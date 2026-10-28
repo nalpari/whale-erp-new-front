@@ -6,7 +6,7 @@ import { Badge, Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, us
 import { usePagePermission } from "@/components/site/session-gate";
 import { HeadValues } from "@/components/site/head-values";
 import { WarnBand } from "@/components/site/side-parts";
-import type { BpMasterDetail, CreateBpMasterResult } from "@/lib/bp-masters";
+import type { BpMasterDetail } from "@/lib/bp-masters";
 import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { formatBizNumber } from "@/lib/store-view";
 import { Blocked, FailedBand, WhoList } from "../platform-admins/admin-parts";
@@ -20,13 +20,9 @@ import { WithdrawalButton } from "./withdrawal-dialog";
 // 하단은 [닫기] … [삭제][수정][변경 이력]. 탈퇴 BP 는 조회만 된다(상태 변경 · 초기화 · 삭제 · 수정 · 변경 이력 없음, 탈퇴 사유는 [사유 보기]).
 // 화면은 미리 숨기거나 흐리게만 한다 — 막는 것은 api 다.
 
-/** 방금 등록한 BP — 초기 비밀번호 메일이 실패했을 때만 상세 위쪽 빨간 상자로 알린다(2026-10-28 사용자 지정 · 전엔 성공도 BP 코드 · 메일 주소 띠) */
-export type CreatedNotice = CreateBpMasterResult;
-
 export function BpMasterDetailPanel({
   open,
   detail,
-  created,
   onClose,
   onBackdropClose,
   trigger,
@@ -35,7 +31,6 @@ export function BpMasterDetailPanel({
 }: {
   open: boolean;
   detail: { bp: BpMasterDetail } | { failed: string } | null;
-  created: CreatedNotice | null;
   onClose: () => void;
   /** 바탕창 클릭 — 겹친 패널을 모두 닫는다(bp-masters-screen.tsx closeAll) */
   onBackdropClose: () => void;
@@ -60,7 +55,6 @@ export function BpMasterDetailPanel({
           key={detail.bp.bpCodeId}
           bp={detail.bp}
           panelOpen={open}
-          created={created}
           onClose={onClose}
           onEdit={onEdit}
           onDeleted={onDeleted}
@@ -84,7 +78,6 @@ type Confirm = "inactive" | "active" | "reset" | "delete";
 function DetailBody({
   bp,
   panelOpen,
-  created,
   onClose,
   onEdit,
   onDeleted,
@@ -92,7 +85,6 @@ function DetailBody({
   bp: BpMasterDetail;
   /** 상세 패널이 열려 있는가 — 닫히면 이 안에서 띄운 팝업도 닫는다 */
   panelOpen: boolean;
-  created: CreatedNotice | null;
   onClose: () => void;
   onEdit: (from: HTMLButtonElement) => void;
   onDeleted: () => void;
@@ -174,8 +166,8 @@ function DetailBody({
     { label: "이메일", value: withdrawn ? gone : bp.email },
     {
       label: "비밀번호",
-      // 칸을 35:65 로 나눠 왼쪽 「[초기화] 초기 비밀번호 미발송」, 오른쪽 35% 자리에서(왼쪽 내용보다 좁아지지 않고, 구분선과 18px 띄운다) 「강제변경 대상 · 대상아님」(2026-10-28 사용자 지정 — 잠시 하위 줄 「└ 강제변경」이었다).
-      // 미사용 · 탈퇴 BP 는 초기화 버튼 · 미발송 표시를 숨긴다(플랫폼 관리자 상세와 같다, 2026-10-28 사용자 지정) — 화면에서만 숨긴다
+      // 칸을 35:65 로 나눠 왼쪽 「[초기화]」(미발송은 머리 아래 빨간 상자로 옮겼다), 오른쪽 35% 자리에서(왼쪽 내용보다 좁아지지 않고, 구분선과 18px 띄운다) 「강제변경 대상 · 대상아님」(2026-10-28 사용자 지정 — 잠시 하위 줄 「└ 강제변경」이었다).
+      // 미사용 · 탈퇴 BP 는 초기화 버튼을 숨긴다(플랫폼 관리자 상세와 같다, 2026-10-28 사용자 지정) — 화면에서만 숨긴다
       value: (
         <span className="grid w-full grid-cols-[minmax(max-content,7fr)_13fr] items-center gap-[18px]">
           <span className="flex min-w-0 items-center gap-[10px]">
@@ -184,10 +176,8 @@ function DetailBody({
                 초기화
               </Button>
             )}
-            {/* 등록 · 초기화 메일이 실패했다 — 다시 보내는 길은 초기화뿐이다 */}
-            {bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent && <span className="truncate text-erp-off">초기 비밀번호 미발송</span>}
-            {/* 초기화 버튼 · 미발송 표시가 모두 없으면(미사용 · 탈퇴 · 수정 권한 없음) 빈칸 대신 「-」(2026-10-28 사용자 지정) */}
-            {!(bp.accountStatus === "ACTIVE" && (canUpdate || bp.isInitialPasswordUnsent)) && muted("-")}
+            {/* 초기화 버튼이 없으면(미사용 · 탈퇴 · 수정 권한 없음) 빈칸 대신 「-」(2026-10-28 사용자 지정) */}
+            {!(bp.accountStatus === "ACTIVE" && canUpdate) && muted("-")}
           </span>
           {/* 앞에 머리 줄(HeadValues)과 같은 11px 세로 구분선 — #d9d9d9 는 Figma 값 구분선(DESIGN.md) */}
           <span className="flex min-w-0 items-center gap-[10px]">
@@ -267,7 +257,9 @@ function DetailBody({
         </span>
       </div>
 
-      {created && !created.isMailSent && <WarnBand>초기 비밀번호 미발송! [초기화]로 다시 보내주세요.</WarnBand>}
+      {/* 등록 · 초기화 메일이 실패한 사용 BP — 다시 보내는 길은 초기화뿐이다. 비밀번호 줄의 「초기 비밀번호 미발송」 대신 머리 아래 빨간 상자로(칸이 틀어지지 않게, 2026-10-28 사용자 지정).
+          api isInitialPasswordUnsent 를 따르므로 초기화 메일이 나갈 때까지 상세를 열 때마다 보인다 */}
+      {bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent && <WarnBand>초기 비밀번호 미발송! [초기화]로 다시 보내주세요.</WarnBand>}
       {/* 미사용 · 탈퇴 안내는 빨간 안내 상자(WarnBand — 2026-10-28 사용자 지정, 점포 BP 탈퇴 · 미사용 안내와 같다). 미사용은 두 줄로 줄였다(같은 날 사용자 지정) */}
       {bp.accountStatus === "INACTIVE" && (
         <WarnBand>
