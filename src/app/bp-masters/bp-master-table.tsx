@@ -8,7 +8,7 @@ import { formatBizNumber } from "@/lib/store-view";
 import { WithIcon } from "../platform-admins/admin-table";
 import { BpStatusBadge, WITHDRAWN_TEXT } from "./bp-master-parts";
 
-// BP 마스터 계정 목록 표(S-ALHCJS). BP 코드 · 상호명을 누르면 상세 패널이 열린다(목업과 같다).
+// BP 마스터 계정 목록 표(S-ALHCJS). 상호명을 누르면 상세 패널이 열린다(플랫폼 관리자 목록의 이름처럼 링크 하나, 2026-10-28 사용자 지정).
 // 연락처 · 이메일은 열을 나눈다(플랫폼 관리자 목록과 같은 모양, 2026-10-28 사용자 지정 — 전엔 한 칸 두 줄).
 // 사업자등록번호가 빈 줄이 미인증 BP 다. 탈퇴 BP 는 이름 · 연락처 · 이메일이 「탈퇴로 삭제됨」으로 보인다.
 
@@ -29,7 +29,7 @@ export function BpMasterTable({
 }) {
   const gone = <span className="text-erp-muted">{WITHDRAWN_TEXT}</span>;
   const withdrawn = (b: BpMaster) => b.accountStatus === "WITHDRAWN";
-  // 탈퇴 BP 줄은 글자를 모두 회색으로(BP 코드 링크 · 상태 배지는 그대로) — 플랫폼 관리자 목록의 미사용 줄과 같다(2026-10-28 사용자 지정)
+  // 탈퇴 BP 줄은 글자를 모두 회색으로(상호명 링크 · 상태 배지는 그대로) — 플랫폼 관리자 목록의 미사용 줄과 같다(2026-10-28 사용자 지정)
   const dim = (b: BpMaster, node: ReactNode) => (withdrawn(b) ? <span className="text-erp-muted">{node}</span> : node);
   const open = (b: BpMaster, text: string, bold = false) => (
     <button
@@ -45,7 +45,8 @@ export function BpMasterTable({
 
   // 열 순서는 BP 코드 · 아이디 · 이름 · 상태 · 상호명 …, 이름은 플랫폼 관리자 목록 느낌으로(2026-10-28 사용자 지정) — 연락처 · 이메일은 나누고, 등록은 일시만
   const columns: Column<BpMaster>[] = [
-    { header: "BP 코드", width: "w-[110px]", cell: (b) => open(b, b.bpCode) },
+    // 링크는 상호명 하나 — 파란 글자가 너무 많아 BP 코드는 일반 글자로(2026-10-28 사용자 지정)
+    { header: "BP 코드", width: "w-[110px]", cell: (b) => dim(b, b.bpCode) },
     { header: "아이디", width: "w-[130px]", cell: (b) => dim(b, b.loginId) },
     { header: "이름", width: "w-[110px]", cell: (b) => (withdrawn(b) ? gone : b.name) },
     { header: "계정상태", width: "w-[100px]", cell: (b) => <BpStatusBadge status={b.accountStatus} /> },
