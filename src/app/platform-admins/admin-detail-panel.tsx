@@ -155,8 +155,10 @@ function DetailBody({
     { label: "이메일", value: admin.email ?? null },
     {
       label: "비밀번호",
-      // 미사용 계정은 초기화 버튼 · 미발송 표시 없이 빈칸으로 둔다(2026-10-23) — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다)
-      value: admin.accountStatus === "INACTIVE" ? null : (
+      // 미사용 계정은 초기화 버튼 · 미발송 표시를 숨긴다(2026-10-23) — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다).
+      // 초기화할 수 없어 보일 것이 없으면(미사용 · 수정 권한 없음) 빈칸 대신 「-」(BP 마스터 상세와 같다, 2026-10-28 사용자 지정)
+      value:
+        admin.accountStatus === "INACTIVE" || (!canUpdate && !admin.isInitialPasswordUnsent) ? muted("-") : (
         <>
           {canUpdate && (
             <Blocked reason={isSelf ? "본인 비밀번호는 내 정보에서 바꿔 주세요" : undefined}>
