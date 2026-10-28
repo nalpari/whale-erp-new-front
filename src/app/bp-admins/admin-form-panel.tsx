@@ -523,7 +523,7 @@ export function AdminFormPanel(props: Props) {
                 disabled={locks.roleGroup || !form.roleTypeCode}
                 title={locks.roleGroup ? "이 계정의 권한명은 여기서 바꿀 수 없습니다" : undefined}
                 aria-invalid={invalid("roleGroupId")}
-                aria-describedby={describe("roleGroupId")}
+                aria-describedby={groupsFailed || noGroupForRole ? messageId("roleGroupId") : describe("roleGroupId")}
                 aria-required
               >
                 {!form.roleGroupId && <option value="">{form.roleTypeCode ? "선택" : "계정 역할을 먼저 골라 주세요"}</option>}

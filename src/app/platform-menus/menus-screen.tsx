@@ -98,7 +98,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
         // 화면이 cycle · depth 를 미리 막으므로 api 의 400 · 409 는 이 트리가 낡았다는 뜻이다(남이 옮기거나 하위를 더함).
         // 그 사이 지워졌거나(404) 결과를 모를 때와 함께 최신 트리를 받는다 — 안 받으면 같은 이동이 새로고침 전까지 계속 거절된다
         const stale = result.status === undefined || result.status === 400 || result.status === 404 || result.status === 409;
-        // 그 사이 남이 트리를 바꿨으면(400 · 404 · 409) api 문장 대신 쉬운 말로(2026-10-28 사용자 지정 문구). 응답을 못 받았거나 그 밖의 거절은 받은 문장 그대로
+        // 그 사이 남이 트리를 바꿨으면(400 · 404 · 409) api 문장 대신 쉬운 말로(2026-10-28 사용자 지정 문구). 응답을 못 받으면 옮겨졌는지 모른다는 문구, 그 밖의 거절은 받은 문장 그대로
         setMoveFailure(
           result.status !== undefined && stale
             ? { message: "다른 관리자가 메뉴 구성을 변경하여 저장하지 못했습니다.", detail: "변경된 내용을 확인한 후 다시 시도해 주세요." }
