@@ -316,7 +316,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
           >
             <div className="flex flex-col gap-[12px] text-[14px] leading-[1.6]">
               <p>미사용 메뉴 아래로 이동하면 해당 화면이 사용자 메뉴에서 제외되어 접근할 수 없습니다.</p>
-              <p>그래도 이동하시겠습니까?</p>
+              <p>이동하시겠습니까?</p>
             </div>
           </ConfirmDialog>
         </div>
