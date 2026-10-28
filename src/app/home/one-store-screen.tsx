@@ -29,7 +29,7 @@ import { assigneeText, dueText, MASKED_STAFF } from "../todos/todo-row";
 import { ScheduleMonth } from "../work-schedules/schedule-month";
 import { ScheduleWeek } from "../work-schedules/schedule-week";
 import { addDays, mondayOf, moved, parseScheduleQuery, scheduleApiSearch, toScheduleSearch, type ScheduleQuery } from "../work-schedules/work-schedule-query";
-import { latestNotices, manWon, oneStorePaths, staffRowsOf, oneStoreStatusCells, STAFF_LIMIT, staffCountsOf, todoSummaryOf } from "./one-store-view";
+import { latestNotices, manWon, oneStorePaths, staffRowsOf, oneStoreStatusCells, STAFF_LIMIT, staffCountsOf, todoSummaryOf, workDaysText, workTimeText } from "./one-store-view";
 import { useHomeLoad, type Loaded } from "./use-home-api";
 
 // 로그인 후 홈 — 점포 하나 화면(WHALEERP-342, HOME-6 · HOME-9, 목업 home/signed-in.html 「점포 하나 화면」 · 데모 oneStore).
@@ -322,7 +322,7 @@ type StaffRow = { no: number; item: StaffMemberListItem };
 const DASH = "—";
 
 // 직원 정보 — 그 점포의 재직 직원(퇴직 예정 포함). 직원 초대 버튼 · 직원 수 상한은 없다.
-// 근무 시간 · 근무요일 열은 api #622 로 준비됐고, 1팀 /bp-masters api 가 api main 에 들어와 타입을 다시 만들 수 있을 때 붙인다(2026-10-27 재영)
+// 근무 시간 · 근무요일은 근로계약 조항(api #622). 근로계약 관리 조회 권한이 없으면 api 가 workDays 를 null 로 줘 「—」로 비운다(api #172)
 function StaffCard({
   storeId,
   section,
@@ -383,6 +383,8 @@ function StaffCard({
                     ),
                 },
                 { header: "구분", width: "w-[110px]", cell: masked((item) => (item.employmentType ? EMPLOYMENT_TYPE_LABELS[item.employmentType] : DASH)) },
+                { header: "근무 시간", width: "w-[150px]", cell: masked((item) => (item.contract?.workDays ? workTimeText(item.contract.workDays) : DASH)) },
+                { header: "근무요일", width: "w-[130px]", cell: masked((item) => (item.contract?.workDays ? workDaysText(item.contract.workDays) : DASH)) },
                 {
                   header: "근로계약",
                   cell: masked((item) => {

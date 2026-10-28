@@ -6,6 +6,7 @@ import type { AdminStore } from "../../lib/session.ts";
 import { employmentStatusCells, type Cell } from "../staff-members/staff-row.ts";
 import { formatAmount } from "../../lib/payslips.ts";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
+import { DAY_KO, WEEKDAYS } from "../contracts/new/contract-form-model.ts";
 
 /**
  * 점포 하나 화면으로 그릴 점포. 범위가 점포 하나면 그 점포, 가맹마스터 · 가맹관리자(FM · FA)는 고를 점포가 하나라 범위(전체 · 가맹 등)와
@@ -72,6 +73,30 @@ export function todoSummaryOf(list: { items: readonly { status: string }[]; tota
 
 /** 직원 급여 카드의 금액 — 목업처럼 만원 단위로 반올림한다(1,184만원). 만원이 안 되는 금액이 0만원으로 보이지 않게 그때는 원 단위다 */
 export const manWon = (won: number): string => (won !== 0 && Math.abs(won) < 10_000 ? `${formatAmount(won)}원` : `${formatAmount(Math.round(won / 10_000))}만원`);
+type WorkDay = NonNullable<NonNullable<StaffMemberListItem["contract"]>["workDays"]>[number];
+const NO_VALUE = "—";
+
+/** 직원 정보 표의 근무 시간 — 요일마다 같으면 「09:00~18:00」, 다르면 가장 많은 시간(같으면 앞 요일 것)에 「외」. 근무 요일이 없으면 「—」 */
+export function workTimeText(days: readonly WorkDay[]): string {
+  const counts = new Map<string, number>();
+  for (const d of days) counts.set(`${d.startTime}~${d.endTime}`, (counts.get(`${d.startTime}~${d.endTime}`) ?? 0) + 1);
+  const [top] = [...counts].sort((a, b) => b[1] - a[1]);
+  if (!top) return NO_VALUE;
+  return counts.size === 1 ? top[0] : `${top[0]} 외`;
+}
+
+/** 직원 정보 표의 근무요일 — 월→일 순, 셋 이상 이어지면 「월~금」, 아니면 「월·목·금」(섞이면 「월~수·금」). 없으면 「—」 */
+export function workDaysText(days: readonly WorkDay[]): string {
+  const idx = WEEKDAYS.map((w, i) => (days.some((d) => d.weekday === w) ? i : -1)).filter((i) => i >= 0);
+  const runs: number[][] = [];
+  for (const i of idx) {
+    const last = runs.at(-1);
+    if (last && last.at(-1) === i - 1) last.push(i);
+    else runs.push([i]);
+  }
+  const name = (i: number) => DAY_KO[WEEKDAYS[i]];
+  return runs.flatMap((r) => (r.length >= 3 ? [`${name(r[0])}~${name(r.at(-1)!)}`] : r.map(name))).join("·") || NO_VALUE;
+}
 
 /** 공지 띠 — 고정 여부와 상관없이 게시일 최신 3건(같은 날이면 나중 글). api 는 고정 공지를 먼저 주므로 게시일로 다시 고른다 */
 export function latestNotices<P extends { postId: number; postedDate: string }>(items: readonly P[]): P[] {
