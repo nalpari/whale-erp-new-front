@@ -6,7 +6,7 @@ import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, useTo
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
-import { FailedBand, InfoBand } from "@/components/site/side-parts";
+import { FailedBand, InfoBand, WarnBand } from "@/components/site/side-parts";
 import { Blocked, WhoList } from "@/app/platform-admins/admin-parts";
 import { HistoryButton } from "@/app/platform-admins/history-dialog";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
@@ -233,13 +233,8 @@ function DetailBody({
           <div className="flex flex-col gap-[12px]">
             <WhoList rows={[["아이디", admin.loginId], ["이름", name ?? "-"], ["이메일", admin.email ?? "-"]]} />
             {/* 세 관리 화면 같은 문구 · 대상은 아이디 · 이름 · 이메일 각각(「아이디/이름」 한 줄은 라벨이 잘렸다)(2026-10-28 사용자 지정) */}
-            <p>
-              비밀번호 초기화 시 새로운 비밀번호가 등록된 이메일로 발송됩니다.
-              <br />
-              새 비밀번호는 1시간 동안 유효하며, 로그인 시 변경해야 합니다.
-              <br />
-              기존 비밀번호는 즉시 사용할 수 없게 됩니다.
-            </p>
+            {/* 안내는 빨간 안내 상자로 — 되돌릴 수 없는 동작이라 놓치지 않게(2026-10-28 사용자 지정) */}
+            <WarnBand>{"비밀번호 초기화 시 새로운 비밀번호가 등록된 이메일로 발송됩니다.\n새 비밀번호는 1시간 동안 유효하며, 로그인 시 변경해야 합니다.\n기존 비밀번호는 즉시 사용할 수 없게 됩니다."}</WarnBand>
           </div>
         </ConfirmDialog>
       )}
