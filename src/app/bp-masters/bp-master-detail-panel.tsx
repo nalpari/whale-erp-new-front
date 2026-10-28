@@ -245,11 +245,11 @@ function DetailBody({
 
   return (
     <div className="flex flex-col gap-[16px]">
-      {/* 머리: 첫 줄 상호명, 둘째 줄 「BP 코드 값 | 상태 배지」 — 플랫폼 관리자 상세와 같은 모양(2026-10-28 사용자 지정) */}
+      {/* 머리: 첫 줄 상호명, 둘째 줄 「BP 코드 값 | 아이디 값 | 상태 배지」 — 플랫폼 관리자 상세와 같은 모양(2026-10-28 사용자 지정) */}
       <div className="flex flex-col gap-[6px]">
         <h2 className="text-[18px] font-semibold break-all text-erp-ink">{bp.tradeName}</h2>
         <span className="text-[14px]">
-          <HeadValues items={[{ label: "BP 코드", value: bp.bpCode }, { value: <BpStatusBadge status={bp.accountStatus} /> }]} />
+          <HeadValues items={[{ label: "BP 코드", value: bp.bpCode }, { label: "아이디", value: bp.loginId }, { value: <BpStatusBadge status={bp.accountStatus} /> }]} />
         </span>
       </div>
 
