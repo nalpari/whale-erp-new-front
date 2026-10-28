@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { AdminStore } from "../../lib/session.ts";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
-import { latestNotices, oneStoreIdOf, oneStorePaths, oneStoreStatusCells, staffCountsOf, staffRowsOf, todoSummaryOf } from "./one-store-view.ts";
+import { latestNotices, manWon, oneStoreIdOf, oneStorePaths, oneStoreStatusCells, staffCountsOf, staffRowsOf, todoSummaryOf } from "./one-store-view.ts";
 
 const store = (storeId: number) => ({ storeId }) as AdminStore;
 const staff = (over: Partial<StaffMemberListItem>) =>
@@ -33,6 +33,14 @@ test("api 경로 — TO-DO 는 그 점포 오늘 전부 · 긴급(대기 · 진�
   assert.equal(q(p.staff).get("joinState"), null);
   assert.equal(q(p.notices).get("pageSize"), "20");
   assert.equal(p.store, "/stores/5");
+  assert.deepEqual([q(p.payslipSummary).get("storeId"), q(p.payslipSummary).get("month")], ["5", "2026-10"]);
+});
+
+test("직원 급여 금액 — 만원 반올림, 만원 미만은 원", () => {
+  assert.equal(manWon(11_840_000), "1,184만원");
+  assert.equal(manWon(6_425_000), "643만원");
+  assert.equal(manWon(0), "0만원");
+  assert.equal(manWon(9_500), "9,500원");
 });
 
 test("TO-DO 숫자 — 완료는 줄의 묶음 상태(한 명만 끝낸 근무지 전체는 진행 중), 대기 · 진행 중은 전체 − 완료, 0건이면 막대 0%", () => {

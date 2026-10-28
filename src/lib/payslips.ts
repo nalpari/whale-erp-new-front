@@ -18,6 +18,8 @@ export type PayslipReviewReasonValue = Schemas["PayslipReviewReason"];
 export type PayslipListItem = Schemas["PayslipListItemDto"];
 /** total 은 모든 필터를 건 건수, statusCounts 는 상태 필터와 상관없이 점포 · 직원명 필터만 건 그 달 건수다(직원명으로 거르면 가린 줄은 뺀다). reviewPendingCount 는 그 달 · 고른 점포(직원명이면 그 이름)의 검토 대기 수다 — 가린 줄은 세지 않는다(ATT-30 v218). */
 export type PayslipListResponse = Schemas["PayslipListResponseDto"];
+/** 점포 · 달 급여 요약(GET /payslips/summary) — 네 상태 모두, 본사 역할은 본사 제공 동의한 가맹 직원만 센다(api 가 거른다, ATT-30). 점포 하나 화면의 직원 급여 카드가 쓴다 */
+export type PayslipSummary = Schemas["PayslipSummaryResponseDto"];
 /** 명세서 상세(GET /payslips/:id). 가려지는 명세서는 404 라 늘 직원 이름이 있다. */
 export type PayslipDetail = Schemas["PayslipDetailResponseDto"];
 /** 명세서 금액 한 줄. 금액은 adjustedAmount ?? calculatedAmount, 아직 넣지 않았으면 isEntered = false. */
