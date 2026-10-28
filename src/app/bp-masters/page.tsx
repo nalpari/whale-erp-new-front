@@ -10,7 +10,8 @@ import { BpMastersScreen } from "./bp-masters-screen";
 // 메뉴 권한(등록 · 수정 · 삭제)은 로그인 정보에서 화면(클라이언트)이 읽는다(SessionGate).
 export default async function BpMastersPage({ searchParams }: PageProps<"/bp-masters">) {
   const query = parseBpMastersQuery(await searchParams);
-  const [list, detail] = await Promise.all([getBpMasters(query), query.bp ? loadDetail(query.bp) : null]);
+  // 상태를 셋 다 끄면(status=NONE) 결과 없음 — api 를 부르지 않는다(플랫폼 관리자와 같다, 2026-10-28 사용자 지정)
+  const [list, detail] = await Promise.all([query.statusNone ? { items: [], total: 0 } : getBpMasters(query), query.bp ? loadDetail(query.bp) : null]);
 
   return (
     <>

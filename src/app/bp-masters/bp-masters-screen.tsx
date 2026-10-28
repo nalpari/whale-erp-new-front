@@ -151,14 +151,10 @@ export function BpMastersScreen({
               </div>
             </ListToolbar>
           </StoreExcelProvider>
-          <BpMasterTable rows={list.items} selected={query.bp} onOpen={openDetail} />
+          <BpMasterTable rows={list.items} selected={query.bp} onOpen={openDetail} noStatus={query.statusNone} />
           <div className="pt-[14px]">
             <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / query.pageSize))} onPageChange={(page) => go({ page, bp: undefined })} />
           </div>
-          <p className="text-[13px] leading-[1.6] text-erp-label">
-            사업자등록번호가 빈 줄이 사업자정보 미인증 BP 입니다. 탈퇴 BP 는 이름 · 연락처 · 이메일이 지워져 BP 코드 · 아이디 · 상호명 · 사업자등록번호로만 찾을 수
-            있습니다. 엑셀에는 목록 항목과 BP 사업자정보 전체를 담고, 연락처와 대표자 연락처는 가운데자리를 가립니다.
-          </p>
         </main>
       </div>
 
