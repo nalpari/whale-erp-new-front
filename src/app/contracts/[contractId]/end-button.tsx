@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, ConfirmDialog } from "@/components/common";
+import { Button, ConfirmDialog, useAction } from "@/components/common";
 import { withBack } from "../contract-list";
 import { endContract, type EndContractResult } from "./actions";
 import { END_UNKNOWN, sendFailureOf } from "./send-model";
@@ -18,6 +18,7 @@ export function EndContractButton({ contractId, name, back }: { contractId: numb
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
+  const end = useAction(endContract, { text: "종료중입니다" });
 
   return (
     <>
@@ -37,8 +38,9 @@ export function EndContractButton({ contractId, name, back }: { contractId: numb
           start(async () => {
             let result: EndContractResult;
             try {
-              result = await endContract(contractId);
-            } catch {
+              result = await end(contractId);
+            } catch (e) {
+              console.error("근로계약 종료 호출이 끊김", contractId, e);
               // 서버 액션 호출 자체가 끊겼다(브라우저 ↔ Next, 배포 중 재시작) — api 는 이미 닫았을 수 있다
               result = sendFailureOf(null, undefined, "", END_UNKNOWN);
             }
