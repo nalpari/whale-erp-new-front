@@ -1214,6 +1214,9 @@
   .w-\[160px\] {
     width: 160px;
   }
+  .w-\[166px\] {
+    width: 166px;
+  }
   .w-\[170px\] {
     width: 170px;
   }
@@ -1562,6 +1565,9 @@
   .grid-cols-\[28px_1fr\] {
     grid-template-columns: 28px 1fr;
   }
+  .grid-cols-\[56px_1fr\] {
+    grid-template-columns: 56px 1fr;
+  }
   .grid-cols-\[60px_1fr\] {
     grid-template-columns: 60px 1fr;
   }
@@ -1785,6 +1791,9 @@
   }
   .self-stretch {
     align-self: stretch;
+  }
+  .justify-self-center {
+    justify-self: center;
   }
   .justify-self-start {
     justify-self: flex-start;
@@ -3714,6 +3723,13 @@
   }
   .\[\&\>span\>span\]\:bg-erp-on > span > span {
     background-color: var(--color-erp-on);
+  }
+  .\[\&\>td\]\:border-t > td {
+    border-top-style: var(--tw-border-style);
+    border-top-width: 1px;
+  }
+  .\[\&\>td\]\:border-t-\[\#c9d1de\] > td {
+    border-top-color: #c9d1de;
   }
   .\[\&\>td\:first-child\]\:shadow-\[inset_3px_0_0_var\(--color-erp-brand\)\] > td:first-child {
     --tw-shadow: inset 3px 0 0 var(--tw-shadow-color, var(--color-erp-brand));

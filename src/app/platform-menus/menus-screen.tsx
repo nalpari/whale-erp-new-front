@@ -160,6 +160,8 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
         const name = r.kind === "menu" ? r.row.node.name : draftName.trim() || "새 메뉴";
         return (
           <span style={{ paddingLeft: (depth - 1) * 18 }} className={r.kind === "menu" && r.row.node.status !== "ACTIVE" ? "text-erp-muted" : undefined}>
+            {/* 2단계부터 회색 「└ 」 — 권한별 메뉴설정 팝업과 같은 모양(2026-10-28 사용자 지정) */}
+            {depth > 1 && <span className="text-erp-label">└ </span>}
             {r.kind === "menu" ? (
               // 줄 누르기와 같은 고르기를 키보드로도 — 눌림은 줄(tr)의 onClick 으로 올라간다
               <button type="button" aria-pressed={r.row.node.menuId === picked && !creating} className="max-w-full truncate text-left">
@@ -194,9 +196,12 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
       cell: (r) =>
         r.kind === "menu" ? (
           // 상위가 미사용이면 자기 값(사용 · 미사용)은 그대로 보이고, 숨는 이유를 회색 꼬리표로 덧붙인다(2026-10-27 사용자 지정 — 안 A)
-          <span className="inline-flex items-center gap-[6px]">
-            <Badge tone={r.row.node.status === "ACTIVE" ? "on" : "off"}>{statusText(r.row.node.status)}</Badge>
-            {hiddenByParent.has(r.row.node.menuId) && <Tag>상위 미사용</Tag>}
+          // 배지는 늘 같은 자리(166px 묶음을 칸 가운데에 두고 트리 들여쓰기 한 칸(18px) 더 민 뒤, 그 왼쪽 56px 칸 가운데)에 두고 꼬리표는 그 오른쪽 — 꼬리표 유무로 배지가 좌우로 흔들려 읽기 어려웠다(2026-10-28 사용자 지정)
+          <span className="mx-auto grid w-[166px] grid-cols-[56px_1fr] pl-[18px] items-center gap-[6px]">
+            <span className="justify-self-center">
+              <Badge tone={r.row.node.status === "ACTIVE" ? "on" : "off"}>{statusText(r.row.node.status)}</Badge>
+            </span>
+            <span className="justify-self-start">{hiddenByParent.has(r.row.node.menuId) && <Tag>상위 미사용</Tag>}</span>
           </span>
         ) : (
           <span className="text-erp-muted">—</span>
@@ -250,7 +255,12 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
             {/* 머리 줄까지 고정하고 아래만 스크롤(DataTable scroll) — 칸이 남는 높이를 채우게 flex 묶음으로 둔다. CARD 의 [&>*]:shrink-0 를 이 칸만 푼다.
                 머리 색은 권한별 메뉴설정 팝업과 같다(2026-10-26 사용자 지정). 1단계 줄 바탕은 두지 않고 굵은 글씨로만 가른다 — 고른 줄(current)
                 회색과 거의 같아 헷갈렸다(2026-10-28 사용자 지정 — 전엔 erp-thead-bg) */}
-            <div {...drag.wrapProps} className="relative flex min-h-0 flex-1 shrink! flex-col">
+            {/* 1단계 묶음 사이에 1px 진한 선(2px 는 무거웠다) — 묶음이 한눈에 갈라지게(2026-10-28 사용자 지정, 비교 페이지 3번). 공통 DataTable 은 줄 모양을 받지 않아
+                줄에 data-top 을 달고(rowProps) 감싸는 칸에서 칠한다. #c9d1de — 표 선(#e9edf5)보다 한 단계 진한 선, 이 표에만 쓰여 토큰이 없다 */}
+            <div
+              {...drag.wrapProps}
+              className="relative flex min-h-0 flex-1 shrink! flex-col [&_tbody_tr[data-top]:not(:first-child)>td]:border-t [&_tbody_tr[data-top]:not(:first-child)>td]:border-t-[#c9d1de]"
+            >
               <DataTable
                 columns={columns}
                 rows={rows}
@@ -265,6 +275,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
                     ? {
                         ...(editable ? drag.rowProps(r.row.node) : {}),
                         onClick: () => handleRowClick(r.row.node.menuId),
+                        "data-top": r.row.node.depth === 1 ? "" : undefined,
                       }
                     : {}
                 }
