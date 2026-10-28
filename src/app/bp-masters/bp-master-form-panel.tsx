@@ -543,10 +543,9 @@ export function BpMasterFormPanel(props: Props) {
         />
       </FormGroup>
 
-      {mode === "create" ? (
+      {/* 수정 화면의 「사유는 받지 않습니다 …」 안내는 지웠다(2026-10-28 사용자 지정) */}
+      {mode === "create" && (
         <Note>BP 마스터 계정의 초기 비밀번호는 등록한 이메일로 발송됩니다. 권한 그룹은 BP 마스터 기본 권한으로 정해지고, 약관 동의는 첫 로그인 때 받습니다.</Note>
-      ) : (
-        <Note>정보를 고칠 때 사유는 받지 않습니다. 여럿이 같은 BP 를 고치면 마지막에 저장한 내용이 남습니다.</Note>
       )}
 
       <div className="flex justify-center gap-[6px]">
