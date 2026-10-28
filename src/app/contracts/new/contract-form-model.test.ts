@@ -15,7 +15,7 @@ import {
   initialForm,
   inProgressLine,
   stillCorrecting,
-  withoutCorrection,
+  replaceConfirmBody,
   inProgressOf,
   isMinor,
   monthlyWage,
@@ -442,6 +442,12 @@ test("바로잡기 뒤 다시 물을 때 바로잡기 문구는 체결 완료가
   assert.equal(stillCorrecting(body, [c(7, "DRAFT")]), false);
   assert.equal(stillCorrecting({} as typeof body, [c(5, "SIGNED")]), false);
   // 바로잡기 문구를 보이지 않으면 본문에서도 바로잡기를 뺀다 — 그사이 체결된 계약이 「대체」로 종료되지 않게(front #135 재리뷰)
-  assert.equal(withoutCorrection(body).correctSignedContracts, undefined);
-  assert.equal(body.correctSignedContracts, true); // 원래 본문은 그대로
+  // 확인 본문 — 바로잡기 문구일 때만 바로잡기를 싣고, 대체 목록은 확인창에 보인 그대로(front #135 재리뷰 · 셀프 code-review)
+  const corrected = { ...body, replaceContractIds: [1] };
+  const list = [c(5, "SIGNED"), c(7, "DRAFT")];
+  assert.deepEqual(replaceConfirmBody(corrected, list, true), { correctSignedContracts: true, replaceContractIds: [5, 7] });
+  assert.deepEqual(replaceConfirmBody(corrected, [c(7, "DRAFT")], false), { replaceContractIds: [7] });
+  // 다시 물을 때의 판정 그대로 — 진행 중 목록만이면 바로잡기가 빠진다
+  assert.equal(replaceConfirmBody(corrected, [c(7, "DRAFT")], stillCorrecting(corrected, [c(7, "DRAFT")])).correctSignedContracts, undefined);
+  assert.equal(corrected.correctSignedContracts, true); // 원래 본문은 그대로
 });

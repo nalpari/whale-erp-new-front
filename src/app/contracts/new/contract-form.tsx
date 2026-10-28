@@ -16,7 +16,7 @@ import {
   initialForm,
   inProgressLine,
   stillCorrecting,
-  withoutCorrection,
+  replaceConfirmBody,
   isMinor,
   MINIMUM_WAGE,
   monthlyHours,
@@ -369,7 +369,7 @@ export function ContractForm({
       // 한 판정을 따른다(front #135 재리뷰)
       if (result.inProgress) {
         const correcting = stillCorrecting(body, result.inProgress);
-        setReplace({ body: correcting ? body : withoutCorrection(body), list: result.inProgress, paper: true, correcting });
+        setReplace({ body, list: result.inProgress, paper: true, correcting });
         return;
       }
       setReplace(null);
@@ -845,8 +845,7 @@ export function ContractForm({
           if (!replace) return;
           // 다시 물은 목록만 보낸다 — api(checkReplace)는 지금 목록과 같은 집합만 받고, 409 는 늘 지금 목록 전체를 싣는다. 앞서 고른 것을
           // 합치면 그사이 빠진 계약 때문에 같은 409 가 되풀이된다(front #135 재리뷰)
-          const ids = { replaceContractIds: replace.list.map((c) => c.contractId) };
-          const body = { ...replace.body, ...ids, ...(replace.correcting && { correctSignedContracts: true }) };
+          const body = replaceConfirmBody(replace.body, replace.list, replace.correcting);
           if (replace.paper) sendPaper(body);
           else send(body);
         }}

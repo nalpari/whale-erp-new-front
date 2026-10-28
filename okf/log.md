@@ -1,7 +1,8 @@
 # Bundle history
 
 ## 2026-10-28
-* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영: 바로잡기로 보낸 뒤 진행 중 목록으로 다시 물을 때 바로잡기 문구를 보이지 않으면 본문에서 `correctSignedContracts` 도 뺀다(`withoutCorrection` — 문구와 본문이 한 판정(`stillCorrecting`)을 따른다, 확인창을 띄워 둔 사이 체결된 계약이 대체 확인만으로 종료되지 않게). main 병합, api 타입을 #157 gyarados `ba054c7b` 에서 다시 만듦(설명 2곳만 바뀜).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 셀프 code-review: 대체 확인 본문(대체 목록 · 바로잡기)을 `replaceConfirmBody` 한 곳에서 정하고 판정을 테스트한다. main 병합 · api 타입을 gyarados `d520d95a`(api main 포함)에서 다시 만듦.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영: 바로잡기로 보낸 뒤 진행 중 목록으로 다시 물을 때 바로잡기 문구를 보이지 않으면 본문에서 `correctSignedContracts` 도 뺀다(확인 본문은 `replaceConfirmBody` 한 곳에서 확인창의 바로잡기 여부로 정한다, 확인창을 띄워 둔 사이 체결된 계약이 대체 확인만으로 종료되지 않게). main 병합, api 타입을 #157 gyarados `ba054c7b` 에서 다시 만듦(설명 2곳만 바뀜).
 
 ## 2026-10-27
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영: 대체 확인을 다시 물으면 다시 물은 목록만 보낸다(`replaceIdsOf` 를 없앰) — api `checkReplace` 는 지금 목록과 같은 집합만 받아, 앞서 고른 것을 합치면 그사이 빠진 계약 때문에 같은 409 가 되풀이됐다. main 병합.
