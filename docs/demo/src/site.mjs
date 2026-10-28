@@ -189,7 +189,7 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     `<div class="flex flex-col gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[16px]">` +
     bizFields(state, num, ceo, open) +
     bizButtons(state) +
-    (state === "struck" ? bizStruckGuide : bizGuide) +
+    (state === "struck" ? bizStruckGuide : state === "new" ? bizGuide : "") /* 국세청 안내는 인증 전에만(앱 BizVerificationBox, 2026-10-28) */ +
     `</div></section>`;
   // sameAsBasic: 대표자 연락처 · 이메일 칸에 "기본정보와 동일" 체크박스 — 체크하면 기본정보(이름 탭) 값을 그대로 쓴다(2026-10-22 사용자 지정).
   const ceoContact = (idp, checked) =>
@@ -205,7 +205,7 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     f.address(A, "사업자주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }) +
     `</section>`;
 
-  const biz = `<div class="flex flex-col gap-[18px]">${bizAuthBox("locked", "211-87-01234", "남도현", "2021-03-15", "2026-10-20")}${bizRest(`${idPrefix}-done`)}</div>${save}`;
+  const biz = `<div class="flex flex-col gap-[18px]">${bizAuthBox("locked", "211-87-01234", "남도현", "2021-03-15", "2026-10-20 14:32")}${bizRest(`${idPrefix}-done`)}</div>${save}`;
 
   // 가입 직후처럼 아직 사업자 인증을 받지 않은 초기 상태 — 인증완료 탭과 생김새를 견주어 보려고 따로 둔다(2026-10-07 피드백).
   const bizNew = `<div class="flex flex-col gap-[18px]">${bizAuthBox("new", "", "", "")}${bizRest(`${idPrefix}-new`)}</div>${save}`;
