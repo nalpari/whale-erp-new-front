@@ -175,39 +175,36 @@ function DetailBody({
     { label: "이메일", value: withdrawn ? gone : bp.email },
     {
       label: "비밀번호",
-      // 미사용 · 탈퇴 BP 는 초기화 버튼 · 미발송 표시 없이 빈칸(플랫폼 관리자 상세와 같다, 2026-10-28 사용자 지정) — 화면에서만 숨긴다
-      value:
-        bp.accountStatus !== "ACTIVE" ? null : (
-          <>
-            {canUpdate && (
-              <Button variant="soft" onClick={() => setConfirm("reset")} disabled={busy}>
-                초기화
-              </Button>
-            )}
-            {/* 등록 · 초기화 메일이 실패했다 — 다시 보내는 길은 초기화뿐이다 */}
-            {bp.isInitialPasswordUnsent && <span className="text-erp-off">초기 비밀번호 미발송</span>}
-          </>
-        ),
-    },
-    // 비밀번호 줄 바로 아래 하위 줄 「└ 강제변경」 — 「비밀번호 강제변경」은 110px 라벨 칸에서 잘려서(2026-10-28 사용자 지정). 값은 「대상」 · 「대상아님」
-    { label: "└ 강제변경", value: bp.isPasswordChangeRequired ? "대상" : "대상아님" },
-    {
-      label: "상태",
-      // 현재 상태는 머리의 배지가 보이므로 이 줄은 버튼만 둔다(2026-10-28 사용자 지정) — 수정 권한이면 [상태 변경], 탈퇴 BP 는 [사유 보기]. 누를 버튼이 없을 때만 배지를 보인다.
-      value: canUpdate ? (
-        <Button variant="soft" onClick={() => setConfirm(bp.accountStatus === "ACTIVE" ? "inactive" : "active")} disabled={busy}>
-          상태 변경
-        </Button>
-      ) : withdrawn && bp.withdrawal ? (
-        // 탈퇴 BP 는 변경 이력을 보이지 않으니 탈퇴 사유를 여기서 본다(WHALEERP-626)
-        <WithdrawalButton bp={bp} withdrawal={bp.withdrawal} panelOpen={panelOpen} />
-      ) : (
-        <BpStatusBadge status={bp.accountStatus} />
+      // 「[초기화] | 강제변경 대상 | 초기 비밀번호 미발송」 — 강제변경도 이 줄에(2026-10-28 사용자 지정, 잠시 하위 줄 「└ 강제변경」이었다). 값은 「대상」 · 「대상아님」.
+      // 미사용 · 탈퇴 BP 는 초기화 버튼 · 미발송 표시를 숨긴다(플랫폼 관리자 상세와 같다, 2026-10-28 사용자 지정) — 화면에서만 숨긴다
+      value: (
+        <DetailValues
+          items={[
+            ...(bp.accountStatus === "ACTIVE" && canUpdate
+              ? [
+                  <Button key="reset" variant="soft" onClick={() => setConfirm("reset")} disabled={busy}>
+                    초기화
+                  </Button>,
+                ]
+              : []),
+            <span key="forced">
+              <span className="text-erp-label">강제변경</span> {bp.isPasswordChangeRequired ? "대상" : "대상아님"}
+            </span>,
+            // 등록 · 초기화 메일이 실패했다 — 다시 보내는 길은 초기화뿐이다
+            ...(bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent
+              ? [
+                  <span key="unsent" className="text-erp-off">
+                    초기 비밀번호 미발송
+                  </span>,
+                ]
+              : []),
+          ]}
+        />
       ),
     },
     // 소속 점포는 수만 보인다 — 점포 목록 연결은 나중에(BP-8)
     { label: "소속 점포", value: `${bp.storeCount.toLocaleString("ko-KR")}곳` },
-    // 아래 다섯 줄은 가입경로 · 약관동의 · 최근 로그인 · 등록 · 최종수정 순(강제변경은 비밀번호 아래로 옮겼다)(2026-10-28 사용자 지정)
+    // 아래 다섯 줄은 가입경로 · 약관동의 · 최근 로그인 · 등록 · 최종수정 순(강제변경은 비밀번호 줄로 옮겼다)(2026-10-28 사용자 지정)
     { label: "가입경로", value: bp.joinPath === "SIGNUP" ? "회원가입" : "플랫폼등록" },
     // 「첫 로그인 때 받음」은 아직 로그인하지 않은 BP 에만 붙인다
     { label: "약관동의", value: bp.termsAgreedAt ? "동의" : bp.lastLoginAt ? "미동의" : <>미동의 {muted("· 첫 로그인 때 받음")}</> },
@@ -243,6 +240,16 @@ function DetailBody({
     { label: "최종 인증일시", value: unverified(formatDateTime(bp.bizVerifiedAt)) },
   ];
 
+  // 상태 줄은 없앴다 — 현재 상태는 머리 배지가, 버튼은 「기본정보」 제목 줄 오른쪽이 맡는다(2026-10-28 사용자 지정).
+  // 수정 권한이면 [상태 변경], 탈퇴 BP 는 [사유 보기](변경 이력을 보이지 않으니 탈퇴 사유를 여기서 본다, WHALEERP-626)
+  const statusAction = canUpdate ? (
+    <Button variant="soft" onClick={() => setConfirm(bp.accountStatus === "ACTIVE" ? "inactive" : "active")} disabled={busy}>
+      상태 변경
+    </Button>
+  ) : withdrawn && bp.withdrawal ? (
+    <WithdrawalButton bp={bp} withdrawal={bp.withdrawal} panelOpen={panelOpen} />
+  ) : undefined;
+
   const who = <WhoList rows={[["BP", `${bp.tradeName} · ${bp.bpCode}`], ["계정", bp.loginId]]} />;
 
   return (
@@ -276,13 +283,13 @@ function DetailBody({
         // [사유 보기]는 withdrawal 이 있을 때만 그려지므로 안내도 그때만 붙인다(api #175 전이나 값이 비면 버튼이 없다)
         <WarnBand>
           {`탈퇴 BP는 조회만 됩니다\nBP 정보와 업무 이력은 보존 정책대로 남기고, 수정 · 비밀번호 초기화 · 삭제는 하지 않습니다. 변경 이력은 볼 수 없${
-            bp.withdrawal ? "고 탈퇴 사유는 상태의 [사유 보기]에서 봅니다" : "습니다"
+            bp.withdrawal ? "고 탈퇴 사유는 기본정보의 [사유 보기]에서 봅니다" : "습니다"
           }. 다시 쓰려면 새 BP 로 등록합니다.`}
         </WarnBand>
       )}
       {failure && <FailedBand message={failure.message} detail={failure.detail} />}
 
-      <DetailTable title="기본정보" rows={basic} />
+      <DetailTable title="기본정보" action={statusAction} rows={basic} />
       <DetailTable
         title={
           <span className="flex items-center gap-[6px]">
