@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
-import { Button, Checkbox, Field, PasswordInput } from "@/components/common";
+import { useEffect, useRef, useState, useTransition, type FormEvent, type ReactNode } from "react";
+import { Button, Checkbox, PasswordInput, RequiredMark } from "@/components/common";
 import { changeForcedPassword, logout } from "@/app/actions";
 import { signOut } from "@/lib/bff";
 import { passwordChecks } from "@/lib/password";
@@ -87,7 +87,7 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
 
         {account.temporaryPasswordExpiresAt && <Remaining expiresAt={account.temporaryPasswordExpiresAt} />}
 
-        <Field label="새 비밀번호">
+        <InkField label="새 비밀번호">
           {/* 크롬 비밀번호 생성 제안 창을 막는다 — new-password 대신 off, 1Password · LastPass 도 빼 둔다(2026-10-28 사용자 지정). 크롬 버전에 따라 다 막히지 않을 수 있다 */}
           {/* 칸 끝에 보기 · 숨기기 눈 아이콘 — 다른 비밀번호 변경 화면과 같은 공통 PasswordInput(2026-10-28 사용자 지정) */}
           <PasswordInput
@@ -103,12 +103,12 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
             onBlur={() => setPasswordTouched(true)}
             aria-invalid={(passwordTouched && Boolean(ruleError)) || undefined}
           />
-        </Field>
+        </InkField>
         {passwordTouched && ruleError && <ErrorText>{ruleError}</ErrorText>}
         {/* 약관 제목 · 전체 동의 문구는 회원가입(agree-section.tsx)과 같다 — 「약관동의」 · 「모두 동의합니다.」(2026-10-28 사용자 지정).
             조건 체크 줄 · 「현재 비밀번호는 묻지 않습니다」 · 약관 동의 옆 설명은 지웠다(2026-10-28 사용자 지정) — 조건은 칸 안내와 저장 때 검사가 알린다 */}
         {error?.at === "password" && <ErrorText>{error.message}</ErrorText>}
-        <Field label="새 비밀번호 확인">
+        <InkField label="새 비밀번호 확인">
           <PasswordInput
             fieldLabel="새 비밀번호 확인"
             autoComplete="off"
@@ -120,7 +120,7 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
             onChange={(e) => setConfirm(e.target.value)}
             aria-invalid={mismatch || undefined}
           />
-        </Field>
+        </InkField>
         {mismatch && <ErrorText>비밀번호가 일치하지 않습니다.</ErrorText>}
 
         {needTerms && (
@@ -150,6 +150,19 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
         </div>
       </form>
     </dialog>
+  );
+}
+
+// 이 팝업의 입력칸 라벨은 먹색 글자 + 빨간 필수 표시(2026-10-28 사용자 지정). 공통 Field 는 라벨이 회색이고 className 을 받지 않아 여기서 같은 모양으로 둔다
+function InkField({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="flex flex-col gap-[8px]">
+      <span className="text-[14px] font-medium text-erp-ink">
+        {label}
+        <RequiredMark />
+      </span>
+      {children}
+    </label>
   );
 }
 
