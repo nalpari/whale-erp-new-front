@@ -101,7 +101,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
         // 그 사이 남이 트리를 바꿨으면(400 · 404 · 409) api 문장 대신 쉬운 말로(2026-10-28 사용자 지정 문구). 응답을 못 받았거나 그 밖의 거절은 받은 문장 그대로
         setMoveFailure(
           result.status !== undefined && stale
-            ? { message: "다른 관리자가 메뉴 구성을 변경하여 저장할 수 없습니다.", detail: "최신 메뉴 정보를 다시 불러온 후 수정해 주세요.\n※ 현재 수정한 내용은 저장되지 않았습니다." }
+            ? { message: "다른 관리자가 메뉴 구성을 변경하여 저장하지 못했습니다.", detail: "변경된 내용을 확인한 후 다시 시도해 주세요." }
             : result.status === undefined
               ? // 응답을 못 받았다 — 옮겨졌는지 모른다(2026-10-28 사용자 지정 문구)
                 { message: "메뉴 이동 결과를 확인할 수 없습니다.", detail: "메뉴순서를 확인한 후 다시 시도해 주세요." }
