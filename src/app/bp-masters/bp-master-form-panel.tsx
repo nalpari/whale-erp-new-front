@@ -34,7 +34,7 @@ import { BpStatusBadge, unknownResult } from "./bp-master-parts";
 // 기본정보 / 사업자정보 두 묶음으로 나눈다(데모와 같다, 2026-10-22).
 // 사업자 인증은 [사업자 번호 인증하기]로 상자를 펼쳐 한다(데모처럼 처음부터 펼치지 않는다). 인증하면 같은 자리가 읽기 전용 완료 카드가 되고,
 // [재인증]은 확인을 한 번 받는다. 번호 중복 · 확인 불가 · 처리 오류여도 인증 없이 저장할 수 있다.
-// 수정은 BP 코드 · 아이디 · 가입경로를 보여 주기만 하고, BP 상태는 상세의 [상태 변경]에서만 바꾼다. 마지막 저장이 남는다(409 없음).
+// 수정은 BP 코드를 제목 옆에 보여 주기만 하고(아이디 · 가입경로 칸은 2026-10-28 사용자 지정으로 뺐다), BP 상태는 상세의 [상태 변경]에서만 바꾼다. 마지막 저장이 남는다(409 없음).
 
 /** 아이디 중복 문구 — 저장할 때 api 가 주는 409 문구와 같게 둔다 */
 // 관리자 등록 세 화면(플랫폼 · BP 관리자 · BP 마스터)이 같은 문구(2026-10-28 사용자 지정)
@@ -342,16 +342,7 @@ export function BpMasterFormPanel(props: Props) {
             </Field>
             <LoginIdAvailability id={messageId("loginId")} check={loginIdCheck} message={errors.loginId} />
           </Stack>
-        ) : (
-          <>
-            <Field label="아이디">
-              <TextField value={props.bp.loginId} readOnly />
-            </Field>
-            <Field label="가입경로">
-              <TextField value={props.bp.joinPath === "SIGNUP" ? "회원가입" : "플랫폼등록"} readOnly />
-            </Field>
-          </>
-        )}
+        ) : null /* 수정은 아이디 · 가입경로 칸을 두지 않는다 — 바꿀 수 없는 값이라 상세에서 본다(2026-10-28 사용자 지정) */}
         <Stack>
           <Field label="이름" required>
             <TextField
