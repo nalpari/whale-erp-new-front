@@ -127,7 +127,10 @@ function DetailBody({
   const handleStatus = (status: "ACTIVE" | "INACTIVE") =>
     run(
       () => changeBpMasterStatusAction(bp.bpCodeId, status).catch(unknownResult("상태 변경")),
-      () => toast("변경되었습니다."), // 토스트는 동작만 짧게 — 저장 · 수정 · 삭제 · 초기화와 같은 말투(2026-10-28 사용자 지정)
+      () => {
+        toast("변경되었습니다."); // 토스트는 동작만 짧게 — 저장 · 수정 · 삭제 · 초기화와 같은 말투(2026-10-28 사용자 지정)
+        setResetSent(false); // 상태를 바꾸면 방금 초기화 안내도 내린다 — 되돌린 BP 에는 띄우지 않는 규칙(리뷰로 찾음)
+      },
     );
 
   const handleReset = () =>
