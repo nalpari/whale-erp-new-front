@@ -1,11 +1,12 @@
 // 점포 수정. 목업 docs/mockup/stores/edit.html 의 기본 상태(모리커피 연남점 · 인증된 점포 · 이미지 있음)를 BP 마스터로 본 것.
 // 배치는 점포 등록 화면에 맞춘다(재영 2026-10-06). 폼은 1팀 FormGroup·FormRow·Field.
+// render 의 bpStatus(「탈퇴」 · 「미사용」)를 주면 소속 BP 가 그 상태인 점포를 플랫폼 계정으로 본 것이다(edit-bp-unused.mjs, 앱 store-form-view.tsx 와 같다, 2026-10-28).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as f from "../../biz-form.mjs";
 import { STORES, erpHeader, link } from "../../site.mjs";
 
-export default ({ A, R }) => {
+export const render = ({ A, R }, { bpStatus } = {}) => {
   const [code, name, type, , , , , , , photo] = STORES.find((s) => s[0] === "ST000006");
   const unmetId = x.dialogId();
   // 재인증 확인 문구는 점포 등록 화면과 같다.
@@ -105,13 +106,17 @@ export default ({ A, R }) => {
 
   // 취소 · 저장은 제목 줄 오른쪽에 둔다 — 근로계약서 작성 화면과 같은 자리(2026-10-19 점검 — 실사용자 확인).
   // 전에는 화면 맨 아래에 있어 긴 폼에서 저장하려면 끝까지 스크롤해야 했다.
+  // 소속 BP 가 탈퇴 · 미사용이면 제목 줄 위 맨 위에 빨간 띠, 저장은 막는다(앱 store-form-view.tsx 와 같다, 2026-10-28)
+  const blocked = bpStatus ? f.bpBlockedText(bpStatus) : "";
   const body = ui.detailBody(
+    (blocked ? f.noticeBand(blocked) : "") +
     ui.sectionHead(
       `점포 수정 <span class="ml-[10px] inline-flex align-middle text-[14px] font-medium text-erp-label">${ui.detailValues([
         `<span class="mr-[10px]">점포코드</span>${code}`,
         `<span class="mr-[10px]">점포유형</span>${type}`,
       ])}</span>`,
-      ui.button("취소", { variant: "off", href: link(R, "stores/detail.html") }) + ui.button("저장", { href: link(R, "stores/detail.html") }),
+      ui.button("취소", { variant: "off", href: link(R, "stores/detail.html") }) +
+        (blocked ? f.disabledButton("저장", blocked, "primary") : ui.button("저장", { href: link(R, "stores/detail.html") })),
     ) +
       // 두 묶음은 각자 내용만큼의 높이로 둔다. 높이를 맞추려 늘리면 짧은 쪽 상자에 빈 자리가 남는다.
       `<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${biz}</div>` +
@@ -120,5 +125,7 @@ export default ({ A, R }) => {
       f.SWAP_SCRIPT,
   );
 
-  return { title: "점포 수정", html: ui.erpFrame({ header: erpHeader(A, R), title: "점포 정보 관리", body }) };
+  return { title: bpStatus ? `점포 수정 · BP ${bpStatus}` : "점포 수정", html: ui.erpFrame({ header: erpHeader(A, R, { bpStatus }), title: "점포 정보 관리", body }) };
 };
+
+export default (ctx) => render(ctx);

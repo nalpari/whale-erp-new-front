@@ -1,14 +1,15 @@
 "use client";
 
-import { DetailTable, FormRow, ReadonlyCard, ReadonlyValue, Tag, type DetailRow } from "@/components/common";
+import { DetailTable, HelpTip, Tag, type DetailRow } from "@/components/common";
 import { RoleDeleteDialog } from "@/components/role-groups/role-delete-dialog";
 import { RoleForm } from "@/components/role-groups/role-form";
-import { actorOf, CARD, FailedBand, InfoBand, reasonLabel } from "@/components/role-groups/role-parts";
+import { actorOf, CARD, FailedBand, reasonLabel, WarnBand } from "@/components/role-groups/role-parts";
 import { CodeLabel } from "@/components/site/code-label";
+import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { BpRoleGroupDetail, BpRoleType } from "@/lib/bp-role-groups";
 import type { EnumValue } from "@/lib/enums";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, wasUpdated } from "@/lib/format";
 import { useBpActions, type BpRoleDetailState } from "./bp-actions";
 
 // 오른쪽 고정 칸(S-LYKAEI 상세 · 데모 config/roles) — 고른 그룹 없음 · 수정 · 상세(고칠 수 없는 그룹) · 등록 네 상태.
@@ -83,61 +84,63 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
           { label: "설명", value: role.description || muted("-"), multiline: Boolean(role.description) },
         ]),
   ];
-  // 고칠 수 없는 값은 MY PAGE 「계정 정보」와 같은 카드로(2026-10-26 사용자 지정 — 전엔 「기본 정보」 상세 표 세 줄).
-  // 일시는 굵게, 사람은 회색으로 「일시 · 사람」.
-  const whenText = (at: string, actor: Parameters<typeof actorOf>[0]) => `${formatDateTime(at)} · ${actorOf(actor)}`;
+  // 가맹마스터 계정 · 등록 · 최종수정도 상세 표의 줄로(2026-10-28 사용자 지정 — 전엔 표 밖 테두리 없는 카드). 값은 「일시 · 사람」, 사람은 회색
   const when = (at: string, actor: Parameters<typeof actorOf>[0]) => (
-    <>
-      {formatDateTime(at)} <span className="font-normal text-erp-label">· {actorOf(actor)}</span>
-    </>
+    <span className="truncate" title={`${formatDateTime(at)} · ${actorOf(actor)}`}>
+      {formatDateTime(at)} <span className="text-erp-label">· {actorOf(actor)}</span>
+    </span>
   );
-  // 위 · 아래 항목과의 간격을 입력칸 사이(18)와 같게 — 칸 간격 12 에 6 을 더한다(2026-10-26 사용자 지정)
+  const recordRows: DetailRow[] = [
+    {
+      // 가맹마스터 계정(api manager) — 가맹 관리자 그룹을 만든 가맹 마스터. BP 관리자 그룹은 값이 없다(S-LYKAEI). 줄은 늘 둔다.
+      // 도움말 i 는 값 칸에 — 라벨 옆에 두면 라벨이 잘렸다. 가맹 관리자 그룹에만 값이 있고, 없으면 「-」 없이 i 만 둔다(2026-10-28 사용자 지정).
+      // 값 칸이 넘치면 잘려 도움말 상자는 최상위 레이어에 띄운다(floating)
+      label: "가맹마스터 계정",
+      value: (
+        // i 를 앞에, 가맹마스터 정보는 그 뒤에(2026-10-28 사용자 지정)
+        <span className="flex min-w-0 items-center gap-[6px]">
+          <HelpTip text="가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다." floating />
+          {role.manager && (
+            <span className="truncate" title={[role.manager.loginId, role.manager.name].filter(Boolean).join(" · ")}>
+              {role.manager.loginId}
+              {role.manager.name && <span className="text-erp-label"> · {role.manager.name}</span>}
+            </span>
+          )}
+        </span>
+      ),
+    },
+    { label: "등록", value: when(role.createdAt, role.createdBy) },
+    // 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청)
+    { label: "최종수정", value: wasUpdated(role.createdAt, role.updatedAt) ? when(role.updatedAt, role.updatedBy) : muted("-") },
+  ];
+  // 위 입력칸과 18px(칸 간격 12 + 6) — 입력칸 사이와 같다(2026-10-26 권한 그룹 다듬기와 같은 간격)
   const record = (
     <div className="mt-[6px]">
-      <ReadonlyCard>
-        {/* 제목 바는 두지 않는다(2026-10-26 사용자 지정) */}
-        {/* 가맹마스터 계정(api manager) — 가맹 관리자 그룹을 만든 가맹 마스터. BP 관리자 그룹은 없어서 「-」(S-LYKAEI). 줄은 늘 둔다(2026-10-26 사용자 지정) */}
-        <FormRow>
-          <ReadonlyValue
-            label="가맹마스터 계정"
-            help="가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다."
-            // 아이디는 굵게, 이름은 등록 · 최종수정의 사람처럼 회색 · 보통 굵기(2026-10-27 사용자 지정)
-            value={
-              role.manager ? (
-                <>
-                  {role.manager.loginId}
-                  {role.manager.name && <span className="font-normal text-erp-label"> · {role.manager.name}</span>}
-                </>
-              ) : (
-                <span className="font-normal text-erp-muted">-</span>
-              )
-            }
-            title={role.manager ? [role.manager.loginId, role.manager.name].filter(Boolean).join(" · ") : undefined}
-            bold
-          />
-        </FormRow>
-        <hr className="border-erp-divider" />
-        {/* 등록 · 최종수정은 한 줄에 하나씩, 사이 선 없이(2026-10-26 사용자 지정) */}
-        <FormRow>
-          <ReadonlyValue label="등록" value={when(role.createdAt, role.createdBy)} title={whenText(role.createdAt, role.createdBy)} bold />
-        </FormRow>
-        <FormRow>
-          <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
-        </FormRow>
-      </ReadonlyCard>
+      <DetailTable rows={recordRows} />
     </div>
   );
   const heading = (
     <h2 className="flex min-h-[34px] flex-wrap content-end items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
       <span className="mr-[4px]">권한 그룹 상세</span>
       {/* 띠 「권한유형 · {유형}」(유형만 굵게) → 코드 순 — 목록 「권한유형 · 코드」와 같은 순서(2026-10-26 사용자 지정). Tag 는 className 을 받지 않아 안쪽 span 으로 굵힌다 */}
-      <Tag>
-        <span className="font-normal">권한유형 ·</span>{" "}
-        <span className="font-semibold">
-          <CodeLabel group="ROLE_TYPE" value={role.roleTypeCode} />
-        </span>
-      </Tag>
-      <span className="text-[14px] font-normal text-erp-label">{role.roleCode}</span>
+      {/* 띠지 뒤에 「| 권한코드 값」 — 권한코드는 띠지가 아니라 글자(라벨 회색 · 값 굵게, 공통코드 상세 코드 머리와 같은 구분선, 2026-10-27 사용자 지정) */}
+      <span className="text-[14px] font-normal">
+        <HeadValues
+          items={[
+            {
+              value: (
+                <Tag>
+                  <span className="font-normal">권한유형 ·</span>{" "}
+                  <span className="font-semibold">
+                    <CodeLabel group="ROLE_TYPE" value={role.roleTypeCode} />
+                  </span>
+                </Tag>
+              ),
+            },
+            { label: "권한코드", value: role.roleCode },
+          ]}
+        />
+      </span>
     </h2>
   );
   // 지울 수 없는 그룹(역할 · 본인 연결)은 버튼을 숨긴다. 막힌 이유는 수정 권한이 있으면 위 띠(editBlockedReason, 같은 값)로 보인다.
@@ -158,17 +161,23 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
         {/* 조회 권한만 있으면 이유 띠 없이 상세로만 보인다 */}
         {/* 본인 연결(SELF_LINKED)은 api 이유 문구(「본인이 연결된 권한」) 대신 문장으로 풀어 쓴다(2026-10-26 사용자 지정).
             가맹 마스터가 아닌 사람이 보는 가맹 관리자 그룹(NO_PERMISSION · FA)도 문장으로(2026-10-27 사용자 지정) */}
+        {/* 막힌 이유는 빨간 안내 상자(WarnBand — 2026-10-27 사용자 지정, 전엔 회색 띠) */}
         {can.update && role.editBlockedReason && (
-          <InfoBand>
+          <WarnBand>
             {role.editBlockedReason === "SELF_LINKED"
               ? "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."
               : role.editBlockedReason === "NO_PERMISSION" && role.roleTypeCode === "FA"
                 ? "본인 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다."
-                : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다")}
-          </InfoBand>
+                : // 남은 이유도 문장으로(2026-10-28 사용자 지정 — 전엔 api 이유 이름 「권한 관리 메뉴 권한 없음」 · 「고정 권한」)
+                  role.editBlockedReason === "NO_PERMISSION"
+                  ? "선택한 권한그룹에 대한 수정 권한이 없습니다."
+                  : role.editBlockedReason === "FIXED_ROLE"
+                    ? "시스템이 제공하는 기본권한 그룹은 수정할 수 없습니다."
+                    : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다")}
+          </WarnBand>
         )}
-        {rows.length > 0 && <DetailTable rows={rows} />}
-        {record}
+        {/* 수정할 수 없으면 권한명 · 설명과 같은 표 하나에 */}
+        <DetailTable rows={[...rows, ...recordRows]} />
         {deleteButton && <div className="mt-[6px] flex justify-center gap-[6px]">{deleteButton}</div>}
       </>
     );

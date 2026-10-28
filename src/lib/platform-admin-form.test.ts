@@ -61,12 +61,16 @@ test("이메일 형식 — api @IsEmail 이 막는 값은 화면도 형식 오�
   for (const bad of ["kim@whale.c", "kim@whale.co,", "kim😀@whale.co"]) assert.equal(emailError(bad), "이메일 형식이 올바르지 않습니다.", bad);
 });
 
-test("필수 칸 — 이름 · 연락처 · 이메일 · 사용자 권한", () => {
+test("필수 칸 — 이름 · 연락처 · 이메일 · 권한명", () => {
   const errors = validateAdminForm({ ...filled, name: "", phone: ["010", "", ""], email: "", roleGroupId: "" }, "create");
   assert.deepEqual(Object.keys(errors).sort(), ["email", "name", "phone", "roleGroupId"]);
   assert.ok(validateAdminForm({ ...filled, name: "이" }, "create").name, "1자");
   assert.ok(validateAdminForm({ ...filled, email: "seojun@" }, "create").email);
   assert.ok(validateAdminForm({ ...filled, phone: ["010", "12a4", "5678"] }, "create").phone);
+  assert.equal(validateAdminForm({ ...filled, phone: ["010", "1", "5678"] }, "create").phone, "연락처는 숫자 9~12자리입니다.", "8자리");
+  assert.ok(validateAdminForm({ ...filled, phone: ["0507", "2033", "13345"] }, "create").phone, "13자리");
+  assert.equal(validateAdminForm({ ...filled, phone: ["02", "123", "4567"] }, "create").phone, undefined, "9자리");
+  assert.equal(validateAdminForm({ ...filled, phone: ["0507", "2033", "1334"] }, "create").phone, undefined, "12자리");
 });
 
 test("등록 요청 — 공백을 빼고, 이메일은 소문자로, 빈 선택 칸은 null", () => {
@@ -95,6 +99,9 @@ test("연락처를 세 칸으로 나눈다", () => {
   assert.deepEqual(splitPhone("01012345678"), ["010", "1234", "5678"]);
   assert.deepEqual(splitPhone("0311234567"), ["031", "123", "4567"]);
   assert.deepEqual(splitPhone("0212345678"), ["02", "1234", "5678"]);
+  assert.deepEqual(splitPhone("050720331334"), ["0507", "2033", "1334"]);
+  assert.deepEqual(splitPhone("05012345678"), ["050", "1234", "5678"], "11자리 050 은 3자리 국번");
+  assert.deepEqual(splitPhone("010123456789"), ["010", "12345", "6789"], "050 이 아닌 12자리는 050X 규칙을 타지 않는다");
   assert.deepEqual(splitPhone(null), ["", "", ""]);
 });
 

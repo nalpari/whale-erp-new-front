@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DetailTable, FormRow, ReadonlyCard, ReadonlyValue, SlidePanel, useToast, type DetailRow } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DetailTable, SlidePanel, useToast, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
+import { WarnBand } from "@/components/site/side-parts";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
-import { formatDateTime, formatPhone } from "@/lib/format";
+import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { adminActionsOf } from "@/lib/platform-admin-actions";
 import type { PlatformAdminDetail } from "@/lib/platform-admins";
 import { deletePlatformAdminAction, getPlatformAdminHistoriesAction, resetPlatformAdminPasswordAction } from "./actions";
@@ -134,12 +135,19 @@ function DetailBody({
 
   const address = [admin.zipCode, admin.address, admin.addressDetail].filter((line): line is string => Boolean(line));
   const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
-  // 등록 · 최종수정 카드의 값 — 일시는 굵게, 사람은 회색 · 보통 굵기로 「일시 · 사람」(권한 그룹 상세 · BP 관리자 상세와 같다)
+  // 등록 · 최종수정 줄의 값 — 「일시 · 사람」, 사람은 회색(권한 그룹 상세와 같은 구분)
+  // 값 칸 폭(약 280px)을 넘는 긴 이름은 말줄임하고, 마우스를 올리면 전체를 보인다(리뷰로 찾음)
   const when = (at: string, who: string) => (
-    <>
-      {formatDateTime(at)} <span className="font-normal text-erp-label">· {who}</span>
-    </>
+    <span className="truncate" title={`${formatDateTime(at)} · ${who}`}>
+      {formatDateTime(at)} <span className="text-erp-label">· {who}</span>
+    </span>
   );
+  // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 최종수정은 「-」(BP 관리자 상세와 같다, 2026-10-27 사용자 지정).
+  // 1초 안쪽 어긋남은 같은 것으로 본다(wasUpdated).
+  // 수정자가 없는 계정(마이그레이션으로 넣은 플랫폼 마스터 등)도 「-」다. 한계: api 의 updatedAt(Prisma @updatedAt)은 로그인 · 초기 비밀번호 미발송 표시에도 올라가는데,
+  // 수정자(updatedBy)는 등록 때부터 등록자로 채워져 있어 이 검사로는 그 갱신을 거르지 못한다 — 로그인한 계정은 「로그인 시각 · 등록자」가
+  // 최종수정으로 보이고, 등록 직후에도 메일을 보낸 뒤 미발송 표시를 끄며 몇 초 늦게 찍혀 보일 수 있다(api 요청 대기)
+  const edited = admin.updatedByName !== null && wasUpdated(admin.createdAt, admin.updatedAt);
   const rows: DetailRow[] = [
     { label: "아이디", value: admin.loginId },
     { label: "이름", value: name },
@@ -147,8 +155,10 @@ function DetailBody({
     { label: "이메일", value: admin.email ?? null },
     {
       label: "비밀번호",
-      // 미사용 계정은 초기화 버튼 · 미발송 표시 없이 빈칸으로 둔다(2026-10-23) — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다)
-      value: admin.accountStatus === "INACTIVE" ? null : (
+      // 미사용 계정은 초기화 버튼 · 미발송 표시를 숨긴다(2026-10-23) — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다).
+      // 초기화할 수 없어 보일 것이 없으면(미사용 · 수정 권한 없음) 빈칸 대신 「-」(BP 마스터 상세와 같다, 2026-10-28 사용자 지정)
+      value:
+        admin.accountStatus === "INACTIVE" || (!canUpdate && !admin.isInitialPasswordUnsent) ? muted("-") : (
         <>
           {canUpdate && (
             <Blocked reason={isSelf ? "본인 비밀번호는 내 정보에서 바꿔 주세요" : undefined}>
@@ -177,14 +187,13 @@ function DetailBody({
         null
       ),
     },
-    // 최근 로그인은 표 맨 아래 줄. 등록 · 최종수정은 표 밖 테두리 없는 카드로 둔다(2026-10-27 사용자 지정 — 전엔 표의 두 줄)
-    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("로그인 기록 없음") },
+    // 최근 로그인 다음에 등록 · 최종수정을 표 안 두 줄로(2026-10-27 사용자 지정 — 잠시 표 밖 테두리 없는 카드였다)
+    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("-") },
+    { label: "등록", value: when(admin.createdAt, admin.createdByName ?? "시스템") },
+    { label: "최종수정", value: edited && admin.updatedByName ? when(admin.updatedAt, admin.updatedByName) : muted("-") },
   ];
   // 미사용 전환일시는 상세에 더 보이지 않는다 — 누가 바꿨는지까지는 변경이력에 이미 쌓인다(2026-10-20 피드백).
 
-  // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 최종수정은 「-」(BP 관리자 상세와 같다, 2026-10-27 사용자 지정).
-  // 등록 때 두 값이 따로 찍혀 ms 가 어긋날 수 있어 1초 안쪽은 같은 것으로 본다
-  const edited = Math.abs(Date.parse(admin.updatedAt) - Date.parse(admin.createdAt)) >= 1000;
   const who = <WhoList rows={[["아이디", admin.loginId], ["이름", name]]} />;
   const roleType = useCodeLabel("ROLE_TYPE");
 
@@ -193,12 +202,16 @@ function DetailBody({
       {/* 이름 아랫줄에 「역할 값 | 권한그룹 값 | 상태 배지」 — 공통코드 상세 코드 머리와 같은 모양(2026-10-27 사용자 지정 — 전엔 상태 배지와 「사용자 권한 · 그룹명」 띠지).
           상태는 라벨 없이 배지만. 이름 길이와 상관없이 두 화면이 같은 자리에 선다. 제목(h2)은 이름만 — 값 줄까지 제목 이름으로 읽히지 않게(리뷰로 찾음) */}
       <div className="flex flex-col items-start gap-[6px]">
-        <h2 className="text-[18px] font-semibold text-erp-ink">{name}</h2>
+        {/* 이름 앞에 14px 회색 라벨 「이름」 — BP 마스터 상세 「상호명」과 같다(2026-10-28 사용자 지정). 라벨은 h2 밖에 둬 제목은 이름만 읽힌다 */}
+        <div className="flex items-baseline gap-[6px]">
+          <span className="text-[14px] text-erp-label">이름</span>
+          <h2 className="text-[18px] font-semibold text-erp-ink">{name}</h2>
+        </div>
         <span className="text-[14px]">
           <HeadValues
             items={[
               { label: "역할", value: roleType(admin.roleGroup.roleTypeCode) },
-              { label: "권한그룹", value: admin.roleGroup.name },
+              { label: "권한명", value: admin.roleGroup.name }, // 라벨 「권한명」(2026-10-27 사용자 지정 — 전엔 「권한그룹」)
               { value: admin.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge> },
             ]}
           />
@@ -206,19 +219,6 @@ function DetailBody({
       </div>
       {failure && <FailedBand message={failure} />}
       <DetailTable title="기본정보" rows={rows} />
-      {/* 등록 · 최종수정을 한 줄에 하나씩 — BP 관리자 상세 · 권한 그룹 상세와 같은 테두리 없는 카드(2026-10-27 사용자 지정) */}
-      <ReadonlyCard>
-        <FormRow>
-          <ReadonlyValue label="등록" value={when(admin.createdAt, admin.createdByName ?? "시스템")} bold />
-        </FormRow>
-        <FormRow>
-          <ReadonlyValue
-            label="최종수정"
-            value={edited ? when(admin.updatedAt, admin.updatedByName ?? "시스템") : <span className="font-normal text-erp-muted">-</span>}
-            bold
-          />
-        </FormRow>
-      </ReadonlyCard>
 
       <div className="flex flex-wrap items-center gap-[6px]">
         <Button variant="off" onClick={onClose}>
@@ -274,10 +274,13 @@ function DetailBody({
           >
             <div className="flex flex-col gap-[12px]">
               {who}
-              <p>
-                삭제한 계정은 <b className="font-semibold">관리자 목록 및 검색 결과에서 제외</b>되며, <b className="font-semibold">해당 계정으로 더 이상 로그인할 수 없습니다</b>.
-              </p>
-              <p>삭제한 계정은 복구할 수 없습니다.</p>
+              {/* 되돌릴 수 없는 결과 안내 — 플랫폼 메뉴 관리의 미사용 안내와 같은 빨간 테두리 · 연한 빨간 바탕 상자(2026-10-27 사용자 지정 — 전엔 본문 글자) */}
+              <WarnBand>
+                <p>
+                  삭제한 계정은 관리자 목록 및 검색 결과에서 제외되며, 해당 계정으로 더 이상 로그인할 수 없습니다.
+                </p>
+                <p>삭제한 계정은 복구할 수 없습니다.</p>
+              </WarnBand>
             </div>
           </ConfirmDialog>
         </>

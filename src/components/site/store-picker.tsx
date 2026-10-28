@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useRef, useState } from "react";
-import { FIELD } from "@/components/common/theme";
+import { FIELD, SMALL_BUTTON } from "@/components/common/theme";
 import { searchStoresByText, toPickedStore } from "@/lib/store-scope";
 import type { StoreSummary } from "@/lib/store-types";
 import { useStores } from "./session-gate";
@@ -105,7 +105,7 @@ export function StorePicker({
           >
             {options.length === 0 ? (
               <div className="flex flex-col gap-[6px] px-[6px] py-[6px]">
-                <p className="text-erp-muted">맞는 점포가 없습니다.</p>
+                <p className="text-erp-muted">검색 결과가 없습니다.</p>
                 {/* 찾기는 로그인 정보 안에서 한다 — 방금 등록한 점포를 「없음」으로 오해하지 않게 */}
                 <p className="text-[12px] text-erp-label">로그인 뒤 등록한 점포는 다시 로그인하면 찾을 수 있습니다.</p>
               </div>
@@ -130,12 +130,14 @@ export function StorePicker({
         )}
       </div>
       <div className="flex flex-col gap-[6px]">
-        <p className="flex items-center gap-[6px] text-[13px] font-medium text-erp-ink">
+        {/* 칩이 생기면 나타나는 24px [전체 제거] 만큼 줄 높이를 미리 둔다 — 첫 점포를 고를 때 아래 필터가 밀리지 않게 */}
+        <p className="flex min-h-[24px] items-center gap-[6px] text-[13px] font-medium text-erp-ink">
           선택한 점포
           <span className="font-normal text-erp-label">{picked.length}개점</span>
           {picked.length > 0 && (
-            <button type="button" onClick={() => onChange([])} className="ml-auto text-erp-link hover:underline">
-              모두 빼기
+            // 「점포」 라벨 줄의 [일괄검색]과 같은 작은 버튼(theme SMALL_BUTTON)
+            <button type="button" onClick={() => onChange([])} className={`ml-auto ${SMALL_BUTTON}`}>
+              전체 제거
             </button>
           )}
         </p>

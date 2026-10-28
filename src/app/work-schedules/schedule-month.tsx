@@ -14,16 +14,21 @@ const ICON_BUTTON =
   "grid size-[34px] shrink-0 place-items-center rounded-[2px] border border-erp-button-line bg-white transition-[border-color] duration-150 ease-out hover:border-erp-brand";
 const DAY_BUTTON = "grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line";
 
+/** hrefBase · readOnly 는 로그인 후 홈 점포 하나 화면(WHALEERP-342)이 쓴다 — readOnly 면 왼쪽 목록에 그날 근무가 있는 직원만(휴무 행 없음) */
 export function ScheduleMonth({
   data,
   query,
   today,
+  hrefBase = "/work-schedules",
+  readOnly = false,
 }: {
   data: WorkScheduleList;
   query: ScheduleQuery;
   today: string;
+  hrefBase?: string;
+  readOnly?: boolean;
 }) {
-  const href = (next: Parameters<typeof moved>[1]) => `/work-schedules${toScheduleSearch(moved(query, next), today)}`;
+  const href = (next: Parameters<typeof moved>[1]) => `${hrefBase}${toScheduleSearch(moved(query, next), today)}`;
   const cells = monthCells(query.month);
   // 달을 옮기면 그 달 1일, 이번 달이면 오늘을 고른다(데모 initDayPlan)
   const toMonth = (month: string) => ({ month, day: month === today.slice(0, 7) ? today : `${month}-01` });
@@ -33,7 +38,8 @@ export function ScheduleMonth({
   // 그날 받을 수 있는 직원 전원(휴무 포함, 데모 all · STAFF-29) — 주간 보기의 직원 줄과 같다
   const rows = data.staff
     .filter((s) => !s.isMasked && s.schedulableDates.includes(picked))
-    .map((s) => ({ s, shifts: data.items.filter((it) => it.staffMemberId === s.staffMemberId && it.workDate === picked) }));
+    .map((s) => ({ s, shifts: data.items.filter((it) => it.staffMemberId === s.staffMemberId && it.workDate === picked) }))
+    .filter((r) => !readOnly || r.shifts.length > 0);
   const headcount = countOf(picked);
   const hidden = headcount - rows.filter((r) => r.shifts.length > 0).length;
   const when = picked === today ? "오늘" : picked < today ? "지난 날" : "예정";

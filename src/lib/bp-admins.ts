@@ -72,6 +72,16 @@ export type BpAdminHistory = {
 };
 export type BpAdminHistoryList = { items: BpAdminHistory[]; total: number };
 
+/** 가맹 마스터를 저장하면 함께 바뀌는 가맹 관리자 — 상태 칸 아래 띠 · 저장 전 확인창에 첫 아이디와 「외 N명」으로 보인다 */
+export type BpAdminUpdateImpact = {
+  /** 함께 미사용이 되는 사용 중 가맹 관리자 수 */
+  deactivatedCount: number;
+  firstDeactivatedLoginId: string | null;
+  /** 점포 매핑이 빠지는 가맹 관리자 수 */
+  unmappedCount: number;
+  firstUnmappedLoginId: string | null;
+};
+
 export type CreateBpAdminInput = {
   loginId: string;
   name: string;
@@ -148,6 +158,17 @@ export async function getBpAdmin(id: number): Promise<BpAdminDetail> {
 /** GET /bp-admins/{id}/histories — 변경 이력, 최신순. */
 export async function getBpAdminHistories(id: number, page = 1): Promise<BpAdminHistoryList> {
   return request(`/bp-admins/${id}/histories?page=${page}&pageSize=${HISTORY_PAGE_SIZE}`, await json("GET"));
+}
+
+/**
+ * GET /bp-admins/{id}/update-impact — 가맹 마스터 계정만. 저장하려는 상태 · 점포로 함께 바뀔 가맹 관리자를 센다(저장과 같게, 보는 사람의
+ * 범위 밖 매핑은 빠지지 않는 것으로 센다). 실제 연쇄는 저장(PUT)이 같은 트랜잭션에서 한다.
+ */
+export async function getBpAdminUpdateImpact(id: number, input: Pick<UpdateBpAdminInput, "accountStatus" | "storeIds">): Promise<BpAdminUpdateImpact> {
+  const params = new URLSearchParams({ accountStatus: input.accountStatus });
+  // 점포를 모두 빼면 storeIds 를 싣지 않는다 — api 는 storeIds 가 없으면 「모두 뺌」으로 센다(빈 값 storeIds= 은 보내지 않는다)
+  if (input.storeIds.length) params.set("storeIds", input.storeIds.join(","));
+  return request(`/bp-admins/${id}/update-impact?${params}`, await json("GET"));
 }
 
 /** GET /bp-admins/login-id-availability — 지우거나 탈퇴한 계정의 아이디도 쓸 수 없다. 등록 권한이 필요하다. */

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Badge, DetailTable, DetailValues, Tag, type DetailRow } from "@/components/common";
 import { getEnum } from "@/lib/api";
-import { formatDateTime, formatPhone } from "@/lib/format";
+import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { storeImageFailureText } from "@/lib/store-image";
 import { getStore } from "@/lib/stores";
 import { CodeLabel } from "@/components/site/code-label";
@@ -101,7 +101,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
     { label: "재직직원", value: <span>{store.staffCount.toLocaleString("ko-KR")}명</span> },
     {
       label: "변경이력",
-      // 고친 적 없으면 최종수정 값은 「-」(화면 정의서). 등록 · 최종수정 글자는 라벨과 같은 회색이다. [변경이력
+      // 고친 적 없으면(최종수정일시가 등록일시와 같으면, wasUpdated) 최종수정 값은 「-」(화면 정의서 · 2026-10-27 사용자 요청). 등록 · 최종수정 글자는 라벨과 같은 회색이다. [변경이력
       // 보기] 버튼은 DetailValues 밖에 따로 두어 앞에 구분선(|)이 안 붙게 하고, justify-between 으로 칸 맨
       // 오른쪽에 고정한다 — 칸 자체의 12px 오른쪽 여백(DetailTable dd)이 있어 따로 더 주지 않는다(2026-10-16 점검).
       // 등록 · 최종수정은 DetailValues(inline-block) 대신 직접 그린다 — 등록은 위치정보 줄과 구분선을 맞춘
@@ -120,7 +120,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             <span className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
             <span className="min-w-0 flex-1 truncate">
               <span className="mr-[10px] text-erp-label">최종수정</span>
-              {store.updatedByName ? `${formatDateTime(store.updatedAt)} · ${store.updatedByName}` : muted("-")}
+              {wasUpdated(store.createdAt, store.updatedAt) ? `${formatDateTime(store.updatedAt)} · ${store.updatedByName ?? "-"}` : muted("-")}
             </span>
           </span>
           <HistoryButton storeId={store.storeId} />
@@ -191,6 +191,9 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
     <StoreFrame>
       <StoreCardBody>
         <div className="flex flex-col gap-[12px]">
+          {/* 소속 BP 가 미사용인지 탈퇴인지 상태 이름(공통코드 ACCOUNT_STATUS)으로 밝힌다(2026-10-28 사용자 지정 — 전엔 늘 「미사용」). 문구는 「이 점포가 속한 BP가 … 상태로, 조회 기능만 이용할 수 있습니다.」(사용자 지정).
+              미사용 · 탈퇴 BP 의 점포는 플랫폼 사용자만 열 수 있어 그들에게만 보인다 — 점포명 머리 카드 위에 둔다(2026-10-28 사용자 지정) */}
+          {bpInactive && <NoticeBand title={<>이 점포가 속한 BP가 <CodeLabel group="ACCOUNT_STATUS" value={store.bpAccountStatusCode} /> 상태로, 조회 기능만 이용할 수 있습니다.</>} />}
           {/* 대표 이미지 · 점포명 · 점포코드 · 유형 · 폐점일 · 실행 버튼을 한 머리 카드에 묶는다(2026-10-19 점검 —
               실사용자 확인, 디자인 데모 1안 채택). 운영 상태는 아래 점포 기본정보 표의 점포상태 줄로만 보인다
               (바로 아래 주석 참고). 이미지가 없으면 48px 아이콘(목록 카드와 같은 크기)을 그대로 쓴다 — 머리 카드
@@ -219,7 +222,6 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             </div>
           </div>
           <ImageFailedNotice message={imageFailure} />
-          {bpInactive && <NoticeBand title="소속 BP 가 미사용 상태여서 이 업무를 할 수 없습니다." detail="조회만 됩니다. 등록 · 수정 · 상태 변경 · 삭제는 BP 를 다시 사용하면 할 수 있습니다." />}
           {store.storeStatusCode === "CLOSED" && (
             <NoticeBand tone="info" title="폐점한 점포는 조회만 가능하며, 수정할 수 없습니다. 다시 운영하려면 신규 점포로 등록해 주세요." />
           )}

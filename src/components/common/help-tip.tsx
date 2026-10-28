@@ -21,8 +21,10 @@ export function HelpTip({ text, label = "도움말", floating, focusable = true 
     box.style.top = `${at.bottom + 6}px`;
     box.style.left = `${at.left - 8}px`;
     box.showPopover();
-    // 화면 오른쪽 끝 열(BP 공통코드 관리주체)이면 상자가 창 밖으로 잘렸다 — 띄운 뒤 폭을 재서 창 안(오른쪽 8px 여백)으로 당긴다(사용자가 찾음)
-    const overflow = box.getBoundingClientRect().right - (document.documentElement.clientWidth - 8);
+    // 오른쪽 끝 쪽 열(BP 공통코드 관리주체)이면 상자가 표 · 창 밖으로 넘쳤다 — 띄운 뒤 폭을 재서 감싼 표의 오른쪽 끝(표가 없으면 창 끝, 8px 안쪽)을
+    // 넘지 않게 왼쪽으로 당긴다(사용자가 찾음). 상세 표(DetailTable 의 dl)도 같은 표로 본다(권한 그룹 상세 가맹마스터, 2026-10-28)
+    const bound = Math.min(document.documentElement.clientWidth - 8, button.current?.closest("table, dl")?.getBoundingClientRect().right ?? Infinity);
+    const overflow = box.getBoundingClientRect().right - bound;
     if (overflow > 0) box.style.left = `${Math.max(8, at.left - 8 - overflow)}px`;
     // 자리는 열 때 한 번 잡는다 — 표를 밀거나 창 크기가 바뀌면 아이콘에서 떨어지지 않게 닫는다(리뷰로 찾음)
     window.addEventListener("scroll", hide, { capture: true, once: true });
@@ -57,19 +59,20 @@ export function HelpTip({ text, label = "도움말", floating, focusable = true 
   );
   // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups). 가운데 정렬 칸(표 머리) 안에서도 글은 왼쪽부터
   const box =
-    "w-max max-w-[260px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[8px] text-left text-[13px] leading-[1.5] font-normal break-keep whitespace-pre-line text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)]";
+    "w-max rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[8px] text-left text-[13px] leading-[1.5] font-normal break-keep whitespace-pre-line text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)]";
 
   if (floating)
     return (
       <span className="relative inline-flex shrink-0">
         {icon}
-        {/* popover 의 기본 자리(가운데 · 바깥 여백)를 풀고 show 가 잡은 자리에 선다. 열 때 투명도를 200ms 로 올린다 */}
+        {/* popover 의 기본 자리(가운데 · 바깥 여백)를 풀고 show 가 잡은 자리에 선다. 열 때 투명도를 200ms 로 올린다.
+            표 머리 도움말은 줄마다 접지 않고 두는 글(관리주체)이 있어 최대 폭을 320 으로 둔다 — 표 · 창 오른쪽 끝을 넘으면 show 가 왼쪽으로 당긴다 */}
         <span
           ref={tip}
           popover="manual"
           role="tooltip"
           id={id}
-          className={`pointer-events-none fixed inset-auto m-0 ${box} transition-opacity duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] starting:opacity-0 motion-reduce:transition-none`}
+          className={`pointer-events-none fixed inset-auto m-0 max-w-[320px] ${box} transition-opacity duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] starting:opacity-0 motion-reduce:transition-none`}
         >
           {text}
         </span>
@@ -82,7 +85,7 @@ export function HelpTip({ text, label = "도움말", floating, focusable = true 
       <span
         role="tooltip"
         id={id}
-        className={`pointer-events-none absolute top-[calc(100%+6px)] left-[-8px] z-10 ${box} opacity-0 transition-opacity duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] group-focus-within/help:opacity-100 group-focus-within/help:duration-200 group-hover/help:opacity-100 group-hover/help:duration-200 motion-reduce:transition-none`}
+        className={`pointer-events-none absolute top-[calc(100%+6px)] left-[-8px] z-10 max-w-[260px] ${box} opacity-0 transition-opacity duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] group-focus-within/help:opacity-100 group-focus-within/help:duration-200 group-hover/help:opacity-100 group-hover/help:duration-200 motion-reduce:transition-none`}
       >
         {text}
       </span>

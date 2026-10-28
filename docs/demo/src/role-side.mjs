@@ -70,11 +70,11 @@ const helpTip = (text, label) =>
   `<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-[-8px] z-10 w-max max-w-[260px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[8px] text-[13px] leading-[1.5] font-normal break-keep whitespace-normal text-erp-ink opacity-0 shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-opacity duration-150 group-focus-within/help:opacity-100 group-hover/help:opacity-100">${text}</span></span>`;
 // 넘치는 부분을 자르는 상자 안(고정 머리 표의 열 이름)에 두는 도움말 — 상자를 popover 로 최상위 레이어에 띄우고 창 오른쪽 안으로 당긴다(앱 HelpTip floating, 2026-10-27)
 const SHOW_TIP =
-  "const t=this.nextElementSibling,r=this.getBoundingClientRect();if(!t.showPopover||t.matches(':popover-open'))return;t.style.top=(r.bottom+6)+'px';t.style.left=(r.left-8)+'px';t.showPopover();const o=t.getBoundingClientRect().right-(document.documentElement.clientWidth-8);if(o>0)t.style.left=Math.max(8,r.left-8-o)+'px'";
+  "const t=this.nextElementSibling,r=this.getBoundingClientRect();if(!t.showPopover||t.matches(':popover-open'))return;t.style.top=(r.bottom+6)+'px';t.style.left=(r.left-8)+'px';t.showPopover();const tb=this.closest('table'),b=Math.min(document.documentElement.clientWidth-8,tb?tb.getBoundingClientRect().right:Infinity),o=t.getBoundingClientRect().right-b;if(o>0)t.style.left=Math.max(8,r.left-8-o)+'px'";
 const HIDE_TIP = "const t=this.nextElementSibling;if(t.matches(':popover-open'))t.hidePopover()";
 export const floatingHelpTip = (html, label) =>
   `<span class="relative inline-flex shrink-0"><button type="button" aria-label="${label} 도움말" tabindex="-1" onmouseenter="${SHOW_TIP}" onmouseleave="${HIDE_TIP}" class="grid size-[16px] place-items-center rounded-full text-erp-muted transition-colors duration-150 hover:text-erp-brand"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="7" width="1.4" height="5" rx="0.7" fill="#fff"/><circle cx="8" cy="4.8" r="0.9" fill="#fff"/></svg></button>` +
-  `<span popover="manual" role="tooltip" class="pointer-events-none fixed inset-auto m-0 w-max max-w-[260px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[8px] text-left text-[13px] leading-[1.5] font-normal break-keep text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)]">${html}</span></span>`;
+  `<span popover="manual" role="tooltip" class="pointer-events-none fixed inset-auto m-0 w-max max-w-[320px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[8px] text-left text-[13px] leading-[1.5] font-normal break-keep text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)]">${html}</span></span>`;
 const helpField = (label, value, text) =>
   `<div class="flex min-w-px flex-1 flex-col gap-[4px]"><span class="flex min-w-0 items-center gap-[4px]"><span class="truncate text-[14px] font-medium text-erp-label">${label}</span>${helpTip(text, label)}</span><span class="truncate text-[14px] text-erp-ink font-semibold">${value}</span></div>`;
 export function recordCard({ manager, reg, mod }) {
@@ -85,9 +85,9 @@ export function recordCard({ manager, reg, mod }) {
   return `<div class="flex w-full flex-col gap-[18px]">${head}${ui.formRow(ui.readonlyField("등록", when(reg), true))}${ui.formRow(ui.readonlyField("최종수정", when(mod), true))}</div>`;
 }
 
-// 권한별 메뉴설정 표의 묶음(1단계) 칸이 일부만 켜졌을 때의 「–」 — 앱은 공용 Checkbox indeterminate, 데모는 같은 모양을 그린다(2026-10-26 사용자 지정: 묶음 줄은 「–」 유지, 머리칸만 제외)
+// 권한별 메뉴설정 표의 묶음(1단계) 칸이 일부만 켜졌을 때의 「–」 — 앱은 공용 Checkbox indeterminate, 데모는 같은 모양을 그린다(2026-10-26 사용자 지정: 묶음 줄은 「–」 유지 · 2026-10-27 머리칸도 같은 「–」)
 export const partialBox = (label) =>
-  `<span role="checkbox" aria-checked="mixed" aria-label="${label}" tabindex="0" class="grid size-[20px] place-items-center rounded-[2px] border border-erp-on bg-erp-on-bg"><span class="h-[2px] w-[10px] bg-erp-on"></span></span>`; // 1단계 줄에서만 쓰여 「등록」 배지 모양(연한 파랑 바탕 · 파랑 막대, 앱과 같다)
+  `<span role="checkbox" aria-checked="mixed" aria-label="${label}" tabindex="0" class="grid size-[20px] place-items-center rounded-[2px] border border-erp-on bg-erp-on-bg"><span class="h-[2px] w-[10px] bg-erp-on"></span></span>`; // 1단계 줄 · 머리칸에서 쓰여 「등록」 배지 모양(연한 파랑 바탕 · 파랑 막대, 앱과 같다)
 
 // 권한별 메뉴설정 [저장] — 앱 role-menu-dialog 와 같다(2026-10-26): 바뀐 칸이 없으면 막고, 켜져 있던 칸을 껐으면 「메뉴 권한 회수」를 먼저 묻고,
 // 저장하면 팝업을 닫지 않고 안에 「저장되었습니다.」를 띄운다. 회수 확인창은 화면에 하나 두고 [저장] 의 data-role-name 으로 권한명을 채운다.
@@ -173,7 +173,7 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
       : `<div class="flex justify-center gap-[6px]">${canDelete ? x.dialogTrigger("삭제", del[code], "soft") : fixedDelete}${editSaveButton()}</div>`;
     return (
       `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${locked ? "" : " data-dirty-scope"}${code === selected ? "" : " hidden"}>` +
-      sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[6px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}<span class="text-[14px] font-normal text-erp-label">${code}</span></span>`) +
+      sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[10px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}<span aria-hidden="true" class="h-[11px] w-px bg-[#d9d9d9]"></span><span class="text-[14px] font-normal"><span class="text-erp-label">권한코드</span> <b class="font-semibold">${code}</b></span></span>`) +
       (locked ? band("본인 계정에 연결된 권한그룹은 수정할 수 없습니다.") : "") +
       fields +
       (rows.length ? plainTable(rows) : "") +

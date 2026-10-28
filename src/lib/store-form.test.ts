@@ -2,9 +2,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  BP_BLOCKED_TEXT,
   EMPTY_STORE_FORM,
   formOfStore,
   hasCoordinateInput,
+  isBpBlockedMessage,
   newFloorRow,
   splitPhone,
   storeServerErrorField,
@@ -34,12 +36,13 @@ test("필수는 점포유형(등록) · 점포명뿐이다", () => {
   assert.ok(validateStoreForm({ ...filled, name: "가".repeat(51) }, "create").name);
 });
 
-test("점포 연락처 9~12자리 · 대표자 연락처는 숫자 10~11자리(api 와 같게 유선 번호도 받는다)", () => {
+test("점포 연락처 · 대표자 연락처 모두 9~12자리(유선 번호도 받는다)", () => {
   assert.equal(validateStoreForm({ ...filled, phone: ["02", "123", "4567"] }, "create").phone, undefined);
   assert.ok(validateStoreForm({ ...filled, phone: ["02", "12", "34"] }, "create").phone);
   assert.equal(validateStoreForm({ ...filled, ceoPhone: ["010", "1234", "5678"] }, "create").ceoPhone, undefined);
   assert.equal(validateStoreForm({ ...filled, ceoPhone: ["02", "1234", "5678"] }, "create").ceoPhone, undefined);
-  assert.ok(validateStoreForm({ ...filled, ceoPhone: ["02", "123", "4567"] }, "create").ceoPhone);
+  assert.equal(validateStoreForm({ ...filled, ceoPhone: ["02", "123", "4567"] }, "create").ceoPhone, undefined);
+  assert.ok(validateStoreForm({ ...filled, ceoPhone: ["02", "12", "4567"] }, "create").ceoPhone);
 });
 
 test("위도 · 경도는 범위 · 소수 6자리 · 함께", () => {
@@ -303,8 +306,9 @@ test("점포 연락처는 9~12자리만 — 050X 평생번호는 받고, 8자리
   assert.ok(validateStoreForm({ ...filled, phone: ["1588", "", "1234"] }, "edit").phone);
   assert.equal(validateStoreForm({ ...filled, phone: ["0507", "2033", "1334"] }, "edit").phone, undefined);
   assert.ok(validateStoreForm({ ...filled, phone: ["0507", "2033", "13345"] }, "edit").phone, "13자리는 막는다");
-  // 대표자 연락처는 숫자 10~11자리(유선 포함) 그대로
-  assert.ok(validateStoreForm({ ...filled, ceoPhone: ["0507", "2033", "1334"] }, "edit").ceoPhone);
+  // 대표자 연락처도 같은 9~12자리(2026-10-27)
+  assert.equal(validateStoreForm({ ...filled, ceoPhone: ["0507", "2033", "1334"] }, "edit").ceoPhone, undefined);
+  assert.ok(validateStoreForm({ ...filled, ceoPhone: ["0507", "2033", "13345"] }, "edit").ceoPhone, "13자리는 막는다");
 });
 
 test("050 이 아닌 12자리 점포 연락처도 저장 검사는 통과한다 — api 와 같이 자릿수만 본다. 나누기 · 표시는 050X 규칙을 타지 않는다", () => {
@@ -381,4 +385,11 @@ test("api 오류 나누기 — 저장 때 번호 중복 409 는 번호 칸에 �
 
 test("api 오류 칸 — 운영 조건 문구는 조건 이름에 「진위확인」이 있어도 점포상태 칸", () => {
   assert.equal(storeServerErrorField(400, "운영으로 바꾸려면 다음이 필요합니다 — 사업자 진위확인, 좌표(위도 · 경도)"), "storeStatus");
+});
+
+test("BP 미사용 · 탈퇴 거절 문장 — 409 의 api 문장만 알아본다", () => {
+  assert.equal(isBpBlockedMessage(409, "소속 BP가 미사용 상태여서 이 업무를 할 수 없습니다. 조회는 그대로 됩니다"), true);
+  assert.equal(isBpBlockedMessage(400, "소속 BP가 미사용 상태여서 이 업무를 할 수 없습니다."), false);
+  assert.equal(isBpBlockedMessage(409, "이미 등록된 사업자등록번호입니다."), false);
+  assert.equal(BP_BLOCKED_TEXT.create, "BP가 탈퇴 또는 미사용 상태로, 점포를 등록할 수 없습니다.");
 });

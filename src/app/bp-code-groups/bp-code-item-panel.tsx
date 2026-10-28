@@ -3,12 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Badge, Button, DataTable, TextField, Toggle, useToast, type Column } from "@/components/common";
-import { CellError, CodePanel, DoneNotice, FieldErrors, focusFirstInvalid, recheck, GroupHead, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
+import { CellError, CodePanel, FieldErrors, focusFirstInvalid, recheck, GroupHead, PendingNotice, REORDERED, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
 import { useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
 import { DeletePending, DeleteToggle, Struck } from "@/components/site/code-editor/delete-mark";
 import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import { useCodeLabel } from "@/components/site/code-label";
+import { WarnBand } from "@/components/site/side-parts";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import { bpCodePanelAccess, bpDeletable, bpPanelLock, newBpItemDraft, toBpItemDraft, type BpItemDraft } from "@/lib/bp-code-drafts";
 import type { BpCodeGroup, BpCodeItem } from "@/lib/bp-codes";
@@ -40,12 +41,14 @@ import { saveBpCodeItemsAction } from "./actions";
 type Draft = BpItemDraft;
 /** 관리주체 열 도움말 문구(2026-10-27 사용자 지정). */
 // 제목은 굵게, 줄 앞에 「·」. 화면 오른쪽 끝 열이라 짧게 줄였다(2026-10-27 사용자 지정)
+// 「(수정·삭제 가능)」은 다음 줄에 둔다(사용자 지정). 줄마다 접히지 않게 한 줄로 두고, 상자 폭은 글에 맞춘다
 const OWNER_HELP = (
   <>
-    <span className="block">
-      · <b className="font-semibold">플랫폼제공</b> 웨일ERP 기본 코드입니다.(수정·삭제 가능)
+    <span className="block whitespace-nowrap">
+      · <b className="font-semibold">플랫폼제공</b> 웨일ERP 기본 코드입니다.
     </span>
-    <span className="block">
+    <span className="block whitespace-nowrap pl-[10px]">(수정·삭제 가능)</span>
+    <span className="block whitespace-nowrap">
       · <b className="font-semibold">BP전용</b> 우리 회사만 사용하는 코드입니다.
     </span>
   </>
@@ -221,8 +224,8 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       : []),
     {
       header: "상세 코드",
-      // 새 행 안내 문구(입력 규칙, CODE_PLACEHOLDER)가 잘리지 않는 폭 — 코드명 칸은 남는 폭을 쓴다(2026-10-27 사용자 지정, 150 → 230 → 300)
-      width: "w-[300px]",
+      // 폭을 정하지 않는다 — 남는 폭을 받는다. 300px 로 고정했더니 좁은 화면에서 코드명 칸이 60px 로 찌그러졌다(사용자가 찾음).
+      // 코드명을 160px 로 고정하는 플랫폼 공통코드와 같은 배치다
       align: "left",
       cell: (d) =>
         d.deleted ? (
@@ -245,6 +248,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
     },
     {
       header: "코드명",
+      width: "w-[160px]", // 플랫폼 공통코드 · 그룹명 칸과 같은 폭(2026-10-27 사용자 지정)
       align: "left",
       cell: (d) =>
         d.deleted ? (
@@ -338,9 +342,10 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
         )
       }
     >
-      {lock === "platform-user" && <DoneNotice message="플랫폼 사용자는 BP 공통코드를 조회만 할 수 있습니다." />}
-      {group && lock === "fixed" && <DoneNotice message="플랫폼고정 그룹이라 조회만 할 수 있습니다." />}
-      {reordered && <DoneNotice message="표시 순서를 바꿨습니다 — 저장을 눌러야 반영됩니다." />}
+      {/* 고칠 수 없는 이유는 빨간 안내(WarnBand)로 — 권한 그룹 상세의 막힌 이유와 같은 모양 · 말투(2026-10-28 사용자 지정, 전엔 회색 띠 「…조회만 할 수 있습니다」) */}
+      {lock === "platform-user" && <WarnBand>BP 공통코드는 BP 계정만 수정할 수 있습니다.</WarnBand>}
+      {group && lock === "fixed" && <WarnBand>플랫폼고정 그룹은 수정할 수 없습니다.</WarnBand>}
+      {reordered && <PendingNotice message={REORDERED} />}
       {failure && <SaveFailedBand message={failure} />}
       <DataTable
         // 열 이름 줄까지 고정하고 그 아래만 스크롤한다(2026-10-26 사용자 지정)

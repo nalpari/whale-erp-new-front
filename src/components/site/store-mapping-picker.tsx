@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button, Checkbox } from "@/components/common";
 import { FIELD } from "@/components/common/theme";
 import { useCodeLabel } from "./code-label";
@@ -10,6 +10,7 @@ import { useCodeLabel } from "./code-label";
 // 후보(options)는 화면이 api 로 받아 넘긴다 — 로그인 정보의 점포가 아니라 그 폼이 고를 수 있는 점포다(BP 관리자: store-options).
 // 후보에는 고를 수 있는 점포만 온다 — 폐점 · 다른 가맹 마스터 담당은 api 가 빼고 보낸다.
 // 찾기 칸을 누르면 아직 고르지 않은 점포가 모두 펼쳐지고, 글자를 넣으면 점포명 · 점포코드로 좁힌다. 고르면 칩 맨 앞에 붙는다.
+// exclude 를 주면 고른 점포가 「예외 점포」다 — 적용 범위가 전체 점포일 때 빠질 점포를 고른다(BP 휴일). 고르는 동작은 같고 문구만 바뀐다.
 
 export type MappingStoreOption = {
   storeId: number;
@@ -18,6 +19,76 @@ export type MappingStoreOption = {
   storeTypeCode: string;
 };
 export type MappingStore = { storeId: number; name: string; storeCode: string };
+
+/** 일괄 검색 창이 쓰는 문구 — 필터용(filter)은 창만 쓰므로 이것만 둔다 */
+type BulkTexts = { guide: string; left: string; right: string; leftDone: string; rightEmpty: ReactNode };
+/** 고르기 칸까지 쓰는 문구 */
+type PickerTexts = BulkTexts & { search: string; picked: string; noPicked: ReactNode };
+
+/**
+ * 고른 점포의 뜻에 따라 바뀌는 문구 — 기본은 매핑할 점포, exclude 는 전체 점포에서 뺄 점포.
+ * 기본 문구는 2026-10-27 사용자 지정(빈 칩 · 오른쪽 빈 목록은 두 줄, 일괄 검색 안내는 한 줄)이고, 예외 · 필터 문구도 같은 말투로 맞췄다.
+ */
+const TEXTS: { include: PickerTexts; exclude: PickerTexts; filter: BulkTexts } = {
+  include: {
+    search: "관리할 점포 찾기",
+    picked: "선택한 점포",
+    noPicked: (
+      <>
+        선택된 점포가 없습니다.
+        <br />
+        점포찾기에서 점포를 검색하여 추가해주세요.
+      </>
+    ),
+    guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 매핑할 수 있습니다. 매핑 해제는 [빼기] 버튼을 이용해 주세요.",
+    left: "매핑 안 된 점포",
+    right: "매핑된 점포",
+    leftDone: "선택할 수 있는 점포를 모두 매핑했습니다.",
+    rightEmpty: (
+      <>
+        매핑된 점포가 없습니다.
+        <br />
+        왼쪽 목록에서 점포를 선택하여 추가해 주세요.
+      </>
+    ),
+  },
+  exclude: {
+    search: "예외로 뺄 점포 찾기",
+    picked: "예외 점포",
+    noPicked: (
+      <>
+        예외 점포가 없습니다.
+        <br />
+        모든 점포에 적용합니다.
+      </>
+    ),
+    guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 예외로 뺄 수 있습니다. 예외 해제는 [빼기] 버튼을 이용해 주세요.",
+    left: "적용 점포",
+    right: "예외 점포",
+    leftDone: "선택할 수 있는 점포를 모두 예외로 지정했습니다.",
+    rightEmpty: (
+      <>
+        예외 점포가 없습니다.
+        <br />
+        왼쪽 목록에서 점포를 선택하여 추가해 주세요.
+      </>
+    ),
+  },
+  // 목록 필터의 점포 고르기(StorePicker) 옆 [일괄검색] — 고른 점포만 목록에 보인다(점포 정보 관리)
+  filter: {
+    guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 선택할 수 있습니다. 선택 해제는 [빼기] 버튼을 이용해 주세요.",
+    left: "선택할 수 있는 점포",
+    right: "선택한 점포",
+    leftDone: "선택할 수 있는 점포를 모두 선택했습니다.",
+    rightEmpty: (
+      <>
+        선택된 점포가 없습니다.
+        <br />
+        왼쪽 목록에서 점포를 선택하여 추가해 주세요.
+      </>
+    ),
+  },
+};
 
 const matches = (s: MappingStoreOption, keyword: string) => {
   const k = keyword.trim().toLowerCase();
@@ -33,6 +104,7 @@ export function StoreMappingPicker({
   loading,
   failed,
   panelOpen,
+  exclude = false,
 }: {
   /** 감싼 패널이 열려 있는가 — 뒤로 가기처럼 클릭 아닌 길로 닫히면 최상위 레이어의 일괄 검색 창 · 찾기 목록도 닫는다 */
   panelOpen: boolean;
@@ -46,10 +118,14 @@ export function StoreMappingPicker({
   loading?: boolean;
   /** 후보를 받지 못했다 — 빈 후보를 「고를 점포가 없다」로 보이지 않게 찾기 목록 · 일괄 검색을 막는다(화면이 실패 띠를 보인다) */
   failed?: boolean;
+  /** 고른 점포가 예외 점포다(적용 범위 전체 점포) — 문구만 바뀐다 */
+  exclude?: boolean;
 }) {
+  const text = exclude ? TEXTS.exclude : TEXTS.include;
   const listId = useId();
   const box = useRef<HTMLDivElement>(null);
   const [keyword, setKeyword] = useState("");
+  const escClearing = useRef(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const [bulkOpen, setBulkOpen] = useState(false);
@@ -64,7 +140,7 @@ export function StoreMappingPicker({
   const listShown = open && candidates.length > 0;
   // 후보가 없을 때도 층을 열어 이유를 말한다 — 받는 중 · 받지 못함은 화면이 따로 알린다
   const emptyShown = open && !candidates.length && !loading && !failed;
-  const emptyText = !options.length ? "고를 수 있는 점포가 없습니다." : keyword.trim() ? "맞는 점포가 없습니다." : "고를 수 있는 점포를 모두 골랐습니다.";
+  const emptyText = !options.length ? "선택할 수 있는 점포가 없습니다." : keyword.trim() ? "검색 결과가 없습니다." : "선택할 수 있는 점포를 모두 선택했습니다.";
 
   const choose = (s: MappingStoreOption) => {
     onChange([{ storeId: s.storeId, name: s.name, storeCode: s.storeCode }, ...picked]);
@@ -84,10 +160,19 @@ export function StoreMappingPicker({
               if (!box.current?.contains(e.relatedTarget as Node | null)) setOpen(false);
             }}
           >
+            {/* type="search" — 크롬 비밀번호 관리자가 이 칸을 아이디 칸으로 보고 저장한 계정 목록을 띄웠다(autoComplete="off" 로는 안 막힌다, 2026-10-28 사용자 지적).
+                검색칸에는 계정 목록을 띄우지 않는다. 브라우저 기본 지우기 단추는 숨겨 모양은 그대로 둔다. 1Password · LastPass 도 빼 둔다 */}
             <input
-              type="text"
+              type="search"
+              data-1p-ignore
+              data-lpignore="true"
               value={keyword}
               onChange={(e) => {
+                // search 칸은 Esc 에 브라우저가 값을 지운다 — 목록이 닫힌 채 Esc 로 패널을 닫을 때 입력이 사라지지 않게 그 지우기는 받지 않는다
+                if (escClearing.current) {
+                  escClearing.current = false;
+                  return;
+                }
                 setKeyword(e.target.value);
                 setOpen(true);
                 setActive(0);
@@ -98,6 +183,10 @@ export function StoreMappingPicker({
                 if (e.key === "Escape" && (listShown || emptyShown)) {
                   e.preventDefault();
                   setOpen(false);
+                } else if (e.key === "Escape") {
+                  // preventDefault 하면 패널 Esc 닫기까지 막힌다(slide-panel) — 대신 뒤따르는 브라우저 지우기만 무시한다
+                  escClearing.current = true;
+                  requestAnimationFrame(() => (escClearing.current = false));
                 } else if (e.key === "ArrowDown" && candidates.length) {
                   e.preventDefault();
                   setOpen(true);
@@ -112,7 +201,7 @@ export function StoreMappingPicker({
                 }
               }}
               placeholder={loading ? "점포 목록을 불러오는 중입니다" : "점포명 또는 점포코드"}
-              aria-label="관리할 점포 찾기"
+              aria-label={text.search}
               role="combobox"
               aria-autocomplete="list"
               aria-expanded={listShown}
@@ -122,13 +211,13 @@ export function StoreMappingPicker({
               aria-describedby={describedBy}
               autoComplete="off"
               maxLength={50}
-              className={`${FIELD} pr-[10px]`}
+              className={`${FIELD} pr-[10px] [&::-webkit-search-cancel-button]:hidden`}
             />
             {listShown && (
               <ul
                 id={listId}
                 role="listbox"
-                aria-label="고를 수 있는 점포"
+                aria-label="선택할 수 있는 점포"
                 // 열려 있는 동안 Esc 가 이 층부터 닫도록 알린다(slide-panel.tsx 의 data-dismiss-open 규칙)
                 data-dismiss-open=""
                 onMouseDown={(e) => e.preventDefault()}
@@ -169,16 +258,16 @@ export function StoreMappingPicker({
 
       <div className="flex flex-col gap-[8px] border-t border-erp-divider pt-[10px]">
         <p className="flex min-h-[34px] items-center gap-[10px] text-[14px] font-medium text-erp-ink">
-          선택한 점포 <span className="font-normal text-erp-label">{picked.length}개점</span>
+          {text.picked} <span className="font-normal text-erp-label">{picked.length}개점</span>
           <span className="ml-auto">
             <Button variant="soft" onClick={() => onChange([])} disabled={!picked.length}>
               전체 제거
             </Button>
           </span>
         </p>
-        {/* 칩 34px × 5 + 간격 6px × 4 = 194px. 넘치면 이 안에서 세로로 스크롤한다 */}
-        <div className="relative h-[194px]">
-          <ul aria-label="선택한 점포" className="flex h-full flex-wrap content-start gap-[6px] overflow-y-auto overscroll-contain">
+        {/* 194px(칩 다섯 줄)에서 1/3 줄인 130px(2026-10-27 사용자 지정) — 넷째 줄 윗부분이 살짝 보여 더 있다는 것을 알린다. 넘치면 이 안에서 세로로 스크롤한다 */}
+        <div className="relative h-[130px]">
+          <ul aria-label={text.picked} className="flex h-full flex-wrap content-start gap-[6px] overflow-y-auto overscroll-contain">
             {picked.map((s) => (
               <li
                 key={s.storeId}
@@ -200,7 +289,10 @@ export function StoreMappingPicker({
             ))}
           </ul>
           {!picked.length && (
-            <p className="pointer-events-none absolute inset-0 grid place-items-center text-[13px] text-erp-muted">아직 고른 점포가 없습니다. 위에서 찾아 더하세요.</p>
+            <p className="pointer-events-none absolute inset-0 grid place-items-center text-center text-[13px] leading-[1.6] text-erp-muted">
+              {/* 두 줄 안내 — TEXTS 의 noPicked */}
+              <span>{text.noPicked}</span>
+            </p>
           )}
         </div>
       </div>
@@ -209,6 +301,7 @@ export function StoreMappingPicker({
         open={bulkOpen}
         options={options}
         picked={picked}
+        text={text}
         onCancel={() => setBulkOpen(false)}
         onApply={(next) => {
           setBulkOpen(false);
@@ -224,17 +317,24 @@ export function StoreMappingPicker({
  * 줄을 끌어 반대쪽 목록에 놓는다 — 체크한 줄을 끌면 같은 쪽에서 체크한 줄이 모두 간다(2026-10-26). 옮긴 뒤
  * [N개점 적용]으로 칩에 반영한다. 두 목록 위 묶음 체크(전체 선택 · 점포유형)는 그 목록에서 한꺼번에 체크한다.
  * 이미 매핑된 점포는 후보에 없어도(폐점) 오른쪽에 그대로 서고 뺄 수 있다. 열 때마다 지금 칩으로 두 목록을 다시 나눈다.
+ * 목록 필터도 같은 창을 쓴다(StoreBulkDialog — 문구만 필터용).
  */
+export function StoreBulkDialog(props: Omit<Parameters<typeof BulkDialog>[0], "text">) {
+  return <BulkDialog {...props} text={TEXTS.filter} />;
+}
+
 function BulkDialog({
   open,
   options,
   picked,
+  text,
   onCancel,
   onApply,
 }: {
   open: boolean;
   options: MappingStoreOption[];
   picked: MappingStore[];
+  text: BulkTexts;
   onCancel: () => void;
   onApply: (next: MappingStore[]) => void;
 }) {
@@ -291,7 +391,7 @@ function BulkDialog({
     setOver(null);
   };
 
-  const pane = (side: "L" | "R", title: string, rows: MappingStoreOption[], empty: string) => {
+  const pane = (side: "L" | "R", title: string, rows: MappingStoreOption[], empty: ReactNode) => {
     const group = (label: string, members: MappingStoreOption[]) => {
       const on = members.filter((m) => checked.has(m.storeId)).length;
       return (
@@ -383,9 +483,9 @@ function BulkDialog({
         점포 일괄 검색
       </h2>
       <div className="mt-[12px] text-[14px] leading-[1.6]">
-        <p className="text-[13px] text-erp-label">왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.</p>
+        <p className="text-[13px] text-erp-label">{text.guide}</p>
         <div className="mt-[12px] flex items-stretch gap-[12px]">
-          {pane("L", "매핑 안 된 점포", left, options.length ? "고를 수 있는 점포를 모두 매핑했습니다." : "고를 수 있는 점포가 없습니다.")}
+          {pane("L", text.left, left, options.length ? text.leftDone : "선택할 수 있는 점포가 없습니다.")}
           <div className="flex shrink-0 flex-col justify-center gap-[6px]">
             <Button variant="off" onClick={() => move("R")} disabled={!canAdd}>
               추가 ›
@@ -394,7 +494,7 @@ function BulkDialog({
               ‹ 빼기
             </Button>
           </div>
-          {pane("R", "매핑된 점포", right, "아직 매핑된 점포가 없습니다. 왼쪽에서 골라 옮기세요.")}
+          {pane("R", text.right, right, text.rightEmpty)}
         </div>
       </div>
       <div className="mt-[24px] flex justify-end gap-[6px]">

@@ -9,9 +9,9 @@ import { platformAdminEditPanel } from "../../platform-admin/edit.mjs";
 
 // 이름은 상세를 슬라이드 패널로 연다(표본 상세는 platpark 하나라 모든 줄이 그 상세를 연다). 아이디는 고칠 수 없는 값이라
 // 링크로 두지 않는다(2026-10-20 디자인 수정).
-// 미사용 계정의 이름은 링크색 대신 흐린 글자 + 밑줄 호버(앱 admin-table.tsx 와 같다, 2026-10-26)
-const detailTrigger = (text, inactive) =>
-  `<button type="button" aria-controls="platform-admin-detail-panel" aria-expanded="false" class="${inactive ? "text-erp-muted" : "text-erp-link"} hover:underline">${text}</button>`;
+// 미사용 계정도 이름은 링크색 — 눌러서 상세를 여는 링크로 보이게(앱 admin-table.tsx 와 같다, 2026-10-28 사용자 지정 · 전엔 흐린 글자)
+const detailTrigger = (text) =>
+  `<button type="button" aria-controls="platform-admin-detail-panel" aria-expanded="false" class="text-erp-link hover:underline">${text}</button>`;
 
 // 미사용 계정 줄은 흐리게(목업 is-read). 행 단위 클래스를 받지 않는 dataTable 결과에서 n 번째 줄에 글자색을 얹는다.
 const dimRows = (table, idx) => {
@@ -25,7 +25,7 @@ const ICON = {
   phone: '<circle cx="12" cy="12" r="10.5"/><rect x="9" y="6.5" width="6" height="11" rx="1.6"/><path d="M10.5 15.3h3"/>',
   mail: '<circle cx="12" cy="12" r="10.5"/><rect x="6.8" y="8.8" width="10.4" height="7.4" rx="1"/><path d="m7.3 9.6 4.7 3.7 4.7-3.7"/>',
 };
-const withIcon = (name, text) =>
+export const withIcon = (name, text) =>
   `<span class="inline-flex items-center gap-[6px]"><svg viewBox="0 0 24 24" class="size-[17px] shrink-0 text-erp-label" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>${text}</span>`;
 
 const ADMINS = [
@@ -41,15 +41,15 @@ const ADMINS = [
 export default ({ A, R }) => {
   const filter = ui.filterPanel(A, [
     ui.filterSection("아이디 · 이름", ui.searchField(A, { placeholder: "아이디 또는 이름 일부" }), { tight: true }),
-    ui.filterSection("사용자 권한", ui.select(["전체", "플랫폼 마스터", "플랫폼 관리자", "고객지원 담당", "정산 담당", "기준정보 조회"], { "aria-label": "사용자 권한" }), { tight: true }),
-    ui.filterSection("계정 상태", ui.checkbox(A, "사용", true) + ui.checkbox(A, "미사용", true), { last: true }),
+    ui.filterSection("권한명", ui.select(["전체", "플랫폼 마스터", "플랫폼 관리자", "고객지원 담당", "정산 담당", "기준정보 조회"], { "aria-label": "권한명" }), { tight: true }),
+    ui.filterSection("계정상태", ui.checkbox(A, "사용", true) + ui.checkbox(A, "미사용", true), { last: true }),
   ]);
 
   const cols = [
     { header: "아이디", width: "w-[130px]" },
     { header: "이름", width: "w-[110px]" },
-    { header: "사용자 권한", width: "w-[150px]" }, // 앱 admin-table.tsx 와 같은 폭(2026-10-26)
-    { header: "계정 상태", width: "w-[100px]" },
+    { header: "계정상태", width: "w-[100px]" }, // 이름 다음에 계정상태 → 권한명(앱 admin-table.tsx, 2026-10-28 사용자 지정)
+    { header: "권한명", width: "w-[150px]" }, // 앱 admin-table.tsx 와 같은 폭(2026-10-26)
     { header: "연락처", width: "w-[150px]", align: "left" },
     { header: "이메일", width: "w-[220px]", align: "left" },
     { header: "최근 로그인", width: "w-[180px]" }, // 앱 admin-table.tsx 와 같은 폭(2026-10-26)
@@ -57,12 +57,12 @@ export default ({ A, R }) => {
   ];
   const rows = ADMINS.map(([id, name, role, state, phone, mail, login, reg]) => [
     id,
-    detailTrigger(name, state === "미사용"),
-    role,
+    detailTrigger(name),
     ui.badge(state === "사용" ? "on" : "off", state),
+    role,
     withIcon("phone", phone),
     withIcon("mail", mail),
-    login || '<span class="text-erp-muted">로그인 기록 없음</span>',
+    login || '<span class="text-erp-muted">-</span>',
     reg,
   ]);
 

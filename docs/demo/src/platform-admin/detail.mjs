@@ -15,7 +15,7 @@ const kv = (rows) =>
     .join("")}</dl>`;
 const WHO = kv([["아이디", "platpark"], ["이름", "박지우"]]);
 // 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」 — 공통코드 상세 코드 머리와 같은 모양(2026-10-27 사용자 지정 — 전엔 이름 옆 상태 배지 · 「사용자 권한 · 그룹명」 꼬리표)
-const HEAD = c.adminHead("박지우", "플랫폼 관리자", "고객지원 담당", ui.badge("on", "사용"));
+const HEAD = c.adminHead("박지우", "플랫폼 관리자", "고객지원 담당", ui.badge("on", "사용"), "이름");
 
 function platformAdminDetailBody(A, R) {
   const resetId = x.dialogId();
@@ -36,9 +36,11 @@ function platformAdminDetailBody(A, R) {
     ["직책", "매니저"],
     // 주소는 우편번호 · 기본주소 · 상세주소를 줄을 바꿔 보이고, 위아래 선에 붙지 않게 여백을 준다
     ["주소", `<div class="py-[2px] leading-[1.6]">${["06236", "서울 강남구 테헤란로 152", "12층"].join("<br>")}</div>`],
-    // 최근 로그인은 표 맨 아래 줄. 등록 · 최종수정은 표 밖 테두리 없는 카드로(2026-10-27 사용자 지정)
+    // 최근 로그인 다음에 등록 · 최종수정을 표 안 두 줄로 「일시 · 사람」(앱 admin-detail-panel.tsx 와 같다, 2026-10-27 사용자 지정)
     ["최근 로그인", "2026-09-21 09:03"],
-  ])) + c.recordValues(["2025-06-02 10:11", "platjung"], ["2026-08-12 09:40", "platkim"]);
+    ["등록", `2025-06-02 10:11 <span class="text-erp-label">· platjung</span>`],
+    ["최종수정", `2026-08-12 09:40 <span class="text-erp-label">· platkim</span>`],
+  ]));
 
   const history = ui.dataTable(
     [
@@ -67,7 +69,7 @@ function platformAdminDetailBody(A, R) {
   const deleteDialog = x.dialog(
     deleteId,
     "관리자 계정을 삭제하시겠습니까?",
-    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>삭제한 계정은 <b class="font-semibold">관리자 목록 및 검색 결과에서 제외</b>되며, <b class="font-semibold">해당 계정으로 더 이상 로그인할 수 없습니다</b>.</p><p>삭제한 계정은 복구할 수 없습니다.</p></div>`,
+    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p>삭제한 계정은 관리자 목록 및 검색 결과에서 제외되며, 해당 계정으로 더 이상 로그인할 수 없습니다.</p><p>삭제한 계정은 복구할 수 없습니다.</p></div></div>` /* 빨간 안내 상자 · 굵은 글씨 없음(앱과 같다, 2026-10-27) */,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "system/admins.html") }),
   );
 

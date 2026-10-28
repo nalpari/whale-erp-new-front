@@ -312,6 +312,16 @@
     const after = bulkItems(dlg, side).find((it) => +it.dataset.order > +item.dataset.order);
     list.insertBefore(item, after || $("[data-bulk-empty]", list));
   }
+  // 묶음 체크(전체 선택 · 유형) 칠하기 — BP 선택 팝업을 정리하며(2e029653) 함께 지워져 일괄 검색 창이 열리지 않던 것을 되살렸다(2026-10-27)
+  function paintScopeGroup(g, state) {
+    g.setAttribute("aria-checked", state);
+    g.classList.toggle("border-erp-brand", state !== "false");
+    g.classList.toggle("bg-erp-brand", state === "true");
+    const check = $("[data-group-check]", g);
+    const mixed = $("[data-group-mixed]", g);
+    if (check) check.classList.toggle("hidden", state !== "true");
+    if (mixed) mixed.classList.toggle("hidden", state !== "mixed");
+  }
   function syncBulkDialog(dlg) {
     for (const side of ["L", "R"]) {
       const pane = bulkPane(dlg, side);
@@ -479,7 +489,7 @@
               `<button type="button" role="option" tabindex="-1" aria-selected="false" data-i="${i}" class="flex w-full items-center gap-[10px] rounded-[2px] px-[10px] py-[8px] text-left text-[14px] text-erp-ink hover:bg-erp-thead-bg aria-selected:bg-erp-thead-bg"><span class="min-w-0 flex-1 truncate">${s.name}</span>${box.hasAttribute("data-spick-nocode") ? "" : `<span class="shrink-0 text-[12px] text-erp-muted">${s.code}</span>`}</button>`,
           )
           .join("")
-      : `<p class="px-[10px] py-[14px] text-center text-[13px] text-erp-label">${picked.length >= spickPool(box).length ? "고를 수 있는 점포를 모두 골랐습니다." : "맞는 점포가 없습니다."}</p>`;
+      : `<p class="px-[10px] py-[14px] text-center text-[13px] text-erp-label">${picked.length >= spickPool(box).length ? "선택할 수 있는 점포를 모두 선택했습니다." : "검색 결과가 없습니다."}</p>`;
     dd.hidden = false;
     input.setAttribute("aria-expanded", "true");
     spickMark(dd, found.length ? 0 : -1);

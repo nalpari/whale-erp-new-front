@@ -119,7 +119,7 @@ function menuDialog(A, R, role, id) {
           const gb = open.length ? null : kids.length ? block(kids[0], op) : "view";
           const n = open.filter((k) => has(map, k[0], op)).length;
           if (TIP[gb]) reasons.add(TIP[gb]);
-          // 일부만 켜졌으면 「–」(머리칸은 「–」 없이 해제 — 아래 head)
+          // 일부만 켜졌으면 「–」(머리칸도 같다 — 아래 head)
           if (n > 0 && n < open.length) return `<span class="inline-flex">${partialBox(label)}</span>`;
           return cell(open.length > 0 && n === open.length, gb, label, m[1] === 1);
         }
@@ -130,11 +130,14 @@ function menuDialog(A, R, role, id) {
       const nm = `<span style="padding-left:${(m[1] - 1) * 18}px">${m[1] > 1 ? sub("└ ") : ""}${m[1] === 1 ? `<b class="font-semibold">${m[2]}</b>` : m[2]}</span>${[...reasons].map((r) => ` <span class="text-[13px] text-erp-label">· ${r}</span>`).join("")}`;
       return [nm, sub(`${m[1]}단계`), ...cells];
     });
-    // 머리칸 전체 선택: 고를 수 있는 칸이 모두 켜져 있으면 켜짐, 고를 칸이 없으면 흐리게
+    // 머리칸 전체 선택: 고를 수 있는 칸이 모두 켜져 있으면 켜짐, 일부만 켜졌으면 「–」, 고를 칸이 없으면 흐리게
     const head = ([op, label]) => {
       const open = vis.filter((m) => !m[4] && !block(m, op));
       // 체크박스는 칸 가운데(본문과 같은 세로줄), 글자는 그 오른쪽(앱 role-menu-dialog.tsx 와 같다, 2026-10-26 사용자 지정)
-      return `<span class="grid grid-cols-[1fr_auto_1fr] items-center gap-[6px]"><span></span><span class="inline-flex${open.length ? "" : " opacity-40"}">${ui.checkbox(A, "", open.length > 0 && open.every((m) => has(map, m[0], op)), { "aria-label": `${label} 전체 선택`, disabled: !open.length })}</span><span class="justify-self-start whitespace-nowrap">${label}</span></span>`;
+      // 일부만 켜졌으면 1단계 줄과 같은 하늘색 「–」(앱 role-menu-dialog 머리칸과 같다, 2026-10-27 사용자 지정)
+      const on = open.filter((m) => has(map, m[0], op)).length;
+      const box = on > 0 && on < open.length ? partialBox(`${label} 전체 선택`) : ui.checkbox(A, "", open.length > 0 && on === open.length, { "aria-label": `${label} 전체 선택`, disabled: !open.length });
+      return `<span class="grid grid-cols-[1fr_auto_1fr] items-center gap-[6px]"><span></span><span class="inline-flex${open.length ? "" : " opacity-40"}">${box}</span><span class="justify-self-start whitespace-nowrap">${label}</span></span>`;
     };
     // 메뉴 영역은 BP 권한별 메뉴설정처럼 높이를 고정하고 넘치면 그 안에서 스크롤한다
     return menuScroll(depthRows(ui.dataTable(
@@ -173,7 +176,7 @@ export default ({ A, R }) => {
     dialogs.push(menuDialog(A, R, r, id));
     const n = Object.values(GRANT[code]).reduce((s, m) => s + Object.values(m).filter(Boolean).length, 0);
     return [
-      `${type} <span class="text-erp-label">· ${code}</span>`,
+      `${type} <span class="text-[12px] text-erp-label">· ${code}</span>`,
       `<span class="text-erp-link hover:underline">${name}</span>`, // 권한명은 링크색 — 앱(platform-role-groups · bp-role-groups)과 같다(2026-10-26 사용자 지정)
       desc,
       // 등록일시 열은 뺐다 — 앱 platform-role-groups 와 같이 최종수정만(2026-10-26 사용자 지정)
@@ -185,10 +188,10 @@ export default ({ A, R }) => {
   });
   const cols = [
     // 권한유형 · 코드를 한 칸에 — BP 권한 그룹 관리(앱 bp-role-groups)와 같은 모양(2026-10-26 사용자 지정)
-    { header: "권한유형 · 코드", width: "w-[200px]", align: "left" },
-    { header: "권한명", width: "w-[180px]", align: "left" }, // 설명이 칸 한가운데서 시작하지 않게 고정한다(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
+    { header: "권한유형 · 코드", width: "w-[260px]" }, // 가운데 정렬(앱과 같다, 2026-10-27)
+    { header: "권한명", width: "w-[260px]", align: "left" }, // 설명이 칸 한가운데서 시작하지 않게 고정한다(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "설명", align: "left" },
-    { header: "최종수정", width: "w-[220px]", align: "left" },
+    { header: "최종수정", width: "w-[260px]", align: "left" } /* 세 열 같은 260px(앱과 같다, 2026-10-27) */,
     { header: "메뉴설정", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "메뉴설정 여부", width: "w-[120px]" },
   ];
@@ -213,9 +216,10 @@ export default ({ A, R }) => {
       const body = users.length
         ? kv([
             ["권한명", `${name} ${sub(`· ${code}`)}`],
-            // 몇 명인지 먼저, 그 아래에 한 사람씩 「아이디 | 사용자명」으로 줄을 바꿔 보인다. 다섯 명까지 보이고 넘으면 목록 안에서 스크롤한다(2026-10-15)
-            ["연결 사용자", `<p>${users.length}명</p><ul class="mt-[4px] flex max-h-[118px] flex-col gap-[2px] overflow-y-auto text-erp-label">${users.map((u) => `<li class="h-[22px] shrink-0 truncate leading-[22px]">${u.replace(" ", " | ").replace("(미사용)", " (미사용)")}</li>`).join("")}</ul>`],
+            // 몇 명인지만 두고, 사람은 아래 표(아이디 · 이름 · 계정 상태)로 보인다 — 다섯 명 넘으면 표 안에서 스크롤(앱 role-delete-dialog.tsx 와 같다, 2026-10-27)
+            ["연결 사용자", `${users.length}명`],
           ]) +
+          c.linkedUsersTable(users) +
           ui.field(req("대체 권한"), ui.select(["선택하세요", ...others])) +
           band(`변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.`)
         : kv([

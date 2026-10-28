@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { BpAdminActions } from "./bp-admins.ts";
-import { allowsAllStores, canCreateBpAdmin, creatableRolesOf, detailButtonsOf, editLocksOf } from "./bp-admin-rules.ts";
+import { allowsAllStores, andOthers, canCreateBpAdmin, cascadeOf, creatableRolesOf, detailButtonsOf, editLocksOf } from "./bp-admin-rules.ts";
 
 const all: BpAdminActions = { isSelf: false, canUpdate: true, canResetPassword: true, canChangeScope: true, canChangeRoleGroup: true };
 const none: BpAdminActions = { isSelf: false, canUpdate: false, canResetPassword: false, canChangeScope: false, canChangeRoleGroup: false };
@@ -42,4 +42,28 @@ test("수정 칸 잠금 — 범위는 BP 관리자이고 api 가 허락할 때�
   assert.equal(editLocksOf({ roleTypeCode: "BA", actions: { ...all, canChangeScope: false } }).scope, true);
   assert.equal(editLocksOf({ roleTypeCode: "FM", actions: all }).scope, true);
   assert.equal(editLocksOf({ roleTypeCode: "BA", actions: { ...all, canChangeRoleGroup: false } }).roleGroup, true);
+});
+
+test("가맹 마스터 저장의 연쇄 — 사용 → 미사용, 내 범위 안 점포 빼기만 센다", () => {
+  const stores = [
+    { storeId: 1, isOutOfScope: false },
+    { storeId: 2, isOutOfScope: false },
+    { storeId: 9, isOutOfScope: true },
+  ];
+  const fm = { roleTypeCode: "FM" as const, accountStatus: "ACTIVE" as const, stores };
+  // 폼은 범위 밖 점포(9)를 싣지 않는다 — 그대로 저장하면 연쇄가 없다
+  assert.deepEqual(cascadeOf(fm, { accountStatus: "ACTIVE", storeIds: [1, 2] }), { deactivating: false, removed: [] });
+  assert.equal(cascadeOf(fm, { accountStatus: "INACTIVE", storeIds: [1, 2] }).deactivating, true);
+  assert.deepEqual(cascadeOf(fm, { accountStatus: "ACTIVE", storeIds: [2] }).removed, [stores[0]]);
+  // 이미 미사용인 계정은 다시 미사용으로 저장해도 번지지 않는다
+  assert.equal(cascadeOf({ ...fm, accountStatus: "INACTIVE" }, { accountStatus: "INACTIVE", storeIds: [1, 2] }).deactivating, false);
+  // BP 관리자 · 가맹 관리자는 번지지 않는다
+  assert.deepEqual(cascadeOf({ ...fm, roleTypeCode: "BA" }, { accountStatus: "INACTIVE", storeIds: [] }), { deactivating: false, removed: [] });
+  assert.deepEqual(cascadeOf({ ...fm, roleTypeCode: "FA" }, { accountStatus: "INACTIVE", storeIds: [] }), { deactivating: false, removed: [] });
+});
+
+test("「외 N명」 — 첫 아이디만, 없으면 수만", () => {
+  assert.equal(andOthers("moriyn", 1), "moriyn");
+  assert.equal(andOthers("moriyn", 3), "moriyn 외 2명");
+  assert.equal(andOthers(null, 2), "2명");
 });

@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useEffectEvent, useState, type ReactNode } from "react";
-import { GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
+import { Badge, GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bpPath, isBpPathScreen } from "@/lib/bp-path";
 import type { ServiceCode } from "@/lib/browser-storage";
@@ -10,7 +10,9 @@ import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
 import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, scopeOfKey, withScope } from "@/lib/store-scope";
 import { BpSelectDialog } from "./bp-select-dialog";
-import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, usePasswordChangeOpen, useScope, useService, useStores } from "./session-gate";
+import { useCodeLabel } from "./code-label";
+import { useCurrentBpStatus } from "./current-bp-status";
+import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, usePasswordChangeOpen, useScope, useService, useStores, useWithdrawOpen } from "./session-gate";
 
 /** ERP 메뉴 url 의 화면 주소 — /bp/{id} 주소로 옮긴 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다. */
 const screenOf = (url: string, tabBp: number) => (isBpPathScreen(url) ? bpPath(tabBp, url) : url);
@@ -29,6 +31,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const [bpSelectOpen, setBpSelectOpen] = useState(false);
   const [, setMyPageOpen] = useMyPageOpen();
   const [, setPasswordChangeOpen] = usePasswordChangeOpen();
+  const [, setWithdrawOpen] = useWithdrawOpen();
   const myPageTrigger = useMyPageTrigger();
   const tabBp = useCurrentBp().bpCodeId;
   const [scope] = useScope();
@@ -45,15 +48,13 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
       });
       return { label: m.name, items, href: items.length === 0 && m.permission.read && m.url ? linkOf(m.url) : undefined };
     });
-  // 회원 탈퇴는 슬라이드 패널 작업 전이라 아직 아무 데도 가지 않는다(S-JHQQNR).
   const mine: UserPopItem[] = [
     { label: "내정보 관리", onSelect: () => setMyPageOpen(true) },
     { label: "비밀번호 변경", onSelect: () => setPasswordChangeOpen(true) },
   ];
-  const userItems: UserPopItem[] =
-    service === "WHALE_ERP"
-      ? [...mine, { label: "회원 탈퇴", href: "#" }, { label: "로그아웃", action: logout, danger: true }]
-      : [...mine, { label: "로그아웃", action: logout, danger: true }];
+  // 회원 탈퇴는 BP 마스터(BM)에게만 보인다(S-JHQQNR) — 다른 유형은 항목 자체가 없다.
+  const withdraw: UserPopItem[] = service === "WHALE_ERP" && account.roleTypeCode === "BM" ? [{ label: "회원 탈퇴", onSelect: () => setWithdrawOpen(true) }] : [];
+  const userItems: UserPopItem[] = [...mine, ...withdraw, { label: "로그아웃", action: logout, danger: true }];
 
   return (
     <GlobalHeader
@@ -63,13 +64,30 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
       right={
         <>
           {service === "WHALE_ERP" ? <HeaderScopeSelect /> : <div className="flex-1" />}
-          <ServiceLinks targets={serviceTargets(account.bp, service, () => setBpSelectOpen(true))} />
+          <ServiceLinks targets={serviceTargets(account.bp, service, () => setBpSelectOpen(true))} hideAddon={service === "PLATFORM"} />
           {alarm}
           <UserPop name={account.name ?? account.loginId} items={userItems} triggerRef={myPageTrigger} />
           {bpSelectOpen && <BpSelectDialog onClose={() => setBpSelectOpen(false)} />}
         </>
       }
     />
+  );
+}
+
+/**
+ * 플랫폼 계정이 탈퇴 · 미사용 BP 를 보고 있으면 범위 선택기 옆에 상태 배지와 한 줄을 둔다 — 어느 화면에서든 조회만 된다는 것을 먼저 안다
+ * (2026-10-28 사용자 지정). 사용 중이거나 상태를 모르면(BP 계정 · 받기 전 · 받지 못함) 그리지 않는다.
+ */
+function BpStatusNote() {
+  // 헤더는 화면을 옮겨도 그대로 떠 있다 — 화면 주소가 바뀔 때마다 다시 묻게 한다(30초 캐시 안이면 그대로, 리뷰로 찾음)
+  const status = useCurrentBpStatus(usePathname());
+  const label = useCodeLabel("ACCOUNT_STATUS");
+  if (!status || status === "ACTIVE") return null;
+  return (
+    <span role="status" className="flex shrink-0 items-center gap-[6px] text-[14px] text-erp-off">
+      <Badge tone="off">{label(status)}</Badge>
+      조회 기능만 이용할 수 있는 BP입니다.
+    </span>
   );
 }
 
@@ -106,17 +124,23 @@ function HeaderScopeSelect() {
       <Suspense fallback={null}>
         <ScopeFromAddress />
       </Suspense>
-      <ScopeSelect
-        title={bp.tradeName}
-        sections={scopeSections(bp.tradeName, stores)}
-        value={scopeKeyOf(scope)}
-        onChange={(key) => {
-          const next = scopeOfKey(key);
-          if (!next) return;
-          setScope(next);
-          if (pageUrl) router.push(withScope(screenOf(pageUrl, bp.bpCodeId), next));
-        }}
-      />
+      {/* 상태 안내를 범위 선택기 바로 오른쪽(빈자리 왼쪽 끝)에 붙인다 — ScopeSelect 는 남는 폭을 다 받아(flex-1) 칸 폭(420)만큼 감싸 둔다(2026-10-28 사용자 지정) */}
+      <div className="flex min-w-0 flex-1 items-center gap-[12px]">
+        <div className="flex w-[420px] shrink-0">
+          <ScopeSelect
+            title={bp.tradeName}
+            sections={scopeSections(bp.tradeName, stores)}
+            value={scopeKeyOf(scope)}
+            onChange={(key) => {
+              const next = scopeOfKey(key);
+              if (!next) return;
+              setScope(next);
+              if (pageUrl) router.push(withScope(screenOf(pageUrl, bp.bpCodeId), next));
+            }}
+          />
+        </div>
+        <BpStatusNote />
+      </div>
     </>
   );
 }

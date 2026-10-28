@@ -149,8 +149,8 @@ export function useTreeDrag({
 function overLabel(nodes: MenuNode[], over: Over): { ok: boolean; text: string; hint: string } | null {
   const v = over.verdict;
   if (v.kind === "noop") return null;
-  if (v.kind === "cycle") return { ok: false, text: "놓을 수 없음 · 자기 하위", hint: "놓을 수 없음 — 자기 자신이나 하위 메뉴 아래" };
-  if (v.kind === "depth") return { ok: false, text: `놓을 수 없음 · ${v.deep}단계가 됨`, hint: `놓을 수 없음 — 메뉴는 최대 3단계까지 (놓으면 ${v.deep}단계)` };
+  if (v.kind === "cycle") return { ok: false, text: "놓을 수 없음 · 자기 하위", hint: "메뉴를 자기 하위 메뉴 아래로 옮길 수 없습니다." };
+  if (v.kind === "depth") return { ok: false, text: `놓을 수 없음 · ${v.deep}단계가 됨`, hint: "메뉴는 최대 3단계까지만 만들 수 있습니다." };
   const where = `${placeLabel(nodes, over.spot.parentMenuId, v.index + 1)} · ${v.level}단계`;
   return { ok: true, text: where, hint: `놓으면 ${where}` };
 }

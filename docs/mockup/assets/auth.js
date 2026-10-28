@@ -359,11 +359,11 @@
         ["", "주식회사 인터플러그는 직원 근무 앱의 출퇴근 등록에서 근무지 도착 여부를 확인하기 위해 아래와 같이 개인위치정보를 수집·이용합니다. 이 동의는 첫 출퇴근 등록 때 받습니다."],
         ["수집·이용 내역", { head: ["이용 목적", "수집 항목", "보유·이용 기간"], rows: [
           ["출근·퇴근 등록 때 근무지 반경 안에 있는지 판정", "출근·퇴근 버튼을 누른 순간의 단말기 위치(GPS)", "판정 직후 파기 — 좌표는 저장하지 않음"],
-          ["출퇴근 기록 관리와 확인", "판정 결과(반경 안 · 확인 필요), 위치 오차", "출퇴근 기록 보존 기간 동안 [근로기준법상 3년]"]
+          ["출퇴근 기록 관리와 확인", "출퇴근 시각, 반경 밖이면 확인 필요 표시(반경 밖 출근 · 반경 밖 퇴근 · 위치 조작 감지)", "출퇴근 시각은 출퇴근 기록 보존 기간 동안 [근로기준법상 3년] · 확인 필요 표시는 관리자 검토 뒤 지움"]
         ]}],
-        ["수집 방법과 시점", ["출근·퇴근 버튼을 누를 때만 한 번 위치를 확인합니다.", "앱을 쓰지 않는 동안이나 근무 중에 위치를 계속 추적하지 않습니다.", "근무지 반경은 기본 100m 이며, 지하·실내 근무지는 관리자가 넓힐 수 있습니다."]],
+        ["수집 방법과 시점", ["출근·퇴근 버튼을 누를 때만 한 번 위치를 확인합니다. 화면을 열 때는 위치를 읽지 않습니다.", "앱을 쓰지 않는 동안이나 근무 중에 위치를 계속 추적하지 않습니다.", "근무지 반경은 모든 근무지 100m 입니다. 반경 밖이어도 출퇴근은 등록되고 확인 필요 표시가 붙습니다."]],
         ["위치정보 이용·제공 사실 확인자료", "위치정보의 보호 및 이용 등에 관한 법률에 따라 위치정보 이용·제공 사실 확인자료를 [6개월] 동안 보관합니다."],
-        ["판정 결과의 제공", "판정 결과(반경 안 · 확인 필요)와 등록 시각은 출퇴근 관리를 위해 소속 사업장의 관리자에게 보입니다. 좌표는 제공하지 않습니다. [제3자 제공 해당 여부와 즉시 통보 방식은 법무 확인]"],
+        ["판정 결과의 제공", "확인 필요 표시와 등록 시각은 출퇴근 관리를 위해 소속 사업장의 관리자에게 보입니다. 좌표는 제공하지 않습니다. [제3자 제공 해당 여부와 즉시 통보 방식은 법무 확인]"],
         ["개인위치정보주체의 권리", ["언제든지 동의의 전부나 일부를 철회할 수 있습니다.", "위치정보 이용·제공 사실 확인자료의 열람이나 고지를 요구할 수 있고, 오류가 있으면 정정을 요구할 수 있습니다.", "권리는 앱의 설정 > 위치정보 또는 아래 담당자에게 요청해 행사할 수 있습니다."]],
         ["동의를 거부할 권리", "귀하는 동의를 거부하거나 철회할 수 있습니다. 이 경우 GPS 출퇴근 등록을 할 수 없으며, 출퇴근은 소속 사업장 관리자에게 등록을 요청해야 합니다. [대체 수단은 확정 전]"],
         ["사업자 정보", "주식회사 인터플러그 · [주소] · 위치정보관리책임자 [이름] · [이메일] · [전화번호]"]
@@ -673,8 +673,13 @@
      두 목록 위 옵션(전체 선택 · 직영점포 · 가맹점포)은 그 목록에서 묶음을 한꺼번에 체크한다(옮기지는 않는다).
      다른 가맹 마스터가 맡은 점포처럼 고를 수 없는 점포는 왼쪽에 사유와 함께 흐리게 있고, 체크도 끌기도 되지 않는다.
      [적용]을 눌러야 화면의 선택한 점포가 오른쪽 목록으로 바뀐다. 새로 매핑한 점포가 앞에 붙는다.
-     취소 · 닫기 · Esc · 바깥 누르기는 아무것도 바꾸지 않는다. 팝업은 한 화면에 하나만 두고, 연 묶음의 점포와 선택을 받아 그린다. */
+     취소 · 닫기 · Esc · 바깥 누르기는 아무것도 바꾸지 않는다. 팝업은 한 화면에 하나만 두고, 연 묶음의 점포와 선택을 받아 그린다.
+     검색 필터의 점포 고르기(data-spick-nocode)에서 열면 「매핑」 대신 「선택」 문구를 쓴다(점포 정보 관리 필터 · 2026-10-27). */
   var bulkPop = null, bulk = null;
+  var BULK_TEXT = {
+    map: { guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.", left: "매핑 안 된 점포", right: "매핑된 점포", leftDone: "고를 수 있는 점포를 모두 매핑했습니다.", rightEmpty: "아직 매핑된 점포가 없습니다." },
+    filter: { guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 선택됩니다. 오른쪽에서 빼면 선택이 풀립니다.", left: "고를 수 있는 점포", right: "선택한 점포", leftDone: "고를 수 있는 점포를 모두 골랐습니다.", rightEmpty: "아직 고른 점포가 없습니다." }
+  };
   function bulkIc(name, size) { return '<svg width="' + size + '" height="' + size + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
   function bulkSide(side) {
     return bulk.pool.filter(function (s) { return (bulk.sel.indexOf(s.code) > -1) === (side === "R"); });
@@ -707,23 +712,23 @@
         return opt(t, t, can.filter(function (s) { return s.type === t; }), chk, side);
       }).join("") + "</div>";
     }
-    var nl = bulk.chkL.length, nr = bulk.chkR.length, n = bulk.sel.length;
+    var nl = bulk.chkL.length, nr = bulk.chkR.length, n = bulk.sel.length, t = bulk.t;
     bulkPop.innerHTML = '<div class="modal__box spickpop__box">' +
       '<div class="modal__head"><h2 class="t-h2" id="spb-t">점포 일괄 검색</h2><button class="iconbtn" type="button" data-spb-cancel aria-label="닫기">' + bulkIc("x", 16) + "</button></div>" +
       '<div class="modal__body">' +
-      '<p class="help" style="margin: 0">왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.</p>' +
+      '<p class="help" style="margin: 0">' + t.guide + '</p>' +
       '<div class="spickpop__cols">' +
-      '<section class="spickpop__pane" data-spb-pane="L" aria-label="매핑 안 된 점포">' +
-      '<div class="spickpop__phead"><b>매핑 안 된 점포</b><span class="subtle">' + left.length + "곳</span></div>" +
-      opts(left, bulk.chkL, "L", "매핑 안 된 점포에서 한꺼번에 체크") +
-      '<div class="spickpop__list">' + (left.length ? left.map(function (s) { return item(s, "L"); }).join("") : '<p class="spickpop__empty">고를 수 있는 점포를 모두 매핑했습니다.</p>') + "</div></section>" +
+      '<section class="spickpop__pane" data-spb-pane="L" aria-label="' + t.left + '">' +
+      '<div class="spickpop__phead"><b>' + t.left + '</b><span class="subtle">' + left.length + "곳</span></div>" +
+      opts(left, bulk.chkL, "L", t.left + "에서 한꺼번에 체크") +
+      '<div class="spickpop__list">' + (left.length ? left.map(function (s) { return item(s, "L"); }).join("") : '<p class="spickpop__empty">' + t.leftDone + '</p>') + "</div></section>" +
       '<div class="spickpop__mid">' +
       '<button class="btn btn--secondary btn--sm" type="button" data-spb-move="R"' + (nl ? "" : " disabled") + ">추가" + (nl ? " " + nl : "") + " ›</button>" +
       '<button class="btn btn--secondary btn--sm" type="button" data-spb-move="L"' + (nr ? "" : " disabled") + ">‹ 빼기" + (nr ? " " + nr : "") + "</button></div>" +
-      '<section class="spickpop__pane" data-spb-pane="R" aria-label="매핑된 점포">' +
-      '<div class="spickpop__phead"><b>매핑된 점포</b><span class="subtle">' + right.length + "곳</span></div>" +
-      opts(right, bulk.chkR, "R", "매핑된 점포에서 한꺼번에 체크") +
-      '<div class="spickpop__list">' + (right.length ? right.map(function (s) { return item(s, "R"); }).join("") : '<p class="spickpop__empty">아직 매핑된 점포가 없습니다.<br />왼쪽에서 골라 옮기세요.</p>') + "</div></section>" +
+      '<section class="spickpop__pane" data-spb-pane="R" aria-label="' + t.right + '">' +
+      '<div class="spickpop__phead"><b>' + t.right + '</b><span class="subtle">' + right.length + "곳</span></div>" +
+      opts(right, bulk.chkR, "R", t.right + "에서 한꺼번에 체크") +
+      '<div class="spickpop__list">' + (right.length ? right.map(function (s) { return item(s, "R"); }).join("") : '<p class="spickpop__empty">' + t.rightEmpty + '<br />왼쪽에서 골라 옮기세요.</p>') + "</div></section>" +
       "</div>" +
       "</div>" +
       '<div class="modal__foot"><button class="btn btn--ghost" type="button" data-spb-cancel>취소</button>' +
@@ -843,7 +848,7 @@
       document.body.appendChild(bulkPop);
       bulkWire();
     }
-    bulk = { pool: o.pool, sel: o.picked.slice(), was: o.picked.slice(), chkL: [], chkR: [], apply: o.apply, back: document.activeElement };
+    bulk = { pool: o.pool, sel: o.picked.slice(), was: o.picked.slice(), chkL: [], chkR: [], apply: o.apply, back: document.activeElement, t: o.texts || BULK_TEXT.map };
     bulkDraw();
     bulkPop.hidden = false;
     var first = bulkPop.querySelector(".spickpop__opts .check:not([disabled])") || bulkPop.querySelector("[data-spb-cancel]");
@@ -937,11 +942,14 @@
       if (!f) close();
     });
     if (clear) clear.addEventListener("click", function () { picked = []; draw(); q.focus(); });
-    var bulkBtn = box.querySelector("[data-spick-bulk]");
+    /* 검색 필터는 [일괄검색]이 묶음 밖 「점포」 라벨 줄에 있어 같은 .field 에서도 찾는다 */
+    var field = box.closest(".field");
+    var bulkBtn = box.querySelector("[data-spick-bulk]") || (field && field.querySelector("[data-spick-bulk]"));
     if (bulkBtn) bulkBtn.addEventListener("click", function () {
       close();
       spickBulk({
         pool: pool, picked: picked,
+        texts: box.hasAttribute("data-spick-nocode") ? BULK_TEXT.filter : null,
         apply: function (sel) {
           var keep = picked.filter(function (c) { return sel.indexOf(c) > -1; });
           var fresh = pool.filter(function (s) { return !s.lock && sel.indexOf(s.code) > -1 && picked.indexOf(s.code) < 0; }).map(function (s) { return s.code; });

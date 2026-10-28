@@ -23,8 +23,9 @@ export const headValues = (items) =>
     .map(([label, value]) => (label ? `<span class="inline-flex items-baseline gap-[6px]"><span class="text-erp-label">${label}</span><b class="font-semibold text-erp-ink">${value}</b></span>` : value))
     .join(HEAD_BAR)}</span>`;
 // 관리자 상세 머리 — 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」(앱 bp-admins · platform-admins admin-detail-panel, 2026-10-27 사용자 지정)
-export const adminHead = (name, role, group, badge) =>
-  `<h2 class="flex flex-col items-start gap-[6px] text-[18px] font-semibold text-erp-ink"><span>${name}</span><span class="text-[14px] font-normal">${headValues([["역할", role], ["권한그룹", group], ["", badge]])}</span></h2>`;
+// nameLabel 을 주면 이름 앞에 14px 회색 라벨(앱 플랫폼 관리자 상세 「이름」, 2026-10-28 사용자 지정 — 아랫줄 라벨과 같은 6px 간격)
+export const adminHead = (name, role, group, badge, nameLabel = "") =>
+  `<h2 class="flex flex-col items-start gap-[6px] text-[18px] font-semibold text-erp-ink"><span>${nameLabel ? `<span class="mr-[6px] text-[14px] font-normal text-erp-label">${nameLabel}</span>` : ""}${name}</span><span class="text-[14px] font-normal">${headValues([["역할", role], ["권한명", group], ["", badge]])}</span></h2>`;
 // 등록 · 최종수정 — 표 밖 테두리 없는 카드, 일시 굵게 · 사람 회색(앱 ReadonlyCard, 2026-10-27 사용자 지정). extra: 카드 아래쪽에 더 둘 줄(선 뒤)
 export const recordValues = (reg, mod, extra = "") => {
   const when = ([at, by]) => `${at} <span class="font-normal text-erp-label">· ${by}</span>`;
@@ -78,7 +79,7 @@ export const storePicker = (A, { pool, picked, hint, label = "관리할 점포 �
   const dlg = bulk ? ui.uid("spick-bulk") : "";
   const search = ui.searchField(A, { placeholder: "점포명 또는 점포코드", label });
   // 떠 있는 목록이라 팝업 그림자 하나만 쓴다(DESIGN 뜬 것만 그림자). 테두리 #ebebeb 는 팝업 테두리 값.
-  const dropdown = `<div role="listbox" aria-label="고를 수 있는 점포" hidden data-spick-dd class="absolute top-[calc(100%+4px)] right-0 left-0 z-20 max-h-[288px] overflow-y-auto overscroll-contain rounded-[2px] border border-[#ebebeb] bg-white p-[6px] shadow-[0_2px_6px_rgba(40,47,55,0.08)]"></div>`;
+  const dropdown = `<div role="listbox" aria-label="선택할 수 있는 점포" hidden data-spick-dd class="absolute top-[calc(100%+4px)] right-0 left-0 z-20 max-h-[288px] overflow-y-auto overscroll-contain rounded-[2px] border border-[#ebebeb] bg-white p-[6px] shadow-[0_2px_6px_rgba(40,47,55,0.08)]"></div>`;
   const find = bulk
     ? `<div class="flex items-start gap-[6px]"><div class="relative min-w-px flex-1" data-spick-find>${search}${dropdown}</div>${ui.button("일괄 검색", { variant: "soft", "data-spick-open": dlg })}</div>`
     : search;
@@ -87,7 +88,7 @@ export const storePicker = (A, { pool, picked, hint, label = "관리할 점포 �
       ui.button(clearLabel, { variant: "soft", "data-spick-clear": true }).replace('class="', 'class="ml-auto ').replace("px-[24px]", "px-[12px]")
     : `<button type="button" class="ml-auto text-erp-link hover:underline">${clearLabel}</button>`;
   const poolAttr = bulk ? ` data-spick-pool="${bulk.filter((s) => !s[3]).map((s) => s.slice(0, 3).join("|")).join(";")}"` : "";
-  return `<div class="flex flex-col gap-[10px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[12px]" data-spick${poolAttr}${hidden ? " hidden" : ""}><div class="flex flex-col gap-[8px]"><p class="text-[14px] font-medium">점포 찾기${pool ? ` <span class="font-normal text-erp-label">${pool}</span>` : ""}</p>${find}${hint ? `<span class="text-[13px] text-erp-label">${hint}</span>` : ""}</div><div class="flex flex-col gap-[8px] border-t border-erp-divider pt-[10px]"><p class="flex min-h-[34px] items-center gap-[10px] text-[14px] font-medium">선택한 점포 <span class="font-normal text-erp-label" data-spick-count>${picked.length}개점</span>${clear}</p><div class="relative h-[194px]"><ul aria-label="선택한 점포" class="flex h-full flex-wrap content-start gap-[6px] overflow-y-auto overscroll-contain" data-spick-list>${picked.map(chip).join("")}</ul><p class="pointer-events-none absolute inset-0 grid place-items-center text-[13px] text-erp-muted" data-spick-none${picked.length ? " hidden" : ""}>아직 고른 점포가 없습니다. 위에서 찾아 더하세요.</p></div></div>${bulk ? storeBulkDialog(A, dlg, { stores: bulk, picked: picked.map((p) => p[1]) }) : ""}</div>`;
+  return `<div class="flex flex-col gap-[10px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[12px]" data-spick${poolAttr}${hidden ? " hidden" : ""}><div class="flex flex-col gap-[8px]"><p class="text-[14px] font-medium">점포 찾기${pool ? ` <span class="font-normal text-erp-label">${pool}</span>` : ""}</p>${find}${hint ? `<span class="text-[13px] text-erp-label">${hint}</span>` : ""}</div><div class="flex flex-col gap-[8px] border-t border-erp-divider pt-[10px]"><p class="flex min-h-[34px] items-center gap-[10px] text-[14px] font-medium">선택한 점포 <span class="font-normal text-erp-label" data-spick-count>${picked.length}개점</span>${clear}</p><div class="relative h-[130px]"><ul aria-label="선택한 점포" class="flex h-full flex-wrap content-start gap-[6px] overflow-y-auto overscroll-contain" data-spick-list>${picked.map(chip).join("")}</ul><p class="pointer-events-none absolute inset-0 grid place-items-center text-center text-[13px] leading-[1.6] text-erp-muted" data-spick-none${picked.length ? " hidden" : ""}>선택된 점포가 없습니다.<br>점포찾기에서 점포를 검색하여 추가해주세요.</p></div></div>${bulk ? storeBulkDialog(A, dlg, { stores: bulk, picked: picked.map((p) => p[1]) }) : ""}</div>`;
 };
 
 // 점포 일괄 검색 확인창(목업 spickpop). 왼쪽은 매핑 안 된 점포, 오른쪽은 매핑된 점포다.
@@ -95,7 +96,16 @@ export const storePicker = (A, { pool, picked, hint, label = "관리할 점포 �
 // 두 목록 위 옵션(전체 선택 · 직영점포 · 가맹점포)은 그 목록에서 묶음을 한꺼번에 체크한다. 사유가 있는 점포는 흐리게 두고 옮기지 않는다.
 // 묶음 체크의 켜진 바탕·테두리는 aria-checked 변형으로 칠한다 — bg-white 가 erp.css 에서 bg-erp-brand 뒤에 나와 클래스 바꾸기로는 덮이지 않는다.
 // 끌어 놓을 목록은 data-over 일 때 브랜드색 테두리가 된다. 열 때마다 erp.js 가 지금 칩(선택한 점포)으로 두 목록을 다시 나눈다.
-function storeBulkDialog(A, id, { stores, picked }) {
+// 목록 필터의 [일괄검색](store-filter.mjs storeFilterSection)도 이 창을 쓴다 — text 로 「매핑」 대신 「선택」 문구를 넘긴다.
+// 안내 · 오른쪽 빈 목록은 2026-10-27 사용자 지정 문구다(앱 store-mapping-picker.tsx TEXTS 와 같다).
+const BULK_MAP_TEXT = {
+  guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 매핑할 수 있습니다. 매핑 해제는 [빼기] 버튼을 이용해 주세요.",
+  left: "매핑 안 된 점포",
+  right: "매핑된 점포",
+  leftDone: "선택할 수 있는 점포를 모두 매핑했습니다.",
+  rightEmpty: "매핑된 점포가 없습니다.<br>왼쪽 목록에서 점포를 선택하여 추가해 주세요.",
+};
+export function storeBulkDialog(A, id, { stores, picked, text = BULK_MAP_TEXT }) {
   const groupCheck = (key, side, label) =>
     `<span role="checkbox" tabindex="0" aria-checked="false" aria-label="${label}" data-bulk-group="${key}" data-bulk-side="${side}" class="relative grid size-[20px] shrink-0 place-items-center rounded-[2px] border border-erp-field-line bg-white aria-checked:border-erp-brand aria-checked:bg-erp-brand aria-[checked=mixed]:border-erp-brand aria-disabled:opacity-40"><img alt="" width="12" height="9" class="hidden" data-group-check src="${A}icons/check.svg"><span class="hidden h-[2px] w-[10px] bg-erp-brand" data-group-mixed></span></span>`;
   const opt = (key, side, label) =>
@@ -119,23 +129,40 @@ function storeBulkDialog(A, id, { stores, picked }) {
     ui.button(label, { variant: "off", "data-bulk-move": to, disabled: true }).replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ');
   const left = pane(
     "L",
-    "매핑 안 된 점포",
-    { opts: opts("L", "매핑 안 된 점포에서 한꺼번에 체크") },
+    text.left,
+    { opts: opts("L", `${text.left}에서 한꺼번에 체크`) },
     stores.map((s, i) => (picked.includes(s[1]) ? "" : items[i])).join(""),
-    "고를 수 있는 점포를 모두 매핑했습니다.",
+    text.leftDone,
   );
   const right = pane(
     "R",
-    "매핑된 점포",
-    { opts: opts("R", "매핑된 점포에서 한꺼번에 체크") },
+    text.right,
+    { opts: opts("R", `${text.right}에서 한꺼번에 체크`) },
     stores.map((s, i) => (picked.includes(s[1]) ? items[i] : "")).join(""),
-    "아직 매핑된 점포가 없습니다.<br>왼쪽에서 골라 옮기세요.",
+    text.rightEmpty,
   );
   const body =
-    `<p class="text-[13px] text-erp-label">왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.</p>` +
+    `<p class="text-[13px] text-erp-label">${text.guide}</p>` +
     `<div class="mt-[12px] flex items-stretch gap-[12px]">${left}<div class="flex shrink-0 flex-col justify-center gap-[6px]">${move("R", "추가 ›")}${move("L", "‹ 빼기")}</div>${right}</div>`;
   return `<dialog id="${id}" data-bulk-popup aria-labelledby="${id}-t" class="m-auto w-[800px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">점포 일괄 검색</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button(`${picked.length}개점 적용`, { "data-bulk-apply": true })}</div></dialog>`;
 }
+
+// 권한 그룹 삭제 확인창의 연결 사용자 표 — 아이디 · 이름 · 계정 상태(사용 · 미사용 배지). 여섯 명부터는 머리 42 + 줄 46 × 5 + 선 높이 안에서 사람 줄만 스크롤.
+// 앱 role-delete-dialog.tsx 와 같다(2026-10-27 사용자 지정 — 전엔 「아이디 | 이름」을 옅은 회색으로 이어 붙였다). 표본 글자는 「아이디 이름」 또는 「아이디 이름(미사용)」
+export const linkedUsersTable = (users) => {
+  const table = ui.dataTable(
+    // 값도 열 이름처럼 가운데, 아이디는 140px(앱과 같다, 2026-10-27)
+    [{ header: "아이디", width: "w-[140px]" }, { header: "이름" }, { header: "계정상태", width: "w-[100px]" }],
+    users.map((u) => {
+      const [id, ...rest] = u.split(" ");
+      const raw = rest.join(" ");
+      const off = raw.includes("(미사용)");
+      return [id, raw.replace("(미사용)", "").trim() || "-", ui.badge(off ? "off" : "on", off ? "미사용" : "사용")];
+    }),
+  );
+  // 여섯 명부터는 높이를 묶고 열 이름 줄을 고정한 채 사람 줄만 스크롤한다(앱과 같다, 2026-10-27 사용자 지정)
+  return users.length > 5 ? `<div class="relative flex h-[274px] flex-col">${ui.scrollTable(table)}<span aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden [scrollbar-gutter:stable]"><span class="absolute inset-x-0 bottom-0 h-px bg-erp-thead-line"></span></span></div>` : table; // 스크롤 중에도 아래 선이 보이게 덧그린다. 스크롤바 자리를 비운 겹 상자 안이라 표 오른쪽 끝에서 멈춘다(앱과 같다)
+};
 
 // 화면 아래 가운데 버튼 줄
 export const buttons = (...b) => `<div class="flex justify-center gap-[6px]">${b.join("")}</div>`;

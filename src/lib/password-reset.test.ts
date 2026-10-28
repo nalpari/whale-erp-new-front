@@ -1,7 +1,7 @@
 // node --test src/lib/password-reset.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { canResetPassword, isApiSendRefusal, refreshesAfterReset, resetFailureMessage, resetRecipientText } from "./password-reset.ts";
+import { canResetPassword, refreshesAfterReset, resetFailureMessage, resetRecipientText } from "./password-reset.ts";
 
 const direct = { storeId: 1, name: "직영점", storeType: "DIRECT" };
 const franchise = { storeId: 2, name: "가맹점", storeType: "FRANCHISE" };
@@ -86,27 +86,7 @@ test("실패 문구 — 결과를 모르면(5xx · 연결 실패) 다시 보내�
   );
 });
 
-test("503 — api 가 Nest 본문으로 보내지 않았다고 알린 것만 확실한 실패다", () => {
-  const body = { statusCode: 503, message: "메일 발송이 설정되지 않아 재설정 링크를 보낼 수 없습니다. 운영자에게 문의해 주세요", error: "Service Unavailable" };
-  assert.equal(isApiSendRefusal(503, body), true);
-});
-
-test("503 — 프록시 · 로드밸런서의 503(본문 없음 · HTML · 다른 모양)은 결과 모름이다", () => {
-  assert.equal(isApiSendRefusal(503, null), false);
-  assert.equal(isApiSendRefusal(503, { message: "Service Unavailable" }), false);
-  assert.equal(isApiSendRefusal(503, { statusCode: 502, message: "x" }), false);
-  assert.equal(isApiSendRefusal(503, { statusCode: 503, message: ["x"] }), false);
-});
-
-test("503 — 문구가 비었으면 확인창에 보일 것이 없어 결과 모름으로 둔다", () => {
-  assert.equal(isApiSendRefusal(503, { statusCode: 503, message: "" }), false);
-});
-
 test("409(가입 전 · 퇴직 · 탈퇴)만 상세를 다시 받는다 — 화면이 낡았으니 버튼을 거둔다", () => {
   assert.equal(refreshesAfterReset({ status: 409 }), true);
   for (const status of [401, 404, 429, 503, undefined]) assert.equal(refreshesAfterReset({ status }), false, String(status));
-});
-
-test("503 — 다른 상태는 해당 없다", () => {
-  assert.equal(isApiSendRefusal(500, { statusCode: 500, message: "x" }), false);
 });
