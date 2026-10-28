@@ -153,9 +153,10 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
   );
 }
 
+// 이 팝업의 작은 글자(오류 · 전문 보기 · 남은 시간 안내)는 14px — 13px 은 너무 작았다(2026-10-28 사용자 지정)
 function ErrorText({ children }: { children: string }) {
   return (
-    <p role="alert" className="text-[13px] text-erp-off">
+    <p role="alert" className="text-[14px] text-erp-off">
       {children}
     </p>
   );
@@ -166,7 +167,7 @@ function TermsRow({ kind, label, checked, onChange }: { kind: "use" | "policy"; 
   return (
     <div className="flex items-center justify-between">
       <Checkbox label={label} checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="text-[13px] text-erp-link underline underline-offset-2">
+      <span className="text-[14px] text-erp-link underline underline-offset-2">
         {/* 약관 유형은 공통코드 TERMS_TYPE — 이용약관은 BP 사업자 회원가입용, 개인정보는 그 수집·이용 동의다. */}
         <TermsLink termsTypeCode={kind === "use" ? "TERMS_SERVICE" : "PRIVACY_COLLECT"}>전문 보기</TermsLink>
       </span>
@@ -207,7 +208,7 @@ function Remaining({ expiresAt }: { expiresAt: string }) {
           <span className="text-erp-label">남은 시간</span>
           <b className={`text-[18px] font-semibold tabular-nums ${urgent ? "text-erp-off" : "text-erp-ink"}`}>{`${m}:${String(s).padStart(2, "0")}`}</b>
         </p>
-        <p className="text-[13px] text-erp-label">시간 안에 새 비밀번호로 변경해 주세요. 시간이 지나면 다시 로그인해야 합니다.</p>
+        <p className="text-[14px] text-erp-label">시간 안에 새 비밀번호로 변경해 주세요. 시간이 지나면 다시 로그인해야 합니다.</p>
       </div>
     </div>
   );
