@@ -98,7 +98,7 @@ function DetailBody({
       }
       setFailure(null);
       // 메일이 실패해도 기존 비밀번호는 이미 막혔다 — 다시 초기화하면 보낸다
-      toast(result.isMailSent ? "초기 비밀번호를 계정 이메일로 보냈습니다." : "초기화했지만 메일을 보내지 못했습니다. 다시 초기화해 주세요.");
+      toast(result.isMailSent ? "초기화 비밀번호를 계정 이메일로 보냈습니다." : "초기화했지만 메일을 보내지 못했습니다. 다시 초기화해 주세요.");
     });
 
   const muted = (text: string) => <span className="font-normal text-erp-muted">{text}</span>;
@@ -132,7 +132,7 @@ function DetailBody({
               </Button>
             </Blocked>
           )}
-          {admin.isInitialPasswordUnsent && <span className="text-erp-off">초기 비밀번호 미발송</span>}
+          {admin.isInitialPasswordUnsent && <span className="text-erp-off">초기화 비밀번호 미발송</span>}
         </span>
       ),
     },
@@ -233,9 +233,9 @@ function DetailBody({
           <div className="flex flex-col gap-[12px]">
             <WhoList rows={[["아이디", admin.loginId], ["이름", name]]} />
             <p>
-              임시 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.
+              초기화 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.
               <br />
-              임시 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.
+              초기화 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.
               <br />
               현재 로그인 중인 세션은 유지됩니다.
             </p>

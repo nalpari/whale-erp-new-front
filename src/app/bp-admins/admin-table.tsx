@@ -68,7 +68,7 @@ export function AdminTable({
       // 초기 비밀번호 메일이 실패한 계정은 그 사실을 먼저 알린다 — 상세의 비밀번호 초기화로 다시 보낸다
       cell: (a) =>
         a.isInitialPasswordUnsent ? (
-          <span className="text-erp-off">초기 비밀번호 미발송</span>
+          <span className="text-erp-off">초기화 비밀번호 미발송</span>
         ) : a.lastLoginAt ? (
           dim(a, formatDateTime(a.lastLoginAt))
         ) : (
