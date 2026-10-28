@@ -175,17 +175,19 @@ function DetailBody({
     { label: "이메일", value: withdrawn ? gone : bp.email },
     {
       label: "비밀번호",
-      value: (
-        <>
-          {canUpdate && (
-            <Button variant="soft" onClick={() => setConfirm("reset")} disabled={busy}>
-              초기화
-            </Button>
-          )}
-          {/* 등록 · 초기화 메일이 실패했다 — 다시 보내는 길은 초기화뿐이다 */}
-          {!withdrawn && bp.isInitialPasswordUnsent && <span className="text-erp-off">초기 비밀번호 미발송</span>}
-        </>
-      ),
+      // 미사용 · 탈퇴 BP 는 초기화 버튼 · 미발송 표시 없이 빈칸(플랫폼 관리자 상세와 같다, 2026-10-28 사용자 지정) — 화면에서만 숨긴다
+      value:
+        bp.accountStatus !== "ACTIVE" ? null : (
+          <>
+            {canUpdate && (
+              <Button variant="soft" onClick={() => setConfirm("reset")} disabled={busy}>
+                초기화
+              </Button>
+            )}
+            {/* 등록 · 초기화 메일이 실패했다 — 다시 보내는 길은 초기화뿐이다 */}
+            {bp.isInitialPasswordUnsent && <span className="text-erp-off">초기 비밀번호 미발송</span>}
+          </>
+        ),
     },
     // 비밀번호 줄 바로 아래 하위 줄 「└ 강제변경」 — 「비밀번호 강제변경」은 110px 라벨 칸에서 잘려서(2026-10-28 사용자 지정). 값은 「대상」 · 「대상아님」
     { label: "└ 강제변경", value: bp.isPasswordChangeRequired ? "대상" : "대상아님" },
