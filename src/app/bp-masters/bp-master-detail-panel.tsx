@@ -258,7 +258,7 @@ function DetailBody({
 
       {/* 등록 · 초기화 메일이 실패한 사용 BP — 다시 보내는 길은 초기화뿐이다. 비밀번호 줄의 「초기 비밀번호 미발송」 대신 머리 아래 빨간 상자로(칸이 틀어지지 않게, 2026-10-28 사용자 지정).
           api isInitialPasswordUnsent 를 따르므로 초기화 메일이 나갈 때까지 상세를 열 때마다 보인다 */}
-      {bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent && <WarnBand>초기 비밀번호 미발송! [초기화]로 다시 보내주세요.</WarnBand>}
+      {bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent && <WarnBand>{"초기 비밀번호가 발송되지 않았습니다.\n비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요."}</WarnBand>}
       {/* 미사용 · 탈퇴 안내는 빨간 안내 상자(WarnBand — 2026-10-28 사용자 지정, 점포 BP 탈퇴 · 미사용 안내와 같다). 미사용은 두 줄로 줄였다(같은 날 사용자 지정) */}
       {bp.accountStatus === "INACTIVE" && (
         <WarnBand>
