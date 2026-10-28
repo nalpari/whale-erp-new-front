@@ -10,7 +10,6 @@ import type { BpMasterDetail, CreateBpMasterResult } from "@/lib/bp-masters";
 import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { formatBizNumber } from "@/lib/store-view";
 import { Blocked, FailedBand, WhoList } from "../platform-admins/admin-parts";
-import { NoticeBand } from "../stores/store-parts";
 import { changeBpMasterStatusAction, deleteBpMasterAction, resetBpMasterPasswordAction } from "./actions";
 import { BpStatusBadge, unknownResult, WITHDRAWN_TEXT } from "./bp-master-parts";
 import { HistoryButton } from "./history-dialog";
@@ -21,7 +20,7 @@ import { WithdrawalButton } from "./withdrawal-dialog";
 // 하단은 [닫기] … [삭제][수정][변경 이력]. 탈퇴 BP 는 조회만 된다(상태 변경 · 초기화 · 삭제 · 수정 · 변경 이력 없음, 탈퇴 사유는 [사유 보기]).
 // 화면은 미리 숨기거나 흐리게만 한다 — 막는 것은 api 다.
 
-/** 방금 등록한 BP — 상세 위쪽 띠로 BP 코드와 메일 발송 주소를 알린다(BP-3) */
+/** 방금 등록한 BP — 초기 비밀번호 메일이 실패했을 때만 상세 위쪽 빨간 상자로 알린다(2026-10-28 사용자 지정 · 전엔 성공도 BP 코드 · 메일 주소 띠) */
 export type CreatedNotice = CreateBpMasterResult;
 
 export function BpMasterDetailPanel({
@@ -268,17 +267,7 @@ function DetailBody({
         </span>
       </div>
 
-      {created && (
-        <NoticeBand
-          tone="info"
-          title={`BP를 등록했습니다 · BP 코드 ${created.bpCode}`}
-          detail={
-            created.isMailSent
-              ? `초기 비밀번호를 ${created.email} 로 보냈습니다. BP 마스터는 첫 로그인 때 비밀번호 변경과 약관 동의를 마쳐야 ERP 를 쓸 수 있습니다.`
-              : `초기 비밀번호 메일을 ${created.email} 로 보내지 못했습니다. 아래 비밀번호 [초기화]로 다시 보내 주세요.`
-          }
-        />
-      )}
+      {created && !created.isMailSent && <WarnBand>초기 비밀번호 메일을 보내지 못했습니다. [초기화]로 다시 보내 주세요.</WarnBand>}
       {/* 미사용 · 탈퇴 안내는 빨간 안내 상자(WarnBand — 2026-10-28 사용자 지정, 점포 BP 탈퇴 · 미사용 안내와 같다). 미사용은 두 줄로 줄였다(같은 날 사용자 지정) */}
       {bp.accountStatus === "INACTIVE" && (
         <WarnBand>
