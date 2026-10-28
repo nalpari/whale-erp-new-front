@@ -25,7 +25,7 @@ import {
 import { BIZ_MESSAGE, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
 import type { BpMasterDetail, CreateBpMasterResult } from "@/lib/bp-masters";
 import { loginIdError, type LoginIdCheck } from "@/lib/platform-admin-form";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { formatBizNumber } from "@/lib/store-view";
 import { EmailAvailability, FailedBand, FieldMessage, LoginIdAvailability } from "../platform-admins/admin-parts";
 import { checkBpMasterEmailAction, checkBpMasterLoginIdAction,createBpMasterAction, updateBpMasterAction, verifyBpBusinessAction } from "./actions";
@@ -323,10 +323,12 @@ export function BpMasterFormPanel(props: Props) {
       <h2 className="text-[18px] font-semibold text-erp-ink">
         {title}
         {props.mode === "edit" && (
-          <span className="ml-[6px] inline-flex">
+          <span className="ml-[6px] inline-flex items-center gap-[6px] align-middle">
             <Tag>
               BP 코드 · <b className="font-semibold">{props.bp.bpCode}</b>
             </Tag>
+            {/* 계정상태는 고칠 수 없어 칸 대신 제목 줄 배지로만(2026-10-28 사용자 지정 — 전엔 기본정보 안 「계정상태」 칸 · 변경 일시 · 안내) */}
+            <BpStatusBadge status={props.bp.accountStatus} />
           </span>
         )}
       </h2>
@@ -403,17 +405,8 @@ export function BpMasterFormPanel(props: Props) {
           </Field>
           <EmailAvailability id={messageId("email")} check={emailCheck} message={errors.email} />
         </Stack>
-        {props.mode === "edit" && (
-          <Stack>
-            <span className="text-[14px] font-medium text-erp-label">계정상태</span>
-            <span className="flex items-center gap-[6px] text-[14px] text-erp-ink">
-              <BpStatusBadge status={props.bp.accountStatus} />
-              {props.bp.statusChangedAt && <span className="text-erp-label">{formatDateTime(props.bp.statusChangedAt)} 부터</span>}
-            </span>
-            {/* 라벨 「계정상태」(목록 · 필터와 같다), 안내는 바뀐 버튼 자리 · 이름에 맞춘다(2026-10-28) */}
-            <Note>계정상태는 상세의 [BP 상태 변경]에서 바꿉니다.</Note>
-          </Stack>
-        )}
+        {/* 계정상태 칸 대신 안내 한 줄만 — 상태는 제목 줄 배지(2026-10-28 사용자 지정) */}
+        {props.mode === "edit" && <Note>계정상태는 상세의 [BP 상태 변경]에서 바꿉니다.</Note>}
       </FormGroup>
 
       {/* 사업자정보 — MY PAGE 사업자정보 탭과 같은 모양(2026-10-28 사용자 지정): 회색 제목 바(오른쪽 인증 상태) + 세 칸 한 줄 인증 상자 */}
