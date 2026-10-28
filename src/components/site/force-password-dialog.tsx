@@ -187,7 +187,7 @@ function Remaining({ expiresAt }: { expiresAt: string }) {
       </svg>
       <div className="flex min-w-0 flex-col gap-[2px]">
         <p className="flex items-baseline gap-[8px] text-[14px]">
-          <span className="text-erp-label">임시 비밀번호 남은 시간</span>
+          <span className="text-erp-label">남은 시간</span>
           <b className={`text-[18px] font-semibold tabular-nums ${urgent ? "text-erp-off" : "text-erp-ink"}`}>{`${m}:${String(s).padStart(2, "0")}`}</b>
         </p>
         <p className="text-[13px] text-erp-label">시간 안에 새 비밀번호로 변경해 주세요. 시간이 지나면 다시 로그인해야 합니다.</p>
