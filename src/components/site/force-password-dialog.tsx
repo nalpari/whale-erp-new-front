@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
-import { Button, Checkbox, Field, TextField } from "@/components/common";
+import { Button, Checkbox, Field, PasswordInput } from "@/components/common";
 import { changeForcedPassword, logout } from "@/app/actions";
 import { signOut } from "@/lib/bff";
 import type { LoginInfoAccount } from "@/lib/session";
@@ -27,9 +27,12 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
     if (!ref.current?.open) ref.current?.showModal();
   }, []);
 
+  // 확인 칸이 새 비밀번호와 다르면 바로 알린다 — 회원가입과 같은 문구(validators.ts validatePasswordConfirm, 2026-10-28 사용자 지정)
+  const mismatch = confirm !== "" && confirm !== password;
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!agreed) return;
+    if (!agreed || mismatch) return;
     startTransition(async () => {
       const r = await changeForcedPassword({
         newPassword: password,
@@ -75,8 +78,9 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
         {account.temporaryPasswordExpiresAt && <Remaining expiresAt={account.temporaryPasswordExpiresAt} />}
 
         <Field label="새 비밀번호">
-          <TextField
-            type="password"
+          {/* 칸 끝에 보기 · 숨기기 눈 아이콘 — 다른 비밀번호 변경 화면과 같은 공통 PasswordInput(2026-10-28 사용자 지정) */}
+          <PasswordInput
+            fieldLabel="새 비밀번호"
             autoComplete="new-password"
             placeholder="영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요."
             maxLength={20}
@@ -88,8 +92,17 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
         {/* 조건 체크 줄 · 「현재 비밀번호는 묻지 않습니다」 · 약관 동의 옆 설명은 지웠다(2026-10-28 사용자 지정) — 조건은 칸 안내와 저장 때 검사가 알린다 */}
         {error?.at === "password" && <ErrorText>{error.message}</ErrorText>}
         <Field label="새 비밀번호 확인">
-          <TextField type="password" autoComplete="new-password" maxLength={20} required value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+          <PasswordInput
+            fieldLabel="새 비밀번호 확인"
+            autoComplete="new-password"
+            maxLength={20}
+            required
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            aria-invalid={mismatch || undefined}
+          />
         </Field>
+        {mismatch && <ErrorText>비밀번호가 일치하지 않습니다.</ErrorText>}
 
         {needTerms && (
           <fieldset className="flex flex-col gap-[12px] border-t border-erp-divider pt-[18px]">
@@ -111,7 +124,7 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
           <button type="button" onClick={() => signOut(logout)} className="text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink">
             로그아웃
           </button>
-          <Button type="submit" disabled={pending || !agreed}>
+          <Button type="submit" disabled={pending || !agreed || mismatch}>
             {pending ? "변경 중" : "변경"}
           </Button>
         </div>
