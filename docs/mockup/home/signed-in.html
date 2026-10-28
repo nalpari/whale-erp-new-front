@@ -405,7 +405,7 @@
                   <div class="panel__body">
                     <div class="figure__label">9월 급여 지급 예정</div>
                     <div class="stat">1,184<span class="stat__unit">만원</span></div>
-                    <div class="subtle" style="font-size: 12px">직원 6명 · 급여명세서 초안 합계</div>
+                    <div class="subtle" style="font-size: 12px">직원 6명 · 급여명세서 합계</div>
                     <dl class="kv" style="margin-top: var(--s-4)">
                       <dt>정직원 2명</dt><dd class="mono">642만원</dd>
                       <dt>파트타이머 4명</dt><dd class="mono">542만원</dd>
@@ -437,6 +437,32 @@
 
               <div class="gap is-decided">
                 <div class="gap__head">
+                  <span class="gap__no">HOME-10</span>
+                  <b>본사 역할이 가맹 점포를 볼 때 직원 급여 카드가 0으로 보이는 것을 어떻게 알리는가</b>
+                  <span class="gap__decided">확정 · 안내 한 줄 · 2026-10-28 재영</span>
+                  <span class="gap__ref">S-KRERLI · WHALEERP-621</span>
+                </div>
+                <div class="gap__block">
+                  <p>직원 급여 합계는 본사 역할(BP 마스터 · BP 관리자)이면 본사 제공 동의한 가맹 직원만 센다(운영 정책 ATT-30, api 가 거른다). 동의한 직원이 없으면 명세서가 있어도 「0만원 · 직원 0명」이라 명세서가 없는 것처럼 읽힌다.</p>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt is-dropped" data-side="a">
+                    <div class="gap__label">A · 그대로 둔다</div>
+                    <p>숫자만 보인다.</p>
+                  </div>
+                  <div class="gap__opt is-picked" data-side="b">
+                    <div class="gap__label">B · 늘 안내 한 줄 · 확정</div>
+                    <p>본사 역할이 가맹 점포를 볼 때 카드 아래에 「동의하지 않은 가맹 직원은 급여 합계에 세지 않습니다」를 붙인다. 동의한 직원 수와 관계없이 늘 붙이고, 직영 점포 · 가맹마스터 · 가맹관리자에게는 붙이지 않는다. 여러 점포 화면 수치 카드의 안내와 같은 말투다. api 는 그대로다.</p>
+                  </div>
+                  <div class="gap__opt is-dropped" data-side="c">
+                    <div class="gap__label">C · 가린 수를 받아 보인다</div>
+                    <p>급여 요약 api 가 가린 명세서 수를 더 주고 「· 가려진 직원 K」를 붙인다. api 변경이 든다.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="gap is-decided">
+                <div class="gap__head">
                   <span class="gap__no">HOME-9</span>
                   <b>점포 하나 화면은 어떤 데이터로 그리는가</b>
                   <span class="gap__decided">확정 · 2026-10-27 재영</span>
@@ -448,7 +474,7 @@
                     <li>운영 점포 정보의 <b>점장 · 영업시간</b>은 1팀 점포 데이터에 없어 뺀다. 1팀에 칸을 요청하지 않는다.</li>
                     <li>직원 정보의 <b>상태 칸</b>은 재직 · 퇴직 예정이고, 아직 가입하지 않은 직원(초대 발송 · 만료 · 거절 · 소속 추가 확인 · 복귀 확인)은 「가입 대기」다.</li>
                     <li><b>직원 급여</b> 합계는 귀속월이 이번 달인 급여명세서 모든 상태를 더한다. 본사 역할은 본사 제공 동의가 없는 가맹 직원을 뺀다 — api 요청 WHALEERP-621.</li>
-                    <li>직원 정보의 <b>근무 시간 · 근무요일</b>: api 는 #622(api #171)로 준비됐고, 관리자 웹 열은 1팀 /bp-masters api 가 api main 에 들어와 타입을 다시 만들 수 있을 때 후속 PR 로 붙인다(2026-10-27 재영). 근로계약 관리 조회 권한이 없으면 두 칸을 비운다.</li>
+                    <li>직원 정보의 <b>근무 시간 · 근무요일</b>: api 는 #622(api #171)로 준비됐고, 관리자 웹 열은 1팀 /bp-masters api 가 api main 에 들어온 뒤 붙였다(2026-10-28). 근로계약 관리 조회 권한이 없으면 두 칸을 「—」로 비운다.</li>
                     <li>근무스케줄에서 <b>가린 직원</b>(본사 제공 동의 없음)도 근무스케줄 관리처럼 이름 · 막대 없는 줄로 보인다 — 근무 인원 줄과 줄 수를 맞춘다. 휴무 직원 줄은 없다.</li>
                     <li>직원 정보 표의 가린 줄은 짧은 「본사 제공 동의 없음」이고, 「재직 N · 가입 대기 M」에 넣지 않고 「가려진 직원 K」로 따로 센다.</li>
                   </ul>
