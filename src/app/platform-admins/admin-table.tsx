@@ -67,7 +67,7 @@ export function AdminTable({
       aria-controls="platform-admin-detail-panel"
       aria-expanded={selected === a.adminAccountId}
       onClick={(e) => onOpen(a.adminAccountId, e.currentTarget)}
-      // 미사용 계정도 이름 링크는 파란색 — 눌러서 상세를 여는 링크로 보이게(2026-10-28 사용자 지정, BP 마스터 목록 BP 코드와 같다 · 전엔 회색)
+      // 미사용 계정도 이름 링크는 파란색 — 눌러서 상세를 여는 링크로 보이게(2026-10-28 사용자 지정, BP 마스터 목록 상호명 링크와 같다 · 전엔 회색)
       className="max-w-full truncate text-erp-link hover:underline"
     >
       {text}

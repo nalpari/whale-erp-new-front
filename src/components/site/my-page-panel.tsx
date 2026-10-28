@@ -13,7 +13,7 @@ import { BpProfileTab, type BpProfileTabHandle } from "./bp-profile-tab";
 import { useCodeLabel } from "./code-label";
 import { usePatchAccount } from "./session-gate";
 
-/** 저장할 때 api 가 주는 409 문구와 같게 둔다(serverErrorField 가 이 문구를 "이메일" 포함으로 가른다). */
+/** 이메일 중복 확인 문구. 저장 409 는 api 문구 그대로 보인다(serverErrorField 가 "이메일" 포함으로 칸을 가른다). */
 const EMAIL_TAKEN = "이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요."; // 등록 화면들과 같은 문구(2026-10-28 사용자 지정)
 
 function FieldMessage({ id, message }: { id: string; message?: string }) {

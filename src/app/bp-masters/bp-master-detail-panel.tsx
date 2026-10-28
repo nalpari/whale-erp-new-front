@@ -17,7 +17,7 @@ import { HistoryButton } from "./history-dialog";
 import { WithdrawalButton } from "./withdrawal-dialog";
 
 // BP 마스터 계정 상세(S-GZDODB · 초기화 S-PRRLMA). 모두 읽기 전용이고, 기본정보 · 사업자정보를 나눠 보인다.
-// 버튼 자리는 플랫폼 관리자 상세와 같다(BP-6) — [BP 상태 변경]은 기본정보 제목 줄, 비밀번호 초기화는 그 줄의 버튼(수정 권한),
+// 버튼 자리는 플랫폼 관리자 상세와 같다(BP-6) — [BP 상태 변경]은 기본정보 제목 줄, 비밀번호 초기화는 비밀번호 줄의 버튼(수정 권한),
 // 하단은 [닫기] … [삭제][수정][변경 이력]. 탈퇴 BP 는 조회만 된다(상태 변경 · 초기화 · 삭제 · 수정 · 변경 이력 없음, 탈퇴 사유는 [사유 보기]).
 // 화면은 미리 숨기거나 흐리게만 한다 — 막는 것은 api 다.
 
@@ -254,7 +254,7 @@ function DetailBody({
     <div className="flex flex-col gap-[16px]">
       {/* 머리: 첫 줄 상호명, 둘째 줄 「BP 코드 값 | 아이디 값 | 상태 배지」 — 플랫폼 관리자 상세와 같은 모양(2026-10-28 사용자 지정) */}
       {/* 패널을 내려도 머리(상호명 · BP 코드 · 아이디 · 상태)는 위에 고정 — 아래 내용만 스크롤(2026-10-28 사용자 지정).
-          패널(aside)이 스크롤 상자라 sticky 로 붙인다 — sticky 기준선이 패널 안쪽 여백(24) 아래라 top 을 -24 로 당겨야 위 여백 틈으로 내용이 비치지 않는다. 위 · 아래 여백(패널 24 · 칸 간격 16)까지 흰 바탕으로 덮어 지나가는 내용을 가린다 */}
+          패널(aside, common/slide-panel.tsx 의 p-[24px] · gap-[16px])이 스크롤 상자라 sticky 로 붙인다 — 그 여백이 바뀌면 여기 음수 여백도 함께 고친다. sticky 기준선이 패널 안쪽 여백(24) 아래라 top 을 -24 로 당겨야 위 여백 틈으로 내용이 비치지 않는다. 위 · 아래 여백(패널 24 · 칸 간격 16)까지 흰 바탕으로 덮어 지나가는 내용을 가린다 */}
       {/* 라벨 칸을 두 줄이 같이 쓰는 grid — 「상호명」 · 「BP코드」 길이가 달라도 값이 같은 자리에서 시작한다(2026-10-28 사용자 지정, 「BP코드」 붙여 씀) */}
       <div className="sticky -top-[24px] z-[1] -mx-[24px] -mt-[24px] -mb-[16px] grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-[6px] gap-y-[6px] bg-white px-[24px] pt-[24px] pb-[16px] text-[14px]">
         <span className="text-erp-label">상호명</span>

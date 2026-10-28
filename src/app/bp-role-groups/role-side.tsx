@@ -92,7 +92,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
   );
   const recordRows: DetailRow[] = [
     {
-      // 가맹마스터 계정(api manager) — 가맹 관리자 그룹을 만든 가맹 마스터. BP 관리자 그룹은 없어서 「-」(S-LYKAEI). 줄은 늘 둔다.
+      // 가맹마스터 계정(api manager) — 가맹 관리자 그룹을 만든 가맹 마스터. BP 관리자 그룹은 값이 없다(S-LYKAEI). 줄은 늘 둔다.
       // 도움말 i 는 값 칸에 — 라벨 옆에 두면 라벨이 잘렸다. 가맹 관리자 그룹에만 값이 있고, 없으면 「-」 없이 i 만 둔다(2026-10-28 사용자 지정).
       // 값 칸이 넘치면 잘려 도움말 상자는 최상위 레이어에 띄운다(floating)
       label: "가맹마스터 계정",

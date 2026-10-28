@@ -202,11 +202,11 @@ function DetailBody({
       {/* 이름 아랫줄에 「역할 값 | 권한그룹 값 | 상태 배지」 — 공통코드 상세 코드 머리와 같은 모양(2026-10-27 사용자 지정 — 전엔 상태 배지와 「사용자 권한 · 그룹명」 띠지).
           상태는 라벨 없이 배지만. 이름 길이와 상관없이 두 화면이 같은 자리에 선다. 제목(h2)은 이름만 — 값 줄까지 제목 이름으로 읽히지 않게(리뷰로 찾음) */}
       <div className="flex flex-col items-start gap-[6px]">
-        {/* 이름 앞에 14px 회색 라벨 「이름」 — BP 마스터 상세 「상호명」과 같다(2026-10-28 사용자 지정) */}
-        <h2 className="text-[18px] font-semibold text-erp-ink">
-          <span className="mr-[6px] text-[14px] font-normal text-erp-label">이름</span>
-          {name}
-        </h2>
+        {/* 이름 앞에 14px 회색 라벨 「이름」 — BP 마스터 상세 「상호명」과 같다(2026-10-28 사용자 지정). 라벨은 h2 밖에 둬 제목은 이름만 읽힌다 */}
+        <div className="flex items-baseline gap-[6px]">
+          <span className="text-[14px] text-erp-label">이름</span>
+          <h2 className="text-[18px] font-semibold text-erp-ink">{name}</h2>
+        </div>
         <span className="text-[14px]">
           <HeadValues
             items={[
