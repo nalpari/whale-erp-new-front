@@ -7,7 +7,7 @@ import { formatBizNumber } from "@/lib/store-view";
 import { WithIcon } from "../platform-admins/admin-table";
 import { BpStatusBadge, WITHDRAWN_TEXT } from "./bp-master-parts";
 
-// BP 마스터 계정 목록 표(S-ALHCJS). BP 코드 · 상호명을 누르면 상세 패널이 열린다(목업과 같다).
+// BP 마스터 계정 목록 표(S-ALHCJS). BP 코드를 누르면 상세 패널이 열린다(상호명 링크는 2026-10-28 사용자 지정으로 뺐다).
 // 연락처 · 이메일은 열을 나눈다(플랫폼 관리자 목록과 같은 모양, 2026-10-28 사용자 지정 — 전엔 한 칸 두 줄).
 // 사업자등록번호가 빈 줄이 미인증 BP 다. 탈퇴 BP 는 이름 · 연락처 · 이메일이 「탈퇴로 삭제됨」으로 보인다.
 
@@ -43,7 +43,8 @@ export function BpMasterTable({
   // 열 순서는 BP 코드 · 상호명 · 아이디 …, 이름은 플랫폼 관리자 목록 느낌으로(2026-10-28 사용자 지정) — 연락처 · 이메일은 나누고, 등록은 일시만
   const columns: Column<BpMaster>[] = [
     { header: "BP 코드", width: "w-[110px]", cell: (b) => open(b, b.bpCode) },
-    { header: "상호명", align: "left", cell: (b) => open(b, b.tradeName) },
+    // 상호명은 링크 없이 먹색 글자 — 상세는 BP 코드로 연다(2026-10-28 사용자 지정)
+    { header: "상호명", align: "left", cell: (b) => b.tradeName },
     { header: "아이디", width: "w-[130px]", cell: (b) => b.loginId },
     { header: "이름", width: "w-[110px]", cell: (b) => (withdrawn(b) ? gone : b.name) },
     { header: "상태", width: "w-[100px]", cell: (b) => <BpStatusBadge status={b.accountStatus} /> },
