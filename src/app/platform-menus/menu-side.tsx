@@ -358,10 +358,11 @@ function MenuForm(
         onConfirm={save}
         onCancel={() => setConfirmSelfLock(null)}
       >
+        {/* 「다.」만 다음 줄로 넘어가지 않게 「접근할 수 없습니다.」 앞에서 줄을 바꾼다(2026-10-28 사용자 지정) */}
         <p className="text-[14px] leading-[1.6]">
-          {confirmSelfLock === "url"
-            ? "변경 후에는 실제 화면 주소와 달라져 현재 화면에 접근할 수 없습니다."
-            : "변경 후에는 현재 화면이 사용자 메뉴에서 제외되어 접근할 수 없습니다."}
+          {confirmSelfLock === "url" ? "변경 후에는 실제 화면 주소와 달라져 현재 화면에" : "변경 후에는 현재 화면이 사용자 메뉴에서 제외되어"}
+          <br />
+          접근할 수 없습니다.
         </p>
       </ConfirmDialog>
     </form>

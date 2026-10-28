@@ -314,7 +314,12 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
             onConfirm={() => pendingMove && saveMove(pendingMove.menuId, pendingMove.spot, pendingMove.verdict, pendingMove.via)}
             onCancel={() => setPendingMove(null)}
           >
-            <p className="text-[14px] leading-[1.6]">이동 후에는 현재 화면이 사용자 메뉴에서 제외되어 접근할 수 없습니다.</p>
+            {/* 「다.」만 다음 줄로 넘어가지 않게 「접근할 수 없습니다.」 앞에서 줄을 바꾼다(2026-10-28 사용자 지정) */}
+            <p className="text-[14px] leading-[1.6]">
+              이동 후에는 현재 화면이 사용자 메뉴에서 제외되어
+              <br />
+              접근할 수 없습니다.
+            </p>
           </ConfirmDialog>
         </div>
       </div>
