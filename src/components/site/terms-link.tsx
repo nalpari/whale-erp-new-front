@@ -35,11 +35,11 @@ export function TermsLink({ termsTypeCode, children }: { termsTypeCode: string; 
       <button type="button" onClick={handleOpen} className="transition-colors duration-150 ease-out hover:text-erp-ink">
         {children}
       </button>
-      {/* #ebebeb 팝업 테두리·그림자는 DESIGN.md Popups 의 값 */}
+      {/* #ebebeb 팝업 테두리·그림자는 DESIGN.md Popups 의 값. 폭 720 — 640 이면 수집·이용 표의 보유 기간 칸이 접혔다(2026-10-28 사용자 지정) */}
       <dialog
         ref={ref}
         aria-label={terms?.title ?? "약관 전문"}
-        className="m-auto w-[640px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
+        className="m-auto w-[720px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
       >
         {terms ? (
           <>

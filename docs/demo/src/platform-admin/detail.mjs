@@ -51,7 +51,7 @@ function platformAdminDetailBody(A, R) {
       { header: "변경 후", align: "left" },
     ],
     [
-      ["2026-08-12 09:40", "platkim", "초기 비밀번호", "", `초기화 메일 발송 완료 ${muted("· 값은 남기지 않음")}`],
+      ["2026-08-12 09:40", "platkim", "초기화 비밀번호", "", `초기화 메일 발송 완료 ${muted("· 값은 남기지 않음")}`],
       ["2026-03-02 14:20", "platkim", "직책", "사원", "매니저"],
       ["2025-07-01 09:30", "platjung", "사용자 권한", `플랫폼 관리자 ${muted("PA000001")}`, `고객지원 담당 ${muted("PA000002")}`],
       ["2025-06-02 10:11", "platjung", "계정", "", `사용 · 플랫폼 관리자 ${muted("PA000001")}`],
@@ -62,14 +62,14 @@ function platformAdminDetailBody(A, R) {
   const resetDialog = x.dialog(
     resetId,
     "비밀번호를 초기화하시겠습니까?",
-    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>임시 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.<br>임시 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.<br>현재 로그인 중인 세션은 유지됩니다.</p></div>`,
+    `<div class="flex flex-col gap-[12px] break-keep">${kv([["아이디", "platpark"], ["이름", "박지우"], ["이메일", "jiwoo.park@whale-erp.example"]])}<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">비밀번호 초기화 시 새로운 비밀번호가 등록된 이메일로 발송됩니다.<br>새 비밀번호는 1시간 동안 유효하며, 로그인 시 변경해야 합니다.<br>기존 비밀번호는 즉시 사용할 수 없게 됩니다.</div></div>` /* 세 관리 화면 같은 문구(앱과 같다, 2026-10-28) */,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("초기화", { "data-close": true }),
     "w-[480px]",
   );
   const deleteDialog = x.dialog(
     deleteId,
     "관리자 계정을 삭제하시겠습니까?",
-    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p>삭제한 계정은 관리자 목록 및 검색 결과에서 제외되며, 해당 계정으로 더 이상 로그인할 수 없습니다.</p><p>삭제한 계정은 복구할 수 없습니다.</p></div></div>` /* 빨간 안내 상자 · 굵은 글씨 없음(앱과 같다, 2026-10-27) */,
+    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p>삭제한 계정은 관리자 목록 및 검색 결과에서 제외되며, 해당 계정으로 더 이상 로그인할 수 없습니다.</p></div></div>` /* 빨간 안내 상자 · 굵은 글씨 없음(앱과 같다, 2026-10-27) */,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "system/admins.html") }),
   );
 
