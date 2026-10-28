@@ -5,6 +5,7 @@ import { useId, useLayoutEffect, useRef, useState, useTransition, type ReactNode
 import { Button, Checkbox, ConfirmDialog, Field, FormGroup, FormRow, RequiredMark, SlidePanel, Tag, TextField } from "@/components/common";
 import { AddressField } from "@/components/address-field";
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
+import { InfoBand } from "@/components/site/side-parts";
 import {
   bpMasterServerErrorField,
   emailError,
@@ -335,8 +336,8 @@ export function BpMasterFormPanel(props: Props) {
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}
 
       <FormGroup title="기본정보">
-        {/* 계정상태 칸 대신 안내 한 줄만 — 상태는 제목 줄 배지. 기본정보 맨 위, 이름 위에 둔다(2026-10-28 사용자 지정) */}
-        {props.mode === "edit" && <Note>계정상태는 상세화면의 [BP상태변경]에서 변경할 수 있습니다.</Note>}
+        {/* 계정상태 칸 대신 안내 한 줄만 — 상태는 제목 줄 배지. 기본정보 맨 위, 이름 위에 안내 상자로 둔다 — 회색 작은 글씨는 잘 안 보였다(2026-10-28 사용자 지정) */}
+        {props.mode === "edit" && <InfoBand>계정상태는 상세화면의 [BP상태변경]에서 변경할 수 있습니다.</InfoBand>}
         {props.mode === "create" ? (
           <Stack>
             <Field label="아이디" required>
