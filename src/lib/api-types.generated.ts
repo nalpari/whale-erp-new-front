@@ -5945,6 +5945,20 @@ export interface components {
             /** @description 10분짜리 토큰. 등록 · 수정 저장에 실어야 반영된다. */
             verificationToken: string;
         };
+        BpMasterWithdrawalResponseDto: {
+            /**
+             * Format: date-time
+             * @description 탈퇴 일시 — 탈퇴로 BP 마스터 계정 상태가 바뀐 시각.
+             */
+            withdrawnAt: string | null;
+            /**
+             * @description 탈퇴 사유 한글(공통코드 WITHDRAW_REASON). 표에 없는 코드는 코드 그대로.
+             * @example 폐업·사업 종료
+             */
+            reasonLabel: string | null;
+            /** @description 직접 입력한 사유. 직접입력이 아니면 null. */
+            reasonDetail: string | null;
+        };
         BpMasterDeletionResponseDto: {
             /** @description 지금 지울 수 있는가 */
             isDeletable: boolean;
@@ -5962,6 +5976,8 @@ export interface components {
              * @enum {string}
              */
             joinPath: "SIGNUP" | "PLATFORM_REGISTERED";
+            /** @description 탈퇴 정보 — 탈퇴한 BP 만, 아니면 null. 화면 「사유 보기」 팝업이 쓴다. */
+            withdrawal: components["schemas"]["BpMasterWithdrawalResponseDto"] | null;
             bpCodeId: number;
             /**
              * @description BP 코드.

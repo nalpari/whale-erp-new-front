@@ -9,7 +9,8 @@ import { FailedBand } from "../platform-admins/admin-parts";
 import { getBpMasterHistoriesAction } from "./actions";
 
 // 변경 이력 팝업(S-GZDODB · BP-6). 상세 하단 [변경 이력]으로 열고, BP 정보와 BP 마스터 계정 이력을 한 표로 최신순 · 한 쪽 10건 보인다.
-// 사유는 받지 않는다 — 비고(note)는 탈퇴 줄의 탈퇴 사유와 사업자 번호 인증 줄에만 붙는다. 비밀번호 초기화도 계정 이력 한 줄(비밀번호 → 초기화)로 보인다.
+// 사유는 받지 않는다 — 비고(note)는 사업자 번호 인증 줄에 붙는다. 비밀번호 초기화도 계정 이력 한 줄(비밀번호 → 초기화)로 보인다.
+// 탈퇴 BP 는 이 팝업을 열지 않는다(api 409, WHALEERP-625) — 탈퇴 사유는 withdrawal-dialog.tsx 가 보인다.
 // 플랫폼 관리자 이력 팝업(platform-admins/history-dialog.tsx)과 같은 네이티브 <dialog> 다.
 
 const COLUMNS: Column<BpMasterHistory>[] = [
@@ -109,7 +110,7 @@ export function HistoryButton({ bpCodeId, panelOpen }: { bpCodeId: number; /** �
             </div>
           )}
           <p className="text-[13px] leading-[1.6] text-erp-label">
-            변경 사유는 받지 않습니다. 탈퇴 줄에는 회원 탈퇴 때 받은 사유가 붙습니다.
+            변경 사유는 받지 않습니다.
           </p>
         </div>
         <div className="mt-[24px] flex justify-end">
