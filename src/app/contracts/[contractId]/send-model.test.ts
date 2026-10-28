@@ -2,7 +2,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { redirect, unstable_rethrow } from "next/navigation.js";
-import { callSave, END_UNKNOWN, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, resendDialogCopy, sendFailureOf, sendNoticeOf, signingResendCopy, canShowResend, sendBodyOf } from "./send-model.ts";
+import { ApiError } from "../../../lib/api-error.ts";
+import { callSave, deleteFailureOf, END_UNKNOWN, saveFailureOf, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, resendDialogCopy, sendFailureOf, sendNoticeOf, signingResendCopy, canShowResend, sendBodyOf } from "./send-model.ts";
 
 test("sendFailureOf — 접수 여부 모름은 보내기를 막고 상세를 다시 읽는다", () => {
   assert.deepEqual(sendFailureOf(502, "SEND_UNCONFIRMED", "알림톡이 접수됐는지 알 수 없습니다"), {
@@ -183,4 +184,70 @@ test("재발송 본문은 화면이 본 상태를 싣는다 — 모르면 비운
   // 서버 액션을 직접 불러 모양이 다른 값을 넘겨도 터지지 않고 싣지 않는다
   assert.deepEqual(sendBodyOf(null), {});
   assert.deepEqual(sendBodyOf({ status: 7, sentAt: {} } as unknown as Parameters<typeof sendBodyOf>[0]), {});
+});
+
+// 로그는 failureOf 가 남긴다 — 테스트 출력을 어지럽히지 않게 막고 센다
+function quiet<T>(fn: () => T): T {
+  const original = console.error;
+  console.error = () => {};
+  try {
+    return fn();
+  } finally {
+    console.error = original;
+  }
+}
+const log = { feature: "근로계약", contractId: 1 };
+
+test("saveFailureOf — 401 은 로그인 필요", () => {
+  assert.deepEqual(saveFailureOf(new ApiError(401, "Unauthorized"), log), { kind: "login" });
+});
+
+test("saveFailureOf — 저장은 됐고 보내기만 실패(502 + 코드 + 계약 ID)는 그 상세로", () => {
+  const e = new ApiError(502, "알림톡 실패", ["알림톡 실패"], { code: "SEND_FAILED", contractId: 7 });
+  assert.deepEqual(saveFailureOf(e, log), { kind: "sendFailed", target: "/contracts/7?send=failed" });
+});
+
+test("saveFailureOf — 코드 없는 502 · 504 · 500 과 코드 있는 5xx 는 모두 결과 모름(커밋 뒤 발송 단계 실패일 수 있다)", () => {
+  for (const e of [
+    new ApiError(504, "Gateway Timeout"),
+    new ApiError(502, "Bad Gateway"),
+    new ApiError(500, "boom"),
+    new ApiError(502, "x", ["x"], { code: "OTHER" }),
+    // 상세로 보낼 계약 ID 가 없으면 보내기 실패도 결과 모름이다
+    new ApiError(502, "x", ["x"], { code: "SEND_FAILED" }),
+    new ApiError(502, "x", ["x"], { code: "SEND_UNCONFIRMED", contractId: "7" }),
+  ])
+    assert.deepEqual(quiet(() => saveFailureOf(e, log)), { kind: "unknown" });
+});
+
+test("saveFailureOf — api 의 503(Nest 본문, 설정 · 템플릿 문제 — 저장 전 실패)은 api 문장 그대로 보이고 잠그지 않는다", () => {
+  const message = "가입 초대 알림톡 템플릿이 없거나 꺼져 있어 보낼 수 없습니다";
+  const body = { statusCode: 503, message, error: "Service Unavailable" };
+  assert.deepEqual(quiet(() => saveFailureOf(new ApiError(503, message, [message], body), log)), { kind: "error", error: message });
+});
+
+test("saveFailureOf — 본문 없는 503 · HTML 503 · 문구가 빈 503(프록시 · 로드밸런서)은 결과 모름", () => {
+  for (const e of [
+    new ApiError(503, "요청이 실패했습니다 (HTTP 503)"),
+    new ApiError(503, "요청이 실패했습니다 (HTTP 503)", undefined, null),
+    new ApiError(503, "x", ["x"], { statusCode: 503, message: "" }),
+    new ApiError(503, "x", ["x"], { message: "Service Unavailable" }),
+  ])
+    assert.deepEqual(quiet(() => saveFailureOf(e, log)), { kind: "unknown" });
+});
+
+test("saveFailureOf — 409 + 진행 중 계약이면 api 문구와 목록, 400 은 api 문구", () => {
+  const body = { code: "CONTRACT_IN_PROGRESS", contracts: [{ contractId: 5, status: "SIGNED", name: "남도현" }] };
+  const r = saveFailureOf(new ApiError(409, "진행 중인 계약이 있습니다", ["진행 중인 계약이 있습니다"], body), log);
+  assert.equal(r.kind, "error");
+  assert.equal(r.kind === "error" && r.error, "진행 중인 계약이 있습니다");
+  assert.equal(r.kind === "error" && r.inProgress?.[0].contractId, 5);
+  assert.deepEqual(saveFailureOf(new ApiError(400, "만 19세 미만입니다"), log), { kind: "error", error: "만 19세 미만입니다" });
+});
+
+test("deleteFailureOf — 401 · 결과 모름 · 확정 실패 · 4xx", () => {
+  assert.equal(deleteFailureOf(new ApiError(401, "x"), log), "로그인이 필요합니다");
+  assert.match(quiet(() => deleteFailureOf(new ApiError(504, "x"), log)), /^삭제 결과를 확인하지 못했습니다\. 목록이나 상세에서 다시 확인해 주세요\.$/);
+  assert.equal(quiet(() => deleteFailureOf(new ApiError(500, "x"), log)), "삭제하지 못했습니다. 잠시 뒤 다시 시도해 주세요.");
+  assert.equal(deleteFailureOf(new ApiError(409, "임시저장이 아닙니다"), log), "임시저장이 아닙니다");
 });

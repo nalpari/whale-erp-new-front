@@ -32,7 +32,8 @@ export function AdminTable({
       aria-controls="bp-admin-detail-panel"
       aria-expanded={selected === a.adminAccountId}
       onClick={(e) => onOpen(a.adminAccountId, e.currentTarget)}
-      className={`max-w-full truncate hover:underline ${inactive(a) ? "text-erp-muted" : "text-erp-link"}`}
+      // 미사용 계정도 이름 링크는 파란색 — 눌러서 상세를 여는 링크로 보이게(2026-10-28 사용자 지정, 플랫폼 관리자 목록과 같다 · 전엔 회색)
+      className="max-w-full truncate text-erp-link hover:underline"
     >
       {text}
     </button>

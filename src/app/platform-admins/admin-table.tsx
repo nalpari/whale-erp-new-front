@@ -67,7 +67,8 @@ export function AdminTable({
       aria-controls="platform-admin-detail-panel"
       aria-expanded={selected === a.adminAccountId}
       onClick={(e) => onOpen(a.adminAccountId, e.currentTarget)}
-      className={`max-w-full truncate hover:underline ${a.accountStatus === "INACTIVE" ? "text-erp-muted" : "text-erp-link"}`}
+      // 미사용 계정도 이름 링크는 파란색 — 눌러서 상세를 여는 링크로 보이게(2026-10-28 사용자 지정, BP 마스터 목록 상호명 링크와 같다 · 전엔 회색)
+      className="max-w-full truncate text-erp-link hover:underline"
     >
       {text}
     </button>
@@ -76,12 +77,13 @@ export function AdminTable({
   const columns: Column<PlatformAdmin>[] = [
     { header: "아이디", width: "w-[130px]", cell: (a) => dim(a, a.loginId) },
     { header: "이름", width: "w-[110px]", cell: (a) => open(a, a.name ?? a.loginId) },
-    { header: "권한명", width: "w-[150px]", cell: (a) => dim(a, a.roleGroup.name) },
+    // 이름 다음에 계정상태 → 권한명(2026-10-28 사용자 지정 — 전엔 권한명 → 계정상태)
     {
       header: "계정상태",
       width: "w-[100px]",
       cell: (a) => (a.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge>),
     },
+    { header: "권한명", width: "w-[150px]", cell: (a) => dim(a, a.roleGroup.name) },
     { header: "연락처", width: "w-[150px]", align: "left", cell: (a) => (a.phone ? dim(a, <WithIcon icon="phone">{formatPhone(a.phone)}</WithIcon>) : "") },
     { header: "이메일", width: "w-[220px]", align: "left", cell: (a) => (a.email ? dim(a, <WithIcon icon="mail">{a.email}</WithIcon>) : "") },
     {

@@ -12,11 +12,12 @@ export function bpEditBody(A, R, { panel = false } = {}) {
 
   const basic = ui.formGroup(
     "BP 마스터 기본정보",
-    // BP 코드 · 가입경로는 빼고 아이디만 둔다(2026-10-08)
-    ui.field("아이디", ui.textField({ value: "hangang01", disabled: true })),
+    // 아이디 · 가입경로 칸은 두지 않는다 — 바꿀 수 없는 값이라 상세에서 본다(앱 bp-master-form-panel.tsx, 2026-10-28 사용자 지정)
     ui.field(f.req("이름"), ui.textField({ value: "정하윤" })),
     f.group(f.req("연락처"), f.tel("010", "4821", "7730")),
     ui.field(f.req("이메일"), ui.textField({ value: "hayoon@hangang.co.kr" })),
+    // 계정상태는 보여 주기만 한다 — 바꾸는 곳은 상세의 [BP 상태 변경](2026-10-28)
+    `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">계정상태</span><span class="flex items-center gap-[6px] text-[14px]">${ui.badge("on", "사용")}</span>${f.help("계정상태는 상세의 [BP 상태 변경]에서 바꿉니다.")}</div>`,
   );
 
   const biz = ui.formGroup(

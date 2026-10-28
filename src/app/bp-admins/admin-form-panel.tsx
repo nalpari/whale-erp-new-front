@@ -31,7 +31,8 @@ import type {
   BpAdminUpdateImpact,
   UpdateBpAdminInput,
 } from "@/lib/bp-admins";
-import { loginIdError } from "@/lib/platform-admin-form";
+import { loginIdError, type LoginIdCheck } from "@/lib/platform-admin-form";
+import { EmailAvailability, LoginIdAvailability } from "@/app/platform-admins/admin-parts";
 import type { StoreStatus } from "@/lib/store-types";
 import {
   checkBpAdminEmailAction,
@@ -54,9 +55,10 @@ import { unknownResult } from "./bp-admin-parts";
 /** 동시 수정 409 문구(작업 지시서). 이때만 최신 정보를 다시 불러온다. */
 const STALE = "먼저 바꿨습니다";
 /** 중복 확인에서 쓸 수 없다고 온 아이디의 문구 */
-const LOGIN_ID_TAKEN = "이미 사용 중인 아이디입니다. 지우거나 탈퇴한 계정의 아이디도 다시 쓸 수 없습니다.";
+// 관리자 등록 세 화면(플랫폼 · BP 관리자 · BP 마스터)이 같은 문구 — 탈퇴 · 삭제 계정 아이디 안내는 길어 뺐다(2026-10-28 사용자 지정)
+const LOGIN_ID_TAKEN = "이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.";
 /** 중복 확인에서 쓸 수 없다고 온 이메일의 문구 */
-const EMAIL_TAKEN = "이미 사용 중인 이메일입니다.";
+const EMAIL_TAKEN = "이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요."; // 네 화면 같은 문구(2026-10-28 사용자 지정)
 
 type Props = {
   id: string;
@@ -96,6 +98,13 @@ export function AdminFormPanel(props: Props) {
   const [form, setForm] = useState<BpAdminForm>(initialForm);
   const [errors, setErrors] = useState<Partial<Record<BpAdminFormField, string>>>({});
   const [failure, setFailure] = useState<string | null>(null);
+  /**
+   * 아이디 중복확인 대기 · 성공 · 실패 상태(platform-admins 와 같다). 오류는 errors.loginId 에 두고, 오류를 달 때는 "idle" 로 내린다.
+   * 플랫폼 관리자 등록과 같은 문구를 칸 아래에 보인다(2026-10-28 사용자 지정).
+   */
+  const [loginIdCheck, setLoginIdCheck] = useState<LoginIdCheck>("idle");
+  /** 이메일 중복확인 대기 · 성공 · 실패 상태 — 아이디와 같다. 오류는 errors.email 에 둔다(2026-10-28 사용자 지정) */
+  const [emailCheck, setEmailCheck] = useState<LoginIdCheck>("idle");
   /** 칸을 되돌릴 때마다 올라간다 — 아래 layout effect 가 이 값을 보고 중복 확인 차례(ref)를 올린다(platform-admins 와 같다) */
   const [resetSignal, setResetSignal] = useState(0);
 
@@ -111,6 +120,9 @@ export function AdminFormPanel(props: Props) {
       setForm(initialForm());
       setErrors({});
       if (reopened) setFailure(null);
+      // 되돌린 빈 칸에 이전에 확인했던 "사용가능합니다."가 남지 않게 아이디 · 이메일 확인 표시도 내린다
+      setLoginIdCheck("idle");
+      setEmailCheck("idle");
       // 닫는 사이 떠 있던 중복 확인이 늦게 와 되돌린 칸에 옛 결과를 칠하지 않게 차례를 올린다 — ref 는 그리는 중에 건드릴 수 없어
       // (react-hooks/refs) 아래 layout effect 가 올린다(platform-admins 4f17a7c3 와 같다)
       setResetSignal((n) => n + 1);
@@ -220,6 +232,17 @@ export function AdminFormPanel(props: Props) {
     // 보낸 뒤 고친 칸의 거절이면 지금 값에 붙이지 않고 띠로만 알린다. 점포 칸이 숨어 있으면(전체 점포 · 본인 계정) 붙여도 안 보이므로 띠로
     // 범위는 저장을 누른 때의 값이라, 그 뒤 범위를 바꿨으면(editedWhileSaving) 지금 점포 칸이 숨었을 수 있다
     const hidden = field === "stores" && (form.isAllStores || locks.stores || editedWhileSaving.current.has("isAllStores" as BpAdminFormField));
+    // 아이디가 거절됐거나 칸을 가를 수 없는 거절(띠)이면 아이디의 "사용가능합니다."를 내리고 떠 있던 확인 답도 버린다(platform-admins 와 같다).
+    // 보낸 뒤 고친 아이디의 거절이면 고친 값은 따로 확인되므로 그대로 둔다.
+    if ((!field || field === "loginId") && !editedWhileSaving.current.has("loginId")) {
+      checkNumber.current.loginId++;
+      setLoginIdCheck("idle");
+    }
+    // 이메일도 같다(2026-10-28 사용자 지정)
+    if ((!field || field === "email") && !editedWhileSaving.current.has("email")) {
+      checkNumber.current.email++;
+      setEmailCheck("idle");
+    }
     if (!field || hidden || editedWhileSaving.current.has(field)) return setFailure(text);
     setErrors((e) => ({ ...e, [field]: text }));
     focusFirstError();
@@ -228,6 +251,8 @@ export function AdminFormPanel(props: Props) {
   /**
    * 아이디 · 이메일 중복 확인(등록만) — 칸을 벗어나거나 Enter 를 칠 때, 두 칸 모두 같은 때에 묻는다(2026-10-26 사용자 요청).
    * 형식이 틀리면 api 에 묻지 않는다. 그 밖의 실패(403 · 404 · 5xx)는 칸에 달지 않고 넘어간다 — 저장할 때 api 가 다시 본다.
+   * 아이디는 묻는 동안 · 쓸 수 있을 때 · 확인하지 못했을 때를 칸 아래에 플랫폼 관리자 등록과 같은 문구로 보인다(LoginIdAvailability,
+   * 2026-10-28 사용자 지정). 이메일도 같은 세 상태를 이메일 문구로 보인다(EmailAvailability, 2026-10-28 사용자 지정).
    */
   const CHECKS = {
     loginId: { formatError: loginIdError, ask: checkBpAdminLoginIdAction, taken: LOGIN_ID_TAKEN, value: (v: string) => v.trim() },
@@ -236,23 +261,36 @@ export function AdminFormPanel(props: Props) {
   const checkAvailable = (field: "loginId" | "email", raw: string) => {
     if (mode !== "create" || !raw.trim()) return;
     const check = CHECKS[field];
+    const setCheck = field === "loginId" ? setLoginIdCheck : setEmailCheck;
     const formatError = check.formatError(raw);
     if (formatError) {
       setErrors((e) => ({ ...e, [field]: formatError }));
+      setCheck("idle");
       return;
     }
     const mine = ++checkNumber.current[field];
+    // 같은 값을 다시 물을 때(Enter 재확인 등)도 앞서 달렸던 오류를 지운다 — 안 그러면 묻는 동안 확인 중 문구 대신 옛 오류가 보인다
+    clearError(field);
+    setCheck("checking");
     check
       .ask(check.value(raw))
       .then((result) => {
         if (mine !== checkNumber.current[field]) return;
         if (result.ok) {
           if (!result.available) setErrors((e) => ({ ...e, [field]: check.taken }));
-        } else if (result.status === 400) setErrors((e) => ({ ...e, [field]: result.message }));
+          setCheck(result.available ? "available" : "idle");
+          return;
+        }
+        setCheck(result.status === 400 || result.status === 401 ? "idle" : "failed");
+        if (result.status === 400) setErrors((e) => ({ ...e, [field]: result.message }));
         else if (result.status === 401) setFailure(result.message);
         else console.warn(`${field} 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다`, result.status, result.message);
       })
-      .catch((error: unknown) => console.warn(`${field} 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다`, error));
+      .catch((error: unknown) => {
+        if (mine !== checkNumber.current[field]) return;
+        setCheck("failed");
+        console.warn(`${field} 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다`, error);
+      });
   };
   /** Enter 로 중복을 묻는다 — 한글 조합 중 Enter 는 글자 확정이라 넘긴다 */
   const isEnter = (e: KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && !e.nativeEvent.isComposing;
@@ -272,6 +310,8 @@ export function AdminFormPanel(props: Props) {
   const handleSave = () => {
     const found = validateBpAdminForm(form, { mode, outOfScopeCount: outOfScope.length, storesLocked: locks.stores });
     setErrors(found);
+    if (found.loginId) setLoginIdCheck("idle");
+    if (found.email) setEmailCheck("idle");
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();
 
@@ -370,11 +410,12 @@ export function AdminFormPanel(props: Props) {
       <div className="flex flex-col gap-[24px] [&_select:disabled]:bg-erp-thead-bg">
         <FormGroup title="기본정보">
           {mode === "create" ? (
-            <Labeled label="아이디" required message={message("loginId")}>
+            <Labeled label="아이디" required message={<LoginIdAvailability id={messageId("loginId")} check={loginIdCheck} message={errors.loginId} />}>
               <TextField
                 value={form.loginId}
                 onChange={(e) => {
                   checkNumber.current.loginId++;
+                  setLoginIdCheck("idle");
                   set("loginId", e.target.value);
                 }}
                 onBlur={(e) => checkAvailable("loginId", e.currentTarget.value)}
@@ -386,7 +427,8 @@ export function AdminFormPanel(props: Props) {
                 maxLength={20}
                 placeholder="영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요."
                 aria-invalid={invalid("loginId")}
-                aria-describedby={describe("loginId")}
+                aria-describedby={describe("loginId") ?? (loginIdCheck !== "idle" ? messageId("loginId") : undefined)}
+                aria-busy={loginIdCheck === "checking" || undefined}
                 aria-required
                 autoComplete="off"
               />
@@ -425,12 +467,13 @@ export function AdminFormPanel(props: Props) {
             </FormRow>
             {message("phone")}
           </Group>
-          <Labeled label="이메일" required message={message("email")}>
+          <Labeled label="이메일" required message={<EmailAvailability id={messageId("email")} check={emailCheck} message={errors.email} />}>
             <TextField
               type="email"
               value={form.email}
               onChange={(e) => {
                 checkNumber.current.email++;
+                setEmailCheck("idle");
                 set("email", e.target.value);
               }}
               onBlur={(e) => checkAvailable("email", e.currentTarget.value)}
@@ -441,7 +484,8 @@ export function AdminFormPanel(props: Props) {
               }}
               maxLength={100}
               aria-invalid={invalid("email")}
-              aria-describedby={describe("email")}
+              aria-describedby={describe("email") ?? (emailCheck !== "idle" ? messageId("email") : undefined)}
+              aria-busy={emailCheck === "checking" || undefined}
               aria-required
             />
           </Labeled>
@@ -612,7 +656,7 @@ export function AdminFormPanel(props: Props) {
       </div>
 
       {/* 안내 문구는 플랫폼 관리자 등록 · 수정과 같다(2026-10-27 사용자 지정) */}
-      {mode === "create" && <Note>관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.</Note>}
+      {mode === "create" && <Note>초기 비밀번호는 등록한 이메일로 발송됩니다.</Note>}
       {mode === "edit" && form.accountStatus === "INACTIVE" && props.admin.accountStatus === "ACTIVE" && (
         <Note>
           미사용으로 변경하면 해당 계정의 로그인 및 서비스 접근이 즉시 차단됩니다.

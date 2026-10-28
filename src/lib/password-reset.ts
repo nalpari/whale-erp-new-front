@@ -60,14 +60,3 @@ export function resetFailureMessage(failure: { status?: number; message: string 
  * 확인창도 내려가므로, 확인창은 문구를 토스트로 알리고 닫은 뒤 다시 받는다.
  */
 export const refreshesAfterReset = (failure: { status?: number }) => failure.status === 409;
-
-/**
- * 503 이 api 가 보내지 않았다고 알린 것인가 — 링크 주소 · 발송기가 없거나 발송에 실패하면 api 가 Nest 본문({ statusCode: 503, message })
- * 으로 답하고, 앞서 보낸 링크는 그대로다. 프록시 · 로드밸런서의 503(본문 없음 · HTML)은 api 에 닿았는지 몰라 결과 모름으로 둔다.
- * 문구가 비었으면 확인창에 보일 것이 없어 결과 모름으로 둔다.
- */
-export function isApiSendRefusal(status: number, body: unknown): boolean {
-  if (status !== 503 || typeof body !== "object" || body === null) return false;
-  const { statusCode, message } = body as { statusCode?: unknown; message?: unknown };
-  return statusCode === 503 && typeof message === "string" && message !== "";
-}

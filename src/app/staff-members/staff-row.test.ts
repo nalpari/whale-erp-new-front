@@ -15,14 +15,14 @@ const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => (
   joinState: "JOINED",
   invitation: null,
   linkHold: null,
-  contract: { contractId: 1, status: "SIGNED", signDeadlineAt: null, lastSentAt: null, endDate: null, updatedAt: null, workDays: null },
+  contract: { contractId: 1, status: "SIGNED", signDeadlineAt: null, lastSentAt: null, endDate: null, updatedAt: null, canResend: false, workDays: null },
   employmentStatus: "EMPLOYED",
   retiredDate: null,
   ...over,
 });
 const contract = (status: NonNullable<StaffMemberListItem["contract"]>["status"], over = {}) => ({
   // workDays 는 api #171 이 더한 대표 계약의 근무 요일(조회 권한이 없으면 null) — 이 테스트는 쓰지 않는다
-  contract: { contractId: 1, status, signDeadlineAt: null, lastSentAt: null, endDate: null, updatedAt: null, workDays: null, ...over },
+  contract: { contractId: 1, status, signDeadlineAt: null, lastSentAt: null, endDate: null, updatedAt: null, canResend: false, workDays: null, ...over },
 });
 
 test("번호는 3-4-4, 10자리는 3-3-4", () => {

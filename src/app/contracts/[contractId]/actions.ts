@@ -1,11 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { ApiError, authHeaders, request } from "@/lib/api";
+import { actionFailure, ApiError, authHeaders, send } from "@/lib/api";
 import type { components } from "@/lib/api-types.generated";
 import { listAfterSave, withBack } from "../contract-list";
-import { inProgressOf, type SaveResult } from "../new/contract-form-model";
-import { END_UNKNOWN, saveOutcomeUnknown, sendBodyOf, sendFailedTarget, sendFailureOf, type SeenContract, type SendFailure } from "./send-model";
+import { type SaveResult } from "../new/contract-form-model";
+import { END_UNKNOWN, deleteFailureOf, saveFailureOf, sendBodyOf, sendFailureOf, type SeenContract, type SendFailure } from "./send-model";
 import type { WorkerBody } from "./worker/worker-model";
 
 // 경로에 넣는 id — 1..2147483647 정수만. 서버 액션은 누구나 직접 부를 수 있어 TS 타입이 막아 주지 않는다.
@@ -21,13 +21,10 @@ export async function deleteContract(contractId: number, back?: string): Promise
   const headers = await authHeaders();
   if (!headers.Authorization) return { error: "로그인이 필요합니다" };
   try {
-    await request(`/contracts/${contractId}`, {
-      method: "DELETE",
-      headers,
-    });
+    await send(`/contracts/${contractId}`, "DELETE");
   } catch (e) {
-    if (e instanceof ApiError) return { error: e.status === 401 ? "로그인이 필요합니다" : e.message };
-    throw e;
+    if (e instanceof ApiError) return { error: deleteFailureOf(e, { feature: "근로계약", contractId }) };
+    return { error: actionFailure(e, "삭제", { feature: "근로계약", contractId }).message };
   }
   redirect(listAfterSave(back, null));
 }
@@ -41,22 +38,17 @@ export async function updateWorker(contractId: number, body: WorkerBody, back?: 
   const headers = await authHeaders();
   if (!headers.Authorization) return { error: "로그인이 필요합니다" };
   try {
-    await request(`/contracts/${contractId}/worker`, {
-      method: "PATCH",
-      headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    await send(`/contracts/${contractId}/worker`, "PATCH", body);
   } catch (e) {
     if (e instanceof ApiError) {
-      if (e.status === 401) return { error: "로그인이 필요합니다" };
+      const failure = saveFailureOf(e, { feature: "근로계약 당사자 정보", contractId });
+      if (failure.kind === "login") return { error: "로그인이 필요합니다" };
       // 고친 내용은 저장했는데 다시 보내기(가입 초대 알림톡)가 실패했다 — 상세에서 알린다
-      const sendFailed = sendFailedTarget(e.status, e.body);
-      if (sendFailed) redirect(withBack(sendFailed, back));
-      // 결과를 받지 못했다(코드 없는 502 · 504) — 저장 · 다시 보내기가 됐을 수 있어 같은 폼으로 다시 저장하지 않게 상세로(front #50 리뷰)
-      const code = (e.body as { code?: unknown } | null)?.code;
-      if (saveOutcomeUnknown(e.status, typeof code === "string" ? code : undefined)) redirect(withBack(`/contracts/${contractId}?send=unknown`, back));
-      const inProgress = e.status === 409 ? inProgressOf(e.body) : undefined;
-      return inProgress ? { error: e.message, inProgress } : { error: e.message };
+      if (failure.kind === "sendFailed") redirect(withBack(failure.target, back));
+      // 결과를 받지 못했다(saveFailureOf 의 unknown — api 의 503 이 아닌 5xx 전부) — 저장 · 다시 보내기가 됐을 수 있어 같은 폼으로 다시 저장하지 않게 상세로(front #50 리뷰)
+      if (failure.kind === "unknown") redirect(withBack(`/contracts/${contractId}?send=unknown`, back));
+      // 새 번호로 같은 점포에 진행 중 계약이 있으면(409) 목록도 돌려준다
+      return failure.inProgress ? { error: failure.error, inProgress: failure.inProgress } : { error: failure.error };
     }
     console.error("당사자 정보 저장 응답을 받지 못함", contractId, e);
     redirect(withBack(`/contracts/${contractId}?send=unknown`, back));
@@ -72,7 +64,8 @@ export type SendContractResult = { ok: true } | SendFailure;
 /**
  * 근로계약 발송 · 재발송(WHALEERP-136). 계정이 없는 직원에게는 가입 초대 알림톡, 가입한 직원에게는 앱 알림(알림함 · 푸시 대기 —
  * 푸시는 #261 · #321 뒤. 받을 계정이 없거나 탈퇴면 알림 없이 기한만 새로, api NTF-25)을 보내고 서명 대기로 둔다
- * (WHALEERP-611). 소속 추가 확인 · 복귀 확인(계정 있음 · 이 점포 미가입)은 api 가 409 SEND_CHANNEL_NOT_READY 로 막는다.
+ * (WHALEERP-611). 소속 추가 확인 · 복귀 확인(계정 있음 · 이 점포 미가입)은 api 가 소속 추가 확인 요청을 보내고 발송 대기로 둔다
+ * (api #164, WHALEERP-130).
  * 화면이 본 계약 상태 · 발송 시각(expectedStatus · expectedSentAt)을 함께 보낸다 — 그사이 바뀌었으면(거부 · 만료 · 다른 탭에서 먼저 보냄) api 가 409
  * CONTRACT_STATUS_CONFLICT 로 막아 화면이 다시 읽는다(front #136 재리뷰).
  */
@@ -81,11 +74,7 @@ export async function sendContract(contractId: number, seen: SeenContract): Prom
   const headers = await authHeaders();
   if (!headers.Authorization) return { ok: false, error: "로그인이 필요합니다", recheck: false };
   try {
-    await request(`/contracts/${contractId}/send`, {
-      method: "POST",
-      headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify(sendBodyOf(seen)),
-    });
+    await send(`/contracts/${contractId}/send`, "POST", sendBodyOf(seen));
   } catch (e) {
     if (e instanceof ApiError) {
       if (e.status === 401) return { ok: false, error: "로그인이 필요합니다", recheck: false };
@@ -113,7 +102,7 @@ export async function endContract(contractId: number): Promise<EndContractResult
   const headers = await authHeaders();
   if (!headers.Authorization) return { ok: false, error: "로그인이 필요합니다", recheck: false };
   try {
-    await request(`/contracts/${contractId}/end`, { method: "POST", headers });
+    await send(`/contracts/${contractId}/end`, "POST");
   } catch (e) {
     if (e instanceof ApiError) {
       if (e.status === 401) return { ok: false, error: "로그인이 필요합니다", recheck: false };
