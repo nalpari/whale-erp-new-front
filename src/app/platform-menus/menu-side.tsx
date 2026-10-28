@@ -351,17 +351,21 @@ function MenuForm(
       </div>
       <ConfirmDialog
         open={confirmSelfLock !== null}
-        title="이 화면이 닫힙니다"
-        confirmLabel={confirmSelfLock === "url" ? "URL 바꿔 저장" : "미사용으로 저장"}
+        // 트리에서 미사용 메뉴 아래로 옮길 때의 확인창과 같은 틀 — 메뉴 이름 · 코드는 넣지 않는다(2026-10-28 사용자 지정)
+        title="이 화면에 접근할 수 없게 됩니다."
+        confirmLabel={confirmSelfLock === "url" ? "변경 후 저장" : "미사용으로 저장"}
         busy={saving}
         onConfirm={save}
         onCancel={() => setConfirmSelfLock(null)}
       >
-        <p className="text-[14px] leading-[1.6]">
-          {confirmSelfLock === "url"
-            ? `플랫폼 메뉴 관리(${SELF_MENU_CODE})의 URL 을 바꾸면 실제 화면 주소와 어긋나, 다음 로그인부터 이 화면에 들어올 수 없습니다. 계속할까요?`
-            : `이 메뉴를 미사용으로 돌리면 플랫폼 메뉴 관리(${SELF_MENU_CODE})도 사용자 화면과 메뉴 권한에서 빠져, 이 화면으로는 다시 켤 수 없습니다. 계속할까요?`}
-        </p>
+        <div className="flex flex-col gap-[12px] text-[14px] leading-[1.6]">
+          <p>
+            {confirmSelfLock === "url"
+              ? "메뉴 URL을 변경하면 실제 화면 주소와 달라져 접근할 수 없습니다."
+              : "미사용으로 변경하면 해당 화면이 사용자 메뉴에서 제외되어 접근할 수 없습니다."}
+          </p>
+          <p>그래도 변경하시겠습니까?</p>
+        </div>
       </ConfirmDialog>
     </form>
   );
