@@ -2,12 +2,16 @@
 // 목업 위쪽 검색 조건 묶음은 점포 목록처럼 왼쪽 필터로 옮겼다.
 import * as ui from "../../ui.mjs";
 import { platformHeader } from "../../site.mjs";
+import { withIcon } from "../system/admins.mjs";
 import { bpNewPanel } from "./new.mjs";
 import { bpDetailPanel } from "./detail.mjs";
 import { bpEditPanel } from "./edit.mjs";
 
-// 표의 BP 코드·상호명은 상세를 슬라이드 패널로 연다 — 이 데모는 점포·사업자 데이터를 ㈜한강상회 하나만 갖고 있어 어느 줄을 눌러도 같은 상세가 뜬다.
-const detailTrigger = (text) => `<button type="button" aria-controls="bp-detail-panel" aria-expanded="false" class="text-erp-link hover:underline">${text}</button>`;
+// 표의 상호명만 상세를 슬라이드 패널로 연다(굵은 링크, 앱 bp-master-table.tsx · 2026-10-28 사용자 지정 — 파란 글자가 너무 많아 BP 코드는 일반 글자).
+// 이 데모는 점포·사업자 데이터를 ㈜한강상회 하나만 갖고 있어 어느 줄을 눌러도 같은 상세가 뜬다.
+const detailTrigger = (text) => `<button type="button" aria-controls="bp-detail-panel" aria-expanded="false" class="font-semibold text-erp-link hover:underline">${text}</button>`;
+// 탈퇴 BP 줄은 글자를 모두 회색으로(상호명 링크 · 계정상태 배지는 그대로) — 앱과 같다(2026-10-28 사용자 지정)
+const dim = (gone, text) => (gone ? `<span class="text-erp-muted">${text}</span>` : text);
 
 // [BP 코드, 아이디, 이름, 연락처, 이메일, 상태, 상호명, 사업자등록번호, 가입경로, 등록자, 등록 일시]
 const GONE = '<span class="text-erp-muted">탈퇴로 삭제됨</span>';
@@ -34,38 +38,39 @@ export default ({ A, R }) => {
     ui.filterSection("사업자정보 인증", ui.select(["전체", "인증완료", "미인증"], { "aria-label": "사업자정보 인증" }), { tight: true, last: true }),
   ]);
 
+  // 열 순서 · 폭은 앱 bp-master-table.tsx 와 같다 — 연락처 · 이메일은 나누고(아이콘), 등록은 일시만(2026-10-28 사용자 지정)
   const cols = [
     { header: "BP 코드", width: "w-[110px]" },
-    { header: "아이디", width: "w-[120px]" },
+    { header: "상호명", width: "w-[240px]", align: "left" },
+    { header: "아이디", width: "w-[130px]", align: "left" },
     { header: "이름", width: "w-[110px]" },
-    { header: "연락처", width: "w-[130px]" },
-    { header: "이메일", align: "left" },
-    { header: "계정상태", width: "w-[90px]" },
-    { header: "상호명", width: "w-[160px]" },
-    { header: "사업자등록번호", width: "w-[150px]" },
-    { header: "가입경로", width: "w-[110px]" },
-    { header: "등록자", width: "w-[110px]" },
-    { header: "등록 일시", width: "w-[150px]" },
+    { header: "계정상태", width: "w-[100px]" },
+    { header: "연락처", width: "w-[150px]", align: "left" },
+    { header: "이메일", width: "w-[220px]", align: "left" },
+    { header: "사업자등록번호", width: "w-[130px]" },
+    { header: "가입경로", width: "w-[100px]" },
+    { header: "등록", width: "w-[170px]" },
   ];
-  const rows = BPS.map(([code, id, nm, tel, mail, state, corp, biz, via, by, at]) => [
-    detailTrigger(code),
-    id,
-    nm ?? GONE,
-    tel ?? GONE,
-    mail ?? GONE,
-    ui.badge(state === "사용" ? "on" : "off", state),
-    detailTrigger(corp),
-    biz,
-    via,
-    by,
-    at,
-  ]);
+  const rows = BPS.map(([code, id, nm, tel, mail, state, corp, biz, via, , at]) => {
+    const gone = state === "탈퇴";
+    return [
+      dim(gone, code),
+      detailTrigger(corp),
+      dim(gone, id),
+      nm ?? GONE,
+      ui.badge(state === "사용" ? "on" : "off", state),
+      tel ? withIcon("phone", tel) : GONE,
+      mail ? withIcon("mail", mail) : GONE,
+      dim(gone, biz),
+      dim(gone, via),
+      dim(gone, at),
+    ];
+  });
 
+  // [등록]은 제목 줄 오른쪽(앱 bp-masters-screen.tsx — 플랫폼 관리자 관리와 같은 자리, 2026-10-28 사용자 지정)
   const toolbar = ui.listToolbar(
     BPS.length,
-    ui.button("엑셀 다운로드", { variant: "soft" }) +
-      ui.slideTrigger("등록", "bp-new-panel") +
-      `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
+    ui.button("엑셀 다운로드", { variant: "soft" }) + `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
   );
 
   return {
@@ -73,6 +78,7 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: platformHeader(A, R),
       title: "BP 마스터 계정 관리",
+      titleRight: ui.slideTrigger("등록", "bp-new-panel"),
       body: ui.listBody(filter, toolbar + ui.dataTable(cols, rows, "일치하는 BP가 없습니다.") + `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`),
       panels: bpNewPanel(A, R) + bpDetailPanel(A, R) + bpEditPanel(A, R),
     }),

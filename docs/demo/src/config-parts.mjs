@@ -23,8 +23,9 @@ export const headValues = (items) =>
     .map(([label, value]) => (label ? `<span class="inline-flex items-baseline gap-[6px]"><span class="text-erp-label">${label}</span><b class="font-semibold text-erp-ink">${value}</b></span>` : value))
     .join(HEAD_BAR)}</span>`;
 // 관리자 상세 머리 — 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」(앱 bp-admins · platform-admins admin-detail-panel, 2026-10-27 사용자 지정)
-export const adminHead = (name, role, group, badge) =>
-  `<h2 class="flex flex-col items-start gap-[6px] text-[18px] font-semibold text-erp-ink"><span>${name}</span><span class="text-[14px] font-normal">${headValues([["역할", role], ["권한명", group], ["", badge]])}</span></h2>`;
+// nameLabel 을 주면 이름 앞에 14px 회색 라벨(앱 플랫폼 관리자 상세 「이름」, 2026-10-28 사용자 지정 — 아랫줄 라벨과 같은 6px 간격)
+export const adminHead = (name, role, group, badge, nameLabel = "") =>
+  `<h2 class="flex flex-col items-start gap-[6px] text-[18px] font-semibold text-erp-ink"><span>${nameLabel ? `<span class="mr-[6px] text-[14px] font-normal text-erp-label">${nameLabel}</span>` : ""}${name}</span><span class="text-[14px] font-normal">${headValues([["역할", role], ["권한명", group], ["", badge]])}</span></h2>`;
 // 등록 · 최종수정 — 표 밖 테두리 없는 카드, 일시 굵게 · 사람 회색(앱 ReadonlyCard, 2026-10-27 사용자 지정). extra: 카드 아래쪽에 더 둘 줄(선 뒤)
 export const recordValues = (reg, mod, extra = "") => {
   const when = ([at, by]) => `${at} <span class="font-normal text-erp-label">· ${by}</span>`;
