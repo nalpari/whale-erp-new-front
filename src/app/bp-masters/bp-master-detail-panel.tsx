@@ -323,20 +323,12 @@ function DetailBody({
             onConfirm={() => handleStatus("INACTIVE")}
             onCancel={() => setConfirm(null)}
           >
+            {/* 대상은 상호명 · 아이디 · 이름, 안내는 빨간 상자 두 줄 — 상세 미사용 안내와 같은 말투(2026-10-28 사용자 지정, 점포 수 · 세션 안내는 뺐다) */}
             <div className="flex flex-col gap-[12px]">
-              {who}
-              {bp.subAdminCount > 0 ? (
-                <p>
-                  이 BP의 관리자 계정 <b className="font-semibold">{bp.subAdminCount + 1}개</b>(BP 마스터 포함)가 모두 미사용이 되어 로그인할 수 없습니다.
-                </p>
-              ) : (
-                <p>BP 마스터 계정이 미사용이 되어 로그인할 수 없습니다.</p>
-              )}
-              <p>
-                점포 <b className="font-semibold">{bp.storeCount.toLocaleString("ko-KR")}곳</b>은 상태를 그대로 두고 직원 초대 · 근로계약 · 출퇴근 기록 등
-                업무만 멈춥니다.
-              </p>
-              <p>확인하면 바로 적용됩니다. 로그인 중인 세션과 비밀번호는 그대로 유지됩니다.</p>
+              <WhoList rows={[["상호명", bp.tradeName], ["아이디", bp.loginId], ["이름", bp.name ?? "-"]]} />
+              <WarnBand>
+                {`${bp.subAdminCount > 0 ? `이 BP의 관리자 계정 ${bp.subAdminCount + 1}개(BP 마스터 포함)가 모두 미사용이 되어 로그인할 수 없습니다.` : "BP 마스터 계정이 미사용이 되어 로그인할 수 없습니다."}\n점포 상태는 유지되고, 직원초대 · 계약 · 출퇴근 기능은 중지됩니다.`}
+              </WarnBand>
             </div>
           </ConfirmDialog>
 
@@ -349,12 +341,12 @@ function DetailBody({
             onConfirm={() => handleStatus("ACTIVE")}
             onCancel={() => setConfirm(null)}
           >
+            {/* 미사용으로 바꾸기와 같은 모양(2026-10-28 사용자 지정) */}
             <div className="flex flex-col gap-[12px]">
-              {who}
-              <p>
-                <b className="font-semibold">BP 마스터 계정만</b> 사용으로 바뀌어 기존 비밀번호로 다시 로그인할 수 있습니다.
-              </p>
-              <p>BP 관리자 · 가맹 관리자 계정은 미사용으로 남습니다. BP 마스터가 BP 관리자 관리에서 다시 켜야 합니다.</p>
+              <WhoList rows={[["상호명", bp.tradeName], ["아이디", bp.loginId], ["이름", bp.name ?? "-"]]} />
+              <WarnBand>
+                {"BP 마스터 계정만 사용으로 바뀌어 기존 비밀번호로 다시 로그인할 수 있습니다.\nBP 관리자 · 가맹 관리자 계정은 미사용으로 남습니다."}
+              </WarnBand>
             </div>
           </ConfirmDialog>
 
