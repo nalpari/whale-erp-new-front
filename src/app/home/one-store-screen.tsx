@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, type ReactNode } from "react";
-import { Badge, Button, DataTable, Tag } from "@/components/common";
+import type { ReactNode } from "react";
+import { Badge, Button, DataTable, LoadGroupArea, Tag } from "@/components/common";
 import { CodeLabel } from "@/components/site/code-label";
 import { useAccount, useCurrentBp, useMenuRole, useMenus, useService, useStores } from "@/components/site/session-gate";
 import { InquiryStatusBadge } from "@/components/support/support-lists";
@@ -30,7 +30,7 @@ import { ScheduleMonth } from "../work-schedules/schedule-month";
 import { ScheduleWeek } from "../work-schedules/schedule-week";
 import { addDays, mondayOf, moved, parseScheduleQuery, scheduleApiSearch, toScheduleSearch, type ScheduleQuery } from "../work-schedules/work-schedule-query";
 import { latestNotices, payAmounts, oneStorePaths, staffRowsOf, oneStoreStatusCells, STAFF_LIMIT, staffCountsOf, todoSummaryOf, workDaysText, workTimeText } from "./one-store-view";
-import { useHomeLoad, type Loaded } from "./use-home-api";
+import { useLoad, type Loaded } from "@/lib/use-load";
 
 // 로그인 후 홈 — 점포 하나 화면(WHALEERP-342, HOME-6 · HOME-9, 목업 home/signed-in.html 「점포 하나 화면」 · 데모 oneStore).
 // 업무 범위가 점포 하나일 때다. 처리 대기 · 점포별 현황 표는 없다. api 는 새로 만들지 않고 영역마다 기존 목록을 따로 부른다(2026-10-27 재영) —
@@ -97,20 +97,20 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
   const key = `${storeId}|${reloadKey}`;
   const at = (path: string) => bpPath(bp, path);
 
-  const notices = useHomeLoad(canOpen("/support-notices") ? () => Promise.all([bff<SupportPostList>(paths.notices), enumOf("NoticeType")]) : null, key, "공지사항");
-  const store = useHomeLoad(canOpen("/stores") ? () => bff<StoreDetail>(paths.store) : null, key, "점포 정보");
-  const todos = useHomeLoad(
+  const notices = useLoad(canOpen("/support-notices") ? () => Promise.all([bff<SupportPostList>(paths.notices), enumOf("NoticeType")]) : null, key, "공지사항");
+  const store = useLoad(canOpen("/stores") ? () => bff<StoreDetail>(paths.store) : null, key, "점포 정보");
+  const todos = useLoad(
     canOpen("/todos") ? () => Promise.all([bff<TodoList>(paths.todoToday), bff<TodoList>(paths.todoUrgent)]) : null,
     `${key}|${today}`,
     "TO-DO",
   );
-  const inquiries = useHomeLoad(
+  const inquiries = useLoad(
     canOpen("/support-inquiries") ? () => Promise.all([bff<SupportInquiryList>(paths.inquiries), bff<SupportInquiryList>(paths.inquiriesWaiting), enumOf("InquiryStatus")]) : null,
     key,
     "내 문의",
   );
-  const pay = useHomeLoad(canOpen("/payslips") ? () => bff<PayslipSummary>(paths.payslipSummary) : null, `${key}|${today.slice(0, 7)}`, "직원 급여");
-  const staff = useHomeLoad(canOpen("/staff-members") ? () => bff<{ items: StaffMemberListItem[]; total: number }>(paths.staff) : null, key, "직원 정보");
+  const pay = useLoad(canOpen("/payslips") ? () => bff<PayslipSummary>(paths.payslipSummary) : null, `${key}|${today.slice(0, 7)}`, "직원 급여");
+  const staff = useLoad(canOpen("/staff-members") ? () => bff<{ items: StaffMemberListItem[]; total: number }>(paths.staff) : null, key, "직원 정보");
 
   const cards = [
     canOpen("/stores") && (
@@ -254,10 +254,11 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
       )}
       {cards.length > 0 && <div className="grid auto-cols-fr grid-flow-col items-start gap-[12px]">{cards}</div>}
       {canOpen("/work-schedules") && (
-        // 보기 상태는 홈 주소의 쿼리(useSearchParams)라 Suspense 로 감싼다
-        <Suspense fallback={<Card title="근무스케줄">{null}</Card>}>
+        // 보기 상태는 홈 주소의 쿼리(useSearchParams)라 Suspense 가 필요하다 — LoadGroupArea 는 Suspense 경계이면서, 경계가 풀리기 전(안쪽 로더가 아직
+        // 마운트되지 않은 때)에도 묶음을 붙잡아 다른 로더만 끝났다고 일찍 풀리지 않게 한다
+        <LoadGroupArea fallback={<Card title="근무스케줄">{null}</Card>}>
           <ScheduleCard storeId={storeId} reloadKey={key} today={today} />
-        </Suspense>
+        </LoadGroupArea>
       )}
       {canOpen("/staff-members") && (
         <StaffCard storeId={storeId} section={staff} canContracts={canOpen("/contracts")} canCreateContract={canCreateContract} today={today} />
@@ -278,7 +279,7 @@ function ScheduleCard({ storeId, reloadKey, today }: { storeId: number; reloadKe
   // 점포는 헤더 범위가 정한다 — 주소의 store · scope 는 읽지 않고 링크에도 싣지 않는다
   const query: ScheduleQuery = { ...parseScheduleQuery(Object.fromEntries(params), today), storeId: null };
   const search = scheduleApiSearch({ ...query, storeId });
-  const section = useHomeLoad(() => bff<WorkScheduleList>(`/work-schedules?${search}`), `${reloadKey}|${search}`, "근무스케줄");
+  const section = useLoad(() => bff<WorkScheduleList>(`/work-schedules?${search}`), `${reloadKey}|${search}`, "근무스케줄");
   const href = (next: Parameters<typeof moved>[1]) => `${HOME}${toScheduleSearch(moved(query, next), today)}`;
   return (
     <Card

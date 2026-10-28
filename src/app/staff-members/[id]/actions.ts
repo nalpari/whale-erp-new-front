@@ -2,9 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
-import { codeOf } from "@/lib/api-error";
+import { codeOf, isApiSendRefusal } from "@/lib/api-error";
 import { checkBirthDate } from "@/lib/birth-date";
-import { isApiSendRefusal } from "@/lib/password-reset";
 import { checkRetiredDate, staleDayWarning } from "@/lib/retirement";
 import { kstToday, type RetirementPreview } from "@/lib/staff-members";
 import { cancelRetirement, changeRetirementDate, getRetirementPreview, correctBirthDate, issuePasswordResetLink, retireStaffMember } from "@/lib/staff-members-api";

@@ -4,6 +4,7 @@
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as f from "../../biz-form.mjs";
+import { headValues } from "../../config-parts.mjs";
 import { BP, platformHeader, link } from "../../site.mjs";
 import { bpEditPanel } from "./edit.mjs";
 
@@ -14,36 +15,39 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
   const cancel = ui.button("취소", { variant: "off", "data-close": true });
 
   const closeBtn = panel ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("닫기", { variant: "off", href: link(R, "bp/index.html") });
-  // 상태변경은 기본정보의 ‘상태변경’ 칸으로 옮겼다(2026-10-08)
+  // [BP 상태 변경]은 기본정보 제목 줄 오른쪽(2026-10-28 사용자 지정)
   const actionButtons =
     f.disabledButton("삭제", "삭제할 수 없습니다 — 로그인 기록이 있고(2026-09-20), 하위 관리자 4명과 등록 점포 11곳이 있습니다. 대신 BP 상태를 미사용으로 바꾸세요.") +
     ui.slideTrigger("수정", "bp-edit-panel") +
     x.dialogTrigger("변경 이력", histId, "soft");
 
-  // 이름 옆에 BP 상태 배지와 BP 코드 꼬리표를 보이고, 기능 버튼은 닫기까지 모두 맨 아래로 내린다(구현 front #144 와 같다).
-  const tag = `<span class="inline-block rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub">BP 코드 · <b class="font-semibold">${BP.code}</b></span>`;
-  const head = `<h2 class="flex flex-wrap items-center gap-[6px] text-[18px] font-semibold text-erp-ink"><span class="mr-[4px]">${BP.name}</span>${ui.badge("on", "사용")}${tag}</h2>`;
+  // 머리: 「상호명 값」 / 「BP코드 값 | 아이디 값 | 계정상태 배지」 두 줄 — 라벨 칸을 두 줄이 같이 써 값이 같은 자리에서 시작한다(앱 bp-master-detail-panel.tsx, 2026-10-28 사용자 지정).
+  // 앱은 스크롤해도 머리가 위에 고정된다(sticky). 기능 버튼은 닫기까지 모두 맨 아래.
+  const head = `<div class="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-[6px] gap-y-[6px] text-[14px]"><span class="text-erp-label">상호명</span><h2 class="-ml-px text-[18px] font-semibold break-all text-erp-ink">${BP.name}</h2><span class="text-erp-label">BP코드</span><span>${headValues([["", `<b class="font-semibold text-erp-ink">${BP.code}</b>`], ["아이디", "hangang01"], ["", ui.badge("on", "사용")]])}</span></div>`;
   const bottomButtons = `<div class="flex flex-wrap items-center gap-[6px]">${closeBtn}<span class="flex-1"></span>${actionButtons}</div>`; // 닫기는 맨 왼쪽(상세 슬라이드 공통 · 2026-10-08)
 
   const inline = (...parts) => `<span class="flex items-center gap-[6px]">${parts.join("")}</span>`;
-  const basic = ui.detailTable("기본정보", [
-    ["BP 코드", BP.code],
-    ["아이디", "hangang01"],
-    ["이름", "정하윤"],
-    ["연락처", "010-4821-7730"],
-    ["이메일", "hayoon@hangang.co.kr"],
-    ["비밀번호", x.dialogTrigger("초기화", resetId, "soft")],
-    // 현재 상태는 머리의 배지가 보이므로 이 줄은 [상태 변경] 버튼만(2026-10-28 사용자 지정)
-    ["상태", x.dialogTrigger("상태 변경", offId, "soft")],
-    // 소속 점포는 수만 보인다 — 점포 목록 연결은 나중에(BP-8)
-    ["소속 점포", "11곳"],
-    ["가입경로", "회원가입"],
-    ["등록 일시", ui.detailValues(["2025-02-03 11:12", "hangang01"])],
-    ["수정 일시", ui.detailValues(["2026-08-14 10:31", "platkim"])],
-    ["최근 로그인", "2026-09-20 08:41"],
-    ["약관 동의", "동의"],
-    ["강제 변경", "대상 아님"],
-  ]);
+  // 앱 bp-master-detail-panel.tsx 와 같다(2026-10-28 사용자 지정): BP 코드 · 아이디 줄은 머리로, 상태 줄 대신 제목 줄 오른쪽 [BP 상태 변경],
+  // 비밀번호 줄은 「[초기화] | 강제변경 대상 · 대상아님」(구분선 35% 자리), 등록 · 최종수정은 「일시 · 사람」(사람 회색)
+  const when = (at, by) => `${at} <span class="text-erp-label">· ${by}</span>`;
+  const password = `<span class="grid w-full grid-cols-[minmax(max-content,7fr)_13fr] items-center gap-[18px]"><span class="flex min-w-0 items-center gap-[10px]">${x.dialogTrigger("초기화", resetId, "soft")}</span><span class="flex min-w-0 items-center gap-[10px]"><span aria-hidden="true" class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span><span class="truncate"><span class="text-erp-label">강제변경</span> 대상아님</span></span></span>`;
+  const basic = ui.detailTable(
+    "기본정보",
+    [
+      ["이름", "정하윤"],
+      ["연락처", "010-4821-7730"],
+      ["이메일", "hayoon@hangang.co.kr"],
+      ["비밀번호", password],
+      // 소속점포는 수만 보인다 — 점포 목록 연결은 나중에(BP-8)
+      ["소속점포", "11개"],
+      ["가입경로", "회원가입"],
+      ["약관동의", "동의"],
+      ["최근 로그인", "2026-09-20 08:41"],
+      ["등록", when("2025-02-03 11:12", "hangang01")],
+      ["최종수정", when("2026-08-14 10:31", "platkim")],
+    ],
+    x.dialogTrigger("BP 상태 변경", offId, "soft"),
+  );
   // 사업자주소는 플랫폼 관리자 상세의 주소처럼 우편번호 · 기본주소 · 상세주소를 줄을 바꿔 보이고, 그 줄만 내용만큼 늘어난다(2026-10-08)
   const growAddress = (html) =>
     html.replace(/<div class="flex w-full"><dt class="flex h-\[46px\]([^"]*)">사업자주소<\/dt><dd class="flex h-\[46px\]/, '<div class="flex w-full"><dt class="flex min-h-[46px]$1">사업자주소</dt><dd class="flex min-h-[46px]');

@@ -15,7 +15,7 @@ const kv = (rows) =>
     .join("")}</dl>`;
 const WHO = kv([["아이디", "platpark"], ["이름", "박지우"]]);
 // 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」 — 공통코드 상세 코드 머리와 같은 모양(2026-10-27 사용자 지정 — 전엔 이름 옆 상태 배지 · 「사용자 권한 · 그룹명」 꼬리표)
-const HEAD = c.adminHead("박지우", "플랫폼 관리자", "고객지원 담당", ui.badge("on", "사용"));
+const HEAD = c.adminHead("박지우", "플랫폼 관리자", "고객지원 담당", ui.badge("on", "사용"), "이름");
 
 function platformAdminDetailBody(A, R) {
   const resetId = x.dialogId();

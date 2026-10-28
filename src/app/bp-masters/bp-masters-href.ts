@@ -18,6 +18,8 @@ export type BpMastersQuery = BpMasterListQuery & {
   bp?: number;
   /** 상세 위에 수정 패널을 열었다 — bp 가 있을 때만 참이다 */
   edit?: boolean;
+  /** 상태를 셋 다 껐다 — 결과 없음(주소 status=NONE, api 를 부르지 않는다 · 플랫폼 관리자와 같다, 2026-10-28 사용자 지정) */
+  statusNone?: true;
 };
 
 type Params = Record<string, string | string[] | undefined>;
@@ -53,6 +55,7 @@ export function parseBpMastersQuery(params: Params): BpMastersQuery {
     searchType: isSearchType(searchType) ? searchType : "BP_CODE",
     keyword,
     statuses: normalizeStatuses((one(params.status) ?? "").split(",").filter(isStatus)),
+    statusNone: one(params.status) === "NONE" ? true : undefined,
     verification: verification === "VERIFIED" || verification === "UNVERIFIED" ? verification : undefined,
     bp,
     edit: bp !== undefined && one(params.edit) === "1" ? true : undefined,
@@ -67,7 +70,8 @@ export function bpMastersHref(query: Partial<BpMastersQuery>): string {
     params.set("keyword", query.keyword);
   }
   const statuses = normalizeStatuses(query.statuses ?? []);
-  if (statuses.length) params.set("status", statuses.join(","));
+  if (query.statusNone) params.set("status", "NONE");
+  else if (statuses.length) params.set("status", statuses.join(","));
   if (query.verification) params.set("verification", query.verification);
   if (query.pageSize && query.pageSize !== 20) params.set("pageSize", String(query.pageSize));
   if (query.page && query.page > 1) params.set("page", String(query.page));

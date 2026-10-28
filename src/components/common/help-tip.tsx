@@ -22,8 +22,8 @@ export function HelpTip({ text, label = "도움말", floating, focusable = true 
     box.style.left = `${at.left - 8}px`;
     box.showPopover();
     // 오른쪽 끝 쪽 열(BP 공통코드 관리주체)이면 상자가 표 · 창 밖으로 넘쳤다 — 띄운 뒤 폭을 재서 감싼 표의 오른쪽 끝(표가 없으면 창 끝, 8px 안쪽)을
-    // 넘지 않게 왼쪽으로 당긴다(사용자가 찾음)
-    const bound = Math.min(document.documentElement.clientWidth - 8, button.current?.closest("table")?.getBoundingClientRect().right ?? Infinity);
+    // 넘지 않게 왼쪽으로 당긴다(사용자가 찾음). 상세 표(DetailTable 의 dl)도 같은 표로 본다(권한 그룹 상세 가맹마스터, 2026-10-28)
+    const bound = Math.min(document.documentElement.clientWidth - 8, button.current?.closest("table, dl")?.getBoundingClientRect().right ?? Infinity);
     const overflow = box.getBoundingClientRect().right - bound;
     if (overflow > 0) box.style.left = `${Math.max(8, at.left - 8 - overflow)}px`;
     // 자리는 열 때 한 번 잡는다 — 표를 밀거나 창 크기가 바뀌면 아이콘에서 떨어지지 않게 닫는다(리뷰로 찾음)

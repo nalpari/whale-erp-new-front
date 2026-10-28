@@ -2,7 +2,7 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FormGroup, FormRow, Radio, Select, Textarea, TextField, useAction } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
 import { SAVED_COOKIE, SAVED_COOKIE_MAX_AGE, backHrefOf, listAfterSave, savedKindOf, withBack } from "../contract-list";
@@ -252,6 +252,13 @@ export function ContractForm({
   const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
   const [saving, startSaving] = useTransition();
+  // 저장 · 종이 계약 등록 요청은 화면 전체 딤으로 감싼다 — 고쳐 쓰기(correction)는 「수정중」, 새 계약 · 임시저장 이어 쓰기 · 종이 계약 등록은 「등록중」
+  const create = useAction(createContract, { kind: "create" });
+  const update = useAction(updateContract, { kind: correction ? "update" : "create" });
+  const postPaper = useAction(async (data: FormData) => {
+    const res = await fetch("/contracts/paper", { method: "POST", body: data });
+    return { status: res.status, body: res.status === 401 ? null : await res.json().catch(() => null) };
+  }, { kind: "create" });
   const [locked, setLocked] = useState(false);
   // 저장하지 못하면 안내(폼 맨 아래)로 화면을 옮긴다 — 위쪽 버튼을 누르면 안내가 화면 밖에 떠 제자리인 것처럼 보였다.
   // 같은 이유로 다시 실패해도 옮기도록 횟수로 센다.
@@ -309,7 +316,7 @@ export function ContractForm({
     startSaving(async () => {
       // 성공하면 액션이 목록으로 보낸다. 돌아왔다면 실패다.
       // 액션의 redirect(성공 · 보내기 실패)는 callSave 가 다시 던져 그 목적지로 간다
-      const result = await callSave(() => (contractId ? updateContract(contractId, body, back) : createContract(body, back)), unstable_rethrow);
+      const result = await callSave(() => (contractId ? update(contractId, body, back) : create(body, back)), unstable_rethrow);
       if (result === SAVE_CALL_LOST) {
         // 서버 액션 호출 자체가 끊겼다(앞단 504 · 배포 중 재시작 · 네트워크) — 저장 = 발송이라 이미 저장 · 발송됐을 수 있다.
         // 이어 쓰기는 상세로 옮겨 알리고, 새 계약은 같은 폼으로 다시 저장하지 못하게 막는다(front #50 재리뷰).
@@ -341,13 +348,13 @@ export function ContractForm({
       if (contractId) data.set("contractId", String(contractId));
       let result: SaveResult & { ok?: boolean; status?: string | null; draftAction?: string | null };
       try {
-        const res = await fetch("/contracts/paper", { method: "POST", body: data });
+        const res = await postPaper(data);
         // 세션이 끊겼다 — proxy · 핸들러가 쿠키를 지우고 401 을 준다. 로그인 화면으로 보낸다.
         if (res.status === 401) {
           router.push("/login");
           return;
         }
-        result = (await res.json().catch(() => ({ error: `요청이 실패했습니다 (HTTP ${res.status})` }))) as typeof result;
+        result = (res.body ?? { error: `요청이 실패했습니다 (HTTP ${res.status})` }) as typeof result;
       } catch {
         result = { error: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요" };
       }
