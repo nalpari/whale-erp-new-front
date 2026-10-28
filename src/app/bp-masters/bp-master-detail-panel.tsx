@@ -187,6 +187,8 @@ function DetailBody({
         </>
       ),
     },
+    // 비밀번호 줄 바로 아래 하위 줄 「└ 강제변경」 — 「비밀번호 강제변경」은 110px 라벨 칸에서 잘려서(2026-10-28 사용자 지정). 값은 「대상」 · 「대상아님」
+    { label: "└ 강제변경", value: bp.isPasswordChangeRequired ? "대상" : "대상아님" },
     {
       label: "상태",
       // 현재 상태는 머리의 배지가 보이므로 이 줄은 버튼만 둔다(2026-10-28 사용자 지정) — 수정 권한이면 [상태 변경], 탈퇴 BP 는 [사유 보기]. 누를 버튼이 없을 때만 배지를 보인다.
@@ -203,12 +205,10 @@ function DetailBody({
     },
     // 소속 점포는 수만 보인다 — 점포 목록 연결은 나중에(BP-8)
     { label: "소속 점포", value: `${bp.storeCount.toLocaleString("ko-KR")}곳` },
-    // 아래 여섯 줄은 가입경로 · 약관동의 · 강제변경 · 최근 로그인 · 등록 · 최종수정 순(2026-10-28 사용자 지정)
+    // 아래 다섯 줄은 가입경로 · 약관동의 · 최근 로그인 · 등록 · 최종수정 순(강제변경은 비밀번호 아래로 옮겼다)(2026-10-28 사용자 지정)
     { label: "가입경로", value: bp.joinPath === "SIGNUP" ? "회원가입" : "플랫폼등록" },
     // 「첫 로그인 때 받음」은 아직 로그인하지 않은 BP 에만 붙인다
     { label: "약관동의", value: bp.termsAgreedAt ? "동의" : bp.lastLoginAt ? "미동의" : <>미동의 {muted("· 첫 로그인 때 받음")}</> },
-    // 값은 「대상」 · 「대상아님」(2026-10-28 사용자 지정 — 전엔 「비밀번호 변경 대상」). 라벨 「비번 강제변경」(사용자 지정) — 「비밀번호강제변경」은 110px 칸에서 잘렸다
-    { label: "비번 강제변경", value: bp.isPasswordChangeRequired ? "대상" : "대상아님" },
     { label: "최근 로그인", value: bp.lastLoginAt ? formatDateTime(bp.lastLoginAt) : "-" },
     { label: "등록", value: when(bp.createdAt, bp.createdByName ?? bp.loginId) },
     // api 의 최종수정 일시는 BP 정보(bp_codes.updated_at) 것이다 — 수정 저장 · 상태 변경 때 바뀌고, 비밀번호 초기화처럼 계정만 고친 것은 들어가지 않는다(BP-7).
