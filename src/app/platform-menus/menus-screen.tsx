@@ -168,7 +168,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
             ) : (
               <b className="font-semibold">{name}</b>
             )}
-            {r.kind === "menu" && r.row.node.isGroup && <span className="text-[13px] text-erp-label"> 묶음</span>}
+            {/* 하위가 있는 메뉴의 「묶음」 글자는 두지 않는다 — 들여쓰기 · 굵은 글씨로 이미 보인다(2026-10-28 사용자 지정) */}
             {r.kind === "draft" && <span className="text-[13px] text-erp-label"> 작성 중</span>}
           </span>
         );

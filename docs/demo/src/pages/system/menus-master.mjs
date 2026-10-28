@@ -116,7 +116,7 @@ function treeTab(key, s) {
 
   const rows = nodes.map((n) => [
     handle,
-    `<span style="padding-left:${(n.lvl - 1) * 18}px">${n.lvl === 1 ? `<b class="font-semibold">${n.name}</b>` : n.name}${n.kids ? ` <span class="text-[13px] text-erp-label">묶음</span>` : ""}</span>`,
+    `<span style="padding-left:${(n.lvl - 1) * 18}px">${n.lvl === 1 ? `<b class="font-semibold">${n.name}</b>` : n.name}</span>`,
     n.code,
     sub(`${n.lvl}단계`),
     n.url || '<span class="text-erp-muted">—</span>', // 빈 URL 은 옅은 줄표(앱 menus-screen.tsx 와 같다, 2026-10-26)
