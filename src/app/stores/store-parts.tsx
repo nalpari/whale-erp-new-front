@@ -219,7 +219,7 @@ export function FieldMessage({ id, message }: { id: string; message?: string }) 
 }
 
 /** 실패 · 막힘 안내 띠 — 화면 위에 하나만 선다 */
-export function NoticeBand({ tone = "risk", title, detail }: { tone?: "risk" | "info"; title: string; detail?: ReactNode }) {
+export function NoticeBand({ tone = "risk", title, detail }: { tone?: "risk" | "info"; title: ReactNode; detail?: ReactNode }) {
   const color = tone === "risk" ? "border-erp-off bg-erp-off-bg text-erp-off" : "border-erp-panel-line bg-erp-thead-bg text-erp-ink";
   return (
     <div role={tone === "risk" ? "alert" : "status"} className={`rounded-[2px] border px-[16px] py-[12px] text-[14px] leading-[1.6] ${color}`}>

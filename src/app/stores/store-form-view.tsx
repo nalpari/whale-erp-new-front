@@ -27,6 +27,8 @@ import {
   hasCoordinateInput,
   newFloorRow,
   storeServerErrors,
+  isBpBlockedMessage,
+  BP_BLOCKED_TEXT,
   toCreateStoreInput,
   toUpdateStoreInput,
   validateStoreForm,
@@ -46,6 +48,7 @@ import { BIZ_MESSAGE, bizDigits, bizVerifyFailure, type BizVerifyField } from "@
 import { formatDate } from "@/lib/format";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp } from "@/components/site/session-gate";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { bpPath } from "@/lib/bp-path";
 import { withoutStoreSearch } from "@/lib/store-scope";
 import { storeImageAccept, storeImageFileError, storeImageTypesText } from "@/lib/store-image";
@@ -113,6 +116,10 @@ export function StoreFormView(props: Props) {
   // 등록할 BP — 이 탭의 BP(플랫폼 계정이 고른 BP, 그 밖은 소속 BP). 주소 /bp/{id} 의 BP 와 같다(SessionGate 가 주소로 정한다) —
   // api 가 헤더로 대상 BP 를 정하면(점포 탭 BP 전환) 본문의 bpCodeId 가 proxy 가 실은 헤더와 다를 때 400 이다
   const currentBp = useCurrentBp();
+  // 등록할 BP 가 탈퇴 · 미사용인가 — 들어오자마자 알려 저장까지 가서야 거절당하지 않게 한다(2026-10-28 사용자 지정).
+  // 플랫폼 계정만 본다(useCurrentBpStatus). 확인하지 못하면(null) 아무것도 띄우지 않는다 — 저장 때 api 가 막고 같은 문구가 뜬다
+  const bpStatus = useCurrentBpStatus();
+  const bpBlocked = mode === "create" && bpStatus !== null && bpStatus !== "ACTIVE";
   // 화면 주소는 탭 BP 를 붙인다. backHref 는 옛 경로(목록 쿼리)다
   const at = (path: string) => bpPath(currentBp.bpCodeId, path);
   const toast = useToast();
@@ -185,6 +192,8 @@ export function StoreFormView(props: Props) {
   /** api 가 거절한 이유를 칸마다 나눠 붙이고(검증 실패는 문장이 여럿), 칸을 못 찾은 문장은 위 띠로 */
   const applyServerError = (failure: ActionFailure) => {
     const messages = failure.messages?.length ? failure.messages : [failure.message];
+    // BP 가 미사용 · 탈퇴라 거절했으면 칸 오류로 나누지 않고 한 줄만 — 다시 눌러도 저장되지 않아 「입력한 값은 그대로 …」는 붙이지 않는다(2026-10-28 사용자 지정)
+    if (messages.some((m) => isBpBlockedMessage(failure.status, m))) return setFailure({ title: BP_BLOCKED_TEXT[mode] });
     const { fields, rest } = storeServerErrors(failure.status, messages);
     // 등록 화면에는 점포상태 칸이 없다 — 그 칸으로 갈 문장은 띠로 돌린다(안 보이는 칸에 붙으면 아무 말 없이 끝난다)
     if (mode === "create" && fields.storeStatus) {
@@ -521,6 +530,9 @@ export function StoreFormView(props: Props) {
 
   return (
     <div id={`${ids}-form`} className="flex flex-col gap-[24px]">
+      {/* 등록: 고른 BP 가 탈퇴 · 미사용이면 들어올 때 알린다. 수정: 소속 BP 상태 이름(미사용 · 탈퇴)을 상세와 같은 문구 · 같은 자리(점포명 제목 줄 위)에(2026-10-28 사용자 지정) */}
+      {bpBlocked && <NoticeBand title={BP_BLOCKED_TEXT.create} />}
+      {store && store.bpAccountStatusCode !== "ACTIVE" && <NoticeBand title={<>이 점포가 속한 BP가 <CodeLabel group="ACCOUNT_STATUS" value={store.bpAccountStatusCode} /> 상태로, 조회 기능만 이용할 수 있습니다.</>} />}
       {/* 취소 · 저장은 제목 줄 오른쪽에 둔다 — 근로계약서 작성 화면(contract-form.tsx)과 같은 자리(2026-10-19 점검 — 실사용자 확인). 전에는
           화면 맨 아래에 있어 긴 폼에서 저장하려면 끝까지 스크롤해야 했다. */}
       <div className="flex items-center gap-[6px]">
@@ -535,13 +547,12 @@ export function StoreFormView(props: Props) {
         <Button variant="off" href={at(store ? withBack(`/stores/${store.storeId}`, backHref) : backHref)}>
           취소
         </Button>
-        <Button onClick={handleSave} disabled={saving || closedOrBlocked || locating || checkingClose || createUncertain}>
+        <Button onClick={handleSave} disabled={saving || closedOrBlocked || bpBlocked || locating || checkingClose || createUncertain}>
           저장
         </Button>
       </div>
       {failure && <NoticeBand title={failure.title} detail={failure.detail} />}
       {store && store.storeStatusCode === "CLOSED" && <NoticeBand tone="info" title="폐점 점포는 수정할 수 없습니다." detail="다시 운영하려면 새 점포로 등록하세요." />}
-      {store && store.bpAccountStatusCode !== "ACTIVE" && <NoticeBand title="소속 BP 가 미사용 상태여서 이 업무를 할 수 없습니다." />}
 
       {/* 두 묶음은 같은 선에서 끝나게 높이를 맞춘다(FormGroup 상자가 flex-1 로 늘어난다, 2026-10-16 점검) */}
       <div className="grid grid-cols-2 gap-[24px]">

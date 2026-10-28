@@ -1,5 +1,6 @@
 // 점포 상세. 목업 docs/mockup/stores/detail.html 의 기본 상태(모리커피 연남점 · 운영)를 BP 마스터로 본 것.
 // 생김새는 1팀 /design/detail 샘플: 카드 안 묶음 제목 줄 + [버튼] 과 상세 표.
+// render 의 bpStatus(「탈퇴」 · 「미사용」)를 주면 소속 BP 가 그 상태인 점포를 플랫폼 계정으로 본 것이다(detail-bp-withdrawn.mjs, 앱 stores/[storeId]/page.tsx 와 같다, 2026-10-28).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as f from "../../biz-form.mjs";
@@ -13,11 +14,18 @@ const FIRST_COL = "inline-block min-w-[140px]";
 // 줄 출퇴근 위치 적용 여부 앞 구분선과 같은 세로줄에 선다(2026-10-23 사용자 요청 — 앱 stores/[storeId]/page.tsx 와 같다).
 const REGISTERED_COL = "w-[301px]";
 
-export default ({ A, R }) => {
+export const render = ({ A, R }, { bpStatus } = {}) => {
   const [code, name, type, state, biz, phone, staff, date, , photo] = STORES.find((s) => s[0] === "ST000006");
   const statusId = x.dialogId();
   const histId = x.dialogId();
 
+  // 소속 BP 가 탈퇴 · 미사용이면 상태 변경 · 삭제 · 수정을 막고 이유는 위 띠와 같은 문장(앱 store-detail-actions.tsx 와 같다, 2026-10-28)
+  const blocked = bpStatus ? f.bpBlockedText(bpStatus) : "";
+  const actions = blocked
+    ? f.disabledButton("상태 변경", blocked) + f.disabledButton("삭제", blocked) + f.disabledButton("수정", blocked)
+    : x.dialogTrigger("상태 변경", statusId, "soft") +
+      f.disabledButton("삭제", "미운영 점포만 삭제할 수 있습니다. 운영을 끝내려면 상태 변경에서 폐점하세요.") +
+      ui.button("수정", { variant: "soft", href: link(R, "stores/edit.html") });
   // 대표 이미지 · 점포명 · 점포코드 · 유형 · 상태 · 실행 버튼을 한 머리 카드에 묶는다(2026-10-19 점검 —
   // 실사용자 확인, 디자인 데모 1안 채택). 그만큼 점포 기본정보 표에서 대표 이미지 · 점포코드가 빠져 사업자정보와
   // 같은 5행이 된다. 점포명과 점포코드 줄 사이는 6px(앱과 같다, 2026-10-23 사용자 요청).
@@ -33,9 +41,7 @@ export default ({ A, R }) => {
       </div>
     </div>
     <div class="flex shrink-0 gap-[6px]">
-      ${x.dialogTrigger("상태 변경", statusId, "soft")}
-      ${f.disabledButton("삭제", "미운영 점포만 삭제할 수 있습니다. 운영을 끝내려면 상태 변경에서 폐점하세요.")}
-      ${ui.button("수정", { variant: "soft", href: link(R, "stores/edit.html") })}
+      ${actions}
       ${ui.button("목록", { href: link(R, "stores/index.html") })}
     </div>
   </div>`;
@@ -145,11 +151,14 @@ export default ({ A, R }) => {
     .replace("w-[420px]", "w-[860px] max-h-[calc(100dvh-48px)] overflow-y-auto");
 
   const body = ui.detailBody(
-    `<div class="flex flex-col gap-[12px]">${head}<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${bizInfo}</div></div>` +
+    // BP 탈퇴 · 미사용 안내는 점포명 머리 카드 위 맨 위(앱 stores/[storeId]/page.tsx 와 같다, 2026-10-28)
+    `<div class="flex flex-col gap-[12px]">${blocked ? f.noticeBand(blocked) : ""}${head}<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${bizInfo}</div></div>` +
       floors +
       statusDialog +
       historyDialog,
   );
 
-  return { title: "점포 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "점포 정보 관리", body }) };
+  return { title: bpStatus ? `점포 상세 · BP ${bpStatus}` : "점포 상세", html: ui.erpFrame({ header: erpHeader(A, R, { bpStatus }), title: "점포 정보 관리", body }) };
 };
+
+export default (ctx) => render(ctx);

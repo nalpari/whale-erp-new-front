@@ -408,7 +408,12 @@ export function withdrawPanel(A, R) {
   return ui.slidePanel("withdraw-panel", "회원 탈퇴", ui.sectionHead("회원 탈퇴") + html + f.SWAP_SCRIPT);
 }
 
-export function erpHeader(A, R) {
+// 플랫폼 계정이 탈퇴 · 미사용 BP 를 보고 있으면 범위 선택기 바로 오른쪽에 빨간 상태 배지와 한 줄을 둔다(앱 admin-header.tsx BpStatusNote 와 같다, 2026-10-28).
+// 기본 화면은 사용 중인 BP 라 그리지 않는다 — bpStatus(「탈퇴」 · 「미사용」)를 넘기는 화면(점포 BP 탈퇴 · 미사용 보기)만 보인다.
+const bpStatusNote = (status) =>
+  `<span role="status" class="flex shrink-0 items-center gap-[6px] text-[14px] text-erp-off">${ui.badge("off", status)}조회 기능만 이용할 수 있는 BP입니다.</span>`;
+
+export function erpHeader(A, R, { bpStatus } = {}) {
   const menus = ERP_MENUS.map(([label, items]) => ({ label, items: items.map(([l, p]) => ({ label: l, href: to(R, p) })) }));
   const user = [
     { label: "내정보 관리", panel: "mypage-panel" },
@@ -420,7 +425,10 @@ export function erpHeader(A, R) {
     ui.globalHeader(
       A,
       menus,
-      scopeDropdown(A) +
+      // 상태 안내가 있으면 범위 선택기를 칸 폭(420)만큼 감싸 그 오른쪽에 붙인다 — 묶음이 남는 폭을 받는다(앱 admin-header.tsx 와 같다, 2026-10-28)
+      (bpStatus
+        ? `<div class="flex min-w-0 flex-1 items-center gap-[12px]">${scopeDropdown(A).replace('<div class="relative flex-1">', '<div class="relative w-[420px] shrink-0">')}${bpStatusNote(bpStatus)}</div>`
+        : scopeDropdown(A)) +
         ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: to(R, "bp/index.html") }) +
         ui.alarmLink(A, to(R, "notify/index.html")) +
         ui.userPop(A, USER, user),
