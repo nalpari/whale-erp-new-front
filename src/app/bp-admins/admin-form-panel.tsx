@@ -656,7 +656,7 @@ export function AdminFormPanel(props: Props) {
       </div>
 
       {/* 안내 문구는 플랫폼 관리자 등록 · 수정과 같다(2026-10-27 사용자 지정) */}
-      {mode === "create" && <Note>관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.</Note>}
+      {mode === "create" && <Note>초기 비밀번호는 등록한 이메일로 발송됩니다.</Note>}
       {mode === "edit" && form.accountStatus === "INACTIVE" && props.admin.accountStatus === "ACTIVE" && (
         <Note>
           미사용으로 변경하면 해당 계정의 로그인 및 서비스 접근이 즉시 차단됩니다.
