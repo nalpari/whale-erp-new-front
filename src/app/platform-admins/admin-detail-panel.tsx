@@ -136,10 +136,11 @@ function DetailBody({
   const address = [admin.zipCode, admin.address, admin.addressDetail].filter((line): line is string => Boolean(line));
   const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
   // 등록 · 최종수정 줄의 값 — 「일시 · 사람」, 사람은 회색(권한 그룹 상세와 같은 구분)
+  // 값 칸 폭(약 280px)을 넘는 긴 이름은 말줄임하고, 마우스를 올리면 전체를 보인다(리뷰로 찾음)
   const when = (at: string, who: string) => (
-    <>
+    <span className="truncate" title={`${formatDateTime(at)} · ${who}`}>
       {formatDateTime(at)} <span className="text-erp-label">· {who}</span>
-    </>
+    </span>
   );
   // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 최종수정은 「-」(BP 관리자 상세와 같다, 2026-10-27 사용자 지정).
   // 1초 안쪽 어긋남은 같은 것으로 본다(wasUpdated).
