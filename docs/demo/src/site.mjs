@@ -522,7 +522,7 @@ export function platformHeader(A, R, { master = false, noMenu = false } = {}) {
       menus,
       // 플랫폼 콘솔에는 BP 선택 드롭다운을 두지 않는다 — BP 는 서비스 바로가기 「웨일ERP」로 고른다(2026-10-19 재영). 빈 칸이 오른쪽 컨트롤을 민다.
       `<div class="flex-1"></div>` +
-        ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: home, scopeDialog: scopeId }) +
+        ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: home, scopeDialog: scopeId, hideAddon: true }) +
         ui.alarmLink(A, "#") +
         ui.userPop(A, master ? PLATFORM_MASTER : PLATFORM_USER, user),
       home,

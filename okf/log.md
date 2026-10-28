@@ -1,8 +1,18 @@
 # Bundle history
 
 ## 2026-10-28
+* **Update**: main 병합(front abra, #164 · #135 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 는 main 본문에 이 브랜치의 플랫폼 첫 메뉴 이동 세 곳을 다시 얹었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 계정 로그인 후 첫 메뉴로 이동(`/platform` 은 넘겨 주는 주소, `firstMenuUrl` · `firstMenuRedirect`), 헤더 로고 · 플랫폼관리 바로가기, `src/app/platform/` 권한 요청 안내(front abra, PR #165 리뷰).
 * **Update**: [로그인](/auth.md) — 플랫폼 계정은 홈이 없고 로그인하면 헤더 순서상 첫 플랫폼 메뉴로 간다(2026-10-28 재영). `/platform` 은 넘겨 주는 주소이고, 메뉴가 없으면 권한 요청 안내, 비밀번호 강제 변경 전에는 머문다(front abra).
+* **Update**: main 병합(front poliwag, #164 mudkip 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 는 main 의 LoadGroup · loading · `send`/`actionFailure` 줄과 이 브랜치의 근로계약 두 줄.
+* **Update**: main 병합(front poliwag, main 최신까지): okf 충돌은 양쪽 기록을 살렸다(BP 휴일 겹침 확인 버튼 이름은 main, api 타입 설명은 이 브랜치).
+* **Fix**: api 타입을 gyarados 로 다시 뽑으며 front main 의 BP 마스터 탈퇴 타입(`withdrawal`, 아직 api main 에 없음)을 지워 tsc 가 깨진 것을 3-way 병합(`git merge-file`)으로 되살렸다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 셀프 code-review: 대체 확인 본문(대체 목록 · 바로잡기)을 `replaceConfirmBody` 한 곳에서 정하고 판정을 테스트한다. main 병합 · api 타입을 gyarados `d520d95a`(api main 포함)에서 다시 만듦.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영: 바로잡기로 보낸 뒤 진행 중 목록으로 다시 물을 때 바로잡기 문구를 보이지 않으면 본문에서 `correctSignedContracts` 도 뺀다(확인 본문은 `replaceConfirmBody` 한 곳에서 확인창의 바로잡기 여부로 정한다, 확인창을 띄워 둔 사이 체결된 계약이 대체 확인만으로 종료되지 않게). main 병합, api 타입을 #157 gyarados `ba054c7b` 에서 다시 만듦(설명 2곳만 바뀜).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) — PR #164 리뷰: 근로계약 저장의 5xx 는 api 가 저장 커밋 뒤 발송을 불러 이미 저장됐을 수 있어 모두 결과 모름으로 두고(저장 전 실패가 확실한 api 의 503 발송 설정 오류만 api 문장 — 본문 없는 프록시 · LB 503 은 결과 모름. `isApiSendRefusal` 은 `lib/api-error.ts` 로 옮겨 비밀번호 초기화와 같이 쓴다), 계약 ID 없는 502 SEND_* 도 결과 모름이다. 루트 loading.tsx 로 스트리밍되는 페이지는 notFound() · redirect() 가 404 · 307 이 아니라 200 + 화면 안 처리다(front mudkip).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 쓰기 요청 공통 `send` · `actionFailure`(`lib/action-failure.ts`)와 화면 전체 「처리중」 딤 `useAction(kind)`를 만들고 근로계약 작성 · 수정 · 삭제 · 발송 · 종료 · 당사자 정보 수정에 먼저 적용했다(front mudkip). 저장 실패 가르기는 `send-model.ts` 의 `saveFailureOf` · `deleteFailureOf`(순수 함수 + 테스트), 덮개 저장소 · 감싸기는 `busy-stack.ts` 로 떼었고, LoadGroup 은 시간 제한으로 풀릴 때 `console.warn` 을 남긴다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [홈·계정 진입](/home.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 영역이 여러 개인 화면은 `LoadGroup` 으로 감싸 처음 들어올 때 모두 받은 뒤 한 번에 보인다(15초 뒤에는 늦는 영역만 영역 안 로딩). 묶여 있는 동안은 딤 + 스피너 + 「로딩중입니다」(`LoadingNotice`)를 보인다. 직원 상세는 기본 정보까지 본문 전체를 덮고 영역 로딩도 같은 모양이다(`AreaLoading` 삭제). 페이지 이동 로딩은 `app/loading.tsx` 공통 로딩, 로그인 전 화면은 `(public)/(site)/loading.tsx` 로 본문만 비운다. 홈 두 화면과 직원 상세 네 영역에 적용, `use-home-api.ts` 는 `lib/use-load.ts`(`useLoad` · `useApi`)로 옮겼다(front mudkip).
+* **Update**: [BP 마스터 계정 관리](/bp.md) · [Whale ERP Frontend](/whale-erp-front.md) — 사용자 디자인 수정(front beedrill): BP 마스터 목록 열 · 계정상태 필터(셋 다 끄기) · 상호명 링크, 상세 머리 고정 · [BP 상태 변경] 자리(기본정보 제목 줄) · 강제변경을 비밀번호 줄로 · 미사용/탈퇴 빨간 안내, 수정 화면 아이디 · 가입경로 삭제. 중복 확인 문구 네 화면 통일, 플랫폼관리 사이트 부가서비스 현황 숨김.
 * **Update**: [점포 관리](/stores.md) — BP 탈퇴 · 미사용 안내 문구 · 자리(상세 · 수정 머리 위), 등록 화면은 들어올 때 BP 상태를 보고 안내 · 저장 막기(front kakuna).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 헤더 BP 탈퇴 · 미사용 배지(`useCurrentBpStatus`), BP 관리자 등록의 권한명 없음 안내 · [이동], 플랫폼 메뉴 관리 트리 모양(1단계 바탕 없음 · 묶음 사이 선 · 「└」 · 배지 정렬) · 미사용 안내 · 끌어 옮기기 안내 · 확인창 문구, BP 휴일 겹침 확인창 버튼 「저장」(front kakuna).
 * **Update**: [BP 마스터 계정 관리](/bp.md) — 사용자 피드백(front #156): 상세 · 수정의 「BP 상태」 줄 이름을 「상태」로, 상세 상태 줄은 버튼만([상태 변경] · 탈퇴는 [사유 보기], 누를 버튼이 없으면 배지 — 상태가 바뀐 일시는 보이지 않는다). 삭제 · 상태 변경 확인창 문구를 다듬었다. 목업 · 화면정의서 · 데모도 맞췄다.
@@ -10,6 +20,9 @@
 * **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 재영 재리뷰(front #151, 2026-10-28): 상세 「검토 사유」에도 공제 미입력을 보인다. api 상세는 사유 행만 주므로 상세가 저장된 공제 칸으로 판정해(`detailReviewReasons` — 작성 중 · 검토 중, 보이는 지급 밖 칸 가운데 넣지 않은 것, 목록 검토 대기와 같은 기준) 「공제 미입력 · 빈 공제 이름」 줄을 더하고, 「그 밖의 사유」에서 공제 미입력을 빼던 것을 없앴다.
 
 ## 2026-10-27
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영: 대체 확인을 다시 물으면 다시 물은 목록만 보낸다(`replaceIdsOf` 를 없앰) — api `checkReplace` 는 지금 목록과 같은 집합만 받아, 앞서 고른 것을 합치면 그사이 빠진 계약 때문에 같은 409 가 되풀이됐다. main 병합.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 code-review(델타) 반영: 이어 쓰기(`PUT`)에는 `previousContractId` 를 싣지 않음, 재계약이면 바로잡기 확인창을 띄우지 않음(`signedOverlap` 이어도), 대체 확인을 다시 물으면 앞서 고른 계약과 합쳐 보냄(`replaceIdsOf`), 바로잡기 뒤 진행 중 목록으로 다시 물을 때 바로잡기 문구는 체결 완료가 있을 때만(`stillCorrecting`), 낡은 주석 고침.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영(노영주): 진행 중인 재계약이 있어도 재계약 작성 화면을 연다 — api `renewedBy` 가 체결된 재계약만 싣고, 저장할 때 대체를 묻는다. `renewedBy != null` 로 봐 칸 없는 옛 응답에도 안전. main 병합 · api 타입 다시 만듦.
 * **Update**: [BP 마스터 계정 관리](/bp.md) — 탈퇴 BP 는 변경 이력을 보이지 않고(버튼 숨김 · api 409, 이력 데이터는 그대로) 탈퇴 사유를 BP 상태 줄의 [사유 보기] 팝업으로 본다(WHALEERP-625 · 626, 2026-10-27 재영). 목업 상세 · 화면정의서도 맞췄다.
 * **Update**: [BP 마스터 계정 관리](/bp.md) — 구현(front #144 · api #163)에 맞춤: 비밀번호 초기화는 변경 이력에 「비밀번호 → 초기화」 한 줄로 남고, 성공은 알림 · 메일 실패는 안내 띠로 보인다. 목업 상세 · 화면정의서와 데모 상세(BP 상태 줄 · 소속 점포 수만 · 라벨 · 초기화 확인창 문구)도 같이 고쳤다.
 * **Update**: main 병합(front butterfree, #151 머지 뒤): okf/log 는 양쪽 기록을, screens/payslips.md 시각은 늦은 값을 남겼다. payslip-review.tsx 는 자동 병합.
@@ -53,6 +66,9 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 마스터 계정 등록 · 수정이 이메일 중복을 아이디와 같은 때(칸을 벗어나거나 Enter) `GET /bp-masters/email-availability` 로 묻는다. 상세의 수정 일시는 실제로 고친 BP 에만 보이고, 수정 · 로그인 기록이 없으면 「-」. 생성 타입을 api 브랜치(stonehenge · lucario, api main #161 병합 뒤) 기준으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 공통코드 관리에 관리주체 필터(체크박스, 주소 `?manageOwnerCode` · 둘 다 끔은 NONE, api `manageOwnerCodes`)를 더했다. BP 공통코드 관리에는 두지 않는다. 관리주체 꼬리표(`OwnerTag`), 상세 코드 머리(`GroupHead`), 고른 그룹 줄(`current`), 사용여부 · 관리주체 문구, 저장 안 한 변경 확인창 문구도 바꿨다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 공통 Button `danger` · ConfirmDialog `confirmVariant` 가 1팀 동의를 받았다(DESIGN.md Buttons 에 Danger 추가). 같은 날 1팀이 DetailTable 라벨 110px, 점포 카드 모서리 8px, 트리 표 머리(subtle) · 고른 줄(current), ReadonlyCard, 스위치 알약형에도 동의해 DESIGN.md 와 코드 주석의 「1팀 확인 필요」 표시를 동의 기록으로 바꿨다. 플랫폼 관리자 상세의 버튼 줄 위 선을 없앴다(데모의 BP 마스터 · BP 관리자 · 휴일 상세도 같이).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 리뷰 참고 반영(노영주): 이어지는 재계약이 있으면 「새 계약」 작성 화면이 「이미 이어지는 재계약」 안내와 그 계약으로 가는 버튼을 보인다(틀린 사유 「체결 완료만…」 대신), 재계약 수정 요청 화면도 번호 · 시작일을 임시저장 이어 쓰기처럼 막는다.
+* **Update**: main 병합(front poliwag, main #139 까지): okf 충돌은 양쪽 기록을 살렸다(whale-erp-front.md 는 줄이 맞닿아 난 충돌이라 main 줄에 이 브랜치의 줄을 다시 얹었다).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — WHALEERP-156 재영 문의 반영: 종이 계약이 기간이 겹치는 체결 완료와 부딪히면(api 409 `SIGNED_CONTRACT_OVERLAP`) 「잘못 올린 계약 바로잡기」 확인창(`correctSignedContracts`), 재계약 시작일은 직전 계약 시작일 다음 날부터(작성 · 이어 쓰기). api 타입은 api gyarados(3ddc4d3d) 기준으로 다시 만들었다.
 
 ## 2026-10-26 (BP 휴일)
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 수정 패널을 주소(`?edit=1`)에 남겨 뒤로 가기 · 바탕창 클릭이 플랫폼 관리자 관리와 같게 동작한다(사용자 요청). 상세 반복 영역의 다음 날짜 · 오늘 시작한 휴일의 강제 종료 불가 띠 · 점포 표의 적용 중 수를 뺐다.
@@ -71,6 +87,8 @@
 * **Update**: 목업 · 데모 출·퇴근 현황의 낡은 「퇴근 시각 이상」 사유를 「반경 밖 퇴근」으로, 사유 필터에서 「위치 오차 초과」를 뺐다 — 확인 필요 사유는 반경 밖 출근 · 반경 밖 퇴근 · 위치 조작 감지 셋(2026-10-26 재영). [Staff](/staff.md) 도 맞췄다.
 * **Update**: main 병합(front sandshrew, main #139 까지): okf 충돌은 양쪽 기록을 살렸다. 플랫폼 관리자 이메일 검사가 `email-format.ts` 로 모여, BP 관리자 폼도 그 `emailError` 를 쓴다(문구 「이메일 형식이 올바르지 않습니다.」).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 관리자: 등록 때 이메일도 아이디와 같은 때(칸을 벗어나거나 Enter) api `GET /bp-admins/email-availability` 로 중복을 묻는다(사용자 요청). 점포 일괄 검색 창에 끌어서 옮기기를 더하고 폭을 960 으로 넓혔다. 상세 대상 점포 표는 5개 뒤로 표 안에서 스크롤하고, 등록만 한 계정은 최종 수정일시를 「수정한 적 없음」으로 둔다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 code-review 반영: 이어지는 재계약이 있으면 「새 계약」을 숨기고(api `renewedBy`), 재계약 임시저장 이어 쓰기도 근무지 · 번호 잠금, 고를 수 없는 근무지면 재계약 화면을 열지 않음, 시작일이 지난 날이면 비우고 수습은 끔, 목록 「재계약」은 체결 전까지 · 갱신 예정은 날짜(해 포함) 또는 D-n, 직전 계약과 작성 재료를 함께 읽음. api 타입 다시 만듦(api main + 재계약).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 재계약(WHALEERP-156): 근로계약 상세의 「새 계약」을 체결 완료 · 체결 뒤 종료에서 켜고 `/contracts/new?from=` 재계약 작성(직전 값 채움 · 근무지 · 번호 잠금 · `previousContractId`). 목록 상태 칸에 재계약 서명 대기 「재계약」, 체결 완료 「갱신 예정 MM-DD」. api 타입 다시 만듦.
 * **Update**: main 병합(front raichu, main #134 까지): okf 충돌은 양쪽 기록을 살렸다.
 * **Update**: main 병합(front raichu, main #132 까지): okf 충돌은 양쪽 기록을 살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 디자인 수정 모음(front raichu): 공통 컴포넌트(DataTable `scroll` · DetailTable `title` 생략 · ReadonlyCard/ReadonlyValue 공통화 · HelpTip 신설), BP · 플랫폼 권한 그룹 목록 · 상세 · [메뉴설정] 팝업, 공통코드 관리 표 머리 고정.

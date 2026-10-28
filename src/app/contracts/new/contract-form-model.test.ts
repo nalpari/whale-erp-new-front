@@ -9,9 +9,13 @@ import {
   formatPhone,
   formatWage,
   fromDetail,
+  canRenew,
+  renewalFromDetail,
   hoursOf,
   initialForm,
   inProgressLine,
+  stillCorrecting,
+  replaceConfirmBody,
   inProgressOf,
   isMinor,
   monthlyWage,
@@ -23,6 +27,8 @@ import {
   partTimePay,
   probationWage,
   problems,
+  renewalStartProblem,
+  signedOverlapOf,
   toBody,
   weeklyHolidayOf,
   weeklyHours,
@@ -53,7 +59,7 @@ const detailOf = (over: Partial<ContractDetail> = {}): ContractDetail => ({
   probationMonths: null, probationWageReductionRate: null,
   isHealthPensionInsured: null, isEmploymentInjuryInsured: null, draftAction: null, histories: [], workDays: [], documents: [],
   firstSentAt: null, lastSentAt: null, signDeadlineAt: null, lastProcessedAt: null, rejectReason: null, resendCount: 0,
-  previousContractId: null, registeredAt: null, registeredBy: null, canResend: false,
+  previousContractId: null, registeredAt: null, registeredBy: null, canResend: false, renewedBy: null, staffJoined: false,
   ...over,
 });
 
@@ -291,6 +297,25 @@ test("409 본문에서 대체할 진행 중 계약만 꺼낸다", () => {
   assert.equal(inProgressOf({ code: "CONTRACT_IN_PROGRESS", contracts: [{ contractId: "5" }] }), undefined);
 });
 
+test("종이 계약과 기간이 겹치는 체결 완료(SIGNED_CONTRACT_OVERLAP)는 바로잡기가 대체할 목록으로 꺼내고, 진행 중 계약과 섞지 않는다(WHALEERP-156)", () => {
+  const list = [{ contractId: 5, status: "SIGNED", name: "남도현", startDate: "2026-11-01", endDate: "2027-10-31" }];
+  const body = { statusCode: 409, code: "SIGNED_CONTRACT_OVERLAP", message: "…", contracts: list };
+  assert.deepEqual(signedOverlapOf(body), list);
+  assert.equal(inProgressOf(body), undefined);
+  assert.equal(signedOverlapOf({ code: "CONTRACT_IN_PROGRESS", contracts: list }), undefined);
+});
+
+test("재계약 시작일은 직전 계약 시작일 다음 날부터 — 같거나 이르면 막고, 그 뒤로는 직전 계약과 겹쳐도 된다(WHALEERP-156)", () => {
+  const message = renewalStartProblem("2026-11-01");
+  assert.equal(message, "재계약 시작일은 직전 계약 시작일(2026-11-01) 다음 날부터입니다");
+  assert.ok(problems(filled({ startDate: "2026-11-01" }), false, false, "2026-11-01").includes(message));
+  assert.ok(problems(filled({ startDate: "2026-10-31" }), false, false, "2026-11-01").includes(message));
+  assert.ok(!problems(filled({ startDate: "2026-11-02" }), false, false, "2026-11-01").includes(message));
+  // 임시저장도 시작일을 넣었으면 본다(api 와 같다), 비었으면 묻지 않는다
+  assert.ok(problems(filled({ startDate: "2026-11-01" }), true, false, "2026-11-01").includes(message));
+  assert.ok(!problems(filled({ startDate: "" }), true, false, "2026-11-01").includes(message));
+});
+
 test("주휴일은 고른 요일을 쓰고, 근무 요일이면 근무하지 않는 가장 뒤 요일로 본다", () => {
   const f = initialForm();
   assert.equal(weeklyHolidayOf({ ...f, weeklyHoliday: "SAT" }), "SAT");
@@ -388,4 +413,41 @@ test("성별 · 외국인 여부 — 이어 쓰기는 상세 값으로 다시 �
   assert.equal(f.gender, "FEMALE");
   assert.equal(f.isForeigner, true);
   assert.equal(fromDetail(detailOf()).gender, "");
+});
+
+test("재계약 — 직전 계약 값을 채우고 시작일은 종료일 다음 날, 종료일은 비운다. 체결 완료 · 체결 뒤 종료만 재계약한다(WHALEERP-156)", () => {
+  const signed = detailOf({ status: "SIGNED", startDate: "2026-01-01", endDate: "2026-12-31" });
+  const f = renewalFromDetail(signed);
+  assert.equal(f.startDate, "2027-01-01");
+  assert.equal(f.endDate, "");
+  assert.equal(f.name, fromDetail(signed).name);
+  assert.equal(renewalFromDetail(detailOf({ status: "SIGNED", endDate: null })).startDate, "");
+
+  assert.equal(canRenew({ status: "SIGNED", histories: [], renewedBy: null }), true);
+  // 이미 이어지는 재계약이 있으면 띄우지 않는다
+  assert.equal(canRenew({ status: "SIGNED", histories: [], renewedBy: 9 }), false);
+  const ended = (actor: "SYSTEM" | "ADMIN") => ({ fromStatus: "SIGNED" as const, toStatus: "ENDED" as const, actor, changedAt: "2027-01-01T00:00:00Z" });
+  // 기간이 끝나 배치가 닫은 체결 완료는 재계약한다
+  assert.equal(canRenew({ status: "ENDED", histories: [ended("SYSTEM")], renewedBy: null }), true);
+  // 대체로 닫힌 체결 완료 · 체결 없이 종료(채용 접음)는 재계약하지 않는다
+  assert.equal(canRenew({ status: "ENDED", histories: [ended("ADMIN")], renewedBy: null }), false);
+  assert.equal(canRenew({ status: "ENDED", histories: [], renewedBy: null }), false);
+  assert.equal(canRenew({ status: "PENDING_SIGNATURE", histories: [], renewedBy: null }), false);
+});
+
+test("바로잡기 뒤 다시 물을 때 바로잡기 문구는 체결 완료가 있을 때만(front #135 code-review)", () => {
+  const c = (contractId: number, status: string) => ({ contractId, status, name: null, startDate: null, endDate: null });
+  const body = { correctSignedContracts: true } as Parameters<typeof stillCorrecting>[0];
+  assert.equal(stillCorrecting(body, [c(5, "SIGNED"), c(7, "DRAFT")]), true);
+  assert.equal(stillCorrecting(body, [c(7, "DRAFT")]), false);
+  assert.equal(stillCorrecting({} as typeof body, [c(5, "SIGNED")]), false);
+  // 바로잡기 문구를 보이지 않으면 본문에서도 바로잡기를 뺀다 — 그사이 체결된 계약이 「대체」로 종료되지 않게(front #135 재리뷰)
+  // 확인 본문 — 바로잡기 문구일 때만 바로잡기를 싣고, 대체 목록은 확인창에 보인 그대로(front #135 재리뷰 · 셀프 code-review)
+  const corrected = { ...body, replaceContractIds: [1] };
+  const list = [c(5, "SIGNED"), c(7, "DRAFT")];
+  assert.deepEqual(replaceConfirmBody(corrected, list, true), { correctSignedContracts: true, replaceContractIds: [5, 7] });
+  assert.deepEqual(replaceConfirmBody(corrected, [c(7, "DRAFT")], false), { replaceContractIds: [7] });
+  // 다시 물을 때의 판정 그대로 — 진행 중 목록만이면 바로잡기가 빠진다
+  assert.equal(replaceConfirmBody(corrected, [c(7, "DRAFT")], stillCorrecting(corrected, [c(7, "DRAFT")])).correctSignedContracts, undefined);
+  assert.equal(corrected.correctSignedContracts, true); // 원래 본문은 그대로
 });

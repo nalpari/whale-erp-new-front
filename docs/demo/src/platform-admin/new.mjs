@@ -72,7 +72,7 @@ function platformAdminNewBody(A) {
 
   // 저장하면 등록 패널을 닫고 상세 패널을 연다
   const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-save-panel": "platform-admin-detail-panel" })}</div>`;
-  return basic + note("관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.") + buttons;
+  return basic + note("초기 비밀번호는 등록한 이메일로 발송됩니다.") + buttons;
 }
 
 export const platformAdminNewPanel = (A, R) =>

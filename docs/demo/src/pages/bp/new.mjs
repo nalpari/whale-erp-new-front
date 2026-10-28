@@ -11,7 +11,8 @@ export function bpNewBody(A, R, { panel = false } = {}) {
     ui.field(f.req("이름"), ui.textField({ value: "오세린" })),
     f.group(f.req("연락처"), f.tel("010", "2291", "7730")),
     ui.field(f.req("이메일"), ui.textField({ value: "serin@breadlab.kr" }) + f.help("초기 비밀번호가 이 주소로 갑니다.")),
-    f.help("이 화면에서는 약관 동의를 받지 않습니다. 등록한 BP 마스터가 첫 로그인 때 비밀번호를 바꾸면서 이용약관과 개인정보 수집·이용에 동의합니다. 권한 그룹은 BP 마스터 기본 권한으로 정해집니다."),
+    // 등록 안내는 한 줄(앱 bp-master-form-panel.tsx, 2026-10-28 사용자 지정 — 권한 그룹 · 약관 동의 안내 삭제)
+    f.help("초기 비밀번호는 등록한 이메일로 발송됩니다."),
   );
 
   const biz = ui.formGroup(
