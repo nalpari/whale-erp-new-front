@@ -3,7 +3,7 @@ import type { components } from "../../../lib/api-types.generated";
 
 export type SendContractBody = components["schemas"]["SendContractDto"];
 
-/** 화면이 본 계약 — 상태와 마지막 발송 시각(상세 lastSentAt, 직원 목록은 모른다) */
+/** 화면이 본 계약 — 상태와 마지막 발송 시각(상세 · 직원 목록 · 직원 상세의 lastSentAt) */
 export type SeenContract = { status: SendContractBody["expectedStatus"] | null; sentAt?: string | null };
 
 /**
@@ -11,10 +11,12 @@ export type SeenContract = { status: SendContractBody["expectedStatus"] | null; 
  * CONTRACT_STATUS_CONFLICT 로 막아 다시 읽는다(front #136 재리뷰). 발송 시각은 상태가 그대로인 발송 대기 · 서명 대기를 두 탭에서
  * 두 번 보내는 것을 막는다(재발송마다 바뀐다). 모르는 값은 비운다(api 가 그 검사를 하지 않는다)
  */
-export const sendBodyOf = (seen: SeenContract): SendContractBody => ({
-  ...(seen.status && { expectedStatus: seen.status }),
-  ...(seen.sentAt && { expectedSentAt: seen.sentAt }),
-});
+export function sendBodyOf(seen: SeenContract | null | undefined): SendContractBody {
+  // 서버 액션은 누구나 직접 부를 수 있다 — 모양이 다른 값은 싣지 않는다(api 가 그 검사를 하지 않고 보낸다, 셀프 code-review)
+  const status = typeof seen?.status === "string" ? seen.status : null;
+  const sentAt = typeof seen?.sentAt === "string" ? seen.sentAt : null;
+  return { ...(status && { expectedStatus: status }), ...(sentAt && { expectedSentAt: sentAt }) };
+}
 
 /**
  * 실패 결과. recheck 면 api 가 이미 쓰고 보냈을 수 있다 — 확인창의 보내기를 막고 상세를 다시 읽는다(두 번 가지 않게). blocked 면

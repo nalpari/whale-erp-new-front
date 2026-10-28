@@ -180,4 +180,7 @@ test("재발송 본문은 화면이 본 상태를 싣는다 — 모르면 비운
     expectedSentAt: "2026-10-10T01:00:00.000Z",
   });
   assert.deepEqual(sendBodyOf({ status: null, sentAt: null }), {});
+  // 서버 액션을 직접 불러 모양이 다른 값을 넘겨도 터지지 않고 싣지 않는다
+  assert.deepEqual(sendBodyOf(null), {});
+  assert.deepEqual(sendBodyOf({ status: 7, sentAt: {} } as unknown as Parameters<typeof sendBodyOf>[0]), {});
 });

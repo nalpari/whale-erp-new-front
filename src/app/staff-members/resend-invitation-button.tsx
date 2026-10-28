@@ -22,7 +22,7 @@ import { SEND_UNKNOWN, sendFailureOf } from "../contracts/[contractId]/send-mode
 /** 목록 · 상세에서 접수 여부를 모를 때의 문장. SEND_UNKNOWN 은 근로계약 상세용(「상세를 다시 읽었으니」)이라 바꿔 쓴다 */
 const RESEND_UNKNOWN = "발송됐는지 알 수 없습니다. 화면을 다시 읽었으니 직원에게 받았는지 확인해 주세요 — 다시 보내려면 화면을 새로 고친 뒤 보내 주세요";
 
-export function ResendInvitationButton({ contractId, name, status }: { contractId: number; name: string | null; status: ContractStatus | null }) {
+export function ResendInvitationButton({ contractId, name, status, lastSentAt }: { contractId: number; name: string | null; status: ContractStatus | null; lastSentAt: string | null }) {
   const router = useRouter();
   const toast = useToast();
   const allowed = useMenuRole(MENU_CODE.contracts, "update");
@@ -55,7 +55,7 @@ export function ResendInvitationButton({ contractId, name, status }: { contractI
           start(async () => {
             let result: SendContractResult;
             try {
-              result = await sendContract(contractId, { status });
+              result = await sendContract(contractId, { status, sentAt: lastSentAt });
             } catch {
               // 서버 액션 호출 자체가 끊겼다 — api 는 이미 보냈을 수 있어 「모름」으로 다룬다(send-button.tsx 와 같다)
               result = sendFailureOf(null, undefined, "");
