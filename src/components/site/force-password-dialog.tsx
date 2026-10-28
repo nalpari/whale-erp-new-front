@@ -104,7 +104,6 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
             />
             <TermsRow kind="use" label="이용약관 동의 (필수)" checked={terms.use} onChange={(use) => setTerms({ ...terms, use })} />
             <TermsRow kind="policy" label="개인정보 수집·이용 동의 (필수)" checked={terms.policy} onChange={(policy) => setTerms({ ...terms, policy })} />
-            <p className="text-[13px] text-erp-label">필수 두 가지에 모두 동의해야 비밀번호도 바뀝니다. 동의하지 않으면 로그아웃만 할 수 있습니다.</p>
             {error?.at === "terms" && <ErrorText>{error.message}</ErrorText>}
           </fieldset>
         )}
