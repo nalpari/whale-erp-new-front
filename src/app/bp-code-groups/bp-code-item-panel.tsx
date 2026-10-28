@@ -343,7 +343,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       }
     >
       {/* 고칠 수 없는 이유는 빨간 안내(WarnBand)로 — 권한 그룹 상세의 막힌 이유와 같은 모양 · 말투(2026-10-28 사용자 지정, 전엔 회색 띠 「…조회만 할 수 있습니다」) */}
-      {lock === "platform-user" && <WarnBand>플랫폼 계정은 BP 공통코드를 수정할 수 없습니다.</WarnBand>}
+      {lock === "platform-user" && <WarnBand>BP 공통코드는 BP 계정만 수정할 수 있습니다.</WarnBand>}
       {group && lock === "fixed" && <WarnBand>플랫폼고정 그룹은 수정할 수 없습니다.</WarnBand>}
       {reordered && <PendingNotice message={REORDERED} />}
       {failure && <SaveFailedBand message={failure} />}
