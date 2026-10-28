@@ -16,7 +16,7 @@ import {
   initialForm,
   inProgressLine,
   stillCorrecting,
-  reaskedBody,
+  withoutCorrection,
   isMinor,
   MINIMUM_WAGE,
   monthlyHours,
@@ -365,15 +365,11 @@ export function ContractForm({
         return;
       }
       // 바로잡기로 다시 보냈는데 그사이 대체할 목록이 바뀌었으면 api 가 지금 목록으로 다시 묻는다 — 바로잡기 문구는 목록에 체결
-      // 완료가 있을 때만 보이고(진행 중 계약만이면 대체 문구, front #135 code-review), 그때는 본문에서 바로잡기도 뺀다(reaskedBody,
-      // front #135 재리뷰)
+      // 완료가 있을 때만 보이고(진행 중 계약만이면 대체 문구, front #135 code-review), 그때는 본문에서 바로잡기도 뺀다 — 문구와 본문이
+      // 한 판정을 따른다(front #135 재리뷰)
       if (result.inProgress) {
-        setReplace({
-          body: reaskedBody(body, result.inProgress),
-          list: result.inProgress,
-          paper: true,
-          correcting: stillCorrecting(body, result.inProgress),
-        });
+        const correcting = stillCorrecting(body, result.inProgress);
+        setReplace({ body: correcting ? body : withoutCorrection(body), list: result.inProgress, paper: true, correcting });
         return;
       }
       setReplace(null);
