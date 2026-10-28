@@ -187,6 +187,8 @@ function DetailBody({
             )}
             {/* 등록 · 초기화 메일이 실패했다 — 다시 보내는 길은 초기화뿐이다 */}
             {bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent && <span className="truncate text-erp-off">초기 비밀번호 미발송</span>}
+            {/* 초기화 버튼 · 미발송 표시가 모두 없으면(미사용 · 탈퇴 · 수정 권한 없음) 빈칸 대신 「-」(2026-10-28 사용자 지정) */}
+            {!(bp.accountStatus === "ACTIVE" && (canUpdate || bp.isInitialPasswordUnsent)) && muted("-")}
           </span>
           {/* 앞에 머리 줄(HeadValues)과 같은 11px 세로 구분선 — #d9d9d9 는 Figma 값 구분선(DESIGN.md) */}
           <span className="flex min-w-0 items-center gap-[10px]">
