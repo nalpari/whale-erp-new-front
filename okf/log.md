@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-28
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) — PR #164 리뷰: 근로계약 저장의 5xx 는 api 가 저장 커밋 뒤 발송을 불러 이미 저장됐을 수 있어 모두 결과 모름으로 두고(저장 전 실패가 확실한 503 발송 설정 오류만 api 문장), 계약 ID 없는 502 SEND_* 도 결과 모름이다. 루트 loading.tsx 로 스트리밍되는 페이지는 notFound() · redirect() 가 404 · 307 이 아니라 200 + 화면 안 처리다(front mudkip).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 쓰기 요청 공통 `send` · `actionFailure`(`lib/action-failure.ts`)와 화면 전체 「처리중」 딤 `useAction(kind)`를 만들고 근로계약 작성 · 수정 · 삭제 · 발송 · 종료 · 당사자 정보 수정에 먼저 적용했다(front mudkip). 저장 실패 가르기는 `send-model.ts` 의 `saveFailureOf` · `deleteFailureOf`(순수 함수 + 테스트), 덮개 저장소 · 감싸기는 `busy-stack.ts` 로 떼었고, LoadGroup 은 시간 제한으로 풀릴 때 `console.warn` 을 남긴다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [홈·계정 진입](/home.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 영역이 여러 개인 화면은 `LoadGroup` 으로 감싸 처음 들어올 때 모두 받은 뒤 한 번에 보인다(15초 뒤에는 늦는 영역만 영역 안 로딩). 묶여 있는 동안은 딤 + 스피너 + 「로딩중입니다」(`LoadingNotice`)를 보인다. 직원 상세는 기본 정보까지 본문 전체를 덮고 영역 로딩도 같은 모양이다(`AreaLoading` 삭제). 페이지 이동 로딩은 `app/loading.tsx` 공통 로딩, 로그인 전 화면은 `(public)/(site)/loading.tsx` 로 본문만 비운다. 홈 두 화면과 직원 상세 네 영역에 적용, `use-home-api.ts` 는 `lib/use-load.ts`(`useLoad` · `useApi`)로 옮겼다(front mudkip).
 * **Update**: [BP 마스터 계정 관리](/bp.md) · [Whale ERP Frontend](/whale-erp-front.md) — 사용자 디자인 수정(front beedrill): BP 마스터 목록 열 · 계정상태 필터(셋 다 끄기) · 상호명 링크, 상세 머리 고정 · [BP 상태 변경] 자리(기본정보 제목 줄) · 강제변경을 비밀번호 줄로 · 미사용/탈퇴 빨간 안내, 수정 화면 아이디 · 가입경로 삭제. 중복 확인 문구 네 화면 통일, 플랫폼관리 사이트 부가서비스 현황 숨김.
