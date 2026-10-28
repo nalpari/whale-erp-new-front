@@ -406,7 +406,7 @@ export function BpMasterFormPanel(props: Props) {
           <EmailAvailability id={messageId("email")} check={emailCheck} message={errors.email} />
         </Stack>
         {/* 계정상태 칸 대신 안내 한 줄만 — 상태는 제목 줄 배지(2026-10-28 사용자 지정) */}
-        {props.mode === "edit" && <Note>계정상태는 상세화면의 [BP 상태 변경]에서 변경할 수 있습니다.</Note>}
+        {props.mode === "edit" && <Note>계정상태는 상세화면의 [BP상태변경]에서 변경할 수 있습니다.</Note>}
       </FormGroup>
 
       {/* 사업자정보 — MY PAGE 사업자정보 탭과 같은 모양(2026-10-28 사용자 지정): 회색 제목 바(오른쪽 인증 상태) + 세 칸 한 줄 인증 상자 */}

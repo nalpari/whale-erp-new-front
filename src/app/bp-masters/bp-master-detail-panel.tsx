@@ -226,7 +226,7 @@ function DetailBody({
   // 수정 권한이면 [BP 상태 변경](2026-10-28 사용자 지정 문구), 탈퇴 BP 는 [사유 보기](변경 이력을 보이지 않으니 탈퇴 사유를 여기서 본다, WHALEERP-626)
   const statusAction = canUpdate ? (
     <Button variant="soft" onClick={() => setConfirm(bp.accountStatus === "ACTIVE" ? "inactive" : "active")} disabled={busy}>
-      BP 상태 변경
+      BP상태변경
     </Button>
   ) : withdrawn && bp.withdrawal ? (
     <WithdrawalButton bp={bp} withdrawal={bp.withdrawal} panelOpen={panelOpen} />
