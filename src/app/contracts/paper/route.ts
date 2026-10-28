@@ -1,12 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { authHeaders, requestRaw, SESSION_COOKIE } from "@/lib/api";
 import { sameOrigin } from "@/lib/paper-request";
-import { inProgressOf } from "../new/contract-form-model";
+import { inProgressOf, signedOverlapOf } from "../new/contract-form-model";
 
 // 종이 계약 등록(CTR-23)의 창구. 화면이 multipart(data = 근로계약서 JSON, employmentContract 필수 · wageContract 선택)를 보내면
 // 쿠키의 접근 토큰을 붙여 api 의 POST /contracts/paper(이어 쓰기면 contractId 를 실어 PUT /contracts/:contractId/paper)로 넘긴다.
 // 서버 액션이 아니라 라우트 핸들러인 것은 본문 크기 때문이다 — 날인본은 하나에 10MB 라 서버 액션 한도(next.config 6MB)를 넘는다.
-// 성공하면 { ok: true }, 실패하면 화면에 보일 { error, inProgress? } 를 api 와 같은 상태 코드로 준다(같은 점포 진행 중 계약은 409 CONTRACT_IN_PROGRESS).
+// 성공하면 { ok: true }, 실패하면 화면에 보일 { error, inProgress?, signedOverlap? } 를 api 와 같은 상태 코드로 준다(같은 점포 진행 중
+// 계약은 409 CONTRACT_IN_PROGRESS, 기간이 겹치는 체결 완료는 409 SIGNED_CONTRACT_OVERLAP — WHALEERP-156).
 
 const SERVER_DOWN = "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요";
 // 경로에 넣는 id — 1..2147483647 정수만. 화면 밖에서 직접 부를 수 있어 api 의 다른 경로로 새지 않게 막는다.
@@ -53,7 +54,8 @@ export async function POST(req: NextRequest) {
   const error = response.status >= 500 && response.status !== 503 ? SERVER_DOWN : (text ?? `요청이 실패했습니다 (HTTP ${response.status})`);
   if (response.status >= 500) console.error("종이 계약 등록 실패", response.status, body);
   const inProgress = response.status === 409 ? inProgressOf(body) : undefined;
-  const res = NextResponse.json(inProgress ? { error, inProgress } : { error }, { status: response.status });
+  const signedOverlap = response.status === 409 ? signedOverlapOf(body) : undefined;
+  const res = NextResponse.json({ error, ...(inProgress && { inProgress }), ...(signedOverlap && { signedOverlap }) }, { status: response.status });
   // 토큰이 끊겼다. 지워야 /login 이 「로그인한 채 오면 홈으로」로 되돌려 보내지 않는다(BFF 와 같다).
   if (response.status === 401) res.cookies.delete(SESSION_COOKIE);
   return res;
