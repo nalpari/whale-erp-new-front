@@ -305,14 +305,20 @@ function MenuTable({
   const walk = (list: RoleGroupMenuNode[]) => list.forEach((n) => (rows.push(n), walk(n.children)));
   walk(nodes);
 
-  // 일부만 켜진 묶음 줄은 –(mixed)로 보이고, 누르면 모두 켠다(머리칸은 – 없이 해제로 — 아래 머리 표의 OPS 칸 참고)
-  // top: 1단계 줄 — 켜진 칸을 「등록」 배지 모양(연한 파랑 바탕 erp-on-bg · 파랑 erp-on)으로 칠해 2단계와 가른다(2026-10-26 사용자 지정).
+  // 일부만 켜진 묶음 줄 · 머리칸은 –(mixed)로 보이고, 누르면 모두 켠다
+  // top: 1단계 줄 — 켜진 칸 · – 칸을 「등록」 배지 모양(연한 파랑 바탕 erp-on-bg · 파랑 erp-on)으로 칠해 2단계와 가른다(2026-10-26 사용자 지정).
   // 바탕이 연해 흰 체크가 안 보이므로 흰 체크 그림은 숨기고 파랑 체크(/icons/check-on.svg)를 input 바탕 그림으로 깐다.
+  // head: 머리칸 — – 칸만 1단계 줄과 같은 하늘색으로 칠한다(다 켜진 칸은 기본 체크 그대로, 2026-10-27 사용자 지정).
   // 공통 Checkbox 는 className 을 받지 않아 감싸는 span 에서 안쪽 input · 그림 · 막대만 덮는다.
-  const box = (label: string, state: { checked: boolean; mixed?: boolean; disabled: boolean }, onToggle: (on: boolean) => void, top = false) => (
+  const MIXED_TONE = "[&_input:indeterminate]:border-erp-on [&_input:indeterminate]:bg-erp-on-bg [&_input:indeterminate~span]:bg-erp-on";
+  const box = (label: string, state: { checked: boolean; mixed?: boolean; disabled: boolean }, onToggle: (on: boolean) => void, tone?: "top" | "head") => (
     <span
       className={`inline-flex ${state.disabled ? "opacity-40" : ""} ${
-        top ? "[&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on-bg [&_input:checked]:bg-[url(/icons/check-on.svg)] [&_input:checked]:bg-center [&_input:checked]:bg-no-repeat [&_img]:hidden [&_input:indeterminate]:border-erp-on [&_input:indeterminate]:bg-erp-on-bg [&_input:indeterminate~span]:bg-erp-on" : ""
+        tone === "top"
+          ? `[&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on-bg [&_input:checked]:bg-[url(/icons/check-on.svg)] [&_input:checked]:bg-center [&_input:checked]:bg-no-repeat [&_img]:hidden ${MIXED_TONE}`
+          : tone === "head"
+            ? MIXED_TONE
+            : ""
       }`}
     >
       <Checkbox
@@ -356,15 +362,15 @@ function MenuTable({
                 메뉴단계
               </th>
               {OPS.map((op) => {
-                // 머리칸은 하나라도 꺼져 있으면 – 없이 그냥 해제로 보인다(2026-10-26 사용자 지정). 누르면 모두 켠다. 묶음 줄의 – 는 그대로다
-                const state = { ...aggregate(values, nodes, op), mixed: false };
+                // 머리칸도 아래 칸이 하나라도 켜져 있고 다 켜지진 않았으면 1단계 줄과 같은 하늘색 – 로 보인다(2026-10-27 사용자 지정 — 전엔 – 없이 해제로). 누르면 모두 켠다
+                const state = aggregate(values, nodes, op);
                 return (
                   <th key={op} scope="col" className="px-[4px] font-semibold text-erp-ink">
                     {/* 체크박스를 칸 가운데(본문 체크박스와 같은 세로줄)에 두고 글자는 그 오른쪽에 — 전엔 글자까지 묶어 가운데 맞춰
                         체크박스가 왼쪽으로 밀려 본문과 들쭉날쭉했다(2026-10-26 사용자 지정) */}
                     <span className="grid grid-cols-[1fr_auto_1fr] items-center gap-[6px]">
                       <span />
-                      {box(`${OP_LABEL[op]} 전체 선택`, state, (on) => onChange(toggleAll(values, nodes, op, on)))}
+                      {box(`${OP_LABEL[op]} 전체 선택`, state, (on) => onChange(toggleAll(values, nodes, op, on)), "head")}
                       <span className="justify-self-start whitespace-nowrap">{OP_LABEL[op]}</span>
                     </span>
                   </th>
@@ -428,7 +434,7 @@ function MenuTable({
                           `${n.name} ${OP_LABEL[op]}`,
                           n.isGroup ? aggregate(values, n.children, op, n[op].value) : { checked: Boolean(values[n.menuId]?.[op]), disabled: !editableOf(n, op) },
                           (on) => onChange(toggle(values, n, op, on)),
-                          n.depth === 1,
+                          n.depth === 1 ? "top" : undefined,
                         )}
                       </td>
                     ))}

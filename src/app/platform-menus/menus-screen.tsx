@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Badge, Button, ConfirmDialog, DataTable, PageBar, useToast, type Column } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DataTable, PageBar, Tag, useToast, type Column } from "@/components/common";
 import { ServiceTabs } from "@/components/site/service-tabs";
 import { usePagePermission } from "@/components/site/session-gate";
 import { CARD, FailedBand } from "@/components/site/side-parts";
@@ -134,6 +134,14 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
   }, [moving, tree]);
 
   const flat = flatten(nodes);
+  // 위 단계가 미사용이라 사용자 화면 · 메뉴 설정에서 함께 숨는 메뉴 — 자기 사용여부는 그대로 둔다(상위를 다시 사용으로 바꾸면 그대로 보이게, 2026-10-27 사용자 지정)
+  const hiddenByParent = new Set<number>();
+  const markHidden = (list: MenuNode[], parentOff: boolean) =>
+    list.forEach((n) => {
+      if (parentOff) hiddenByParent.add(n.menuId);
+      markHidden(n.children, parentOff || n.status !== "ACTIVE");
+    });
+  markHidden(nodes, false);
   const rows: Row[] = flat.map((row) => ({ kind: "menu", row }));
   if (placement) {
     const at = placement.afterId === null ? rows.length : rows.findIndex((r) => r.kind === "menu" && r.row.node.menuId === placement.afterId) + 1;
@@ -181,9 +189,18 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     { header: "순서", width: "w-[60px]", cell: (r) => (r.kind === "menu" ? muted(r.row.node, r.row.node.sortOrder) : placement!.order) },
     {
       header: "사용여부",
-      width: "w-[100px]",
+      // 「사용 + 상위 미사용」 꼬리표가 한 줄에 들게 넓힌다(2026-10-27)
+      width: "w-[180px]",
       cell: (r) =>
-        r.kind === "menu" ? <Badge tone={r.row.node.status === "ACTIVE" ? "on" : "off"}>{statusText(r.row.node.status)}</Badge> : <span className="text-erp-muted">—</span>,
+        r.kind === "menu" ? (
+          // 상위가 미사용이면 자기 값(사용 · 미사용)은 그대로 보이고, 숨는 이유를 회색 꼬리표로 덧붙인다(2026-10-27 사용자 지정 — 안 A)
+          <span className="inline-flex items-center gap-[6px]">
+            <Badge tone={r.row.node.status === "ACTIVE" ? "on" : "off"}>{statusText(r.row.node.status)}</Badge>
+            {hiddenByParent.has(r.row.node.menuId) && <Tag>상위 미사용</Tag>}
+          </span>
+        ) : (
+          <span className="text-erp-muted">—</span>
+        ),
     },
   ];
 

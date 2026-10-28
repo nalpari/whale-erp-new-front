@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-27
+* **Update**: main 병합(front venusaur, main #155 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Update**: main 병합(front venusaur, v221 반영 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 재영 리뷰(front #151, 운영 정책 v221 PAY-06): 건수 줄의 「검토 대기 N」을 상태 넷과 세로선으로 떼어 꼬리표(`Tag`)로, 줄의 「검토 대기」도 「검토 중」 빨간 배지와 다른 꼬리표로 바꿨다. 공제 미입력(`DEDUCTION_MISSING`)도 api 가 검토 대기 사유로 보내 꼬리표 · 사유 글자에 보인다. 확정 확인창의 「검토 사유는 확인한 것으로 남습니다」에 「확정 취소하면 다시 검토 대기가 됩니다」를 붙였다. [이름 규칙](/conventions/naming.md) 검토 대기 사유를 다섯으로. api 타입은 venusaur api openapi 로 다시 만들었다.
 * **Update**: main 병합(front venusaur, main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
@@ -8,6 +9,7 @@
 * **Fix**: [급여명세서 관리 화면](/screens/payslips.md) — PR #151 ⑥ 머지 블로커: api 가 검토 대기 건수에서도 본사 역할에게 가린 줄을 빼므로(ATT-30 v218) 「본사 제공 동의 없는 직원의 명세서는 …빠집니다」 안내를 뺐다.
 * **Update**: main 병합(front venusaur, ivysaur 머지 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Update**: [급여명세서 관리 화면 (구현)](/screens/payslips.md) — 검토 대기(WHALEERP-234, 운영 정책 PAY-01 · 06 2026-10-26 — 상태가 아니라 분류): 목록 상태 칸에 「검토 대기」 배지(사유는 마우스를 올리면), 왼쪽 필터 「분류 · 검토 대기만」(`reviewPending`), 건수 줄 끝 「검토 대기 N」. 상세 오른쪽 단에 채널별 성공 · 실패 「발송 이력」(WHALEERP-236). api 타입을 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한별 메뉴설정 팝업 머리칸도 일부만 켜졌으면 하늘색 「–」, 플랫폼 메뉴 관리에서 상위가 미사용인 메뉴에 「상위 미사용」 꼬리표 · 하위 메뉴가 있는 메뉴를 미사용으로 고르면 하위도 함께 숨는다는 안내, 플랫폼 · BP 관리자 상세의 등록 · 최종수정을 기본정보 표 안으로 · 본인 계정 수정 안내 문구, 하위 메뉴 숨김 안내 수는 새로 숨는 메뉴만, 아이디 · 비밀번호 찾기 플레이스홀더(front weedle).
 * **Update**: main 병합(front snubbull, main #147 · #148 까지): api 타입은 git 이 합친 것이 아니라 api main `65a871a` openapi 로 다시 만들었다(BP 휴일 기간 필드와 홈 · 출퇴근 · BP 마스터 · BP 관리자가 함께 들어 있다). `StoreMappingPicker` 는 main 의 사용자 지정 문구(빈 칩 · 오른쪽 빈 목록 두 줄, 일괄 검색 안내 한 줄)와 칩 영역 130px 를 `TEXTS.include` 로 옮기고 예외 · 필터 문구도 같은 말투로 맞췄다(데모 `BULK_MAP_TEXT` · `FILTER_BULK_TEXT` 도). okf 충돌은 양쪽 기록을 살렸다(PR #154 머지 블로커).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 상세의 최종수정일시를 1팀 규칙(`wasUpdated` + 수정자)으로: 등록만 한 휴일은 「수정한 적 없음」 대신 「-」다. 전엔 수정자 유무로만 갈라, api 가 등록 때 수정자를 채워 등록 시각 · 등록자가 최종수정으로 보였다(PR #154 코드 리뷰).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 코드 리뷰 반영: DESIGN.md Buttons 에 작은 버튼(24px, 1팀 확인 필요)을 적었다. 「선택한 점포」 줄 높이를 24px 로 미리 둬 첫 점포를 고를 때 필터가 밀리지 않게, 필터 일괄 검색은 남긴 칩 뒤에 새 점포를 붙이게, BP 휴일은 적용 범위를 바꾸면 점포 오류 · 찾기 글자를 비우게 했다.
