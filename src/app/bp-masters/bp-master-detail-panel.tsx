@@ -314,7 +314,7 @@ function DetailBody({
         <>
           <ConfirmDialog
             open={confirm === "inactive"}
-            title="BP를 미사용으로 바꾸시겠습니까?"
+            title="BP상태를 미사용으로 바꾸시겠습니까?"
             confirmLabel="미사용으로 변경"
             confirmVariant="danger"
             wide
@@ -333,7 +333,7 @@ function DetailBody({
 
           <ConfirmDialog
             open={confirm === "active"}
-            title="BP를 사용으로 되돌리시겠습니까?"
+            title="BP상태를 사용으로 바꾸시겠습니까?"
             confirmLabel="사용으로 변경"
             wide
             busy={busy}
