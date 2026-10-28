@@ -326,7 +326,7 @@ function DetailBody({
             <div className="flex flex-col gap-[12px]">
               <WhoList rows={[["상호명", bp.tradeName], ["아이디", bp.loginId], ["이름", bp.name ?? "-"]]} />
               <WarnBand>
-                {"BP 마스터를 포함한 모든 관리자 계정이 미사용이 되어 로그인할 수 없습니다.\n점포 상태는 유지되고, 직원초대 · 계약 · 출퇴근 기능은 중지됩니다."}
+                {"BP 마스터를 포함한 모든 관리자 계정은 [미사용]되어 로그인할 수 없습니다.\n점포 상태는 유지되고, 직원초대 · 계약 · 출퇴근 기능은 중지됩니다."}
               </WarnBand>
             </div>
           </ConfirmDialog>
