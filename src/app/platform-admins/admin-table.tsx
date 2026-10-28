@@ -77,12 +77,13 @@ export function AdminTable({
   const columns: Column<PlatformAdmin>[] = [
     { header: "아이디", width: "w-[130px]", cell: (a) => dim(a, a.loginId) },
     { header: "이름", width: "w-[110px]", cell: (a) => open(a, a.name ?? a.loginId) },
-    { header: "권한명", width: "w-[150px]", cell: (a) => dim(a, a.roleGroup.name) },
+    // 이름 다음에 계정상태 → 권한명(2026-10-28 사용자 지정 — 전엔 권한명 → 계정상태)
     {
       header: "계정상태",
       width: "w-[100px]",
       cell: (a) => (a.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge>),
     },
+    { header: "권한명", width: "w-[150px]", cell: (a) => dim(a, a.roleGroup.name) },
     { header: "연락처", width: "w-[150px]", align: "left", cell: (a) => (a.phone ? dim(a, <WithIcon icon="phone">{formatPhone(a.phone)}</WithIcon>) : "") },
     { header: "이메일", width: "w-[220px]", align: "left", cell: (a) => (a.email ? dim(a, <WithIcon icon="mail">{a.email}</WithIcon>) : "") },
     {
