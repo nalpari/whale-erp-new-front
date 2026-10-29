@@ -179,6 +179,8 @@ test("상태 칸 안내 — 발송 대기는 직원의 지금 가입 · 초대 �
     draftAction: "SIGNUP_INVITE" as const,
     staffJoinState: "INVITED" as const,
     staffRetired: false,
+    renewalDate: null,
+    previousContractId: null,
   };
   assert.deepEqual(statusNotes(base, now), ["가입 대기 중"]);
   // 초대가 만료되면 저장 때 판별한 초대 유형(가입 초대)이 아니라 만료다
@@ -188,6 +190,13 @@ test("상태 칸 안내 — 발송 대기는 직원의 지금 가입 · 초대 �
   assert.deepEqual(statusNotes({ ...base, status: "PENDING_SIGNATURE", staffJoinState: "JOINED" }, now), ["D-24"]);
   assert.deepEqual(statusNotes({ ...base, status: "ENDED", staffJoinState: "JOINED", staffRetired: true }, now), ["퇴직"]);
   assert.deepEqual(statusNotes({ ...base, status: "SIGNED", staffJoinState: "JOINED" }, now), []);
+  // 재계약 서명 대기 · 체결 완료의 갱신 예정일(WHALEERP-156)
+  assert.deepEqual(statusNotes({ ...base, status: "PENDING_SIGNATURE", staffJoinState: "JOINED", previousContractId: 5 }, now), ["재계약", "D-24"]);
+  // 퇴직 뒤 재입사는 가입 초대(발송 대기)로 시작한다 — 체결 전까지 「재계약」
+  assert.deepEqual(statusNotes({ ...base, previousContractId: 5 }, now), ["가입 대기 중", "재계약"]);
+  // 갱신 예정일이 아직이면 날짜(해 포함), 오늘이거나 지났으면 종료일까지 남은 날 — 지난 날짜를 앞날처럼 보이지 않게
+  assert.deepEqual(statusNotes({ ...base, status: "SIGNED", staffJoinState: "JOINED", renewalDate: "2026-12-01" }, now), ["갱신 예정 2026-12-01"]);
+  assert.deepEqual(statusNotes({ ...base, status: "SIGNED", staffJoinState: "JOINED", renewalDate: "2026-08-28" }, now), ["갱신 예정 D-20"]);
 });
 
 test("api 가 가입 상태를 아직 싣지 않으면 발송 대기에 판별한 초대 유형을 붙인다(먼저 배포된 화면)", () => {
@@ -213,7 +222,7 @@ test("저장 뒤 안내 — 임시저장 · 종이 계약은 상태로, 보낸 �
 
 test("발송 대기에 가입 · 초대 안내가 없을 때 — 초안 직원 · 가입 상태가 null 이면 판별한 초대 유형, 가입한 직원은 없음", () => {
   const now = new Date("2026-09-07T03:00:00Z");
-  const row = { status: "PENDING_SEND" as const, signDeadlineAt: null, draftAction: "SIGNUP_INVITE" as const, staffRetired: false };
+  const row = { status: "PENDING_SEND" as const, signDeadlineAt: null, draftAction: "SIGNUP_INVITE" as const, staffRetired: false, renewalDate: null, previousContractId: null };
   assert.deepEqual(statusNotes({ ...row, staffJoinState: "JOINED" }, now), []);
   // 나간 초대가 없는 초안 직원(알림톡 실패 뒤 등)은 어느 초대를 보내야 하는지 예전처럼 알린다
   assert.deepEqual(statusNotes({ ...row, staffJoinState: "DRAFT" }, now, () => "가입 초대"), ["가입 초대"]);

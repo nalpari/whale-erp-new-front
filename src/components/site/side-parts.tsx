@@ -29,6 +29,11 @@ export function WarnBand({ children }: { children: ReactNode }) {
   return <div className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] whitespace-pre-line text-erp-off">{children}</div>;
 }
 
+/** 하늘색 안내 상자 — WarnBand 와 같은 모양에 상태 파랑(erp-on). 잘 된 일을 알리고 다음 할 일을 덧붙일 때(BP 마스터 상세 초기 비밀번호 발송, 2026-10-28 사용자 지정). */
+export function SuccessBand({ children }: { children: ReactNode }) {
+  return <div className="rounded-[2px] border border-erp-on bg-erp-on-bg px-[16px] py-[12px] text-[14px] whitespace-pre-line text-erp-on">{children}</div>;
+}
+
 /** 칸 오류 문구 — 입력칸 바로 아래 한 줄. 문구가 없으면 그리지 않는다. */
 export function FieldMessage({ id, message }: { id: string; message?: string }) {
   if (!message) return null;

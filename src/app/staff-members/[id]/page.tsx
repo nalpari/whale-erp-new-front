@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
-import { DetailTable, PageBar } from "@/components/common";
+import { DetailTable, LoadGroup, LoadGroupArea, LoadingNotice, PageBar } from "@/components/common";
 import { getEnum } from "@/lib/api";
 import type { EnumValue } from "@/lib/enums";
 import { hqSharingConsentText, kstToday, staffEmailText } from "@/lib/staff-members";
@@ -14,7 +13,7 @@ import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, for
 import { CellView } from "../staff-table";
 import { BirthDateCell } from "./birth-date-dialog";
 import { ContractBox } from "./contract-box";
-import { AreaLoading, Box, BoxMessage } from "./detail-box";
+import { Box, BoxMessage } from "./detail-box";
 import { employmentHistoryLines, historySearch } from "./employment-history";
 import { MenuManageLink } from "./manage-link";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
@@ -154,66 +153,70 @@ export default async function StaffMemberDetailPage({
       <PageBar title="직원 정보 관리" />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
-          <div className="flex flex-col gap-[12px]">
+          <div className="flex flex-1 flex-col gap-[12px]">
             <div className="flex items-center gap-[6px]">
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>
               <StaffDetailActions staff={staff} today={today} listHref={listHref} />
             </div>
-            <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
-              <div className="flex min-w-0 flex-col gap-[24px]">
-                <DetailTable title="기본 정보" rows={basicRows} />
-                <PasswordResetButton staff={staff} />
-                {/* 가장 최근 계약 1건 — 근로계약 영역 요약(api #183). 계약이 없으면 그 칸이 작성으로 넘긴다 */}
-                <Box
-                  title="근로계약"
-                  manage={
-                    <MenuManageLink
-                      menuCode={MENU_CODE.contracts}
-                      menuName="근로계약 관리"
-                      href={staff.contract ? `/contracts/${staff.contract.contractId}` : "/contracts"}
-                    />
-                  }
-                >
-                  <Suspense fallback={<AreaLoading />}>
-                    <ContractBox staffMemberId={staffMemberId} />
-                  </Suspense>
-                </Box>
+            {/* 처음 들어올 때는 제목 줄 아래 본문 전체(기본 정보 · 네 영역)를 LoadGroup 이 딤 + 스피너로 덮고, 네 영역이 모두 온 뒤 한 번에 보인다.
+                  영역은 LoadGroupArea 가 각자 세기만 한다 */}
+            <LoadGroup>
+              <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
+                <div className="flex min-w-0 flex-col gap-[24px]">
+                  <DetailTable title="기본 정보" rows={basicRows} />
+                  <PasswordResetButton staff={staff} />
+                  {/* 가장 최근 계약 1건 — 근로계약 영역 요약(api #183). 계약이 없으면 그 칸이 작성으로 넘긴다 */}
+                  <Box
+                    title="근로계약"
+                    manage={
+                      <MenuManageLink
+                        menuCode={MENU_CODE.contracts}
+                        menuName="근로계약 관리"
+                        href={staff.contract ? `/contracts/${staff.contract.contractId}` : "/contracts"}
+                      />
+                    }
+                  >
+                    <LoadGroupArea fallback={<LoadingNotice compact />}>
+                      <ContractBox staffMemberId={staffMemberId} />
+                    </LoadGroupArea>
+                  </Box>
+                </div>
+                {/* 영역마다 따로 받는다 — 한 영역이 실패해도 그 영역에만 안내 · 다시 하기를 그리고 나머지는 그대로다 */}
+                <div className="flex min-w-0 flex-col gap-[24px]">
+                  <Box
+                    title="근무스케줄"
+                    tools={<WeekNav monday={monday} search={search} today={today} />}
+                    manage={
+                      <MenuManageLink
+                        menuCode={MENU_CODE.workSchedules}
+                        menuName="근무스케줄 관리"
+                        href={`/work-schedules?${new URLSearchParams({ store: String(staff.store.storeId), week: monday })}`}
+                      />
+                    }
+                  >
+                    {/* 주를 바꾸면 이 영역만 다시 기다린다 — key 가 바뀌면 영역의 Suspense 경계가 새로 서고, 묶음은 이미 풀려 있어 이 영역만 로딩을 보인다 */}
+                    <LoadGroupArea key={monday} fallback={<LoadingNotice compact />}>
+                      <ScheduleBox staffMemberId={staffMemberId} weekStart={monday} />
+                    </LoadGroupArea>
+                  </Box>
+                  {/* 출퇴근 현황 api 는 아직 없다(api #183 「하지 않은 것」) */}
+                  <Box title="출퇴근 현황">
+                    <NotReady />
+                  </Box>
+                  <Box title="급여명세서" manage={<MenuManageLink menuCode={MENU_CODE.payslips} menuName="급여명세서 관리" href="/payslips" />}>
+                    <LoadGroupArea fallback={<LoadingNotice compact />}>
+                      <PayslipBox staffMemberId={staffMemberId} />
+                    </LoadGroupArea>
+                  </Box>
+                  <Box title="TO-DO" manage={<MenuManageLink menuCode={MENU_CODE.todos} menuName="TO-DO 리스트 관리" href="/todos" />}>
+                    {/* TO-DO 관리 조회 권한이 없으면 목록까지 영역 전체를 막는다(summary-boxes.tsx TodoBox) */}
+                    <LoadGroupArea fallback={<LoadingNotice compact />}>
+                      <TodoBox staffMemberId={staffMemberId} />
+                    </LoadGroupArea>
+                  </Box>
+                </div>
               </div>
-              {/* 영역마다 따로 받는다 — 한 영역이 실패해도 그 영역에만 안내 · 다시 하기를 그리고 나머지는 그대로다 */}
-              <div className="flex min-w-0 flex-col gap-[24px]">
-                <Box
-                  title="근무스케줄"
-                  tools={<WeekNav monday={monday} search={search} today={today} />}
-                  manage={
-                    <MenuManageLink
-                      menuCode={MENU_CODE.workSchedules}
-                      menuName="근무스케줄 관리"
-                      href={`/work-schedules?${new URLSearchParams({ store: String(staff.store.storeId), week: monday })}`}
-                    />
-                  }
-                >
-                  {/* 주를 바꾸면 이 영역만 다시 기다린다 */}
-                  <Suspense key={monday} fallback={<AreaLoading />}>
-                    <ScheduleBox staffMemberId={staffMemberId} weekStart={monday} />
-                  </Suspense>
-                </Box>
-                {/* 출퇴근 현황 api 는 아직 없다(api #183 「하지 않은 것」) */}
-                <Box title="출퇴근 현황">
-                  <NotReady />
-                </Box>
-                <Box title="급여명세서" manage={<MenuManageLink menuCode={MENU_CODE.payslips} menuName="급여명세서 관리" href="/payslips" />}>
-                  <Suspense fallback={<AreaLoading />}>
-                    <PayslipBox staffMemberId={staffMemberId} />
-                  </Suspense>
-                </Box>
-                <Box title="TO-DO" manage={<MenuManageLink menuCode={MENU_CODE.todos} menuName="TO-DO 리스트 관리" href="/todos" />}>
-                  {/* TO-DO 관리 조회 권한이 없으면 목록까지 영역 전체를 막는다(summary-boxes.tsx TodoBox) */}
-                  <Suspense fallback={<AreaLoading />}>
-                    <TodoBox staffMemberId={staffMemberId} />
-                  </Suspense>
-                </Box>
-              </div>
-            </div>
+            </LoadGroup>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState, us
 import { AddressField } from "@/components/address-field";
 import { Checkbox, Field, FormRow, RequiredMark, TextField, useToast } from "@/components/common";
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
-import { formatDate } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { splitPhone } from "@/lib/my-profile-form";
 import { formatBizNumber } from "@/lib/store-view";
 import { BIZ_MESSAGE, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
@@ -379,7 +379,7 @@ export const BpProfileTab = forwardRef<
         verified={locked}
         // pending(재인증은 통과했지만 아직 저장 전)일 때 저장된 옛 인증일자를 보이면 "지금 보이는 값이
         // 이 날짜에 인증됐다"로 잘못 읽힌다 — savedLocked 일 때만 보인다(점포와 같다, 코드 리뷰로 찾음, 2026-10-23)
-        verifiedDate={savedLocked && verifyForm.savedVerifiedAt ? formatDate(verifyForm.savedVerifiedAt) : ""}
+        verifiedDate={savedLocked && verifyForm.savedVerifiedAt ? formatDateTime(verifyForm.savedVerifiedAt) : ""}
         verifying={verifying}
         fieldErrors={bizFieldErrors}
         missing={bizMissing}

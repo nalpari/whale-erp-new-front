@@ -7,7 +7,7 @@ import { usePagePermission } from "@/components/site/session-gate";
 import { BP_MASTER_PAGE_SIZES, type BpMasterPageSize } from "@/lib/bp-master-paging";
 import type { BpMasterDetail, BpMasterList } from "@/lib/bp-masters";
 import { StoreExcelButton, StoreExcelNotice, StoreExcelProvider } from "../stores/store-excel";
-import { BpMasterDetailPanel, type CreatedNotice } from "./bp-master-detail-panel";
+import { BpMasterDetailPanel } from "./bp-master-detail-panel";
 import { BpMasterFilter } from "./bp-master-filter";
 import { BpMasterFormPanel } from "./bp-master-form-panel";
 import { BpMasterTable } from "./bp-master-table";
@@ -38,8 +38,6 @@ export function BpMastersScreen({
    * 새로 고침 · 앞으로 가기로 다시 열린 수정은 history.state 꼬리표로 되살린다(admins-screen.tsx 와 같다).
    */
   const editPushed = useRef(false);
-  /** 방금 등록한 BP — 그 상세 위쪽에 BP 코드와 메일 주소를 알리는 띠를 세운다(BP-3). 다른 BP 를 열면 사라진다 */
-  const [created, setCreated] = useState<CreatedNotice | null>(null);
   const newTrigger = useRef<HTMLButtonElement>(null);
   const detailTrigger = useRef<HTMLElement | null>(null);
   const editTrigger = useRef<HTMLButtonElement | null>(null);
@@ -174,9 +172,8 @@ export function BpMastersScreen({
             trigger={newTrigger}
             onSaved={(result) => {
               setNewOpen(false);
-              // 상세 띠는 상세를 불러와야 보이고 다른 줄을 누르면 사라진다 — 메일 실패를 놓치지 않게 토스트로도 알린다(platform-admins 와 같다)
-              toast(result.isMailSent ? "saved" : "저장되었습니다. 초기 비밀번호 메일은 보내지 못했습니다 — 상세에서 비밀번호를 초기화해 주세요.");
-              setCreated(result);
+              // 토스트는 늘 「저장되었습니다.」 — 저장하면 상세가 열리고, 메일 실패는 상세 머리 아래 빨간 상자가 알린다(2026-10-28 사용자 지정)
+              toast("saved");
               detailTrigger.current = newTrigger.current;
               go({ bp: result.bpCodeId });
             }}
@@ -186,7 +183,6 @@ export function BpMastersScreen({
         <BpMasterDetailPanel
           open={Boolean(query.bp)}
           detail={shown}
-          created={created && shown && "bp" in shown && shown.bp.bpCodeId === created.bpCodeId ? created : null}
           onClose={dismissDetail}
           onBackdropClose={closeAll}
           trigger={detailTrigger}

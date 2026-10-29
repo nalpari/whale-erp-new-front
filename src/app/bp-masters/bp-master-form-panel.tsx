@@ -2,8 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useLayoutEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DateField, Field, FormGroup, FormRow, RequiredMark, SlidePanel, Tag, TextField } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, Field, FormGroup, FormRow, RequiredMark, SlidePanel, Tag, TextField } from "@/components/common";
 import { AddressField } from "@/components/address-field";
+import { BizVerificationBox } from "@/components/site/biz-verification-box";
+import { InfoBand } from "@/components/site/side-parts";
 import {
   bpMasterServerErrorField,
   emailError,
@@ -21,7 +23,7 @@ import {
   type BpMasterFormErrors,
   type BpMasterFormField,
 } from "@/lib/bp-master-form";
-import { BIZ_MESSAGE, bizVerifyFailure } from "@/lib/biz-verification-rules";
+import { BIZ_MESSAGE, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
 import type { BpMasterDetail, CreateBpMasterResult } from "@/lib/bp-masters";
 import { loginIdError, type LoginIdCheck } from "@/lib/platform-admin-form";
 import { formatDateTime } from "@/lib/format";
@@ -32,9 +34,10 @@ import { BpStatusBadge, unknownResult } from "./bp-master-parts";
 
 // BP 마스터 계정 등록(S-OJEYQJ) · 수정(S-CQGGZS) 슬라이드 패널. 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓고,
 // 기본정보 / 사업자정보 두 묶음으로 나눈다(데모와 같다, 2026-10-22).
-// 사업자 인증은 [사업자 번호 인증하기]로 상자를 펼쳐 한다(데모처럼 처음부터 펼치지 않는다). 인증하면 같은 자리가 읽기 전용 완료 카드가 되고,
-// [재인증]은 확인을 한 번 받는다. 번호 중복 · 확인 불가 · 처리 오류여도 인증 없이 저장할 수 있다.
-// 수정은 BP 코드를 제목 옆에 보여 주기만 하고(아이디 · 가입경로 칸은 2026-10-28 사용자 지정으로 뺐다), BP 상태는 상세의 [BP 상태 변경]에서만 바꾼다. 마지막 저장이 남는다(409 없음).
+// 사업자정보는 MY PAGE 사업자정보 탭과 같은 모양이다(2026-10-28 사용자 지정 — 전엔 [사업자 번호 인증하기]로 상자를 펼쳤다):
+// 공통 인증 상자(BizVerificationBox, 세 칸 한 줄)가 처음부터 열려 있고, 인증하면 칸이 잠긴다. [재인증]은 확인을 한 번 받는다.
+// 상호명부터는 따로 카드이고, 대표자 연락처 · 이메일에 「기본정보와 동일」이 있다. 번호 중복 · 확인 불가 · 처리 오류여도 인증 없이 저장할 수 있다.
+// 수정은 제목 옆에 BP 코드 · 계정상태 배지를 보여 주기만 하고(아이디 · 가입경로 칸은 2026-10-28 사용자 지정으로 뺐다), BP 상태는 상세의 [BP상태변경]에서만 바꾼다. 마지막 저장이 남는다(409 없음).
 
 /** 아이디 중복 문구 — 칸을 벗어날 때 중복 확인에 보인다. 저장 409 는 api 문구 그대로라 다를 수 있다(칸은 「아이디」 포함으로 가른다) */
 // 관리자 등록 세 화면(플랫폼 · BP 관리자 · BP 마스터)이 같은 문구(2026-10-28 사용자 지정)
@@ -194,9 +197,10 @@ export function BpMasterFormPanel(props: Props) {
     setForm((f) => ({ ...f, verifying: true, bizNumber: f.verified?.bizNumber ?? "", ceoName: f.verified?.ceoName ?? "", openDate: f.verified?.openDate ?? "" }));
     setVerifyFailure(null);
   };
+  /** 세 칸을 비운다. 인증이 있으면(재인증 중) 잠긴 인증으로 돌아가고(재인증 취소), 없으면 빈 칸으로 열어 둔다(지우기) */
   const closeVerification = () => {
     verifyNumber.current++;
-    setForm((f) => ({ ...f, verifying: false, bizNumber: "", ceoName: "", openDate: "" }));
+    setForm((f) => ({ ...f, verifying: !f.verified, bizNumber: "", ceoName: "", openDate: "" }));
     setErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => !["bizNumber", "ceoName", "openDate"].includes(k))));
     setVerifyFailure(null);
   };
@@ -239,7 +243,11 @@ export function BpMasterFormPanel(props: Props) {
    */
   const releaseVerification = (reason: string) => {
     verifyNumber.current++;
-    setForm((f) => ({ ...f, verified: props.mode === "edit" ? formOfBpMaster(props.bp).verified : null }));
+    setForm((f) => {
+      const verified = props.mode === "edit" ? formOfBpMaster(props.bp).verified : null;
+      // 돌아간 인증이 없으면 상자를 다시 연다(처음부터 열려 있는 모양)
+      return { ...f, verified, verifying: !verified };
+    });
     setFailure(`${reason} 다시 인증하거나 인증 없이 저장할 수 있습니다.`);
   };
 
@@ -252,7 +260,9 @@ export function BpMasterFormPanel(props: Props) {
     if (Object.keys(found).length) return focusFirstError();
     // 펼친 상자의 값은 인증해야만 저장된다 — 그대로 저장하면 적은 값이 말없이 사라진다
     if (hasPendingVerification(form)) {
-      return setFailure("인증하지 않은 사업자등록번호 · 대표자명 · 개업일자는 저장되지 않습니다. [인증하기]를 누르거나 인증 상자를 닫은 뒤 저장해 주세요.");
+      return setFailure(
+        `인증하지 않은 사업자등록번호 · 대표자명 · 개업일자는 저장되지 않습니다. [인증하기]를 누르거나 ${form.verified ? "[재인증 취소]" : "[지우기]"}를 누른 뒤 저장해 주세요.`,
+      );
     }
     if (isVerificationExpired(form, Date.now())) return releaseVerification(BIZ_MESSAGE.EXPIRED);
 
@@ -284,8 +294,18 @@ export function BpMasterFormPanel(props: Props) {
   };
 
   const title = mode === "create" ? "BP 마스터 계정 등록" : "BP 마스터 계정 수정";
-  const verified = Boolean(form.verified);
-  const verifyErrorId = `${ids}-verify`;
+  // 인증 상자(BizVerificationBox) — 인증이 있고 재인증 중이 아니면 잠근다. 잠긴 동안 보이는 값은 인증된 세 값이다
+  const bizLocked = Boolean(form.verified) && !form.verifying;
+  const bizValues =
+    bizLocked && form.verified
+      ? { bizNumber: form.verified.bizNumber, ceoName: form.verified.ceoName, openDate: form.verified.openDate }
+      : { bizNumber: form.bizNumber, ceoName: form.ceoName, openDate: form.openDate };
+  // 비어서 걸린 칸은 버튼 위 한 줄로 모으고(missing), 칸 아래에는 형식 오류만 둔다(MY PAGE 와 같다)
+  const bizKeys: BizVerifyField[] = ["bizNumber", "ceoName", "openDate"];
+  const bizMissing = bizKeys.filter((key) => errors[key] && !bizValues[key].trim());
+  const bizFieldErrors: Partial<Record<BizVerifyField, string>> = Object.fromEntries(
+    bizKeys.filter((key) => errors[key] && !bizMissing.includes(key)).map((key) => [key, errors[key]]),
+  );
 
   return (
     // 등록 · 수정 모두 바탕창을 깔고, 바탕을 누르면 겹친 패널을 모두 닫는다(platform-admins 와 같다, 2026-10-22 사용자 요청).
@@ -304,16 +324,20 @@ export function BpMasterFormPanel(props: Props) {
       <h2 className="text-[18px] font-semibold text-erp-ink">
         {title}
         {props.mode === "edit" && (
-          <span className="ml-[6px] inline-flex">
+          <span className="ml-[6px] inline-flex items-center gap-[6px] align-middle">
             <Tag>
               BP 코드 · <b className="font-semibold">{props.bp.bpCode}</b>
             </Tag>
+            {/* 계정상태는 고칠 수 없어 칸 대신 제목 줄 배지로만(2026-10-28 사용자 지정 — 전엔 기본정보 안 「계정상태」 칸 · 변경 일시 · 안내) */}
+            <BpStatusBadge status={props.bp.accountStatus} />
           </span>
         )}
       </h2>
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}
 
       <FormGroup title="기본정보">
+        {/* 계정상태 칸 대신 안내 한 줄만 — 상태는 제목 줄 배지. 기본정보 맨 위, 이름 위에 안내 상자로 둔다 — 회색 작은 글씨는 잘 안 보였다(2026-10-28 사용자 지정) */}
+        {props.mode === "edit" && <InfoBand>계정상태는 상세화면의 [BP상태변경]에서 변경할 수 있습니다.</InfoBand>}
         {props.mode === "create" ? (
           <Stack>
             <Field label="아이디" required>
@@ -384,105 +408,37 @@ export function BpMasterFormPanel(props: Props) {
           </Field>
           <EmailAvailability id={messageId("email")} check={emailCheck} message={errors.email} />
         </Stack>
-        {props.mode === "edit" && (
-          <Stack>
-            <span className="text-[14px] font-medium text-erp-label">계정상태</span>
-            <span className="flex items-center gap-[6px] text-[14px] text-erp-ink">
-              <BpStatusBadge status={props.bp.accountStatus} />
-              {props.bp.statusChangedAt && <span className="text-erp-label">{formatDateTime(props.bp.statusChangedAt)} 부터</span>}
-            </span>
-            {/* 라벨 「계정상태」(목록 · 필터와 같다), 안내는 바뀐 버튼 자리 · 이름에 맞춘다(2026-10-28) */}
-            <Note>계정상태는 상세의 [BP 상태 변경]에서 바꿉니다.</Note>
-          </Stack>
-        )}
       </FormGroup>
 
-      <FormGroup
-        title={
-          <>
-            사업자정보
-            <span className="ml-[10px] inline-flex align-middle">
-              {verified ? <Badge tone="on">인증완료</Badge> : <Badge tone="off">미인증</Badge>}
-            </span>
-          </>
-        }
-      >
-        {form.verifying ? (
-          <Stack>
-            <Field label="사업자등록번호">
-              <TextField
-                value={form.bizNumber}
-                onChange={(e) => setVerification("bizNumber", e.target.value.replace(/[^0-9-]/g, ""))}
-                placeholder="숫자 10자리"
-                maxLength={12}
-                inputMode="numeric"
-                aria-invalid={invalid("bizNumber")}
-                aria-describedby={describe("bizNumber") ?? (verifyFailure ? verifyErrorId : undefined)}
-              />
-            </Field>
-            {message("bizNumber")}
-            <Field label="대표자명">
-              <TextField
-                value={form.ceoName}
-                onChange={(e) => setVerification("ceoName", e.target.value)}
-                placeholder="대표자 이름"
-                maxLength={50}
-                aria-invalid={invalid("ceoName")}
-                aria-describedby={describe("ceoName")}
-              />
-            </Field>
-            {message("ceoName")}
-            <Labeled label="개업일자">
-              <DateField value={form.openDate} onChange={(v) => setVerification("openDate", v)} aria-label="개업일자" />
-            </Labeled>
-            {message("openDate")}
-            {verifyFailure && (
-              <p id={verifyErrorId} role="alert" className="text-[13px] leading-[1.5] text-erp-off">
-                {verifyFailure}
-              </p>
-            )}
-            <div className="flex justify-end gap-[6px]">
-              <Button variant="off" onClick={closeVerification} disabled={verifying}>
-                취소
-              </Button>
-              <Button variant="soft" onClick={handleVerify} disabled={verifying}>
-                인증하기
-              </Button>
-            </div>
-            <Note>
-              사업자등록번호 · 대표자명 · 개업일자가 국세청에 등록된 정보와 일치하는지 확인합니다.
-              {/* 점포 수정(store-form-view.tsx)과 같은 문구 */}
-              {mode === "edit" && verified && " 인증 실패 시 기존 정보가 유지됩니다."}
-            </Note>
-          </Stack>
-        ) : form.verified ? (
-          <Stack>
-            <div className="flex flex-col gap-[6px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg p-[12px] text-[14px]">
-              <Line label="사업자등록번호" value={formatBizNumber(form.verified.bizNumber)} />
-              <Line label="대표자명" value={form.verified.ceoName} />
-              <Line label="개업일자" value={form.verified.openDate} />
-            </div>
-            <div className="flex justify-end">
-              <Button variant="soft" onClick={() => setReverifyAsk(true)}>
-                재인증
-              </Button>
-            </div>
-            {mode === "edit" && form.verified.token && <Note>인증 결과는 저장해야 반영됩니다.</Note>}
-          </Stack>
-        ) : (
-          <Stack>
-            <div className="flex justify-start">
-              <Button variant="soft" onClick={openVerification}>
-                사업자 번호 인증하기
-              </Button>
-            </div>
-          </Stack>
-        )}
-        {/* 성공은 화면이 완료 카드로 바뀌는 것으로 보여 주고, 화면 낭독기에만 알린다(점포 등록과 같다) */}
-        <span role="status" className="sr-only">
-          {form.verified?.token ? "사업자정보 인증이 완료되었습니다." : ""}
-        </span>
+      {/* 사업자정보 — MY PAGE 사업자정보 탭과 같은 모양(2026-10-28 사용자 지정): 회색 제목 바(오른쪽 인증 상태) + 세 칸 한 줄 인증 상자 */}
+      <BizVerificationBox
+        layout="row"
+        compactRow
+        titleBar
+        values={bizValues}
+        onChange={(key, value) => setVerification(key, value)}
+        locked={{ bizNumber: bizLocked, ceoName: bizLocked, openDate: bizLocked }}
+        lockedDisplay={bizValues.bizNumber ? { bizNumber: formatBizNumber(bizValues.bizNumber) } : {}}
+        verified={bizLocked}
+        // 저장돼 있던 인증만 날짜를 보인다 — 이번 화면에서 받은 인증은 아직 저장 전이다
+        verifiedDate={bizLocked && !form.verified?.token && props.mode === "edit" && props.bp.bizVerifiedAt ? formatDateTime(props.bp.bizVerifiedAt) : ""}
+        verifying={verifying}
+        fieldErrors={bizFieldErrors}
+        missing={bizMissing}
+        boxError={verifyFailure}
+        // 잠겼을 때 누르면 재인증 확인창, 열렸을 때는 실제 인증 요청
+        onVerify={bizLocked ? () => setReverifyAsk(true) : handleVerify}
+        onClear={closeVerification}
+        showClear={!form.verified && Boolean(form.bizNumber || form.ceoName || form.openDate)}
+        // 재인증 중이면 잠긴 인증으로 되돌린다(점포 수정 · MY PAGE 와 같다)
+        onRevert={form.verified && form.verifying ? closeVerification : undefined}
+        {...(form.verified?.token && !form.verifying
+          ? { note: mode === "edit" ? "인증 결과는 저장해야 반영됩니다." : undefined }
+          : { note: mode === "edit" && form.verified && form.verifying ? "인증 실패 시 기존 정보가 유지됩니다." : undefined })}
+      />
 
+      {/* 상호명부터는 따로 카드 — MY PAGE 와 같은 테두리 · 여백(2026-10-28 사용자 지정) */}
+      <section aria-label="상호명 등" className="flex flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">
         <Stack>
           <Field label="상호명" required>
             <TextField
@@ -497,19 +453,37 @@ export function BpMasterFormPanel(props: Props) {
           </Field>
           {message("tradeName")}
         </Stack>
-        <PhoneGroup label="대표자 연락처" value={form.ceoPhone} onChange={(v) => set("ceoPhone", v, "ceoPhone")} invalid={invalid("ceoPhone")} describedBy={describe("ceoPhone")} />
-        {message("ceoPhone")}
         <Stack>
-          <Field label="대표자 이메일">
+          {/* 「기본정보와 동일」이면 기본정보 연락처를 보이고 고칠 수 없다 — 풀면 적던 값으로 돌아온다(MY PAGE 와 같다) */}
+          <PhoneGroup
+            label="대표자 연락처"
+            extra={<Checkbox label="기본정보와 동일" checked={form.sameAsBasicPhone} onChange={(e) => set("sameAsBasicPhone", e.target.checked, "ceoPhone")} />}
+            value={form.sameAsBasicPhone ? form.phone : form.ceoPhone}
+            onChange={(v) => set("ceoPhone", v, "ceoPhone")}
+            readOnly={form.sameAsBasicPhone}
+            invalid={invalid("ceoPhone")}
+            describedBy={describe("ceoPhone")}
+          />
+          {message("ceoPhone")}
+        </Stack>
+        <Stack>
+          <LabelWithExtra
+            label="대표자 이메일"
+            extra={<Checkbox label="기본정보와 동일" checked={form.sameAsBasicEmail} onChange={(e) => set("sameAsBasicEmail", e.target.checked, "ceoEmail")} />}
+          >
             <TextField
               type="email"
-              value={form.ceoEmail}
+              value={form.sameAsBasicEmail ? form.email : form.ceoEmail}
               onChange={(e) => set("ceoEmail", e.target.value, "ceoEmail")}
+              // 공통 입력칸은 disabled 회색이 없어(DESIGN.md) 읽기 전용 바탕이 깔리는 readOnly 를 함께 건다(MY PAGE 와 같다)
+              readOnly={form.sameAsBasicEmail}
+              disabled={form.sameAsBasicEmail}
               maxLength={100}
+              aria-label="대표자 이메일"
               aria-invalid={invalid("ceoEmail")}
               aria-describedby={describe("ceoEmail")}
             />
-          </Field>
+          </LabelWithExtra>
           {message("ceoEmail")}
         </Stack>
         <FormRow>
@@ -532,11 +506,11 @@ export function BpMasterFormPanel(props: Props) {
           }}
           detailError={errors.addressDetail}
         />
-      </FormGroup>
+      </section>
 
       {/* 등록 안내는 한 줄로 줄였고(권한 그룹 · 약관 동의 안내 삭제), 수정 화면의 「사유는 받지 않습니다 …」 안내는 지웠다(2026-10-28 사용자 지정) */}
       {mode === "create" && (
-        <Note>초기 비밀번호는 등록한 이메일로 발송됩니다.</Note>
+        <Note>초기화 비밀번호는 등록한 이메일로 발송됩니다.</Note>
       )}
 
       <div className="flex justify-center gap-[6px]">
@@ -572,22 +546,16 @@ function Stack({ children }: { children: ReactNode }) {
   return <div className="flex flex-col gap-[8px]">{children}</div>;
 }
 
-/** 입력칸 하나를 감싸지 않는 칸(날짜 · 상태 표시)의 라벨 */
-function Labeled({ label, children }: { label: string; children: ReactNode }) {
+/** 라벨 오른쪽에 체크박스를 붙이는 칸 — Field 는 라벨이 입력칸 하나를 감싸 체크박스를 둘 수 없다(MY PAGE Labeled 와 같다) */
+function LabelWithExtra({ label, extra, children }: { label: string; extra: ReactNode; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-[8px]">
-      <span className="text-[14px] font-medium text-erp-label">{label}</span>
+      <span className="flex items-center gap-[10px] text-[14px] font-medium text-erp-label">
+        {label}
+        {extra}
+      </span>
       {children}
     </div>
-  );
-}
-
-function Line({ label, value }: { label: string; value: string }) {
-  return (
-    <p className="flex gap-[10px]">
-      <span className="w-[100px] shrink-0 text-erp-label">{label}</span>
-      <span className="text-erp-ink">{value}</span>
-    </p>
   );
 }
 
@@ -599,23 +567,32 @@ function Note({ children }: { children: ReactNode }) {
 function PhoneGroup({
   label,
   required,
+  extra,
   value,
   onChange,
+  readOnly,
   invalid,
   describedBy,
 }: {
   label: string;
   required?: boolean;
+  /** 라벨 오른쪽에 붙는 것(「기본정보와 동일」) */
+  extra?: ReactNode;
   value: [string, string, string];
   onChange: (next: [string, string, string]) => void;
+  /** 고칠 수 없게(읽기 전용 바탕) — 「기본정보와 동일」 */
+  readOnly?: boolean;
   invalid?: true;
   describedBy?: string;
 }) {
   return (
     <div role="group" aria-label={label} className="flex flex-col gap-[8px]">
-      <span className="text-[14px] font-medium text-erp-label">
-        {label}
-        {required && <RequiredMark />}
+      <span className="flex items-center gap-[10px] text-[14px] font-medium text-erp-label">
+        <span>
+          {label}
+          {required && <RequiredMark />}
+        </span>
+        {extra}
       </span>
       <FormRow>
         {(["앞자리", "가운데자리", "끝자리"] as const).map((part, i) => (
@@ -628,6 +605,8 @@ function PhoneGroup({
               onChange(next);
             }}
             inputMode="numeric"
+            readOnly={readOnly}
+            disabled={readOnly}
             // 1팀 연락처는 숫자 9~12자리(0505 같은 4자리 앞자리 포함) — platform-admins 와 같게 칸마다 4자리까지
             maxLength={4}
             aria-label={`${label} ${part}`}

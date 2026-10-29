@@ -189,7 +189,7 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     `<div class="flex flex-col gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[16px]">` +
     bizFields(state, num, ceo, open) +
     bizButtons(state) +
-    (state === "struck" ? bizStruckGuide : bizGuide) +
+    (state === "struck" ? bizStruckGuide : state === "new" ? bizGuide : "") /* 국세청 안내는 인증 전에만(앱 BizVerificationBox, 2026-10-28) */ +
     `</div></section>`;
   // sameAsBasic: 대표자 연락처 · 이메일 칸에 "기본정보와 동일" 체크박스 — 체크하면 기본정보(이름 탭) 값을 그대로 쓴다(2026-10-22 사용자 지정).
   const ceoContact = (idp, checked) =>
@@ -205,7 +205,7 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     f.address(A, "사업자주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }) +
     `</section>`;
 
-  const biz = `<div class="flex flex-col gap-[18px]">${bizAuthBox("locked", "211-87-01234", "남도현", "2021-03-15", "2026-10-20")}${bizRest(`${idPrefix}-done`)}</div>${save}`;
+  const biz = `<div class="flex flex-col gap-[18px]">${bizAuthBox("locked", "211-87-01234", "남도현", "2021-03-15", "2026-10-20 14:32")}${bizRest(`${idPrefix}-done`)}</div>${save}`;
 
   // 가입 직후처럼 아직 사업자 인증을 받지 않은 초기 상태 — 인증완료 탭과 생김새를 견주어 보려고 따로 둔다(2026-10-07 피드백).
   const bizNew = `<div class="flex flex-col gap-[18px]">${bizAuthBox("new", "", "", "")}${bizRest(`${idPrefix}-new`)}</div>${save}`;
@@ -504,8 +504,11 @@ function platformScopeDialog(A, R, id) {
 }
 
 // master: true 면 플랫폼 마스터로 로그인한 헤더(마스터 기준 화면용).
-export function platformHeader(A, R, { master = false } = {}) {
-  const menus = PLATFORM_MENUS.map(([label, items]) => ({ label, items: items.map(([l, p]) => ({ label: l, href: to(R, p) })) }));
+// noMenu: true 면 접근할 플랫폼 메뉴가 없는 계정의 헤더(권한 요청 안내 화면용) — 메뉴 줄이 비고 로고 · 플랫폼관리 바로가기가 안내 화면을 가리킨다.
+// 플랫폼은 홈이 없어 로고 · 플랫폼관리 바로가기는 GNB 순서상 첫 메뉴(BP 마스터 계정 관리)로 간다(2026-10-28 재영).
+export function platformHeader(A, R, { master = false, noMenu = false } = {}) {
+  const home = to(R, noMenu ? "auth/platform-no-menu.html" : "bp/index.html");
+  const menus = noMenu ? [] : PLATFORM_MENUS.map(([label, items]) => ({ label, items: items.map(([l, p]) => ({ label: l, href: to(R, p) })) }));
   const user = [
     // 내정보 관리 · 비밀번호 변경은 화면을 옮기지 않고 슬라이드에서 한다(ERP 헤더와 같다 · 2026-10-08)
     { label: "내정보 관리", panel: "platform-mypage-panel" },
@@ -519,10 +522,10 @@ export function platformHeader(A, R, { master = false } = {}) {
       menus,
       // 플랫폼 콘솔에는 BP 선택 드롭다운을 두지 않는다 — BP 는 서비스 바로가기 「웨일ERP」로 고른다(2026-10-19 재영). 빈 칸이 오른쪽 컨트롤을 민다.
       `<div class="flex-1"></div>` +
-        ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: to(R, "bp/index.html"), scopeDialog: scopeId, hideAddon: true }) +
+        ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: home, scopeDialog: scopeId, hideAddon: true }) +
         ui.alarmLink(A, "#") +
         ui.userPop(A, master ? PLATFORM_MASTER : PLATFORM_USER, user),
-      to(R, "bp/index.html"),
+      home,
     ) + platformScopeDialog(A, R, scopeId) + platformMyPanel(A, { master }) + passwordPanel(A)
   );
 }

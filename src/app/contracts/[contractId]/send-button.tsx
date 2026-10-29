@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, ConfirmDialog } from "@/components/common";
+import { Button, ConfirmDialog, useAction } from "@/components/common";
 import { withBack } from "../contract-list";
 import { sendContract, type SendContractResult } from "./actions";
 import { resendDialogCopy, sendFailureOf } from "./send-model";
@@ -22,6 +22,7 @@ export function SendContractButton({ contractId, status, name, back }: { contrac
   const [error, setError] = useState("");
   const [locked, setLocked] = useState(false);
   const [pending, start] = useTransition();
+  const resend = useAction(sendContract, { text: "발송중입니다" });
   const copy = resendDialogCopy(status, name);
 
   return (
@@ -44,8 +45,9 @@ export function SendContractButton({ contractId, status, name, back }: { contrac
           start(async () => {
             let result: SendContractResult;
             try {
-              result = await sendContract(contractId);
-            } catch {
+              result = await resend(contractId);
+            } catch (e) {
+              console.error("근로계약 발송 호출이 끊김", contractId, e);
               // 서버 액션 호출 자체가 끊겼다(브라우저 ↔ Next, 배포 중 재시작) — api 는 이미 보냈을 수 있어 「모름」으로 다룬다(front #41 재리뷰)
               result = sendFailureOf(null, undefined, "");
             }

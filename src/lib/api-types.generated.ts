@@ -7119,6 +7119,14 @@ export interface components {
              *     만료 · 거절돼도 남는다 — 상태 칸의 「가입 대기 중」 · 「소속 확인 중」은 이 값으로 정한다
              */
             staffJoinState: components["schemas"]["StaffJoinState"];
+            /**
+             * @description 갱신 예정일 YYYY-MM-DD — 체결 완료이고 종료일이 오늘 이후면 종료일 30일 전(직원 상세 요약과 같은 규칙, WHALEERP-156).
+             *     종료일이 30일 안이면 이미 지난 날짜다. 이미 재계약했으면(진행 중이거나 체결을 거친 재계약이 있음) null, 그 밖에도 null
+             * @example 2026-11-01
+             */
+            renewalDate: string | null;
+            /** @description 재계약이면 직전 계약 ID(WHALEERP-156) — 상태 칸에 「재계약」을 붙인다. 아니면 null */
+            previousContractId: number | null;
             contractId: number;
             staffMemberId: number;
             /** @description 직원 레코드의 이름(초안 입력값) */
@@ -7240,10 +7248,29 @@ export interface components {
             /** @description true 면 임시저장(DRAFT) — 초대 · 계약서를 보내지 않는다. 없으면 초안 저장(발송 대기) */
             isTemporarySave?: boolean;
             /**
+             * @description 재계약의 직전 계약(WHALEERP-156) — 저장(POST)에서만 본다. 체결 완료이거나 체결 뒤 종료된 같은 근무지 · 같은 번호의
+             *     계약이어야 하고, 이미 체결을 거친 재계약이 있으면 409 다(진행 중 재계약은 같은 점포 진행 중 계약처럼 대체를 묻는다). 그 직원이 재직 중이면(퇴직 · 퇴직 예정이
+             *     아니면) 연장이라 같은 직원 레코드에 새 계약을 붙인다 — 가입한 재직 직원이어도 막지 않는다. 퇴직한 직원이면 재입사라 지금처럼
+             *     새 레코드를 만든다(가입한 직원이 퇴직 예정이면 아직 재직이라 409 — 퇴직 뒤에). 앞 계약은 새 계약이 체결 완료이고 그 시작일이
+             *     되면 하루 배치가 종료로 바꾼다(2026-10-26 김민식). 고르지 않아도 이 점포에 같은 번호로 가입한 재직 직원이 있으면 그 사람의
+             *     가장 최근 체결 계약에 잇는 재계약으로 저장한다(WHALEERP-130, 2026-10-26 재영 — 재직 중인 직원에게 새 계약을 보내는 것이 곧
+             *     재계약). 재계약의 시작일은 직전 계약 시작일보다 하루 이상 뒤여야 하고(400), 그러면 직전 계약과 기간이 겹쳐도 된다
+             *     (2026-10-26 김민식 · 재영 확인). 고르지 않은 종이 계약이 가입 전 레코드의 그 계약보다 늦게 시작하지 않으면 재계약이 아니라
+             *     같은 계약서를 다시 올린 것으로 본다 — 겹치면 SIGNED_CONTRACT_OVERLAP 이다.
+             */
+            previousContractId?: number;
+            /**
+             * @description 잘못 올린 계약 바로잡기(WHALEERP-156) — 종이 계약 등록에서만 쓴다(그 밖이면 400). 종이 계약은 체결 완료 계약을 대체하지 않고,
+             *     같은 점포 · 같은 번호에 기간이 겹치는 체결 완료 계약이 있으면 409(code SIGNED_CONTRACT_OVERLAP)다. 잘못 올린 계약을 고치려면
+             *     이 값을 켜고 그 409 의 contracts id 를 모두 replaceContractIds 로 넣어 다시 보낸다 — 체결 완료 계약도 곧바로 종료한다(수정
+             *     권한). 재계약이 아니다 — previousContractId 와 함께 보낼 수 없고(400), 직전 계약을 저절로 찾지 않는다. 사유는 받지 않는다.
+             */
+            correctSignedContracts?: boolean;
+            /**
              * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(임시저장 · 발송 대기 · 서명 대기 · 수정 요청)이
              *     있으면 409(code CONTRACT_IN_PROGRESS)가 그 목록(id · 상태 · 직원 이름 · 계약 기간)을 준다. 관리자가 대체를 확인하면
-             *     그 id 를 모두 넣어 다시 보낸다 — 임시저장은 지우고 발송 대기 · 서명 대기 · 수정 요청은 종료한다. 종이 계약 등록이면 체결 완료도
-             *     묻고 종료한다. 체결 완료는 같은 번호로 퇴직 · 재입사가 되풀이되면 쌓이므로 상한을 넉넉히 둔다 — 409 목록을 모두
+             *     그 id 를 모두 넣어 다시 보낸다 — 임시저장은 지우고 발송 대기 · 서명 대기 · 수정 요청은 종료한다. 종이 계약 바로잡기
+             *     (correctSignedContracts)면 체결 완료도 묻고 종료한다. 체결 완료는 같은 번호로 퇴직 · 재입사가 되풀이되면 쌓이므로 상한을 넉넉히 둔다 — 409 목록을 모두
              *     다시 보낼 수 없으면 그 번호로는 종이 계약을 등록할 수 없다(api #49 리뷰, WHALEERP-600).
              */
             replaceContractIds?: number[];
@@ -7355,6 +7382,11 @@ export interface components {
              *     처음 작성한 관리자다(상태 이력은 관리자를 남기지 않는다)
              */
             registeredBy: string | null;
+            /**
+             * @description 이 계약을 직전 계약으로 둔 체결을 거친 재계약 ID(WHALEERP-156) — 있으면 상세가 「새 계약」을 띄우지 않는다. 진행 중 재계약은 치지
+             *     않는다(새 재계약을 저장할 때 대체를 묻는다). 없으면 null
+             */
+            renewedBy: number | null;
             contractId: number;
             staffMemberId: number;
             name: string;
@@ -7376,6 +7408,8 @@ export interface components {
              *     본다 — 유선번호(409 SEND_PHONE_NOT_MOBILE) · 발송 설정 없음(503)은 true 여도 보낼 때 막힌다
              */
             canResend: boolean;
+            /** @description 직원이 가입을 마쳤는가 — 거부 · 만료 재발송이 앱(서명 대기)으로 가는지 가입 초대(발송 대기)로 가는지 확인창 문구를 가른다 */
+            staffJoined: boolean;
         };
         UpdateWorkerDto: {
             /** @description 성별 — 남 · 여. 가입 때 직원이 넣은 값과 본인 대조한다(WHALEERP-125). 임시저장은 비워도 된다 */
@@ -7391,8 +7425,8 @@ export interface components {
             /**
              * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(임시저장 · 발송 대기 · 서명 대기 · 수정 요청)이
              *     있으면 409(code CONTRACT_IN_PROGRESS)가 그 목록(id · 상태 · 직원 이름 · 계약 기간)을 준다. 관리자가 대체를 확인하면
-             *     그 id 를 모두 넣어 다시 보낸다 — 임시저장은 지우고 발송 대기 · 서명 대기 · 수정 요청은 종료한다. 종이 계약 등록이면 체결 완료도
-             *     묻고 종료한다. 체결 완료는 같은 번호로 퇴직 · 재입사가 되풀이되면 쌓이므로 상한을 넉넉히 둔다 — 409 목록을 모두
+             *     그 id 를 모두 넣어 다시 보낸다 — 임시저장은 지우고 발송 대기 · 서명 대기 · 수정 요청은 종료한다. 종이 계약 바로잡기
+             *     (correctSignedContracts)면 체결 완료도 묻고 종료한다. 체결 완료는 같은 번호로 퇴직 · 재입사가 되풀이되면 쌓이므로 상한을 넉넉히 둔다 — 409 목록을 모두
              *     다시 보낼 수 없으면 그 번호로는 종이 계약을 등록할 수 없다(api #49 리뷰, WHALEERP-600).
              */
             replaceContractIds?: number[];
@@ -9490,7 +9524,8 @@ export interface components {
         };
         InvitationCheckResponseDto: {
             /**
-             * @description 고용 형태 — 정직원 · 파트타이머
+             * @description 고용 형태 — 정직원 · 파트타이머. 함께 온 계약(발송 대기)의 값이고, 계약 칸이 비었으면 직원 레코드 값이다(직원 레코드는
+             *     체결을 거친 계약이 시작할 때 옮긴다)
              * @enum {string}
              */
             employmentType: "FULL_TIME" | "PART_TIME";
@@ -16294,7 +16329,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 */
+            /** @description 입력 오류 · 만 19세 미만 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 종이 계약 등록이 아닌데 잘못 올린 계약 바로잡기 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -16375,7 +16410,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 날인본 없음 · 파일 종류 · 크기 · 개수 */
+            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 날인본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -16396,7 +16431,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 대체할 계약을 다른 요청이 먼저 고침 */
+            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 대체할 계약을 다른 요청이 먼저 고침 · SIGNED_CONTRACT_OVERLAP(종이 계약 — 기간이 겹치는 체결 완료 계약, contracts 목록. 잘못 올린 계약이면 correctSignedContracts 와 그 id 를 모두 replaceContractIds 로) · RENEWAL_SIGNED_OVERLAP(종이 재계약이 직전 계약이 아닌 체결 완료와 겹침 — 바로잡기 없이 막음) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -16476,7 +16511,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 수정 요청인데 임시저장 · 근무지 변경 · 가입한 직원의 번호 변경 */
+            /** @description 입력 오류 · 만 19세 미만 · 수정 요청인데 임시저장 · 근무지 변경 · 가입한 직원의 번호 변경 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 종이 계약 등록이 아닌데 잘못 올린 계약 바로잡기 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -16673,7 +16708,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 날인본 없음 · 파일 종류 · 크기 · 개수 */
+            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 날인본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -16694,7 +16729,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 임시저장이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 */
+            /** @description 임시저장이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SIGNED_CONTRACT_OVERLAP(종이 계약 — 기간이 겹치는 체결 완료 계약, contracts 목록. 잘못 올린 계약이면 correctSignedContracts 와 그 id 를 모두 replaceContractIds 로) · RENEWAL_SIGNED_OVERLAP(종이 재계약이 직전 계약이 아닌 체결 완료와 겹침 — 바로잡기 없이 막음) */
             409: {
                 headers: {
                     [name: string]: unknown;
