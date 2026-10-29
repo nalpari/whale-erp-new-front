@@ -3,7 +3,8 @@
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
 import { logout } from "@/app/actions";
 import { Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
-import { withdrawFormField, withdrawWarningText, WITHDRAW_REASONS, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
+import { withdrawFormField, withdrawWarningText, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
+import { useCodes } from "./session-gate";
 import { createWithdrawalAction, getWithdrawEligibilityAction, verifyWithdrawPasswordAction } from "./withdraw-actions";
 
 type Step = "password" | "content" | "done";
@@ -60,6 +61,8 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, startSaving] = useTransition();
   const [verifying, startVerifying] = useTransition();
+  // 탈퇴 사유는 공통코드 WITHDRAW_REASON(플랫폼고정)의 사용 중인 값을 표시 순서대로 쓴다(S-JHQQNR · S-DHBTXZ)
+  const reasons = useCodes("WITHDRAW_REASON");
   // password-change-panel.tsx 의 saveNumber 와 같은 패턴 — 패널을 닫았다 다시 열면 지난 요청의 응답이 늦게
   // 와도 새 세션에 적용되지 않게 막는다.
   const saveNumber = useRef(0);
@@ -273,8 +276,8 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                       aria-required
                     >
                       <option value="">탈퇴 사유를 선택하세요</option>
-                      {WITHDRAW_REASONS.map((r) => (
-                        <option key={r.code} value={r.code}>
+                      {reasons.map((r) => (
+                        <option key={r.value} value={r.value}>
                           {r.label}
                         </option>
                       ))}

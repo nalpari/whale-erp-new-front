@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [MY PAGE](/mypage.md) — 회원 탈퇴 사유를 front 고정 목록 대신 로그인 정보의 공통코드 `WITHDRAW_REASON` 에서 읽는다 — 정책 그대로, 구현을 맞췄다(2026-10-29 재영).
 * **Update**: [MY PAGE](/mypage.md) — 회원 탈퇴 최종 확인 팝업은 숫자(계정 · 점포 수)를 다시 보이지 않는 실제 화면대로 둔다 — 숫자는 탈퇴 화면 경고문에만 있다(2026-10-29 재영).
 * **Update**: [MY PAGE](/mypage.md) — 회원 탈퇴 조건이 모자라면 버튼을 막는 실제 화면대로 둔다(MYPAGE-2 의 「평소 모양 + 팝업」을 바꿈, 2026-10-29 재영). 데모의 미충족 안내 팝업을 걷었다.
 * **Update**: [MY PAGE](/mypage.md) — 회원 탈퇴 1단계에서 비밀번호를 api(`POST /auth/admin/me/password-verifications`, api 요청 중)로 바로 확인해 맞아야 탈퇴 화면으로 간다. 확인하지 못하면 넘기지 않는다(2026-10-29 재영). 틀릴 때 문구는 「현재 비밀번호가 올바르지 않습니다.」.

@@ -11,16 +11,6 @@ export type WithdrawEligibility = {
 
 export type WithdrawWarningBlock = string | { head: string; text: string };
 
-// 탈퇴 사유 공통코드는 목 단계라 여기 둔다 — api 에 getCodes() 가 생기면 그걸로 바꾼다.
-export const WITHDRAW_REASONS: { code: string; label: string }[] = [
-  { code: "WD_CLOSE", label: "폐업·사업 종료" },
-  { code: "WD_SWITCH", label: "다른 서비스 이용" },
-  { code: "WD_COST", label: "비용 부담" },
-  { code: "WD_FEATURE", label: "기능 부족" },
-  { code: "WD_HARD", label: "이용이 어려움" },
-  { code: "WD_INPUT", label: "직접입력" },
-];
-
 /** api 가 거절한 이유를 붙일 칸. 400 만 본다 — 401 등(세션 만료 · 연결 실패)은 칸이 아니라 띠로 보인다.
  * 진행 중인 근로계약이 있어 막힌 경우도 특정 칸을 가리킬 수 없어 띠로 보인다. */
 export function withdrawFormField(status: number | undefined, message: string): "currentPassword" | "reasonDetail" | null {
