@@ -228,11 +228,11 @@ export function userPop(A, name, items) {
         : `<li><a class="${cls}" href="${it.href}">${it.label}</a></li>`;
     })
     .join("");
-  return `<div class="relative"><button type="button" aria-expanded="false" aria-controls="${id}" class="flex items-center"><span class="flex items-center gap-[10px] text-[15px] font-medium text-erp-ink">${img(A, "avatar.svg", 42, 42)}${name}</span>${img(A, "user-more.svg", 34, 34, `transition-transform duration-200 ${EASE_OUT} `)}</button>${popup(
+  return `<div class="relative"><button type="button" aria-expanded="false" aria-controls="${id}" class="group relative flex items-center"><span class="flex items-center gap-[10px] text-[15px] font-medium text-erp-ink">${img(A, "avatar.svg", 42, 42)}${name}</span>${img(A, "user-more.svg", 34, 34, `transition-transform duration-200 ${EASE_OUT} `)}${tip("마이페이지")}</button>${popup(
     id,
     "fade",
     "right-0 w-[154px]",
-    `<p class="text-[15px] leading-[2] font-medium text-[#111] [text-box:trim-both_cap_alphabetic]">MY PAGE</p><hr class="mt-[12px] mb-[18px] border-erp-button-line"><ul class="text-[14px] leading-[2] [text-box:trim-both_cap_alphabetic]">${list}</ul>`,
+    `<p class="text-[15px] leading-[2] font-medium text-[#111] [text-box:trim-both_cap_alphabetic]">마이페이지</p><hr class="mt-[12px] mb-[18px] border-erp-button-line"><ul class="text-[14px] leading-[2] [text-box:trim-both_cap_alphabetic]">${list}</ul>`,
     true,
   )}</div>`;
 }

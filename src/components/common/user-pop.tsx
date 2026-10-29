@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, type RefObject } from "react";
+import { HeaderTip } from "./global-header";
 import { Popup, useDropdown } from "./popup";
 import { EASE_OUT } from "./theme";
 
@@ -14,7 +15,7 @@ export type UserPopItem = { label: string; danger?: boolean } & (
   | { onSelect: () => void; href?: never; action?: never }
 );
 
-// Figma Login_infos. 이름을 누르면 MY PAGE 메뉴가 페이드로 뜬다.
+// Figma Login_infos. 이름을 누르면 마이페이지 메뉴가 페이드로 뜬다(제목은 2026-10-29 「MY PAGE」 → 「마이페이지」, 사용자 지정).
 // 화살표 키 탐색을 따로 두지 않으므로 ARIA menu 대신 disclosure(aria-expanded + 링크/버튼 목록)로 둔다.
 // Figma Top2 의 Info(둥근 42px 사람 아이콘 + 이름)다.
 // triggerRef: 이 버튼을 다른 SlidePanel(MY PAGE 등)의 trigger 로도 쓰려는 바깥 ref — 이름 버튼은
@@ -30,7 +31,7 @@ export function UserPop({ name, items, triggerRef }: { name: string; items: User
 
   return (
     <div ref={ref} className="relative">
-      <button ref={trigger} type="button" aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)} className="flex items-center">
+      <button ref={trigger} type="button" aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)} className="group relative flex items-center">
         <span className="flex items-center gap-[10px] text-[15px] font-medium text-erp-ink">
           <Image src="/icons/avatar.svg" alt="" width={42} height={42} />
           {name}
@@ -42,9 +43,11 @@ export function UserPop({ name, items, triggerRef }: { name: string; items: User
           height={34}
           className={`transition-transform duration-200 ${EASE_OUT} ${open ? "rotate-180" : ""}`}
         />
+        {/* 서비스 바로가기 · 알림 종과 같은 툴팁(2026-10-29 사용자 지정). 메뉴가 열리면 감춘다. */}
+        {!open && <HeaderTip label="마이페이지" />}
       </button>
       <Popup id={id} open={open} motion="fade" tail className="right-0 w-[154px]">
-        <p className="text-[15px] leading-[2] font-medium text-[#111] [text-box:trim-both_cap_alphabetic]">MY PAGE</p>
+        <p className="text-[15px] leading-[2] font-medium text-[#111] [text-box:trim-both_cap_alphabetic]">마이페이지</p>
         <hr className="mt-[12px] mb-[18px] border-erp-button-line" />
         <ul className="text-[14px] leading-[2] [text-box:trim-both_cap_alphabetic]">
           {items.map((item) => {
