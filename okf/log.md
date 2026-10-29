@@ -1,7 +1,9 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: main 병합(front kingler, main #184 까지): okf/log 는 양쪽 기록을 살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #146 재리뷰 참고: 근로계약 상세 「재발송」은 발송 대기 · 서명 대기도 api `canResend` 가 참일 때만(`canShowResend`) — 칸이 없는 옛 응답이면 세우던 대체 값을 걷음.
+* **Update**: [운영 알림](/notify.md) — 플랫폼 계정이 운영 알림함을 열지 못하던 것을 고쳤다: `src/lib/menus.ts` `isAllowed` 가 플랫폼 탭에서 `/notifications` 아래를 연다(메뉴 MN000042 는 웨일ERP 행뿐, 2026-10-29 재영 A안). 웨일ERP 판정 · 메뉴 데이터 · `MENULESS_PATHS` 는 그대로다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 일괄 저장 화면에서 범위 선택기로 범위를 바꾸면 목록으로 가지 않고 머문다. 헤더(`admin-header.tsx` `SCOPE_STAY_SCREENS`)가 같은 주소에 새 `?scope=` 만 실어 바꾼다(front #179 리뷰).
 * **Update**: main 병합(front blastoise, origin/main 최신): okf/log 는 양쪽 기록을 살렸고, [직원 정보 관리 화면](/screens/staff-members.md) 은 늦은 generated 시각과 main 의 출퇴근 현황 구현을 남기고 미구현 목록에서 일괄 저장을 뺐다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 직원 자료 일괄 저장 화면 `/staff-members/export`(WHALEERP-337): 목록 [일괄 저장]을 BP 마스터 · 가맹마스터에게만 보이고, 미리 보기 · 요청 · 지난 요청(만드는 중이면 10초마다 다시 읽기) · 내려받기를 붙였다. api 응답 타입은 아직 손으로 적었다(api 336 openapi 반영 전).
