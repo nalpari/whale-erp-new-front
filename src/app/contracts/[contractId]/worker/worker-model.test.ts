@@ -1,7 +1,10 @@
 // node --test "src/app/contracts/[contractId]/worker/worker-model.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isWorkerEditable, workerBody, workerOf, workerProblems, workerProblemsByField, workerSaveNote } from "./worker-model.ts";
+import { isWorkerEditable, workerBody, workerOf, workerProblemsByField, workerSaveNote, type WorkerForm } from "./worker-model.ts";
+
+/** 문장만, 화면 위에서 아래 순서로 */
+const workerProblems = (f: WorkerForm) => Object.values(workerProblemsByField(f));
 
 const filled = { name: " 남도현 ", phone: "010-9014-5563", birthDate: "1998-07-12", gender: "MALE" as const, isForeigner: false };
 

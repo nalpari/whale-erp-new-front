@@ -5,6 +5,7 @@ import {
   ageOn,
   fieldProblems,
   problemsByField,
+  shownProblems,
   DEFAULT_ANNUAL_LEAVE_TERMS,
   DEFAULT_SEVERANCE_PAY_TERMS,
   formatHours,
@@ -28,7 +29,6 @@ import {
   paperFileTypesOf,
   partTimePay,
   probationWage,
-  problems,
   renewalStartProblem,
   signedOverlapOf,
   toBody,
@@ -36,7 +36,11 @@ import {
   weeklyHours,
   type ContractDetail,
   type ContractForm,
+  type ProblemField,
 } from "./contract-form-model.ts";
+
+/** 문장만 — 칸 매핑은 problemsByField 테스트가 본다 */
+const problems = (...a: Parameters<typeof fieldProblems>) => fieldProblems(...a).map((p) => p.message);
 
 const filled = (over: Partial<ContractForm> = {}): ContractForm => ({
   ...initialForm("11"),
@@ -485,4 +489,10 @@ test("한 칸에 오류가 여럿이면 모두 — 파트타이머 요일 시간
   const low = problemsByField(fieldProblems(filled({ employmentType: "FULL_TIME", wage: "10,000", probation: true, probationRate: "10" })));
   assert.equal(low.probationWage?.length, 1);
   assert.equal(low.probationRate, undefined);
+});
+
+test("저장을 누른 때 오류가 난 칸만 보인다 — 고쳐지면 빠지고, 저장 뒤 새로 생긴 칸 오류는 다음 저장 때", () => {
+  const shown = new Set<ProblemField>(["name", "phone"]);
+  assert.deepEqual(shownProblems({ name: ["이름을 입력하세요"], jobTitle: ["직무를 입력하세요"] }, shown), { name: ["이름을 입력하세요"] });
+  assert.deepEqual(shownProblems({}, shown), {});
 });

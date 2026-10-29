@@ -4,11 +4,12 @@ import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { Button, Checkbox, ConfirmDialog, DateField, Field, FieldMessage, FormGroup, FormRow, Radio, TextField, useAction } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
-import { formatPhone, GENDERS, inProgressLine, type InProgressContract } from "../../new/contract-form-model";
+import { formatPhone, GENDERS, inProgressLine, shownProblems, type InProgressContract } from "../../new/contract-form-model";
+import { useInvalid } from "../../field-errors";
 import { withBack } from "../../contract-list";
 import { updateWorker } from "../actions";
 import { callSave, SAVE_CALL_LOST } from "../send-model";
-import { workerBody, workerProblemsByField, workerSaveNote, type WorkerForm as Form } from "./worker-model";
+import { workerBody, workerProblemsByField, workerSaveNote, type WorkerField, type WorkerForm as Form } from "./worker-model";
 
 
 // 날인 전 근로자 정보 수정(WHALEERP-125 「본인 대조」 · 126). 초대 코드를 못 받았다는 직원과 유선으로 번호를 확인했거나,
@@ -29,7 +30,6 @@ export function WorkerForm({
 }) {
   const router = useRouter();
   const [form, setForm] = useState<Form>(initial);
-  const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
   const [saving, startSaving] = useTransition();
   const update = useAction(updateWorker, { kind: "update" });
@@ -46,26 +46,18 @@ export function WorkerForm({
     target?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [failures]);
   const ids = { name: useId(), phone: useId(), birthDate: useId(), gender: useId() };
-  // 공통 DateField 는 aria 속성을 받지 않아 안의 입력에 직접 단다
+  // 공통 DateField 는 aria 속성을 받지 않아 안의 입력에, 성별은 묶음 안 라디오 모두에 단다(작성 화면과 같은 useInvalid)
   const birthRef = useRef<HTMLDivElement>(null);
+  const genderRef = useRef<HTMLDivElement>(null);
 
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
   const issues = workerProblemsByField(form);
-  // 칸 아래 오류는 저장을 한 번 누른 뒤부터, 고칠 때마다 다시 본다
-  const errs = tried ? issues : {};
+  // 칸 아래 오류는 저장을 누른 때 오류가 난 칸에만, 고치는 동안 다시 본다(작성 화면과 같다)
+  const [errorFields, setErrorFields] = useState<ReadonlySet<WorkerField> | null>(null);
+  const errs = errorFields ? shownProblems(issues, errorFields) : {};
   const invalid = (k: keyof typeof ids) => (errs[k] ? { "aria-invalid": true, "aria-describedby": ids[k] } : {});
-  const birthInvalid = !!errs.birthDate;
-  useEffect(() => {
-    const input = birthRef.current?.querySelector("input");
-    if (!input) return;
-    if (birthInvalid) {
-      input.setAttribute("aria-invalid", "true");
-      input.setAttribute("aria-describedby", ids.birthDate);
-    } else {
-      input.removeAttribute("aria-invalid");
-      input.removeAttribute("aria-describedby");
-    }
-  }, [birthInvalid, ids.birthDate]);
+  useInvalid(birthRef, ids.birthDate, !!errs.birthDate);
+  useInvalid(genderRef, ids.gender, !!errs.gender, true);
   const send = (replaceContractIds?: number[]) =>
     startSaving(async () => {
       // 성공하면 액션이 상세로 보낸다. 돌아왔다면 실패다.
@@ -85,9 +77,10 @@ export function WorkerForm({
       setFailures((n) => n + 1);
     });
   const save = () => {
-    setTried(true);
     setServerError("");
-    if (Object.keys(issues).length) {
+    const found = Object.keys(issues) as WorkerField[];
+    setErrorFields(found.length ? new Set(found) : null);
+    if (found.length) {
       setFailures((n) => n + 1);
       return;
     }
@@ -140,9 +133,9 @@ export function WorkerForm({
             <FieldMessage id={ids.birthDate} message={errs.birthDate} />
           </div>
           <div
+            ref={genderRef}
             role="group"
             aria-label="성별"
-            aria-describedby={errs.gender ? ids.gender : undefined}
             data-invalid={errs.gender ? true : undefined}
             className="flex min-w-px flex-1 flex-col gap-[8px]"
           >

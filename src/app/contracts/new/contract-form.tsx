@@ -1,8 +1,9 @@
 "use client";
 
 import { unstable_rethrow, useRouter } from "next/navigation";
-import { useEffect, useId, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
+import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FieldMessage, FormGroup, FormRow, Radio, Select, Textarea, TextField, useAction } from "@/components/common";
+import { FieldErrors, useInvalid } from "../field-errors";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
 import { SAVED_COOKIE, SAVED_COOKIE_MAX_AGE, backHrefOf, listAfterSave, savedKindOf, withBack } from "../contract-list";
@@ -29,6 +30,7 @@ import {
   PROBATION_WAGE_FLOOR,
   probationWage,
   problemsByField,
+  shownProblems,
   type ProblemField,
   timesOf,
   toBody,
@@ -78,47 +80,17 @@ function Calc({ children, strong }: { children: ReactNode; strong?: boolean }) {
 }
 
 // 표 위 제목과 표. 급여 표가 둘씩 나란히 선다.
+// 표(급여항목 · 비과세)는 칸이 많아 입력마다 빨갛게 하지 않고 표 아래 오류만 보인다
 function PayTable({ title, help, errors, children }: { title: string; help?: string; errors?: string[]; children: ReactNode }) {
+  const errorId = useId();
   return (
     <div data-invalid={errors?.length ? true : undefined} className="flex min-w-px flex-1 flex-col gap-[8px]">
       <span className={LABEL}>{title}</span>
       {children}
-      <FieldErrors errors={errors} />
+      <FieldErrors id={errorId} errors={errors} />
       {help && <span className={HELP}>{help}</span>}
     </div>
   );
-}
-
-// 저장 때 찾은 유효성 오류 — 그 칸 바로 아래, 도움말 위에 보인다(WHALEERP-631, 2026-10-29 재영 공지 1번). 문장마다 공통 FieldMessage
-// (다른 화면의 칸 아래 오류와 같은 모양 · role="alert")이고, 묶음 id 를 입력의 aria-describedby 로 잇는다.
-function FieldErrors({ id, errors }: { id?: string; errors?: string[] }) {
-  const fallback = useId();
-  if (!errors?.length) return null;
-  const base = id ?? fallback;
-  return (
-    <div id={base} className="flex flex-col">
-      {errors.map((m, i) => (
-        <FieldMessage key={m} id={`${base}-${i}`} message={m} />
-      ))}
-    </div>
-  );
-}
-
-// 오류가 있는 칸의 입력에 aria-invalid · aria-describedby 를 단다. 칸 안 입력은 공통 컴포넌트라 첫 입력을 찾아 단다(DateField 처럼 id 를
-// 받지 않는 것도 있다). 칸 안 입력이 다시 만들어져도 다시 달도록 렌더마다 본다. 입력이 여럿인 Group · PayTable 은 묶음에
-// aria-describedby 를 단다(입력마다 aria-invalid 를 달지 않는다).
-function useInvalid(box: RefObject<HTMLElement | null>, errorId: string, invalid: boolean) {
-  useEffect(() => {
-    const control = box.current?.querySelector<HTMLElement>("input:not([type=file]):not([type=hidden]), select, textarea");
-    if (!control) return;
-    if (invalid) {
-      control.setAttribute("aria-invalid", "true");
-      control.setAttribute("aria-describedby", errorId);
-    } else if (control.getAttribute("aria-describedby") === errorId) {
-      control.removeAttribute("aria-invalid");
-      control.removeAttribute("aria-describedby");
-    }
-  });
 }
 
 type PayRow = { key: string; label: string; cells?: ReactNode[]; hours?: ReactNode; wage?: ReactNode; amount: ReactNode };
@@ -143,7 +115,8 @@ function Item({
   const id = useId();
   const box = useRef<HTMLDivElement>(null);
   const invalid = !!errors?.length;
-  useInvalid(box, `${id}-error`, invalid);
+  // PaperFile 이 파일 칸 오류에 `${id}-error` 를 쓴다 — 겹치면 이 훅이 그 속성을 지운다(front #170 code-review)
+  useInvalid(box, `${id}-errors`, invalid);
   return (
     <div ref={box} data-invalid={invalid || undefined} className={`flex flex-col gap-[8px] ${width ?? "min-w-px flex-1"}`}>
       <label htmlFor={id} className="truncate text-[14px] font-medium text-erp-label">
@@ -159,7 +132,7 @@ function Item({
         )}
       </label>
       {children(id)}
-      <FieldErrors id={`${id}-error`} errors={errors} />
+      <FieldErrors id={`${id}-errors`} errors={errors} />
       {help && <span className={HELP}>{help}</span>}
     </div>
   );
@@ -170,7 +143,7 @@ function Item({
 function PaperFile({ id, label, file, error, accept, onPick }: { id: string; label: string; file: File | null; error?: string; accept: string; onPick: (file: File | undefined) => void }) {
   const input = useRef<HTMLInputElement>(null);
   return (
-    <span className="flex flex-col gap-[6px]">
+    <span data-invalid={error ? true : undefined} className="flex flex-col gap-[6px]">
       <span className="flex gap-[6px]">
         <TextField
           id={id}
@@ -208,12 +181,15 @@ function PaperFile({ id, label, file, error, accept, onPick }: { id: string; lab
 // 입력이 여럿인 칸(라디오 · 요일 · 시각). <label> 하나로 묶을 수 없어 group 으로 둔다.
 function Group({ label, required, children, help, errors }: { label: string; required?: boolean; children: ReactNode; help?: string; errors?: string[] }) {
   const errorId = useId();
+  const box = useRef<HTMLDivElement>(null);
   const invalid = !!errors?.length;
+  // 묶음 안 입력(라디오 · 시각 고르기) 모두에 aria-invalid · aria-describedby
+  useInvalid(box, errorId, invalid, true);
   return (
     <div
+      ref={box}
       role="group"
       aria-label={label}
-      aria-describedby={invalid ? errorId : undefined}
       data-invalid={invalid || undefined}
       className="flex min-w-px flex-1 flex-col gap-[8px]"
     >
@@ -318,7 +294,6 @@ export function ContractForm({
   const [form, setForm] = useState<Form>(() => initial ?? initialForm(stores.length === 1 ? String(stores[0].storeId) : ""));
   // 저장을 한 번 누른 뒤부터 막는 이유를 보인다. 처음부터 빨간 줄을 띄우지 않는다.
   const router = useRouter();
-  const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
   const [saving, startSaving] = useTransition();
   // 저장 · 종이 계약 등록 요청은 화면 전체 딤으로 감싼다 — 고쳐 쓰기(correction)는 「수정중」, 새 계약 · 임시저장 이어 쓰기 · 종이 계약 등록은 「등록중」
@@ -335,11 +310,11 @@ export function ContractForm({
   // 상자)까지 밀어 올려 화면 아래가 빈 공간으로 남았다. nearest 는 본문 안에서 보일 만큼만 옮긴다.
   const failureRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
+  const scheduleErrorId = useId();
   const [failures, setFailures] = useState(0);
   useEffect(() => {
     if (!failures) return;
-    // 날인본 파일 칸은 PaperFile 이 입력에 aria-invalid 를 단다 — 둘 다 찾아 화면 위에서 가장 앞의 것으로
-    const target = failureRef.current ?? formRef.current?.querySelector("[data-invalid], [aria-invalid=true]");
+    const target = failureRef.current ?? formRef.current?.querySelector("[data-invalid]");
     target?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [failures]);
   const fail = (message: string) => {
@@ -364,18 +339,23 @@ export function ContractForm({
 
   // 막는 이유는 마지막으로 누른 저장 방식 기준으로 보인다.
   const [lastTemporary, setLastTemporary] = useState(false);
-  // 칸 아래 오류는 저장을 한 번 누른 뒤부터, 고칠 때마다 다시 본다
-  const errs: Partial<Record<ProblemField, string[]>> = tried ? problemsByField(fieldProblems(form, lastTemporary, files.employment !== null, previousStartDate)) : {};
+  // 칸 아래 오류는 저장을 누른 때 오류가 난 칸에만 보이고, 고치는 동안 다시 본다 — 고쳐지면 사라지고, 새 칸 오류는 다음 저장 때 보인다
+  // (칠 때마다 role="alert" 가 새로 울리지 않게, front #170 code-review)
+  const [errorFields, setErrorFields] = useState<ReadonlySet<ProblemField> | null>(null);
+  const errs: Partial<Record<ProblemField, string[]>> = errorFields
+    ? shownProblems(problemsByField(fieldProblems(form, lastTemporary, files.employment !== null, previousStartDate)), errorFields)
+    : {};
   const minor = isMinor(form);
   const holiday = weeklyHolidayOf(form);
   const dayLabel = (d: Weekday) => labelOf(labels.weekday, d);
 
   // 임시저장(DRAFT)은 직원 칸과 근무지만 있으면 되고, 초안 저장(발송 대기)은 다 채워야 한다(근로계약은 키만 NOT NULL).
   const save = (temporary: boolean) => {
-    setTried(true);
     setLastTemporary(temporary);
     setServerError("");
-    if (fieldProblems(form, temporary, files.employment !== null, previousStartDate).length) {
+    const found = fieldProblems(form, temporary, files.employment !== null, previousStartDate);
+    setErrorFields(found.length ? new Set(found.map((p) => p.field)) : null);
+    if (found.length) {
       setFailures((n) => n + 1);
       return;
     }
@@ -730,7 +710,7 @@ export function ContractForm({
             />
             {errs.schedule && (
               <div data-invalid>
-                <FieldErrors errors={errs.schedule} />
+                <FieldErrors id={scheduleErrorId} errors={errs.schedule} />
               </div>
             )}
             <span className={HELP}>

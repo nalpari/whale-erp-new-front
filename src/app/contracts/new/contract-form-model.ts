@@ -543,9 +543,14 @@ export function fieldProblems(f: ContractForm, temporary = false, hasEmploymentF
   return out;
 }
 
-/** fieldProblems 의 문장만 */
-export function problems(f: ContractForm, temporary = false, hasEmploymentFile = false, previousStartDate?: string): string[] {
-  return fieldProblems(f, temporary, hasEmploymentFile, previousStartDate).map((p) => p.message);
+/**
+ * 보일 칸 오류 — 저장을 누른 때 오류가 난 칸(shown)만 지금 값으로. 고쳐진 칸은 빠지고, 저장 뒤 고치다 새로 생긴 칸 오류는 다음
+ * 저장 때 보인다(칠 때마다 role="alert" 가 새로 울리지 않게, front #170 code-review). 두 화면(작성 · 근로자 정보 수정)이 같이 쓴다.
+ */
+export function shownProblems<K extends string, V>(live: Partial<Record<K, V>>, shown: ReadonlySet<K>): Partial<Record<K, V>> {
+  const out: Partial<Record<K, V>> = {};
+  for (const k of shown) if (live[k] !== undefined) out[k] = live[k];
+  return out;
 }
 
 /** 칸마다 오류 문장 — 화면이 칸 아래에 보인다 */

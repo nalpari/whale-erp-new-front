@@ -42,8 +42,6 @@ export function workerProblemsByField(f: WorkerForm): Partial<Record<WorkerField
   return out;
 }
 
-/** workerProblemsByField 의 문장만, 화면 위에서 아래 순서로 */
-export const workerProblems = (f: WorkerForm): string[] => Object.values(workerProblemsByField(f));
 
 export function workerBody(f: WorkerForm, replaceContractIds?: number[]): WorkerBody {
   return {
