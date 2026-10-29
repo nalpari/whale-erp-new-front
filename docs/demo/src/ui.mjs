@@ -241,7 +241,7 @@ export function userPop(A, name, items) {
 const ICON_HOVER =
   "group relative grid h-[32px] place-items-center rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70 [&>span:first-child]:transition-opacity hover:[&>span:first-child]:opacity-70";
 const tip = (label) =>
-  `<span class="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${TIP_TAIL}${label}</span>`;
+  `<span class="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${TIP_TAIL}${label}</span>`;
 // scopeDialog 를 주면(플랫폼 콘솔) 웨일ERP 아이콘이 바로 이동하지 않고 그 id 의 BP 선택 확인창을 먼저 연다(F-TLJOCK).
 // hideAddon 이면 부가서비스구독관리 아이콘을 뺀다 — 플랫폼관리 사이트(global-header.tsx 와 같다, 2026-10-28 사용자 지정).
 export const serviceLinks = (A, hrefs = {}) => {
@@ -255,7 +255,7 @@ export const serviceLinks = (A, hrefs = {}) => {
   return `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]">${erpLink}${hrefs.hideAddon ? "" : `<a aria-label="부가서비스구독관리" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-subscription.svg", 24, 24)}${tip("부가서비스구독관리")}</a>`}${platformLink}</div></div>`;
 };
 export const alarmLink = (A, href) =>
-  `<a aria-label="알림" class="shrink-0 rounded-full transition-opacity duration-150 ease-out hover:opacity-70" href="${href}">${img(A, "alarm.svg", 42, 42)}</a>`;
+  `<a aria-label="알림" class="group relative shrink-0 rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70" href="${href}">${img(A, "alarm.svg", 42, 42)}${tip("알림")}</a>`;
 
 // menus: { label, items: [{ label, href }] }. 2depth 줄은 처음엔 첫 메뉴 항목을 그려 두고 erp.js 가 바꾼다.
 export function globalHeader(A, menus, right, home = "#") {

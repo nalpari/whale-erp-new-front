@@ -89,10 +89,11 @@ function Logo({ href = "/", onClick }: { href?: string; onClick?: (e: MouseEvent
 }
 
 // 아이콘 아래 뜨는 알약 모양 툴팁 — 버튼에 마우스를 올린 모양처럼 흰 바탕 · 회청 테두리 · 먹색 글자 500(2026-10-29 사용자 지정, 전엔 Figma Info on 의 연회색 테두리 · 회청 글자).
+// 모서리는 6px — 알약형은 짙은 메뉴 줄 위에서 테두리가 거칠게 보였다(2026-10-29 사용자 지적). 부모에 group · relative 를 둔다(서비스 바로가기 · 알림 종).
 // 떠오를 때 4px 아래에서 올라오고, 동작 줄이기 설정이면 올라오지 않고 나타나기만 한다.
-function Tip({ label }: { label: string }) {
+export function HeaderTip({ label }: { label: string }) {
   return (
-    <span className="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">
+    <span className="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">
       {/* 꼬리는 SVG 삼각형 — 네모를 45° 돌린 꼬리는 대각선 테두리가 계단처럼 거칠게 보였다(2026-10-29 사용자 지적). 아랫변을 흰색으로 채워 상자 테두리를 그 폭만큼 덮는다. */}
       <svg aria-hidden width="12" height="7" viewBox="0 0 12 7" className="absolute -top-[6px] left-1/2 -translate-x-1/2 overflow-visible fill-white stroke-erp-brand">
         <path d="M0.5 6.5 6 1l5.5 5.5" strokeLinejoin="round" />
@@ -113,7 +114,7 @@ function ServiceLink({ target, label, className, children }: { target?: ServiceT
   const body = (
     <>
       {children}
-      <Tip label={label} />
+      <HeaderTip label={label} />
     </>
   );
   return typeof target === "function" ? (
