@@ -1,6 +1,9 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 일괄 저장 화면에서 범위 선택기로 범위를 바꾸면 목록으로 가지 않고 머문다. 헤더(`admin-header.tsx` `SCOPE_STAY_SCREENS`)가 같은 주소에 새 `?scope=` 만 실어 바꾼다(front #179 리뷰).
+* **Update**: main 병합(front blastoise, origin/main 최신): okf/log 는 양쪽 기록을 살렸고, [직원 정보 관리 화면](/screens/staff-members.md) 은 늦은 generated 시각과 main 의 출퇴근 현황 구현을 남기고 미구현 목록에서 일괄 저장을 뺐다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 직원 자료 일괄 저장 화면 `/staff-members/export`(WHALEERP-337): 목록 [일괄 저장]을 BP 마스터 · 가맹마스터에게만 보이고, 미리 보기 · 요청 · 지난 요청(만드는 중이면 10초마다 다시 읽기) · 내려받기를 붙였다. api 응답 타입은 아직 손으로 적었다(api 336 openapi 반영 전).
 * **Update**: main 병합(front bulbasaur, main #170 까지): okf/log 는 양쪽 기록을 살렸고, [Whale ERP Frontend](/whale-erp-front.md) 의 근로계약 상세 · 당사자 정보 수정 두 줄은 이 PR 의 재발송 문장과 main(#170)의 칸 아래 오류 문장을 함께 남겼다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #146 병합 code-review: 재발송 확인창 제목 · 토스트를 「계약서를 다시 보내시겠습니까?」 · 「계약서를 다시 보냈습니다.」(가입한 직원 문구와 같게), 가입 전 직원 문구에서 「가입한 직원이면 앱 알림」 문장을 뺌(그 경우 api 가 막거나 상세는 앱 문구를 고른다), 「서명 기한」 → 「날인 기한」, `invitation.canResend` 대체 값 설명을 지금 코드에 맞춤.
 * **Update**: main 병합(front #146, #136 머지 뒤) — 재발송 확인창은 #136 의 `resendDialogCopy(status, name, staffJoined)` · 거부 · 만료 문장 · 직원 목록의 `status` · `lastSentAt` 를 살리고, 가입 전 직원 쪽 본문만 `inviteResendCopy`(가입 초대 · 소속 추가 확인 요청을 함께 알림)로. 「상세에 가입 여부 없음」 주석은 지움(#146 리뷰 참고 1 · 3). api 타입은 api main 으로 다시 만듦.

@@ -48,8 +48,12 @@ sources:
     last_modified: 2026-10-23T03:37:40Z
   - id: staff-list-page
     resource: ../../src/app/staff-members/page.tsx
-    title: 직원 목록 화면
-    last_modified: 2026-10-23T03:37:40Z
+    title: 직원 목록 화면 — 도구 줄 [일괄 저장]은 BP 마스터 · 가맹마스터에게만(bulk-export-button.tsx)
+    last_modified: 2026-10-29T02:41:12Z
+  - id: staff-export-screen
+    resource: ../../src/app/staff-members/export/export-screen.tsx
+    title: 직원 자료 일괄 저장 화면(WHALEERP-337) — 미리 보기 · 지난 요청(BFF) · 요청 · 내려받기(서버 액션 actions.ts) · 판정 bulk-export-model.ts
+    last_modified: 2026-10-29T02:41:12Z
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
     title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 재직 이력 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치 · 근무스케줄 주(주소 week) · [목록] 주소(주소 back, 없으면 상세 주소에 붙은 예전 목록 조건) + 생년월일 줄 [정정])
@@ -419,9 +423,21 @@ sources:
 초대 유형 · 상태 한글은 `getEnum("InvitationType")` · `getEnum("InvitationStatus")` 이고, 받지 못하면 그 조각만 빠진다(영문 값을
 보이지 않는다). 가린 직원은 상세가 404 라 이 줄이 없다.
 
+# 직원 자료 일괄 저장 (WHALEERP-337)
+
+`/staff-members/export`(운영 정책 RET-09, 목업 `docs/mockup/staff/export.html`, 계획 `docs/plans/2026-10-29-staff-records-export-screen.md`).
+목록 도구 줄의 [일괄 저장]과 이 화면은 BP 마스터(`BM`) · 가맹마스터(`FM`)에게만 보이고(`canBulkExport`), 다른 역할이 주소로 오면
+「일괄 저장은 BP 마스터와 가맹마스터만 쓸 수 있습니다」를 보인다 — 막는 것은 api 403 이다. 업무 범위는 헤더 범위(`useScope`)를
+`storeIdsOfScope`(`scopeStores` — 직영 · 가맹은 폐점 점포를 뺀다, 전체는 빈 목록)로 바꿔 미리 보기 · 요청에 싣는다.
+미리 보기(`GET /staff-members/bulk-exports/preview`) · 지난 요청(`GET /staff-members/bulk-exports`)은 BFF, 요청 · 내려받기 주소는 서버 액션이고,
+내려받기는 받은 서명 주소로 탭을 옮긴다(`location.assign`). 대상 0명 · 같은 범위 만드는 중이면 [일괄 저장 요청]을 끄고 까닭을 적으며, 요청한 뒤에는 새 미리 보기를 받을 때까지 꺼 둔다.
+실패 줄의 [다시 요청]은 그 요청의 `storeIds` 로 다시 보내고, 같은 점포 묶음을 만드는 중인 줄이 있으면 끈다(막는 것은 api 409). api 503 은 요청이 만들어지지 않은 것이라 api 문장을 그대로 보인다.
+만드는 중인 줄이 있거나 미리 보기가 `inProgress` 면 10초마다 둘을 다시 읽는다 — 운영 알림은 보내지 않는다(운영 정책 NTF-01). 받을 수 있는 기한은 api `expiresAt`(한국 날짜 MM-DD)로 보인다.
+api(Plane 336)가 openapi.json 에 싣기 전이라 응답 타입은 `bulk-export-model.ts` 에 손으로 적었다.
+
 # 아직 없는 것
 
-* 가입 연결 확인 시트(#139), 일괄 저장 · 직원 초대(근로계약서 초안).
+* 가입 연결 확인 시트(#139), 직원 초대(근로계약서 초안).
 * 상세 「근로계약서 작성」 버튼의 직원 미리 채움 — 작성 화면이 직원을 받지 않는다.
 * 쪽 이동이 `router.replace` 라 뒤로 가기가 쪽을 거슬러 가지 않는다.
 

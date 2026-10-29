@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useEffectEvent, useState, type ReactNode } from "react";
 import { ConfirmDialog, GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
-import { bpPath, isBpPathScreen } from "@/lib/bp-path";
+import { bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
 import type { ServiceCode } from "@/lib/browser-storage";
 import { entryUrlOf, findMenu, firstMenuUrl, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
@@ -16,6 +16,9 @@ import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, us
 
 /** ERP 메뉴 url 의 화면 주소 — /bp/{id} 주소로 옮긴 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다. */
 const screenOf = (url: string, tabBp: number) => (isBpPathScreen(url) ? bpPath(tabBp, url) : url);
+// 범위를 바꿔도 목록으로 가지 않고 머무는 화면 — 목록이 아니라 지금 범위로 일하는 화면이다(직원 자료 일괄 저장, 2026-10-29 front #179 리뷰).
+// 같은 주소에 새 scope 만 실어 바꾼다 — 주소의 옛 scope 가 남으면 복사한 주소와 헤더 범위가 어긋난다.
+const SCOPE_STAY_SCREENS = ["/staff-members/export"];
 
 // 로그인 후 화면의 헤더 하나. 메뉴·점포·이름은 로그인 정보(SessionGate)에서 그린다.
 // 메뉴는 이 탭 서비스(useService)의 것만, 2단계까지 그린다(3단계는 헤더에 보이지 않는다, 2026-10-13).
@@ -134,6 +137,7 @@ function HeaderScopeSelect() {
   const stores = useStores();
   const [scope, setScope] = useScope();
   const pageUrl = pageMenu?.url ?? null;
+  const pathname = usePathname();
   // 칸 앞의 BP 이름이 어느 BP 의 데이터인지 늘 보인다(플랫폼 계정이 고른 BP 의 탭도)
   return (
     <>
@@ -152,7 +156,8 @@ function HeaderScopeSelect() {
               const next = scopeOfKey(key);
               if (!next) return;
               setScope(next);
-              if (pageUrl) router.push(withScope(screenOf(pageUrl, bp.bpCodeId), next));
+              if (SCOPE_STAY_SCREENS.includes(stripBp(pathname))) router.replace(withScope(pathname, next));
+              else if (pageUrl) router.push(withScope(screenOf(pageUrl, bp.bpCodeId), next));
             }}
           />
         </div>
