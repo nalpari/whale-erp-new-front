@@ -100,6 +100,8 @@ function DetailBody({
   const [busy, startBusy] = useTransition();
   /** 이 상세에서 초기화 메일을 보냈다 — 로그인한 적이 있어도 하늘색 안내를 띄운다(등록 때와 같은 안내, 2026-10-28 사용자 지정) */
   const [resetSent, setResetSent] = useState(false);
+  // 패널을 닫으면 방금 초기화 안내를 내린다 — 같은 계정을 다시 열어도 띄우지 않는다(로그인한 적 있는 계정은 그 뒤 안내 없음, 2026-10-29 사용자 지정)
+  if (!panelOpen && resetSent) setResetSent(false);
 
   const can = usePagePermission();
   const withdrawn = bp.accountStatus === "WITHDRAWN";
