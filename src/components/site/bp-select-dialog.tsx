@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ConfirmDialog, DataTable, Pagination, Radio, SearchField, Select, type Column } from "@/components/common";
+import { ConfirmDialog, DataTable, ListToolbar, Pagination, Radio, SearchField, Select, type Column } from "@/components/common";
 import { bff, BffError } from "@/lib/bff";
 import { bpSwitchUrl } from "@/lib/menus";
 import type { BpOption } from "@/lib/session";
@@ -79,21 +79,19 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
     <ConfirmDialog open wide title="BP 선택" confirmLabel="이동" confirmDisabled={!picked} onConfirm={handleMove} onCancel={onClose}>
       <div className="flex flex-col gap-[12px]">
         <p>BP를 선택하면 웨일ERP가 새 탭으로 열립니다.</p>
-        {/* 찾기 칸 오른쪽에 한 쪽 건수 — 바꾸면 1쪽부터, 고른 줄은 비운다(검색과 같다) */}
-        <div className="flex gap-[6px]">
-          <div className="min-w-0 flex-1">
-            <SearchField
-              value={keyword}
-              onValueChange={setKeyword}
-              onSearch={(v) => {
-                setPicked(null);
-                setQuery((q) => ({ ...q, keyword: v.trim(), page: 1 }));
-              }}
-              placeholder="상호명 또는 BP코드"
-              aria-label="BP 찾기"
-              maxLength={50}
-            />
-          </div>
+        <SearchField
+          value={keyword}
+          onValueChange={setKeyword}
+          onSearch={(v) => {
+            setPicked(null);
+            setQuery((q) => ({ ...q, keyword: v.trim(), page: 1 }));
+          }}
+          placeholder="상호명 또는 BP코드"
+          aria-label="BP 찾기"
+          maxLength={50}
+        />
+        {/* 「총 N 건」과 한 쪽 건수 — 목록 화면과 같은 줄(2026-10-29 사용자 지정). 건수를 바꾸면 1쪽부터, 고른 줄은 비운다(검색과 같다) */}
+        <ListToolbar total={result?.total ?? 0}>
           <div className="w-[80px] shrink-0">
             <Select
               aria-label="페이지당 건수"
@@ -110,16 +108,24 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
               ))}
             </Select>
           </div>
-        </div>
+        </ListToolbar>
+        {/* 결과 자리는 높이를 고정한다 — 불러오는 동안 · 받은 뒤 · 건수가 적을 때 팝업 크기가 바뀌지 않게(2026-10-29 사용자 지적, 작았다가 커졌다) */}
         {failure ? (
-          <p role="alert" className="text-erp-off">
-            {failure}
-          </p>
+          <>
+            <p role="alert" className="flex h-[506px] items-center justify-center text-erp-off">
+              {failure}
+            </p>
+            <div aria-hidden className="h-[34px]" />
+          </>
         ) : !result ? (
-          <p className="text-erp-muted">불러오는 중입니다.</p>
+          <>
+            <p className="flex h-[506px] items-center justify-center text-erp-muted">불러오는 중입니다.</p>
+            {/* 쪽 번호 줄 자리도 미리 비워 둔다 */}
+            <div aria-hidden className="h-[34px]" />
+          </>
         ) : (
           <>
-            <div className="max-h-[506px] overflow-y-auto">
+            <div className="h-[506px] overflow-y-auto">
               <DataTable
                 columns={columns}
                 rows={result.items}
