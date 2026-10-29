@@ -218,3 +218,176 @@ details[name="guest-faq"][open]::details-content {
     transition: none;
   }
 }
+
+/* 공통 로딩의 고래 그림(src/components/common/whale-loader.tsx). 크기 · 색은 컴포넌트가 --wl-* 변수로 넘긴다. 원본: 노영주 님 제공 whale-loader. */
+.wl-root .wl-line {
+  position: relative;
+  width: 100%;
+}
+.wl-root .wl-sq {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.wl-root .wl-sq i {
+  position: relative;
+  width: var(--wl-sq);
+  height: var(--wl-sq);
+  border-radius: 2px;
+  background: var(--wl-to);
+  background: color-mix(in srgb, var(--wl-to) calc(var(--i) * 3.6% + 12%), var(--wl-from));
+  animation: wl-swell 2.4s infinite;
+  animation-delay: calc((var(--i) - 24) * 0.2s);
+}
+.wl-root .wl-sq i.hit {
+  animation-name: wl-swell, wl-dip;
+  animation-duration: 2.4s, 0.65s;
+  animation-iteration-count: infinite, 1;
+  animation-delay: calc((var(--i) - 24) * 0.2s), 0s;
+  animation-timing-function: ease, ease-out;
+}
+@keyframes wl-swell {
+  0% {
+    translate: 0 var(--wl-swell-low);
+    opacity: 0.5;
+    scale: 1;
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  50% {
+    translate: 0 var(--wl-swell-high);
+    opacity: 1;
+    scale: 1.15;
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  100% {
+    translate: 0 var(--wl-swell-low);
+    opacity: 0.5;
+    scale: 1;
+  }
+}
+@keyframes wl-dip {
+  30% {
+    top: calc(var(--wl-sq) * 1);
+  }
+  65% {
+    top: calc(var(--wl-sq) * -0.7);
+  }
+  100% {
+    top: 0;
+  }
+}
+.wl-root .wl-sky {
+  position: absolute;
+  bottom: calc(50% - 3px);
+  overflow: hidden;
+}
+.wl-root .wl-rider {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  color: var(--wl-whale);
+  transform-origin: 50% 60%;
+  opacity: 0;
+}
+.wl-root .wl-bob {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  animation: wl-bob 2.6s ease-in-out infinite;
+}
+@keyframes wl-bob {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  25% {
+    translate: 0 -2px;
+    rotate: -3deg;
+  }
+  55% {
+    translate: 0 1px;
+    rotate: 2deg;
+  }
+  80% {
+    translate: 0 -1px;
+    rotate: -1deg;
+  }
+}
+.wl-root svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+  animation: wl-kick 1.3s infinite;
+}
+@keyframes wl-kick {
+  0% {
+    transform: scaleX(-1) rotate(2.5deg);
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  50% {
+    transform: scaleX(-1) rotate(-2.5deg);
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  100% {
+    transform: scaleX(-1) rotate(2.5deg);
+  }
+}
+.wl-root .wl-tail {
+  transform-box: view-box;
+  transform-origin: 41.8px 13.6px;
+  animation: wl-flap 1.3s infinite;
+}
+@keyframes wl-flap {
+  0% {
+    rotate: -6deg;
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  50% {
+    rotate: 95deg;
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  100% {
+    rotate: -6deg;
+  }
+}
+.wl-root .wl-drop {
+  position: absolute;
+  top: 50%;
+  width: var(--wl-drop);
+  height: var(--wl-drop);
+  margin: calc(var(--wl-drop) / -2) 0 0 calc(var(--wl-drop) / -2);
+  border-radius: 1.5px;
+  background: var(--wl-to);
+  animation: wl-drop 0.75s cubic-bezier(0.2, 0.6, 0.4, 1) forwards;
+}
+@keyframes wl-drop {
+  0% {
+    translate: 0 0;
+    opacity: 1;
+    scale: 1;
+  }
+  45% {
+    translate: calc(var(--dx) * 0.6) var(--dy);
+    opacity: 1;
+  }
+  100% {
+    translate: var(--dx) 8px;
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+/* 움직임 줄이기: 고래는 점프 없이 떠 있고(컴포넌트) 꼬리 · 몸 흔들림은 멈추며 파도만 천천히 */
+@media (prefers-reduced-motion: reduce) {
+  .wl-root .wl-bob,
+  .wl-root svg,
+  .wl-root .wl-tail {
+    animation: none;
+  }
+  .wl-root .wl-sq i {
+    animation-duration: 6s;
+  }
+}
