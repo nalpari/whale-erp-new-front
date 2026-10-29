@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, use, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Button, LoadingNotice, useBackdropActive } from "@/components/common";
-import { logout } from "@/app/actions";
+import { expireSession } from "@/app/actions";
 import { loginPathOf, returnPathOf } from "@/lib/auth-routes";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
 import { bpOfPath, bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
@@ -190,20 +190,20 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
           // 쿠키의 소속 BP 와 브라우저의 로그인 정보가 어긋났다(쿠키를 고쳤거나 다른 탭에서 다른 계정으로 로그인). proxy 와 서로 반대로 보내며
           // 돌지 않게 다시 보내지 않고 로그아웃한다 — 두 값 모두 새로 만들어진다.
           alert("로그인 정보가 맞지 않아 다시 로그인해 주세요");
-          if (!(await signOut(logout))) setState(LOGOUT_FAILED);
+          if (!(await signOut(expireSession))) setState(LOGOUT_FAILED);
           return;
         }
         if (e instanceof BffError && e.status === 401) {
           // 세션이 이미 끊겼으면(proxy·BFF 가 쿠키를 지움) 로그인 화면으로 바로 간다. login-key 가 없는 옛 세션만 로그아웃으로 끝낸다.
           // 메일 링크(엑셀 내려받기)로 왔으면 ?next= 를 붙여 로그인 뒤 그 화면으로 돌아온다(loginPathOf).
           if (readLoginKey()) router.replace(loginPathOf(location.pathname));
-          else if (!(await signOut(logout))) setState(LOGOUT_FAILED);
+          else if (!(await signOut(expireSession))) setState(LOGOUT_FAILED);
           return;
         }
         if (e instanceof LoginInfoDeniedError) {
           // 로그인 정보를 볼 수 없는 계정이다. 다시 시도해도 같으므로 안내하고 로그아웃한다.
           alert(e.message);
-          if (!(await signOut(logout))) setState(LOGOUT_FAILED);
+          if (!(await signOut(expireSession))) setState(LOGOUT_FAILED);
           return;
         }
         if (e instanceof OtherBpError) {

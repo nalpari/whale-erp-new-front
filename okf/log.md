@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Fix**: [Whale ERP Frontend](/whale-erp-front.md) · [MY PAGE](/mypage.md) — 로그아웃 · 회원 탈퇴처럼 스스로 끝내면 로그인 전 홈(`/`)으로 간다(정책 MYPAGE-3 그대로, 전엔 `/login`). 세션 만료 · 강제로 끝나는 경우는 새 `expireSession` 으로 `/login` 에 둔다(2026-10-29 재영).
 * **Update**: main 병합(front caterpie, PR #173 두 번째 충돌 해소): okf/log.md 는 두 쪽 항목을 모두 남겼다.
 * **Update**: main 병합(front caterpie, PR #173 충돌 해소): okf 충돌은 양쪽 기록을 살렸다 — bp.md 는 main 의 generated 시각, log.md 는 두 쪽 항목을 날짜별로 모두 남겼다. 알림 종 403 은 main 의 강제 변경 문구 판정을 따랐다.
 * **Update**: [MY PAGE](/mypage.md) — 회원 탈퇴 사유를 front 고정 목록 대신 로그인 정보의 공통코드 `WITHDRAW_REASON` 에서 읽는다 — 정책 그대로, 구현을 맞췄다(2026-10-29 재영).

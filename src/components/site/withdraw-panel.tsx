@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
-import { logout } from "@/app/actions";
+import { expireSession, logout } from "@/app/actions";
 import { Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
 import { withdrawFormField, withdrawWarningText, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
 import { useCodes } from "./session-gate";
@@ -132,7 +132,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
         const result = await verifyWithdrawPasswordAction(form.currentPassword);
         if (mine !== saveNumber.current) return;
         if (result.ok) return setStep("content");
-        if (result.status === 401) return void logout();
+        if (result.status === 401) return void expireSession();
         if (result.status === 400) return setFieldError({ at: "currentPassword", message: result.message });
         setFailure(result.message);
       } catch (error: unknown) {
@@ -161,7 +161,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
           // 401은 칸 오류가 아니라 세션이 이미 끝났다는 뜻이다 — 탈퇴가 서버에서 커밋된 뒤 응답만 잃고
           // 재시도한 경우도 여기로 온다(탈퇴 쪽 execute()가 커밋과 같은 트랜잭션에서 세션을 revoke 한다).
           // 되돌릴 수 없는 동작이라 "실패"로 남겨 다시 시도하게 하면 안 된다 — 바로 로그아웃으로 보낸다
-          // (ip-code-review-claude 블로커 #2, 2026-10-27).
+          // (ip-code-review-claude 블로커 #2, 2026-10-27). 탈퇴를 마쳤을 수 있어 스스로 끝낸 경우처럼 로그인 전 홈으로 간다.
           if (result.status === 401) {
             void logout();
             return;
