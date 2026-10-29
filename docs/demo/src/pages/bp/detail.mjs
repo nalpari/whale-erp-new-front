@@ -15,7 +15,7 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
   const cancel = ui.button("취소", { variant: "off", "data-close": true });
 
   const closeBtn = panel ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("닫기", { variant: "off", href: link(R, "bp/index.html") });
-  // [BP 상태 변경]은 기본정보 제목 줄 오른쪽(2026-10-28 사용자 지정)
+  // [BP상태변경]은 기본정보 표 맨 위 「계정상태」 줄(앱과 같다, 2026-10-28 사용자 지정)
   const actionButtons =
     f.disabledButton("삭제", "삭제할 수 없습니다 — 로그인 기록이 있고(2026-09-20), 하위 관리자 4명과 등록 점포 11곳이 있습니다. 대신 BP 상태를 미사용으로 바꾸세요.") +
     ui.slideTrigger("수정", "bp-edit-panel") +
@@ -27,13 +27,14 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
   const bottomButtons = `<div class="flex flex-wrap items-center gap-[6px]">${closeBtn}<span class="flex-1"></span>${actionButtons}</div>`; // 닫기는 맨 왼쪽(상세 슬라이드 공통 · 2026-10-08)
 
   const inline = (...parts) => `<span class="flex items-center gap-[6px]">${parts.join("")}</span>`;
-  // 앱 bp-master-detail-panel.tsx 와 같다(2026-10-28 사용자 지정): BP 코드 · 아이디 줄은 머리로, 상태 줄 대신 제목 줄 오른쪽 [BP 상태 변경],
+  // 앱 bp-master-detail-panel.tsx 와 같다(2026-10-28 사용자 지정): BP 코드 · 아이디 줄은 머리로, 표 맨 위 「계정상태 | [BP상태변경]」,
   // 비밀번호 줄은 「[초기화] | 강제변경 대상 · 대상아님」(구분선 35% 자리), 등록 · 최종수정은 「일시 · 사람」(사람 회색)
   const when = (at, by) => `${at} <span class="text-erp-label">· ${by}</span>`;
   const password = `<span class="grid w-full grid-cols-[minmax(max-content,7fr)_13fr] items-center gap-[18px]"><span class="flex min-w-0 items-center gap-[10px]">${x.dialogTrigger("초기화", resetId, "soft")}</span><span class="flex min-w-0 items-center gap-[10px]"><span aria-hidden="true" class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span><span class="truncate"><span class="text-erp-label">강제변경</span> 대상아님</span></span></span>`;
   const basic = ui.detailTable(
     "기본정보",
     [
+      ["계정상태", x.dialogTrigger("BP상태변경", offId, "soft")],
       ["이름", "정하윤"],
       ["연락처", "010-4821-7730"],
       ["이메일", "hayoon@hangang.co.kr"],
@@ -46,12 +47,11 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
       ["등록", when("2025-02-03 11:12", "hangang01")],
       ["최종수정", when("2026-08-14 10:31", "platkim")],
     ],
-    x.dialogTrigger("BP 상태 변경", offId, "soft"),
   );
   // 사업자주소는 플랫폼 관리자 상세의 주소처럼 우편번호 · 기본주소 · 상세주소를 줄을 바꿔 보이고, 그 줄만 내용만큼 늘어난다(2026-10-08)
   const growAddress = (html) =>
     html.replace(/<div class="flex w-full"><dt class="flex h-\[46px\]([^"]*)">사업자주소<\/dt><dd class="flex h-\[46px\]/, '<div class="flex w-full"><dt class="flex min-h-[46px]$1">사업자주소</dt><dd class="flex min-h-[46px]');
-  const biz = growAddress(ui.detailTable(f.titleBadge("사업자정보", "on", "인증완료"), [
+  const biz = growAddress(ui.detailTable(`<span class="flex w-full items-center justify-between gap-[6px]">사업자정보 ${ui.badge("on", "인증 완료 · 2026-03-04 10:20")}</span>`, [
     ["상호명", BP.name],
     ["사업자번호", "211-87-01234"],
     ["대표자명", "남도현"],
@@ -60,7 +60,6 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
     ["개업일자", "2021-03-15"],
     ["사업자주소", `<div class="py-[2px] leading-[1.6]">${["04007", "서울 마포구 망원로 42", "3층"].join("<br>")}</div>`],
     ["업태 · 종목", ui.detailValues(["도소매업", "식자재 유통"])],
-    ["최종 인증일시", "2026-03-04 10:20"],
   ]));
   const history = ui.dataTable(
     [{ header: "변경 일시", width: "w-[180px]" }, { header: "변경자", width: "w-[140px]" }, { header: "변경 항목", width: "w-[180px]", align: "left" }, { header: "변경 전", align: "left" }, { header: "변경 후", align: "left" }],
@@ -89,10 +88,10 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
   const resetDialog = x.dialog(
     resetId,
     "비밀번호를 초기화하시겠습니까?",
-    `<dl class="grid grid-cols-[60px_1fr] gap-y-[6px]"><dt class="text-erp-label">BP</dt><dd>${BP.name} · ${BP.code}</dd><dt class="text-erp-label">계정</dt><dd>hangang01</dd></dl>` +
-      `<p class="mt-[12px]">새 초기 비밀번호(12자 무작위)를 계정 이메일로만 보내며, 기존 비밀번호는 즉시 무효가 됩니다.<br>초기 비밀번호는 1시간 안에 로그인해야 하고, 로그인 때 비밀번호를 새로 정합니다. 현재 로그인 중인 세션은 유지됩니다.</p>`,
-    cancel + ui.button("초기화", { "data-close": true, "data-toast": "새 초기 비밀번호를 hayoon@hangang.co.kr 로 보냈습니다." }),
-    "w-[560px]",
+    // 대상은 아이디 · 이름 · 이메일, 안내는 빨간 상자 — 세 관리 화면 같은 문구(앱과 같다, 2026-10-28)
+    `<div class="flex flex-col gap-[12px] break-keep"><dl class="grid grid-cols-[60px_1fr] gap-y-[6px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg p-[12px]"><dt class="text-erp-label">아이디</dt><dd>hangang01</dd><dt class="text-erp-label">이름</dt><dd>정하윤</dd><dt class="text-erp-label">이메일</dt><dd>hayoon@hangang.co.kr</dd></dl><div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">비밀번호 초기화 시 새로운 비밀번호가 등록된 이메일로 발송됩니다.<br>새 비밀번호는 1시간 동안 유효하며, 로그인 시 변경해야 합니다.<br>기존 비밀번호는 즉시 사용할 수 없게 됩니다.</div></div>`,
+    cancel + ui.button("초기화", { "data-close": true, "data-toast": "초기화되었습니다." }),
+    "w-[480px]",
   );
   const historyDialog = x
     .dialog(

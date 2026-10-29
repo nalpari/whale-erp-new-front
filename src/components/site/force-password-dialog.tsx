@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
-import { Button, Checkbox, Field, TextField } from "@/components/common";
+import { useEffect, useRef, useState, useTransition, type FormEvent, type ReactNode } from "react";
+import { Button, Checkbox, PasswordInput, RequiredMark } from "@/components/common";
 import { changeForcedPassword, logout } from "@/app/actions";
 import { signOut } from "@/lib/bff";
 import { passwordChecks } from "@/lib/password";
@@ -17,6 +17,8 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
   const ref = useRef<HTMLDialogElement>(null);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  /** 새 비밀번호 칸을 한 번 벗어났다 — 규칙 오류는 그 뒤부터 보인다(입력 중에는 재촉하지 않는다, 회원가입과 같다) */
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [terms, setTerms] = useState({ use: false, policy: false });
   // 정책 위반은 비밀번호 칸 아래, 약관 미동의는 약관 아래에 보인다.
   const [error, setError] = useState<{ at: "password" | "terms"; message: string } | null>(null);
@@ -28,9 +30,18 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
     if (!ref.current?.open) ref.current?.showModal();
   }, []);
 
+  // 확인 칸이 새 비밀번호와 다르면 바로 알린다 — 회원가입과 같은 문구(validators.ts validatePasswordConfirm, 2026-10-28 사용자 지정)
+  const mismatch = confirm !== "" && confirm !== password;
+  // 두 칸을 다 채워야 [변경]이 켜진다(2026-10-28 사용자 지정)
+  const filled = password !== "" && confirm !== "";
+  // 비밀번호 규칙(PL-QSBSYY) — 어기면 칸 아래 오류, [변경]도 막는다. 「받은 비밀번호와 다름」은 화면이 몰라 api 가 판정한다(2026-10-28 사용자 지정)
+  const [ruleCheck, idCheck] = passwordChecks(password, account.loginId);
+  const ruleError =
+    password === "" ? undefined : !ruleCheck.met ? "영문·숫자·특수문자를 모두 포함해 8~20자로 입력해 주세요." : !idCheck.met ? "아이디와 다른 비밀번호를 입력해 주세요." : undefined;
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!agreed) return;
+    if (!agreed || mismatch || !filled || ruleError) return setPasswordTouched(true);
     startTransition(async () => {
       const r = await changeForcedPassword({
         newPassword: password,
@@ -63,68 +74,77 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
       onCancel={(e) => e.target === e.currentTarget && e.preventDefault()}
       // Chrome 은 사용자 입력 뒤 cancel 막기를 한 번만 허용해 두 번째 Esc 는 그냥 닫는다. 닫히면 바로 다시 연다.
       onClose={(e) => e.target === e.currentTarget && ref.current?.showModal()}
-      className="m-auto w-[464px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
+      // 폭 520 — 탈퇴 사유 팝업과 같다(2026-10-28 사용자 지정, 전엔 등록 패널 폭 464)
+      className="m-auto w-[520px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
     >
       <form onSubmit={submit} className="flex flex-col gap-[18px]">
         <div className="flex flex-col gap-[6px]">
           <h2 id="force-password-title" className="text-[18px] font-semibold">
             새 비밀번호 설정
           </h2>
-          <p className="text-[14px] text-erp-label">새 비밀번호를 설정해야 웨일ERP 를 이용할 수 있습니다.</p>
+          <p className="text-[15px] text-erp-label">서비스 이용을 위해 새로운 비밀번호를 설정해 주세요.</p>
         </div>
 
         {account.temporaryPasswordExpiresAt && <Remaining expiresAt={account.temporaryPasswordExpiresAt} />}
 
-        <Field label="새 비밀번호">
-          <TextField
-            type="password"
-            autoComplete="new-password"
+        <InkField label="새 비밀번호">
+          {/* 크롬 비밀번호 생성 제안 창을 막는다 — new-password 대신 off, 1Password · LastPass 도 빼 둔다(2026-10-28 사용자 지정). 크롬 버전에 따라 다 막히지 않을 수 있다 */}
+          {/* 칸 끝에 보기 · 숨기기 눈 아이콘 — 다른 비밀번호 변경 화면과 같은 공통 PasswordInput(2026-10-28 사용자 지정) */}
+          <PasswordInput
+            fieldLabel="새 비밀번호"
+            autoComplete="off"
+            data-1p-ignore
+            data-lpignore="true"
             placeholder="영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요."
             maxLength={20}
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onBlur={() => setPasswordTouched(true)}
+            aria-invalid={(passwordTouched && Boolean(ruleError)) || undefined}
           />
-        </Field>
-        <ul aria-label="비밀번호 조건" className="-mt-[10px] flex flex-wrap gap-x-[10px] text-[13px]">
-          {passwordChecks(password, account.loginId).map((c) => (
-            <li key={c.label} className={c.met ? "text-erp-brand" : "text-erp-label"}>
-              {c.met ? "✓ " : ""}
-              {c.label}
-              <span className="sr-only">{c.met ? " (충족)" : " (미충족)"}</span>
-            </li>
-          ))}
-          <li className="text-erp-label">받은 비밀번호와 다름</li>
-        </ul>
+        </InkField>
+        {passwordTouched && ruleError && <ErrorText>{ruleError}</ErrorText>}
+        {/* 약관 제목 · 전체 동의 문구는 회원가입(agree-section.tsx)과 같다 — 「약관동의」 · 「모두 동의합니다.」(2026-10-28 사용자 지정).
+            조건 체크 줄 · 「현재 비밀번호는 묻지 않습니다」 · 약관 동의 옆 설명은 지웠다(2026-10-28 사용자 지정) — 조건은 칸 안내와 저장 때 검사가 알린다 */}
         {error?.at === "password" && <ErrorText>{error.message}</ErrorText>}
-        <Field label="새 비밀번호 확인">
-          <TextField type="password" autoComplete="new-password" maxLength={20} required value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-        </Field>
-        <p className="text-[13px] leading-[1.6] text-erp-label">현재 비밀번호는 묻지 않습니다. 바꿔도 이 기기와 다른 기기의 로그인은 모두 그대로 이어집니다.</p>
+        <InkField label="새 비밀번호 확인">
+          <PasswordInput
+            fieldLabel="새 비밀번호 확인"
+            autoComplete="off"
+            data-1p-ignore
+            data-lpignore="true"
+            maxLength={20}
+            required
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            aria-invalid={mismatch || undefined}
+          />
+        </InkField>
+        {mismatch && <ErrorText>비밀번호가 일치하지 않습니다.</ErrorText>}
 
         {needTerms && (
           <fieldset className="flex flex-col gap-[12px] border-t border-erp-divider pt-[18px]">
-            <legend className="sr-only">약관 동의</legend>
-            <p className="flex items-baseline gap-[10px]">
-              <b className="text-[16px] font-semibold">약관 동의</b>
-              <span className="text-[13px] text-erp-label">운영자가 만든 계정이라 본인 동의가 필요합니다</span>
+            <legend className="sr-only">약관동의</legend>
+            <p>
+              <b className="text-[16px] font-semibold">약관동의</b>
             </p>
             <Checkbox
-              label="약관 전체 동의"
+              label="모두 동의합니다."
               checked={terms.use && terms.policy}
               onChange={(e) => setTerms({ use: e.target.checked, policy: e.target.checked })}
             />
             <TermsRow kind="use" label="이용약관 동의 (필수)" checked={terms.use} onChange={(use) => setTerms({ ...terms, use })} />
             <TermsRow kind="policy" label="개인정보 수집·이용 동의 (필수)" checked={terms.policy} onChange={(policy) => setTerms({ ...terms, policy })} />
-            <p className="text-[13px] text-erp-label">필수 두 가지에 모두 동의해야 비밀번호도 바뀝니다. 동의하지 않으면 로그아웃만 할 수 있습니다.</p>
             {error?.at === "terms" && <ErrorText>{error.message}</ErrorText>}
           </fieldset>
         )}
-        <div className="flex items-center justify-between text-[14px]">
-          <button type="button" onClick={() => signOut(logout)} className="text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink">
+        {/* 버튼은 가운데, 로그아웃도 버튼 모양(Off) — 다른 확인창의 [취소][확인] 줄과 같다(2026-10-28 사용자 지정) */}
+        <div className="flex justify-center gap-[6px]">
+          <Button variant="off" onClick={() => signOut(logout)}>
             로그아웃
-          </button>
-          <Button type="submit" disabled={pending || !agreed}>
+          </Button>
+          <Button type="submit" disabled={pending || !agreed || mismatch || !filled || Boolean(ruleError)}>
             {pending ? "변경 중" : "변경"}
           </Button>
         </div>
@@ -133,19 +153,34 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
   );
 }
 
+// 이 팝업의 입력칸 라벨은 먹색 글자 + 빨간 필수 표시(2026-10-28 사용자 지정). 공통 Field 는 라벨이 회색이고 className 을 받지 않아 여기서 같은 모양으로 둔다
+function InkField({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="flex flex-col gap-[8px]">
+      <span className="text-[14px] font-medium text-erp-ink">
+        {label}
+        <RequiredMark />
+      </span>
+      {children}
+    </label>
+  );
+}
+
+// 이 팝업의 작은 글자(오류 · 전문 보기 · 남은 시간 안내)는 14px — 13px 은 너무 작았다(2026-10-28 사용자 지정)
 function ErrorText({ children }: { children: string }) {
   return (
-    <p role="alert" className="text-[13px] text-erp-off">
+    <p role="alert" className="text-[14px] text-erp-off">
       {children}
     </p>
   );
 }
 
+// 필수 항목도 「모두 동의합니다.」와 같은 줄에서 시작한다(들여쓰기 없음, 2026-10-28 사용자 지정)
 function TermsRow({ kind, label, checked, onChange }: { kind: "use" | "policy"; label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <div className="flex items-center justify-between pl-[28px]">
+    <div className="flex items-center justify-between">
       <Checkbox label={label} checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="text-[13px] text-erp-label underline underline-offset-2">
+      <span className="text-[14px] text-erp-link underline underline-offset-2">
         {/* 약관 유형은 공통코드 TERMS_TYPE — 이용약관은 BP 사업자 회원가입용, 개인정보는 그 수집·이용 동의다. */}
         <TermsLink termsTypeCode={kind === "use" ? "TERMS_SERVICE" : "PRIVACY_COLLECT"}>전문 보기</TermsLink>
       </span>
@@ -173,12 +208,21 @@ function Remaining({ expiresAt }: { expiresAt: string }) {
   if (Number.isNaN(end)) return null; // 잘못된 시각이면 남은 시간을 보이지 않는다(만료는 api 가 끊는다).
   const m = Math.floor(left / 60_000);
   const s = Math.floor((left % 60_000) / 1000);
+  // 시계 아이콘 · 큰 남은 시간 · 부드러운 안내(2026-10-28 사용자 지정). 5분 아래로 내려가면 남은 시간을 빨갛게(상태 빨강)
+  const urgent = left < 5 * 60_000;
   return (
-    <div className="flex flex-col gap-[4px] rounded-[2px] bg-erp-thead-bg px-[12px] py-[10px] text-[14px]">
-      <p>
-        임시 비밀번호 남은 시간 <b className="font-semibold tabular-nums">{`${m}:${String(s).padStart(2, "0")}`}</b>
-      </p>
-      <p className="text-[13px] text-erp-label">시간이 지나면 이 세션이 끝나고 로그인 화면으로 돌아갑니다.</p>
+    <div className="flex items-center gap-[12px] rounded-[4px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px]">
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="size-[28px] shrink-0 text-erp-brand" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+        <circle cx="12" cy="13" r="8" />
+        <path d="M12 9v4l2.5 2.5M9.5 3h5" />
+      </svg>
+      <div className="flex min-w-0 flex-col gap-[2px]">
+        <p className="flex items-baseline gap-[8px] text-[14px]">
+          <span className="text-erp-label">남은 시간</span>
+          <b className={`text-[18px] font-semibold tabular-nums ${urgent ? "text-erp-off" : "text-erp-ink"}`}>{`${m}:${String(s).padStart(2, "0")}`}</b>
+        </p>
+        <p className="text-[14px] text-erp-label">시간 안에 새 비밀번호로 변경해 주세요.</p>
+      </div>
     </div>
   );
 }

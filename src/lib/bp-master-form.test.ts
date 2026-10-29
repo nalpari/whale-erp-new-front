@@ -40,6 +40,8 @@ test("인증 상자의 세 칸은 저장을 막지 않는다 — 인증 없이 �
   assert.deepEqual(validateBpMasterForm(open, "create"), {});
   assert.equal(hasPendingVerification(open), true);
   assert.equal(hasPendingVerification({ ...filled, verifying: true }), false);
+  // 등록은 처음부터 상자가 열려 있다(MY PAGE 처럼, 2026-10-28)
+  assert.equal(EMPTY_BP_MASTER_FORM.verifying, true);
   assert.deepEqual(Object.keys(verificationErrors(open)).sort(), ["bizNumber", "ceoName", "openDate"]);
   assert.deepEqual(verificationErrors({ bizNumber: "105-86-33412", ceoName: "정하윤", openDate: "2016-05-20" }), {});
 });
@@ -92,6 +94,8 @@ test("상세로 채우면 인증된 BP 는 완료 카드 값을, 미인증 BP �
   assert.deepEqual(form.ceoPhone, ["02", "3380", "1127"]);
   assert.equal(form.verifying, false);
   assert.equal(formOfBpMaster({ ...detail, bizVerifiedAt: null, bizRegistrationNumber: null }).verified, null);
+  // 인증이 없으면 상자를 열어 둔다
+  assert.equal(formOfBpMaster({ ...detail, bizVerifiedAt: null, bizRegistrationNumber: null }).verifying, true);
   // 번호만 남고 인증 시각이 없는 BP 는 인증 완료 카드로 열지 않는다
   assert.equal(formOfBpMaster({ ...detail, bizVerifiedAt: null }).verified, null);
 });
@@ -136,4 +140,42 @@ test("저장이 실어 보낸 인증 때문에 거절됐는가 — 토큰 만료
   assert.equal(verificationRejection(sent, 409, "이미 등록된 사업자등록번호입니다."), "이미 등록된 사업자등록번호입니다.");
   assert.equal(verificationRejection(sent, 409, "사용 중이거나 미사용인 다른 관리자 계정의 이메일입니다"), null);
   assert.equal(verificationRejection({ verified: { ...sent.verified, token: undefined } }, 409, "이미 등록된 사업자등록번호입니다."), null);
+});
+
+test("기본정보와 동일 — 저장된 대표자 값이 기본정보와 같고 비어 있지 않을 때만 켜고, 켜면 기본정보 값으로 검사 · 저장한다", () => {
+  const detail = {
+    bpCodeId: 1,
+    bpCode: "BP000001",
+    loginId: "hangang01",
+    name: "정하윤",
+    phone: "01033801127",
+    email: "hayoon@hangang.co.kr",
+    tradeName: "㈜한강상회",
+    bizRegistrationNumber: null,
+    bizCeoName: null,
+    bizOpenDate: null,
+    bizVerifiedAt: null,
+    bizCeoPhone: "01033801127",
+    bizCeoEmail: "Hayoon@Hangang.co.kr",
+    bizZipCode: null,
+    bizAddress: null,
+    bizAddressDetail: null,
+    bizCategory: null,
+    bizItem: null,
+    withdrawal: null,
+  } as unknown as BpMasterDetail;
+  const same = formOfBpMaster(detail);
+  assert.equal(same.sameAsBasicPhone, true);
+  assert.equal(same.sameAsBasicEmail, true);
+  const differ = formOfBpMaster({ ...detail, bizCeoPhone: "0233801127", bizCeoEmail: null });
+  assert.equal(differ.sameAsBasicPhone, false);
+  assert.equal(differ.sameAsBasicEmail, false);
+  // 등록은 꺼져 있다
+  assert.equal(EMPTY_BP_MASTER_FORM.sameAsBasicPhone, false);
+  // 켜면 적어 둔 대표자 값 대신 기본정보 값을 보낸다 — 적어 둔 값이 틀려도 검사에 걸리지 않는다
+  const checked = { ...filled, ceoPhone: ["0", "", ""] as BpMasterForm["ceoPhone"], ceoEmail: "bad@", sameAsBasicPhone: true, sameAsBasicEmail: true };
+  assert.deepEqual(validateBpMasterForm(checked, "create"), {});
+  const input = toCreateBpMasterInput(checked);
+  assert.equal(input.bizCeoPhone, "01033801127");
+  assert.equal(input.bizCeoEmail, "hayoon@hangang.co.kr");
 });

@@ -13,7 +13,7 @@ import {
   sessionCookie,
   type AdminLoginResponse,
 } from "@/lib/api";
-import { homeOf } from "@/lib/auth-routes";
+import { homeOf, RETURN_PARAM, returnPathOf } from "@/lib/auth-routes";
 import { apiHeaders } from "@/lib/forwarded-headers";
 
 export type LoginFormState = { error?: string };
@@ -71,5 +71,6 @@ export async function login(_prev: LoginFormState, formData: FormData): Promise<
   // 새 값이면 브라우저에 남은 앞 로그인의 메뉴·점포·공통코드를 버리고 login-info 를 다시 받는다(SessionGate). 같은 계정이 다시 로그인해도 갈린다.
   jar.set(loginKeyCookie(crypto.randomUUID()));
   // redirect 는 try 밖에서 — 안에서 부르면 catch 가 이동 신호를 오류로 삼킨다.
-  redirect(homeOf(res.account.roleTypeCode));
+  // 메일 링크(엑셀 내려받기)로 왔으면 그 화면으로 돌아간다. 폼 값은 믿지 않고 받을 수 있는 주소인지 다시 본다.
+  redirect(returnPathOf(formData.get(RETURN_PARAM)) ?? homeOf(res.account.roleTypeCode));
 }

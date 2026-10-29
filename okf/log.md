@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: main 병합(front caterpie, PR #173 충돌 해소): okf 충돌은 양쪽 기록을 살렸다 — bp.md 는 main 의 generated 시각, log.md 는 두 쪽 항목을 날짜별로 모두 남겼다. 알림 종 403 은 main 의 강제 변경 문구 판정을 따랐다.
 * **Update**: [MY PAGE](/mypage.md) — 회원 탈퇴 사유를 front 고정 목록 대신 로그인 정보의 공통코드 `WITHDRAW_REASON` 에서 읽는다 — 정책 그대로, 구현을 맞췄다(2026-10-29 재영).
 * **Update**: [MY PAGE](/mypage.md) — 회원 탈퇴 최종 확인 팝업은 숫자(계정 · 점포 수)를 다시 보이지 않는 실제 화면대로 둔다 — 숫자는 탈퇴 화면 경고문에만 있다(2026-10-29 재영).
 * **Update**: [MY PAGE](/mypage.md) — 회원 탈퇴 조건이 모자라면 버튼을 막는 실제 화면대로 둔다(MYPAGE-2 의 「평소 모양 + 팝업」을 바꿈, 2026-10-29 재영). 데모의 미충족 안내 팝업을 걷었다.
@@ -15,11 +16,24 @@
 * **Update**: [로그인](/auth.md) — 임시 비밀번호 1시간 5회 초과 문구(api 문구 그대로 보임)도 「…받을 수 있습니다.」로 마침표를 붙인다. api 에 맞춤 요청, front 테스트 · 데모 · 화면정의서를 먼저 맞췄다.
 * **Update**: [로그인](/auth.md) — 찾기 화면 코드 대조: 임시 비밀번호 결과 모름 문구(5xx) · 빈칸 대비 문구도 마침표로 끝낸다. api #77 이 머지되어 「머지 전에는 늘 202」 주석 · 데모 설명을 걷었다.
 * **Update**: [로그인](/auth.md) — 찾기 화면 문구 「요청이 많습니다. 잠시 뒤 다시 시도해 주세요.」 · 「서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.」 끝에 마침표를 붙였다(로그인 화면과 같은 기준, 2026-10-29 재영). 화면정의서 auth-find 의 이메일 형식 문구를 공통 문구 「이메일 형식이 올바르지 않습니다.」로 맞췄다(2026-10-23 결정에서 빠졌던 곳).
-
+* **Fix**: [Whale ERP Frontend](/whale-erp-front.md) — 비밀번호 강제 변경 403 판정 문구를 api 의 「서비스 이용을 위해 비밀번호를 변경해 주세요.」(api `src/auth/access-messages.ts`, 2026-10-14 바뀜)로 맞췄다: `bff.ts` 의 팝업 다시 띄우기 이벤트, 고객지원 · 커뮤니티 쓰기(`community-view.ts` — 전엔 「권한이 없습니다」로 잘못 보였다), 엑셀 내려받기 화면의 403 다시 받기(PR #168 적대적 재리뷰). 옛 문구 「비밀번호를 변경한 뒤 이용할 수 있습니다」로 판정해 그 분기들이 한 번도 맞지 않았다. `retirement.ts` 는 이미 새 문구였다. 본문은 이 문구를 적지 않아 바꿀 곳이 없다.
+* **Update**: [점포 관리](/stores.md) — PR #168 적대적 리뷰(블로커 아님) 반영: 메일 링크 화면에서 비밀번호를 강제로 바꾸면 SessionGate 가 홈 대신 그 화면(`returnPathOf`)을 다시 열어 바로 내려받는다 — 전엔 홈으로 가 [다시 받기]에 닿지 못했다. SessionGate 가 login-info 401 · 다른 탭 로그아웃으로 로그인에 보낼 때도 `loginPathOf` 로 `?next=` 를 붙인다(쿠키는 살았는데 api 세션만 끊긴 경우 로그인 뒤 홈으로 가던 것).
+* **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 검토 화면 금액 칸은 숫자와 쉼표만 받는다(WHALEERP-633, 화면 설계 공통 기준 1번 — 칸 오류가 생기지 않게). 출퇴근 보정 · 대신 등록 패널은 칸마다 검사해 칸 아래에 알린다(출처가 아니라 화면 문서는 그대로).
+* **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 「급여명세서 작성」 버튼을 목록 위 도구 줄에서 화면명 오른쪽(PageBar)으로 옮기고 기본 버튼으로 바꿨다. 근로계약 관리 「계약서 작성」과 같은 자리(WHALEERP-632, 화면 설계 공통 기준 2번).
+* **Update**: main 병합(front monferno, main #167 까지): okf 충돌은 양쪽 기록을 살렸고, [Whale ERP Frontend](/whale-erp-front.md) 시각은 늦은 값을 남겼다.
+* **Update**: 1팀 ERD(`docs/erd/team1`) — api #188 머지 뒤 맞춤: `excel_download_logs.scope_key`(범위 지문, text · NULL — 만들 때 요청자가 볼 수 있던 범위, 받을 때 지금 범위와 다르면 403)를 README · 생성기에 더하고, `bp_code_id` · `attempt_count` 비고를 api 문구와 같게 했다. 생성기 DDL 이 api main `docs/raw/2026-10-12-1팀-schema.sql` 과 같은 것을 확인했다(물리 ERD 문서의 컬럼 수는 api 쪽이 349 로 남아 있다 — 생성기는 350). api 타입은 엑셀 경로가 응답 설명(403 · 503)만 늘어 다시 만들지 않았다 — api main 전체로 만들면 3팀 직원 목록 응답(`lastSentAt` · `canResend`)이 바뀌어 front main 에서 따로 맞춘다.
+* **Update**: main 병합(front monferno, main #165 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 레이아웃 줄은 main 의 플랫폼 첫 메뉴 이동에 이 브랜치의 메뉴 없는 화면(`MENULESS_PATHS`) 문장을 끼웠고, proxy 줄은 이 브랜치 것(main 은 바꾸지 않았다), generated 는 늦은 시각. `api-types.generated.ts` · `menus.ts` 는 git 이 자동으로 합쳤다.
+* **Update**: [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) — review-pr(4관점) 반영: 내려받기 화면은 409 「만들지 못함」을 문구 머리로 갈라 실패 띠 · 다시 받기 없음(만드는 중은 안내 색 · 다시 받기), 403 비밀번호 변경 필요는 바꾼 뒤 다시 받기. S3 주소를 탭 이동(`location.assign`) 대신 숨은 iframe 으로 받아, S3 오류여도 화면과 [다시 받기]가 남는다. 로그인 주소 · 로그인한 채 갈 곳 판정을 `loginPathOf` · `signedInTargetOf`(auth-routes.ts)로 빼 proxy · 화면이 함께 쓰고 테스트했다. 페이지 id 판정을 `returnPathOf` 와 같은 1~9자리(앞자리 0 없음)로. 메일 링크 화면 권한 서술을 「내려받을 때 본인 · 화면 조회 권한을 다시 본다」로, 503 조건에 관리자 웹 주소를, 기본 예약 문구를 「1만 건 이상」으로 고쳤다. 1팀 ERD 「대상 BP」 설명(소속 · 탭 BP)과 4xx 는 다시 하지 않는다는 점을 README · 생성기에 맞추고 논리 · 물리 페이지를 다시 그렸다 — api `docs/raw` DDL 과 마이그레이션 `COMMENT` 의 「플랫폼 계정이 고른 탭 BP」는 api #188 몫이라 그대로다.
+* **Update**: [점포 관리](/stores.md) — 엑셀 예약 생성 셀프 리뷰 반영: 202 안내 띠에 api 문구와 같은 「24시간 · 본인만」 문장을 한 번 더 붙이던 것을 뺐다(api 문구가 없을 때의 기본 문구 `EXCEL_SCHEDULED` 가 같은 말을 한다). 내려받기 화면은 409 를 안내 색 띠로, 404 에 「엑셀을 요청한 계정으로 로그인했는지 확인해 주세요」, [다시 받기]를 Primary 로. `returnPathOf` 는 0 · 앞자리 0 번호를 받지 않는다. `relayExcelResponse` 단위 테스트를 더했다. sources 에 `src/app/excel-downloads` 를 걸었다. **배포는 front 먼저 또는 api(#188)와 동시** — api 가 먼저 나가면 옛 중계 경로가 202 를 200 으로 바꿔 「엑셀 파일을 만들지 못했습니다」를 띄우고, 메일 링크 화면도 없어 404 다. front 가 먼저 나가면 옛 api 의 1만 건 이상 400 은 안내 띠로 보인다.
 ## 2026-10-28
 * **Update**: [로그인](/auth.md) — 잠김 문구를 「로그인이 잠겼습니다. 5분 뒤에 다시 시도해주세요.」로 바꿨다 — 임시 비밀번호 안내를 문구에서 뺐고, 풀리는 길은 그대로다(목업 auth/login 데모 · 화면 정의, api #179 요청, 레드마인 #2620)(재영).
 * **Update**: [로그인](/auth.md) — 로그인 실패 문구를 모두 마침표로 끝낸다: 잠김 문구(api 맞춤 요청) · 요청 제한 문구(front `login/actions.ts`). 목업 auth/login 데모 · 화면 정의도 맞췄다(레드마인 #2619)(재영).
 * **Update**: [로그인](/auth.md) — 메뉴가 없는 BP · 가맹 계정은 홈에 권한 요청 안내를 두지 않고 홈과 MY PAGE 만 쓴다. 권한 요청 안내는 홈이 없는 플랫폼 계정에만 둔다(목업 auth/overview)(재영).
+* **Update**: [점포 관리](/stores.md) · [BP 마스터 계정 관리](/bp.md) · [Whale ERP Frontend](/whale-erp-front.md) — 엑셀 1만 건 이상 예약 생성 대응(api monferno, 엑셀 공통 `okf/api/excel-exports.md`): 중계 경로가 202 예약 접수 JSON 을 넘기고(`relayExcelResponse`) 화면은 안내 띠만, 409 생성 중 안내 띠 · 503 실패 띠. 메일 링크 화면 `/excel-downloads/{id}`(받을 때마다 새 S3 주소, 404 · 409 · 410 안내), 메뉴 없는 화면(`MENULESS_PATHS`), 로그인 뒤 돌아오기(`/login?next=`, `returnPathOf`). 「예약 생성은 api 에 아직 없다」 문구를 지웠다. api 타입을 다시 만들었다.
+* **Update**: main 병합(front chimchar, #165 까지): okf 충돌은 양쪽 기록을 살렸고, [Whale ERP Frontend](/whale-erp-front.md) 시각은 병합 시각으로 맞췄다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [홈·계정 진입](/home.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 공통 로딩 `LoadingNotice` 의 모양을 딤 + 스피너에서 네모 파도 위로 뛰는 고래 그림(`WhaleLoader`, 노영주 님 제공 whale-loader(Whale ERP 로고 SVG))으로 바꿨다. 띄우고 내리는 로직은 그대로, 최소 표시 시간 없음. 큰 자리에만 쓰고 작은 영역(직원 상세 네 영역)과 상세 진입(직원 상세 `LoadGroup`)에는 쓰지 않고 최소 높이 92px 빈 자리만 둔다. SessionGate 의 로딩 안내(불러오는 중 · BP 이동 · 전체 점포로 여는 중)는 고래로 바꿨다(오류 안내는 그대로).
+* **Update**: main 병합(front clefable, #165 까지): okf 충돌은 양쪽 기록을 살렸고, [Whale ERP Frontend](/whale-erp-front.md) 시각은 늦은 값을 남겼다.
+* **Update**: [BP 마스터 계정 관리](/bp.md) · [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) — 사용자 디자인 수정 2(front clefable, 점포는 인증 상자 일시 · 국세청 안내): 초기화 비밀번호 안내 상자 · 토스트 · 확인창 문구, BP 마스터 사업자정보를 MY PAGE 모양으로, 상세 계정상태 줄 · 인증 일시, 강제 비밀번호 변경 팝업 다듬기.
 * **Update**: main 병합(front abra, #164 · #135 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 는 main 본문에 이 브랜치의 플랫폼 첫 메뉴 이동 세 곳을 다시 얹었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 계정 로그인 후 첫 메뉴로 이동(`/platform` 은 넘겨 주는 주소, `firstMenuUrl` · `firstMenuRedirect`), 헤더 로고 · 플랫폼관리 바로가기, `src/app/platform/` 권한 요청 안내(front abra, PR #165 리뷰).
 * **Update**: [로그인](/auth.md) — 플랫폼 계정은 홈이 없고 로그인하면 헤더 순서상 첫 플랫폼 메뉴로 간다(2026-10-28 재영). `/platform` 은 넘겨 주는 주소이고, 메뉴가 없으면 권한 요청 안내, 비밀번호 강제 변경 전에는 머문다(front abra).

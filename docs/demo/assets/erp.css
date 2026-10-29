@@ -565,9 +565,6 @@
   .-mx-\[16px\] {
     margin-inline: calc(16px * -1);
   }
-  .mx-\[10px\] {
-    margin-inline: 10px;
-  }
   .mx-\[12px\] {
     margin-inline: 12px;
   }
@@ -651,6 +648,9 @@
   }
   .ml-\[2px\] {
     margin-left: 2px;
+  }
+  .ml-\[3px\] {
+    margin-left: 3px;
   }
   .ml-\[4px\] {
     margin-left: 4px;
@@ -1309,6 +1309,9 @@
   }
   .w-\[480px\] {
     width: 480px;
+  }
+  .w-\[520px\] {
+    width: 520px;
   }
   .w-\[560px\] {
     width: 560px;
@@ -2949,11 +2952,18 @@
   .uppercase {
     text-transform: uppercase;
   }
+  .tabular-nums {
+    --tw-numeric-spacing: tabular-nums;
+    font-variant-numeric: var(--tw-ordinal,) var(--tw-slashed-zero,) var(--tw-numeric-figure,) var(--tw-numeric-spacing,) var(--tw-numeric-fraction,);
+  }
   .line-through {
     text-decoration-line: line-through;
   }
   .underline {
     text-decoration-line: underline;
+  }
+  .underline-offset-2 {
+    text-underline-offset: 2px;
   }
   .underline-offset-\[3px\] {
     text-underline-offset: 3px;
@@ -4044,6 +4054,26 @@ details[name="guest-faq"][open]::details-content {
   syntax: "*";
   inherits: false;
 }
+@property --tw-ordinal {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-slashed-zero {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-numeric-figure {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-numeric-spacing {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-numeric-fraction {
+  syntax: "*";
+  inherits: false;
+}
 @property --tw-shadow {
   syntax: "*";
   inherits: false;
@@ -4239,6 +4269,11 @@ details[name="guest-faq"][open]::details-content {
       --tw-leading: initial;
       --tw-font-weight: initial;
       --tw-tracking: initial;
+      --tw-ordinal: initial;
+      --tw-slashed-zero: initial;
+      --tw-numeric-figure: initial;
+      --tw-numeric-spacing: initial;
+      --tw-numeric-fraction: initial;
       --tw-shadow: 0 0 #0000;
       --tw-shadow-color: initial;
       --tw-shadow-alpha: 100%;

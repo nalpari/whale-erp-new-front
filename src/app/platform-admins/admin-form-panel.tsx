@@ -446,7 +446,7 @@ export function AdminFormPanel(props: Props) {
       </FormGroup>
       {isSelf && <Note>본인 계정의 권한과 상태는 변경할 수 없습니다. 이름, 연락처 등 기타 정보만 수정할 수 있습니다.</Note>}
 
-      {mode === "create" && <Note>초기 비밀번호는 등록한 이메일로 발송됩니다.</Note>}
+      {mode === "create" && <Note>초기화 비밀번호는 등록한 이메일로 발송됩니다.</Note>}
       {mode === "edit" && form.accountStatus === "INACTIVE" && props.admin.accountStatus === "ACTIVE" && (
         <Note>
           미사용으로 변경하면 해당 계정의 로그인 및 서비스 접근이 즉시 차단됩니다.

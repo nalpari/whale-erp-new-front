@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, Suspense, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from "react";
+import { WHALE_LOADER_BACKGROUND, WHALE_LOADER_TEXT_COLOR, WhaleLoader } from "./whale-loader";
 import { INITIAL_LOAD_GROUP, isSettled, reduceLoadGroup } from "./load-group-state";
 
 // 영역이 여럿인 화면의 「처음 들어올 때 모두 받은 뒤 한 번에」 묶음.
@@ -13,17 +14,19 @@ type Ctx = { begin: () => void; end: () => void };
 const LoadGroupContext = createContext<Ctx | null>(null);
 
 /**
- * 공통 로딩 — 놓인 자리(부모의 남는 영역 전체)를 딤(확인창 바탕과 같은 erp-nav 40%)으로 덮고 가운데에 돌아가는 원과 문구를 둔다.
- * compact 는 상자 안 영역용으로 최소 높이를 92px 로 낮춘다(이전 영역 로딩의 높이). 스피너는 테두리 한쪽만 색을 준 원이다(저장소에 스피너 이미지가 없다). 움직임을 줄인 설정이면 돌지 않는다.
+ * 공통 로딩 — 놓인 자리(부모의 남는 영역 전체)를 흰색 → 연한 하늘색 원형 그라데이션으로 채우고 가운데에 네모 파도 위로 뛰는 고래(WhaleLoader)와 문구를 둔다.
+ * 큰 자리(화면 · 묶음 전체 · 처리중 덮개)에만 쓴다 — 작은 영역에는 고래 로딩을 쓰지 않는다. 그림은 aria-hidden, 문구가 role="status" 로 읽힌다.
+ * 받으면 바로 걷는다(최소 표시 시간 없음). 움직임을 줄인 설정이면 고래는 점프 없이 떠 있고 파도만 천천히 움직인다.
  */
-export function LoadingNotice({ text = "로딩중입니다", compact = false }: { text?: string; compact?: boolean }) {
+export function LoadingNotice({ text = "로딩중입니다" }: { text?: string }) {
   return (
     <div
       role="status"
       aria-live="polite"
-      className={`flex ${compact ? "min-h-[92px]" : "min-h-[120px]"} flex-1 flex-col items-center justify-center gap-[14px] bg-erp-nav/40 text-[14px] font-medium text-white`}
+      style={{ background: WHALE_LOADER_BACKGROUND, color: WHALE_LOADER_TEXT_COLOR }}
+      className="flex min-h-[120px] flex-1 flex-col items-center justify-center gap-[26px] px-[16px] text-[17px] font-bold tracking-[-0.02em] max-[480px]:text-[15px]"
     >
-      <span aria-hidden="true" className="size-[36px] rounded-full border-[3px] border-white/30 border-t-white motion-safe:animate-spin" />
+      <WhaleLoader />
       {text}
     </div>
   );
@@ -36,7 +39,7 @@ function Probe({ onMount }: { onMount: () => void }) {
 }
 
 /**
- * @param fallback 묶여 있는 동안 children 자리에 보일 것. 기본은 LoadingNotice(딤 + 스피너 + 「로딩중입니다」, 스켈레톤은 아직 없다)
+ * @param fallback 묶여 있는 동안 children 자리에 보일 것. 기본은 LoadingNotice(고래 파도 그림 + 「로딩중입니다」, 스켈레톤은 아직 없다)
  * @param timeoutMs 이 시간이 지나면 남은 로더가 있어도 푼다
  */
 export function LoadGroup({
