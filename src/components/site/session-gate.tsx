@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createContext, use, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Button, LoadingNotice, useBackdropActive } from "@/components/common";
 import { logout } from "@/app/actions";
+import { loginPathOf, returnPathOf } from "@/lib/auth-routes";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
 import { bpOfPath, bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
 import { BP_SWITCH_PATH, bpOfSwitchUrl, firstMenuRedirect, HOME, isAllowed, menuOfPath, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
@@ -194,7 +195,8 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
         }
         if (e instanceof BffError && e.status === 401) {
           // 세션이 이미 끊겼으면(proxy·BFF 가 쿠키를 지움) 로그인 화면으로 바로 간다. login-key 가 없는 옛 세션만 로그아웃으로 끝낸다.
-          if (readLoginKey()) router.replace("/login");
+          // 메일 링크(엑셀 내려받기)로 왔으면 ?next= 를 붙여 로그인 뒤 그 화면으로 돌아온다(loginPathOf).
+          if (readLoginKey()) router.replace(loginPathOf(location.pathname));
           else if (!(await signOut(logout))) setState(LOGOUT_FAILED);
           return;
         }
@@ -342,7 +344,7 @@ function Ready({
     const onStorage = (e: StorageEvent) => {
       if (e.key !== null && e.key !== LOGIN_INFO_KEY) return;
       const loginKey = readLoginKey();
-      if (!loginKey) router.replace("/login");
+      if (!loginKey) router.replace(loginPathOf(location.pathname));
       else if (loginKey !== value.loginKey) location.reload();
     };
     addEventListener("storage", onStorage);
@@ -357,8 +359,9 @@ function Ready({
   const passwordChanged = () => {
     setPasswordRequired(false);
     // 바꾼 뒤에는 이 탭 서비스의 HOME 으로 다시 연다 — 플랫폼은 /platform 을 거쳐 첫 메뉴로 간다.
+    // 메일 링크(엑셀 내려받기, returnPathOf)에서 바꿨으면 그 화면을 다시 연다 — 다시 열리면 바로 내려받는다.
     // replace — assign 이면 같은 HOME 이 기록에 두 번 남아 뒤로 가기가 한 번 제자리처럼 보인다.
-    location.replace(home);
+    location.replace(returnPathOf(location.pathname) ?? home);
   };
   return (
     <LoginContext value={{ ...value, setScope, patchAccount, myPageOpen, setMyPageOpen, passwordChangeOpen, setPasswordChangeOpen, withdrawOpen, setWithdrawOpen, myPageTrigger }}>

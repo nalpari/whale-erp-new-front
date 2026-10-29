@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [점포 관리](/stores.md) — PR #168 적대적 리뷰(블로커 아님) 반영: 메일 링크 화면에서 비밀번호를 강제로 바꾸면 SessionGate 가 홈 대신 그 화면(`returnPathOf`)을 다시 열어 바로 내려받는다 — 전엔 홈으로 가 [다시 받기]에 닿지 못했다. SessionGate 가 login-info 401 · 다른 탭 로그아웃으로 로그인에 보낼 때도 `loginPathOf` 로 `?next=` 를 붙인다(쿠키는 살았는데 api 세션만 끊긴 경우 로그인 뒤 홈으로 가던 것).
 * **Update**: main 병합(front monferno, main #167 까지): okf 충돌은 양쪽 기록을 살렸고, [Whale ERP Frontend](/whale-erp-front.md) 시각은 늦은 값을 남겼다.
 * **Update**: 1팀 ERD(`docs/erd/team1`) — api #188 머지 뒤 맞춤: `excel_download_logs.scope_key`(범위 지문, text · NULL — 만들 때 요청자가 볼 수 있던 범위, 받을 때 지금 범위와 다르면 403)를 README · 생성기에 더하고, `bp_code_id` · `attempt_count` 비고를 api 문구와 같게 했다. 생성기 DDL 이 api main `docs/raw/2026-10-12-1팀-schema.sql` 과 같은 것을 확인했다(물리 ERD 문서의 컬럼 수는 api 쪽이 349 로 남아 있다 — 생성기는 350). api 타입은 엑셀 경로가 응답 설명(403 · 503)만 늘어 다시 만들지 않았다 — api main 전체로 만들면 3팀 직원 목록 응답(`lastSentAt` · `canResend`)이 바뀌어 front main 에서 따로 맞춘다.
 * **Update**: main 병합(front monferno, main #165 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 레이아웃 줄은 main 의 플랫폼 첫 메뉴 이동에 이 브랜치의 메뉴 없는 화면(`MENULESS_PATHS`) 문장을 끼웠고, proxy 줄은 이 브랜치 것(main 은 바꾸지 않았다), generated 는 늦은 시각. `api-types.generated.ts` · `menus.ts` 는 git 이 자동으로 합쳤다.

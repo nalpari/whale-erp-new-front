@@ -27,7 +27,8 @@ const PASSWORD_REQUIRED_PREFIX = "비밀번호를 변경한 뒤 이용할 수 �
 /**
  * api GET /excel-downloads/:id 실패를 화면 안내로. retry 는 [다시 받기]를 둘지 —
  * 404 없음 · 남의 것 · 바로 받기, 410 기한 지남, 409 만들지 못함, 403 화면 권한 잃음은 다시 해도 같으니 두지 않는다.
- * 409 만드는 중(안내 색) · 403 비밀번호 변경 필요(바꾼 뒤 다시 받는다) · 연결 실패 · 5xx 는 둔다.
+ * 409 만드는 중(안내 색) · 403 비밀번호 변경 필요 · 연결 실패 · 5xx 는 둔다. 비밀번호를 바꾸면 SessionGate 가 이 화면을 다시 열어
+ * 바로 받는다(passwordChanged → returnPathOf) — 다시 받기는 강제 변경 팝업이 다시 뜨게 하는 길로 남겨 둔다.
  */
 export function failureOf(status: number, message: string): Failure {
   if (status === 404) return { tone: "risk", title: NOT_FOUND, detail: NOT_FOUND_DETAIL, retry: false };
