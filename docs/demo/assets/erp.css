@@ -256,9 +256,6 @@
   .-top-\[5px\] {
     top: calc(5px * -1);
   }
-  .-top-\[6px\] {
-    top: calc(6px * -1);
-  }
   .top-0 {
     top: 0px;
   }
@@ -1830,9 +1827,6 @@
   .overflow-hidden {
     overflow: hidden;
   }
-  .overflow-visible {
-    overflow: visible;
-  }
   .overflow-x-auto {
     overflow-x: auto;
   }
@@ -2240,14 +2234,8 @@
   .fill-none {
     fill: none;
   }
-  .fill-white {
-    fill: var(--color-white);
-  }
   .stroke-current {
     stroke: currentcolor;
-  }
-  .stroke-erp-brand {
-    stroke: var(--color-erp-brand);
   }
   .stroke-erp-label {
     stroke: var(--color-erp-label);
