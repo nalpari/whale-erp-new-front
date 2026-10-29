@@ -56,10 +56,10 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
         onDone(); // 이미 바꾼 계정이다. 팝업만 닫는다.
       } else if (r.status === 401) {
         // 발급 비밀번호가 만료됐으면 api 문구가 비밀번호 찾기를 안내한다. 팝업을 오래 열어 둬 접근 토큰이 끝난 401 이면 세션 만료로 안내한다.
-        alert(r.message?.startsWith("발급받은 비밀번호") ? r.message : "세션이 만료되었습니다. 다시 로그인해 주세요");
+        alert(r.message?.startsWith("발급받은 비밀번호") ? r.message : "세션이 만료되었습니다. 다시 로그인해 주세요.");
         await signOut(logout);
       } else {
-        const message = r.message ?? "비밀번호를 변경하지 못했습니다";
+        const message = r.message ?? "비밀번호를 변경하지 못했습니다.";
         setError({ at: r.status === 400 && message.includes("약관") ? "terms" : "password", message });
       }
     });
@@ -202,7 +202,7 @@ function Remaining({ expiresAt }: { expiresAt: string }) {
   useEffect(() => {
     if (left !== 0) return;
     // shortcut: 안내는 브라우저 alert 다. 공통 확인 팝업이 생기면 바꾼다.
-    alert("임시 비밀번호 사용 시간이 지났습니다. 다시 로그인해 주세요");
+    alert("임시 비밀번호 사용 시간이 지났습니다. 다시 로그인해 주세요.");
     signOut(logout);
   }, [left]);
 
