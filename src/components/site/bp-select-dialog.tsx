@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ConfirmDialog, DataTable, Pagination, Radio, SearchField, type Column } from "@/components/common";
+import { ConfirmDialog, DataTable, Pagination, Radio, SearchField, Select, type Column } from "@/components/common";
 import { bff, BffError } from "@/lib/bff";
 import { bpSwitchUrl } from "@/lib/menus";
 import type { BpOption } from "@/lib/session";
 import { useCodeLabel } from "./code-label";
 import { useCurrentBp } from "./session-gate";
 
-const PAGE_SIZE = 10;
+// 한 쪽 건수 — 목록 화면과 같은 20 · 50 · 100, 처음은 20(2026-10-29 사용자 지정 — 전엔 10 고정)
+const PAGE_SIZES = [20, 50, 100] as const;
 
 /**
  * 웨일ERP 바로가기의 BP 선택 팝업(플랫폼 계정). 상호 · BP코드로 찾아 한 줄을 고르고 [이동]하면 새 탭으로 BP 이동 화면(/bp-switch)을
@@ -17,7 +18,7 @@ const PAGE_SIZE = 10;
 export function BpSelectDialog({ onClose }: { onClose: () => void }) {
   const currentBp = useCurrentBp();
   const statusLabel = useCodeLabel("ACCOUNT_STATUS");
-  const [query, setQuery] = useState({ keyword: "", page: 1 });
+  const [query, setQuery] = useState({ keyword: "", page: 1, pageSize: 20 as number });
   const [keyword, setKeyword] = useState("");
   const [result, setResult] = useState<{ items: BpOption[]; total: number } | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -25,7 +26,7 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     let cancelled = false;
-    const params = new URLSearchParams({ page: String(query.page), pageSize: String(PAGE_SIZE) });
+    const params = new URLSearchParams({ page: String(query.page), pageSize: String(query.pageSize) });
     if (query.keyword) params.set("keyword", query.keyword);
     bff<{ items: BpOption[]; total: number }>(`/bp-codes?${params}`).then(
       (r) => {
@@ -72,23 +73,44 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
     },
     { header: "계정상태", width: "w-[80px]", cell: (r) => statusLabel(r.accountStatusCode) },
   ];
-  const totalPages = result ? Math.ceil(result.total / PAGE_SIZE) : 0;
+  const totalPages = result ? Math.ceil(result.total / query.pageSize) : 0;
 
   return (
     <ConfirmDialog open wide title="BP 선택" confirmLabel="이동" confirmDisabled={!picked} onConfirm={handleMove} onCancel={onClose}>
       <div className="flex flex-col gap-[12px]">
         <p>BP를 선택하면 웨일ERP가 새 탭으로 열립니다.</p>
-        <SearchField
-          value={keyword}
-          onValueChange={setKeyword}
-          onSearch={(v) => {
-            setPicked(null);
-            setQuery({ keyword: v.trim(), page: 1 });
-          }}
-          placeholder="상호명 또는 BP코드"
-          aria-label="BP 찾기"
-          maxLength={50}
-        />
+        {/* 찾기 칸 오른쪽에 한 쪽 건수 — 바꾸면 1쪽부터, 고른 줄은 비운다(검색과 같다) */}
+        <div className="flex gap-[6px]">
+          <div className="min-w-0 flex-1">
+            <SearchField
+              value={keyword}
+              onValueChange={setKeyword}
+              onSearch={(v) => {
+                setPicked(null);
+                setQuery((q) => ({ ...q, keyword: v.trim(), page: 1 }));
+              }}
+              placeholder="상호명 또는 BP코드"
+              aria-label="BP 찾기"
+              maxLength={50}
+            />
+          </div>
+          <div className="w-[80px] shrink-0">
+            <Select
+              aria-label="페이지당 건수"
+              value={String(query.pageSize)}
+              onChange={(e) => {
+                setPicked(null);
+                setQuery((q) => ({ ...q, pageSize: Number(e.target.value), page: 1 }));
+              }}
+            >
+              {PAGE_SIZES.map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </Select>
+          </div>
+        </div>
         {failure ? (
           <p role="alert" className="text-erp-off">
             {failure}
