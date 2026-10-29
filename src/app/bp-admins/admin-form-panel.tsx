@@ -4,9 +4,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useLayoutEffect, useRef, useState, useTransition, type KeyboardEvent, type ReactNode, type RefObject } from "react";
 import { Button, ConfirmDialog, DataTable, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, Tag, TextField } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { useAccount, useCurrentBp } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
-import { FailedBand, FieldMessage, InfoBand } from "@/components/site/side-parts";
+import { FailedBand, FieldMessage, InfoBand, WarnBand } from "@/components/site/side-parts";
 import { StoreMappingPicker, type MappingStoreOption } from "@/components/site/store-mapping-picker";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
 import {
@@ -304,6 +305,9 @@ export function AdminFormPanel(props: Props) {
   const groupOptions = groups.filter((r) => r.roleTypeCode === form.roleTypeCode);
   // 고른 역할에 붙일 그룹이 없으면 저장할 수 없다 — 가맹 마스터가 가맹 관리자 그룹을 아직 만들지 않은 때 등(BP 관리자 등록 정책)
   const noGroupForRole = mode === "create" && !groupsFailed && !!form.roleTypeCode && !groupOptions.length;
+  // 탈퇴 · 미사용 BP 에는 등록하지 않는다 — 점포 등록과 같다(플랫폼 계정만 본다, 2026-10-29 사용자 지정). 확인하지 못하면(null) 막지 않는다
+  const bpStatus = useCurrentBpStatus();
+  const bpBlocked = mode === "create" && bpStatus !== null && bpStatus !== "ACTIVE";
   // 지금 권한 그룹이 선택지에 없으면(보는 사람이 고를 수 없는 그룹) 그 그룹도 남겨 값이 비지 않게 한다
   if (mode === "edit" && !groupOptions.some((r) => r.roleGroupId === props.admin.roleGroup.roleGroupId)) groupOptions.unshift(props.admin.roleGroup);
 
@@ -398,6 +402,7 @@ export function AdminFormPanel(props: Props) {
           </span>
         )}
       </h2>
+      {bpBlocked && <WarnBand>BP가 탈퇴 또는 미사용 상태로, 관리자를 등록할 수 없습니다.</WarnBand>}
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}
       {locks.stores && (
         <Note>
@@ -496,7 +501,7 @@ export function AdminFormPanel(props: Props) {
                   value={form.accountStatus}
                   onChange={(e) => set("accountStatus", e.target.value as BpAdminForm["accountStatus"])}
                   disabled={locks.status}
-                  title={locks.status ? "본인 계정의 상태는 바꿀 수 없습니다" : undefined}
+                  title={locks.status ? "본인 계정의 상태는 바꿀 수 없습니다." : undefined}
                   aria-required
                 >
                   <option value="ACTIVE">사용</option>
@@ -505,7 +510,7 @@ export function AdminFormPanel(props: Props) {
               </Field>
               {deactivationImpact && deactivationImpact.deactivatedCount > 0 && (
                 <InfoBand>
-                  <p>가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 계정도 함께 멈춥니다</p>
+                  <p>가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 계정도 함께 멈춥니다.</p>
                   <p className="font-normal text-erp-label">
                     가맹 관리자 {andOthers(deactivationImpact.firstDeactivatedLoginId, deactivationImpact.deactivatedCount)} → 미사용
                   </p>
@@ -551,7 +556,7 @@ export function AdminFormPanel(props: Props) {
                 ) : noGroupForRole ? (
                   // [이동]은 환경설정 > 권한그룹 관리(/bp-role-groups, 이 탭 BP 주소)로 간다 — 권한명이 없으면 어차피 저장할 수 없다(2026-10-28 사용자 지정 문구)
                   <span className="flex items-center gap-[10px]">
-                    <FieldMessage id={messageId("roleGroupId")} message="선택할 수 있는 권한명이 없습니다. 먼저 권한명을 등록해주세요." />
+                    <FieldMessage id={messageId("roleGroupId")} message="선택할 수 있는 권한명이 없습니다. 먼저 권한명을 등록해 주세요." />
                     <Button variant="soft" href={bpPath(currentBp.bpCodeId, "/bp-role-groups")}>
                       이동
                     </Button>
@@ -565,7 +570,7 @@ export function AdminFormPanel(props: Props) {
                 value={form.roleGroupId}
                 onChange={(e) => set("roleGroupId", e.target.value)}
                 disabled={locks.roleGroup || !form.roleTypeCode}
-                title={locks.roleGroup ? "이 계정의 권한명은 여기서 바꿀 수 없습니다" : undefined}
+                title={locks.roleGroup ? "이 계정의 권한명은 여기서 바꿀 수 없습니다." : undefined}
                 aria-invalid={invalid("roleGroupId")}
                 aria-describedby={groupsFailed || noGroupForRole ? messageId("roleGroupId") : describe("roleGroupId")}
                 aria-required
@@ -599,7 +604,7 @@ export function AdminFormPanel(props: Props) {
               aria-required={!locks.scope}
               title={
                 locks.scope && mode === "edit" && props.admin.isAllStores
-                  ? "관리 범위가 일부 점포인 사용자는 전체 점포 계정의 범위를 바꿀 수 없습니다"
+                  ? "관리 범위가 일부 점포인 사용자는 전체 점포 계정의 범위를 바꿀 수 없습니다."
                   : undefined
               }
             >
@@ -669,7 +674,7 @@ export function AdminFormPanel(props: Props) {
           취소
         </Button>
         {/* 권한 그룹을 받지 못하면 등록은 고를 그룹이 없어 저장할 수 없다(수정은 지금 그룹을 그대로 둔다) */}
-        <Button onClick={handleSave} disabled={saving || (mode === "create" && (groupsFailed || noGroupForRole))}>
+        <Button onClick={handleSave} disabled={saving || bpBlocked || (mode === "create" && (groupsFailed || noGroupForRole))}>
           저장
         </Button>
       </div>
@@ -699,7 +704,7 @@ export function AdminFormPanel(props: Props) {
               {cascade.impact.unmappedCount > 0 && (
                 <>
                   <dt className="text-erp-label">매핑 해제</dt>
-                  <dd>가맹 관리자 {andOthers(cascade.impact.firstUnmappedLoginId, cascade.impact.unmappedCount)} · 뺀 점포의 매핑만 풀립니다</dd>
+                  <dd>가맹 관리자 {andOthers(cascade.impact.firstUnmappedLoginId, cascade.impact.unmappedCount)} · 뺀 점포의 매핑만 풀립니다.</dd>
                 </>
               )}
               {cascade.impact.deactivatedCount > 0 && (
@@ -719,7 +724,7 @@ export function AdminFormPanel(props: Props) {
                 남습니다.
               </p>
             )}
-            <p>가맹 관리자 변경 이력에는 저장하는 사람이 처리자로 남고, 변경 후 값에 사유가 붙습니다.</p>
+            <p>가맹 관리자 변경이력에는 저장하는 사람이 처리자로 남고, 변경 후 값에 사유가 붙습니다.</p>
           </div>
         </ConfirmDialog>
       )}

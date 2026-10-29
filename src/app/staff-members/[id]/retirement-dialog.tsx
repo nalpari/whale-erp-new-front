@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog, DateField, useToast } from "@/components/common";
-import { checkRetiredDate, earliestRetiredDate, isSettledNow, todayAfterSubmit } from "@/lib/retirement";
+import { checkRetiredDate, earliestRetiredDate, isSettledNow, reloadsPreview, showsBelowDateField, todayAfterSubmit } from "@/lib/retirement";
 import type { RetirementPreview } from "@/lib/staff-members";
 import { cancelRetirementAction, changeRetirementDateAction, previewRetirementAction, retireAction } from "./actions";
 import { useFailure } from "./use-action-failure";
@@ -18,7 +18,7 @@ function nextDay(date: string): string {
   return d.toISOString().slice(0, 10);
 }
 
-type Preview = { status: "loading" } | { status: "ok"; date: string; value: RetirementPreview } | { status: "error"; message: string };
+type Preview = { status: "idle" } | { status: "loading" } | { status: "ok"; date: string; value: RetirementPreview } | { status: "error"; message: string };
 
 /**
  * 퇴직 처리(mode retire) · 퇴직일 변경(mode change). 열릴 때만 그린다 — 닫으면 날짜 · 미리 보기가 처음으로 돌아간다.
@@ -43,14 +43,16 @@ export function RetirementDialog({
   const onFailure = useFailure();
   const [today, setToday] = useState(initialToday);
   const [date, setDate] = useState(currentDate ?? initialToday);
-  const [preview, setPreview] = useState<Preview>(() => {
-    const invalid = checkRetiredDate(date, today);
-    return invalid ? { status: "error", message: invalid } : { status: "loading" };
-  });
+  // 날짜가 틀리면 미리 보기를 받지 않는다(idle) — 틀린 이유는 날짜 칸 아래에 둔다(재영 공지 2026-10-29).
+  const [preview, setPreview] = useState<Preview>(() => (checkRetiredDate(date, today) ? { status: "idle" } : { status: "loading" }));
+  // api 가 퇴직일 입력으로 거절한 400(3개월 범위 · 입사일보다 앞섬 등). 날짜를 고치면 지운다.
+  const [serverDateError, setServerDateError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   // 날짜를 빠르게 바꾸면 앞의 응답이 늦게 올 수 있다 — 마지막 요청의 응답만 쓴다.
   const seq = useRef(0);
+  // 지금 칸의 날짜. 저장 응답이 올 때 보낸 날짜와 같은지 본다 — 그 사이 날짜를 바꿨으면 이전 날짜의 400 을 새 날짜에 붙이지 않는다.
+  const dateRef = useRef(date);
 
   /** 미리 보기를 받아 그 응답이 마지막 요청일 때만 담는다. 상태는 응답을 받은 뒤에만 바꾼다. */
   const fetchPreview = (value: string) => {
@@ -59,6 +61,10 @@ export function RetirementDialog({
       .then((result) => {
         if (n !== seq.current) return;
         if (result.ok) return setPreview({ status: "ok", date: value, value: result.preview });
+        if (showsBelowDateField(result)) {
+          setServerDateError(result.message);
+          return setPreview({ status: "idle" });
+        }
         const message = onFailure(result);
         if (message) setPreview({ status: "error", message });
       })
@@ -75,18 +81,21 @@ export function RetirementDialog({
   }, []);
 
   const changeDate = (value: string, on: string = today) => {
+    dateRef.current = value;
     setDate(value);
     setSubmitError(null);
+    setServerDateError(null);
     const invalid = checkRetiredDate(value, on);
     if (invalid) {
-      seq.current++; // 늦게 오는 앞 응답이 이 문구를 덮지 않게
-      setPreview({ status: "error", message: invalid });
+      seq.current++; // 늦게 오는 앞 응답이 미리 보기를 덮지 않게
+      setPreview({ status: "idle" });
       return;
     }
     setPreview({ status: "loading" });
     fetchPreview(value);
   };
 
+  const dateNote = checkRetiredDate(date, today) ?? serverDateError;
   const sameDate = mode === "change" && date === currentDate;
   const ready = preview.status === "ok" && preview.date === date && !sameDate;
 
@@ -94,6 +103,8 @@ export function RetirementDialog({
   const handleConfirm = async () => {
     setBusy(true);
     setSubmitError(null);
+    setServerDateError(null);
+    const sentDate = date;
     try {
       // 경고 여부를 정한 오늘을 함께 보낸다 — 서버 액션이 서버 시계로 다시 판정한다(브라우저 시계가 늦어도 막힌다)
       const result =
@@ -110,6 +121,13 @@ export function RetirementDialog({
         setToday(nextToday);
         changeDate(date, nextToday);
         setSubmitError(result.message);
+        return;
+      }
+      if (showsBelowDateField(result)) {
+        if (dateRef.current !== sentDate) return; // 처리 중에 날짜를 바꿨다 — 이전 날짜의 거절이다
+        seq.current++;
+        setServerDateError(result.message);
+        setPreview({ status: "idle" }); // 거절된 날짜의 정리 건수 · 활성 버튼이 남지 않게(미리 보기 400 과 같다)
         return;
       }
       const message = onFailure(result);
@@ -139,8 +157,16 @@ export function RetirementDialog({
       <div className="flex flex-col gap-[12px]">
         <div className="flex flex-col gap-[8px]">
           <span className="text-[14px] font-medium text-erp-label">퇴직일</span>
-          <DateField aria-label="퇴직일" value={date} onChange={changeDate} />
+          <DateField aria-label="퇴직일" value={date} onChange={(value) => {
+              if (reloadsPreview(value, date, preview.status)) changeDate(value);
+            }}
+          />
           <p className="text-[13px] text-erp-label">오늘 이후, 또는 최근 3개월 안({earliestRetiredDate(today)}부터)의 지난 날짜를 받습니다.</p>
+          {dateNote && (
+            <p role="alert" className="text-[13px] text-erp-off">
+              {dateNote}
+            </p>
+          )}
           {sameDate && <p className="text-[13px] text-erp-off">지금 퇴직일과 같습니다.</p>}
         </div>
 

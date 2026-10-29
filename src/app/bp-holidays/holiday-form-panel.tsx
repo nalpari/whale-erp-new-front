@@ -3,8 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useId, useState, useTransition, type RefObject } from "react";
 import { Button, ConfirmDialog, DateField, Field, FormGroup, Radio, RequiredMark, Select, SlidePanel, Textarea, TextField } from "@/components/common";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { useAccount, useCodes, useStores } from "@/components/site/session-gate";
-import { FailedBand, FieldMessage } from "@/components/site/side-parts";
+import { FailedBand, FieldMessage, WarnBand } from "@/components/site/side-parts";
 import { StoreMappingPicker, type MappingStore } from "@/components/site/store-mapping-picker";
 import {
   canChooseAllStores,
@@ -165,6 +166,9 @@ export function HolidayFormPanel(props: Props) {
     else if (status === undefined) router.refresh();
   };
 
+  // 탈퇴 · 미사용 BP 에는 등록하지 않는다 — 점포 등록과 같다(플랫폼 계정만 본다, 2026-10-29 사용자 지정). 확인하지 못하면(null) 막지 않는다
+  const bpStatus = useCurrentBpStatus();
+  const bpBlocked = mode === "create" && bpStatus !== null && bpStatus !== "ACTIVE";
   const repeatType = form.repeatType as RepeatType;
   const skip = form.type === "REPEAT" ? repeatSkipNote(repeatType, form.startDate) : null;
   const options = stores.filter((s) => s.storeStatusCode !== "CLOSED");
@@ -174,7 +178,9 @@ export function HolidayFormPanel(props: Props) {
     <SlidePanel id={id} open={open} onClose={() => !saving && onClose()} onBackdropClose={() => !saving && onBackdropClose()} label={title} trigger={trigger} closeOnBackdrop>
       <div className="flex flex-col gap-[18px]">
         <h2 className="text-[18px] font-semibold text-erp-ink">{title}</h2>
-        {/* 제목 아래 띠는 오류일 때만 둔다 — 진행 중 · 막힘 안내 띠는 두지 않는다(2026-10-27 사용자 요청). 막힌 칸은 disabled 로 그대로 막는다 */}
+        {/* 제목 아래 띠는 오류일 때만 둔다 — 진행 중 · 막힘 안내 띠는 두지 않는다(2026-10-27 사용자 요청). 막힌 칸은 disabled 로 그대로 막는다.
+            예외: 탈퇴 · 미사용 BP 의 등록 막기 띠는 둔다 — 점포 등록과 같다(2026-10-29 사용자 지정) */}
+        {bpBlocked && <WarnBand>BP가 탈퇴 또는 미사용 상태로, 휴일을 등록할 수 없습니다.</WarnBand>}
         {failure && <FailedBand message={failure} detail="입력한 내용은 그대로 두었습니다." />}
 
         <FormGroup title="휴일 정보">
@@ -325,7 +331,7 @@ export function HolidayFormPanel(props: Props) {
             취소
           </Button>
           <span className="flex-1" />
-          <Button onClick={() => handleSave()} disabled={saving}>
+          <Button onClick={() => handleSave()} disabled={saving || bpBlocked}>
             저장
           </Button>
         </div>
@@ -333,7 +339,7 @@ export function HolidayFormPanel(props: Props) {
 
       <ConfirmDialog
         open={overlaps !== null}
-        title="같은 날짜에 이미 휴일이 있습니다"
+        title="같은 날짜에 이미 휴일이 있습니다."
         confirmLabel="저장" // 「그래도 저장」은 어색해 「저장」(2026-10-28 사용자 지정)
         wide
         busy={saving}

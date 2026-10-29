@@ -39,7 +39,7 @@ export default ({ A, R }) => {
           p
             .ask("선택 삭제", "off", "선택한 알림을 삭제하시겠습니까?", "삭제한 알림은 되돌릴 수 없습니다.", "삭제", { "data-remove-picked": "notify-list" })
             .replace("data-dialog=", `data-need-pick="notify-list" data-none-dialog="${noneId}" data-dialog=`) +
-          x.dialog(noneId, "선택된 알림이 없습니다", "삭제할 알림을 먼저 골라 주세요.", ui.button("확인", { "data-close": true })),
+          x.dialog(noneId, "선택된 알림이 없습니다.", "삭제할 알림을 먼저 골라 주세요.", ui.button("확인", { "data-close": true })),
       ) +
       ui.dataTable(
         [

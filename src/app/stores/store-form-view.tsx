@@ -14,6 +14,7 @@ import {
   Field,
   FormGroup,
   FormRow,
+  NoticeBand,
   RequiredMark,
   Select,
   TextField,
@@ -61,7 +62,7 @@ import {
   verifyStoreBusinessAction,
   type ActionFailure,
 } from "./actions";
-import { FieldMessage, NoticeBand, StoreImage, StoreStatusBadge, StoreTypeCards } from "./store-parts";
+import { FieldMessage, StoreImage, StoreStatusBadge, StoreTypeCards } from "./store-parts";
 import { withBack } from "./stores-query";
 
 /** 동시 수정 409 문구(api). 이때만 최신 정보를 다시 불러온다 */
@@ -879,7 +880,7 @@ export function StoreFormView(props: Props) {
         {message("floors")}
       </FormGroup>
 
-      <ConfirmDialog open={dialog === "close-blocked"} title="폐점할 수 없습니다" confirmLabel="확인" onConfirm={() => setDialog(null)} onCancel={() => setDialog(null)}>
+      <ConfirmDialog open={dialog === "close-blocked"} title="폐점할 수 없습니다." confirmLabel="확인" onConfirm={() => setDialog(null)} onCancel={() => setDialog(null)}>
         <p>{closeBlock}</p>
         <p className="mt-[6px] text-erp-label">점포상태를 이전 값으로 되돌렸습니다.</p>
       </ConfirmDialog>

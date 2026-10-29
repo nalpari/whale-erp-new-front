@@ -146,7 +146,7 @@ function RenewalBand({ renewals, href }: { renewals: NonNullable<HomePending["re
     <div className={`${CARD} flex items-center gap-[12px] px-[24px] py-[12px]`}>
       <Badge tone="off">갱신 예정</Badge>
       <div className="flex min-w-0 flex-1 flex-col gap-[6px]">
-        <p className="text-[15px] font-semibold">계약 갱신 예정 {renewals.length}건이 7일 안에 끝납니다</p>
+        <p className="text-[15px] font-semibold">계약 갱신 예정 {renewals.length}건이 7일 안에 끝납니다.</p>
         <p className="truncate text-[14px] text-erp-label">
           {renewalNamesOf(renewals)} 에 계약이 종료됩니다. 새 근로계약서 초안을 저장하면 재직 중이라 즉시 발송됩니다.
         </p>
@@ -203,7 +203,7 @@ function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: bo
         <Figure
           href={canOpen("/staff-members") ? scopeHref("/staff-members") : null}
           label="재직 직원"
-          note={hq ? "동의하지 않은 가맹 직원은 고용 형태에 세지 않습니다" : undefined}
+          note={hq ? "동의하지 않은 가맹 직원은 고용 형태에 세지 않습니다." : undefined}
           value={staff.total}
           unit="명"
           sub={`정직원 ${staff.fullTime} · 파트 ${staff.partTime}`}
@@ -214,7 +214,7 @@ function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: bo
         <Figure
           href={canOpen("/attendance-records") ? scopeHref("/attendance-records") : null}
           label="오늘 출근"
-          note={hq ? "동의하지 않은 가맹 직원은 출근 · 미출근에 세지 않습니다" : undefined}
+          note={hq ? "동의하지 않은 가맹 직원은 출근 · 미출근에 세지 않습니다." : undefined}
           value={today.checkedIn}
           unit="명"
           sub={
@@ -278,7 +278,7 @@ function StoreTable({ table, hq, staffHref }: { table: HomeSummary["storeTable"]
         <p className="flex-1 text-erp-label">
           {table.total}개점 중 상위 {table.items.length}개 · 미조치 많은 순
           {/* 출근 수만 가린 값이라 「1 / 5」처럼 보일 수 있다 — 수치 카드와 같은 안내(운영 정책 ATT-30). 보이는 열만 적는다 */}
-          {hqNote && <span className="ml-[8px] text-[12px] text-erp-muted">동의하지 않은 가맹 직원은 {hqNote}에 세지 않습니다</span>}
+          {hqNote && <span className="ml-[8px] text-[12px] text-erp-muted">동의하지 않은 가맹 직원은 {hqNote}에 세지 않습니다.</span>}
         </p>
         {staffHref && (
           <Link href={staffHref} className="text-erp-link hover:underline">

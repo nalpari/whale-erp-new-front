@@ -65,7 +65,7 @@ test("faqBody — FAQ JSON 에 공지사항 칸을 싣지 않는다", () => {
 
 test("validatePost — 제목 200자 · 본문 20,000자 경계", () => {
   assert.deepEqual(validatePost(notice({ title: "a".repeat(200), body: "a".repeat(20_000) }), "DRAFT", 0, []), []);
-  assert.deepEqual(validatePost(notice({ body: "a".repeat(20_001) }), "DRAFT", 0, []), ["본문은 20,000자까지 쓸 수 있습니다"]);
+  assert.deepEqual(validatePost(notice({ body: "a".repeat(20_001) }), "DRAFT", 0, []), ["본문은 20,000자까지 쓸 수 있습니다."]);
 });
 
 test("queryString — 빈 값과 기본값은 싣지 않는다", () => {
@@ -83,23 +83,23 @@ test("validatePost — 맞으면 빈 목록", () => {
 });
 
 test("validatePost — 게시만 노출 대상이 있어야 한다", () => {
-  assert.deepEqual(validatePost(notice({ audiences: [] }), "PUBLISHED", 0, []), ["게시하려면 노출 대상을 하나 이상 골라 주세요"]);
+  assert.deepEqual(validatePost(notice({ audiences: [] }), "PUBLISHED", 0, []), ["게시하려면 노출 대상을 하나 이상 골라 주세요."]);
   assert.deepEqual(validatePost(notice({ audiences: [] }), "DRAFT", 0, []), []);
 });
 
 test("validatePost — 공지는 유형, FAQ 는 카테고리가 필수", () => {
-  assert.deepEqual(validatePost(notice({ noticeType: "" }), "DRAFT", 0, []), ["공지사항 유형을 골라 주세요"]);
-  assert.deepEqual(validatePost(faq({ faqCategoryCode: "" }), "DRAFT", 0, []), ["FAQ 카테고리를 골라 주세요"]);
+  assert.deepEqual(validatePost(notice({ noticeType: "" }), "DRAFT", 0, []), ["공지사항 유형을 골라 주세요."]);
+  assert.deepEqual(validatePost(faq({ faqCategoryCode: "" }), "DRAFT", 0, []), ["FAQ 카테고리를 골라 주세요."]);
 });
 
 test("validatePost — 제목 · 본문 공백과 길이", () => {
-  assert.deepEqual(validatePost(notice({ title: " ", body: "\n" }), "DRAFT", 0, []), ["제목을 입력해 주세요", "본문을 입력해 주세요"]);
+  assert.deepEqual(validatePost(notice({ title: " ", body: "\n" }), "DRAFT", 0, []), ["제목을 입력해 주세요.", "본문을 입력해 주세요."]);
   assert.equal(validatePost(notice({ title: "a".repeat(201) }), "DRAFT", 0, []).length, 1);
 });
 
 test("validatePost — 게시 종료일이 시작일보다 앞서면 막는다(FAQ 는 기간을 보지 않는다)", () => {
   const swapped = { publishStartDate: "2026-09-14", publishEndDate: "2026-09-05" };
-  assert.deepEqual(validatePost(notice(swapped), "DRAFT", 0, []), ["게시 종료일이 시작일보다 앞설 수 없습니다"]);
+  assert.deepEqual(validatePost(notice(swapped), "DRAFT", 0, []), ["게시 종료일이 시작일보다 앞설 수 없습니다."]);
   assert.deepEqual(validatePost(faq(swapped), "DRAFT", 0, []), []);
 });
 
@@ -107,8 +107,8 @@ test("validatePost — 첨부는 남는 것 + 더하는 것 5개, 종류 · 크�
   const ok = { name: "a.PDF", size: 1024 };
   assert.deepEqual(validatePost(notice(), "DRAFT", 4, [ok]), []);
   assert.equal(validatePost(notice(), "DRAFT", 4, [ok, ok]).length, 1);
-  assert.deepEqual(validatePost(notice(), "DRAFT", 0, [{ name: "a.gif", size: 1 }]), ["a.gif: JPG · PNG · PDF 만 올릴 수 있습니다"]);
-  assert.deepEqual(validatePost(notice(), "DRAFT", 0, [{ name: "a.jpg", size: 10 * 1024 * 1024 + 1 }]), ["a.jpg: 파일 하나는 10MB 까지 올릴 수 있습니다"]);
+  assert.deepEqual(validatePost(notice(), "DRAFT", 0, [{ name: "a.gif", size: 1 }]), ["a.gif: JPG · PNG · PDF 만 올릴 수 있습니다."]);
+  assert.deepEqual(validatePost(notice(), "DRAFT", 0, [{ name: "a.jpg", size: 10 * 1024 * 1024 + 1 }]), ["a.jpg: 파일 하나는 10MB 까지 올릴 수 있습니다."]);
 });
 
 test("postFields — 공지 칸은 공지에만, 노출 대상은 이름을 되풀이", () => {

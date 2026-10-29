@@ -13,12 +13,12 @@ import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, for
 import { CellView } from "../staff-table";
 import { BirthDateCell } from "./birth-date-dialog";
 import { ContractBox } from "./contract-box";
-import { Box, BoxMessage } from "./detail-box";
+import { Box } from "./detail-box";
 import { employmentHistoryLines, historySearch } from "./employment-history";
 import { MenuManageLink } from "./manage-link";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
-import { PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
-import { scheduleWeekOf } from "./summary-view";
+import { AttendanceBox, PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
+import { attendanceManageHref, scheduleWeekOf } from "./summary-view";
 import { WeekNav } from "./week-nav";
 
 export const metadata: Metadata = {
@@ -32,17 +32,12 @@ const AREA_PENDING = <div aria-hidden="true" className="min-h-[92px]" />;
 // 바깥 LoadGroup(본문 전체) fallback 에만 스크린리더용 안내를 붙인다 — 영역 4곳까지 읽히면 「로딩중입니다」가 여럿 겹친다
 const BODY_PENDING = (
   <div role="status" className="min-h-[92px]">
-    <span className="sr-only">로딩중입니다</span>
+    <span className="sr-only">로딩중입니다.</span>
   </div>
 );
 
-function NotReady() {
-  return <BoxMessage>준비 중입니다.</BoxMessage>;
-}
-
-// 오른쪽 영역의 「관리」. 출퇴근 현황은 아직 링크를 걸지 않는다 — 화면이 없다(메뉴 url #592 결정 /attendance-records).
-// TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이, 근무스케줄은 화면(#202)과 메뉴 url(MN000010 /work-schedules)이, 급여명세서는 화면과
-// 메뉴 url(MN000009 /payslips)이 있어 걸었다 — 근무스케줄은 그 직원의 근무지 · 칸이 보던 주로 연다.
+// 오른쪽 영역의 「관리」. TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이, 근무스케줄은 화면(#202)과 메뉴 url(MN000010 /work-schedules)이, 급여명세서는 화면과
+// 메뉴 url(MN000009 /payslips)이, 출퇴근 현황은 화면과 메뉴 url(MN000025 /attendance-records)이 있어 걸었다 — 근무스케줄 · 출퇴근 현황은 그 직원의 근무지 · 칸이 보던 주로 연다.
 
 // 가입 상태 한글(이메일 칸, WHALEERP-180). 받지 못해도 상세는 그린다 — 이메일 칸만 「-」가 되고 원인은 서버 로그에 남긴다.
 async function loadJoinStateLabels(): Promise<EnumValue[]> {
@@ -145,7 +140,7 @@ export default async function StaffMemberDetailPage({
       value: (
         <span className="inline-flex items-center gap-[6px]">
           <CellView cell={joinCell(staff, today)} />
-          {staff.contract && canResendInvitation(staff) && <ResendInvitationButton contractId={staff.contract.contractId} name={staff.name} />}
+          {staff.contract && canResendInvitation(staff) && <ResendInvitationButton contractId={staff.contract.contractId} name={staff.name} status={staff.contract.status} lastSentAt={staff.contract.lastSentAt} />}
         </span>
       ),
     },
@@ -207,9 +202,20 @@ export default async function StaffMemberDetailPage({
                       <ScheduleBox staffMemberId={staffMemberId} weekStart={monday} />
                     </LoadGroupArea>
                   </Box>
-                  {/* 출퇴근 현황 api 는 아직 없다(api #183 「하지 않은 것」) */}
-                  <Box title="출퇴근 현황">
-                    <NotReady />
+                  {/* 출퇴근 현황은 근무스케줄과 같은 주를 따라간다 — 주 넘김이 monday 를 바꾸면 이 영역도 key 로 다시 기다린다 */}
+                  <Box
+                    title="출퇴근 현황"
+                    manage={
+                      <MenuManageLink
+                        menuCode={MENU_CODE.attendanceRecords}
+                        menuName="출·퇴근 현황 조회"
+                        href={attendanceManageHref(staffMemberId, staff.store.storeId, monday, today)}
+                      />
+                    }
+                  >
+                    <LoadGroupArea key={monday} fallback={AREA_PENDING}>
+                      <AttendanceBox staffMemberId={staffMemberId} weekStart={monday} />
+                    </LoadGroupArea>
                   </Box>
                   <Box title="급여명세서" manage={<MenuManageLink menuCode={MENU_CODE.payslips} menuName="급여명세서 관리" href="/payslips" />}>
                     <LoadGroupArea fallback={AREA_PENDING}>

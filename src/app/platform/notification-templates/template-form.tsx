@@ -111,7 +111,7 @@ function Preview({ channel, title, body, button }: { channel: Channel | ""; titl
               </span>
             )}
           </div>
-          <div className="border-t border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[12px] text-erp-muted">WHALE ERP 운영 알림 · 이 메일은 발신 전용입니다</div>
+          <div className="border-t border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[12px] text-erp-muted">WHALE ERP 운영 알림 · 이 메일은 발신 전용입니다.</div>
         </div>
       </>
     );
@@ -441,7 +441,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
                 />
               </Box>
               {saved && (
-                <Box title="변경 이력" pad={false}>
+                <Box title="변경이력" pad={false}>
                   <DataTable
                     columns={[
                       { header: "일시", width: "w-[120px]", cell: (h) => <span className="font-mono text-erp-muted">{formatAt(h.changedAt)}</span> },
@@ -450,7 +450,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
                     ]}
                     rows={saved.histories}
                     rowKey={(h) => `${h.changedAt}-${h.summary}`}
-                    empty="변경 이력이 없습니다."
+                    empty="변경이력이 없습니다."
                   />
                 </Box>
               )}
@@ -470,7 +470,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
         onConfirm={handleRestore}
         onCancel={() => setDialog(null)}
       >
-        제목 · 본문 · 변수 목록이 처음 배포된 것으로 바뀝니다. 되돌린 것도 변경 이력에 남습니다.
+        제목 · 본문 · 변수 목록이 처음 배포된 것으로 바뀝니다. 되돌린 것도 변경이력에 남습니다.
         {saved?.channel === "ALIMTALK" && " 카카오 템플릿 코드는 바뀌지 않으니, 검수받은 본문과 맞는지 확인해 주세요."}
       </ConfirmDialog>
     </>

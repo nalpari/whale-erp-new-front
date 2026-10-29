@@ -130,7 +130,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
         ["2025-08-20 11:00", "정하윤", "점포상태", "미운영", "운영"],
         ["2025-08-12 17:48", "정하윤", "상호명", "모리커피", "모리커피 연남"],
       ],
-      "변경 이력이 없습니다.",
+      "변경이력이 없습니다.",
     )}</div>` + `<div class="pt-[12px]">${ui.pagination(A, 1, 2)}</div>`;
 
   // 운영 점포의 상태 변경: 갈 수 있는 곳은 폐점뿐이고, 기본 상태는 폐점 조건을 못 채운 경우다.
@@ -139,7 +139,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
     statusId,
     "상태 변경",
     `<p>현재 상태 ${ui.badge("on", "운영")}</p>` +
-      `<div class="mt-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">폐점 조건</p><ul class="mt-[6px] list-disc pl-[18px]"><li>진행 중인 근로계약 <b class="font-semibold">6건</b> — 정리해야 할 근로계약이 있습니다</li></ul></div>`,
+      `<div class="mt-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">폐점 조건</p><ul class="mt-[6px] list-disc pl-[18px]"><li>진행 중인 근로계약 <b class="font-semibold">6건</b> — 정리해야 할 근로계약이 있습니다.</li></ul></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + f.disabledButton("폐점으로 변경", "폐점 조건을 채우지 못했습니다.", "primary"),
   );
 

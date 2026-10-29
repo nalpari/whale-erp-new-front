@@ -242,7 +242,7 @@ export function StoreDetailActions({
                 <ul className="mt-[6px] list-disc pl-[18px]">
                   <li className={transitions.inProgressContractCount ? "text-erp-off" : undefined}>
                     진행 중인 근로계약 <b className="font-semibold">{transitions.inProgressContractCount.toLocaleString("ko-KR")}건</b>
-                    {transitions.inProgressContractCount ? " — 정리해야 할 근로계약이 있습니다" : ""}
+                    {transitions.inProgressContractCount ? " — 정리해야 할 근로계약이 있습니다." : ""}
                   </li>
                 </ul>
               </div>

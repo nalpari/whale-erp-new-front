@@ -2,12 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, useToast, type DetailRow } from "@/components/common";
+import { Badge, Blocked, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, useToast, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
 import { FailedBand, InfoBand, SuccessBand, WarnBand } from "@/components/site/side-parts";
-import { Blocked, WhoList } from "@/app/platform-admins/admin-parts";
+import { WhoList } from "@/app/platform-admins/admin-parts";
 import { HistoryButton } from "@/app/platform-admins/history-dialog";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
 import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
@@ -134,7 +134,7 @@ function DetailBody({
       value: admin.accountStatus === "INACTIVE" || !showReset ? muted("-") : (
         <span className="flex items-center gap-[10px]">
           {showReset && (
-            <Blocked reason={resetBlocked ? "본인 비밀번호는 내 정보에서 바꿉니다" : undefined}>
+            <Blocked reason={resetBlocked ? "본인 비밀번호는 내 정보에서 바꿉니다." : undefined}>
               <Button variant="soft" onClick={() => setConfirmOpen(true)} disabled={resetBlocked || busy}>
                 초기화
               </Button>
@@ -186,15 +186,15 @@ function DetailBody({
           보냈고 첫 로그인 전이거나 이 상세에서 방금 초기화했으면 하늘색 상자. 초기화 비밀번호는 1시간만 유효하다(api) */}
       {/* 방금 한 동작의 실패는 머리 바로 아래, 다른 안내 상자보다 위에(2026-10-28 사용자 지정) */}
       {failure && <FailedBand message={failure} />}
-      {admin.accountStatus === "ACTIVE" && admin.isInitialPasswordUnsent && <WarnBand>{`초기화 비밀번호가 발송되지 않았습니다.${canReset ? "\n비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요." : ""}`}</WarnBand>}
+      {admin.accountStatus === "ACTIVE" && admin.isInitialPasswordUnsent && <WarnBand>{`초기화 비밀번호가 발송되지 않았습니다.${canReset ? "\n비밀번호 [초기화] 버튼을 눌러 다시 발송해 주세요." : ""}`}</WarnBand>}
       {admin.accountStatus === "ACTIVE" && !admin.isInitialPasswordUnsent && (resetSent || (!admin.lastLoginAt && !admin.statusChangedAt)) && (
-        <SuccessBand>{`초기화 비밀번호를 발송했습니다.${canReset ? "\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해주세요." : ""}`}</SuccessBand>
+        <SuccessBand>{`초기화 비밀번호를 발송했습니다.${canReset ? "\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해 주세요." : ""}`}</SuccessBand>
       )}
       {/* 버튼을 숨기거나 막은 이유(목업 admins-detail). 연결 가맹 마스터가 아닌 사람이 보는 가맹 관리자 문구는 2026-10-27 사용자 지정 */}
       {admin.actions.isSelf ? (
         admin.roleTypeCode === "FA" ? (
           <InfoBand>
-            <p>내 계정입니다 — 조회만 합니다</p>
+            <p>내 계정입니다 — 조회만 합니다.</p>
             <p className="font-normal text-erp-label">
               가맹 관리자는 계정을 수정하지 않습니다. 계정 정보 · 권한명 · 점포 · 계정상태는 연결된 가맹 마스터가 바꾸고, 비밀번호는 내 정보에서 직접 바꿉니다.
             </p>
@@ -203,7 +203,7 @@ function DetailBody({
           // 수정 화면을 설명하는 띠라 [수정]이 보일 때만(메뉴 수정 권한 + api canUpdate)
           canUpdate && (
             <InfoBand>
-              <p>내 계정입니다</p>
+              <p>내 계정입니다.</p>
               <p className="font-normal text-erp-label">
                 수정 화면에서는 기본정보(이름 · 연락처 · 이메일)만 바뀝니다. 권한명 · 계정상태 · 대상점포는 BP 마스터 · BP 관리자 · 플랫폼 사용자가,
                 비밀번호는 내 정보에서 직접 바꿉니다.

@@ -5,6 +5,7 @@ import { RoleDeleteDialog } from "@/components/role-groups/role-delete-dialog";
 import { RoleForm } from "@/components/role-groups/role-form";
 import { actorOf, CARD, FailedBand, reasonLabel, WarnBand } from "@/components/role-groups/role-parts";
 import { CodeLabel } from "@/components/site/code-label";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { BpRoleGroupDetail, BpRoleType } from "@/lib/bp-role-groups";
@@ -39,11 +40,21 @@ export function BpRoleSide({
   const actions = useBpActions();
   const can = usePagePermission();
   const role = !creating && detail && "role" in detail ? detail.role : null;
+  // 탈퇴 · 미사용 BP 에는 등록하지 않는다 — 점포 등록과 같다(플랫폼 계정만 본다, 2026-10-29 사용자 지정). 확인하지 못하면(null) 막지 않는다
+  const bpStatus = useCurrentBpStatus();
+  const bpBlocked = bpStatus !== null && bpStatus !== "ACTIVE";
   return (
     <section className={`${CARD} w-[464px] shrink-0`} aria-label={creating ? "권한 등록" : "권한 그룹 상세"}>
       {creating && createTypeCode ? (
         // 제목(「권한 등록」)은 양식이 단다
-        <RoleForm mode="create" actions={actions.form} createTypeCode={createTypeCode} onCancel={onCancelCreate} onDone={onCreated} />
+        <RoleForm
+          mode="create"
+          actions={actions.form}
+          createTypeCode={createTypeCode}
+          onCancel={onCancelCreate}
+          onDone={onCreated}
+          blockedNotice={bpBlocked ? "BP가 탈퇴 또는 미사용 상태로, 권한그룹을 등록할 수 없습니다." : undefined}
+        />
       ) : role ? (
         <RoleView role={role} lockReasons={lockReasons} onDeleted={onDeleted} />
       ) : (
@@ -173,7 +184,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
                   ? "선택한 권한그룹에 대한 수정 권한이 없습니다."
                   : role.editBlockedReason === "FIXED_ROLE"
                     ? "시스템이 제공하는 기본권한 그룹은 수정할 수 없습니다."
-                    : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다")}
+                    : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다.")}
           </WarnBand>
         )}
         {/* 수정할 수 없으면 권한명 · 설명과 같은 표 하나에 */}

@@ -6,7 +6,7 @@ import { useCodeLabel } from "@/components/site/code-label";
 import { useAccount, useMenus, useMyPageOpen } from "@/components/site/session-gate";
 import { firstMenuUrl } from "@/lib/menus";
 
-// 접근할 플랫폼 메뉴가 하나도 없는 플랫폼 계정의 권한 요청 안내(S-XJDKSI — 메뉴 없는 계정도 로그인되고 안내와 MY PAGE 만 보인다).
+// 접근할 플랫폼 메뉴가 하나도 없는 플랫폼 계정의 권한 요청 안내(S-XJDKSI — 메뉴 없는 계정도 로그인되고 안내와 마이페이지만 보인다).
 // 메뉴가 있는데 여기 있으면 비밀번호 강제 변경 팝업이 떠 있는 동안이다 — 안내를 그리지 않는다(SessionGate 가 바꾼 뒤 첫 메뉴로 보낸다).
 // 관리자에게 권한을 요청할 때 계정을 알려 줄 수 있게 아이디 · 권한 유형을 함께 보인다.
 export function NoMenuNotice() {
@@ -26,7 +26,7 @@ export function NoMenuNotice() {
       </span>
       <div className="flex flex-col gap-[10px]">
         <h2 id="no-menu-title" className="text-[18px] font-semibold text-erp-ink">
-          접근할 수 있는 메뉴가 없습니다
+          접근할 수 있는 메뉴가 없습니다.
         </h2>
         {/* 한 줄로 둔다(사용자 지정, 2026-10-28) — 계정 정보 상자 폭(420px)보다 넓어 가운데로 양쪽에 넘친다. */}
         <p className="text-[14px] leading-[1.6] whitespace-nowrap text-erp-label">

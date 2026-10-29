@@ -1,4 +1,4 @@
-// 내 정보(MY PAGE) 데이터 접근 — manyfast F-AMTDCK > S-JXKHCM 「내 기본정보 조회 및 수정」.
+// 내 정보(마이페이지) 데이터 접근 — manyfast F-AMTDCK > S-JXKHCM 「내 기본정보 조회 및 수정」.
 // api(whale-erp-api auth/admin-auth.controller.ts)에 경로가 있지만 아직 openapi.json 에 실리지 않아
 // 타입을 손으로 적었다(api가 openapi:export 에 포함하면 api-types.generated.ts 로 바꾼다).
 // GET /auth/admin/login-info 에는 연락처 · 가입일 · 최근 로그인 일시가 없어 이 기능은 새 경로를 쓴다.

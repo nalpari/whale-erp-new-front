@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-28T01:08:20Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-29T03:48:54Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -17,7 +17,7 @@ sources:
   - id: payslip-list-page
     resource: ../../src/app/payslips/page.tsx
     title: 목록 화면 — 상태 필터 · 달 이동 · 상태 건수 · 건수 선택 · 목록
-    last_modified: 2026-10-27T09:10:13Z
+    last_modified: 2026-10-29T01:21:21Z
   - id: payslip-list-query
     resource: ../../src/app/payslips/payslip-list-query.ts
     title: 목록 URL ↔ 조회 조건(달은 늘 싣는다, 기본 건수 20 은 뺀다)
@@ -29,7 +29,7 @@ sources:
   - id: payslip-draft-dialog
     resource: ../../src/app/payslips/payslip-draft-dialog.tsx
     title: 급여명세서 작성 팝업 — 점포 · 이름 좁히기 · 직원 고르기 · 작성 · 일괄 작성(칸 문구 payslip-draft.ts, server action actions.ts)
-    last_modified: 2026-10-19T14:00:00Z
+    last_modified: 2026-10-29T01:21:21Z
   - id: payslip-detail-page
     resource: ../../src/app/payslips/[payslipId]/page.tsx
     title: 검토 화면 — 오른쪽 단(검토 사유 · 참조한 것 · 처리 이력 · 발송 이력)
@@ -41,7 +41,7 @@ sources:
   - id: payslip-review
     resource: ../../src/app/payslips/[payslipId]/payslip-review.tsx
     title: 검토 화면 — 머리 버튼 · 지급 내역 · 확인창
-    last_modified: 2026-10-27T09:23:13Z
+    last_modified: 2026-10-29T01:33:43Z
 ---
 
 # api 로 그린다
@@ -116,7 +116,7 @@ page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치
 같은 규칙이고, 결과를 모르면 목록을 다시 받는다 — 오류 화면으로 가지 않아 입력하던 값이 남는다.
 
 * **임시저장**(`PUT /payslips/:id`) — 줄마다 급여 항목 id 와 금액(빈 칸 null — 0 과 다르다), 가산 · 3.3% 스위치, 상세의 `updatedAt`.
-  숫자가 아닌 칸이 있으면 보내지 않고 그 이름을 알린다. 상태는 그대로다. 3.3% 는 파트타이머만 보낸다.
+  금액 칸은 숫자와 쉼표만 받는다(화면 설계 공통 기준 1번 · WHALEERP-633) — 붙여 넣은 「원」 · 「₩」 · 공백은 떼고, 그 밖의 글자(소수점 · 빼기 등)가 섞인 입력은 통째로 받지 않는다(글자만 지우면 다른 금액이 된다). 그래도 숫자가 아닌 칸이 있으면 보내지 않고 그 이름을 알린다. 상태는 그대로다. 3.3% 는 파트타이머만 보낸다.
 * **항목 추가** — `GET /payslips/additional-items`(추가 공제) 중 아직 붙지 않은 것을 골라 빈 칸 한 줄을 붙인다. 붙인 추가 공제는
   「빼기」로 뗀다. 둘 다 임시저장해야 남는다(api 는 실은 추가 공제가 곧 붙은 목록이다).
 * **지난 명세서에서 불러오기**(`GET /payslips/:id/previous-values`) — 같은 직원의 지난 명세서의 공제와 직접 넣는 지급 값을 칸에 채운다
@@ -130,7 +130,7 @@ page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치
 * **발송**(`POST /payslips/:id/send`, 확정일 때) · **재발송**(`POST /payslips/:id/resend`, 발송 완료일 때) — 머리 버튼, 확인창을 거친다.
   직원 앱 계정 이메일로 간다. 메일 설정 없음 · 계정 없음 · 메일 실패 등은 api 문장을 확인창에 보인다(실패하면 확정 그대로).
 * 위쪽 경고 띠(`reviewBand`)는 이미 확인한 검토 사유(`acknowledgedAt` — 확정 때 확인됨)를 세우지 않는다.
-* 3.3% 원천징수 칸 도움말은 「비과세를 포함한 지급 총액 N원에 매긴다」로 기준 금액을 보인다 — 금액은 관리자가 넣는다(PAY-03).
+* 3.3% 원천징수 칸 도움말은 「비과세를 포함한 지급 총액 N원에 매긴다.」로 기준 금액을 보인다 — 금액은 관리자가 넣는다(PAY-03).
 * **출퇴근으로 다시 계산**(`POST /payslips/:id/recalculate`, 작성 중 · 검토 중) — 확인창을 거쳐 기본급 · 주휴수당 · 연장수당을 지금
   출퇴근 기록으로 다시 채운다. 세 칸에서 고친 값과 임시저장하지 않은 변경은 사라진다(확인창이 알린다). 계산은 api 가 한다(WHALEERP-227,
   api okf 「지급 항목 계산」). 가산 스위치는 칸을 건드리지 않는다 — 임시저장 때 api 가 그 값으로 다시 계산하고, 고치지 않은 칸은
@@ -143,7 +143,7 @@ page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치
 
 # 급여명세서 작성 (WHALEERP-226)
 
-목록의 「급여명세서 작성」(MN000009 등록 권한일 때만 보임)은 화면을 옮기지 않고 **목록 위 팝업**(720px, 데모 `staff-sections.mjs`
+화면명 오른쪽의 「급여명세서 작성」(기본 버튼, 근로계약 관리 「계약서 작성」과 같은 자리 · WHALEERP-632, MN000009 등록 권한일 때만 보임)은 화면을 옮기지 않고 **목록 위 팝업**(720px, 데모 `staff-sections.mjs`
 `pickId`)을 연다. 달은 목록의 달이다. **미리 고른 직원은 없다**(데모처럼 특정 직원 명세서로 바로 가지 않는다). 따로 있던
 `/payslips/new` 화면은 지웠다.
 

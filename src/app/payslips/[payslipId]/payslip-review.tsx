@@ -70,7 +70,12 @@ function AmountField({
           placeholder={readOnly ? undefined : "직접 입력"}
           readOnly={readOnly}
           aria-invalid={invalid || undefined}
-          onChange={(e) => onChange(e.target.value)}
+          // 숫자와 쉼표만 받는다(화면 설계 공통 기준 1번 — 저장 때 칸 오류가 생기지 않게, WHALEERP-633). 붙여 넣은 「원」 · 「₩」 · 공백은 떼고, 그 밖의
+          // 글자가 섞인 입력은 통째로 받지 않는다 — 글자만 지우면 「1,000.50」이 「100050」처럼 다른 금액이 된다
+          onChange={(e) => {
+            const text = e.target.value.replace(/[\s원₩]/g, "");
+            if (/^[\d,]*$/.test(text)) onChange(text);
+          }}
           // 다 친 뒤에 쉼표를 넣는다 — 치는 중에 넣으면 커서가 끝으로 튄다
           onBlur={(e) => {
             const amount = parseAmount(e.target.value);
@@ -189,7 +194,7 @@ export function PayslipReview({
   );
   const earnings = shown.filter((i) => i.itemCategory === "EARNING");
   const deductionHelp = (item: PayslipItem) =>
-    item.itemCategory === "WITHHOLDING" ? `3.3% 원천징수 · 비과세를 포함한 지급 총액 ${formatAmount(totals.gross)}원에 매긴다` : "직접 입력";
+    item.itemCategory === "WITHHOLDING" ? `3.3% 원천징수 · 비과세를 포함한 지급 총액 ${formatAmount(totals.gross)}원에 매긴다.` : "직접 입력";
 
   // 끄면 연장수당을 가산 없이 1배로 계산한다(PAY-05). 금액은 임시저장 때 api 가 그 값으로 다시 계산한다 — 칸을 고치지 않았으면 새 계산값을 따르고,
   // 앞서 직접 고쳐 둔 연장수당은 그대로 두고 계산값만 바꾼다(PR #159 리뷰). 저장하기 전에는 칸이 저장된 가산 값의 금액이라, 도움말도 저장된 값으로
@@ -390,7 +395,7 @@ export function PayslipReview({
           {totals.blankDeductions > 0 && (
             <Band
               risk
-              title={`공제 ${totals.blankDeductions}칸이 아직 비어 있습니다`}
+              title={`공제 ${totals.blankDeductions}칸이 아직 비어 있습니다.`}
               desc={`${totals.deduction === 0 ? "지금 실지급액은 지급 총액과 같습니다. " : ""}기본 공제나 붙인 추가 공제가 비어 있으면 확정할 수 없습니다. 공제 대상이 아닌 항목에는 0 을 넣으세요.`}
             />
           )}

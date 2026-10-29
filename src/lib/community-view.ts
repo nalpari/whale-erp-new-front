@@ -34,7 +34,7 @@ export const BODY_MAX = 20_000;
 /** 세션이 끊겼을 때 폼 위 띠 문구. 화면을 옮기지 않아 고치던 내용은 남는다. */
 export const SESSION_EXPIRED = "로그인이 만료되었습니다. 고친 내용을 옮겨 둔 뒤 다시 로그인해 주세요.";
 /** api 403 중 비밀번호 강제 변경(bff.ts 와 같은 문장 앞부분). 권한 없음과 갈라 api 문장을 그대로 보이고 변경 팝업을 띄운다. */
-export const PASSWORD_REQUIRED_PREFIX = "비밀번호를 변경한 뒤 이용할 수 있습니다";
+export const PASSWORD_REQUIRED_PREFIX = "서비스 이용을 위해 비밀번호를 변경해 주세요.";
 
 /**
  * 게시물 id — 1..2147483647 정수(api parseRouteId 와 같다). 서버 액션 · 라우트 핸들러 · 화면 주소가 api 경로에 붙이기 전에 본다 —
@@ -121,20 +121,20 @@ export type NewFile = { name: string; size: number };
 export function validatePost(f: PostForm, status: PostStatus, kept: number, files: readonly NewFile[]): string[] {
   const errors: string[] = [];
   const notice = f.kind === "NOTICE";
-  if (!f.title.trim()) errors.push("제목을 입력해 주세요");
-  else if (f.title.length > TITLE_MAX) errors.push(`제목은 ${TITLE_MAX}자까지 쓸 수 있습니다`);
-  if (!f.body.trim()) errors.push("본문을 입력해 주세요");
-  else if (f.body.length > BODY_MAX) errors.push(`본문은 ${BODY_MAX.toLocaleString("ko-KR")}자까지 쓸 수 있습니다`);
-  if (notice && !f.noticeType) errors.push("공지사항 유형을 골라 주세요");
-  if (!notice && !f.faqCategoryCode) errors.push("FAQ 카테고리를 골라 주세요");
-  if (status === "PUBLISHED" && f.audiences.length === 0) errors.push("게시하려면 노출 대상을 하나 이상 골라 주세요");
+  if (!f.title.trim()) errors.push("제목을 입력해 주세요.");
+  else if (f.title.length > TITLE_MAX) errors.push(`제목은 ${TITLE_MAX}자까지 쓸 수 있습니다.`);
+  if (!f.body.trim()) errors.push("본문을 입력해 주세요.");
+  else if (f.body.length > BODY_MAX) errors.push(`본문은 ${BODY_MAX.toLocaleString("ko-KR")}자까지 쓸 수 있습니다.`);
+  if (notice && !f.noticeType) errors.push("공지사항 유형을 골라 주세요.");
+  if (!notice && !f.faqCategoryCode) errors.push("FAQ 카테고리를 골라 주세요.");
+  if (status === "PUBLISHED" && f.audiences.length === 0) errors.push("게시하려면 노출 대상을 하나 이상 골라 주세요.");
   // YYYY-MM-DD 는 글자 순서가 날짜 순서다.
-  if (notice && f.publishStartDate && f.publishEndDate && f.publishEndDate < f.publishStartDate) errors.push("게시 종료일이 시작일보다 앞설 수 없습니다");
+  if (notice && f.publishStartDate && f.publishEndDate && f.publishEndDate < f.publishStartDate) errors.push("게시 종료일이 시작일보다 앞설 수 없습니다.");
   if (notice) {
-    if (kept + files.length > MAX_ATTACHMENTS) errors.push(`첨부파일은 공지사항 하나에 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다`);
+    if (kept + files.length > MAX_ATTACHMENTS) errors.push(`첨부파일은 공지사항 하나에 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다.`);
     for (const file of files) {
-      if (!FILE_EXT.test(file.name)) errors.push(`${file.name}: JPG · PNG · PDF 만 올릴 수 있습니다`);
-      else if (file.size > MAX_FILE_BYTES) errors.push(`${file.name}: 파일 하나는 10MB 까지 올릴 수 있습니다`);
+      if (!FILE_EXT.test(file.name)) errors.push(`${file.name}: JPG · PNG · PDF 만 올릴 수 있습니다.`);
+      else if (file.size > MAX_FILE_BYTES) errors.push(`${file.name}: 파일 하나는 10MB 까지 올릴 수 있습니다.`);
     }
   }
   return errors;
@@ -216,9 +216,9 @@ export function pickInquiryFiles<F extends NewFile>(had: number, picked: readonl
   const accepted: F[] = [];
   const rejected: string[] = [];
   for (const file of picked) {
-    if (!FILE_EXT.test(file.name)) rejected.push(`${file.name}: 이미지(JPG · PNG)와 PDF 만 올릴 수 있습니다`);
-    else if (file.size > MAX_FILE_BYTES) rejected.push(`${file.name}: 파일 하나는 10MB 까지 올릴 수 있습니다`);
-    else if (had + accepted.length >= MAX_ATTACHMENTS) rejected.push(`${file.name}: 첨부파일은 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다`);
+    if (!FILE_EXT.test(file.name)) rejected.push(`${file.name}: 이미지(JPG · PNG)와 PDF 만 올릴 수 있습니다.`);
+    else if (file.size > MAX_FILE_BYTES) rejected.push(`${file.name}: 파일 하나는 10MB 까지 올릴 수 있습니다.`);
+    else if (had + accepted.length >= MAX_ATTACHMENTS) rejected.push(`${file.name}: 첨부파일은 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다.`);
     else accepted.push(file);
   }
   return { accepted, rejected };

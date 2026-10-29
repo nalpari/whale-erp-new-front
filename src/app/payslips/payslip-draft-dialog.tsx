@@ -145,9 +145,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
 
   return (
     <>
-      <Button variant="soft" onClick={show}>
-        급여명세서 작성
-      </Button>
+      <Button onClick={show}>급여명세서 작성</Button>
       <dialog
         ref={ref}
         aria-labelledby={titleId}

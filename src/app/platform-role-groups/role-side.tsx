@@ -83,7 +83,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
           { label: "설명", value: role.description || muted("-"), multiline: Boolean(role.description) },
         ]),
   ];
-  // 고칠 수 없는 값은 MY PAGE 「계정 정보」와 같은 카드로(2026-10-26 사용자 지정 — 전엔 「기본 정보」 상세 표의 등록일시 · 최종수정일시 두 줄).
+  // 고칠 수 없는 값은 마이페이지 「계정 정보」와 같은 카드로(2026-10-26 사용자 지정 — 전엔 「기본 정보」 상세 표의 등록일시 · 최종수정일시 두 줄).
   // 일시는 굵게, 사람은 회색으로 「일시 · 사람」.
   const whenText = (at: string, actor: Parameters<typeof actorOf>[0]) => `${formatDateTime(at)} · ${actorOf(actor)}`;
   const when = (at: string, actor: Parameters<typeof actorOf>[0]) => (
@@ -143,7 +143,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
         actions={DELETE_ACTIONS}
         // 두 줄로 보인다(줄바꿈은 확인창이 살린다) — 2026-10-26 사용자 지정
         noCandidateText={"대체 권한이 없어 삭제할 수 없습니다.\n플랫폼관리자 권한을 추가한 후 다시 시도해 주세요."}
-        blockedReason={role.deleteBlockedReason && reasonLabel(lockReasons, role.deleteBlockedReason, "지울 수 없는 권한입니다")} onDeleted={onDeleted} />
+        blockedReason={role.deleteBlockedReason && reasonLabel(lockReasons, role.deleteBlockedReason, "지울 수 없는 권한입니다.")} onDeleted={onDeleted} />
     ) : null;
 
   if (!editable)
@@ -162,7 +162,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
                 ? "선택한 권한그룹에 대한 수정 권한이 없습니다."
                 : role.editBlockedReason === "FIXED_ROLE"
                   ? "시스템이 제공하는 기본권한 그룹은 수정할 수 없습니다."
-                  : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한입니다")}
+                  : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한입니다.")}
           </WarnBand>
         )}
         {rows.length > 0 && <DetailTable rows={rows} />}

@@ -1,7 +1,10 @@
 // node --test "src/app/contracts/[contractId]/worker/worker-model.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isWorkerEditable, workerBody, workerOf, workerProblems, workerSaveNote } from "./worker-model.ts";
+import { isWorkerEditable, workerBody, workerOf, workerProblemsByField, workerSaveNote, type WorkerForm } from "./worker-model.ts";
+
+/** 문장만, 화면 위에서 아래 순서로 */
+const workerProblems = (f: WorkerForm) => Object.values(workerProblemsByField(f));
 
 const filled = { name: " 남도현 ", phone: "010-9014-5563", birthDate: "1998-07-12", gender: "MALE" as const, isForeigner: false };
 
@@ -23,10 +26,10 @@ test("상세 값으로 폼을 채운다 — 번호는 하이픈, 비어 있는 �
 test("다섯 칸 모두 필수 — 성별 · 생년월일이 없으면 막는다", () => {
   assert.deepEqual(workerProblems(filled), []);
   assert.deepEqual(workerProblems({ ...filled, name: " ", phone: "010", birthDate: "", gender: "" }), [
-    "이름을 입력하세요",
-    "휴대전화번호는 숫자 10~11자리입니다",
-    "생년월일을 입력하세요",
-    "성별을 고르세요",
+    "이름을 입력하세요.",
+    "휴대전화번호는 숫자 10~11자리입니다.",
+    "생년월일을 입력하세요.",
+    "성별을 고르세요.",
   ]);
 });
 
@@ -43,4 +46,12 @@ test("저장 뒤 상태 안내 — 서명 기한 30일 · 가입 초대 대상�
   }
   assert.match(workerSaveNote("CORRECTION_REQUESTED"), /서명 대기로/);
   assert.match(workerSaveNote("PENDING_SEND"), /계정이 있는 번호로 고치면 보내지 않고/);
+});
+
+test("오류는 칸마다 — 화면이 그 칸 아래에 보인다(WHALEERP-631)", () => {
+  assert.deepEqual(workerProblemsByField(filled), {});
+  assert.deepEqual(workerProblemsByField({ ...filled, phone: "010", gender: "" }), {
+    phone: "휴대전화번호는 숫자 10~11자리입니다.",
+    gender: "성별을 고르세요.",
+  });
 });

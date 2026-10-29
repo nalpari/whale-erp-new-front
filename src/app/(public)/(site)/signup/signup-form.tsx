@@ -389,7 +389,7 @@ export function SignupForm({ loggedInHomeHref }: { loggedInHomeHref?: string }) 
                 />
               </span>
               {errors.loginId ? null : available.loginId ? (
-                <span className="-mt-[2px] flex items-center gap-[4px] text-[14px] leading-[1.5] text-[#5e8ce9]">{CHECK_CIRCLE} 사용가능합니다.</span>
+                <span className="-mt-[2px] flex items-center gap-[4px] text-[14px] leading-[1.5] text-[#5e8ce9]">{CHECK_CIRCLE} 사용 가능합니다.</span>
               ) : loginIdCheck !== "idle" ? (
                 // 확인 중 · 확인 실패는 막는 오류가 아니라 사용가능 줄과 같은 자리 · 크기에 이 화면의 보조 글자색(#767676)으로 둔다
                 <span className="-mt-[2px] text-[14px] leading-[1.5] text-[#767676]">{LOGIN_ID_CHECK_TEXT[loginIdCheck]}</span>
@@ -451,7 +451,7 @@ export function SignupForm({ loggedInHomeHref }: { loggedInHomeHref?: string }) 
                 />
               </span>
               {errors.email ? null : available.email ? (
-                <span className="-mt-[2px] flex items-center gap-[4px] text-[14px] leading-[1.5] text-[#5e8ce9]">{CHECK_CIRCLE} 사용가능합니다.</span>
+                <span className="-mt-[2px] flex items-center gap-[4px] text-[14px] leading-[1.5] text-[#5e8ce9]">{CHECK_CIRCLE} 사용 가능합니다.</span>
               ) : emailCheck !== "idle" ? (
                 // 아이디와 같은 자리 · 크기 · 보조 글자색(#767676)
                 <span className="-mt-[2px] text-[14px] leading-[1.5] text-[#767676]">{EMAIL_CHECK_TEXT[emailCheck]}</span>

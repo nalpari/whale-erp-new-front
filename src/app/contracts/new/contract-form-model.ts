@@ -258,7 +258,7 @@ export function renewalFromDetail(d: ContractDetail, now = new Date()): Contract
 }
 
 /** 재계약 시작일 안내 — api 400 과 같은 문장 */
-export const renewalStartProblem = (previousStartDate: string) => `재계약 시작일은 직전 계약 시작일(${previousStartDate}) 다음 날부터입니다`;
+export const renewalStartProblem = (previousStartDate: string) => `재계약 시작일은 직전 계약 시작일(${previousStartDate}) 다음 날부터입니다.`;
 
 const nextDay = (iso: string) => {
   const t = new Date(`${iso}T00:00:00Z`);
@@ -456,12 +456,13 @@ export const probationTermOk = (f: Pick<ContractForm, "startDate" | "endDate">) 
 export const DAY_KO: Record<Weekday, string> = { MON: "월", TUE: "화", WED: "수", THU: "목", FRI: "금", SAT: "토", SUN: "일" };
 
 /** 근무시간 · 휴게시간 한 벌의 문제. who 는 「월요일 」처럼 요일을 앞에 붙일 때 */
-function timeProblems(t: DayTimes, who = ""): string[] {
-  const out: string[] = [];
-  if (minutes(t.work.end) <= minutes(t.work.start)) out.push(`${who}근무시간은 끝이 시작보다 뒤여야 합니다`);
+function timeProblems(t: DayTimes, who = ""): { work: string[]; rest: string[] } {
+  const work: string[] = [];
+  const rest: string[] = [];
+  if (minutes(t.work.end) <= minutes(t.work.start)) work.push(`${who}근무시간은 끝이 시작보다 뒤여야 합니다.`);
   if (!(minutes(t.rest.start) >= minutes(t.work.start) && minutes(t.rest.end) > minutes(t.rest.start) && minutes(t.rest.end) <= minutes(t.work.end)))
-    out.push(`${who}휴게시간은 근무시간 안이어야 합니다`);
-  return out;
+    rest.push(`${who}휴게시간은 근무시간 안이어야 합니다.`);
+  return { work, rest };
 }
 
 /** on 날짜에 만 몇 살인지. 생일 당일에 한 살 는다. api ageOn 과 같다 */
@@ -476,54 +477,86 @@ export const isMinor = (f: Pick<ContractForm, "birthDate" | "startDate">) =>
   Boolean(f.birthDate && f.startDate) && ageOn(f.birthDate, f.startDate) < 19;
 
 /**
- * 저장 전에 화면이 먼저 막는 것. api 도 같은 것을 다시 본다.
+ * 오류를 보일 입력 칸 — 저장 때 찾은 유효성 오류는 그 칸 바로 아래에 보인다(WHALEERP-631, 2026-10-29 재영 공지 1번).
+ * schedule 은 요일별 소정근로시간 표, hours 는 급여항목 표(월 근로시간), allowances 는 비과세 항목 표다.
+ */
+export type ProblemField =
+  | "name" | "phone" | "birthDate" | "gender" | "storeId" | "jobTitle" | "employmentFile" | "startDate" | "endDate"
+  | "days" | "work" | "rest" | "schedule" | "wage" | "allowances" | "hours" | "weeklyHoliday" | "payDay"
+  | "probationMonths" | "probationRate" | "probationWage";
+export type Problem = { field: ProblemField; message: string };
+
+/**
+ * 저장 전에 화면이 먼저 막는 것을 칸과 함께. api 도 같은 것을 다시 본다. 순서는 화면 위에서 아래로다.
  * 임시저장은 직원 칸(이름 · 번호 · 직무)과 근무지만 필수이고, 비운 칸은 묻지 않되 넣은 값은 똑같이 본다.
  */
-export function problems(f: ContractForm, temporary = false, hasEmploymentFile = false, previousStartDate?: string): string[] {
-  const out: string[] = [];
-  const need = (empty: boolean, message: string) => {
-    if (empty && !temporary) out.push(message);
+export function fieldProblems(f: ContractForm, temporary = false, hasEmploymentFile = false, previousStartDate?: string): Problem[] {
+  const out: Problem[] = [];
+  const add = (field: ProblemField, message: string) => out.push({ field, message });
+  const need = (field: ProblemField, empty: boolean, message: string) => {
+    if (empty && !temporary) add(field, message);
   };
-  if (!f.name.trim()) out.push("이름을 입력하세요");
-  if (!/^[0-9]{10,11}$/.test(digits(f.phone))) out.push("휴대전화번호는 숫자 10~11자리입니다");
-  need(!f.birthDate, "생년월일을 입력하세요");
-  need(!f.gender, "성별을 고르세요");
-  if (!f.storeId) out.push("소속 근무지를 고르세요");
-  if (!f.jobTitle.trim()) out.push("직무를 입력하세요");
-  need(!f.startDate, "계약 시작일을 입력하세요");
-  if (f.startDate && f.endDate && f.endDate < f.startDate) out.push("계약 종료일은 시작일보다 앞설 수 없습니다");
+  if (!f.name.trim()) add("name", "이름을 입력하세요.");
+  if (!/^[0-9]{10,11}$/.test(digits(f.phone))) add("phone", "휴대전화번호는 숫자 10~11자리입니다.");
+  need("birthDate", !f.birthDate, "생년월일을 입력하세요.");
+  if (isMinor(f)) add("birthDate", "만 19세 미만 직원은 등록할 수 없습니다.");
+  need("gender", !f.gender, "성별을 고르세요.");
+  if (!f.storeId) add("storeId", "소속 근무지를 고르세요.");
+  if (!f.jobTitle.trim()) add("jobTitle", "직무를 입력하세요.");
+  // 종이 계약 등록은 당사자가 모두 날인한 근로계약서가 있어야 한다(CTR-23). 임시저장은 파일 없이 둔다
+  if (f.contractMethod === "PAPER" && !temporary && !hasEmploymentFile) add("employmentFile", "당사자가 모두 날인한 근로계약서 파일을 올려 주세요.");
+  need("startDate", !f.startDate, "계약 시작일을 입력하세요.");
   // 재계약은 직전 계약 시작일 다음 날부터 — 그 뒤로는 직전 계약과 겹쳐도 된다(WHALEERP-156, 2026-10-26 김민식 · 재영 확인)
-  if (previousStartDate && f.startDate && f.startDate <= previousStartDate) out.push(renewalStartProblem(previousStartDate));
-  if (digits(f.wage) ? !(Number(digits(f.wage)) > 0) : !temporary) out.push("시급을 입력하세요"); // 고용 형태와 상관없이 시급(2026-10-12 재영)
-  need(f.days.length === 0, "근무요일을 하나 이상 고르세요");
-  out.push(...timeProblems(f));
+  if (previousStartDate && f.startDate && f.startDate <= previousStartDate) add("startDate", renewalStartProblem(previousStartDate));
+  if (f.startDate && f.endDate && f.endDate < f.startDate) add("endDate", "계약 종료일은 시작일보다 앞설 수 없습니다.");
+  need("days", f.days.length === 0, "근무요일을 하나 이상 고르세요.");
+  const top = timeProblems(f);
+  top.work.forEach((m) => add("work", m));
+  top.rest.forEach((m) => add("rest", m));
   // 파트타이머가 표에서 고친 요일은 그 요일 시간도 본다
   if (f.employmentType === "PART_TIME")
     for (const d of WEEKDAYS) {
       const t = f.dayTimes[d];
-      if (t && f.days.includes(d)) out.push(...timeProblems(t, `${DAY_KO[d]}요일 `));
+      if (!t || !f.days.includes(d)) continue;
+      const day = timeProblems(t, `${DAY_KO[d]}요일 `);
+      [...day.work, ...day.rest].forEach((m) => add("schedule", m));
     }
-  need(weeklyHolidayOf(f) === "NO_DAY_OFF", "주 15시간 이상이면 근무하지 않는 요일이 있어야 주휴일을 정할 수 있습니다");
-  const day = Number(f.payDay);
-  if (f.payDay ? !(Number.isInteger(day) && day >= 1 && day <= 31) : !temporary) out.push("임금지급일은 1~31입니다");
+  if (digits(f.wage) ? !(Number(digits(f.wage)) > 0) : !temporary) add("wage", "시급을 입력하세요."); // 고용 형태와 상관없이 시급(2026-10-12 재영)
+  if (Number(digits(f.wage)) > MAX_AMOUNT) add("wage", "시급은 2,147,483,647원 이하로 입력하세요.");
   if (f.employmentType === "FULL_TIME") {
-    if (HOUR_FIELDS.some((k) => Number.isNaN(hoursOf(f[k])))) out.push("월 근로시간은 0 이상, 30분(0.5시간) 단위로 입력하세요");
-    const base = hoursOf(f.baseHours), night = hoursOf(f.baseNightHours);
-    if (base !== null && night !== null && night > base) out.push("기본시간 중 야간근무는 월 기본시간보다 클 수 없습니다");
     if ([f.mealAllowance, f.carAllowance, f.childcareAllowance].some((t) => Number(digits(t)) > MAX_AMOUNT))
-      out.push("비과세 수당은 2,147,483,647원 이하로 입력하세요");
-    if (f.probation) {
-      if (!/^\d+$/.test(f.probationRate) || Number(f.probationRate) > 10) out.push("수습 임금 감액률은 0~10% 정수로 입력하세요");
-      if (!probationTermOk(f)) out.push("수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다");
-      const pw = probationWage(f);
-      if (pw !== null && pw < PROBATION_WAGE_FLOOR)
-        out.push(`수습 중 시급은 최저임금의 90%(${PROBATION_WAGE_FLOOR.toLocaleString("ko-KR")}원) 이상이어야 합니다`);
-    }
+      add("allowances", "비과세 수당은 2,147,483,647원 이하로 입력하세요.");
+    if (HOUR_FIELDS.some((k) => Number.isNaN(hoursOf(f[k])))) add("hours", "월 근로시간은 0 이상, 30분(0.5시간) 단위로 입력하세요.");
+    const base = hoursOf(f.baseHours), night = hoursOf(f.baseNightHours);
+    if (base !== null && night !== null && night > base) add("hours", "기본시간 중 야간근무는 월 기본시간보다 클 수 없습니다.");
   }
-  if (Number(digits(f.wage)) > MAX_AMOUNT) out.push("시급은 2,147,483,647원 이하로 입력하세요");
-  if (isMinor(f)) out.push("만 19세 미만 직원은 등록할 수 없습니다");
-  // 종이 계약 등록은 당사자가 모두 날인한 근로계약서가 있어야 한다(CTR-23). 임시저장은 파일 없이 둔다
-  if (f.contractMethod === "PAPER" && !temporary && !hasEmploymentFile) out.push("당사자가 모두 날인한 근로계약서 파일을 올려 주세요");
+  need("weeklyHoliday", weeklyHolidayOf(f) === "NO_DAY_OFF", "주 15시간 이상이면 근무하지 않는 요일이 있어야 주휴일을 정할 수 있습니다.");
+  const payDay = Number(f.payDay);
+  if (f.payDay ? !(Number.isInteger(payDay) && payDay >= 1 && payDay <= 31) : !temporary) add("payDay", "임금지급일은 1~31입니다.");
+  if (f.employmentType === "FULL_TIME" && f.probation) {
+    if (!probationTermOk(f)) add("probationMonths", "수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다.");
+    if (!/^\d+$/.test(f.probationRate) || Number(f.probationRate) > 10) add("probationRate", "수습 임금 감액률은 0~10% 정수로 입력하세요.");
+    const pw = probationWage(f);
+    if (pw !== null && pw < PROBATION_WAGE_FLOOR)
+      add("probationWage", `수습 중 시급은 최저임금의 90%(${PROBATION_WAGE_FLOOR.toLocaleString("ko-KR")}원) 이상이어야 합니다.`);
+  }
+  return out;
+}
+
+/**
+ * 보일 칸 오류 — 저장을 누른 때 오류가 난 칸(shown)만 지금 값으로. 고쳐진 칸은 빠지고, 저장 뒤 고치다 새로 생긴 칸 오류는 다음
+ * 저장 때 보인다(칠 때마다 role="alert" 가 새로 울리지 않게, front #170 code-review). 두 화면(작성 · 근로자 정보 수정)이 같이 쓴다.
+ */
+export function shownProblems<K extends string, V>(live: Partial<Record<K, V>>, shown: ReadonlySet<K>): Partial<Record<K, V>> {
+  const out: Partial<Record<K, V>> = {};
+  for (const k of shown) if (live[k] !== undefined) out[k] = live[k];
+  return out;
+}
+
+/** 칸마다 오류 문장 — 화면이 칸 아래에 보인다 */
+export function problemsByField(list: readonly Problem[]): Partial<Record<ProblemField, string[]>> {
+  const out: Partial<Record<ProblemField, string[]>> = {};
+  for (const p of list) (out[p.field] ??= []).push(p.message);
   return out;
 }
 

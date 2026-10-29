@@ -25,7 +25,7 @@ import { failureOf as sharedFailureOf, validId, type ActionFailure, type ActionR
 const PATH = "/bp-holidays";
 
 const failureOf = (error: unknown, what: string, wrote = true) => sharedFailureOf(error, "BP 휴일", what, wrote);
-const NOT_FOUND = { ok: false, status: 404, message: "휴일을 찾을 수 없습니다" } satisfies ActionFailure;
+const NOT_FOUND = { ok: false, status: 404, message: "휴일을 찾을 수 없습니다." } satisfies ActionFailure;
 
 /** 저장이 끝났으면 목록 · 상세를 새로 받는다. 무효화가 실패해도 저장은 끝났으므로 성공으로 돌려준다. */
 function refresh() {
@@ -96,6 +96,6 @@ export async function getBpHolidayHistoriesAction(q: { from: string; to: string;
   try {
     return { ok: true, ...(await getBpHolidayHistories({ ...q, page })) };
   } catch (error) {
-    return failureOf(error, "변경 이력 조회", false);
+    return failureOf(error, "변경이력 조회", false);
   }
 }

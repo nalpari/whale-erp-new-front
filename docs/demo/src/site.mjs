@@ -99,7 +99,7 @@ function scopeDropdown(A) {
 const saveRow = (label, closeSave, toast) =>
   `<div class="flex justify-center gap-[6px]">${closeSave ? ui.button("닫기", { variant: "off", "data-close": true }) : ""}${ui.button(label, { "data-toast": toast })}</div>`;
 
-// 내 정보 입력칸(기본정보·사업자정보 탭). MY PAGE 전체 화면(mypage/profile.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다.
+// 내 정보 입력칸(기본정보·사업자정보 탭). 마이페이지 전체 화면(mypage/profile.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다.
 // idPrefix: 사업자 인증 상자 id 접두 — 전체 화면과 패널이 한 페이지(mypage/profile.html)에 같이 실릴 수 있어 서로 다르게 둔다.
 // tabPrefix: 탭 id 접두. closeSave: 저장 버튼이 패널을 닫을지(패널에서는 닫는다, 전체 화면에서는 그대로 머문다).
 export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = false } = {}) {
@@ -138,7 +138,7 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
   // 「재인증」을 누르면 값은 그대로 둔 채 세 칸이 한꺼번에 열리고, 「인증하기」로 다시 검사해야 다시 잠긴다.
   // 「사용안함」을 누르면(struck) 확인창 없이 바로 세 칸이 지워질 값에 취소선을 긋고 잠기며, 「인증하기」
   // 버튼은 사라지고 「사용안함 취소」 하나만 남는다 — 저장을 눌러야 실제로 지워진다(점포는 저장 뒤 번호 ·
-  // 개업일자가 고정이라 이 기능 자체가 없다, MY PAGE 전용, 2026-10-23 사용자 결정).
+  // 개업일자가 고정이라 이 기능 자체가 없다, 마이페이지 전용, 2026-10-23 사용자 결정).
   const struckField = (value) =>
     `<div class="flex h-[34px] w-full items-center rounded-[2px] border border-erp-field-line bg-erp-thead-bg pl-[10px] text-[14px] text-erp-label"><span class="truncate line-through">${value || "&nbsp;"}</span></div>`;
   const bizFields = (state, num, ceo, open) => {
@@ -225,14 +225,14 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
   );
 }
 
-// MY PAGE 탭 줄만 앱 my-page-panel.tsx TabBar 모양으로 — 14px 500, 탭 사이 18px, 좌우 여백 없음, 아래 선 erp-thead-line.
+// 마이페이지 탭 줄만 앱 my-page-panel.tsx TabBar 모양으로 — 14px 500, 탭 사이 18px, 좌우 여백 없음, 아래 선 erp-thead-line.
 // 탭 내용 묶음 사이는 16px(계정 정보 ↔ 기본정보, 앱과 같다). 공통 x.tabs 는 다른 화면도 써서 그 결과를 여기서만 바꾼다(2026-10-26).
 // 탭 전환은 공통 erp.js 가 data-on · data-off 클래스로 한다.
 function mypageTabs(html) {
   const end = html.indexOf("</div>"); // 첫 </div> 가 탭 줄의 끝이다(탭 단추 안에는 div 가 없다)
   const bar = html
     .slice(0, end)
-    .replace('<div role="tablist" class="flex shrink-0 border-b border-erp-bar-line">', '<div role="tablist" aria-label="내 정보" class="flex h-[42px] shrink-0 gap-[18px] border-b border-erp-thead-line">')
+    .replace('<div role="tablist" class="flex shrink-0 border-b border-erp-bar-line">', '<div role="tablist" aria-label="내정보 관리" class="flex h-[42px] shrink-0 gap-[18px] border-b border-erp-thead-line">')
     .replaceAll("-mb-px flex h-[42px] items-center border-b-2 px-[18px] text-[15px]", "h-[42px] border-b-2 text-[14px]")
     .replaceAll("border-erp-brand font-semibold text-erp-ink", "border-erp-brand font-medium text-erp-ink");
   const panels = html.slice(end).replace(/(<div role="tabpanel"[^>]*?class=")flex min-h-0 flex-1 flex-col gap-\[12px\]"/g, '$1flex min-h-0 flex-1 flex-col gap-[16px]"');
@@ -243,10 +243,10 @@ function mypageTabs(html) {
 // 모든 ERP 화면의 헤더에 실리므로(erpHeader), id("mypage-panel")는 화면마다 한 번만 쓰인다. 전체 화면(mypage/profile.html)은
 // 회원 탈퇴 화면의 "취소"가 돌아갈 곳으로 그대로 둔다.
 export function mypagePanel(A) {
-  return ui.slidePanel("mypage-panel", "내 정보", ui.sectionHead("내 정보") + mypageBody(A, { idPrefix: "mpb", tabPrefix: "mp-", closeSave: true }));
+  return ui.slidePanel("mypage-panel", "내정보 관리", ui.sectionHead("내정보 관리") + mypageBody(A, { idPrefix: "mpb", tabPrefix: "mp-", closeSave: true }));
 }
 
-// MY PAGE 전체 화면(mypage/password.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다. 비밀번호 칸(눈 아이콘 보기 토글)은
+// 마이페이지 전체 화면(mypage/password.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다. 비밀번호 칸(눈 아이콘 보기 토글)은
 // biz-form.mjs 의 pwField. 안내 문구는 전부 칸 안 placeholder 로 두고, 칸 아래는 error 가 있을 때만 보인다(2026-10-26
 // 사용자 지정 — 전엔 긴 조건 문구가 칸 아래 늘 남아 있었다). errors 의 칸(current · newPassword · confirm)에 값이
 // 있으면 그 pwField 가 그 문구를 칸 아래에 보인다.
@@ -303,7 +303,7 @@ export function passwordPanel(A) {
   return ui.slidePanel("password-panel", "비밀번호 변경", ui.sectionHead("비밀번호 변경") + passwordBody(A, { closeSave: true }));
 }
 
-// 회원 탈퇴. MY PAGE 전체 화면(mypage/withdraw.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다.
+// 회원 탈퇴. 마이페이지 전체 화면(mypage/withdraw.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다.
 // panel 이 true 면: "취소"는 페이지 이동 대신 패널을 닫고, 비밀번호 확인은 따로 뜨는 확인창이 아니라 패널 맨 앞 단계로 넣는다
 // (2026-10-06 피드백) — 맞게 입력하고 [확인]을 누르면(데모라 항상 통과) 같은 패널 안에서 회원 탈퇴 내용으로 바뀐다.
 // 전체 화면에서는 기존대로 페이지에 들어오면 비밀번호 확인창이 뜬다.
@@ -326,16 +326,16 @@ export function withdrawBody(R, { panel = false } = {}) {
   // 실제 값으로 바뀌는 자리(BP 이름·계정 수·점포 수)는 굵게 + 밑줄로 표시한다.
   const live = (t) => `<b class="font-semibold underline">${t}</b>`;
   const warn = notice(
-    "탈퇴 전 꼭 확인해 주세요",
+    "탈퇴 전 꼭 확인해 주세요.",
     [
       `탈퇴하면 ${live(BP.name)}의 서비스 이용이 종료됩니다. 동일한 BP에 속한 관리자·가맹 계정 ${live("6개")}도 함께 탈퇴되어 더 이상 로그인할 수 없습니다.`,
       {
-        head: `점포 ${live("11개")}가 모두 폐점 처리됩니다`,
+        head: `점포 ${live("11개")}가 모두 폐점 처리됩니다.`,
         text: `점포 보유 여부는 탈퇴를 제한하지 않습니다.<br>탈퇴 처리 시 점포의 현재 운영 상태나 폐점 조건을 별도로 확인하지 않고, 운영·미운영 점포 ${live("11개")}를 모두 폐점 처리합니다.`,
       },
       {
-        head: "개인정보가 삭제됩니다",
-        text: "탈퇴 계정의 이름·연락처·이메일과 대표자의 연락처·이메일은 즉시 삭제되며, 아이디만 보관됩니다. 직원·계약·정산 정보와 변경 이력은 보존 정책에 따라 보관됩니다.",
+        head: "개인정보가 삭제됩니다.",
+        text: "탈퇴 계정의 이름·연락처·이메일과 대표자의 연락처·이메일은 즉시 삭제되며, 아이디만 보관됩니다. 직원·계약·정산 정보와 변경이력은 보존 정책에 따라 보관됩니다.",
       },
       "탈퇴한 계정은 복구할 수 없습니다.<br>정말 탈퇴하시겠습니까?",
     ],
@@ -490,12 +490,18 @@ const PLATFORM_BPS = [
   ["BP000035", "㈜온기에프앤비", "사용"],
 ];
 function platformScopeDialog(A, R, id) {
-  const columns = [{ header: "BP코드", width: "w-[110px]" }, { header: "상호", align: "left" }, { header: "상태", width: "w-[80px]" }];
-  const rows = PLATFORM_BPS.map(([code, name, status]) => [code, ui.radio(name, `${id}-bp`, false, { "data-bp-code": code, "data-bp-name": name }), status]);
+  const columns = [{ header: "BP코드", width: "w-[110px]" }, { header: "상호명", align: "left" }, { header: "계정상태", width: "w-[80px]" }];
+  // 사용 BP 만 상호명을 굵게(앱 bp-select-dialog.tsx 와 같다, 2026-10-29)
+  const rows = PLATFORM_BPS.map(([code, name, status]) => {
+    const radio = ui.radio(name, `${id}-bp`, false, { "data-bp-code": code, "data-bp-name": name });
+    return [code, status === "사용" ? `<div class="font-semibold">${radio}</div>` : radio, status];
+  });
   const table = ui.dataTable(columns, rows).replace("</tbody>", `${ui.tableEmptyRow(columns).replace("<tr ", "<tr hidden data-bp-none ")}</tbody>`);
   const body =
-    `<div class="flex flex-col gap-[12px]"><p>고른 BP 의 웨일ERP 가 새 탭으로 열립니다.</p>${ui.searchField(A, { placeholder: "상호 또는 BP코드", label: "BP 찾기" })}` +
-    `<div class="max-h-[506px] overflow-y-auto [&_tbody_tr]:cursor-pointer [&_tbody_tr:has(:checked)]:bg-erp-thead-bg" data-bp-table>${table}</div>${ui.pagination(A, 1, Math.ceil(PLATFORM_BPS.length / 10), 5)}</div>`;
+    // 「총 N 건」 · 찾기 칸 · 한 쪽 건수를 한 줄에, 결과 자리는 높이 고정 · 열 이름 줄 고정 스크롤(앱과 같다, 2026-10-29)
+    `<div class="flex flex-col gap-[12px]"><p>BP를 선택하면 웨일ERP가 새 탭으로 열립니다.</p>` +
+    `<div class="flex items-center gap-[6px]"><p class="mr-[6px] shrink-0 text-[14px] text-erp-ink">총 <b class="font-semibold">${PLATFORM_BPS.length}</b> 건</p><div class="min-w-0 flex-1">${ui.searchField(A, { placeholder: "상호명 또는 BP코드", label: "BP 찾기" })}</div><div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div></div>` +
+    `<div class="flex h-[506px] flex-col [&_tbody_tr]:cursor-pointer [&_tbody_tr:has(:checked)]:bg-erp-thead-bg" data-bp-table>${ui.scrollTable(table)}</div>${ui.pagination(A, 1, Math.ceil(PLATFORM_BPS.length / 20), 5)}</div>`;
 
   return `<dialog id="${id}" data-scope-popup data-scope-all="전체 ${STORES.length}개점" aria-labelledby="${id}-t" class="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">BP 선택</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button(
     "취소",

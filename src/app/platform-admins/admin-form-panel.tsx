@@ -206,7 +206,7 @@ export function AdminFormPanel(props: Props) {
   /**
    * 이메일 형식 즉시 확인(등록 · 수정 모두) — 칸을 벗어나거나 Enter 를 칠 때. 아이디와 달리 바로 물어볼 중복확인 API 가 없어
    * (중복은 저장할 때 — 등록 · 수정 모두 — api 가 409 로 막는다) 형식만 본다 — 그래서 확인 중 차례나 네트워크 호출이 없다.
-   * 수정 화면에서 원래 이메일 그대로면 아무것도 띄우지 않는다 — 바꾸지 않은 값은 확인 대상이 아니다(MY PAGE 와 같다).
+   * 수정 화면에서 원래 이메일 그대로면 아무것도 띄우지 않는다 — 바꾸지 않은 값은 확인 대상이 아니다(마이페이지와 같다).
    * 원래 값이 형식에 맞지 않는 옛 데이터여도 여기서는 조용하고, 저장할 때 형식 문구로 막는다.
    */
   const checkEmail = (value: string) => {
@@ -389,7 +389,7 @@ export function AdminFormPanel(props: Props) {
                 value={form.roleGroupId}
                 onChange={(e) => set("roleGroupId", e.target.value)}
                 disabled={isSelf}
-                title={isSelf ? "본인 계정의 권한은 바꿀 수 없습니다" : undefined}
+                title={isSelf ? "본인 계정의 권한은 바꿀 수 없습니다." : undefined}
                 aria-invalid={invalid("roleGroupId")}
                 aria-describedby={describe("roleGroupId")}
                 aria-required
@@ -414,7 +414,7 @@ export function AdminFormPanel(props: Props) {
                 value={form.accountStatus}
                 onChange={(e) => set("accountStatus", e.target.value as AdminForm["accountStatus"])}
                 disabled={isSelf}
-                title={isSelf ? "본인 계정의 상태는 바꿀 수 없습니다" : undefined}
+                title={isSelf ? "본인 계정의 상태는 바꿀 수 없습니다." : undefined}
               >
                 <option value="ACTIVE">사용</option>
                 <option value="INACTIVE">미사용</option>
