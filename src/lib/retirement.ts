@@ -42,6 +42,13 @@ export function checkRetiredDate(value: string, today: string): string | null {
  */
 export const showsBelowDateField = (failure: { status?: number }) => failure.status === 400;
 
+/**
+ * 퇴직일 칸의 onChange 가 미리 보기를 다시 받는가. DateField 는 값이 같아도 blur 때 onChange 를 부르므로 같은 값은 건너뛴다.
+ * 다만 미리 보기가 연결 · 서버 오류(error)로 끝났으면 같은 날짜로도 다시 받는다 — 달리 다시 받을 길이 없다.
+ */
+export const reloadsPreview = (value: string, date: string, previewStatus: "idle" | "loading" | "ok" | "error") =>
+  value !== date || previewStatus === "error";
+
 /** 지난 날짜면 처리하는 그 자리에서 정리된다. 오늘은 아직 일하는 날이라 다음 날 배치가 정리한다. */
 export const isSettledNow = (retiredDate: string, today: string) => retiredDate < today;
 

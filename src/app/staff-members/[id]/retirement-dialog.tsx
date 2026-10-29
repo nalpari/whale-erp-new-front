@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog, DateField, useToast } from "@/components/common";
-import { checkRetiredDate, earliestRetiredDate, isSettledNow, showsBelowDateField, todayAfterSubmit } from "@/lib/retirement";
+import { checkRetiredDate, earliestRetiredDate, isSettledNow, reloadsPreview, showsBelowDateField, todayAfterSubmit } from "@/lib/retirement";
 import type { RetirementPreview } from "@/lib/staff-members";
 import { cancelRetirementAction, changeRetirementDateAction, previewRetirementAction, retireAction } from "./actions";
 import { useFailure } from "./use-action-failure";
@@ -157,7 +157,10 @@ export function RetirementDialog({
       <div className="flex flex-col gap-[12px]">
         <div className="flex flex-col gap-[8px]">
           <span className="text-[14px] font-medium text-erp-label">퇴직일</span>
-          <DateField aria-label="퇴직일" value={date} onChange={(value) => value !== date && changeDate(value)} />
+          <DateField aria-label="퇴직일" value={date} onChange={(value) => {
+              if (reloadsPreview(value, date, preview.status)) changeDate(value);
+            }}
+          />
           <p className="text-[13px] text-erp-label">오늘 이후, 또는 최근 3개월 안({earliestRetiredDate(today)}부터)의 지난 날짜를 받습니다.</p>
           {dateNote && (
             <p role="alert" className="text-[13px] text-erp-off">
