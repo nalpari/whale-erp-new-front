@@ -30,6 +30,16 @@ export function wasUpdated(createdAt: string | null | undefined, updatedAt: stri
   return Number.isFinite(gap) && Math.abs(gap) >= 1000;
 }
 
+/**
+ * 그 일시로부터 1시간이 안 지났는가 — 초기 · 초기화 비밀번호는 1시간 동안 유효하다. 계정을 만들면 그때 초기 비밀번호를 보내므로
+ * 등록 일시로 「방금 보냄」을 가른다(상세 위 안내, 2026-10-29 사용자 지적 — 만들자마자 「초기화가 필요합니다」가 떴다). 깨진 값이면 false.
+ */
+export function withinPasswordHour(at: string | null | undefined): boolean {
+  if (!at) return false;
+  const gap = Date.now() - Date.parse(at);
+  return Number.isFinite(gap) && gap >= 0 && gap < 3_600_000;
+}
+
 /** ISO 일시 → `2026-10-13`(한국 시간, 날짜만). 값이 없거나 깨졌으면 빈 문자열. */
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return "";

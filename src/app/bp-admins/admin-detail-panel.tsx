@@ -10,7 +10,7 @@ import { FailedBand, InfoBand, SuccessBand, WarnBand } from "@/components/site/s
 import { WhoList } from "@/app/platform-admins/admin-parts";
 import { HistoryButton } from "@/app/platform-admins/history-dialog";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
-import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
+import { formatDateTime, formatPhone, wasUpdated, withinPasswordHour } from "@/lib/format";
 import { detailButtonsOf } from "@/lib/bp-admin-rules";
 import type { BpAdminDetail, BpAdminStore } from "@/lib/bp-admins";
 import type { StoreStatus } from "@/lib/store-types";
@@ -187,9 +187,9 @@ function DetailBody({
       {admin.accountStatus === "ACTIVE" && admin.isInitialPasswordUnsent && <WarnBand>{`초기화 비밀번호가 발송되지 않았습니다.${canReset ? "\n비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요." : ""}`}</WarnBand>}
       {admin.accountStatus === "ACTIVE" && !admin.isInitialPasswordUnsent && (resetSent || (!admin.lastLoginAt && !admin.statusChangedAt)) && (
         <SuccessBand>
-          {/* 방금 이 화면에서 보냈으면 발송 안내, 아니면(한 번도 로그인하지 않은 계정) 로그인하지 않았다는 사실만 — 발송 시각을 api 가 주지 않아
+          {/* 방금 이 화면에서 보냈거나 계정을 만든 지 1시간이 안 됐으면(만들 때 초기 비밀번호를 보낸다) 발송 안내, 아니면(한 번도 로그인하지 않은 계정) 로그인하지 않았다는 사실만 — 발송 시각을 api 가 주지 않아
             「1시간」은 방금 보냈을 때만 쓴다(2026-10-29 사용자 지정, 전엔 며칠 지나도 「발송했습니다」가 남았다) */}
-          {resetSent
+          {resetSent || withinPasswordHour(admin.createdAt)
             ? "초기화 비밀번호를 발송했습니다.\n1시간 동안 유효합니다."
             : `아직 로그인하지 않은 계정입니다.${canReset ? "\n비밀번호 초기화가 필요합니다." : ""}`}
         </SuccessBand>
