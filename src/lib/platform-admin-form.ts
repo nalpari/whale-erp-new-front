@@ -68,9 +68,12 @@ export function formOf(detail: PlatformAdminDetail): AdminForm {
 
 const phoneOf = (form: AdminForm) => form.phone.map((p) => p.trim()).join("");
 
-export const LOGIN_ID_FORMAT_ERROR = "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다.";
+// 회원가입과 같은 문구(2026-10-29 재영) — BP 관리자 · BP 마스터 등록도 이 함수를 쓴다
+export const LOGIN_ID_FORMAT_ERROR = "영문 또는 영문·숫자 조합으로 4~20자로 입력해 주세요.";
 /** 아이디 중복 — 중복확인의 「사용 중」과 저장 때 api 409 를 같은 문구로 보인다(api 문구는 다음에 할 일을 말하지 않는다). */
 export const LOGIN_ID_TAKEN = "이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.";
+/** 이메일 중복 — 저장 때 api 409 도 다른 등록 화면과 같은 문구로(2026-10-29 재영). */
+export const EMAIL_TAKEN = "이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요.";
 
 /** 아이디 형식 오류 문구. 맞으면 undefined. 저장할 때와 칸을 벗어날 때(중복 확인 전) 같이 쓴다. */
 export function loginIdError(loginId: string): string | undefined {
@@ -132,11 +135,11 @@ export function serverErrorField(status: number | undefined, message: string, mo
 
 /**
  * 칸 아래에 붙일 api 오류 문구. 아이디는 화면 문구로 바꾼다 — 400(형식)은 화면 검사와 같은 문구, 409(중복)는 LOGIN_ID_TAKEN.
- * 이메일 400(형식)도 화면 형식 문구(EMAIL_FORMAT_ERROR)로. 그 밖(이메일 중복 등)은 api 문구 그대로. 여러 칸 검증 오류는 serverErrorField 가 이미 띠로 보낸다.
+ * 이메일 400(형식)은 화면 형식 문구(EMAIL_FORMAT_ERROR), 409(중복)는 EMAIL_TAKEN. 그 밖은 api 문구 그대로. 여러 칸 검증 오류는 serverErrorField 가 이미 띠로 보낸다.
  */
 export function serverFieldMessage(field: AdminFormField, status: number | undefined, message: string): string {
   // 이메일 400(형식)도 화면 형식 문구로 — api 문구(「이메일 형식이 아닙니다」)와 칸에서 본 문구가 달라지지 않게
-  if (field === "email") return status === 400 ? EMAIL_FORMAT_ERROR : message;
+  if (field === "email") return status === 400 ? EMAIL_FORMAT_ERROR : status === 409 ? EMAIL_TAKEN : message;
   if (field !== "loginId") return message;
   if (status === 400) return LOGIN_ID_FORMAT_ERROR;
   if (status === 409) return LOGIN_ID_TAKEN;

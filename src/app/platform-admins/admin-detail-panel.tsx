@@ -288,6 +288,7 @@ function DetailBody({
                 <p>
                   삭제한 계정은 관리자 목록 및 검색 결과에서 제외되며, 해당 계정으로 더 이상 로그인할 수 없습니다.
                 </p>
+                <p>삭제한 계정은 복구할 수 없습니다.</p>
               </WarnBand>
             </div>
           </ConfirmDialog>
