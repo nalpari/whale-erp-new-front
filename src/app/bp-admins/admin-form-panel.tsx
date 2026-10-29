@@ -629,6 +629,8 @@ export function AdminFormPanel(props: Props) {
                 onChange={(next) => set("stores", next)}
                 loading={!!optionsRole && !optionsReady && !optionsFailure}
                 failed={!!optionsFailure}
+                // 후보는 계정 역할마다 다르다(가맹 마스터면 다른 가맹 마스터 담당 점포가 빠진다) — 역할을 고르기 전엔 받지 않으니 찾기를 막는다. 권한명은 상관없다
+                blocked={form.roleTypeCode ? undefined : "계정 역할을 먼저 골라 주세요"}
                 invalid={invalid("stores")}
                 describedBy={describe("stores")}
               />
