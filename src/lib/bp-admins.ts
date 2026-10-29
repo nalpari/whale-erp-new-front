@@ -39,6 +39,8 @@ export type BpAdminActions = {
 };
 
 export type BpAdminDetail = BpAdmin & {
+  /** 비밀번호 강제 변경 대상 — 상세의 「강제변경 대상 · 대상아님」. 이 칸을 주지 않는 api 면 없다 */
+  isPasswordChangeRequired?: boolean;
   phone: string | null;
   email: string | null;
   statusChangedAt: string | null;
