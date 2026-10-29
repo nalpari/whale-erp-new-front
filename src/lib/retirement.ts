@@ -44,7 +44,7 @@ export const showsBelowDateField = (failure: { status?: number }) => failure.sta
 
 /**
  * 퇴직일 칸의 onChange 가 미리 보기를 다시 받는가. DateField 는 값이 같아도 blur 때 onChange 를 부르므로 같은 값은 건너뛴다.
- * 다만 미리 보기가 연결 · 서버 오류(error)로 끝났으면 같은 날짜로도 다시 받는다 — 달리 다시 받을 길이 없다.
+ * 다만 미리 보기가 실패(error — 연결 · 5xx · 403 · 409 등 onFailure 가 문구를 준 모든 실패)로 끝났으면 같은 날짜로도 다시 받는다 — 달리 다시 받을 길이 없다.
  */
 export const reloadsPreview = (value: string, date: string, previewStatus: "idle" | "loading" | "ok" | "error") =>
   value !== date || previewStatus === "error";
