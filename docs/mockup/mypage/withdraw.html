@@ -14,7 +14,7 @@
          구독·정산은 1차 범위 밖이라 어느 팀 몫도 아니다 — 두 조건은 「1차 범위 밖」으로만 표시하고 확인하지 않는다.
          1차에서 실제로 확인하는 조건은 진행 중인 근로계약 없음 하나이고, 건수는 3팀이 점포 폐점·삭제용으로 주는 점포별 진행 중 근로계약 건수를 그 BP 모든 점포에 대해 합산한다(진행 중 기준은 3팀이 정함).
          점포는 조건이 아니다 — 탈퇴하면 그 BP 의 점포를 상태와 관계없이 모두 폐점으로 바꾼다.
-         조건이 모자라도 회원 탈퇴 버튼은 평소 모양 그대로다 — 누르면 아직 채우지 못한 조건과 할 일을 팝업으로 안내한다(MYPAGE-2 확정).
+         조건이 모자라면 회원 탈퇴 버튼을 막는다 — 탈퇴 조건 표의 빨간 「있음」 · 건수 안내로 알린다(2026-10-29 재영 — 실제 화면대로, 전엔 MYPAGE-2 팝업 안내).
          조건을 모두 채운 뒤에는 사유를 골라야 버튼이 켜진다.
          최종 확인 → 완료 안내 → 로그인 전 홈(스스로 세션을 끝냈으므로 · 확정 2026-09-29).
          같은 BP 의 하위 계정(BP 관리자·가맹 마스터·가맹 관리자)도 같은 순간 탈퇴 처리되고 개인정보를 지운다 — 아이디만 재사용 방지로 남긴다(확정 2026-09-29).
@@ -127,7 +127,7 @@
               <div class="inline" style="justify-content: flex-end; gap: 8px">
                 <a class="btn btn--secondary" href="profile.html">취소</a>
                 <button class="btn btn--danger" type="button" data-show="met" data-enable-when="wdreason" data-open="wdconfirm">회원 탈퇴</button>
-                <button class="btn btn--danger" type="button" data-show="unmet" hidden data-open="wdblock">회원 탈퇴</button>
+                <button class="btn btn--danger" type="button" data-show="unmet" hidden disabled>회원 탈퇴</button>
               </div>
             </div>
           </section>
@@ -161,30 +161,6 @@
               <a class="btn btn--ghost" href="profile.html">취소</a>
               <button class="btn btn--primary" type="button" data-show="ok" data-conceal="wdpw" data-reveal="wdbody">확인</button>
               <button class="btn btn--primary" type="button" data-show="bad" hidden>확인</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 조건 미충족 안내 -->
-        <div class="modal" id="wdblock" hidden role="dialog" aria-modal="true" aria-labelledby="wdblock-t">
-          <div class="modal__box" style="max-width: 440px">
-            <div class="modal__head">
-              <h2 class="t-h2" id="wdblock-t">아직 탈퇴할 수 없습니다</h2>
-              <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
-            </div>
-            <div class="modal__body">
-              <p style="margin: 0; font-size: 13.5px">아래 조건을 먼저 채워 주세요.</p>
-              <div class="rows">
-                <div class="row">
-                  <span class="stack" style="gap: 2px">
-                    <b style="font-size: 13px">진행 중인 근로계약 없음</b>
-                    <span class="subtle" style="font-size: 12.5px">진행 중인 근로계약 2건을 종료하세요.</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div class="modal__foot">
-              <button class="btn btn--primary" type="button" data-close>확인</button>
             </div>
           </div>
         </div>
