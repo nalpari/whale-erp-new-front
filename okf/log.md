@@ -1,8 +1,14 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: main 병합(front porygon, main #177 · #172 · #176 까지): okf/log.md 충돌은 양쪽 기록을 살렸다.
 * **Update**: main 병합(front porygon, main #175 · #173 까지): okf 충돌은 양쪽 기록을 살렸다 — generated 는 늦은 시각(main), [Whale ERP Frontend](/whale-erp-front.md) 의 공통 컴포넌트 · 점포 · BP 마스터 줄은 main 의 「마이페이지」 · 「변경이력」 · 헤더 툴팁(`HeaderTip`) 변경에 이 브랜치의 `NoticeBand` · `ExcelDownload*` 이름 변경을 글자 단위로 합쳤다. 코드는 git 이 자동으로 합쳤고 옛 이름 참조는 남지 않았다.
 * **Update**: [점포 관리](/stores.md) · [BP 마스터 계정 관리](/bp.md) · [Whale ERP Frontend](/whale-erp-front.md) — 엑셀 받기와 안내 띠를 공통 컴포넌트로 올렸다(1팀, 2026-10-29): 점포 화면의 `store-excel.tsx`(`StoreExcelProvider` · `StoreExcelNotice` · `StoreExcelButton`)를 `components/common/excel-download.tsx`(`ExcelDownloadProvider` · `ExcelDownloadNotice` · `ExcelDownloadButton`)로, `store-parts.tsx` 의 `NoticeBand` 를 `components/common/notice-band.tsx` 로 옮겼다. 점포 전용 기본값(파일 이름 「점포목록.xlsx」 · 「받을 점포가 없습니다」)은 없애고 화면이 넘긴다. 점포 · BP 마스터 목록 · 엑셀 내려받기 화면 · 점포 상세 · 등록 · 수정 · 이력의 import 를 바꿨고 동작은 그대로다. DESIGN.md Components 에 Notice Band · Excel Download 를 적었다.
+* **Update**: main 병합(front tauros, PR #177 충돌 해소 — #172 · #173 · #175 · #176 머지분): okf 는 양쪽 기록을 살렸다 — staff-members.md 는 늦은 generated 시각, log.md 는 두 쪽 항목을 모두 남겼다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 상세 「출퇴근 현황」 영역을 채우고(WHALEERP-186, 재영 10-29 결정 · ATT-19 · ATT-34) 「관리」 링크(MN000025 `/attendance-records`, 그 직원 · 근무지 · 주)를 걸었다. `GET /attendance-records?staffMemberId=` 로 근무스케줄과 같은 주를 받아 날짜 · 출근 · 퇴근 · 상태 · 비고 표를 그린다. 하루 쌍이 여럿이면 첫 출근 · 마지막 퇴근(시각 기준, 자정 넘긴 퇴근은 「(다음날)」) + 「외 N회」. 「관리」 주소는 일별 날(date)도 싣는다. sources 에 attendance-query.ts · attendance-records-api.ts 를 걸었다.
+* **Update**: main 병합(front mankey, PR #172 충돌 해소 — #173 · #175 · #176 머지분): okf/log.md 는 두 쪽 항목을 모두 남겼다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 재영 공지(10-29 「검증 오류는 입력 필드 하단」)에 맞춰 퇴직 처리 · 퇴직일 변경 확인창의 퇴직일 검증 오류(형식 · 3개월 범위 · api 400)와 생년월일 정정 확인창의 api 400(오늘 뒤 · 만 19세 미만)을 날짜 칸 아래로 옮겼다. 문구 · api · 권한은 그대로, 403 · 409 · 결과 모름은 지금 자리. 판정은 `showsBelowDateField` · `showsBelowBirthDateField`. 퇴직일 칸은 날짜가 실제로 바뀔 때만 미리 보기를 다시 받되, 미리 보기가 실패한 뒤에는 같은 날짜로도 다시 받는다(`reloadsPreview`).
+* **Update**: [마이페이지](/mypage.md) · [로그인](/auth.md) · [BP 마스터 계정 관리](/bp.md) · 목차 — 「MY PAGE」를 「마이페이지」로 표기를 바꿨다(사용자 지정, PR #176 — 주석 · DESIGN.md · 데모 소스 · 약관 본문도 같이). 헤더 팝업 제목(`user-pop.tsx`)과 [Whale ERP Frontend](/whale-erp-front.md) 는 persian PR 이 바꾼다. bp.md 시각은 main 의 늦은 값을 그대로 뒀다.
 * **Update**: main 병합(front caterpie, PR #173 두 번째 충돌 해소): okf/log.md 는 두 쪽 항목을 모두 남겼다.
 * **Update**: main 병합(front caterpie, PR #173 충돌 해소): okf 충돌은 양쪽 기록을 살렸다 — bp.md 는 main 의 generated 시각, log.md 는 두 쪽 항목을 날짜별로 모두 남겼다. 알림 종 403 은 main 의 강제 변경 문구 판정을 따랐다.
 * **Update**: [MY PAGE](/mypage.md) — 회원 탈퇴 사유를 front 고정 목록 대신 로그인 정보의 공통코드 `WITHDRAW_REASON` 에서 읽는다 — 정책 그대로, 구현을 맞췄다(2026-10-29 재영).

@@ -1,7 +1,7 @@
 // node --test src/lib/retirement.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, retirementActions, settlesWithoutWarning, staleDayWarning, todayAfterSubmit } from "./retirement.ts";
+import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, reloadsPreview, retirementActions, settlesWithoutWarning, showsBelowDateField, staleDayWarning, todayAfterSubmit } from "./retirement.ts";
 
 test("가장 이른 퇴직일은 오늘에서 3개월 전 같은 날", () => {
   assert.equal(earliestRetiredDate("2026-10-15"), "2026-07-15");
@@ -125,4 +125,17 @@ test("서버의 오늘을 받은 뒤 다른 이유(409 등)로 실패해도 그 
 
 test("서버가 돌려준 오늘이 날짜가 아니면 무시한다", () => {
   assert.equal(todayAfterSubmit("2026-10-15", { ok: false, today: "x" }), "2026-10-15");
+});
+
+test("날짜 칸 아래 — 퇴직일 입력 400 만 칸 아래, 권한 403 · 상태 409 · 결과 모름은 맨 아래", () => {
+  assert.equal(showsBelowDateField({ status: 400 }), true);
+  assert.equal(showsBelowDateField({ status: 403 }), false);
+  assert.equal(showsBelowDateField({ status: 409 }), false);
+  assert.equal(showsBelowDateField({}), false);
+});
+
+test("미리 보기 다시 받기 — 다른 값은 늘, 같은 값은 연결 · 서버 오류일 때만", () => {
+  assert.equal(reloadsPreview("2026-10-30", "2026-10-29", "ok"), true);
+  for (const status of ["ok", "loading", "idle"] as const) assert.equal(reloadsPreview("2026-10-29", "2026-10-29", status), false);
+  assert.equal(reloadsPreview("2026-10-29", "2026-10-29", "error"), true);
 });
