@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button, DetailTable } from "@/components/common";
 import type { components } from "@/lib/api-types.generated";
-import { RETURN_PARAM } from "@/lib/auth-routes";
+import { loginPathOf } from "@/lib/auth-routes";
 import { bff, BffError } from "@/lib/bff";
 import { formatDateTime } from "@/lib/format";
 import { NoticeBand } from "../../stores/store-parts";
@@ -15,6 +15,20 @@ type View =
   | { kind: "loading" }
   | { kind: "ready"; fileName: string; expiresAt: string }
   | ({ kind: "failed" } & Failure);
+
+/**
+ * S3 주소를 숨은 iframe 에서 연다. S3 가 첨부(Content-Disposition attachment)로 주면 파일만 받고, 오류(서명 만료 · 객체 없음)면
+ * XML 오류 페이지가 보이지 않는 iframe 안에 갇힌다 — 탭을 S3 로 옮기면(location.assign) 이 화면과 [다시 받기]가 사라졌다.
+ * 받기마다 iframe 을 새로 둔다(앞의 것은 지운다).
+ */
+function fetchInFrame(url: string) {
+  document.querySelectorAll("iframe[data-excel-download]").forEach((frame) => frame.remove());
+  const frame = document.createElement("iframe");
+  frame.hidden = true;
+  frame.dataset.excelDownload = "";
+  frame.src = url;
+  document.body.append(frame);
+}
 
 /**
  * 들어오면 바로 내려받고, [다시 받기]로 또 받는다. 받을 때마다 api(BFF /api/excel-downloads/{id})에서 새 주소를 받는다 —
@@ -36,12 +50,11 @@ export function ExcelDownloadView({ id }: { id: number | null }) {
       const link = await bff<ExcelDownloadLink>(`/excel-downloads/${id}`);
       setView({ kind: "ready", fileName: link.fileName, expiresAt: link.expiresAt });
       setNow(Date.now());
-      // S3 가 첨부로 내려 주므로 화면은 그대로 있고 파일만 받는다
-      location.assign(link.url);
+      fetchInFrame(link.url);
     } catch (error) {
       const status = error instanceof BffError ? error.status : 0;
       // 세션이 끝났다 — 로그인한 뒤 이 화면으로 돌아오게 한다
-      if (status === 401) return router.replace(`/login?${new URLSearchParams({ [RETURN_PARAM]: `/excel-downloads/${id}` })}`);
+      if (status === 401) return router.replace(loginPathOf(`/excel-downloads/${id}`));
       if (!(error instanceof BffError)) console.error("엑셀 내려받기 주소 받기 실패", error);
       setView({ kind: "failed", ...failureOf(status, error instanceof Error ? error.message : "") });
     } finally {

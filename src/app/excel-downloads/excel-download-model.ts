@@ -18,15 +18,23 @@ export const NOT_FOUND_DETAIL = "엑셀을 요청한 계정으로 로그인했�
 
 export type Failure = { tone: "risk" | "info"; title: string; detail?: string; retry: boolean };
 
+// api 는 409 하나로 「만드는 중」과 「만들지 못함(FAILED)」을 함께 알린다 — 상태 값이 따로 없어 문구 머리로 가른다
+// (api excel-exports.service.ts download). bff.ts 가 비밀번호 변경 403 을 문구 머리로 가르는 것과 같은 방식이다.
+const EXCEL_FAILED_PREFIX = "엑셀 파일을 만들지 못했습니다";
+// bff.ts PASSWORD_REQUIRED_MESSAGE 와 같은 문구 — 이 모듈은 node --test 가 바로 읽어 import 하지 않는다
+const PASSWORD_REQUIRED_PREFIX = "비밀번호를 변경한 뒤 이용할 수 있습니다";
+
 /**
  * api GET /excel-downloads/:id 실패를 화면 안내로. retry 는 [다시 받기]를 둘지 —
- * 404 없음 · 남의 것 · 바로 받기와 410 기한 지남은 다시 해도 같으니 두지 않는다. 409 만드는 중 · 실패와 연결 실패 · 5xx 는 둔다.
- * 409 는 대개 「아직 만드는 중」이라 실패 색이 아니라 안내 색이다.
+ * 404 없음 · 남의 것 · 바로 받기, 410 기한 지남, 409 만들지 못함, 403 화면 권한 잃음은 다시 해도 같으니 두지 않는다.
+ * 409 만드는 중(안내 색) · 403 비밀번호 변경 필요(바꾼 뒤 다시 받는다) · 연결 실패 · 5xx 는 둔다.
  */
 export function failureOf(status: number, message: string): Failure {
   if (status === 404) return { tone: "risk", title: NOT_FOUND, detail: NOT_FOUND_DETAIL, retry: false };
   if (status === 410) return { tone: "risk", title: EXPIRED, retry: false };
-  if (status === 409) return { tone: "info", title: message, retry: true };
+  if (status === 409)
+    return message.startsWith(EXCEL_FAILED_PREFIX) ? { tone: "risk", title: message, retry: false } : { tone: "info", title: message, retry: true };
+  if (status === 403 && message.startsWith(PASSWORD_REQUIRED_PREFIX)) return { tone: "risk", title: message, retry: true };
   if (status === 0 || status >= 500) return { tone: "risk", title: "파일 주소를 받지 못했습니다. 잠시 후 다시 시도해 주세요", retry: true };
   return { tone: "risk", title: message, retry: false };
 }

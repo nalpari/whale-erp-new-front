@@ -21,3 +21,12 @@ test("실패 안내 — 404 · 410 은 정한 문구에 다시 받기 없음, 40
   assert.equal(failureOf(502, "x").retry, true);
   assert.deepEqual(failureOf(403, "권한이 없습니다"), { tone: "risk", title: "권한이 없습니다", retry: false });
 });
+
+test("실패 안내 — 409 만들지 못함은 실패 색에 다시 받기 없음, 403 비밀번호 변경은 바꾼 뒤 다시 받기", () => {
+  assert.deepEqual(failureOf(409, "엑셀 파일을 만들지 못했습니다. 다시 요청해 주세요"), {
+    tone: "risk",
+    title: "엑셀 파일을 만들지 못했습니다. 다시 요청해 주세요",
+    retry: false,
+  });
+  assert.deepEqual(failureOf(403, "비밀번호를 변경한 뒤 이용할 수 있습니다"), { tone: "risk", title: "비밀번호를 변경한 뒤 이용할 수 있습니다", retry: true });
+});
