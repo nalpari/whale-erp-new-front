@@ -1,4 +1,4 @@
-// 회원 탈퇴(MY PAGE) 순수 로직 — manyfast S-JHQQNR 「회원 탈퇴」. api 를 부르는 쪽(withdrawal.ts)과
+// 회원 탈퇴(마이페이지) 순수 로직 — manyfast S-JHQQNR 「회원 탈퇴」. api 를 부르는 쪽(withdrawal.ts)과
 // 갈라 둔다 — api.ts 가 next/headers 를 써서 node --test 가 플레인으로 풀 수 없기 때문이다
 // (my-password-form.ts 가 my-password.ts 와 갈라진 것과 같은 이유).
 

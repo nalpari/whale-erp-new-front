@@ -4,7 +4,7 @@ import { ApiError } from "@/lib/api";
 import { createWithdrawal, getWithdrawEligibility, type CreateWithdrawalInput } from "@/lib/withdrawal";
 import type { WithdrawEligibility } from "@/lib/withdrawal-form";
 
-// 회원 탈퇴(MY PAGE, S-JHQQNR). password-change-actions.ts 와 같은 얇은 어댑터라 대응 테스트가 없다.
+// 회원 탈퇴(마이페이지, S-JHQQNR). password-change-actions.ts 와 같은 얇은 어댑터라 대응 테스트가 없다.
 
 export type EligibilityResult = { ok: true; data: WithdrawEligibility } | { ok: false; message: string };
 

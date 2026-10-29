@@ -1,4 +1,4 @@
-// 회원 탈퇴(MY PAGE) 데이터 접근 — manyfast S-JHQQNR 「회원 탈퇴」.
+// 회원 탈퇴(마이페이지) 데이터 접근 — manyfast S-JHQQNR 「회원 탈퇴」.
 // api(whale-erp-api auth/admin-auth.controller.ts gligar 브랜치)에 경로가 있지만 아직 front 생성 타입
 // (api-types.generated.ts)에 실리지 않아(이 api PR 이 main 에 머지되기 전) 타입을 손으로 적었다
 // (my-password.ts 와 같은 이유). 순수 로직(WithdrawEligibility 등)은 withdrawal-form.ts 에 갈라

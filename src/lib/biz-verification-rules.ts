@@ -1,6 +1,6 @@
 // 사업자정보 인증(국세청 진위확인) 상자의 공통 규칙 — 입력 거르기 · 검사 · 문구 · 10분 만료. 네 화면(회원가입 · 점포 등록/수정 ·
-// MY PAGE 사업자정보 탭 · 플랫폼 BP 관리)이 같은 규칙 · 같은 문구를 쓰도록 둔 곳이다(manyfast S-VRNTHD, 2026-10-22 사용자 확정).
-// 지금은 회원가입 · 점포가 쓰고, MY PAGE 탭과 플랫폼 BP 관리는 이것으로 옮길 차례다. 화면마다 다른 것은 재인증에서 여는 칸(점포는
+// 마이페이지 사업자정보 탭 · 플랫폼 BP 관리)이 같은 규칙 · 같은 문구를 쓰도록 둔 곳이다(manyfast S-VRNTHD, 2026-10-22 사용자 확정).
+// 지금은 회원가입 · 점포가 쓰고, 마이페이지 탭과 플랫폼 BP 관리는 이것으로 옮길 차례다. 화면마다 다른 것은 재인증에서 여는 칸(점포는
 // 저장 뒤 대표자명만)과 [재인증 취소] · 안내 문구다.
 // node --test 가 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 
@@ -81,7 +81,7 @@ export const isBizVerificationExpired = (verifiedAt: number, now: number) => now
 
 /**
  * 인증 요청이 실패했을 때 보일 문구와 자리. 중복만 번호 칸 아래(field), 나머지는 인증하기 버튼 바로 위 한 줄(field: null).
- * status 가 없으면 서버에 닿지 못한 것이다. 화면마다 api 문구가 달라도(가입 · 점포 · MY PAGE api 가 따로 짓는다) 네 화면이
+ * status 가 없으면 서버에 닿지 못한 것이다. 화면마다 api 문구가 달라도(가입 · 점포 · 마이페이지 api 가 따로 짓는다) 네 화면이
  * 같은 글자를 보이도록 상태 코드로만 가른다.
  */
 export function bizVerifyFailure(status: number | undefined): { field: "bizNumber" | null; message: string } {

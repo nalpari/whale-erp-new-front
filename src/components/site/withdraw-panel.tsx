@@ -44,7 +44,7 @@ function ConditionValue({ value, checked }: { value: string; checked: boolean | 
   return <span className={`font-semibold ${tone}`}>{value}</span>;
 }
 
-/** GNB 「회원 탈퇴」가 여는 슬라이드 패널(MY PAGE, S-JHQQNR). 1단계(비밀번호)는 api 를 부르지 않는다 — 별도
+/** GNB 「회원 탈퇴」가 여는 슬라이드 패널(마이페이지, S-JHQQNR). 1단계(비밀번호)는 api 를 부르지 않는다 — 별도
  * 비밀번호 확인 엔드포인트가 없고, 실제 확인은 최종 제출(POST /auth/admin/me/withdraw)에서만 일어난다(설계
  * 결정, Task 3 dispatch). 2단계(내용)에 들어가기 전부터 eligibility 를 미리 불러 둬 2단계 전환이 기다리지
  * 않게 한다. 성공하면 비밀번호 변경과 같은 패턴으로 패널을 닫지 않고 완료 화면으로 바꾼 뒤, 로그아웃은
