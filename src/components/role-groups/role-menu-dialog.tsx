@@ -309,8 +309,8 @@ function MenuTable({
   // head: 머리칸 — – 칸만 1단계 줄과 같은 하늘색으로 칠한다(다 켜진 칸은 기본 체크 그대로, 2026-10-27 사용자 지정).
   // 공통 Checkbox 는 className 을 받지 않아 감싸는 span 에서 안쪽 input · 그림 · 막대만 덮는다.
   const MIXED_TONE = "[&_input:indeterminate]:border-erp-on [&_input:indeterminate]:bg-erp-on-bg [&_input:indeterminate~span]:bg-erp-on";
-  // 고를 수 있는 빈 칸은 테두리를 연회청(erp-brand-soft)으로 진하게 — 기본 테두리(#ededee)로는 체크를 풀어도 잘 안 보였다(2026-10-29 사용자 지정)
-  const EDITABLE_EDGE = "[&_input:enabled:not(:checked):not(:indeterminate)]:border-erp-brand-soft";
+  // 고를 수 있는 빈 칸은 테두리를 회청(erp-brand)으로 진하게 — 연회청으로는 아직 옅었다 — 기본 테두리(#ededee)로는 체크를 풀어도 잘 안 보였다(2026-10-29 사용자 지정)
+  const EDITABLE_EDGE = "[&_input:enabled:not(:checked):not(:indeterminate)]:border-erp-brand";
   const box = (label: string, state: { checked: boolean; mixed?: boolean; disabled: boolean }, onToggle: (on: boolean) => void, tone?: "top" | "head") => (
     <span
       className={`inline-flex ${state.disabled ? "opacity-40" : EDITABLE_EDGE} ${
