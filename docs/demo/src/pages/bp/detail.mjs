@@ -19,7 +19,7 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
   const actionButtons =
     f.disabledButton("삭제", "삭제할 수 없습니다 — 로그인 기록이 있고(2026-09-20), 하위 관리자 4명과 등록 점포 11곳이 있습니다. 대신 BP 상태를 미사용으로 바꾸세요.") +
     ui.slideTrigger("수정", "bp-edit-panel") +
-    x.dialogTrigger("변경 이력", histId, "soft");
+    x.dialogTrigger("변경이력", histId, "soft");
 
   // 머리: 「상호명 값」 / 「BP코드 값 | 아이디 값 | 계정상태 배지」 두 줄 — 라벨 칸을 두 줄이 같이 써 값이 같은 자리에서 시작한다(앱 bp-master-detail-panel.tsx, 2026-10-28 사용자 지정).
   // 앱은 스크롤해도 머리가 위에 고정된다(sticky). 기능 버튼은 닫기까지 모두 맨 아래.
@@ -96,7 +96,7 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
   const historyDialog = x
     .dialog(
       histId,
-      "변경 이력",
+      "변경이력",
       `<div class="overflow-x-auto">${history}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
       ui.button("닫기", { variant: "off", "data-close": true }),
     )

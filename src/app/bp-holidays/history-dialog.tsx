@@ -59,11 +59,11 @@ export function HolidayHistoryButton({ today }: { today: string }) {
           load(initial, 1);
         }}
       >
-        변경 이력 보기
+        변경이력
       </Button>
       <WideDialog
         open={open}
-        title="변경 이력 보기"
+        title="변경이력"
         onClose={() => setOpen(false)}
         footer={
           <Button variant="off" onClick={() => setOpen(false)}>
@@ -105,11 +105,11 @@ export function OwnHistoryButton({ histories, panelOpen }: { histories: BpHolida
   return (
     <>
       <Button variant="soft" onClick={() => setOpen(true)}>
-        변경 이력
+        변경이력
       </Button>
       <WideDialog
         open={open}
-        title="변경 이력"
+        title="변경이력"
         onClose={() => setOpen(false)}
         footer={
           <Button variant="off" onClick={() => setOpen(false)}>

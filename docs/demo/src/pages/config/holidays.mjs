@@ -76,7 +76,7 @@ export default ({ A, R }) => {
     "2026년",
     "연도",
     "w-[96px]",
-  )}${sel(["8월", "9월", "10월"], "9월", "월", "w-[80px]")}<span class="flex-1"></span>${x.dialogTrigger("변경 이력 보기", ids.hist, "soft")}${ui.slideTrigger("등록", PANEL.new)}</div>`;
+  )}${sel(["8월", "9월", "10월"], "9월", "월", "w-[80px]")}<span class="flex-1"></span>${x.dialogTrigger("변경이력", ids.hist, "soft")}${ui.slideTrigger("등록", PANEL.new)}</div>`;
 
   // 오른쪽 그날 칸 — 달력 날짜 칸을 누르면 그 날짜의 판으로 바뀐다(DAY_SCRIPT · 2026-10-08).
   const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -155,7 +155,7 @@ export default ({ A, R }) => {
   const histDialog = big(
     x.dialog(
       ids.hist,
-      "변경 이력 보기",
+      "변경이력",
       `<div class="flex flex-col gap-[12px]"><div class="flex items-center gap-[6px]"><div class="w-[150px]">${ui.dateField(A, { label: "이력 시작일", value: "2026-09-01" })}</div><span class="text-erp-label">~</span><div class="w-[150px]">${ui.dateField(A, {
         label: "이력 종료일",
         value: "2026-09-21",

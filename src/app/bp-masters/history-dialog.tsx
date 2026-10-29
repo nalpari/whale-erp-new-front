@@ -80,7 +80,7 @@ export function HistoryButton({ bpCodeId, panelOpen }: { bpCodeId: number; /** �
           load(1);
         }}
       >
-        변경 이력
+        변경이력
       </Button>
       <dialog
         ref={ref}
@@ -93,7 +93,7 @@ export function HistoryButton({ bpCodeId, panelOpen }: { bpCodeId: number; /** �
         className="m-auto max-h-[calc(100dvh-48px)] w-[860px] max-w-[calc(100vw-32px)] overflow-y-auto rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
       >
         <h2 id={titleId} className="text-[18px] font-semibold">
-          변경 이력
+          변경이력
         </h2>
         <div className="mt-[12px] flex flex-col gap-[12px]" aria-busy={loading}>
           {failure && <FailedBand message={failure} />}
