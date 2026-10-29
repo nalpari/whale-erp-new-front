@@ -56,7 +56,7 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
     { header: "BP코드", width: "w-[110px]", cell: (r) => r.bpCode },
     // 줄을 눌러도 고르지만, 키보드로도 고를 수 있게 상호 칸을 라디오로 둔다.
     {
-      header: "상호",
+      header: "상호명",
       align: "left",
       cell: (r) => (
         <Radio
@@ -82,7 +82,7 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
             setPicked(null);
             setQuery({ keyword: v.trim(), page: 1 });
           }}
-          placeholder="상호 또는 BP코드"
+          placeholder="상호명 또는 BP코드"
           aria-label="BP 찾기"
           maxLength={50}
         />
