@@ -5,8 +5,10 @@ import { formatDateTime } from "@/lib/format";
 import { kstToday } from "@/lib/staff-members";
 import { MENU_CODE } from "@/lib/menus";
 import { getStaffMemberPayslipSummary, getStaffMemberTodoSummary, getStaffMemberWeekSchedule } from "@/lib/staff-members-api";
+import { getPeriodAttendance } from "@/lib/attendance-records-api";
 import { getStaffMemberTodos } from "@/lib/todos-api";
 import { STATUS_STYLE } from "../../payslips/payslip-row";
+import { addDays } from "../../work-schedules/work-schedule-query";
 import { endLabel } from "../../work-schedules/work-schedule-view";
 import { CellView } from "../staff-table";
 import { AreaFailure, BoxMessage } from "./detail-box";
@@ -15,6 +17,7 @@ import { MenuTextLink } from "./manage-link";
 import { loadArea, loadLabels } from "./summary-load";
 import { TodoTitleLink } from "./todo-links";
 import {
+  attendanceLines,
   hoursText,
   isAreaForbidden,
   isPayslipSummaryEmpty,
@@ -25,6 +28,7 @@ import {
   todoAssignText,
   todoStatusMark,
   workDateText,
+  type AttendanceLine,
   type PayslipSummaryItem,
   type TodoItem,
   type WeekScheduleItem,
@@ -80,6 +84,44 @@ export async function ScheduleBox({ staffMemberId, weekStart }: { staffMemberId:
       />
       <Foot label="주간 근무시간 합계">{hoursText(totalWorkMinutes)}</Foot>
     </>
+  );
+}
+
+/**
+ * 「출퇴근 현황」 영역(WHALEERP-186) — 근무스케줄 영역과 같은 주(월~일)의 그 직원 출퇴근 표: 날짜 · 출근 · 퇴근 · 상태 · 비고. GET /attendance-records 를
+ * 직원 한 명(staffMemberId)으로 부른다. 이 api 는 영역 전용 문구 없이 출·퇴근 현황 조회 메뉴 권한이 없으면 일반 403 이라 그것도 영역 권한 안내로 본다
+ * (includeAccessDenied). 가려진 직원(404)은 상세가 먼저 404 라 여기서는 오류 안내다. 줄 만들기는 summary-view.ts attendanceLines.
+ */
+export async function AttendanceBox({ staffMemberId, weekStart }: { staffMemberId: number; weekStart: string }) {
+  const [result, statuses, reasons] = await Promise.all([
+    loadArea(
+      "출퇴근 현황 영역",
+      () => getPeriodAttendance(new URLSearchParams({ staffMemberId: String(staffMemberId) }), weekStart, addDays(weekStart, 6)),
+      { includeAccessDenied: true },
+    ),
+    loadLabels("AttendanceDayStatus"),
+    loadLabels("AttendanceReviewReason"),
+  ]);
+  if (result.kind !== "ok") return <AreaFailure kind={result.kind} subject="출퇴근 현황을" />;
+  const lines = attendanceLines(
+    result.data.items,
+    statuses ? (v) => labelOf(statuses, v) : null,
+    reasons ? (v) => labelOf(reasons, v) : null,
+  );
+  return (
+    <DataTable<AttendanceLine>
+      headVariant="plain"
+      columns={[
+        { header: "날짜", cell: (r) => workDateText(r.date) },
+        { header: "출근", cell: (r) => r.checkIn },
+        { header: "퇴근", cell: (r) => r.checkOut },
+        { header: "상태", cell: (r) => r.status },
+        { header: "비고", cell: (r) => <span className="block truncate">{r.remark}</span> },
+      ]}
+      rows={lines}
+      rowKey={(r) => `${r.date}-${r.checkIn}-${r.checkOut}-${r.remark}`}
+      empty="이 주에 출퇴근 기록이 없습니다."
+    />
   );
 }
 

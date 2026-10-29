@@ -92,7 +92,7 @@ export function templateEdit(t) {
     );
     const preview = t.preview ? box("미리보기", "", PREVIEW[t.kind](t.preview)) : box("미리보기", "", p.help("채널을 고르고 본문을 넣으면 채널 모양으로 보입니다."));
     const history = t.history
-      ? p.box("변경 이력", "", ui.dataTable([{ header: "일시", width: "w-[120px]" }, { header: "수정자", width: "w-[90px]" }, { header: "내용", align: "left" }], t.history))
+      ? p.box("변경이력", "", ui.dataTable([{ header: "일시", width: "w-[120px]" }, { header: "수정자", width: "w-[90px]" }, { header: "내용", align: "left" }], t.history))
       : "";
 
     const list = link(R, "notify/templates.html");
@@ -102,7 +102,7 @@ export function templateEdit(t) {
           "soft",
           "기본 문구로 되돌리시겠습니까?",
           // 되돌리기는 제목·본문·변수 목록만(NOTIFY-18). 알림톡은 카카오 템플릿 코드가 그대로라 검수 본문과 맞는지 확인을 청한다.
-          "제목 · 본문 · 변수 목록이 처음 배포된 것으로 바뀝니다. 되돌린 것도 변경 이력에 남습니다." +
+          "제목 · 본문 · 변수 목록이 처음 배포된 것으로 바뀝니다. 되돌린 것도 변경이력에 남습니다." +
             (talk ? " 카카오 템플릿 코드는 바뀌지 않으니, 검수받은 본문과 맞는지 확인해 주세요." : ""),
           "되돌리기",
         )

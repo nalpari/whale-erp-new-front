@@ -2,13 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
-import { Badge, Button, DataTable, DetailTable, FailedBand, Pagination, useAction, useToast, type Column } from "@/components/common";
+import { Badge, Button, DataTable, DetailTable, FailedBand, NoticeBand, Pagination, useAction, useToast, type Column } from "@/components/common";
 import { PendingNotice } from "@/components/site/code-editor/code-panel";
 import { useAccount, useCurrentBp, useScope, useStores } from "@/components/site/session-gate";
 import { loginPathOf } from "@/lib/auth-routes";
 import { bff, BffError } from "@/lib/bff";
 import { formatDateTime } from "@/lib/format";
-import { NoticeBand } from "../../stores/store-parts";
 import { getBulkExportLink, requestBulkExport } from "./actions";
 import {
   bulkExportViewOf,
