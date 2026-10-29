@@ -1,6 +1,10 @@
 # Bundle history
 
+## 2026-10-29
+* **Update**: [점포 관리](/stores.md) — 엑셀 예약 생성 셀프 리뷰 반영: 202 안내 띠에 api 문구와 같은 「24시간 · 본인만」 문장을 한 번 더 붙이던 것을 뺐다(api 문구가 없을 때의 기본 문구 `EXCEL_SCHEDULED` 가 같은 말을 한다). 내려받기 화면은 409 를 안내 색 띠로, 404 에 「엑셀을 요청한 계정으로 로그인했는지 확인해 주세요」, [다시 받기]를 Primary 로. `returnPathOf` 는 0 · 앞자리 0 번호를 받지 않는다. `relayExcelResponse` 단위 테스트를 더했다. sources 에 `src/app/excel-downloads` 를 걸었다. **배포는 front 먼저 또는 api(#188)와 동시** — api 가 먼저 나가면 옛 중계 경로가 202 를 200 으로 바꿔 「엑셀 파일을 만들지 못했습니다」를 띄우고, 메일 링크 화면도 없어 404 다. front 가 먼저 나가면 옛 api 의 1만 건 이상 400 은 안내 띠로 보인다.
+
 ## 2026-10-28
+* **Update**: [점포 관리](/stores.md) · [BP 마스터 계정 관리](/bp.md) · [Whale ERP Frontend](/whale-erp-front.md) — 엑셀 1만 건 이상 예약 생성 대응(api monferno, 엑셀 공통 `okf/api/excel-exports.md`): 중계 경로가 202 예약 접수 JSON 을 넘기고(`relayExcelResponse`) 화면은 안내 띠만, 409 생성 중 안내 띠 · 503 실패 띠. 메일 링크 화면 `/excel-downloads/{id}`(받을 때마다 새 S3 주소, 404 · 409 · 410 안내), 메뉴 없는 화면(`MENULESS_PATHS`), 로그인 뒤 돌아오기(`/login?next=`, `returnPathOf`). 「예약 생성은 api 에 아직 없다」 문구를 지웠다. api 타입을 다시 만들었다.
 * **Update**: [BP 마스터 계정 관리](/bp.md) · [Whale ERP Frontend](/whale-erp-front.md) — 사용자 디자인 수정(front beedrill): BP 마스터 목록 열 · 계정상태 필터(셋 다 끄기) · 상호명 링크, 상세 머리 고정 · [BP 상태 변경] 자리(기본정보 제목 줄) · 강제변경을 비밀번호 줄로 · 미사용/탈퇴 빨간 안내, 수정 화면 아이디 · 가입경로 삭제. 중복 확인 문구 네 화면 통일, 플랫폼관리 사이트 부가서비스 현황 숨김.
 * **Update**: [점포 관리](/stores.md) — BP 탈퇴 · 미사용 안내 문구 · 자리(상세 · 수정 머리 위), 등록 화면은 들어올 때 BP 상태를 보고 안내 · 저장 막기(front kakuna).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 헤더 BP 탈퇴 · 미사용 배지(`useCurrentBpStatus`), BP 관리자 등록의 권한명 없음 안내 · [이동], 플랫폼 메뉴 관리 트리 모양(1단계 바탕 없음 · 묶음 사이 선 · 「└」 · 배지 정렬) · 미사용 안내 · 끌어 옮기기 안내 · 확인창 문구, BP 휴일 겹침 확인창 버튼 「저장」(front kakuna).
