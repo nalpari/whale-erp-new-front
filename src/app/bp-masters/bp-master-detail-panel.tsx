@@ -316,7 +316,6 @@ function DetailBody({
             open={confirm === "inactive"}
             title="BP상태를 미사용으로 바꾸시겠습니까?"
             confirmLabel="미사용으로 변경"
-            confirmVariant="danger"
             wide
             busy={busy}
             onConfirm={() => handleStatus("INACTIVE")}
@@ -373,7 +372,6 @@ function DetailBody({
           open={confirm === "delete"}
           title="BP 마스터 계정을 삭제하시겠습니까?"
           confirmLabel="삭제"
-          confirmVariant="danger"
           busy={busy}
           onConfirm={handleDelete}
           onCancel={() => setConfirm(null)}
