@@ -1799,6 +1799,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/staff-members/{id}/summary/send-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 발송 이력 영역 — 근로계약이 보낸 가입 초대 · 소속 추가 확인 요청(재발송 포함)의 결과 · 실패 사유 · 재시도 가능 여부, 최근 순
+         *     (WHALEERP-136). 근로계약 관리 조회 권한
+         */
+        get: operations["StaffMemberSummaryController_sendLogs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/staff-members/{id}/summary/todos": {
         parameters: {
             query?: never;
@@ -6840,6 +6860,34 @@ export interface components {
             recent: components["schemas"]["StaffMemberRecentPayslipDto"][];
             /** @description 발송 완료가 아닌 명세서 수 — 작성 중 · 검토 중 · 확정 */
             unsentCount: number;
+        };
+        /** @enum {string} */
+        StaffSendKind: "SIGNUP_INVITE" | "AFFILIATION_REQUEST";
+        /**
+         * @description 비즈뿌리오 접수 기준. 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다
+         * @enum {string}
+         */
+        StaffSendResult: "SUCCEEDED" | "FAILED" | "UNCONFIRMED";
+        StaffMemberSendLogDto: {
+            kind: components["schemas"]["StaffSendKind"];
+            /** @description 비즈뿌리오 접수 기준. 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다 */
+            result: components["schemas"]["StaffSendResult"];
+            /** @description 알림톡 발송 이력 ID(alimtalk_send_logs) */
+            sendLogId: number;
+            /** @description 보낸 근로계약 */
+            contractId: number;
+            /** @description 같은 계약에 앞서 나간 발송이 있었다(재발송 · 고쳐 다시 보냄) */
+            isResend: boolean;
+            /** @description 관리자에게 보일 실패 사유. 성공이면 null */
+            failureReason: string | null;
+            /** @description 다시 보내도 되는가 — 확실히 나가지 않은 실패만 true, 접수 여부 모름은 false. 성공이면 null */
+            retryable: boolean | null;
+            /** Format: date-time */
+            sentAt: string;
+        };
+        StaffMemberSendLogResponseDto: {
+            /** @description 이 직원 레코드의 모든 근로계약 발송, 최근 순 */
+            items: components["schemas"]["StaffMemberSendLogDto"][];
         };
         /** @enum {string} */
         TodoStatus: "PENDING" | "IN_PROGRESS" | "DONE";
@@ -15630,6 +15678,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StaffMemberPayslipSummaryResponseDto"];
+                };
+            };
+            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMemberSummaryController_sendLogs: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMemberSendLogResponseDto"];
                 };
             };
             /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
