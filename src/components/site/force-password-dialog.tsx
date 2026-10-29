@@ -24,7 +24,8 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
   const [error, setError] = useState<{ at: "password" | "terms"; message: string } | null>(null);
   const [pending, startTransition] = useTransition();
   // 결과 안내 — 브라우저 alert 대신 공통 확인창([확인] 하나)으로 띄우고, 누르면 다음 동작을 한다(2026-10-29 사용자 지적 — 「localhost 내용:」 창이 떴다)
-  const [notice, setNotice] = useState<{ text: string; then: () => void } | null>(null);
+  // title 이 없으면 「비밀번호 변경」. 비밀번호가 만료된 안내는 「비밀번호 만료」(2026-10-29 사용자 지정)
+  const [notice, setNotice] = useState<{ title?: string; text: ReactNode; then: () => void } | null>(null);
   const needTerms = account.isTermsAgreementRequired;
   const agreed = !needTerms || (terms.use && terms.policy);
 
@@ -56,8 +57,12 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
         onDone(); // 이미 바꾼 계정이다. 팝업만 닫는다.
       } else if (r.status === 401) {
         // 발급 비밀번호가 만료됐으면 api 문구가 비밀번호 찾기를 안내한다. 팝업을 오래 열어 둬 접근 토큰이 끝난 401 이면 세션 만료로 안내한다.
-        const text = r.message?.startsWith("발급받은 비밀번호") ? r.message : "세션이 만료되었습니다. 다시 로그인해 주세요.";
-        setNotice({ text, then: () => void signOut(logout) });
+        const expired = r.message?.startsWith("발급받은 비밀번호");
+        setNotice({
+          title: expired ? "비밀번호 만료" : undefined,
+          text: expired ? r.message : "세션이 만료되었습니다. 다시 로그인해 주세요.",
+          then: () => void signOut(logout),
+        });
       } else {
         const message = r.message ?? "비밀번호를 변경하지 못했습니다";
         setError({ at: r.status === 400 && message.includes("약관") ? "terms" : "password", message });
@@ -89,7 +94,19 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
           {account.temporaryPasswordExpiresAt && (
             <Remaining
               expiresAt={account.temporaryPasswordExpiresAt}
-              onExpire={() => setNotice({ text: "임시 비밀번호 사용 시간이 지났습니다. 다시 로그인해 주세요.", then: () => void signOut(logout) })}
+              onExpire={() =>
+              setNotice({
+                title: "비밀번호 만료",
+                text: (
+                  <>
+                    임시 비밀번호 사용 시간이 지났습니다.
+                    <br />
+                    다시 로그인해 주세요.
+                  </>
+                ),
+                then: () => void signOut(logout),
+              })
+            }
             />
           )}
 
@@ -160,7 +177,7 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
       <ConfirmDialog
         open={!!notice}
         // 제목은 이 팝업의 일 — 「안내」보다 무엇에 대한 것인지 바로 읽힌다(2026-10-29 사용자 지정)
-        title="비밀번호 변경"
+        title={notice?.title ?? "비밀번호 변경"}
         cancelLabel={null}
         onConfirm={() => {
           const then = notice?.then;
