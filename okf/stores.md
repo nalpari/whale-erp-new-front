@@ -8,7 +8,7 @@ sources:
   - { id: stores-data, resource: ../src/lib/stores.ts, title: 점포 데이터 접근 }
   - { id: store-form, resource: ../src/lib/store-form.ts, title: 점포 등록 · 수정 폼 규칙 }
   - { id: store-view, resource: ../src/lib/store-view.ts, title: 점포 표기 }
-generated: { by: claude-code/opus-5.5, at: 2026-10-29T05:23:37Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-29T05:30:54Z }
 ---
 
 근거: `docs/mockup/stores/` (목업 · 1차 · R-QTPRUQ)
@@ -70,6 +70,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-29T05:23:37Z }
 * 기타 정보는 층별로 둔다(점포 1 : 층 N). 층마다 층수·매장평수·전용면적·좌석수를 한 줄로 적고 모두 선택이다 — `S-ALHLHW`
 * 재직직원 수는 그 점포를 근무지로 하는 재직 직원 수다. 목록 카드 칸은 점포 연락처 · 재직직원 · 점포주소(시 · 군 · 구)이고, 운영이 아닌 점포는 카드 바탕을 회색으로 가라앉힌다 — 카드 왼쪽 색 띠는 두지 않는다(2026-10-29 사용자 결정 — 코드 이름으로 맞춤) — `S-BAYAJS`
 * 삭제는 미운영이면서 폐점 조건과 같은 세 조건을 채운 점포만 된다. 폐점 점포는 지우지 않고 보존한다 — `S-AGGZZG`
+* 상세의 [삭제]는 보조 색 버튼이고, 확인 창(점포명 · 점포유형 · 점포코드, 「삭제한 점포는 복구할 수 없습니다.」)의 [삭제]만 위험 색이다 — BP 마스터 계정 삭제와 같다(2026-10-29 사용자 결정) — `S-AGGZZG`
 * 변경·삭제·상태 변경 이력은 5년 보존한다(탈퇴 BP 는 `PL-ZHHPAV` 우선). 변경 이력은 상세에서 조회 권한자에게 보이고, 삭제 이력은 운영 요청으로만 확인한다 — `F-MOQKGY`
 * 수정을 저장하면 바뀐 항목마다 변경 전후 값·변경자·변경 일시가 변경 이력에 쌓인다. 변경 사유는 받지 않는다 — `S-JEPOMK`
 * 화면을 연 뒤 다른 사람이 먼저 고쳤으면 저장하지 않고 최신 정보를 불러오게 한다 — `S-JEPOMK`

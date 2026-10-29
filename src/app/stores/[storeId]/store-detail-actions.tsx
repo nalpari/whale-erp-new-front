@@ -272,6 +272,8 @@ export function StoreDetailActions({
           open={dialog === "delete"}
           title="점포를 삭제하시겠습니까?"
           confirmLabel="삭제"
+          // 되돌릴 수 없어 확인 버튼만 위험 색 — 머리의 [삭제]는 Soft 그대로(BP 마스터 계정 삭제와 같다, 2026-10-29 사용자 결정)
+          confirmVariant="danger"
           busy={busy}
           onConfirm={handleDelete}
           onCancel={() => setDialog(null)}

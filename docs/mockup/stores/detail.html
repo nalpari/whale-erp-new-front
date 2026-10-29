@@ -33,9 +33,9 @@
               <button class="btn btn--secondary btn--sm" type="button" data-open="pop-status-run" data-show="run">점포 상태 변경</button>
               <button class="btn btn--secondary btn--sm" type="button" data-open="pop-status-unop" data-show="unop" hidden>점포 상태 변경</button>
               <button class="btn btn--secondary btn--sm" type="button" disabled data-show="bpoff" hidden>점포 상태 변경</button>
-              <button class="btn btn--danger btn--sm" type="button" data-open="pop-delete" data-show="unop" hidden>점포 삭제</button>
-              <button class="btn btn--danger btn--sm" type="button" disabled data-show="run" title="미운영 점포만 삭제할 수 있습니다. 운영을 끝내려면 점포 상태 변경에서 폐점하세요.">점포 삭제</button>
-              <button class="btn btn--danger btn--sm" type="button" disabled data-show="bpoff" hidden title="소속 BP가 미사용 상태여서 삭제할 수 없습니다.">점포 삭제</button>
+              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-delete" data-show="unop" hidden>점포 삭제</button>
+              <button class="btn btn--secondary btn--sm" type="button" disabled data-show="run" title="미운영 점포만 삭제할 수 있습니다. 운영을 끝내려면 점포 상태 변경에서 폐점하세요.">점포 삭제</button>
+              <button class="btn btn--secondary btn--sm" type="button" disabled data-show="bpoff" hidden title="소속 BP가 미사용 상태여서 삭제할 수 없습니다.">점포 삭제</button>
               <a class="btn btn--primary btn--sm" href="edit.html" data-show="run">점포 정보 수정</a>
               <a class="btn btn--primary btn--sm" href="edit.html?state=noauth" data-show="unop" hidden>점포 정보 수정</a>
               <button class="btn btn--primary btn--sm" type="button" disabled data-show="bpoff" hidden>점포 정보 수정</button>
@@ -295,12 +295,12 @@
     <div class="modal" id="pop-delete" hidden role="dialog" aria-modal="true" aria-labelledby="pd-t">
       <div class="modal__box">
         <div class="modal__head">
-          <h2 class="t-h2" id="pd-t">점포 삭제</h2>
+          <h2 class="t-h2" id="pd-t">점포를 삭제하시겠습니까?</h2>
           <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
         </div>
         <div class="modal__body">
-          <p style="margin: 0; font-size: 13.5px"><b>모리커피 청담점</b>을 삭제합니다.</p>
-          <p class="subtle" style="margin: 0; font-size: 13px">삭제하면 점포 목록과 상세 조회에서 사라지고 되돌릴 수 없습니다. 삭제 이력은 남습니다.</p>
+          <dl class="kv" style="margin: 0; font-size: 13.5px"><dt>점포명</dt><dd>모리커피 청담점</dd><dt>점포유형</dt><dd>가맹점포</dd><dt>점포코드</dt><dd>ST000007</dd></dl>
+          <p style="margin: 0; font-size: 13.5px">삭제한 점포는 복구할 수 없습니다.</p>
         </div>
         <div class="modal__foot">
           <button class="btn btn--ghost" type="button" data-close>취소</button>
