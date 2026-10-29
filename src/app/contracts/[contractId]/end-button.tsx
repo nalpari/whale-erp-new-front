@@ -57,7 +57,7 @@ export function EndContractButton({ contractId, name, back }: { contractId: numb
         }
       >
         <p>채용을 접을 때 씁니다. {name ? `${name} 님에게 ` : ""}보낸 가입 초대(초대 코드 · 링크)를 쓸 수 없게 되고, 종료한 계약은 다시 열 수 없습니다.</p>
-        <p className="mt-[6px]">계약은 지우지 않고 상태 변경 이력에 남습니다. 남은 직원 정보는 직원 정보 관리에서 퇴직 처리로 정리합니다.</p>
+        <p className="mt-[6px]">계약은 지우지 않고 상태 변경이력에 남습니다. 남은 직원 정보는 직원 정보 관리에서 퇴직 처리로 정리합니다.</p>
         {error && (
           <p className="mt-[6px] text-erp-off" aria-live="polite">
             {error}

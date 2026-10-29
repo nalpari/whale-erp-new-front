@@ -172,7 +172,7 @@ export function staffSections({ A, R }) {
   const schedMonthView = p.schedMonth(A, schedCrew, { year: 2026, month: 7, today: "2026-08-22", all: true });
 
   const schedLog = p.section(
-    "변경 이력",
+    "변경이력",
     "",
     ui.dataTable(
       [{ header: "일시", width: "w-[120px]" }, { header: "구분", width: "w-[80px]" }, { header: "내용", align: "left" }],
