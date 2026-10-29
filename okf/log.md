@@ -1,8 +1,12 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: main 병합(front slowpoke, main #174 까지): okf/log 는 양쪽 기록을 살렸다.
 * **Update**: main 병합(front slowpoke, main #177 까지): okf/log 는 양쪽 기록을 살렸고, [Whale ERP Frontend](/whale-erp-front.md) 는 이 PR 의 재발송 · 타입 출처 문장에 main 의 「변경이력」 표기를 얹었다.
 * **Update**: front #136 재리뷰 5 참고 3 — api 타입을 api main(`d785f100`, #158 · #164 · #180 · #182 · #184 포함)으로 다시 만듦. api #180 이 지운 `/me/invitations/check` · `MyInvitationLookupDto` 가 빠지고 소속 추가 확인 요청 · 받은 초대 · 계약 파일 받기 경로가 들어옴(관리자웹 사용처 없음).
+* **Update**: main 병합(front porygon, main #177 · #172 · #176 까지): okf/log.md 충돌은 양쪽 기록을 살렸다.
+* **Update**: main 병합(front porygon, main #175 · #173 까지): okf 충돌은 양쪽 기록을 살렸다 — generated 는 늦은 시각(main), [Whale ERP Frontend](/whale-erp-front.md) 의 공통 컴포넌트 · 점포 · BP 마스터 줄은 main 의 「마이페이지」 · 「변경이력」 · 헤더 툴팁(`HeaderTip`) 변경에 이 브랜치의 `NoticeBand` · `ExcelDownload*` 이름 변경을 글자 단위로 합쳤다. 코드는 git 이 자동으로 합쳤고 옛 이름 참조는 남지 않았다.
+* **Update**: [점포 관리](/stores.md) · [BP 마스터 계정 관리](/bp.md) · [Whale ERP Frontend](/whale-erp-front.md) — 엑셀 받기와 안내 띠를 공통 컴포넌트로 올렸다(1팀, 2026-10-29): 점포 화면의 `store-excel.tsx`(`StoreExcelProvider` · `StoreExcelNotice` · `StoreExcelButton`)를 `components/common/excel-download.tsx`(`ExcelDownloadProvider` · `ExcelDownloadNotice` · `ExcelDownloadButton`)로, `store-parts.tsx` 의 `NoticeBand` 를 `components/common/notice-band.tsx` 로 옮겼다. 점포 전용 기본값(파일 이름 「점포목록.xlsx」 · 「받을 점포가 없습니다」)은 없애고 화면이 넘긴다. 점포 · BP 마스터 목록 · 엑셀 내려받기 화면 · 점포 상세 · 등록 · 수정 · 이력의 import 를 바꿨고 동작은 그대로다. DESIGN.md Components 에 Notice Band · Excel Download 를 적었다.
 * **Update**: main 병합(front tauros, PR #177 충돌 해소 — #172 · #173 · #175 · #176 머지분): okf 는 양쪽 기록을 살렸다 — staff-members.md 는 늦은 generated 시각, log.md 는 두 쪽 항목을 모두 남겼다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 상세 「출퇴근 현황」 영역을 채우고(WHALEERP-186, 재영 10-29 결정 · ATT-19 · ATT-34) 「관리」 링크(MN000025 `/attendance-records`, 그 직원 · 근무지 · 주)를 걸었다. `GET /attendance-records?staffMemberId=` 로 근무스케줄과 같은 주를 받아 날짜 · 출근 · 퇴근 · 상태 · 비고 표를 그린다. 하루 쌍이 여럿이면 첫 출근 · 마지막 퇴근(시각 기준, 자정 넘긴 퇴근은 「(다음날)」) + 「외 N회」. 「관리」 주소는 일별 날(date)도 싣는다. sources 에 attendance-query.ts · attendance-records-api.ts 를 걸었다.
 * **Update**: main 병합(front mankey, PR #172 충돌 해소 — #173 · #175 · #176 머지분): okf/log.md 는 두 쪽 항목을 모두 남겼다.
