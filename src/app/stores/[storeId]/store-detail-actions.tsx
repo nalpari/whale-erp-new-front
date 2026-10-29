@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, ConfirmDialog, Radio, useToast } from "@/components/common";
+import { Blocked, Button, ConfirmDialog, Radio, useToast } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formOfStore, toUpdateStoreInput } from "@/lib/store-form";
 import type { StoreDetail, StoreStatus, StoreTransitions } from "@/lib/store-types";
@@ -14,15 +14,6 @@ import { closeBlockText, finalEuro, nextStatuses } from "@/lib/store-view";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
 import { withBack } from "../stores-query";
-
-/** 막힌 버튼의 이유. 막힌 버튼은 호버를 받지 않으므로(Button 의 disabled:pointer-events-none) 감싸는 칸에 단다 */
-function Blocked({ reason, children }: { reason?: string; children: React.ReactNode }) {
-  return (
-    <span title={reason} className="inline-flex">
-      {children}
-    </span>
-  );
-}
 
 /** 확인창 안에서 어떤 점포인지 — platform-admins/admin-parts.tsx 의 WhoList 와 같은 모양(화면마다 로컬로 둔다). */
 function WhoList({ rows }: { rows: [string, React.ReactNode][] }) {
@@ -49,6 +40,7 @@ const UNKNOWN =
 /**
  * 상세 제목 줄의 버튼 — [상태 변경] [삭제] [수정] [목록](데모 stores/detail).
  * 상태 변경 팝업은 열 때 운영 · 폐점 조건을 지금 기준으로 다시 받고, 갈 수 있는 상태만 보인다(미운영→운영 · 폐점, 운영→폐점).
+ * 폐점은 되돌릴 수 없어 조건 팝업 다음에 확인 창을 한 번 더 거친다([이전]은 조건 팝업으로 돌아간다).
  * 상태만 바꾸는 저장도 수정(PUT)으로 보낸다 — 화면 전체를 보내야 해서 상세 값을 그대로 싣고 상태만 바꾼다.
  * 폐점 점포는 수정 · 삭제 · 상태 변경이 없다. 소속 BP 가 미사용이면 쓰는 버튼을 막는다(api 도 409 로 막는다).
  * 메뉴 권한(로그인 정보)으로 상태 변경 · 수정은 update, 삭제는 delete 가 있을 때 보인다 — 막는 것은 api 다.
@@ -70,7 +62,7 @@ export function StoreDetailActions({
   const bp = useCurrentBp().bpCodeId;
   const at = (path: string) => bpPath(bp, path);
   const statusLabel = useCodeLabel("STORE_STATUS");
-  const [dialog, setDialog] = useState<"status" | "delete" | null>(null);
+  const [dialog, setDialog] = useState<"status" | "close-confirm" | "delete" | null>(null);
   const [target, setTarget] = useState<StoreStatus | null>(null);
   const [transitions, setTransitions] = useState<StoreTransitions>(store.transitions);
   const [failure, setFailure] = useState<string | null>(null);
@@ -97,16 +89,25 @@ export function StoreDetailActions({
     if (status === undefined || status === 404 || status === 409) router.refresh();
   };
 
-  const handleStatusOpen = () => {
-    setFailure(null);
-    setTarget(targets[0] ?? null);
-    setDialog("status");
-    // 조건은 그 사이 바뀌었을 수 있어 지금 기준으로 다시 받는다(진행 중 근로계약 등)
+  // 조건은 그 사이 바뀌었을 수 있어 지금 기준으로 다시 받는다(진행 중 근로계약 등)
+  const reloadTransitions = () =>
     startBusy(async () => {
       const result = await getStoreTransitionsAction(store.storeId).catch(UNKNOWN("상태 확인"));
       if (result.ok) setTransitions(result);
       else setFailure(result.message);
     });
+
+  const handleStatusOpen = () => {
+    setFailure(null);
+    setTarget(targets[0] ?? null);
+    setDialog("status");
+    reloadTransitions();
+  };
+
+  /** 폐점 확인 창의 [이전] — 조건 팝업으로 돌아가며 조건을 다시 받는다. 폐점이 막혀(409 등) 돌아온 때 옛 조건을 보이지 않게 한다. 실패 문구 · 고른 상태는 둔다 */
+  const handleBackToStatus = () => {
+    setDialog("status");
+    reloadTransitions();
   };
 
   const allowed =
@@ -188,7 +189,16 @@ export function StoreDetailActions({
           confirmLabel={target ? `${statusLabel(target)}${finalEuro(statusLabel(target))} 변경` : "변경"}
           busy={busy}
           confirmDisabled={!allowed}
-          onConfirm={handleStatusChange}
+          // 폐점은 되돌릴 수 없어 수정 화면처럼 확인 창을 한 번 더 거친다(2026-10-29 사용자 결정). 조건 팝업에는 폐점일 안내를 적지 않는다(10-19)
+          // 넘어갈 때 앞 팝업의 실패 문구를 지운다 — 남으면 아직 누르지 않은 폐점이 실패한 것처럼 보인다(조건은 api 가 다시 본다)
+          onConfirm={
+            target === "CLOSED"
+              ? () => {
+                  setFailure(null);
+                  setDialog("close-confirm");
+                }
+              : handleStatusChange
+          }
           onCancel={() => setDialog(null)}
         >
           <div className="flex flex-col gap-[12px]">
@@ -251,11 +261,28 @@ export function StoreDetailActions({
         </ConfirmDialog>
       )}
 
+      {can.update && !closed && targets.includes("CLOSED") && (
+        <ConfirmDialog
+          open={dialog === "close-confirm"}
+          title="폐점으로 변경할까요?"
+          confirmLabel="폐점으로 변경"
+          cancelLabel="이전"
+          busy={busy}
+          onConfirm={handleStatusChange}
+          onCancel={handleBackToStatus}
+        >
+          <p>폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다.</p>
+          {failure && <p role="alert" className="mt-[10px] text-erp-off">{failure}</p>}
+        </ConfirmDialog>
+      )}
+
       {can.delete && !closed && (
         <ConfirmDialog
           open={dialog === "delete"}
           title="점포를 삭제하시겠습니까?"
           confirmLabel="삭제"
+          // 되돌릴 수 없어 확인 버튼만 위험 색 — 머리의 [삭제]는 Soft 그대로(BP 마스터 계정 삭제와 같다, 2026-10-29 사용자 결정)
+          confirmVariant="danger"
           busy={busy}
           onConfirm={handleDelete}
           onCancel={() => setDialog(null)}

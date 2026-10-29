@@ -2,7 +2,7 @@
 // Node 24 가 타입을 벗겨 그대로 실행한다. 테스트 도구를 따로 깔지 않는다(date-math.test.ts 와 같다).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { homeOf, isPlatformRole, isPublicPath, loginPathOf, redirectsSignedIn, returnPathOf, signedInTargetOf } from "./auth-routes.ts";
+import { homeOf, isFranchiseRole, isPlatformRole, isPublicPath, loginPathOf, redirectsSignedIn, returnPathOf, signedInTargetOf } from "./auth-routes.ts";
 
 test("로그인한 채 홈 · 로그인 · 찾기를 열면 자기 홈으로 — 홈은 접근 토큰이 살아 있을 때만", () => {
   const now = 1_000_000;
@@ -23,6 +23,10 @@ test("플랫폼 마스터·관리자는 플랫폼 홈, 나머지는 ERP 홈", ()
   assert.equal(homeOf("PA"), "/platform");
   for (const code of ["BM", "BA", "FM", "FA"]) assert.equal(homeOf(code), "/home");
   assert.equal(isPlatformRole("BM"), false);
+});
+
+test("가맹 역할은 가맹 마스터 · 가맹 관리자뿐", () => {
+  assert.deepEqual(["FM", "FA", "BM", "BA", "PM", "PA", ""].map(isFranchiseRole), [true, true, false, false, false, false, false]);
 });
 
 test("공개 경로만 로그인 없이 열린다 — 접두가 경로 마디와 맞아야 한다", () => {

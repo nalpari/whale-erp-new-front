@@ -1,6 +1,28 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: main 병합(front typhlosion, main #192 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 공통 컴포넌트 줄은 main 의 헤더 툴팁 설명에 이 브랜치의 `Blocked` 문장을 다시 얹었고, [홈](/home.md) 시각은 늦은 값을 남겼다.
+* **Update**: [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) — PR #190 코드 리뷰 반영: 상세 폐점 확인 창의 [이전]이 조건을 다시 받는다. 가맹 역할 판정을 `auth-routes.ts` 의 `isFranchiseRole` 로 모아 점포 목록 [등록] · 홈 점포 없음 안내 · 홈 점포 하나 화면이 같이 쓴다(테스트 포함, front typhlosion).
+* **Update**: [홈](/home.md) — 매핑된 점포가 없는 가맹 마스터 · 가맹 관리자의 홈은 [점포 등록] 없이 「등록된 점포가 없습니다. 관리자에게 점포 배정을 요청하세요.」를 보인다(2026-10-29 사용자 결정, PR #190 리뷰, front typhlosion).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 상세의 `Blocked` 복사본을 지우고 공통 `@/components/common` 의 것을 쓴다. 공통 [엑셀 다운로드](`ExcelDownloadButton`)는 막힌 버튼 자체에 title 을 달아 0건 이유가 뜨지 않았다 — `Blocked` 로 감쌌다(점포 · BP 마스터 목록 함께, 실제 화면 확인, front typhlosion).
+* **Update**: [점포 관리](/stores.md) — review-pr(PR #190) 반영: 상세에서 폐점 확인 창으로 넘어갈 때 앞 팝업의 실패 문구를 지운다. 주석 셋을 바로잡았다(front typhlosion).
+* **Update**: main 병합(front typhlosion, main #187 까지): okf 충돌은 양쪽 기록을 살렸다 — [점포 관리](/stores.md) 는 main 의 엑셀 내려받기 출처 줄과 늦은 시각을 남겼다.
+* **Update**: [점포 관리](/stores.md) — 수정 화면: 동시 수정은 지금처럼 즉시 다시 채우고 폼 띠로 알림 · 폐점 점포 안내는 코드 문구 · 변경 이력 안내는 두지 않음으로 정하고, 데모 · 화면정의서(그림 · 항목 17개)를 실제 배치 · 공통 인증 상자(10-22) · 폐점 조건(10-19) · BP 미사용 문구(10-28) · 주소 storeId(10-14)대로 다시 그렸다(2026-10-29 사용자 결정, front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 등록 화면 점포유형 누락 문구를 「점포유형을 선택해 주세요.」로 바꿨다(코드 · 데모, 2026-10-29 사용자 지정, front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 등록 화면: 점포상태 「미운영」 표시 · BP 줄 없음 · 좌표 실패 문구를 코드대로 정하고, 데모 · 화면정의서(그림 · 항목 16개)를 실제 배치와 공통 인증 상자(10-22) · 위치 적용 기본 미사용(10-19) · 사업자주소 같음 기본 해제(10-23) · [취소][저장](10-19) · 가맹 버튼만 숨김(오늘)대로 다시 그렸다(2026-10-29 사용자 결정, front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 상세 데모 · 화면정의서(그림 · 항목 21개)를 10-19 배치(머리 카드 · 변경이력 팝업 · 운영 조건 체크리스트)와 10-27 최종수정 규칙, 주소 `storeId`(10-14)대로 다시 그렸다. 삭제 조건 「세 조건」을 1차(미운영 + 근로계약 0건)로 고쳤다(front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 상세 데모 · 화면정의서의 「사업자정보 안내 문구」를 뺐다. 설명일 뿐 실제 화면에는 두지 않는다 — 내용(인증 판정 · 엑셀 가림)은 이 문서 정책에 있다(2026-10-29 사용자 결정, front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 상세에서 좌표가 없으면 「-」만 보이고 「좌표를 계산하지 못했습니다」 안내 링크는 두지 않기로 했다. 데모 · 화면정의서에서 뺐다(2026-10-29 사용자 결정, front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 대표자 연락처 · 업태 · 종목 · 사업자주소도 상호명처럼 인증과 상관없이 입력 · 표시하는 직접 입력값으로 적었다(2026-10-29 사용자 결정 — 코드 동작대로, front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 상세 삭제 확인 창의 [삭제]만 위험 색으로 바꾸고(머리 버튼은 보조 색), 데모 확인 창 문구를 코드에 맞췄다(2026-10-29 사용자 결정, front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 상세 상태 변경 팝업에서 폐점을 고르면 수정 화면과 같은 확인 창을 한 번 더 거친다(2026-10-29 사용자 결정, front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 두 번 들어간 「인증 결과는 10분 동안만」 줄을 하나로 줄였다. 점포 목록 화면정의서의 검색 항목을 2026-10-12 결정(점포 여러 곳 고르기 + 사업자등록번호 따로)대로 고쳤다(front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 페이지 건수 「한 번 고르면 모든 목록이 따른다」를 「고른 값은 그 목록 주소에만 남는다」로 고쳤다 — 지금 모든 목록의 동작이다(2026-10-29 사용자 결정, front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 가맹 마스터 · 가맹 관리자에게 목록 [등록] 버튼을 숨겼다(`NotFranchise`). 등록 화면 직접 접근은 api 403 이 막는다(2026-10-29 사용자 결정, front typhlosion).
+* **Update**: [점포 관리](/stores.md) — BP 상세의 소속 점포 수로 들어오면 그 BP 로 좁힌다는 옛 줄을 BP 쪽 결정(연결 없음, 2026-10-27 Plane #416)대로 고치고 목업의 BP 조건 띠를 뺐다(front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 플랫폼 사용자는 BP 를 고른 탭에서만 점포를 보고 등록한다는 결정(10-19 · 10-22)으로 옛 정책 줄(전체 BP · 등록 비활성)을 고치고, api 탭 BP 전환이 main 에 머지됐음을 적었다. 목업 [등록]을 제목 줄로 옮겼다(10-23 결정, front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 목록 표 열(점포 연락처 · 점포주소 · 재직직원, 번호 없으면 「미인증」)과 거꾸로 세는 순번을 코드대로 정책에 적고 목업 표를 맞췄다(2026-10-29 사용자 결정, front typhlosion).
+* **Update**: [점포 관리](/stores.md) — 목록 카드 칸을 코드 이름(점포 연락처 · 재직직원 · 점포주소)으로 맞추고, 운영이 아닌 점포는 왼쪽 색 띠가 아니라 회색 바탕임을 적었다. 목업 카드에 미인증 반 칸도 더했다(2026-10-29 사용자 결정, front typhlosion).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 리뷰 반영: 권한별 메뉴설정의 내 권한 밖 칸은 이미 켜졌으면 흐린 체크로 보인다. 데모(system/roles · roles-master)도 이유 글자 빼기 · 범위 밖 빈 칸 숨기기 · 진한 테두리를 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 마스터 계정 관리](/bp.md) — front jolteon: BP 선택 팝업 미사용 · 탈퇴 BP 회색, BP 관리자 수정 화면(고칠 수 없는 점포는 회색 상자 · 범위 칸 없음 · 수정 범위 안내 없음), 상세 「내 계정입니다.」 · 가맹관리자 안내 문구 · 본인 [초기화] 대신 「-」, 초기화 안내 상자 규칙(방금 보냄 · 등록 1시간 안 → 발송 / 그 밖 미로그인 → 초기화 필요), 강제 비밀번호 변경 · 부가서비스 안내를 공통 확인창으로, 권한별 메뉴설정의 막힌 이유 글자 · 오버 문구 없앰 · 내 권한 밖 칸 숨김 · 고를 수 있는 칸 테두리 진하게.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front jolteon: BP 관리자 등록의 계정 역할 고르기 전 점포 찾기 막기(StoreMappingPicker blocked), 범위 도움말 「(역할)는 '일부 점포'만 선택할 수 있습니다.」.
