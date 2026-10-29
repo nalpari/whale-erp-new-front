@@ -26,6 +26,8 @@
          가맹 마스터는 자기에게 연결된 가맹 관리자를 점포와 관계없이 본다 — 매핑 점포가 0곳이 된 가맹 관리자를 고칠 사람은 그뿐이다 (2026-10-29 사용자 결정).
          정렬은 등록일시 최신순이다 (확정 2026-09-29).
          목록은 ‘역할’ 열과 ‘권한명 · 코드’ 열을 따로 둔다 (확정 2026-09-29). 최근 로그인 열이 등록일시 열 앞이다 (2026-10-27 사용자 지정).
+         빈 목록 문구는 역할과 상관없이 「조건에 맞는 관리자 계정이 없습니다.」 하나다. 목록 아래 안내문은 두지 않는다 — 설명은 화면정의서에 남긴다 (2026-10-29 사용자 결정).
+         최근 로그인 칸은 초기 비밀번호 메일이 실패한 사용 계정이면 「초기화 비밀번호 미발송」을 빨간 글자로 보인다. 미사용 계정은 보이지 않는다(상세와 같다, 2026-10-29).
          위쪽 점선 줄 둘은 목업 전용이다 — 보는 사람의 역할과 목록 상태를 따로 바꾼다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
@@ -327,27 +329,9 @@
             </div>
             <div class="empty" data-show="off" data-show-role="fm fa" hidden>
               <span class="empty__ic" data-icon="search" data-icon-size="22"></span>
-              <p>매핑 점포 범위 안에 미사용 가맹 관리자 계정이 없습니다.</p>
+              <p>조건에 맞는 관리자 계정이 없습니다.</p>
             </div>
           </section>
-
-          <p class="note" data-show="base off created empty" data-show-role="bm bpall bppart plat view">
-            <span data-icon="info" data-icon-size="14"></span>
-            <span>
-              흐린 줄이 미사용 계정이다 — 로그인과 ERP 이용이 막혔지만 상세와 변경 이력은 그대로 남는다.
-              BP 마스터 계정은 플랫폼 BP 관리에서 다루므로 이 목록에 없다. 가맹 관리자 줄은 여기서 조회만 하고, 수정·비밀번호 초기화는 연결된 가맹 마스터만 한다.
-              권한 그룹은 <a class="tlink" href="roles.html">BP 권한 그룹 관리</a>의 값과 같다. 등록일시 최신순이다.
-            </span>
-          </p>
-          <p class="note" data-show="base off created empty" data-show-role="fm fa" hidden>
-            <span data-icon="info" data-icon-size="14"></span>
-            <span>
-              가맹 쪽 사용자에게는 본인 계정과, 본인 매핑 점포와 하나라도 겹치는 가맹 관리자 계정이 보인다.
-              <span data-show-role="fm">본인에게 연결된 가맹 관리자는 점포가 겹치지 않아도 보인다.</span> 본인이 아닌 BP 관리자와 가맹 마스터 계정은 조회 대상이 아니다.
-              <span data-show-role="fm">본인 계정은 기본정보만 고친다.</span>
-              <span data-show-role="fa">가맹 관리자는 계정을 조회만 하고 등록·수정하지 않는다.</span>
-            </span>
-          </p>
         </div>
       </main>
     </div>
