@@ -198,6 +198,13 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                   maxLength={100}
                   value={form.currentPassword}
                   onChange={(e) => setForm((f) => ({ ...f, currentPassword: e.target.value }))}
+                  // Enter 는 [확인]과 같다 — 버튼이 막힌 조건(빈 칸 · 확인 중)도 같게 본다
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.nativeEvent.isComposing && form.currentPassword && !verifying) {
+                      e.preventDefault();
+                      handleVerify();
+                    }
+                  }}
                   aria-invalid={fieldError?.at === "currentPassword" ? true : undefined}
                   aria-describedby={fieldError?.at === "currentPassword" ? currentPasswordMessageId : undefined}
                   aria-required
