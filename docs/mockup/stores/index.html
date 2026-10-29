@@ -9,7 +9,7 @@
   </head>
   <body data-root="../" data-page="stores" data-sub="stores/index.html">
     <!-- 점포 목록 조회 · /stores · S-BAYAJS (F-MOQKGY 점포정보 관리) · 1팀
-         플랫폼 사용자는 서비스 바로가기 「웨일ERP」로 BP 를 골라 연 탭(/bp/{bpCodeId}/stores)에서만 점포 메뉴를 쓰고, 그 BP 의 점포만 보고 그 BP 로 등록한다(2026-10-19 · 10-22). BP 검색 칸은 없고, BP 상세의 소속 점포 수로 들어오면 그 BP 로 좁혀진다(?bp=). 그 밖의 역할은 소속 BP 가 고정된다.
+         플랫폼 사용자는 서비스 바로가기 「웨일ERP」로 BP 를 골라 연 탭(/bp/{bpCodeId}/stores)에서만 점포 메뉴를 쓰고, 그 BP 의 점포만 보고 그 BP 로 등록한다(2026-10-19 · 10-22). BP 검색 칸은 없다. BP 상세의 소속 점포 수에서 이 목록으로 오는 연결은 두지 않는다(2026-10-27, okf/bp.md). 그 밖의 역할은 소속 BP 가 고정된다.
          [등록]은 제목 줄 오른쪽에 둔다 — 3팀 목록과 같은 자리(2026-10-23). 목업의 플랫폼 관리자는 ㈜한강상회 BP 탭을 연 상태다.
          처음 들어오면 미운영·운영만 보이고 폐점은 뺀다. 정렬은 등록일 내림차순, 페이지는 20·50·100 건(기본 20, STORE-4 확정).
          검색 조건과 페이지는 주소의 쿼리 문자열에 담아 상세에서 돌아와도 그대로다.
@@ -115,31 +115,6 @@
             </div>
           </section>
 
-          <!-- BP 상세의 소속 점포 수로 들어왔을 때만 — 검색 칸 없이 그 BP 로 좁혀 보여 준다 -->
-          <div class="band band--info" data-bp-filter hidden>
-            <span class="band__ic" data-icon="filter" data-icon-size="20"></span>
-            <div class="band__body">
-              <div class="band__title"><span data-bp-filter-name></span> 의 점포만 보는 중입니다 · 폐점 제외</div>
-            </div>
-            <div class="band__act">
-              <a class="btn btn--secondary btn--sm" href="index.html">조건 해제</a>
-            </div>
-          </div>
-
-          <!-- 엑셀 내려받기 안내 — 같은 자리에 하나만 선다 -->
-          <div class="band band--info" data-show="big" hidden>
-            <span class="band__ic" data-icon="clock" data-icon-size="20"></span>
-            <div class="band__body">
-              <div class="band__title">1만 건이 넘어 파일을 만든 뒤 알려 드립니다</div>
-              <p class="band__desc">다 만들어지면 등록한 이메일로 내려받기 링크를 보냅니다. 링크는 24시간 동안 요청한 본인만 쓸 수 있습니다. 그동안 목록은 계속 쓸 수 있습니다.</p>
-            </div>
-          </div>
-          <div class="band band--warn" data-show="cool" hidden>
-            <span class="band__ic" data-icon="clock" data-icon-size="20"></span>
-            <div class="band__body">
-              <div class="band__title">방금 내려받았습니다. 1분 뒤에 다시 시도해 주세요.</div>
-            </div>
-          </div>
           <div class="band band--risk" data-show="xfail" hidden>
             <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
             <div class="band__body">
