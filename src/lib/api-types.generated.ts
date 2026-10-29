@@ -1450,8 +1450,9 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 엑셀 바로 받기(xlsx). 목록과 같은 조건으로 전부, 연락처 · 대표자 연락처는 가운데 자리를 가린다.
-         *     1만 건 이상은 400, 한 사람 1분에 한 번(429). `:id` 보다 먼저 둔다.
+         * 엑셀(xlsx). 목록과 같은 조건으로 전부, 연락처 · 대표자 연락처는 가운데 자리를 가린다. 공통 엑셀 규칙을 따른다 —
+         *     1만 건 미만은 바로 파일(200), 이상은 예약 생성(202, 등록한 이메일로 링크). 같은 사람이 생성 중이면 409, 1분에
+         *     한 번(429). `:id` 보다 먼저 둔다.
          */
         get: operations["BpMastersController_excel"];
         put?: never;
@@ -1542,7 +1543,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 변경 이력 — BP 와 BP 마스터 계정의 이력을 합쳐 최신순. */
+        /** 변경 이력 — BP 와 BP 마스터 계정의 이력을 합쳐 최신순. 탈퇴한 BP 는 409(이력에 탈퇴 전 개인정보가 남아 있다). */
         get: operations["BpMastersController_histories"];
         put?: never;
         post?: never;
@@ -1580,6 +1581,23 @@ export interface paths {
         put?: never;
         /** 비밀번호 초기화. 새 1시간짜리 비밀번호를 BP 마스터 이메일로만 보낸다. 수정 권한이 필요하다. */
         post: operations["BpMastersController_resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/excel-downloads/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내려받기 주소(5분). 받은 시각을 이력에 남긴다. */
+        get: operations["ExcelDownloadsController_download"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2529,8 +2547,9 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 엑셀 바로 받기(xlsx). 목록과 같은 검색 조건으로 전부 담고, 대표자 연락처만 가운데 자리를 가린다.
-         *     1만 건 이상은 400(예약 생성은 아직 없다), 한 사람 1분에 한 번(429). `:id` 보다 먼저 둔다.
+         * 엑셀(xlsx). 목록과 같은 검색 조건으로 전부 담고, 대표자 연락처만 가운데 자리를 가린다. 공통 엑셀 규칙을 따른다 —
+         *     1만 건 미만은 바로 파일(200), 이상은 예약 생성(202, 다 만들어지면 등록한 이메일로 링크). 같은 사람 · 같은 화면은 생성
+         *     중이면 409, 1분에 한 번(429). `:id` 보다 먼저 둔다.
          */
         get: operations["StoresController_excel"];
         put?: never;
@@ -6008,6 +6027,20 @@ export interface components {
             /** @description 조건에 맞는 전체 건수 */
             total: number;
         };
+        ExcelScheduledResponseDto: {
+            /**
+             * @description 다운로드 이력 ID — 메일 링크와 `GET /excel-downloads/{id}` 가 쓴다.
+             * @example 41
+             */
+            excelDownloadId: number;
+            /**
+             * @description 담길 건수(요청 때 센 값).
+             * @example 12480
+             */
+            rowCount: number;
+            /** @description 화면에 그대로 보일 안내. */
+            message: string;
+        };
         VerifyBpMasterBusinessDto: {
             /**
              * @description 사업자등록번호. 하이픈을 넣어 보내도 숫자만 남겨 받는다.
@@ -6034,11 +6067,11 @@ export interface components {
         BpMasterWithdrawalResponseDto: {
             /**
              * Format: date-time
-             * @description 탈퇴 일시 — 탈퇴로 BP 마스터 계정 상태가 바뀐 시각.
+             * @description 탈퇴 일시 — 탈퇴로 BP 마스터 계정 상태가 바뀐 시각. 기록이 없으면 null(탈퇴 흐름은 늘 채운다).
              */
             withdrawnAt: string | null;
             /**
-             * @description 탈퇴 사유 한글(공통코드 WITHDRAW_REASON). 표에 없는 코드는 코드 그대로.
+             * @description 탈퇴 사유 한글(공통코드 WITHDRAW_REASON). 표에 없는 코드는 코드 그대로, 사유 코드가 없으면 null.
              * @example 폐업·사업 종료
              */
             reasonLabel: string | null;
@@ -6064,32 +6097,6 @@ export interface components {
             joinPath: "SIGNUP" | "PLATFORM_REGISTERED";
             /** @description 탈퇴 정보 — 탈퇴한 BP 만, 아니면 null. 화면 「사유 보기」 팝업이 쓴다. */
             withdrawal: components["schemas"]["BpMasterWithdrawalResponseDto"] | null;
-            bpCodeId: number;
-            /**
-             * @description BP 코드.
-             * @example BP000012
-             */
-            bpCode: string;
-            /**
-             * @description BP 마스터 아이디. 탈퇴해도 남는다.
-             * @example hangang01
-             */
-            loginId: string;
-            /** @description BP 마스터 이름 · 연락처 · 이메일. 탈퇴한 BP 는 null — 화면은 「탈퇴로 삭제됨」. */
-            name: string | null;
-            phone: string | null;
-            email: string | null;
-            /** @description 상호명 */
-            tradeName: string;
-            /** @description 사업자등록번호(숫자 10자리). 미인증이면 null. */
-            bizRegistrationNumber: string | null;
-            /**
-             * Format: date-time
-             * @description 등록 일시
-             */
-            createdAt: string;
-            /** @description 등록자 이름. 회원가입한 BP 는 null. */
-            createdByName: string | null;
             /** @description BP 마스터 계정 id */
             adminAccountId: number;
             /**
@@ -6138,6 +6145,32 @@ export interface components {
             /** @description 최종수정자 이름. 고친 적이 없거나 회원가입 그대로면 null. */
             updatedByName: string | null;
             deletion: components["schemas"]["BpMasterDeletionResponseDto"];
+            bpCodeId: number;
+            /**
+             * @description BP 코드.
+             * @example BP000012
+             */
+            bpCode: string;
+            /**
+             * @description BP 마스터 아이디. 탈퇴해도 남는다.
+             * @example hangang01
+             */
+            loginId: string;
+            /** @description BP 마스터 이름 · 연락처 · 이메일. 탈퇴한 BP 는 null — 화면은 「탈퇴로 삭제됨」. */
+            name: string | null;
+            phone: string | null;
+            email: string | null;
+            /** @description 상호명 */
+            tradeName: string;
+            /** @description 사업자등록번호(숫자 10자리). 미인증이면 null. */
+            bizRegistrationNumber: string | null;
+            /**
+             * Format: date-time
+             * @description 등록 일시
+             */
+            createdAt: string;
+            /** @description 등록자 이름. 회원가입한 BP 는 null. */
+            createdByName: string | null;
         };
         BpMasterHistoryResponseDto: {
             /** Format: date-time */
@@ -6151,7 +6184,7 @@ export interface components {
             afterValue: string | null;
             /** @description 처리자 이름. 시스템이 처리했으면 null. */
             changedByName: string | null;
-            /** @description 비고 — 탈퇴 사유, 사업자 번호 인증으로 바뀐 줄의 「사업자 번호 인증」. */
+            /** @description 비고 — 사업자 번호 인증으로 바뀐 줄의 「사업자 번호 인증」. 탈퇴한 BP 는 이력을 409 로 거절하므로 탈퇴 사유는 상세의 withdrawal 로 본다. */
             note: string | null;
         };
         BpMasterHistoryListResponseDto: {
@@ -6275,6 +6308,17 @@ export interface components {
         ResetBpMasterPasswordResponseDto: {
             /** @description 초기화 메일을 보냈는가. 실패해도 기존 비밀번호는 이미 막혔다 — 다시 초기화한다. */
             isMailSent: boolean;
+        };
+        ExcelDownloadLinkResponseDto: {
+            /** @description S3 서명 주소(5분). */
+            url: string;
+            /** @example 점포목록_20261028.xlsx */
+            fileName: string;
+            /**
+             * @description 내려받기 기한(완료 + 24시간).
+             * @example 2026-10-29T05:05:00.000Z
+             */
+            expiresAt: string;
         };
         TermsVersionResponseDto: {
             /** @description 약관 유형 코드 — 공통코드 `TERMS_TYPE`. 예: PRIVACY_COLLECT */
@@ -8153,7 +8197,7 @@ export interface components {
             bodySummary: string;
             kakaoTemplateCode: string | null;
             isActive: boolean;
-            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 42건) — 되돌리기를 보일지 */
+            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 44건) — 되돌리기를 보일지 */
             hasDefault: boolean;
             /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
             updatedByName: string | null;
@@ -8193,7 +8237,7 @@ export interface components {
             bodySummary: string;
             kakaoTemplateCode: string | null;
             isActive: boolean;
-            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 42건) — 되돌리기를 보일지 */
+            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 44건) — 되돌리기를 보일지 */
             hasDefault: boolean;
             /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
             updatedByName: string | null;
@@ -11607,8 +11651,22 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 아이디 · 이메일 중복 · 다른 가맹 마스터가 맡은 점포 */
+            /** @description 그사이 지워진 BP */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 아이디 · 이메일 중복 · 다른 가맹 마스터가 맡은 점포 · 사용 중이 아닌 BP(미사용 · 탈퇴) */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잠금 대기(BP 미사용 전환 · 삭제 등) · 연결 부족으로 트랜잭션 시간 초과 — 다시 시도 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -11856,15 +11914,22 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 없거나 볼 수 없는 계정 */
+            /** @description 없거나 볼 수 없는 계정 · 그사이 지워진 BP */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 이메일 중복 · 동시 수정 · 다른 가맹 마스터가 맡은 점포 */
+            /** @description 이메일 중복 · 동시 수정 · 다른 가맹 마스터가 맡은 점포 · 사용 중이 아닌 BP 에 사용으로 저장 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잠금 대기(BP 미사용 전환 · 삭제 등) · 연결 부족으로 트랜잭션 시간 초과 — 다시 시도 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -14128,9 +14193,20 @@ export interface operations {
                 };
                 content: {
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/json": string;
                 };
             };
-            /** @description 검색 조건 형식 · 1만 건 이상 */
+            /** @description 1만 건 이상 — 예약 생성(메일로 링크) */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["ExcelScheduledResponseDto"];
+                    "application/json": components["schemas"]["ExcelScheduledResponseDto"];
+                };
+            };
+            /** @description 검색 조건 형식 · 1만 건 이상인데 등록한 이메일이 없음 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -14144,8 +14220,22 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description 같은 화면의 엑셀을 만드는 중 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 1분 안에 다시 받음 */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 1만 건 이상인데 메일 · 저장소 설정이 없음 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -14481,6 +14571,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description 탈퇴한 BP — 변경 이력을 볼 수 없다 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     BpMastersController_changeStatus: {
@@ -14575,6 +14672,48 @@ export interface operations {
             };
             /** @description 메일 설정(MAIL_* · ADMIN_WEB_URL)이 없는 환경 — 아무것도 바꾸지 않는다 */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ExcelDownloadsController_download: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExcelDownloadLinkResponseDto"];
+                };
+            };
+            /** @description 없음 · 요청한 본인이 아님 · 바로 받기 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 아직 만드는 중 · 만들지 못함 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내려받기 기한(24시간)이 지남 */
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17527,9 +17666,20 @@ export interface operations {
                 };
                 content: {
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/json": string;
                 };
             };
-            /** @description 검색 조건 형식 · 1만 건 이상 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 1만 건 이상 — 예약 생성(메일로 링크) */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["ExcelScheduledResponseDto"];
+                    "application/json": components["schemas"]["ExcelScheduledResponseDto"];
+                };
+            };
+            /** @description 검색 조건 형식 · 1만 건 이상인데 등록한 이메일이 없음 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -17550,8 +17700,22 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description 같은 화면의 엑셀을 만드는 중 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 1분 안에 다시 받음 */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 1만 건 이상인데 메일 · 저장소 설정이 없음 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
