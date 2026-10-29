@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
+import { HeaderTip } from "@/components/common";
 import type { NotificationItem } from "@/lib/notifications";
 import { badgeText, formatAt, relatedLabel } from "@/lib/notification-view";
 
@@ -30,8 +31,9 @@ export function NotificationBell({ data }: { data: { unreadCount: number; recent
   const icon = <Image src="/icons/alarm-bell.svg" alt="" width={42} height={42} />;
   if (!data)
     return (
-      <Link href="/notifications" aria-label="알림" className="shrink-0 rounded-full transition-opacity duration-150 ease-out hover:opacity-70">
+      <Link href="/notifications" aria-label="알림" className="group relative shrink-0 rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70">
         {icon}
+        <HeaderTip label="알림" />
       </Link>
     );
 
@@ -44,9 +46,11 @@ export function NotificationBell({ data }: { data: { unreadCount: number; recent
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((v) => !v)}
-        className="relative block rounded-full transition-opacity duration-150 ease-out hover:opacity-70"
+        className="group relative block rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70"
       >
         {icon}
+        {/* 서비스 바로가기와 같은 툴팁(2026-10-29 사용자 지정). 팝오버가 열리면 그 아래에 깔린다. */}
+        {!open && <HeaderTip label="알림" />}
         {badge && (
           <span className="absolute -top-[2px] -right-[4px] min-w-[18px] rounded-full border-2 border-white bg-erp-off px-[4px] text-center text-[11px] leading-[14px] font-semibold text-white">
             {badge}

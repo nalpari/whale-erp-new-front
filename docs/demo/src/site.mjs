@@ -232,7 +232,7 @@ function mypageTabs(html) {
   const end = html.indexOf("</div>"); // 첫 </div> 가 탭 줄의 끝이다(탭 단추 안에는 div 가 없다)
   const bar = html
     .slice(0, end)
-    .replace('<div role="tablist" class="flex shrink-0 border-b border-erp-bar-line">', '<div role="tablist" aria-label="내 정보" class="flex h-[42px] shrink-0 gap-[18px] border-b border-erp-thead-line">')
+    .replace('<div role="tablist" class="flex shrink-0 border-b border-erp-bar-line">', '<div role="tablist" aria-label="내정보 관리" class="flex h-[42px] shrink-0 gap-[18px] border-b border-erp-thead-line">')
     .replaceAll("-mb-px flex h-[42px] items-center border-b-2 px-[18px] text-[15px]", "h-[42px] border-b-2 text-[14px]")
     .replaceAll("border-erp-brand font-semibold text-erp-ink", "border-erp-brand font-medium text-erp-ink");
   const panels = html.slice(end).replace(/(<div role="tabpanel"[^>]*?class=")flex min-h-0 flex-1 flex-col gap-\[12px\]"/g, '$1flex min-h-0 flex-1 flex-col gap-[16px]"');
@@ -243,7 +243,7 @@ function mypageTabs(html) {
 // 모든 ERP 화면의 헤더에 실리므로(erpHeader), id("mypage-panel")는 화면마다 한 번만 쓰인다. 전체 화면(mypage/profile.html)은
 // 회원 탈퇴 화면의 "취소"가 돌아갈 곳으로 그대로 둔다.
 export function mypagePanel(A) {
-  return ui.slidePanel("mypage-panel", "내 정보", ui.sectionHead("내 정보") + mypageBody(A, { idPrefix: "mpb", tabPrefix: "mp-", closeSave: true }));
+  return ui.slidePanel("mypage-panel", "내정보 관리", ui.sectionHead("내정보 관리") + mypageBody(A, { idPrefix: "mpb", tabPrefix: "mp-", closeSave: true }));
 }
 
 // MY PAGE 전체 화면(mypage/password.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다. 비밀번호 칸(눈 아이콘 보기 토글)은
@@ -335,7 +335,7 @@ export function withdrawBody(R, { panel = false } = {}) {
       },
       {
         head: "개인정보가 삭제됩니다",
-        text: "탈퇴 계정의 이름·연락처·이메일과 대표자의 연락처·이메일은 즉시 삭제되며, 아이디만 보관됩니다. 직원·계약·정산 정보와 변경 이력은 보존 정책에 따라 보관됩니다.",
+        text: "탈퇴 계정의 이름·연락처·이메일과 대표자의 연락처·이메일은 즉시 삭제되며, 아이디만 보관됩니다. 직원·계약·정산 정보와 변경이력은 보존 정책에 따라 보관됩니다.",
       },
       "탈퇴한 계정은 복구할 수 없습니다.<br>정말 탈퇴하시겠습니까?",
     ],
@@ -490,12 +490,18 @@ const PLATFORM_BPS = [
   ["BP000035", "㈜온기에프앤비", "사용"],
 ];
 function platformScopeDialog(A, R, id) {
-  const columns = [{ header: "BP코드", width: "w-[110px]" }, { header: "상호", align: "left" }, { header: "상태", width: "w-[80px]" }];
-  const rows = PLATFORM_BPS.map(([code, name, status]) => [code, ui.radio(name, `${id}-bp`, false, { "data-bp-code": code, "data-bp-name": name }), status]);
+  const columns = [{ header: "BP코드", width: "w-[110px]" }, { header: "상호명", align: "left" }, { header: "계정상태", width: "w-[80px]" }];
+  // 사용 BP 만 상호명을 굵게(앱 bp-select-dialog.tsx 와 같다, 2026-10-29)
+  const rows = PLATFORM_BPS.map(([code, name, status]) => {
+    const radio = ui.radio(name, `${id}-bp`, false, { "data-bp-code": code, "data-bp-name": name });
+    return [code, status === "사용" ? `<div class="font-semibold">${radio}</div>` : radio, status];
+  });
   const table = ui.dataTable(columns, rows).replace("</tbody>", `${ui.tableEmptyRow(columns).replace("<tr ", "<tr hidden data-bp-none ")}</tbody>`);
   const body =
-    `<div class="flex flex-col gap-[12px]"><p>고른 BP 의 웨일ERP 가 새 탭으로 열립니다.</p>${ui.searchField(A, { placeholder: "상호 또는 BP코드", label: "BP 찾기" })}` +
-    `<div class="max-h-[506px] overflow-y-auto [&_tbody_tr]:cursor-pointer [&_tbody_tr:has(:checked)]:bg-erp-thead-bg" data-bp-table>${table}</div>${ui.pagination(A, 1, Math.ceil(PLATFORM_BPS.length / 10), 5)}</div>`;
+    // 「총 N 건」 · 찾기 칸 · 한 쪽 건수를 한 줄에, 결과 자리는 높이 고정 · 열 이름 줄 고정 스크롤(앱과 같다, 2026-10-29)
+    `<div class="flex flex-col gap-[12px]"><p>BP를 선택하면 웨일ERP가 새 탭으로 열립니다.</p>` +
+    `<div class="flex items-center gap-[6px]"><p class="mr-[6px] shrink-0 text-[14px] text-erp-ink">총 <b class="font-semibold">${PLATFORM_BPS.length}</b> 건</p><div class="min-w-0 flex-1">${ui.searchField(A, { placeholder: "상호명 또는 BP코드", label: "BP 찾기" })}</div><div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div></div>` +
+    `<div class="flex h-[506px] flex-col [&_tbody_tr]:cursor-pointer [&_tbody_tr:has(:checked)]:bg-erp-thead-bg" data-bp-table>${ui.scrollTable(table)}</div>${ui.pagination(A, 1, Math.ceil(PLATFORM_BPS.length / 20), 5)}</div>`;
 
   return `<dialog id="${id}" data-scope-popup data-scope-all="전체 ${STORES.length}개점" aria-labelledby="${id}-t" class="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">BP 선택</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button(
     "취소",

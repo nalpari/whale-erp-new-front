@@ -57,7 +57,7 @@ export function detailParts(A, R, delId, { panel = false } = {}) {
   const histDialog = c.wide(
     x.dialog(
       histId,
-      "변경 이력",
+      "변경이력",
       `<div class="overflow-x-auto">${ui.dataTable(
         [
           { header: "변경 일시", width: "w-[160px]" },
@@ -104,7 +104,7 @@ export default ({ A, R }) => {
           c.buttons(
             ui.button("목록", { variant: "off", href: link(R, "config/holidays.html") }),
             x.dialogTrigger("삭제", delId, "soft"),
-            x.dialogTrigger("변경 이력", histId, "soft"),
+            x.dialogTrigger("변경이력", histId, "soft"),
             ui.button("수정", { href: link(R, "config/holidays-edit.html") }),
           ) +
           delDialog +
