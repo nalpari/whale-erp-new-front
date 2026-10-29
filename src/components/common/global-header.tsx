@@ -88,12 +88,12 @@ function Logo({ href = "/", onClick }: { href?: string; onClick?: (e: MouseEvent
   );
 }
 
-// 아이콘 아래 뜨는 알약 모양 툴팁 — [등록] 같은 기본 버튼처럼 회청 바탕에 흰 글자(2026-10-29 사용자 지정, 전엔 Figma Info on 의 흰 바탕 · 회청 글자).
+// 아이콘 아래 뜨는 알약 모양 툴팁 — 버튼에 마우스를 올린 모양처럼 흰 바탕 · 회청 테두리 · 먹색 글자 500(2026-10-29 사용자 지정, 전엔 Figma Info on 의 연회색 테두리 · 회청 글자).
 // 떠오를 때 4px 아래에서 올라오고, 동작 줄이기 설정이면 올라오지 않고 나타나기만 한다.
 function Tip({ label }: { label: string }) {
   return (
-    <span className="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-erp-brand bg-erp-brand px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-white opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">
-      <span className="absolute -top-[5px] left-1/2 size-[8px] -translate-x-1/2 -rotate-45 rounded-tr-[1px] border-t border-r border-erp-brand bg-erp-brand" />
+    <span className="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">
+      <span className="absolute -top-[5px] left-1/2 size-[8px] -translate-x-1/2 -rotate-45 rounded-tr-[1px] border-t border-r border-erp-brand bg-white" />
       {label}
     </span>
   );
