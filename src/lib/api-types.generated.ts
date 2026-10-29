@@ -7608,6 +7608,17 @@ export interface components {
             /** @description 올린 파일의 원래 이름 */
             fileName: string;
         };
+        /** @enum {string} */
+        ContractTaxProfileState: "OK" | "NONE" | "HIDDEN" | "UNAVAILABLE";
+        ContractTaxProfileDto: {
+            status: components["schemas"]["ContractTaxProfileState"];
+            /** @description 가린 주민등록번호 — 앞 6자리 + 뒷자리 첫 자(예 900101-1******). 원문은 API 밖으로 나가지 않는다 */
+            rrnMasked: string | null;
+            /** @description 은행 이름(BANK 공통코드 이름, 예 KB국민은행). 공통코드에 없으면 은행 코드 그대로 */
+            bankName: string | null;
+            /** @description 계좌번호 전체 — 하이픈 없음, 가리지 않음(직원 상세 급여 계좌와 같다) */
+            accountNumber: string | null;
+        };
         ContractDetailDto: {
             startDate: string | null;
             endDate: string | null;
@@ -7711,6 +7722,8 @@ export interface components {
             canResend: boolean;
             /** @description 직원이 가입을 마쳤는가 — 거부 · 만료 재발송이 앱(서명 대기)으로 가는지 가입 초대(발송 대기)로 가는지 확인창 문구를 가른다 */
             staffJoined: boolean;
+            /** @description 직원의 신고 정보(주민등록번호 · 급여 계좌) — 읽기만. 풀 수 없어도 상세는 열리고 이 칸만 UNAVAILABLE 이다 */
+            taxProfile: components["schemas"]["ContractTaxProfileDto"];
         };
         UpdateWorkerDto: {
             /** @description 성별 — 남 · 여. 가입 때 직원이 넣은 값과 본인 대조한다(WHALEERP-125). 임시저장은 비워도 된다 */
@@ -10757,7 +10770,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 맞는 계정이 없음. 어느 값이 틀렸든 같은 메시지(「일치하는 계정이 없습니다」)이고 실패 1회로 센다 */
+            /** @description 맞는 계정이 없음. 어느 값이 틀렸든 같은 메시지(「일치하는 계정이 없습니다.」)이고 실패 1회로 센다 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -10895,7 +10908,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 플랫폼 관리자에게 문의해 주세요」 */
+            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 플랫폼 관리자에게 문의해 주세요.」 */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -14288,7 +14301,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴를 찾을 수 없습니다 */
+            /** @description 메뉴를 찾을 수 없습니다. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14335,7 +14348,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴를 찾을 수 없습니다 */
+            /** @description 메뉴를 찾을 수 없습니다. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14396,7 +14409,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴를 찾을 수 없습니다 */
+            /** @description 메뉴를 찾을 수 없습니다. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17529,7 +17542,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 거부 · 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(거부 · 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 기간이 끝남, 기간이 겹치거나 더 늦게 시작한 다른 체결 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(거부 · 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
+            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 거부 · 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(거부 · 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 기간이 끝남, 기간이 겹치거나 더 늦게 시작한 다른 체결 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(거부 · 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다.」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -22534,7 +22547,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 지금 비밀번호가 맞지 않음(「지금 비밀번호가 맞지 않습니다」) · 이메일 형식 · 지금 이메일과 같음 */
+            /** @description 지금 비밀번호가 맞지 않음(「지금 비밀번호가 맞지 않습니다.」) · 이메일 형식 · 지금 이메일과 같음 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -22569,7 +22582,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 관리자에게 문의해 주세요」 */
+            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 관리자에게 문의해 주세요.」 */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -22767,7 +22780,7 @@ export interface operations {
                     "application/json": components["schemas"]["MyTaxProfileResponseDto"];
                 };
             };
-            /** @description 형식 오류 · 바꿀 값 없음(TAX_PROFILE_EMPTY) · 고치는데 지금 비밀번호가 없거나 틀림(CURRENT_PASSWORD_MISMATCH — 「지금 비밀번호가 맞지 않습니다」, 내 소속 확인 뒤 · 다른 검사 전에 본다) · 처음인데 셋 중 빠짐(TAX_PROFILE_INCOMPLETE) · 은행 · 계좌번호 한쪽만(TAX_PROFILE_ACCOUNT_INCOMPLETE) · 주민등록번호 앞자리와 가입 생년월일이 다름(RRN_BIRTH_MISMATCH — 관리자에게 정정 요청) · 없는 은행(BANK_CODE_UNKNOWN) */
+            /** @description 형식 오류 · 바꿀 값 없음(TAX_PROFILE_EMPTY) · 고치는데 지금 비밀번호가 없거나 틀림(CURRENT_PASSWORD_MISMATCH — 「지금 비밀번호가 맞지 않습니다.」, 내 소속 확인 뒤 · 다른 검사 전에 본다) · 처음인데 셋 중 빠짐(TAX_PROFILE_INCOMPLETE) · 은행 · 계좌번호 한쪽만(TAX_PROFILE_ACCOUNT_INCOMPLETE) · 주민등록번호 앞자리와 가입 생년월일이 다름(RRN_BIRTH_MISMATCH — 관리자에게 정정 요청) · 없는 은행(BANK_CODE_UNKNOWN) */
             400: {
                 headers: {
                     [name: string]: unknown;

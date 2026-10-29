@@ -66,6 +66,7 @@ const detailOf = (over: Partial<ContractDetail> = {}): ContractDetail => ({
   isHealthPensionInsured: null, isEmploymentInjuryInsured: null, draftAction: null, histories: [], workDays: [], documents: [],
   firstSentAt: null, lastSentAt: null, signDeadlineAt: null, lastProcessedAt: null, rejectReason: null, resendCount: 0,
   previousContractId: null, registeredAt: null, registeredBy: null, canResend: false, renewedBy: null, staffJoined: false,
+  taxProfile: { status: "NONE", rrnMasked: null, bankName: null, accountNumber: null },
   ...over,
 });
 
