@@ -194,7 +194,7 @@ function DetailBody({
         (admin.roleTypeCode === "FA" || canUpdate) && <InfoBand>내 계정입니다</InfoBand>
       ) : (
         admin.roleTypeCode === "FA" &&
-        !admin.actions.canUpdate && <InfoBand>가맹 관리자 계정은 연결된 가맹 마스터만 수정 · 비밀번호 초기화할 수 있습니다.</InfoBand>
+        !admin.actions.canUpdate && <InfoBand>이 계정은 연결된 가맹마스터만 수정할 수 있습니다.</InfoBand>
       )}
       <DetailTable title="기본정보" rows={rows} />
       {/* 적용 대상은 대상점포 제목 바 옆에 「전체 점포 · 일부 점포」로 합쳤다(2026-10-27 사용자 지정 — 전엔 따로 「적용 대상」 줄) */}
