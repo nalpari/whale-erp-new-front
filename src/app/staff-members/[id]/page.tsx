@@ -140,7 +140,7 @@ export default async function StaffMemberDetailPage({
       value: (
         <span className="inline-flex items-center gap-[6px]">
           <CellView cell={joinCell(staff, today)} />
-          {staff.contract && canResendInvitation(staff) && <ResendInvitationButton contractId={staff.contract.contractId} name={staff.name} />}
+          {staff.contract && canResendInvitation(staff) && <ResendInvitationButton contractId={staff.contract.contractId} name={staff.name} status={staff.contract.status} lastSentAt={staff.contract.lastSentAt} />}
         </span>
       ),
     },

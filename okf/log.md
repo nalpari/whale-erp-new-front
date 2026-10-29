@@ -1,6 +1,9 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: main 병합(front slowpoke, main #174 까지): okf/log 는 양쪽 기록을 살렸다.
+* **Update**: main 병합(front slowpoke, main #177 까지): okf/log 는 양쪽 기록을 살렸고, [Whale ERP Frontend](/whale-erp-front.md) 는 이 PR 의 재발송 · 타입 출처 문장에 main 의 「변경이력」 표기를 얹었다.
+* **Update**: front #136 재리뷰 5 참고 3 — api 타입을 api main(`d785f100`, #158 · #164 · #180 · #182 · #184 포함)으로 다시 만듦. api #180 이 지운 `/me/invitations/check` · `MyInvitationLookupDto` 가 빠지고 소속 추가 확인 요청 · 받은 초대 · 계약 파일 받기 경로가 들어옴(관리자웹 사용처 없음).
 * **Update**: main 병합(front porygon, main #177 · #172 · #176 까지): okf/log.md 충돌은 양쪽 기록을 살렸다.
 * **Update**: main 병합(front porygon, main #175 · #173 까지): okf 충돌은 양쪽 기록을 살렸다 — generated 는 늦은 시각(main), [Whale ERP Frontend](/whale-erp-front.md) 의 공통 컴포넌트 · 점포 · BP 마스터 줄은 main 의 「마이페이지」 · 「변경이력」 · 헤더 툴팁(`HeaderTip`) 변경에 이 브랜치의 `NoticeBand` · `ExcelDownload*` 이름 변경을 글자 단위로 합쳤다. 코드는 git 이 자동으로 합쳤고 옛 이름 참조는 남지 않았다.
 * **Update**: [점포 관리](/stores.md) · [BP 마스터 계정 관리](/bp.md) · [Whale ERP Frontend](/whale-erp-front.md) — 엑셀 받기와 안내 띠를 공통 컴포넌트로 올렸다(1팀, 2026-10-29): 점포 화면의 `store-excel.tsx`(`StoreExcelProvider` · `StoreExcelNotice` · `StoreExcelButton`)를 `components/common/excel-download.tsx`(`ExcelDownloadProvider` · `ExcelDownloadNotice` · `ExcelDownloadButton`)로, `store-parts.tsx` 의 `NoticeBand` 를 `components/common/notice-band.tsx` 로 옮겼다. 점포 전용 기본값(파일 이름 「점포목록.xlsx」 · 「받을 점포가 없습니다」)은 없애고 화면이 넘긴다. 점포 · BP 마스터 목록 · 엑셀 내려받기 화면 · 점포 상세 · 등록 · 수정 · 이력의 import 를 바꿨고 동작은 그대로다. DESIGN.md Components 에 Notice Band · Excel Download 를 적었다.
@@ -41,6 +44,10 @@
 * **Update**: [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) — review-pr(4관점) 반영: 내려받기 화면은 409 「만들지 못함」을 문구 머리로 갈라 실패 띠 · 다시 받기 없음(만드는 중은 안내 색 · 다시 받기), 403 비밀번호 변경 필요는 바꾼 뒤 다시 받기. S3 주소를 탭 이동(`location.assign`) 대신 숨은 iframe 으로 받아, S3 오류여도 화면과 [다시 받기]가 남는다. 로그인 주소 · 로그인한 채 갈 곳 판정을 `loginPathOf` · `signedInTargetOf`(auth-routes.ts)로 빼 proxy · 화면이 함께 쓰고 테스트했다. 페이지 id 판정을 `returnPathOf` 와 같은 1~9자리(앞자리 0 없음)로. 메일 링크 화면 권한 서술을 「내려받을 때 본인 · 화면 조회 권한을 다시 본다」로, 503 조건에 관리자 웹 주소를, 기본 예약 문구를 「1만 건 이상」으로 고쳤다. 1팀 ERD 「대상 BP」 설명(소속 · 탭 BP)과 4xx 는 다시 하지 않는다는 점을 README · 생성기에 맞추고 논리 · 물리 페이지를 다시 그렸다 — api `docs/raw` DDL 과 마이그레이션 `COMMENT` 의 「플랫폼 계정이 고른 탭 BP」는 api #188 몫이라 그대로다.
 * **Update**: [점포 관리](/stores.md) — 엑셀 예약 생성 셀프 리뷰 반영: 202 안내 띠에 api 문구와 같은 「24시간 · 본인만」 문장을 한 번 더 붙이던 것을 뺐다(api 문구가 없을 때의 기본 문구 `EXCEL_SCHEDULED` 가 같은 말을 한다). 내려받기 화면은 409 를 안내 색 띠로, 404 에 「엑셀을 요청한 계정으로 로그인했는지 확인해 주세요」, [다시 받기]를 Primary 로. `returnPathOf` 는 0 · 앞자리 0 번호를 받지 않는다. `relayExcelResponse` 단위 테스트를 더했다. sources 에 `src/app/excel-downloads` 를 걸었다. **배포는 front 먼저 또는 api(#188)와 동시** — api 가 먼저 나가면 옛 중계 경로가 202 를 200 으로 바꿔 「엑셀 파일을 만들지 못했습니다」를 띄우고, 메일 링크 화면도 없어 404 다. front 가 먼저 나가면 옛 api 의 1만 건 이상 400 은 안내 띠로 보인다.
 ## 2026-10-28
+* **Update**: main 병합(front #136, #164 · #135 머지 뒤) — 재발송 서버 액션은 공통 `send` 로 본문(`sendBodyOf`)을 보내고, 버튼은 `useAction` 안에서 3인자 `resendDialogCopy` 를 쓴다. api #164 로 없어진 `SEND_CHANNEL_NOT_READY` 를 말하던 주석을 지금 동작(소속 추가 확인 요청)으로 고침.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 셀프 code-review(2차): 직원 목록 · 직원 상세의 초대 재발송도 마지막 발송 시각(api 계약 칸 `lastSentAt`)을 보내 두 화면 재발송을 막는다, 서버 액션이 받은 값의 모양을 보고 싣는다(`sendBodyOf` — 직접 불러 null 을 넘겨도 터지지 않음). api 타입을 tentacruel `c03a7e3b`(api main 포함)에서 다시 만듦.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 셀프 code-review: 상세 재발송이 마지막 발송 시각(`lastSentAt` → `expectedSentAt`)도 보내 상태가 그대로인 두 탭 재발송을 막는다(api #158), `SendContractButton` 의 `status` 를 `ContractStatus` 로(단언 없앰), api 타입을 tentacruel `437523d8` 에서 다시 만듦.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 재리뷰 참고 1: 재발송(상세 · 직원 목록 · 직원 상세)이 화면이 본 계약 상태를 `expectedStatus` 로 함께 보낸다(`sendBodyOf`) — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냈으면 api(#158)가 409 로 막아 다시 읽는다. #135(main 병합) 병합, api 타입을 #158 tentacruel `2347eac7` 에서 다시 만듦.
 * **Update**: [로그인](/auth.md) — 잠김 문구를 「로그인이 잠겼습니다. 5분 뒤에 다시 시도해주세요.」로 바꿨다 — 임시 비밀번호 안내를 문구에서 뺐고, 풀리는 길은 그대로다(목업 auth/login 데모 · 화면 정의, api #179 요청, 레드마인 #2620)(재영).
 * **Update**: [로그인](/auth.md) — 로그인 실패 문구를 모두 마침표로 끝낸다: 잠김 문구(api 맞춤 요청) · 요청 제한 문구(front `login/actions.ts`). 목업 auth/login 데모 · 화면 정의도 맞췄다(레드마인 #2619)(재영).
 * **Update**: [로그인](/auth.md) — 메뉴가 없는 BP · 가맹 계정은 홈에 권한 요청 안내를 두지 않고 홈과 MY PAGE 만 쓴다. 권한 요청 안내는 홈이 없는 플랫폼 계정에만 둔다(목업 auth/overview)(재영).
@@ -75,8 +82,12 @@
 * **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 재영 재리뷰(front #151, 2026-10-28): 상세 「검토 사유」에도 공제 미입력을 보인다. api 상세는 사유 행만 주므로 상세가 저장된 공제 칸으로 판정해(`detailReviewReasons` — 작성 중 · 검토 중, 보이는 지급 밖 칸 가운데 넣지 않은 것, 목록 검토 대기와 같은 기준) 「공제 미입력 · 빈 공제 이름」 줄을 더하고, 「그 밖의 사유」에서 공제 미입력을 빼던 것을 없앴다.
 
 ## 2026-10-27
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 셀프 code-review: 재발송이 막힌(`blocked`) 확인창을 닫을 때 상세를 다시 읽는다 — 낡은 재발송 버튼으로 같은 409 를 되풀이하지 않게.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 재리뷰 참고 반영: 거부 · 만료 재발송이 막히면(`REOPEN_BLOCKED` · `WORK_TIME_OVERLAP`) 까닭 문장을 남기고 보내기만 막는다(`SendFailure.blocked`) — code-review 델타에서 다시 읽게 했더니 버튼 · 확인창과 함께 까닭이 사라졌다. #135(main 병합) 병합.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 code-review(델타) 반영: 거부 · 만료 재발송이 막히면(`REOPEN_BLOCKED` · `WORK_TIME_OVERLAP`) api 문장을 보이며 보내기를 막고 상세를 다시 읽음, 재발송 확인창 문구를 상태가 아니라 가입 여부(`staffJoined`, 필수)로 고름(가입 전 서명 대기는 가입 초대 문구), 거부 문구에서 「새 계약을 작성해 주세요」 뺌, 버튼 조건을 `canShowResend` 로 옮겨 테스트, 낡은 주석 고침. #135 병합 · api 타입을 #158 tentacruel 에서 다시 만듦.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영: 대체 확인을 다시 물으면 다시 물은 목록만 보낸다(`replaceIdsOf` 를 없앰) — api `checkReplace` 는 지금 목록과 같은 집합만 받아, 앞서 고른 것을 합치면 그사이 빠진 계약 때문에 같은 409 가 되풀이됐다. main 병합.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 code-review(델타) 반영: 이어 쓰기(`PUT`)에는 `previousContractId` 를 싣지 않음, 재계약이면 바로잡기 확인창을 띄우지 않음(`signedOverlap` 이어도), 대체 확인을 다시 물으면 앞서 고른 계약과 합쳐 보냄(`replaceIdsOf`), 바로잡기 뒤 진행 중 목록으로 다시 물을 때 바로잡기 문구는 체결 완료가 있을 때만(`stillCorrecting`), 낡은 주석 고침.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 리뷰 참고 반영: 거부 · 만료 재발송이 막히면 api 가 code 를 실어(`REOPEN_BLOCKED` · `WORK_TIME_OVERLAP`) 화면이 다시 읽지 않고 막힌 까닭을 확인창에 보인다(테스트로 고정). #135 병합.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영(노영주): 진행 중인 재계약이 있어도 재계약 작성 화면을 연다 — api `renewedBy` 가 체결된 재계약만 싣고, 저장할 때 대체를 묻는다. `renewedBy != null` 로 봐 칸 없는 옛 응답에도 안전. main 병합 · api 타입 다시 만듦.
 * **Update**: [BP 마스터 계정 관리](/bp.md) — 탈퇴 BP 는 변경 이력을 보이지 않고(버튼 숨김 · api 409, 이력 데이터는 그대로) 탈퇴 사유를 BP 상태 줄의 [사유 보기] 팝업으로 본다(WHALEERP-625 · 626, 2026-10-27 재영). 목업 상세 · 화면정의서도 맞췄다.
 * **Update**: [BP 마스터 계정 관리](/bp.md) — 구현(front #144 · api #163)에 맞춤: 비밀번호 초기화는 변경 이력에 「비밀번호 → 초기화」 한 줄로 남고, 성공은 알림 · 메일 실패는 안내 띠로 보인다. 목업 상세 · 화면정의서와 데모 상세(BP 상태 줄 · 소속 점포 수만 · 라벨 · 초기화 확인창 문구)도 같이 고쳤다.
@@ -142,6 +153,7 @@
 * **Update**: 목업 · 데모 출·퇴근 현황의 낡은 「퇴근 시각 이상」 사유를 「반경 밖 퇴근」으로, 사유 필터에서 「위치 오차 초과」를 뺐다 — 확인 필요 사유는 반경 밖 출근 · 반경 밖 퇴근 · 위치 조작 감지 셋(2026-10-26 재영). [Staff](/staff.md) 도 맞췄다.
 * **Update**: main 병합(front sandshrew, main #139 까지): okf 충돌은 양쪽 기록을 살렸다. 플랫폼 관리자 이메일 검사가 `email-format.ts` 로 모여, BP 관리자 폼도 그 `emailError` 를 쓴다(문구 「이메일 형식이 올바르지 않습니다.」).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 관리자: 등록 때 이메일도 아이디와 같은 때(칸을 벗어나거나 Enter) api `GET /bp-admins/email-availability` 로 중복을 묻는다(사용자 요청). 점포 일괄 검색 창에 끌어서 옮기기를 더하고 폭을 960 으로 넓혔다. 상세 대상 점포 표는 5개 뒤로 표 안에서 스크롤하고, 등록만 한 계정은 최종 수정일시를 「수정한 적 없음」으로 둔다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 거부 · 만료 재발송(WHALEERP-153): 근로계약 상세의 「재발송」을 거부 · 만료에서도 켠다(api `canResend` 가 참일 때만). 확인창은 같은 조건으로 다시 보낸다는 문장을 더한다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 code-review 반영: 이어지는 재계약이 있으면 「새 계약」을 숨기고(api `renewedBy`), 재계약 임시저장 이어 쓰기도 근무지 · 번호 잠금, 고를 수 없는 근무지면 재계약 화면을 열지 않음, 시작일이 지난 날이면 비우고 수습은 끔, 목록 「재계약」은 체결 전까지 · 갱신 예정은 날짜(해 포함) 또는 D-n, 직전 계약과 작성 재료를 함께 읽음. api 타입 다시 만듦(api main + 재계약).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 재계약(WHALEERP-156): 근로계약 상세의 「새 계약」을 체결 완료 · 체결 뒤 종료에서 켜고 `/contracts/new?from=` 재계약 작성(직전 값 채움 · 근무지 · 번호 잠금 · `previousContractId`). 목록 상태 칸에 재계약 서명 대기 「재계약」, 체결 완료 「갱신 예정 MM-DD」. api 타입 다시 만듦.
 * **Update**: main 병합(front raichu, main #134 까지): okf 충돌은 양쪽 기록을 살렸다.
