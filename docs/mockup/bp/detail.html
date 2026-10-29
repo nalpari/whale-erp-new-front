@@ -10,7 +10,8 @@
   <body data-root="../" data-page="bp" data-sub="bp/detail.html">
     <!-- BP 마스터 계정 상세 조회·삭제 · /bp-masters?bp= 상세 패널 · S-GZDODB · 비밀번호 초기화 S-PRRLMA · 1팀
          기본정보(계정 관리정보 포함) · 사업자정보를 나눠 보이고, 변경 이력은 하단 [변경 이력] 버튼의 팝업으로 본다. 모든 항목은 읽기 전용이다.
-         미인증 BP 의 비어 있는 사업자정보는 하이픈(-)으로 보인다. 계정 삭제는 하단 버튼이고, 조건을 채우지 못하면 흐리게 두고 이유를 말풍선으로 보인다.
+         미인증 BP 는 인증으로 채우는 사업자등록번호 · 대표자명 · 개업일자만 하이픈(-)으로 보이고 대표자 연락처 · 이메일 · 주소 · 업태 · 종목 · 상호명은 입력한 값을 보인다(2026-10-28 사용자 지정).
+         「인증 완료 · 일시」는 사업자정보 제목 줄 오른쪽에 보이고 「최종 인증 일시」 줄은 없다. 비밀번호 초기화 안내는 머리 아래 상자(메일 미발송 빨강 · 발송 뒤 하늘색)이고 성공 알림은 「초기화되었습니다.」뿐이다(2026-10-28). 계정 삭제는 하단 버튼이고, 조건을 채우지 못하면 흐리게 두고 이유를 말풍선으로 보인다.
          수정은 BP 마스터 계정 수정 화면, BP 상태 변경(사용·미사용) · 비밀번호 초기화 · 삭제 확인은 이 화면의 팝업이 맡는다.
          버튼 자리는 플랫폼 관리자 상세와 같다 — 상태 변경 · 비밀번호 초기화는 기본정보의 그 줄 버튼, 하단은 [닫기][삭제][수정][변경 이력](2026-10-22 결정).
          실제 화면은 목록 위로 밀려 나오는 슬라이드 패널이고(/bp-masters?bp=), 이 목업은 내용과 버튼 자리만 보인다.
@@ -66,14 +67,20 @@
               </div>
             </div>
 
+            <!-- 초기화 비밀번호 안내 — 메일을 보냈고 첫 로그인 전이면 하늘색 상자(초기화 비밀번호는 1시간만 유효). 메일 미발송이면 같은 자리에 빨간 상자
+                 「초기화 비밀번호가 발송되지 않았습니다. 비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요.」(2026-10-28 사용자 지정). 비밀번호 줄에 「미발송」 글자는 두지 않는다. -->
+            <div class="band band--info" data-show="fresh" hidden>
+              <span class="band__ic" data-icon="check" data-icon-size="20"></span>
+              <div class="band__body">
+                <p class="band__desc">초기화 비밀번호를 발송했습니다.<br />1시간 내 미로그인 시 [초기화] 버튼으로 재발송해주세요.</p>
+              </div>
+            </div>
             <div class="band band--info" data-show="created" hidden>
               <span class="band__ic" data-icon="check" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">BP를 등록했습니다 · BP 코드 <span class="mono">BP000031</span></div>
-                <p class="band__desc">
-                  초기 비밀번호를 <b class="mono">serin@breadlab.kr</b> 로 보냈습니다. BP 마스터는 첫 로그인 때
-                  <a class="tlink" href="../auth/force-password.html?state=platform">비밀번호 변경과 약관 동의</a>를 마쳐야 ERP 를 쓸 수 있습니다.
-                </p>
+                <!-- 등록 직후도 초기화 안내와 같은 하늘색 상자 한 문구다. BP 코드는 머리 · 이메일은 기본정보에서 본다(2026-10-29 재영) -->
+                <div class="band__title">초기화 비밀번호를 발송했습니다.</div>
+                <p class="band__desc">1시간 내 미로그인 시 [초기화] 버튼으로 재발송해주세요.</p>
               </div>
             </div>
             <div class="band band--warn" data-show="off" hidden>
@@ -149,8 +156,10 @@
                 <section class="panel">
                   <div class="panel__head">
                     <h2 class="t-h2">BP 사업자정보</h2>
-                    <span class="badge badge--ok" data-show="use off gone">인증완료</span>
-                    <span class="badge badge--warn" data-show="fresh created" hidden>사업자정보 미인증</span>
+                    <span style="margin-left: auto; font-weight: 500" data-show="use">인증 완료 · 2025-02-03 11:10</span>
+                    <span style="margin-left: auto; font-weight: 500" data-show="off" hidden>인증 완료 · 2024-11-05 14:05</span>
+                    <span style="margin-left: auto; font-weight: 500" data-show="gone" hidden>인증 완료 · 2024-06-14 08:45</span>
+                    <span style="margin-left: auto; color: var(--risk-text); font-weight: 500" data-show="fresh created" hidden>미인증</span>
                   </div>
                   <div class="panel__body">
                     <dl class="kv" data-show="use off gone">
@@ -163,7 +172,6 @@
                       <dt>사업자주소</dt>
                       <dd><span data-show="use"><span class="mono">04524</span> 서울 중구 세종대로 110, 7층</span><span data-show="off" hidden><span class="mono">06232</span> 서울 강남구 테헤란로 8길 21</span><span data-show="gone" hidden><span class="mono">48058</span> 부산 해운대구 센텀중앙로 55</span></dd>
                       <dt>업태 · 종목</dt><dd>음식점업 · <span data-show="use">한식 음식점</span><span data-show="off" hidden>한식 음식점</span><span data-show="gone" hidden>국밥 전문점</span></dd>
-                      <dt>최종 인증 일시</dt><dd class="mono"><span data-show="use">2025-02-03 11:10</span><span data-show="off" hidden>2024-11-05 14:05</span><span data-show="gone" hidden>2024-06-14 08:45</span></dd>
                     </dl>
                     <div class="stack" data-show="fresh created" hidden>
                       <dl class="kv">
@@ -171,9 +179,9 @@
                         <dt>사업자등록번호</dt><dd class="nil">-</dd>
                         <dt>대표자명</dt><dd class="nil">-</dd>
                         <dt>개업일자</dt><dd class="nil">-</dd>
-                        <dt>대표자 연락처</dt><dd class="nil">-</dd>
-                        <dt>대표자 이메일</dt><dd class="nil">-</dd>
-                        <dt>사업자주소</dt><dd class="nil">-</dd>
+                        <dt>대표자 연락처</dt><dd class="mono">010-2291-7730</dd>
+                        <dt>대표자 이메일</dt><dd class="mono">serin@breadlab.kr</dd>
+                        <dt>사업자주소</dt><dd><span class="mono">13494</span> 경기 성남시 분당구 판교역로 235, 2층</dd>
                         <dt>업태 · 종목</dt><dd>제과점업 · 베이커리</dd>
                       </dl>
                       <p class="note" style="margin: 0">
@@ -347,7 +355,7 @@
 
     <!-- 비밀번호 초기화 확인 (S-PRRLMA) — 새 비밀번호는 누구에게도 보이지 않고 계정 이메일로만 간다.
          메일은 BP 신규 등록 포맷이 아니라 비밀번호 초기화 전용 포맷을 쓴다 (BP-4 확정 · 플랫폼·BP 관리자도 같은 양식, 2026-09-29).
-         실제 화면(front #144)은 성공하면 확인창을 닫고 알림만 띄우고, 메일 발송 실패는 상세 위 안내 띠로 보인다. 아래 결과 단계는 그 두 문구를 보이려는 것이다.
+         실제 화면(front #144)은 성공하면 확인창을 닫고 토스트 「초기화되었습니다.」만 띄우고, 메일 발송 실패는 상세 머리 아래 빨간 상자로 보인다. 아래 결과 단계는 그 두 문구를 보이려는 것이다.
          변경 이력에는 「비밀번호 → 초기화」 한 줄이 남는다(2026-10-27 구현에 맞춤). -->
     <div class="modal" id="pop-reset" hidden role="dialog" aria-modal="true" aria-labelledby="pr-t">
       <div class="modal__box">
@@ -358,10 +366,16 @@
         <div class="modal__body" id="preset">
           <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
             <dl class="kv">
-              <dt>BP</dt><dd>㈜한강상회 <span class="mono subtle">BP000017</span></dd>
-              <dt>계정</dt><dd><span class="mono">hangang01</span></dd>
+              <dt>아이디</dt><dd><span class="mono">hangang01</span></dd>
+              <dt>이름</dt><dd>정하윤</dd>
+              <dt>이메일</dt><dd class="mono">hayoon@hangang.co.kr</dd>
             </dl>
-            <p style="margin: 0; font-size: 13px">새 초기 비밀번호(12자 무작위)를 계정 이메일로만 보내며, 기존 비밀번호는 즉시 무효가 됩니다.<br>초기 비밀번호는 1시간 안에 로그인해야 하고, 로그인 때 비밀번호를 새로 정합니다. 현재 로그인 중인 세션은 유지됩니다.</p>
+            <div class="band band--risk">
+              <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+              <div class="band__body">
+                <p class="band__desc">비밀번호 초기화 시 새로운 비밀번호가 등록된 이메일로 발송됩니다.<br />새 비밀번호는 1시간 동안 유효하며, 로그인 시 변경해야 합니다.<br />기존 비밀번호는 즉시 사용할 수 없게 됩니다.</p>
+              </div>
+            </div>
             <div class="inline" style="justify-content: flex-end">
               <button class="btn btn--ghost" type="button" data-close>취소</button>
               <button class="btn btn--primary" type="button" data-step-to="sent">초기화</button>
@@ -372,8 +386,8 @@
             <div class="band band--info">
               <span class="band__ic" data-icon="check" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">알림 · 새 초기 비밀번호를 <span class="mono">hayoon@hangang.co.kr</span> 로 보냈습니다.</div>
-                <p class="band__desc">실제 화면은 확인창을 닫고 이 문구를 알림으로만 띄운다. 비밀번호는 어디에도 보이지 않는다.</p>
+                <div class="band__title">알림 · 초기화되었습니다.</div>
+                <p class="band__desc">실제 화면은 확인창을 닫고 이 짧은 토스트만 띄운다(2026-10-28 사용자 지정). 비밀번호는 어디에도 보이지 않고, 첫 로그인 전이거나 방금 초기화했으면 상세 머리 아래에 하늘색 안내 상자가 선다.</p>
               </div>
             </div>
             <div class="inline" style="justify-content: flex-end">
@@ -385,7 +399,7 @@
               <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
               <div class="band__body">
                 <div class="band__title">초기화는 됐지만 안내 메일을 보내지 못했습니다</div>
-                <p class="band__desc">기존 비밀번호는 이미 무효입니다. 다시 초기화하면 새 비밀번호로 메일을 다시 보냅니다. (실제 화면은 상세 위 안내 띠로 보이고, 비밀번호 줄에 「초기 비밀번호 미발송」을 붙인다)</p>
+                <p class="band__desc">기존 비밀번호는 이미 무효입니다. 다시 초기화하면 새 비밀번호로 메일을 다시 보냅니다. (실제 화면은 상세 머리 아래 빨간 상자 「초기화 비밀번호가 발송되지 않았습니다.」로 보이고, 비밀번호 줄에는 「미발송」 글자를 두지 않는다 — 2026-10-28 사용자 지정)</p>
               </div>
             </div>
             <div class="inline" style="justify-content: flex-end">
