@@ -11,7 +11,8 @@
     <!-- BP 마스터 계정 목록 조회 · /bp-masters · S-ALHCJS (F-EHHJLV BP 마스터 계정 관리) · 1팀
          BP 하나에 BP 마스터 계정 하나다. 목록은 BP 를 기준으로 서고, 계정 기본정보와 BP 사업자정보를 한 줄에 함께 보인다.
          검색은 검색 기준(BP 코드 · 아이디+이름 · 상호명 · 사업자등록번호)을 고르고 검색어 하나를 넣는다. 상태·인증 여부는 따로 거른다.
-         대표자명·개업일자는 목록에 두지 않고, 연락처·이메일과 등록자·등록 일시는 한 칸에 두 줄로 보인다.
+         대표자명·개업일자는 목록에 두지 않는다. 열은 BP 코드 · 상호명 · 아이디 · 이름 · 계정상태 · 연락처 · 이메일 · 사업자등록번호 · 가입경로 · 등록(일시만)이고,
+         상세를 여는 링크는 상호명 하나뿐이다(2026-10-28 사용자 지정).
          처음 들어오면 조건 없이 전체 BP 를 본다(미사용·탈퇴 포함). 정렬은 등록 일시 내림차순, 한 페이지 20 · 50 · 100건(기본 20) — 관리자 웹 목록 공통 규칙(STORE-4 확정)이다.
          플랫폼 사용자만 들어온다 — 점포 매핑 없이 전체 BP 가 대상이다.
          위쪽 점선 줄은 목업 전용이다 — 목록 상태를 바꿔 본다. -->
@@ -144,80 +145,113 @@
                 <thead>
                   <tr>
                     <th scope="col">BP 코드</th>
+                    <th scope="col">상호명</th>
                     <th scope="col">아이디</th>
                     <th scope="col">이름</th>
-                    <th scope="col">연락처 · 이메일</th>
-                    <th scope="col">상태</th>
-                    <th scope="col">상호명</th>
+                    <th scope="col">계정상태</th>
+                    <th scope="col">연락처</th>
+                    <th scope="col">이메일</th>
                     <th scope="col">사업자등록번호</th>
                     <th scope="col">가입경로</th>
-                    <th scope="col">등록자 · 등록 일시</th>
+                    <th scope="col">등록</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr data-show="base big making cool xfail">
-                    <td class="mono" style="white-space: nowrap"><a class="tlink" href="detail.html?state=fresh">BP000031</a></td>
-                    <td class="mono" style="white-space: nowrap">bakerylab</td><td style="white-space: nowrap">오세린</td><td class="mono"><span class="ct"><span class="ct__line"><span class="ct__ic" data-icon="phone" data-icon-size="13"></span>010-2291-7730</span><span class="ct__line"><span class="ct__ic" data-icon="mail" data-icon-size="13"></span>serin@breadlab.kr</span></span></td>
-                    <td style="white-space: nowrap"><span class="badge badge--ok">사용</span></td>
+                    <td class="mono" style="white-space: nowrap">BP000031</td>
                     <td class="k" style="white-space: nowrap"><a class="tlink" href="detail.html?state=fresh">브레드랩 2호</a></td>
+                    <td class="mono" style="white-space: nowrap">bakerylab</td>
+                    <td style="white-space: nowrap">오세린</td>
+                    <td style="white-space: nowrap"><span class="badge badge--ok">사용</span></td>
+                    <td class="mono" style="white-space: nowrap">010-2291-7730</td>
+                    <td class="mono" style="white-space: nowrap">serin@breadlab.kr</td>
                     <td class="mono nil" style="white-space: nowrap"></td>
-                    <td style="white-space: nowrap">플랫폼등록</td><td class="mono" style="white-space: nowrap">platjung<br />2026-09-18 10:04</td>
+                    <td style="white-space: nowrap">플랫폼등록</td>
+                    <td class="mono" style="white-space: nowrap">2026-09-18 10:04</td>
                   </tr>
                   <tr data-show="base big making cool xfail">
-                    <td class="mono" style="white-space: nowrap"><a class="tlink" href="detail.html?state=fresh">BP000030</a></td>
-                    <td class="mono" style="white-space: nowrap">breadlab</td><td style="white-space: nowrap">오세린</td><td class="mono"><span class="ct"><span class="ct__line"><span class="ct__ic" data-icon="phone" data-icon-size="13"></span>010-2291-7730</span><span class="ct__line"><span class="ct__ic" data-icon="mail" data-icon-size="13"></span>ceo@breadlab.kr</span></span></td>
-                    <td style="white-space: nowrap"><span class="badge badge--ok">사용</span></td>
+                    <td class="mono" style="white-space: nowrap">BP000030</td>
                     <td class="k" style="white-space: nowrap"><a class="tlink" href="detail.html?state=fresh">브레드랩</a></td>
+                    <td class="mono" style="white-space: nowrap">breadlab</td>
+                    <td style="white-space: nowrap">오세린</td>
+                    <td style="white-space: nowrap"><span class="badge badge--ok">사용</span></td>
+                    <td class="mono" style="white-space: nowrap">010-2291-7730</td>
+                    <td class="mono" style="white-space: nowrap">ceo@breadlab.kr</td>
                     <td class="mono" style="white-space: nowrap">214-88-10392</td>
-                    <td style="white-space: nowrap">플랫폼등록</td><td class="mono" style="white-space: nowrap">platjung<br />2026-08-02 15:40</td>
+                    <td style="white-space: nowrap">플랫폼등록</td>
+                    <td class="mono" style="white-space: nowrap">2026-08-02 15:40</td>
                   </tr>
                   <tr data-show="base big making cool xfail">
-                    <td class="mono" style="white-space: nowrap"><a class="tlink" href="detail.html">BP000021</a></td>
-                    <td class="mono" style="white-space: nowrap">badafood</td><td style="white-space: nowrap">김도현</td><td class="mono"><span class="ct"><span class="ct__line"><span class="ct__ic" data-icon="phone" data-icon-size="13"></span>010-4410-2215</span><span class="ct__line"><span class="ct__ic" data-icon="mail" data-icon-size="13"></span>dohyun@badafood.co.kr</span></span></td>
-                    <td style="white-space: nowrap"><span class="badge badge--ok">사용</span></td>
+                    <td class="mono" style="white-space: nowrap">BP000021</td>
                     <td class="k" style="white-space: nowrap"><a class="tlink" href="detail.html">㈜바다푸드</a></td>
+                    <td class="mono" style="white-space: nowrap">badafood</td>
+                    <td style="white-space: nowrap">김도현</td>
+                    <td style="white-space: nowrap"><span class="badge badge--ok">사용</span></td>
+                    <td class="mono" style="white-space: nowrap">010-4410-2215</td>
+                    <td class="mono" style="white-space: nowrap">dohyun@badafood.co.kr</td>
                     <td class="mono" style="white-space: nowrap">617-81-40277</td>
-                    <td style="white-space: nowrap">회원가입</td><td class="mono" style="white-space: nowrap">badafood<br />2026-03-11 09:20</td>
+                    <td style="white-space: nowrap">회원가입</td>
+                    <td class="mono" style="white-space: nowrap">2026-03-11 09:20</td>
                   </tr>
                   <tr data-show="base big making cool xfail">
-                    <td class="mono" style="white-space: nowrap"><a class="tlink" href="detail.html">BP000017</a></td>
-                    <td class="mono" style="white-space: nowrap">hangang01</td><td style="white-space: nowrap">정하윤</td><td class="mono"><span class="ct"><span class="ct__line"><span class="ct__ic" data-icon="phone" data-icon-size="13"></span>010-3380-1127</span><span class="ct__line"><span class="ct__ic" data-icon="mail" data-icon-size="13"></span>hayoon@hangang.co.kr</span></span></td>
-                    <td style="white-space: nowrap"><span class="badge badge--ok">사용</span></td>
+                    <td class="mono" style="white-space: nowrap">BP000017</td>
                     <td class="k" style="white-space: nowrap"><a class="tlink" href="detail.html">㈜한강상회</a></td>
+                    <td class="mono" style="white-space: nowrap">hangang01</td>
+                    <td style="white-space: nowrap">정하윤</td>
+                    <td style="white-space: nowrap"><span class="badge badge--ok">사용</span></td>
+                    <td class="mono" style="white-space: nowrap">010-3380-1127</td>
+                    <td class="mono" style="white-space: nowrap">hayoon@hangang.co.kr</td>
                     <td class="mono" style="white-space: nowrap">105-86-33412</td>
-                    <td style="white-space: nowrap">회원가입</td><td class="mono" style="white-space: nowrap">hangang01<br />2025-02-03 11:12</td>
+                    <td style="white-space: nowrap">회원가입</td>
+                    <td class="mono" style="white-space: nowrap">2025-02-03 11:12</td>
                   </tr>
                   <tr data-show="base off big making cool xfail">
-                    <td class="mono" style="white-space: nowrap"><a class="tlink" href="detail.html?state=off">BP000012</a></td>
-                    <td class="mono" style="white-space: nowrap">sotbap</td><td style="white-space: nowrap">이준호</td><td class="mono"><span class="ct"><span class="ct__line"><span class="ct__ic" data-icon="phone" data-icon-size="13"></span>010-7732-0918</span><span class="ct__line"><span class="ct__ic" data-icon="mail" data-icon-size="13"></span>junho@sotbap.kr</span></span></td>
-                    <td style="white-space: nowrap"><span class="badge badge--warn">미사용</span></td>
+                    <td class="mono" style="white-space: nowrap">BP000012</td>
                     <td class="k" style="white-space: nowrap"><a class="tlink" href="detail.html?state=off">솥밥상회</a></td>
+                    <td class="mono" style="white-space: nowrap">sotbap</td>
+                    <td style="white-space: nowrap">이준호</td>
+                    <td style="white-space: nowrap"><span class="badge badge--warn">미사용</span></td>
+                    <td class="mono" style="white-space: nowrap">010-7732-0918</td>
+                    <td class="mono" style="white-space: nowrap">junho@sotbap.kr</td>
                     <td class="mono" style="white-space: nowrap">220-19-55813</td>
-                    <td style="white-space: nowrap">회원가입</td><td class="mono" style="white-space: nowrap">sotbap<br />2024-11-05 14:08</td>
+                    <td style="white-space: nowrap">회원가입</td>
+                    <td class="mono" style="white-space: nowrap">2024-11-05 14:08</td>
                   </tr>
                   <tr data-show="base big making cool xfail">
-                    <td class="mono" style="white-space: nowrap"><a class="tlink" href="detail.html">BP000010</a></td>
-                    <td class="mono" style="white-space: nowrap">cafenoon</td><td style="white-space: nowrap">한지우</td><td class="mono"><span class="ct"><span class="ct__line"><span class="ct__ic" data-icon="phone" data-icon-size="13"></span>010-5518-4402</span><span class="ct__line"><span class="ct__ic" data-icon="mail" data-icon-size="13"></span>jiwoo@cafenoon.kr</span></span></td>
-                    <td style="white-space: nowrap"><span class="badge badge--ok">사용</span></td>
+                    <td class="mono" style="white-space: nowrap">BP000010</td>
                     <td class="k" style="white-space: nowrap"><a class="tlink" href="detail.html">카페눈</a></td>
+                    <td class="mono" style="white-space: nowrap">cafenoon</td>
+                    <td style="white-space: nowrap">한지우</td>
+                    <td style="white-space: nowrap"><span class="badge badge--ok">사용</span></td>
+                    <td class="mono" style="white-space: nowrap">010-5518-4402</td>
+                    <td class="mono" style="white-space: nowrap">jiwoo@cafenoon.kr</td>
                     <td class="mono" style="white-space: nowrap">113-25-60418</td>
-                    <td style="white-space: nowrap">플랫폼등록</td><td class="mono" style="white-space: nowrap">platkim<br />2024-09-02 10:00</td>
+                    <td style="white-space: nowrap">플랫폼등록</td>
+                    <td class="mono" style="white-space: nowrap">2024-09-02 10:00</td>
                   </tr>
                   <tr data-show="base off big making cool xfail">
-                    <td class="mono" style="white-space: nowrap"><a class="tlink" href="detail.html?state=gone">BP000008</a></td>
-                    <td class="mono" style="white-space: nowrap">gukbap24</td><td class="subtle" style="white-space: nowrap">탈퇴로 삭제됨</td><td class="subtle" style="white-space: nowrap">탈퇴로 삭제됨</td>
-                    <td style="white-space: nowrap"><span class="badge badge--risk">탈퇴</span></td>
+                    <td class="mono" style="white-space: nowrap">BP000008</td>
                     <td class="k" style="white-space: nowrap"><a class="tlink" href="detail.html?state=gone">국밥24</a></td>
+                    <td class="mono" style="white-space: nowrap">gukbap24</td>
+                    <td class="subtle" style="white-space: nowrap">탈퇴로 삭제됨</td>
+                    <td style="white-space: nowrap"><span class="badge badge--risk">탈퇴</span></td>
+                    <td class="subtle" style="white-space: nowrap">탈퇴로 삭제됨</td>
+                    <td class="subtle" style="white-space: nowrap">탈퇴로 삭제됨</td>
                     <td class="mono" style="white-space: nowrap">312-07-88104</td>
-                    <td style="white-space: nowrap">회원가입</td><td class="mono" style="white-space: nowrap">gukbap24<br />2024-06-14 08:47</td>
+                    <td style="white-space: nowrap">회원가입</td>
+                    <td class="mono" style="white-space: nowrap">2024-06-14 08:47</td>
                   </tr>
                   <tr data-show="base big making cool xfail">
-                    <td class="mono" style="white-space: nowrap"><a class="tlink" href="detail.html">BP000003</a></td>
-                    <td class="mono" style="white-space: nowrap">morihq</td><td style="white-space: nowrap">박서윤</td><td class="mono"><span class="ct"><span class="ct__line"><span class="ct__ic" data-icon="phone" data-icon-size="13"></span>010-5521-3380</span><span class="ct__line"><span class="ct__ic" data-icon="mail" data-icon-size="13"></span>seoyun@moricoffee.kr</span></span></td>
-                    <td style="white-space: nowrap"><span class="badge badge--ok">사용</span></td>
+                    <td class="mono" style="white-space: nowrap">BP000003</td>
                     <td class="k" style="white-space: nowrap"><a class="tlink" href="detail.html">모리커피 본사</a></td>
+                    <td class="mono" style="white-space: nowrap">morihq</td>
+                    <td style="white-space: nowrap">박서윤</td>
+                    <td style="white-space: nowrap"><span class="badge badge--ok">사용</span></td>
+                    <td class="mono" style="white-space: nowrap">010-5521-3380</td>
+                    <td class="mono" style="white-space: nowrap">seoyun@moricoffee.kr</td>
                     <td class="mono" style="white-space: nowrap">101-81-22302</td>
-                    <td style="white-space: nowrap">회원가입</td><td class="mono" style="white-space: nowrap">morihq<br />2024-02-19 13:30</td>
+                    <td style="white-space: nowrap">회원가입</td>
+                    <td class="mono" style="white-space: nowrap">2024-02-19 13:30</td>
                   </tr>
                 </tbody>
               </table>

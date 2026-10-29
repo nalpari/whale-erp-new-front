@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [BP 마스터 계정 관리](/bp.md) — 실제 화면에 문서를 맞췄다: 목록은 상호명 링크 하나 · 연락처와 이메일 각자 칸 · 마지막 칸 「등록」은 일시만(2026-10-28 사용자 지정), 상세 미인증은 사업자번호 · 대표자명 · 개업일자만 하이픈이고 「인증 완료 · 일시」는 사업자정보 제목 줄 오른쪽, 초기화 안내는 토스트 + 머리 아래 빨강(미발송) · 하늘색 상자, 수정 화면은 BP 코드 · 계정상태 배지와 안내 상자, 사업자 인증은 네 화면 공통 상자로 재인증 확인창 없음(2026-10-29 재영), 아이디 · 이메일 중복 문구 통일. 목업 index · detail · new · edit · 화면정의서 네 개도 같이 고쳤다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [MY PAGE](/mypage.md) — 모든 로그아웃은 로그인 화면(`/login`)으로, 회원 탈퇴를 마친 뒤만 로그인 전 홈(`/`)으로 간다(새 `logoutAfterWithdrawal`, 2026-10-29 재영 — MYPAGE-3 의 「로그아웃도 로그인 전 홈」을 바꿈).
 * **Update**: main 병합(front caterpie, PR #173 두 번째 충돌 해소): okf/log.md 는 두 쪽 항목을 모두 남겼다.
 * **Update**: main 병합(front caterpie, PR #173 충돌 해소): okf 충돌은 양쪽 기록을 살렸다 — bp.md 는 main 의 generated 시각, log.md 는 두 쪽 항목을 날짜별로 모두 남겼다. 알림 종 403 은 main 의 강제 변경 문구 판정을 따랐다.
