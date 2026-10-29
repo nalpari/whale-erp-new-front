@@ -248,7 +248,7 @@ export const serviceLinks = (A, hrefs = {}) => {
     : `<a aria-label="웨일ERP" class="${ICON_HOVER} w-[32px]" href="${hrefs.erp ?? "#"}">${img(A, "service-erp.svg", 32, 32)}${tip("웨일ERP")}</a>`;
   // 플랫폼관리는 플랫폼 계정에게만 보인다 — hrefs.platform 을 안 주면 자리째 뺀다(BP·가맹 role, 사용자 지적 · global-header.tsx 와 같다, 2026-10-21).
   const platformLink = hrefs.platform
-    ? `<a aria-label="플랫폼관리" class="${ICON_HOVER} w-[20px] bg-white" href="${hrefs.platform}">${img(A, "service-platform.svg", 20, 20)}${tip("플랫폼관리")}</a>`
+    ? `<a aria-label="플랫폼관리" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.platform}">${img(A, "service-platform.svg", 22, 22)}${tip("플랫폼관리")}</a>`
     : "";
   return `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]">${erpLink}${hrefs.hideAddon ? "" : `<a aria-label="부가서비스구독관리" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-subscription.svg", 24, 24)}${tip("부가서비스구독관리")}</a>`}${platformLink}</div></div>`;
 };

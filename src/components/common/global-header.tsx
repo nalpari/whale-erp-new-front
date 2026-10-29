@@ -141,10 +141,11 @@ export function ServiceLinks({ targets = {}, hideAddon = false }: { targets?: { 
           </ServiceLink>
         )}
         {/* 플랫폼관리는 톱니바퀴(데모 service-platform.svg, 2026-10-20). 아홉 점 아이콘에서 바꿨다.
-            플랫폼 계정에게만 보인다 — BP·가맹 계정은 자리 자체를 없앤다(사용자 지적, 2026-10-21). */}
+            플랫폼 계정에게만 보인다 — BP·가맹 계정은 자리 자체를 없앤다(사용자 지적, 2026-10-21).
+            칸은 다른 둘과 같은 32px — 20px 칸이라 부가서비스에 붙어 보였다. 톱니바퀴는 22px 로 키워 부가서비스와 무게를 맞춘다(2026-10-29 사용자 지적). */}
         {targets.platform && (
-          <ServiceLink target={targets.platform} label="플랫폼관리" className={`${ICON_HOVER} w-[20px] bg-white`}>
-            <Image src="/icons/service-platform.svg" alt="" width={20} height={20} />
+          <ServiceLink target={targets.platform} label="플랫폼관리" className={`${ICON_HOVER} w-[32px] bg-white`}>
+            <Image src="/icons/service-platform.svg" alt="" width={22} height={22} />
           </ServiceLink>
         )}
       </div>
