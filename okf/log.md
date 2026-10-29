@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 목록: 가맹 마스터는 자기에게 연결된 가맹 관리자를 점포와 관계없이 본다(api 규칙대로, 데모 함께, 2026-10-29 사용자 결정, front piplup).
 * **Update**: main 병합(front typhlosion, main #192 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 공통 컴포넌트 줄은 main 의 헤더 툴팁 설명에 이 브랜치의 `Blocked` 문장을 다시 얹었고, [홈](/home.md) 시각은 늦은 값을 남겼다.
 * **Update**: [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) — PR #190 코드 리뷰 반영: 상세 폐점 확인 창의 [이전]이 조건을 다시 받는다. 가맹 역할 판정을 `auth-routes.ts` 의 `isFranchiseRole` 로 모아 점포 목록 [등록] · 홈 점포 없음 안내 · 홈 점포 하나 화면이 같이 쓴다(테스트 포함, front typhlosion).
 * **Update**: [홈](/home.md) — 매핑된 점포가 없는 가맹 마스터 · 가맹 관리자의 홈은 [점포 등록] 없이 「등록된 점포가 없습니다. 관리자에게 점포 배정을 요청하세요.」를 보인다(2026-10-29 사용자 결정, PR #190 리뷰, front typhlosion).
