@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) — PR #190 코드 리뷰 반영: 상세 폐점 확인 창의 [이전]이 조건을 다시 받는다. 가맹 역할 판정을 `auth-routes.ts` 의 `isFranchiseRole` 로 모아 점포 목록 [등록] · 홈 점포 없음 안내 · 홈 점포 하나 화면이 같이 쓴다(테스트 포함, front typhlosion).
 * **Update**: [홈](/home.md) — 매핑된 점포가 없는 가맹 마스터 · 가맹 관리자의 홈은 [점포 등록] 없이 「등록된 점포가 없습니다. 관리자에게 점포 배정을 요청하세요.」를 보인다(2026-10-29 사용자 결정, PR #190 리뷰, front typhlosion).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 상세의 `Blocked` 복사본을 지우고 공통 `@/components/common` 의 것을 쓴다. 공통 [엑셀 다운로드](`ExcelDownloadButton`)는 막힌 버튼 자체에 title 을 달아 0건 이유가 뜨지 않았다 — `Blocked` 로 감쌌다(점포 · BP 마스터 목록 함께, 실제 화면 확인, front typhlosion).
 * **Update**: [점포 관리](/stores.md) — review-pr(PR #190) 반영: 상세에서 폐점 확인 창으로 넘어갈 때 앞 팝업의 실패 문구를 지운다. 주석 셋을 바로잡았다(front typhlosion).

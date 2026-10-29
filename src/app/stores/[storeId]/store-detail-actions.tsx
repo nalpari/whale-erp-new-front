@@ -89,16 +89,25 @@ export function StoreDetailActions({
     if (status === undefined || status === 404 || status === 409) router.refresh();
   };
 
-  const handleStatusOpen = () => {
-    setFailure(null);
-    setTarget(targets[0] ?? null);
-    setDialog("status");
-    // 조건은 그 사이 바뀌었을 수 있어 지금 기준으로 다시 받는다(진행 중 근로계약 등)
+  // 조건은 그 사이 바뀌었을 수 있어 지금 기준으로 다시 받는다(진행 중 근로계약 등)
+  const reloadTransitions = () =>
     startBusy(async () => {
       const result = await getStoreTransitionsAction(store.storeId).catch(UNKNOWN("상태 확인"));
       if (result.ok) setTransitions(result);
       else setFailure(result.message);
     });
+
+  const handleStatusOpen = () => {
+    setFailure(null);
+    setTarget(targets[0] ?? null);
+    setDialog("status");
+    reloadTransitions();
+  };
+
+  /** 폐점 확인 창의 [이전] — 조건 팝업으로 돌아가며 조건을 다시 받는다. 폐점이 막혀(409 등) 돌아온 때 옛 조건을 보이지 않게 한다. 실패 문구 · 고른 상태는 둔다 */
+  const handleBackToStatus = () => {
+    setDialog("status");
+    reloadTransitions();
   };
 
   const allowed =
@@ -260,7 +269,7 @@ export function StoreDetailActions({
           cancelLabel="이전"
           busy={busy}
           onConfirm={handleStatusChange}
-          onCancel={() => setDialog("status")}
+          onCancel={handleBackToStatus}
         >
           <p>폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다.</p>
           {failure && <p role="alert" className="mt-[10px] text-erp-off">{failure}</p>}
