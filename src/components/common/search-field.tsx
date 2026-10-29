@@ -7,6 +7,8 @@ import { FIELD } from "./theme";
 // ref 는 안쪽에서 지우기 뒤 포커스를 옮기는 데 쓰므로 받지 않는다.
 type Props = Omit<ComponentProps<"input">, "type" | "value" | "defaultValue" | "onChange" | "className" | "style" | "ref"> & {
   onSearch?: (value: string) => void;
+  /** X(입력 지우기)를 눌렀을 때 — 비운 값으로 다시 검색하는 화면이 쓴다(BP 선택 팝업, 2026-10-29) */
+  onClear?: () => void;
 } & (
     // 제어 모드는 값을 되돌려 줄 onValueChange 와 짝으로만 쓸 수 있다. 짝이 없으면 글자를 쳐도 화면이 그대로라
     // 고장난 것처럼 보이는데, React 는 안쪽 input 에 onChange 가 있어 경고도 하지 않는다.
@@ -16,7 +18,7 @@ type Props = Omit<ComponentProps<"input">, "type" | "value" | "defaultValue" | "
 
 // 검색 입력칸. 브라우저 기본 지우기(X) 버튼을 숨기고, 값이 있을 때만 같은 선 굵기(1.5)의 X 를 보여 준다.
 // Figma 에 지우기 아이콘이 없어 기존 아이콘의 선 굵기(1.5)에 맞춰 그렸다. 색은 erp-label, 호버 때 erp-ink.
-export function SearchField({ value: controlled, defaultValue = "", onValueChange, onSearch, onKeyDown, ...props }: Props) {
+export function SearchField({ value: controlled, defaultValue = "", onValueChange, onSearch, onClear, onKeyDown, ...props }: Props) {
   const [inner, setInner] = useState(defaultValue);
   const value = controlled ?? inner;
   const input = useRef<HTMLInputElement>(null);
@@ -46,6 +48,7 @@ export function SearchField({ value: controlled, defaultValue = "", onValueChang
         inert={!value}
         onClick={() => {
           change("");
+          onClear?.();
           input.current?.focus();
         }}
         className={`group absolute top-1/2 right-[32px] grid size-[18px] -translate-y-1/2 place-items-center rounded-full bg-erp-subtle transition-[opacity,background-color] duration-150 ease-out hover:bg-erp-field-line ${
