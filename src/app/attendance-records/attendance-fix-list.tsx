@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, Checkbox, ConfirmDialog, DataTable, DetailTable, Field, FormGroup, FormRow, Select, SlidePanel, TextField, Textarea, useToast, type Column } from "@/components/common";
+import { useCallback, useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
+import { Button, Checkbox, ConfirmDialog, DataTable, DetailTable, Field, FieldMessage, FormGroup, Select, SlidePanel, TextField, Textarea, useToast, type Column } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import type { AttendanceHistory, ProxyStaff } from "@/lib/attendance-records-api";
@@ -252,15 +252,20 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
   const forced = forcedNextDay(checkIn, checkOut);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const ids = useId();
   const [busy, startTransition] = useTransition();
 
   const save = () => {
-    if (checkIn && !TIME.test(checkIn)) return setError("출근 시각을 시 · 분까지 입력해 주세요.");
-    if (checkOut && !TIME.test(checkOut)) return setError("퇴근 시각을 시 · 분까지 입력해 주세요.");
-    if (pair.checkIn && !checkIn) return setError("출근 시각을 입력해 주세요.");
-    if (pair.checkOut && !checkOut) return setError("퇴근 시각을 입력해 주세요.");
-    if (!reason.trim()) return setError("수정 사유를 입력해 주세요.");
+    // 저장할 때 칸마다 검사해 그 칸 아래에 알린다(화면 설계 공통 기준 1번, WHALEERP-633)
+    const next = pickErrors({
+      checkIn: checkIn && !TIME.test(checkIn) ? "출근 시각을 시 · 분까지 입력해 주세요." : pair.checkIn && !checkIn ? "출근 시각을 입력해 주세요." : undefined,
+      checkOut: checkOut && !TIME.test(checkOut) ? "퇴근 시각을 시 · 분까지 입력해 주세요." : pair.checkOut && !checkOut ? "퇴근 시각을 입력해 주세요." : undefined,
+      reason: reason.trim() ? undefined : "수정 사유를 입력해 주세요.",
+    });
+    setErrors(next);
     setError(null);
+    if (Object.keys(next).length > 0) return focusFirstError(ids);
     startTransition(async () => {
       const result = await correctAttendanceAction(anchorOf(pair), {
         ...(checkIn ? { checkInTime: checkIn } : {}),
@@ -276,7 +281,7 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
   };
 
   return (
-    <div className="flex flex-col gap-[24px] p-[24px]">
+    <div id={ids} className="flex flex-col gap-[24px] p-[24px]">
       <div className="flex items-center gap-[8px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">기록 보정</h2>
         <span className="rounded-[2px] bg-erp-thead-bg px-[4px] py-px text-[14px] text-erp-sub">
@@ -296,21 +301,54 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
         </Field>
       )}
       <FormGroup title="출퇴근 기록">
-        <FormRow>
-          <HelpField label="출근" help={`원본 ${pair.checkIn?.time ?? "없음"}`}>
-            <TextField type="time" aria-label="출근" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
+        <MessageRow>
+          <HelpField label="출근" help={`원본 ${pair.checkIn?.time ?? "없음"}`} message={<FieldMessage id={`${ids}-checkIn`} message={errors.checkIn} />}>
+            <TextField
+              type="time"
+              aria-label="출근"
+              value={checkIn}
+              {...invalidProps(ids, errors, "checkIn")}
+              onChange={(e) => {
+                setCheckIn(e.target.value);
+                setErrors((x) => clearError(x, "checkIn"));
+              }}
+            />
           </HelpField>
-          <HelpField label="퇴근" help={`원본 ${pair.checkOut ? pair.checkOut.time + laterDayMark(fix.row.date, pair.checkOut.recordedAt) : "없음"}`}>
-            <TextField type="time" aria-label="퇴근" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
+          <HelpField
+            label="퇴근"
+            help={`원본 ${pair.checkOut ? pair.checkOut.time + laterDayMark(fix.row.date, pair.checkOut.recordedAt) : "없음"}`}
+            message={<FieldMessage id={`${ids}-checkOut`} message={errors.checkOut} />}
+          >
+            <TextField
+              type="time"
+              aria-label="퇴근"
+              value={checkOut}
+              {...invalidProps(ids, errors, "checkOut")}
+              onChange={(e) => {
+                setCheckOut(e.target.value);
+                setErrors((x) => clearError(x, "checkOut"));
+              }}
+            />
           </HelpField>
-        </FormRow>
+        </MessageRow>
         {pair.checkIn && checkOut && (
           <Checkbox label="다음 날 퇴근" checked={forced || nextDay} disabled={forced} onChange={(e) => setNextDay(e.target.checked)} />
         )}
         <SaveNote note={fixSaveNote(fix.row.date, !!pair.checkIn, checkIn, checkOut, nextDay)} />
-        <Field label="수정 사유" required>
-          <Textarea aria-label="수정 사유" rows={4} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인." />
-        </Field>
+        <MessageField label="수정 사유" required message={<FieldMessage id={`${ids}-reason`} message={errors.reason} />}>
+          <Textarea
+            aria-label="수정 사유"
+            rows={4}
+            maxLength={500}
+            value={reason}
+            {...invalidProps(ids, errors, "reason")}
+            onChange={(e) => {
+              setReason(e.target.value);
+              setErrors((x) => clearError(x, "reason"));
+            }}
+            placeholder="예: 퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인."
+          />
+        </MessageField>
         {/* 「다음 날 퇴근」 체크는 출근이 있는 짝에만 선다 — 출근 미등록 줄은 출근을 전날로 저장한다(위 안내) */}
         <p className="text-[13px] text-erp-label">
           {pair.checkIn
@@ -389,6 +427,10 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   const [checkOut, setCheckOut] = useState("");
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  // 직원 목록을 받지 못한 까닭 — 저장 때 지우지 않는다(지우면 직원 칸을 왜 고를 수 없는지 사라진다). 날짜를 다시 고르면 내린다
+  const [listError, setListError] = useState<string | null>(null);
+  const ids = useId();
   const [busy, startTransition] = useTransition();
   // 직원 선택지는 그날 기준이다 — 날짜를 바꿀 때마다 다시 받고, 늦게 온 앞 날짜 응답은 버린다
   const wanted = useRef(today);
@@ -398,14 +440,14 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
       getProxyStaffAction(stores, day)
         .then((result) => {
           if (wanted.current !== day) return;
-          if (!result.ok) return setError(result.message);
+          if (!result.ok) return setListError(result.message);
           setStaff(result.staff);
         })
         .catch(() => {
           // 서버 액션 호출 자체가 실패(연결 끊김 등) — 선택지를 비우고 알린다. 날짜를 다시 고르면 다시 받는다
           if (wanted.current !== day) return;
           setStaff([]);
-          setError("직원 목록을 불러오지 못했습니다. 날짜를 다시 골라 주세요.");
+          setListError("직원 목록을 불러오지 못했습니다. 날짜를 다시 골라 주세요.");
         });
     },
     [stores],
@@ -416,6 +458,9 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
     setStaff(null);
     setStaffId(null);
     setError(null);
+    setListError(null);
+    // 직원이 비면 퇴근 필수 여부(보정 대상)도 바뀐다 — 퇴근 문구도 함께 내린다
+    setErrors((x) => clearError(clearError(x, "staff"), "checkOut"));
     loadStaff(day);
   };
   const manyStores = new Set((staff ?? []).map((s) => s.storeId)).size > 1;
@@ -424,12 +469,17 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   const isProxy = picked?.isProxy ?? true;
 
   const save = () => {
-    if (staffId === null) return setError("직원을 골라 주세요.");
-    if (!TIME.test(checkIn)) return setError("출근 시각을 입력해 주세요.");
-    if (!isProxy && !checkOut) return setError("퇴근 시각을 입력해 주세요.");
-    if (checkOut && !TIME.test(checkOut)) return setError("퇴근 시각을 시 · 분까지 입력해 주세요.");
-    if (!reason.trim()) return setError("사유를 입력해 주세요.");
+    // 저장할 때 칸마다 검사해 그 칸 아래에 알린다(화면 설계 공통 기준 1번, WHALEERP-633)
+    const next = pickErrors({
+      staff: staffId === null ? "직원을 골라 주세요." : undefined,
+      checkIn: TIME.test(checkIn) ? undefined : "출근 시각을 입력해 주세요.",
+      checkOut: !isProxy && !checkOut ? "퇴근 시각을 입력해 주세요." : checkOut && !TIME.test(checkOut) ? "퇴근 시각을 시 · 분까지 입력해 주세요." : undefined,
+      reason: reason.trim() ? undefined : "사유를 입력해 주세요.",
+    });
+    setErrors(next);
     setError(null);
+    // staffId === null 은 next.staff 와 같다 — 아래 호출에 number 로 좁히려고 둔다
+    if (staffId === null || Object.keys(next).length > 0) return focusFirstError(ids);
     startTransition(async () => {
       const result = await proxyAttendanceAction({ staffMemberId: staffId, date, checkInTime: checkIn, ...(checkOut ? { checkOutTime: checkOut } : {}), reason: reason.trim() });
       if (!result.ok && result.status !== undefined && result.status < 500) return setError(result.message);
@@ -438,12 +488,22 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   };
 
   return (
-    <div className="flex flex-col gap-[24px] p-[24px]">
+    <div id={ids} className="flex flex-col gap-[24px] p-[24px]">
       <h2 className="text-[18px] font-semibold text-erp-ink">출퇴근 대신 등록</h2>
       <FormGroup title="출퇴근 기록">
-        <FormRow>
-          <Field label="직원" required>
-            <Select aria-label="직원" value={staffId ?? ""} onChange={(e) => setStaffId(e.target.value ? Number(e.target.value) : null)} disabled={!staff}>
+        <MessageRow>
+          <MessageField label="직원" required message={<FieldMessage id={`${ids}-staff`} message={errors.staff} />}>
+            <Select
+              aria-label="직원"
+              value={staffId ?? ""}
+              {...invalidProps(ids, errors, "staff")}
+              onChange={(e) => {
+                setStaffId(e.target.value ? Number(e.target.value) : null);
+                // 직원이 바뀌면 퇴근 필수 여부(보정 대상)도 바뀐다 — 퇴근 문구도 함께 내린다
+                setErrors((x) => clearError(clearError(x, "staff"), "checkOut"));
+              }}
+              disabled={!staff}
+            >
               <option value="">{staff === null ? "불러오는 중…" : staff.length ? "직원 선택" : "등록할 수 있는 직원 없음"}</option>
               {(staff ?? []).map((s) => (
                 <option key={s.staffMemberId} value={s.staffMemberId}>
@@ -452,32 +512,64 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
                 </option>
               ))}
             </Select>
-          </Field>
+          </MessageField>
           <Field label="날짜" required>
             <TextField type="date" aria-label="날짜" min={editableFrom} max={today} value={date} onChange={(e) => e.target.value && changeDate(e.target.value)} />
           </Field>
-        </FormRow>
-        <FormRow>
-          <Field label="출근" required>
-            <TextField type="time" aria-label="출근" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
-          </Field>
-          <Field label="퇴근" required={!isProxy}>
-            <TextField type="time" aria-label="퇴근" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
-          </Field>
-        </FormRow>
+        </MessageRow>
+        <MessageRow>
+          <MessageField label="출근" required message={<FieldMessage id={`${ids}-checkIn`} message={errors.checkIn} />}>
+            <TextField
+              type="time"
+              aria-label="출근"
+              value={checkIn}
+              {...invalidProps(ids, errors, "checkIn")}
+              onChange={(e) => {
+                setCheckIn(e.target.value);
+                setErrors((x) => clearError(x, "checkIn"));
+              }}
+            />
+          </MessageField>
+          <MessageField label="퇴근" required={!isProxy} message={<FieldMessage id={`${ids}-checkOut`} message={errors.checkOut} />}>
+            <TextField
+              type="time"
+              aria-label="퇴근"
+              value={checkOut}
+              {...invalidProps(ids, errors, "checkOut")}
+              onChange={(e) => {
+                setCheckOut(e.target.value);
+                setErrors((x) => clearError(x, "checkOut"));
+              }}
+            />
+          </MessageField>
+        </MessageRow>
         <OvernightNote date={date} checkIn={checkIn} checkOut={checkOut} />
         {picked?.isPayslipConfirmed && <PayslipWarning />}
-        <Field label="사유" required>
-          <Textarea aria-label="사유" rows={4} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 위치 수집 일시 중지 · 점장 확인" />
-        </Field>
+        <MessageField label="사유" required message={<FieldMessage id={`${ids}-reason`} message={errors.reason} />}>
+          <Textarea
+            aria-label="사유"
+            rows={4}
+            maxLength={500}
+            value={reason}
+            {...invalidProps(ids, errors, "reason")}
+            onChange={(e) => {
+              setReason(e.target.value);
+              setErrors((x) => clearError(x, "reason"));
+            }}
+            placeholder="예: 위치 수집 일시 중지 · 점장 확인"
+          />
+        </MessageField>
         <p className="text-[13px] text-erp-label">
           위치정보 동의를 하지 않았거나 일시 중지한 직원은 대신 등록합니다. 그 밖의 직원(보정)은 출근 · 퇴근을 모두 찍지 않은 날만 두 시각을 함께 넣어 보정합니다. 퇴근이 출근보다 이르거나 같으면 다음 날 퇴근이고, 아직 오지 않은 시각은 등록할 수 없습니다. 직원 근무 앱에는 연필 표시로 보입니다.
         </p>
       </FormGroup>
-      {error && (
-        <p role="alert" className="text-[14px] text-erp-off">
-          {error}
-        </p>
+      {[listError, error].map(
+        (text, i) =>
+          text && (
+            <p key={i} role="alert" className="text-[14px] text-erp-off">
+              {text}
+            </p>
+          ),
       )}
       <div className="flex justify-end gap-[6px]">
         <Button variant="off" onClick={onClose} disabled={busy}>
@@ -507,13 +599,41 @@ function SaveNote({ note }: { note: string | null }) {
 }
 
 /** 도움말이 칸 아래에 붙는 칸(데모 fieldH) — 기록 보정의 「원본 12:58」 */
-function HelpField({ label, help, children }: { label: string; help: string; children: ReactNode }) {
+function HelpField({ label, help, message, children }: { label: string; help: string; message: ReactNode; children: ReactNode }) {
   return (
     <div className="flex min-w-px flex-1 flex-col gap-[8px]">
       <Field label={label}>
         {children}
       </Field>
+      {message}
       <span className="text-[12px] leading-[1.5] text-erp-muted">{help}</span>
     </div>
   );
+}
+
+// 보정 · 대신 등록 폼의 칸 오류(칸 이름 → 문구). api 가 돌려준 거절은 칸을 가를 수 없어 폼 아래 한 줄(error)로 둔다.
+type FieldErrors = Partial<Record<"staff" | "checkIn" | "checkOut" | "reason", string>>;
+const pickErrors = (all: FieldErrors): FieldErrors => Object.fromEntries(Object.entries(all).filter(([, m]) => m)) as FieldErrors;
+const clearError = (errors: FieldErrors, key: keyof FieldErrors): FieldErrors => (errors[key] ? { ...errors, [key]: undefined } : errors);
+const invalidProps = (ids: string, errors: FieldErrors, key: keyof FieldErrors) =>
+  errors[key] ? { "aria-invalid": true, "aria-describedby": `${ids}-${key}` } : {};
+/** 첫 오류 칸으로 커서를 옮긴다 — 슬라이드 패널이 길어 아래 칸 오류는 보이지 않을 수 있다. 직원 목록을 받는 중이라 잠긴 직원 칸은 건너뛴다 */
+const focusFirstError = (ids: string) =>
+  requestAnimationFrame(() => (document.getElementById(ids)?.querySelector('[aria-invalid="true"]:not(:disabled)') as HTMLElement | null)?.focus());
+
+/** 입력칸 하나와 그 아래 오류 문구(bp-admins Labeled 와 같은 모양) */
+function MessageField({ label, required, message, children }: { label: string; required?: boolean; message: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex min-w-px flex-1 flex-col gap-[8px]">
+      <Field label={label} required={required}>
+        {children}
+      </Field>
+      {message}
+    </div>
+  );
+}
+
+/** 칸을 나란히 두는 줄 — 위쪽 정렬이라 한 칸에만 오류 문구가 붙어도 두 입력칸이 같은 높이에 선다(FormRow 는 늘여 세워 옆 칸이 가운데로 내려간다) */
+function MessageRow({ children }: { children: ReactNode }) {
+  return <div className="flex w-full items-start gap-[6px]">{children}</div>;
 }

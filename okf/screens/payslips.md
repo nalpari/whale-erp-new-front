@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-29T01:21:21Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-29T01:33:43Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -41,7 +41,7 @@ sources:
   - id: payslip-review
     resource: ../../src/app/payslips/[payslipId]/payslip-review.tsx
     title: 검토 화면 — 머리 버튼 · 지급 내역 · 확인창
-    last_modified: 2026-10-27T09:23:13Z
+    last_modified: 2026-10-29T01:33:43Z
 ---
 
 # api 로 그린다
@@ -116,7 +116,7 @@ page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치
 같은 규칙이고, 결과를 모르면 목록을 다시 받는다 — 오류 화면으로 가지 않아 입력하던 값이 남는다.
 
 * **임시저장**(`PUT /payslips/:id`) — 줄마다 급여 항목 id 와 금액(빈 칸 null — 0 과 다르다), 가산 · 3.3% 스위치, 상세의 `updatedAt`.
-  숫자가 아닌 칸이 있으면 보내지 않고 그 이름을 알린다. 상태는 그대로다. 3.3% 는 파트타이머만 보낸다.
+  금액 칸은 숫자와 쉼표만 받는다(화면 설계 공통 기준 1번 · WHALEERP-633) — 붙여 넣은 「원」 · 「₩」 · 공백은 떼고, 그 밖의 글자(소수점 · 빼기 등)가 섞인 입력은 통째로 받지 않는다(글자만 지우면 다른 금액이 된다). 그래도 숫자가 아닌 칸이 있으면 보내지 않고 그 이름을 알린다. 상태는 그대로다. 3.3% 는 파트타이머만 보낸다.
 * **항목 추가** — `GET /payslips/additional-items`(추가 공제) 중 아직 붙지 않은 것을 골라 빈 칸 한 줄을 붙인다. 붙인 추가 공제는
   「빼기」로 뗀다. 둘 다 임시저장해야 남는다(api 는 실은 추가 공제가 곧 붙은 목록이다).
 * **지난 명세서에서 불러오기**(`GET /payslips/:id/previous-values`) — 같은 직원의 지난 명세서의 공제와 직접 넣는 지급 값을 칸에 채운다
