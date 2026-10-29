@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useEffectEvent, useState, type ReactNode } from "react";
-import { Badge, GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
+import { GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bpPath, isBpPathScreen } from "@/lib/bp-path";
 import type { ServiceCode } from "@/lib/browser-storage";
@@ -86,9 +86,16 @@ function BpStatusNote() {
   const label = useCodeLabel("ACCOUNT_STATUS");
   if (!status || status === "ACTIVE") return null;
   return (
-    <span role="status" className="flex shrink-0 items-center gap-[6px] text-[14px] text-erp-off">
-      <Badge tone="off">{label(status)}</Badge>
-      조회 기능만 이용할 수 있는 BP입니다.
+    // 빨간 알약 칩 하나에 자물쇠 · 상태 · 「조회만 가능합니다.」 — 헤더의 알약형 컨트롤과 같은 모양(2026-10-29 사용자 지정, 시안 B+D · 전엔 배지 + 「조회 기능만 이용할 수 있는 BP입니다.」)
+    <span
+      role="status"
+      className="flex h-[34px] shrink-0 items-center gap-[6px] rounded-full border border-erp-off bg-erp-off-bg pr-[14px] pl-[10px] text-[14px] whitespace-nowrap text-erp-off"
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="size-[15px] shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <rect x="5" y="11" width="14" height="9" rx="1.5" />
+        <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+      </svg>
+      <b className="font-semibold">{label(status)}</b> · 조회만 가능합니다.
     </span>
   );
 }
