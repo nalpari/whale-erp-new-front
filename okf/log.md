@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front jolteon: BP 관리자 등록의 계정 역할 고르기 전 점포 찾기 막기(StoreMappingPicker blocked), 범위 도움말 「(역할)는 '일부 점포'만 선택할 수 있습니다.」.
 * **Update**: main 병합(front kingler, main #184 까지): okf/log 는 양쪽 기록을 살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #146 재리뷰 참고: 근로계약 상세 「재발송」은 발송 대기 · 서명 대기도 api `canResend` 가 참일 때만(`canShowResend`) — 칸이 없는 옛 응답이면 세우던 대체 값을 걷음.
 * **Update**: [운영 알림](/notify.md) — 플랫폼 계정이 운영 알림함을 열지 못하던 것을 고쳤다: `src/lib/menus.ts` `isAllowed` 가 플랫폼 탭에서 `/notifications` 아래를 연다(메뉴 MN000042 는 웨일ERP 행뿐, 2026-10-29 재영 A안). 웨일ERP 판정 · 메뉴 데이터 · `MENULESS_PATHS` 는 그대로다.

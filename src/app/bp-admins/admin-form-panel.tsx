@@ -592,7 +592,7 @@ export function AdminFormPanel(props: Props) {
           <HintedField
             label="범위"
             required={!locks.scope}
-            hint={form.roleTypeCode === "FM" || form.roleTypeCode === "FA" ? `${form.roleTypeCode === "FM" ? "가맹 마스터" : "가맹 관리자"}는 점포를 골라서 맡습니다.` : undefined}
+            hint={form.roleTypeCode === "FM" || form.roleTypeCode === "FA" ? `${form.roleTypeCode === "FM" ? "가맹마스터" : "가맹관리자"}는 '일부 점포'만 선택할 수 있습니다.` : undefined}
           >
             <Select
               value={form.isAllStores ? "ALL" : "PART"}
