@@ -14,7 +14,7 @@ export type ContractStatus = Schemas["ContractStatus"];
 
 /**
  * 직원 목록 한 줄(GET /staff-members). isMasked 면 store 밖의 칸은 모두 null 이다 — staffMemberId 도 null(본사 제공 동의 없음).
- * invitation.canResend 는 재발송 버튼을 보일지, contract.updatedAt 은 「거부 · MM-DD」를 그리는 최종 수정 일시다.
+ * contract.canResend 는 재발송 버튼을 보일지, contract.updatedAt 은 「거부 · MM-DD」를 그리는 최종 수정 일시다.
  * retiredDate 는 퇴직일 YYYY-MM-DD — 재직이면서 값이 있으면 퇴직 예정이다.
  */
 export type StaffMemberListItem = Schemas["StaffMemberListItemDto"];

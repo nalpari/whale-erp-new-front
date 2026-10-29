@@ -34,9 +34,9 @@ import { BpStatusBadge, unknownResult } from "./bp-master-parts";
 
 // BP 마스터 계정 등록(S-OJEYQJ) · 수정(S-CQGGZS) 슬라이드 패널. 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓고,
 // 기본정보 / 사업자정보 두 묶음으로 나눈다(데모와 같다, 2026-10-22).
-// 사업자정보는 MY PAGE 사업자정보 탭과 같은 모양이다(2026-10-28 사용자 지정 — 전엔 [사업자 번호 인증하기]로 상자를 펼쳤다):
+// 사업자정보는 마이페이지 사업자정보 탭과 같은 모양이다(2026-10-28 사용자 지정 — 전엔 [사업자 번호 인증하기]로 상자를 펼쳤다):
 // 공통 인증 상자(BizVerificationBox, 세 칸 한 줄)가 처음부터 열려 있고, 인증하면 칸이 잠긴다. [재인증]은 확인 없이 값을 둔 채
-// 칸을 다시 연다 — 회원가입 · 점포 · MY PAGE 와 같다(2026-10-29 재영, 전엔 확인창을 한 번 거쳤다).
+// 칸을 다시 연다 — 회원가입 · 점포 · 마이페이지 와 같다(2026-10-29 재영, 전엔 확인창을 한 번 거쳤다).
 // 상호명부터는 따로 카드이고, 대표자 연락처 · 이메일에 「기본정보와 동일」이 있다. 번호 중복 · 확인 불가 · 처리 오류여도 인증 없이 저장할 수 있다.
 // 수정은 제목 옆에 BP 코드 · 계정상태 배지를 보여 주기만 하고(아이디 · 가입경로 칸은 2026-10-28 사용자 지정으로 뺐다), BP 상태는 상세의 [BP상태변경]에서만 바꾼다. 마지막 저장이 남는다(409 없음).
 
@@ -297,7 +297,7 @@ export function BpMasterFormPanel(props: Props) {
     bizLocked && form.verified
       ? { bizNumber: form.verified.bizNumber, ceoName: form.verified.ceoName, openDate: form.verified.openDate }
       : { bizNumber: form.bizNumber, ceoName: form.ceoName, openDate: form.openDate };
-  // 비어서 걸린 칸은 버튼 위 한 줄로 모으고(missing), 칸 아래에는 형식 오류만 둔다(MY PAGE 와 같다)
+  // 비어서 걸린 칸은 버튼 위 한 줄로 모으고(missing), 칸 아래에는 형식 오류만 둔다(마이페이지와 같다)
   const bizKeys: BizVerifyField[] = ["bizNumber", "ceoName", "openDate"];
   const bizMissing = bizKeys.filter((key) => errors[key] && !bizValues[key].trim());
   const bizFieldErrors: Partial<Record<BizVerifyField, string>> = Object.fromEntries(
@@ -407,7 +407,7 @@ export function BpMasterFormPanel(props: Props) {
         </Stack>
       </FormGroup>
 
-      {/* 사업자정보 — MY PAGE 사업자정보 탭과 같은 모양(2026-10-28 사용자 지정): 회색 제목 바(오른쪽 인증 상태) + 세 칸 한 줄 인증 상자 */}
+      {/* 사업자정보 — 마이페이지 사업자정보 탭과 같은 모양(2026-10-28 사용자 지정): 회색 제목 바(오른쪽 인증 상태) + 세 칸 한 줄 인증 상자 */}
       <BizVerificationBox
         layout="row"
         compactRow
@@ -427,14 +427,14 @@ export function BpMasterFormPanel(props: Props) {
         onVerify={bizLocked ? openVerification : handleVerify}
         onClear={closeVerification}
         showClear={!form.verified && Boolean(form.bizNumber || form.ceoName || form.openDate)}
-        // 재인증 중이면 잠긴 인증으로 되돌린다(점포 수정 · MY PAGE 와 같다)
+        // 재인증 중이면 잠긴 인증으로 되돌린다(점포 수정 · 마이페이지와 같다)
         onRevert={form.verified && form.verifying ? closeVerification : undefined}
         {...(form.verified?.token && !form.verifying
           ? { note: mode === "edit" ? "인증 결과는 저장해야 반영됩니다." : undefined }
           : { note: mode === "edit" && form.verified && form.verifying ? "인증 실패 시 기존 정보가 유지됩니다." : undefined })}
       />
 
-      {/* 상호명부터는 따로 카드 — MY PAGE 와 같은 테두리 · 여백(2026-10-28 사용자 지정) */}
+      {/* 상호명부터는 따로 카드 — 마이페이지와 같은 테두리 · 여백(2026-10-28 사용자 지정) */}
       <section aria-label="상호명 등" className="flex flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">
         <Stack>
           <Field label="상호명" required>
@@ -451,7 +451,7 @@ export function BpMasterFormPanel(props: Props) {
           {message("tradeName")}
         </Stack>
         <Stack>
-          {/* 「기본정보와 동일」이면 기본정보 연락처를 보이고 고칠 수 없다 — 풀면 적던 값으로 돌아온다(MY PAGE 와 같다) */}
+          {/* 「기본정보와 동일」이면 기본정보 연락처를 보이고 고칠 수 없다 — 풀면 적던 값으로 돌아온다(마이페이지와 같다) */}
           <PhoneGroup
             label="대표자 연락처"
             extra={<Checkbox label="기본정보와 동일" checked={form.sameAsBasicPhone} onChange={(e) => set("sameAsBasicPhone", e.target.checked, "ceoPhone")} />}
@@ -472,7 +472,7 @@ export function BpMasterFormPanel(props: Props) {
               type="email"
               value={form.sameAsBasicEmail ? form.email : form.ceoEmail}
               onChange={(e) => set("ceoEmail", e.target.value, "ceoEmail")}
-              // 공통 입력칸은 disabled 회색이 없어(DESIGN.md) 읽기 전용 바탕이 깔리는 readOnly 를 함께 건다(MY PAGE 와 같다)
+              // 공통 입력칸은 disabled 회색이 없어(DESIGN.md) 읽기 전용 바탕이 깔리는 readOnly 를 함께 건다(마이페이지와 같다)
               readOnly={form.sameAsBasicEmail}
               disabled={form.sameAsBasicEmail}
               maxLength={100}
@@ -526,7 +526,7 @@ function Stack({ children }: { children: ReactNode }) {
   return <div className="flex flex-col gap-[8px]">{children}</div>;
 }
 
-/** 라벨 오른쪽에 체크박스를 붙이는 칸 — Field 는 라벨이 입력칸 하나를 감싸 체크박스를 둘 수 없다(MY PAGE Labeled 와 같다) */
+/** 라벨 오른쪽에 체크박스를 붙이는 칸 — Field 는 라벨이 입력칸 하나를 감싸 체크박스를 둘 수 없다(마이페이지 Labeled 와 같다) */
 function LabelWithExtra({ label, extra, children }: { label: string; extra: ReactNode; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-[8px]">

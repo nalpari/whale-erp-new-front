@@ -10,7 +10,7 @@ import { TermsLink } from "./terms-link";
 
 // 강제 비밀번호 변경 팝업(S-VFGQLI, 데모 auth/force-password · 목업 auth/force-password.html).
 // 초기·임시 비밀번호로 들어온 계정에 로그인 직후 뜬다. 닫기가 없고 Esc·바깥 클릭으로도 닫히지 않는다.
-// 모달 <dialog> 라 뒤의 메뉴·MY PAGE 는 조작할 수 없고, 로그아웃만 팝업 안에서 된다.
+// 모달 <dialog> 라 뒤의 메뉴·마이페이지는 조작할 수 없고, 로그아웃만 팝업 안에서 된다.
 // 운영자가 만든 계정(약관 미동의)은 아래에 약관 동의를 붙여 비밀번호와 한 번에 받는다 — 필수 둘에 동의해야 변경 버튼이 열린다.
 // 저장은 POST /auth/admin/password-change. 오류 문구는 화면이 만들지 않고 api 의 message 를 그대로 보인다.
 export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAccount; onDone: () => void }) {
@@ -180,8 +180,9 @@ function TermsRow({ kind, label, checked, onChange }: { kind: "use" | "policy"; 
   return (
     <div className="flex items-center justify-between">
       <Checkbox label={label} checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="text-[14px] text-erp-link underline underline-offset-2">
-        {/* 약관 유형은 공통코드 TERMS_TYPE — 이용약관은 BP 사업자 회원가입용, 개인정보는 그 수집·이용 동의다. */}
+      <span className="text-[14px]">
+        {/* 약관 유형은 공통코드 TERMS_TYPE — 이용약관은 BP 사업자 회원가입용, 개인정보는 그 수집·이용 동의다.
+            색·밑줄은 TermsLink 자신이 맡는다(여기서 같이 지정하면 늘 밑줄이 돼 호버 피드백이 사라진다, code-review 리뷰로 찾음). */}
         <TermsLink termsTypeCode={kind === "use" ? "TERMS_SERVICE" : "PRIVACY_COLLECT"}>전문 보기</TermsLink>
       </span>
     </div>

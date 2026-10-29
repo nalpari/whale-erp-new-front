@@ -1,4 +1,4 @@
-// 내 정보(MY PAGE) 기본정보 입력칸 — 검사와 요청 만들기. 패널(src/components/site/my-page-panel.tsx)에서 뺀 순수 함수라
+// 내 정보(마이페이지) 기본정보 입력칸 — 검사와 요청 만들기. 패널(src/components/site/my-page-panel.tsx)에서 뺀 순수 함수라
 // node --test 로 검사한다(my-profile-form.test.ts). 규칙은 manyfast F-AMTDCK > S-JXKHCM 과 같다 — 플랫폼 관리자
 // 등록(platform-admin-form.ts)의 이름 · 연락처 규칙과 같은 값이지만, 서로 다른 기능이라 따로 둔다(코드가 아주 짧다).
 // 이메일 형식은 api @IsEmail 과 같은 규칙이라 이메일 칸이 있는 화면이 같이 쓰는 email-format.ts 를 쓴다.

@@ -2,7 +2,8 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FormGroup, FormRow, Radio, Select, Textarea, TextField, useAction } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FieldMessage, FormGroup, FormRow, Radio, Select, Textarea, TextField, useAction } from "@/components/common";
+import { FieldErrors, useInvalid } from "../field-errors";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
 import { SAVED_COOKIE, SAVED_COOKIE_MAX_AGE, backHrefOf, listAfterSave, savedKindOf, withBack } from "../contract-list";
@@ -17,6 +18,7 @@ import {
   inProgressLine,
   stillCorrecting,
   replaceConfirmBody,
+  fieldProblems,
   isMinor,
   MINIMUM_WAGE,
   monthlyHours,
@@ -27,7 +29,9 @@ import {
   partTimePay,
   PROBATION_WAGE_FLOOR,
   probationWage,
-  problems,
+  problemsByField,
+  shownProblems,
+  type ProblemField,
   timesOf,
   toBody,
   weeklyHolidayOf,
@@ -76,11 +80,14 @@ function Calc({ children, strong }: { children: ReactNode; strong?: boolean }) {
 }
 
 // 표 위 제목과 표. 급여 표가 둘씩 나란히 선다.
-function PayTable({ title, help, children }: { title: string; help?: string; children: ReactNode }) {
+// 표(급여항목 · 비과세)는 칸이 많아 입력마다 빨갛게 하지 않고 표 아래 오류만 보인다
+function PayTable({ title, help, errors, children }: { title: string; help?: string; errors?: string[]; children: ReactNode }) {
+  const errorId = useId();
   return (
-    <div className="flex min-w-px flex-1 flex-col gap-[8px]">
+    <div data-invalid={errors?.length ? true : undefined} className="flex min-w-px flex-1 flex-col gap-[8px]">
       <span className={LABEL}>{title}</span>
       {children}
+      <FieldErrors id={errorId} errors={errors} />
       {help && <span className={HELP}>{help}</span>}
     </div>
   );
@@ -90,10 +97,28 @@ type PayRow = { key: string; label: string; cells?: ReactNode[]; hours?: ReactNo
 
 // 라벨 · 입력 · 도움말 한 칸. 공통 Field 는 라벨이 글자뿐이라 필수 표시(*)를 달 수 없어 여기서 묶는다.
 // 필수 표시 색 #e93737 은 DESIGN.md 의 「위험」 한 번 쓰는 색이다(데모 biz-form REQ 와 같다).
-function Item({ label, required, help, width, children }: { label: string; required?: boolean; help?: string; width?: string; children: (id: string) => ReactNode }) {
+function Item({
+  label,
+  required,
+  help,
+  width,
+  errors,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  help?: string;
+  width?: string;
+  errors?: string[];
+  children: (id: string) => ReactNode;
+}) {
   const id = useId();
+  const box = useRef<HTMLDivElement>(null);
+  const invalid = !!errors?.length;
+  // PaperFile 이 파일 칸 오류에 `${id}-error` 를 쓴다 — 겹치면 이 훅이 그 속성을 지운다(front #170 code-review)
+  useInvalid(box, `${id}-errors`, invalid);
   return (
-    <div className={`flex flex-col gap-[8px] ${width ?? "min-w-px flex-1"}`}>
+    <div ref={box} data-invalid={invalid || undefined} className={`flex flex-col gap-[8px] ${width ?? "min-w-px flex-1"}`}>
       <label htmlFor={id} className="truncate text-[14px] font-medium text-erp-label">
         {label}
         {required && (
@@ -107,6 +132,7 @@ function Item({ label, required, help, width, children }: { label: string; requi
         )}
       </label>
       {children(id)}
+      <FieldErrors id={`${id}-errors`} errors={errors} />
       {help && <span className={HELP}>{help}</span>}
     </div>
   );
@@ -117,9 +143,16 @@ function Item({ label, required, help, width, children }: { label: string; requi
 function PaperFile({ id, label, file, error, accept, onPick }: { id: string; label: string; file: File | null; error?: string; accept: string; onPick: (file: File | undefined) => void }) {
   const input = useRef<HTMLInputElement>(null);
   return (
-    <span className="flex flex-col gap-[6px]">
+    <span data-invalid={error ? true : undefined} className="flex flex-col gap-[6px]">
       <span className="flex gap-[6px]">
-        <TextField id={id} readOnly value={file?.name ?? ""} placeholder="PDF · JPG · PNG" aria-invalid={error ? true : undefined} />
+        <TextField
+          id={id}
+          readOnly
+          value={file?.name ?? ""}
+          placeholder="PDF · JPG · PNG"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
+        />
         <Button variant="soft" onClick={() => input.current?.click()}>
           파일 선택
         </Button>
@@ -129,7 +162,7 @@ function PaperFile({ id, label, file, error, accept, onPick }: { id: string; lab
           </Button>
         )}
       </span>
-      {error && <span className="text-[12px] text-erp-off">{error}</span>}
+      <FieldMessage id={`${id}-error`} message={error} />
       <input
         ref={input}
         type="file"
@@ -146,9 +179,20 @@ function PaperFile({ id, label, file, error, accept, onPick }: { id: string; lab
 }
 
 // 입력이 여럿인 칸(라디오 · 요일 · 시각). <label> 하나로 묶을 수 없어 group 으로 둔다.
-function Group({ label, required, children, help }: { label: string; required?: boolean; children: ReactNode; help?: string }) {
+function Group({ label, required, children, help, errors }: { label: string; required?: boolean; children: ReactNode; help?: string; errors?: string[] }) {
+  const errorId = useId();
+  const box = useRef<HTMLDivElement>(null);
+  const invalid = !!errors?.length;
+  // 묶음 안 입력(라디오 · 시각 고르기) 모두에 aria-invalid · aria-describedby
+  useInvalid(box, errorId, invalid, true);
   return (
-    <div role="group" aria-label={label} className="flex min-w-px flex-1 flex-col gap-[8px]">
+    <div
+      ref={box}
+      role="group"
+      aria-label={label}
+      data-invalid={invalid || undefined}
+      className="flex min-w-px flex-1 flex-col gap-[8px]"
+    >
       <span className="truncate text-[14px] font-medium text-erp-label">
         {label}
         {required && (
@@ -162,6 +206,7 @@ function Group({ label, required, children, help }: { label: string; required?: 
         )}
       </span>
       {children}
+      <FieldErrors id={errorId} errors={errors} />
       {help && <span className={HELP}>{help}</span>}
     </div>
   );
@@ -249,7 +294,6 @@ export function ContractForm({
   const [form, setForm] = useState<Form>(() => initial ?? initialForm(stores.length === 1 ? String(stores[0].storeId) : ""));
   // 저장을 한 번 누른 뒤부터 막는 이유를 보인다. 처음부터 빨간 줄을 띄우지 않는다.
   const router = useRouter();
-  const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
   const [saving, startSaving] = useTransition();
   // 저장 · 종이 계약 등록 요청은 화면 전체 딤으로 감싼다 — 고쳐 쓰기(correction)는 「수정중」, 새 계약 · 임시저장 이어 쓰기 · 종이 계약 등록은 「등록중」
@@ -260,14 +304,18 @@ export function ContractForm({
     return { status: res.status, body: res.status === 401 ? null : await res.json().catch(() => null) };
   }, { kind: "create" });
   const [locked, setLocked] = useState(false);
-  // 저장하지 못하면 안내(폼 맨 아래)로 화면을 옮긴다 — 위쪽 버튼을 누르면 안내가 화면 밖에 떠 제자리인 것처럼 보였다.
-  // 같은 이유로 다시 실패해도 옮기도록 횟수로 센다.
+  // 저장하지 못하면 화면을 옮긴다 — 화면이 막았으면 첫 오류 칸으로, api 가 막았으면 안내(폼 맨 아래)로. 위쪽 버튼을 누르면 안내가
+  // 화면 밖에 떠 제자리인 것처럼 보였다. 같은 이유로 다시 실패해도 옮기도록 횟수로 센다.
   // nearest — 안내는 폼 맨 끝이라 center 로는 본문 스크롤이 끝나도 못 미쳐, 남은 만큼 바깥 틀(AdminFrame 의 overflow-y-hidden
   // 상자)까지 밀어 올려 화면 아래가 빈 공간으로 남았다. nearest 는 본문 안에서 보일 만큼만 옮긴다.
   const failureRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+  const scheduleErrorId = useId();
   const [failures, setFailures] = useState(0);
   useEffect(() => {
-    if (failures) failureRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    if (!failures) return;
+    const target = failureRef.current ?? formRef.current?.querySelector("[data-invalid]");
+    target?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [failures]);
   const fail = (message: string) => {
     setServerError(message);
@@ -291,17 +339,23 @@ export function ContractForm({
 
   // 막는 이유는 마지막으로 누른 저장 방식 기준으로 보인다.
   const [lastTemporary, setLastTemporary] = useState(false);
-  const issues = problems(form, lastTemporary, files.employment !== null, previousStartDate);
+  // 칸 아래 오류는 저장을 누른 때 오류가 난 칸에만 보이고, 고치는 동안 다시 본다 — 고쳐지면 사라지고, 새 칸 오류는 다음 저장 때 보인다
+  // (칠 때마다 role="alert" 가 새로 울리지 않게, front #170 code-review)
+  const [errorFields, setErrorFields] = useState<ReadonlySet<ProblemField> | null>(null);
+  const errs: Partial<Record<ProblemField, string[]>> = errorFields
+    ? shownProblems(problemsByField(fieldProblems(form, lastTemporary, files.employment !== null, previousStartDate)), errorFields)
+    : {};
   const minor = isMinor(form);
   const holiday = weeklyHolidayOf(form);
   const dayLabel = (d: Weekday) => labelOf(labels.weekday, d);
 
   // 임시저장(DRAFT)은 직원 칸과 근무지만 있으면 되고, 초안 저장(발송 대기)은 다 채워야 한다(근로계약은 키만 NOT NULL).
   const save = (temporary: boolean) => {
-    setTried(true);
     setLastTemporary(temporary);
     setServerError("");
-    if (problems(form, temporary, files.employment !== null, previousStartDate).length) {
+    const found = fieldProblems(form, temporary, files.employment !== null, previousStartDate);
+    setErrorFields(found.length ? new Set(found.map((p) => p.field)) : null);
+    if (found.length) {
       setFailures((n) => n + 1);
       return;
     }
@@ -472,7 +526,7 @@ export function ContractForm({
 
   return (
     // 막힌 입력칸(주휴일 등)은 이 화면에서만 회색 바탕이다(데모 확인 2026-10-15). 공통 FIELD 는 읽기 전용만 회색이라 1팀 화면은 그대로다.
-    <div className="flex flex-col gap-[12px] [&_:is(select,input:not([type=radio],[type=checkbox])):disabled]:bg-erp-thead-bg">
+    <div ref={formRef} className="flex flex-col gap-[12px] [&_:is(select,input:not([type=radio],[type=checkbox])):disabled]:bg-erp-thead-bg">
       <div className="flex items-end gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약서</h2>
         <Button variant="off" href={backHrefOf(back)}>
@@ -487,10 +541,10 @@ export function ContractForm({
 
         <FormGroup title="직원 정보">
           <FormRow>
-            <Item label="이름" required>
+            <Item label="이름" required errors={errs.name}>
               {(id) => <TextField id={id} value={form.name} maxLength={50} onChange={(e) => set("name", e.target.value)} />}
             </Item>
-            <Item label="휴대전화번호" required help="초대 발송과 가입 연결의 기준값">
+            <Item label="휴대전화번호" required help="초대 발송과 가입 연결의 기준값" errors={errs.phone}>
               {(id) => (
                 <TextField
                   id={id}
@@ -505,11 +559,11 @@ export function ContractForm({
             </Item>
           </FormRow>
           <FormRow>
-            <Item label="생년월일" required help="계약 시작일 기준 만 19세 미만이면 저장할 수 없다">
+            <Item label="생년월일" required help="계약 시작일 기준 만 19세 미만이면 저장할 수 없다" errors={errs.birthDate}>
               {() => <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />}
             </Item>
             {/* 성별 · 외국인 여부 — 직원이 가입하며 넣는 값과 이름 · 번호 · 생년월일과 함께 대조해 본인만 날인한다(WHALEERP-125) */}
-            <Group label="성별" required help="가입 값과 대조해 본인만 날인한다">
+            <Group label="성별" required help="가입 값과 대조해 본인만 날인한다" errors={errs.gender}>
               <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
                 {GENDERS.map((v) => (
                   <Radio key={v} name="gender" label={labelOf(labels.gender, v)} checked={form.gender === v} onChange={() => set("gender", v)} />
@@ -517,7 +571,7 @@ export function ContractForm({
                 <Checkbox label="외국인" checked={form.isForeigner} onChange={(e) => set("isForeigner", e.target.checked)} />
               </div>
             </Group>
-            <Item label="소속 근무지" required>
+            <Item label="소속 근무지" required errors={errs.storeId}>
               {(id) => (
                 // 수정 요청은 이미 보낸 계약이라 근무지를 바꾸지 않는다 — 다른 근무지는 새 근로계약서로(api #58). 재계약도 직전 계약의 근무지다
                 <Select id={id} value={form.storeId} disabled={correction || previousContractId !== undefined} onChange={(e) => set("storeId", e.target.value)}>
@@ -530,7 +584,7 @@ export function ContractForm({
                 </Select>
               )}
             </Item>
-            <Item label="직무" required>
+            <Item label="직무" required errors={errs.jobTitle}>
               {(id) => <TextField id={id} value={form.jobTitle} maxLength={50} placeholder="예: 바리스타" onChange={(e) => set("jobTitle", e.target.value)} />}
             </Item>
           </FormRow>
@@ -570,7 +624,7 @@ export function ContractForm({
           {paper && (
             <FormRow>
               <Item label="근로계약서" required help={`당사자가 모두 날인한 파일. ${paperTypes.join(" · ")}, 10MB까지`}>
-                {(id) => <PaperFile id={id} label="근로계약서" file={files.employment} error={fileErrors.employment} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("employment", f)} />}
+                {(id) => <PaperFile id={id} label="근로계약서" file={files.employment} error={fileErrors.employment ?? errs.employmentFile?.[0]} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("employment", f)} />}
               </Item>
               <Item label="임금계약서" help="임금 약정을 따로 날인한 경우. 없으면 비워 둔다">
                 {(id) => <PaperFile id={id} label="임금계약서" file={files.wage} error={fileErrors.wage} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("wage", f)} />}
@@ -581,15 +635,15 @@ export function ContractForm({
 
         <FormGroup title="계약 조건">
           <FormRow>
-            <Item label="계약 시작일" required help={previousStartDate ? `재계약은 직전 계약 시작일(${previousStartDate}) 다음 날부터` : undefined}>
+            <Item label="계약 시작일" required help={previousStartDate ? `재계약은 직전 계약 시작일(${previousStartDate}) 다음 날부터` : undefined} errors={errs.startDate}>
               {() => <DateField aria-label="계약 시작일" value={form.startDate} onChange={(v) => set("startDate", v)} />}
             </Item>
-            <Item label="계약 종료일" help="비워 두면 기간의 정함이 없는 계약">
+            <Item label="계약 종료일" help="비워 두면 기간의 정함이 없는 계약" errors={errs.endDate}>
               {() => <DateField aria-label="계약 종료일" value={form.endDate} onChange={(v) => set("endDate", v)} />}
             </Item>
           </FormRow>
           <FormRow>
-            <Group label="근무요일">
+            <Group label="근무요일" errors={errs.days}>
               <span className="flex gap-[6px]">
                 {/* 요일 단추는 칸 폭을 7등분해 채운다 */}
                 {WEEKDAYS.map((d) => (
@@ -605,17 +659,17 @@ export function ContractForm({
                 ))}
               </span>
             </Group>
-            <Group label="근무시간">
+            <Group label="근무시간" errors={errs.work}>
               <SpanPick label="근무시간" value={form.work} onChange={(v) => setTop("work", v)} />
             </Group>
-            <Group label="휴게시간">
+            <Group label="휴게시간" errors={errs.rest}>
               <SpanPick label="휴게시간" value={form.rest} onChange={(v) => setTop("rest", v)} />
             </Group>
           </FormRow>
           {/* 급여 표 — 흰 칸은 입력, 회색 칸은 셈한 값이다(현업 엑셀 견본, 2026-10-13). */}
           {/* 시급 · 월급 · 연봉 한 줄이 소정근로시간 표 위에 있다(데모 확인 2026-10-15). 생년월일 · 근무요일 줄처럼 3등분한다(파트타이머는 셋째 칸을 비운다). 시급은 고용 형태와 상관없이 한 칸이다(2026-10-12 재영). */}
           <FormRow>
-            <Item label="시급" required help={`2026년 최저임금 ${MINIMUM_WAGE.toLocaleString("ko-KR")}원 이상`}>
+            <Item label="시급" required help={`2026년 최저임금 ${MINIMUM_WAGE.toLocaleString("ko-KR")}원 이상`} errors={errs.wage}>
               {(id) => <TextField id={id} value={form.wage} inputMode="numeric" onChange={(e) => set("wage", formatWage(e.target.value))} />}
             </Item>
             <Item label="월급" help={form.employmentType === "FULL_TIME" ? "급여항목 합계 + 비과세 합계" : "주급 × 4.345"}>
@@ -654,6 +708,11 @@ export function ContractForm({
               rows={scheduleRows}
               rowKey={(r) => r.key}
             />
+            {errs.schedule && (
+              <div data-invalid>
+                <FieldErrors id={scheduleErrorId} errors={errs.schedule} />
+              </div>
+            )}
             <span className={HELP}>
               {partTime
                 ? "요일마다 시업 · 종업 · 휴게를 고칠 수 있다. 위 근무시간 · 휴게시간을 바꾸거나 요일을 켜면 그 값으로 다시 채운다. 주휴시간은 주 15시간 이상일 때 주 시간 ÷ 5(8시간까지), 월급여는 주급 × 4.345."
@@ -672,7 +731,7 @@ export function ContractForm({
           {!partTime && (
             <>
               <FormRow>
-                <PayTable title="비과세 항목" help="금액은 원 단위. 0 원도 값으로 저장한다.">
+                <PayTable title="비과세 항목" help="금액은 원 단위. 0 원도 값으로 저장한다." errors={errs.allowances}>
                   <DataTable
                     columns={[
                       { header: "항목", align: "left", cell: (r: PayRow) => r.label },
@@ -682,7 +741,7 @@ export function ContractForm({
                     rowKey={(r) => r.key}
                   />
                 </PayTable>
-                <PayTable title="급여항목" help="시간은 월 · 30분(0.5) 단위. 연장 1.5배 · 야간 0.5배(가산분)로 셈한다.">
+                <PayTable title="급여항목" help="시간은 월 · 30분(0.5) 단위. 연장 1.5배 · 야간 0.5배(가산분)로 셈한다." errors={errs.hours}>
                   <DataTable
                     columns={[
                       { header: "항목", align: "left", cell: (r: PayRow) => r.label },
@@ -704,7 +763,12 @@ export function ContractForm({
           </span>
           <FormRow>
             {/* 주휴일은 특정 요일로 정해 계약서 휴일 조항에 적는다(노무사 확인 2026-10-14, 질문 4). 주 15시간 미만이면 없음이라 고를 수 없다. */}
-            <Item label="주휴일" required={holiday !== null} help="특정 요일로 정해 계약서 휴일 조항에 적는다. 근무하는 요일은 고를 수 없고, 주 15시간 미만이면 주휴가 없다">
+            <Item
+              label="주휴일"
+              required={holiday !== null}
+              help="특정 요일로 정해 계약서 휴일 조항에 적는다. 근무하는 요일은 고를 수 없고, 주 15시간 미만이면 주휴가 없다"
+              errors={errs.weeklyHoliday}
+            >
               {(id) =>
                 holiday === null ? (
                   <Select id={id} disabled value="">
@@ -722,7 +786,7 @@ export function ContractForm({
                 )
               }
             </Item>
-            <Group label="임금지급일" help="31 을 넣으면 말일로 본다">
+            <Group label="임금지급일" help="31 을 넣으면 말일로 본다" errors={errs.payDay}>
               <span className="flex gap-[6px]">
                 <span className="w-[100px] shrink-0">
                   <Select aria-label="임금지급 월" value={form.payMonth} onChange={(e) => set("payMonth", e.target.value as Form["payMonth"])}>
@@ -767,7 +831,7 @@ export function ContractForm({
             </Group>
             {form.probation && (
               <FormRow>
-                <Item label="수습 기간" required help="최대 3개월. 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있다">
+                <Item label="수습 기간" required help="최대 3개월. 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있다" errors={errs.probationMonths}>
                   {(id) => (
                     <Select id={id} value={form.probationMonths} onChange={(e) => set("probationMonths", e.target.value as Form["probationMonths"])}>
                       {(["1", "2", "3"] as const).map((m) => (
@@ -778,14 +842,18 @@ export function ContractForm({
                     </Select>
                   )}
                 </Item>
-                <Item label="임금 감액률" required help="최대 10%. 감액하지 않으면 0">
+                <Item label="임금 감액률" required help="최대 10%. 감액하지 않으면 0" errors={errs.probationRate}>
                   {(id) => (
                     <span className="flex items-center gap-[8px] text-[14px] text-erp-ink">
                       <TextField id={id} value={form.probationRate} inputMode="numeric" maxLength={2} onChange={(e) => set("probationRate", e.target.value.replace(/\D/g, ""))} />%
                     </span>
                   )}
                 </Item>
-                <Item label="수습 중 시급" help={`시급 × (1 − 감액률). 최저임금의 90%(${PROBATION_WAGE_FLOOR.toLocaleString("ko-KR")}원) 이상이어야 한다`}>
+                <Item
+                  label="수습 중 시급"
+                  help={`시급 × (1 − 감액률). 최저임금의 90%(${PROBATION_WAGE_FLOOR.toLocaleString("ko-KR")}원) 이상이어야 한다`}
+                  errors={errs.probationWage}
+                >
                   {(id) => <TextField id={id} readOnly value={won(probationWage(form))} />}
                 </Item>
               </FormRow>
@@ -811,19 +879,10 @@ export function ContractForm({
           title="만 19세 미만 직원은 등록할 수 없습니다"
           desc="근로계약·출퇴근·급여는 점포에서 따로 관리해 주세요. 계약 시작일 기준으로 따지며, 만 19세 미만이면 저장이 막히고 초대도 나가지 않습니다."
         />
-        {(serverError || (tried && issues.length > 0)) && (
+        {/* 화면이 막은 유효성 오류는 칸 아래에 보이고, 여기는 api 가 막은 것(특정 칸에 붙일 수 없는 것)만이다(WHALEERP-631) */}
+        {serverError && (
           <div ref={failureRef}>
-            <Band
-              risk
-              title="저장하지 못했습니다"
-              desc={
-                <ul className="list-disc pl-[18px]">
-                  {(serverError ? [serverError] : issues).map((m) => (
-                    <li key={m}>{m}</li>
-                  ))}
-                </ul>
-              }
-            />
+            <Band risk title="저장하지 못했습니다" desc={serverError} />
           </div>
         )}
         <div className="flex items-center gap-[6px]">

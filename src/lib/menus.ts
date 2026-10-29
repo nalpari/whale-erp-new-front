@@ -10,7 +10,7 @@ import { stripBp } from "./bp-path.ts";
  * 직원 정보 관리의 「직원 초대」 → contracts 등록, 직원 목록 · 상세의 가입 초대 재발송 → contracts 수정),
  * 권한이 아닌 용도(메뉴 관리의 자기 잠금 확인 → platformMenus). staffMembers 는 화면에서 쓰지 않는다 — 메뉴 판정 테스트가 MenuCode 로 쓰는 시드 값이다.
  */
-export const MENU_CODE = { platformMenus: "MN000215", staffMembers: "MN000005", contracts: "MN000006", payslips: "MN000009", workSchedules: "MN000010", todos: "MN000026" } as const;
+export const MENU_CODE = { platformMenus: "MN000215", staffMembers: "MN000005", contracts: "MN000006", payslips: "MN000009", workSchedules: "MN000010", attendanceRecords: "MN000025", todos: "MN000026" } as const;
 export type MenuCode = (typeof MENU_CODE)[keyof typeof MENU_CODE];
 export type MenuAction = keyof AdminMenu["permission"];
 
@@ -117,6 +117,8 @@ export function isAllowed(menus: AdminMenu[], path: string, service: ServiceCode
   if (pathname === HOME[service]) return true;
   if (MENULESS_PATHS.some((url) => isUnder(pathname, url))) return true;
   if (service === "PLATFORM" && isUnder(pathname, PENDING_PLATFORM_MENU.url)) return true;
+  // 운영 알림함 — 메뉴 MN000042 는 웨일ERP 행뿐이라 플랫폼 운영자가 받은 문의 알림을 열 수 없었다(2026-10-29 재영 A안). 웨일ERP 는 메뉴 권한 그대로
+  if (service === "PLATFORM" && isUnder(pathname, "/notifications")) return true;
   return menuOfPath(menus, pathname, service) !== null;
 }
 

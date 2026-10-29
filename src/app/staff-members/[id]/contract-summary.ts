@@ -28,6 +28,14 @@ export function contractSummaryTexts(
 }
 
 /**
+ * 「급여 계좌」 줄 글자 — 「은행이름 계좌번호」(예 KB국민은행 123456789012). 번호는 api 가 준 전체 숫자 그대로이고 하이픈을 넣거나 가리지 않는다.
+ * 신고 정보가 없으면(null) 「-」.
+ */
+export function payrollAccountText(account: { bankName: string; accountNumber: string } | null | undefined): string {
+  return account ? `${account.bankName} ${account.accountNumber}` : "-";
+}
+
+/**
  * 받은 enum 목록. 비었으면 받지 못한 것과 같이 null 이다 — getEnum 은 응답에 그 enum 이 빠지면 throw 하지 않고 [] 를 주는데,
  * 그대로 쓰면 labelOf 가 영문 값을 돌려준다(PR #47 리뷰).
  */
