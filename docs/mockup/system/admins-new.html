@@ -14,7 +14,7 @@
          아이디는 삭제한 계정까지 포함해 겹칠 수 없고, 이메일은 사용·미사용 계정과만 겹치지 않으면 된다. 중복 안내는 항목별로 따로 낸다.
          계정 상태 항목은 없다 — 새 계정은 늘 사용으로 생긴다. 비밀번호 입력도 없다 — 12자 무작위 초기 비밀번호를 등록 이메일로만 보낸다(S-WABHRE).
          우편번호·기본주소는 주소 검색 컴포넌트에서 고른 값만 들어가고 직접 칠 수 없다. 상세주소만 직접 적는다.
-         주소는 치는 대로 찾고(버튼 없음), 상세주소는 주소를 고른 뒤에만 적는다. 아이디 중복은 칸을 벗어나거나 Enter 때 확인한다.
+         주소는 치는 대로 찾고(버튼 없음), 상세주소는 주소를 고른 뒤에만 적는다. 아이디 · 이메일 중복은 칸을 벗어나거나 Enter 때 확인한다.
          입력 오류 · 중복 안내는 모두 그 입력칸 바로 아래에 낸다(2026-10-13, 앱 반영).
          플랫폼 관리자는 플랫폼 마스터 계정을 등록할 수 없다. BP 마스터·가맹 마스터 같은 BP 관련 권한은 누구도 부여할 수 없다.
          등록하면 상세(등록 직후)로 가서 첫 로그인 때 비밀번호를 바꿔야 한다고 알린다.
@@ -23,7 +23,7 @@
          아이디는 영문·숫자만 쓴다(밑줄 불가). 표본 아이디도 밑줄을 뺐다 — plat_yoon → platyoon (확정 2026-09-29).
          시스템에서 만든 계정은 첫 로그인 때 강제 비밀번호 변경 화면에서 약관 동의도 함께 받는다 — 회원가입 계정은 가입 때 받았으므로 제외 (확정 2026-09-29).
          메일 발송 실패는 등록 실패로 보지 않는다 — 계정과 초기 비밀번호 발급은 그대로 두고 발송 실패만 기록한다.
-           다시 보내는 길은 상세의 비밀번호 초기화뿐이고, 목록·상세에 ‘초기 비밀번호 미발송’을 표시한다 (SYSTEM-3 확정).
+           다시 보내는 길은 상세의 비밀번호 초기화뿐이고, 목록·상세에 ‘초기화 비밀번호 미발송’을 표시한다(사용 계정만, 2026-10-29 재영) (SYSTEM-3 확정).
            ‘처리 실패’ 상태는 계정 생성이나 초기 비밀번호 발급 자체가 실패한 경우다 — 그때만 계정을 만들지 않는다.
          위쪽 점선 줄 둘은 목업 전용이다 — 등록하는 사람의 권한과 입력 상태를 따로 바꾼다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
@@ -115,7 +115,7 @@
                     <span class="help" data-dup="checking" hidden>확인 중입니다.</span>
                     <span class="pass" data-dup="ok" hidden><span data-icon="check" data-icon-size="13"></span>사용할 수 있는 아이디입니다.</span>
                     <span class="err" data-dup="bad" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다.</span>
-                    <span class="err" data-dup="fmt" hidden><span data-icon="alert" data-icon-size="13"></span>아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다.</span>
+                    <span class="err" data-dup="fmt" hidden><span data-icon="alert" data-icon-size="13"></span>영문 또는 영문·숫자 조합으로 4~20자로 입력해 주세요.</span>
                     <input class="input mono" value="plathan" maxlength="20" aria-invalid="true" aria-label="아이디" data-show="dupid" hidden />
                     <span class="err" data-show="dupid" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다.</span>
                   </div>
@@ -141,13 +141,14 @@
                   </div>
                   <div class="field">
                     <label for="nmail">이메일 <span class="req">*</span></label>
-                    <!-- 아이디와 달리 바로 물어볼 중복확인 API 가 없어(등록 시점에만 api 가 409 로 막는다) 형식만 본다
-                         — data-taken 이 없어 auth.js checkDup 이 지연 없이 바로 답한다(2026-10-20). -->
-                    <input class="input mono" id="nmail" value="chaewon.yoon@whale-erp.example" maxlength="100" data-show="in dupid miss denied fail" data-dupcheck="mail" data-dup-enter />
-                    <span class="pass" data-dup="ok" hidden><span data-icon="check" data-icon-size="13"></span>올바른 이메일 형식입니다.</span>
+                    <!-- 칸을 벗어나거나 Enter 를 치면 형식과 중복을 확인해 칸 아래에 알린다 — BP 관리자 · BP 마스터 · 내 정보 · 회원가입과 같다.
+                         저장 때 api 409 도 같은 문구다 (2026-10-29 재영). 목업의 ‘이미 있는 이메일’은 data-taken 값이다. -->
+                    <input class="input mono" id="nmail" value="chaewon.yoon@whale-erp.example" maxlength="100" data-show="in dupid miss denied fail" data-dupcheck="mail" data-dup-enter data-taken="jiwoo.park@whale-erp.example,seoyeon.kim@whale-erp.example" />
+                    <span class="pass" data-dup="ok" hidden><span data-icon="check" data-icon-size="13"></span>사용 가능합니다.</span>
+                    <span class="err" data-dup="bad" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요.</span>
                     <span class="err" data-dup="fmt" hidden><span data-icon="alert" data-icon-size="13"></span>이메일 형식이 아닙니다.</span>
                     <input class="input mono" value="jiwoo.park@whale-erp.example" maxlength="100" aria-invalid="true" aria-label="이메일" data-show="dupmail" hidden />
-                    <span class="err" data-show="dupmail" hidden><span data-icon="alert" data-icon-size="13"></span>사용 중이거나 미사용인 다른 관리자 계정의 이메일입니다.</span>
+                    <span class="err" data-show="dupmail" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요.</span>
                   </div>
                   <div class="field">
                     <label for="ndept">소속부서</label>

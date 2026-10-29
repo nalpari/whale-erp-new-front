@@ -13,7 +13,9 @@
          수정 권한이 있으면 수정·비밀번호 초기화를, 삭제 권한이 있으면 삭제를 보인다.
          플랫폼 마스터 계정의 세 실행 항목은 보는 사람이 플랫폼 마스터일 때만 보인다.
          본인 계정은 삭제·비밀번호 초기화를 막고 내 정보에서 처리한다고 알린다.
-         초기 비밀번호 메일이 나가지 못한 계정은 그대로 두고 ‘초기 비밀번호 미발송’을 적는다 — 다시 보내는 길은 비밀번호 초기화뿐이다 (SYSTEM-3 확정).
+         초기 비밀번호 메일이 나가지 못한 계정은 그대로 두고 ‘초기화 비밀번호 미발송’을 적는다 — 다시 보내는 길은 비밀번호 초기화뿐이다 (SYSTEM-3 확정).
+           미발송 표시는 사용 계정에만 둔다 — 미사용 계정은 다시 보낼 수 없다 (2026-10-29 재영).
+         미사용 계정은 비밀번호 [초기화]를 숨기고 「-」를 보인다 (2026-10-23 · 2026-10-29 재영).
          삭제는 논리 삭제다 — 선행 조건 없이 바로 처리하고, 목록·검색·상세에서 빠지며 로그인을 막는다. 복구하지 않는다.
          초기화한 비밀번호는 누구에게도 보이지 않고 계정 이메일로만 간다 — 계정 생성 메일이 아니라 비밀번호 초기화 전용 양식으로 보낸다.
          초기화하면 로그인 5회 실패 잠금도 함께 풀린다 — BP 마스터 · BP 관리자 초기화와 같다 (2026-10-28).
@@ -24,7 +26,7 @@
          플랫폼 관리자가 플랫폼 마스터 계정을 볼 때 수정·삭제·비밀번호 초기화 항목은 모두 숨긴다 — 권한이 없으면 실행 항목을 보이지 않는다 (SYSTEM-1 확정).
            비활성으로 흐리게 두는 것은 권한은 있으나 상태 때문에 막힌 경우뿐이다 — 본인 계정.
          상태·권한 변경 실행 항목은 상세에 두지 않는다 — 수정 화면에서만 바꾼다 (확정 2026-09-29).
-         비밀번호 초기화 이력은 생성·변경 이력 표에 ‘비밀번호 초기화’ 한 줄로 함께 보인다 — 처리자·일시·발송 결과만, 비밀번호 값은 남기지 않는다.
+         비밀번호 초기화 이력은 생성·변경 이력 표에 ‘비밀번호 초기화’ 한 줄로 함께 보인다 — 처리자·일시·변경 전후 값만 남기고, 메일 발송 결과와 비밀번호 값은 남기지 않는다 (2026-10-29 재영).
            삭제 이력은 삭제된 계정이 목록·상세에 나오지 않으므로 데이터로만 남는다 (확정 2026-09-29).
          기본정보에는 주소를 둔다 — 등록에서 받은 우편번호·기본주소·상세주소를 상세에서 보고 수정에서 고친다 (SYSTEM-4 확정).
          시스템에서 만든 계정(플랫폼 관리자 포함)은 첫 로그인 강제 변경 화면에서 약관 동의도 받는다 — 회원가입 계정은 가입 때 받았으므로 제외 (확정 2026-09-29).
@@ -167,7 +169,8 @@
                       <!-- 비밀번호 초기화 — 이메일 아래 칸(BP 관리자 상세와 같다 · 2026-10-08). 수정 권한. 플랫폼 마스터 계정은 플랫폼 마스터만. 본인 계정은 비활성 -->
                       <dt>비밀번호</dt>
                       <dd>
-                        <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="pm pa" data-show="park choi yoon created mailfail">초기화</button>
+                        <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="pm pa" data-show="park yoon created mailfail">초기화</button>
+                        <span class="subtle" data-show="choi" hidden>-</span>
                         <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="pm" data-show="kim" hidden>초기화</button>
                         <button class="btn btn--secondary btn--sm" type="button" disabled data-show-role="pm" data-show="self" hidden title="본인 비밀번호는 내 정보에서 변경합니다">초기화</button>
                       </dd>
@@ -205,7 +208,7 @@
                       <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
                     </thead>
                     <tbody>
-                      <tr data-show="park"><td class="mono">2026-08-12 09:40</td><td class="mono">platkim</td><td>초기 비밀번호</td><td class="nil"></td><td>초기화 메일 발송 완료 <span class="subtle">· 값은 남기지 않음</span></td></tr>
+                      <tr data-show="park"><td class="mono">2026-08-12 09:40</td><td class="mono">platkim</td><td>비밀번호 초기화</td><td class="nil"></td><td>초기화 <span class="subtle">· 비밀번호 값과 메일 발송 결과는 남기지 않음</span></td></tr>
                       <tr data-show="park"><td class="mono">2026-03-02 14:20</td><td class="mono">platkim</td><td>직책</td><td>사원</td><td>매니저</td></tr>
                       <tr data-show="park"><td class="mono">2025-07-01 09:30</td><td class="mono">platjung</td><td>사용자 권한</td><td>플랫폼 관리자 <span class="mono subtle">PA000001</span></td><td>고객지원 담당 <span class="mono subtle">PA000002</span></td></tr>
                       <tr data-show="park"><td class="mono">2025-06-02 10:11</td><td class="mono">platjung</td><td>계정</td><td class="nil"></td><td>사용 · 플랫폼 관리자 <span class="mono subtle">PA000001</span></td></tr>
@@ -308,8 +311,8 @@
                   <div class="inline" style="justify-content: flex-end">
                     <button class="btn btn--ghost" type="button" data-close>취소</button>
                     <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 삭제 실패 결과 보기">실패로 보기</button>
-                    <a class="btn btn--danger" href="admins.html?state=deleted" data-show="park">삭제</a>
-                    <a class="btn btn--danger" href="admins.html" data-show="choi kim yoon created" hidden>삭제</a>
+                    <a class="btn btn--primary" href="admins.html?state=deleted" data-show="park">삭제</a>
+                    <a class="btn btn--primary" href="admins.html" data-show="choi kim yoon created" hidden>삭제</a>
                   </div>
                 </div>
                 <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">
