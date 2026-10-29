@@ -3,8 +3,8 @@
 
 import { EMAIL_FORMAT_ERROR } from "../../../../lib/email-format.ts";
 
-export const CONNECT_FAILED = "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요";
-export const THROTTLED = "요청이 많습니다. 잠시 뒤 다시 시도해 주세요";
+export const CONNECT_FAILED = "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.";
+export const THROTTLED = "요청이 많습니다. 잠시 뒤 다시 시도해 주세요.";
 // 이메일 칸이 있는 화면 모두 같은 형식 문구다(lib/email-format.ts)
 export const INVALID_INPUT = EMAIL_FORMAT_ERROR;
 // 일치 없음(404). 미사용 · 탈퇴 계정과만 맞아도 같은 문구다.
