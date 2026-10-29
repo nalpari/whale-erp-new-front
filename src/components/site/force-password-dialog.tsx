@@ -159,7 +159,8 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
       {/* 안내 확인창 — 강제 변경 팝업 위 최상위 레이어에 뜬다. Esc 도 [확인]과 같다 */}
       <ConfirmDialog
         open={!!notice}
-        title="안내"
+        // 제목은 이 팝업의 일 — 「안내」보다 무엇에 대한 것인지 바로 읽힌다(2026-10-29 사용자 지정)
+        title="비밀번호 변경"
         cancelLabel={null}
         onConfirm={() => {
           const then = notice?.then;
