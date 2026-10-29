@@ -628,7 +628,8 @@ DIAGRAMS.append(Diagram(
            "|최근 내려받은 일시|datetime|downloaded_at|",
            "|요청 일시|datetime|requested_at|2년 보존",
            "|생성 시작 일시|datetime|started_at|멈춘 작업 판단",
-           "|완료 일시|datetime|completed_at|"],
+           "|완료 일시|datetime|completed_at|",
+           "|범위 지문|text|scope_key|받을 때 범위 비교"],
           1, 780),
     ],
     [

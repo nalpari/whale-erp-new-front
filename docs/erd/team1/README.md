@@ -668,14 +668,14 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 | PK | 다운로드 이력 ID | id | `excel_download_id` |  |
 | FK | 요청자 | id | `requested_by` | admin_accounts FK |
 | FK | 화면(메뉴) | id | `menu_id` | menus FK — 같은 화면 판단 기준 |
-| FK | 대상 BP | id | `bp_code_id` | 다룬 BP — BP · 가맹 계정은 소속 BP, 플랫폼 계정은 탭 BP. BP 를 다루지 않는 화면(BP 마스터 목록)은 비움 |
+| FK | 대상 BP | id | `bp_code_id` | 다룬 BP. BP · 가맹 계정은 소속 BP, 플랫폼 계정은 탭 BP. BP 를 다루지 않는 화면(BP 마스터 목록)은 비움 |
 |  | 검색 조건 | json | `search_conditions` | 요청 때의 조건 그대로 |
 |  | 건수 | int | `row_count` |  |
 |  | 생성 방식 | enum | `delivery_method` | 바로 받기·예약 생성 |
 |  | 처리 상태 | enum | `status` | 대기·생성 중·완료·실패 |
 |  | 파일명 | text | `file_name` | 예) 점포목록_20261028.xlsx |
 |  | 저장소 키 | text | `storage_key` | 예약 생성만, excel-exports/ 아래 |
-|  | 시도 횟수 | int | `attempt_count` | 예약 생성만 센다(바로 받기는 0). 시도를 시작할 때 1씩 올린다(최대 2 — 처음 1번 + 재시도 1번). 2에서 실패하거나 4xx 면 끝 |
+|  | 시도 횟수 | int | `attempt_count` | 예약 생성만 센다(바로 받기는 0). 시도를 시작할 때 1씩 올린다(최대 2 — 처음 1번 + 재시도 1번). 2에서 실패하거나 4xx(권한 · 계정 · 범위로 거부)면 끝 |
 |  | 실패 사유 | text | `failure_reason` |  |
 |  | 메일 발송 일시 | datetime | `notified_at` | 완료·실패 메일 |
 |  | 만료 일시 | datetime | `expires_at` | 완료 + 24시간 |
@@ -683,6 +683,7 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 |  | 요청 일시 | datetime | `requested_at` | 2년 보존 |
 |  | 생성 시작 일시 | datetime | `started_at` | 이번 시도를 시작한 시각. 멈춘 작업 판단 기준 |
 |  | 완료 일시 | datetime | `completed_at` |  |
+|  | 범위 지문 | text | `scope_key` | 만들 때 요청자가 볼 수 있던 범위(플랫폼 여부 · 대상 BP · 전체 점포 · 매핑 점포). 받을 때 지금 범위와 다르면 막는다 |
 
 **관계**
 
