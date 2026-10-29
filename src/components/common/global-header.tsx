@@ -135,7 +135,7 @@ export function ServiceLinks({ targets = {}, hideAddon = false }: { targets?: { 
           <Image src="/icons/service-erp.svg" alt="" width={32} height={32} />
         </ServiceLink>
         {!hideAddon && (
-          <ServiceLink target={targets.addon} label="부가서비스 현황" className={`${ICON_HOVER} w-[32px] bg-white`}>
+          <ServiceLink target={targets.addon} label="부가서비스구독관리" className={`${ICON_HOVER} w-[32px] bg-white`}>
             <Image src="/icons/service-chat.svg" alt="" width={19} height={19} />
           </ServiceLink>
         )}
