@@ -26,7 +26,8 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     let cancelled = false;
-    const params = new URLSearchParams({ page: String(query.page), pageSize: String(query.pageSize) });
+    // withMaster — BP 마스터 계정이 있는 BP 만(BP 마스터 계정 목록과 같은 건수, 2026-10-29). 탭 BP 찾기 · 상태 확인은 이 조건 없이 부른다
+    const params = new URLSearchParams({ page: String(query.page), pageSize: String(query.pageSize), withMaster: "true" });
     if (query.keyword) params.set("keyword", query.keyword);
     bff<{ items: BpOption[]; total: number }>(`/bp-codes?${params}`).then(
       (r) => {
