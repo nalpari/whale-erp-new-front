@@ -538,7 +538,7 @@ export function staffSections({ A, R }) {
   const staffChip = (name) =>
     `<li class="flex h-[34px] items-center gap-[8px] rounded-[2px] border border-erp-field-line bg-white pr-[4px] pl-[10px] text-[14px]"><span class="font-medium">${name}</span><button type="button" aria-label="${name} 빼기" class="grid size-[26px] place-items-center rounded-[2px] text-erp-label hover:text-erp-ink">×</button></li>`;
   const staffPick = (radio, picked = []) =>
-    `<div class="flex flex-col gap-[8px]" data-when="${radio}:개인"><span class="text-[14px] font-medium text-erp-label">직원</span>${ui.searchField(A, { placeholder: "이름 또는 휴대전화번호 끝자리" })}<ul aria-label="고른 직원" class="flex flex-wrap gap-[6px]">${picked.map(staffChip).join("")}</ul>${p.help("고른 근무지의 재직 직원 중 한 명 이상 고르고, 직원마다 1건씩 생긴다. 근무지를 바꾸면 비우고, 아무도 고르지 않으면 「직원을 한 명 이상 골라 주세요」로 막는다.")}</div>`;
+    `<div class="flex flex-col gap-[8px]" data-when="${radio}:개인"><span class="text-[14px] font-medium text-erp-label">직원</span>${ui.searchField(A, { placeholder: "이름 또는 휴대전화번호 끝자리" })}<ul aria-label="고른 직원" class="flex flex-wrap gap-[6px]">${picked.map(staffChip).join("")}</ul>${p.help("고른 근무지의 재직 직원 중 한 명 이상 고르고, 직원마다 1건씩 생긴다. 근무지를 바꾸면 비우고, 아무도 고르지 않으면 「직원을 한 명 이상 골라 주세요.」로 막는다.")}</div>`;
   const todoForm = ui.slidePanel(
     todoPanel,
     "TO-DO 등록",
