@@ -57,7 +57,8 @@ export const PENDING_PLATFORM_MENU = { name: "알림 템플릿 관리", url: "/p
 
 /**
  * 메뉴 없이 로그인한 관리자면 어느 탭 서비스에서나 여는 화면. 권한은 메뉴가 아니라 api 가 따로 본다.
- * /excel-downloads/{id} — 1만 건 이상 엑셀 예약 생성 완료 메일의 링크. 요청한 본인만 받고(api), 메뉴 권한은 요청할 때 이미 봤다.
+ * /excel-downloads/{id} — 1만 건 이상 엑셀 예약 생성 완료 메일의 링크. 요청한 본인인지(404)와 그 화면 조회 권한이 아직 있는지(403)는
+ * api 가 내려받을 때 다시 본다.
  */
 export const MENULESS_PATHS = ["/excel-downloads"];
 

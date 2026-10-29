@@ -7,7 +7,7 @@ export const XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.
 export const EXCEL_FAILED = "엑셀 파일을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.";
 
 /** 1만 건 이상 예약 접수(202)인데 api 문구가 없을 때의 안내 — api 문구(EXCEL_SCHEDULED_MESSAGE)처럼 링크 기한까지 한 번에 말한다 */
-export const EXCEL_SCHEDULED = "1만 건이 넘어 파일을 만든 뒤 등록한 이메일로 내려받기 링크를 보내 드립니다. 링크는 다 만들어진 뒤 24시간 동안 요청한 본인만 쓸 수 있습니다.";
+export const EXCEL_SCHEDULED = "1만 건 이상이라 파일을 만든 뒤 등록한 이메일로 내려받기 링크를 보내 드립니다. 링크는 다 만들어진 뒤 24시간 동안 요청한 본인만 쓸 수 있습니다.";
 
 /**
  * 엑셀 중계 경로(점포 · BP 마스터 계정 목록)가 api 응답을 화면으로 넘긴다.
