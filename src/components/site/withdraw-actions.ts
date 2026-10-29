@@ -2,7 +2,7 @@
 
 import { ApiError } from "@/lib/api";
 import { createWithdrawal, getWithdrawEligibility, verifyCurrentPassword, type CreateWithdrawalInput } from "@/lib/withdrawal";
-import type { WithdrawEligibility } from "@/lib/withdrawal-form";
+import { withdrawVerifyFailureOf, type WithdrawEligibility } from "@/lib/withdrawal-form";
 
 // 회원 탈퇴(MY PAGE, S-JHQQNR). password-change-actions.ts 와 같은 얇은 어댑터라 대응 테스트가 없다.
 
@@ -22,22 +22,16 @@ export async function getWithdrawEligibilityAction(): Promise<EligibilityResult>
 type Failure = { ok: false; status?: 400 | 401; message: string };
 export type WithdrawActionResult = { ok: true } | Failure;
 
-/** 1단계 본인 확인 — 맞아야 탈퇴 화면으로 간다(S-JHQQNR, 2026-10-29 재영). 확인하지 못하면(경로가 없는 404 ·
- * 5xx · 연결 실패 포함) 넘기지 않는다 — 비밀번호를 모르는 사람이 탈퇴 화면을 보지 않게 하는 단계라서다. */
+/** 1단계 본인 확인 — 맞아야 탈퇴 화면으로 간다(S-JHQQNR, 2026-10-29 재영). 실패 판정은 withdrawal-form.ts 의
+ * withdrawVerifyFailureOf(확인하지 못하면 넘기지 않는다, 테스트 있음). */
 export async function verifyWithdrawPasswordAction(currentPassword: string): Promise<WithdrawActionResult> {
   try {
     await verifyCurrentPassword(currentPassword);
     return { ok: true };
   } catch (error) {
-    if (error instanceof ApiError) {
-      if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
-      // 400 은 현재 비밀번호 불일치 — api 문구(「현재 비밀번호가 올바르지 않습니다.」)를 그대로 쓴다.
-      if (error.status === 400) return { ok: false, status: 400, message: error.message };
-      if (error.status === 429) return { ok: false, message: "너무 많이 시도했습니다. 10분 뒤 다시 시도해 주세요." };
-      if (error.status === 403) return { ok: false, message: error.message };
-    }
-    console.error("탈퇴 비밀번호 확인 실패", error);
-    return { ok: false, message: "비밀번호를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." };
+    // 판정한 거절(401 · 400 · 403 · 429) 말고는 화면이 모르는 실패라 서버 로그에 남긴다
+    if (!(error instanceof ApiError && [400, 401, 403, 429].includes(error.status))) console.error("탈퇴 비밀번호 확인 실패", error);
+    return withdrawVerifyFailureOf(error);
   }
 }
 

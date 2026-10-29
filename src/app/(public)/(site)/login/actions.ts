@@ -22,7 +22,8 @@ export type LoginFormState = { error?: string };
 const SYSTEM_ERROR = "시스템 오류로 로그인할 수 없습니다. 잠시 후 다시 시도해 주세요.";
 
 /**
- * api 로그인 → 쿠키 → 권한 유형별 홈. 실패 문구는 api 가 정한 것을 그대로 보인다(없는 아이디·불일치·탈퇴는 같은 문구, 미사용·잠금은 따로).
+ * api 로그인 → 쿠키 → 권한 유형별 홈. 4xx 실패 문구는 api 가 정한 것을 그대로 보인다(없는 아이디·불일치·탈퇴는 같은 문구, 미사용·잠금은 따로).
+ * 5xx · 연결 실패 · 깨진 응답은 시스템 오류 문구로, 요청 제한(스로틀러 429)은 화면 문구로 바꾼다.
  * 강제 비밀번호 변경 여부(isPasswordChangeRequired)는 SessionGate 가 login-info 로 보고 팝업을 띄운다.
  */
 export async function login(_prev: LoginFormState, formData: FormData): Promise<LoginFormState> {

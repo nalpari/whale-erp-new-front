@@ -95,6 +95,11 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
     })();
   }, [open]);
 
+  // useCodes 는 그룹이 없으면 개발 중에만 경고한다 — 탈퇴를 막는 일이라 운영에서도 남긴다
+  useEffect(() => {
+    if (open && reasons.length === 0) console.error("탈퇴 사유 공통코드(WITHDRAW_REASON)가 비어 있습니다");
+  }, [open, reasons.length]);
+
   const doneHeadingId = `${ids}-done`;
   useEffect(() => {
     if (step === "done") requestAnimationFrame(() => document.getElementById(doneHeadingId)?.focus());
@@ -123,12 +128,19 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
     setFailure(null);
     const mine = saveNumber.current;
     startVerifying(async () => {
-      const result = await verifyWithdrawPasswordAction(form.currentPassword);
-      if (mine !== saveNumber.current) return;
-      if (result.ok) return setStep("content");
-      if (result.status === 401) return void logout();
-      if (result.status === 400) return setFieldError({ at: "currentPassword", message: result.message });
-      setFailure(result.message);
+      try {
+        const result = await verifyWithdrawPasswordAction(form.currentPassword);
+        if (mine !== saveNumber.current) return;
+        if (result.ok) return setStep("content");
+        if (result.status === 401) return void logout();
+        if (result.status === 400) return setFieldError({ at: "currentPassword", message: result.message });
+        setFailure(result.message);
+      } catch (error: unknown) {
+        // 서버 액션 요청 자체가 실패한 경우(연결 끊김 · 배포 뒤 액션을 못 찾음) — handleConfirm 과 같이 띠로 알린다
+        if (mine !== saveNumber.current) return;
+        console.error("탈퇴 비밀번호 확인 요청 실패", error);
+        setFailure("비밀번호를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      }
     });
   };
 
@@ -290,6 +302,8 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                       ))}
                     </Select>
                   </Field>
+                  {/* 사유가 비면 고를 수 없어 탈퇴가 이유 없이 막힌다 — 공통코드가 빠졌거나 모두 미사용인 경우 */}
+                  {reasons.length === 0 && <FailedBand message="탈퇴 사유를 불러오지 못했습니다. 잠시 후 다시 시도하거나 관리자에게 문의해 주세요." />}
                 </div>
                 {form.reasonCode === "WD_INPUT" && (
                   <div className="flex flex-col gap-[8px]">
