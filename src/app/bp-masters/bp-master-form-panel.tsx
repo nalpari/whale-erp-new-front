@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useLayoutEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
-import { Button, Checkbox, ConfirmDialog, Field, FormGroup, FormRow, RequiredMark, SlidePanel, Tag, TextField } from "@/components/common";
+import { Button, Checkbox, Field, FormGroup, FormRow, RequiredMark, SlidePanel, Tag, TextField } from "@/components/common";
 import { AddressField } from "@/components/address-field";
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
 import { InfoBand } from "@/components/site/side-parts";
@@ -35,7 +35,8 @@ import { BpStatusBadge, unknownResult } from "./bp-master-parts";
 // BP 마스터 계정 등록(S-OJEYQJ) · 수정(S-CQGGZS) 슬라이드 패널. 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓고,
 // 기본정보 / 사업자정보 두 묶음으로 나눈다(데모와 같다, 2026-10-22).
 // 사업자정보는 MY PAGE 사업자정보 탭과 같은 모양이다(2026-10-28 사용자 지정 — 전엔 [사업자 번호 인증하기]로 상자를 펼쳤다):
-// 공통 인증 상자(BizVerificationBox, 세 칸 한 줄)가 처음부터 열려 있고, 인증하면 칸이 잠긴다. [재인증]은 확인을 한 번 받는다.
+// 공통 인증 상자(BizVerificationBox, 세 칸 한 줄)가 처음부터 열려 있고, 인증하면 칸이 잠긴다. [재인증]은 확인 없이 값을 둔 채
+// 칸을 다시 연다 — 회원가입 · 점포 · MY PAGE 와 같다(2026-10-29 재영, 전엔 확인창을 한 번 거쳤다).
 // 상호명부터는 따로 카드이고, 대표자 연락처 · 이메일에 「기본정보와 동일」이 있다. 번호 중복 · 확인 불가 · 처리 오류여도 인증 없이 저장할 수 있다.
 // 수정은 제목 옆에 BP 코드 · 계정상태 배지를 보여 주기만 하고(아이디 · 가입경로 칸은 2026-10-28 사용자 지정으로 뺐다), BP 상태는 상세의 [BP상태변경]에서만 바꾼다. 마지막 저장이 남는다(409 없음).
 
@@ -72,9 +73,6 @@ export function BpMasterFormPanel(props: Props) {
   const [emailCheck, setEmailCheck] = useState<LoginIdCheck>("idle");
   /** 진위확인 실패 문구(중복 · 불일치 · 장애) — 인증 상자 아래 한 줄 */
   const [verifyFailure, setVerifyFailure] = useState<string | null>(null);
-  const [reverifyAsk, setReverifyAsk] = useState(false);
-  // 재인증 확인창은 네이티브 <dialog> 라 패널이 뒤로 가기 등으로 닫혀도 혼자 남는다 — 함께 닫는다
-  if (!open && reverifyAsk) setReverifyAsk(false);
 
   /** 칸별 중복 확인 차례 — 고치거나 다시 물으면 올라가, 앞선 답을 버린다 */
   const checkNumber = useRef({ loginId: 0, email: 0 });
@@ -288,9 +286,8 @@ export function BpMasterFormPanel(props: Props) {
   };
 
   // 저장하는 동안은 Esc · 바탕 클릭으로도 닫히지 않는다(admin-form-panel.tsx 와 같다)
-  // 재인증 확인창(<dialog>) 안의 Esc 는 확인창만 닫는다 — SlidePanel 의 문서 Esc 도 같이 받아 패널까지 닫히던 것을 막는다(상세의 dismissDetail 과 같다)
   const safeClose = () => {
-    if (!saving && !document.querySelector("dialog[open]")) onClose();
+    if (!saving) onClose();
   };
 
   const title = mode === "create" ? "BP 마스터 계정 등록" : "BP 마스터 계정 수정";
@@ -426,8 +423,8 @@ export function BpMasterFormPanel(props: Props) {
         fieldErrors={bizFieldErrors}
         missing={bizMissing}
         boxError={verifyFailure}
-        // 잠겼을 때 누르면 재인증 확인창, 열렸을 때는 실제 인증 요청
-        onVerify={bizLocked ? () => setReverifyAsk(true) : handleVerify}
+        // 잠겼을 때 누르면 재인증으로 칸을 다시 열고, 열렸을 때는 실제 인증 요청
+        onVerify={bizLocked ? openVerification : handleVerify}
         onClear={closeVerification}
         showClear={!form.verified && Boolean(form.bizNumber || form.ceoName || form.openDate)}
         // 재인증 중이면 잠긴 인증으로 되돌린다(점포 수정 · MY PAGE 와 같다)
@@ -521,23 +518,6 @@ export function BpMasterFormPanel(props: Props) {
           저장
         </Button>
       </div>
-
-      <ConfirmDialog
-        open={reverifyAsk}
-        title="사업자정보를 다시 인증하시겠습니까?"
-        confirmLabel="재인증"
-        onConfirm={() => {
-          setReverifyAsk(false);
-          openVerification();
-        }}
-        onCancel={() => setReverifyAsk(false)}
-      >
-        <p>
-          {mode === "edit"
-            ? "새 값으로 인증에 성공하고 저장해야 바뀝니다. 실패하거나 취소하면 저장된 사업자정보는 그대로입니다."
-            : "지금 인증한 사업자등록번호 · 대표자명 · 개업일자로 다시 확인합니다. 인증에 성공해야 새 값이 쓰입니다."}
-        </p>
-      </ConfirmDialog>
     </SlidePanel>
   );
 }
