@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-29
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 고객지원 문의하기의 [문의하기](등록) 버튼을 목록 건수 줄에서 제목 줄 오른쪽으로 옮겼다(등록 버튼은 화면명 우측, 사용자 지정). 데모(`support/inquiries`)도 맞췄다.
+
 ## 2026-10-27
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한별 메뉴설정 팝업 머리칸도 일부만 켜졌으면 하늘색 「–」, 플랫폼 메뉴 관리에서 상위가 미사용인 메뉴에 「상위 미사용」 꼬리표 · 하위 메뉴가 있는 메뉴를 미사용으로 고르면 하위도 함께 숨는다는 안내, 플랫폼 · BP 관리자 상세의 등록 · 최종수정을 기본정보 표 안으로 · 본인 계정 수정 안내 문구, 하위 메뉴 숨김 안내 수는 새로 숨는 메뉴만, 아이디 · 비밀번호 찾기 플레이스홀더(front weedle).
 * **Update**: main 병합(front snubbull, main #147 · #148 까지): api 타입은 git 이 합친 것이 아니라 api main `65a871a` openapi 로 다시 만들었다(BP 휴일 기간 필드와 홈 · 출퇴근 · BP 마스터 · BP 관리자가 함께 들어 있다). `StoreMappingPicker` 는 main 의 사용자 지정 문구(빈 칩 · 오른쪽 빈 목록 두 줄, 일괄 검색 안내 한 줄)와 칩 영역 130px 를 `TEXTS.include` 로 옮기고 예외 · 필터 문구도 같은 말투로 맞췄다(데모 `BULK_MAP_TEXT` · `FILTER_BULK_TEXT` 도). okf 충돌은 양쪽 기록을 살렸다(PR #154 머지 블로커).

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { Badge, Button, DataTable, FilterPanel, FilterSection, SearchField, Tag, type Column } from "@/components/common";
+import { Badge, Button, DataTable, FilterPanel, FilterSection, PageBar, SearchField, Tag, type Column } from "@/components/common";
 import { Checks, Frame, useGo } from "@/components/community/community-lists";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCodes, useCurrentBp, usePagePermission } from "@/components/site/session-gate";
@@ -153,6 +153,14 @@ export function MyInquiryList({ items, total, query, statuses }: { items: Suppor
   ];
   return (
     <>
+      {/* [문의하기]는 제목 줄 오른쪽 — 등록 버튼은 화면명 우측(2026-10-29 사용자 지정, 전엔 목록 건수 줄) */}
+      <PageBar title="문의하기">
+        {can.create && (
+          <Button ref={trigger} aria-controls="support-inquiry-new-panel" aria-expanded={open} onClick={() => setOpen(true)}>
+            문의하기
+          </Button>
+        )}
+      </PageBar>
       <Frame
           query={query}
           total={total}
@@ -161,13 +169,6 @@ export function MyInquiryList({ items, total, query, statuses }: { items: Suppor
               <Search label="제목" placeholder="제목으로 검색" value={query.title} maxLength={200} onSearch={(title) => go({ title })} />
               <Checks label="상태" values={statuses} value={query.status} onPick={(status) => go({ status })} last />
             </FilterPanel>
-          }
-          action={
-            can.create && (
-              <Button ref={trigger} aria-controls="support-inquiry-new-panel" aria-expanded={open} onClick={() => setOpen(true)}>
-                문의하기
-              </Button>
-            )
           }
         >
           <DataTable columns={columns} rows={items} rowKey={(i) => i.inquiryId} empty={query.title || query.status.length ? "찾는 문의가 없습니다." : "등록한 문의사항이 없습니다."} />

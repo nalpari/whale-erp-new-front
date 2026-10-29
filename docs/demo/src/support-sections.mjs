@@ -56,7 +56,8 @@ export function supportSections({ A, R }) {
   const askPanel = "inquiry-form";
   const inq = (title, cat, state, reg, ans) => [ui.link(title, IM), cat, state, reg, ans];
   const inquiries =
-    ui.listToolbar(7, ui.slideTrigger("문의하기", askPanel)) +
+    // [문의하기]는 목록 건수 줄이 아니라 제목 줄 오른쪽에 둔다(등록 버튼은 화면명 우측, 2026-10-29 사용자 지정) — 화면이 askTrigger 를 titleRight 로 넣는다.
+    ui.listToolbar(7) +
     ui.dataTable(
       [
         { header: "제목", align: "left" },
@@ -106,5 +107,6 @@ export function supportSections({ A, R }) {
   const noticeFilter = checkFilter(["제목", "제목으로 검색", "구분"], ["점검", "기능", "약관", "안내"]);
   const faqFilter = checkFilter(["질문", "질문으로 검색", "카테고리"], ["가입·계정", "직원·근로", "요금·구독", "점포·설비"]);
   const inquiryFilter = checkFilter(["제목", "제목으로 검색", "상태"], ["접수", "처리중", "답변완료"]);
-  return { notices, faq, inquiries, askForm, noticeFilter, faqFilter, inquiryFilter };
+  const askTrigger = ui.slideTrigger("문의하기", askPanel);
+  return { notices, faq, inquiries, askForm, askTrigger, noticeFilter, faqFilter, inquiryFilter };
 }

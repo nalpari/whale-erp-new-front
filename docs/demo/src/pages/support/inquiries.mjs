@@ -5,5 +5,5 @@ import { erpHeader } from "../../site.mjs";
 
 export default ({ A, R }) => {
   const s = supportSections({ A, R });
-  return { title: "문의하기", html: ui.erpFrame({ header: erpHeader(A, R), title: "문의하기", body: ui.listBody(s.inquiryFilter, s.inquiries), panels: s.askForm }) };
+  return { title: "문의하기", html: ui.erpFrame({ header: erpHeader(A, R), title: "문의하기", titleRight: s.askTrigger, body: ui.listBody(s.inquiryFilter, s.inquiries), panels: s.askForm }) };
 };

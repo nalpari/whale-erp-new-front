@@ -9,14 +9,12 @@ import { MyInquiryList } from "@/components/support/support-lists";
 export default async function SupportInquiriesPage({ searchParams }: PageProps<"/support-inquiries">) {
   const query = parseSupportInquiryQuery(await searchParams);
   const loaded = await loadList("문의사항", () => Promise.all([getMyInquiries(query), getEnum("InquiryStatus")]));
+  // 제목 줄은 목록이 그린다 — [문의하기] 버튼이 그 오른쪽에 선다
+  if ("data" in loaded) return <MyInquiryList items={loaded.data[0].items} total={loaded.data[0].total} query={query} statuses={loaded.data[1]} />;
   return (
     <>
       <PageBar title="문의하기" />
-      {"data" in loaded ? (
-        <MyInquiryList items={loaded.data[0].items} total={loaded.data[0].total} query={query} statuses={loaded.data[1]} />
-      ) : (
-        <ListFailure {...loaded} retryHref={await bpHref(SUPPORT_INQUIRY_BASE)} />
-      )}
+      <ListFailure {...loaded} retryHref={await bpHref(SUPPORT_INQUIRY_BASE)} />
     </>
   );
 }
