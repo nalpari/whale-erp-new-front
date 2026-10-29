@@ -4,7 +4,7 @@ import { ApiError, deniedMessageOf, screenPath } from "@/lib/api";
 import { getStores } from "@/lib/stores";
 import type { StoreSummary } from "@/lib/store-types";
 import { StoreFilter } from "./store-filter";
-import { StorePermission } from "./store-permission";
+import { NotFranchise, StorePermission } from "./store-permission";
 import { StoreDenied, StoreFrame } from "./store-frame";
 import { StoreListNavigationProvider } from "./store-list-navigation";
 import { StorePageSizeSelect, StorePagination, StoreViewToggle } from "./store-list-controls";
@@ -44,9 +44,11 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
     <StoreFrame
       // 등록 버튼은 제목 줄 오른쪽 — 3팀 목록(근로계약 · 직원 · TO-DO)과 같은 자리(2026-10-23)
       actions={
-        // 가맹 마스터 · 가맹 관리자는 등록 권한이 켜져 있어도 등록하지 못한다 — api 가 403 으로 막는다
+        // 가맹 마스터 · 가맹 관리자는 등록 권한이 켜져 있어도 등록하지 못한다 — 버튼을 숨기고, api 가 403 으로 막는다
         <StorePermission action="create">
-          <Button href={at(withBack("/stores/new", listHref))}>등록</Button>
+          <NotFranchise>
+            <Button href={at(withBack("/stores/new", listHref))}>등록</Button>
+          </NotFranchise>
         </StorePermission>
       }
     >
