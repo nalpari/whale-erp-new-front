@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DetailTable, SlidePanel, useToast, type DetailRow } from "@/components/common";
+import { Badge, Blocked, Button, ConfirmDialog, DetailTable, SlidePanel, useToast, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { SuccessBand, WarnBand } from "@/components/site/side-parts";
@@ -11,7 +11,7 @@ import { formatDateTime, formatPhone, wasUpdated, withinPasswordHour } from "@/l
 import { adminActionsOf } from "@/lib/platform-admin-actions";
 import type { PlatformAdminDetail } from "@/lib/platform-admins";
 import { deletePlatformAdminAction, getPlatformAdminHistoriesAction, resetPlatformAdminPasswordAction } from "./actions";
-import { Blocked, FailedBand, unknownResult, WhoList } from "./admin-parts";
+import { FailedBand, unknownResult, WhoList } from "./admin-parts";
 import { HistoryButton } from "./history-dialog";
 
 // 플랫폼 관리자 상세(S-BRSPGB). 모두 읽기 전용이고, 상태 · 권한은 수정 패널에서만 바꾼다.
@@ -226,7 +226,7 @@ function DetailBody({
           보냈고 첫 로그인 전이거나 이 상세에서 방금 초기화했으면 하늘색 상자. 초기화 비밀번호는 1시간만 유효하다(api) */}
       {/* 방금 한 동작의 실패는 머리 바로 아래, 다른 안내 상자보다 위에(2026-10-28 사용자 지정) */}
       {failure && <FailedBand message={failure} />}
-      {admin.accountStatus === "ACTIVE" && admin.isInitialPasswordUnsent && <WarnBand>{`초기화 비밀번호가 발송되지 않았습니다.${canReset ? "\n비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요." : ""}`}</WarnBand>}
+      {admin.accountStatus === "ACTIVE" && admin.isInitialPasswordUnsent && <WarnBand>{`초기화 비밀번호가 발송되지 않았습니다.${canReset ? "\n비밀번호 [초기화] 버튼을 눌러 다시 발송해 주세요." : ""}`}</WarnBand>}
       {admin.accountStatus === "ACTIVE" && !admin.isInitialPasswordUnsent && (resetSent || (!admin.lastLoginAt && !admin.statusChangedAt)) && (
         <SuccessBand>
           {/* 방금 이 화면에서 보냈거나 계정을 만든 지 1시간이 안 됐으면(만들 때 초기 비밀번호를 보낸다) 발송 안내, 아니면(한 번도 로그인하지 않은 계정) 로그인하지 않았다는 사실만 — 발송 시각을 api 가 주지 않아
@@ -244,7 +244,7 @@ function DetailBody({
         </Button>
         <span className="flex-1" />
         {canDelete && (
-          <Blocked reason={isSelf ? "본인 계정은 스스로 삭제할 수 없습니다" : undefined}>
+          <Blocked reason={isSelf ? "본인 계정은 스스로 삭제할 수 없습니다." : undefined}>
             <Button variant="soft" onClick={() => setConfirm("delete")} disabled={isSelf || busy}>
               삭제
             </Button>

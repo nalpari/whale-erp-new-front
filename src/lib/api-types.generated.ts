@@ -1659,6 +1659,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/staff-members/bulk-exports/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 담을 직원 수(재직 · 퇴직)와 범위 점포 수. 0 이면 화면이 요청 버튼을 끈다 */
+        get: operations["BulkExportsController_preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/bulk-exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 볼 수 있는 요청 — 같은 BP · 같은 권한 유형이고 요청의 점포를 모두 관리하는 마스터. 최근 순 */
+        get: operations["BulkExportsController_list"];
+        put?: never;
+        /** 요청. 1분 배치가 만든다 */
+        post: operations["BulkExportsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/bulk-exports/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 5분짜리 내려받기 주소. 내려받기 이력을 남긴다 */
+        post: operations["BulkExportsController_download"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/staff-members": {
         parameters: {
             query?: never;
@@ -1703,7 +1755,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 근로계약 영역 — 가장 최근 계약의 유형 · 기간 · 상태 · 최근 발송일 · 갱신 예정일. 근로계약 관리 조회 권한 */
+        /** 근로계약 영역 — 가장 최근 계약의 유형 · 기간 · 상태 · 최근 발송일 · 갱신 예정일 · 신고 정보의 급여 계좌(전체 번호, 가리지 않음). 근로계약 관리 조회 권한 */
         get: operations["StaffMemberSummaryController_contract"];
         put?: never;
         post?: never;
@@ -6465,6 +6517,61 @@ export interface components {
             /** @description 약관 본문(Markdown) */
             content: string;
         };
+        BulkExportPreviewResponseDto: {
+            /** @description 범위 점포 수 */
+            storeCount: number;
+            /** @description 담을 직원 수(재직 + 퇴직). 0 이면 요청 버튼을 끈다 */
+            staffCount: number;
+            /** @description 재직 */
+            employedCount: number;
+            /** @description 퇴직(퇴직일 다음 날부터 3년 안) */
+            retiredCount: number;
+            /** @description 같은 범위의 파일을 만드는 중인가 */
+            inProgress: boolean;
+        };
+        CreateBulkExportDto: {
+            /**
+             * @description 업무 범위 점포. 비거나 없으면 관리하는 점포 전부. 관리하지 않는 점포가 섞이면 400
+             * @example [
+             *       3,
+             *       5
+             *     ]
+             */
+            storeIds?: number[];
+        };
+        /** @enum {string} */
+        BulkExportStatus: "PENDING" | "PROCESSING" | "SUCCEEDED" | "FAILED";
+        BulkExportItemDto: {
+            status: components["schemas"]["BulkExportStatus"];
+            bulkExportId: number;
+            /** @description 요청의 업무 범위 점포(오름차순) — 「다시 요청」이 같은 범위로 보낸다 */
+            storeIds: number[];
+            /** @description 요청 일시(ISO) */
+            requestedAt: string;
+            /** @description 요청한 관리자 이름(없으면 로그인 아이디) */
+            requesterName: string;
+            /** @description 담은 직원 수 */
+            staffCount: number;
+            /** @description 완료 일시(ISO) */
+            completedAt: string | null;
+            /** @description 받을 수 있는 기한(ISO) — 완료 + 7일 */
+            expiresAt: string | null;
+            /** @description 기한이 지났는가 */
+            isExpired: boolean;
+            /** @description 실패 사유 */
+            failureReason: string | null;
+        };
+        BulkExportListResponseDto: {
+            items: components["schemas"]["BulkExportItemDto"][];
+            total: number;
+        };
+        BulkExportDownloadResponseDto: {
+            /** @description 5분짜리 내려받기 주소 */
+            url: string;
+            fileName: string;
+            /** @description 파일을 받을 수 있는 기한(ISO) */
+            expiresAt: string;
+        };
         /** @enum {string} */
         EmploymentStatus: "EMPLOYED" | "RETIRED";
         /** @enum {string} */
@@ -6639,6 +6746,12 @@ export interface components {
             /** @description 퇴직일(YYYY-MM-DD). 재직이면서 값이 있으면 퇴직 예정 */
             retiredDate: string | null;
         };
+        StaffMemberPayrollAccountDto: {
+            /** @description 은행 이름(BANK 공통코드 이름, 예 KB국민은행). 공통코드에 없으면 은행 코드 그대로 */
+            bankName: string;
+            /** @description 계좌번호 전체 — 하이픈 없음, 가리지 않음 */
+            accountNumber: string;
+        };
         /** @enum {string} */
         ContractMethod: "ELECTRONIC" | "PAPER";
         StaffMemberContractSummaryDto: {
@@ -6663,8 +6776,21 @@ export interface components {
             renewalDate: string | null;
         };
         StaffMemberContractSummaryResponseDto: {
+            /**
+             * @description 신고 정보의 급여 계좌 — 은행 이름 · 계좌번호 전체(하이픈 없음, 가리지 않음). 신고 정보가 없으면 null. 계약이 없어도
+             *     신고 정보가 있으면 오고, 급여 지급 방식(계좌 · 현금)과 상관없다. canViewPayrollAccount 가 false 이면 신고 정보를
+             *     읽지 않고 항상 null
+             */
+            payrollAccount: components["schemas"]["StaffMemberPayrollAccountDto"] | null;
             /** @description 계약이 없으면 null */
             contract: components["schemas"]["StaffMemberContractSummaryDto"] | null;
+            /**
+             * @description 이 관리자가 이 직원의 급여 계좌를 볼 수 있는가. 본사 역할(BP 마스터 · BP 관리자)이 가맹 점포 직원을 보면 false —
+             *     본사 제공 동의를 했어도 그렇다(동의 범위에 신고 정보가 없고 계좌는 가맹 점포 사업주가 받는 정보, 운영 정책 TAX-07 ·
+             *     TAX-08, 재영 2026-10-29). 그 밖(직영 점포 직원, 가맹마스터 · 가맹관리자)은 true. false 이면 화면은 「급여 계좌」 줄
+             *     자체를 숨긴다
+             */
+            canViewPayrollAccount: boolean;
         };
         StaffMemberWeekScheduleItemDto: {
             workScheduleId: number;
@@ -15099,6 +15225,188 @@ export interface operations {
             };
         };
     };
+    BulkExportsController_preview: {
+        parameters: {
+            query?: {
+                /**
+                 * @description 업무 범위 점포(범위 선택기). 반복(`storeIds=1&storeIds=2`)과 쉼표(`storeIds=1,2`)를 모두 받는다. 주지 않으면 관리하는
+                 *     점포 전부. 관리하지 않는 점포가 섞이면 400
+                 */
+                storeIds?: number[];
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkExportPreviewResponseDto"];
+                };
+            };
+            /** @description 관리하지 않는 점포가 섞임 · 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 조회 권한 없음 · BP 마스터 · 가맹마스터가 아님 · 직원 앱 토큰 · 쓸 수 없는 계정 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BulkExportsController_list: {
+        parameters: {
+            query?: {
+                /** @description 페이지, 1부터 */
+                page?: number;
+                /** @description 페이지당 건수, 기본 20 · 최대 100 */
+                pageSize?: number;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkExportListResponseDto"];
+                };
+            };
+            /** @description 직원 정보 관리 조회 권한 없음 · BP 마스터 · 가맹마스터가 아님 · 직원 앱 토큰 · 쓸 수 없는 계정 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BulkExportsController_create: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBulkExportDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkExportItemDto"];
+                };
+            };
+            /** @description 관리하지 않는 점포가 섞임 · 담을 직원이 없음 · 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 조회 권한 없음 · BP 마스터 · 가맹마스터가 아님 · 직원 앱 토큰 · 쓸 수 없는 계정 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 범위의 파일을 만드는 중 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 저장소(AWS_S3_*) 설정 없음 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BulkExportsController_download: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkExportDownloadResponseDto"];
+                };
+            };
+            /** @description 직원 정보 관리 조회 권한 없음 · BP 마스터 · 가맹마스터가 아님 · 직원 앱 토큰 · 쓸 수 없는 계정 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없음 · 볼 수 없는 요청 · ID 형식 오류 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 아직 만드는 중 · 만들지 못함 · BP 마스터 파일에 담긴 직원의 본사 제공 동의나 가맹 점포 상태가 바뀜 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 받을 수 있는 기한(7일)이 지남 */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     StaffMembersController_findAll: {
         parameters: {
             query?: {
@@ -15240,6 +15548,13 @@ export interface operations {
             };
             /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 서버에 암호화 키가 없음(신고 정보가 있을 때만) */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

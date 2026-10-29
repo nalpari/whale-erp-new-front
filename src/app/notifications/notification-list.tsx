@@ -172,7 +172,7 @@ export function NotificationList({
       >
         삭제한 알림은 되돌릴 수 없습니다.
       </ConfirmDialog>
-      <ConfirmDialog open={dialog === "none"} title="선택된 알림이 없습니다" onConfirm={() => setDialog(null)} onCancel={() => setDialog(null)}>
+      <ConfirmDialog open={dialog === "none"} title="선택된 알림이 없습니다." onConfirm={() => setDialog(null)} onCancel={() => setDialog(null)}>
         삭제할 알림을 먼저 골라 주세요.
       </ConfirmDialog>
     </>

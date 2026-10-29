@@ -184,7 +184,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
                   ? "선택한 권한그룹에 대한 수정 권한이 없습니다."
                   : role.editBlockedReason === "FIXED_ROLE"
                     ? "시스템이 제공하는 기본권한 그룹은 수정할 수 없습니다."
-                    : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다")}
+                    : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다.")}
           </WarnBand>
         )}
         {/* 수정할 수 없으면 권한명 · 설명과 같은 표 하나에 */}

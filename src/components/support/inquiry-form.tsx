@@ -45,9 +45,9 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
 
   const handleSubmit = async () => {
     const missing = [
-      !form.inquiryCategoryCode && "문의 유형을 골라 주세요",
-      !form.title.trim() && "제목을 입력해 주세요",
-      !form.body.trim() && "문의 내용을 입력해 주세요",
+      !form.inquiryCategoryCode && "문의 유형을 골라 주세요.",
+      !form.title.trim() && "제목을 입력해 주세요.",
+      !form.body.trim() && "문의 내용을 입력해 주세요.",
     ].filter((m): m is string => !!m);
     if (missing.length) return setErrors(missing);
     const data = new FormData();
@@ -107,7 +107,7 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
           </Select>
         </Field>
         <Field label="제목" required>
-          <TextField value={form.title} onChange={(e) => set("title", e.target.value)} maxLength={TITLE_MAX} placeholder="한 줄로 적어 주세요" />
+          <TextField value={form.title} onChange={(e) => set("title", e.target.value)} maxLength={TITLE_MAX} placeholder="한 줄로 적어 주세요." />
         </Field>
         <Field label="내용" required>
           <Textarea rows={8} value={form.body} onChange={(e) => set("body", e.target.value)} maxLength={BODY_MAX} placeholder="어떤 화면에서 무엇을 하려다 막혔는지 적어 주시면 빨리 답할 수 있습니다." />

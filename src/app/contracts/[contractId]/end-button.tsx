@@ -18,7 +18,7 @@ export function EndContractButton({ contractId, name, back }: { contractId: numb
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
-  const end = useAction(endContract, { text: "종료중입니다" });
+  const end = useAction(endContract, { text: "종료중입니다." });
 
   return (
     <>

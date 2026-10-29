@@ -402,7 +402,7 @@ export const BpProfileTab = forwardRef<
         // 저장 전 통과 상태 한 줄(사용자 지정, 2026-10-22).
         {...(verifyForm.pendingClear
           ? { guide: "하단의 [저장] 버튼을 클릭하면 인증 정보가 삭제됩니다." }
-          : { note: pending ? "저장하면 반영됩니다" : undefined })}
+          : { note: pending ? "저장하면 반영됩니다." : undefined })}
       />
 
       {/* 상호명부터는 별도 카드다(사용자 지정, 2026-10-22) — 칸과 그 오류 문구 사이에는 여백을 두지 않는다. */}

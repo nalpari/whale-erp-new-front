@@ -17,9 +17,9 @@ const isContractId = (id: unknown): id is number => Number.isInteger(id) && (id 
  * 누구나 부를 수 있어 backHrefOf 로 다시 거른다). 실패하면 화면에 보일 문장을 돌려준다(임시저장이 아님 409 등)
  */
 export async function deleteContract(contractId: number, back?: string): Promise<{ error: string }> {
-  if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다" };
+  if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다." };
   const headers = await authHeaders();
-  if (!headers.Authorization) return { error: "로그인이 필요합니다" };
+  if (!headers.Authorization) return { error: "로그인이 필요합니다." };
   try {
     await send(`/contracts/${contractId}`, "DELETE");
   } catch (e) {
@@ -34,15 +34,15 @@ export async function deleteContract(contractId: number, back?: string): Promise
  * 같은 점포에 진행 중 계약이 있으면(409 CONTRACT_IN_PROGRESS) 그 목록도 돌려줘 화면이 대체할지 묻는다.
  */
 export async function updateWorker(contractId: number, body: WorkerBody, back?: string): Promise<SaveResult> {
-  if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다" };
+  if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다." };
   const headers = await authHeaders();
-  if (!headers.Authorization) return { error: "로그인이 필요합니다" };
+  if (!headers.Authorization) return { error: "로그인이 필요합니다." };
   try {
     await send(`/contracts/${contractId}/worker`, "PATCH", body);
   } catch (e) {
     if (e instanceof ApiError) {
       const failure = saveFailureOf(e, { feature: "근로계약 당사자 정보", contractId });
-      if (failure.kind === "login") return { error: "로그인이 필요합니다" };
+      if (failure.kind === "login") return { error: "로그인이 필요합니다." };
       // 고친 내용은 저장했는데 다시 보내기(가입 초대 알림톡)가 실패했다 — 상세에서 알린다
       if (failure.kind === "sendFailed") redirect(withBack(failure.target, back));
       // 결과를 받지 못했다(saveFailureOf 의 unknown — api 의 503 이 아닌 5xx 전부) — 저장 · 다시 보내기가 됐을 수 있어 같은 폼으로 다시 저장하지 않게 상세로(front #50 리뷰)
@@ -70,14 +70,14 @@ export type SendContractResult = { ok: true } | SendFailure;
  * CONTRACT_STATUS_CONFLICT 로 막아 화면이 다시 읽는다(front #136 재리뷰).
  */
 export async function sendContract(contractId: number, seen: SeenContract): Promise<SendContractResult> {
-  if (!isContractId(contractId)) return { ok: false, error: "근로계약을 찾을 수 없습니다", recheck: false };
+  if (!isContractId(contractId)) return { ok: false, error: "근로계약을 찾을 수 없습니다.", recheck: false };
   const headers = await authHeaders();
-  if (!headers.Authorization) return { ok: false, error: "로그인이 필요합니다", recheck: false };
+  if (!headers.Authorization) return { ok: false, error: "로그인이 필요합니다.", recheck: false };
   try {
     await send(`/contracts/${contractId}/send`, "POST", sendBodyOf(seen));
   } catch (e) {
     if (e instanceof ApiError) {
-      if (e.status === 401) return { ok: false, error: "로그인이 필요합니다", recheck: false };
+      if (e.status === 401) return { ok: false, error: "로그인이 필요합니다.", recheck: false };
       const code = (e.body as { code?: unknown } | null)?.code;
       // 502 · 503 은 api 문장이 한글이라 그대로 둔다(발송 실패 · 접수 여부 모름 · 설정 없음)
       return sendFailureOf(e.status, typeof code === "string" ? code : undefined, e.message);
@@ -98,14 +98,14 @@ export type EndContractResult = { ok: true } | SendFailure;
  * 닫혔는지 모름(코드 없는 502 · 504 · 응답 전에 끊김, 문장은 END_UNKNOWN)이면 다시 읽는다.
  */
 export async function endContract(contractId: number): Promise<EndContractResult> {
-  if (!isContractId(contractId)) return { ok: false, error: "근로계약을 찾을 수 없습니다", recheck: false };
+  if (!isContractId(contractId)) return { ok: false, error: "근로계약을 찾을 수 없습니다.", recheck: false };
   const headers = await authHeaders();
-  if (!headers.Authorization) return { ok: false, error: "로그인이 필요합니다", recheck: false };
+  if (!headers.Authorization) return { ok: false, error: "로그인이 필요합니다.", recheck: false };
   try {
     await send(`/contracts/${contractId}/end`, "POST");
   } catch (e) {
     if (e instanceof ApiError) {
-      if (e.status === 401) return { ok: false, error: "로그인이 필요합니다", recheck: false };
+      if (e.status === 401) return { ok: false, error: "로그인이 필요합니다.", recheck: false };
       const code = (e.body as { code?: unknown } | null)?.code;
       return sendFailureOf(e.status, typeof code === "string" ? code : undefined, e.message, END_UNKNOWN);
     }

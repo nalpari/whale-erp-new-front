@@ -47,7 +47,7 @@ function failureOf(error: unknown, what: string): ActionFailure {
 }
 
 const validId = (id: number) => Number.isInteger(id) && id >= 1 && id <= 2_147_483_647;
-const NOT_FOUND = { ok: false as const, status: 404, message: "점포를 찾을 수 없습니다" };
+const NOT_FOUND = { ok: false as const, status: 404, message: "점포를 찾을 수 없습니다." };
 
 /** 등록 · 수정 · 삭제가 끝났으면 목록 · 상세를 새로 받는다. 무효화가 실패해도 저장은 끝났으므로 성공으로 돌려준다 */
 function refresh() {
@@ -99,7 +99,7 @@ export async function deleteStoreAction(id: number): Promise<ActionResult> {
 export async function putStoreImageAction(id: number, data: FormData): Promise<ActionResult> {
   if (!validId(id)) return NOT_FOUND;
   const file = data instanceof FormData ? data.get("file") : null;
-  if (!(file instanceof File) || file.size === 0) return { ok: false, status: 400, message: "대표 이미지 파일을 골라 주세요" };
+  if (!(file instanceof File) || file.size === 0) return { ok: false, status: 400, message: "대표 이미지 파일을 골라 주세요." };
   try {
     await putStoreImage(id, file);
     refresh();

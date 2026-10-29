@@ -9,11 +9,11 @@
   </head>
   <body data-root="../" data-page="bp" data-sub="bp/edit.html">
     <!-- BP 마스터 계정 수정 · /bp-masters?bp= 수정 패널 · S-CQGGZS · 1팀
-         기본정보 · 사업자정보 · BP 상태를 나눠 고친다. 아이디 · BP 코드 · 가입경로는 읽기 전용이다.
-         BP 상태는 이 화면에서 보여 주기만 한다 — 상태 변경은 BP 마스터 계정 상세의 상태 줄 [상태 변경]이 맡는다.
+         기본정보 · 사업자정보를 나눠 고친다. BP 코드 · 아이디 · 가입경로 · 계정상태 칸은 없다 — 제목 옆 배지(BP 코드 · 계정상태)로만 보이고,
+         그 아래 안내 상자가 「계정상태는 상세화면의 [BP상태변경]에서 변경할 수 있습니다.」를 알린다(2026-10-28 사용자 지정).
          탈퇴 BP 는 이 화면에 들어오지 못한다.
-         사업자등록번호·대표자명·개업일자는 재인증으로만 바뀐다 — 점포 수정과 같이 팝업 없이 사업자정보 영역 안에서 입력 상자를 펼친다.
-         사업자정보 영역 안의 ‘목업 사업자정보’ 줄로 인증된 BP(재인증)와 미인증 BP(최초 인증)를 바꿔 본다.
+         사업자등록번호·대표자명·개업일자는 재인증으로만 바뀐다 — 네 화면(회원가입 · 점포 · MY PAGE · BP 관리) 공통 인증 상자(S-VRNTHD, 2026-10-22)다.
+         사업자정보 영역 안의 ‘목업 사업자 인증’ 줄로 인증 완료 · 재인증 중 · 미인증 입력 · 번호 중복 · 불일치 · 국세청 오류를 바꿔 본다.
          위쪽 점선 줄은 목업 전용이다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
@@ -22,13 +22,17 @@
           <div class="titlebar">
             <a class="iconbtn" href="detail.html" aria-label="BP 마스터 계정 상세로" data-icon="arrowleft" data-icon-size="18"></a>
             <h1 class="t-h1">BP 마스터 계정 수정</h1>
+            <span class="badge badge--quiet mono" data-show="base dup">BP 코드 · BP000017</span>
+            <span class="badge badge--quiet mono" data-show="off" hidden>BP 코드 · BP000012</span>
+            <span class="badge badge--ok" data-show="base dup">사용</span>
+            <span class="badge badge--warn" data-show="off" hidden>미사용</span>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
-              <span class="filters__count mono" data-show="base dup reauth reauthfail">BP000017 · ㈜한강상회</span>
+              <span class="filters__count mono" data-show="base dup">BP000017 · ㈜한강상회</span>
               <span class="filters__count mono" data-show="off" hidden>BP000012 · 솥밥상회</span>
               <a class="btn btn--secondary btn--sm" href="detail.html">취소</a>
               <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./bp-edit.screen-def.html', 'screenDef', 'width=1620,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
-              <a class="btn btn--primary btn--sm" href="detail.html" data-show="base reauth reauthfail">저장</a>
+              <a class="btn btn--primary btn--sm" href="detail.html" data-show="base">저장</a>
               <a class="btn btn--primary btn--sm" href="detail.html?state=off" data-show="off" hidden>저장</a>
               <button class="btn btn--primary btn--sm" type="button" data-show="dup" hidden>저장</button>
             </div>
@@ -40,60 +44,29 @@
               <div class="seg">
                 <button type="button" data-state="base" aria-pressed="true">한강상회 · 사용</button>
                 <button type="button" data-state="off" aria-pressed="false">솥밥상회 · 미사용</button>
-                <button type="button" data-state="reauth" aria-pressed="false">재인증 완료</button>
-                <button type="button" data-state="reauthfail" aria-pressed="false">재인증 실패</button>
                 <button type="button" data-state="dup" aria-pressed="false">이메일 중복</button>
               </div>
             </div>
-
-            <!-- BP 상태 -->
-            <section class="panel">
-              <div class="panel__head">
-                <h2 class="t-h2">상태</h2>
-              </div>
-              <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-                <div class="inline" style="gap: var(--s-3)">
-                  <span class="badge badge--ok" data-show="base dup reauth reauthfail">사용</span>
-                  <span class="badge badge--warn" data-show="off" hidden>미사용</span>
-                  <span class="subtle mono" style="font-size: 12px" data-show="base dup reauth reauthfail">2025-02-03 11:12 부터</span>
-                  <span class="subtle mono" style="font-size: 12px" data-show="off" hidden>2026-07-01 18:30 부터</span>
-                </div>
-                <p class="note" style="margin: 0">
-                  <span data-icon="info" data-icon-size="14"></span>
-                  <span>상태는 여기서 바꾸지 않습니다. <a class="tlink" href="detail.html">BP 마스터 계정 상세</a>의 상태 줄 [상태 변경]에서 사용·미사용을 바꿉니다. 탈퇴는 BP 마스터가 MY PAGE 에서 직접 회원 탈퇴할 때만 생깁니다.</span>
-                </p>
-              </div>
-            </section>
 
             <!-- BP 마스터 기본정보 -->
             <section class="panel">
               <div class="panel__head"><h2 class="t-h2">BP 마스터 기본정보</h2></div>
               <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-                <div class="grid grid--3">
-                  <div class="field">
-                    <label>BP 코드</label>
-                    <input class="input mono" value="BP000017" readonly data-show="base dup reauth reauthfail" />
-                    <input class="input mono" value="BP000012" readonly data-show="off" hidden aria-label="BP 코드" />
-                  </div>
-                  <div class="field">
-                    <label>아이디</label>
-                    <input class="input mono" value="hangang01" readonly data-show="base dup reauth reauthfail" />
-                    <input class="input mono" value="sotbap" readonly data-show="off" hidden aria-label="아이디" />
-                  </div>
-                  <div class="field">
-                    <label>가입경로</label>
-                    <input class="input" value="회원가입" readonly />
+                <div class="band band--info">
+                  <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <p class="band__desc">계정상태는 상세화면의 [BP상태변경]에서 변경할 수 있습니다.</p>
                   </div>
                 </div>
                 <div class="grid grid--3">
                   <div class="field">
                     <label for="enm">이름 <span class="req">*</span></label>
-                    <input class="input" id="enm" value="정하윤" data-show="base dup reauth reauthfail" />
+                    <input class="input" id="enm" value="정하윤" data-show="base dup" />
                     <input class="input" value="이준호" data-show="off" hidden aria-label="이름" />
                   </div>
                   <div class="field">
                     <label for="etel">연락처 <span class="req">*</span></label>
-                    <div class="tel3" data-show="base dup reauth reauthfail">
+                    <div class="tel3" data-show="base dup">
                       <input class="input mono" id="etel" value="010" inputmode="numeric" aria-label="앞자리" />
                       <input class="input mono" value="3380" inputmode="numeric" aria-label="가운데자리" />
                       <input class="input mono" value="1127" inputmode="numeric" aria-label="끝자리" />
@@ -106,175 +79,94 @@
                   </div>
                   <div class="field">
                     <label for="email">이메일 <span class="req">*</span></label>
-                    <input class="input mono" id="email" value="hayoon@hangang.co.kr" data-show="base reauth reauthfail" />
+                    <input class="input mono" id="email" value="hayoon@hangang.co.kr" data-show="base" />
                     <input class="input mono" value="junho@sotbap.kr" data-show="off" hidden aria-label="이메일" />
                     <input class="input mono" value="dohyun@badafood.co.kr" aria-invalid="true" data-show="dup" hidden aria-label="이메일" />
-                    <span class="help" data-show="base off reauth reauthfail">형식과 중복만 검사하고 소유 인증은 하지 않습니다.</span>
-                    <span class="err" data-show="dup" hidden><span data-icon="alert" data-icon-size="13"></span>다른 관리자 계정에 등록된 이메일입니다.</span>
+                    <span class="help" data-show="base off">형식과 중복만 검사하고 소유 인증은 하지 않습니다.</span>
+                    <span class="err" data-show="dup" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요.</span>
                   </div>
                 </div>
               </div>
             </section>
 
-            <!-- BP 사업자정보 — 사업자 번호 인증은 점포 수정과 같은 흐름(팝업 없이 영역 안에서)이다.
-                 인증된 BP: 인증 완료 카드의 ‘재인증’ → 입력 상자 → 카드. BP 는 재인증으로 사업자등록번호도 바꿀 수 있다(바꾼 번호도 다른 BP 와 겹치는지 검사).
-                 미인증 BP: ‘사업자 번호 인증하기’ → 입력 상자(세 값) → 인증 완료 카드.
-                 인증 결과는 저장을 눌러야 반영된다. 재인증에 실패하면 저장된 세 값과 인증 상태는 그대로다. -->
+            <!-- BP 사업자정보 — 사업자 번호 인증은 네 화면 공통 상자(S-VRNTHD, 2026-10-22, 실제 화면 biz-verification-box.tsx)다.
+                 처음부터 세 칸 한 줄 상자가 열려 있고, 인증하면 세 칸이 제자리에서 잠기며 상자 제목 오른쪽에 「인증 완료 · 일시」가 보인다.
+                 [재인증]은 확인창 없이 값을 둔 채 세 칸을 다시 열고(2026-10-29 재영 — 전엔 BP 관리만 확인창이 있었다), [재인증 취소]로 저장된 값으로 되돌린다.
+                 인증 결과는 [저장]을 눌러야 반영된다. 재인증에 실패하면 저장된 세 값과 인증 상태는 그대로다. 저장한 적 없는 값은 [지우기].
+                 바꾼 사업자등록번호도 다른 BP 와 겹치는지 검사한다(자기 BP 는 뺀다). -->
             <section class="panel">
               <div class="panel__head">
                 <h2 class="t-h2">BP 사업자정보</h2>
-                <span class="badge badge--ok" data-show-case="done">인증완료</span>
-                <span class="badge badge--warn" data-show-case="none" hidden>미인증</span>
-                <span data-show-case="done">
-                  <span class="subtle mono" style="font-size: 12px" data-show="base dup reauthfail">최종 인증 2025-02-03 11:10</span>
-                  <span class="subtle mono" style="font-size: 12px" data-show="reauth" hidden>최종 인증 2026-09-21 14:02</span>
-                  <span class="subtle mono" style="font-size: 12px" data-show="off" hidden>최종 인증 2024-11-05 14:05</span>
-                </span>
               </div>
               <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-                <div class="demo" data-demo="ef" data-demo-key="case">
-                  <b>목업 사업자정보</b>
-                  <div class="seg">
-                    <button type="button" data-state="done" aria-pressed="true">인증된 BP · 재인증</button>
-                    <button type="button" data-state="none" aria-pressed="false">미인증 BP · 최초 인증</button>
-                  </div>
-                </div>
-                <div class="band band--risk" data-show="reauthfail" data-show-case="done" hidden>
-                  <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-                  <div class="band__body">
-                    <div class="band__title">재인증에 실패했습니다 — 사업자정보를 확인할 수 없습니다</div>
-                    <p class="band__desc">저장된 사업자등록번호·대표자명·개업일자와 인증 상태는 그대로 둡니다. 실패 사유는 저장하지 않습니다.</p>
-                  </div>
-                </div>
                 <p class="subtle" style="margin: 0; font-size: 12px">국세청 API로 사업자등록번호·대표자명·개업일자의 진위만 확인합니다. 인증 결과는 저장을 눌러야 반영됩니다. 상호명은 이 인증으로 채워지지 않습니다.</p>
 
-                <!-- 미인증 BP · 최초 인증 — 등록 화면과 같다: 버튼 → 입력 상자 → 인증 완료 카드 -->
-                <div class="stack--lg" style="display: flex; flex-direction: column" data-show-case="none" hidden>
-                  <div id="efold">
-                    <button class="btn btn--secondary" type="button" data-conceal="efold" data-reveal="eform">
-                      <span data-icon="building" data-icon-size="14"></span>사업자 번호 인증하기
-                    </button>
+                <div class="card card--soft bizbox" id="ebizbox">
+                  <div class="spread">
+                    <h3 class="t-h3">사업자 번호 인증</h3>
+                    <span style="font-weight: 500" data-show-biz="saved"><span data-show="base dup">인증 완료 · 2025-02-03 11:10</span><span data-show="off" hidden>인증 완료 · 2024-11-05 14:05</span></span>
+                    <span style="color: var(--risk-text); font-weight: 500" data-show-biz="reverify none dup mismatch unavailable" hidden>미인증</span>
                   </div>
-                  <div class="card card--soft bizbox" id="eform" hidden>
-                    <div class="spread">
-                      <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자 번호 인증</h3>
-                      <button class="iconbtn" type="button" aria-label="접기" data-icon="x" data-icon-size="16" data-conceal="eform" data-reveal="efold"></button>
-                    </div>
-                    <div class="demo" data-demo="ef" data-demo-key="biz">
-                      <b>목업 결과</b>
-                      <div class="seg">
-                        <button type="button" data-state="in" aria-pressed="true">입력</button>
-                        <button type="button" data-state="fail" aria-pressed="false">확인 불가</button>
-                        <button type="button" data-state="dup" aria-pressed="false">번호 중복</button>
-                        <button type="button" data-state="error" aria-pressed="false">처리 오류</button>
-                      </div>
-                    </div>
-                    <div class="field">
-                      <label for="ef1">사업자등록번호</label>
-                      <input class="input mono" id="ef1" value="105-86-33412" />
-                    </div>
-                    <div class="field">
-                      <label for="ef2">대표자명</label>
-                      <input class="input" id="ef2" value="정하윤" />
-                    </div>
-                    <div class="field">
-                      <label for="ef3">개업일자</label>
-                      <input class="input mono" id="ef3" type="date" value="2016-05-20" />
-                    </div>
-                    <div class="band band--risk" data-show-biz="fail" hidden>
-                      <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-                      <div class="band__body"><div class="band__title">사업자정보를 확인할 수 없습니다.</div><p class="band__desc">다시 입력해 인증하거나, 인증 없이 저장할 수 있습니다.</p></div>
-                    </div>
-                    <div class="band band--risk" data-show-biz="dup" hidden>
-                      <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-                      <div class="band__body"><div class="band__title">이미 등록된 사업자등록번호입니다.</div><p class="band__desc">사용·미사용 상태인 다른 BP 와는 겹칠 수 없습니다. 탈퇴·삭제한 BP 의 번호는 다시 쓸 수 있습니다.</p></div>
-                    </div>
-                    <div class="band band--risk" data-show-biz="error" hidden>
-                      <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
-                      <div class="band__body"><div class="band__title">사업자정보 인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</div></div>
-                    </div>
-                    <div>
-                      <button class="btn btn--primary btn--sm" type="button" data-conceal="eform" data-reveal="enewinfo">인증하기</button>
+                  <div class="demo" data-demo="ef" data-demo-key="biz">
+                    <b>목업 사업자 인증</b>
+                    <div class="seg">
+                      <button type="button" data-state="saved" aria-pressed="true">인증 완료</button>
+                      <button type="button" data-state="reverify" aria-pressed="false">재인증 중</button>
+                      <button type="button" data-state="none" aria-pressed="false">미인증 입력</button>
+                      <button type="button" data-state="dup" aria-pressed="false">번호 중복</button>
+                      <button type="button" data-state="mismatch" aria-pressed="false">불일치</button>
+                      <button type="button" data-state="unavailable" aria-pressed="false">국세청 오류</button>
                     </div>
                   </div>
-                  <div class="card card--soft bizbox" id="enewinfo" hidden>
-                    <div class="spread">
-                      <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자정보</h3>
-                      <span class="badge badge--ok">인증 완료</span>
-                    </div>
-                    <div class="grid grid--3">
-                      <div class="field"><label>사업자등록번호</label><input class="input mono" value="105-86-33412" readonly /></div>
-                      <div class="field"><label>대표자명</label><input class="input" value="정하윤" readonly /></div>
-                      <div class="field"><label>개업일자</label><input class="input mono" value="2016-05-20" readonly /></div>
-                    </div>
-                    <p class="subtle" style="margin: 0; font-size: 12px">저장하면 인증 상태가 인증완료로 바뀌고 최종 인증 일시가 남습니다.</p>
-                  </div>
-                </div>
-
-                <!-- 인증된 BP · 재인증 — 인증 완료 카드 → 재인증 → 입력 상자(세 값) → 카드 -->
-                <div class="stack--lg" style="display: flex; flex-direction: column" data-show-case="done">
-                  <div class="card card--soft bizbox" id="einfo">
-                    <div class="spread">
-                      <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자정보</h3>
-                      <span class="badge badge--ok">인증 완료</span>
-                    </div>
-                    <div class="grid grid--3">
-                      <div class="field">
-                        <label>사업자등록번호</label>
-                        <input class="input mono" value="105-86-33412" readonly data-show="base dup reauthfail" aria-label="사업자등록번호" />
-                        <input class="input mono" value="105-86-40981" readonly data-show="reauth" hidden aria-label="사업자등록번호" />
-                        <input class="input mono" value="220-19-55813" readonly data-show="off" hidden aria-label="사업자등록번호" />
-                      </div>
-                      <div class="field">
-                        <label>대표자명</label>
-                        <input class="input" value="정하윤" readonly data-show="base dup reauth reauthfail" aria-label="대표자명" />
-                        <input class="input" value="이준호" readonly data-show="off" hidden aria-label="대표자명" />
-                      </div>
-                      <div class="field">
-                        <label>개업일자</label>
-                        <input class="input mono" value="2016-05-20" readonly data-show="base dup reauthfail" aria-label="개업일자" />
-                        <input class="input mono" value="2026-09-01" readonly data-show="reauth" hidden aria-label="개업일자" />
-                        <input class="input mono" value="2020-10-12" readonly data-show="off" hidden aria-label="개업일자" />
-                      </div>
-                    </div>
-                    <div>
-                      <button class="btn btn--secondary btn--sm" type="button" data-conceal="einfo" data-reveal="eform2">
-                        <span data-icon="refresh" data-icon-size="14"></span>재인증
-                      </button>
-                    </div>
-                  </div>
-                  <div class="card card--soft bizbox" id="eform2" hidden>
-                    <div class="spread">
-                      <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자 번호 재인증</h3>
-                      <button class="iconbtn" type="button" aria-label="접기" data-icon="x" data-icon-size="16" data-conceal="eform2" data-reveal="einfo"></button>
+                  <div class="grid grid--3" data-show-biz="saved">
+                    <div class="field">
+                      <label for="ebizs">사업자등록번호</label>
+                      <input class="input mono" id="ebizs" value="105-86-33412" readonly data-show="base dup" />
+                      <input class="input mono" value="220-19-55813" readonly data-show="off" hidden aria-label="사업자등록번호" />
                     </div>
                     <div class="field">
-                      <label for="er1">사업자등록번호</label>
-                      <input class="input mono" id="er1" value="105-86-40981" />
+                      <label for="eceos">대표자명</label>
+                      <input class="input" id="eceos" value="정하윤" readonly data-show="base dup" />
+                      <input class="input" value="이준호" readonly data-show="off" hidden aria-label="대표자명" />
                     </div>
                     <div class="field">
-                      <label for="er2">대표자명</label>
-                      <input class="input" id="er2" value="정하윤" />
-                    </div>
-                    <div class="field">
-                      <label for="er3">개업일자</label>
-                      <input class="input mono" id="er3" type="date" value="2026-09-01" />
-                    </div>
-                    <div class="inline">
-                      <button class="btn btn--primary btn--sm" type="button" data-conceal="eform2" data-reveal="einfo" data-state-go="reauth">인증하기</button>
-                      <button class="btn btn--secondary btn--sm" type="button" data-conceal="eform2" data-reveal="einfo" data-state-go="reauthfail" title="목업 전용 — 실패 결과 보기">실패로 보기</button>
+                      <label for="eopens">개업일자</label>
+                      <input class="input mono" id="eopens" type="date" value="2016-05-20" readonly data-show="base dup" />
+                      <input class="input mono" type="date" value="2020-10-12" readonly data-show="off" hidden aria-label="개업일자" />
                     </div>
                   </div>
-                  <p class="note" style="margin: 0">
-                    <span data-icon="lock" data-icon-size="14"></span>
-                    <span>세 값은 직접 고칠 수 없고 재인증을 통과해야 바뀝니다. 바꾼 사업자등록번호도 다른 BP 와 겹치는지 검사합니다.</span>
-                  </p>
+                  <div class="grid grid--3" data-show-biz="reverify none dup mismatch unavailable" hidden>
+                    <div class="field">
+                      <label for="ebiz">사업자등록번호</label>
+                      <input class="input mono" id="ebiz" value="105-86-33412" placeholder="숫자 10자리" />
+                      <span class="err" data-show-biz="dup" hidden><span data-icon="alert" data-icon-size="13"></span>이미 등록된 사업자등록번호입니다.</span>
+                    </div>
+                    <div class="field">
+                      <label for="eceo1">대표자명</label>
+                      <input class="input" id="eceo1" value="정하윤" maxlength="50" />
+                    </div>
+                    <div class="field">
+                      <label for="eopen">개업일자</label>
+                      <input class="input mono" id="eopen" type="date" value="2016-05-20" />
+                    </div>
+                  </div>
+                  <span class="err" data-show-biz="mismatch" hidden><span data-icon="alert" data-icon-size="13"></span>입력한 사업자정보가 국세청 정보와 일치하지 않습니다.</span>
+                  <span class="err" data-show-biz="unavailable" hidden><span data-icon="alert" data-icon-size="13"></span>국세청 확인이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.</span>
+                  <div class="inline" style="gap: 8px">
+                    <button class="btn btn--secondary btn--sm" type="button" data-show-biz="saved" data-state-go="reverify">재인증</button>
+                    <button class="btn btn--secondary btn--sm" type="button" data-show-biz="reverify none" data-state-go="saved" hidden>인증하기</button>
+                    <button class="btn btn--secondary btn--sm" type="button" data-show-biz="dup mismatch unavailable" hidden>인증하기</button>
+                    <button class="btn btn--secondary btn--sm" type="button" data-show-biz="reverify dup mismatch unavailable" data-state-go="saved" hidden>재인증 취소</button>
+                    <button class="btn btn--secondary btn--sm" type="button" data-show-biz="none" hidden>지우기</button>
+                  </div>
+                  <p class="subtle" style="margin: 0; font-size: 13px" data-show-biz="reverify" hidden>인증 실패 시 기존 정보가 유지됩니다.</p>
+                  <p class="subtle" style="margin: 0; font-size: 13px">사업자정보가 국세청에 등록된 정보와 일치하는지 확인합니다.</p>
                 </div>
 
                 <div class="grid grid--2">
                   <div class="field">
                     <label for="ecorp">상호명 <span class="req">*</span></label>
-                    <input class="input" id="ecorp" value="㈜한강상회" maxlength="50" data-show="base dup reauth reauthfail" />
+                    <input class="input" id="ecorp" value="㈜한강상회" maxlength="50" data-show="base dup" />
                     <input class="input" value="솥밥상회" maxlength="50" data-show="off" hidden aria-label="상호명" />
                   </div>
                   <div class="field">

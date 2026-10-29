@@ -495,7 +495,7 @@ export function AdminFormPanel(props: Props) {
                   value={form.accountStatus}
                   onChange={(e) => set("accountStatus", e.target.value as BpAdminForm["accountStatus"])}
                   disabled={locks.status}
-                  title={locks.status ? "본인 계정의 상태는 바꿀 수 없습니다" : undefined}
+                  title={locks.status ? "본인 계정의 상태는 바꿀 수 없습니다." : undefined}
                   aria-required
                 >
                   <option value="ACTIVE">사용</option>
@@ -504,7 +504,7 @@ export function AdminFormPanel(props: Props) {
               </Field>
               {deactivationImpact && deactivationImpact.deactivatedCount > 0 && (
                 <InfoBand>
-                  <p>가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 계정도 함께 멈춥니다</p>
+                  <p>가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 계정도 함께 멈춥니다.</p>
                   <p className="font-normal text-erp-label">
                     가맹 관리자 {andOthers(deactivationImpact.firstDeactivatedLoginId, deactivationImpact.deactivatedCount)} → 미사용
                   </p>
@@ -550,7 +550,7 @@ export function AdminFormPanel(props: Props) {
                 ) : noGroupForRole ? (
                   // [이동]은 환경설정 > 권한그룹 관리(/bp-role-groups, 이 탭 BP 주소)로 간다 — 권한명이 없으면 어차피 저장할 수 없다(2026-10-28 사용자 지정 문구)
                   <span className="flex items-center gap-[10px]">
-                    <FieldMessage id={messageId("roleGroupId")} message="선택할 수 있는 권한명이 없습니다. 먼저 권한명을 등록해주세요." />
+                    <FieldMessage id={messageId("roleGroupId")} message="선택할 수 있는 권한명이 없습니다. 먼저 권한명을 등록해 주세요." />
                     <Button variant="soft" href={bpPath(currentBp.bpCodeId, "/bp-role-groups")}>
                       이동
                     </Button>
@@ -564,7 +564,7 @@ export function AdminFormPanel(props: Props) {
                 value={form.roleGroupId}
                 onChange={(e) => set("roleGroupId", e.target.value)}
                 disabled={locks.roleGroup || !form.roleTypeCode}
-                title={locks.roleGroup ? "이 계정의 권한명은 여기서 바꿀 수 없습니다" : undefined}
+                title={locks.roleGroup ? "이 계정의 권한명은 여기서 바꿀 수 없습니다." : undefined}
                 aria-invalid={invalid("roleGroupId")}
                 aria-describedby={groupsFailed || noGroupForRole ? messageId("roleGroupId") : describe("roleGroupId")}
                 aria-required
@@ -600,7 +600,7 @@ export function AdminFormPanel(props: Props) {
                 aria-required={!locks.scope}
                 title={
                   locks.scope && mode === "edit" && props.admin.isAllStores
-                    ? "관리 범위가 일부 점포인 사용자는 전체 점포 계정의 범위를 바꿀 수 없습니다"
+                    ? "관리 범위가 일부 점포인 사용자는 전체 점포 계정의 범위를 바꿀 수 없습니다."
                     : undefined
                 }
               >
@@ -716,7 +716,7 @@ export function AdminFormPanel(props: Props) {
               {cascade.impact.unmappedCount > 0 && (
                 <>
                   <dt className="text-erp-label">매핑 해제</dt>
-                  <dd>가맹 관리자 {andOthers(cascade.impact.firstUnmappedLoginId, cascade.impact.unmappedCount)} · 뺀 점포의 매핑만 풀립니다</dd>
+                  <dd>가맹 관리자 {andOthers(cascade.impact.firstUnmappedLoginId, cascade.impact.unmappedCount)} · 뺀 점포의 매핑만 풀립니다.</dd>
                 </>
               )}
               {cascade.impact.deactivatedCount > 0 && (

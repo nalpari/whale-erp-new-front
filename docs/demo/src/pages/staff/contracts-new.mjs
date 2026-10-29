@@ -148,12 +148,12 @@ export const contractForm = (d) => ({ A, R }) => {
         // 초과근무는 단시간근로자여도 1.5배(5인 미만 사업장은 1.0배 가능), 연장과 야간이 겹치면 2.0배, 계약하지 않은 요일 근무는 연장으로 1.5배.
         p.note("주휴수당은 주 15시간 이상이고 그 주 소정근로일을 다 나온 주에만 주고, 주휴시간은 주 근로시간 ÷ 5 입니다. 연장과 야간이 겹치면 2.0배, 계약하지 않은 요일에 일한 시간은 연장(1.5배)으로 셉니다. 셈한 값은 저장하지 않습니다."),
       ui.formRow(
-        p.fieldH("연차휴가", ui.textField({ value: "근로기준법에 따른다" }), "계약서 연차휴가 조항에 그대로 들어간다"),
-        p.fieldH("퇴직금", ui.textField({ value: "근로자퇴직급여 보장법에 따른다" }), "계약서 퇴직금 조항에 그대로 들어간다"),
+        p.fieldH("연차휴가", ui.textField({ value: "근로기준법에 따른다" }), "계약서 연차휴가 조항에 그대로 들어간다."),
+        p.fieldH("퇴직금", ui.textField({ value: "근로자퇴직급여 보장법에 따른다" }), "계약서 퇴직금 조항에 그대로 들어간다."),
       ),
       ui.formRow(
         // 주휴일은 특정 요일로 정해 계약서 휴일 조항에 적는다(노무사 확인 2026-10-14, 질문 4). 주 15시간 미만이면 없음.
-        p.fieldH(req("주휴일"), ui.select([...DAYS, "없음 (주 15시간 미만)"], { value: "일", "data-weekly-holiday": "" }), "특정 요일로 정해 계약서 휴일 조항에 적는다. 주 15시간 미만이면 주휴가 없어 고를 수 없다"),
+        p.fieldH(req("주휴일"), ui.select([...DAYS, "없음 (주 15시간 미만)"], { value: "일", "data-weekly-holiday": "" }), "특정 요일로 정해 계약서 휴일 조항에 적는다. 주 15시간 미만이면 주휴가 없어 고를 수 없다."),
         p.fieldH(
           "임금지급일",
           `<span class="flex gap-[6px]">${p.w("w-[100px]", ui.select(["익월", "당월"], { "aria-label": "임금지급 월" }))}${ui.textField({ value: "10", "aria-label": "임금지급일 날짜", inputmode: "numeric" })}</span>`,
@@ -170,9 +170,9 @@ export const contractForm = (d) => ({ A, R }) => {
       "수습",
       choice("수습 여부", "probation", ["없음", "적용"]),
       `<div data-when="probation:적용" class="flex w-full items-start gap-[6px]">` +
-        p.fieldH(req("수습 기간"), ui.select(["1개월", "2개월", "3개월"], { value: "3개월" }), "최대 3개월. 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있다") +
+        p.fieldH(req("수습 기간"), ui.select(["1개월", "2개월", "3개월"], { value: "3개월" }), "최대 3개월. 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있다.") +
         p.fieldH(req("임금 감액률"), `<span class="flex items-center gap-[8px] text-[14px] text-erp-ink">${ui.textField({ value: "10", inputmode: "decimal", "aria-label": "임금 감액률", "data-probation-rate": "" })}%</span>`, "최대 10%. 감액하지 않으면 0") +
-        p.fieldH("수습 중 시급", ui.textField({ value: "10,080", readonly: true, "data-probation-wage": "" }), "시급 × (1 − 감액률). 최저임금의 90%(9,288원) 이상이어야 한다") +
+        p.fieldH("수습 중 시급", ui.textField({ value: "10,080", readonly: true, "data-probation-wage": "" }), "시급 × (1 − 감액률). 최저임금의 90%(9,288원) 이상이어야 한다.") +
         `</div>`,
     ) +
     `</div>` +
@@ -184,7 +184,7 @@ export const contractForm = (d) => ({ A, R }) => {
       // 3.3% 원천징수는 부과 기관이 달라 4대보험과 따로 공제한다.
       p.note(`이 계약은 월 약 <b data-insure-month class="font-semibold text-erp-ink">174</b>시간이라 <b data-insure-need class="font-semibold text-erp-ink">4대보험 가입 대상</b>입니다. 월 60시간 이상 일하면 가입이 원칙이고, 3.3% 원천징수와는 따로 공제합니다.`),
     ) +
-    p.band("만 19세 미만 직원은 등록할 수 없습니다", {
+    p.band("만 19세 미만 직원은 등록할 수 없습니다.", {
       desc: "근로계약·출퇴근·급여는 점포에서 따로 관리해 주세요. 계약 시작일 기준으로 따지며, 만 19세 미만이면 저장이 막히고 초대도 나가지 않습니다.",
     }) +
     // 같은 점포 진행 중 계약은 대체 확인, 다른 점포와 근무 시간이 겹치면 저장을 막는다(2026-10-13 재영, 운영 정책 CTR-26).

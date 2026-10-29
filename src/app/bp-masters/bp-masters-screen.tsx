@@ -149,7 +149,7 @@ export function BpMastersScreen({
             <ExcelDownloadProvider fileName="BP목록.xlsx">
               <ExcelDownloadNotice href={excelHref} />
               <ListToolbar total={list.total}>
-                <ExcelDownloadButton href={excelHref} empty={list.total === 0} emptyTitle="받을 BP 가 없습니다" />
+                <ExcelDownloadButton href={excelHref} empty={list.total === 0} emptyTitle="받을 BP 가 없습니다." />
                 <div className="w-[80px] shrink-0">
                   <Select
                     aria-label="페이지당 건수"

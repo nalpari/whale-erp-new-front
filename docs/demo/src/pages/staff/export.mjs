@@ -6,7 +6,7 @@ import { BP, erpHeader, link } from "../../site.mjs";
 export default ({ A, R }) => {
   const L = (path) => link(R, path);
   const head = ui.sectionHead("직원 자료 일괄 저장", ui.button("목록", { href: L("staff/index.html") }));
-  const warn = p.band("BP 가 탈퇴하면 관리자 계정이 모두 미사용이 되어 자료를 볼 수 없습니다", {
+  const warn = p.band("BP 가 탈퇴하면 관리자 계정이 모두 미사용이 되어 자료를 볼 수 없습니다.", {
     desc: "탈퇴한 뒤에는 이 화면도 열리지 않습니다. 보존 기간이 남아 있어도 마찬가지입니다. 필요한 자료는 탈퇴 전에 받아 두세요. 탈퇴와 상관없이 평소에도 받을 수 있습니다.",
   });
 
@@ -63,7 +63,7 @@ export default ({ A, R }) => {
   const after = p.section(
     "받은 뒤",
     "",
-    p.band("내려받은 파일의 보관 책임은 BP 에 있습니다", {
+    p.band("내려받은 파일의 보관 책임은 BP 에 있습니다.", {
       desc: "직원의 이름·휴대전화번호·급여가 담긴 파일입니다. 잠긴 곳에 두고, 쓸 일이 끝나면 지우세요. 플랫폼은 기한이 지난 파일을 지우지만 내려받은 사본까지는 어쩌지 못합니다.",
     }),
   );

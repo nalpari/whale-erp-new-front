@@ -25,14 +25,14 @@ test("다 채우면 막는 것이 없다", () => {
 });
 
 test("막는 것 — 제목 · 근무지 · 직원 0명 · 날짜 · 지난 날짜 · 시간 모양 · 길이", () => {
-  assert.deepEqual(problems(form({ title: "  " }), TODAY), ["제목을 입력해 주세요"]);
-  assert.deepEqual(problems(form({ storeId: "" }), TODAY), ["근무지를 골라 주세요"]);
-  assert.deepEqual(problems(form({ assigneeType: "INDIVIDUAL", staff: [] }), TODAY), ["직원을 한 명 이상 골라 주세요"]);
-  assert.deepEqual(problems(form({ dueDate: "" }), TODAY), ["수행 예정 날짜를 입력해 주세요"]);
-  assert.deepEqual(problems(form({ dueDate: "2026-10-18" }), TODAY), ["지난 날짜는 고를 수 없습니다"]);
-  assert.deepEqual(problems(form({ dueTime: "25:00" }), TODAY), ["수행 시간은 HH:mm 입니다"]);
-  assert.deepEqual(problems(form({ title: "가".repeat(101) }), TODAY), ["제목은 100자까지입니다"]);
-  assert.deepEqual(problems(form({ body: "가".repeat(2001) }), TODAY), ["내용은 2,000자까지입니다"]);
+  assert.deepEqual(problems(form({ title: "  " }), TODAY), ["제목을 입력해 주세요."]);
+  assert.deepEqual(problems(form({ storeId: "" }), TODAY), ["근무지를 골라 주세요."]);
+  assert.deepEqual(problems(form({ assigneeType: "INDIVIDUAL", staff: [] }), TODAY), ["직원을 한 명 이상 골라 주세요."]);
+  assert.deepEqual(problems(form({ dueDate: "" }), TODAY), ["수행 예정 날짜를 입력해 주세요."]);
+  assert.deepEqual(problems(form({ dueDate: "2026-10-18" }), TODAY), ["지난 날짜는 고를 수 없습니다."]);
+  assert.deepEqual(problems(form({ dueTime: "25:00" }), TODAY), ["수행 시간은 HH:mm 입니다."]);
+  assert.deepEqual(problems(form({ title: "가".repeat(101) }), TODAY), ["제목은 100자까지입니다."]);
+  assert.deepEqual(problems(form({ body: "가".repeat(2001) }), TODAY), ["내용은 2,000자까지입니다."]);
 });
 
 test("근무지 전체면 직원을 묻지 않는다 — 고른 채로 바꿔도 보내지 않는다", () => {
@@ -93,7 +93,7 @@ test("수정 — 바꾼 칸만 보낸다. 지난 수행 예정 날짜도 그대�
 
 test("수정 — 날짜를 바꾸면 지난 날짜를 막는다", () => {
   const f = { ...fromDetail(detail), dueDate: "2026-10-11" };
-  assert.deepEqual(problems(f, TODAY, detail), ["지난 날짜는 고를 수 없습니다"]);
+  assert.deepEqual(problems(f, TODAY, detail), ["지난 날짜는 고를 수 없습니다."]);
   assert.deepEqual(toUpdateBody(detail, { ...f, dueDate: "2026-10-20" }), { dueDate: "2026-10-20" });
 });
 
