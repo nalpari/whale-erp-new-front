@@ -147,7 +147,7 @@ export function usePageMenu() {
 }
 
 // 다시 시도하면 같은 길로 다시 로그아웃한다.
-const LOGOUT_FAILED = { status: "error", message: "로그아웃하지 못했습니다" } as const;
+const LOGOUT_FAILED = { status: "error", message: "로그아웃하지 못했습니다." } as const;
 
 /**
  * 로그인 후 화면의 문. 이 탭의 BP 와 그 BP 의 점포·공통코드가 준비될 때까지 로딩 화면을 보이고, 준비되면 children 을 그린다.
@@ -173,12 +173,12 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
   const tabKey = tabKeyOf(pathname);
   const readyBp = state.status === "ready" ? state.value.currentBp.bpCodeId : null;
   // 준비한 BP 와 주소의 BP 가 다르면 다시 준비하는 동안 옛 BP 화면을 보이지 않는다. 옮긴 화면에 BP 없이 온 것("move")은 가리지 않는다 —
-  // 보낼 BP 가 없는 플랫폼 계정은 그대로 준비되어 Ready 가 「BP 를 먼저 골라 주세요」로 막아야 한다.
+  // 보낼 BP 가 없는 플랫폼 계정은 그대로 준비되어 Ready 가 「BP 를 먼저 골라 주세요.」로 막아야 한다.
   const stale = readyBp !== null && typeof tabKey === "number" && tabKey !== readyBp;
 
   useEffect(() => {
     let cancelled = false;
-    prepare((bp) => !cancelled && setSwitchNotice(`${bp.tradeName}(${bp.bpCode}) · 전체 점포로 여는 중입니다`)).then(
+    prepare((bp) => !cancelled && setSwitchNotice(`${bp.tradeName}(${bp.bpCode}) · 전체 점포로 여는 중입니다.`)).then(
       (value) => {
         if (cancelled) return;
         setSwitchNotice(null);
@@ -189,7 +189,7 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
         if (e instanceof BpMismatchError) {
           // 쿠키의 소속 BP 와 브라우저의 로그인 정보가 어긋났다(쿠키를 고쳤거나 다른 탭에서 다른 계정으로 로그인). proxy 와 서로 반대로 보내며
           // 돌지 않게 다시 보내지 않고 로그아웃한다 — 두 값 모두 새로 만들어진다.
-          alert("로그인 정보가 맞지 않아 다시 로그인해 주세요");
+          alert("로그인 정보가 맞지 않아 다시 로그인해 주세요.");
           if (!(await signOut(logout))) setState(LOGOUT_FAILED);
           return;
         }
@@ -220,7 +220,7 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
           return;
         }
         console.error(e);
-        setState({ status: "error", message: e instanceof BffError ? e.message : "로그인 정보를 불러오지 못했습니다" });
+        setState({ status: "error", message: e instanceof BffError ? e.message : "로그인 정보를 불러오지 못했습니다." });
       },
     );
     return () => {
@@ -229,7 +229,7 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
     // tabKey: 주소의 탭 BP 가 바뀌면 다시 준비한다. 같은 BP 안의 이동이나 안 옮긴 화면끼리의 이동은 그대로다.
   }, [attempt, router, tabKey]);
 
-  if (state.status === "loading" || stale) return <LoadingNotice text={switchNotice ?? (pathname === BP_SWITCH_PATH ? "BP 로 이동하는 중입니다" : "불러오는 중입니다")} />;
+  if (state.status === "loading" || stale) return <LoadingNotice text={switchNotice ?? (pathname === BP_SWITCH_PATH ? "BP 로 이동하는 중입니다." : "불러오는 중입니다.")} />;
   if (state.status === "error")
     return (
       <Notice>
@@ -314,7 +314,7 @@ function Ready({
     // 없을 때다. 강제 팝업 대신 바로가기에서 고르라고 알린다(2026-10-19 재영).
     // shortcut: 안내는 브라우저 alert 다. 공통 확인 팝업이 생기면 바꾼다.
     const needsBp = value.serviceCode === "PLATFORM" && serviceOfPath(value.menus, pathname) === "WHALE_ERP";
-    alert(needsBp ? "웨일ERP 바로가기에서 BP 를 먼저 골라 주세요" : "접근 권한이 없는 메뉴입니다");
+    alert(needsBp ? "웨일ERP 바로가기에서 BP 를 먼저 골라 주세요." : "접근 권한이 없는 메뉴입니다.");
     if (history.length > 1) history.back();
     else router.replace(home);
   }, [allowed, home, pathname, router, value.menus, value.serviceCode]);
@@ -366,7 +366,7 @@ function Ready({
   return (
     <LoginContext value={{ ...value, setScope, patchAccount, myPageOpen, setMyPageOpen, passwordChangeOpen, setPasswordChangeOpen, withdrawOpen, setWithdrawOpen, myPageTrigger }}>
       {/* 첫 메뉴로 넘어가는 동안 /platform 의 빈 화면을 한 번 그리지 않게 안내만 둔다. */}
-      {firstMenu && <LoadingNotice text="불러오는 중입니다" />}
+      {firstMenu && <LoadingNotice text="불러오는 중입니다." />}
       {allowed && !switching && !firstMenu && (
         <>
           {header}
@@ -420,7 +420,7 @@ const readLoginKey = () => document.cookie.match(new RegExp(`(?:^|; )${LOGIN_KEY
 async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> {
   const loginKey = readLoginKey();
   // 이 기능 전에 로그인했거나 쿠키가 지워졌다. 세션을 끝내고 다시 로그인하게 한다(/login 으로만 보내면 proxy 가 홈으로 되돌린다).
-  if (!loginKey) throw new BffError(401, "다시 로그인해 주세요");
+  if (!loginKey) throw new BffError(401, "다시 로그인해 주세요.");
 
   let info = readLoginInfo(loginKey);
   let bpInfo = readLoginBpInfo(loginKey);
@@ -450,7 +450,7 @@ async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> 
   // 영영 달라 준비가 끝나지 않고(stale) 강제 변경 팝업도 뜨지 않는다 — 플랫폼 첫 주소(/platform)로 보낸다.
   if (platform && account.isPasswordChangeRequired && pathBp !== null) return moveTo(HOME.PLATFORM);
   // 옮긴 화면에 BP 없이 왔다(옛 즐겨찾기 · 알림 링크 · 아직 접두를 안 붙인 링크). 탭 BP 주소로 보낸다.
-  // 플랫폼 계정이 BP 를 고른 적이 없으면 플랫폼 탭으로 열려 Ready 가 「BP 를 먼저 골라 주세요」로 막는다.
+  // 플랫폼 계정이 BP 를 고른 적이 없으면 플랫폼 탭으로 열려 Ready 가 「BP 를 먼저 골라 주세요.」로 막는다.
   if (pathBp === null && isBpPathScreen(url.pathname)) {
     const to = !platform ? ownBp : current?.serviceCode === "WHALE_ERP" ? current.bp : readSelectedBp(loginKey);
     if (to) return moveTo(bpPath(to.bpCodeId, url.pathname) + url.search + url.hash);
@@ -460,7 +460,7 @@ async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> 
   const target = bpOfSwitchUrl(url);
   // 이동 화면인데 BP 를 읽지 못했다(잘렸거나 손으로 고친 주소). 플랫폼 계정은 조용히 플랫폼으로 가지 않고 알린다.
   // 그 밖의 계정은 BP 를 고를 수 없어 늘 자기 BP 로 열리므로 그대로 둔다.
-  if (switching && !target && platform) throw new OtherBpError("BP 이동 주소가 올바르지 않습니다", null);
+  if (switching && !target && platform) throw new OtherBpError("BP 이동 주소가 올바르지 않습니다.", null);
   // 다른 BP 로 가면 그 BP 를 서버에서 찾는다 — 주소는 id 만 믿는다. 탭들이 같이 쓰는 selected-bp 를 거치지 않아, 이 탭이 준비되는 사이
   // 다른 탭에서 BP 를 또 골라도 이 탭은 주소의 BP 로 열린다. 비밀번호를 바꾸기 전에는 다른 BP 를 열지 않는다(아래).
   let switchBp: StoredBp | null = null;
@@ -468,7 +468,7 @@ async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> 
     if (target && target.bpCodeId !== ownBp.bpCodeId) switchBp = await findBp(target);
     else if (pathBp !== null) {
       // 플랫폼 BP 는 ERP 로 열지 않는다. 이 탭이 이미 연 BP 면 다시 찾지 않는다(새로고침 · 탭 안 이동)
-      if (pathBp === ownBp.bpCodeId) throw new OtherBpError(`BP(${pathBp})를 찾지 못했습니다`, pathBp);
+      if (pathBp === ownBp.bpCodeId) throw new OtherBpError(`BP(${pathBp})를 찾지 못했습니다.`, pathBp);
       switchBp = current?.bp.bpCodeId === pathBp ? current.bp : await findBpById(pathBp, readSelectedBp(loginKey));
     }
   }
@@ -530,7 +530,7 @@ async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> 
  * 코드가 없거나, 찾은 줄의 id 가 다르거나, 볼 수 없으면(403 · 404) OtherBpError.
  */
 async function findBp({ bpCodeId, bpCode }: { bpCodeId: number; bpCode: string | null }): Promise<StoredBp> {
-  const notFound = new OtherBpError(`BP(${bpCode ?? bpCodeId})를 찾지 못했습니다`, bpCodeId);
+  const notFound = new OtherBpError(`BP(${bpCode ?? bpCodeId})를 찾지 못했습니다.`, bpCodeId);
   if (!bpCode) throw notFound;
   const query = new URLSearchParams({ keyword: bpCode, page: "1", pageSize: "20" });
   const r = await bff<{ items: BpOption[] }>(`/bp-codes?${query}`).catch((e: unknown) => {
@@ -558,7 +558,7 @@ async function findBpById(bpCodeId: number, selected: StoredBp | null): Promise<
     });
     const found = r.items.find((i) => i.bpCodeId === bpCodeId);
     if (found) return { bpCodeId: found.bpCodeId, bpCode: found.bpCode, tradeName: found.tradeName };
-    if (r.items.length < pageSize || page * pageSize >= r.total) throw new OtherBpError(`BP(${bpCodeId})를 찾지 못했습니다`, bpCodeId);
+    if (r.items.length < pageSize || page * pageSize >= r.total) throw new OtherBpError(`BP(${bpCodeId})를 찾지 못했습니다.`, bpCodeId);
   }
 }
 

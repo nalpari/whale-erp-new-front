@@ -2,6 +2,7 @@
 
 import { createContext, use, useState, type ReactNode } from "react";
 import { downloadPercent, errorMessageOf, EXCEL_FAILED as FAILED, EXCEL_SCHEDULED, fileNameOfDisposition, XLSX_CONTENT_TYPE } from "@/lib/download";
+import { Blocked } from "./blocked";
 import { Button } from "./button";
 import { NoticeBand } from "./notice-band";
 
@@ -139,9 +140,12 @@ export function ExcelDownloadButton({ href, empty, emptyTitle }: { href: string;
       : phase.kind === "receiving" && phase.percent !== null
         ? `파일 만드는 중 · ${phase.percent}%`
         : "파일 만드는 중";
+  // 막힌 버튼은 호버를 받지 않아(disabled:pointer-events-none) 이유를 감싸는 칸(Blocked)에 단다 — 버튼에 달면 말풍선이 뜨지 않았다
   return (
-    <Button variant="soft" onClick={() => download(href)} disabled={busy || empty} aria-busy={busy || undefined} title={empty ? emptyTitle : undefined}>
-      {label}
-    </Button>
+    <Blocked reason={empty ? emptyTitle : undefined}>
+      <Button variant="soft" onClick={() => download(href)} disabled={busy || empty} aria-busy={busy || undefined}>
+        {label}
+      </Button>
+    </Blocked>
   );
 }

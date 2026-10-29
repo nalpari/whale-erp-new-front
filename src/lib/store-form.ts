@@ -251,7 +251,7 @@ export function hasCoordinateInput(latitude: string, longitude: string): boolean
  * 생겨 이 검증을 타지 않으므로 등록(create) 화면은 빈 배열을 넘겨도 된다. now 는 인증 10분 만료를 재는 지금 시각(ms) */
 export function validateStoreForm(f: StoreForm, mode: "create" | "edit", requirementLabels: EnumValue[] = [], now = Date.now()): StoreFormErrors {
   const errors: StoreFormErrors = {};
-  if (mode === "create" && !f.storeTypeCode) errors.storeTypeCode = "점포유형을 골라 주세요.";
+  if (mode === "create" && !f.storeTypeCode) errors.storeTypeCode = "점포유형을 선택해 주세요.";
 
   const name = f.name.trim();
   if (!name) errors.name = "점포명을 입력해 주세요.";
