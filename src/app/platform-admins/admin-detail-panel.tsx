@@ -162,18 +162,15 @@ function DetailBody({
       label: "비밀번호",
       // 미사용 계정은 초기화 버튼을 숨긴다(2026-10-23) — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다).
       // 초기화할 수 없으면(미사용 · 수정 권한 없음) 빈칸 대신 「-」(BP 마스터 상세와 같다, 2026-10-28 사용자 지정). 미발송은 상세 위 빨간 상자가 알린다
+      // 본인 계정도 「-」 — 흐린 버튼을 두지 않는다(BP 관리자 상세와 같다, 2026-10-29 사용자 지정)
       value:
-        admin.accountStatus === "INACTIVE" || !canUpdate ? muted("-") : (
-        <>
-          {canUpdate && (
-            <Blocked reason={isSelf ? "본인 비밀번호는 내 정보에서 바꿔 주세요" : undefined}>
-              <Button variant="soft" onClick={() => setConfirm("reset")} disabled={isSelf || busy}>
-                초기화
-              </Button>
-            </Blocked>
-          )}
-        </>
-      ),
+        admin.accountStatus === "INACTIVE" || !canUpdate || isSelf ? (
+          muted("-")
+        ) : (
+          <Button variant="soft" onClick={() => setConfirm("reset")} disabled={busy}>
+            초기화
+          </Button>
+        ),
     },
     { label: "소속부서", value: admin.department ?? null },
     { label: "직책", value: admin.jobTitle ?? null },

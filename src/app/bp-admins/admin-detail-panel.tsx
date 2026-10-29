@@ -7,7 +7,7 @@ import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
 import { FailedBand, InfoBand, SuccessBand, WarnBand } from "@/components/site/side-parts";
-import { Blocked, WhoList } from "@/app/platform-admins/admin-parts";
+import { WhoList } from "@/app/platform-admins/admin-parts";
 import { HistoryButton } from "@/app/platform-admins/history-dialog";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
 import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
@@ -88,8 +88,8 @@ function DetailBody({
 
   const can = usePagePermission();
   const { canUpdate, showReset, resetBlocked } = detailButtonsOf(admin.actions, can);
-  // 안내 상자의 「[초기화] 버튼으로 …」는 그 버튼을 누를 수 있는 사람에게만 — 권한 없음 · 본인 계정은 앞 문장만(리뷰로 찾음)
   const canReset = showReset && !resetBlocked;
+  // 안내 상자의 「[초기화] 버튼으로 …」는 그 버튼을 누를 수 있는 사람에게만 — 권한 없음 · 본인 계정은 앞 문장만(리뷰로 찾음)
   const name = admin.name ?? admin.loginId;
 
   const handleReset = () =>
@@ -130,18 +130,16 @@ function DetailBody({
     {
       label: "비밀번호",
       // 미사용 계정 · 초기화 버튼을 못 보는 계정은 「-」 — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다, 플랫폼 관리자와 같다, 2026-10-28).
+      // 본인 계정도 「-」 — 초기화할 수 없는 버튼을 흐리게 두지 않고 뺀다(2026-10-29 사용자 지정, 위 「내 계정입니다」 상자가 내 정보에서 바꾼다고 알린다).
       // 미발송은 상세 위 빨간 상자가 알린다
-      value: admin.accountStatus === "INACTIVE" || !showReset ? muted("-") : (
-        <span className="flex items-center gap-[10px]">
-          {showReset && (
-            <Blocked reason={resetBlocked ? "본인 비밀번호는 내 정보에서 바꿉니다" : undefined}>
-              <Button variant="soft" onClick={() => setConfirmOpen(true)} disabled={resetBlocked || busy}>
-                초기화
-              </Button>
-            </Blocked>
-          )}
-        </span>
-      ),
+      value:
+        admin.accountStatus === "INACTIVE" || !canReset ? (
+          muted("-")
+        ) : (
+          <Button variant="soft" onClick={() => setConfirmOpen(true)} disabled={busy}>
+            초기화
+          </Button>
+        ),
     },
     // 비밀번호 아래 줄 — 플랫폼 관리자 상세와 같이 표에 둔다(2026-10-27 사용자 지정)
     { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("-") },

@@ -575,7 +575,7 @@ export function AdminFormPanel(props: Props) {
                 aria-describedby={groupsFailed || noGroupForRole ? messageId("roleGroupId") : describe("roleGroupId")}
                 aria-required
               >
-                {!form.roleGroupId && <option value="">{form.roleTypeCode ? "선택" : "계정 역할을 먼저 골라 주세요"}</option>}
+                {!form.roleGroupId && <option value="">{form.roleTypeCode ? "선택" : "계정역할을 먼저 선택하세요."}</option>}
                 {groupOptions.map((r) => (
                   <option key={r.roleGroupId} value={r.roleGroupId}>
                     {r.name} · {r.roleCode}
@@ -630,7 +630,7 @@ export function AdminFormPanel(props: Props) {
                 loading={!!optionsRole && !optionsReady && !optionsFailure}
                 failed={!!optionsFailure}
                 // 후보는 계정 역할마다 다르다(가맹 마스터면 다른 가맹 마스터 담당 점포가 빠진다) — 역할을 고르기 전엔 받지 않으니 찾기를 막는다. 권한명은 상관없다
-                blocked={form.roleTypeCode ? undefined : "계정 역할을 먼저 골라 주세요"}
+                blocked={form.roleTypeCode ? undefined : "계정역할을 먼저 선택하세요."}
                 invalid={invalid("stores")}
                 describedBy={describe("stores")}
               />
