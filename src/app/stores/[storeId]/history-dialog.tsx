@@ -105,7 +105,7 @@ export function HistoryButton({ storeId }: { storeId: number }) {
               columns={COLUMNS}
               rows={data?.items ?? []}
               rowKey={(h) => String(h.changeId)}
-              empty={loading && !data ? "불러오는 중입니다." : failure ? "이력을 불러오지 못했습니다." : "변경 이력이 없습니다."}
+              empty={loading && !data ? "불러오는 중입니다." : failure ? "이력을 불러오지 못했습니다." : "변경이력이 없습니다."}
             />
           </div>
           {data && data.total > STORE_HISTORY_PAGE_SIZE && (

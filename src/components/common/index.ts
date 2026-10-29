@@ -21,7 +21,7 @@ export { HelpTip } from "./help-tip";
 export { ListToolbar } from "./list-toolbar";
 export { Pagination } from "./pagination";
 export { FilterPanel, FilterSection } from "./filter-panel";
-export { GlobalHeader, ServiceLinks, AlarmLink, type HeaderMenu } from "./global-header";
+export { GlobalHeader, HeaderTip, ServiceLinks, AlarmLink, type HeaderMenu } from "./global-header";
 export { StoreSelect } from "./store-select";
 export { ScopeSelect, type ScopeSelectOption, type ScopeSelectSection } from "./scope-select";
 export { UserPop, type UserPopItem } from "./user-pop";

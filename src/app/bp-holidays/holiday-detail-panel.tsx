@@ -197,7 +197,7 @@ function DetailBody({
       <ConfirmDialog open={confirm === "delete"} title="휴일을 삭제하시겠습니까?" confirmLabel="삭제" busy={busy} onConfirm={handleDelete} onCancel={() => setConfirm(null)}>
         <div className="flex flex-col gap-[12px] break-keep">
           <p>
-            <b className="font-semibold">{h.name}</b> 휴일을 삭제합니다. 삭제한 휴일은 목록과 캘린더에서 빠지고 <b className="font-semibold">변경 이력에만</b> 남습니다.
+            <b className="font-semibold">{h.name}</b> 휴일을 삭제합니다. 삭제한 휴일은 목록과 캘린더에서 빠지고 <b className="font-semibold">변경이력에만</b> 남습니다.
           </p>
           <p>삭제한 휴일은 복구할 수 없습니다.</p>
         </div>
