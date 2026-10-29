@@ -2,11 +2,21 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Button, ListToolbar, PageBar, Pagination, Select, useBackdropActive, useToast } from "@/components/common";
+import {
+  Button,
+  ExcelDownloadButton,
+  ExcelDownloadNotice,
+  ExcelDownloadProvider,
+  ListToolbar,
+  PageBar,
+  Pagination,
+  Select,
+  useBackdropActive,
+  useToast,
+} from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { BP_MASTER_PAGE_SIZES, type BpMasterPageSize } from "@/lib/bp-master-paging";
 import type { BpMasterDetail, BpMasterList } from "@/lib/bp-masters";
-import { StoreExcelButton, StoreExcelNotice, StoreExcelProvider } from "../stores/store-excel";
 import { BpMasterDetailPanel } from "./bp-master-detail-panel";
 import { BpMasterFilter } from "./bp-master-filter";
 import { BpMasterFormPanel } from "./bp-master-form-panel";
@@ -136,10 +146,10 @@ export function BpMastersScreen({
         <div className="contents" inert={backdropActive}>
           <BpMasterFilter query={query} onApply={(next) => go({ ...next, page: 1, bp: undefined })} />
           <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
-            <StoreExcelProvider fileName="BP목록.xlsx">
-              <StoreExcelNotice href={excelHref} />
+            <ExcelDownloadProvider fileName="BP목록.xlsx">
+              <ExcelDownloadNotice href={excelHref} />
               <ListToolbar total={list.total}>
-                <StoreExcelButton href={excelHref} empty={list.total === 0} emptyTitle="받을 BP 가 없습니다" />
+                <ExcelDownloadButton href={excelHref} empty={list.total === 0} emptyTitle="받을 BP 가 없습니다" />
                 <div className="w-[80px] shrink-0">
                   <Select
                     aria-label="페이지당 건수"
@@ -154,7 +164,7 @@ export function BpMastersScreen({
                   </Select>
                 </div>
               </ListToolbar>
-            </StoreExcelProvider>
+            </ExcelDownloadProvider>
             <BpMasterTable rows={list.items} selected={query.bp} onOpen={openDetail} noStatus={query.statusNone} />
             <div className="pt-[14px]">
               <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / query.pageSize))} onPageChange={(page) => go({ page, bp: undefined })} />
