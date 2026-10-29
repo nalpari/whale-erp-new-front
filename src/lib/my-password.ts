@@ -1,4 +1,4 @@
-// 내 비밀번호 변경(MY PAGE) 데이터 접근 — manyfast F-AMTDCK > S-PTWREE 「내 비밀번호 변경」.
+// 내 비밀번호 변경(마이페이지) 데이터 접근 — manyfast F-AMTDCK > S-PTWREE 「내 비밀번호 변경」.
 // api(whale-erp-api auth/admin-auth.controller.ts everest 브랜치)의 openapi.json 에는 이미 실렸지만, front
 // 생성 타입(api-types.generated.ts)은 api main(kabuto 기준)을 따라가므로 이 api PR 이 머지되기 전까진
 // 받지 못해 타입을 손으로 적었다(my-profile.ts 와 같은 이유).

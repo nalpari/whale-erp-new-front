@@ -1,4 +1,4 @@
-// 회원 탈퇴(MY PAGE) 데이터 접근 — manyfast S-JHQQNR 「회원 탈퇴」.
+// 회원 탈퇴(마이페이지) 데이터 접근 — manyfast S-JHQQNR 「회원 탈퇴」.
 // withdraw · withdraw-eligibility 는 생성 타입(api-types.generated.ts)에 실렸지만 password-verifications 는
 // 아직 없어(api #190 머지 전) 입력 · 응답 타입을 손으로 적었다. 순수 로직(WithdrawEligibility 등)은 withdrawal-form.ts 에 갈라
 // 두었다 — api.ts 가 next/headers 를 써서 node --test 가 플레인으로 풀 수 없기 때문이다. 이 파일은

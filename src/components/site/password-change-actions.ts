@@ -3,7 +3,7 @@
 import { ApiError } from "@/lib/api";
 import { changeMyPassword, type ChangeMyPasswordInput } from "@/lib/my-password";
 
-// 내 비밀번호 변경(MY PAGE, S-PTWREE). 로그인 판정은 api 가 한다(세션 토큰이 없거나 끝났으면 401).
+// 내 비밀번호 변경(마이페이지, S-PTWREE). 로그인 판정은 api 가 한다(세션 토큰이 없거나 끝났으면 401).
 
 type Failure = { ok: false; status?: 400 | 401; message: string };
 export type ActionResult = { ok: true } | Failure;

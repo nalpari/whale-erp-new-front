@@ -7,7 +7,7 @@ import { BP, platformHeader, link } from "../../site.mjs";
 // 제목 옆에 「BP 코드 · 값」 꼬리표와 계정상태 배지 — 계정상태 칸은 없앴다(앱 bp-master-form-panel.tsx, 2026-10-28 사용자 지정)
 const TITLE = `BP 마스터 계정 수정<span class="ml-[6px] inline-flex items-center gap-[6px] align-middle"><span class="inline-flex rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] py-[2px] text-[14px] font-medium text-erp-label">BP 코드 · <b class="ml-[3px] font-semibold text-erp-ink">${BP.code}</b></span>${ui.badge("on", "사용")}</span>`;
 
-// 사업자정보 — MY PAGE 사업자정보 탭과 같은 모양(앱 bp-master-form-panel.tsx · 공통 BizVerificationBox, 2026-10-28 사용자 지정).
+// 사업자정보 — 마이페이지 사업자정보 탭과 같은 모양(앱 bp-master-form-panel.tsx · 공통 BizVerificationBox, 2026-10-28 사용자 지정).
 // 인증 상자: 회색 제목 줄(오른쪽에 「인증 완료 · 일시」 · 「미인증」) + 세 칸 한 줄 + [인증하기] · [재인증]. 국세청 안내는 인증 전에만.
 export function bizAuthBox(A, { locked, values = ["", "", ""], date = "" }) {
   const [num, ceo, open] = values;
@@ -29,7 +29,7 @@ export function bizAuthBox(A, { locked, values = ["", "", ""], date = "" }) {
 }
 
 // 상호명부터는 따로 상자. 대표자 연락처 · 이메일 옆 「기본정보와 동일」 — 켜면 기본정보 값이 읽기 전용으로 들어간다.
-// 등록은 꺼진 채, 수정은 저장된 값이 기본정보와 같을 때만 켜진 채로 연다(MY PAGE 와 같은 규칙)
+// 등록은 꺼진 채, 수정은 저장된 값이 기본정보와 같을 때만 켜진 채로 연다(마이페이지와 같은 규칙)
 export function bizRest(A, idp, { tradeName, same, phone = ["", "", ""], email = "", category = "", item = "", addr = {} }) {
   const label = (text, id) => `<span class="flex items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>${text}</span>${ui.checkbox(A, "기본정보와 동일", same, { id })}</span>`;
   const tel = same
