@@ -89,6 +89,7 @@ FK_TARGET = {
     "updated_by": ("admin_accounts", None),
     "changed_by": ("admin_accounts", None),
     "sent_by": ("admin_accounts", None),
+    "requested_by": ("admin_accounts", None),
     "store_id": ("stores", None),
     "role_group_id": ("role_groups", None),
     "menu_id": ("menus", None),
@@ -119,6 +120,10 @@ ENUMS = {
     ("bp_holidays", "repeat_end_type"): ("repeat_end_type", ["NONE", "UNTIL_DATE", "COUNT"], "없음 · 날짜 · 횟수"),
     ("store_image_files", "file_type"): ("store_image_file_type", ["JPG", "PNG"], "JPG · PNG"),
     ("public_holidays", "source"): ("public_holiday_source", ["RULE", "PUBLIC_API"], "규칙 계산 · 공식 API"),
+    ("excel_download_logs", "delivery_method"): ("excel_delivery_method", ["DIRECT", "SCHEDULED"],
+                                                 "바로 받기 · 예약 생성"),
+    ("excel_download_logs", "status"): ("excel_download_status", ["PENDING", "PROCESSING", "SUCCEEDED", "FAILED"],
+                                        "대기 · 생성 중 · 완료 · 실패"),
 }
 
 # 타입·기본값 개별 지정
@@ -150,6 +155,9 @@ PHYS = {
     ("public_holiday_synchronization_logs", "synchronized_at"): {"default": "CURRENT_TIMESTAMP"},
     ("temporary_passwords", "issued_at"): {"default": "CURRENT_TIMESTAMP"},
     ("admin_sessions", "issued_at"): {"default": "CURRENT_TIMESTAMP"},
+    ("excel_download_logs", "search_conditions"): {"type": "jsonb", "default": "'{}'::jsonb"},
+    ("excel_download_logs", "attempt_count"): {"default": "0"},
+    ("excel_download_logs", "requested_at"): {"default": "CURRENT_TIMESTAMP"},
 }
 
 # NOT NULL (PK·boolean·created_at·updated_at 은 자동). 나머지는 NULL 허용.
@@ -184,6 +192,8 @@ REQUIRED = {
     "public_holidays": ["holiday_date", "year", "name", "source"],
     "public_holiday_synchronization_logs": ["year", "synchronized_at", "created_count", "updated_count", "deleted_count",
                                  "failed_count", "result"],
+    "excel_download_logs": ["requested_by", "menu_id", "search_conditions", "row_count", "delivery_method", "status",
+                            "file_name", "attempt_count", "requested_at"],
 }
 
 # 고유 제약: (테이블, 컬럼들, 조건 또는 None, 설명)
@@ -208,6 +218,8 @@ UNIQUES = [
      "열린 기간(종료일 없음)은 휴일 · 점포마다 하나 — api 이름 holiday_store_mappings_open_period_key"),
     ("holiday_excluded_stores", ["bp_holiday_id", "store_id"], "\"is_deleted\" = false AND \"effective_end_date\" IS NULL",
      "열린 예외 기간은 휴일 · 점포마다 하나 — api 이름 holiday_excluded_stores_open_period_key"),
+    ("excel_download_logs", ["requested_by", "menu_id"], "\"status\" IN ('PENDING', 'PROCESSING')",
+     "같은 사람 · 같은 화면은 생성 중(바로 받기 · 예약 생성)인 요청이 하나뿐 — 앱이 409 로 먼저 막고 이 인덱스가 마지막 방어선이다"),
 ]
 # NULLS NOT DISTINCT 가 필요한 고유 제약 (PostgreSQL 15+)
 UNIQUES_NND = [
@@ -252,6 +264,14 @@ CHECKS = [
     ("public_holidays", "year_range", "\"year\" BETWEEN 2000 AND 2100"),
     ("public_holiday_synchronization_logs", "counts_nonnegative",
      "\"created_count\" >= 0 AND \"updated_count\" >= 0 AND \"deleted_count\" >= 0 AND \"failed_count\" >= 0"),
+    ("excel_download_logs", "counts_nonnegative", "\"row_count\" >= 0 AND \"attempt_count\" >= 0"),
+    ("excel_download_logs", "scheduled_file_when_succeeded",
+     "\"delivery_method\" <> 'SCHEDULED' OR \"status\" <> 'SUCCEEDED' OR "
+     "(\"storage_key\" IS NOT NULL AND \"expires_at\" IS NOT NULL)"),
+    # 생성 중인 행은 시작 시각이 있어야 멈춘 작업 정리가 거둔다 — 없으면 같은 화면이 영영 409 다
+    ("excel_download_logs", "started_when_processing", "\"status\" <> 'PROCESSING' OR \"started_at\" IS NOT NULL"),
+    # 바로 받기는 대기열에 들어가지 않는다 — 대기 행은 배치가 예약 생성으로 만들어 메일을 보낸다
+    ("excel_download_logs", "direct_not_pending", "\"delivery_method\" <> 'DIRECT' OR \"status\" <> 'PENDING'"),
 ]
 
 # 조회용 인덱스 (FK 중 목록·이력 조회에 쓰는 것). 고유 제약이 앞머리를 덮으면 두지 않는다.
@@ -273,6 +293,8 @@ INDEXES = [
     ("holiday_store_mappings", ["bp_holiday_id"]), ("holiday_excluded_stores", ["bp_holiday_id"]),
     ("bp_holiday_change_histories", ["bp_holiday_id", "changed_at"]),
     ("public_holidays", ["year"]),
+    ("excel_download_logs", ["requested_by", "menu_id", "requested_at"]),
+    ("excel_download_logs", ["status", "requested_at"]),
 ]
 
 
@@ -439,9 +461,9 @@ LAYOUT = {
            "full": {"bp_code", "bp_hist"}},
     "system": {"cols": {"role_group": 0, "code_group": 0, "role_menu": 1, "code_item": 1, "menu": 2,
                         "holiday_hist": 2, "public_holiday": 2, "holiday": 3, "holiday_store": 3,
-                        "holiday_except": 3, "sync_hist": 3},
+                        "holiday_except": 3, "sync_hist": 3, "excel_hist": 1},
                "full": {"role_group", "code_group", "role_menu", "code_item", "menu", "holiday_hist",
-                        "public_holiday", "holiday", "holiday_store", "holiday_except", "sync_hist"}},
+                        "public_holiday", "holiday", "holiday_store", "holiday_except", "sync_hist", "excel_hist"}},
 }
 
 # 관계 연결점·꺾는 위치 지정 (영역, 관계 순번) → dict. 자동 배치로 선이 박스를 지나갈 때만 쓴다.

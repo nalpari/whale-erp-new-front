@@ -56,7 +56,7 @@
 - 공통코드는 식별자 대신 코드로 PK 를 잡는다 (2026-09-30) — `code_groups` 는 `group_code`, `code_items` 는 (`group_code`, `item_code`, `bp_code`) 복합 PK 다. 세 값 모두 필수이고 등록 뒤 바꾸지 않는다. 복사된 행의 원본은 같은 그룹 코드·상세코드의 플랫폼 BP 행이라 원본 참조 컬럼을 두지 않는다.
 - 공식 휴일 적재 이력 테이블은 두지 않는다 (2026-09-30) — 규칙 적재는 운영 작업이라 따로 기록하지 않는다. 동기화 이력은 3팀과의 배치 이력 공통화 논의 결과에 따라 남기거나 없앤다.
 - 이력 테이블에는 변경 유형(`change_type`)을 두지 않는다 (2026-09-30) — 무엇이 바뀌었는지는 변경 항목과 변경 전후 값으로 본다.
-- 이력 테이블 접미는 네이밍 규칙을 따른다 (2026-10-02) — 변경 전후를 담으면 `_histories`, 사건 기록이면 `_logs`. 로그인·메일 발송·약관 동의·공식 휴일 동기화는 사건 기록이라 `admin_login_logs` · `mail_send_logs` · `terms_agreement_logs` · `public_holiday_synchronization_logs` 다.
+- 이력 테이블 접미는 네이밍 규칙을 따른다 (2026-10-02) — 변경 전후를 담으면 `_histories`, 사건 기록이면 `_logs`. 로그인·메일 발송·약관 동의·공식 휴일 동기화·엑셀 다운로드는 사건 기록이라 `admin_login_logs` · `mail_send_logs` · `terms_agreement_logs` · `public_holiday_synchronization_logs` · `excel_download_logs` 다.
 - 공통코드 값을 담는 컬럼은 논리 타입 `code`, 이름은 그룹 코드 + `_code` 로 맞춘다 (2026-09-30) — 권한 유형·계정 상태·BP 상태·점포 상태·점포 유형·관리 주체·가입경로·탈퇴 사유(`WITHDRAW_REASON`)·휴일 유형·휴일 반복 유형·서비스·메일 유형(`MAIL_TYPE`)·약관 유형(`TERMS_TYPE`)·층수 구분(`FLOOR_TYPE`).
 - 관리자 계정의 관리 점포 범위(전체·일부)는 전체 점포 적용 여부(`is_all_stores`, bool)로 둔다 (2026-09-30). BP 휴일의 적용 범위(전체점포·특정점포)도 같은 이름·같은 컬럼(`bp_holidays.is_all_stores`)으로 둔다 — 관리 점포 범위는 이 값이 true 면 소속 BP 모든 점포, false 면 점포 매핑에 있는 점포다.
 - BP 상태를 `bp_codes.account_status_code`(사용·미사용·탈퇴)에 둔다 (2026-09-30) — BP 마스터 계정 상태와 함께 바뀌고, 오등록 삭제는 `is_deleted` 로 따로 본다. 상태 변경 일시는 `bp_codes` 에 두지 않는다.
@@ -658,6 +658,37 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 |  | 실패 건수 | int | `failed_count` |  |
 |  | 오류 정보 | text | `error` |  |
 |  | 결과 | enum | `result` | 성공·실패 |
+
+### 엑셀 다운로드 이력 `excel_download_logs` · 이력
+
+모든 화면의 엑셀 요청 한 건이 한 행이다(2026-10-28). 1만 건 미만은 바로 받고, 이상은 예약 생성해 S3 에 24시간 두고 등록한 이메일로 내려받기 링크를 보낸다 — 요청한 본인만 받는다. 같은 사람 · 같은 화면은 생성 중이면 새 요청을 받지 않고 1분에 한 번이다. 예약 생성이 실패하면 한 번만 다시 시도한다 — 재시도까지 실패하면(두 번째 실패) 더 시도하지 않고 처리 상태를 실패로 두고 실패 메일을 보낸다. 첫 실패에는 메일을 보내지 않는다. 2년 보존 뒤 지운다.
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 다운로드 이력 ID | id | `excel_download_id` |  |
+| FK | 요청자 | id | `requested_by` | admin_accounts FK |
+| FK | 화면(메뉴) | id | `menu_id` | menus FK — 같은 화면 판단 기준 |
+| FK | 대상 BP | id | `bp_code_id` | 플랫폼 계정이 고른 탭 BP, 없으면 비움 |
+|  | 검색 조건 | json | `search_conditions` | 요청 때의 조건 그대로 |
+|  | 건수 | int | `row_count` |  |
+|  | 생성 방식 | enum | `delivery_method` | 바로 받기·예약 생성 |
+|  | 처리 상태 | enum | `status` | 대기·생성 중·완료·실패 |
+|  | 파일명 | text | `file_name` | 예) 점포목록_20261028.xlsx |
+|  | 저장소 키 | text | `storage_key` | 예약 생성만, excel-exports/ 아래 |
+|  | 시도 횟수 | int | `attempt_count` | 예약 생성만 센다(바로 받기는 0). 시도를 시작할 때 1씩 올린다(최대 2 — 처음 1번 + 재시도 1번). 2에서 실패하면 끝 |
+|  | 실패 사유 | text | `failure_reason` |  |
+|  | 메일 발송 일시 | datetime | `notified_at` | 완료·실패 메일 |
+|  | 만료 일시 | datetime | `expires_at` | 완료 + 24시간 |
+|  | 최근 내려받은 일시 | datetime | `downloaded_at` | 링크로 받은 시각 |
+|  | 요청 일시 | datetime | `requested_at` | 2년 보존 |
+|  | 생성 시작 일시 | datetime | `started_at` | 이번 시도를 시작한 시각. 멈춘 작업 판단 기준 |
+|  | 완료 일시 | datetime | `completed_at` |  |
+
+**관계**
+
+- 관리자 계정 `1` -- `N` 엑셀 다운로드 이력 · 요청자
+- 메뉴 `1` -- `N` 엑셀 다운로드 이력 · 화면
+- BP 코드 `0..1` -- `N` 엑셀 다운로드 이력 · 대상 BP
 
 ---
 
