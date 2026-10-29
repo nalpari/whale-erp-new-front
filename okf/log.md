@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #194 code-review: 근로계약 화면이 탭 BP 주소로 옮겨도 이 화면의 근로계약 링크는 옛 주소 그대로(SessionGate 가 보냄)라고 적었다. 날인본 창구는 api 의 BP 거절(400 · 403)을 오류 로그 없이 「받을 수 없습니다」 안내(`?document=denied`)로 돌려보낸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 화면을 탭 BP 주소 `/bp/{bpCodeId}/contracts` 로 옮겼다(`BP_PATH_SCREENS`, WHALEERP-618). 목록 · 상세 · 작성 · 이어 쓰기 · 근로자 정보 · 재발송 · 종료 · 삭제 뒤 이동과 종이 계약 · 날인본 창구가 주소의 BP 를 잃지 않고(`bpPath` · `screenPath()` · `bpHref`), 저장 뒤 안내 쿠키 경로도 `/bp/{id}/contracts` 다. api 거절(BP 를 고르지 않음 400 · 403 · 없는 BP 404)은 화면에 그 문장으로 보인다(`deniedMessageOf`). 홈의 근로계약 링크도 탭 BP 를 붙이고, 직원 정보 관리 · 급여명세서의 링크는 옛 주소로 두어 SessionGate 가 보낸다. api 타입은 근로계약 경로의 400 · 404 설명만 다시 만들었다(같은 배포 창: api 의 근로계약 `@TargetBp()` 전환).
 * **Update**: [BP 마스터 계정 관리](/bp.md) — 등록 뒤 안내는 초기화 안내와 같은 하늘색 상자 한 문구이고 BP 코드 · 이메일은 상자에 적지 않는다(실제 화면대로, BP-3 를 바꿈, 2026-10-29 재영).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 막힌 버튼의 이유 말풍선 `Blocked` 를 `src/components/common` 으로 올리고 1팀 화면(BP 관리 · BP 관리자 · 플랫폼 관리자 · 공통코드 [BP 적용])이 같이 쓴다. 화면 모양은 그대로다(기본 말풍선). 점포 상세의 복사본 · 점포 엑셀 버튼은 점포 탭 몫으로 남겼다(2026-10-29 재영).

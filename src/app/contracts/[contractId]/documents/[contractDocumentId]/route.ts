@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { ApiError, authHeaders, request, screenPath, SESSION_COOKIE } from "@/lib/api";
+import { ApiError, authHeaders, deniedMessageOf, request, screenPath, SESSION_COOKIE } from "@/lib/api";
 import type { DocumentNotice } from "../../document-notice";
 
 // 종이 계약 날인본 내려받기. api 가 업무 범위를 본 뒤 주는 300초짜리 서명 주소로 보낸다 — 받으면 원래 파일 이름으로 저장된다.
@@ -28,7 +28,9 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/contracts/[contr
     return NextResponse.redirect(url);
   } catch (e) {
     if (e instanceof ApiError && e.status === 401) return toLogin();
-    if (e instanceof ApiError && (e.status === 403 || e.status === 404)) return back("missing");
+    if (e instanceof ApiError && e.status === 404) return back("missing");
+    // BP 를 고르지 않음(400) · 권한 · 다른 BP(403) — 옛 /contracts/… 주소는 라우트 핸들러라 SessionGate 가 옮기지 못한다. 거절이라 오류로 남기지 않는다
+    if (deniedMessageOf(e)) return back("denied");
     console.error("날인본 내려받기 실패", e);
     return back(e instanceof ApiError && e.status === 503 ? "unavailable" : "failed");
   }
