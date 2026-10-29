@@ -2,12 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, useToast, type DetailRow } from "@/components/common";
+import { Badge, Blocked, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, useToast, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
 import { FailedBand, InfoBand, SuccessBand, WarnBand } from "@/components/site/side-parts";
-import { Blocked, WhoList } from "@/app/platform-admins/admin-parts";
+import { WhoList } from "@/app/platform-admins/admin-parts";
 import { HistoryButton } from "@/app/platform-admins/history-dialog";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
 import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";

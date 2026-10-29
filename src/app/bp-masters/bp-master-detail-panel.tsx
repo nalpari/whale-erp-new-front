@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode, type RefObject } from "react";
-import { Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, useToast, type DetailRow } from "@/components/common";
+import { Blocked, Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, useToast, type DetailRow } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { HeadValues } from "@/components/site/head-values";
 import { BizVerifiedStatus } from "@/components/site/biz-verification-box";
@@ -10,7 +10,7 @@ import { SuccessBand, WarnBand } from "@/components/site/side-parts";
 import type { BpMasterDetail } from "@/lib/bp-masters";
 import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { formatBizNumber } from "@/lib/store-view";
-import { Blocked, FailedBand, WhoList } from "../platform-admins/admin-parts";
+import { FailedBand, WhoList } from "../platform-admins/admin-parts";
 import { changeBpMasterStatusAction, deleteBpMasterAction, resetBpMasterPasswordAction } from "./actions";
 import { BpStatusBadge, unknownResult, WITHDRAWN_TEXT } from "./bp-master-parts";
 import { HistoryButton } from "./history-dialog";
