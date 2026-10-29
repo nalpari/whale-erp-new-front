@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-28T01:08:20Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-29T01:21:21Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -17,7 +17,7 @@ sources:
   - id: payslip-list-page
     resource: ../../src/app/payslips/page.tsx
     title: 목록 화면 — 상태 필터 · 달 이동 · 상태 건수 · 건수 선택 · 목록
-    last_modified: 2026-10-27T09:10:13Z
+    last_modified: 2026-10-29T01:21:21Z
   - id: payslip-list-query
     resource: ../../src/app/payslips/payslip-list-query.ts
     title: 목록 URL ↔ 조회 조건(달은 늘 싣는다, 기본 건수 20 은 뺀다)
@@ -29,7 +29,7 @@ sources:
   - id: payslip-draft-dialog
     resource: ../../src/app/payslips/payslip-draft-dialog.tsx
     title: 급여명세서 작성 팝업 — 점포 · 이름 좁히기 · 직원 고르기 · 작성 · 일괄 작성(칸 문구 payslip-draft.ts, server action actions.ts)
-    last_modified: 2026-10-19T14:00:00Z
+    last_modified: 2026-10-29T01:21:21Z
   - id: payslip-detail-page
     resource: ../../src/app/payslips/[payslipId]/page.tsx
     title: 검토 화면 — 오른쪽 단(검토 사유 · 참조한 것 · 처리 이력 · 발송 이력)
@@ -143,7 +143,7 @@ page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치
 
 # 급여명세서 작성 (WHALEERP-226)
 
-목록의 「급여명세서 작성」(MN000009 등록 권한일 때만 보임)은 화면을 옮기지 않고 **목록 위 팝업**(720px, 데모 `staff-sections.mjs`
+화면명 오른쪽의 「급여명세서 작성」(기본 버튼, 근로계약 관리 「계약서 작성」과 같은 자리 · WHALEERP-632, MN000009 등록 권한일 때만 보임)은 화면을 옮기지 않고 **목록 위 팝업**(720px, 데모 `staff-sections.mjs`
 `pickId`)을 연다. 달은 목록의 달이다. **미리 고른 직원은 없다**(데모처럼 특정 직원 명세서로 바로 가지 않는다). 따로 있던
 `/payslips/new` 화면은 지웠다.
 
