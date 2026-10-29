@@ -1,4 +1,4 @@
-// 1팀 화면(점포·BP·MY PAGE) 폼이 같이 쓰는 임시 부품. 1팀 공통 컴포넌트에 없는 것들이라 컴포넌트 제안 대상이다.
+// 1팀 화면(점포·BP·마이페이지) 폼이 같이 쓰는 임시 부품. 1팀 공통 컴포넌트에 없는 것들이라 컴포넌트 제안 대상이다.
 // 생김새는 DESIGN.md 토큰과 규칙(2px 모서리, 1px 선, 34px 높이)으로만 만든다.
 import * as ui from "./ui.mjs";
 import * as x from "./extra.mjs";
@@ -142,7 +142,7 @@ export const imageBox = (src, alt = "대표 이미지") =>
 // 비활성 버튼. 1팀 버튼에 비활성 생김새가 없어 검색 버튼(disabled:opacity-40)과 같은 값으로 흐리게 둔다. 이유는 말풍선(title).
 export const disabledButton = (label, why, variant = "soft") => `<span class="opacity-40" title="${why}">${ui.button(label, { variant, disabled: true })}</span>`;
 
-// 실패 · 막힘 안내 띠(빨강) — 화면 위에 하나만 선다(앱 stores/store-parts.tsx NoticeBand 와 같다, 2026-10-28)
+// 실패 · 막힘 안내 띠(빨강) — 화면 위에 하나만 선다(앱 공통 components/common/notice-band.tsx NoticeBand 와 같다, 2026-10-28 · 2026-10-29 공통으로 올림)
 export const noticeBand = (title) =>
   `<div role="alert" class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off"><p class="font-medium">${title}</p></div>`;
 // 소속 BP 가 탈퇴 · 미사용인 점포의 상세 · 수정 안내 — 상태 이름(공통코드 ACCOUNT_STATUS)을 밝힌다(앱 stores/[storeId]/page.tsx · store-form-view.tsx 와 같다, 2026-10-28)

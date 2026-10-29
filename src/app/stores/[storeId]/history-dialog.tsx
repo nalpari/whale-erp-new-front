@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useTransition } from "react";
-import { Button, DataTable, Pagination, type Column } from "@/components/common";
+import { Button, DataTable, NoticeBand, Pagination, type Column } from "@/components/common";
 import { formatDateTime } from "@/lib/format";
 import { STORE_HISTORY_PAGE_SIZE, type StoreHistory, type StoreHistoryList } from "@/lib/store-types";
 import { getStoreHistoriesAction } from "../actions";
-import { NoticeBand } from "../store-parts";
 
 // 변경이력 버튼과 그 팝업(플랫폼 관리자 history-dialog.tsx 와 같은 생김새 — 확인창(ConfirmDialog)과 같은 네이티브
 // <dialog> 다, 표가 넓어 이 창만 넓힌다). 등록 · 최종수정은 기본정보의 변경이력 행에 이미 보이므로 팝업에는
@@ -106,7 +105,7 @@ export function HistoryButton({ storeId }: { storeId: number }) {
               columns={COLUMNS}
               rows={data?.items ?? []}
               rowKey={(h) => String(h.changeId)}
-              empty={loading && !data ? "불러오는 중입니다." : failure ? "이력을 불러오지 못했습니다." : "변경 이력이 없습니다."}
+              empty={loading && !data ? "불러오는 중입니다." : failure ? "이력을 불러오지 못했습니다." : "변경이력이 없습니다."}
             />
           </div>
           {data && data.total > STORE_HISTORY_PAGE_SIZE && (

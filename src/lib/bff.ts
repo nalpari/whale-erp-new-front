@@ -1,9 +1,10 @@
 // 브라우저에서 api 를 부를 때 쓴다. /api/* (src/app/api/[...path]/route.ts)가 토큰을 붙여 대신 부른다.
 import { BP_HEADER, bpOfPath } from "./bp-path";
 
-/** api 403 「비밀번호를 변경한 뒤 이용할 수 있습니다」를 받으면 window 에 보내는 이벤트. SessionGate 가 강제 변경 팝업을 다시 띄운다. */
+/** api 403 「서비스 이용을 위해 비밀번호를 변경해 주세요.」를 받으면 window 에 보내는 이벤트. SessionGate 가 강제 변경 팝업을 다시 띄운다. */
 export const PASSWORD_REQUIRED_EVENT = "whale-erp:password-required";
-const PASSWORD_REQUIRED_MESSAGE = "비밀번호를 변경한 뒤 이용할 수 있습니다";
+// api src/auth/access-messages.ts PASSWORD_CHANGE_REQUIRED_MESSAGE(2026-10-14)와 같은 문구 — retirement.ts 와 같다
+const PASSWORD_REQUIRED_MESSAGE = "서비스 이용을 위해 비밀번호를 변경해 주세요.";
 
 export class BffError extends Error {
   constructor(

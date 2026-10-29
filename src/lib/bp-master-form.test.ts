@@ -40,7 +40,7 @@ test("인증 상자의 세 칸은 저장을 막지 않는다 — 인증 없이 �
   assert.deepEqual(validateBpMasterForm(open, "create"), {});
   assert.equal(hasPendingVerification(open), true);
   assert.equal(hasPendingVerification({ ...filled, verifying: true }), false);
-  // 등록은 처음부터 상자가 열려 있다(MY PAGE 처럼, 2026-10-28)
+  // 등록은 처음부터 상자가 열려 있다(마이페이지처럼, 2026-10-28)
   assert.equal(EMPTY_BP_MASTER_FORM.verifying, true);
   assert.deepEqual(Object.keys(verificationErrors(open)).sort(), ["bizNumber", "ceoName", "openDate"]);
   assert.deepEqual(verificationErrors({ bizNumber: "105-86-33412", ceoName: "정하윤", openDate: "2016-05-20" }), {});
@@ -112,7 +112,7 @@ test("api 오류를 붙일 칸 — 중복 · 형식만, 수정의 아이디 오�
   assert.equal(bpMasterServerErrorField(500, "이메일", "create"), null);
 });
 
-test("대표자 연락처는 02 국번 9자리도 받는다(1팀 연락처 9~12자리, MY PAGE 와 같다)", () => {
+test("대표자 연락처는 02 국번 9자리도 받는다(1팀 연락처 9~12자리, 마이페이지와 같다)", () => {
   assert.equal(validateBpMasterForm({ ...filled, ceoPhone: ["02", "123", "4567"] }, "create").ceoPhone, undefined);
   assert.equal(validateBpMasterForm({ ...filled, ceoPhone: ["02", "12", "4567"] }, "create").ceoPhone, "대표자 연락처는 숫자 9~12자리입니다.");
 });

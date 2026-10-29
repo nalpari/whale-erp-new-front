@@ -4,6 +4,7 @@
 import type { components } from "../../../lib/api-types.generated.ts";
 import { formatAmount } from "../../../lib/payslips.ts";
 import { kstToday } from "../../../lib/staff-members.ts";
+import { ENTRY_KIND_LABELS, laterDayMark, REVIEW_REASONS } from "../../attendance-records/attendance-query.ts";
 import { addDays, mondayOf } from "../../work-schedules/work-schedule-query.ts";
 
 type Schemas = components["schemas"];
@@ -14,12 +15,19 @@ export type TodoSummary = Schemas["StaffMemberTodoSummaryResponseDto"];
 export type WeekSchedule = Schemas["StaffMemberWeekScheduleResponseDto"];
 export type WeekScheduleItem = WeekSchedule["items"][number];
 export type TodoItem = Schemas["TodoItemDto"];
+export type AttendanceItem = Schemas["PeriodAttendanceResponseDto"]["items"][number];
 
 /**
  * 영역 메뉴 조회 권한이 없을 때 api 가 그 영역만 주는 403 문구(api READ_DENIED_MESSAGE). 다른 403(공통 「접근 권한이 없습니다.
  * 관리자에게 문의해 주세요.」 · 직원 앱 토큰 등)과 이 문구로 가른다 — 상태 코드만으로는 둘이 같다. 403 문구 네 번째로 확정(2026-10-21 재영).
  */
 export const AREA_READ_DENIED_MESSAGE = "조회 권한이 없습니다.";
+
+/**
+ * 출퇴근 현황 영역의 403 문구. 이 영역 api(GET /attendance-records)는 영역 전용 문구가 아니라 일반 메뉴 가드를 쓰므로 출·퇴근 현황 조회 메뉴 권한이
+ * 없으면 이 문구(api ACCESS_DENIED_MESSAGE)가 온다. 직원 상세는 이미 열려 있어 이 문구는 곧 그 영역 권한 없음이다.
+ */
+export const ACCESS_DENIED_MESSAGE = "접근 권한이 없습니다. 관리자에게 문의해 주세요.";
 
 /** 한 영역을 받은 결과. forbidden 은 다시 해도 같아 안내만, error 는 「다시 하기」를 둔다. */
 export type AreaResult<T> = { kind: "ok"; data: T } | { kind: "forbidden" } | { kind: "error" };
@@ -28,8 +36,9 @@ export type AreaResult<T> = { kind: "ok"; data: T } | { kind: "forbidden" } | { 
  * 영역을 못 받았을 때. 403 이면서 문구가 영역 권한 문구일 때만 forbidden 이다. status 는 api 에 닿지 못했으면 null,
  * message 는 응답의 message(ApiError.message).
  */
-export function areaFailureOf(status: number | null, message: string | null): "forbidden" | "error" {
-  return status === 403 && message === AREA_READ_DENIED_MESSAGE ? "forbidden" : "error";
+export function areaFailureOf(status: number | null, message: string | null, options?: { includeAccessDenied?: boolean }): "forbidden" | "error" {
+  if (status !== 403) return "error";
+  return message === AREA_READ_DENIED_MESSAGE || (options?.includeAccessDenied === true && message === ACCESS_DENIED_MESSAGE) ? "forbidden" : "error";
 }
 
 /**
@@ -214,4 +223,66 @@ export function todoStatusMark(t: Pick<TodoItem, "status" | "completedAt">, stat
     return { text: `${done.slice(0, 4) === today.slice(0, 4) ? md(done) : done} ${label}`, style: "mark-on" };
   }
   return { text: label, style: "mark-on" };
+}
+
+/** 출퇴근 현황 칸의 표 줄 한 개. 값이 없는 칸은 「-」다 */
+export type AttendanceLine = { date: string; checkIn: string; checkOut: string; status: string; remark: string };
+
+const NONE = "-";
+
+/**
+ * 출퇴근 현황 칸의 줄 만들기(2026-10-29 재영). 날짜 오름차순(같은 날은 api 순서 그대로), 줄 하나는 직원 · 날 하나다.
+ * 출근 = 기록 시각(recordedAt)이 가장 이른 출근 · 퇴근 = 가장 늦은 퇴근(자정을 넘기면 출·퇴근 화면과 같은 「(다음날)」), 없으면 「-」(근무스케줄만 있는 날도 api 가 준 줄 그대로). 짝이 둘 이상이면 비고 끝에 「외 N회」(N = 짝 수 - 1).
+ * 비고는 「 · 」로 잇는다 — 확인 필요 사유(출퇴근 현황 화면과 같은 넷, 짝 순서대로 겹치면 한 번) · 「보정됨」 · 「대신 등록」(글자는 출·퇴근 현황 조회 화면의 ENTRY_KIND_LABELS)
+ * · 「외 N회」. 상태 · 사유 한글은 enum 라벨이고(화면에 한글 표를 따로 두지 않는다) 받지 못했거나 상태가 없으면 상태는 「-」, 사유는 빠진다 — 영문 값을 보이지 않는다.
+ */
+export function attendanceLines(
+  items: readonly Pick<AttendanceItem, "date" | "status" | "pairs">[],
+  statusLabel: ((v: string) => string) | null,
+  reasonLabel: ((v: string) => string) | null,
+): AttendanceLine[] {
+  return items
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => a.item.date.localeCompare(b.item.date) || a.index - b.index)
+    .map(({ item }) => {
+      const punches = item.pairs.flatMap((p) => [p.checkIn, p.checkOut]);
+      const reasons = [...new Set(punches.flatMap((x) => (x?.reviewReason && REVIEW_REASONS.includes(x.reviewReason) ? [x.reviewReason] : [])))];
+      // 시각 기준 — api 는 출근 없는 퇴근(orphan)을 맨 뒤에 붙여 pairs 가 시간순이 아니다
+      const checkIns = item.pairs.flatMap((p) => (p.checkIn ? [p.checkIn] : []));
+      const checkOuts = item.pairs.flatMap((p) => (p.checkOut ? [p.checkOut] : []));
+      const earliest = checkIns.reduce<(typeof checkIns)[number] | null>((a, x) => (!a || x.recordedAt < a.recordedAt ? x : a), null);
+      const latest = checkOuts.reduce<(typeof checkOuts)[number] | null>((a, x) => (!a || x.recordedAt > a.recordedAt ? x : a), null);
+      const remarks = [
+        ...(reasonLabel ? reasons.map((r) => reasonLabel(r)) : []),
+        ...(punches.some((x) => x?.isCorrected) ? [ENTRY_KIND_LABELS.CORRECTED] : []),
+        ...(punches.some((x) => x?.entryMethod === "PROXY") ? [ENTRY_KIND_LABELS.PROXY] : []),
+        ...(item.pairs.length > 1 ? [`외 ${item.pairs.length - 1}회`] : []),
+      ];
+      return {
+        date: item.date,
+        checkIn: earliest ? earliest.time : NONE,
+        checkOut: latest ? `${latest.time}${laterDayMark(item.date, latest.recordedAt)}` : NONE,
+        status: item.status && statusLabel ? statusLabel(item.status) : NONE,
+        remark: remarks.length ? remarks.join(" · ") : NONE,
+      };
+    });
+}
+
+/**
+ * 출퇴근 현황 칸 「관리」 주소 — 출·퇴근 현황 조회 화면을 그 직원 · 근무지 · 보던 주로 연다(근무스케줄 링크와 같다). 직원은 staffMemberId 로 한 명만,
+ * 퇴직 직원도 보이게 재직 상태는 전체, 일별 날(date)은 오늘이 그 주 안이면 오늘 아니면 월요일, 근태 요약 주(week)와 보정 목록 기간(fixFrom ~ fixTo = 그 주)은 monday 로 맞춘다. 화면이 오늘 뒤 · 석 달 앞을 알아서 줄인다.
+ */
+export function attendanceManageHref(staffMemberId: number, storeId: number, monday: string, today: string): string {
+  // 일별 칸의 날 — 오늘이 그 주 안이면 오늘, 아니면 그 주 월요일(화면은 date 를 그대로 받는다)
+  const date = today >= monday && today <= addDays(monday, 6) ? today : monday;
+  const params = new URLSearchParams({
+    storeIds: String(storeId),
+    staffMemberId: String(staffMemberId),
+    employment: "ALL",
+    date,
+    week: monday,
+    fixFrom: monday,
+    fixTo: addDays(monday, 6),
+  });
+  return `/attendance-records?${params}`;
 }

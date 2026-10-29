@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createContext, use, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Button, LoadingNotice, useBackdropActive } from "@/components/common";
 import { logout } from "@/app/actions";
+import { loginPathOf, returnPathOf } from "@/lib/auth-routes";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
 import { bpOfPath, bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
 import { BP_SWITCH_PATH, bpOfSwitchUrl, firstMenuRedirect, HOME, isAllowed, menuOfPath, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
@@ -57,7 +58,7 @@ interface LoginState {
 
 type LoginActions = {
   setScope: (scope: Scope) => void;
-  /** 내 정보(MY PAGE)에서 이름 · 이메일을 바꾸면 GNB 등 이 값을 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
+  /** 내 정보(마이페이지)에서 이름 · 이메일을 바꾸면 GNB 등 이 값을 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
    * 이름 · 이메일만 받고 둘 다 빈 값을 허락하지 않는다 — 소속 BP · 권한 · 비밀번호 변경 대기 같은 칸은 이 통로로
    * 바뀌면 안 되고, 호출자(MyPagePanel)는 늘 toUpdateInput 이 다듬은 값만 준다. */
   patchAccount: (partial: { name: string; email: string }) => void;
@@ -194,7 +195,8 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
         }
         if (e instanceof BffError && e.status === 401) {
           // 세션이 이미 끊겼으면(proxy·BFF 가 쿠키를 지움) 로그인 화면으로 바로 간다. login-key 가 없는 옛 세션만 로그아웃으로 끝낸다.
-          if (readLoginKey()) router.replace("/login");
+          // 메일 링크(엑셀 내려받기)로 왔으면 ?next= 를 붙여 로그인 뒤 그 화면으로 돌아온다(loginPathOf).
+          if (readLoginKey()) router.replace(loginPathOf(location.pathname));
           else if (!(await signOut(logout))) setState(LOGOUT_FAILED);
           return;
         }
@@ -270,9 +272,9 @@ function Ready({
   const allowed = switching || isAllowed(value.menus, pathname, value.serviceCode);
   // 개발 모드(StrictMode)는 effect 를 두 번 돌린다. 같은 주소에 두 번 안내하고 두 번 뒤로 가지 않게 한다.
   const denied = useRef<string | null>(null);
-  // GNB 「내정보 관리」(MY PAGE). 패널은 children(화면 본문) 뒤에 그려야 한다 — SlidePanel 은 전부 같은 z-10 이라
+  // GNB 「내정보 관리」(마이페이지). 패널은 children(화면 본문) 뒤에 그려야 한다 — SlidePanel 은 전부 같은 z-10 이라
   // DOM 순서가 쌓임을 가른다(PanelBackdrop 의 같은 설명 참고). header 는 먼저, children 은 그다음, 패널은 가장
-  // 뒤라야 화면이 자기 등록 패널을 열어 둔 채로 MY PAGE 를 열어도 그 패널 아래 깔리지 않는다(코드 리뷰로 찾음, 2026-10-21).
+  // 뒤라야 화면이 자기 등록 패널을 열어 둔 채로 마이페이지를 열어도 그 패널 아래 깔리지 않는다(코드 리뷰로 찾음, 2026-10-21).
   const [myPageOpen, setMyPageOpen] = useState(false);
   // GNB 「비밀번호 변경」(S-PTWREE) — myPageOpen 과 같은 이유로 같은 자리에 둔다.
   const [passwordChangeOpen, setPasswordChangeOpen] = useState(false);
@@ -282,7 +284,7 @@ function Ready({
   // 닫으면 SlidePanel 이 여기로 포커스를 되돌린다(DESIGN.md Slide Panel). 전엔 못 꺼내 body 로 빠졌다
   // (코드 리뷰로 찾음, 2026-10-21 — UserPop 공개 API 를 triggerRef 로 넓혀 고쳤다).
   const myPageTrigger = useRef<HTMLButtonElement>(null);
-  // 바탕창(closeOnBackdrop 켠 패널)이 떠 있는 동안 화면 본문을 inert 로 뺀다 — MY PAGE 는 어느 화면에서나
+  // 바탕창(closeOnBackdrop 켠 패널)이 떠 있는 동안 화면 본문을 inert 로 뺀다 — 마이페이지는 어느 화면에서나
   // 열 수 있어 화면마다 따로 감싸 둘 수 없다. admins-screen.tsx 의 같은 처리(자기 등록 패널용)와 겹쳐도 무해하다.
   const backdropActive = useBackdropActive();
 
@@ -342,13 +344,13 @@ function Ready({
     const onStorage = (e: StorageEvent) => {
       if (e.key !== null && e.key !== LOGIN_INFO_KEY) return;
       const loginKey = readLoginKey();
-      if (!loginKey) router.replace("/login");
+      if (!loginKey) router.replace(loginPathOf(location.pathname));
       else if (loginKey !== value.loginKey) location.reload();
     };
     addEventListener("storage", onStorage);
     return () => removeEventListener("storage", onStorage);
   }, [value.loginKey, router]);
-  // 변경 전에는 api 가 403 「비밀번호를 변경한 뒤 이용할 수 있습니다」를 준다. 저장값이 어긋났으면 팝업을 다시 띄운다.
+  // 변경 전에는 api 가 403 「서비스 이용을 위해 비밀번호를 변경해 주세요.」를 준다. 저장값이 어긋났으면 팝업을 다시 띄운다.
   useEffect(() => {
     const reopen = () => !value.account.isPasswordChangeRequired && setPasswordRequired(true);
     addEventListener(PASSWORD_REQUIRED_EVENT, reopen);
@@ -357,8 +359,9 @@ function Ready({
   const passwordChanged = () => {
     setPasswordRequired(false);
     // 바꾼 뒤에는 이 탭 서비스의 HOME 으로 다시 연다 — 플랫폼은 /platform 을 거쳐 첫 메뉴로 간다.
+    // 메일 링크(엑셀 내려받기, returnPathOf)에서 바꿨으면 그 화면을 다시 연다 — 다시 열리면 바로 내려받는다.
     // replace — assign 이면 같은 HOME 이 기록에 두 번 남아 뒤로 가기가 한 번 제자리처럼 보인다.
-    location.replace(home);
+    location.replace(returnPathOf(location.pathname) ?? home);
   };
   return (
     <LoginContext value={{ ...value, setScope, patchAccount, myPageOpen, setMyPageOpen, passwordChangeOpen, setPasswordChangeOpen, withdrawOpen, setWithdrawOpen, myPageTrigger }}>
@@ -367,7 +370,7 @@ function Ready({
       {allowed && !switching && !firstMenu && (
         <>
           {header}
-          {/* MY PAGE · 비밀번호 변경 패널이 맨 위일 때만 본문을 inert 로 뺀다 — 그냥 backdropActive 를 쓰면 화면
+          {/* 마이페이지 · 비밀번호 변경 패널이 맨 위일 때만 본문을 inert 로 뺀다 — 그냥 backdropActive 를 쓰면 화면
               자신의 closeOnBackdrop 패널(platform-admins 상세·수정 등)이 맨 위일 때 그 패널까지 children 안에
               있어 함께 inert 가 되어 버튼을 못 눌렀다(ip-code-review-claude 적대적 리뷰로 찾음, 2026-10-21).
               이 둘이 열려 있을 때는 그 패널이 다른 패널 뒤에 그려져(DOM 순서) 늘 맨 위이므로 이 조건으로

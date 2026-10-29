@@ -14,7 +14,7 @@ import {
 } from "@/lib/biz-verification-rules";
 
 /**
- * 사업자정보 인증 상자(관리자 웹) — 지금은 점포 등록/수정이 쓰고, MY PAGE 사업자정보 탭 · 플랫폼 BP 관리도 이것으로 옮길 차례다. 규칙과 문구는
+ * 사업자정보 인증 상자(관리자 웹) — 지금은 점포 등록/수정이 쓰고, 마이페이지 사업자정보 탭 · 플랫폼 BP 관리도 이것으로 옮길 차례다. 규칙과 문구는
  * lib/biz-verification-rules.ts, 정책은 manyfast S-VRNTHD(2026-10-22 사용자 확정, 미리보기 「사업자정보 인증 통일안」).
  * 회원가입은 로그인 전 화면 규격(guest-form)이라 같은 구성 · 같은 문구를 그 화면 부품으로 그린다(signup/biz-auth-section.tsx).
  * 상태는 부르는 화면이 쥔다 — 이 상자는 그리기만 한다. 인증하기는 확인만 하고 저장은 화면의 [저장]이 한다.
@@ -25,7 +25,7 @@ export function BizVerifiedStatus({ verified, date }: { verified: boolean; date:
   return <Badge tone={verified ? "on" : "off"}>{bizVerifiedLabel(verified, date)}</Badge>;
 }
 
-/** struck 일 때 쓰는 칸 — 입력칸이 아니라 "지워질 값"을 보여주기만 한다(MY PAGE "사용안함", 2026-10-23
+/** struck 일 때 쓰는 칸 — 입력칸이 아니라 "지워질 값"을 보여주기만 한다(마이페이지 "사용안함", 2026-10-23
  * 사용자 지정). TextField 는 className 을 안 받아(공통 컴포넌트 규칙) 취소선을 못 넣으므로, 같은 높이 ·
  * 테두리 · 읽기전용 바탕(FIELD_BOX)을 직접 그린 읽기 전용 칸이다. */
 function StruckField({ value }: { value: string }) {
@@ -55,7 +55,7 @@ export function BizVerificationBox({
   onRevert,
   revertLabel = "재인증 취소",
   onClearSaved,
-  // 국세청 안내 줄은 인증하기 전에만 보인다 — 인증한 뒤에도 남으면 어색했다(점포 · MY PAGE · BP 마스터, 2026-10-28 사용자 지정)
+  // 국세청 안내 줄은 인증하기 전에만 보인다 — 인증한 뒤에도 남으면 어색했다(점포 · 마이페이지 · BP 마스터, 2026-10-28 사용자 지정)
   guide = BIZ_MESSAGE.GUIDE,
   note,
   layout = "stack",
@@ -70,7 +70,7 @@ export function BizVerificationBox({
   /** 잠긴 칸에 값 대신 보일 글자(저장된 번호의 123-45-67890 표기) */
   lockedDisplay?: Partial<Record<BizVerifyField, string>>;
   /** 세 칸을 전부 지워질 값으로 보인다 — 입력칸이 아니라 취소선 그은 읽기 전용 칸, 인증하기 버튼도 숨긴다
-   * ("사용안함"을 누른 MY PAGE, 2026-10-23 사용자 지정 — 고칠 수 있는 게 아니라 지워진다는 걸 보여준다) */
+   * ("사용안함"을 누른 마이페이지, 2026-10-23 사용자 지정 — 고칠 수 있는 게 아니라 지워진다는 걸 보여준다) */
   struck?: boolean;
   verified: boolean;
   /** 인증 일자 YYYY-MM-DD — 「인증 완료 · 날짜」. 모르면 빈 문자열 */
@@ -90,26 +90,26 @@ export function BizVerificationBox({
   /** 주면 재인증 버튼 옆에 되돌리기 버튼을 보인다 — 저장된 값으로 되돌린다(점포 수정, 2026-10-22 사용자 지정) */
   onRevert?: () => void;
   /** onRevert 버튼 글자. 기본은 "재인증 취소" — "사용안함" 뒤의 되돌리기처럼 다른 문구가 필요하면 바꿔 쓴다
-   * (MY PAGE, 2026-10-23 사용자 지정 — 두 동작이 같은 되돌리기 함수를 쓰지만 문구는 달라야 한다) */
+   * (마이페이지, 2026-10-23 사용자 지정 — 두 동작이 같은 되돌리기 함수를 쓰지만 문구는 달라야 한다) */
   revertLabel?: string;
   /** 주면 [사용안함]을 재인증 버튼 오른쪽에 보인다 — 저장된 값을 아예 지운다. 점포는 못 쓰고 BP 자신만
-   * 쓴다(점포는 저장 뒤 번호 · 개업일자가 고정이라 지울 수 없다, MY PAGE, 2026-10-23 사용자 지정) */
+   * 쓴다(점포는 저장 뒤 번호 · 개업일자가 고정이라 지울 수 없다, 마이페이지, 2026-10-23 사용자 지정) */
   onClearSaved?: () => void;
   /** 버튼 아래 안내. 기본은 공통 안내 한 줄 — 저장된 점포 재인증처럼 그 화면만의 안내로 바꿀 때만 준다 */
   guide?: ReactNode;
   /** 안내 아래에 덧붙일 그 화면만의 한 줄(점포의 운영 전환 조건 등) */
   note?: ReactNode;
-  /** 세 칸 배치 — 한 줄씩 쌓거나(stack, 기본) 한 줄에 나란히(row) 둔다(2026-10-22 사용자 지정). MY PAGE
+  /** 세 칸 배치 — 한 줄씩 쌓거나(stack, 기본) 한 줄에 나란히(row) 둔다(2026-10-22 사용자 지정). 마이페이지
    * 사업자정보도 row 를 쓴다(2026-10-23 사용자 지정 — 처음엔 좁은 패널이라 stack 이었다) */
   layout?: "stack" | "row";
-  /** row 일 때 세 칸의 비율을 좁은 슬라이드 패널(MY PAGE)에 맞게 바꾼다 — 기본은 셋이 똑같다(회원가입 ·
+  /** row 일 때 세 칸의 비율을 좁은 슬라이드 패널(마이페이지)에 맞게 바꾼다 — 기본은 셋이 똑같다(회원가입 ·
    * 점포, 2026-10-23 사용자 지정으로 원래 비율 유지). 사업자등록번호를 좁히고 대표자명을 넓힌다 — 개업일자
    * 입력칸은 달력 아이콘(34px)까지 있어 "YYYY-MM-DD"가 좁은 폭에서 잘렸던 걸 먼저 고쳤는데, 그러면 사업자
    * 등록번호 · 대표자명의 placeholder가 잘려 사용자가 다시 조정했다. */
   compactRow?: boolean;
   /** 상자 머리(「사업자정보」 · 인증 상태). 점포는 인증 상태를 위쪽 묶음 제목에 두어(BizVerifiedStatus) 머리를 뺀다(2026-10-22 사용자 지정) */
   showHeader?: boolean;
-  /** 머리를 상자 밖 42px 회색 제목 바로 떼고 본문을 흰 바탕에 둔다 — MY PAGE 사업자정보 탭 전용(2026-10-26 사용자 지정).
+  /** 머리를 상자 밖 42px 회색 제목 바로 떼고 본문을 흰 바탕에 둔다 — 마이페이지 사업자정보 탭 전용(2026-10-26 사용자 지정).
    * 켜면 showHeader 는 보지 않는다 */
   titleBar?: boolean;
 }) {
@@ -121,7 +121,7 @@ export function BizVerificationBox({
   const invalid = (key: BizVerifyField) => Boolean(fieldErrors[key]) || missing.includes(key);
   const off = disabled || verifying;
   // 칸 하나(입력칸 + 그 아래 문구). 나란히 둘 때(row)는 세 칸이 남는 폭을 똑같이 나눈다 — 회원가입 · 점포는
-  // 그대로. compactRow 를 받은 화면만(MY PAGE 슬라이드 패널, 2026-10-23 사용자 지정) 세 칸의 비율을 바꾼다 —
+  // 그대로. compactRow 를 받은 화면만(마이페이지 슬라이드 패널, 2026-10-23 사용자 지정) 세 칸의 비율을 바꾼다 —
   // 값 길이 기준으로 맞춘 것이다: 사업자등록번호(하이픈 넣어 최대 12자, 123-45-67890)·개업일자(입력칸 안
   // 달력 아이콘 34px 까지 있어 "YYYY-MM-DD"가 가장 좁은 폭에서 끝(DD)까지 안 보였다)는 넓게, 대표자명은
   // 보통 짧아 좁게 — 수치는 실제 화면으로 여러 번 맞춰 본 값이다(사용자 확인, 2026-10-23). 다른 화면엔
@@ -188,7 +188,7 @@ export function BizVerificationBox({
     </div>
   );
 
-  // titleBar 면 머리를 상자 밖 회색 제목 바로 떼고 본문을 흰 바탕에 둔다(MY PAGE 「계정 정보」와 같은 모양,
+  // titleBar 면 머리를 상자 밖 회색 제목 바로 떼고 본문을 흰 바탕에 둔다(마이페이지 「계정 정보」와 같은 모양,
   // 2026-10-26 사용자 지정). 아니면 본문 div 는 contents 라 회색 상자 하나(머리 · 본문이 한 상자)다.
   return (
     <section

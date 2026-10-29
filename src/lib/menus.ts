@@ -10,7 +10,7 @@ import { stripBp } from "./bp-path.ts";
  * 직원 정보 관리의 「직원 초대」 → contracts 등록, 직원 목록 · 상세의 가입 초대 재발송 → contracts 수정),
  * 권한이 아닌 용도(메뉴 관리의 자기 잠금 확인 → platformMenus). staffMembers 는 화면에서 쓰지 않는다 — 메뉴 판정 테스트가 MenuCode 로 쓰는 시드 값이다.
  */
-export const MENU_CODE = { platformMenus: "MN000215", staffMembers: "MN000005", contracts: "MN000006", payslips: "MN000009", workSchedules: "MN000010", todos: "MN000026" } as const;
+export const MENU_CODE = { platformMenus: "MN000215", staffMembers: "MN000005", contracts: "MN000006", payslips: "MN000009", workSchedules: "MN000010", attendanceRecords: "MN000025", todos: "MN000026" } as const;
 export type MenuCode = (typeof MENU_CODE)[keyof typeof MENU_CODE];
 export type MenuAction = keyof AdminMenu["permission"];
 
@@ -83,6 +83,13 @@ export function menusOf(menus: AdminMenu[], service: ServiceCode): AdminMenu[] {
 // api 에 메뉴 행이 생기면 이 상수와 쓰는 곳(isAllowed · serviceOfPath · admin-header)을 지운다. 메뉴에 이미 있으면 따로 더하지 않는다.
 export const PENDING_PLATFORM_MENU = { name: "알림 템플릿 관리", url: "/platform/notification-templates", after: "/code-groups" };
 
+/**
+ * 메뉴 없이 로그인한 관리자면 어느 탭 서비스에서나 여는 화면. 권한은 메뉴가 아니라 api 가 따로 본다.
+ * /excel-downloads/{id} — 1만 건 이상 엑셀 예약 생성 완료 메일의 링크. 요청한 본인인지(404)와 그 화면 조회 권한이 아직 있는지(403)는
+ * api 가 내려받을 때 다시 본다.
+ */
+export const MENULESS_PATHS = ["/excel-downloads"];
+
 const isUnder = (pathname: string, url: string) => pathname === url || pathname.startsWith(`${url}/`);
 
 /**
@@ -100,7 +107,7 @@ export function serviceOfPath(menus: AdminMenu[], path: string): ServiceCode | n
 }
 
 /**
- * 이 탭(서비스)에서 이 주소를 열 수 있는가 — 그 서비스의 홈, 임시 플랫폼 메뉴(PENDING_PLATFORM_MENU), 또는 menuOfPath 가 메뉴를 찾는 주소.
+ * 이 탭(서비스)에서 이 주소를 열 수 있는가 — 그 서비스의 홈, 메뉴 없는 화면(MENULESS_PATHS), 임시 플랫폼 메뉴(PENDING_PLATFORM_MENU), 또는 menuOfPath 가 메뉴를 찾는 주소.
  * 다른 서비스의 화면은 권한이 있어도 열지 않는다 — 플랫폼 탭에서 ERP 주소를 치면 BP 없이 ERP 화면이 열리게 된다.
  * 하위 메뉴로 가는 길로만 들어온 상위 메뉴는 조회 권한이 false 라, 그 url 아래의 권한 없는 화면을 열어 주지 않는다(2026-10-14).
  * 헤더는 2단계까지 그리지만 판정은 모든 깊이(메뉴는 최대 3단계)를 본다.
@@ -108,6 +115,7 @@ export function serviceOfPath(menus: AdminMenu[], path: string): ServiceCode | n
 export function isAllowed(menus: AdminMenu[], path: string, service: ServiceCode): boolean {
   const pathname = stripBp(path);
   if (pathname === HOME[service]) return true;
+  if (MENULESS_PATHS.some((url) => isUnder(pathname, url))) return true;
   if (service === "PLATFORM" && isUnder(pathname, PENDING_PLATFORM_MENU.url)) return true;
   return menuOfPath(menus, pathname, service) !== null;
 }

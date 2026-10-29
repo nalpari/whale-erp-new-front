@@ -83,7 +83,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
           { label: "설명", value: role.description || muted("-"), multiline: Boolean(role.description) },
         ]),
   ];
-  // 고칠 수 없는 값은 MY PAGE 「계정 정보」와 같은 카드로(2026-10-26 사용자 지정 — 전엔 「기본 정보」 상세 표의 등록일시 · 최종수정일시 두 줄).
+  // 고칠 수 없는 값은 마이페이지 「계정 정보」와 같은 카드로(2026-10-26 사용자 지정 — 전엔 「기본 정보」 상세 표의 등록일시 · 최종수정일시 두 줄).
   // 일시는 굵게, 사람은 회색으로 「일시 · 사람」.
   const whenText = (at: string, actor: Parameters<typeof actorOf>[0]) => `${formatDateTime(at)} · ${actorOf(actor)}`;
   const when = (at: string, actor: Parameters<typeof actorOf>[0]) => (

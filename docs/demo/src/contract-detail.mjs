@@ -19,7 +19,7 @@ export function contractDetail({ A, R }, c) {
     ui.detailTable(c.kind, c.rows),
   );
   const history = p.section(
-    "상태 변경 이력",
+    "상태 변경이력",
     p.tag("quiet", `${c.history.length}건`),
     ui.dataTable(
       [{ header: "일시", width: "w-[120px]" }, { header: "변경 전", width: "w-[120px]" }, { header: "변경 후", width: "w-[120px]" }, { header: "처리 주체", align: "left" }],

@@ -4,9 +4,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useLayoutEffect, useRef, useState, useTransition, type KeyboardEvent, type ReactNode, type RefObject } from "react";
 import { Button, ConfirmDialog, DataTable, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, Tag, TextField } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { useAccount, useCurrentBp } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
-import { FailedBand, FieldMessage, InfoBand } from "@/components/site/side-parts";
+import { FailedBand, FieldMessage, InfoBand, WarnBand } from "@/components/site/side-parts";
 import { StoreMappingPicker, type MappingStoreOption } from "@/components/site/store-mapping-picker";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
 import {
@@ -304,6 +305,9 @@ export function AdminFormPanel(props: Props) {
   const groupOptions = groups.filter((r) => r.roleTypeCode === form.roleTypeCode);
   // 고른 역할에 붙일 그룹이 없으면 저장할 수 없다 — 가맹 마스터가 가맹 관리자 그룹을 아직 만들지 않은 때 등(BP 관리자 등록 정책)
   const noGroupForRole = mode === "create" && !groupsFailed && !!form.roleTypeCode && !groupOptions.length;
+  // 탈퇴 · 미사용 BP 에는 등록하지 않는다 — 점포 등록과 같다(플랫폼 계정만 본다, 2026-10-29 사용자 지정). 확인하지 못하면(null) 막지 않는다
+  const bpStatus = useCurrentBpStatus();
+  const bpBlocked = mode === "create" && bpStatus !== null && bpStatus !== "ACTIVE";
   // 지금 권한 그룹이 선택지에 없으면(보는 사람이 고를 수 없는 그룹) 그 그룹도 남겨 값이 비지 않게 한다
   if (mode === "edit" && !groupOptions.some((r) => r.roleGroupId === props.admin.roleGroup.roleGroupId)) groupOptions.unshift(props.admin.roleGroup);
 
@@ -398,6 +402,7 @@ export function AdminFormPanel(props: Props) {
           </span>
         )}
       </h2>
+      {bpBlocked && <WarnBand>BP가 탈퇴 또는 미사용 상태로, 관리자를 등록할 수 없습니다.</WarnBand>}
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}
       {locks.stores && (
         <Note>
@@ -669,7 +674,7 @@ export function AdminFormPanel(props: Props) {
           취소
         </Button>
         {/* 권한 그룹을 받지 못하면 등록은 고를 그룹이 없어 저장할 수 없다(수정은 지금 그룹을 그대로 둔다) */}
-        <Button onClick={handleSave} disabled={saving || (mode === "create" && (groupsFailed || noGroupForRole))}>
+        <Button onClick={handleSave} disabled={saving || bpBlocked || (mode === "create" && (groupsFailed || noGroupForRole))}>
           저장
         </Button>
       </div>
@@ -719,7 +724,7 @@ export function AdminFormPanel(props: Props) {
                 남습니다.
               </p>
             )}
-            <p>가맹 관리자 변경 이력에는 저장하는 사람이 처리자로 남고, 변경 후 값에 사유가 붙습니다.</p>
+            <p>가맹 관리자 변경이력에는 저장하는 사람이 처리자로 남고, 변경 후 값에 사유가 붙습니다.</p>
           </div>
         </ConfirmDialog>
       )}

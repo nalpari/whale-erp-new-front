@@ -70,7 +70,12 @@ function AmountField({
           placeholder={readOnly ? undefined : "직접 입력"}
           readOnly={readOnly}
           aria-invalid={invalid || undefined}
-          onChange={(e) => onChange(e.target.value)}
+          // 숫자와 쉼표만 받는다(화면 설계 공통 기준 1번 — 저장 때 칸 오류가 생기지 않게, WHALEERP-633). 붙여 넣은 「원」 · 「₩」 · 공백은 떼고, 그 밖의
+          // 글자가 섞인 입력은 통째로 받지 않는다 — 글자만 지우면 「1,000.50」이 「100050」처럼 다른 금액이 된다
+          onChange={(e) => {
+            const text = e.target.value.replace(/[\s원₩]/g, "");
+            if (/^[\d,]*$/.test(text)) onChange(text);
+          }}
           // 다 친 뒤에 쉼표를 넣는다 — 치는 중에 넣으면 커서가 끝으로 튄다
           onBlur={(e) => {
             const amount = parseAmount(e.target.value);
