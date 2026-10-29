@@ -70,7 +70,7 @@ export function StoreDetailActions({
   const bp = useCurrentBp().bpCodeId;
   const at = (path: string) => bpPath(bp, path);
   const statusLabel = useCodeLabel("STORE_STATUS");
-  const [dialog, setDialog] = useState<"status" | "delete" | null>(null);
+  const [dialog, setDialog] = useState<"status" | "close-confirm" | "delete" | null>(null);
   const [target, setTarget] = useState<StoreStatus | null>(null);
   const [transitions, setTransitions] = useState<StoreTransitions>(store.transitions);
   const [failure, setFailure] = useState<string | null>(null);
@@ -188,7 +188,8 @@ export function StoreDetailActions({
           confirmLabel={target ? `${statusLabel(target)}${finalEuro(statusLabel(target))} 변경` : "변경"}
           busy={busy}
           confirmDisabled={!allowed}
-          onConfirm={handleStatusChange}
+          // 폐점은 되돌릴 수 없어 수정 화면처럼 확인 창을 한 번 더 거친다(2026-10-29 사용자 결정). 조건 팝업에는 폐점일 안내를 적지 않는다(10-19)
+          onConfirm={target === "CLOSED" ? () => setDialog("close-confirm") : handleStatusChange}
           onCancel={() => setDialog(null)}
         >
           <div className="flex flex-col gap-[12px]">
@@ -248,6 +249,21 @@ export function StoreDetailActions({
             )}
             {failure && <p role="alert" className="text-erp-off">{failure}</p>}
           </div>
+        </ConfirmDialog>
+      )}
+
+      {can.update && !closed && targets.includes("CLOSED") && (
+        <ConfirmDialog
+          open={dialog === "close-confirm"}
+          title="폐점으로 변경할까요?"
+          confirmLabel="폐점으로 변경"
+          cancelLabel="이전"
+          busy={busy}
+          onConfirm={handleStatusChange}
+          onCancel={() => setDialog("status")}
+        >
+          <p>폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다.</p>
+          {failure && <p role="alert" className="mt-[10px] text-erp-off">{failure}</p>}
         </ConfirmDialog>
       )}
 
