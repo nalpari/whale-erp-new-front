@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 상세의 `Blocked` 복사본을 지우고 공통 `@/components/common` 의 것을 쓴다. 공통 [엑셀 다운로드](`ExcelDownloadButton`)는 막힌 버튼 자체에 title 을 달아 0건 이유가 뜨지 않았다 — `Blocked` 로 감쌌다(점포 · BP 마스터 목록 함께, 실제 화면 확인, front typhlosion).
 * **Update**: [점포 관리](/stores.md) — review-pr(PR #190) 반영: 상세에서 폐점 확인 창으로 넘어갈 때 앞 팝업의 실패 문구를 지운다. 주석 셋을 바로잡았다(front typhlosion).
 * **Update**: main 병합(front typhlosion, main #187 까지): okf 충돌은 양쪽 기록을 살렸다 — [점포 관리](/stores.md) 는 main 의 엑셀 내려받기 출처 줄과 늦은 시각을 남겼다.
 * **Update**: [점포 관리](/stores.md) — 수정 화면: 동시 수정은 지금처럼 즉시 다시 채우고 폼 띠로 알림 · 폐점 점포 안내는 코드 문구 · 변경 이력 안내는 두지 않음으로 정하고, 데모 · 화면정의서(그림 · 항목 17개)를 실제 배치 · 공통 인증 상자(10-22) · 폐점 조건(10-19) · BP 미사용 문구(10-28) · 주소 storeId(10-14)대로 다시 그렸다(2026-10-29 사용자 결정, front typhlosion).
