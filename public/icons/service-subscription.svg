@@ -1,7 +1,16 @@
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<mask id="subscription-cut">
+<rect width="24" height="24" fill="white"/>
+<circle cx="17.5" cy="17.5" r="5.75" fill="black"/>
+</mask>
+</defs>
 <g id="subscription" stroke="#6B7988" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-<rect x="2.5" y="5" width="15" height="10.5" rx="1.5"/>
-<path d="M2.5 9h15M5.5 12.5h3"/>
-<path d="M21.5 13.5a4 4 0 0 1-6.8 3.4M14.5 20.5v-3.6h3.6"/>
+<g mask="url(#subscription-cut)">
+<rect x="2.75" y="4.75" width="15.5" height="11" rx="2"/>
+<path d="M2.75 8.75h15.5M5.75 12.5h3"/>
+</g>
+<path d="M13.75 17.5a3.75 3.75 0 1 0 3.75-3.75"/>
+<path d="M18.75 12.5 17.5 13.75l1.25 1.25"/>
 </g>
 </svg>

@@ -192,6 +192,8 @@ const MOTION = {
   fade: { base: "transition-[opacity,visibility]", closed: "invisible opacity-0 duration-150", innerClosed: "" },
 };
 const TAIL = '<span class="absolute -top-[5px] left-1/2 size-[8px] -translate-x-1/2 -rotate-45 rounded-tr-[1px] border-t border-r border-[#ebebeb] bg-white"></span>';
+// 서비스 바로가기 툴팁 꼬리 — 툴팁과 같은 회청 바탕(global-header.tsx Tip 과 같다, 2026-10-29 사용자 지정).
+const TIP_TAIL = TAIL.replace("border-[#ebebeb] bg-white", "border-erp-brand bg-erp-brand");
 export const popup = (id, motion, cls, children, tail = false) => {
   const m = MOTION[motion];
   return `<div id="${id}" inert class="absolute top-[calc(100%+8px)] z-20 rounded-[2px] border border-[#ebebeb] bg-white p-[23px] ${EASE_OUT} ${m.base} ${m.closed} ${cls}">${tail ? TAIL : ""}<div class="transition-transform ${EASE_OUT} motion-reduce:transform-none ${m.innerClosed}">${children}</div></div>`;
@@ -239,7 +241,7 @@ export function userPop(A, name, items) {
 const ICON_HOVER =
   "group relative grid h-[32px] place-items-center rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70 [&>span:first-child]:transition-opacity hover:[&>span:first-child]:opacity-70";
 const tip = (label) =>
-  `<span class="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[14px] leading-[2] whitespace-nowrap text-erp-brand opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${TAIL}${label}</span>`;
+  `<span class="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-erp-brand bg-erp-brand px-[12px] py-[10px] text-[14px] leading-[2] whitespace-nowrap text-white opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${TIP_TAIL}${label}</span>`;
 // scopeDialog 를 주면(플랫폼 콘솔) 웨일ERP 아이콘이 바로 이동하지 않고 그 id 의 BP 선택 확인창을 먼저 연다(F-TLJOCK).
 // hideAddon 이면 부가서비스구독관리 아이콘을 뺀다 — 플랫폼관리 사이트(global-header.tsx 와 같다, 2026-10-28 사용자 지정).
 export const serviceLinks = (A, hrefs = {}) => {
