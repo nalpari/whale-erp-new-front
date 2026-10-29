@@ -10,10 +10,13 @@
   <body data-root="../" data-page="auth" data-sub="auth/signup.html">
     <!-- BP 회원가입 · /signup · S-RCJXIG 기본정보·사업자정보 입력 (F-JVTPSU) · S-VRNTHD 사업자 번호 인증 팝업
          한 화면에 기본정보 · 사업자정보 인증 · 약관동의를 모두 둔다. 별도 약관 화면과 점포 입력은 없다.
-         사업자정보 인증은 선택이다. 인증에 성공해야 사업자정보 입력 영역이 열린다.
+         사업자정보 인증은 선택이다. 인증해도 받는 칸은 사업자등록번호·대표자명·개업일자 셋뿐이다.
          가입 전에는 아무것도 서버에 저장하지 않는다 — 새로 고치거나 떠나면 입력값과 인증 결과가 모두 사라진다.
-         아이디·이메일은 칸을 벗어날 때(포커스 아웃) 형식과 중복을 확인해 칸 아래에 결과를 보이고, 둘 다 통과해야 가입 버튼이 열린다.
-         값을 고치면 결과를 지우고 다시 벗어날 때 새로 확인한다. -->
+         아이디·이메일은 칸을 벗어날 때(포커스 아웃) 형식과 중복을 확인해 칸 아래에 결과를 보인다.
+         값을 고치면 결과를 지우고 다시 벗어날 때 새로 확인한다.
+         [회원가입] 버튼은 늘 열려 있다. 누르면 모든 칸을 검사해 틀린 칸 아래에 문구를 띄우고 첫 칸으로 커서를 옮기며,
+         필수 약관을 안 했으면 약관 아래에 알리고, 아직 확인하지 않은 아이디·이메일은 그때 확인한다(2026-10-29 재영 — 실제 화면대로).
+         막히는 것은 제출 중 · 사업자 인증 중 · 결과를 모르는 제출 뒤뿐이다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
@@ -56,7 +59,7 @@
                   <input class="input" id="sid" value="hangang01" autocomplete="username" data-dupcheck="id" data-taken="whale01,admin,hangang" />
                   <span class="help">영문 또는 영문·숫자 4~20자 · 칸을 벗어나면 바로 중복을 확인합니다</span>
                   <span class="pass" data-dup="ok" hidden><span data-icon="check" data-icon-size="13"></span>사용할 수 있는 아이디입니다.</span>
-                  <span class="err" data-dup="bad" hidden><span data-icon="alert" data-icon-size="13"></span>사용할 수 없는 아이디입니다.</span>
+                  <span class="err" data-dup="bad" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.</span>
                   <span class="err" data-dup="fmt" hidden><span data-icon="alert" data-icon-size="13"></span>영문 또는 영문·숫자 조합 4~20자로 입력해 주세요.</span>
                 </div>
                 <div class="grid grid--2">
@@ -97,7 +100,7 @@
                   <input class="input" id="smail" type="email" value="hayoon@hangang.co.kr" data-dupcheck="mail" data-taken="taken@whale.kr,admin@whale.kr" />
                   <span class="help">칸을 벗어나면 형식과 중복을 확인합니다 · 아이디 찾기와 임시 비밀번호가 이 주소로 갑니다</span>
                   <span class="pass" data-dup="ok" hidden><span data-icon="check" data-icon-size="13"></span>사용할 수 있는 이메일입니다.</span>
-                  <span class="err" data-dup="bad" hidden><span data-icon="alert" data-icon-size="13"></span>이미 등록된 이메일입니다.</span>
+                  <span class="err" data-dup="bad" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요.</span>
                   <span class="err" data-dup="fmt" hidden><span data-icon="alert" data-icon-size="13"></span>이메일 형식이 올바르지 않습니다.</span>
                 </div>
                 <div class="field">
@@ -194,13 +197,10 @@
                 </div>
               </section>
 
-              <div class="stack" data-dupgate style="gap: 6px">
+              <div class="stack" style="gap: 6px">
 
-                <a class="btn btn--primary btn--lg btn--block" href="signup-done.html" data-gate="go">회원가입</a>
-
-                <button class="btn btn--primary btn--lg btn--block" type="button" disabled data-gate="block" hidden>회원가입</button>
-
-                <span class="subtle" style="font-size: 12px; text-align: center" data-gate="block" hidden>아이디·이메일 중복 확인과 필수 약관 동의를 마쳐야 가입할 수 있습니다.</span>
+                <!-- 버튼은 늘 열려 있다 — 빠진 것은 누른 뒤 칸마다 알린다(2026-10-29 재영) -->
+                <a class="btn btn--primary btn--lg btn--block" href="signup-done.html">회원가입</a>
 
               </div>
               <div class="auth__links">
