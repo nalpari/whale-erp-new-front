@@ -216,7 +216,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
           </div>
           {c && (
             <div className="flex flex-col gap-[12px]">
-              <h3 className="text-[15px] font-semibold text-erp-ink">상태 변경 이력</h3>
+              <h3 className="text-[15px] font-semibold text-erp-ink">상태 변경이력</h3>
               <DataTable
                 columns={[
                   { header: "일시", width: "w-[160px]", cell: (h) => kstDateTime(h.changedAt) },

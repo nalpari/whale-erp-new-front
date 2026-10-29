@@ -81,3 +81,9 @@ const STATE_CHANGED_CODES: ReadonlySet<string> = new Set(["BIRTH_DATE_NOT_JOINED
  */
 export const refreshesAfterCorrection = (failure: { status?: number; code?: string }) =>
   failure.status === 409 && failure.code !== undefined && STATE_CHANGED_CODES.has(failure.code);
+
+/**
+ * 정정 실패를 날짜 칸 아래에 둘 것인가(재영 공지 2026-10-29). api 의 400 은 BIRTH_DATE_INVALID(형식 · 오늘 뒤) · BIRTH_DATE_UNDER_AGE(만 19세 미만)
+ * 모두 새 생년월일 입력 검증이다. 같은 값 409 · 권한 403 · 가입 전 · 퇴직 409 · 결과 모름은 맨 아래 문구나 토스트로 둔다.
+ */
+export const showsBelowBirthDateField = (failure: { status?: number }) => failure.status === 400;

@@ -105,7 +105,7 @@ export function detailTable(title, rows, action = "") {
   const head = action
     ? `<div class="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px]"><h3 class="flex min-w-0 flex-1 items-center text-[15px] font-semibold text-erp-ink">${title}</h3>${action}</div>`
     : `<h3 class="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">${title}</h3>`;
-  return `<div class="w-full">${head}<dl class="flex w-full flex-col">${items}</dl></div>`; // 제목은 MY PAGE 「계정 정보」와 같은 15px 600(앱 detail-table.tsx, 2026-10-27 사용자 지정)
+  return `<div class="w-full">${head}<dl class="flex w-full flex-col">${items}</dl></div>`; // 제목은 마이페이지 「계정 정보」와 같은 15px 600(앱 detail-table.tsx, 2026-10-27 사용자 지정)
 }
 export const detailValues = (items) =>
   items
@@ -226,11 +226,11 @@ export function userPop(A, name, items) {
         : `<li><a class="${cls}" href="${it.href}">${it.label}</a></li>`;
     })
     .join("");
-  return `<div class="relative"><button type="button" aria-expanded="false" aria-controls="${id}" class="flex items-center"><span class="flex items-center gap-[10px] text-[15px] font-medium text-erp-ink">${img(A, "avatar.svg", 42, 42)}${name}</span>${img(A, "user-more.svg", 34, 34, `transition-transform duration-200 ${EASE_OUT} `)}</button>${popup(
+  return `<div class="relative"><button type="button" aria-label="${name} 마이페이지" aria-expanded="false" aria-controls="${id}" class="group relative flex items-center"><span class="flex items-center gap-[10px] text-[15px] font-medium text-erp-ink">${img(A, "avatar.svg", 42, 42)}${name}</span>${img(A, "user-more.svg", 34, 34, `transition-transform duration-200 ${EASE_OUT} `)}${tip("마이페이지")}</button>${popup(
     id,
     "fade",
     "right-0 w-[154px]",
-    `<p class="text-[15px] leading-[2] font-medium text-[#111] [text-box:trim-both_cap_alphabetic]">MY PAGE</p><hr class="mt-[12px] mb-[18px] border-erp-button-line"><ul class="text-[14px] leading-[2] [text-box:trim-both_cap_alphabetic]">${list}</ul>`,
+    `<p class="text-[15px] leading-[2] font-medium text-[#111] [text-box:trim-both_cap_alphabetic]">마이페이지</p><hr class="mt-[12px] mb-[18px] border-erp-button-line"><ul class="text-[14px] leading-[2] [text-box:trim-both_cap_alphabetic]">${list}</ul>`,
     true,
   )}</div>`;
 }
@@ -239,21 +239,21 @@ export function userPop(A, name, items) {
 const ICON_HOVER =
   "group relative grid h-[32px] place-items-center rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70 [&>span:first-child]:transition-opacity hover:[&>span:first-child]:opacity-70";
 const tip = (label) =>
-  `<span class="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[14px] leading-[2] whitespace-nowrap text-erp-brand opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${TAIL}${label}</span>`;
+  `<span aria-hidden="true" class="pointer-events-none absolute top-[calc(50%+26px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${label}</span>`;
 // scopeDialog 를 주면(플랫폼 콘솔) 웨일ERP 아이콘이 바로 이동하지 않고 그 id 의 BP 선택 확인창을 먼저 연다(F-TLJOCK).
-// hideAddon 이면 부가서비스 현황 아이콘을 뺀다 — 플랫폼관리 사이트(global-header.tsx 와 같다, 2026-10-28 사용자 지정).
+// hideAddon 이면 부가서비스구독관리 아이콘을 뺀다 — 플랫폼관리 사이트(global-header.tsx 와 같다, 2026-10-28 사용자 지정).
 export const serviceLinks = (A, hrefs = {}) => {
   const erpLink = hrefs.scopeDialog
     ? `<button type="button" aria-label="웨일ERP" data-dialog="${hrefs.scopeDialog}" class="${ICON_HOVER} w-[32px]">${img(A, "service-erp.svg", 32, 32)}${tip("웨일ERP")}</button>`
     : `<a aria-label="웨일ERP" class="${ICON_HOVER} w-[32px]" href="${hrefs.erp ?? "#"}">${img(A, "service-erp.svg", 32, 32)}${tip("웨일ERP")}</a>`;
   // 플랫폼관리는 플랫폼 계정에게만 보인다 — hrefs.platform 을 안 주면 자리째 뺀다(BP·가맹 role, 사용자 지적 · global-header.tsx 와 같다, 2026-10-21).
   const platformLink = hrefs.platform
-    ? `<a aria-label="플랫폼관리" class="${ICON_HOVER} w-[20px] bg-white" href="${hrefs.platform}">${img(A, "service-platform.svg", 20, 20)}${tip("플랫폼관리")}</a>`
+    ? `<a aria-label="플랫폼관리" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.platform}">${img(A, "service-platform.svg", 22, 22)}${tip("플랫폼관리")}</a>`
     : "";
-  return `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]">${erpLink}${hrefs.hideAddon ? "" : `<a aria-label="부가서비스 현황" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-chat.svg", 19, 19)}${tip("부가서비스 현황")}</a>`}${platformLink}</div></div>`;
+  return `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]">${erpLink}${hrefs.hideAddon ? "" : `<a aria-label="부가서비스구독관리" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-subscription.svg", 24, 24)}${tip("부가서비스구독관리")}</a>`}${platformLink}</div></div>`;
 };
 export const alarmLink = (A, href) =>
-  `<a aria-label="알림" class="shrink-0 rounded-full transition-opacity duration-150 ease-out hover:opacity-70" href="${href}">${img(A, "alarm.svg", 42, 42)}</a>`;
+  `<a aria-label="알림" class="group relative shrink-0 rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70" href="${href}">${img(A, "alarm.svg", 42, 42)}${tip("알림")}</a>`;
 
 // menus: { label, items: [{ label, href }] }. 2depth 줄은 처음엔 첫 메뉴 항목을 그려 두고 erp.js 가 바꾼다.
 export function globalHeader(A, menus, right, home = "#") {

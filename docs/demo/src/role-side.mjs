@@ -62,7 +62,7 @@ export function menuScroll(table) {
   );
 }
 
-// 권한 그룹 상세의 고칠 수 없는 값 — MY PAGE 「계정 정보」 모양에서 제목 바 · 테두리를 뺐다(앱 components/common/readonly-card.tsx, 2026-10-26 사용자 지정).
+// 권한 그룹 상세의 고칠 수 없는 값 — 마이페이지 「계정 정보」 모양에서 제목 바 · 테두리를 뺐다(앱 components/common/readonly-card.tsx, 2026-10-26 사용자 지정).
 // manager: 가맹마스터 계정 — undefined 면 줄 없음(플랫폼), null 이면 「-」(BP 관리자 그룹), 값이면 가맹 마스터 아이디 · 이름. reg · mod: [일시, 사람]
 // 라벨 옆 도움말 정보 아이콘 — 마우스를 올리거나 키보드로 닿으면 안내가 뜬다(앱 components/common/help-tip.tsx 와 같다, 2026-10-26 사용자 지정)
 const helpTip = (text, label) =>

@@ -41,7 +41,7 @@ function TabBar({ tab, onChange }: { tab: "basic" | "biz"; onChange: (next: "bas
     { key: "biz" as const, label: "사업자정보" },
   ];
   return (
-    <div role="tablist" aria-label="내 정보" className="flex h-[42px] gap-[18px] border-b border-erp-thead-line">
+    <div role="tablist" aria-label="내정보 관리" className="flex h-[42px] gap-[18px] border-b border-erp-thead-line">
       {items.map((it) => {
         const on = tab === it.key;
         return (
@@ -256,8 +256,8 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   };
 
   return (
-    <SlidePanel id={id} open={open} onClose={onClose} label="내 정보" trigger={trigger} closeOnBackdrop>
-      <h2 className="text-[18px] font-semibold text-erp-ink">내 정보</h2>
+    <SlidePanel id={id} open={open} onClose={onClose} label="내정보 관리" trigger={trigger} closeOnBackdrop>
+      <h2 className="text-[18px] font-semibold text-erp-ink">내정보 관리</h2>
       {loadFailure && <FailedBand message={loadFailure} />}
       {tab === "basic" && failure && <FailedBand message={failure} />}
       {!profile || !form ? (

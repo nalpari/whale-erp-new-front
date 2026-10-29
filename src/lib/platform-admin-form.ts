@@ -79,7 +79,7 @@ export function loginIdError(loginId: string): string | undefined {
   return value ? LOGIN_ID_FORMAT_ERROR : "아이디를 입력해 주세요.";
 }
 
-/** 수정 화면의 이메일이 원래 값 그대로인가 — 그대로면 확인 대상이 아니라 칸 아래에 아무것도 띄우지 않는다(MY PAGE 와 같다). */
+/** 수정 화면의 이메일이 원래 값 그대로인가 — 그대로면 확인 대상이 아니라 칸 아래에 아무것도 띄우지 않는다(마이페이지와 같다). */
 export function isOriginalEmail(value: string, original: string | null): boolean {
   return value.trim().toLowerCase() === (original ?? "").trim().toLowerCase();
 }
