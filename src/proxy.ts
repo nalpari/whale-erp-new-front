@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { homeOf, isPlatformRole, isPublicPath, redirectsSignedIn } from "@/lib/auth-routes";
+import { homeOf, isPlatformRole, isPublicPath, loginPathOf, redirectsSignedIn, RETURN_PARAM, signedInTargetOf } from "@/lib/auth-routes";
 import { BP_HEADER, bpRouteOf, stripBp } from "@/lib/bp-path";
 import { answersWith401, TOO_LARGE, tooLarge } from "@/lib/paper-request";
 import {
@@ -32,7 +32,11 @@ export async function proxy(req: NextRequest) {
 
   if (isPublicPath(pathname)) {
     // 로그인한 채 로그인 전 홈 · 로그인 · 찾기에 오면 자기 홈으로 보낸다 — 조건은 redirectsSignedIn(auth-routes.ts).
-    if (session && redirectsSignedIn(pathname, req.method, session)) return NextResponse.redirect(new URL(homeOf(session.roleTypeCode), req.url));
+    // 로그인 화면에 돌아올 곳(?next=, 메일 링크)이 있으면 홈 대신 그리로(signedInTargetOf).
+    if (session && redirectsSignedIn(pathname, req.method, session)) {
+      const target = signedInTargetOf(pathname, req.nextUrl.searchParams.get(RETURN_PARAM), homeOf(session.roleTypeCode));
+      return NextResponse.redirect(new URL(target, req.url));
+    }
     // 공개 화면도 들어온 탭 BP 헤더는 버린다 — 헤더는 늘 proxy 가 주소에서 정한 값이다.
     req.headers.delete(BP_HEADER);
     return NextResponse.next({ request: { headers: req.headers } });
@@ -119,11 +123,12 @@ async function refresh(session: Session): Promise<Session | "unauthorized" | nul
 // 쿠키를 지워야 /login 의 「로그인한 채 오면 홈으로」가 다시 돌려보내지 않는다.
 // BFF(/api/*)와 종이 계약 등록(/contracts/paper)은 fetch 가 부르므로 로그인 화면 HTML 대신 401 을 준다 — 화면이 받아 /login 으로 보낸다.
 // 리다이렉트를 주면 fetch 가 따라가 날인본을 실은 채 /login 으로 다시 POST 하고, 화면은 로그인으로 가지 못한다(answersWith401).
+// 메일 링크(엑셀 내려받기)처럼 돌아올 수 있는 화면이면 /login?next= 로 보내 로그인 뒤 그 화면으로 돌아오게 한다(loginPathOf).
 function toLogin(req: NextRequest) {
   // 탭 BP 주소(/bp/{id}/contracts/paper)로 부른 창구도 같은 판정을 받게 접두를 떼고 본다.
   const res = answersWith401(stripBp(req.nextUrl.pathname))
     ? NextResponse.json({ message: "로그인이 필요합니다" }, { status: 401 })
-    : NextResponse.redirect(new URL("/login", req.url));
+    : NextResponse.redirect(new URL(loginPathOf(req.nextUrl.pathname, req.method), req.url));
   res.cookies.delete(SESSION_COOKIE);
   return res;
 }

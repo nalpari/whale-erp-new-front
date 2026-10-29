@@ -25,6 +25,34 @@ export function redirectsSignedIn(pathname: string, method: string, session: { a
   return pathname === "/" && session.accessTokenExpiresAt > now;
 }
 
+/** 로그인 화면 주소의 돌아올 곳 쿼리 이름 — /login?next=/excel-downloads/41 */
+export const RETURN_PARAM = "next";
+
+/**
+ * 로그인한 뒤 돌아올 수 있는 주소. 메일 링크로 들어오는 화면(1만 건 이상 엑셀 내려받기 /excel-downloads/{id})만 받는다 —
+ * 아무 주소나 받으면 바깥 사이트로 보내는 링크(열린 리다이렉트)가 된다. 맞지 않으면 null(자기 홈으로 간다).
+ */
+export function returnPathOf(value: unknown): string | null {
+  return typeof value === "string" && /^\/excel-downloads\/[1-9]\d{0,8}$/.test(value) ? value : null;
+}
+
+/**
+ * 로그인 없이 이 주소에 온 사람을 보낼 로그인 화면 주소(proxy · 화면의 401). 화면을 여는 GET 이고 돌아올 수 있는 주소(returnPathOf)면
+ * /login?next= 로, 아니면 /login. 서버 액션 POST 에는 붙이지 않는다 — 로그인 뒤 POST 주소로 돌아갈 수 없다.
+ */
+export function loginPathOf(pathname: string, method = "GET"): string {
+  const back = method === "GET" ? returnPathOf(pathname) : null;
+  return back ? `/login?${new URLSearchParams({ [RETURN_PARAM]: back })}` : "/login";
+}
+
+/**
+ * 로그인한 채 로그인 전 화면(redirectsSignedIn)에 온 사람을 보낼 곳. /login 에 돌아올 곳(?next=, 메일 링크)이 있으면 그리로 —
+ * 다른 탭에서 이미 로그인한 채 메일 링크를 연 경우다. 그 밖에는 자기 홈. next 는 returnPathOf 를 거쳐 바깥 주소로 보내지 않는다.
+ */
+export function signedInTargetOf(pathname: string, next: string | null, home: string): string {
+  return (pathname === "/login" ? returnPathOf(next) : null) ?? home;
+}
+
 /** okf/auth.md — BP·가맹 계정은 웨일ERP(BP) 홈, 플랫폼 계정은 플랫폼관리 사이트. */
 export function homeOf(roleTypeCode: string): "/platform" | "/home" {
   return isPlatformRole(roleTypeCode) ? "/platform" : "/home";
