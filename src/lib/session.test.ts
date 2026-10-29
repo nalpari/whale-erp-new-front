@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { loginKeyCookie, parseSession, sessionCookie, type Session } from "./session.ts";
+import { deviceCookie, deviceIdOf, loginKeyCookie, parseSession, sessionCookie, type Session } from "./session.ts";
 
 const session: Session = {
   accessToken: "a",
@@ -44,4 +44,18 @@ test("login-key 쿠키는 화면 스크립트가 읽어야 해서 httpOnly 가 �
   const c = loginKeyCookie("k");
   assert.equal("httpOnly" in c && c.httpOnly, false);
   assert.equal(c.path, "/");
+});
+
+test("기기 구분값: 쿠키의 UUID 는 그대로, 없거나 고친 값은 새로 만든다", () => {
+  const id = "0f8b1c2d-3e4f-4a5b-8c6d-7e8f9a0b1c2d";
+  assert.equal(deviceIdOf(id), id);
+  for (const stored of [undefined, "", "Mozilla/5.0", `${id}x`]) assert.match(deviceIdOf(stored), /^[0-9a-f-]{36}$/);
+  assert.notEqual(deviceIdOf(undefined), deviceIdOf(undefined));
+});
+
+test("기기 구분값 쿠키는 브라우저를 닫아도 남는다 — 같은 브라우저의 다음 로그인이 앞 세션을 끊어야 한다", () => {
+  const c = deviceCookie("v");
+  assert.equal(c.httpOnly, true);
+  assert.equal(c.path, "/");
+  assert.ok(c.maxAge > 0);
 });

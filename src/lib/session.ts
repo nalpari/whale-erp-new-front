@@ -152,6 +152,32 @@ export function sessionCookie(session: Session) {
   };
 }
 
+export const DEVICE_COOKIE = "device-id";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/**
+ * 로그인 때 api 에 넘기는 기기 구분값(deviceInformation). api 는 같은 값으로 다시 로그인하면 그 기기의 앞 세션을 끊는다.
+ * user-agent 를 넘기면 같은 OS · 브라우저 버전의 다른 PC 끼리 값이 같아 서로의 세션을 끊는다 — 여러 브라우저 동시 로그인(S-XJDKSI).
+ * 쿠키에 있던 값이 UUID 가 아니면(고쳤거나 비었으면) 새로 만든다.
+ */
+export function deviceIdOf(stored: string | undefined): string {
+  return stored && UUID.test(stored) ? stored : crypto.randomUUID();
+}
+
+/** 로그아웃해도 지우지 않는다 — 같은 브라우저의 다음 로그인이 앞 세션을 끊어야 한다. 400일은 브라우저 쿠키 수명 상한이다. */
+export function deviceCookie(value: string) {
+  return {
+    name: DEVICE_COOKIE,
+    value,
+    httpOnly: true,
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 400 * 24 * 60 * 60,
+  };
+}
+
 export function loginKeyCookie(value: string) {
   return { name: LOGIN_KEY_COOKIE, value, sameSite: "lax" as const, secure: process.env.NODE_ENV === "production", path: "/" };
 }
