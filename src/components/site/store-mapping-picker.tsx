@@ -105,6 +105,7 @@ export function StoreMappingPicker({
   failed,
   panelOpen,
   exclude = false,
+  blocked,
 }: {
   /** 감싼 패널이 열려 있는가 — 뒤로 가기처럼 클릭 아닌 길로 닫히면 최상위 레이어의 일괄 검색 창 · 찾기 목록도 닫는다 */
   panelOpen: boolean;
@@ -120,6 +121,11 @@ export function StoreMappingPicker({
   failed?: boolean;
   /** 고른 점포가 예외 점포다(적용 범위 전체 점포) — 문구만 바뀐다 */
   exclude?: boolean;
+  /**
+   * 아직 후보를 받을 수 없는 이유(예: 「계정역할을 먼저 선택하세요.」) — 주면 찾기 칸 · [일괄 검색]을 막고 찾기 칸에 이 문구를 둔다.
+   * 후보를 받기 전 빈 목록이 「선택할 수 있는 점포가 없습니다.」로 읽히지 않게 한다(2026-10-29 사용자 지적, BP 관리자 등록)
+   */
+  blocked?: string;
 }) {
   const text = exclude ? TEXTS.exclude : TEXTS.include;
   const listId = useId();
@@ -200,7 +206,8 @@ export function StoreMappingPicker({
                   if (listShown && candidates[active]) choose(candidates[active]);
                 }
               }}
-              placeholder={loading ? "점포 목록을 불러오는 중입니다" : "점포명 또는 점포코드"}
+              placeholder={blocked ?? (loading ? "점포 목록을 불러오는 중입니다" : "점포명 또는 점포코드")}
+              disabled={!!blocked}
               aria-label={text.search}
               role="combobox"
               aria-autocomplete="list"
@@ -250,7 +257,7 @@ export function StoreMappingPicker({
               </p>
             )}
           </div>
-          <Button variant="soft" onClick={() => setBulkOpen(true)} disabled={loading || failed}>
+          <Button variant="soft" onClick={() => setBulkOpen(true)} disabled={!!blocked || loading || failed}>
             일괄 검색
           </Button>
         </div>

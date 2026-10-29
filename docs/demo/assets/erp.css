@@ -3645,6 +3645,12 @@
   .\[\&_input\:checked\]\:bg-no-repeat input:checked {
     background-repeat: no-repeat;
   }
+  .\[\&_input\:enabled\:not\(\:checked\)\]\:border-erp-brand input:enabled:not(:checked) {
+    border-color: var(--color-erp-brand);
+  }
+  .\[\&_label\]\:text-erp-muted label {
+    color: var(--color-erp-muted);
+  }
   .\[\&_tbody_tr\]\:cursor-pointer tbody tr {
     cursor: pointer;
   }

@@ -8,7 +8,7 @@ import { HeadValues } from "@/components/site/head-values";
 import { BizVerifiedStatus } from "@/components/site/biz-verification-box";
 import { SuccessBand, WarnBand } from "@/components/site/side-parts";
 import type { BpMasterDetail } from "@/lib/bp-masters";
-import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
+import { formatDateTime, formatPhone, wasUpdated, withinPasswordHour } from "@/lib/format";
 import { formatBizNumber } from "@/lib/store-view";
 import { FailedBand, WhoList } from "../platform-admins/admin-parts";
 import { changeBpMasterStatusAction, deleteBpMasterAction, resetBpMasterPasswordAction } from "./actions";
@@ -100,6 +100,8 @@ function DetailBody({
   const [busy, startBusy] = useTransition();
   /** 이 상세에서 초기화 메일을 보냈다 — 로그인한 적이 있어도 하늘색 안내를 띄운다(등록 때와 같은 안내, 2026-10-28 사용자 지정) */
   const [resetSent, setResetSent] = useState(false);
+  // 패널을 닫으면 방금 초기화 안내를 내린다 — 같은 계정을 다시 열어도 띄우지 않는다(로그인한 적 있는 계정은 그 뒤 안내 없음, 2026-10-29 사용자 지정)
+  if (!panelOpen && resetSent) setResetSent(false);
 
   const can = usePagePermission();
   const withdrawn = bp.accountStatus === "WITHDRAWN";
@@ -265,7 +267,13 @@ function DetailBody({
       {/* 메일이 나갔고 아직 한 번도 로그인하지 않은 사용 BP — 초기 비밀번호는 1시간만 유효해(api) 그 뒤 할 일을 함께 적는다. 첫 로그인하면 사라진다.
           직접 회원가입한 BP 는 초기화 비밀번호를 받은 적이 없어 띄우지 않는다(리뷰로 찾음). 미사용 → 사용으로 되돌린 BP(statusChangedAt 있음 — 상태를 바꿀 때만 찍힌다)는 그 사이 초기화 비밀번호가 만료돼 「발송했습니다」가 맞지 않아 띄우지 않는다(2026-10-28 사용자 지정) */}
       {bp.accountStatus === "ACTIVE" && !bp.isInitialPasswordUnsent && (resetSent || (bp.joinPath === "PLATFORM_REGISTERED" && !bp.lastLoginAt && !bp.statusChangedAt)) && (
-        <SuccessBand>{`초기화 비밀번호를 발송했습니다.${canReset ? "\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해 주세요." : ""}`}</SuccessBand>
+        <SuccessBand>
+          {/* 방금 이 화면에서 보냈거나 계정을 만든 지 1시간이 안 됐으면(만들 때 초기 비밀번호를 보낸다) 발송 안내, 아니면(한 번도 로그인하지 않은 계정) 로그인하지 않았다는 사실만 — 발송 시각을 api 가 주지 않아
+            「1시간」은 방금 보냈을 때만 쓴다(2026-10-29 사용자 지정, 전엔 며칠 지나도 「발송했습니다」가 남았다) */}
+          {resetSent || withinPasswordHour(bp.createdAt)
+            ? "초기화 비밀번호를 발송했습니다.\n비밀번호는 1시간 동안 유효합니다."
+            : `아직 로그인하지 않은 계정입니다.${canReset ? "\n비밀번호 초기화가 필요합니다." : ""}`}
+        </SuccessBand>
       )}
       {/* 미사용 · 탈퇴 안내는 빨간 안내 상자(WarnBand — 2026-10-28 사용자 지정, 점포 BP 탈퇴 · 미사용 안내와 같다). 미사용은 두 줄로 줄였다(같은 날 사용자 지정) */}
       {bp.accountStatus === "INACTIVE" && (
