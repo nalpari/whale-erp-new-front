@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 상세 근로계약 칸 「급여 계좌」 줄을 요약 응답 `canViewPayrollAccount` 가 true 일 때만 넣는다(`payrollAccountRows`). false 면 줄 자체를 숨기고, 칸이 없는 옛 응답도 숨긴다(재영 2026-10-29: 가맹 직원 급여 계좌는 본사 역할에게 안 보임, 노영주: 줄 숨김). api 타입 재생성은 api openapi 반영 뒤.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 상세 근로계약 칸 「계약 상태」 다음에 「급여 계좌」(`payrollAccountText`, 요약 응답 `payrollAccount`) 줄을 더했다. 신고 정보가 없으면 「-」(WHALEERP-184, 2026-10-29 노영주).
 * **Update**: 3팀 논리 ERD(`docs/erd`) — 새 장 「직원 자료 일괄 저장」(`export.html`)에 `bulk_exports` · `bulk_export_download_logs` · enum 상태와 관리자 계정 참조를 그렸다(WHALEERP-336, 운영 정책 RET-09). README 카탈로그는 `_build.py` 로 생성했고, 다른 장은 위쪽 탭만 바뀌었다. `docs/erd/physical` 은 api 물리 생성기로 다시 만들었다.
 * **Update**: main 병합(front kingler, main #184 까지): okf/log 는 양쪽 기록을 살렸다.
