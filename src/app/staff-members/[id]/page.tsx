@@ -162,7 +162,7 @@ export default async function StaffMemberDetailPage({
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>
               <StaffDetailActions staff={staff} today={today} listHref={listHref} />
             </div>
-            {/* 처음 들어올 때는 제목 줄 아래 본문 전체(기본 정보 · 네 영역)를 LoadGroup 이 빈 자리로 덮고(상세 진입에는 고래를 쓰지 않는다), 네 영역이 모두 온 뒤 한 번에 보인다.
+            {/* 처음 들어올 때는 제목 줄 아래 본문 전체(기본 정보 · 영역들)를 LoadGroup 이 빈 자리로 덮고(상세 진입에는 고래를 쓰지 않는다), 영역이 모두(발송 이력 포함) 온 뒤 한 번에 보인다.
                   영역은 LoadGroupArea 가 각자 세기만 한다 */}
             <LoadGroup fallback={BODY_PENDING}>
               <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
@@ -231,9 +231,10 @@ export default async function StaffMemberDetailPage({
                   </Box>
                 </div>
               </div>
-              {/* 발송 이력(WHALEERP-136) — 열이 많아 두 단 아래 전체 너비로 둔다. 관리 화면이 없어 「관리」는 흐리게 둔다 */}
+              {/* 발송 이력(WHALEERP-136) — 열이 많아 두 단 아래 전체 너비로 둔다. 따로 된 발송 이력 화면은 두지 않기로 해(2026-10-26 김민식)
+                  「관리」 자리를 비운다 — 흐린 「관리」(준비 중)는 생길 화면이 있다는 뜻이라 쓰지 않는다 */}
               <div className="mt-[24px]">
-                <Box title="발송 이력">
+                <Box title="발송 이력" manage={false}>
                   <LoadGroupArea fallback={AREA_PENDING}>
                     <SendLogBox staffMemberId={staffMemberId} />
                   </LoadGroupArea>

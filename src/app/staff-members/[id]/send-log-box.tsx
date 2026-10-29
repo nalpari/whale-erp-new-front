@@ -1,15 +1,18 @@
 import { DataTable } from "@/components/common";
 import { labelOf } from "@/lib/enums";
+import { MENU_CODE } from "@/lib/menus";
 import { getStaffMemberSendLogs } from "@/lib/staff-members-api";
 import { CellView } from "../staff-table";
 import { AreaFailure } from "./detail-box";
+import { MenuTextLink } from "./manage-link";
 import { sendLogLine, type SendLogLine } from "./send-log-view";
 import { loadArea, loadLabels } from "./summary-load";
 
 /**
  * 직원 상세의 「발송 이력」 칸(WHALEERP-136). 이 직원 레코드의 근로계약이 보낸 가입 초대 · 소속 추가 확인 요청(재발송 포함)을 최근 순으로
  * 모두 보인다(GET /staff-members/:id/summary/send-logs). 발송 이력은 이 화면에만 둔다 — 계약 상세 · 따로 된 화면에는 없다(2026-10-26 김민식).
- * 이 경로는 근로계약 관리 조회 권한을 보므로, 그 권한이 없으면 이 칸만 권한 안내다(근로계약 칸과 같다).
+ * 이 경로는 근로계약 관리 조회 권한을 보므로, 그 권한이 없으면 이 칸만 권한 안내다(근로계약 칸과 같다). 계약이 여럿(재계약 등)이면 어느 계약의
+ * 발송인지 가를 수 있게 종류를 그 계약 상세 링크로 둔다.
  */
 export async function SendLogBox({ staffMemberId }: { staffMemberId: number }) {
   const [result, kinds, results] = await Promise.all([
@@ -26,7 +29,15 @@ export async function SendLogBox({ staffMemberId }: { staffMemberId: number }) {
       headVariant="plain"
       columns={[
         { header: "발송 일시", width: "w-[160px]", cell: (r) => r.sentAt },
-        { header: "종류", width: "w-[220px]", cell: (r) => r.kind },
+        {
+          header: "종류",
+          width: "w-[220px]",
+          cell: (r) => (
+            <MenuTextLink menuCode={MENU_CODE.contracts} href={`/contracts/${r.contractId}`}>
+              {r.kind}
+            </MenuTextLink>
+          ),
+        },
         { header: "결과", width: "w-[130px]", cell: (r) => (r.result ? <CellView cell={r.result} /> : "-") },
         { header: "재시도", width: "w-[100px]", cell: (r) => r.retry },
         // 사유는 길 수 있어 한 줄로 자르고 전체는 title 로 보인다

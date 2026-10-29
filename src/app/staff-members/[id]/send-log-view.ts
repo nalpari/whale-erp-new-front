@@ -9,6 +9,7 @@ export type SendLogItem = components["schemas"]["StaffMemberSendLogDto"];
 
 export type SendLogLine = {
   key: number;
+  contractId: number;
   sentAt: string;
   kind: string;
   /** 결과 배지. 결과 한글을 받지 못했으면 null — 화면은 「-」 */
@@ -36,9 +37,11 @@ export function sendLogLine(
 ): SendLogLine {
   return {
     key: item.sendLogId,
+    contractId: item.contractId,
     sentAt: formatDateTime(item.sentAt) || "-",
     kind: kindLabel ? `${kindLabel(item.kind)}${item.isResend ? " (재발송)" : ""}` : "-",
-    result: resultLabel ? { text: resultLabel(item.result), style: RESULT_STYLE[item.result] } : null,
+    // api 가 먼저 새 결과 값을 내도 배지가 빈칸이 되지 않게 회색으로 둔다
+    result: resultLabel ? { text: resultLabel(item.result), style: RESULT_STYLE[item.result] ?? "badge-neutral" } : null,
     retry: item.retryable === null ? "-" : item.retryable ? "가능" : "확인 필요",
     reason: item.failureReason ?? "-",
   };

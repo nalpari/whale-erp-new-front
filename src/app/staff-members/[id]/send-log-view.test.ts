@@ -23,6 +23,7 @@ const item = (more: Partial<SendLogItem> = {}): SendLogItem => ({
 test("성공 — 한국 시각, 종류, 초록 배지, 재시도 · 사유는 -", () => {
   assert.deepEqual(sendLogLine(item(), kindLabel, resultLabel), {
     key: 1,
+    contractId: 7,
     sentAt: "2026-10-29 09:05",
     kind: "가입 초대",
     result: { text: "성공", style: "badge-on" },
