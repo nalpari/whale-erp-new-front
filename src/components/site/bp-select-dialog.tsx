@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ConfirmDialog, DataTable, ListToolbar, Pagination, Radio, SearchField, Select, type Column } from "@/components/common";
+import { ConfirmDialog, DataTable, Pagination, Radio, SearchField, Select, type Column } from "@/components/common";
 import { bff, BffError } from "@/lib/bff";
 import { bpSwitchUrl } from "@/lib/menus";
 import type { BpOption } from "@/lib/session";
@@ -79,19 +79,24 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
     <ConfirmDialog open wide title="BP 선택" confirmLabel="이동" confirmDisabled={!picked} onConfirm={handleMove} onCancel={onClose}>
       <div className="flex flex-col gap-[12px]">
         <p>BP를 선택하면 웨일ERP가 새 탭으로 열립니다.</p>
-        <SearchField
-          value={keyword}
-          onValueChange={setKeyword}
-          onSearch={(v) => {
-            setPicked(null);
-            setQuery((q) => ({ ...q, keyword: v.trim(), page: 1 }));
-          }}
-          placeholder="상호명 또는 BP코드"
-          aria-label="BP 찾기"
-          maxLength={50}
-        />
-        {/* 「총 N 건」과 한 쪽 건수 — 목록 화면과 같은 줄(2026-10-29 사용자 지정). 건수를 바꾸면 1쪽부터, 고른 줄은 비운다(검색과 같다) */}
-        <ListToolbar total={result?.total ?? 0}>
+        {/* 「총 N 건」 · 찾기 칸 · 한 쪽 건수를 한 줄에(2026-10-29 사용자 지정). 건수를 바꾸면 1쪽부터, 고른 줄은 비운다(검색과 같다) */}
+        <div className="flex items-center gap-[6px]">
+          <p className="mr-[6px] shrink-0 text-[14px] text-erp-ink">
+            총 <b className="font-semibold">{(result?.total ?? 0).toLocaleString("ko-KR")}</b> 건
+          </p>
+          <div className="min-w-0 flex-1">
+            <SearchField
+              value={keyword}
+              onValueChange={setKeyword}
+              onSearch={(v) => {
+                setPicked(null);
+                setQuery((q) => ({ ...q, keyword: v.trim(), page: 1 }));
+              }}
+              placeholder="상호명 또는 BP코드"
+              aria-label="BP 찾기"
+              maxLength={50}
+            />
+          </div>
           <div className="w-[80px] shrink-0">
             <Select
               aria-label="페이지당 건수"
@@ -108,7 +113,7 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
               ))}
             </Select>
           </div>
-        </ListToolbar>
+        </div>
         {/* 결과 자리는 높이를 고정한다 — 불러오는 동안 · 받은 뒤 · 건수가 적을 때 팝업 크기가 바뀌지 않게(2026-10-29 사용자 지적, 작았다가 커졌다) */}
         {failure ? (
           <>
