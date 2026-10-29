@@ -36,6 +36,17 @@ export function payrollAccountText(account: { bankName: string; accountNumber: s
 }
 
 /**
+ * 「급여 계좌」 줄 — 보일 때만 한 줄짜리 배열, 숨길 때는 빈 배열이다. 재영 정책(2026-10-29): 가맹 직원의 급여 계좌는 본사 역할에게 보이지 않고,
+ * 이때 줄 자체를 숨긴다(노영주). api 의 canViewPayrollAccount 가 true 일 때만 보인다. 타입은 필수 boolean 이지만 칸이 없는 옛 응답이 와도(런타임 undefined)
+ * 정해지지 않아 안전한 쪽인 숨김으로 둔다 — 보이면 안 되는 사람에게 계좌가 나가지 않게.
+ */
+export function payrollAccountRows(
+  data: Pick<components["schemas"]["StaffMemberContractSummaryResponseDto"], "canViewPayrollAccount" | "payrollAccount">,
+): { label: string; value: string }[] {
+  return data.canViewPayrollAccount === true ? [{ label: "급여 계좌", value: payrollAccountText(data.payrollAccount) }] : [];
+}
+
+/**
  * 받은 enum 목록. 비었으면 받지 못한 것과 같이 null 이다 — getEnum 은 응답에 그 enum 이 빠지면 throw 하지 않고 [] 를 주는데,
  * 그대로 쓰면 labelOf 가 영문 값을 돌려준다(PR #47 리뷰).
  */
