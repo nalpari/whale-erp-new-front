@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState, useTransition, type RefObject } fro
 import { logout } from "@/app/actions";
 import { Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
 import { withdrawFormField, withdrawWarningText, WITHDRAW_REASONS, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
-import { createWithdrawalAction, getWithdrawEligibilityAction } from "./withdraw-actions";
+import { createWithdrawalAction, getWithdrawEligibilityAction, verifyWithdrawPasswordAction } from "./withdraw-actions";
 
 type Step = "password" | "content" | "done";
 type Form = { currentPassword: string; reasonCode: string; reasonDetail: string };
@@ -44,9 +44,9 @@ function ConditionValue({ value, checked }: { value: string; checked: boolean | 
   return <span className={`font-semibold ${tone}`}>{value}</span>;
 }
 
-/** GNB 「회원 탈퇴」가 여는 슬라이드 패널(MY PAGE, S-JHQQNR). 1단계(비밀번호)는 api 를 부르지 않는다 — 별도
- * 비밀번호 확인 엔드포인트가 없고, 실제 확인은 최종 제출(POST /auth/admin/me/withdraw)에서만 일어난다(설계
- * 결정, Task 3 dispatch). 2단계(내용)에 들어가기 전부터 eligibility 를 미리 불러 둬 2단계 전환이 기다리지
+/** GNB 「회원 탈퇴」가 여는 슬라이드 패널(MY PAGE, S-JHQQNR). 1단계(비밀번호)는 api(POST /auth/admin/me/password-verifications)로
+ * 확인해 맞아야 2단계로 간다 — 전엔 확인 없이 넘겨 틀린 비밀번호로도 탈퇴 화면이 보였다(2026-10-29 재영). 최종 제출(POST
+ * /auth/admin/me/withdraw)도 비밀번호를 다시 본다. 2단계(내용)에 들어가기 전부터 eligibility 를 미리 불러 둬 2단계 전환이 기다리지
  * 않게 한다. 성공하면 비밀번호 변경과 같은 패턴으로 패널을 닫지 않고 완료 화면으로 바꾼 뒤, 로그아웃은
  * 사용자가 "확인"을 눌러야 일어난다 — 탈퇴 안내 이메일을 보냈다는 문구를 반드시 보게 한다. */
 export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open: boolean; onClose: () => void; trigger: RefObject<HTMLElement | null> }) {
@@ -59,6 +59,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
   const [failure, setFailure] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, startSaving] = useTransition();
+  const [verifying, startVerifying] = useTransition();
   // password-change-panel.tsx 의 saveNumber 와 같은 패턴 — 패널을 닫았다 다시 열면 지난 요청의 응답이 늦게
   // 와도 새 세션에 적용되지 않게 막는다.
   const saveNumber = useRef(0);
@@ -111,6 +112,21 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
       return;
     }
     onClose();
+  };
+
+  // 1단계 [확인] — 비밀번호가 맞아야 탈퇴 화면으로 간다(S-JHQQNR, 2026-10-29 재영). 최종 제출에서도 api 가 한 번 더 본다.
+  const handleVerify = () => {
+    setFieldError(null);
+    setFailure(null);
+    const mine = saveNumber.current;
+    startVerifying(async () => {
+      const result = await verifyWithdrawPasswordAction(form.currentPassword);
+      if (mine !== saveNumber.current) return;
+      if (result.ok) return setStep("content");
+      if (result.status === 401) return void logout();
+      if (result.status === 400) return setFieldError({ at: "currentPassword", message: result.message });
+      setFailure(result.message);
+    });
   };
 
   const handleConfirm = () => {
@@ -188,11 +204,13 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
             </div>
           </FormGroup>
 
+          {failure && <FailedBand message={failure} />}
+
           <div className="flex justify-center gap-[6px]">
             <Button variant="off" onClick={handleClose}>
               닫기
             </Button>
-            <Button onClick={() => setStep("content")} disabled={!form.currentPassword}>
+            <Button onClick={handleVerify} disabled={!form.currentPassword || verifying}>
               확인
             </Button>
           </div>

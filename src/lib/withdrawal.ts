@@ -12,6 +12,15 @@ export async function getWithdrawEligibility(): Promise<WithdrawEligibility> {
   return request("/auth/admin/me/withdraw-eligibility", { headers: await authHeaders() });
 }
 
+/** POST /auth/admin/me/password-verifications. 탈퇴 화면을 열기 전 현재 비밀번호만 확인한다. 맞으면 204, 틀리면 400. */
+export async function verifyCurrentPassword(currentPassword: string): Promise<void> {
+  return request("/auth/admin/me/password-verifications", {
+    method: "POST",
+    headers: { ...(await authHeaders()), "Content-Type": "application/json" },
+    body: JSON.stringify({ currentPassword }),
+  });
+}
+
 export type CreateWithdrawalInput = {
   currentPassword: string;
   reasonCode: string;
