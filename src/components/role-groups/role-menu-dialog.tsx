@@ -410,7 +410,8 @@ function MenuTable({
               </tr>
             ) : (
               rows.map((n) => {
-                // enum 을 못 받았으면 영문 값 대신 쓰지 않는다(이유는 띠 · 흐린 칸으로 알 수 있다)
+                // 막힌 이유(「본인 권한 범위 밖」 등)는 메뉴명 옆에 글로 붙이지 않고 마우스를 올리면만 보인다 — 줄마다 반복돼 메뉴명이 묻혔고,
+                // 줄 전체가 막힌 것처럼 읽혔다. 막힌 칸은 흐린 체크박스로 이미 보인다(2026-10-29 사용자 지정). enum 을 못 받았으면 영문 값 대신 쓰지 않는다
                 const why = blockedReasonsOf(n).flatMap((r) => (reasons.some((l) => l.value === r) ? [labelOf(reasons, r)] : []));
                 return (
                   // 1단계 줄에만 옅은 바탕(erp-thead-bg #f8f9fb)을 깔아 2단계와 가른다. 줄 높이는 한 화면에 더 들어가게 42px(2026-10-26 사용자 지정)
@@ -420,12 +421,6 @@ function MenuTable({
                         {n.depth > 1 && <span className="text-erp-label">└ </span>}
                         {n.depth === 1 ? <b className="font-semibold">{n.name}</b> : n.name}
                       </span>
-                      {why.map((r) => (
-                        <span key={r} className="text-[13px] text-erp-label">
-                          {" "}
-                          · {r}
-                        </span>
-                      ))}
                     </td>
                     <td className="px-[10px] text-center text-erp-label">{n.depth}단계</td>
                     {OPS.map((op) => (
