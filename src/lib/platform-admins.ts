@@ -8,8 +8,7 @@ import { ADMIN_PAGE_SIZE, HISTORY_PAGE_SIZE } from "./platform-admin-paging";
 type Schemas = components["schemas"];
 export type PlatformAdmin = Schemas["PlatformAdminSummaryResponseDto"];
 export type PlatformAdminList = Schemas["PlatformAdminListResponseDto"];
-// isPasswordChangeRequired — api 가 상세에 더하기 전 생성 타입에는 없다. 생성 타입이 갱신되면 이 덧붙임을 지운다
-export type PlatformAdminDetail = Schemas["PlatformAdminDetailResponseDto"] & { isPasswordChangeRequired?: boolean };
+export type PlatformAdminDetail = Schemas["PlatformAdminDetailResponseDto"];
 export type PlatformAdminHistory = Schemas["PlatformAdminHistoryResponseDto"];
 export type PlatformAdminHistoryList = Schemas["PlatformAdminHistoryListResponseDto"];
 export type PlatformRoleGroup = Schemas["PlatformRoleGroupResponseDto"];

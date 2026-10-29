@@ -154,22 +154,3 @@ export function Blocked({ reason, children }: { reason?: string; children: React
     </span>
   );
 }
-
-/**
- * 상세의 비밀번호 칸 — 왼쪽은 [초기화] 또는 「-」, 오른쪽은 11px 세로선 뒤 「강제변경 대상 · 대상아님」. BP 마스터 상세와 같은 7:13 배치(2026-10-29 사용자 지정).
- * forceChange 를 api 가 아직 주지 않으면(undefined) 오른쪽을 두지 않는다. #d9d9d9 는 Figma 값 구분선(DESIGN.md).
- */
-export function PasswordCell({ action, forceChange }: { action: ReactNode; forceChange: boolean | undefined }) {
-  if (forceChange === undefined) return <>{action}</>;
-  return (
-    <span className="grid w-full grid-cols-[minmax(max-content,7fr)_13fr] items-center gap-[18px]">
-      <span className="flex min-w-0 items-center gap-[10px]">{action}</span>
-      <span className="flex min-w-0 items-center gap-[10px]">
-        <span aria-hidden="true" className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
-        <span className="truncate">
-          <span className="text-erp-label">강제변경</span> {forceChange ? "대상" : "대상아님"}
-        </span>
-      </span>
-    </span>
-  );
-}
