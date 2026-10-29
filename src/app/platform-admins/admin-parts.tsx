@@ -3,7 +3,7 @@ import type { LoginIdCheck } from "@/lib/platform-admin-form";
 
 // 플랫폼 관리자 패널들이 같이 쓰는 작은 조각. 공통 컴포넌트에 없는 것만 둔다.
 // LoginIdAvailability 는 BP 관리자 · BP 마스터 등록도 가져다 쓴다(아이디 중복확인 문구를 한 곳에서, 2026-10-28 사용자 지정).
-// EmailAvailability 는 BP 관리자 · BP 마스터 등록과 내 정보가 쓴다(이메일 중복확인 문구를 한 곳에서, 2026-10-28 사용자 지정).
+// EmailAvailability 는 플랫폼 관리자 · BP 관리자 · BP 마스터 등록과 내 정보가 쓴다(이메일 중복확인 문구를 한 곳에서, 2026-10-28 사용자 지정).
 
 /**
  * server action 호출 자체가 거절됐을 때(응답을 못 받음). 요청이 서버에 닿지 않았다는 뜻은 아니다 — 받는 도중 끊겼거나
@@ -41,7 +41,7 @@ export function FieldMessage({ id, message }: { id: string; message?: string }) 
   );
 }
 
-/** 확인 완료 체크 표시(테두리만 그린 원) — Availability(아이디 · 이메일) · EmailFormatValid 가 같이 쓴다. */
+/** 확인 완료 체크 표시(테두리만 그린 원) — Availability(아이디 · 이메일)가 쓴다. */
 function CheckIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -110,26 +110,6 @@ export function LoginIdAvailability({ id, check, message }: { id: string; check:
 /** 이메일 중복확인 표시 — 상태 값은 아이디와 같은 LoginIdCheck 를 쓴다(대기 · 사용 가능 · 확인 실패, 2026-10-28 사용자 지정) */
 export function EmailAvailability({ id, check, message }: { id: string; check: LoginIdCheck; message?: string }) {
   return <Availability id={id} check={check} message={message} texts={EMAIL_CHECK_TEXT} />;
-}
-
-/**
- * 이메일 형식 즉시 확인 — 아이디처럼 바로 물어볼 중복확인 API 가 없어(중복은 저장할 때 api 가 409 로 막는다) 형식만 본다.
- * 그래서 "사용 가능"이라 하지 않고 "형식이 올바르다"고만 말한다 — 중복 여부는 저장해야 알 수 있다.
- */
-export function EmailFormatValid({ id, valid, message }: { id: string; valid: boolean; message?: string }) {
-  const text = !message && valid ? "올바른 이메일 형식입니다." : "";
-  return (
-    <>
-      <FieldMessage id={id} message={message} />
-      {text && (
-        <p id={id} aria-hidden="true" className="flex items-center gap-[4px] text-[13px] leading-[1.5] text-erp-on">
-          <CheckIcon />
-          {text}
-        </p>
-      )}
-      <LiveText text={text} />
-    </>
-  );
 }
 
 /** 확인창 안에서 누구를 대상으로 하는지 — 짧은 항목 · 값 두 칸. */

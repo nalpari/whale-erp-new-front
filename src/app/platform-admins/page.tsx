@@ -1,5 +1,5 @@
 import { ApiError } from "@/lib/api";
-import { getPlatformAdmin, getPlatformAdmins, getPlatformRoleGroups, type PlatformAdminDetail } from "@/lib/platform-admins";
+import { getPlatformAdmin, getPlatformAdmins, getPlatformRoleGroupFilterOptions, getPlatformRoleGroups, type PlatformAdminDetail } from "@/lib/platform-admins";
 import { parseAdminsQuery } from "./admins-href";
 import { AdminsScreen } from "./admins-screen";
 
@@ -11,7 +11,7 @@ export default async function PlatformAdminsPage({ searchParams }: PageProps<"/p
   const params = await searchParams;
   const query = parseAdminsQuery(params);
 
-  const [list, roleGroups, detail] = await Promise.all([
+  const [list, roleGroups, filterRoleGroups, detail] = await Promise.all([
     // 계정 상태를 모두 끄면(NONE) 결과 없음 — api 를 부르지 않는다(2026-10-27 사용자 지정)
     query.status === "NONE"
       ? { items: [], total: 0, inactiveCount: 0 }
@@ -23,11 +23,13 @@ export default async function PlatformAdminsPage({ searchParams }: PageProps<"/p
           statuses: query.status && [query.status],
         }),
     getPlatformRoleGroups(),
+    // 필터는 등록 · 수정 선택지와 달리 마스터 권한도 보인다 — 플랫폼 관리자도 목록의 마스터 계정을 거른다(2026-10-29 재영)
+    getPlatformRoleGroupFilterOptions(),
     query.admin ? loadDetail(query.admin) : null,
   ]);
 
   // 제목 줄(PageBar)은 AdminsScreen 이 그린다 — [등록]이 등록 패널을 여는 상태와 같은 곳에 있어야 해서다
-  return <AdminsScreen list={list} roleGroups={roleGroups} query={query} detail={detail} />;
+  return <AdminsScreen list={list} roleGroups={roleGroups} filterRoleGroups={filterRoleGroups} query={query} detail={detail} />;
 }
 
 /** 상세를 못 불러오면 패널은 열되 실패 띠로 알린다 — 404(지웠거나 없는 계정)는 그 사실을, 그 밖은 일반 문구를. */

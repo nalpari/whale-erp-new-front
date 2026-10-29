@@ -22,11 +22,14 @@ const EDIT_PUSHED_STATE = "platformAdminEditPushedFor";
 export function AdminsScreen({
   list,
   roleGroups,
+  filterRoleGroups,
   query,
   detail,
 }: {
   list: PlatformAdminList;
   roleGroups: PlatformRoleGroup[];
+  /** 목록 필터 「권한명」 선택지 — 플랫폼 권한 그룹 전부 */
+  filterRoleGroups: PlatformRoleGroup[];
   query: AdminsQuery;
   detail: { admin: PlatformAdminDetail } | { failed: string } | null;
 }) {
@@ -164,7 +167,7 @@ export function AdminsScreen({
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         {/* display:contents 로 레이아웃(gap-[12px])에 끼어들지 않으면서 둘을 함께 inert 로 뺀다 */}
         <div className="contents" inert={backdropActive}>
-          <AdminFilter query={query} roleGroups={roleGroups} onApply={(next) => go({ ...next, page: 1, admin: undefined })} />
+          <AdminFilter query={query} roleGroups={filterRoleGroups} onApply={(next) => go({ ...next, page: 1, admin: undefined })} />
           <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
             {/* 오른쪽 위에 한 쪽 건수 — BP 관리자 관리와 같다(2026-10-27 사용자 지정). 바꾸면 1쪽부터 */}
             <ListToolbar total={list.total}>
