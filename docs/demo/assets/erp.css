@@ -956,6 +956,9 @@
   .h-\[420px\] {
     height: 420px;
   }
+  .h-\[506px\] {
+    height: 506px;
+  }
   .h-\[540px\] {
     height: 540px;
   }
@@ -991,9 +994,6 @@
   }
   .max-h-\[440px\] {
     max-height: 440px;
-  }
-  .max-h-\[506px\] {
-    max-height: 506px;
   }
   .max-h-\[calc\(100dvh-48px\)\] {
     max-height: calc(100dvh - 48px);

@@ -178,7 +178,8 @@ export function HolidayFormPanel(props: Props) {
     <SlidePanel id={id} open={open} onClose={() => !saving && onClose()} onBackdropClose={() => !saving && onBackdropClose()} label={title} trigger={trigger} closeOnBackdrop>
       <div className="flex flex-col gap-[18px]">
         <h2 className="text-[18px] font-semibold text-erp-ink">{title}</h2>
-        {/* 제목 아래 띠는 오류일 때만 둔다 — 진행 중 · 막힘 안내 띠는 두지 않는다(2026-10-27 사용자 요청). 막힌 칸은 disabled 로 그대로 막는다 */}
+        {/* 제목 아래 띠는 오류일 때만 둔다 — 진행 중 · 막힘 안내 띠는 두지 않는다(2026-10-27 사용자 요청). 막힌 칸은 disabled 로 그대로 막는다.
+            예외: 탈퇴 · 미사용 BP 의 등록 막기 띠는 둔다 — 점포 등록과 같다(2026-10-29 사용자 지정) */}
         {bpBlocked && <WarnBand>BP가 탈퇴 또는 미사용 상태로, 휴일을 등록할 수 없습니다.</WarnBand>}
         {failure && <FailedBand message={failure} detail="입력한 내용은 그대로 두었습니다." />}
 

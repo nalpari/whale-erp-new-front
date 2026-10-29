@@ -226,7 +226,7 @@ export function userPop(A, name, items) {
         : `<li><a class="${cls}" href="${it.href}">${it.label}</a></li>`;
     })
     .join("");
-  return `<div class="relative"><button type="button" aria-expanded="false" aria-controls="${id}" class="group relative flex items-center"><span class="flex items-center gap-[10px] text-[15px] font-medium text-erp-ink">${img(A, "avatar.svg", 42, 42)}${name}</span>${img(A, "user-more.svg", 34, 34, `transition-transform duration-200 ${EASE_OUT} `)}${tip("마이페이지")}</button>${popup(
+  return `<div class="relative"><button type="button" aria-label="${name} 마이페이지" aria-expanded="false" aria-controls="${id}" class="group relative flex items-center"><span class="flex items-center gap-[10px] text-[15px] font-medium text-erp-ink">${img(A, "avatar.svg", 42, 42)}${name}</span>${img(A, "user-more.svg", 34, 34, `transition-transform duration-200 ${EASE_OUT} `)}${tip("마이페이지")}</button>${popup(
     id,
     "fade",
     "right-0 w-[154px]",
@@ -239,7 +239,7 @@ export function userPop(A, name, items) {
 const ICON_HOVER =
   "group relative grid h-[32px] place-items-center rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70 [&>span:first-child]:transition-opacity hover:[&>span:first-child]:opacity-70";
 const tip = (label) =>
-  `<span class="pointer-events-none absolute top-[calc(50%+26px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${label}</span>`;
+  `<span aria-hidden="true" class="pointer-events-none absolute top-[calc(50%+26px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${label}</span>`;
 // scopeDialog 를 주면(플랫폼 콘솔) 웨일ERP 아이콘이 바로 이동하지 않고 그 id 의 BP 선택 확인창을 먼저 연다(F-TLJOCK).
 // hideAddon 이면 부가서비스구독관리 아이콘을 뺀다 — 플랫폼관리 사이트(global-header.tsx 와 같다, 2026-10-28 사용자 지정).
 export const serviceLinks = (A, hrefs = {}) => {

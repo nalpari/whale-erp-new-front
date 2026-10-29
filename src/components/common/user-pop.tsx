@@ -31,7 +31,7 @@ export function UserPop({ name, items, triggerRef }: { name: string; items: User
 
   return (
     <div ref={ref} className="relative">
-      <button ref={trigger} type="button" aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)} className="group relative flex items-center">
+      <button ref={trigger} type="button" aria-label={`${name} 마이페이지`} aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)} className="group relative flex items-center">
         <span className="flex items-center gap-[10px] text-[15px] font-medium text-erp-ink">
           <Image src="/icons/avatar.svg" alt="" width={42} height={42} />
           {name}

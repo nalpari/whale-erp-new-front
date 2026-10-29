@@ -61,14 +61,14 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
       align: "left",
       // 사용 BP 상호명은 굵게, 미사용 · 탈퇴는 보통 굵기(2026-10-29 사용자 지정). Radio 는 className 을 받지 않아 감싸는 칸에서 굵기를 물려준다
       cell: (r) => (
-        <span className={r.accountStatusCode === "ACTIVE" ? "font-semibold" : undefined}>
+        <div className={r.accountStatusCode === "ACTIVE" ? "font-semibold" : undefined}>
           <Radio
             name="bp"
             label={r.bpCodeId === currentBp.bpCodeId ? `${r.tradeName} (현재)` : r.tradeName}
             checked={r.bpCodeId === picked?.bpCodeId}
             onChange={() => setPicked(r)}
           />
-        </span>
+        </div>
       ),
     },
     { header: "계정상태", width: "w-[80px]", cell: (r) => statusLabel(r.accountStatusCode) },
@@ -82,7 +82,7 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
         {/* 「총 N 건」 · 찾기 칸 · 한 쪽 건수를 한 줄에(2026-10-29 사용자 지정). 건수를 바꾸면 1쪽부터, 고른 줄은 비운다(검색과 같다) */}
         <div className="flex items-center gap-[6px]">
           <p className="mr-[6px] shrink-0 text-[14px] text-erp-ink">
-            총 <b className="font-semibold">{(result?.total ?? 0).toLocaleString("ko-KR")}</b> 건
+            총 <b className="font-semibold">{result ? result.total.toLocaleString("ko-KR") : "–"}</b> 건
           </p>
           <div className="min-w-0 flex-1">
             <SearchField
