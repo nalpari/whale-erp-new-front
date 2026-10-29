@@ -1,7 +1,7 @@
 // node --test "src/app/contracts/[contractId]/detail-format.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, processRows, weeklyHoursOf, workDayLines } from "./detail-format.ts";
+import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, processRows, TAX_PROFILE_UNAVAILABLE, taxProfileTexts, weeklyHoursOf, workDayLines } from "./detail-format.ts";
 import type { ContractDetail } from "../new/contract-form-model.ts";
 
 const label = (d: string) => ({ MON: "월", TUE: "화", WED: "수", THU: "목", FRI: "금", SAT: "토", SUN: "일" })[d] ?? d;
@@ -145,4 +145,24 @@ test("보낸 적 없는 임시저장은 최종 처리일만 — 이력도 없으
   const draft = { ...sent, status: "DRAFT", firstSentAt: null, lastSentAt: null, signDeadlineAt: null } as const;
   assert.deepEqual(processRows(draft), [{ label: "최종 처리일", value: "2026-10-20 10:00" }]);
   assert.deepEqual(processRows({ ...draft, lastProcessedAt: null }), []);
+});
+
+test("신고 정보 — 가린 주민등록번호와 「은행이름 계좌번호」(WHALEERP-155)", () => {
+  assert.deepEqual(taxProfileTexts({ status: "OK", rrnMasked: "900101-1******", bankName: "KB국민은행", accountNumber: "12345678901234" }), {
+    rrn: "900101-1******",
+    account: "KB국민은행 12345678901234",
+  });
+});
+
+test("신고 정보 — 미입력 · 본사 역할의 가맹 직원 조회 · 칸 없는 옛 응답은 「-」", () => {
+  const empty = { rrnMasked: null, bankName: null, accountNumber: null };
+  for (const t of [{ status: "NONE", ...empty } as const, { status: "HIDDEN", ...empty } as const, undefined])
+    assert.deepEqual(taxProfileTexts(t), { rrn: "-", account: "-" });
+});
+
+test("신고 정보 — 풀 수 없으면 두 칸 모두 실패 문구", () => {
+  assert.deepEqual(taxProfileTexts({ status: "UNAVAILABLE", rrnMasked: null, bankName: null, accountNumber: null }), {
+    rrn: TAX_PROFILE_UNAVAILABLE,
+    account: TAX_PROFILE_UNAVAILABLE,
+  });
 });
