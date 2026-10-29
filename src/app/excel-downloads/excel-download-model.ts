@@ -21,8 +21,8 @@ export type Failure = { tone: "risk" | "info"; title: string; detail?: string; r
 // api 는 409 하나로 「만드는 중」과 「만들지 못함(FAILED)」을 함께 알린다 — 상태 값이 따로 없어 문구 머리로 가른다
 // (api excel-exports.service.ts download). bff.ts 가 비밀번호 변경 403 을 문구 머리로 가르는 것과 같은 방식이다.
 const EXCEL_FAILED_PREFIX = "엑셀 파일을 만들지 못했습니다";
-// bff.ts PASSWORD_REQUIRED_MESSAGE 와 같은 문구 — 이 모듈은 node --test 가 바로 읽어 import 하지 않는다
-const PASSWORD_REQUIRED_PREFIX = "비밀번호를 변경한 뒤 이용할 수 있습니다";
+// api 강제 비밀번호 변경 403 문구(api src/auth/access-messages.ts) — bff.ts · retirement.ts 와 같다. node --test 가 바로 읽어 import 하지 않는다
+const PASSWORD_REQUIRED_PREFIX = "서비스 이용을 위해 비밀번호를 변경해 주세요.";
 
 /**
  * api GET /excel-downloads/:id 실패를 화면 안내로. retry 는 [다시 받기]를 둘지 —

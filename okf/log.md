@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Fix**: [Whale ERP Frontend](/whale-erp-front.md) — 비밀번호 강제 변경 403 판정 문구를 api 의 「서비스 이용을 위해 비밀번호를 변경해 주세요.」(api `src/auth/access-messages.ts`, 2026-10-14 바뀜)로 맞췄다: `bff.ts` 의 팝업 다시 띄우기 이벤트, 고객지원 · 커뮤니티 쓰기(`community-view.ts` — 전엔 「권한이 없습니다」로 잘못 보였다), 엑셀 내려받기 화면의 403 다시 받기(PR #168 적대적 재리뷰). 옛 문구 「비밀번호를 변경한 뒤 이용할 수 있습니다」로 판정해 그 분기들이 한 번도 맞지 않았다. `retirement.ts` 는 이미 새 문구였다. 본문은 이 문구를 적지 않아 바꿀 곳이 없다.
 * **Update**: [점포 관리](/stores.md) — PR #168 적대적 리뷰(블로커 아님) 반영: 메일 링크 화면에서 비밀번호를 강제로 바꾸면 SessionGate 가 홈 대신 그 화면(`returnPathOf`)을 다시 열어 바로 내려받는다 — 전엔 홈으로 가 [다시 받기]에 닿지 못했다. SessionGate 가 login-info 401 · 다른 탭 로그아웃으로 로그인에 보낼 때도 `loginPathOf` 로 `?next=` 를 붙인다(쿠키는 살았는데 api 세션만 끊긴 경우 로그인 뒤 홈으로 가던 것).
 * **Update**: main 병합(front monferno, main #167 까지): okf 충돌은 양쪽 기록을 살렸고, [Whale ERP Frontend](/whale-erp-front.md) 시각은 늦은 값을 남겼다.
 * **Update**: 1팀 ERD(`docs/erd/team1`) — api #188 머지 뒤 맞춤: `excel_download_logs.scope_key`(범위 지문, text · NULL — 만들 때 요청자가 볼 수 있던 범위, 받을 때 지금 범위와 다르면 403)를 README · 생성기에 더하고, `bp_code_id` · `attempt_count` 비고를 api 문구와 같게 했다. 생성기 DDL 이 api main `docs/raw/2026-10-12-1팀-schema.sql` 과 같은 것을 확인했다(물리 ERD 문서의 컬럼 수는 api 쪽이 349 로 남아 있다 — 생성기는 350). api 타입은 엑셀 경로가 응답 설명(403 · 503)만 늘어 다시 만들지 않았다 — api main 전체로 만들면 3팀 직원 목록 응답(`lastSentAt` · `canResend`)이 바뀌어 front main 에서 따로 맞춘다.

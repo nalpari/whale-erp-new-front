@@ -350,7 +350,7 @@ function Ready({
     addEventListener("storage", onStorage);
     return () => removeEventListener("storage", onStorage);
   }, [value.loginKey, router]);
-  // 변경 전에는 api 가 403 「비밀번호를 변경한 뒤 이용할 수 있습니다」를 준다. 저장값이 어긋났으면 팝업을 다시 띄운다.
+  // 변경 전에는 api 가 403 「서비스 이용을 위해 비밀번호를 변경해 주세요.」를 준다. 저장값이 어긋났으면 팝업을 다시 띄운다.
   useEffect(() => {
     const reopen = () => !value.account.isPasswordChangeRequired && setPasswordRequired(true);
     addEventListener(PASSWORD_REQUIRED_EVENT, reopen);

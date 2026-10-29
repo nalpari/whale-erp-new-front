@@ -28,5 +28,6 @@ test("실패 안내 — 409 만들지 못함은 실패 색에 다시 받기 없�
     title: "엑셀 파일을 만들지 못했습니다. 다시 요청해 주세요",
     retry: false,
   });
-  assert.deepEqual(failureOf(403, "비밀번호를 변경한 뒤 이용할 수 있습니다"), { tone: "risk", title: "비밀번호를 변경한 뒤 이용할 수 있습니다", retry: true });
+  // api src/auth/access-messages.ts 의 실제 문구로 시험한다
+  assert.deepEqual(failureOf(403, "서비스 이용을 위해 비밀번호를 변경해 주세요."), { tone: "risk", title: "서비스 이용을 위해 비밀번호를 변경해 주세요.", retry: true });
 });
