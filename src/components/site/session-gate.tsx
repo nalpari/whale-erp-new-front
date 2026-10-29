@@ -366,7 +366,7 @@ function Ready({
   return (
     <LoginContext value={{ ...value, setScope, patchAccount, myPageOpen, setMyPageOpen, passwordChangeOpen, setPasswordChangeOpen, withdrawOpen, setWithdrawOpen, myPageTrigger }}>
       {/* 첫 메뉴로 넘어가는 동안 /platform 의 빈 화면을 한 번 그리지 않게 안내만 둔다. */}
-      {firstMenu && <Notice>불러오는 중입니다</Notice>}
+      {firstMenu && <LoadingNotice text="불러오는 중입니다" />}
       {allowed && !switching && !firstMenu && (
         <>
           {header}

@@ -180,8 +180,9 @@ function TermsRow({ kind, label, checked, onChange }: { kind: "use" | "policy"; 
   return (
     <div className="flex items-center justify-between">
       <Checkbox label={label} checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="text-[14px] text-erp-link underline underline-offset-2">
-        {/* 약관 유형은 공통코드 TERMS_TYPE — 이용약관은 BP 사업자 회원가입용, 개인정보는 그 수집·이용 동의다. */}
+      <span className="text-[14px]">
+        {/* 약관 유형은 공통코드 TERMS_TYPE — 이용약관은 BP 사업자 회원가입용, 개인정보는 그 수집·이용 동의다.
+            색·밑줄은 TermsLink 자신이 맡는다(여기서 같이 지정하면 늘 밑줄이 돼 호버 피드백이 사라진다, code-review 리뷰로 찾음). */}
         <TermsLink termsTypeCode={kind === "use" ? "TERMS_SERVICE" : "PRIVACY_COLLECT"}>전문 보기</TermsLink>
       </span>
     </div>

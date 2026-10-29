@@ -32,7 +32,7 @@ export function TermsLink({ termsTypeCode, children }: { termsTypeCode: string; 
 
   return (
     <>
-      <button type="button" onClick={handleOpen} className="transition-colors duration-150 ease-out hover:text-erp-ink">
+      <button type="button" onClick={handleOpen} className="text-erp-link hover:underline">
         {children}
       </button>
       {/* #ebebeb 팝업 테두리·그림자는 DESIGN.md Popups 의 값. 폭 720 — 640 이면 수집·이용 표의 보유 기간 칸이 접혔다(2026-10-28 사용자 지정) */}
