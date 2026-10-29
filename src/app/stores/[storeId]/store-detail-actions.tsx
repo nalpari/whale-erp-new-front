@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, ConfirmDialog, Radio, useToast } from "@/components/common";
+import { Blocked, Button, ConfirmDialog, Radio, useToast } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formOfStore, toUpdateStoreInput } from "@/lib/store-form";
 import type { StoreDetail, StoreStatus, StoreTransitions } from "@/lib/store-types";
@@ -14,15 +14,6 @@ import { closeBlockText, finalEuro, nextStatuses } from "@/lib/store-view";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
 import { withBack } from "../stores-query";
-
-/** 막힌 버튼의 이유. 막힌 버튼은 호버를 받지 않으므로(Button 의 disabled:pointer-events-none) 감싸는 칸에 단다 */
-function Blocked({ reason, children }: { reason?: string; children: React.ReactNode }) {
-  return (
-    <span title={reason} className="inline-flex">
-      {children}
-    </span>
-  );
-}
 
 /** 확인창 안에서 어떤 점포인지 — platform-admins/admin-parts.tsx 의 WhoList 와 같은 모양(화면마다 로컬로 둔다). */
 function WhoList({ rows }: { rows: [string, React.ReactNode][] }) {
