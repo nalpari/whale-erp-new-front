@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DetailTable, LoadGroup, LoadGroupArea, LoadingNotice, PageBar } from "@/components/common";
+import { DetailTable, LoadGroup, LoadGroupArea, PageBar } from "@/components/common";
 import { getEnum } from "@/lib/api";
 import type { EnumValue } from "@/lib/enums";
 import { hqSharingConsentText, kstToday, staffEmailText } from "@/lib/staff-members";
@@ -27,6 +27,14 @@ export const metadata: Metadata = {
 
 // 값이 없는 칸.
 const PENDING = "-";
+// 기다리는 동안의 빈 자리(영역 하나, 그리고 상세 본문 묶음) — 상세 진입 · 작은 영역에는 고래 로딩을 쓰지 않는다. 최소 높이만 잡아 영역이 들어올 때 상자 높이가 크게 출렁이지 않게 한다.
+const AREA_PENDING = <div aria-hidden="true" className="min-h-[92px]" />;
+// 바깥 LoadGroup(본문 전체) fallback 에만 스크린리더용 안내를 붙인다 — 영역 4곳까지 읽히면 「로딩중입니다」가 여럿 겹친다
+const BODY_PENDING = (
+  <div role="status" className="min-h-[92px]">
+    <span className="sr-only">로딩중입니다</span>
+  </div>
+);
 
 function NotReady() {
   return <BoxMessage>준비 중입니다.</BoxMessage>;
@@ -158,9 +166,9 @@ export default async function StaffMemberDetailPage({
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>
               <StaffDetailActions staff={staff} today={today} listHref={listHref} />
             </div>
-            {/* 처음 들어올 때는 제목 줄 아래 본문 전체(기본 정보 · 네 영역)를 LoadGroup 이 딤 + 스피너로 덮고, 네 영역이 모두 온 뒤 한 번에 보인다.
+            {/* 처음 들어올 때는 제목 줄 아래 본문 전체(기본 정보 · 네 영역)를 LoadGroup 이 빈 자리로 덮고(상세 진입에는 고래를 쓰지 않는다), 네 영역이 모두 온 뒤 한 번에 보인다.
                   영역은 LoadGroupArea 가 각자 세기만 한다 */}
-            <LoadGroup>
+            <LoadGroup fallback={BODY_PENDING}>
               <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
                 <div className="flex min-w-0 flex-col gap-[24px]">
                   <DetailTable title="기본 정보" rows={basicRows} />
@@ -176,7 +184,7 @@ export default async function StaffMemberDetailPage({
                       />
                     }
                   >
-                    <LoadGroupArea fallback={<LoadingNotice compact />}>
+                    <LoadGroupArea fallback={AREA_PENDING}>
                       <ContractBox staffMemberId={staffMemberId} />
                     </LoadGroupArea>
                   </Box>
@@ -195,7 +203,7 @@ export default async function StaffMemberDetailPage({
                     }
                   >
                     {/* 주를 바꾸면 이 영역만 다시 기다린다 — key 가 바뀌면 영역의 Suspense 경계가 새로 서고, 묶음은 이미 풀려 있어 이 영역만 로딩을 보인다 */}
-                    <LoadGroupArea key={monday} fallback={<LoadingNotice compact />}>
+                    <LoadGroupArea key={monday} fallback={AREA_PENDING}>
                       <ScheduleBox staffMemberId={staffMemberId} weekStart={monday} />
                     </LoadGroupArea>
                   </Box>
@@ -204,13 +212,13 @@ export default async function StaffMemberDetailPage({
                     <NotReady />
                   </Box>
                   <Box title="급여명세서" manage={<MenuManageLink menuCode={MENU_CODE.payslips} menuName="급여명세서 관리" href="/payslips" />}>
-                    <LoadGroupArea fallback={<LoadingNotice compact />}>
+                    <LoadGroupArea fallback={AREA_PENDING}>
                       <PayslipBox staffMemberId={staffMemberId} />
                     </LoadGroupArea>
                   </Box>
                   <Box title="TO-DO" manage={<MenuManageLink menuCode={MENU_CODE.todos} menuName="TO-DO 리스트 관리" href="/todos" />}>
                     {/* TO-DO 관리 조회 권한이 없으면 목록까지 영역 전체를 막는다(summary-boxes.tsx TodoBox) */}
-                    <LoadGroupArea fallback={<LoadingNotice compact />}>
+                    <LoadGroupArea fallback={AREA_PENDING}>
                       <TodoBox staffMemberId={staffMemberId} />
                     </LoadGroupArea>
                   </Box>
