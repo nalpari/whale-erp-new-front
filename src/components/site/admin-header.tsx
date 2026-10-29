@@ -95,7 +95,7 @@ function BpStatusNote() {
         <rect x="5" y="11" width="14" height="9" rx="1.5" />
         <path d="M8 11V8a4 4 0 0 1 8 0v3" />
       </svg>
-      <b className="font-semibold">{label(status)}</b> · 조회만 가능합니다.
+      <b className="font-semibold">{label(status)}BP</b> · 조회만 가능합니다.
     </span>
   );
 }
