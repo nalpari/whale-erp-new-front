@@ -51,6 +51,8 @@ export function RetirementDialog({
   const [submitError, setSubmitError] = useState<string | null>(null);
   // 날짜를 빠르게 바꾸면 앞의 응답이 늦게 올 수 있다 — 마지막 요청의 응답만 쓴다.
   const seq = useRef(0);
+  // 지금 칸의 날짜. 저장 응답이 올 때 보낸 날짜와 같은지 본다 — 그 사이 날짜를 바꿨으면 이전 날짜의 400 을 새 날짜에 붙이지 않는다.
+  const dateRef = useRef(date);
 
   /** 미리 보기를 받아 그 응답이 마지막 요청일 때만 담는다. 상태는 응답을 받은 뒤에만 바꾼다. */
   const fetchPreview = (value: string) => {
@@ -79,6 +81,7 @@ export function RetirementDialog({
   }, []);
 
   const changeDate = (value: string, on: string = today) => {
+    dateRef.current = value;
     setDate(value);
     setSubmitError(null);
     setServerDateError(null);
@@ -101,6 +104,7 @@ export function RetirementDialog({
     setBusy(true);
     setSubmitError(null);
     setServerDateError(null);
+    const sentDate = date;
     try {
       // 경고 여부를 정한 오늘을 함께 보낸다 — 서버 액션이 서버 시계로 다시 판정한다(브라우저 시계가 늦어도 막힌다)
       const result =
@@ -120,6 +124,7 @@ export function RetirementDialog({
         return;
       }
       if (showsBelowDateField(result)) {
+        if (dateRef.current !== sentDate) return; // 처리 중에 날짜를 바꿨다 — 이전 날짜의 거절이다
         seq.current++;
         setServerDateError(result.message);
         setPreview({ status: "idle" }); // 거절된 날짜의 정리 건수 · 활성 버튼이 남지 않게(미리 보기 400 과 같다)
@@ -152,7 +157,7 @@ export function RetirementDialog({
       <div className="flex flex-col gap-[12px]">
         <div className="flex flex-col gap-[8px]">
           <span className="text-[14px] font-medium text-erp-label">퇴직일</span>
-          <DateField aria-label="퇴직일" value={date} onChange={changeDate} />
+          <DateField aria-label="퇴직일" value={date} onChange={(value) => value !== date && changeDate(value)} />
           <p className="text-[13px] text-erp-label">오늘 이후, 또는 최근 3개월 안({earliestRetiredDate(today)}부터)의 지난 날짜를 받습니다.</p>
           {dateNote && (
             <p role="alert" className="text-[13px] text-erp-off">

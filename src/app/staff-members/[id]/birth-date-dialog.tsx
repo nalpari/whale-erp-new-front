@@ -70,6 +70,8 @@ function BirthDateDialog({
   const [serverDateError, setServerDateError] = useState<string | null>(null);
   // busy 가 그려지기 전에 들어온 두 번째 클릭을 막는다 — 그대로 두면 두 번째 요청이 「지금과 같습니다」 409 를 남긴다.
   const sending = useRef(false);
+  // 지금 칸의 날짜. 응답이 올 때 보낸 날짜와 같은지 본다 — 그 사이 날짜를 바꿨으면 이전 날짜의 400 을 새 날짜에 붙이지 않는다.
+  const dateRef = useRef("");
 
   const problem = checkBirthDate(date, today, current);
   // 아직 아무것도 치지 않았을 때는 문구를 보이지 않고 버튼만 막는다
@@ -109,6 +111,7 @@ function BirthDateDialog({
       if (confirmed) setReconfirm(true);
       changeConfirmed(false);
     }
+    dateRef.current = next;
     setDate(next);
     setError(null);
     if (next !== date) setServerDateError(null); // DateField 는 값이 같아도 blur 때 onChange 를 부른다
@@ -132,6 +135,7 @@ function BirthDateDialog({
       return;
     }
     sending.current = true;
+    const sentDate = date;
     setBusy(true);
     setError(null);
     setServerDateError(null);
@@ -155,6 +159,7 @@ function BirthDateDialog({
     }
     // 생년월일 입력 검증 400 은 날짜 칸 아래에 둔다
     if (showsBelowBirthDateField(result)) {
+      if (dateRef.current !== sentDate) return; // 처리 중에 날짜를 바꿨다 — 이전 날짜의 거절이다
       setServerDateError(result.message);
       return;
     }
@@ -183,7 +188,7 @@ function BirthDateDialog({
       title="생년월일 정정"
       confirmLabel="정정"
       busy={busy}
-      confirmDisabled={problem !== null || !confirmed}
+      confirmDisabled={problem !== null || serverDateError !== null || !confirmed}
       onConfirm={handleConfirm}
       onCancel={onClose}
     >
