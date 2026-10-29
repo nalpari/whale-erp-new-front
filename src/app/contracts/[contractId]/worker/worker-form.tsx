@@ -1,14 +1,23 @@
 "use client";
 
 import { unstable_rethrow, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { Button, Checkbox, ConfirmDialog, DateField, Field, FormGroup, FormRow, Radio, TextField, useAction } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatPhone, GENDERS, inProgressLine, type InProgressContract } from "../../new/contract-form-model";
 import { withBack } from "../../contract-list";
 import { updateWorker } from "../actions";
 import { callSave, SAVE_CALL_LOST } from "../send-model";
-import { workerBody, workerProblems, workerSaveNote, type WorkerForm as Form } from "./worker-model";
+import { workerBody, workerProblemsByField, workerSaveNote, type WorkerForm as Form } from "./worker-model";
+
+// 저장 때 찾은 유효성 오류 — 그 칸 바로 아래에 보인다(WHALEERP-631, 2026-10-29 재영 공지 1번). 작성 화면과 같은 색이다.
+function FieldError({ id, error }: { id: string; error?: string }) {
+  return error ? (
+    <span id={id} className="text-[12px] leading-[1.5] text-erp-off">
+      {error}
+    </span>
+  ) : null;
+}
 
 // 날인 전 근로자 정보 수정(WHALEERP-125 「본인 대조」 · 126). 초대 코드를 못 받았다는 직원과 유선으로 번호를 확인했거나,
 // 직원이 가입 값과 달라 수정을 요청했을 때 쓴다. 다섯 칸은 직원이 가입하며 넣는 값과 대조된다.
@@ -35,14 +44,36 @@ export function WorkerForm({
   // 새 번호로 같은 점포에 진행 중 계약이 있으면(409) 대체할지 묻는다 — 작성 화면과 같다
   const [replace, setReplace] = useState<InProgressContract[] | null>(null);
   const failureRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
   const [failures, setFailures] = useState(0);
   useEffect(() => {
-    // nearest — center 는 바깥 틀까지 밀어 올려 화면 아래에 빈 공간이 생긴다(작성 화면과 같다)
-    if (failures) failureRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    // 화면이 막았으면 첫 오류 칸으로, api 가 막았으면 아래 안내로. nearest — center 는 바깥 틀까지 밀어 올려 화면 아래에 빈 공간이
+    // 생긴다(작성 화면과 같다)
+    if (!failures) return;
+    const target = failureRef.current ?? formRef.current?.querySelector("[aria-invalid=true], [data-invalid]");
+    target?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [failures]);
+  const ids = { name: useId(), phone: useId(), birthDate: useId(), gender: useId() };
+  // 공통 DateField 는 aria 속성을 받지 않아 안의 입력에 직접 단다
+  const birthRef = useRef<HTMLDivElement>(null);
 
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
-  const issues = workerProblems(form);
+  const issues = workerProblemsByField(form);
+  // 칸 아래 오류는 저장을 한 번 누른 뒤부터, 고칠 때마다 다시 본다
+  const errs = tried ? issues : {};
+  const invalid = (k: keyof typeof ids) => (errs[k] ? { "aria-invalid": true, "aria-describedby": ids[k] } : {});
+  const birthInvalid = !!errs.birthDate;
+  useEffect(() => {
+    const input = birthRef.current?.querySelector("input");
+    if (!input) return;
+    if (birthInvalid) {
+      input.setAttribute("aria-invalid", "true");
+      input.setAttribute("aria-describedby", ids.birthDate);
+    } else {
+      input.removeAttribute("aria-invalid");
+      input.removeAttribute("aria-describedby");
+    }
+  }, [birthInvalid, ids.birthDate]);
   const send = (replaceContractIds?: number[]) =>
     startSaving(async () => {
       // 성공하면 액션이 상세로 보낸다. 돌아왔다면 실패다.
@@ -64,7 +95,7 @@ export function WorkerForm({
   const save = () => {
     setTried(true);
     setServerError("");
-    if (issues.length) {
+    if (Object.keys(issues).length) {
       setFailures((n) => n + 1);
       return;
     }
@@ -72,7 +103,7 @@ export function WorkerForm({
   };
 
   return (
-    <div className="flex flex-col gap-[12px]">
+    <div ref={formRef} className="flex flex-col gap-[12px]">
       <div className="flex items-end gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로자 정보 수정</h2>
         <Button variant="off" href={withBack(`/contracts/${contractId}`, back)}>
@@ -89,18 +120,35 @@ export function WorkerForm({
       <FormGroup title="직원 정보">
         <FormRow>
           <Field label="이름" required>
-            <TextField value={form.name} maxLength={50} aria-required onChange={(e) => set("name", e.target.value)} />
+            <TextField value={form.name} maxLength={50} aria-required {...invalid("name")} onChange={(e) => set("name", e.target.value)} />
+            <FieldError id={ids.name} error={errs.name} />
           </Field>
           <Field label="휴대전화번호" required>
-            <TextField value={form.phone} inputMode="tel" placeholder="010-0000-0000" maxLength={13} aria-required onChange={(e) => set("phone", formatPhone(e.target.value))} />
+            <TextField
+              value={form.phone}
+              inputMode="tel"
+              placeholder="010-0000-0000"
+              maxLength={13}
+              aria-required
+              {...invalid("phone")}
+              onChange={(e) => set("phone", formatPhone(e.target.value))}
+            />
+            <FieldError id={ids.phone} error={errs.phone} />
           </Field>
         </FormRow>
         <FormRow>
-          <div className="flex min-w-px flex-1 flex-col gap-[8px]">
+          <div ref={birthRef} data-invalid={errs.birthDate ? true : undefined} className="flex min-w-px flex-1 flex-col gap-[8px]">
             <span className="text-[14px] font-medium text-erp-label">생년월일 *</span>
             <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />
+            <FieldError id={ids.birthDate} error={errs.birthDate} />
           </div>
-          <div role="group" aria-label="성별" className="flex min-w-px flex-1 flex-col gap-[8px]">
+          <div
+            role="group"
+            aria-label="성별"
+            aria-describedby={errs.gender ? ids.gender : undefined}
+            data-invalid={errs.gender ? true : undefined}
+            className="flex min-w-px flex-1 flex-col gap-[8px]"
+          >
             <span className="text-[14px] font-medium text-erp-label">성별 *</span>
             <div role="radiogroup" className="flex min-h-[34px] flex-wrap items-center gap-x-[18px] gap-y-[8px]">
               {GENDERS.map((v) => (
@@ -108,18 +156,16 @@ export function WorkerForm({
               ))}
               <Checkbox label="외국인" checked={form.isForeigner} onChange={(e) => set("isForeigner", e.target.checked)} />
             </div>
+            <FieldError id={ids.gender} error={errs.gender} />
           </div>
         </FormRow>
       </FormGroup>
 
-      {(serverError || (tried && issues.length > 0)) && (
+      {/* 화면이 막은 유효성 오류는 칸 아래에 보이고, 여기는 api 가 막은 것만이다(WHALEERP-631) */}
+      {serverError && (
         <div ref={failureRef} role="alert" className="flex flex-col gap-[4px] rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px]">
           <p className="text-[14px] font-semibold text-erp-off">저장하지 못했습니다</p>
-          <ul className="list-disc pl-[18px] text-[14px] leading-[1.6] text-erp-ink">
-            {(serverError ? [serverError] : issues).map((m) => (
-              <li key={m}>{m}</li>
-            ))}
-          </ul>
+          <p className="text-[14px] leading-[1.6] text-erp-ink">{serverError}</p>
         </div>
       )}
 
