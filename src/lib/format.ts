@@ -37,7 +37,8 @@ export function wasUpdated(createdAt: string | null | undefined, updatedAt: stri
 export function withinPasswordHour(at: string | null | undefined): boolean {
   if (!at) return false;
   const gap = Date.now() - Date.parse(at);
-  return Number.isFinite(gap) && gap >= 0 && gap < 3_600_000;
+  // 등록 일시는 api 서버 시계라 PC 시계가 몇 분 늦으면 gap 이 음수다 — 5분까지는 방금 만든 것으로 본다(리뷰로 찾음)
+  return Number.isFinite(gap) && gap > -300_000 && gap < 3_600_000;
 }
 
 /** ISO 일시 → `2026-10-13`(한국 시간, 날짜만). 값이 없거나 깨졌으면 빈 문자열. */

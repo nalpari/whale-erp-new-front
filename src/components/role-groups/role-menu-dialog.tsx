@@ -426,7 +426,7 @@ function MenuTable({
                       <td key={op} className="px-[10px] text-center">
                         {/* 내 권한 밖 칸은 체크박스를 두지 않는다(2026-10-29 사용자 지정). 다만 이미 켜진 칸은 보인다 — 숨기면 저장된 권한이 안 보이고
                             그 칸 때문에 조회가 잠긴 이유도 알 수 없다(리뷰로 찾음). 묶음 줄은 api 가 아래 잎이 모두 범위 밖일 때만 범위 밖으로 준다 */}
-                        {n[op].blockedReason === "OUT_OF_SCOPE" && !(n.isGroup ? n[op].value : values[n.menuId]?.[op]) ? null : box(
+                        {n[op].blockedReason === "OUT_OF_SCOPE" && !(n.isGroup ? aggregate(values, n.children, op, n[op].value).checked || aggregate(values, n.children, op, n[op].value).mixed : values[n.menuId]?.[op]) ? null : box(
                           `${n.name} ${OP_LABEL[op]}`,
                           n.isGroup ? aggregate(values, n.children, op, n[op].value) : { checked: Boolean(values[n.menuId]?.[op]), disabled: !editableOf(n, op) },
                           (on) => onChange(toggle(values, n, op, on)),
