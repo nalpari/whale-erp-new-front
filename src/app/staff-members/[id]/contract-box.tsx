@@ -3,7 +3,7 @@ import { labelOf } from "@/lib/enums";
 import { getStaffMemberContractSummary } from "@/lib/staff-members-api";
 import { StatusBadge } from "../../contracts/columns";
 import { ContractMenuPermission } from "../../contracts/contract-permission";
-import { contractSummaryTexts, payrollAccountText } from "./contract-summary";
+import { contractSummaryTexts, payrollAccountRows } from "./contract-summary";
 import { AreaFailure, BoxMessage } from "./detail-box";
 import { loadArea, loadLabels } from "./summary-load";
 
@@ -41,7 +41,7 @@ export async function ContractBox({ staffMemberId }: { staffMemberId: number }) 
     { label: "계약 유형", value: texts.type },
     { label: "계약 기간", value: texts.period },
     { label: "계약 상태", value: statusCell },
-    { label: "급여 계좌", value: payrollAccountText(result.data.payrollAccount) },
+    ...payrollAccountRows(result.data),
     { label: "최근 발송일", value: texts.lastSent },
     { label: "갱신 예정일", value: texts.renewal },
   ];
