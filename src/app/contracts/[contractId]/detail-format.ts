@@ -60,8 +60,9 @@ export function taxProfileTexts(t: ContractDetail["taxProfile"] | undefined): { 
   if (t?.status === "UNAVAILABLE") return { rrn: TAX_PROFILE_UNAVAILABLE, account: TAX_PROFILE_UNAVAILABLE };
   if (t?.status !== "OK") return { rrn: "-", account: "-" };
   return {
-    rrn: t.rrnMasked ?? "-",
-    account: payrollAccountText(t.bankName !== null && t.accountNumber !== null ? { bankName: t.bankName, accountNumber: t.accountNumber } : null),
+    // 빈 글자 · 빠진 칸도 비었다고 본다 — 빈 칸이나 「은행 undefined」를 보이지 않게
+    rrn: t.rrnMasked || "-",
+    account: payrollAccountText(t.bankName && t.accountNumber ? { bankName: t.bankName, accountNumber: t.accountNumber } : null),
   };
 }
 

@@ -163,6 +163,7 @@ test("신고 정보 — OK 인데 빈 칸이 있으면 그 칸만 「-」(「은
     rrn: "-",
     account: "KB국민은행 12345678901234",
   });
+  assert.deepEqual(taxProfileTexts({ status: "OK", rrnMasked: "", bankName: "KB국민은행", accountNumber: "" }), { rrn: "-", account: "-" });
 });
 
 test("신고 정보 — 미입력 · 본사 역할의 가맹 직원 조회 · 칸 없는 옛 응답은 「-」", () => {
