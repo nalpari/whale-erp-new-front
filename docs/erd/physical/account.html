@@ -78,7 +78,7 @@ table.spec td.n{color:var(--muted)}
 <h1>계정과 접속</h1>
 <p class="subtitle">직원 근무 앱에 로그인하는 사람 단위의 데이터다. 이메일 아이디로 로그인하고 본인인증 휴대전화번호는 초대 연결의 매칭 키로만 쓴다. 비밀번호는 이메일 핀으로 재설정한다.</p>
 </div>
-<div class="nav-row"><nav aria-label="ERD 영역"><a href="index.html">개요</a><a href="account.html" aria-current="page">계정·접속</a><a href="hiring.html">채용·초대</a><a href="contract.html">근로계약</a><a href="attendance.html">근무스케줄·출퇴근</a><a href="todo.html">TO-DO</a><a href="payroll.html">급여명세서</a><a href="notify.html">알림</a><a href="support.html">고객지원·커뮤니티</a></nav><div class="tools"><div class="view-btns" role="group" aria-label="보기"><button type="button" aria-pressed="false" data-view="logical">논리</button><button type="button" aria-pressed="true" data-view="physical">물리</button><button type="button" aria-pressed="false" data-view="both">논리+물리</button></div></div></div>
+<div class="nav-row"><nav aria-label="ERD 영역"><a href="index.html">개요</a><a href="account.html" aria-current="page">계정·접속</a><a href="hiring.html">채용·초대</a><a href="contract.html">근로계약</a><a href="attendance.html">근무스케줄·출퇴근</a><a href="todo.html">TO-DO</a><a href="payroll.html">급여명세서</a><a href="notify.html">알림</a><a href="support.html">고객지원·커뮤니티</a><a href="export.html">일괄 저장</a></nav><div class="tools"><div class="view-btns" role="group" aria-label="보기"><button type="button" aria-pressed="false" data-view="logical">논리</button><button type="button" aria-pressed="true" data-view="physical">물리</button><button type="button" aria-pressed="false" data-view="both">논리+물리</button></div></div></div>
 <div class="diagram">
 <div class="v v-logical"><svg viewBox="0 0 1328 1224" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="erd-account-logical-title erd-account-logical-desc" style="min-width:1328px">
 <title id="erd-account-logical-title">계정과 접속</title>
@@ -817,12 +817,12 @@ table.spec td.n{color:var(--muted)}
 <text x="604" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">identity_verification_result</text>
 <text x="56" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">인증 일시</text>
 <text x="604" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
-<text x="232" y="116" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">identity_verification_id</text>
-<text x="232" y="136" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
-<text x="232" y="156" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">purpose</text>
-<text x="232" y="176" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">phone</text>
-<text x="232" y="196" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">result</text>
-<text x="232" y="216" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">verified_at</text>
+<text x="244" y="116" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">identity_verification_id</text>
+<text x="244" y="136" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
+<text x="244" y="156" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">purpose</text>
+<text x="244" y="176" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">phone</text>
+<text x="244" y="196" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">result</text>
+<text x="244" y="216" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">verified_at</text>
 </g>
 <g id="both-ent-session">
 <rect x="40" y="312" width="580" height="252" rx="6" fill="#ffffff"/>
@@ -851,15 +851,15 @@ table.spec td.n{color:var(--muted)}
 <text x="604" y="528" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">boolean</text>
 <text x="56" y="548" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">종료 시각</text>
 <text x="604" y="548" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
-<text x="232" y="388" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">auth_session_id</text>
-<text x="232" y="408" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
-<text x="232" y="428" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">device_identifier</text>
-<text x="232" y="448" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">refresh_token_hash</text>
-<text x="232" y="468" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">issued_at</text>
-<text x="232" y="488" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">last_used_at</text>
-<text x="232" y="508" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">expires_at</text>
-<text x="232" y="528" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">is_remembered</text>
-<text x="232" y="548" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">revoked_at</text>
+<text x="244" y="388" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">auth_session_id</text>
+<text x="244" y="408" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
+<text x="244" y="428" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">device_identifier</text>
+<text x="244" y="448" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">refresh_token_hash</text>
+<text x="244" y="468" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">issued_at</text>
+<text x="244" y="488" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">last_used_at</text>
+<text x="244" y="508" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">expires_at</text>
+<text x="244" y="528" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">is_remembered</text>
+<text x="244" y="548" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">revoked_at</text>
 </g>
 <g id="both-ent-account">
 <rect x="740" y="40" width="580" height="492" rx="6" fill="#ffffff"/>
@@ -911,27 +911,27 @@ table.spec td.n{color:var(--muted)}
 <text x="1304" y="496" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
 <text x="756" y="516" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">최근 수정 일시</text>
 <text x="1304" y="516" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
-<text x="932" y="116" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
-<text x="932" y="136" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">email</text>
-<text x="932" y="156" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">password_hash</text>
-<text x="932" y="176" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">real_name</text>
-<text x="932" y="196" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">birth_date</text>
-<text x="932" y="216" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">phone</text>
-<text x="932" y="236" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">gender</text>
-<text x="932" y="256" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">is_foreigner</text>
-<text x="932" y="276" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">connecting_information</text>
-<text x="932" y="296" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">zip_code</text>
-<text x="932" y="316" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">address</text>
-<text x="932" y="336" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">address_detail</text>
-<text x="932" y="356" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">is_hq_sharing_consented</text>
-<text x="932" y="376" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">hq_sharing_consent_version</text>
-<text x="932" y="396" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">hq_sharing_agreed_at</text>
-<text x="932" y="416" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">hq_sharing_withdrawn_at</text>
-<text x="932" y="436" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">status</text>
-<text x="932" y="456" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">failed_login_count</text>
-<text x="932" y="476" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">lock_expires_at</text>
-<text x="932" y="496" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">created_at</text>
-<text x="932" y="516" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">updated_at</text>
+<text x="944" y="116" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
+<text x="944" y="136" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">email</text>
+<text x="944" y="156" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">password_hash</text>
+<text x="944" y="176" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">real_name</text>
+<text x="944" y="196" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">birth_date</text>
+<text x="944" y="216" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">phone</text>
+<text x="944" y="236" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">gender</text>
+<text x="944" y="256" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">is_foreigner</text>
+<text x="944" y="276" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">connecting_information</text>
+<text x="944" y="296" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">zip_code</text>
+<text x="944" y="316" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">address</text>
+<text x="944" y="336" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">address_detail</text>
+<text x="944" y="356" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">is_hq_sharing_consented</text>
+<text x="944" y="376" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">hq_sharing_consent_version</text>
+<text x="944" y="396" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">hq_sharing_agreed_at</text>
+<text x="944" y="416" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">hq_sharing_withdrawn_at</text>
+<text x="944" y="436" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">status</text>
+<text x="944" y="456" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">failed_login_count</text>
+<text x="944" y="476" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">lock_expires_at</text>
+<text x="944" y="496" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">created_at</text>
+<text x="944" y="516" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">updated_at</text>
 </g>
 <g id="both-ent-change">
 <rect x="740" y="596" width="580" height="232" rx="6" fill="#ffffff"/>
@@ -959,14 +959,14 @@ table.spec td.n{color:var(--muted)}
 <text x="1304" y="792" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer?</text>
 <text x="756" y="812" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">변경 일시</text>
 <text x="1304" y="812" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
-<text x="932" y="672" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_change_history_id</text>
-<text x="932" y="692" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
-<text x="932" y="712" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">field</text>
-<text x="932" y="732" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">before_value</text>
-<text x="932" y="752" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">after_value</text>
-<text x="932" y="772" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">channel</text>
-<text x="932" y="792" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">requested_by</text>
-<text x="932" y="812" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">changed_at</text>
+<text x="944" y="672" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_change_history_id</text>
+<text x="944" y="692" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
+<text x="944" y="712" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">field</text>
+<text x="944" y="732" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">before_value</text>
+<text x="944" y="752" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">after_value</text>
+<text x="944" y="772" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">channel</text>
+<text x="944" y="792" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">requested_by</text>
+<text x="944" y="812" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">changed_at</text>
 </g>
 <g id="both-ent-login">
 <rect x="1440" y="40" width="580" height="192" rx="6" fill="#ffffff"/>
@@ -989,12 +989,12 @@ table.spec td.n{color:var(--muted)}
 <text x="2004" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">account_login_failure_reason?</text>
 <text x="1456" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">시도 시각</text>
 <text x="2004" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
-<text x="1632" y="116" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">login_history_id</text>
-<text x="1632" y="136" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
-<text x="1632" y="156" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">email</text>
-<text x="1632" y="176" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">is_succeeded</text>
-<text x="1632" y="196" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">failure_reason</text>
-<text x="1632" y="216" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">attempted_at</text>
+<text x="1644" y="116" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">login_history_id</text>
+<text x="1644" y="136" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
+<text x="1644" y="156" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">email</text>
+<text x="1644" y="176" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">is_succeeded</text>
+<text x="1644" y="196" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">failure_reason</text>
+<text x="1644" y="216" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">attempted_at</text>
 </g>
 <g id="both-ent-pin">
 <rect x="1440" y="312" width="580" height="212" rx="6" fill="#ffffff"/>
@@ -1019,13 +1019,13 @@ table.spec td.n{color:var(--muted)}
 <text x="2004" y="488" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
 <text x="1456" y="508" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">사용 시각</text>
 <text x="2004" y="508" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
-<text x="1632" y="388" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">password_reset_pin_id</text>
-<text x="1632" y="408" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
-<text x="1632" y="428" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">pin_hash</text>
-<text x="1632" y="448" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">issued_at</text>
-<text x="1632" y="468" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">expires_at</text>
-<text x="1632" y="488" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">attempt_count</text>
-<text x="1632" y="508" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">used_at</text>
+<text x="1644" y="388" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">password_reset_pin_id</text>
+<text x="1644" y="408" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
+<text x="1644" y="428" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">pin_hash</text>
+<text x="1644" y="448" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">issued_at</text>
+<text x="1644" y="468" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">expires_at</text>
+<text x="1644" y="488" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">attempt_count</text>
+<text x="1644" y="508" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">used_at</text>
 </g>
 <g id="both-ent-access_log">
 <rect x="1440" y="608" width="580" height="232" rx="6" fill="#ffffff"/>
@@ -1053,14 +1053,14 @@ table.spec td.n{color:var(--muted)}
 <text x="1456" y="824" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
 <text x="1470" y="824" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">출퇴근 기록</text>
 <text x="2004" y="824" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer?</text>
-<text x="1632" y="684" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">location_access_log_id</text>
-<text x="1632" y="704" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
-<text x="1632" y="724" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">action</text>
-<text x="1632" y="744" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">occurred_at</text>
-<text x="1632" y="764" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">method</text>
-<text x="1632" y="784" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">recipient</text>
-<text x="1632" y="804" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">purpose</text>
-<text x="1632" y="824" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">attendance_record_id</text>
+<text x="1644" y="684" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">location_access_log_id</text>
+<text x="1644" y="704" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
+<text x="1644" y="724" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">action</text>
+<text x="1644" y="744" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">occurred_at</text>
+<text x="1644" y="764" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">method</text>
+<text x="1644" y="784" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">recipient</text>
+<text x="1644" y="804" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">purpose</text>
+<text x="1644" y="824" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">attendance_record_id</text>
 </g>
 <g id="both-ent-admin">
 <rect x="40" y="628" width="580" height="132" rx="6" fill="#ffffff"/>
@@ -1077,9 +1077,9 @@ table.spec td.n{color:var(--muted)}
 <text x="604" y="724" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
 <text x="56" y="744" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">역할</text>
 <text x="604" y="744" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">enum</text>
-<text x="232" y="704" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">admin_account_id</text>
-<text x="232" y="724" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">bp_code_id</text>
-<text x="232" y="744" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">role</text>
+<text x="244" y="704" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">admin_account_id</text>
+<text x="244" y="724" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">bp_code_id</text>
+<text x="244" y="744" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">role</text>
 </g>
 <g id="both-ent-reset_link">
 <rect x="1440" y="904" width="580" height="212" rx="6" fill="#ffffff"/>
@@ -1105,13 +1105,13 @@ table.spec td.n{color:var(--muted)}
 <text x="1456" y="1100" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
 <text x="1470" y="1100" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">요청 관리자</text>
 <text x="2004" y="1100" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
-<text x="1632" y="980" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">password_reset_link_id</text>
-<text x="1632" y="1000" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
-<text x="1632" y="1020" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">token_hash</text>
-<text x="1632" y="1040" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">issued_at</text>
-<text x="1632" y="1060" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">expires_at</text>
-<text x="1632" y="1080" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">closed_at</text>
-<text x="1632" y="1100" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">requested_by</text>
+<text x="1644" y="980" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">password_reset_link_id</text>
+<text x="1644" y="1000" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
+<text x="1644" y="1020" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">token_hash</text>
+<text x="1644" y="1040" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">issued_at</text>
+<text x="1644" y="1060" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">expires_at</text>
+<text x="1644" y="1080" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">closed_at</text>
+<text x="1644" y="1100" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">requested_by</text>
 </g>
 <g id="both-ent-email_find">
 <rect x="2140" y="40" width="580" height="192" rx="6" fill="#ffffff"/>
@@ -1133,12 +1133,12 @@ table.spec td.n{color:var(--muted)}
 <text x="2704" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
 <text x="2156" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">시도 시각</text>
 <text x="2704" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
-<text x="2332" y="116" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">email_find_attempt_id</text>
-<text x="2332" y="136" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">phone_key</text>
-<text x="2332" y="156" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">is_succeeded</text>
-<text x="2332" y="176" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">failed_count</text>
-<text x="2332" y="196" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">lock_expires_at</text>
-<text x="2332" y="216" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">attempted_at</text>
+<text x="2344" y="116" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">email_find_attempt_id</text>
+<text x="2344" y="136" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">phone_key</text>
+<text x="2344" y="156" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">is_succeeded</text>
+<text x="2344" y="176" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">failed_count</text>
+<text x="2344" y="196" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">lock_expires_at</text>
+<text x="2344" y="216" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">attempted_at</text>
 </g>
 <g id="both-ent-email_pin">
 <rect x="2140" y="380" width="580" height="232" rx="6" fill="#ffffff"/>
@@ -1165,14 +1165,14 @@ table.spec td.n{color:var(--muted)}
 <text x="2704" y="576" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
 <text x="2156" y="596" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">사용 시각</text>
 <text x="2704" y="596" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
-<text x="2332" y="456" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">email_change_pin_id</text>
-<text x="2332" y="476" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
-<text x="2332" y="496" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">new_email</text>
-<text x="2332" y="516" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">pin_hash</text>
-<text x="2332" y="536" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">issued_at</text>
-<text x="2332" y="556" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">expires_at</text>
-<text x="2332" y="576" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">attempt_count</text>
-<text x="2332" y="596" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">used_at</text>
+<text x="2344" y="456" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">email_change_pin_id</text>
+<text x="2344" y="476" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
+<text x="2344" y="496" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">new_email</text>
+<text x="2344" y="516" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">pin_hash</text>
+<text x="2344" y="536" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">issued_at</text>
+<text x="2344" y="556" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">expires_at</text>
+<text x="2344" y="576" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">attempt_count</text>
+<text x="2344" y="596" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">used_at</text>
 </g>
 <rect x="718" y="188" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="726" y="198" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
