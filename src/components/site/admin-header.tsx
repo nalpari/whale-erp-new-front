@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useEffectEvent, useState, type ReactNode } from "react";
-import { GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
+import { ConfirmDialog, GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bpPath, isBpPathScreen } from "@/lib/bp-path";
 import type { ServiceCode } from "@/lib/browser-storage";
@@ -29,6 +29,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const all = useMenus();
   const backdropActive = useBackdropActive();
   const [bpSelectOpen, setBpSelectOpen] = useState(false);
+  const [addonNoticeOpen, setAddonNoticeOpen] = useState(false);
   const [, setMyPageOpen] = useMyPageOpen();
   const [, setPasswordChangeOpen] = usePasswordChangeOpen();
   const [, setWithdrawOpen] = useWithdrawOpen();
@@ -66,10 +67,14 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
       right={
         <>
           {service === "WHALE_ERP" ? <HeaderScopeSelect /> : <div className="flex-1" />}
-          <ServiceLinks targets={serviceTargets(account.bp, service, home, () => setBpSelectOpen(true))} hideAddon={service === "PLATFORM"} />
+          <ServiceLinks targets={{ ...serviceTargets(account.bp, service, home, () => setBpSelectOpen(true)), addon: () => setAddonNoticeOpen(true) }} hideAddon={service === "PLATFORM"} />
           {alarm}
           <UserPop name={account.name ?? account.loginId} items={userItems} triggerRef={myPageTrigger} />
           {bpSelectOpen && <BpSelectDialog onClose={() => setBpSelectOpen(false)} />}
+          {/* 부가서비스 아이콘 — 고객지원 > 부가서비스구독관리 화면이 아직 없어 안내만 띄운다(2026-10-29 사용자 지정). 화면이 생기면 그 주소로 현재 창 이동한다. */}
+          <ConfirmDialog open={addonNoticeOpen} title="안내" cancelLabel={null} onConfirm={() => setAddonNoticeOpen(false)} onCancel={() => setAddonNoticeOpen(false)}>
+            부가서비스구독관리 화면은 준비 중입니다.
+          </ConfirmDialog>
         </>
       }
     />
