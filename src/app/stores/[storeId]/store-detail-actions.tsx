@@ -49,6 +49,7 @@ const UNKNOWN =
 /**
  * 상세 제목 줄의 버튼 — [상태 변경] [삭제] [수정] [목록](데모 stores/detail).
  * 상태 변경 팝업은 열 때 운영 · 폐점 조건을 지금 기준으로 다시 받고, 갈 수 있는 상태만 보인다(미운영→운영 · 폐점, 운영→폐점).
+ * 폐점은 되돌릴 수 없어 조건 팝업 다음에 확인 창을 한 번 더 거친다([이전]은 조건 팝업으로 돌아간다).
  * 상태만 바꾸는 저장도 수정(PUT)으로 보낸다 — 화면 전체를 보내야 해서 상세 값을 그대로 싣고 상태만 바꾼다.
  * 폐점 점포는 수정 · 삭제 · 상태 변경이 없다. 소속 BP 가 미사용이면 쓰는 버튼을 막는다(api 도 409 로 막는다).
  * 메뉴 권한(로그인 정보)으로 상태 변경 · 수정은 update, 삭제는 delete 가 있을 때 보인다 — 막는 것은 api 다.
@@ -189,7 +190,15 @@ export function StoreDetailActions({
           busy={busy}
           confirmDisabled={!allowed}
           // 폐점은 되돌릴 수 없어 수정 화면처럼 확인 창을 한 번 더 거친다(2026-10-29 사용자 결정). 조건 팝업에는 폐점일 안내를 적지 않는다(10-19)
-          onConfirm={target === "CLOSED" ? () => setDialog("close-confirm") : handleStatusChange}
+          // 넘어갈 때 앞 팝업의 실패 문구를 지운다 — 남으면 아직 누르지 않은 폐점이 실패한 것처럼 보인다(조건은 api 가 다시 본다)
+          onConfirm={
+            target === "CLOSED"
+              ? () => {
+                  setFailure(null);
+                  setDialog("close-confirm");
+                }
+              : handleStatusChange
+          }
           onCancel={() => setDialog(null)}
         >
           <div className="flex flex-col gap-[12px]">

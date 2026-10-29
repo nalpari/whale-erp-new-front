@@ -152,7 +152,7 @@ export function resolveStoresQuery(parsed: ParsedStoresQuery, found: readonly Fo
 }
 
 /**
- * 헤더 범위(직영 · 가맹)와 고른 점포유형이 겹치지 않아 0건인가 — 「점포유형을 선택해 주세요」가 아니라 이 이유로 알린다.
+ * 헤더 범위(직영 · 가맹)와 고른 점포유형이 겹치지 않아 0건인가 — 「점포유형을 골라 주세요」가 아니라 이 이유로 알린다.
  * 점포유형을 하나도 고르지 않은 것은 여기에 들지 않는다.
  */
 export const scopeTypeMismatch = (query: StoresQuery) => query.storeTypes.length > 0 && storeListQueryOf(query).storeTypes.length === 0;

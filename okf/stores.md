@@ -9,7 +9,7 @@ sources:
   - { id: store-form, resource: ../src/lib/store-form.ts, title: 점포 등록 · 수정 폼 규칙 }
   - { id: store-view, resource: ../src/lib/store-view.ts, title: 점포 표기 }
   - { id: excel-downloads-app, resource: ../src/app/excel-downloads, title: 엑셀 내려받기 화면(메일 링크) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-29T09:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-29T08:05:31Z }
 ---
 
 근거: `docs/mockup/stores/` (목업 · 1차 · R-QTPRUQ)
