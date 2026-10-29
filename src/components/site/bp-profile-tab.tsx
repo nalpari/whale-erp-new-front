@@ -79,7 +79,7 @@ function Labeled({ label, required, labelExtra, children }: { label: string; req
 
 export type BpProfileTabHandle = { save: () => void };
 
-/** MY PAGE 사업자정보 탭(S-UOJVUR). BP 마스터에게만 보인다 — my-page-panel.tsx 가 그 판정을 한다.
+/** 마이페이지 사업자정보 탭(S-UOJVUR). BP 마스터에게만 보인다 — my-page-panel.tsx 가 그 판정을 한다.
  * 패널이 열릴 때마다 새로 받는다(기본정보 탭과 같다). 「저장」·「닫기」는 기본정보 탭과 같은 자리(패널 맨 아래
  * 한 줄)에 둔다(사용자 디자인 피드백, 2026-10-22) — 그래서 저장은 ref 로 부모가 부르고, 저장 중 여부는
  * onSavingChange 로 부모에 올린다(부모가 그 값으로 맨 아래 버튼을 잠근다).

@@ -3,7 +3,7 @@
 import { ApiError } from "@/lib/api";
 import { checkMyEmailAvailable, getMyProfile, updateMyProfile, type MyProfile, type UpdateMyProfileInput } from "@/lib/my-profile";
 
-// 내 정보(MY PAGE) 조회 · 수정. 로그인 판정은 api 가 한다(세션 토큰이 없거나 끝났으면 401).
+// 내 정보(마이페이지) 조회 · 수정. 로그인 판정은 api 가 한다(세션 토큰이 없거나 끝났으면 401).
 
 type Failure = { ok: false; status?: 400 | 401 | 409; message: string };
 export type ActionResult<T = object> = ({ ok: true } & T) | Failure;

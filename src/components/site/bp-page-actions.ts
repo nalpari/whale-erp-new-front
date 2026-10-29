@@ -3,7 +3,7 @@
 import { ApiError } from "@/lib/api";
 import { getBpProfile, updateBpProfile, verifyBpBusiness, type BpProfile, type UpdateBpProfileInput, type VerifyBpBusinessInput } from "@/lib/bp-profile";
 
-// 내 정보(MY PAGE) 사업자정보 조회 · 수정 · 사업자 번호 인증. 로그인·권한 판정은 api 가 한다
+// 내 정보(마이페이지) 사업자정보 조회 · 수정 · 사업자 번호 인증. 로그인·권한 판정은 api 가 한다
 // (토큰 없음·만료 401, BP 마스터가 아니면 403).
 
 type Failure = { ok: false; status?: number; message: string };

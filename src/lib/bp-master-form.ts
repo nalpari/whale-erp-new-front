@@ -3,7 +3,7 @@
 // node --test 가 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { BpMasterDetail, CreateBpMasterInput, UpdateBpMasterInput } from "./bp-masters.ts";
 import { loginIdError, NAME_PATTERN, PHONE_PATTERN, splitPhone } from "./platform-admin-form.ts";
-// 대표자 연락처는 1팀 연락처 칸과 같은 숫자 9~12자리 — BP 자기 사업자정보(MY PAGE)와 같은 규칙
+// 대표자 연락처는 1팀 연락처 칸과 같은 숫자 9~12자리 — BP 자기 사업자정보(마이페이지)와 같은 규칙
 import { CEO_PHONE_PATTERN } from "./bp-profile-form.ts";
 import { BIZ_MESSAGE, isBizVerificationExpired } from "./biz-verification-rules.ts";
 
@@ -25,7 +25,7 @@ export type BpMasterForm = {
   email: string;
   tradeName: string;
   ceoPhone: [string, string, string];
-  /** 체크하면 대표자 연락처는 기본정보 연락처를 그대로 쓴다 — ceoPhone 은 지우지 않아 풀면 적던 값으로 돌아온다(MY PAGE 와 같다, 2026-10-28 사용자 지정) */
+  /** 체크하면 대표자 연락처는 기본정보 연락처를 그대로 쓴다 — ceoPhone 은 지우지 않아 풀면 적던 값으로 돌아온다(마이페이지와 같다, 2026-10-28 사용자 지정) */
   sameAsBasicPhone: boolean;
   ceoEmail: string;
   /** 체크하면 대표자 이메일은 기본정보 이메일을 그대로 쓴다 */
@@ -40,7 +40,7 @@ export type BpMasterForm = {
   ceoName: string;
   openDate: string;
   /**
-   * 인증 상자의 세 칸이 열려 있는가. 인증이 없으면 처음부터 열려 있고(MY PAGE 처럼, 2026-10-28 사용자 지정 — 전엔 [사업자 번호 인증하기]로 펼쳤다),
+   * 인증 상자의 세 칸이 열려 있는가. 인증이 없으면 처음부터 열려 있고(마이페이지처럼, 2026-10-28 사용자 지정 — 전엔 [사업자 번호 인증하기]로 펼쳤다),
    * 인증이 있으면 잠겨 있다가 [재인증]으로 연다.
    */
   verifying: boolean;
@@ -89,7 +89,7 @@ export const EMPTY_BP_MASTER_FORM: BpMasterForm = {
 
 /**
  * 상세 값으로 수정 칸을 채운다. 인증된 BP 면 잠긴 상자에 저장된 세 값을 둔다.
- * 「기본정보와 동일」은 저장된 대표자 연락처 · 이메일이 기본정보 값과 같고 비어 있지 않을 때만 켠다(MY PAGE formOf 와 같은 규칙).
+ * 「기본정보와 동일」은 저장된 대표자 연락처 · 이메일이 기본정보 값과 같고 비어 있지 않을 때만 켠다(마이페이지 formOf 와 같은 규칙).
  */
 export function formOfBpMaster(d: BpMasterDetail): BpMasterForm {
   const verified =

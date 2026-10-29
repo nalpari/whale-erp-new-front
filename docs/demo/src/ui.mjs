@@ -105,7 +105,7 @@ export function detailTable(title, rows, action = "") {
   const head = action
     ? `<div class="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px]"><h3 class="flex min-w-0 flex-1 items-center text-[15px] font-semibold text-erp-ink">${title}</h3>${action}</div>`
     : `<h3 class="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">${title}</h3>`;
-  return `<div class="w-full">${head}<dl class="flex w-full flex-col">${items}</dl></div>`; // 제목은 MY PAGE 「계정 정보」와 같은 15px 600(앱 detail-table.tsx, 2026-10-27 사용자 지정)
+  return `<div class="w-full">${head}<dl class="flex w-full flex-col">${items}</dl></div>`; // 제목은 마이페이지 「계정 정보」와 같은 15px 600(앱 detail-table.tsx, 2026-10-27 사용자 지정)
 }
 export const detailValues = (items) =>
   items
