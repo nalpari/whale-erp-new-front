@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Button, DataTable, DetailTable, DetailValues, PageBar } from "@/components/common";
-import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
+import { ApiError, authHeaders, deniedMessageOf, getEnum, request, screenPath } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { StatusBadge } from "../columns";
 import { backHrefOf, withBack } from "../contract-list";
@@ -44,7 +44,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
     authHeaders(),
   ]);
 
-  // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403)이면 api 문장을 그대로 보인다(목록과 같다)
+  // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403) · BP 를 고르지 않은 플랫폼 계정(400)이면 api 문장을 그대로 보인다(목록과 같다)
   let c: ContractDetail | null = null;
   let notice = "로그인이 필요합니다.";
   if (headers.Authorization) {
@@ -52,12 +52,16 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
       c = await request<ContractDetail>(`/contracts/${contractId}`, { headers });
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) notFound();
-      if (!(e instanceof ApiError && (e.status === 401 || e.status === 403))) throw e;
-      if (e.status === 403) notice = e.message;
+      // api 의 거절(BP 를 고르지 않음 400 · 권한 · 다른 BP 403 · 없는 BP 404 — deniedMessageOf)은 그 문장을 보인다
+      const denied = deniedMessageOf(e);
+      if (!(e instanceof ApiError && e.status === 401) && denied === null) throw e;
+      if (denied !== null) notice = denied;
     }
   }
 
   const status = (c?.status ?? null) as Status | null;
+  // 링크는 옛 경로에 탭 BP 를 붙여 그린다. ?back= 은 옛 경로 그대로다
+  const at = await screenPath();
   // 저장 · 고침 뒤 가입 초대 알림톡이 실패해 이 화면으로 왔다(?send=)
   const sendNotice = sendNoticeOf(query.send, status);
   const statusCell = (s: string | null): ReactNode => (s ? <StatusBadge status={s as Status} label={labelOf(statuses, s)} /> : "-");
@@ -66,7 +70,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
     // 버튼은 근로계약 관리 메뉴 권한으로 가린다 — 이어 쓰기는 작성(api 가 임시저장 이어 쓰기 저장에 작성 권한을 본다), 재발송 · 수정은 수정(WHALEERP-592)
     status === "DRAFT" ? (
       <ContractPermission action="create">
-        <Button variant="soft" href={withBack(`/contracts/${contractId}/edit`, query.back)}>
+        <Button variant="soft" href={at(withBack(`/contracts/${contractId}/edit`, query.back))}>
           이어 쓰기
         </Button>
       </ContractPermission>
@@ -80,7 +84,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         {/* 직원이 수정을 요청했다 — 계약서 전체를 고치면 곧바로 서명 대기로 다시 보낸다(WHALEERP-125 · 126) */}
         {status === "CORRECTION_REQUESTED" && (
           <ContractPermission action="update">
-            <Button variant="soft" href={withBack(`/contracts/${contractId}/edit`, query.back)}>
+            <Button variant="soft" href={at(withBack(`/contracts/${contractId}/edit`, query.back))}>
               수정
             </Button>
           </ContractPermission>
@@ -88,7 +92,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         {/* 날인 전 당사자 정보(이름 · 번호 · 생년월일 · 성별 · 외국인 여부) — 본인 대조 값. 저장하면 다시 보낸다 */}
         {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && (
           <ContractPermission action="update">
-            <Button variant="soft" href={withBack(`/contracts/${contractId}/worker`, query.back)}>
+            <Button variant="soft" href={at(withBack(`/contracts/${contractId}/worker`, query.back))}>
               수정
             </Button>
           </ContractPermission>
@@ -101,7 +105,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         )}
         {c && canRenew(c) && (
           <ContractPermission action="create">
-            <Button variant="soft" href={withBack(`/contracts/new?from=${contractId}`, query.back)}>
+            <Button variant="soft" href={at(withBack(`/contracts/new?from=${contractId}`, query.back))}>
               새 계약
             </Button>
           </ContractPermission>
@@ -174,7 +178,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
                 value: (
                   <DetailValues
                     items={c.documents.map((d) => (
-                      <a key={d.contractDocumentId} href={`/contracts/${c.contractId}/documents/${d.contractDocumentId}`} className="text-erp-link hover:underline">
+                      <a key={d.contractDocumentId} href={at(`/contracts/${c.contractId}/documents/${d.contractDocumentId}`)} className="text-erp-link hover:underline">
                         {labelOf(documentKinds, d.kind)} · {d.fileName}
                       </a>
                     ))}
@@ -196,7 +200,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             <div className="flex items-center gap-[6px]">
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약 상세</h2>
               {buttons}
-              <Button href={backHrefOf(query.back)}>목록</Button>
+              <Button href={at(backHrefOf(query.back))}>목록</Button>
             </div>
             {sendNotice && (
               <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
