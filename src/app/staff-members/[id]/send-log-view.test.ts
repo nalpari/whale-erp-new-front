@@ -46,6 +46,11 @@ test("접수 여부 모름은 회색 배지 · 재시도 확인 필요", () => {
   assert.deepEqual([line.result?.style, line.retry], ["badge-neutral", "확인 필요"]);
 });
 
+test("api 가 먼저 낸 모르는 결과 값은 회색 배지 — 빈칸이 되지 않는다", () => {
+  const line = sendLogLine(item({ result: "QUEUED" as SendLogItem["result"] }), kindLabel, (v) => v);
+  assert.equal(line.result?.style, "badge-neutral");
+});
+
 test("enum 한글을 받지 못했으면 종류 · 결과는 - 다 — 영문 값을 보이지 않는다", () => {
   const line = sendLogLine(item({ isResend: true }), null, null);
   assert.deepEqual([line.kind, line.result], ["-", null]);

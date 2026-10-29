@@ -3,7 +3,8 @@ import { RetryButton } from "./retry-button";
 
 // 데모 staff-parts.mjs 의 box — 제목 줄(오른쪽에 「관리」 링크) + 내용.
 // 「관리」는 manage 로 받는다 — 링크는 그 메뉴 조회 권한을 보는 MenuManageLink(manage-link.tsx)다. 없으면 흐리게 두고 누를 수 없게 한다(그 화면으로 가는
-// 링크가 아직 없다, WHALEERP-186). 권한을 보지 않는 링크를 걸 길은 두지 않는다(front #90 리뷰).
+// 링크가 아직 없다, WHALEERP-186). 권한을 보지 않는 링크를 걸 길은 두지 않는다(front #90 리뷰). 만들 화면이 없는 칸은 false 를 넘겨 자리를
+// 비운다(발송 이력 — 따로 된 화면을 두지 않는다, WHALEERP-136). 흐린 「관리」는 생길 화면이 있다는 뜻이라서다.
 // tools 는 「관리」 왼쪽에 서는 것(근무스케줄의 주 넘김, week-nav.tsx)이다.
 export function Box({
   title,
@@ -12,7 +13,7 @@ export function Box({
   children,
 }: {
   title: string;
-  manage?: ReactNode;
+  manage?: ReactNode | false;
   tools?: ReactNode;
   children: ReactNode;
 }) {
@@ -22,11 +23,11 @@ export function Box({
         <span className="flex-1">{title}</span>
         <span className="flex items-center gap-[6px] text-[14px] font-normal">
           {tools}
-          {manage ?? (
+          {manage === false ? null : (manage ?? (
             <span aria-disabled="true" title="준비 중입니다." className="cursor-default text-erp-muted">
               관리
             </span>
-          )}
+          ))}
         </span>
       </h3>
       {children}
