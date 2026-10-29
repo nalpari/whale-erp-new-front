@@ -42,7 +42,7 @@ export const tel = (a = "", b = "", c = "") =>
 export const address = (A, label, { zip = "", base = "", detail = "" } = {}, { top = "", bottom = "", labelExtra = "" } = {}) => {
   const body =
     top +
-    `<div class="flex gap-[6px]"><div class="flex-1">${ui.searchField(A, { placeholder: "지번/도로명을 입력해주세요.", label: `${label} 검색어` })}</div>${ui.button("주소 검색", { variant: "soft" })}</div>` +
+    `<div class="flex gap-[6px]"><div class="flex-1">${ui.searchField(A, { placeholder: "지번/도로명을 입력해 주세요.", label: `${label} 검색어` })}</div>${ui.button("주소 검색", { variant: "soft" })}</div>` +
     `<div class="flex gap-[6px]"><div class="w-[120px] shrink-0 text-center">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": `${label} 우편번호` })}</div>${ui.textField({ value: base, readonly: true, placeholder: "기본주소", "aria-label": `${label} 기본주소` })}</div>` +
     ui.textField({ value: detail, maxlength: 100, placeholder: base ? "상세주소" : "상세주소를 입력하세요.", "aria-label": `${label} 상세주소` }) +
     bottom;

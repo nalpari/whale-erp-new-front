@@ -210,7 +210,7 @@ function TodoFormFields({
               <Group label="근무지">
                 <span className="text-[14px] text-erp-ink">{storeName}</span>
               </Group>
-              <Group label="배정 대상" help="등록 후에는 바꿀 수 없다">
+              <Group label="배정 대상" help="등록 후에는 바꿀 수 없다.">
                 <span className="text-[14px] text-erp-ink">
                   {labelOf(labels.assigneeType, detail.assigneeType)}
                   {detail.assigneeType === "ALL" ? ` · ${labelOf(labels.executionMode, detail.executionMode)}` : ""}
@@ -338,7 +338,7 @@ function TodoFormFields({
 
         {(serverError || (tried && issues.length > 0)) && (
           <div role="alert" className="flex flex-col gap-[4px] rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px]">
-            <p className="text-[14px] font-semibold text-erp-off">저장하지 못했습니다</p>
+            <p className="text-[14px] font-semibold text-erp-off">저장하지 못했습니다.</p>
             <ul className="list-disc pl-[18px] text-[14px] leading-[1.6] text-erp-ink">
               {(serverError ? [serverError] : issues).map((m) => (
                 <li key={m}>{m}</li>

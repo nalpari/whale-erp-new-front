@@ -248,7 +248,7 @@ function MemoBox({
   const shown = draftView(draft, saved);
   const text = shown.text ?? saved;
   return (
-    <Box title="운영자 메모" hint="문의자에게 보이지 않습니다">
+    <Box title="운영자 메모" hint="문의자에게 보이지 않습니다.">
       {/* 그사이 다른 운영자가 메모를 저장했다 — 쓰던 글로 덮어쓰기 전에 그 메모를 보인다. */}
       {shown.stale && (
         <Stale>
@@ -298,7 +298,7 @@ function useCommon(target: Target, id: number, updatedAt: string, answered: bool
     setDraft,
     startProcessing: () => run(() => startProcessingAction(target, id), "처리중으로 바꿨습니다."),
     saveReply: (body: string) => {
-      if (!body.trim()) return setErrors(["답변을 입력해 주세요"]);
+      if (!body.trim()) return setErrors(["답변을 입력해 주세요."]);
       run(() => saveReplyAction(target, id, body, updatedAt), answered ? EDITED_TOAST : ANSWERED_TOAST, saved("answer"));
     },
     saveMemo: (memo: string) => run(() => saveMemoAction(target, id, memo, updatedAt), "saved", saved("memo")),
@@ -351,7 +351,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         )}
       </Box>
       <AnswerBox
-        hint="문의한 사람에게 보입니다"
+        hint="문의한 사람에게 보입니다."
         current={last?.body ?? null}
         view={
           last && (
@@ -485,7 +485,7 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
         <Prose>{d.body}</Prose>
       </Box>
       <AnswerBox
-        hint="적어 준 이메일로 나갑니다"
+        hint="적어 준 이메일로 나갑니다."
         current={d.reply}
         view={
           <>
@@ -539,7 +539,7 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
         <DetailTable
           title="보관"
           rows={[
-            { label: "상담 완료일", value: d.consultedDate ?? <Sub>답변을 저장하는 날 남습니다</Sub> },
+            { label: "상담 완료일", value: d.consultedDate ?? <Sub>답변을 저장하는 날 남습니다.</Sub> },
             { label: "파기 예정", value: purge || <Sub>상담 완료일로부터 1년</Sub> },
           ]}
         />

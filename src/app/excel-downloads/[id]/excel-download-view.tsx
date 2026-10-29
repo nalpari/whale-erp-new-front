@@ -101,7 +101,7 @@ export function ExcelDownloadView({ id }: { id: number | null }) {
             value: (
               <>
                 {formatDateTime(view.expiresAt)}
-                <span className="text-erp-label"> · {remaining ?? "기한이 지났습니다"}</span>
+                <span className="text-erp-label"> · {remaining ?? "기한이 지났습니다."}</span>
               </>
             ),
           },

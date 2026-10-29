@@ -111,7 +111,7 @@ function Preview({ channel, title, body, button }: { channel: Channel | ""; titl
               </span>
             )}
           </div>
-          <div className="border-t border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[12px] text-erp-muted">WHALE ERP 운영 알림 · 이 메일은 발신 전용입니다</div>
+          <div className="border-t border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[12px] text-erp-muted">WHALE ERP 운영 알림 · 이 메일은 발신 전용입니다.</div>
         </div>
       </>
     );

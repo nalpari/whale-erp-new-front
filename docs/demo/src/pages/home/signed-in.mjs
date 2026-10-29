@@ -19,7 +19,7 @@ const warn = (t) => `<span class="text-erp-off">${t}</span>`;
 export default ({ A, R }) => {
   const top = band(
     ui.badge("off", "갱신 예정"),
-    "계약 갱신 예정 2건이 7일 안에 끝납니다",
+    "계약 갱신 예정 2건이 7일 안에 끝납니다.",
     ui.button("계약 보기", { variant: "soft", href: link(R, "staff/contracts.html") }) + ui.button("새 계약 작성", { href: link(R, "staff/contracts-new.html") }),
   );
 

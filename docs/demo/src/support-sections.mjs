@@ -92,7 +92,7 @@ export function supportSections({ A, R }) {
       ui.formGroup(
         "문의 내용",
         ui.field("분류", ui.select(["가입·계정", "직원·근로", "요금·구독", "점포·설비", "기타"])),
-        ui.field("제목", ui.textField({ placeholder: "한 줄로 적어 주세요" })),
+        ui.field("제목", ui.textField({ placeholder: "한 줄로 적어 주세요." })),
         ui.field("내용", ui.textarea({ rows: 8, placeholder: "어떤 화면에서 무엇을 하려다 막혔는지 적어 주시면 빨리 답할 수 있습니다." })),
         attachField,
       ) +

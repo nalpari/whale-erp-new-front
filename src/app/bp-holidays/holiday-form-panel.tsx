@@ -339,7 +339,7 @@ export function HolidayFormPanel(props: Props) {
 
       <ConfirmDialog
         open={overlaps !== null}
-        title="같은 날짜에 이미 휴일이 있습니다"
+        title="같은 날짜에 이미 휴일이 있습니다."
         confirmLabel="저장" // 「그래도 저장」은 어색해 「저장」(2026-10-28 사용자 지정)
         wide
         busy={saving}

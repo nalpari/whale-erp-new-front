@@ -18,7 +18,7 @@ export default ({ A, R }) => {
       p.ask("임시저장", "soft", "급여명세서를 임시저장하시겠습니까?") +
       x.dialogTrigger("확정", confirmId),
   );
-  const warn = p.band("출퇴근 기록이 2일 누락되어 검토 대기로 분류되었습니다", {
+  const warn = p.band("출퇴근 기록이 2일 누락되어 검토 대기로 분류되었습니다.", {
     desc: "08-28 퇴근 미등록, 08-22 출근·퇴근 모두 없음. 확인한 뒤에는 경고가 있어도 확정할 수 있습니다.",
     actions: ui.button("출퇴근 보정", { variant: "soft", href: L("staff/attendance.html") }),
   });
@@ -59,7 +59,7 @@ export default ({ A, R }) => {
       ),
     ),
     p.total("실지급액", "₩3,026,000"),
-    p.band("기본 공제 여섯 칸이 아직 비어 있습니다", {
+    p.band("기본 공제 여섯 칸이 아직 비어 있습니다.", {
       tone: "risk",
       desc: "지금 실지급액은 지급 총액과 같습니다. 기본 공제나 붙인 추가 공제가 비어 있으면 확정할 수 없습니다. 공제 대상이 아닌 항목에는 0 을 넣으세요.",
     }),

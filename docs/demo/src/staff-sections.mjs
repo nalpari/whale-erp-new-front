@@ -538,7 +538,7 @@ export function staffSections({ A, R }) {
   const staffChip = (name) =>
     `<li class="flex h-[34px] items-center gap-[8px] rounded-[2px] border border-erp-field-line bg-white pr-[4px] pl-[10px] text-[14px]"><span class="font-medium">${name}</span><button type="button" aria-label="${name} 빼기" class="grid size-[26px] place-items-center rounded-[2px] text-erp-label hover:text-erp-ink">×</button></li>`;
   const staffPick = (radio, picked = []) =>
-    `<div class="flex flex-col gap-[8px]" data-when="${radio}:개인"><span class="text-[14px] font-medium text-erp-label">직원</span>${ui.searchField(A, { placeholder: "이름 또는 휴대전화번호 끝자리" })}<ul aria-label="고른 직원" class="flex flex-wrap gap-[6px]">${picked.map(staffChip).join("")}</ul>${p.help("고른 근무지의 재직 직원 중 한 명 이상 고르고, 직원마다 1건씩 생긴다. 근무지를 바꾸면 비우고, 아무도 고르지 않으면 「직원을 한 명 이상 골라 주세요」로 막는다.")}</div>`;
+    `<div class="flex flex-col gap-[8px]" data-when="${radio}:개인"><span class="text-[14px] font-medium text-erp-label">직원</span>${ui.searchField(A, { placeholder: "이름 또는 휴대전화번호 끝자리" })}<ul aria-label="고른 직원" class="flex flex-wrap gap-[6px]">${picked.map(staffChip).join("")}</ul>${p.help("고른 근무지의 재직 직원 중 한 명 이상 고르고, 직원마다 1건씩 생긴다. 근무지를 바꾸면 비우고, 아무도 고르지 않으면 「직원을 한 명 이상 골라 주세요.」로 막는다.")}</div>`;
   const todoForm = ui.slidePanel(
     todoPanel,
     "TO-DO 등록",
@@ -573,7 +573,7 @@ export function staffSections({ A, R }) {
           ui.field("근무지", ui.select(["모리커피 서초점", "온기식당 판교점"], { value: store })),
           `<div class="flex flex-col gap-[8px]">${tipLabel("배정 대상", TIP_TARGET)}${p.radios(`${id}-target`, ["개인", "근무지 전체"], target)}</div>`,
           staffPick(`${id}-target`, person ? [person] : []),
-          `<div class="flex flex-col gap-[8px]" data-when="${id}-target:근무지 전체">${tipLabel("수행 방식", TIP_MODE)}<span class="text-[14px] text-erp-ink">${mode}</span>${p.help("등록 후에는 바꿀 수 없다")}</div>`,
+          `<div class="flex flex-col gap-[8px]" data-when="${id}-target:근무지 전체">${tipLabel("수행 방식", TIP_MODE)}<span class="text-[14px] text-erp-ink">${mode}</span>${p.help("등록 후에는 바꿀 수 없다.")}</div>`,
           ui.formRow(p.fieldH("수행 예정 날짜", ui.dateField(A, { label: "수행 예정 날짜", value: date }), ""), p.fieldH("시간", p.timeField(time, "시간"), "선택")),
           `<div class="flex flex-col gap-[8px]">${x.toggle("긴급", urgent)}</div>`,
         ) +

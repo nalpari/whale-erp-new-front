@@ -19,7 +19,7 @@ const passwordField = (A, label, name, placeholder) =>
 // 아이디·이메일 중복 확인 칸. 판정 결과 두 줄을 미리 그려 두고 guest.js 가 하나만 보인다.
 const TAKEN_MESSAGE = { loginId: "이미 사용 중인 아이디입니다.", email: "이미 가입된 이메일입니다." };
 const checkedInput = (A, kind, attrs) =>
-  `${box(`<input ${attrs} name="${kind}" data-check="${kind}" aria-describedby="${kind}-status" class="${g.INPUT}">`)}<span id="${kind}-status" aria-live="polite" hidden class="-mt-[2px] flex items-center gap-[4px] text-[14px] leading-[1.5] empty:hidden"><span data-check-ok hidden class="flex items-center gap-[4px] text-[#5e8ce9]"><svg aria-hidden="true" class="size-[12px]" viewBox="0 0 12 9" fill="currentColor"><path d="M4.33 8.316a.64.64 0 0 1-.462-.188L.99 5.251a.64.64 0 0 1 .925-.926l2.43 2.415L10.114.985a.64.64 0 0 1 .926.926L4.808 8.128a.7.7 0 0 1-.477.188Z"/></svg>사용가능합니다.</span><span data-check-taken hidden class="text-[#e93737]">${TAKEN_MESSAGE[kind]}</span></span>`;
+  `${box(`<input ${attrs} name="${kind}" data-check="${kind}" aria-describedby="${kind}-status" class="${g.INPUT}">`)}<span id="${kind}-status" aria-live="polite" hidden class="-mt-[2px] flex items-center gap-[4px] text-[14px] leading-[1.5] empty:hidden"><span data-check-ok hidden class="flex items-center gap-[4px] text-[#5e8ce9]"><svg aria-hidden="true" class="size-[12px]" viewBox="0 0 12 9" fill="currentColor"><path d="M4.33 8.316a.64.64 0 0 1-.462-.188L.99 5.251a.64.64 0 0 1 .925-.926l2.43 2.415L10.114.985a.64.64 0 0 1 .926.926L4.808 8.128a.7.7 0 0 1-.477.188Z"/></svg>사용 가능합니다.</span><span data-check-taken hidden class="text-[#e93737]">${TAKEN_MESSAGE[kind]}</span></span>`;
 
 // 묶음 사이는 테두리 없이 바깥 form 의 gap-[40px] 만으로 나눈다(2026-10-16 — 사업자정보·약관동의 앞에
 // 있던 border-t 는 중복이라 뺐다). badge 는 제목 줄 오른쪽에 하나만 두는 상태 표시(예: 사업자정보의 "인증완료").

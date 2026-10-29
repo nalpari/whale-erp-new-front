@@ -33,7 +33,7 @@ export function adminNewBody(A, R, { panel = false, noRoleGroup = false } = {}) 
       ui.field(c.req("계정 역할"), ui.select(["BP 관리자", "가맹 마스터"], { value: noRoleGroup ? "가맹 마스터" : "BP 관리자" }), "w-[130px] shrink-0"),
       // 고른 역할에 권한명이 없으면 칸 아래 빨간 한 줄 + [이동](권한 그룹 관리로) — 위 띠 대신 이 칸 아래에 둔다(앱 admin-form-panel.tsx 와 같다, 2026-10-28 사용자 지정 문구)
       noRoleGroup
-        ? `<div class="flex min-w-px flex-1 flex-col gap-[8px]"><span class="truncate text-[14px] font-medium text-erp-label">${c.req("권한명")}</span>${ui.select(["선택"], { "aria-label": "권한명" })}<span class="flex items-center gap-[10px]"><p role="alert" class="text-[13px] leading-[1.5] text-erp-off">선택할 수 있는 권한명이 없습니다. 먼저 권한명을 등록해주세요.</p>${ui.button("이동", { variant: "soft", href: link(R, "config/roles.html") })}</span></div>`
+        ? `<div class="flex min-w-px flex-1 flex-col gap-[8px]"><span class="truncate text-[14px] font-medium text-erp-label">${c.req("권한명")}</span>${ui.select(["선택"], { "aria-label": "권한명" })}<span class="flex items-center gap-[10px]"><p role="alert" class="text-[13px] leading-[1.5] text-erp-off">선택할 수 있는 권한명이 없습니다. 먼저 권한명을 등록해 주세요.</p>${ui.button("이동", { variant: "soft", href: link(R, "config/roles.html") })}</span></div>`
         : ui.field(
             c.req("권한명"),
             ui.select(["운영 총괄 · BA000003", "인사 담당 · BA000004", "정산 조회 · BA000005", "고객응대 · BA000006", "점포 조회 전용 · BA000007"], { value: "고객응대 · BA000006" }),

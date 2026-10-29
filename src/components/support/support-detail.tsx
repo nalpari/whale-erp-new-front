@@ -120,8 +120,8 @@ export function SupportNoticeView({ notice: n, noticeTypes }: { notice: SupportN
       <DetailTable
         title="이전 · 다음"
         rows={[
-          { label: "이전", value: neighbor(n.prev, "목록의 맨 아래 공지입니다") },
-          { label: "다음", value: neighbor(n.next, "목록의 맨 위 공지입니다") },
+          { label: "이전", value: neighbor(n.prev, "목록의 맨 아래 공지입니다.") },
+          { label: "다음", value: neighbor(n.next, "목록의 맨 위 공지입니다.") },
         ]}
       />
     </Frame>

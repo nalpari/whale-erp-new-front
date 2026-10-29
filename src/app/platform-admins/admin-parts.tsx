@@ -67,7 +67,7 @@ function LiveText({ text }: { text: string }) {
 const LOGIN_ID_CHECK_TEXT: Record<Exclude<LoginIdCheck, "idle">, string> = {
   checking: "아이디를 확인하는 중입니다.",
   // 아이디 중복확인이 있는 네 화면(플랫폼 · BP 관리자 · BP 마스터 등록, 회원가입)이 같은 문구 — 회원가입의 「사용가능합니다.」로 맞췄다(2026-10-28 사용자 지정)
-  available: "사용가능합니다.",
+  available: "사용 가능합니다.",
   // 확인 요청 자체가 실패(429 · 5xx · 연결)했을 때(401 · 403 은 패널 위 띠). 저장은 막지 않는다 — 저장할 때 api 가 중복을 다시 막는다.
   failed: "아이디를 확인하지 못했습니다. 저장 시 다시 확인합니다.",
 };
@@ -75,7 +75,7 @@ const LOGIN_ID_CHECK_TEXT: Record<Exclude<LoginIdCheck, "idle">, string> = {
 // 이메일 중복확인이 있는 네 화면(BP 관리자 · BP 마스터 등록, 내 정보, 회원가입)이 아이디와 같은 모양의 문구를 쓴다(2026-10-28 사용자 지정)
 const EMAIL_CHECK_TEXT: Record<Exclude<LoginIdCheck, "idle">, string> = {
   checking: "이메일을 확인하는 중입니다.",
-  available: "사용가능합니다.",
+  available: "사용 가능합니다.",
   failed: "이메일을 확인하지 못했습니다. 저장 시 다시 확인합니다.",
 };
 

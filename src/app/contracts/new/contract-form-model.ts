@@ -258,7 +258,7 @@ export function renewalFromDetail(d: ContractDetail, now = new Date()): Contract
 }
 
 /** 재계약 시작일 안내 — api 400 과 같은 문장 */
-export const renewalStartProblem = (previousStartDate: string) => `재계약 시작일은 직전 계약 시작일(${previousStartDate}) 다음 날부터입니다`;
+export const renewalStartProblem = (previousStartDate: string) => `재계약 시작일은 직전 계약 시작일(${previousStartDate}) 다음 날부터입니다.`;
 
 const nextDay = (iso: string) => {
   const t = new Date(`${iso}T00:00:00Z`);
@@ -459,9 +459,9 @@ export const DAY_KO: Record<Weekday, string> = { MON: "월", TUE: "화", WED: "�
 function timeProblems(t: DayTimes, who = ""): { work: string[]; rest: string[] } {
   const work: string[] = [];
   const rest: string[] = [];
-  if (minutes(t.work.end) <= minutes(t.work.start)) work.push(`${who}근무시간은 끝이 시작보다 뒤여야 합니다`);
+  if (minutes(t.work.end) <= minutes(t.work.start)) work.push(`${who}근무시간은 끝이 시작보다 뒤여야 합니다.`);
   if (!(minutes(t.rest.start) >= minutes(t.work.start) && minutes(t.rest.end) > minutes(t.rest.start) && minutes(t.rest.end) <= minutes(t.work.end)))
-    rest.push(`${who}휴게시간은 근무시간 안이어야 합니다`);
+    rest.push(`${who}휴게시간은 근무시간 안이어야 합니다.`);
   return { work, rest };
 }
 
@@ -496,20 +496,20 @@ export function fieldProblems(f: ContractForm, temporary = false, hasEmploymentF
   const need = (field: ProblemField, empty: boolean, message: string) => {
     if (empty && !temporary) add(field, message);
   };
-  if (!f.name.trim()) add("name", "이름을 입력하세요");
-  if (!/^[0-9]{10,11}$/.test(digits(f.phone))) add("phone", "휴대전화번호는 숫자 10~11자리입니다");
-  need("birthDate", !f.birthDate, "생년월일을 입력하세요");
-  if (isMinor(f)) add("birthDate", "만 19세 미만 직원은 등록할 수 없습니다");
-  need("gender", !f.gender, "성별을 고르세요");
-  if (!f.storeId) add("storeId", "소속 근무지를 고르세요");
-  if (!f.jobTitle.trim()) add("jobTitle", "직무를 입력하세요");
+  if (!f.name.trim()) add("name", "이름을 입력하세요.");
+  if (!/^[0-9]{10,11}$/.test(digits(f.phone))) add("phone", "휴대전화번호는 숫자 10~11자리입니다.");
+  need("birthDate", !f.birthDate, "생년월일을 입력하세요.");
+  if (isMinor(f)) add("birthDate", "만 19세 미만 직원은 등록할 수 없습니다.");
+  need("gender", !f.gender, "성별을 고르세요.");
+  if (!f.storeId) add("storeId", "소속 근무지를 고르세요.");
+  if (!f.jobTitle.trim()) add("jobTitle", "직무를 입력하세요.");
   // 종이 계약 등록은 당사자가 모두 날인한 근로계약서가 있어야 한다(CTR-23). 임시저장은 파일 없이 둔다
-  if (f.contractMethod === "PAPER" && !temporary && !hasEmploymentFile) add("employmentFile", "당사자가 모두 날인한 근로계약서 파일을 올려 주세요");
-  need("startDate", !f.startDate, "계약 시작일을 입력하세요");
+  if (f.contractMethod === "PAPER" && !temporary && !hasEmploymentFile) add("employmentFile", "당사자가 모두 날인한 근로계약서 파일을 올려 주세요.");
+  need("startDate", !f.startDate, "계약 시작일을 입력하세요.");
   // 재계약은 직전 계약 시작일 다음 날부터 — 그 뒤로는 직전 계약과 겹쳐도 된다(WHALEERP-156, 2026-10-26 김민식 · 재영 확인)
   if (previousStartDate && f.startDate && f.startDate <= previousStartDate) add("startDate", renewalStartProblem(previousStartDate));
-  if (f.startDate && f.endDate && f.endDate < f.startDate) add("endDate", "계약 종료일은 시작일보다 앞설 수 없습니다");
-  need("days", f.days.length === 0, "근무요일을 하나 이상 고르세요");
+  if (f.startDate && f.endDate && f.endDate < f.startDate) add("endDate", "계약 종료일은 시작일보다 앞설 수 없습니다.");
+  need("days", f.days.length === 0, "근무요일을 하나 이상 고르세요.");
   const top = timeProblems(f);
   top.work.forEach((m) => add("work", m));
   top.rest.forEach((m) => add("rest", m));
@@ -521,24 +521,24 @@ export function fieldProblems(f: ContractForm, temporary = false, hasEmploymentF
       const day = timeProblems(t, `${DAY_KO[d]}요일 `);
       [...day.work, ...day.rest].forEach((m) => add("schedule", m));
     }
-  if (digits(f.wage) ? !(Number(digits(f.wage)) > 0) : !temporary) add("wage", "시급을 입력하세요"); // 고용 형태와 상관없이 시급(2026-10-12 재영)
-  if (Number(digits(f.wage)) > MAX_AMOUNT) add("wage", "시급은 2,147,483,647원 이하로 입력하세요");
+  if (digits(f.wage) ? !(Number(digits(f.wage)) > 0) : !temporary) add("wage", "시급을 입력하세요."); // 고용 형태와 상관없이 시급(2026-10-12 재영)
+  if (Number(digits(f.wage)) > MAX_AMOUNT) add("wage", "시급은 2,147,483,647원 이하로 입력하세요.");
   if (f.employmentType === "FULL_TIME") {
     if ([f.mealAllowance, f.carAllowance, f.childcareAllowance].some((t) => Number(digits(t)) > MAX_AMOUNT))
-      add("allowances", "비과세 수당은 2,147,483,647원 이하로 입력하세요");
-    if (HOUR_FIELDS.some((k) => Number.isNaN(hoursOf(f[k])))) add("hours", "월 근로시간은 0 이상, 30분(0.5시간) 단위로 입력하세요");
+      add("allowances", "비과세 수당은 2,147,483,647원 이하로 입력하세요.");
+    if (HOUR_FIELDS.some((k) => Number.isNaN(hoursOf(f[k])))) add("hours", "월 근로시간은 0 이상, 30분(0.5시간) 단위로 입력하세요.");
     const base = hoursOf(f.baseHours), night = hoursOf(f.baseNightHours);
-    if (base !== null && night !== null && night > base) add("hours", "기본시간 중 야간근무는 월 기본시간보다 클 수 없습니다");
+    if (base !== null && night !== null && night > base) add("hours", "기본시간 중 야간근무는 월 기본시간보다 클 수 없습니다.");
   }
-  need("weeklyHoliday", weeklyHolidayOf(f) === "NO_DAY_OFF", "주 15시간 이상이면 근무하지 않는 요일이 있어야 주휴일을 정할 수 있습니다");
+  need("weeklyHoliday", weeklyHolidayOf(f) === "NO_DAY_OFF", "주 15시간 이상이면 근무하지 않는 요일이 있어야 주휴일을 정할 수 있습니다.");
   const payDay = Number(f.payDay);
-  if (f.payDay ? !(Number.isInteger(payDay) && payDay >= 1 && payDay <= 31) : !temporary) add("payDay", "임금지급일은 1~31입니다");
+  if (f.payDay ? !(Number.isInteger(payDay) && payDay >= 1 && payDay <= 31) : !temporary) add("payDay", "임금지급일은 1~31입니다.");
   if (f.employmentType === "FULL_TIME" && f.probation) {
-    if (!probationTermOk(f)) add("probationMonths", "수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다");
-    if (!/^\d+$/.test(f.probationRate) || Number(f.probationRate) > 10) add("probationRate", "수습 임금 감액률은 0~10% 정수로 입력하세요");
+    if (!probationTermOk(f)) add("probationMonths", "수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다.");
+    if (!/^\d+$/.test(f.probationRate) || Number(f.probationRate) > 10) add("probationRate", "수습 임금 감액률은 0~10% 정수로 입력하세요.");
     const pw = probationWage(f);
     if (pw !== null && pw < PROBATION_WAGE_FLOOR)
-      add("probationWage", `수습 중 시급은 최저임금의 90%(${PROBATION_WAGE_FLOOR.toLocaleString("ko-KR")}원) 이상이어야 합니다`);
+      add("probationWage", `수습 중 시급은 최저임금의 90%(${PROBATION_WAGE_FLOOR.toLocaleString("ko-KR")}원) 이상이어야 합니다.`);
   }
   return out;
 }
