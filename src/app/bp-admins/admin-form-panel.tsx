@@ -634,13 +634,16 @@ export function AdminFormPanel(props: Props) {
               {message("stores")}
             </div>
           )}
-          {/* 고칠 수 없으면 맡은 점포를 한 줄씩 — 점포명 + 점포 상태(2026-10-29 사용자 지정, 전엔 쉼표로 이은 이름만). 유형은 api 가 주지 않아 두지 않는다 */}
+          {/* 고칠 수 없으면 맡은 점포를 한 줄씩 — 점포명 + 점포 상태(2026-10-29 사용자 지정, 전엔 쉼표로 이은 이름만). 유형은 api 가 주지 않아 두지 않는다.
+              위의 막힌 칸(계정 역할 · 권한명)과 같은 회색 바탕 · 회색 글자 상자에 담아 고칠 수 없다는 것을 보인다(2026-10-29 사용자 지정) */}
           {locks.stores &&
             mode === "edit" &&
             (props.admin.isAllStores || !props.admin.stores.length ? (
-              <p className="text-[14px] text-erp-label">{props.admin.isAllStores ? "전체 점포" : "매핑된 점포가 없습니다."}</p>
+              <p className="rounded-[2px] border border-erp-field-line bg-erp-thead-bg px-[10px] py-[7px] text-[14px] text-erp-label">
+                {props.admin.isAllStores ? "전체 점포" : "매핑된 점포가 없습니다."}
+              </p>
             ) : (
-              <ul className="flex flex-col gap-[8px] text-[14px] text-erp-ink">
+              <ul className="flex flex-col gap-[8px] rounded-[2px] border border-erp-field-line bg-erp-thead-bg px-[10px] py-[8px] text-[14px] text-erp-label">
                 {props.admin.stores.map((s) => (
                   <li key={s.storeId} className="flex items-center justify-between gap-[10px]">
                     <span className="min-w-0 truncate">{s.name}</span>
