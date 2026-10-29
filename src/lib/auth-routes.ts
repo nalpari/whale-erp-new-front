@@ -13,6 +13,11 @@ export function isPlatformRole(roleTypeCode: string): boolean {
   return roleTypeCode === "PM" || roleTypeCode === "PA";
 }
 
+/** 가맹 마스터 · 가맹 관리자 — 점포를 등록하지 못하고(api 403) 매핑된 점포만 다룬다 */
+export function isFranchiseRole(roleTypeCode: string): boolean {
+  return roleTypeCode === "FM" || roleTypeCode === "FA";
+}
+
 /**
  * 로그인한 채 이 로그인 전 화면에 오면 자기 홈(homeOf)으로 보낼지(proxy). 화면을 여는 GET 만 본다 — 서버 액션 POST 는 보내지 않는다.
  * /login · /find 는 쿠키만 있으면 보낸다 — 로그인이 끝났으면 홈에서 갱신에 실패해 결국 로그인 화면으로 오니 손해가 없다.
