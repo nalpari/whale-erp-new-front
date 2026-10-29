@@ -27,15 +27,21 @@ export const workerOf = (d: Pick<ContractDetail, "name" | "phone" | "birthDate" 
   isForeigner: d.isForeigner,
 });
 
-/** 저장 전에 화면이 막는 것. 다섯 칸 모두 필수(외국인 여부는 체크라 늘 값이 있다). api 가 같은 것을 다시 본다 */
-export function workerProblems(f: WorkerForm): string[] {
-  const out: string[] = [];
-  if (!f.name.trim()) out.push("이름을 입력하세요.");
-  if (!/^[0-9]{10,11}$/.test(digits(f.phone))) out.push("휴대전화번호는 숫자 10~11자리입니다.");
-  if (!f.birthDate) out.push("생년월일을 입력하세요.");
-  if (!f.gender) out.push("성별을 고르세요.");
+export type WorkerField = "name" | "phone" | "birthDate" | "gender";
+
+/**
+ * 저장 전에 화면이 막는 것을 칸마다 — 화면은 그 칸 아래에 보인다(WHALEERP-631). 다섯 칸 모두 필수(외국인 여부는 체크라 늘 값이
+ * 있다). api 가 같은 것을 다시 본다
+ */
+export function workerProblemsByField(f: WorkerForm): Partial<Record<WorkerField, string>> {
+  const out: Partial<Record<WorkerField, string>> = {};
+  if (!f.name.trim()) out.name = "이름을 입력하세요.";
+  if (!/^[0-9]{10,11}$/.test(digits(f.phone))) out.phone = "휴대전화번호는 숫자 10~11자리입니다.";
+  if (!f.birthDate) out.birthDate = "생년월일을 입력하세요.";
+  if (!f.gender) out.gender = "성별을 고르세요.";
   return out;
 }
+
 
 export function workerBody(f: WorkerForm, replaceContractIds?: number[]): WorkerBody {
   return {
