@@ -614,7 +614,7 @@ DIAGRAMS.append(Diagram(
           ["#|다운로드 이력 ID|id|excel_download_id|",
            "→|요청자|id|requested_by|",
            "→|화면(메뉴)|id|menu_id|같은 화면 판단 기준",
-           "→|대상 BP|id|bp_code_id|플랫폼 탭 BP",
+           "→|대상 BP|id|bp_code_id|소속 · 탭 BP",
            "|검색 조건|json|search_conditions|",
            "|건수|int|row_count|",
            "|생성 방식|enum|delivery_method|바로 받기·예약 생성",
