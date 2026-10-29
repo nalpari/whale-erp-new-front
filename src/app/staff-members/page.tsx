@@ -1,6 +1,7 @@
 import { Button, ListToolbar, PageBar } from "@/components/common";
 import { kstToday } from "@/lib/staff-members";
 import { getStaffMembers } from "@/lib/staff-members-api";
+import { BulkExportButton } from "./bulk-export-button";
 import { StaffFilter } from "./staff-filter";
 import { StaffPageSize, StaffPagination } from "./staff-list-controls";
 import { parseStaffListQuery, staffListHrefOf } from "./staff-list-query";
@@ -33,9 +34,7 @@ export default async function StaffMembersPage({
         <StaffFilter query={query} />
         <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
           <ListToolbar total={total}>
-            <Button variant="soft" href="/staff-members/export">
-              일괄 저장
-            </Button>
+            <BulkExportButton />
             <StaffPageSize query={query} />
           </ListToolbar>
           <StaffTable
