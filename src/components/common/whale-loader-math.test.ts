@@ -3,13 +3,18 @@ import { test } from "node:test";
 import { jumpPose, planJump } from "./whale-loader-math.ts";
 
 test("planJump — random 0 이면 최소 거리, 왼쪽 6% 에서 시작", () => {
-  const p = planJump(400, [0.3, 0.5], () => 0);
+  const p = planJump(400, [0.3, 0.5], () => 0)!;
   assert.equal(p.x0, 24);
   assert.equal(p.x1, 24 + 120);
 });
 
+test("planJump — 폭이 0 이하면 계획을 세우지 않는다(null)", () => {
+  assert.equal(planJump(0, [0.3, 0.5], () => 0.5), null);
+  assert.equal(planJump(-1, [0.3, 0.5], () => 0.5), null);
+});
+
 test("planJump — random 1 에 가까워도 도착은 파도 줄 안(94% 이내)", () => {
-  const p = planJump(400, [0.3, 0.5], () => 0.999999);
+  const p = planJump(400, [0.3, 0.5], () => 0.999999)!;
   assert.ok(p.x0 >= 24);
   assert.ok(p.x1 <= 400 * 0.94 + 0.01);
 });

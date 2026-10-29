@@ -67,7 +67,8 @@ export function WhaleLoader() {
     const OFF = size.whaleSize;
     const HALF = size.whaleSize / 2;
     const UNDER = whaleH + 3; // 시작 · 끝에 고래가 물속에 완전히 잠기는 깊이
-    let plan: JumpPlan = planJump(line.clientWidth, JUMP_DISTANCE, Math.random);
+    // 폭을 알 때까지(처리중 덮개는 자식 effect 가 부모의 showPopover() 보다 먼저 돌아 처음엔 0) 계획을 미루고 고래는 숨겨 둔다
+    let plan: JumpPlan | null = null;
     let t0 = 0;
     let out = false;
     let back = false;
@@ -92,20 +93,29 @@ export function WhaleLoader() {
     };
 
     const frame = (now: number) => {
-      if (reduce.matches) {
+      const width = line.clientWidth;
+      if (width <= 0) {
+        // 아직 자리가 없다 — 보이지 않게 두고 다음 프레임에 다시 본다(점프 시각도 폭이 생긴 때부터 센다)
+        rider.style.opacity = "0";
+        plan = null;
+      } else if (reduce.matches) {
         // 움직임을 줄인 설정 — 점프 없이 가운데에 떠 있고 파도만 천천히 움직인다
         rider.style.opacity = "1";
-        rider.style.transform = `translate(${line.clientWidth / 2 + OFF - HALF}px,-14px)`;
+        rider.style.transform = `translate(${width / 2 + OFF - HALF}px,-14px)`;
       } else {
-        if (t0 === 0) t0 = now;
+        if (!plan) {
+          plan = planJump(width, JUMP_DISTANCE, Math.random);
+          t0 = now;
+          out = back = false;
+        }
         let el = now - t0;
         if (el > JUMP_MS + REST_MS) {
           t0 = now;
           el = 0;
-          plan = planJump(line.clientWidth, JUMP_DISTANCE, Math.random);
+          plan = planJump(width, JUMP_DISTANCE, Math.random);
           out = back = false;
         }
-        if (el <= JUMP_MS) {
+        if (plan && el <= JUMP_MS) {
           const s = el / JUMP_MS;
           const { x, y, angle } = jumpPose(s, plan, UNDER, size.jumpHeight);
           rider.style.opacity = "1";

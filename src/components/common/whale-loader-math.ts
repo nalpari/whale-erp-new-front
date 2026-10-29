@@ -3,8 +3,12 @@
 
 export type JumpPlan = { x0: number; x1: number };
 
-/** 한 번 점프의 출발 · 도착 x. random 은 0 이상 1 미만 값을 돌려주는 함수(테스트에서 고정값을 넣는다) */
-export function planJump(width: number, span: readonly [number, number], random: () => number): JumpPlan {
+/**
+ * 한 번 점프의 출발 · 도착 x. random 은 0 이상 1 미만 값을 돌려주는 함수(테스트에서 고정값을 넣는다).
+ * 폭을 아직 모르면(0 이하 — 덮개가 열리기 전에 effect 가 먼저 돌 때) null 이다. 부르는 쪽은 다음 프레임에 다시 본다.
+ */
+export function planJump(width: number, span: readonly [number, number], random: () => number): JumpPlan | null {
+  if (!(width > 0)) return null;
   const dist = width * (span[0] + random() * (span[1] - span[0]));
   const x0 = width * 0.06 + random() * (width * 0.88 - dist);
   return { x0, x1: x0 + dist };
