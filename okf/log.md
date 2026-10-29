@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #189 code-review: 발송 이력 칸이 목록에 없는 enum 값을 영문으로 보이지 않고(`labelIn`), 종류를 모르면 링크 없이 「-」(재발송 표시는 남김), 다시 보낼 수 없는 실패는 재시도 「불가」, 빈 사유는 「-」. `Box` 의 `manage={false}` 판정은 원래 `??` 로 되돌리고 주석만 남겼다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 상세 두 단 아래에 「발송 이력」 칸(`send-log-box.tsx` · `send-log-view.ts`)을 더했다. 가입 초대 · 소속 추가 확인 요청(재발송 포함)의 결과 · 실패 사유 · 재시도 가능 여부를 `GET /staff-members/:id/summary/send-logs` 로 받는다(WHALEERP-136). api 타입을 다시 만들었다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 상세 근로계약 칸 「계약 상태」 다음에 「급여 계좌」(`payrollAccountText`, 요약 응답 `payrollAccount`) 줄을 더했다. 신고 정보가 없으면 「-」(WHALEERP-184, 2026-10-29 노영주).
 * **Update**: 3팀 논리 ERD(`docs/erd`) — 새 장 「직원 자료 일괄 저장」(`export.html`)에 `bulk_exports` · `bulk_export_download_logs` · enum 상태와 관리자 계정 참조를 그렸다(WHALEERP-336, 운영 정책 RET-09). README 카탈로그는 `_build.py` 로 생성했고, 다른 장은 위쪽 탭만 바뀌었다. `docs/erd/physical` 은 api 물리 생성기로 다시 만들었다.
