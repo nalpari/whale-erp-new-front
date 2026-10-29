@@ -6,7 +6,7 @@ tags: [mockup, bp]
 sources:
   - { id: bp-masters-app, resource: ../src/app/bp-masters, title: BP 마스터 계정 관리 화면 }
   - { id: bp-masters-lib, resource: ../src/lib/bp-masters.ts, title: BP 마스터 계정 api 호출 }
-generated: { by: claude-code/opus-5.5, at: 2026-10-28T08:25:55Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-29T03:10:00Z }
 ---
 
 근거: `docs/mockup/bp/` (목업 · 1차 · R-NMDCYH)
