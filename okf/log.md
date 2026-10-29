@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-29
+* **Update**: front #136 재리뷰 5 참고 3 — api 타입을 api main(`d785f100`, #158 · #164 · #180 · #182 · #184 포함)으로 다시 만듦. api #180 이 지운 `/me/invitations/check` · `MyInvitationLookupDto` 가 빠지고 소속 추가 확인 요청 · 받은 초대 · 계약 파일 받기 경로가 들어옴(관리자웹 사용처 없음).
+
 ## 2026-10-28
 * **Update**: main 병합(front #136, #164 · #135 머지 뒤) — 재발송 서버 액션은 공통 `send` 로 본문(`sendBodyOf`)을 보내고, 버튼은 `useAction` 안에서 3인자 `resendDialogCopy` 를 쓴다. api #164 로 없어진 `SEND_CHANNEL_NOT_READY` 를 말하던 주석을 지금 동작(소속 추가 확인 요청)으로 고침.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 셀프 code-review(2차): 직원 목록 · 직원 상세의 초대 재발송도 마지막 발송 시각(api 계약 칸 `lastSentAt`)을 보내 두 화면 재발송을 막는다, 서버 액션이 받은 값의 모양을 보고 싣는다(`sendBodyOf` — 직접 불러 null 을 넘겨도 터지지 않음). api 타입을 tentacruel `c03a7e3b`(api main 포함)에서 다시 만듦.
