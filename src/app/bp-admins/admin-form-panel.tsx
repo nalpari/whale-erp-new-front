@@ -724,7 +724,7 @@ export function AdminFormPanel(props: Props) {
                 남습니다.
               </p>
             )}
-            <p>가맹 관리자 변경 이력에는 저장하는 사람이 처리자로 남고, 변경 후 값에 사유가 붙습니다.</p>
+            <p>가맹 관리자 변경이력에는 저장하는 사람이 처리자로 남고, 변경 후 값에 사유가 붙습니다.</p>
           </div>
         </ConfirmDialog>
       )}

@@ -102,7 +102,7 @@ export function HistoryButton({ bpCodeId, panelOpen }: { bpCodeId: number; /** �
             // api 이력 줄에는 id 가 없다(두 테이블을 합친 것) — 한 쪽 안에서 같은 값이 겹칠 수 있어 쪽 안 순번을 섞는다
             rows={(data?.items ?? []).map((h, i) => ({ ...h, key: `${page}-${i}` }))}
             rowKey={(h) => h.key}
-            empty={loading && !data ? "불러오는 중입니다." : "변경 이력이 없습니다."}
+            empty={loading && !data ? "불러오는 중입니다." : "변경이력이 없습니다."}
           />
           {data && data.total > BP_MASTER_HISTORY_PAGE_SIZE && (
             <div className="pt-[6px]">

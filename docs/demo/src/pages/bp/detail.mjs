@@ -69,7 +69,7 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
       ["2026-03-02 16:45", "hangang01", "사업자주소", "서울 마포구 망원로 42, 2층", "서울 마포구 망원로 42, 3층"],
       ["2025-06-10 09:12", "platjung", "대표자 연락처", "010-5530-1100", "010-5530-1182"],
     ],
-    "변경 이력이 없습니다.",
+    "변경이력이 없습니다.",
   );
 
   const box = (title, text) => `<div class="mt-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">${title}</p>${text ? `<p class="mt-[6px]">${text}</p>` : ""}</div>`;

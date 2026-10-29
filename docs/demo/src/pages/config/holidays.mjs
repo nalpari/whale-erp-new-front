@@ -176,7 +176,7 @@ export default ({ A, R }) => {
     "BP 휴일 상세",
     ui.sectionHead(TITLE + TAGS) +
       detailBody +
-      `<div class="flex flex-wrap items-center gap-[6px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${x.dialogTrigger("삭제", ids.del, "soft")}${ui.slideTrigger("수정", PANEL.edit)}${x.dialogTrigger("변경 이력", histId, "soft")}</div>`,
+      `<div class="flex flex-wrap items-center gap-[6px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${x.dialogTrigger("삭제", ids.del, "soft")}${ui.slideTrigger("수정", PANEL.edit)}${x.dialogTrigger("변경이력", histId, "soft")}</div>`,
   );
   const editPanel = ui.slidePanel(
     PANEL.edit,

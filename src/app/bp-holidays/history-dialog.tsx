@@ -38,7 +38,7 @@ export function HolidayHistoryButton({ today }: { today: string }) {
   const load = (next: { from: string; to: string }, nextPage: number) => {
     const mine = ++requestNumber.current;
     startLoading(async () => {
-      const result = await getBpHolidayHistoriesAction({ ...next, page: nextPage }).catch(unknownResult("변경 이력 조회", false));
+      const result = await getBpHolidayHistoriesAction({ ...next, page: nextPage }).catch(unknownResult("변경이력 조회", false));
       if (mine !== requestNumber.current) return;
       if (!result.ok) return setFailure(result.message);
       setFailure(null);
