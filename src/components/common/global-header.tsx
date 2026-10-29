@@ -136,7 +136,7 @@ export function ServiceLinks({ targets = {}, hideAddon = false }: { targets?: { 
         </ServiceLink>
         {!hideAddon && (
           <ServiceLink target={targets.addon} label="부가서비스구독관리" className={`${ICON_HOVER} w-[32px] bg-white`}>
-            <Image src="/icons/service-subscription.svg" alt="" width={20} height={20} />
+            <Image src="/icons/service-subscription.svg" alt="" width={24} height={24} />
           </ServiceLink>
         )}
         {/* 플랫폼관리는 톱니바퀴(데모 service-platform.svg, 2026-10-20). 아홉 점 아이콘에서 바꿨다.
