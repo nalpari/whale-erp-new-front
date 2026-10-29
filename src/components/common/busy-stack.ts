@@ -4,8 +4,8 @@ export type BusyEntry = { id: number; text: string };
 export type ActionKind = "create" | "update" | "delete";
 export type ActionOptions = { kind: ActionKind; text?: never } | { text: string; kind?: never };
 
-export const BUSY_TEXT = { create: "등록중입니다", update: "수정중입니다", delete: "삭제중입니다" } as const;
-export const BUSY_DEFAULT = "처리중입니다";
+export const BUSY_TEXT = { create: "등록중입니다.", update: "수정중입니다.", delete: "삭제중입니다." } as const;
+export const BUSY_DEFAULT = "처리중입니다.";
 
 /** kind 면 정해진 문구, text 면 그 문구, 둘 다 없으면 「처리중입니다」 */
 export function busyTextOf(options?: { kind?: ActionKind; text?: string }): string {

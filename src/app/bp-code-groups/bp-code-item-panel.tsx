@@ -243,7 +243,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
             />
           </CellError>
         ) : (
-          <span title="등록한 코드 값은 바꿀 수 없습니다">{d.itemCode}</span>
+          <span title="등록한 코드 값은 바꿀 수 없습니다.">{d.itemCode}</span>
         ),
     },
     {

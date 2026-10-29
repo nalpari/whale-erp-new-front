@@ -21,7 +21,7 @@ export type TemplateResult = { ok: true; detail: TemplateDetail } | { ok: false;
 // 서버 액션은 누구나 아무 인자로 부를 수 있다 — api 경로에 붙이기 전에 id 범위(1..2147483647)를 본다.
 const NOT_FOUND: TemplateResult = { ok: false, status: 404, messages: ["알림 템플릿을 찾을 수 없습니다."] };
 
-const STALE = "다른 사람이 먼저 고쳤습니다. 새로 불러온 뒤 다시 저장해 주세요";
+const STALE = "다른 사람이 먼저 고쳤습니다. 새로 불러온 뒤 다시 저장해 주세요.";
 
 /**
  * api 오류를 화면 문장으로 바꾼다. 400 은 api 문장 목록을, 409 는 그사이 고침(낙관적 잠금)이면 고정 문구를,

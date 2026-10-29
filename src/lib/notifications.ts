@@ -39,6 +39,6 @@ function assertIds(ids: number[]) {
 
 export class InvalidNotificationIdError extends Error {
   constructor() {
-    super("알림 ID 가 올바르지 않습니다");
+    super("알림 ID 가 올바르지 않습니다.");
   }
 }

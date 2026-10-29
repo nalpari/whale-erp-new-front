@@ -123,7 +123,7 @@ export function StoreExcelNotice({ href }: { href: string }) {
 }
 
 /** [엑셀 다운로드] — 받는 동안 「파일 만드는 중 · N%」로 바뀌고 잠긴다. 0건이면 막는다 */
-export function StoreExcelButton({ href, empty, emptyTitle = "받을 점포가 없습니다" }: { href: string; empty: boolean; emptyTitle?: string }) {
+export function StoreExcelButton({ href, empty, emptyTitle = "받을 점포가 없습니다." }: { href: string; empty: boolean; emptyTitle?: string }) {
   const { phase, download } = useExcel();
   const busy = phase.kind !== "idle";
   const label =

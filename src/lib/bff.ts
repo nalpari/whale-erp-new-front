@@ -24,7 +24,7 @@ export async function bff<T>(path: string): Promise<T> {
     response = await fetch(`/api${path}`, { cache: "no-store", headers: bp === null ? undefined : { [BP_HEADER]: String(bp) } });
   } catch (e) {
     console.warn("BFF 연결 실패", path, e); // 오프라인·중단 등 원인은 화면 문구에 안 보이므로 남긴다
-    throw new BffError(0, "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요");
+    throw new BffError(0, "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.");
   }
   if (response.ok) return (await response.json()) as T;
   const body: unknown = await response.json().catch(() => null);
@@ -44,7 +44,7 @@ export async function signOut(logout: () => Promise<void>): Promise<boolean> {
     return true;
   } catch (e) {
     console.error("로그아웃 실패", e);
-    alert("로그아웃하지 못했습니다. 다시 시도해 주세요");
+    alert("로그아웃하지 못했습니다. 다시 시도해 주세요.");
     return false;
   }
 }

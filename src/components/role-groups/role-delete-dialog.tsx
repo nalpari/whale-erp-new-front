@@ -145,7 +145,7 @@ export function RoleDeleteDialog({
             <dt className="text-erp-label">연결 사용자</dt>
             <dd>
               {!data ? (
-                <span className="text-erp-muted">{busy ? "불러오는 중입니다" : "—"}</span>
+                <span className="text-erp-muted">{busy ? "불러오는 중입니다." : "—"}</span>
               ) : admins.length ? (
                 `${admins.length.toLocaleString("ko-KR")}명`
               ) : (

@@ -879,7 +879,7 @@ export function StoreFormView(props: Props) {
         {message("floors")}
       </FormGroup>
 
-      <ConfirmDialog open={dialog === "close-blocked"} title="폐점할 수 없습니다" confirmLabel="확인" onConfirm={() => setDialog(null)} onCancel={() => setDialog(null)}>
+      <ConfirmDialog open={dialog === "close-blocked"} title="폐점할 수 없습니다." confirmLabel="확인" onConfirm={() => setDialog(null)} onCancel={() => setDialog(null)}>
         <p>{closeBlock}</p>
         <p className="mt-[6px] text-erp-label">점포상태를 이전 값으로 되돌렸습니다.</p>
       </ConfirmDialog>

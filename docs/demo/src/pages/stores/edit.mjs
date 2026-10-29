@@ -97,9 +97,9 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
 
   const unmet = x.dialog(
     unmetId,
-    "폐점할 수 없습니다",
+    "폐점할 수 없습니다.",
     `<p>폐점 조건을 채우지 못해 <b class="font-semibold">폐점</b>을 고를 수 없습니다. 점포상태는 이전 상태인 <b class="font-semibold">운영</b>으로 되돌렸습니다.</p>` +
-      `<div class="mt-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">채우지 못한 조건</p><ul class="mt-[6px] list-disc pl-[18px]"><li>진행 중인 근로계약 <b class="font-semibold">6건</b> — 정리해야 할 근로계약이 있습니다</li></ul><p class="mt-[6px] text-erp-label">이용 중인 부가서비스 구독과 정산 대기 금액은 1차 범위 밖이라 확인하지 않습니다.</p></div>` +
+      `<div class="mt-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">채우지 못한 조건</p><ul class="mt-[6px] list-disc pl-[18px]"><li>진행 중인 근로계약 <b class="font-semibold">6건</b> — 정리해야 할 근로계약이 있습니다.</li></ul><p class="mt-[6px] text-erp-label">이용 중인 부가서비스 구독과 정산 대기 금액은 1차 범위 밖이라 확인하지 않습니다.</p></div>` +
       `<p class="mt-[12px] text-erp-label">조건을 정리한 뒤 다시 폐점을 고르세요. 다른 수정 내용은 그대로 남아 있습니다.</p>`,
     ui.button("확인", { "data-close": true }),
   );

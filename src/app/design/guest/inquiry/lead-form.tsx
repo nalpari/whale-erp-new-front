@@ -258,7 +258,7 @@ export function LeadForm({ options, submit = sampleSubmit }: { options: LeadOpti
               <div className="col-start-1">
                 <Field label="업종 직접 입력" required>
                   <span className={INPUT_BOX}>
-                    <input name="industryDetail" required autoFocus maxLength={50} placeholder="업종을 직접 입력해 주세요" className={INPUT} />
+                    <input name="industryDetail" required autoFocus maxLength={50} placeholder="업종을 직접 입력해 주세요." className={INPUT} />
                   </span>
                 </Field>
               </div>
@@ -338,7 +338,7 @@ export function LeadForm({ options, submit = sampleSubmit }: { options: LeadOpti
       </LeadDialog>
       <LeadDialog
         open={done}
-        title="문의가 접수되었습니다"
+        title="문의가 접수되었습니다."
         onClose={handleDoneClose}
         actions={
           <GuestButton tone="navy" onClick={handleDoneClose}>

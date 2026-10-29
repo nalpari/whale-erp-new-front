@@ -10,10 +10,10 @@ import { parseStoresQuery, scopeTypeMismatch, storeListQueryOf, withDefaultStatu
 export async function GET(request: Request) {
   // 화면이 점포상태를 늘 적어 보낸다(storesExcelHref). 없으면 기본값(폐점 제외)이다
   const parsed = withDefaultStatuses(parseStoresQuery(Object.fromEntries(new URL(request.url).searchParams)), false);
-  if (scopeTypeMismatch(parsed)) return Response.json({ message: "상단 범위와 고른 점포유형이 겹치지 않습니다" }, { status: 400 });
+  if (scopeTypeMismatch(parsed)) return Response.json({ message: "상단 범위와 고른 점포유형이 겹치지 않습니다." }, { status: 400 });
   const query = storeListQueryOf(parsed);
   if (!query.statuses.length || !query.storeTypes.length) {
-    return Response.json({ message: "점포상태 · 점포유형을 하나 이상 골라 주세요" }, { status: 400 });
+    return Response.json({ message: "점포상태 · 점포유형을 하나 이상 골라 주세요." }, { status: 400 });
   }
 
   let response: Response;

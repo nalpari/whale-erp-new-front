@@ -166,7 +166,7 @@ function DetailBody({
         admin.accountStatus === "INACTIVE" || !canUpdate ? muted("-") : (
         <>
           {canUpdate && (
-            <Blocked reason={isSelf ? "본인 비밀번호는 내 정보에서 바꿔 주세요" : undefined}>
+            <Blocked reason={isSelf ? "본인 비밀번호는 내 정보에서 바꿔 주세요." : undefined}>
               <Button variant="soft" onClick={() => setConfirm("reset")} disabled={isSelf || busy}>
                 초기화
               </Button>
@@ -239,7 +239,7 @@ function DetailBody({
         </Button>
         <span className="flex-1" />
         {canDelete && (
-          <Blocked reason={isSelf ? "본인 계정은 스스로 삭제할 수 없습니다" : undefined}>
+          <Blocked reason={isSelf ? "본인 계정은 스스로 삭제할 수 없습니다." : undefined}>
             <Button variant="soft" onClick={() => setConfirm("delete")} disabled={isSelf || busy}>
               삭제
             </Button>

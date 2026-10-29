@@ -20,7 +20,7 @@ import { SEND_UNKNOWN, sendFailureOf } from "../contracts/[contractId]/send-mode
 // 화면이 낡았으면(상태 충돌) 다시 받은 화면에서 버튼이 사라지므로 문구를 토스트로 알리고 닫은 뒤 다시 받는다.
 
 /** 목록 · 상세에서 접수 여부를 모를 때의 문장. SEND_UNKNOWN 은 근로계약 상세용(「상세를 다시 읽었으니」)이라 바꿔 쓴다 */
-const RESEND_UNKNOWN = "발송됐는지 알 수 없습니다. 화면을 다시 읽었으니 직원에게 받았는지 확인해 주세요 — 다시 보내려면 화면을 새로 고친 뒤 보내 주세요";
+const RESEND_UNKNOWN = "발송됐는지 알 수 없습니다. 화면을 다시 읽었으니 직원에게 받았는지 확인해 주세요 — 다시 보내려면 화면을 새로 고친 뒤 보내 주세요.";
 
 export function ResendInvitationButton({ contractId, name }: { contractId: number; name: string | null }) {
   const router = useRouter();

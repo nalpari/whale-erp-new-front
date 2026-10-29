@@ -22,7 +22,7 @@ export function SendContractButton({ contractId, status, name, back }: { contrac
   const [error, setError] = useState("");
   const [locked, setLocked] = useState(false);
   const [pending, start] = useTransition();
-  const resend = useAction(sendContract, { text: "발송중입니다" });
+  const resend = useAction(sendContract, { text: "발송중입니다." });
   const copy = resendDialogCopy(status, name);
 
   return (

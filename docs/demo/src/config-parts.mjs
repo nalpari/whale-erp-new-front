@@ -111,7 +111,7 @@ export function storeBulkDialog(A, id, { stores, picked, text = BULK_MAP_TEXT })
   const opt = (key, side, label) =>
     `<span class="flex cursor-pointer items-center gap-[6px] text-[13px] text-erp-ink" data-bulk-opt>${groupCheck(key, side, label)}${label}<span class="text-erp-muted" data-bulk-optcount></span></span>`;
   const row = ([name, code, type, lock], i) =>
-    `<label data-bulk-item data-code="${code}" data-order="${i}" draggable="${!lock}" class="flex items-center gap-[8px] rounded-[2px] px-[8px] py-[6px] ${lock ? "cursor-not-allowed text-erp-muted" : "cursor-grab text-erp-ink hover:bg-erp-thead-bg has-checked:bg-erp-subtle"}"${lock ? ` title="${lock} · 고를 수 없습니다"` : ""}>${ui.checkbox(A, "", false, {
+    `<label data-bulk-item data-code="${code}" data-order="${i}" draggable="${!lock}" class="flex items-center gap-[8px] rounded-[2px] px-[8px] py-[6px] ${lock ? "cursor-not-allowed text-erp-muted" : "cursor-grab text-erp-ink hover:bg-erp-thead-bg has-checked:bg-erp-subtle"}"${lock ? ` title="${lock} · 고를 수 없습니다."` : ""}>${ui.checkbox(A, "", false, {
       "data-bulk-pick": "",
       "data-bulk-type": type,
       "data-name": name,

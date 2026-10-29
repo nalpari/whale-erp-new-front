@@ -139,7 +139,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
     statusId,
     "상태 변경",
     `<p>현재 상태 ${ui.badge("on", "운영")}</p>` +
-      `<div class="mt-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">폐점 조건</p><ul class="mt-[6px] list-disc pl-[18px]"><li>진행 중인 근로계약 <b class="font-semibold">6건</b> — 정리해야 할 근로계약이 있습니다</li></ul></div>`,
+      `<div class="mt-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">폐점 조건</p><ul class="mt-[6px] list-disc pl-[18px]"><li>진행 중인 근로계약 <b class="font-semibold">6건</b> — 정리해야 할 근로계약이 있습니다.</li></ul></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + f.disabledButton("폐점으로 변경", "폐점 조건을 채우지 못했습니다.", "primary"),
   );
 

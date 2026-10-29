@@ -41,7 +41,7 @@ export default ({ A, R }) => {
   // 부가서비스 대상(상품별)은 1차에 없다(2026-10-12 재영).
   const targets = box("노출 대상", "",
     `<div class="flex flex-col gap-[12px]">${target("비회원", "", true)}${target("회원", "로그인한 모든 사용자", true)}${target("BP", "사업자 관리자", true)}${target("점포", "점포 단위 관리자", false)}</div>` +
-      band("비회원이 포함되어 로그인 전 홈에 공개됩니다"),
+      band("비회원이 포함되어 로그인 전 홈에 공개됩니다."),
   );
 
   // 변경 이력 표는 두지 않는다 — 마지막 수정자 · 수정 시각만 남긴다(updated_by · updated_at, WHALEERP-272 2026-10-12 재영 승인).

@@ -45,7 +45,7 @@ function failureOf(error: unknown, what: string, notNts = false): { ok: false; s
 }
 
 const validId = (id: number) => Number.isInteger(id) && id >= 1 && id <= 2_147_483_647;
-const NOT_FOUND = { ok: false as const, status: 404, message: "BP 를 찾을 수 없습니다" };
+const NOT_FOUND = { ok: false as const, status: 404, message: "BP 를 찾을 수 없습니다." };
 
 /** 저장이 끝났으면 목록 · 상세를 새로 받는다. 무효화가 실패해도 저장은 끝났으므로 성공으로 돌려준다. */
 function refresh() {
@@ -79,7 +79,7 @@ export async function updateBpMasterAction(bpCodeId: number, input: UpdateBpMast
 
 export async function changeBpMasterStatusAction(bpCodeId: number, status: Exclude<BpMasterStatus, "WITHDRAWN">): Promise<ActionResult> {
   if (!validId(bpCodeId)) return NOT_FOUND;
-  if (status !== "ACTIVE" && status !== "INACTIVE") return { ok: false, status: 400, message: "사용 또는 미사용으로만 바꿀 수 있습니다" };
+  if (status !== "ACTIVE" && status !== "INACTIVE") return { ok: false, status: 400, message: "사용 또는 미사용으로만 바꿀 수 있습니다." };
   try {
     await changeBpMasterStatus(bpCodeId, status);
     refresh();

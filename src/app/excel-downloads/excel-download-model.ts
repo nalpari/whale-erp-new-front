@@ -10,9 +10,9 @@ export function remainingOf(expiresAt: string, now = Date.now()): string | null 
   return hours ? `${hours}시간 ${minutes % 60}분 남음` : `${minutes}분 남음`;
 }
 
-export const EXPIRED = "기한이 지났습니다. 목록에서 다시 요청해 주세요";
+export const EXPIRED = "기한이 지났습니다. 목록에서 다시 요청해 주세요.";
 
-export const NOT_FOUND = "파일을 찾을 수 없습니다";
+export const NOT_FOUND = "파일을 찾을 수 없습니다.";
 /** 남의 요청도 404 다 — 공용 PC 에서 다른 계정으로 로그인한 채 메일 링크를 연 경우를 짚어 준다 */
 export const NOT_FOUND_DETAIL = "엑셀을 요청한 계정으로 로그인했는지 확인해 주세요.";
 
@@ -36,6 +36,6 @@ export function failureOf(status: number, message: string): Failure {
   if (status === 409)
     return message.startsWith(EXCEL_FAILED_PREFIX) ? { tone: "risk", title: message, retry: false } : { tone: "info", title: message, retry: true };
   if (status === 403 && message.startsWith(PASSWORD_REQUIRED_PREFIX)) return { tone: "risk", title: message, retry: true };
-  if (status === 0 || status >= 500) return { tone: "risk", title: "파일 주소를 받지 못했습니다. 잠시 후 다시 시도해 주세요", retry: true };
+  if (status === 0 || status >= 500) return { tone: "risk", title: "파일 주소를 받지 못했습니다. 잠시 후 다시 시도해 주세요.", retry: true };
   return { tone: "risk", title: message, retry: false };
 }

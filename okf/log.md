@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) · [급여명세서 관리 화면 (구현)](/screens/payslips.md) · [직원 정보 관리 화면 (구현)](/screens/staff-members.md) · [직원 운영 관리](/staff.md) — 화면 문구 끝에 마침표를 붙이고 「사용가능합니다.」를 「사용 가능합니다.」로 띄운 것(사용자 지정 2026-10-29)에 맞춰 본문에 옮겨 적은 문구를 고쳤다. 뜻은 그대로다. whale-erp-front · stores 시각은 이미 늦은 값이라 그대로 뒀다.
 * **Update**: [마이페이지](/mypage.md) · [로그인](/auth.md) · [BP 마스터 계정 관리](/bp.md) · 목차 — 「MY PAGE」를 「마이페이지」로 표기를 바꿨다(사용자 지정, PR #176 — 주석 · DESIGN.md · 데모 소스 · 약관 본문도 같이). 헤더 팝업 제목(`user-pop.tsx`)과 [Whale ERP Frontend](/whale-erp-front.md) 는 persian PR 이 바꾼다. bp.md 시각은 main 의 늦은 값을 그대로 뒀다.
 * **Update**: main 병합(front caterpie, PR #173 두 번째 충돌 해소): okf/log.md 는 두 쪽 항목을 모두 남겼다.
 * **Update**: main 병합(front caterpie, PR #173 충돌 해소): okf 충돌은 양쪽 기록을 살렸다 — bp.md 는 main 의 generated 시각, log.md 는 두 쪽 항목을 날짜별로 모두 남겼다. 알림 종 403 은 main 의 강제 변경 문구 판정을 따랐다.

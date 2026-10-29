@@ -151,7 +151,7 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
                   <dt className="text-erp-label">파트타이머 {s.partTime.count}명</dt>
                   <dd>{won.partTime}</dd>
                 </dl>
-                {hqFranchise && <span className="text-[12px] text-erp-muted">동의하지 않은 가맹 직원은 급여 합계에 세지 않습니다</span>}
+                {hqFranchise && <span className="text-[12px] text-erp-muted">동의하지 않은 가맹 직원은 급여 합계에 세지 않습니다.</span>}
               </>
             );
           }}

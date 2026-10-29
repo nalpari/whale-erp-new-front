@@ -26,8 +26,8 @@ test("입력 검사 — 맞는 날짜는 null", () => {
 
 test("입력 검사 — 빈 값 · 모양 · 없는 날짜", () => {
   assert.equal(checkBirthDate("", "2026-10-26", null), "새 생년월일을 입력해 주세요.");
-  assert.equal(checkBirthDate("1990-5-2", "2026-10-26", null), "생년월일은 YYYY-MM-DD 형식의 있는 날짜여야 합니다");
-  assert.equal(checkBirthDate("1990-02-30", "2026-10-26", null), "생년월일은 YYYY-MM-DD 형식의 있는 날짜여야 합니다");
+  assert.equal(checkBirthDate("1990-5-2", "2026-10-26", null), "생년월일은 YYYY-MM-DD 형식의 있는 날짜여야 합니다.");
+  assert.equal(checkBirthDate("1990-02-30", "2026-10-26", null), "생년월일은 YYYY-MM-DD 형식의 있는 날짜여야 합니다.");
 });
 
 test("입력 검사 — 오늘은 받고 내일부터 막는다", () => {

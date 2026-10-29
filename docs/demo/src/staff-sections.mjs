@@ -573,7 +573,7 @@ export function staffSections({ A, R }) {
           ui.field("근무지", ui.select(["모리커피 서초점", "온기식당 판교점"], { value: store })),
           `<div class="flex flex-col gap-[8px]">${tipLabel("배정 대상", TIP_TARGET)}${p.radios(`${id}-target`, ["개인", "근무지 전체"], target)}</div>`,
           staffPick(`${id}-target`, person ? [person] : []),
-          `<div class="flex flex-col gap-[8px]" data-when="${id}-target:근무지 전체">${tipLabel("수행 방식", TIP_MODE)}<span class="text-[14px] text-erp-ink">${mode}</span>${p.help("등록 후에는 바꿀 수 없다")}</div>`,
+          `<div class="flex flex-col gap-[8px]" data-when="${id}-target:근무지 전체">${tipLabel("수행 방식", TIP_MODE)}<span class="text-[14px] text-erp-ink">${mode}</span>${p.help("등록 후에는 바꿀 수 없다.")}</div>`,
           ui.formRow(p.fieldH("수행 예정 날짜", ui.dateField(A, { label: "수행 예정 날짜", value: date }), ""), p.fieldH("시간", p.timeField(time, "시간"), "선택")),
           `<div class="flex flex-col gap-[8px]">${x.toggle("긴급", urgent)}</div>`,
         ) +

@@ -134,7 +134,7 @@ function DetailBody({
       value: admin.accountStatus === "INACTIVE" || !showReset ? muted("-") : (
         <span className="flex items-center gap-[10px]">
           {showReset && (
-            <Blocked reason={resetBlocked ? "본인 비밀번호는 내 정보에서 바꿉니다" : undefined}>
+            <Blocked reason={resetBlocked ? "본인 비밀번호는 내 정보에서 바꿉니다." : undefined}>
               <Button variant="soft" onClick={() => setConfirmOpen(true)} disabled={resetBlocked || busy}>
                 초기화
               </Button>
@@ -194,7 +194,7 @@ function DetailBody({
       {admin.actions.isSelf ? (
         admin.roleTypeCode === "FA" ? (
           <InfoBand>
-            <p>내 계정입니다 — 조회만 합니다</p>
+            <p>내 계정입니다 — 조회만 합니다.</p>
             <p className="font-normal text-erp-label">
               가맹 관리자는 계정을 수정하지 않습니다. 계정 정보 · 권한명 · 점포 · 계정상태는 연결된 가맹 마스터가 바꾸고, 비밀번호는 내 정보에서 직접 바꿉니다.
             </p>
@@ -203,7 +203,7 @@ function DetailBody({
           // 수정 화면을 설명하는 띠라 [수정]이 보일 때만(메뉴 수정 권한 + api canUpdate)
           canUpdate && (
             <InfoBand>
-              <p>내 계정입니다</p>
+              <p>내 계정입니다.</p>
               <p className="font-normal text-erp-label">
                 수정 화면에서는 기본정보(이름 · 연락처 · 이메일)만 바뀝니다. 권한명 · 계정상태 · 대상점포는 BP 마스터 · BP 관리자 · 플랫폼 사용자가,
                 비밀번호는 내 정보에서 직접 바꿉니다.

@@ -18,8 +18,8 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
   // 점포유형은 등록 뒤 바꿀 수 없다 — 기본정보 맨 위에 큰 선택 카드로 두어 맨 앞에서 정하게 한다(2026-10-16 점검).
   const typeCards =
     `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">${f.req("점포유형")}</span>${x.choiceCards("점포유형", [
-      { label: "직영점포", desc: "직접 운영하는 매장이에요", checked: true },
-      { label: "가맹점포", desc: "가맹점주가 운영하는 매장이에요" },
+      { label: "직영점포", desc: "직접 운영하는 매장이에요.", checked: true },
+      { label: "가맹점포", desc: "가맹점주가 운영하는 매장이에요." },
     ])}</div>`;
 
   // 점포상태는 수정 화면과 같은 자리에 두되 고를 수 없다 — 새 점포는 미운영으로만 생기고,

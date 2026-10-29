@@ -287,7 +287,7 @@ export function CodeGroupPanel({
       cell: (d) =>
         !d.added && d.manageOwnerCode === "PLATFORM_PROVIDED" && manage ? (
           // 막힌 버튼은 호버를 받지 않으므로(Button 의 disabled:pointer-events-none) 이유 안내는 감싸는 칸에 단다
-          <span title={applyBlocked ? "저장한 뒤 적용할 수 있습니다" : undefined} className="inline-flex">
+          <span title={applyBlocked ? "저장한 뒤 적용할 수 있습니다." : undefined} className="inline-flex">
             <Button variant="soft" onClick={() => setApplyTarget(d)} disabled={applyBlocked || saving || applying}>
               BP 적용
             </Button>
