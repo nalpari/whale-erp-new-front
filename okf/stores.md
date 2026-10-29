@@ -9,7 +9,7 @@ sources:
   - { id: store-form, resource: ../src/lib/store-form.ts, title: 점포 등록 · 수정 폼 규칙 }
   - { id: store-view, resource: ../src/lib/store-view.ts, title: 점포 표기 }
   - { id: excel-downloads-app, resource: ../src/app/excel-downloads, title: 엑셀 내려받기 화면(메일 링크) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-29T06:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-29T09:00:00Z }
 ---
 
 근거: `docs/mockup/stores/` (목업 · 1차 · R-QTPRUQ)
@@ -23,7 +23,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-29T06:00:00Z }
 | 주소 | 이름 | 하는 일 | 스펙 |
 |------|------|---------|------|
 | `/stores` | 점포 목록 | 대표 이미지 썸네일을 단 카드 목록이 기본이고 표 보기로 바꿀 수 있다. 처음엔 폐점을 뺀다. 점포명을 누르면 상세로 간다. 엑셀 다운로드와 점포 등록으로 이어진다 | `S-BAYAJS` |
-| `/stores/:storeId` | 점포 상세 · 삭제 · 상태 변경 | 기본정보·사업자정보·연계 관리정보·층별 기타 정보·변경 이력을 읽기 전용으로 보인다. 상태 변경과 삭제 확인은 이 화면의 팝업이다 | `S-AGGZZG` · `S-MNRZOM` |
+| `/stores/:storeId` | 점포 상세 · 삭제 · 상태 변경 | 기본정보·사업자정보·연계 관리정보·층별 기타 정보·변경이력을 읽기 전용으로 보인다. 상태 변경과 삭제 확인은 이 화면의 팝업이다 | `S-AGGZZG` · `S-MNRZOM` |
 | `/stores/new` | 점포 등록 | 필수는 점포유형과 점포명뿐이고 미운영으로 생긴다. 대표 이미지 1장과 사업자 번호 인증은 선택이다 | `S-ALHLHW` · `S-VRNTHD` · `S-LEAAUT` |
 | `/stores/:storeId/edit` | 점포 수정 | 번호가 없으면 최초 인증, 있으면 대표자명만 바꾸는 재인증을 한다. 점포상태도 여기서 바꾼다. 폐점·BP 미사용 점포는 막힌다 | `S-JEPOMK` |
 

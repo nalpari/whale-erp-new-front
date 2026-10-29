@@ -88,12 +88,13 @@ function Logo({ href = "/", onClick }: { href?: string; onClick?: (e: MouseEvent
   );
 }
 
-// Figma Info on. 아이콘 아래 뜨는 흰 알약 모양 툴팁. 아래쪽이 짙은 메뉴 줄에 걸치므로 테두리로 경계를 남긴다.
+// 아이콘 아래 뜨는 알약 모양 툴팁 — 버튼에 마우스를 올린 모양처럼 흰 바탕 · 회청 테두리 · 먹색 글자 500(2026-10-29 사용자 지정, 전엔 Figma Info on 의 연회색 테두리 · 회청 글자).
+// 이름은 부모가 aria-label 로 갖는다 — 툴팁은 보이기만 한다(aria-hidden). 모서리는 6px, 꼬리는 없다 — 알약형 · 꼬리는 짙은 메뉴 줄 위에서 거칠게 보였다(2026-10-29 사용자 지적). 부모에 group · relative 를 둔다(서비스 바로가기 · 알림 종 · 마이페이지).
+// 위치는 부모 가운데에서 26px 아래 — 부모 높이(아이콘 32 · 종 · 사람 42)가 달라도 헤더 줄 안에서 같은 높이에 뜬다(2026-10-29 사용자 지적).
 // 떠오를 때 4px 아래에서 올라오고, 동작 줄이기 설정이면 올라오지 않고 나타나기만 한다.
-function Tip({ label }: { label: string }) {
+export function HeaderTip({ label }: { label: string }) {
   return (
-    <span className="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[14px] leading-[2] whitespace-nowrap text-erp-brand opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">
-      <span className="absolute -top-[5px] left-1/2 size-[8px] -translate-x-1/2 -rotate-45 rounded-tr-[1px] border-t border-r border-[#ebebeb] bg-white" />
+    <span aria-hidden className="pointer-events-none absolute top-[calc(50%+26px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">
       {label}
     </span>
   );
@@ -110,7 +111,7 @@ function ServiceLink({ target, label, className, children }: { target?: ServiceT
   const body = (
     <>
       {children}
-      <Tip label={label} />
+      <HeaderTip label={label} />
     </>
   );
   return typeof target === "function" ? (
@@ -125,7 +126,7 @@ function ServiceLink({ target, label, className, children }: { target?: ServiceT
 }
 
 // Figma Top2 의 서비스 바로가기. 둥근 테두리 안에 세 아이콘을 두고, 올리면 이름 툴팁이 뜬다.
-// hideAddon — 플랫폼관리 사이트에서는 부가서비스 현황 아이콘 자리를 없앤다(2026-10-28 사용자 지정).
+// hideAddon — 플랫폼관리 사이트에서는 부가서비스구독관리 아이콘 자리를 없앤다(2026-10-28 사용자 지정).
 export function ServiceLinks({ targets = {}, hideAddon = false }: { targets?: { erp?: ServiceTarget; addon?: ServiceTarget; platform?: ServiceTarget }; hideAddon?: boolean }) {
   return (
     <div className="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]">
@@ -135,15 +136,16 @@ export function ServiceLinks({ targets = {}, hideAddon = false }: { targets?: { 
           <Image src="/icons/service-erp.svg" alt="" width={32} height={32} />
         </ServiceLink>
         {!hideAddon && (
-          <ServiceLink target={targets.addon} label="부가서비스 현황" className={`${ICON_HOVER} w-[32px] bg-white`}>
-            <Image src="/icons/service-chat.svg" alt="" width={19} height={19} />
+          <ServiceLink target={targets.addon} label="부가서비스구독관리" className={`${ICON_HOVER} w-[32px] bg-white`}>
+            <Image src="/icons/service-subscription.svg" alt="" width={24} height={24} />
           </ServiceLink>
         )}
         {/* 플랫폼관리는 톱니바퀴(데모 service-platform.svg, 2026-10-20). 아홉 점 아이콘에서 바꿨다.
-            플랫폼 계정에게만 보인다 — BP·가맹 계정은 자리 자체를 없앤다(사용자 지적, 2026-10-21). */}
+            플랫폼 계정에게만 보인다 — BP·가맹 계정은 자리 자체를 없앤다(사용자 지적, 2026-10-21).
+            칸은 다른 둘과 같은 32px — 20px 칸이라 부가서비스에 붙어 보였다. 톱니바퀴는 22px 로 키워 부가서비스와 무게를 맞춘다(2026-10-29 사용자 지적). */}
         {targets.platform && (
-          <ServiceLink target={targets.platform} label="플랫폼관리" className={`${ICON_HOVER} w-[20px] bg-white`}>
-            <Image src="/icons/service-platform.svg" alt="" width={20} height={20} />
+          <ServiceLink target={targets.platform} label="플랫폼관리" className={`${ICON_HOVER} w-[32px] bg-white`}>
+            <Image src="/icons/service-platform.svg" alt="" width={22} height={22} />
           </ServiceLink>
         )}
       </div>
