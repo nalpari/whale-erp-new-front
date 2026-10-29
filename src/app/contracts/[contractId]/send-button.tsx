@@ -12,8 +12,9 @@ import { resendDialogCopy, sendFailureOf } from "./send-model";
 // 다시 읽는다(기한이 바뀐다).
 // 가입한 직원은 앱 알림(알림함 · 푸시 대기 — 푸시는 #261 · #321 뒤. 받을 계정이 없거나 탈퇴면 알림 없이 기한만 새로, api NTF-25)
 // 으로, 계정이 없는 직원은 가입 초대 알림톡으로 간다(WHALEERP-611). 소속 추가 확인 · 복귀 확인(계정 있음 · 이 점포 미가입)은
-// api 가 소속 추가 확인 요청을 보내고 발송 대기로 둔다(api #164) — 그 경우의 확인창 문구는 WHALEERP-130 화면 후속(front #146)이다.
-// 확인창 문구는 resendDialogCopy(send-model.ts) — 가입 여부(api staffJoined)로 앱 문구(데모)와 가입 초대 문구를 고른다.
+// 소속 추가 확인 요청(알림톡 · 메일)을 다시 보내고 계약은 발송 대기로 남는다(WHALEERP-130, api #164).
+// 확인창 문구는 resendDialogCopy(send-model.ts) — 가입 여부(api staffJoined)로 앱 문구(데모)와, 가입 초대 · 소속 추가 확인 요청을 함께
+// 알리는 문구(inviteResendCopy — 직원 목록 재발송과 같다)를 고른다.
 // 접수 여부를 모르거나 화면이 낡았으면(recheck) 보내기를 막고 상세를 다시 읽는다 — 다시 눌러 두 번 가지 않게(front #41 리뷰).
 // 거부 · 만료를 되살릴 수 없게 됐으면(blocked) 보내기만 막고 까닭 문장을 남긴다 — 다시 읽으면 버튼과 함께 사라진다(front #136 재리뷰).
 // 확인창을 닫을 때 상세를 다시 읽는다 — 낡은 버튼으로 같은 409 를 되풀이하지 않게(front #136 셀프 code-review).
