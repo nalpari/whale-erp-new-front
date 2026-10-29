@@ -58,16 +58,19 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
     {
       header: "상호명",
       align: "left",
+      // 사용 BP 상호명은 굵게, 미사용 · 탈퇴는 보통 굵기(2026-10-29 사용자 지정). Radio 는 className 을 받지 않아 감싸는 칸에서 굵기를 물려준다
       cell: (r) => (
-        <Radio
-          name="bp"
-          label={r.bpCodeId === currentBp.bpCodeId ? `${r.tradeName} (현재)` : r.tradeName}
-          checked={r.bpCodeId === picked?.bpCodeId}
-          onChange={() => setPicked(r)}
-        />
+        <span className={r.accountStatusCode === "ACTIVE" ? "font-semibold" : undefined}>
+          <Radio
+            name="bp"
+            label={r.bpCodeId === currentBp.bpCodeId ? `${r.tradeName} (현재)` : r.tradeName}
+            checked={r.bpCodeId === picked?.bpCodeId}
+            onChange={() => setPicked(r)}
+          />
+        </span>
       ),
     },
-    { header: "상태", width: "w-[80px]", cell: (r) => statusLabel(r.accountStatusCode) },
+    { header: "계정상태", width: "w-[80px]", cell: (r) => statusLabel(r.accountStatusCode) },
   ];
   const totalPages = result ? Math.ceil(result.total / PAGE_SIZE) : 0;
 

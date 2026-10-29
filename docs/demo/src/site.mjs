@@ -490,7 +490,7 @@ const PLATFORM_BPS = [
   ["BP000035", "㈜온기에프앤비", "사용"],
 ];
 function platformScopeDialog(A, R, id) {
-  const columns = [{ header: "BP코드", width: "w-[110px]" }, { header: "상호명", align: "left" }, { header: "상태", width: "w-[80px]" }];
+  const columns = [{ header: "BP코드", width: "w-[110px]" }, { header: "상호명", align: "left" }, { header: "계정상태", width: "w-[80px]" }];
   const rows = PLATFORM_BPS.map(([code, name, status]) => [code, ui.radio(name, `${id}-bp`, false, { "data-bp-code": code, "data-bp-name": name }), status]);
   const table = ui.dataTable(columns, rows).replace("</tbody>", `${ui.tableEmptyRow(columns).replace("<tr ", "<tr hidden data-bp-none ")}</tbody>`);
   const body =
