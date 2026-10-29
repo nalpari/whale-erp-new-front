@@ -154,6 +154,17 @@ test("신고 정보 — 가린 주민등록번호와 「은행이름 계좌번�
   });
 });
 
+test("신고 정보 — OK 인데 빈 칸이 있으면 그 칸만 「-」(「은행 null」을 만들지 않는다)", () => {
+  assert.deepEqual(taxProfileTexts({ status: "OK", rrnMasked: "900101-1******", bankName: "KB국민은행", accountNumber: null }), {
+    rrn: "900101-1******",
+    account: "-",
+  });
+  assert.deepEqual(taxProfileTexts({ status: "OK", rrnMasked: null, bankName: "KB국민은행", accountNumber: "12345678901234" }), {
+    rrn: "-",
+    account: "KB국민은행 12345678901234",
+  });
+});
+
 test("신고 정보 — 미입력 · 본사 역할의 가맹 직원 조회 · 칸 없는 옛 응답은 「-」", () => {
   const empty = { rrnMasked: null, bankName: null, accountNumber: null };
   for (const t of [{ status: "NONE", ...empty } as const, { status: "HIDDEN", ...empty } as const, undefined])
