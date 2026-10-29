@@ -11,7 +11,7 @@ import { documentNoticeOf } from "./document-notice";
 import { EndContractButton } from "./end-button";
 import { SendContractButton } from "./send-button";
 import { canShowResend, sendNoticeOf } from "./send-model";
-import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, processRows, weeklyHoursOf, workDayLines, type PartTimeRow } from "./detail-format";
+import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, processRows, taxProfileTexts, weeklyHoursOf, workDayLines, type PartTimeRow } from "./detail-format";
 
 type Status = Parameters<typeof StatusBadge>[0]["status"];
 
@@ -114,6 +114,8 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         { label: "직원", value: <DetailValues items={[c.name, formatPhone(c.phone)]} /> },
         // 가입 값과 본인 대조하는 성별 · 외국인 여부(WHALEERP-125)
         { label: "성별", value: [c.gender ? labelOf(genders, c.gender) : "-", ...(c.isForeigner ? ["외국인"] : [])].join(" · ") },
+        // 직원 신고 정보(WHALEERP-155) — 읽기만, 고치는 것은 직원 본인(TAX-07)
+        { label: "주민등록번호", value: taxProfileTexts(c.taxProfile).rrn },
         { label: "직무", value: c.jobTitle },
         { label: "근무지", value: c.storeName ?? "-" },
         { label: "고용 형태", value: labelOf(employmentTypes, c.employmentType) },
@@ -161,6 +163,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         { label: "주휴일", value: c.weeklyHoliday ? `${labelOf(weekdays, c.weeklyHoliday)}요일` : "-" },
         { label: "임금지급일", value: payDayText(c.payMonth ? labelOf(payMonths, c.payMonth) : null, c.payDay) },
         { label: "급여 지급 방식", value: c.payMethod ? labelOf(payMethods, c.payMethod) : "-" },
+        { label: "급여 계좌", value: taxProfileTexts(c.taxProfile).account },
         ...(c.employmentType === "FULL_TIME" ? [{ label: "수습", value: probationText(c.probationMonths, c.probationWageReductionRate, c.wageAmount) }] : []),
         { label: "4대보험", value: insuranceText(c.isHealthPensionInsured, c.isEmploymentInjuryInsured) },
         { label: "근무 장소", value: c.workLocation ?? "-" },
