@@ -8,7 +8,7 @@ sources:
   - { id: stores-data, resource: ../src/lib/stores.ts, title: 점포 데이터 접근 }
   - { id: store-form, resource: ../src/lib/store-form.ts, title: 점포 등록 · 수정 폼 규칙 }
   - { id: store-view, resource: ../src/lib/store-view.ts, title: 점포 표기 }
-generated: { by: claude-code/opus-5.5, at: 2026-10-29T05:30:54Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-29T05:40:57Z }
 ---
 
 근거: `docs/mockup/stores/` (목업 · 1차 · R-QTPRUQ)
@@ -61,7 +61,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-29T05:30:54Z }
 * 사업자 인증 완료 여부는 따로 저장하지 않는다. 사업자등록번호가 있으면 인증된 것이고, 재인증에 실패해도 그대로다 — `F-MOQKGY`
 * 사업자 번호 인증은 국세청 API로 사업자등록번호·대표자명·개업일자의 진위만 확인한다. 등록 단계에서는 선택이고 운영으로 바꿀 때 필요하다 — `S-ALHLHW`
 * 한 번 저장된 사업자등록번호는 바꿀 수 없다. 재인증은 대표자명만 고치고, 번호가 바뀌면 기존 점포를 끝내고 새로 등록한다 — `S-JEPOMK`
-* 상호명은 진위확인이 돌려주지 않아 인증과 상관없이 직접 입력하고, 재인증해도 바뀌지 않는다 — `S-ALHLHW` · `S-JEPOMK`
+* 상호명 · 대표자 연락처 · 업태 · 종목 · 사업자주소는 진위확인이 돌려주지 않아 인증과 상관없이 직접 입력하고 상세에도 보인다(미인증 점포도 같다). 재인증해도 바뀌지 않는다. 인증해야만 생기는 값은 사업자등록번호 · 대표자명 · 개업일자 셋이다(대표자 연락처 · 업태 · 종목 · 사업자주소는 2026-10-29 사용자 결정) — `S-ALHLHW` · `S-JEPOMK` · `S-AGGZZG`
 * 점포 사업자등록번호는 미운영·운영인 다른 점포와 겹칠 수 없다(플랫폼 전체). 폐점·삭제한 점포의 번호는 다시 쓸 수 있다. BP 사업자등록번호와는 따로 본다 — `PL-OCJOFP`
 * 대표 이미지는 점포당 1장 · 선택 · JPG·PNG 5MB 이하다. 파일은 점포 대표 이미지 파일 테이블에 따로 두고 점포 테이블에는 경로를 두지 않는다. 바꾸거나 지우면 기존 파일 행을 삭제 처리한다 — `S-ALHLHW` · `S-JEPOMK`
 * 목록 썸네일과 상세에 같은 대표 이미지가 보이고, 없으면 점포 아이콘이 선다. 엑셀에는 담지 않는다 — `S-ALHLHW` · `S-JEPOMK`
