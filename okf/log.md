@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — WHALEERP-631(2026-10-29 재영 공지 1번): 근로계약 작성 · 근로자 정보 수정 화면의 유효성 오류를 입력 칸 바로 아래에 보인다(`fieldProblems` · `problemsByField` · `workerProblemsByField`), 첫 오류 칸으로 스크롤. 폼 아래 「저장하지 못했습니다」는 api 오류만.
+* **Update**: main 병합(front jynx, main #136 · #174 까지): okf/log 는 양쪽 기록을 살렸고, [Whale ERP Frontend](/whale-erp-front.md) 의 근로계약 상세 줄은 main(재발송 · 상태 변경이력), 당사자 정보 수정 줄은 이 PR(칸 아래 오류)을 살렸다.
 * **Update**: main 병합(front slowpoke, main #174 까지): okf/log 는 양쪽 기록을 살렸다.
 * **Update**: main 병합(front slowpoke, main #177 까지): okf/log 는 양쪽 기록을 살렸고, [Whale ERP Frontend](/whale-erp-front.md) 는 이 PR 의 재발송 · 타입 출처 문장에 main 의 「변경이력」 표기를 얹었다.
 * **Update**: front #136 재리뷰 5 참고 3 — api 타입을 api main(`d785f100`, #158 · #164 · #180 · #182 · #184 포함)으로 다시 만듦. api #180 이 지운 `/me/invitations/check` · `MyInvitationLookupDto` 가 빠지고 소속 추가 확인 요청 · 받은 초대 · 계약 파일 받기 경로가 들어옴(관리자웹 사용처 없음).
