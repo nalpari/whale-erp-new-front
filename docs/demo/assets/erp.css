@@ -3645,6 +3645,9 @@
   .\[\&_input\:checked\]\:bg-no-repeat input:checked {
     background-repeat: no-repeat;
   }
+  .\[\&_label\]\:text-erp-muted label {
+    color: var(--color-erp-muted);
+  }
   .\[\&_tbody_tr\]\:cursor-pointer tbody tr {
     cursor: pointer;
   }
