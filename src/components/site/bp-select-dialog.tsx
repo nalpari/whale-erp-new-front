@@ -74,7 +74,7 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
   return (
     <ConfirmDialog open wide title="BP 선택" confirmLabel="이동" confirmDisabled={!picked} onConfirm={handleMove} onCancel={onClose}>
       <div className="flex flex-col gap-[12px]">
-        <p>고른 BP 의 웨일ERP 가 새 탭으로 열립니다.</p>
+        <p>BP를 선택하면 웨일ERP가 새 탭으로 열립니다.</p>
         <SearchField
           value={keyword}
           onValueChange={setKeyword}
