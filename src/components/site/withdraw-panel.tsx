@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
-import { expireSession, logout } from "@/app/actions";
+import { logout, logoutAfterWithdrawal } from "@/app/actions";
 import { Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
 import { withdrawFormField, withdrawWarningText, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
 import { useCodes } from "./session-gate";
@@ -116,7 +116,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
   const handleClose = () => {
     if (saving || confirmOpen) return;
     if (step === "done") {
-      void logout();
+      void logoutAfterWithdrawal();
       return;
     }
     onClose();
@@ -132,7 +132,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
         const result = await verifyWithdrawPasswordAction(form.currentPassword);
         if (mine !== saveNumber.current) return;
         if (result.ok) return setStep("content");
-        if (result.status === 401) return void expireSession();
+        if (result.status === 401) return void logout();
         if (result.status === 400) return setFieldError({ at: "currentPassword", message: result.message });
         setFailure(result.message);
       } catch (error: unknown) {
@@ -163,7 +163,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
           // 되돌릴 수 없는 동작이라 "실패"로 남겨 다시 시도하게 하면 안 된다 — 바로 로그아웃으로 보낸다
           // (ip-code-review-claude 블로커 #2, 2026-10-27). 탈퇴를 마쳤을 수 있어 스스로 끝낸 경우처럼 로그인 전 홈으로 간다.
           if (result.status === 401) {
-            void logout();
+            void logoutAfterWithdrawal();
             return;
           }
           const field = withdrawFormField(result.status, result.message);
@@ -359,7 +359,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
             </p>
           </div>
           {/* admin-header.tsx 의 UserPop 로그아웃 항목과 같은 호출 방식 — <form action={}> 으로 서버 액션을 부른다. */}
-          <form action={logout} className="flex justify-center gap-[6px]">
+          <form action={logoutAfterWithdrawal} className="flex justify-center gap-[6px]">
             <Button type="submit">확인</Button>
           </form>
         </>

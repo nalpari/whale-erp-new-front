@@ -18,16 +18,16 @@ async function endSession(): Promise<void> {
   jar.delete(LOGIN_KEY_COOKIE);
 }
 
-/** 스스로 끝내는 로그아웃(상단 메뉴 · 회원 탈퇴 완료 등) — 로그인 전 홈으로 간다(MYPAGE-3 · S-TMRGOG, 2026-10-29 재영). */
+/** 로그아웃 — 스스로 나가든 세션이 끝나 밀려나든 로그인 화면으로 간다(2026-10-29 재영). */
 export async function logout(): Promise<void> {
   await endSession();
-  redirect("/");
+  redirect("/login");
 }
 
-/** 세션이 끝나 밀려나는 경우(401 · 임시 비밀번호 시간 초과 · 로그인 정보 불일치 등) — 로그인 화면으로 간다(MYPAGE-3). */
-export async function expireSession(): Promise<void> {
+/** 회원 탈퇴를 마친 뒤의 로그아웃 — 로그인 전 홈으로 간다(S-JHQQNR, 2026-10-29 재영). */
+export async function logoutAfterWithdrawal(): Promise<void> {
   await endSession();
-  redirect("/login");
+  redirect("/");
 }
 
 /**
