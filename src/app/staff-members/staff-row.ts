@@ -83,10 +83,8 @@ export function joinCell(item: StaffMemberListItem, today: string): Cell {
  * 대기 또는 서명 대기 · 수락하지 않은 초대). 초대 행이 없는 옛 소속 확인 계약도 보이도록 invitation 이 아니라 contract 에 실린다.
  * 가입한 직원의 앱 알림 재발송은 근로계약 상세에서 한다.
  */
-export function canResendInvitation(item: Pick<StaffMemberListItem, "contract" | "invitation">): boolean {
-  // api #164 전 응답에는 contract.canResend 가 없다 — 그때는 같은 값인 invitation.canResend 를 본다(배포 순서와 무관하게 버튼이 남게).
-  // 타입은 손으로 넣은 칸이라 필수로 적혀 있다 — #164 가 배포되고 타입을 main 기준으로 다시 만들면 이 대체 값을 걷는다
-  return !!(item.contract?.canResend ?? item.invitation?.canResend);
+export function canResendInvitation(item: Pick<StaffMemberListItem, "contract">): boolean {
+  return !!item.contract?.canResend;
 }
 
 /**
