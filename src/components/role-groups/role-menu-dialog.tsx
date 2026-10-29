@@ -212,7 +212,7 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
         <>
           <ServiceTabs services={tree.services} selected={tab} idPrefix={tabsId} onSelect={setTab} />
           <div id={`${tabsId}-panel`} role="tabpanel" aria-labelledby={service ? `${tabsId}-${service.serviceCode}` : undefined} className="h-[420px]">
-            {/* 통째로 잠긴 팝업은 위 띠가 이유를 한 번 말한다 — 줄마다 같은 이유를 되풀이하지 않는다 */}
+            {/* 막힌 이유는 줄마다 적지 않는다(2026-10-29 사용자 지정). 통째로 잠긴 팝업만 위 띠가 이유를 한 번 말한다 */}
             <MenuTable nodes={service?.menus ?? []} values={values} locked={!savable || busy} onChange={setValues} />
           </div>
         </>
@@ -424,8 +424,9 @@ function MenuTable({
                     <td className="px-[10px] text-center text-erp-label">{n.depth}단계</td>
                     {OPS.map((op) => (
                       <td key={op} className="px-[10px] text-center">
-                        {/* 내 권한 밖 칸은 체크박스를 두지 않는다(2026-10-29 사용자 지정) */}
-                        {n[op].blockedReason === "OUT_OF_SCOPE" ? null : box(
+                        {/* 내 권한 밖 칸은 체크박스를 두지 않는다(2026-10-29 사용자 지정). 다만 이미 켜진 칸은 보인다 — 숨기면 저장된 권한이 안 보이고
+                            그 칸 때문에 조회가 잠긴 이유도 알 수 없다(리뷰로 찾음). 묶음 줄은 api 가 아래 잎이 모두 범위 밖일 때만 범위 밖으로 준다 */}
+                        {n[op].blockedReason === "OUT_OF_SCOPE" && !(n.isGroup ? n[op].value : values[n.menuId]?.[op]) ? null : box(
                           `${n.name} ${OP_LABEL[op]}`,
                           n.isGroup ? aggregate(values, n.children, op, n[op].value) : { checked: Boolean(values[n.menuId]?.[op]), disabled: !editableOf(n, op) },
                           (on) => onChange(toggle(values, n, op, on)),

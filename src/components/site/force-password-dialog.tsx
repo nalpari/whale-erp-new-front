@@ -95,7 +95,8 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
             <Remaining
               expiresAt={account.temporaryPasswordExpiresAt}
               onExpire={() =>
-              setNotice({
+              // 변경 완료 안내가 떠 있으면 덮지 않는다 — 바꾼 뒤 시간이 다 되어도 로그아웃시키지 않는다(리뷰로 찾음)
+              setNotice((current) => current ?? {
                 title: "비밀번호 만료",
                 text: (
                   <>

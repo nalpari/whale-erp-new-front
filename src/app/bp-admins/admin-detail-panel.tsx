@@ -90,8 +90,8 @@ function DetailBody({
 
   const can = usePagePermission();
   const { canUpdate, showReset, resetBlocked } = detailButtonsOf(admin.actions, can);
+  // 안내 상자의 「비밀번호 초기화가 필요합니다.」는 그 버튼을 누를 수 있는 사람에게만 — 권한 없음 · 본인 계정은 앞 문장만(리뷰로 찾음)
   const canReset = showReset && !resetBlocked;
-  // 안내 상자의 「[초기화] 버튼으로 …」는 그 버튼을 누를 수 있는 사람에게만 — 권한 없음 · 본인 계정은 앞 문장만(리뷰로 찾음)
   const name = admin.name ?? admin.loginId;
 
   const handleReset = () =>
