@@ -93,7 +93,10 @@ function Logo({ href = "/", onClick }: { href?: string; onClick?: (e: MouseEvent
 function Tip({ label }: { label: string }) {
   return (
     <span className="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">
-      <span className="absolute -top-[5px] left-1/2 size-[8px] -translate-x-1/2 -rotate-45 rounded-tr-[1px] border-t border-r border-erp-brand bg-white" />
+      {/* 꼬리는 SVG 삼각형 — 네모를 45° 돌린 꼬리는 대각선 테두리가 계단처럼 거칠게 보였다(2026-10-29 사용자 지적). 아랫변을 흰색으로 채워 상자 테두리를 그 폭만큼 덮는다. */}
+      <svg aria-hidden width="12" height="7" viewBox="0 0 12 7" className="absolute -top-[6px] left-1/2 -translate-x-1/2 overflow-visible fill-white stroke-erp-brand">
+        <path d="M0.5 6.5 6 1l5.5 5.5" strokeLinejoin="round" />
+      </svg>
       {label}
     </span>
   );

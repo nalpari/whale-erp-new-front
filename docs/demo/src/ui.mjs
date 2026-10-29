@@ -192,8 +192,8 @@ const MOTION = {
   fade: { base: "transition-[opacity,visibility]", closed: "invisible opacity-0 duration-150", innerClosed: "" },
 };
 const TAIL = '<span class="absolute -top-[5px] left-1/2 size-[8px] -translate-x-1/2 -rotate-45 rounded-tr-[1px] border-t border-r border-[#ebebeb] bg-white"></span>';
-// 서비스 바로가기 툴팁 꼬리 — 툴팁과 같은 회청 테두리(global-header.tsx Tip 과 같다, 2026-10-29 사용자 지정).
-const TIP_TAIL = TAIL.replace("border-[#ebebeb]", "border-erp-brand");
+// 서비스 바로가기 툴팁 꼬리 — 툴팁과 같은 회청 테두리. SVG 삼각형이라 대각선이 매끄럽다(global-header.tsx Tip 과 같다, 2026-10-29 사용자 지정).
+const TIP_TAIL = '<svg aria-hidden="true" width="12" height="7" viewBox="0 0 12 7" class="absolute -top-[6px] left-1/2 -translate-x-1/2 overflow-visible fill-white stroke-erp-brand"><path d="M0.5 6.5 6 1l5.5 5.5" stroke-linejoin="round"></path></svg>';
 export const popup = (id, motion, cls, children, tail = false) => {
   const m = MOTION[motion];
   return `<div id="${id}" inert class="absolute top-[calc(100%+8px)] z-20 rounded-[2px] border border-[#ebebeb] bg-white p-[23px] ${EASE_OUT} ${m.base} ${m.closed} ${cls}">${tail ? TAIL : ""}<div class="transition-transform ${EASE_OUT} motion-reduce:transform-none ${m.innerClosed}">${children}</div></div>`;
