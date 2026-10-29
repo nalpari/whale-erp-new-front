@@ -35,6 +35,13 @@ export function checkRetiredDate(value: string, today: string): string | null {
   return null;
 }
 
+/**
+ * 실패를 날짜 칸 아래에 둘 것인가(재영 공지 2026-10-29 「검증 오류는 입력 필드 하단」). api 의 퇴직일 400 은 모두 퇴직일 입력 검증이다 —
+ * 형식 · 없는 날짜(DTO), 3개월 범위, 입사일보다 앞섬(okf/api/staff-retirement.md). 직원 id 는 서버 액션이 먼저 걸러 400 이 아니다.
+ * 권한(403) · 상태 충돌(409) · 결과 모름 · 연결은 확인창 맨 아래에 둔다.
+ */
+export const showsBelowDateField = (failure: { status?: number }) => failure.status === 400;
+
 /** 지난 날짜면 처리하는 그 자리에서 정리된다. 오늘은 아직 일하는 날이라 다음 날 배치가 정리한다. */
 export const isSettledNow = (retiredDate: string, today: string) => retiredDate < today;
 

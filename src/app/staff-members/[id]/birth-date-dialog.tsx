@@ -14,6 +14,7 @@ import {
   ignoresCheck,
   isPendingInput,
   checkBirthDate,
+  showsBelowBirthDateField,
   refreshesAfterCorrection,
 } from "@/lib/birth-date";
 import type { StaffMember } from "@/lib/staff-members";
@@ -65,12 +66,14 @@ function BirthDateDialog({
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // api 가 새 생년월일 입력으로 거절한 400(만 19세 미만 등). 날짜를 고치면 지운다 — 칸 아래 dateNote 자리.
+  const [serverDateError, setServerDateError] = useState<string | null>(null);
   // busy 가 그려지기 전에 들어온 두 번째 클릭을 막는다 — 그대로 두면 두 번째 요청이 「지금과 같습니다」 409 를 남긴다.
   const sending = useRef(false);
 
   const problem = checkBirthDate(date, today, current);
   // 아직 아무것도 치지 않았을 때는 문구를 보이지 않고 버튼만 막는다
-  const dateNote = date === "" ? null : problem;
+  const dateNote = date === "" ? null : (problem ?? serverDateError);
 
   // 날짜가 바뀌면 확인을 풀어 다시 받는다 — 공통 DateField 는 [정정]을 누르는 순간의 blur 로 덜 친 값(1990-05-1)을 맞춰(1990-05-01)
   // 관리자가 보지 못한 날짜가 저장될 수 있다. blur → onChange → 다시 그림이 click 보다 먼저라 버튼이 잠기지만, 그 사이 낡은 클릭이
@@ -108,6 +111,7 @@ function BirthDateDialog({
     }
     setDate(next);
     setError(null);
+    if (next !== date) setServerDateError(null); // DateField 는 값이 같아도 blur 때 onChange 를 부른다
   };
   const checkClicked = (checked: boolean) => {
     const ignored = ignoresCheck(inputPending(), pointerDownAt.current, dateChangedAt.current);
@@ -130,6 +134,7 @@ function BirthDateDialog({
     sending.current = true;
     setBusy(true);
     setError(null);
+    setServerDateError(null);
     // try 는 서버 액션 호출만 감싼다 — 결과를 받은 뒤의 처리가 던진 것을 「결과 모름」으로 잘못 알리지 않게.
     let result: ActionResult;
     try {
@@ -146,6 +151,11 @@ function BirthDateDialog({
       toast("생년월일을 정정했습니다.");
       onClose();
       router.refresh();
+      return;
+    }
+    // 생년월일 입력 검증 400 은 날짜 칸 아래에 둔다
+    if (showsBelowBirthDateField(result)) {
+      setServerDateError(result.message);
       return;
     }
     // 403 · 결과 모름(5xx · 연결)은 다른 확인창과 같다 — 강제 비밀번호 변경이면 팝업, 권한 없음이면 알리고 이전 화면으로, 결과 모름이면 화면을 새로 받는다.
