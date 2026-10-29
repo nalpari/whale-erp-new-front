@@ -64,7 +64,7 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
           then: () => void signOut(logout),
         });
       } else {
-        const message = r.message ?? "비밀번호를 변경하지 못했습니다";
+        const message = r.message ?? "비밀번호를 변경하지 못했습니다.";
         setError({ at: r.status === 400 && message.includes("약관") ? "terms" : "password", message });
       }
     });

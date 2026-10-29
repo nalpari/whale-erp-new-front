@@ -18,7 +18,7 @@ const LoadGroupContext = createContext<Ctx | null>(null);
  * 큰 자리(화면 · 묶음 전체 · 처리중 덮개)에만 쓴다 — 작은 영역에는 고래 로딩을 쓰지 않는다. 그림은 aria-hidden, 문구가 role="status" 로 읽힌다.
  * 받으면 바로 걷는다(최소 표시 시간 없음). 움직임을 줄인 설정이면 고래는 점프 없이 떠 있고 파도만 천천히 움직인다.
  */
-export function LoadingNotice({ text = "로딩중입니다" }: { text?: string }) {
+export function LoadingNotice({ text = "로딩중입니다." }: { text?: string }) {
   return (
     <div
       role="status"
@@ -39,7 +39,7 @@ function Probe({ onMount }: { onMount: () => void }) {
 }
 
 /**
- * @param fallback 묶여 있는 동안 children 자리에 보일 것. 기본은 LoadingNotice(고래 파도 그림 + 「로딩중입니다」, 스켈레톤은 아직 없다)
+ * @param fallback 묶여 있는 동안 children 자리에 보일 것. 기본은 LoadingNotice(고래 파도 그림 + 「로딩중입니다.」, 스켈레톤은 아직 없다)
  * @param timeoutMs 이 시간이 지나면 남은 로더가 있어도 푼다
  */
 export function LoadGroup({
