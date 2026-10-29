@@ -583,29 +583,32 @@ export function AdminFormPanel(props: Props) {
         {/* 상세와 같은 「대상점포」(2026-10-27 사용자 지정) */}
         <FormGroup title="대상점포">
           {/* 「전체 점포」가 막힌 이유를 라벨 옆에 둔다(2026-10-27 사용자 지정 문구 · 자리). 공통코드 이름은 띄어 쓰지 않아(가맹마스터) 문구를 적어 둔다 */}
-          <HintedField
-            label="범위"
-            required={!locks.scope}
-            hint={form.roleTypeCode === "FM" || form.roleTypeCode === "FA" ? `${form.roleTypeCode === "FM" ? "가맹마스터" : "가맹관리자"}는 '일부 점포'만 선택할 수 있습니다.` : undefined}
-          >
-            <Select
-              value={form.isAllStores ? "ALL" : "PART"}
-              onChange={(e) => {
-                set("isAllStores", e.target.value === "ALL");
-                clearError("stores");
-              }}
-              disabled={locks.scope || !allowsAllStores(form.roleTypeCode)}
-              aria-required={!locks.scope}
-              title={
-                locks.scope && mode === "edit" && props.admin.isAllStores
-                  ? "관리 범위가 일부 점포인 사용자는 전체 점포 계정의 범위를 바꿀 수 없습니다"
-                  : undefined
-              }
+          {/* 점포를 고칠 수 없는 계정(본인 · 관리 범위 밖)은 범위 칸을 두지 않고 맡은 점포만 글로 보인다(2026-10-29 사용자 지정) */}
+          {!locks.stores && (
+            <HintedField
+              label="범위"
+              required={!locks.scope}
+              hint={form.roleTypeCode === "FM" || form.roleTypeCode === "FA" ? `${form.roleTypeCode === "FM" ? "가맹마스터" : "가맹관리자"}는 '일부 점포'만 선택할 수 있습니다.` : undefined}
             >
-              <option value="ALL">전체 점포</option>
-              <option value="PART">일부 점포</option>
-            </Select>
-          </HintedField>
+              <Select
+                value={form.isAllStores ? "ALL" : "PART"}
+                onChange={(e) => {
+                  set("isAllStores", e.target.value === "ALL");
+                  clearError("stores");
+                }}
+                disabled={locks.scope || !allowsAllStores(form.roleTypeCode)}
+                aria-required={!locks.scope}
+                title={
+                  locks.scope && mode === "edit" && props.admin.isAllStores
+                    ? "관리 범위가 일부 점포인 사용자는 전체 점포 계정의 범위를 바꿀 수 없습니다"
+                    : undefined
+                }
+              >
+                <option value="ALL">전체 점포</option>
+                <option value="PART">일부 점포</option>
+              </Select>
+            </HintedField>
+          )}
           {!form.isAllStores && !locks.stores && (
             <div className="flex flex-col gap-[8px]">
               {optionsFailure && (
@@ -631,9 +634,9 @@ export function AdminFormPanel(props: Props) {
               {message("stores")}
             </div>
           )}
-          {!form.isAllStores && locks.stores && mode === "edit" && (
+          {locks.stores && mode === "edit" && (
             <p className="text-[14px] text-erp-label">
-              {props.admin.stores.map((s) => s.name).join(", ") || "매핑된 점포가 없습니다."}
+              {props.admin.isAllStores ? "전체 점포" : props.admin.stores.map((s) => s.name).join(", ") || "매핑된 점포가 없습니다."}
             </p>
           )}
           {outOfScope.length > 0 && !locks.stores && (
