@@ -391,6 +391,9 @@
   .top-\[calc\(50\%\+9px\)\] {
     top: calc(50% + 9px);
   }
+  .top-\[calc\(50\%\+26px\)\] {
+    top: calc(50% + 26px);
+  }
   .top-\[calc\(100\%\+4px\)\] {
     top: calc(100% + 4px);
   }
