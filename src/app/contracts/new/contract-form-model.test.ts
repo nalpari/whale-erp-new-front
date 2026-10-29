@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   ageOn,
+  fieldProblems,
+  problemsByField,
+  shownProblems,
   DEFAULT_ANNUAL_LEAVE_TERMS,
   DEFAULT_SEVERANCE_PAY_TERMS,
   formatHours,
@@ -26,7 +29,6 @@ import {
   paperFileTypesOf,
   partTimePay,
   probationWage,
-  problems,
   renewalStartProblem,
   signedOverlapOf,
   toBody,
@@ -34,7 +36,11 @@ import {
   weeklyHours,
   type ContractDetail,
   type ContractForm,
+  type ProblemField,
 } from "./contract-form-model.ts";
+
+/** 문장만 — 칸 매핑은 problemsByField 테스트가 본다 */
+const problems = (...a: Parameters<typeof fieldProblems>) => fieldProblems(...a).map((p) => p.message);
 
 const filled = (over: Partial<ContractForm> = {}): ContractForm => ({
   ...initialForm("11"),
@@ -450,4 +456,43 @@ test("바로잡기 뒤 다시 물을 때 바로잡기 문구는 체결 완료가
   // 다시 물을 때의 판정 그대로 — 진행 중 목록만이면 바로잡기가 빠진다
   assert.equal(replaceConfirmBody(corrected, [c(7, "DRAFT")], stillCorrecting(corrected, [c(7, "DRAFT")])).correctSignedContracts, undefined);
   assert.equal(corrected.correctSignedContracts, true); // 원래 본문은 그대로
+});
+
+// 저장 때 찾은 오류는 그 칸 아래에 보인다(WHALEERP-631, 2026-10-29 재영 공지 1번) — 문장마다 붙을 칸
+test("유효성 오류는 칸과 함께 — 화면이 그 칸 아래에 보인다", () => {
+  assert.deepEqual(fieldProblems(filled()), []);
+  const by = problemsByField(fieldProblems(filled({ name: "", birthDate: "2010-01-01", endDate: "2026-09-13", payDay: "40", wage: "" })));
+  assert.deepEqual(by.name, ["이름을 입력하세요"]);
+  assert.deepEqual(by.birthDate, ["만 19세 미만 직원은 등록할 수 없습니다"]);
+  assert.deepEqual(by.endDate, ["계약 종료일은 시작일보다 앞설 수 없습니다"]);
+  assert.deepEqual(by.payDay, ["임금지급일은 1~31입니다"]);
+  assert.deepEqual(by.wage, ["시급을 입력하세요"]);
+  // 근무 · 휴게 시간은 따로, 파트타이머 요일별 시간은 표 아래
+  const rest: Partial<ContractForm> = { rest: { start: { hour: "08", minute: "00" }, end: { hour: "09", minute: "00" } } };
+  assert.deepEqual(problemsByField(fieldProblems(filled(rest))).rest, ["휴게시간은 근무시간 안이어야 합니다"]);
+  assert.equal(problemsByField(fieldProblems(filled(rest))).work, undefined);
+  // 종이 계약 날인본 · 재계약 시작일
+  assert.deepEqual(problemsByField(fieldProblems(filled({ contractMethod: "PAPER" }))).employmentFile, ["당사자가 모두 날인한 근로계약서 파일을 올려 주세요"]);
+  assert.ok(problemsByField(fieldProblems(filled({ startDate: "2026-11-01" }), false, false, "2026-11-01")).startDate?.length);
+});
+
+test("한 칸에 오류가 여럿이면 모두 — 파트타이머 요일 시간은 표 아래, 수습은 세 칸에 나눠", () => {
+  // 파트타이머가 표에서 고친 요일의 근무 · 휴게 오류는 둘 다 소정근로시간 표(schedule) 아래
+  const bad = { work: { start: { hour: "15", minute: "00" }, end: { hour: "09", minute: "00" } }, rest: { start: { hour: "12", minute: "00" }, end: { hour: "13", minute: "00" } } } as const;
+  const part = filled({ employmentType: "PART_TIME", days: ["MON"], dayTimes: { MON: bad } });
+  assert.deepEqual(problemsByField(fieldProblems(part)).schedule, ["월요일 근무시간은 끝이 시작보다 뒤여야 합니다", "월요일 휴게시간은 근무시간 안이어야 합니다"]);
+  // 정직원 수습 — 기간 · 감액률 · 수습 중 시급이 각자 칸
+  const by = problemsByField(fieldProblems(filled({ employmentType: "FULL_TIME", probation: true, probationRate: "11", endDate: "2027-03-13" })));
+  assert.deepEqual(by.probationMonths, ["수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다"]);
+  assert.deepEqual(by.probationRate, ["수습 임금 감액률은 0~10% 정수로 입력하세요"]);
+  // 시급 10,000원 × (1 − 10%) = 9,000원 — 최저임금의 90% 아래
+  const low = problemsByField(fieldProblems(filled({ employmentType: "FULL_TIME", wage: "10,000", probation: true, probationRate: "10" })));
+  assert.equal(low.probationWage?.length, 1);
+  assert.equal(low.probationRate, undefined);
+});
+
+test("저장을 누른 때 오류가 난 칸만 보인다 — 고쳐지면 빠지고, 저장 뒤 새로 생긴 칸 오류는 다음 저장 때", () => {
+  const shown = new Set<ProblemField>(["name", "phone"]);
+  assert.deepEqual(shownProblems({ name: ["이름을 입력하세요"], jobTitle: ["직무를 입력하세요"] }, shown), { name: ["이름을 입력하세요"] });
+  assert.deepEqual(shownProblems({}, shown), {});
 });
