@@ -30,8 +30,8 @@ export async function login(_prev: LoginFormState, formData: FormData): Promise<
   const loginId = String(formData.get("loginId") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   // 폼이 먼저 막는다(login-form.tsx). 스크립트 없이 낸 요청만 여기 온다.
-  if (!loginId) return { error: "아이디를 입력해주세요." };
-  if (!password) return { error: "비밀번호를 입력해주세요." };
+  if (!loginId) return { error: "아이디를 입력해 주세요." };
+  if (!password) return { error: "비밀번호를 입력해 주세요." };
 
   const jar = await cookies();
   const deviceId = deviceIdOf(jar.get(DEVICE_COOKIE)?.value);

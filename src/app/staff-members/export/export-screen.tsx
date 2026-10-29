@@ -38,7 +38,7 @@ export function ExportScreen() {
   if (!canBulkExport(roleTypeCode))
     return (
       <div className="p-[24px]">
-        <NoticeBand tone="info" title="일괄 저장은 BP 마스터와 가맹마스터만 쓸 수 있습니다" />
+        <NoticeBand tone="info" title="일괄 저장은 BP 마스터와 가맹마스터만 쓸 수 있습니다." />
       </div>
     );
   return <ExportBody />;
@@ -90,8 +90,8 @@ function ExportBody() {
   const [error, setError] = useState("");
   // 요청이 만들어졌을 수 있으면(성공 · 결과 모름) 이 횟수 이후에 받은 미리 보기 · 지난 요청으로만 요청 버튼을 다시 켠다
   const [freshFrom, setFreshFrom] = useState(0);
-  const request = useAction(requestBulkExport, { text: "요청중입니다" });
-  const fetchLink = useAction(getBulkExportLink, { text: "파일을 준비하는 중입니다" });
+  const request = useAction(requestBulkExport, { text: "요청중입니다." });
+  const fetchLink = useAction(getBulkExportLink, { text: "파일을 준비하는 중입니다." });
 
   const toLogin = () => router.replace(loginPathOf(location.pathname));
   // 세션이 끝났으면 로그인한 뒤 이 화면으로 돌아오게 한다. 그 밖에는 영역 안에 보일 문장
@@ -101,7 +101,7 @@ function ExportBody() {
       return null;
     }
     console.error(`직원 자료 일괄 저장 ${what} 조회 실패`, e);
-    return e instanceof BffError ? e.message : "잠시 뒤 다시 불러와 주세요";
+    return e instanceof BffError ? e.message : "잠시 뒤 다시 불러와 주세요.";
   });
 
   useEffect(() => {
@@ -281,7 +281,7 @@ function ExportBody() {
           </Card>
           <NoticeBand
             tone="info"
-            title="내려받은 파일의 보관 책임은 BP 에 있습니다"
+            title="내려받은 파일의 보관 책임은 BP 에 있습니다."
             detail="직원의 이름 · 휴대전화번호 · 급여가 담긴 파일입니다. 잠긴 곳에 두고, 쓸 일이 끝나면 지워 주세요."
           />
         </div>

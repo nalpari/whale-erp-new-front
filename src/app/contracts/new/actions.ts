@@ -23,7 +23,7 @@ export async function createContract(body: CreateContractBody, back?: string): P
 
 /** 임시저장 이어 쓰기. 임시저장이 아니게 된 계약이면 api 가 409 로 돌려준다 */
 export async function updateContract(contractId: number, body: CreateContractBody, back?: string): Promise<SaveResult> {
-  if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다" };
+  if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다." };
   return save(`/contracts/${contractId}`, "PUT", body, contractId, back);
 }
 
@@ -39,14 +39,14 @@ function unknownOutcome(contractId: number | null, back: string | undefined): Sa
 /** back 은 화면이 넘긴 목록 주소다 — 서버 액션은 누구나 부를 수 있어 withBack · listAfterSave 가 backHrefOf 로 다시 거른다 */
 async function save(path: string, method: "POST" | "PUT", body: CreateContractBody, contractId: number | null, back: string | undefined): Promise<SaveResult> {
   const headers = await authHeaders();
-  if (!headers.Authorization) return { error: "로그인이 필요합니다" };
+  if (!headers.Authorization) return { error: "로그인이 필요합니다." };
   let saved: SavedContract | null = null;
   try {
     saved = await send<SavedContract>(path, method, body);
   } catch (e) {
     if (e instanceof ApiError) {
       const failure = saveFailureOf(e, { feature: "근로계약", contractId });
-      if (failure.kind === "login") return { error: "로그인이 필요합니다" };
+      if (failure.kind === "login") return { error: "로그인이 필요합니다." };
       // 저장은 됐다 — 성공과 같이 새 계약이면 점포 조건을 「전체」로 비운 목록을 넘긴다(#109 리뷰)
       if (failure.kind === "sendFailed") redirect(withBack(failure.target, listAfterSave(back, contractId === null ? null : body.storeId)));
       if (failure.kind === "unknown") return unknownOutcome(contractId, back);

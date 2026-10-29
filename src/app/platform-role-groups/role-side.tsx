@@ -143,7 +143,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
         actions={DELETE_ACTIONS}
         // 두 줄로 보인다(줄바꿈은 확인창이 살린다) — 2026-10-26 사용자 지정
         noCandidateText={"대체 권한이 없어 삭제할 수 없습니다.\n플랫폼관리자 권한을 추가한 후 다시 시도해 주세요."}
-        blockedReason={role.deleteBlockedReason && reasonLabel(lockReasons, role.deleteBlockedReason, "지울 수 없는 권한입니다")} onDeleted={onDeleted} />
+        blockedReason={role.deleteBlockedReason && reasonLabel(lockReasons, role.deleteBlockedReason, "지울 수 없는 권한입니다.")} onDeleted={onDeleted} />
     ) : null;
 
   if (!editable)
@@ -162,7 +162,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
                 ? "선택한 권한그룹에 대한 수정 권한이 없습니다."
                 : role.editBlockedReason === "FIXED_ROLE"
                   ? "시스템이 제공하는 기본권한 그룹은 수정할 수 없습니다."
-                  : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한입니다")}
+                  : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한입니다.")}
           </WarnBand>
         )}
         {rows.length > 0 && <DetailTable rows={rows} />}

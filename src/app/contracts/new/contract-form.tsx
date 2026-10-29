@@ -410,7 +410,7 @@ export function ContractForm({
         }
         result = (res.body ?? { error: `요청이 실패했습니다 (HTTP ${res.status})` }) as typeof result;
       } catch {
-        result = { error: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요" };
+        result = { error: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
       }
       if (result.ok) {
         // 저장 뒤 안내는 서버 액션과 같이 저장 응답으로 고른다(종이 계약 등록이면 체결 완료 — 쿠키 SAVED_COOKIE, WHALEERP-132)
@@ -537,7 +537,7 @@ export function ContractForm({
       </div>
 
       <div className="flex flex-col gap-[24px]">
-        {!signedIn && <Band risk title="로그인이 필요합니다" desc="관리자 로그인이 생기면 근무지를 고르고 저장할 수 있습니다." />}
+        {!signedIn && <Band risk title="로그인이 필요합니다." desc="관리자 로그인이 생기면 근무지를 고르고 저장할 수 있습니다." />}
 
         <FormGroup title="직원 정보">
           <FormRow>
@@ -559,11 +559,11 @@ export function ContractForm({
             </Item>
           </FormRow>
           <FormRow>
-            <Item label="생년월일" required help="계약 시작일 기준 만 19세 미만이면 저장할 수 없다" errors={errs.birthDate}>
+            <Item label="생년월일" required help="계약 시작일 기준 만 19세 미만이면 저장할 수 없다." errors={errs.birthDate}>
               {() => <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />}
             </Item>
             {/* 성별 · 외국인 여부 — 직원이 가입하며 넣는 값과 이름 · 번호 · 생년월일과 함께 대조해 본인만 날인한다(WHALEERP-125) */}
-            <Group label="성별" required help="가입 값과 대조해 본인만 날인한다" errors={errs.gender}>
+            <Group label="성별" required help="가입 값과 대조해 본인만 날인한다." errors={errs.gender}>
               <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
                 {GENDERS.map((v) => (
                   <Radio key={v} name="gender" label={labelOf(labels.gender, v)} checked={form.gender === v} onChange={() => set("gender", v)} />
@@ -605,7 +605,7 @@ export function ContractForm({
           </Group>
           <Group
             label="계약 방식"
-            help={paper ? "당사자가 모두 날인한 근로계약서를 올려 등록하면 발송 · 날인 없이 체결 완료로 저장된다" : "초안 저장하면 곧바로 직원에게 보내고, 직원이 앱에서 날인한다"}
+            help={paper ? "당사자가 모두 날인한 근로계약서를 올려 등록하면 발송 · 날인 없이 체결 완료로 저장된다." : "초안 저장하면 곧바로 직원에게 보내고, 직원이 앱에서 날인한다."}
           >
             <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
               {(["ELECTRONIC", "PAPER"] as const).map((v) => (
@@ -626,7 +626,7 @@ export function ContractForm({
               <Item label="근로계약서" required help={`당사자가 모두 날인한 파일. ${paperTypes.join(" · ")}, 10MB까지`}>
                 {(id) => <PaperFile id={id} label="근로계약서" file={files.employment} error={fileErrors.employment ?? errs.employmentFile?.[0]} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("employment", f)} />}
               </Item>
-              <Item label="임금계약서" help="임금 약정을 따로 날인한 경우. 없으면 비워 둔다">
+              <Item label="임금계약서" help="임금 약정을 따로 날인한 경우. 없으면 비워 둔다.">
                 {(id) => <PaperFile id={id} label="임금계약서" file={files.wage} error={fileErrors.wage} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("wage", f)} />}
               </Item>
             </FormRow>
@@ -766,7 +766,7 @@ export function ContractForm({
             <Item
               label="주휴일"
               required={holiday !== null}
-              help="특정 요일로 정해 계약서 휴일 조항에 적는다. 근무하는 요일은 고를 수 없고, 주 15시간 미만이면 주휴가 없다"
+              help="특정 요일로 정해 계약서 휴일 조항에 적는다. 근무하는 요일은 고를 수 없고, 주 15시간 미만이면 주휴가 없다."
               errors={errs.weeklyHoliday}
             >
               {(id) =>
@@ -786,7 +786,7 @@ export function ContractForm({
                 )
               }
             </Item>
-            <Group label="임금지급일" help="31 을 넣으면 말일로 본다" errors={errs.payDay}>
+            <Group label="임금지급일" help="31 을 넣으면 말일로 본다." errors={errs.payDay}>
               <span className="flex gap-[6px]">
                 <span className="w-[100px] shrink-0">
                   <Select aria-label="임금지급 월" value={form.payMonth} onChange={(e) => set("payMonth", e.target.value as Form["payMonth"])}>
@@ -800,7 +800,7 @@ export function ContractForm({
                 <TextField aria-label="임금지급일 날짜" value={form.payDay} inputMode="numeric" maxLength={2} onChange={(e) => set("payDay", e.target.value.replace(/\D/g, ""))} />
               </span>
             </Group>
-            <Item label="근무 장소" help="계약서 근무 장소 조항에 들어간다. 근무지 점포와 따로 적는다">
+            <Item label="근무 장소" help="계약서 근무 장소 조항에 들어간다. 근무지 점포와 따로 적는다.">
               {(id) => (
                 <TextField id={id} value={form.workLocation} maxLength={200} placeholder="예: 서울 성동구 연무장길 18, 1층" onChange={(e) => set("workLocation", e.target.value)} />
               )}
@@ -810,10 +810,10 @@ export function ContractForm({
 
         <FormGroup title="계약서 조항">
           <FormRow>
-            <Item label="연차휴가" help="계약서 연차휴가 조항에 그대로 들어간다">
+            <Item label="연차휴가" help="계약서 연차휴가 조항에 그대로 들어간다.">
               {(id) => <Textarea id={id} rows={2} maxLength={1000} value={form.annualLeaveTerms} onChange={(e) => set("annualLeaveTerms", e.target.value)} />}
             </Item>
-            <Item label="퇴직금" help="계약서 퇴직금 조항에 그대로 들어간다">
+            <Item label="퇴직금" help="계약서 퇴직금 조항에 그대로 들어간다.">
               {(id) => <Textarea id={id} rows={2} maxLength={1000} value={form.severancePayTerms} onChange={(e) => set("severancePayTerms", e.target.value)} />}
             </Item>
           </FormRow>
@@ -831,7 +831,7 @@ export function ContractForm({
             </Group>
             {form.probation && (
               <FormRow>
-                <Item label="수습 기간" required help="최대 3개월. 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있다" errors={errs.probationMonths}>
+                <Item label="수습 기간" required help="최대 3개월. 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있다." errors={errs.probationMonths}>
                   {(id) => (
                     <Select id={id} value={form.probationMonths} onChange={(e) => set("probationMonths", e.target.value as Form["probationMonths"])}>
                       {(["1", "2", "3"] as const).map((m) => (
@@ -851,7 +851,7 @@ export function ContractForm({
                 </Item>
                 <Item
                   label="수습 중 시급"
-                  help={`시급 × (1 − 감액률). 최저임금의 90%(${PROBATION_WAGE_FLOOR.toLocaleString("ko-KR")}원) 이상이어야 한다`}
+                  help={`시급 × (1 − 감액률). 최저임금의 90%(${PROBATION_WAGE_FLOOR.toLocaleString("ko-KR")}원) 이상이어야 한다.`}
                   errors={errs.probationWage}
                 >
                   {(id) => <TextField id={id} readOnly value={won(probationWage(form))} />}
@@ -876,13 +876,13 @@ export function ContractForm({
 
         <Band
           risk={minor}
-          title="만 19세 미만 직원은 등록할 수 없습니다"
+          title="만 19세 미만 직원은 등록할 수 없습니다."
           desc="근로계약·출퇴근·급여는 점포에서 따로 관리해 주세요. 계약 시작일 기준으로 따지며, 만 19세 미만이면 저장이 막히고 초대도 나가지 않습니다."
         />
         {/* 화면이 막은 유효성 오류는 칸 아래에 보이고, 여기는 api 가 막은 것(특정 칸에 붙일 수 없는 것)만이다(WHALEERP-631) */}
         {serverError && (
           <div ref={failureRef}>
-            <Band risk title="저장하지 못했습니다" desc={serverError} />
+            <Band risk title="저장하지 못했습니다." desc={serverError} />
           </div>
         )}
         <div className="flex items-center gap-[6px]">

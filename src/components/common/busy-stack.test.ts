@@ -4,21 +4,21 @@ import { test } from "node:test";
 import { busyTextOf, createBusyStore, currentBusyText, pushBusy, removeBusy, wrapAction, type BusyEntry } from "./busy-stack.ts";
 
 test("kind 는 정해진 문구, text 는 그 문구, 없으면 처리중입니다", () => {
-  assert.equal(busyTextOf({ kind: "create" }), "등록중입니다");
-  assert.equal(busyTextOf({ kind: "update" }), "수정중입니다");
-  assert.equal(busyTextOf({ kind: "delete" }), "삭제중입니다");
-  assert.equal(busyTextOf({ text: "발송중입니다" }), "발송중입니다");
-  assert.equal(busyTextOf(), "처리중입니다");
+  assert.equal(busyTextOf({ kind: "create" }), "등록중입니다.");
+  assert.equal(busyTextOf({ kind: "update" }), "수정중입니다.");
+  assert.equal(busyTextOf({ kind: "delete" }), "삭제중입니다.");
+  assert.equal(busyTextOf({ text: "발송중입니다." }), "발송중입니다.");
+  assert.equal(busyTextOf(), "처리중입니다.");
 });
 
 test("요청이 겹치면 마지막 것이 끝날 때 내려간다", () => {
   let s: BusyEntry[] = [];
   assert.equal(currentBusyText(s), null);
-  s = pushBusy(s, { id: 1, text: "등록중입니다" });
-  s = pushBusy(s, { id: 2, text: "수정중입니다" });
-  assert.equal(currentBusyText(s), "수정중입니다");
+  s = pushBusy(s, { id: 1, text: "등록중입니다." });
+  s = pushBusy(s, { id: 2, text: "수정중입니다." });
+  assert.equal(currentBusyText(s), "수정중입니다.");
   s = removeBusy(s, 2);
-  assert.equal(currentBusyText(s), "등록중입니다");
+  assert.equal(currentBusyText(s), "등록중입니다.");
   s = removeBusy(s, 1);
   assert.equal(currentBusyText(s), null);
 });
@@ -66,12 +66,12 @@ test("저장소 — 바뀔 때만 listener 를 부르고, 비면 text 는 null",
 test("wrapAction — 결과를 그대로 돌려주고 end 를 부른다", async () => {
   const store = createBusyStore();
   let during: string | null = null;
-  const run = wrapAction(store.begin, "등록중입니다", async (n: number) => {
+  const run = wrapAction(store.begin, "등록중입니다.", async (n: number) => {
     during = store.text();
     return n * 2;
   });
   assert.equal(await run(21), 42);
-  assert.equal(during, "등록중입니다");
+  assert.equal(during, "등록중입니다.");
   assert.equal(store.text(), null);
 });
 

@@ -26,7 +26,7 @@ export function NoMenuNotice() {
       </span>
       <div className="flex flex-col gap-[10px]">
         <h2 id="no-menu-title" className="text-[18px] font-semibold text-erp-ink">
-          접근할 수 있는 메뉴가 없습니다
+          접근할 수 있는 메뉴가 없습니다.
         </h2>
         {/* 한 줄로 둔다(사용자 지정, 2026-10-28) — 계정 정보 상자 폭(420px)보다 넓어 가운데로 양쪽에 넘친다. */}
         <p className="text-[14px] leading-[1.6] whitespace-nowrap text-erp-label">

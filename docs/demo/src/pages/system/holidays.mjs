@@ -68,7 +68,7 @@ export default ({ A, R }) => {
     name,
     memo || '<span class="text-erp-muted">—</span>',
   ]);
-  const list = ui.sectionHead(`2026년${sub(`공식 휴일 ${HOLIDAYS.length}일`)}`, '<span class="text-[14px] text-erp-label">목록은 고른 연도 한 해를 보여 줍니다</span>') + ui.dataTable(cols, rows);
+  const list = ui.sectionHead(`2026년${sub(`공식 휴일 ${HOLIDAYS.length}일`)}`, '<span class="text-[14px] text-erp-label">목록은 고른 연도 한 해를 보여 줍니다.</span>') + ui.dataTable(cols, rows);
 
   const sep = HOLIDAYS.filter((h) => h[0].startsWith("2026-09")).length;
   const cal =

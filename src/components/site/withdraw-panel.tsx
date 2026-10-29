@@ -266,7 +266,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
           ) : (
             <>
               <div className="flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[14px] text-[14px] leading-[1.6]">
-                <p className="font-semibold text-[#e93737]">탈퇴 전 꼭 확인해 주세요</p>
+                <p className="font-semibold text-[#e93737]">탈퇴 전 꼭 확인해 주세요.</p>
                 {withdrawWarningText(eligibility).map((block, i) => (
                   <WarningBlock key={i} block={block} />
                 ))}

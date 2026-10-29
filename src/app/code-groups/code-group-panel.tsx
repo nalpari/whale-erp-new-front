@@ -286,7 +286,7 @@ export function CodeGroupPanel({
       // 플랫폼제공 그룹만 [BP 적용]. 이미 적용한 그룹도 다시 누를 수 있다(BP 에 없는 코드만 들어간다). 새 그룹은 저장 뒤에 적용한다.
       cell: (d) =>
         !d.added && d.manageOwnerCode === "PLATFORM_PROVIDED" && manage ? (
-          <Blocked reason={applyBlocked ? "저장한 뒤 적용할 수 있습니다" : undefined}>
+          <Blocked reason={applyBlocked ? "저장한 뒤 적용할 수 있습니다." : undefined}>
             <Button variant="soft" onClick={() => setApplyTarget(d)} disabled={applyBlocked || saving || applying}>
               BP 적용
             </Button>
