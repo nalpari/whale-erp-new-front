@@ -130,13 +130,15 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
           </>
         ) : (
           <>
-            <div className="h-[506px] overflow-y-auto">
+            {/* 열 이름 줄은 고정하고 그 아래 줄만 스크롤(DataTable scroll, 2026-10-29 사용자 지정) */}
+            <div className="flex h-[506px] flex-col">
               <DataTable
                 columns={columns}
                 rows={result.items}
                 rowKey={(r) => r.bpCodeId}
                 rowState={(r) => (r.bpCodeId === picked?.bpCodeId ? "selected" : undefined)}
                 rowProps={(r) => ({ onClick: () => setPicked(r) })}
+                scroll
               />
             </div>
             <Pagination page={query.page} totalPages={totalPages} maxPages={5} onPageChange={(page) => {
