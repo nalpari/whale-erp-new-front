@@ -4,7 +4,7 @@ import { PAYSLIP_STATUSES } from "@/lib/payslips";
 import { getPayslips } from "@/lib/payslips-api";
 import { kstToday } from "@/lib/staff-members";
 import { PayslipFilter } from "./payslip-filter";
-import { PayslipListActions } from "./payslip-list-actions";
+import { PayslipCreateAction, PayslipListActions } from "./payslip-list-actions";
 import { PayslipMonthNav, PayslipPageSize, PayslipPagination } from "./payslip-list-controls";
 import { parsePayslipListQuery, toPayslipListSearch } from "./payslip-list-query";
 import { PayslipTable } from "./payslip-table";
@@ -29,7 +29,9 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
 
   return (
     <>
-      <PageBar title="급여명세서 관리" />
+      <PageBar title="급여명세서 관리">
+        <PayslipCreateAction month={query.month} employmentTypeLabels={employmentTypeLabels} />
+      </PageBar>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         <PayslipFilter query={query} today={today} statusLabels={statusLabels} />
         <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
@@ -49,7 +51,7 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
             <Tag>검토 대기 {reviewPendingCount}</Tag>
           </p>
           <ListToolbar total={total}>
-            <PayslipListActions query={query} confirmedCount={statusCounts.CONFIRMED} employmentTypeLabels={employmentTypeLabels} />
+            <PayslipListActions query={query} confirmedCount={statusCounts.CONFIRMED} />
             <PayslipPageSize query={query} />
           </ListToolbar>
           <PayslipTable

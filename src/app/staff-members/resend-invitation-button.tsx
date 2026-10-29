@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { Button, ConfirmDialog, useToast } from "@/components/common";
 import { useMenuRole } from "@/components/site/session-gate";
 import { MENU_CODE } from "@/lib/menus";
-import { sendContract, type SendContractResult } from "../contracts/[contractId]/actions";
+import { sendContract, type ContractStatus, type SendContractResult } from "../contracts/[contractId]/actions";
 import { inviteResendCopy, SEND_UNKNOWN, sendFailureOf } from "../contracts/[contractId]/send-model";
 
 // 직원 목록 · 상세의 가입 초대 재발송(WHALEERP-138). 보일지는 canResendInvitation(staff-row.ts)이 정하고, api 는 근로계약 재발송
@@ -22,7 +22,7 @@ import { inviteResendCopy, SEND_UNKNOWN, sendFailureOf } from "../contracts/[con
 /** 목록 · 상세에서 접수 여부를 모를 때의 문장. SEND_UNKNOWN 은 근로계약 상세용(「상세를 다시 읽었으니」)이라 바꿔 쓴다 */
 const RESEND_UNKNOWN = "발송됐는지 알 수 없습니다. 화면을 다시 읽었으니 직원에게 받았는지 확인해 주세요 — 다시 보내려면 화면을 새로 고친 뒤 보내 주세요";
 
-export function ResendInvitationButton({ contractId, name }: { contractId: number; name: string | null }) {
+export function ResendInvitationButton({ contractId, name, status, lastSentAt }: { contractId: number; name: string | null; status: ContractStatus | null; lastSentAt: string | null }) {
   const router = useRouter();
   const toast = useToast();
   const allowed = useMenuRole(MENU_CODE.contracts, "update");
@@ -56,7 +56,7 @@ export function ResendInvitationButton({ contractId, name }: { contractId: numbe
           start(async () => {
             let result: SendContractResult;
             try {
-              result = await sendContract(contractId);
+              result = await sendContract(contractId, { status, sentAt: lastSentAt });
             } catch {
               // 서버 액션 호출 자체가 끊겼다 — api 는 이미 보냈을 수 있어 「모름」으로 다룬다(send-button.tsx 와 같다)
               result = sendFailureOf(null, undefined, "");

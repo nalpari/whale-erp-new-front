@@ -410,7 +410,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * MY PAGE 내 정보 (S-JXKHCM). 플랫폼 · BP 여섯 역할 모두 쓴다. AllowPasswordChangePending 을
+         * 마이페이지 내 정보 (S-JXKHCM). 플랫폼 · BP 여섯 역할 모두 쓴다. AllowPasswordChangePending 을
          *     달지 않는다 — 강제 비밀번호 변경 대상이면 이 경로도 403 이다(위 changeRequiredPassword 주석과 같다).
          */
         get: operations["AdminAuthController_getProfile"];
@@ -440,12 +440,33 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 내 비밀번호 변경(MY PAGE, 1팀 S-PTWREE). 현재 비밀번호를 확인한 뒤 새 비밀번호로 바꾼다. 강제 비밀번호
+         * 내 비밀번호 변경(마이페이지, 1팀 S-PTWREE). 현재 비밀번호를 확인한 뒤 새 비밀번호로 바꾼다. 강제 비밀번호
          *     변경(POST password-change)과 달리 로그인한 상태에서 스스로 비밀번호를 아는 채로 바꾸는 것이라
          *     AllowPasswordChangePending 을 달지 않는다 — 강제 변경 대상이면 이 경로도 403 이다(updateProfile 과
          *     같다). 바꿔도 이 기기 · 다른 기기의 로그인은 모두 이어진다(서비스 주석 참고).
          */
         post: operations["AdminAuthController_changeMyPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/me/password-verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 현재 비밀번호 확인(마이페이지 회원 탈퇴 1단계, S-JHQQNR). 맞아야 front 가 탈퇴 화면을 연다 — 맞으면 204, 틀리면
+         *     400. 로그인한 관리자 아무나 받는다(지금은 탈퇴에서만 쓰지만 다른 확인에도 쓸 수 있게). 탈퇴 실행의 비밀번호
+         *     확인은 그대로 둔다(이중 확인). 비밀번호를 받는 경로라 내 비밀번호 변경 · 탈퇴 실행과 같은 한도를 건다.
+         */
+        post: operations["AdminAuthController_verifyMyPassword"];
         delete?: never;
         options?: never;
         head?: never;
@@ -460,7 +481,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 회원 탈퇴 조건 조회(MY PAGE, S-JHQQNR). 탈퇴 버튼을 누르기 전에 보여줄 영향 범위 — BP명 · 함께 탈퇴될
+         * 회원 탈퇴 조건 조회(마이페이지, S-JHQQNR). 탈퇴 버튼을 누르기 전에 보여줄 영향 범위 — BP명 · 함께 탈퇴될
          *     하위 관리자 수 · 함께 강제 폐점될 점포 수 · 가로막는 진행 중 계약 여부. BP 마스터만 받는다 — 그 밖의
          *     권한은 403, 계정이 지워졌으면 404. 조회만 하고 실제 탈퇴는 하지 않는다.
          */
@@ -483,7 +504,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 회원 탈퇴 실행(MY PAGE, S-JHQQNR). BP 마스터가 현재 비밀번호와 사유를 보내면 본인 · 같은 BP 의 하위 관리자가
+         * 회원 탈퇴 실행(마이페이지, S-JHQQNR). BP 마스터가 현재 비밀번호와 사유를 보내면 본인 · 같은 BP 의 하위 관리자가
          *     모두 탈퇴하고 점포는 모두 폐점된다. 진행 중인 근로계약이 있으면 막는다(조건 조회와 같은 기준). 비밀번호를
          *     받는 경로라 내 비밀번호 변경과 같은 한도를 건다.
          */
@@ -528,7 +549,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 내 BP 사업자정보(MY PAGE, S-UOJVUR). BP 마스터만 받는다 — 그 밖의 권한은 403, 계정이 지워졌으면
+         * 내 BP 사업자정보(마이페이지, S-UOJVUR). BP 마스터만 받는다 — 그 밖의 권한은 403, 계정이 지워졌으면
          *     404. GET me 와 같이 인증된 조회라 한도를 끈다(코드 리뷰로 찾음, 2026-10-22 — 탭 전환·저장 뒤
          *     재조회가 로그인성 한도에 걸릴 수 있었다).
          */
@@ -566,7 +587,7 @@ export interface paths {
          *     IP · 계정마다 시간당 10건 — 점포 사업자정보 인증(stores.controller.ts)과 같은 기준이다. 국세청을 실제로
          *     부르는 횟수는 BpProfileService 가 관리자별로 따로 센다(countNtsCall, StoreManagementService 와 같은
          *     방식) — 국세청 키 · 하루 할당량을 모든 BP 가 함께 쓰므로, 한 관리자가 반복해 부르면 그날 모든 BP 의
-         *     가입 · 점포 · MY PAGE 인증이 503 이 된다(코드 리뷰로 찾음, 2026-10-22 — 점포 쪽에만 있던 보호가
+         *     가입 · 점포 · 마이페이지 인증이 503 이 된다(코드 리뷰로 찾음, 2026-10-22 — 점포 쪽에만 있던 보호가
          *     빠져 있었다).
          */
         post: operations["AdminAuthController_requestBpBusinessVerification"];
@@ -1369,7 +1390,7 @@ export interface paths {
         };
         /**
          * 플랫폼 계정이 고를 고객 BP — 서비스 바로가기 「웨일ERP」의 BP 선택. 미삭제 고객 BP 를 사용 · 미사용 · 탈퇴 모두
-         *     BP코드순으로 나눠 준다. 사용 중인 플랫폼 관리자(PM · PA)만 부르고, 그 밖의 관리자 · 직원 앱은 403.
+         *     최신 등록순으로 나눠 준다. withMaster 면 BP 마스터 계정이 있는 BP 만(BP 마스터 계정 목록과 같은 범위 · 순서). 사용 중인 플랫폼 관리자(PM · PA)만 부르고, 그 밖의 관리자 · 직원 앱은 403.
          */
         get: operations["BpCodesController_list"];
         put?: never;
@@ -1450,8 +1471,9 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 엑셀 바로 받기(xlsx). 목록과 같은 조건으로 전부, 연락처 · 대표자 연락처는 가운데 자리를 가린다.
-         *     1만 건 이상은 400, 한 사람 1분에 한 번(429). `:id` 보다 먼저 둔다.
+         * 엑셀(xlsx). 목록과 같은 조건으로 전부, 연락처 · 대표자 연락처는 가운데 자리를 가린다. 공통 엑셀 규칙을 따른다 —
+         *     1만 건 미만은 바로 파일(200), 이상은 예약 생성(202, 등록한 이메일로 링크). 같은 사람 · 같은 화면은 생성 중이면 409, 1분에
+         *     한 번(429). `:id` 보다 먼저 둔다.
          */
         get: operations["BpMastersController_excel"];
         put?: never;
@@ -1580,6 +1602,23 @@ export interface paths {
         put?: never;
         /** 비밀번호 초기화. 새 1시간짜리 비밀번호를 BP 마스터 이메일로만 보낸다. 수정 권한이 필요하다. */
         post: operations["BpMastersController_resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/excel-downloads/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내려받기 주소(5분). 받은 시각을 이력에 남긴다. */
+        get: operations["ExcelDownloadsController_download"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2092,7 +2131,8 @@ export interface paths {
         put?: never;
         /**
          * 근로계약서 초안 저장 — 직원 레코드와 계약을 만들고 곧바로 보낸다(2026-10-19 재영). 계정이 없는 번호면 가입 초대
-         *     알림톡과 발송 대기, 계정이 있는 번호면 서명 대기(앱 알림은 아직 없다). 임시저장은 보내지 않는다.
+         *     알림톡과 발송 대기, 계정이 있는 번호면 소속 추가 확인 요청과 발송 대기(직원이 수락하면 서명 대기, WHALEERP-130). 임시저장은
+         *     보내지 않는다.
          */
         post: operations["ContractsController_create"];
         delete?: never;
@@ -2333,6 +2373,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/contracts/{contractId}/documents/{contractDocumentId}/download-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 근로계약 파일 내려받기 주소(300초) — 상세 documents 의 파일. 받으면 원래 파일 이름으로 저장된다 */
+        get: operations["MyContractDocumentsController_downloadUrl"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/notifications": {
         parameters: {
             query?: never;
@@ -2530,8 +2587,9 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 엑셀 바로 받기(xlsx). 목록과 같은 검색 조건으로 전부 담고, 대표자 연락처만 가운데 자리를 가린다.
-         *     1만 건 이상은 400(예약 생성은 아직 없다), 한 사람 1분에 한 번(429). `:id` 보다 먼저 둔다.
+         * 엑셀(xlsx). 목록과 같은 검색 조건으로 전부 담고, 대표자 연락처만 가운데 자리를 가린다. 공통 엑셀 규칙을 따른다 —
+         *     1만 건 미만은 바로 파일(200), 이상은 예약 생성(202, 다 만들어지면 등록한 이메일로 링크). 같은 사람 · 같은 화면은 생성
+         *     중이면 409, 1분에 한 번(429). `:id` 보다 먼저 둔다.
          */
         get: operations["StoresController_excel"];
         put?: never;
@@ -3518,8 +3576,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 위치 읽음(ATT-22) — 출근 · 퇴근 버튼을 눌러 위치를 읽을 때마다 부른다. 확인자료(수집 · 이용)를 남기고, 받은 locationReadId 를
-         *     이어서 보내는 출근 · 퇴근에 넣는다. 위치는 보내지 않는다
+         * 위치 읽음(ATT-22 v229) — 출퇴근 탭에 들어오거나 출근 · 퇴근 버튼을 눌러 위치를 읽을 때마다 부른다. 확인자료(수집 · 이용)를
+         *     남기고, 버튼을 눌러 받은 locationReadId 를 이어서 보내는 출근 · 퇴근에 넣는다. 위치는 보내지 않는다
          */
         post: operations["MyAttendanceController_locationRead"];
         delete?: never;
@@ -3812,7 +3870,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 내 소속 근무지 — TO-DO 와 같은 재직 직원 기준. 체결 완료 근로계약이 있고 가입 완료 · 퇴직 전인 직원 레코드. 퇴직 예정은 퇴직일과 함께 */
+        /**
+         * 내 소속 근무지 — TO-DO 와 같은 재직 직원 기준. 체결 완료 근로계약이 있고 가입 완료 · 퇴직 전인 직원 레코드. 퇴직 예정은
+         *     퇴직일과 함께. `includeRetired=true` 면 퇴직한 레코드도 지금 소속 뒤에 퇴직일 최근 순으로 넣는다 — 퇴직일(retiredDate)이
+         *     오늘보다 앞이면 퇴직, 오늘 · 뒤면 퇴직 예정이다(2026-10-28). 묶음은 재직 상태로 가르므로 퇴직 배치가 늦은 날에는 날짜와
+         *     어긋날 수 있다.
+         */
         get: operations["MyMembershipsController_list"];
         put?: never;
         post?: never;
@@ -3854,7 +3917,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 위치정보 동의 — 미동의 · 철회 상태에서. 지금 시행 중인 위치정보 약관 버전에 동의한 것으로 남는다 (ATT-23) */
+        /**
+         * 위치정보 동의 — 미동의 · 철회 상태에서. 지금 시행 중인 위치정보 약관 버전에 동의한 것으로 남는다 (ATT-23). 본문의
+         *     `termsVersion`(화면이 보여 준 버전, 필수 · null 가능)이 그와 다르면 409 — 화면은 다시 받아 새 약관을 보인다. 빼면 400
+         */
         post: operations["MyConsentController_agreeLocation"];
         delete?: never;
         options?: never;
@@ -3922,7 +3988,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 본사 제공 동의 — 처음이든 철회 뒤든 (ATT-30). 계정에 하나라 소속 가맹 점포 모두에 같이 적용된다 */
+        /**
+         * 본사 제공 동의 — 처음이든 철회 뒤든, 내 정보의 `needsReconsent` 로 다시 동의할 때든 (ATT-30). 계정에 하나라 소속 가맹
+         *     점포 모두에 같이 적용된다
+         */
         post: operations["MyConsentController_agreeHqSharing"];
         delete?: never;
         options?: never;
@@ -3988,27 +4057,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/me/invitations/check": {
+    "/me/invitations": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
         /**
-         * 초대 확인 — 앱 안에서 넣은 초대 코드(계정의 번호로 찾는다) 또는 로그인한 채 연 초대 링크의 토큰. 근무지 · 고용 형태 ·
-         *     유효 기간과 본사 제공 동의를 물을지(직영이 아니고 계정이 아직 동의하지 않았을 때) 준다.
+         * 내게 온 가입 초대 — 계정의 휴대전화번호로 나간, 아직 쓸 수 있는 가입 초대 · 재초대(보냄 · 기한 안 · 아직 계정 없는
+         *     직원 레코드). 근로계약서 이름이 계정 이름과 다른 초대는 뺀다(본인 대조 규칙 — 번호 재활용 대비, 2026-10-28). 보낸 시각 최근 순. 근무지 · 고용 형태 · 직무 · 유효 기간과 본사 제공 동의를 물을지(직영이 아니고 계정이
+         *     아직 동의하지 않았을 때) 준다.
          */
-        post: operations["MyInvitationsController_check"];
+        get: operations["MyInvitationsController_list"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/me/invitations/accept": {
+    "/me/invitations/{invitationId}/accept": {
         parameters: {
             query?: never;
             header?: never;
@@ -4018,8 +4088,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 근무지 더하기 — 초대를 다시 확인하고 그 근무지의 직원 레코드를 이 계정에 잇는다(가입 완료 · 초대 수락). 가입을 기다리던
-         *     근로계약서는 서명 대기가 된다.
+         * 근무지 더하기 — 목록에서 고른 초대를 다시 확인하고 그 근무지의 직원 레코드를 이 계정에 잇는다(가입 완료 · 초대 수락).
+         *     가입을 기다리던 근로계약서는 서명 대기가 된다.
          */
         post: operations["MyInvitationsController_accept"];
         delete?: never;
@@ -4596,6 +4666,10 @@ export interface components {
             newPassword: string;
             /** @description 새 비밀번호 확인. */
             newPasswordConfirm: string;
+        };
+        AdminPasswordVerificationDto: {
+            /** @description 현재 비밀번호. */
+            currentPassword: string;
         };
         WithdrawEligibilityResponseDto: {
             /** @description BP 상호명. */
@@ -6014,7 +6088,7 @@ export interface components {
             accountStatusCode: string;
         };
         BpListResponseDto: {
-            /** @description BP코드순. 미삭제 고객 BP 를 상태와 상관없이. */
+            /** @description 최신 등록순. 미삭제 고객 BP 를 상태와 상관없이(withMaster 면 BP 마스터 계정이 있는 BP 만). */
             items: components["schemas"]["BpListItemResponseDto"][];
             total: number;
         };
@@ -6065,6 +6139,20 @@ export interface components {
             items: components["schemas"]["BpMasterSummaryResponseDto"][];
             /** @description 조건에 맞는 전체 건수 */
             total: number;
+        };
+        ExcelScheduledResponseDto: {
+            /**
+             * @description 다운로드 이력 ID — 메일 링크와 `GET /excel-downloads/{id}` 가 쓴다.
+             * @example 41
+             */
+            excelDownloadId: number;
+            /**
+             * @description 담길 건수(요청 때 센 값).
+             * @example 12480
+             */
+            rowCount: number;
+            /** @description 화면에 그대로 보일 안내. */
+            message: string;
         };
         VerifyBpMasterBusinessDto: {
             /**
@@ -6333,6 +6421,17 @@ export interface components {
         ResetBpMasterPasswordResponseDto: {
             /** @description 초기화 메일을 보냈는가. 실패해도 기존 비밀번호는 이미 막혔다 — 다시 초기화한다. */
             isMailSent: boolean;
+        };
+        ExcelDownloadLinkResponseDto: {
+            /** @description S3 서명 주소(5분). */
+            url: string;
+            /** @example 점포목록_20261028.xlsx */
+            fileName: string;
+            /**
+             * @description 내려받기 기한(완료 + 24시간).
+             * @example 2026-10-29T05:05:00.000Z
+             */
+            expiresAt: string;
         };
         TermsVersionResponseDto: {
             /** @description 약관 유형 코드 — 공통코드 `TERMS_TYPE`. 예: PRIVACY_COLLECT */
@@ -7478,7 +7577,8 @@ export interface components {
         SendContractResponseDto: {
             /**
              * @description 보낸 뒤의 상태 — 가입 초대는 그대로(발송 대기 · 서명 대기), 가입한 직원은 서명 대기, 소속 추가 확인 요청은 발송 대기(직원이
-             *     수락하면 서명 대기)
+             *     수락하면 서명 대기). 거부 · 만료를 되살리면 가입한 직원은 서명 대기, 그 밖에는 발송 대기다(WHALEERP-153). 보내는 사이 직원이
+             *     소속 추가 확인 요청에 먼저 답했으면 그 답의 상태(서명 대기 · 거부)를 그대로 싣는다
              * @enum {string}
              */
             status: "DRAFT" | "PENDING_SEND" | "PENDING_SIGNATURE" | "CORRECTION_REQUESTED" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
@@ -8285,7 +8385,7 @@ export interface components {
             bodySummary: string;
             kakaoTemplateCode: string | null;
             isActive: boolean;
-            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 42건) — 되돌리기를 보일지 */
+            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 46건) — 되돌리기를 보일지 */
             hasDefault: boolean;
             /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
             updatedByName: string | null;
@@ -8325,7 +8425,7 @@ export interface components {
             bodySummary: string;
             kakaoTemplateCode: string | null;
             isActive: boolean;
-            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 42건) — 되돌리기를 보일지 */
+            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 46건) — 되돌리기를 보일지 */
             hasDefault: boolean;
             /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
             updatedByName: string | null;
@@ -9438,6 +9538,12 @@ export interface components {
              * @description 철회 일시. 철회하지 않았으면 null
              */
             withdrawnAt: string | null;
+            /**
+             * @description 동의한 문구 버전을 더는 받아 주지 않아(항목 · 목적이 넓어짐) 다시 동의해야 하는지(ATT-30). 동의일 때만 true 일 수 있고,
+             *     그동안 본사에는 미동의로 보여 가려진다 — 앱은 들어올 때 동의 시트를 다시 띄우고 `POST /me/hq-sharing-consent` 로 새
+             *     버전에 동의한다.
+             */
+            needsReconsent: boolean;
         };
         MyLocationConsentDto: {
             state: components["schemas"]["LocationConsentState"];
@@ -9526,11 +9632,18 @@ export interface components {
             jobTitle: string;
             /** @description 입사일(YYYY-MM-DD) */
             hiredDate: string | null;
-            /** @description 퇴직일(YYYY-MM-DD). 값이 있으면 퇴직 예정 */
+            /**
+             * @description 퇴직일(YYYY-MM-DD) — 이날까지 일한다. 오늘(한국 시각) · 뒤면 퇴직 예정, 앞이면 퇴직(`includeRetired=true` 로 받은
+             *     퇴직한 소속)이다. 없으면 null. 목록의 묶음(지금 소속 · 퇴직)은 재직 상태로 가르므로, 퇴직 배치가 늦은 날에는 퇴직일이 지난
+             *     레코드가 지금 소속 쪽에 섞일 수 있다
+             */
             retiredDate: string | null;
         };
         MyMembershipListResponseDto: {
-            /** @description 체결 완료 근로계약이 있고 가입 완료 · 퇴직 전인 직원 레코드. 입사일(없으면 뒤) · id 순 */
+            /**
+             * @description 체결 완료 근로계약이 있고 가입 완료 · 퇴직 전인 직원 레코드. 입사일(없으면 뒤) · id 순. `includeRetired=true` 면 그 뒤에
+             *     퇴직한 레코드가 퇴직일 최근 순으로 붙는다
+             */
             items: components["schemas"]["MyMembershipDto"][];
             total: number;
         };
@@ -9567,6 +9680,10 @@ export interface components {
              *     않지만 형식은 본다(빈 문자열 · 128자 초과는 처음 작성에도 400). 형식 · 상한은 이메일 변경 핀 요청(WHALEERP-607)과 같다
              */
             currentPassword?: string;
+        };
+        AgreeLocationConsentDto: {
+            /** @description 동의 시트에 보여 준 위치정보 약관 버전 — 예: v1.1. 시트를 그릴 때 시행 중인 약관이 없었으면 null */
+            termsVersion: string | null;
         };
         InvitationLookupDto: {
             /** @description 초대 링크의 토큰(base64url 43자) */
@@ -9633,26 +9750,50 @@ export interface components {
             /** @description 초대 코드 — 대문자 · 숫자 8자리, 0 · O · 1 · I 는 없다. 소문자로 넣어도 대문자로 맞춰 본다 */
             code?: string;
         };
-        MyInvitationLookupDto: {
-            /** @description 초대 링크의 토큰(base64url 43자) */
-            token?: string;
-            /** @description 초대 코드 — 대문자 · 숫자 8자리, 0 · O · 1 · I 는 없다. 소문자로 넣어도 대문자로 맞춰 본다 */
-            code?: string;
+        MyInvitationDto: {
+            /**
+             * @description 고용 형태 — 정직원 · 파트타이머
+             * @enum {string}
+             */
+            employmentType: "FULL_TIME" | "PART_TIME";
+            /** @description 직무 — 함께 온 계약의 값(없으면 직원 레코드), 고용 형태와 같은 곳에서 읽는다. 계약에 직무가 없는 옛 행이면 null 일 수 있다 */
+            jobTitle: string | null;
+            /** @description 초대 — 더하기(`POST /me/invitations/{invitationId}/accept`)의 경로 값 */
+            invitationId: number;
+            /** @description 초대한 근무지(점포) 이름 */
+            storeName: string;
+            /**
+             * Format: date-time
+             * @description 초대를 보낸 시각
+             */
+            sentAt: string;
+            /**
+             * Format: date-time
+             * @description 초대가 끝나는 시각(보낸 때부터 30일)
+             */
+            expiresAt: string;
+            /** @description 본사 제공 동의를 물을지 — 직영이 아닌 점포이고 계정이 아직 동의하지 않았다(운영 정책 ATT-30) */
+            asksHqSharingConsent: boolean;
+        };
+        MyInvitationListResponseDto: {
+            /** @description 보낸 시각 최근 순 */
+            items: components["schemas"]["MyInvitationDto"][];
+            /** @description items 의 개수 */
+            total: number;
         };
         AcceptMyInvitationDto: {
-            /** @description 초대 링크의 토큰(base64url 43자) */
-            token?: string;
-            /** @description 초대 코드 — 대문자 · 숫자 8자리, 0 · O · 1 · I 는 없다. 소문자로 넣어도 대문자로 맞춰 본다 */
-            code?: string;
             /**
-             * @description 본사 제공 동의(운영 정책 ATT-30, 선택). 확인의 asksHqSharingConsent 가 true 일 때만 쓴다 — 직영 점포이거나 계정이
-             *     이미 동의했으면 보내도 바꾸지 않는다. 동의는 계정에 하나다(api #78)
+             * @description 본사 제공 동의(운영 정책 ATT-30, 선택). 목록의 asksHqSharingConsent 가 true 일 때만 쓴다 — 직영 점포이거나 계정이
+             *     받아 주는 문구 버전에 이미 동의했으면 보내도 바꾸지 않는다. 더는 받아 주지 않는 버전에 동의했으면 true 로 지금 버전에
+             *     다시 동의한다. 동의는 계정에 하나다(api #78)
              */
             hqSharingConsented?: boolean;
         };
         AcceptMyInvitationResponseDto: {
             /** @description 이 계정에 이어진 직원 레코드 */
             staffMemberId: number;
+            /** @description 근무지(점포) — 이은 직원 레코드의 점포. 앱이 `/me/contracts` 항목을 이 storeId 로 걸러 그 근무지 근로계약서만 연다 */
+            storeId: number;
             /** @description 근무지(점포) 이름 */
             storeName: string;
         };
@@ -10906,6 +11047,41 @@ export interface operations {
             };
             /** @description 현재 비밀번호 불일치 · 비밀번호 정책 위반 · 새 비밀번호가 현재와 같음 · 확인 불일치 */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminAuthController_verifyMyPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminPasswordVerificationDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 현재 비밀번호 불일치 · 빈 값 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 계정을 찾을 수 없음 */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -14106,12 +14282,17 @@ export interface operations {
     BpCodesController_list: {
         parameters: {
             query: {
+                /**
+                 * @description true 면 BP 마스터 계정이 있는 BP 만 — BP 선택 팝업이 BP 마스터 계정 목록과 같은 범위 · 건수를 보이려고 준다(2026-10-29 사용자 지정).
+                 *     없거나 false 면 거르지 않는다 — BP 탭 · 상태 확인은 BP 마스터 계정이 없는 BP 도 찾아야 한다. 'true' · 'false' 밖의 값은 400.
+                 */
+                withMaster?: boolean;
+                /** @description 상호 · BP코드 중 하나에 들어 있으면 나온다(대소문자 무시). 앞뒤 공백은 자른다. */
+                keyword?: string;
                 /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
                 page: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize: number;
-                /** @description 상호 · BP코드 중 하나에 들어 있으면 나온다(대소문자 무시). 앞뒤 공백은 자른다. */
-                keyword?: string;
             };
             header?: never;
             path?: never;
@@ -14329,9 +14510,20 @@ export interface operations {
                 };
                 content: {
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/json": string;
                 };
             };
-            /** @description 검색 조건 형식 · 1만 건 이상 */
+            /** @description 1만 건 이상 — 예약 생성(메일로 링크) */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["ExcelScheduledResponseDto"];
+                    "application/json": components["schemas"]["ExcelScheduledResponseDto"];
+                };
+            };
+            /** @description 검색 조건 형식 · 1만 건 이상인데 등록한 이메일이 없음 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -14345,8 +14537,22 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description 같은 화면의 엑셀을 만드는 중 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 1분 안에 다시 받음 */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 1만 건 이상인데 메일(MAIL_*) · 관리자 웹 주소(ADMIN_WEB_URL) · 저장소(AWS_S3_*) 설정 중 하나가 없음 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -14782,6 +14988,62 @@ export interface operations {
                 content?: never;
             };
             /** @description 메일 설정(MAIL_* · ADMIN_WEB_URL)이 없는 환경 — 아무것도 바꾸지 않는다 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ExcelDownloadsController_download: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExcelDownloadLinkResponseDto"];
+                };
+            };
+            /** @description 그 화면의 조회 권한을 잃음 · 쓸 수 없는 계정 · 화면의 호출자 조건을 잃음(예: BP 목록은 플랫폼 계정) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없음 · 요청한 본인이 아님 · 바로 받기 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 아직 만드는 중 · 만들지 못함 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내려받기 기한(24시간)이 지남 */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소(AWS_S3_*)가 설정되지 않음 */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -17216,6 +17478,63 @@ export interface operations {
             };
         };
     };
+    MyContractDocumentsController_downloadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contractId: number;
+                contractDocumentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadUrlResponseDto"];
+                };
+            };
+            /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내 계약이 아님(상세와 같은 본문) · 그 계약의 파일이 아님 · 상세 documents 에 없는 파일(직원 필기 서명) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description CONTRACT_STATUS_CONFLICT — 처리 완료본(SIGNED_COPY)인데 체결된 계약이 아님(서명 대기 · 수정 요청 · 거부 · 만료, 체결 완료를 거치지 않은 종료). 본문 status 에 지금 상태 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소가 설정되지 않음 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     NotificationsController_findAll: {
         parameters: {
             query?: {
@@ -17741,9 +18060,20 @@ export interface operations {
                 };
                 content: {
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/json": string;
                 };
             };
-            /** @description 검색 조건 형식 · 1만 건 이상 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 1만 건 이상 — 예약 생성(메일로 링크) */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["ExcelScheduledResponseDto"];
+                    "application/json": components["schemas"]["ExcelScheduledResponseDto"];
+                };
+            };
+            /** @description 검색 조건 형식 · 1만 건 이상인데 등록한 이메일이 없음 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -17764,8 +18094,22 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description 같은 화면의 엑셀을 만드는 중 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 1분 안에 다시 받음 */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 1만 건 이상인데 메일(MAIL_*) · 관리자 웹 주소(ADMIN_WEB_URL) · 저장소(AWS_S3_*) 설정 중 하나가 없음 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -21899,7 +22243,13 @@ export interface operations {
     };
     MyMembershipsController_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /**
+                 * @description 퇴직한 소속도 넣을지(true · false, 없으면 false). true 면 지금 소속 뒤에 퇴직한 소속을 퇴직일 최근 순으로 붙인다 —
+                 *     응답 모양은 같고, 퇴직일(retiredDate)이 오늘보다 앞이면 퇴직한 소속이다. 'true' · 'false' 밖의 값은 400.
+                 */
+                includeRetired?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -21913,6 +22263,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["MyMembershipListResponseDto"];
                 };
+            };
+            /** @description includeRetired 가 true · false 가 아님 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
             401: {
@@ -22067,10 +22424,21 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgreeLocationConsentDto"];
+            };
+        };
         responses: {
             /** @description 동의함 */
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description termsVersion 없음 · 빈 문자열 · 문자열 아님 · 64자 초과 · 모르는 칸 */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22090,7 +22458,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 지금 동의 상태에서 할 수 없는 동작 */
+            /** @description 이미 같은 버전에 동의함 · 화면이 보여 준 약관 버전(termsVersion)이 시행 중인 것과 다름(그사이 바뀜, 보인 약관이 없었는데(null) 시행 중인 약관이 있음 — 화면은 다시 받는다) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -22403,33 +22771,22 @@ export interface operations {
             };
         };
     };
-    MyInvitationsController_check: {
+    MyInvitationsController_list: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MyInvitationLookupDto"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvitationCheckResponseDto"];
+                    "application/json": components["schemas"]["MyInvitationListResponseDto"];
                 };
-            };
-            /** @description 형식 오류 · 토큰과 코드를 함께 보내거나 둘 다 없음 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
             /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
             401: {
@@ -22445,21 +22802,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 맞는 초대가 없음(INVITATION_NOT_FOUND — 코드가 틀림, 링크의 초대 번호가 계정 번호와 다름) · 끝난 초대(INVITATION_ENDED) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 이미 가입을 마친 초대(INVITATION_ALREADY_JOINED) */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 계정 번호로 코드를 5번 틀려 30분 잠김(INVITATION_CODE_LOCKED, 본문 lockExpiresAt — 재발송하면 풀림) · 기본 요청 제한 */
+            /** @description 계정 · IP 요청 한도 */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -22472,7 +22815,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                invitationId: number;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -22489,7 +22834,7 @@ export interface operations {
                     "application/json": components["schemas"]["AcceptMyInvitationResponseDto"];
                 };
             };
-            /** @description 형식 오류 · 토큰과 코드를 함께 보내거나 둘 다 없음 */
+            /** @description 형식 오류 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -22510,21 +22855,21 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description INVITATION_NOT_FOUND · INVITATION_ENDED — 확인과 같다 */
+            /** @description INVITATION_NOT_FOUND — 없는 초대 · 범위 밖 id · 가입 초대가 아님 · 남의 번호로 온 초대 · 근로계약서 이름이 계정 이름과 다른 초대(그 초대의 상태와 상관없이 같다) · INVITATION_ENDED — 내 초대가 끝남(기한 · 다시 보냄 · 퇴직 · 가입 불가, 처리 중 번호 · 이름 변경) */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description INVITATION_ALREADY_JOINED — 먼저 더했거나 같은 초대로 동시에 */
+            /** @description INVITATION_ALREADY_JOINED — 내 초대를 먼저 더했거나 같은 초대로 동시에 */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 계정 번호로 코드를 5번 틀려 30분 잠김(INVITATION_CODE_LOCKED, 본문 lockExpiresAt — 재발송하면 풀림) · 기본 요청 제한 */
+            /** @description 계정 · IP 요청 한도 */
             429: {
                 headers: {
                     [name: string]: unknown;

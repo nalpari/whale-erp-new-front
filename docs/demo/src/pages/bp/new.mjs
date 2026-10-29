@@ -16,7 +16,7 @@ export function bpNewBody(A, R, { panel = false } = {}) {
     f.help("초기화 비밀번호는 등록한 이메일로 발송됩니다."),
   );
 
-  // 사업자정보 — MY PAGE 와 같은 모양(인증 상자 + 상호명 등 상자), 「기본정보와 동일」은 꺼진 채(앱과 같다, 2026-10-28 사용자 지정)
+  // 사업자정보 — 마이페이지와 같은 모양(인증 상자 + 상호명 등 상자), 「기본정보와 동일」은 꺼진 채(앱과 같다, 2026-10-28 사용자 지정)
   const biz =
     `<div class="flex flex-col gap-[18px]">` +
     bizAuthBox(A, { locked: false }) +

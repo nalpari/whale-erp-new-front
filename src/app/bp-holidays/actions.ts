@@ -96,6 +96,6 @@ export async function getBpHolidayHistoriesAction(q: { from: string; to: string;
   try {
     return { ok: true, ...(await getBpHolidayHistories({ ...q, page })) };
   } catch (error) {
-    return failureOf(error, "변경 이력 조회", false);
+    return failureOf(error, "변경이력 조회", false);
   }
 }

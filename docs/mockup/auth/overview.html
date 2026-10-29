@@ -178,14 +178,15 @@
                 <ul class="pol">
                   <li><span class="pol__t">로그인에 성공하면 계정 유형에 따라 접속 사이트를 나눈다 — BP·가맹 마스터·관리자는 <b>웨일ERP(BP) 홈</b>, 플랫폼 마스터·관리자는 <b>웨일ERP(플랫폼관리) 사이트</b>로 이동한다.</span><span class="pol__ref">F-DZVFIC</span></li>
                   <li><span class="pol__t">플랫폼관리 사이트에는 홈이 없다. 플랫폼 계정은 계정에 등록된 메뉴 가운데 조회 권한과 URL 이 있는 <b>첫 메뉴</b>(GNB 순서상 첫 화면)로 들어가고, 비밀번호 강제 변경·약관 동의를 마치기 전에는 넘어가지 않는다 (2026-10-28 변경 · manyfast 반영 대기).</span><span class="pol__ref">F-DZVFIC</span></li>
-                  <li><span class="pol__t">식별자는 <b>아이디</b>다. 영문 또는 영문·숫자 4~20자이고 탈퇴·삭제한 계정의 아이디도 다시 쓸 수 없다.</span><span class="pol__ref">S-XJDKSI · PL-OCJOFP</span></li>
-                  <li><span class="pol__t">연속 5회 틀리면 5분 잠근다. 풀리는 길은 5분 경과와 임시 비밀번호 발급 둘뿐이고 운영자가 푸는 기능은 1차에 없다.</span><span class="pol__ref">F-DZVFIC</span></li>
-                  <li><span class="pol__t">틀린 경우와 탈퇴 계정은 같은 문구 하나로 답한다. 미사용 계정은 비밀번호까지 맞을 때만 이용 제한을 알린다.</span><span class="pol__ref">S-XJDKSI</span></li>
+                  <li><span class="pol__t">식별자는 <b>아이디</b>다. 영문 또는 영문·숫자 4~20자이고 탈퇴·삭제한 계정의 아이디도 다시 쓸 수 없다. 로그인 화면은 형식을 검사하지 않고 빈칸만 막는다 (2026-10-28).</span><span class="pol__ref">S-XJDKSI · PL-OCJOFP</span></li>
+                  <li><span class="pol__t">연속 5회 틀리면 5분 잠근다. 풀리는 길은 5분 경과 · 임시 비밀번호 발급 · 운영자의 비밀번호 초기화 셋이고, 잠금만 푸는 버튼은 1차에 없다.</span><span class="pol__ref">F-DZVFIC</span></li>
+                  <li><span class="pol__t">실패 횟수는 성공한 로그인 사이에 틀린 횟수다. 시간이 지나도 줄지 않는다. 잠긴 동안의 시도는 세지 않고 해제 시각도 늘리지 않는다. 로그인 성공 · 임시 비밀번호 발급 · 운영자의 비밀번호 초기화 때 0 이 되고, 잠금이 끝난 뒤의 첫 실패는 1회째로 센다 (2026-10-28).</span><span class="pol__ref">F-DZVFIC</span></li>
+                  <li><span class="pol__t">틀린 경우와 탈퇴 계정은 같은 문구 하나로 답한다. 미사용 계정은 비밀번호까지 맞을 때만 「사용이 제한된 계정입니다. 관리자에게 문의해 주세요.」로 알린다 — 미사용으로 바꾸는 사람이 계정마다 달라 문의처를 「관리자」로 둔다 (2026-10-28). 잠금은 있는 계정에만 걸리므로 5회 틀려 잠김 안내가 나오면 그 아이디가 있다는 것이 드러나는데, 이것은 받아들인다 (확정 2026-10-22, WHALEERP-392).</span><span class="pol__ref">S-XJDKSI</span></li>
                   <li><span class="pol__t">아이디 저장은 브라우저에만 둔다. 로그인 유지 선택은 없다.</span><span class="pol__ref">S-XJDKSI</span></li>
                   <li><span class="pol__t">접근 토큰 1시간, 갱신 토큰은 마지막 사용부터 1시간. 쓰는 동안은 끊기지 않는다.</span><span class="pol__ref">S-QCNVFC</span></li>
                   <li><span class="pol__t">갱신 토큰으로 세션을 연장할 때 계정 상태를 확인해 미사용·삭제·탈퇴 계정이면 거절한다. 비밀번호 초기화·미사용·삭제·탈퇴로 로그인 중인 세션을 바로 끊지는 않지만, 미사용·삭제·탈퇴 계정의 세션은 접근 토큰이 끝나는 최대 1시간 안에 끝난다. BP 마스터 탈퇴로 함께 탈퇴된 하위 계정(BP 관리자·가맹 마스터·가맹 관리자)도 같다 (확정 2026-10-07).</span><span class="pol__ref">S-QCNVFC</span></li>
                   <li><span class="pol__t">만료 안내는 동시에 실패한 요청이 여럿이어도 한 번만 띄운다. 저장 중이던 입력은 복구하지 않는다.</span><span class="pol__ref">S-QCNVFC</span></li>
-                  <li><span class="pol__t">접근할 메뉴가 하나도 없는 계정도 로그인은 되고, 홈에 권한 요청 안내와 MY PAGE 만 보인다. 홈이 없는 플랫폼 계정은 플랫폼관리 첫 주소에서 같은 안내(아이디 · 사용자 권한, [내정보 관리] · [로그아웃])를 본다 (2026-10-28 변경 · manyfast 반영 대기).</span><span class="pol__ref">S-XJDKSI</span></li>
+                  <li><span class="pol__t">접근할 메뉴가 하나도 없는 계정도 로그인은 된다. BP · 가맹 계정은 따로 안내 문구 없이 홈과 MY PAGE 만 쓴다. 홈이 없는 플랫폼 계정만 플랫폼관리 첫 주소에서 권한 요청 안내(아이디 · 사용자 권한, [내정보 관리] · [로그아웃])를 본다 (2026-10-28 변경).</span><span class="pol__ref">S-XJDKSI</span></li>
                   <li><span class="pol__t">강제 변경 대상은 계정에 저장한 표시로만 판정한다. 회원가입으로 들어온 계정은 첫 로그인이어도 대상이 아니다.</span><span class="pol__ref">S-VFGQLI · PL-QSBSYY</span></li>
                 </ul>
               </div>
@@ -200,7 +201,7 @@
                   <li><span class="pol__t">BP 회원가입의 약관은 필수 두 가지뿐이다. 마케팅 수신 동의는 BP 회원가입에는 없고, 직원 근무 앱에서 받는다.</span><span class="pol__ref">S-RCJXIG</span></li>
                   <li><span class="pol__t">약관 문구의 원본은 api 의 약관 버전(terms_versions)이다. 가입·강제 변경의 전문 팝업은 <b>처음 열 때</b> 사용 중 버전을 캐시 없이 받아 보이고, 받으면 다시 묻지 않는다. 받지 못하면 팝업에 「약관을 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요.」를 두고 다시 열 때 다시 받는다. 가입·비밀번호 변경은 막지 않는다 — 사용 중 약관이 없으면 api 가 가입을 거절한다 (2026-10-19, PR #52).</span><span class="pol__ref">F-OFBCVL · S-RCJXIG · S-VFGQLI</span></li>
                   <li><span class="pol__t">가입 중 입력은 서버에 두지 않는다. 떠나거나 새로 고치면 인증 결과까지 모두 사라진다.</span><span class="pol__ref">F-JVTPSU</span></li>
-                  <li><span class="pol__t">가입해도 점포는 만들지 않고, 완료 화면과 홈에서 점포 등록을 권하지 않는다.</span><span class="pol__ref">S-UUBGOD</span></li>
+                  <li><span class="pol__t">가입해도 점포는 만들지 않고, 완료 화면에서는 점포 등록을 권하지 않는다. 홈은 점포가 없으면 「점포를 먼저 등록하세요」로 안내한다(HOME-4, 2026-10-29).</span><span class="pol__ref">S-UUBGOD</span></li>
                   <li><span class="pol__t">아이디 찾기는 사용 상태 계정만 대상이다. 찾으면 앞 2자와 뒤 1자만 보인다. 횟수 제한은 없다.</span><span class="pol__ref">S-PHOPWY</span></li>
                   <li><span class="pol__t">임시 비밀번호는 12자, 1시간 유효, 계정당 1시간 5회. 발급해도 기존 비밀번호는 살아 있다.</span><span class="pol__ref">S-EOMSRG</span></li>
                   <li><span class="pol__t">비밀번호 오류 문구는 화면이 따로 만들지 않고 비밀번호 정책의 문구를 그대로 쓴다.</span><span class="pol__ref">PL-QSBSYY</span></li>

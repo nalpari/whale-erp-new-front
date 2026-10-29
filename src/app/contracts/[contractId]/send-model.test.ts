@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { redirect, unstable_rethrow } from "next/navigation.js";
 import { ApiError } from "../../../lib/api-error.ts";
-import { callSave, deleteFailureOf, END_UNKNOWN, saveFailureOf, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, resendDialogCopy, inviteResendCopy, sendFailureOf, sendNoticeOf, signingResendCopy } from "./send-model.ts";
+import { callSave, deleteFailureOf, END_UNKNOWN, saveFailureOf, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, resendDialogCopy, inviteResendCopy, sendFailureOf, sendNoticeOf, signingResendCopy, canShowResend, sendBodyOf } from "./send-model.ts";
 
 test("sendFailureOf — 접수 여부 모름은 보내기를 막고 상세를 다시 읽는다", () => {
   assert.deepEqual(sendFailureOf(502, "SEND_UNCONFIRMED", "알림톡이 접수됐는지 알 수 없습니다"), {
@@ -109,25 +109,40 @@ test("서명 대기 재발송 확인창 — 데모 문구, 이름을 모르면 �
   assert.equal(signingResendCopy("").body, "같은 조건의 계약서를 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.");
 });
 
-test("근로계약 상세 재발송 확인창 — 서명 대기는 데모 문구, 발송 대기는 가입 초대 문구", () => {
-  assert.deepEqual(resendDialogCopy("PENDING_SIGNATURE", "권도윤"), {
+test("근로계약 상세 재발송 확인창 — 가입한 직원은 데모 문구, 가입 전 직원은 상태와 상관없이 가입 초대 문구(front #136 code-review)", () => {
+  assert.deepEqual(resendDialogCopy("PENDING_SIGNATURE", "권도윤", true), {
     title: "계약서를 다시 보내시겠습니까?",
     body: ["같은 조건의 계약서를 권도윤 님에게 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다."],
   });
-  const invite = resendDialogCopy("PENDING_SEND", "남도현");
-  assert.equal(invite.title, "다시 보내시겠습니까?");
-  assert.equal(invite.body.length, 2);
-  // 보낼 때 api 가 다시 판별한다 — 가입 초대 · 소속 추가 확인 요청을 함께 알린다(WHALEERP-130)
-  assert.match(invite.body.join(" "), /가입 초대 알림톡\(초대 코드\)/);
-  assert.match(invite.body.join(" "), /소속 추가 확인 요청/);
-  assert.match(invite.body[0], /^남도현 님의 /);
-  // 직원 목록 재발송도 같은 문구다
-  assert.deepEqual(inviteResendCopy("남도현"), invite);
+  // 가입 전 직원은 발송 대기 · 서명 대기 모두 보낼 때 api 가 다시 판별한다 — 가입 초대 · 소속 추가 확인 요청을 함께 알린다(WHALEERP-130)
+  for (const status of ["PENDING_SEND", "PENDING_SIGNATURE"]) {
+    const invite = resendDialogCopy(status, "남도현", false);
+    assert.equal(invite.title, "다시 보내시겠습니까?");
+    assert.equal(invite.body.length, 2);
+    assert.match(invite.body.join(" "), /가입 초대 알림톡\(초대 코드\)/);
+    assert.match(invite.body.join(" "), /소속 추가 확인 요청/);
+    assert.match(invite.body[0], /^남도현 님의 /);
+    // 직원 목록 재발송도 같은 문구다
+    assert.deepEqual(invite, { title: inviteResendCopy("남도현").title, body: inviteResendCopy("남도현").body });
+  }
   // 요청 유효 기간 · 발송 대기로 남는 것 · 날인 기한(용어 통일)
+  const invite = inviteResendCopy("남도현");
   assert.match(invite.body[1], /30일 동안 유효/);
   assert.match(invite.body[1], /발송 대기로 남습니다/);
   assert.doesNotMatch(invite.body.join(" "), /서명 기한/);
   assert.match(inviteResendCopy(null).body[0], /^직원 휴대전화번호로/);
+  assert.equal(resendDialogCopy("PENDING_SEND", "남도현", true).title, "계약서를 다시 보내시겠습니까?");
+});
+
+test("재발송 버튼 — 발송 대기 · 서명 대기는 api 가 막지 않으면, 거부 · 만료는 api 가 된다고 할 때만(WHALEERP-153)", () => {
+  assert.equal(canShowResend("PENDING_SEND", undefined), true);
+  assert.equal(canShowResend("PENDING_SIGNATURE", true), true);
+  assert.equal(canShowResend("PENDING_SIGNATURE", false), false);
+  assert.equal(canShowResend("REJECTED", undefined), false);
+  assert.equal(canShowResend("EXPIRED", true), true);
+  assert.equal(canShowResend("REJECTED", false), false);
+  assert.equal(canShowResend("SIGNED", true), false);
+  assert.equal(canShowResend(null, true), false);
 });
 
 test("발송 대기 종료도 같은 규칙 — 모를 때 문장만 종료 문장이다", () => {
@@ -139,6 +154,47 @@ test("발송 대기 종료도 같은 규칙 — 모를 때 문장만 종료 문�
     code: "CONTRACT_STATUS_CONFLICT",
     recheck: true,
   });
+});
+
+test("거부 · 만료 재발송 확인창 — 같은 조건으로 다시 보낸다는 문장을 더한다(WHALEERP-153)", () => {
+  // 가입한 직원 — 앱으로(서명 대기 문구)
+  const rejected = resendDialogCopy("REJECTED", "남도현", true);
+  assert.equal(rejected.title, "계약서를 다시 보내시겠습니까?");
+  assert.deepEqual(rejected.body, [
+    "거부된 근로계약서를 같은 조건으로 다시 보냅니다.",
+    "같은 조건의 계약서를 남도현 님에게 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.",
+  ]);
+  // 가입 전 직원 — 가입 초대 알림톡(발송 대기 문구)
+  const expired = resendDialogCopy("EXPIRED", null, false);
+  assert.equal(expired.body[0], "날인 기한이 지나 만료된 근로계약서를 같은 조건으로 다시 보냅니다.");
+  assert.match(expired.body[1], /가입 초대 알림톡/);
+});
+
+test("거부 · 만료 재발송이 막히면(REOPEN_BLOCKED · WORK_TIME_OVERLAP) api 문장을 확인창에 보이고 보내기만 막는다 — 다시 읽지 않는다(front #136 재리뷰)", () => {
+  for (const code of ["REOPEN_BLOCKED", "WORK_TIME_OVERLAP"]) {
+    assert.deepEqual(sendFailureOf(409, code, "퇴직했거나 퇴직일을 정한 직원에게는 근로계약서를 다시 보낼 수 없습니다"), {
+      ok: false,
+      error: "퇴직했거나 퇴직일을 정한 직원에게는 근로계약서를 다시 보낼 수 없습니다",
+      code,
+      recheck: false,
+      blocked: true,
+    });
+  }
+  // 그 밖의 409 코드는 막지 않는다
+  assert.equal(sendFailureOf(409, "SEND_CHANNEL_NOT_READY", "x").blocked, undefined);
+});
+
+test("재발송 본문은 화면이 본 상태를 싣는다 — 모르면 비운다(front #136 재리뷰)", () => {
+  assert.deepEqual(sendBodyOf({ status: "REJECTED" }), { expectedStatus: "REJECTED" });
+  // 발송 시각도 싣는다 — 상태가 그대로인 재발송을 두 탭에서 두 번 보내지 않게(front #136 셀프 code-review)
+  assert.deepEqual(sendBodyOf({ status: "PENDING_SEND", sentAt: "2026-10-10T01:00:00.000Z" }), {
+    expectedStatus: "PENDING_SEND",
+    expectedSentAt: "2026-10-10T01:00:00.000Z",
+  });
+  assert.deepEqual(sendBodyOf({ status: null, sentAt: null }), {});
+  // 서버 액션을 직접 불러 모양이 다른 값을 넘겨도 터지지 않고 싣지 않는다
+  assert.deepEqual(sendBodyOf(null), {});
+  assert.deepEqual(sendBodyOf({ status: 7, sentAt: {} } as unknown as Parameters<typeof sendBodyOf>[0]), {});
 });
 
 // 로그는 failureOf 가 남긴다 — 테스트 출력을 어지럽히지 않게 막고 센다

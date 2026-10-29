@@ -1,4 +1,4 @@
-// 내 정보(MY PAGE) 사업자정보 입력칸 — 검사와 요청 만들기. bp-profile-tab.tsx 에서 뺀 순수 함수라
+// 내 정보(마이페이지) 사업자정보 입력칸 — 검사와 요청 만들기. bp-profile-tab.tsx 에서 뺀 순수 함수라
 // node --test 로 검사한다(bp-profile-form.test.ts). 숫자 패턴은 api DTO(bp-profile-update.dto.ts ·
 // bp-business-verification.dto.ts)와 같다 — 대표자 연락처 9~12자리는 api 2026-10-27 변경분과 같다(그전 api 는 9~11). 규칙은 manyfast F-AMTDCK > S-UOJVUR.
 import type { AddressValue } from "@/components/address-field";
