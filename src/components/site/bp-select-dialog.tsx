@@ -92,6 +92,11 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
                 setPicked(null);
                 setQuery((q) => ({ ...q, keyword: v.trim(), page: 1 }));
               }}
+              // X 로 지우면 바로 전체 목록으로 다시 찾는다(2026-10-29 사용자 지정)
+              onClear={() => {
+                setPicked(null);
+                setQuery((q) => ({ ...q, keyword: "", page: 1 }));
+              }}
               placeholder="상호명 또는 BP코드"
               aria-label="BP 찾기"
               maxLength={50}
