@@ -181,7 +181,7 @@ export default ({ A, R }) => {
         `<div class="flex justify-center gap-[6px]">${x.dialogTrigger("삭제", del[code], "soft")}${editSaveButton()}</div>`
       : // 고칠 수 없는 그룹(BP 마스터가 보는 가맹 관리자 그룹)은 표 위에 막힌 이유 띠 — 앱 bp-role-groups/role-side.tsx InfoBand 와 같은 문장
         // (api NO_PERMISSION · 가맹 관리자 그룹, 2026-10-27 사용자 지정)
-        band("본인 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다.") + plainTable(rowsInfo) + record;
+        band("내 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다.") + plainTable(rowsInfo) + record;
     return (
       `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${editable ? " data-dirty-scope" : ""}${i === SELECTED ? "" : " hidden"}>` +
       sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[10px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}<span aria-hidden="true" class="h-[11px] w-px bg-[#d9d9d9]"></span><span class="text-[14px] font-normal"><span class="text-erp-label">권한코드</span> <b class="font-semibold">${code}</b></span></span>`) +
