@@ -34,6 +34,12 @@ test("isAllowed: 서비스 홈은 메뉴가 비어도 열린다", () => {
   assert.equal(isAllowed([], "/platform", "PLATFORM"), true);
 });
 
+test("isAllowed: 엑셀 내려받기(메일 링크)는 메뉴 없이 두 서비스에서 열린다 — 경로 마디가 맞아야 한다", () => {
+  assert.equal(isAllowed([], "/excel-downloads/41", "WHALE_ERP"), true);
+  assert.equal(isAllowed([], "/excel-downloads/41", "PLATFORM"), true);
+  assert.equal(isAllowed([], "/excel-downloads-x/41", "WHALE_ERP"), false);
+});
+
 test("isAllowed: 조회 권한 있는 메뉴와 그 아래(상세·등록)는 열린다", () => {
   for (const p of ["/settings/admins", "/settings/admins/12", "/settings/admins/new"]) assert.equal(isAllowed(menus, p, "WHALE_ERP"), true, p);
 });

@@ -2,7 +2,7 @@
 // Node 24 가 타입을 벗겨 그대로 실행한다. 테스트 도구를 따로 깔지 않는다(date-math.test.ts 와 같다).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { homeOf, isPlatformRole, isPublicPath, redirectsSignedIn } from "./auth-routes.ts";
+import { homeOf, isPlatformRole, isPublicPath, redirectsSignedIn, returnPathOf } from "./auth-routes.ts";
 
 test("로그인한 채 홈 · 로그인 · 찾기를 열면 자기 홈으로 — 홈은 접근 토큰이 살아 있을 때만", () => {
   const now = 1_000_000;
@@ -38,4 +38,10 @@ test("공개 경로만 로그인 없이 열린다 — 접두가 경로 마디와
 
 test("BFF(/api/*)는 공개 경로가 아니다 — 세션 없이 열리면 안 된다", () => {
   for (const p of ["/api", "/api/bp-codes/1/stores"]) assert.equal(isPublicPath(p), false, p);
+});
+
+test("로그인 뒤 돌아올 곳은 엑셀 내려받기(메일 링크)만 받는다 — 바깥 주소 · 다른 화면은 null", () => {
+  assert.equal(returnPathOf("/excel-downloads/41"), "/excel-downloads/41");
+  for (const v of ["//evil.example/excel-downloads/1", "https://evil.example", "/excel-downloads/41/x", "/excel-downloads/abc", "/excel-downloads/0", "/excel-downloads/041", "/stores", "", null, undefined, 41])
+    assert.equal(returnPathOf(v), null, String(v));
 });

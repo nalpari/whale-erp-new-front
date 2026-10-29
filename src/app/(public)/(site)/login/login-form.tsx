@@ -6,6 +6,7 @@ import { useActionState, useEffect, useState } from "react";
 import { CHECKBOX, INPUT, INPUT_BOX, SUBMIT } from "@/app/design/guest/guest-form";
 import { SITE_ROUTES } from "@/app/design/guest/guest-routes";
 import { HOVER } from "@/app/design/guest/theme";
+import { RETURN_PARAM } from "@/lib/auth-routes";
 import { clearLoginStorage } from "@/lib/browser-storage";
 import { login, type LoginFormState } from "./actions";
 
@@ -16,7 +17,7 @@ const ICON_BUTTON = "flex size-[16px] items-center justify-center";
 
 // 모양은 Figma 「로그인전_로그인」 샘플(design/guest/login/login-form.tsx)의 폼 규격(guest-form.ts)을 쓴다(2026-10-19).
 // 샘플의 「로그인 상태 유지」 자리에는 아이디 저장을 둔다 — 로그인 유지 선택은 없다.
-export function LoginForm() {
+export function LoginForm({ returnPath }: { /** 로그인 뒤 돌아갈 화면(메일 링크로 왔을 때) — 없으면 자기 홈 */ returnPath?: string | null }) {
   const [state, action, pending] = useActionState<LoginFormState, FormData>(login, {});
   // 제어 입력 — 실패 뒤 React 가 비제어 폼을 비워도 아이디·체크가 남아야 다시 치지 않고, 다음 제출에서 저장값이 지워지지 않는다.
   const [loginId, setLoginId] = useState("");
@@ -50,6 +51,7 @@ export function LoginForm() {
 
   return (
     <form action={remember} className="flex flex-col gap-[24px]">
+      {returnPath && <input type="hidden" name={RETURN_PARAM} value={returnPath} />}
       <div className="flex flex-col gap-[10px]">
         <label className={INPUT_BOX}>
           <span className="sr-only">아이디</span>

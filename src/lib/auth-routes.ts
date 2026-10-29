@@ -25,6 +25,17 @@ export function redirectsSignedIn(pathname: string, method: string, session: { a
   return pathname === "/" && session.accessTokenExpiresAt > now;
 }
 
+/** 로그인 화면 주소의 돌아올 곳 쿼리 이름 — /login?next=/excel-downloads/41 */
+export const RETURN_PARAM = "next";
+
+/**
+ * 로그인한 뒤 돌아올 수 있는 주소. 메일 링크로 들어오는 화면(1만 건 이상 엑셀 내려받기 /excel-downloads/{id})만 받는다 —
+ * 아무 주소나 받으면 바깥 사이트로 보내는 링크(열린 리다이렉트)가 된다. 맞지 않으면 null(자기 홈으로 간다).
+ */
+export function returnPathOf(value: unknown): string | null {
+  return typeof value === "string" && /^\/excel-downloads\/[1-9]\d{0,8}$/.test(value) ? value : null;
+}
+
 /** okf/auth.md — BP·가맹 계정은 웨일ERP(BP) 홈, 플랫폼 계정은 플랫폼관리 사이트. */
 export function homeOf(roleTypeCode: string): "/platform" | "/home" {
   return isPlatformRole(roleTypeCode) ? "/platform" : "/home";
