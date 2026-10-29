@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 마스터 계정 관리](/bp.md) — front jolteon: BP 선택 팝업 미사용 · 탈퇴 BP 회색, BP 관리자 수정 화면(고칠 수 없는 점포는 회색 상자 · 범위 칸 없음 · 수정 범위 안내 없음), 상세 「내 계정입니다.」 · 가맹관리자 안내 문구 · 본인 [초기화] 대신 「-」, 초기화 안내 상자 규칙(방금 보냄 · 등록 1시간 안 → 발송 / 그 밖 미로그인 → 초기화 필요), 강제 비밀번호 변경 · 부가서비스 안내를 공통 확인창으로, 권한별 메뉴설정의 막힌 이유 글자 · 오버 문구 없앰 · 내 권한 밖 칸 숨김 · 고를 수 있는 칸 테두리 진하게.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front jolteon: BP 관리자 등록의 계정 역할 고르기 전 점포 찾기 막기(StoreMappingPicker blocked), 범위 도움말 「(역할)는 '일부 점포'만 선택할 수 있습니다.」.
 * **Update**: [BP 마스터 계정 관리](/bp.md) — 등록 뒤 안내는 초기화 안내와 같은 하늘색 상자 한 문구이고 BP 코드 · 이메일은 상자에 적지 않는다(실제 화면대로, BP-3 를 바꿈, 2026-10-29 재영).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 막힌 버튼의 이유 말풍선 `Blocked` 를 `src/components/common` 으로 올리고 1팀 화면(BP 관리 · BP 관리자 · 플랫폼 관리자 · 공통코드 [BP 적용])이 같이 쓴다. 화면 모양은 그대로다(기본 말풍선). 점포 상세의 복사본 · 점포 엑셀 버튼은 점포 탭 몫으로 남겼다(2026-10-29 재영).
