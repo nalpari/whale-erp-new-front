@@ -471,6 +471,45 @@ DIAGRAMS.append(Diagram(
     ],
 ))
 
+# ── 9. 직원 자료 일괄 저장 ─────────────────────────────────────────────────
+DIAGRAMS.append(Diagram(
+    "export", "일괄 저장", "직원 자료 일괄 저장",
+    "BP 마스터 · 가맹마스터가 업무 범위 직원의 근로계약서 · 출퇴근 기록 · 급여명세서 · 근무스케줄을 zip 하나로 받는다. 1분 배치가 파일을 만들고, 완료부터 7일 받을 수 있다. 운영 알림 없이 일괄 저장 화면의 상태로만 보인다 (운영 정책 RET-09 · NTF-01, WHALEERP-336).",
+    [
+        E("export", "직원 자료 일괄 저장 요청", "bulk_exports", "focal",
+          ["#|일괄 저장 요청 ID|id|bulk_export_id|", "→|요청 BP|id|bp_code_id|bp_codes FK", "→|요청한 관리자|id|requested_by|admin_accounts FK",
+           "|요청 때 권한 유형|code|role_type_code|BM · FM. 목록 · 내려받기는 같은 BP · 같은 권한 유형이고 store_ids 를 모두 관리하는 마스터만 (2026-10-29 재영)",
+           "|업무 범위 점포|id[]|store_ids|오름차순. 비면 안 된다",
+           "|범위 키|text|scope_key|{role_type_code}:{store_ids}. 만드는 중인 요청이 (bp_code_id, md5(scope_key)) 마다 하나뿐",
+           "|처리 상태|enum|status|대기 · 만드는 중 · 완료 · 실패",
+           "|담은 직원 수|int|staff_count|요청 때 센 수, 다 만들면 실제로 담은 수",
+           "|파일에 담은 직원 레코드 ID|id[]|staff_member_ids|다 만들 때 채운다. BP 마스터 파일은 내려받기 직전에 이 직원들의 본사 제공 동의 · 가맹 점포 폐점을 다시 보고 바뀌었으면 막는다 (2026-10-29 재영, RET-09)",
+           "|저장소 키|text|storage_key|bulk-exports/{bp_code_id}/{uuid}.zip. 기한이 지나 파일을 지우면 NULL",
+           "|파일명|text|file_name|직원자료_{BP명}_{YYYYMMDD}.zip (요청한 한국 날짜)",
+           "|파일 크기|int|file_size|바이트",
+           "|시도 횟수|int|attempt_count|시도를 시작할 때 1씩 올린다(최대 2). 2에서 실패하거나 4xx 성격(권한 · 범위)이면 끝",
+           "|실패 사유|text|failure_reason|",
+           "|요청 일시|datetime|requested_at|",
+           "|만들기 시작 일시|datetime|started_at|이번 시도를 시작한 시각. 멈춘 작업 판단 기준",
+           "|완료 일시|datetime|completed_at|",
+           "|받을 수 있는 기한|datetime|expires_at|완료 + 7일"], 0, 40),
+        E("download", "직원 자료 일괄 저장 내려받기 이력", "bulk_export_download_logs", "history",
+          ["#|내려받기 이력 ID|id|bulk_export_download_log_id|", "→|일괄 저장 요청|id|bulk_export_id|bulk_exports FK",
+           "→|내려받은 관리자|id|downloaded_by|admin_accounts FK", "|내려받은 일시|datetime|downloaded_at|내려받기 주소를 준 시각"], 1, 40),
+        ref_admin(1, 280),
+    ],
+    [
+        R("export", "right", "download", "left", "1", "N", ""),
+        R("admin", "left", "export", "right", "1", "N", "요청"),
+        R("admin", "top", "download", "bottom", "1", "N", "받은 사람"),
+    ],
+    [
+        ("coral", "중심", "요청 한 건이 파일 하나다", ["같은 BP · 같은 범위는 만드는 중인 요청이 하나뿐이다", "완료부터 7일 받을 수 있고, 지나면 매일 배치가 파일을 지운다", "주민등록번호 원본 · 신고 정보 · 확인자료 · 동의 기록은 담지 않는다"]),
+        ("ink", "", "누가 받는가", ["같은 BP · 같은 권한 유형이고 그 요청의 점포를 지금 모두 관리하는 마스터가 목록 · 내려받기를 같이 쓴다", "BP 마스터 파일은 내려받기 직전에 담긴 직원(staff_member_ids)의 본사 제공 동의 · 가맹 점포 폐점을 다시 본다", "내려받을 때마다 받은 관리자와 시각을 이력에 남긴다"]),
+        ("muted", "", "참조만 하는 것", ["점포(store_ids) · 직원 레코드(staff_member_ids)는 배열이라 외래키를 두지 않는다", "BP 는 1팀 bp_codes 를 가리킨다"]),
+    ],
+))
+
 KIND_TAG = {"focal": "CORE ENTITY", "entity": "ENTITY", "history": "HISTORY", "ref": "TEAM-1 REF"}
 
 

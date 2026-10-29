@@ -1013,3 +1013,55 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 - 문의사항 `1` — `N` 문의 답변
 - 관리자 계정 `1` — `N` 문의사항 · 등록
 - 문의사항 `1` — `0..5` 문의 첨부파일
+
+## 직원 자료 일괄 저장
+
+BP 마스터 · 가맹마스터가 업무 범위 직원의 근로계약서 · 출퇴근 기록 · 급여명세서 · 근무스케줄을 zip 하나로 받는다. 1분 배치가 파일을 만들고, 완료부터 7일 받을 수 있다. 운영 알림 없이 일괄 저장 화면의 상태로만 보인다 (운영 정책 RET-09 · NTF-01, WHALEERP-336).
+
+### 직원 자료 일괄 저장 요청 `bulk_exports` · 중심
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 일괄 저장 요청 ID | id | `bulk_export_id` |  |
+| FK | 요청 BP | id | `bp_code_id` | bp_codes FK |
+| FK | 요청한 관리자 | id | `requested_by` | admin_accounts FK |
+|  | 요청 때 권한 유형 | code | `role_type_code` | BM · FM. 목록 · 내려받기는 같은 BP · 같은 권한 유형이고 store_ids 를 모두 관리하는 마스터만 (2026-10-29 재영) |
+|  | 업무 범위 점포 | id[] | `store_ids` | 오름차순. 비면 안 된다 |
+|  | 범위 키 | text | `scope_key` | {role_type_code}:{store_ids}. 만드는 중인 요청이 (bp_code_id, md5(scope_key)) 마다 하나뿐 |
+|  | 처리 상태 | enum | `status` | 대기 · 만드는 중 · 완료 · 실패 |
+|  | 담은 직원 수 | int | `staff_count` | 요청 때 센 수, 다 만들면 실제로 담은 수 |
+|  | 파일에 담은 직원 레코드 ID | id[] | `staff_member_ids` | 다 만들 때 채운다. BP 마스터 파일은 내려받기 직전에 이 직원들의 본사 제공 동의 · 가맹 점포 폐점을 다시 보고 바뀌었으면 막는다 (2026-10-29 재영, RET-09) |
+|  | 저장소 키 | text | `storage_key` | bulk-exports/{bp_code_id}/{uuid}.zip. 기한이 지나 파일을 지우면 NULL |
+|  | 파일명 | text | `file_name` | 직원자료_{BP명}_{YYYYMMDD}.zip (요청한 한국 날짜) |
+|  | 파일 크기 | int | `file_size` | 바이트 |
+|  | 시도 횟수 | int | `attempt_count` | 시도를 시작할 때 1씩 올린다(최대 2). 2에서 실패하거나 4xx 성격(권한 · 범위)이면 끝 |
+|  | 실패 사유 | text | `failure_reason` |  |
+|  | 요청 일시 | datetime | `requested_at` |  |
+|  | 만들기 시작 일시 | datetime | `started_at` | 이번 시도를 시작한 시각. 멈춘 작업 판단 기준 |
+|  | 완료 일시 | datetime | `completed_at` |  |
+|  | 받을 수 있는 기한 | datetime | `expires_at` | 완료 + 7일 |
+
+### 직원 자료 일괄 저장 내려받기 이력 `bulk_export_download_logs` · 이력
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 내려받기 이력 ID | id | `bulk_export_download_log_id` |  |
+| FK | 일괄 저장 요청 | id | `bulk_export_id` | bulk_exports FK |
+| FK | 내려받은 관리자 | id | `downloaded_by` | admin_accounts FK |
+|  | 내려받은 일시 | datetime | `downloaded_at` | 내려받기 주소를 준 시각 |
+
+### 관리자 계정 `admin_accounts` · 1팀 참조
+
+1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블.
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 관리자 ID | id | `admin_account_id` | admin_accounts PK |
+| FK | BP | id | `bp_code_id` |  |
+|  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
+
+**관계**
+
+- 직원 자료 일괄 저장 요청 `1` — `N` 직원 자료 일괄 저장 내려받기 이력
+- 관리자 계정 `1` — `N` 직원 자료 일괄 저장 요청 · 요청
+- 관리자 계정 `1` — `N` 직원 자료 일괄 저장 내려받기 이력 · 받은 사람
