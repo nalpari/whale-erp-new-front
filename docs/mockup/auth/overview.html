@@ -201,7 +201,7 @@
                   <li><span class="pol__t">BP 회원가입의 약관은 필수 두 가지뿐이다. 마케팅 수신 동의는 BP 회원가입에는 없고, 직원 근무 앱에서 받는다.</span><span class="pol__ref">S-RCJXIG</span></li>
                   <li><span class="pol__t">약관 문구의 원본은 api 의 약관 버전(terms_versions)이다. 가입·강제 변경의 전문 팝업은 <b>처음 열 때</b> 사용 중 버전을 캐시 없이 받아 보이고, 받으면 다시 묻지 않는다. 받지 못하면 팝업에 「약관을 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요.」를 두고 다시 열 때 다시 받는다. 가입·비밀번호 변경은 막지 않는다 — 사용 중 약관이 없으면 api 가 가입을 거절한다 (2026-10-19, PR #52).</span><span class="pol__ref">F-OFBCVL · S-RCJXIG · S-VFGQLI</span></li>
                   <li><span class="pol__t">가입 중 입력은 서버에 두지 않는다. 떠나거나 새로 고치면 인증 결과까지 모두 사라진다.</span><span class="pol__ref">F-JVTPSU</span></li>
-                  <li><span class="pol__t">가입해도 점포는 만들지 않고, 완료 화면과 홈에서 점포 등록을 권하지 않는다.</span><span class="pol__ref">S-UUBGOD</span></li>
+                  <li><span class="pol__t">가입해도 점포는 만들지 않고, 완료 화면에서는 점포 등록을 권하지 않는다. 홈은 점포가 없으면 「점포를 먼저 등록하세요」로 안내한다(HOME-4, 2026-10-29).</span><span class="pol__ref">S-UUBGOD</span></li>
                   <li><span class="pol__t">아이디 찾기는 사용 상태 계정만 대상이다. 찾으면 앞 2자와 뒤 1자만 보인다. 횟수 제한은 없다.</span><span class="pol__ref">S-PHOPWY</span></li>
                   <li><span class="pol__t">임시 비밀번호는 12자, 1시간 유효, 계정당 1시간 5회. 발급해도 기존 비밀번호는 살아 있다.</span><span class="pol__ref">S-EOMSRG</span></li>
                   <li><span class="pol__t">비밀번호 오류 문구는 화면이 따로 만들지 않고 비밀번호 정책의 문구를 그대로 쓴다.</span><span class="pol__ref">PL-QSBSYY</span></li>
