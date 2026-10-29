@@ -18,8 +18,8 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
   // 점포유형은 등록 뒤 바꿀 수 없다 — 기본정보 맨 위에 큰 선택 카드로 두어 맨 앞에서 정하게 한다(2026-10-16 점검).
   const typeCards =
     `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">${f.req("점포유형")}</span>${x.choiceCards("점포유형", [
-      { label: "직영점포", desc: "직접 운영하는 매장이에요", checked: true },
-      { label: "가맹점포", desc: "가맹점주가 운영하는 매장이에요" },
+      { label: "직영점포", desc: "직접 운영하는 매장이에요.", checked: true },
+      { label: "가맹점포", desc: "가맹점주가 운영하는 매장이에요." },
     ])}</div>`;
 
   // 점포상태는 수정 화면과 같은 자리에 두되 고를 수 없다 — 새 점포는 미운영으로만 생기고,
@@ -71,8 +71,8 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
       f.group("대표자 연락처", f.tel(), "w-[312px]"),
     ),
     ui.formRow(
-      ui.field("업태", ui.textField({ maxlength: 30, placeholder: "30자 이내로 입력해주세요." }), "w-[160px]"),
-      ui.field("종목", ui.textField({ maxlength: 30, placeholder: "30자 이내로 입력해주세요." }), "w-[160px]"),
+      ui.field("업태", ui.textField({ maxlength: 30, placeholder: "30자 이내로 입력해 주세요." }), "w-[160px]"),
+      ui.field("종목", ui.textField({ maxlength: 30, placeholder: "30자 이내로 입력해 주세요." }), "w-[160px]"),
     ),
     // 등록 기본값은 해제 — 점포주소와 사업자주소가 다를 수 있다(EMPTY_STORE_FORM.bizSameAsStore, 사용자 지정, 2026-10-23)
     f.address(A, "사업자주소", {}, { labelExtra: ui.checkbox(A, "점포 주소와 같음", false) }),

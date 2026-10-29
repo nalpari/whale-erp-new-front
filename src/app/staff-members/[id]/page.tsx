@@ -33,7 +33,7 @@ const AREA_PENDING = <div aria-hidden="true" className="min-h-[92px]" />;
 // 바깥 LoadGroup(본문 전체) fallback 에만 스크린리더용 안내를 붙인다 — 영역 4곳까지 읽히면 「로딩중입니다」가 여럿 겹친다
 const BODY_PENDING = (
   <div role="status" className="min-h-[92px]">
-    <span className="sr-only">로딩중입니다</span>
+    <span className="sr-only">로딩중입니다.</span>
   </div>
 );
 

@@ -19,7 +19,7 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
   // 직전 계약은 작성 화면 재료와 함께 읽는다. 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403)이면 api 문장을 그대로
   // 보인다(이어 쓰기와 같다). 세션이 없으면 api 가 401 이라 「로그인이 필요합니다」다
   const readPrevious = async (): Promise<{ previous: ContractDetail | null; notice: string }> => {
-    const none = { previous: null, notice: "로그인이 필요합니다" };
+    const none = { previous: null, notice: "로그인이 필요합니다." };
     if (from === undefined) return none;
     const headers = await authHeaders();
     if (!headers.Authorization) return none;
@@ -41,7 +41,7 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
       <PageBar title={from === undefined ? "근로계약서 초안 작성" : "재계약 작성"} />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
-          <ContractPermission action="create" fallback={<Notice title="근로계약서를 작성할 권한이 없습니다" back={back} />}>
+          <ContractPermission action="create" fallback={<Notice title="근로계약서를 작성할 권한이 없습니다." back={back} />}>
             {from === undefined ? (
               <ContractForm stores={stores} labels={labels} signedIn={signedIn} back={back} />
             ) : !previous ? (
@@ -49,11 +49,11 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
             ) : previous.renewedBy != null ? (
               // 이미 체결된 재계약이 이어져 있다 — 그 계약으로 안내한다. 진행 중 재계약은 api 가 renewedBy 에 싣지 않아 이 화면을 열고,
               // 저장할 때 대체를 묻는다(api #157 리뷰 · front #135 참고 1). 칸이 없는 옛 api 응답(undefined)도 안내로 빠지지 않게 != null
-              <Notice title="이 근로계약에는 이미 체결된 재계약이 이어져 있습니다. 그 근로계약에서 재계약해 주세요" back={back}>
+              <Notice title="이 근로계약에는 이미 체결된 재계약이 이어져 있습니다. 그 근로계약에서 재계약해 주세요." back={back}>
                 <Button href={withBack(`/contracts/${previous.renewedBy}`, query.back)}>이어지는 계약</Button>
               </Notice>
             ) : !canRenew(previous) ? (
-              <Notice title="체결 완료되었거나 체결 뒤 종료된 근로계약만 재계약할 수 있습니다" back={back} />
+              <Notice title="체결 완료되었거나 체결 뒤 종료된 근로계약만 재계약할 수 있습니다." back={back} />
             ) : !storeOpen ? (
               <Notice title="이 근무지에는 근로계약서를 작성할 수 없습니다(폐점했거나 맡은 점포가 아님)" back={back} />
             ) : (

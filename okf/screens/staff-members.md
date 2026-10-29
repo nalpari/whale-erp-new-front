@@ -68,12 +68,12 @@ sources:
     last_modified: 2026-10-23T07:40:00Z
   - id: contract-box
     resource: ../../src/app/staff-members/[id]/contract-box.tsx
-    title: 상세 근로계약 칸 — 근로계약 영역 요약(api #183)을 받고 실패 · 권한 없음이면 이 칸만 안내, 계약이 없으면 작성으로(WHALEERP-184). 「계약 상태」 다음 줄에 「급여 계좌」(요약 응답 payrollAccount, 하이픈 · 가림 없음; 계약이 없는 직원에게는 계좌 줄을 보이지 않음 — 노영주 결정 2026-10-29). 줄 라벨 칸은 DetailTable 과 같은 폭(110px)을 옮겨 쓴다.
-    last_modified: 2026-10-29T06:04:05Z
+    title: 상세 근로계약 칸 — 근로계약 영역 요약(api #183)을 받고 실패 · 권한 없음이면 이 칸만 안내, 계약이 없으면 작성으로(WHALEERP-184). 「계약 상태」 다음 줄에 「급여 계좌」(요약 응답 payrollAccount, 하이픈 · 가림 없음; 계약이 없는 직원에게는 계좌 줄을 보이지 않음 — 노영주 결정 2026-10-29; 요약 응답 canViewPayrollAccount 가 true 일 때만 줄을 넣고 false 면 줄 자체를 숨김 — 재영 정책 2026-10-29: 가맹 직원 급여 계좌는 본사 역할에게 안 보임). 줄 라벨 칸은 DetailTable 과 같은 폭(110px)을 옮겨 쓴다.
+    last_modified: 2026-10-29T06:45:42Z
   - id: contract-summary
     resource: ../../src/app/staff-members/[id]/contract-summary.ts
-    title: 근로계약 칸 줄 글자(유형 · 기간 · 최근 발송일 · 갱신 예정일 · 급여 계좌 — 「은행이름 계좌번호」, 신고 정보 없으면 -)
-    last_modified: 2026-10-29T06:04:05Z
+    title: 근로계약 칸 줄 글자(유형 · 기간 · 최근 발송일 · 갱신 예정일 · 급여 계좌 — 「은행이름 계좌번호」, 신고 정보 없으면 -; payrollAccountRows — canViewPayrollAccount 가 true 일 때만 줄, false · 칸 없는 옛 응답은 숨김)
+    last_modified: 2026-10-29T06:51:08Z
   - id: summary-view
     resource: ../../src/app/staff-members/[id]/summary-view.ts
     title: 상세 요약 영역 판정 — 영역 403 문구 가르기(출퇴근 현황은 일반 메뉴 가드 403 도 영역 권한 안내) · 근무스케줄 주(주소 week · 주 글자 · 주 선택 달력 판) · 날짜 칸 · 급여명세서 지급월 · 금액 글자 · 빈 상태 · TO-DO 배정 · 상태 글자 · 요약 줄 · 이력 문구 · 출퇴근 현황 줄 만들기(attendanceLines — 시각 기준 첫 출근 · 마지막 퇴근 · 비고) · 「관리」 주소(attendanceManageHref)

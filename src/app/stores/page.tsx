@@ -63,7 +63,7 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
               <ExcelDownloadNotice href={excelHref} />
               <ListToolbar total={total}>
                 <StoreViewToggle />
-                <ExcelDownloadButton href={excelHref} empty={total === 0} emptyTitle="받을 점포가 없습니다" />
+                <ExcelDownloadButton href={excelHref} empty={total === 0} emptyTitle="받을 점포가 없습니다." />
                 <StorePageSizeSelect />
               </ListToolbar>
               {query.view === "table" ? (

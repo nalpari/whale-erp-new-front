@@ -39,7 +39,7 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
         if (cancelled) return;
         console.error("BP 목록 조회 실패", e);
         setResult(null);
-        setFailure(e instanceof BffError ? e.message : "BP 목록을 불러오지 못했습니다");
+        setFailure(e instanceof BffError ? e.message : "BP 목록을 불러오지 못했습니다.");
       },
     );
     return () => {

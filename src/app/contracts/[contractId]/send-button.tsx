@@ -40,7 +40,7 @@ export function SendContractButton({
   // 거부 · 만료를 되살릴 수 없게 됐다(blocked) — 확인창을 닫을 때 상세를 다시 읽어 낡은 재발송 버튼을 걷는다
   const [blocked, setBlocked] = useState(false);
   const [pending, start] = useTransition();
-  const resend = useAction(sendContract, { text: "발송중입니다" });
+  const resend = useAction(sendContract, { text: "발송중입니다." });
   const copy = resendDialogCopy(status, name, staffJoined);
 
   return (

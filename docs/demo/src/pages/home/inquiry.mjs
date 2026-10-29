@@ -22,11 +22,11 @@ export default ({ A, R }) => {
     `(<span class="text-[#e93737]">*</span> 표시는 필수 기재 항목입니다.)`,
     grid(
       field("이름", input('name="name" required autocomplete="name" placeholder="홍길동"'), { required: true }),
-      field("전화번호", input('name="phone" type="tel" required inputmode="numeric" autocomplete="tel" placeholder="숫자만 입력해 주세요"'), { required: true, help: "점포 번호를 적어도 됩니다. 중복 접수는 이 번호와 이메일로 가립니다." }),
+      field("전화번호", input('name="phone" type="tel" required inputmode="numeric" autocomplete="tel" placeholder="숫자만 입력해 주세요."'), { required: true, help: "점포 번호를 적어도 됩니다. 중복 접수는 이 번호와 이메일로 가립니다." }),
       // 업종에서 「기타」를 고르면 아래에 직접 입력 칸이 열린다(LEAD-1 · #297, api industryDetail 1~50자). 닫혀 있는 동안은 검사·전송에서 빠진다.
       field("업종", select("industry", ["카페·음료", "음식점", "베이커리·디저트", "주점", "기타"], true).replace("<select ", "<select data-other-select "), { required: true }),
       field("이메일", input('name="email" type="email" data-email-format="이메일 형식이 올바르지 않습니다." required autocomplete="email" placeholder="example@company.com"'), { required: true, help: "접수 확인 메일을 이 주소로 보냅니다." }),
-      `<div data-other-wrap hidden class="col-start-1">${field("업종 직접 입력", input('name="industryOther" data-other-input required disabled maxlength="50" placeholder="업종을 직접 입력해 주세요"'), { required: true })}</div>`,
+      `<div data-other-wrap hidden class="col-start-1">${field("업종 직접 입력", input('name="industryOther" data-other-input required disabled maxlength="50" placeholder="업종을 직접 입력해 주세요."'), { required: true })}</div>`,
     ),
   );
   const what = section(
@@ -47,7 +47,7 @@ export default ({ A, R }) => {
   );
   // 중복 접수(429) 문구는 운영 정책 CNT-03 · 04 · 08 · 10 · 14 (2026-10-13).
   // 접수가 끝나면 완료와 담당자 연락 일정을 팝업으로 알린다(#298, 2026-10-20 김창수). [확인]은 폼을 비운다.
-  const done = `<dialog data-demo-done aria-labelledby="inquiry-done-title" class="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[6px] bg-white p-[32px] text-guest-ink backdrop:bg-black/40"><h2 id="inquiry-done-title" class="text-[22px] leading-[1.4] font-bold">문의가 접수되었습니다</h2><p class="mt-[12px] text-[16px] leading-[1.6] text-guest-sub">담당자가 영업일 기준 1~2일 안에 알려주신 전화번호나 이메일로 연락드립니다.</p><div class="mt-[24px] flex justify-end"><button type="button" data-dialog-close class="w-[180px] ${g.SUBMIT}">확인</button></div></dialog>`;
+  const done = `<dialog data-demo-done aria-labelledby="inquiry-done-title" class="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[6px] bg-white p-[32px] text-guest-ink backdrop:bg-black/40"><h2 id="inquiry-done-title" class="text-[22px] leading-[1.4] font-bold">문의가 접수되었습니다.</h2><p class="mt-[12px] text-[16px] leading-[1.6] text-guest-sub">담당자가 영업일 기준 1~2일 안에 알려주신 전화번호나 이메일로 연락드립니다.</p><div class="mt-[24px] flex justify-end"><button type="button" data-dialog-close class="w-[180px] ${g.SUBMIT}">확인</button></div></dialog>`;
   const submit = `<div class="flex flex-col gap-[16px]">${done}<button type="submit" class="${g.SUBMIT}">문의 접수하기</button><p class="text-[15px] leading-[1.5] text-[#767676]">같은 전화번호나 이메일로 짧은 시간에 여러 번 보내면 잠시 접수가 막히고 「이미 접수된 문의가 있습니다. 담당자가 영업일 기준 1~2일 안에 연락드립니다」를 보입니다. 접수에 실패하면 적은 내용은 그대로 두고 오류를 알려 드리니, 잠시 후 다시 [문의 접수하기]를 눌러 주세요.</p></div>`;
 
   const main = `<section class="mx-auto flex w-[800px] flex-col gap-[40px] pt-[80px] text-guest-ink"><div class="flex flex-col gap-[8px]"><h1 class="text-[28px] leading-[1.2] font-bold">도입문의</h1><p class="text-[16px] leading-[1.5]">가입하지 않아도 남기실 수 있습니다. 담당자가 확인한 뒤 알려주신 전화번호나 이메일로 회신합니다.</p></div><form data-demo-submit data-guest-validate class="flex flex-col gap-[40px]">${who}${what}${consent}${submit}</form></section>`;

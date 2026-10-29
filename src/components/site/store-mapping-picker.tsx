@@ -37,7 +37,7 @@ const TEXTS: { include: PickerTexts; exclude: PickerTexts; filter: BulkTexts } =
       <>
         선택된 점포가 없습니다.
         <br />
-        점포찾기에서 점포를 검색하여 추가해주세요.
+        점포찾기에서 점포를 검색하여 추가해 주세요.
       </>
     ),
     guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 매핑할 수 있습니다. 매핑 해제는 [빼기] 버튼을 이용해 주세요.",

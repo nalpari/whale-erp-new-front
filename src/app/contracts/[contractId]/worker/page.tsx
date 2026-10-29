@@ -18,7 +18,7 @@ export default async function ContractWorkerPage({ params, searchParams }: PageP
   const [gender, contractStatus, headers] = await Promise.all([getEnum("Gender"), getEnum("ContractStatus"), authHeaders()]);
   // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403)이면 api 문장을 그대로 보인다(목록과 같다)
   let c: ContractDetail | null = null;
-  let notice = "로그인이 필요합니다";
+  let notice = "로그인이 필요합니다.";
   if (headers.Authorization) {
     try {
       c = await request<ContractDetail>(`/contracts/${contractId}`, { headers });
@@ -37,9 +37,9 @@ export default async function ContractWorkerPage({ params, searchParams }: PageP
           {!c ? (
             <Notice title={notice} back={back} />
           ) : !isWorkerEditable(c.status) ? (
-            <Notice title="발송 대기 · 서명 대기 · 수정 요청 근로계약만 근로자 정보를 고칠 수 있습니다" contractId={contractId} back={back} />
+            <Notice title="발송 대기 · 서명 대기 · 수정 요청 근로계약만 근로자 정보를 고칠 수 있습니다." contractId={contractId} back={back} />
           ) : (
-            <ContractPermission action="update" fallback={<Notice title="근로자 정보를 고칠 권한이 없습니다" contractId={contractId} back={back} />}>
+            <ContractPermission action="update" fallback={<Notice title="근로자 정보를 고칠 권한이 없습니다." contractId={contractId} back={back} />}>
               <WorkerForm contractId={contractId} status={c.status ?? ""} initial={workerOf(c)} labels={{ gender, contractStatus }} back={back} />
             </ContractPermission>
           )}

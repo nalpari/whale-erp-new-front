@@ -8,7 +8,7 @@ import { Button } from "@/components/common";
 export default function PayslipsError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   return (
     <div role="alert" className="flex min-h-[100dvh] flex-col items-center justify-center gap-[12px] bg-erp-thead-bg p-[24px] text-center text-[14px]">
-      <p className="text-[16px] font-semibold text-erp-ink">급여명세서를 불러오지 못했습니다</p>
+      <p className="text-[16px] font-semibold text-erp-ink">급여명세서를 불러오지 못했습니다.</p>
       <p className="text-erp-label">잠시 뒤 다시 시도해 주세요. 계속되면 관리자에게 알려 주세요.</p>
       {process.env.NODE_ENV === "development" ? (
         <p className="text-erp-muted">{error.message}</p>

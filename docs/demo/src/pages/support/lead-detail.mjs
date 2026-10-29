@@ -59,7 +59,7 @@ export const render = ({ A, R }, state = "wait") => {
           ["접수 경로", "로그인 전 홈 · 도입문의"],
         ]),
     ) +
-    box("답변", hint("적어 준 이메일로 나갑니다"), done
+    box("답변", hint("적어 준 이메일로 나갑니다."), done
       ? prose(ANSWER) +
           `<p class="text-[13px] text-erp-label">08-28 14:05 · 이서준</p>` +
           // 처음 답할 때만 문의자 이메일로 보낸다(#588). 고쳐도 다시 보내지 않는다.
@@ -73,11 +73,11 @@ export const render = ({ A, R }, state = "wait") => {
       : ui.field("내용", ui.textarea({ placeholder: "계정이 없는 분이라 이 내용이 메일로 그대로 갑니다." })) +
           spread(note("저장하면 상태가 답변 완료로 바뀌고 오늘이 상담 완료일로 남습니다. 처음 저장할 때만 문의자 이메일로 답변이 갑니다. 다른 운영자가 먼저 저장했으면 막고 최신 내용을 다시 보입니다."), ui.button("답변 저장")),
     ) +
-    box("운영자 메모", hint("문의자에게 보이지 않습니다"),
+    box("운영자 메모", hint("문의자에게 보이지 않습니다."),
       ui.field(
         "내부 기록",
         ui.textarea({ rows: 4, value: c.memo }),
-      ) + spread(note("다른 운영자와 함께 봅니다"), ui.button("메모 저장", { variant: "soft" })),
+      ) + spread(note("다른 운영자와 함께 봅니다."), ui.button("메모 저장", { variant: "soft" })),
     );
 
   // 상호 · 사업자등록번호 · 점포 수는 접수 때 받지 않는다(WHALEERP-288). 필요하면 회신하며 묻는다.
@@ -101,7 +101,7 @@ export const render = ({ A, R }, state = "wait") => {
     // 상담 완료일은 답변 완료가 되는 날 자동으로 남고, 그날부터 1년 뒤 파기한다(WHALEERP-274 · 295).
     // 상담하지 않은 도입문의(상담 완료일 없음)는 상세의 [삭제]로 지운다. 확인창을 띄우고, 지우면 행을 남기지 않는다(개인정보 파기). 상담을 마친 건은 지우지 못하고 1년 뒤 배치가 파기한다(CNT-11 v120, #590).
     plain(
-      ui.detailTable("보관", [["상담 완료일", c.consulted ?? p.sub("답변을 저장하는 날 남습니다")], ["파기 예정", c.purge ?? p.sub("상담 완료일로부터 1년")]]) +
+      ui.detailTable("보관", [["상담 완료일", c.consulted ?? p.sub("답변을 저장하는 날 남습니다.")], ["파기 예정", c.purge ?? p.sub("상담 완료일로부터 1년")]]) +
         note(c.consulted ? "상담을 마친 건이라 지울 수 없고, 상담 완료일로부터 1년 뒤 배치가 파기합니다." : "상담하지 않은 건은 [삭제]로 지웁니다. 확인창을 띄우고, 지우면 기록이 남지 않습니다."),
     ) +
     tbox("처리 이력", "",

@@ -1,8 +1,16 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: main 병합(front doduo, main #187 까지): okf/log 충돌은 양쪽 기록을 살렸고, [직원 정보 관리 화면](/screens/staff-members.md) 시각 충돌은 늦은 값을 썼다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #189 code-review: 발송 이력 칸이 목록에 없는 enum 값을 영문으로 보이지 않고(`labelIn`), 종류를 모르면 링크 없이 「-」(재발송 표시는 남김), 다시 보낼 수 없는 실패는 재시도 「불가」, 빈 사유는 「-」. `Box` 의 `manage={false}` 판정은 원래 `??` 로 되돌리고 주석만 남겼다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 상세 두 단 아래에 「발송 이력」 칸(`send-log-box.tsx` · `send-log-view.ts`)을 더했다. 가입 초대 · 소속 추가 확인 요청(재발송 포함)의 결과 · 실패 사유 · 재시도 가능 여부를 `GET /staff-members/:id/summary/send-logs` 로 받는다(WHALEERP-136). api 타입을 다시 만들었다.
+* **Update**: [BP 마스터 계정 관리](/bp.md) — 등록 뒤 안내는 초기화 안내와 같은 하늘색 상자 한 문구이고 BP 코드 · 이메일은 상자에 적지 않는다(실제 화면대로, BP-3 를 바꿈, 2026-10-29 재영).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 막힌 버튼의 이유 말풍선 `Blocked` 를 `src/components/common` 으로 올리고 1팀 화면(BP 관리 · BP 관리자 · 플랫폼 관리자 · 공통코드 [BP 적용])이 같이 쓴다. 화면 모양은 그대로다(기본 말풍선). 점포 상세의 복사본 · 점포 엑셀 버튼은 점포 탭 몫으로 남겼다(2026-10-29 재영).
+* **Update**: [BP 마스터 계정 관리](/bp.md) — 실제 화면에 문서를 맞췄다: 목록은 상호명 링크 하나 · 연락처와 이메일 각자 칸 · 마지막 칸 「등록」은 일시만(2026-10-28 사용자 지정), 상세 미인증은 사업자번호 · 대표자명 · 개업일자만 하이픈이고 「인증 완료 · 일시」는 사업자정보 제목 줄 오른쪽, 초기화 안내는 토스트 + 머리 아래 빨강(미발송) · 하늘색 상자, 수정 화면은 BP 코드 · 계정상태 배지와 안내 상자, 사업자 인증은 네 화면 공통 상자로 재인증 확인창 없음(2026-10-29 재영), 아이디 · 이메일 중복 문구 통일. 목업 index · detail · new · edit · 화면정의서 네 개도 같이 고쳤다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [MY PAGE](/mypage.md) — 모든 로그아웃은 로그인 화면(`/login`)으로, 회원 탈퇴를 마친 뒤만 로그인 전 홈(`/`)으로 간다(새 `logoutAfterWithdrawal`, 2026-10-29 재영 — MYPAGE-3 의 「로그아웃도 로그인 전 홈」을 바꿈).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [로그인](/auth.md) — 「…해주세요」를 「…해 주세요」로 띄웠다(사용자 지정 2026-10-29 — 로그인 빈칸 · 관리자 상세 초기화 안내 상자 · 주소 검색 · 점포 매핑 · 권한명 안내, 데모 같이). main 이 더한 직원 자료 일괄 저장 화면 문구에도 마침표를 붙였다. 잠금 문구 인용은 api #202 와 같은 「…다시 시도해 주세요.」.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 마스터 계정 관리](/bp.md) · [점포 관리](/stores.md) · [급여명세서 관리 화면 (구현)](/screens/payslips.md) · [직원 정보 관리 화면 (구현)](/screens/staff-members.md) · [직원 운영 관리](/staff.md) — 화면 문구 끝에 마침표를 붙이고 「사용가능합니다.」를 「사용 가능합니다.」로 띄운 것(사용자 지정 2026-10-29)에 맞춰 본문에 옮겨 적은 문구를 고쳤다. 뜻은 그대로다. whale-erp-front · stores 시각은 이미 늦은 값이라 그대로 뒀다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 상세 근로계약 칸 「급여 계좌」 줄을 요약 응답 `canViewPayrollAccount` 가 true 일 때만 넣는다(`payrollAccountRows`). false 면 줄 자체를 숨기고, 칸이 없는 옛 응답도 숨긴다(재영 2026-10-29: 가맹 직원 급여 계좌는 본사 역할에게 안 보임, 노영주: 줄 숨김). api 타입 재생성은 api openapi 반영 뒤.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 상세 근로계약 칸 「계약 상태」 다음에 「급여 계좌」(`payrollAccountText`, 요약 응답 `payrollAccount`) 줄을 더했다. 신고 정보가 없으면 「-」(WHALEERP-184, 2026-10-29 노영주).
 * **Update**: 3팀 논리 ERD(`docs/erd`) — 새 장 「직원 자료 일괄 저장」(`export.html`)에 `bulk_exports` · `bulk_export_download_logs` · enum 상태와 관리자 계정 참조를 그렸다(WHALEERP-336, 운영 정책 RET-09). README 카탈로그는 `_build.py` 로 생성했고, 다른 장은 위쪽 탭만 바뀌었다. `docs/erd/physical` 은 api 물리 생성기로 다시 만들었다.
 * **Update**: main 병합(front kingler, main #184 까지): okf/log 는 양쪽 기록을 살렸다.
