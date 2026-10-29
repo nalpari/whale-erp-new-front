@@ -8,11 +8,12 @@ import { jumpPose, planJump, type JumpPlan } from "./whale-loader-math";
 // 점프 위치는 requestAnimationFrame 으로 직접 옮기므로(마운트 동안만 돈다) 서버 렌더에는 고래가 보이지 않고, 무작위 값은 effect 안에서만 쓴다.
 // 파도 · 꼬리 움직임 CSS(wl- 접두어)는 globals.css 에 있다.
 
-/** 크기 값. 화면을 보고 숫자만 바꾸면 된다(원본 기본값). 작은 영역에는 고래 로딩을 쓰지 않는다 */
+/** 크기 값. 화면을 보고 숫자만 바꾸면 된다. 작은 영역에는 고래 로딩을 쓰지 않는다
+ * (whaleSize · jumpHeight 는 원본 기본값 38 · 50 에서 더 크게 키웠다 — 사용자 지정, 2026-10-29) */
 export const WHALE_LOADER_SIZE = {
   width: 420, // 파도 줄 최대 너비(px)
-  whaleSize: 38, // 고래 가로(px)
-  jumpHeight: 50, // 수면 위로 뛰어오르는 높이(px)
+  whaleSize: 52, // 고래 가로(px)
+  jumpHeight: 60, // 수면 위로 뛰어오르는 높이(px)
   squareSize: 7, // 파도 네모 한 변(px)
   lineHeight: 36, // 파도 줄 높이(px)
   swellLow: 6, // 파도가 가라앉는 깊이(px)
@@ -28,7 +29,8 @@ const COLORS = {
 };
 /** 로딩 덮개 바탕(배경 → 연한 하늘색 원형 그라데이션)과 문구색. LoadingNotice 가 쓴다 */
 export const WHALE_LOADER_BACKGROUND = "radial-gradient(60% 70% at 50% 45%, #fff 0, #EEF3F8 75%)";
-export const WHALE_LOADER_TEXT_COLOR = "#1F3449";
+// 문구 색을 고래 색과 같게 맞췄다(사용자 지정, 2026-10-29 — 전엔 #1F3449 로 고래보다 살짝 더 어두웠다)
+export const WHALE_LOADER_TEXT_COLOR = COLORS.whale;
 const JUMP_MS = 1500; // 물에서 나와 다시 들어가기까지
 const REST_MS = 1100; // 물속에 있다가 다음 점프까지
 const JUMP_DISTANCE = [0.32, 0.44] as const; // 한 번에 건너는 거리(파도 줄 너비 대비 최소 · 최대)
