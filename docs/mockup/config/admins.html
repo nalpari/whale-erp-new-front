@@ -16,7 +16,7 @@
            가맹 관리자(moriyn) = 본인 계정과 본인 매핑 점포(ST000006)와 하나라도 겹치는 가맹 관리자(본인 한 줄).
            가맹 마스터 · 가맹 관리자도 본인 계정 줄을 보고 상세를 연다. 가맹 마스터는 본인 기본정보만 고치고, 가맹 관리자 본인 계정은 조회만 한다 (확정 2026-10-23).
          목록은 한 BP 의 계정만 보이므로 BP코드·BP상호명 열과 관리 대상 BP 검색은 두지 않는다. 플랫폼 사용자는 서비스 바로가기 「웨일ERP」에서 대상 BP 를 골라 새 탭으로 연다.
-         검색은 한 줄 — 점포(공통 점포 검색 필터, 매핑 점포로 좁힘) · 아이디·이름 검색어(둘을 함께 찾음, 포함) · 권한 그룹 · 계정 상태(일치)다. 계정 상태는 사용 · 미사용 두 값뿐이다.
+         검색은 점포(공통 점포 검색 필터, 매핑 점포로 좁힘) · 아이디·이름 검색어(둘을 함께 찾음, 포함) · 권한명 · 계정상태다. [검색] 버튼은 없다 — 점포 · 권한명 · 계정상태는 고르는 즉시, 아이디·이름은 Enter 나 돋보기로 건다. 권한명은 역할로 묶지 않고 「이름 · 코드」를 한 줄로 늘어놓는다. 계정상태는 사용 · 미사용 체크박스 둘이고(처음엔 둘 다 켬), 둘 다 끄면 결과가 없다 (2026-10-29 사용자 결정, 코드대로).
          행(아이디·이름)을 누르면 상세로 간다. 목록에는 수정 링크가 없다 — 수정은 상세를 거쳐서만 한다.
          등록 버튼은 등록 권한이 있는 BP 마스터 · BP 관리자 · 가맹 마스터 · 플랫폼 사용자에게만 보인다. 가맹 관리자는 어느 역할도 등록하지 않는다.
          표본 상세가 없는 줄(ongifm · moricd · ongids)은 같은 역할의 대표 상세(morinam01 · moriyn)로 간다.
@@ -82,7 +82,7 @@
               <span class="subtle" style="font-size: 12px" data-show-role="fa" hidden>본인 계정과 매핑 점포가 하나라도 겹치는 가맹 관리자 계정</span>
             </div>
             <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-              <!-- 검색 조건 — 점포(맨 위, 고른 점포는 아래 「선택한 점포」) · 아이디·이름 · 권한 그룹 · 계정 상태 한 줄, 초기화 · 검색은 아래 오른쪽 (점포 정보 관리와 같은 구조) -->
+              <!-- 검색 조건 — 점포(맨 위, 고른 점포는 아래 「선택한 점포」) · 아이디·이름 · 권한명 · 계정상태 한 줄, 초기화는 아래 오른쪽. [검색] 버튼 없이 고르면 바로 건다 (2026-10-29) -->
               <!-- 점포 — 점포 정보 관리와 같은 점포 고르기(S-WDJFWH). 점포명·점포코드로 찾아 고르면 아래 「선택한 점포」에 쌓인다(2026-10-12) -->
               <div class="field">
                 <label for="q-store">점포</label>
@@ -113,50 +113,36 @@
                   </div>
                 </div>
                 <div class="field">
-                  <label for="q-grp">권한 그룹</label>
+                  <label for="q-grp">권한명</label>
                   <select class="select" id="q-grp" data-show-role="bm bpall bppart plat view">
                     <option selected>전체</option>
-                    <optgroup label="BP 관리자">
-                      <option>운영 총괄 · BA000003</option>
-                      <option>인사 담당 · BA000004</option>
-                      <option>정산 조회 · BA000005</option>
-                      <option>고객응대 · BA000006</option>
-                      <option>점포 조회 전용 · BA000007</option>
-                    </optgroup>
-                    <optgroup label="가맹 마스터">
-                      <option>가맹 마스터(고정) · FM000001</option>
-                    </optgroup>
-                    <optgroup label="가맹 관리자">
-                      <option>모리 점장 · FA000002</option>
-                      <option>모리 매니저 · FA000003</option>
-                      <option>온기 점장 · FA000004</option>
-                    </optgroup>
+                    <option>운영 총괄 · BA000003</option>
+                    <option>인사 담당 · BA000004</option>
+                    <option>정산 조회 · BA000005</option>
+                    <option>고객응대 · BA000006</option>
+                    <option>점포 조회 전용 · BA000007</option>
+                    <option>가맹 마스터(고정) · FM000001</option>
+                    <option>모리 점장 · FA000002</option>
+                    <option>모리 매니저 · FA000003</option>
+                    <option>온기 점장 · FA000004</option>
                   </select>
-                  <select class="select" aria-label="권한 그룹" data-show-role="fm fa" hidden>
+                  <select class="select" aria-label="권한명" data-show-role="fm fa" hidden>
                     <option selected>전체</option>
-                    <optgroup label="가맹 관리자 · 관리계정ID morinam01">
-                      <option>모리 점장 · FA000002</option>
-                      <option>모리 매니저 · FA000003</option>
-                    </optgroup>
+                    <option>모리 점장 · FA000002</option>
+                    <option>모리 매니저 · FA000003</option>
                   </select>
                 </div>
                 <div class="field">
-                  <label for="q-st">계정 상태</label>
-                  <select class="select" id="q-st" data-show="base created empty">
-                    <option selected>전체</option>
-                    <option>사용</option>
-                    <option>미사용</option>
-                  </select>
-                  <select class="select" aria-label="계정 상태" data-show="off" hidden>
-                    <option>전체</option>
-                    <option>사용</option>
-                    <option selected>미사용</option>
-                  </select>
+                  <label id="q-st">계정상태</label>
+                  <div class="inline" role="group" aria-labelledby="q-st" style="gap: 18px; min-height: 34px">
+                    <span class="inline" style="gap: 6px" data-show="base created empty"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="사용" data-icon="check" data-icon-size="11"></span>사용</span>
+                    <span class="inline" style="gap: 6px" data-show="off" hidden><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="사용" data-icon="check" data-icon-size="11"></span>사용</span>
+                    <span class="inline" style="gap: 6px"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="미사용" data-icon="check" data-icon-size="11"></span>미사용</span>
+                  </div>
                 </div>
               </div>
               <div class="inline" style="justify-content: flex-end">
                 <button class="btn btn--secondary" type="button" data-state-go="base">초기화</button>
-                <button class="btn btn--primary" type="button">검색</button>
               </div>
             </div>
           </section>
