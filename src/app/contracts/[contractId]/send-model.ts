@@ -105,11 +105,11 @@ const RESENDABLE = new Set(["PENDING_SEND", "PENDING_SIGNATURE"]);
 const REOPENABLE = new Set(["REJECTED", "EXPIRED"]);
 
 /**
- * 상세 제목 줄에 「재발송」을 세우는가 — 발송 대기 · 서명 대기는 api 가 막지 않으면(canResend 칸이 없는 옛 응답이면 세운다 — front 가
- * 먼저 배포돼도 버튼이 모두 사라지지 않게), 거부 · 만료(WHALEERP-153)는 api 가 다시 보낼 수 있다고 할 때만(그 전 api 와 떠도 서지 않게)
+ * 상세 제목 줄에 「재발송」을 세우는가 — 발송 대기 · 서명 대기와 거부 · 만료(WHALEERP-153)에서 api 가 다시 보낼 수 있다고 할 때만.
+ * canResend 칸이 없는 옛 응답을 위한 대체 값(발송 대기 · 서명 대기면 세움)은 api #158 · #164 가 배포된 뒤 걷었다(front #146 재리뷰).
  */
 export const canShowResend = (status: string | null | undefined, canResend: boolean | undefined): status is string =>
-  !!status && ((RESENDABLE.has(status) && canResend !== false) || (REOPENABLE.has(status) && canResend === true));
+  !!status && (RESENDABLE.has(status) || REOPENABLE.has(status)) && canResend === true;
 
 /**
  * 저장하면 곧바로 보낸다(2026-10-19 재영). 저장 · 고침은 끝났는데 가입 초대 알림톡이 실패하면 api 가 502 와 계약 ID 를

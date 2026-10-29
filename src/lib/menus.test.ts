@@ -40,6 +40,13 @@ test("isAllowed: 엑셀 내려받기(메일 링크)는 메뉴 없이 두 서비�
   assert.equal(isAllowed([], "/excel-downloads-x/41", "WHALE_ERP"), false);
 });
 
+test("isAllowed: 운영 알림함은 플랫폼 탭에서 메뉴 없이 열리고, 웨일ERP 탭은 메뉴 권한을 따른다", () => {
+  for (const p of ["/notifications", "/notifications/7/open"]) assert.equal(isAllowed(platformAccount, p, "PLATFORM"), true, p);
+  assert.equal(isAllowed(platformAccount, "/notifications-x", "PLATFORM"), false);
+  assert.equal(isAllowed([], "/bp/8/notifications", "WHALE_ERP"), false);
+  assert.equal(isAllowed([menu("/notifications", true)], "/bp/8/notifications/7/open", "WHALE_ERP"), true);
+});
+
 test("isAllowed: 조회 권한 있는 메뉴와 그 아래(상세·등록)는 열린다", () => {
   for (const p of ["/settings/admins", "/settings/admins/12", "/settings/admins/new"]) assert.equal(isAllowed(menus, p, "WHALE_ERP"), true, p);
 });

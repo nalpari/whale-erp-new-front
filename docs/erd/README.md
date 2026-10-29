@@ -518,7 +518,7 @@ python3 docs/erd/_build.py
 |  | 구분 | enum | `kind` | 출근·퇴근 |
 |  | 기록 시각 | datetime | `recorded_at` | 기기 시각 |
 |  | 서버 수신 시각 | datetime | `received_at` | 확정 기준 |
-|  | 확인 필요 사유 | enum | `review_reason` | 반경 밖 출근·반경 밖 퇴근·위치 조작, 검토 후 null |
+|  | 확인 필요 사유 | enum | `review_reason` | 반경 밖 출근·반경 밖 퇴근·위치 조작·근무 12시간 초과, 검토 후 null |
 | FK | 검토 관리자 | id | `reviewed_by` | 보정 또는 이상 없음 |
 |  | 검토 일시 | datetime | `reviewed_at` |  |
 |  | 등록 방식 | enum | `entry_method` | 직원 등록·대신 등록 |

@@ -136,8 +136,10 @@ test("근로계약 상세 재발송 확인창 — 가입한 직원은 데모 문
   assert.equal(resendDialogCopy("PENDING_SEND", "남도현", true).title, "계약서를 다시 보내시겠습니까?");
 });
 
-test("재발송 버튼 — 발송 대기 · 서명 대기는 api 가 막지 않으면, 거부 · 만료는 api 가 된다고 할 때만(WHALEERP-153)", () => {
-  assert.equal(canShowResend("PENDING_SEND", undefined), true);
+test("재발송 버튼 — 발송 대기 · 서명 대기 · 거부 · 만료 모두 api 가 된다고 할 때만(WHALEERP-153, front #146 재리뷰)", () => {
+  // api 가 된다고 할 때만 — 칸이 없으면(옛 응답) 세우지 않는다
+  assert.equal(canShowResend("PENDING_SEND", undefined), false);
+  assert.equal(canShowResend("PENDING_SEND", true), true);
   assert.equal(canShowResend("PENDING_SIGNATURE", true), true);
   assert.equal(canShowResend("PENDING_SIGNATURE", false), false);
   assert.equal(canShowResend("REJECTED", undefined), false);

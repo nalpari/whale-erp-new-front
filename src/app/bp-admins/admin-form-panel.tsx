@@ -556,7 +556,7 @@ export function AdminFormPanel(props: Props) {
                 ) : noGroupForRole ? (
                   // [이동]은 환경설정 > 권한그룹 관리(/bp-role-groups, 이 탭 BP 주소)로 간다 — 권한명이 없으면 어차피 저장할 수 없다(2026-10-28 사용자 지정 문구)
                   <span className="flex items-center gap-[10px]">
-                    <FieldMessage id={messageId("roleGroupId")} message="선택할 수 있는 권한명이 없습니다. 먼저 권한명을 등록해주세요." />
+                    <FieldMessage id={messageId("roleGroupId")} message="선택할 수 있는 권한명이 없습니다. 먼저 권한명을 등록해 주세요." />
                     <Button variant="soft" href={bpPath(currentBp.bpCodeId, "/bp-role-groups")}>
                       이동
                     </Button>

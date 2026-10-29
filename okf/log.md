@@ -1,7 +1,14 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [로그인](/auth.md) — 「…해주세요」를 「…해 주세요」로 띄웠다(사용자 지정 2026-10-29 — 로그인 빈칸 · 관리자 상세 초기화 안내 상자 · 주소 검색 · 점포 매핑 · 권한명 안내, 데모 같이). main 이 더한 직원 자료 일괄 저장 화면 문구에도 마침표를 붙였다. 잠금 문구 인용은 api #202 와 같은 「…다시 시도해 주세요.」.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 마스터 계정 관리](/bp.md) · [점포 관리](/stores.md) · [급여명세서 관리 화면 (구현)](/screens/payslips.md) · [직원 정보 관리 화면 (구현)](/screens/staff-members.md) · [직원 운영 관리](/staff.md) — 화면 문구 끝에 마침표를 붙이고 「사용가능합니다.」를 「사용 가능합니다.」로 띄운 것(사용자 지정 2026-10-29)에 맞춰 본문에 옮겨 적은 문구를 고쳤다. 뜻은 그대로다. whale-erp-front · stores 시각은 이미 늦은 값이라 그대로 뒀다.
+* **Update**: main 병합(front kingler, main #184 까지): okf/log 는 양쪽 기록을 살렸다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #146 재리뷰 참고: 근로계약 상세 「재발송」은 발송 대기 · 서명 대기도 api `canResend` 가 참일 때만(`canShowResend`) — 칸이 없는 옛 응답이면 세우던 대체 값을 걷음.
+* **Update**: [운영 알림](/notify.md) — 플랫폼 계정이 운영 알림함을 열지 못하던 것을 고쳤다: `src/lib/menus.ts` `isAllowed` 가 플랫폼 탭에서 `/notifications` 아래를 연다(메뉴 MN000042 는 웨일ERP 행뿐, 2026-10-29 재영 A안). 웨일ERP 판정 · 메뉴 데이터 · `MENULESS_PATHS` 는 그대로다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 일괄 저장 화면에서 범위 선택기로 범위를 바꾸면 목록으로 가지 않고 머문다. 헤더(`admin-header.tsx` `SCOPE_STAY_SCREENS`)가 같은 주소에 새 `?scope=` 만 실어 바꾼다(front #179 리뷰).
+* **Update**: main 병합(front blastoise, origin/main 최신): okf/log 는 양쪽 기록을 살렸고, [직원 정보 관리 화면](/screens/staff-members.md) 은 늦은 generated 시각과 main 의 출퇴근 현황 구현을 남기고 미구현 목록에서 일괄 저장을 뺐다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 직원 자료 일괄 저장 화면 `/staff-members/export`(WHALEERP-337): 목록 [일괄 저장]을 BP 마스터 · 가맹마스터에게만 보이고, 미리 보기 · 요청 · 지난 요청(만드는 중이면 10초마다 다시 읽기) · 내려받기를 붙였다. api 응답 타입은 아직 손으로 적었다(api 336 openapi 반영 전).
 * **Update**: main 병합(front bulbasaur, main #170 까지): okf/log 는 양쪽 기록을 살렸고, [Whale ERP Frontend](/whale-erp-front.md) 의 근로계약 상세 · 당사자 정보 수정 두 줄은 이 PR 의 재발송 문장과 main(#170)의 칸 아래 오류 문장을 함께 남겼다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #146 병합 code-review: 재발송 확인창 제목 · 토스트를 「계약서를 다시 보내시겠습니까?」 · 「계약서를 다시 보냈습니다.」(가입한 직원 문구와 같게), 가입 전 직원 문구에서 「가입한 직원이면 앱 알림」 문장을 뺌(그 경우 api 가 막거나 상세는 앱 문구를 고른다), 「서명 기한」 → 「날인 기한」, `invitation.canResend` 대체 값 설명을 지금 코드에 맞춤.
 * **Update**: main 병합(front #146, #136 머지 뒤) — 재발송 확인창은 #136 의 `resendDialogCopy(status, name, staffJoined)` · 거부 · 만료 문장 · 직원 목록의 `status` · `lastSentAt` 를 살리고, 가입 전 직원 쪽 본문만 `inviteResendCopy`(가입 초대 · 소속 추가 확인 요청을 함께 알림)로. 「상세에 가입 여부 없음」 주석은 지움(#146 리뷰 참고 1 · 3). api 타입은 api main 으로 다시 만듦.

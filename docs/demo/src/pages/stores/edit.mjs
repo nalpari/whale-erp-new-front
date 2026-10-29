@@ -81,8 +81,8 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
       f.group("대표자 연락처", f.tel("010", "5521", "3380")),
     ),
     ui.formRow(
-      ui.field("업태", ui.textField({ value: "음식점업", maxlength: 30, placeholder: "30자 이내로 입력해주세요." })),
-      ui.field("종목", ui.textField({ value: "커피전문점", maxlength: 30, placeholder: "30자 이내로 입력해주세요." })),
+      ui.field("업태", ui.textField({ value: "음식점업", maxlength: 30, placeholder: "30자 이내로 입력해 주세요." })),
+      ui.field("종목", ui.textField({ value: "커피전문점", maxlength: 30, placeholder: "30자 이내로 입력해 주세요." })),
     ),
     f.address(A, "사업자주소", { zip: "03991", base: "서울 마포구 동교로 256", detail: "1층" }, { labelExtra: ui.checkbox(A, "점포 주소와 같음", true) }),
   );
