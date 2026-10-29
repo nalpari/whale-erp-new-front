@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [점포 관리](/stores.md) — 페이지 건수 「한 번 고르면 모든 목록이 따른다」를 「고른 값은 그 목록 주소에만 남는다」로 고쳤다 — 지금 모든 목록의 동작이다(2026-10-29 사용자 결정, front typhlosion).
 * **Update**: [점포 관리](/stores.md) — 가맹 마스터 · 가맹 관리자에게 목록 [등록] 버튼을 숨겼다(`NotFranchise`). 등록 화면 직접 접근은 api 403 이 막는다(2026-10-29 사용자 결정, front typhlosion).
 * **Update**: [점포 관리](/stores.md) — BP 상세의 소속 점포 수로 들어오면 그 BP 로 좁힌다는 옛 줄을 BP 쪽 결정(연결 없음, 2026-10-27 Plane #416)대로 고치고 목업의 BP 조건 띠를 뺐다(front typhlosion).
 * **Update**: [점포 관리](/stores.md) — 플랫폼 사용자는 BP 를 고른 탭에서만 점포를 보고 등록한다는 결정(10-19 · 10-22)으로 옛 정책 줄(전체 BP · 등록 비활성)을 고치고, api 탭 BP 전환이 main 에 머지됐음을 적었다. 목업 [등록]을 제목 줄로 옮겼다(10-23 결정, front typhlosion).
