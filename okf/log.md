@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #146 재리뷰 참고: 근로계약 상세 「재발송」은 발송 대기 · 서명 대기도 api `canResend` 가 참일 때만(`canShowResend`) — 칸이 없는 옛 응답이면 세우던 대체 값을 걷음.
 * **Update**: main 병합(front bulbasaur, main #170 까지): okf/log 는 양쪽 기록을 살렸고, [Whale ERP Frontend](/whale-erp-front.md) 의 근로계약 상세 · 당사자 정보 수정 두 줄은 이 PR 의 재발송 문장과 main(#170)의 칸 아래 오류 문장을 함께 남겼다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #146 병합 code-review: 재발송 확인창 제목 · 토스트를 「계약서를 다시 보내시겠습니까?」 · 「계약서를 다시 보냈습니다.」(가입한 직원 문구와 같게), 가입 전 직원 문구에서 「가입한 직원이면 앱 알림」 문장을 뺌(그 경우 api 가 막거나 상세는 앱 문구를 고른다), 「서명 기한」 → 「날인 기한」, `invitation.canResend` 대체 값 설명을 지금 코드에 맞춤.
 * **Update**: main 병합(front #146, #136 머지 뒤) — 재발송 확인창은 #136 의 `resendDialogCopy(status, name, staffJoined)` · 거부 · 만료 문장 · 직원 목록의 `status` · `lastSentAt` 를 살리고, 가입 전 직원 쪽 본문만 `inviteResendCopy`(가입 초대 · 소속 추가 확인 요청을 함께 알림)로. 「상세에 가입 여부 없음」 주석은 지움(#146 리뷰 참고 1 · 3). api 타입은 api main 으로 다시 만듦.
