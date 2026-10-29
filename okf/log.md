@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [홈·계정 진입](/home.md) · [직원 정보 관리 화면](/screens/staff-members.md) — #178 에서 빼 두었던 세 파일(session-gate · force-password-dialog · load-group)의 화면 문구 끝에도 마침표를 붙였다(로딩 기본 문구 「로딩중입니다.」, 「BP 로 이동하는 중입니다.」, 로그아웃 실패 · 세션 만료 알림 등).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [로그인](/auth.md) — 「…해주세요」를 「…해 주세요」로 띄웠다(사용자 지정 2026-10-29 — 로그인 빈칸 · 관리자 상세 초기화 안내 상자 · 주소 검색 · 점포 매핑 · 권한명 안내, 데모 같이). main 이 더한 직원 자료 일괄 저장 화면 문구에도 마침표를 붙였다. 잠금 문구 인용은 api #202 와 같은 「…다시 시도해 주세요.」.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 마스터 계정 관리](/bp.md) · [점포 관리](/stores.md) · [급여명세서 관리 화면 (구현)](/screens/payslips.md) · [직원 정보 관리 화면 (구현)](/screens/staff-members.md) · [직원 운영 관리](/staff.md) — 화면 문구 끝에 마침표를 붙이고 「사용가능합니다.」를 「사용 가능합니다.」로 띄운 것(사용자 지정 2026-10-29)에 맞춰 본문에 옮겨 적은 문구를 고쳤다. 뜻은 그대로다. whale-erp-front · stores 시각은 이미 늦은 값이라 그대로 뒀다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 상세 근로계약 칸 「급여 계좌」 줄을 요약 응답 `canViewPayrollAccount` 가 true 일 때만 넣는다(`payrollAccountRows`). false 면 줄 자체를 숨기고, 칸이 없는 옛 응답도 숨긴다(재영 2026-10-29: 가맹 직원 급여 계좌는 본사 역할에게 안 보임, 노영주: 줄 숨김). api 타입 재생성은 api openapi 반영 뒤.
