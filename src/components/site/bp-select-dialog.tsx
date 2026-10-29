@@ -54,8 +54,10 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
     onClose();
   };
 
+  // 미사용 · 탈퇴 BP 는 BP코드 · 계정상태를 회색으로(2026-10-29 사용자 지정). 상호명은 굵기로 가른다(아래)
+  const muted = (r: BpOption) => (r.accountStatusCode === "ACTIVE" ? undefined : "text-erp-muted");
   const columns: Column<BpOption>[] = [
-    { header: "BP코드", width: "w-[110px]", cell: (r) => r.bpCode },
+    { header: "BP코드", width: "w-[110px]", cell: (r) => <span className={muted(r)}>{r.bpCode}</span> },
     // 줄을 눌러도 고르지만, 키보드로도 고를 수 있게 상호 칸을 라디오로 둔다.
     {
       header: "상호명",
@@ -72,7 +74,7 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
         </div>
       ),
     },
-    { header: "계정상태", width: "w-[80px]", cell: (r) => statusLabel(r.accountStatusCode) },
+    { header: "계정상태", width: "w-[80px]", cell: (r) => <span className={muted(r)}>{statusLabel(r.accountStatusCode)}</span> },
   ];
   const totalPages = result ? Math.ceil(result.total / query.pageSize) : 0;
 

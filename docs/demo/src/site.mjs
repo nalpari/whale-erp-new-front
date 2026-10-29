@@ -494,7 +494,9 @@ function platformScopeDialog(A, R, id) {
   // 사용 BP 만 상호명을 굵게(앱 bp-select-dialog.tsx 와 같다, 2026-10-29)
   const rows = PLATFORM_BPS.map(([code, name, status]) => {
     const radio = ui.radio(name, `${id}-bp`, false, { "data-bp-code": code, "data-bp-name": name });
-    return [code, status === "사용" ? `<div class="font-semibold">${radio}</div>` : radio, status];
+    // 미사용 · 탈퇴는 BP코드 · 계정상태를 회색으로(앱과 같다, 2026-10-29)
+    const gray = (v) => (status === "사용" ? v : `<span class="text-erp-muted">${v}</span>`);
+    return [gray(code), status === "사용" ? `<div class="font-semibold">${radio}</div>` : radio, gray(status)];
   });
   const table = ui.dataTable(columns, rows).replace("</tbody>", `${ui.tableEmptyRow(columns).replace("<tr ", "<tr hidden data-bp-none ")}</tbody>`);
   const body =
