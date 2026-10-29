@@ -404,12 +404,6 @@ export function AdminFormPanel(props: Props) {
       </h2>
       {bpBlocked && <WarnBand>BP가 탈퇴 또는 미사용 상태로, 관리자를 등록할 수 없습니다.</WarnBand>}
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}
-      {locks.stores && (
-        <Note>
-          수정 화면에서는 기본정보(이름 · 연락처 · 이메일)만 바뀝니다. 권한명 · 계정상태 · 대상점포는 이 계정을 관리할 수 있는 다른 사용자가,
-          비밀번호는 내 정보에서 직접 바꿉니다.
-        </Note>
-      )}
 
       {/* 막힌 칸만 회색으로 그린다 — 공통 입력칸 토큰은 그대로 두고 이 화면 테두리에서만 셈한다(platform-admins 와 같다) */}
       <div className="flex flex-col gap-[24px] [&_select:disabled]:bg-erp-thead-bg">
