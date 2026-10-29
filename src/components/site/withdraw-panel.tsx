@@ -1,7 +1,8 @@
 "use client";
 
+import { unstable_rethrow } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
-import { logout } from "@/app/actions";
+import { logout, logoutAfterWithdrawal } from "@/app/actions";
 import { Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
 import { withdrawFormField, withdrawWarningText, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
 import { useCodes } from "./session-gate";
@@ -116,7 +117,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
   const handleClose = () => {
     if (saving || confirmOpen) return;
     if (step === "done") {
-      void logout();
+      void logoutAfterWithdrawal();
       return;
     }
     onClose();
@@ -132,6 +133,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
         const result = await verifyWithdrawPasswordAction(form.currentPassword);
         if (mine !== saveNumber.current) return;
         if (result.ok) return setStep("content");
+        // 1단계라 아직 탈퇴 전이다 — 세션만 끝난 것이니 로그인 화면으로 간다(logout). 최종 제출의 401 과 다르다
         if (result.status === 401) return void logout();
         if (result.status === 400) return setFieldError({ at: "currentPassword", message: result.message });
         setFailure(result.message);
@@ -161,9 +163,10 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
           // 401은 칸 오류가 아니라 세션이 이미 끝났다는 뜻이다 — 탈퇴가 서버에서 커밋된 뒤 응답만 잃고
           // 재시도한 경우도 여기로 온다(탈퇴 쪽 execute()가 커밋과 같은 트랜잭션에서 세션을 revoke 한다).
           // 되돌릴 수 없는 동작이라 "실패"로 남겨 다시 시도하게 하면 안 된다 — 바로 로그아웃으로 보낸다
-          // (ip-code-review-claude 블로커 #2, 2026-10-27).
+          // (ip-code-review-claude 블로커 #2, 2026-10-27). 탈퇴를 마쳤을 수 있어 완료 화면의 [확인]과 같이 로그인 전 홈으로 간다(logoutAfterWithdrawal).
+          // 기다려서, 액션 요청이 실패하면(연결 끊김) 아래 catch 의 띠로 알린다
           if (result.status === 401) {
-            void logout();
+            await logoutAfterWithdrawal();
             return;
           }
           const field = withdrawFormField(result.status, result.message);
@@ -182,6 +185,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
         setForm(EMPTY);
         setStep("done");
       } catch (error: unknown) {
+        unstable_rethrow(error); // 401 뒤 로그아웃의 redirect 는 성공해도 reject 로 온다 — 실패 띠 없이 그대로 넘긴다
         if (mine !== saveNumber.current) return;
         console.error("회원 탈퇴 처리 실패", error);
         setConfirmOpen(false);
@@ -358,8 +362,8 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
               회원 탈퇴 완료 안내 메일이 등록된 이메일로 발송되었습니다.
             </p>
           </div>
-          {/* admin-header.tsx 의 UserPop 로그아웃 항목과 같은 호출 방식 — <form action={}> 으로 서버 액션을 부른다. */}
-          <form action={logout} className="flex justify-center gap-[6px]">
+          {/* admin-header.tsx 의 UserPop 로그아웃 항목과 같은 호출 방식(<form action={}>)이지만, 탈퇴 뒤라 logoutAfterWithdrawal(→ /)을 부른다. */}
+          <form action={logoutAfterWithdrawal} className="flex justify-center gap-[6px]">
             <Button type="submit">확인</Button>
           </form>
         </>

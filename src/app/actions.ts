@@ -6,7 +6,7 @@ import { ApiError, getSession, LOGIN_KEY_COOKIE, request, SESSION_COOKIE } from 
 import { apiHeaders } from "@/lib/forwarded-headers";
 
 /** 이 브라우저의 접속만 끝낸다. api 가 실패해도 쿠키는 지운다 — 나가려는 사람을 붙잡지 않는다. */
-export async function logout(): Promise<void> {
+async function endSession(): Promise<void> {
   const session = await getSession();
   if (session)
     await request("/auth/admin/logout", {
@@ -16,7 +16,18 @@ export async function logout(): Promise<void> {
   const jar = await cookies();
   jar.delete(SESSION_COOKIE);
   jar.delete(LOGIN_KEY_COOKIE);
+}
+
+/** 로그아웃 — 스스로 나가든 세션이 끝나 밀려나든 로그인 화면으로 간다(2026-10-29 재영). */
+export async function logout(): Promise<void> {
+  await endSession();
   redirect("/login");
+}
+
+/** 회원 탈퇴를 마친 뒤의 로그아웃 — 로그인 전 홈으로 간다(S-JHQQNR, 2026-10-29 재영). */
+export async function logoutAfterWithdrawal(): Promise<void> {
+  await endSession();
+  redirect("/");
 }
 
 /**
