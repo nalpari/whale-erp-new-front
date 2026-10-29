@@ -189,9 +189,19 @@ function DetailBody({
         <SuccessBand>{`초기화 비밀번호를 발송했습니다.${canReset ? "\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해주세요." : ""}`}</SuccessBand>
       )}
       {/* 버튼을 숨기거나 막은 이유(목업 admins-detail). 연결 가맹 마스터가 아닌 사람이 보는 가맹 관리자 문구는 2026-10-27 사용자 지정 */}
-      {/* 본인 계정은 한 줄만 — 설명문은 뺐다(2026-10-29 사용자 지정, 전엔 수정 범위 · 비밀번호 바꾸는 곳까지 적었다). 가맹 관리자는 [수정]이 없어도 둔다 */}
+      {/* 본인 계정은 사람 아이콘 + 한 줄만 — 설명문은 뺐다(2026-10-29 사용자 지정, 전엔 수정 범위 · 비밀번호 바꾸는 곳까지 적었다). 가맹 관리자는 [수정]이 없어도 둔다 */}
       {admin.actions.isSelf ? (
-        (admin.roleTypeCode === "FA" || canUpdate) && <InfoBand>내 계정입니다</InfoBand>
+        (admin.roleTypeCode === "FA" || canUpdate) && (
+          <InfoBand>
+            {/* 사람 아이콘 — 헤더 사람 아이콘(avatar.svg)과 같은 모양 · 선 굵기(2026-10-29 사용자 지정) */}
+            <span className="flex items-center gap-[6px]">
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden className="size-[16px] shrink-0 stroke-erp-brand">
+                <path d="M2.5 14c2.4-2.7 8.6-2.8 11 0M10.6 6.1a2.6 2.6 0 1 1-5.2 0 2.6 2.6 0 0 1 5.2 0Z" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              내 계정입니다.
+            </span>
+          </InfoBand>
+        )
       ) : (
         admin.roleTypeCode === "FA" &&
         !admin.actions.canUpdate && <InfoBand>이 계정은 연결된 가맹마스터만 수정할 수 있습니다.</InfoBand>
