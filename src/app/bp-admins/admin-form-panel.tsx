@@ -634,11 +634,21 @@ export function AdminFormPanel(props: Props) {
               {message("stores")}
             </div>
           )}
-          {locks.stores && mode === "edit" && (
-            <p className="text-[14px] text-erp-label">
-              {props.admin.isAllStores ? "전체 점포" : props.admin.stores.map((s) => s.name).join(", ") || "매핑된 점포가 없습니다."}
-            </p>
-          )}
+          {/* 고칠 수 없으면 맡은 점포를 한 줄씩 — 점포명 + 점포 상태(2026-10-29 사용자 지정, 전엔 쉼표로 이은 이름만). 유형은 api 가 주지 않아 두지 않는다 */}
+          {locks.stores &&
+            mode === "edit" &&
+            (props.admin.isAllStores || !props.admin.stores.length ? (
+              <p className="text-[14px] text-erp-label">{props.admin.isAllStores ? "전체 점포" : "매핑된 점포가 없습니다."}</p>
+            ) : (
+              <ul className="flex flex-col gap-[8px] text-[14px] text-erp-ink">
+                {props.admin.stores.map((s) => (
+                  <li key={s.storeId} className="flex items-center justify-between gap-[10px]">
+                    <span className="min-w-0 truncate">{s.name}</span>
+                    <StoreStatusBadge status={s.storeStatusCode as StoreStatus} />
+                  </li>
+                ))}
+              </ul>
+            ))}
           {outOfScope.length > 0 && !locks.stores && (
             <div className="flex flex-col gap-[8px]">
               <p className="text-[14px] font-medium text-erp-ink">
