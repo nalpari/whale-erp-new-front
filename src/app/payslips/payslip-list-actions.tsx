@@ -10,23 +10,26 @@ import { sendPayslips, type DraftFailure } from "./actions";
 import { PayslipDraftButton } from "./payslip-draft-dialog";
 import { sendTargetOf } from "./payslip-list-query";
 
-// 목록 오른쪽 위 버튼(데모 payButtons). 「급여명세서 작성」은 어느 달이든 늘 보이고(2026-10-02 재영), 「확정 N건 발송」은 확정 건이 있을 때만.
-// 작성은 그 달 직원을 고르는 팝업을 연다(WHALEERP-226, payslip-draft-dialog.tsx). 발송은 확인창 뒤 POST /payslips/send(WHALEERP-231 · 237)로
-// 목록과 같은 달 · 점포 · 직원명의 확정 명세서를 보낸다. 모두 보내면 토스트, 실패가 있으면 결과 창에 성공 건수와 실패 대상(이름 · 이유)을
+// 화면명 오른쪽 「급여명세서 작성」 — 근로계약 관리의 「계약서 작성」과 같은 자리다. 어느 달이든 늘 보이고(2026-10-02 재영), 그 달 직원을
+// 고르는 팝업을 연다(WHALEERP-226, payslip-draft-dialog.tsx). 메뉴 권한은 버튼을 숨기기만 한다 — 막는 것은 api 다.
+export function PayslipCreateAction({ month, employmentTypeLabels }: { month: string; employmentTypeLabels: EnumValue[] }) {
+  const can = usePagePermission();
+  return can.create ? <PayslipDraftButton key={month} month={month} employmentTypeLabels={employmentTypeLabels} /> : null;
+}
+
+// 목록 오른쪽 위 발송 버튼(데모 payButtons 중 발송 — 작성은 화면명 오른쪽으로 옮겼다, WHALEERP-632). 「확정 N건 발송」은 확정 건이 있을 때만.
+// 발송은 확인창 뒤 POST /payslips/send(WHALEERP-231 · 237)로 목록과 같은 달 · 점포 · 직원명의 확정 명세서를 보낸다. 모두 보내면 토스트, 실패가 있으면 결과 창에 성공 건수와 실패 대상(이름 · 이유)을
 // 따로 보인다. 끝나면 목록을 다시 받는다. 메뉴 권한은 버튼을 숨기기만 한다 — 막는 것은 api 다.
 export function PayslipListActions({
   query,
   confirmedCount,
-  employmentTypeLabels,
 }: {
   query: PayslipListQuery;
   confirmedCount: number;
-  employmentTypeLabels: EnumValue[];
 }) {
   const router = useRouter();
   const toast = useToast();
   const can = usePagePermission();
-  const canCreate = can.create;
   const canUpdate = can.update;
   const [sending, setSending] = useState(false);
   const [busy, startBusy] = useTransition();
@@ -59,7 +62,6 @@ export function PayslipListActions({
 
   return (
     <>
-      {canCreate && <PayslipDraftButton key={query.month} month={query.month} employmentTypeLabels={employmentTypeLabels} />}
       {canUpdate && confirmedCount > 0 && (
         <Button
           onClick={() => {
