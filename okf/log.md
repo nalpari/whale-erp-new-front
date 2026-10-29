@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-29
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 본문의 「MY PAGE」를 「마이페이지」로(메뉴 제목 변경에 맞춤, front #176 코드 리뷰 지적).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 리뷰 반영: BP 선택 팝업만 `withMaster=true` 로 BP 마스터 계정 있는 BP 를 받는다(탭 BP 찾기 · 상태 확인은 거르지 않음), 「내정보 관리」 슬라이드 제목.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front persian: BP 선택 팝업(안내 · 상호명 · 계정상태 · 사용 BP 굵게 · 「총 N 건」 · 찾기 칸 X 다시 찾기 · 20/50/100 · 높이 고정 · 머리 고정 — 목록은 BP 마스터 계정 있는 BP 만 최신순, api primeape), 헤더 BP 상태 칩(탈퇴BP · 미사용BP · 조회만 가능합니다.), 탈퇴 · 미사용 BP 의 BP 관리자 · 권한그룹 · 휴일 등록 막기, 「변경이력」 문구 통일, 서비스 바로가기(부가서비스 아이콘 · 「준비 중」 팝업 · 32px 칸) · 헤더 툴팁 HeaderTip · 마이페이지 제목.
 * **Update**: [BP 마스터 계정 관리](/bp.md) · [점포 관리](/stores.md) — 화면 문구 「변경 이력」 → 「변경이력」.
