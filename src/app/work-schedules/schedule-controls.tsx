@@ -85,7 +85,7 @@ export function ScheduleHistory({
     <section aria-labelledby="schedule-history" className="flex min-w-0 flex-col gap-[12px] pt-[12px]">
       <div className="flex items-end gap-[6px]">
         <h2 id="schedule-history" className="flex-1 text-[18px] font-semibold text-erp-ink">
-          변경 이력
+          변경이력
         </h2>
         <div className="w-[150px] shrink-0">
           <DateField aria-label="변경일 시작" value={query.historyFrom} onChange={(v) => go({ historyFrom: v })} />
@@ -121,11 +121,11 @@ export function ScheduleHistory({
         rowKey={(h) => h.workScheduleHistoryId}
         empty={
           list ? (
-            "변경 이력이 없습니다."
+            "변경이력이 없습니다."
           ) : (
             // 이력을 받지 못해도 근무표는 그린다 — 이 표 안에만 알린다(front #93 리뷰)
             <span role="alert" className="text-erp-off">
-              변경 이력을 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요.
+              변경이력을 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요.
             </span>
           )
         }

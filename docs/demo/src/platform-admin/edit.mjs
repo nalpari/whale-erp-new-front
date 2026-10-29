@@ -103,5 +103,5 @@ export const platformMyPanel = (A, { master = false } = {}) => {
   );
   const role = ui.formGroup("사용자 권한", ui.field("사용자 권한", ui.textField({ value: me.role, readonly: true })));
   const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-close": true })}</div>`;
-  return ui.slidePanel("platform-mypage-panel", "내 정보", ui.sectionHead(`내 정보${sub(`${me.name} · ${me.id}`)}`) + basic + role + buttons);
+  return ui.slidePanel("platform-mypage-panel", "내정보 관리", ui.sectionHead(`내정보 관리${sub(`${me.name} · ${me.id}`)}`) + basic + role + buttons);
 };

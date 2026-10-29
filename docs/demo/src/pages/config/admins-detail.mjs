@@ -78,7 +78,7 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
   const historyDialog = c.wide(
     x.dialog(
       histId,
-      "변경 이력",
+      "변경이력",
       `<div class="overflow-x-auto">${history}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
       ui.button("닫기", { variant: "off", "data-close": true }),
     ),
@@ -86,7 +86,7 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
   );
 
   const editBtn = ui.slideTrigger("수정", "admin-edit-panel");
-  const histBtn = x.dialogTrigger("변경 이력", histId, "soft");
+  const histBtn = x.dialogTrigger("변경이력", histId, "soft");
   // 패널: 이름은 맨 위에 혼자(닫기도 포함해 기능 버튼은 모두 맨 아래로, 2026-10-07 피드백). 전체 화면: 아래 버튼 줄.
   const head = panel ? HEAD : HEAD_LINE;
   const bottomButtons = panel
