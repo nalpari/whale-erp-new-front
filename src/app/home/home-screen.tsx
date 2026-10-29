@@ -99,7 +99,7 @@ function HomeBody({ greeting }: { greeting: string }) {
     const failed = (what: string, error: string) => <Notice text={`${what} 불러오지 못했습니다. ${error}`} />;
     body = (
       <>
-        {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={(renewalItem && pendingLineOf(renewalItem, bp)?.href) || bpPath(bp, "/contracts")} newHref={bpPath(bp, "/contracts/new")} /> : null}
+        {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={renewalItem ? (pendingLineOf(renewalItem, bp)?.href ?? bpPath(bp, "/contracts")) : bpPath(bp, "/contracts")} newHref={bpPath(bp, "/contracts/new")} /> : null}
         {s?.cards && <Cards cards={s.cards} hq={hq && s.cards.stores.franchise > 0} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
         <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
           {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} hq={hq && !!s?.cards?.stores.franchise} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />}
