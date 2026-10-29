@@ -274,6 +274,16 @@ components:
 - 2px 모서리, 14px 500, 상하 2 좌우 4. 운영은 파랑 계열(최소 폭 44px), 미운영은 빨강 계열.
 - **꼬리표(Tag):** 같은 크기 · 모서리에 표 머리 바탕 · 선 · 보조 글자색(분류를 말할 뿐 상태가 아니다). 공통코드 관리주체는 글자 · 선은 그대로 두고 바탕만 가른다 — 플랫폼고정은 연한 파랑(#f4f9ff), 플랫폼제공 · BP전용은 회색(`OwnerTag`, 2026-10-27).
 
+### Notice Band
+- 화면 위 안내 띠(`NoticeBand`). 2px 모서리, 1px 테두리, 안쪽 16/12, 14px · 줄간 1.6, 제목은 500, 아래 설명은 먹색.
+- **risk:** 실패 · 막힘 — `erp-off` 테두리 · 글자에 `erp-off-bg` 바탕(`role="alert"`).
+- **info:** 막히지는 않았지만 알아야 할 안내(할 일 · 조회 범위가 바뀜 · 조회만 가능 등) — 패널 선(#edeef1) 테두리에 표 머리 바탕(#f8f9fb), 먹색 글자(`role="status"`).
+- 점포 화면에서 만들어 엑셀 받기 · 엑셀 내려받기 화면이 같이 쓰게 되어 공통으로 올렸다(2026-10-29, 1팀). 공통 `FailedBand`(`field-message.tsx`) 말고도 화면별 띠(`InfoBand` · `WarnBand` · `PendingNotice` · 화면별 `FailedBand` 사본 등)가 아직 따로 있다.
+
+### Excel Download
+- 목록 엑셀 받기는 `ExcelDownloadProvider` 로 목록 영역을 감싸고, 툴바에 `ExcelDownloadButton`(Soft 버튼), 목록 위에 `ExcelDownloadNotice`(Notice Band)를 둔다. 화면이 파일 이름(`fileName`)과 0건일 때 문구(`emptyTitle`)를 넘긴다.
+- 받는 동안 버튼 글자가 「파일 만드는 중 · N%」로 바뀌고 잠긴다. 1만 건 이상(예약 생성) · 생성 중 · 1분 제한 · 이메일 없음은 info 띠, 그 밖의 실패(권한 · 예약 생성 불가 · 서버 오류 · 잘린 파일)는 risk 띠다(2026-10-29, 1팀).
+
 ### Popups
 - 흰 바탕, 1px #ebebeb, 2px 모서리, 안쪽 23px(테두리 1px 을 더해 Figma 의 24 를 맞춘다).
 - **fold:** 위에서부터 펼쳐지고 아래에서부터 말린다(열기 260ms / 닫기 180ms).

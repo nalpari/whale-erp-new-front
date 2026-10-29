@@ -55,7 +55,7 @@ BP 마스터 계정 하나라 목록은 BP 를 기준으로 선다. 상태는 �
 * 엑셀은 1만 건 미만이면 바로, 이상이면 생성 후 알림. 한 사람 1분 1회, 연락처·대표자 연락처만 가린다. 내려받은 사람·일시·조건·건수를 남긴다 — `S-ALHCJS`
 * 엑셀에는 목록 항목과 BP 사업자정보 전체를 담는다. 생성 중에는 새 요청을 받지 않는다 — `S-ALHCJS`
 * 1만 건 이상 엑셀은 점포 목록과 같게 예약 생성하고, 끝나면 등록한 이메일로 내려받기 링크를 보낸다. 파일은 24시간 보관하고 요청한 본인만 받는다. 즉시 생성분은 보관하지 않는다 — `BP-1`
-* 구현(2026-10-28): api `GET /bp-masters/excel` 이 모든 화면 공통의 엑셀(api `okf/api/excel-exports.md`)을 타서 1만 건 이상은 202 로 예약 접수하고, front 중계 경로 `/bp-masters/excel` 이 그 JSON 을 상태 그대로 넘긴다. 화면 처리 · 메일 링크 화면(`/excel-downloads/{id}`)은 점포 목록과 같다 — [점포 관리](/stores.md) 「엑셀」. 1분 제한 · 생성 중 차단은 같은 사람 · 같은 화면 기준이라 점포 엑셀을 만드는 중에도 BP 엑셀은 받는다
+* 구현(2026-10-28): api `GET /bp-masters/excel` 이 모든 화면 공통의 엑셀(api `okf/api/excel-exports.md`)을 타서 1만 건 이상은 202 로 예약 접수하고, front 중계 경로 `/bp-masters/excel` 이 그 JSON 을 상태 그대로 넘긴다. 화면 처리 · 메일 링크 화면(`/excel-downloads/{id}`)은 점포 목록과 같다 — [점포 관리](/stores.md) 「엑셀」. 1분 제한 · 생성 중 차단은 같은 사람 · 같은 화면 기준이라 점포 엑셀을 만드는 중에도 BP 엑셀은 받는다. 화면은 공통 `ExcelDownloadProvider`(`fileName="BP목록.xlsx"`) · `ExcelDownloadNotice` · `ExcelDownloadButton`(`emptyTitle="받을 BP 가 없습니다"`)을 쓴다(2026-10-29 점포 화면에서 공통으로 올림)
 
 ## 상세
 

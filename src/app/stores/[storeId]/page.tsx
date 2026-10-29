@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Badge, DetailTable, DetailValues, Tag, type DetailRow } from "@/components/common";
+import { Badge, DetailTable, DetailValues, NoticeBand, Tag, type DetailRow } from "@/components/common";
 import { getEnum } from "@/lib/api";
 import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { storeImageFailureText } from "@/lib/store-image";
@@ -8,7 +8,7 @@ import { CodeLabel } from "@/components/site/code-label";
 import { formatBizNumber, hasStoreCoordinates } from "@/lib/store-view";
 import { StoreCardBody, StoreDenied, StoreFrame, storeDenied } from "../store-frame";
 import { StoreFloorLabel } from "../store-floor-label";
-import { NoticeBand, StoreImage, StoreStatusBadge } from "../store-parts";
+import { StoreImage, StoreStatusBadge } from "../store-parts";
 import { backHrefOf } from "../stores-query";
 import { HistoryButton } from "./history-dialog";
 import { ImageFailedNotice } from "./image-failed-notice";

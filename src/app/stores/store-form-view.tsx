@@ -14,6 +14,7 @@ import {
   Field,
   FormGroup,
   FormRow,
+  NoticeBand,
   RequiredMark,
   Select,
   TextField,
@@ -61,7 +62,7 @@ import {
   verifyStoreBusinessAction,
   type ActionFailure,
 } from "./actions";
-import { FieldMessage, NoticeBand, StoreImage, StoreStatusBadge, StoreTypeCards } from "./store-parts";
+import { FieldMessage, StoreImage, StoreStatusBadge, StoreTypeCards } from "./store-parts";
 import { withBack } from "./stores-query";
 
 /** 동시 수정 409 문구(api). 이때만 최신 정보를 다시 불러온다 */

@@ -2,12 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Button, DetailTable } from "@/components/common";
+import { Button, DetailTable, NoticeBand } from "@/components/common";
 import type { components } from "@/lib/api-types.generated";
 import { loginPathOf } from "@/lib/auth-routes";
 import { bff, BffError } from "@/lib/bff";
 import { formatDateTime } from "@/lib/format";
-import { NoticeBand } from "../../stores/store-parts";
 import { type Failure, failureOf, remainingOf } from "../excel-download-model";
 
 type ExcelDownloadLink = components["schemas"]["ExcelDownloadLinkResponseDto"];
