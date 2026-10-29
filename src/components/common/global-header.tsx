@@ -92,7 +92,7 @@ function Logo({ href = "/", onClick }: { href?: string; onClick?: (e: MouseEvent
 // 떠오를 때 4px 아래에서 올라오고, 동작 줄이기 설정이면 올라오지 않고 나타나기만 한다.
 function Tip({ label }: { label: string }) {
   return (
-    <span className="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-erp-brand bg-erp-brand px-[12px] py-[10px] text-[14px] leading-[2] whitespace-nowrap text-white opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">
+    <span className="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-erp-brand bg-erp-brand px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-white opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">
       <span className="absolute -top-[5px] left-1/2 size-[8px] -translate-x-1/2 -rotate-45 rounded-tr-[1px] border-t border-r border-erp-brand bg-erp-brand" />
       {label}
     </span>
