@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { redirect, unstable_rethrow } from "next/navigation.js";
 import { ApiError } from "../../../lib/api-error.ts";
-import { callSave, deleteFailureOf, END_UNKNOWN, saveFailureOf, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, resendDialogCopy, sendFailureOf, sendNoticeOf, signingResendCopy, canShowResend, sendBodyOf } from "./send-model.ts";
+import { callSave, deleteFailureOf, END_UNKNOWN, saveFailureOf, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, resendDialogCopy, inviteResendCopy, sendFailureOf, sendNoticeOf, signingResendCopy, canShowResend, sendBodyOf } from "./send-model.ts";
 
 test("sendFailureOf — 접수 여부 모름은 보내기를 막고 상세를 다시 읽는다", () => {
   assert.deepEqual(sendFailureOf(502, "SEND_UNCONFIRMED", "알림톡이 접수됐는지 알 수 없습니다"), {
@@ -114,12 +114,25 @@ test("근로계약 상세 재발송 확인창 — 가입한 직원은 데모 문
     title: "계약서를 다시 보내시겠습니까?",
     body: ["같은 조건의 계약서를 권도윤 님에게 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다."],
   });
+  // 가입 전 직원은 발송 대기 · 서명 대기 모두 보낼 때 api 가 다시 판별한다 — 가입 초대 · 소속 추가 확인 요청을 함께 알린다(WHALEERP-130)
   for (const status of ["PENDING_SEND", "PENDING_SIGNATURE"]) {
     const invite = resendDialogCopy(status, "남도현", false);
-    assert.equal(invite.title, "근로계약서를 다시 보내시겠습니까?");
+    // 제목은 가입한 직원과 같다 — 같은 화면에서 무엇을 다시 보내는지가 같게
+    assert.equal(invite.title, "계약서를 다시 보내시겠습니까?");
+    assert.doesNotMatch(invite.body.join(" "), /앱 알림/);
     assert.equal(invite.body.length, 2);
-    assert.match(invite.body.join(" "), /초대 코드/);
+    assert.match(invite.body.join(" "), /가입 초대 알림톡\(초대 코드\)/);
+    assert.match(invite.body.join(" "), /소속 추가 확인 요청/);
+    assert.match(invite.body[0], /^남도현 님의 /);
+    // 직원 목록 재발송도 같은 문구다
+    assert.deepEqual(invite, { title: inviteResendCopy("남도현").title, body: inviteResendCopy("남도현").body });
   }
+  // 요청 유효 기간 · 발송 대기로 남는 것 · 날인 기한(용어 통일)
+  const invite = inviteResendCopy("남도현");
+  assert.match(invite.body[1], /30일 동안 유효/);
+  assert.match(invite.body[1], /발송 대기로 남습니다/);
+  assert.doesNotMatch(invite.body.join(" "), /서명 기한/);
+  assert.match(inviteResendCopy(null).body[0], /^직원 휴대전화번호로/);
   assert.equal(resendDialogCopy("PENDING_SEND", "남도현", true).title, "계약서를 다시 보내시겠습니까?");
 });
 

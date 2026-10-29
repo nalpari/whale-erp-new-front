@@ -410,7 +410,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * MY PAGE 내 정보 (S-JXKHCM). 플랫폼 · BP 여섯 역할 모두 쓴다. AllowPasswordChangePending 을
+         * 마이페이지 내 정보 (S-JXKHCM). 플랫폼 · BP 여섯 역할 모두 쓴다. AllowPasswordChangePending 을
          *     달지 않는다 — 강제 비밀번호 변경 대상이면 이 경로도 403 이다(위 changeRequiredPassword 주석과 같다).
          */
         get: operations["AdminAuthController_getProfile"];
@@ -440,12 +440,33 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 내 비밀번호 변경(MY PAGE, 1팀 S-PTWREE). 현재 비밀번호를 확인한 뒤 새 비밀번호로 바꾼다. 강제 비밀번호
+         * 내 비밀번호 변경(마이페이지, 1팀 S-PTWREE). 현재 비밀번호를 확인한 뒤 새 비밀번호로 바꾼다. 강제 비밀번호
          *     변경(POST password-change)과 달리 로그인한 상태에서 스스로 비밀번호를 아는 채로 바꾸는 것이라
          *     AllowPasswordChangePending 을 달지 않는다 — 강제 변경 대상이면 이 경로도 403 이다(updateProfile 과
          *     같다). 바꿔도 이 기기 · 다른 기기의 로그인은 모두 이어진다(서비스 주석 참고).
          */
         post: operations["AdminAuthController_changeMyPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/me/password-verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 현재 비밀번호 확인(마이페이지 회원 탈퇴 1단계, S-JHQQNR). 맞아야 front 가 탈퇴 화면을 연다 — 맞으면 204, 틀리면
+         *     400. 로그인한 관리자 아무나 받는다(지금은 탈퇴에서만 쓰지만 다른 확인에도 쓸 수 있게). 탈퇴 실행의 비밀번호
+         *     확인은 그대로 둔다(이중 확인). 비밀번호를 받는 경로라 내 비밀번호 변경 · 탈퇴 실행과 같은 한도를 건다.
+         */
+        post: operations["AdminAuthController_verifyMyPassword"];
         delete?: never;
         options?: never;
         head?: never;
@@ -460,7 +481,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 회원 탈퇴 조건 조회(MY PAGE, S-JHQQNR). 탈퇴 버튼을 누르기 전에 보여줄 영향 범위 — BP명 · 함께 탈퇴될
+         * 회원 탈퇴 조건 조회(마이페이지, S-JHQQNR). 탈퇴 버튼을 누르기 전에 보여줄 영향 범위 — BP명 · 함께 탈퇴될
          *     하위 관리자 수 · 함께 강제 폐점될 점포 수 · 가로막는 진행 중 계약 여부. BP 마스터만 받는다 — 그 밖의
          *     권한은 403, 계정이 지워졌으면 404. 조회만 하고 실제 탈퇴는 하지 않는다.
          */
@@ -483,7 +504,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 회원 탈퇴 실행(MY PAGE, S-JHQQNR). BP 마스터가 현재 비밀번호와 사유를 보내면 본인 · 같은 BP 의 하위 관리자가
+         * 회원 탈퇴 실행(마이페이지, S-JHQQNR). BP 마스터가 현재 비밀번호와 사유를 보내면 본인 · 같은 BP 의 하위 관리자가
          *     모두 탈퇴하고 점포는 모두 폐점된다. 진행 중인 근로계약이 있으면 막는다(조건 조회와 같은 기준). 비밀번호를
          *     받는 경로라 내 비밀번호 변경과 같은 한도를 건다.
          */
@@ -528,7 +549,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 내 BP 사업자정보(MY PAGE, S-UOJVUR). BP 마스터만 받는다 — 그 밖의 권한은 403, 계정이 지워졌으면
+         * 내 BP 사업자정보(마이페이지, S-UOJVUR). BP 마스터만 받는다 — 그 밖의 권한은 403, 계정이 지워졌으면
          *     404. GET me 와 같이 인증된 조회라 한도를 끈다(코드 리뷰로 찾음, 2026-10-22 — 탭 전환·저장 뒤
          *     재조회가 로그인성 한도에 걸릴 수 있었다).
          */
@@ -566,7 +587,7 @@ export interface paths {
          *     IP · 계정마다 시간당 10건 — 점포 사업자정보 인증(stores.controller.ts)과 같은 기준이다. 국세청을 실제로
          *     부르는 횟수는 BpProfileService 가 관리자별로 따로 센다(countNtsCall, StoreManagementService 와 같은
          *     방식) — 국세청 키 · 하루 할당량을 모든 BP 가 함께 쓰므로, 한 관리자가 반복해 부르면 그날 모든 BP 의
-         *     가입 · 점포 · MY PAGE 인증이 503 이 된다(코드 리뷰로 찾음, 2026-10-22 — 점포 쪽에만 있던 보호가
+         *     가입 · 점포 · 마이페이지 인증이 503 이 된다(코드 리뷰로 찾음, 2026-10-22 — 점포 쪽에만 있던 보호가
          *     빠져 있었다).
          */
         post: operations["AdminAuthController_requestBpBusinessVerification"];
@@ -1369,7 +1390,7 @@ export interface paths {
         };
         /**
          * 플랫폼 계정이 고를 고객 BP — 서비스 바로가기 「웨일ERP」의 BP 선택. 미삭제 고객 BP 를 사용 · 미사용 · 탈퇴 모두
-         *     BP코드순으로 나눠 준다. 사용 중인 플랫폼 관리자(PM · PA)만 부르고, 그 밖의 관리자 · 직원 앱은 403.
+         *     최신 등록순으로 나눠 준다. withMaster 면 BP 마스터 계정이 있는 BP 만(BP 마스터 계정 목록과 같은 범위 · 순서). 사용 중인 플랫폼 관리자(PM · PA)만 부르고, 그 밖의 관리자 · 직원 앱은 403.
          */
         get: operations["BpCodesController_list"];
         put?: never;
@@ -3967,7 +3988,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 본사 제공 동의 — 처음이든 철회 뒤든 (ATT-30). 계정에 하나라 소속 가맹 점포 모두에 같이 적용된다 */
+        /**
+         * 본사 제공 동의 — 처음이든 철회 뒤든, 내 정보의 `needsReconsent` 로 다시 동의할 때든 (ATT-30). 계정에 하나라 소속 가맹
+         *     점포 모두에 같이 적용된다
+         */
         post: operations["MyConsentController_agreeHqSharing"];
         delete?: never;
         options?: never;
@@ -4642,6 +4666,10 @@ export interface components {
             newPassword: string;
             /** @description 새 비밀번호 확인. */
             newPasswordConfirm: string;
+        };
+        AdminPasswordVerificationDto: {
+            /** @description 현재 비밀번호. */
+            currentPassword: string;
         };
         WithdrawEligibilityResponseDto: {
             /** @description BP 상호명. */
@@ -6060,7 +6088,7 @@ export interface components {
             accountStatusCode: string;
         };
         BpListResponseDto: {
-            /** @description BP코드순. 미삭제 고객 BP 를 상태와 상관없이. */
+            /** @description 최신 등록순. 미삭제 고객 BP 를 상태와 상관없이(withMaster 면 BP 마스터 계정이 있는 BP 만). */
             items: components["schemas"]["BpListItemResponseDto"][];
             total: number;
         };
@@ -9510,6 +9538,12 @@ export interface components {
              * @description 철회 일시. 철회하지 않았으면 null
              */
             withdrawnAt: string | null;
+            /**
+             * @description 동의한 문구 버전을 더는 받아 주지 않아(항목 · 목적이 넓어짐) 다시 동의해야 하는지(ATT-30). 동의일 때만 true 일 수 있고,
+             *     그동안 본사에는 미동의로 보여 가려진다 — 앱은 들어올 때 동의 시트를 다시 띄우고 `POST /me/hq-sharing-consent` 로 새
+             *     버전에 동의한다.
+             */
+            needsReconsent: boolean;
         };
         MyLocationConsentDto: {
             state: components["schemas"]["LocationConsentState"];
@@ -9750,13 +9784,16 @@ export interface components {
         AcceptMyInvitationDto: {
             /**
              * @description 본사 제공 동의(운영 정책 ATT-30, 선택). 목록의 asksHqSharingConsent 가 true 일 때만 쓴다 — 직영 점포이거나 계정이
-             *     이미 동의했으면 보내도 바꾸지 않는다. 동의는 계정에 하나다(api #78)
+             *     받아 주는 문구 버전에 이미 동의했으면 보내도 바꾸지 않는다. 더는 받아 주지 않는 버전에 동의했으면 true 로 지금 버전에
+             *     다시 동의한다. 동의는 계정에 하나다(api #78)
              */
             hqSharingConsented?: boolean;
         };
         AcceptMyInvitationResponseDto: {
             /** @description 이 계정에 이어진 직원 레코드 */
             staffMemberId: number;
+            /** @description 근무지(점포) — 이은 직원 레코드의 점포. 앱이 `/me/contracts` 항목을 이 storeId 로 걸러 그 근무지 근로계약서만 연다 */
+            storeId: number;
             /** @description 근무지(점포) 이름 */
             storeName: string;
         };
@@ -11010,6 +11047,41 @@ export interface operations {
             };
             /** @description 현재 비밀번호 불일치 · 비밀번호 정책 위반 · 새 비밀번호가 현재와 같음 · 확인 불일치 */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminAuthController_verifyMyPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminPasswordVerificationDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 현재 비밀번호 불일치 · 빈 값 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 계정을 찾을 수 없음 */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -14210,12 +14282,17 @@ export interface operations {
     BpCodesController_list: {
         parameters: {
             query: {
+                /**
+                 * @description true 면 BP 마스터 계정이 있는 BP 만 — BP 선택 팝업이 BP 마스터 계정 목록과 같은 범위 · 건수를 보이려고 준다(2026-10-29 사용자 지정).
+                 *     없거나 false 면 거르지 않는다 — BP 탭 · 상태 확인은 BP 마스터 계정이 없는 BP 도 찾아야 한다. 'true' · 'false' 밖의 값은 400.
+                 */
+                withMaster?: boolean;
+                /** @description 상호 · BP코드 중 하나에 들어 있으면 나온다(대소문자 무시). 앞뒤 공백은 자른다. */
+                keyword?: string;
                 /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
                 page: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize: number;
-                /** @description 상호 · BP코드 중 하나에 들어 있으면 나온다(대소문자 무시). 앞뒤 공백은 자른다. */
-                keyword?: string;
             };
             header?: never;
             path?: never;
