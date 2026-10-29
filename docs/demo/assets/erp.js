@@ -683,7 +683,7 @@
     const cover = document.createElement("div");
     cover.setAttribute("role", "status");
     cover.style.cssText = "position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#fff;font-size:14px;color:var(--color-erp-muted,#999)";
-    cover.textContent = `${data.bp}(${data.code}) · 전체 점포로 여는 중입니다`;
+    cover.textContent = `${data.bp}(${data.code}) · 전체 점포로 여는 중입니다.`;
     document.body.append(cover);
     setTimeout(() => cover.remove(), 900);
   }

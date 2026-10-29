@@ -100,8 +100,10 @@ function menuDialog(A, R, role, id) {
     const map = GRANT[code][svc] || {};
     // top: 1단계 줄 — 켜진 칸을 「등록」 배지 모양(연한 파랑 바탕 · 파랑 테두리 · 파랑 체크)으로(앱 role-menu-dialog 와 같다, 2026-10-26 사용자 지정)
     const cell = (on, b, op, top = false) => {
+      // 내 권한 밖(self) 칸은 꺼져 있으면 체크박스를 두지 않고, 고를 수 있는 빈 칸은 테두리를 회청으로 진하게(앱과 같다, 2026-10-29 사용자 지정)
+      if (b === "self" && !on) return "";
       const box = ui.checkbox(A, "", on, { "aria-label": op, disabled: !!b });
-      return `<span class="inline-flex${b ? " opacity-40" : ""}${top ? " [&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on-bg [&_input:checked]:bg-[url(icons/check-on.svg)] [&_input:checked]:bg-center [&_input:checked]:bg-no-repeat [&_img]:hidden" : ""}">${box}</span>`;
+      return `<span class="inline-flex${b ? " opacity-40" : " [&_input:enabled:not(:checked)]:border-erp-brand"}${top ? " [&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on-bg [&_input:checked]:bg-[url(icons/check-on.svg)] [&_input:checked]:bg-center [&_input:checked]:bg-no-repeat [&_img]:hidden" : ""}">${box}</span>`;
     };
     const OPS = [["R", "조회"], ["C", "등록"], ["U", "수정"], ["D", "삭제"]];
     const rows = vis.map((m, i) => {
@@ -121,7 +123,7 @@ function menuDialog(A, R, role, id) {
         if (TIP[b]) reasons.add(TIP[b]);
         return cell(has(map, m[0], op), b, label, m[1] === 1);
       });
-      const nm = `<span style="padding-left:${(m[1] - 1) * 18}px">${m[1] > 1 ? sub("└ ") : ""}${m[1] === 1 ? `<b class="font-semibold">${m[2]}</b>` : m[2]}</span>${[...reasons].map((r) => ` <span class="text-[13px] text-erp-label">· ${r}</span>`).join("")}`;
+      const nm = `<span style="padding-left:${(m[1] - 1) * 18}px">${m[1] > 1 ? sub("└ ") : ""}${m[1] === 1 ? `<b class="font-semibold">${m[2]}</b>` : m[2]}</span>`; // 막힌 이유는 메뉴명 옆에 적지 않는다(앱과 같다, 2026-10-29 사용자 지정)
       return [nm, sub(`${m[1]}단계`), ...cells];
     });
     // 머리칸 전체 선택: 고를 수 있는 칸이 모두 켜져 있으면 켜짐, 일부만 켜졌으면 「–」, 고를 칸이 없으면 흐리게

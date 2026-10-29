@@ -30,7 +30,7 @@ const REQUIREMENT_LABELS = [
 test("필수는 점포유형(등록) · 점포명뿐이다", () => {
   assert.deepEqual(validateStoreForm(filled, "create"), {});
   const empty = validateStoreForm(EMPTY_STORE_FORM, "create");
-  assert.equal(empty.storeTypeCode, "점포유형을 골라 주세요.");
+  assert.equal(empty.storeTypeCode, "점포유형을 선택해 주세요.");
   assert.equal(empty.name, "점포명을 입력해 주세요.");
   assert.equal(validateStoreForm({ ...filled, storeTypeCode: "" }, "edit").storeTypeCode, undefined);
   assert.ok(validateStoreForm({ ...filled, name: "가".repeat(51) }, "create").name);

@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 const PENDING = "-";
 // 기다리는 동안의 빈 자리(영역 하나, 그리고 상세 본문 묶음) — 상세 진입 · 작은 영역에는 고래 로딩을 쓰지 않는다. 최소 높이만 잡아 영역이 들어올 때 상자 높이가 크게 출렁이지 않게 한다.
 const AREA_PENDING = <div aria-hidden="true" className="min-h-[92px]" />;
-// 바깥 LoadGroup(본문 전체) fallback 에만 스크린리더용 안내를 붙인다 — 영역 4곳까지 읽히면 「로딩중입니다」가 여럿 겹친다
+// 바깥 LoadGroup(본문 전체) fallback 에만 스크린리더용 안내를 붙인다 — 영역 4곳까지 읽히면 「로딩중입니다.」가 여럿 겹친다
 const BODY_PENDING = (
   <div role="status" className="min-h-[92px]">
     <span className="sr-only">로딩중입니다.</span>
