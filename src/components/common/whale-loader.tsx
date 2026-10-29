@@ -9,11 +9,12 @@ import { jumpPose, planJump, type JumpPlan } from "./whale-loader-math";
 // 파도 · 꼬리 움직임 CSS(wl- 접두어)는 globals.css 에 있다.
 
 /** 크기 값. 화면을 보고 숫자만 바꾸면 된다. 작은 영역에는 고래 로딩을 쓰지 않는다
- * (whaleSize · jumpHeight 는 원본 기본값 38 · 50 에서 더 크게 키웠다 — 사용자 지정, 2026-10-29) */
+ * (whaleSize · jumpHeight 는 원본 기본값 38 · 50 에서 더 크게 키웠다 — 사용자 지정, 2026-10-29.
+ * jumpHeight 는 whaleSize 보다 더 큰 비율로 키워야 몸집 대비 낮게 뛰는 것처럼 안 보인다) */
 export const WHALE_LOADER_SIZE = {
   width: 420, // 파도 줄 최대 너비(px)
-  whaleSize: 52, // 고래 가로(px)
-  jumpHeight: 60, // 수면 위로 뛰어오르는 높이(px)
+  whaleSize: 68, // 고래 가로(px)
+  jumpHeight: 100, // 수면 위로 뛰어오르는 높이(px)
   squareSize: 7, // 파도 네모 한 변(px)
   lineHeight: 36, // 파도 줄 높이(px)
   swellLow: 6, // 파도가 가라앉는 깊이(px)
@@ -21,9 +22,10 @@ export const WHALE_LOADER_SIZE = {
   dropSize: 5, // 물방울 한 변(px)
 } as const;
 
-// 색 · 움직임 시간은 두 크기가 같다(원본 기본값)
+// 움직임 시간은 원본 기본값
 const COLORS = {
-  whale: "#3A5670",
+  // 돌고래 시안 때 썼던 색(erp-brand-soft, #8f9eaf)으로 맞췄다 — 사용자 지정, 2026-10-29. 원본 기본값은 #3A5670.
+  whale: "#8F9EAF",
   waveFrom: "rgba(174,190,206,.9)", // 왼쪽(연한) 네모
   waveTo: "rgba(32,96,154,.9)", // 오른쪽(진한) 네모 · 물방울
 };
