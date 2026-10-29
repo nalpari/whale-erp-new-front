@@ -1,8 +1,9 @@
 # Bundle history
 
 ## 2026-10-29
-* **Update**: main 병합(front mankey, PR #172 충돌 해소 — #173 · #175 머지분): okf/log.md 는 두 쪽 항목을 모두 남겼다.
+* **Update**: main 병합(front mankey, PR #172 충돌 해소 — #173 · #175 · #176 머지분): okf/log.md 는 두 쪽 항목을 모두 남겼다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 재영 공지(10-29 「검증 오류는 입력 필드 하단」)에 맞춰 퇴직 처리 · 퇴직일 변경 확인창의 퇴직일 검증 오류(형식 · 3개월 범위 · api 400)와 생년월일 정정 확인창의 api 400(오늘 뒤 · 만 19세 미만)을 날짜 칸 아래로 옮겼다. 문구 · api · 권한은 그대로, 403 · 409 · 결과 모름은 지금 자리. 판정은 `showsBelowDateField` · `showsBelowBirthDateField`. 퇴직일 칸은 날짜가 실제로 바뀔 때만 미리 보기를 다시 받되, 미리 보기가 실패한 뒤에는 같은 날짜로도 다시 받는다(`reloadsPreview`).
+* **Update**: [마이페이지](/mypage.md) · [로그인](/auth.md) · [BP 마스터 계정 관리](/bp.md) · 목차 — 「MY PAGE」를 「마이페이지」로 표기를 바꿨다(사용자 지정, PR #176 — 주석 · DESIGN.md · 데모 소스 · 약관 본문도 같이). 헤더 팝업 제목(`user-pop.tsx`)과 [Whale ERP Frontend](/whale-erp-front.md) 는 persian PR 이 바꾼다. bp.md 시각은 main 의 늦은 값을 그대로 뒀다.
 * **Update**: main 병합(front caterpie, PR #173 두 번째 충돌 해소): okf/log.md 는 두 쪽 항목을 모두 남겼다.
 * **Update**: main 병합(front caterpie, PR #173 충돌 해소): okf 충돌은 양쪽 기록을 살렸다 — bp.md 는 main 의 generated 시각, log.md 는 두 쪽 항목을 날짜별로 모두 남겼다. 알림 종 403 은 main 의 강제 변경 문구 판정을 따랐다.
 * **Update**: [MY PAGE](/mypage.md) — 회원 탈퇴 사유를 front 고정 목록 대신 로그인 정보의 공통코드 `WITHDRAW_REASON` 에서 읽는다 — 정책 그대로, 구현을 맞췄다(2026-10-29 재영).

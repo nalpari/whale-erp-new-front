@@ -176,7 +176,7 @@ export function RoleForm(
         </div>
       </div>
       {props.extra}
-      {/* 버튼 줄은 가운데 — MY PAGE 패널(my-page-panel.tsx)과 같다(2026-10-26 사용자 지정, 전엔 양 끝 · 오른쪽 정렬) */}
+      {/* 버튼 줄은 가운데 — 마이페이지 패널(my-page-panel.tsx)과 같다(2026-10-26 사용자 지정, 전엔 양 끝 · 오른쪽 정렬) */}
       {/* 위 내용(최종수정)과의 간격을 입력칸 사이(18)와 같게 — 칸 간격 12 + 6(2026-10-26 사용자 지정) */}
       <div className="mt-[6px] flex justify-center gap-[6px]">
         {props.mode === "create" ? (

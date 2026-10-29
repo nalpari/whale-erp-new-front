@@ -10,7 +10,7 @@ import { TermsLink } from "./terms-link";
 
 // 강제 비밀번호 변경 팝업(S-VFGQLI, 데모 auth/force-password · 목업 auth/force-password.html).
 // 초기·임시 비밀번호로 들어온 계정에 로그인 직후 뜬다. 닫기가 없고 Esc·바깥 클릭으로도 닫히지 않는다.
-// 모달 <dialog> 라 뒤의 메뉴·MY PAGE 는 조작할 수 없고, 로그아웃만 팝업 안에서 된다.
+// 모달 <dialog> 라 뒤의 메뉴·마이페이지는 조작할 수 없고, 로그아웃만 팝업 안에서 된다.
 // 운영자가 만든 계정(약관 미동의)은 아래에 약관 동의를 붙여 비밀번호와 한 번에 받는다 — 필수 둘에 동의해야 변경 버튼이 열린다.
 // 저장은 POST /auth/admin/password-change. 오류 문구는 화면이 만들지 않고 api 의 message 를 그대로 보인다.
 export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAccount; onDone: () => void }) {

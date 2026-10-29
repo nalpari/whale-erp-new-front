@@ -1,6 +1,6 @@
 ---
 type: Area
-title: MY PAGE
+title: 마이페이지
 description: 상단 이름을 눌러 여는 계정 메뉴 — 내 정보·비밀번호 변경·회원 탈퇴·로그아웃.
 tags: [mockup, mypage]
 generated: { by: claude-code/opus-5.5, at: 2026-10-29T04:00:00Z }
@@ -8,7 +8,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-29T04:00:00Z }
 
 근거: `docs/mockup/mypage/` (목업 · 1차 · R-LYZWGG)
 
-MY PAGE 는 사이드바 메뉴가 아니라 어느 화면에서든 상단 오른쪽 이름을 누르면 여는
+마이페이지는 사이드바 메뉴가 아니라 어느 화면에서든 상단 오른쪽 이름을 누르면 여는
 메뉴다. 내 정보 관리·비밀번호 변경·회원 탈퇴·로그아웃이 뜨고, 메뉴 권한 설정과
 상관없이 로그인한 사람 모두에게 보인다. 회원 탈퇴만 BP 마스터에게 보인다. 1팀 작업이다.
 
