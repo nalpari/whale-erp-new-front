@@ -2,7 +2,7 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
-import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FormGroup, FormRow, Radio, Select, Textarea, TextField, useAction } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FieldMessage, FormGroup, FormRow, Radio, Select, Textarea, TextField, useAction } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
 import { SAVED_COOKIE, SAVED_COOKIE_MAX_AGE, backHrefOf, listAfterSave, savedKindOf, withBack } from "../contract-list";
@@ -89,20 +89,24 @@ function PayTable({ title, help, errors, children }: { title: string; help?: str
   );
 }
 
-// 저장 때 찾은 유효성 오류 — 그 칸 바로 아래, 도움말 위에 보인다(WHALEERP-631, 2026-10-29 재영 공지 1번). 색은 종이 계약 파일 칸 오류와 같다.
+// 저장 때 찾은 유효성 오류 — 그 칸 바로 아래, 도움말 위에 보인다(WHALEERP-631, 2026-10-29 재영 공지 1번). 문장마다 공통 FieldMessage
+// (다른 화면의 칸 아래 오류와 같은 모양 · role="alert")이고, 묶음 id 를 입력의 aria-describedby 로 잇는다.
 function FieldErrors({ id, errors }: { id?: string; errors?: string[] }) {
+  const fallback = useId();
   if (!errors?.length) return null;
+  const base = id ?? fallback;
   return (
-    <span id={id} className="flex flex-col text-[12px] leading-[1.5] text-erp-off">
-      {errors.map((m) => (
-        <span key={m}>{m}</span>
+    <div id={base} className="flex flex-col">
+      {errors.map((m, i) => (
+        <FieldMessage key={m} id={`${base}-${i}`} message={m} />
       ))}
-    </span>
+    </div>
   );
 }
 
 // 오류가 있는 칸의 입력에 aria-invalid · aria-describedby 를 단다. 칸 안 입력은 공통 컴포넌트라 첫 입력을 찾아 단다(DateField 처럼 id 를
-// 받지 않는 것도 있다).
+// 받지 않는 것도 있다). 칸 안 입력이 다시 만들어져도 다시 달도록 렌더마다 본다. 입력이 여럿인 Group · PayTable 은 묶음에
+// aria-describedby 를 단다(입력마다 aria-invalid 를 달지 않는다).
 function useInvalid(box: RefObject<HTMLElement | null>, errorId: string, invalid: boolean) {
   useEffect(() => {
     const control = box.current?.querySelector<HTMLElement>("input:not([type=file]):not([type=hidden]), select, textarea");
@@ -114,7 +118,7 @@ function useInvalid(box: RefObject<HTMLElement | null>, errorId: string, invalid
       control.removeAttribute("aria-invalid");
       control.removeAttribute("aria-describedby");
     }
-  }, [box, errorId, invalid]);
+  });
 }
 
 type PayRow = { key: string; label: string; cells?: ReactNode[]; hours?: ReactNode; wage?: ReactNode; amount: ReactNode };
@@ -168,7 +172,14 @@ function PaperFile({ id, label, file, error, accept, onPick }: { id: string; lab
   return (
     <span className="flex flex-col gap-[6px]">
       <span className="flex gap-[6px]">
-        <TextField id={id} readOnly value={file?.name ?? ""} placeholder="PDF · JPG · PNG" aria-invalid={error ? true : undefined} />
+        <TextField
+          id={id}
+          readOnly
+          value={file?.name ?? ""}
+          placeholder="PDF · JPG · PNG"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
+        />
         <Button variant="soft" onClick={() => input.current?.click()}>
           파일 선택
         </Button>
@@ -178,7 +189,7 @@ function PaperFile({ id, label, file, error, accept, onPick }: { id: string; lab
           </Button>
         )}
       </span>
-      {error && <span className="text-[12px] text-erp-off">{error}</span>}
+      <FieldMessage id={`${id}-error`} message={error} />
       <input
         ref={input}
         type="file"
@@ -327,7 +338,8 @@ export function ContractForm({
   const [failures, setFailures] = useState(0);
   useEffect(() => {
     if (!failures) return;
-    const target = failureRef.current ?? formRef.current?.querySelector("[data-invalid]");
+    // 날인본 파일 칸은 PaperFile 이 입력에 aria-invalid 를 단다 — 둘 다 찾아 화면 위에서 가장 앞의 것으로
+    const target = failureRef.current ?? formRef.current?.querySelector("[data-invalid], [aria-invalid=true]");
     target?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [failures]);
   const fail = (message: string) => {

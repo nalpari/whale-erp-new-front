@@ -2,7 +2,7 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
-import { Button, Checkbox, ConfirmDialog, DateField, Field, FormGroup, FormRow, Radio, TextField, useAction } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DateField, Field, FieldMessage, FormGroup, FormRow, Radio, TextField, useAction } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatPhone, GENDERS, inProgressLine, type InProgressContract } from "../../new/contract-form-model";
 import { withBack } from "../../contract-list";
@@ -10,14 +10,6 @@ import { updateWorker } from "../actions";
 import { callSave, SAVE_CALL_LOST } from "../send-model";
 import { workerBody, workerProblemsByField, workerSaveNote, type WorkerForm as Form } from "./worker-model";
 
-// 저장 때 찾은 유효성 오류 — 그 칸 바로 아래에 보인다(WHALEERP-631, 2026-10-29 재영 공지 1번). 작성 화면과 같은 색이다.
-function FieldError({ id, error }: { id: string; error?: string }) {
-  return error ? (
-    <span id={id} className="text-[12px] leading-[1.5] text-erp-off">
-      {error}
-    </span>
-  ) : null;
-}
 
 // 날인 전 근로자 정보 수정(WHALEERP-125 「본인 대조」 · 126). 초대 코드를 못 받았다는 직원과 유선으로 번호를 확인했거나,
 // 직원이 가입 값과 달라 수정을 요청했을 때 쓴다. 다섯 칸은 직원이 가입하며 넣는 값과 대조된다.
@@ -119,28 +111,33 @@ export function WorkerForm({
 
       <FormGroup title="직원 정보">
         <FormRow>
-          <Field label="이름" required>
-            <TextField value={form.name} maxLength={50} aria-required {...invalid("name")} onChange={(e) => set("name", e.target.value)} />
-            <FieldError id={ids.name} error={errs.name} />
-          </Field>
-          <Field label="휴대전화번호" required>
-            <TextField
-              value={form.phone}
-              inputMode="tel"
-              placeholder="010-0000-0000"
-              maxLength={13}
-              aria-required
-              {...invalid("phone")}
-              onChange={(e) => set("phone", formatPhone(e.target.value))}
-            />
-            <FieldError id={ids.phone} error={errs.phone} />
-          </Field>
+          {/* 저장 때 찾은 오류는 칸 바로 아래(공통 FieldMessage, WHALEERP-631). Field 는 <label> 이라 오류를 그 밖에 둔다 — 안에 두면 입력 이름이 된다 */}
+          <div className="flex min-w-px flex-1 flex-col gap-[8px]">
+            <Field label="이름" required>
+              <TextField value={form.name} maxLength={50} aria-required {...invalid("name")} onChange={(e) => set("name", e.target.value)} />
+            </Field>
+            <FieldMessage id={ids.name} message={errs.name} />
+          </div>
+          <div className="flex min-w-px flex-1 flex-col gap-[8px]">
+            <Field label="휴대전화번호" required>
+              <TextField
+                value={form.phone}
+                inputMode="tel"
+                placeholder="010-0000-0000"
+                maxLength={13}
+                aria-required
+                {...invalid("phone")}
+                onChange={(e) => set("phone", formatPhone(e.target.value))}
+              />
+            </Field>
+            <FieldMessage id={ids.phone} message={errs.phone} />
+          </div>
         </FormRow>
         <FormRow>
           <div ref={birthRef} data-invalid={errs.birthDate ? true : undefined} className="flex min-w-px flex-1 flex-col gap-[8px]">
             <span className="text-[14px] font-medium text-erp-label">생년월일 *</span>
             <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />
-            <FieldError id={ids.birthDate} error={errs.birthDate} />
+            <FieldMessage id={ids.birthDate} message={errs.birthDate} />
           </div>
           <div
             role="group"
@@ -156,7 +153,7 @@ export function WorkerForm({
               ))}
               <Checkbox label="외국인" checked={form.isForeigner} onChange={(e) => set("isForeigner", e.target.checked)} />
             </div>
-            <FieldError id={ids.gender} error={errs.gender} />
+            <FieldMessage id={ids.gender} message={errs.gender} />
           </div>
         </FormRow>
       </FormGroup>

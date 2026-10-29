@@ -472,9 +472,17 @@ test("유효성 오류는 칸과 함께 — 화면이 그 칸 아래에 보인�
   assert.ok(problemsByField(fieldProblems(filled({ startDate: "2026-11-01" }), false, false, "2026-11-01")).startDate?.length);
 });
 
-test("한 칸에 오류가 여럿이면 모두 — 문장만 뽑은 problems 와 같은 것을 담는다", () => {
-  const f = filled({ wage: "9,999,999,999", name: "" });
-  const list = fieldProblems(f);
-  assert.deepEqual(list.map((p) => p.message), problems(f));
-  assert.deepEqual(problemsByField(list).wage, ["시급은 2,147,483,647원 이하로 입력하세요"]);
+test("한 칸에 오류가 여럿이면 모두 — 파트타이머 요일 시간은 표 아래, 수습은 세 칸에 나눠", () => {
+  // 파트타이머가 표에서 고친 요일의 근무 · 휴게 오류는 둘 다 소정근로시간 표(schedule) 아래
+  const bad = { work: { start: { hour: "15", minute: "00" }, end: { hour: "09", minute: "00" } }, rest: { start: { hour: "12", minute: "00" }, end: { hour: "13", minute: "00" } } } as const;
+  const part = filled({ employmentType: "PART_TIME", days: ["MON"], dayTimes: { MON: bad } });
+  assert.deepEqual(problemsByField(fieldProblems(part)).schedule, ["월요일 근무시간은 끝이 시작보다 뒤여야 합니다", "월요일 휴게시간은 근무시간 안이어야 합니다"]);
+  // 정직원 수습 — 기간 · 감액률 · 수습 중 시급이 각자 칸
+  const by = problemsByField(fieldProblems(filled({ employmentType: "FULL_TIME", probation: true, probationRate: "11", endDate: "2027-03-13" })));
+  assert.deepEqual(by.probationMonths, ["수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다"]);
+  assert.deepEqual(by.probationRate, ["수습 임금 감액률은 0~10% 정수로 입력하세요"]);
+  // 시급 10,000원 × (1 − 10%) = 9,000원 — 최저임금의 90% 아래
+  const low = problemsByField(fieldProblems(filled({ employmentType: "FULL_TIME", wage: "10,000", probation: true, probationRate: "10" })));
+  assert.equal(low.probationWage?.length, 1);
+  assert.equal(low.probationRate, undefined);
 });
