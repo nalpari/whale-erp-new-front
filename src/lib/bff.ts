@@ -36,7 +36,7 @@ export async function bff<T>(path: string): Promise<T> {
 
 /**
  * 로그아웃 서버 액션(logout → /login)을 부른다. 성공하면 서버 액션의 redirect 로 이동한다.
- * 액션 자체가 실패하면(연결 끊김) 쿠키가 남아 다시 홈으로 돌려보내지므로, 이동하지 않고 알린 뒤 false 를 돌려준다.
+ * 액션 자체가 실패하면(연결 끊김) 쿠키가 남아 proxy 가 /login 을 다시 자기 홈으로 돌려보내므로, 이동하지 않고 알린 뒤 false 를 돌려준다.
  */
 export async function signOut(logout: () => Promise<void>): Promise<boolean> {
   try {
