@@ -16,6 +16,7 @@ import { ContractBox } from "./contract-box";
 import { Box } from "./detail-box";
 import { employmentHistoryLines, historySearch } from "./employment-history";
 import { MenuManageLink } from "./manage-link";
+import { SendLogBox } from "./send-log-box";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
 import { AttendanceBox, PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
 import { attendanceManageHref, scheduleWeekOf } from "./summary-view";
@@ -60,7 +61,7 @@ async function loadEnumOrEmpty(name: string): Promise<EnumValue[]> {
 }
 
 // 직원 상세(WHALEERP-184). 배치는 데모 docs/demo/staff/detail.html(원본 src/pages/staff/detail.mjs)과 같다 — 5:7 두 단,
-// 왼쪽은 기본 정보 · 비밀번호 초기화 · 근로계약, 오른쪽은 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO.
+// 왼쪽은 기본 정보 · 비밀번호 초기화 · 근로계약, 오른쪽은 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO. 두 단 아래에 발송 이력(WHALEERP-136, 데모에 없음).
 // 기본 정보는 상세 api(GET /staff-members/:id, WHALEERP-599 · 183)로 받는다 — 목록 한 줄에 계정 이메일 · 직무 · 입사일 · 생년월일을 더한 모양이다.
 // 근로계약 · 근무스케줄 · 급여명세서 · TO-DO 건수는 영역마다 상세 요약 api(GET /staff-members/:id/summary/…, WHALEERP-183)로 따로 받아
 // 한 영역만 실패하거나 그 영역 메뉴 권한이 없어도 나머지는 그린다(summary-boxes.tsx). 가린 직원 · 없는 직원 · 이상한 id 는 404 다.
@@ -229,6 +230,14 @@ export default async function StaffMemberDetailPage({
                     </LoadGroupArea>
                   </Box>
                 </div>
+              </div>
+              {/* 발송 이력(WHALEERP-136) — 열이 많아 두 단 아래 전체 너비로 둔다. 관리 화면이 없어 「관리」는 흐리게 둔다 */}
+              <div className="mt-[24px]">
+                <Box title="발송 이력">
+                  <LoadGroupArea fallback={AREA_PENDING}>
+                    <SendLogBox staffMemberId={staffMemberId} />
+                  </LoadGroupArea>
+                </Box>
               </div>
             </LoadGroup>
           </div>

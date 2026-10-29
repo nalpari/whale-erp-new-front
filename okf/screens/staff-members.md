@@ -1,10 +1,10 @@
 ---
 type: Screen
 title: 직원 정보 관리 화면 (구현)
-description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [정정] 확인창(WHALEERP-602)을 두었다. 남은 것.
+description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [정정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-29T06:04:05Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-29T07:30:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -18,6 +18,10 @@ sources:
     resource: ../../src/lib/api-types.generated.ts
     title: 생성한 api 타입 — 근무스케줄 칸은 한 주 응답 StaffMemberWeekScheduleResponseDto, TO-DO 칸은 TodoItemDto, 목록 쿼리 storeIds · storeTypes, 재직 이력은 StaffMemberEmploymentPeriodDto · 생년월일 정정(BirthDateCorrectionDto · 상세의 birthDateCorrectable)
     last_modified: 2026-10-26T03:31:34Z
+  - id: send-log-box
+    resource: ../../src/app/staff-members/[id]/send-log-box.tsx
+    title: 상세 발송 이력 칸 — 가입 초대 · 소속 추가 확인 요청 발송 결과 · 실패 사유 · 재시도(WHALEERP-136), 줄 글자는 send-log-view.ts
+    last_modified: 2026-10-29T07:30:00Z
   - id: staff-list-query
     resource: ../../src/app/staff-members/staff-list-query.ts
     title: 목록 URL ↔ 조회 조건(점포 조건 storeIds · 빈 storeIds · scope) · 상세로 넘기는 ?back=(withBack · backHrefOf)
@@ -294,6 +298,17 @@ sources:
 * **계약 없음**(`contract: null`)은 「등록된 근로계약이 없습니다.」와 「근로계약서 작성」(`/contracts/new`) 버튼이다(184 완료 조건 3). 버튼은 근로계약 관리
   조회 · 등록 권한이 있을 때만(`ContractMenuPermission`, front #57 규칙). 근로계약서를 쓰면서 직원 레코드가 생기므로 거의 나오지 않는다(2026-10-19 노영주).
   작성 화면은 직원을 미리 채워 받지 않아 빈 작성 화면으로 간다 — 이 직원으로 미리 채우는 것은 남은 일이다.
+
+# 발송 이력 칸 (WHALEERP-136)
+
+* 두 단 아래 전체 너비 칸 「발송 이력」(`send-log-box.tsx`, 줄 글자는 `send-log-view.ts`). 이 직원 레코드의 근로계약이 보낸 가입 초대 · 소속 추가 확인 요청
+  (재발송 포함)을 `GET /staff-members/:id/summary/send-logs` 로 받아 최근 순으로 모두 보인다. 발송 이력은 이 화면에만 둔다 — 계약 상세 · 따로 된 화면에는
+  두지 않는다(2026-10-26 김민식). 데모에 없는 칸이라 열이 많아 두 단 아래에 두었고, 관리 화면이 없어 「관리」는 흐리다.
+* 열은 발송 일시(한국 시각) · 종류(`StaffSendKind` 한글, 재발송이면 뒤에 「(재발송)」) · 결과(`StaffSendResult` 배지 — 성공 초록, 실패 빨강, 접수 여부 모름
+  회색) · 재시도(확실히 나가지 않은 실패 「가능」, 접수 여부 모름 「확인 필요」, 성공 「-」) · 실패 사유(api 문구 그대로, 한 줄로 자르고 전체는 title).
+  재시도는 그 발송 한 번의 판정이고, 지금 재발송을 누를 수 있는지는 가입 상태 줄의 재발송 버튼이 정한다.
+* 근로계약 관리 조회 권한을 보는 경로라 그 권한이 없으면 「발송 이력을 볼 권한이 없습니다.」, 나머지 실패는 「다시 하기」다(근로계약 칸과 같다).
+  enum 을 받지 못했으면 종류 · 결과만 「-」다. 보낸 초대가 없으면 「보낸 초대가 없습니다.」.
 
 # 이메일 (WHALEERP-180)
 
