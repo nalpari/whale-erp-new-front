@@ -1001,7 +1001,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 사용자 권한 선택지. 플랫폼 관리자에게는 플랫폼 마스터 권한을 빼고 준다. */
+        /**
+         * 사용자 권한 선택지. 플랫폼 관리자에게는 플랫폼 마스터 권한을 빼고 준다.
+         *     `purpose=filter` 는 목록 필터 「권한명」용 — 호출자와 상관없이 PM · PA 그룹을 다 준다.
+         */
         get: operations["PlatformAdminsController_roleGroups"];
         put?: never;
         post?: never;
@@ -1023,6 +1026,23 @@ export interface paths {
          *     `:id` 보다 먼저 둔다 — 뒤에 두면 이 경로가 상세(:id)로 잡힌다.
          */
         get: operations["PlatformAdminsController_loginIdAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-admins/email-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 이메일 중복 확인. 아이디 확인과 같은 등록 권한이고, 판정은 등록의 409 와 같다. `:id` 보다 먼저 둔다. */
+        get: operations["PlatformAdminsController_emailAvailability"];
         put?: never;
         post?: never;
         delete?: never;
@@ -10709,7 +10729,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 맞는 계정이 없음. 어느 값이 틀렸든 같은 메시지(「일치하는 계정이 없습니다」)이고 실패 1회로 센다 */
+            /** @description 맞는 계정이 없음. 어느 값이 틀렸든 같은 메시지(「일치하는 계정이 없습니다.」)이고 실패 1회로 센다 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -10847,7 +10867,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 플랫폼 관리자에게 문의해 주세요」 */
+            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 플랫폼 관리자에게 문의해 주세요.」 */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -12883,7 +12903,10 @@ export interface operations {
     };
     PlatformAdminsController_roleGroups: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description `filter` 면 목록 필터용 — 호출자와 상관없이 플랫폼 권한(PM · PA) 그룹을 다 준다. 없으면 등록 · 수정 선택지. */
+                purpose?: "filter";
+            };
             header?: {
                 /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
                 "X-Bp-Code-Id"?: string;
@@ -12900,6 +12923,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PlatformRoleGroupListResponseDto"];
                 };
+            };
+            /** @description purpose 값 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
             403: {
@@ -12934,6 +12964,44 @@ export interface operations {
                 };
             };
             /** @description 아이디 형식 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformAdminsController_emailAvailability: {
+        parameters: {
+            query: {
+                email: string;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProfileEmailAvailabilityResponseDto"];
+                };
+            };
+            /** @description 이메일 형식 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -14240,7 +14308,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴를 찾을 수 없습니다 */
+            /** @description 메뉴를 찾을 수 없습니다. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14287,7 +14355,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴를 찾을 수 없습니다 */
+            /** @description 메뉴를 찾을 수 없습니다. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14348,7 +14416,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴를 찾을 수 없습니다 */
+            /** @description 메뉴를 찾을 수 없습니다. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17443,7 +17511,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 거부 · 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(거부 · 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 기간이 끝남, 기간이 겹치거나 더 늦게 시작한 다른 체결 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(거부 · 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
+            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 거부 · 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(거부 · 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 기간이 끝남, 기간이 겹치거나 더 늦게 시작한 다른 체결 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(거부 · 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다.」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -22448,7 +22516,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 지금 비밀번호가 맞지 않음(「지금 비밀번호가 맞지 않습니다」) · 이메일 형식 · 지금 이메일과 같음 */
+            /** @description 지금 비밀번호가 맞지 않음(「지금 비밀번호가 맞지 않습니다.」) · 이메일 형식 · 지금 이메일과 같음 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -22483,7 +22551,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 관리자에게 문의해 주세요」 */
+            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 관리자에게 문의해 주세요.」 */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -22681,7 +22749,7 @@ export interface operations {
                     "application/json": components["schemas"]["MyTaxProfileResponseDto"];
                 };
             };
-            /** @description 형식 오류 · 바꿀 값 없음(TAX_PROFILE_EMPTY) · 고치는데 지금 비밀번호가 없거나 틀림(CURRENT_PASSWORD_MISMATCH — 「지금 비밀번호가 맞지 않습니다」, 내 소속 확인 뒤 · 다른 검사 전에 본다) · 처음인데 셋 중 빠짐(TAX_PROFILE_INCOMPLETE) · 은행 · 계좌번호 한쪽만(TAX_PROFILE_ACCOUNT_INCOMPLETE) · 주민등록번호 앞자리와 가입 생년월일이 다름(RRN_BIRTH_MISMATCH — 관리자에게 정정 요청) · 없는 은행(BANK_CODE_UNKNOWN) */
+            /** @description 형식 오류 · 바꿀 값 없음(TAX_PROFILE_EMPTY) · 고치는데 지금 비밀번호가 없거나 틀림(CURRENT_PASSWORD_MISMATCH — 「지금 비밀번호가 맞지 않습니다.」, 내 소속 확인 뒤 · 다른 검사 전에 본다) · 처음인데 셋 중 빠짐(TAX_PROFILE_INCOMPLETE) · 은행 · 계좌번호 한쪽만(TAX_PROFILE_ACCOUNT_INCOMPLETE) · 주민등록번호 앞자리와 가입 생년월일이 다름(RRN_BIRTH_MISMATCH — 관리자에게 정정 요청) · 없는 은행(BANK_CODE_UNKNOWN) */
             400: {
                 headers: {
                     [name: string]: unknown;
