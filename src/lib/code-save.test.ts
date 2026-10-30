@@ -254,8 +254,9 @@ test("failureView — 그 사이 고쳤거나 지운 409 는 칸 오류가 아�
     conflict: null,
     stale: true,
   });
-  // 문구 꼴이 다른 404(배포가 어긋난 Nest 기본 문구 등)도 그 사이 바뀜으로 본다 — 화면은 판정 값(stale)으로 아랫줄을 고른다
-  assert.equal(failureView(failed({ status: 404, message: "Cannot PUT /code-groups/X/items", saved: [], failed: "수정" })).stale, true);
+  // 행이 아닌 404(그룹 · BP 단위, 문구 꼴이 다른 Nest 기본 404)는 그 사이 바뀜이 아니다 — 다시 받지 않고 입력을 그대로 둔다(PR #206 2차 리뷰)
+  for (const message of ["Cannot PUT /code-groups/X/items", "공통코드 그룹을 찾을 수 없습니다.", "BP 를 찾을 수 없습니다."])
+    assert.deepEqual(failureView(failed({ status: 404, message, saved: [], failed: "수정" })), { band: message, conflict: null, stale: false }, message);
 });
 
 test("withKeptPending — 이어 두면 기존 행은 최신 값으로, 보내지 않은 새 행 · 지울 행 표시는 남긴다(그 사이 바뀜 409 뒤)", () => {
