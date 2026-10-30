@@ -2081,7 +2081,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 확정 — 보이는 공제가 모두 있어야 한다. 검토 사유는 확인한 것으로 남는다. */
+        /** 확정 — 급여 기간이 끝나야 하고(그 전에 퇴직 · 계약 종료면 그 다음 날부터), 보이는 공제가 모두 있어야 한다. 검토 사유는 확인한 것으로 남는다. */
         post: operations["PayslipsController_confirm"];
         delete?: never;
         options?: never;
@@ -7600,12 +7600,12 @@ export interface components {
             changedAt: string;
         };
         /**
-         * @description 종이 계약 근로계약서 · 임금계약서
+         * @description 종이 계약 근로계약서 · 임금계약서 · 보낸 원본 · 처리 완료본
          * @enum {string}
          */
         ContractDocumentKind: "SENT_ORIGINAL" | "SIGNED_COPY" | "PAPER_EMPLOYMENT_CONTRACT" | "WAGE_CONTRACT" | "SIGNATURE";
         ContractDocumentDto: {
-            /** @description 종이 계약 근로계약서 · 임금계약서 */
+            /** @description 종이 계약 근로계약서 · 임금계약서 · 보낸 원본 · 처리 완료본 */
             kind: components["schemas"]["ContractDocumentKind"];
             contractDocumentId: number;
             /** @description 올린 파일의 원래 이름 */
@@ -7890,6 +7890,28 @@ export interface components {
             contractDocumentId: number;
             fileName: string;
         };
+        ContractTableRowDto: {
+            cells: string[];
+            /** @description 근무하지 않는 날(휴무 · 주휴일) — 흐리게 그린다 */
+            off: boolean;
+        };
+        ContractValueDto: {
+            label: string;
+            value: string;
+        };
+        ContractBlockDto: {
+            /** @enum {string} */
+            type: "TEXT" | "TABLE" | "VALUES";
+            tableRows?: components["schemas"]["ContractTableRowDto"][];
+            values?: components["schemas"]["ContractValueDto"][];
+            text?: string;
+            header?: string[];
+        };
+        ContractArticleDto: {
+            blocks: components["schemas"]["ContractBlockDto"][];
+            /** @description 「제1조(근로계약기간)」 */
+            title: string;
+        };
         MyContractDetailDto: {
             startDate: string | null;
             endDate: string | null;
@@ -7942,6 +7964,8 @@ export interface components {
             employer: components["schemas"]["MyContractEmployerDto"];
             account: components["schemas"]["MyContractAccountDto"];
             documents: components["schemas"]["MyContractDocumentDto"][];
+            /** @description 계약서 조항 열 가지 — 보낸 원본 · 처리 완료본 PDF 와 같은 템플릿(WHALEERP-131). 화면은 이 순서대로 그린다 */
+            articles: components["schemas"]["ContractArticleDto"][];
             contractId: number;
             storeId: number;
             /** @description 목록과 같다 — 서명 대기 · 기한 안 · 재직 중 */
@@ -16716,7 +16740,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description DEDUCTION_MISSING — 비어 있는 공제(본문 items) */
+            /** @description PERIOD_NOT_ENDED — 확정할 수 있는 날(퇴직일 · 마지막 계약 종료일 · 급여 기간 마지막 날 가운데 가장 빠른 날의 다음 날, 그 계약의 보낸 갱신(임시저장 제외)이 기간 안에 시작하면 계약 종료일은 보지 않는다) 전 · DEDUCTION_MISSING — 비어 있는 공제(본문 items) */
             422: {
                 headers: {
                     [name: string]: unknown;
