@@ -8,35 +8,39 @@
     <link rel="stylesheet" href="../assets/whale.css" />
   </head>
   <body data-root="../" data-page="config" data-sub="config/roles.html">
-    <!-- BP 권한 그룹 관리 · /settings/roles · S-LYKAEI · 권한 메뉴 등록 팝업 S-KUDELB (F-GSJRKH) · 1팀
-         한 화면이다. 왼쪽은 권한 그룹 목록, 오른쪽은 고른 그룹의 상세·등록·수정 영역이다.
-         목록에는 수정 항목이 없다 — 행을 고르면 오른쪽에 상세가 서고, 그 상세에서 권한명·설명을 바로 고쳐 저장한다. 따로 수정 단계는 없다
-         (플랫폼 권한 관리와 같다 · 확정 2026-10-07). 고칠 수 없는 그룹(다른 유형·다른 관리계정ID·본인 연결)은 읽기 전용 상세만 선다.
-         신규 등록을 마치면 새 그룹의 상세가 서고, 삭제를 마치면 선택 없는 목록으로 돌아온다. 저장·삭제가 성공하면 오른쪽 아래 토스트를 띄운다.
-         목록은 BP 관리자(BA)·가맹 관리자(FA) 권한 그룹만 싣는다. 가맹 마스터 고정 권한 FM000001 은 목록 위 가맹마스터 보기 버튼이 조회 전용 팝업으로 연다.
+    <!-- BP 권한 그룹 관리 · /settings/roles · S-LYKAEI · 권한별 메뉴설정 팝업 S-KUDELB (F-GSJRKH) · 1팀
+         한 화면이다. 왼쪽은 권한 그룹 목록, 오른쪽 464px 칸은 고른 그룹의 상세(고칠 수 있으면 권한명·설명이 입력칸)와 등록 양식이다.
+         상세는 목록의 권한명 링크로만 연다(행·코드를 눌러도 열리지 않는다). 제목은 고칠 수 있어도 늘 「권한 그룹 상세」다. 따로 수정 단계는 없다 (2026-10-07).
+         신규 등록을 마치면 토스트를 띄우고 새 그룹의 상세가 서며 목록 줄에 「새로 등록」 꼬리표가 붙는다. 삭제는 확인창 안에서 「삭제되었습니다.」를 보이고 선택 없는 목록으로 돌아온다.
+         목록은 BP 관리자(BA)·가맹 관리자(FA) 권한 그룹만 싣는다(20건씩, 페이지당 표시 선택 없음). 가맹 마스터 고정 권한 FM000001 은 목록 카드 머리의
+           [가맹마스터 메뉴설정 보기]가 권한별 메뉴설정 팝업([가맹 마스터 권한용] 띠지)으로 열어 볼 수만 있다. [등록]은 페이지 제목 줄 오른쪽이다. 가맹 관리자에게는 둘 다 숨긴다.
          BP 마스터 고정 권한 BM000001 은 BA 그룹의 상한, FM000001 은 FA 그룹의 상한이다 (PL-AMTMVC). 두 마스터의 본인 권한이 곧 상한이라 설정자 범위와 상한이 같다.
-         BP 마스터는 BA 그룹만, 가맹 마스터는 관리계정ID 가 자기 아이디인 FA 그룹만 등록·수정·삭제한다. BP 관리자·가맹 관리자·플랫폼 사용자는 조회만 한다 (PL-RWJYLJ).
-         가맹마스터 보기는 가맹 관리자에게만 숨긴다. 메뉴등록은 모든 행에 두되 저장은 그 그룹을 만들 수 있는 역할에게만 열린다.
+         BP 마스터는 BA 그룹만, 가맹 마스터는 관리계정이 자기 아이디인 FA 그룹만 등록·수정·삭제한다. BP 관리자·가맹 관리자·플랫폼 사용자는 조회만 한다 (PL-RWJYLJ).
+         고칠 수 없는 그룹 — 메뉴 수정 권한이 있으면 빨간 상자로 이유를 말하고(가맹관리자 그룹 「내 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다.」 ·
+           그 밖 「선택한 권한 그룹에 대한 수정 권한이 없습니다.」), 조회 권한만이면 안내 없이 상세만 선다. 플랫폼 계정은 회색 안내 「플랫폼 계정은 BP 권한 그룹을 조회만 합니다.」 (코드대로, 2026-10-30).
+         본인 연결 띠는 두지 않는다 — 그룹을 고칠 수 있는 BP 마스터·가맹 마스터의 본인 권한은 목록에 없는 고정 권한이고, 목록에서 본인이 연결된 그룹은
+           가맹 관리자의 것뿐이라 위 역할 문구로 보인다 (코드대로, 2026-10-30).
          권한 코드는 유형 코드 + 6자리 순번으로 등록할 때 채번한다 (PL-EIMSQF). 신규 미리보기는 BA000008 · FA000005 다.
-         권한명 중복은 같은 관리계정ID 안에서만 본다 — BA 그룹은 그 BP 의 BA 그룹끼리, FA 그룹은 같은 가맹 마스터의 FA 그룹끼리만 겹칠 수 없다 (확정 2026-09-29).
-           그래서 가맹 마스터가 BA 그룹과 같은 이름을 써도 된다. 권한 유형·권한 코드는 등록 뒤 읽기 전용이다.
-         삭제 — 연결 사용자가 있으면 같은 BP·같은 유형의 다른 그룹을 골라 일괄 변경한 뒤 지운다. 대체 후보가 없으면 지우지 않는다.
-         본인이 연결된 그룹은 수정·삭제·메뉴 저장이 막힌다. 권한 그룹에는 사용 상태가 없다 — 쓰거나 지우거나 둘뿐이다 (CONFIG-6 확정).
-         메뉴 트리는 system/menus.html 의 Whale ERP 서비스 표본이되 사용중지 메뉴(MN000003)와 사용중지 상위 아래의 하위 메뉴는 뺀다 — 기존 설정은 보존돼 다시 사용하면 그대로 보인다 (확정 2026-09-29).
-         칸이 흐린 이유는 둘 — 기준 고정 권한 밖 · 설정자 본인 권한 밖.
-         묶음 메뉴에도 조회·등록·수정·삭제 칸을 둔다 — 일괄 설정용이라 하위가 모두 켜지면 켜짐, 일부면 반쯤으로 보이고, 누르면 하위의 고를 수 있는 칸을 한꺼번에 켜고 끈다 (확정 2026-09-29 · system/roles.html 과 같다).
-         목록·상세·두 팝업은 아래 스크립트가 목업 권한 줄과 목업 상태 줄에 따라 그린다. 행을 누르면 그 그룹의 상세로 바뀐다.
+         권한명 중복은 같은 관리계정 안에서만 본다 — BA 그룹은 그 BP 의 BA 그룹끼리, FA 그룹은 같은 가맹 마스터의 FA 그룹끼리만 겹칠 수 없다 (확정 2026-09-29).
+           겹치면 칸 아래 「같은 이름의 권한이 있습니다.」만 보이고 어느 그룹과 겹쳤는지는 알리지 않는다. 권한유형·권한코드는 등록 뒤 읽기 전용이다.
+         삭제 — [삭제]는 지울 수 있을 때만 보인다(비활성으로 두지 않는다). 연결 사용자가 있으면 같은 BP·같은 유형의 다른 그룹(대체 권한)을 골라 옮긴 뒤 지운다.
+           대체 후보가 없으면 빨간 상자로 알리고 [삭제]를 막는다. 권한 그룹에는 사용 상태가 없다 — 쓰거나 지우거나 둘뿐이다 (CONFIG-6 확정).
+         메뉴설정 — 메뉴 트리는 system/menus.html 의 Whale ERP 서비스 표본이되 사용중지 메뉴(MN000003)와 사용중지 상위 아래의 하위 메뉴는 나오지 않는다 — 기존 설정은 보존돼 다시 사용하면 그대로 보인다 (확정 2026-09-29).
+           설정자 범위(= 상한) 밖 칸은 체크박스를 숨기고 이미 켜진 칸만 흐린 체크로 둔다. 「상한 밖」 같은 꼬리표·이유 문구와 잠긴 팝업의 이유 띠는 두지 않는다 (코드대로, 2026-10-30).
+           묶음 메뉴에도 조회·등록·수정·삭제 칸을 둔다 — 일괄 설정용이라 하위가 모두 켜지면 켜짐, 일부면 반쯤으로 보이고, 누르면 하위의 고를 수 있는 칸을 한꺼번에 켜고 끈다 (확정 2026-09-29).
+           [닫기][저장] — 저장해도 팝업은 열어 두고 「저장되었습니다.」를 띄운다. 켜진 칸을 끄고 저장하면 영향받는 사용자가 있을 때 「메뉴 권한 회수」 확인창을 먼저 띄운다.
+         목록·상세·두 팝업은 아래 스크립트가 목업 권한 줄과 목업 상태 줄에 따라 그린다. 권한명을 누르면 그 그룹의 상세로 바뀐다.
 
          확정 (2026-09-29)
-         - 가맹 마스터·가맹 관리자에게는 관리계정ID 가 연결 가맹 마스터인 FA 그룹만 보인다. BA 그룹은 보이지 않는다.
-         - FA 그룹 삭제의 대체 후보는 같은 관리계정ID 의 그룹만이다 (CONFIG-5 확정).
-         - 권한명 중복은 같은 관리계정ID 안에서만 본다 — 보이지 않는 그룹과 이름이 같아도 저장된다.
+         - 가맹 마스터·가맹 관리자에게는 관리계정이 연결 가맹 마스터인 FA 그룹만 보인다. BA 그룹은 보이지 않는다.
+         - FA 그룹 삭제의 대체 후보는 같은 관리계정의 그룹만이다 (CONFIG-5 확정).
+         - 권한명 중복은 같은 관리계정 안에서만 본다 — 보이지 않는 그룹과 이름이 같아도 저장된다.
          - 플랫폼 사용자는 BP 환경설정 공통으로 서비스 바로가기 「웨일ERP」에서 BP 를 골라 새 탭으로 연다. 목업은 BP000017 을 고른 상태다.
-         - 메뉴 등록 팝업의 서비스는 표 위 탭으로 고르며, 이 BP 에 허용된 서비스만 탭으로 나온다(플랫폼 권한 관리 메뉴 등록과 같다 · 2026-10-07).
-           탭을 바꾸면 그 서비스의 메뉴가 보이고, 저장은 탭을 오가며 바꾼 칸을 한꺼번에 반영한다. 메뉴가 없는 서비스는 빈 표로 보인다 —
-           ‘목업 서비스’ 줄에서 둘로 바꿔 본다. 팝업 머리에는 권한 코드·유형·이름만 두고 서비스·상한·설정자 권한 줄은 두지 않는다.
+         - 메뉴설정 팝업의 서비스는 표 위 탭으로 고른다. 지금은 웨일ERP 하나만 보인다 — BP별 허용 서비스(부가서비스 구독)가 생기면 그 서비스도 탭으로 나온다 (코드대로, 2026-10-30).
+           탭을 바꾸면 그 서비스의 메뉴가 보이고, 저장은 탭을 오가며 바꾼 칸을 한꺼번에 반영한다. 메뉴가 없는 서비스는 빈 표로 보인다 — ‘목업 서비스’ 줄에서 둘로 바꿔 본다.
+           팝업 머리는 「권한유형 | 권한코드 | 권한명」 한 줄뿐이다.
          - 메뉴 코드는 system/menus.html 의 Whale ERP 서비스 표본(MN000001~015)과 같다.
-         목록·상세에 연결 사용자는 두지 않는다. 목록에는 메뉴 등록 여부(등록 · 메뉴 N개 / 미등록)를 두고, 연결 사용자 수는 삭제 확인에서만 보인다. -->
+         목록·상세에 연결 사용자는 두지 않는다. 목록에는 메뉴설정 여부(등록 N개 / 미등록 — 사용 메뉴에서 조회가 켜진 메뉴 수, 묶음 포함)를 두고, 연결 사용자 수는 삭제 확인에서만 보인다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
@@ -47,6 +51,8 @@
             <div class="titlebar__end">
               <span class="filters__count mono">S-LYKAEI · S-KUDELB · /settings/roles</span>
               <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./config-roles.screen-def.html', 'screenDef', 'width=1620,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
+              <!-- [등록]은 페이지 제목 줄 오른쪽 (코드대로, 2026-10-30). 등록 양식이 열려 있는 동안 잠근다 -->
+              <button class="btn btn--primary btn--sm" type="button" id="rg-new-btn" data-rg-new data-show-role="bpm fm">등록</button>
             </div>
           </div>
 
@@ -57,9 +63,9 @@
                 <div class="seg">
                   <button type="button" data-state="bpm" aria-pressed="true">BP 마스터 · hangang01</button>
                   <button type="button" data-state="fm" aria-pressed="false">가맹 마스터 · morinam01</button>
-                  <button type="button" data-state="bpa" aria-pressed="false">BP 관리자 · hgops (조회)</button>
-                  <button type="button" data-state="fa" aria-pressed="false">가맹 관리자 · moriyn (조회)</button>
-                  <button type="button" data-state="plat" aria-pressed="false">플랫폼 사용자 · platjung (조회)</button>
+                  <button type="button" data-state="bpa" aria-pressed="false">BP 관리자 · hgops (조회 권한만)</button>
+                  <button type="button" data-state="fa" aria-pressed="false">가맹 관리자 · moriyn (메뉴 수정 권한)</button>
+                  <button type="button" data-state="plat" aria-pressed="false">플랫폼 사용자 · platjung</button>
                 </div>
               </div>
               <div class="demo" data-demo="rg">
@@ -72,74 +78,56 @@
                   <button type="button" data-state="dup" aria-pressed="false">권한명 중복</button>
                   <button type="button" data-state="fail" aria-pressed="false">저장 실패</button>
                   <button type="button" data-state="deleted" aria-pressed="false">삭제 완료</button>
-                  <button type="button" data-state="own" aria-pressed="false">본인 연결 그룹</button>
                   <button type="button" data-state="empty" aria-pressed="false">권한 그룹 없음</button>
                 </div>
               </div>
               <div class="demo">
                 <b>목업 서비스</b>
                 <div class="seg" id="svc-demo">
-                  <button type="button" data-svc="1" aria-pressed="false">허용 서비스 하나 · Whale ERP</button>
-                  <button type="button" data-svc="2" aria-pressed="true">허용 서비스 둘 · Whale ERP · 점포 재고관리</button>
+                  <button type="button" data-svc="1" aria-pressed="true">지금 · 웨일ERP 하나</button>
+                  <button type="button" data-svc="2" aria-pressed="false">부가서비스 구독 뒤(예정) · 웨일ERP · 점포 재고관리</button>
                 </div>
               </div>
-              <p class="note" style="margin: 0" data-show-role="bpm">
-                <span data-icon="info" data-icon-size="14"></span>
-                <span>정하윤 <span class="mono">hangang01</span> · BP 마스터 <span class="mono">BM000001</span> 로 보는 중 — BP 관리자 권한 그룹을 등록·수정·삭제하고, 가맹 관리자 권한 그룹은 볼 수만 있습니다.</span>
-              </p>
-              <p class="note" style="margin: 0" data-show-role="fm" hidden>
-                <span data-icon="info" data-icon-size="14"></span>
-                <span>박서윤 <span class="mono">morinam01</span> · 가맹 마스터 <span class="mono">FM000001</span> 로 보는 중 — 관리계정ID 가 <span class="mono">morinam01</span> 인 가맹 관리자 권한 그룹만 보이고, 그 그룹을 등록·수정·삭제합니다.</span>
-              </p>
-              <p class="note" style="margin: 0" data-show-role="bpa" hidden>
-                <span data-icon="info" data-icon-size="14"></span>
-                <span>김도윤 <span class="mono">hgops</span> · BP 관리자 <span class="mono">BA000003</span> 운영 총괄로 보는 중 — 메뉴 권한과 관계없이 권한 그룹은 조회만 합니다.</span>
-              </p>
-              <p class="note" style="margin: 0" data-show-role="fa" hidden>
-                <span data-icon="info" data-icon-size="14"></span>
-                <span>한지수 <span class="mono">moriyn</span> · 가맹 관리자 <span class="mono">FA000002</span> 모리 점장으로 보는 중 — 연결된 가맹 마스터 morinam01 의 그룹만 조회하고, 가맹마스터 보기 버튼은 보이지 않습니다.</span>
-              </p>
-              <p class="note" style="margin: 0" data-show-role="plat" hidden>
-                <span data-icon="info" data-icon-size="14"></span>
-                <span>정민재 <span class="mono">platjung</span> · 플랫폼 마스터로 보는 중 — ㈜한강상회 <span class="mono">BP000017</span> 의 권한 그룹을 고객 지원 목적으로 조회만 합니다.</span>
-              </p>
+              <!-- 목록 위 역할별 안내 문단은 두지 않는다 (코드대로, 2026-10-30) -->
             </div>
 
-            <div style="display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--s-5); align-items: start">
-              <!-- 왼쪽 — 권한 그룹 목록. BA 먼저, 그 안은 코드 순. 행은 스크립트가 그린다. -->
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) 464px; gap: var(--s-5); align-items: start">
+              <!-- 왼쪽 — 권한 그룹 목록. 코드 순. 행은 스크립트가 그린다. -->
               <section class="panel">
                 <div class="panel__head">
                   <h2 class="t-h2">권한 그룹 목록</h2>
                   <span class="badge badge--quiet" id="rg-count">8건</span>
-                  <span class="badge badge--quiet" data-show-role="plat" hidden>㈜한강상회 · BP000017</span>
                   <div class="panel__end">
-                    <button class="btn btn--secondary btn--sm" type="button" data-rg-menu="FM000001" data-show-role="bpm fm bpa plat">
-                      <span data-icon="eye" data-icon-size="14"></span>가맹마스터 보기
-                    </button>
-                    <button class="btn btn--primary btn--sm" type="button" data-rg-new data-show-role="bpm fm">
-                      <span data-icon="plus" data-icon-size="14"></span>등록
-                    </button>
+                    <!-- 가맹 관리자에게는 숨긴다(S-LYKAEI) -->
+                    <button class="btn btn--secondary btn--sm" type="button" data-rg-menu="FM000001" data-show-role="bpm fm bpa plat">가맹마스터 메뉴설정 보기</button>
                   </div>
                 </div>
-                <div class="tblwrap" id="rg-list" data-pager="8">
+                <div class="tblwrap" id="rg-list">
                   <table class="tbl tbl--dense">
                     <thead>
                       <tr>
-                        <th scope="col">권한 코드</th>
-                        <th scope="col">권한 유형</th>
+                        <th scope="col">권한유형 · 코드</th>
                         <th scope="col">권한명</th>
                         <th scope="col">설명</th>
-                        <th scope="col">최종 수정일시 · 수정자</th>
-                        <th scope="col">메뉴 등록 여부</th>
-                        <th scope="col">메뉴등록</th>
+                        <th scope="col">최종수정</th>
+                        <th scope="col">메뉴설정</th>
+                        <th scope="col">메뉴설정 여부</th>
                       </tr>
                     </thead>
                     <tbody id="rg-rows"></tbody>
                   </table>
                 </div>
+                <!-- 20건씩 고정 — 페이지당 표시 선택은 없다 (코드대로, 2026-10-30) -->
+                <div class="pager">
+                  <nav class="pager__nav" aria-label="페이지">
+                    <button type="button" aria-label="이전" disabled data-icon="arrowleft" data-icon-size="14"></button>
+                    <button type="button" aria-current="page">1</button>
+                    <button type="button" aria-label="다음" disabled data-icon="arrowright" data-icon-size="14"></button>
+                  </nav>
+                </div>
               </section>
 
-              <!-- 오른쪽 — 상세 · 수정 · 신규 등록 -->
+              <!-- 오른쪽 — 상세 · 등록 (464px) -->
               <div class="stack" id="rg-side"></div>
             </div>
 
@@ -148,102 +136,85 @@
       </main>
     </div>
 
-    <!-- 권한 그룹 삭제 — 본문은 스크립트가 고른 그룹에 맞춰 그린다. 단계: ask · noalt · delfail -->
+    <!-- 권한 그룹 삭제 확인창 — 본문은 스크립트가 고른 그룹에 맞춰 그린다 -->
     <div class="modal" id="rg-del" hidden role="dialog" aria-modal="true" aria-labelledby="rgdel-t">
-      <div class="modal__box">
+      <div class="modal__box" style="max-width: 480px; position: relative">
         <div class="modal__head">
-          <h2 class="t-h2" id="rgdel-t">권한 그룹 삭제</h2>
+          <h2 class="t-h2" id="rgdel-t">권한 그룹을 삭제하시겠습니까?</h2>
           <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
         </div>
         <div class="modal__body" id="rg-del-body"></div>
+        <div role="status" aria-live="polite" id="rg-del-done" hidden style="position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); padding: 12px 24px; border-radius: 2px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; white-space: nowrap">삭제되었습니다.</div>
       </div>
     </div>
 
-    <!-- 권한 메뉴 등록 팝업 (S-KUDELB) — 목록 행의 메뉴등록과 가맹마스터 보기가 연다. 표는 스크립트가 그린다. -->
+    <!-- 권한별 메뉴설정 팝업 (S-KUDELB) — 목록의 [설정]과 [가맹마스터 메뉴설정 보기]가 연다. 표는 스크립트가 그린다. -->
     <div class="modal" id="rg-menu" hidden role="dialog" aria-modal="true" aria-labelledby="mn-t">
-      <div class="modal__box modal__box--wide" style="max-width: 880px">
+      <div class="modal__box modal__box--wide" style="max-width: 880px; position: relative">
         <div class="modal__head">
-          <h2 class="t-h2" id="mn-t">권한 메뉴 등록</h2>
-          <span class="badge badge--quiet" id="mn-badge" hidden>조회용</span>
+          <h2 class="t-h2" id="mn-t">권한별 메뉴설정</h2>
+          <span class="tag" id="mn-badge" hidden>가맹 마스터 권한용</span>
           <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
         </div>
         <div data-step="edit">
           <div class="modal__body">
-            <dl class="kv" id="mn-head" style="grid-template-columns: 96px minmax(0, 1fr) 96px minmax(0, 1fr)"></dl>
-            <div class="tabs" id="mn-svc" role="tablist" aria-label="서비스"></div>
+            <!-- 머리는 「권한유형 | 권한코드 | 권한명」 한 줄 (코드대로, 2026-10-30) -->
+            <div class="band" id="mn-head" style="align-items: center; gap: 10px; padding: 10px 12px"></div>
             <div id="mn-bands" class="stack"></div>
+            <div class="tabs" id="mn-svc" role="tablist" aria-label="서비스"></div>
             <div class="modal__scroll" style="height: 420px; overflow-y: auto">
               <table class="tbl tbl--dense tbl--fit">
                 <thead>
                   <tr>
                     <th scope="col">메뉴명</th>
-                    <th scope="col">메뉴 계층</th>
-                    <th scope="col" style="text-align: center; white-space: nowrap"><label class="inline" style="gap: 6px; justify-content: center; cursor: pointer; font: inherit; color: inherit"><span class="check" role="checkbox" tabindex="0" aria-checked="false" aria-label="조회 전체 선택" data-all="R" title="조회 열 전체 선택 · 고를 수 있는 칸만"><svg width="11" height="11" aria-hidden="true"><use href="#i-check"/></svg></span>조회</label></th>
-                    <th scope="col" style="text-align: center; white-space: nowrap"><label class="inline" style="gap: 6px; justify-content: center; cursor: pointer; font: inherit; color: inherit"><span class="check" role="checkbox" tabindex="0" aria-checked="false" aria-label="등록 전체 선택" data-all="C" title="등록 열 전체 선택 · 고를 수 있는 칸만"><svg width="11" height="11" aria-hidden="true"><use href="#i-check"/></svg></span>등록</label></th>
-                    <th scope="col" style="text-align: center; white-space: nowrap"><label class="inline" style="gap: 6px; justify-content: center; cursor: pointer; font: inherit; color: inherit"><span class="check" role="checkbox" tabindex="0" aria-checked="false" aria-label="수정 전체 선택" data-all="U" title="수정 열 전체 선택 · 고를 수 있는 칸만"><svg width="11" height="11" aria-hidden="true"><use href="#i-check"/></svg></span>수정</label></th>
-                    <th scope="col" style="text-align: center; white-space: nowrap"><label class="inline" style="gap: 6px; justify-content: center; cursor: pointer; font: inherit; color: inherit"><span class="check" role="checkbox" tabindex="0" aria-checked="false" aria-label="삭제 전체 선택" data-all="D" title="삭제 열 전체 선택 · 고를 수 있는 칸만"><svg width="11" height="11" aria-hidden="true"><use href="#i-check"/></svg></span>삭제</label></th>
+                    <th scope="col">메뉴단계</th>
+                    <th scope="col" style="text-align: center; white-space: nowrap"><label class="inline" style="gap: 6px; justify-content: center; cursor: pointer; font: inherit; color: inherit"><span class="check" role="checkbox" tabindex="0" aria-checked="false" aria-label="조회 전체 선택" data-all="R"><svg width="11" height="11" aria-hidden="true"><use href="#i-check"/></svg></span>조회</label></th>
+                    <th scope="col" style="text-align: center; white-space: nowrap"><label class="inline" style="gap: 6px; justify-content: center; cursor: pointer; font: inherit; color: inherit"><span class="check" role="checkbox" tabindex="0" aria-checked="false" aria-label="등록 전체 선택" data-all="C"><svg width="11" height="11" aria-hidden="true"><use href="#i-check"/></svg></span>등록</label></th>
+                    <th scope="col" style="text-align: center; white-space: nowrap"><label class="inline" style="gap: 6px; justify-content: center; cursor: pointer; font: inherit; color: inherit"><span class="check" role="checkbox" tabindex="0" aria-checked="false" aria-label="수정 전체 선택" data-all="U"><svg width="11" height="11" aria-hidden="true"><use href="#i-check"/></svg></span>수정</label></th>
+                    <th scope="col" style="text-align: center; white-space: nowrap"><label class="inline" style="gap: 6px; justify-content: center; cursor: pointer; font: inherit; color: inherit"><span class="check" role="checkbox" tabindex="0" aria-checked="false" aria-label="삭제 전체 선택" data-all="D"><svg width="11" height="11" aria-hidden="true"><use href="#i-check"/></svg></span>삭제</label></th>
                   </tr>
                 </thead>
                 <tbody id="mn-rows"></tbody>
               </table>
             </div>
-            <p class="note" id="mn-hint" style="margin: 0; color: var(--warn)" hidden></p>
           </div>
           <div class="modal__foot">
             <button class="btn btn--secondary" type="button" id="mn-fail" title="목업 전용" style="margin-right: auto">저장 실패로 보기</button>
-            <button class="btn btn--secondary" type="button" id="mn-stale" title="목업 전용">변경 충돌로 보기</button>
-            <button class="btn btn--ghost" type="button" data-close id="mn-cancel">취소</button>
+            <button class="btn btn--secondary" type="button" id="mn-stale" title="목업 전용">동시 수정(409)으로 보기</button>
+            <button class="btn btn--ghost" type="button" data-close id="mn-cancel">닫기</button>
             <button class="btn btn--primary" type="button" id="mn-save">저장</button>
             <button class="btn btn--primary" type="button" data-close id="mn-close">닫기</button>
           </div>
         </div>
 
-        <div data-step="savefail" hidden>
+        <!-- 메뉴 권한 회수 확인 — 켜진 칸을 끄고 저장할 때, 영향받는 사용자가 있으면 묻는다 (코드대로, 2026-10-30) -->
+        <div data-step="revoke" hidden>
           <div class="modal__body">
-            <div class="band band--risk">
-              <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-              <div class="band__body">
-                <div class="band__title">메뉴별 권한을 저장하지 못했습니다</div>
-                <p class="band__desc">이 권한 그룹의 기존 메뉴별 권한을 그대로 유지합니다. 잠시 뒤 다시 저장해 주세요.</p>
-              </div>
-            </div>
+            <h3 class="t-h2" style="margin: 0">메뉴 권한 회수</h3>
+            <p style="margin: 0"><span class="tag"><b id="rv-name"></b></span> 의 메뉴 권한이 변경됩니다.</p>
+            <ul style="margin: 0; padding-left: 18px">
+              <li>영향받는 사용자: <b id="rv-users"></b></li>
+              <li>변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.</li>
+            </ul>
           </div>
           <div class="modal__foot">
-            <button class="btn btn--ghost" type="button" data-close>닫기</button>
-            <button class="btn btn--primary" type="button" data-step-to="edit">설정으로 돌아가기</button>
+            <button class="btn btn--ghost" type="button" data-step-to="edit">취소</button>
+            <button class="btn btn--primary" type="button" id="rv-save">저장</button>
           </div>
         </div>
 
-        <div data-step="stale" hidden>
-          <div class="modal__body">
-            <div class="band band--warn">
-              <span class="band__ic" data-icon="refresh" data-icon-size="20"></span>
-              <div class="band__body">
-                <div class="band__title">그사이 권한 그룹이나 메뉴 정보가 바뀌었습니다</div>
-                <p class="band__desc">다른 사용자가 먼저 저장했거나 메뉴 또는 상한 권한이 바뀌었습니다. 저장하지 않았으니 최신 정보를 불러와 다시 확인해 주세요.</p>
-              </div>
-            </div>
-          </div>
-          <div class="modal__foot">
-            <button class="btn btn--ghost" type="button" data-close>닫기</button>
-            <button class="btn btn--primary" type="button" id="mn-reload">최신 정보로 다시 열기</button>
-          </div>
-        </div>
+        <!-- 팝업 안 저장 알림 — 저장해도 팝업은 닫지 않는다 -->
+        <div role="status" aria-live="polite" id="mn-saved" hidden style="position: absolute; left: 50%; bottom: 70px; transform: translateX(-50%); padding: 12px 24px; border-radius: 2px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; white-space: nowrap">저장되었습니다.</div>
       </div>
     </div>
 
-    <!-- 저장·삭제 성공 토스트 -->
-    <div class="band band--info" id="rg-toast" role="status" aria-live="polite" hidden style="position: fixed; right: 24px; bottom: 24px; z-index: 90; width: min(420px, calc(100vw - 48px)); box-shadow: 0 12px 32px rgba(23, 23, 23, 0.16)">
-      <span class="band__ic" data-icon="check" data-icon-size="20"></span>
-      <div class="band__body">
-        <div class="band__title" id="rg-toast-t"></div>
-      </div>
-    </div>
+    <!-- 저장·등록 성공 토스트 — 화면 아래 가운데 한 줄 -->
+    <div role="status" aria-live="polite" id="rg-toast" hidden style="position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 90; max-width: calc(100vw - 48px); padding: 12px 24px; border-radius: 2px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; box-shadow: 0 2px 6px rgba(40, 47, 55, 0.08)"></div>
 
     <script src="../assets/app.js"></script>
     <script src="../assets/auth.js"></script>
     <script>
-      /* 이 화면 전용 — 목업 권한·상태에 따라 목록, 오른쪽 영역, 삭제 팝업, 권한 메뉴 등록 팝업을 그린다. */
+      /* 이 화면 전용 — 목업 권한·상태에 따라 목록, 오른쪽 칸, 삭제 확인창, 권한별 메뉴설정 팝업을 그린다. */
       (function () {
         "use strict";
         var roleBar = document.querySelector('[data-demo="rg"][data-demo-key="role"]');
@@ -253,11 +224,15 @@
         var countEl = document.getElementById("rg-count");
 
         function ic(n, s) { s = s || 16; return '<svg width="' + s + '" height="' + s + '" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; }
-        function band(tone, icon, title, desc) {
-          return "<div class='band band--" + tone + "'><span class=\"band__ic\">" + ic(icon, 20) + '</span><div class="band__body"><div class="band__title">' + title + "</div>" +
-            (desc ? '<p class="band__desc">' + desc + "</p>" : "") + "</div></div>";
+        /* 빨간 상자(실패 · 막힌 이유) — 첫 줄은 500, 둘째 줄(detail)은 먹색 */
+        function redBox(msg, detail) {
+          return '<div class="band band--risk" role="alert"><div class="band__body"><div class="band__title" style="color: var(--risk-text); font-weight: 500">' + msg + "</div>" +
+            (detail ? '<p class="band__desc" style="color: var(--ink)">' + detail + "</p>" : "") + "</div></div>";
         }
+        /* 회색 안내 한 줄 */
+        function grayBox(msg) { return '<div class="band" role="status"><div class="band__body"><div class="band__title" style="font-weight: 500">' + msg + "</div></div></div>"; }
         function clone(o) { return JSON.parse(JSON.stringify(o)); }
+        var MUTED = '<span class="subtle">-</span>';
 
         /* ---------- 표본 ---------- */
         /* [메뉴 코드, 단계, 메뉴명, 사용 여부, 묶음 여부] — system/menus.html 의 Whale ERP 서비스 */
@@ -278,30 +253,33 @@
           ["MN000014", 2, "BP 공통코드 관리", 1, 0],
           ["MN000015", 2, "BP 휴일 관리", 1, 0]
         ];
-        /* 서비스별 메뉴 트리 — 점포 재고관리는 아직 등록된 메뉴가 없다 */
-        var SVCS = [["WHALE_ERP", "Whale ERP"], ["STORE_INVENTORY", "점포 재고관리"]];
+        /* 서비스별 메뉴 트리 — 지금은 웨일ERP 하나. 점포 재고관리는 부가서비스 구독이 생긴 뒤의 예시이고 아직 등록된 메뉴가 없다 */
+        var SVCS = [["WHALE_ERP", "웨일ERP"], ["STORE_INVENTORY", "점포 재고관리"]];
         var TREES = { WHALE_ERP: TREE, STORE_INVENTORY: [] };
         var ALL = "RCUD";
         function upperAll() { var o = {}; TREE.forEach(function (m) { if (m[3]) o[m[0]] = m[4] ? "R" : ALL; }); return o; }
         var GRANT = {
           BM000001: upperAll(),
-          FM000001: { MN000001: "R", MN000002: "RU", MN000004: "R", MN000005: "RCU", MN000006: "R", MN000007: "RCU", MN000008: "RCU", MN000009: "R", MN000010: "RCU", MN000011: "R", MN000012: "RCU", MN000013: "RCU", MN000014: "R", MN000015: "RCUD" },
-          /* MN000003 R 은 메뉴가 사용중지되기 전에 받은 권한 — 팝업에는 나오지 않지만 보존돼 다시 사용하면 그대로 보인다 */
+          /* MN000013(BP 권한 그룹 관리) RCUD — 가맹 마스터가 자기 FA 그룹을 지울 수 있어야 [삭제]가 보인다 */
+          FM000001: { MN000001: "R", MN000002: "RU", MN000004: "R", MN000005: "RCU", MN000006: "R", MN000007: "RCU", MN000008: "RCU", MN000009: "R", MN000010: "RCU", MN000011: "R", MN000012: "RCU", MN000013: "RCUD", MN000014: "R", MN000015: "RCUD" },
+          /* MN000003 R 은 메뉴가 사용중지되기 전에 받은 권한 — 팝업에도 메뉴설정 여부 수에도 나오지 않지만 보존돼 다시 사용하면 그대로 보인다 */
           BA000003: { MN000001: "R", MN000002: ALL, MN000003: "R", MN000004: "R", MN000005: ALL, MN000006: "R", MN000007: ALL, MN000008: ALL, MN000009: ALL, MN000010: ALL, MN000011: "R", MN000012: "RCU", MN000013: "R", MN000014: "RCU", MN000015: ALL },
           BA000004: { MN000001: "R", MN000002: "R", MN000004: "R", MN000005: "RCU", MN000006: "R", MN000007: "RCU", MN000008: "RCU", MN000009: "RCU", MN000010: "RCU", MN000011: "R", MN000012: "R", MN000013: "R", MN000014: "R", MN000015: "RCUD" },
           BA000005: { MN000001: "R", MN000002: "R", MN000004: "R", MN000009: "R" },
           BA000006: { MN000001: "R", MN000002: "R", MN000011: "R", MN000015: "R" },
           BA000007: {}, /* 메뉴 미등록 표본(2026-10-08) */
-          FA000002: { MN000001: "R", MN000002: "RU", MN000004: "R", MN000005: "RCU", MN000006: "R", MN000007: "RCU", MN000008: "RCU", MN000009: "R", MN000010: "RCU", MN000011: "R", MN000013: "R", MN000015: ALL },
+          /* MN000013 RU — 가맹 관리자 moriyn 은 메뉴 수정 권한이 있어 고칠 수 없는 그룹에 빨간 상자가 보인다 */
+          FA000002: { MN000001: "R", MN000002: "RU", MN000004: "R", MN000005: "RCU", MN000006: "R", MN000007: "RCU", MN000008: "RCU", MN000009: "R", MN000010: "RCU", MN000011: "R", MN000013: "RU", MN000015: ALL },
           FA000003: { MN000001: "R", MN000002: "R", MN000004: "R", MN000005: "R", MN000010: "RCU", MN000011: "R", MN000013: "R", MN000015: "R" },
           FA000004: { MN000001: "R", MN000002: "RU", MN000004: "R", MN000005: "RCU", MN000010: "RCU" },
           BA000008: {},
           FA000005: {}
         };
-        var TYPE = { BA: "BP 관리자", FA: "가맹 관리자" };
+        /* 공통코드 ROLE_TYPE 한글 */
+        var TYPE = { BA: "BP관리자", FA: "가맹관리자", FM: "가맹마스터" };
         var BASE = { BA: "BM000001", FA: "FM000001" };
-        var BASE_NAME = { BM000001: "BP 마스터", FM000001: "가맹 마스터" };
-        var MASTER = { morinam01: "박서윤", ongifm: "오태민" };
+        var NAME = { hangang01: "정하윤", morinam01: "박서윤", ongifm: "오태민" };
+        /* [이름, 사용 여부] */
         var USERS = { hgops: ["김도윤", 1], hghr: ["이서아", 1], hgacct: ["최민호", 0], moriyn: ["한지수", 1], moricd: ["윤재희", 1], ongids: ["서동현", 0] };
         var GROUPS = [
           { code: "BA000003", type: "BA", name: "운영 총괄", desc: "점포·직원·환경설정 전반", owner: null, users: ["hgops"], mod: ["2026-08-28 16:40", "hangang01"], reg: ["2025-02-07 14:10", "hangang01"] },
@@ -319,11 +297,11 @@
         };
         /* 목업 권한 → 보는 사람. manage = 등록·수정·삭제하는 유형, side = 보이는 범위 */
         var VIEWER = {
-          bpm: { id: "hangang01", who: "정하윤", own: "BM000001", manage: "BA", side: "bp" },
-          fm: { id: "morinam01", who: "박서윤", own: "FM000001", manage: "FA", side: "fa", master: "morinam01" },
-          bpa: { id: "hgops", who: "김도윤", own: "BA000003", manage: null, side: "bp" },
-          fa: { id: "moriyn", who: "한지수", own: "FA000002", manage: null, side: "fa", master: "morinam01" },
-          plat: { id: "platjung", who: "정민재", own: null, manage: null, side: "bp", plat: true }
+          bpm: { id: "hangang01", own: "BM000001", manage: "BA", side: "bp" },
+          fm: { id: "morinam01", own: "FM000001", manage: "FA", side: "fa", master: "morinam01" },
+          bpa: { id: "hgops", own: "BA000003", manage: null, side: "bp" },
+          fa: { id: "moriyn", own: "FA000002", manage: null, side: "fa", master: "morinam01" },
+          plat: { id: "platjung", own: null, manage: null, side: "bp", plat: true }
         };
         var FAILNAME = { BA000004: "인사·노무 담당", FA000003: "모리 매니저(주말)" };
 
@@ -334,170 +312,137 @@
         function viewer() { return VIEWER[roleBar.dataset.current || "bpm"]; }
         function newCode(v) { return v.side === "fa" ? "FA000005" : "BA000008"; }
         function sees(v, g) { return v.side === "bp" || (g.type === "FA" && g.owner === v.master); }
-        function modOf(g) { return g.mod; }
         function visible(v) {
           if (live.empty) return [];
           var list = GROUPS.slice();
-          if (live.created) list.push(NEWG[newCode(v)]);
+          if (live.created && v.manage) list.push(NEWG[newCode(v)]);
           return list.filter(function (g) { return sees(v, g) && !live.removed[g.code]; })
             .sort(function (a, b) { return a.code < b.code ? -1 : 1; });
         }
         function find(code, v) { return visible(v).filter(function (g) { return g.code === code; })[0] || null; }
-        /* 이 사람이 이 그룹을 바꿀 수 없는 이유. 없으면 null */
-        function lockOf(v, g) {
-          if (!v.manage) return "role";
-          if (v.manage !== g.type) return "type";
-          if (g.type === "FA" && g.owner !== v.id) return "type";
-          if (v.own === g.code) return "own";
-          return null;
-        }
+        function has(grants, menu, op) { return !!grants && (grants[menu] || "").indexOf(op) > -1; }
+        /* 이 화면(MN000013)의 메뉴 권한 — 플랫폼 계정은 늘 조회만 */
+        function can(v, op) { return !v.plat && has(GRANT[v.own], "MN000013", op); }
+        /* 고칠 수 있는 그룹 — 만드는 유형이고, FA 는 관리계정이 본인이어야 한다 */
+        function editable(v, g) { return can(v, "U") && v.manage === g.type && (g.type !== "FA" || g.owner === v.id); }
+        function deletable(v, g) { return editable(v, g) && can(v, "D"); }
         function preset(st, v) {
-          var bp = v.side === "bp";
-          if (st === "own") return v.own && v.own.indexOf("M0") < 0 ? v.own : (bp ? "BA000004" : "FA000003");
           if (st === "created") return newCode(v);
           if (st === "none" || st === "new" || st === "dup" || st === "deleted" || st === "empty") return null;
-          return bp ? "BA000004" : "FA000003";
+          if (v.side === "bp") return "BA000004";
+          return v.manage ? "FA000003" : "FA000002"; /* 가맹 관리자는 본인 그룹(모리 점장) */
         }
+        function when(at, id) { return '<span class="mono">' + at + '</span> <span class="subtle">· ' + (NAME[id] || id) + "</span>"; }
 
         /* ---------- 토스트 ---------- */
-        var toastEl = document.getElementById("rg-toast"), toastT = document.getElementById("rg-toast-t"), toastTimer = 0;
+        var toastEl = document.getElementById("rg-toast"), toastTimer = 0;
         function toast(msg) {
-          toastT.textContent = msg;
+          toastEl.textContent = msg;
           toastEl.hidden = false;
           clearTimeout(toastTimer);
-          toastTimer = setTimeout(function () { toastEl.hidden = true; }, 6000);
+          toastTimer = setTimeout(function () { toastEl.hidden = true; }, 3000);
         }
 
         /* ---------- 목록 ---------- */
-        function rowHTML(g, v) {
-          var picked = g.code === sel, m = modOf(g);
-          var st = ["cursor: pointer"];
-          if (picked) st.push("background: var(--info-wash)");
-          return '<tr data-rg-row="' + g.code + '" style="' + st.join("; ") + '"' + (picked ? ' aria-current="true"' : "") + ">" +
-            '<td style="white-space: nowrap"><button class="tlink mono" type="button" style="padding: 0">' + g.code + "</button></td>" +
-            '<td style="white-space: nowrap">' + TYPE[g.type] + "</td>" +
-            '<td class="k" style="white-space: nowrap">' + g.name +
-            (v.own === g.code ? ' <span class="badge badge--info">본인</span>' : "") +
-            (g.fresh ? ' <span class="badge badge--preview">새로 등록</span>' : "") + "</td>" +
-            '<td style="min-width: 96px">' + (g.desc || '<span class="subtle">—</span>') + "</td>" +
-            '<td style="white-space: nowrap; font-size: 12px"><span class="mono">' + m[0] + '</span><br />' + (m[1] === "시스템" ? '<span class="subtle" style="font-size: 12px">' : '<span class="mono subtle" style="font-size: 12px">') + m[1] + "</span></td>" +
-            '<td style="white-space: nowrap">' + regHTML(g.code) + "</td>" +
-            '<td><button class="btn btn--secondary btn--sm" type="button" data-rg-menu="' + g.code + '">메뉴등록</button></td></tr>';
+        /* 메뉴설정 여부 — 사용 메뉴(사용중지와 그 아래 제외)에서 조회가 켜진 메뉴 수, 묶음 메뉴 포함 (코드대로, 2026-10-30) */
+        function menuCount(code) {
+          var gr = GRANT[code] || {};
+          return visibleTree(TREE).filter(function (m) { return has(gr, m[0], "R"); }).length;
         }
-        function emptyList(v) {
-          var msg, sub;
-          if (v.manage === "BA") { msg = "아직 만든 BP 관리자 권한 그룹이 없습니다"; sub = "신규 등록으로 첫 그룹을 만들고, 메뉴등록에서 메뉴 권한을 정한 뒤 BP 관리자 관리에서 계정에 붙이세요."; }
-          else if (v.manage === "FA") { msg = "아직 만든 가맹 관리자 권한 그룹이 없습니다"; sub = "신규 등록으로 가맹 관리자에게 줄 그룹을 만드세요. 만든 그룹은 박서윤 님과 연결된 가맹 관리자 계정에만 붙습니다."; }
-          else { msg = "조회할 수 있는 권한 그룹이 없습니다"; sub = v.side === "fa" ? "연결된 가맹 마스터가 그룹을 만들면 여기에 나타납니다." : "BP 마스터나 가맹 마스터가 그룹을 만들면 여기에 나타납니다."; }
-          return '<div class="empty"><span class="empty__ic">' + ic("users", 22) + "</span><p><b>" + msg + "</b><br />" + sub + "</p>" +
-            (v.manage ? '<button class="btn btn--primary btn--sm" type="button" data-rg-new>' + ic("plus", 14) + "등록</button>" : "") + "</div>";
+        function regHTML(code) {
+          var n = menuCount(code);
+          return n ? '<span class="badge badge--ok">등록 ' + n + "개</span>" : '<span class="badge badge--risk">미등록</span>';
+        }
+        function rowHTML(g, v) {
+          var picked = mode !== "new" && mode !== "dup" && g.code === sel, m = g.mod;
+          return "<tr" + (picked ? ' style="background: var(--info-wash)"' : "") + ">" +
+            '<td style="white-space: nowrap">' + TYPE[g.type] + ' <span class="subtle" style="font-size: 12px">· <span class="mono">' + g.code + "</span></span></td>" +
+            /* 상세는 권한명 링크로만 연다 (코드대로, 2026-10-30) */
+            '<td style="white-space: nowrap"><button class="tlink" type="button" data-rg-pick="' + g.code + '"' + (picked ? ' aria-current="true"' : "") + ">" + g.name + "</button>" +
+            (v.own === g.code ? ' <span class="tag">본인</span>' : "") +
+            (g.fresh ? ' <span class="tag">새로 등록</span>' : "") + "</td>" +
+            '<td style="min-width: 96px">' + (g.desc || MUTED) + "</td>" +
+            /* 등록만 하고 고친 적 없으면 「-」 */
+            '<td style="white-space: nowrap">' + (m[0] !== g.reg[0] ? when(m[0], m[1]) : MUTED) + "</td>" +
+            '<td><button class="btn btn--secondary btn--sm" type="button" data-rg-menu="' + g.code + '">설정</button></td>' +
+            '<td style="white-space: nowrap">' + regHTML(g.code) + "</td></tr>";
         }
         function renderList(v) {
           var list = visible(v);
           countEl.textContent = list.length + "건";
           rowsEl.innerHTML = list.length
             ? list.map(function (g) { return rowHTML(g, v); }).join("")
-            : '<tr><td colspan="7" style="padding: 0">' + emptyList(v) + "</td></tr>";
-          document.getElementById("rg-list").dataset.pager = String(list.length);
-          var pc = document.querySelector("#rg-list + .pager .pager__count");
-          if (pc) pc.innerHTML = "총 <b>" + list.length + "</b>건 · " + (list.length ? "1–" + list.length : "0–0");
+            : '<tr><td colspan="6" class="subtle" style="text-align: center; height: 92px">데이터가 없습니다.</td></tr>';
         }
 
-        /* ---------- 오른쪽 영역 ---------- */
-        /* 메뉴 등록 여부 — 조회 이상 권한을 받은 메뉴가 하나라도 있으면 등록. 메뉴등록 팝업에서 저장하면 바로 바뀐다 */
-        function regHTML(code) {
-          var gr = GRANT[code] || {};
-          var n = Object.keys(gr).filter(function (k) { return gr[k]; }).length;
-          return n ? '<span class="badge badge--ok">등록</span>' : '<span class="badge badge--risk">미등록</span>';
+        /* ---------- 오른쪽 칸 ---------- */
+        function field(id, label, control, err) {
+          return '<div class="field"><label for="' + id + '">' + label + "</label>" + control + (err || "") + "</div>";
         }
-        function kvHTML(g) {
-          var m = modOf(g);
-          return '<dl class="kv">' +
-            "<dt>권한명</dt><dd>" + g.name + "</dd>" +
-            "<dt>설명</dt><dd>" + (g.desc || '<span class="subtle">—</span>') + "</dd>" +
-            '<dt>등록일시</dt><dd><span class="mono">' + g.reg[0] + '</span> | <span class="mono">' + g.reg[1] + "</span></dd>" +
-            '<dt>최종수정일시</dt><dd><span class="mono">' + m[0] + '</span> | <span class="mono">' + m[1] + "</span></dd>" +
-            "</dl>";
+        function fieldErr(msg) { return '<span class="err">' + ic("alert", 13) + "<span>" + msg + "</span></span>"; }
+        function heading(g) {
+          return '<div class="panel__head"><h2 class="t-h2">권한 그룹 상세</h2>' +
+            '<span class="tag">권한유형 · <b>' + TYPE[g.type] + "</b></span>" +
+            '<span class="subtle">| 권한코드</span> <b class="mono">' + g.code + "</b></div>";
         }
-        /* 설명 문구(도움말)는 두지 않는다 (2026-10-07) */
-        function field(id, label, control) {
-          return '<div class="field"><label for="' + id + '">' + label + "</label>" + control + "</div>";
+        /* 가맹마스터 계정 · 등록 · 최종수정 줄. 도움말 i 는 값 칸 앞에, BA 그룹은 i 만 */
+        function recordRows(g) {
+          var tip = '<span class="subtle" tabindex="0" role="img" aria-label="도움말" data-tip="가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다." style="display: inline-flex; vertical-align: -2px">' + ic("info", 14) + "</span>";
+          return "<dt>가맹마스터 계정</dt><dd>" + tip + (g.owner ? ' <span class="mono">' + g.owner + '</span> <span class="subtle">· ' + NAME[g.owner] + "</span>" : "") + "</dd>" +
+            "<dt>등록</dt><dd>" + when(g.reg[0], g.reg[1]) + "</dd>" +
+            "<dt>최종수정</dt><dd>" + (g.mod[0] !== g.reg[0] ? when(g.mod[0], g.mod[1]) : MUTED) + "</dd>";
         }
-        /* 상세 — 고칠 수 있는 그룹이면 권한명·설명이 바로 입력칸이고 [삭제][저장]을 둔다(플랫폼 권한 관리와 같다). fail 이면 저장 실패 띠를 얹는다. */
-        function detailHTML(g, v, pre, fail) {
-          var lock = lockOf(v, g), mine = lock !== "role" && lock !== "type", editable = mine && lock !== "own";
-          var bands = fail ? band("risk", "alert", "권한 그룹을 저장하지 못했습니다",
-            "실패 사유: 저장 중 서버가 응답하지 않았습니다(목업). 기존 권한 그룹과 연결 사용자 권한은 그대로이고, 입력한 권한명·설명은 화면에 남겨 두었습니다.") : "";
-          bands += pre || "";
-          if (g.fresh) bands += band("info", "info", "메뉴 권한이 아직 비어 있습니다", "목록의 메뉴등록에서 메뉴별 조회·등록·수정·삭제를 정해야 이 그룹을 받은 관리자에게 메뉴가 보입니다.");
-          if (v.own === g.code) bands += band("warn", "lock", "본인이 연결된 권한 그룹입니다", "본인 권한은 스스로 바꿀 수 없습니다. 권한명·설명 수정, 메뉴 권한 저장과 삭제가 막히고, 이 그룹을 관리하는 다른 사용자가 처리합니다.");
-          var m = modOf(g), body, foot;
-          if (editable) {
+        /* 상세 — 고칠 수 있으면 권한명·설명 입력칸 + 가운데 [삭제](지울 수 있을 때만)[저장]. 고칠 수 없으면 한 표로만 */
+        function detailHTML(g, v, fail) {
+          var body;
+          if (editable(v, g)) {
             var name = fail ? FAILNAME[g.code] || g.name : g.name;
-            body = field("e-name", '권한명 <span class="req">*</span>', '<input class="input" id="e-name" value="' + name + '" />') +
-              field("e-desc", "설명", '<textarea class="textarea" id="e-desc">' + g.desc + "</textarea>") +
-              '<dl class="kv">' +
-              '<dt>등록일시</dt><dd><span class="mono">' + g.reg[0] + '</span> | <span class="mono">' + g.reg[1] + "</span></dd>" +
-              '<dt>최종수정일시</dt><dd><span class="mono">' + m[0] + '</span> | <span class="mono">' + m[1] + "</span></dd></dl>";
-            foot = '<div class="panel__foot inline" style="justify-content: flex-end">' +
-              '<button class="btn btn--danger btn--sm" type="button" data-rg-del style="margin-right: auto">삭제</button>' +
+            /* 첫 줄은 api 문구 */
+            body = (fail ? redBox("저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.", "입력한 값은 그대로 두었습니다.") : "") +
+              field("e-name", '권한명 <span class="req">*</span>', '<input class="input" id="e-name" value="' + name + '" placeholder="권한명을 입력해 주세요. (예: 프로모션 담당자)" />') +
+              field("e-desc", "설명", '<textarea class="textarea" id="e-desc" rows="2" placeholder="해당 권한에 대한 역할과 담당 업무를 입력해 주세요.">' + g.desc + "</textarea>") +
+              '<dl class="kv">' + recordRows(g) + "</dl>" +
+              /* [삭제](Soft) · [저장]을 가운데에 (코드대로, 2026-10-30) */
+              '<div class="inline" style="justify-content: center">' +
+              (deletable(v, g) ? '<button class="btn btn--secondary btn--sm" type="button" data-rg-del>삭제</button>' : "") +
               '<button class="btn btn--primary btn--sm" type="button" data-rg-save>저장</button></div>';
           } else {
-            body = kvHTML(g);
-            if (lock === "own") {
-              var why = "본인 권한이라 바꿀 수 없습니다", dis = ' disabled title="' + why + '"';
-              foot = '<div class="panel__foot inline" style="justify-content: flex-end">' +
-                '<button class="btn btn--danger btn--sm" type="button" data-rg-del style="margin-right: auto"' + dis + ">삭제</button>" +
-                '<button class="btn btn--primary btn--sm" type="button" data-rg-save' + dis + ">저장</button></div>";
-            } else foot = "";
+            var notice = "";
+            if (v.plat) notice = grayBox("플랫폼 계정은 BP 권한 그룹을 조회만 합니다.");
+            else if (can(v, "U")) notice = redBox(g.type === "FA" ? "내 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다." : "선택한 권한 그룹에 대한 수정 권한이 없습니다.");
+            /* 조회 권한만이면 안내 없이 상세만 */
+            body = notice + '<dl class="kv"><dt>권한명</dt><dd>' + g.name + "</dd><dt>설명</dt><dd>" + (g.desc || MUTED) + "</dd>" + recordRows(g) + "</dl>";
           }
-          return '<section class="panel"><div class="panel__head"><h2 class="t-h2">' + (editable ? "권한 그룹 수정" : "권한 그룹 상세") + '</h2><span class="mono">' + g.code + '</span><span class="badge badge--quiet">' + TYPE[g.type] + "</span></div>" +
-            '<div class="panel__body stack--lg" style="display: flex; flex-direction: column">' + bands + body + "</div>" + foot + "</section>";
+          return '<section class="panel">' + heading(g) + '<div class="panel__body stack--lg" style="display: flex; flex-direction: column">' + body + "</div></section>";
         }
         function newHTML(v, dup) {
-          var fa = v.manage === "FA", code = newCode(v), g = NEWG[code];
-          var name = dup ? (fa ? "모리 매니저" : "인사 담당") : g.name;
-          var err = !dup ? "" : '<span class="err" style="align-items: flex-start"><span style="flex: none; margin-top: 2px">' + ic("alert", 13) + "</span><span>" + (fa
-            ? "내가 만든 가맹 관리자 권한 그룹에 이미 있는 권한명입니다 — FA000003 모리 매니저. BP 관리자 그룹이나 다른 가맹 마스터의 그룹과는 이름이 같아도 됩니다."
-            : "BP 관리자 권한 그룹에 이미 있는 권한명입니다 — BA000004 인사 담당. 가맹 관리자 그룹과는 이름이 같아도 됩니다.") + "</span></span>";
-          return '<section class="panel"><div class="panel__head"><h2 class="t-h2">권한 그룹 등록</h2></div>' +
+          var code = newCode(v), g = NEWG[code];
+          var name = dup ? (v.manage === "FA" ? "모리 매니저" : "인사 담당") : g.name;
+          return '<section class="panel"><div class="panel__head"><h2 class="t-h2">권한 등록</h2></div>' +
             '<div class="panel__body stack--lg" style="display: flex; flex-direction: column">' +
-            field("n-type", '권한 유형 <span class="req">*</span>', '<select class="select" id="n-type"><option selected>' + TYPE[v.manage] + "</option></select>",
-              fa ? "가맹 마스터는 가맹 관리자 권한 그룹만 만듭니다. BP 관리자 유형은 선택 항목에 없습니다."
-                 : "BP 마스터는 BP 관리자 권한 그룹만 만듭니다. 가맹 관리자 유형은 가맹 마스터만 등록할 수 있어 선택 항목에서 뺐습니다.") +
-            '<div class="field"><label for="n-name">권한명 <span class="req">*</span></label><input class="input" id="n-name" value="' + name + '"' + (dup ? ' aria-invalid="true"' : "") + " />" + err + "</div>" +
-            field("n-desc", "설명", '<textarea class="textarea" id="n-desc" placeholder="이 그룹에 맡길 업무를 적습니다">' + (dup ? "" : g.desc) + "</textarea>", "등록하면 바로 쓸 수 있습니다. 권한 그룹에는 사용 상태를 두지 않습니다.") +
-            "</div>" +
-            '<div class="panel__foot inline" style="justify-content: flex-end">' +
+            field("n-type", '권한유형 <span class="req">*</span>', '<input class="input" id="n-type" value="' + TYPE[v.manage] + '" readonly />') +
+            field("n-name", '권한명 <span class="req">*</span>', '<input class="input" id="n-name" value="' + name + '" placeholder="권한명을 입력해 주세요. (예: 프로모션 담당자)"' + (dup ? ' aria-invalid="true"' : "") + " />",
+              /* 어느 그룹과 겹쳤는지는 알리지 않는다 */
+              dup ? fieldErr("같은 이름의 권한이 있습니다.") : "") +
+            field("n-desc", "설명", '<textarea class="textarea" id="n-desc" rows="2" placeholder="해당 권한에 대한 역할과 담당 업무를 입력해 주세요.">' + (dup ? "" : g.desc) + "</textarea>") +
+            '<div class="inline" style="justify-content: center">' +
             '<button class="btn btn--ghost btn--sm" type="button" data-rg-cancel>취소</button>' +
-            '<button class="btn btn--primary btn--sm" type="button"' + (dup ? "" : " data-rg-create") + ">저장</button></div></section>";
+            '<button class="btn btn--primary btn--sm" type="button"' + (dup ? "" : " data-rg-create") + ">저장</button></div></div></section>";
         }
-        function lockPanel(v) {
-          var who = v.plat ? "플랫폼 사용자" : v.side === "fa" ? "가맹 관리자" : "BP 관리자";
-          var sub = v.side === "bp" && !v.plat
-            ? "BP 관리자 권한 그룹은 BP 마스터가, 가맹 관리자 권한 그룹은 메뉴 권한과 관계없이 가맹 마스터만 등록할 수 있습니다."
-            : v.plat ? "권한 그룹은 그 BP 의 BP 마스터와 가맹 마스터가 만듭니다." : "가맹 관리자 권한 그룹은 연결된 가맹 마스터만 등록할 수 있습니다.";
-          return '<section class="panel"><div class="empty"><span class="empty__ic">' + ic("lock", 22) + "</span><p><b>" + who + "는 권한 그룹을 등록하거나 고칠 수 없습니다</b><br />" + sub + "</p></div></section>";
-        }
-        function nonePanel(st, v) {
-          /* 처음 진입 · 선택 없음 — 플랫폼 메뉴·권한 관리의 빈 칸과 같은 안내(2026-10-08) */
-          if (st === "none")
-            return '<section class="panel"><div class="panel__head"><h2 class="t-h2">권한 그룹 수정</h2></div><div class="empty"><span class="empty__ic">' + ic("list", 22) +
-              "</span><p>왼쪽 목록에서 권한 그룹을 고르면 수정 화면이 여기에 섭니다.</p><p class=\"subtle\" style=\"font-size: 13px\">" + (v.manage ? "아무것도 고르지 않고 등록을 누르면 BP 관리자 권한 그룹을 등록합니다." : "") + "</p></div></section>";
-          var msg = "왼쪽 목록에서 권한 그룹을 고르면 상세가 여기에 보입니다.";
-          if (st === "deleted") msg = "삭제한 그룹은 목록과 관리자 계정의 권한 그룹 선택에서 빠졌습니다. 다른 권한 그룹을 고르세요.";
-          if (st === "empty") msg = "보여 드릴 권한 그룹이 없습니다.";
-          return '<section class="panel"><div class="empty"><span class="empty__ic">' + ic("list", 22) + "</span><p>" + msg + "</p>" +
-            (v.manage && st !== "empty" ? '<button class="btn btn--secondary btn--sm" type="button" data-rg-new>' + ic("plus", 14) + "등록</button>" : "") + "</div></section>";
+        /* 고른 그룹 없음 — 목록이 비었는지로 문구를 가른다 */
+        function nonePanel(v) {
+          var empty = !visible(v).length;
+          var msg = empty
+            ? "<p>상세 정보를 표시할 권한 그룹이 없습니다.</p>" + (v.manage && can(v, "C") ? "<p>새로운 권한 그룹을 추가하려면 [등록] 버튼을 클릭해 주세요.</p>" : "")
+            : "<p>왼쪽 목록에서 [권한명]을 클릭하면 상세 정보가 표시됩니다.</p>";
+          return '<section class="panel"><div class="panel__head"><h2 class="t-h2">권한 그룹 상세</h2></div><div class="empty">' + msg + "</div></section>";
         }
         function renderSide(v) {
-          var g = sel ? find(sel, v) : null, html;
-          if (mode === "new" || mode === "dup") html = v.manage ? newHTML(v, mode === "dup") : lockPanel(v);
-          else if (mode === "fail" && g) html = detailHTML(g, v, "", !lockOf(v, g));
-          else if (g) {
-            html = detailHTML(g, v, "");
-          } else html = nonePanel(mode, v);
-          sideEl.innerHTML = html;
+          var g = sel ? find(sel, v) : null, creating = (mode === "new" || mode === "dup") && v.manage;
+          document.getElementById("rg-new-btn").disabled = !!creating;
+          if (creating) sideEl.innerHTML = newHTML(v, mode === "dup");
+          else if (g) sideEl.innerHTML = detailHTML(g, v, mode === "fail");
+          else sideEl.innerHTML = nonePanel(v);
         }
         function render() { var v = viewer(); renderList(v); renderSide(v); }
 
@@ -506,14 +451,13 @@
           var st = stateBar.dataset.current || "none", v = viewer(), p = pending;
           pending = null;
           mode = st;
+          /* 등록 양식은 [등록]이 보이는 역할만 연다 */
+          if (!v.manage && (st === "new" || st === "dup" || st === "created")) mode = st === "created" ? "view" : "none";
           if (!p) {
-            live = { removed: {}, created: st === "created", empty: st === "empty" };
+            live = { removed: {}, created: mode === "created", empty: st === "empty" };
             if (st === "deleted") live.removed[v.side === "bp" ? "BA000004" : "FA000003"] = 1;
-            sel = preset(st, v);
-            if (v.manage === "BA" && st === "created") toast("권한 그룹을 등록했습니다 · BA000008 매장 운영 지원");
-            if (v.manage === "FA" && st === "created") toast("권한 그룹을 등록했습니다 · FA000005 모리 스태프");
-            if (v.manage === "BA" && st === "deleted") toast("권한 그룹을 삭제했습니다 · BA000004 인사 담당 — hghr 이서아를 BA000003 운영 총괄로 옮겼습니다");
-            if (v.manage === "FA" && st === "deleted") toast("권한 그룹을 삭제했습니다 · FA000003 모리 매니저 — moricd 윤재희를 FA000002 모리 점장으로 옮겼습니다");
+            sel = preset(mode, v);
+            if (mode === "created") toast("등록했습니다. 권한 코드 " + newCode(v) + " — 목록의 메뉴설정 [설정]으로 메뉴 권한을 정해 주세요.");
           } else {
             if (p.created) live.created = true;
             if (p.del) live.removed[p.del] = 1;
@@ -521,10 +465,10 @@
             if (p.toast) toast(p.toast);
           }
           if (sel && !find(sel, v)) sel = null;
-          if (st === "view" && !sel) { var d = find(preset("view", v), v) || visible(v)[0]; sel = d ? d.code : null; }
-          if (st === "fail" && v.manage) {
+          if (mode === "view" && !sel) { var d = find(preset("view", v), v) || visible(v)[0]; sel = d ? d.code : null; }
+          if (mode === "fail" && v.manage) {
             var g = sel && find(sel, v);
-            if (!g || lockOf(v, g)) sel = preset(st, v);
+            if (!g || !editable(v, g)) sel = preset("view", v);
           }
           render();
         }
@@ -535,86 +479,79 @@
         stateBar.addEventListener("click", function (ev) { if (ev.target.closest("[data-state]")) apply(); });
         roleBar.addEventListener("click", function (ev) { if (ev.target.closest("[data-state]")) { pending = null; apply(); } });
 
-        /* ---------- 삭제 팝업 ---------- */
-        var delModal = document.getElementById("rg-del"), delBody = document.getElementById("rg-del-body"), delTarget = null;
-        function openDel() {
+        /* ---------- 삭제 확인창 (코드대로, 2026-10-30) ---------- */
+        var delModal = document.getElementById("rg-del"), delBody = document.getElementById("rg-del-body"), delDone = document.getElementById("rg-del-done"), delTarget = null;
+        function openDel(opt) {
+          opt = opt || {};
           var v = viewer(), g = find(sel, v);
-          if (!g || lockOf(v, g)) return;
+          if (!g || !deletable(v, g)) return;
           delTarget = g;
-          var alts = visible(v).filter(function (o) { return o.type === g.type && o.code !== g.code && (g.type !== "FA" || o.owner === g.owner); });
-          var n = g.users.length;
-          var head = '<dl class="kv"><dt>권한 그룹</dt><dd>' + g.name + ' <span class="mono subtle">' + g.code + "</span></dd>" +
-            "<dt>권한 유형</dt><dd>" + TYPE[g.type] + (g.owner ? ' <span class="subtle">· 관리계정ID ' + g.owner + "</span>" : "") + "</dd>" +
-            "<dt>연결 사용자</dt><dd>" + (n ? n + "명 <span class=\"subtle\">· " + g.users.map(function (id) { return id + " " + USERS[id][0]; }).join(", ") + "</span>" : "없음") + "</dd></dl>";
-          var gone = band("warn", "warn", "삭제한 권한 코드 " + g.code + " 는 다시 쓰지 않습니다",
-            n ? "옮겨진 사용자는 다음 요청부터 새 그룹 기준으로 메뉴와 업무 접근이 판정됩니다." : "목록과 관리자 계정의 권한 그룹 선택에서 바로 빠집니다.");
-          var ask;
-          if (n && alts.length) {
-            ask = head + '<div class="field"><label for="del-alt">대체 권한 그룹 <span class="req">*</span></label>' +
-              '<select class="select" id="del-alt"><option value="">선택하세요</option>' +
-              alts.map(function (o) { return '<option value="' + o.code + '">' + o.code + " · " + o.name + "</option>"; }).join("") + "</select></div>" + gone;
-          } else if (!n) {
-            ask = head + gone;
+          var alts = opt.noalt ? [] : visible(v).filter(function (o) { return o.type === g.type && o.code !== g.code && (g.type !== "FA" || o.owner === g.owner); });
+          var n = g.users.length, noCand = n > 0 && !alts.length;
+          var html = (opt.fail ? redBox("삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.") : "") +
+            '<dl class="kv" style="padding: 12px; border: 1px solid var(--hairline-strong); background: var(--canvas-soft)">' +
+            "<dt>권한명</dt><dd>" + g.name + ' <span class="subtle">· <span class="mono">' + g.code + "</span></span></dd>" +
+            "<dt>연결 사용자</dt><dd>" + (n ? n + "명" : "없음") + "</dd></dl>";
+          if (n) {
+            html += '<table class="tbl tbl--dense"><thead><tr><th scope="col">아이디</th><th scope="col">이름</th><th scope="col">계정상태</th></tr></thead><tbody>' +
+              g.users.map(function (id) {
+                return '<tr><td class="mono">' + id + "</td><td>" + USERS[id][0] + "</td><td>" + (USERS[id][1] ? '<span class="badge badge--ok">사용</span>' : '<span class="badge badge--risk">미사용</span>') + "</td></tr>";
+              }).join("") + "</tbody></table>";
           }
-          var noalt = head + '<div class="field"><label for="del-alt-none">대체 권한 그룹 <span class="req">*</span></label>' +
-            '<select class="select" id="del-alt-none" disabled><option>고를 수 있는 그룹이 없습니다</option></select></div>' +
-            band("risk", "alert", "대체할 같은 유형의 권한 그룹이 없어 삭제할 수 없습니다", "연결 사용자 " + n + "명을 옮길 곳이 있어야 지울 수 있습니다. 권한 그룹과 연결 사용자는 그대로 둡니다.") +
-            '<div class="inline" style="justify-content: flex-end"><button class="btn btn--primary" type="button" data-close>확인</button></div>';
-          var html = "";
-          if (ask) {
-            html += '<div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">' + ask +
-              '<div class="inline" style="justify-content: flex-end"><button class="btn btn--ghost" type="button" data-close>취소</button>' +
-              '<button class="btn btn--danger" type="button" id="rg-del-go"' + (n ? " disabled" : "") + ">삭제</button></div>" +
-              '<div class="inline" style="justify-content: flex-end">' +
-              (n ? '<button class="btn btn--secondary btn--sm" type="button" data-step-to="noalt" title="목업 전용">대체 그룹 없음으로 보기</button>' : "") +
-              '<button class="btn btn--secondary btn--sm" type="button" data-step-to="delfail" title="목업 전용">삭제 실패로 보기</button></div></div>';
+          if (!n) html += '<div class="subtle"><p style="margin: 0">연결된 사용자가 없어 바로 삭제할 수 있습니다.</p><p style="margin: 0">삭제된 권한 그룹은 복구할 수 없습니다.</p></div>';
+          else if (noCand) html += redBox("대체 권한 그룹이 없어 삭제할 수 없습니다.<br />" + TYPE[g.type] + " 권한 그룹을 추가한 후 다시 시도해 주세요.");
+          else {
+            html += field("del-alt", '대체 권한 <span class="req">*</span>', '<select class="select" id="del-alt"><option value="">선택하세요</option>' +
+              alts.map(function (o) { return '<option value="' + o.code + '">' + o.code + " · " + o.name + "</option>"; }).join("") + "</select>") +
+              '<p class="subtle" style="margin: 0">삭제된 권한 그룹은 복구할 수 없습니다.</p>' +
+              grayBox("변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.");
           }
-          html += '<div data-step="noalt" class="stack--lg" style="display: flex; flex-direction: column"' + (ask ? " hidden" : "") + ">" + noalt + "</div>";
-          html += '<div data-step="delfail" hidden class="stack--lg" style="display: flex; flex-direction: column">' +
-            band("risk", "alert", "권한 그룹을 삭제하지 못했습니다", "실패 사유: 연결 사용자의 권한 그룹을 바꾸는 중 오류가 났습니다(목업). " + g.code + " 와 연결 사용자 " + n + "명의 권한은 삭제 전 그대로입니다.") +
-            '<div class="inline" style="justify-content: flex-end"><button class="btn btn--ghost" type="button" data-close>닫기</button>' +
-            (ask ? '<button class="btn btn--primary" type="button" data-step-to="ask">다시 시도</button>' : "") + "</div></div>";
-          delBody.innerHTML = html;
+          html += '<div class="inline" style="justify-content: flex-end">' +
+            '<button class="btn btn--ghost" type="button" data-close>닫기</button>' +
+            '<button class="btn btn--primary" type="button" id="rg-del-go"' + (n ? " disabled" : "") + ">삭제</button></div>" +
+            '<div class="inline" style="justify-content: flex-end">' +
+            (n && !opt.noalt ? '<button class="btn btn--secondary btn--sm" type="button" data-del-demo="noalt" title="목업 전용">대체 권한 없음으로 보기</button>' : "") +
+            (!opt.fail ? '<button class="btn btn--secondary btn--sm" type="button" data-del-demo="fail" title="목업 전용">삭제 실패로 보기</button>' : "") + "</div>";
+          delBody.innerHTML = '<div class="stack--lg" style="display: flex; flex-direction: column">' + html + "</div>";
+          delDone.hidden = true;
           delModal.hidden = false;
         }
         delBody.addEventListener("change", function (e) {
           if (e.target.id === "del-alt") document.getElementById("rg-del-go").disabled = !e.target.value;
         });
-        delBody.addEventListener("click", function onDelClick(ev) {
+        delBody.addEventListener("click", function (ev) {
+          var d = ev.target.closest("[data-del-demo]");
+          if (d) { openDel(d.dataset.delDemo === "noalt" ? { noalt: true } : { fail: true }); return; }
           if (!ev.target.closest("#rg-del-go")) return;
-          var g = delTarget, altSel = document.getElementById("del-alt"), msg = "권한 그룹을 삭제했습니다 · " + g.code + " " + g.name;
-          if (altSel && altSel.value) msg += " — 연결 사용자 " + g.users.length + "명을 " + altSel.options[altSel.selectedIndex].text + " 로 옮겼습니다";
-          delModal.hidden = true;
-          go("deleted", { del: g.code, sel: null, toast: msg });
+          /* 확인창 안에 「삭제되었습니다.」를 잠깐 보이고 닫는다 */
+          var g = delTarget;
+          delBody.querySelectorAll("button").forEach(function (b) { b.disabled = true; });
+          delDone.hidden = false;
+          setTimeout(function () {
+            delModal.hidden = true;
+            go("deleted", { del: g.code, sel: null });
+          }, 1200);
         });
 
         /* ---------- 목업 서비스 — 이 BP 에 허용된 서비스 수 ---------- */
-        var svcTwo = true;
+        var svcTwo = false;
         document.getElementById("svc-demo").addEventListener("click", function (e) {
           var b = e.target.closest("[data-svc]"); if (!b) return;
           svcTwo = b.dataset.svc === "2";
           this.querySelectorAll("[data-svc]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
         });
 
-        /* ---------- 권한 메뉴 등록 팝업 ---------- */
-        var menuModal = document.getElementById("rg-menu"), mRows = document.getElementById("mn-rows"), mHint = document.getElementById("mn-hint");
+        /* ---------- 권한별 메뉴설정 팝업 ---------- */
+        var menuModal = document.getElementById("rg-menu"), mRows = document.getElementById("mn-rows"), mBands = document.getElementById("mn-bands");
+        var savedEl = document.getElementById("mn-saved"), savedTimer = 0;
         var cur = null;
-        var TIP = {
-          base: "상한 고정 권한이 허용하지 않은 칸이라 고를 수 없습니다. 저장해도 반영되지 않습니다.",
-          self: "설정자 본인이 받은 권한 범위를 넘는 칸이라 고를 수 없습니다."
-        };
-        var TAG = { base: "상한 밖", self: "본인 범위 밖" };
-        function has(grants, menu, op) { return !!grants && (grants[menu] || "").indexOf(op) > -1; }
-        function blockOf(m, op) {
-          if (!cur.canSave) return "ro";
-          if (!has(GRANT[cur.base], m[0], op)) return "base";
-          var v = viewer();
-          if (!has(GRANT[v.own], m[0], op)) return "self";
-          return null;
+        /* 설정자 범위(= 상한) 밖 칸 — 체크박스를 숨기고, 이미 켜진 칸만 흐린 체크로 둔다 */
+        function outOf(m, op) {
+          return cur.canSave && (!has(GRANT[cur.base], m[0], op) || !has(GRANT[viewer().own], m[0], op));
         }
-        function cell(code, op, on, b, group) {
-          var dis = b ? ' disabled aria-disabled="true"' + (on && on !== "false" ? ' style="color: var(--muted-tert)"' : "") : "";
-          return '<span class="check" role="checkbox" tabindex="' + (b ? "-1" : "0") + '" aria-checked="' + on + '" aria-label="' + op + '" data-m="' + code + '" data-op="' + op + '" data-b="' + (b || "") + '"' + (group ? ' data-group="1" title="켜면 하위 메뉴 전체에 적용"' : "") + dis +
+        function cell(code, op, on, dis, group) {
+          return '<span class="check" role="checkbox" tabindex="' + (dis ? "-1" : "0") + '" aria-checked="' + on + '" aria-label="' + op + '" data-m="' + code + '" data-op="' + op + '"' +
+            (group ? ' data-group="1"' : "") + (dis ? ' disabled aria-disabled="true" style="opacity: 0.4"' : "") +
             '><svg width="11" height="11" aria-hidden="true"><use href="#i-' + (on === "mixed" ? "minus" : "check") + '"/></svg></span>';
         }
         /* 사용중지 메뉴와 사용중지 상위 아래의 하위 메뉴는 트리에서 뺀다 (확정 2026-09-29) — 기존 설정(GRANT)은 그대로 둔다 */
@@ -640,65 +577,54 @@
           else { if (v.indexOf(op) < 0) v += op; if (op !== "R" && v.indexOf("R") < 0) v += "R"; }
           map[code] = ALL.split("").filter(function (x) { return v.indexOf(x) > -1; }).join("");
         }
+        function td(inner) { return '<td style="text-align: center"><span class="inline" style="justify-content: center">' + inner + "</span></td>"; }
         function renderMenu() {
           var map = cur.grants;
           vis = visibleTree(TREES[cur.svc]);
           if (!vis.length) {
-            mRows.innerHTML = '<tr><td colspan="7" class="subtle" style="text-align: center; padding: 28px">이 서비스에 등록된 메뉴가 없습니다.</td></tr>';
+            mRows.innerHTML = '<tr><td colspan="6" class="subtle" style="text-align: center; height: 92px">이 서비스에 등록된 메뉴가 없습니다.</td></tr>';
             syncAll();
             return;
           }
           mRows.innerHTML = vis.map(function (m) {
-            var tags = {};
             var cells = ["R", "C", "U", "D"].map(function (op) {
               if (m[4]) {
-                var kids = kidsOf(m[0]), open = kids.filter(function (k) { return !blockOf(k, op); });
-                var gb = open.length ? null : (kids.length ? blockOf(kids[0], op) : "ro");
-                var n = open.filter(function (k) { return has(map, k[0], op); }).length;
-                var gon = open.length && n === open.length ? "true" : n ? "mixed" : "false";
-                return '<td style="text-align: center"><span class="inline" style="justify-content: center">' + cell(m[0], op, gon, gb, 1) + "</span></td>";
+                var kids = kidsOf(m[0]), pool = cur.canSave ? kids.filter(function (k) { return !outOf(k, op); }) : kids;
+                var n = pool.filter(function (k) { return has(map, k[0], op); }).length;
+                var anyOn = kids.some(function (k) { return has(map, k[0], op); });
+                if (cur.canSave && !pool.length && !anyOn) return td("");
+                var gon = pool.length && n === pool.length ? "true" : n || (!pool.length && anyOn) ? "mixed" : "false";
+                return td(cell(m[0], op, gon, !cur.canSave || !pool.length, 1));
               }
-              var b = blockOf(m, op);
-              if (TAG[b]) tags[b] = 1;
-              return '<td style="text-align: center"><span class="inline" style="justify-content: center">' + cell(m[0], op, has(map, m[0], op), b) + "</span></td>";
+              var on = has(map, m[0], op), out = outOf(m, op);
+              if (out && !on) return td("");
+              return td(cell(m[0], op, on, !cur.canSave || out));
             }).join("");
             var pad = (m[1] - 1) * 18;
-            return "<tr>" +
-              '<td><span style="padding-left: ' + pad + 'px">' + (m[1] > 1 ? '<span class="subtle">└ </span>' : "") + (m[1] === 1 ? "<b>" + m[2] + "</b>" : m[2]) + "</span>" +
-              Object.keys(tags).map(function (k) { return ' <span class="badge badge--quiet">' + TAG[k] + "</span>"; }).join("") + "</td>" +
-              '<td class="subtle" style="white-space: nowrap">' + m[1] + "단계</td>" + cells + "</tr>";
+            /* 1단계 줄에만 옅은 바탕 */
+            return "<tr" + (m[1] === 1 ? ' style="background: var(--canvas-soft)"' : "") + ">" +
+              '<td><span style="padding-left: ' + pad + 'px">' + (m[1] > 1 ? '<span class="subtle">└ </span>' : "") + (m[1] === 1 ? "<b>" + m[2] + "</b>" : m[2]) + "</span></td>" +
+              '<td class="subtle" style="white-space: nowrap; text-align: center">' + m[1] + "단계</td>" + cells + "</tr>";
           }).join("");
           syncAll();
         }
-        /* 머리칸 전체 선택/해제 — 그 열에서 고를 수 있는 칸이 모두 켜져 있으면 ✓, 일부면 –, 고를 칸이 없으면(조회용 포함) 흐리게 */
+        /* 머리칸 전체 선택/해제 — 그 열에서 고를 수 있는 칸이 모두 켜져 있으면 ✓, 일부면 –, 고를 칸이 없으면 흐리게 */
         function syncAll() {
           ["R", "C", "U", "D"].forEach(function (op) {
             var all = menuModal.querySelector('[data-all="' + op + '"]');
             var cells = [].slice.call(mRows.querySelectorAll('.check[data-op="' + op + '"]:not([data-group])')).filter(function (c) { return !c.hasAttribute("disabled"); });
             var on = cells.filter(function (c) { return c.getAttribute("aria-checked") === "true"; }).length;
-            if (!cells.length) { all.setAttribute("disabled", ""); all.setAttribute("aria-checked", "false"); all.tabIndex = -1; }
-            else { all.removeAttribute("disabled"); all.tabIndex = 0; all.setAttribute("aria-checked", on === cells.length ? "true" : on ? "mixed" : "false"); }
-            var st = all.getAttribute("aria-checked");
-            all.querySelector("use").setAttribute("href", st === "mixed" ? "#i-minus" : "#i-check");
-            all.title = !cells.length ? "이 열에는 고를 수 있는 칸이 없습니다" : st === "true" ? "누르면 이 열의 고를 수 있는 칸을 모두 끕니다" : "누르면 이 열의 고를 수 있는 칸을 모두 켭니다";
+            if (!cells.length) { all.setAttribute("disabled", ""); all.setAttribute("aria-checked", "false"); all.tabIndex = -1; all.style.opacity = "0.4"; }
+            else { all.removeAttribute("disabled"); all.tabIndex = 0; all.style.opacity = ""; all.setAttribute("aria-checked", on === cells.length ? "true" : on ? "mixed" : "false"); }
+            all.querySelector("use").setAttribute("href", all.getAttribute("aria-checked") === "mixed" ? "#i-minus" : "#i-check");
           });
         }
         function selectAll(op) {
           var all = menuModal.querySelector('[data-all="' + op + '"]');
           if (all.hasAttribute("disabled")) return;
           var turnOn = all.getAttribute("aria-checked") !== "true";
-          mHint.hidden = true;
           mRows.querySelectorAll('.check[data-op="' + op + '"]:not([data-group])').forEach(function (c) {
-            if (c.hasAttribute("disabled")) return;
-            var code = c.dataset.m, v = cur.grants[code] || "";
-            if (turnOn) {
-              if (v.indexOf(op) < 0) v += op;
-              var rCell = mRows.querySelector('.check[data-m="' + code + '"][data-op="R"]');
-              if (op !== "R" && v.indexOf("R") < 0 && rCell && !rCell.hasAttribute("disabled")) v += "R";
-            } else {
-              v = op === "R" ? "" : v.replace(op, "");
-            }
-            cur.grants[code] = ALL.split("").filter(function (x) { return v.indexOf(x) > -1; }).join("");
+            if (!c.hasAttribute("disabled")) setOp(cur.grants, c.dataset.m, op, turnOn);
           });
           renderMenu();
         }
@@ -717,38 +643,30 @@
             var again = menuModal.querySelector('[data-all="' + op + '"]'); if (again) again.focus();
           }
         });
+        function sep() { return '<span aria-hidden="true" style="width: 1px; height: 11px; background: #d9d9d9"></span>'; }
         function openMenu(code) {
           var v = viewer();
           var fixed = code === "FM000001";
-          var g = fixed ? { code: code, type: "FM", name: "가맹 마스터", fixed: true } : find(code, v);
+          var g = fixed ? { code: code, type: "FM", name: TYPE.FM, users: [] } : find(code, v);
           if (!g) return;
-          var lock = fixed ? "fixed" : lockOf(v, g);
-          cur = { code: code, g: g, base: fixed ? null : BASE[g.type], canSave: !lock, grants: clone(GRANT[code] || {}), svc: SVCS[0][0] };
-          document.getElementById("mn-badge").hidden = !lock;
+          /* 가맹마스터 보기는 볼 수만 있다. 그 밖은 고칠 수 있는 그룹일 때만 저장한다 */
+          cur = { code: code, g: g, base: fixed ? null : BASE[g.type], canSave: !fixed && editable(v, g), grants: clone(GRANT[code] || {}), svc: SVCS[0][0] };
+          document.getElementById("mn-badge").hidden = !fixed;
           document.getElementById("mn-head").innerHTML =
-            '<dt>권한 코드</dt><dd class="mono">' + code + "</dd>" +
-            (fixed ? "" : "<dt>권한 유형</dt><dd>" + TYPE[g.type] + "</dd>") +
-            "<dt>권한명</dt><dd>" + g.name + "</dd>";
+            '<span class="subtle">권한유형</span><b>' + TYPE[g.type] + "</b>" + sep() +
+            '<span class="subtle">권한코드</span><span class="mono">' + code + "</span>" + sep() +
+            '<span class="subtle">권한명</span><b>' + g.name + "</b>";
+          /* 잠긴 팝업에는 이유 띠를 두지 않는다 — 칸이 막히고 [닫기]만 보인다 (코드대로, 2026-10-30) */
+          mBands.innerHTML = "";
           renderSvcTabs();
-          var out = [];
-          if (fixed) {
-            /* 가맹 마스터 조회 팝업은 안내 띠 없이 제목의 조회용 표시만 둔다 (2026-10-07) */
-          } else if (lock === "own") {
-            out.push(band("warn", "lock", "본인이 연결된 권한 그룹이라 메뉴 권한을 바꿀 수 없습니다", "조회용으로 열었습니다. 이 그룹의 메뉴 권한은 그룹을 관리하는 다른 사용자가 바꿉니다."));
-          } else if (lock === "type") {
-            out.push(band("info", "eye", "가맹 관리자 권한 그룹은 만든 가맹 마스터만 메뉴 권한을 저장합니다", "BP 마스터에게는 조회용으로 열립니다."));
-          } else if (lock === "role") {
-            out.push(band("info", "eye", "조회용으로 열었습니다", v.plat ? "플랫폼 사용자는 BP 권한 그룹의 메뉴 권한을 볼 수만 있습니다." : "메뉴 권한 저장은 이 그룹을 만든 마스터 역할만 할 수 있습니다."));
-          }
-          document.getElementById("mn-bands").innerHTML = out.join("");
           ["mn-save", "mn-cancel", "mn-fail", "mn-stale"].forEach(function (id) { document.getElementById(id).hidden = !cur.canSave; });
           document.getElementById("mn-close").hidden = cur.canSave;
-          mHint.hidden = true;
-          menuModal.querySelectorAll("[data-step]").forEach(function (p) { p.hidden = p.dataset.step !== "edit"; });
+          savedEl.hidden = true;
+          step("edit");
           renderMenu();
           menuModal.hidden = false;
         }
-        /* 서비스 탭 — 이 BP 에 허용된 서비스만. 탭을 바꿔도 고른 칸(cur.grants)은 남고 저장 때 한꺼번에 반영한다 */
+        /* 서비스 탭 — 지금은 웨일ERP 하나. 탭을 바꿔도 고른 칸(cur.grants)은 남고 저장 때 한꺼번에 반영한다 */
         var svcTabs = document.getElementById("mn-svc");
         function renderSvcTabs() {
           svcTabs.innerHTML = SVCS.slice(0, svcTwo ? 2 : 1).map(function (s) {
@@ -758,29 +676,16 @@
         svcTabs.addEventListener("click", function (ev) {
           var t = ev.target.closest("[data-svc-tab]"); if (!t || t.dataset.svcTab === cur.svc) return;
           cur.svc = t.dataset.svcTab;
-          mHint.hidden = true;
           renderSvcTabs();
           renderMenu();
         });
         function toggle(c) {
-          if (c.hasAttribute("disabled")) {
-            var why = TIP[c.dataset.b];
-            if (why) { mHint.innerHTML = ic("warn", 14) + "<span>" + c.dataset.m + " · " + why + "</span>"; mHint.hidden = false; }
-            return;
-          }
-          mHint.hidden = true;
-          var code = c.dataset.m, op = c.dataset.op, v = cur.grants[code] || "";
+          if (c.hasAttribute("disabled")) return;
+          var code = c.dataset.m, op = c.dataset.op;
           if (c.dataset.group) {
             var turnOn = c.getAttribute("aria-checked") !== "true";
-            kidsOf(code).forEach(function (k) { if (!blockOf(k, op)) setOp(cur.grants, k[0], op, turnOn); });
-            renderMenu();
-            var g = mRows.querySelector("[data-m='" + code + "'][data-op='" + op + "']");
-            if (g) g.focus();
-            return;
-          }
-          if (v.indexOf(op) > -1) v = op === "R" ? "" : v.replace(op, "");
-          else { v += op; if (op !== "R" && v.indexOf("R") < 0) v += "R"; }
-          cur.grants[code] = ALL.split("").filter(function (x) { return v.indexOf(x) > -1; }).join("");
+            kidsOf(code).forEach(function (k) { if (!outOf(k, op)) setOp(cur.grants, k[0], op, turnOn); });
+          } else setOp(cur.grants, code, op, !has(cur.grants, code, op));
           renderMenu();
           var again = mRows.querySelector("[data-m='" + code + "'][data-op='" + op + "']");
           if (again) again.focus();
@@ -791,37 +696,65 @@
           if (c && (ev.key === " " || ev.key === "Enter")) { ev.preventDefault(); toggle(c); }
         });
         function step(name) { menuModal.querySelectorAll("[data-step]").forEach(function (p) { p.hidden = p.dataset.step !== name; }); }
-        document.getElementById("mn-save").addEventListener("click", function () {
-          GRANT[cur.code] = cur.grants;
-          menuModal.hidden = true;
+        /* 켜져 있던 칸을 껐는가 */
+        function revoked() {
+          var before = GRANT[cur.code] || {};
+          return Object.keys(before).some(function (k) { return before[k].split("").some(function (op) { return !has(cur.grants, k, op); }); });
+        }
+        function commit() {
+          GRANT[cur.code] = clone(cur.grants);
+          mBands.innerHTML = "";
+          step("edit");
           render();
-          toast("메뉴별 권한을 저장했습니다 · " + cur.code + " " + cur.g.name);
+          /* 저장해도 팝업은 열어 두고 「저장되었습니다.」를 3초 보인다 */
+          savedEl.hidden = false;
+          clearTimeout(savedTimer);
+          savedTimer = setTimeout(function () { savedEl.hidden = true; }, 3000);
+        }
+        document.getElementById("mn-save").addEventListener("click", function () {
+          mBands.innerHTML = "";
+          /* 영향받는 사용자가 있을 때만 회수를 묻는다 — BA·FA 그룹 아래에는 하위 권한 그룹이 없다 */
+          if (revoked() && cur.g.users.length) {
+            document.getElementById("rv-name").textContent = cur.g.name;
+            document.getElementById("rv-users").textContent = cur.g.users.length + "명";
+            step("revoke");
+            return;
+          }
+          commit();
         });
-        document.getElementById("mn-fail").onclick = function () { step("savefail"); };
-        document.getElementById("mn-stale").addEventListener("click", function () { step("stale"); });
-        document.getElementById("mn-reload").addEventListener("click", function () { openMenu(cur.code); });
+        document.getElementById("rv-save").addEventListener("click", commit);
+        /* 첫 줄은 api 문구. 5xx 는 고친 칸을 그대로 둔다 */
+        document.getElementById("mn-fail").addEventListener("click", function () {
+          mBands.innerHTML = redBox("메뉴 권한 저장 결과를 확인하지 못했습니다. 화면을 새로 받았으니 처리됐는지 확인한 뒤 다시 시도해 주세요.");
+        });
+        /* 동시 수정(409) — 최신 메뉴 권한으로 다시 채우고 알린다 */
+        document.getElementById("mn-stale").addEventListener("click", function () {
+          cur.grants = clone(GRANT[cur.code] || {});
+          renderMenu();
+          mBands.innerHTML = redBox("다른 관리자가 먼저 수정했습니다. 최신 정보를 불러온 뒤 다시 저장해 주세요.", "최신 메뉴 권한으로 칸을 다시 채웠습니다. 확인한 뒤 다시 저장해 주세요.");
+        });
 
         /* ---------- 화면 안 동작 ---------- */
         document.addEventListener("click", function onScreenClick(ev) {
           var t, e = ev;
           if ((t = e.target.closest("[data-rg-menu]"))) { openMenu(t.dataset.rgMenu); return; }
-          if ((t = e.target.closest("[data-rg-row]"))) { go("view", { sel: t.dataset.rgRow }); return; }
+          if ((t = e.target.closest("[data-rg-pick]"))) { go("view", { sel: t.dataset.rgPick }); return; }
           if (e.target.closest("[data-rg-new]")) { go("new", {}); return; }
           if (e.target.closest("[data-rg-del]")) { openDel(); return; }
           if (e.target.closest("[data-rg-cancel]")) { go("view", {}); return; }
           if (e.target.closest("[data-rg-save]")) {
             var nm = document.getElementById("e-name"), ds = document.getElementById("e-desc"), g = find(sel, viewer());
             if (g && nm && nm.value.trim()) { g.name = nm.value.trim(); g.desc = ds ? ds.value.trim() : g.desc; g.mod = ["2026-09-21 10:45", viewer().id]; }
-            go("view", { sel: sel, toast: "권한 그룹을 저장했습니다 · " + sel + " " + (g ? g.name : "") });
+            go("view", { sel: sel, toast: "수정되었습니다." });
             return;
           }
           if (e.target.closest("[data-rg-create]")) {
             var c = newCode(viewer());
-            go("created", { created: true, sel: c, toast: "권한 그룹을 등록했습니다 · " + c + " " + NEWG[c].name });
+            go("created", { created: true, sel: c, toast: "등록했습니다. 권한 코드 " + c + " — 목록의 메뉴설정 [설정]으로 메뉴 권한을 정해 주세요." });
           }
         });
 
-        /* app.js 가 DOMContentLoaded 에 페이저·아이콘을 붙이므로 그 뒤에 처음 그린다 */
+        /* app.js 가 DOMContentLoaded 에 아이콘을 붙이므로 그 뒤에 처음 그린다 */
         if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", apply);
         else apply();
       })();
