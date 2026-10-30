@@ -174,7 +174,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
     <>
       {heading}
       {/* 삭제만 막힌 이유(본인 연결 등) — 고정 권한은 원래 [삭제]가 없어 두지 않는다(2026-10-30 재영) */}
-      {can.delete && !role.isMaster && role.deleteBlockedReason && (
+      {can.delete && !role.isMaster && role.deleteBlockedReason && role.deleteBlockedReason !== "FIXED_ROLE" && (
         <InfoBand>
           {role.deleteBlockedReason === "SELF_LINKED"
             ? "본인 계정에 연결된 권한 그룹은 삭제할 수 없습니다."
