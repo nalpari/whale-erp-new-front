@@ -49,3 +49,19 @@ test("documentRowsOf — 체결 완료에서 종료된 계약도 처리 완료�
     );
   assert.deepEqual(documentRowsOf({ contractMethod: null, status: "PENDING_SIGNATURE", histories: [], documents: [] }), []);
 });
+
+test("documentRowsOf — 체결 완료에서 종료됐는데 처리 완료본이 없으면 만드는 중 안내, 계약 방식이 빈 옛 계약은 전자로 본다", () => {
+  assert.deepEqual(
+    documentRowsOf({
+      contractMethod: "ELECTRONIC",
+      status: "ENDED",
+      histories: [...signedHistory, { fromStatus: "SIGNED", toStatus: "ENDED" }],
+      documents: [],
+    }),
+    [{ label: "처리 완료본", documents: [], empty: "처리 완료본을 만드는 중입니다. 잠시 뒤 새로 고쳐 주세요." }],
+  );
+  assert.deepEqual(
+    documentRowsOf({ contractMethod: null, status: "SIGNED", histories: signedHistory, documents: [doc(5, "SIGNED_COPY"), doc(6, "SIGNATURE")] }),
+    [{ label: "처리 완료본", documents: [doc(5, "SIGNED_COPY")], empty: null }],
+  );
+});

@@ -170,7 +170,9 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         // 핸들러가 300초짜리 주소를 받아 원래 파일 이름으로 내려받게 한다. documents 는 api #49 부터 온다 — 없으면 빈 것으로 본다.
         ...documentRowsOf({ ...c, histories: c.histories ?? [], documents: c.documents ?? [] }).map((row) => ({
           label: row.label,
-          value: row.empty ?? (
+          value: row.empty ? (
+            <span className="text-erp-sub">{row.empty}</span>
+          ) : (
             <DetailValues
               items={row.documents.map((d) => (
                 <a key={d.contractDocumentId} href={`/contracts/${c.contractId}/documents/${d.contractDocumentId}`} className="text-erp-link hover:underline">
