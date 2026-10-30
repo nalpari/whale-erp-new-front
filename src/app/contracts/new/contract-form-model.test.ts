@@ -29,6 +29,8 @@ import {
   paperFileTypesOf,
   partTimePay,
   probationWage,
+  probationFloorLabel,
+  probationWageFloor,
   renewalStartProblem,
   signedOverlapOf,
   toBody,
@@ -41,6 +43,8 @@ import {
 
 /** 문장만 — 칸 매핑은 problemsByField 테스트가 본다 */
 const problems = (...a: Parameters<typeof fieldProblems>) => fieldProblems(...a).map((p) => p.message);
+// api 공통코드 최저임금 MINIMUM_WAGE · HOURLY(WHALEERP-595) — 10,320원 → 수습 중 시급 하한 9,288원
+const WAGE = { hourlyWage: 10320, problem: null };
 
 const filled = (over: Partial<ContractForm> = {}): ContractForm => ({
   ...initialForm("11"),
@@ -365,9 +369,16 @@ test("수습: 정직원만, 기간과 감액률을 함께 보내고 조건을 �
   assert.ok(problems(filled({ ...on, endDate: "2027-09-12" })).includes("수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다."));
   assert.deepEqual(problems(filled({ ...on, endDate: "2027-09-13" })), []);
   assert.ok(problems(filled({ ...on, probationRate: "11" })).includes("수습 임금 감액률은 0~10% 정수로 입력하세요."));
-  // 최저임금의 90%(9,288원) 아래면 막는다
-  assert.ok(problems(filled({ ...on, wage: "10,320" })).length === 0);
-  assert.ok(problems(filled({ ...on, wage: "10,000" })).some((m) => m.startsWith("수습 중 시급은 최저임금의 90%")));
+  // 지금 최저임금의 90%(9,288원) 아래면 막는다 — 딱 90%는 된다
+  assert.deepEqual(problems(filled({ ...on, wage: "10,320" }), false, false, undefined, WAGE), []);
+  assert.deepEqual(problems(filled({ ...on, wage: "10,319" }), false, false, undefined, WAGE), [
+    "수습 중 시급은 최저임금의 90%(9,288원) 이상이어야 합니다.",
+  ]);
+  // 계약 시작일과 상관없이 지금 값으로 본다 — 지난 날짜 · 시작일 없음(임시저장)도
+  assert.equal(problems(filled({ ...on, wage: "10,000", startDate: "2020-03-01" }), false, false, undefined, WAGE).length, 1);
+  assert.equal(problems(filled({ ...on, wage: "10,000", startDate: "" }), true, false, undefined, WAGE).length, 1);
+  // 최저임금을 받지 못했으면(null) 화면은 보지 않는다 — 저장 때 api 가 본다
+  assert.deepEqual(problems(filled({ ...on, wage: "5,000" })), []);
   // 수습을 끄면 보내지 않는다
   assert.equal("probationMonths" in toBody(filled({ ...on, probation: false })), false);
 });
@@ -487,7 +498,7 @@ test("한 칸에 오류가 여럿이면 모두 — 파트타이머 요일 시간
   assert.deepEqual(by.probationMonths, ["수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다."]);
   assert.deepEqual(by.probationRate, ["수습 임금 감액률은 0~10% 정수로 입력하세요."]);
   // 시급 10,000원 × (1 − 10%) = 9,000원 — 최저임금의 90% 아래
-  const low = problemsByField(fieldProblems(filled({ employmentType: "FULL_TIME", wage: "10,000", probation: true, probationRate: "10" })));
+  const low = problemsByField(fieldProblems(filled({ employmentType: "FULL_TIME", wage: "10,000", probation: true, probationRate: "10" }), false, false, undefined, WAGE));
   assert.equal(low.probationWage?.length, 1);
   assert.equal(low.probationRate, undefined);
 });
@@ -496,4 +507,18 @@ test("저장을 누른 때 오류가 난 칸만 보인다 — 고쳐지면 빠�
   const shown = new Set<ProblemField>(["name", "phone"]);
   assert.deepEqual(shownProblems({ name: ["이름을 입력하세요."], jobTitle: ["직무를 입력하세요."] }, shown), { name: ["이름을 입력하세요."] });
   assert.deepEqual(shownProblems({}, shown), {});
+});
+
+test("최저임금 공통코드를 쓸 수 없으면 화면은 막지 않고 api 에 맡긴다(WHALEERP-595, front #203 code-review)", () => {
+  const problem = "최저임금 공통코드(MINIMUM_WAGE · HOURLY)가 사용 중지되어 수습 중 시급을 확인할 수 없습니다. 플랫폼 관리자에게 문의해 주세요.";
+  const on = { employmentType: "FULL_TIME" as const, probation: true, probationMonths: "3" as const, probationRate: "10", wage: "5,000" };
+  // 화면을 연 뒤 공통코드를 고쳐도 새로 고침 없이 저장되게 — 저장 때 api 가 그 문장으로 막는다
+  assert.deepEqual(problems(filled(on), false, false, undefined, { hourlyWage: null, problem }), []);
+  // 하한은 원 미만 올림, 수습 중 시급은 원 미만 반올림 — api 와 같은 정수 셈
+  assert.equal(probationWageFloor(10320), 9288);
+  assert.equal(probationWageFloor(10031), 9028);
+  assert.equal(probationWage({ wage: "12,345", probationRate: "10" }), 11111);
+  // 도움말 · 오류 문장이 같이 쓰는 하한 표기
+  assert.equal(probationFloorLabel(10320), "최저임금의 90%(9,288원)");
+  assert.equal(probationFloorLabel(null), "최저임금의 90%");
 });

@@ -18,7 +18,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
   const contractId = Number(raw);
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
-  const { stores, labels, signedIn, denied: optionsDenied } = await loadFormData();
+  const { stores, labels, signedIn, denied: optionsDenied, minimumWage } = await loadFormData();
   // 계약 상세: 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403) · BP 를 고르지 않은 플랫폼 계정(400)이면 api 문장을 그대로 보인다(목록과
   // 같다). 근무지 선택지의 거절(optionsDenied — 작성 · 수정 권한, 없는 BP 404 포함)은 loadFormData 가 따로 준다
   let detail: ContractDetail | null = null;
@@ -67,6 +67,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
                 <ContractForm
                   stores={stores}
                   labels={labels}
+                  minimumWage={minimumWage}
                   signedIn
                   contractId={contractId}
                   initial={fromDetail(detail)}
@@ -99,6 +100,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
                 <ContractForm
                   stores={stores}
                   labels={labels}
+                  minimumWage={minimumWage}
                   signedIn
                   contractId={contractId}
                   initial={fromDetail(detail)}
