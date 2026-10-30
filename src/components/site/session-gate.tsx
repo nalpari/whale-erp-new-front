@@ -49,7 +49,7 @@ import { restoredScope, sameStores, SCOPE_PARAM, scopeKeyOf, withScope } from "@
 
 /** 다시 받은 점포 목록이 달라졌을 때의 토스트(2026-10-29 사용자 지정) — 다른 PC · 다른 탭 · 이 화면에서 바꾼 것 모두 같다 */
 const STORES_CHANGED_MESSAGE = "점포 목록이 변경되었습니다.";
-/** 창으로 돌아올 때(포커스)는 마지막으로 맞춘 지 이만큼 지났을 때만 다시 묻는다 — 창을 오가는 것만으로 연달아 부르지 않게 */
+/** 창으로 돌아오거나 탭이 다시 보일 때는 마지막으로 물은 지 이만큼 지났을 때만 다시 묻는다 — 창을 오가는 것만으로 연달아 부르지 않게 */
 const FOCUS_SYNC_MS = 10_000;
 
 interface LoginState {
@@ -68,7 +68,7 @@ interface LoginState {
 
 type LoginActions = {
   setScope: (scope: Scope) => void;
-  /** 점포 목록을 지금 서버 값에 맞춘다 — 점포를 등록 · 수정 · 삭제한 화면이 저장 직후 부른다. 버전이 같으면 다시 받지 않는다. */
+  /** 점포 목록을 지금 서버 값에 맞춘다 — 점포를 등록 · 수정 · 상태 변경 · 삭제했거나 그 결과를 모를 때(409 · 404 · 연결 끊김) 화면이 부른다. 버전이 같으면 다시 받지 않는다. */
   refreshStores: () => void;
   /** 내 정보(마이페이지)에서 이름 · 이메일을 바꾸면 GNB 등 이 값을 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
    * 이름 · 이메일만 받고 둘 다 빈 값을 허락하지 않는다 — 소속 BP · 권한 · 비밀번호 변경 대기 같은 칸은 이 통로로
@@ -122,7 +122,7 @@ export function useMenus() {
 }
 export const useCurrentBp = () => useLogin().currentBp;
 export const useStores = () => useLogin().stores;
-/** 점포를 등록 · 수정 · 삭제한 뒤 헤더 범위 선택기 · 점포 고르기를 바로 맞춘다. 바뀌었으면 「점포 목록이 변경되었습니다.」를 띄운다. */
+/** 점포를 바꿨거나 결과를 모를 때 헤더 범위 선택기 · 점포 고르기를 바로 맞춘다. 화면에 보이는 점포가 바뀌었으면 「점포 목록이 변경되었습니다.」를 띄운다. */
 export const useRefreshStores = () => useLogin().refreshStores;
 /** 그룹의 상세 코드. 없거나 사용하지 않는 그룹은 [] */
 export function useCodes(group: string) {
@@ -355,8 +355,10 @@ function Ready({
   };
   // 점포 목록 맞추기(2026-10-29). 같은 계정으로 여러 PC 에서 일하므로 다른 PC 에서 점포를 등록 · 수정 · 폐점 · 삭제하거나 담당 점포가 바뀌면
   // 이 탭의 헤더 범위 선택기 · 점포 고르기도 따라와야 한다. 서버가 알려 줄 통로는 없어 이 탭이 묻는다 — 버전(값 하나)만 묻고, 이 탭이 받을 때의
-  // 버전과 다르면 점포를 다시 받는다. 버전 확인 · 다시 받기가 실패하면 지금 목록을 두고 알리지 않는다(다음 이동 때 다시 묻는다).
-  // 묻는 때: 새로고침 · 메뉴 이동(주소가 바뀔 때) · 창 포커스, 점포를 바꾼 화면이 저장 직후(refreshStores), 다른 탭의 알림(stores-changed).
+  // 버전과 다르면 점포를 다시 받는다(준비 직후에는 버전이 없어 한 번 다시 받는다). 연결 끊김 · 5xx 면 지금 목록을 두고 알리지 않는다(다음에
+  // 다시 묻는다). 다시 물어도 같은 실패(401 세션 끊김은 로그인 화면으로, 403 계정 미사용 · 404 볼 수 없게 된 BP 는 이 화면에서 더 묻지 않음)는 멈춘다.
+  // 묻는 때: 새로고침 · 경로가 바뀔 때(메뉴 · 화면 이동, 쿼리만 바뀌면 묻지 않는다) · 창 포커스 · 탭이 다시 보일 때, 점포를 바꿨거나 결과를 모를 때
+  // (refreshStores), 다른 탭의 알림(stores-changed).
   // 비동기 뒤에 지금 값을 읽으려고 마지막으로 그린 값을 둔다. 이미 묻는 중이면 끝난 뒤 한 번 더 묻는다.
   const toast = useToast();
   const latest = useRef(value);
@@ -366,7 +368,8 @@ function Ready({
   // announce: 이번 차례가 다른 탭에 알릴 것인가 — 다른 탭의 알림으로 물은 것만이면 되돌려 알리지 않는다
   // disposed: 이 Ready 가 내려갔다 — 다른 BP 주소로 가면 SessionGate 가 로딩을 그려 Ready 가 내려가는데, 그때 묻던 결과가 늦게 와서
   // 새 BP 의 상태 · 탭 저장값을 옛 BP 의 점포로 덮지 않게 한다(코드 리뷰로 찾음, 2026-10-30)
-  const sync = useRef({ running: false, again: false, announce: false, checkedAt: 0, disposed: false });
+  // stopped: 다시 물어도 같은 실패(403 · 404)를 받았다 — 이 화면에서는 더 묻지 않는다(이동마다 실패 요청이 쌓이지 않게)
+  const sync = useRef({ running: false, again: false, announce: false, checkedAt: 0, disposed: false, stopped: false });
   useEffect(() => {
     const s = sync.current;
     // 개발 모드(StrictMode)는 effect 를 두 번 돌린다 — 다시 올라올 때 표시를 되돌린다
@@ -392,18 +395,28 @@ function Ready({
         s.checkedAt = Date.now();
         const v = latest.current;
         // 플랫폼 탭(자기 BP)은 점포가 없다. 비밀번호를 바꾸기 전에는 점포 api 가 403 이다
-        if (v.serviceCode !== "WHALE_ERP" || v.account.isPasswordChangeRequired) return;
+        if (v.serviceCode !== "WHALE_ERP" || v.account.isPasswordChangeRequired || s.stopped) return;
         const bpCodeId = v.currentBp.bpCodeId;
         const own = bpCodeId === v.account.bp.bpCodeId;
+        // 응답을 기다리는 사이 사용자가 다른 화면으로 가면 아래 replace 가 그 이동을 덮지 않게 물을 때의 경로를 둔다
+        const askedPath = location.pathname;
         const changed = await fetchChangedStores(bpCodeId, own, readStoresVersion(bpCodeId)).catch((e: unknown) => {
-          console.warn("점포 목록 버전을 맞추지 못함", e);
+          const status = e instanceof BffError ? e.status : undefined;
+          // 비밀번호 강제 변경 403 은 bff() 가 팝업을 다시 띄우고, 그 뒤로는 위에서 묻지 않는다
+          if (status === 401) {
+            router.replace(loginPathOf(location.pathname));
+            s.stopped = true;
+          } else if (status === 403 || status === 404) {
+            console.error("점포 목록을 맞출 수 없음 — 이 화면에서는 더 묻지 않는다", { bpCodeId, own, status }, e);
+            s.stopped = true;
+          } else console.warn("점포 목록 버전을 맞추지 못함 — 다음에 다시 묻는다", { bpCodeId, own, status }, e);
           return null;
         });
         // 그 사이 탭 BP 가 바뀌었으면(BP 주소 이동) 받은 값은 버린다 — 새 BP 는 준비에서 받았다
         if (s.disposed) return;
         if (!changed || latest.current.currentBp.bpCodeId !== bpCodeId) continue;
-        writeStoresVersion(bpCodeId, changed.version);
-        writeStores(bpCodeId, changed.items);
+        // 목록을 쓴 뒤에만 버전을 쓴다 — 목록 쓰기가 실패했는데 버전만 남으면 새로고침 뒤 옛 목록을 최신으로 믿는다
+        if (writeStores(bpCodeId, changed.items)) writeStoresVersion(bpCodeId, changed.version);
         // 자기 BP 면 새 탭이 읽는 공용 값(login-bp-info)도 맞춘다
         const shared = own ? readLoginBpInfo(v.loginKey) : null;
         if (shared) writeLoginBpInfo({ ...shared, stores: changed.items });
@@ -415,7 +428,7 @@ function Ready({
           writeScope(bpCodeId, scope);
           // 점포 조건이 바뀌므로 쪽(page)은 뺀다 — 3쪽을 보던 중이어도 새 범위의 1쪽부터
           const params = new URLSearchParams(location.search);
-          if (params.has(SCOPE_PARAM)) {
+          if (params.has(SCOPE_PARAM) && location.pathname === askedPath) {
             params.delete("page");
             router.replace(withScope(`${location.pathname}?${params}`, scope));
           }
@@ -429,9 +442,11 @@ function Ready({
       s.running = false;
     }
   };
-  const refreshStores = () => void syncStores();
-  const syncOnEvent = useEffectEvent((fromOtherTab: boolean) => void syncStores(fromOtherTab));
-  // 새로고침(처음 그릴 때)과 메뉴 이동 — 이동을 막지 않고 뒤에서 묻는다
+  // 맞추는 중의 예외(주소 · 범위 계산 등)는 화면을 깨지 않고 남기기만 한다 — 실행 중 표시는 finally 가 푼다
+  const runSync = (fromOtherTab: boolean) => void syncStores(fromOtherTab).catch((e: unknown) => console.error("점포 목록 맞추기 중 예외", e));
+  const refreshStores = () => runSync(false);
+  const syncOnEvent = useEffectEvent((fromOtherTab: boolean) => runSync(fromOtherTab));
+  // 새로고침(처음 그릴 때)과 경로가 바뀔 때(메뉴 · 화면 이동) — 이동을 막지 않고 뒤에서 묻는다
   useEffect(() => syncOnEvent(false), [pathname]);
   useEffect(() => {
     const onFocus = () => {

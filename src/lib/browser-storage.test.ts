@@ -117,6 +117,13 @@ test("stores-version: 탭 값이라 bpCodeId 가 다르면 null 이고, 앞 로�
   assert.deepEqual(tab.keys(), []);
 });
 
+test("writeStores: 목록을 바꾸면 그 목록의 버전이 아니므로 버전을 지운다", () => {
+  fresh();
+  writeStoresVersion(a.bpCodeId, "v1");
+  assert.equal(writeStores(a.bpCodeId, []), true);
+  assert.equal(readStoresVersion(a.bpCodeId), null);
+});
+
 test("stores-changed: 같은 로그인 · 같은 BP 의 알림만 받고, 로그인 정보와 함께 지운다", () => {
   const { local } = fresh();
   announceStoresChanged("k", a.bpCodeId);
@@ -126,6 +133,9 @@ test("stores-changed: 같은 로그인 · 같은 BP 의 알림만 받고, 로그
   assert.equal(isStoresChangedFor(raw, "k", b.bpCodeId), false);
   assert.equal(isStoresChangedFor(null, "k", a.bpCodeId), false);
   assert.equal(isStoresChangedFor("{", "k", a.bpCodeId), false);
+  // 객체가 아닌 JSON · 문자열 BP 번호도 받지 않는다
+  for (const odd of ["null", "[]", '"x"']) assert.equal(isStoresChangedFor(odd, "k", a.bpCodeId), false, odd);
+  assert.equal(isStoresChangedFor(JSON.stringify({ loginKey: "k", bpCodeId: String(a.bpCodeId) }), "k", a.bpCodeId), false);
   clearLoginStorage();
   assert.equal(local.getItem("whale-erp:v2:stores-changed"), null);
 });

@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — PR 리뷰(조용한 실패 · 테스트 · 주석) 반영: 점포 목록 맞추기가 401 은 로그인 화면으로, 403 · 404 는 그 화면에서 더 묻지 않게 했다(연결 끊김 · 5xx 만 다음에 다시). 탭 `stores` 를 쓰면 버전을 지우고 목록을 쓴 뒤에만 버전을 써 짝이 어긋나지 않게 했다. 응답 사이 다른 화면으로 갔으면 범위 replace 를 건너뛴다. 헤더가 점포 목록이 바뀌면 주소 범위를 다시 따른다. 삭제 뒤 주소는 점포 번호를 숫자로 읽는다(「02」). 공통 토스트 차례 판정을 `toast-queue.ts` 로 떼어 테스트를 붙였다. 옛 주석 · 문서(「세션 동안 바뀌지 않는다」 · 「로그인 뒤 맡게 된 점포」 등)를 고쳤다(front wooper).
 * **Update**: [점포 관리](/stores.md) — 재리뷰 반영: 등록 · 삭제 뒤 목록이 헤더 범위를 따르도록 바뀐 것(`withHeaderStoreSearch` · `withoutDeletedStore`)과 점포 목록 맞추기를 적었다(옛 「등록 · 삭제 뒤 전체」 서술 정정). [Whale ERP Frontend](/whale-erp-front.md) — 고른 점포가 없어져 범위를 전체로 돌릴 때 쪽(page)을 뺀다(front wooper).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 목록 필터(3팀)도 점포 목록을 다시 맞추면 직영 · 가맹 칩을 맞춘다(`chipsKeyOf` 동기화 키, 점포 · BP 관리자와 같다). 공용 개발 DB 에 `contracts.reject_reason` 마이그레이션이 없어 화면 확인은 못 했다(front wooper).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 코드 리뷰 반영: 다른 BP 주소로 가 `Ready` 가 내려간 뒤 늦게 온 점포 목록 맞추기 결과가 새 BP 의 상태 · 탭 저장값을 덮지 않게 했다(`disposed` 표시 · 상태 갱신 때 BP 재확인). 공통 토스트가 내려갈 때 타이머를 지운다(front wooper).

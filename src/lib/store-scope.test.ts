@@ -116,9 +116,14 @@ test("withoutDeletedStore: 고른 점포에서 지운 점포만 빼고, 남은 �
   // 헤더 범위가 지운 그 점포면 전체로 적는다
   assert.equal(withoutDeletedStore("/stores?scope=STORE%3A2", 2, { type: "STORE", storeId: 2 }), "/stores?scope=ALL");
   assert.equal(withoutDeletedStore("/stores", 2, { type: "STORE", storeId: 7 }), "/stores");
+  // 고른 점포가 남으면 헤더가 지운 점포여도 주소에 범위를 적지 않는다(헤더는 점포 목록 맞추기가 돌린다)
+  assert.equal(withoutDeletedStore("/stores?storeIds=7%2C2", 2, { type: "STORE", storeId: 2 }), "/stores?storeIds=7");
+  // 목록 쿼리처럼 숫자로 읽는다 — 「02」 · 「 2」도 지운 점포다
+  assert.equal(withoutDeletedStore("/stores?storeIds=02%2C3", 2, direct), "/stores?storeIds=3");
+  assert.equal(withoutDeletedStore("/stores?storeIds=%202%2C3", 2, direct), "/stores?storeIds=3");
 });
 
-test("withoutStoreSearch: 등록 · 삭제 뒤 점포 검색을 「전체」로 — 빈 storeIds, 범위 · 쪽은 빼고 다른 조건은 남긴다(헤더 범위는 그대로)", () => {
+test("withoutStoreSearch: (근로계약 · TO-DO) 등록 · 삭제 뒤 점포 검색을 「전체」로 — 빈 storeIds, 범위 · 쪽은 빼고 다른 조건은 남긴다(헤더 범위는 그대로)", () => {
   assert.equal(withoutStoreSearch("/stores"), "/stores?storeIds=");
   assert.equal(withoutStoreSearch("/stores?storeIds=1%2C2&statuses=CLOSED&page=3&view=table"), "/stores?storeIds=&statuses=CLOSED&view=table");
   assert.equal(withoutStoreSearch("/stores?scope=DIRECT"), "/stores?storeIds=");
@@ -150,6 +155,9 @@ test("sameStores: 화면에 보이는 칸 · 순서가 같을 때만 같다", ()
   // 점포명 · 상태(폐점) 변경
   assert.equal(sameStores(stores, [{ ...stores[0], name: "새 이름" }, ...stores.slice(1)]), false);
   assert.equal(sameStores(stores, [{ ...stores[0], storeStatusCode: "CLOSED" }, ...stores.slice(1)]), false);
+  // 점포코드 · 유형(직영 · 가맹 범위 판정에 쓴다)
+  assert.equal(sameStores(stores, [{ ...stores[0], storeCode: "ST999999" }, ...stores.slice(1)]), false);
+  assert.equal(sameStores(stores, [{ ...stores[0], storeTypeCode: "FRANCHISE" }, ...stores.slice(1)]), false);
   // 이름이 바뀌어 순서가 달라졌다
   assert.equal(sameStores(stores, [stores[1], stores[0], ...stores.slice(2)]), false);
 });

@@ -1,10 +1,12 @@
 // 로그인 정보를 브라우저에 두는 곳. 키·모양·확인을 여기 한 곳에서 한다(2026-10-13 계획).
 // localStorage — 모든 탭이 같이 쓴다. loginKey 가 쿠키 login-key 와 다르면 앞 로그인 것이라 버린다.
-//   login-info: 계정·메뉴 / login-bp-info: 자기 BP 의 점포·공통코드(탭에 자기 BP 값이 없을 때 — 새 탭, /bp-switch 로 자기 BP 에 돌아올 때 — 만 읽는다) / selected-bp: 플랫폼 계정이 마지막으로 고른 BP
+//   login-info: 계정·메뉴 / login-bp-info: 자기 BP 의 점포·공통코드(탭에 자기 BP 값이 없을 때 — 새 탭, /bp-switch 로 자기 BP 에 돌아올 때 — 만 읽는다.
+//   점포 목록 맞추기가 자기 BP 점포를 다시 받으면 이 값의 stores 도 고친다) / selected-bp: 플랫폼 계정이 마지막으로 고른 BP
+//   stores-changed: 한 탭이 점포 목록이 바뀐 것을 알면 적는다 — 같은 BP 의 다른 탭이 storage 이벤트로 받아 바로 다시 맞춘다.
 // sessionStorage — 탭마다 다르다. 화면은 이것만 읽는다.
 //   current-bp: 이 탭의 서비스(WHALE_ERP·PLATFORM)와 BP / stores·codes·scope: 그 BP 의 값. bpCodeId 가 이 탭의 BP 와 다르면 버린다.
-//   stores-version: 이 탭의 stores 를 받을 때의 점포 목록 버전(GET /bp-codes/{id}/stores-version). 없으면 아직 맞춰 보지 않은 것이다.
-// stores-changed(localStorage): 한 탭이 점포 목록이 바뀐 것을 알면 적는다 — 같은 BP 의 다른 탭이 storage 이벤트로 받아 바로 다시 맞춘다.
+//   stores-version: 이 탭의 stores 를 받을 때의 점포 목록 버전(GET /bp-codes/{id}/stores-version). 없으면 아직 맞춰 보지 않은 것이다
+//   (stores 를 쓰면 지운다 — writeStores).
 //   store-picks: 2026-10-21 에 없앴다(목록에서 고른 점포는 주소의 storeIds). 앞서 쓰던 값을 지우려고 키만 남긴다(TAB_KEYS).
 //   bp-fix: BP · 가맹 계정이 남의 BP 주소로 와서 소속 BP 로 고쳐 보낸 표시(들어온 주소). 같은 주소로 다시 오면 쿠키와 로그인 정보가 어긋난 것이다.
 //   서비스와 BP 는 짝이 맞아야 해서(플랫폼 서비스 = 플랫폼 BP, ERP 서비스 = 고객 BP) 한 키에 함께 둔다.
@@ -78,10 +80,14 @@ function read<T>(storage: () => Storage, key: string): T | null {
     return null;
   }
 }
-function write(storage: () => Storage, key: string, value: unknown) {
+/** 썼으면 true — 저장소가 가득 찼거나 못 쓰면 false */
+function write(storage: () => Storage, key: string, value: unknown): boolean {
   try {
     storage().setItem(key, JSON.stringify(value));
-  } catch {}
+    return true;
+  } catch {
+    return false;
+  }
 }
 function remove(storage: () => Storage, keys: string[]) {
   try {
@@ -113,7 +119,15 @@ export const writeCurrentBp = (loginKey: string, { serviceCode, bp }: TabContext
   write(tab, KEY.currentBp, { loginKey, serviceCode, ...pickBp(bp) });
 
 export const readStores = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; items: AdminStore[] }>(tab, KEY.stores), bpCodeId)?.items ?? null;
-export const writeStores = (bpCodeId: number, items: AdminStore[]) => write(tab, KEY.stores, { bpCodeId, items });
+/**
+ * 탭 점포 목록을 쓴다. 버전은 「그 목록을 받을 때의 버전」이라, 목록을 바꾸면 먼저 지운다 — 준비(prepare)가 다른 출처(login-bp-info ·
+ * 고른 BP 를 새로 받음)로 쓰면 다음 맞추기가 한 번 다시 받는다. 썼으면 true(코드 리뷰로 찾음, 2026-10-30 — 버전만 남고 목록 쓰기가
+ * 실패하면 새로고침 뒤 옛 목록을 「최신」으로 믿었다).
+ */
+export function writeStores(bpCodeId: number, items: AdminStore[]): boolean {
+  remove(tab, [KEY.storesVersion]);
+  return write(tab, KEY.stores, { bpCodeId, items });
+}
 export const readStoresVersion = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; version: string }>(tab, KEY.storesVersion), bpCodeId)?.version ?? null;
 export const writeStoresVersion = (bpCodeId: number, version: string) => write(tab, KEY.storesVersion, { bpCodeId, version });
 /** 점포 목록이 바뀐 것을 다른 탭에 알린다 — 같은 값을 다시 적으면 이벤트가 오지 않아 시각을 함께 적는다 */
