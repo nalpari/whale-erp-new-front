@@ -1,11 +1,12 @@
 "use client";
 
 import { unstable_rethrow } from "next/navigation";
-import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
+import { useEffect, useId, useRef, useState, useTransition, type MouseEvent, type RefObject } from "react";
 import { logout, logoutAfterWithdrawal } from "@/app/actions";
 import { Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
-import { CONTRACTS_PATH, IN_PROGRESS_CONTRACTS_HREF, withdrawFormField, withdrawWarningText, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
-import { useCanOpen, useCodes, useStores } from "./session-gate";
+import { IN_PROGRESS_CONTRACTS_HREF, withdrawFormField, withdrawWarningText, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
+import { bpPath, isBpPathScreen } from "@/lib/bp-path";
+import { useCanOpen, useCodes, useCurrentBp, useStores } from "./session-gate";
 import { createWithdrawalAction, getWithdrawEligibilityAction, verifyWithdrawPasswordAction } from "./withdraw-actions";
 
 type Step = "password" | "content" | "done";
@@ -35,34 +36,36 @@ function WarningBlock({ block, onNavigate }: { block: WithdrawWarningBlock; onNa
         <span>{withEmphasis(block.head)}</span>
       </p>
       {block.text && <p className="whitespace-pre-line">{withEmphasis(block.text)}</p>}
-      {block.link && <WarningLink link={block.link} onNavigate={onNavigate} />}
+      {block.link && (
+        <div className="mt-[10px]">
+          <MoveButton href={block.link.href} label={block.link.label} onNavigate={onNavigate} />
+        </div>
+      )}
     </div>
   );
 }
 
-// 본문 아래 이동 버튼(outline — 호버 모양을 기본으로, DESIGN.md 「링크 버튼」 — 생김새는 버튼, 하는 일은 이동). 글자 링크는 누를 곳으로 잘 안 보였다
-// (2026-10-30 사용자 지정). 이 계정이 열 수 없는 화면이면(권한 그룹에서 그 메뉴 조회가 꺼짐) 숨기고 본문 안내만 남긴다.
-// 누르면 패널을 닫는다 — 헤더에 붙은 패널이라 이동해도 열린 채 남기 때문이다.
-function WarningLink({ link, onNavigate }: { link: { href: string; label: string }; onNavigate: () => void }) {
-  if (!useCanOpen(link.href)) return null;
+// 탈퇴 전에 할 일을 하는 화면으로 보내는 이동 버튼(outline — 호버 모양을 기본으로, DESIGN.md 「링크 버튼」 — 생김새는 버튼, 하는 일은 이동).
+// 글자 링크는 누를 곳으로 잘 안 보였다(2026-10-30 사용자 지정). 이 계정이 열 수 없는 화면이면(권한 그룹에서 그 메뉴 조회가 꺼짐) 숨긴다 —
+// 메뉴 판정은 경로만 보므로 쿼리를 뗀 경로로 묻는다. 탭 BP 주소로 옮긴 화면(/contracts 등)은 admin-header 의 메뉴처럼 /bp/{id} 를 씌운다
+// — 맨 경로로 가면 SessionGate 가 다시 준비하며 한 번 돌아간다. 누르면 패널을 닫는다(헤더에 붙은 패널이라 이동해도 열린 채 남는다).
+// 새 탭으로 여는 클릭(Ctrl/⌘ · Shift · 가운데 버튼)은 닫지 않는다 — 돌아와 탈퇴를 이어 갈 수 있게.
+function MoveButton({ href, label, onNavigate }: { href: string; label: string; onNavigate: () => void }) {
+  const tabBp = useCurrentBp().bpCodeId;
+  const [path, query] = href.split("?");
+  const canOpen = useCanOpen(path);
+  if (!canOpen) return null;
+  const screen = isBpPathScreen(path) ? bpPath(tabBp, path) : path;
   return (
-    <div className="mt-[10px]">
-      <Button variant="outline" href={link.href} onClick={onNavigate}>
-        {link.label}
-      </Button>
-    </div>
-  );
-}
-
-// 탈퇴 조건 표 아래 오른쪽(「진행 중인 근로계약」 칸 밑) 이동 버튼(WarningLink 와 같은 outline). 근로계약 관리를 열 수 없는 계정이면 숨긴다.
-function ContractsLink({ onNavigate }: { onNavigate: () => void }) {
-  if (!useCanOpen(CONTRACTS_PATH)) return null;
-  return (
-    <div className="flex justify-end">
-      <Button variant="outline" href={IN_PROGRESS_CONTRACTS_HREF} onClick={onNavigate}>
-        근로계약 확인
-      </Button>
-    </div>
+    <Button
+      variant="outline"
+      href={query ? `${screen}?${query}` : screen}
+      onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+        if (!(e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0)) onNavigate();
+      }}
+    >
+      {label}
+    </Button>
   );
 }
 
@@ -320,7 +323,11 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                 />
                 {/* 탈퇴를 막는 조건이라 BP 마스터가 직접 정리해야 한다 — 진행 중 상태만 걸러 근로계약 관리로 보낸다(2026-10-30 사용자 지정).
                  * 표 칸 안에 두면 좁은 패널(464px)에서 잘려 표 아래 오른쪽, 「진행 중인 근로계약」 칸 밑에 둔다. */}
-                {eligibility.hasInProgressContract && <ContractsLink onNavigate={handleClose} />}
+                {eligibility.hasInProgressContract && (
+                  <div className="flex justify-end">
+                    <MoveButton href={IN_PROGRESS_CONTRACTS_HREF} label="근로계약 확인" onNavigate={handleClose} />
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col gap-[18px]">

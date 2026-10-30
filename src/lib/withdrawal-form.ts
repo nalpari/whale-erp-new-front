@@ -10,7 +10,6 @@ export type WithdrawEligibility = {
   hasInProgressContract: boolean;
 };
 
-
 /** link 는 본문 아래 붙는 이동 버튼 — 탈퇴 전에 할 일을 하는 화면으로 보낸다(직원 자료 일괄 저장, WHALEERP-339). */
 export type WithdrawWarningBlock = string | { head: string; text?: string; link?: { href: string; label: string } };
 
@@ -39,22 +38,25 @@ export function withdrawVerifyFailureOf(error: unknown): WithdrawVerifyFailure {
   return { ok: false, message: "비밀번호를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." };
 }
 
-/** 탈퇴 경고 문구(데모 docs/demo/src/site.mjs 328-343줄의 근거) — 실제 값으로 바뀌는 자리를
+/** 탈퇴를 막는 「진행 중」 근로계약 — api IN_PROGRESS_CONTRACT_STATUSES(whale-erp-api src/stores/store-format.ts)와 같다. */
+export const IN_PROGRESS_CONTRACT_STATUSES = ["DRAFT", "PENDING_SEND", "PENDING_SIGNATURE", "CORRECTION_REQUESTED", "SIGNED"] as const;
+
+/** 근로계약 관리 화면. 메뉴 권한 판정(useCanOpen)은 쿼리 없는 이 경로로 한다 — 쿼리를 붙이면 메뉴를 못 찾는다. */
+export const CONTRACTS_PATH = "/contracts";
+
+/** [근로계약 확인]이 여는 주소 — 근로계약 목록을 진행 중 상태로만 거른다(목록은 status 를 여러 번 받는다).
+ * 빈 storeIds 로 점포를 「전체」로 연다 — 없으면 목록이 헤더 범위(점포 하나 · 직영만 등)로 채워져, 탈퇴를 막은 다른 점포의
+ * 계약이 안 보일 수 있다(탈퇴 조건은 BP 전체를 본다). 빈 storeIds 는 헤더 범위를 바꾸지 않는다(contract-list.ts). */
+export const IN_PROGRESS_CONTRACTS_HREF = `${CONTRACTS_PATH}?storeIds=&${IN_PROGRESS_CONTRACT_STATUSES.map((s) => `status=${s}`).join("&")}`;
+
+/** 탈퇴 경고 문구(데모 docs/demo/src/site.mjs 의 withdrawBody 가 같은 문구를 쓴다) — 실제 값으로 바뀌는 자리를
  * eligibility 로 채운다. `<br>` 대신 `\n` 을 쓴다 — 줄바꿈을 어떻게 그릴지는 컴포넌트(withdraw-panel.tsx) 몫이다.
  * 데모의 live()(굵게)에 해당하는 자리(BP 이름·관리자 수·점포 수)는 `**...**` 로 감싼다 — 이 파일은
  * React 를 안 쓰므로(node --test 로 돈다) 마크다운 굵게만 흉내 내고, 실제 굵게 렌더링은 컴포넌트가
  * `**` 를 갈라 맡는다(2026-10-27 사용자 지정 — BP 이름이 눈에 띄어야 한다. 밑줄은 2026-10-30 뺐다).
  * 관리자 계정 · 점포가 0개면 그 문장 · 블록을 뺀다 — 「0개도 미사용」「0개를 모두 폐점」처럼 없는 것을 처리한다고
- * 말하게 되어서다(2026-10-30 사용자 지정). */
-/** 탈퇴를 막는 「진행 중」 근로계약 — api IN_PROGRESS_CONTRACT_STATUSES(whale-erp-api src/stores/store-format.ts)와 같다. */
-export const IN_PROGRESS_CONTRACT_STATUSES = ["DRAFT", "PENDING_SEND", "PENDING_SIGNATURE", "CORRECTION_REQUESTED", "SIGNED"] as const;
-
-/** [근로계약 확인]이 여는 주소 — 근로계약 목록을 진행 중 상태로만 거른다(목록은 status 를 여러 번 받는다). */
-/** 근로계약 관리 화면. 메뉴 권한 판정(useCanOpen)은 쿼리 없는 이 경로로 한다 — 쿼리를 붙이면 메뉴를 못 찾는다. */
-export const CONTRACTS_PATH = "/contracts";
-export const IN_PROGRESS_CONTRACTS_HREF = `${CONTRACTS_PATH}?${IN_PROGRESS_CONTRACT_STATUSES.map((s) => `status=${s}`).join("&")}`;
-
-/** hasFranchiseStore 는 이 BP 에 직영이 아닌 점포가 있는가 — 본사 제공 동의로 가려지는 직원은 그런 점포에만 있다(api hidesPersonalData).
+ * 말하게 되어서다(2026-10-30 사용자 지정).
+ * hasFranchiseStore 는 이 BP 에 직영이 아닌 점포가 있는가 — 본사 제공 동의로 가려지는 직원은 그런 점포에만 있다(api hidesPersonalData).
  * 없으면(직영만) 가맹마스터에게 알리라는 줄을 뺀다(2026-10-30 사용자 지정). */
 export function withdrawWarningText(eligibility: WithdrawEligibility, hasFranchiseStore = true): WithdrawWarningBlock[] {
   const { bpName, adminCount, storeCount } = eligibility;

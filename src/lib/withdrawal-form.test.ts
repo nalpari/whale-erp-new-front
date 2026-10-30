@@ -95,10 +95,12 @@ test("마지막 블록은 복구할 수 없다는 제목 한 줄이고, 「정�
   assert.ok(!JSON.stringify(blocks).includes("정말 탈퇴하시겠습니까"));
 });
 
-test("[근로계약 확인]은 근로계약 목록을 진행 중 다섯 상태로 거른다", () => {
+test("[근로계약 확인]은 근로계약 목록을 점포 「전체」 · 진행 중 다섯 상태로 연다", () => {
   const url = new URL(IN_PROGRESS_CONTRACTS_HREF, "http://x");
   assert.equal(url.pathname, "/contracts");
   assert.deepEqual(url.searchParams.getAll("status"), ["DRAFT", "PENDING_SEND", "PENDING_SIGNATURE", "CORRECTION_REQUESTED", "SIGNED"]);
+  // 빈 storeIds 가 없으면 목록이 헤더 범위(점포 하나 등)로 채워져 탈퇴를 막은 다른 점포의 계약이 안 보일 수 있다
+  assert.equal(url.searchParams.get("storeIds"), "");
 });
 
 test("직영만 있는 BP 는 가맹마스터에게 알리라는 줄을 뺀다", () => {
