@@ -90,6 +90,22 @@ export function validateBpAdminForm(
   return errors;
 }
 
+/** 아이디 중복 문구 — 칸을 벗어날 때의 확인과 저장할 때의 409 가 같이 쓴다. 관리자 등록 세 화면(플랫폼 · BP 관리자 · BP 마스터)이 같은 문구 — 탈퇴 · 삭제 계정 아이디 안내는 길어 뺐다(2026-10-28 사용자 지정) */
+export const LOGIN_ID_TAKEN = "이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.";
+/** 이메일 중복 문구 — 칸을 벗어날 때의 확인과 저장할 때의 409 가 같이 쓴다. 네 화면 같은 문구(2026-10-28 사용자 지정) */
+export const EMAIL_TAKEN = "이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요.";
+
+/**
+ * 칸 아래에 붙일 api 오류 문구. 저장할 때의 409 가운데 api 의 중복 문구일 때만 중복 확인과 같은 화면 문구로 바꾼다 — 같은 중복이 두 문구로 보였다(2026-10-29 사용자 결정).
+ * 칸은 「아이디」 · 「이메일」 글자로 가르므로, 중복이 아닌 409 가 그 칸으로 와도 진짜 이유를 덮지 않게 중복 문구(api bp-admins.service.ts LOGIN_ID_TAKEN · EMAIL_TAKEN)에 직접 맞춘다.
+ */
+export function bpAdminFieldMessage(field: BpAdminFormField, status: number | undefined, apiText: string): string {
+  if (status !== 409) return apiText;
+  if (field === "loginId" && apiText.includes("사용할 수 없는 아이디")) return LOGIN_ID_TAKEN;
+  if (field === "email" && apiText.includes("관리자 계정의 이메일")) return EMAIL_TAKEN;
+  return apiText;
+}
+
 /**
  * api 가 거절한 이유를 붙일 칸. 한 칸의 것이 아니면 null(패널 위 띠로 보인다).
  * api 는 오류에 칸 이름을 싣지 않아 문구로 가른다 — 400(형식 · 고를 수 없는 값) · 409(중복 · 한 점포 한 가맹 마스터)만 본다.

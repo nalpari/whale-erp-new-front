@@ -4,7 +4,10 @@ import { test } from "node:test";
 import type { BpAdminDetail } from "./bp-admins.ts";
 import {
   bpAdminFormOf,
+  bpAdminFieldMessage,
   bpAdminServerErrorField,
+  EMAIL_TAKEN,
+  LOGIN_ID_TAKEN,
   EMPTY_BP_ADMIN_FORM,
   emailError,
   toCreateBpAdminInput,
@@ -118,6 +121,17 @@ test("api 오류를 붙일 칸 — 문구로 가른다", () => {
   assert.equal(bpAdminServerErrorField(409, "아이디 또는 이메일이 이미 쓰였습니다", "create"), null);
   // 여러 칸의 검증 실패는 한 칸에 몰지 않고 띠로
   assert.equal(bpAdminServerErrorField(400, "아이디는 4~20자입니다, 이메일 형식이 아닙니다", "create"), null);
+});
+
+test("칸에 붙일 api 문구 — 저장 때 409 중복만 중복 확인과 같은 문구로, 그 밖은 api 문구 그대로", () => {
+  // api bp-admins.service.ts 의 중복 문구
+  assert.equal(bpAdminFieldMessage("loginId", 409, "사용할 수 없는 아이디라 계정을 만들지 않았습니다."), LOGIN_ID_TAKEN);
+  assert.equal(bpAdminFieldMessage("email", 409, "사용 중이거나 미사용인 다른 관리자 계정의 이메일입니다."), EMAIL_TAKEN);
+  // 중복이 아닌 409 가 글자 때문에 그 칸으로 와도 진짜 이유를 덮지 않는다
+  assert.equal(bpAdminFieldMessage("email", 409, "이메일 인증이 끝나지 않았습니다"), "이메일 인증이 끝나지 않았습니다");
+  // 400(형식)은 그대로
+  assert.equal(bpAdminFieldMessage("loginId", 400, "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다"), "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다");
+  assert.equal(bpAdminFieldMessage("stores", 409, "다른 가맹 마스터(kim)가 맡은 점포가 있습니다"), "다른 가맹 마스터(kim)가 맡은 점포가 있습니다");
 });
 
 test("계정 역할을 바꾸면 그 역할로 다시 맞춘다 — 전체 점포는 BP 관리자만, 점포는 비우고, 그룹이 하나면 미리 고른다", () => {

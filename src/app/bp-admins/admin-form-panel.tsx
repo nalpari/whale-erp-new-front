@@ -11,10 +11,13 @@ import { FailedBand, FieldMessage, InfoBand, WarnBand } from "@/components/site/
 import { StoreMappingPicker, type MappingStoreOption } from "@/components/site/store-mapping-picker";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
 import {
+  bpAdminFieldMessage,
   bpAdminFormOf,
   bpAdminServerErrorField,
+  EMAIL_TAKEN,
   EMPTY_BP_ADMIN_FORM,
   emailError,
+  LOGIN_ID_TAKEN,
   toCreateBpAdminInput,
   toUpdateBpAdminInput,
   validateBpAdminForm,
@@ -55,11 +58,6 @@ import { unknownResult } from "./bp-admin-parts";
 
 /** 동시 수정 409 문구(작업 지시서). 이때만 최신 정보를 다시 불러온다. */
 const STALE = "먼저 바꿨습니다";
-/** 중복 확인에서 쓸 수 없다고 온 아이디의 문구 */
-// 관리자 등록 세 화면(플랫폼 · BP 관리자 · BP 마스터)이 같은 문구 — 탈퇴 · 삭제 계정 아이디 안내는 길어 뺐다(2026-10-28 사용자 지정)
-const LOGIN_ID_TAKEN = "이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.";
-/** 중복 확인에서 쓸 수 없다고 온 이메일의 문구 */
-const EMAIL_TAKEN = "이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요."; // 네 화면 같은 문구(2026-10-28 사용자 지정)
 
 type Props = {
   id: string;
@@ -230,8 +228,8 @@ export function AdminFormPanel(props: Props) {
 
   const applyServerError = (status: number | undefined, apiText: string) => {
     const field = bpAdminServerErrorField(status, apiText, mode);
-    // 저장할 때의 중복(409)도 칸을 벗어날 때와 같은 문구로 — api 문구를 그대로 붙이면 같은 중복이 두 문구로 보였다(2026-10-29 사용자 결정)
-    const text = status === 409 && field === "loginId" ? LOGIN_ID_TAKEN : status === 409 && field === "email" ? EMAIL_TAKEN : apiText;
+    // 칸 아래에는 중복 확인과 같은 문구(bpAdminFieldMessage). 띠는 api 문구 그대로 — 저장 중 이미 고친 칸에 「다른 아이디를 입력해 주세요」는 맞지 않고, 저장하지 않았다는 사실도 api 문구에 있다
+    const text = field ? bpAdminFieldMessage(field, status, apiText) : apiText;
     // 보낸 뒤 고친 칸의 거절이면 지금 값에 붙이지 않고 띠로만 알린다. 점포 칸이 숨어 있으면(전체 점포 · 본인 계정) 붙여도 안 보이므로 띠로
     // 범위는 저장을 누른 때의 값이라, 그 뒤 범위를 바꿨으면(editedWhileSaving) 지금 점포 칸이 숨었을 수 있다
     const hidden = field === "stores" && (form.isAllStores || locks.stores || editedWhileSaving.current.has("isAllStores" as BpAdminFormField));
@@ -246,7 +244,7 @@ export function AdminFormPanel(props: Props) {
       checkNumber.current.email++;
       setEmailCheck("idle");
     }
-    if (!field || hidden || editedWhileSaving.current.has(field)) return setFailure(text);
+    if (!field || hidden || editedWhileSaving.current.has(field)) return setFailure(apiText);
     setErrors((e) => ({ ...e, [field]: text }));
     focusFirstError();
   };
