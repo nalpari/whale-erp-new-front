@@ -94,15 +94,23 @@ export function partialSaved(saved: readonly SaveStep[], failed: SaveStep, skipp
   return `${done} 저장했습니다. ${notDone}${notSent}`;
 }
 
+/** 그 사이 다른 관리자가 고쳤거나 지웠다는 409(api CHANGED_MEANWHILE · 먼저 지운 상세 코드) — 칸 오류가 아니라 띠로 알리고 최신 목록을 다시 받는다(2026-10-30). */
+export const isStaleConflict = (message: string) => message.includes("먼저 수정했습니다") || message.includes("먼저 지운");
+
+/** 그 사이 바뀐 409 띠의 아랫줄 — 화면은 최신 목록으로 다시 채운다(「입력한 값은 그대로 두었습니다.」 대신) */
+export const STALE_DETAIL = "최신 정보로 다시 채웠습니다.";
+
 /**
  * 실패를 화면에 어떻게 보일지. 409(중복)는 그 칸 아래 오류(conflict)로, 그 밖은 표 위 띠(band)로 보인다.
+ * 그 사이 바뀐 409(stale)는 띠로 보이고, 부르는 쪽이 최신 목록을 다시 받는다.
  * 앞 단계가 저장된 실패면 띠에 그 사실을 먼저 적는다 — 「저장하지 못했습니다」만 보이면 저장된 것도 날아간 줄 안다.
  */
-export function failureView(result: SaveFailed): { band: string | null; conflict: string | null } {
-  const conflict = result.status === 409 ? result.message : null;
+export function failureView(result: SaveFailed): { band: string | null; conflict: string | null; stale: boolean } {
+  const stale = result.status === 409 && isStaleConflict(result.message);
+  const conflict = result.status === 409 && !stale ? result.message : null;
   if (result.anySaved) {
     const partial = partialSaved(result.saved, result.failed, result.skipped);
-    return { band: conflict ? partial : `${partial} ${result.message}`, conflict };
+    return { band: conflict ? partial : `${partial} ${result.message}`, conflict, stale };
   }
-  return { band: conflict ? null : result.message, conflict };
+  return { band: conflict ? null : result.message, conflict, stale };
 }

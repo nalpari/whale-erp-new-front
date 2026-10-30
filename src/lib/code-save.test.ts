@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { failureView, partialSaved, planSave, saveInOrder, savedNote, type SaveFailed, type SaveStep } from "./code-save.ts";
+import { failureView, isStaleConflict, partialSaved, planSave, saveInOrder, savedNote, type SaveFailed, type SaveStep } from "./code-save.ts";
 
 // 부른 순서와 화면 무효화 횟수를 남기는 가짜 api. 실패하면 던진 오류의 문구와 409 를 결과로 옮긴다 —
 // failureOf 가 어느 단계의 어떤 오류를 받았는지까지 결과에서 보인다.
@@ -208,22 +208,37 @@ const failed = (rest: { status?: number; message: string; saved: SaveStep[]; fai
 
 test("failureView — 409 는 칸 오류, 그 밖은 띠. 앞 단계가 저장됐으면 띠에 먼저 적는다", () => {
   const partial = partialSaved(["수정"], "등록");
-  assert.deepEqual(failureView(failed({ status: 409, message: "겹칩니다: A", saved: [], failed: "등록" })), { band: null, conflict: "겹칩니다: A" });
-  assert.deepEqual(failureView(failed({ status: 403, message: "권한이 없습니다", saved: [], failed: "수정" })), { band: "권한이 없습니다", conflict: null });
-  assert.deepEqual(failureView(failed({ status: 409, message: "겹칩니다: A", saved: ["수정"], failed: "등록" })), { band: partial, conflict: "겹칩니다: A" });
+  assert.deepEqual(failureView(failed({ status: 409, message: "겹칩니다: A", saved: [], failed: "등록" })), { band: null, conflict: "겹칩니다: A", stale: false });
+  assert.deepEqual(failureView(failed({ status: 403, message: "권한이 없습니다", saved: [], failed: "수정" })), { band: "권한이 없습니다", conflict: null, stale: false });
+  assert.deepEqual(failureView(failed({ status: 409, message: "겹칩니다: A", saved: ["수정"], failed: "등록" })), { band: partial, conflict: "겹칩니다: A", stale: false });
   assert.deepEqual(failureView(failed({ message: "저장하지 못했습니다.", saved: ["수정"], failed: "등록" })), {
     band: `${partial} 저장하지 못했습니다.`,
     conflict: null,
+    stale: false,
   });
   assert.deepEqual(failureView(failed({ message: "x", saved: ["수정"], failed: "삭제", skipped: ["등록"] })), {
     band: `${partialSaved(["수정"], "삭제", ["등록"])} x`,
     conflict: null,
+    stale: false,
   });
   // 삭제만 저장되고 등록이 409 면 띠는 삭제를 저장했다고 알리고, 겹친 코드는 칸 오류로 간다
   assert.deepEqual(failureView(failed({ status: 409, message: "겹칩니다: B", saved: ["삭제"], failed: "등록" })), {
     band: partialSaved(["삭제"], "등록"),
     conflict: "겹칩니다: B",
+    stale: false,
   });
   // 아무것도 저장되지 않은 삭제 단계 409(막힌 그룹 등)는 띠 없이 칸 오류(표 아래 한 줄)로 보인다
-  assert.deepEqual(failureView(failed({ status: 409, message: "막힌 그룹입니다", saved: [], failed: "삭제" })), { band: null, conflict: "막힌 그룹입니다" });
+  assert.deepEqual(failureView(failed({ status: 409, message: "막힌 그룹입니다", saved: [], failed: "삭제" })), { band: null, conflict: "막힌 그룹입니다", stale: false });
+});
+
+test("failureView — 그 사이 고쳤거나 지운 409 는 칸 오류가 아니라 띠(최신 정보로 다시 채움)", () => {
+  const changed = "다른 관리자가 먼저 수정했습니다. 최신 정보를 불러온 뒤 다시 저장해 주세요.";
+  assert.deepEqual(failureView(failed({ status: 409, message: changed, saved: [], failed: "수정" })), { band: changed, conflict: null, stale: true });
+  const gone = "다른 관리자가 먼저 지운 상세 코드가 있습니다(G1). 다시 불러온 뒤 저장해 주세요.";
+  assert.deepEqual(failureView(failed({ status: 409, message: gone, saved: ["수정"], failed: "삭제" })), {
+    band: `${partialSaved(["수정"], "삭제")} ${gone}`,
+    conflict: null,
+    stale: true,
+  });
+  assert.equal(isStaleConflict("이 그룹에 이미 있는 상세 코드입니다(A)."), false, "중복은 그 사이 바뀜이 아니다");
 });

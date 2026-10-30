@@ -18,7 +18,7 @@ import {
   withKeptPending,
   type ItemDraft,
 } from "@/lib/code-drafts";
-import { failureView } from "@/lib/code-save";
+import { failureView, isStaleConflict, STALE_DETAIL } from "@/lib/code-save";
 import { CODE_PLACEHOLDER, codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, CodeItem } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -71,6 +71,8 @@ export function CodeItemPanel({
   const [drafts, setDrafts] = useState(() => items.map(toDraft));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
+  // 그 사이 바뀐 409 뒤 다시 받은 목록으로 칸을 채울 때 실패 띠를 지우지 않는다
+  const [staleBand, setStaleBand] = useState(false);
   const [saving, startSaving] = useTransition();
   // 저장을 시작한 목록. 저장할 때마다 두고, 다음에 오는 목록이 바로 그 목록을 대신하면 아직 저장하지 못한 새 행을 그 뒤에
   // 이어 두고 지울 행 표시도 다시 얹는다(한 번 쓰고 지운다 — 뒤 단계가 실패했거나 결과를 모를 때 입력을 잃지 않게). 완전히 성공했으면 저장 처리가 등록한 새 행을
@@ -92,8 +94,10 @@ export function CodeItemPanel({
       setDrafts(next);
       if (!hasPending(next)) {
         setErrors({});
-        setFailure(null);
+        // 그 사이 바뀐 409 로 다시 받은 목록이면 그 띠는 남긴다(staleBand) — 한 번 쓰고 푼다
+        if (!staleBand) setFailure(null);
       }
+      setStaleBand(false);
     }
   }
 
@@ -197,6 +201,12 @@ export function CodeItemPanel({
       // 상세 코드가 겹치면(이 화면에 안 보이는 BP 행 · BP전용 코드 포함) 그 새 행의 칸 오류로, 그 밖은 띠로 알린다.
       // 앞 단계가 저장됐으면 띠에 그 사실을 먼저 적는다(failureView).
       const view = failureView(result);
+      // 그 사이 다른 관리자가 고쳤거나 지웠다 — 띠로 알리고 최신 목록으로 칸을 다시 채운다
+      if (view.stale) {
+        setSavingFrom(null);
+        setStaleBand(true);
+        router.refresh();
+      }
       if (view.conflict) {
         const code = conflictCode(view.conflict);
         const row = addedRows.find((d) => normalizeCode(d.itemCode) === code);
@@ -356,7 +366,7 @@ export function CodeItemPanel({
       }
     >
       {reordered && <PendingNotice message={REORDERED} />}
-      {failure && <SaveFailedBand message={failure} />}
+      {failure && <SaveFailedBand message={failure} detail={isStaleConflict(failure) ? STALE_DETAIL : undefined} />}
       <DataTable
         // 열 이름 줄까지 고정하고 그 아래만 스크롤한다(2026-10-26 사용자 지정)
         scroll

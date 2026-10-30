@@ -34,7 +34,7 @@ test("newBpItemDraft · toBpItemDraft — 새 행은 BP전용 · 사용, 받은 
   assert.equal(d.manageOwnerCode, "BP_ONLY");
   assert.equal(d.status, "ACTIVE");
   assert.equal(d.added, true);
-  const item = { itemCode: "A", label: "가", status: "ACTIVE", sortOrder: 1, manageOwnerCode: "PLATFORM_PROVIDED", isPlatformInactive: false } as const;
+  const item = { itemCode: "A", label: "가", status: "ACTIVE", sortOrder: 1, manageOwnerCode: "PLATFORM_PROVIDED", isPlatformInactive: false, updatedAt: "2026-10-30T01:00:00.000Z" } as const;
   assert.deepEqual(toBpItemDraft(item), { ...item, key: "A", added: false });
 });
 

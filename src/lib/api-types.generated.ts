@@ -728,9 +728,9 @@ export interface paths {
         };
         /** 공통코드 그룹 목록. 플랫폼고정 · 플랫폼제공 그룹을 표시 순서대로, 그룹 코드 · 그룹명 검색(부분 일치). */
         get: operations["CodeGroupsController_listGroups"];
-        /** 그룹 수정. 기존 그룹 여러 개를 한 번에 — 하나라도 없으면 아무것도 고치지 않는다. */
+        /** 그룹 수정. 기존 그룹 여러 개를 한 번에 — 하나라도 없거나 그 사이 고쳐졌으면(행마다 updatedAt) 아무것도 고치지 않는다. */
         put: operations["CodeGroupsController_updateGroups"];
-        /** 그룹 등록. 새 그룹 여러 개를 한 번에 — 하나라도 막히면 아무것도 생기지 않는다. */
+        /** 그룹 등록. 새 그룹 여러 개를 한 번에 — 하나라도 막히면 아무것도 생기지 않는다. 표시 순서는 api 가 전체의 최대 + 1 부터 매긴다. */
         post: operations["CodeGroupsController_createGroups"];
         delete?: never;
         options?: never;
@@ -747,13 +747,13 @@ export interface paths {
         };
         /** 고른 그룹의 상세 코드(플랫폼 원본). BP전용 코드는 나오지 않는다. */
         get: operations["CodeGroupsController_listItems"];
-        /** 상세 코드 수정. 기존 코드 여러 개를 한 번에 — 하나라도 없으면 아무것도 고치지 않는다. */
+        /** 상세 코드 수정. 기존 코드 여러 개를 한 번에 — 하나라도 없거나 그 사이 고쳐졌으면(행마다 updatedAt) 아무것도 고치지 않는다. */
         put: operations["CodeGroupsController_updateItems"];
         /** 상세 코드 등록. 새 코드 여러 개를 한 번에 — 하나라도 막히면 아무것도 생기지 않는다. */
         post: operations["CodeGroupsController_createItems"];
         /**
          * 상세 코드 삭제(논리) — 플랫폼제공 그룹만, 여러 개를 한 번에, 하나라도 막히면 아무것도 지우지 않는다. 플랫폼 원본만
-         *     지우고 BP 에 복사된 행은 건드리지 않는다. 플랫폼고정 그룹은 시스템이 값을 참조해 409(사용 상태로 관리). 같은 코드로 다시 등록하면 되살아난다 — 단 어느 BP 에 복사본이 살아 있으면 등록이 409 다.
+         *     지우고 BP 에 복사된 행은 건드리지 않는다. 플랫폼고정 그룹은 시스템이 값을 참조해 409(사용 상태로 관리). 같은 코드로 다시 등록하면 되살아난다 — BP 에 플랫폼제공 복사본이 살아 있어도 되살린다.
          */
         delete: operations["CodeGroupsController_deleteItems"];
         options?: never;
@@ -965,7 +965,7 @@ export interface paths {
         };
         /** 고른 플랫폼제공 그룹의 상세 코드 — 이 BP 의 행(BP전용 포함). 플랫폼고정 · 사용중지 그룹은 404. */
         get: operations["BpCodeGroupsController_listItems"];
-        /** 상세 코드 수정 — 이 BP 의 행 여러 개를 한 번에. 하나라도 막히면 아무것도 고치지 않는다. */
+        /** 상세 코드 수정 — 이 BP 의 행 여러 개를 한 번에. 하나라도 막히거나 그 사이 고쳐졌으면(행마다 updatedAt) 아무것도 고치지 않는다. */
         put: operations["BpCodeGroupsController_updateItems"];
         /** 상세 코드 등록 — BP전용 코드 여러 개를 한 번에. 하나라도 막히면 아무것도 생기지 않는다. */
         post: operations["BpCodeGroupsController_createItems"];
@@ -5059,6 +5059,11 @@ export interface components {
             isBpApplied: boolean;
             /** @description 표시 순서. */
             sortOrder: number;
+            /**
+             * Format: date-time
+             * @description 최종 수정 시각. 수정(PUT) 때 그 행의 updatedAt 으로 그대로 보낸다.
+             */
+            updatedAt: string;
         };
         CodeGroupListResponseDto: {
             items: components["schemas"]["CodeGroupResponseDto"][];
@@ -5083,14 +5088,16 @@ export interface components {
              * @enum {string}
              */
             status: "ACTIVE" | "INACTIVE";
-            /** @description 표시 순서. 화면이 끌어 옮긴 뒤 1부터 다시 매긴 값. */
-            sortOrder: number;
         };
         CreateCodeGroupsDto: {
             /** @description 만들 그룹. 1~200행. 한 요청 안에서 그룹 코드가 겹치면 409. */
             items: components["schemas"]["CreateCodeGroupDto"][];
         };
-        CodeGroupInputDto: {
+        UpdateCodeGroupDto: {
+            /** @description 목록에서 받은 그 행의 updatedAt 그대로. 그 사이 다른 관리자가 고쳤으면 요청 전체를 저장하지 않고 409. */
+            updatedAt: string;
+            /** @description 표시 순서. 화면이 끌어 옮긴 뒤 1부터 다시 매긴 값. */
+            sortOrder: number;
             /**
              * @description 그룹 코드. 등록 뒤 바뀌지 않는다 — 수정 본문에서는 대상을 가리킬 뿐이다.
              * @example EMP_TYPE
@@ -5103,12 +5110,10 @@ export interface components {
              * @enum {string}
              */
             status: "ACTIVE" | "INACTIVE";
-            /** @description 표시 순서. 화면이 끌어 옮긴 뒤 1부터 다시 매긴 값. */
-            sortOrder: number;
         };
         UpdateCodeGroupsDto: {
             /** @description 고칠 그룹. 1~200행. 한 요청 안에서 그룹 코드가 겹치면 409. */
-            items: components["schemas"]["CodeGroupInputDto"][];
+            items: components["schemas"]["UpdateCodeGroupDto"][];
         };
         CodeItemResponseDto: {
             /** @description 사용 상태. */
@@ -5125,6 +5130,11 @@ export interface components {
             label: string;
             /** @description 표시 순서. */
             sortOrder: number;
+            /**
+             * Format: date-time
+             * @description 최종 수정 시각. 수정(PUT) 때 그 행의 updatedAt 으로 그대로 보낸다.
+             */
+            updatedAt: string;
         };
         CodeItemListResponseDto: {
             items: components["schemas"]["CodeItemResponseDto"][];
@@ -5154,9 +5164,30 @@ export interface components {
             /** @description 만들 상세 코드. 1~500행. 한 요청 안에서 코드가 겹치면 409. */
             items: components["schemas"]["CodeItemInputDto"][];
         };
+        UpdateCodeItemDto: {
+            /** @description 목록에서 받은 그 행의 updatedAt 그대로. 그 사이 다른 관리자가 고쳤으면 요청 전체를 저장하지 않고 409. */
+            updatedAt: string;
+            /**
+             * @description 상세 코드. 등록 뒤 바뀌지 않는다 — 수정 본문에서는 대상을 가리킬 뿐이다. SERVICE 그룹이면 서비스 코드다.
+             * @example FULL
+             */
+            itemCode: string;
+            /**
+             * @description 코드명. 앞뒤 공백을 지우고 1~50자. SERVICE 그룹이면 서비스명이다.
+             * @example 정규직
+             */
+            label: string;
+            /**
+             * @description 사용 상태.
+             * @enum {string}
+             */
+            status: "ACTIVE" | "INACTIVE";
+            /** @description 표시 순서. 화면이 끌어 옮긴 뒤 1부터 다시 매긴 값. */
+            sortOrder: number;
+        };
         UpdateCodeItemsDto: {
             /** @description 고칠 상세 코드. 1~500행. 한 요청 안에서 코드가 겹치면 409. */
-            items: components["schemas"]["CodeItemInputDto"][];
+            items: components["schemas"]["UpdateCodeItemDto"][];
         };
         DeleteCodeItemsDto: {
             /**
@@ -5178,9 +5209,9 @@ export interface components {
         /** @enum {string} */
         StoreType: "DIRECT" | "FRANCHISE";
         /** @enum {string} */
-        AdminAccountStatus: "ACTIVE" | "INACTIVE";
-        /** @enum {string} */
         BpAdminRole: "BA" | "FM" | "FA";
+        /** @enum {string} */
+        AdminAccountStatus: "ACTIVE" | "INACTIVE";
         BpAdminRoleGroupDto: {
             roleTypeCode: components["schemas"]["BpAdminRole"];
             roleGroupId: number;
@@ -5323,8 +5354,8 @@ export interface components {
              */
             name: string;
             /**
-             * @description 휴대전화. 하이픈 없이 숫자 9~12자리 — 화면 이름은 휴대전화지만 1팀 연락처 범위(02 지역번호 9자리 · 050X
-             *     평생번호 12자리)를 그대로 받는다. 중복 검사는 하지 않는다.
+             * @description 연락처. 하이픈 없이 숫자 9~12자리 — 1팀 연락처 범위(02 지역번호 9자리 · 050X 평생번호 12자리)를
+             *     그대로 받는다. 중복 검사는 하지 않는다.
              * @example 01012345678
              */
             phone: string;
@@ -5357,8 +5388,8 @@ export interface components {
              */
             name: string;
             /**
-             * @description 휴대전화. 하이픈 없이 숫자 9~12자리 — 화면 이름은 휴대전화지만 1팀 연락처 범위(02 지역번호 9자리 · 050X
-             *     평생번호 12자리)를 그대로 받는다. 중복 검사는 하지 않는다.
+             * @description 연락처. 하이픈 없이 숫자 9~12자리 — 1팀 연락처 범위(02 지역번호 9자리 · 050X 평생번호 12자리)를
+             *     그대로 받는다. 중복 검사는 하지 않는다.
              * @example 01012345678
              */
             phone: string;
@@ -5427,6 +5458,11 @@ export interface components {
             label: string;
             /** @description 표시 순서. */
             sortOrder: number;
+            /**
+             * Format: date-time
+             * @description 최종 수정 시각. 수정(PUT) 때 그 행의 updatedAt 으로 그대로 보낸다.
+             */
+            updatedAt: string;
             /**
              * @description 플랫폼 원본이 사용중지인가(안내용). BP전용은 늘 거짓. 플랫폼제공 그룹에서 BP 는 이 값과 관계없이 사용 상태를
              *     자유롭게 바꾼다(2026-10-22 결정).
@@ -5788,8 +5824,8 @@ export interface components {
             editBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
             deleteBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
             /**
-             * @description 역할로 권한명 · 설명 · 메뉴를 고칠 수 있고 본인이 연결된 그룹도 아닌가 — BM 은 그 BP 의 BA, FM 은 본인 FA. false 의
-             *     이유는 editBlockedReason. 메뉴 권한은 화면이 합친다.
+             * @description 역할로 권한명 · 설명을 고칠 수 있는가 — BM 은 그 BP 의 BA, FM 은 본인 FA. 본인이 연결된 그룹도 고친다(재영
+             *     2026-10-30). false 의 이유는 editBlockedReason. 메뉴 칸은 메뉴 트리의 칸별 값을 본다(본인 연결은 거기서 막힌다).
              */
             isEditable: boolean;
             /**
@@ -5934,7 +5970,7 @@ export interface components {
             /** @description 고칠 수 없는 이유. 고칠 수 있으면 null. 한글은 GET /enums/PlatformRoleGroupLockReason. */
             editBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
             deleteBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
-            /** @description 권한명 · 설명을 고칠 수 있는가. 메뉴 칸은 메뉴 트리의 칸별 값을 본다. */
+            /** @description 권한명 · 설명을 고칠 수 있는가. 본인이 연결된 권한도 고친다(재영 2026-10-30). 메뉴 칸은 메뉴 트리의 칸별 값을 본다. */
             isEditable: boolean;
             /** @description 지울 수 있는가. 연결 사용자가 있는데 대체 후보가 없는 것은 삭제 후보 조회로 알린다. */
             isDeletable: boolean;
@@ -11889,7 +11925,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 한 요청에 같은 그룹 코드가 두 번 */
+            /** @description 한 요청에 같은 그룹 코드가 두 번 · 목록에서 읽은 뒤 다른 관리자가 먼저 수정(updatedAt 이 다름) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -12012,7 +12048,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 한 요청에 같은 상세 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지운 코드 */
+            /** @description 한 요청에 같은 상세 코드가 두 번 · 목록에서 읽은 뒤 다른 관리자가 먼저 수정(updatedAt 이 다름) · 먼저 지운 코드 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -12059,7 +12095,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 이 그룹의 살아 있는 행(플랫폼 원본 · BP별 · BP전용)과 겹친 상세 코드 · 요청 안에서 겹친 상세 코드 · 확인 뒤 다른 관리자가 같은 코드를 먼저 등록 · 되살림 — 지운 원본과 같은 코드는 되살린다 */
+            /** @description 이 그룹의 살아 있는 플랫폼 원본 · BP전용 행과 겹친 상세 코드 · 요청 안에서 겹친 상세 코드 · 확인 뒤 다른 관리자가 같은 코드를 먼저 등록 · 되살림 — 지운 원본과 같은 코드는 BP 에 플랫폼제공 복사본이 살아 있어도 되살린다 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -12165,6 +12201,11 @@ export interface operations {
             query: {
                 /** @description 이 유형의 점포를 관리하는 계정 — 헤더의 직영 · 가맹 전체 범위용. 전체 점포 계정은 늘 나온다. */
                 storeTypeCode?: components["schemas"]["StoreType"];
+                /**
+                 * @description 역할 — 고른 역할의 계정만. 여러 개는 반복 또는 쉼표로. 주지 않거나 비우면 세 역할 모두
+                 *     (역할을 하나도 고르지 않은 화면은 api 를 부르지 않는다).
+                 */
+                roleTypeCodes?: components["schemas"]["BpAdminRole"][];
                 /** @description 계정 상태. 주지 않으면 사용 · 미사용 둘 다. */
                 accountStatus?: components["schemas"]["AdminAccountStatus"];
                 /** @description 아이디 · 이름 중 하나에 들어 있으면 나온다. */
@@ -12837,7 +12878,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지운 코드(「다른 관리자가 먼저 지운…저장해 주세요」) */
+            /** @description 한 요청에 같은 코드가 두 번 · 목록에서 읽은 뒤 다른 관리자가 먼저 수정(「다른 관리자가 먼저 수정했습니다…」) · 먼저 지운 코드(「다른 관리자가 먼저 지운…저장해 주세요.」) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -13412,7 +13453,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13459,7 +13500,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13509,7 +13550,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13554,7 +13595,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13601,7 +13642,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13655,7 +13696,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13707,7 +13748,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13756,7 +13797,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13812,7 +13853,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13857,7 +13898,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13893,7 +13934,7 @@ export interface operations {
                     "application/json": components["schemas"]["PlatformRoleGroupSummaryListResponseDto"];
                 };
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13933,7 +13974,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13971,7 +14012,7 @@ export interface operations {
                     "application/json": components["schemas"]["PlatformRoleGroupDetailResponseDto"];
                 };
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14018,7 +14059,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14072,7 +14113,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14117,7 +14158,7 @@ export interface operations {
                     "application/json": components["schemas"]["RoleGroupMenuTreeResponseDto"];
                 };
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14166,7 +14207,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14222,7 +14263,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14267,7 +14308,7 @@ export interface operations {
                     "application/json": components["schemas"]["RoleGroupDeletionCandidatesResponseDto"];
                 };
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14403,7 +14444,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 같거나 겹치는 URL 을 쓰는 사용 중 메뉴 · API 권한 주소(경로 방식 @MenuPermission 컨트롤러의 경로)인 URL · 메뉴 코드를 더 만들 수 없음 */
+            /** @description 같거나 겹치는 URL을 쓰는 사용 중 메뉴 · API 권한 주소(경로 방식 @MenuPermission 컨트롤러의 경로)인 URL · 메뉴 코드를 더 만들 수 없음 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -14502,7 +14543,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 같거나 겹치는 URL 을 쓰는 사용 중 메뉴 · API 권한 주소인 URL 을 바꾸거나 다른 메뉴가 가져가려 함 · 동시 수정 */
+            /** @description 같거나 겹치는 URL을 쓰는 사용 중 메뉴 · API 권한 주소인 URL을 바꾸거나 다른 메뉴가 가져가려 함 · 동시 수정 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -14575,7 +14616,7 @@ export interface operations {
     PublicHolidaysController_list: {
         parameters: {
             query: {
-                /** @description 연도. 2000~2100(공식 휴일 테이블의 범위). */
+                /** @description 연도. 2000~2100(공식 휴일 테이블의 범위 — 2051년부터는 양력 휴일만 있다). */
                 year: number;
                 /** @description 월 1~12. 주면 그 달(캘린더), 없으면 그 해 전체(목록). 목록은 키를 빼고 보낸다 — 빈 값(`month=`)은 400. */
                 month?: number;

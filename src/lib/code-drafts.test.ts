@@ -23,13 +23,13 @@ import {
 } from "./code-drafts.ts";
 
 const items: CodeItem[] = [
-  { itemCode: "FULL", label: "정직원", status: "ACTIVE", sortOrder: 1 },
-  { itemCode: "PART", label: "파트타이머", status: "ACTIVE", sortOrder: 2 },
+  { itemCode: "FULL", label: "정직원", status: "ACTIVE", sortOrder: 1, updatedAt: "2026-10-30T01:00:00.000Z" },
+  { itemCode: "PART", label: "파트타이머", status: "ACTIVE", sortOrder: 2, updatedAt: "2026-10-30T01:00:00.000Z" },
 ] as CodeItem[];
 const itemDraft = (i: CodeItem, patch: Partial<ItemDraft> = {}): ItemDraft => ({ ...i, key: i.itemCode, added: false, ...patch });
 
 const groups: CodeGroup[] = [
-  { groupCode: "EMP_TYPE", groupName: "고용 형태", manageOwnerCode: "PLATFORM_PROVIDED", isBpApplied: true, status: "ACTIVE", sortOrder: 1 },
+  { groupCode: "EMP_TYPE", groupName: "고용 형태", manageOwnerCode: "PLATFORM_PROVIDED", isBpApplied: true, status: "ACTIVE", sortOrder: 1, updatedAt: "2026-10-30T01:00:00.000Z" },
 ] as CodeGroup[];
 const groupDraft = (g: CodeGroup, patch: Partial<GroupDraft> = {}): GroupDraft => ({ ...g, added: false, ...patch });
 const newGroup = (patch: Partial<GroupDraft> = {}): GroupDraft => ({
@@ -60,7 +60,7 @@ test("상세 코드 저장 요청 — 바뀐 기존 행만 updates, 새 행은 c
     ],
     items,
   );
-  assert.deepEqual(input.updates, [{ itemCode: "FULL", label: "정규직", status: "ACTIVE", sortOrder: 1 }]);
+  assert.deepEqual(input.updates, [{ itemCode: "FULL", label: "정규직", status: "ACTIVE", sortOrder: 1, updatedAt: "2026-10-30T01:00:00.000Z" }], "받아 온 updatedAt 을 함께 보낸다");
   assert.deepEqual(input.creates, [{ itemCode: "INTERN", label: "인턴", status: "ACTIVE", sortOrder: 3 }]);
 });
 
@@ -77,10 +77,10 @@ test("지우기로 한 행은 deletes 에만 싣는다 — 값을 고쳤어도 �
 
 test("그룹 저장 요청 — 새 그룹 코드는 대문자 · 공백 제거, 이름은 공백 제거", () => {
   const input = buildSaveGroupsInput([groupDraft(groups[0], { groupName: "근로 형태" }), newGroup()], groups);
-  assert.deepEqual(input.updates, [{ groupCode: "EMP_TYPE", groupName: "근로 형태", status: "ACTIVE", sortOrder: 1 }]);
+  assert.deepEqual(input.updates, [{ groupCode: "EMP_TYPE", groupName: "근로 형태", status: "ACTIVE", sortOrder: 1, updatedAt: "2026-10-30T01:00:00.000Z" }], "받아 온 updatedAt 을 함께 보낸다");
   assert.deepEqual(input.creates, [
-    { groupCode: "PAY_CYCLE", groupName: "급여 주기", manageOwnerCode: "PLATFORM_FIXED", status: "ACTIVE", sortOrder: 21 },
-  ]);
+    { groupCode: "PAY_CYCLE", groupName: "급여 주기", manageOwnerCode: "PLATFORM_FIXED", status: "ACTIVE" },
+  ], "새 그룹의 표시 순서는 보내지 않는다 — api 가 매긴다");
 });
 
 test("관리 주체를 고르지 않은 새 그룹은 요청에 싣지 않는다", () => {
@@ -165,7 +165,7 @@ test("지울 표시가 붙은 새 행은 등록하지 않는다", () => {
 });
 
 test("토스트 — 새 행이 있거나 고치기 · 지우기를 함께 하면 저장, 지우기만이면 삭제, 고치기만이면 수정", () => {
-  const u = [{ itemCode: "A", label: "a", status: "ACTIVE" as const, sortOrder: 1 }];
+  const u = [{ itemCode: "A", label: "a", status: "ACTIVE" as const, sortOrder: 1, updatedAt: "2026-10-30T01:00:00.000Z" }];
   assert.equal(savedToast({ updates: [], creates: u, deletes: [] }), "saved");
   assert.equal(savedToast({ updates: u, creates: [], deletes: ["B"] }), "saved");
   assert.equal(savedToast({ updates: [], creates: [], deletes: ["B"] }), "deleted");

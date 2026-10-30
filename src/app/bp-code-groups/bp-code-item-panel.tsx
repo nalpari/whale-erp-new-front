@@ -25,7 +25,7 @@ import {
   unusableCodeMessage,
   withKeptPending,
 } from "@/lib/code-drafts";
-import { failureView } from "@/lib/code-save";
+import { failureView, isStaleConflict, STALE_DETAIL } from "@/lib/code-save";
 import { CODE_PLACEHOLDER, codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import { saveBpCodeItemsAction } from "./actions";
 
@@ -70,6 +70,8 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
   const [drafts, setDrafts] = useState(() => items.map(toBpItemDraft));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
+  // 그 사이 바뀐 409 뒤 다시 받은 목록으로 칸을 채울 때 실패 띠를 지우지 않는다
+  const [staleBand, setStaleBand] = useState(false);
   const [saving, startSaving] = useTransition();
   // 저장을 시작한 목록 — 뒤 단계가 실패했거나 결과를 모를 때 다음에 오는 목록 뒤에 새 행을 이어 두고 지울 행 표시도 다시 얹는다(플랫폼 패널과 같다).
   const [savingFrom, setSavingFrom] = useState<BpCodeItem[] | null>(null);
@@ -87,8 +89,10 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       setDrafts(next);
       if (!hasPending(next)) {
         setErrors({});
-        setFailure(null);
+        // 그 사이 바뀐 409 로 다시 받은 목록이면 그 띠는 남긴다(staleBand) — 한 번 쓰고 푼다
+        if (!staleBand) setFailure(null);
       }
+      setStaleBand(false);
     }
   }
 
@@ -178,6 +182,12 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       if (!result.anySaved) setSavingFrom(null);
       // 409 — 겹친 코드(지운 코드 포함) · 플랫폼고정 그룹. 문구가 「…: CODE」 꼴이면 그 새 행의 칸 오류로, 아니면 표 아래 한 줄로 보인다.
       const view = failureView(result);
+      // 그 사이 다른 관리자가 고쳤거나 지웠다 — 띠로 알리고 최신 목록으로 칸을 다시 채운다
+      if (view.stale) {
+        setSavingFrom(null);
+        setStaleBand(true);
+        router.refresh();
+      }
       if (view.conflict) {
         const code = conflictCode(view.conflict);
         const row = addedRows.find((d) => normalizeCode(d.itemCode) === code);
@@ -347,7 +357,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       {lock === "platform-user" && <WarnBand>BP 공통코드는 BP 계정만 수정할 수 있습니다.</WarnBand>}
       {group && lock === "fixed" && <WarnBand>플랫폼고정 그룹은 수정할 수 없습니다.</WarnBand>}
       {reordered && <PendingNotice message={REORDERED} />}
-      {failure && <SaveFailedBand message={failure} />}
+      {failure && <SaveFailedBand message={failure} detail={isStaleConflict(failure) ? STALE_DETAIL : undefined} />}
       <DataTable
         // 열 이름 줄까지 고정하고 그 아래만 스크롤한다(2026-10-26 사용자 지정)
         scroll

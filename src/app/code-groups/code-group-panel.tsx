@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Badge, Blocked, Button, DataTable, Select, TextField, Toggle, useToast, type Column } from "@/components/common";
 import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, withKeptPending, type GroupDraft } from "@/lib/code-drafts";
-import { failureView } from "@/lib/code-save";
+import { failureView, isStaleConflict, STALE_DETAIL } from "@/lib/code-save";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, ManageOwnerCode } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -56,6 +56,8 @@ export function CodeGroupPanel({
   const [drafts, setDrafts] = useState(() => groups.map(toDraft));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
+  // 그 사이 바뀐 409 뒤 다시 받은 목록으로 칸을 채울 때 실패 띠를 지우지 않는다
+  const [staleBand, setStaleBand] = useState(false);
   const [saving, startSaving] = useTransition();
   const [applyTarget, setApplyTarget] = useState<Draft | null>(null);
   const [applying, startApplying] = useTransition();
@@ -84,8 +86,10 @@ export function CodeGroupPanel({
       setDrafts(next);
       if (!next.some((d) => d.added)) {
         setErrors({});
-        setFailure(null);
+        // 그 사이 바뀐 409 로 다시 받은 목록이면 그 띠는 남긴다(staleBand) — 한 번 쓰고 푼다
+        if (!staleBand) setFailure(null);
       }
+      setStaleBand(false);
     }
   }
 
@@ -114,11 +118,10 @@ export function CodeGroupPanel({
   };
 
   const handleAdd = () => {
-    // 새 행은 마지막 다음 순서, 사용 상태로 시작한다.
-    const last = Math.max(total, ...drafts.map((d) => d.sortOrder));
+    // 새 행은 사용 상태로 시작한다. 표시 순서는 보내지 않고 api 가 전체 마지막 다음으로 매긴다 — 검색 · 쪽 결과로는 마지막을 모른다(2026-10-30)
     setDrafts((rows) => [
       ...rows,
-      { groupCode: "", groupName: "", manageOwnerCode: "", isBpApplied: false, status: "ACTIVE", sortOrder: last + 1, added: true },
+      { groupCode: "", groupName: "", manageOwnerCode: "", isBpApplied: false, status: "ACTIVE", sortOrder: 0, added: true },
     ]);
   };
 
@@ -197,6 +200,12 @@ export function CodeGroupPanel({
       if (!result.anySaved) setSavingFrom(null);
       // 그룹 코드가 겹치면 칸 오류로, 그 밖은 띠로 알린다. 수정분이 저장됐으면 띠에 그 사실을 먼저 적는다(failureView).
       const view = failureView(result);
+      // 그 사이 다른 관리자가 고쳤거나 지웠다 — 띠로 알리고 최신 목록으로 칸을 다시 채운다
+      if (view.stale) {
+        setSavingFrom(null);
+        setStaleBand(true);
+        router.refresh();
+      }
       if (view.conflict) setErrors({ code: view.conflict });
       setFailure(view.band);
     });
@@ -334,7 +343,7 @@ export function CodeGroupPanel({
         )
       }
     >
-      {failure && <SaveFailedBand message={failure} />}
+      {failure && <SaveFailedBand message={failure} detail={isStaleConflict(failure) ? STALE_DETAIL : undefined} />}
       {applyError && <SaveFailedBand message={applyError} detail={null} />}
       {notice && <DoneNotice message={notice} />}
       <DataTable

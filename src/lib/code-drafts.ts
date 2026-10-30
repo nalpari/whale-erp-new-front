@@ -30,26 +30,32 @@ export function itemChanged(d: ItemDraft, saved: Pick<CodeItem, "label" | "statu
   return !saved || saved.label !== d.label.trim() || saved.status !== d.status || saved.sortOrder !== d.sortOrder;
 }
 
-/** 그룹 목록 패널 저장 요청. 새 행은 관리 주체를 고른 뒤에만 싣는다 — 검사(validate)가 먼저 막지만 빈 값이 api 로 나가지 않게 한 번 더 본다. */
+/**
+ * 그룹 목록 패널 저장 요청. 새 행은 관리 주체를 고른 뒤에만 싣는다 — 검사(validate)가 먼저 막지만 빈 값이 api 로 나가지 않게 한 번 더 본다.
+ * 고친 행은 받아 온 updatedAt 을 함께 보내 그 사이 다른 관리자가 고쳤으면 api 가 409 로 막는다. 새 그룹의 표시 순서는 api 가 전체 마지막 다음으로 매긴다(2026-10-30).
+ */
 export function buildSaveGroupsInput(drafts: readonly GroupDraft[], groups: readonly CodeGroup[]): SaveCodeGroupsInput {
   const saved = new Map(groups.map((g) => [g.groupCode, g]));
-  const updates = drafts
-    .filter((d) => !d.added && groupChanged(d, saved.get(d.groupCode)))
-    .map(({ groupCode, groupName, status, sortOrder }) => ({ groupCode, groupName: groupName.trim(), status, sortOrder }));
+  const updates = drafts.flatMap((d) => {
+    const s = saved.get(d.groupCode);
+    return !d.added && s && groupChanged(d, s) ? [{ groupCode: d.groupCode, groupName: d.groupName.trim(), status: d.status, sortOrder: d.sortOrder, updatedAt: s.updatedAt }] : [];
+  });
   const creates = drafts.flatMap((d) =>
-    d.added && d.manageOwnerCode
-      ? [{ groupCode: normalizeCode(d.groupCode), groupName: d.groupName.trim(), manageOwnerCode: d.manageOwnerCode, status: d.status, sortOrder: d.sortOrder }]
-      : [],
+    d.added && d.manageOwnerCode ? [{ groupCode: normalizeCode(d.groupCode), groupName: d.groupName.trim(), manageOwnerCode: d.manageOwnerCode, status: d.status }] : [],
   );
   return { updates, creates };
 }
 
-/** 상세 코드 패널 저장 요청. 바뀐 기존 행만 updates 에, 새 행은 모두 creates 에, 지우기로 한 기존 행은 deletes 에 싣는다(지울 행은 고치지 않는다). */
-export function buildSaveItemsInput(drafts: readonly ItemDraft[], items: readonly Pick<CodeItem, "itemCode" | "label" | "status" | "sortOrder">[]): SaveCodeItemsInput {
+/**
+ * 상세 코드 패널 저장 요청. 바뀐 기존 행만 updates 에(받아 온 updatedAt 과 함께 — 그 사이 고쳤으면 409), 새 행은 모두 creates 에,
+ * 지우기로 한 기존 행은 deletes 에 싣는다(지울 행은 고치지 않는다).
+ */
+export function buildSaveItemsInput(drafts: readonly ItemDraft[], items: readonly Pick<CodeItem, "itemCode" | "label" | "status" | "sortOrder" | "updatedAt">[]): SaveCodeItemsInput {
   const saved = new Map(items.map((i) => [i.itemCode, i]));
-  const updates = drafts
-    .filter((d) => !d.added && !d.deleted && itemChanged(d, saved.get(d.itemCode)))
-    .map(({ itemCode, label, status, sortOrder }) => ({ itemCode, label: label.trim(), status, sortOrder }));
+  const updates = drafts.flatMap((d) => {
+    const s = saved.get(d.itemCode);
+    return !d.added && !d.deleted && s && itemChanged(d, s) ? [{ itemCode: d.itemCode, label: d.label.trim(), status: d.status, sortOrder: d.sortOrder, updatedAt: s.updatedAt }] : [];
+  });
   const creates = drafts
     .filter((d) => d.added && !d.deleted)
     .map((d) => ({ itemCode: normalizeCode(d.itemCode), label: d.label.trim(), status: d.status, sortOrder: d.sortOrder }));
