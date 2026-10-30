@@ -94,7 +94,7 @@ function TodoFormFields({
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
   const issues = problems(form, today, detail);
   const cancelHref = detail ? withBack(`/todos/${detail.todoId}`, backHref) : backHref;
-  // 등록 뒤에는 점포 검색을 「전체」로 비운다 — 고른 점포 밖에 등록했으면 목록에 보이지 않는다(점포 목록의 등록 뒤와 같다)
+  // 등록 뒤에는 점포 검색을 「전체」로 비운다 — 고른 점포 밖에 등록했으면 목록에 보이지 않는다(근로계약 목록과 같다. 점포 목록은 2026-10-30 부터 헤더 범위를 따른다)
   const createdHref = withoutStoreSearch(backHref);
 
   /**

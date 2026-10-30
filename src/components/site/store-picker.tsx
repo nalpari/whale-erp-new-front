@@ -12,7 +12,7 @@ export type PickedStore = Pick<StoreSummary, "storeId" | "name" | "storeCode">;
  * 목록 필터의 점포 고르기(데모 store-filter.mjs) — 점포명 · 점포코드로 찾아 고르면 아래 「선택한 점포」에 한 줄씩 쌓인다.
  * 점포 검색 필터가 있는 목록이 쓴다 — 고른 점포는 그 목록 주소의 storeIds, 헤더 범위는 scope 로 받는다(src/lib/store-scope.ts).
  * 찾기는 로그인 정보의 관리 점포(useStores, 폐점 포함) 안에서 한다 — api 를 부르지 않아 「점포 정보 관리」 메뉴 권한이 없는 화면에서도
- * 쓸 수 있다. 로그인 뒤 새로 생긴 점포는 다시 로그인해야 찾힌다(헤더 범위 선택기와 같다).
+ * 쓸 수 있다. 다른 PC 에서 등록 · 삭제한 점포는 새로고침 · 메뉴 이동 · 창 포커스 때 점포 목록을 다시 맞춰 들어온다(SessionGate, 헤더 범위 선택기와 같다).
  * 고른 점포만 목록에 보이고, 고르지 않으면 전체다. 필터 폭(188px)이라 펼친 목록에는 점포코드를 보이지 않는다(코드로 찾기는 된다).
  * 키보드: ↑ · ↓ 로 고르고 Enter 로 넣는다. Esc 는 층만 닫는다. 포커스가 층 밖으로 나가면 닫는다.
  * 칩 영역은 5개까지 보이고 그 뒤로는 이 안에서 스크롤한다.
@@ -104,11 +104,7 @@ export function StorePicker({
             className="absolute top-[calc(100%+4px)] right-0 left-0 z-20 max-h-[288px] overflow-y-auto overscroll-contain rounded-[2px] border border-[#ebebeb] bg-white p-[6px] text-[14px] shadow-[0_2px_6px_rgba(40,47,55,0.08)]"
           >
             {options.length === 0 ? (
-              <div className="flex flex-col gap-[6px] px-[6px] py-[6px]">
-                <p className="text-erp-muted">검색 결과가 없습니다.</p>
-                {/* 찾기는 로그인 정보 안에서 한다 — 방금 등록한 점포를 「없음」으로 오해하지 않게 */}
-                <p className="text-[12px] text-erp-label">로그인 뒤 등록한 점포는 다시 로그인하면 찾을 수 있습니다.</p>
-              </div>
+              <p className="px-[6px] py-[6px] text-erp-muted">검색 결과가 없습니다.</p>
             ) : (
               <ul id={listId} role="listbox" aria-label="고를 수 있는 점포">
                 {options.map((store, i) => (

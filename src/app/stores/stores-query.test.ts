@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { bpPath } from "../../lib/bp-path.ts";
-import { withoutStoreSearch } from "../../lib/store-scope.ts";
+import { withHeaderStoreSearch } from "../../lib/store-scope.ts";
 import {
   backHrefOf,
   DEFAULT_STORES_QUERY,
@@ -204,11 +204,14 @@ test("엑셀 중계 경로가 api 로 보내는 조건 — 범위는 점포유�
   assert.ok(storesExcelHref({ ...DEFAULT_STORES_QUERY, scope: { type: "ALL" } }).includes("scope=ALL"));
 });
 
-test("등록 뒤 상세에 넘긴 목록 주소(?back=)가 두 번 인코딩돼도 점포 검색 「전체」로 돌아온다", () => {
-  const params = new URLSearchParams({ back: withoutStoreSearch("/stores?scope=DIRECT&view=table") });
+test("등록 뒤 상세에 넘긴 목록 주소(?back=)가 두 번 인코딩돼도 점포 조건 없이 돌아와 헤더 범위로 채워진다", () => {
+  const params = new URLSearchParams({ back: withHeaderStoreSearch("/stores?storeIds=3&scope=DIRECT&view=table") });
   const back = new URL(`/stores/1?${params}`, "http://x").searchParams.get("back") ?? undefined;
-  assert.equal(backHrefOf(back), "/stores?view=table&storeIds=");
-  assert.equal(read(backHrefOf(back)).storesCleared, true);
+  assert.equal(backHrefOf(back), "/stores?view=table");
+  const query = read(backHrefOf(back));
+  assert.equal(query.storesCleared, false);
+  // 필터가 헤더 범위로 다시 채운다
+  assert.deepEqual(fillScopeOf(query, { type: "DIRECT" }), { type: "DIRECT" });
 });
 
 test("헤더가 실어 온 전체(scope=ALL)는 목록을 조작해도 scope=ALL 로 남는다 — 뒤로 가기에 헤더가 전체로 따라오게", () => {

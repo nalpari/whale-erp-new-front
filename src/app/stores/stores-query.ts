@@ -16,13 +16,13 @@ export type StoreView = "cards" | "table";
  * | storeIds | storesCleared | scope                          | 뜻                                                    | 주소           |
  * |----------|---------------|--------------------------------|-------------------------------------------------------|----------------|
  * | 1개 이상 | false         | null                           | 목록에서 고른 점포                                    | storeIds=3,7   |
- * | []       | true          | null                           | 목록에서 비운 「전체」(비움 · 등록 · 삭제 뒤 · 찾지 못한 점포를 뺌) — 헤더 범위가 아니다 | storeIds= |
+ * | []       | true          | null                           | 목록에서 비운 「전체」(비움 · 찾지 못한 점포를 뺌. 등록 · 삭제 뒤는 2026-10-30 부터 헤더 범위를 따른다) — 헤더 범위가 아니다 | storeIds= |
  * | []       | false         | ALL · DIRECT · FRANCHISE · STORE | 헤더 범위(전체 포함 — 목록을 조작해도 scope 로 남아 뒤로 가기에 헤더가 따라온다) | scope=ALL |
  * | []       | false         | null                           | 정해지지 않음 — 필터가 헤더 범위로 채운다(fillScopeOf) | (없음)         |
  *
  * api 에 보낼 조건은 storeListQueryOf 로 만든다.
  * statusesDefault 는 점포상태를 주소에 적지 않은 것 — 그 값은 서버가 고른 점포의 지금 상태로 정한다(withDefaultStatuses). 브라우저는
- * 폐점 여부를 세지 않는다: 로그인 정보의 점포 상태는 세션 동안 바뀌지 않아, 이 메뉴에서 폐점 처리한 점포를 서버와 다르게 본다.
+ * 폐점 여부를 세지 않는다: 브라우저의 점포 목록은 점포 목록 맞추기(SessionGate) 전까지 옛 상태일 수 있어, 폐점 여부는 서버가 지금 상태로 정한다.
  */
 export type StoresQuery = StoreListQuery & { view: StoreView; scope: Scope | null; storesCleared: boolean; statusesDefault: boolean };
 /** 주소에서 읽은 그대로 — 점포상태가 주소에 없으면 null 이고, 고른 점포에 폐점이 있는지 알아야 기본값이 정해진다(withDefaultStatuses) */

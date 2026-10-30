@@ -50,13 +50,13 @@
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-BXEAEZ · /settings/holidays/<span data-show="hd0122 miss denied">HD-0122</span><span data-show="hd0114 conflict" hidden>HD-0114</span><span data-show="hd0120 pastdate fail" hidden>HD-0120</span><span data-show="hd0121" hidden>HD-0121</span><span data-show="hd0123 oos" hidden>HD-0123</span><span data-show="created partial" hidden>HD-0124</span><span data-show="past" hidden>HD-0101</span>/edit</span>
-              <a class="btn btn--secondary btn--sm" href="holidays-detail.html" data-show="hd0122 miss denied">취소</a>
-              <a class="btn btn--secondary btn--sm" href="holidays-detail.html?state=hd0114" data-show="hd0114 conflict" hidden>취소</a>
-              <a class="btn btn--secondary btn--sm" href="holidays-detail.html?state=hd0120" data-show="hd0120 pastdate fail" hidden>취소</a>
-              <a class="btn btn--secondary btn--sm" href="holidays-detail.html?state=hd0121" data-show="hd0121" hidden>취소</a>
-              <a class="btn btn--secondary btn--sm" href="holidays-detail.html?state=hd0123" data-show="hd0123 oos" hidden>취소</a>
-              <a class="btn btn--secondary btn--sm" href="holidays-detail.html?state=created" data-show="created partial" hidden>취소</a>
-              <a class="btn btn--secondary btn--sm" href="holidays-detail.html?state=hd0101" data-show="past" hidden>취소</a>
+              <a class="btn btn--secondary btn--sm" href="holidays-detail.html" data-show="hd0122 miss denied">닫기</a>
+              <a class="btn btn--secondary btn--sm" href="holidays-detail.html?state=hd0114" data-show="hd0114 conflict" hidden>닫기</a>
+              <a class="btn btn--secondary btn--sm" href="holidays-detail.html?state=hd0120" data-show="hd0120 pastdate fail" hidden>닫기</a>
+              <a class="btn btn--secondary btn--sm" href="holidays-detail.html?state=hd0121" data-show="hd0121" hidden>닫기</a>
+              <a class="btn btn--secondary btn--sm" href="holidays-detail.html?state=hd0123" data-show="hd0123 oos" hidden>닫기</a>
+              <a class="btn btn--secondary btn--sm" href="holidays-detail.html?state=created" data-show="created partial" hidden>닫기</a>
+              <a class="btn btn--secondary btn--sm" href="holidays-detail.html?state=hd0101" data-show="past" hidden>닫기</a>
               <a class="btn btn--primary btn--sm" href="holidays-detail.html?state=hd0122" data-show="hd0122">저장</a>
               <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./config-holidays-edit.screen-def.html', 'screenDef', 'width=1580,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
               <a class="btn btn--primary btn--sm" href="holidays-detail.html?state=hd0114" data-show="hd0114" hidden>저장</a>
@@ -118,7 +118,7 @@
             <div class="band band--risk" data-show="oos" hidden>
               <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">대상 점포가 접근 범위 밖이라 저장하지 않았습니다</div>
+                <div class="band__title">대상점포가 접근 범위 밖이라 저장하지 않았습니다</div>
                 <p class="band__desc">화면을 연 뒤 온기식당 광화문점이 hghr 의 점포 접근 범위에서 빠졌습니다. 이 휴일은 전과 같습니다.</p>
               </div>
             </div>
@@ -147,7 +147,7 @@
 
               <section class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">휴일 정보</h2>
+                  <h2 class="t-h2">휴일정보</h2>
                   <span class="subtle" style="font-size: 12px">* 표시가 필수</span>
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -158,34 +158,28 @@
                   </div>
                   <div class="field">
                     <label for="f0122-date">시작일 <span class="req">*</span></label>
-                    <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="true">반복</button></div>
+                    <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="true">반복</button></div>
                     <input class="input mono" id="f0122-date" value="2026-10-01" style="max-width: 180px" />
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-3); background: var(--canvas-soft); border: 1px solid var(--hairline); border-radius: var(--r-xs)">
+                    <div class="grid grid--3">
+                      <div class="field">
+                        <label for="f0122-rep">반복유형<span style="display: inline-block; margin-left: 6px; padding: 1px 4px; border: 1px solid var(--hairline-strong); border-radius: 2px; background: var(--hairline-strong); color: var(--body); font-size: 12.5px; font-weight: 500; white-space: nowrap; vertical-align: middle">매년 10월 1일마다 반복</span></label>
+                        <select class="select" id="f0122-rep"><option>매일</option><option>매주</option><option>매월</option><option selected>매년</option></select>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label>종료조건</label>
+                      <div class="inline" style="gap: 10px"><div class="seg" role="group" aria-label="종료조건" style="align-self: flex-start"><button type="button" aria-pressed="true">종료일 없음</button><button type="button" aria-pressed="false">특정 날짜까지</button><button type="button" aria-pressed="false">지정 횟수만큼</button></div></div>
+                    </div>
                   </div>
                   <div class="field">
                     <label for="f0122-desc">설명</label>
-                    <textarea class="textarea" id="f0122-desc" rows="2">㈜한강상회 창립 기념 전 점포 휴무 · 전날 마감 때 공지</textarea>
+                    <textarea class="textarea" id="f0122-desc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">㈜한강상회 창립 기념 전 점포 휴무 · 전날 마감 때 공지</textarea>
                   </div>
                 </div>
               </section>
 
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">반복 설정</h2>
-                  <span class="subtle" style="font-size: 12px">반복 유형과 종료 조건도 고칠 수 있습니다</span>
-                </div>
-                <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-                  <div class="grid grid--3">
-                    <div class="field">
-                      <label for="f0122-rep">반복 유형</label>
-                      <select class="select" id="f0122-rep"><option>매일</option><option>매주</option><option>매월</option><option selected>매년</option></select>
-                    </div>
-                  </div>
-                  <div class="field">
-                    <label>종료 조건</label>
-                    <div class="inline" style="gap: 10px"><div class="seg" role="group" aria-label="종료 조건" style="align-self: flex-start"><button type="button" aria-pressed="true">종료일 없음</button><button type="button" aria-pressed="false">특정 날짜까지</button><button type="button" aria-pressed="false">지정 횟수만큼</button></div></div>
-                  </div>
-                </div>
-              </section>
               <section class="panel">
                 <div class="panel__head">
                   <h2 class="t-h2">적용 대상</h2>
@@ -193,24 +187,24 @@
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                   <div class="field">
-                    <label>적용 범위 <span class="req">*</span></label>
+                    <!-- 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(2026-10-30) -->
                     <!-- 적용 범위 — BP 관리자 관리의 범위처럼 선택 상자 + 안내 한 줄(2026-10-07). 고르면 대상 점포 / 예외 점포 칸이 바뀐다 -->
                     <div class="grid grid--2"><div class="field">
                       <select class="select" aria-label="적용 범위" data-scope-select>
-                        <option selected data-reveal="f0122-exc" data-conceal="f0122-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외 점포를 뺄 수 있음">전체 점포</option>
+                        <option selected data-reveal="f0122-exc" data-conceal="f0122-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외점포를 뺄 수 있음">전체 점포</option>
                         <option data-reveal="f0122-store" data-conceal="f0122-exc" data-help="고른 점포에만 적용 · 여러 곳을 한 휴일로">일부 점포</option>
                       </select>
                     </div></div>
                   </div>
                   <div class="field" id="f0122-store" hidden>
-                    <label>대상 점포 <span class="req">*</span></label>
+                    <label>대상점포 <span class="req">*</span></label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
                       <div class="spick__find">
                         <div class="spick__head"><b>점포 찾기</b></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -224,23 +218,23 @@
                     </div>
                   </div>
                   <div class="field" id="f0122-exc">
-                    <label>예외 점포</label>
+                    <label>예외점포</label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
                       <div class="spick__find">
                         <div class="spick__head"><b>뺄 점포 찾기</b><span class="subtle">㈜한강상회 전체 11개점 중에서</span></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="뺄 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
                       </div>
                       <div class="spick__box">
-                        <div class="spick__head"><b>예외 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
-                        <ul class="spick__picked" data-spick-list aria-label="예외 점포"></ul>
-                        <p class="spick__empty" data-spick-empty hidden>예외 점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
+                        <div class="spick__head"><b>예외점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
+                        <ul class="spick__picked" data-spick-list aria-label="예외점포"></ul>
+                        <p class="spick__empty" data-spick-empty hidden>예외점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
                       </div>
                     </div>
                   </div>
@@ -252,7 +246,7 @@
 
               <section class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">휴일 정보</h2>
+                  <h2 class="t-h2">휴일정보</h2>
                   <span class="subtle" style="font-size: 12px">* 표시가 필수</span>
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -263,34 +257,28 @@
                   </div>
                   <div class="field">
                     <label for="f0114-date">시작일 <span class="req">*</span></label>
-                    <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="true">반복</button></div>
+                    <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="true">반복</button></div>
                     <input class="input mono" id="f0114-date" value="2026-09-28" style="max-width: 180px" />
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-3); background: var(--canvas-soft); border: 1px solid var(--hairline); border-radius: var(--r-xs)">
+                    <div class="grid grid--3">
+                      <div class="field">
+                        <label for="f0114-rep">반복유형<span style="display: inline-block; margin-left: 6px; padding: 1px 4px; border: 1px solid var(--hairline-strong); border-radius: 2px; background: var(--hairline-strong); color: var(--body); font-size: 12.5px; font-weight: 500; white-space: nowrap; vertical-align: middle">매주 월요일마다 반복</span></label>
+                        <select class="select" id="f0114-rep"><option>매일</option><option selected>매주</option><option>매월</option><option>매년</option></select>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label>종료조건</label>
+                      <div class="inline" style="gap: 10px"><div class="seg" role="group" aria-label="종료조건" style="align-self: flex-start"><button type="button" aria-pressed="true">종료일 없음</button><button type="button" aria-pressed="false">특정 날짜까지</button><button type="button" aria-pressed="false">지정 횟수만큼</button></div></div>
+                    </div>
                   </div>
                   <div class="field">
                     <label for="f0114-desc">설명</label>
-                    <textarea class="textarea" id="f0114-desc" rows="2">월요일마다 쉬는 정기 휴무</textarea>
+                    <textarea class="textarea" id="f0114-desc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">월요일마다 쉬는 정기 휴무</textarea>
                   </div>
                 </div>
               </section>
 
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">반복 설정</h2>
-                  <span class="subtle" style="font-size: 12px">반복 유형과 종료 조건도 고칠 수 있습니다</span>
-                </div>
-                <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-                  <div class="grid grid--3">
-                    <div class="field">
-                      <label for="f0114-rep">반복 유형</label>
-                      <select class="select" id="f0114-rep"><option>매일</option><option selected>매주</option><option>매월</option><option>매년</option></select>
-                    </div>
-                  </div>
-                  <div class="field">
-                    <label>종료 조건</label>
-                    <div class="inline" style="gap: 10px"><div class="seg" role="group" aria-label="종료 조건" style="align-self: flex-start"><button type="button" aria-pressed="true">종료일 없음</button><button type="button" aria-pressed="false">특정 날짜까지</button><button type="button" aria-pressed="false">지정 횟수만큼</button></div></div>
-                  </div>
-                </div>
-              </section>
               <section class="panel">
                 <div class="panel__head">
                   <h2 class="t-h2">적용 대상</h2>
@@ -298,24 +286,24 @@
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                   <div class="field">
-                    <label>적용 범위 <span class="req">*</span></label>
+                    <!-- 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(2026-10-30) -->
                     <!-- 적용 범위 — BP 관리자 관리의 범위처럼 선택 상자 + 안내 한 줄(2026-10-07). 고르면 대상 점포 / 예외 점포 칸이 바뀐다 -->
                     <div class="grid grid--2"><div class="field">
                       <select class="select" aria-label="적용 범위" data-scope-select>
-                        <option data-reveal="f0114-exc" data-conceal="f0114-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외 점포를 뺄 수 있음">전체 점포</option>
+                        <option data-reveal="f0114-exc" data-conceal="f0114-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외점포를 뺄 수 있음">전체 점포</option>
                         <option selected data-reveal="f0114-store" data-conceal="f0114-exc" data-help="고른 점포에만 적용 · 여러 곳을 한 휴일로">일부 점포</option>
                       </select>
                     </div></div>
                   </div>
                   <div class="field" id="f0114-store">
-                    <label>대상 점포 <span class="req">*</span></label>
+                    <label>대상점포 <span class="req">*</span></label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="ST000003">
                       <div class="spick__find">
                         <div class="spick__head"><b>점포 찾기</b></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -329,23 +317,23 @@
                     </div>
                   </div>
                   <div class="field" id="f0114-exc" hidden>
-                    <label>예외 점포</label>
+                    <label>예외점포</label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
                       <div class="spick__find">
                         <div class="spick__head"><b>뺄 점포 찾기</b><span class="subtle">㈜한강상회 전체 11개점 중에서</span></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="뺄 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
                       </div>
                       <div class="spick__box">
-                        <div class="spick__head"><b>예외 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
-                        <ul class="spick__picked" data-spick-list aria-label="예외 점포"></ul>
-                        <p class="spick__empty" data-spick-empty hidden>예외 점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
+                        <div class="spick__head"><b>예외점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
+                        <ul class="spick__picked" data-spick-list aria-label="예외점포"></ul>
+                        <p class="spick__empty" data-spick-empty hidden>예외점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
                       </div>
                     </div>
                   </div>
@@ -357,7 +345,7 @@
 
               <section class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">휴일 정보</h2>
+                  <h2 class="t-h2">휴일정보</h2>
                   <span class="subtle" style="font-size: 12px">* 표시가 필수</span>
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -368,12 +356,12 @@
                   </div>
                   <div class="field">
                     <label for="f0120-date">날짜 <span class="req">*</span></label>
-                    <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                    <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                     <input class="input mono" id="f0120-date" value="2026-09-25" style="max-width: 180px" />
                   </div>
                   <div class="field">
                     <label for="f0120-desc">설명</label>
-                    <textarea class="textarea" id="f0120-desc" rows="2">추석 당일 전 점포 휴무</textarea>
+                    <textarea class="textarea" id="f0120-desc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">추석 당일 전 점포 휴무</textarea>
                   </div>
                 </div>
               </section>
@@ -384,24 +372,24 @@
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                   <div class="field">
-                    <label>적용 범위 <span class="req">*</span></label>
+                    <!-- 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(2026-10-30) -->
                     <!-- 적용 범위 — BP 관리자 관리의 범위처럼 선택 상자 + 안내 한 줄(2026-10-07). 고르면 대상 점포 / 예외 점포 칸이 바뀐다 -->
                     <div class="grid grid--2"><div class="field">
                       <select class="select" aria-label="적용 범위" data-scope-select>
-                        <option selected data-reveal="f0120-exc" data-conceal="f0120-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외 점포를 뺄 수 있음">전체 점포</option>
+                        <option selected data-reveal="f0120-exc" data-conceal="f0120-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외점포를 뺄 수 있음">전체 점포</option>
                         <option data-reveal="f0120-store" data-conceal="f0120-exc" data-help="고른 점포에만 적용 · 여러 곳을 한 휴일로">일부 점포</option>
                       </select>
                     </div></div>
                   </div>
                   <div class="field" id="f0120-store" hidden>
-                    <label>대상 점포 <span class="req">*</span></label>
+                    <label>대상점포 <span class="req">*</span></label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
                       <div class="spick__find">
                         <div class="spick__head"><b>점포 찾기</b></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -415,23 +403,23 @@
                     </div>
                   </div>
                   <div class="field" id="f0120-exc">
-                    <label>예외 점포</label>
+                    <label>예외점포</label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
                       <div class="spick__find">
                         <div class="spick__head"><b>뺄 점포 찾기</b><span class="subtle">㈜한강상회 전체 11개점 중에서</span></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="뺄 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
                       </div>
                       <div class="spick__box">
-                        <div class="spick__head"><b>예외 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
-                        <ul class="spick__picked" data-spick-list aria-label="예외 점포"></ul>
-                        <p class="spick__empty" data-spick-empty hidden>예외 점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
+                        <div class="spick__head"><b>예외점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
+                        <ul class="spick__picked" data-spick-list aria-label="예외점포"></ul>
+                        <p class="spick__empty" data-spick-empty hidden>예외점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
                       </div>
                     </div>
                   </div>
@@ -443,7 +431,7 @@
 
               <section class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">휴일 정보</h2>
+                  <h2 class="t-h2">휴일정보</h2>
                   <span class="subtle" style="font-size: 12px">* 표시가 필수</span>
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -454,12 +442,12 @@
                   </div>
                   <div class="field">
                     <label for="f0121-date">날짜 <span class="req">*</span></label>
-                    <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                    <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                     <input class="input mono" id="f0121-date" value="2026-09-29" style="max-width: 180px" />
                   </div>
                   <div class="field">
                     <label for="f0121-desc">설명</label>
-                    <textarea class="textarea" id="f0121-desc" rows="2">주방 배관 교체 공사</textarea>
+                    <textarea class="textarea" id="f0121-desc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">주방 배관 교체 공사</textarea>
                   </div>
                 </div>
               </section>
@@ -470,24 +458,24 @@
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                   <div class="field">
-                    <label>적용 범위 <span class="req">*</span></label>
+                    <!-- 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(2026-10-30) -->
                     <!-- 적용 범위 — BP 관리자 관리의 범위처럼 선택 상자 + 안내 한 줄(2026-10-07). 고르면 대상 점포 / 예외 점포 칸이 바뀐다 -->
                     <div class="grid grid--2"><div class="field">
                       <select class="select" aria-label="적용 범위" data-scope-select>
-                        <option disabled data-help="㈜한강상회의 모든 점포에 적용 · 예외 점포를 뺄 수 있음">전체 점포</option>
+                        <option disabled data-help="㈜한강상회의 모든 점포에 적용 · 예외점포를 뺄 수 있음">전체 점포</option>
                         <option selected data-reveal="f0121-store" data-help="고른 점포에만 적용 · 여러 곳을 한 휴일로">일부 점포</option>
                       </select>
                     </div></div>
                   </div>
                   <div class="field" id="f0121-store">
-                    <label>대상 점포 <span class="req">*</span></label>
+                    <label>대상점포 <span class="req">*</span></label>
                     <div class="spick" data-spick data-pool="ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포" data-picked="ST000006">
                       <div class="spick__find">
                         <div class="spick__head"><b>점포 찾기</b></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -508,7 +496,7 @@
 
               <section class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">휴일 정보</h2>
+                  <h2 class="t-h2">휴일정보</h2>
                   <span class="subtle" style="font-size: 12px">* 표시가 필수</span>
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -519,12 +507,12 @@
                   </div>
                   <div class="field">
                     <label for="f0123-date">날짜 <span class="req">*</span></label>
-                    <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                    <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                     <input class="input mono" id="f0123-date" value="2026-10-01" style="max-width: 180px" />
                   </div>
                   <div class="field">
                     <label for="f0123-desc">설명</label>
-                    <textarea class="textarea" id="f0123-desc" rows="2">오후 2시 이후 단축 운영 · 오전만 영업</textarea>
+                    <textarea class="textarea" id="f0123-desc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">오후 2시 이후 단축 운영 · 오전만 영업</textarea>
                   </div>
                 </div>
               </section>
@@ -535,24 +523,24 @@
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                   <div class="field">
-                    <label>적용 범위 <span class="req">*</span></label>
+                    <!-- 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(2026-10-30) -->
                     <!-- 적용 범위 — BP 관리자 관리의 범위처럼 선택 상자 + 안내 한 줄(2026-10-07). 고르면 대상 점포 / 예외 점포 칸이 바뀐다 -->
                     <div class="grid grid--2"><div class="field">
                       <select class="select" aria-label="적용 범위" data-scope-select>
-                        <option disabled data-help="㈜한강상회의 모든 점포에 적용 · 예외 점포를 뺄 수 있음">전체 점포</option>
+                        <option disabled data-help="㈜한강상회의 모든 점포에 적용 · 예외점포를 뺄 수 있음">전체 점포</option>
                         <option selected data-reveal="f0123-store" data-help="고른 점포에만 적용 · 여러 곳을 한 휴일로">일부 점포</option>
                       </select>
                     </div></div>
                   </div>
                   <div class="field" id="f0123-store">
-                    <label>대상 점포 <span class="req">*</span></label>
+                    <label>대상점포 <span class="req">*</span></label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포" data-picked="ST000004">
                       <div class="spick__find">
                         <div class="spick__head"><b>점포 찾기</b></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -573,7 +561,7 @@
 
               <section class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">휴일 정보</h2>
+                  <h2 class="t-h2">휴일정보</h2>
                   <span class="subtle" style="font-size: 12px">* 표시가 필수</span>
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -584,12 +572,12 @@
                   </div>
                   <div class="field">
                     <label for="fnew-date">날짜 <span class="req">*</span></label>
-                    <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                    <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                     <input class="input mono" id="fnew-date" value="2026-10-15" style="max-width: 180px" />
                   </div>
                   <div class="field">
                     <label for="fnew-desc">설명</label>
-                    <textarea class="textarea" id="fnew-desc" rows="2">분기 재고 실사로 하루 휴무</textarea>
+                    <textarea class="textarea" id="fnew-desc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">분기 재고 실사로 하루 휴무</textarea>
                   </div>
                 </div>
               </section>
@@ -600,24 +588,24 @@
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                   <div class="field">
-                    <label>적용 범위 <span class="req">*</span></label>
+                    <!-- 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(2026-10-30) -->
                     <!-- 적용 범위 — BP 관리자 관리의 범위처럼 선택 상자 + 안내 한 줄(2026-10-07). 고르면 대상 점포 / 예외 점포 칸이 바뀐다 -->
                     <div class="grid grid--2"><div class="field">
                       <select class="select" aria-label="적용 범위" data-scope-select>
-                        <option data-reveal="fnew-exc" data-conceal="fnew-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외 점포를 뺄 수 있음">전체 점포</option>
+                        <option data-reveal="fnew-exc" data-conceal="fnew-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외점포를 뺄 수 있음">전체 점포</option>
                         <option selected data-reveal="fnew-store" data-conceal="fnew-exc" data-help="고른 점포에만 적용 · 여러 곳을 한 휴일로">일부 점포</option>
                       </select>
                     </div></div>
                   </div>
                   <div class="field" id="fnew-store">
-                    <label>대상 점포 <span class="req">*</span></label>
+                    <label>대상점포 <span class="req">*</span></label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="ST000002 ST000003 ST000006">
                       <div class="spick__find">
                         <div class="spick__head"><b>점포 찾기</b></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -631,23 +619,23 @@
                     </div>
                   </div>
                   <div class="field" id="fnew-exc" hidden>
-                    <label>예외 점포</label>
+                    <label>예외점포</label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
                       <div class="spick__find">
                         <div class="spick__head"><b>뺄 점포 찾기</b><span class="subtle">㈜한강상회 전체 11개점 중에서</span></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="뺄 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
                       </div>
                       <div class="spick__box">
-                        <div class="spick__head"><b>예외 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
-                        <ul class="spick__picked" data-spick-list aria-label="예외 점포"></ul>
-                        <p class="spick__empty" data-spick-empty hidden>예외 점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
+                        <div class="spick__head"><b>예외점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
+                        <ul class="spick__picked" data-spick-list aria-label="예외점포"></ul>
+                        <p class="spick__empty" data-spick-empty hidden>예외점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
                       </div>
                     </div>
                   </div>
@@ -658,7 +646,7 @@
             <div class="band band--info" data-show="partial" hidden>
               <span class="band__ic" data-icon="info" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">대상 점포 3곳 중 hghr 의 범위는 모리커피 성수점 · 온기식당 판교점입니다</div>
+                <div class="band__title">대상점포 3곳 중 hghr 의 범위는 모리커피 성수점 · 온기식당 판교점입니다</div>
                 <p class="band__desc">저장하면 두 점포가 이 휴일(<span class="mono">HD-0124</span>)에서 빠지고, 두 점포만 대상인 새 휴일이 생깁니다. 모리커피 연남점은 원래 휴일에 그대로 남습니다.</p>
               </div>
             </div>
@@ -666,7 +654,7 @@
 
               <section class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">휴일 정보</h2>
+                  <h2 class="t-h2">휴일정보</h2>
                   <span class="subtle" style="font-size: 12px">* 표시가 필수</span>
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -676,12 +664,12 @@
                   </div>
                   <div class="field">
                     <label for="fpart-date">날짜 <span class="req">*</span></label>
-                    <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                    <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                     <input class="input mono" id="fpart-date" value="2026-10-16" style="max-width: 180px" />
                   </div>
                   <div class="field">
                     <label for="fpart-desc">설명</label>
-                    <textarea class="textarea" id="fpart-desc" rows="2">분기 재고 실사로 하루 휴무 · 직영점은 하루 늦춤</textarea>
+                    <textarea class="textarea" id="fpart-desc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">분기 재고 실사로 하루 휴무 · 직영점은 하루 늦춤</textarea>
                   </div>
                 </div>
               </section>
@@ -692,24 +680,24 @@
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                   <div class="field">
-                    <label>적용 범위 <span class="req">*</span></label>
+                    <!-- 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(2026-10-30) -->
                     <!-- 적용 범위 — BP 관리자 관리의 범위처럼 선택 상자 + 안내 한 줄(2026-10-07). 고르면 대상 점포 / 예외 점포 칸이 바뀐다 -->
                     <div class="grid grid--2"><div class="field">
                       <select class="select" aria-label="적용 범위" data-scope-select>
-                        <option disabled data-help="㈜한강상회의 모든 점포에 적용 · 예외 점포를 뺄 수 있음">전체 점포</option>
+                        <option disabled data-help="㈜한강상회의 모든 점포에 적용 · 예외점포를 뺄 수 있음">전체 점포</option>
                         <option selected data-help="고른 점포에만 적용 · 여러 곳을 한 휴일로">일부 점포</option>
                       </select>
                     </div></div>
                   </div>
                   <div class="field" id="fpart-store">
-                    <label>내 범위의 대상 점포 <span class="req">*</span></label>
+                    <label>내 범위의 대상점포 <span class="req">*</span></label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포" data-picked="ST000002 ST000003">
                       <div class="spick__find">
                         <div class="spick__head"><b>점포 찾기</b></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -730,7 +718,7 @@
 
               <section class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">휴일 정보</h2>
+                  <h2 class="t-h2">휴일정보</h2>
                   <span class="subtle" style="font-size: 12px">* 표시가 필수</span>
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -741,13 +729,13 @@
                   </div>
                   <div class="field">
                     <label for="fpd-date">날짜 <span class="req">*</span></label>
-                    <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                    <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                     <input class="input mono" id="fpd-date" value="2026-09-18" style="max-width: 180px" aria-invalid="true" />
-                    <span class="err"><span data-icon="alert" data-icon-size="13"></span>오늘(2026-09-21) 또는 그 뒤 날짜로만 바꿀 수 있습니다.</span>
+                    <span class="err"><span data-icon="alert" data-icon-size="13"></span>오늘 이후 날짜를 선택해 주세요.</span>
                   </div>
                   <div class="field">
                     <label for="fpd-desc">설명</label>
-                    <textarea class="textarea" id="fpd-desc" rows="2">추석 당일 전 점포 휴무</textarea>
+                    <textarea class="textarea" id="fpd-desc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">추석 당일 전 점포 휴무</textarea>
                   </div>
                 </div>
               </section>
@@ -758,24 +746,24 @@
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                   <div class="field">
-                    <label>적용 범위 <span class="req">*</span></label>
+                    <!-- 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(2026-10-30) -->
                     <!-- 적용 범위 — BP 관리자 관리의 범위처럼 선택 상자 + 안내 한 줄(2026-10-07). 고르면 대상 점포 / 예외 점포 칸이 바뀐다 -->
                     <div class="grid grid--2"><div class="field">
                       <select class="select" aria-label="적용 범위" data-scope-select>
-                        <option selected data-reveal="fpd-exc" data-conceal="fpd-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외 점포를 뺄 수 있음">전체 점포</option>
+                        <option selected data-reveal="fpd-exc" data-conceal="fpd-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외점포를 뺄 수 있음">전체 점포</option>
                         <option data-reveal="fpd-store" data-conceal="fpd-exc" data-help="고른 점포에만 적용 · 여러 곳을 한 휴일로">일부 점포</option>
                       </select>
                     </div></div>
                   </div>
                   <div class="field" id="fpd-store" hidden>
-                    <label>대상 점포 <span class="req">*</span></label>
+                    <label>대상점포 <span class="req">*</span></label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
                       <div class="spick__find">
                         <div class="spick__head"><b>점포 찾기</b></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -789,23 +777,23 @@
                     </div>
                   </div>
                   <div class="field" id="fpd-exc">
-                    <label>예외 점포</label>
+                    <label>예외점포</label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
                       <div class="spick__find">
                         <div class="spick__head"><b>뺄 점포 찾기</b><span class="subtle">㈜한강상회 전체 11개점 중에서</span></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="뺄 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
                       </div>
                       <div class="spick__box">
-                        <div class="spick__head"><b>예외 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
-                        <ul class="spick__picked" data-spick-list aria-label="예외 점포"></ul>
-                        <p class="spick__empty" data-spick-empty hidden>예외 점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
+                        <div class="spick__head"><b>예외점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
+                        <ul class="spick__picked" data-spick-list aria-label="예외점포"></ul>
+                        <p class="spick__empty" data-spick-empty hidden>예외점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
                       </div>
                     </div>
                   </div>
@@ -817,7 +805,7 @@
 
               <section class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">휴일 정보</h2>
+                  <h2 class="t-h2">휴일정보</h2>
                   <span class="subtle" style="font-size: 12px">* 표시가 필수</span>
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -828,12 +816,12 @@
                   </div>
                   <div class="field">
                     <label for="foos-date">날짜 <span class="req">*</span></label>
-                    <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                    <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                     <input class="input mono" id="foos-date" value="2026-10-01" style="max-width: 180px" />
                   </div>
                   <div class="field">
                     <label for="foos-desc">설명</label>
-                    <textarea class="textarea" id="foos-desc" rows="2">오후 2시 이후 단축 운영 · 오전만 영업</textarea>
+                    <textarea class="textarea" id="foos-desc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">오후 2시 이후 단축 운영 · 오전만 영업</textarea>
                   </div>
                 </div>
               </section>
@@ -844,24 +832,24 @@
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                   <div class="field">
-                    <label>적용 범위 <span class="req">*</span></label>
+                    <!-- 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(2026-10-30) -->
                     <!-- 적용 범위 — BP 관리자 관리의 범위처럼 선택 상자 + 안내 한 줄(2026-10-07). 고르면 대상 점포 / 예외 점포 칸이 바뀐다 -->
                     <div class="grid grid--2"><div class="field">
                       <select class="select" aria-label="적용 범위" data-scope-select>
-                        <option disabled data-help="㈜한강상회의 모든 점포에 적용 · 예외 점포를 뺄 수 있음">전체 점포</option>
+                        <option disabled data-help="㈜한강상회의 모든 점포에 적용 · 예외점포를 뺄 수 있음">전체 점포</option>
                         <option selected data-reveal="foos-store" data-help="고른 점포에만 적용 · 여러 곳을 한 휴일로">일부 점포</option>
                       </select>
                     </div></div>
                   </div>
                   <div class="field" id="foos-store">
-                    <label>대상 점포 <span class="req">*</span></label>
+                    <label>대상점포 <span class="req">*</span></label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포" data-picked="ST000004">
                       <div class="spick__find">
                         <div class="spick__head"><b>점포 찾기</b></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-invalid="true" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-invalid="true" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -883,7 +871,7 @@
 
               <section class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">휴일 정보</h2>
+                  <h2 class="t-h2">휴일정보</h2>
                   <span class="subtle" style="font-size: 12px">* 표시가 필수</span>
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -894,34 +882,28 @@
                   </div>
                   <div class="field">
                     <label for="fmiss-date">시작일 <span class="req">*</span></label>
-                    <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="true">반복</button></div>
+                    <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="true">반복</button></div>
                     <input class="input mono" id="fmiss-date" value="2026-10-01" style="max-width: 180px" />
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-3); background: var(--canvas-soft); border: 1px solid var(--hairline); border-radius: var(--r-xs)">
+                    <div class="grid grid--3">
+                      <div class="field">
+                        <label for="fmiss-rep">반복유형<span style="display: inline-block; margin-left: 6px; padding: 1px 4px; border: 1px solid var(--hairline-strong); border-radius: 2px; background: var(--hairline-strong); color: var(--body); font-size: 12.5px; font-weight: 500; white-space: nowrap; vertical-align: middle">매년 10월 1일마다 반복</span></label>
+                        <select class="select" id="fmiss-rep"><option>매일</option><option>매주</option><option>매월</option><option selected>매년</option></select>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label>종료조건</label>
+                      <div class="inline" style="gap: 10px"><div class="seg" role="group" aria-label="종료조건" style="align-self: flex-start"><button type="button" aria-pressed="true">종료일 없음</button><button type="button" aria-pressed="false">특정 날짜까지</button><button type="button" aria-pressed="false">지정 횟수만큼</button></div></div>
+                    </div>
                   </div>
                   <div class="field">
                     <label for="fmiss-desc">설명</label>
-                    <textarea class="textarea" id="fmiss-desc" rows="2">㈜한강상회 창립 기념 전 점포 휴무 · 전날 마감 때 공지</textarea>
+                    <textarea class="textarea" id="fmiss-desc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">㈜한강상회 창립 기념 전 점포 휴무 · 전날 마감 때 공지</textarea>
                   </div>
                 </div>
               </section>
 
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">반복 설정</h2>
-                  <span class="subtle" style="font-size: 12px">반복 유형과 종료 조건도 고칠 수 있습니다</span>
-                </div>
-                <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-                  <div class="grid grid--3">
-                    <div class="field">
-                      <label for="fmiss-rep">반복 유형</label>
-                      <select class="select" id="fmiss-rep"><option>매일</option><option>매주</option><option>매월</option><option selected>매년</option></select>
-                    </div>
-                  </div>
-                  <div class="field">
-                    <label>종료 조건</label>
-                    <div class="inline" style="gap: 10px"><div class="seg" role="group" aria-label="종료 조건" style="align-self: flex-start"><button type="button" aria-pressed="true">종료일 없음</button><button type="button" aria-pressed="false">특정 날짜까지</button><button type="button" aria-pressed="false">지정 횟수만큼</button></div></div>
-                  </div>
-                </div>
-              </section>
               <section class="panel">
                 <div class="panel__head">
                   <h2 class="t-h2">적용 대상</h2>
@@ -929,24 +911,24 @@
                 </div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                   <div class="field">
-                    <label>적용 범위 <span class="req">*</span></label>
+                    <!-- 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(2026-10-30) -->
                     <!-- 적용 범위 — BP 관리자 관리의 범위처럼 선택 상자 + 안내 한 줄(2026-10-07). 고르면 대상 점포 / 예외 점포 칸이 바뀐다 -->
                     <div class="grid grid--2"><div class="field">
                       <select class="select" aria-label="적용 범위" data-scope-select>
-                        <option selected data-reveal="fmiss-exc" data-conceal="fmiss-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외 점포를 뺄 수 있음">전체 점포</option>
+                        <option selected data-reveal="fmiss-exc" data-conceal="fmiss-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외점포를 뺄 수 있음">전체 점포</option>
                         <option data-reveal="fmiss-store" data-conceal="fmiss-exc" data-help="고른 점포에만 적용 · 여러 곳을 한 휴일로">일부 점포</option>
                       </select>
                     </div></div>
                   </div>
                   <div class="field" id="fmiss-store" hidden>
-                    <label>대상 점포 <span class="req">*</span></label>
+                    <label>대상점포 <span class="req">*</span></label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
                       <div class="spick__find">
                         <div class="spick__head"><b>점포 찾기</b></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -960,23 +942,23 @@
                     </div>
                   </div>
                   <div class="field" id="fmiss-exc">
-                    <label>예외 점포</label>
+                    <label>예외점포</label>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
                       <div class="spick__find">
                         <div class="spick__head"><b>뺄 점포 찾기</b><span class="subtle">㈜한강상회 전체 11개점 중에서</span></div>
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="뺄 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
                       </div>
                       <div class="spick__box">
-                        <div class="spick__head"><b>예외 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
-                        <ul class="spick__picked" data-spick-list aria-label="예외 점포"></ul>
-                        <p class="spick__empty" data-spick-empty hidden>예외 점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
+                        <div class="spick__head"><b>예외점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
+                        <ul class="spick__picked" data-spick-list aria-label="예외점포"></ul>
+                        <p class="spick__empty" data-spick-empty hidden>예외점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
                       </div>
                     </div>
                   </div>

@@ -7,7 +7,13 @@ export function TextField(props: Omit<ComponentProps<"input">, "className" | "st
 }
 
 // 여러 줄 입력. 높이는 rows 로 정한다 — 8줄 × (14 × 1.6) + 위아래 12 + 테두리 1 ≈ 205 로 Figma 점포 소개(204)와 맞는다.
-export function Textarea({ rows = 8, ...props }: Omit<ComponentProps<"textarea">, "className" | "style">) {
+// grow 를 주면 한 줄 입력칸(TextField)과 같은 34px 에서 시작해 Enter 로 줄을 더한 만큼 늘어난다(최대 grow 줄, 넘으면 칸 안에서 스크롤) —
+// 여백 · 줄 높이를 한 줄 칸에 맞춘다: 22 + 위아래 5×2 + 테두리 1×2 = 34(BP 휴일 설명, 2026-10-30 사용자 지정)
+export function Textarea({ rows = 8, grow, ...props }: Omit<ComponentProps<"textarea">, "className" | "style"> & { grow?: number }) {
+  if (grow) {
+    const lines = Math.min(Math.max(String(props.value ?? "").split("\n").length, 1), grow);
+    return <textarea {...props} rows={lines} className={`${FIELD_BOX} resize-none px-[10px] py-[5px] leading-[22px]`} />;
+  }
   return <textarea {...props} rows={rows} className={`${FIELD_BOX} resize-none px-[16px] py-[12px] leading-[1.6]`} />;
 }
 
