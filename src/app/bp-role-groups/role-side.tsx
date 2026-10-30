@@ -196,7 +196,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
       {can.delete && !role.isDeletable && role.deleteBlockedReason && role.deleteBlockedReason !== "FIXED_ROLE" && (
         <InfoBand>
           {role.deleteBlockedReason === "SELF_LINKED"
-            ? "본인 계정에 연결된 권한 그룹은 삭제할 수 없습니다."
+            ? "내 계정에 연결된 권한 그룹은 삭제할 수 없습니다."
             : reasonLabel(lockReasons, role.deleteBlockedReason, "삭제할 수 없는 권한 그룹입니다.")}
         </InfoBand>
       )}

@@ -495,7 +495,7 @@ export function AdminFormPanel(props: Props) {
                   value={form.accountStatus}
                   onChange={(e) => set("accountStatus", e.target.value as BpAdminForm["accountStatus"])}
                   disabled={locks.status}
-                  title={locks.status ? "본인 계정의 상태는 바꿀 수 없습니다." : undefined}
+                  title={locks.status ? "내 계정의 상태는 바꿀 수 없습니다." : undefined}
                   aria-required
                 >
                   <option value="ACTIVE">사용</option>

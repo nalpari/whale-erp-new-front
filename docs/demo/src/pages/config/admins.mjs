@@ -41,30 +41,31 @@ export default ({ A, R }) => {
     // 점포 — 점포 정보 관리와 같은 점포 고르기(찾아 고르면 「선택한 점포」에 쌓임 · 5개 넘으면 스크롤)
     ui.filterSection("점포", storeFilter(A), { tight: true }),
     ui.filterSection("아이디 · 이름", ui.searchField(A, { placeholder: "아이디 또는 이름 일부", label: "아이디 · 이름" }), { tight: true }),
+    // 역할 — 계정상태와 같은 체크박스, 처음엔 모두 켬(앱과 같다, 2026-10-30 사용자 지정)
+    ui.filterSection("역할", ui.checkbox(A, "BP관리자", true) + ui.checkbox(A, "가맹마스터", true) + ui.checkbox(A, "가맹관리자", true), { tight: true }),
     ui.filterSection("권한명", ui.select(GROUPS, { "aria-label": "권한명" }), { tight: true }),
     ui.filterSection("계정상태", ui.checkbox(A, "사용", true) + ui.checkbox(A, "미사용", true), { last: true }), // 앱과 같이 체크박스 · 처음엔 모두 켬(2026-10-27)
   ]);
 
-  // 아이디 · 이름 · 역할 · 권한명 · 코드 · 최근 로그인 · 등록일시는 폭을 정하지 않아 남는 폭을 똑같이 나눈다. 최근 로그인 다음에 등록일시(2026-10-27 사용자 지정)
+  // 권한명 · 코드 · 최근 로그인은 폭을 정하지 않아 남는 폭을 똑같이 나눈다(2026-10-27 사용자 지정).
+  // 아이디 180 · 이름 220 · 역할 120 고정, 역할 · 대상점포(상세와 같은 이름)는 이름 다음, 등록일시 열은 뺐다(앱과 같다, 2026-10-30 사용자 지정)
   const cols = [
-    { header: "아이디" },
-    { header: "이름" },
-    { header: "역할" },
-    { header: "권한명 · 코드" }, // 열 이름도 값과 같은 형식 · 가운데 정렬(앱과 같다, 2026-10-27)
+    { header: "아이디", width: "w-[180px]" },
+    { header: "이름", width: "w-[220px]" },
+    { header: "역할", width: "w-[120px]" },
+    { header: "대상점포", width: "w-[110px]" },
+    { header: "권한명 · 코드", align: "left" }, // 열 이름도 값과 같은 형식. 값은 왼쪽 정렬(앱과 같다, 2026-10-30 사용자 지정 — 전엔 가운데)
     { header: "계정상태", width: "w-[100px]" },
-    { header: "매핑 점포", width: "w-[110px]" },
     { header: "최근 로그인" },
-    { header: "등록일시" },
   ];
-  const rows = ADMINS.map(([id, name, role, group, code, state, stores, reg, login]) => [
+  const rows = ADMINS.map(([id, name, role, group, code, state, stores, , login]) => [
     id,
     detailTrigger(name),
     role,
+    stores,
     `${group} <span class="text-[12px] text-erp-muted">· ${code}</span>`, // 코드는 12px(앱과 같다, 2026-10-27)
     ui.badge(state === "사용" ? "on" : "off", state),
-    stores,
     login,
-    reg,
   ]);
   const off = ADMINS.flatMap((a, i) => (a[5] === "미사용" ? [i] : []));
 

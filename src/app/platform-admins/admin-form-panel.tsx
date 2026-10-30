@@ -425,7 +425,7 @@ export function AdminFormPanel(props: Props) {
                 value={form.roleGroupId}
                 onChange={(e) => set("roleGroupId", e.target.value)}
                 disabled={isSelf}
-                title={isSelf ? "본인 계정의 권한은 바꿀 수 없습니다." : undefined}
+                title={isSelf ? "내 계정의 권한은 바꿀 수 없습니다." : undefined}
                 aria-invalid={invalid("roleGroupId")}
                 aria-describedby={describe("roleGroupId")}
                 aria-required
@@ -450,7 +450,7 @@ export function AdminFormPanel(props: Props) {
                 value={form.accountStatus}
                 onChange={(e) => set("accountStatus", e.target.value as AdminForm["accountStatus"])}
                 disabled={isSelf}
-                title={isSelf ? "본인 계정의 상태는 바꿀 수 없습니다." : undefined}
+                title={isSelf ? "내 계정의 상태는 바꿀 수 없습니다." : undefined}
               >
                 <option value="ACTIVE">사용</option>
                 <option value="INACTIVE">미사용</option>
@@ -480,7 +480,7 @@ export function AdminFormPanel(props: Props) {
           detailError={errors.addressDetail}
         />
       </FormGroup>
-      {isSelf && <Note>본인 계정의 권한과 상태는 변경할 수 없습니다. 이름, 연락처 등 기타 정보만 수정할 수 있습니다.</Note>}
+      {isSelf && <Note>내 계정의 권한과 상태는 변경할 수 없습니다. 이름, 연락처 등 기타 정보만 수정할 수 있습니다.</Note>}
 
       {mode === "create" && <Note>초기화 비밀번호는 등록한 이메일로 발송됩니다.</Note>}
       {mode === "edit" && form.accountStatus === "INACTIVE" && props.admin.accountStatus === "ACTIVE" && (

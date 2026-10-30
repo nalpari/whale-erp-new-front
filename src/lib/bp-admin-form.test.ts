@@ -68,9 +68,9 @@ test("수정은 아이디 · 계정 역할을 보지 않는다", () => {
   assert.deepEqual(errors, {});
 });
 
-test("일부 점포는 1곳 이상 — 범위 밖 매핑도 센다, 전체 점포 · 막힌 칸은 보지 않는다", () => {
+test("일부 점포는 1개 이상 — 범위 밖 매핑도 센다, 전체 점포 · 막힌 칸은 보지 않는다", () => {
   const empty = { ...filled, stores: [] };
-  assert.equal(validateBpAdminForm(empty, { mode: "edit" }).stores, "대상점포를 1곳 이상 골라 주세요.");
+  assert.equal(validateBpAdminForm(empty, { mode: "edit" }).stores, "대상점포를 1개 이상 선택해 주세요.");
   assert.equal(validateBpAdminForm(empty, { mode: "edit", outOfScopeCount: 2 }).stores, undefined);
   assert.equal(validateBpAdminForm({ ...empty, isAllStores: true }, { mode: "create" }).stores, undefined);
   assert.equal(validateBpAdminForm(empty, { mode: "edit", storesLocked: true }).stores, undefined);
