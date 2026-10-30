@@ -12,6 +12,7 @@ test("주소 값이 틀리면 기본값으로 — api 에 400 · 500 을 일으�
     pageSize: 20,
     keyword: undefined,
     roleGroupId: undefined,
+    roleTypeCodes: undefined,
     accountStatus: undefined,
     storeIds: [],
     storesCleared: false,
@@ -39,6 +40,7 @@ test("만든 주소를 다시 읽으면 같은 조건 — 새로 고침 · 링�
     pageSize: 50,
     keyword: "서아",
     roleGroupId: 4,
+    roleTypeCodes: ["FM", "FA"],
     accountStatus: "INACTIVE",
     storeIds: [3, 7],
     storesCleared: false,
@@ -97,4 +99,17 @@ test("계정상태를 둘 다 끄면 NONE — 주소에 남고 api 조건에는 
   assert.equal(none.accountStatus, "NONE");
   assert.equal(bpAdminsHref(none), "/bp-admins?accountStatus=NONE");
   assert.equal(bpAdminListQueryOf(none).accountStatus, undefined);
+});
+
+test("역할 — 고른 역할만 주소 · api 에, 셋 다면 조건 없음, 모두 끄면 NONE", () => {
+  assert.deepEqual(parseBpAdminsQuery({ roleTypeCodes: "FA,FM" }).roleTypeCodes, ["FM", "FA"]);
+  assert.equal(parseBpAdminsQuery({ roleTypeCodes: "BA,FM,FA" }).roleTypeCodes, undefined);
+  // 알아볼 수 없는 값은 버리고, 남는 게 없으면 전체 — api 에 400 을 일으키지 않는다
+  assert.deepEqual(parseBpAdminsQuery({ roleTypeCodes: "BM,FA" }).roleTypeCodes, ["FA"]);
+  assert.equal(parseBpAdminsQuery({ roleTypeCodes: "XX" }).roleTypeCodes, undefined);
+  const none = parseBpAdminsQuery({ roleTypeCodes: "NONE" });
+  assert.deepEqual(none.roleTypeCodes, []);
+  assert.equal(bpAdminsHref(none), "/bp-admins?roleTypeCodes=NONE");
+  assert.equal(bpAdminsHref({ ...base, roleTypeCodes: ["BA"] }), "/bp-admins?roleTypeCodes=BA");
+  assert.deepEqual(bpAdminListQueryOf({ ...base, roleTypeCodes: ["FM", "FA"] }).roleTypeCodes, ["FM", "FA"]);
 });

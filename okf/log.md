@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-30
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 관리자 관리 디자인 수정(front swinub): 필터 「역할」(api `roleTypeCodes`), 목록 열(대상점포 · 역할 이동, 등록일시 뺌, 권한명 · 코드 왼쪽 정렬), 상세 안내 상자(빨간 상자 · 순서 · 간격), 대상점포 오류 문구 「1개 이상 선택해 주세요」, 「본인 계정」 → 「내 계정」 · 「권한 그룹」 띄어쓰기.
+
 ## 2026-10-29
 * **Update**: main 병합(front kabuto, main #195 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Update**: main 병합(front kabuto, main #190 까지): okf/log 충돌은 양쪽 기록을 살렸고 [Whale ERP Frontend](/whale-erp-front.md) 시각은 늦은 값을 남겼다.

@@ -157,7 +157,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
           <WarnBand>
             {/* 이유를 문장으로(2026-10-28 사용자 지정 — 전엔 api 이유 이름) */}
             {role.editBlockedReason === "SELF_LINKED"
-              ? "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."
+              ? "내 계정에 연결된 권한 그룹은 수정할 수 없습니다."
               : role.editBlockedReason === "NO_PERMISSION"
                 ? "선택한 권한그룹에 대한 수정 권한이 없습니다."
                 : role.editBlockedReason === "FIXED_ROLE"

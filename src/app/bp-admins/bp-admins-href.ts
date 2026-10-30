@@ -4,18 +4,26 @@
 // 이 파일의 주소는 옛 경로(/bp-admins…)다. 탭 BP(/bp/{id})는 이동할 때 bpPath(클라이언트)로 씌운다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { Scope } from "../../lib/browser-storage.ts";
-import type { BpAdminListQuery, BpAdminStatus } from "../../lib/bp-admins.ts";
+import type { BpAdminListQuery, BpAdminRoleType, BpAdminStatus } from "../../lib/bp-admins.ts";
 import { BP_ADMIN_PAGE_SIZES, type BpAdminPageSize } from "../../lib/bp-admin-paging.ts";
 import { SCOPE_PARAM, scopeKeyOf, scopeOfParam } from "../../lib/store-scope.ts";
 import { MAX_PICKED_STORES, pickedIdsOf } from "../stores/stores-query.ts";
 
 export const PATH = "/bp-admins";
 
+/** 역할 필터의 선택지 — 필터 순서이자 api 가 받는 값 */
+export const BP_ADMIN_ROLE_TYPES = ["BA", "FM", "FA"] as const satisfies readonly BpAdminRoleType[];
+
 export type BpAdminsQuery = {
   page: number;
   pageSize: BpAdminPageSize;
   keyword?: string;
   roleGroupId?: number;
+  /**
+   * 역할 필터(2026-10-30 사용자 지정). 셋 다 고르면 두지 않는다(전체), 모두 끄면 빈 배열(결과 없음 — 계정상태 NONE 처럼 api 를 부르지 않는다).
+   * 주소에는 고른 역할을 쉼표로, 모두 끈 것은 NONE 으로 남긴다.
+   */
+  roleTypeCodes?: BpAdminRoleType[];
   /** 하나만 고른 때 그 상태, 둘 다 끄면 NONE(결과 없음 — api 를 부르지 않고 빈 목록, 플랫폼 관리자와 같다, 2026-10-27 사용자 지정). 둘 다 고르면 두지 않는다(전체). */
   accountStatus?: BpAdminStatus | "NONE";
   storeIds: number[];
@@ -42,12 +50,16 @@ export function parseBpAdminsQuery(params: Params): BpAdminsQuery {
   const rawStoreIds = one(params.storeIds);
   const storeIds = [...new Set((rawStoreIds ?? "").split(",").map(positiveInt).filter((id) => id !== undefined))].slice(0, MAX_PICKED_STORES);
   const admin = positiveInt(one(params.admin));
+  const rawRoles = one(params.roleTypeCodes);
+  const roles = BP_ADMIN_ROLE_TYPES.filter((r) => rawRoles?.split(",").includes(r));
   return {
     page: positiveInt(one(params.page)) ?? 1,
     pageSize: BP_ADMIN_PAGE_SIZES.find((s) => s === pageSize) ?? BP_ADMIN_PAGE_SIZES[0],
     // api 는 20자까지 받는다. 넘는 검색어는 400 이 되므로 잘라 둔다.
     keyword: one(params.keyword)?.trim().slice(0, 20).trim() || undefined,
     roleGroupId: positiveInt(one(params.roleGroupId)),
+    // 알아볼 수 없는 값만 왔으면 조건 없음(전체)으로 둔다 — NONE 만 「모두 끔」이다
+    roleTypeCodes: rawRoles === "NONE" ? [] : roles.length && roles.length < BP_ADMIN_ROLE_TYPES.length ? roles : undefined,
     accountStatus: status === "ACTIVE" || status === "INACTIVE" || status === "NONE" ? status : undefined,
     storeIds,
     // 빈 storeIds 는 목록에서 비운 「전체」다 — 헤더 범위가 아니다. 고른 점포가 있으면 범위는 쓰지 않는다
@@ -66,6 +78,7 @@ export function bpAdminsHref(query: Partial<BpAdminsQuery>): string {
   else if (query.scope) params.set(SCOPE_PARAM, scopeKeyOf(query.scope));
   if (query.keyword) params.set("keyword", query.keyword);
   if (query.roleGroupId) params.set("roleGroupId", String(query.roleGroupId));
+  if (query.roleTypeCodes) params.set("roleTypeCodes", query.roleTypeCodes.length ? query.roleTypeCodes.join(",") : "NONE");
   if (query.accountStatus) params.set("accountStatus", query.accountStatus);
   if (query.page && query.page > 1) params.set("page", String(query.page));
   if (query.pageSize && query.pageSize !== BP_ADMIN_PAGE_SIZES[0]) params.set("pageSize", String(query.pageSize));
@@ -77,17 +90,17 @@ export function bpAdminsHref(query: Partial<BpAdminsQuery>): string {
 
 /** api 조회 조건 — 고른 점포는 storeIds, 헤더 범위가 직영 · 가맹 전체면 점포를 풀지 않고 storeTypeCode 로 보낸다(점포 목록과 같다). */
 export function bpAdminListQueryOf(query: BpAdminsQuery): BpAdminListQuery {
-  const { page, pageSize, keyword, roleGroupId } = query;
+  const { page, pageSize, keyword, roleGroupId, roleTypeCodes } = query;
   // NONE 이면 화면이 api 를 부르지 않는다(page.tsx). 혹시 불려도 상태 조건 없이 보내지 않게 막을 값이 없어 그대로 뺀다
   const accountStatus = query.accountStatus === "NONE" ? undefined : query.accountStatus;
   const scopeType = !query.storeIds.length && (query.scope?.type === "DIRECT" || query.scope?.type === "FRANCHISE") ? query.scope.type : undefined;
-  return { page, pageSize, keyword, roleGroupId, accountStatus, storeIds: pickedIdsOf(query), storeTypeCode: scopeType };
+  return { page, pageSize, keyword, roleGroupId, roleTypeCodes, accountStatus, storeIds: pickedIdsOf(query), storeTypeCode: scopeType };
 }
 
 /** 필터 · 건수를 바꾼다. 쪽은 1로 돌리고 연 상세는 닫는다 — 4쪽에서 거르면 빈 쪽이 보인다. */
 export const withBpAdminFilter = (
   query: BpAdminsQuery,
-  next: Partial<Pick<BpAdminsQuery, "keyword" | "roleGroupId" | "accountStatus" | "pageSize">>,
+  next: Partial<Pick<BpAdminsQuery, "keyword" | "roleGroupId" | "roleTypeCodes" | "accountStatus" | "pageSize">>,
 ): BpAdminsQuery => ({ ...query, ...next, page: 1, admin: undefined, edit: undefined });
 
 /** 고른 점포를 바꾼다. 비면 「전체」(주소에는 빈 storeIds — 헤더 범위로 다시 채우지 않는다). */

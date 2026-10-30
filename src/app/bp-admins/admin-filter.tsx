@@ -2,17 +2,18 @@
 
 import { useEffect, useEffectEvent, useState } from "react";
 import { Checkbox, FilterPanel, FilterSection, SearchField, Select, useToast } from "@/components/common";
+import { useCodeLabel } from "@/components/site/code-label";
 import { useScope, useStores } from "@/components/site/session-gate";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { Scope } from "@/lib/browser-storage";
-import type { BpAdminRoleGroup, BpAdminStatus } from "@/lib/bp-admins";
+import type { BpAdminRoleGroup, BpAdminRoleType, BpAdminStatus } from "@/lib/bp-admins";
 import { isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
 import { fillScopeOf } from "@/app/stores/stores-query";
-import { keepingPanel, parseBpAdminsQuery, withBpAdminFilter, withPickedStores, withScopeCondition, type BpAdminsQuery } from "./bp-admins-href";
+import { BP_ADMIN_ROLE_TYPES, keepingPanel, parseBpAdminsQuery, withBpAdminFilter, withPickedStores, withScopeCondition, type BpAdminsQuery } from "./bp-admins-href";
 
 /**
- * 왼쪽 필터(데모 config/admins). 점포 · 아이디 · 이름 · 권한명 · 계정상태, 조건은 모두 AND 다(S-AJHXFU).
- * 점포는 고르는 즉시, 아이디 · 이름은 Enter · 돋보기에 걸고, 권한명 · 계정상태는 고르는 즉시 건다.
+ * 왼쪽 필터(데모 config/admins). 점포 · 아이디 · 이름 · 역할 · 권한명 · 계정상태, 조건은 모두 AND 다(S-AJHXFU).
+ * 점포는 고르는 즉시, 아이디 · 이름은 Enter · 돋보기에 걸고, 역할 · 권한명 · 계정상태는 고르는 즉시 건다.
  * 점포 칸은 점포 목록 필터와 같다 — 목록에서 고른 점포(storeIds), 없으면 헤더가 실어 온 범위(scope)를 칩으로 그리고, 점포 조건이 주소에
  * 없으면(주소 직접 입력 · 즐겨찾기) 헤더 범위로 채워 다시 검색한다(stores/store-filter.tsx). 고른 점포를 관리하는 계정을 찾고,
  * 전체 점포 계정은 늘 결과에 나온다(api). 칩 이름은 로그인 정보의 점포에서 찾는다 — 찾지 못한 점포는 조건에서 빼고 알린다.
@@ -30,6 +31,7 @@ export function AdminFilter({
   const [headerScope] = useScope();
   const stores = useStores();
   const toast = useToast();
+  const roleType = useCodeLabel("ROLE_TYPE");
   // 고른 점포는 고른 순서대로, 범위는 그 범위의 점포(전체면 칩 없음)
   const chipsOf = (q: Pick<BpAdminsQuery, "storeIds" | "scope">): PickedStore[] =>
     q.storeIds.length
@@ -94,6 +96,20 @@ export function AdminFilter({
     navigate(withBpAdminFilter(query, { accountStatus: next.length === 0 ? "NONE" : next.length === 1 ? next[0] : undefined }));
   };
 
+  // 역할 — 계정상태와 같은 체크박스, 처음엔 모두 켠다. 섞여 보여 정신없다는 의견으로 더했다(2026-10-30 사용자 지정)
+  const showsRole = (r: BpAdminRoleType) => !query.roleTypeCodes || query.roleTypeCodes.includes(r);
+  const toggleRole = (r: BpAdminRoleType, checked: boolean) => {
+    const next = BP_ADMIN_ROLE_TYPES.filter((x) => (x === r ? checked : showsRole(x)));
+    // 고른 권한명이 끈 역할의 것이면 함께 푼다 — 남겨 두면 선택지에서 사라진 조건이 결과를 0건으로 만든다
+    const pickedRole = roleGroups?.find((g) => g.roleGroupId === query.roleGroupId)?.roleTypeCode;
+    navigate(
+      withBpAdminFilter(query, {
+        roleTypeCodes: next.length === BP_ADMIN_ROLE_TYPES.length ? undefined : next,
+        ...(pickedRole && !next.includes(pickedRole) ? { roleGroupId: undefined } : {}),
+      }),
+    );
+  };
+
   return (
     <FilterPanel
       onReset={() => {
@@ -127,6 +143,11 @@ export function AdminFilter({
           maxLength={20}
         />
       </FilterSection>
+      <FilterSection label="역할" tight>
+        {BP_ADMIN_ROLE_TYPES.map((r) => (
+          <Checkbox key={r} label={roleType(r)} checked={showsRole(r)} onChange={(e) => toggleRole(r, e.target.checked)} />
+        ))}
+      </FilterSection>
       {/* 라벨은 목록 열 · 상세 머리와 같은 「권한명」(2026-10-27 사용자 지정 — 전엔 「권한 그룹」) */}
       <FilterSection label="권한명" tight>
         <Select
@@ -141,7 +162,8 @@ export function AdminFilter({
           {query.roleGroupId && !roleGroups?.some((r) => r.roleGroupId === query.roleGroupId) && (
             <option value={query.roleGroupId}>선택한 권한명(#{query.roleGroupId})</option>
           )}
-          {roleGroups?.map((r) => (
+          {/* 고른 역할의 권한명만(2026-10-30) */}
+          {roleGroups?.filter((r) => showsRole(r.roleTypeCode)).map((r) => (
             <option key={r.roleGroupId} value={r.roleGroupId}>
               {r.name} · {r.roleCode}
             </option>

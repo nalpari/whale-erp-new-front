@@ -160,7 +160,7 @@ function menuDialog(A, R, role, id) {
     `<div class="flex flex-col gap-[12px]">` +
     roleHead(type, code, name) +
     // 잠긴 팝업의 안내 띠(앱 role-menu-dialog lockedText 와 같다, 2026-10-26)
-    (canSave ? "" : `<p class="flex min-h-[42px] items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[12px] py-[8px] text-[14px] font-medium text-erp-ink">${code === "PM000001" ? "플랫폼마스터는 시스템 최상위 권한으로, 모든 메뉴의 접근·관리 권한이 자동 부여되며 현재 화면에서는 조작할 수 없습니다." : "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."}</p>`) +
+    (canSave ? "" : `<p class="flex min-h-[42px] items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[12px] py-[8px] text-[14px] font-medium text-erp-ink">${code === "PM000001" ? "플랫폼마스터는 시스템 최상위 권한으로, 모든 메뉴의 접근·관리 권한이 자동 부여되며 현재 화면에서는 조작할 수 없습니다." : "내 계정에 연결된 권한 그룹은 수정할 수 없습니다."}</p>`) +
     tabs +
     `</div>`;
   const foot = canSave
