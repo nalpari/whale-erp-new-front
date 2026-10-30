@@ -15,7 +15,7 @@ import {
   type HolidayQuery,
 } from "@/lib/public-holiday-view";
 import { kstToday } from "@/lib/staff-members";
-import { HolidayNavigation, MonthSelect, MonthStep, TodayButton, ViewTab, YearSelect } from "./holiday-controls";
+import { HolidayNavigation, MonthPick, MonthStep, TodayButton, ViewTab, YearSelect } from "./holiday-controls";
 
 // 플랫폼 휴일 관리(S-DDGJKQ · F-CNPWOQ). 목업 docs/mockup/system/holidays.html · 데모 docs/demo/system/holidays.html 을 공통 컴포넌트로 옮겼다.
 // 조회 전용이다 — 대한민국 공식 휴일만 보이고 등록 · 수정 · 삭제, 연도별 불러오기, 휴일 구분 필터가 없다.
@@ -48,8 +48,9 @@ export default async function PublicHolidaysPage({ searchParams }: PageProps<"/p
       <HolidayNavigation query={query}>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
           <main className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
+            {/* 연도 선택칸은 목록 보기에만 — 캘린더는 제목 줄의 「2026년 10월 ▾」에서 연 · 월을 함께 고른다(2026-10-30 사용자 지정) */}
             <div className="flex flex-wrap items-center gap-[12px]">
-              <YearSelect />
+              {query.view === "list" && <YearSelect />}
               {lastSynchronizedAt && <span className="text-[14px] text-erp-label">최종 동기화 {formatDateTime(lastSynchronizedAt)}</span>}
               {needsAnnouncementNote(query.year, Number(today.slice(0, 4))) && <span className="text-[14px] text-erp-label">임시공휴일 · 선거일은 정부 발표 후 반영됩니다.</span>}
             </div>
@@ -105,18 +106,18 @@ function HolidayCalendar({ query, today, holidays, total }: { query: HolidayQuer
 
   return (
     <>
+      {/* 제목 자리에 달 이동 — [2026년 10월 ●] ‹ › [오늘 · 날짜] 공식 휴일 N일, 오른쪽 범례는 「공식 휴일」 하나(BP 휴일 관리와 같다, 2026-10-30 사용자 지정 —
+          전엔 [오늘] ‹ › [월] 줄 아래 「2026년 10월」 제목이 따로 있고 범례에 「오늘 날짜」가 있었다) */}
       <div className="flex items-center gap-[6px]">
-        <TodayButton today={today} />
-        <MonthStep shift={-1} />
-        <MonthStep shift={1} />
-        <MonthSelect />
+        <div role="group" aria-label="달 이동" className="flex flex-1 items-center gap-[6px]">
+          <MonthPick today={today} />
+          <MonthStep shift={-1} />
+          <MonthStep shift={1} />
+          <TodayButton today={today} />
+          <span className="ml-[12px] text-[14px] text-erp-label">공식 휴일 {total}일</span>
+        </div>
+        <Legend mark="bg-erp-off" text="공식 휴일" />
       </div>
-      <SectionHead title={`${year}년 ${month}월`} count={total}>
-        <span className="flex gap-[18px]">
-          <Legend mark="bg-erp-off" text="공식 휴일" />
-          <Legend mark="border border-erp-brand" text={`오늘 ${today}`} />
-        </span>
-      </SectionHead>
       <table aria-label={`${year}년 ${month}월 캘린더`} className="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]">
         <thead>
           <tr className="h-[42px] border-y border-erp-thead-line bg-erp-thead-bg">
@@ -169,7 +170,8 @@ const LIST_COLUMNS: Column<PublicHoliday>[] = [
     ),
   },
   { header: "휴일명", align: "left", cell: (h) => h.name },
-  { header: "비고", align: "left", cell: (h) => h.note || <span className="text-erp-muted">—</span> },
+  // 비어 있으면 다른 목록과 같은 짧은 「-」(2026-10-30 사용자 지정 — 전엔 긴 줄표 「—」)
+  { header: "비고", align: "left", cell: (h) => h.note || <span className="text-erp-muted">-</span> },
 ];
 
 /** 목록 보기 — 고른 연도 한 해를 날짜순으로(SYSTEM-9). 월 이동 · 월 선택은 없다. */
@@ -177,7 +179,7 @@ function HolidayList({ year, holidays, total }: { year: number; holidays: Public
   return (
     <>
       <SectionHead title={`${year}년`} count={total}>
-        <span className="text-[14px] text-erp-label">목록은 고른 연도 한 해를 보여 줍니다.</span>
+        <span className="text-[14px] text-erp-label">선택한 연도의 공식 휴일을 모두 표시합니다.</span>
       </SectionHead>
       <DataTable columns={LIST_COLUMNS} rows={holidays} rowKey={(h) => h.publicHolidayId} />
     </>

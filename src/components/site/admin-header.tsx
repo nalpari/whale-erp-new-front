@@ -180,7 +180,9 @@ function ScopeFromAddress() {
     const wanted = scopeFromAddress(param, scope, stores);
     if (wanted) setScope(wanted);
   });
-  useEffect(() => follow(), [param]);
+  // 점포 목록을 다시 맞추면(SessionGate) 처음엔 모르던 점포의 범위(다른 PC 에서 막 만든 점포가 담긴 주소)도 그때 따른다
+  const storeIdsKey = stores.map((s) => s.storeId).join(",");
+  useEffect(() => follow(), [param, storeIdsKey]);
   return null;
 }
 

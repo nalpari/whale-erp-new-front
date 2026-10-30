@@ -32,7 +32,7 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
       return denied !== null ? { previous: null, notice: denied } : none;
     }
   };
-  const [{ stores, labels, signedIn }, { previous, notice }] = await Promise.all([loadFormData(), readPrevious()]);
+  const [{ stores, labels, signedIn, denied, minimumWage }, { previous, notice }] = await Promise.all([loadFormData(), readPrevious()]);
   // 재계약은 직전 계약의 근무지로만 한다 — 그 점포가 고를 수 있는 근무지(폐점 아님 · 맡은 점포)가 아니면 열지 않는다. 잠긴 칸에
   // 보이지 않는 점포로 저장되지 않게
   const storeOpen = !previous || stores.some((s) => s.storeId === previous.storeId);
@@ -43,8 +43,12 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
           <ContractPermission action="create" fallback={<Notice title="근로계약서를 작성할 권한이 없습니다." back={back} />}>
-            {from === undefined ? (
-              <ContractForm stores={stores} labels={labels} signedIn={signedIn} back={back} />
+            {/* 근무지 선택지를 api 가 거절했으면(BP 를 고르지 않음 · 권한 · 없는 BP) 그 문장. 재계약은 직전 계약을 읽지 못한 안내가 먼저고,
+                읽었으면 거절이 먼저다 — 빈 선택지로 「폐점했거나 맡은 점포가 아님」이라고 잘못 안내하지 않게 */}
+            {denied !== null && (from === undefined || previous) ? (
+              <Notice title={denied} back={back} />
+            ) : from === undefined ? (
+              <ContractForm stores={stores} labels={labels} minimumWage={minimumWage} signedIn={signedIn} back={back} />
             ) : !previous ? (
               <Notice title={notice} back={back} />
             ) : previous.renewedBy != null ? (
@@ -58,7 +62,7 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
             ) : !storeOpen ? (
               <Notice title="이 근무지에는 근로계약서를 작성할 수 없습니다(폐점했거나 맡은 점포가 아님)" back={back} />
             ) : (
-              <ContractForm stores={stores} labels={labels} signedIn={signedIn} initial={renewalFromDetail(previous)} previousContractId={from} previousStartDate={previous.startDate ?? undefined} back={back} />
+              <ContractForm stores={stores} labels={labels} minimumWage={minimumWage} signedIn={signedIn} initial={renewalFromDetail(previous)} previousContractId={from} previousStartDate={previous.startDate ?? undefined} back={back} />
             )}
           </ContractPermission>
         </div>

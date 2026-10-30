@@ -79,7 +79,7 @@ function TodoFormFields({
 }) {
   const router = useRouter();
   const toast = useToast();
-  // 근무지는 로그인 정보의 관리 점포에서 폐점만 뺀다(목록 필터와 같은 출처). GET /stores/options 는 본사 제공 동의 기준이 걸려
+  // 근무지는 로그인 정보의 관리 점포에서 폐점만 뺀다(목록 필터와 같은 출처). GET /contracts/store-options(근로계약 근무지 선택지)는 본사 제공 동의 기준이 걸려
   // BP 마스터 · BP 관리자에게 가맹 점포가 빠지는데, TO-DO 는 점포 단위라 본사 제공 동의와 상관없다(운영 정책 ATT-30).
   const stores = useStores().filter((s) => s.storeStatusCode !== "CLOSED");
   const onFailure = useFailure();
@@ -94,7 +94,7 @@ function TodoFormFields({
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
   const issues = problems(form, today, detail);
   const cancelHref = detail ? withBack(`/todos/${detail.todoId}`, backHref) : backHref;
-  // 등록 뒤에는 점포 검색을 「전체」로 비운다 — 고른 점포 밖에 등록했으면 목록에 보이지 않는다(점포 목록의 등록 뒤와 같다)
+  // 등록 뒤에는 점포 검색을 「전체」로 비운다 — 고른 점포 밖에 등록했으면 목록에 보이지 않는다(근로계약 목록과 같다. 점포 목록은 2026-10-30 부터 헤더 범위를 따른다)
   const createdHref = withoutStoreSearch(backHref);
 
   /**

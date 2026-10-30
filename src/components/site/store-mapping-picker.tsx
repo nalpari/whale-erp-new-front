@@ -54,21 +54,22 @@ const TEXTS: { include: PickerTexts; exclude: PickerTexts; filter: BulkTexts } =
   },
   exclude: {
     search: "예외로 뺄 점포 찾기",
-    picked: "예외 점포",
+    picked: "예외점포", // 붙여 쓴다(2026-10-30 사용자 지정)
+    // 기본(「선택된 점포가 없습니다.」)과 같은 말투 — 「모든 점포에 적용합니다.」는 무엇이 적용되는지 빠져 어색했다(2026-10-30 사용자 지정)
     noPicked: (
       <>
-        예외 점포가 없습니다.
+        선택된 예외점포가 없습니다.
         <br />
-        모든 점포에 적용합니다.
+        모든 점포에 휴일이 적용됩니다.
       </>
     ),
     guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 예외로 뺄 수 있습니다. 예외 해제는 [빼기] 버튼을 이용해 주세요.",
     left: "적용 점포",
-    right: "예외 점포",
+    right: "예외점포",
     leftDone: "선택할 수 있는 점포를 모두 예외로 지정했습니다.",
     rightEmpty: (
       <>
-        예외 점포가 없습니다.
+        예외점포가 없습니다.
         <br />
         왼쪽 목록에서 점포를 선택하여 추가해 주세요.
       </>
@@ -106,6 +107,7 @@ export function StoreMappingPicker({
   panelOpen,
   exclude = false,
   blocked,
+  short = false,
 }: {
   /** 감싼 패널이 열려 있는가 — 뒤로 가기처럼 클릭 아닌 길로 닫히면 최상위 레이어의 일괄 검색 창 · 찾기 목록도 닫는다 */
   panelOpen: boolean;
@@ -126,6 +128,8 @@ export function StoreMappingPicker({
    * 후보를 받기 전 빈 목록이 「선택할 수 있는 점포가 없습니다.」로 읽히지 않게 한다(2026-10-29 사용자 지적, BP 관리자 등록)
    */
   blocked?: string;
+  /** 고른 점포 칸을 1/3 낮춘다(130 → 86px) — 위아래로 긴 패널(BP 휴일)에서 버튼이 화면 밖으로 밀리지 않게(2026-10-30 사용자 지정) */
+  short?: boolean;
 }) {
   const text = exclude ? TEXTS.exclude : TEXTS.include;
   const listId = useId();
@@ -272,8 +276,8 @@ export function StoreMappingPicker({
             </Button>
           </span>
         </p>
-        {/* 194px(칩 다섯 줄)에서 1/3 줄인 130px(2026-10-27 사용자 지정) — 넷째 줄 윗부분이 살짝 보여 더 있다는 것을 알린다. 넘치면 이 안에서 세로로 스크롤한다 */}
-        <div className="relative h-[130px]">
+        {/* 194px(칩 다섯 줄)에서 1/3 줄인 130px(2026-10-27 사용자 지정), short 면 다시 1/3 줄인 86px(BP 휴일, 2026-10-30) — 넷째 줄 윗부분이 살짝 보여 더 있다는 것을 알린다. 넘치면 이 안에서 세로로 스크롤한다 */}
+        <div className={`relative ${short ? "h-[86px]" : "h-[130px]"}`}>
           <ul aria-label={text.picked} className="flex h-full flex-wrap content-start gap-[6px] overflow-y-auto overscroll-contain">
             {picked.map((s) => (
               <li

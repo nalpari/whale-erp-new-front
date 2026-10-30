@@ -1,18 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useLayoutEffect, useRef, useState, useTransition, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DataTable, DetailTable, DetailValues, SlidePanel, Tag, type Column, type DetailRow } from "@/components/common";
+import { useState, useTransition, type ReactNode, type RefObject } from "react";
+import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, type Column, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
-import { FailedBand, InfoBand } from "@/components/site/side-parts";
+import { HeadValues } from "@/components/site/head-values";
+import { FailedBand, InfoBand, WarnBand } from "@/components/site/side-parts";
+import { WhoList } from "@/app/platform-admins/admin-parts";
 import { repeatBasis, repeatEndText, weekdayName, yesterdayOf, type RepeatType } from "@/lib/bp-holiday-view";
 import type { BpHolidayDetail, BpHolidayStore } from "@/lib/bp-holidays";
 import { formatDateTime, wasUpdated } from "@/lib/format";
 import { deleteBpHolidayAction, terminateBpHolidayAction } from "./actions";
 import { OwnHistoryButton } from "./history-dialog";
-import { Muted, ScopeTag, unknownResult, useHolidayTypeText } from "./holiday-parts";
+import { Muted, unknownResult, useHolidayTypeText } from "./holiday-parts";
 
-// BP 휴일 상세(S-MQELTV). 등록 화면과 같은 순서로 묶는다 — 휴일 정보 · 날짜(반복) · 적용 대상 · 점포(데모 2026-10-08).
+// BP 휴일 상세(S-MQELTV). 등록 화면과 같은 순서로 묶는다 — 휴일정보(휴일명 · 날짜(반복) · 설명 · 등록 · 최종수정) · 점포(데모 2026-10-08, 「적용 대상」 표는 2026-10-30 뺐다).
 // 무엇을 할 수 있는지는 api 가 휴일마다 준 actions 로 가린다 — 메뉴 권한 · 점포 범위 · 상태(시작 전 · 진행 중 · 종료)를 api 가 이미 셈했다.
 // 「BP 휴일 변경 · 종료 정책」(1팀, 2026-10-26): 시작 전이면 삭제, 지난 날짜가 있으면 삭제 대신 강제 종료(어제로 끝냄, 되돌리지 않음),
 // 끝난 휴일은 읽기만 한다. 막힌 동작이 있으면 그 사유(blockedReason)를 띠로 보인다.
@@ -54,7 +56,7 @@ export function HolidayDetailPanel({
       ) : (
         <>
           {detail && <FailedBand message={detail.failed} />}
-          <div className="flex border-t border-erp-panel-line pt-[16px]">
+          <div className="flex">
             <Button variant="off" onClick={onClose}>
               닫기
             </Button>
@@ -114,56 +116,88 @@ function DetailBody({
       onRemoved("deleted");
     });
 
-  const dated = (date: string | null) => (date ? <>{date} <Muted>({weekdayName(date).slice(0, 1)})</Muted></> : null);
+  // 값 조각은 한 span 으로 묶는다 — 조각으로 두면 표 값 칸의 간격이 사이에 끼어 「2026-10-30   (금)」처럼 벌어졌다(2026-10-30)
+  // 요일도 날짜와 같은 크기 · 먹색으로 — 「2026-10-30(금)부터 · 금요일마다 · 2회」가 한 덩어리로 읽히게(2026-10-30 사용자 지정 — 전엔 요일만 회색)
+  const dated = (date: string | null) => (date ? `${date}(${weekdayName(date).slice(0, 1)})` : null);
   // api 는 등록 때 수정자 · 수정일시도 등록자 · 등록일시로 채운다 — 1팀 화면처럼 등록 뒤 고친 적이 없으면 「-」(format.ts wasUpdated, 관리자 상세와 같은 규칙)
   const edited = h.updatedByName !== null && wasUpdated(h.createdAt, h.updatedAt);
-  const info: DetailRow[] = [
-    { label: "휴일명", value: h.name },
-    { label: "휴일 유형", value: typeText(h.holidayTypeCode, h.holidayRepeatTypeCode) },
-    { label: "설명", value: h.description, multiline: Boolean(h.description) },
-    { label: "등록일시", value: <DetailValues items={[formatDateTime(h.createdAt), h.createdByName ?? <Muted>시스템</Muted>]} /> },
-    { label: "최종수정일시", value: edited ? <DetailValues items={[formatDateTime(h.updatedAt), h.updatedByName]} /> : <Muted>-</Muted> },
-  ];
   const repeat = h.holidayRepeatTypeCode as RepeatType | null;
   const dates: DetailRow[] =
     h.holidayTypeCode === "REPEAT"
       ? [
-          { label: "시작일", value: dated(h.startDate) },
-          { label: "반복 유형", value: repeat ? <>{repeatLabel(repeat)} {repeatBasis(repeat, h.startDate) && <Muted>· {repeatBasis(repeat, h.startDate)}</Muted>}</> : null },
-          // 다음 날짜(S-MQELTV — 고른 날짜 다음 셋)는 보이지 않는다(2026-10-26 사용자 요청). api 는 nextDates 를 계속 준다
-          { label: "종료 조건", value: repeatEndText(h.repeatEndType, h.repeatEndDate, h.repeatCount) },
+          // 시작일 · 반복 기준 · 종료조건을 한 줄로 — 「2026-10-30(금)부터 · 금요일마다 · 2회」(2026-10-30 사용자 지정 — 전엔 시작일 · 반복유형 · 종료조건 세 줄).
+          // 반복 종류(매주 등)는 머리 줄 「휴일유형」에 있다. 다음 날짜(S-MQELTV — 고른 날짜 다음 셋)는 보이지 않는다(2026-10-26 사용자 요청)
+          {
+            label: "날짜",
+            // 길면 두 줄이 된다 — 「2027-03-30까」/「지」처럼 글자 중간이 아니라 「 · 」 조각 사이에서만 줄을 바꾸고, 칸 높이도 늘린다(2026-10-30 사용자 지적)
+            multiline: true,
+            value: (
+              <span>
+                {[
+                  `${dated(h.startDate)}부터`,
+                  // 매월은 「30일마다」가 「30일 간격」으로 읽혀 「매월 30일마다」로(코드 리뷰로 찾음)
+                  repeat && (repeatBasis(repeat, h.startDate) ? `${repeat === "MONTHLY" ? "매월 " : ""}${repeatBasis(repeat, h.startDate)}마다` : repeatLabel(repeat)),
+                  repeatEndText(h.repeatEndType, h.repeatEndDate, h.repeatCount),
+                ]
+                  .filter(Boolean)
+                  .map((part, i) => (
+                    <span key={i} className="whitespace-nowrap">
+                      {i > 0 && " · "}
+                      {part}
+                    </span>
+                  ))
+                  .reduce<ReactNode[]>((acc, el, i) => (i ? [...acc, " ", el] : [el]), [])}
+              </span>
+            ),
+          },
         ]
       : h.holidayTypeCode === "PERIOD"
-        ? [{ label: "기간", value: <>{dated(h.startDate)} ~ {dated(h.endDate)}</> }]
+        ? [{ label: "기간", value: <span>{dated(h.startDate)} ~ {dated(h.endDate)}</span> }]
         : [{ label: "날짜", value: dated(h.startDate) }];
-  const target: DetailRow[] = [
-    { label: "적용 범위", value: <ScopeTag isAllStores={h.isAllStores} /> },
-    // 고른 날짜(없으면 오늘)에 이 휴일이 적용되는 점포 수 — 전체 점포 휴일은 예외를 뺀 수다
-    { label: "적용 점포", value: `${h.appliedStoreCount}곳` },
+  // 날짜 · 반복은 따로 묶음을 두지 않고 휴일정보의 휴일명 바로 아래 줄로 둔다(2026-10-30 사용자 지정 — 전엔 「반복」 · 「날짜」 표)
+  const info: DetailRow[] = [
+    { label: "휴일명", value: h.name },
+    // 휴일유형 줄은 뺐다 — 머리 줄 「휴일유형 매주 반복」에 있다(2026-10-30 사용자 지정)
+    ...dates,
+    // 입력한 줄바꿈 그대로 보인다(whitespace-pre-line) — 등록 · 수정에서 Enter 로 나눈 줄이 한 줄로 붙어 보였다(2026-10-30 사용자 지적)
+    { label: "설명", value: h.description && <span className="whitespace-pre-line">{h.description}</span>, multiline: Boolean(h.description) },
+    // 등록 · 최종수정은 설명 아래(휴일정보 표 마지막 두 줄)에 둔다(2026-10-30 사용자 지정 — 잠깐 버튼 줄 위 따로 두었다가 되돌림)
+    // 라벨은 「등록」 · 「최종수정」, 값은 「일시 · 사람」 — 일시는 먹색, 「 · 사람」은 회색(관리자 · 권한 그룹 상세와 같다, 2026-10-30 사용자 지정 — 전엔 「등록일시」 · 「최종수정일시」에 세로선 구분)
+    // 한 span 으로 묶는다 — 조각으로 두면 표 값 칸의 간격이 일시와 「 · 사람」 사이에 끼었다(BP 마스터 상세 when 과 같다)
+    { label: "등록", value: <span>{formatDateTime(h.createdAt)} <span className="text-erp-label">· {h.createdByName ?? "시스템"}</span></span> },
+    { label: "최종수정", value: edited ? <span>{formatDateTime(h.updatedAt)} <span className="text-erp-label">· {h.updatedByName}</span></span> : <Muted>-</Muted> },
   ];
   const canEdit = actions.canUpdate || actions.canUpdateStores;
   const yesterday = yesterdayOf(today);
 
   return (
     <div className="flex flex-col gap-[16px]">
-      {/* 이름(꼬리표)은 맨 위에 혼자, 기능 버튼은 닫기까지 모두 맨 아래로(BP 관리자 상세 패널과 같다 · 2026-10-08) */}
-      <h2 className="flex flex-wrap items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
-        <span className="mr-[4px]">{h.name}</span>
-        <ScopeTag isAllStores={h.isAllStores} />
-        <Tag>{typeText(h.holidayTypeCode, h.holidayRepeatTypeCode)}</Tag>
-        {/* 상태 — 시작 전 · 진행 중 · 종료(오늘 기준). 무엇을 고칠 수 있는지가 이것으로 갈린다 */}
-        <Badge tone={h.state === "ONGOING" ? "on" : "closed"}>{STATE_TEXT[h.state]}</Badge>
-      </h2>
+      {/* 머리: 첫 줄 휴일명, 둘째 줄 「적용 범위 값 | 휴일유형 값 | 상태 배지」 — BP 관리자 상세 머리와 같은 형식(2026-10-30 사용자 지정 — 전엔 이름 옆 꼬리표 셋,
+          잠깐 BP 마스터처럼 「휴일명」 라벨을 두었다가 뺐다). 기능 버튼은 닫기까지 모두 맨 아래로(BP 관리자 상세 패널과 같다 · 2026-10-08) */}
+      <div className="flex flex-col items-start gap-[6px]">
+        <h2 className="text-[18px] font-semibold break-all text-erp-ink">{h.name}</h2>
+        <span className="text-[14px]">
+          <HeadValues
+            items={[
+              { label: "적용 범위", value: h.isAllStores ? "전체 점포" : "일부 점포" },
+              { label: "휴일유형", value: typeText(h.holidayTypeCode, h.holidayRepeatTypeCode) },
+              // 상태 — 시작 전 · 진행 중 · 종료(오늘 기준). 무엇을 고칠 수 있는지가 이것으로 갈린다
+              { value: <Badge tone={h.state === "ONGOING" ? "on" : "closed"}>{STATE_TEXT[h.state]}</Badge> },
+            ]}
+          />
+        </span>
+      </div>
       {failure && <FailedBand message={failure} />}
-      {/* 끝난 휴일은 띠를 두지 않는다 — 제목 줄의 「종료」 배지로 이미 알 수 있다(2026-10-26 사용자 요청) */}
+      {/* 끝난 휴일은 띠를 두지 않는다 — 머리 둘째 줄의 「종료」 배지로 이미 알 수 있다(2026-10-26 사용자 요청) */}
       {/* 오늘 시작한 휴일의 「강제 종료할 수 없습니다 — 삭제해 주세요」도 두지 않는다 — [삭제]만 보이는 것으로 충분하다(2026-10-26 사용자 요청) */}
       {actions.blockedReason && h.state !== "ENDED" && !actions.blockedReason.startsWith(TODAY_START_REASON) && <InfoBand>{actions.blockedReason}</InfoBand>}
-      <DetailTable title="휴일 정보" rows={info} />
-      <DetailTable title={h.holidayTypeCode === "REPEAT" ? "반복" : "날짜"} rows={dates} />
-      <DetailTable title="적용 대상" rows={target} />
+      {/* 「휴일정보」 · 「예외점포」 · 「대상점포」는 붙여 쓴다 — 등록 패널과 같다(2026-10-30 사용자 지정) */}
+      <DetailTable title="휴일정보" rows={info} />
+      {/* 「적용 대상」 표(적용 범위 · 적용 점포 수)는 뺐다 — 적용 범위는 머리 줄에, 점포는 아래 대상점포 · 예외점포 제목 바에 있다(2026-10-30 사용자 지정) */}
       <StoreTable isAllStores={h.isAllStores} stores={h.stores} />
 
-      <div className="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">
+      {/* 버튼 줄은 위 표와 선으로 가르지 않는다 — 패널 칸 간격(16)만 둔다(DESIGN 슬라이드 패널 · BP 관리자 상세와 같다, 2026-10-30 사용자 지정) */}
+      <div className="flex flex-wrap items-center gap-[6px]">
         <Button variant="off" onClick={onClose}>
           닫기
         </Button>
@@ -186,20 +220,18 @@ function DetailBody({
         <OwnHistoryButton histories={h.histories} panelOpen={panelOpen} />
       </div>
 
+      {/* 확인창은 대상(회색 상자) + 빨간 안내 상자로 짧게 — BP · 플랫폼 관리자 비밀번호 초기화 확인창과 같은 모양(2026-10-30 사용자 지정 — 전엔 긴 설명 두 문단).
+          확인 버튼은 다른 삭제 확인창과 같은 기본 버튼(빨간 Danger 버튼은 쓰지 않는다, 2026-10-30 사용자 지정) */}
       <ConfirmDialog open={confirm === "terminate"} title="휴일을 강제 종료하시겠습니까?" confirmLabel="강제 종료" busy={busy} onConfirm={handleTerminate} onCancel={() => setConfirm(null)}>
         <div className="flex flex-col gap-[12px] break-keep">
-          <p>
-            <b className="font-semibold">{h.name}</b> 휴일을 <b className="font-semibold">어제({yesterday})</b> 날짜로 끝냅니다. 오늘부터는 이 휴일이 적용되지 않고, 지난 날짜는 그대로 남습니다.
-          </p>
-          <p>강제 종료는 되돌릴 수 없습니다.</p>
+          <WhoList rows={[["휴일명", h.name], ["종료일", `${yesterday}(어제)`]]} />
+          <WarnBand>{"오늘부터 이 휴일은 적용되지 않으며, 강제 종료는 되돌릴 수 없습니다."}</WarnBand>
         </div>
       </ConfirmDialog>
       <ConfirmDialog open={confirm === "delete"} title="휴일을 삭제하시겠습니까?" confirmLabel="삭제" busy={busy} onConfirm={handleDelete} onCancel={() => setConfirm(null)}>
         <div className="flex flex-col gap-[12px] break-keep">
-          <p>
-            <b className="font-semibold">{h.name}</b> 휴일을 삭제합니다. 삭제한 휴일은 목록과 캘린더에서 빠지고 <b className="font-semibold">변경이력에만</b> 남습니다.
-          </p>
-          <p>삭제한 휴일은 복구할 수 없습니다.</p>
+          <WhoList rows={[["휴일명", h.name]]} />
+          <WarnBand>삭제한 휴일은 변경이력에서 확인할 수 있으며, 복구할 수 없습니다.</WarnBand>
         </div>
       </ConfirmDialog>
     </div>
@@ -226,15 +258,24 @@ const STORE_COLUMNS: Column<BpHolidayStore>[] = [
       </span>
     ),
   },
-  { header: "점포코드", width: "w-[90px]", cell: (s) => s.storeCode },
+  // 점포명 · 적용 기간은 14px, 점포코드는 작은 회색(12px)으로 — 들쭉날쭉해 보이지 않게 코드도 같은 글자 바닥선에 맞춘다(2026-10-30 사용자 지정).
+  // 칸은 세로 가운데 맞춤이라 작은 글자가 위로 떠 보인다 — 14px 줄 높이(21px) 상자 안에 바닥으로 붙여 바닥선을 맞춘다
+  { header: "점포코드", width: "w-[90px]", cell: (s) => <span className="inline-flex h-[21px] items-end pb-[2px] text-[12px] leading-none text-erp-muted">{s.storeCode}</span> },
   // 적용 기간 — 시작 · 종료를 두 줄로. 끝나지 않았으면(휴일이 끝날 때까지) 「시작 ~」 한 줄만 둔다(2026-10-26 사용자 요청)
   {
     header: "적용 기간",
-    width: "w-[96px]",
+    width: "w-[110px]",
     cell: (s) => (
-      <span className={`flex flex-col text-[13px] leading-[1.3] ${s.periodState === "ENDED" ? "text-erp-muted" : ""}`} title={`${s.effectiveStartDate} ~ ${s.effectiveEndDate ?? ""}`}>
-        <span>{shortDate(s.effectiveStartDate)} ~</span>
-        {s.effectiveEndDate && <span>{shortDate(s.effectiveEndDate)}</span>}
+      <span className={`flex flex-col leading-[1.3] ${s.periodState === "ENDED" ? "text-erp-muted" : ""}`} title={`${s.effectiveStartDate} ~ ${s.effectiveEndDate ?? ""}`}>
+        {/* 끝나지 않았으면 「26.10.30부터」 — 열 이름 줄이 없어 「26.10.30 ~」만으로는 무슨 날짜인지 몰랐다(2026-10-30 사용자 지정). 끝났으면 「26.10.30 ~」 / 「26.11.05」 두 줄 */}
+        {s.effectiveEndDate ? (
+          <>
+            <span>{shortDate(s.effectiveStartDate)} ~</span>
+            <span>{shortDate(s.effectiveEndDate)}</span>
+          </>
+        ) : (
+          <span>{shortDate(s.effectiveStartDate)}부터</span>
+        )}
       </span>
     ),
   },
@@ -244,31 +285,38 @@ const STORE_COLUMNS: Column<BpHolidayStore>[] = [
 const VISIBLE_STORE_ROWS = 5;
 
 /**
- * 대상 점포(특정 점포) · 예외 점포(전체 점포) — 지우지 않은 모든 기간, 기간마다 한 줄(빠진 기간 포함). 다섯 줄까지 보이고 넘으면 표 안에서 스크롤하며, 열 이름 줄은 위에 붙여 둔다.
- * 높이는 그려진 열 이름 줄 + 앞 다섯 줄을 재서 정한다 — 줄 46px 에 칸 선(border-collapse)이 더해져 고정값으로 두면 다섯째 줄이 조금 잘린다.
+ * 대상점포(일부 점포) · 예외점포(전체 점포) — 지우지 않은 모든 기간, 기간마다 한 줄(빠진 기간 포함).
+ * BP 관리자 상세의 대상점포와 같은 모양이다(2026-10-30 사용자 지정 — 전엔 글자 제목 아래 열 이름 줄 있는 표): 회색 제목 바(42px · 15px 600) 아래에
+ * 열 이름 줄 없이(headVariant="none") 표를 붙이고, 여섯 줄부터는 다섯 줄 높이 안에서 스크롤하며 상자 위 · 아래 선을 늘 보이게 덧그린다.
  */
 function StoreTable({ isAllStores, stores }: { isAllStores: boolean; stores: BpHolidayStore[] }) {
-  const box = useRef<HTMLDivElement>(null);
-  const [maxHeight, setMaxHeight] = useState<number | undefined>(undefined);
-  useLayoutEffect(() => {
-    const table = box.current?.querySelector("table");
-    if (!table || stores.length <= VISIBLE_STORE_ROWS) return setMaxHeight(undefined);
-    const head = table.tHead?.getBoundingClientRect().height ?? 0;
-    const rows = [...table.tBodies[0].rows].slice(0, VISIBLE_STORE_ROWS).reduce((sum, r) => sum + r.getBoundingClientRect().height, 0);
-    setMaxHeight(Math.ceil(head + rows));
-  }, [stores]);
-
+  const many = stores.length > VISIBLE_STORE_ROWS;
+  const table = <DataTable headVariant="none" columns={STORE_COLUMNS} rows={stores} rowKey={(s) => s.periodId} empty={isAllStores ? "예외점포가 없습니다." : "대상점포가 없습니다."} />;
   return (
-    <section className="flex flex-col gap-[12px]">
-      <h3 className="text-[16px] font-medium text-erp-ink">
-        {isAllStores ? "예외 점포" : "대상 점포"}
-        {/* 기간 줄 수 — 같은 점포를 뺐다 다시 더하면 줄이 늘어난다(2026-10-26 사용자 요청으로 적용 중 점포 수는 빼고 전체만) */}
-        <span className="ml-[10px] text-[14px] font-normal text-erp-label">전체 {stores.length}건</span>
-      </h3>
-      {/* 열 이름 줄을 스크롤 영역 위에 붙인다(sticky). 표 머리 바탕이 그 줄에 깔려 있어 아래 줄이 비치지 않는다 */}
-      <div ref={box} style={{ maxHeight }} className="overflow-y-auto overscroll-contain [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-[1]">
-        <DataTable columns={STORE_COLUMNS} rows={stores} rowKey={(s) => s.periodId} empty={isAllStores ? "예외 점포가 없습니다." : "대상 점포가 없습니다."} />
+    <section className="flex flex-col">
+      {/* 표가 스크롤하면 표는 오른쪽에 스크롤바 자리를 비운다 — 제목 바도 같은 자리를 비워 오른쪽 선을 맞춘다(BP 관리자 상세와 같다) */}
+      <div className={many ? "overflow-hidden [scrollbar-gutter:stable]" : undefined}>
+        <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">
+          <span className="flex items-baseline gap-[10px]">
+            {isAllStores ? "예외점포" : "대상점포"}
+            {/* 점포 수만 — 「전체 점포 · 1건」은 전체 점포와 그 밖의 1곳으로 읽혀 헷갈렸다(2026-10-30 사용자 지적). 적용 범위는 머리 줄에 있다.
+                같은 점포를 뺐다 다시 더하면 기간 줄이 늘어나므로 줄 수가 아니라 점포 수를 센다 */}
+            <span className="text-[14px] font-normal text-erp-label">{new Set(stores.map((s) => s.storeId)).size.toLocaleString("ko-KR")}개</span>
+          </span>
+        </h3>
       </div>
+      {many ? (
+        // 다섯 줄 높이(위 선 1 + 줄 46 × 5) 안에서 스크롤 — 위 · 아래 선은 표에 붙어 스크롤하면 사라지므로 상자에 덧그린다(BP 관리자 상세와 같다)
+        <div className="relative">
+          <div className="max-h-[231px] overflow-y-auto overscroll-contain [scrollbar-gutter:stable]">{table}</div>
+          <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden [scrollbar-gutter:stable]">
+            <span className="absolute inset-x-0 top-0 h-px bg-erp-thead-line" />
+            <span className="absolute inset-x-0 bottom-0 h-px bg-erp-thead-line" />
+          </span>
+        </div>
+      ) : (
+        table
+      )}
     </section>
   );
 }
