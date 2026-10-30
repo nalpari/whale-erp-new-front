@@ -228,8 +228,10 @@ export function AdminFormPanel(props: Props) {
   const focusFirstError = () =>
     requestAnimationFrame(() => (document.getElementById(id)?.querySelector('[aria-invalid="true"]') as HTMLElement | null)?.focus());
 
-  const applyServerError = (status: number | undefined, text: string) => {
-    const field = bpAdminServerErrorField(status, text, mode);
+  const applyServerError = (status: number | undefined, apiText: string) => {
+    const field = bpAdminServerErrorField(status, apiText, mode);
+    // 저장할 때의 중복(409)도 칸을 벗어날 때와 같은 문구로 — api 문구를 그대로 붙이면 같은 중복이 두 문구로 보였다(2026-10-29 사용자 결정)
+    const text = status === 409 && field === "loginId" ? LOGIN_ID_TAKEN : status === 409 && field === "email" ? EMAIL_TAKEN : apiText;
     // 보낸 뒤 고친 칸의 거절이면 지금 값에 붙이지 않고 띠로만 알린다. 점포 칸이 숨어 있으면(전체 점포 · 본인 계정) 붙여도 안 보이므로 띠로
     // 범위는 저장을 누른 때의 값이라, 그 뒤 범위를 바꿨으면(editedWhileSaving) 지금 점포 칸이 숨었을 수 있다
     const hidden = field === "stores" && (form.isAllStores || locks.stores || editedWhileSaving.current.has("isAllStores" as BpAdminFormField));
