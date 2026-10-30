@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 관리 · 플랫폼 휴일 관리 디자인 수정(front cleffa): 캘린더 머리(공통 MonthPicker) · 범례, BP 휴일 목록 열 · 상세 머리와 표 · 확인창 · 등록 패널 반복 상자 · 설명 칸, 공통 Textarea grow · ConfirmDialog wide="large" · StoreMappingPicker short.
 * **Update**: main 병합(front swinub, main 까지): okf 충돌은 양쪽 기록을 살렸다(generated 는 늦은 값).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 관리자 관리 디자인 수정(front swinub): 필터 「역할」(api `roleTypeCodes`), 목록 열(대상점포 · 역할 이동, 등록일시 뺌, 권한명 · 코드 왼쪽 정렬), 상세 안내 상자(빨간 상자 · 순서 · 간격), 대상점포 오류 문구 「1개 이상 선택해 주세요」, 「본인 계정」 → 「내 계정」 · 「권한 그룹」 띄어쓰기.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 관리](/staff.md) — WHALEERP-635: 근로계약 상세가 수정 요청된 계약에 「수정 요청 사유」(api `correctionReason`, 없으면 「-」)를 보이고 「거부 사유」 줄을 지웠다. api 타입을 api 브랜치 openapi 로 다시 만들었고, 논리 · 물리 ERD(`contracts.correction_reason` 추가 · `reject_reason` 두 칸 삭제)와 알림 템플릿 · 근로계약 상세 데모의 거부 사유를 맞췄다.

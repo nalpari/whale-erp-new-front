@@ -5,7 +5,7 @@ import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
-import { TITLE, TAGS, detailParts } from "./holidays-detail.mjs";
+import { HEAD, detailParts } from "./holidays-detail.mjs";
 import { newForm, HOLIDAY_SCRIPT } from "./holidays-new.mjs";
 import { editForm } from "./holidays-edit.mjs";
 
@@ -109,29 +109,32 @@ export default ({ A, R }) => {
 
   const ON0114 = (t) => panelLink(t, PANEL.detail);
   // 적용 대상: 일부 점포는 ‘첫 점포 외 N건’, 전체 점포는 예외가 있으면 ‘첫 점포 외 N건 예외’(2026-10-08)
-  const some = (names) => `${c.tag("일부 점포")} ${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}건` : ""}`;
-  const all = (except) =>
-    `${c.tag("전체 점포")} ${except.length ? `${except[0]}${except.length > 1 ? ` 외 ${except.length - 1}건` : ""} 예외` : c.muted("예외 없음")}`;
-  // 최종수정일시: 수정일시 | 수정자
-  const mod = (at, by) => `${at} ${c.muted(`| ${by}`)}`;
+  // 적용범위(꼬리표) · 대상점포 · 예외점포 세 칸(앱과 같다, 2026-10-30 사용자 지정 — 전엔 「적용 대상」 한 칸). 해당 없는 칸은 「-」, 단위는 「개」
+  const some = (names) => [c.tag("일부 점포"), `${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}개` : ""}`, c.muted("-")];
+  const all = (except) => [c.tag("전체 점포"), c.muted("-"), except.length ? `${except.length}개` : c.muted("-")];
+  // 최종수정: 「일시 · 사람」 — 사람은 회색(앱 · 권한 그룹 목록과 같다, 2026-10-30 사용자 지정)
+  const mod = (at, by) => `${at} <span class="text-erp-label">· ${by}</span>`;
   const HD0114 = ["온기식당 판교점", "모리커피 서초점", "모리커피 성수점", "온기식당 광화문점", "모리커피 을지로점", "모리커피 연남점"];
   const listRows = [
-    [`2026-09-10 ${c.muted("(목)")}`, ui.link("정전 점검 휴무", "#"), some(["모리커피 서초점"]), "하루", mod("2026-09-01 09:40", "hgops")],
-    [`2026-09-21 ${c.muted("(월)")}`, ON0114("정기휴무"), some(HD0114), `매주 · 월요일 ${c.muted("· 종료일 없음")}`, mod("2026-09-16 10:05", "hangang01")],
-    [`2026-09-25 ${c.muted("(금)")}`, ui.link("추석 당일 휴무", "#"), all(["모리커피 청담점", "온기식당 일산점"]), "하루", mod("2026-09-02 11:00", "hangang01")],
-    [`2026-09-28 ${c.muted("(월)")}`, ON0114("정기휴무"), some(HD0114), `매주 · 월요일 ${c.muted("· 종료일 없음")}`, mod("2026-09-16 10:05", "hangang01")],
-    [`2026-09-29 ${c.muted("(화)")}`, ui.link("내부 공사", "#"), some(["모리커피 연남점"]), "하루", mod("2026-09-08 16:20", "morinam01")],
+    [`2026-09-10 ${c.muted("(목)")}`, ui.link("정전 점검 휴무", "#"), "하루", ...some(["모리커피 서초점"]), mod("2026-09-01 09:40", "hgops")],
+    [`2026-09-21 ${c.muted("(월)")}`, ON0114("정기휴무"), `매주 · 월요일 ${c.muted("· 종료일 없음")}`, ...some(HD0114), mod("2026-09-16 10:05", "hangang01")],
+    [`2026-09-25 ${c.muted("(금)")}`, ui.link("추석 당일 휴무", "#"), "하루", ...all(["모리커피 청담점", "온기식당 일산점"]), mod("2026-09-02 11:00", "hangang01")],
+    [`2026-09-28 ${c.muted("(월)")}`, ON0114("정기휴무"), `매주 · 월요일 ${c.muted("· 종료일 없음")}`, ...some(HD0114), mod("2026-09-16 10:05", "hangang01")],
+    [`2026-09-29 ${c.muted("(화)")}`, ui.link("내부 공사", "#"), "하루", ...some(["모리커피 연남점"]), mod("2026-09-08 16:20", "morinam01")],
   ];
   const list =
     ui.sectionHead(`2026년 9월 BP 휴일${c.sub(`${listRows.length}건`)}`) +
     c.dimRows(
       ui.dataTable(
         [
-          { header: "날짜", width: "w-[220px]", align: "left" },
-          { header: "휴일명", width: "w-[180px]", align: "left" },
-          { header: "적용 대상", align: "left" },
-          { header: "휴일 유형", width: "w-[220px]", align: "left" },
-          { header: "최종수정일시", width: "w-[230px]" },
+          // 날짜 · 휴일명 · 휴일유형 · 적용범위 · 대상점포 · 예외점포 · 최종수정(앱과 같다, 2026-10-30 사용자 지정)
+          { header: "날짜", width: "w-[150px]" },
+          { header: "휴일명", width: "w-[200px]", align: "left" },
+          { header: "휴일유형", width: "w-[180px]" },
+          { header: "적용범위", width: "w-[110px]" },
+          { header: "대상점포", width: "w-[180px]", align: "left" },
+          { header: "예외점포", width: "w-[180px]" },
+          { header: "최종수정", align: "left" },
         ],
         listRows,
         "이 달에 등록된 BP 휴일이 없습니다.",
@@ -174,7 +177,7 @@ export default ({ A, R }) => {
   const detailPanel = ui.slidePanel(
     PANEL.detail,
     "BP 휴일 상세",
-    ui.sectionHead(TITLE + TAGS) +
+    HEAD +
       detailBody +
       `<div class="flex flex-wrap items-center gap-[6px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${x.dialogTrigger("삭제", ids.del, "soft")}${ui.slideTrigger("수정", PANEL.edit)}${x.dialogTrigger("변경이력", histId, "soft")}</div>`,
   );
@@ -183,12 +186,12 @@ export default ({ A, R }) => {
     "BP 휴일 수정",
     ui.sectionHead("BP 휴일 수정") +
       `<div class="flex flex-col gap-[18px]">${editForm(A, { panel: true })}</div>` +
-      c.buttons(ui.button("취소", { variant: "off", "data-close": true }), ui.button("저장", { "data-save-panel": PANEL.detail })),
+      c.buttons(ui.button("닫기", { variant: "off", "data-close": true }), ui.button("저장", { "data-save-panel": PANEL.detail })),
   );
   const newPanel = ui.slidePanel(
     PANEL.new,
     "BP 휴일 등록",
-    ui.sectionHead("BP 휴일 등록") + `<div class="flex flex-col gap-[18px]">${newForm(A, { panel: true })}</div>` + c.buttons(ui.button("취소", { variant: "off", "data-close": true }), ui.button("저장", { "data-save-panel": PANEL.detail })),
+    ui.sectionHead("BP 휴일 등록") + `<div class="flex flex-col gap-[18px]">${newForm(A, { panel: true })}</div>` + c.buttons(ui.button("닫기", { variant: "off", "data-close": true }), ui.button("저장", { "data-save-panel": PANEL.detail })),
   );
 
   return {
