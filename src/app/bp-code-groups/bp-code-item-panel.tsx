@@ -186,14 +186,13 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
         return toast(savedToast(input));
       }
       // 앞 단계(수정 · 삭제)가 저장됐으면 새 행 · 지울 행 표시는 다시 받은 목록에 남는다(savingFrom)
-      if (!result.anySaved) setSavingFrom(null);
       // 409 — 겹친 코드(지운 코드 포함) · 플랫폼고정 그룹. 문구에 코드가 실려 있으면(「…(CODE).」, 옛 꼴 「…: CODE」) 그 새 행의 칸 오류로,
       // 아니면 표 아래 한 줄로 보인다. 그 사이 먼저 지운 409 · 404 는 칸 오류가 아니라 아래 stale 로 간다.
       const view = failureView(result);
-      // 그 사이 다른 관리자가 고쳤거나 지웠다 — 띠로 알리고 최신 목록으로 칸을 다시 채운다
-      // 기준을 지금 목록으로 두어, 다시 받은 목록이 기존 행만 최신 값으로 바꾸고 보내지 않은 새 행 · 지울 행 표시는 잇게 한다(PR #206 리뷰)
+      if (!result.anySaved && !view.stale) setSavingFrom(null);
+      // 그 사이 다른 관리자가 고쳤거나 지웠다 — 띠로 알리고 최신 목록으로 칸을 다시 채운다. 저장 기준(savingFrom)은 저장을 시작할 때
+      // 잡아 둔(또는 같은 내용으로 따라간) 값을 그대로 두어, 기존 행만 최신 값으로 바꾸고 보내지 않은 새 행 · 지울 행 표시는 잇게 한다(PR #206 리뷰)
       if (view.stale) {
-        setSavingFrom(items);
         setStaleBand(true);
         router.refresh();
       }

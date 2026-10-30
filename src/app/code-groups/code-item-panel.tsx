@@ -203,15 +203,14 @@ export function CodeItemPanel({
         setFailure(null);
         return toast(savedToast(input));
       }
-      // 아무것도 저장되지 않았으면 이어 둘 일이 없다. 앞 단계(수정 · 삭제)가 저장됐으면 새 행 · 지울 행 표시는 다시 받은 목록에 남는다(savingFrom).
-      if (!result.anySaved) setSavingFrom(null);
+      // 아무것도 저장되지 않았으면 이어 둘 일이 없다(그 사이 바뀜은 빼고 — 다시 받은 목록에 잇는다). 앞 단계(수정 · 삭제)가 저장됐으면 새 행 · 지울 행 표시는 다시 받은 목록에 남는다(savingFrom).
       // 상세 코드가 겹치면(이 화면에 안 보이는 BP 행 · BP전용 코드 포함) 그 새 행의 칸 오류로, 그 밖은 띠로 알린다.
       // 앞 단계가 저장됐으면 띠에 그 사실을 먼저 적는다(failureView).
       const view = failureView(result);
-      // 그 사이 다른 관리자가 고쳤거나 지웠다 — 띠로 알리고 최신 목록으로 칸을 다시 채운다
-      // 기준을 지금 목록으로 두어, 다시 받은 목록이 기존 행만 최신 값으로 바꾸고 보내지 않은 새 행 · 지울 행 표시는 잇게 한다(PR #206 리뷰)
+      if (!result.anySaved && !view.stale) setSavingFrom(null);
+      // 그 사이 다른 관리자가 고쳤거나 지웠다 — 띠로 알리고 최신 목록으로 칸을 다시 채운다. 저장 기준(savingFrom)은 저장을 시작할 때
+      // 잡아 둔(또는 같은 내용으로 따라간) 값을 그대로 두어, 기존 행만 최신 값으로 바꾸고 보내지 않은 새 행 · 지울 행 표시는 잇게 한다(PR #206 리뷰)
       if (view.stale) {
-        setSavingFrom(items);
         setStaleBand(true);
         router.refresh();
       }
