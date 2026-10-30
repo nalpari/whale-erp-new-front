@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { Button, PageBar } from "@/components/common";
-import { ApiError, authHeaders, request } from "@/lib/api";
+import { ApiError, authHeaders, bpHref, deniedMessageOf, request } from "@/lib/api";
 import { ContractForm } from "../../new/contract-form";
 import { fromDetail, type ContractDetail } from "../../new/contract-form-model";
 import { loadFormData } from "../../new/load-form-data";
@@ -19,7 +19,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
   const { stores, labels, signedIn } = await loadFormData();
-  // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403)이면 api 문장을 그대로 보인다(목록과 같다)
+  // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403) · BP 를 고르지 않은 플랫폼 계정(400)이면 api 문장을 그대로 보인다(목록과 같다)
   let detail: ContractDetail | null = null;
   let notice = "로그인이 필요합니다.";
   if (signedIn) {
@@ -27,8 +27,10 @@ export default async function EditContractPage({ params, searchParams }: PagePro
       detail = await request<ContractDetail>(`/contracts/${contractId}`, { headers: await authHeaders() });
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) notFound();
-      if (!(e instanceof ApiError && (e.status === 401 || e.status === 403))) throw e;
-      if (e.status === 403) notice = e.message;
+      // api 의 거절(BP 를 고르지 않음 400 · 권한 · 다른 BP 403 — deniedMessageOf)은 그 문장을 보인다. 404(없는 계약 · 없는 BP)는 위에서 찾을 수 없음 화면이다
+      const denied = deniedMessageOf(e);
+      if (!(e instanceof ApiError && e.status === 401) && denied === null) throw e;
+      if (denied !== null) notice = denied;
     }
   }
   // 재계약(WHALEERP-156)의 임시저장 · 수정 요청이면 직전 계약 시작일 — 새 계약 시작일은 그 다음 날부터라 화면이 먼저 막는다. 읽지 못하면
@@ -103,17 +105,17 @@ export default async function EditContractPage({ params, searchParams }: PagePro
 }
 
 // 권한이 없어 막혔으면 상세로 보낸다 — 목록의 임시저장 행은 이 화면으로 바로 오므로, 조회 권한만 있어도 내용은 상세에서 본다.
-// 그래도 할 수 있는 동작(임시저장 삭제)은 children 으로 받아 이동 버튼 뒤에 둔다
-function Notice({ title, contractId, back, children }: { title: string; contractId?: number; back: string; children?: ReactNode }) {
+// 그래도 할 수 있는 동작(임시저장 삭제)은 children 으로 받아 이동 버튼 뒤에 둔다. 이동 주소에는 탭 BP 를 붙인다(bpHref)
+async function Notice({ title, contractId, back, children }: { title: string; contractId?: number; back: string; children?: ReactNode }) {
   return (
     <div className="flex items-center gap-[6px]">
       <p className="flex-1 text-[14px] font-semibold text-erp-ink">{title}</p>
       {contractId !== undefined && (
-        <Button variant="soft" href={withBack(`/contracts/${contractId}`, back)}>
+        <Button variant="soft" href={await bpHref(withBack(`/contracts/${contractId}`, back))}>
           상세
         </Button>
       )}
-      <Button href={back}>목록</Button>
+      <Button href={await bpHref(back)}>목록</Button>
       {children}
     </div>
   );

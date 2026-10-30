@@ -7,6 +7,8 @@ import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatPhone, GENDERS, inProgressLine, shownProblems, type InProgressContract } from "../../new/contract-form-model";
 import { useInvalid } from "../../field-errors";
 import { withBack } from "../../contract-list";
+import { useCurrentBp } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { updateWorker } from "../actions";
 import { callSave, SAVE_CALL_LOST } from "../send-model";
 import { workerBody, workerProblemsByField, workerSaveNote, type WorkerField, type WorkerForm as Form } from "./worker-model";
@@ -29,6 +31,9 @@ export function WorkerForm({
   back: string;
 }) {
   const router = useRouter();
+  // 상세 주소는 탭 BP 를 붙인다. back 은 옛 경로(목록 쿼리)다
+  const bp = useCurrentBp().bpCodeId;
+  const at = (path: string) => bpPath(bp, path);
   const [form, setForm] = useState<Form>(initial);
   const [serverError, setServerError] = useState("");
   const [saving, startSaving] = useTransition();
@@ -65,7 +70,7 @@ export function WorkerForm({
       const result = await callSave(() => update(contractId, workerBody(form, replaceContractIds), back), unstable_rethrow);
       if (result === SAVE_CALL_LOST) {
         // 서버 액션 호출 자체가 끊겼다 — 저장하면 다시 보내므로 이미 보냈을 수 있다. 같은 폼으로 다시 저장하지 않게 상세로(front #50 재리뷰)
-        router.replace(withBack(`/contracts/${contractId}?send=unknown`, back));
+        router.replace(at(withBack(`/contracts/${contractId}?send=unknown`, back)));
         return;
       }
       if (result.inProgress) {
@@ -91,7 +96,7 @@ export function WorkerForm({
     <div ref={formRef} className="flex flex-col gap-[12px]">
       <div className="flex items-end gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로자 정보 수정</h2>
-        <Button variant="off" href={withBack(`/contracts/${contractId}`, back)}>
+        <Button variant="off" href={at(withBack(`/contracts/${contractId}`, back))}>
           취소
         </Button>
         <Button onClick={save} disabled={saving}>
