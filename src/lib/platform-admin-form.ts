@@ -68,7 +68,7 @@ export function formOf(detail: PlatformAdminDetail): AdminForm {
 
 const phoneOf = (form: AdminForm) => form.phone.map((p) => p.trim()).join("");
 
-// 회원가입과 같은 문구(2026-10-29 재영) — BP 관리자 · BP 마스터 등록도 이 함수를 쓴다
+// 회원가입과 같은 문구(2026-10-29 재영) — BP 관리자 · BP 마스터 등록도 loginIdError 로 이 문구를 쓴다
 export const LOGIN_ID_FORMAT_ERROR = "영문 또는 영문·숫자 조합으로 4~20자로 입력해 주세요.";
 /** 아이디 중복 — 중복확인의 「사용 중」과 저장 때 api 409 를 같은 문구로 보인다(api 문구는 다음에 할 일을 말하지 않는다). */
 export const LOGIN_ID_TAKEN = "이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.";
@@ -89,7 +89,7 @@ export function isOriginalEmail(value: string, original: string | null): boolean
 
 /**
  * 이메일 형식 오류 문구. 맞으면 undefined. 저장할 때와 칸을 벗어나거나 Enter 를 칠 때 같이 쓴다.
- * 아이디처럼 중복을 바로 물어볼 API 가 없어(중복은 저장할 때 — 등록 · 수정 모두 — api 가 409 로 막는다) 형식만 본다.
+ * 형식이 맞아야 중복 확인(checkEmailAvailable)을 부른다 — 저장할 때도 api 가 409 로 중복을 막는다.
  */
 export function emailError(email: string): string | undefined {
   const value = email.trim();

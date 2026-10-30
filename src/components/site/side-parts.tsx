@@ -23,7 +23,7 @@ export function InfoBand({ children }: { children: ReactNode }) {
 
 /**
  * 막힌 이유 안내 — 플랫폼 메뉴 관리의 「미사용으로 변경하면 …」 안내와 같은 빨간 테두리 · 연한 빨간 바탕 상자(2026-10-27 사용자 지정).
- * 권한 그룹 상세에서 고칠 수 없는 이유(본인 연결 등) · 삭제 확인창의 대체 후보 없음에 쓴다. 글로 이유를 함께 말한다(DESIGN.md 색은 상태다 예외).
+ * 권한 그룹 상세에서 고칠 수 없는 이유(권한 없음 등) · 삭제 확인창의 대체 후보 없음에 쓴다. 글로 이유를 함께 말한다(DESIGN.md 색은 상태다 예외).
  */
 export function WarnBand({ children }: { children: ReactNode }) {
   return <div className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] whitespace-pre-line text-erp-off">{children}</div>;

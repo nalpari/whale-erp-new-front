@@ -72,7 +72,7 @@ const LOGIN_ID_CHECK_TEXT: Record<Exclude<LoginIdCheck, "idle">, string> = {
   failed: "아이디를 확인하지 못했습니다. 저장 시 다시 확인합니다.",
 };
 
-// 이메일 중복확인이 있는 네 화면(BP 관리자 · BP 마스터 등록, 내 정보, 회원가입)이 아이디와 같은 모양의 문구를 쓴다(2026-10-28 사용자 지정)
+// 이메일 중복확인이 있는 다섯 화면(플랫폼 관리자 · BP 관리자 · BP 마스터 등록, 내 정보, 회원가입)이 아이디와 같은 모양의 문구를 쓴다(2026-10-28 사용자 지정)
 const EMAIL_CHECK_TEXT: Record<Exclude<LoginIdCheck, "idle">, string> = {
   checking: "이메일을 확인하는 중입니다.",
   available: "사용 가능합니다.",
