@@ -1,5 +1,6 @@
 // 근로계약 상세 — 거부. 목업 docs/mockup/staff/contracts-detail.html(유하람 · 거부)을 BP 마스터로 본 것. 내용은 고치지 않고 상태와 이력을 본다.
 // 거부는 제목 줄 버튼이 없다(2026-10-12). 조건을 고쳐 다시 보내려면 목록의 「계약서 작성」으로 새로 쓴다.
+// 거부 사유는 받지 않는다 — 고칠 내용은 직원이 수정 요청 사유로 남긴다(WHALEERP-635).
 import * as ui from "../../ui.mjs";
 import * as p from "../../staff-parts.mjs";
 import { contractDetail } from "../../contract-detail.mjs";
@@ -8,10 +9,7 @@ export default (ctx) =>
   contractDetail(ctx, {
     title: "근로계약 상세 · 거부",
     band: () =>
-      p.band("유하람 님이 09-02 에 날인을 거부했습니다.", {
-        tone: "risk",
-        desc: "거부 사유 — “근무 시작 시각이 면접 때 이야기한 것과 다릅니다. 11시가 아니라 13시로 알고 있었습니다.”",
-      }),
+      p.band("유하람 님이 09-02 에 날인을 거부했습니다.", { tone: "risk" }),
     kind: "파트타이머 근로계약",
     doc: "유하람_근로계약서.pdf",
     rows: [

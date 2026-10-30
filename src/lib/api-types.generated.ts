@@ -2386,7 +2386,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 거부 — 사유는 선택(500자) */
+        /** 거부 — 사유는 받지 않는다(WHALEERP-635, 본문은 읽지 않는다) */
         post: operations["MyContractsController_reject"];
         delete?: never;
         options?: never;
@@ -2403,7 +2403,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 수정 요청 — 계약서가 틀렸을 때(대조 결과와 상관없이). 따로 받는 내용은 없다 */
+        /** 수정 요청 — 계약서가 틀렸을 때(대조 결과와 상관없이). 사유는 필수(1~100자, WHALEERP-635) */
         post: operations["MyContractsController_requestCorrection"];
         delete?: never;
         options?: never;
@@ -7685,8 +7685,11 @@ export interface components {
             signDeadlineAt: string | null;
             /** @description 최종 처리일(ISO 8601) — 가장 최근 상태 변경 일시. 이력이 없으면 null */
             lastProcessedAt: string | null;
-            /** @description 직원이 남긴 거부 사유 — 거부된 계약에만, 그 밖은 null */
-            rejectReason: string | null;
+            /**
+             * @description 직원이 남긴 수정 요청 사유(1~100자, WHALEERP-635) — 수정 요청된 계약에만, 그 밖은 null. 사유를 받기 전의 수정 요청도 null.
+             *     고쳐 다시 보내도 행에는 남지만 다른 상태에서는 주지 않는다(지난 사유가 지금 사유처럼 읽히지 않게)
+             */
+            correctionReason: string | null;
             /** @description 재계약으로 만든 계약이면 직전 계약 ID. 재계약(WHALEERP-156) 전이라 지금은 늘 null */
             previousContractId: number | null;
             /** @description 종이 계약 등록일(ISO 8601) — 체결 완료가 된 때. 종이 계약만 — 전자계약 · 등록 전 임시저장(등록 전에 종료된 것 포함)은 null */
@@ -7787,12 +7790,16 @@ export interface components {
              */
             signedAt: string;
         };
-        RejectMyContractDto: {
-            reason?: string;
-        };
         MyContractActionResponseDto: {
             contractId: number;
             status: components["schemas"]["ContractStatus"];
+        };
+        RequestMyContractCorrectionDto: {
+            /**
+             * @description 수정 요청 사유 — 앞뒤 공백을 지운 뒤 1~100자
+             * @example 시급이 안내받은 금액과 다릅니다
+             */
+            reason: string;
         };
         MyContractListItemDto: {
             status: components["schemas"]["ContractStatus"];
@@ -10103,10 +10110,6 @@ export interface components {
             storeName: string;
             /** @description 서명 대기로 넘어간 근로계약 — 날인 기한은 수락한 때부터 30일 */
             contractIds: number[];
-        };
-        RejectAffiliationRequestDto: {
-            /** @description 거절 사유 — 함께 온 계약의 거부 사유로도 남는다 */
-            reason?: string;
         };
         BpHolidayTargetResponseDto: {
             isAllStores: boolean;
@@ -17919,11 +17922,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RejectMyContractDto"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -17932,13 +17931,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["MyContractActionResponseDto"];
                 };
-            };
-            /** @description 사유 500자 넘음 · null */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
             /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
             401: {
@@ -17986,7 +17978,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestMyContractCorrectionDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -17995,6 +17991,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["MyContractActionResponseDto"];
                 };
+            };
+            /** @description 사유 없음 · 비었음(앞뒤 공백을 지운 뒤) · 100자 넘음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
             401: {
@@ -23663,11 +23666,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RejectAffiliationRequestDto"];
-            };
-        };
+        requestBody?: never;
         responses: {
             204: {
                 headers: {
@@ -23675,7 +23674,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 형식 오류 · 사유 500자 넘음 */
+            /** @description 형식 오류(요청 ID) */
             400: {
                 headers: {
                     [name: string]: unknown;
