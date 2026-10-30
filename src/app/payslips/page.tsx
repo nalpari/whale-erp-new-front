@@ -1,5 +1,5 @@
 import { ListToolbar, PageBar, Tag } from "@/components/common";
-import { getEnum } from "@/lib/api";
+import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import { PAYSLIP_STATUSES } from "@/lib/payslips";
 import { getPayslips } from "@/lib/payslips-api";
 import { kstToday } from "@/lib/staff-members";
@@ -18,13 +18,34 @@ import { PayslipTable } from "./payslip-table";
 export default async function PayslipsPage({ searchParams }: PageProps<"/payslips">) {
   const today = kstToday();
   const query = parsePayslipListQuery(await searchParams, today);
-  const [{ items, total, statusCounts, reviewPendingCount }, statusLabels, employmentTypeLabels, reviewReasonLabels] = await Promise.all([
-    getPayslips(query),
+  // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 · 없는 BP 404 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다(근로계약 목록과 같다)
+  const [listed, statusLabels, employmentTypeLabels, reviewReasonLabels] = await Promise.all([
+    getPayslips(query).then(
+      (page) => ({ page }),
+      (e: unknown) => {
+        const notice = deniedMessageOf(e);
+        if (notice === null) throw e;
+        return { notice };
+      },
+    ),
     getEnum("PayslipStatus"),
     getEnum("EmploymentType"),
     getEnum("PayslipReviewReason"),
   ]);
+  if ("notice" in listed)
+    return (
+      <>
+        <PageBar title="급여명세서 관리" />
+        <p role="alert" className="p-[24px] text-[14px] text-erp-label">
+          {listed.notice}
+        </p>
+      </>
+    );
+  const { items, total, statusCounts, reviewPendingCount } = listed.page;
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
+  // 화면 주소는 탭 BP 주소 /bp/{id}/payslips 다 — proxy 가 그 BP 를 X-Bp-Code-Id 로 실어, 플랫폼 계정은 고른 BP 의 명세서만 본다(BP_PATH_SCREENS, WHALEERP-637).
+  // 쿼리는 옛 경로로 두고, 링크로 그릴 때만 탭 BP 를 붙인다
+  const at = await screenPath();
   const counts = statusLabels.map((s) => ({ label: s.label, count: statusCounts[s.value as keyof typeof statusCounts] ?? 0 }));
 
   return (
@@ -63,6 +84,7 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
             statusLabels={statusLabels}
             employmentTypeLabels={employmentTypeLabels}
             reviewReasonLabels={reviewReasonLabels}
+            at={at}
             // 거른 목록이 비면 그달 명세서가 없는 것이 아니다
             filtered={query.reviewPending || !!query.staffName || query.statuses.length !== PAYSLIP_STATUSES.length}
           />
