@@ -7,6 +7,7 @@ import { FieldErrors, useInvalid } from "../field-errors";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
+import { kstToday } from "@/lib/staff-members";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
 import { SAVED_COOKIE, SAVED_COOKIE_MAX_AGE, backHrefOf, listAfterSave, savedKindOf, withBack } from "../contract-list";
 import { createContract, updateContract } from "./actions";
@@ -22,15 +23,16 @@ import {
   replaceConfirmBody,
   fieldProblems,
   isMinor,
-  MINIMUM_WAGE,
   monthlyHours,
   monthlyWage,
   paperFileAccept,
   paperFileError,
   paperFileTypesOf,
   partTimePay,
-  PROBATION_WAGE_FLOOR,
+  minimumWageOn,
+  type MinimumWage,
   probationWage,
+  probationWageFloor,
   problemsByField,
   shownProblems,
   type ProblemField,
@@ -268,6 +270,7 @@ export function ContractForm({
   correction = false,
   previousContractId,
   previousStartDate,
+  minimumWages,
   back = "/contracts",
 }: {
   stores: { storeId: number; name: string }[];
@@ -290,6 +293,8 @@ export function ContractForm({
   previousContractId?: number;
   /** 재계약의 직전 계약 시작일 — 새 계약 시작일은 그 다음 날부터다(api 가 400 으로 다시 본다) */
   previousStartDate?: string;
+  /** 최저임금(공통코드, WHALEERP-595) — 계약 시작일에 적용되는 값으로 시급 도움말 · 수습 중 시급을 본다 */
+  minimumWages: readonly MinimumWage[];
   /** 돌아갈 목록 주소(?back=) — 취소 · 저장 뒤 같은 조건의 목록으로 간다 */
   back?: string;
 }) {
@@ -348,9 +353,12 @@ export function ContractForm({
   // (칠 때마다 role="alert" 가 새로 울리지 않게, front #170 code-review)
   const [errorFields, setErrorFields] = useState<ReadonlySet<ProblemField> | null>(null);
   const errs: Partial<Record<ProblemField, string[]>> = errorFields
-    ? shownProblems(problemsByField(fieldProblems(form, lastTemporary, files.employment !== null, previousStartDate)), errorFields)
+    ? shownProblems(problemsByField(fieldProblems(form, lastTemporary, files.employment !== null, previousStartDate, minimumWages)), errorFields)
     : {};
   const minor = isMinor(form);
+  // 계약 시작일에 적용되는 최저임금 — 시작일이 없으면 오늘(한국 날짜) 것으로 도움말만 보인다
+  const minimum = minimumWageOn(minimumWages, form.startDate || kstToday());
+  const floorText = minimum ? `(${probationWageFloor(minimum.hourlyWage).toLocaleString("ko-KR")}원)` : "";
   const holiday = weeklyHolidayOf(form);
   const dayLabel = (d: Weekday) => labelOf(labels.weekday, d);
 
@@ -358,7 +366,7 @@ export function ContractForm({
   const save = (temporary: boolean) => {
     setLastTemporary(temporary);
     setServerError("");
-    const found = fieldProblems(form, temporary, files.employment !== null, previousStartDate);
+    const found = fieldProblems(form, temporary, files.employment !== null, previousStartDate, minimumWages);
     setErrorFields(found.length ? new Set(found.map((p) => p.field)) : null);
     if (found.length) {
       setFailures((n) => n + 1);
@@ -674,7 +682,7 @@ export function ContractForm({
           {/* 급여 표 — 흰 칸은 입력, 회색 칸은 셈한 값이다(현업 엑셀 견본, 2026-10-13). */}
           {/* 시급 · 월급 · 연봉 한 줄이 소정근로시간 표 위에 있다(데모 확인 2026-10-15). 생년월일 · 근무요일 줄처럼 3등분한다(파트타이머는 셋째 칸을 비운다). 시급은 고용 형태와 상관없이 한 칸이다(2026-10-12 재영). */}
           <FormRow>
-            <Item label="시급" required help={`2026년 최저임금 ${MINIMUM_WAGE.toLocaleString("ko-KR")}원 이상`} errors={errs.wage}>
+            <Item label="시급" required help={minimum ? `${minimum.effectiveDate.slice(0, 4)}년 최저임금 ${minimum.hourlyWage.toLocaleString("ko-KR")}원 이상` : "최저임금 이상"} errors={errs.wage}>
               {(id) => <TextField id={id} value={form.wage} inputMode="numeric" onChange={(e) => set("wage", formatWage(e.target.value))} />}
             </Item>
             <Item label="월급" help={form.employmentType === "FULL_TIME" ? "급여항목 합계 + 비과세 합계" : "주급 × 4.345"}>
@@ -856,7 +864,7 @@ export function ContractForm({
                 </Item>
                 <Item
                   label="수습 중 시급"
-                  help={`시급 × (1 − 감액률). 최저임금의 90%(${PROBATION_WAGE_FLOOR.toLocaleString("ko-KR")}원) 이상이어야 한다.`}
+                  help={`시급 × (1 − 감액률). 최저임금의 90%${floorText} 이상이어야 한다.`}
                   errors={errs.probationWage}
                 >
                   {(id) => <TextField id={id} readOnly value={won(probationWage(form))} />}

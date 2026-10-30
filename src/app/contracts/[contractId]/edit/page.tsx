@@ -18,7 +18,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
   const contractId = Number(raw);
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
-  const { stores, labels, signedIn } = await loadFormData();
+  const { stores, labels, signedIn, minimumWages } = await loadFormData();
   // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403) · BP 를 고르지 않은 플랫폼 계정(400)이면 api 문장을 그대로 보인다(목록과 같다)
   let detail: ContractDetail | null = null;
   let notice = "로그인이 필요합니다.";
@@ -56,6 +56,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
               <ContractForm
                 stores={stores}
                 labels={labels}
+                minimumWages={minimumWages}
                 signedIn
                 contractId={contractId}
                 initial={fromDetail(detail)}
@@ -83,6 +84,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
               <ContractForm
                 stores={stores}
                 labels={labels}
+                minimumWages={minimumWages}
                 signedIn
                 contractId={contractId}
                 initial={fromDetail(detail)}

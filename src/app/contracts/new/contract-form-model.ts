@@ -429,16 +429,24 @@ export function weeklyHolidayOf(f: Schedule & Partial<Pick<ContractForm, "weekly
   return FROM_SUNDAY.find((d) => !f.days.includes(d)) ?? "NO_DAY_OFF";
 }
 
-/** 최저임금(시급, 원). 시스템이 공통코드처럼 관리하기 전까지 화면에 둔다(2026-10-15) */
-export const MINIMUM_WAGE = 10320;
-/** 수습 중 시급의 하한 — 최저임금의 90%(노무사 확인 2026-10-14, 질문 19) */
-export const PROBATION_WAGE_FLOOR = Math.ceil(MINIMUM_WAGE * 0.9);
+/** 최저임금 한 시행일 — api 공통코드 MINIMUM_WAGE(`GET /contracts/minimum-wages`, WHALEERP-595) */
+export type MinimumWage = components["schemas"]["MinimumWageDto"];
 
-/** 수습 중 시급 = 시급 × (1 − 감액률), 원 미만 반올림. 시급이 비었거나 감액률이 틀리면 null */
+/** 그날 적용되는 최저임금 — 시행일이 그날 이전(그날 포함)인 것 중 가장 늦은 것. 없으면 null. api 와 같다 */
+export function minimumWageOn(wages: readonly MinimumWage[], date: string): MinimumWage | null {
+  let found: MinimumWage | null = null;
+  for (const w of wages) if (w.effectiveDate <= date && (!found || w.effectiveDate > found.effectiveDate)) found = w;
+  return found;
+}
+
+/** 수습 중 시급의 하한 — 최저임금의 90%, 원 미만 올림(노무사 확인 2026-10-14, 질문 19). api 와 같다 */
+export const probationWageFloor = (minimumWage: number) => Math.ceil((minimumWage * 90) / 100);
+
+/** 수습 중 시급 = 시급 × (1 − 감액률), 원 미만 반올림(api 와 같은 정수 셈). 시급이 비었거나 감액률이 틀리면 null */
 export function probationWage(f: Pick<ContractForm, "wage" | "probationRate">): number | null {
   const rate = Number(f.probationRate);
   if (!wageOf(f) || !/^\d+$/.test(f.probationRate) || rate > 10) return null;
-  return Math.round(wageOf(f) * (1 - rate / 100));
+  return Math.round((wageOf(f) * (100 - rate)) / 100);
 }
 
 /** start 부터 1년이 되는 날(그날 포함) — 2026-01-01 이면 2026-12-31. api 와 같다 */
@@ -490,7 +498,13 @@ export type Problem = { field: ProblemField; message: string };
  * 저장 전에 화면이 먼저 막는 것을 칸과 함께. api 도 같은 것을 다시 본다. 순서는 화면 위에서 아래로다.
  * 임시저장은 직원 칸(이름 · 번호 · 직무)과 근무지만 필수이고, 비운 칸은 묻지 않되 넣은 값은 똑같이 본다.
  */
-export function fieldProblems(f: ContractForm, temporary = false, hasEmploymentFile = false, previousStartDate?: string): Problem[] {
+export function fieldProblems(
+  f: ContractForm,
+  temporary = false,
+  hasEmploymentFile = false,
+  previousStartDate?: string,
+  minimumWages: readonly MinimumWage[] = [],
+): Problem[] {
   const out: Problem[] = [];
   const add = (field: ProblemField, message: string) => out.push({ field, message });
   const need = (field: ProblemField, empty: boolean, message: string) => {
@@ -536,9 +550,12 @@ export function fieldProblems(f: ContractForm, temporary = false, hasEmploymentF
   if (f.employmentType === "FULL_TIME" && f.probation) {
     if (!probationTermOk(f)) add("probationMonths", "수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다.");
     if (!/^\d+$/.test(f.probationRate) || Number(f.probationRate) > 10) add("probationRate", "수습 임금 감액률은 0~10% 정수로 입력하세요.");
+    // 계약 시작일에 적용되는 최저임금으로 본다 — 시작일이 없거나 그날 값이 없으면(첫 시행일 전) api 처럼 보지 않는다
     const pw = probationWage(f);
-    if (pw !== null && pw < PROBATION_WAGE_FLOOR)
-      add("probationWage", `수습 중 시급은 최저임금의 90%(${PROBATION_WAGE_FLOOR.toLocaleString("ko-KR")}원) 이상이어야 합니다.`);
+    const minimum = f.startDate ? minimumWageOn(minimumWages, f.startDate) : null;
+    const floor = minimum && probationWageFloor(minimum.hourlyWage);
+    if (pw !== null && floor && pw < floor)
+      add("probationWage", `수습 중 시급은 최저임금의 90%(${floor.toLocaleString("ko-KR")}원) 이상이어야 합니다.`);
   }
   return out;
 }
