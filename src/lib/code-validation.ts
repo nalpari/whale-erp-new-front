@@ -19,7 +19,7 @@ export function normalizeCode(value: string): string {
 export function codeFormatError(code: string): string | null {
   if (!code) return "코드를 입력해 주세요.";
   // 칸 아래 한 줄에 들어가게 줄였다(2026-10-27 사용자 지정 — 전엔 「영문 대문자·숫자·밑줄만 쓰고 영문으로 시작하며 20자 이내입니다.」)
-  if (!CODE_PATTERN.test(code)) return "영문 대문자로 시작해 영문·숫자·_로 입력해 주세요.(최대 20자)";
+  if (!CODE_PATTERN.test(code)) return "영문 대문자로 시작해 영문·숫자·_로 입력해 주세요(최대 20자).";
   return null;
 }
 
