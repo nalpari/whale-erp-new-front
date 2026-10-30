@@ -24,12 +24,16 @@ export default async function PlatformAdminsPage({ searchParams }: PageProps<"/p
         }),
     getPlatformRoleGroups(),
     // 필터는 등록 · 수정 선택지와 달리 마스터 권한도 보인다 — 플랫폼 관리자도 목록의 마스터 계정을 거른다(2026-10-29 재영)
-    getPlatformRoleGroupFilterOptions(),
+    getPlatformRoleGroupFilterOptions().catch((error: unknown) => {
+      console.error("플랫폼 관리자 필터 권한 목록 조회 실패", error);
+      return null;
+    }),
     query.admin ? loadDetail(query.admin) : null,
   ]);
 
   // 제목 줄(PageBar)은 AdminsScreen 이 그린다 — [등록]이 등록 패널을 여는 상태와 같은 곳에 있어야 해서다
-  return <AdminsScreen list={list} roleGroups={roleGroups} filterRoleGroups={filterRoleGroups} query={query} detail={detail} />;
+  // 필터 선택지일 뿐이라 실패하면 등록용 목록으로 대신한다(2026-10-30 재영)
+  return <AdminsScreen list={list} roleGroups={roleGroups} filterRoleGroups={filterRoleGroups ?? roleGroups} query={query} detail={detail} />;
 }
 
 /** 상세를 못 불러오면 패널은 열되 실패 띠로 알린다 — 404(지웠거나 없는 계정)는 그 사실을, 그 밖은 일반 문구를. */

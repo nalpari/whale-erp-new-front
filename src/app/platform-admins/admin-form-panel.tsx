@@ -212,8 +212,9 @@ export function AdminFormPanel(props: Props) {
   /**
    * 이메일 중복 확인(등록 · 수정 모두) — 칸을 벗어나거나 Enter 를 칠 때. 형식이 틀리면 묻지 않는다(2026-10-29 재영 — 전엔 형식만 봤다).
    * 수정 화면에서 원래 이메일 그대로면 묻지 않는다 — 바꾸지 않은 값은 확인 대상이 아니다(마이페이지와 같다).
-   * 서버가 거절한 값을 고치지 않고 다시 벗어난 것이면 묻지 않는다(아이디와 같다). 그 밖의 실패(403 · 5xx)는 칸에 달지 않고 넘어간다 —
-   * 저장할 때 api 가 다시 본다. 403 은 등록 권한 없이 수정만 하는 사람이라 조용히 넘긴다.
+   * 서버가 거절한 값을 고치지 않고 다시 벗어난 것이면 묻지 않는다(아이디와 같다). 400 은 화면 형식 문구로 칸에(고칠 때까지 남긴다),
+   * 401 은 패널 위 띠로, 403 은 등록 권한 없이 수정만 하는 사람이라 조용히(콘솔만), 그 밖(5xx · 연결 실패)은 「확인하지 못했습니다」 —
+   * 저장할 때 api 가 다시 본다.
    */
   const checkEmail = (value: string) => {
     if (!value.trim()) return;
@@ -240,8 +241,14 @@ export function AdminFormPanel(props: Props) {
           return;
         }
         setEmailCheck(result.status === 400 || result.status === 401 || result.status === 403 ? "idle" : "failed");
-        if (result.status === 400) setErrors((e) => ({ ...e, email: emailError(value) ?? result.message }));
-        else if (result.status === 401) setFailure(result.message);
+        if (result.status === 400) {
+          // 아이디 확인과 같다 — 화면 형식 문구로, 고칠 때까지 같은 값으로 다시 묻지 않는다
+          const text = serverFieldMessage("email", 400, result.message);
+          console.warn("이메일 중복 확인 400 — 화면 형식 문구로 보인다", result.message);
+          setServerErrors((e) => ({ ...e, email: text }));
+          setErrors((e) => ({ ...e, email: text }));
+        } else if (result.status === 401) setFailure(result.message);
+        else if (result.status === 403) console.warn("이메일 중복 확인 403 — 등록 권한이 없어 저장할 때 api 가 본다", result.message);
         else console.warn("이메일 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
       })
       .catch((error: unknown) => {

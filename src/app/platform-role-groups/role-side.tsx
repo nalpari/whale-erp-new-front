@@ -10,11 +10,12 @@ import { formatDateTime, wasUpdated } from "@/lib/format";
 import type { RoleGroupDetail } from "@/lib/platform-role-groups";
 import { RoleDeleteDialog, type DeleteDialogActions } from "@/components/role-groups/role-delete-dialog";
 import { createRoleGroupAction, deleteRoleGroupAction, getDeletionCandidatesAction, updateRoleGroupAction } from "./actions";
-import { actorOf, CARD, FailedBand, reasonLabel, WarnBand, type RoleDetailState } from "./role-parts";
+import { actorOf, CARD, FailedBand, InfoBand, reasonLabel, WarnBand, type RoleDetailState } from "./role-parts";
 
 // 오른쪽 고정 칸(데모 role-side) — 고른 권한 없음 · 수정 · 상세(고칠 수 없는 권한) · 등록 네 상태.
 // 권한유형 · 권한코드는 읽기 전용이고 권한명 · 설명만 고친다. 고칠 수 있는지 · 지울 수 있는지와 막힌 이유는 api 상세가 준다
-// (한글은 GET /enums/PlatformRoleGroupLockReason) — 수정은 권한 없음 · 본인 연결이 막고, 삭제는 여기에 고정 권한까지 막는다.
+// (한글은 GET /enums/PlatformRoleGroupLockReason) — 수정은 권한 없음이 막는다. 본인 연결은 권한명 · 설명은 고치고 삭제 · 메뉴 저장만
+// 막는다(2026-10-30 재영). 삭제는 고정 권한도 막는다.
 // 등록은 플랫폼 관리자(PA) 권한만 만든다.
 
 const FORM_ACTIONS: RoleFormActions = { create: createRoleGroupAction, update: updateRoleGroupAction };
@@ -136,8 +137,8 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
       </span>
     </h2>
   );
-  // 지울 수 없는 권한(고정 권한 · 본인 연결 · 삭제 권한 없음)은 버튼을 숨긴다. 막힌 이유는 수정 권한이 있으면 위 빨간 상자로 보인다
-  // — BP 권한 그룹과 같다(2026-10-30 재영, 전엔 흐린 버튼 옆에 api 이유를 글자로 두었다)
+  // 지울 수 없는 권한(고정 권한 · 본인 연결 · 삭제 권한 없음)은 버튼을 숨긴다. 고칠 수 있는 화면이면 폼 위 회색 안내 한 줄로 삭제가 막힌
+  // 이유를, 고칠 수 없으면 빨간 상자가 고칠 수 없는 이유를 말한다 — BP 권한 그룹과 같다(2026-10-30 재영, 전엔 흐린 버튼 옆에 api 이유를 글자로 두었다)
   const deleteButton =
     can.delete && !role.isMaster && !role.deleteBlockedReason ? (
       <RoleDeleteDialog
@@ -172,6 +173,14 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
   return (
     <>
       {heading}
+      {/* 삭제만 막힌 이유(본인 연결 등) — 고정 권한은 원래 [삭제]가 없어 두지 않는다(2026-10-30 재영) */}
+      {can.delete && !role.isMaster && role.deleteBlockedReason && (
+        <InfoBand>
+          {role.deleteBlockedReason === "SELF_LINKED"
+            ? "본인 계정에 연결된 권한 그룹은 삭제할 수 없습니다."
+            : reasonLabel(lockReasons, role.deleteBlockedReason, "삭제할 수 없는 권한 그룹입니다.")}
+        </InfoBand>
+      )}
       <RoleForm mode="edit" actions={FORM_ACTIONS} role={role} extra={record} deleteButton={deleteButton} />
     </>
   );
