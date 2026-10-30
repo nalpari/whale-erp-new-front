@@ -18,7 +18,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
   const contractId = Number(raw);
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
-  const { stores, labels, signedIn, denied } = await loadFormData();
+  const { stores, labels, signedIn, denied: optionsDenied } = await loadFormData();
   // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403) · BP 를 고르지 않은 플랫폼 계정(400)이면 api 문장을 그대로 보인다(목록과 같다)
   let detail: ContractDetail | null = null;
   let notice = "로그인이 필요합니다.";
@@ -54,8 +54,8 @@ export default async function EditContractPage({ params, searchParams }: PagePro
             <ContractPermission action="update" fallback={<Notice title="근로계약서를 고칠 권한이 없습니다." contractId={contractId} back={back} />}>
               {/* 재계약 수정 요청도 번호 · 시작일을 임시저장 이어 쓰기와 같이 막는다(api 가 400 으로 다시 본다, api #157 리뷰) */}
               {/* 근무지 선택지를 api 가 거절했으면 그 문장(loadFormData) */}
-              {denied !== null ? (
-                <Notice title={denied} contractId={contractId} back={back} />
+              {optionsDenied !== null ? (
+                <Notice title={optionsDenied} contractId={contractId} back={back} />
               ) : (
                 <ContractForm
                   stores={stores}
@@ -86,8 +86,8 @@ export default async function EditContractPage({ params, searchParams }: PagePro
               }
             >
               {/* 근무지 선택지를 api 가 거절했으면 그 문장(loadFormData) — 삭제는 그대로 둔다 */}
-              {denied !== null ? (
-                <Notice title={denied} contractId={contractId} back={back}>
+              {optionsDenied !== null ? (
+                <Notice title={optionsDenied} contractId={contractId} back={back}>
                   <ContractPermission action="delete">
                     <DeleteDraftButton contractId={contractId} back={back} />
                   </ContractPermission>
