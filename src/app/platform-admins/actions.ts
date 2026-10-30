@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
 import { withPeriod } from "@/lib/format";
 import {
+  checkEmailAvailable,
   checkLoginIdAvailable,
   createPlatformAdmin,
   deletePlatformAdmin,
@@ -67,6 +68,15 @@ export async function checkLoginIdAvailableAction(loginId: string): Promise<Acti
     return { ok: true, available: await checkLoginIdAvailable(loginId) };
   } catch (error) {
     return failureOf(error, "아이디 확인");
+  }
+}
+
+/** 이메일 중복 확인 — 등록 · 수정 화면이 칸을 벗어나거나 Enter 를 칠 때 부른다. 형식은 화면이 먼저 본다(2026-10-29 재영). */
+export async function checkEmailAvailableAction(email: string): Promise<ActionResult<{ available: boolean }>> {
+  try {
+    return { ok: true, available: await checkEmailAvailable(email) };
+  } catch (error) {
+    return failureOf(error, "이메일 확인");
   }
 }
 

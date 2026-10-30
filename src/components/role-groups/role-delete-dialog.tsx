@@ -23,13 +23,11 @@ export function RoleDeleteDialog({
   role,
   actions,
   noCandidateText,
-  blockedReason,
   onDeleted,
 }: {
   role: { roleGroupId: number; roleCode: string; name: string; updatedAt: string };
   actions: DeleteDialogActions;
   noCandidateText: string;
-  blockedReason?: string | null;
   onDeleted: () => void;
 }) {
   const router = useRouter();
@@ -101,17 +99,9 @@ export function RoleDeleteDialog({
 
   return (
     <>
-      {/* 막힌 이유는 툴팁만이 아니라 글자로 옆에 둔다 — 키보드 · 터치 · 화면 낭독기도 읽는다 */}
-      <span className="inline-flex items-center gap-[6px]">
-        <Button variant="soft" onClick={handleOpen} disabled={Boolean(blockedReason)} aria-describedby={blockedReason ? `role-${role.roleGroupId}-delete-blocked` : undefined}>
-          삭제
-        </Button>
-        {blockedReason && (
-          <span id={`role-${role.roleGroupId}-delete-blocked`} className="text-[13px] text-erp-label">
-            {blockedReason}
-          </span>
-        )}
-      </span>
+      <Button variant="soft" onClick={handleOpen}>
+        삭제
+      </Button>
       <ConfirmDialog
         open={open}
         // 점포 삭제 확인창(stores/[storeId]/store-detail-actions.tsx)과 같은 물음 · 복구 안내(2026-10-26 사용자 지정)
@@ -190,6 +180,7 @@ export function RoleDeleteDialog({
                   ))}
                 </Select>
               </Field>
+              <p className="text-erp-label">삭제된 권한 그룹은 복구할 수 없습니다.</p>
               <InfoBand>변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.</InfoBand>
             </>
           )}
