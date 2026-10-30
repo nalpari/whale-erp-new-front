@@ -1,6 +1,17 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: main 병합(front wooper, main #205 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 는 문장 단위로 합쳤고 generated 는 늦은 값을 썼다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — PR #204 code-review: 출처 `staff-filter.tsx` 의 주석을 고친 것(「로그인 뒤 맡게 된 점포」 → 「이 탭이 아직 맞추지 못한 점포」, 점포 목록 맞추기)을 본문에도 맞췄다(front wooper).
+* **Update**: main 병합(front wooper, main #202 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) 는 문장 단위로 합쳤고 generated 는 늦은 값을 썼다. BP 관리자 필터 import 충돌은 양쪽(역할 타입 · chipsKeyOf)을 살렸다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — PR 리뷰(조용한 실패 · 테스트 · 주석) 반영: 점포 목록 맞추기가 401 은 로그인 화면으로, 403 · 404 는 그 화면에서 더 묻지 않게 했다(연결 끊김 · 5xx 만 다음에 다시). 탭 `stores` 를 쓰면 버전을 지우고 목록을 쓴 뒤에만 버전을 써 짝이 어긋나지 않게 했다. 응답 사이 다른 화면으로 갔으면 범위 replace 를 건너뛴다. 헤더가 점포 목록이 바뀌면 주소 범위를 다시 따른다. 삭제 뒤 주소는 점포 번호를 숫자로 읽는다(「02」). 공통 토스트 차례 판정을 `toast-queue.ts` 로 떼어 테스트를 붙였다. 옛 주석 · 문서(「세션 동안 바뀌지 않는다」 · 「로그인 뒤 맡게 된 점포」 등)를 고쳤다(front wooper).
+* **Update**: [점포 관리](/stores.md) — 재리뷰 반영: 등록 · 삭제 뒤 목록이 헤더 범위를 따르도록 바뀐 것(`withHeaderStoreSearch` · `withoutDeletedStore`)과 점포 목록 맞추기를 적었다(옛 「등록 · 삭제 뒤 전체」 서술 정정). [Whale ERP Frontend](/whale-erp-front.md) — 고른 점포가 없어져 범위를 전체로 돌릴 때 쪽(page)을 뺀다(front wooper).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 목록 필터(3팀)도 점포 목록을 다시 맞추면 직영 · 가맹 칩을 맞춘다(`chipsKeyOf` 동기화 키, 점포 · BP 관리자와 같다). 공용 개발 DB 에 `contracts.reject_reason` 마이그레이션이 없어 화면 확인은 못 했다(front wooper).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 코드 리뷰 반영: 다른 BP 주소로 가 `Ready` 가 내려간 뒤 늦게 온 점포 목록 맞추기 결과가 새 BP 의 상태 · 탭 저장값을 덮지 않게 했다(`disposed` 표시 · 상태 갱신 때 BP 재확인). 공통 토스트가 내려갈 때 타이머를 지운다(front wooper).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 목록을 다시 맞춰도 점포 · BP 관리자 목록 필터의 직영 · 가맹 범위 칩이 옛 개수로 남던 것을 고쳤다: 칩을 쥔 필터의 동기화 키에 지금 점포로 만든 칩의 지문(`chipsKeyOf`)을 넣었다(헤더 10개 · 칩 9개, front wooper).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 등록 뒤 목록도 헤더 범위를 따른다(`withHeaderStoreSearch` — 고른 점포 · 범위를 지운다). 새 점포가 헤더 범위 밖이면 목록에는 없고 헤더 개수 · 토스트로 알린다(2026-10-30 사용자 결정, front wooper).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 삭제 뒤 목록이 헤더 범위와 맞도록 `withoutDeletedStore` 로 보낸다: 고른 점포에서 지운 점포만 빼고, 없으면 헤더 범위로 다시 채우며, 헤더 범위가 그 점포였으면 전체. 전엔 점포 검색을 「전체」로 비워 헤더 「직영 9개」 · 필터 「전체」로 갈렸다(2026-10-30 사용자 결정, front wooper). 등록 뒤는 그대로 `withoutStoreSearch`.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 목록 맞추기: 새로고침 · 메뉴 이동 · 창 포커스 때 `GET /bp-codes/{id}/stores-version` 을 묻고 바뀌었으면 `GET /auth/admin/me/stores`(고른 BP 는 `/bp-codes/{id}/stores`)로 다시 받아 헤더 범위 선택기 · 점포 고르기를 맞춘다. 바뀌면 「점포 목록이 변경되었습니다.」 토스트, 다른 탭은 `stores-changed` 로 바로 맞추고, 점포 화면은 저장 직후 `useRefreshStores()` 를 부른다. 공통 토스트는 차례로 뜬다. 점포 고르기의 「다시 로그인하면 찾을 수 있습니다」 안내를 뺐다(api exeggcute, front wooper).
 * **Update**: main 병합(front cleffa): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 관리 · 플랫폼 휴일 관리 디자인 수정(front cleffa): 캘린더 머리(공통 MonthPicker) · 범례, BP 휴일 목록 열 · 상세 머리와 표 · 확인창 · 등록 패널 반복 상자 · 설명 칸, 공통 Textarea grow · ConfirmDialog wide="large" · StoreMappingPicker short.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 근로계약 작성 · 이어 쓰기의 근무지 선택지를 api 를 따라 `GET /contracts/store-options` 로 바꿨다(WHALEERP-638) — 탭 BP 를 실어 플랫폼 계정도 고른 BP 의 근무지를 받는다. api 가 거절하면(400 · 403 · 404) 오류 화면 대신 폼 자리에 그 문장(`loadFormData` 의 `denied`). 생성 타입은 바뀐 블록만 옮겼다. api 가 옛 경로를 지워 api 와 front 를 잇달아 배포한다.
