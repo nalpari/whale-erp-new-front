@@ -109,7 +109,7 @@ export const DETAILS = {
 const groupName = (g) => g.split(" · ")[0];
 
 // 안내 상자(앱 side-parts.tsx WarnBand · InfoBand · SuccessBand). 줄바꿈은 \n(whitespace-pre-line)
-const warnBand = (t) => `<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] whitespace-pre-line text-erp-off">${t}</div>`;
+const warnBand = c.warnBand;
 const infoBand = (t, a = "") => `<div${a} class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[14px] font-medium text-erp-ink">${t}</div>`;
 const successBand = (t) => `<div class="rounded-[2px] border border-erp-on bg-erp-on-bg px-[16px] py-[12px] text-[14px] whitespace-pre-line text-erp-on">${t}</div>`;
 // 칸 오류 문구(앱 FieldMessage)
