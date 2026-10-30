@@ -2,6 +2,7 @@
 
 import { createContext, use, useEffect, useRef, useState, type ReactNode } from "react";
 import { EASE_OUT } from "./theme";
+import { EMPTY_TOAST_QUEUE, onToastExpire, onToastShow, type ToastQueue } from "./toast-queue";
 
 // 공통 토스트 — 저장 · 수정 · 삭제가 성공하면 화면 하단 가운데에 한 줄로 띄우고 3초 뒤 사라진다(2026-10-12 결정).
 // 문구는 화면마다 짓지 않고 아래 셋을 쓴다. 다른 안내가 꼭 필요하면 문자열을 그대로 넘긴다.
@@ -31,31 +32,30 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState("");
   const [open, setOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  // 지금 떠 있는(또는 곧 뜰) 문구와 그 뒤에 기다리는 문구
-  const current = useRef<string | null>(null);
-  const queue = useRef<string[]>([]);
+  // 지금 떠 있는(또는 곧 뜰) 문구와 그 뒤에 기다리는 문구 — 차례 판정은 toast-queue.ts
+  const queue = useRef<ToastQueue>(EMPTY_TOAST_QUEUE);
   // 내려갈 때 기다리던 타이머를 지운다
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const present = (text: string) => {
-    current.current = text;
     setMessage(text);
     setOpen(true);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
-      const next = queue.current.shift();
+      const { state, next } = onToastExpire(queue.current);
+      queue.current = state;
       setOpen(false);
-      current.current = next ?? null;
-      if (next !== undefined) timer.current = setTimeout(() => present(next), GAP_MS);
+      if (next !== null) timer.current = setTimeout(() => present(next), GAP_MS);
     }, SHOW_MS);
   };
 
   // 떠 있는 동안 다른 문구가 오면 앞의 것이 3초를 다 채운 뒤 차례로 띄운다(저장 뒤 「점포 목록이 변경되었습니다.」 등, 2026-10-29).
-  // 떠 있는 것과 같은 문구면 3초를 처음부터 다시 세고, 이미 기다리는 문구는 또 쌓지 않는다.
+  // 같은 문구 · 이미 기다리는 문구의 처리는 onToastShow 를 본다.
   const show = (kind: ToastKind | string) => {
     const text = kind in TOAST_MESSAGE ? TOAST_MESSAGE[kind as ToastKind] : kind;
-    if (current.current === null || (text === current.current && !queue.current.length)) return present(text);
-    if (text !== current.current && !queue.current.includes(text)) queue.current.push(text);
+    const { state, present: now } = onToastShow(queue.current, text);
+    queue.current = state;
+    if (now) present(text);
   };
 
   return (
