@@ -263,7 +263,6 @@ python3 docs/erd/_build.py
 |  | 만료 일시 | datetime | `expires_at` | 30일 |
 |  | 상태 | enum | `status` | 발송·수락·만료·거절 |
 |  | 응답 일시 | datetime | `responded_at` |  |
-|  | 거절 사유 | text | `reject_reason` | 소속 확인 거절 |
 
 ### 가입 연결 보류 `link_holds` · 엔티티
 
@@ -386,7 +385,7 @@ python3 docs/erd/_build.py
 |  | 발송 일시 | datetime | `sent_at` |  |
 |  | 날인 기한 | datetime | `sign_deadline_at` | 발송일부터 30일 |
 |  | 재발송 횟수 | int | `resend_count` |  |
-|  | 거부 사유 | text | `reject_reason` |  |
+|  | 수정 요청 사유 | text | `correction_reason` | 직원이 쓴 글, 100자 |
 | FK | 작성 관리자 | id | `created_by` |  |
 
 ### 계약 근무 요일 `contract_work_days` · 엔티티
