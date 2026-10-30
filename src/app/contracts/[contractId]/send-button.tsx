@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, ConfirmDialog, useAction } from "@/components/common";
 import { withBack } from "../contract-list";
+import { useCurrentBp } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { sendContract, type ContractStatus, type SendContractResult } from "./actions";
 import { resendDialogCopy, sendFailureOf } from "./send-model";
 
@@ -34,6 +36,8 @@ export function SendContractButton({
   staffJoined: boolean;
 }) {
   const router = useRouter();
+  // 상세 주소는 탭 BP 를 붙인다. back 은 옛 경로(목록 쿼리)다
+  const bp = useCurrentBp().bpCodeId;
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [locked, setLocked] = useState(false);
@@ -78,7 +82,7 @@ export function SendContractButton({
               setError("");
               // 보내기 실패 안내(?send=)로 왔다면 쿼리를 지운다 — 남아 있으면 「보내지 못했습니다」를 보고 또 누른다(front #50 리뷰).
               // 돌아갈 목록 주소(?back=)는 남긴다
-              router.replace(withBack(`/contracts/${contractId}`, back));
+              router.replace(bpPath(bp, withBack(`/contracts/${contractId}`, back)));
               router.refresh();
               return;
             }

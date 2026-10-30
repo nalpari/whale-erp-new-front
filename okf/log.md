@@ -4,6 +4,9 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 계약서 파일 줄을 나눴다(WHALEERP-155): 전자계약은 처리 완료본(서명 확인) · 보낸 원본, 종이 계약은 날인본(`document-rows.ts`, `node --test`). 체결됐는데 처리 완료본이 아직 없으면 「아직 없음」 안내. api #211(WHALEERP-131)이 두 파일을 만든다. `docs/erd/physical` 은 api 물리 생성기로 다시 만들었다(당사자 사용자 칸 · 파일 발송 일시).
 
 ## 2026-10-29
+* **Update**: main 병합(front grimer, main #189 등까지): okf 충돌은 양쪽 기록을 살렸다(generated 는 늦은 값).
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #194 code-review: 근로계약 화면이 탭 BP 주소로 옮겨도 이 화면의 근로계약 링크는 옛 주소 그대로(SessionGate 가 보냄)라고 적었다. 날인본 창구는 api 의 BP 거절(400 · 403)을 오류 로그 없이 「받을 수 없습니다」 안내(`?document=denied`)로 돌려보낸다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 화면을 탭 BP 주소 `/bp/{bpCodeId}/contracts` 로 옮겼다(`BP_PATH_SCREENS`, WHALEERP-618). 목록 · 상세 · 작성 · 이어 쓰기 · 근로자 정보 · 재발송 · 종료 · 삭제 뒤 이동과 종이 계약 · 날인본 창구가 주소의 BP 를 잃지 않고(`bpPath` · `screenPath()` · `bpHref`), 저장 뒤 안내 쿠키 경로도 `/bp/{id}/contracts` 다. api 거절(BP 를 고르지 않음 400 · 403 · 없는 BP 404)은 화면에 그 문장으로 보인다(`deniedMessageOf`). 홈의 근로계약 링크도 탭 BP 를 붙이고, 직원 정보 관리 · 급여명세서의 링크는 옛 주소로 두어 SessionGate 가 보낸다. api 타입은 근로계약 경로의 400 · 404 설명만 다시 만들었다(같은 배포 창: api 의 근로계약 `@TargetBp()` 전환).
 * **Update**: main 병합(front kabuto, main #195 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Update**: main 병합(front kabuto, main #190 까지): okf/log 충돌은 양쪽 기록을 살렸고 [Whale ERP Frontend](/whale-erp-front.md) 시각은 늦은 값을 남겼다.
 * **Update**: main 병합(front doduo, main #192 까지): okf 충돌은 양쪽 기록을 살렸다.

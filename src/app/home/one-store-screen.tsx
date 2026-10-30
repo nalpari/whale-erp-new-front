@@ -261,7 +261,7 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
         </LoadGroupArea>
       )}
       {canOpen("/staff-members") && (
-        <StaffCard storeId={storeId} section={staff} canContracts={canOpen("/contracts")} canCreateContract={canCreateContract} today={today} />
+        <StaffCard storeId={storeId} section={staff} canContracts={canOpen("/contracts")} canCreateContract={canCreateContract} today={today} at={at} />
       )}
     </>
   );
@@ -333,14 +333,17 @@ function StaffCard({
   canContracts,
   canCreateContract,
   today,
+  at,
 }: {
   storeId: number;
   section: Section<{ items: StaffMemberListItem[]; total: number }>;
   canContracts: boolean;
   canCreateContract: boolean;
   today: string;
+  /** 탭 BP 주소로 옮긴 화면(근로계약)의 링크에 탭 BP 를 붙인다 */
+  at: (path: string) => string;
 }) {
-  const create = canCreateContract && <Button href="/contracts/new">계약서 작성</Button>;
+  const create = canCreateContract && <Button href={at("/contracts/new")}>계약서 작성</Button>;
   const counts = section.got && "data" in section.got ? staffCountsOf(section.got.data) : null;
   const masked = (render: (item: StaffMemberListItem) => ReactNode) => (r: StaffRow) => (r.item.isMasked ? DASH : render(r.item));
   return (
@@ -360,7 +363,7 @@ function StaffCard({
       }
       actions={
         <>
-          {canContracts && soft("근로계약 관리", listHrefOf({ page: 1, pageSize: 20, staffMemberName: "", status: [], storeIds: [storeId], storesCleared: false, scope: null }))}
+          {canContracts && soft("근로계약 관리", at(listHrefOf({ page: 1, pageSize: 20, staffMemberName: "", status: [], storeIds: [storeId], storesCleared: false, scope: null })))}
           {soft("직원 관리", staffListHrefOf({ ...DEFAULT_STAFF_LIST_QUERY, storeIds: [storeId] }))}
           {create}
         </>

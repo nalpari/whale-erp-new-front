@@ -102,7 +102,7 @@ function HomeBody({ greeting }: { greeting: string }) {
     const failed = (what: string, error: string) => <Notice text={`${what} 불러오지 못했습니다. ${error}`} />;
     body = (
       <>
-        {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={renewalItem ? (pendingLineOf(renewalItem, bp)?.href ?? "/contracts") : "/contracts"} /> : null}
+        {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={renewalItem ? (pendingLineOf(renewalItem, bp)?.href ?? bpPath(bp, "/contracts")) : bpPath(bp, "/contracts")} newHref={bpPath(bp, "/contracts/new")} /> : null}
         {s?.cards && <Cards cards={s.cards} hq={hq && s.cards.stores.franchise > 0} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
         <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
           {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} hq={hq && !!s?.cards?.stores.franchise} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />}
@@ -143,7 +143,7 @@ function Notice({ text, children }: { text: string; children?: ReactNode }) {
 }
 
 // 경고 밴드 — 갱신 예정 계약 중 종료일이 7일 안인 것이 있을 때만(HOM-04). 가려진 직원은 이름 없이 점포만 적는다
-function RenewalBand({ renewals, href }: { renewals: NonNullable<HomePending["renewals"]>; href: string }) {
+function RenewalBand({ renewals, href, newHref }: { renewals: NonNullable<HomePending["renewals"]>; href: string; newHref: string }) {
   const canCreate = useMenuRole(MENU_CODE.contracts, "create");
   return (
     <div className={`${CARD} flex items-center gap-[12px] px-[24px] py-[12px]`}>
@@ -158,7 +158,7 @@ function RenewalBand({ renewals, href }: { renewals: NonNullable<HomePending["re
         <Button variant="soft" href={href}>
           계약 보기
         </Button>
-        {canCreate && <Button href="/contracts/new">새 계약 작성</Button>}
+        {canCreate && <Button href={newHref}>새 계약 작성</Button>}
       </div>
     </div>
   );

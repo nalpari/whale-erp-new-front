@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [정정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-29T07:31:22Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-29T11:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -285,6 +285,7 @@ sources:
 
 # 근로계약 칸 (WHALEERP-184)
 
+* 근로계약 화면은 탭 BP 주소(`/bp/{id}/contracts…`, WHALEERP-618)로 옮겼지만, 직원 정보 관리는 아직 BP 주소가 아니라 이 칸의 「관리」 · 「근로계약서 작성」 · 직원 초대 링크는 옛 `/contracts…` 그대로다 — SessionGate 가 탭 BP 주소로 보낸다. 이 화면을 옮길 때 `bpPath()` 로 바꾼다.
 * 근로계약 영역 요약(`GET /staff-members/:id/summary/contracts`)으로 가장 최근 계약 하나를 받는다(전에는 상세 응답의 `contract` 로 계약 상세를
   한 번 더 받았다). 「근로계약 관리」 조회 권한이 없으면 영역 403 이라 「근로계약을 볼 권한이 없습니다.」(front #79 와 같은 자리), 나머지 실패는
   「근로계약을 불러오지 못했습니다.」 + 「다시 하기」다(위 영역 규칙).
