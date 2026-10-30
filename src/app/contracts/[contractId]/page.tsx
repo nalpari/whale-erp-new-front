@@ -171,7 +171,12 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         { label: "계약 방식", value: c.contractMethod ? labelOf(contractMethods, c.contractMethod) : "-" },
         // 계약서 파일 — 종이 계약은 날인본(CTR-23), 전자계약은 처리 완료본(서명 확인)과 보낸 원본(WHALEERP-155 · 131). 누르면 라우트
         // 핸들러가 300초짜리 주소를 받아 원래 파일 이름으로 내려받게 한다. documents 는 api #49 부터 온다 — 없으면 빈 것으로 본다.
-        ...documentRowsOf({ ...c, histories: c.histories ?? [], documents: c.documents ?? [] }).map((row) => ({
+        ...documentRowsOf({
+          contractMethod: c.contractMethod,
+          status: c.status,
+          histories: c.histories ?? [],
+          documents: c.documents ?? [],
+        }).map((row) => ({
           label: row.label,
           value: row.empty ? (
             <span className="text-erp-sub">{row.empty}</span>
