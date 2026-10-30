@@ -42,7 +42,8 @@ export function button(label, { variant = "primary", href, ...a } = {}) {
 }
 
 // badge.tsx
-const BADGE_TONE = { on: "min-w-[44px] bg-erp-on-bg text-erp-on", off: "bg-erp-off-bg text-erp-off" };
+// closed: 폐점처럼 더는 다루지 않는 상태 — 회색(앱 badge.tsx 와 같다)
+const BADGE_TONE = { on: "min-w-[44px] bg-erp-on-bg text-erp-on", off: "bg-erp-off-bg text-erp-off", closed: "bg-erp-thead-bg text-erp-sub" };
 export const badge = (tone, text) =>
   `<span class="inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium ${BADGE_TONE[tone]}">${text}</span>`;
 
