@@ -7,7 +7,7 @@ import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { FailedBand, InfoBand, WarnBand } from "@/components/site/side-parts";
 import { WhoList } from "@/app/platform-admins/admin-parts";
-import { repeatBasis, repeatEndText, weekdayName, yesterdayOf, type RepeatType } from "@/lib/bp-holiday-view";
+import { openStores, repeatBasis, repeatEndText, weekdayName, yesterdayOf, type RepeatType } from "@/lib/bp-holiday-view";
 import type { BpHolidayDetail, BpHolidayStore } from "@/lib/bp-holidays";
 import { formatDateTime, wasUpdated } from "@/lib/format";
 import { deleteBpHolidayAction, terminateBpHolidayAction } from "./actions";
@@ -281,6 +281,9 @@ const STORE_COLUMNS: Column<BpHolidayStore>[] = [
   },
 ];
 
+/** 지금 열린 점포 수(openStores). 휴일이 끝나 열린 점포가 없으면 걸렸던 점포 수 — 0개로 보이지 않게 */
+const storeCountOf = (stores: BpHolidayStore[]) => openStores(stores).length || new Set(stores.map((s) => s.storeId)).size;
+
 /** 점포 표에서 한 번에 보이는 줄 수 — 넘으면 표 안에서 스크롤한다(데모 2026-10-08 · 2026-10-26 사용자 요청) */
 const VISIBLE_STORE_ROWS = 5;
 
@@ -300,8 +303,8 @@ function StoreTable({ isAllStores, stores }: { isAllStores: boolean; stores: BpH
           <span className="flex items-baseline gap-[10px]">
             {isAllStores ? "예외점포" : "대상점포"}
             {/* 점포 수만 — 「전체 점포 · 1건」은 전체 점포와 그 밖의 1곳으로 읽혀 헷갈렸다(2026-10-30 사용자 지적). 적용 범위는 머리 줄에 있다.
-                같은 점포를 뺐다 다시 더하면 기간 줄이 늘어나므로 줄 수가 아니라 점포 수를 센다 */}
-            <span className="text-[14px] font-normal text-erp-label">{new Set(stores.map((s) => s.storeId)).size.toLocaleString("ko-KR")}개</span>
+                같은 점포를 뺐다 다시 더하면 기간 줄이 늘어나므로 줄 수가 아니라 점포 수를 센다. 빠진 점포는 세지 않는다(2026-10-30 재영) */}
+            <span className="text-[14px] font-normal text-erp-label">{storeCountOf(stores).toLocaleString("ko-KR")}개</span>
           </span>
         </h3>
       </div>

@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: [BP 환경설정](/config.md) · [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일을 새 main(#207) 기준으로 문서 ↔ 구현 대조했다: 상세 점포 수는 지금 열린 점포만(끝난 휴일은 걸렸던 수), 변경이력 빈 문구 「변경이력이 없습니다.」, 「맡지 않은 점포 N개」, 안 쓰는 `sameSchedule` 삭제. 목록 「첫 점포 외 N개」는 그날 적용 점포 전부 · 짧은 휴일유형 · 꼬리표 · 미리보기 · 오류 요약 띠 없음을 적고, 입력 순서 · 막힌 사유 띠 서술을 코드대로 고쳤다(front prinplup, 2026-10-30 재영).
 * **Update**: main 병합(front prinplup, main #207 까지): 생성물(docs/demo/*.html · erp.css)은 다시 빌드해 맞추고, okf 충돌은 양쪽 기록을 살렸다.
 * **Update**: [BP 환경설정](/config.md) — BP 관리자 목록 열 순서를 지금 코드대로 고쳤다(대상점포는 역할 다음, 등록일시 열 없음 — PR #200 반영이 okf 에 빠져 있었다, front prinplup).
 * **Update**: [BP 환경설정](/config.md) · [Whale ERP Frontend](/whale-erp-front.md) — BP 공통코드를 문서 ↔ 구현 대조로 맞췄다: 목업 `config/codes.html` · 화면정의서를 front대로(왼쪽 필터 · 쪽 없음 · 관리주체 꼬리표 · 사용여부 · 삭제 열 · 순서 변경 빨간 상자 · 플랫폼 사용중지 코드 다시 켬 등 21곳) 고치고 그림을 다시 찍었다. 플랫폼 계정은 회색 「플랫폼 계정은 BP 공통코드를 조회만 합니다.」(전엔 빨간 상자), 쓰이지 않던 플랫폼고정 잠금(`bpPanelLock` fixed)을 지웠다. 지운 코드 다시 등록 · 받지 않은 플랫폼 원본과의 중복은 api 기준을 적고, 낡은 「api 다시 켜기 409 대기」 문장을 걷었다(front prinplup, 2026-10-30 재영).

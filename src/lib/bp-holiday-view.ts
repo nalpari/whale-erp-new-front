@@ -253,22 +253,6 @@ export function holidayBody(f: HolidayForm) {
   };
 }
 
-/** 두 양식의 일정(유형 · 날짜 · 반복 · 종료 조건 · 적용 범위)이 같은가 — 진행 중 휴일은 이것을 바꾸면 409 다. */
-export function sameSchedule(a: HolidayForm, b: HolidayForm): boolean {
-  const x = holidayBody(a);
-  const y = holidayBody(b);
-  return (
-    x.holidayTypeCode === y.holidayTypeCode &&
-    x.startDate === y.startDate &&
-    x.endDate === y.endDate &&
-    x.holidayRepeatTypeCode === y.holidayRepeatTypeCode &&
-    x.repeatEndType === y.repeatEndType &&
-    x.repeatEndDate === y.repeatEndDate &&
-    x.repeatCount === y.repeatCount &&
-    x.isAllStores === y.isAllStores
-  );
-}
-
 // ── 문구 ──────────────────────────────────────────────────────────────
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"] as const;

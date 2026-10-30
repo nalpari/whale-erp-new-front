@@ -18,7 +18,6 @@ import {
   repeatBasis,
   repeatEndText,
   repeatSkipNote,
-  sameSchedule,
   shiftBpHolidayMonth,
   targetText,
   validateHolidayForm,
@@ -196,9 +195,6 @@ test("상세 → 양식 → 같은 일정", () => {
   };
   const f = formOfDetail(detail);
   assert.deepEqual([f.type, f.repeatType, f.repeatEnd, f.repeatCount, f.storeIds], ["REPEAT", "WEEKLY", "COUNT", "10", [3, 4]]);
-  assert.equal(sameSchedule(f, { ...f, name: "바꾼 이름", storeIds: [3] }), true);
-  assert.equal(sameSchedule(f, { ...f, repeatCount: "11" }), false);
-  assert.equal(sameSchedule(f, { ...f, isAllStores: true }), false);
   assert.deepEqual(formOfDetail({ ...detail, isAllStores: true }).excludedStoreIds, [3, 4]);
 });
 
