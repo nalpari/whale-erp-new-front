@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { DataTable, PageBar, type Column } from "@/components/common";
+import { DataTable, NoticeBand, PageBar, type Column } from "@/components/common";
 import { deniedMessage, ListFailure } from "@/components/community/list-load";
 import { ApiError } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
@@ -54,10 +54,11 @@ export default async function PublicHolidaysPage({ searchParams }: PageProps<"/p
               {needsAnnouncementNote(query.year, Number(today.slice(0, 4))) && <span className="text-[14px] text-erp-label">임시공휴일 · 선거일은 정부 발표 후 반영됩니다.</span>}
             </div>
             {showsSyncFailure(failedYears, query.year) && (
-              <div role="status" className="flex flex-col gap-[6px] rounded-[2px] border border-erp-off bg-erp-off-bg px-[18px] py-[12px] text-[14px]">
-                <p className="font-semibold text-erp-off">{query.year}년 공식 휴일 동기화가 실패했습니다 — 저장된 휴일을 그대로 보여 드립니다.</p>
-                <p className="text-erp-ink">실패한 동기화는 휴일을 바꾸지 않았습니다. 아래 휴일은 직전 동기화 값 또는 규칙으로 계산한 값이며, 다음 정기 동기화에서 다시 맞춥니다.</p>
-              </div>
+              // 실패 띠는 공통 NoticeBand(risk · role=alert) — 화면 낭독기가 바로 읽는다(2026-10-30 재영)
+              <NoticeBand
+                title={`${query.year}년 공식 휴일 동기화가 실패했습니다 — 저장된 휴일을 그대로 보여 드립니다.`}
+                detail="실패한 동기화는 휴일을 바꾸지 않았습니다. 아래 휴일은 직전 동기화 값 또는 규칙으로 계산한 값이며, 다음 정기 동기화에서 다시 맞춥니다."
+              />
             )}
             <div className="flex min-h-0 flex-col gap-[12px]">
               <nav aria-label="보기" className="flex shrink-0 border-b border-erp-bar-line">
