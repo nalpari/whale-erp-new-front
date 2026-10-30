@@ -19,7 +19,7 @@ export default async function BpAdminsPage({ searchParams }: PageProps<"/bp-admi
     // 역할을 모두 꺼도(빈 배열) 같다(2026-10-30)
     query.accountStatus === "NONE" || query.roleTypeCodes?.length === 0
       ? { items: [], total: 0, inactiveCount: 0 }
-       : getBpAdmins(bpAdminListQueryOf(query)).catch(listDenied),
+      : getBpAdmins(bpAdminListQueryOf(query)).catch(listDenied),
     // 권한 그룹 선택지를 못 받아도 목록은 연다 — null 로 넘겨 필터 · 폼이 받지 못한 것을 알린다(빈 선택지로 조용히 두지 않는다).
     // 로그인 만료 · 권한 없음은 목록도 같은 이유로 막혀 그쪽이 알리므로 장애 로그를 남기지 않는다
     getBpAdminRoleGroups().catch((error: unknown) => {

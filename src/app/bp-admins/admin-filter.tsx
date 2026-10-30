@@ -110,6 +110,9 @@ export function AdminFilter({
     );
   };
 
+  // 고른 역할의 권한명만 선택지로(2026-10-30)
+  const visibleGroups = roleGroups?.filter((r) => showsRole(r.roleTypeCode));
+
   return (
     <FilterPanel
       onReset={() => {
@@ -158,12 +161,11 @@ export function AdminFilter({
           title={roleGroups === null ? "권한 그룹 목록을 불러오지 못했습니다. 화면을 새로 고쳐 주세요." : undefined}
         >
           <option value="">{roleGroups === null ? "불러오지 못함" : "전체"}</option>
-          {/* 주소의 권한 그룹이 선택지에 없어도(받지 못함 · 고를 수 없는 그룹) 걸린 조건을 「전체」로 숨기지 않는다 */}
-          {query.roleGroupId && !roleGroups?.some((r) => r.roleGroupId === query.roleGroupId) && (
+          {/* 주소의 권한 그룹이 선택지에 없어도(받지 못함 · 고를 수 없는 그룹 · 끈 역할의 그룹 — 북마크 · 뒤로 가기) 걸린 조건을 「전체」로 숨기지 않는다 */}
+          {query.roleGroupId && !visibleGroups?.some((r) => r.roleGroupId === query.roleGroupId) && (
             <option value={query.roleGroupId}>선택한 권한명(#{query.roleGroupId})</option>
           )}
-          {/* 고른 역할의 권한명만(2026-10-30) */}
-          {roleGroups?.filter((r) => showsRole(r.roleTypeCode)).map((r) => (
+          {visibleGroups?.map((r) => (
             <option key={r.roleGroupId} value={r.roleGroupId}>
               {r.name} · {r.roleCode}
             </option>
