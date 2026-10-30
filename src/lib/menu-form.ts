@@ -75,7 +75,7 @@ export const bodyOf = (f: MenuFormValues) => {
 };
 
 /**
- * api 거절 문구를 붙일 칸 — 노출 메뉴명 형식은 이름 칸, URL 형식 · 겹침(409)은 URL 칸, 그 밖(동시 수정 · 상위 · 서비스)은 null(띠로 보인다).
+ * api 거절 문구를 붙일 칸 — 노출 메뉴명 형식은 이름 칸, URL 형식 · 겹침(409)은 URL 칸, 그 밖(동시 수정 · 상위 · 서비스 · API 권한 주소)은 null(띠로 보인다).
  * api 는 오류에 칸 이름을 싣지 않아 문구로 가른다(platform-menus DTO · assertUrlFree).
  */
 export function menuFieldOf(message: string): "name" | "url" | null {

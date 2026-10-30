@@ -83,6 +83,12 @@ test("그룹 저장 요청 — 새 그룹 코드는 대문자 · 공백 제거, 
   ], "새 그룹의 표시 순서는 보내지 않는다 — api 가 매긴다");
 });
 
+test("받아 온 목록에 없는 기존 행은 수정 요청에 싣지 않는다 — 보낼 updatedAt 이 없다", () => {
+  const gone = { key: "GONE", itemCode: "GONE", label: "x", status: "ACTIVE" as const, sortOrder: 9, added: false };
+  assert.deepEqual(buildSaveItemsInput([gone], items).updates, []);
+  assert.deepEqual(buildSaveGroupsInput([groupDraft({ ...groups[0], groupCode: "GONE" }, { groupName: "x" })], groups).updates, []);
+});
+
 test("관리 주체를 고르지 않은 새 그룹은 요청에 싣지 않는다", () => {
   assert.deepEqual(buildSaveGroupsInput([newGroup({ manageOwnerCode: "" })], groups).creates, []);
 });

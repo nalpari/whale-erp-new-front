@@ -17,7 +17,7 @@ import { useTreeDrag } from "./use-tree-drag";
 // 줄을 누르면 오른쪽에 그 메뉴의 수정(수정 권한이 없으면 상세)이, 같은 줄을 다시 누르면 고른 것을 푼다. [등록]을 누르면 같은 칸이 등록 양식이 되고
 // 트리의 새 자리(고른 메뉴 안 맨 끝, 3단계를 고르면 그 상위 안 맨 끝, 고른 것이 없으면 최상위 맨 끝)에 「작성 중」 줄이 선다.
 // 손잡이로 끌어 옮기면 바로 저장된다(목업). 버튼은 지금 주소(/platform-menus)의 메뉴 권한(usePagePermission)으로 보인다 — 등록 create, 저장 · 옮기기 update. 막는 것은 api 다.
-// 지금 화면의 메뉴(usePageMenu)는 권한이 아니라 자기 잠금 확인(이 화면이 닫히는 저장 · 옮기기)에도 쓴다.
+// 같은 메뉴(usePageMenu)의 메뉴 코드는 자기 잠금 확인(이 화면이 닫히는 저장 · 옮기기)에도 쓴다.
 
 type Row = { kind: "menu"; row: FlatRow<MenuNode> } | { kind: "draft" };
 

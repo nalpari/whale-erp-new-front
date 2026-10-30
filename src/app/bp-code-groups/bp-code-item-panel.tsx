@@ -25,7 +25,7 @@ import {
   unusableCodeMessage,
   withKeptPending,
 } from "@/lib/code-drafts";
-import { failureView, isStaleConflict, STALE_DETAIL } from "@/lib/code-save";
+import { failureView, STALE_DETAIL } from "@/lib/code-save";
 import { CODE_PLACEHOLDER, codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import { saveBpCodeItemsAction } from "./actions";
 
@@ -70,8 +70,10 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
   const [drafts, setDrafts] = useState(() => items.map(toBpItemDraft));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
-  // 그 사이 바뀐 409 뒤 다시 받은 목록으로 칸을 채울 때 실패 띠를 지우지 않는다
+  // 그 사이 바뀐 실패(409 · 404) 뒤 다시 받은 목록으로 칸을 채울 때 실패 띠를 지우지 않는다
   const [staleBand, setStaleBand] = useState(false);
+  // 지금 실패 띠가 그 사이 바뀐 실패인가 — 아랫줄을 「최신 정보로 다시 채웠습니다.」로 고른다(failureView 의 판정 그대로)
+  const [failureStale, setFailureStale] = useState(false);
   const [saving, startSaving] = useTransition();
   // 저장을 시작한 목록 — 뒤 단계가 실패했거나 결과를 모를 때 다음에 오는 목록 뒤에 새 행을 이어 두고 지울 행 표시도 다시 얹는다(플랫폼 패널과 같다).
   const [savingFrom, setSavingFrom] = useState<BpCodeItem[] | null>(null);
@@ -82,7 +84,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
   if (items !== shown) {
     const sameRows = JSON.stringify(items) === JSON.stringify(shown);
     setShown(items);
-    // 다시 받은 목록이 같은 내용이면 그 사이 바뀜 띠 표시를 여기서 푼다 — 띠는 남긴다
+    // 다시 받은 목록이 같은 내용이면 staleBand 표시만 푼다 — 실패 띠(failure)는 그대로 둔다
     if (sameRows) {
       setStaleBand(false);
       setSavingFrom(followSameRows(savingFrom, shown, items));
@@ -93,7 +95,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       setDrafts(next);
       if (!hasPending(next)) {
         setErrors({});
-        // 그 사이 바뀐 409 로 다시 받은 목록이면 그 띠는 남긴다(staleBand) — 한 번 쓰고 푼다
+        // 그 사이 바뀐 실패(409 · 404)로 다시 받은 목록이면 실패 띠는 남긴다(staleBand) — 한 번 쓰고 푼다
         if (!staleBand) setFailure(null);
       }
       setStaleBand(false);
@@ -160,6 +162,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
     const found = validate();
     setErrors(found);
     setFailure(null);
+    setFailureStale(false);
     if (Object.keys(found).length) return focusFirstInvalid(PANEL_ID);
 
     const input = buildSaveItemsInput(drafts, items);
@@ -184,7 +187,8 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       }
       // 앞 단계(수정 · 삭제)가 저장됐으면 새 행 · 지울 행 표시는 다시 받은 목록에 남는다(savingFrom)
       if (!result.anySaved) setSavingFrom(null);
-      // 409 — 겹친 코드(지운 코드 포함) · 플랫폼고정 그룹. 문구가 「…: CODE」 꼴이면 그 새 행의 칸 오류로, 아니면 표 아래 한 줄로 보인다.
+      // 409 — 겹친 코드(지운 코드 포함) · 플랫폼고정 그룹. 문구에 코드가 실려 있으면(「…(CODE).」, 옛 꼴 「…: CODE」) 그 새 행의 칸 오류로,
+      // 아니면 표 아래 한 줄로 보인다. 그 사이 먼저 지운 409 · 404 는 칸 오류가 아니라 아래 stale 로 간다.
       const view = failureView(result);
       // 그 사이 다른 관리자가 고쳤거나 지웠다 — 띠로 알리고 최신 목록으로 칸을 다시 채운다
       // 기준을 지금 목록으로 두어, 다시 받은 목록이 기존 행만 최신 값으로 바꾸고 보내지 않은 새 행 · 지울 행 표시는 잇게 한다(PR #206 리뷰)
@@ -204,6 +208,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
         setErrors({ [`code:${row?.key ?? "server"}`]: message });
       }
       setFailure(view.band);
+      setFailureStale(view.stale);
     });
   };
 
@@ -362,7 +367,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       {lock === "platform-user" && <WarnBand>BP 공통코드는 BP 계정만 수정할 수 있습니다.</WarnBand>}
       {group && lock === "fixed" && <WarnBand>플랫폼고정 그룹은 수정할 수 없습니다.</WarnBand>}
       {reordered && <PendingNotice message={REORDERED} />}
-      {failure && <SaveFailedBand message={failure} detail={isStaleConflict(failure) ? STALE_DETAIL : undefined} />}
+      {failure && <SaveFailedBand message={failure} detail={failureStale ? STALE_DETAIL : undefined} />}
       <DataTable
         // 열 이름 줄까지 고정하고 그 아래만 스크롤한다(2026-10-26 사용자 지정)
         scroll

@@ -247,7 +247,15 @@ test("failureView — 그 사이 고쳤거나 지운 409 는 칸 오류가 아�
   // 이미 지운 행을 고치거나 지우면 api 는 읽기 단계에서 404 — 같은 「그 사이 바뀜」으로 다시 받는다(PR #206 리뷰)
   const missing = "상세 코드를 찾을 수 없습니다(G2).";
   assert.deepEqual(failureView(failed({ status: 404, message: missing, saved: [], failed: "수정" })), { band: missing, conflict: null, stale: true });
-  assert.equal(isStaleConflict(missing), true, "띠 아랫줄도 「최신 정보로 다시 채웠습니다.」");
+  assert.equal(isStaleConflict(missing), false, "404 는 문구가 아니라 상태 코드로 가른다");
+  // 앞 단계가 저장된 뒤의 404 도 띠 앞에 저장한 것을 먼저 적는다
+  assert.deepEqual(failureView(failed({ status: 404, message: missing, saved: ["수정"], failed: "삭제" })), {
+    band: `${partialSaved(["수정"], "삭제")} ${missing}`,
+    conflict: null,
+    stale: true,
+  });
+  // 문구 꼴이 다른 404(배포가 어긋난 Nest 기본 문구 등)도 그 사이 바뀜으로 본다 — 화면은 판정 값(stale)으로 아랫줄을 고른다
+  assert.equal(failureView(failed({ status: 404, message: "Cannot PUT /code-groups/X/items", saved: [], failed: "수정" })).stale, true);
 });
 
 test("withKeptPending — 이어 두면 기존 행은 최신 값으로, 보내지 않은 새 행 · 지울 행 표시는 남긴다(그 사이 바뀜 409 뒤)", () => {

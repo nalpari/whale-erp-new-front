@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Badge, Blocked, Button, DataTable, Select, TextField, Toggle, useToast, type Column } from "@/components/common";
 import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, withKeptPending, type GroupDraft } from "@/lib/code-drafts";
-import { failureView, isStaleConflict, STALE_DETAIL } from "@/lib/code-save";
+import { failureView, STALE_DETAIL } from "@/lib/code-save";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, ManageOwnerCode } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -56,8 +56,10 @@ export function CodeGroupPanel({
   const [drafts, setDrafts] = useState(() => groups.map(toDraft));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
-  // 그 사이 바뀐 409 뒤 다시 받은 목록으로 칸을 채울 때 실패 띠를 지우지 않는다
+  // 그 사이 바뀐 실패(409 · 404) 뒤 다시 받은 목록으로 칸을 채울 때 실패 띠를 지우지 않는다
   const [staleBand, setStaleBand] = useState(false);
+  // 지금 실패 띠가 그 사이 바뀐 실패인가 — 아랫줄을 「최신 정보로 다시 채웠습니다.」로 고른다(failureView 의 판정 그대로)
+  const [failureStale, setFailureStale] = useState(false);
   const [saving, startSaving] = useTransition();
   const [applyTarget, setApplyTarget] = useState<Draft | null>(null);
   const [applying, startApplying] = useTransition();
@@ -77,7 +79,7 @@ export function CodeGroupPanel({
     setShown({ groups, selected });
     // 저장 중에 같은 내용의 목록이 새 참조로 오면(오른쪽 패널 저장 등) 저장 기준도 그 참조로 옮긴다(followSameRows)
     if (sameRows) {
-      // 다시 받은 목록이 같은 내용이면 그 사이 바뀜 띠 표시를 여기서 푼다 — 띠는 남긴다
+      // 다시 받은 목록이 같은 내용이면 staleBand 표시만 푼다 — 실패 띠(failure)는 그대로 둔다
       setStaleBand(false);
       const followed = followSameRows(savingFrom?.groups ?? null, shown.groups, groups);
       if (savingFrom && followed !== savingFrom.groups) setSavingFrom({ ...savingFrom, groups });
@@ -88,7 +90,7 @@ export function CodeGroupPanel({
       setDrafts(next);
       if (!next.some((d) => d.added)) {
         setErrors({});
-        // 그 사이 바뀐 409 로 다시 받은 목록이면 그 띠는 남긴다(staleBand) — 한 번 쓰고 푼다
+        // 그 사이 바뀐 실패(409 · 404)로 다시 받은 목록이면 실패 띠는 남긴다(staleBand) — 한 번 쓰고 푼다
         if (!staleBand) setFailure(null);
       }
       setStaleBand(false);
@@ -171,6 +173,7 @@ export function CodeGroupPanel({
     const found = validate();
     setErrors(found);
     setFailure(null);
+    setFailureStale(false);
     if (Object.keys(found).length) return focusFirstInvalid(PANEL_ID);
 
     const input = buildSaveGroupsInput(drafts, groups);
@@ -211,6 +214,7 @@ export function CodeGroupPanel({
       }
       if (view.conflict) setErrors({ code: view.conflict });
       setFailure(view.band);
+      setFailureStale(view.stale);
     });
   };
 
@@ -332,9 +336,9 @@ export function CodeGroupPanel({
       actions={
         canSave && (
           <>
-            {/* 저장 전 새 행은 하나만 둔다. 관리주체를 둘 다 끄면(목록 없음) 새 그룹의 표시 순서를 셀 목록이 없어 막는다(리뷰로 찾음) */}
+            {/* 저장 전 새 행은 하나만 둔다. 표시 순서는 api 가 매기므로 관리주체 필터와 상관없이 추가한다(2026-10-30 재영 — 전엔 둘 다 끄면 막음) */}
             {canAdd && (
-              <Button variant="soft" onClick={handleAdd} disabled={Boolean(added) || saving || search.manageOwnerCode === "NONE"}>
+              <Button variant="soft" onClick={handleAdd} disabled={Boolean(added) || saving}>
                 추가
               </Button>
             )}
@@ -346,7 +350,7 @@ export function CodeGroupPanel({
         )
       }
     >
-      {failure && <SaveFailedBand message={failure} detail={isStaleConflict(failure) ? STALE_DETAIL : undefined} />}
+      {failure && <SaveFailedBand message={failure} detail={failureStale ? STALE_DETAIL : undefined} />}
       {applyError && <SaveFailedBand message={applyError} detail={null} />}
       {notice && <DoneNotice message={notice} />}
       <DataTable

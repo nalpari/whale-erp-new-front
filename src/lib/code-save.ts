@@ -95,12 +95,12 @@ export function partialSaved(saved: readonly SaveStep[], failed: SaveStep, skipp
 }
 
 /**
- * 그 사이 다른 관리자가 고쳤거나 지웠다는 문구(api CHANGED_MEANWHILE · 먼저 지운 상세 코드 409, 지운 행의 404 「…찾을 수 없습니다」) —
- * 칸 오류가 아니라 띠로 알리고 최신 목록을 다시 받는다(2026-10-30). 띠 아랫줄을 고를 때도 쓴다 — 판정은 상태 코드와 함께(failureView).
+ * 그 사이 다른 관리자가 고쳤거나 끼어들어 지웠다는 409 문구(api CHANGED_MEANWHILE · 먼저 지운 상세 코드) — 칸 오류가 아니라 띠로 알리고
+ * 최신 목록을 다시 받는다(2026-10-30). 404 는 문구를 보지 않고 상태 코드로 가른다(failureView).
  */
-export const isStaleConflict = (message: string) => message.includes("먼저 수정했습니다") || message.includes("먼저 지운") || message.includes("찾을 수 없습니다");
+export const isStaleConflict = (message: string) => message.includes("먼저 수정했습니다") || message.includes("먼저 지운");
 
-/** 그 사이 바뀐 409 띠의 아랫줄 — 화면은 최신 목록으로 다시 채운다(「입력한 값은 그대로 두었습니다.」 대신) */
+/** 그 사이 바뀐 실패(409 · 404) 띠의 아랫줄 — 화면은 최신 목록으로 다시 채운다(「입력한 값은 그대로 두었습니다.」 대신) */
 export const STALE_DETAIL = "최신 정보로 다시 채웠습니다.";
 
 /**
