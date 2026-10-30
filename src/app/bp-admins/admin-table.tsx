@@ -72,9 +72,10 @@ export function AdminTable({
     },
     {
       header: "최근 로그인",
-      // 초기 비밀번호 메일이 실패한 계정은 그 사실을 먼저 알린다 — 상세의 비밀번호 초기화로 다시 보낸다
+      // 초기 비밀번호 메일이 실패한 계정은 그 사실을 먼저 알린다 — 초기화할 수 있는 사람이 상세의 비밀번호 초기화로 다시 보낸다.
+      // 미사용 계정은 알리지 않는다 — 상세도 숨기고 초기화 버튼이 없다(2026-10-29 사용자 결정)
       cell: (a) =>
-        a.isInitialPasswordUnsent ? (
+        a.accountStatus === "ACTIVE" && a.isInitialPasswordUnsent ? (
           <span className="text-erp-off">초기화 비밀번호 미발송</span>
         ) : a.lastLoginAt ? (
           dim(a, formatDateTime(a.lastLoginAt))

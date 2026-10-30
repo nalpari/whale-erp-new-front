@@ -15,7 +15,7 @@ const sameValues = (a: MenuFormValues, b: MenuFormValues) => {
   return x.name === y.name && x.url === y.url && x.status === y.status;
 };
 
-/** 고친 것이 있는가 — 없으면 [저장]을 막는다 */
+/** 고친 것이 있는가 — 새 서버 값이 왔을 때 칸을 다시 채울지 가른다(sync…). [저장]은 막지 않는다(2026-10-30 재영) */
 export const isDirty = (base: MenuFormValues, form: MenuFormValues) => !sameValues(base, form);
 
 const valuesOf = (b: MenuFormBase): MenuFormValues => ({ name: b.name, url: b.url, status: b.status });

@@ -335,7 +335,8 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
                 추가
               </Button>
             )}
-            <Button onClick={handleSave} disabled={!canSave || !dirty || saving}>
+            {/* 고친 것이 없어도 누를 수 있다 — 보낼 것이 없으면 api 를 부르지 않고 저장 마무리만 한다(saveInOrder, 2026-10-30 재영) */}
+            <Button onClick={handleSave} disabled={!canSave || saving}>
               저장
             </Button>
           </>
