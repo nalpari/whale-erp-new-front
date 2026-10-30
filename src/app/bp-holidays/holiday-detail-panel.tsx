@@ -14,7 +14,7 @@ import { deleteBpHolidayAction, terminateBpHolidayAction } from "./actions";
 import { OwnHistoryButton } from "./history-dialog";
 import { Muted, unknownResult, useHolidayTypeText } from "./holiday-parts";
 
-// BP 휴일 상세(S-MQELTV). 등록 화면과 같은 순서로 묶는다 — 휴일정보 · 날짜(반복) · 점포(데모 2026-10-08, 「적용 대상」 표는 2026-10-30 뺐다).
+// BP 휴일 상세(S-MQELTV). 등록 화면과 같은 순서로 묶는다 — 휴일정보(휴일명 · 날짜(반복) · 설명 · 등록 · 최종수정) · 점포(데모 2026-10-08, 「적용 대상」 표는 2026-10-30 뺐다).
 // 무엇을 할 수 있는지는 api 가 휴일마다 준 actions 로 가린다 — 메뉴 권한 · 점포 범위 · 상태(시작 전 · 진행 중 · 종료)를 api 가 이미 셈했다.
 // 「BP 휴일 변경 · 종료 정책」(1팀, 2026-10-26): 시작 전이면 삭제, 지난 날짜가 있으면 삭제 대신 강제 종료(어제로 끝냄, 되돌리지 않음),
 // 끝난 휴일은 읽기만 한다. 막힌 동작이 있으면 그 사유(blockedReason)를 띠로 보인다.
@@ -126,7 +126,7 @@ function DetailBody({
     h.holidayTypeCode === "REPEAT"
       ? [
           // 시작일 · 반복 기준 · 종료조건을 한 줄로 — 「2026-10-30(금)부터 · 금요일마다 · 2회」(2026-10-30 사용자 지정 — 전엔 시작일 · 반복유형 · 종료조건 세 줄).
-          // 반복 종류(매주 등)는 바로 위 휴일유형 줄에 있다. 다음 날짜(S-MQELTV — 고른 날짜 다음 셋)는 보이지 않는다(2026-10-26 사용자 요청)
+          // 반복 종류(매주 등)는 머리 줄 「휴일유형」에 있다. 다음 날짜(S-MQELTV — 고른 날짜 다음 셋)는 보이지 않는다(2026-10-26 사용자 요청)
           {
             label: "날짜",
             // 길면 두 줄이 된다 — 「2027-03-30까」/「지」처럼 글자 중간이 아니라 「 · 」 조각 사이에서만 줄을 바꾸고, 칸 높이도 늘린다(2026-10-30 사용자 지적)
@@ -154,7 +154,7 @@ function DetailBody({
       : h.holidayTypeCode === "PERIOD"
         ? [{ label: "기간", value: <span>{dated(h.startDate)} ~ {dated(h.endDate)}</span> }]
         : [{ label: "날짜", value: dated(h.startDate) }];
-  // 날짜 · 반복은 따로 묶음을 두지 않고 휴일정보의 휴일 유형 바로 아래 줄로 둔다(2026-10-30 사용자 지정 — 전엔 「반복」 · 「날짜」 표)
+  // 날짜 · 반복은 따로 묶음을 두지 않고 휴일정보의 휴일명 바로 아래 줄로 둔다(2026-10-30 사용자 지정 — 전엔 「반복」 · 「날짜」 표)
   const info: DetailRow[] = [
     { label: "휴일명", value: h.name },
     // 휴일유형 줄은 뺐다 — 머리 줄 「휴일유형 매주 반복」에 있다(2026-10-30 사용자 지정)
@@ -188,7 +188,7 @@ function DetailBody({
         </span>
       </div>
       {failure && <FailedBand message={failure} />}
-      {/* 끝난 휴일은 띠를 두지 않는다 — 제목 줄의 「종료」 배지로 이미 알 수 있다(2026-10-26 사용자 요청) */}
+      {/* 끝난 휴일은 띠를 두지 않는다 — 머리 둘째 줄의 「종료」 배지로 이미 알 수 있다(2026-10-26 사용자 요청) */}
       {/* 오늘 시작한 휴일의 「강제 종료할 수 없습니다 — 삭제해 주세요」도 두지 않는다 — [삭제]만 보이는 것으로 충분하다(2026-10-26 사용자 요청) */}
       {actions.blockedReason && h.state !== "ENDED" && !actions.blockedReason.startsWith(TODAY_START_REASON) && <InfoBand>{actions.blockedReason}</InfoBand>}
       {/* 「휴일정보」 · 「예외점포」 · 「대상점포」는 붙여 쓴다 — 등록 패널과 같다(2026-10-30 사용자 지정) */}

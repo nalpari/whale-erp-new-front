@@ -276,7 +276,7 @@ export function StoreMappingPicker({
             </Button>
           </span>
         </p>
-        {/* 194px(칩 다섯 줄)에서 1/3 줄인 130px(2026-10-27 사용자 지정) — 넷째 줄 윗부분이 살짝 보여 더 있다는 것을 알린다. 넘치면 이 안에서 세로로 스크롤한다 */}
+        {/* 194px(칩 다섯 줄)에서 1/3 줄인 130px(2026-10-27 사용자 지정), short 면 다시 1/3 줄인 86px(BP 휴일, 2026-10-30) — 넷째 줄 윗부분이 살짝 보여 더 있다는 것을 알린다. 넘치면 이 안에서 세로로 스크롤한다 */}
         <div className={`relative ${short ? "h-[86px]" : "h-[130px]"}`}>
           <ul aria-label={text.picked} className="flex h-full flex-wrap content-start gap-[6px] overflow-y-auto overscroll-contain">
             {picked.map((s) => (

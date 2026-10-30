@@ -240,7 +240,7 @@ export function HolidayFormPanel(props: Props) {
           {/* 반복 칸은 날짜(반복) 바로 아래, 설명 위에 둔다 — 따로 「반복」 묶음으로 맨 아래에 뜨면 고른 것과 멀었다(2026-10-30 사용자 지정) */}
           {form.type === "REPEAT" && (
             // 바로 위 날짜 칸과는 10px — 묶음 칸 간격(18)보다 붙여 날짜에 딸린 칸으로 보이게. 회색 상자로 묶어 날짜 · 설명과 가른다
-            // — 점포 고르기 상자와 같은 모양(표 머리 바탕 · 패널 선, 두 바탕 규칙 안)(2026-10-30 사용자 지정)
+            // — 점포 고르기 상자와 같은 모양(표 머리 바탕 · 패널 선)(2026-10-30 사용자 지정). 안의 반복 기준 꼬리표만 선 색(erp-bar-line) 바탕 — DESIGN 두 바탕 규칙의 예외로 적었다
             <fieldset className="-mt-[8px] flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[12px]" disabled={scheduleLocked}>
               {/* 기준(시작일의 요일 · 날짜)은 칸 이름 옆 꼬리표 「매주 금요일마다 반복」으로 — 아랫줄 글로 두면 반복유형과 떨어져 보였다(2026-10-30 사용자 지정). 매일은 기준이 없다 */}
               <label className="flex flex-col gap-[8px]">

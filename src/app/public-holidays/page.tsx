@@ -48,7 +48,7 @@ export default async function PublicHolidaysPage({ searchParams }: PageProps<"/p
       <HolidayNavigation query={query}>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
           <main className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
-            {/* 연도 선택칸은 목록 보기에만 — 캘린더는 제목 줄의 「2026년 10월 ●」에서 연 · 월을 함께 고른다(2026-10-30 사용자 지정) */}
+            {/* 연도 선택칸은 목록 보기에만 — 캘린더는 제목 줄의 「2026년 10월 ▾」에서 연 · 월을 함께 고른다(2026-10-30 사용자 지정) */}
             <div className="flex flex-wrap items-center gap-[12px]">
               {query.view === "list" && <YearSelect />}
               {lastSynchronizedAt && <span className="text-[14px] text-erp-label">최종 동기화 {formatDateTime(lastSynchronizedAt)}</span>}

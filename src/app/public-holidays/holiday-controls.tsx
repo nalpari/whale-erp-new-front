@@ -41,7 +41,7 @@ function useMove(target: HolidayQuery | null) {
   };
 }
 
-// 연도는 캘린더 · 목록이 함께 쓰고, 월은 캘린더에만 둔다(S-DDGJKQ — 월 이동과 월 선택은 캘린더에만).
+// 연도 선택칸은 목록에만, 캘린더는 연 · 월 고르기 판(MonthPick)으로 옮긴다(S-DDGJKQ — 월 이동과 월 선택은 캘린더에만, 2026-10-30 사용자 지정).
 export function YearSelect() {
   const { current, navigate } = useNavigation();
   return (
@@ -57,7 +57,7 @@ export function YearSelect() {
   );
 }
 
-/** 캘린더 제목 자리의 「2026년 10월 ●」 — 누르면 연 · 월 고르기 판(BP 휴일 관리와 같다, 2026-10-30 사용자 지정 — 전엔 월 선택칸 + 따로 제목) */
+/** 캘린더 제목 자리의 「2026년 10월 ▾」 — 누르면 연 · 월 고르기 판(BP 휴일 관리와 같다, 2026-10-30 사용자 지정 — 전엔 월 선택칸 + 따로 제목) */
 export function MonthPick({ today }: { today: string }) {
   const { current, navigate } = useNavigation();
   return (
