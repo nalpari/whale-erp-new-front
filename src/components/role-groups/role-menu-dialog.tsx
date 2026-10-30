@@ -139,8 +139,9 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
         : (() => {
             const first = tree?.services.flatMap((sv) => sv.menus.flatMap((m) => blockedReasonsOf(m)))[0];
             // 플랫폼 마스터(PM_FIXED)는 안내 문장 전체를 따로 둔다 — enum 한글(「플랫폼 마스터 권한은 전체 메뉴 허용 고정」)에 덧붙이면 뜻이 잘 안 읽혔다(2026-10-26 사용자 지정)
-            if (first === "SELF_LINKED") return "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."; // 상세 띠와 같은 문장(2026-10-26 사용자 지정)
-            if (first === "PM_FIXED") return "플랫폼마스터는 시스템 최상위 권한으로, 모든 메뉴의 접근·관리 권한이 자동 부여되며 현재 화면에서는 조작할 수 없습니다.";
+            // 본인 연결 권한도 권한명 · 설명은 고치므로(2026-10-30 재영) 막히는 것은 메뉴 권한뿐이라고 말한다
+            if (first === "SELF_LINKED") return "본인 계정에 연결된 권한 그룹의 메뉴 권한은 수정할 수 없습니다.";
+            if (first === "PM_FIXED") return "플랫폼 마스터는 시스템 최상위 권한으로, 모든 메뉴의 접근·관리 권한이 자동 부여되며 현재 화면에서는 조작할 수 없습니다.";
             return first ? `${reasonLabel(reasons, first, "고칠 수 없는 권한")} — 메뉴 권한을 볼 수만 있습니다.` : "이 권한의 메뉴 권한은 볼 수만 있습니다.";
           })();
   const service = tree?.services.find((s) => s.serviceCode === tab);
@@ -166,8 +167,9 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
     });
 
   const handleSave = () => {
-    if (!changed.length) return;
     setFailure(null);
+    // 바뀐 칸이 없어도 [저장]은 누를 수 있다(2026-10-30 재영) — 빈 목록 저장은 api 가 updatedAt 만 올리므로 부르지 않고 저장 알림만 띄운다
+    if (!changed.length) return setSavedShown(true);
     if (!hasRevocation(initial, values)) return handleConfirmSave();
     // 저장은 미리보기와 함께만 온다(MenuDialogActions). 없으면 확인 없이 저장하지 않고 멈춘다.
     if (!previewMenus) return;
@@ -226,8 +228,7 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
             <Button variant="off" onClick={onClose} disabled={busy}>
               닫기
             </Button>
-            {/* 바뀐 칸이 없으면 막는다 — 저장해도 팝업을 닫지 않으므로 누를 일이 없다 */}
-            <Button onClick={handleSave} disabled={busy || changed.length === 0}>
+            <Button onClick={handleSave} disabled={busy}>
               저장
             </Button>
           </>

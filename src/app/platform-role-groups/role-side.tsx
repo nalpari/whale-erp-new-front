@@ -136,14 +136,17 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
       </span>
     </h2>
   );
+  // 지울 수 없는 권한(고정 권한 · 본인 연결 · 삭제 권한 없음)은 버튼을 숨긴다. 막힌 이유는 수정 권한이 있으면 위 빨간 상자로 보인다
+  // — BP 권한 그룹과 같다(2026-10-30 재영, 전엔 흐린 버튼 옆에 api 이유를 글자로 두었다)
   const deleteButton =
-    can.delete && !role.isMaster ? (
+    can.delete && !role.isMaster && !role.deleteBlockedReason ? (
       <RoleDeleteDialog
         role={role}
         actions={DELETE_ACTIONS}
         // 두 줄로 보인다(줄바꿈은 확인창이 살린다) — 2026-10-26 사용자 지정
-        noCandidateText={"대체 권한이 없어 삭제할 수 없습니다.\n플랫폼관리자 권한을 추가한 후 다시 시도해 주세요."}
-        blockedReason={role.deleteBlockedReason && reasonLabel(lockReasons, role.deleteBlockedReason, "지울 수 없는 권한입니다.")} onDeleted={onDeleted} />
+        noCandidateText={"대체 권한이 없어 삭제할 수 없습니다.\n플랫폼 관리자 권한을 추가한 후 다시 시도해 주세요."}
+        onDeleted={onDeleted}
+      />
     ) : null;
 
   if (!editable)
@@ -151,18 +154,14 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
       <>
         {heading}
         {/* 조회 권한만 있으면 이유 띠 없이 상세로만 보인다 */}
-        {/* 본인 연결(SELF_LINKED)은 api 이유 문구(「본인이 연결된 권한」) 대신 문장으로 풀어 쓴다(2026-10-26 사용자 지정) */}
         {can.update && role.editBlockedReason && (
           // 막힌 이유는 빨간 안내 상자(WarnBand — 2026-10-27 사용자 지정, 전엔 회색 띠)
           <WarnBand>
             {/* 이유를 문장으로(2026-10-28 사용자 지정 — 전엔 api 이유 이름) */}
-            {role.editBlockedReason === "SELF_LINKED"
-              ? "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."
-              : role.editBlockedReason === "NO_PERMISSION"
-                ? "선택한 권한그룹에 대한 수정 권한이 없습니다."
-                : role.editBlockedReason === "FIXED_ROLE"
-                  ? "시스템이 제공하는 기본권한 그룹은 수정할 수 없습니다."
-                  : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한입니다.")}
+            {/* 본인 연결은 수정을 막지 않는다 — 권한명 · 설명은 고친다(2026-10-30 재영) */}
+            {role.editBlockedReason === "NO_PERMISSION"
+              ? "선택한 권한 그룹에 대한 수정 권한이 없습니다."
+              : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한입니다.")}
           </WarnBand>
         )}
         {rows.length > 0 && <DetailTable rows={rows} />}
