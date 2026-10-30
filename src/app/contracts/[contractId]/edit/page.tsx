@@ -19,7 +19,8 @@ export default async function EditContractPage({ params, searchParams }: PagePro
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
   const { stores, labels, signedIn, denied: optionsDenied } = await loadFormData();
-  // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403) · BP 를 고르지 않은 플랫폼 계정(400)이면 api 문장을 그대로 보인다(목록과 같다)
+  // 계약 상세: 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403) · BP 를 고르지 않은 플랫폼 계정(400)이면 api 문장을 그대로 보인다(목록과
+  // 같다). 근무지 선택지의 거절(optionsDenied — 작성 · 수정 권한, 없는 BP 404 포함)은 loadFormData 가 따로 준다
   let detail: ContractDetail | null = null;
   let notice = "로그인이 필요합니다.";
   if (signedIn) {
@@ -34,14 +35,20 @@ export default async function EditContractPage({ params, searchParams }: PagePro
     }
   }
   // 재계약(WHALEERP-156)의 임시저장 · 수정 요청이면 직전 계약 시작일 — 새 계약 시작일은 그 다음 날부터라 화면이 먼저 막는다. 읽지 못하면
-  // 비워 두고 api 의 400 에 맡긴다
+  // 비워 두고 api 의 400 에 맡긴다. 근무지 선택지를 거절당해 폼을 그리지 않으면 읽지 않는다
   const previousStartDate =
-    (detail?.status === "DRAFT" || detail?.status === "CORRECTION_REQUESTED") && detail.previousContractId
+    optionsDenied === null && (detail?.status === "DRAFT" || detail?.status === "CORRECTION_REQUESTED") && detail.previousContractId
       ? await request<ContractDetail>(`/contracts/${detail.previousContractId}`, { headers: await authHeaders() }).then(
           (p) => p.startDate ?? undefined,
           () => undefined,
         )
       : undefined;
+  // 임시저장 삭제 — 권한이 없어 막혔을 때 · 근무지 선택지를 거절당했을 때의 안내 줄과 폼 버튼 줄이 같이 쓴다
+  const deleteDraft = (
+    <ContractPermission action="delete">
+      <DeleteDraftButton contractId={contractId} back={back} />
+    </ContractPermission>
+  );
 
   return (
     <>
@@ -79,18 +86,14 @@ export default async function EditContractPage({ params, searchParams }: PagePro
               action="create"
               fallback={
                 <Notice title="근로계약서를 이어 쓸 권한이 없습니다." contractId={contractId} back={back}>
-                  <ContractPermission action="delete">
-                    <DeleteDraftButton contractId={contractId} back={back} />
-                  </ContractPermission>
+                  {deleteDraft}
                 </Notice>
               }
             >
               {/* 근무지 선택지를 api 가 거절했으면 그 문장(loadFormData) — 삭제는 그대로 둔다 */}
               {optionsDenied !== null ? (
                 <Notice title={optionsDenied} contractId={contractId} back={back}>
-                  <ContractPermission action="delete">
-                    <DeleteDraftButton contractId={contractId} back={back} />
-                  </ContractPermission>
+                  {deleteDraft}
                 </Notice>
               ) : (
                 <ContractForm
@@ -103,11 +106,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
                   previousContractId={detail.previousContractId ?? undefined}
                   previousStartDate={previousStartDate}
                   back={back}
-                  deleteButton={
-                    <ContractPermission action="delete">
-                      <DeleteDraftButton contractId={contractId} back={back} />
-                    </ContractPermission>
-                  }
+                  deleteButton={deleteDraft}
                 />
               )}
             </ContractPermission>
