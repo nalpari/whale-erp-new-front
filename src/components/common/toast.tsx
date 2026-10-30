@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, use, useRef, useState, type ReactNode } from "react";
+import { createContext, use, useEffect, useRef, useState, type ReactNode } from "react";
 import { EASE_OUT } from "./theme";
 
 // 공통 토스트 — 저장 · 수정 · 삭제가 성공하면 화면 하단 가운데에 한 줄로 띄우고 3초 뒤 사라진다(2026-10-12 결정).
@@ -15,6 +15,8 @@ export const TOAST_MESSAGE = {
 export type ToastKind = keyof typeof TOAST_MESSAGE;
 
 const SHOW_MS = 3000;
+/** 다음 토스트를 띄우기 전에 앞의 것이 닫히는 시간(닫힘 전환 150ms) — 문구만 바뀌면 새 안내인 줄 모른다 */
+const GAP_MS = 150;
 
 const ToastContext = createContext<((kind: ToastKind | string) => void) | null>(null);
 
@@ -29,13 +31,31 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState("");
   const [open, setOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // 지금 떠 있는(또는 곧 뜰) 문구와 그 뒤에 기다리는 문구
+  const current = useRef<string | null>(null);
+  const queue = useRef<string[]>([]);
+  // 내려갈 때 기다리던 타이머를 지운다
+  useEffect(() => () => clearTimeout(timer.current), []);
 
-  // 연달아 띄우면 문구만 바꾸고 3초를 처음부터 다시 센다.
-  const show = (kind: ToastKind | string) => {
-    setMessage(kind in TOAST_MESSAGE ? TOAST_MESSAGE[kind as ToastKind] : kind);
+  const present = (text: string) => {
+    current.current = text;
+    setMessage(text);
     setOpen(true);
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => setOpen(false), SHOW_MS);
+    timer.current = setTimeout(() => {
+      const next = queue.current.shift();
+      setOpen(false);
+      current.current = next ?? null;
+      if (next !== undefined) timer.current = setTimeout(() => present(next), GAP_MS);
+    }, SHOW_MS);
+  };
+
+  // 떠 있는 동안 다른 문구가 오면 앞의 것이 3초를 다 채운 뒤 차례로 띄운다(저장 뒤 「점포 목록이 변경되었습니다.」 등, 2026-10-29).
+  // 떠 있는 것과 같은 문구면 3초를 처음부터 다시 세고, 이미 기다리는 문구는 또 쌓지 않는다.
+  const show = (kind: ToastKind | string) => {
+    const text = kind in TOAST_MESSAGE ? TOAST_MESSAGE[kind as ToastKind] : kind;
+    if (current.current === null || (text === current.current && !queue.current.length)) return present(text);
+    if (text !== current.current && !queue.current.includes(text)) queue.current.push(text);
   };
 
   return (
