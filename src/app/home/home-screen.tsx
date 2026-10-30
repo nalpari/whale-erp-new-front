@@ -10,7 +10,7 @@ import { bpPath } from "@/lib/bp-path";
 import { HOME, MENU_CODE, menuOfPath } from "@/lib/menus";
 import { formatAt } from "@/lib/notification-view";
 import { withScope } from "@/lib/store-scope";
-import { isPlatformRole } from "@/lib/auth-routes";
+import { isFranchiseRole, isPlatformRole } from "@/lib/auth-routes";
 import { OneStoreScreen } from "./one-store-screen";
 import { oneStoreIdOf } from "./one-store-view";
 import { useApi } from "@/lib/use-load";
@@ -83,8 +83,11 @@ function HomeBody({ greeting }: { greeting: string }) {
       </Notice>
     );
   } else if (!stores.length) {
-    // 점포가 없는 BP — 빈 현황 대신 등록으로 안내한다(HOME-4)
-    body = (
+    // 점포가 없는 BP — 빈 현황 대신 등록으로 안내한다(HOME-4). 가맹 마스터 · 가맹 관리자는 점포를 등록하지 못해(api 403)
+    // 매핑된 점포가 없으면 배정을 요청하게 하고 [점포 등록]을 두지 않는다(2026-10-29 사용자 결정 — 점포 목록 [등록]과 같은 규칙)
+    body = isFranchiseRole(account.roleTypeCode) ? (
+      <Notice text="등록된 점포가 없습니다. 관리자에게 점포 배정을 요청하세요." />
+    ) : (
       <Notice text="등록된 점포가 없습니다. 점포를 먼저 등록하세요.">
         {canCreateStore && <Button href={bpPath(bp, "/stores/new")}>점포 등록</Button>}
       </Notice>

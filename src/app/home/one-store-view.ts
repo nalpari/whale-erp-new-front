@@ -1,6 +1,7 @@
 // 로그인 후 홈 점포 하나 화면(WHALEERP-342)의 순수 규칙 — 어느 점포로 그릴지, 영역별 api 쿼리, TO-DO 세기, 직원 정보 상태 칸.
 // api 는 새로 만들지 않고 기존 목록을 부른다(2026-10-27 재영). 가림(isMasked)은 각 api 가 정한다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
+import { isFranchiseRole } from "../../lib/auth-routes.ts";
 import type { Scope } from "../../lib/browser-storage.ts";
 import type { AdminStore } from "../../lib/session.ts";
 import { employmentStatusCells, type Cell } from "../staff-members/staff-row.ts";
@@ -14,7 +15,7 @@ import { DAY_KO, WEEKDAYS } from "../contracts/new/contract-form-model.ts";
  */
 export function oneStoreIdOf(scope: Scope, roleTypeCode: string, stores: readonly AdminStore[]): number | null {
   if (scope.type === "STORE") return scope.storeId;
-  if ((roleTypeCode === "FM" || roleTypeCode === "FA") && stores.length === 1) return stores[0].storeId;
+  if (isFranchiseRole(roleTypeCode) && stores.length === 1) return stores[0].storeId;
   return null;
 }
 

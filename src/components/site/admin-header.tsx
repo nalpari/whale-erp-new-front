@@ -75,7 +75,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
           <UserPop name={account.name ?? account.loginId} items={userItems} triggerRef={myPageTrigger} />
           {bpSelectOpen && <BpSelectDialog onClose={() => setBpSelectOpen(false)} />}
           {/* 부가서비스 아이콘 — 고객지원 > 부가서비스구독관리 화면이 아직 없어 안내만 띄운다(2026-10-29 사용자 지정). 화면이 생기면 그 주소로 현재 창 이동한다. */}
-          <ConfirmDialog open={addonNoticeOpen} title="안내" cancelLabel={null} onConfirm={() => setAddonNoticeOpen(false)} onCancel={() => setAddonNoticeOpen(false)}>
+          <ConfirmDialog open={addonNoticeOpen} title="부가서비스구독관리" cancelLabel={null} onConfirm={() => setAddonNoticeOpen(false)} onCancel={() => setAddonNoticeOpen(false)}>
             부가서비스구독관리 화면은 준비 중입니다.
             <br />
             현재 모든 서비스를 무료로 이용하실 수 있으며, 구독 관리 기능은 추후 제공될 예정입니다.
