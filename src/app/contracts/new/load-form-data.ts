@@ -36,15 +36,13 @@ export async function loadFormData(): Promise<{
   try {
     const [{ items }, minimumWage] = await Promise.all([
       request<{ items: StoreOption[] }>("/contracts/store-options?pageSize=200", { headers }),
-      request<MinimumWage>("/contracts/minimum-wage", { headers }).then(
-        (r) => r,
-        (e: unknown) => {
-          if (e instanceof ApiError && e.status === 401) return Promise.reject(e);
-          // 권한 없음(403)은 화면이 권한 안내만 그린다. 그 밖의 실패는 검사 · 도움말이 조용히 빠지므로 남긴다
-          if (!(e instanceof ApiError && e.status === 403)) console.error("[contracts] 최저임금 조회 실패", e);
-          return null;
-        },
-      ),
+      request<MinimumWage>("/contracts/minimum-wage", { headers }).catch((e: unknown) => {
+        if (e instanceof ApiError && e.status === 401) throw e;
+        // api 의 거절(BP 를 고르지 않음 400 · 권한 403 · 없는 BP 404)은 근무지 선택지와 같은 안내가 그려진다. 그 밖의 실패는
+        // 검사 · 도움말이 조용히 빠지므로 남긴다
+        if (deniedMessageOf(e) === null) console.error("[contracts] 최저임금 조회 실패", e);
+        return null;
+      }),
     ]);
     return { stores: items, labels, signedIn: true, denied: null, minimumWage };
   } catch (e) {

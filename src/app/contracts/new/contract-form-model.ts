@@ -438,6 +438,10 @@ export type MinimumWage = components["schemas"]["MinimumWageResponseDto"];
 /** 수습 중 시급의 하한 — 최저임금의 90%, 원 미만 올림(노무사 확인 2026-10-14, 질문 19). api 와 같다 */
 export const probationWageFloor = (minimumWage: number) => Math.ceil((minimumWage * 90) / 100);
 
+/** 「최저임금의 90%(9,288원)」 — 수습 중 시급 칸 도움말과 오류 문장이 같이 쓴다. 최저임금을 모르면 금액 없이 */
+export const probationFloorLabel = (minimumWage: number | null) =>
+  minimumWage ? `최저임금의 90%(${probationWageFloor(minimumWage).toLocaleString("ko-KR")}원)` : "최저임금의 90%";
+
 /** 수습 중 시급 = 시급 × (1 − 감액률), 원 미만 반올림(api 와 같은 정수 셈). 시급이 비었거나 감액률이 틀리면 null */
 export function probationWage(f: Pick<ContractForm, "wage" | "probationRate">): number | null {
   const rate = Number(f.probationRate);
@@ -546,14 +550,12 @@ export function fieldProblems(
   if (f.employmentType === "FULL_TIME" && f.probation) {
     if (!probationTermOk(f)) add("probationMonths", "수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다.");
     if (!/^\d+$/.test(f.probationRate) || Number(f.probationRate) > 10) add("probationRate", "수습 임금 감액률은 0~10% 정수로 입력하세요.");
-    // 지금 최저임금으로 본다(계약 시작일과 상관없이, api 와 같다). 공통코드를 쓸 수 없으면 api 가 저장을 막는 그 문장을 먼저
-    // 보인다. 최저임금을 받지 못했으면(null) 화면은 보지 않고 저장 때 api 가 본다
+    // 지금 최저임금으로 본다(계약 시작일과 상관없이, api 와 같다). 값을 받지 못했거나 공통코드를 쓸 수 없으면(problem) 화면은
+    // 막지 않고 저장 때 api 가 본다 — 화면을 연 뒤 관리자가 공통코드를 고쳐도 새로 고침 없이 저장되게(front #203 code-review)
     const pw = probationWage(f);
-    if (pw !== null && minimumWage?.problem) add("probationWage", minimumWage.problem);
-    else if (pw !== null && minimumWage?.hourlyWage) {
-      const floor = probationWageFloor(minimumWage.hourlyWage);
-      if (pw < floor) add("probationWage", `수습 중 시급은 최저임금의 90%(${floor.toLocaleString("ko-KR")}원) 이상이어야 합니다.`);
-    }
+    const hourly = minimumWage?.hourlyWage ?? null;
+    if (pw !== null && hourly && pw < probationWageFloor(hourly))
+      add("probationWage", `수습 중 시급은 ${probationFloorLabel(hourly)} 이상이어야 합니다.`);
   }
   return out;
 }

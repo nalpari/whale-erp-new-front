@@ -29,6 +29,7 @@ import {
   paperFileTypesOf,
   partTimePay,
   probationWage,
+  probationFloorLabel,
   probationWageFloor,
   renewalStartProblem,
   signedOverlapOf,
@@ -508,14 +509,16 @@ test("저장을 누른 때 오류가 난 칸만 보인다 — 고쳐지면 빠�
   assert.deepEqual(shownProblems({}, shown), {});
 });
 
-test("최저임금 공통코드를 쓸 수 없으면 api 가 저장을 막는 그 문장을 수습 중 시급 칸에(WHALEERP-595)", () => {
+test("최저임금 공통코드를 쓸 수 없으면 화면은 막지 않고 api 에 맡긴다(WHALEERP-595, front #203 code-review)", () => {
   const problem = "최저임금 공통코드(MINIMUM_WAGE · HOURLY)가 사용 중지되어 수습 중 시급을 확인할 수 없습니다. 플랫폼 관리자에게 문의해 주세요.";
-  const on = { employmentType: "FULL_TIME" as const, probation: true, probationMonths: "3" as const, probationRate: "10", wage: "20,000" };
-  assert.deepEqual(problemsByField(fieldProblems(filled(on), false, false, undefined, { hourlyWage: null, problem })).probationWage, [problem]);
-  // 수습이 없으면 보지 않는다
-  assert.deepEqual(problems(filled({ ...on, probation: false }), false, false, undefined, { hourlyWage: null, problem }), []);
+  const on = { employmentType: "FULL_TIME" as const, probation: true, probationMonths: "3" as const, probationRate: "10", wage: "5,000" };
+  // 화면을 연 뒤 공통코드를 고쳐도 새로 고침 없이 저장되게 — 저장 때 api 가 그 문장으로 막는다
+  assert.deepEqual(problems(filled(on), false, false, undefined, { hourlyWage: null, problem }), []);
   // 하한은 원 미만 올림, 수습 중 시급은 원 미만 반올림 — api 와 같은 정수 셈
   assert.equal(probationWageFloor(10320), 9288);
   assert.equal(probationWageFloor(10031), 9028);
   assert.equal(probationWage({ wage: "12,345", probationRate: "10" }), 11111);
+  // 도움말 · 오류 문장이 같이 쓰는 하한 표기
+  assert.equal(probationFloorLabel(10320), "최저임금의 90%(9,288원)");
+  assert.equal(probationFloorLabel(null), "최저임금의 90%");
 });

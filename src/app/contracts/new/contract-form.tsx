@@ -30,7 +30,7 @@ import {
   partTimePay,
   type MinimumWage,
   probationWage,
-  probationWageFloor,
+  probationFloorLabel,
   problemsByField,
   shownProblems,
   type ProblemField,
@@ -356,7 +356,6 @@ export function ContractForm({
   const minor = isMinor(form);
   // 지금 최저임금(계약 시작일과 상관없이) — 받지 못했거나 공통코드를 쓸 수 없으면 금액 없이 보인다
   const hourlyMinimum = minimumWage?.hourlyWage ?? null;
-  const floorText = hourlyMinimum ? `(${probationWageFloor(hourlyMinimum).toLocaleString("ko-KR")}원)` : "";
   const holiday = weeklyHolidayOf(form);
   const dayLabel = (d: Weekday) => labelOf(labels.weekday, d);
 
@@ -862,7 +861,7 @@ export function ContractForm({
                 </Item>
                 <Item
                   label="수습 중 시급"
-                  help={`시급 × (1 − 감액률). 최저임금의 90%${floorText} 이상이어야 한다.`}
+                  help={`시급 × (1 − 감액률). ${probationFloorLabel(hourlyMinimum)} 이상이어야 한다.`}
                   errors={errs.probationWage}
                 >
                   {(id) => <TextField id={id} readOnly value={won(probationWage(form))} />}
