@@ -82,7 +82,11 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
   if (items !== shown) {
     const sameRows = JSON.stringify(items) === JSON.stringify(shown);
     setShown(items);
-    if (sameRows) setSavingFrom(followSameRows(savingFrom, shown, items));
+    // 다시 받은 목록이 같은 내용이면 그 사이 바뀜 띠 표시를 여기서 푼다 — 띠는 남긴다
+    if (sameRows) {
+      setStaleBand(false);
+      setSavingFrom(followSameRows(savingFrom, shown, items));
+    }
     else {
       const next = renumberAdded(withKeptPending(items.map(toBpItemDraft), drafts, savingFrom === shown));
       setSavingFrom(null);
@@ -183,8 +187,9 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       // 409 — 겹친 코드(지운 코드 포함) · 플랫폼고정 그룹. 문구가 「…: CODE」 꼴이면 그 새 행의 칸 오류로, 아니면 표 아래 한 줄로 보인다.
       const view = failureView(result);
       // 그 사이 다른 관리자가 고쳤거나 지웠다 — 띠로 알리고 최신 목록으로 칸을 다시 채운다
+      // 기준을 지금 목록으로 두어, 다시 받은 목록이 기존 행만 최신 값으로 바꾸고 보내지 않은 새 행 · 지울 행 표시는 잇게 한다(PR #206 리뷰)
       if (view.stale) {
-        setSavingFrom(null);
+        setSavingFrom(items);
         setStaleBand(true);
         router.refresh();
       }

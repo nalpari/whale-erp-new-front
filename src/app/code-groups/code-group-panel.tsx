@@ -77,6 +77,8 @@ export function CodeGroupPanel({
     setShown({ groups, selected });
     // 저장 중에 같은 내용의 목록이 새 참조로 오면(오른쪽 패널 저장 등) 저장 기준도 그 참조로 옮긴다(followSameRows)
     if (sameRows) {
+      // 다시 받은 목록이 같은 내용이면 그 사이 바뀜 띠 표시를 여기서 푼다 — 띠는 남긴다
+      setStaleBand(false);
       const followed = followSameRows(savingFrom?.groups ?? null, shown.groups, groups);
       if (savingFrom && followed !== savingFrom.groups) setSavingFrom({ ...savingFrom, groups });
     } else {
@@ -201,8 +203,9 @@ export function CodeGroupPanel({
       // 그룹 코드가 겹치면 칸 오류로, 그 밖은 띠로 알린다. 수정분이 저장됐으면 띠에 그 사실을 먼저 적는다(failureView).
       const view = failureView(result);
       // 그 사이 다른 관리자가 고쳤거나 지웠다 — 띠로 알리고 최신 목록으로 칸을 다시 채운다
+      // 기준을 지금 목록으로 두어, 다시 받은 목록이 기존 행만 최신 값으로 바꾸고 보내지 않은 새 행 · 지울 행 표시는 잇게 한다(PR #206 리뷰)
       if (view.stale) {
-        setSavingFrom(null);
+        setSavingFrom({ groups, selected });
         setStaleBand(true);
         router.refresh();
       }

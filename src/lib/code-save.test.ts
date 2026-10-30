@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { failureView, isStaleConflict, partialSaved, planSave, saveInOrder, savedNote, type SaveFailed, type SaveStep } from "./code-save.ts";
+import { withKeptPending, type ItemDraft } from "./code-drafts.ts";
+
+const itemDraftOf = (key: string, label: string): ItemDraft => ({ key, itemCode: key, label, status: "ACTIVE", sortOrder: 1, added: false });
 
 // 부른 순서와 화면 무효화 횟수를 남기는 가짜 api. 실패하면 던진 오류의 문구와 409 를 결과로 옮긴다 —
 // failureOf 가 어느 단계의 어떤 오류를 받았는지까지 결과에서 보인다.
@@ -241,4 +244,20 @@ test("failureView — 그 사이 고쳤거나 지운 409 는 칸 오류가 아�
     stale: true,
   });
   assert.equal(isStaleConflict("이 그룹에 이미 있는 상세 코드입니다(A)."), false, "중복은 그 사이 바뀜이 아니다");
+  // 이미 지운 행을 고치거나 지우면 api 는 읽기 단계에서 404 — 같은 「그 사이 바뀜」으로 다시 받는다(PR #206 리뷰)
+  const missing = "상세 코드를 찾을 수 없습니다(G2).";
+  assert.deepEqual(failureView(failed({ status: 404, message: missing, saved: [], failed: "수정" })), { band: missing, conflict: null, stale: true });
+  assert.equal(isStaleConflict(missing), true, "띠 아랫줄도 「최신 정보로 다시 채웠습니다.」");
+});
+
+test("withKeptPending — 이어 두면 기존 행은 최신 값으로, 보내지 않은 새 행 · 지울 행 표시는 남긴다(그 사이 바뀜 409 뒤)", () => {
+  const fresh = [itemDraftOf("A", "새 이름"), itemDraftOf("B", "비")];
+  const current = [{ ...itemDraftOf("A", "내가 고친 이름") }, { ...itemDraftOf("B", "비"), deleted: true }, { ...itemDraftOf("new-1", "인턴"), itemCode: "INTERN", added: true }];
+  const kept = withKeptPending(fresh, current, true);
+  assert.deepEqual(kept.map((d) => [d.key, d.label, !!d.deleted, d.added]), [
+    ["A", "새 이름", false, false],
+    ["B", "비", true, false],
+    ["new-1", "인턴", false, true],
+  ]);
+  assert.deepEqual(withKeptPending(fresh, current, false), fresh, "잇지 않으면 받은 목록 그대로");
 });
