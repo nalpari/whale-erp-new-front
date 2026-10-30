@@ -22,7 +22,7 @@ export type StoreView = "cards" | "table";
  *
  * api 에 보낼 조건은 storeListQueryOf 로 만든다.
  * statusesDefault 는 점포상태를 주소에 적지 않은 것 — 그 값은 서버가 고른 점포의 지금 상태로 정한다(withDefaultStatuses). 브라우저는
- * 폐점 여부를 세지 않는다: 로그인 정보의 점포 상태는 세션 동안 바뀌지 않아, 이 메뉴에서 폐점 처리한 점포를 서버와 다르게 본다.
+ * 폐점 여부를 세지 않는다: 브라우저의 점포 목록은 점포 목록 맞추기(SessionGate) 전까지 옛 상태일 수 있어, 폐점 여부는 서버가 지금 상태로 정한다.
  */
 export type StoresQuery = StoreListQuery & { view: StoreView; scope: Scope | null; storesCleared: boolean; statusesDefault: boolean };
 /** 주소에서 읽은 그대로 — 점포상태가 주소에 없으면 null 이고, 고른 점포에 폐점이 있는지 알아야 기본값이 정해진다(withDefaultStatuses) */
