@@ -111,6 +111,8 @@ export type BpAdminListQuery = {
   pageSize: number;
   keyword?: string;
   roleGroupId?: number;
+  /** 고른 역할만 — 없거나 비면 세 역할 모두 */
+  roleTypeCodes?: BpAdminRoleType[];
   accountStatus?: BpAdminStatus;
   /** 고른 점포 — 그 점포를 관리하는 계정(전체 점포 계정 포함) */
   storeIds: number[];
@@ -129,6 +131,7 @@ export async function getBpAdmins(query: BpAdminListQuery): Promise<BpAdminList>
   const params = new URLSearchParams({ page: String(query.page), pageSize: String(query.pageSize) });
   if (query.keyword) params.set("keyword", query.keyword);
   if (query.roleGroupId) params.set("roleGroupId", String(query.roleGroupId));
+  if (query.roleTypeCodes?.length) params.set("roleTypeCodes", query.roleTypeCodes.join(","));
   if (query.accountStatus) params.set("accountStatus", query.accountStatus);
   if (query.storeIds.length) params.set("storeIds", query.storeIds.join(","));
   if (query.storeTypeCode) params.set("storeTypeCode", query.storeTypeCode);

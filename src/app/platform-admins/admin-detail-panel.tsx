@@ -244,7 +244,7 @@ function DetailBody({
         </Button>
         <span className="flex-1" />
         {canDelete && (
-          <Blocked reason={isSelf ? "본인 계정은 스스로 삭제할 수 없습니다." : undefined}>
+          <Blocked reason={isSelf ? "내 계정은 스스로 삭제할 수 없습니다." : undefined}>
             <Button variant="soft" onClick={() => setConfirm("delete")} disabled={isSelf || busy}>
               삭제
             </Button>

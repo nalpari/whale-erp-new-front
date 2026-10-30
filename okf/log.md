@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: main 병합(front swinub, main 까지): okf 충돌은 양쪽 기록을 살렸다(generated 는 늦은 값).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 관리자 관리 디자인 수정(front swinub): 필터 「역할」(api `roleTypeCodes`), 목록 열(대상점포 · 역할 이동, 등록일시 뺌, 권한명 · 코드 왼쪽 정렬), 상세 안내 상자(빨간 상자 · 순서 · 간격), 대상점포 오류 문구 「1개 이상 선택해 주세요」, 「본인 계정」 → 「내 계정」 · 「권한 그룹」 띄어쓰기.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 관리](/staff.md) — WHALEERP-635: 근로계약 상세가 수정 요청된 계약에 「수정 요청 사유」(api `correctionReason`, 없으면 「-」)를 보이고 「거부 사유」 줄을 지웠다. api 타입을 api 브랜치 openapi 로 다시 만들었고, 논리 · 물리 ERD(`contracts.correction_reason` 추가 · `reject_reason` 두 칸 삭제)와 알림 템플릿 · 근로계약 상세 데모의 거부 사유를 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 계약서 파일 줄을 나눴다(WHALEERP-155): 전자계약은 처리 완료본(서명 확인) · 보낸 원본, 종이 계약은 날인본(`document-rows.ts`, `node --test`). 체결됐는데 처리 완료본이 아직 없으면 「아직 없음」 안내. api #211(WHALEERP-131)이 두 파일을 만든다. `docs/erd/physical` 은 api 물리 생성기로 다시 만들었다(당사자 사용자 칸 · 파일 발송 일시).
 

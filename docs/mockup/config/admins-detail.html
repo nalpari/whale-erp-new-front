@@ -13,6 +13,7 @@
          수정 · 비밀번호 초기화는 수정 권한이 있고 관리 범위 안인 계정에만 보인다.
            BP 관리자 · 가맹 마스터 계정 = BP 마스터 · BP 관리자 · 플랫폼 사용자(수정 권한)가 한다.
            가맹 관리자 계정 = 연결된 가맹 마스터만 한다. 다른 역할에게는 두 실행 항목을 감추고 조회만 한다고 알린다.
+             그 안내는 빨간 상자 「이 계정은 [연결된 가맹마스터]만 수정할 수 있습니다.」 한 줄이고, 로그인 · 비밀번호 안내 상자보다 위에 둔다. 안내 상자끼리는 10px 간격 (2026-10-30).
          가맹 마스터 · 가맹 관리자는 BP 관리자 · 가맹 마스터 계정을 볼 수 없다 — 주소로 열어도 상세정보를 주지 않는다. 본인 계정은 예외다.
          가맹 마스터 · 가맹 관리자도 본인 계정 상세를 연다. 가맹 마스터는 수정에서 기본정보만 고치고 비밀번호 초기화는 막힌다. 가맹 관리자 본인 계정은 조회만 한다 (확정 2026-10-23).
          가맹 마스터 미사용 · 점포 빼기로 연쇄해 바뀐 가맹 관리자의 변경 이력은 처리자가 그 가맹 마스터를 저장한 사람이고, 변경 후 값에 사유를 붙인다 —
@@ -191,11 +192,12 @@
                 <p class="band__desc">권한 그룹과 계정 상태는 스스로 바꿀 수 없습니다. 비밀번호는 내 정보에서 직접 바꿉니다.</p>
               </div>
             </div>
-            <div class="band band--info" data-show="yn" data-show-role="bm bpall bppart plat view" hidden>
+            <!-- 연결 가맹 마스터가 아닌 사람이 보는 가맹 관리자 계정 — 놓치지 않게 빨간 상자, 「[연결된 가맹마스터]」 굵게 (2026-10-30, 전엔 회색 안내).
+                 로그인 · 비밀번호 안내 상자가 함께 뜨면 그보다 위에 두고, 안내 상자끼리는 10px 간격으로 붙인다 -->
+            <div class="band band--risk" data-show="yn" data-show-role="bm bpall bppart plat view" hidden>
               <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">가맹 관리자 계정은 연결된 가맹 마스터만 수정 · 비밀번호 초기화할 수 있습니다</div>
-                <p class="band__desc">이 계정의 가맹 마스터는 <span class="mono">morinam01</span> 박서윤입니다. 여기서는 조회만 합니다.</p>
+                <div class="band__title" style="font-weight: 500">이 계정은 <strong style="font-weight: 600">[연결된 가맹마스터]</strong>만 수정할 수 있습니다.</div>
               </div>
             </div>
             <div class="band band--info" data-show="morinam" data-show-role="fm" hidden>
