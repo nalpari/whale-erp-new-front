@@ -2081,7 +2081,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 확정 — 보이는 공제가 모두 있어야 한다. 검토 사유는 확인한 것으로 남는다. */
+        /** 확정 — 급여 기간이 끝나야 하고(그 전에 퇴직 · 계약 종료면 그 다음 날부터), 보이는 공제가 모두 있어야 한다. 검토 사유는 확인한 것으로 남는다. */
         post: operations["PayslipsController_confirm"];
         delete?: never;
         options?: never;
@@ -2386,7 +2386,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 거부 — 사유는 선택(500자) */
+        /** 거부 — 사유는 받지 않는다(WHALEERP-635, 본문은 읽지 않는다) */
         post: operations["MyContractsController_reject"];
         delete?: never;
         options?: never;
@@ -2403,7 +2403,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 수정 요청 — 계약서가 틀렸을 때(대조 결과와 상관없이). 따로 받는 내용은 없다 */
+        /** 수정 요청 — 계약서가 틀렸을 때(대조 결과와 상관없이). 사유는 필수(1~100자, WHALEERP-635) */
         post: operations["MyContractsController_requestCorrection"];
         delete?: never;
         options?: never;
@@ -4062,7 +4062,8 @@ export interface paths {
         put?: never;
         /**
          * 본사 제공 동의 — 처음이든 철회 뒤든, 내 정보의 `needsReconsent` 로 다시 동의할 때든 (ATT-30). 계정에 하나라 소속 가맹
-         *     점포 모두에 같이 적용된다
+         *     점포 모두에 같이 적용된다. 본문의 `consentVersion`(화면이 보여 준 문구 버전, 필수)이 지금 버전과 다르면 409 — 화면은 새로
+         *     고쳐 새 문구를 보인다(ATT-30 v252). 빼면 400
          */
         post: operations["MyConsentController_agreeHqSharing"];
         delete?: never;
@@ -4121,6 +4122,8 @@ export interface paths {
          * 직원 앱 가입(WHALEERP-601 · 142, 가이드 ③·④). 초대를 다시 확인하고 계정을 만들어 직원 레코드에 잇고(가입 완료) 초대를
          *     수락으로 둔다. 가입을 기다리던 근로계약서는 서명 대기가 된다. 계정 번호는 초대의 번호다. 마치면 로그인 응답과 같은
          *     모양으로 접속 상태를 준다. 가입하는 날 만 19세 미만이면 계정을 만들지 않고 초대를 「가입 불가」로 둔 뒤 400 이다.
+         *     본사 제공 동의에 실은 문구 버전(hqSharingConsentVersion)이 지금과 달라도 가입은 마치고 동의만 남기지 않는다 — 응답의
+         *     hqSharingConsentRecorded 가 false 다(ATT-30 v253).
          */
         post: operations["StaffSignupController_signup"];
         delete?: never;
@@ -6876,7 +6879,7 @@ export interface components {
             sendLogId: number;
             /** @description 보낸 근로계약 */
             contractId: number;
-            /** @description 같은 계약에 앞서 나간 발송이 있었다(재발송 · 고쳐 다시 보냄) */
+            /** @description 같은 계약으로 앞서 직원에게 나갔을 수 있는 발송(성공 · 접수 여부 모름)이 있었다 — 재발송 · 고쳐 다시 보냄. 계약 재발송 횟수와는 다를 수 있다 */
             isResend: boolean;
             /** @description 관리자에게 보일 실패 사유. 성공이면 null */
             failureReason: string | null;
@@ -7597,12 +7600,12 @@ export interface components {
             changedAt: string;
         };
         /**
-         * @description 종이 계약 근로계약서 · 임금계약서
+         * @description 종이 계약 근로계약서 · 임금계약서 · 보낸 원본 · 처리 완료본
          * @enum {string}
          */
         ContractDocumentKind: "SENT_ORIGINAL" | "SIGNED_COPY" | "PAPER_EMPLOYMENT_CONTRACT" | "WAGE_CONTRACT" | "SIGNATURE";
         ContractDocumentDto: {
-            /** @description 종이 계약 근로계약서 · 임금계약서 */
+            /** @description 종이 계약 근로계약서 · 임금계약서 · 보낸 원본 · 처리 완료본 */
             kind: components["schemas"]["ContractDocumentKind"];
             contractDocumentId: number;
             /** @description 올린 파일의 원래 이름 */
@@ -7682,8 +7685,11 @@ export interface components {
             signDeadlineAt: string | null;
             /** @description 최종 처리일(ISO 8601) — 가장 최근 상태 변경 일시. 이력이 없으면 null */
             lastProcessedAt: string | null;
-            /** @description 직원이 남긴 거부 사유 — 거부된 계약에만, 그 밖은 null */
-            rejectReason: string | null;
+            /**
+             * @description 직원이 남긴 수정 요청 사유(1~100자, WHALEERP-635) — 수정 요청된 계약에만, 그 밖은 null. 사유를 받기 전의 수정 요청도 null.
+             *     고쳐 다시 보내도 행에는 남지만 다른 상태에서는 주지 않는다(지난 사유가 지금 사유처럼 읽히지 않게)
+             */
+            correctionReason: string | null;
             /** @description 재계약으로 만든 계약이면 직전 계약 ID. 재계약(WHALEERP-156) 전이라 지금은 늘 null */
             previousContractId: number | null;
             /** @description 종이 계약 등록일(ISO 8601) — 체결 완료가 된 때. 종이 계약만 — 전자계약 · 등록 전 임시저장(등록 전에 종료된 것 포함)은 null */
@@ -7784,12 +7790,16 @@ export interface components {
              */
             signedAt: string;
         };
-        RejectMyContractDto: {
-            reason?: string;
-        };
         MyContractActionResponseDto: {
             contractId: number;
             status: components["schemas"]["ContractStatus"];
+        };
+        RequestMyContractCorrectionDto: {
+            /**
+             * @description 수정 요청 사유 — 앞뒤 공백을 지운 뒤 1~100자
+             * @example 시급이 안내받은 금액과 다릅니다
+             */
+            reason: string;
         };
         MyContractListItemDto: {
             status: components["schemas"]["ContractStatus"];
@@ -7880,6 +7890,28 @@ export interface components {
             contractDocumentId: number;
             fileName: string;
         };
+        ContractTableRowDto: {
+            cells: string[];
+            /** @description 근무하지 않는 날(휴무 · 주휴일) — 흐리게 그린다 */
+            off: boolean;
+        };
+        ContractValueDto: {
+            label: string;
+            value: string;
+        };
+        ContractBlockDto: {
+            /** @enum {string} */
+            type: "TEXT" | "TABLE" | "VALUES";
+            tableRows?: components["schemas"]["ContractTableRowDto"][];
+            values?: components["schemas"]["ContractValueDto"][];
+            text?: string;
+            header?: string[];
+        };
+        ContractArticleDto: {
+            blocks: components["schemas"]["ContractBlockDto"][];
+            /** @description 「제1조(근로계약기간)」 */
+            title: string;
+        };
         MyContractDetailDto: {
             startDate: string | null;
             endDate: string | null;
@@ -7932,6 +7964,8 @@ export interface components {
             employer: components["schemas"]["MyContractEmployerDto"];
             account: components["schemas"]["MyContractAccountDto"];
             documents: components["schemas"]["MyContractDocumentDto"][];
+            /** @description 계약서 조항 열 가지 — 보낸 원본 · 처리 완료본 PDF 와 같은 템플릿(WHALEERP-131). 화면은 이 순서대로 그린다 */
+            articles: components["schemas"]["ContractArticleDto"][];
             contractId: number;
             storeId: number;
             /** @description 목록과 같다 — 서명 대기 · 기한 안 · 재직 중 */
@@ -9872,6 +9906,10 @@ export interface components {
             /** @description 동의 시트에 보여 준 위치정보 약관 버전 — 예: v1.1. 시트를 그릴 때 시행 중인 약관이 없었으면 null */
             termsVersion: string | null;
         };
+        AgreeHqSharingConsentDto: {
+            /** @description 화면이 보여 준 본사 제공 동의 문구 버전 — 예: v1.0 */
+            consentVersion: string;
+        };
         InvitationLookupDto: {
             /** @description 초대 링크의 토큰(base64url 43자) */
             token?: string;
@@ -9906,6 +9944,12 @@ export interface components {
              */
             gender: "MALE" | "FEMALE";
             /**
+             * @description 본사 제공 동의 문구 버전 — 화면이 보인 문구의 버전(예: v1.0, ATT-30 v252). hqSharingConsented 가 true 일 때
+             *     싣는다(실었으면 비지 않은 64자 이하 문자열 — 아니면 400), 아니면 보지 않는다. 빠지거나(null 포함) 지금 버전과 다르면 가입은 그대로
+             *     마치고 동의만 남기지 않는다 — 응답의 hqSharingConsentRecorded 가 false 다(예전 앱 · 배포 어긋남에도 막지 않는다, v253)
+             */
+            hqSharingConsentVersion?: string;
+            /**
              * Format: email
              * @description 로그인 아이디. 소문자로 맞춰 저장한다(accounts_email_lower). 핀으로 확인하지 않는다
              */
@@ -9936,6 +9980,23 @@ export interface components {
             phone?: string;
             /** @description 초대 코드 — 대문자 · 숫자 8자리, 0 · O · 1 · I 는 없다. 소문자로 넣어도 대문자로 맞춰 본다 */
             code?: string;
+        };
+        StaffSignupResponseDto: {
+            /**
+             * @description 본사 제공 동의를 남겼는지(ATT-30 v253). true 남김 · false 동의했지만 보인 문구 버전이 지금과 다르거나 싣지 않아(예전 앱) 남기지 않음(가입은
+             *     마쳤다 — 앱은 내 정보에서 다시 동의하라고 알린다) · null 남길 동의가 없음(직영 점포 · 동의하지 않음)
+             */
+            hqSharingConsentRecorded: boolean | null;
+            /** @description Authorization: Bearer <accessToken> 으로 API 를 호출한다. 15분 뒤 만료된다. */
+            accessToken: string;
+            /** @description 접속을 이어 갈 때 쓴다. 원문은 이 응답에만 있고 서버에는 해시만 남는다. */
+            refreshToken: string;
+            /**
+             * Format: date-time
+             * @description 마지막으로 사용한 때부터 30일(로그인 때 `rememberMe: false` 면 7일)이 되는 시각. 사용할 때마다 같은 길이로 뒤로 밀린다.
+             */
+            refreshTokenExpiresAt: string;
+            account: components["schemas"]["LoginAccountResponseDto"];
         };
         MyInvitationDto: {
             /**
@@ -9970,6 +10031,12 @@ export interface components {
         };
         AcceptMyInvitationDto: {
             /**
+             * @description 본사 제공 동의 문구 버전 — 화면이 보인 문구의 버전(예: v1.0, ATT-30 v252). hqSharingConsented 가 true 일 때
+             *     싣는다(실었으면 비지 않은 64자 이하 문자열 — 아니면 400), 아니면 보지 않는다. 빠지거나(null 포함) 지금 버전과 다르면 근무지 더하기는 그대로
+             *     마치고 동의만 남기지 않는다 — 응답의 hqSharingConsentRecorded 가 false 다(예전 앱 · 배포 어긋남에도 막지 않는다, v253)
+             */
+            hqSharingConsentVersion?: string;
+            /**
              * @description 본사 제공 동의(운영 정책 ATT-30, 선택). 목록의 asksHqSharingConsent 가 true 일 때만 쓴다 — 직영 점포이거나 계정이
              *     받아 주는 문구 버전에 이미 동의했으면 보내도 바꾸지 않는다. 더는 받아 주지 않는 버전에 동의했으면 true 로 지금 버전에
              *     다시 동의한다. 동의는 계정에 하나다(api #78)
@@ -9977,6 +10044,11 @@ export interface components {
             hqSharingConsented?: boolean;
         };
         AcceptMyInvitationResponseDto: {
+            /**
+             * @description 본사 제공 동의를 남겼는지(ATT-30 v253). true 남김 · false 동의했지만 보인 문구 버전이 지금과 다르거나 싣지 않아(예전 앱) 남기지 않음(계정의 동의는
+             *     그대로 — 앱은 내 정보에서 다시 동의하라고 알린다) · null 남길 동의가 없음(묻지 않는 초대 · 이미 동의함 · 동의하지 않음)
+             */
+            hqSharingConsentRecorded: boolean | null;
             /** @description 이 계정에 이어진 직원 레코드 */
             staffMemberId: number;
             /** @description 근무지(점포) — 이은 직원 레코드의 점포. 앱이 `/me/contracts` 항목을 이 storeId 로 걸러 그 근무지 근로계약서만 연다 */
@@ -10015,22 +10087,29 @@ export interface components {
         };
         AcceptAffiliationRequestDto: {
             /**
+             * @description 본사 제공 동의 문구 버전 — 화면이 보인 문구의 버전(예: v1.0, ATT-30 v252). hqSharingConsented 가 true 일 때
+             *     싣는다(실었으면 비지 않은 64자 이하 문자열 — 아니면 400), 아니면 보지 않는다. 빠지거나(null 포함) 지금 버전과 다르면 수락은 그대로
+             *     마치고 동의만 남기지 않는다 — 응답의 hqSharingConsentRecorded 가 false 다(예전 앱 · 배포 어긋남에도 막지 않는다, v253)
+             */
+            hqSharingConsentVersion?: string;
+            /**
              * @description 본사 제공 동의(운영 정책 ATT-30, 선택). 목록의 asksHqSharingConsent 가 true 일 때만 쓴다 — 직영 점포이거나 계정이 이미
              *     동의했으면 보내도 바꾸지 않는다(근무지 더하기와 같다)
              */
             hqSharingConsented?: boolean;
         };
         AcceptAffiliationResponseDto: {
+            /**
+             * @description 본사 제공 동의를 남겼는지(ATT-30 v253). true 남김 · false 동의했지만 보인 문구 버전이 지금과 다르거나 싣지 않아(예전 앱) 남기지 않음(계정의 동의는
+             *     그대로 — 앱은 내 정보에서 다시 동의하라고 알린다) · null 남길 동의가 없음(묻지 않는 요청 · 이미 동의함 · 동의하지 않음)
+             */
+            hqSharingConsentRecorded: boolean | null;
             /** @description 이 계정에 이어진 직원 레코드 */
             staffMemberId: number;
             /** @description 근무지(점포) 이름 */
             storeName: string;
             /** @description 서명 대기로 넘어간 근로계약 — 날인 기한은 수락한 때부터 30일 */
             contractIds: number[];
-        };
-        RejectAffiliationRequestDto: {
-            /** @description 거절 사유 — 함께 온 계약의 거부 사유로도 남는다 */
-            reason?: string;
         };
         BpHolidayTargetResponseDto: {
             isAllStores: boolean;
@@ -16661,7 +16740,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description DEDUCTION_MISSING — 비어 있는 공제(본문 items) */
+            /** @description PERIOD_NOT_ENDED — 확정할 수 있는 날(퇴직일 · 마지막 계약 종료일 · 급여 기간 마지막 날 가운데 가장 빠른 날의 다음 날, 그 계약의 보낸 갱신(임시저장 제외)이 기간 안에 시작하면 계약 종료일은 보지 않는다) 전 · DEDUCTION_MISSING — 비어 있는 공제(본문 items) */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -17752,11 +17831,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RejectMyContractDto"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -17765,13 +17840,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["MyContractActionResponseDto"];
                 };
-            };
-            /** @description 사유 500자 넘음 · null */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
             /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
             401: {
@@ -17819,7 +17887,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestMyContractCorrectionDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -17828,6 +17900,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["MyContractActionResponseDto"];
                 };
+            };
+            /** @description 사유 없음 · 비었음(앞뒤 공백을 지운 뒤) · 100자 넘음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
             401: {
@@ -23061,10 +23140,21 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgreeHqSharingConsentDto"];
+            };
+        };
         responses: {
             /** @description 동의함 */
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description consentVersion 없음 · 빈 문자열 · 문자열 아님 · 64자 초과 · 모르는 칸 */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23084,7 +23174,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 지금 동의 상태에서 할 수 없는 동작 */
+            /** @description 이미 지금 버전에 동의함 · 화면이 보여 준 문구 버전(consentVersion)이 지금 것과 다름 — 「사업자 제공 동의 내용이 바뀌었습니다. …」(화면은 새로 고친다) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -23201,7 +23291,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LoginResponseDto"];
+                    "application/json": components["schemas"]["StaffSignupResponseDto"];
                 };
             };
             /** @description 형식 오류 · 비밀번호 규칙 · 만 19세 미만(SIGNUP_UNDER_AGE, 초대는 가입 불가가 됨) */
@@ -23450,11 +23540,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RejectAffiliationRequestDto"];
-            };
-        };
+        requestBody?: never;
         responses: {
             204: {
                 headers: {
@@ -23462,7 +23548,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 형식 오류 · 사유 500자 넘음 */
+            /** @description 형식 오류(요청 ID) */
             400: {
                 headers: {
                     [name: string]: unknown;

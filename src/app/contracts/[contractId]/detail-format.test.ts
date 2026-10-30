@@ -82,7 +82,7 @@ const sent = {
   signDeadlineAt: "2026-11-19T01:00:00.000Z",
   lastProcessedAt: "2026-10-20T01:00:00.000Z",
   resendCount: 0,
-  rejectReason: null,
+  correctionReason: null,
   registeredAt: null,
   registeredBy: null,
 } as const;
@@ -111,13 +111,27 @@ test("재발송 횟수가 있어도 마지막 발송 일시가 없으면 재발�
   assert.ok(!labels.includes("재발송"));
 });
 
-test("거부된 계약은 거부 사유를 보인다 — 직원이 쓴 글이라 줄이 늘어난다", () => {
-  assert.deepEqual(processRows({ ...sent, status: "REJECTED", rejectReason: "근무 시간이 맞지 않아요" }).at(-1), {
-    label: "거부 사유",
-    value: "근무 시간이 맞지 않아요",
+test("수정 요청된 계약은 수정 요청 사유를 보인다 — 직원이 쓴 글이라 줄이 늘어나고, 없으면 「-」(WHALEERP-635)", () => {
+  assert.deepEqual(processRows({ ...sent, status: "CORRECTION_REQUESTED", correctionReason: "시급이 안내받은 금액과 다릅니다" }).at(-1), {
+    label: "수정 요청 사유",
+    value: "시급이 안내받은 금액과 다릅니다",
     multiline: true,
   });
-  assert.deepEqual(processRows({ ...sent, status: "REJECTED", rejectReason: null }).at(-1), { label: "거부 사유", value: "-", multiline: true });
+  assert.deepEqual(processRows({ ...sent, status: "CORRECTION_REQUESTED", correctionReason: null }).at(-1), {
+    label: "수정 요청 사유",
+    value: "-",
+    multiline: true,
+  });
+});
+
+test("수정 요청이 아니면 사유가 남아 있어도(고쳐 다시 보냄) 수정 요청 사유 줄이 없고, 거부 사유 줄은 어느 상태에도 없다", () => {
+  const statuses = ["DRAFT", "PENDING_SEND", "PENDING_SIGNATURE", "SIGNED", "REJECTED", "EXPIRED", "ENDED"] as const;
+  for (const status of statuses) {
+    const labels = processRows({ ...sent, status, correctionReason: "시급이 다릅니다" }).map((r) => r.label);
+    assert.ok(!labels.includes("수정 요청 사유"), status);
+    assert.ok(!labels.includes("거부 사유"), status);
+  }
+  assert.ok(!processRows({ ...sent, status: "CORRECTION_REQUESTED" }).some((r) => r.label === "거부 사유"));
 });
 
 test("종이 계약은 발송 칸 대신 등록일 · 등록 관리자를 보인다", () => {
