@@ -30,6 +30,8 @@ const BTN_TONE = {
   off: "border-erp-subtle bg-erp-subtle text-erp-ink",
   // 퇴직 처리처럼 되돌리기 어려운 동작(2026-10-08 재영). 미운영 배지와 같은 상태 빨강 토큰을 쓴다. 공통 Button 에는 아직 없다.
   danger: "border-erp-off bg-erp-off text-white",
+  // 다른 버튼이 호버했을 때의 모양을 처음부터 쓴다 — 앱 button.tsx 의 outline 과 같다(2026-10-30, 회원 탈퇴 [직원 자료 일괄 저장]).
+  outline: "border-erp-brand bg-white text-erp-ink hover:bg-erp-subtle!",
 };
 // 막힌 버튼(disabled)은 흐리게 두고 호버하지 않는다 — 앱 button.tsx 에 있던 것을 옮겼다(2026-10-26, 수정 양식 [저장] · 권한 삭제 [삭제]가 막혀 보이게)
 const BTN_SHELL =

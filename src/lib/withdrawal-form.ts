@@ -10,7 +10,9 @@ export type WithdrawEligibility = {
   hasInProgressContract: boolean;
 };
 
-export type WithdrawWarningBlock = string | { head: string; text: string };
+
+/** link 는 본문 아래 붙는 이동 버튼 — 탈퇴 전에 할 일을 하는 화면으로 보낸다(직원 자료 일괄 저장, WHALEERP-339). */
+export type WithdrawWarningBlock = string | { head: string; text?: string; link?: { href: string; label: string } };
 
 /** api 가 거절한 이유를 붙일 칸. 400 만 본다 — 401 등(세션 만료 · 연결 실패)은 칸이 아니라 띠로 보인다.
  * 진행 중인 근로계약이 있어 막힌 경우도 특정 칸을 가리킬 수 없어 띠로 보인다. */
@@ -39,21 +41,49 @@ export function withdrawVerifyFailureOf(error: unknown): WithdrawVerifyFailure {
 
 /** 탈퇴 경고 문구(데모 docs/demo/src/site.mjs 328-343줄의 근거) — 실제 값으로 바뀌는 자리를
  * eligibility 로 채운다. `<br>` 대신 `\n` 을 쓴다 — 줄바꿈을 어떻게 그릴지는 컴포넌트(withdraw-panel.tsx) 몫이다.
- * 데모의 live()(굵게+밑줄)에 해당하는 자리(BP 이름·관리자 수·점포 수)는 `**...**` 로 감싼다 — 이 파일은
- * React 를 안 쓰므로(node --test 로 돈다) 마크다운 굵게만 흉내 내고, 실제 굵게+밑줄 렌더링은 컴포넌트가
- * `**` 를 갈라 맡는다(2026-10-27 사용자 지정 — BP 이름이 눈에 띄어야 한다). */
-export function withdrawWarningText(eligibility: WithdrawEligibility): WithdrawWarningBlock[] {
+ * 데모의 live()(굵게)에 해당하는 자리(BP 이름·관리자 수·점포 수)는 `**...**` 로 감싼다 — 이 파일은
+ * React 를 안 쓰므로(node --test 로 돈다) 마크다운 굵게만 흉내 내고, 실제 굵게 렌더링은 컴포넌트가
+ * `**` 를 갈라 맡는다(2026-10-27 사용자 지정 — BP 이름이 눈에 띄어야 한다. 밑줄은 2026-10-30 뺐다).
+ * 관리자 계정 · 점포가 0개면 그 문장 · 블록을 뺀다 — 「0개도 미사용」「0개를 모두 폐점」처럼 없는 것을 처리한다고
+ * 말하게 되어서다(2026-10-30 사용자 지정). */
+/** 탈퇴를 막는 「진행 중」 근로계약 — api IN_PROGRESS_CONTRACT_STATUSES(whale-erp-api src/stores/store-format.ts)와 같다. */
+export const IN_PROGRESS_CONTRACT_STATUSES = ["DRAFT", "PENDING_SEND", "PENDING_SIGNATURE", "CORRECTION_REQUESTED", "SIGNED"] as const;
+
+/** [근로계약 확인]이 여는 주소 — 근로계약 목록을 진행 중 상태로만 거른다(목록은 status 를 여러 번 받는다). */
+/** 근로계약 관리 화면. 메뉴 권한 판정(useCanOpen)은 쿼리 없는 이 경로로 한다 — 쿼리를 붙이면 메뉴를 못 찾는다. */
+export const CONTRACTS_PATH = "/contracts";
+export const IN_PROGRESS_CONTRACTS_HREF = `${CONTRACTS_PATH}?${IN_PROGRESS_CONTRACT_STATUSES.map((s) => `status=${s}`).join("&")}`;
+
+/** hasFranchiseStore 는 이 BP 에 직영이 아닌 점포가 있는가 — 본사 제공 동의로 가려지는 직원은 그런 점포에만 있다(api hidesPersonalData).
+ * 없으면(직영만) 가맹마스터에게 알리라는 줄을 뺀다(2026-10-30 사용자 지정). */
+export function withdrawWarningText(eligibility: WithdrawEligibility, hasFranchiseStore = true): WithdrawWarningBlock[] {
   const { bpName, adminCount, storeCount } = eligibility;
   return [
-    `탈퇴하면 **${bpName}**의 서비스 이용이 종료됩니다. 관리자·가맹 계정 **${adminCount}개**도 함께 탈퇴되어 더 이상 로그인할 수 없습니다.`,
     {
-      head: `점포 **${storeCount}개**가 모두 폐점 처리됩니다.`,
-      text: `점포 보유 여부는 탈퇴를 제한하지 않습니다.\n탈퇴 처리 시 점포의 현재 운영 상태나 폐점 조건을 별도로 확인하지 않고, 운영·미운영 점포 **${storeCount}개**를 모두 폐점 처리합니다.`,
+      head: `「**${bpName}**」님의 서비스 이용이 종료됩니다.`,
+      ...(adminCount > 0 && { text: `관리자 계정 **${adminCount}개**도 미사용 처리되어 로그인할 수 없습니다.` }),
     },
+    ...(storeCount > 0
+      ? [
+          {
+            head: `점포 **${storeCount}개**의 상태가 「폐점」으로 바뀝니다.`,
+            text: "서비스상의 점포 상태로, 실제 매장 영업과는 관계없습니다.",
+          },
+        ]
+      : []),
     {
       head: "개인정보가 삭제됩니다.",
-      text: "탈퇴 계정의 이름·연락처·이메일과 대표자의 연락처·이메일은 즉시 삭제되며, 아이디만 보관됩니다. 직원·계약·정산 정보와 변경이력은 보존 정책에 따라 보관됩니다.",
+      text: "관리자 이름·연락처·이메일은 즉시 삭제되며 아이디는 보관됩니다.",
     },
-    "탈퇴한 계정은 복구할 수 없습니다.\n정말 탈퇴하시겠습니까?",
+    // 관리자 계정이 모두 미사용 처리되어 탈퇴 뒤에는 직원 자료를 볼 수 없으니 미리 내려받게 한다(3팀 WHALEERP-339,
+    // 운영 정책 RET-09). 본사 제공에 동의하지 않은 가맹 점포 직원은 본사 파일에서 빠지고 이 경고는 BP 마스터만
+    // 보므로, 그 가맹마스터에게 알리라는 말까지 둔다.
+    {
+      head: "직원 자료는 조회할 수 없습니다.",
+      text: `필요한 자료는 탈퇴 전에 내려받아 주세요.${hasFranchiseStore ? "\n본사 제공에 동의하지 않은 가맹 점포 직원의 자료는 가맹마스터만 내려받을 수 있으니, 탈퇴 전에 가맹마스터에게 알려 주세요." : ""}`,
+      link: { href: "/staff-members/export", label: "직원 자료 일괄 저장" },
+    },
+    // 「정말 탈퇴하시겠습니까?」는 두지 않는다 — [회원 탈퇴]를 누르면 뜨는 확인창이 묻는다(2026-10-30 사용자 지정).
+    { head: "탈퇴한 계정은 복구할 수 없습니다." },
   ];
 }

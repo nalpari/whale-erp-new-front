@@ -126,6 +126,11 @@ export function useMenuRole(menuCode: MenuCode, action: MenuAction) {
   const { menus, serviceCode } = useLogin();
   return menuPermissionOf(menus, serviceCode, menuCode, action);
 }
+/** 이 탭에서 이 주소를 열 수 있는가(isAllowed) — 다른 메뉴 화면으로 보내는 바로가기를 보이거나 숨길 때 쓴다. */
+export function useCanOpen(path: string) {
+  const { menus, serviceCode } = useLogin();
+  return isAllowed(menus, path, serviceCode);
+}
 /** 메뉴 코드로 찾은 메뉴의 등록 · 수정 · 삭제 권한. 화면 자기 버튼은 usePagePermission 을 쓰고, 이 훅은 다른 메뉴의 버튼이나 아직 옮기지 않은 화면에만 쓴다. 막는 것은 api 다. */
 export function useMenuPermission(menuCode: MenuCode) {
   return { create: useMenuRole(menuCode, "create"), update: useMenuRole(menuCode, "update"), delete: useMenuRole(menuCode, "delete") };

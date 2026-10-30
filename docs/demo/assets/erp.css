@@ -595,6 +595,9 @@
   .mt-\[6px\] {
     margin-top: 6px;
   }
+  .mt-\[10px\] {
+    margin-top: 10px;
+  }
   .mt-\[12px\] {
     margin-top: 12px;
   }
@@ -3370,6 +3373,9 @@
     }
     .hover\:bg-erp-on-bg:hover {
       background-color: var(--color-erp-on-bg);
+    }
+    .hover\:bg-erp-subtle\!:hover {
+      background-color: var(--color-erp-subtle) !important;
     }
     .hover\:bg-erp-thead-bg:hover {
       background-color: var(--color-erp-thead-bg);

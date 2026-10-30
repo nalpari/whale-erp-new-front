@@ -307,51 +307,65 @@ export function passwordPanel(A) {
 // panel 이 true 면: "취소"는 페이지 이동 대신 패널을 닫고, 비밀번호 확인은 따로 뜨는 확인창이 아니라 패널 맨 앞 단계로 넣는다
 // (2026-10-06 피드백) — 맞게 입력하고 [확인]을 누르면(데모라 항상 통과) 같은 패널 안에서 회원 탈퇴 내용으로 바뀐다.
 // 전체 화면에서는 기존대로 페이지에 들어오면 비밀번호 확인창이 뜬다.
-export function withdrawBody(R, { panel = false } = {}) {
+// blocked 가 true 면 진행 중인 근로계약이 있어 막힌 상태(조건 미충족)를 그린다 — [근로계약 확인]이 보이고 [회원 탈퇴]는 막힌다.
+export function withdrawBody(R, { panel = false, blocked = false } = {}) {
   const confirmId = x.dialogId();
   const doneId = x.dialogId();
-  // text 는 문단 하나(string), 여러 문단(array), 또는 소제목+문단({head,text})을 섞은 array 를 받는다.
+  // text 는 문단 하나(string), 여러 문단(array), 또는 소제목+문단({head,text,action})을 섞은 array 를 받는다. action 은 문단 아래 버튼이다.
   const notice = (title, text, danger) => {
     const blocks = Array.isArray(text) ? text : [text];
     const body = blocks
       .map((b) =>
         typeof b === "object"
-          ? `<p class="mt-[14px] font-semibold text-erp-ink">${b.head}</p><p class="mt-[4px] leading-[1.6] text-erp-ink">${b.text}</p>`
+          ? `<p class="mt-[14px] font-semibold text-erp-ink">${b.head}</p>${b.text ? `<p class="mt-[4px] leading-[1.6] text-erp-ink">${b.text}</p>` : ""}${b.action ? `<div class="mt-[10px]">${b.action}</div>` : ""}`
           : `<p class="mt-[6px] leading-[1.6] text-erp-ink">${b}</p>`,
       )
       .join("");
     return `<div class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px] text-[14px]"><p class="font-semibold ${danger ? "text-[#e93737]" : "text-erp-ink"}">${title}</p>${body}</div>`;
   };
 
-  // 실제 값으로 바뀌는 자리(BP 이름·계정 수·점포 수)는 굵게 + 밑줄로 표시한다.
-  const live = (t) => `<b class="font-semibold underline">${t}</b>`;
+  // 실제 값으로 바뀌는 자리(BP 이름·계정 수·점포 수)는 굵게 표시한다(밑줄은 2026-10-30 뺐다).
+  const live = (t) => `<b class="font-semibold">${t}</b>`;
   const warn = notice(
     "탈퇴 전 꼭 확인해 주세요.",
     [
-      `탈퇴하면 ${live(BP.name)}의 서비스 이용이 종료됩니다. 동일한 BP에 속한 관리자·가맹 계정 ${live("6개")}도 함께 탈퇴되어 더 이상 로그인할 수 없습니다.`,
+      // 개발 화면은 관리자 계정 · 점포가 0개면 그 문장 · 블록을 뺀다(withdrawal-form.ts). 데모는 있는 경우만 보인다.
       {
-        head: `점포 ${live("11개")}가 모두 폐점 처리됩니다.`,
-        text: `점포 보유 여부는 탈퇴를 제한하지 않습니다.<br>탈퇴 처리 시 점포의 현재 운영 상태나 폐점 조건을 별도로 확인하지 않고, 운영·미운영 점포 ${live("11개")}를 모두 폐점 처리합니다.`,
+        head: `「${live(BP.name)}」님의 서비스 이용이 종료됩니다.`,
+        text: `관리자 계정 ${live("6개")}도 미사용 처리되어 로그인할 수 없습니다.`,
+      },
+      {
+        head: `점포 ${live("11개")}의 상태가 「폐점」으로 바뀝니다.`,
+        text: "서비스상의 점포 상태로, 실제 매장 영업과는 관계없습니다.",
       },
       {
         head: "개인정보가 삭제됩니다.",
-        text: "탈퇴 계정의 이름·연락처·이메일과 대표자의 연락처·이메일은 즉시 삭제되며, 아이디만 보관됩니다. 직원·계약·정산 정보와 변경이력은 보존 정책에 따라 보관됩니다.",
+        text: "관리자 이름·연락처·이메일은 즉시 삭제되며 아이디는 보관됩니다.",
       },
-      "탈퇴한 계정은 복구할 수 없습니다.<br>정말 탈퇴하시겠습니까?",
+      // 직원 자료를 미리 받게 한다(3팀 WHALEERP-339, 운영 정책 RET-09) — 이 경고는 BP 마스터만 보므로 그 가맹마스터에게 알리게 한다.
+      {
+        head: "직원 자료는 조회할 수 없습니다.",
+        text: "필요한 자료는 탈퇴 전에 내려받아 주세요.<br>본사 제공에 동의하지 않은 가맹 점포 직원의 자료는 가맹마스터만 내려받을 수 있으니, 탈퇴 전에 가맹마스터에게 알려 주세요.",
+        action: ui.button("직원 자료 일괄 저장", { variant: "outline", href: to(R, "staff/export.html") }),
+      },
+      // 「정말 탈퇴하시겠습니까?」는 두지 않는다 — [회원 탈퇴]를 누르면 뜨는 확인창이 묻는다.
+      { head: "탈퇴한 계정은 복구할 수 없습니다." },
     ],
     true, // #e93737: DESIGN.md 의 위험 글자색
   );
 
   // 표(조건·내용·상태 열) 대신 아이콘 + 제목 + 설명 한 줄짜리 목록으로 보인다(2026-10-06 피드백) — 열 이름 없이 충족 여부는 앞 표시(—/✓)로만 말한다.
   // icon·iconCls 로 상태별 색을 따로 준다: 막는 조건은 빨강, 충족한 조건은 파랑, 그 밖(확인 안 함)은 무채색.
-  const condRow = (icon, iconCls, title, desc) => {
+  const condRow = (icon, iconCls, title, desc, end = "") => {
     const lines = (Array.isArray(desc) ? desc : [desc]).map((d) => `<p class="text-[13px] text-erp-label">${d}</p>`).join("");
-    return `<div class="flex items-start gap-[10px] border-b border-erp-divider py-[14px] last:border-b-0"><span class="w-[16px] shrink-0 text-center text-[14px] font-semibold ${iconCls}">${icon}</span><div class="flex flex-col gap-[2px]"><p class="text-[15px] font-semibold text-erp-ink">${title}</p>${lines}</div></div>`;
+    return `<div class="flex items-start gap-[10px] border-b border-erp-divider py-[14px] last:border-b-0"><span class="w-[16px] shrink-0 text-center text-[14px] font-semibold ${iconCls}">${icon}</span><div class="flex flex-1 flex-col gap-[2px]"><p class="text-[15px] font-semibold text-erp-ink">${title}</p>${lines}</div>${end}</div>`;
   };
   const conditions =
     condRow("–", "text-[#e93737]", "부가서비스 구독 해지", ["1차 범위 밖 — 1차에서는 확인하지 않습니다.", "직원추가 구독중"]) +
     condRow("–", "text-erp-muted font-normal", "미정산 금액 없음", "1차 범위 밖 — 1차에서는 확인하지 않습니다.") +
-    condRow("✓", "text-erp-link", "진행 중인 근로계약 없음", "진행 중인 근로계약이 없습니다.");
+    (blocked
+      ? condRow("✕", "text-[#e93737]", "진행 중인 근로계약 있음", "진행 중인 근로계약이 있습니다.")
+      : condRow("✓", "text-erp-link", "진행 중인 근로계약 없음", "진행 중인 근로계약이 없습니다."));
 
   // 탈퇴 사유를 "직접입력"으로 고를 때만 상세 사유 칸을 보인다. select 는 data-when(라디오 전용)을 못 쓰므로 onchange 로 직접 토글한다.
   const detailId = ui.uid("wd-detail");
@@ -378,9 +392,9 @@ export function withdrawBody(R, { panel = false } = {}) {
 
   const withdrawContent =
     warn +
-    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`탈퇴 조건<span class="ml-[10px] inline-flex align-middle">${ui.badge("on", "모두 충족")}</span>`)}${conditions}</div>` +
+    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`탈퇴 조건<span class="ml-[10px] inline-flex align-middle">${blocked ? ui.badge("off", "1개 미충족") : ui.badge("on", "모두 충족")}</span>`)}${conditions}${blocked ? `<div class="flex justify-end">${ui.button("근로계약 확인", { variant: "outline", href: to(R, "staff/contracts.html") })}</div>` : ""}</div>` +
     reason +
-    f.formButtons(ui.button("닫기", { variant: "off", ...dismiss }), x.dialogTrigger("회원 탈퇴", confirmId)) +
+    f.formButtons(ui.button("닫기", { variant: "off", ...dismiss }), blocked ? ui.button("회원 탈퇴", { disabled: true }) : x.dialogTrigger("회원 탈퇴", confirmId)) +
     confirmDoneDialogs;
 
   if (!panel) {

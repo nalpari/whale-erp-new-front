@@ -46,9 +46,23 @@
             <div class="band__body">
               <div class="band__title">탈퇴하면 웨일ERP 를 더 이상 이용할 수 없습니다</div>
               <p class="band__desc">
-                ㈜한강상회의 이용이 끝나고, 같은 BP 의 관리자·가맹 계정 <b>6개</b>도 함께 탈퇴되어 로그인할 수 없게 됩니다.
-                모든 계정의 이름·연락처·이메일과 대표자 연락처·이메일은 바로 지우고 아이디만 남깁니다. 직원·계약·정산 기록과 변경 이력은 보존 정책대로 보존합니다. 탈퇴한 계정은 되살릴 수 없습니다.
+                「<b>㈜한강상회</b>」님의 서비스 이용이 종료됩니다.<br>
+                관리자 계정 <b>6개</b>도 미사용 처리되어 로그인할 수 없습니다.<br>
+                관리자 이름·연락처·이메일은 즉시 삭제되며 아이디는 보관됩니다. 탈퇴한 계정은 복구할 수 없습니다.
               </p>
+            </div>
+          </div>
+
+          <!-- 직원 자료를 미리 받게 한다(3팀 WHALEERP-339, 운영 정책 RET-09). 이 경고는 BP 마스터만 보므로 관련 담당자에게 알리라는 말까지 둔다. -->
+          <div class="band band--warn">
+            <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">직원 자료는 조회할 수 없습니다</div>
+              <p class="band__desc">
+                필요한 자료는 탈퇴 전에 내려받아 주세요.<br>
+                본사 제공에 동의하지 않은 가맹 점포 직원의 자료는 가맹마스터만 내려받을 수 있으니, 탈퇴 전에 가맹마스터에게 알려 주세요.
+              </p>
+              <a class="btn btn--secondary" href="../staff/export.html" style="margin-top: 10px; align-self: flex-start">직원 자료 일괄 저장</a>
             </div>
           </div>
 
@@ -89,13 +103,15 @@
                 </span>
               </div>
             </div>
+            <!-- 진행 중 근로계약이 있을 때만 — 직원 관리 › 근로계약 관리를 진행 중 상태로 걸러 연다(2026-10-30 사용자 지정). 표 아래 오른쪽 -->
+            <div data-show="unmet" hidden><div style="display: flex; justify-content: flex-end; margin-top: 10px"><a class="btn btn--secondary" href="../staff/contracts.html">근로계약 확인</a></div></div>
           </section>
 
           <div class="band band--info">
             <span class="band__ic" data-icon="store" data-icon-size="20"></span>
             <div class="band__body">
-              <div class="band__title">점포 11개가 폐점으로 바뀝니다</div>
-              <p class="band__desc">점포는 탈퇴를 막는 조건이 아닙니다. 탈퇴를 처리하면서 운영·미운영 점포를 폐점 조건 확인 없이 모두 폐점으로 바꿉니다.</p>
+              <div class="band__title">점포 11개의 상태가 「폐점」으로 바뀝니다</div>
+              <p class="band__desc">서비스상의 점포 상태로, 실제 매장 영업과는 관계없습니다.</p>
             </div>
           </div>
 
@@ -126,8 +142,8 @@
               </div>
               <div class="inline" style="justify-content: flex-end; gap: 8px">
                 <a class="btn btn--secondary" href="profile.html">취소</a>
-                <button class="btn btn--danger" type="button" data-show="met" data-enable-when="wdreason" data-open="wdconfirm">회원 탈퇴</button>
-                <button class="btn btn--danger" type="button" data-show="unmet" hidden disabled>회원 탈퇴</button>
+                <button class="btn btn--primary" type="button" data-show="met" data-enable-when="wdreason" data-open="wdconfirm">회원 탈퇴</button>
+                <button class="btn btn--primary" type="button" data-show="unmet" hidden disabled>회원 탈퇴</button>
               </div>
             </div>
           </section>
@@ -179,7 +195,7 @@
             </div>
             <div class="modal__foot">
               <button class="btn btn--ghost" type="button" data-close>취소</button>
-              <button class="btn btn--danger" type="button" data-close data-open="wddone">회원 탈퇴</button>
+              <button class="btn btn--primary" type="button" data-close data-open="wddone">회원 탈퇴</button>
             </div>
           </div>
         </div>
