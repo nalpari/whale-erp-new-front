@@ -47,7 +47,10 @@ export const CONTRACTS_PATH = "/contracts";
 
 /** [근로계약 확인]이 여는 주소 — 근로계약 목록을 진행 중 상태로만 거른다(목록은 status 를 여러 번 받는다).
  * 빈 storeIds 로 점포를 「전체」로 연다 — 없으면 목록이 헤더 범위(점포 하나 · 직영만 등)로 채워져, 탈퇴를 막은 다른 점포의
- * 계약이 안 보일 수 있다(탈퇴 조건은 BP 전체를 본다). 빈 storeIds 는 헤더 범위를 바꾸지 않는다(src/app/contracts/contract-list.ts 의 storesCleared). */
+ * 계약이 안 보일 수 있다(탈퇴 조건은 BP 전체를 본다). 빈 storeIds 는 헤더 범위를 바꾸지 않는다(src/app/contracts/contract-list.ts 의 storesCleared).
+ * 그래도 다 보이지는 않는다 — 탈퇴 판정(api countInProgressContracts)은 지운 · 폐점한 점포까지 세지만, 목록은 본사 역할에게
+ * 본사 제공에 동의하지 않은 가맹 점포 직원과 폐점한 가맹 점포 · 지운 점포의 계약을 가린다. 그런 계약만 남으면 목록이 비고
+ * BP 마스터 혼자 풀 수 없다(가맹마스터가 정리해야 한다) — 탈퇴 차단 조건 자체를 manyfast S-JHQQNR 정책 질문으로 올렸다(2026-10-30). */
 export const IN_PROGRESS_CONTRACTS_HREF = `${CONTRACTS_PATH}?storeIds=&${IN_PROGRESS_CONTRACT_STATUSES.map((s) => `status=${s}`).join("&")}`;
 
 /**
