@@ -96,6 +96,13 @@ test("409 문구에서 겹친 코드를 꺼낸다", () => {
   assert.equal(conflictCode("이미 있는 그룹 코드입니다: INTERN ,PART_TIME"), "INTERN", "쉼표 앞뒤 공백은 다듬는다");
 });
 
+test("409 문구에서 겹친 코드를 꺼낸다 — 괄호 꼴(2026-10-30 api 문구 정리 뒤)", () => {
+  assert.equal(conflictCode("이 그룹에 이미 있는 상세 코드입니다(INTERN)."), "INTERN");
+  assert.equal(conflictCode("이 그룹에 이미 있는 상세 코드입니다(INTERN, PART_TIME)."), "INTERN", "여럿이면 첫 코드");
+  assert.equal(conflictCode("다른 관리자가 먼저 지운 상세 코드가 있습니다(G1). 다시 불러온 뒤 저장해 주세요."), "G1", "괄호 뒤에 문장이 더 있어도");
+  assert.equal(conflictCode("영문 대문자로 시작해 영문·숫자·_로 입력해 주세요(최대 20자)."), undefined, "괄호 안이 코드가 아니면 쓰지 않는다");
+});
+
 test("권한 — [추가]는 등록, 기존 행 고치기는 수정, [삭제]는 삭제, [저장]은 셋 중 하나. 상세를 못 불러왔으면 모두 막는다", () => {
   const cases: [boolean, boolean, { manage: boolean; canAdd: boolean; canDelete: boolean; canSave: boolean }][] = [
     [false, true, { manage: false, canAdd: true, canDelete: false, canSave: true }],
@@ -186,8 +193,10 @@ test("등록한 새 행은 뺀다 — 코드는 대문자 · 공백을 맞춰 �
 });
 
 test("unusableCodeMessage — 표에 없는 코드와 겹친 409 는 「사용할 수 없는 상세 코드」로, 그 밖은 그대로", () => {
-  assert.equal(unusableCodeMessage("이 그룹에 이미 있는 상세 코드입니다: G2", ["G1"]), "이 그룹에서 사용할 수 없는 상세 코드입니다: G2");
-  assert.equal(unusableCodeMessage("플랫폼이 등록한 상세 코드와 겹칩니다: G2", []), "이 그룹에서 사용할 수 없는 상세 코드입니다: G2");
+  assert.equal(unusableCodeMessage("이 그룹에 이미 있는 상세 코드입니다: G2", ["G1"]), "이 그룹에서 사용할 수 없는 상세 코드입니다(G2).");
+  assert.equal(unusableCodeMessage("플랫폼이 등록한 상세 코드와 겹칩니다: G2", []), "이 그룹에서 사용할 수 없는 상세 코드입니다(G2).");
+  assert.equal(unusableCodeMessage("이 그룹에 이미 있는 상세 코드입니다(G2, G3).", ["G1"]), "이 그룹에서 사용할 수 없는 상세 코드입니다(G2, G3).");
+  assert.equal(unusableCodeMessage("이 그룹에 이미 있는 상세 코드입니다(G1).", ["G1"]), "이 그룹에 이미 있는 상세 코드입니다(G1).");
   assert.equal(unusableCodeMessage("이 그룹에 이미 있는 상세 코드입니다: G1", ["G1"]), "이 그룹에 이미 있는 상세 코드입니다: G1");
   assert.equal(unusableCodeMessage("이 그룹에 이미 있는 상세 코드입니다: G1, G2", ["G1"]), "이 그룹에 이미 있는 상세 코드입니다: G1, G2");
   assert.equal(unusableCodeMessage("플랫폼고정 그룹은 조회만 할 수 있습니다", []), "플랫폼고정 그룹은 조회만 할 수 있습니다");

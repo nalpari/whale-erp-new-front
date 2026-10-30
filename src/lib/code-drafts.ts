@@ -134,14 +134,24 @@ export function dropCreatedAdded<D extends ItemDraft>(rows: readonly D[], create
 }
 
 /**
- * 409 문구에서 겹친 코드를 꺼낸다. api 문구가 「…: CODE」 꼴이라는 데 기댄다
- * (whale-erp-api code-groups.service — 「이 그룹에 이미 있는 상세 코드입니다: INTERN」 등). 동시 등록 경합이면
- * 「…: A, B」처럼 여럿이라 첫 코드를 꺼낸다. 꼴이 다르면 undefined.
+ * api 문구에 실린 코드 목록 — 마지막 괄호 「…입니다(A, B).」(2026-10-30 문구 정리 뒤) 또는 옛 꼴 「…입니다: A, B」. 없으면 null.
+ * (whale-erp-api code-groups · bp-code-groups service)
+ */
+function codeListOf(message: string): string | null {
+  const paren = /\(([^()]*)\)[^()]*$/.exec(message);
+  if (paren) return paren[1];
+  const at = message.lastIndexOf(": ");
+  return at < 0 ? null : message.slice(at + 2);
+}
+
+/**
+ * 409 문구에서 겹친 코드를 꺼낸다(「이 그룹에 이미 있는 상세 코드입니다(INTERN).」 등). 동시 등록 경합이면
+ * 「…(A, B).」처럼 여럿이라 첫 코드를 꺼낸다. 꼴이 다르거나 코드 형식이 아니면 undefined.
  */
 export function conflictCode(message: string): string | undefined {
-  const at = message.lastIndexOf(": ");
-  if (at < 0) return undefined;
-  const code = normalizeCode(message.slice(at + 2).split(",")[0]);
+  const list = codeListOf(message);
+  if (list === null) return undefined;
+  const code = normalizeCode(list.split(",")[0]);
   return CODE_PATTERN.test(code) ? code : undefined;
 }
 
@@ -152,15 +162,14 @@ const DUPLICATE_PREFIXES = ["이 그룹에 이미 있는 상세 코드입니다"
 
 /**
  * 상세 코드 등록 409 문구를 화면 문구로 바꾼다. 겹친 코드가 지금 표(visibleCodes)에 없으면 — 화면에 안 보이는 행(플랫폼에서는 BP 의
- * BP전용, BP 에서는 받지 않았거나 지운 코드)이다 — api 문구(「이 그룹에 이미 있는 상세 코드입니다: G2」 등) 대신 「이 그룹에서 사용할 수
- * 없는 상세 코드입니다: G2」로 바꾼다. 표에 있는 코드와 겹친 것은 저장 전에 화면 검사가 막으므로 여기 오지 않는다. 다른 문구는 그대로.
+ * BP전용, BP 에서는 받지 않았거나 지운 코드)이다 — api 문구(「이 그룹에 이미 있는 상세 코드입니다(G2).」 등) 대신 「이 그룹에서 사용할 수
+ * 없는 상세 코드입니다(G2).」로 바꾼다. 표에 있는 코드와 겹친 것은 저장 전에 화면 검사가 막으므로 여기 오지 않는다. 다른 문구는 그대로.
  */
 export function unusableCodeMessage(message: string, visibleCodes: readonly string[]): string {
-  const at = message.lastIndexOf(": ");
-  if (at < 0 || !DUPLICATE_PREFIXES.some((p) => message.startsWith(p))) return message;
-  const codes = message.slice(at + 2);
+  const codes = codeListOf(message);
+  if (codes === null || !DUPLICATE_PREFIXES.some((p) => message.startsWith(p))) return message;
   const visible = new Set(visibleCodes);
-  return codes.split(",").some((c) => visible.has(normalizeCode(c))) ? message : `${UNUSABLE_CODE}: ${codes}`;
+  return codes.split(",").some((c) => visible.has(normalizeCode(c))) ? message : `${UNUSABLE_CODE}(${codes.trim()}).`;
 }
 
 /** 주소의 검색어 다듬기(플랫폼 · BP 공통코드 그룹 검색) — 앞뒤 공백을 빼고 api 상한(그룹 코드 20 · 그룹명 50)으로 자른다. 대소문자는 api 가 가리지 않아 그대로 둔다. */
