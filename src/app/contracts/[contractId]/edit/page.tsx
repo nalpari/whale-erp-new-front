@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { Button, PageBar } from "@/components/common";
-import { ApiError, authHeaders, request } from "@/lib/api";
+import { ApiError, authHeaders, bpHref, deniedMessageOf, request } from "@/lib/api";
 import { ContractForm } from "../../new/contract-form";
 import { fromDetail, type ContractDetail } from "../../new/contract-form-model";
 import { loadFormData } from "../../new/load-form-data";
@@ -18,8 +18,9 @@ export default async function EditContractPage({ params, searchParams }: PagePro
   const contractId = Number(raw);
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
-  const { stores, labels, signedIn } = await loadFormData();
-  // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403)이면 api 문장을 그대로 보인다(목록과 같다)
+  const { stores, labels, signedIn, denied: optionsDenied } = await loadFormData();
+  // 계약 상세: 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403) · BP 를 고르지 않은 플랫폼 계정(400)이면 api 문장을 그대로 보인다(목록과
+  // 같다). 근무지 선택지의 거절(optionsDenied — 작성 · 수정 권한, 없는 BP 404 포함)은 loadFormData 가 따로 준다
   let detail: ContractDetail | null = null;
   let notice = "로그인이 필요합니다.";
   if (signedIn) {
@@ -27,19 +28,27 @@ export default async function EditContractPage({ params, searchParams }: PagePro
       detail = await request<ContractDetail>(`/contracts/${contractId}`, { headers: await authHeaders() });
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) notFound();
-      if (!(e instanceof ApiError && (e.status === 401 || e.status === 403))) throw e;
-      if (e.status === 403) notice = e.message;
+      // api 의 거절(BP 를 고르지 않음 400 · 권한 · 다른 BP 403 — deniedMessageOf)은 그 문장을 보인다. 404(없는 계약 · 없는 BP)는 위에서 찾을 수 없음 화면이다
+      const denied = deniedMessageOf(e);
+      if (!(e instanceof ApiError && e.status === 401) && denied === null) throw e;
+      if (denied !== null) notice = denied;
     }
   }
   // 재계약(WHALEERP-156)의 임시저장 · 수정 요청이면 직전 계약 시작일 — 새 계약 시작일은 그 다음 날부터라 화면이 먼저 막는다. 읽지 못하면
-  // 비워 두고 api 의 400 에 맡긴다
+  // 비워 두고 api 의 400 에 맡긴다. 근무지 선택지를 거절당해 폼을 그리지 않으면 읽지 않는다
   const previousStartDate =
-    (detail?.status === "DRAFT" || detail?.status === "CORRECTION_REQUESTED") && detail.previousContractId
+    optionsDenied === null && (detail?.status === "DRAFT" || detail?.status === "CORRECTION_REQUESTED") && detail.previousContractId
       ? await request<ContractDetail>(`/contracts/${detail.previousContractId}`, { headers: await authHeaders() }).then(
           (p) => p.startDate ?? undefined,
           () => undefined,
         )
       : undefined;
+  // 임시저장 삭제 — 권한이 없어 막혔을 때 · 근무지 선택지를 거절당했을 때의 안내 줄과 폼 버튼 줄이 같이 쓴다
+  const deleteDraft = (
+    <ContractPermission action="delete">
+      <DeleteDraftButton contractId={contractId} back={back} />
+    </ContractPermission>
+  );
 
   return (
     <>
@@ -51,17 +60,22 @@ export default async function EditContractPage({ params, searchParams }: PagePro
           ) : detail.status === "CORRECTION_REQUESTED" ? (
             <ContractPermission action="update" fallback={<Notice title="근로계약서를 고칠 권한이 없습니다." contractId={contractId} back={back} />}>
               {/* 재계약 수정 요청도 번호 · 시작일을 임시저장 이어 쓰기와 같이 막는다(api 가 400 으로 다시 본다, api #157 리뷰) */}
-              <ContractForm
-                stores={stores}
-                labels={labels}
-                signedIn
-                contractId={contractId}
-                initial={fromDetail(detail)}
-                correction
-                previousContractId={detail.previousContractId ?? undefined}
-                previousStartDate={previousStartDate}
-                back={back}
-              />
+              {/* 근무지 선택지를 api 가 거절했으면 그 문장(loadFormData) */}
+              {optionsDenied !== null ? (
+                <Notice title={optionsDenied} contractId={contractId} back={back} />
+              ) : (
+                <ContractForm
+                  stores={stores}
+                  labels={labels}
+                  signedIn
+                  contractId={contractId}
+                  initial={fromDetail(detail)}
+                  correction
+                  previousContractId={detail.previousContractId ?? undefined}
+                  previousStartDate={previousStartDate}
+                  back={back}
+                />
+              )}
             </ContractPermission>
           ) : detail.status !== "DRAFT" ? (
             <Notice title="임시저장 · 수정 요청 근로계약서만 고칠 수 있습니다." back={back} />
@@ -72,28 +86,29 @@ export default async function EditContractPage({ params, searchParams }: PagePro
               action="create"
               fallback={
                 <Notice title="근로계약서를 이어 쓸 권한이 없습니다." contractId={contractId} back={back}>
-                  <ContractPermission action="delete">
-                    <DeleteDraftButton contractId={contractId} back={back} />
-                  </ContractPermission>
+                  {deleteDraft}
                 </Notice>
               }
             >
-              <ContractForm
-                stores={stores}
-                labels={labels}
-                signedIn
-                contractId={contractId}
-                initial={fromDetail(detail)}
-                // 재계약 임시저장(WHALEERP-156)은 근무지 · 번호를 바꾸지 않는다(api 가 400 으로 다시 본다)
-                previousContractId={detail.previousContractId ?? undefined}
-                previousStartDate={previousStartDate}
-                back={back}
-                deleteButton={
-                  <ContractPermission action="delete">
-                    <DeleteDraftButton contractId={contractId} back={back} />
-                  </ContractPermission>
-                }
-              />
+              {/* 근무지 선택지를 api 가 거절했으면 그 문장(loadFormData) — 삭제는 그대로 둔다 */}
+              {optionsDenied !== null ? (
+                <Notice title={optionsDenied} contractId={contractId} back={back}>
+                  {deleteDraft}
+                </Notice>
+              ) : (
+                <ContractForm
+                  stores={stores}
+                  labels={labels}
+                  signedIn
+                  contractId={contractId}
+                  initial={fromDetail(detail)}
+                  // 재계약 임시저장(WHALEERP-156)은 근무지 · 번호를 바꾸지 않는다(api 가 400 으로 다시 본다)
+                  previousContractId={detail.previousContractId ?? undefined}
+                  previousStartDate={previousStartDate}
+                  back={back}
+                  deleteButton={deleteDraft}
+                />
+              )}
             </ContractPermission>
           )}
         </div>
@@ -103,17 +118,17 @@ export default async function EditContractPage({ params, searchParams }: PagePro
 }
 
 // 권한이 없어 막혔으면 상세로 보낸다 — 목록의 임시저장 행은 이 화면으로 바로 오므로, 조회 권한만 있어도 내용은 상세에서 본다.
-// 그래도 할 수 있는 동작(임시저장 삭제)은 children 으로 받아 이동 버튼 뒤에 둔다
-function Notice({ title, contractId, back, children }: { title: string; contractId?: number; back: string; children?: ReactNode }) {
+// 그래도 할 수 있는 동작(임시저장 삭제)은 children 으로 받아 이동 버튼 뒤에 둔다. 이동 주소에는 탭 BP 를 붙인다(bpHref)
+async function Notice({ title, contractId, back, children }: { title: string; contractId?: number; back: string; children?: ReactNode }) {
   return (
     <div className="flex items-center gap-[6px]">
       <p className="flex-1 text-[14px] font-semibold text-erp-ink">{title}</p>
       {contractId !== undefined && (
-        <Button variant="soft" href={withBack(`/contracts/${contractId}`, back)}>
+        <Button variant="soft" href={await bpHref(withBack(`/contracts/${contractId}`, back))}>
           상세
         </Button>
       )}
-      <Button href={back}>목록</Button>
+      <Button href={await bpHref(back)}>목록</Button>
       {children}
     </div>
   );

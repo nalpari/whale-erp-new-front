@@ -105,7 +105,7 @@ export function HistoryButton({
             columns={COLUMNS}
             rows={data?.items ?? []}
             rowKey={(h) => h.changeId}
-            empty={loading && !data ? "불러오는 중입니다." : "이력이 없습니다."}
+            empty={loading && !data ? "불러오는 중입니다." : "변경이력이 없습니다."}
           />
           {data && data.total > HISTORY_PAGE_SIZE && (
             <div className="pt-[6px]">

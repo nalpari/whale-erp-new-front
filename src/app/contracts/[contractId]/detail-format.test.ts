@@ -1,7 +1,7 @@
 // node --test "src/app/contracts/[contractId]/detail-format.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, processRows, weeklyHoursOf, workDayLines } from "./detail-format.ts";
+import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, processRows, TAX_PROFILE_UNAVAILABLE, taxProfileTexts, weeklyHoursOf, workDayLines } from "./detail-format.ts";
 import type { ContractDetail } from "../new/contract-form-model.ts";
 
 const label = (d: string) => ({ MON: "월", TUE: "화", WED: "수", THU: "목", FRI: "금", SAT: "토", SUN: "일" })[d] ?? d;
@@ -82,7 +82,7 @@ const sent = {
   signDeadlineAt: "2026-11-19T01:00:00.000Z",
   lastProcessedAt: "2026-10-20T01:00:00.000Z",
   resendCount: 0,
-  rejectReason: null,
+  correctionReason: null,
   registeredAt: null,
   registeredBy: null,
 } as const;
@@ -111,13 +111,27 @@ test("재발송 횟수가 있어도 마지막 발송 일시가 없으면 재발�
   assert.ok(!labels.includes("재발송"));
 });
 
-test("거부된 계약은 거부 사유를 보인다 — 직원이 쓴 글이라 줄이 늘어난다", () => {
-  assert.deepEqual(processRows({ ...sent, status: "REJECTED", rejectReason: "근무 시간이 맞지 않아요" }).at(-1), {
-    label: "거부 사유",
-    value: "근무 시간이 맞지 않아요",
+test("수정 요청된 계약은 수정 요청 사유를 보인다 — 직원이 쓴 글이라 줄이 늘어나고, 없으면 「-」(WHALEERP-635)", () => {
+  assert.deepEqual(processRows({ ...sent, status: "CORRECTION_REQUESTED", correctionReason: "시급이 안내받은 금액과 다릅니다" }).at(-1), {
+    label: "수정 요청 사유",
+    value: "시급이 안내받은 금액과 다릅니다",
     multiline: true,
   });
-  assert.deepEqual(processRows({ ...sent, status: "REJECTED", rejectReason: null }).at(-1), { label: "거부 사유", value: "-", multiline: true });
+  assert.deepEqual(processRows({ ...sent, status: "CORRECTION_REQUESTED", correctionReason: null }).at(-1), {
+    label: "수정 요청 사유",
+    value: "-",
+    multiline: true,
+  });
+});
+
+test("수정 요청이 아니면 사유가 남아 있어도(고쳐 다시 보냄) 수정 요청 사유 줄이 없고, 거부 사유 줄은 어느 상태에도 없다", () => {
+  const statuses = ["DRAFT", "PENDING_SEND", "PENDING_SIGNATURE", "SIGNED", "REJECTED", "EXPIRED", "ENDED"] as const;
+  for (const status of statuses) {
+    const labels = processRows({ ...sent, status, correctionReason: "시급이 다릅니다" }).map((r) => r.label);
+    assert.ok(!labels.includes("수정 요청 사유"), status);
+    assert.ok(!labels.includes("거부 사유"), status);
+  }
+  assert.ok(!processRows({ ...sent, status: "CORRECTION_REQUESTED" }).some((r) => r.label === "거부 사유"));
 });
 
 test("종이 계약은 발송 칸 대신 등록일 · 등록 관리자를 보인다", () => {
@@ -145,4 +159,36 @@ test("보낸 적 없는 임시저장은 최종 처리일만 — 이력도 없으
   const draft = { ...sent, status: "DRAFT", firstSentAt: null, lastSentAt: null, signDeadlineAt: null } as const;
   assert.deepEqual(processRows(draft), [{ label: "최종 처리일", value: "2026-10-20 10:00" }]);
   assert.deepEqual(processRows({ ...draft, lastProcessedAt: null }), []);
+});
+
+test("신고 정보 — 가린 주민등록번호와 「은행이름 계좌번호」(WHALEERP-155)", () => {
+  assert.deepEqual(taxProfileTexts({ status: "OK", rrnMasked: "900101-1******", bankName: "KB국민은행", accountNumber: "12345678901234" }), {
+    rrn: "900101-1******",
+    account: "KB국민은행 12345678901234",
+  });
+});
+
+test("신고 정보 — OK 인데 빈 칸이 있으면 그 칸만 「-」(「은행 null」을 만들지 않는다)", () => {
+  assert.deepEqual(taxProfileTexts({ status: "OK", rrnMasked: "900101-1******", bankName: "KB국민은행", accountNumber: null }), {
+    rrn: "900101-1******",
+    account: "-",
+  });
+  assert.deepEqual(taxProfileTexts({ status: "OK", rrnMasked: null, bankName: "KB국민은행", accountNumber: "12345678901234" }), {
+    rrn: "-",
+    account: "KB국민은행 12345678901234",
+  });
+  assert.deepEqual(taxProfileTexts({ status: "OK", rrnMasked: "", bankName: "KB국민은행", accountNumber: "" }), { rrn: "-", account: "-" });
+});
+
+test("신고 정보 — 미입력 · 본사 역할의 가맹 직원 조회 · 칸 없는 옛 응답은 「-」", () => {
+  const empty = { rrnMasked: null, bankName: null, accountNumber: null };
+  for (const t of [{ status: "NONE", ...empty } as const, { status: "HIDDEN", ...empty } as const, undefined])
+    assert.deepEqual(taxProfileTexts(t), { rrn: "-", account: "-" });
+});
+
+test("신고 정보 — 풀 수 없으면 두 칸 모두 실패 문구", () => {
+  assert.deepEqual(taxProfileTexts({ status: "UNAVAILABLE", rrnMasked: null, bankName: null, accountNumber: null }), {
+    rrn: TAX_PROFILE_UNAVAILABLE,
+    account: TAX_PROFILE_UNAVAILABLE,
+  });
 });

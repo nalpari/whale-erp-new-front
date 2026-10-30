@@ -1,5 +1,5 @@
 import { PageBar } from "@/components/common";
-import { getEnum } from "@/lib/api";
+import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import { getDailyAttendance, getPeriodAttendance } from "@/lib/attendance-records-api";
 import { kstToday } from "@/lib/staff-members";
 import { AttendanceFilter } from "./attendance-filter";
@@ -15,16 +15,38 @@ export default async function AttendanceRecordsPage({ searchParams }: { searchPa
   const today = kstToday();
   const query = parseAttendanceQuery(await searchParams, today);
   const stores = storeParams(query);
-  const href = (next: Partial<AttendanceQuery>) => `/attendance-records${toAttendanceSearch({ ...query, ...next }, today)}`;
+  // 화면 주소는 탭 BP 주소 /bp/{id}/attendance-records 다 — proxy 가 그 BP 를 X-Bp-Code-Id 로 실어, 플랫폼 계정은 고른 BP 의 기록만 본다(BP_PATH_SCREENS, WHALEERP-637)
+  const at = await screenPath();
+  const href = (next: Partial<AttendanceQuery>) => at(`/attendance-records${toAttendanceSearch({ ...query, ...next }, today)}`);
 
-  const [day, week, fix, statusLabels, reasonLabels, employmentTypeLabels] = await Promise.all([
-    getDailyAttendance(stores, query.date),
-    getPeriodAttendance(stores, query.week, addDays(query.week, 6)),
-    getPeriodAttendance(stores, query.fixFrom, query.fixTo),
+  // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 · 없는 BP 404 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다(근로계약 목록과 같다)
+  const [records, statusLabels, reasonLabels, employmentTypeLabels] = await Promise.all([
+    Promise.all([
+      getDailyAttendance(stores, query.date),
+      getPeriodAttendance(stores, query.week, addDays(query.week, 6)),
+      getPeriodAttendance(stores, query.fixFrom, query.fixTo),
+    ]).then(
+      (lists) => ({ lists }),
+      (e: unknown) => {
+        const notice = deniedMessageOf(e);
+        if (notice === null) throw e;
+        return { notice };
+      },
+    ),
     getEnum("AttendanceDayStatus"),
     getEnum("AttendanceReviewReason"),
     getEnum("EmploymentType"),
   ]);
+  if ("notice" in records)
+    return (
+      <>
+        <PageBar title="출·퇴근 현황 조회" />
+        <p role="alert" className="p-[24px] text-[14px] text-erp-label">
+          {records.notice}
+        </p>
+      </>
+    );
+  const [day, week, fix] = records.lists;
 
   return (
     <>

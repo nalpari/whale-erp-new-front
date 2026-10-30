@@ -2,17 +2,29 @@
 
 import { useEffect, useEffectEvent, useState } from "react";
 import { Checkbox, FilterPanel, FilterSection, SearchField, Select, useToast } from "@/components/common";
+import { useCodeLabel } from "@/components/site/code-label";
 import { useScope, useStores } from "@/components/site/session-gate";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { Scope } from "@/lib/browser-storage";
-import type { BpAdminRoleGroup, BpAdminStatus } from "@/lib/bp-admins";
+import type { BpAdminRoleGroup, BpAdminRoleType, BpAdminStatus } from "@/lib/bp-admins";
 import { chipsKeyOf, isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
 import { fillScopeOf } from "@/app/stores/stores-query";
-import { keepingPanel, parseBpAdminsQuery, withBpAdminFilter, withPickedStores, withScopeCondition, type BpAdminsQuery } from "./bp-admins-href";
+import {
+  BP_ADMIN_ROLE_TYPES,
+  keepingPanel,
+  parseBpAdminsQuery,
+  roleGroupOptionsOf,
+  showsRoleOf,
+  withBpAdminFilter,
+  withPickedStores,
+  withRoleToggled,
+  withScopeCondition,
+  type BpAdminsQuery,
+} from "./bp-admins-href";
 
 /**
- * 왼쪽 필터(데모 config/admins). 점포 · 아이디 · 이름 · 권한명 · 계정상태, 조건은 모두 AND 다(S-AJHXFU).
- * 점포는 고르는 즉시, 아이디 · 이름은 Enter · 돋보기에 걸고, 권한명 · 계정상태는 고르는 즉시 건다.
+ * 왼쪽 필터(데모 config/admins). 점포 · 아이디 · 이름 · 역할 · 권한명 · 계정상태, 조건은 모두 AND 다(S-AJHXFU).
+ * 점포는 고르는 즉시, 아이디 · 이름은 Enter · 돋보기에 걸고, 역할 · 권한명 · 계정상태는 고르는 즉시 건다.
  * 점포 칸은 점포 목록 필터와 같다 — 목록에서 고른 점포(storeIds), 없으면 헤더가 실어 온 범위(scope)를 칩으로 그리고, 점포 조건이 주소에
  * 없으면(주소 직접 입력 · 즐겨찾기) 헤더 범위로 채워 다시 검색한다(stores/store-filter.tsx). 고른 점포를 관리하는 계정을 찾고,
  * 전체 점포 계정은 늘 결과에 나온다(api). 칩 이름은 로그인 정보의 점포에서 찾는다 — 찾지 못한 점포는 조건에서 빼고 알린다.
@@ -30,6 +42,7 @@ export function AdminFilter({
   const [headerScope] = useScope();
   const stores = useStores();
   const toast = useToast();
+  const roleType = useCodeLabel("ROLE_TYPE");
   // 고른 점포는 고른 순서대로, 범위는 그 범위의 점포(전체면 칩 없음)
   const chipsOf = (q: Pick<BpAdminsQuery, "storeIds" | "scope">): PickedStore[] =>
     q.storeIds.length
@@ -95,6 +108,11 @@ export function AdminFilter({
     navigate(withBpAdminFilter(query, { accountStatus: next.length === 0 ? "NONE" : next.length === 1 ? next[0] : undefined }));
   };
 
+  // 역할 — 계정상태와 같은 체크박스, 처음엔 모두 켠다. 섞여 보여 정신없다는 의견으로 더했다(2026-10-30 사용자 지정)
+  const toggleRole = (r: BpAdminRoleType, checked: boolean) => navigate(withRoleToggled(query, roleGroups, r, checked));
+  // 고른 역할의 권한명만 선택지로(2026-10-30)
+  const visibleGroups = roleGroups && roleGroupOptionsOf(roleGroups, query.roleTypeCodes);
+
   return (
     <FilterPanel
       onReset={() => {
@@ -128,6 +146,11 @@ export function AdminFilter({
           maxLength={20}
         />
       </FilterSection>
+      <FilterSection label="역할" tight>
+        {BP_ADMIN_ROLE_TYPES.map((r) => (
+          <Checkbox key={r} label={roleType(r)} checked={showsRoleOf(query.roleTypeCodes, r)} onChange={(e) => toggleRole(r, e.target.checked)} />
+        ))}
+      </FilterSection>
       {/* 라벨은 목록 열 · 상세 머리와 같은 「권한명」(2026-10-27 사용자 지정 — 전엔 「권한 그룹」) */}
       <FilterSection label="권한명" tight>
         <Select
@@ -138,11 +161,11 @@ export function AdminFilter({
           title={roleGroups === null ? "권한 그룹 목록을 불러오지 못했습니다. 화면을 새로 고쳐 주세요." : undefined}
         >
           <option value="">{roleGroups === null ? "불러오지 못함" : "전체"}</option>
-          {/* 주소의 권한 그룹이 선택지에 없어도(받지 못함 · 고를 수 없는 그룹) 걸린 조건을 「전체」로 숨기지 않는다 */}
-          {query.roleGroupId && !roleGroups?.some((r) => r.roleGroupId === query.roleGroupId) && (
+          {/* 주소의 권한 그룹이 선택지에 없어도(받지 못함 · 고를 수 없는 그룹 · 끈 역할의 그룹 — 북마크 · 뒤로 가기) 걸린 조건을 「전체」로 숨기지 않는다 */}
+          {query.roleGroupId && !visibleGroups?.some((r) => r.roleGroupId === query.roleGroupId) && (
             <option value={query.roleGroupId}>선택한 권한명(#{query.roleGroupId})</option>
           )}
-          {roleGroups?.map((r) => (
+          {visibleGroups?.map((r) => (
             <option key={r.roleGroupId} value={r.roleGroupId}>
               {r.name} · {r.roleCode}
             </option>

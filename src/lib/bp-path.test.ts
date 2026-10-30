@@ -65,6 +65,22 @@ test("isBpPathScreen 은 옮긴 화면만", () => {
   assert.equal(isBpPathScreen("/bp/8/bp-admins"), true);
 });
 
+test("isBpPathScreen 은 근로계약과 그 창구(종이 계약 · 날인본)도", () => {
+  assert.equal(isBpPathScreen("/contracts"), true);
+  assert.equal(isBpPathScreen("/bp/8/contracts/7/edit"), true);
+  assert.equal(isBpPathScreen("/contracts/paper"), true);
+  assert.equal(isBpPathScreen("/contracts/7/documents/3"), true);
+  assert.equal(isBpPathScreen("/contracts-x"), false);
+});
+
+test("isBpPathScreen 은 급여명세서 · 출퇴근 현황도(WHALEERP-637)", () => {
+  assert.equal(isBpPathScreen("/payslips"), true);
+  assert.equal(isBpPathScreen("/bp/8/payslips/40"), true);
+  assert.equal(isBpPathScreen("/attendance-records"), true);
+  assert.equal(isBpPathScreen("/bp/8/attendance-records"), true);
+  assert.equal(isBpPathScreen("/payslips-x"), false);
+});
+
 test("isBpPathScreen 은 고객지원 셋과 문의 등록 창구도", () => {
   assert.equal(isBpPathScreen("/support-notices"), true);
   assert.equal(isBpPathScreen("/bp/8/support-faqs"), true);

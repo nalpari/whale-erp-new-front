@@ -12,19 +12,24 @@
          대상은 BP 관리자 · 가맹 마스터 · 가맹 관리자 계정이다. BP 마스터(hangang01)와 플랫폼 관리자 계정은 나오지 않는다(PL-RWJYLJ).
          조회 범위는 메뉴 조회 권한과 권한 레벨별 관리 대상 정책을 함께 적용해 가른다.
            BP 마스터 · BP 관리자 · 플랫폼 사용자 = 그 BP 의 세 역할 계정 전부(8명).
-           가맹 마스터(morinam01) = 본인 계정과 본인 매핑 점포(ST000005~008) 범위의 가맹 관리자(morinam01 · moriyn · moricd).
+           가맹 마스터(morinam01) = 본인 계정과 본인 매핑 점포(ST000005~008) 범위의 가맹 관리자와, 점포와 관계없이 자기에게 연결된 가맹 관리자(morinam01 · moriyn · moricd).
            가맹 관리자(moriyn) = 본인 계정과 본인 매핑 점포(ST000006)와 하나라도 겹치는 가맹 관리자(본인 한 줄).
            가맹 마스터 · 가맹 관리자도 본인 계정 줄을 보고 상세를 연다. 가맹 마스터는 본인 기본정보만 고치고, 가맹 관리자 본인 계정은 조회만 한다 (확정 2026-10-23).
          목록은 한 BP 의 계정만 보이므로 BP코드·BP상호명 열과 관리 대상 BP 검색은 두지 않는다. 플랫폼 사용자는 서비스 바로가기 「웨일ERP」에서 대상 BP 를 골라 새 탭으로 연다.
-         검색은 한 줄 — 점포(공통 점포 검색 필터, 매핑 점포로 좁힘) · 아이디·이름 검색어(둘을 함께 찾음, 포함) · 권한 그룹 · 계정 상태(일치)다. 계정 상태는 사용 · 미사용 두 값뿐이다.
-         행(아이디·이름)을 누르면 상세로 간다. 목록에는 수정 링크가 없다 — 수정은 상세를 거쳐서만 한다.
+         검색은 점포(공통 점포 검색 필터, 매핑 점포로 좁힘) · 아이디·이름 검색어(둘을 함께 찾음, 포함) · 역할 · 권한명 · 계정상태다. [검색] 버튼은 없다 — 점포 · 역할 · 권한명 · 계정상태는 고르는 즉시, 아이디·이름은 Enter 나 돋보기로 건다. 권한명은 역할로 묶지 않고 「이름 · 코드」를 한 줄로 늘어놓는다. 계정상태는 사용 · 미사용 체크박스 둘이고(처음엔 둘 다 켬), 둘 다 끄면 결과가 없다 (2026-10-29 사용자 결정, 코드대로).
+         역할 필터 — 켠 역할의 계정만, 권한명 선택지도 켠 역할 것만. 모두 끄면 「선택한 역할이 없어 표시할 관리자 계정이 없습니다. 역할을 하나 이상 선택해 주세요.」 (2026-10-30)
+         이름을 누르면 상세로 간다(아이디는 링크가 아니다). 목록에는 수정 링크가 없다 — 수정은 상세를 거쳐서만 한다.
          등록 버튼은 등록 권한이 있는 BP 마스터 · BP 관리자 · 가맹 마스터 · 플랫폼 사용자에게만 보인다. 가맹 관리자는 어느 역할도 등록하지 않는다.
          표본 상세가 없는 줄(ongifm · moricd · ongids)은 같은 역할의 대표 상세(morinam01 · moriyn)로 간다.
          일부 점포만 맡은 BP 관리자(hghr)도 소속 BP 전체(8명)를 본다 — 대상 점포로 좁히지 않는다 (CONFIG-1 확정).
          가맹 쪽의 “매핑 점포 범위 안의 가맹 관리자”는 매핑 점포가 하나라도 겹치면 보인다 (확정 2026-09-29).
            moriyn(ST000006)과 moricd(ST000007~008)는 겹치는 점포가 없어 서로 보이지 않는다.
-         정렬은 등록일시 최신순이다 (확정 2026-09-29).
-         목록은 ‘역할’ 열과 ‘권한 그룹’ 열(그룹명 · 코드)을 따로 둔다 (확정 2026-09-29).
+         가맹 마스터는 자기에게 연결된 가맹 관리자를 점포와 관계없이 본다 — 매핑 점포가 0곳이 된 가맹 관리자를 고칠 사람은 그뿐이다 (2026-10-29 사용자 결정).
+         정렬은 등록일시 최신순이다 (확정 2026-09-29). 등록일시 열은 두지 않는다 — 상세에서 본다 (2026-10-30).
+         목록은 ‘역할’ 열과 ‘권한명 · 코드’ 열을 따로 둔다 (확정 2026-09-29).
+         열 순서는 아이디 · 이름 · 역할 · 대상점포 · 권한명 · 코드 · 계정 상태 · 최근 로그인이다. ‘매핑 점포’ 열은 상세와 같은 ‘대상점포’로 부르고 역할 다음에 둔다 (2026-10-30).
+         빈 목록 문구는 「조건에 맞는 관리자 계정이 없습니다.」 하나다(역할 · 계정상태를 모두 끄면 그 이유를 따로 알린다). 목록 아래 안내문은 두지 않는다 — 설명은 화면정의서에 남긴다 (2026-10-29 사용자 결정).
+         최근 로그인 칸은 초기 비밀번호 메일이 실패한 사용 계정이면 「초기화 비밀번호 미발송」을 빨간 글자로 보인다. 미사용 계정은 보이지 않는다(상세와 같다, 2026-10-29).
          위쪽 점선 줄 둘은 목업 전용이다 — 보는 사람의 역할과 목록 상태를 따로 바꾼다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
@@ -77,10 +82,11 @@
             <div class="panel__head">
               <h2 class="t-h2">검색 조건</h2>
               <span class="subtle" style="font-size: 12px" data-show-role="bm bpall bppart plat view">BP 관리자 · 가맹 마스터 · 가맹 관리자 계정</span>
-              <span class="subtle" style="font-size: 12px" data-show-role="fm fa" hidden>본인 계정과 매핑 점포가 하나라도 겹치는 가맹 관리자 계정</span>
+              <span class="subtle" style="font-size: 12px" data-show-role="fm" hidden>본인 계정과 매핑 점포가 겹치거나 본인에게 연결된 가맹 관리자 계정</span>
+              <span class="subtle" style="font-size: 12px" data-show-role="fa" hidden>본인 계정과 매핑 점포가 하나라도 겹치는 가맹 관리자 계정</span>
             </div>
             <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-              <!-- 검색 조건 — 점포(맨 위, 고른 점포는 아래 「선택한 점포」) · 아이디·이름 · 권한 그룹 · 계정 상태 한 줄, 초기화 · 검색은 아래 오른쪽 (점포 정보 관리와 같은 구조) -->
+              <!-- 검색 조건 — 점포(맨 위, 고른 점포는 아래 「선택한 점포」) · 아이디·이름 · 권한명 · 계정상태 한 줄, 초기화는 아래 오른쪽. [검색] 버튼 없이 고르면 바로 건다 (2026-10-29) -->
               <!-- 점포 — 점포 정보 관리와 같은 점포 고르기(S-WDJFWH). 점포명·점포코드로 찾아 고르면 아래 「선택한 점포」에 쌓인다(2026-10-12) -->
               <div class="field">
                 <label for="q-store">점포</label>
@@ -101,7 +107,7 @@
                   </div>
                 </div>
               </div>
-              <div class="grid grid--3" style="align-items: start; grid-template-columns: repeat(3, minmax(0, 1fr))">
+              <div class="grid grid--3" style="align-items: start; grid-template-columns: repeat(4, minmax(0, 1fr))">
                 <div class="field">
                   <label for="q-word">아이디 · 이름</label>
                   <div class="inputwrap" title="아이디와 이름을 한꺼번에 찾습니다 — 둘 중 하나에 입력한 글자가 들어 있으면 나옵니다.">
@@ -110,51 +116,46 @@
                     <input class="input" value="hgsales" aria-label="아이디 · 이름" data-show="empty" hidden />
                   </div>
                 </div>
+                <!-- 역할 — 체크박스 셋, 처음엔 모두 켬. 켠 역할의 계정만 보이고 권한 그룹 선택지도 켠 역할 것만 (2026-10-30) -->
                 <div class="field">
-                  <label for="q-grp">권한 그룹</label>
+                  <label id="q-role">역할</label>
+                  <div class="inline" role="group" aria-labelledby="q-role" style="gap: 12px; min-height: 34px">
+                    <label class="inline" style="gap: 6px; cursor: pointer"><input type="checkbox" checked /> BP관리자</label>
+                    <label class="inline" style="gap: 6px; cursor: pointer"><input type="checkbox" checked /> 가맹마스터</label>
+                    <label class="inline" style="gap: 6px; cursor: pointer"><input type="checkbox" checked /> 가맹관리자</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="q-grp">권한명</label>
                   <select class="select" id="q-grp" data-show-role="bm bpall bppart plat view">
                     <option selected>전체</option>
-                    <optgroup label="BP 관리자">
-                      <option>운영 총괄 · BA000003</option>
-                      <option>인사 담당 · BA000004</option>
-                      <option>정산 조회 · BA000005</option>
-                      <option>고객응대 · BA000006</option>
-                      <option>점포 조회 전용 · BA000007</option>
-                    </optgroup>
-                    <optgroup label="가맹 마스터">
-                      <option>가맹 마스터(고정) · FM000001</option>
-                    </optgroup>
-                    <optgroup label="가맹 관리자">
-                      <option>모리 점장 · FA000002</option>
-                      <option>모리 매니저 · FA000003</option>
-                      <option>온기 점장 · FA000004</option>
-                    </optgroup>
+                    <option>운영 총괄 · BA000003</option>
+                    <option>인사 담당 · BA000004</option>
+                    <option>정산 조회 · BA000005</option>
+                    <option>고객응대 · BA000006</option>
+                    <option>점포 조회 전용 · BA000007</option>
+                    <option>가맹 마스터(고정) · FM000001</option>
+                    <option>모리 점장 · FA000002</option>
+                    <option>모리 매니저 · FA000003</option>
+                    <option>온기 점장 · FA000004</option>
                   </select>
-                  <select class="select" aria-label="권한 그룹" data-show-role="fm fa" hidden>
+                  <select class="select" aria-label="권한명" data-show-role="fm fa" hidden>
                     <option selected>전체</option>
-                    <optgroup label="가맹 관리자 · 관리계정ID morinam01">
-                      <option>모리 점장 · FA000002</option>
-                      <option>모리 매니저 · FA000003</option>
-                    </optgroup>
+                    <option>모리 점장 · FA000002</option>
+                    <option>모리 매니저 · FA000003</option>
                   </select>
                 </div>
                 <div class="field">
-                  <label for="q-st">계정 상태</label>
-                  <select class="select" id="q-st" data-show="base created empty">
-                    <option selected>전체</option>
-                    <option>사용</option>
-                    <option>미사용</option>
-                  </select>
-                  <select class="select" aria-label="계정 상태" data-show="off" hidden>
-                    <option>전체</option>
-                    <option>사용</option>
-                    <option selected>미사용</option>
-                  </select>
+                  <label id="q-st">계정상태</label>
+                  <div class="inline" role="group" aria-labelledby="q-st" style="gap: 18px; min-height: 34px">
+                    <span class="inline" style="gap: 6px" data-show="base created empty"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="사용" data-icon="check" data-icon-size="11"></span>사용</span>
+                    <span class="inline" style="gap: 6px" data-show="off" hidden><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="사용" data-icon="check" data-icon-size="11"></span>사용</span>
+                    <span class="inline" style="gap: 6px"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="미사용" data-icon="check" data-icon-size="11"></span>미사용</span>
+                  </div>
                 </div>
               </div>
               <div class="inline" style="justify-content: flex-end">
                 <button class="btn btn--secondary" type="button" data-state-go="base">초기화</button>
-                <button class="btn btn--primary" type="button">검색</button>
               </div>
             </div>
           </section>
@@ -162,8 +163,8 @@
           <section class="panel" data-show="base off created empty">
             <div class="panel__head">
               <h2 class="t-h2">관리자 계정</h2>
-              <span class="badge badge--quiet" data-show="base" data-show-role="bm bpall bppart plat view">8명 · 미사용 2</span>
-              <span class="badge badge--quiet" data-show="created" data-show-role="bm bpall bppart plat view" hidden>9명 · 미사용 2</span>
+              <span class="badge badge--quiet" data-show="base" data-show-role="bm bpall bppart plat view">8명</span>
+              <span class="badge badge--quiet" data-show="created" data-show-role="bm bpall bppart plat view" hidden>9명</span>
               <span class="badge badge--quiet" data-show="off" data-show-role="bm bpall bppart plat view" hidden>2명</span>
               <span class="badge badge--quiet" data-show="base created" data-show-role="fm" hidden>3명</span>
               <span class="badge badge--quiet" data-show="base created" data-show-role="fa" hidden>1명</span>
@@ -184,102 +185,92 @@
                     <th scope="col">아이디</th>
                     <th scope="col">이름</th>
                     <th scope="col">역할</th>
-                    <th scope="col">권한 그룹</th>
+                    <th scope="col" class="num">대상점포</th>
+                    <th scope="col">권한명 · 코드</th>
                     <th scope="col">계정 상태</th>
-                    <th scope="col" class="num">매핑 점포</th>
-                    <th scope="col">등록일시</th>
                     <th scope="col">최근 로그인</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr data-show="created" data-show-role="bm bpall bppart plat view" hidden>
-                    <td class="mono"><a class="tlink" href="admins-detail.html?state=created">hgcs</a></td>
+                    <td class="mono">hgcs</td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=created">문가은</a></td>
                     <td>BP 관리자</td>
+                    <td class="num" style="white-space: nowrap">전체</td>
                     <td>고객응대 <span class="mono subtle">BA000006</span></td>
                     <td><span class="badge badge--ok">사용</span></td>
-                    <td class="num" style="white-space: nowrap">전체</td>
-                    <td class="mono" style="white-space: nowrap">2026-09-21 10:30</td>
                     <td><span class="subtle">-</span></td>
                   </tr>
                   <tr data-show-role="bm bpall bppart plat view fm">
-                    <td class="mono"><a class="tlink" href="admins-detail.html?state=yn">moricd</a></td>
+                    <td class="mono">moricd</td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=yn">윤재희</a></td>
                     <td>가맹 관리자</td>
+                    <td class="num">2</td>
                     <td>모리 매니저 <span class="mono subtle">FA000003</span></td>
                     <td><span class="badge badge--ok">사용</span></td>
-                    <td class="num">2</td>
-                    <td class="mono" style="white-space: nowrap">2026-01-06 13:30</td>
                     <td class="mono" style="white-space: nowrap">2026-09-18 22:41</td>
                   </tr>
                   <tr class="is-read" data-show-role="bm bpall bppart plat view">
-                    <td class="mono"><a class="tlink" href="admins-detail.html?state=yn">ongids</a></td>
+                    <td class="mono">ongids</td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=yn">서동현</a></td>
                     <td>가맹 관리자</td>
+                    <td class="num">1</td>
                     <td>온기 점장 <span class="mono subtle">FA000004</span></td>
                     <td><span class="badge badge--warn">미사용</span></td>
-                    <td class="num">1</td>
-                    <td class="mono" style="white-space: nowrap">2025-09-01 09:40</td>
                     <td class="mono" style="white-space: nowrap">2026-06-12 21:15</td>
                   </tr>
                   <tr data-show-role="bm bpall bppart plat view fm fa">
-                    <td class="mono"><a class="tlink" href="admins-detail.html?state=yn">moriyn</a></td>
+                    <td class="mono">moriyn</td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=yn">한지수</a></td>
                     <td>가맹 관리자</td>
+                    <td class="num">1</td>
                     <td>모리 점장 <span class="mono subtle">FA000002</span></td>
                     <td><span class="badge badge--ok">사용</span></td>
-                    <td class="num">1</td>
-                    <td class="mono" style="white-space: nowrap">2025-08-11 10:05</td>
                     <td class="mono" style="white-space: nowrap">2026-09-21 07:58</td>
                   </tr>
                   <tr class="is-read" data-show-role="bm bpall bppart plat view">
-                    <td class="mono"><a class="tlink" href="admins-detail.html?state=acct">hgacct</a></td>
+                    <td class="mono">hgacct</td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=acct">최민호</a></td>
                     <td>BP 관리자</td>
+                    <td class="num" style="white-space: nowrap">전체</td>
                     <td>정산 조회 <span class="mono subtle">BA000005</span></td>
                     <td><span class="badge badge--warn">미사용</span></td>
-                    <td class="num" style="white-space: nowrap">전체</td>
-                    <td class="mono" style="white-space: nowrap">2025-07-15 14:03</td>
                     <td class="mono" style="white-space: nowrap">2026-03-31 18:10</td>
                   </tr>
                   <tr data-show-role="bm bpall bppart plat view">
-                    <td class="mono"><a class="tlink" href="admins-detail.html?state=morinam">ongifm</a></td>
+                    <td class="mono">ongifm</td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=morinam">오태민</a></td>
                     <td>가맹 마스터</td>
+                    <td class="num">3</td>
                     <td>가맹 마스터(고정) <span class="mono subtle">FM000001</span></td>
                     <td><span class="badge badge--ok">사용</span></td>
-                    <td class="num">3</td>
-                    <td class="mono" style="white-space: nowrap">2025-05-20 15:40</td>
                     <td class="mono" style="white-space: nowrap">2026-09-19 20:02</td>
                   </tr>
                   <tr data-show-role="bm bpall bppart plat view">
-                    <td class="mono"><a class="tlink" href="admins-detail.html">hghr</a></td>
+                    <td class="mono">hghr</td>
                     <td class="k"><a class="tlink" href="admins-detail.html">이서아</a></td>
                     <td>BP 관리자</td>
+                    <td class="num">4</td>
                     <td>인사 담당 <span class="mono subtle">BA000004</span></td>
                     <td><span class="badge badge--ok">사용</span></td>
-                    <td class="num">4</td>
-                    <td class="mono" style="white-space: nowrap">2025-04-01 09:12</td>
                     <td class="mono" style="white-space: nowrap">2026-09-20 17:55</td>
                   </tr>
                   <tr data-show-role="bm bpall bppart plat view fm">
-                    <td class="mono"><a class="tlink" href="admins-detail.html?state=morinam">morinam01</a></td>
+                    <td class="mono">morinam01</td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=morinam">박서윤</a></td>
                     <td>가맹 마스터</td>
+                    <td class="num">4</td>
                     <td>가맹 마스터(고정) <span class="mono subtle">FM000001</span></td>
                     <td><span class="badge badge--ok">사용</span></td>
-                    <td class="num">4</td>
-                    <td class="mono" style="white-space: nowrap">2025-03-03 11:00</td>
                     <td class="mono" style="white-space: nowrap">2026-09-21 09:12</td>
                   </tr>
                   <tr data-show-role="bm bpall bppart plat view">
-                    <td class="mono"><a class="tlink" href="admins-detail.html?state=ops">hgops</a></td>
+                    <td class="mono">hgops</td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=ops">김도윤</a></td>
                     <td>BP 관리자</td>
+                    <td class="num" style="white-space: nowrap">전체</td>
                     <td>운영 총괄 <span class="mono subtle">BA000003</span></td>
                     <td><span class="badge badge--ok">사용</span></td>
-                    <td class="num" style="white-space: nowrap">전체</td>
-                    <td class="mono" style="white-space: nowrap">2025-02-10 10:20</td>
                     <td class="mono" style="white-space: nowrap">2026-09-21 08:30</td>
                   </tr>
                 </tbody>
@@ -294,32 +285,29 @@
                     <th scope="col">아이디</th>
                     <th scope="col">이름</th>
                     <th scope="col">역할</th>
-                    <th scope="col">권한 그룹</th>
+                    <th scope="col" class="num">대상점포</th>
+                    <th scope="col">권한명 · 코드</th>
                     <th scope="col">계정 상태</th>
-                    <th scope="col" class="num">매핑 점포</th>
-                    <th scope="col">등록일시</th>
                     <th scope="col">최근 로그인</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr class="is-read">
-                    <td class="mono"><a class="tlink" href="admins-detail.html?state=yn">ongids</a></td>
+                    <td class="mono">ongids</td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=yn">서동현</a></td>
                     <td>가맹 관리자</td>
+                    <td class="num">1</td>
                     <td>온기 점장 <span class="mono subtle">FA000004</span></td>
                     <td><span class="badge badge--warn">미사용</span></td>
-                    <td class="num">1</td>
-                    <td class="mono" style="white-space: nowrap">2025-09-01 09:40</td>
                     <td class="mono" style="white-space: nowrap">2026-06-12 21:15</td>
                   </tr>
                   <tr class="is-read">
-                    <td class="mono"><a class="tlink" href="admins-detail.html?state=acct">hgacct</a></td>
+                    <td class="mono">hgacct</td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=acct">최민호</a></td>
                     <td>BP 관리자</td>
+                    <td class="num" style="white-space: nowrap">전체</td>
                     <td>정산 조회 <span class="mono subtle">BA000005</span></td>
                     <td><span class="badge badge--warn">미사용</span></td>
-                    <td class="num" style="white-space: nowrap">전체</td>
-                    <td class="mono" style="white-space: nowrap">2025-07-15 14:03</td>
                     <td class="mono" style="white-space: nowrap">2026-03-31 18:10</td>
                   </tr>
                 </tbody>
@@ -339,26 +327,9 @@
             </div>
             <div class="empty" data-show="off" data-show-role="fm fa" hidden>
               <span class="empty__ic" data-icon="search" data-icon-size="22"></span>
-              <p>매핑 점포 범위 안에 미사용 가맹 관리자 계정이 없습니다.</p>
+              <p>조건에 맞는 관리자 계정이 없습니다.</p>
             </div>
           </section>
-
-          <p class="note" data-show="base off created empty" data-show-role="bm bpall bppart plat view">
-            <span data-icon="info" data-icon-size="14"></span>
-            <span>
-              흐린 줄이 미사용 계정이다 — 로그인과 ERP 이용이 막혔지만 상세와 변경 이력은 그대로 남는다.
-              BP 마스터 계정은 플랫폼 BP 관리에서 다루므로 이 목록에 없다. 가맹 관리자 줄은 여기서 조회만 하고, 수정·비밀번호 초기화는 연결된 가맹 마스터만 한다.
-              권한 그룹은 <a class="tlink" href="roles.html">BP 권한 그룹 관리</a>의 값과 같다. 등록일시 최신순이다.
-            </span>
-          </p>
-          <p class="note" data-show="base off created empty" data-show-role="fm fa" hidden>
-            <span data-icon="info" data-icon-size="14"></span>
-            <span>
-              가맹 쪽 사용자에게는 본인 계정과, 본인 매핑 점포와 하나라도 겹치는 가맹 관리자 계정이 보인다. 본인이 아닌 BP 관리자와 가맹 마스터 계정은 조회 대상이 아니다.
-              <span data-show-role="fm">본인 계정은 기본정보만 고친다.</span>
-              <span data-show-role="fa">가맹 관리자는 계정을 조회만 하고 등록·수정하지 않는다.</span>
-            </span>
-          </p>
         </div>
       </main>
     </div>

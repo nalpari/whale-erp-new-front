@@ -1001,7 +1001,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 사용자 권한 선택지. 플랫폼 관리자에게는 플랫폼 마스터 권한을 빼고 준다. */
+        /**
+         * 사용자 권한 선택지. 플랫폼 관리자에게는 플랫폼 마스터 권한을 빼고 준다.
+         *     `purpose=filter` 는 목록 필터 「권한명」용 — 호출자와 상관없이 PM · PA 그룹을 다 준다.
+         */
         get: operations["PlatformAdminsController_roleGroups"];
         put?: never;
         post?: never;
@@ -1023,6 +1026,23 @@ export interface paths {
          *     `:id` 보다 먼저 둔다 — 뒤에 두면 이 경로가 상세(:id)로 잡힌다.
          */
         get: operations["PlatformAdminsController_loginIdAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-admins/email-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 이메일 중복 확인. 아이디 확인과 같은 등록 권한이고, 판정은 등록의 409 와 같다. `:id` 보다 먼저 둔다. */
+        get: operations["PlatformAdminsController_emailAvailability"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2081,7 +2101,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 확정 — 보이는 공제가 모두 있어야 한다. 검토 사유는 확인한 것으로 남는다. */
+        /** 확정 — 급여 기간이 끝나야 하고(그 전에 퇴직 · 계약 종료면 그 다음 날부터), 보이는 공제가 모두 있어야 한다. 검토 사유는 확인한 것으로 남는다. */
         post: operations["PayslipsController_confirm"];
         delete?: never;
         options?: never;
@@ -2207,6 +2227,23 @@ export interface paths {
          *     보내지 않는다.
          */
         post: operations["ContractsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contracts/store-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 작성 · 이어 쓰기의 근무지 선택지. 업무 범위(플랫폼 계정은 탭 BP) 안에서 지우지 않았고 폐점이 아닌 점포, 이름순. 작성 또는 수정 권한. */
+        get: operations["ContractsController_storeOptions"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2386,7 +2423,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 거부 — 사유는 선택(500자) */
+        /** 거부 — 사유는 받지 않는다(WHALEERP-635, 본문은 읽지 않는다) */
         post: operations["MyContractsController_reject"];
         delete?: never;
         options?: never;
@@ -2403,7 +2440,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 수정 요청 — 계약서가 틀렸을 때(대조 결과와 상관없이). 따로 받는 내용은 없다 */
+        /** 수정 요청 — 계약서가 틀렸을 때(대조 결과와 상관없이). 사유는 필수(1~100자, WHALEERP-635) */
         post: operations["MyContractsController_requestCorrection"];
         delete?: never;
         options?: never;
@@ -2609,23 +2646,6 @@ export interface paths {
         get?: never;
         /** 한 묶음 켜고 끄기. 그 뒤에 생기는 알림부터 든다 */
         put: operations["MyNotificationPreferencesController_update"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/stores/options": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** 근무지 선택지. 업무 범위 안에서 지우지 않았고 폐점이 아닌 점포, 이름순. `:id` 보다 먼저 둔다. */
-        get: operations["StoresController_options"];
-        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -4062,7 +4082,8 @@ export interface paths {
         put?: never;
         /**
          * 본사 제공 동의 — 처음이든 철회 뒤든, 내 정보의 `needsReconsent` 로 다시 동의할 때든 (ATT-30). 계정에 하나라 소속 가맹
-         *     점포 모두에 같이 적용된다
+         *     점포 모두에 같이 적용된다. 본문의 `consentVersion`(화면이 보여 준 문구 버전, 필수)이 지금 버전과 다르면 409 — 화면은 새로
+         *     고쳐 새 문구를 보인다(ATT-30 v252). 빼면 400
          */
         post: operations["MyConsentController_agreeHqSharing"];
         delete?: never;
@@ -4121,6 +4142,8 @@ export interface paths {
          * 직원 앱 가입(WHALEERP-601 · 142, 가이드 ③·④). 초대를 다시 확인하고 계정을 만들어 직원 레코드에 잇고(가입 완료) 초대를
          *     수락으로 둔다. 가입을 기다리던 근로계약서는 서명 대기가 된다. 계정 번호는 초대의 번호다. 마치면 로그인 응답과 같은
          *     모양으로 접속 상태를 준다. 가입하는 날 만 19세 미만이면 계정을 만들지 않고 초대를 「가입 불가」로 둔 뒤 400 이다.
+         *     본사 제공 동의에 실은 문구 버전(hqSharingConsentVersion)이 지금과 달라도 가입은 마치고 동의만 남기지 않는다 — 응답의
+         *     hqSharingConsentRecorded 가 false 다(ATT-30 v253).
          */
         post: operations["StaffSignupController_signup"];
         delete?: never;
@@ -6876,7 +6899,7 @@ export interface components {
             sendLogId: number;
             /** @description 보낸 근로계약 */
             contractId: number;
-            /** @description 같은 계약에 앞서 나간 발송이 있었다(재발송 · 고쳐 다시 보냄) */
+            /** @description 같은 계약으로 앞서 직원에게 나갔을 수 있는 발송(성공 · 접수 여부 모름)이 있었다 — 재발송 · 고쳐 다시 보냄. 계약 재발송 횟수와는 다를 수 있다 */
             isResend: boolean;
             /** @description 관리자에게 보일 실패 사유. 성공이면 null */
             failureReason: string | null;
@@ -7597,16 +7620,27 @@ export interface components {
             changedAt: string;
         };
         /**
-         * @description 종이 계약 근로계약서 · 임금계약서
+         * @description 종이 계약 근로계약서 · 임금계약서 · 보낸 원본 · 처리 완료본
          * @enum {string}
          */
         ContractDocumentKind: "SENT_ORIGINAL" | "SIGNED_COPY" | "PAPER_EMPLOYMENT_CONTRACT" | "WAGE_CONTRACT" | "SIGNATURE";
         ContractDocumentDto: {
-            /** @description 종이 계약 근로계약서 · 임금계약서 */
+            /** @description 종이 계약 근로계약서 · 임금계약서 · 보낸 원본 · 처리 완료본 */
             kind: components["schemas"]["ContractDocumentKind"];
             contractDocumentId: number;
             /** @description 올린 파일의 원래 이름 */
             fileName: string;
+        };
+        /** @enum {string} */
+        ContractTaxProfileState: "OK" | "NONE" | "HIDDEN" | "UNAVAILABLE";
+        ContractTaxProfileDto: {
+            status: components["schemas"]["ContractTaxProfileState"];
+            /** @description 가린 주민등록번호 — 앞 6자리 + 뒷자리 첫 자(예 900101-1******). 원문은 API 밖으로 나가지 않는다 */
+            rrnMasked: string | null;
+            /** @description 은행 이름(BANK 공통코드 이름, 예 KB국민은행). 공통코드에 없으면 은행 코드 그대로 */
+            bankName: string | null;
+            /** @description 계좌번호 전체 — 하이픈 없음, 가리지 않음(직원 상세 급여 계좌와 같다) */
+            accountNumber: string | null;
         };
         ContractDetailDto: {
             startDate: string | null;
@@ -7671,8 +7705,11 @@ export interface components {
             signDeadlineAt: string | null;
             /** @description 최종 처리일(ISO 8601) — 가장 최근 상태 변경 일시. 이력이 없으면 null */
             lastProcessedAt: string | null;
-            /** @description 직원이 남긴 거부 사유 — 거부된 계약에만, 그 밖은 null */
-            rejectReason: string | null;
+            /**
+             * @description 직원이 남긴 수정 요청 사유(1~100자, WHALEERP-635) — 수정 요청된 계약에만, 그 밖은 null. 사유를 받기 전의 수정 요청도 null.
+             *     고쳐 다시 보내도 행에는 남지만 다른 상태에서는 주지 않는다(지난 사유가 지금 사유처럼 읽히지 않게)
+             */
+            correctionReason: string | null;
             /** @description 재계약으로 만든 계약이면 직전 계약 ID. 재계약(WHALEERP-156) 전이라 지금은 늘 null */
             previousContractId: number | null;
             /** @description 종이 계약 등록일(ISO 8601) — 체결 완료가 된 때. 종이 계약만 — 전자계약 · 등록 전 임시저장(등록 전에 종료된 것 포함)은 null */
@@ -7711,6 +7748,8 @@ export interface components {
             canResend: boolean;
             /** @description 직원이 가입을 마쳤는가 — 거부 · 만료 재발송이 앱(서명 대기)으로 가는지 가입 초대(발송 대기)로 가는지 확인창 문구를 가른다 */
             staffJoined: boolean;
+            /** @description 직원의 신고 정보(주민등록번호 · 급여 계좌) — 읽기만. 풀 수 없어도 상세는 열리고 이 칸만 UNAVAILABLE 이다 */
+            taxProfile: components["schemas"]["ContractTaxProfileDto"];
         };
         UpdateWorkerDto: {
             /** @description 성별 — 남 · 여. 가입 때 직원이 넣은 값과 본인 대조한다(WHALEERP-125). 임시저장은 비워도 된다 */
@@ -7771,12 +7810,16 @@ export interface components {
              */
             signedAt: string;
         };
-        RejectMyContractDto: {
-            reason?: string;
-        };
         MyContractActionResponseDto: {
             contractId: number;
             status: components["schemas"]["ContractStatus"];
+        };
+        RequestMyContractCorrectionDto: {
+            /**
+             * @description 수정 요청 사유 — 앞뒤 공백을 지운 뒤 1~100자
+             * @example 시급이 안내받은 금액과 다릅니다
+             */
+            reason: string;
         };
         MyContractListItemDto: {
             status: components["schemas"]["ContractStatus"];
@@ -7867,6 +7910,28 @@ export interface components {
             contractDocumentId: number;
             fileName: string;
         };
+        ContractTableRowDto: {
+            cells: string[];
+            /** @description 근무하지 않는 날(휴무 · 주휴일) — 흐리게 그린다 */
+            off: boolean;
+        };
+        ContractValueDto: {
+            label: string;
+            value: string;
+        };
+        ContractBlockDto: {
+            /** @enum {string} */
+            type: "TEXT" | "TABLE" | "VALUES";
+            tableRows?: components["schemas"]["ContractTableRowDto"][];
+            values?: components["schemas"]["ContractValueDto"][];
+            text?: string;
+            header?: string[];
+        };
+        ContractArticleDto: {
+            blocks: components["schemas"]["ContractBlockDto"][];
+            /** @description 「제1조(근로계약기간)」 */
+            title: string;
+        };
         MyContractDetailDto: {
             startDate: string | null;
             endDate: string | null;
@@ -7919,6 +7984,8 @@ export interface components {
             employer: components["schemas"]["MyContractEmployerDto"];
             account: components["schemas"]["MyContractAccountDto"];
             documents: components["schemas"]["MyContractDocumentDto"][];
+            /** @description 계약서 조항 열 가지 — 보낸 원본 · 처리 완료본 PDF 와 같은 템플릿(WHALEERP-131). 화면은 이 순서대로 그린다 */
+            articles: components["schemas"]["ContractArticleDto"][];
             contractId: number;
             storeId: number;
             /** @description 목록과 같다 — 서명 대기 · 기한 안 · 재직 중 */
@@ -9859,6 +9926,10 @@ export interface components {
             /** @description 동의 시트에 보여 준 위치정보 약관 버전 — 예: v1.1. 시트를 그릴 때 시행 중인 약관이 없었으면 null */
             termsVersion: string | null;
         };
+        AgreeHqSharingConsentDto: {
+            /** @description 화면이 보여 준 본사 제공 동의 문구 버전 — 예: v1.0 */
+            consentVersion: string;
+        };
         InvitationLookupDto: {
             /** @description 초대 링크의 토큰(base64url 43자) */
             token?: string;
@@ -9893,6 +9964,12 @@ export interface components {
              */
             gender: "MALE" | "FEMALE";
             /**
+             * @description 본사 제공 동의 문구 버전 — 화면이 보인 문구의 버전(예: v1.0, ATT-30 v252). hqSharingConsented 가 true 일 때
+             *     싣는다(실었으면 비지 않은 64자 이하 문자열 — 아니면 400), 아니면 보지 않는다. 빠지거나(null 포함) 지금 버전과 다르면 가입은 그대로
+             *     마치고 동의만 남기지 않는다 — 응답의 hqSharingConsentRecorded 가 false 다(예전 앱 · 배포 어긋남에도 막지 않는다, v253)
+             */
+            hqSharingConsentVersion?: string;
+            /**
              * Format: email
              * @description 로그인 아이디. 소문자로 맞춰 저장한다(accounts_email_lower). 핀으로 확인하지 않는다
              */
@@ -9923,6 +10000,23 @@ export interface components {
             phone?: string;
             /** @description 초대 코드 — 대문자 · 숫자 8자리, 0 · O · 1 · I 는 없다. 소문자로 넣어도 대문자로 맞춰 본다 */
             code?: string;
+        };
+        StaffSignupResponseDto: {
+            /**
+             * @description 본사 제공 동의를 남겼는지(ATT-30 v253). true 남김 · false 동의했지만 보인 문구 버전이 지금과 다르거나 싣지 않아(예전 앱) 남기지 않음(가입은
+             *     마쳤다 — 앱은 내 정보에서 다시 동의하라고 알린다) · null 남길 동의가 없음(직영 점포 · 동의하지 않음)
+             */
+            hqSharingConsentRecorded: boolean | null;
+            /** @description Authorization: Bearer <accessToken> 으로 API 를 호출한다. 15분 뒤 만료된다. */
+            accessToken: string;
+            /** @description 접속을 이어 갈 때 쓴다. 원문은 이 응답에만 있고 서버에는 해시만 남는다. */
+            refreshToken: string;
+            /**
+             * Format: date-time
+             * @description 마지막으로 사용한 때부터 30일(로그인 때 `rememberMe: false` 면 7일)이 되는 시각. 사용할 때마다 같은 길이로 뒤로 밀린다.
+             */
+            refreshTokenExpiresAt: string;
+            account: components["schemas"]["LoginAccountResponseDto"];
         };
         MyInvitationDto: {
             /**
@@ -9957,6 +10051,12 @@ export interface components {
         };
         AcceptMyInvitationDto: {
             /**
+             * @description 본사 제공 동의 문구 버전 — 화면이 보인 문구의 버전(예: v1.0, ATT-30 v252). hqSharingConsented 가 true 일 때
+             *     싣는다(실었으면 비지 않은 64자 이하 문자열 — 아니면 400), 아니면 보지 않는다. 빠지거나(null 포함) 지금 버전과 다르면 근무지 더하기는 그대로
+             *     마치고 동의만 남기지 않는다 — 응답의 hqSharingConsentRecorded 가 false 다(예전 앱 · 배포 어긋남에도 막지 않는다, v253)
+             */
+            hqSharingConsentVersion?: string;
+            /**
              * @description 본사 제공 동의(운영 정책 ATT-30, 선택). 목록의 asksHqSharingConsent 가 true 일 때만 쓴다 — 직영 점포이거나 계정이
              *     받아 주는 문구 버전에 이미 동의했으면 보내도 바꾸지 않는다. 더는 받아 주지 않는 버전에 동의했으면 true 로 지금 버전에
              *     다시 동의한다. 동의는 계정에 하나다(api #78)
@@ -9964,6 +10064,11 @@ export interface components {
             hqSharingConsented?: boolean;
         };
         AcceptMyInvitationResponseDto: {
+            /**
+             * @description 본사 제공 동의를 남겼는지(ATT-30 v253). true 남김 · false 동의했지만 보인 문구 버전이 지금과 다르거나 싣지 않아(예전 앱) 남기지 않음(계정의 동의는
+             *     그대로 — 앱은 내 정보에서 다시 동의하라고 알린다) · null 남길 동의가 없음(묻지 않는 초대 · 이미 동의함 · 동의하지 않음)
+             */
+            hqSharingConsentRecorded: boolean | null;
             /** @description 이 계정에 이어진 직원 레코드 */
             staffMemberId: number;
             /** @description 근무지(점포) — 이은 직원 레코드의 점포. 앱이 `/me/contracts` 항목을 이 storeId 로 걸러 그 근무지 근로계약서만 연다 */
@@ -10002,22 +10107,29 @@ export interface components {
         };
         AcceptAffiliationRequestDto: {
             /**
+             * @description 본사 제공 동의 문구 버전 — 화면이 보인 문구의 버전(예: v1.0, ATT-30 v252). hqSharingConsented 가 true 일 때
+             *     싣는다(실었으면 비지 않은 64자 이하 문자열 — 아니면 400), 아니면 보지 않는다. 빠지거나(null 포함) 지금 버전과 다르면 수락은 그대로
+             *     마치고 동의만 남기지 않는다 — 응답의 hqSharingConsentRecorded 가 false 다(예전 앱 · 배포 어긋남에도 막지 않는다, v253)
+             */
+            hqSharingConsentVersion?: string;
+            /**
              * @description 본사 제공 동의(운영 정책 ATT-30, 선택). 목록의 asksHqSharingConsent 가 true 일 때만 쓴다 — 직영 점포이거나 계정이 이미
              *     동의했으면 보내도 바꾸지 않는다(근무지 더하기와 같다)
              */
             hqSharingConsented?: boolean;
         };
         AcceptAffiliationResponseDto: {
+            /**
+             * @description 본사 제공 동의를 남겼는지(ATT-30 v253). true 남김 · false 동의했지만 보인 문구 버전이 지금과 다르거나 싣지 않아(예전 앱) 남기지 않음(계정의 동의는
+             *     그대로 — 앱은 내 정보에서 다시 동의하라고 알린다) · null 남길 동의가 없음(묻지 않는 요청 · 이미 동의함 · 동의하지 않음)
+             */
+            hqSharingConsentRecorded: boolean | null;
             /** @description 이 계정에 이어진 직원 레코드 */
             staffMemberId: number;
             /** @description 근무지(점포) 이름 */
             storeName: string;
             /** @description 서명 대기로 넘어간 근로계약 — 날인 기한은 수락한 때부터 30일 */
             contractIds: number[];
-        };
-        RejectAffiliationRequestDto: {
-            /** @description 거절 사유 — 함께 온 계약의 거부 사유로도 남는다 */
-            reason?: string;
         };
         BpHolidayTargetResponseDto: {
             isAllStores: boolean;
@@ -10757,7 +10869,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 맞는 계정이 없음. 어느 값이 틀렸든 같은 메시지(「일치하는 계정이 없습니다」)이고 실패 1회로 센다 */
+            /** @description 맞는 계정이 없음. 어느 값이 틀렸든 같은 메시지(「일치하는 계정이 없습니다.」)이고 실패 1회로 센다 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -10895,7 +11007,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 플랫폼 관리자에게 문의해 주세요」 */
+            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 플랫폼 관리자에게 문의해 주세요.」 */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -12931,7 +13043,10 @@ export interface operations {
     };
     PlatformAdminsController_roleGroups: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description `filter` 면 목록 필터용 — 호출자와 상관없이 플랫폼 권한(PM · PA) 그룹을 다 준다. 없으면 등록 · 수정 선택지. */
+                purpose?: "filter";
+            };
             header?: {
                 /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
                 "X-Bp-Code-Id"?: string;
@@ -12948,6 +13063,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PlatformRoleGroupListResponseDto"];
                 };
+            };
+            /** @description purpose 값 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
             403: {
@@ -12982,6 +13104,44 @@ export interface operations {
                 };
             };
             /** @description 아이디 형식 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformAdminsController_emailAvailability: {
+        parameters: {
+            query: {
+                email: string;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProfileEmailAvailabilityResponseDto"];
+                };
+            };
+            /** @description 이메일 형식 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -14288,7 +14448,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴를 찾을 수 없습니다 */
+            /** @description 메뉴를 찾을 수 없습니다. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14335,7 +14495,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴를 찾을 수 없습니다 */
+            /** @description 메뉴를 찾을 수 없습니다. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14396,7 +14556,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴를 찾을 수 없습니다 */
+            /** @description 메뉴를 찾을 수 없습니다. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16155,15 +16315,22 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipListResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류(month 누락 포함) */
+            /** @description 쿼리 형식 오류(month 누락 포함) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -16195,21 +16362,21 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipCreatedDto"];
                 };
             };
-            /** @description 본문 형식 오류 */
+            /** @description 본문 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원(본사 제공 동의 없음) */
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원(본사 제공 동의 없음) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16257,15 +16424,22 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipSummaryResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류(month · storeId 누락 포함) */
+            /** @description 쿼리 형식 오류(month · storeId 누락 포함) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -16295,15 +16469,22 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipCandidatesResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류(month 누락 포함) */
+            /** @description 쿼리 형식 오류(month 누락 포함) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -16335,15 +16516,22 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipBulkCreateResponseDto"];
                 };
             };
-            /** @description 본문 형식 오류 */
+            /** @description 본문 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -16375,15 +16563,22 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipSendResultDto"];
                 };
             };
-            /** @description 본문 형식 오류 */
+            /** @description 본문 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -16411,7 +16606,14 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipAdditionalItemsResponseDto"];
                 };
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -16442,14 +16644,21 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipDetailResponseDto"];
                 };
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 */
+            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16484,21 +16693,21 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipDetailResponseDto"];
                 };
             };
-            /** @description 본문 형식 오류 · 정직원 3.3% · 같은 항목 두 번 · 붙일 수 없는 항목 · 합계 초과 */
+            /** @description 본문 형식 오류 · 정직원 3.3% · 같은 항목 두 번 · 붙일 수 없는 항목 · 합계 초과 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 */
+            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16536,14 +16745,21 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipPreviousResponseDto"];
                 };
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 */
+            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16578,14 +16794,21 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipDetailResponseDto"];
                 };
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 */
+            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16627,14 +16850,21 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipDetailResponseDto"];
                 };
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 */
+            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16648,7 +16878,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description DEDUCTION_MISSING — 비어 있는 공제(본문 items) */
+            /** @description PERIOD_NOT_ENDED — 확정할 수 있는 날(퇴직일 · 마지막 계약 종료일 · 급여 기간 마지막 날 가운데 가장 빠른 날의 다음 날, 그 계약의 보낸 갱신(임시저장 제외)이 기간 안에 시작하면 계약 종료일은 보지 않는다) 전 · DEDUCTION_MISSING — 비어 있는 공제(본문 items) */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -16683,14 +16913,21 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipDetailResponseDto"];
                 };
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 */
+            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16732,14 +16969,21 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipDetailResponseDto"];
                 };
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 */
+            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16802,14 +17046,21 @@ export interface operations {
                     "application/json": components["schemas"]["PayslipDetailResponseDto"];
                 };
             };
-            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 */
+            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16993,8 +17244,22 @@ export interface operations {
                     "application/json": components["schemas"]["ContractListResponseDto"];
                 };
             };
-            /** @description 근로계약 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 검색 조건 형식 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근로계약 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17026,21 +17291,21 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 종이 계약 등록이 아닌데 잘못 올린 계약 바로잡기 */
+            /** @description 입력 오류 · 만 19세 미만 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 종이 계약 등록이 아닌데 잘못 올린 계약 바로잡기 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근로계약 관리 작성 권한 없음 · 대체하는데 권한 없음(진행 중 계약은 수정, 임시저장은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 근로계약 관리 작성 권한 없음 · 대체하는데 권한 없음(진행 중 계약은 수정, 임시저장은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무지 점포가 없거나 폐점이거나 업무 범위 밖 */
+            /** @description 근무지 점포가 없거나 폐점이거나 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17063,6 +17328,53 @@ export interface operations {
             };
             /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 주소 STAFF_APP_URL 없음, 대체 문자 발신번호 BIZPPURIO_SMS_FROM 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractsController_storeOptions: {
+        parameters: {
+            query: {
+                /** @description 쪽 번호. 1부터. */
+                page: number;
+                pageSize: number;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreOptionListResponseDto"];
+                };
+            };
+            /** @description 검색 조건 형식 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근로계약 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17107,21 +17419,21 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 날인본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 */
+            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 날인본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근로계약 관리 작성 권한 없음 · 대체하는데 권한 없음(진행 중 계약은 수정, 임시저장은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 근로계약 관리 작성 권한 없음 · 대체하는데 권한 없음(진행 중 계약은 수정, 임시저장은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무지 점포가 없거나 폐점이거나 업무 범위 밖 */
+            /** @description 근무지 점포가 없거나 폐점이거나 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17166,14 +17478,21 @@ export interface operations {
                     "application/json": components["schemas"]["ContractDetailDto"];
                 };
             };
-            /** @description 근로계약 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근로계약 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 계약 · 업무 범위 밖 */
+            /** @description 없는 계약 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17208,21 +17527,21 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 수정 요청인데 임시저장 · 근무지 변경 · 가입한 직원의 번호 변경 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 종이 계약 등록이 아닌데 잘못 올린 계약 바로잡기 */
+            /** @description 입력 오류 · 만 19세 미만 · 수정 요청인데 임시저장 · 근무지 변경 · 가입한 직원의 번호 변경 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 종이 계약 등록이 아닌데 잘못 올린 계약 바로잡기 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근로계약 관리 권한 없음(임시저장 이어 쓰기는 작성, 수정 요청은 수정) · 대체하는데 권한 없음(진행 중 계약은 수정, 임시저장은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) */
+            /** @description 근로계약 관리 권한 없음(임시저장 이어 쓰기는 작성, 수정 요청은 수정) · 대체하는데 권한 없음(진행 중 계약은 수정, 임시저장은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 계약 · 근무지 점포가 없거나 폐점 · 업무 범위 밖 */
+            /** @description 없는 계약 · 근무지 점포가 없거나 폐점 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17273,14 +17592,21 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 근로계약 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근로계약 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 계약 · 업무 범위 밖 */
+            /** @description 없는 계약 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17322,21 +17648,21 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 가입한 직원의 번호 변경 */
+            /** @description 입력 오류 · 만 19세 미만 · 가입한 직원의 번호 변경 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근로계약 관리 수정 권한 없음 · 새 번호의 같은 점포 임시저장을 대체하는데 삭제 권한 없음(409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) */
+            /** @description 근로계약 관리 수정 권한 없음 · 새 번호의 같은 점포 임시저장을 대체하는데 삭제 권한 없음(409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 계약 · 업무 범위 밖 */
+            /** @description 없는 계약 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17405,21 +17731,21 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 날인본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 */
+            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 날인본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근로계약 관리 권한 없음(임시저장 이어 쓰기는 작성 — 수정 요청은 종이 계약으로 바꿀 수 없어 400) · 대체하는데 권한 없음(진행 중 계약은 수정, 임시저장은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) */
+            /** @description 근로계약 관리 권한 없음(임시저장 이어 쓰기는 작성 — 수정 요청은 종이 계약으로 바꿀 수 없어 400) · 대체하는데 권한 없음(진행 중 계약은 수정, 임시저장은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 계약 · 근무지 점포가 없거나 폐점 · 업무 범위 밖 */
+            /** @description 없는 계약 · 근무지 점포가 없거나 폐점 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17465,14 +17791,21 @@ export interface operations {
                     "application/json": components["schemas"]["DownloadUrlResponseDto"];
                 };
             };
-            /** @description 근로계약 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근로계약 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 계약 · 파일 · 업무 범위 밖 */
+            /** @description 없는 계약 · 파일 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17515,21 +17848,28 @@ export interface operations {
                     "application/json": components["schemas"]["SendContractResponseDto"];
                 };
             };
-            /** @description 근로계약 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 본문 형식(expectedStatus · expectedSentAt) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근로계약 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 계약 · 업무 범위 밖 */
+            /** @description 없는 계약 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 거부 · 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(거부 · 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 기간이 끝남, 기간이 겹치거나 더 늦게 시작한 다른 체결 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(거부 · 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
+            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 거부 · 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(거부 · 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 기간이 끝남, 기간이 겹치거나 더 늦게 시작한 다른 체결 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(거부 · 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다.」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -17573,14 +17913,21 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 근로계약 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근로계약 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 계약 · 업무 범위 밖 */
+            /** @description 없는 계약 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17690,11 +18037,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RejectMyContractDto"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -17703,13 +18046,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["MyContractActionResponseDto"];
                 };
-            };
-            /** @description 사유 500자 넘음 · null */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
             /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
             401: {
@@ -17757,7 +18093,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestMyContractCorrectionDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -17766,6 +18106,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["MyContractActionResponseDto"];
                 };
+            };
+            /** @description 사유 없음 · 비었음(앞뒤 공백을 지운 뒤) · 100자 넘음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
             401: {
@@ -18260,43 +18607,6 @@ export interface operations {
                 content?: never;
             };
             /** @description 관리자 토큰 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    StoresController_options: {
-        parameters: {
-            query: {
-                /** @description 쪽 번호. 1부터. */
-                page: number;
-                pageSize: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StoreOptionListResponseDto"];
-                };
-            };
-            /** @description 검색 조건 형식 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22082,15 +22392,22 @@ export interface operations {
                     "application/json": components["schemas"]["DailyAttendanceResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류 */
+            /** @description 쿼리 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22129,21 +22446,21 @@ export interface operations {
                     "application/json": components["schemas"]["PeriodAttendanceResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류 · 기간이 92일 넘음 · 끝이 시작보다 앞 */
+            /** @description 쿼리 형식 오류 · 기간이 92일 넘음 · 끝이 시작보다 앞 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 직원이 점포 조건 안의 직원이 아니거나 본사에게 가려진 직원 */
+            /** @description 직원이 점포 조건 안의 직원이 아니거나 본사에게 가려진 직원 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22179,15 +22496,22 @@ export interface operations {
                     "application/json": components["schemas"]["ProxyStaffResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류 */
+            /** @description 쿼리 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22219,15 +22543,22 @@ export interface operations {
                     "application/json": components["schemas"]["AttendanceEditResultDto"];
                 };
             };
-            /** @description 본문 형식 오류 · 3개월이 지났거나 오늘 이후 · 아직 오지 않은 시각 */
+            /** @description 본문 형식 오류 · 3개월이 지났거나 오늘 이후 · 아직 오지 않은 시각 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22275,21 +22606,21 @@ export interface operations {
                     "application/json": components["schemas"]["AttendanceEditResultDto"];
                 };
             };
-            /** @description 본문 형식 오류 · 3개월이 지남 · 있던 쪽 시각을 비움 · 바뀐 값 없음 · 아직 오지 않은 시각 */
+            /** @description 본문 형식 오류 · 3개월이 지남 · 있던 쪽 시각을 비움 · 바뀐 값 없음 · 아직 오지 않은 시각 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 기록 · 업무 범위 밖 · 본사에게 가려진 직원 */
+            /** @description 없는 기록 · 업무 범위 밖 · 본사에게 가려진 직원 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22327,14 +22658,21 @@ export interface operations {
                     "application/json": components["schemas"]["AttendanceEditResultDto"];
                 };
             };
-            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 기록 · 업무 범위 밖 · 본사에게 가려진 직원 */
+            /** @description 없는 기록 · 업무 범위 밖 · 본사에게 가려진 직원 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22372,14 +22710,21 @@ export interface operations {
                     "application/json": components["schemas"]["AttendanceHistoryResponseDto"];
                 };
             };
-            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 기록 · 업무 범위 밖 · 본사에게 가려진 직원 */
+            /** @description 없는 기록 · 업무 범위 밖 · 본사에게 가려진 직원 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22534,7 +22879,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 지금 비밀번호가 맞지 않음(「지금 비밀번호가 맞지 않습니다」) · 이메일 형식 · 지금 이메일과 같음 */
+            /** @description 지금 비밀번호가 맞지 않음(「지금 비밀번호가 맞지 않습니다.」) · 이메일 형식 · 지금 이메일과 같음 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -22569,7 +22914,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 관리자에게 문의해 주세요」 */
+            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 관리자에게 문의해 주세요.」 */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -22767,7 +23112,7 @@ export interface operations {
                     "application/json": components["schemas"]["MyTaxProfileResponseDto"];
                 };
             };
-            /** @description 형식 오류 · 바꿀 값 없음(TAX_PROFILE_EMPTY) · 고치는데 지금 비밀번호가 없거나 틀림(CURRENT_PASSWORD_MISMATCH — 「지금 비밀번호가 맞지 않습니다」, 내 소속 확인 뒤 · 다른 검사 전에 본다) · 처음인데 셋 중 빠짐(TAX_PROFILE_INCOMPLETE) · 은행 · 계좌번호 한쪽만(TAX_PROFILE_ACCOUNT_INCOMPLETE) · 주민등록번호 앞자리와 가입 생년월일이 다름(RRN_BIRTH_MISMATCH — 관리자에게 정정 요청) · 없는 은행(BANK_CODE_UNKNOWN) */
+            /** @description 형식 오류 · 바꿀 값 없음(TAX_PROFILE_EMPTY) · 고치는데 지금 비밀번호가 없거나 틀림(CURRENT_PASSWORD_MISMATCH — 「지금 비밀번호가 맞지 않습니다.」, 내 소속 확인 뒤 · 다른 검사 전에 본다) · 처음인데 셋 중 빠짐(TAX_PROFILE_INCOMPLETE) · 은행 · 계좌번호 한쪽만(TAX_PROFILE_ACCOUNT_INCOMPLETE) · 주민등록번호 앞자리와 가입 생년월일이 다름(RRN_BIRTH_MISMATCH — 관리자에게 정정 요청) · 없는 은행(BANK_CODE_UNKNOWN) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -22999,10 +23344,21 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgreeHqSharingConsentDto"];
+            };
+        };
         responses: {
             /** @description 동의함 */
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description consentVersion 없음 · 빈 문자열 · 문자열 아님 · 64자 초과 · 모르는 칸 */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23022,7 +23378,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 지금 동의 상태에서 할 수 없는 동작 */
+            /** @description 이미 지금 버전에 동의함 · 화면이 보여 준 문구 버전(consentVersion)이 지금 것과 다름 — 「사업자 제공 동의 내용이 바뀌었습니다. …」(화면은 새로 고친다) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -23139,7 +23495,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LoginResponseDto"];
+                    "application/json": components["schemas"]["StaffSignupResponseDto"];
                 };
             };
             /** @description 형식 오류 · 비밀번호 규칙 · 만 19세 미만(SIGNUP_UNDER_AGE, 초대는 가입 불가가 됨) */
@@ -23388,11 +23744,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RejectAffiliationRequestDto"];
-            };
-        };
+        requestBody?: never;
         responses: {
             204: {
                 headers: {
@@ -23400,7 +23752,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 형식 오류 · 사유 500자 넘음 */
+            /** @description 형식 오류(요청 ID) */
             400: {
                 headers: {
                     [name: string]: unknown;

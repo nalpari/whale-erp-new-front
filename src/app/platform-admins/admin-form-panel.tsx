@@ -9,6 +9,7 @@ import {
   EMPTY_FORM,
   emailError,
   formOf,
+  EMAIL_TAKEN,
   isOriginalEmail,
   loginIdCheckOutcome,
   loginIdError,
@@ -22,9 +23,9 @@ import {
   type LoginIdCheck,
 } from "@/lib/platform-admin-form";
 import type { PlatformAdminDetail, PlatformRoleGroup } from "@/lib/platform-admins";
-import { checkLoginIdAvailableAction, createPlatformAdminAction, updatePlatformAdminAction } from "./actions";
+import { checkEmailAvailableAction, checkLoginIdAvailableAction, createPlatformAdminAction, updatePlatformAdminAction } from "./actions";
 import { AddressField } from "@/components/address-field";
-import { EmailFormatValid, FailedBand, FieldMessage, LoginIdAvailability, unknownResult } from "./admin-parts";
+import { EmailAvailability, FailedBand, FieldMessage, LoginIdAvailability, unknownResult } from "./admin-parts";
 
 // 플랫폼 관리자 등록(S-FOJJKB) · 수정(S-CZGHBS) 슬라이드 패널. 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓는다(데모와 같다).
 // 등록에는 상태 · 비밀번호 칸이 없다 — 사용으로 생기고 초기 비밀번호가 등록 이메일로 간다.
@@ -60,8 +61,9 @@ export function AdminFormPanel(props: Props) {
   const checkNumber = useRef(0);
   /** 중복확인 대기 · 성공 · 실패 상태. 오류는 errors.loginId(서버의 답이면 serverErrors.loginId 에도)에 둔다 */
   const [loginIdCheck, setLoginIdCheck] = useState<LoginIdCheck>("idle");
-  /** 이메일 형식 확인 성공 — api 호출이 없어 아이디처럼 확인 중 차례를 둘 필요가 없다. 오류는 errors.email 에 둔다. */
-  const [emailValid, setEmailValid] = useState(false);
+  /** 이메일 중복 확인 차례와 상태 — 아이디와 같은 방식이다(다른 등록 화면처럼 미리 확인, 2026-10-29 재영). 오류는 errors.email 에 둔다. */
+  const emailCheckNumber = useRef(0);
+  const [emailCheck, setEmailCheck] = useState<LoginIdCheck>("idle");
   /**
    * 서버가 칸에 붙인 오류 — 저장 때 받은 아이디 · 이메일 중복(아이디는 400 형식도)과, 아이디 중복확인의 「사용 중」 · 400 답.
    * 그 칸을 고칠 때까지 남긴다 — 다시 저장하거나 같은 값을
@@ -91,7 +93,7 @@ export function AdminFormPanel(props: Props) {
       // 그대로 남는다. 닫는 사이 떠 있던 요청이 늦게 도착해 새로 연 칸에 옛 결과를 칠하는 것은 ref 차례로 막는데,
       // ref 는 그리는 중에 건드릴 수 없어(react-hooks/refs) 되돌릴 때의 차례는 아래 effect 가 올린다.
       setLoginIdCheck("idle");
-      setEmailValid(false);
+      setEmailCheck("idle");
       setResetSignal((n) => n + 1);
     }
   }
@@ -100,6 +102,7 @@ export function AdminFormPanel(props: Props) {
   useLayoutEffect(() => {
     if (resetSignal === 0) return;
     checkNumber.current++;
+    emailCheckNumber.current++;
   }, [resetSignal]);
   const [saving, startSaving] = useTransition();
   /**
@@ -147,7 +150,10 @@ export function AdminFormPanel(props: Props) {
       checkNumber.current++; // 떠 있던 아이디 확인 답도 버린다
       setLoginIdCheck("idle");
     }
-    if (field !== "loginId") setEmailValid(false);
+    if (field !== "loginId") {
+      emailCheckNumber.current++; // 떠 있던 이메일 확인 답도 버린다
+      setEmailCheck("idle");
+    }
     if (!field) return setFailure(message);
     // 아이디는 화면 문구로 바꿔 붙인다 — 중복확인 때의 「사용 중」과 같은 문구여야 한다
     const text = serverFieldMessage(field, status, message);
@@ -204,24 +210,52 @@ export function AdminFormPanel(props: Props) {
   };
 
   /**
-   * 이메일 형식 즉시 확인(등록 · 수정 모두) — 칸을 벗어나거나 Enter 를 칠 때. 아이디와 달리 바로 물어볼 중복확인 API 가 없어
-   * (중복은 저장할 때 — 등록 · 수정 모두 — api 가 409 로 막는다) 형식만 본다 — 그래서 확인 중 차례나 네트워크 호출이 없다.
-   * 수정 화면에서 원래 이메일 그대로면 아무것도 띄우지 않는다 — 바꾸지 않은 값은 확인 대상이 아니다(마이페이지와 같다).
-   * 원래 값이 형식에 맞지 않는 옛 데이터여도 여기서는 조용하고, 저장할 때 형식 문구로 막는다.
+   * 이메일 중복 확인(등록 · 수정 모두) — 칸을 벗어나거나 Enter 를 칠 때. 형식이 틀리면 묻지 않는다(2026-10-29 재영 — 전엔 형식만 봤다).
+   * 수정 화면에서 원래 이메일 그대로면 묻지 않는다 — 바꾸지 않은 값은 확인 대상이 아니다(마이페이지와 같다).
+   * 서버가 거절한 값을 고치지 않고 다시 벗어난 것이면 묻지 않는다(아이디와 같다). 400 은 화면 형식 문구로 칸에(고칠 때까지 남긴다),
+   * 401 은 패널 위 띠로, 403 은 등록 권한 없이 수정만 하는 사람이라 조용히(콘솔만), 그 밖(5xx · 연결 실패)은 「확인하지 못했습니다」 —
+   * 저장할 때 api 가 다시 본다.
    */
   const checkEmail = (value: string) => {
     if (!value.trim()) return;
     if (mode === "edit" && isOriginalEmail(value, props.admin.email)) return;
+    if (serverErrors.email) return;
     const formatError = emailError(value);
     if (formatError) {
       setErrors((e) => ({ ...e, email: formatError }));
-      setEmailValid(false);
+      setEmailCheck("idle");
       return;
     }
-    // 형식은 맞지만 이미 다른 오류(저장할 때 서버가 돌려준 중복 등)가 달려 있으면 그대로 둔다 — 고치지 않고
-    // 칸만 다시 벗어나는 것으로 그 안내가 사라지면 안 된다(고치면 onChange 가 먼저 지운다).
-    if (errors.email) return;
-    setEmailValid(true);
+    const mine = ++emailCheckNumber.current;
+    clearError("email");
+    setEmailCheck("checking");
+    checkEmailAvailableAction(value.trim().toLowerCase())
+      .then((result) => {
+        if (mine !== emailCheckNumber.current) return;
+        if (result.ok) {
+          if (!result.available) {
+            setServerErrors((e) => ({ ...e, email: EMAIL_TAKEN }));
+            setErrors((e) => ({ ...e, email: EMAIL_TAKEN }));
+          }
+          setEmailCheck(result.available ? "available" : "idle");
+          return;
+        }
+        setEmailCheck(result.status === 400 || result.status === 401 || result.status === 403 ? "idle" : "failed");
+        if (result.status === 400) {
+          // 아이디 확인과 같다 — 화면 형식 문구로, 고칠 때까지 같은 값으로 다시 묻지 않는다
+          const text = serverFieldMessage("email", 400, result.message);
+          console.warn("이메일 중복 확인 400 — 화면 형식 문구로 보인다", result.message);
+          setServerErrors((e) => ({ ...e, email: text }));
+          setErrors((e) => ({ ...e, email: text }));
+        } else if (result.status === 401) setFailure(result.message);
+        else if (result.status === 403) console.warn("이메일 중복 확인 403 — 등록 권한이 없어 저장할 때 api 가 본다", result.message);
+        else console.warn("이메일 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
+      })
+      .catch((error: unknown) => {
+        if (mine !== emailCheckNumber.current) return;
+        setEmailCheck("failed");
+        console.warn("이메일 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다", error);
+      });
   };
 
   // 수정할 계정이 지금 권한 목록에 없으면(플랫폼 관리자가 보는 마스터 등) 그 권한도 선택지에 남겨 값이 비지 않게 한다
@@ -361,7 +395,8 @@ export function AdminFormPanel(props: Props) {
               type="email"
               value={form.email}
               onChange={(e) => {
-                setEmailValid(false);
+                emailCheckNumber.current++;
+                setEmailCheck("idle");
                 set("email", e.target.value);
               }}
               onBlur={(e) => checkEmail(e.currentTarget.value)}
@@ -373,11 +408,12 @@ export function AdminFormPanel(props: Props) {
               }}
               maxLength={100}
               aria-invalid={invalid("email")}
-              aria-describedby={describe("email") ?? (emailValid ? messageId("email") : undefined)}
+              aria-describedby={describe("email") ?? (emailCheck !== "idle" ? messageId("email") : undefined)}
+              aria-busy={emailCheck === "checking" || undefined}
               aria-required
             />
           </Field>
-          <EmailFormatValid id={messageId("email")} valid={emailValid} message={errors.email} />
+          <EmailAvailability id={messageId("email")} check={emailCheck} message={errors.email} />
         </div>
         {/* 권한명 · 계정상태는 기본정보 안 이메일 다음에 둔다(2026-10-27 사용자 지정 — 전엔 따로 묶음) */}
         {/* 본인 계정은 이 칸들을 고칠 수 없어 비활성 처리한다 — 흰 바탕과 구별되게 막힌 칸만 회색으로 그린다
@@ -389,7 +425,7 @@ export function AdminFormPanel(props: Props) {
                 value={form.roleGroupId}
                 onChange={(e) => set("roleGroupId", e.target.value)}
                 disabled={isSelf}
-                title={isSelf ? "본인 계정의 권한은 바꿀 수 없습니다." : undefined}
+                title={isSelf ? "내 계정의 권한은 바꿀 수 없습니다." : undefined}
                 aria-invalid={invalid("roleGroupId")}
                 aria-describedby={describe("roleGroupId")}
                 aria-required
@@ -414,7 +450,7 @@ export function AdminFormPanel(props: Props) {
                 value={form.accountStatus}
                 onChange={(e) => set("accountStatus", e.target.value as AdminForm["accountStatus"])}
                 disabled={isSelf}
-                title={isSelf ? "본인 계정의 상태는 바꿀 수 없습니다." : undefined}
+                title={isSelf ? "내 계정의 상태는 바꿀 수 없습니다." : undefined}
               >
                 <option value="ACTIVE">사용</option>
                 <option value="INACTIVE">미사용</option>
@@ -444,7 +480,7 @@ export function AdminFormPanel(props: Props) {
           detailError={errors.addressDetail}
         />
       </FormGroup>
-      {isSelf && <Note>본인 계정의 권한과 상태는 변경할 수 없습니다. 이름, 연락처 등 기타 정보만 수정할 수 있습니다.</Note>}
+      {isSelf && <Note>내 계정의 권한과 상태는 변경할 수 없습니다. 이름, 연락처 등 기타 정보만 수정할 수 있습니다.</Note>}
 
       {mode === "create" && <Note>초기화 비밀번호는 등록한 이메일로 발송됩니다.</Note>}
       {mode === "edit" && form.accountStatus === "INACTIVE" && props.admin.accountStatus === "ACTIVE" && (

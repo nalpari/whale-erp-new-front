@@ -90,8 +90,9 @@ export function AdminTable({
       header: "최근 로그인",
       width: "w-[180px]",
       // 로그인한 적이 없으면 「-」(2026-10-27 사용자 요청). 초기 비밀번호 메일이 실패한 계정은 그 사실을 먼저 알린다(SYSTEM-3).
+      // 미발송은 사용 계정만 — 미사용은 [초기화]로 다시 보낼 수 없어 상세처럼 표시하지 않는다(2026-10-29 재영)
       cell: (a) =>
-        a.isInitialPasswordUnsent ? (
+        a.isInitialPasswordUnsent && a.accountStatus === "ACTIVE" ? (
           <span className="text-erp-off">초기화 비밀번호 미발송</span>
         ) : a.lastLoginAt ? (
           dim(a, formatDateTime(a.lastLoginAt))
