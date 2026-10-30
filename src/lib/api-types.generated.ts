@@ -7686,8 +7686,8 @@ export interface components {
             /** @description 최종 처리일(ISO 8601) — 가장 최근 상태 변경 일시. 이력이 없으면 null */
             lastProcessedAt: string | null;
             /**
-             * @description 직원이 남긴 마지막 수정 요청 사유(1~100자, WHALEERP-635). 다시 요청하면 바뀌고 관리자가 고쳐 다시 보내도 남는다 — 상태와
-             *     상관없이 준다(화면은 수정 요청일 때만 보인다). 수정 요청한 적이 없거나 사유를 받기 전의 수정 요청이면 null
+             * @description 직원이 남긴 수정 요청 사유(1~100자, WHALEERP-635) — 수정 요청된 계약에만, 그 밖은 null. 사유를 받기 전의 수정 요청도 null.
+             *     고쳐 다시 보내도 행에는 남지만 다른 상태에서는 주지 않는다(지난 사유가 지금 사유처럼 읽히지 않게)
              */
             correctionReason: string | null;
             /** @description 재계약으로 만든 계약이면 직전 계약 ID. 재계약(WHALEERP-156) 전이라 지금은 늘 null */
