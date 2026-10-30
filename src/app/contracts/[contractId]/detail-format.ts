@@ -106,7 +106,7 @@ export function processRows(c: ProcessFields): { label: string; value: string; m
     if (c.signDeadlineAt && c.status && DEADLINE_SHOWN.has(c.status)) rows.push({ label: "날인 기한", value: kstDateTime(c.signDeadlineAt) });
   }
   if (c.lastProcessedAt) rows.push({ label: "최종 처리일", value: kstDateTime(c.lastProcessedAt) });
-  // 사유는 고쳐 다시 보내도 api 에 남지만 수정 요청일 때만 보인다
+  // api 도 수정 요청일 때만 사유를 주지만(그 밖은 null), 줄 자체도 수정 요청일 때만 둔다
   if (c.status === "CORRECTION_REQUESTED") rows.push({ label: "수정 요청 사유", value: c.correctionReason ?? "-", multiline: true });
   return rows;
 }
