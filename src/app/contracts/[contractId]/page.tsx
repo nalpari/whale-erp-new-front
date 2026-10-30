@@ -176,7 +176,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             <DetailValues
               items={row.documents.map((d) => (
                 <a key={d.contractDocumentId} href={`/contracts/${c.contractId}/documents/${d.contractDocumentId}`} className="text-erp-link hover:underline">
-                  {labelOf(documentKinds, d.kind)} · {d.fileName}
+                  {row.withKind ? `${labelOf(documentKinds, d.kind)} · ${d.fileName}` : d.fileName}
                 </a>
               ))}
             />

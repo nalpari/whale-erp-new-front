@@ -1,7 +1,7 @@
 # Bundle history
 
 ## 2026-10-30
-* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 계약서 파일 줄을 나눴다(WHALEERP-155): 전자계약은 처리 완료본(서명 확인) · 보낸 원본, 종이 계약은 날인본(`document-rows.ts`, `node --test`). 체결됐는데 처리 완료본이 아직 없으면 만드는 중 안내. api #211(WHALEERP-131)이 두 파일을 만든다. `docs/erd/physical` 은 api 물리 생성기로 다시 만들었다(당사자 사용자 칸 · 파일 발송 일시).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 계약서 파일 줄을 나눴다(WHALEERP-155): 전자계약은 처리 완료본(서명 확인) · 보낸 원본, 종이 계약은 날인본(`document-rows.ts`, `node --test`). 체결됐는데 처리 완료본이 아직 없으면 「아직 없음」 안내. api #211(WHALEERP-131)이 두 파일을 만든다. `docs/erd/physical` 은 api 물리 생성기로 다시 만들었다(당사자 사용자 칸 · 파일 발송 일시).
 
 ## 2026-10-29
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 상세 근로계약 칸 「계약 상태」 다음에 「급여 계좌」(`payrollAccountText`, 요약 응답 `payrollAccount`) 줄을 더했다. 신고 정보가 없으면 「-」(WHALEERP-184, 2026-10-29 노영주).
