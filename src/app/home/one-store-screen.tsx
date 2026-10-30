@@ -136,7 +136,7 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
     ),
     canOpen("/payslips") && (
       // 이번 달 급여명세서 합계(WHALEERP-621) — 네 상태 모두, 본사 역할은 본사 제공 동의한 가맹 직원만(api 가 센다, ATT-30)
-      <Card key="pay" title="직원 급여" actions={soft("급여명세서", `/payslips?${new URLSearchParams({ month: today.slice(0, 7), storeIds: String(storeId) })}`)}>
+      <Card key="pay" title="직원 급여" actions={soft("급여명세서", at(`/payslips?${new URLSearchParams({ month: today.slice(0, 7), storeIds: String(storeId) })}`))}>
         <Body section={pay} what="직원 급여를">
           {(s) => {
             const won = payAmounts(s.fullTime.grossPayAmount, s.partTime.grossPayAmount);

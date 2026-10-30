@@ -215,7 +215,7 @@ function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: bo
       <Figure href={canOpen("/stores") ? bpPath(bp, scopeHref("/stores")) : null} label="운영 점포" value={stores.total} unit="개점" sub={`직영 ${stores.direct} · 가맹 ${stores.franchise}`} />
       {today && (
         <Figure
-          href={canOpen("/attendance-records") ? scopeHref("/attendance-records") : null}
+          href={canOpen("/attendance-records") ? bpPath(bp, scopeHref("/attendance-records")) : null}
           label="오늘 출근"
           note={hq ? "동의하지 않은 가맹 직원은 출근 · 미출근에 세지 않습니다." : undefined}
           value={today.checkedIn}

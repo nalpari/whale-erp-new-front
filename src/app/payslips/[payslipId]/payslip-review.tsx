@@ -3,7 +3,8 @@
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode } from "react";
 import { Button, ConfirmDialog, DetailTable, Field, FormGroup, FormRow, Select, TextField, Toggle, useToast } from "@/components/common";
-import { usePagePermission } from "@/components/site/session-gate";
+import { useCurrentBp, usePagePermission } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import {
   formatAmount,
   isItemShown,
@@ -153,6 +154,8 @@ export function PayslipReview({
   const router = useRouter();
   const toast = useToast();
   const canUpdate = usePagePermission().update;
+  // 출퇴근 현황도 탭 BP 주소 화면이다(WHALEERP-637)
+  const bp = useCurrentBp().bpCodeId;
   const editable = canUpdate && (payslip.status === "DRAFTING" || payslip.status === "REVIEWING");
   const isPartTime = payslip.employmentType === "PART_TIME";
   const month = payslip.periodStartDate.slice(0, 7);
@@ -319,7 +322,7 @@ export function PayslipReview({
             title={band.title}
             desc={band.desc}
             actions={
-              <Button variant="soft" href={attendanceHref(payslip)}>
+              <Button variant="soft" href={bpPath(bp, attendanceHref(payslip))}>
                 출퇴근 보정
               </Button>
             }
