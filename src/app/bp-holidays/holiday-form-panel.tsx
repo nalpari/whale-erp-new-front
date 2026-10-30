@@ -392,7 +392,7 @@ function OverlapSummary({ overlaps }: { overlaps: BpHolidayOverlaps }) {
   ]);
   return (
     <div className="flex flex-col gap-[12px] break-keep">
-      <p>저장하면 두 휴일이 모두 적용됩니다. 저장하시겠습니까?</p>
+      <p>저장하면 겹치는 휴일이 모두 적용됩니다. 저장하시겠습니까?</p>
       <div className="max-h-[280px] overflow-y-auto overscroll-contain [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-[1]">
         <DataTable columns={OVERLAP_COLUMNS} rows={rows} rowKey={(r) => r.key} />
       </div>
