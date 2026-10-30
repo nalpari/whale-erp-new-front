@@ -1,12 +1,24 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: main 병합(front piplup, main #200 까지): okf 충돌은 양쪽 기록을 살렸다. BP 관리자 목록 데모 · 화면정의서는 swinub 의 역할 필터 · 열 순서(대상점포 · 등록일시 없음)와 이 브랜치의 검색 · 링크 · 미발송 기준을 합쳤다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — review-pr(PR #199) 반영: BP 관리자 저장 때 409 는 api 중복 문구일 때만 칸 아래 화면 문구로 바꾸고(`bpAdminFieldMessage`, 테스트 포함), 띠는 api 문구 그대로 둔다. 목록 미발송 표시 기준(사용 계정만)을 적고 주석을 바로잡았다(front piplup).
+* **Update**: main 병합(front piplup, main #196 까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 수정: 연결 가맹 마스터 칸 · 권한명 도움말 없음 · 등록일시 · 최근 로그인 칸 없음(아이디는 제목 꼬리표) · 점포 빼기는 저장 때 확인 창만으로 정하고 데모 · 화면정의서를 맞췄다(2026-10-29 사용자 결정, front piplup).
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 상세: 미사용 · 본인 계정 초기화 「-」 · 이름 아랫줄 배지 · 소속 BP 없음 · 등록/최종수정 · 연결 가맹마스터 표 끝 · 미사용 띠 없음 · 변경 이력 팝업(변경자 이름, 비밀번호 줄 「초기화」 · 「강제 변경」) · 못 보는 계정 한 문구 · 초기화 확인창 문구를 코드대로 정하고 데모 · 화면정의서를 맞췄다(2026-10-29 사용자 결정, front piplup).
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 등록: 역할 처음 「선택」 · 가맹 마스터 고정 권한은 선택칸 · 연결 가맹 마스터 칸 없음 · 「연락처」로 통일(api 요청) · 저장할 때 중복도 칸 문구(코드 수정) · 탈퇴 · 미사용 BP 등록 막음을 정하고, 데모 · 화면정의서(등록 그림 다시 찍음, 수정 · 상세 「연락처」)를 맞췄다(2026-10-29 사용자 결정, front piplup).
 * **Update**: main 병합(front swinub, main 까지): okf 충돌은 양쪽 기록을 살렸다(generated 는 늦은 값).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 관리자 관리 디자인 수정(front swinub): 필터 「역할」(api `roleTypeCodes`), 목록 열(대상점포 · 역할 이동, 등록일시 뺌, 권한명 · 코드 왼쪽 정렬), 상세 안내 상자(빨간 상자 · 순서 · 간격), 대상점포 오류 문구 「1개 이상 선택해 주세요」, 「본인 계정」 → 「내 계정」 · 「권한 그룹」 띄어쓰기.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 관리](/staff.md) — WHALEERP-635: 근로계약 상세가 수정 요청된 계약에 「수정 요청 사유」(api `correctionReason`, 없으면 「-」)를 보이고 「거부 사유」 줄을 지웠다. api 타입을 api 브랜치 openapi 로 다시 만들었고, 논리 · 물리 ERD(`contracts.correction_reason` 추가 · `reject_reason` 두 칸 삭제)와 알림 템플릿 · 근로계약 상세 데모의 거부 사유를 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 계약서 파일 줄을 나눴다(WHALEERP-155): 전자계약은 처리 완료본(서명 확인) · 보낸 원본, 종이 계약은 날인본(`document-rows.ts`, `node --test`). 체결됐는데 처리 완료본이 아직 없으면 「아직 없음」 안내. api #211(WHALEERP-131)이 두 파일을 만든다. `docs/erd/physical` 은 api 물리 생성기로 다시 만들었다(당사자 사용자 칸 · 파일 발송 일시).
 
 ## 2026-10-29
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 목록 화면정의서(그림 · 항목 17개)를 오늘 정한 목록 데모대로 다시 만들었다. 목록 아래 안내문은 그림에 없이 「보충 설명」 항목으로 남겼다(front piplup).
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 목록: 「초기화 비밀번호 미발송」은 사용 계정에만 보인다(코드 수정, 상세와 맞춤) · 매핑 점포 「전체」 · 빈 목록 문구 하나 · 목록 아래 안내문은 데모에서 뺐다(화면정의서엔 남김, 2026-10-29 사용자 결정, front piplup).
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 목록 열: 「권한명 · 코드」 열 이름 · 최근 로그인을 등록일시 앞으로 · 링크는 이름에만, 데모를 코드에 맞췄다(2026-10-29 사용자 결정, front piplup).
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 목록 건수는 총건수만 보인다(데모의 「· 미사용 N」을 뺐다, 2026-10-29 사용자 결정, front piplup).
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 목록 검색: [검색] 버튼 없이 고르면 바로 · 권한명 「이름 · 코드」 한 줄 · 계정상태 체크박스 둘로 데모를 코드에 맞췄다(2026-10-29 사용자 결정, front piplup).
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 목록: 가맹 마스터는 자기에게 연결된 가맹 관리자를 점포와 관계없이 본다(api 규칙대로, 데모 함께, 2026-10-29 사용자 결정, front piplup).
 * **Update**: main 병합(front grimer, main #189 등까지): okf 충돌은 양쪽 기록을 살렸다(generated 는 늦은 값).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #194 code-review: 근로계약 화면이 탭 BP 주소로 옮겨도 이 화면의 근로계약 링크는 옛 주소 그대로(SessionGate 가 보냄)라고 적었다. 날인본 창구는 api 의 BP 거절(400 · 403)을 오류 로그 없이 「받을 수 없습니다」 안내(`?document=denied`)로 돌려보낸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 화면을 탭 BP 주소 `/bp/{bpCodeId}/contracts` 로 옮겼다(`BP_PATH_SCREENS`, WHALEERP-618). 목록 · 상세 · 작성 · 이어 쓰기 · 근로자 정보 · 재발송 · 종료 · 삭제 뒤 이동과 종이 계약 · 날인본 창구가 주소의 BP 를 잃지 않고(`bpPath` · `screenPath()` · `bpHref`), 저장 뒤 안내 쿠키 경로도 `/bp/{id}/contracts` 다. api 거절(BP 를 고르지 않음 400 · 403 · 없는 BP 404)은 화면에 그 문장으로 보인다(`deniedMessageOf`). 홈의 근로계약 링크도 탭 BP 를 붙이고, 직원 정보 관리 · 급여명세서의 링크는 옛 주소로 두어 SessionGate 가 보낸다. api 타입은 근로계약 경로의 400 · 404 설명만 다시 만들었다(같은 배포 창: api 의 근로계약 `@TargetBp()` 전환).
