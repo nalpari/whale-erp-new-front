@@ -13,7 +13,7 @@ export type BpCodeItem = Schemas["BpCodeItemResponseDto"];
 export type BpCodeItemList = Schemas["BpCodeItemListResponseDto"];
 /**
  * 상세 코드의 관리 주체. api #165 부터 BP 에게 플랫폼고정은 오지 않아(목록 · 상세에서 뺀다) 생성 타입에 없지만,
- * 막는 판단(bp-code-drafts.ts 의 bpPanelLock · bpDeletable)은 옛 응답 대비로 남겨 두므로 값으로 받아 둔다.
+ * 지울 수 있는지(bp-code-drafts.ts 의 bpDeletable)는 옛 응답 대비로 플랫폼고정을 빼 두므로 값으로 받아 둔다.
  */
 export type BpManageOwnerCode = BpCodeItem["manageOwnerCode"] | "PLATFORM_FIXED";
 export type { SaveCodeItemsInput };

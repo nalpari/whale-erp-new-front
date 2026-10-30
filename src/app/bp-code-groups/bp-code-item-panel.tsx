@@ -9,7 +9,7 @@ import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
 import { DeletePending, DeleteToggle, Struck } from "@/components/site/code-editor/delete-mark";
 import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import { useCodeLabel } from "@/components/site/code-label";
-import { WarnBand } from "@/components/site/side-parts";
+import { InfoBand } from "@/components/site/side-parts";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import { bpCodePanelAccess, bpDeletable, bpPanelLock, newBpItemDraft, toBpItemDraft, type BpItemDraft } from "@/lib/bp-code-drafts";
 import type { BpCodeGroup, BpCodeItem } from "@/lib/bp-codes";
@@ -59,9 +59,9 @@ const PANEL_ID = "bp-code-items-panel";
 export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGroup; items: BpCodeItem[]; loadFailed?: boolean }) {
   const isPlatform = useAccount().bp.isPlatform;
   const permission = usePagePermission();
-  const lock = bpPanelLock(group, isPlatform);
+  const lock = bpPanelLock(isPlatform);
   const { manage, canAdd, canDelete, canSave } = bpCodePanelAccess({ lock, ...permission, loadFailed });
-  // 플랫폼고정 그룹이면 버튼은 두되 잠근다(목업) — 이유는 띠가 말한다. 플랫폼 사용자 · 권한 없음 · 불러오기 실패면 버튼이 없다.
+  // 플랫폼 사용자 · 권한 없음 · 불러오기 실패면 버튼이 없다.
   const showButtons = Boolean(group) && !loadFailed && !isPlatform && (permission.update || permission.create || permission.delete);
   const ownerLabel = useCodeLabel("MANAGE_OWNER");
   const router = useRouter();
@@ -198,8 +198,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
   const reorder = useRowReorder({ rows: drafts, setRows: setDrafts, keyOf: (d) => d.key, labelOf: (d) => d.itemCode });
 
   const columns: Column<Draft>[] = [
-    // 플랫폼고정 그룹은 순서를 바꿀 수 없어 이동 칸 자체를 두지 않는다(목업)
-    ...(lock !== "fixed" && (manage || canAdd)
+    ...(manage || canAdd
       ? [
           {
             header: "이동",
@@ -343,9 +342,8 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
         )
       }
     >
-      {/* 고칠 수 없는 이유는 빨간 안내(WarnBand)로 — 권한 그룹 상세의 막힌 이유와 같은 모양 · 말투(2026-10-28 사용자 지정, 전엔 회색 띠 「…조회만 할 수 있습니다」) */}
-      {lock === "platform-user" && <WarnBand>BP 공통코드는 BP 계정만 수정할 수 있습니다.</WarnBand>}
-      {group && lock === "fixed" && <WarnBand>플랫폼고정 그룹은 수정할 수 없습니다.</WarnBand>}
+      {/* 플랫폼 계정은 조회만 — BP 권한 그룹과 같은 회색 안내 한 줄(2026-10-30 재영, 전엔 빨간 상자 「BP 공통코드는 BP 계정만 수정할 수 있습니다.」) */}
+      {lock === "platform-user" && <InfoBand>플랫폼 계정은 BP 공통코드를 조회만 합니다.</InfoBand>}
       {reordered && <PendingNotice message={REORDERED} />}
       {failure && <SaveFailedBand message={failure} />}
       <DataTable

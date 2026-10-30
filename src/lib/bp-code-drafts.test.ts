@@ -4,21 +4,16 @@ import { test } from "node:test";
 import { bpCodePanelAccess, bpCodesHref, bpDeletable, bpPanelLock, newBpItemDraft, toBpItemDraft } from "./bp-code-drafts.ts";
 import { searchTerm } from "./code-drafts.ts";
 
-const open = { manageOwnerCode: "PLATFORM_PROVIDED" } as const;
-
-test("bpPanelLock — 플랫폼 사용자가 먼저, 그다음 플랫폼고정 그룹", () => {
-  assert.equal(bpPanelLock(open, true), "platform-user");
-  assert.equal(bpPanelLock({ manageOwnerCode: "PLATFORM_FIXED" }, true), "platform-user");
-  assert.equal(bpPanelLock({ manageOwnerCode: "PLATFORM_FIXED" }, false), "fixed");
-  assert.equal(bpPanelLock(open, false), null);
-  assert.equal(bpPanelLock(undefined, false), null);
+test("bpPanelLock — 플랫폼 사용자만 막는다", () => {
+  assert.equal(bpPanelLock(true), "platform-user");
+  assert.equal(bpPanelLock(false), null);
 });
 
 test("bpCodePanelAccess — 막히면 권한이 있어도 고치기 · 추가 · 삭제 · 저장을 모두 막는다", () => {
   const all = { update: true, create: true, delete: true };
   assert.deepEqual(bpCodePanelAccess({ lock: null, ...all }), { manage: true, canAdd: true, canDelete: true, canSave: true });
   const closed = { manage: false, canAdd: false, canDelete: false, canSave: false };
-  for (const lock of ["platform-user", "fixed"] as const) assert.deepEqual(bpCodePanelAccess({ lock, ...all }), closed);
+  assert.deepEqual(bpCodePanelAccess({ lock: "platform-user", ...all }), closed);
   assert.deepEqual(bpCodePanelAccess({ lock: null, ...all, loadFailed: true }), closed);
 });
 
