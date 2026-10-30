@@ -34,7 +34,12 @@ export async function loadFormData(): Promise<{
       request<{ items: StoreOption[] }>("/stores/options?pageSize=200", { headers }),
       request<{ items: MinimumWage[] }>("/contracts/minimum-wages", { headers }).then(
         (r) => r.items,
-        (e: unknown) => (e instanceof ApiError && e.status === 401 ? Promise.reject(e) : []),
+        (e: unknown) => {
+          if (e instanceof ApiError && e.status === 401) return Promise.reject(e);
+          // 권한 없음(403)은 화면이 권한 안내만 그린다. 그 밖의 실패는 검사 · 도움말이 조용히 빠지므로 남긴다
+          if (!(e instanceof ApiError && e.status === 403)) console.error("[contracts] 최저임금 조회 실패", e);
+          return [];
+        },
       ),
     ]);
     return { stores: items, labels, signedIn: true, minimumWages };
