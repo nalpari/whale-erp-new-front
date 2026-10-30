@@ -77,7 +77,10 @@ const chip = ([name, code, type]) =>
 //  · 칸 옆 [일괄 검색] 버튼과 두 목록 사이로 옮기는 확인창.
 //  · 전체 제거(clearLabel) 버튼 — 칩을 모두 뺀다.
 // hidden: 처음에 숨긴다(범위가 전체 점포인 등록 화면). 범위 선택에 data-spick-scope 를 달면 erp.js 가 전체 점포일 때 숨기고 일부 점포일 때 보인다.
-export const storePicker = (A, { pool, picked, hint, label = "관리할 점포 찾기", clearLabel = "모두 빼기", bulk, hidden = false }) => {
+// exclude: 고른 점포가 예외점포다(BP 휴일 전체 점포) — 고른 칸 이름 · 빈 문구 · 일괄 검색 문구만 앱 store-mapping-picker.tsx TEXTS.exclude 로 바뀐다(2026-10-30)
+export const storePicker = (A, { pool, picked, hint, label = "관리할 점포 찾기", clearLabel = "모두 빼기", bulk, hidden = false, exclude = false }) => {
+  const pickedLabel = exclude ? "예외점포" : "선택한 점포";
+  const noPicked = exclude ? "선택된 예외점포가 없습니다.<br>모든 점포에 휴일이 적용됩니다." : "선택된 점포가 없습니다.<br>점포찾기에서 점포를 검색하여 추가해 주세요.";
   const dlg = bulk ? ui.uid("spick-bulk") : "";
   const search = ui.searchField(A, { placeholder: "점포명 또는 점포코드", label });
   // 떠 있는 목록이라 팝업 그림자 하나만 쓴다(DESIGN 뜬 것만 그림자). 테두리 #ebebeb 는 팝업 테두리 값.
@@ -90,7 +93,7 @@ export const storePicker = (A, { pool, picked, hint, label = "관리할 점포 �
       ui.button(clearLabel, { variant: "soft", "data-spick-clear": true }).replace('class="', 'class="ml-auto ').replace("px-[24px]", "px-[12px]")
     : `<button type="button" class="ml-auto text-erp-link hover:underline">${clearLabel}</button>`;
   const poolAttr = bulk ? ` data-spick-pool="${bulk.filter((s) => !s[3]).map((s) => s.slice(0, 3).join("|")).join(";")}"` : "";
-  return `<div class="flex flex-col gap-[10px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[12px]" data-spick${poolAttr}${hidden ? " hidden" : ""}><div class="flex flex-col gap-[8px]"><p class="text-[14px] font-medium">점포 찾기${pool ? ` <span class="font-normal text-erp-label">${pool}</span>` : ""}</p>${find}${hint ? `<span class="text-[13px] text-erp-label">${hint}</span>` : ""}</div><div class="flex flex-col gap-[8px] border-t border-erp-divider pt-[10px]"><p class="flex min-h-[34px] items-center gap-[10px] text-[14px] font-medium">선택한 점포 <span class="font-normal text-erp-label" data-spick-count>${picked.length}개점</span>${clear}</p><div class="relative h-[130px]"><ul aria-label="선택한 점포" class="flex h-full flex-wrap content-start gap-[6px] overflow-y-auto overscroll-contain" data-spick-list>${picked.map(chip).join("")}</ul><p class="pointer-events-none absolute inset-0 grid place-items-center text-center text-[13px] leading-[1.6] text-erp-muted" data-spick-none${picked.length ? " hidden" : ""}>선택된 점포가 없습니다.<br>점포찾기에서 점포를 검색하여 추가해 주세요.</p></div></div>${bulk ? storeBulkDialog(A, dlg, { stores: bulk, picked: picked.map((p) => p[1]) }) : ""}</div>`;
+  return `<div class="flex flex-col gap-[10px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[12px]" data-spick${poolAttr}${hidden ? " hidden" : ""}><div class="flex flex-col gap-[8px]"><p class="text-[14px] font-medium">점포 찾기${pool ? ` <span class="font-normal text-erp-label">${pool}</span>` : ""}</p>${find}${hint ? `<span class="text-[13px] text-erp-label">${hint}</span>` : ""}</div><div class="flex flex-col gap-[8px] border-t border-erp-divider pt-[10px]"><p class="flex min-h-[34px] items-center gap-[10px] text-[14px] font-medium">${pickedLabel} <span class="font-normal text-erp-label" data-spick-count>${picked.length}개점</span>${clear}</p><div class="relative h-[130px]"><ul aria-label="${pickedLabel}" class="flex h-full flex-wrap content-start gap-[6px] overflow-y-auto overscroll-contain" data-spick-list>${picked.map(chip).join("")}</ul><p class="pointer-events-none absolute inset-0 grid place-items-center text-center text-[13px] leading-[1.6] text-erp-muted" data-spick-none${picked.length ? " hidden" : ""}>${noPicked}</p></div></div>${bulk ? storeBulkDialog(A, dlg, { stores: bulk, picked: picked.map((p) => p[1]), ...(exclude && { text: BULK_EXCLUDE_TEXT }) }) : ""}</div>`;
 };
 
 // 점포 일괄 검색 확인창(목업 spickpop). 왼쪽은 매핑 안 된 점포, 오른쪽은 매핑된 점포다.
@@ -106,6 +109,14 @@ const BULK_MAP_TEXT = {
   right: "매핑된 점포",
   leftDone: "선택할 수 있는 점포를 모두 매핑했습니다.",
   rightEmpty: "매핑된 점포가 없습니다.<br>왼쪽 목록에서 점포를 선택하여 추가해 주세요.",
+};
+// 예외점포 고르기(storePicker exclude) — 앱 store-mapping-picker.tsx TEXTS.exclude 와 같다(2026-10-30)
+const BULK_EXCLUDE_TEXT = {
+  guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 예외로 뺄 수 있습니다. 예외 해제는 [빼기] 버튼을 이용해 주세요.",
+  left: "적용 점포",
+  right: "예외점포",
+  leftDone: "선택할 수 있는 점포를 모두 예외로 지정했습니다.",
+  rightEmpty: "예외점포가 없습니다.<br>왼쪽 목록에서 점포를 선택하여 추가해 주세요.",
 };
 export function storeBulkDialog(A, id, { stores, picked, text = BULK_MAP_TEXT }) {
   const groupCheck = (key, side, label) =>

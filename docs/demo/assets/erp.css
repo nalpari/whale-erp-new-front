@@ -1002,9 +1002,6 @@
   .max-h-\[328px\] {
     max-height: 328px;
   }
-  .max-h-\[440px\] {
-    max-height: 440px;
-  }
   .max-h-\[calc\(100dvh-48px\)\] {
     max-height: calc(100dvh - 48px);
   }
@@ -2085,6 +2082,9 @@
   .bg-erp-bar {
     background-color: var(--color-erp-bar);
   }
+  .bg-erp-bar-line {
+    background-color: var(--color-erp-bar-line);
+  }
   .bg-erp-brand {
     background-color: var(--color-erp-brand);
   }
@@ -2496,11 +2496,11 @@
   .pr-\[6px\] {
     padding-right: 6px;
   }
+  .pr-\[8px\] {
+    padding-right: 8px;
+  }
   .pr-\[10px\] {
     padding-right: 10px;
-  }
-  .pr-\[12px\] {
-    padding-right: 12px;
   }
   .pr-\[20px\] {
     padding-right: 20px;
@@ -2519,6 +2519,9 @@
   }
   .pb-\[4px\] {
     padding-bottom: 4px;
+  }
+  .pb-\[6px\] {
+    padding-bottom: 6px;
   }
   .pb-\[8px\] {
     padding-bottom: 8px;
@@ -2758,6 +2761,10 @@
   .leading-\[16px\] {
     --tw-leading: 16px;
     line-height: 16px;
+  }
+  .leading-\[22px\] {
+    --tw-leading: 22px;
+    line-height: 22px;
   }
   .leading-\[34px\] {
     --tw-leading: 34px;
