@@ -10,7 +10,7 @@ import { bpPath } from "@/lib/bp-path";
 import { HOME, MENU_CODE, menuOfPath } from "@/lib/menus";
 import { formatAt } from "@/lib/notification-view";
 import { withScope } from "@/lib/store-scope";
-import { isPlatformRole } from "@/lib/auth-routes";
+import { isFranchiseRole, isPlatformRole } from "@/lib/auth-routes";
 import { OneStoreScreen } from "./one-store-screen";
 import { oneStoreIdOf } from "./one-store-view";
 import { useApi } from "@/lib/use-load";
@@ -83,8 +83,11 @@ function HomeBody({ greeting }: { greeting: string }) {
       </Notice>
     );
   } else if (!stores.length) {
-    // 점포가 없는 BP — 빈 현황 대신 등록으로 안내한다(HOME-4)
-    body = (
+    // 점포가 없는 BP — 빈 현황 대신 등록으로 안내한다(HOME-4). 가맹 마스터 · 가맹 관리자는 점포를 등록하지 못해(api 403)
+    // 매핑된 점포가 없으면 배정을 요청하게 하고 [점포 등록]을 두지 않는다(2026-10-29 사용자 결정 — 점포 목록 [등록]과 같은 규칙)
+    body = isFranchiseRole(account.roleTypeCode) ? (
+      <Notice text="등록된 점포가 없습니다. 관리자에게 점포 배정을 요청하세요." />
+    ) : (
       <Notice text="등록된 점포가 없습니다. 점포를 먼저 등록하세요.">
         {canCreateStore && <Button href={bpPath(bp, "/stores/new")}>점포 등록</Button>}
       </Notice>
@@ -99,7 +102,7 @@ function HomeBody({ greeting }: { greeting: string }) {
     const failed = (what: string, error: string) => <Notice text={`${what} 불러오지 못했습니다. ${error}`} />;
     body = (
       <>
-        {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={renewalItem ? (pendingLineOf(renewalItem, bp)?.href ?? "/contracts") : "/contracts"} /> : null}
+        {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={renewalItem ? (pendingLineOf(renewalItem, bp)?.href ?? bpPath(bp, "/contracts")) : bpPath(bp, "/contracts")} newHref={bpPath(bp, "/contracts/new")} /> : null}
         {s?.cards && <Cards cards={s.cards} hq={hq && s.cards.stores.franchise > 0} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
         <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
           {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} hq={hq && !!s?.cards?.stores.franchise} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />}
@@ -140,7 +143,7 @@ function Notice({ text, children }: { text: string; children?: ReactNode }) {
 }
 
 // 경고 밴드 — 갱신 예정 계약 중 종료일이 7일 안인 것이 있을 때만(HOM-04). 가려진 직원은 이름 없이 점포만 적는다
-function RenewalBand({ renewals, href }: { renewals: NonNullable<HomePending["renewals"]>; href: string }) {
+function RenewalBand({ renewals, href, newHref }: { renewals: NonNullable<HomePending["renewals"]>; href: string; newHref: string }) {
   const canCreate = useMenuRole(MENU_CODE.contracts, "create");
   return (
     <div className={`${CARD} flex items-center gap-[12px] px-[24px] py-[12px]`}>
@@ -155,7 +158,7 @@ function RenewalBand({ renewals, href }: { renewals: NonNullable<HomePending["re
         <Button variant="soft" href={href}>
           계약 보기
         </Button>
-        {canCreate && <Button href="/contracts/new">새 계약 작성</Button>}
+        {canCreate && <Button href={newHref}>새 계약 작성</Button>}
       </div>
     </div>
   );

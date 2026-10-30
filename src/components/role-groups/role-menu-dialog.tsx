@@ -7,7 +7,7 @@ import { EASE_OUT } from "@/components/common/theme";
 import { CodeLabel } from "@/components/site/code-label";
 import { ServiceTabs } from "@/components/site/service-tabs";
 import { usePagePermission } from "@/components/site/session-gate";
-import { labelOf, type EnumValue } from "@/lib/enums";
+import type { EnumValue } from "@/lib/enums";
 import type { RevocationPreview, RoleGroupMenuCells, RoleGroupMenuNode, RoleGroupMenuTree } from "@/lib/platform-role-groups";
 import type { ActionResult } from "@/lib/role-group-actions";
 import { aggregate, blockedReasonsOf, changedMenus, editableOf, hasRevocation, initialValues, OPS, toggle, toggleAll, type Op, type Values } from "@/lib/role-menu-grid";
@@ -214,8 +214,8 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
         <>
           <ServiceTabs services={tree.services} selected={tab} idPrefix={tabsId} onSelect={setTab} />
           <div id={`${tabsId}-panel`} role="tabpanel" aria-labelledby={service ? `${tabsId}-${service.serviceCode}` : undefined} className="h-[420px]">
-            {/* 통째로 잠긴 팝업은 위 띠가 이유를 한 번 말한다 — 줄마다 같은 이유를 되풀이하지 않는다 */}
-            <MenuTable nodes={service?.menus ?? []} values={values} reasons={savable ? reasons : []} locked={!savable || busy} onChange={setValues} />
+            {/* 막힌 이유는 줄마다 적지 않는다(2026-10-29 사용자 지정). 통째로 잠긴 팝업만 위 띠가 이유를 한 번 말한다 */}
+            <MenuTable nodes={service?.menus ?? []} values={values} locked={!savable || busy} onChange={setValues} />
           </div>
         </>
       )}
@@ -291,13 +291,11 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
 function MenuTable({
   nodes,
   values,
-  reasons,
   locked,
   onChange,
 }: {
   nodes: RoleGroupMenuNode[];
   values: Values;
-  reasons: EnumValue[];
   locked: boolean;
   onChange: (v: Values) => void;
 }) {
@@ -312,9 +310,11 @@ function MenuTable({
   // head: 머리칸 — – 칸만 1단계 줄과 같은 하늘색으로 칠한다(다 켜진 칸은 기본 체크 그대로, 2026-10-27 사용자 지정).
   // 공통 Checkbox 는 className 을 받지 않아 감싸는 span 에서 안쪽 input · 그림 · 막대만 덮는다.
   const MIXED_TONE = "[&_input:indeterminate]:border-erp-on [&_input:indeterminate]:bg-erp-on-bg [&_input:indeterminate~span]:bg-erp-on";
+  // 고를 수 있는 빈 칸은 테두리를 회청(erp-brand)으로 진하게 — 연회청으로는 아직 옅었다 — 기본 테두리(#ededee)로는 체크를 풀어도 잘 안 보였다(2026-10-29 사용자 지정)
+  const EDITABLE_EDGE = "[&_input:enabled:not(:checked):not(:indeterminate)]:border-erp-brand";
   const box = (label: string, state: { checked: boolean; mixed?: boolean; disabled: boolean }, onToggle: (on: boolean) => void, tone?: "top" | "head") => (
     <span
-      className={`inline-flex ${state.disabled ? "opacity-40" : ""} ${
+      className={`inline-flex ${state.disabled ? "opacity-40" : EDITABLE_EDGE} ${
         tone === "top"
           ? `[&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on-bg [&_input:checked]:bg-[url(/icons/check-on.svg)] [&_input:checked]:bg-center [&_input:checked]:bg-no-repeat [&_img]:hidden ${MIXED_TONE}`
           : tone === "head"
@@ -411,27 +411,23 @@ function MenuTable({
               </tr>
             ) : (
               rows.map((n) => {
-                // enum 을 못 받았으면 영문 값 대신 쓰지 않는다(이유는 띠 · 흐린 칸으로 알 수 있다)
-                const why = blockedReasonsOf(n).flatMap((r) => (reasons.some((l) => l.value === r) ? [labelOf(reasons, r)] : []));
                 return (
                   // 1단계 줄에만 옅은 바탕(erp-thead-bg #f8f9fb)을 깔아 2단계와 가른다. 줄 높이는 한 화면에 더 들어가게 42px(2026-10-26 사용자 지정)
                   <tr key={n.menuId} className={`h-[42px] border-b border-erp-thead-line ${n.depth === 1 ? "bg-erp-thead-bg" : ""}`}>
-                    <td className="truncate px-[10px] text-left" title={why.join(" · ") || undefined}>
+                    {/* 막힌 이유(「본인 권한 범위 밖」 등)는 글로도 마우스 오버로도 보이지 않는다 — 줄마다 반복돼 메뉴명이 묻혔다. 내 권한 밖 칸은 체크박스를 숨기고,
+                        나머지 막힌 칸은 흐리게 둔다(2026-10-29 사용자 지정) */}
+                    <td className="truncate px-[10px] text-left">
                       <span style={{ paddingLeft: (n.depth - 1) * 18 }}>
                         {n.depth > 1 && <span className="text-erp-label">└ </span>}
                         {n.depth === 1 ? <b className="font-semibold">{n.name}</b> : n.name}
                       </span>
-                      {why.map((r) => (
-                        <span key={r} className="text-[13px] text-erp-label">
-                          {" "}
-                          · {r}
-                        </span>
-                      ))}
                     </td>
                     <td className="px-[10px] text-center text-erp-label">{n.depth}단계</td>
                     {OPS.map((op) => (
                       <td key={op} className="px-[10px] text-center">
-                        {box(
+                        {/* 내 권한 밖 칸은 체크박스를 두지 않는다(2026-10-29 사용자 지정). 다만 이미 켜진 칸은 보인다 — 숨기면 저장된 권한이 안 보이고
+                            그 칸 때문에 조회가 잠긴 이유도 알 수 없다(리뷰로 찾음). 묶음 줄은 api 가 아래 잎이 모두 범위 밖일 때만 범위 밖으로 준다 */}
+                        {n[op].blockedReason === "OUT_OF_SCOPE" && !(n.isGroup ? aggregate(values, n.children, op, n[op].value).checked || aggregate(values, n.children, op, n[op].value).mixed : values[n.menuId]?.[op]) ? null : box(
                           `${n.name} ${OP_LABEL[op]}`,
                           n.isGroup ? aggregate(values, n.children, op, n[op].value) : { checked: Boolean(values[n.menuId]?.[op]), disabled: !editableOf(n, op) },
                           (on) => onChange(toggle(values, n, op, on)),

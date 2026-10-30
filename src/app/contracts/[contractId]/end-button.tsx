@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, ConfirmDialog, useAction } from "@/components/common";
 import { withBack } from "../contract-list";
+import { useCurrentBp } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { endContract, type EndContractResult } from "./actions";
 import { END_UNKNOWN, sendFailureOf } from "./send-model";
 
@@ -15,6 +17,8 @@ import { END_UNKNOWN, sendFailureOf } from "./send-model";
 // 닫으면 보내기 실패 안내(?send=)를 지운다 — 종료한 계약에 「재발송해 주세요」가 남지 않게(재발송 버튼과 같다).
 export function EndContractButton({ contractId, name, back }: { contractId: number; name: string | null; back: string }) {
   const router = useRouter();
+  // 상세 주소는 탭 BP 를 붙인다. back 은 옛 경로(목록 쿼리)다
+  const bp = useCurrentBp().bpCodeId;
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
@@ -47,7 +51,7 @@ export function EndContractButton({ contractId, name, back }: { contractId: numb
             if (result.ok) {
               setOpen(false);
               setError("");
-              router.replace(withBack(`/contracts/${contractId}`, back));
+              router.replace(bpPath(bp, withBack(`/contracts/${contractId}`, back)));
               router.refresh();
               return;
             }

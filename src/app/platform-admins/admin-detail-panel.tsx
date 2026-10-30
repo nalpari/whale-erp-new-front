@@ -7,7 +7,7 @@ import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { SuccessBand, WarnBand } from "@/components/site/side-parts";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
-import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
+import { formatDateTime, formatPhone, wasUpdated, withinPasswordHour } from "@/lib/format";
 import { adminActionsOf } from "@/lib/platform-admin-actions";
 import type { PlatformAdminDetail } from "@/lib/platform-admins";
 import { deletePlatformAdminAction, getPlatformAdminHistoriesAction, resetPlatformAdminPasswordAction } from "./actions";
@@ -101,6 +101,8 @@ function DetailBody({
   const [busy, startBusy] = useTransition();
   /** 이 상세에서 초기화 메일을 보냈다 — 로그인한 적이 있어도 하늘색 안내를 띄운다(BP 마스터 상세와 같다, 2026-10-28 사용자 지정) */
   const [resetMark, setResetMark] = useState<{ statusChangedAt: string | null } | null>(null);
+  // 패널을 닫으면 방금 초기화 안내를 내린다 — 같은 계정을 다시 열어도 띄우지 않는다(로그인한 적 있는 계정은 그 뒤 안내 없음, 2026-10-29 사용자 지정)
+  if (!panelOpen && resetMark) setResetMark(null);
   // 초기화한 뒤 상태를 바꾸면(수정 패널에서 미사용 → 사용) 방금 초기화 안내를 내린다 — 그때의 상태 변경 일시와 같을 때만(리뷰로 찾음)
   const resetSent = resetMark !== null && resetMark.statusChangedAt === (admin.statusChangedAt ?? null);
 
@@ -162,18 +164,15 @@ function DetailBody({
       label: "비밀번호",
       // 미사용 계정은 초기화 버튼을 숨긴다(2026-10-23) — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다).
       // 초기화할 수 없으면(미사용 · 수정 권한 없음) 빈칸 대신 「-」(BP 마스터 상세와 같다, 2026-10-28 사용자 지정). 미발송은 상세 위 빨간 상자가 알린다
+      // 본인 계정도 「-」 — 흐린 버튼을 두지 않는다(BP 관리자 상세와 같다, 2026-10-29 사용자 지정)
       value:
-        admin.accountStatus === "INACTIVE" || !canUpdate ? muted("-") : (
-        <>
-          {canUpdate && (
-            <Blocked reason={isSelf ? "본인 비밀번호는 내 정보에서 바꿔 주세요." : undefined}>
-              <Button variant="soft" onClick={() => setConfirm("reset")} disabled={isSelf || busy}>
-                초기화
-              </Button>
-            </Blocked>
-          )}
-        </>
-      ),
+        admin.accountStatus === "INACTIVE" || !canUpdate || isSelf ? (
+          muted("-")
+        ) : (
+          <Button variant="soft" onClick={() => setConfirm("reset")} disabled={busy}>
+            초기화
+          </Button>
+        ),
     },
     { label: "소속부서", value: admin.department ?? null },
     { label: "직책", value: admin.jobTitle ?? null },
@@ -229,7 +228,13 @@ function DetailBody({
       {failure && <FailedBand message={failure} />}
       {admin.accountStatus === "ACTIVE" && admin.isInitialPasswordUnsent && <WarnBand>{`초기화 비밀번호가 발송되지 않았습니다.${canReset ? "\n비밀번호 [초기화] 버튼을 눌러 다시 발송해 주세요." : ""}`}</WarnBand>}
       {admin.accountStatus === "ACTIVE" && !admin.isInitialPasswordUnsent && (resetSent || (!admin.lastLoginAt && !admin.statusChangedAt)) && (
-        <SuccessBand>{`초기화 비밀번호를 발송했습니다.${canReset ? "\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해 주세요." : ""}`}</SuccessBand>
+        <SuccessBand>
+          {/* 방금 이 화면에서 보냈거나 계정을 만든 지 1시간이 안 됐으면(만들 때 초기 비밀번호를 보낸다) 발송 안내, 아니면(한 번도 로그인하지 않은 계정) 로그인하지 않았다는 사실만 — 발송 시각을 api 가 주지 않아
+            「1시간」은 방금 보냈을 때만 쓴다(2026-10-29 사용자 지정, 전엔 며칠 지나도 「발송했습니다」가 남았다) */}
+          {resetSent || withinPasswordHour(admin.createdAt)
+            ? "초기화 비밀번호를 발송했습니다.\n비밀번호는 1시간 동안 유효합니다."
+            : `아직 로그인하지 않은 계정입니다.${canReset ? "\n비밀번호 초기화가 필요합니다." : ""}`}
+        </SuccessBand>
       )}
       <DetailTable title="기본정보" rows={rows} />
 
