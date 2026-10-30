@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [정정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-30T17:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-30T18:30:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -148,8 +148,8 @@ sources:
     last_modified: 2026-10-15T10:00:00Z
   - id: button
     resource: ../../src/components/common/button.tsx
-    title: 공통 Button — danger 추가
-    last_modified: 2026-10-12T08:33:58Z
+    title: 공통 Button — danger · outline 추가
+    last_modified: 2026-10-30T09:00:00Z
 ---
 
 # api 에 붙였다
@@ -462,3 +462,6 @@ api(Plane 336)가 openapi.json 에 싣기 전이라 응답 타입은 `bulk-expor
 
 퇴직 처리를 데모처럼 붉게 보이려고 공통 `Button` 에 `danger`(상태 빨강 `erp-off`)를 더했다 — 데모 `ui.mjs` 의
 danger 와 같은 값이다. 1팀이 동의해(2026-10-27) DESIGN.md Buttons 에 네 번째 모양 **Danger** 로 올렸다.
+
+같은 파일에 `outline`(흰 바탕 · 브랜드 테두리 · 먹색 글자, 호버하면 `erp-subtle`)도 더했다(2026-10-30, 1팀 동의 2026-10-30). 직원 화면은 쓰지
+않고, 회원 탈퇴 경고(`site/withdraw-panel.tsx`)의 [직원 자료 일괄 저장] · [근로계약 확인] 이동 버튼이 쓴다 — DESIGN.md Buttons 「Outline」.

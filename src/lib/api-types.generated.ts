@@ -380,6 +380,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/admin/me/stores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 관리 점포만 — 로그인 정보의 `stores` 와 같은 목록을 `{ items, total }` 로. 관리자 웹이 점포 목록 버전
+         *     (`GET /bp-codes/:id/stores-version`)이 바뀌었을 때 메뉴 · 공통코드 없이 점포만 다시 받는다. 버전 경로와 같이
+         *     강제 비밀번호 변경 중에는 403 이다 — 그동안은 팝업만 열려 점포를 다시 받을 화면이 없다. 플랫폼 계정은 빈 목록,
+         *     없거나 삭제된 계정은 401.
+         */
+        get: operations["AdminAuthController_getMyStores"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/admin/password-change": {
         parameters: {
             query?: never;
@@ -1443,6 +1465,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bp-codes/{bpCodeId}/stores-version": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 그 BP 점포 목록의 버전 — 관리자 웹이 새로고침 · 메뉴 이동 · 창 포커스 때 버전만 묻고, 바뀌었을 때만 점포 목록
+         *     (자기 BP 는 `GET /auth/admin/me/stores`, 연 BP 는 위 점포 목록)을 다시 받는다 — 버전을 먼저 받고 목록을 받는다.
+         *     여러 PC 에서 같은 계정으로 쓸 때 다른 PC 의 점포 등록 · 수정 · 폐점 · 삭제와 담당 점포 매핑 · 관리 범위 변경을
+         *     잡는다(BP · 가맹 관리자만 매핑 · 범위까지). 볼 수 있는 BP 와 오류는 점포 목록과 같다(bpStoresAccess) — 볼 수 없는
+         *     BP · 플랫폼 BP 는 404, 사용 중인 관리자 계정이 아니면 403(판정 뒤 버전을 만드는 사이에 바뀌어도).
+         */
+        get: operations["BpCodesController_findStoresVersion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/bp-codes/{bpCodeId}/code-items": {
         parameters: {
             query?: never;
@@ -2265,6 +2310,27 @@ export interface paths {
          *     초안 저장과 같다. 저장이 실패하면 올린 파일도 지운다.
          */
         post: operations["ContractsController_createPaper"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contracts/minimum-wage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 지금 최저임금(공통코드 MINIMUM_WAGE · HOURLY) — 작성 · 이어 쓰기 화면이 시급 칸 도움말과 수습 중 시급 확인에 쓴다
+         *     (WHALEERP-595). 저장도 같은 값으로 다시 본다. 공통코드를 쓸 수 없으면 hourlyWage 는 null, problem 이 저장 400 문장이다.
+         *     `:contractId` 보다 먼저 둔다.
+         */
+        get: operations["ContractsController_minimumWage"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4688,6 +4754,11 @@ export interface components {
             /** @description 관리 점포 — 점포 선택 목록. 플랫폼 계정은 빈 목록이다(BP 를 골라 일한다). */
             stores: components["schemas"]["AdminStoreDto"][];
         };
+        AdminStoreListResponseDto: {
+            /** @description 관리 점포 — 로그인 정보의 `stores` 와 같은 항목 · 순서(점포 이름순). 플랫폼 계정은 빈 목록이다. */
+            items: components["schemas"]["AdminStoreDto"][];
+            total: number;
+        };
         AdminPasswordChangeDto: {
             /** @description 새 비밀번호 — 영문 · 숫자 · 특수문자 각 1자 이상 8~20자. 규칙 위반은 400 과 정책 문구 하나. */
             newPassword: string;
@@ -6228,6 +6299,13 @@ export interface components {
             items: components["schemas"]["AdminStoreDto"][];
             total: number;
         };
+        BpStoresVersionResponseDto: {
+            /**
+             * @description 점포 목록 버전 — 이전에 받은 값과 다르면 점포 목록을 다시 받는다. 형식은 정해 두지 않으니 비교에만 쓴다.
+             * @example q3Zr8l0b2nXyK1pV0aWmTg
+             */
+            version: string;
+        };
         BpMasterSummaryResponseDto: {
             /**
              * @description BP 상태. 사용 · 미사용 · 탈퇴.
@@ -7517,6 +7595,15 @@ export interface components {
              */
             statusCounts: components["schemas"]["ContractStatusCountsDto"];
         };
+        StoreOptionDto: {
+            storeId: number;
+            /** @description 점포명 */
+            name: string;
+        };
+        StoreOptionListResponseDto: {
+            items: components["schemas"]["StoreOptionDto"][];
+            total: number;
+        };
         /**
          * @description 성별 — 남 · 여. 가입 때 직원이 넣은 값과 본인 대조한다(WHALEERP-125). 임시저장은 비워도 된다
          * @enum {string}
@@ -7646,6 +7733,19 @@ export interface components {
             draftAction: components["schemas"]["ContractDraftAction"] | null;
             contractId: number;
             staffMemberId: number;
+        };
+        MinimumWageResponseDto: {
+            /**
+             * @description 시급(원). 공통코드를 쓸 수 없으면 null
+             * @example 10320
+             */
+            hourlyWage: number | null;
+            /**
+             * @description 공통코드를 쓸 수 없는 까닭(없음 · 사용 중지 · 코드명이 숫자 아님) — 수습이 있는 계약을 저장하면 이 문장으로 400 이다.
+             *     쓸 수 있으면 null
+             * @example null
+             */
+            problem: string | null;
         };
         ContractStatusHistoryDto: {
             /** @description 처음 만든 줄은 null */
@@ -8118,15 +8218,6 @@ export interface components {
         UpdateMyNotificationPreferenceDto: {
             /** @description 앱 푸시 받기 */
             isEnabled: boolean;
-        };
-        StoreOptionDto: {
-            storeId: number;
-            /** @description 점포명 */
-            name: string;
-        };
-        StoreOptionListResponseDto: {
-            items: components["schemas"]["StoreOptionDto"][];
-            total: number;
         };
         StoreSummaryResponseDto: {
             /** @enum {string} */
@@ -8662,7 +8753,7 @@ export interface components {
             bodySummary: string;
             kakaoTemplateCode: string | null;
             isActive: boolean;
-            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 46건) — 되돌리기를 보일지 */
+            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 47건) — 되돌리기를 보일지 */
             hasDefault: boolean;
             /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
             updatedByName: string | null;
@@ -8702,7 +8793,7 @@ export interface components {
             bodySummary: string;
             kakaoTemplateCode: string | null;
             isActive: boolean;
-            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 46건) — 되돌리기를 보일지 */
+            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 47건) — 되돌리기를 보일지 */
             hasDefault: boolean;
             /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
             updatedByName: string | null;
@@ -11255,6 +11346,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminLoginInfoResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAuthController_getMyStores: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminStoreListResponseDto"];
                 };
             };
         };
@@ -14727,6 +14837,41 @@ export interface operations {
             };
         };
     };
+    BpCodesController_findStoresVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bpCodeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpStoresVersionResponseDto"];
+                };
+            };
+            /** @description 사용할 수 없는 관리자 계정 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 삭제된 BP */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     BpCodesController_findCodeItems: {
         parameters: {
             query?: {
@@ -17490,6 +17635,42 @@ export interface operations {
             };
             /** @description 첨부파일 저장소가 설정되지 않음 · 저장소 오류 · 저장이 몰려 시간 초과(잠시 뒤 다시) */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractsController_minimumWage: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinimumWageResponseDto"];
+                };
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근로계약 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
