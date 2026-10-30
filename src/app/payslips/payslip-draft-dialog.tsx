@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
+import { useCurrentBp } from "@/components/site/session-gate";
 import { Button, ConfirmDialog, DataTable, Field, FormRow, SearchField, Select, useToast, type Column } from "@/components/common";
+import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { monthLabel, type PayslipCandidate } from "@/lib/payslips";
 import { CellView } from "../staff-members/staff-table";
@@ -17,6 +19,8 @@ import { bulkSummary, canDraft, candidateStores, contractCell, filterCandidates,
 // 작성 대상은 열 때마다 새로 받고(GET /payslips/candidates), 닫으면 고른 직원 · 좁히기 · 오류를 지운다.
 export function PayslipDraftButton({ month, employmentTypeLabels }: { month: string; employmentTypeLabels: EnumValue[] }) {
   const router = useRouter();
+  // 이미 있는 명세서 링크는 탭 BP 주소로(WHALEERP-637)
+  const bp = useCurrentBp().bpCodeId;
   const toast = useToast();
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -184,7 +188,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
             <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] font-semibold text-erp-off">
               {failure.message}
               {failure.payslipId !== undefined && (
-                <Link href={`/payslips/${failure.payslipId}`} className="ml-[8px] font-normal text-erp-link hover:underline">
+                <Link href={bpPath(bp, `/payslips/${failure.payslipId}`)} className="ml-[8px] font-normal text-erp-link hover:underline">
                   작성된 명세서 보기
                 </Link>
               )}

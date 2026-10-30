@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge, Button, DataTable, DetailTable, PageBar } from "@/components/common";
-import { getEnum } from "@/lib/api";
+import { getEnum, screenPath } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
 import { formatAmount } from "@/lib/payslips";
@@ -31,7 +31,9 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
     getEnum("DispatchResult"),
   ]);
   if (!payslip) notFound();
-  const listHref = payslipListHref(await searchParams, kstToday());
+  // 링크는 옛 경로에 탭 BP 를 붙여 그린다(WHALEERP-637). 근로계약도 탭 BP 주소 화면이다
+  const at = await screenPath();
+  const listHref = at(payslipListHref(await searchParams, kstToday()));
   const reasonOf = (value: string) => labelOf(reasonLabels, value);
   // 공제 미입력은 사유 줄로 저장되지 않아 저장된 공제 칸으로 판정해 더한다 — 목록의 검토 대기 사유와 같다(v221 PAY-06).
   const reviewReasons = detailReviewReasons(payslip);
@@ -59,7 +61,7 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
       </section>
       <section className="flex min-w-0 flex-col gap-[12px]">
         <SectionHead title="참조한 것">
-          <Button variant="soft" href={attendanceHref(payslip)}>
+          <Button variant="soft" href={at(attendanceHref(payslip))}>
             출퇴근 기록 보기
           </Button>
         </SectionHead>
@@ -70,7 +72,7 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
               label: "근로계약",
               value: (
                 <span>
-                  <Link href={`/contracts/${contract.contractId}`} className="text-erp-link hover:underline">
+                  <Link href={at(`/contracts/${contract.contractId}`)} className="text-erp-link hover:underline">
                     근로계약 #{contract.contractId}
                   </Link>{" "}
                   · {contract.status ? labelOf(contractStatuses, contract.status) : "-"}

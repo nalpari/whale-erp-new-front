@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useOptimistic, useTransition } from "react";
 import { Checkbox, FilterPanel, FilterSection, SearchField, Select, useToast } from "@/components/common";
-import { useScope, useStores } from "@/components/site/session-gate";
+import { useCurrentBp, useScope, useStores } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { StorePicker } from "@/components/site/store-picker";
 import type { EnumValue } from "@/lib/enums";
 import { isUnusableScope, scopeStores, toPickedStore } from "@/lib/store-scope";
@@ -42,6 +43,8 @@ export function AttendanceFilter({
   employmentTypeLabels: EnumValue[];
 }) {
   const router = useRouter();
+  // 화면 주소는 탭 BP 주소다(/bp/{id}/attendance-records, WHALEERP-637)
+  const bp = useCurrentBp().bpCodeId;
   const stores = useStores();
   const [headerScope] = useScope();
   const toast = useToast();
@@ -50,7 +53,7 @@ export function AttendanceFilter({
   const navigate = (next: AttendanceQuery) =>
     startTransition(() => {
       setCurrent(next);
-      router.replace(`/attendance-records${toAttendanceSearch(next, today)}`, { scroll: false });
+      router.replace(bpPath(bp, `/attendance-records${toAttendanceSearch(next, today)}`), { scroll: false });
     });
   const go = (next: Partial<AttendanceQuery>) => navigate({ ...current, ...next });
   const withPicked = (ids: number[]) => go({ storeIds: ids, storesCleared: !ids.length, scope: null });

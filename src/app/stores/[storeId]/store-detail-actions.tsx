@@ -7,9 +7,9 @@ import { labelOf, type EnumValue } from "@/lib/enums";
 import { formOfStore, toUpdateStoreInput } from "@/lib/store-form";
 import type { StoreDetail, StoreStatus, StoreTransitions } from "@/lib/store-types";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
-import { useCurrentBp, usePagePermission } from "@/components/site/session-gate";
+import { useCurrentBp, usePagePermission, useRefreshStores, useScope } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
-import { withoutStoreSearch } from "@/lib/store-scope";
+import { withoutDeletedStore } from "@/lib/store-scope";
 import { closeBlockText, finalEuro, nextStatuses } from "@/lib/store-view";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
@@ -57,6 +57,9 @@ export function StoreDetailActions({
 }) {
   const router = useRouter();
   const toast = useToast();
+  // 상태 변경 · 삭제 뒤 헤더 범위 선택기 · 점포 고르기를 바로 맞춘다(폐점은 회색, 지운 점포는 빠진다)
+  const refreshStores = useRefreshStores();
+  const [scope] = useScope();
   const can = usePagePermission();
   // 화면 주소는 탭 BP 를 붙인다. backHref 는 옛 경로(목록 쿼리)다
   const bp = useCurrentBp().bpCodeId;
@@ -86,7 +89,10 @@ export function StoreDetailActions({
   /** 실패를 팝업에 보인다. 결과를 모르거나 그 사이 바뀌었으면(404 · 409) 화면을 새로 받고, 결과를 모르면 확인해 달라고 덧붙인다 */
   const fail = (status: number | undefined, message: string) => {
     setFailure(status === undefined ? `${message} 화면을 다시 불러왔으니 처리됐는지 확인한 뒤 다시 시도해 주세요.` : message);
-    if (status === undefined || status === 404 || status === 409) router.refresh();
+    if (status === undefined || status === 404 || status === 409) {
+      router.refresh();
+      refreshStores();
+    }
   };
 
   // 조건은 그 사이 바뀌었을 수 있어 지금 기준으로 다시 받는다(진행 중 근로계약 등)
@@ -122,9 +128,12 @@ export function StoreDetailActions({
       setDialog(null);
       toast(`점포상태를 ${statusLabel(target)}${finalEuro(statusLabel(target))} 바꿨습니다.`);
       router.refresh();
+      refreshStores();
     });
 
-  // 삭제 뒤 목록은 점포 검색을 「전체」로 비운다(지운 점포가 고른 점포 조건에 남지 않게). 다른 조건 · 보기는 그대로다(쪽은 1로 돌린다)
+  // 삭제 뒤 목록은 점포 검색이 헤더 범위와 어긋나지 않게 한다(2026-10-30 사용자 결정 — 전엔 「전체」로 비워 헤더 「직영 9개」 · 필터 「전체」로 갈렸다).
+  // 목록에서 고른 점포가 있으면 지운 점포만 빼고, 없으면 헤더 범위로 다시 채운다(withoutDeletedStore). 다른 조건 · 보기는 그대로다(쪽은 1로 돌린다)
+  const listAfterDelete = () => at(withoutDeletedStore(backHref, store.storeId, scope));
   const handleDelete = () =>
     startBusy(async () => {
       const result = await deleteStoreAction(store.storeId).catch(UNKNOWN("삭제"));
@@ -132,12 +141,14 @@ export function StoreDetailActions({
       if (!result.ok && (result.status === undefined || result.status === 404)) {
         setDialog(null);
         toast(result.status === 404 ? "이미 지워진 점포입니다." : "삭제 결과를 확인하지 못했습니다. 목록에서 확인해 주세요.");
-        return router.push(at(withoutStoreSearch(backHref)));
+        refreshStores();
+        return router.push(listAfterDelete());
       }
       if (!result.ok) return fail(result.status, result.message);
       setDialog(null);
       toast("deleted");
-      router.push(at(withoutStoreSearch(backHref)));
+      refreshStores();
+      router.push(listAfterDelete());
     });
 
   return (

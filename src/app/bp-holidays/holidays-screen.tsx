@@ -1,12 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Button, DataTable, PageBar, Select, useBackdropActive, useToast, type Column } from "@/components/common";
+import { Button, DataTable, MonthPicker, PageBar, type Column, useBackdropActive, useToast } from "@/components/common";
 import { useCurrentBp, usePagePermission } from "@/components/site/session-gate";
-import { bpHolidaysHref, isEditOpen, shiftBpHolidayMonth, targetText, weekdayName, type BpHolidayQuery } from "@/lib/bp-holiday-view";
+import { bpHolidaysHref, isEditOpen, shiftBpHolidayMonth, storesText, weekdayName, type BpHolidayQuery } from "@/lib/bp-holiday-view";
 import type { BpHolidayDateRow, BpHolidayDetail, BpHolidayList } from "@/lib/bp-holidays";
 import { bpPath } from "@/lib/bp-path";
 import { formatDateTime } from "@/lib/format";
@@ -140,15 +139,38 @@ export function HolidaysScreen({
   const prev = shiftBpHolidayMonth(query, -1);
   const next = shiftBpHolidayMonth(query, 1);
   const thisMonth: BpHolidayQuery = { ...query, year: Number(today.slice(0, 4)), month: Number(today.slice(5, 7)), day: today, holiday: null, at: null, edit: false };
+  const monthNav = (
+    // [2026년 11월 ▾] ‹ › [오늘] — 제목을 누르면 연 · 월 고르기 판, 이전 · 다음 달 버튼은 나란히, [오늘]은 오른쪽 끝(2026-10-30 사용자 지정)
+    <div role="group" aria-label="달 이동" className="flex items-center gap-[6px]">
+      <MonthPicker
+        year={query.year}
+        month={query.month}
+        years={YEAR_OPTIONS}
+        current={{ year: thisMonth.year, month: thisMonth.month }}
+        onPick={(year, month) => go({ year, month, day: null, holiday: null, at: null })}
+      />
+      <MonthStep target={prev} href={prev && href(prev)} label="이전달" icon="prev" />
+      <MonthStep target={next} href={next && href(next)} label="다음달" icon="next" />
+      {/* [오늘]도 좌우 화살표와 같은 흰 바탕 · 테두리 상자 — 회색 Off 버튼은 이 줄에서 혼자 달라 보였다(2026-10-30 사용자 지정) */}
+      <Link href={href(thisMonth)} scroll={false} className={`${ICON_BUTTON} w-auto! px-[14px] text-[14px] font-medium text-erp-ink`}>
+        {/* 버튼 글자에 오늘 날짜를 함께 — 「오늘 · 2026-10-30(금)」, 날짜는 작고 흐리게(범례 · 따로 둔 표시 대신, 2026-10-30 사용자 지정) */}
+        {/* 한 덩어리로 감싼다 — 버튼 바탕(grid)이 글자와 날짜를 두 줄로 쌓았다 */}
+        <span className="whitespace-nowrap">
+          오늘<span className="ml-[6px] text-[12px] font-normal text-erp-label">· {today}({weekdayName(today).slice(0, 1)})</span>
+        </span>
+      </Link>
+    </div>
+  );
   // 새 휴일의 처음 날짜 — 고른 날짜가 오늘 이후면 그날, 아니면 오늘(지난 날짜에는 등록하지 않는다 · CONFIG-9)
   const newStart = query.day && query.day >= today ? query.day : today;
 
+  // 열: 날짜 · 휴일명 · 휴일유형 · 적용범위 · 대상점포 · 예외점포 · 최종수정(2026-10-30 사용자 지정 — 전엔 날짜 · 휴일명 · 적용 대상 · 휴일유형 · 최종수정일시).
+  // 「적용 대상」 한 칸을 적용범위(꼬리표만) · 대상점포 · 예외점포 셋으로 나눴고, 해당 없는 칸은 「-」. 폭은 정하고 남는 폭은 최종수정이 쓴다
   const columns: Column<BpHolidayDateRow>[] = [
     {
       header: "날짜",
       width: "w-[150px]",
-      align: "left",
-      // 지난 날짜는 흐리게 — 고칠 수 없는 날짜다(CONFIG-9)
+      // 지난 날짜는 흐리게 — 고칠 수 없는 날짜다(CONFIG-9). 가운데 정렬(2026-10-30 사용자 지정)
       cell: (r) => (
         <span className={r.isPast ? "text-erp-muted" : ""}>
           {r.date} <Muted>({weekdayName(r.date).slice(0, 1)})</Muted>
@@ -165,18 +187,37 @@ export function HolidaysScreen({
         </button>
       ),
     },
+    // 휴일유형은 휴일명 바로 옆(2026-10-30 사용자 지정)
+    { header: "휴일유형", width: "w-[120px]", cell: (r) => typeText(r.holidayTypeCode, r.holidayRepeatTypeCode) },
+    { header: "적용범위", width: "w-[110px]", cell: (r) => <ScopeTag isAllStores={r.target.isAllStores} /> },
+    // 대상점포 · 예외점포는 같은 폭(2026-10-30 사용자 지정)
     {
-      header: "적용 대상",
+      header: "대상점포",
+      width: "w-[180px]",
+      align: "left",
+      cell: (r) =>
+        r.target.isAllStores ? (
+          <Muted>-</Muted>
+        ) : (
+          <span className="block truncate">{storesText(r.target.firstStoreName, r.target.otherStoreCount)}</span>
+        ),
+    },
+    {
+      header: "예외점포",
+      width: "w-[180px]",
+      cell: (r) => (r.target.isAllStores && r.target.excludedStoreCount ? `${r.target.excludedStoreCount}개` : <Muted>-</Muted>),
+    },
+    // 「최종수정」 한 칸에 「일시 · 사람」(사람은 회색) — BP · 플랫폼 권한 그룹 목록과 같은 모양(2026-10-30 사용자 지정 — 전엔 「최종수정일시」 · 「일시 | 사람」).
+    // 목록 줄에는 등록일시가 없어(api) 고친 적 없는 휴일도 「-」 대신 등록 때 값이 보인다
+    {
+      header: "최종수정",
       align: "left",
       cell: (r) => (
-        <span className="flex min-w-0 items-center gap-[6px]">
-          <ScopeTag isAllStores={r.target.isAllStores} />
-          <span className="truncate">{targetText(r.target)}</span>
+        <span className="block truncate">
+          {formatDateTime(r.updatedAt)} {r.updatedByName && <span className="text-erp-label">· {r.updatedByName}</span>}
         </span>
       ),
     },
-    { header: "휴일 유형", width: "w-[120px]", align: "left", cell: (r) => typeText(r.holidayTypeCode, r.holidayRepeatTypeCode) },
-    { header: "최종수정일시", width: "w-[220px]", cell: (r) => <>{formatDateTime(r.updatedAt)} {r.updatedByName && <Muted>| {r.updatedByName}</Muted>}</> },
   ];
 
   return (
@@ -196,34 +237,10 @@ export function HolidaysScreen({
           inert={backdropActive}
           className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0"
         >
-          <div className="flex flex-wrap items-center gap-[6px]">
-            <Button variant="off" href={href(thisMonth)} scroll={false}>
-              오늘
-            </Button>
-            <MonthStep target={prev} href={prev && href(prev)} label="이전달" icon="/icons/prev.svg" />
-            <MonthStep target={next} href={next && href(next)} label="다음달" icon="/icons/next.svg" />
-            <div className="w-[110px] shrink-0">
-              <Select aria-label="연도" value={query.year} onChange={(e) => go({ year: Number(e.target.value), day: null, holiday: null, at: null })}>
-                {YEAR_OPTIONS.map((y) => (
-                  <option key={y} value={y}>
-                    {y}년
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <div className="w-[80px] shrink-0">
-              <Select aria-label="월" value={query.month} onChange={(e) => go({ month: Number(e.target.value), day: null, holiday: null, at: null })}>
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m}>
-                    {m}월
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <span className="flex-1" />
-            <HolidayHistoryButton today={today} />
-          </div>
-          <nav aria-label="보기" className="flex shrink-0 border-b border-erp-bar-line">
+          {/* 탭(캘린더 · 목록)을 맨 위에, [변경이력]은 그 줄 오른쪽 — 달 이동은 달력 제목 줄로 옮겼다(2026-10-30 사용자 지정 — 전엔 탭 위에 이동 줄이 따로 있어
+              달력 제목과 같은 연 · 월이 두 번 보였다) */}
+          <div className="flex shrink-0 items-end gap-[6px] border-b border-erp-bar-line">
+          <nav aria-label="보기" className="flex flex-1">
             <Link href={href({ ...query, view: "calendar" })} aria-current={query.view === "calendar" ? "page" : undefined} className={tab(query.view === "calendar")} scroll={false}>
               캘린더
             </Link>
@@ -231,14 +248,18 @@ export function HolidaysScreen({
               목록
             </Link>
           </nav>
+            <span className="pb-[6px]">
+              <HolidayHistoryButton today={today} />
+            </span>
+          </div>
           {query.view === "calendar" ? (
-            <HolidayCalendar query={query} today={today} list={list} onSelectDay={(day) => go({ day }, true)} onOpen={openDetail} />
+            <HolidayCalendar query={query} today={today} list={list} nav={monthNav} onSelectDay={(day) => go({ day }, true)} onOpen={openDetail} />
           ) : (
             <>
-              <h2 className="text-[18px] font-semibold text-erp-ink">
-                {query.year}년 {query.month}월 BP 휴일
-                <span className="ml-[10px] text-[14px] font-normal text-erp-label">{list.total}건</span>
-              </h2>
+              <div className="flex items-center gap-[10px]">
+                {monthNav}
+                <span className="text-[14px] text-erp-label">BP 휴일 {list.total}건</span>
+              </div>
               {/* 계산한 날짜마다 한 줄 · 날짜순(같은 날은 전체 점포 먼저, 그다음 등록 순서). 공식 휴일은 목록에 없다(CONFIG-10) */}
               <DataTable
                 columns={columns}
@@ -316,8 +337,13 @@ export function HolidaysScreen({
 }
 
 /** 이전 · 다음 달. 2000년 1월 앞 · 2100년 12월 뒤는 갈 곳이 없어 막힌 버튼으로 둔다(호버하지 않는다). */
-function MonthStep({ target, href, label, icon }: { target: BpHolidayQuery | null; href: string | null; label: string; icon: string }) {
-  const img = <Image src={icon} alt="" width={16} height={16} />;
+function MonthStep({ target, href, label, icon }: { target: BpHolidayQuery | null; href: string | null; label: string; icon: "prev" | "next" }) {
+  // 화살표는 먹색으로 그린다 — 회색(#858b94) 아이콘 파일은 흰 상자 위에서 잘 안 보였다(2026-10-30 사용자 지정)
+  const img = (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden className="size-[16px] text-erp-ink">
+      <path d={icon === "prev" ? "M11 14L5 8L11 2" : "M5 14L11 8L5 2"} stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
   return target && href ? (
     <Link href={href} aria-label={label} scroll={false} className={ICON_BUTTON}>
       {img}

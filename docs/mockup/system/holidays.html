@@ -17,9 +17,9 @@
          공휴일 규정이 바뀌면 운영 담당자가 계산 규칙을 고친 뒤 미래 연도만 다시 적재한다 — 화면은 없다.
          배치는 화면이 없다 — 이 화면에는 그 결과(동기화 실패 안내)만 보인다.
          들어오면 늘 현재 연도·현재 월의 월간 캘린더다 — 사용자별 마지막 보기 방식·연월은 기억하지 않는다 (SYSTEM-8 확정).
-         들어오면 현재 연도·현재 월의 월간 캘린더다. 오늘 · 이전달 · 다음달 · 연도·월 선택 · 캘린더/목록 전환이 위에 선다.
+         들어오면 현재 연도·현재 월의 월간 캘린더다. 맨 위 줄에 연도 선택(목록 보기에만) · 최종 동기화, 그 아래 캘린더 · 목록 탭, 캘린더 제목 자리에 달 이동 줄([2026년 9월 ●] ‹ › [오늘 · 날짜] 공식 휴일 N일 · 범례 「공식 휴일」)이 선다(앱 2026-10-30).
          캘린더는 공식 휴일 날짜를 빨간색으로 칠하고 그 칸에 휴일명을 적는다. 토·일은 요일로 판정할 뿐 휴일 데이터가 아니다 — 빨갛게 칠하지 않는다.
-         목록은 고른 연도 한 해를 날짜 · 휴일명 · 비고로 보인다 (SYSTEM-9 확정). 월 이동과 월 선택은 캘린더에만 쓴다.
+         목록은 고른 연도 한 해를 날짜 · 휴일명 · 비고로 보인다 (SYSTEM-9 확정). 달 이동 줄은 캘린더에만, 연도 선택은 목록에만 쓴다.
          휴일 등록·수정·삭제, 연도별 휴일 불러오기, 휴일 구분 필터는 두지 않는다.
          BP·점포 휴무일, 정기휴무일, 개인 휴가, 플랫폼 자체 운영 휴무일은 여기 없다.
          위쪽 점선 줄은 목업 전용이다 — 달과 보기, 안내 상태를 바꿔 본다. 비고 값은 목업 표본이다.
@@ -58,72 +58,55 @@
             </div>
           </div>
 
-          <!-- 상단 조작 줄 — 오늘 · 이전달 · 다음달 · 연도·월 · 보기 전환 -->
+          <!-- 맨 위 줄 — 연도 선택(목록 보기에만) · 최종 동기화. 그 아래 캘린더 · 목록 탭, 캘린더는 제목 자리에 달 이동 줄
+               [2026년 9월 ●](누르면 연 · 월 고르기 판 · 목업은 판을 그리지 않았다) ‹ › [오늘 · 날짜] 공식 휴일 N일, 오른쪽 범례는 「공식 휴일」 하나(앱 2026-10-30 — 전엔 [오늘] ‹ › [연도] [월] 줄 아래
+               「2026년 9월」 제목이 따로 있고 범례에 「오늘」이 있었다. BP 휴일 관리와 같은 줄이다) -->
           <section class="panel" data-show="cal list oct empty syncfail">
             <div class="panel__head" style="flex-wrap: wrap">
-              <button class="btn btn--secondary btn--sm" type="button" data-state-go="cal">오늘</button>
-              <div class="inline" style="gap: 4px; flex-wrap: nowrap">
-                <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" data-show="cal syncfail"></button>
-                <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" data-state-go="cal" data-show="oct" hidden></button>
-                <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" data-state-go="oct" data-show="empty" hidden></button>
-                <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="oct" data-show="cal syncfail"></button>
-                <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="empty" data-show="oct" hidden></button>
-                <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-show="empty" hidden></button>
-              </div>
-              <div class="inline" style="gap: 6px; flex-wrap: nowrap">
-                <select class="select select--sm" aria-label="연도" style="width: 96px">
-                  <option>2000년</option>
-                  <option>…</option>
-                  <option>2025년</option>
-                  <option selected>2026년</option>
-                  <option>2027년</option>
-                  <option>…</option>
-                  <option>2100년</option>
-                </select>
-                <select class="select select--sm" aria-label="월" style="width: 80px" data-show="cal syncfail">
-                  <option>8월</option>
-                  <option selected>9월</option>
-                  <option>10월</option>
-                </select>
-                <select class="select select--sm" aria-label="월" style="width: 80px" data-show="oct" hidden>
-                  <option>9월</option>
-                  <option selected>10월</option>
-                  <option>11월</option>
-                </select>
-                <select class="select select--sm" aria-label="월" style="width: 80px" data-show="empty" hidden>
-                  <option>10월</option>
-                  <option selected>11월</option>
-                  <option>12월</option>
-                </select>
-              </div>
-              <span class="subtle" style="font-size: 12px" data-show="list" hidden>목록은 고른 연도 한 해를 보여 줍니다</span>
+              <select class="select select--sm" aria-label="연도" style="width: 96px" data-show="list" hidden>
+                <option>2000년</option>
+                <option>…</option>
+                <option>2025년</option>
+                <option selected>2026년</option>
+                <option>2027년</option>
+                <option>…</option>
+                <option>2100년</option>
+              </select>
+              <span class="subtle" style="font-size: 12px" data-show="list" hidden>선택한 연도의 공식 휴일을 모두 표시합니다.</span>
               <span class="subtle" style="font-size: 12px">최종 동기화 <span class="mono">2026-09-01 03:00</span></span>
-              <div class="panel__end">
-                <div class="seg" role="group" aria-label="보기 방식" data-show="cal oct empty syncfail">
-                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="true" data-state-go="cal"><span data-icon="calendar" data-icon-size="13"></span> 캘린더</button>
-                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="false" data-state-go="list"><span data-icon="list" data-icon-size="13"></span> 목록</button>
-                </div>
-                <div class="seg" role="group" aria-label="보기 방식" data-show="list" hidden>
-                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="false" data-state-go="cal"><span data-icon="calendar" data-icon-size="13"></span> 캘린더</button>
-                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="true" data-state-go="list"><span data-icon="list" data-icon-size="13"></span> 목록</button>
-                </div>
-              </div>
             </div>
 
             <div class="panel__head" style="border-bottom: 0; padding-bottom: 0">
-              <h2 class="t-h2">
-                <span data-show="cal syncfail">2026년 9월</span>
-                <span data-show="list" hidden>2026년</span>
-                <span data-show="oct" hidden>2026년 10월</span>
-                <span data-show="empty" hidden>2026년 11월</span>
-              </h2>
-              <span class="badge badge--quiet" data-show="cal syncfail">공식 휴일 4일</span>
+              <nav class="tabs" aria-label="보기 방식" style="flex: 1" data-show="cal oct empty syncfail">
+                <button type="button" aria-current="true" data-state-go="cal">캘린더</button>
+                <button type="button" data-state-go="list">목록</button>
+              </nav>
+              <nav class="tabs" aria-label="보기 방식" style="flex: 1" data-show="list" hidden>
+                <button type="button" data-state-go="cal">캘린더</button>
+                <button type="button" aria-current="true" data-state-go="list">목록</button>
+              </nav>
+            </div>
+
+            <div class="panel__head" style="flex-wrap: wrap; border-bottom: 0; padding-bottom: 0">
+              <h2 class="t-h2" data-show="list" hidden>2026년</h2>
               <span class="badge badge--quiet" data-show="list" hidden>공식 휴일 20일</span>
-              <span class="badge badge--quiet" data-show="oct" hidden>공식 휴일 3일</span>
-              <span class="badge badge--quiet" data-show="empty" hidden>공식 휴일 0일</span>
+              <div class="inline" role="group" aria-label="달 이동" data-show="cal oct empty syncfail" style="gap: 6px; flex-wrap: nowrap">
+                <button type="button" aria-label="연 · 월 고르기" data-show="cal syncfail" style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 6px 0 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); font: inherit; font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer">2026년 9월<span aria-hidden="true" style="display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--muted-tert)"><svg viewBox="0 0 10 6" width="10" height="6" fill="none"><path d="M1 1L5 5L9 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg></span></button>
+                <button type="button" aria-label="연 · 월 고르기" data-show="oct" hidden style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 6px 0 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); font: inherit; font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer">2026년 10월<span aria-hidden="true" style="display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--muted-tert)"><svg viewBox="0 0 10 6" width="10" height="6" fill="none"><path d="M1 1L5 5L9 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg></span></button>
+                <button type="button" aria-label="연 · 월 고르기" data-show="empty" hidden style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 6px 0 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); font: inherit; font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer">2026년 11월<span aria-hidden="true" style="display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--muted-tert)"><svg viewBox="0 0 10 6" width="10" height="6" fill="none"><path d="M1 1L5 5L9 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg></span></button>
+                <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" data-show="cal syncfail" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
+                <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" data-state-go="cal" data-show="oct" hidden style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
+                <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" data-state-go="oct" data-show="empty" hidden style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
+                <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="oct" data-show="cal syncfail" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
+                <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="empty" data-show="oct" hidden style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
+                <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-show="empty" hidden style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
+                <button class="btn btn--secondary btn--sm" type="button" data-state-go="cal">오늘<span class="mono" style="font-size: 11px; font-weight: 400; color: var(--muted-tert)">· 2026-09-21(월)</span></button>
+                <span class="subtle" style="margin-left: 12px; font-size: 12.5px" data-show="cal syncfail">공식 휴일 4일</span>
+                <span class="subtle" style="margin-left: 12px; font-size: 12.5px" data-show="oct" hidden>공식 휴일 3일</span>
+                <span class="subtle" style="margin-left: 12px; font-size: 12.5px" data-show="empty" hidden>공식 휴일 0일</span>
+              </div>
               <div class="panel__end legend" data-show="cal oct empty syncfail">
                 <span><i style="background: var(--risk-text)"></i>공식 휴일</span>
-                <span data-show="cal syncfail"><i style="background: var(--ink)"></i>오늘 <span class="mono">2026-09-21</span></span>
               </div>
             </div>
 
@@ -333,7 +316,7 @@
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-01-01</span> <span class="subtle">(목)</span></td>
                       <td class="k">신정</td>
-                      <td class="nil">—</td>
+                      <td class="nil">-</td>
                     </tr>
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-02-16</span> <span class="subtle">(월)</span></td>
@@ -343,7 +326,7 @@
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-02-17</span> <span class="subtle">(화)</span></td>
                       <td class="k">설날</td>
-                      <td class="nil">—</td>
+                      <td class="nil">-</td>
                     </tr>
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-02-18</span> <span class="subtle">(수)</span></td>
@@ -353,7 +336,7 @@
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-03-01</span> <span class="subtle">(일)</span></td>
                       <td class="k">삼일절</td>
-                      <td class="nil">—</td>
+                      <td class="nil">-</td>
                     </tr>
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-03-02</span> <span class="subtle">(월)</span></td>
@@ -363,12 +346,12 @@
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-05-05</span> <span class="subtle">(화)</span></td>
                       <td class="k">어린이날</td>
-                      <td class="nil">—</td>
+                      <td class="nil">-</td>
                     </tr>
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-05-24</span> <span class="subtle">(일)</span></td>
                       <td class="k">부처님오신날</td>
-                      <td class="nil">—</td>
+                      <td class="nil">-</td>
                     </tr>
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-05-25</span> <span class="subtle">(월)</span></td>
@@ -378,12 +361,12 @@
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-06-06</span> <span class="subtle">(토)</span></td>
                       <td class="k">현충일</td>
-                      <td class="nil">—</td>
+                      <td class="nil">-</td>
                     </tr>
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-08-15</span> <span class="subtle">(토)</span></td>
                       <td class="k">광복절</td>
-                      <td class="nil">—</td>
+                      <td class="nil">-</td>
                     </tr>
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-08-17</span> <span class="subtle">(월)</span></td>
@@ -398,7 +381,7 @@
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-09-25</span> <span class="subtle">(금)</span></td>
                       <td class="k">추석</td>
-                      <td class="nil">—</td>
+                      <td class="nil">-</td>
                     </tr>
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-09-26</span> <span class="subtle">(토)</span></td>
@@ -413,7 +396,7 @@
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-10-03</span> <span class="subtle">(토)</span></td>
                       <td class="k">개천절</td>
-                      <td class="nil">—</td>
+                      <td class="nil">-</td>
                     </tr>
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-10-05</span> <span class="subtle">(월)</span></td>
@@ -423,19 +406,19 @@
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-10-09</span> <span class="subtle">(금)</span></td>
                       <td class="k">한글날</td>
-                      <td class="nil">—</td>
+                      <td class="nil">-</td>
                     </tr>
                     <tr>
                       <td><span class="mono" style="color: var(--risk-text)">2026-12-25</span> <span class="subtle">(금)</span></td>
                       <td class="k">성탄절</td>
-                      <td class="nil">—</td>
+                      <td class="nil">-</td>
                     </tr>
                 </tbody>
               </table>
             </div>
 
             <div class="panel__note" data-show="cal oct empty syncfail">빨간 날짜는 플랫폼 공식 휴일입니다. 토요일·일요일은 요일로만 판정하므로 휴일로 칠하지 않습니다 — 토요일이 공휴일인 10월 3일처럼 공식 휴일 날짜일 때만 빨갛게 표시됩니다.</div>
-            <div class="panel__note" data-show="list" hidden>목록은 고른 연도 한 해의 공식 휴일을 날짜순으로 보여 줍니다. 월 이동과 월 선택은 캘린더에만 씁니다. 공식 휴일만 나오며 토요일·일요일은 그 자체로 목록에 오르지 않습니다.</div>
+            <div class="panel__note" data-show="list" hidden>목록은 고른 연도 한 해의 공식 휴일을 날짜순으로 보여 줍니다. 달 이동은 캘린더에만, 연도 선택은 목록에만 씁니다. 공식 휴일만 나오며 토요일·일요일은 그 자체로 목록에 오르지 않습니다.</div>
           </section>
 
           <section class="panel" data-show="nopriv" hidden>

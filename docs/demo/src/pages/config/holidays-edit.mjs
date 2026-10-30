@@ -35,7 +35,7 @@ export default ({ A, R }) => {
       body: ui.detailBody(
         ui.sectionHead("BP 휴일 수정") +
           editForm(A) +
-          c.buttons(ui.button("취소", { variant: "off", href: detail }), ui.button("저장", { href: `${link(R, "config/holidays.html")}?panel=hol-detail-panel` })) +
+          c.buttons(ui.button("닫기", { variant: "off", href: detail }), ui.button("저장", { href: `${link(R, "config/holidays.html")}?panel=hol-detail-panel` })) +
           HOLIDAY_SCRIPT,
       ),
     }),
