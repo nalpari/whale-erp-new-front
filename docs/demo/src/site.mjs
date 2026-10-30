@@ -354,8 +354,8 @@ export function withdrawBody(R, { panel = false, blocked = false } = {}) {
     true, // #e93737: DESIGN.md 의 위험 글자색
   );
 
-  // 표(조건·내용·상태 열) 대신 아이콘 + 제목 + 설명 한 줄짜리 목록으로 보인다(2026-10-06 피드백) — 열 이름 없이 충족 여부는 앞 표시(—/✓)로만 말한다.
-  // icon·iconCls 로 상태별 색을 따로 준다: 막는 조건은 빨강, 충족한 조건은 파랑, 그 밖(확인 안 함)은 무채색.
+  // 표(조건·내용·상태 열) 대신 아이콘 + 제목 + 설명 한 줄짜리 목록으로 보인다(2026-10-06 피드백) — 열 이름 없이 충족 여부는 앞 표시(–/✓/✕)로만 말한다.
+  // icon·iconCls 로 상태별 색을 따로 준다: 막는 조건(✕)은 빨강, 충족한 조건은 파랑, 그 밖(확인 안 함)은 무채색.
   const condRow = (icon, iconCls, title, desc, end = "") => {
     const lines = (Array.isArray(desc) ? desc : [desc]).map((d) => `<p class="text-[13px] text-erp-label">${d}</p>`).join("");
     return `<div class="flex items-start gap-[10px] border-b border-erp-divider py-[14px] last:border-b-0"><span class="w-[16px] shrink-0 text-center text-[14px] font-semibold ${iconCls}">${icon}</span><div class="flex flex-1 flex-col gap-[2px]"><p class="text-[15px] font-semibold text-erp-ink">${title}</p>${lines}</div>${end}</div>`;

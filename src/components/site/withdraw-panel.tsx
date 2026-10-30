@@ -4,8 +4,7 @@ import { unstable_rethrow } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type MouseEvent, type RefObject } from "react";
 import { logout, logoutAfterWithdrawal } from "@/app/actions";
 import { Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
-import { IN_PROGRESS_CONTRACTS_HREF, withdrawFormField, withdrawWarningText, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
-import { bpPath, isBpPathScreen } from "@/lib/bp-path";
+import { IN_PROGRESS_CONTRACTS_HREF, moveTargetOf, withdrawFormField, withdrawWarningText, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
 import { useCanOpen, useCodes, useCurrentBp, useStores } from "./session-gate";
 import { createWithdrawalAction, getWithdrawEligibilityAction, verifyWithdrawPasswordAction } from "./withdraw-actions";
 
@@ -22,10 +21,11 @@ function withEmphasis(text: string) {
 }
 
 // 경고 상자 — bp-apply-dialog.tsx 의 위험 띠(채도 높은 border-erp-off/bg-erp-off-bg)와는 다른 패턴이다. 이
-// 상자는 승인된 데모의 notice() 상자를 그대로 따른다(docs/demo/src/site.mjs:314-323) — 제목("탈퇴 전 꼭
+// 상자는 승인된 데모의 notice() 상자를 그대로 따른다(docs/demo/src/site.mjs 의 withdrawBody 안 notice()) — 제목("탈퇴 전 꼭
 // 확인해 주세요")과 본문 블록이 한 상자(border-erp-panel-line / bg-erp-thead-bg) 안에 함께 들어간다. 제목만
-// #e93737(DESIGN.md 가 토큰 없이 직접 쓰기로 둔 Figma 전용 색). head/text 블록은 head 를 굵게, text 는 \n 을
-// 그대로 줄바꿈으로 보인다(whitespace-pre-line).
+// #e93737(DESIGN.md 가 토큰 없이 직접 쓰기로 둔 Figma 전용 색). 블록은 head 를 굵게, text(있을 때)는 \n 을 그대로
+// 줄바꿈으로 보이고(whitespace-pre-line), link 가 있으면 그 아래 이동 버튼(MoveButton)을 둔다. 문자열 블록은 지금
+// withdrawWarningText 가 만들지 않는다(타입에만 남아 있다).
 function WarningBlock({ block, onNavigate }: { block: WithdrawWarningBlock; onNavigate: () => void }) {
   if (typeof block === "string") return <p className="whitespace-pre-line">{withEmphasis(block)}</p>;
   return (
@@ -46,22 +46,18 @@ function WarningBlock({ block, onNavigate }: { block: WithdrawWarningBlock; onNa
 }
 
 // 탈퇴 전에 할 일을 하는 화면으로 보내는 이동 버튼(outline — 호버 모양을 기본으로, DESIGN.md 「링크 버튼」 — 생김새는 버튼, 하는 일은 이동).
-// 글자 링크는 누를 곳으로 잘 안 보였다(2026-10-30 사용자 지정). 이 계정이 열 수 없는 화면이면(권한 그룹에서 그 메뉴 조회가 꺼짐) 숨긴다 —
-// 메뉴 판정은 경로만 보므로 쿼리를 뗀 경로로 묻는다. 탭 BP 주소로 옮긴 화면(/contracts 등)은 admin-header 의 메뉴처럼 /bp/{id} 를 씌운다
-// — 맨 경로로 가면 SessionGate 가 다시 준비하며 한 번 돌아간다. 누르면 패널을 닫는다(헤더에 붙은 패널이라 이동해도 열린 채 남는다).
-// 새 탭으로 여는 클릭(Ctrl/⌘ · Shift · 가운데 버튼)은 닫지 않는다 — 돌아와 탈퇴를 이어 갈 수 있게.
+// 글자 링크는 누를 곳으로 잘 안 보였다(2026-10-30 사용자 지정). 이 계정이 열 수 없는 화면이면(권한 그룹에서 그 메뉴 조회가 꺼짐) 숨긴다.
+// 판정 경로 · 실제 주소(탭 BP 주소)는 moveTargetOf 가 만든다. 누르면 패널을 닫는다(헤더에 붙은 패널이라 이동해도 열린 채 남는다).
+// 새 탭으로 여는 클릭(Ctrl/⌘ · Shift)은 닫지 않는다 — 돌아와 탈퇴를 이어 갈 수 있게. 가운데 버튼은 click 이 오지 않아 원래 닫히지 않는다.
 function MoveButton({ href, label, onNavigate }: { href: string; label: string; onNavigate: () => void }) {
-  const tabBp = useCurrentBp().bpCodeId;
-  const [path, query] = href.split("?");
-  const canOpen = useCanOpen(path);
-  if (!canOpen) return null;
-  const screen = isBpPathScreen(path) ? bpPath(tabBp, path) : path;
+  const target = moveTargetOf(href, useCurrentBp().bpCodeId);
+  if (!useCanOpen(target.menuPath)) return null;
   return (
     <Button
       variant="outline"
-      href={query ? `${screen}?${query}` : screen}
+      href={target.href}
       onClick={(e: MouseEvent<HTMLAnchorElement>) => {
-        if (!(e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0)) onNavigate();
+        if (!(e.metaKey || e.ctrlKey || e.shiftKey)) onNavigate();
       }}
     >
       {label}
@@ -322,7 +318,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                   rowKey={() => "conditions"}
                 />
                 {/* 탈퇴를 막는 조건이라 BP 마스터가 직접 정리해야 한다 — 진행 중 상태만 걸러 근로계약 관리로 보낸다(2026-10-30 사용자 지정).
-                 * 표 칸 안에 두면 좁은 패널(464px)에서 잘려 표 아래 오른쪽, 「진행 중인 근로계약」 칸 밑에 둔다. */}
+                 * 표 칸 안에 두면 좁은 패널(464px)에서 잘리므로, 표 아래 오른쪽(「진행 중인 근로계약」 칸 밑)에 둔다. */}
                 {eligibility.hasInProgressContract && (
                   <div className="flex justify-end">
                     <MoveButton href={IN_PROGRESS_CONTRACTS_HREF} label="근로계약 확인" onNavigate={handleClose} />

@@ -2,7 +2,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ApiError } from "./api-error.ts";
-import { IN_PROGRESS_CONTRACTS_HREF, withdrawFormField, withdrawVerifyFailureOf, withdrawWarningText } from "./withdrawal-form.ts";
+import { readListQuery } from "../app/contracts/contract-list.ts";
+import { IN_PROGRESS_CONTRACTS_HREF, moveTargetOf, withdrawFormField, withdrawVerifyFailureOf, withdrawWarningText, type WithdrawWarningBlock } from "./withdrawal-form.ts";
 
 test("비밀번호 불일치 메시지는 currentPassword 칸", () => {
   assert.equal(withdrawFormField(400, "현재 비밀번호가 올바르지 않습니다."), "currentPassword");
@@ -76,13 +77,16 @@ test("블록 제목은 마침표로 끝난다", () => {
   for (const b of blocks) if (typeof b !== "string") assert.match(b.head, /\.$/);
 });
 
+// 블록 위치는 0개 빼기로 바뀌므로 제목으로 찾는다
+const STAFF_HEAD = "직원 자료는 조회할 수 없습니다.";
+function staffBlockOf(blocks: WithdrawWarningBlock[]) {
+  const block = blocks.find((b) => typeof b !== "string" && b.head === STAFF_HEAD);
+  assert.ok(block && typeof block !== "string" && block.text !== undefined);
+  return block as { head: string; text: string; link?: { href: string; label: string } };
+}
+
 test("직원 자료 안내는 일괄 저장 화면으로 보내고, 가맹 점포 직원은 가맹마스터가 받는다고 말한다", () => {
-  const block = withdrawWarningText({ bpName: "테스트상회", adminCount: 3, storeCount: 7, hasInProgressContract: false })[3] as {
-    head: string;
-    text: string;
-    link?: { href: string; label: string };
-  };
-  assert.equal(block.head, "직원 자료는 조회할 수 없습니다.");
+  const block = staffBlockOf(withdrawWarningText({ bpName: "테스트상회", adminCount: 3, storeCount: 7, hasInProgressContract: false }));
   assert.ok(block.text.startsWith("필요한 자료는 탈퇴 전에 내려받아 주세요.\n"));
   assert.equal(block.link?.label, "직원 자료 일괄 저장");
   assert.match(block.text, /가맹마스터만 내려받을 수 있으니, 탈퇴 전에 가맹마스터에게 알려 주세요\.$/);
@@ -103,7 +107,31 @@ test("[근로계약 확인]은 근로계약 목록을 점포 「전체」 · 진
   assert.equal(url.searchParams.get("storeIds"), "");
 });
 
-test("직영만 있는 BP 는 가맹마스터에게 알리라는 줄을 뺀다", () => {
-  const blocks = withdrawWarningText({ bpName: "테스트상회", adminCount: 3, storeCount: 7, hasInProgressContract: false }, false);
-  assert.equal((blocks[3] as { text: string }).text, "필요한 자료는 탈퇴 전에 내려받아 주세요.");
+test("직영만 있는 BP 는 가맹마스터에게 알리라는 줄을 빼고, 일괄 저장 버튼은 남긴다", () => {
+  const block = staffBlockOf(withdrawWarningText({ bpName: "테스트상회", adminCount: 3, storeCount: 0, hasInProgressContract: false }, false));
+  assert.equal(block.text, "필요한 자료는 탈퇴 전에 내려받아 주세요.");
+  assert.equal(block.link?.href, "/staff-members/export");
+});
+
+test("[근로계약 확인] 주소는 근로계약 목록이 점포 「전체」 · 진행 중 다섯 상태로 읽는다", () => {
+  const url = new URL(IN_PROGRESS_CONTRACTS_HREF, "http://x");
+  const params: Record<string, string | string[]> = {};
+  for (const key of new Set(url.searchParams.keys())) {
+    const values = url.searchParams.getAll(key);
+    params[key] = values.length > 1 ? values : values[0];
+  }
+  const query = readListQuery(params);
+  // 헤더 범위가 아니라 목록에서 비운 「전체」로 읽혀야 탈퇴를 막은 다른 점포의 계약도 보인다
+  assert.equal(query.storesCleared, true);
+  assert.deepEqual(query.storeIds, []);
+  assert.equal(query.scope, null);
+  assert.deepEqual(query.status, ["DRAFT", "PENDING_SEND", "PENDING_SIGNATURE", "CORRECTION_REQUESTED", "SIGNED"]);
+});
+
+test("이동 버튼 주소 — 메뉴 판정은 쿼리 뗀 경로, 탭 BP 주소로 옮긴 화면만 /bp/{id} 를 씌우고 쿼리를 다시 붙인다", () => {
+  const contracts = moveTargetOf(IN_PROGRESS_CONTRACTS_HREF, 8);
+  assert.equal(contracts.menuPath, "/contracts");
+  assert.equal(contracts.href, `/bp/8${IN_PROGRESS_CONTRACTS_HREF}`);
+  // 일괄 저장 화면은 아직 옮기지 않은 화면이라 접두가 없다
+  assert.deepEqual(moveTargetOf("/staff-members/export", 8), { menuPath: "/staff-members/export", href: "/staff-members/export" });
 });

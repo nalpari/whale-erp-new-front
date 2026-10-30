@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 출처 `button.tsx` 에 `outline` 변형을 더한 것(회원 탈퇴 경고의 이동 버튼, WHALEERP-339)을 본문 「공통 Button 의 danger」 절에 적었다(front marill).
 * **Update**: main 병합(front wooper, main #205 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 는 문장 단위로 합쳤고 generated 는 늦은 값을 썼다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — PR #204 code-review: 출처 `staff-filter.tsx` 의 주석을 고친 것(「로그인 뒤 맡게 된 점포」 → 「이 탭이 아직 맞추지 못한 점포」, 점포 목록 맞추기)을 본문에도 맞췄다(front wooper).
 * **Update**: main 병합(front wooper, main #202 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) 는 문장 단위로 합쳤고 generated 는 늦은 값을 썼다. BP 관리자 필터 import 충돌은 양쪽(역할 타입 · chipsKeyOf)을 살렸다.

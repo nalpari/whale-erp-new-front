@@ -2,6 +2,7 @@
 // 갈라 둔다 — api.ts 가 next/headers 를 써서 node --test 가 플레인으로 풀 수 없기 때문이다
 // (my-password-form.ts 가 my-password.ts 와 갈라진 것과 같은 이유).
 import { ApiError } from "./api-error.ts";
+import { bpPath, isBpPathScreen } from "./bp-path.ts";
 
 export type WithdrawEligibility = {
   bpName: string;
@@ -41,13 +42,24 @@ export function withdrawVerifyFailureOf(error: unknown): WithdrawVerifyFailure {
 /** 탈퇴를 막는 「진행 중」 근로계약 — api IN_PROGRESS_CONTRACT_STATUSES(whale-erp-api src/stores/store-format.ts)와 같다. */
 export const IN_PROGRESS_CONTRACT_STATUSES = ["DRAFT", "PENDING_SEND", "PENDING_SIGNATURE", "CORRECTION_REQUESTED", "SIGNED"] as const;
 
-/** 근로계약 관리 화면. 메뉴 권한 판정(useCanOpen)은 쿼리 없는 이 경로로 한다 — 쿼리를 붙이면 메뉴를 못 찾는다. */
+/** 근로계약 관리 화면 경로(쿼리 없음). [근로계약 확인] 주소의 앞부분이다. */
 export const CONTRACTS_PATH = "/contracts";
 
 /** [근로계약 확인]이 여는 주소 — 근로계약 목록을 진행 중 상태로만 거른다(목록은 status 를 여러 번 받는다).
  * 빈 storeIds 로 점포를 「전체」로 연다 — 없으면 목록이 헤더 범위(점포 하나 · 직영만 등)로 채워져, 탈퇴를 막은 다른 점포의
- * 계약이 안 보일 수 있다(탈퇴 조건은 BP 전체를 본다). 빈 storeIds 는 헤더 범위를 바꾸지 않는다(contract-list.ts). */
+ * 계약이 안 보일 수 있다(탈퇴 조건은 BP 전체를 본다). 빈 storeIds 는 헤더 범위를 바꾸지 않는다(src/app/contracts/contract-list.ts 의 storesCleared). */
 export const IN_PROGRESS_CONTRACTS_HREF = `${CONTRACTS_PATH}?storeIds=&${IN_PROGRESS_CONTRACT_STATUSES.map((s) => `status=${s}`).join("&")}`;
+
+/**
+ * 이동 버튼이 쓸 두 주소. menuPath 는 메뉴 권한 판정(useCanOpen)용 — 메뉴 판정은 경로만 보므로 쿼리를 뗀다(붙이면 메뉴를 못 찾아
+ * 버튼이 늘 숨는다). href 는 실제로 가는 주소 — 탭 BP 주소로 옮긴 화면(/contracts 등)은 admin-header 의 메뉴처럼 /bp/{id} 를
+ * 씌우고 쿼리를 다시 붙인다(맨 경로로 가면 SessionGate 가 다시 준비하며 한 번 돌아간다).
+ */
+export function moveTargetOf(href: string, tabBp: number): { menuPath: string; href: string } {
+  const [path, query] = href.split("?");
+  const screen = isBpPathScreen(path) ? bpPath(tabBp, path) : path;
+  return { menuPath: path, href: query ? `${screen}?${query}` : screen };
+}
 
 /** 탈퇴 경고 문구(데모 docs/demo/src/site.mjs 의 withdrawBody 가 같은 문구를 쓴다) — 실제 값으로 바뀌는 자리를
  * eligibility 로 채운다. `<br>` 대신 `\n` 을 쓴다 — 줄바꿈을 어떻게 그릴지는 컴포넌트(withdraw-panel.tsx) 몫이다.

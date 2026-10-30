@@ -7,8 +7,8 @@ const TONE = {
   off: "border-erp-subtle bg-erp-subtle text-erp-ink",
   // 퇴직 처리처럼 되돌리기 어려운 동작. 미운영 배지와 같은 상태 빨강 토큰을 쓴다 — 데모 ui.mjs 의 danger 와 같다(2026-10-08 재영, DESIGN.md Buttons · 1팀 동의 2026-10-27).
   danger: "border-erp-off bg-erp-off text-white",
-  // 다른 버튼이 호버했을 때의 모양(흰 바탕 · 브랜드 테두리 · 먹색 글자)을 처음부터 쓰고, 호버하면 옅은 회색(erp-subtle)으로 바뀐다. 안내 상자 안의 이동 버튼처럼 색 바탕이
-  // 무거운 자리에 둔다 — 회원 탈퇴 경고의 [직원 자료 일괄 저장](2026-10-30 사용자 지정, 1팀 확인 필요).
+  // 다른 버튼이 호버했을 때의 모양(흰 바탕 · 브랜드 테두리 · 먹색 글자)을 처음부터 쓰고, 호버하면 옅은 회색(erp-subtle)으로 바뀐다. 안내 상자 안이나 표 아래의 이동 버튼처럼 색 바탕이
+  // 무거운 자리에 둔다 — 회원 탈퇴의 [직원 자료 일괄 저장] · [근로계약 확인](2026-10-30 사용자 지정, 1팀 확인 필요).
   outline: "border-erp-brand bg-white text-erp-ink hover:bg-erp-subtle!",
 };
 
@@ -25,7 +25,8 @@ type ButtonProps = { variant?: ButtonVariant; className?: string } & (
   | ({ href?: never } & Omit<ComponentProps<"button">, "className">)
 );
 
-// Figma Btn_basic / Btn_basic_off2 / Btn_basic_off. 세 종류 모두 호버하면(Figma 의 active 상태) 흰 바탕·브랜드 테두리·기본 글자색이 된다.
+// Figma Btn_basic / Btn_basic_off2 / Btn_basic_off(+ danger). 이 종류들은 호버하면(Figma 의 active 상태) 흰 바탕·브랜드 테두리·기본 글자색이 된다.
+// outline 은 그 모양이 기본이고 호버하면 erp-subtle 바탕이 된다.
 // 테두리를 처음부터 같은 색으로 깔아 두어 호버 때 크기가 변하지 않는다. 막힌 버튼(disabled)은 흐리게 두고 호버하지 않는다.
 export function Button(props: ButtonProps) {
   const tone = (variant: ButtonVariant = "primary", className = "") => `${SHELL} ${TONE[variant] ?? TONE.primary} ${className}`;
