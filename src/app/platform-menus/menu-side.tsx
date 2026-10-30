@@ -9,7 +9,6 @@ import {
   afterConflict,
   bodyOf,
   isChangedMeanwhile,
-  isDirty,
   MENU_NAME_MAX,
   MENU_URL_MAX,
   menuFieldOf,
@@ -172,9 +171,6 @@ function MenuForm(
     setBase(next.base);
     if (next.form !== form) setForm(next.form);
   }
-  // 고친 것이 없으면 [저장]을 막는다 — 바뀐 것 없는 저장이 남의 변경을 덮어쓸 여지를 없앤다
-  const dirty = props.mode === "create" || isDirty(base, form);
-
   const handleFieldChange = <K extends keyof MenuFormValues>(key: K, value: MenuFormValues[K]) => {
     // 다시 채우기를 기다리는 동안 손으로 고치기 시작하면 그 입력을 우선한다
     setReloadOnRefresh(false);
@@ -199,7 +195,8 @@ function MenuForm(
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (saving || !dirty) return;
+    // 고친 것이 없어도 그대로 저장한다 — 점포 등록 · 수정과 같다(2026-10-30 재영)
+    if (saving) return;
     // 수정은 그대로 둔 URL 의 1뎁스 검사를 건너뛴다 — 아직 여러 구간인 메뉴(사용중지 메뉴)도 이름 · 상태를 고친다
     const found = validateMenuForm(form, props.mode === "edit" ? base.url : undefined);
     setErrors(found);
@@ -345,7 +342,7 @@ function MenuForm(
             취소
           </Button>
         )}
-        <Button type="submit" disabled={saving || !dirty}>
+        <Button type="submit" disabled={saving}>
           저장
         </Button>
       </div>
