@@ -1001,7 +1001,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 사용자 권한 선택지. 플랫폼 관리자에게는 플랫폼 마스터 권한을 빼고 준다. */
+        /**
+         * 사용자 권한 선택지. 플랫폼 관리자에게는 플랫폼 마스터 권한을 빼고 준다.
+         *     `purpose=filter` 는 목록 필터 「권한명」용 — 호출자와 상관없이 PM · PA 그룹을 다 준다.
+         */
         get: operations["PlatformAdminsController_roleGroups"];
         put?: never;
         post?: never;
@@ -1023,6 +1026,23 @@ export interface paths {
          *     `:id` 보다 먼저 둔다 — 뒤에 두면 이 경로가 상세(:id)로 잡힌다.
          */
         get: operations["PlatformAdminsController_loginIdAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-admins/email-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 이메일 중복 확인. 아이디 확인과 같은 등록 권한이고, 판정은 등록의 409 와 같다. `:id` 보다 먼저 둔다. */
+        get: operations["PlatformAdminsController_emailAvailability"];
         put?: never;
         post?: never;
         delete?: never;
@@ -13023,7 +13043,10 @@ export interface operations {
     };
     PlatformAdminsController_roleGroups: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description `filter` 면 목록 필터용 — 호출자와 상관없이 플랫폼 권한(PM · PA) 그룹을 다 준다. 없으면 등록 · 수정 선택지. */
+                purpose?: "filter";
+            };
             header?: {
                 /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
                 "X-Bp-Code-Id"?: string;
@@ -13040,6 +13063,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PlatformRoleGroupListResponseDto"];
                 };
+            };
+            /** @description purpose 값 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
             403: {
@@ -13074,6 +13104,44 @@ export interface operations {
                 };
             };
             /** @description 아이디 형식 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformAdminsController_emailAvailability: {
+        parameters: {
+            query: {
+                email: string;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProfileEmailAvailabilityResponseDto"];
+                };
+            };
+            /** @description 이메일 형식 */
             400: {
                 headers: {
                     [name: string]: unknown;

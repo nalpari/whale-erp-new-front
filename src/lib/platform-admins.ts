@@ -48,6 +48,11 @@ export async function getPlatformRoleGroups(): Promise<PlatformRoleGroup[]> {
   return (await request<Schemas["PlatformRoleGroupListResponseDto"]>("/platform-admins/role-groups", await json("GET"))).items;
 }
 
+/** GET /platform-admins/role-groups?purpose=filter — 목록 필터 「권한명」용. 보는 사람과 상관없이 플랫폼 권한 그룹을 다 준다(2026-10-29 재영). */
+export async function getPlatformRoleGroupFilterOptions(): Promise<PlatformRoleGroup[]> {
+  return (await request<Schemas["PlatformRoleGroupListResponseDto"]>("/platform-admins/role-groups?purpose=filter", await json("GET"))).items;
+}
+
 /** GET /platform-admins/{id} — 지운 계정은 404. */
 export async function getPlatformAdmin(id: number): Promise<PlatformAdminDetail> {
   return request(`/platform-admins/${id}`, await json("GET"));
@@ -56,6 +61,12 @@ export async function getPlatformAdmin(id: number): Promise<PlatformAdminDetail>
 /** GET /platform-admins/{id}/histories — 생성 · 변경 이력, 최신순. */
 export async function getPlatformAdminHistories(id: number, page = 1): Promise<PlatformAdminHistoryList> {
   return request(`/platform-admins/${id}/histories?page=${page}&pageSize=${HISTORY_PAGE_SIZE}`, await json("GET"));
+}
+
+/** GET /platform-admins/email-availability — 사용 · 미사용 관리자 계정과 겹치면 쓸 수 없다(저장 409 와 같은 판정). 등록 권한이 필요하다. */
+export async function checkEmailAvailable(email: string): Promise<boolean> {
+  const params = new URLSearchParams({ email });
+  return (await request<Schemas["AdminProfileEmailAvailabilityResponseDto"]>(`/platform-admins/email-availability?${params}`, await json("GET"))).available;
 }
 
 /** GET /platform-admins/login-id-availability — 삭제한 계정의 아이디도 쓸 수 없다. 등록 권한이 필요하다. */

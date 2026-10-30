@@ -14,7 +14,8 @@
          상태는 사용·미사용 두 값뿐이다(탈퇴 없음). 미사용 줄은 흐리게 하고 상태 꼬리표로 가른다.
          논리 삭제한 계정은 목록·검색에서 빠지고 상세로도 가지 않는다.
          표본 상세가 없는 줄(platlee · plathan)은 대표 상세(platpark)로 간다.
-         초기 비밀번호 메일이 나가지 못한 계정은 계정 상태 아래에 ‘초기 비밀번호 미발송’을 적는다 — 다시 보내는 길은 상세의 비밀번호 초기화다 (SYSTEM-3 확정).
+         초기 비밀번호 메일이 나가지 못한 사용 계정은 계정 상태 아래에 ‘초기화 비밀번호 미발송’을 적는다 — 다시 보내는 길은 상세의 비밀번호 초기화다 (SYSTEM-3 확정).
+         미사용 계정에는 적지 않는다 — 다시 보낼 수 없다 (2026-10-29 재영).
          목록은 등록일시 최신순이다 (확정 2026-09-29).
          조회 권한이 없으면 전 메뉴 공통 규칙(PL-AMTMVC)을 따른다 — 메뉴를 숨기고, 주소로 들어오면 권한 없음 안내 화면 + 홈으로 가기 (확정 2026-09-29).
          위쪽 점선 줄 둘은 목업 전용이다 — 권한과 목록 상태를 따로 바꾼다. -->
@@ -45,7 +46,7 @@
                 <button type="button" data-state="off" aria-pressed="false">미사용만</button>
                 <button type="button" data-state="cs" aria-pressed="false">권한 · 고객지원 담당</button>
                 <button type="button" data-state="empty" aria-pressed="false">결과 없음</button>
-                <button type="button" data-state="mailfail" aria-pressed="false">초기 비밀번호 미발송</button>
+                <button type="button" data-state="mailfail" aria-pressed="false">초기화 비밀번호 미발송</button>
                 <button type="button" data-state="deleted" aria-pressed="false">계정 삭제 직후</button>
                 <button type="button" data-state="noauth" aria-pressed="false">조회 권한 없음</button>
               </div>
@@ -169,7 +170,7 @@
                     <td class="mono">platyoon</td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=yoon">윤채원</a></td>
                     <td>플랫폼 관리자</td>
-                    <td><span class="badge badge--ok">사용</span><span class="badge badge--warn badge--stack">초기 비밀번호 미발송</span></td>
+                    <td><span class="badge badge--ok">사용</span><span class="badge badge--warn badge--stack">초기화 비밀번호 미발송</span></td>
                     <td class="mono"><span class="ct__line"><span class="ct__ic" data-icon="phone-circle" data-icon-size="17"></span>010-9013-5528</span></td>
                     <td class="mono"><span class="ct__line"><span class="ct__ic" data-icon="mail-circle" data-icon-size="17"></span>chaewon.yoon@whale-erp.example</span></td>
                     <td><span class="subtle">-</span></td>

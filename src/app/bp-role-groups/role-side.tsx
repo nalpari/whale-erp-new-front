@@ -3,7 +3,7 @@
 import { DetailTable, HelpTip, Tag, type DetailRow } from "@/components/common";
 import { RoleDeleteDialog } from "@/components/role-groups/role-delete-dialog";
 import { RoleForm } from "@/components/role-groups/role-form";
-import { actorOf, CARD, FailedBand, reasonLabel, WarnBand } from "@/components/role-groups/role-parts";
+import { actorOf, CARD, FailedBand, InfoBand, reasonLabel, WarnBand } from "@/components/role-groups/role-parts";
 import { CodeLabel } from "@/components/site/code-label";
 import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { HeadValues } from "@/components/site/head-values";
@@ -15,7 +15,7 @@ import { useBpActions, type BpRoleDetailState } from "./bp-actions";
 
 // 오른쪽 고정 칸(S-LYKAEI 상세 · 데모 config/roles) — 고른 그룹 없음 · 수정 · 상세(고칠 수 없는 그룹) · 등록 네 상태.
 // 권한 유형 · 권한 코드 · 가맹마스터 계정은 읽기 전용이고 권한명 · 설명만 고친다. 따로 수정 단계는 없다(2026-10-07).
-// 고칠 수 있는지 · 지울 수 있는지와 막힌 이유(권한 없음 · 본인 연결)는 api 상세가 준다. 등록 유형은 등록자로 정해진다(BM → BA, FM → FA).
+// 고칠 수 있는지 · 지울 수 있는지와 막힌 이유는 api 상세가 준다 — 수정은 권한 없음이, 삭제는 여기에 본인 연결 · 고정 권한까지 막는다(2026-10-30 재영). 등록 유형은 등록자로 정해진다(BM → BA, FM → FA).
 
 export function BpRoleSide({
   creating,
@@ -154,7 +154,8 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
       </span>
     </h2>
   );
-  // 지울 수 없는 그룹(역할 · 본인 연결)은 버튼을 숨긴다. 막힌 이유는 수정 권한이 있으면 위 띠(editBlockedReason, 같은 값)로 보인다.
+  // 지울 수 없는 그룹(역할 · 본인 연결)은 버튼을 숨긴다. 고칠 수 있는 화면이면 폼 위 회색 안내 한 줄(deleteBlockedReason)로 삭제가 막힌
+  // 이유를, 고칠 수 없으면 빨간 상자(editBlockedReason)가 고칠 수 없는 이유를 말한다(2026-10-30 재영).
   const deleteButton = can.delete && role.isDeletable ? (
     <RoleDeleteDialog
       role={role}
@@ -170,21 +171,17 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
       <>
         {heading}
         {/* 조회 권한만 있으면 이유 띠 없이 상세로만 보인다 */}
-        {/* 본인 연결(SELF_LINKED)은 api 이유 문구(「본인이 연결된 권한」) 대신 문장으로 풀어 쓴다(2026-10-26 사용자 지정).
-            가맹 마스터가 아닌 사람이 보는 가맹 관리자 그룹(NO_PERMISSION · FA)도 문장으로(2026-10-27 사용자 지정) */}
+        {/* 가맹 마스터가 아닌 사람이 보는 가맹 관리자 그룹(NO_PERMISSION · FA)은 문장으로(2026-10-27 사용자 지정) */}
         {/* 막힌 이유는 빨간 안내 상자(WarnBand — 2026-10-27 사용자 지정, 전엔 회색 띠) */}
         {can.update && role.editBlockedReason && (
           <WarnBand>
-            {role.editBlockedReason === "SELF_LINKED"
-              ? "내 계정에 연결된 권한 그룹은 수정할 수 없습니다."
-              : role.editBlockedReason === "NO_PERMISSION" && role.roleTypeCode === "FA"
+            {/* 본인 연결은 수정을 막지 않는다 — 권한명 · 설명은 고친다(2026-10-30 재영) */}
+            {role.editBlockedReason === "NO_PERMISSION" && role.roleTypeCode === "FA"
                 ? "내 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다."
                 : // 남은 이유도 문장으로(2026-10-28 사용자 지정 — 전엔 api 이유 이름 「권한 관리 메뉴 권한 없음」 · 「고정 권한」)
                   role.editBlockedReason === "NO_PERMISSION"
                   ? "선택한 권한 그룹에 대한 수정 권한이 없습니다."
-                  : role.editBlockedReason === "FIXED_ROLE"
-                    ? "시스템이 제공하는 기본권한 그룹은 수정할 수 없습니다."
-                    : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다.")}
+                  : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다.")}
           </WarnBand>
         )}
         {/* 수정할 수 없으면 권한명 · 설명과 같은 표 하나에 */}
@@ -195,6 +192,14 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
   return (
     <>
       {heading}
+      {/* 삭제만 막힌 이유(본인 연결 등) — 고정 권한(api FIXED_ROLE)은 원래 [삭제]가 없어 두지 않는다(2026-10-30 재영) */}
+      {can.delete && !role.isDeletable && role.deleteBlockedReason && role.deleteBlockedReason !== "FIXED_ROLE" && (
+        <InfoBand>
+          {role.deleteBlockedReason === "SELF_LINKED"
+            ? "내 계정에 연결된 권한 그룹은 삭제할 수 없습니다."
+            : reasonLabel(lockReasons, role.deleteBlockedReason, "삭제할 수 없는 권한 그룹입니다.")}
+        </InfoBand>
+      )}
       <RoleForm mode="edit" actions={actions.form} role={role} extra={record} deleteButton={deleteButton} />
     </>
   );

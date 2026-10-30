@@ -8,7 +8,6 @@ import type { ActionResult } from "@/lib/role-group-actions";
 import {
   afterConflict,
   isChangedMeanwhile,
-  isDirty,
   ROLE_DESCRIPTION_MAX,
   ROLE_NAME_MAX,
   roleFieldOf,
@@ -75,9 +74,6 @@ export function RoleForm(
     setBase(next.base);
     if (next.form !== form) setForm(next.form);
   }
-  // 고친 것이 없으면 [저장]을 막는다 — 바뀐 것 없는 저장이 남의 변경을 덮어쓸 여지를 없앤다
-  const dirty = props.mode === "create" || isDirty(base, form);
-
   const handleFieldChange = (key: keyof Form, value: string) => {
     // 다시 채우기를 기다리는 동안 손으로 고치기 시작하면 그 입력을 우선한다
     setReloadOnRefresh(false);
@@ -85,6 +81,7 @@ export function RoleForm(
     if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
   };
 
+  // 고친 것이 없어도 [저장]을 막지 않고 그대로 저장한다 — 점포 등록 · 수정과 같다(2026-10-30 재영)
   const handleSave = () => {
     const found = validateRoleForm(form);
     setErrors(found);
@@ -186,7 +183,7 @@ export function RoleForm(
         ) : (
           props.deleteButton
         )}
-        <Button onClick={handleSave} disabled={saving || !dirty || (props.mode === "create" && Boolean(props.blockedNotice))}>
+        <Button onClick={handleSave} disabled={saving || (props.mode === "create" && Boolean(props.blockedNotice))}>
           저장
         </Button>
       </div>

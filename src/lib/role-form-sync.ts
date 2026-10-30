@@ -10,7 +10,7 @@ const sameValues = (a: RoleFormValues, b: RoleFormValues) => a.name === b.name &
 /** 저장할 값(앞뒤 공백을 지운 것) — 기준값과 견줄 때도 이 모양으로 본다 */
 export const trimmedOf = (f: RoleFormValues): RoleFormValues => ({ name: f.name.trim(), description: f.description.trim() });
 
-/** 고친 것이 있는가 — 없으면 [저장]을 막는다 */
+/** 고친 것이 있는가 — 새 서버 값이 왔을 때 칸을 다시 채울지 가른다(sync…). [저장]은 막지 않는다(2026-10-30 재영) */
 export const isDirty = (base: RoleFormValues, form: RoleFormValues) => !sameValues(trimmedOf(base), trimmedOf(form));
 
 /**
