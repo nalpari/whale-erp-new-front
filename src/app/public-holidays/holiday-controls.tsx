@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { MonthPicker, Select } from "@/components/common";
 import { holidaysHref, moveHolidayQuery, weekdayOf, YEAR_OPTIONS, type HolidayQuery } from "@/lib/public-holiday-view";
 
-// 플랫폼 휴일 관리의 이동 조작(연도 · 월 선택칸, 캘린더 · 목록 탭, 오늘 · 이전 · 다음 달). 화면 상태는 주소에만 둔다(public-holiday-view.ts).
+// 플랫폼 휴일 관리의 이동 조작(목록의 연도 선택칸 · 캘린더의 연 · 월 고르기 판, 캘린더 · 목록 탭, 오늘 · 이전 · 다음 달). 화면 상태는 주소에만 둔다(public-holiday-view.ts).
 // 고른 값은 서버가 새 화면을 줄 때까지 먼저 보인다(급여명세서 목록과 같다). 낙관적 상태를 HolidayNavigation 하나가 모두 나눠 가져,
 // 연도를 고르고 응답 전에 월 · 탭 · 달 이동을 눌러도 앞의 선택을 잃지 않는다 — 조작마다 따로 두면 저마다 서버가 준 옛 값에서 출발한다.
 

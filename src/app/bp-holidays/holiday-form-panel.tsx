@@ -51,10 +51,10 @@ type Props = {
   | { mode: "edit"; holiday: BpHolidayDetail; startDate?: never; onSaved: () => void; onStale: () => void }
 );
 
-/** 칸을 고치면 그 칸의 오류는 바로 지운다 */
 /** 반복 기준 꼬리표의 앞말 — 매일은 기준이 없어 쓰지 않는다 */
 const REPEAT_WORD: Record<RepeatType, string> = { DAILY: "매일", WEEKLY: "매주", MONTHLY: "매월", YEARLY: "매년" };
 
+/** 칸을 고치면 그 칸의 오류는 바로 지운다 */
 const without = (key: keyof FormErrors) => (e: FormErrors): FormErrors => (key in e ? Object.fromEntries(Object.entries(e).filter(([k]) => k !== key)) : e);
 
 /** 상세의 점포를 고르기 칸 모양으로 */
@@ -387,7 +387,7 @@ function OverlapSummary({ overlaps }: { overlaps: BpHolidayOverlaps }) {
   // 점포 · 날짜 · 이미 있는 휴일 세 칸 표 — 점포마다 겹치는 날짜를 한 줄씩, 점포 이름은 그 점포의 첫 줄에만(2026-10-30 사용자 지정 — 전엔 점포 이름 아래 「날짜 휴일명 · 휴일명, …」 글줄이라
   // 무엇이 어디서 겹치는지 알기 어려웠다). 앞 10일만 보이고 나머지는 「외 N일」 줄로 센다(api)
   const rows: OverlapRow[] = overlaps.stores.flatMap((s) => [
-    ...s.dates.map((d, i) => ({ key: `${s.storeId}-${d.date}`, store: i === 0 ? s.storeName : "", date: `${d.date.slice(5)}(${weekdayName(d.date).slice(0, 1)})`, names: d.holidayNames.join(", ") })),
+    ...s.dates.map((d, i) => ({ key: `${s.storeId}-${d.date}`, store: i === 0 ? s.storeName : "", date: `${d.date}(${weekdayName(d.date).slice(0, 1)})`, names: d.holidayNames.join(", ") })),
     ...(s.moreDateCount > 0 ? [{ key: `${s.storeId}-more`, store: "", date: `외 ${s.moreDateCount}일`, names: "" }] : []),
   ]);
   return (
@@ -404,6 +404,6 @@ type OverlapRow = { key: string; store: string; date: string; names: string };
 const OVERLAP_COLUMNS: Column<OverlapRow>[] = [
   // 점포 칸은 폭을 정해 날짜가 점포 쪽으로 붙게 하고, 남는 폭은 휴일 이름이 쓴다(2026-10-30 사용자 지정)
   { header: "점포", width: "w-[170px]", align: "left", cell: (r) => <span className="block truncate" title={r.store}>{r.store}</span> },
-  { header: "날짜", width: "w-[100px]", align: "left", cell: (r) => r.date }, // 왼쪽 정렬로 점포 바로 옆에(2026-10-30 사용자 지정)
+  { header: "날짜", width: "w-[120px]", align: "left", cell: (r) => r.date }, // 왼쪽 정렬로 점포 바로 옆에(2026-10-30 사용자 지정). 겹침은 1년 범위라 해를 넘을 수 있어 연도까지 쓴다(코드 리뷰로 찾음)
   { header: "이미 등록된 휴일", align: "left", cell: (r) => r.names },
 ];

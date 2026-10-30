@@ -135,7 +135,8 @@ function DetailBody({
               <span>
                 {[
                   `${dated(h.startDate)}부터`,
-                  repeat && (repeatBasis(repeat, h.startDate) ? `${repeatBasis(repeat, h.startDate)}마다` : repeatLabel(repeat)),
+                  // 매월은 「30일마다」가 「30일 간격」으로 읽혀 「매월 30일마다」로(코드 리뷰로 찾음)
+                  repeat && (repeatBasis(repeat, h.startDate) ? `${repeat === "MONTHLY" ? "매월 " : ""}${repeatBasis(repeat, h.startDate)}마다` : repeatLabel(repeat)),
                   repeatEndText(h.repeatEndType, h.repeatEndDate, h.repeatCount),
                 ]
                   .filter(Boolean)
