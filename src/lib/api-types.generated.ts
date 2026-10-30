@@ -2254,6 +2254,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/contracts/minimum-wages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 최저임금(공통코드 MINIMUM_WAGE) — 작성 · 이어 쓰기 화면이 시급 칸 도움말과 수습 중 시급 확인에 쓴다(WHALEERP-595).
+         *     저장도 같은 값으로 다시 본다. `:contractId` 보다 먼저 둔다.
+         */
+        get: operations["ContractsController_minimumWages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/contracts/{contractId}": {
         parameters: {
             query?: never;
@@ -5178,9 +5198,9 @@ export interface components {
         /** @enum {string} */
         StoreType: "DIRECT" | "FRANCHISE";
         /** @enum {string} */
-        AdminAccountStatus: "ACTIVE" | "INACTIVE";
-        /** @enum {string} */
         BpAdminRole: "BA" | "FM" | "FA";
+        /** @enum {string} */
+        AdminAccountStatus: "ACTIVE" | "INACTIVE";
         BpAdminRoleGroupDto: {
             roleTypeCode: components["schemas"]["BpAdminRole"];
             roleGroupId: number;
@@ -5323,8 +5343,8 @@ export interface components {
              */
             name: string;
             /**
-             * @description 휴대전화. 하이픈 없이 숫자 9~12자리 — 화면 이름은 휴대전화지만 1팀 연락처 범위(02 지역번호 9자리 · 050X
-             *     평생번호 12자리)를 그대로 받는다. 중복 검사는 하지 않는다.
+             * @description 연락처. 하이픈 없이 숫자 9~12자리 — 1팀 연락처 범위(02 지역번호 9자리 · 050X 평생번호 12자리)를
+             *     그대로 받는다. 중복 검사는 하지 않는다.
              * @example 01012345678
              */
             phone: string;
@@ -5357,8 +5377,8 @@ export interface components {
              */
             name: string;
             /**
-             * @description 휴대전화. 하이픈 없이 숫자 9~12자리 — 화면 이름은 휴대전화지만 1팀 연락처 범위(02 지역번호 9자리 · 050X
-             *     평생번호 12자리)를 그대로 받는다. 중복 검사는 하지 않는다.
+             * @description 연락처. 하이픈 없이 숫자 9~12자리 — 1팀 연락처 범위(02 지역번호 9자리 · 050X 평생번호 12자리)를
+             *     그대로 받는다. 중복 검사는 하지 않는다.
              * @example 01012345678
              */
             phone: string;
@@ -5788,8 +5808,8 @@ export interface components {
             editBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
             deleteBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
             /**
-             * @description 역할로 권한명 · 설명 · 메뉴를 고칠 수 있고 본인이 연결된 그룹도 아닌가 — BM 은 그 BP 의 BA, FM 은 본인 FA. false 의
-             *     이유는 editBlockedReason. 메뉴 권한은 화면이 합친다.
+             * @description 역할로 권한명 · 설명을 고칠 수 있는가 — BM 은 그 BP 의 BA, FM 은 본인 FA. 본인이 연결된 그룹도 고친다(재영
+             *     2026-10-30). false 의 이유는 editBlockedReason. 메뉴 칸은 메뉴 트리의 칸별 값을 본다(본인 연결은 거기서 막힌다).
              */
             isEditable: boolean;
             /**
@@ -5934,7 +5954,7 @@ export interface components {
             /** @description 고칠 수 없는 이유. 고칠 수 있으면 null. 한글은 GET /enums/PlatformRoleGroupLockReason. */
             editBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
             deleteBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
-            /** @description 권한명 · 설명을 고칠 수 있는가. 메뉴 칸은 메뉴 트리의 칸별 값을 본다. */
+            /** @description 권한명 · 설명을 고칠 수 있는가. 본인이 연결된 권한도 고친다(재영 2026-10-30). 메뉴 칸은 메뉴 트리의 칸별 값을 본다. */
             isEditable: boolean;
             /** @description 지울 수 있는가. 연결 사용자가 있는데 대체 후보가 없는 것은 삭제 후보 조회로 알린다. */
             isDeletable: boolean;
@@ -7610,6 +7630,15 @@ export interface components {
             draftAction: components["schemas"]["ContractDraftAction"] | null;
             contractId: number;
             staffMemberId: number;
+        };
+        MinimumWageDto: {
+            /** @description 시행일 YYYY-MM-DD — 이날부터 적용 */
+            effectiveDate: string;
+            /** @description 시급(원) */
+            hourlyWage: number;
+        };
+        MinimumWagesResponseDto: {
+            items: components["schemas"]["MinimumWageDto"][];
         };
         ContractStatusHistoryDto: {
             /** @description 처음 만든 줄은 null */
@@ -12165,6 +12194,11 @@ export interface operations {
             query: {
                 /** @description 이 유형의 점포를 관리하는 계정 — 헤더의 직영 · 가맹 전체 범위용. 전체 점포 계정은 늘 나온다. */
                 storeTypeCode?: components["schemas"]["StoreType"];
+                /**
+                 * @description 역할 — 고른 역할의 계정만. 여러 개는 반복 또는 쉼표로. 주지 않거나 비우면 세 역할 모두
+                 *     (역할을 하나도 고르지 않은 화면은 api 를 부르지 않는다).
+                 */
+                roleTypeCodes?: components["schemas"]["BpAdminRole"][];
                 /** @description 계정 상태. 주지 않으면 사용 · 미사용 둘 다. */
                 accountStatus?: components["schemas"]["AdminAccountStatus"];
                 /** @description 아이디 · 이름 중 하나에 들어 있으면 나온다. */
@@ -13412,7 +13446,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13459,7 +13493,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13509,7 +13543,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13554,7 +13588,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13601,7 +13635,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13655,7 +13689,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13707,7 +13741,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13756,7 +13790,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13812,7 +13846,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13857,7 +13891,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13893,7 +13927,7 @@ export interface operations {
                     "application/json": components["schemas"]["PlatformRoleGroupSummaryListResponseDto"];
                 };
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13933,7 +13967,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13971,7 +14005,7 @@ export interface operations {
                     "application/json": components["schemas"]["PlatformRoleGroupDetailResponseDto"];
                 };
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14018,7 +14052,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14072,7 +14106,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14117,7 +14151,7 @@ export interface operations {
                     "application/json": components["schemas"]["RoleGroupMenuTreeResponseDto"];
                 };
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14166,7 +14200,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14222,7 +14256,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14267,7 +14301,7 @@ export interface operations {
                     "application/json": components["schemas"]["RoleGroupDeletionCandidatesResponseDto"];
                 };
             };
-            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한(메뉴 권한 저장 · 삭제) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17402,6 +17436,42 @@ export interface operations {
             };
             /** @description 첨부파일 저장소가 설정되지 않음 · 저장소 오류 · 저장이 몰려 시간 초과(잠시 뒤 다시) */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractsController_minimumWages: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MinimumWagesResponseDto"];
+                };
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근로계약 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
