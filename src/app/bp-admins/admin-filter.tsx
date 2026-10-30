@@ -6,7 +6,7 @@ import { useScope, useStores } from "@/components/site/session-gate";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { Scope } from "@/lib/browser-storage";
 import type { BpAdminRoleGroup, BpAdminStatus } from "@/lib/bp-admins";
-import { isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
+import { chipsKeyOf, isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
 import { fillScopeOf } from "@/app/stores/stores-query";
 import { keepingPanel, parseBpAdminsQuery, withBpAdminFilter, withPickedStores, withScopeCondition, type BpAdminsQuery } from "./bp-admins-href";
 
@@ -39,7 +39,8 @@ export function AdminFilter({
         : [];
 
   // 주소가 바뀌면(뒤로 가기 · 헤더 범위 변경 · 서버가 뺀 점포) 칩을 그 값으로 맞춘다. 고르는 즉시 칩이 서도록 이 안에서도 쥔다.
-  const shownKey = `${query.storeIds.join(",")}|${query.storesCleared}|${query.scope ? scopeKeyOf(query.scope) : ""}`;
+  // 칩은 로그인 정보의 점포로 만들므로, 점포 목록을 다시 맞췄을 때도 맞춘다(chipsKeyOf)
+  const shownKey = `${query.storeIds.join(",")}|${query.storesCleared}|${query.scope ? scopeKeyOf(query.scope) : ""}|${chipsKeyOf(chipsOf(query))}`;
   const [fillScope] = useState(() => fillScopeOf(query, headerScope));
   const [chips, setChips] = useState(() => chipsOf(fillScope ? { storeIds: [], scope: fillScope } : query));
   const [chipsKey, setChipsKey] = useState(shownKey);

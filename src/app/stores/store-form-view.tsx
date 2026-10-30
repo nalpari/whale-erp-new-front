@@ -48,10 +48,10 @@ import { BizVerificationBox, BizVerifiedStatus } from "@/components/site/biz-ver
 import { BIZ_MESSAGE, bizDigits, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
 import { formatDateTime } from "@/lib/format";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
-import { useCurrentBp } from "@/components/site/session-gate";
+import { useCurrentBp, useRefreshStores } from "@/components/site/session-gate";
 import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { bpPath } from "@/lib/bp-path";
-import { withoutStoreSearch } from "@/lib/store-scope";
+import { withHeaderStoreSearch } from "@/lib/store-scope";
 import { storeImageAccept, storeImageFileError, storeImageTypesText } from "@/lib/store-image";
 import {
   createStoreAction,
@@ -124,6 +124,7 @@ export function StoreFormView(props: Props) {
   // 화면 주소는 탭 BP 를 붙인다. backHref 는 옛 경로(목록 쿼리)다
   const at = (path: string) => bpPath(currentBp.bpCodeId, path);
   const toast = useToast();
+  const refreshStores = useRefreshStores();
   const ids = useId();
   const initialForm = () => (props.mode === "edit" ? formOfStore(props.store) : EMPTY_STORE_FORM);
   const [form, setForm] = useState<StoreForm>(initialForm);
@@ -413,8 +414,11 @@ export function StoreFormView(props: Props) {
         // 점포는 생겼다 — 이미지가 실패해도 등록을 되돌리지 않고 상세에서 알린다(상태 코드만 주소에 싣는다)
         const imageResult = await applyImage(result.storeId);
         toast("saved");
-        // 등록 뒤 목록에 돌아가면 점포 검색은 「전체」다 — 새 점포가 고른 점포 조건에 걸려 안 보이지 않게(상세의 [목록]이 이 주소로 간다)
-        const params = new URLSearchParams({ back: withoutStoreSearch(backHref) });
+        // 헤더 범위 선택기 · 점포 고르기에 새 점포를 바로 넣는다 — 저장 토스트 뒤에 「점포 목록이 변경되었습니다.」가 이어서 뜬다
+        refreshStores();
+        // 등록 뒤 목록에 돌아가면 점포 검색은 헤더 범위를 따른다 — 고른 점포는 지운다(상세의 [목록]이 이 주소로 간다, 2026-10-30 사용자 결정 —
+        // 전엔 「전체」라 헤더와 필터가 갈렸다). 새 점포가 헤더 범위 밖이면 목록에는 없고 헤더 개수 · 토스트로 알 수 있다
+        const params = new URLSearchParams({ back: withHeaderStoreSearch(backHref) });
         if (imageResult && !imageResult.ok) params.set("imageFailed", String(imageResult.status ?? "error"));
         return router.push(at(`/stores/${result.storeId}?${params}`));
       }
@@ -451,15 +455,20 @@ export function StoreFormView(props: Props) {
         if (imageResult && !imageResult.ok) {
           // 점포 정보는 저장됐다. 새 수정 시각으로 다시 받고, 고른 이미지는 남겨 다시 저장할 수 있게 한다
           router.refresh();
+          refreshStores();
           return setFailure({
             title: `점포 정보는 저장했지만 대표 이미지는 저장하지 못했습니다 — ${imageResult.message}`,
             detail: "고른 이미지는 그대로 두었습니다. 다시 저장해 주세요.",
           });
         }
         toast("updated");
+        // 점포명 · 상태가 바뀌었으면 헤더 범위 선택기 · 점포 고르기에 바로 넣는다(바뀐 게 없으면 알리지 않는다)
+        refreshStores();
         return router.push(at(withBack(`/stores/${props.store.storeId}`, backHref)));
       }
       // 다른 사람이 먼저 고쳤거나 결과를 모르면 최신 정보를 불러온다 — 저장됐으면 updatedAt 이 바뀌어 칸이 새 값으로 다시 채워진다
+      // 점포 목록도 같은 까닭으로 맞춘다
+      if (result.status === undefined || result.status === 409) refreshStores();
       if (result.status === undefined) {
         router.refresh();
         return setFailure({

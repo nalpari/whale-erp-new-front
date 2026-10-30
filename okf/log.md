@@ -1,5 +1,14 @@
 # Bundle history
 
+## 2026-10-30
+* **Update**: [점포 관리](/stores.md) — 재리뷰 반영: 등록 · 삭제 뒤 목록이 헤더 범위를 따르도록 바뀐 것(`withHeaderStoreSearch` · `withoutDeletedStore`)과 점포 목록 맞추기를 적었다(옛 「등록 · 삭제 뒤 전체」 서술 정정). [Whale ERP Frontend](/whale-erp-front.md) — 고른 점포가 없어져 범위를 전체로 돌릴 때 쪽(page)을 뺀다(front wooper).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 목록 필터(3팀)도 점포 목록을 다시 맞추면 직영 · 가맹 칩을 맞춘다(`chipsKeyOf` 동기화 키, 점포 · BP 관리자와 같다). 공용 개발 DB 에 `contracts.reject_reason` 마이그레이션이 없어 화면 확인은 못 했다(front wooper).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 코드 리뷰 반영: 다른 BP 주소로 가 `Ready` 가 내려간 뒤 늦게 온 점포 목록 맞추기 결과가 새 BP 의 상태 · 탭 저장값을 덮지 않게 했다(`disposed` 표시 · 상태 갱신 때 BP 재확인). 공통 토스트가 내려갈 때 타이머를 지운다(front wooper).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 목록을 다시 맞춰도 점포 · BP 관리자 목록 필터의 직영 · 가맹 범위 칩이 옛 개수로 남던 것을 고쳤다: 칩을 쥔 필터의 동기화 키에 지금 점포로 만든 칩의 지문(`chipsKeyOf`)을 넣었다(헤더 10개 · 칩 9개, front wooper).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 등록 뒤 목록도 헤더 범위를 따른다(`withHeaderStoreSearch` — 고른 점포 · 범위를 지운다). 새 점포가 헤더 범위 밖이면 목록에는 없고 헤더 개수 · 토스트로 알린다(2026-10-30 사용자 결정, front wooper).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 삭제 뒤 목록이 헤더 범위와 맞도록 `withoutDeletedStore` 로 보낸다: 고른 점포에서 지운 점포만 빼고, 없으면 헤더 범위로 다시 채우며, 헤더 범위가 그 점포였으면 전체. 전엔 점포 검색을 「전체」로 비워 헤더 「직영 9개」 · 필터 「전체」로 갈렸다(2026-10-30 사용자 결정, front wooper). 등록 뒤는 그대로 `withoutStoreSearch`.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 목록 맞추기: 새로고침 · 메뉴 이동 · 창 포커스 때 `GET /bp-codes/{id}/stores-version` 을 묻고 바뀌었으면 `GET /auth/admin/me/stores`(고른 BP 는 `/bp-codes/{id}/stores`)로 다시 받아 헤더 범위 선택기 · 점포 고르기를 맞춘다. 바뀌면 「점포 목록이 변경되었습니다.」 토스트, 다른 탭은 `stores-changed` 로 바로 맞추고, 점포 화면은 저장 직후 `useRefreshStores()` 를 부른다. 공통 토스트는 차례로 뜬다. 점포 고르기의 「다시 로그인하면 찾을 수 있습니다」 안내를 뺐다(api exeggcute, front wooper).
+
 ## 2026-10-29
 * **Update**: main 병합(front doduo, main #192 까지): okf 충돌은 양쪽 기록을 살렸다.
 * **Update**: main 병합(front doduo, main #187 까지): okf/log 충돌은 양쪽 기록을 살렸고, [직원 정보 관리 화면](/screens/staff-members.md) 시각 충돌은 늦은 값을 썼다.

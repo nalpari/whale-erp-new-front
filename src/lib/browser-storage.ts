@@ -3,6 +3,8 @@
 //   login-info: 계정·메뉴 / login-bp-info: 자기 BP 의 점포·공통코드(탭에 자기 BP 값이 없을 때 — 새 탭, /bp-switch 로 자기 BP 에 돌아올 때 — 만 읽는다) / selected-bp: 플랫폼 계정이 마지막으로 고른 BP
 // sessionStorage — 탭마다 다르다. 화면은 이것만 읽는다.
 //   current-bp: 이 탭의 서비스(WHALE_ERP·PLATFORM)와 BP / stores·codes·scope: 그 BP 의 값. bpCodeId 가 이 탭의 BP 와 다르면 버린다.
+//   stores-version: 이 탭의 stores 를 받을 때의 점포 목록 버전(GET /bp-codes/{id}/stores-version). 없으면 아직 맞춰 보지 않은 것이다.
+// stores-changed(localStorage): 한 탭이 점포 목록이 바뀐 것을 알면 적는다 — 같은 BP 의 다른 탭이 storage 이벤트로 받아 바로 다시 맞춘다.
 //   store-picks: 2026-10-21 에 없앴다(목록에서 고른 점포는 주소의 storeIds). 앞서 쓰던 값을 지우려고 키만 남긴다(TAB_KEYS).
 //   bp-fix: BP · 가맹 계정이 남의 BP 주소로 와서 소속 BP 로 고쳐 보낸 표시(들어온 주소). 같은 주소로 다시 오면 쿠키와 로그인 정보가 어긋난 것이다.
 //   서비스와 BP 는 짝이 맞아야 해서(플랫폼 서비스 = 플랫폼 BP, ERP 서비스 = 고객 BP) 한 키에 함께 둔다.
@@ -50,18 +52,22 @@ const KEY = {
   selectedBp: `${PREFIX}selected-bp`,
   currentBp: `${PREFIX}current-bp`,
   stores: `${PREFIX}stores`,
+  storesVersion: `${PREFIX}stores-version`,
+  storesChanged: `${PREFIX}stores-changed`,
   codes: `${PREFIX}codes`,
   scope: `${PREFIX}scope`,
   /** 지금은 쓰지 않는다 — 목록에서 고른 점포는 주소(storeIds)에 둔다(2026-10-21). 로그아웃하거나 앞 로그인의 탭 값을 버릴 때 함께 지우려고 키만 둔다 */
   storePicks: `${PREFIX}store-picks`,
   bpFix: `${PREFIX}bp-fix`,
 } as const;
-const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope, KEY.storePicks, KEY.bpFix];
+const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.storesVersion, KEY.codes, KEY.scope, KEY.storePicks, KEY.bpFix];
 // 앞 버전의 키 — 읽지는 않지만 로그인 정보(아이디 · 이름 · 이메일 · 메뉴 권한 · 점포)가 들어 있어 로그아웃할 때 함께 지운다(공용 PC).
 const LEGACY_PREFIXES = ["whale-erp:v1:"];
 const LEGACY_KEYS = LEGACY_PREFIXES.flatMap((p) => Object.values(KEY).map((k) => p + k.slice(PREFIX.length)));
 /** 다른 탭이 로그인·로그아웃했는지 storage 이벤트로 알아챌 때 보는 키. */
 export const LOGIN_INFO_KEY = KEY.loginInfo;
+/** 다른 탭이 점포 목록이 바뀐 것을 알렸는지 storage 이벤트로 알아챌 때 보는 키. */
+export const STORES_CHANGED_KEY = KEY.storesChanged;
 
 // 저장소를 못 쓰는 브라우저(사생활 보호 등)면 읽기는 null, 쓰기는 버린다 — SessionGate 가 login-info 를 다시 받아 화면은 그린다.
 function read<T>(storage: () => Storage, key: string): T | null {
@@ -108,6 +114,19 @@ export const writeCurrentBp = (loginKey: string, { serviceCode, bp }: TabContext
 
 export const readStores = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; items: AdminStore[] }>(tab, KEY.stores), bpCodeId)?.items ?? null;
 export const writeStores = (bpCodeId: number, items: AdminStore[]) => write(tab, KEY.stores, { bpCodeId, items });
+export const readStoresVersion = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; version: string }>(tab, KEY.storesVersion), bpCodeId)?.version ?? null;
+export const writeStoresVersion = (bpCodeId: number, version: string) => write(tab, KEY.storesVersion, { bpCodeId, version });
+/** 점포 목록이 바뀐 것을 다른 탭에 알린다 — 같은 값을 다시 적으면 이벤트가 오지 않아 시각을 함께 적는다 */
+export const announceStoresChanged = (loginKey: string, bpCodeId: number) => write(local, KEY.storesChanged, { loginKey, bpCodeId, at: Date.now() });
+/** storage 이벤트의 새 값이 이 로그인 · 이 BP 의 알림인가 */
+export function isStoresChangedFor(raw: string | null, loginKey: string, bpCodeId: number): boolean {
+  try {
+    const v = raw ? (JSON.parse(raw) as { loginKey?: unknown; bpCodeId?: unknown }) : null;
+    return v?.loginKey === loginKey && v.bpCodeId === bpCodeId;
+  } catch {
+    return false;
+  }
+}
 export const readCodes = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; codes: Codes }>(tab, KEY.codes), bpCodeId)?.codes ?? null;
 export const writeCodes = (bpCodeId: number, codes: Codes) => write(tab, KEY.codes, { bpCodeId, codes });
 export const readScope = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; scope: Scope }>(tab, KEY.scope), bpCodeId)?.scope ?? null;
@@ -126,7 +145,7 @@ export const clearTabBp = () => remove(tab, TAB_KEYS);
 
 /** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). 앞 버전 키도 지운다. */
 export function clearLoginStorage() {
-  remove(local, [KEY.loginInfo, KEY.loginBpInfo, KEY.selectedBp, ...LEGACY_KEYS]);
+  remove(local, [KEY.loginInfo, KEY.loginBpInfo, KEY.selectedBp, KEY.storesChanged, ...LEGACY_KEYS]);
   remove(tab, [...TAB_KEYS, ...LEGACY_KEYS]);
 }
 

@@ -6,7 +6,7 @@ import { Checkbox, FilterPanel, FilterSection, Pagination, SearchField, Select, 
 import { useScope, useStores } from "@/components/site/session-gate";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { EnumValue } from "@/lib/enums";
-import { scopeStores, toPickedStore } from "@/lib/store-scope";
+import { chipsKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
 import { PAGE_SIZES, fillScopeOf, pickedIdsOf, toSearch, unusableScopeOf, withPickedStores, withScopeCondition, type ContractListPage, type ListQuery, type PageSize } from "./contract-list";
 
 // 필터와 페이지는 주소 쿼리에 둔다. 서버 페이지가 그 쿼리로 목록을 다시 받아 그린다.
@@ -58,7 +58,16 @@ export function ContractFilters({
           return store ? toPickedStore(store) : { storeId: id, name: `점포 ${id}`, storeCode: "" };
         });
   // 고르는 즉시 칩이 서도록 쥔다. 주소가 바뀌면 page.tsx 가 key 로 이 필터를 새로 그려 주소 값으로 돌아온다.
-  const [chips, setChips] = useState(() => chipsOf(shown));
+  // 주소는 그대로인데 점포 목록을 다시 맞췄으면(다른 PC · 탭의 등록 · 삭제 · 이름 변경, SessionGate) 칩도 맞춘다 — 직영 · 가맹 칩은
+  // 로그인 정보의 점포로 만들어, 이것 없이는 헤더 10개 · 칩 9개로 남는다(store-filter.tsx 와 같다, 2026-10-30)
+  const shownChips = chipsOf(shown);
+  const [chips, setChips] = useState(shownChips);
+  const shownKey = chipsKeyOf(shownChips);
+  const [chipsKey, setChipsKey] = useState(shownKey);
+  if (chipsKey !== shownKey) {
+    setChipsKey(shownKey);
+    setChips(shownChips);
+  }
 
   // 거르는 조건이 바뀌면 첫 페이지로 간다.
   const apply = (next: Partial<ListQuery>) => go.push({ ...query, staffMemberName, ...next, page: 1 });
