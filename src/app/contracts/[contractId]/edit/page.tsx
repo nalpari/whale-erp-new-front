@@ -18,7 +18,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
   const contractId = Number(raw);
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
-  const { stores, labels, signedIn } = await loadFormData();
+  const { stores, labels, signedIn, denied } = await loadFormData();
   // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403) · BP 를 고르지 않은 플랫폼 계정(400)이면 api 문장을 그대로 보인다(목록과 같다)
   let detail: ContractDetail | null = null;
   let notice = "로그인이 필요합니다.";
@@ -53,17 +53,22 @@ export default async function EditContractPage({ params, searchParams }: PagePro
           ) : detail.status === "CORRECTION_REQUESTED" ? (
             <ContractPermission action="update" fallback={<Notice title="근로계약서를 고칠 권한이 없습니다." contractId={contractId} back={back} />}>
               {/* 재계약 수정 요청도 번호 · 시작일을 임시저장 이어 쓰기와 같이 막는다(api 가 400 으로 다시 본다, api #157 리뷰) */}
-              <ContractForm
-                stores={stores}
-                labels={labels}
-                signedIn
-                contractId={contractId}
-                initial={fromDetail(detail)}
-                correction
-                previousContractId={detail.previousContractId ?? undefined}
-                previousStartDate={previousStartDate}
-                back={back}
-              />
+              {/* 근무지 선택지를 api 가 거절했으면 그 문장(loadFormData) */}
+              {denied !== null ? (
+                <Notice title={denied} contractId={contractId} back={back} />
+              ) : (
+                <ContractForm
+                  stores={stores}
+                  labels={labels}
+                  signedIn
+                  contractId={contractId}
+                  initial={fromDetail(detail)}
+                  correction
+                  previousContractId={detail.previousContractId ?? undefined}
+                  previousStartDate={previousStartDate}
+                  back={back}
+                />
+              )}
             </ContractPermission>
           ) : detail.status !== "DRAFT" ? (
             <Notice title="임시저장 · 수정 요청 근로계약서만 고칠 수 있습니다." back={back} />
@@ -80,22 +85,30 @@ export default async function EditContractPage({ params, searchParams }: PagePro
                 </Notice>
               }
             >
-              <ContractForm
-                stores={stores}
-                labels={labels}
-                signedIn
-                contractId={contractId}
-                initial={fromDetail(detail)}
-                // 재계약 임시저장(WHALEERP-156)은 근무지 · 번호를 바꾸지 않는다(api 가 400 으로 다시 본다)
-                previousContractId={detail.previousContractId ?? undefined}
-                previousStartDate={previousStartDate}
-                back={back}
-                deleteButton={
+              {denied !== null ? (
+                <Notice title={denied} contractId={contractId} back={back}>
                   <ContractPermission action="delete">
                     <DeleteDraftButton contractId={contractId} back={back} />
                   </ContractPermission>
-                }
-              />
+                </Notice>
+              ) : (
+                <ContractForm
+                  stores={stores}
+                  labels={labels}
+                  signedIn
+                  contractId={contractId}
+                  initial={fromDetail(detail)}
+                  // 재계약 임시저장(WHALEERP-156)은 근무지 · 번호를 바꾸지 않는다(api 가 400 으로 다시 본다)
+                  previousContractId={detail.previousContractId ?? undefined}
+                  previousStartDate={previousStartDate}
+                  back={back}
+                  deleteButton={
+                    <ContractPermission action="delete">
+                      <DeleteDraftButton contractId={contractId} back={back} />
+                    </ContractPermission>
+                  }
+                />
+              )}
             </ContractPermission>
           )}
         </div>

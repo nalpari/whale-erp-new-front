@@ -2233,6 +2233,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/contracts/store-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 작성 · 이어 쓰기 화면의 근무지 선택지(WHALEERP-638). 플랫폼 계정은 탭 BP 의 점포다 — 그래서 가드가 대상 BP 를 정하는
+         *     근로계약 경로에 두고, 작성 또는 수정 권한이다(작성 화면과 같다). `:contractId` 보다 먼저 둔다.
+         */
+        get: operations["ContractsController_storeOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/contracts/paper": {
         parameters: {
             query?: never;
@@ -2629,23 +2649,6 @@ export interface paths {
         get?: never;
         /** 한 묶음 켜고 끄기. 그 뒤에 생기는 알림부터 든다 */
         put: operations["MyNotificationPreferencesController_update"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/stores/options": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** 근무지 선택지. 업무 범위 안에서 지우지 않았고 폐점이 아닌 점포, 이름순. `:id` 보다 먼저 둔다. */
-        get: operations["StoresController_options"];
-        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -17244,6 +17247,53 @@ export interface operations {
             };
         };
     };
+    ContractsController_storeOptions: {
+        parameters: {
+            query: {
+                /** @description 쪽 번호. 1부터. */
+                page: number;
+                pageSize: number;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreOptionListResponseDto"];
+                };
+            };
+            /** @description 검색 조건 형식 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근로계약 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ContractsController_createPaper: {
         parameters: {
             query?: never;
@@ -18469,43 +18519,6 @@ export interface operations {
                 content?: never;
             };
             /** @description 관리자 토큰 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    StoresController_options: {
-        parameters: {
-            query: {
-                /** @description 쪽 번호. 1부터. */
-                page: number;
-                pageSize: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StoreOptionListResponseDto"];
-                };
-            };
-            /** @description 검색 조건 형식 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
