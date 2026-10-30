@@ -2316,7 +2316,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/contracts/minimum-wages": {
+    "/contracts/minimum-wage": {
         parameters: {
             query?: never;
             header?: never;
@@ -2324,10 +2324,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 최저임금(공통코드 MINIMUM_WAGE) — 작성 · 이어 쓰기 화면이 시급 칸 도움말과 수습 중 시급 확인에 쓴다(WHALEERP-595).
-         *     저장도 같은 값으로 다시 본다. `:contractId` 보다 먼저 둔다.
+         * 지금 최저임금(공통코드 MINIMUM_WAGE · HOURLY) — 작성 · 이어 쓰기 화면이 시급 칸 도움말과 수습 중 시급 확인에 쓴다
+         *     (WHALEERP-595). 저장도 같은 값으로 다시 본다. 공통코드를 쓸 수 없으면 hourlyWage 는 null, problem 이 저장 400 문장이다.
+         *     `:contractId` 보다 먼저 둔다.
          */
-        get: operations["ContractsController_minimumWages"];
+        get: operations["ContractsController_minimumWage"];
         put?: never;
         post?: never;
         delete?: never;
@@ -7697,14 +7698,18 @@ export interface components {
             contractId: number;
             staffMemberId: number;
         };
-        MinimumWageDto: {
-            /** @description 시행일 YYYY-MM-DD — 이날부터 적용 */
-            effectiveDate: string;
-            /** @description 시급(원) */
-            hourlyWage: number;
-        };
-        MinimumWagesResponseDto: {
-            items: components["schemas"]["MinimumWageDto"][];
+        MinimumWageResponseDto: {
+            /**
+             * @description 시급(원). 공통코드를 쓸 수 없으면 null
+             * @example 10320
+             */
+            hourlyWage: number | null;
+            /**
+             * @description 공통코드를 쓸 수 없는 까닭(없음 · 사용 중지 · 코드명이 숫자 아님) — 수습이 있는 계약을 저장하면 이 문장으로 400 이다.
+             *     쓸 수 있으면 null
+             * @example null
+             */
+            problem: string | null;
         };
         ContractStatusHistoryDto: {
             /** @description 처음 만든 줄은 null */
@@ -17601,7 +17606,7 @@ export interface operations {
             };
         };
     };
-    ContractsController_minimumWages: {
+    ContractsController_minimumWage: {
         parameters: {
             query?: never;
             header?: {
@@ -17618,7 +17623,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MinimumWagesResponseDto"];
+                    "application/json": components["schemas"]["MinimumWageResponseDto"];
                 };
             };
             /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */

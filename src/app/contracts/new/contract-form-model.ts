@@ -429,15 +429,11 @@ export function weeklyHolidayOf(f: Schedule & Partial<Pick<ContractForm, "weekly
   return FROM_SUNDAY.find((d) => !f.days.includes(d)) ?? "NO_DAY_OFF";
 }
 
-/** 최저임금 한 시행일 — api 공통코드 MINIMUM_WAGE(`GET /contracts/minimum-wages`, WHALEERP-595) */
-export type MinimumWage = components["schemas"]["MinimumWageDto"];
-
-/** 그날 적용되는 최저임금 — 시행일이 그날 이전(그날 포함)인 것 중 가장 늦은 것. 없으면 null. api 와 같다 */
-export function minimumWageOn(wages: readonly MinimumWage[], date: string): MinimumWage | null {
-  let found: MinimumWage | null = null;
-  for (const w of wages) if (w.effectiveDate <= date && (!found || w.effectiveDate > found.effectiveDate)) found = w;
-  return found;
-}
+/**
+ * 지금 최저임금 — api 공통코드 MINIMUM_WAGE · HOURLY 하나(`GET /contracts/minimum-wage`, WHALEERP-595). 계약 시작일과 상관없이
+ * 이 값으로 본다. 공통코드를 쓸 수 없으면 hourlyWage 는 null, problem 이 저장 400 문장이다
+ */
+export type MinimumWage = components["schemas"]["MinimumWageResponseDto"];
 
 /** 수습 중 시급의 하한 — 최저임금의 90%, 원 미만 올림(노무사 확인 2026-10-14, 질문 19). api 와 같다 */
 export const probationWageFloor = (minimumWage: number) => Math.ceil((minimumWage * 90) / 100);
@@ -503,7 +499,7 @@ export function fieldProblems(
   temporary = false,
   hasEmploymentFile = false,
   previousStartDate?: string,
-  minimumWages: readonly MinimumWage[] = [],
+  minimumWage: MinimumWage | null = null,
 ): Problem[] {
   const out: Problem[] = [];
   const add = (field: ProblemField, message: string) => out.push({ field, message });
@@ -550,12 +546,14 @@ export function fieldProblems(
   if (f.employmentType === "FULL_TIME" && f.probation) {
     if (!probationTermOk(f)) add("probationMonths", "수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다.");
     if (!/^\d+$/.test(f.probationRate) || Number(f.probationRate) > 10) add("probationRate", "수습 임금 감액률은 0~10% 정수로 입력하세요.");
-    // 계약 시작일에 적용되는 최저임금으로 본다 — 시작일이 없거나 그날 값이 없으면(첫 시행일 전) api 처럼 보지 않는다
+    // 지금 최저임금으로 본다(계약 시작일과 상관없이, api 와 같다). 공통코드를 쓸 수 없으면 api 가 저장을 막는 그 문장을 먼저
+    // 보인다. 최저임금을 받지 못했으면(null) 화면은 보지 않고 저장 때 api 가 본다
     const pw = probationWage(f);
-    const minimum = f.startDate ? minimumWageOn(minimumWages, f.startDate) : null;
-    const floor = minimum ? probationWageFloor(minimum.hourlyWage) : null;
-    if (pw !== null && floor !== null && pw < floor)
-      add("probationWage", `수습 중 시급은 최저임금의 90%(${floor.toLocaleString("ko-KR")}원) 이상이어야 합니다.`);
+    if (pw !== null && minimumWage?.problem) add("probationWage", minimumWage.problem);
+    else if (pw !== null && minimumWage?.hourlyWage) {
+      const floor = probationWageFloor(minimumWage.hourlyWage);
+      if (pw < floor) add("probationWage", `수습 중 시급은 최저임금의 90%(${floor.toLocaleString("ko-KR")}원) 이상이어야 합니다.`);
+    }
   }
   return out;
 }
