@@ -4,6 +4,8 @@ import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FieldMessage, FormGroup, FormRow, Radio, Select, Textarea, TextField, useAction } from "@/components/common";
 import { FieldErrors, useInvalid } from "../field-errors";
+import { useCurrentBp } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
 import { SAVED_COOKIE, SAVED_COOKIE_MAX_AGE, backHrefOf, listAfterSave, savedKindOf, withBack } from "../contract-list";
@@ -294,13 +296,16 @@ export function ContractForm({
   const [form, setForm] = useState<Form>(() => initial ?? initialForm(stores.length === 1 ? String(stores[0].storeId) : ""));
   // 저장을 한 번 누른 뒤부터 막는 이유를 보인다. 처음부터 빨간 줄을 띄우지 않는다.
   const router = useRouter();
+  // 화면 주소 · 종이 계약 창구는 탭 BP 를 붙인다 — proxy 가 그 BP 를 api 에 싣는다. back 은 옛 경로(목록 쿼리)다
+  const bp = useCurrentBp().bpCodeId;
+  const at = (path: string) => bpPath(bp, path);
   const [serverError, setServerError] = useState("");
   const [saving, startSaving] = useTransition();
   // 저장 · 종이 계약 등록 요청은 화면 전체 딤으로 감싼다 — 고쳐 쓰기(correction)는 「수정중」, 새 계약 · 임시저장 이어 쓰기 · 종이 계약 등록은 「등록중」
   const create = useAction(createContract, { kind: "create" });
   const update = useAction(updateContract, { kind: correction ? "update" : "create" });
   const postPaper = useAction(async (data: FormData) => {
-    const res = await fetch("/contracts/paper", { method: "POST", body: data });
+    const res = await fetch(at("/contracts/paper"), { method: "POST", body: data });
     return { status: res.status, body: res.status === 401 ? null : await res.json().catch(() => null) };
   }, { kind: "create" });
   const [locked, setLocked] = useState(false);
@@ -375,7 +380,7 @@ export function ContractForm({
         // 서버 액션 호출 자체가 끊겼다(앞단 504 · 배포 중 재시작 · 네트워크) — 저장 = 발송이라 이미 저장 · 발송됐을 수 있다.
         // 이어 쓰기는 상세로 옮겨 알리고, 새 계약은 같은 폼으로 다시 저장하지 못하게 막는다(front #50 재리뷰).
         if (contractId) {
-          router.replace(withBack(`/contracts/${contractId}?send=unknown`, back));
+          router.replace(at(withBack(`/contracts/${contractId}?send=unknown`, back)));
           return;
         }
         setLocked(true);
@@ -415,8 +420,8 @@ export function ContractForm({
       if (result.ok) {
         // 저장 뒤 안내는 서버 액션과 같이 저장 응답으로 고른다(종이 계약 등록이면 체결 완료 — 쿠키 SAVED_COOKIE, WHALEERP-132)
         const kind = savedKindOf(result);
-        if (kind) document.cookie = `${SAVED_COOKIE}=${kind}; path=/contracts; max-age=${SAVED_COOKIE_MAX_AGE}; samesite=lax`;
-        router.push(listAfterSave(back, contractId ? body.storeId : null));
+        if (kind) document.cookie = `${SAVED_COOKIE}=${kind}; path=${at("/contracts")}; max-age=${SAVED_COOKIE_MAX_AGE}; samesite=lax`;
+        router.push(at(listAfterSave(back, contractId ? body.storeId : null)));
         return;
       }
       // 기간이 겹치는 체결 완료(SIGNED_CONTRACT_OVERLAP)면 바로잡기를 묻는다. 재계약은 api 가 RENEWAL_SIGNED_OVERLAP 으로 막기만 해
@@ -529,7 +534,7 @@ export function ContractForm({
     <div ref={formRef} className="flex flex-col gap-[12px] [&_:is(select,input:not([type=radio],[type=checkbox])):disabled]:bg-erp-thead-bg">
       <div className="flex items-end gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약서</h2>
-        <Button variant="off" href={backHrefOf(back)}>
+        <Button variant="off" href={at(backHrefOf(back))}>
           취소
         </Button>
         {deleteButton}

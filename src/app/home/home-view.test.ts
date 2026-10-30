@@ -45,10 +45,10 @@ test("api 가 이 화면이 모르는 처리 대기 유형을 주면 null(그 �
   assert.equal(pendingLineOf(item({ type: "SOMETHING_NEW" as HomePendingItem["type"] }), 8), null);
 });
 
-test("서명 대기 — 이름 외 N명 · 발송 후 경과, 근로계약 목록의 점포 · 상태로 간다", () => {
+test("서명 대기 — 이름 외 N명 · 발송 후 경과, 탭 BP 의 근로계약 목록 점포 · 상태로 간다", () => {
   const line = pendingLineOf(item({}), 8)!;
   assert.deepEqual([line.kind, line.title, line.desc], ["계약", "근로계약 서명 대기 3건", "남도현 외 2명 · 발송 후 6일 경과"]);
-  assert.equal(line.href, "/contracts?storeIds=3%2C7&status=PENDING_SIGNATURE");
+  assert.equal(line.href, "/bp/8/contracts?storeIds=3%2C7&status=PENDING_SIGNATURE");
   const q = readListQuery(searchOf(line.href));
   assert.deepEqual([q.storeIds, q.status], [[3, 7], ["PENDING_SIGNATURE"]]);
 });

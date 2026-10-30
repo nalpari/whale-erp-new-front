@@ -52,7 +52,7 @@ export function pendingHrefOf(item: HomePendingItem, bpCodeId: number): string {
     case "CONTRACT_RENEWAL":
     case "CONTRACT_PENDING_SIGNATURE":
     case "CONTRACT_CORRECTION_REQUESTED":
-      return listHrefOf({ page: 1, pageSize: 20, staffMemberName: "", status, storeIds, storesCleared: false, scope: null });
+      return bpPath(bpCodeId, listHrefOf({ page: 1, pageSize: 20, staffMemberName: "", status, storeIds, storesCleared: false, scope: null }));
     case "AFFILIATION_REJECTED":
       // 직원 목록은 가입 상태를 묶음으로만 거른다 — 그 상태가 든 묶음(거절은 「초대」)
       return staffListHrefOf({
