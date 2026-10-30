@@ -35,7 +35,7 @@ const MENUS_MAX = 1000;
 
 /** 메뉴 목록이 api 로 보낼 수 있는 모양인가. 아니면 화면에 보일 실패를 돌려준다. server action 은 공개 엔드포인트라 다시 본다. */
 export function menusFailure(menus: unknown): ActionFailure | null {
-  if (!Array.isArray(menus)) return { ok: false, status: 400, message: "메뉴 목록이 올바르지 않습니다" };
-  if (menus.length > MENUS_MAX) return { ok: false, status: 400, message: "한 번에 저장할 수 있는 메뉴 수를 넘었습니다" };
+  if (!Array.isArray(menus)) return { ok: false, status: 400, message: "메뉴 목록이 올바르지 않습니다." };
+  if (menus.length > MENUS_MAX) return { ok: false, status: 400, message: "한 번에 저장할 수 있는 메뉴 수를 넘었습니다." };
   return null;
 }

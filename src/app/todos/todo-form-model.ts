@@ -61,17 +61,17 @@ export function fromDetail(d: TodoDetail): TodoForm {
  */
 export function problems(f: TodoForm, today: string, original?: Pick<TodoDetail, "dueDate">): string[] {
   const out: string[] = [];
-  if (!f.title.trim()) out.push("제목을 입력해 주세요");
-  else if (f.title.trim().length > MAX_TITLE) out.push("제목은 100자까지입니다");
-  if (f.body.trim().length > MAX_BODY) out.push("내용은 2,000자까지입니다");
+  if (!f.title.trim()) out.push("제목을 입력해 주세요.");
+  else if (f.title.trim().length > MAX_TITLE) out.push("제목은 100자까지입니다.");
+  if (f.body.trim().length > MAX_BODY) out.push("내용은 2,000자까지입니다.");
   if (!original) {
-    if (!f.storeId) out.push("근무지를 골라 주세요");
-    if (f.assigneeType === "INDIVIDUAL" && f.staff.length === 0) out.push("직원을 한 명 이상 골라 주세요");
-    if (f.assigneeType === "INDIVIDUAL" && f.staff.length > MAX_STAFF) out.push("직원은 200명까지 고를 수 있습니다");
+    if (!f.storeId) out.push("근무지를 골라 주세요.");
+    if (f.assigneeType === "INDIVIDUAL" && f.staff.length === 0) out.push("직원을 한 명 이상 골라 주세요.");
+    if (f.assigneeType === "INDIVIDUAL" && f.staff.length > MAX_STAFF) out.push("직원은 200명까지 고를 수 있습니다.");
   }
-  if (!f.dueDate) out.push("수행 예정 날짜를 입력해 주세요");
-  else if (f.dueDate < today && f.dueDate !== original?.dueDate) out.push("지난 날짜는 고를 수 없습니다");
-  if (f.dueTime && !TIME.test(f.dueTime)) out.push("수행 시간은 HH:mm 입니다");
+  if (!f.dueDate) out.push("수행 예정 날짜를 입력해 주세요.");
+  else if (f.dueDate < today && f.dueDate !== original?.dueDate) out.push("지난 날짜는 고를 수 없습니다.");
+  if (f.dueTime && !TIME.test(f.dueTime)) out.push("수행 시간은 HH:mm 입니다.");
   return out;
 }
 

@@ -28,10 +28,10 @@ export function sendBodyOf(seen: SeenContract | null | undefined): SendContractB
 export type SendFailure = { ok: false; error: string; code?: string; recheck: boolean; blocked?: true };
 
 /** 접수됐는지 모를 때(응답이 끊김 · 코드 없는 502 · 504)의 문장 */
-export const SEND_UNKNOWN = "발송됐는지 알 수 없습니다. 상세를 다시 읽었으니 직원에게 받았는지 확인한 뒤 다시 보내 주세요";
+export const SEND_UNKNOWN = "발송됐는지 알 수 없습니다. 상세를 다시 읽었으니 직원에게 받았는지 확인한 뒤 다시 보내 주세요.";
 
 /** 발송 대기 종료(WHALEERP-327)가 됐는지 모를 때의 문장 — 종료도 sendFailureOf 규칙으로 고른다 */
-export const END_UNKNOWN = "종료됐는지 확인하지 못했습니다. 상세를 다시 읽었으니 상태를 확인해 주세요";
+export const END_UNKNOWN = "종료됐는지 확인하지 못했습니다. 상세를 다시 읽었으니 상태를 확인해 주세요.";
 
 /**
  * api 응답(status · 본문의 code · 문장)으로 실패를 고른다. status 가 null 이면 응답을 받지 못했다(연결이 끊김).
@@ -133,7 +133,7 @@ export const saveOutcomeUnknown = (status: number | null, code: string | undefin
 
 /** 새 계약 저장의 결과를 받지 못했을 때 — 계약 ID 를 몰라 상세로 옮기지 못한다. 같은 폼으로 다시 저장하지 못하게 막는다 */
 export const SAVE_UNKNOWN_NEW =
-  "저장 요청의 결과를 받지 못했습니다. 저장 · 발송됐을 수 있으니 목록에서 확인해 주세요 — 이 화면에서 다시 저장하면 한 벌 더 만들어 두 번 보낼 수 있습니다";
+  "저장 요청의 결과를 받지 못했습니다. 저장 · 발송됐을 수 있으니 목록에서 확인해 주세요 — 이 화면에서 다시 저장하면 한 벌 더 만들어 두 번 보낼 수 있습니다.";
 
 /**
  * 상세 위쪽 안내(?send=). 되돌아간 상태에 맞춰 할 일을 알린다 — 임시저장이면 이어 쓰기에서 다시 저장, 수정 요청이면 「수정」에서
@@ -141,15 +141,15 @@ export const SAVE_UNKNOWN_NEW =
  */
 export function sendNoticeOf(raw: unknown, status: string | null): string | null {
   if (raw === "unconfirmed")
-    return "저장했지만 가입 초대 알림톡이 접수됐는지 알 수 없습니다. 직원에게 받았는지 확인한 뒤 재발송해 주세요 — 다시 보내면 두 번 갈 수 있습니다";
+    return "저장했지만 가입 초대 알림톡이 접수됐는지 알 수 없습니다. 직원에게 받았는지 확인한 뒤 재발송해 주세요 — 다시 보내면 두 번 갈 수 있습니다.";
   if (raw === "unknown")
-    return "저장 요청의 결과를 받지 못했습니다. 아래 상태로 저장됐는지 확인하고, 보냈다면 직원에게 받았는지 확인한 뒤 필요할 때만 다시 보내 주세요";
+    return "저장 요청의 결과를 받지 못했습니다. 아래 상태로 저장됐는지 확인하고, 보냈다면 직원에게 받았는지 확인한 뒤 필요할 때만 다시 보내 주세요.";
   if (raw !== "failed") return null;
   if (status === "DRAFT")
-    return "가입 초대 알림톡을 보내지 못해 임시저장으로 두었습니다. 휴대전화번호를 확인하고 이어 쓰기에서 다시 저장해 주세요";
+    return "가입 초대 알림톡을 보내지 못해 임시저장으로 두었습니다. 휴대전화번호를 확인하고 이어 쓰기에서 다시 저장해 주세요.";
   if (status === "CORRECTION_REQUESTED")
-    return "고친 내용은 저장했지만 가입 초대 알림톡을 보내지 못해 수정 요청으로 두었습니다. 휴대전화번호를 확인하고 「수정」에서 다시 저장해 주세요";
-  return "고친 내용은 저장했지만 가입 초대 알림톡을 보내지 못했습니다. 휴대전화번호를 확인하고 재발송해 주세요";
+    return "고친 내용은 저장했지만 가입 초대 알림톡을 보내지 못해 수정 요청으로 두었습니다. 휴대전화번호를 확인하고 「수정」에서 다시 저장해 주세요.";
+  return "고친 내용은 저장했지만 가입 초대 알림톡을 보내지 못했습니다. 휴대전화번호를 확인하고 재발송해 주세요.";
 }
 
 /** 저장 서버 액션을 부른 결과를 받지 못했다(호출 자체가 끊김) */
@@ -209,7 +209,7 @@ export function saveFailureOf(e: ApiError, log: Record<string, unknown>): SaveFa
  * 4xx 는 api 문구. 401 은 로그인이 필요하다는 고정 문구.
  */
 export function deleteFailureOf(e: ApiError, log: Record<string, unknown>): string {
-  if (e.status === 401) return "로그인이 필요합니다";
+  if (e.status === 401) return "로그인이 필요합니다.";
   const code = (e.body as { code?: unknown } | null)?.code;
   const unknown = saveOutcomeUnknown(e.status, typeof code === "string" ? code : undefined);
   return failureOf(e, "삭제", log, { definite: !unknown }).message;

@@ -21,7 +21,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
   const { stores, labels, signedIn } = await loadFormData();
   // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403)이면 api 문장을 그대로 보인다(목록과 같다)
   let detail: ContractDetail | null = null;
-  let notice = "로그인이 필요합니다";
+  let notice = "로그인이 필요합니다.";
   if (signedIn) {
     try {
       detail = await request<ContractDetail>(`/contracts/${contractId}`, { headers: await authHeaders() });
@@ -49,7 +49,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
           {!signedIn || !detail ? (
             <Notice title={notice} back={back} />
           ) : detail.status === "CORRECTION_REQUESTED" ? (
-            <ContractPermission action="update" fallback={<Notice title="근로계약서를 고칠 권한이 없습니다" contractId={contractId} back={back} />}>
+            <ContractPermission action="update" fallback={<Notice title="근로계약서를 고칠 권한이 없습니다." contractId={contractId} back={back} />}>
               {/* 재계약 수정 요청도 번호 · 시작일을 임시저장 이어 쓰기와 같이 막는다(api 가 400 으로 다시 본다, api #157 리뷰) */}
               <ContractForm
                 stores={stores}
@@ -64,14 +64,14 @@ export default async function EditContractPage({ params, searchParams }: PagePro
               />
             </ContractPermission>
           ) : detail.status !== "DRAFT" ? (
-            <Notice title="임시저장 · 수정 요청 근로계약서만 고칠 수 있습니다" back={back} />
+            <Notice title="임시저장 · 수정 요청 근로계약서만 고칠 수 있습니다." back={back} />
           ) : (
             // 임시저장 이어 쓰기는 작성의 연장이라 작성 권한으로 연다(api 도 저장에 작성 권한을 본다). 삭제 버튼은 삭제 권한이 있을 때만 —
             // 이어 쓸 수 없어도 삭제 권한이 있으면 안내 줄에서 지울 수 있다
             <ContractPermission
               action="create"
               fallback={
-                <Notice title="근로계약서를 이어 쓸 권한이 없습니다" contractId={contractId} back={back}>
+                <Notice title="근로계약서를 이어 쓸 권한이 없습니다." contractId={contractId} back={back}>
                   <ContractPermission action="delete">
                     <DeleteDraftButton contractId={contractId} back={back} />
                   </ContractPermission>

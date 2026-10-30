@@ -9,26 +9,26 @@ import { inProgressOf, signedOverlapOf } from "../new/contract-form-model";
 // 성공하면 { ok: true }, 실패하면 화면에 보일 { error, inProgress?, signedOverlap? } 를 api 와 같은 상태 코드로 준다(같은 점포 진행 중
 // 계약은 409 CONTRACT_IN_PROGRESS, 기간이 겹치는 체결 완료는 409 SIGNED_CONTRACT_OVERLAP — WHALEERP-156).
 
-const SERVER_DOWN = "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요";
+const SERVER_DOWN = "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.";
 // 경로에 넣는 id — 1..2147483647 정수만. 화면 밖에서 직접 부를 수 있어 api 의 다른 경로로 새지 않게 막는다.
 const isContractId = (raw: string) => /^[1-9][0-9]{0,9}$/.test(raw) && Number(raw) <= 2_147_483_647;
 
 export async function POST(req: NextRequest) {
   // 상태를 바꾸는 라우트 핸들러라 다른 출처의 요청은 막는다. 쿠키 sameSite lax 는 교차 사이트만 막고, 같은 등록 도메인의 다른 서브도메인은
   // 막지 못한다(서버 액션이면 Next 가 하는 검사). 기준은 서버 액션과 같다 — lib/paper-request.ts.
-  if (!sameOrigin(req.headers.get("origin"), req.headers.get("x-forwarded-host"), req.headers.get("host"))) return NextResponse.json({ error: "허용되지 않은 요청입니다" }, { status: 403 });
+  if (!sameOrigin(req.headers.get("origin"), req.headers.get("x-forwarded-host"), req.headers.get("host"))) return NextResponse.json({ error: "허용되지 않은 요청입니다." }, { status: 403 });
   const headers = await authHeaders();
-  if (!headers.Authorization) return NextResponse.json({ error: "로그인이 필요합니다" }, { status: 401 });
+  if (!headers.Authorization) return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
   let form: FormData;
   try {
     form = await req.formData();
   } catch {
-    return NextResponse.json({ error: "보낸 내용을 읽지 못했습니다" }, { status: 400 });
+    return NextResponse.json({ error: "보낸 내용을 읽지 못했습니다." }, { status: 400 });
   }
   const contractId = form.get("contractId");
   form.delete("contractId");
   if (contractId !== null && (typeof contractId !== "string" || !isContractId(contractId)))
-    return NextResponse.json({ error: "근로계약을 찾을 수 없습니다" }, { status: 404 });
+    return NextResponse.json({ error: "근로계약을 찾을 수 없습니다." }, { status: 404 });
 
   let response: Response;
   try {

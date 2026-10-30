@@ -26,10 +26,10 @@ test("상세 값으로 폼을 채운다 — 번호는 하이픈, 비어 있는 �
 test("다섯 칸 모두 필수 — 성별 · 생년월일이 없으면 막는다", () => {
   assert.deepEqual(workerProblems(filled), []);
   assert.deepEqual(workerProblems({ ...filled, name: " ", phone: "010", birthDate: "", gender: "" }), [
-    "이름을 입력하세요",
-    "휴대전화번호는 숫자 10~11자리입니다",
-    "생년월일을 입력하세요",
-    "성별을 고르세요",
+    "이름을 입력하세요.",
+    "휴대전화번호는 숫자 10~11자리입니다.",
+    "생년월일을 입력하세요.",
+    "성별을 고르세요.",
   ]);
 });
 
@@ -51,7 +51,7 @@ test("저장 뒤 상태 안내 — 서명 기한 30일 · 가입 초대 대상�
 test("오류는 칸마다 — 화면이 그 칸 아래에 보인다(WHALEERP-631)", () => {
   assert.deepEqual(workerProblemsByField(filled), {});
   assert.deepEqual(workerProblemsByField({ ...filled, phone: "010", gender: "" }), {
-    phone: "휴대전화번호는 숫자 10~11자리입니다",
-    gender: "성별을 고르세요",
+    phone: "휴대전화번호는 숫자 10~11자리입니다.",
+    gender: "성별을 고르세요.",
   });
 });

@@ -154,7 +154,7 @@ export function WorkerForm({
       {/* 화면이 막은 유효성 오류는 칸 아래에 보이고, 여기는 api 가 막은 것만이다(WHALEERP-631) */}
       {serverError && (
         <div ref={failureRef} role="alert" className="flex flex-col gap-[4px] rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px]">
-          <p className="text-[14px] font-semibold text-erp-off">저장하지 못했습니다</p>
+          <p className="text-[14px] font-semibold text-erp-off">저장하지 못했습니다.</p>
           <p className="text-[14px] leading-[1.6] text-erp-ink">{serverError}</p>
         </div>
       )}

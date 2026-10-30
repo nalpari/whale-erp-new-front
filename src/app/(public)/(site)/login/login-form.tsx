@@ -17,7 +17,7 @@ const ICON_BUTTON = "flex size-[16px] items-center justify-center";
 // 칸 아래 오류 문구 — 회원가입(required-field.tsx)과 같은 모양.
 const FIELD_ERROR = "text-[14px] leading-[1.5] text-[#e93737]";
 // 빈칸 문구는 화면 정의(S-XJDKSI)대로다. 형식은 검사하지 않는다(okf/auth.md).
-const EMPTY = { loginId: "아이디를 입력해주세요.", password: "비밀번호를 입력해주세요." } as const;
+const EMPTY = { loginId: "아이디를 입력해 주세요.", password: "비밀번호를 입력해 주세요." } as const;
 type EmptyField = keyof typeof EMPTY;
 
 // 모양은 Figma 「로그인전_로그인」 샘플(design/guest/login/login-form.tsx)의 폼 규격(guest-form.ts)을 쓴다(2026-10-19).

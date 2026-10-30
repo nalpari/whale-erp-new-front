@@ -39,7 +39,7 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
         if (cancelled) return;
         console.error("BP 목록 조회 실패", e);
         setResult(null);
-        setFailure(e instanceof BffError ? e.message : "BP 목록을 불러오지 못했습니다");
+        setFailure(e instanceof BffError ? e.message : "BP 목록을 불러오지 못했습니다.");
       },
     );
     return () => {
@@ -54,15 +54,18 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
     onClose();
   };
 
+  // 미사용 · 탈퇴 BP 는 BP코드 · 상호명 · 계정상태를 회색으로(2026-10-29 사용자 지정). 사용 BP 상호명은 굵게(아래)
+  const muted = (r: BpOption) => (r.accountStatusCode === "ACTIVE" ? undefined : "text-erp-muted");
   const columns: Column<BpOption>[] = [
-    { header: "BP코드", width: "w-[110px]", cell: (r) => r.bpCode },
+    { header: "BP코드", width: "w-[110px]", cell: (r) => <span className={muted(r)}>{r.bpCode}</span> },
     // 줄을 눌러도 고르지만, 키보드로도 고를 수 있게 상호 칸을 라디오로 둔다.
     {
       header: "상호명",
       align: "left",
-      // 사용 BP 상호명은 굵게, 미사용 · 탈퇴는 보통 굵기(2026-10-29 사용자 지정). Radio 는 className 을 받지 않아 감싸는 칸에서 굵기를 물려준다
+      // 사용 BP 상호명은 굵게, 미사용 · 탈퇴는 보통 굵기 · 회색(2026-10-29 사용자 지정). Radio 는 className 을 받지 않아 감싸는 칸에서
+      // 굵기를 물려주고, 글자색은 Radio 라벨이 먹색으로 고정이라 감싸는 칸에서 라벨을 골라 덮는다
       cell: (r) => (
-        <div className={r.accountStatusCode === "ACTIVE" ? "font-semibold" : undefined}>
+        <div className={r.accountStatusCode === "ACTIVE" ? "font-semibold" : "[&_label]:text-erp-muted"}>
           <Radio
             name="bp"
             label={r.bpCodeId === currentBp.bpCodeId ? `${r.tradeName} (현재)` : r.tradeName}
@@ -72,7 +75,7 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
         </div>
       ),
     },
-    { header: "계정상태", width: "w-[80px]", cell: (r) => statusLabel(r.accountStatusCode) },
+    { header: "계정상태", width: "w-[80px]", cell: (r) => <span className={muted(r)}>{statusLabel(r.accountStatusCode)}</span> },
   ];
   const totalPages = result ? Math.ceil(result.total / query.pageSize) : 0;
 

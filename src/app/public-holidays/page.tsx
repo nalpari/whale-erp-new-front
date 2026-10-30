@@ -51,11 +51,11 @@ export default async function PublicHolidaysPage({ searchParams }: PageProps<"/p
             <div className="flex flex-wrap items-center gap-[12px]">
               <YearSelect />
               {lastSynchronizedAt && <span className="text-[14px] text-erp-label">최종 동기화 {formatDateTime(lastSynchronizedAt)}</span>}
-              {needsAnnouncementNote(query.year, Number(today.slice(0, 4))) && <span className="text-[14px] text-erp-label">임시공휴일 · 선거일은 정부 발표 후 반영됩니다</span>}
+              {needsAnnouncementNote(query.year, Number(today.slice(0, 4))) && <span className="text-[14px] text-erp-label">임시공휴일 · 선거일은 정부 발표 후 반영됩니다.</span>}
             </div>
             {showsSyncFailure(failedYears, query.year) && (
               <div role="status" className="flex flex-col gap-[6px] rounded-[2px] border border-erp-off bg-erp-off-bg px-[18px] py-[12px] text-[14px]">
-                <p className="font-semibold text-erp-off">{query.year}년 공식 휴일 동기화가 실패했습니다 — 저장된 휴일을 그대로 보여 드립니다</p>
+                <p className="font-semibold text-erp-off">{query.year}년 공식 휴일 동기화가 실패했습니다 — 저장된 휴일을 그대로 보여 드립니다.</p>
                 <p className="text-erp-ink">실패한 동기화는 휴일을 바꾸지 않았습니다. 아래 휴일은 직전 동기화 값 또는 규칙으로 계산한 값이며, 다음 정기 동기화에서 다시 맞춥니다.</p>
               </div>
             )}
@@ -177,7 +177,7 @@ function HolidayList({ year, holidays, total }: { year: number; holidays: Public
   return (
     <>
       <SectionHead title={`${year}년`} count={total}>
-        <span className="text-[14px] text-erp-label">목록은 고른 연도 한 해를 보여 줍니다</span>
+        <span className="text-[14px] text-erp-label">목록은 고른 연도 한 해를 보여 줍니다.</span>
       </SectionHead>
       <DataTable columns={LIST_COLUMNS} rows={holidays} rowKey={(h) => h.publicHolidayId} />
     </>

@@ -280,7 +280,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
               />
               {drag.dragging !== null && (
                 <div {...drag.endProps} className="flex h-[46px] items-center justify-center border border-t-0 border-dashed border-erp-thead-line text-[13px] text-erp-label">
-                  여기에 놓으면 최상위 맨 끝으로 옮깁니다
+                  여기에 놓으면 최상위 맨 끝으로 옮깁니다.
                 </div>
               )}
               {drag.indicator}

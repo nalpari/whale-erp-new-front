@@ -326,15 +326,15 @@ export function withdrawBody(R, { panel = false } = {}) {
   // 실제 값으로 바뀌는 자리(BP 이름·계정 수·점포 수)는 굵게 + 밑줄로 표시한다.
   const live = (t) => `<b class="font-semibold underline">${t}</b>`;
   const warn = notice(
-    "탈퇴 전 꼭 확인해 주세요",
+    "탈퇴 전 꼭 확인해 주세요.",
     [
       `탈퇴하면 ${live(BP.name)}의 서비스 이용이 종료됩니다. 동일한 BP에 속한 관리자·가맹 계정 ${live("6개")}도 함께 탈퇴되어 더 이상 로그인할 수 없습니다.`,
       {
-        head: `점포 ${live("11개")}가 모두 폐점 처리됩니다`,
+        head: `점포 ${live("11개")}가 모두 폐점 처리됩니다.`,
         text: `점포 보유 여부는 탈퇴를 제한하지 않습니다.<br>탈퇴 처리 시 점포의 현재 운영 상태나 폐점 조건을 별도로 확인하지 않고, 운영·미운영 점포 ${live("11개")}를 모두 폐점 처리합니다.`,
       },
       {
-        head: "개인정보가 삭제됩니다",
+        head: "개인정보가 삭제됩니다.",
         text: "탈퇴 계정의 이름·연락처·이메일과 대표자의 연락처·이메일은 즉시 삭제되며, 아이디만 보관됩니다. 직원·계약·정산 정보와 변경이력은 보존 정책에 따라 보관됩니다.",
       },
       "탈퇴한 계정은 복구할 수 없습니다.<br>정말 탈퇴하시겠습니까?",
@@ -494,7 +494,9 @@ function platformScopeDialog(A, R, id) {
   // 사용 BP 만 상호명을 굵게(앱 bp-select-dialog.tsx 와 같다, 2026-10-29)
   const rows = PLATFORM_BPS.map(([code, name, status]) => {
     const radio = ui.radio(name, `${id}-bp`, false, { "data-bp-code": code, "data-bp-name": name });
-    return [code, status === "사용" ? `<div class="font-semibold">${radio}</div>` : radio, status];
+    // 미사용 · 탈퇴는 BP코드 · 상호명 · 계정상태를 회색으로(앱과 같다, 2026-10-29)
+    const gray = (v) => (status === "사용" ? v : `<span class="text-erp-muted">${v}</span>`);
+    return [gray(code), status === "사용" ? `<div class="font-semibold">${radio}</div>` : `<div class="[&_label]:text-erp-muted">${radio}</div>`, gray(status)];
   });
   const table = ui.dataTable(columns, rows).replace("</tbody>", `${ui.tableEmptyRow(columns).replace("<tr ", "<tr hidden data-bp-none ")}</tbody>`);
   const body =

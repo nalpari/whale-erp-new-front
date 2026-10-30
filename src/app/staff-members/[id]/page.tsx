@@ -16,6 +16,7 @@ import { ContractBox } from "./contract-box";
 import { Box } from "./detail-box";
 import { employmentHistoryLines, historySearch } from "./employment-history";
 import { MenuManageLink } from "./manage-link";
+import { SendLogBox } from "./send-log-box";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
 import { AttendanceBox, PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
 import { attendanceManageHref, scheduleWeekOf } from "./summary-view";
@@ -29,10 +30,10 @@ export const metadata: Metadata = {
 const PENDING = "-";
 // 기다리는 동안의 빈 자리(영역 하나, 그리고 상세 본문 묶음) — 상세 진입 · 작은 영역에는 고래 로딩을 쓰지 않는다. 최소 높이만 잡아 영역이 들어올 때 상자 높이가 크게 출렁이지 않게 한다.
 const AREA_PENDING = <div aria-hidden="true" className="min-h-[92px]" />;
-// 바깥 LoadGroup(본문 전체) fallback 에만 스크린리더용 안내를 붙인다 — 영역 4곳까지 읽히면 「로딩중입니다」가 여럿 겹친다
+// 바깥 LoadGroup(본문 전체) fallback 에만 스크린리더용 안내를 붙인다 — 영역 4곳까지 읽히면 「로딩중입니다.」가 여럿 겹친다
 const BODY_PENDING = (
   <div role="status" className="min-h-[92px]">
-    <span className="sr-only">로딩중입니다</span>
+    <span className="sr-only">로딩중입니다.</span>
   </div>
 );
 
@@ -60,7 +61,7 @@ async function loadEnumOrEmpty(name: string): Promise<EnumValue[]> {
 }
 
 // 직원 상세(WHALEERP-184). 배치는 데모 docs/demo/staff/detail.html(원본 src/pages/staff/detail.mjs)과 같다 — 5:7 두 단,
-// 왼쪽은 기본 정보 · 비밀번호 초기화 · 근로계약, 오른쪽은 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO.
+// 왼쪽은 기본 정보 · 비밀번호 초기화 · 근로계약, 오른쪽은 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO. 두 단 아래에 발송 이력(WHALEERP-136, 데모에 없음).
 // 기본 정보는 상세 api(GET /staff-members/:id, WHALEERP-599 · 183)로 받는다 — 목록 한 줄에 계정 이메일 · 직무 · 입사일 · 생년월일을 더한 모양이다.
 // 근로계약 · 근무스케줄 · 급여명세서 · TO-DO 건수는 영역마다 상세 요약 api(GET /staff-members/:id/summary/…, WHALEERP-183)로 따로 받아
 // 한 영역만 실패하거나 그 영역 메뉴 권한이 없어도 나머지는 그린다(summary-boxes.tsx). 가린 직원 · 없는 직원 · 이상한 id 는 404 다.
@@ -161,7 +162,7 @@ export default async function StaffMemberDetailPage({
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>
               <StaffDetailActions staff={staff} today={today} listHref={listHref} />
             </div>
-            {/* 처음 들어올 때는 제목 줄 아래 본문 전체(기본 정보 · 네 영역)를 LoadGroup 이 빈 자리로 덮고(상세 진입에는 고래를 쓰지 않는다), 네 영역이 모두 온 뒤 한 번에 보인다.
+            {/* 처음 들어올 때는 제목 줄 아래 본문 전체(기본 정보 · 영역들)를 LoadGroup 이 빈 자리로 덮고(상세 진입에는 고래를 쓰지 않는다), 영역이 모두(발송 이력 포함) 온 뒤 한 번에 보인다.
                   영역은 LoadGroupArea 가 각자 세기만 한다 */}
             <LoadGroup fallback={BODY_PENDING}>
               <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
@@ -229,6 +230,15 @@ export default async function StaffMemberDetailPage({
                     </LoadGroupArea>
                   </Box>
                 </div>
+              </div>
+              {/* 발송 이력(WHALEERP-136) — 열이 많아 두 단 아래 전체 너비로 둔다. 따로 된 발송 이력 화면은 두지 않기로 해(2026-10-26 김민식)
+                  「관리」 자리를 비운다 — 흐린 「관리」(준비 중)는 생길 화면이 있다는 뜻이라 쓰지 않는다 */}
+              <div className="mt-[24px]">
+                <Box title="발송 이력" manage={false}>
+                  <LoadGroupArea fallback={AREA_PENDING}>
+                    <SendLogBox staffMemberId={staffMemberId} />
+                  </LoadGroupArea>
+                </Box>
               </div>
             </LoadGroup>
           </div>

@@ -1799,6 +1799,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/staff-members/{id}/summary/send-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 발송 이력 영역 — 근로계약이 보낸 가입 초대 · 소속 추가 확인 요청(재발송 포함)의 결과 · 실패 사유 · 재시도 가능 여부, 최근 순
+         *     (WHALEERP-136). 근로계약 관리 조회 권한
+         */
+        get: operations["StaffMemberSummaryController_sendLogs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/staff-members/{id}/summary/todos": {
         parameters: {
             query?: never;
@@ -6778,11 +6798,19 @@ export interface components {
         StaffMemberContractSummaryResponseDto: {
             /**
              * @description 신고 정보의 급여 계좌 — 은행 이름 · 계좌번호 전체(하이픈 없음, 가리지 않음). 신고 정보가 없으면 null. 계약이 없어도
-             *     신고 정보가 있으면 오고, 급여 지급 방식(계좌 · 현금)과 상관없다
+             *     신고 정보가 있으면 오고, 급여 지급 방식(계좌 · 현금)과 상관없다. canViewPayrollAccount 가 false 이면 신고 정보를
+             *     읽지 않고 항상 null
              */
             payrollAccount: components["schemas"]["StaffMemberPayrollAccountDto"] | null;
             /** @description 계약이 없으면 null */
             contract: components["schemas"]["StaffMemberContractSummaryDto"] | null;
+            /**
+             * @description 이 관리자가 이 직원의 급여 계좌를 볼 수 있는가. 본사 역할(BP 마스터 · BP 관리자)이 가맹 점포 직원을 보면 false —
+             *     본사 제공 동의를 했어도 그렇다(동의 범위에 신고 정보가 없고 계좌는 가맹 점포 사업주가 받는 정보, 운영 정책 TAX-07 ·
+             *     TAX-08, 재영 2026-10-29). 그 밖(직영 점포 직원, 가맹마스터 · 가맹관리자)은 true. false 이면 화면은 「급여 계좌」 줄
+             *     자체를 숨긴다
+             */
+            canViewPayrollAccount: boolean;
         };
         StaffMemberWeekScheduleItemDto: {
             workScheduleId: number;
@@ -6832,6 +6860,34 @@ export interface components {
             recent: components["schemas"]["StaffMemberRecentPayslipDto"][];
             /** @description 발송 완료가 아닌 명세서 수 — 작성 중 · 검토 중 · 확정 */
             unsentCount: number;
+        };
+        /** @enum {string} */
+        StaffSendKind: "SIGNUP_INVITE" | "AFFILIATION_REQUEST";
+        /**
+         * @description 비즈뿌리오 접수 기준. 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다
+         * @enum {string}
+         */
+        StaffSendResult: "SUCCEEDED" | "FAILED" | "UNCONFIRMED";
+        StaffMemberSendLogDto: {
+            kind: components["schemas"]["StaffSendKind"];
+            /** @description 비즈뿌리오 접수 기준. 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다 */
+            result: components["schemas"]["StaffSendResult"];
+            /** @description 알림톡 발송 이력 ID(alimtalk_send_logs) */
+            sendLogId: number;
+            /** @description 보낸 근로계약 */
+            contractId: number;
+            /** @description 같은 계약에 앞서 나간 발송이 있었다(재발송 · 고쳐 다시 보냄) */
+            isResend: boolean;
+            /** @description 관리자에게 보일 실패 사유. 성공이면 null */
+            failureReason: string | null;
+            /** @description 다시 보내도 되는가 — 확실히 나가지 않은 실패만 true, 접수 여부 모름은 false. 성공이면 null */
+            retryable: boolean | null;
+            /** Format: date-time */
+            sentAt: string;
+        };
+        StaffMemberSendLogResponseDto: {
+            /** @description 이 직원 레코드의 모든 근로계약 발송, 최근 순 */
+            items: components["schemas"]["StaffMemberSendLogDto"][];
         };
         /** @enum {string} */
         TodoStatus: "PENDING" | "IN_PROGRESS" | "DONE";
@@ -7552,6 +7608,17 @@ export interface components {
             /** @description 올린 파일의 원래 이름 */
             fileName: string;
         };
+        /** @enum {string} */
+        ContractTaxProfileState: "OK" | "NONE" | "HIDDEN" | "UNAVAILABLE";
+        ContractTaxProfileDto: {
+            status: components["schemas"]["ContractTaxProfileState"];
+            /** @description 가린 주민등록번호 — 앞 6자리 + 뒷자리 첫 자(예 900101-1******). 원문은 API 밖으로 나가지 않는다 */
+            rrnMasked: string | null;
+            /** @description 은행 이름(BANK 공통코드 이름, 예 KB국민은행). 공통코드에 없으면 은행 코드 그대로 */
+            bankName: string | null;
+            /** @description 계좌번호 전체 — 하이픈 없음, 가리지 않음(직원 상세 급여 계좌와 같다) */
+            accountNumber: string | null;
+        };
         ContractDetailDto: {
             startDate: string | null;
             endDate: string | null;
@@ -7655,6 +7722,8 @@ export interface components {
             canResend: boolean;
             /** @description 직원이 가입을 마쳤는가 — 거부 · 만료 재발송이 앱(서명 대기)으로 가는지 가입 초대(발송 대기)로 가는지 확인창 문구를 가른다 */
             staffJoined: boolean;
+            /** @description 직원의 신고 정보(주민등록번호 · 급여 계좌) — 읽기만. 풀 수 없어도 상세는 열리고 이 칸만 UNAVAILABLE 이다 */
+            taxProfile: components["schemas"]["ContractTaxProfileDto"];
         };
         UpdateWorkerDto: {
             /** @description 성별 — 남 · 여. 가입 때 직원이 넣은 값과 본인 대조한다(WHALEERP-125). 임시저장은 비워도 된다 */
@@ -10701,7 +10770,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 맞는 계정이 없음. 어느 값이 틀렸든 같은 메시지(「일치하는 계정이 없습니다」)이고 실패 1회로 센다 */
+            /** @description 맞는 계정이 없음. 어느 값이 틀렸든 같은 메시지(「일치하는 계정이 없습니다.」)이고 실패 1회로 센다 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -10839,7 +10908,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 플랫폼 관리자에게 문의해 주세요」 */
+            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 플랫폼 관리자에게 문의해 주세요.」 */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -14232,7 +14301,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴를 찾을 수 없습니다 */
+            /** @description 메뉴를 찾을 수 없습니다. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14279,7 +14348,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴를 찾을 수 없습니다 */
+            /** @description 메뉴를 찾을 수 없습니다. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14340,7 +14409,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴를 찾을 수 없습니다 */
+            /** @description 메뉴를 찾을 수 없습니다. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -15622,6 +15691,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StaffMemberPayslipSummaryResponseDto"];
+                };
+            };
+            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMemberSummaryController_sendLogs: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMemberSendLogResponseDto"];
                 };
             };
             /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
@@ -17435,7 +17542,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 거부 · 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(거부 · 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 기간이 끝남, 기간이 겹치거나 더 늦게 시작한 다른 체결 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(거부 · 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
+            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 거부 · 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(거부 · 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 기간이 끝남, 기간이 겹치거나 더 늦게 시작한 다른 체결 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(거부 · 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다.」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -22440,7 +22547,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 지금 비밀번호가 맞지 않음(「지금 비밀번호가 맞지 않습니다」) · 이메일 형식 · 지금 이메일과 같음 */
+            /** @description 지금 비밀번호가 맞지 않음(「지금 비밀번호가 맞지 않습니다.」) · 이메일 형식 · 지금 이메일과 같음 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -22475,7 +22582,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 관리자에게 문의해 주세요」 */
+            /** @description 보내기 전에 막힘(메일 템플릿 꺼짐 · 제목 없음 · DB 오류) — 「메일 설정 문제로 … 관리자에게 문의해 주세요.」 */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -22673,7 +22780,7 @@ export interface operations {
                     "application/json": components["schemas"]["MyTaxProfileResponseDto"];
                 };
             };
-            /** @description 형식 오류 · 바꿀 값 없음(TAX_PROFILE_EMPTY) · 고치는데 지금 비밀번호가 없거나 틀림(CURRENT_PASSWORD_MISMATCH — 「지금 비밀번호가 맞지 않습니다」, 내 소속 확인 뒤 · 다른 검사 전에 본다) · 처음인데 셋 중 빠짐(TAX_PROFILE_INCOMPLETE) · 은행 · 계좌번호 한쪽만(TAX_PROFILE_ACCOUNT_INCOMPLETE) · 주민등록번호 앞자리와 가입 생년월일이 다름(RRN_BIRTH_MISMATCH — 관리자에게 정정 요청) · 없는 은행(BANK_CODE_UNKNOWN) */
+            /** @description 형식 오류 · 바꿀 값 없음(TAX_PROFILE_EMPTY) · 고치는데 지금 비밀번호가 없거나 틀림(CURRENT_PASSWORD_MISMATCH — 「지금 비밀번호가 맞지 않습니다.」, 내 소속 확인 뒤 · 다른 검사 전에 본다) · 처음인데 셋 중 빠짐(TAX_PROFILE_INCOMPLETE) · 은행 · 계좌번호 한쪽만(TAX_PROFILE_ACCOUNT_INCOMPLETE) · 주민등록번호 앞자리와 가입 생년월일이 다름(RRN_BIRTH_MISMATCH — 관리자에게 정정 요청) · 없는 은행(BANK_CODE_UNKNOWN) */
             400: {
                 headers: {
                     [name: string]: unknown;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition, type FormEvent, type ReactNode } from "react";
-import { Button, Checkbox, PasswordInput, RequiredMark } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, PasswordInput, RequiredMark } from "@/components/common";
 import { changeForcedPassword, logout } from "@/app/actions";
 import { signOut } from "@/lib/bff";
 import { passwordChecks } from "@/lib/password";
@@ -23,6 +23,9 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
   // 정책 위반은 비밀번호 칸 아래, 약관 미동의는 약관 아래에 보인다.
   const [error, setError] = useState<{ at: "password" | "terms"; message: string } | null>(null);
   const [pending, startTransition] = useTransition();
+  // 결과 안내 — 브라우저 alert 대신 공통 확인창([확인] 하나)으로 띄우고, 누르면 다음 동작을 한다(2026-10-29 사용자 지적 — 「localhost 내용:」 창이 떴다)
+  // title 이 없으면 「비밀번호 변경」. 비밀번호가 만료된 안내는 「비밀번호 만료」(2026-10-29 사용자 지정)
+  const [notice, setNotice] = useState<{ title?: string; text: ReactNode; then: () => void } | null>(null);
   const needTerms = account.isTermsAgreementRequired;
   const agreed = !needTerms || (terms.use && terms.policy);
 
@@ -48,108 +51,149 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
         newPasswordConfirm: confirm,
         ...(needTerms && { isTermsAgreed: true }),
       });
-      // shortcut: 안내는 브라우저 alert 다. 공통 확인 팝업이 생기면 바꾼다.
       if (r.status === 204) {
-        alert("비밀번호가 변경되었습니다.");
-        onDone();
+        setNotice({ text: "비밀번호가 변경되었습니다.", then: onDone });
       } else if (r.status === 409) {
         onDone(); // 이미 바꾼 계정이다. 팝업만 닫는다.
       } else if (r.status === 401) {
         // 발급 비밀번호가 만료됐으면 api 문구가 비밀번호 찾기를 안내한다. 팝업을 오래 열어 둬 접근 토큰이 끝난 401 이면 세션 만료로 안내한다.
-        alert(r.message?.startsWith("발급받은 비밀번호") ? r.message : "세션이 만료되었습니다. 다시 로그인해 주세요");
-        await signOut(logout);
+        const expired = r.message?.startsWith("발급받은 비밀번호");
+        setNotice({
+          title: expired ? "비밀번호 만료" : undefined,
+          text: expired ? r.message : "세션이 만료되었습니다. 다시 로그인해 주세요.",
+          then: () => void signOut(logout),
+        });
       } else {
-        const message = r.message ?? "비밀번호를 변경하지 못했습니다";
+        const message = r.message ?? "비밀번호를 변경하지 못했습니다.";
         setError({ at: r.status === 400 && message.includes("약관") ? "terms" : "password", message });
       }
     });
   };
 
   return (
-    // #ebebeb 팝업 테두리·그림자는 DESIGN.md Popups 의 값
-    <dialog
-      ref={ref}
-      aria-labelledby="force-password-title"
-      // React 는 cancel·close 를 트리 위로 올린다. 안쪽 약관 팝업의 Esc 까지 막지 않게 이 팝업의 것만 다룬다.
-      onCancel={(e) => e.target === e.currentTarget && e.preventDefault()}
-      // Chrome 은 사용자 입력 뒤 cancel 막기를 한 번만 허용해 두 번째 Esc 는 그냥 닫는다. 닫히면 바로 다시 연다.
-      onClose={(e) => e.target === e.currentTarget && ref.current?.showModal()}
-      // 폭 520 — 탈퇴 사유 팝업과 같다(2026-10-28 사용자 지정, 전엔 등록 패널 폭 464)
-      className="m-auto w-[520px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
-    >
-      <form onSubmit={submit} className="flex flex-col gap-[18px]">
-        <div className="flex flex-col gap-[6px]">
-          <h2 id="force-password-title" className="text-[18px] font-semibold">
-            새 비밀번호 설정
-          </h2>
-          <p className="text-[15px] text-erp-label">서비스 이용을 위해 새로운 비밀번호를 설정해 주세요.</p>
-        </div>
+    <>
+      {/* #ebebeb 팝업 테두리·그림자는 DESIGN.md Popups 의 값 */}
+      <dialog
+        ref={ref}
+        aria-labelledby="force-password-title"
+        // React 는 cancel·close 를 트리 위로 올린다. 안쪽 약관 팝업의 Esc 까지 막지 않게 이 팝업의 것만 다룬다.
+        onCancel={(e) => e.target === e.currentTarget && e.preventDefault()}
+        // Chrome 은 사용자 입력 뒤 cancel 막기를 한 번만 허용해 두 번째 Esc 는 그냥 닫는다. 닫히면 바로 다시 연다.
+        onClose={(e) => e.target === e.currentTarget && ref.current?.showModal()}
+        // 폭 520 — 탈퇴 사유 팝업과 같다(2026-10-28 사용자 지정, 전엔 등록 패널 폭 464)
+        className="m-auto w-[520px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
+      >
+        <form onSubmit={submit} className="flex flex-col gap-[18px]">
+          <div className="flex flex-col gap-[6px]">
+            <h2 id="force-password-title" className="text-[18px] font-semibold">
+              새 비밀번호 설정
+            </h2>
+            <p className="text-[15px] text-erp-label">서비스 이용을 위해 새로운 비밀번호를 설정해 주세요.</p>
+          </div>
 
-        {account.temporaryPasswordExpiresAt && <Remaining expiresAt={account.temporaryPasswordExpiresAt} />}
-
-        <InkField label="새 비밀번호">
-          {/* 크롬 비밀번호 생성 제안 창을 막는다 — new-password 대신 off, 1Password · LastPass 도 빼 둔다(2026-10-28 사용자 지정). 크롬 버전에 따라 다 막히지 않을 수 있다 */}
-          {/* 칸 끝에 보기 · 숨기기 눈 아이콘 — 다른 비밀번호 변경 화면과 같은 공통 PasswordInput(2026-10-28 사용자 지정) */}
-          <PasswordInput
-            fieldLabel="새 비밀번호"
-            autoComplete="off"
-            data-1p-ignore
-            data-lpignore="true"
-            placeholder="영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요."
-            maxLength={20}
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onBlur={() => setPasswordTouched(true)}
-            aria-invalid={(passwordTouched && Boolean(ruleError)) || undefined}
-          />
-        </InkField>
-        {passwordTouched && ruleError && <ErrorText>{ruleError}</ErrorText>}
-        {/* 약관 제목 · 전체 동의 문구는 회원가입(agree-section.tsx)과 같다 — 「약관동의」 · 「모두 동의합니다.」(2026-10-28 사용자 지정).
-            조건 체크 줄 · 「현재 비밀번호는 묻지 않습니다」 · 약관 동의 옆 설명은 지웠다(2026-10-28 사용자 지정) — 조건은 칸 안내와 저장 때 검사가 알린다 */}
-        {error?.at === "password" && <ErrorText>{error.message}</ErrorText>}
-        <InkField label="새 비밀번호 확인">
-          <PasswordInput
-            fieldLabel="새 비밀번호 확인"
-            autoComplete="off"
-            data-1p-ignore
-            data-lpignore="true"
-            maxLength={20}
-            required
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            aria-invalid={mismatch || undefined}
-          />
-        </InkField>
-        {mismatch && <ErrorText>비밀번호가 일치하지 않습니다.</ErrorText>}
-
-        {needTerms && (
-          <fieldset className="flex flex-col gap-[12px] border-t border-erp-divider pt-[18px]">
-            <legend className="sr-only">약관동의</legend>
-            <p>
-              <b className="text-[16px] font-semibold">약관동의</b>
-            </p>
-            <Checkbox
-              label="모두 동의합니다."
-              checked={terms.use && terms.policy}
-              onChange={(e) => setTerms({ use: e.target.checked, policy: e.target.checked })}
+          {account.temporaryPasswordExpiresAt && (
+            <Remaining
+              expiresAt={account.temporaryPasswordExpiresAt}
+              onExpire={() =>
+              // 변경 완료 안내가 떠 있으면 덮지 않는다 — 바꾼 뒤 시간이 다 되어도 로그아웃시키지 않는다(리뷰로 찾음)
+              setNotice((current) => current ?? {
+                title: "비밀번호 만료",
+                text: (
+                  <>
+                    임시 비밀번호 사용 시간이 지났습니다.
+                    <br />
+                    다시 로그인해 주세요.
+                  </>
+                ),
+                then: () => void signOut(logout),
+              })
+            }
             />
-            <TermsRow kind="use" label="이용약관 동의 (필수)" checked={terms.use} onChange={(use) => setTerms({ ...terms, use })} />
-            <TermsRow kind="policy" label="개인정보 수집·이용 동의 (필수)" checked={terms.policy} onChange={(policy) => setTerms({ ...terms, policy })} />
-            {error?.at === "terms" && <ErrorText>{error.message}</ErrorText>}
-          </fieldset>
-        )}
-        {/* 버튼은 가운데, 로그아웃도 버튼 모양(Off) — 다른 확인창의 [취소][확인] 줄과 같다(2026-10-28 사용자 지정) */}
-        <div className="flex justify-center gap-[6px]">
-          <Button variant="off" onClick={() => signOut(logout)}>
-            로그아웃
-          </Button>
-          <Button type="submit" disabled={pending || !agreed || mismatch || !filled || Boolean(ruleError)}>
-            {pending ? "변경 중" : "변경"}
-          </Button>
-        </div>
-      </form>
-    </dialog>
+          )}
+
+          <InkField label="새 비밀번호">
+            {/* 크롬 비밀번호 생성 제안 창을 막는다 — new-password 대신 off, 1Password · LastPass 도 빼 둔다(2026-10-28 사용자 지정). 크롬 버전에 따라 다 막히지 않을 수 있다 */}
+            {/* 칸 끝에 보기 · 숨기기 눈 아이콘 — 다른 비밀번호 변경 화면과 같은 공통 PasswordInput(2026-10-28 사용자 지정) */}
+            <PasswordInput
+              fieldLabel="새 비밀번호"
+              autoComplete="off"
+              data-1p-ignore
+              data-lpignore="true"
+              placeholder="영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요."
+              maxLength={20}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => setPasswordTouched(true)}
+              aria-invalid={(passwordTouched && Boolean(ruleError)) || undefined}
+            />
+          </InkField>
+          {passwordTouched && ruleError && <ErrorText>{ruleError}</ErrorText>}
+          {/* 약관 제목 · 전체 동의 문구는 회원가입(agree-section.tsx)과 같다 — 「약관동의」 · 「모두 동의합니다.」(2026-10-28 사용자 지정).
+              조건 체크 줄 · 「현재 비밀번호는 묻지 않습니다」 · 약관 동의 옆 설명은 지웠다(2026-10-28 사용자 지정) — 조건은 칸 안내와 저장 때 검사가 알린다 */}
+          {error?.at === "password" && <ErrorText>{error.message}</ErrorText>}
+          <InkField label="새 비밀번호 확인">
+            <PasswordInput
+              fieldLabel="새 비밀번호 확인"
+              autoComplete="off"
+              data-1p-ignore
+              data-lpignore="true"
+              maxLength={20}
+              required
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              aria-invalid={mismatch || undefined}
+            />
+          </InkField>
+          {mismatch && <ErrorText>비밀번호가 일치하지 않습니다.</ErrorText>}
+
+          {needTerms && (
+            <fieldset className="flex flex-col gap-[12px] border-t border-erp-divider pt-[18px]">
+              <legend className="sr-only">약관동의</legend>
+              <p>
+                <b className="text-[16px] font-semibold">약관동의</b>
+              </p>
+              <Checkbox
+                label="모두 동의합니다."
+                checked={terms.use && terms.policy}
+                onChange={(e) => setTerms({ use: e.target.checked, policy: e.target.checked })}
+              />
+              <TermsRow kind="use" label="이용약관 동의 (필수)" checked={terms.use} onChange={(use) => setTerms({ ...terms, use })} />
+              <TermsRow kind="policy" label="개인정보 수집·이용 동의 (필수)" checked={terms.policy} onChange={(policy) => setTerms({ ...terms, policy })} />
+              {error?.at === "terms" && <ErrorText>{error.message}</ErrorText>}
+            </fieldset>
+          )}
+          {/* 버튼은 가운데, 로그아웃도 버튼 모양(Off) — 다른 확인창의 [취소][확인] 줄과 같다(2026-10-28 사용자 지정) */}
+          <div className="flex justify-center gap-[6px]">
+            <Button variant="off" onClick={() => signOut(logout)}>
+              로그아웃
+            </Button>
+            <Button type="submit" disabled={pending || !agreed || mismatch || !filled || Boolean(ruleError)}>
+              {pending ? "변경 중" : "변경"}
+            </Button>
+          </div>
+        </form>
+      </dialog>
+      {/* 안내 확인창 — 강제 변경 팝업 위 최상위 레이어에 뜬다. Esc 도 [확인]과 같다 */}
+      <ConfirmDialog
+        open={!!notice}
+        // 제목은 이 팝업의 일 — 「안내」보다 무엇에 대한 것인지 바로 읽힌다(2026-10-29 사용자 지정)
+        title={notice?.title ?? "비밀번호 변경"}
+        cancelLabel={null}
+        onConfirm={() => {
+          const then = notice?.then;
+          setNotice(null);
+          then?.();
+        }}
+        onCancel={() => {
+          const then = notice?.then;
+          setNotice(null);
+          then?.();
+        }}
+      >
+        {notice?.text}
+      </ConfirmDialog>
+    </>
   );
 }
 
@@ -190,7 +234,7 @@ function TermsRow({ kind, label, checked, onChange }: { kind: "use" | "policy"; 
 }
 
 // 임시 비밀번호 남은 시간. 다 되면 세션이 끝나므로 로그아웃해 로그인 화면으로 보낸다(S-QCNVFC).
-function Remaining({ expiresAt }: { expiresAt: string }) {
+function Remaining({ expiresAt, onExpire }: { expiresAt: string; onExpire: () => void }) {
   const end = Date.parse(expiresAt);
   const [now, setNow] = useState(() => Date.now());
   const left = Math.max(0, end - now);
@@ -201,9 +245,9 @@ function Remaining({ expiresAt }: { expiresAt: string }) {
   }, []);
   useEffect(() => {
     if (left !== 0) return;
-    // shortcut: 안내는 브라우저 alert 다. 공통 확인 팝업이 생기면 바꾼다.
-    alert("임시 비밀번호 사용 시간이 지났습니다. 다시 로그인해 주세요");
-    signOut(logout);
+    onExpire();
+    // onExpire 는 렌더마다 새 함수라 넣지 않는다 — 시간이 다 된 그 한 번만 부른다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [left]);
 
   if (Number.isNaN(end)) return null; // 잘못된 시각이면 남은 시간을 보이지 않는다(만료는 api 가 끊는다).

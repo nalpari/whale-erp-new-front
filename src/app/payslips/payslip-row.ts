@@ -47,7 +47,7 @@ export const sentDateText = (item: Pick<PayslipListItem, "lastSentAt">) => sentT
 export function earningHelp(item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "calculatedAmount" | "adjustedAmount">, isPremiumApplied: boolean): string {
   // 가산을 끄면 연장수당을 가산 없이 1배로 계산하고, 관리자가 넣는 야간 · 휴일근무수당은 가산 대상이 아니다(PAY-05, 2026-10-26 재영).
   if (!isPremiumApplied && (item.itemCode === "NIGHT_WORK_PAY" || item.itemCode === "HOLIDAY_WORK_PAY"))
-    return "가산 대상 아님 · 넣어도 가산하지 않는다";
+    return "가산 대상 아님 · 넣어도 가산하지 않는다.";
   if (item.isTaxFree) return "비과세";
   if (item.calculatedAmount === null) return "직접 입력";
   // 계산값을 고쳤으면 계산값을 함께 보인다(okf/staff.md 급여). 계산 근거 글자(데모 「8.0h × 1.5배」)는 api 에 칸이 없다.
@@ -102,7 +102,7 @@ export function reviewBand(reasons: readonly PayslipReviewReason[], labelOf: (re
   if (!shown.length) return null;
   const [head] = shown;
   const title =
-    head.reviewReason === "MISSING_ATTENDANCE" ? "출퇴근 기록이 누락되어 검토 대기로 분류되었습니다" : `${labelOf(head.reviewReason)} 사유로 검토 대기로 분류되었습니다`;
+    head.reviewReason === "MISSING_ATTENDANCE" ? "출퇴근 기록이 누락되어 검토 대기로 분류되었습니다." : `${labelOf(head.reviewReason)} 사유로 검토 대기로 분류되었습니다.`;
   const details = shown.map((r) => r.detail ?? labelOf(r.reviewReason));
   return { title, desc: `${details.join(". ")}. 확인한 뒤에는 경고가 있어도 확정할 수 있습니다.` };
 }

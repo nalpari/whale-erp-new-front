@@ -15,7 +15,7 @@ export function contractDetail({ A, R }, c) {
   const content = p.section(
     "계약 내용",
     p.ask("원본 내려받기", "off", "근로계약서 원본을 내려받으시겠습니까?", c.doc, "내려받기") +
-      ui.button("날인본 내려받기", { variant: "off", disabled: true, title: "종이 계약일 때만 쓴다" }),
+      ui.button("날인본 내려받기", { variant: "off", disabled: true, title: "종이 계약일 때만 쓴다." }),
     ui.detailTable(c.kind, c.rows),
   );
   const history = p.section(

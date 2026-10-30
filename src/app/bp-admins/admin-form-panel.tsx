@@ -404,12 +404,6 @@ export function AdminFormPanel(props: Props) {
       </h2>
       {bpBlocked && <WarnBand>BP가 탈퇴 또는 미사용 상태로, 관리자를 등록할 수 없습니다.</WarnBand>}
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}
-      {locks.stores && (
-        <Note>
-          수정 화면에서는 기본정보(이름 · 연락처 · 이메일)만 바뀝니다. 권한명 · 계정상태 · 대상점포는 이 계정을 관리할 수 있는 다른 사용자가,
-          비밀번호는 내 정보에서 직접 바꿉니다.
-        </Note>
-      )}
 
       {/* 막힌 칸만 회색으로 그린다 — 공통 입력칸 토큰은 그대로 두고 이 화면 테두리에서만 셈한다(platform-admins 와 같다) */}
       <div className="flex flex-col gap-[24px] [&_select:disabled]:bg-erp-thead-bg">
@@ -501,7 +495,7 @@ export function AdminFormPanel(props: Props) {
                   value={form.accountStatus}
                   onChange={(e) => set("accountStatus", e.target.value as BpAdminForm["accountStatus"])}
                   disabled={locks.status}
-                  title={locks.status ? "본인 계정의 상태는 바꿀 수 없습니다" : undefined}
+                  title={locks.status ? "본인 계정의 상태는 바꿀 수 없습니다." : undefined}
                   aria-required
                 >
                   <option value="ACTIVE">사용</option>
@@ -510,7 +504,7 @@ export function AdminFormPanel(props: Props) {
               </Field>
               {deactivationImpact && deactivationImpact.deactivatedCount > 0 && (
                 <InfoBand>
-                  <p>가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 계정도 함께 멈춥니다</p>
+                  <p>가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 계정도 함께 멈춥니다.</p>
                   <p className="font-normal text-erp-label">
                     가맹 관리자 {andOthers(deactivationImpact.firstDeactivatedLoginId, deactivationImpact.deactivatedCount)} → 미사용
                   </p>
@@ -556,7 +550,7 @@ export function AdminFormPanel(props: Props) {
                 ) : noGroupForRole ? (
                   // [이동]은 환경설정 > 권한그룹 관리(/bp-role-groups, 이 탭 BP 주소)로 간다 — 권한명이 없으면 어차피 저장할 수 없다(2026-10-28 사용자 지정 문구)
                   <span className="flex items-center gap-[10px]">
-                    <FieldMessage id={messageId("roleGroupId")} message="선택할 수 있는 권한명이 없습니다. 먼저 권한명을 등록해주세요." />
+                    <FieldMessage id={messageId("roleGroupId")} message="선택할 수 있는 권한명이 없습니다. 먼저 권한명을 등록해 주세요." />
                     <Button variant="soft" href={bpPath(currentBp.bpCodeId, "/bp-role-groups")}>
                       이동
                     </Button>
@@ -570,12 +564,12 @@ export function AdminFormPanel(props: Props) {
                 value={form.roleGroupId}
                 onChange={(e) => set("roleGroupId", e.target.value)}
                 disabled={locks.roleGroup || !form.roleTypeCode}
-                title={locks.roleGroup ? "이 계정의 권한명은 여기서 바꿀 수 없습니다" : undefined}
+                title={locks.roleGroup ? "이 계정의 권한명은 여기서 바꿀 수 없습니다." : undefined}
                 aria-invalid={invalid("roleGroupId")}
                 aria-describedby={groupsFailed || noGroupForRole ? messageId("roleGroupId") : describe("roleGroupId")}
                 aria-required
               >
-                {!form.roleGroupId && <option value="">{form.roleTypeCode ? "선택" : "계정 역할을 먼저 골라 주세요"}</option>}
+                {!form.roleGroupId && <option value="">{form.roleTypeCode ? "선택" : "계정역할을 먼저 선택하세요."}</option>}
                 {groupOptions.map((r) => (
                   <option key={r.roleGroupId} value={r.roleGroupId}>
                     {r.name} · {r.roleCode}
@@ -589,29 +583,32 @@ export function AdminFormPanel(props: Props) {
         {/* 상세와 같은 「대상점포」(2026-10-27 사용자 지정) */}
         <FormGroup title="대상점포">
           {/* 「전체 점포」가 막힌 이유를 라벨 옆에 둔다(2026-10-27 사용자 지정 문구 · 자리). 공통코드 이름은 띄어 쓰지 않아(가맹마스터) 문구를 적어 둔다 */}
-          <HintedField
-            label="범위"
-            required={!locks.scope}
-            hint={form.roleTypeCode === "FM" || form.roleTypeCode === "FA" ? `${form.roleTypeCode === "FM" ? "가맹 마스터" : "가맹 관리자"}는 점포를 골라서 맡습니다.` : undefined}
-          >
-            <Select
-              value={form.isAllStores ? "ALL" : "PART"}
-              onChange={(e) => {
-                set("isAllStores", e.target.value === "ALL");
-                clearError("stores");
-              }}
-              disabled={locks.scope || !allowsAllStores(form.roleTypeCode)}
-              aria-required={!locks.scope}
-              title={
-                locks.scope && mode === "edit" && props.admin.isAllStores
-                  ? "관리 범위가 일부 점포인 사용자는 전체 점포 계정의 범위를 바꿀 수 없습니다"
-                  : undefined
-              }
+          {/* 점포를 고칠 수 없는 계정(본인 계정)은 범위 칸을 두지 않고 맡은 점포만 글로 보인다(2026-10-29 사용자 지정) */}
+          {!locks.stores && (
+            <HintedField
+              label="범위"
+              required={!locks.scope}
+              hint={form.roleTypeCode === "FM" || form.roleTypeCode === "FA" ? `${form.roleTypeCode === "FM" ? "가맹마스터" : "가맹관리자"}는 '일부 점포'만 선택할 수 있습니다.` : undefined}
             >
-              <option value="ALL">전체 점포</option>
-              <option value="PART">일부 점포</option>
-            </Select>
-          </HintedField>
+              <Select
+                value={form.isAllStores ? "ALL" : "PART"}
+                onChange={(e) => {
+                  set("isAllStores", e.target.value === "ALL");
+                  clearError("stores");
+                }}
+                disabled={locks.scope || !allowsAllStores(form.roleTypeCode)}
+                aria-required={!locks.scope}
+                title={
+                  locks.scope && mode === "edit" && props.admin.isAllStores
+                    ? "관리 범위가 일부 점포인 사용자는 전체 점포 계정의 범위를 바꿀 수 없습니다."
+                    : undefined
+                }
+              >
+                <option value="ALL">전체 점포</option>
+                <option value="PART">일부 점포</option>
+              </Select>
+            </HintedField>
+          )}
           {!form.isAllStores && !locks.stores && (
             <div className="flex flex-col gap-[8px]">
               {optionsFailure && (
@@ -629,17 +626,32 @@ export function AdminFormPanel(props: Props) {
                 onChange={(next) => set("stores", next)}
                 loading={!!optionsRole && !optionsReady && !optionsFailure}
                 failed={!!optionsFailure}
+                // 후보는 계정 역할마다 다르다(가맹 마스터면 다른 가맹 마스터 담당 점포가 빠진다) — 역할을 고르기 전엔 받지 않으니 찾기를 막는다. 권한명은 상관없다
+                blocked={form.roleTypeCode ? undefined : "계정역할을 먼저 선택하세요."}
                 invalid={invalid("stores")}
                 describedBy={describe("stores")}
               />
               {message("stores")}
             </div>
           )}
-          {!form.isAllStores && locks.stores && mode === "edit" && (
-            <p className="text-[14px] text-erp-label">
-              {props.admin.stores.map((s) => s.name).join(", ") || "매핑된 점포가 없습니다."}
-            </p>
-          )}
+          {/* 고칠 수 없으면 맡은 점포를 한 줄씩 — 점포명 + 점포 상태(2026-10-29 사용자 지정, 전엔 쉼표로 이은 이름만). 유형은 api 가 주지 않아 두지 않는다.
+              위의 막힌 칸(계정 역할 · 권한명)과 같은 회색 바탕 · 회색 글자 상자에 담아 고칠 수 없다는 것을 보인다(2026-10-29 사용자 지정) */}
+          {locks.stores &&
+            mode === "edit" &&
+            (props.admin.isAllStores || !props.admin.stores.length ? (
+              <p className="rounded-[2px] border border-erp-field-line bg-erp-thead-bg px-[10px] py-[7px] text-[14px] text-erp-label">
+                {props.admin.isAllStores ? "전체 점포" : "매핑된 점포가 없습니다."}
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-[8px] rounded-[2px] border border-erp-field-line bg-erp-thead-bg px-[10px] py-[8px] text-[14px] text-erp-label">
+                {props.admin.stores.map((s) => (
+                  <li key={s.storeId} className="flex items-center justify-between gap-[10px]">
+                    <span className="min-w-0 truncate">{s.name}</span>
+                    <StoreStatusBadge status={s.storeStatusCode as StoreStatus} />
+                  </li>
+                ))}
+              </ul>
+            ))}
           {outOfScope.length > 0 && !locks.stores && (
             <div className="flex flex-col gap-[8px]">
               <p className="text-[14px] font-medium text-erp-ink">
@@ -704,7 +716,7 @@ export function AdminFormPanel(props: Props) {
               {cascade.impact.unmappedCount > 0 && (
                 <>
                   <dt className="text-erp-label">매핑 해제</dt>
-                  <dd>가맹 관리자 {andOthers(cascade.impact.firstUnmappedLoginId, cascade.impact.unmappedCount)} · 뺀 점포의 매핑만 풀립니다</dd>
+                  <dd>가맹 관리자 {andOthers(cascade.impact.firstUnmappedLoginId, cascade.impact.unmappedCount)} · 뺀 점포의 매핑만 풀립니다.</dd>
                 </>
               )}
               {cascade.impact.deactivatedCount > 0 && (

@@ -160,7 +160,7 @@ export default ({ A, R }) => {
           ['<button type="button" data-remove-row title="이 새 행 빼기" aria-label="새 행 빼기" class="px-[6px] text-[16px] text-erp-label hover:text-erp-ink">×</button>'],
           [codeField("서비스 코드 직접 입력", "상세 코드"), true],
           [ui.textField({ placeholder: "서비스명", "aria-label": "코드명" }), true],
-          [`<span data-new-order title="맨 끝에 붙습니다. 저장한 뒤 끌어서 옮길 수 있습니다">${SERVICES.length + 1}</span>`],
+          [`<span data-new-order title="맨 끝에 붙습니다. 저장한 뒤 끌어서 옮길 수 있습니다.">${SERVICES.length + 1}</span>`],
           [x.toggle("사용", true)],
         ],
       ),

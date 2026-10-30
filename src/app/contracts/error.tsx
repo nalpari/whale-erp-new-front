@@ -7,7 +7,7 @@ import { Button } from "@/components/common";
 export default function ContractsError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <div role="alert" className="flex min-h-[100dvh] flex-col items-center justify-center gap-[12px] bg-erp-thead-bg p-[24px] text-center">
-      <p className="text-[16px] font-semibold text-erp-ink">근로계약 정보를 불러오지 못했습니다</p>
+      <p className="text-[16px] font-semibold text-erp-ink">근로계약 정보를 불러오지 못했습니다.</p>
       <p className="text-[14px] text-erp-label">잠시 뒤 다시 시도해 주세요. 계속되면 관리자에게 알려 주세요.</p>
       <div className="flex gap-[6px]">
         <Button variant="soft" onClick={reset}>

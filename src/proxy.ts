@@ -127,7 +127,7 @@ async function refresh(session: Session): Promise<Session | "unauthorized" | nul
 function toLogin(req: NextRequest) {
   // 탭 BP 주소(/bp/{id}/contracts/paper)로 부른 창구도 같은 판정을 받게 접두를 떼고 본다.
   const res = answersWith401(stripBp(req.nextUrl.pathname))
-    ? NextResponse.json({ message: "로그인이 필요합니다" }, { status: 401 })
+    ? NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 })
     : NextResponse.redirect(new URL(loginPathOf(req.nextUrl.pathname, req.method), req.url));
   res.cookies.delete(SESSION_COOKIE);
   return res;
