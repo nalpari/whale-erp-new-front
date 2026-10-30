@@ -9,7 +9,8 @@ import { erpHeader, link, STORES } from "../../site.mjs";
 // 적용 범위 — 선택 상자만 둔다(안내 문구 없음 · 2026-10-07). 전체 화면은 반 칸, 패널은 한 칸 전체.
 // 일부 점포면 대상 점포, 전체 점포면 예외 점포 고르기를 보인다(HOLIDAY_SCRIPT · 목업 data-reveal 과 같다).
 export const scopeField = (store, panel) => {
-  const f = ui.field(c.req("적용 범위"), ui.select(["전체 점포", "일부 점포"], { value: store ? "일부 점포" : "전체 점포", "data-hscope": true }));
+  // 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(앱과 같다, 2026-10-30 사용자 지정)
+  const f = ui.select(["전체 점포", "일부 점포"], { value: store ? "일부 점포" : "전체 점포", "data-hscope": true, "aria-label": "적용 범위" });
   return panel ? f : c.row(f, c.blank);
 };
 
@@ -41,21 +42,15 @@ export const holidayForm = (A, s, { panel = false } = {}) => {
       s.type === "기간",
       `<div class="flex items-center gap-[6px]"><div class="min-w-px flex-1">${ui.dateField(A, { label: "시작일", value: s.date })}</div><span class="text-erp-label">~</span><div class="min-w-px flex-1">${ui.dateField(A, { label: "종료일", value: s.end || "" })}</div></div>`,
     );
-  const info = ui.formGroup(
-    "휴일 정보",
-    ui.field(c.req("휴일명"), ui.textField({ value: s.name, maxlength: 30 })),
-    c.stack(fieldLabel(c.req("날짜")), `<div data-htype>${c.radios(`${s.id}-type`, types, types.indexOf(s.type))}</div>`, dates),
-    ui.field("설명", ui.textarea({ rows: 4, value: s.desc })),
-  );
   const repeat = when(
     "data-hshow",
     "반복",
     s.type === "반복",
-    ui.formGroup(
-      "반복",
-      ui.field(c.req("반복 유형"), ui.select(["매일", "매주", "매월", "매년"], { value: s.rep || "매주" })),
+    // 반복 칸은 날짜 바로 아래 · 설명 위의 회색 상자(앱과 같다, 2026-10-30 사용자 지정 — 전엔 맨 아래 「반복」 묶음)
+    `<div class="-mt-[8px] flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[12px]">${[
+      ui.field(c.req("반복유형"), ui.select(["매일", "매주", "매월", "매년"], { value: s.rep || "매주" })),
       c.stack(
-        fieldLabel(c.req("종료 조건")),
+        fieldLabel(c.req("종료조건")),
         `<div data-hendpick>${c.radios(`${s.id}-end`, ends, ends.indexOf(s.until || "종료일 없음"))}</div>`,
         when("data-hend", "특정 날짜까지", s.until === "특정 날짜까지", ui.dateField(A, { label: "종료일", value: s.untilDate || "" })),
         when(
@@ -65,15 +60,22 @@ export const holidayForm = (A, s, { panel = false } = {}) => {
           `<div class="flex w-[160px] items-center gap-[6px]">${ui.textField({ value: s.count || "", inputmode: "numeric", "aria-label": "반복 횟수" })}<span class="shrink-0 text-[14px] text-erp-ink">회</span></div>`,
         ),
       ),
-    ),
+    ].join("")}</div>`,
+  );
+  const info = ui.formGroup(
+    "휴일정보", // 붙여 쓴다(앱과 같다, 2026-10-30 사용자 지정)
+    ui.field(c.req("휴일명"), ui.textField({ value: s.name, maxlength: 30 })),
+    c.stack(fieldLabel(c.req("날짜")), `<div data-htype>${c.radios(`${s.id}-type`, types, types.indexOf(s.type))}</div>`, dates),
+    repeat,
+    ui.field("설명", ui.textField({ value: s.desc, maxlength: 500 })) // 휴일명과 같은 한 줄 칸(앱과 같다, 2026-10-30),
   );
   const target = ui.formGroup(
     "적용 대상",
     scopeField(s.store, panel),
-    when("data-hscope-show", "일부 점포", s.store, c.stack(fieldLabel(c.req("대상 점포")), holidayStorePicker(A, s.picked || []))),
-    when("data-hscope-show", "전체 점포", !s.store, c.stack(fieldLabel("예외 점포"), holidayStorePicker(A, s.excluded || [], "뺄 점포 찾기"))),
+    when("data-hscope-show", "일부 점포", s.store, c.stack(fieldLabel(c.req("대상점포")), holidayStorePicker(A, s.picked || []))),
+    when("data-hscope-show", "전체 점포", !s.store, c.stack(fieldLabel("예외점포"), holidayStorePicker(A, s.excluded || [], "뺄 점포 찾기"))),
   );
-  return `<div data-hform class="contents">${info}${repeat}${target}</div>`;
+  return `<div data-hform class="contents">${info}${target}</div>`;
 };
 
 // 휴일 유형 · 종료 조건 · 적용 범위에 따라 칸을 바꾼다. 한 화면에 양식이 둘(등록 · 수정 패널)이어도 한 번만 건다.
@@ -125,7 +127,7 @@ export default ({ A, R }) => ({
     body: ui.detailBody(
       ui.sectionHead("BP 휴일 등록") +
         newForm(A) +
-        c.buttons(ui.button("취소", { variant: "off", href: link(R, "config/holidays.html") }), ui.button("저장", { href: `${link(R, "config/holidays.html")}?panel=hol-detail-panel` })) +
+        c.buttons(ui.button("닫기", { variant: "off", href: link(R, "config/holidays.html") }), ui.button("저장", { href: `${link(R, "config/holidays.html")}?panel=hol-detail-panel` })) +
         HOLIDAY_SCRIPT,
     ),
   }),
