@@ -229,9 +229,9 @@ test("종료 조건 · 적용 대상 문구", () => {
   assert.equal(repeatEndText("UNTIL_DATE", "2026-12-28", null), "2026-12-28까지");
   assert.equal(repeatEndText("COUNT", null, 10), "10회");
   const t = { isAllStores: false, bpTradeName: null, firstStoreName: "판교점", otherStoreCount: 2, excludedStoreCount: 0 };
-  assert.equal(targetText(t), "판교점 외 2곳");
+  assert.equal(targetText(t), "판교점 외 2개");
   assert.equal(targetText({ ...t, otherStoreCount: 0 }), "판교점");
-  assert.equal(targetText({ ...t, isAllStores: true, bpTradeName: "㈜한강상회", excludedStoreCount: 1 }), "㈜한강상회 · 예외 1곳");
+  assert.equal(targetText({ ...t, isAllStores: true, bpTradeName: "㈜한강상회", excludedStoreCount: 1 }), "㈜한강상회 · 예외 1개");
 });
 
 test("어제 · 이력 기본 기간 · 전체 점포 역할", () => {

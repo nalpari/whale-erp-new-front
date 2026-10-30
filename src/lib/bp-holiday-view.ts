@@ -210,17 +210,18 @@ export function validateHolidayForm(f: HolidayForm, today: string, { scheduleLoc
   else if (name.length > 30) errors.name = "휴일명은 30자까지입니다.";
   if (!scheduleLocked) {
     if (!isDate(f.startDate)) errors.startDate = "날짜를 YYYY-MM-DD 로 입력해 주세요.";
-    else if (f.startDate < today) errors.startDate = "오늘 이후 날짜로 정해 주세요.";
+    else if (f.startDate < today) errors.startDate = "오늘 이후 날짜를 선택해 주세요."; // 「정해 주세요」가 어색했다 — 「선택해 주세요」로(2026-10-30 사용자 지정)
     else if (f.startDate > LAST_DATE) errors.startDate = LAST_DATE_MESSAGE;
     // 기간의 종료일은 시작일과 같아도 된다(api ruleOf — endDate < startDate 만 막는다)
     if (f.type === "PERIOD") {
       if (!isDate(f.endDate)) errors.endDate = "종료일을 입력해 주세요.";
-      else if (isDate(f.startDate) && f.endDate < f.startDate) errors.endDate = "종료일은 시작일 이후로 정해 주세요.";
+      // 「이후 날짜」는 같은 날을 넣는지 헷갈려 무엇이 틀렸는지만 짧게 말한다(2026-10-30 사용자 지정)
+      else if (isDate(f.startDate) && f.endDate < f.startDate) errors.endDate = "종료일이 시작일보다 빠릅니다.";
       else if (f.endDate > LAST_DATE) errors.endDate = LAST_DATE_MESSAGE;
     }
     if (f.type === "REPEAT" && f.repeatEnd === "UNTIL_DATE") {
       if (!isDate(f.repeatEndDate)) errors.repeatEndDate = "종료일을 입력해 주세요.";
-      else if (isDate(f.startDate) && f.repeatEndDate < f.startDate) errors.repeatEndDate = "종료일은 시작일 이후로 정해 주세요.";
+      else if (isDate(f.startDate) && f.repeatEndDate < f.startDate) errors.repeatEndDate = "종료일이 시작일보다 빠릅니다.";
       else if (f.repeatEndDate > LAST_DATE) errors.repeatEndDate = LAST_DATE_MESSAGE;
     }
     // 지정 횟수가 2100년 안에 다 나오는지는 날짜를 셈해야 해 api 가 본다(400 「반복 횟수가 2100-12-31 을 넘습니다」)
@@ -229,7 +230,7 @@ export function validateHolidayForm(f: HolidayForm, today: string, { scheduleLoc
       if (n < 1) errors.repeatCount = "반복 횟수는 1~9999 회로 입력해 주세요.";
     }
   }
-  if (!f.isAllStores && f.storeIds.length === 0) errors.storeIds = "대상 점포를 하나 이상 골라 주세요.";
+  if (!f.isAllStores && f.storeIds.length === 0) errors.storeIds = "대상점포를 1개 이상 선택해 주세요."; // BP 관리자와 같은 문구(2026-10-30)
   return errors;
 }
 
@@ -292,8 +293,9 @@ export function repeatBasis(type: RepeatType, startDate: string): string {
 export function repeatSkipNote(type: RepeatType, startDate: string): string | null {
   if (!isDate(startDate)) return null;
   const day = Number(startDate.slice(8, 10));
-  if (type === "MONTHLY" && day >= 29) return `${day}일이 없는 달은 건너뜁니다. 건너뛴 달은 반복 횟수에 세지 않습니다.`;
-  if (type === "YEARLY" && startDate.slice(5) === "02-29") return "2월 29일이 없는 해는 건너뜁니다. 건너뛴 해는 반복 횟수에 세지 않습니다.";
+  // 한 문장으로(2026-10-30 사용자 지정 — 전엔 「…달은 건너뜁니다. 건너뛴 달은 반복 횟수에 세지 않습니다.」)
+  if (type === "MONTHLY" && day >= 29) return `${day}일이 없는 달에는 휴일이 적용되지 않으며, 반복 횟수에도 포함되지 않습니다.`;
+  if (type === "YEARLY" && startDate.slice(5) === "02-29") return "2월 29일이 없는 해에는 휴일이 적용되지 않으며, 반복 횟수에도 포함되지 않습니다.";
   return null;
 }
 
@@ -310,10 +312,13 @@ export const REPEAT_ENDS: { value: RepeatEnd; label: string }[] = [
   { value: "COUNT", label: "지정 횟수만큼" },
 ];
 
-/** 「적용 대상」 한 줄 — 전체 점포면 BP 상호와 예외 수, 특정 점포면 첫 점포와 나머지 수(데모 2026-10-08). */
+/** 특정 점포의 점포 줄 — 첫 점포와 나머지 수(「판교점 외 2개」, 단위는 「개」 2026-10-30). */
+export const storesText = (firstStoreName: string | null, otherStoreCount: number) => `${firstStoreName ?? "점포 없음"}${otherStoreCount ? ` 외 ${otherStoreCount}개` : ""}`;
+
+/** 「적용 대상」 한 줄 — 전체 점포면 BP 상호와 예외 수, 특정 점포면 첫 점포와 나머지 수(데모 2026-10-08). 단위는 「개」(2026-10-30 사용자 지정 — 전엔 「곳」) */
 export function targetText(t: { isAllStores: boolean; bpTradeName: string | null; firstStoreName: string | null; otherStoreCount: number; excludedStoreCount: number }): string {
-  if (t.isAllStores) return `${t.bpTradeName ?? "전체 점포"}${t.excludedStoreCount ? ` · 예외 ${t.excludedStoreCount}곳` : ""}`;
-  return `${t.firstStoreName ?? "점포 없음"}${t.otherStoreCount ? ` 외 ${t.otherStoreCount}곳` : ""}`;
+  if (t.isAllStores) return `${t.bpTradeName ?? "전체 점포"}${t.excludedStoreCount ? ` · 예외 ${t.excludedStoreCount}개` : ""}`;
+  return storesText(t.firstStoreName, t.otherStoreCount);
 }
 
 /** 어제(한국 날짜) — 강제 종료가 끝내는 날. */

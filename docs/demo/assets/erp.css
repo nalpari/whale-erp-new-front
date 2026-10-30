@@ -580,6 +580,9 @@
   .-mt-\[2px\] {
     margin-top: calc(2px * -1);
   }
+  .-mt-\[8px\] {
+    margin-top: calc(8px * -1);
+  }
   .-mt-\[110px\] {
     margin-top: calc(110px * -1);
   }
@@ -977,8 +980,8 @@
   .max-h-\[194px\] {
     max-height: 194px;
   }
-  .max-h-\[272px\] {
-    max-height: 272px;
+  .max-h-\[231px\] {
+    max-height: 231px;
   }
   .max-h-\[273px\] {
     max-height: 273px;
@@ -1820,9 +1823,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-  .overflow-auto {
-    overflow: auto;
   }
   .overflow-hidden {
     overflow: hidden;
