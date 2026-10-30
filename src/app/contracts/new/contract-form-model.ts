@@ -553,8 +553,8 @@ export function fieldProblems(
     // 계약 시작일에 적용되는 최저임금으로 본다 — 시작일이 없거나 그날 값이 없으면(첫 시행일 전) api 처럼 보지 않는다
     const pw = probationWage(f);
     const minimum = f.startDate ? minimumWageOn(minimumWages, f.startDate) : null;
-    const floor = minimum && probationWageFloor(minimum.hourlyWage);
-    if (pw !== null && floor && pw < floor)
+    const floor = minimum ? probationWageFloor(minimum.hourlyWage) : null;
+    if (pw !== null && floor !== null && pw < floor)
       add("probationWage", `수습 중 시급은 최저임금의 90%(${floor.toLocaleString("ko-KR")}원) 이상이어야 합니다.`);
   }
   return out;

@@ -682,7 +682,7 @@ export function ContractForm({
           {/* 급여 표 — 흰 칸은 입력, 회색 칸은 셈한 값이다(현업 엑셀 견본, 2026-10-13). */}
           {/* 시급 · 월급 · 연봉 한 줄이 소정근로시간 표 위에 있다(데모 확인 2026-10-15). 생년월일 · 근무요일 줄처럼 3등분한다(파트타이머는 셋째 칸을 비운다). 시급은 고용 형태와 상관없이 한 칸이다(2026-10-12 재영). */}
           <FormRow>
-            <Item label="시급" required help={minimum ? `${minimum.effectiveDate.slice(0, 4)}년 최저임금 ${minimum.hourlyWage.toLocaleString("ko-KR")}원 이상` : "최저임금 이상"} errors={errs.wage}>
+            <Item label="시급" required help={minimum ? `최저임금 ${minimum.hourlyWage.toLocaleString("ko-KR")}원 이상(${minimum.effectiveDate} 시행)` : "최저임금 이상"} errors={errs.wage}>
               {(id) => <TextField id={id} value={form.wage} inputMode="numeric" onChange={(e) => set("wage", formatWage(e.target.value))} />}
             </Item>
             <Item label="월급" help={form.employmentType === "FULL_TIME" ? "급여항목 합계 + 비과세 합계" : "주급 × 4.345"}>
