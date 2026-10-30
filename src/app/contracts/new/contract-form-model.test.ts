@@ -377,6 +377,8 @@ test("수습: 정직원만, 기간과 감액률을 함께 보내고 조건을 �
   // 시작일에 적용되는 값이 없으면(첫 시행일 전 · 목록 없음) api 처럼 보지 않는다
   assert.deepEqual(problems(filled({ ...on, wage: "5,000", startDate: "2025-12-31" }), false, false, undefined, WAGES2026), []);
   assert.deepEqual(problems(filled({ ...on, wage: "5,000" })), []);
+  // 시작일이 비면(임시저장) 값이 있어도 보지 않는다 — api 와 같다
+  assert.deepEqual(problems(filled({ ...on, wage: "5,000", startDate: "" }), true, false, undefined, WAGES2026), []);
   // 수습을 끄면 보내지 않는다
   assert.equal("probationMonths" in toBody(filled({ ...on, probation: false })), false);
 });

@@ -7,8 +7,8 @@ export type StoreOption = { storeId: number; name: string };
 /**
  * 작성 · 이어 쓰기 화면이 같이 쓰는 선택지. 근무지 · 최저임금은 관리자 토큰으로만 받는다.
  * 세션이 없거나 만료(401)면 빈 목록과 signedIn=false 로 그리고 저장을 막는다.
- * 최저임금(공통코드, WHALEERP-595)은 시급 칸 도움말 · 수습 중 시급 확인에 쓴다. 작성 · 수정 권한이 없어 받지 못하면(403) 빈
- * 목록이다 — 그 화면은 권한 안내만 그리고, 저장하면 api 가 같은 값으로 다시 본다.
+ * 최저임금(공통코드, WHALEERP-595)은 시급 칸 도움말 · 수습 중 시급 확인에만 쓴다 — 받지 못하면(권한 없음 403 · 그 밖의 실패)
+ * 빈 목록으로 화면을 그대로 그리고, 저장하면 api 가 같은 값으로 다시 본다. 401 은 근무지와 함께 로그인 필요로 처리한다.
  */
 export async function loadFormData(): Promise<{
   stores: StoreOption[];
@@ -34,7 +34,7 @@ export async function loadFormData(): Promise<{
       request<{ items: StoreOption[] }>("/stores/options?pageSize=200", { headers }),
       request<{ items: MinimumWage[] }>("/contracts/minimum-wages", { headers }).then(
         (r) => r.items,
-        (e: unknown) => (e instanceof ApiError && e.status === 403 ? [] : Promise.reject(e)),
+        (e: unknown) => (e instanceof ApiError && e.status === 401 ? Promise.reject(e) : []),
       ),
     ]);
     return { stores: items, labels, signedIn: true, minimumWages };

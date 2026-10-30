@@ -356,8 +356,8 @@ export function ContractForm({
     ? shownProblems(problemsByField(fieldProblems(form, lastTemporary, files.employment !== null, previousStartDate, minimumWages)), errorFields)
     : {};
   const minor = isMinor(form);
-  // 계약 시작일에 적용되는 최저임금 — 시작일이 없으면 오늘(한국 날짜) 것으로 도움말만 보인다
-  const minimum = minimumWageOn(minimumWages, form.startDate || kstToday());
+  // 계약 시작일에 적용되는 최저임금 — 시작일이 없거나 입력 중이면 오늘(한국 날짜) 것으로 도움말만 보인다
+  const minimum = minimumWageOn(minimumWages, /^\d{4}-\d{2}-\d{2}$/.test(form.startDate) ? form.startDate : kstToday());
   const floorText = minimum ? `(${probationWageFloor(minimum.hourlyWage).toLocaleString("ko-KR")}원)` : "";
   const holiday = weeklyHolidayOf(form);
   const dayLabel = (d: Weekday) => labelOf(labels.weekday, d);
