@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-30
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 관리](/staff.md) — WHALEERP-635: 근로계약 상세가 수정 요청된 계약에 「수정 요청 사유」(api `correctionReason`, 없으면 「-」)를 보이고 「거부 사유」 줄을 지웠다. api 타입을 api 브랜치 openapi 로 다시 만들었고, 논리 · 물리 ERD(`contracts.correction_reason` 추가 · `reject_reason` 두 칸 삭제)와 알림 템플릿 · 근로계약 상세 데모의 거부 사유를 맞췄다.
+
 ## 2026-10-29
 * **Update**: main 병합(front grimer, main #189 등까지): okf 충돌은 양쪽 기록을 살렸다(generated 는 늦은 값).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #194 code-review: 근로계약 화면이 탭 BP 주소로 옮겨도 이 화면의 근로계약 링크는 옛 주소 그대로(SessionGate 가 보냄)라고 적었다. 날인본 창구는 api 의 BP 거절(400 · 403)을 오류 로그 없이 「받을 수 없습니다」 안내(`?document=denied`)로 돌려보낸다.

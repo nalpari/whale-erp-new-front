@@ -81,7 +81,7 @@ type ProcessFields = Pick<
   | "signDeadlineAt"
   | "lastProcessedAt"
   | "resendCount"
-  | "rejectReason"
+  | "correctionReason"
   | "registeredAt"
   | "registeredBy"
 >;
@@ -91,8 +91,9 @@ const DEADLINE_SHOWN = new Set(["PENDING_SEND", "PENDING_SIGNATURE", "EXPIRED"])
 
 /**
  * 근로계약 상세의 발송 · 처리 정보 줄(WHALEERP-155 · 328). 전자계약은 발송일 · (재발송했으면) 재발송 횟수와 마지막 발송 · (날인을
- * 기다리는 동안 · 만료) 날인 기한, 종이 계약은 발송 칸 대신 등록일 · 등록 관리자다. 그 뒤 최종 처리일(가장 최근 상태 변경), 거부된
- * 계약은 거부 사유(직원이 쓴 글이라 길면 줄이 늘어난다). 값이 없는 칸은 줄을 두지 않는다. 시각은 한국 시간.
+ * 기다리는 동안 · 만료) 날인 기한, 종이 계약은 발송 칸 대신 등록일 · 등록 관리자다. 그 뒤 최종 처리일(가장 최근 상태 변경), 수정
+ * 요청된 계약은 직원이 남긴 수정 요청 사유(직원이 쓴 글이라 길면 줄이 늘어난다, 없으면 「-」). 거부 사유는 받지 않아 줄이 없다
+ * (WHALEERP-635). 값이 없는 칸은 줄을 두지 않는다. 시각은 한국 시간.
  */
 export function processRows(c: ProcessFields): { label: string; value: string; multiline?: boolean }[] {
   const rows: { label: string; value: string; multiline?: boolean }[] = [];
@@ -105,7 +106,8 @@ export function processRows(c: ProcessFields): { label: string; value: string; m
     if (c.signDeadlineAt && c.status && DEADLINE_SHOWN.has(c.status)) rows.push({ label: "날인 기한", value: kstDateTime(c.signDeadlineAt) });
   }
   if (c.lastProcessedAt) rows.push({ label: "최종 처리일", value: kstDateTime(c.lastProcessedAt) });
-  if (c.status === "REJECTED") rows.push({ label: "거부 사유", value: c.rejectReason ?? "-", multiline: true });
+  // 사유는 고쳐 다시 보내도 api 에 남지만 수정 요청일 때만 보인다
+  if (c.status === "CORRECTION_REQUESTED") rows.push({ label: "수정 요청 사유", value: c.correctionReason ?? "-", multiline: true });
   return rows;
 }
 

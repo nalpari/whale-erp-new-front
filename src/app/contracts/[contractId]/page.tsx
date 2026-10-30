@@ -131,7 +131,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             />
           ),
         },
-        // 발송일 · 재발송 · 날인 기한 · 최종 처리일 · 거부 사유, 종이 계약은 등록일 · 등록 관리자(WHALEERP-155 · 328)
+        // 발송일 · 재발송 · 날인 기한 · 최종 처리일 · 수정 요청 사유(수정 요청일 때, WHALEERP-635), 종이 계약은 등록일 · 등록 관리자(WHALEERP-155 · 328)
         ...processRows(c),
         { label: "계약 기간", value: c.startDate ? `${c.startDate} ~ ${c.endDate ?? "무기한"}` : "-" },
         { label: "시급", value: c.wageAmount === null ? "-" : c.wageAmount.toLocaleString("ko-KR") },
