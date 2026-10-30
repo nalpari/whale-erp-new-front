@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: 목업 BP 관리자 목록 화면정의서 그림을 PR #200 뒤 데모(역할 필터 · 대상점포 열 이동 · 등록일시 열 없음)로 다시 찍고 번호 위치 · 열 순서를 맞췄다(front prinplup).
 * **Update**: main 병합(front quilava, main #200 까지 — PR #198 블로커): 권한 그룹 화면의 본인 연결 수정 막힘 분기는 지운 채 두고, 새 안내 세 문장(메뉴설정 팝업 · 삭제 막힘 회색 띠 둘)과 okf · 데모의 같은 문장을 main 의 「내 계정」 표현으로 맞췄다. okf/log 는 양쪽 기록을 살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #198 리뷰(requesting-code-review): 플랫폼 권한 그룹의 삭제 막힘 안내에서 고정 권한(FIXED_ROLE)도 빼 BP 와 맞췄고, 생성 타입 출처(chansey `76b1eb02`)와 BP 권한 그룹 삭제 막힘 안내(빨간 상자 · 회색 띠) 문장을 지금 코드에 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #198 리뷰 반영: 고칠 수 있는데 삭제만 막힌 권한 그룹(본인 연결 등)은 제목 아래 회색 띠로 이유를 한 줄 보인다(플랫폼 · BP), 플랫폼 관리자 필터 권한 목록 조회 실패는 등록용 목록으로 대신, 이메일 확인 400 은 화면 형식 문구 · 403 은 콘솔만, 낡은 주석 정리(2026-10-30 재영).
