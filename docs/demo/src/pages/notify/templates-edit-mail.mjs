@@ -1,4 +1,5 @@
 // 알림 템플릿 수정 · 메일. 목업 docs/mockup/notify/templates-edit.html 의 「근로계약 거부 · 메일」 예.
+// 문구는 api 기본 문구(20261030093710 정리 뒤 20261030120100 — 거부 사유 줄을 뺌, WHALEERP-635).
 import { templateEdit } from "../../template-edit.mjs";
 
 export default templateEdit({
@@ -8,12 +9,12 @@ export default templateEdit({
   type: "근로계약 거부",
   channel: "메일",
   to: "소속 범위 사업자 관리자",
-  title: "[WHALE ERP] #{직원이름} 님이 근로계약서를 거부했습니다",
-  body: "#{직원이름} 님이 #{근무지} 근로계약서를 거부했습니다.\n\n거부 사유: #{거부사유}\n\n조건을 고쳐 새 계약을 만들거나 그대로 재발송할 수 있습니다.",
-  vars: [{ name: "직원이름", label: "직원 이름", required: true, example: "유하람" }, { name: "근무지", label: "근무지", required: true, example: "모리커피 연남점" }, { name: "거부사유", label: "거부 사유", required: false, example: "근무 시작 시각이 다릅니다" }, { name: "계약링크", label: "계약 링크", required: false, buttonLink: true, example: "https://…" }],
+  title: "[WHALE ERP] 근로계약서 서명 거부",
+  body: "#{직원이름} 님이 근로계약서 서명을 거부했습니다.\n\n- 근무지: #{근무지}\n\n필요하면 계약 조건을 수정해\n근로계약서를 다시 보내 주세요.",
+  vars: [{ name: "직원이름", label: "직원 이름", required: true, example: "유하람" }, { name: "근무지", label: "근무지 점포 이름", required: true, example: "모리커피 연남점" }, { name: "링크", label: "바로가기 링크", required: true, buttonLink: true, example: "https://…" }],
   preview: {
-    title: "[WHALE ERP] 유하람 님이 근로계약서를 거부했습니다",
-    body: "유하람 님이 모리커피 연남점 근로계약서를 거부했습니다.\n\n거부 사유: 근무 시작 시각이 면접 때 이야기한 것과 다릅니다.\n\n조건을 고쳐 새 계약을 만들거나 그대로 재발송할 수 있습니다.",
+    title: "[WHALE ERP] 근로계약서 서명 거부",
+    body: "유하람 님이 근로계약서 서명을 거부했습니다.\n\n- 근무지: 모리커피 연남점\n\n필요하면 계약 조건을 수정해\n근로계약서를 다시 보내 주세요.",
     button: "계약 열기",
   },
   history: [
