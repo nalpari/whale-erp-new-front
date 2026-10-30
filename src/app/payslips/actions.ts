@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { ApiError, authHeaders, request } from "@/lib/api";
+import { ApiError, authHeaders, bpHref, request } from "@/lib/api";
 import type { PayslipBulkResult, PayslipCandidates, PayslipSendResult } from "@/lib/payslips";
 import { getPayslipCandidates } from "@/lib/payslips-api";
 
@@ -61,8 +61,8 @@ export async function createPayslip(staffMemberId: number, month: string): Promi
   } catch (error) {
     return failureOf(error, "초안 작성");
   }
-  // 목록 · 상세는 요청마다 새로 받는다(no-store). 따로 비울 캐시가 없다.
-  redirect(`/payslips/${payslipId}`);
+  // 목록 · 상세는 요청마다 새로 받는다(no-store). 따로 비울 캐시가 없다. 상세 주소에는 이 요청의 탭 BP 를 붙인다(bpHref)
+  redirect(await bpHref(`/payslips/${payslipId}`));
 }
 
 /** 그 달 관리 범위 작성 대상 모두의 초안. 결과(만든 것 · 건너뛴 것)는 화면이 한 줄로 알리고 목록으로 간다. */

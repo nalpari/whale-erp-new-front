@@ -1,5 +1,5 @@
 import { ListToolbar, PageBar, Tag } from "@/components/common";
-import { getEnum } from "@/lib/api";
+import { getEnum, screenPath } from "@/lib/api";
 import { PAYSLIP_STATUSES } from "@/lib/payslips";
 import { getPayslips } from "@/lib/payslips-api";
 import { kstToday } from "@/lib/staff-members";
@@ -25,6 +25,9 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
     getEnum("PayslipReviewReason"),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
+  // 화면 주소는 탭 BP 주소 /bp/{id}/payslips 다 — proxy 가 그 BP 를 X-Bp-Code-Id 로 실어, 플랫폼 계정은 고른 BP 의 명세서만 본다(BP_PATH_SCREENS, WHALEERP-637).
+  // 쿼리는 옛 경로로 두고, 링크로 그릴 때만 탭 BP 를 붙인다
+  const at = await screenPath();
   const counts = statusLabels.map((s) => ({ label: s.label, count: statusCounts[s.value as keyof typeof statusCounts] ?? 0 }));
 
   return (
@@ -63,6 +66,7 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
             statusLabels={statusLabels}
             employmentTypeLabels={employmentTypeLabels}
             reviewReasonLabels={reviewReasonLabels}
+            at={at}
             // 거른 목록이 비면 그달 명세서가 없는 것이 아니다
             filtered={query.reviewPending || !!query.staffName || query.statuses.length !== PAYSLIP_STATUSES.length}
           />

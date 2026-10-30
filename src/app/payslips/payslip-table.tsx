@@ -26,6 +26,7 @@ export function PayslipTable({
   employmentTypeLabels,
   reviewReasonLabels,
   filtered = false,
+  at = (path) => path,
 }: {
   items: PayslipListItem[];
   total: number;
@@ -38,6 +39,8 @@ export function PayslipTable({
   reviewReasonLabels: EnumValue[];
   /** 상태 · 직원명 · 검토 대기만으로 거른 목록인가 — 비었을 때 문구가 다르다 */
   filtered?: boolean;
+  /** 상세 링크에 탭 BP 를 붙인다(목록 화면의 screenPath, WHALEERP-637) — listSearch 는 옛 경로 그대로다 */
+  at?: (path: string) => string;
 }) {
   const rows: Row[] = items.map((payslip, i) => ({ no: rowNumber(total, page, pageSize, i), payslip }));
   const columns: Column<Row>[] = [
@@ -49,7 +52,7 @@ export function PayslipTable({
         payslip.isMasked || payslip.payslipId === null ? (
           <span className="text-erp-muted">{MASKED_TEXT}</span>
         ) : (
-          <Link href={`/payslips/${payslip.payslipId}${listSearch}`} className="text-erp-link hover:underline">
+          <Link href={at(`/payslips/${payslip.payslipId}${listSearch}`)} className="text-erp-link hover:underline">
             {payslip.staffName}
           </Link>
         ),

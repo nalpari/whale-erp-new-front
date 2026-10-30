@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: [급여명세서 화면](/screens/payslips.md) · [출·퇴근 현황 화면](/screens/attendance-records.md) — 두 화면을 탭 BP 주소 `/bp/{bpCodeId}/payslips…` · `/bp/{bpCodeId}/attendance-records` 로 옮겼다(`BP_PATH_SCREENS`, WHALEERP-637). 목록 · 상세 · 필터 · 초안 팝업 · 검토 화면 · 날짜 이동 · 오류 화면의 링크와 초안 작성 뒤 이동이 주소의 BP 를 잃지 않고(`bpPath` · `screenPath()` · `bpHref`), 홈의 출근 수치 · 점포 하나 급여 카드 링크도 탭 BP 를 붙인다. 직원 정보 관리의 두 화면 링크는 옛 주소 그대로 두어 SessionGate 가 보낸다. api 타입 다시 생성(같은 배포 창: api 의 급여명세서 · 출퇴근 `@TargetBp()` 전환).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 계약서 파일 줄을 나눴다(WHALEERP-155): 전자계약은 처리 완료본(서명 확인) · 보낸 원본, 종이 계약은 날인본(`document-rows.ts`, `node --test`). 체결됐는데 처리 완료본이 아직 없으면 「아직 없음」 안내. api #211(WHALEERP-131)이 두 파일을 만든다. `docs/erd/physical` 은 api 물리 생성기로 다시 만들었다(당사자 사용자 칸 · 파일 발송 일시).
 
 ## 2026-10-29

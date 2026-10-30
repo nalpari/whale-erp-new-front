@@ -1,5 +1,5 @@
 import { PageBar } from "@/components/common";
-import { getEnum } from "@/lib/api";
+import { getEnum, screenPath } from "@/lib/api";
 import { getDailyAttendance, getPeriodAttendance } from "@/lib/attendance-records-api";
 import { kstToday } from "@/lib/staff-members";
 import { AttendanceFilter } from "./attendance-filter";
@@ -15,7 +15,9 @@ export default async function AttendanceRecordsPage({ searchParams }: { searchPa
   const today = kstToday();
   const query = parseAttendanceQuery(await searchParams, today);
   const stores = storeParams(query);
-  const href = (next: Partial<AttendanceQuery>) => `/attendance-records${toAttendanceSearch({ ...query, ...next }, today)}`;
+  // 화면 주소는 탭 BP 주소 /bp/{id}/attendance-records 다 — proxy 가 그 BP 를 X-Bp-Code-Id 로 실어, 플랫폼 계정은 고른 BP 의 기록만 본다(BP_PATH_SCREENS, WHALEERP-637)
+  const at = await screenPath();
+  const href = (next: Partial<AttendanceQuery>) => at(`/attendance-records${toAttendanceSearch({ ...query, ...next }, today)}`);
 
   const [day, week, fix, statusLabels, reasonLabels, employmentTypeLabels] = await Promise.all([
     getDailyAttendance(stores, query.date),
