@@ -26,8 +26,9 @@
           10. 초기화 확인창은 front 문구 그대로다 — 등록된 이메일로 발송 · 1시간 유효 · 로그인 시 변경 · 기존 비밀번호 즉시 무효.
          수정은 수정 권한이 있고 관리 범위 안인 계정에만 보인다.
            BP 관리자 · 가맹 마스터 계정 = BP 마스터 · BP 관리자 · 플랫폼 사용자(수정 권한)가 한다.
-           가맹 관리자 계정 = 연결된 가맹 마스터만 한다. 다른 역할에게는 「이 계정은 연결된 가맹마스터만 수정할 수 있습니다.」 띠를 보인다.
-         가맹 마스터 · 가맹 관리자는 BP 관리자 · 가맹 마스터 계정을 볼 수 없다. 본인 계정은 예외다.
+           가맹 관리자 계정 = 연결된 가맹 마스터만 한다. 다른 역할에게는 두 실행 항목을 감추고 조회만 한다고 알린다.
+             그 안내는 빨간 상자 「이 계정은 [연결된 가맹마스터]만 수정할 수 있습니다.」 한 줄이고, 로그인 · 비밀번호 안내 상자보다 위에 둔다. 안내 상자끼리는 10px 간격 (2026-10-30).
+         가맹 마스터 · 가맹 관리자는 BP 관리자 · 가맹 마스터 계정을 볼 수 없다 — 주소로 열어도 상세정보를 주지 않는다. 본인 계정은 예외다.
          가맹 마스터는 본인 계정 수정에서 기본정보만 고친다. 가맹 관리자 본인 계정은 조회만 한다 (확정 2026-10-23). 본인 계정은 「내 계정입니다.」 한 줄 띠를 보인다(가맹 관리자는 늘, 그 밖은 [수정]이 보일 때만).
          가맹 마스터 미사용 · 점포 빼기로 연쇄해 바뀐 가맹 관리자의 변경 이력은 처리자가 그 가맹 마스터를 저장한 사람이고, 변경 후 값에 사유를 붙인다 —
            ‘미사용 (가맹 마스터 미사용)’ · ‘… (가맹 마스터 점포 제외)’. system 으로 남기지 않는다 (확정 2026-10-23).
@@ -297,9 +298,10 @@
                 <span class="band__ic" data-icon="users" data-icon-size="20"></span>
                 <div class="band__body"><div class="band__title">내 계정입니다.</div></div>
               </div>
-              <div class="band band--info" data-show-role="bm bpall bppart plat view" role="status">
-                <span class="band__ic" data-icon="info" data-icon-size="20"></span>
-                <div class="band__body"><div class="band__title">이 계정은 연결된 가맹마스터만 수정할 수 있습니다.</div></div>
+              <!-- 연결 가맹 마스터가 아닌 사람이 보는 가맹 관리자 계정 — 놓치지 않게 빨간 상자, 「[연결된 가맹마스터]」 굵게 (2026-10-30) -->
+              <div class="band band--risk" data-show-role="bm bpall bppart plat view" role="alert">
+                <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+                <div class="band__body"><div class="band__title" style="font-weight: 500">이 계정은 <strong style="font-weight: 600">[연결된 가맹마스터]</strong>만 수정할 수 있습니다.</div></div>
               </div>
               <div class="grid grid--2">
                 <div class="stack">

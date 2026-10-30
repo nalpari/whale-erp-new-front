@@ -3,7 +3,7 @@ type: Area
 title: 직원 운영 관리
 description: 관리자 웹에서 직원을 초대하고 계약·근무스케줄·출퇴근·급여·TO-DO 를 다루는 영역. 채용은 근로계약서 초안에서 시작한다.
 tags: [mockup, staff]
-generated: { by: claude-code/opus-5.5, at: 2026-10-29T03:48:54Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-30T10:00:00Z }
 ---
 
 근거: `docs/mockup/staff/` (목업 · 1차 · R-QFUXNA)
@@ -19,7 +19,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-29T03:48:54Z }
 | `/staff/contracts/new` | 근로계약서 초안 작성 | 채용의 시작점. 초안을 저장하면 시스템이 초대 유형을 스스로 판별해 발송한다. | `S-OIILIW` |
 | `/staff/invites/holds` | 가입 연결 확인 | 본인인증 번호가 초대와 어긋나 자동 연결이 보류된 건을 관리자가 승인하거나 번호를 고쳐 재초대한다. | `S-VZBTHL` |
 | `/staff/contracts` | 근로계약 · 근무스케줄 · 급여 · TO-DO 탭 | 직원 목록과 같은 화면의 탭들. 계약 상태 7종(임시저장 포함), TO-DO 배정 방식, 급여 검토 대기가 여기서 갈린다. | `S-XDBBDP` · `S-NIAGGB` · `S-DOVWAR` |
-| `/staff/contracts/[id]` | 근로계약 상세 | 날인 기한·거부 사유·상태 변경 이력을 보고 재발송하거나 새 계약으로 대체한다. 계약 내용은 여기서 고치지 않는다. | `S-XDBBDP` |
+| `/staff/contracts/[id]` | 근로계약 상세 | 날인 기한·수정 요청 사유·상태 변경 이력을 보고 재발송하거나 새 계약으로 대체한다. 계약 내용은 여기서 고치지 않는다. | `S-XDBBDP` |
 | `/staff/payrolls/[id]` | 급여명세서 검토 | 검토 대기로 분류된 건을 열어 금액을 확인·수정하고 확정한다. STAFF-5 가 가장 선명하게 드러나는 화면. | `S-DOVWAR` |
 
 # 정책
