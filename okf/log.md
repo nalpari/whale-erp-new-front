@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: [플랫폼 시스템 관리](/system.md) · [Whale ERP Frontend](/whale-erp-front.md) — front #206 적대적 리뷰 반영: 공통코드 「그 사이 바뀜」 처리에서 보내지 않은 새 행 · 지울 행 표시를 버리던 것을 잇게(기준을 지금 목록으로), 이미 지운 행의 404 「…찾을 수 없습니다」도 같은 띠 · 다시 받기로, 같은 내용이 다시 오면 띠 표시를 푼다(플랫폼 · BP).
 * **Update**: [플랫폼 시스템 관리](/system.md) — 플랫폼 휴일 관리 검토: 연도 범위는 2000~2100 그대로 두고(2051~2100 은 음력 공휴일 없이 양력분만 — 지우지도 막지도 않는다), 계산 행의 휴일 이름을 정부 표기에 맞춤(api teddiursa) (2026-10-30 재영).
 * **Update**: [플랫폼 시스템 관리](/system.md) · [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 관리 검토(api teddiursa `fce3a860` 짝): 새 그룹 표시 순서는 api 가 매긴다(화면은 보내지 않음), 고친 그룹 · 상세 코드 행마다 updatedAt 을 보내 그 사이 바뀌었으면 409 띠 「…먼저 수정했습니다.」 + 「최신 정보로 다시 채웠습니다.」로 최신 목록을 다시 채운다(플랫폼 · BP, `isStaleConflict`), BP 복사본만 남은 지운 코드는 되살린다. 생성 타입을 teddiursa openapi 로 다시 만들었다. 플랫폼 휴일: 동기화 실패 띠를 공통 NoticeBand(risk · role=alert)로, 배치가 없다는 낡은 주석을 고쳤다(2026-10-30 재영).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 코드 형식 문구의 마침표를 끝으로(「…입력해 주세요(최대 20자).」), api 409 문구가 코드 목록을 「…입니다(A, B).」 괄호 꼴로 바뀌어도 겹친 코드를 꺼내게 했다(옛 「: A, B」 꼴도 읽는다 — `conflictCode` · `unusableCodeMessage`, 플랫폼 · BP 공통코드). 화면이 바꿔 보이는 문구도 「이 그룹에서 사용할 수 없는 상세 코드입니다(G2).」 (2026-10-30 재영).
