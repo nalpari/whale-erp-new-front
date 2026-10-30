@@ -8,6 +8,7 @@ import { backHrefOf, withBack } from "../contract-list";
 import { ContractPermission } from "../contract-permission";
 import { canRenew, formatPhone, type ContractDetail } from "../new/contract-form-model";
 import { documentNoticeOf } from "./document-notice";
+import { documentRowsOf } from "./document-rows";
 import { EndContractButton } from "./end-button";
 import { SendContractButton } from "./send-button";
 import { canShowResend, sendNoticeOf } from "./send-model";
@@ -165,24 +166,20 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         { label: "4대보험", value: insuranceText(c.isHealthPensionInsured, c.isEmploymentInjuryInsured) },
         { label: "근무 장소", value: c.workLocation ?? "-" },
         { label: "계약 방식", value: c.contractMethod ? labelOf(contractMethods, c.contractMethod) : "-" },
-        // 종이 계약 날인본(CTR-23). 누르면 라우트 핸들러가 300초짜리 주소를 받아 원래 파일 이름으로 내려받게 한다
-        // documents 는 api #49 부터 온다 — 그 전 api 와 함께 떠도 상세가 깨지지 않게 없으면 빈 것으로 본다.
-        ...(c.documents?.length
-          ? [
-              {
-                label: "날인본",
-                value: (
-                  <DetailValues
-                    items={c.documents.map((d) => (
-                      <a key={d.contractDocumentId} href={`/contracts/${c.contractId}/documents/${d.contractDocumentId}`} className="text-erp-link hover:underline">
-                        {labelOf(documentKinds, d.kind)} · {d.fileName}
-                      </a>
-                    ))}
-                  />
-                ),
-              },
-            ]
-          : []),
+        // 계약서 파일 — 종이 계약은 날인본(CTR-23), 전자계약은 처리 완료본(서명 확인)과 보낸 원본(WHALEERP-155 · 131). 누르면 라우트
+        // 핸들러가 300초짜리 주소를 받아 원래 파일 이름으로 내려받게 한다. documents 는 api #49 부터 온다 — 없으면 빈 것으로 본다.
+        ...documentRowsOf({ ...c, histories: c.histories ?? [], documents: c.documents ?? [] }).map((row) => ({
+          label: row.label,
+          value: row.empty ?? (
+            <DetailValues
+              items={row.documents.map((d) => (
+                <a key={d.contractDocumentId} href={`/contracts/${c.contractId}/documents/${d.contractDocumentId}`} className="text-erp-link hover:underline">
+                  {labelOf(documentKinds, d.kind)} · {d.fileName}
+                </a>
+              ))}
+            />
+          ),
+        })),
       ]
     : [];
   const histories = c?.histories ?? [];
