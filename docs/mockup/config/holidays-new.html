@@ -36,7 +36,7 @@
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-UCPMYB · /settings/holidays/new</span>
-              <a class="btn btn--secondary btn--sm" href="holidays.html">취소</a>
+              <a class="btn btn--secondary btn--sm" href="holidays.html">닫기</a>
               <a class="btn btn--primary btn--sm" href="holidays-detail.html?state=created" data-show="in allst allex range noend m31 dup" data-show-role="bm pf ba bp fm">저장</a>
               <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./config-holidays-new.screen-def.html', 'screenDef', 'width=1580,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
               <button class="btn btn--primary btn--sm" type="button" data-show="rangebad past oos miss fail" data-show-role="bm pf ba bp fm" hidden>저장</button>
@@ -60,8 +60,8 @@
               <b>목업 상태</b>
               <div class="seg">
                 <button type="button" data-state="in" aria-pressed="true">입력 · 하루 · 점포 여럿</button>
-                <button type="button" data-state="allst" aria-pressed="false">전체 점포 · 예외 점포 2곳</button>
-                <button type="button" data-state="allex" aria-pressed="false">예외 점포 · 전부</button>
+                <button type="button" data-state="allst" aria-pressed="false">전체 점포 · 예외점포 2곳</button>
+                <button type="button" data-state="allex" aria-pressed="false">예외점포 · 전부</button>
                 <button type="button" data-state="range" aria-pressed="false">기간 7일</button>
                 <button type="button" data-state="noend" aria-pressed="false">매주 · 종료일 없음</button>
                 <button type="button" data-state="m31" aria-pressed="false">매월 · 31일 시작</button>
@@ -87,27 +87,31 @@
             <div class="band band--info" data-show="dup" data-show-role="bm pf ba bp" hidden>
               <span class="band__ic" data-icon="info" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">3개 점포에서 5일이 다른 휴일과 겹칩니다 · 등록은 할 수 있습니다</div>
-                <details class="acc">
-                  <summary>겹치는 날짜 펼쳐보기</summary>
-                  <div class="acc__body">
-                    <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px">
-                      <li>온기식당 판교점 · <span class="mono">2026-09-28</span> (월) · 정기휴무 · <span class="mono">HD-0114</span></li>
-                      <li>온기식당 판교점 · <span class="mono">2026-10-05</span> (월) · 정기휴무 · <span class="mono">HD-0114</span></li>
-                      <li>온기식당 판교점 · <span class="mono">2026-10-12</span> (월) · 정기휴무 · <span class="mono">HD-0114</span></li>
-                      <li>온기식당 광화문점 · <span class="mono">2026-10-01</span> (목) · 창립기념일 · <span class="mono">HD-0122</span></li>
-                      <li>모리커피 을지로점 · <span class="mono">2026-10-01</span> (목) · 창립기념일 · <span class="mono">HD-0122</span></li>
-                    </ul>
-                  </div>
-                </details>
-                <p class="band__desc">겹쳐도 두 휴일 모두 저장되고 목록·캘린더에 함께 보입니다. 겹치는 날이 많으면 처음 10건만 적고 나머지는 ‘외 N건’으로 줄입니다.</p>
+                <!-- 저장할 때 같은 날 휴일이 있으면 묻는다 — 제목 · 한 줄 · 점포 · 날짜 · 이미 등록된 휴일 표(앱 2026-10-30, 넓은 확인창 — 전엔 「N개 점포에서 N일이 겹칩니다」와 펼쳐보기 목록).
+                     목업은 확인창 대신 이 띠로 그린다. 점포 이름은 그 점포의 첫 줄에만, 앞 10일만 보이고 나머지는 「외 N일」 줄로 센다 -->
+                <div class="band__title">같은 날 등록된 휴일이 있습니다.</div>
+                <p class="band__desc">저장하면 겹치는 휴일이 모두 적용됩니다. 저장하시겠습니까?</p>
+                <div class="tblwrap" style="margin-top: 8px; max-height: 280px; overflow-y: auto">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr><th scope="col" style="width: 170px">점포</th><th scope="col" style="width: 120px">날짜</th><th scope="col">이미 등록된 휴일</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="k">온기식당 판교점</td><td style="white-space: nowrap"><span class="mono">2026-09-28</span>(월)</td><td>정기휴무</td></tr>
+                      <tr><td class="k"></td><td style="white-space: nowrap"><span class="mono">2026-10-05</span>(월)</td><td>정기휴무</td></tr>
+                      <tr><td class="k"></td><td style="white-space: nowrap"><span class="mono">2026-10-12</span>(월)</td><td>정기휴무</td></tr>
+                      <tr><td class="k">온기식당 광화문점</td><td style="white-space: nowrap"><span class="mono">2026-10-01</span>(목)</td><td>창립기념일</td></tr>
+                      <tr><td class="k">모리커피 을지로점</td><td style="white-space: nowrap"><span class="mono">2026-10-01</span>(목)</td><td>창립기념일</td></tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
             <div class="band band--info" data-show="allex" data-show-role="bm pf ba" hidden>
               <span class="band__ic" data-icon="info" data-icon-size="20"></span>
               <div class="band__body">
                 <div class="band__title">적용할 점포가 없습니다 — 나중에 새 점포가 생기면 이 휴일이 적용됩니다</div>
-                <p class="band__desc">예외 점포로 ㈜한강상회 11곳을 모두 뺐습니다. 지금은 이 휴일이 적용되는 점포가 없지만 등록은 할 수 있습니다. 나중에 점포가 새로 생기면 예외 목록에 없는 한 그 점포에도 자동으로 적용됩니다.</p>
+                <p class="band__desc">예외점포로 ㈜한강상회 11곳을 모두 뺐습니다. 지금은 이 휴일이 적용되는 점포가 없지만 등록은 할 수 있습니다. 나중에 점포가 새로 생기면 예외 목록에 없는 한 그 점포에도 자동으로 적용됩니다.</p>
               </div>
             </div>
             <div class="band band--risk" data-show="rangebad" data-show-role="bm pf ba bp fm" hidden>
@@ -127,14 +131,14 @@
             <div class="band band--risk" data-show="oos" data-show-role="bm pf ba bp fm" hidden>
               <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">대상 점포 가운데 접근 범위 밖 점포가 있어 등록하지 않았습니다</div>
-                <p class="band__desc">화면을 연 뒤 점포 접근 범위가 바뀌었거나, 다른 BP의 점포가 요청에 섞였습니다. 대상 점포를 다시 골라 주세요.</p>
+                <div class="band__title">대상점포 가운데 접근 범위 밖 점포가 있어 등록하지 않았습니다</div>
+                <p class="band__desc">화면을 연 뒤 점포 접근 범위가 바뀌었거나, 다른 BP의 점포가 요청에 섞였습니다. 대상점포를 다시 골라 주세요.</p>
               </div>
             </div>
             <div class="band band--risk" data-show="miss" data-show-role="bm pf ba bp fm" hidden>
               <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">필수 항목이 비어 있어 등록하지 않았습니다 — 대상 점포, 휴일명</div>
+                <div class="band__title">필수 항목이 비어 있어 등록하지 않았습니다 — 대상점포, 휴일명</div>
               </div>
             </div>
             <div class="band band--risk" data-show="fail" data-show-role="bm pf ba bp fm" hidden>
@@ -150,7 +154,7 @@
               <div style="display: contents" data-show="in oos fail">
                 <section class="panel">
                   <div class="panel__head">
-                    <h2 class="t-h2">휴일 정보</h2>
+                    <h2 class="t-h2">휴일정보</h2>
                     <span class="subtle" style="font-size: 12px">* 표시가 필수 · 설명은 선택 · 종일 휴일</span>
                   </div>
                   <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -160,12 +164,12 @@
                     </div>
                     <div class="field">
                       <label for="nd1">날짜 <span class="req">*</span></label>
-                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                      <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <input class="input mono" id="nd1" value="2026-10-15" style="max-width: 180px" />
                     </div>
                     <div class="field">
                       <label for="ndesc">설명</label>
-                      <textarea class="textarea" id="ndesc" rows="2">분기 재고 실사로 하루 휴무</textarea>
+                      <textarea class="textarea" id="ndesc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">분기 재고 실사로 하루 휴무</textarea>
                     </div>
                   </div>
                 </section>
@@ -173,7 +177,7 @@
               <div style="display: contents" data-show="allst allex" hidden>
                 <section class="panel">
                   <div class="panel__head">
-                    <h2 class="t-h2">휴일 정보</h2>
+                    <h2 class="t-h2">휴일정보</h2>
                     <span class="subtle" style="font-size: 12px">* 표시가 필수 · 설명은 선택 · 종일 휴일</span>
                   </div>
                   <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -183,12 +187,12 @@
                     </div>
                     <div class="field">
                       <label for="nd1">날짜 <span class="req">*</span></label>
-                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                      <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <input class="input mono" id="nd1" value="2026-11-11" style="max-width: 180px" />
                     </div>
                     <div class="field">
                       <label for="ndesc">설명</label>
-                      <textarea class="textarea" id="ndesc" rows="2">전 점포 직원 워크숍으로 하루 휴무 · 서면점·일산점은 행사 대행으로 영업</textarea>
+                      <textarea class="textarea" id="ndesc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">전 점포 직원 워크숍으로 하루 휴무 · 서면점·일산점은 행사 대행으로 영업</textarea>
                     </div>
                   </div>
                 </section>
@@ -196,7 +200,7 @@
               <div style="display: contents" data-show="range" hidden>
                 <section class="panel">
                   <div class="panel__head">
-                    <h2 class="t-h2">휴일 정보</h2>
+                    <h2 class="t-h2">휴일정보</h2>
                     <span class="subtle" style="font-size: 12px">* 표시가 필수 · 설명은 선택 · 종일 휴일</span>
                   </div>
                   <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -206,7 +210,7 @@
                     </div>
                     <div class="field">
                       <label for="nd1">날짜 <span class="req">*</span></label>
-                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="true">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                      <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="true">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <div class="inline" style="flex-wrap: nowrap"><input class="input mono" id="nd1" value="2026-11-02" aria-label="시작일" /><span class="subtle">~</span><input class="input mono" value="2026-11-08" aria-label="종료일" /></div>
                     </div>
                     <div class="band band--info">
@@ -218,7 +222,7 @@
                     </div>
                     <div class="field">
                       <label for="ndesc">설명</label>
-                      <textarea class="textarea" id="ndesc" rows="2">매장 리모델링 공사 기간</textarea>
+                      <textarea class="textarea" id="ndesc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">매장 리모델링 공사 기간</textarea>
                     </div>
                   </div>
                 </section>
@@ -226,7 +230,7 @@
               <div style="display: contents" data-show="noend" hidden>
                 <section class="panel">
                   <div class="panel__head">
-                    <h2 class="t-h2">휴일 정보</h2>
+                    <h2 class="t-h2">휴일정보</h2>
                     <span class="subtle" style="font-size: 12px">* 표시가 필수 · 설명은 선택 · 종일 휴일</span>
                   </div>
                   <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -236,12 +240,31 @@
                     </div>
                     <div class="field">
                       <label for="nd1">시작일 <span class="req">*</span></label>
-                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="true">반복</button></div>
+                      <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="true">반복</button></div>
                       <input class="input mono" id="nd1" value="2026-10-07" style="max-width: 180px" />
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-3); background: var(--canvas-soft); border: 1px solid var(--hairline); border-radius: var(--r-xs)">
+                      <div class="grid grid--3">
+                        <div class="field">
+                          <label for="nrep">반복유형<span style="display: inline-block; margin-left: 6px; padding: 1px 4px; border: 1px solid var(--hairline-strong); border-radius: 2px; background: var(--hairline-strong); color: var(--body); font-size: 12.5px; font-weight: 500; white-space: nowrap; vertical-align: middle">매주 수요일마다 반복</span></label>
+                          <select class="select" id="nrep"><option>매일</option><option selected>매주</option><option>매월</option><option>매년</option></select>
+                        </div>
+                      </div>
+                      <div class="field">
+                        <label>종료조건</label>
+                        <div class="inline" style="gap: 10px"><div class="seg" role="group" aria-label="종료조건" style="align-self: flex-start"><button type="button" aria-pressed="true">종료일 없음</button><button type="button" aria-pressed="false">특정 날짜까지</button><button type="button" aria-pressed="false">지정 횟수만큼</button></div></div>
+                      </div>
+                      <div class="band band--info">
+                        <span class="band__ic" data-icon="refresh" data-icon-size="20"></span>
+                        <div class="band__body">
+                          <div class="band__title">첫 날짜 <span class="mono">2026-10-07</span> (수) · 다음 <span class="mono">2026-10-14</span> · <span class="mono">2026-10-21</span> · <span class="mono">2026-10-28</span> …</div>
+                          <p class="band__desc">종료일이 없어 끝나는 날 없이 이어집니다. 반복 휴일 한 건으로 저장하고, 날짜는 목록·캘린더에서 볼 때 계산합니다.</p>
+                        </div>
+                      </div>
                     </div>
                     <div class="field">
                       <label for="ndesc">설명</label>
-                      <textarea class="textarea" id="ndesc" rows="2">수요일마다 쉬는 정기 휴무</textarea>
+                      <textarea class="textarea" id="ndesc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">수요일마다 쉬는 정기 휴무</textarea>
                     </div>
                   </div>
                 </section>
@@ -249,7 +272,7 @@
               <div style="display: contents" data-show="m31" hidden>
                 <section class="panel">
                   <div class="panel__head">
-                    <h2 class="t-h2">휴일 정보</h2>
+                    <h2 class="t-h2">휴일정보</h2>
                     <span class="subtle" style="font-size: 12px">* 표시가 필수 · 설명은 선택 · 종일 휴일</span>
                   </div>
                   <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -259,12 +282,37 @@
                     </div>
                     <div class="field">
                       <label for="nd1">시작일 <span class="req">*</span></label>
-                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="true">반복</button></div>
+                      <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="true">반복</button></div>
                       <input class="input mono" id="nd1" value="2026-10-31" style="max-width: 180px" />
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-3); background: var(--canvas-soft); border: 1px solid var(--hairline); border-radius: var(--r-xs)">
+                      <div class="grid grid--3">
+                        <div class="field">
+                          <label for="nrep">반복유형<span style="display: inline-block; margin-left: 6px; padding: 1px 4px; border: 1px solid var(--hairline-strong); border-radius: 2px; background: var(--hairline-strong); color: var(--body); font-size: 12.5px; font-weight: 500; white-space: nowrap; vertical-align: middle">매월 31일마다 반복</span></label>
+                          <select class="select" id="nrep"><option>매일</option><option>매주</option><option selected>매월</option><option>매년</option></select>
+                        </div>
+                      </div>
+                      <div class="field">
+                        <label>종료조건</label>
+                        <div class="inline" style="gap: 10px"><div class="seg" role="group" aria-label="종료조건" style="align-self: flex-start"><button type="button" aria-pressed="false">종료일 없음</button><button type="button" aria-pressed="false">특정 날짜까지</button><button type="button" aria-pressed="true">지정 횟수만큼</button></div><span class="inline" style="gap: 6px; flex-wrap: nowrap"><input class="input mono" value="10" inputmode="numeric" aria-label="반복 횟수" style="width: 100px" /><span class="subtle">회</span></span></div>
+                      </div>
+                      <div class="band band--warn">
+                        <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                        <div class="band__body">
+                          <div class="band__title">31일이 없는 달에는 휴일이 적용되지 않으며, 반복 횟수에도 포함되지 않습니다.</div>
+                        </div>
+                      </div>
+                      <div class="band band--info">
+                        <span class="band__ic" data-icon="calendar" data-icon-size="20"></span>
+                        <div class="band__body">
+                          <div class="band__title">첫 날짜 <span class="mono">2026-10-31</span> (토) · 다음 <span class="mono">2026-12-31</span> · <span class="mono">2027-01-31</span> · <span class="mono">2027-03-31</span> …</div>
+                          <p class="band__desc">31일이 없는 달은 건너뛰며 횟수에 세지 않습니다 — 10회의 마지막 날짜는 <span class="mono">2028-01-31</span> (월)입니다. 반복 휴일 한 건으로 저장합니다.</p>
+                        </div>
+                      </div>
                     </div>
                     <div class="field">
                       <label for="ndesc">설명</label>
-                      <textarea class="textarea" id="ndesc" rows="2">달마다 마지막 날 재고 실사</textarea>
+                      <textarea class="textarea" id="ndesc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">달마다 마지막 날 재고 실사</textarea>
                     </div>
                   </div>
                 </section>
@@ -272,7 +320,7 @@
               <div style="display: contents" data-show="rangebad" hidden>
                 <section class="panel">
                   <div class="panel__head">
-                    <h2 class="t-h2">휴일 정보</h2>
+                    <h2 class="t-h2">휴일정보</h2>
                     <span class="subtle" style="font-size: 12px">* 표시가 필수 · 설명은 선택 · 종일 휴일</span>
                   </div>
                   <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -282,13 +330,13 @@
                     </div>
                     <div class="field">
                       <label for="nd1">날짜 <span class="req">*</span></label>
-                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="true">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                      <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="true">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <div class="inline" style="flex-wrap: nowrap"><input class="input mono" id="nd1" value="2026-11-08" aria-label="시작일" aria-invalid="true" /><span class="subtle">~</span><input class="input mono" value="2026-11-02" aria-label="종료일" aria-invalid="true" /></div>
-                      <span class="err"><span data-icon="alert" data-icon-size="13"></span>종료일이 시작일보다 빠릅니다. 기간을 다시 입력해 주세요.</span>
+                      <span class="err"><span data-icon="alert" data-icon-size="13"></span>종료일이 시작일보다 빠릅니다.</span>
                     </div>
                     <div class="field">
                       <label for="ndesc">설명</label>
-                      <textarea class="textarea" id="ndesc" rows="2">매장 리모델링 공사 기간</textarea>
+                      <textarea class="textarea" id="ndesc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">매장 리모델링 공사 기간</textarea>
                     </div>
                   </div>
                 </section>
@@ -296,7 +344,7 @@
               <div style="display: contents" data-show="past" hidden>
                 <section class="panel">
                   <div class="panel__head">
-                    <h2 class="t-h2">휴일 정보</h2>
+                    <h2 class="t-h2">휴일정보</h2>
                     <span class="subtle" style="font-size: 12px">* 표시가 필수 · 설명은 선택 · 종일 휴일</span>
                   </div>
                   <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -306,13 +354,13 @@
                     </div>
                     <div class="field">
                       <label for="nd1">날짜 <span class="req">*</span></label>
-                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                      <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <input class="input mono" id="nd1" value="2026-09-18" aria-invalid="true" style="max-width: 180px" />
-                      <span class="err"><span data-icon="alert" data-icon-size="13"></span>지난 날짜입니다. 오늘 또는 그 뒤 날짜를 골라 주세요.</span>
+                      <span class="err"><span data-icon="alert" data-icon-size="13"></span>오늘 이후 날짜를 선택해 주세요.</span>
                     </div>
                     <div class="field">
                       <label for="ndesc">설명</label>
-                      <textarea class="textarea" id="ndesc" rows="2">분기 재고 실사로 하루 휴무</textarea>
+                      <textarea class="textarea" id="ndesc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">분기 재고 실사로 하루 휴무</textarea>
                     </div>
                   </div>
                 </section>
@@ -320,7 +368,7 @@
               <div style="display: contents" data-show="dup" hidden>
                 <section class="panel">
                   <div class="panel__head">
-                    <h2 class="t-h2">휴일 정보</h2>
+                    <h2 class="t-h2">휴일정보</h2>
                     <span class="subtle" style="font-size: 12px">* 표시가 필수 · 설명은 선택 · 종일 휴일</span>
                   </div>
                   <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -330,12 +378,12 @@
                     </div>
                     <div class="field">
                       <label for="nd1">날짜 <span class="req">*</span></label>
-                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                      <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <input class="input mono" id="nd1" value="2026-09-28" style="max-width: 180px" />
                     </div>
                     <div class="field">
                       <label for="ndesc">설명</label>
-                      <textarea class="textarea" id="ndesc" rows="2">설비 점검</textarea>
+                      <textarea class="textarea" id="ndesc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">설비 점검</textarea>
                     </div>
                   </div>
                 </section>
@@ -343,7 +391,7 @@
               <div style="display: contents" data-show="miss" hidden>
                 <section class="panel">
                   <div class="panel__head">
-                    <h2 class="t-h2">휴일 정보</h2>
+                    <h2 class="t-h2">휴일정보</h2>
                     <span class="subtle" style="font-size: 12px">* 표시가 필수 · 설명은 선택 · 종일 휴일</span>
                   </div>
                   <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -354,88 +402,27 @@
                     </div>
                     <div class="field">
                       <label for="nd1">날짜 <span class="req">*</span></label>
-                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
+                      <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <input class="input mono" id="nd1" value="2026-10-15" style="max-width: 180px" />
                     </div>
                     <div class="field">
                       <label for="ndesc">설명</label>
-                      <textarea class="textarea" id="ndesc" rows="2">분기 재고 실사로 하루 휴무</textarea>
+                      <textarea class="textarea" id="ndesc" rows="1" maxlength="500" style="height: 40px; min-height: 40px">분기 재고 실사로 하루 휴무</textarea>
                     </div>
                   </div>
                 </section>
               </div>
 
-              <div style="display: contents" data-show="noend" hidden>
-                <section class="panel">
-                  <div class="panel__head">
-                    <h2 class="t-h2">반복</h2>
-                    <span class="subtle" style="font-size: 12px">휴일 한 건으로 저장하고, 날짜는 볼 때 계산합니다</span>
-                  </div>
-                  <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-                    <div class="grid grid--3">
-                      <div class="field">
-                        <label for="nrep">반복 유형</label>
-                        <select class="select" id="nrep"><option>매일</option><option selected>매주</option><option>매월</option><option>매년</option></select>
-                      </div>
-                    </div>
-                    <div class="field">
-                      <label>종료 조건</label>
-                      <div class="inline" style="gap: 10px"><div class="seg" role="group" aria-label="종료 조건" style="align-self: flex-start"><button type="button" aria-pressed="true">종료일 없음</button><button type="button" aria-pressed="false">특정 날짜까지</button><button type="button" aria-pressed="false">지정 횟수만큼</button></div></div>
-                    </div>
-                    <div class="band band--info">
-                      <span class="band__ic" data-icon="refresh" data-icon-size="20"></span>
-                      <div class="band__body">
-                        <div class="band__title">첫 날짜 <span class="mono">2026-10-07</span> (수) · 다음 <span class="mono">2026-10-14</span> · <span class="mono">2026-10-21</span> · <span class="mono">2026-10-28</span> …</div>
-                        <p class="band__desc">종료일이 없어 끝나는 날 없이 이어집니다. 반복 휴일 한 건으로 저장하고, 날짜는 목록·캘린더에서 볼 때 계산합니다.</p>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </div>
-              <div style="display: contents" data-show="m31" hidden>
-                <section class="panel">
-                  <div class="panel__head">
-                    <h2 class="t-h2">반복</h2>
-                    <span class="subtle" style="font-size: 12px">휴일 한 건으로 저장하고, 날짜는 볼 때 계산합니다</span>
-                  </div>
-                  <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-                    <div class="grid grid--3">
-                      <div class="field">
-                        <label for="nrep">반복 유형</label>
-                        <select class="select" id="nrep"><option>매일</option><option>매주</option><option selected>매월</option><option>매년</option></select>
-                      </div>
-                    </div>
-                    <div class="field">
-                      <label>종료 조건</label>
-                      <div class="inline" style="gap: 10px"><div class="seg" role="group" aria-label="종료 조건" style="align-self: flex-start"><button type="button" aria-pressed="false">종료일 없음</button><button type="button" aria-pressed="false">특정 날짜까지</button><button type="button" aria-pressed="true">지정 횟수만큼</button></div><span class="inline" style="gap: 6px; flex-wrap: nowrap"><input class="input mono" value="10" inputmode="numeric" aria-label="반복 횟수" style="max-width: 72px" /><span class="subtle">회</span></span></div>
-                    </div>
-                    <div class="band band--warn">
-                      <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-                      <div class="band__body">
-                        <div class="band__title">31일이 없는 달은 건너뜁니다 · 2026년 11월, 2027년 2월·4월·6월·9월·11월</div>
-                        <p class="band__desc">그 달에는 휴일이 생기지 않고 다음 31일로 넘어갑니다. 달의 마지막 날로 옮기지 않고, 건너뛴 달은 횟수에 세지 않습니다 — 실제로 휴일이 생긴 날만 셉니다.</p>
-                      </div>
-                    </div>
-                    <div class="band band--info">
-                      <span class="band__ic" data-icon="calendar" data-icon-size="20"></span>
-                      <div class="band__body">
-                        <div class="band__title">첫 날짜 <span class="mono">2026-10-31</span> (토) · 다음 <span class="mono">2026-12-31</span> · <span class="mono">2027-01-31</span> · <span class="mono">2027-03-31</span> …</div>
-                        <p class="band__desc">31일이 없는 달은 건너뛰며 횟수에 세지 않습니다 — 10회의 마지막 날짜는 <span class="mono">2028-01-31</span> (월)입니다. 반복 휴일 한 건으로 저장합니다.</p>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </div>
               <section class="panel">
                 <div class="panel__head"><h2 class="t-h2">적용 대상</h2></div>
                 <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                   <div class="field">
-                    <label>적용 범위 <span class="req">*</span></label>
+                    <!-- 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(2026-10-30) -->
                     <div style="display: contents" data-show="in range noend m31 rangebad past dup oos miss fail" data-show-role="bm pf ba">
                     <!-- 적용 범위 — BP 관리자 관리의 범위처럼 선택 상자 + 안내 한 줄(2026-10-07). 고르면 대상 점포 / 예외 점포 칸이 바뀐다 -->
                     <div class="grid grid--2"><div class="field">
                       <select class="select" aria-label="적용 범위" data-scope-select>
-                        <option data-reveal="nf-exc" data-conceal="nf-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외 점포를 뺄 수 있음">전체 점포</option>
+                        <option data-reveal="nf-exc" data-conceal="nf-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외점포를 뺄 수 있음">전체 점포</option>
                         <option selected data-reveal="nf-store" data-conceal="nf-exc" data-help="고른 점포에만 적용 · 여러 곳을 한 휴일로">일부 점포</option>
                       </select>
                     </div></div>
@@ -444,7 +431,7 @@
                     <!-- 적용 범위 — BP 관리자 관리의 범위처럼 선택 상자 + 안내 한 줄(2026-10-07). 고르면 대상 점포 / 예외 점포 칸이 바뀐다 -->
                     <div class="grid grid--2"><div class="field">
                       <select class="select" aria-label="적용 범위" data-scope-select>
-                        <option selected data-reveal="nf-exc" data-conceal="nf-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외 점포를 뺄 수 있음">전체 점포</option>
+                        <option selected data-reveal="nf-exc" data-conceal="nf-store" data-help="㈜한강상회의 모든 점포에 적용 · 예외점포를 뺄 수 있음">전체 점포</option>
                         <option data-reveal="nf-store" data-conceal="nf-exc" data-help="고른 점포에만 적용 · 여러 곳을 한 휴일로">일부 점포</option>
                       </select>
                     </div></div>
@@ -453,7 +440,7 @@
                     <!-- 적용 범위 — BP 관리자 관리의 범위처럼 선택 상자 + 안내 한 줄(2026-10-07). 고르면 대상 점포 / 예외 점포 칸이 바뀐다 -->
                     <div class="grid grid--2"><div class="field">
                       <select class="select" aria-label="적용 범위" data-scope-select>
-                        <option disabled data-help="㈜한강상회의 모든 점포에 적용 · 예외 점포를 뺄 수 있음">전체 점포</option>
+                        <option disabled data-help="㈜한강상회의 모든 점포에 적용 · 예외점포를 뺄 수 있음">전체 점포</option>
                         <option selected data-help="고른 점포에만 적용 · 여러 곳을 한 휴일로">일부 점포</option>
                       </select>
                     </div></div>
@@ -461,7 +448,7 @@
                   </div>
 
                   <div class="field" id="nf-store" data-show="in range noend m31 rangebad past dup oos miss fail">
-                    <label>대상 점포 <span class="req">*</span></label>
+                    <label>대상점포 <span class="req">*</span></label>
                     <div style="display: contents" data-show="in range noend m31 rangebad past dup oos fail">
                     <div class="spick" data-spick data-show-role="bm pf ba" data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="ST000002 ST000003 ST000006">
                       <div class="spick__find">
@@ -469,7 +456,7 @@
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -487,7 +474,7 @@
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -505,7 +492,7 @@
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -525,7 +512,7 @@
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-invalid="true" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-invalid="true" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -543,7 +530,7 @@
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-invalid="true" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-invalid="true" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -561,7 +548,7 @@
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-invalid="true" aria-label="대상 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-invalid="true" aria-label="대상점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
@@ -575,11 +562,11 @@
                     </div>
                     </div>
                     <span class="err" data-show="oos" hidden><span data-icon="alert" data-icon-size="13"></span>고른 점포 가운데 지금 접근 범위 밖인 점포가 있습니다. 목록을 새로 불러와 다시 골라 주세요.</span>
-                    <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>일부 점포 휴일은 대상 점포를 한 곳 이상 골라야 합니다.</span>
+                    <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>대상점포를 1개 이상 선택해 주세요.</span>
                   </div>
 
                   <div class="field" id="nf-exc" data-show="allst allex" data-show-role="bm pf ba" hidden>
-                    <label>예외 점포</label>
+                    <label>예외점포</label>
                     <div style="display: contents" data-show="allst">
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="ST000010 ST000011">
                       <div class="spick__find">
@@ -587,16 +574,16 @@
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="뺄 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
                       </div>
                       <div class="spick__box">
-                        <div class="spick__head"><b>예외 점포</b><span class="badge badge--quiet" data-spick-count>2개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
-                        <ul class="spick__picked" data-spick-list aria-label="예외 점포"></ul>
-                        <p class="spick__empty" data-spick-empty hidden>예외 점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
+                        <div class="spick__head"><b>예외점포</b><span class="badge badge--quiet" data-spick-count>2개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
+                        <ul class="spick__picked" data-spick-list aria-label="예외점포"></ul>
+                        <p class="spick__empty" data-spick-empty hidden>예외점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
                       </div>
                     </div>
                     </div>
@@ -607,16 +594,16 @@
                         <div class="spick__row">
                           <div class="addr__q spick__q">
                             <span data-icon="search" data-icon-size="15"></span>
-                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="예외점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                             <div class="addr__list spick__list" role="listbox" aria-label="뺄 수 있는 점포" hidden></div>
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
                       </div>
                       <div class="spick__box">
-                        <div class="spick__head"><b>예외 점포</b><span class="badge badge--quiet" data-spick-count>11개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
-                        <ul class="spick__picked" data-spick-list aria-label="예외 점포"></ul>
-                        <p class="spick__empty" data-spick-empty hidden>예외 점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
+                        <div class="spick__head"><b>예외점포</b><span class="badge badge--quiet" data-spick-count>11개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
+                        <ul class="spick__picked" data-spick-list aria-label="예외점포"></ul>
+                        <p class="spick__empty" data-spick-empty hidden>예외점포가 없습니다. ㈜한강상회의 모든 점포에 적용됩니다.</p>
                       </div>
                     </div>
                     </div>

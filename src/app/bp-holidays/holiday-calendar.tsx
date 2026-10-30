@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Checkbox } from "@/components/common";
 import { groupByDate, targetText, weekdayName, type BpHolidayQuery } from "@/lib/bp-holiday-view";
 import type { BpHolidayList } from "@/lib/bp-holidays";
@@ -17,12 +17,15 @@ export function HolidayCalendar({
   query,
   today,
   list,
+  nav,
   onSelectDay,
   onOpen,
 }: {
   query: BpHolidayQuery;
   today: string;
   list: BpHolidayList;
+  /** 제목 자리의 달 이동 줄 */
+  nav: ReactNode;
   onSelectDay: (day: string) => void;
   onOpen: (bpHolidayId: number, date: string, from: HTMLElement) => void;
 }) {
@@ -38,15 +41,18 @@ export function HolidayCalendar({
     // 달력 아래가 카드 선에 붙지 않게 아래 여백을 둔다(데모 2026-10-08)
     <div className="flex items-start gap-[24px] pb-[24px]">
       <div className="flex min-w-0 flex-1 flex-col gap-[12px]">
-        <div className="flex items-end gap-[6px]">
-          <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">
-            {year}년 {month}월
-          </h2>
-          <span className="flex flex-wrap items-center gap-[18px]">
-            <Legend mark="bg-erp-off" text="공식 휴일" />
-            <Legend mark="bg-erp-on" text="BP 휴일" />
-            <Legend mark="border border-erp-brand" text={`선택한 날짜 · 오늘 ${today}`} />
+        {/* 제목 자리에 달 이동([2026년 11월 ▾] ‹ › [오늘])을 둔다 — 화면이 넘겨준다(2026-10-30 사용자 지정, 전엔 「2026년 11월」 글자 제목) */}
+        <div className="flex items-center gap-[6px]">
+          {/* 「공식 휴일 숨기기」는 조작이라 범례와 떼어 달 이동 줄 끝에 둔다(2026-10-30 사용자 지정 — 전엔 범례 맨 끝) */}
+          <div className="flex flex-1 flex-wrap items-center gap-[18px]">
+            {nav}
             <Checkbox label="공식 휴일 숨기기" checked={hideOfficial} onChange={(e) => setHideOfficial(e.target.checked)} />
+          </div>
+          <span className="flex flex-wrap items-center gap-[18px]">
+            {/* 이 화면의 주인공인 BP 휴일을 먼저(2026-10-30 사용자 지정) */}
+            <Legend mark="bg-erp-on" text="BP 휴일" />
+            <Legend mark="bg-erp-off" text="공식 휴일" />
+            {/* 「선택한 날짜」 · 「오늘」 범례는 뺐다 — 고른 칸 굵은 선은 눌러 보면 알고, 오늘 날짜는 [오늘] 버튼에 있다(2026-10-30 사용자 지정) */}
           </span>
         </div>
         <table aria-label={`${year}년 ${month}월 캘린더`} className="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]">
@@ -106,7 +112,8 @@ export function HolidayCalendar({
       {/* 오른쪽 그날 칸(데모 dayView) — 범위 꼬리표 · 휴일명, 아랫줄에는 휴일 유형 · 적용 대상 */}
       <section aria-label="고른 날짜의 휴일" className="flex w-[340px] shrink-0 flex-col gap-[12px]">
         <h2 className="text-[18px] font-semibold text-erp-ink">
-          {selected ? `${Number(selected.slice(5, 7))}월 ${Number(selected.slice(8, 10))}일 (${weekdayName(selected).slice(0, 1)})` : "날짜를 고르세요"}
+          {/* 「고르세요」 말투를 「선택해 주세요」로(2026-10-30 사용자 지정) */}
+          {selected ? `${Number(selected.slice(5, 7))}월 ${Number(selected.slice(8, 10))}일 (${weekdayName(selected).slice(0, 1)})` : "날짜를 선택해 주세요"}
           {selected && <span className="ml-[10px] text-[14px] font-normal text-erp-label">{dayRows.length}건</span>}
         </h2>
         <div className="flex flex-col">
@@ -130,7 +137,7 @@ export function HolidayCalendar({
               </button>
             ))
           ) : (
-            <p className="border-b border-erp-thead-line py-[24px] text-center text-[14px] text-erp-muted">{selected ? "등록된 휴일이 없습니다." : "캘린더에서 날짜를 누르면 그날 휴일이 보입니다."}</p>
+            <p className="border-b border-erp-thead-line py-[24px] text-center text-[14px] text-erp-muted">{selected ? "등록된 휴일이 없습니다." : "캘린더에서 날짜를 선택하면 그날의 휴일이 표시됩니다."}</p>
           )}
         </div>
       </section>
