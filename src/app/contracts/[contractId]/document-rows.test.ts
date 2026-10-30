@@ -71,3 +71,10 @@ test("documentRowsOf — 줄은 파일 종류로 나눈다: 계약 방식이 빈
     [{ label: "보낸 원본", documents: [doc(3, "SENT_ORIGINAL")], withKind: false }],
   );
 });
+
+test("documentRowsOf — 계약 방식이 빈 옛 종이 계약(날인본만)에는 「처리 완료본 없음」을 붙이지 않는다", () => {
+  assert.deepEqual(
+    documentRowsOf({ contractMethod: null, status: "SIGNED", histories: [], documents: [doc(1, "PAPER_EMPLOYMENT_CONTRACT")] }),
+    [{ label: "날인본", documents: [doc(1, "PAPER_EMPLOYMENT_CONTRACT")], withKind: true }],
+  );
+});

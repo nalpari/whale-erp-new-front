@@ -43,7 +43,8 @@ export function documentRowsOf(c: Source): DocumentRow[] {
   if (paper.length) rows.push({ label: "날인본", documents: paper, withKind: true });
   const signed = ofKind("SIGNED_COPY");
   if (signed.length) rows.push({ label: "처리 완료본", documents: signed, withKind: false });
-  else if (c.contractMethod !== "PAPER" && executed(c)) rows.push({ label: "처리 완료본", documents: [], withKind: false, empty: NO_SIGNED_COPY });
+  // 종이 계약이면(계약 방식이 빈 옛 계약은 날인본이 있으면) 처리 완료본이 없다 — 「아직 없음」이 영영 남지 않게(front #196 리뷰)
+  else if (c.contractMethod !== "PAPER" && paper.length === 0 && executed(c)) rows.push({ label: "처리 완료본", documents: [], withKind: false, empty: NO_SIGNED_COPY });
   const sent = ofKind("SENT_ORIGINAL");
   if (sent.length) rows.push({ label: "보낸 원본", documents: sent, withKind: false });
   // api 가 새 종류를 더하면 이름표(getEnum)와 함께 보인다 — 말없이 사라지지 않게
