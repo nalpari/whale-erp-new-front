@@ -43,7 +43,8 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
           <ContractPermission action="create" fallback={<Notice title="근로계약서를 작성할 권한이 없습니다." back={back} />}>
-            {/* 근무지 선택지를 api 가 거절했으면(BP 를 고르지 않음 · 권한 · 없는 BP) 그 문장 — 재계약이면 직전 계약 안내가 먼저다 */}
+            {/* 근무지 선택지를 api 가 거절했으면(BP 를 고르지 않음 · 권한 · 없는 BP) 그 문장. 재계약은 직전 계약을 읽지 못한 안내가 먼저고,
+                읽었으면 거절이 먼저다 — 빈 선택지로 「폐점했거나 맡은 점포가 아님」이라고 잘못 안내하지 않게 */}
             {denied !== null && (from === undefined || previous) ? (
               <Notice title={denied} back={back} />
             ) : from === undefined ? (

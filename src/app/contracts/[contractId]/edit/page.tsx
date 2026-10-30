@@ -85,6 +85,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
                 </Notice>
               }
             >
+              {/* 근무지 선택지를 api 가 거절했으면 그 문장(loadFormData) — 삭제는 그대로 둔다 */}
               {denied !== null ? (
                 <Notice title={denied} contractId={contractId} back={back}>
                   <ContractPermission action="delete">
