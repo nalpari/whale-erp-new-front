@@ -468,6 +468,9 @@
     $("[data-spick-count]", box).textContent = `${n}개점`;
     const none = $("[data-spick-none]", box);
     if (none) none.hidden = n > 0;
+    // 고른 점포가 없으면 [전체 제거]를 막는다 — data-spick-clear-empty 를 단 칸만(BP 관리자 등록 · 수정, 앱 store-mapping-picker.tsx)
+    const clear = $("[data-spick-clear-empty]", box);
+    if (clear) clear.disabled = n === 0;
   };
   function spickMark(dd, i) {
     const opts = $$('[role="option"]', dd);

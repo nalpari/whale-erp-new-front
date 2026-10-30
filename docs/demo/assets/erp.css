@@ -981,6 +981,9 @@
   .max-h-\[194px\] {
     max-height: 194px;
   }
+  .max-h-\[231px\] {
+    max-height: 231px;
+  }
   .max-h-\[272px\] {
     max-height: 272px;
   }
@@ -1382,6 +1385,9 @@
   }
   .max-w-\[calc\(100vw-32px\)\] {
     max-width: calc(100vw - 32px);
+  }
+  .max-w-full {
+    max-width: 100%;
   }
   .max-w-none {
     max-width: none;
@@ -3465,6 +3471,9 @@
   .has-disabled\:bg-guest-card:has(:disabled) {
     background-color: var(--color-guest-card);
   }
+  .has-aria-expanded\:bg-erp-thead-bg:has([aria-expanded="true"]) {
+    background-color: var(--color-erp-thead-bg);
+  }
   .has-\[\:checked\]\:border-erp-brand:has(:is(:checked)) {
     border-color: var(--color-erp-brand);
   }
@@ -3651,6 +3660,9 @@
   }
   .\[\&_label\]\:text-erp-muted label {
     color: var(--color-erp-muted);
+  }
+  .\[\&_select\:disabled\]\:bg-erp-thead-bg select:disabled {
+    background-color: var(--color-erp-thead-bg);
   }
   .\[\&_tbody_tr\]\:cursor-pointer tbody tr {
     cursor: pointer;
