@@ -16,7 +16,7 @@ test("영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내만 통
 test("비었거나 형식이 틀리면 오류 문구를 준다", () => {
   assert.equal(codeFormatError(""), "코드를 입력해 주세요.");
   for (const bad of ["1POS", "_POS", "A".repeat(21), "POS-2", "POS 2", "가나", "pos"])
-    assert.equal(codeFormatError(bad), "영문 대문자로 시작해 영문·숫자·_로 입력해 주세요.(최대 20자)", bad);
+    assert.equal(codeFormatError(bad), "영문 대문자로 시작해 영문·숫자·_로 입력해 주세요(최대 20자).", bad);
 });
 
 test("새 코드가 기존 코드나 다른 새 코드와 겹치면 그 코드를 돌려준다", () => {

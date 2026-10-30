@@ -1,6 +1,14 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #206 적대적 리뷰 2차 블로커 반영: 공통코드 「그 사이 바뀜」으로 다시 받는 404 를 행이 지워진 것(「상세 코드를 찾을 수 없습니다」)으로 좁혔다 — 그룹 · BP 단위 404 를 다시 받으면 BP 패널이 다른 그룹으로 바뀌어 입력이 안내 없이 사라졌다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #206 리뷰(code-review · pr-review-toolkit) 반영: 공통코드 실패 띠 아랫줄을 문구가 아니라 판정 값(`stale`)으로 고르고(문구 꼴이 다른 404 도), 관리주체 필터를 둘 다 꺼도 [추가]할 수 있게(순서는 api 가 매김), 낡은 주석 정리, 공통코드 저장 · 그 사이 바뀜 처리를 본문에 적었다(2026-10-30 재영).
+* **Update**: [플랫폼 시스템 관리](/system.md) · [Whale ERP Frontend](/whale-erp-front.md) — front #206 적대적 리뷰 반영: 공통코드 「그 사이 바뀜」 처리에서 보내지 않은 새 행 · 지울 행 표시를 버리던 것을 잇게(기준을 지금 목록으로), 이미 지운 행의 404 「…찾을 수 없습니다」도 같은 띠 · 다시 받기로, 같은 내용이 다시 오면 띠 표시를 푼다(플랫폼 · BP).
+* **Update**: [플랫폼 시스템 관리](/system.md) — 플랫폼 휴일 관리 검토: 연도 범위는 2000~2100 그대로 두고(2051~2100 은 음력 공휴일 없이 양력분만 — 지우지도 막지도 않는다), 계산 행의 휴일 이름을 정부 표기에 맞춤(api teddiursa) (2026-10-30 재영).
+* **Update**: [플랫폼 시스템 관리](/system.md) · [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 관리 검토(api teddiursa `fce3a860` 짝): 새 그룹 표시 순서는 api 가 매긴다(화면은 보내지 않음), 고친 그룹 · 상세 코드 행마다 updatedAt 을 보내 그 사이 바뀌었으면 409 띠 「…먼저 수정했습니다.」 + 「최신 정보로 다시 채웠습니다.」로 최신 목록을 다시 채운다(플랫폼 · BP, `isStaleConflict`), BP 복사본만 남은 지운 코드는 되살린다. 생성 타입을 teddiursa openapi 로 다시 만들었다. 플랫폼 휴일: 동기화 실패 띠를 공통 NoticeBand(risk · role=alert)로, 배치가 없다는 낡은 주석을 고쳤다(2026-10-30 재영).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 코드 형식 문구의 마침표를 끝으로(「…입력해 주세요(최대 20자).」), api 409 문구가 코드 목록을 「…입니다(A, B).」 괄호 꼴로 바뀌어도 겹친 코드를 꺼내게 했다(옛 「: A, B」 꼴도 읽는다 — `conflictCode` · `unusableCodeMessage`, 플랫폼 · BP 공통코드). 화면이 바꿔 보이는 문구도 「이 그룹에서 사용할 수 없는 상세 코드입니다(G2).」 (2026-10-30 재영).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 메뉴 관리 URL 칸 오류 문구의 띄어쓰기를 맞췄다(「메뉴 URL은」 · 「'-'로」, 목업 문구도). api 쪽 같은 문구 · 마침표는 teddiursa 에 요청했다(2026-10-30 재영). 등록 토스트는 그대로 둔다.
+* **Update**: [플랫폼 시스템 관리](/system.md) · [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 메뉴 관리 검토: 미사용 상위 아래 등록은 양식에서 알리지 않고 저장 뒤 「상위 미사용」 꼬리표로 보인다(정책을 구현에 맞춤, 목업 문장도). 이 화면 메뉴의 URL 변경 확인창을 지웠다 — 10-21 부터 api 가 API 권한 주소 URL 변경을 409 로 막아 쓸모없었다. 자기 잠금 확인(미사용 저장 · 미사용 상위 아래로 옮기기)은 메뉴 코드 상수(`MENU_CODE.platformMenus` MN000215) 대신 지금 화면의 메뉴(`usePageMenu`)로 찾는다(2026-10-30 재영).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 출처 `button.tsx` 의 `outline` 변형을 1팀이 동의해(2026-10-30) 「1팀 확인 필요」를 지웠다. DESIGN.md Buttons 「Outline」도 같이 고쳤다(front marill).
 * **Update**: `docs/mockup/mypage/` 의 회원 탈퇴 경고 문구 정리(WHALEERP-339 — 직원 자료 일괄 저장 안내 · [근로계약 확인] · 0개 빼기 · [회원 탈퇴] 기본색)를 [마이페이지](/mypage.md) 정책에 옮겼다. 하위 계정 「미사용」 표기와 진행 중 근로계약 차단 여부는 manyfast 질문으로 열려 있어 보류 절에 두었다(front marill).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 출처 `button.tsx` 에 `outline` 변형을 더한 것(회원 탈퇴 경고의 이동 버튼, WHALEERP-339)을 본문 「공통 Button 의 danger」 절에 적었다(front marill).

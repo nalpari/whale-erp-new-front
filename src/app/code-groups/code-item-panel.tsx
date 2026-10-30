@@ -18,7 +18,7 @@ import {
   withKeptPending,
   type ItemDraft,
 } from "@/lib/code-drafts";
-import { failureView } from "@/lib/code-save";
+import { failureView, STALE_DETAIL } from "@/lib/code-save";
 import { CODE_PLACEHOLDER, codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, CodeItem } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -71,6 +71,10 @@ export function CodeItemPanel({
   const [drafts, setDrafts] = useState(() => items.map(toDraft));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
+  // 그 사이 바뀐 실패(409 · 404) 뒤 다시 받은 목록으로 칸을 채울 때 실패 띠를 지우지 않는다
+  const [staleBand, setStaleBand] = useState(false);
+  // 지금 실패 띠가 그 사이 바뀐 실패인가 — 아랫줄을 「최신 정보로 다시 채웠습니다.」로 고른다(failureView 의 판정 그대로)
+  const [failureStale, setFailureStale] = useState(false);
   const [saving, startSaving] = useTransition();
   // 저장을 시작한 목록. 저장할 때마다 두고, 다음에 오는 목록이 바로 그 목록을 대신하면 아직 저장하지 못한 새 행을 그 뒤에
   // 이어 두고 지울 행 표시도 다시 얹는다(한 번 쓰고 지운다 — 뒤 단계가 실패했거나 결과를 모를 때 입력을 잃지 않게). 완전히 성공했으면 저장 처리가 등록한 새 행을
@@ -85,15 +89,21 @@ export function CodeItemPanel({
     const sameRows = JSON.stringify(items) === JSON.stringify(shown);
     setShown(items);
     // 저장 중에 같은 내용의 목록이 새 참조로 오면(왼쪽 패널 저장 등) 저장 기준도 그 참조로 옮긴다(followSameRows)
-    if (sameRows) setSavingFrom(followSameRows(savingFrom, shown, items));
+    // 다시 받은 목록이 같은 내용이면 staleBand 표시만 푼다 — 실패 띠(failure)는 그대로 둔다
+    if (sameRows) {
+      setStaleBand(false);
+      setSavingFrom(followSameRows(savingFrom, shown, items));
+    }
     else {
       const next = renumberAdded(withKeptPending(items.map(toDraft), drafts, savingFrom === shown));
       setSavingFrom(null);
       setDrafts(next);
       if (!hasPending(next)) {
         setErrors({});
-        setFailure(null);
+        // 그 사이 바뀐 실패(409 · 404)로 다시 받은 목록이면 실패 띠는 남긴다(staleBand) — 한 번 쓰고 푼다
+        if (!staleBand) setFailure(null);
       }
+      setStaleBand(false);
     }
   }
 
@@ -166,6 +176,7 @@ export function CodeItemPanel({
     const found = validate();
     setErrors(found);
     setFailure(null);
+    setFailureStale(false);
     if (Object.keys(found).length) return focusFirstInvalid(PANEL_ID);
 
     const input = buildSaveItemsInput(drafts, items);
@@ -192,11 +203,17 @@ export function CodeItemPanel({
         setFailure(null);
         return toast(savedToast(input));
       }
-      // 아무것도 저장되지 않았으면 이어 둘 일이 없다. 앞 단계(수정 · 삭제)가 저장됐으면 새 행 · 지울 행 표시는 다시 받은 목록에 남는다(savingFrom).
-      if (!result.anySaved) setSavingFrom(null);
+      // 아무것도 저장되지 않았으면 이어 둘 일이 없다(그 사이 바뀜은 빼고 — 다시 받은 목록에 잇는다). 앞 단계(수정 · 삭제)가 저장됐으면 새 행 · 지울 행 표시는 다시 받은 목록에 남는다(savingFrom).
       // 상세 코드가 겹치면(이 화면에 안 보이는 BP 행 · BP전용 코드 포함) 그 새 행의 칸 오류로, 그 밖은 띠로 알린다.
       // 앞 단계가 저장됐으면 띠에 그 사실을 먼저 적는다(failureView).
       const view = failureView(result);
+      if (!result.anySaved && !view.stale) setSavingFrom(null);
+      // 그 사이 다른 관리자가 고쳤거나 지웠다 — 띠로 알리고 최신 목록으로 칸을 다시 채운다. 저장 기준(savingFrom)은 저장을 시작할 때
+      // 잡아 둔(또는 같은 내용으로 따라간) 값을 그대로 두어, 기존 행만 최신 값으로 바꾸고 보내지 않은 새 행 · 지울 행 표시는 잇게 한다(PR #206 리뷰)
+      if (view.stale) {
+        setStaleBand(true);
+        router.refresh();
+      }
       if (view.conflict) {
         const code = conflictCode(view.conflict);
         const row = addedRows.find((d) => normalizeCode(d.itemCode) === code);
@@ -208,6 +225,7 @@ export function CodeItemPanel({
         setErrors({ [`code:${row?.key ?? "server"}`]: message });
       }
       setFailure(view.band);
+      setFailureStale(view.stale);
     });
   };
 
@@ -356,7 +374,7 @@ export function CodeItemPanel({
       }
     >
       {reordered && <PendingNotice message={REORDERED} />}
-      {failure && <SaveFailedBand message={failure} />}
+      {failure && <SaveFailedBand message={failure} detail={failureStale ? STALE_DETAIL : undefined} />}
       <DataTable
         // 열 이름 줄까지 고정하고 그 아래만 스크롤한다(2026-10-26 사용자 지정)
         scroll

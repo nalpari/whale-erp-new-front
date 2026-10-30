@@ -750,9 +750,9 @@ export interface paths {
         };
         /** 공통코드 그룹 목록. 플랫폼고정 · 플랫폼제공 그룹을 표시 순서대로, 그룹 코드 · 그룹명 검색(부분 일치). */
         get: operations["CodeGroupsController_listGroups"];
-        /** 그룹 수정. 기존 그룹 여러 개를 한 번에 — 하나라도 없으면 아무것도 고치지 않는다. */
+        /** 그룹 수정. 기존 그룹 여러 개를 한 번에 — 하나라도 없거나 그 사이 고쳐졌으면(행마다 updatedAt) 아무것도 고치지 않는다. */
         put: operations["CodeGroupsController_updateGroups"];
-        /** 그룹 등록. 새 그룹 여러 개를 한 번에 — 하나라도 막히면 아무것도 생기지 않는다. */
+        /** 그룹 등록. 새 그룹 여러 개를 한 번에 — 하나라도 막히면 아무것도 생기지 않는다. 표시 순서는 api 가 전체의 최대 + 1 부터 매긴다. */
         post: operations["CodeGroupsController_createGroups"];
         delete?: never;
         options?: never;
@@ -769,13 +769,13 @@ export interface paths {
         };
         /** 고른 그룹의 상세 코드(플랫폼 원본). BP전용 코드는 나오지 않는다. */
         get: operations["CodeGroupsController_listItems"];
-        /** 상세 코드 수정. 기존 코드 여러 개를 한 번에 — 하나라도 없으면 아무것도 고치지 않는다. */
+        /** 상세 코드 수정. 기존 코드 여러 개를 한 번에 — 하나라도 없거나 그 사이 고쳐졌으면(행마다 updatedAt) 아무것도 고치지 않는다. */
         put: operations["CodeGroupsController_updateItems"];
         /** 상세 코드 등록. 새 코드 여러 개를 한 번에 — 하나라도 막히면 아무것도 생기지 않는다. */
         post: operations["CodeGroupsController_createItems"];
         /**
          * 상세 코드 삭제(논리) — 플랫폼제공 그룹만, 여러 개를 한 번에, 하나라도 막히면 아무것도 지우지 않는다. 플랫폼 원본만
-         *     지우고 BP 에 복사된 행은 건드리지 않는다. 플랫폼고정 그룹은 시스템이 값을 참조해 409(사용 상태로 관리). 같은 코드로 다시 등록하면 되살아난다 — 단 어느 BP 에 복사본이 살아 있으면 등록이 409 다.
+         *     지우고 BP 에 복사된 행은 건드리지 않는다. 플랫폼고정 그룹은 시스템이 값을 참조해 409(사용 상태로 관리). 같은 코드로 다시 등록하면 되살아난다 — BP 에 플랫폼제공 복사본이 살아 있어도 되살린다.
          */
         delete: operations["CodeGroupsController_deleteItems"];
         options?: never;
@@ -987,7 +987,7 @@ export interface paths {
         };
         /** 고른 플랫폼제공 그룹의 상세 코드 — 이 BP 의 행(BP전용 포함). 플랫폼고정 · 사용중지 그룹은 404. */
         get: operations["BpCodeGroupsController_listItems"];
-        /** 상세 코드 수정 — 이 BP 의 행 여러 개를 한 번에. 하나라도 막히면 아무것도 고치지 않는다. */
+        /** 상세 코드 수정 — 이 BP 의 행 여러 개를 한 번에. 하나라도 막히거나 그 사이 고쳐졌으면(행마다 updatedAt) 아무것도 고치지 않는다. */
         put: operations["BpCodeGroupsController_updateItems"];
         /** 상세 코드 등록 — BP전용 코드 여러 개를 한 번에. 하나라도 막히면 아무것도 생기지 않는다. */
         post: operations["BpCodeGroupsController_createItems"];
@@ -5130,6 +5130,11 @@ export interface components {
             isBpApplied: boolean;
             /** @description 표시 순서. */
             sortOrder: number;
+            /**
+             * Format: date-time
+             * @description 최종 수정 시각. 수정(PUT) 때 그 행의 updatedAt 으로 그대로 보낸다.
+             */
+            updatedAt: string;
         };
         CodeGroupListResponseDto: {
             items: components["schemas"]["CodeGroupResponseDto"][];
@@ -5154,14 +5159,16 @@ export interface components {
              * @enum {string}
              */
             status: "ACTIVE" | "INACTIVE";
-            /** @description 표시 순서. 화면이 끌어 옮긴 뒤 1부터 다시 매긴 값. */
-            sortOrder: number;
         };
         CreateCodeGroupsDto: {
             /** @description 만들 그룹. 1~200행. 한 요청 안에서 그룹 코드가 겹치면 409. */
             items: components["schemas"]["CreateCodeGroupDto"][];
         };
-        CodeGroupInputDto: {
+        UpdateCodeGroupDto: {
+            /** @description 목록에서 받은 그 행의 updatedAt 그대로. 그 사이 다른 관리자가 고쳤으면 요청 전체를 저장하지 않고 409. */
+            updatedAt: string;
+            /** @description 표시 순서. 화면이 끌어 옮긴 뒤 1부터 다시 매긴 값. */
+            sortOrder: number;
             /**
              * @description 그룹 코드. 등록 뒤 바뀌지 않는다 — 수정 본문에서는 대상을 가리킬 뿐이다.
              * @example EMP_TYPE
@@ -5174,12 +5181,10 @@ export interface components {
              * @enum {string}
              */
             status: "ACTIVE" | "INACTIVE";
-            /** @description 표시 순서. 화면이 끌어 옮긴 뒤 1부터 다시 매긴 값. */
-            sortOrder: number;
         };
         UpdateCodeGroupsDto: {
             /** @description 고칠 그룹. 1~200행. 한 요청 안에서 그룹 코드가 겹치면 409. */
-            items: components["schemas"]["CodeGroupInputDto"][];
+            items: components["schemas"]["UpdateCodeGroupDto"][];
         };
         CodeItemResponseDto: {
             /** @description 사용 상태. */
@@ -5196,6 +5201,11 @@ export interface components {
             label: string;
             /** @description 표시 순서. */
             sortOrder: number;
+            /**
+             * Format: date-time
+             * @description 최종 수정 시각. 수정(PUT) 때 그 행의 updatedAt 으로 그대로 보낸다.
+             */
+            updatedAt: string;
         };
         CodeItemListResponseDto: {
             items: components["schemas"]["CodeItemResponseDto"][];
@@ -5225,9 +5235,30 @@ export interface components {
             /** @description 만들 상세 코드. 1~500행. 한 요청 안에서 코드가 겹치면 409. */
             items: components["schemas"]["CodeItemInputDto"][];
         };
+        UpdateCodeItemDto: {
+            /** @description 목록에서 받은 그 행의 updatedAt 그대로. 그 사이 다른 관리자가 고쳤으면 요청 전체를 저장하지 않고 409. */
+            updatedAt: string;
+            /**
+             * @description 상세 코드. 등록 뒤 바뀌지 않는다 — 수정 본문에서는 대상을 가리킬 뿐이다. SERVICE 그룹이면 서비스 코드다.
+             * @example FULL
+             */
+            itemCode: string;
+            /**
+             * @description 코드명. 앞뒤 공백을 지우고 1~50자. SERVICE 그룹이면 서비스명이다.
+             * @example 정규직
+             */
+            label: string;
+            /**
+             * @description 사용 상태.
+             * @enum {string}
+             */
+            status: "ACTIVE" | "INACTIVE";
+            /** @description 표시 순서. 화면이 끌어 옮긴 뒤 1부터 다시 매긴 값. */
+            sortOrder: number;
+        };
         UpdateCodeItemsDto: {
             /** @description 고칠 상세 코드. 1~500행. 한 요청 안에서 코드가 겹치면 409. */
-            items: components["schemas"]["CodeItemInputDto"][];
+            items: components["schemas"]["UpdateCodeItemDto"][];
         };
         DeleteCodeItemsDto: {
             /**
@@ -5498,6 +5529,11 @@ export interface components {
             label: string;
             /** @description 표시 순서. */
             sortOrder: number;
+            /**
+             * Format: date-time
+             * @description 최종 수정 시각. 수정(PUT) 때 그 행의 updatedAt 으로 그대로 보낸다.
+             */
+            updatedAt: string;
             /**
              * @description 플랫폼 원본이 사용중지인가(안내용). BP전용은 늘 거짓. 플랫폼제공 그룹에서 BP 는 이 값과 관계없이 사용 상태를
              *     자유롭게 바꾼다(2026-10-22 결정).
@@ -11999,7 +12035,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 한 요청에 같은 그룹 코드가 두 번 */
+            /** @description 한 요청에 같은 그룹 코드가 두 번 · 목록에서 읽은 뒤 다른 관리자가 먼저 수정(updatedAt 이 다름) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -12122,7 +12158,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 한 요청에 같은 상세 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지운 코드 */
+            /** @description 한 요청에 같은 상세 코드가 두 번 · 목록에서 읽은 뒤 다른 관리자가 먼저 수정(updatedAt 이 다름) · 먼저 지운 코드 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -12169,7 +12205,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 이 그룹의 살아 있는 행(플랫폼 원본 · BP별 · BP전용)과 겹친 상세 코드 · 요청 안에서 겹친 상세 코드 · 확인 뒤 다른 관리자가 같은 코드를 먼저 등록 · 되살림 — 지운 원본과 같은 코드는 되살린다 */
+            /** @description 이 그룹의 살아 있는 플랫폼 원본 · BP전용 행과 겹친 상세 코드 · 요청 안에서 겹친 상세 코드 · 확인 뒤 다른 관리자가 같은 코드를 먼저 등록 · 되살림 — 지운 원본과 같은 코드는 BP 에 플랫폼제공 복사본이 살아 있어도 되살린다 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -12952,7 +12988,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지운 코드(「다른 관리자가 먼저 지운…저장해 주세요」) */
+            /** @description 한 요청에 같은 코드가 두 번 · 목록에서 읽은 뒤 다른 관리자가 먼저 수정(「다른 관리자가 먼저 수정했습니다…」) · 먼저 지운 코드(「다른 관리자가 먼저 지운…저장해 주세요.」) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -14518,7 +14554,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 같거나 겹치는 URL 을 쓰는 사용 중 메뉴 · API 권한 주소(경로 방식 @MenuPermission 컨트롤러의 경로)인 URL · 메뉴 코드를 더 만들 수 없음 */
+            /** @description 같거나 겹치는 URL을 쓰는 사용 중 메뉴 · API 권한 주소(경로 방식 @MenuPermission 컨트롤러의 경로)인 URL · 메뉴 코드를 더 만들 수 없음 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -14617,7 +14653,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 같거나 겹치는 URL 을 쓰는 사용 중 메뉴 · API 권한 주소인 URL 을 바꾸거나 다른 메뉴가 가져가려 함 · 동시 수정 */
+            /** @description 같거나 겹치는 URL을 쓰는 사용 중 메뉴 · API 권한 주소인 URL을 바꾸거나 다른 메뉴가 가져가려 함 · 동시 수정 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -14690,7 +14726,7 @@ export interface operations {
     PublicHolidaysController_list: {
         parameters: {
             query: {
-                /** @description 연도. 2000~2100(공식 휴일 테이블의 범위). */
+                /** @description 연도. 2000~2100(공식 휴일 테이블의 범위 — 2051년부터는 양력 휴일만 있다). */
                 year: number;
                 /** @description 월 1~12. 주면 그 달(캘린더), 없으면 그 해 전체(목록). 목록은 키를 빼고 보낸다 — 빈 값(`month=`)은 400. */
                 month?: number;
