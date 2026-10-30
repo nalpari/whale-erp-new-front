@@ -6,32 +6,71 @@
     <title>BP 공통코드 관리 · WHALE ERP</title>
     <link rel="icon" href="../assets/img/favicon.svg" />
     <link rel="stylesheet" href="../assets/whale.css" />
+    <style>
+      /* front 모양을 옮긴 조각 (코드대로, 2026-10-30) */
+      /* 관리주체 꼬리표 — 회색(표 머리 바탕 · 선 · 보조 글자). 플랫폼고정만 연한 파랑(#f4f9ff)인데 이 화면엔 플랫폼고정이 나오지 않는다(OwnerTag) */
+      .otag { display: inline-block; padding: 1px 4px; border: 1px solid #e9edf5; border-radius: 2px; background: #f8f9fb; color: #858b94; font-size: 13px; font-weight: 500; white-space: nowrap; }
+      .otag--fixed { background: #f4f9ff; }
+      /* 고른 그룹 줄 — 한 단계 어두운 바탕(#f0f1f3) + 왼쪽 3px 브랜드색 안쪽 선(DataTable current) */
+      tr.cur > td { background: #f0f1f3; font-weight: 600; }
+      tr.cur > td:first-child { box-shadow: inset 3px 0 0 #6b7988; }
+      /* 상세 코드 머리 값 줄 — 「그룹코드 EMP_TYPE | 그룹명 고용 형태 | 꼬리표」(GroupHead) */
+      .hv { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+      .hv__k { color: #888888; }
+      .hv > i { width: 1px; height: 11px; margin: 0 4px; background: #d9d9d9; }
+      /* 표시 순서 변경 안내 — 빨간 테두리 · 연한 빨간 바탕(PendingNotice) */
+      .pnotice { margin: 0; padding: 12px 16px; border: 1px solid var(--risk); border-radius: 2px; background: var(--risk-wash); color: var(--risk-text); font-size: 14px; }
+      /* 행 끝 [삭제](휴지통) · [되돌리기] — 28px 테두리 상자(DeleteToggle) */
+      .deltg { display: inline-grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--hairline-strong); border-radius: 2px; background: #fff; color: var(--muted-tert); }
+      .deltg:hover { border-color: var(--risk); color: var(--risk-text); }
+      .deltg[aria-pressed="true"]:hover { border-color: #6b7988; color: #6b7988; }
+      /* 새 행 빼기 [×] */
+      .xbtn { padding: 0 6px; font-size: 16px; color: var(--muted-tert); }
+      .xbtn:hover { color: var(--ink); }
+      /* 칸 오류 — 그 칸 바로 아래 한 줄(CellError). 같은 줄의 다른 칸은 &nbsp; 로 자리를 둔다 */
+      .cellerr { display: flex; flex-direction: column; gap: 4px; padding: 6px 0; }
+      .cellerr__msg { font-size: 12px; line-height: 1.4; color: var(--risk-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      /* 표 안 빈 안내 줄 */
+      .emptyrow { height: 92px; text-align: center; color: #999999; white-space: normal !important; }
+    </style>
   </head>
   <body data-root="../" data-page="config" data-sub="config/codes.html">
     <!-- BP 공통코드 목록 조회 및 관리 · /settings/codes · S-FHVSAV (F-QPDEWN BP 공통코드 관리) · 1팀
-         한 화면이다. 위는 검색 조건, 왼쪽은 공통코드 그룹 목록, 오른쪽은 고른 그룹의 상세 코드 목록이다. 상세 코드 등록·수정은 목록 안의 입력 행에서 한다.
+         한 화면이다. 왼쪽은 필터(그룹 코드 · 그룹명), 가운데는 공통코드 그룹 목록, 오른쪽은 고른 그룹의 상세 코드 목록이다. 상세 코드 등록·수정은 목록 안의 입력 행에서 한다
+         (코드대로, 2026-10-30 — 전엔 위쪽 「검색 조건」 패널에 초기화 · 검색 버튼).
          그룹은 플랫폼 공통코드 관리(system/codes.html)가 만든 것을 그대로 읽는다. 그룹 추가 버튼이 없고 그룹 행은 모두 읽기 전용이다.
-         그룹은 플랫폼제공 그룹만 보인다 — 플랫폼고정 그룹은 BP 공통코드에 나오지 않는다(2026-10-27 사용자 결정, 화면이 api 에 관리주체 조건으로 묻는다).
-         상세 코드의 관리 주체는 행마다 읽기 전용으로 보인다 — 플랫폼이 등록한 코드는 플랫폼제공, 한강상회가 추가한 코드는 BP전용.
-         플랫폼제공 그룹은 플랫폼 코드의 코드명·표시 순서·사용 상태를 한강상회 범위에서 고치고(표시 순서는 플랫폼 공통코드 관리처럼 맨 앞 이동 칸을 끌어 바꾼다), 새 코드를 BP전용으로 추가한다. 등록된 코드 값 자체는 잠근다.
+         그룹은 사용 중인 플랫폼제공 그룹만 보인다 — 플랫폼고정 그룹(2026-10-27 사용자 결정, 화면이 api 에 관리주체 조건으로 묻는다)과 사용중지 그룹은 목록에 나오지 않는다.
+         그룹 목록은 쪽을 나누지 않고 전부 보이며 사용 상태 열이 없다 (코드대로, 2026-10-30).
+         처음 들어오거나 고른 그룹이 목록에 없으면 첫 그룹을 고른다 — 그룹을 고르지 않은 상태는 없다. 그룹이 0개(검색 결과 없음 포함)일 때만 오른쪽이 빈 안내이고,
+         추가 · 저장 버튼은 막지 않고 숨긴다 (코드대로, 2026-10-30).
+         상세 코드의 관리주체는 행마다 읽기 전용으로 보인다 — 플랫폼이 등록한 코드는 플랫폼제공, 한강상회가 추가한 코드는 BP전용.
+         플랫폼제공 그룹은 플랫폼 코드의 코드명·표시 순서·사용여부를 한강상회 범위에서 고치고(표시 순서는 맨 앞 이동 칸을 끌어 바꾼다), 새 코드를 BP전용으로 추가하고,
+         플랫폼제공 · BP전용 코드를 지운다. 등록된 코드 값 자체는 잠근다(자물쇠 아이콘 없이 글자만, 마우스를 올리면 「등록한 코드 값은 바꿀 수 없습니다.」).
          바꾼 표시 순서는 한강상회에만 적용되고 다른 BP 와 플랫폼 원본 순서는 그대로다.
-         상세 코드는 같은 BP·같은 그룹 안에서, 한강상회가 가진 행(적용 때 복사받은 코드와 BP전용 코드) 기준으로 겹칠 수 없다. 물리 삭제는 없다.
+         상세 코드는 같은 BP·같은 그룹 안에서 겹칠 수 없다. 화면에 보이는 코드와 겹치면 저장 전에 그 칸 아래에서 막고(「이미 사용 중인 상세 코드입니다.」 ·
+         「다른 새 행과 같은 상세 코드입니다.」), 화면에 없는 코드(받지 않은 플랫폼 코드 · 지운 코드)와 겹치면 api 409 를 그 칸 아래
+         「이 그룹에서 사용할 수 없는 상세 코드입니다: 코드」로 보인다 (코드대로, 2026-10-30).
          BP 코드·BP 상호명 검색 항목은 두지 않는다 — 플랫폼 사용자도 웨일ERP 바로가기로 연 탭의 BP 코드를 보고, 조회만 한다. 적용 서비스 입력·검색 항목은 두지 않는다.
-         그룹을 고르지 않으면 추가 버튼을 막고 그룹 선택 안내를 보인다.
-         표본 값 — 그룹과 플랫폼 코드는 system/codes.html 과 같다. LEAVE_TYPE 상세 값과 BP전용 INTERN · FAMILY 는 브리프 표본이다.
-         ‘플랫폼 사용중지 코드’(CONTRACT)와 ‘사용중지 그룹’(LEAVE_TYPE)은 표본에 없는 상태라 데모용으로 둔다.
+         표본 값 — 그룹과 플랫폼 코드는 system/codes.html 과 같다. LEAVE_TYPE 상세 값과 BP전용 INTERN · FAMILY 는 브리프 표본이다. LEAVE_TYPE 의 ETC(미사용) · 새 행 TEMP · SEASON 은 데모용이다.
          위쪽 점선 줄 둘은 목업 전용이다 — 권한과 화면 상태를 따로 바꾼다.
 
-         확정 (2026-09-29)
-         - 상세 코드에도 관리 주체를 저장한다 — BP 가 추가한 코드는 BP전용 (CONFIG-7 확정).
-         - BP전용 코드의 코드 값은 등록 뒤 바꿀 수 없다. 새 코드는 영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내다(소문자는 대문자로 바뀐다).
-         - 플랫폼이 사용 중지한 그룹의 기존 상세 코드는 읽기 전용이다 — 추가도 수정도 막는다.
-         - 플랫폼고정 코드는 BP 가 아무것도 고치지 못한다. 플랫폼제공 코드는 BP 가 사용 상태를 바꿀 수 있으나, 플랫폼이 사용 중지한 코드는 한강상회도 다시 켤 수 없다(2026-09-29 확정, manyfast S-FHVSAV 반영).
-         - 그룹 코드·그룹명 검색은 일부 일치이고 대소문자를 가리지 않는다.
-         - 저장은 상세 코드 패널마다 한 번이고, 저장하면 오른쪽 아래 토스트를 띄운다(권한 그룹 관리와 같다).
+         확정 (2026-09-29, 2026-10-30 코드대로 고침)
+         - 상세 코드에도 관리주체를 저장한다 — BP 가 추가한 코드는 BP전용 (CONFIG-7 확정).
+         - BP전용 코드의 코드 값은 등록 뒤 바꿀 수 없다. 새 코드는 영문 대문자로 시작, 영문·숫자·밑줄, 20자 이내다(소문자는 대문자로 바뀐다).
+         - 사용중지 그룹은 목록에 나오지 않는다 (코드대로, 2026-10-30 — 전엔 읽기 전용으로 보이고 추가 · 수정을 막았다).
+         - 플랫폼제공 코드의 사용여부는 BP 가 자유롭게 켜고 끈다. 플랫폼이 사용 중지한 코드도 한강상회가 다시 켤 수 있고 막는 안내가 없다
+           (코드대로, 2026-10-30 — 전엔 다시 켤 수 없었다, 2026-09-29 manyfast S-FHVSAV). 토글 옆 글자는 늘 「사용」, 조회 전용 배지는 「사용」 · 「미사용」.
+         - 플랫폼제공 · BP전용 코드를 지울 수 있다. 행 끝 휴지통으로 「삭제 예정」(취소선 · 되돌리기)만 표시하고 [저장] 때 반영한다. 확인창은 없다
+           (2026-10-22, 코드대로 2026-10-30 — 전엔 물리 삭제 없음).
+         - 그룹 코드·그룹명 검색은 일부 일치이고 대소문자를 가리지 않는다. 어느 칸에서 Enter · 돋보기를 눌러도 두 칸 값으로 함께 검색한다.
+         - 저장은 상세 코드 패널마다 한 번이다(수정 → 삭제 → 등록). 고친 것이 없어도 누를 수 있다. 저장하면 화면 아래 가운데 공통 토스트를 띄운다 —
+           새 행이 있거나 수정 · 삭제를 함께 했으면 「저장되었습니다.」, 지우기만 했으면 「삭제되었습니다.」, 그 밖은 「수정되었습니다.」 (코드대로, 2026-10-30).
+         - 저장 실패는 카드 안 표 위 빨간 띠다 — 「상세 코드를 저장하지 못했습니다. 잠시 후 다시 저장해 주세요.」 + 「입력한 값은 그대로 두었습니다.」.
+           앞 단계만 저장됐으면 「기존 행 수정은 저장했습니다. 새 행은 등록하지 못했습니다.」 처럼 저장된 것을 앞에 적는다(code-save.ts partialSaved).
+         - 저장하지 않은 변경이 있는데 다른 그룹을 고르거나 검색하면 확인창 「저장하지 않은 변경사항」으로 묻는다 (코드대로, 2026-10-30).
          - BP 가 고친 플랫폼제공 코드는 고친 값만 보인다 — 플랫폼 원래 값을 나란히 두지 않는다.
-         - 플랫폼제공 그룹은 플랫폼이 ‘BP에 적용’한 것만 보인다. 미적용 그룹(표본 PAY_TYPE)은 이 화면과 업무 화면에 없다.
-           적용할 때의 상세 코드가 한강상회 행으로 복사되어 여기서 고친다. 적용 뒤 플랫폼이 추가한 코드는 한강상회에 오지 않는다.
+         - 플랫폼제공 그룹은 BP 적용 여부와 관계없이 사용 중이면 보인다. 아직 한강상회에 복사되지 않은 그룹은 상세 코드가 비어 있고(「이 그룹에 상세 코드가 없습니다.」),
+           플랫폼의 ‘BP에 적용’이 채운다 (코드대로, 2026-10-30 — 전엔 적용한 그룹만 보였다). 적용 뒤 플랫폼이 추가한 코드는 한강상회에 오지 않는다.
 
          바뀜 (2026-10-27)
          - 플랫폼고정 그룹(SERVICE · ROLE_TYPE · ACCOUNT_STATUS 등)은 이 화면에서 보이지 않는다. 전에는 조회만 하는 그룹으로 목록에 나왔다. -->
@@ -57,23 +96,26 @@
                 <button type="button" data-state="plat" aria-pressed="false">플랫폼 사용자 · platjung</button>
               </div>
             </div>
+            <!-- 그룹 미선택 · 플랫폼 사용중지 코드 · 사용중지 그룹 상태는 없앴다 — 첫 그룹을 자동으로 고르고, 사용중지 그룹은 목록에서 빠지며, 플랫폼이 끈 코드도 BP 가 다시 켠다 (코드대로, 2026-10-30) -->
             <div class="demo" data-demo="cd">
               <b>목업 상태</b>
               <div class="seg">
                 <button type="button" data-state="emp" aria-pressed="true">EMP_TYPE 선택 · 플랫폼제공</button>
-                <button type="button" data-state="none" aria-pressed="false">그룹 미선택</button>
                 <button type="button" data-state="newcode" aria-pressed="false">상세 코드 추가 행</button>
                 <button type="button" data-state="dupcode" aria-pressed="false">상세 코드 중복</button>
+                <button type="button" data-state="conflict" aria-pressed="false">화면에 없는 코드와 중복(409)</button>
+                <button type="button" data-state="reorder" aria-pressed="false">표시 순서 변경</button>
+                <button type="button" data-state="unsaved" aria-pressed="false">저장 안 한 변경 · 그룹 이동</button>
+                <button type="button" data-state="delete" aria-pressed="false">삭제 예정</button>
                 <button type="button" data-state="leave" aria-pressed="false">LEAVE_TYPE 선택</button>
-                <button type="button" data-state="stopcode" aria-pressed="false">플랫폼 사용중지 코드</button>
-                <button type="button" data-state="stopgrp" aria-pressed="false">사용중지 그룹</button>
                 <button type="button" data-state="fail" aria-pressed="false">저장 실패</button>
                 <button type="button" data-state="noresult" aria-pressed="false">검색 결과 없음</button>
+                <button type="button" data-state="empty" aria-pressed="false">그룹 0개</button>
               </div>
             </div>
             <p class="note" style="margin: 0" data-show-role="edit">
               <span data-icon="info" data-icon-size="14"></span>
-              <span>정하윤 <span class="mono">hangang01</span> · BP 마스터로 보는 중 — ㈜한강상회 <span class="mono">BP000017</span> 의 공통코드를 조회하고 플랫폼제공 그룹의 상세 코드를 등록·수정합니다.</span>
+              <span>정하윤 <span class="mono">hangang01</span> · BP 마스터로 보는 중 — ㈜한강상회 <span class="mono">BP000017</span> 의 공통코드를 조회하고 플랫폼제공 그룹의 상세 코드를 등록·수정·삭제합니다.</span>
             </p>
             <p class="note" style="margin: 0" data-show-role="view" hidden>
               <span data-icon="info" data-icon-size="14"></span>
@@ -85,318 +127,380 @@
             </p>
           </div>
 
-          <!-- 플랫폼 사용자 — 조회만 -->
+          <!-- 플랫폼 계정 — 조회만. BP 권한 그룹과 같은 회색 안내 한 줄(코드대로, 2026-10-30 재영) -->
           <div class="band band--info" data-show-role="plat" hidden>
-            <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
             <div class="band__body">
-              <div class="band__title">플랫폼 사용자는 BP 공통코드를 조회만 할 수 있습니다</div>
-              <p class="band__desc">추가와 저장 버튼이 없습니다. 코드 값을 바꿔야 하면 그 BP 의 사용자가 BP 공통코드 관리에서 처리합니다.</p>
+              <div class="band__title">플랫폼 계정은 BP 공통코드를 조회만 합니다.</div>
             </div>
           </div>
 
-          <!-- 차단·실패 안내 -->
-          <div class="band band--risk" data-show="fail" data-show-role="edit" hidden>
-            <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
-            <div class="band__body">
-              <div class="band__title">상세 코드를 저장하지 못했습니다. 잠시 후 다시 저장해 주세요.</div>
-              <p class="band__desc">저장된 공통코드 정보는 바뀌지 않았습니다. 입력한 값(INTERN 코드명 ‘수습 사원’)은 화면에 남겨 두었습니다.</p>
-            </div>
-          </div>
-          <div class="band band--info" data-show="stopcode" data-show-role="edit" hidden>
-            <span class="band__ic" data-icon="info" data-icon-size="20"></span>
-            <div class="band__body">
-              <div class="band__title">플랫폼이 사용 중지한 코드는 한강상회에서도 다시 켤 수 없습니다</div>
-              <p class="band__desc">CONTRACT 계약직은 플랫폼 공통코드 관리에서 사용 중지된 코드입니다. 사용 상태 토글은 비활성으로 표시되며, 플랫폼이 다시 사용으로 돌리기 전까지는 BP가 켤 수 없습니다.</p>
-            </div>
-          </div>
-
-          <!-- 검색 조건 — BP 선택 항목은 두지 않는다(플랫폼 사용자는 웨일ERP 바로가기로 연 탭의 BP). 적용 서비스 항목은 없다. -->
-          <section class="panel">
-            <div class="panel__head">
-              <h2 class="t-h2">검색 조건</h2>
-              <span class="subtle" style="font-size: 12px" data-show-role="edit view">㈜한강상회 BP000017 의 공통코드</span>
-            </div>
-            <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-              <div class="grid grid--3">
+          <div class="grid" style="align-items: start; grid-template-columns: 226px 400px minmax(0, 1fr); gap: var(--s-3)">
+            <!-- 왼쪽 — 필터(그룹 코드 · 그룹명). [검색] 버튼 없이 어느 칸에서 Enter · 돋보기를 눌러도 두 칸 값으로 함께 검색한다. 관리주체 필터는 없다(플랫폼 공통코드 관리에만) (코드대로, 2026-10-30) -->
+            <aside class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2" style="flex: 1">필터</h2>
+                <button class="iconbtn" type="button" data-state-go="emp" aria-label="필터 초기화" title="초기화" data-icon="refresh" data-icon-size="14"></button>
+                <button class="iconbtn" type="button" aria-label="필터 접기" title="접기" data-icon="left" data-icon-size="14"></button>
+              </div>
+              <div class="panel__body" style="display: flex; flex-direction: column; gap: 18px">
                 <div class="field">
                   <label for="q-code">그룹 코드</label>
-                  <input class="input mono" id="q-code" placeholder="예: EMP_TYPE" />
+                  <div class="inputwrap">
+                    <input class="input mono" id="q-code" placeholder="예: EMP_TYPE" maxlength="20" style="padding-left: 10px; padding-right: 36px" />
+                    <button class="iconbtn" type="button" aria-label="그룹 코드 검색" data-icon="search" data-icon-size="15" style="position: absolute; right: 1px"></button>
+                  </div>
                 </div>
                 <div class="field">
                   <label for="q-name">그룹명</label>
-                  <input class="input" id="q-name" placeholder="예: 고용 형태" data-show="emp none newcode dupcode leave stopcode stopgrp fail" />
-                  <input class="input" value="급여" aria-label="그룹명" data-show="noresult" hidden />
+                  <div class="inputwrap">
+                    <input class="input" id="q-name" placeholder="예: 고용 형태" maxlength="50" style="padding-left: 10px; padding-right: 36px" data-show="emp newcode dupcode conflict reorder unsaved delete leave fail empty" />
+                    <input class="input" value="급여" aria-label="그룹명" maxlength="50" style="padding-left: 10px; padding-right: 36px" data-show="noresult" hidden />
+                    <button class="iconbtn" type="button" aria-label="그룹명 검색" data-icon="search" data-icon-size="15" style="position: absolute; right: 1px"></button>
+                  </div>
                 </div>
               </div>
-              <div class="inline" style="justify-content: flex-end">
-                <button class="btn btn--secondary" type="button" data-state-go="emp">초기화</button>
-                <button class="btn btn--primary" type="button">검색</button>
-              </div>
-            </div>
-          </section>
+            </aside>
 
-          <div class="grid grid--5-7" style="align-items: start; grid-template-columns: minmax(0, 12fr) minmax(0, 13fr)">
-            <!-- 왼쪽 — 공통코드 그룹. 조회 전용, 그룹 추가 없음. -->
+            <!-- 가운데 — 공통코드 그룹. 조회 전용, 그룹 추가 없음. 쪽 나눔 없이 전부 보이고, 사용 상태 열은 없다(사용중지 그룹은 목록에 안 나온다) (코드대로, 2026-10-30) -->
             <section class="panel">
               <!-- 머리 줄 높이를 오른쪽 상세 코드(버튼이 있는 줄)와 같게 해 두 표가 같은 높이에서 시작하게 한다 -->
               <div class="panel__head" style="min-height: 63px">
                 <h2 class="t-h2">공통코드 그룹</h2>
-                <span class="badge badge--quiet" data-show="emp none newcode dupcode leave stopcode stopgrp fail">2개</span>
-                <span class="badge badge--quiet" data-show="noresult" hidden>0개</span>
+                <span class="badge badge--quiet" data-show="emp newcode dupcode conflict reorder unsaved delete leave fail">2개</span>
+                <span class="badge badge--quiet" data-show="noresult empty" hidden>0개</span>
               </div>
-              <!-- 바깥 틀에 상태를 걸어 페이저도 함께 숨긴다 -->
-              <div data-show="emp none newcode dupcode leave stopcode stopgrp fail">
-              <div class="tblwrap" data-pager="9">
+              <div class="tblwrap">
                 <table class="tbl tbl--dense tbl--fit">
                   <thead>
                     <tr>
                       <th scope="col">그룹 코드</th>
                       <th scope="col">그룹명</th>
-                      <th scope="col">관리 주체</th>
+                      <th scope="col">관리주체</th>
                     </tr>
                   </thead>
                   <tbody>
-                      <tr data-show="emp newcode dupcode stopcode fail" style="background: var(--surface-strong)">
-                        <td><b class="mono" aria-current="true">EMP_TYPE</b></td>
-                        <td class="k">고용 형태</td>
-                        <td><span class="badge badge--info">플랫폼제공</span></td>
-                      </tr>
-                      <tr data-show="none leave stopgrp" hidden>
-                        <td><button class="tlink mono" type="button" data-state-go="emp">EMP_TYPE</button></td>
-                        <td class="k">고용 형태</td>
-                        <td><span class="badge badge--info">플랫폼제공</span></td>
-                      </tr>
-                      <tr data-show="leave" hidden style="background: var(--surface-strong)">
-                        <td><b class="mono" aria-current="true">LEAVE_TYPE</b></td>
-                        <td class="k">휴가 유형</td>
-                        <td><span class="badge badge--info">플랫폼제공</span></td>
-                      </tr>
-                      <tr data-show="stopgrp" hidden style="background: var(--surface-strong)">
-                        <td><b class="mono" aria-current="true">LEAVE_TYPE</b></td>
-                        <td class="k">휴가 유형</td>
-                        <td><span class="badge badge--info">플랫폼제공</span></td>
-                      </tr>
-                      <tr data-show="emp none newcode dupcode stopcode fail">
-                        <td><button class="tlink mono" type="button" data-state-go="leave">LEAVE_TYPE</button></td>
-                        <td class="k">휴가 유형</td>
-                        <td><span class="badge badge--info">플랫폼제공</span></td>
-                      </tr>
+                    <!-- 고른 줄 — 굵게 + 한 단계 어두운 바탕 + 왼쪽 3px 브랜드색 선 (코드대로, 2026-10-30) -->
+                    <tr class="cur" data-show="emp newcode dupcode conflict reorder unsaved delete fail">
+                      <td><b class="mono" aria-current="true">EMP_TYPE</b></td>
+                      <td class="k">고용 형태</td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                    </tr>
+                    <tr data-show="leave" hidden>
+                      <td><button class="tlink mono" type="button" data-state-go="emp">EMP_TYPE</button></td>
+                      <td class="k">고용 형태</td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                    </tr>
+                    <tr class="cur" data-show="leave" hidden>
+                      <td><b class="mono" aria-current="true">LEAVE_TYPE</b></td>
+                      <td class="k">휴가 유형</td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                    </tr>
+                    <tr data-show="emp newcode dupcode conflict delete fail">
+                      <td><button class="tlink mono" type="button" data-state-go="leave">LEAVE_TYPE</button></td>
+                      <td class="k">휴가 유형</td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                    </tr>
+                    <!-- 저장하지 않은 변경이 있으면 이동 전에 묻는다 -->
+                    <tr data-show="reorder unsaved" hidden>
+                      <td><button class="tlink mono" type="button" data-state-go="unsaved">LEAVE_TYPE</button></td>
+                      <td class="k">휴가 유형</td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                    </tr>
+                    <tr data-show="noresult" hidden>
+                      <td colspan="3" class="emptyrow">그룹명 ‘급여’에 맞는 공통코드 그룹이 없습니다.<br />검색 조건을 바꿔 다시 검색해 주세요.</td>
+                    </tr>
+                    <tr data-show="empty" hidden>
+                      <td colspan="3" class="emptyrow">볼 수 있는 공통코드 그룹이 없습니다.</td>
+                    </tr>
                   </tbody>
                 </table>
-              </div>
-              </div>
-              <div class="empty" data-show="noresult" hidden>
-                <span class="empty__ic" data-icon="search" data-icon-size="22"></span>
-                <p>그룹명 ‘급여’에 맞는 공통코드 그룹이 없습니다. 그룹 코드나 그룹명을 바꿔 다시 검색해 주세요.</p>
-              </div>
-              <div class="panel__note">
-                그룹은 플랫폼 공통코드 관리에서만 만들고 고칩니다. 이 화면에는 그룹을 추가·수정·삭제하는 항목이 없고, 플랫폼제공 그룹만 나옵니다. 플랫폼고정 그룹은 이 화면에 나오지 않습니다.
               </div>
             </section>
 
             <!-- 오른쪽 — 고른 그룹의 상세 코드 -->
-            <div class="stack">
-              <div class="band band--warn" data-show="stopgrp" hidden>
-                <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
-                <div class="band__body">
-                  <div class="band__title">사용 중지된 그룹이라 상세 코드를 추가하거나 고칠 수 없습니다</div>
-                  <p class="band__desc">LEAVE_TYPE 이 플랫폼 공통코드 관리에서 사용 중지된 상태를 보여주는 데모입니다(manyfast S-FHVSAV 확정). 기존 코드는 읽기 전용으로 보이고 추가 · 저장을 막았습니다.</p>
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">상세 코드</h2>
+                <!-- 머리는 「그룹코드 · 그룹명 · 관리주체」 값 줄. 그룹이 0개면 비운다 (코드대로, 2026-10-30) -->
+                <span class="hv" data-show="emp newcode dupcode conflict reorder unsaved delete fail"><span class="hv__k">그룹코드</span><span class="mono">EMP_TYPE</span><i></i><span class="hv__k">그룹명</span><span>고용 형태</span><i></i><span class="otag">플랫폼제공</span></span>
+                <span class="hv" data-show="leave" hidden><span class="hv__k">그룹코드</span><span class="mono">LEAVE_TYPE</span><i></i><span class="hv__k">그룹명</span><span>휴가 유형</span><i></i><span class="otag">플랫폼제공</span></span>
+                <!-- 그룹이 0개면 버튼을 막지 않고 숨긴다. [저장]은 고친 것이 없어도 누를 수 있다 (코드대로, 2026-10-30) -->
+                <div class="panel__end" data-show-role="edit" data-show="emp newcode dupcode conflict reorder unsaved delete leave fail">
+                  <button class="btn btn--secondary btn--sm" type="button" data-state-go="newcode">추가</button>
+                  <button class="btn btn--primary btn--sm" type="button" data-save-toast>저장</button>
                 </div>
               </div>
 
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">상세 코드</h2>
-                  <span class="mono subtle" data-show="emp newcode dupcode stopcode fail">EMP_TYPE · 고용 형태</span>
-                  <span class="mono subtle" data-show="leave stopgrp" hidden>LEAVE_TYPE · 휴가 유형</span>
-                  <span class="badge badge--info" data-show="emp newcode dupcode stopcode fail leave stopgrp">플랫폼제공</span>
-                  <div class="panel__end" data-show-role="edit">
-                    <button class="btn btn--secondary btn--sm" type="button" data-state-go="newcode" data-show="emp newcode dupcode stopcode fail">
-                      <span data-icon="plus" data-icon-size="14"></span>추가
-                    </button>
-                    <button class="btn btn--secondary btn--sm" type="button" data-show="leave" hidden title="목업은 추가 행을 EMP_TYPE 에서 보여 줍니다">
-                      <span data-icon="plus" data-icon-size="14"></span>추가
-                    </button>
-                    <button class="btn btn--secondary btn--sm" type="button" disabled data-show="none noresult" hidden title="그룹을 먼저 고르세요">
-                      <span data-icon="plus" data-icon-size="14"></span>추가
-                    </button>
-                    <button class="btn btn--secondary btn--sm" type="button" disabled data-show="stopgrp" hidden title="사용 중지된 그룹에는 추가할 수 없습니다">
-                      <span data-icon="plus" data-icon-size="14"></span>추가
-                    </button>
-                    <button class="btn btn--primary btn--sm" type="button" data-show="emp newcode dupcode stopcode fail leave" data-save-toast>저장</button>
-                    <button class="btn btn--primary btn--sm" type="button" disabled data-show="none noresult stopgrp" hidden>저장</button>
+              <!-- 표 위 안내 — 저장 실패 띠 · 표시 순서 변경 상자(빨간 테두리 · 연한 빨간 바탕). 카드 안에 둔다 (코드대로, 2026-10-30) -->
+              <div class="stack" style="padding: 0 var(--s-5)" data-show-role="edit">
+                <p class="pnotice" role="status" data-reorder-notice data-show="reorder unsaved" hidden>표시 순서가 변경되었습니다. 저장 시 반영됩니다.</p>
+                <div class="band band--risk" role="alert" data-show="fail" hidden>
+                  <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">상세 코드를 저장하지 못했습니다. 잠시 후 다시 저장해 주세요.</div>
+                    <p class="band__desc">입력한 값은 그대로 두었습니다.</p>
                   </div>
                 </div>
+              </div>
 
-                <div class="tblwrap" data-show="emp newcode dupcode stopcode fail">
-                    <table class="tbl tbl--dense tbl--fit">
-                      <thead>
-                        <tr>
-                          <th scope="col" style="width: 44px">이동</th>
-                          <th scope="col">상세 코드</th>
-                          <th scope="col">코드명</th>
-                          <th scope="col" style="text-align: center">표시 순서</th>
-                          <th scope="col">사용 상태</th>
-                          <th scope="col">관리 주체</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                      <tr>
-                        <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
-                        <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">FULL</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" title="등록한 코드 값은 바꿀 수 없습니다" aria-label="코드 변경 불가"></span></span></td>
-                        <td class="k"><input class="input input--sm" style="width: 104px" data-show-role="edit" value="정직원" aria-label="코드명" /><span data-show-role="view plat" hidden>정직원</span></td>
-                        <td style="text-align: center"><span class="mono" data-order>1</span></td>
-                        <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
-                        <td><span class="badge badge--info">플랫폼제공</span></td>
-                      </tr>
-                      <tr data-show="emp newcode dupcode fail">
-                        <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
-                        <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">CONTRACT</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" title="등록한 코드 값은 바꿀 수 없습니다" aria-label="코드 변경 불가"></span></span></td>
-                        <td class="k"><input class="input input--sm" style="width: 104px" data-show-role="edit" value="계약직" aria-label="코드명" /><span data-show-role="view plat" hidden>계약직</span></td>
-                        <td style="text-align: center"><span class="mono" data-order>2</span></td>
-                        <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
-                        <td><span class="badge badge--info">플랫폼제공</span></td>
-                      </tr>
-                      <tr data-show="stopcode" hidden>
-                        <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
-                        <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">CONTRACT</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" title="등록한 코드 값은 바꿀 수 없습니다" aria-label="코드 변경 불가"></span></span></td>
-                        <td class="k"><input class="input input--sm" style="width: 104px" data-show-role="edit" value="계약직" aria-label="코드명" /><span data-show-role="view plat" hidden>계약직</span></td>
-                        <td style="text-align: center"><span class="mono" data-order>2</span></td>
-                        <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="false" aria-label="사용 상태"></button><span>사용중지</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--quiet">사용중지</span></span></td>
-                        <td><span class="badge badge--info">플랫폼제공</span><br /><span class="subtle" style="font-size: 12px">플랫폼 사용중지</span></td>
-                      </tr>
-                      <tr>
-                        <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
-                        <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">PART</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" title="등록한 코드 값은 바꿀 수 없습니다" aria-label="코드 변경 불가"></span></span></td>
-                        <td class="k"><input class="input input--sm" style="width: 104px" data-show-role="edit" value="아르바이트" aria-label="코드명" /><span data-show-role="view plat" hidden>아르바이트</span></td>
-                        <td style="text-align: center"><span class="mono" data-order>3</span></td>
-                        <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
-                        <td><span class="badge badge--info">플랫폼제공</span></td>
-                      </tr>
-                      <tr>
-                        <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
-                        <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">INTERN</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" title="등록한 코드 값은 바꿀 수 없습니다" aria-label="코드 변경 불가"></span></span></td>
-                        <td class="k"><input class="input input--sm" style="width: 104px" data-show-role="edit" data-show="emp newcode dupcode stopcode" value="수습" aria-label="코드명" /><input class="input input--sm" style="width: 104px" data-show-role="edit" data-show="fail" hidden value="수습 사원" aria-label="코드명" /><span data-show-role="view plat" hidden>수습</span></td>
-                        <td style="text-align: center"><span class="mono" data-order>4</span></td>
-                        <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
-                        <td><span class="badge badge--preview">BP전용</span></td>
-                      </tr>
-                      <tr data-show="newcode dupcode" data-show-role="edit" hidden style="background: var(--surface-hover)">
-                        <td style="width: 44px"></td>
-                        <td>
-                          <input class="input input--sm mono" style="width: 88px; text-transform: uppercase" data-show="newcode" placeholder="상세 코드" aria-label="상세 코드" maxlength="20" oninput="this.value = this.value.toUpperCase()" />
-                          <input class="input input--sm mono" style="width: 88px" data-show="dupcode" hidden value="PART" aria-invalid="true" aria-label="상세 코드" />
-                        </td>
-                        <td>
-                          <input class="input input--sm" style="width: 104px" data-show="newcode" placeholder="코드명" aria-label="코드명" />
-                          <input class="input input--sm" style="width: 104px" data-show="dupcode" hidden value="파트타임" aria-label="코드명" />
-                        </td>
-                        <td style="text-align: center"><span class="mono" data-order title="맨 끝에 붙습니다. 저장한 뒤 끌어서 옮길 수 있습니다">5</span></td>
-                        <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span></td>
-                        <td><span class="badge badge--preview">BP전용</span> <span class="subtle" style="font-size: 12px">자동</span></td>
-                      </tr>
-                      <tr data-show="newcode" data-show-role="edit" hidden style="background: var(--surface-hover)">
-                        <td colspan="6"><span class="help">상세 코드는 영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내 (소문자는 대문자로 바뀝니다) · 저장한 뒤에는 바꿀 수 없습니다. 새 행의 관리 주체는 BP전용으로 자동 저장되며 고르는 칸이 없습니다. 저장한 코드는 한강상회에서만 보이고, 같은 그룹의 플랫폼 코드나 BP전용 코드와 겹칠 수 없습니다.</span></td>
-                      </tr>
-                      <tr data-show="dupcode" data-show-role="edit" hidden style="background: var(--surface-hover)">
-                        <td colspan="6"><div class="field"><span class="err" style="align-items: flex-start"><span data-icon="alert" data-icon-size="13" style="flex: none; margin-top: 2px"></span>플랫폼이 등록한 상세 코드와 겹쳐 저장하지 않았습니다 — PART 아르바이트 (플랫폼제공 · 표시 순서 3). 다른 코드를 입력해 주세요.</span></div></td>
-                      </tr>
-                      </tbody>
-                    </table>
-                </div>
-                <div class="tblwrap" data-show="leave stopgrp" hidden>
-                    <table class="tbl tbl--dense tbl--fit">
-                      <thead>
-                        <tr>
-                          <th scope="col" style="width: 44px">이동</th>
-                          <th scope="col">상세 코드</th>
-                          <th scope="col">코드명</th>
-                          <th scope="col" style="text-align: center">표시 순서</th>
-                          <th scope="col">사용 상태</th>
-                          <th scope="col">관리 주체</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                      <tr>
-                        <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-show="leave" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
-                        <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">ANNUAL</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" title="등록한 코드 값은 바꿀 수 없습니다" aria-label="코드 변경 불가"></span></span></td>
-                        <td class="k"><input class="input input--sm" style="width: 104px" data-show-role="edit" data-show="leave" value="연차" aria-label="코드명" /><span data-show-role="view plat" hidden>연차</span><span data-show-role="edit" data-show="stopgrp" hidden>연차</span></td>
-                        <td style="text-align: center"><span class="mono" data-order>1</span></td>
-                        <td><span data-show-role="edit" data-show="leave"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span></span><span data-show-role="edit" data-show="stopgrp" hidden><span class="badge badge--ok">사용</span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
-                        <td><span class="badge badge--info">플랫폼제공</span></td>
-                      </tr>
-                      <tr>
-                        <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-show="leave" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
-                        <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">HALF</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" title="등록한 코드 값은 바꿀 수 없습니다" aria-label="코드 변경 불가"></span></span></td>
-                        <td class="k"><input class="input input--sm" style="width: 104px" data-show-role="edit" data-show="leave" value="반차" aria-label="코드명" /><span data-show-role="view plat" hidden>반차</span><span data-show-role="edit" data-show="stopgrp" hidden>반차</span></td>
-                        <td style="text-align: center"><span class="mono" data-order>2</span></td>
-                        <td><span data-show-role="edit" data-show="leave"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span></span><span data-show-role="edit" data-show="stopgrp" hidden><span class="badge badge--ok">사용</span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
-                        <td><span class="badge badge--info">플랫폼제공</span></td>
-                      </tr>
-                      <tr>
-                        <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-show="leave" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
-                        <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">SICK</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" title="등록한 코드 값은 바꿀 수 없습니다" aria-label="코드 변경 불가"></span></span></td>
-                        <td class="k"><input class="input input--sm" style="width: 104px" data-show-role="edit" data-show="leave" value="병가" aria-label="코드명" /><span data-show-role="view plat" hidden>병가</span><span data-show-role="edit" data-show="stopgrp" hidden>병가</span></td>
-                        <td style="text-align: center"><span class="mono" data-order>3</span></td>
-                        <td><span data-show-role="edit" data-show="leave"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span></span><span data-show-role="edit" data-show="stopgrp" hidden><span class="badge badge--ok">사용</span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
-                        <td><span class="badge badge--info">플랫폼제공</span></td>
-                      </tr>
-                      <tr>
-                        <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-show="leave" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
-                        <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">ETC</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" title="등록한 코드 값은 바꿀 수 없습니다" aria-label="코드 변경 불가"></span></span></td>
-                        <td class="k"><input class="input input--sm" style="width: 104px" data-show-role="edit" data-show="leave" value="기타" aria-label="코드명" /><span data-show-role="view plat" hidden>기타</span><span data-show-role="edit" data-show="stopgrp" hidden>기타</span></td>
-                        <td style="text-align: center"><span class="mono" data-order>4</span></td>
-                        <td><span data-show-role="edit" data-show="leave"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span></span><span data-show-role="edit" data-show="stopgrp" hidden><span class="badge badge--ok">사용</span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
-                        <td><span class="badge badge--info">플랫폼제공</span></td>
-                      </tr>
-                      <tr>
-                        <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-show="leave" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
-                        <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">FAMILY</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" title="등록한 코드 값은 바꿀 수 없습니다" aria-label="코드 변경 불가"></span></span></td>
-                        <td class="k"><input class="input input--sm" style="width: 104px" data-show-role="edit" data-show="leave" value="경조 휴가" aria-label="코드명" /><span data-show-role="view plat" hidden>경조 휴가</span><span data-show-role="edit" data-show="stopgrp" hidden>경조 휴가</span></td>
-                        <td style="text-align: center"><span class="mono" data-order>5</span></td>
-                        <td><span data-show-role="edit" data-show="leave"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span></span><span data-show-role="edit" data-show="stopgrp" hidden><span class="badge badge--ok">사용</span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
-                        <td><span class="badge badge--preview">BP전용</span></td>
-                      </tr>
-                      </tbody>
-                    </table>
-                </div>
-                <div class="empty" data-show="none noresult" hidden>
-                  <span class="empty__ic" data-icon="list" data-icon-size="22"></span>
-                  <p>왼쪽 목록에서 공통코드 그룹을 고르면 상세 코드가 여기에 나옵니다. 그룹을 고르기 전에는 추가 버튼을 쓸 수 없습니다.</p>
-                </div>
+              <div class="tblwrap" data-show="emp newcode dupcode conflict reorder unsaved delete fail">
+                <table class="tbl tbl--dense tbl--fit">
+                  <thead>
+                    <tr>
+                      <!-- 이동 · 삭제 칸은 등록·수정 권한에만 있다 -->
+                      <th scope="col" style="width: 60px; text-align: center" data-show-role="edit">이동</th>
+                      <th scope="col">상세 코드</th>
+                      <th scope="col">코드명</th>
+                      <th scope="col" style="text-align: center">표시 순서</th>
+                      <th scope="col">사용여부</th>
+                      <th scope="col"><span class="inline" style="gap: 4px; flex-wrap: nowrap">관리주체<span class="nil" data-icon="info" data-icon-size="13" tabindex="0" title="· 플랫폼제공 웨일ERP 기본 코드입니다.&#10;  (수정·삭제 가능)&#10;· BP전용 우리 회사만 사용하는 코드입니다." aria-label="관리주체 도움말: 플랫폼제공 웨일ERP 기본 코드입니다(수정·삭제 가능). BP전용 우리 회사만 사용하는 코드입니다."></span></span></th>
+                      <th scope="col" style="width: 70px; text-align: center" data-show-role="edit">삭제</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="text-align: center" data-show-role="edit"><span class="subtle" data-drag-handle data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
+                      <td><span class="mono" title="등록한 코드 값은 바꿀 수 없습니다.">FULL</span></td>
+                      <td class="k"><input class="input input--sm" style="width: 140px" data-show-role="edit" value="정직원" maxlength="50" aria-label="FULL 코드명" /><span data-show-role="view plat" hidden>정직원</span></td>
+                      <td style="text-align: center"><span class="mono" data-order>1</span></td>
+                      <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="FULL 사용여부"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                      <td style="text-align: center" data-show-role="edit"><button class="deltg" type="button" aria-pressed="false" aria-label="FULL 삭제" title="삭제" data-icon="trash" data-icon-size="14"></button></td>
+                    </tr>
+                    <!-- 표시 순서 변경 표본 — PART 를 CONTRACT 앞으로 옮긴 뒤 -->
+                    <tr data-show="reorder unsaved" hidden>
+                      <td style="text-align: center" data-show-role="edit"><span class="subtle" data-drag-handle data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
+                      <td><span class="mono" title="등록한 코드 값은 바꿀 수 없습니다.">PART</span></td>
+                      <td class="k"><input class="input input--sm" style="width: 140px" data-show-role="edit" value="아르바이트" maxlength="50" aria-label="PART 코드명" /><span data-show-role="view plat" hidden>아르바이트</span></td>
+                      <td style="text-align: center"><span class="mono" data-order>2</span></td>
+                      <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="PART 사용여부"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                      <td style="text-align: center" data-show-role="edit"><button class="deltg" type="button" aria-pressed="false" aria-label="PART 삭제" title="삭제" data-icon="trash" data-icon-size="14"></button></td>
+                    </tr>
+                    <tr data-show="emp newcode dupcode conflict fail">
+                      <td style="text-align: center" data-show-role="edit"><span class="subtle" data-drag-handle data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
+                      <td><span class="mono" title="등록한 코드 값은 바꿀 수 없습니다.">CONTRACT</span></td>
+                      <td class="k"><input class="input input--sm" style="width: 140px" data-show-role="edit" value="계약직" maxlength="50" aria-label="CONTRACT 코드명" /><span data-show-role="view plat" hidden>계약직</span></td>
+                      <td style="text-align: center"><span class="mono" data-order>2</span></td>
+                      <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="CONTRACT 사용여부"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                      <td style="text-align: center" data-show-role="edit"><button class="deltg" type="button" aria-pressed="false" aria-label="CONTRACT 삭제" title="삭제" data-icon="trash" data-icon-size="14" data-state-go="delete"></button></td>
+                    </tr>
+                    <!-- 삭제 예정 — 휴지통을 누른 행. 취소선 · 사용여부 칸에 「삭제 예정」 · 되돌리기. [저장] 때 반영하고 확인창은 없다 (코드대로, 2026-10-30) -->
+                    <tr data-show="delete" hidden>
+                      <td data-show-role="edit"></td>
+                      <td><s class="mono subtle">CONTRACT</s></td>
+                      <td class="k"><s class="subtle">계약직</s></td>
+                      <td style="text-align: center"><span class="mono">2</span></td>
+                      <td><span class="subtle">삭제 예정</span></td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                      <td style="text-align: center" data-show-role="edit"><button class="deltg" type="button" aria-pressed="true" aria-label="CONTRACT 삭제 되돌리기" title="삭제 되돌리기" data-state-go="emp"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 3.5 2.5 6.5l3 3" /><path d="M2.5 6.5h7a4 4 0 0 1 0 8H7" /></svg></button></td>
+                    </tr>
+                    <tr data-show="reorder unsaved" hidden>
+                      <td style="text-align: center" data-show-role="edit"><span class="subtle" data-drag-handle data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
+                      <td><span class="mono" title="등록한 코드 값은 바꿀 수 없습니다.">CONTRACT</span></td>
+                      <td class="k"><input class="input input--sm" style="width: 140px" data-show-role="edit" value="계약직" maxlength="50" aria-label="CONTRACT 코드명" /><span data-show-role="view plat" hidden>계약직</span></td>
+                      <td style="text-align: center"><span class="mono" data-order>3</span></td>
+                      <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="CONTRACT 사용여부"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                      <td style="text-align: center" data-show-role="edit"><button class="deltg" type="button" aria-pressed="false" aria-label="CONTRACT 삭제" title="삭제" data-icon="trash" data-icon-size="14"></button></td>
+                    </tr>
+                    <tr data-show="emp newcode dupcode conflict delete fail">
+                      <td style="text-align: center" data-show-role="edit"><span class="subtle" data-drag-handle data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
+                      <td><span class="mono" title="등록한 코드 값은 바꿀 수 없습니다.">PART</span></td>
+                      <td class="k"><input class="input input--sm" style="width: 140px" data-show-role="edit" value="아르바이트" maxlength="50" aria-label="PART 코드명" /><span data-show-role="view plat" hidden>아르바이트</span></td>
+                      <td style="text-align: center"><span class="mono" data-order>3</span></td>
+                      <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="PART 사용여부"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                      <td style="text-align: center" data-show-role="edit"><button class="deltg" type="button" aria-pressed="false" aria-label="PART 삭제" title="삭제" data-icon="trash" data-icon-size="14"></button></td>
+                    </tr>
+                    <tr>
+                      <td style="text-align: center" data-show-role="edit"><span class="subtle" data-drag-handle data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
+                      <td><span class="mono" title="등록한 코드 값은 바꿀 수 없습니다.">INTERN</span></td>
+                      <td class="k"><input class="input input--sm" style="width: 140px" data-show-role="edit" data-show="emp newcode dupcode conflict reorder unsaved delete" value="수습" maxlength="50" aria-label="INTERN 코드명" /><input class="input input--sm" style="width: 140px" data-show-role="edit" data-show="fail" hidden value="수습 사원" maxlength="50" aria-label="INTERN 코드명" /><span data-show-role="view plat" hidden>수습</span></td>
+                      <td style="text-align: center"><span class="mono" data-order>4</span></td>
+                      <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="INTERN 사용여부"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
+                      <td><span class="otag">BP전용</span></td>
+                      <td style="text-align: center" data-show-role="edit"><button class="deltg" type="button" aria-pressed="false" aria-label="INTERN 삭제" title="삭제" data-icon="trash" data-icon-size="14"></button></td>
+                    </tr>
+                    <!-- 새 행 — 이동 칸에 [×] 빼기, 관리주체는 BP전용(api 가 정한다), 삭제 칸은 비어 있다. 아래 규칙 안내 줄은 없다 — 형식은 자리표시가 말한다 (코드대로, 2026-10-30) -->
+                    <tr data-show="newcode" data-show-role="edit" hidden style="background: var(--surface-hover)">
+                      <td style="text-align: center"><button class="xbtn" type="button" aria-label="새 행 1 빼기" title="이 새 행 빼기" data-state-go="emp">×</button></td>
+                      <td><input class="input input--sm mono" style="width: 100%" placeholder="영문 대문자로 시작, 영문·숫자·언더바(_) (최대20자)" maxlength="20" aria-label="새 행 1 상세 코드" oninput="this.value = this.value.toUpperCase()" /></td>
+                      <td><input class="input input--sm" style="width: 140px" placeholder="코드명" maxlength="50" aria-label="새 행 1 코드명" /></td>
+                      <td style="text-align: center"><span class="mono">5</span></td>
+                      <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="새 행 1 사용여부"></button><span>사용</span></span></td>
+                      <td><span class="otag">BP전용</span></td>
+                      <td></td>
+                    </tr>
+                    <!-- 코드 중복 — 화면에 보이는 코드와 겹치면 저장 전에 그 칸 바로 아래에 한 줄. 같은 줄의 다른 칸은 그만큼 자리를 둔다 (코드대로, 2026-10-30) -->
+                    <tr data-show="dupcode" data-show-role="edit" hidden style="background: var(--surface-hover)">
+                      <td style="text-align: center"><button class="xbtn" type="button" aria-label="새 상세 코드 PART 빼기" title="이 새 행 빼기">×</button></td>
+                      <td><span class="cellerr"><input class="input input--sm mono" style="width: 100%" value="PART" maxlength="20" aria-invalid="true" aria-label="새 상세 코드 PART 상세 코드" /><span class="cellerr__msg">이미 사용 중인 상세 코드입니다.</span></span></td>
+                      <td><span class="cellerr"><input class="input input--sm" style="width: 140px" value="파트타임" maxlength="50" aria-label="새 상세 코드 PART 코드명" /><span class="cellerr__msg">&nbsp;</span></span></td>
+                      <td style="text-align: center"><span class="mono">5</span></td>
+                      <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="새 상세 코드 PART 사용여부"></button><span>사용</span></span></td>
+                      <td><span class="otag">BP전용</span></td>
+                      <td></td>
+                    </tr>
+                    <tr data-show="dupcode" data-show-role="edit" hidden style="background: var(--surface-hover)">
+                      <td style="text-align: center"><button class="xbtn" type="button" aria-label="새 상세 코드 TEMP 빼기" title="이 새 행 빼기">×</button></td>
+                      <td><span class="cellerr"><input class="input input--sm mono" style="width: 100%" value="TEMP" maxlength="20" aria-invalid="true" aria-label="새 상세 코드 TEMP 상세 코드" /><span class="cellerr__msg">다른 새 행과 같은 상세 코드입니다.</span></span></td>
+                      <td><span class="cellerr"><input class="input input--sm" style="width: 140px" value="단기" maxlength="50" aria-label="새 상세 코드 TEMP 코드명" /><span class="cellerr__msg">&nbsp;</span></span></td>
+                      <td style="text-align: center"><span class="mono">6</span></td>
+                      <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="새 상세 코드 TEMP 사용여부"></button><span>사용</span></span></td>
+                      <td><span class="otag">BP전용</span></td>
+                      <td></td>
+                    </tr>
+                    <tr data-show="dupcode" data-show-role="edit" hidden style="background: var(--surface-hover)">
+                      <td style="text-align: center"><button class="xbtn" type="button" aria-label="새 상세 코드 TEMP 빼기" title="이 새 행 빼기">×</button></td>
+                      <td><span class="cellerr"><input class="input input--sm mono" style="width: 100%" value="TEMP" maxlength="20" aria-invalid="true" aria-label="새 상세 코드 TEMP 상세 코드" /><span class="cellerr__msg">다른 새 행과 같은 상세 코드입니다.</span></span></td>
+                      <td><span class="cellerr"><input class="input input--sm" style="width: 140px" value="일용" maxlength="50" aria-label="새 상세 코드 TEMP 코드명" /><span class="cellerr__msg">&nbsp;</span></span></td>
+                      <td style="text-align: center"><span class="mono">7</span></td>
+                      <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="새 상세 코드 TEMP 사용여부"></button><span>사용</span></span></td>
+                      <td><span class="otag">BP전용</span></td>
+                      <td></td>
+                    </tr>
+                    <!-- 화면에 없는 코드(이 BP 가 받지 않은 플랫폼 코드 · 지운 코드)와 겹치면 저장할 때 api 가 409 로 막는다 — 그 새 행의 칸 아래에 보인다. 띠는 없다 (코드대로, 2026-10-30) -->
+                    <tr data-show="conflict" data-show-role="edit" hidden style="background: var(--surface-hover)">
+                      <td style="text-align: center"><button class="xbtn" type="button" aria-label="새 상세 코드 SEASON 빼기" title="이 새 행 빼기">×</button></td>
+                      <td><span class="cellerr"><input class="input input--sm mono" style="width: 100%" value="SEASON" maxlength="20" aria-invalid="true" aria-label="새 상세 코드 SEASON 상세 코드" /><span class="cellerr__msg">이 그룹에서 사용할 수 없는 상세 코드입니다: SEASON</span></span></td>
+                      <td><span class="cellerr"><input class="input input--sm" style="width: 140px" value="계절직" maxlength="50" aria-label="새 상세 코드 SEASON 코드명" /><span class="cellerr__msg">&nbsp;</span></span></td>
+                      <td style="text-align: center"><span class="mono">5</span></td>
+                      <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="새 상세 코드 SEASON 사용여부"></button><span>사용</span></span></td>
+                      <td><span class="otag">BP전용</span></td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="tblwrap" data-show="leave" hidden>
+                <table class="tbl tbl--dense tbl--fit">
+                  <thead>
+                    <tr>
+                      <th scope="col" style="width: 60px; text-align: center" data-show-role="edit">이동</th>
+                      <th scope="col">상세 코드</th>
+                      <th scope="col">코드명</th>
+                      <th scope="col" style="text-align: center">표시 순서</th>
+                      <th scope="col">사용여부</th>
+                      <th scope="col"><span class="inline" style="gap: 4px; flex-wrap: nowrap">관리주체<span class="nil" data-icon="info" data-icon-size="13" tabindex="0" title="· 플랫폼제공 웨일ERP 기본 코드입니다.&#10;  (수정·삭제 가능)&#10;· BP전용 우리 회사만 사용하는 코드입니다." aria-label="관리주체 도움말: 플랫폼제공 웨일ERP 기본 코드입니다(수정·삭제 가능). BP전용 우리 회사만 사용하는 코드입니다."></span></span></th>
+                      <th scope="col" style="width: 70px; text-align: center" data-show-role="edit">삭제</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="text-align: center" data-show-role="edit"><span class="subtle" data-drag-handle data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
+                      <td><span class="mono" title="등록한 코드 값은 바꿀 수 없습니다.">ANNUAL</span></td>
+                      <td class="k"><input class="input input--sm" style="width: 140px" data-show-role="edit" value="연차" maxlength="50" aria-label="ANNUAL 코드명" /><span data-show-role="view plat" hidden>연차</span></td>
+                      <td style="text-align: center"><span class="mono" data-order>1</span></td>
+                      <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="ANNUAL 사용여부"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                      <td style="text-align: center" data-show-role="edit"><button class="deltg" type="button" aria-pressed="false" aria-label="ANNUAL 삭제" title="삭제" data-icon="trash" data-icon-size="14"></button></td>
+                    </tr>
+                    <tr>
+                      <td style="text-align: center" data-show-role="edit"><span class="subtle" data-drag-handle data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
+                      <td><span class="mono" title="등록한 코드 값은 바꿀 수 없습니다.">HALF</span></td>
+                      <td class="k"><input class="input input--sm" style="width: 140px" data-show-role="edit" value="반차" maxlength="50" aria-label="HALF 코드명" /><span data-show-role="view plat" hidden>반차</span></td>
+                      <td style="text-align: center"><span class="mono" data-order>2</span></td>
+                      <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="HALF 사용여부"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                      <td style="text-align: center" data-show-role="edit"><button class="deltg" type="button" aria-pressed="false" aria-label="HALF 삭제" title="삭제" data-icon="trash" data-icon-size="14"></button></td>
+                    </tr>
+                    <tr>
+                      <td style="text-align: center" data-show-role="edit"><span class="subtle" data-drag-handle data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
+                      <td><span class="mono" title="등록한 코드 값은 바꿀 수 없습니다.">SICK</span></td>
+                      <td class="k"><input class="input input--sm" style="width: 140px" data-show-role="edit" value="병가" maxlength="50" aria-label="SICK 코드명" /><span data-show-role="view plat" hidden>병가</span></td>
+                      <td style="text-align: center"><span class="mono" data-order>3</span></td>
+                      <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="SICK 사용여부"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                      <td style="text-align: center" data-show-role="edit"><button class="deltg" type="button" aria-pressed="false" aria-label="SICK 삭제" title="삭제" data-icon="trash" data-icon-size="14"></button></td>
+                    </tr>
+                    <!-- 미사용 표본 — 토글 옆 글자는 꺼져도 「사용」, 조회 전용 배지는 「미사용」 (코드대로, 2026-10-30) -->
+                    <tr>
+                      <td style="text-align: center" data-show-role="edit"><span class="subtle" data-drag-handle data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
+                      <td><span class="mono" title="등록한 코드 값은 바꿀 수 없습니다.">ETC</span></td>
+                      <td class="k"><input class="input input--sm" style="width: 140px" data-show-role="edit" value="기타" maxlength="50" aria-label="ETC 코드명" /><span data-show-role="view plat" hidden>기타</span></td>
+                      <td style="text-align: center"><span class="mono" data-order>4</span></td>
+                      <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="false" aria-label="ETC 사용여부"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--risk">미사용</span></span></td>
+                      <td><span class="otag">플랫폼제공</span></td>
+                      <td style="text-align: center" data-show-role="edit"><button class="deltg" type="button" aria-pressed="false" aria-label="ETC 삭제" title="삭제" data-icon="trash" data-icon-size="14"></button></td>
+                    </tr>
+                    <tr>
+                      <td style="text-align: center" data-show-role="edit"><span class="subtle" data-drag-handle data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td>
+                      <td><span class="mono" title="등록한 코드 값은 바꿀 수 없습니다.">FAMILY</span></td>
+                      <td class="k"><input class="input input--sm" style="width: 140px" data-show-role="edit" value="경조 휴가" maxlength="50" aria-label="FAMILY 코드명" /><span data-show-role="view plat" hidden>경조 휴가</span></td>
+                      <td style="text-align: center"><span class="mono" data-order>5</span></td>
+                      <td><span data-show-role="edit"><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="FAMILY 사용여부"></button><span>사용</span></span></span><span data-show-role="view plat" hidden><span class="badge badge--ok">사용</span></span></td>
+                      <td><span class="otag">BP전용</span></td>
+                      <td style="text-align: center" data-show-role="edit"><button class="deltg" type="button" aria-pressed="false" aria-label="FAMILY 삭제" title="삭제" data-icon="trash" data-icon-size="14"></button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!-- 그룹이 0개 — 열 이름 줄 아래 빈 안내 (코드대로, 2026-10-30) -->
+              <div class="tblwrap" data-show="noresult empty" hidden>
+                <table class="tbl tbl--dense tbl--fit">
+                  <thead>
+                    <tr>
+                      <th scope="col" style="width: 60px; text-align: center" data-show-role="edit">이동</th>
+                      <th scope="col">상세 코드</th>
+                      <th scope="col">코드명</th>
+                      <th scope="col" style="text-align: center">표시 순서</th>
+                      <th scope="col">사용여부</th>
+                      <th scope="col">관리주체</th>
+                      <th scope="col" style="width: 70px; text-align: center" data-show-role="edit">삭제</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="7" class="emptyrow">왼쪽 목록에서 공통코드 그룹을 고르면 상세 코드가 여기에 나옵니다.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
 
-                <div class="panel__note">
-                  관리 주체는 등록한 주체에 따라 정해져 고르거나 바꾸는 칸이 없습니다 — 플랫폼이 등록한 코드는 그룹의 관리 주체를, 한강상회가 추가한 코드는 BP전용을 따릅니다.
-                  표시 순서는 플랫폼이 내려준 코드까지 끌어서 옮길 수 있으며 바뀐 순서는 한강상회에만 적용됩니다.
-                  코드를 지우는 기능은 없고, 쓰지 않는 코드는 사용 상태를 끕니다.
-                </div>
-              </section>
+          <!-- 저장하지 않은 변경 확인창 — 상세 코드에 저장 안 한 변경이 있는데 다른 그룹을 고르거나 검색하면 묻는다 (코드대로, 2026-10-30) -->
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cd-unsaved-t" data-show="unsaved" hidden>
+            <div class="modal__box" style="max-width: 480px">
+              <div class="modal__head"><h2 class="t-h2" id="cd-unsaved-t">저장하지 않은 변경사항</h2></div>
+              <div class="modal__body">
+                <p style="margin: 0">현재 수정한 내용이 저장되지 않았습니다.</p>
+                <p style="margin: 0">저장하지 않고 이동하면 수정한 내용이 모두 사라집니다. 이동하시겠습니까?</p>
+              </div>
+              <div class="modal__foot">
+                <button class="btn btn--ghost" type="button" data-state-go="reorder">취소</button>
+                <button class="btn btn--primary" type="button" data-state-go="leave">저장하지 않고 이동</button>
+              </div>
             </div>
           </div>
 
         </div>
       </main>
     </div>
-    <div class="band band--info" id="cd-toast" role="status" aria-live="polite" hidden style="position: fixed; right: 24px; bottom: 24px; z-index: 90; width: min(420px, calc(100vw - 48px)); box-shadow: 0 12px 32px rgba(23, 23, 23, 0.16)">
-      <span class="band__ic" data-icon="check" data-icon-size="20"></span>
-      <div class="band__body">
-        <div class="band__title">상세 코드를 저장했습니다</div>
-      </div>
-    </div>
+    <!-- 저장 성공 토스트 — 공통 토스트, 화면 아래 가운데 한 줄 (코드대로, 2026-10-30 — 전엔 오른쪽 아래 띠) -->
+    <div role="status" aria-live="polite" id="cd-toast" hidden style="position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 90; max-width: calc(100vw - 48px); padding: 12px 24px; border-radius: 2px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; box-shadow: 0 2px 6px rgba(40, 47, 55, 0.08)"></div>
 
     <script src="../assets/app.js"></script>
     <script src="../assets/auth.js"></script>
     <script>
-      /* 상세 코드 표시 순서 (플랫폼 공통코드 관리와 같은 방식) — 맨 앞 이동 칸의 손잡이를 끌어 옮기면 그 표 안에서 1부터 다시 매긴다. 저장을 눌러야 반영된다는 안내를 띄운다.
-         손잡이는 등록·수정 권한(목업 권한 edit)에서만 보인다. 새로 추가하는 행은 저장 전이라 옮길 수 없다. */
-      /* 저장 성공 토스트 — 상세 코드 패널의 저장을 누르면 오른쪽 아래에 6초 띄운다 (저장 실패 상태에서는 띄우지 않는다) */
+      /* 상세 코드 표시 순서 (플랫폼 공통코드 관리와 같은 방식) — 맨 앞 이동 칸의 손잡이를 끌어 옮기면 그 표 안에서 1부터 다시 매기고, 표 위에 빨간 상자
+         「표시 순서가 변경되었습니다. 저장 시 반영됩니다.」를 띄운다. 손잡이는 등록·수정 권한(목업 권한 edit)에서만 보인다. 새로 추가하는 행은 저장 전이라 옮길 수 없다. */
+      /* 저장 성공 토스트 — [저장]을 누르면 화면 아래 가운데에 3초 띄운다. 새 행이 있으면 「저장되었습니다.」, 지우기만 했으면 「삭제되었습니다.」, 그 밖(고친 것이 없을 때 포함)은
+         「수정되었습니다.」. 칸 오류 · 409 · 저장 실패 상태에서는 띄우지 않는다 (코드대로, 2026-10-30) */
       (function () {
         var t = document.getElementById("cd-toast"), timer = 0;
+        var MSG = { newcode: "저장되었습니다.", delete: "삭제되었습니다.", dupcode: null, conflict: null, fail: null };
         document.addEventListener("click", function (e) {
-          var b = e.target.closest("[data-save-toast]");
-          if (!b || document.querySelector('.band[data-show="fail"]:not([hidden])')) return;
+          if (!e.target.closest("[data-save-toast]")) return;
+          var bar = document.querySelector('[data-demo="cd"]:not([data-demo-key])');
+          var cur = bar && bar.dataset.current;
+          var msg = cur in MSG ? MSG[cur] : "수정되었습니다.";
+          if (!msg) return;
+          t.textContent = msg;
           t.hidden = false; clearTimeout(timer);
-          timer = setTimeout(function () { t.hidden = true; }, 6000);
+          timer = setTimeout(function () { t.hidden = true; }, 3000);
         });
       })();
       (function () {
@@ -409,16 +513,8 @@
           });
         }
         function note(tbody) {
-          var wrap = tbody.closest(".tblwrap");
-          var el = wrap.parentNode.querySelector("[data-order-note]");
-          if (!el) {
-            el = document.createElement("p");
-            el.className = "note";
-            el.setAttribute("data-order-note", "");
-            el.style.margin = "var(--s-2) 0 0"; el.style.padding = "0 var(--s-5)";
-            el.innerHTML = "<span>표시 순서를 바꿨습니다 — <b>저장</b>을 눌러야 반영됩니다.</span>";
-            wrap.insertAdjacentElement("afterend", el);
-          }
+          var el = tbody.closest(".panel").querySelector("[data-reorder-notice]");
+          if (el) el.hidden = false;
         }
         document.addEventListener("mousedown", function (e) {
           var h = e.target.closest("[data-drag-handle]");
