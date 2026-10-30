@@ -2,7 +2,20 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { bpPath } from "../../lib/bp-path.ts";
-import { bpAdminListQueryOf, bpAdminsHref, keepingPanel, parseBpAdminsQuery, withBpAdminFilter, withPickedStores, withScopeCondition, type BpAdminsQuery } from "./bp-admins-href.ts";
+import type { BpAdminRoleGroup } from "../../lib/bp-admins.ts";
+import {
+  bpAdminListQueryOf,
+  bpAdminsHref,
+  isEmptyByFilter,
+  keepingPanel,
+  parseBpAdminsQuery,
+  roleGroupOptionsOf,
+  withBpAdminFilter,
+  withPickedStores,
+  withRoleToggled,
+  withScopeCondition,
+  type BpAdminsQuery,
+} from "./bp-admins-href.ts";
 
 const base = parseBpAdminsQuery({});
 
@@ -112,4 +125,39 @@ test("역할 — 고른 역할만 주소 · api 에, 셋 다면 조건 없음, �
   assert.equal(bpAdminsHref(none), "/bp-admins?roleTypeCodes=NONE");
   assert.equal(bpAdminsHref({ ...base, roleTypeCodes: ["BA"] }), "/bp-admins?roleTypeCodes=BA");
   assert.deepEqual(bpAdminListQueryOf({ ...base, roleTypeCodes: ["FM", "FA"] }).roleTypeCodes, ["FM", "FA"]);
+});
+
+const GROUPS: BpAdminRoleGroup[] = [
+  { roleGroupId: 1, roleCode: "BA000001", name: "BP관리자", roleTypeCode: "BA" },
+  { roleGroupId: 2, roleCode: "FM000001", name: "가맹마스터", roleTypeCode: "FM" },
+  { roleGroupId: 3, roleCode: "FA000001", name: "가맹관리자", roleTypeCode: "FA" },
+];
+
+test("역할 켜고 끄기 — 끈 역할의 권한명은 함께 풀고, 셋 다 켜면 조건 없음, 모두 끄면 NONE", () => {
+  const open = { ...base, page: 3, admin: 15, roleGroupId: 3 };
+  const noFa = withRoleToggled(open, GROUPS, "FA", false);
+  assert.deepEqual([noFa.roleTypeCodes, noFa.roleGroupId, noFa.page, noFa.admin], [["BA", "FM"], undefined, 1, undefined]);
+  // 다른 역할의 권한명은 그대로
+  assert.equal(withRoleToggled({ ...base, roleGroupId: 1 }, GROUPS, "FA", false).roleGroupId, 1);
+  // 권한 그룹 목록을 못 받았으면 고른 권한명을 건드리지 않는다
+  assert.equal(withRoleToggled({ ...base, roleGroupId: 3 }, null, "FA", false).roleGroupId, 3);
+  assert.equal(withRoleToggled(noFa, GROUPS, "FA", true).roleTypeCodes, undefined);
+  const none = withRoleToggled({ ...base, roleTypeCodes: ["BA"] }, GROUPS, "BA", false);
+  assert.deepEqual(none.roleTypeCodes, []);
+  assert.equal(bpAdminsHref(none), "/bp-admins?roleTypeCodes=NONE");
+});
+
+test("권한명 선택지는 켠 역할의 것만, 조건이 없으면 모두", () => {
+  assert.deepEqual(roleGroupOptionsOf(GROUPS, undefined).map((g) => g.roleGroupId), [1, 2, 3]);
+  assert.deepEqual(roleGroupOptionsOf(GROUPS, ["FM", "FA"]).map((g) => g.roleGroupId), [2, 3]);
+  assert.deepEqual(roleGroupOptionsOf(GROUPS, []), []);
+});
+
+test("계정상태 · 역할을 모두 끄면 결과 없음 — 빈 역할이 api 에 「전체」로 가지 않게", () => {
+  assert.equal(isEmptyByFilter({ roleTypeCodes: [] }), true);
+  assert.equal(isEmptyByFilter({ accountStatus: "NONE" }), true);
+  assert.equal(isEmptyByFilter({}), false);
+  assert.equal(isEmptyByFilter({ roleTypeCodes: ["BA"] }), false);
+  assert.deepEqual(parseBpAdminsQuery({ roleTypeCodes: "FA,FA" }).roleTypeCodes, ["FA"]);
+  assert.deepEqual(parseBpAdminsQuery({ roleTypeCodes: "NONE,FA" }).roleTypeCodes, ["FA"]);
 });

@@ -9,7 +9,18 @@ import type { Scope } from "@/lib/browser-storage";
 import type { BpAdminRoleGroup, BpAdminRoleType, BpAdminStatus } from "@/lib/bp-admins";
 import { isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
 import { fillScopeOf } from "@/app/stores/stores-query";
-import { BP_ADMIN_ROLE_TYPES, keepingPanel, parseBpAdminsQuery, withBpAdminFilter, withPickedStores, withScopeCondition, type BpAdminsQuery } from "./bp-admins-href";
+import {
+  BP_ADMIN_ROLE_TYPES,
+  keepingPanel,
+  parseBpAdminsQuery,
+  roleGroupOptionsOf,
+  showsRoleOf,
+  withBpAdminFilter,
+  withPickedStores,
+  withRoleToggled,
+  withScopeCondition,
+  type BpAdminsQuery,
+} from "./bp-admins-href";
 
 /**
  * 왼쪽 필터(데모 config/admins). 점포 · 아이디 · 이름 · 역할 · 권한명 · 계정상태, 조건은 모두 AND 다(S-AJHXFU).
@@ -97,21 +108,9 @@ export function AdminFilter({
   };
 
   // 역할 — 계정상태와 같은 체크박스, 처음엔 모두 켠다. 섞여 보여 정신없다는 의견으로 더했다(2026-10-30 사용자 지정)
-  const showsRole = (r: BpAdminRoleType) => !query.roleTypeCodes || query.roleTypeCodes.includes(r);
-  const toggleRole = (r: BpAdminRoleType, checked: boolean) => {
-    const next = BP_ADMIN_ROLE_TYPES.filter((x) => (x === r ? checked : showsRole(x)));
-    // 고른 권한명이 끈 역할의 것이면 함께 푼다 — 남겨 두면 선택지에서 사라진 조건이 결과를 0건으로 만든다
-    const pickedRole = roleGroups?.find((g) => g.roleGroupId === query.roleGroupId)?.roleTypeCode;
-    navigate(
-      withBpAdminFilter(query, {
-        roleTypeCodes: next.length === BP_ADMIN_ROLE_TYPES.length ? undefined : next,
-        ...(pickedRole && !next.includes(pickedRole) ? { roleGroupId: undefined } : {}),
-      }),
-    );
-  };
-
+  const toggleRole = (r: BpAdminRoleType, checked: boolean) => navigate(withRoleToggled(query, roleGroups, r, checked));
   // 고른 역할의 권한명만 선택지로(2026-10-30)
-  const visibleGroups = roleGroups?.filter((r) => showsRole(r.roleTypeCode));
+  const visibleGroups = roleGroups && roleGroupOptionsOf(roleGroups, query.roleTypeCodes);
 
   return (
     <FilterPanel
@@ -148,7 +147,7 @@ export function AdminFilter({
       </FilterSection>
       <FilterSection label="역할" tight>
         {BP_ADMIN_ROLE_TYPES.map((r) => (
-          <Checkbox key={r} label={roleType(r)} checked={showsRole(r)} onChange={(e) => toggleRole(r, e.target.checked)} />
+          <Checkbox key={r} label={roleType(r)} checked={showsRoleOf(query.roleTypeCodes, r)} onChange={(e) => toggleRole(r, e.target.checked)} />
         ))}
       </FilterSection>
       {/* 라벨은 목록 열 · 상세 머리와 같은 「권한명」(2026-10-27 사용자 지정 — 전엔 「권한 그룹」) */}

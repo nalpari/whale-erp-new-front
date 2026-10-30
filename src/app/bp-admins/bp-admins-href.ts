@@ -4,7 +4,7 @@
 // 이 파일의 주소는 옛 경로(/bp-admins…)다. 탭 BP(/bp/{id})는 이동할 때 bpPath(클라이언트)로 씌운다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { Scope } from "../../lib/browser-storage.ts";
-import type { BpAdminListQuery, BpAdminRoleType, BpAdminStatus } from "../../lib/bp-admins.ts";
+import type { BpAdminListQuery, BpAdminRoleGroup, BpAdminRoleType, BpAdminStatus } from "../../lib/bp-admins.ts";
 import { BP_ADMIN_PAGE_SIZES, type BpAdminPageSize } from "../../lib/bp-admin-paging.ts";
 import { SCOPE_PARAM, scopeKeyOf, scopeOfParam } from "../../lib/store-scope.ts";
 import { MAX_PICKED_STORES, pickedIdsOf } from "../stores/stores-query.ts";
@@ -95,6 +95,30 @@ export function bpAdminListQueryOf(query: BpAdminsQuery): BpAdminListQuery {
   const accountStatus = query.accountStatus === "NONE" ? undefined : query.accountStatus;
   const scopeType = !query.storeIds.length && (query.scope?.type === "DIRECT" || query.scope?.type === "FRANCHISE") ? query.scope.type : undefined;
   return { page, pageSize, keyword, roleGroupId, roleTypeCodes, accountStatus, storeIds: pickedIdsOf(query), storeTypeCode: scopeType };
+}
+
+/** 계정상태 · 역할을 모두 꺼 결과가 없다 — 화면이 api 를 부르지 않는다. 빈 역할을 api 에 보내면 「세 역할 모두」로 읽히므로 이 판정을 꼭 거친다 */
+export const isEmptyByFilter = (query: Pick<BpAdminsQuery, "accountStatus" | "roleTypeCodes">) =>
+  query.accountStatus === "NONE" || query.roleTypeCodes?.length === 0;
+
+/** 그 역할이 켜져 있다 — 조건이 없으면(전체) 모두 켜짐 */
+export const showsRoleOf = (roleTypeCodes: BpAdminRoleType[] | undefined, role: BpAdminRoleType) => !roleTypeCodes || roleTypeCodes.includes(role);
+
+/** 권한명 선택지 — 켠 역할의 권한 그룹만 */
+export const roleGroupOptionsOf = (roleGroups: BpAdminRoleGroup[], roleTypeCodes: BpAdminRoleType[] | undefined) =>
+  roleGroups.filter((g) => showsRoleOf(roleTypeCodes, g.roleTypeCode));
+
+/**
+ * 역할 하나를 켜거나 끈다. 셋 다 켜면 조건 없음(전체), 모두 끄면 빈 배열(NONE).
+ * 고른 권한명이 끈 역할의 것이면 함께 푼다 — 남겨 두면 선택지에서 사라진 조건이 결과를 0건으로 만든다.
+ */
+export function withRoleToggled(query: BpAdminsQuery, roleGroups: BpAdminRoleGroup[] | null, role: BpAdminRoleType, checked: boolean): BpAdminsQuery {
+  const next = BP_ADMIN_ROLE_TYPES.filter((r) => (r === role ? checked : showsRoleOf(query.roleTypeCodes, r)));
+  const pickedRole = roleGroups?.find((g) => g.roleGroupId === query.roleGroupId)?.roleTypeCode;
+  return withBpAdminFilter(query, {
+    roleTypeCodes: next.length === BP_ADMIN_ROLE_TYPES.length ? undefined : next,
+    ...(pickedRole && !next.includes(pickedRole) ? { roleGroupId: undefined } : {}),
+  });
 }
 
 /** 필터 · 건수를 바꾼다. 쪽은 1로 돌리고 연 상세는 닫는다 — 4쪽에서 거르면 빈 쪽이 보인다. */
