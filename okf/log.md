@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — PR #204 code-review: 출처 `staff-filter.tsx` 의 주석을 고친 것(「로그인 뒤 맡게 된 점포」 → 「이 탭이 아직 맞추지 못한 점포」, 점포 목록 맞추기)을 본문에도 맞췄다(front wooper).
 * **Update**: main 병합(front wooper, main #202 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) 는 문장 단위로 합쳤고 generated 는 늦은 값을 썼다. BP 관리자 필터 import 충돌은 양쪽(역할 타입 · chipsKeyOf)을 살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — PR 리뷰(조용한 실패 · 테스트 · 주석) 반영: 점포 목록 맞추기가 401 은 로그인 화면으로, 403 · 404 는 그 화면에서 더 묻지 않게 했다(연결 끊김 · 5xx 만 다음에 다시). 탭 `stores` 를 쓰면 버전을 지우고 목록을 쓴 뒤에만 버전을 써 짝이 어긋나지 않게 했다. 응답 사이 다른 화면으로 갔으면 범위 replace 를 건너뛴다. 헤더가 점포 목록이 바뀌면 주소 범위를 다시 따른다. 삭제 뒤 주소는 점포 번호를 숫자로 읽는다(「02」). 공통 토스트 차례 판정을 `toast-queue.ts` 로 떼어 테스트를 붙였다. 옛 주석 · 문서(「세션 동안 바뀌지 않는다」 · 「로그인 뒤 맡게 된 점포」 등)를 고쳤다(front wooper).
 * **Update**: [점포 관리](/stores.md) — 재리뷰 반영: 등록 · 삭제 뒤 목록이 헤더 범위를 따르도록 바뀐 것(`withHeaderStoreSearch` · `withoutDeletedStore`)과 점포 목록 맞추기를 적었다(옛 「등록 · 삭제 뒤 전체」 서술 정정). [Whale ERP Frontend](/whale-erp-front.md) — 고른 점포가 없어져 범위를 전체로 돌릴 때 쪽(page)을 뺀다(front wooper).
