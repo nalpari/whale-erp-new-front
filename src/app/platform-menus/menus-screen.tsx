@@ -4,10 +4,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Badge, Button, ConfirmDialog, DataTable, PageBar, Tag, useToast, type Column } from "@/components/common";
 import { ServiceTabs } from "@/components/site/service-tabs";
-import { usePagePermission } from "@/components/site/session-gate";
+import { usePageMenu, usePagePermission } from "@/components/site/session-gate";
 import { CARD, FailedBand } from "@/components/site/side-parts";
 import { createPlacement, findRow, flatten, type FlatRow, type Spot, type Verdict } from "@/lib/menu-tree";
-import { MENU_CODE } from "@/lib/menus";
 import type { MenuNode, MenuService, MenuTree } from "@/lib/platform-menus";
 import { moveMenuAction } from "./actions";
 import { MenuSide } from "./menu-side";
@@ -18,19 +17,17 @@ import { useTreeDrag } from "./use-tree-drag";
 // 줄을 누르면 오른쪽에 그 메뉴의 수정(수정 권한이 없으면 상세)이, 같은 줄을 다시 누르면 고른 것을 푼다. [등록]을 누르면 같은 칸이 등록 양식이 되고
 // 트리의 새 자리(고른 메뉴 안 맨 끝, 3단계를 고르면 그 상위 안 맨 끝, 고른 것이 없으면 최상위 맨 끝)에 「작성 중」 줄이 선다.
 // 손잡이로 끌어 옮기면 바로 저장된다(목업). 버튼은 지금 주소(/platform-menus)의 메뉴 권한(usePagePermission)으로 보인다 — 등록 create, 저장 · 옮기기 update. 막는 것은 api 다.
-// MN000215(SELF_MENU_CODE)는 권한이 아니라 자기 잠금 확인(이 화면이 닫히는 저장 · 옮기기)에만 쓴다.
+// 지금 화면의 메뉴(usePageMenu)는 권한이 아니라 자기 잠금 확인(이 화면이 닫히는 저장 · 옮기기)에도 쓴다.
 
 type Row = { kind: "menu"; row: FlatRow<MenuNode> } | { kind: "draft" };
 
-const SELF_MENU_CODE = MENU_CODE.platformMenus;
-
 /**
- * 옮기면 이 화면이 닫히는가 — 옮기는 메뉴(하위 포함)에 이 화면이 있고, 새 상위나 그 위가 미사용이다.
+ * 옮기면 이 화면이 닫히는가 — 옮기는 메뉴(하위 포함)에 이 화면의 메뉴(selfCode)가 있고, 새 상위나 그 위가 미사용이다.
  * login-info 의 메뉴 트리는 사용 중 메뉴만 이어, 미사용 상위 아래의 메뉴는 함께 빠진다(api buildMenuTree).
  */
-function locksSelfByMove(nodes: MenuNode[], moved: MenuNode, parentMenuId: number | null): boolean {
-  const has = (n: MenuNode): boolean => n.menuCode === SELF_MENU_CODE || n.children.some(has);
-  if (!has(moved)) return false;
+function locksSelfByMove(nodes: MenuNode[], moved: MenuNode, parentMenuId: number | null, selfCode: string | undefined): boolean {
+  const has = (n: MenuNode): boolean => n.menuCode === selfCode || n.children.some(has);
+  if (!selfCode || !has(moved)) return false;
   for (let id = parentMenuId; id !== null; ) {
     const row = findRow(nodes, id);
     if (!row) return false;
@@ -44,6 +41,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
   const router = useRouter();
   const toast = useToast();
   const can = usePagePermission();
+  const selfCode = usePageMenu()?.menuCode;
   const nodes = tree?.items ?? [];
   const serviceCode = tree?.service.serviceCode ?? "";
   const [creating, setCreating] = useState(false);
@@ -83,8 +81,8 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     if (verdict.kind === "cycle") return setMoveFailure({ message: "메뉴를 자기 하위 메뉴 아래로 옮길 수 없습니다." });
     // 단계 초과도 한 줄로 — 어디에 놓으면 몇 단계가 되는지 · 「옮기지 않았습니다」는 길어 안 읽혀 뺐다(2026-10-28 사용자 지정)
     if (verdict.kind === "depth") return setMoveFailure({ message: "메뉴는 최대 3단계까지만 만들 수 있습니다." });
-    // 이 화면(MN000215)을 미사용 상위 아래로 옮기면 다음 로그인부터 메뉴 트리에서 빠져 화면으로는 되돌릴 수 없다 — 미사용으로 저장할 때처럼 확인받는다
-    if (locksSelfByMove(nodes, moved, spot.parentMenuId)) return setPendingMove({ menuId, spot, verdict, via });
+    // 이 화면을 미사용 상위 아래로 옮기면 다음 로그인부터 메뉴 트리에서 빠져 화면으로는 되돌릴 수 없다 — 미사용으로 저장할 때처럼 확인받는다
+    if (locksSelfByMove(nodes, moved, spot.parentMenuId, selfCode)) return setPendingMove({ menuId, spot, verdict, via });
     saveMove(menuId, spot, verdict, via);
   };
 

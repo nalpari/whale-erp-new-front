@@ -116,7 +116,7 @@ test("menuPermissionOf: 다른 서비스 탭의 메뉴와 없는 코드는 false
   assert.equal(menuPermissionOf([staff], "WHALE_ERP", MENU_CODE.staffMembers, "create"), true);
   // 플랫폼 탭에서는 ERP 메뉴를 보지 않는다
   assert.equal(menuPermissionOf([staff], "PLATFORM", MENU_CODE.staffMembers, "create"), false);
-  assert.equal(menuPermissionOf([staff], "WHALE_ERP", MENU_CODE.platformMenus, "read"), false);
+  assert.equal(menuPermissionOf([staff], "WHALE_ERP", MENU_CODE.todos, "read"), false);
 });
 
 test("menuOfPath: 직원 상세(/staff-members/12)는 직원 정보 관리 메뉴 — 상세 버튼 권한(usePagePermission)이 이 메뉴의 권한 칸이다", () => {
