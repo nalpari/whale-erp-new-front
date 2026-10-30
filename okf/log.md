@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — review-pr(PR #199) 반영: BP 관리자 저장 때 409 는 api 중복 문구일 때만 칸 아래 화면 문구로 바꾸고(`bpAdminFieldMessage`, 테스트 포함), 띠는 api 문구 그대로 둔다. 목록 미발송 표시 기준(사용 계정만)을 적고 주석을 바로잡았다(front piplup).
 * **Update**: main 병합(front piplup, main #196 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Update**: [BP 환경설정](/config.md) — BP 관리자 수정: 연결 가맹 마스터 칸 · 권한명 도움말 없음 · 등록일시 · 최근 로그인 칸 없음(아이디는 제목 꼬리표) · 점포 빼기는 저장 때 확인 창만으로 정하고 데모 · 화면정의서를 맞췄다(2026-10-29 사용자 결정, front piplup).
 * **Update**: [BP 환경설정](/config.md) — BP 관리자 상세: 미사용 · 본인 계정 초기화 「-」 · 이름 아랫줄 배지 · 소속 BP 없음 · 등록/최종수정 · 연결 가맹마스터 표 끝 · 미사용 띠 없음 · 변경 이력 팝업(변경자 이름, 비밀번호 줄 「초기화」 · 「강제 변경」) · 못 보는 계정 한 문구 · 초기화 확인창 문구를 코드대로 정하고 데모 · 화면정의서를 맞췄다(2026-10-29 사용자 결정, front piplup).
