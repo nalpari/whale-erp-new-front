@@ -30,7 +30,7 @@ sources:
 (staff-sections.mjs attendFilter · attendTab)을 공통 컴포넌트로 옮겼다. 메뉴 표시는 메뉴 권한이, 업무 범위 · 본사 제공 동의 가림은 api 가 본다.
 화면 주소는 탭 BP 주소 `/bp/{bpCodeId}/attendance-records` 다(`BP_PATH_SCREENS`, WHALEERP-637) — 플랫폼 계정은 고른 BP 의 기록만 본다. 필터 이동은
 `bpPath`, 날짜 · 주 이동 링크(서버)는 `screenPath()` 로 탭 BP 를 붙이고, 보정 기간은 지금 주소(`usePathname`)를 그대로 쓴다. 보정 뒤
-`revalidatePath` 는 폴더 경로 그대로다.
+`revalidatePath` 는 폴더 경로 그대로다. api 거절(BP 400 · 403 · 404, `deniedMessageOf`)은 오류 화면이 아니라 그 문장을 보인다.
 
 # Layout
 

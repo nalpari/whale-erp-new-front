@@ -4,7 +4,7 @@ import { Button } from "@/components/common";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 
-// 급여명세서 화면(목록 · 상세)이 받지 못한 오류 — api 가 꺼짐 · 토큰 만료 401 · 권한 없음 403, 상태 · 사유 한글(GET /enums)을
+// 급여명세서 화면(목록 · 상세)이 받지 못한 오류 — api 가 꺼짐 · 토큰 만료 401 · 권한 없음 403(목록의 BP 거절 400 · 403 · 404 는 화면이 문장으로 받는다), 상태 · 사유 한글(GET /enums)을
 // 받지 못한 경우 등. 404 는 상세가 먼저 받는다(notFound).
 // 운영 빌드에서는 서버 오류 문구가 가려져 오므로 개발 서버에서만 원인을 함께 보이고, 서버 로그와 맞춰 볼 오류 번호를 남긴다.
 export default function PayslipsError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
