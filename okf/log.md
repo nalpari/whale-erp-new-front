@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-30
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 메뉴 관리 URL 칸 오류 문구의 띄어쓰기를 맞췄다(「메뉴 URL은」 · 「'-'로」, 목업 문구도). api 쪽 같은 문구 · 마침표는 teddiursa 에 요청했다(2026-10-30 재영). 등록 토스트는 그대로 둔다.
+* **Update**: [플랫폼 시스템 관리](/system.md) · [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 메뉴 관리 검토: 미사용 상위 아래 등록은 양식에서 알리지 않고 저장 뒤 「상위 미사용」 꼬리표로 보인다(정책을 구현에 맞춤, 목업 문장도). 이 화면 메뉴의 URL 변경 확인창을 지웠다 — 10-21 부터 api 가 API 권한 주소 URL 변경을 409 로 막아 쓸모없었다. 자기 잠금 확인(미사용 저장 · 미사용 상위 아래로 옮기기)은 메뉴 코드 상수(`MENU_CODE.platformMenus` MN000215) 대신 지금 화면의 메뉴(`usePageMenu`)로 찾는다(2026-10-30 재영).
 * **Update**: main 병합(front quilava, main #200 까지 — PR #198 블로커): 권한 그룹 화면의 본인 연결 수정 막힘 분기는 지운 채 두고, 새 안내 세 문장(메뉴설정 팝업 · 삭제 막힘 회색 띠 둘)과 okf · 데모의 같은 문장을 main 의 「내 계정」 표현으로 맞췄다. okf/log 는 양쪽 기록을 살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #198 리뷰(requesting-code-review): 플랫폼 권한 그룹의 삭제 막힘 안내에서 고정 권한(FIXED_ROLE)도 빼 BP 와 맞췄고, 생성 타입 출처(chansey `76b1eb02`)와 BP 권한 그룹 삭제 막힘 안내(빨간 상자 · 회색 띠) 문장을 지금 코드에 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #198 리뷰 반영: 고칠 수 있는데 삭제만 막힌 권한 그룹(본인 연결 등)은 제목 아래 회색 띠로 이유를 한 줄 보인다(플랫폼 · BP), 플랫폼 관리자 필터 권한 목록 조회 실패는 등록용 목록으로 대신, 이메일 확인 400 은 화면 형식 문구 · 403 은 콘솔만, 낡은 주석 정리(2026-10-30 재영).
