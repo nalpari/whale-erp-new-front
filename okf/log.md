@@ -4,6 +4,7 @@
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 출처 `button.tsx` 의 `outline` 변형을 1팀이 동의해(2026-10-30) 「1팀 확인 필요」를 지웠다. DESIGN.md Buttons 「Outline」도 같이 고쳤다(front marill).
 * **Update**: `docs/mockup/mypage/` 의 회원 탈퇴 경고 문구 정리(WHALEERP-339 — 직원 자료 일괄 저장 안내 · [근로계약 확인] · 0개 빼기 · [회원 탈퇴] 기본색)를 [마이페이지](/mypage.md) 정책에 옮겼다. 하위 계정 「미사용」 표기와 진행 중 근로계약 차단 여부는 manyfast 질문으로 열려 있어 보류 절에 두었다(front marill).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 출처 `button.tsx` 에 `outline` 변형을 더한 것(회원 탈퇴 경고의 이동 버튼, WHALEERP-339)을 본문 「공통 Button 의 danger」 절에 적었다(front marill).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — WHALEERP-595: 근로계약서 작성 · 이어 쓰기의 최저임금 하드코딩(`MINIMUM_WAGE` · `PROBATION_WAGE_FLOOR`)을 api 공통코드 값 하나(`GET /contracts/minimum-wage`)로 바꿨다. 계약 시작일과 상관없이 그 값으로 수습 중 시급(90%)을 보고 시급 칸 도움말 「최저임금 …원 이상」을 그린다. 공통코드를 쓸 수 없으면 화면은 막지 않고 저장 때 api 400 에 맡긴다. 수습 중 시급 셈을 api 와 같은 정수 셈으로 맞췄다. api 타입 다시 생성(api main 의 다른 변경도 함께).
 * **Update**: main 병합(front wooper, main #205 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 는 문장 단위로 합쳤고 generated 는 늦은 값을 썼다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — PR #204 code-review: 출처 `staff-filter.tsx` 의 주석을 고친 것(「로그인 뒤 맡게 된 점포」 → 「이 탭이 아직 맞추지 못한 점포」, 점포 목록 맞추기)을 본문에도 맞췄다(front wooper).
 * **Update**: main 병합(front wooper, main #202 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) 는 문장 단위로 합쳤고 generated 는 늦은 값을 썼다. BP 관리자 필터 import 충돌은 양쪽(역할 타입 · chipsKeyOf)을 살렸다.
