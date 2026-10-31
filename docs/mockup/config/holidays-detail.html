@@ -8,129 +8,111 @@
     <link rel="stylesheet" href="../assets/whale.css" />
   </head>
   <body data-root="../" data-page="config" data-sub="config/holidays.html">
-    <!-- BP 휴일 상세 조회 · /settings/holidays/:id · S-MQELTV (F-YQTLQE BP 휴일 관리) · 삭제 포함 · 1팀
+    <!-- BP 휴일 상세 · /settings/holidays/:id · S-MQELTV (F-YQTLQE BP 휴일 관리) · 1팀
+         앱(src/app/bp-holidays/holiday-detail-panel.tsx)대로 고쳤다(코드대로, 2026-10-30 — 사용자 결정 「front대로」). 앱에서는 목록 위로 밀려 나오는 슬라이드 패널이다.
          휴일은 규칙 한 건이다 — 하루, 기간(시작일~종료일), 반복(시작일 + 반복 유형 + 종료 조건) 중 하나이고 날짜는 볼 때 계산한다.
-         휴일 유형(하루·기간·반복)을 먼저 고르고, 반복일 때만 반복 유형(매일·매주·매월·매년 — 공통코드 휴일 반복 유형)을 고른다. 하루 휴일은 종료일을 시작일과 같게 저장한다 (확정).
-         휴일정보 표는 휴일명 · 날짜 · 설명 · 등록 · 최종수정 다섯 줄이다(앱 2026-10-30). 휴일유형은 머리 줄에 있고, 날짜 줄은 하루면 「2026-09-25(금)」, 기간이면 「기간 … ~ …」,
-           반복이면 「2026-09-21(월)부터 · 월요일마다 · 종료일 없음」 한 줄이다 — 휴일유형 · 시작일 · 반복유형 · 종료조건 줄은 따로 두지 않는다.
-         목록·캘린더에서 고른 날짜로 들어오며, 그 날짜를 ‘고른 날짜’로 보인다. 수정·삭제는 이 고른 날짜를 기준으로 한다.
-         적용 범위 · 대상 점포(일부 점포 휴일은 여러 곳) 또는 예외 점포(전체 점포 휴일) · 날짜 · 휴일명 · 설명을 읽기 전용으로 보이고,
-           반복 휴일의 다음 날짜는 보이지 않는다(앱 2026-10-26 사용자 요청).
-         머리는 두 줄이다 — 휴일명(「휴일명」 라벨 없이) / 「적용 범위 값 | 휴일유형 값 | 상태(시작 전 · 진행 중 · 종료) 배지」. 적용 범위는 머리에만 두고, 점포는 회색 제목 바 아래 열 이름 줄 없는
-           대상점포(일부 점포) · 예외점포(전체 점포) 표로 보인다 — BP 관리자 상세 대상점포와 같은 모양(앱 2026-10-30). 제목 바는 「대상점포 N개」, 줄은 점포명 · 점포코드 · 적용 기간(끝나지 않았으면 「26.10.01부터」).
-         화면 아래에 이 휴일의 변경 이력(변경 일시 · 변경자 · 변경 항목 · 변경 전후 값)을 둔다.
-         수정은 이 화면의 수정 버튼으로만 간다(사용자 확정 규칙). 수정·삭제 버튼은 변경 권한과 날짜가 모두 맞을 때만 보인다 —
-           전체 점포 휴일은 BP 마스터 · 전체 점포 범위 BP 관리자 · 플랫폼 사용자만, 일부 점포 휴일은 대상 점포 중 한 곳이라도 접근할 수 있는 사람만. 조회만 권한은 버튼이 없다.
-         플랫폼 사용자(플랫폼 마스터·관리자)는 웨일ERP 바로가기로 연 탭의 BP 휴일을 BP 마스터와 같은 범위로 조회·수정·삭제한다(메뉴 권한 필요).
-         여러 점포 휴일의 일부 점포만 맡은 사람(표본 HD-0124 — hghr 은 성수·판교만, morinam01 은 연남만)은 자기 범위 점포만 그 휴일에서 빼거나 고친다.
-           고치면 그 점포가 원래 휴일에서 빠지고 그 점포만 대상인 새 휴일이 생긴다. 나머지 점포는 그대로이고, 범위 밖 점포는 조회만 한다.
-         지난 날짜 휴일은 버튼을 비활성으로 두고 수정·삭제할 수 없다고 적는다. 대상 점포가 모두 접근 범위 밖인 휴일은 상세를 주지 않는다.
-         삭제는 확인 창 하나다 — 휴일명 회색 상자와 빨간 안내 「삭제한 휴일은 변경이력에서 확인할 수 있으며, 복구할 수 없습니다.」(앱 2026-10-30).
-           반복·기간 휴일은 ‘이 날짜부터 이후 휴일에 모두 적용됩니다’를 보이고, ‘이 휴일만’ 고르기는 없다.
-           반복은 종료 조건을 ‘고른 날짜 전날까지’로, 기간은 종료일을 고른 날짜 전날로 앞당긴다. 지난 날짜는 목록·캘린더에 그대로 남는다.
-           첫 날짜부터 지우면(남는 날짜가 없으면) 휴일 자체를 논리 삭제한다. 원래 종료 조건은 변경 이력에만 남는다. 하루 휴일은 그대로 삭제한다.
-         상세 팝업에는 공식 휴일을 표시하지 않는다 — 공식 휴일은 캘린더의 빨간 날짜로만 보인다 (CONFIG-10 · 확정 2026-09-30).
-         대표 상세는 HD-0122 창립기념일(전체 점포 · 매년 반복 · 첫 날짜 2026-10-01)이다. HD-0114 는 2026-09-28 을 고른 날짜로 보인다.
-         위쪽 점선 줄 둘은 목업 전용이다 — 보는 사람의 권한과 대상 휴일을 따로 바꾼다.
-
-         확정 (2026-09-29)
-         - 지난 날짜 휴일은 수정 · 삭제 버튼을 모두 비활성으로 두고 사유를 적는다.
-         - 권한이 없어 바꿀 수 없는 휴일(전체 점포 휴일을 볼 수만 있는 사람 등)은 버튼을 숨기고 조회만 안내를 둔다 — 날짜 사유는 비활성, 권한 사유는 숨김이다.
-         - 운영 영향은 적용 점포 수와 ‘같은 날 겹치면 일부 점포 휴일 우선’ 안내뿐이다. 따로 운영 영향 정보를 두지 않는다.
-         - 반복 휴일의 다음 날짜는 셋까지 보인다. → 앱에서 뺐다(2026-10-26 사용자 요청), 목업도 뺐다(2026-10-30).
-         - 삭제하면 팝업을 닫고 보던 달 · 보기 · 검색어 · 고른 날짜를 그대로 둔 채 완료 토스트를 띄운다. -->
+         머리는 두 줄이다 — 휴일명 / 「적용 범위 값 | 휴일유형 값 | 상태(시작 전 · 진행 중 · 종료) 배지」. 머리 줄에는 버튼이 없다.
+         휴일정보 표는 휴일명 · 날짜 · 설명 · 등록 · 최종수정 다섯 줄이다. 날짜 줄은 하루 「2026-09-25(금)」, 기간이면 라벨 「기간」에 「… ~ …」,
+           반복이면 「2026-09-21(월)부터 · 월요일마다 · 종료일 없음」 한 줄이다. 최종수정은 등록 뒤 고친 적이 없으면 「-」.
+         점포는 회색 제목 바 아래 열 이름 줄 없는 대상점포(일부 점포) · 예외점포(전체 점포) 표다 — 「대상점포 N개」, 줄은 점포명 · 점포코드 · 적용 기간(끝나지 않았으면 「26.10.01부터」).
+         버튼은 모두 맨 아래 한 줄이다 — [닫기] … [삭제] [강제 종료] [수정] [변경이력]. 무엇이 보일지는 api 가 휴일마다 준 동작 가능 여부(메뉴 권한 · 점포 범위 · 상태)로 정하고,
+           못 하는 동작은 숨긴다(비활성 버튼은 두지 않는다).
+           · 시작 전: [삭제] [수정]. 삭제는 휴일 전체를 지운다 — 휴일을 나누지 않는다.
+           · 진행 중: 지난 날짜가 있으면 [삭제] 대신 [강제 종료](어제로 끝냄, 되돌리지 않음). 오늘 시작한 휴일은 지난 날짜가 없어 [삭제]다. 수정은 휴일명 · 설명 · 점포만.
+           · 종료: [삭제] · [수정] 없음, 띠 없음(「종료」 배지로 알 수 있다).
+           · 맡지 않은 점포가 함께 묶인 휴일(일부 점포만 맡은 사람): [수정]으로 맡은 점포만 빼거나 더한다. 휴일을 나누지 않는다.
+         막힌 동작이 있으면 api 가 준 사유 문장을 그대로 회색 띠로 보인다(끝난 휴일 · 오늘 시작한 휴일은 띠 없음).
+         [변경이력]은 이 휴일의 이력 팝업이다 — 변경일시 · 변경자 · 항목 · 변경 전 · 변경 후, 쪽 이동 없음. 화면 아래 표는 없다.
+         못 보거나 지운 휴일을 열면 실패 띠 「삭제되었거나 볼 수 없는 휴일입니다.」와 [닫기]만 보인다.
+         확인창은 대상(회색 상자) + 빨간 안내 상자이고 확인 버튼은 기본 모양이다 — 삭제 「휴일을 삭제하시겠습니까?」, 강제 종료 「휴일을 강제 종료하시겠습니까?」(종료일 = 어제).
+         삭제하면 상세를 닫고 토스트 「삭제되었습니다.」, 강제 종료하면 토스트 「강제 종료했습니다. 어제 날짜로 끝났습니다.」. 그사이 다른 사람이 고쳤으면(409) 실패 띠와 함께 새로 받는다.
+         상세에는 공식 휴일을 표시하지 않는다 — 공식 휴일은 캘린더의 빨간 날짜로만 보인다 (CONFIG-10 · 확정 2026-09-30).
+         목업 오늘은 2026-09-21 이다. HD 번호는 목업 표본이다(앱 화면에는 휴일 번호가 없다). HD-0116 은 강제 종료를 보이려고 더한 표본이다.
+         위쪽 점선 줄 둘은 목업 전용이다 — 보는 사람의 권한과 대상 휴일을 따로 바꾼다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
         <div id="hd" style="display: contents">
           <div class="titlebar" data-show="hd0122">
             <a class="iconbtn" href="holidays.html?state=day1001" aria-label="휴일 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
-            <!-- 머리: 첫 줄 휴일명(「휴일명」 라벨 없이) · 둘째 줄 「적용 범위 값 | 휴일유형 값 | 상태 배지」 — BP 관리자 상세 머리와 같다(앱 2026-10-30 — 잠깐 「휴일명」 라벨을 두었다가 뺐다) -->
             <div class="stack" style="gap: 6px; min-width: 0">
-              <h1 class="t-h1" style="font-size: 18px"><span>창립기념일</span><span data-show-role="" hidden>볼 수 없는 휴일</span></h1>
+              <h1 class="t-h1" style="font-size: 18px">창립기념일</h1>
               <span style="font-size: 14px"><span class="subtle">적용 범위</span> <b class="t-h3">전체 점포</b> <span class="subtle">|</span> <span class="subtle">휴일유형</span> <b class="t-h3">매년 반복</b> <span class="subtle">|</span> <span class="badge badge--quiet">시작 전</span></span>
             </div>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-MQELTV · /settings/holidays/HD-0122</span>
-              <button class="btn btn--danger btn--sm" type="button" data-open="pop-del-hd0122" data-show-role="bm pf ba">삭제</button>
-              <a class="btn btn--primary btn--sm" href="holidays-edit.html" data-show-role="bm pf ba">수정</a>
               <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./config-holidays-detail.screen-def.html', 'screenDef', 'width=1580,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
             </div>
           </div>
           <div class="titlebar" data-show="hd0114" hidden>
             <a class="iconbtn" href="holidays.html" aria-label="휴일 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
-            <!-- 머리: 첫 줄 휴일명(「휴일명」 라벨 없이) · 둘째 줄 「적용 범위 값 | 휴일유형 값 | 상태 배지」 — BP 관리자 상세 머리와 같다(앱 2026-10-30 — 잠깐 「휴일명」 라벨을 두었다가 뺐다) -->
             <div class="stack" style="gap: 6px; min-width: 0">
-              <h1 class="t-h1" style="font-size: 18px"><span data-show-role="bm pf ba bp view">정기휴무</span><span data-show-role="fm" hidden>볼 수 없는 휴일</span></h1>
+              <h1 class="t-h1" style="font-size: 18px"><span data-show-role="bm pf ba bp view">정기휴무</span><span data-show-role="fm" hidden>BP 휴일 상세</span></h1>
               <span data-show-role="bm pf ba bp view" style="font-size: 14px"><span class="subtle">적용 범위</span> <b class="t-h3">일부 점포</b> <span class="subtle">|</span> <span class="subtle">휴일유형</span> <b class="t-h3">매주 반복</b> <span class="subtle">|</span> <span class="badge badge--info">진행 중</span></span>
             </div>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-MQELTV · /settings/holidays/HD-0114</span>
-              <button class="btn btn--danger btn--sm" type="button" data-open="pop-del-hd0114" data-show-role="bm pf ba bp">삭제</button>
-              <a class="btn btn--primary btn--sm" href="holidays-edit.html?state=hd0114" data-show-role="bm pf ba bp">수정</a>
             </div>
           </div>
           <div class="titlebar" data-show="hd0120" hidden>
             <a class="iconbtn" href="holidays.html?state=day0925" aria-label="휴일 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
-            <!-- 머리: 첫 줄 휴일명(「휴일명」 라벨 없이) · 둘째 줄 「적용 범위 값 | 휴일유형 값 | 상태 배지」 — BP 관리자 상세 머리와 같다(앱 2026-10-30 — 잠깐 「휴일명」 라벨을 두었다가 뺐다) -->
             <div class="stack" style="gap: 6px; min-width: 0">
-              <h1 class="t-h1" style="font-size: 18px"><span>추석 당일 휴무</span><span data-show-role="" hidden>볼 수 없는 휴일</span></h1>
+              <h1 class="t-h1" style="font-size: 18px">추석 당일 휴무</h1>
               <span style="font-size: 14px"><span class="subtle">적용 범위</span> <b class="t-h3">전체 점포</b> <span class="subtle">|</span> <span class="subtle">휴일유형</span> <b class="t-h3">하루</b> <span class="subtle">|</span> <span class="badge badge--quiet">시작 전</span></span>
             </div>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-MQELTV · /settings/holidays/HD-0120</span>
-              <button class="btn btn--danger btn--sm" type="button" data-open="pop-del-hd0120" data-show-role="bm pf ba">삭제</button>
-              <a class="btn btn--primary btn--sm" href="holidays-edit.html?state=hd0120" data-show-role="bm pf ba">수정</a>
             </div>
           </div>
           <div class="titlebar" data-show="hd0121" hidden>
             <a class="iconbtn" href="holidays.html?state=day0929" aria-label="휴일 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
-            <!-- 머리: 첫 줄 휴일명(「휴일명」 라벨 없이) · 둘째 줄 「적용 범위 값 | 휴일유형 값 | 상태 배지」 — BP 관리자 상세 머리와 같다(앱 2026-10-30 — 잠깐 「휴일명」 라벨을 두었다가 뺐다) -->
             <div class="stack" style="gap: 6px; min-width: 0">
-              <h1 class="t-h1" style="font-size: 18px"><span data-show-role="bm pf ba fm view">내부 공사</span><span data-show-role="bp" hidden>볼 수 없는 휴일</span></h1>
+              <h1 class="t-h1" style="font-size: 18px"><span data-show-role="bm pf ba fm view">내부 공사</span><span data-show-role="bp" hidden>BP 휴일 상세</span></h1>
               <span data-show-role="bm pf ba fm view" style="font-size: 14px"><span class="subtle">적용 범위</span> <b class="t-h3">일부 점포</b> <span class="subtle">|</span> <span class="subtle">휴일유형</span> <b class="t-h3">하루</b> <span class="subtle">|</span> <span class="badge badge--quiet">시작 전</span></span>
             </div>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-MQELTV · /settings/holidays/HD-0121</span>
-              <button class="btn btn--danger btn--sm" type="button" data-open="pop-del-hd0121" data-show-role="bm pf ba fm">삭제</button>
-              <a class="btn btn--primary btn--sm" href="holidays-edit.html?state=hd0121" data-show-role="bm pf ba fm">수정</a>
             </div>
           </div>
           <div class="titlebar" data-show="hd0123" hidden>
             <a class="iconbtn" href="holidays.html?state=day1001" aria-label="휴일 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
-            <!-- 머리: 첫 줄 휴일명(「휴일명」 라벨 없이) · 둘째 줄 「적용 범위 값 | 휴일유형 값 | 상태 배지」 — BP 관리자 상세 머리와 같다(앱 2026-10-30 — 잠깐 「휴일명」 라벨을 두었다가 뺐다) -->
             <div class="stack" style="gap: 6px; min-width: 0">
-              <h1 class="t-h1" style="font-size: 18px"><span data-show-role="bm pf ba bp view">오후 휴무(단축 운영)</span><span data-show-role="fm" hidden>볼 수 없는 휴일</span></h1>
+              <h1 class="t-h1" style="font-size: 18px"><span data-show-role="bm pf ba bp view">오후 휴무(단축 운영)</span><span data-show-role="fm" hidden>BP 휴일 상세</span></h1>
               <span data-show-role="bm pf ba bp view" style="font-size: 14px"><span class="subtle">적용 범위</span> <b class="t-h3">일부 점포</b> <span class="subtle">|</span> <span class="subtle">휴일유형</span> <b class="t-h3">하루</b> <span class="subtle">|</span> <span class="badge badge--quiet">시작 전</span></span>
             </div>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-MQELTV · /settings/holidays/HD-0123</span>
-              <button class="btn btn--danger btn--sm" type="button" data-open="pop-del-hd0123" data-show-role="bm pf ba bp">삭제</button>
-              <a class="btn btn--primary btn--sm" href="holidays-edit.html?state=hd0123" data-show-role="bm pf ba bp">수정</a>
             </div>
           </div>
           <div class="titlebar" data-show="hd0101" hidden>
             <a class="iconbtn" href="holidays.html?state=day0910" aria-label="휴일 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
-            <!-- 머리: 첫 줄 휴일명(「휴일명」 라벨 없이) · 둘째 줄 「적용 범위 값 | 휴일유형 값 | 상태 배지」 — BP 관리자 상세 머리와 같다(앱 2026-10-30 — 잠깐 「휴일명」 라벨을 두었다가 뺐다) -->
             <div class="stack" style="gap: 6px; min-width: 0">
-              <h1 class="t-h1" style="font-size: 18px"><span data-show-role="bm pf ba bp view">정전 점검 휴무</span><span data-show-role="fm" hidden>볼 수 없는 휴일</span></h1>
+              <h1 class="t-h1" style="font-size: 18px"><span data-show-role="bm pf ba bp view">정전 점검 휴무</span><span data-show-role="fm" hidden>BP 휴일 상세</span></h1>
               <span data-show-role="bm pf ba bp view" style="font-size: 14px"><span class="subtle">적용 범위</span> <b class="t-h3">일부 점포</b> <span class="subtle">|</span> <span class="subtle">휴일유형</span> <b class="t-h3">하루</b> <span class="subtle">|</span> <span class="badge badge--quiet">종료</span></span>
             </div>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-MQELTV · /settings/holidays/HD-0101</span>
-              <button class="btn btn--danger btn--sm" type="button" disabled title="지난 날짜 휴일은 삭제할 수 없습니다" data-show-role="bm pf ba bp">삭제</button>
-              <button class="btn btn--primary btn--sm" type="button" disabled title="지난 날짜 휴일은 수정할 수 없습니다" data-show-role="bm pf ba bp">수정</button>
+            </div>
+          </div>
+          <div class="titlebar" data-show="hd0116" hidden>
+            <a class="iconbtn" href="holidays.html?state=day0910" aria-label="휴일 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
+            <div class="stack" style="gap: 6px; min-width: 0">
+              <h1 class="t-h1" style="font-size: 18px">매장 리뉴얼 휴무</h1>
+              <span style="font-size: 14px"><span class="subtle">적용 범위</span> <b class="t-h3">전체 점포</b> <span class="subtle">|</span> <span class="subtle">휴일유형</span> <b class="t-h3">기간</b> <span class="subtle">|</span> <span class="badge badge--info">진행 중</span></span>
+            </div>
+            <span class="badge badge--warn">1팀 작업</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">S-MQELTV · /settings/holidays/HD-0116</span>
             </div>
           </div>
           <div class="titlebar" data-show="created" hidden>
             <a class="iconbtn" href="holidays.html" aria-label="휴일 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
-            <!-- 머리: 첫 줄 휴일명(「휴일명」 라벨 없이) · 둘째 줄 「적용 범위 값 | 휴일유형 값 | 상태 배지」 — BP 관리자 상세 머리와 같다(앱 2026-10-30 — 잠깐 「휴일명」 라벨을 두었다가 뺐다) -->
             <div class="stack" style="gap: 6px; min-width: 0">
               <h1 class="t-h1" style="font-size: 18px">재고 정리 휴무</h1>
               <span style="font-size: 14px"><span class="subtle">적용 범위</span> <b class="t-h3">일부 점포</b> <span class="subtle">|</span> <span class="subtle">휴일유형</span> <b class="t-h3">하루</b> <span class="subtle">|</span> <span class="badge badge--quiet">시작 전</span></span>
@@ -138,29 +120,22 @@
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-MQELTV · /settings/holidays/HD-0124</span>
-              <button class="btn btn--danger btn--sm" type="button" data-open="pop-del-created" data-show-role="bm pf ba">삭제</button>
-              <a class="btn btn--primary btn--sm" href="holidays-edit.html?state=created" data-show-role="bm pf ba">수정</a>
-              <button class="btn btn--danger btn--sm" type="button" data-open="pop-del-created-part" data-show-role="bp fm" hidden>내 점포 삭제</button>
-              <a class="btn btn--primary btn--sm" href="holidays-edit.html?state=partial" data-show-role="bp fm" hidden>내 점포 수정</a>
             </div>
           </div>
           <div class="titlebar" data-show="stale" hidden>
             <a class="iconbtn" href="holidays.html?state=day1001" aria-label="휴일 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
-            <!-- 머리: 첫 줄 휴일명(「휴일명」 라벨 없이) · 둘째 줄 「적용 범위 값 | 휴일유형 값 | 상태 배지」 — BP 관리자 상세 머리와 같다(앱 2026-10-30 — 잠깐 「휴일명」 라벨을 두었다가 뺐다) -->
             <div class="stack" style="gap: 6px; min-width: 0">
-              <h1 class="t-h1" style="font-size: 18px"><span>창립기념일</span><span data-show-role="" hidden>볼 수 없는 휴일</span></h1>
+              <h1 class="t-h1" style="font-size: 18px">창립기념일</h1>
               <span style="font-size: 14px"><span class="subtle">적용 범위</span> <b class="t-h3">전체 점포</b> <span class="subtle">|</span> <span class="subtle">휴일유형</span> <b class="t-h3">매년 반복</b> <span class="subtle">|</span> <span class="badge badge--quiet">시작 전</span></span>
             </div>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-MQELTV · /settings/holidays/HD-0122</span>
-              <button class="btn btn--danger btn--sm" type="button" data-open="pop-del-stale" data-show-role="bm pf ba">삭제</button>
-              <a class="btn btn--primary btn--sm" href="holidays-edit.html" data-show-role="bm pf ba">수정</a>
             </div>
           </div>
           <div class="titlebar" data-show="gone" hidden>
             <a class="iconbtn" href="holidays.html" aria-label="휴일 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
-            <h1 class="t-h1">삭제된 휴일</h1>
+            <h1 class="t-h1">BP 휴일 상세</h1>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end"><span class="filters__count mono">S-MQELTV · /settings/holidays/HD-0117</span></div>
           </div>
@@ -181,37 +156,30 @@
             <div class="demo" data-demo="hd">
               <b>목업 휴일</b>
               <div class="seg">
-                <button type="button" data-state="hd0122" aria-pressed="true">HD-0122 창립기념일 · 전체 · 매년</button>
-                <button type="button" data-state="hd0114" aria-pressed="false">HD-0114 정기휴무 · 판교 · 매주</button>
+                <button type="button" data-state="hd0122" aria-pressed="true">HD-0122 창립기념일 · 전체 · 매년 · 시작 전</button>
+                <button type="button" data-state="hd0114" aria-pressed="false">HD-0114 정기휴무 · 판교 · 매주 · 오늘 시작</button>
                 <button type="button" data-state="hd0120" aria-pressed="false">HD-0120 추석 당일 휴무 · 전체</button>
                 <button type="button" data-state="hd0121" aria-pressed="false">HD-0121 내부 공사 · 연남</button>
                 <button type="button" data-state="hd0123" aria-pressed="false">HD-0123 오후 휴무 · 광화문</button>
-                <button type="button" data-state="hd0101" aria-pressed="false">HD-0101 정전 점검 · 지난 날짜</button>
-                <button type="button" data-state="created" aria-pressed="false">등록 직후</button>
-                <button type="button" data-state="stale" aria-pressed="false">조회 중 변경됨</button>
-                <button type="button" data-state="gone" aria-pressed="false">삭제된 휴일 열기</button>
+                <button type="button" data-state="hd0101" aria-pressed="false">HD-0101 정전 점검 · 종료</button>
+                <button type="button" data-state="hd0116" aria-pressed="false">HD-0116 매장 리뉴얼 · 기간 · 진행 중(강제 종료)</button>
+                <button type="button" data-state="created" aria-pressed="false">등록 직후 · 점포 3곳</button>
+                <button type="button" data-state="stale" aria-pressed="false">삭제 때 다른 사람이 먼저 수정</button>
+                <button type="button" data-state="gone" aria-pressed="false">삭제되었거나 볼 수 없는 휴일</button>
               </div>
             </div>
             </div>
 
             <section class="panel" data-show="gone" hidden>
-              <div class="empty">
-                <span class="empty__ic" data-icon="lock" data-icon-size="22"></span>
-                <p>삭제된 휴일이라 상세정보를 볼 수 없습니다. 삭제 기록은 휴일 목록의 변경 이력 보기에서 확인합니다.</p>
-                <a class="btn btn--secondary btn--sm" href="holidays.html">휴일 목록으로</a>
+              <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                <div class="band band--risk" role="alert"><span class="band__ic" data-icon="alert" data-icon-size="20"></span><div class="band__body"><div class="band__title">삭제되었거나 볼 수 없는 휴일입니다.</div></div></div>
+                <div class="inline"><a class="btn btn--ghost" href="holidays.html">닫기</a></div>
               </div>
             </section>
 
-            <div class="band band--info" data-show="hd0122" data-show-role="bp fm" hidden>
-              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
-              <div class="band__body">
-                <div class="band__title">전체 점포 휴일은 조회만 할 수 있습니다</div>
-                <p class="band__desc">전체 점포 휴일의 수정·삭제와 예외점포 지정은 BP 마스터, 전체 점포 범위를 가진 BP 관리자, 플랫폼 사용자만 합니다. 매핑된 점포에 따로 쉬는 날이 필요하면 일부 점포 휴일로 등록하세요.</p>
-              </div>
-            </div>
             <div style="display: contents" data-show="hd0122">
-              <!-- 휴일정보 한 표 — 휴일명 · 날짜 · 설명 · 등록 · 최종수정(앱 2026-10-30). 반복은 날짜 한 줄에 「시작일부터 · 반복 기준마다 · 종료조건」, 휴일유형은 머리 줄에 있다.
-                   전엔 「반복 · 등록 정보」 표에 휴일유형 · 반복유형 · 시작일 · 종료조건 · 다음 날짜 · 휴일 번호가 따로 있었다(다음 날짜는 앱에서 뺐다 2026-10-26) -->
+              <!-- 막힌 동작의 사유 — api 가 준 문장(blockedReason)을 그대로 회색 띠로(코드대로, 2026-10-30) -->
+              <div class="band" data-show-role="bp fm" hidden><span class="band__ic" data-icon="info" data-icon-size="20"></span><div class="band__body"><div class="band__title" style="font-weight: 400">전체 점포 휴일은 BP 마스터 · 전체 점포 BP 관리자만 고칠 수 있습니다.</div></div></div>
               <section class="panel">
                 <div class="panel__head"><h2 class="t-h2">휴일정보</h2></div>
                 <div class="panel__body">
@@ -224,8 +192,6 @@
                   </dl>
                 </div>
               </section>
-
-              <!-- 대상점포(일부 점포) · 예외점포(전체 점포) — 회색 제목 바 아래 열 이름 줄 없는 표, 점포코드는 작은 회색 글자(BP 관리자 상세 대상점포와 같다 · 앱 2026-10-30). 「적용 대상」 칸은 뺐다 — 적용 범위는 머리 줄에 있다 -->
               <section class="panel">
                 <div class="panel__head" style="min-height: 42px; padding-block: 0; background: var(--canvas-soft)"><h2 class="t-h2" style="font-size: 15px">예외점포</h2><span class="subtle">0개</span></div>
                 <div class="tblwrap">
@@ -236,36 +202,23 @@
                   </table>
                 </div>
               </section>
-
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">변경이력</h2>
-                  <span class="badge badge--quiet">이 휴일 · 최신순</span>
-                </div>
-                <div class="tblwrap">
-                  <table class="tbl tbl--dense">
-                    <thead>
-                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
-                    </thead>
-                    <tbody>
-                      <tr><td class="mono">2026-09-17 15:30</td><td class="mono">hangang01</td><td>설명</td><td>㈜한강상회 창립 기념 전 점포 휴무</td><td>㈜한강상회 창립 기념 전 점포 휴무 · 전날 마감 때 공지</td></tr>
-                      <tr><td class="mono">2026-03-02 10:00</td><td class="mono">hangang01</td><td>휴일</td><td class="nil"></td><td>창립기념일 · 전체 점포 · 매년 반복 · 시작 2026-10-01 · 종료일 없음</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </section>
+              <!-- 버튼은 모두 맨 아래 — [닫기]만 왼쪽, [삭제] [강제 종료] [수정] [변경이력]은 오른쪽. 무엇이 보일지는 api 가 휴일마다 준 동작 가능 여부로 정한다(코드대로, 2026-10-30) -->
+              <div class="inline" style="gap: 6px">
+                <a class="btn btn--ghost" href="holidays.html">닫기</a>
+                <span style="flex: 1"></span>
+                <button class="btn btn--secondary" type="button" data-open="pop-del-hd0122" data-show-role="bm pf ba">삭제</button>
+                <a class="btn btn--primary" href="holidays-edit.html?state=hd0122" data-show-role="bm pf ba">수정</a>
+                <button class="btn btn--secondary" type="button" data-open="pop-hist-hd0122">변경이력</button>
+              </div>
             </div>
 
-            <section class="panel" data-show="hd0114" data-show-role="fm" hidden>
-              <div class="empty">
-                <span class="empty__ic" data-icon="lock" data-icon-size="22"></span>
-                <p>접근 범위 밖 점포의 휴일이라 상세정보를 볼 수 없습니다.</p>
-                <a class="btn btn--secondary btn--sm" href="holidays.html">휴일 목록으로</a>
-              </div>
-            </section>
+            <!-- 못 보는 휴일 — 실패 띠 한 문장과 [닫기]만(코드대로, 2026-10-30) -->
+            <div style="display: contents" data-show="hd0114" hidden data-show-role="fm">
+              <div class="band band--risk" role="alert"><span class="band__ic" data-icon="alert" data-icon-size="20"></span><div class="band__body"><div class="band__title">삭제되었거나 볼 수 없는 휴일입니다.</div></div></div>
+              <div class="inline"><a class="btn btn--ghost" href="holidays.html">닫기</a></div>
+            </div>
             <div style="display: contents" data-show="hd0114" data-show-role="bm pf ba bp view" hidden>
-              <!-- 휴일정보 한 표 — 휴일명 · 날짜 · 설명 · 등록 · 최종수정(앱 2026-10-30). 반복은 날짜 한 줄에 「시작일부터 · 반복 기준마다 · 종료조건」, 휴일유형은 머리 줄에 있다.
-                   전엔 「반복 · 등록 정보」 표에 휴일유형 · 반복유형 · 시작일 · 종료조건 · 다음 날짜 · 휴일 번호가 따로 있었다(다음 날짜는 앱에서 뺐다 2026-10-26) -->
+              <!-- 오늘(09-21) 시작한 휴일 — 진행 중이지만 지난 날짜가 없어 [강제 종료] 대신 [삭제]가 선다. 「오늘 시작한 휴일은 강제 종료할 수 없습니다」 띠는 두지 않는다(코드대로, 2026-10-30) -->
               <section class="panel">
                 <div class="panel__head"><h2 class="t-h2">휴일정보</h2></div>
                 <div class="panel__body">
@@ -278,8 +231,6 @@
                   </dl>
                 </div>
               </section>
-
-              <!-- 대상점포(일부 점포) · 예외점포(전체 점포) — 회색 제목 바 아래 열 이름 줄 없는 표, 점포코드는 작은 회색 글자(BP 관리자 상세 대상점포와 같다 · 앱 2026-10-30). 「적용 대상」 칸은 뺐다 — 적용 범위는 머리 줄에 있다 -->
               <section class="panel">
                 <div class="panel__head" style="min-height: 42px; padding-block: 0; background: var(--canvas-soft)"><h2 class="t-h2" style="font-size: 15px">대상점포</h2><span class="subtle">1개</span></div>
                 <div class="tblwrap">
@@ -290,36 +241,19 @@
                   </table>
                 </div>
               </section>
-
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">변경이력</h2>
-                  <span class="badge badge--quiet">이 휴일 · 최신순</span>
-                </div>
-                <div class="tblwrap">
-                  <table class="tbl tbl--dense">
-                    <thead>
-                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
-                    </thead>
-                    <tbody>
-                      <tr><td class="mono">2026-09-16 10:05</td><td class="mono">hangang01</td><td>설명</td><td>정기 휴무</td><td>월요일마다 쉬는 정기 휴무</td></tr>
-                      <tr><td class="mono">2026-09-15 14:10</td><td class="mono">hangang01</td><td>휴일</td><td class="nil"></td><td>정기휴무 · 온기식당 판교점 · 매주 반복 · 시작 2026-09-21 · 종료일 없음</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-            </div>
-
-            <div class="band band--info" data-show="hd0120" data-show-role="bp fm" hidden>
-              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
-              <div class="band__body">
-                <div class="band__title">전체 점포 휴일은 조회만 할 수 있습니다</div>
-                <p class="band__desc">전체 점포 휴일의 수정·삭제와 예외점포 지정은 BP 마스터, 전체 점포 범위를 가진 BP 관리자, 플랫폼 사용자만 합니다. 매핑된 점포에 따로 쉬는 날이 필요하면 일부 점포 휴일로 등록하세요.</p>
+              <!-- 버튼은 모두 맨 아래 — [닫기]만 왼쪽, [삭제] [강제 종료] [수정] [변경이력]은 오른쪽. 무엇이 보일지는 api 가 휴일마다 준 동작 가능 여부로 정한다(코드대로, 2026-10-30) -->
+              <div class="inline" style="gap: 6px">
+                <a class="btn btn--ghost" href="holidays.html">닫기</a>
+                <span style="flex: 1"></span>
+                <button class="btn btn--secondary" type="button" data-open="pop-del-hd0114" data-show-role="bm pf ba bp">삭제</button>
+                <a class="btn btn--primary" href="holidays-edit.html?state=hd0114" data-show-role="bm pf ba bp">수정</a>
+                <button class="btn btn--secondary" type="button" data-open="pop-hist-hd0114">변경이력</button>
               </div>
             </div>
+
             <div style="display: contents" data-show="hd0120" hidden>
-              <!-- 휴일정보 한 표 — 휴일명 · 날짜 · 설명 · 등록 · 최종수정(앱 2026-10-30). 반복은 날짜 한 줄에 「시작일부터 · 반복 기준마다 · 종료조건」, 휴일유형은 머리 줄에 있다.
-                   전엔 「반복 · 등록 정보」 표에 휴일유형 · 반복유형 · 시작일 · 종료조건 · 다음 날짜 · 휴일 번호가 따로 있었다(다음 날짜는 앱에서 뺐다 2026-10-26) -->
+              <!-- 막힌 동작의 사유 — api 가 준 문장(blockedReason)을 그대로 회색 띠로(코드대로, 2026-10-30) -->
+              <div class="band" data-show-role="bp fm" hidden><span class="band__ic" data-icon="info" data-icon-size="20"></span><div class="band__body"><div class="band__title" style="font-weight: 400">전체 점포 휴일은 BP 마스터 · 전체 점포 BP 관리자만 고칠 수 있습니다.</div></div></div>
               <section class="panel">
                 <div class="panel__head"><h2 class="t-h2">휴일정보</h2></div>
                 <div class="panel__body">
@@ -328,12 +262,10 @@
                     <dt>날짜</dt><dd><span class="mono">2026-09-25</span>(금)</dd>
                     <dt>설명</dt><dd>추석 당일 전 점포 휴무</dd>
                     <dt>등록</dt><dd>2026-09-02 11:00 <span class="subtle">· hangang01</span></dd>
-                    <dt>최종수정</dt><dd>2026-09-02 11:00 <span class="subtle">· hangang01</span></dd>
+                    <dt>최종수정</dt><dd><span class="subtle">-</span></dd>
                   </dl>
                 </div>
               </section>
-
-              <!-- 대상점포(일부 점포) · 예외점포(전체 점포) — 회색 제목 바 아래 열 이름 줄 없는 표, 점포코드는 작은 회색 글자(BP 관리자 상세 대상점포와 같다 · 앱 2026-10-30). 「적용 대상」 칸은 뺐다 — 적용 범위는 머리 줄에 있다 -->
               <section class="panel">
                 <div class="panel__head" style="min-height: 42px; padding-block: 0; background: var(--canvas-soft)"><h2 class="t-h2" style="font-size: 15px">예외점포</h2><span class="subtle">0개</span></div>
                 <div class="tblwrap">
@@ -344,35 +276,22 @@
                   </table>
                 </div>
               </section>
-
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">변경이력</h2>
-                  <span class="badge badge--quiet">이 휴일 · 최신순</span>
-                </div>
-                <div class="tblwrap">
-                  <table class="tbl tbl--dense">
-                    <thead>
-                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
-                    </thead>
-                    <tbody>
-                      <tr><td class="mono">2026-09-02 11:00</td><td class="mono">hangang01</td><td>휴일</td><td class="nil"></td><td>추석 당일 휴무 · 전체 점포</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </section>
+              <!-- 버튼은 모두 맨 아래 — [닫기]만 왼쪽, [삭제] [강제 종료] [수정] [변경이력]은 오른쪽. 무엇이 보일지는 api 가 휴일마다 준 동작 가능 여부로 정한다(코드대로, 2026-10-30) -->
+              <div class="inline" style="gap: 6px">
+                <a class="btn btn--ghost" href="holidays.html">닫기</a>
+                <span style="flex: 1"></span>
+                <button class="btn btn--secondary" type="button" data-open="pop-del-hd0120" data-show-role="bm pf ba">삭제</button>
+                <a class="btn btn--primary" href="holidays-edit.html?state=hd0120" data-show-role="bm pf ba">수정</a>
+                <button class="btn btn--secondary" type="button" data-open="pop-hist-hd0120">변경이력</button>
+              </div>
             </div>
 
-            <section class="panel" data-show="hd0121" data-show-role="bp" hidden>
-              <div class="empty">
-                <span class="empty__ic" data-icon="lock" data-icon-size="22"></span>
-                <p>접근 범위 밖 점포의 휴일이라 상세정보를 볼 수 없습니다.</p>
-                <a class="btn btn--secondary btn--sm" href="holidays.html">휴일 목록으로</a>
-              </div>
-            </section>
+            <!-- 못 보는 휴일 — 실패 띠 한 문장과 [닫기]만(코드대로, 2026-10-30) -->
+            <div style="display: contents" data-show="hd0121" hidden data-show-role="bp">
+              <div class="band band--risk" role="alert"><span class="band__ic" data-icon="alert" data-icon-size="20"></span><div class="band__body"><div class="band__title">삭제되었거나 볼 수 없는 휴일입니다.</div></div></div>
+              <div class="inline"><a class="btn btn--ghost" href="holidays.html">닫기</a></div>
+            </div>
             <div style="display: contents" data-show="hd0121" data-show-role="bm pf ba fm view" hidden>
-              <!-- 휴일정보 한 표 — 휴일명 · 날짜 · 설명 · 등록 · 최종수정(앱 2026-10-30). 반복은 날짜 한 줄에 「시작일부터 · 반복 기준마다 · 종료조건」, 휴일유형은 머리 줄에 있다.
-                   전엔 「반복 · 등록 정보」 표에 휴일유형 · 반복유형 · 시작일 · 종료조건 · 다음 날짜 · 휴일 번호가 따로 있었다(다음 날짜는 앱에서 뺐다 2026-10-26) -->
               <section class="panel">
                 <div class="panel__head"><h2 class="t-h2">휴일정보</h2></div>
                 <div class="panel__body">
@@ -381,12 +300,10 @@
                     <dt>날짜</dt><dd><span class="mono">2026-09-29</span>(화)</dd>
                     <dt>설명</dt><dd>주방 배관 교체 공사</dd>
                     <dt>등록</dt><dd>2026-09-08 16:20 <span class="subtle">· morinam01</span></dd>
-                    <dt>최종수정</dt><dd>2026-09-08 16:20 <span class="subtle">· morinam01</span></dd>
+                    <dt>최종수정</dt><dd><span class="subtle">-</span></dd>
                   </dl>
                 </div>
               </section>
-
-              <!-- 대상점포(일부 점포) · 예외점포(전체 점포) — 회색 제목 바 아래 열 이름 줄 없는 표, 점포코드는 작은 회색 글자(BP 관리자 상세 대상점포와 같다 · 앱 2026-10-30). 「적용 대상」 칸은 뺐다 — 적용 범위는 머리 줄에 있다 -->
               <section class="panel">
                 <div class="panel__head" style="min-height: 42px; padding-block: 0; background: var(--canvas-soft)"><h2 class="t-h2" style="font-size: 15px">대상점포</h2><span class="subtle">1개</span></div>
                 <div class="tblwrap">
@@ -397,35 +314,22 @@
                   </table>
                 </div>
               </section>
-
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">변경이력</h2>
-                  <span class="badge badge--quiet">이 휴일 · 최신순</span>
-                </div>
-                <div class="tblwrap">
-                  <table class="tbl tbl--dense">
-                    <thead>
-                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
-                    </thead>
-                    <tbody>
-                      <tr><td class="mono">2026-09-08 16:20</td><td class="mono">morinam01</td><td>휴일</td><td class="nil"></td><td>내부 공사 · 모리커피 연남점</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </section>
+              <!-- 버튼은 모두 맨 아래 — [닫기]만 왼쪽, [삭제] [강제 종료] [수정] [변경이력]은 오른쪽. 무엇이 보일지는 api 가 휴일마다 준 동작 가능 여부로 정한다(코드대로, 2026-10-30) -->
+              <div class="inline" style="gap: 6px">
+                <a class="btn btn--ghost" href="holidays.html">닫기</a>
+                <span style="flex: 1"></span>
+                <button class="btn btn--secondary" type="button" data-open="pop-del-hd0121" data-show-role="bm pf ba fm">삭제</button>
+                <a class="btn btn--primary" href="holidays-edit.html?state=hd0121" data-show-role="bm pf ba fm">수정</a>
+                <button class="btn btn--secondary" type="button" data-open="pop-hist-hd0121">변경이력</button>
+              </div>
             </div>
 
-            <section class="panel" data-show="hd0123" data-show-role="fm" hidden>
-              <div class="empty">
-                <span class="empty__ic" data-icon="lock" data-icon-size="22"></span>
-                <p>접근 범위 밖 점포의 휴일이라 상세정보를 볼 수 없습니다.</p>
-                <a class="btn btn--secondary btn--sm" href="holidays.html">휴일 목록으로</a>
-              </div>
-            </section>
+            <!-- 못 보는 휴일 — 실패 띠 한 문장과 [닫기]만(코드대로, 2026-10-30) -->
+            <div style="display: contents" data-show="hd0123" hidden data-show-role="fm">
+              <div class="band band--risk" role="alert"><span class="band__ic" data-icon="alert" data-icon-size="20"></span><div class="band__body"><div class="band__title">삭제되었거나 볼 수 없는 휴일입니다.</div></div></div>
+              <div class="inline"><a class="btn btn--ghost" href="holidays.html">닫기</a></div>
+            </div>
             <div style="display: contents" data-show="hd0123" data-show-role="bm pf ba bp view" hidden>
-              <!-- 휴일정보 한 표 — 휴일명 · 날짜 · 설명 · 등록 · 최종수정(앱 2026-10-30). 반복은 날짜 한 줄에 「시작일부터 · 반복 기준마다 · 종료조건」, 휴일유형은 머리 줄에 있다.
-                   전엔 「반복 · 등록 정보」 표에 휴일유형 · 반복유형 · 시작일 · 종료조건 · 다음 날짜 · 휴일 번호가 따로 있었다(다음 날짜는 앱에서 뺐다 2026-10-26) -->
               <section class="panel">
                 <div class="panel__head"><h2 class="t-h2">휴일정보</h2></div>
                 <div class="panel__body">
@@ -438,8 +342,6 @@
                   </dl>
                 </div>
               </section>
-
-              <!-- 대상점포(일부 점포) · 예외점포(전체 점포) — 회색 제목 바 아래 열 이름 줄 없는 표, 점포코드는 작은 회색 글자(BP 관리자 상세 대상점포와 같다 · 앱 2026-10-30). 「적용 대상」 칸은 뺐다 — 적용 범위는 머리 줄에 있다 -->
               <section class="panel">
                 <div class="panel__head" style="min-height: 42px; padding-block: 0; background: var(--canvas-soft)"><h2 class="t-h2" style="font-size: 15px">대상점포</h2><span class="subtle">1개</span></div>
                 <div class="tblwrap">
@@ -450,44 +352,23 @@
                   </table>
                 </div>
               </section>
-
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">변경이력</h2>
-                  <span class="badge badge--quiet">이 휴일 · 최신순</span>
-                </div>
-                <div class="tblwrap">
-                  <table class="tbl tbl--dense">
-                    <thead>
-                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
-                    </thead>
-                    <tbody>
-                      <tr><td class="mono">2026-09-14 09:15</td><td class="mono">hghr</td><td>설명</td><td>오후 단축 운영</td><td>오후 2시 이후 단축 운영 · 오전만 영업</td></tr>
-                      <tr><td class="mono">2026-09-11 18:02</td><td class="mono">hghr</td><td>휴일명</td><td>오후 휴무</td><td>오후 휴무(단축 운영)</td></tr>
-                      <tr><td class="mono">2026-09-10 13:20</td><td class="mono">hghr</td><td>휴일</td><td class="nil"></td><td>오후 휴무 · 온기식당 광화문점</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </section>
+              <!-- 버튼은 모두 맨 아래 — [닫기]만 왼쪽, [삭제] [강제 종료] [수정] [변경이력]은 오른쪽. 무엇이 보일지는 api 가 휴일마다 준 동작 가능 여부로 정한다(코드대로, 2026-10-30) -->
+              <div class="inline" style="gap: 6px">
+                <a class="btn btn--ghost" href="holidays.html">닫기</a>
+                <span style="flex: 1"></span>
+                <button class="btn btn--secondary" type="button" data-open="pop-del-hd0123" data-show-role="bm pf ba bp">삭제</button>
+                <a class="btn btn--primary" href="holidays-edit.html?state=hd0123" data-show-role="bm pf ba bp">수정</a>
+                <button class="btn btn--secondary" type="button" data-open="pop-hist-hd0123">변경이력</button>
+              </div>
             </div>
 
-            <section class="panel" data-show="hd0101" data-show-role="fm" hidden>
-              <div class="empty">
-                <span class="empty__ic" data-icon="lock" data-icon-size="22"></span>
-                <p>접근 범위 밖 점포의 휴일이라 상세정보를 볼 수 없습니다.</p>
-                <a class="btn btn--secondary btn--sm" href="holidays.html">휴일 목록으로</a>
-              </div>
-            </section>
-            <div class="band band--warn" data-show="hd0101" data-show-role="bm pf ba bp view" hidden>
-              <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
-              <div class="band__body">
-                <div class="band__title">지난 날짜의 휴일이라 수정하거나 삭제할 수 없습니다</div>
-                <p class="band__desc">대한민국 표준시 기준 오늘(<span class="mono">2026-09-21</span>)보다 이른 날짜입니다. 휴일 정보와 변경 이력은 그대로 볼 수 있습니다.</p>
-              </div>
+            <!-- 못 보는 휴일 — 실패 띠 한 문장과 [닫기]만(코드대로, 2026-10-30) -->
+            <div style="display: contents" data-show="hd0101" hidden data-show-role="fm">
+              <div class="band band--risk" role="alert"><span class="band__ic" data-icon="alert" data-icon-size="20"></span><div class="band__body"><div class="band__title">삭제되었거나 볼 수 없는 휴일입니다.</div></div></div>
+              <div class="inline"><a class="btn btn--ghost" href="holidays.html">닫기</a></div>
             </div>
             <div style="display: contents" data-show="hd0101" data-show-role="bm pf ba bp view" hidden>
-              <!-- 휴일정보 한 표 — 휴일명 · 날짜 · 설명 · 등록 · 최종수정(앱 2026-10-30). 반복은 날짜 한 줄에 「시작일부터 · 반복 기준마다 · 종료조건」, 휴일유형은 머리 줄에 있다.
-                   전엔 「반복 · 등록 정보」 표에 휴일유형 · 반복유형 · 시작일 · 종료조건 · 다음 날짜 · 휴일 번호가 따로 있었다(다음 날짜는 앱에서 뺐다 2026-10-26) -->
+              <!-- 끝난 휴일 — [삭제] · [수정]을 숨기고 띠도 두지 않는다. 「종료」 배지로 알 수 있다(코드대로, 2026-10-30) -->
               <section class="panel">
                 <div class="panel__head"><h2 class="t-h2">휴일정보</h2></div>
                 <div class="panel__body">
@@ -496,12 +377,10 @@
                     <dt>날짜</dt><dd><span class="mono">2026-09-10</span>(목)</dd>
                     <dt>설명</dt><dd>건물 전기 설비 점검으로 종일 정전</dd>
                     <dt>등록</dt><dd>2026-09-01 09:40 <span class="subtle">· hgops</span></dd>
-                    <dt>최종수정</dt><dd>2026-09-01 09:40 <span class="subtle">· hgops</span></dd>
+                    <dt>최종수정</dt><dd><span class="subtle">-</span></dd>
                   </dl>
                 </div>
               </section>
-
-              <!-- 대상점포(일부 점포) · 예외점포(전체 점포) — 회색 제목 바 아래 열 이름 줄 없는 표, 점포코드는 작은 회색 글자(BP 관리자 상세 대상점포와 같다 · 앱 2026-10-30). 「적용 대상」 칸은 뺐다 — 적용 범위는 머리 줄에 있다 -->
               <section class="panel">
                 <div class="panel__head" style="min-height: 42px; padding-block: 0; background: var(--canvas-soft)"><h2 class="t-h2" style="font-size: 15px">대상점포</h2><span class="subtle">1개</span></div>
                 <div class="tblwrap">
@@ -512,49 +391,56 @@
                   </table>
                 </div>
               </section>
+              <!-- 버튼은 모두 맨 아래 — [닫기]만 왼쪽, [삭제] [강제 종료] [수정] [변경이력]은 오른쪽. 무엇이 보일지는 api 가 휴일마다 준 동작 가능 여부로 정한다(코드대로, 2026-10-30) -->
+              <div class="inline" style="gap: 6px">
+                <a class="btn btn--ghost" href="holidays.html">닫기</a>
+                <span style="flex: 1"></span>
+                <button class="btn btn--secondary" type="button" data-open="pop-hist-hd0101">변경이력</button>
+              </div>
+            </div>
 
+            <div style="display: contents" data-show="hd0116" hidden>
+              <!-- 지난 날짜(09-16~09-20)가 있는 진행 중 휴일 — [삭제] 대신 [강제 종료](어제로 끝냄)가 선다. 수정은 휴일명 · 설명 · 점포만(코드대로, 2026-10-30) -->
+              <!-- 막힌 동작의 사유 — api 가 준 문장(blockedReason)을 그대로 회색 띠로(코드대로, 2026-10-30) -->
+              <div class="band" data-show-role="bp fm" hidden><span class="band__ic" data-icon="info" data-icon-size="20"></span><div class="band__body"><div class="band__title" style="font-weight: 400">전체 점포 휴일은 BP 마스터 · 전체 점포 BP 관리자만 고칠 수 있습니다.</div></div></div>
               <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">변경이력</h2>
-                  <span class="badge badge--quiet">이 휴일 · 최신순</span>
+                <div class="panel__head"><h2 class="t-h2">휴일정보</h2></div>
+                <div class="panel__body">
+                  <dl class="kv">
+                    <dt>휴일명</dt><dd>매장 리뉴얼 휴무</dd>
+                    <dt>기간</dt><dd><span class="mono">2026-09-16</span>(수) ~ <span class="mono">2026-09-25</span>(금)</dd>
+                    <dt>설명</dt><dd>매장 리뉴얼 공사 기간 전 점포 휴무</dd>
+                    <dt>등록</dt><dd>2026-09-01 10:00 <span class="subtle">· hangang01</span></dd>
+                    <dt>최종수정</dt><dd><span class="subtle">-</span></dd>
+                  </dl>
                 </div>
+              </section>
+              <section class="panel">
+                <div class="panel__head" style="min-height: 42px; padding-block: 0; background: var(--canvas-soft)"><h2 class="t-h2" style="font-size: 15px">예외점포</h2><span class="subtle">0개</span></div>
                 <div class="tblwrap">
                   <table class="tbl tbl--dense">
-                    <thead>
-                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
-                    </thead>
                     <tbody>
-                      <tr><td class="mono">2026-09-01 09:40</td><td class="mono">hgops</td><td>휴일</td><td class="nil"></td><td>정전 점검 휴무 · 모리커피 서초점</td></tr>
+                      <tr><td class="c subtle">예외점포가 없습니다.</td></tr>
                     </tbody>
                   </table>
                 </div>
               </section>
+              <!-- 버튼은 모두 맨 아래 — [닫기]만 왼쪽, [삭제] [강제 종료] [수정] [변경이력]은 오른쪽. 무엇이 보일지는 api 가 휴일마다 준 동작 가능 여부로 정한다(코드대로, 2026-10-30) -->
+              <div class="inline" style="gap: 6px">
+                <a class="btn btn--ghost" href="holidays.html">닫기</a>
+                <span style="flex: 1"></span>
+                <button class="btn btn--secondary" type="button" data-open="pop-end-hd0116" data-show-role="bm pf ba">강제 종료</button>
+                <a class="btn btn--primary" href="holidays-edit.html?state=hd0116" data-show-role="bm pf ba">수정</a>
+                <button class="btn btn--secondary" type="button" data-open="pop-hist-hd0116">변경이력</button>
+              </div>
             </div>
 
-            <div class="band band--info" data-show="created" data-show-role="bm pf ba bp fm view" hidden>
-              <span class="band__ic" data-icon="check" data-icon-size="20"></span>
-              <div class="band__body">
-                <div class="band__title">BP 휴일을 등록했습니다 · <span class="mono">HD-0124</span> 재고 정리 휴무</div>
-                <p class="band__desc">모리커피 성수점 · 온기식당 판교점 · 모리커피 연남점을 묶은 <span class="mono">2026-10-15</span> 하루 휴일 한 건으로 저장했고, 세 점포와 관련 운영 업무에 바로 반영됩니다. 목록과 캘린더에도 나옵니다.</p>
-              </div>
-            </div>
-            <div class="band band--info" data-show="created" data-show-role="bp" hidden>
-              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
-              <div class="band__body">
-                <div class="band__title">대상점포 3곳 중 모리커피 성수점 · 온기식당 판교점만 hghr 의 범위입니다</div>
-                <p class="band__desc">수정·삭제는 이 두 점포에만 적용됩니다. 고치면 두 점포가 이 휴일에서 빠지고 두 점포만 대상인 새 휴일이 생깁니다. 모리커피 연남점은 조회만 하고, 이 휴일에 그대로 남습니다.</p>
-              </div>
-            </div>
-            <div class="band band--info" data-show="created" data-show-role="fm" hidden>
-              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
-              <div class="band__body">
-                <div class="band__title">대상점포 3곳 중 모리커피 연남점만 morinam01 의 범위입니다</div>
-                <p class="band__desc">수정·삭제는 연남점에만 적용됩니다. 고치면 연남점이 이 휴일에서 빠지고 연남점만 대상인 새 휴일이 생깁니다. 모리커피 성수점·온기식당 판교점은 조회만 하고, 이 휴일에 그대로 남습니다.</p>
-              </div>
-            </div>
             <div style="display: contents" data-show="created" hidden>
-              <!-- 휴일정보 한 표 — 휴일명 · 날짜 · 설명 · 등록 · 최종수정(앱 2026-10-30). 반복은 날짜 한 줄에 「시작일부터 · 반복 기준마다 · 종료조건」, 휴일유형은 머리 줄에 있다.
-                   전엔 「반복 · 등록 정보」 표에 휴일유형 · 반복유형 · 시작일 · 종료조건 · 다음 날짜 · 휴일 번호가 따로 있었다(다음 날짜는 앱에서 뺐다 2026-10-26) -->
+              <!-- 맡지 않은 점포가 묶인 휴일 — 성수 · 판교만 맡은 hghr, 연남만 맡은 morinam01 은 [수정]으로 맡은 점포만 빼거나 더한다. 휴일을 나누지 않는다(코드대로, 2026-10-30) -->
+              <!-- 등록 직후 — 실제로는 토스트 「저장되었습니다.」 뒤 새 휴일의 상세(시작일 기준)를 연다. 목업은 토스트를 띠로 대신 그렸다(코드대로, 2026-10-30) -->
+              <div class="band band--ok"><span class="band__ic" data-icon="check" data-icon-size="20"></span><div class="band__body"><div class="band__title">저장되었습니다.</div></div></div>
+              <!-- 막힌 동작의 사유 — api 가 준 문장(blockedReason)을 그대로 회색 띠로(코드대로, 2026-10-30) -->
+              <div class="band" data-show-role="bp fm" hidden><span class="band__ic" data-icon="info" data-icon-size="20"></span><div class="band__body"><div class="band__title" style="font-weight: 400">맡지 않은 점포가 함께 묶인 휴일입니다 — 맡은 점포만 빼거나 더할 수 있습니다.</div></div></div>
               <section class="panel">
                 <div class="panel__head"><h2 class="t-h2">휴일정보</h2></div>
                 <div class="panel__body">
@@ -563,54 +449,38 @@
                     <dt>날짜</dt><dd><span class="mono">2026-10-15</span>(목)</dd>
                     <dt>설명</dt><dd>분기 재고 실사로 하루 휴무</dd>
                     <dt>등록</dt><dd>2026-09-21 10:40 <span class="subtle">· hangang01</span></dd>
-                    <dt>최종수정</dt><dd>2026-09-21 10:40 <span class="subtle">· hangang01</span></dd>
+                    <dt>최종수정</dt><dd><span class="subtle">-</span></dd>
                   </dl>
                 </div>
               </section>
-
-              <!-- 대상점포(일부 점포) · 예외점포(전체 점포) — 회색 제목 바 아래 열 이름 줄 없는 표, 점포코드는 작은 회색 글자(BP 관리자 상세 대상점포와 같다 · 앱 2026-10-30). 「적용 대상」 칸은 뺐다 — 적용 범위는 머리 줄에 있다 -->
               <section class="panel">
                 <div class="panel__head" style="min-height: 42px; padding-block: 0; background: var(--canvas-soft)"><h2 class="t-h2" style="font-size: 15px">대상점포</h2><span class="subtle">3개</span></div>
                 <div class="tblwrap">
                   <table class="tbl tbl--dense">
                     <tbody>
-                      <tr><td class="k">모리커피 성수점 <span class="tag" data-show-role="fm" hidden>범위 밖 · 조회만</span></td><td class="mono subtle" style="width: 1%; font-size: 12px">ST000002</td><td style="width: 1%; white-space: nowrap">26.10.15부터</td></tr>
-                      <tr><td class="k">온기식당 판교점 <span class="tag" data-show-role="fm" hidden>범위 밖 · 조회만</span></td><td class="mono subtle" style="width: 1%; font-size: 12px">ST000003</td><td style="width: 1%; white-space: nowrap">26.10.15부터</td></tr>
-                      <tr><td class="k">모리커피 연남점 <span class="tag" data-show-role="bp" hidden>범위 밖 · 조회만</span></td><td class="mono subtle" style="width: 1%; font-size: 12px">ST000006</td><td style="width: 1%; white-space: nowrap">26.10.15부터</td></tr>
+                      <tr><td class="k">모리커피 성수점</td><td class="mono subtle" style="width: 1%; font-size: 12px">ST000002</td><td style="width: 1%; white-space: nowrap">26.10.15부터</td></tr>
+                      <tr><td class="k">온기식당 판교점</td><td class="mono subtle" style="width: 1%; font-size: 12px">ST000003</td><td style="width: 1%; white-space: nowrap">26.10.15부터</td></tr>
+                      <tr><td class="k">모리커피 연남점</td><td class="mono subtle" style="width: 1%; font-size: 12px">ST000006</td><td style="width: 1%; white-space: nowrap">26.10.15부터</td></tr>
                     </tbody>
                   </table>
                 </div>
               </section>
-
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">변경이력</h2>
-                  <span class="badge badge--quiet">이 휴일 · 최신순</span>
-                </div>
-                <div class="tblwrap">
-                  <table class="tbl tbl--dense">
-                    <thead>
-                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
-                    </thead>
-                    <tbody>
-                      <tr><td class="mono">2026-09-21 10:40</td><td class="mono">hangang01</td><td>휴일</td><td class="nil"></td><td>재고 정리 휴무 · 모리커피 성수점 · 온기식당 판교점 · 모리커피 연남점</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-            </div>
-
-            <div class="band band--warn" data-show="stale" hidden>
-              <span class="band__ic" data-icon="refresh" data-icon-size="20"></span>
-              <div class="band__body">
-                <div class="band__title">이 화면을 보는 동안 다른 사용자가 이 휴일을 바꿨습니다</div>
-                <p class="band__desc">아래는 화면을 연 때의 정보입니다. 최신 상태를 불러온 뒤 수정하거나 삭제해 주세요.</p>
+              <!-- 버튼은 모두 맨 아래 — [닫기]만 왼쪽, [삭제] [강제 종료] [수정] [변경이력]은 오른쪽. 무엇이 보일지는 api 가 휴일마다 준 동작 가능 여부로 정한다(코드대로, 2026-10-30) -->
+              <div class="inline" style="gap: 6px">
+                <a class="btn btn--ghost" href="holidays.html">닫기</a>
+                <span style="flex: 1"></span>
+                <button class="btn btn--secondary" type="button" data-open="pop-del-created" data-show-role="bm pf ba">삭제</button>
+                <a class="btn btn--primary" href="holidays-edit.html?state=created" data-show-role="bm pf ba">수정</a>
+                <a class="btn btn--primary" href="holidays-edit.html?state=partial" data-show-role="bp fm" hidden>수정</a>
+                <button class="btn btn--secondary" type="button" data-open="pop-hist-created">변경이력</button>
               </div>
-              <div class="band__act"><a class="btn btn--secondary btn--sm" href="holidays-detail.html">최신 정보 불러오기</a></div>
             </div>
+
             <div style="display: contents" data-show="stale" hidden>
-              <!-- 휴일정보 한 표 — 휴일명 · 날짜 · 설명 · 등록 · 최종수정(앱 2026-10-30). 반복은 날짜 한 줄에 「시작일부터 · 반복 기준마다 · 종료조건」, 휴일유형은 머리 줄에 있다.
-                   전엔 「반복 · 등록 정보」 표에 휴일유형 · 반복유형 · 시작일 · 종료조건 · 다음 날짜 · 휴일 번호가 따로 있었다(다음 날짜는 앱에서 뺐다 2026-10-26) -->
+              <!-- [삭제] · [강제 종료] 때 그사이 다른 사람이 고쳤으면(409) api 문장을 실패 띠로 두고 상세 · 목록을 새로 받는다 — [최신 정보 불러오기] 버튼은 없다(코드대로, 2026-10-30) -->
+              <div class="band band--risk" role="alert" data-show-role="bm pf ba"><span class="band__ic" data-icon="alert" data-icon-size="20"></span><div class="band__body"><div class="band__title">다른 사용자가 먼저 수정했습니다. 다시 불러온 뒤 시도해 주세요.</div></div></div>
+              <!-- 막힌 동작의 사유 — api 가 준 문장(blockedReason)을 그대로 회색 띠로(코드대로, 2026-10-30) -->
+              <div class="band" data-show-role="bp fm" hidden><span class="band__ic" data-icon="info" data-icon-size="20"></span><div class="band__body"><div class="band__title" style="font-weight: 400">전체 점포 휴일은 BP 마스터 · 전체 점포 BP 관리자만 고칠 수 있습니다.</div></div></div>
               <section class="panel">
                 <div class="panel__head"><h2 class="t-h2">휴일정보</h2></div>
                 <div class="panel__body">
@@ -623,8 +493,6 @@
                   </dl>
                 </div>
               </section>
-
-              <!-- 대상점포(일부 점포) · 예외점포(전체 점포) — 회색 제목 바 아래 열 이름 줄 없는 표, 점포코드는 작은 회색 글자(BP 관리자 상세 대상점포와 같다 · 앱 2026-10-30). 「적용 대상」 칸은 뺐다 — 적용 범위는 머리 줄에 있다 -->
               <section class="panel">
                 <div class="panel__head" style="min-height: 42px; padding-block: 0; background: var(--canvas-soft)"><h2 class="t-h2" style="font-size: 15px">예외점포</h2><span class="subtle">0개</span></div>
                 <div class="tblwrap">
@@ -635,12 +503,25 @@
                   </table>
                 </div>
               </section>
+              <!-- 버튼은 모두 맨 아래 — [닫기]만 왼쪽, [삭제] [강제 종료] [수정] [변경이력]은 오른쪽. 무엇이 보일지는 api 가 휴일마다 준 동작 가능 여부로 정한다(코드대로, 2026-10-30) -->
+              <div class="inline" style="gap: 6px">
+                <a class="btn btn--ghost" href="holidays.html">닫기</a>
+                <span style="flex: 1"></span>
+                <button class="btn btn--secondary" type="button" data-open="pop-del-stale" data-show-role="bm pf ba">삭제</button>
+                <a class="btn btn--primary" href="holidays-edit.html?state=stale" data-show-role="bm pf ba">수정</a>
+                <button class="btn btn--secondary" type="button" data-open="pop-hist-stale">변경이력</button>
+              </div>
+            </div>
 
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">변경이력</h2>
-                  <span class="badge badge--quiet">이 휴일 · 최신순</span>
-                </div>
+          </div>
+
+          <div class="modal" id="pop-hist-hd0122" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0122-t">
+            <div class="modal__box modal__box--wide">
+              <div class="modal__head">
+                <h2 class="t-h2" id="ph-hd0122-t">변경이력</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
                 <div class="tblwrap">
                   <table class="tbl tbl--dense">
                     <thead>
@@ -648,24 +529,22 @@
                     </thead>
                     <tbody>
                       <tr><td class="mono">2026-09-17 15:30</td><td class="mono">hangang01</td><td>설명</td><td>㈜한강상회 창립 기념 전 점포 휴무</td><td>㈜한강상회 창립 기념 전 점포 휴무 · 전날 마감 때 공지</td></tr>
-                      <tr><td class="mono">2026-03-02 10:00</td><td class="mono">hangang01</td><td>휴일</td><td class="nil"></td><td>창립기념일 · 전체 점포 · 매년 반복 · 시작 2026-10-01 · 종료일 없음</td></tr>
+                      <tr><td class="mono">2026-03-02 10:00</td><td class="mono">hangang01</td><td>등록</td><td class="nil"></td><td>창립기념일 · 전체 점포 · 매년 반복 · 시작 2026-10-01 · 종료일 없음</td></tr>
                     </tbody>
                   </table>
                 </div>
-              </section>
+              </div>
+              <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
             </div>
-
           </div>
-
           <div class="modal" id="pop-del-hd0122" hidden role="dialog" aria-modal="true" aria-labelledby="pd-hd0122-t">
             <div class="modal__box">
               <div class="modal__head">
-                <h2 class="t-h2" id="pd-hd0122-t">휴일 삭제</h2>
+                <h2 class="t-h2" id="pd-hd0122-t">휴일을 삭제하시겠습니까?</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
-                  <!-- 대상(회색 상자) + 빨간 안내 상자 — 앱 확인창과 같다(2026-10-30). 버튼은 그대로 -->
+                <div class="stack--lg" style="display: flex; flex-direction: column">
                   <dl class="kv" style="margin: 0; padding: 12px 14px; background: var(--canvas-soft); border: 1px solid var(--hairline); border-radius: var(--r-xs)">
                     <dt>휴일명</dt><dd>창립기념일</dd>
                   </dl>
@@ -674,35 +553,42 @@
                   </div>
                   <div class="inline" style="justify-content: flex-end">
                     <button class="btn btn--ghost" type="button" data-close>취소</button>
-                    <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 삭제 실패 결과 보기">실패로 보기</button>
                     <a class="btn btn--primary" href="holidays.html?state=deleted">삭제</a>
-                  </div>
-                </div>
-                <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">
-                  <div class="band band--risk">
-                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-                    <div class="band__body">
-                      <div class="band__title">휴일을 삭제하지 못했습니다</div>
-                      <p class="band__desc">휴일 정보는 전과 같이 남아 있습니다. 잠시 후 다시 시도해 주세요.</p>
-                    </div>
-                  </div>
-                  <div class="inline" style="justify-content: flex-end">
-                    <button class="btn btn--ghost" type="button" data-close>닫기</button>
-                    <button class="btn btn--primary" type="button" data-step-to="ask">다시 시도</button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="modal" id="pop-del-hd0114" hidden role="dialog" aria-modal="true" aria-labelledby="pd-hd0114-t">
-            <div class="modal__box">
+          <div class="modal" id="pop-hist-hd0114" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0114-t">
+            <div class="modal__box modal__box--wide">
               <div class="modal__head">
-                <h2 class="t-h2" id="pd-hd0114-t">휴일 삭제</h2>
+                <h2 class="t-h2" id="ph-hd0114-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
-                  <!-- 대상(회색 상자) + 빨간 안내 상자 — 앱 확인창과 같다(2026-10-30). 버튼은 그대로 -->
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="mono">2026-09-16 10:05</td><td class="mono">hangang01</td><td>설명</td><td>정기 휴무</td><td>월요일마다 쉬는 정기 휴무</td></tr>
+                      <tr><td class="mono">2026-09-15 14:10</td><td class="mono">hangang01</td><td>등록</td><td class="nil"></td><td>정기휴무 · 온기식당 판교점 · 매주 반복 · 시작 2026-09-21 · 종료일 없음</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
+            </div>
+          </div>
+          <div class="modal" id="pop-del-hd0114" hidden role="dialog" aria-modal="true" aria-labelledby="pd-hd0114-t">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="pd-hd0114-t">휴일을 삭제하시겠습니까?</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div class="stack--lg" style="display: flex; flex-direction: column">
                   <dl class="kv" style="margin: 0; padding: 12px 14px; background: var(--canvas-soft); border: 1px solid var(--hairline); border-radius: var(--r-xs)">
                     <dt>휴일명</dt><dd>정기휴무</dd>
                   </dl>
@@ -711,35 +597,41 @@
                   </div>
                   <div class="inline" style="justify-content: flex-end">
                     <button class="btn btn--ghost" type="button" data-close>취소</button>
-                    <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 삭제 실패 결과 보기">실패로 보기</button>
                     <a class="btn btn--primary" href="holidays.html">삭제</a>
-                  </div>
-                </div>
-                <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">
-                  <div class="band band--risk">
-                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-                    <div class="band__body">
-                      <div class="band__title">휴일을 삭제하지 못했습니다</div>
-                      <p class="band__desc">휴일 정보는 전과 같이 남아 있습니다. 잠시 후 다시 시도해 주세요.</p>
-                    </div>
-                  </div>
-                  <div class="inline" style="justify-content: flex-end">
-                    <button class="btn btn--ghost" type="button" data-close>닫기</button>
-                    <button class="btn btn--primary" type="button" data-step-to="ask">다시 시도</button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="modal" id="pop-del-hd0120" hidden role="dialog" aria-modal="true" aria-labelledby="pd-hd0120-t">
-            <div class="modal__box">
+          <div class="modal" id="pop-hist-hd0120" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0120-t">
+            <div class="modal__box modal__box--wide">
               <div class="modal__head">
-                <h2 class="t-h2" id="pd-hd0120-t">휴일 삭제</h2>
+                <h2 class="t-h2" id="ph-hd0120-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
-                  <!-- 대상(회색 상자) + 빨간 안내 상자 — 앱 확인창과 같다(2026-10-30). 버튼은 그대로 -->
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="mono">2026-09-02 11:00</td><td class="mono">hangang01</td><td>등록</td><td class="nil"></td><td>추석 당일 휴무 · 전체 점포 · 하루 2026-09-25</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
+            </div>
+          </div>
+          <div class="modal" id="pop-del-hd0120" hidden role="dialog" aria-modal="true" aria-labelledby="pd-hd0120-t">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="pd-hd0120-t">휴일을 삭제하시겠습니까?</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div class="stack--lg" style="display: flex; flex-direction: column">
                   <dl class="kv" style="margin: 0; padding: 12px 14px; background: var(--canvas-soft); border: 1px solid var(--hairline); border-radius: var(--r-xs)">
                     <dt>휴일명</dt><dd>추석 당일 휴무</dd>
                   </dl>
@@ -748,35 +640,41 @@
                   </div>
                   <div class="inline" style="justify-content: flex-end">
                     <button class="btn btn--ghost" type="button" data-close>취소</button>
-                    <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 삭제 실패 결과 보기">실패로 보기</button>
                     <a class="btn btn--primary" href="holidays.html">삭제</a>
-                  </div>
-                </div>
-                <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">
-                  <div class="band band--risk">
-                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-                    <div class="band__body">
-                      <div class="band__title">휴일을 삭제하지 못했습니다</div>
-                      <p class="band__desc">휴일 정보는 전과 같이 남아 있습니다. 잠시 후 다시 시도해 주세요.</p>
-                    </div>
-                  </div>
-                  <div class="inline" style="justify-content: flex-end">
-                    <button class="btn btn--ghost" type="button" data-close>닫기</button>
-                    <button class="btn btn--primary" type="button" data-step-to="ask">다시 시도</button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="modal" id="pop-del-hd0121" hidden role="dialog" aria-modal="true" aria-labelledby="pd-hd0121-t">
-            <div class="modal__box">
+          <div class="modal" id="pop-hist-hd0121" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0121-t">
+            <div class="modal__box modal__box--wide">
               <div class="modal__head">
-                <h2 class="t-h2" id="pd-hd0121-t">휴일 삭제</h2>
+                <h2 class="t-h2" id="ph-hd0121-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
-                  <!-- 대상(회색 상자) + 빨간 안내 상자 — 앱 확인창과 같다(2026-10-30). 버튼은 그대로 -->
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="mono">2026-09-08 16:20</td><td class="mono">morinam01</td><td>등록</td><td class="nil"></td><td>내부 공사 · 모리커피 연남점 · 하루 2026-09-29</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
+            </div>
+          </div>
+          <div class="modal" id="pop-del-hd0121" hidden role="dialog" aria-modal="true" aria-labelledby="pd-hd0121-t">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="pd-hd0121-t">휴일을 삭제하시겠습니까?</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div class="stack--lg" style="display: flex; flex-direction: column">
                   <dl class="kv" style="margin: 0; padding: 12px 14px; background: var(--canvas-soft); border: 1px solid var(--hairline); border-radius: var(--r-xs)">
                     <dt>휴일명</dt><dd>내부 공사</dd>
                   </dl>
@@ -785,35 +683,43 @@
                   </div>
                   <div class="inline" style="justify-content: flex-end">
                     <button class="btn btn--ghost" type="button" data-close>취소</button>
-                    <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 삭제 실패 결과 보기">실패로 보기</button>
                     <a class="btn btn--primary" href="holidays.html">삭제</a>
-                  </div>
-                </div>
-                <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">
-                  <div class="band band--risk">
-                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-                    <div class="band__body">
-                      <div class="band__title">휴일을 삭제하지 못했습니다</div>
-                      <p class="band__desc">휴일 정보는 전과 같이 남아 있습니다. 잠시 후 다시 시도해 주세요.</p>
-                    </div>
-                  </div>
-                  <div class="inline" style="justify-content: flex-end">
-                    <button class="btn btn--ghost" type="button" data-close>닫기</button>
-                    <button class="btn btn--primary" type="button" data-step-to="ask">다시 시도</button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="modal" id="pop-del-hd0123" hidden role="dialog" aria-modal="true" aria-labelledby="pd-hd0123-t">
-            <div class="modal__box">
+          <div class="modal" id="pop-hist-hd0123" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0123-t">
+            <div class="modal__box modal__box--wide">
               <div class="modal__head">
-                <h2 class="t-h2" id="pd-hd0123-t">휴일 삭제</h2>
+                <h2 class="t-h2" id="ph-hd0123-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
-                  <!-- 대상(회색 상자) + 빨간 안내 상자 — 앱 확인창과 같다(2026-10-30). 버튼은 그대로 -->
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="mono">2026-09-14 09:15</td><td class="mono">hghr</td><td>설명</td><td>오후 단축 운영</td><td>오후 2시 이후 단축 운영 · 오전만 영업</td></tr>
+                      <tr><td class="mono">2026-09-11 18:02</td><td class="mono">hghr</td><td>휴일명</td><td>오후 휴무</td><td>오후 휴무(단축 운영)</td></tr>
+                      <tr><td class="mono">2026-09-10 13:20</td><td class="mono">hghr</td><td>등록</td><td class="nil"></td><td>오후 휴무 · 온기식당 광화문점 · 하루 2026-10-01</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
+            </div>
+          </div>
+          <div class="modal" id="pop-del-hd0123" hidden role="dialog" aria-modal="true" aria-labelledby="pd-hd0123-t">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="pd-hd0123-t">휴일을 삭제하시겠습니까?</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div class="stack--lg" style="display: flex; flex-direction: column">
                   <dl class="kv" style="margin: 0; padding: 12px 14px; background: var(--canvas-soft); border: 1px solid var(--hairline); border-radius: var(--r-xs)">
                     <dt>휴일명</dt><dd>오후 휴무(단축 운영)</dd>
                   </dl>
@@ -822,35 +728,107 @@
                   </div>
                   <div class="inline" style="justify-content: flex-end">
                     <button class="btn btn--ghost" type="button" data-close>취소</button>
-                    <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 삭제 실패 결과 보기">실패로 보기</button>
                     <a class="btn btn--primary" href="holidays.html">삭제</a>
-                  </div>
-                </div>
-                <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">
-                  <div class="band band--risk">
-                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-                    <div class="band__body">
-                      <div class="band__title">휴일을 삭제하지 못했습니다</div>
-                      <p class="band__desc">휴일 정보는 전과 같이 남아 있습니다. 잠시 후 다시 시도해 주세요.</p>
-                    </div>
-                  </div>
-                  <div class="inline" style="justify-content: flex-end">
-                    <button class="btn btn--ghost" type="button" data-close>닫기</button>
-                    <button class="btn btn--primary" type="button" data-step-to="ask">다시 시도</button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="modal" id="pop-del-created" hidden role="dialog" aria-modal="true" aria-labelledby="pd-created-t">
-            <div class="modal__box">
+          <div class="modal" id="pop-hist-hd0101" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0101-t">
+            <div class="modal__box modal__box--wide">
               <div class="modal__head">
-                <h2 class="t-h2" id="pd-created-t">휴일 삭제</h2>
+                <h2 class="t-h2" id="ph-hd0101-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
-                  <!-- 대상(회색 상자) + 빨간 안내 상자 — 앱 확인창과 같다(2026-10-30). 버튼은 그대로 -->
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="mono">2026-09-01 09:40</td><td class="mono">hgops</td><td>등록</td><td class="nil"></td><td>정전 점검 휴무 · 모리커피 서초점 · 하루 2026-09-10</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
+            </div>
+          </div>
+          <div class="modal" id="pop-hist-hd0116" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0116-t">
+            <div class="modal__box modal__box--wide">
+              <div class="modal__head">
+                <h2 class="t-h2" id="ph-hd0116-t">변경이력</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="mono">2026-09-01 10:00</td><td class="mono">hangang01</td><td>등록</td><td class="nil"></td><td>매장 리뉴얼 휴무 · 전체 점포 · 기간 2026-09-16 ~ 2026-09-25</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
+            </div>
+          </div>
+          <div class="modal" id="pop-end-hd0116" hidden role="dialog" aria-modal="true" aria-labelledby="pe-hd0116-t">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="pe-hd0116-t">휴일을 강제 종료하시겠습니까?</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div class="stack--lg" style="display: flex; flex-direction: column">
+                  <dl class="kv" style="margin: 0; padding: 12px 14px; background: var(--canvas-soft); border: 1px solid var(--hairline); border-radius: var(--r-xs)">
+                    <dt>휴일명</dt><dd>매장 리뉴얼 휴무</dd>
+                    <dt>종료일</dt><dd><span class="mono">2026-09-20</span>(어제)</dd>
+                  </dl>
+                  <div class="band band--risk" role="alert">
+                    <div class="band__body"><div class="band__title" style="font-weight: 400">오늘부터 이 휴일은 적용되지 않으며, 강제 종료는 되돌릴 수 없습니다.</div></div>
+                  </div>
+                  <!-- 끝나면 토스트 「강제 종료했습니다. 어제 날짜로 끝났습니다.」와 함께 새 값으로 다시 그린다 -->
+                  <div class="inline" style="justify-content: flex-end">
+                    <button class="btn btn--ghost" type="button" data-close>취소</button>
+                    <button class="btn btn--primary" type="button" data-close>강제 종료</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal" id="pop-hist-created" hidden role="dialog" aria-modal="true" aria-labelledby="ph-created-t">
+            <div class="modal__box modal__box--wide">
+              <div class="modal__head">
+                <h2 class="t-h2" id="ph-created-t">변경이력</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="mono">2026-09-21 10:40</td><td class="mono">hangang01</td><td>등록</td><td class="nil"></td><td>재고 정리 휴무 · 모리커피 성수점 · 온기식당 판교점 · 모리커피 연남점 · 하루 2026-10-15</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
+            </div>
+          </div>
+          <div class="modal" id="pop-del-created" hidden role="dialog" aria-modal="true" aria-labelledby="pd-created-t">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="pd-created-t">휴일을 삭제하시겠습니까?</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div class="stack--lg" style="display: flex; flex-direction: column">
                   <dl class="kv" style="margin: 0; padding: 12px 14px; background: var(--canvas-soft); border: 1px solid var(--hairline); border-radius: var(--r-xs)">
                     <dt>휴일명</dt><dd>재고 정리 휴무</dd>
                   </dl>
@@ -859,71 +837,42 @@
                   </div>
                   <div class="inline" style="justify-content: flex-end">
                     <button class="btn btn--ghost" type="button" data-close>취소</button>
-                    <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 삭제 실패 결과 보기">실패로 보기</button>
                     <a class="btn btn--primary" href="holidays.html">삭제</a>
-                  </div>
-                </div>
-                <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">
-                  <div class="band band--risk">
-                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-                    <div class="band__body">
-                      <div class="band__title">휴일을 삭제하지 못했습니다</div>
-                      <p class="band__desc">휴일 정보는 전과 같이 남아 있습니다. 잠시 후 다시 시도해 주세요.</p>
-                    </div>
-                  </div>
-                  <div class="inline" style="justify-content: flex-end">
-                    <button class="btn btn--ghost" type="button" data-close>닫기</button>
-                    <button class="btn btn--primary" type="button" data-step-to="ask">다시 시도</button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="modal" id="pop-del-created-part" hidden role="dialog" aria-modal="true" aria-labelledby="pd-created-part-t">
-            <div class="modal__box">
+          <div class="modal" id="pop-hist-stale" hidden role="dialog" aria-modal="true" aria-labelledby="ph-stale-t">
+            <div class="modal__box modal__box--wide">
               <div class="modal__head">
-                <h2 class="t-h2" id="pd-created-part-t">내 점포를 휴일에서 빼기</h2>
+                <h2 class="t-h2" id="ph-stale-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
-                  <dl class="kv">
-                    <dt>휴일명</dt><dd>재고 정리 휴무</dd>
-                    <dt>날짜</dt><dd><span class="mono">2026-10-15</span> <span class="subtle">(목)</span></dd>
-                    <dt>뺄 점포</dt><dd><span data-show-role="bp">모리커피 성수점 · 온기식당 판교점</span><span data-show-role="fm" hidden>모리커피 연남점</span></dd>
-                    <dt>남는 점포</dt><dd><span data-show-role="bp">모리커피 연남점</span><span data-show-role="fm" hidden>모리커피 성수점 · 온기식당 판교점</span></dd>
-                  </dl>
-                  <div class="inline" style="justify-content: flex-end">
-                    <button class="btn btn--ghost" type="button" data-close>취소</button>
-                    <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 삭제 실패 결과 보기">실패로 보기</button>
-                    <a class="btn btn--primary" href="holidays.html">삭제</a>
-                  </div>
-                </div>
-                <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">
-                  <div class="band band--risk">
-                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-                    <div class="band__body">
-                      <div class="band__title">휴일을 삭제하지 못했습니다</div>
-                      <p class="band__desc">휴일 정보는 전과 같이 남아 있습니다. 잠시 후 다시 시도해 주세요.</p>
-                    </div>
-                  </div>
-                  <div class="inline" style="justify-content: flex-end">
-                    <button class="btn btn--ghost" type="button" data-close>닫기</button>
-                    <button class="btn btn--primary" type="button" data-step-to="ask">다시 시도</button>
-                  </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="mono">2026-09-17 15:30</td><td class="mono">hangang01</td><td>설명</td><td>㈜한강상회 창립 기념 전 점포 휴무</td><td>㈜한강상회 창립 기념 전 점포 휴무 · 전날 마감 때 공지</td></tr>
+                      <tr><td class="mono">2026-03-02 10:00</td><td class="mono">hangang01</td><td>등록</td><td class="nil"></td><td>창립기념일 · 전체 점포 · 매년 반복 · 시작 2026-10-01 · 종료일 없음</td></tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
+              <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
             </div>
           </div>
           <div class="modal" id="pop-del-stale" hidden role="dialog" aria-modal="true" aria-labelledby="pd-stale-t">
             <div class="modal__box">
               <div class="modal__head">
-                <h2 class="t-h2" id="pd-stale-t">휴일 삭제</h2>
+                <h2 class="t-h2" id="pd-stale-t">휴일을 삭제하시겠습니까?</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
-                  <!-- 대상(회색 상자) + 빨간 안내 상자 — 앱 확인창과 같다(2026-10-30). 버튼은 그대로 -->
+                <div class="stack--lg" style="display: flex; flex-direction: column">
                   <dl class="kv" style="margin: 0; padding: 12px 14px; background: var(--canvas-soft); border: 1px solid var(--hairline); border-radius: var(--r-xs)">
                     <dt>휴일명</dt><dd>창립기념일</dd>
                   </dl>
@@ -932,21 +881,7 @@
                   </div>
                   <div class="inline" style="justify-content: flex-end">
                     <button class="btn btn--ghost" type="button" data-close>취소</button>
-                    <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 삭제 실패 결과 보기">실패로 보기</button>
                     <a class="btn btn--primary" href="holidays.html?state=deleted">삭제</a>
-                  </div>
-                </div>
-                <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">
-                  <div class="band band--risk">
-                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-                    <div class="band__body">
-                      <div class="band__title">휴일을 삭제하지 못했습니다</div>
-                      <p class="band__desc">휴일 정보는 전과 같이 남아 있습니다. 잠시 후 다시 시도해 주세요.</p>
-                    </div>
-                  </div>
-                  <div class="inline" style="justify-content: flex-end">
-                    <button class="btn btn--ghost" type="button" data-close>닫기</button>
-                    <button class="btn btn--primary" type="button" data-step-to="ask">다시 시도</button>
                   </div>
                 </div>
               </div>

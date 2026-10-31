@@ -18,25 +18,25 @@
     <!-- BP 휴일 관리 (캘린더 · 목록) · /settings/holidays · S-YAFRYZ (F-YQTLQE BP 휴일 관리) · 1팀
          보는 사람의 소속 BP(㈜한강상회)의 전체 점포 휴일과, 대상 점포 중 한 곳이라도 접근 범위 안인 일부 점포 휴일만 보인다. 다른 BP·범위 밖 점포만의 휴일은 아예 나오지 않는다.
          플랫폼 사용자(플랫폼 마스터·관리자)는 서비스 바로가기 「웨일ERP」에서 BP 를 골라 새 탭으로 열면 그 BP 의 휴일을 BP 마스터와 같은 범위로 조회·등록·수정·삭제·예외 점포 지정 한다(메뉴 권한 필요). 목업 권한 ‘플랫폼 관리자’는 ㈜한강상회를 고른 상태다.
-         들어오면 이번 달(2026년 9월) 캘린더다. 맨 위는 캘린더 · 목록 탭이고 그 줄 오른쪽에 [변경이력] · [등록]이 선다. 달 이동은 캘린더 · 목록 제목 자리의 한 줄이다 — [2026년 9월 ●](누르면 연 · 월 고르기 판) ‹ › [오늘 · 2026-09-21(월)], 캘린더는 이어서 「공식 휴일 숨기기」, 오른쪽에 범례 BP 휴일 · 공식 휴일(2026-10-30 앱과 같다 — 전엔 탭 위 조작 줄에 오늘 · 이전달 · 다음달 · 연도 · 월 선택이 따로 있고 캘린더 제목 「2026년 9월」이 또 있었다).
+         들어오면 이번 달(2026년 9월) 캘린더다. 맨 위는 캘린더 · 목록 탭이고 그 줄 오른쪽에 [변경이력]이 선다. [등록]은 페이지 제목 줄 오른쪽이다(코드대로, 2026-10-30 — 1팀 목록과 같은 자리). 달 이동은 캘린더 · 목록 제목 자리의 한 줄이다 — [2026년 9월 ●](누르면 연 · 월 고르기 판) ‹ › [오늘 · 2026-09-21(월)], 캘린더는 이어서 「공식 휴일 숨기기」, 오른쪽에 범례 BP 휴일 · 공식 휴일(2026-10-30 앱과 같다 — 전엔 탭 위 조작 줄에 오늘 · 이전달 · 다음달 · 연도 · 월 선택이 따로 있고 캘린더 제목 「2026년 9월」이 또 있었다).
          조회 기간 검색 조건은 없다. 기간은 달 이동 줄에서 고른 달 하나이고, 캘린더와 목록 모두 월 단위다.
          연도 선택은 플랫폼 휴일 관리와 같이 2000년부터 2100년까지다 — 공식 휴일이 있는 범위와 같다 (CONFIG-8 · 확정 2026-09-30).
-         목록은 플랫폼 휴일 관리(목록 = 고른 연도 한 해)와 달리 고른 달의 BP 휴일만 싣는다 — 그래서 목록 보기에서도 같은 달 이동 줄이 선다.
+         목록은 플랫폼 휴일 관리(목록 = 고른 연도 한 해)와 달리 고른 달의 BP 휴일만 싣는다 — 그래서 목록 보기에서도 같은 달 이동 줄과 ‘BP 휴일 N건’이 선다. 그 달 줄을 모두 보이고 쪽 이동은 없다. 빈 달은 ‘이 달에 등록된 BP 휴일이 없습니다.’(코드대로, 2026-10-30).
          검색 조건(필터)은 두지 않는다(2026-10-07). 두 보기 모두 보는 사람의 접근 범위 안 점포 휴일만 싣는다.
          휴일은 규칙 한 건(하루 · 기간 · 반복)이고, 캘린더와 목록의 날짜는 고른 달 안에서 규칙으로 계산한다. 목록은 계산한 날짜마다 한 줄이다.
-         목록 열은 날짜(요일, 가운데) · 휴일명 · 휴일유형 · 적용범위(꼬리표만) · 대상점포 · 예외점포 · 최종수정이다(2026-10-30 앱과 같다 — 전엔 「적용 대상」 한 칸). 대상점포는 일부 점포일 때 점포명(여러 개면 ‘첫 점포명 외 N개’, 보는 사람 범위 안 점포만 센다), 예외점포는 전체 점포일 때 ‘N개’이고 해당 없는 칸은 ‘-’다. 최종수정은 ‘일시 · 사람’(사람은 회색).
-         휴일 유형은 하루 · 기간(‘n일 중 m일째’) · 반복 요약(매주 · 월요일, 매년 · 10월 1일 등)이다. 표본에는 예외 점포 · 여러 점포 · 기간 휴일이 없다.
+         목록 열은 날짜(요일, 가운데) · 휴일명 · 휴일유형 · 적용범위(꼬리표만) · 대상점포 · 예외점포 · 최종수정이다(2026-10-30 앱과 같다 — 전엔 「적용 대상」 한 칸). 대상점포는 일부 점포일 때 점포명(여러 개면 ‘첫 점포명 외 N개’ — 그날 적용되는 점포를 맡은 범위와 관계없이 모두 센다. 고치는 것만 맡은 점포로 제한한다, 2026-10-30 재영), 예외점포는 전체 점포일 때 ‘N개’이고 해당 없는 칸은 ‘-’다. 최종수정은 ‘일시 · 사람’(사람은 회색).
+         휴일유형은 앱 표기 그대로 짧게 하루 · 기간 · 매일 반복 · 매주 반복 · 매월 반복 · 매년 반복이다(2026-10-30 재영 — 전엔 기간 ‘n일 중 m일째’ · 반복 요약 ‘매주 · 월요일’). 표본에는 예외 점포 · 여러 점포 · 기간 휴일이 없다.
          공식 휴일은 목록의 줄이 아니다 — 캘린더에서 날짜를 빨갛게 칠하고 휴일명을 적는 표시용이며, 플랫폼 공식 휴일 테이블(system/holidays.html 과 같은 값)에서 읽는다. BP·점포 휴일과 별개다.
          일부 점포 휴일은 한 휴일에 여러 점포를 묶을 수 있고, 전체 점포 휴일은 예외 점포를 둘 수 있다 — 예외 점포는 그 휴일의 모든 날짜에서 빠진다.
-         휴일 등록 · 상세 · 수정은 화면을 옮기지 않고 팝업으로 연다(app.js data-pagepop — 각 화면 파일을 팝업 안에 싣는다). 상세에서 수정으로, 수정 저장 뒤 상세로 가는 흐름은 팝업 안에서 이어진다.
-         캘린더는 BP 휴일이 있는 날짜에 건수 배지를 단다. 날짜를 누르면 오른쪽에 그날의 BP 휴일을 ‘휴일명 - 적용 대상명’으로 모두 보인다 — 전체 점포 휴일의 대상명은 BP 상호, 일부 점포 휴일은 점포명(여러 곳이면 보는 사람 범위 안 점포명).
+         휴일 등록 · 상세 · 수정은 화면을 옮기지 않고 연다 — 앱은 목록 위로 밀려 나오는 슬라이드 패널, 목업은 팝업이다(app.js data-pagepop — 각 화면 파일을 팝업 안에 싣는다). 상세에서 수정으로, 수정 저장 뒤 상세로 가는 흐름은 팝업 안에서 이어진다.
+         캘린더는 BP 휴일이 있는 날짜 칸에 휴일 이름을 파란 칸으로 적는다. 날짜를 누르면 오른쪽에 그날의 BP 휴일을 적용 범위 꼬리표 · 휴일명 / ‘휴일유형 · 대상’으로 모두 보인다 — 대상은 전체 점포 휴일이면 BP 상호(예외가 있으면 ‘ · 예외 N개’), 일부 점포 휴일은 점포명(여러 곳이면 ‘첫 점포명 외 N개’, 목록과 같이 그날 적용되는 점포를 모두 센다). 휴일 번호는 없고, 그날 휴일이 없으면 ‘등록된 휴일이 없습니다.’(코드대로, 2026-10-30).
          10-01 은 전체 점포 휴일(창립기념일)과 일부 점포 휴일(광화문점 오후 휴무)이 겹치는 표본이다. 둘 다 보이고 광화문점 업무에는 일부 점포 휴일이 우선한다.
          목록의 줄이나 캘린더 우측 항목을 누르면 상세로 간다. 수정·삭제는 상세에서만 한다 — 목록에는 수정·삭제 실행 항목이 없다(사용자 확정 규칙).
-         지난 날짜 휴일은 흐린 줄 + ‘지난 날짜’ 꼬리표로 수정·삭제할 수 없음을 미리 알린다. 전체 점포 휴일을 바꿀 수 없는 사람에게는 ‘조회만’ 꼬리표를 단다.
-         휴일 등록 버튼은 등록 권한이 있는 사람(BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 사용자)에게만 보인다. 조회만 권한은 버튼이 없다.
-         [변경이력]은 팝업이다 — 고른 기간의 등록·수정·삭제를 날짜별로 묶고, 삭제된 휴일은 여기서만 보인다.
+         지난 날짜 휴일은 흐린 글자로만 보인다 — ‘지난 날짜’ · ‘조회만’ 꼬리표는 없다(앱대로, 2026-10-30 재영). 고칠 수 있는지는 상세의 버튼으로 갈린다.
+         제목 줄의 [등록]은 등록 권한이 있는 사람(BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 사용자)에게만 보인다. 조회만 권한은 버튼이 없다.
+         [변경이력]은 팝업이다 — 고른 기간의 이력을 표(변경일시 · 변경자 · 휴일명 · 항목 · 변경 전 · 변경 후)로 보이고 아래에 쪽 이동을 둔다. 표 위 안내문은 없다. 삭제된 휴일은 여기서만 보인다(코드대로, 2026-10-30).
          폐점한 점포는 폐점일 다음 날부터 적용 대상에서 빠지고, 그 점포만 대상으로 하던 휴일은 목록·캘린더에서 감춘다 — 표본 점포는 모두 운영 중이라 감춰진 줄이 없다.
-         반복 휴일의 다른 날짜(HD-0114 의 다른 월요일)는 표본 상세(고른 날짜 2026-09-28)로 간다. HD 번호는 목업 표본이다.
+         반복 휴일의 다른 날짜(HD-0114 의 다른 월요일)도 같은 휴일 상세로 간다. HD 번호는 목업 표본이다(앱 화면에는 휴일 번호가 없다).
          2026년 8월은 표본 BP 휴일이 없는 달이다(정기휴무 HD-0114 는 09-21 부터) — 목록의 빈 달 표본이다. 8월 캘린더는 그리지 않았다.
          목업 권한의 메뉴 권한은 BP 휴일 관리 조회·등록·수정·삭제를 모두 가진 것으로 가정한다(조회만 제외). 조회만은 전체 점포 범위로 둔다.
 
@@ -44,7 +44,7 @@
          - 수정·삭제는 상세 팝업에서만 한다. 목록 · 캘린더 우측 목록의 줄에는 실행 항목이 없다.
          - [변경이력]은 이력이 생긴 일시로 찾고 기본 기간은 이달 1일~오늘이다.
          - 목록과 우측 목록은 날짜순이고, 같은 날짜에 여러 건이면 등록 순서다.
-         - 보는 동안 다른 사람이 바꾼 내용은 달 이동 · 검색 · 팝업을 닫을 때 다시 조회하며 반영한다. 실시간 감지는 없다.
+         - 보는 동안 다른 사람이 바꾼 내용은 달 이동 · 패널을 닫을 때 다시 조회하며 반영한다. 실시간 감지는 없다.
          - 폐점 점포만 대상인 휴일은 폐점일 다음 날부터만 감춘다 — 폐점일까지의 날짜는 계속 보인다.
          - 조회 권한이 없으면 전 메뉴 공통 규칙(PL-AMTMVC)을 따른다 — 메뉴를 숨기고, 주소로 들어오면 권한 없음 안내 화면을 보인다.
          - 캘린더 앞뒤 달 칸은 비운다 (플랫폼 휴일 캘린더와 같다). -->
@@ -56,6 +56,8 @@
           <span class="badge badge--warn">1팀 작업</span>
           <div class="titlebar__end">
             <span class="filters__count mono">S-YAFRYZ · /settings/holidays</span>
+            <!-- [등록]은 페이지 제목 줄 오른쪽 — 1팀 목록과 같은 자리(코드대로, 2026-10-30 — 전엔 탭 줄 오른쪽) -->
+            <a class="btn btn--primary btn--sm" href="holidays-new.html" data-pagepop data-show-role="bm pf ba bp fm">등록</a>
             <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./config-holidays.screen-def.html', 'screenDef', 'width=1620,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
           </div>
         </div>
@@ -101,55 +103,47 @@
             </div>
           </section>
 
-          <div class="band band--info" data-show="deleted deletedlist" hidden>
+          <!-- 삭제 직후 — 실제로는 토스트 「삭제되었습니다.」다. 목업은 띠로 대신 그렸다. 휴일을 나누지 않고 휴일 전체를 지운다(코드대로, 2026-10-30) -->
+          <div class="band band--ok" data-show="deleted deletedlist" hidden>
             <span class="band__ic" data-icon="check" data-icon-size="20"></span>
-            <div class="band__body">
-              <div class="band__title">창립기념일을 삭제했습니다 · 2026-10-01 부터 이후 모두</div>
-              <!-- 실제로는 완료 토스트다 — 목업은 띠로 대신 그렸다. 달 · 보기 · 검색어 · 고른 날짜는 팝업을 열기 전 그대로(10월)다. -->
-              <p class="band__desc">고른 날짜가 이 반복의 첫 날짜라 남는 날짜가 없어 휴일 자체를 삭제했습니다. 목록·캘린더와 운영 적용 대상에서 빠졌고, 삭제 기록은 변경 이력 보기에 남습니다.</p>
-            </div>
+            <div class="band__body"><div class="band__title">삭제되었습니다.</div></div>
           </div>
 
 
-          <!-- 맨 위 줄 — 캘린더 · 목록 탭, 그 줄 오른쪽 끝에 [변경이력] · [등록] (앱과 같다, 2026-10-30). 달 이동은 캘린더 · 목록 제목 자리로 옮겼다 — 전엔 이 줄에 오늘 · 이전달 · 다음달 · 연도 · 월 선택이 따로 있었다 -->
-          <section class="panel" data-show="base day0910 day0923 day0925 day0929 day1001 named empty deleted list listoct listaug namedlist emptylist deletedlist">
+          <!-- 맨 위 줄 — 캘린더 · 목록 탭, 그 줄 오른쪽 끝에 [변경이력](코드대로, 2026-10-30 — [등록]은 페이지 제목 줄). 달 이동은 캘린더 · 목록 제목 자리로 옮겼다 — 전엔 이 줄에 오늘 · 이전달 · 다음달 · 연도 · 월 선택이 따로 있었다 -->
+          <section class="panel" data-show="base day0910 day0923 day0925 day0929 day1001 deleted list listoct listaug deletedlist">
             <div class="panel__head" style="flex-wrap: wrap; border-bottom: 0; align-items: flex-end">
-              <nav class="tabs" aria-label="보기 방식" style="flex: 1" data-show="base day0910 day0923 day0925 day0929 day1001 named empty deleted">
+              <nav class="tabs" aria-label="보기 방식" style="flex: 1" data-show="base day0910 day0923 day0925 day0929 day1001 deleted">
                 <button type="button" aria-current="true">캘린더</button>
                 <button type="button" data-state-go="list" data-show="base day0910 day0923 day0925 day0929">목록</button>
                 <button type="button" data-state-go="listoct" data-show="day1001" hidden>목록</button>
-                <button type="button" data-state-go="namedlist" data-show="named" hidden>목록</button>
-                <button type="button" data-state-go="emptylist" data-show="empty" hidden>목록</button>
                 <button type="button" data-state-go="deletedlist" data-show="deleted" hidden>목록</button>
               </nav>
-              <nav class="tabs" aria-label="보기 방식" style="flex: 1" data-show="list listoct listaug namedlist emptylist deletedlist" hidden>
+              <nav class="tabs" aria-label="보기 방식" style="flex: 1" data-show="list listoct listaug deletedlist" hidden>
                 <button type="button" data-state-go="base" data-show="list" hidden>캘린더</button>
                 <button type="button" data-state-go="day1001" data-show="listoct" hidden>캘린더</button>
                 <button type="button" data-show="listaug" hidden>캘린더</button>
-                <button type="button" data-state-go="named" data-show="namedlist" hidden>캘린더</button>
-                <button type="button" data-state-go="empty" data-show="emptylist" hidden>캘린더</button>
                 <button type="button" data-state-go="deleted" data-show="deletedlist" hidden>캘린더</button>
                 <button type="button" aria-current="true">목록</button>
               </nav>
               <div class="panel__end">
                 <button class="btn btn--secondary btn--sm" type="button" data-open="pop-hist"><span data-icon="clock" data-icon-size="14"></span>변경이력</button>
-                <a class="btn btn--primary btn--sm" href="holidays-new.html" data-pagepop data-show-role="bm pf ba bp fm"><span data-icon="plus" data-icon-size="14"></span>등록</a>
               </div>
             </div>
           </section>
 
           <!-- 캘린더 보기 — 월간 캘린더 + 고른 날짜의 BP 휴일 -->
-          <div class="grid grid--8-4" style="align-items: start" data-show="base day0910 day0923 day0925 day0929 day1001 named empty deleted">
+          <div class="grid grid--8-4" style="align-items: start" data-show="base day0910 day0923 day0925 day0929 day1001 deleted">
             <section class="panel">
               <div class="panel__head" style="flex-wrap: wrap">
                 <!-- 제목 자리에 달 이동 — [2026년 9월 ●](누르면 연 · 월 고르기 판 · 목업은 판을 그리지 않았다) ‹ › [오늘 · 날짜]. 「공식 휴일 숨기기」는 조작이라 범례와 떼어 이 줄에 둔다.
                      범례는 BP 휴일 · 공식 휴일 둘 — 「선택한 날짜 · 오늘」 범례는 뺐다(오늘 날짜는 [오늘] 버튼에 있다, 앱과 같다 2026-10-30) -->
                 <div class="inline" role="group" aria-label="달 이동" style="gap: 6px; flex-wrap: nowrap">
-                  <button type="button" aria-label="연 · 월 고르기" data-show="base day0910 day0923 day0925 day0929 named empty" style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 6px 0 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); font: inherit; font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer">2026년 9월<span aria-hidden="true" style="display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--muted-tert)"><svg viewBox="0 0 10 6" width="10" height="6" fill="none"><path d="M1 1L5 5L9 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg></span></button>
+                  <button type="button" aria-label="연 · 월 고르기" data-show="base day0910 day0923 day0925 day0929" style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 6px 0 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); font: inherit; font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer">2026년 9월<span aria-hidden="true" style="display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--muted-tert)"><svg viewBox="0 0 10 6" width="10" height="6" fill="none"><path d="M1 1L5 5L9 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg></span></button>
                   <button type="button" aria-label="연 · 월 고르기" data-show="day1001 deleted" hidden style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 6px 0 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); font: inherit; font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer">2026년 10월<span aria-hidden="true" style="display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--muted-tert)"><svg viewBox="0 0 10 6" width="10" height="6" fill="none"><path d="M1 1L5 5L9 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg></span></button>
-                  <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" data-show="base day0910 day0923 day0925 day0929 named empty" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
+                  <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" data-show="base day0910 day0923 day0925 day0929" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
                   <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" data-state-go="base" data-show="day1001 deleted" hidden style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
-                  <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="day1001" data-show="base day0910 day0923 day0925 day0929 named empty" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
+                  <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="day1001" data-show="base day0910 day0923 day0925 day0929" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
                   <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-show="day1001 deleted" hidden style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
                   <button class="btn btn--secondary btn--sm" type="button" data-state-go="base">오늘<span class="mono" style="font-size: 11px; font-weight: 400; color: var(--muted-tert)">· 2026-09-21(월)</span></button>
                 </div>
@@ -429,114 +423,6 @@
                 </tbody>
               </table>
             </div>
-            <div class="panel__body" data-show="named" hidden>
-              <table style="width: 100%; border-collapse: collapse; table-layout: fixed" aria-label="2026년 9월 BP 휴일 캘린더">
-                <thead>
-                  <tr><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">일</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">월</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">화</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">수</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">목</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">금</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">토</th></tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">1</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">2</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">3</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">4</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">5</span></div></td>
-                  </tr>
-                  <tr>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">6</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">7</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">8</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">9</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">10</span><span class="cal-hol" title="정전 점검 휴무" data-show-role="bm pf ba bp view" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">정전 점검 휴무</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">11</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">12</span></div></td>
-                  </tr>
-                  <tr>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">13</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">14</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">15</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">16</span><span class="cal-hol" title="재고 실사 휴무" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">재고 실사 휴무</span><span class="cal-hol" title="매장 청소 휴무" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">매장 청소 휴무</span><span class="cal-hol" title="직원 교육" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">직원 교육</span><span class="cal-hol" title="정기 소독" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">정기 소독</span><span class="cal-hol" title="본사 전 직원 워크숍 및 매장 리뉴얼 공사로 인한 전 점포 임시 휴무" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">본사 전 직원 워크숍 및 매장 리뉴얼 공사로 인한 전 점포 임시 휴무</span><span class="cal-hol" title="설비 점검 휴무" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">설비 점검 휴무</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">17</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">18</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">19</span></div></td>
-                  </tr>
-                  <tr>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">20</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); box-shadow: inset 0 0 0 2px var(--ink);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: var(--r-pill); background: var(--ink); color: var(--on-dark); font-weight: 600; font-size: 12.5px" aria-label="오늘">21</span><span class="cal-hol" title="정기휴무" data-show-role="bm pf ba bp view" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">정기휴무</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">22</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">23</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); " data-official><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono off-num" style="color: var(--risk-text); font-weight: 600; font-size: 13px">24</span><span class="off-name" style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); " data-official><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono off-num" style="color: var(--risk-text); font-weight: 600; font-size: 13px">25</span><span class="off-name" style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span><span class="cal-hol" title="추석 당일 휴무" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">추석 당일 휴무</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); " data-official><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono off-num" style="color: var(--risk-text); font-weight: 600; font-size: 13px">26</span><span class="off-name" style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
-                  </tr>
-                  <tr>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">27</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); " data-official><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono off-num" style="color: var(--risk-text); font-weight: 600; font-size: 13px">28</span><span class="off-name" style="font-size: 12px; font-weight: 500; color: var(--risk-text)">대체공휴일</span><span class="cal-hol" title="정기휴무" data-show-role="bm pf ba bp view" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">정기휴무</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">29</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">30</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="panel__body" data-show="empty" hidden>
-              <table style="width: 100%; border-collapse: collapse; table-layout: fixed" aria-label="2026년 9월 BP 휴일 캘린더">
-                <thead>
-                  <tr><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">일</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">월</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">화</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">수</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">목</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">금</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">토</th></tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">1</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">2</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">3</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">4</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">5</span></div></td>
-                  </tr>
-                  <tr>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">6</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">7</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">8</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">9</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">10</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">11</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">12</span></div></td>
-                  </tr>
-                  <tr>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">13</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">14</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">15</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">16</span><span class="cal-hol" title="재고 실사 휴무" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">재고 실사 휴무</span><span class="cal-hol" title="매장 청소 휴무" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">매장 청소 휴무</span><span class="cal-hol" title="직원 교육" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">직원 교육</span><span class="cal-hol" title="정기 소독" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">정기 소독</span><span class="cal-hol" title="본사 전 직원 워크숍 및 매장 리뉴얼 공사로 인한 전 점포 임시 휴무" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">본사 전 직원 워크숍 및 매장 리뉴얼 공사로 인한 전 점포 임시 휴무</span><span class="cal-hol" title="설비 점검 휴무" style="display: block; align-self: stretch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 12px; font-weight: 500">설비 점검 휴무</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">17</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">18</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">19</span></div></td>
-                  </tr>
-                  <tr>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">20</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); box-shadow: inset 0 0 0 2px var(--ink);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: var(--r-pill); background: var(--ink); color: var(--on-dark); font-weight: 600; font-size: 12.5px" aria-label="오늘">21</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">22</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">23</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); " data-official><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono off-num" style="color: var(--risk-text); font-weight: 600; font-size: 13px">24</span><span class="off-name" style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); " data-official><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono off-num" style="color: var(--risk-text); font-weight: 600; font-size: 13px">25</span><span class="off-name" style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); " data-official><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono off-num" style="color: var(--risk-text); font-weight: 600; font-size: 13px">26</span><span class="off-name" style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
-                  </tr>
-                  <tr>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">27</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); " data-official><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono off-num" style="color: var(--risk-text); font-weight: 600; font-size: 13px">28</span><span class="off-name" style="font-size: 12px; font-weight: 500; color: var(--risk-text)">대체공휴일</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">29</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">30</span></div></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
-                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
             <div class="panel__body" data-show="day1001" hidden>
               <table style="width: 100%; border-collapse: collapse; table-layout: fixed" aria-label="2026년 10월 BP 휴일 캘린더">
                 <thead>
@@ -655,15 +541,15 @@
                 <a class="row" href="holidays-detail.html?state=hd0114" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
                   <span class="badge badge--quiet">일부 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
-                    <b style="font-size: 13px; font-weight: 600">정기휴무 - 온기식당 판교점</b>
-                    <span class="subtle" style="font-size: 12px">매주 반복 · HD-0114 <span class="tag" data-show-role="view" hidden>조회만</span></span>
+                    <b style="font-size: 13px; font-weight: 600">정기휴무</b>
+                    <span class="subtle" style="font-size: 12px">매주 반복 · 온기식당 판교점</span>
                   </span>
                   <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
                 </a>
               </div>
               <div class="empty" data-show-role="fm" hidden>
                 <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
-                <p>이 날짜에 등록된 BP 휴일이 없습니다.</p>
+                <p>등록된 휴일이 없습니다.</p>
               </div>
             </section>
             <section class="panel" style="align-self: start" data-show="day0910" hidden>
@@ -675,15 +561,15 @@
                 <a class="row" href="holidays-detail.html?state=hd0101" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
                   <span class="badge badge--quiet">일부 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
-                    <b style="font-size: 13px; font-weight: 600">정전 점검 휴무 - 모리커피 서초점</b>
-                    <span class="subtle" style="font-size: 12px">HD-0101 <span class="tag">지난 날짜 · 수정·삭제 불가</span></span>
+                    <b style="font-size: 13px; font-weight: 600">정전 점검 휴무</b>
+                    <span class="subtle" style="font-size: 12px">하루 · 모리커피 서초점</span>
                   </span>
                   <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
                 </a>
               </div>
               <div class="empty" data-show-role="fm" hidden>
                 <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
-                <p>이 날짜에 등록된 BP 휴일이 없습니다.</p>
+                <p>등록된 휴일이 없습니다.</p>
               </div>
             </section>
             <section class="panel" style="align-self: start" data-show="day0923" hidden>
@@ -693,7 +579,7 @@
               </div>
               <div class="empty">
                 <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
-                <p>이 날짜에 등록된 BP 휴일이 없습니다.</p>
+                <p>등록된 휴일이 없습니다.</p>
               </div>
             </section>
             <section class="panel" style="align-self: start" data-show="day0925" hidden>
@@ -701,15 +587,13 @@
                 <h2 class="t-h2">9월 25일 (금)</h2>
                 <span class="badge badge--quiet">1건</span>
               </div>
-              <div class="panel__body" style="padding-bottom: 0">
-                <p class="off-name" style="margin: 0; font-size: 12.5px; color: var(--risk-text)">공식 휴일 · 추석 — 날짜만 빨갛게 칠하고 아래 BP 휴일 목록에는 넣지 않습니다.</p>
-              </div>
+              <!-- 공식 휴일 안내 줄은 두지 않는다 — 공식 휴일은 캘린더의 빨간 날짜로만 보인다(코드대로, 2026-10-30) -->
               <div class="rows rows--hover">
                 <a class="row" href="holidays-detail.html?state=hd0120" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none">
                   <span class="badge badge--info">전체 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
-                    <b style="font-size: 13px; font-weight: 600">추석 당일 휴무 - ㈜한강상회</b>
-                    <span class="subtle" style="font-size: 12px">HD-0120 <span class="tag" data-show-role="bp fm view" hidden>조회만</span></span>
+                    <b style="font-size: 13px; font-weight: 600">추석 당일 휴무</b>
+                    <span class="subtle" style="font-size: 12px">하루 · ㈜한강상회</span>
                   </span>
                   <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
                 </a>
@@ -724,45 +608,15 @@
                 <a class="row" href="holidays-detail.html?state=hd0121" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba fm view">
                   <span class="badge badge--quiet">일부 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
-                    <b style="font-size: 13px; font-weight: 600">내부 공사 - 모리커피 연남점</b>
-                    <span class="subtle" style="font-size: 12px">HD-0121 <span class="tag" data-show-role="view" hidden>조회만</span></span>
+                    <b style="font-size: 13px; font-weight: 600">내부 공사</b>
+                    <span class="subtle" style="font-size: 12px">하루 · 모리커피 연남점</span>
                   </span>
                   <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
                 </a>
               </div>
               <div class="empty" data-show-role="bp" hidden>
                 <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
-                <p>이 날짜에 등록된 BP 휴일이 없습니다.</p>
-              </div>
-            </section>
-            <section class="panel" style="align-self: start" data-show="named" hidden>
-              <div class="panel__head">
-                <h2 class="t-h2">9월 21일 (월)</h2>
-                <span class="badge badge--quiet" data-show-role="fm" hidden>0건</span><span class="badge badge--quiet" data-show-role="bm pf ba bp view">1건</span>
-              </div>
-              <div class="rows rows--hover" data-show-role="bm pf ba bp view">
-                <a class="row" href="holidays-detail.html?state=hd0114" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
-                  <span class="badge badge--quiet">일부 점포</span>
-                  <span class="stack" style="gap: 3px; min-width: 0">
-                    <b style="font-size: 13px; font-weight: 600">정기휴무 - 온기식당 판교점</b>
-                    <span class="subtle" style="font-size: 12px">매주 반복 · HD-0114 <span class="tag" data-show-role="view" hidden>조회만</span></span>
-                  </span>
-                  <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
-                </a>
-              </div>
-              <div class="empty" data-show-role="fm" hidden>
-                <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
-                <p>이 날짜에 등록된 BP 휴일이 없습니다.</p>
-              </div>
-            </section>
-            <section class="panel" style="align-self: start" data-show="empty" hidden>
-              <div class="panel__head">
-                <h2 class="t-h2">9월 21일 (월)</h2>
-                <span class="badge badge--quiet">0건</span>
-              </div>
-              <div class="empty">
-                <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
-                <p>검색 조건에 맞는 BP 휴일이 이 날짜에 없습니다.</p>
+                <p>등록된 휴일이 없습니다.</p>
               </div>
             </section>
             <section class="panel" style="align-self: start" data-show="day1001" hidden>
@@ -774,16 +628,16 @@
                 <a class="row" href="holidays-detail.html?state=hd0122" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none">
                   <span class="badge badge--info">전체 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
-                    <b style="font-size: 13px; font-weight: 600">창립기념일 - ㈜한강상회</b>
-                    <span class="subtle" style="font-size: 12px">매년 반복 · HD-0122 <span class="tag" data-show-role="bp fm view" hidden>조회만</span></span>
+                    <b style="font-size: 13px; font-weight: 600">창립기념일</b>
+                    <span class="subtle" style="font-size: 12px">매년 반복 · ㈜한강상회</span>
                   </span>
                   <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
                 </a>
                 <a class="row" href="holidays-detail.html?state=hd0123" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
                   <span class="badge badge--quiet">일부 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
-                    <b style="font-size: 13px; font-weight: 600">오후 휴무(단축 운영) - 온기식당 광화문점</b>
-                    <span class="subtle" style="font-size: 12px">HD-0123 <span class="tag" data-show-role="view" hidden>조회만</span></span>
+                    <b style="font-size: 13px; font-weight: 600">오후 휴무(단축 운영)</b>
+                    <span class="subtle" style="font-size: 12px">하루 · 온기식당 광화문점</span>
                   </span>
                   <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
                 </a>
@@ -798,20 +652,20 @@
                 <a class="row" href="holidays-detail.html?state=hd0123" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
                   <span class="badge badge--quiet">일부 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
-                    <b style="font-size: 13px; font-weight: 600">오후 휴무(단축 운영) - 온기식당 광화문점</b>
-                    <span class="subtle" style="font-size: 12px">HD-0123 <span class="tag" data-show-role="view" hidden>조회만</span></span>
+                    <b style="font-size: 13px; font-weight: 600">오후 휴무(단축 운영)</b>
+                    <span class="subtle" style="font-size: 12px">하루 · 온기식당 광화문점</span>
                   </span>
                   <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
                 </a>
               </div>
               <div class="empty" data-show-role="fm" hidden>
                 <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
-                <p>이 날짜에 등록된 BP 휴일이 없습니다.</p>
+                <p>등록된 휴일이 없습니다.</p>
               </div>
             </section>
           </div>
 
-          <!-- 목록 보기 — 고른 달의 BP 휴일을 날짜마다 한 줄로. 공식 휴일은 줄이 아니다 -->
+          <!-- 목록 보기 — 고른 달의 BP 휴일을 날짜마다 한 줄로. 공식 휴일은 줄이 아니다. 그 달 줄을 모두 보이고 쪽 이동은 없다(코드대로, 2026-10-30) -->
           <section class="panel" data-show="list" hidden>
             <div class="panel__head">
               <div class="inline" role="group" aria-label="달 이동" style="gap: 6px; flex-wrap: nowrap">
@@ -820,7 +674,7 @@
                 <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="listoct" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
                 <button class="btn btn--secondary btn--sm" type="button" data-state-go="list">오늘<span class="mono" style="font-size: 11px; font-weight: 400; color: var(--muted-tert)">· 2026-09-21(월)</span></button>
               </div>
-              <span class="badge badge--quiet" data-show-role="fm" hidden>BP 휴일 2건</span><span class="badge badge--quiet" data-show-role="bp" hidden>BP 휴일 4건</span><span class="badge badge--quiet" data-show-role="bm pf ba view">BP 휴일 5건</span>
+              <span class="subtle" data-show-role="fm" hidden>BP 휴일 2건</span><span class="subtle" data-show-role="bp" hidden>BP 휴일 4건</span><span class="subtle" data-show-role="bm pf ba view">BP 휴일 5건</span>
             </div>
             <div class="tblwrap">
               <table class="tbl tbl--dense">
@@ -838,7 +692,7 @@
                 <tbody>
                   <tr class="is-read" data-pagepop="holidays-detail.html?state=hd0101" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-09-10</span> <span class="subtle">(목)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0101" data-pagepop>정전 점검 휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0101" data-pagepop>정전 점검 휴무</a></td>
                     <td>하루</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>모리커피 서초점</td>
@@ -847,8 +701,8 @@
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-09-21</span> <span class="subtle">(월)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
+                    <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>온기식당 판교점</td>
                     <td><span class="subtle">-</span></td>
@@ -856,7 +710,7 @@
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0120" style="cursor: pointer">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-09-25</span> <span class="subtle">(금)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0120" data-pagepop>추석 당일 휴무</a> <span class="tag" data-show-role="bp fm view" hidden>조회만</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0120" data-pagepop>추석 당일 휴무</a></td>
                     <td>하루</td>
                     <td><span class="badge badge--info">전체 점포</span></td>
                     <td><span class="subtle">-</span></td>
@@ -865,8 +719,8 @@
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-09-28</span> <span class="subtle">(월)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
+                    <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>온기식당 판교점</td>
                     <td><span class="subtle">-</span></td>
@@ -874,7 +728,7 @@
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0121" style="cursor: pointer" data-show-role="bm pf ba fm view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-09-29</span> <span class="subtle">(화)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0121" data-pagepop>내부 공사</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0121" data-pagepop>내부 공사</a></td>
                     <td>하루</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>모리커피 연남점</td>
@@ -884,9 +738,6 @@
                 </tbody>
               </table>
             </div>
-            <div data-show-role="fm" hidden><div data-pager="2"></div></div>
-            <div data-show-role="bp" hidden><div data-pager="4"></div></div>
-            <div data-show-role="bm pf ba view"><div data-pager="5"></div></div>
           </section>
           <section class="panel" data-show="listoct" hidden>
             <div class="panel__head">
@@ -896,7 +747,7 @@
                 <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
                 <button class="btn btn--secondary btn--sm" type="button" data-state-go="list">오늘<span class="mono" style="font-size: 11px; font-weight: 400; color: var(--muted-tert)">· 2026-09-21(월)</span></button>
               </div>
-              <span class="badge badge--quiet" data-show-role="fm" hidden>BP 휴일 1건</span><span class="badge badge--quiet" data-show-role="bm pf ba bp view">BP 휴일 6건</span>
+              <span class="subtle" data-show-role="fm" hidden>BP 휴일 1건</span><span class="subtle" data-show-role="bm pf ba bp view">BP 휴일 6건</span>
             </div>
             <div class="tblwrap">
               <table class="tbl tbl--dense">
@@ -914,8 +765,8 @@
                 <tbody>
                   <tr data-pagepop="holidays-detail.html?state=hd0122" style="cursor: pointer">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-10-01</span> <span class="subtle">(목)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0122" data-pagepop>창립기념일</a> <span class="tag" data-show-role="bp fm view" hidden>조회만</span></td>
-                    <td>매년 · 10월 1일 <span class="subtle">· 종료일 없음</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0122" data-pagepop>창립기념일</a></td>
+                    <td>매년 반복</td>
                     <td><span class="badge badge--info">전체 점포</span></td>
                     <td><span class="subtle">-</span></td>
                     <td><span class="subtle">-</span></td>
@@ -923,7 +774,7 @@
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0123" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-10-01</span> <span class="subtle">(목)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영)</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영)</a></td>
                     <td>하루</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>온기식당 광화문점</td>
@@ -932,8 +783,8 @@
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-10-05</span> <span class="subtle">(월)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
+                    <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>온기식당 판교점</td>
                     <td><span class="subtle">-</span></td>
@@ -941,8 +792,8 @@
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-10-12</span> <span class="subtle">(월)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
+                    <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>온기식당 판교점</td>
                     <td><span class="subtle">-</span></td>
@@ -950,8 +801,8 @@
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-10-19</span> <span class="subtle">(월)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
+                    <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>온기식당 판교점</td>
                     <td><span class="subtle">-</span></td>
@@ -959,8 +810,8 @@
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-10-26</span> <span class="subtle">(월)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
+                    <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>온기식당 판교점</td>
                     <td><span class="subtle">-</span></td>
@@ -969,8 +820,6 @@
                 </tbody>
               </table>
             </div>
-            <div data-show-role="fm" hidden><div data-pager="1"></div></div>
-            <div data-show-role="bm pf ba bp view"><div data-pager="6"></div></div>
           </section>
           <section class="panel" data-show="listaug" hidden>
             <div class="panel__head">
@@ -980,92 +829,11 @@
                 <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="list" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
                 <button class="btn btn--secondary btn--sm" type="button" data-state-go="list">오늘<span class="mono" style="font-size: 11px; font-weight: 400; color: var(--muted-tert)">· 2026-09-21(월)</span></button>
               </div>
-              <span class="badge badge--quiet">BP 휴일 0건</span>
+              <span class="subtle">BP 휴일 0건</span>
             </div>
             <div class="empty">
               <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
-              <p>2026년 8월에 볼 수 있는 BP 휴일이 없습니다.</p>
-            </div>
-          </section>
-          <section class="panel" data-show="namedlist" hidden>
-            <div class="panel__head">
-              <div class="inline" role="group" aria-label="달 이동" style="gap: 6px; flex-wrap: nowrap">
-                <button type="button" aria-label="연 · 월 고르기" style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 6px 0 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); font: inherit; font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer">2026년 9월<span aria-hidden="true" style="display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--muted-tert)"><svg viewBox="0 0 10 6" width="10" height="6" fill="none"><path d="M1 1L5 5L9 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg></span></button>
-                <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
-                <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="listoct" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
-                <button class="btn btn--secondary btn--sm" type="button" data-state-go="list">오늘<span class="mono" style="font-size: 11px; font-weight: 400; color: var(--muted-tert)">· 2026-09-21(월)</span></button>
-              </div>
-              <span class="badge badge--quiet" data-show-role="fm" hidden>BP 휴일 1건</span><span class="badge badge--quiet" data-show-role="bm pf ba bp view">BP 휴일 4건</span>
-            </div>
-            <div class="tblwrap">
-              <table class="tbl tbl--dense">
-                <thead>
-                  <tr>
-                    <th scope="col" style="text-align: center">날짜</th>
-                    <th scope="col">휴일명</th>
-                    <th scope="col">휴일유형</th>
-                    <th scope="col">적용범위</th>
-                    <th scope="col">대상점포</th>
-                    <th scope="col">예외점포</th>
-                    <th scope="col">최종수정</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr class="is-read" data-pagepop="holidays-detail.html?state=hd0101" style="cursor: pointer" data-show-role="bm pf ba bp view">
-                    <td style="white-space: nowrap; text-align: center"><span class="mono">2026-09-10</span> <span class="subtle">(목)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0101" data-pagepop>정전 점검 휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td>하루</td>
-                    <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>모리커피 서초점</td>
-                    <td><span class="subtle">-</span></td>
-                    <td style="white-space: nowrap"><span class="mono">2026-09-01 09:40</span> <span class="subtle">· hgops</span></td>
-                  </tr>
-                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
-                    <td style="white-space: nowrap; text-align: center"><span class="mono">2026-09-21</span> <span class="subtle">(월)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 판교점</td>
-                    <td><span class="subtle">-</span></td>
-                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">· hangang01</span></td>
-                  </tr>
-                  <tr data-pagepop="holidays-detail.html?state=hd0120" style="cursor: pointer">
-                    <td style="white-space: nowrap; text-align: center"><span class="mono">2026-09-25</span> <span class="subtle">(금)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0120" data-pagepop>추석 당일 휴무</a> <span class="tag" data-show-role="bp fm view" hidden>조회만</span></td>
-                    <td>하루</td>
-                    <td><span class="badge badge--info">전체 점포</span></td>
-                    <td><span class="subtle">-</span></td>
-                    <td><span class="subtle">-</span></td>
-                    <td style="white-space: nowrap"><span class="mono">2026-09-02 11:00</span> <span class="subtle">· hangang01</span></td>
-                  </tr>
-                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
-                    <td style="white-space: nowrap; text-align: center"><span class="mono">2026-09-28</span> <span class="subtle">(월)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 판교점</td>
-                    <td><span class="subtle">-</span></td>
-                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">· hangang01</span></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div data-show-role="fm" hidden><div data-pager="1"></div></div>
-            <div data-show-role="bm pf ba bp view"><div data-pager="4"></div></div>
-          </section>
-          <section class="panel" data-show="emptylist" hidden>
-            <div class="panel__head">
-              <div class="inline" role="group" aria-label="달 이동" style="gap: 6px; flex-wrap: nowrap">
-                <button type="button" aria-label="연 · 월 고르기" style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 6px 0 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); font: inherit; font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer">2026년 9월<span aria-hidden="true" style="display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--muted-tert)"><svg viewBox="0 0 10 6" width="10" height="6" fill="none"><path d="M1 1L5 5L9 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg></span></button>
-                <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
-                <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="listoct" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
-                <button class="btn btn--secondary btn--sm" type="button" data-state-go="list">오늘<span class="mono" style="font-size: 11px; font-weight: 400; color: var(--muted-tert)">· 2026-09-21(월)</span></button>
-              </div>
-              <span class="badge badge--quiet">BP 휴일 0건</span>
-            </div>
-            <div class="empty">
-              <span class="empty__ic" data-icon="search" data-icon-size="22"></span>
-              <p>2026년 9월에 휴일명 ‘창립’에 맞는 BP 휴일이 없습니다. 다른 달로 옮기거나 휴일명을 바꿔 다시 찾아 보세요.</p>
+              <p>이 달에 등록된 BP 휴일이 없습니다.</p>
             </div>
           </section>
           <section class="panel" data-show="deletedlist" hidden>
@@ -1076,7 +844,7 @@
                 <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
                 <button class="btn btn--secondary btn--sm" type="button" data-state-go="list">오늘<span class="mono" style="font-size: 11px; font-weight: 400; color: var(--muted-tert)">· 2026-09-21(월)</span></button>
               </div>
-              <span class="badge badge--quiet" data-show-role="fm" hidden>BP 휴일 0건</span><span class="badge badge--quiet" data-show-role="bm pf ba bp view">BP 휴일 5건</span>
+              <span class="subtle" data-show-role="fm" hidden>BP 휴일 0건</span><span class="subtle" data-show-role="bm pf ba bp view">BP 휴일 5건</span>
             </div>
             <div class="tblwrap" data-show-role="bm pf ba bp view">
               <table class="tbl tbl--dense">
@@ -1094,7 +862,7 @@
                 <tbody>
                   <tr data-pagepop="holidays-detail.html?state=hd0123" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-10-01</span> <span class="subtle">(목)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영)</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영)</a></td>
                     <td>하루</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>온기식당 광화문점</td>
@@ -1103,8 +871,8 @@
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-10-05</span> <span class="subtle">(월)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
+                    <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>온기식당 판교점</td>
                     <td><span class="subtle">-</span></td>
@@ -1112,8 +880,8 @@
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-10-12</span> <span class="subtle">(월)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
+                    <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>온기식당 판교점</td>
                     <td><span class="subtle">-</span></td>
@@ -1121,8 +889,8 @@
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-10-19</span> <span class="subtle">(월)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
+                    <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>온기식당 판교점</td>
                     <td><span class="subtle">-</span></td>
@@ -1130,8 +898,8 @@
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-10-26</span> <span class="subtle">(월)</span></td>
-                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
+                    <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
                     <td>온기식당 판교점</td>
                     <td><span class="subtle">-</span></td>
@@ -1140,14 +908,13 @@
                 </tbody>
               </table>
             </div>
-            <div data-show-role="bm pf ba bp view"><div data-pager="5"></div></div>
             <div class="empty" data-show-role="fm" hidden>
               <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
-              <p>2026년 10월에 볼 수 있는 BP 휴일이 없습니다.</p>
+              <p>이 달에 등록된 BP 휴일이 없습니다.</p>
             </div>
           </section>
 
-          <!-- 변경이력 — 고른 기간의 등록·수정·삭제를 날짜별로. 삭제된 휴일은 여기서만 보인다 -->
+          <!-- 변경이력 — 고른 기간(이력이 생긴 날 기준, 기본 이달 1일~오늘)의 이력을 표로, 아래에 쪽 이동. 표 위 안내문은 없다. 삭제된 휴일은 여기서만 보인다(코드대로, 2026-10-30) -->
           <div class="modal" id="pop-hist" hidden role="dialog" aria-modal="true" aria-labelledby="ph-t">
             <div class="modal__box modal__box--wide">
               <div class="modal__head">
@@ -1161,107 +928,32 @@
                   <input class="input mono" value="2026-09-21" aria-label="이력 종료일" />
                   <button class="btn btn--secondary" type="button">조회</button>
                 </div>
-                <p class="subtle" style="margin: 0; font-size: 12px">휴일 날짜가 아니라 등록·수정·삭제한 날 기준입니다. 내 접근 범위 밖 점포의 이력은 나오지 않습니다.</p>
                 <div class="modal__scroll">
-                  <div class="stack" style="gap: 0" data-show="deleted deletedlist" hidden>
-                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-21</span> <span class="subtle">(월)</span></div>
-                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show="deleted deletedlist" hidden>
-                      <span class="badge badge--risk" style="flex: none">삭제</span>
-                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600">창립기념일 - ㈜한강상회</b><span class="subtle" style="font-size: 12px">2026-10-01 부터 이후 모두 삭제 · 첫 날짜라 휴일 자체를 삭제</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-21 10:52 | hangang01</span>
-                    </div>
+                  <div class="tblwrap">
+                    <table class="tbl tbl--dense">
+                      <thead>
+                        <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">휴일명</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                      </thead>
+                      <tbody>
+                      <tr data-show="deleted deletedlist" hidden><td class="mono">2026-09-21 10:52</td><td class="mono">hangang01</td><td>창립기념일</td><td>삭제</td><td>창립기념일</td><td></td></tr>
+                      <tr data-show-role="bm pf ba bp view"><td class="mono">2026-09-18 17:05</td><td class="mono">hgops</td><td>임시 휴무</td><td>삭제</td><td>임시 휴무</td><td></td></tr>
+                      <tr><td class="mono">2026-09-17 15:30</td><td class="mono">hangang01</td><td>창립기념일</td><td>설명</td><td>㈜한강상회 창립 기념 전 점포 휴무</td><td>㈜한강상회 창립 기념 전 점포 휴무 · 전날 마감 때 공지</td></tr>
+                      <tr data-show-role="bm pf ba bp view"><td class="mono">2026-09-16 10:05</td><td class="mono">hangang01</td><td>정기휴무</td><td>설명</td><td>정기 휴무</td><td>월요일마다 쉬는 정기 휴무</td></tr>
+                      <tr data-show-role="bm pf ba bp view"><td class="mono">2026-09-15 14:10</td><td class="mono">hangang01</td><td>정기휴무</td><td>등록</td><td class="nil"></td><td>정기휴무 · 온기식당 판교점 · 매주 반복 · 시작 2026-09-21 · 종료일 없음</td></tr>
+                      <tr data-show-role="bm pf ba bp view"><td class="mono">2026-09-14 09:15</td><td class="mono">hghr</td><td>오후 휴무(단축 운영)</td><td>설명</td><td>오후 단축 운영</td><td>오후 2시 이후 단축 운영 · 오전만 영업</td></tr>
+                      <tr data-show-role="bm pf ba bp view"><td class="mono">2026-09-11 18:02</td><td class="mono">hghr</td><td>오후 휴무(단축 운영)</td><td>휴일명</td><td>오후 휴무</td><td>오후 휴무(단축 운영)</td></tr>
+                      <tr data-show-role="bm pf ba bp view"><td class="mono">2026-09-10 13:20</td><td class="mono">hghr</td><td>오후 휴무(단축 운영)</td><td>등록</td><td class="nil"></td><td>오후 휴무 · 온기식당 광화문점 · 하루 2026-10-01</td></tr>
+                      <tr data-show-role="bm pf ba fm view"><td class="mono">2026-09-08 16:20</td><td class="mono">morinam01</td><td>내부 공사</td><td>등록</td><td class="nil"></td><td>내부 공사 · 모리커피 연남점 · 하루 2026-09-29</td></tr>
+                      <tr data-show-role="bm pf ba bp view"><td class="mono">2026-09-05 11:30</td><td class="mono">hgops</td><td>임시 휴무</td><td>등록</td><td class="nil"></td><td>임시 휴무 · 모리커피 성수점 · 하루 2026-09-30</td></tr>
+                      <tr><td class="mono">2026-09-02 11:00</td><td class="mono">hangang01</td><td>추석 당일 휴무</td><td>등록</td><td class="nil"></td><td>추석 당일 휴무 · 전체 점포 · 하루 2026-09-25</td></tr>
+                      <tr data-show-role="bm pf ba bp view"><td class="mono">2026-09-01 09:40</td><td class="mono">hgops</td><td>정전 점검 휴무</td><td>등록</td><td class="nil"></td><td>정전 점검 휴무 · 모리커피 서초점 · 하루 2026-09-10</td></tr>
+                      </tbody>
+                    </table>
                   </div>
-                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
-                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-18</span> <span class="subtle">(금)</span></div>
-                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
-                      <span class="badge badge--risk" style="flex: none">삭제</span>
-                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600">임시 휴무 - 모리커피 성수점</b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-30 · 삭제되어 목록과 캘린더에 없음</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-18 17:05 | hgops</span>
-                    </div>
-                  </div>
-                  <div class="stack" style="gap: 0">
-                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-17</span> <span class="subtle">(목)</span></div>
-                    <div class="row" style="align-items: flex-start; padding: 8px 0">
-                      <span class="badge badge--info" style="flex: none">수정</span>
-                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0122" data-pagepop>창립기념일 - ㈜한강상회</a></b><span class="subtle" style="font-size: 12px">설명 · 2026-10-01 부터 이후 모두(첫 날짜라 휴일 전체)</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-17 15:30 | hangang01</span>
-                    </div>
-                  </div>
-                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
-                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-16</span> <span class="subtle">(수)</span></div>
-                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
-                      <span class="badge badge--info" style="flex: none">수정</span>
-                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무 - 온기식당 판교점</a></b><span class="subtle" style="font-size: 12px">설명 · 2026-09-21 부터 이후 모두(첫 날짜라 휴일 전체)</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-16 10:05 | hangang01</span>
-                    </div>
-                  </div>
-                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
-                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-15</span> <span class="subtle">(화)</span></div>
-                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
-                      <span class="badge badge--ok" style="flex: none">등록</span>
-                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무 - 온기식당 판교점</a></b><span class="subtle" style="font-size: 12px">매주 반복 · 시작 2026-09-21 · 종료일 없음</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-15 14:10 | hangang01</span>
-                    </div>
-                  </div>
-                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
-                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-14</span> <span class="subtle">(월)</span></div>
-                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
-                      <span class="badge badge--info" style="flex: none">수정</span>
-                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영) - 온기식당 광화문점</a></b><span class="subtle" style="font-size: 12px">설명</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-14 09:15 | hghr</span>
-                    </div>
-                  </div>
-                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
-                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-11</span> <span class="subtle">(금)</span></div>
-                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
-                      <span class="badge badge--info" style="flex: none">수정</span>
-                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영) - 온기식당 광화문점</a></b><span class="subtle" style="font-size: 12px">휴일명 · 오후 휴무 → 오후 휴무(단축 운영)</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-11 18:02 | hghr</span>
-                    </div>
-                  </div>
-                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
-                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-10</span> <span class="subtle">(목)</span></div>
-                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
-                      <span class="badge badge--ok" style="flex: none">등록</span>
-                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영) - 온기식당 광화문점</a></b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-10-01</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-10 13:20 | hghr</span>
-                    </div>
-                  </div>
-                  <div class="stack" style="gap: 0" data-show-role="bm pf ba fm view">
-                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-08</span> <span class="subtle">(화)</span></div>
-                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba fm view">
-                      <span class="badge badge--ok" style="flex: none">등록</span>
-                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0121" data-pagepop>내부 공사 - 모리커피 연남점</a></b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-29</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-08 16:20 | morinam01</span>
-                    </div>
-                  </div>
-                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
-                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-05</span> <span class="subtle">(토)</span></div>
-                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
-                      <span class="badge badge--ok" style="flex: none">등록</span>
-                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600">임시 휴무 - 모리커피 성수점</b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-30</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-05 11:30 | hgops</span>
-                    </div>
-                  </div>
-                  <div class="stack" style="gap: 0">
-                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-02</span> <span class="subtle">(수)</span></div>
-                    <div class="row" style="align-items: flex-start; padding: 8px 0">
-                      <span class="badge badge--ok" style="flex: none">등록</span>
-                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0120" data-pagepop>추석 당일 휴무 - ㈜한강상회</a></b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-25</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-02 11:00 | hangang01</span>
-                    </div>
-                  </div>
-                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
-                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-01</span> <span class="subtle">(화)</span></div>
-                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
-                      <span class="badge badge--ok" style="flex: none">등록</span>
-                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0101" data-pagepop>정전 점검 휴무 - 모리커피 서초점</a></b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-10</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-01 09:40 | hgops</span>
-                    </div>
-                  </div>
+                  <div data-pager="12"></div>
                 </div>
               </div>
-              <div class="modal__foot"><button class="btn btn--primary" type="button" data-close>닫기</button></div>
+              <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
             </div>
           </div>
         </div>
