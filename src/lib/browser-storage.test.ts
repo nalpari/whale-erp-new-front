@@ -10,6 +10,7 @@ import {
   readCodes,
   readCurrentBp,
   readLoginBpInfo,
+  readLoginInfoVersion,
   readScope,
   readSelectedBp,
   readStores,
@@ -19,10 +20,13 @@ import {
   writeCodes,
   writeCurrentBp,
   writeLoginBpInfo,
+  writeLoginInfo,
+  writeLoginInfoVersion,
   writeScope,
   writeSelectedBp,
   writeStores,
   writeStoresVersion,
+  type StoredLoginInfo,
 } from "./browser-storage.ts";
 
 const own = { bpCodeId: 1, bpCode: "BP000000", tradeName: "플랫폼" };
@@ -122,6 +126,23 @@ test("writeStores: 목록을 바꾸면 그 목록의 버전이 아니므로 버�
   writeStoresVersion(a.bpCodeId, "v1");
   assert.equal(writeStores(a.bpCodeId, []), true);
   assert.equal(readStoresVersion(a.bpCodeId), null);
+});
+
+test("login-info-version: 이 로그인 것만 읽고, 로그인 정보를 다시 쓰면 그 정보의 버전이 아니므로 지운다", () => {
+  fresh();
+  const account = { bp: own } as unknown as StoredLoginInfo["account"];
+  writeLoginInfoVersion("k", "v1");
+  assert.equal(readLoginInfoVersion("k"), "v1");
+  assert.equal(readLoginInfoVersion("other"), null);
+  assert.equal(writeLoginInfo({ loginKey: "k", account, menus: [] }), true);
+  assert.equal(readLoginInfoVersion("k"), null);
+});
+
+test("login-info-version: 로그아웃하면 로그인 정보와 함께 지운다", () => {
+  const { local } = fresh();
+  writeLoginInfoVersion("k", "v1");
+  clearLoginStorage();
+  assert.deepEqual(local.keys(), []);
 });
 
 test("stores-changed: 같은 로그인 · 같은 BP 의 알림만 받고, 로그인 정보와 함께 지운다", () => {

@@ -1,6 +1,6 @@
 // 로그인 정보를 브라우저에 두는 곳. 키·모양·확인을 여기 한 곳에서 한다(2026-10-13 계획).
 // localStorage — 모든 탭이 같이 쓴다. loginKey 가 쿠키 login-key 와 다르면 앞 로그인 것이라 버린다.
-//   login-info: 계정·메뉴 / login-bp-info: 자기 BP 의 점포·공통코드(탭에 자기 BP 값이 없을 때 — 새 탭, /bp-switch 로 자기 BP 에 돌아올 때 — 만 읽는다.
+//   login-info: 계정·메뉴 / login-info-version: 그 계정·메뉴를 받을 때의 로그인 정보 버전(GET /auth/admin/me/login-info-version) / login-bp-info: 자기 BP 의 점포·공통코드(탭에 자기 BP 값이 없을 때 — 새 탭, /bp-switch 로 자기 BP 에 돌아올 때 — 만 읽는다.
 //   점포 목록 맞추기가 자기 BP 점포를 다시 받으면 이 값의 stores 도 고친다) / selected-bp: 플랫폼 계정이 마지막으로 고른 BP
 //   stores-changed: 한 탭이 점포 목록이 바뀐 것을 알면 적는다 — 같은 BP 의 다른 탭이 storage 이벤트로 받아 바로 다시 맞춘다.
 // sessionStorage — 탭마다 다르다. 화면은 이것만 읽는다.
@@ -50,6 +50,7 @@ export interface TabContext {
 const PREFIX = "whale-erp:v2:";
 const KEY = {
   loginInfo: `${PREFIX}login-info`,
+  loginInfoVersion: `${PREFIX}login-info-version`,
   loginBpInfo: `${PREFIX}login-bp-info`,
   selectedBp: `${PREFIX}selected-bp`,
   currentBp: `${PREFIX}current-bp`,
@@ -101,7 +102,18 @@ const ofLogin = <T extends { loginKey: string }>(v: T | null, loginKey: string) 
 const ofBp = <T extends { bpCodeId: number }>(v: T | null, bpCodeId: number) => (v?.bpCodeId === bpCodeId ? v : null);
 
 export const readLoginInfo = (loginKey: string) => ofLogin(read<StoredLoginInfo>(local, KEY.loginInfo), loginKey);
-export const writeLoginInfo = (v: StoredLoginInfo) => write(local, KEY.loginInfo, v);
+/**
+ * 로그인 정보를 쓴다. 버전은 「그 정보를 받을 때의 버전」이라 먼저 지운다 — 버전만 남고 정보 쓰기가 실패하면 옛 정보를 최신으로 믿는다
+ * (writeStores 와 같은 이유). 그래서 이름 · 이메일 · 비밀번호 강제 변경 표시만 고쳐 써도 다음 맞추기가 login-info 를 한 번 다시 받는다.
+ * 썼으면 true. 다른 탭은 이 키의 storage 이벤트로 새 메뉴를 읽는다(SessionGate).
+ */
+export function writeLoginInfo(v: StoredLoginInfo): boolean {
+  remove(local, [KEY.loginInfoVersion]);
+  return write(local, KEY.loginInfo, v);
+}
+/** 로그인 정보 버전(GET /auth/admin/me/login-info-version) — 계정 단위라 탭들이 같이 쓴다. 없으면 아직 맞춰 보지 않은 것이다. */
+export const readLoginInfoVersion = (loginKey: string) => ofLogin(read<{ loginKey: string; version: string }>(local, KEY.loginInfoVersion), loginKey)?.version ?? null;
+export const writeLoginInfoVersion = (loginKey: string, version: string) => write(local, KEY.loginInfoVersion, { loginKey, version });
 export const readLoginBpInfo = (loginKey: string) => ofLogin(read<StoredLoginBpInfo>(local, KEY.loginBpInfo), loginKey);
 export const writeLoginBpInfo = (v: StoredLoginBpInfo) => write(local, KEY.loginBpInfo, v);
 export const readSelectedBp = (loginKey: string) => ofLogin(read<StoredSelectedBp>(local, KEY.selectedBp), loginKey);
@@ -159,7 +171,7 @@ export const clearTabBp = () => remove(tab, TAB_KEYS);
 
 /** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). 앞 버전 키도 지운다. */
 export function clearLoginStorage() {
-  remove(local, [KEY.loginInfo, KEY.loginBpInfo, KEY.selectedBp, KEY.storesChanged, ...LEGACY_KEYS]);
+  remove(local, [KEY.loginInfo, KEY.loginInfoVersion, KEY.loginBpInfo, KEY.selectedBp, KEY.storesChanged, ...LEGACY_KEYS]);
   remove(tab, [...TAB_KEYS, ...LEGACY_KEYS]);
 }
 

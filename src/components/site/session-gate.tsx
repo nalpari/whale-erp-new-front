@@ -3,11 +3,24 @@
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, use, useEffect, useEffectEvent, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Button, LoadingNotice, useBackdropActive, useToast } from "@/components/common";
-import { logout } from "@/app/actions";
+import { logout, logoutForAccountChange } from "@/app/actions";
 import { loginPathOf, returnPathOf } from "@/lib/auth-routes";
-import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
+import { bff, BffError, isAccountUnavailable, isPasswordRequired, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
 import { bpOfPath, bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
-import { BP_SWITCH_PATH, bpOfSwitchUrl, firstMenuRedirect, HOME, isAllowed, menuOfPath, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
+import {
+  BP_SWITCH_PATH,
+  bpOfSwitchUrl,
+  firstMenuRedirect,
+  HOME,
+  isAllowed,
+  menuOfPath,
+  menuPermissionOf,
+  menusOf,
+  sameMenus,
+  serviceOfPath,
+  type MenuAction,
+  type MenuCode,
+} from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
 import { MyPagePanel } from "./my-page-panel";
 import { PasswordChangePanel } from "./password-change-panel";
@@ -25,6 +38,7 @@ import {
   readCurrentBp,
   readLoginBpInfo,
   readLoginInfo,
+  readLoginInfoVersion,
   readScope,
   readSelectedBp,
   readStores,
@@ -35,6 +49,7 @@ import {
   writeCurrentBp,
   writeLoginBpInfo,
   writeLoginInfo,
+  writeLoginInfoVersion,
   writeScope,
   writeSelectedBp,
   writeStores,
@@ -49,6 +64,8 @@ import { restoredScope, sameStores, SCOPE_PARAM, scopeKeyOf, withScope } from "@
 
 /** 다시 받은 점포 목록이 달라졌을 때의 토스트(2026-10-29 사용자 지정) — 다른 PC · 다른 탭 · 이 화면에서 바꾼 것 모두 같다 */
 const STORES_CHANGED_MESSAGE = "점포 목록이 변경되었습니다.";
+/** 다시 받은 로그인 정보의 메뉴(권한)가 달라졌을 때의 토스트(2026-11-02 사용자 지정) — 이름 · 이메일만 바뀌면 띄우지 않는다 */
+const LOGIN_INFO_CHANGED_MESSAGE = "권한 정보가 변경되었습니다.";
 /** 창으로 돌아오거나 탭이 다시 보일 때는 마지막으로 물은 지 이만큼 지났을 때만 다시 묻는다 — 창을 오가는 것만으로 연달아 부르지 않게 */
 const FOCUS_SYNC_MS = 10_000;
 
@@ -171,9 +188,10 @@ const LOGOUT_FAILED = { status: "error", message: "로그아웃하지 못했습�
 /**
  * 로그인 후 화면의 문. 이 탭의 BP 와 그 BP 의 점포·공통코드가 준비될 때까지 로딩 화면을 보이고, 준비되면 children 을 그린다.
  * /bp-switch?bp= 는 이 탭을 그 BP 로 새로 준비한 뒤(탭에 남은 점포·공통코드를 쓰지 않고, 범위는 전체) 그 서비스의 홈으로 보낸다.
- * 메뉴와 자기 BP 의 공통코드는 로그인할 때의 값을 쓰고 다시 로그인해야 바뀐다(okf/auth.md, 2026-10-13). 고른 BP 의 것은 그 BP 로
+ * 자기 BP 의 공통코드는 로그인할 때의 값을 쓰고 다시 로그인해야 바뀐다(okf/auth.md, 2026-10-13). 고른 BP 의 것은 그 BP 로
  * 탭을 열 때마다 받는다. 점포는 같은 계정으로 여러 PC 에서 일하므로 새로고침 · 메뉴 이동 · 창 포커스 때 점포 목록 버전을 물어
- * 바뀌었으면 다시 받는다(Ready 의 syncStores, 2026-10-29). 데이터 권한은 api 가 요청마다 다시 본다.
+ * 바뀌었으면 다시 받는다(Ready 의 syncStores, 2026-10-29). 메뉴 · 계정도 같은 때 로그인 정보 버전을 물어 다시 받고, 쓸 수 없게 된
+ * 계정은 로그아웃한다(Ready 의 syncLoginInfo, 2026-11-02). 데이터 권한은 api 가 요청마다 다시 본다.
  */
 
 export function SessionGate({ header, children }: { header: ReactNode; children: ReactNode }) {
@@ -218,6 +236,11 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
           // 메일 링크(엑셀 내려받기)로 왔으면 ?next= 를 붙여 로그인 뒤 그 화면으로 돌아온다(loginPathOf).
           if (readLoginKey()) router.replace(loginPathOf(location.pathname));
           else if (!(await signOut(logout))) setState(LOGOUT_FAILED);
+          return;
+        }
+        if (e instanceof AccountChangedError) {
+          // 쓸 수 없게 된 계정 — 알림창 없이 로그인 화면이 이유를 알린다(맞추기 중 알아챈 것과 같다)
+          if (!(await signOut(logoutForAccountChange))) setState(LOGOUT_FAILED);
           return;
         }
         if (e instanceof LoginInfoDeniedError) {
@@ -344,13 +367,13 @@ function Ready({
     // 메뉴 화면이면 헤더 선택기가 그 메뉴의 목록으로 옮기며 범위를 주소(?scope=)에 싣는다(admin-header.tsx · okf/home.md 범위 선택기).
     onChange((v) => ({ ...v, scope }));
   };
-  // 내 정보에서 이름 · 이메일을 바꾸면 저장값에 쓰고 이 탭에 바로 반영한다(GNB 이름 등). 다른 탭은 새로고침하면 반영된다.
+  // 내 정보에서 이름 · 이메일을 바꾸면 저장값에 쓰고 이 탭에 바로 반영한다(GNB 이름 등). 다른 탭은 저장값의 storage 이벤트로 따라온다.
   const patchAccount = (partial: { name: string; email: string }) => {
     const account = { ...value.account, ...partial };
     writeLoginInfo({ loginKey: value.loginKey, account, menus: value.menus });
     onChange((v) => ({ ...v, account }));
   };
-  // 강제 변경 표시를 저장값에 쓰고 이 탭에 반영한다. 다른 탭은 새로고침하면 반영된다.
+  // 강제 변경 표시를 저장값에 쓰고 이 탭에 반영한다. 다른 탭은 저장값의 storage 이벤트로 따라온다.
   const setPasswordRequired = (required: boolean) => {
     const account = required
       ? { ...value.account, isPasswordChangeRequired: true }
@@ -407,10 +430,12 @@ function Ready({
         const askedPath = location.pathname;
         const changed = await fetchChangedStores(bpCodeId, own, readStoresVersion(bpCodeId)).catch((e: unknown) => {
           const status = e instanceof BffError ? e.status : undefined;
-          // 비밀번호 강제 변경 403 은 bff() 가 팝업을 다시 띄우고, 그 뒤로는 위에서 묻지 않는다
+          // 비밀번호 강제 변경 403 은 bff() 가 팝업을 다시 띄우고, 바꾸기 전에는 위에서 묻지 않는다
           if (status === 401) {
             router.replace(loginPathOf(location.pathname));
             s.stopped = true;
+          } else if (isPasswordRequired(e)) {
+            // 비밀번호 강제 변경 403 은 멈추지 않는다 — 다른 탭에서 바꾸면 이 탭은 새로고침 없이 팝업만 닫힌다(로그인 정보 맞추기와 같다)
           } else if (status === 403 || status === 404) {
             console.error("점포 목록을 맞출 수 없음 — 이 화면에서는 더 묻지 않는다", { bpCodeId, own, status }, e);
             s.stopped = true;
@@ -447,10 +472,64 @@ function Ready({
       s.running = false;
     }
   };
+  // 로그인 정보 맞추기(2026-11-02). 로그인한 뒤 계정 상태 · 권한 그룹 · 메뉴 권한 · 메뉴가 바뀌면 다시 로그인하지 않아도 따라온다.
+  // 점포 맞추기와 같은 때 묻는다(다른 탭의 점포 알림은 빼고). 계정 단위라 BP 를 받지 않고 플랫폼 탭도 묻는다.
+  // - 버전이 다르면 login-info 를 다시 받아 메뉴 · 계정을 바꾼다. 메뉴가 바뀌었으면 토스트, 이름 · 이메일만이면 조용히(2026-11-02 사용자 지정).
+  //   지금 화면의 조회 권한이 빠졌으면 위 막힌 주소 처리(접근 권한이 없는 메뉴입니다 · 뒤로 가기)가 그대로 돈다.
+  // - 사용중지 · 탈퇴 계정(403 사용할 수 없는 계정)은 로그아웃하고 로그인 화면에 「계정 상태가 변경되어 로그아웃되었습니다.」.
+  // - 저장값(login-info)을 고치면 같은 브라우저의 다른 탭은 storage 이벤트로 그 값을 읽는다(아래) — 다시 묻지 않는다.
+  const infoSync = useRef({ running: false, again: false, stopped: false });
+  const syncLoginInfo = async () => {
+    const s = infoSync.current;
+    if (s.running) {
+      s.again = true;
+      return;
+    }
+    s.running = true;
+    try {
+      do {
+        s.again = false;
+        const v = latest.current;
+        // 비밀번호를 바꾸기 전에는 버전 api 가 403 이다(me/stores 와 같다) — 바꾼 뒤 다시 연다
+        if (v.account.isPasswordChangeRequired || s.stopped || sync.current.disposed) return;
+        const changed = await fetchChangedLoginInfo(readLoginInfoVersion(v.loginKey)).catch(async (e: unknown) => {
+          const status = e instanceof BffError ? e.status : undefined;
+          if (isAccountUnavailable(e)) {
+            s.stopped = true;
+            await signOut(logoutForAccountChange);
+          } else if (status === 401) {
+            s.stopped = true;
+            router.replace(loginPathOf(location.pathname));
+          } else if (isPasswordRequired(e)) {
+            // 비밀번호 강제 변경 403 — bff() 가 팝업을 다시 띄우고, 바꾸기 전에는 위의 isPasswordChangeRequired 가 묻지 않게 막는다.
+            // 멈추지 않는다: 다른 탭에서 바꾸면 이 탭은 새로고침 없이 팝업만 닫히므로(storage) 멈춰 두면 맞추기가 영영 꺼진다(코드 리뷰로 찾음)
+          } else if (status === 403) {
+            // 그 밖의 403 은 다시 물어도 같은 실패가 쌓이므로 이 화면에서는 멈춘다
+            console.error("로그인 정보를 맞출 수 없음 — 이 화면에서는 더 묻지 않는다", { status }, e);
+            s.stopped = true;
+          } else console.warn("로그인 정보 버전을 맞추지 못함 — 다음에 다시 묻는다", { status }, e);
+          return null;
+        });
+        if (!changed || sync.current.disposed) continue;
+        const before = latest.current;
+        // 정보를 쓴 뒤에만 버전을 쓴다 — 정보 쓰기가 실패했는데 버전만 남으면 다음에 옛 정보를 최신으로 믿는다
+        if (writeLoginInfo({ loginKey: v.loginKey, account: changed.account, menus: changed.menus })) writeLoginInfoVersion(v.loginKey, changed.version);
+        onChange((cur) => ({ ...cur, account: changed.account, menus: changed.menus }));
+        if (!sameMenus(before.menus, changed.menus)) toast(LOGIN_INFO_CHANGED_MESSAGE);
+      } while (s.again);
+    } finally {
+      s.running = false;
+    }
+  };
   // 맞추는 중의 예외(주소 · 범위 계산 등)는 화면을 깨지 않고 남기기만 한다 — 실행 중 표시는 finally 가 푼다
   const runSync = (fromOtherTab: boolean) => void syncStores(fromOtherTab).catch((e: unknown) => console.error("점포 목록 맞추기 중 예외", e));
+  const runLoginInfoSync = () => void syncLoginInfo().catch((e: unknown) => console.error("로그인 정보 맞추기 중 예외", e));
   const refreshStores = () => runSync(false);
-  const syncOnEvent = useEffectEvent((fromOtherTab: boolean) => runSync(fromOtherTab));
+  // 다른 탭의 점포 알림(fromOtherTab)은 점포만 다시 맞춘다 — 로그인 정보는 그 탭이 저장값으로 알려 준다(아래 storage)
+  const syncOnEvent = useEffectEvent((fromOtherTab: boolean) => {
+    runSync(fromOtherTab);
+    if (!fromOtherTab) runLoginInfoSync();
+  });
   // 새로고침(처음 그릴 때)과 경로가 바뀔 때(메뉴 · 화면 이동) — 이동을 막지 않고 뒤에서 묻는다
   useEffect(() => syncOnEvent(false), [pathname]);
   useEffect(() => {
@@ -472,12 +551,22 @@ function Ready({
 
   // 다른 탭에서 로그아웃하면 로그인 화면으로, 다시 로그인하면(다른 계정 포함) 새 로그인 정보로 다시 연다(정책 B-5).
   // 로그인 화면이 저장값을 지우고, 새 로그인의 첫 탭이 login-info 를 쓰므로 그 키의 변화로 알아챈다. storage 이벤트는 다른 탭에만 온다.
+  // 같은 로그인인데 login-info 가 바뀌었으면 다른 탭이 로그인 정보를 맞췄거나(syncLoginInfo) 이름 · 이메일 · 비밀번호 강제 변경 표시를
+  // 고친 것이다 — 그 값을 이 탭에도 그대로 넣는다. 메뉴가 바뀌었으면 이 탭에서도 토스트를 띄운다.
+  const applyStoredLoginInfo = useEffectEvent((loginKey: string) => {
+    const info = readLoginInfo(loginKey);
+    if (!info) return;
+    const before = latest.current.menus;
+    onChange((cur) => ({ ...cur, account: info.account, menus: info.menus }));
+    if (!sameMenus(before, info.menus)) toast(LOGIN_INFO_CHANGED_MESSAGE);
+  });
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (e.key !== null && e.key !== LOGIN_INFO_KEY) return;
       const loginKey = readLoginKey();
       if (!loginKey) router.replace(loginPathOf(location.pathname));
       else if (loginKey !== value.loginKey) location.reload();
+      else applyStoredLoginInfo(loginKey);
     };
     addEventListener("storage", onStorage);
     return () => removeEventListener("storage", onStorage);
@@ -540,6 +629,17 @@ async function fetchChangedStores(bpCodeId: number, own: boolean, known: string 
   return { version, items };
 }
 
+/**
+ * 로그인 정보 버전을 묻고(GET /auth/admin/me/login-info-version) 이 브라우저가 아는 버전과 다르면 로그인 정보를 다시 받는다. 같으면 null.
+ * 버전을 먼저 받는다 — 받은 뒤 정보를 받기 전에 또 바뀌면 정보가 버전보다 새것이라 다음에 물을 때 다시 받아 맞는다(점포와 같다).
+ */
+async function fetchChangedLoginInfo(known: string | null): Promise<{ version: string; account: LoginInfoAccount; menus: AdminMenu[] } | null> {
+  const { version } = await bff<{ version: string }>("/auth/admin/me/login-info-version");
+  if (version === known) return null;
+  const { account, menus } = await bff<LoginInfo>("/auth/admin/login-info");
+  return { version, account, menus };
+}
+
 /** 탭 준비를 다시 해야 하는지 가르는 값 — 주소의 탭 BP(숫자), 옮긴 화면에 BP 없이 옴("move"), 그 밖("tab"). */
 function tabKeyOf(browserPath: string): number | "move" | "tab" {
   return bpOfPath(browserPath) ?? (isBpPathScreen(browserPath) ? "move" : "tab");
@@ -555,6 +655,8 @@ class OtherBpError extends Error {
   }
 }
 class LoginInfoDeniedError extends Error {}
+/** 계정을 쓸 수 없게 됐다(사용중지 · 탈퇴 — api 403 사용할 수 없는 계정). 로그인 화면이 「계정 상태가 변경되어 로그아웃되었습니다.」를 알린다. */
+class AccountChangedError extends Error {}
 /** 쿠키의 소속 BP 와 로그인 정보(login-info)가 어긋났다(fixBpPath). */
 class BpMismatchError extends Error {}
 
@@ -570,13 +672,20 @@ async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> 
   let bpInfo = readLoginBpInfo(loginKey);
   // 이 로그인에서 처음 열린 탭(또는 저장소가 지워진 브라우저)만 받는다. 그 뒤 탭은 저장한 값을 쓴다.
   if (!info || !bpInfo) {
+    // 받는 정보의 버전을 먼저 받아 둔다 — 없으면 준비 직후 맞추기가 방금 받은 login-info 를 한 번 더 받는다. 버전 · 정보 사이에 바뀌면
+    // 버전이 옛것이라 다음 맞추기가 다시 받는다. 비밀번호를 바꾸기 전(403) 등 버전을 못 받으면 비워 두고 맞추기에 맡긴다.
+    const version = await bff<{ version: string }>("/auth/admin/me/login-info-version").then(
+      (v) => v.version,
+      () => null,
+    );
     const r = await bff<LoginInfo>("/auth/admin/login-info").catch((e: unknown) => {
+      if (isAccountUnavailable(e)) throw new AccountChangedError();
       if (e instanceof BffError && (e.status === 403 || e.status === 404)) throw new LoginInfoDeniedError(e.message);
       throw e;
     });
     info = { loginKey, account: r.account, menus: r.menus };
     bpInfo = { loginKey, bpCodeId: r.account.bp.bpCodeId, stores: r.stores, codes: r.codes };
-    writeLoginInfo(info);
+    if (writeLoginInfo(info) && version) writeLoginInfoVersion(loginKey, version);
     writeLoginBpInfo(bpInfo);
   }
 

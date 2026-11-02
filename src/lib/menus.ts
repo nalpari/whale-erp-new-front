@@ -74,6 +74,14 @@ export function firstMenuRedirect(menus: AdminMenu[], service: ServiceCode, path
   return service === "PLATFORM" && pathname === HOME.PLATFORM && !isPasswordChangeRequired ? firstMenuUrl(menus, service) : null;
 }
 
+/**
+ * 두 메뉴 트리가 같은가 — 이름 · 주소 · 순서 · 권한까지. 로그인 정보를 다시 받았을 때 메뉴가 바뀌었으면 「권한 정보가 변경되었습니다.」를
+ * 띄우고, 이름 · 이메일 같은 계정 정보만 바뀌었으면 조용히 표시만 바꾼다(2026-11-02 사용자 지정). api 가 늘 같은 순서로 준다.
+ */
+export function sameMenus(a: AdminMenu[], b: AdminMenu[]): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 /** 그 서비스의 메뉴만 남긴다(하위 메뉴까지). 플랫폼 계정은 두 서비스 메뉴를 모두 받으므로 탭의 서비스로 거른다. */
 export function menusOf(menus: AdminMenu[], service: ServiceCode): AdminMenu[] {
   return menus.filter((m) => m.serviceCode === service).map((m) => ({ ...m, children: menusOf(m.children, service) }));

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { bpOfSwitchUrl, bpSwitchUrl, firstMenuRedirect, firstMenuUrl, isAllowed, MENU_CODE, menuOfPath, menuPermissionOf, menusOf, serviceOfPath } from "./menus.ts";
+import { bpOfSwitchUrl, bpSwitchUrl, firstMenuRedirect, firstMenuUrl, isAllowed, MENU_CODE, menuOfPath, menuPermissionOf, menusOf, sameMenus, serviceOfPath } from "./menus.ts";
 import type { AdminMenu } from "./session.ts";
 
 const menu = (url: string | null, read: boolean, children: AdminMenu[] = [], serviceCode = "WHALE_ERP"): AdminMenu => ({
@@ -209,4 +209,15 @@ test("첫 메뉴로 넘기기 — 플랫폼 탭의 /platform 에서만, 비밀�
   assert.equal(firstMenuRedirect(platform, "WHALE_ERP", "/platform", false), null);
   // 메뉴가 없으면 /platform 에 머물러 권한 요청 안내를 그린다
   assert.equal(firstMenuRedirect([], "PLATFORM", "/platform", false), null);
+});
+
+test("sameMenus — 권한 · 이름 · 순서 · 하위 메뉴가 하나라도 다르면 다른 메뉴다", () => {
+  const base = [menu("/stores", true, [menu("/stores/new", true)]), menu("/staff", true)];
+  assert.equal(sameMenus(base, structuredClone(base)), true);
+  const withDelete = structuredClone(base);
+  withDelete[0].permission.delete = true;
+  assert.equal(sameMenus(base, withDelete), false);
+  assert.equal(sameMenus(base, [base[1], base[0]]), false);
+  assert.equal(sameMenus(base, [{ ...base[0], name: "점포" }, base[1]]), false);
+  assert.equal(sameMenus(base, [{ ...base[0], children: [] }, base[1]]), false);
 });

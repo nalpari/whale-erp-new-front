@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ApiError, getSession, LOGIN_KEY_COOKIE, request, SESSION_COOKIE } from "@/lib/api";
+import { ACCOUNT_CHANGED_REASON, LOGOUT_REASON_PARAM } from "@/lib/auth-routes";
 import { apiHeaders } from "@/lib/forwarded-headers";
 
 /** 이 브라우저의 접속만 끝낸다. api 가 실패해도 쿠키는 지운다 — 나가려는 사람을 붙잡지 않는다. */
@@ -22,6 +23,12 @@ async function endSession(): Promise<void> {
 export async function logout(): Promise<void> {
   await endSession();
   redirect("/login");
+}
+
+/** 계정 상태가 바뀌어(사용중지 · 탈퇴) 밀려난 로그아웃 — 로그인 화면이 그 사실을 알린다(LOGOUT_REASON). */
+export async function logoutForAccountChange(): Promise<void> {
+  await endSession();
+  redirect(`/login?${new URLSearchParams({ [LOGOUT_REASON_PARAM]: ACCOUNT_CHANGED_REASON })}`);
 }
 
 /** 회원 탈퇴를 마친 뒤의 로그아웃 — 로그인 전 홈으로 간다(S-JHQQNR, 2026-10-29 재영). */
