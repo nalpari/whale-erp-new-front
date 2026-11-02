@@ -181,7 +181,7 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
   // 쪽 넘기기는 10건이 넘을 때만, 표와 6px 띄운다(앱 history-dialog.tsx). 불러오는 중(「불러오는 중입니다.」) · 실패 띠는 데모에 두지 않는다
   const history =
     `<div class="max-h-[273px] overflow-y-auto border-y border-erp-thead-line [&_thead]:sticky [&_thead]:top-0 [&_thead]:shadow-[0_1px_0_var(--color-erp-thead-line)] [&_thead_tr]:border-y-0 [&_tbody_tr:last-child]:border-b-0">${ui.dataTable(
-      [{ header: "변경일시", width: "w-[140px]" }, { header: "변경자", width: "w-[70px]" }, { header: "항목", width: "w-[140px]", align: "left" }, { header: "변경 전", align: "left" }, { header: "변경 후", align: "left" }],
+      [{ header: "변경일시", width: "w-[140px]" }, { header: "변경자", width: "w-[140px]" }, { header: "항목", width: "w-[120px]", align: "left" }, { header: "변경 전", align: "left" }, { header: "변경 후", align: "left" }],
       d.history.map(([at, by, ...rest]) => [at, by ?? muted("시스템"), ...rest]),
       "변경이력이 없습니다.",
     )}</div>` + (d.historyTotal > 10 ? `<div class="pt-[6px]">${ui.pagination(A, 1, Math.ceil(d.historyTotal / 10))}</div>` : "");

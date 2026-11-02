@@ -10,7 +10,7 @@
   <body data-root="../" data-page="config" data-sub="config/holidays.html">
     <!-- BP 휴일 수정 · /settings/holidays/:id/edit · S-BXEAEZ (F-YQTLQE BP 휴일 관리) · 1팀
          앱(src/app/bp-holidays/holiday-form-panel.tsx)대로 고쳤다(코드대로, 2026-10-30 — 사용자 결정 「front대로」). 앱에서는 상세 위에 겹쳐 여는 슬라이드 패널이고, 상세의 [수정]으로만 연다.
-         휴일정보(휴일명 → 날짜(하루 · 기간 · 반복) → 반복 상자 → 설명)를 위로, 적용 대상(적용 범위 · 대상 또는 예외 점포)을 아래로 둔다. 버튼은 맨 아래 가운데 [닫기] [저장]이다.
+         휴일정보(휴일명 → 날짜(하루 · 기간 · 반복) → 반복 상자 → 설명)를 위로, 적용 대상(적용 범위 · 대상 또는 예외 점포)을 아래로 둔다. 버튼은 맨 아래 가운데 [취소] [저장]이다.
          휴일을 나누지 않고 그 휴일을 고친다. 고칠 수 있는 칸은 상태로 갈린다(1팀 「BP 휴일 변경 · 종료 정책」, 2026-10-26) — api 가 같은 규칙으로 다시 막는다.
            · 시작 전: 모든 칸. 시작일을 옮기면 점포도 새 시작일부터다.
            · 진행 중: 휴일명 · 설명 · 점포만. 유형 · 날짜 · 반복 · 적용 범위 칸은 막고 읽은 값 그대로 보낸다. 점포는 더하면 오늘부터, 빼면 어제까지.
@@ -972,14 +972,14 @@
             </div>
 
 
-            <!-- [닫기] [저장]은 맨 아래 가운데, 위 구분선 없이 — 실패 상태의 [저장]도 같은 자리다(코드대로, 2026-10-30) -->
-            <div class="inline" style="justify-content: center; gap: 6px" data-show="hd0122 miss"><a class="btn btn--ghost" href="holidays-detail.html">닫기</a><a class="btn btn--primary" href="holidays-detail.html?state=hd0122">저장</a></div>
-            <div class="inline" style="justify-content: center; gap: 6px" data-show="hd0114 conflict" hidden><a class="btn btn--ghost" href="holidays-detail.html?state=hd0114">닫기</a><a class="btn btn--primary" href="holidays-detail.html?state=hd0114">저장</a></div>
-            <div class="inline" style="justify-content: center; gap: 6px" data-show="hd0120 pastdate fail" hidden><a class="btn btn--ghost" href="holidays-detail.html?state=hd0120">닫기</a><a class="btn btn--primary" href="holidays-detail.html?state=hd0120">저장</a></div>
-            <div class="inline" style="justify-content: center; gap: 6px" data-show="hd0116" hidden><a class="btn btn--ghost" href="holidays-detail.html?state=hd0116">닫기</a><a class="btn btn--primary" href="holidays-detail.html?state=hd0116">저장</a></div>
-            <div class="inline" style="justify-content: center; gap: 6px" data-show="hd0121" hidden><a class="btn btn--ghost" href="holidays-detail.html?state=hd0121">닫기</a><a class="btn btn--primary" href="holidays-detail.html?state=hd0121">저장</a></div>
-            <div class="inline" style="justify-content: center; gap: 6px" data-show="hd0123 oos" hidden><a class="btn btn--ghost" href="holidays-detail.html?state=hd0123">닫기</a><a class="btn btn--primary" href="holidays-detail.html?state=hd0123">저장</a></div>
-            <div class="inline" style="justify-content: center; gap: 6px" data-show="created partial" hidden><a class="btn btn--ghost" href="holidays-detail.html?state=created">닫기</a><a class="btn btn--primary" href="holidays-detail.html?state=created">저장</a></div>
+            <!-- [취소] [저장]은 맨 아래 가운데, 위 구분선 없이 — 실패 상태의 [저장]도 같은 자리다(코드대로, 2026-10-30) -->
+            <div class="inline" style="justify-content: center; gap: 6px" data-show="hd0122 miss"><a class="btn btn--ghost" href="holidays-detail.html">취소</a><a class="btn btn--primary" href="holidays-detail.html?state=hd0122">저장</a></div>
+            <div class="inline" style="justify-content: center; gap: 6px" data-show="hd0114 conflict" hidden><a class="btn btn--ghost" href="holidays-detail.html?state=hd0114">취소</a><a class="btn btn--primary" href="holidays-detail.html?state=hd0114">저장</a></div>
+            <div class="inline" style="justify-content: center; gap: 6px" data-show="hd0120 pastdate fail" hidden><a class="btn btn--ghost" href="holidays-detail.html?state=hd0120">취소</a><a class="btn btn--primary" href="holidays-detail.html?state=hd0120">저장</a></div>
+            <div class="inline" style="justify-content: center; gap: 6px" data-show="hd0116" hidden><a class="btn btn--ghost" href="holidays-detail.html?state=hd0116">취소</a><a class="btn btn--primary" href="holidays-detail.html?state=hd0116">저장</a></div>
+            <div class="inline" style="justify-content: center; gap: 6px" data-show="hd0121" hidden><a class="btn btn--ghost" href="holidays-detail.html?state=hd0121">취소</a><a class="btn btn--primary" href="holidays-detail.html?state=hd0121">저장</a></div>
+            <div class="inline" style="justify-content: center; gap: 6px" data-show="hd0123 oos" hidden><a class="btn btn--ghost" href="holidays-detail.html?state=hd0123">취소</a><a class="btn btn--primary" href="holidays-detail.html?state=hd0123">저장</a></div>
+            <div class="inline" style="justify-content: center; gap: 6px" data-show="created partial" hidden><a class="btn btn--ghost" href="holidays-detail.html?state=created">취소</a><a class="btn btn--primary" href="holidays-detail.html?state=created">저장</a></div>
           </div>
 
         </div>

@@ -1,6 +1,10 @@
 # Bundle history
 
 ## 2026-11-02
+* **Update**: main 병합(front hitmonlee, main #208 까지): 데모 소스 · 목업은 main 쪽(휴일 [강제 종료] · 새 이력 팝업 · 아래 가운데 버튼)을 받고 [취소] · 이력 팝업 860 · 열 폭을 다시 넣은 뒤 데모를 다시 빌드했다. okf 충돌은 양쪽 기록을 살렸다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 등록 · 수정 패널 아래 [닫기]를 [취소]로 바꾸고(상세 패널 [닫기]는 그대로), 1팀 변경이력 팝업 폭을 모두 860px · 열 폭을 변경일시 140 · 변경자 140 · 항목 120(휴일 90) · 휴일명 140 으로 맞췄다(사용자 지정).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 변경이력 열 폭의 근거를 개발 DB 데이터 대신 api 항목 이름 길이로 적고, 데모 이력 표 열 폭도 앱과 같게 맞췄다(front hitmonlee 리뷰 반영).
+* **Update**: [BP 마스터 계정 관리](/bp.md) · [점포 관리](/stores.md) — 출처(`src/app/bp-masters` · `src/app/stores`)의 변경이력 팝업 폭 · 열 폭만 바뀌었다. 본문에 폭 서술이 없어 고칠 문장은 없고 갱신 시각만 올렸다(자세한 값은 Whale ERP Frontend).
 * **Update**: [BP 환경설정](/config.md) — BP 권한 그룹 목록 「등록 N개」 기준을 api 갱신대로 고쳤다: 웨일ERP 메뉴만, 상위 메뉴까지 사용일 때만 센다(api sentret 74ee4422). 응답 모양은 그대로라 front 코드는 바꾸지 않았다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #208 리뷰 반영: BP 휴일 상세 점포 수를 휴일 상태로 가르는 `storeCountOf`(bp-holiday-view.ts, 테스트 포함)로 옮겼다 — 예외를 모두 푼 진행 중 휴일이 「예외점포 1개」로 보이던 것을 고침. BP 공통코드 · 권한 그룹의 플랫폼고정 잠금 시절 낡은 주석도 정리했다(front prinplup).
 
