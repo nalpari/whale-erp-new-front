@@ -50,13 +50,13 @@ export async function getBpCodeGroups({ groupCode = "", groupName = "" }: { grou
   }
 }
 
-/** GET /bp-code-groups/{groupCode}/items — 플랫폼고정이면 플랫폼 원본, 플랫폼제공이면 이 BP 의 행(복사된 코드 · BP전용). 사용중지 포함, 쪽 나눔 없음. */
+/** GET /bp-code-groups/{groupCode}/items — 플랫폼제공 그룹의 이 BP 행(복사된 코드 · BP전용). 그 밖의 그룹은 404. 사용중지 포함, 쪽 나눔 없음. */
 export async function getBpCodeItems(groupCode: string): Promise<BpCodeItemList> {
   return request(`/bp-code-groups/${encodeURIComponent(groupCode)}/items`, await json("GET"));
 }
 
 // 등록 · 수정 · 삭제는 각자 한 트랜잭션이고 응답은 204 다. 한 요청 안에서 하나라도 막히면 아무것도 바뀌지 않는다.
-// 플랫폼고정 그룹(409), 사용중지 · 없는 그룹(404), 플랫폼 사용자(403)는 api 가 막는다.
+// 플랫폼고정 · 사용중지 · 없는 그룹(404), 플랫폼 사용자(403)는 api 가 막는다.
 
 /** POST /bp-code-groups/{groupCode}/items — 새 상세 코드 등록(등록 권한). 관리 주체는 api 가 BP전용으로 저장한다. */
 export async function createBpCodeItems(groupCode: string, input: { items: SaveCodeItemsInput["creates"] }): Promise<void> {

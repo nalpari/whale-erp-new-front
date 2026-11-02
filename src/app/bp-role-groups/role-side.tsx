@@ -171,9 +171,9 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
     return (
       <>
         {heading}
-        {/* 조회 권한만 있으면 이유 띠 없이 상세로만 보인다 */}
+        {/* BP 계정이 조회 권한만 있으면 이유 띠 없이 상세로만 보인다 */}
         {/* 가맹 마스터가 아닌 사람이 보는 가맹 관리자 그룹(NO_PERMISSION · FA)은 문장으로(2026-10-27 사용자 지정) */}
-        {/* 막힌 이유는 빨간 안내 상자(WarnBand — 2026-10-27 사용자 지정, 전엔 회색 띠) */}
+        {/* BP 계정의 막힌 이유는 빨간 안내 상자(WarnBand — 2026-10-27 사용자 지정, 전엔 회색 띠) */}
         {/* 플랫폼 계정은 BP 권한 그룹을 늘 조회만 한다(api) — 그룹마다 빨간 상자 대신 안내 한 줄(2026-10-30 재영) */}
         {isPlatform && <InfoBand>플랫폼 계정은 BP 권한 그룹을 조회만 합니다.</InfoBand>}
         {!isPlatform && can.update && role.editBlockedReason && (
