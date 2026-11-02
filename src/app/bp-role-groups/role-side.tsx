@@ -86,6 +86,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
   const can = usePagePermission();
   const actions = useBpActions();
   const isPlatform = useAccount().bp.isPlatform;
+  // 고칠 수 있는지 · 지울 수 있는지는 api 가 정한다 — 플랫폼 계정이면 isEditable · isDeletable 이 늘 false 로 와서 화면이 따로 막지 않는다
   const editable = can.update && role.isEditable;
   const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
   const rows: DetailRow[] = [
