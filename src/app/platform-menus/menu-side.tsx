@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Badge, Button, ConfirmDialog, DetailTable, Field, FormRow, Radio, TextField, useToast, type DetailRow } from "@/components/common";
-import { usePagePermission } from "@/components/site/session-gate";
+import { usePageMenu, usePagePermission } from "@/components/site/session-gate";
 import { CARD, FailedBand, FieldMessage } from "@/components/site/side-parts";
 import {
   afterConflict,
@@ -20,7 +20,6 @@ import {
   type MenuStatus,
 } from "@/lib/menu-form";
 import { findRow, pathNamesOf, type createPlacement } from "@/lib/menu-tree";
-import { MENU_CODE } from "@/lib/menus";
 import type { MenuDetail, MenuNode } from "@/lib/platform-menus";
 import { createMenuAction, updateMenuAction } from "./actions";
 import { statusText, unknownResult, type MenuDetailState } from "./menu-parts";
@@ -31,10 +30,6 @@ import { statusText, unknownResult, type MenuDetailState } from "./menu-parts";
 
 type Placement = ReturnType<typeof createPlacement<MenuNode>>;
 const ROOT_PARENT = "없음 · 최상위(1단계) 메뉴";
-// 이 화면의 메뉴 코드 — 끄면 메뉴 권한 판정이 이 화면까지 막아 화면으로는 되돌릴 수 없다(api 는 막지 않는다 · 2026-10-16 결정)
-const SELF_MENU_CODE = MENU_CODE.platformMenus;
-/** 이 화면을 막는 저장 — 미사용으로 돌리기 · 이 화면 메뉴의 URL 바꾸기 */
-type SelfLock = "inactive" | "url";
 
 export function MenuSide({
   serviceCode,
@@ -156,7 +151,9 @@ function MenuForm(
   const [form, setForm] = useState<MenuFormValues>(() => ({ name: base.name, url: base.url, status: base.status }));
   const [errors, setErrors] = useState<MenuFormErrors>({});
   const [failure, setFailure] = useState<{ message: string; detail: string } | null>(null);
-  const [confirmSelfLock, setConfirmSelfLock] = useState<SelfLock | null>(null);
+  const [confirmSelfLock, setConfirmSelfLock] = useState(false);
+  // 지금 화면(이 화면)의 메뉴 코드 — 끄면 이 화면이 닫히는지 볼 때 쓴다. 메뉴 코드를 적지 않고 화면이 열린 판정과 같은 메뉴로 찾는다
+  const selfCode = usePageMenu()?.menuCode;
   const [saving, startSaving] = useTransition();
   const id = props.mode === "edit" ? `menu-${props.menu.menuId}` : "menu-new";
   const [seenUpdatedAt, setSeenUpdatedAt] = useState(server?.updatedAt ?? "");
@@ -180,17 +177,14 @@ function MenuForm(
   };
 
   /**
-   * 이 저장이 이 화면(MN000215)을 막는가 — 화면으로는 되돌릴 수 없다.
-   * inactive: 이 메뉴나 그 아래에 이 화면이 있는데 미사용으로 돌린다. url: 이 화면 메뉴의 URL 을 바꾼다 — 메뉴 URL 이 실제 화면 주소와
-   * 어긋나면 다음 로그인부터 URL 막기(isAllowed)가 이 화면을 연다고 보지 않는다(이 화면의 라우트는 /platform-menus 다).
+   * 이 저장이 이 화면을 막는가 — 이 메뉴나 그 아래에 지금 화면의 메뉴(usePageMenu)가 있는데 미사용으로 돌린다. api 는 막지 않고(2026-10-16 결정)
+   * 끄면 메뉴 권한 판정이 이 화면까지 막아 화면으로는 되돌릴 수 없다. 이 화면 메뉴의 URL 변경은 api 가 409 로 막아(API 권한 주소, 2026-10-21) 따로 묻지 않는다.
    */
-  const selfLockOf = (): SelfLock | null => {
-    if (props.mode !== "edit") return null;
-    if (props.menu.menuCode === SELF_MENU_CODE && form.url.trim() !== base.url.trim()) return "url";
-    if (base.status !== "ACTIVE" || form.status !== "INACTIVE") return null;
-    const has = (n: MenuNode): boolean => n.menuCode === SELF_MENU_CODE || n.children.some(has);
+  const locksSelf = (): boolean => {
+    if (props.mode !== "edit" || !selfCode || base.status !== "ACTIVE" || form.status !== "INACTIVE") return false;
+    const has = (n: MenuNode): boolean => n.menuCode === selfCode || n.children.some(has);
     const row = findRow(props.nodes, props.menu.menuId);
-    return row && has(row.node) ? "inactive" : null;
+    return !!row && has(row.node);
   };
 
   const handleSubmit = (e?: React.FormEvent) => {
@@ -201,13 +195,12 @@ function MenuForm(
     const found = validateMenuForm(form, props.mode === "edit" ? base.url : undefined);
     setErrors(found);
     if (Object.keys(found).length) return;
-    const lock = selfLockOf();
-    if (lock) return setConfirmSelfLock(lock);
+    if (locksSelf()) return setConfirmSelfLock(true);
     save();
   };
 
   const save = () => {
-    setConfirmSelfLock(null);
+    setConfirmSelfLock(false);
     const body = bodyOf(form);
     startSaving(async () => {
       if (props.mode === "create") {
@@ -347,17 +340,17 @@ function MenuForm(
         </Button>
       </div>
       <ConfirmDialog
-        open={confirmSelfLock !== null}
+        open={confirmSelfLock}
         // 트리에서 미사용 메뉴 아래로 옮길 때의 확인창과 같은 틀(제목은 묻는 말, 본문은 결과 한 줄) — 메뉴 이름 · 코드는 넣지 않는다(2026-10-28 사용자 지정)
-        title={confirmSelfLock === "url" ? "메뉴 URL을 변경하시겠습니까?" : "미사용으로 변경하시겠습니까?"}
-        confirmLabel={confirmSelfLock === "url" ? "변경 후 저장" : "미사용으로 저장"}
+        title="미사용으로 변경하시겠습니까?"
+        confirmLabel="미사용으로 저장"
         busy={saving}
         onConfirm={save}
-        onCancel={() => setConfirmSelfLock(null)}
+        onCancel={() => setConfirmSelfLock(false)}
       >
         {/* 「다.」만 다음 줄로 넘어가지 않게 「접근할 수 없습니다.」 앞에서 줄을 바꾼다(2026-10-28 사용자 지정) */}
         <p className="text-[14px] leading-[1.6]">
-          {confirmSelfLock === "url" ? "변경 후에는 실제 화면 주소와 달라져 현재 화면에" : "변경 후에는 현재 화면이 사용자 메뉴에서 제외되어"}
+          변경 후에는 현재 화면이 사용자 메뉴에서 제외되어
           <br />
           접근할 수 없습니다.
         </p>

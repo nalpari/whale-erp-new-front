@@ -23,13 +23,13 @@ import {
 } from "./code-drafts.ts";
 
 const items: CodeItem[] = [
-  { itemCode: "FULL", label: "정직원", status: "ACTIVE", sortOrder: 1 },
-  { itemCode: "PART", label: "파트타이머", status: "ACTIVE", sortOrder: 2 },
+  { itemCode: "FULL", label: "정직원", status: "ACTIVE", sortOrder: 1, updatedAt: "2026-10-30T01:00:00.000Z" },
+  { itemCode: "PART", label: "파트타이머", status: "ACTIVE", sortOrder: 2, updatedAt: "2026-10-30T01:00:00.000Z" },
 ] as CodeItem[];
 const itemDraft = (i: CodeItem, patch: Partial<ItemDraft> = {}): ItemDraft => ({ ...i, key: i.itemCode, added: false, ...patch });
 
 const groups: CodeGroup[] = [
-  { groupCode: "EMP_TYPE", groupName: "고용 형태", manageOwnerCode: "PLATFORM_PROVIDED", isBpApplied: true, status: "ACTIVE", sortOrder: 1 },
+  { groupCode: "EMP_TYPE", groupName: "고용 형태", manageOwnerCode: "PLATFORM_PROVIDED", isBpApplied: true, status: "ACTIVE", sortOrder: 1, updatedAt: "2026-10-30T01:00:00.000Z" },
 ] as CodeGroup[];
 const groupDraft = (g: CodeGroup, patch: Partial<GroupDraft> = {}): GroupDraft => ({ ...g, added: false, ...patch });
 const newGroup = (patch: Partial<GroupDraft> = {}): GroupDraft => ({
@@ -60,7 +60,7 @@ test("상세 코드 저장 요청 — 바뀐 기존 행만 updates, 새 행은 c
     ],
     items,
   );
-  assert.deepEqual(input.updates, [{ itemCode: "FULL", label: "정규직", status: "ACTIVE", sortOrder: 1 }]);
+  assert.deepEqual(input.updates, [{ itemCode: "FULL", label: "정규직", status: "ACTIVE", sortOrder: 1, updatedAt: "2026-10-30T01:00:00.000Z" }], "받아 온 updatedAt 을 함께 보낸다");
   assert.deepEqual(input.creates, [{ itemCode: "INTERN", label: "인턴", status: "ACTIVE", sortOrder: 3 }]);
 });
 
@@ -77,10 +77,16 @@ test("지우기로 한 행은 deletes 에만 싣는다 — 값을 고쳤어도 �
 
 test("그룹 저장 요청 — 새 그룹 코드는 대문자 · 공백 제거, 이름은 공백 제거", () => {
   const input = buildSaveGroupsInput([groupDraft(groups[0], { groupName: "근로 형태" }), newGroup()], groups);
-  assert.deepEqual(input.updates, [{ groupCode: "EMP_TYPE", groupName: "근로 형태", status: "ACTIVE", sortOrder: 1 }]);
+  assert.deepEqual(input.updates, [{ groupCode: "EMP_TYPE", groupName: "근로 형태", status: "ACTIVE", sortOrder: 1, updatedAt: "2026-10-30T01:00:00.000Z" }], "받아 온 updatedAt 을 함께 보낸다");
   assert.deepEqual(input.creates, [
-    { groupCode: "PAY_CYCLE", groupName: "급여 주기", manageOwnerCode: "PLATFORM_FIXED", status: "ACTIVE", sortOrder: 21 },
-  ]);
+    { groupCode: "PAY_CYCLE", groupName: "급여 주기", manageOwnerCode: "PLATFORM_FIXED", status: "ACTIVE" },
+  ], "새 그룹의 표시 순서는 보내지 않는다 — api 가 매긴다");
+});
+
+test("받아 온 목록에 없는 기존 행은 수정 요청에 싣지 않는다 — 보낼 updatedAt 이 없다", () => {
+  const gone = { key: "GONE", itemCode: "GONE", label: "x", status: "ACTIVE" as const, sortOrder: 9, added: false };
+  assert.deepEqual(buildSaveItemsInput([gone], items).updates, []);
+  assert.deepEqual(buildSaveGroupsInput([groupDraft({ ...groups[0], groupCode: "GONE" }, { groupName: "x" })], groups).updates, []);
 });
 
 test("관리 주체를 고르지 않은 새 그룹은 요청에 싣지 않는다", () => {
@@ -94,6 +100,13 @@ test("409 문구에서 겹친 코드를 꺼낸다", () => {
   assert.equal(conflictCode("이미 있는 그룹 코드입니다"), undefined, "코드가 없는 꼴");
   assert.equal(conflictCode("겹칩니다: 인턴"), undefined, "코드 형식이 아니면 쓰지 않는다");
   assert.equal(conflictCode("이미 있는 그룹 코드입니다: INTERN ,PART_TIME"), "INTERN", "쉼표 앞뒤 공백은 다듬는다");
+});
+
+test("409 문구에서 겹친 코드를 꺼낸다 — 괄호 꼴(2026-10-30 api 문구 정리 뒤)", () => {
+  assert.equal(conflictCode("이 그룹에 이미 있는 상세 코드입니다(INTERN)."), "INTERN");
+  assert.equal(conflictCode("이 그룹에 이미 있는 상세 코드입니다(INTERN, PART_TIME)."), "INTERN", "여럿이면 첫 코드");
+  assert.equal(conflictCode("다른 관리자가 먼저 지운 상세 코드가 있습니다(G1). 다시 불러온 뒤 저장해 주세요."), "G1", "괄호 뒤에 문장이 더 있어도");
+  assert.equal(conflictCode("영문 대문자로 시작해 영문·숫자·_로 입력해 주세요(최대 20자)."), undefined, "괄호 안이 코드가 아니면 쓰지 않는다");
 });
 
 test("권한 — [추가]는 등록, 기존 행 고치기는 수정, [삭제]는 삭제, [저장]은 셋 중 하나. 상세를 못 불러왔으면 모두 막는다", () => {
@@ -158,7 +171,7 @@ test("지울 표시가 붙은 새 행은 등록하지 않는다", () => {
 });
 
 test("토스트 — 새 행이 있거나 고치기 · 지우기를 함께 하면 저장, 지우기만이면 삭제, 고치기만이면 수정", () => {
-  const u = [{ itemCode: "A", label: "a", status: "ACTIVE" as const, sortOrder: 1 }];
+  const u = [{ itemCode: "A", label: "a", status: "ACTIVE" as const, sortOrder: 1, updatedAt: "2026-10-30T01:00:00.000Z" }];
   assert.equal(savedToast({ updates: [], creates: u, deletes: [] }), "saved");
   assert.equal(savedToast({ updates: u, creates: [], deletes: ["B"] }), "saved");
   assert.equal(savedToast({ updates: [], creates: [], deletes: ["B"] }), "deleted");
@@ -186,8 +199,10 @@ test("등록한 새 행은 뺀다 — 코드는 대문자 · 공백을 맞춰 �
 });
 
 test("unusableCodeMessage — 표에 없는 코드와 겹친 409 는 「사용할 수 없는 상세 코드」로, 그 밖은 그대로", () => {
-  assert.equal(unusableCodeMessage("이 그룹에 이미 있는 상세 코드입니다: G2", ["G1"]), "이 그룹에서 사용할 수 없는 상세 코드입니다: G2");
-  assert.equal(unusableCodeMessage("플랫폼이 등록한 상세 코드와 겹칩니다: G2", []), "이 그룹에서 사용할 수 없는 상세 코드입니다: G2");
+  assert.equal(unusableCodeMessage("이 그룹에 이미 있는 상세 코드입니다: G2", ["G1"]), "이 그룹에서 사용할 수 없는 상세 코드입니다(G2).");
+  assert.equal(unusableCodeMessage("플랫폼이 등록한 상세 코드와 겹칩니다: G2", []), "이 그룹에서 사용할 수 없는 상세 코드입니다(G2).");
+  assert.equal(unusableCodeMessage("이 그룹에 이미 있는 상세 코드입니다(G2, G3).", ["G1"]), "이 그룹에서 사용할 수 없는 상세 코드입니다(G2, G3).");
+  assert.equal(unusableCodeMessage("이 그룹에 이미 있는 상세 코드입니다(G1).", ["G1"]), "이 그룹에 이미 있는 상세 코드입니다(G1).");
   assert.equal(unusableCodeMessage("이 그룹에 이미 있는 상세 코드입니다: G1", ["G1"]), "이 그룹에 이미 있는 상세 코드입니다: G1");
   assert.equal(unusableCodeMessage("이 그룹에 이미 있는 상세 코드입니다: G1, G2", ["G1"]), "이 그룹에 이미 있는 상세 코드입니다: G1, G2");
   assert.equal(unusableCodeMessage("플랫폼고정 그룹은 조회만 할 수 있습니다", []), "플랫폼고정 그룹은 조회만 할 수 있습니다");

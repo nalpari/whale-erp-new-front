@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Badge, Blocked, Button, DataTable, Select, TextField, Toggle, useToast, type Column } from "@/components/common";
 import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, withKeptPending, type GroupDraft } from "@/lib/code-drafts";
-import { failureView } from "@/lib/code-save";
+import { failureView, STALE_DETAIL } from "@/lib/code-save";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, ManageOwnerCode } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -56,6 +56,10 @@ export function CodeGroupPanel({
   const [drafts, setDrafts] = useState(() => groups.map(toDraft));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
+  // 그 사이 바뀐 실패(409 · 404) 뒤 다시 받은 목록으로 칸을 채울 때 실패 띠를 지우지 않는다
+  const [staleBand, setStaleBand] = useState(false);
+  // 지금 실패 띠가 그 사이 바뀐 실패인가 — 아랫줄을 「최신 정보로 다시 채웠습니다.」로 고른다(failureView 의 판정 그대로)
+  const [failureStale, setFailureStale] = useState(false);
   const [saving, startSaving] = useTransition();
   const [applyTarget, setApplyTarget] = useState<Draft | null>(null);
   const [applying, startApplying] = useTransition();
@@ -75,6 +79,8 @@ export function CodeGroupPanel({
     setShown({ groups, selected });
     // 저장 중에 같은 내용의 목록이 새 참조로 오면(오른쪽 패널 저장 등) 저장 기준도 그 참조로 옮긴다(followSameRows)
     if (sameRows) {
+      // 다시 받은 목록이 같은 내용이면 staleBand 표시만 푼다 — 실패 띠(failure)는 그대로 둔다
+      setStaleBand(false);
       const followed = followSameRows(savingFrom?.groups ?? null, shown.groups, groups);
       if (savingFrom && followed !== savingFrom.groups) setSavingFrom({ ...savingFrom, groups });
     } else {
@@ -84,8 +90,10 @@ export function CodeGroupPanel({
       setDrafts(next);
       if (!next.some((d) => d.added)) {
         setErrors({});
-        setFailure(null);
+        // 그 사이 바뀐 실패(409 · 404)로 다시 받은 목록이면 실패 띠는 남긴다(staleBand) — 한 번 쓰고 푼다
+        if (!staleBand) setFailure(null);
       }
+      setStaleBand(false);
     }
   }
 
@@ -114,11 +122,10 @@ export function CodeGroupPanel({
   };
 
   const handleAdd = () => {
-    // 새 행은 마지막 다음 순서, 사용 상태로 시작한다.
-    const last = Math.max(total, ...drafts.map((d) => d.sortOrder));
+    // 새 행은 사용 상태로 시작한다. 표시 순서는 보내지 않고 api 가 전체 마지막 다음으로 매긴다 — 검색 · 쪽 결과로는 마지막을 모른다(2026-10-30)
     setDrafts((rows) => [
       ...rows,
-      { groupCode: "", groupName: "", manageOwnerCode: "", isBpApplied: false, status: "ACTIVE", sortOrder: last + 1, added: true },
+      { groupCode: "", groupName: "", manageOwnerCode: "", isBpApplied: false, status: "ACTIVE", sortOrder: 0, added: true },
     ]);
   };
 
@@ -166,6 +173,7 @@ export function CodeGroupPanel({
     const found = validate();
     setErrors(found);
     setFailure(null);
+    setFailureStale(false);
     if (Object.keys(found).length) return focusFirstInvalid(PANEL_ID);
 
     const input = buildSaveGroupsInput(drafts, groups);
@@ -193,12 +201,19 @@ export function CodeGroupPanel({
         // 새로 만든 것이 있으면 ‘저장되었습니다.’, 고치기만 했으면 ‘수정되었습니다.’(공통 토스트)
         return toast(input.creates.length ? "saved" : "updated");
       }
-      // 아무것도 저장되지 않았으면 이어 둘 일이 없다. 수정만 저장됐으면 새 행은 다시 받은 목록 뒤에 남는다(savingFrom).
-      if (!result.anySaved) setSavingFrom(null);
+      // 아무것도 저장되지 않았으면 이어 둘 일이 없다(그 사이 바뀜은 빼고 — 다시 받은 목록에 잇는다). 수정만 저장됐으면 새 행은 다시 받은 목록 뒤에 남는다(savingFrom).
       // 그룹 코드가 겹치면 칸 오류로, 그 밖은 띠로 알린다. 수정분이 저장됐으면 띠에 그 사실을 먼저 적는다(failureView).
       const view = failureView(result);
+      if (!result.anySaved && !view.stale) setSavingFrom(null);
+      // 그 사이 다른 관리자가 고쳤거나 지웠다 — 띠로 알리고 최신 목록으로 칸을 다시 채운다. 저장 기준(savingFrom)은 저장을 시작할 때
+      // 잡아 둔(또는 같은 내용으로 따라간) 값을 그대로 두어, 기존 행만 최신 값으로 바꾸고 보내지 않은 새 행 · 지울 행 표시는 잇게 한다(PR #206 리뷰)
+      if (view.stale) {
+        setStaleBand(true);
+        router.refresh();
+      }
       if (view.conflict) setErrors({ code: view.conflict });
       setFailure(view.band);
+      setFailureStale(view.stale);
     });
   };
 
@@ -320,9 +335,9 @@ export function CodeGroupPanel({
       actions={
         canSave && (
           <>
-            {/* 저장 전 새 행은 하나만 둔다. 관리주체를 둘 다 끄면(목록 없음) 새 그룹의 표시 순서를 셀 목록이 없어 막는다(리뷰로 찾음) */}
+            {/* 저장 전 새 행은 하나만 둔다. 표시 순서는 api 가 매기므로 관리주체 필터와 상관없이 추가한다(2026-10-30 재영 — 전엔 둘 다 끄면 막음) */}
             {canAdd && (
-              <Button variant="soft" onClick={handleAdd} disabled={Boolean(added) || saving || search.manageOwnerCode === "NONE"}>
+              <Button variant="soft" onClick={handleAdd} disabled={Boolean(added) || saving}>
                 추가
               </Button>
             )}
@@ -334,7 +349,7 @@ export function CodeGroupPanel({
         )
       }
     >
-      {failure && <SaveFailedBand message={failure} />}
+      {failure && <SaveFailedBand message={failure} detail={failureStale ? STALE_DETAIL : undefined} />}
       {applyError && <SaveFailedBand message={applyError} detail={null} />}
       {notice && <DoneNotice message={notice} />}
       <DataTable
