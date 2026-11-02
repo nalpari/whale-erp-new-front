@@ -678,6 +678,8 @@
   var bulkPop = null, bulk = null;
   var BULK_TEXT = {
     map: { guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.", left: "매핑 안 된 점포", right: "매핑된 점포", leftDone: "고를 수 있는 점포를 모두 매핑했습니다.", rightEmpty: "아직 매핑된 점포가 없습니다." },
+    /* BP 휴일 예외점포 고르기(data-spick-exclude) — 앱 store-mapping-picker.tsx TEXTS.exclude 문구(2026-10-30 재영) */
+    exclude: { guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 예외로 뺄 수 있습니다. 예외 해제는 [빼기] 버튼을 이용해 주세요.", left: "적용 점포", right: "예외점포", leftDone: "선택할 수 있는 점포를 모두 예외로 지정했습니다.", rightEmpty: "예외점포가 없습니다." },
     filter: { guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 선택됩니다. 오른쪽에서 빼면 선택이 풀립니다.", left: "고를 수 있는 점포", right: "선택한 점포", leftDone: "고를 수 있는 점포를 모두 골랐습니다.", rightEmpty: "아직 고른 점포가 없습니다." }
   };
   function bulkIc(name, size) { return '<svg width="' + size + '" height="' + size + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
@@ -949,7 +951,7 @@
       close();
       spickBulk({
         pool: pool, picked: picked,
-        texts: box.hasAttribute("data-spick-nocode") ? BULK_TEXT.filter : null,
+        texts: box.hasAttribute("data-spick-nocode") ? BULK_TEXT.filter : box.hasAttribute("data-spick-exclude") ? BULK_TEXT.exclude : null,
         apply: function (sel) {
           var keep = picked.filter(function (c) { return sel.indexOf(c) > -1; });
           var fresh = pool.filter(function (s) { return !s.lock && sel.indexOf(s.code) > -1 && picked.indexOf(s.code) < 0; }).map(function (s) { return s.code; });

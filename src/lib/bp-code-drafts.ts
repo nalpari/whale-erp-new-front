@@ -25,17 +25,12 @@ export const newBpItemDraft = (key: string): BpItemDraft => ({
 });
 
 /**
- * 패널이 막힌 이유 — 플랫폼 사용자(조회만) · 플랫폼고정 그룹(조회만). 막히지 않았으면 null.
- * 둘 다 api 도 막는다(403 · 409) — 화면은 버튼을 숨기거나 잠그고 띠로 이유를 알린다.
- * 사용중지 그룹은 api 가 BP 에게 보내지 않으므로(목록에서 빠지고 상세 코드는 404) 따로 막지 않는다.
+ * 패널이 막힌 이유 — 플랫폼 사용자(조회만, api 도 403). 막히지 않았으면 null.
+ * 플랫폼고정 · 사용중지 그룹은 api 가 BP 에게 보내지 않으므로(목록에서 빠지고 상세 코드는 404) 따로 막지 않는다(2026-10-30 재영).
  */
-export type BpPanelLock = "platform-user" | "fixed" | null;
+export type BpPanelLock = "platform-user" | null;
 
-export function bpPanelLock(group: { manageOwnerCode: BpManageOwnerCode } | undefined, isPlatform: boolean): BpPanelLock {
-  if (isPlatform) return "platform-user";
-  if (group?.manageOwnerCode === "PLATFORM_FIXED") return "fixed";
-  return null;
-}
+export const bpPanelLock = (isPlatform: boolean): BpPanelLock => (isPlatform ? "platform-user" : null);
 
 /**
  * 패널의 메뉴 권한(code-drafts.ts 의 codePanelAccess)에 막힌 이유를 더한다. 막혔으면 고치기 · 순서 옮기기 · 추가 · 삭제 · 저장을 모두 막는다.
@@ -47,7 +42,7 @@ export function bpCodePanelAccess(o: { lock: BpPanelLock; update: boolean; creat
 }
 
 /**
- * BP 가 지울 수 있는 행 — 저장된 플랫폼제공 · BP전용 코드(2026-10-22). 플랫폼고정 코드는 지우지 못한다(그룹이 조회만이라 패널도 잠긴다).
+ * BP 가 지울 수 있는 행 — 저장된 플랫폼제공 · BP전용 코드(2026-10-22). 플랫폼고정 코드는 BP 에 오지 않지만 왔어도 지우지 않는다.
  * 새 행은 이동 칸의 [×]로 뺀다.
  */
 export const bpDeletable = (d: Pick<BpItemDraft, "added" | "manageOwnerCode">) =>

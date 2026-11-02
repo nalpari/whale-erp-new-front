@@ -85,7 +85,7 @@ export function HolidayHistoryButton({ today }: { today: string }) {
         </div>
         <div className="flex flex-col gap-[12px]" aria-busy={loading}>
           {failure && <FailedBand message={failure} />}
-          <DataTable columns={WITH_HOLIDAY} rows={data?.items ?? []} rowKey={(h) => h.changeId} empty={loading && !data ? "불러오는 중입니다." : "이력이 없습니다."} />
+          <DataTable columns={WITH_HOLIDAY} rows={data?.items ?? []} rowKey={(h) => h.changeId} empty={loading && !data ? "불러오는 중입니다." : "변경이력이 없습니다."} />
           {data && data.total > BP_HOLIDAY_HISTORY_PAGE_SIZE && (
             <div className="pt-[6px]">
               <Pagination page={page} totalPages={Math.ceil(data.total / BP_HOLIDAY_HISTORY_PAGE_SIZE)} onPageChange={(p) => load(range, p)} />
@@ -117,7 +117,7 @@ export function OwnHistoryButton({ histories, panelOpen }: { histories: BpHolida
           </Button>
         }
       >
-        <DataTable columns={COLUMNS} rows={histories} rowKey={(h) => h.changeId} empty="이력이 없습니다." />
+        <DataTable columns={COLUMNS} rows={histories} rowKey={(h) => h.changeId} empty="변경이력이 없습니다." />
       </WideDialog>
     </>
   );

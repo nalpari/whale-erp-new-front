@@ -162,6 +162,11 @@ export function openStores<T extends StorePeriod>(stores: T[]): T[] {
   return stores.filter((s) => s.effectiveEndDate === null && s.periodState !== "ENDED" && !seen.has(s.storeId) && seen.add(s.storeId));
 }
 
+/** 상세 점포 표 머리의 점포 수 — 지금 열린 점포(openStores)만 센다. 끝난 휴일은 열린 점포가 없으므로 걸렸던 점포를 하나씩 센다(2026-10-30 재영). */
+export function storeCountOf(stores: StorePeriod[], ended: boolean): number {
+  return ended ? new Set(stores.map((s) => s.storeId)).size : openStores(stores).length;
+}
+
 /** 상세 → 수정 양식. 특정 점포면 대상, 전체 점포면 예외 — 지금 열린 기간의 점포만(openStores). */
 export function formOfDetail(d: {
   name: string;
@@ -251,22 +256,6 @@ export function holidayBody(f: HolidayForm) {
     storeIds: f.isAllStores ? [] : f.storeIds,
     excludedStoreIds: f.isAllStores ? f.excludedStoreIds : [],
   };
-}
-
-/** 두 양식의 일정(유형 · 날짜 · 반복 · 종료 조건 · 적용 범위)이 같은가 — 진행 중 휴일은 이것을 바꾸면 409 다. */
-export function sameSchedule(a: HolidayForm, b: HolidayForm): boolean {
-  const x = holidayBody(a);
-  const y = holidayBody(b);
-  return (
-    x.holidayTypeCode === y.holidayTypeCode &&
-    x.startDate === y.startDate &&
-    x.endDate === y.endDate &&
-    x.holidayRepeatTypeCode === y.holidayRepeatTypeCode &&
-    x.repeatEndType === y.repeatEndType &&
-    x.repeatEndDate === y.repeatEndDate &&
-    x.repeatCount === y.repeatCount &&
-    x.isAllStores === y.isAllStores
-  );
 }
 
 // ── 문구 ──────────────────────────────────────────────────────────────

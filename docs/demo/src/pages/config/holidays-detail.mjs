@@ -54,46 +54,54 @@ export function detailParts(A, R, delId, { panel = false } = {}) {
     ? `<div class="flex flex-col gap-[24px]">${info}${stores}</div>`
     : `<div class="grid grid-cols-2 items-start gap-[24px]"><div class="flex flex-col gap-[24px]">${info}</div><div class="flex flex-col gap-[24px]">${stores}</div></div>`;
 
-  // 변경 이력 확인창 — BP 관리자 상세와 같은 모양(넓은 창 · 표 · 페이지 이동)
+  // 변경이력 — 이 휴일의 이력만, 쪽 이동 없음(앱 history-dialog.tsx OwnHistoryButton · WideDialog 760px). 값은 api bp-holiday-changes 의 문구
+  const cut = (t) => `<span class="block truncate" title="${t}">${t}</span>`;
   const histDialog = c.wide(
     x.dialog(
       histId,
       "변경이력",
-      `<div class="overflow-x-auto">${ui.dataTable(
+      ui.dataTable(
         [
-          { header: "변경 일시", width: "w-[160px]" },
-          { header: "변경자", width: "w-[110px]" },
-          { header: "변경 항목", width: "w-[100px]", align: "left" },
+          { header: "변경일시", width: "w-[140px]" },
+          { header: "변경자", width: "w-[80px]" },
+          { header: "항목", width: "w-[90px]", align: "left" },
           { header: "변경 전", align: "left" },
           { header: "변경 후", align: "left" },
         ],
         [
-          ["2026-09-16 10:05", "hangang01", "설명", "정기 휴무", "월요일마다 쉬는 정기 휴무"],
-          ["2026-09-15 14:10", "hangang01", "휴일", "", "정기휴무 · 온기식당 판교점 · 매주 반복 · 시작 2026-09-21 · 종료일 없음"],
+          ["2026-09-16 10:05", "hangang01", "설명", cut("정기 휴무"), cut("월요일마다 쉬는 정기 휴무")],
+          ["2026-09-15 14:10", "hangang01", "등록", "", cut("정기휴무 · 온기식당 판교점 · 모리커피 서초점 · 모리커피 성수점 · 온기식당 광화문점 · 모리커피 을지로점 · 모리커피 연남점 · 매주 · 시작 2026-09-21 · 종료일 없음")],
         ],
-      )}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
+        "변경이력이 없습니다.",
+      ),
       ui.button("닫기", { variant: "off", "data-close": true }),
     ),
-    "w-[720px] max-h-[calc(100dvh-48px)] overflow-y-auto",
+    "w-[760px] max-h-[calc(100dvh-48px)] overflow-y-auto",
   );
 
+  // 삭제 · 강제 종료 확인창 — 대상(회색 상자) + 빨간 안내 상자, 확인 버튼은 기본 버튼(앱 holiday-detail-panel.tsx, 2026-10-30 사용자 지정)
+  // 둘은 api 가 함께 주지 않는다(시작 전 · 오늘 시작이면 삭제, 지난 날짜가 있으면 강제 종료). 데모는 버튼 둘을 모두 보인다
+  const confirmBody = (rows, warn) => `<div class="flex flex-col gap-[12px] break-keep">${c.kv(rows, 60)}${c.warnBand(warn)}</div>`;
   const delDialog = x.dialog(
     delId,
-    "휴일 삭제",
-    `<div class="flex flex-col gap-[12px] break-keep">${c.kv([
-      ["휴일명", "정기휴무"],
-      ["선택 날짜", `2026-09-28 ${c.muted("(월)")}`],
-      ["적용 대상", "온기식당 판교점"],
-      ["반복", "매주 · 시작 2026-09-21 · 종료일 없음"],
-    ])}</div>`,
+    "휴일을 삭제하시겠습니까?",
+    confirmBody([["휴일명", "정기휴무"]], "삭제한 휴일은 변경이력에서 확인할 수 있으며, 복구할 수 없습니다."),
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "config/holidays.html") }),
   );
-  return { body, delDialog, histDialog, histId };
+  const endId = x.dialogId();
+  // 종료일은 어제 — 오늘이 2026-09-21 이다(목록 · 캘린더 표본과 같다)
+  const endDialog = x.dialog(
+    endId,
+    "휴일을 강제 종료하시겠습니까?",
+    confirmBody([["휴일명", "정기휴무"], ["종료일", "2026-09-20(어제)"]], "오늘부터 이 휴일은 적용되지 않으며, 강제 종료는 되돌릴 수 없습니다."),
+    ui.button("취소", { variant: "off", "data-close": true }) + ui.button("강제 종료", { "data-close": true }),
+  );
+  return { body, delDialog, endDialog, endId, histDialog, histId };
 }
 
 export default ({ A, R }) => {
   const delId = x.dialogId();
-  const { body, delDialog, histDialog, histId } = detailParts(A, R, delId);
+  const { body, delDialog, endDialog, endId, histDialog, histId } = detailParts(A, R, delId);
   return {
     title: "BP 휴일 상세",
     html: ui.erpFrame({
@@ -105,10 +113,12 @@ export default ({ A, R }) => {
           c.buttons(
             ui.button("목록", { variant: "off", href: link(R, "config/holidays.html") }),
             x.dialogTrigger("삭제", delId, "soft"),
-            x.dialogTrigger("변경이력", histId, "soft"),
+            x.dialogTrigger("강제 종료", endId, "soft"),
             ui.button("수정", { href: link(R, "config/holidays-edit.html") }),
+            x.dialogTrigger("변경이력", histId, "soft"),
           ) +
           delDialog +
+          endDialog +
           histDialog,
       ),
     }),

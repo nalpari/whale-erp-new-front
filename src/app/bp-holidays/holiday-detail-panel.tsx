@@ -7,7 +7,7 @@ import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { FailedBand, InfoBand, WarnBand } from "@/components/site/side-parts";
 import { WhoList } from "@/app/platform-admins/admin-parts";
-import { repeatBasis, repeatEndText, weekdayName, yesterdayOf, type RepeatType } from "@/lib/bp-holiday-view";
+import { repeatBasis, repeatEndText, storeCountOf, weekdayName, yesterdayOf, type RepeatType } from "@/lib/bp-holiday-view";
 import type { BpHolidayDetail, BpHolidayStore } from "@/lib/bp-holidays";
 import { formatDateTime, wasUpdated } from "@/lib/format";
 import { deleteBpHolidayAction, terminateBpHolidayAction } from "./actions";
@@ -194,7 +194,7 @@ function DetailBody({
       {/* 「휴일정보」 · 「예외점포」 · 「대상점포」는 붙여 쓴다 — 등록 패널과 같다(2026-10-30 사용자 지정) */}
       <DetailTable title="휴일정보" rows={info} />
       {/* 「적용 대상」 표(적용 범위 · 적용 점포 수)는 뺐다 — 적용 범위는 머리 줄에, 점포는 아래 대상점포 · 예외점포 제목 바에 있다(2026-10-30 사용자 지정) */}
-      <StoreTable isAllStores={h.isAllStores} stores={h.stores} />
+      <StoreTable isAllStores={h.isAllStores} ended={h.state === "ENDED"} stores={h.stores} />
 
       {/* 버튼 줄은 위 표와 선으로 가르지 않는다 — 패널 칸 간격(16)만 둔다(DESIGN 슬라이드 패널 · BP 관리자 상세와 같다, 2026-10-30 사용자 지정) */}
       <div className="flex flex-wrap items-center gap-[6px]">
@@ -289,7 +289,7 @@ const VISIBLE_STORE_ROWS = 5;
  * BP 관리자 상세의 대상점포와 같은 모양이다(2026-10-30 사용자 지정 — 전엔 글자 제목 아래 열 이름 줄 있는 표): 회색 제목 바(42px · 15px 600) 아래에
  * 열 이름 줄 없이(headVariant="none") 표를 붙이고, 여섯 줄부터는 다섯 줄 높이 안에서 스크롤하며 상자 위 · 아래 선을 늘 보이게 덧그린다.
  */
-function StoreTable({ isAllStores, stores }: { isAllStores: boolean; stores: BpHolidayStore[] }) {
+function StoreTable({ isAllStores, ended, stores }: { isAllStores: boolean; ended: boolean; stores: BpHolidayStore[] }) {
   const many = stores.length > VISIBLE_STORE_ROWS;
   const table = <DataTable headVariant="none" columns={STORE_COLUMNS} rows={stores} rowKey={(s) => s.periodId} empty={isAllStores ? "예외점포가 없습니다." : "대상점포가 없습니다."} />;
   return (
@@ -300,8 +300,9 @@ function StoreTable({ isAllStores, stores }: { isAllStores: boolean; stores: BpH
           <span className="flex items-baseline gap-[10px]">
             {isAllStores ? "예외점포" : "대상점포"}
             {/* 점포 수만 — 「전체 점포 · 1건」은 전체 점포와 그 밖의 1곳으로 읽혀 헷갈렸다(2026-10-30 사용자 지적). 적용 범위는 머리 줄에 있다.
-                같은 점포를 뺐다 다시 더하면 기간 줄이 늘어나므로 줄 수가 아니라 점포 수를 센다 */}
-            <span className="text-[14px] font-normal text-erp-label">{new Set(stores.map((s) => s.storeId)).size.toLocaleString("ko-KR")}개</span>
+                같은 점포를 뺐다 다시 더하면 기간 줄이 늘어나므로 줄 수가 아니라 점포 수를 센다. 표에는 빠진 기간도 보이지만 수는 지금 열린 점포만 —
+                끝난 휴일이면 걸렸던 점포(storeCountOf, 2026-10-30 재영) */}
+            <span className="text-[14px] font-normal text-erp-label">{storeCountOf(stores, ended).toLocaleString("ko-KR")}개</span>
           </span>
         </h3>
       </div>
