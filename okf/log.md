@@ -2,6 +2,8 @@
 
 ## 2026-11-02
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 등록 · 수정 패널 아래 [닫기]를 [취소]로 바꾸고(상세 패널 [닫기]는 그대로), 1팀 변경이력 팝업 폭을 모두 860px · 열 폭을 변경일시 140 · 변경자 140 · 항목 120(휴일 90) · 휴일명 140 으로 맞췄다(사용자 지정).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 변경이력 열 폭의 근거를 개발 DB 데이터 대신 api 항목 이름 길이로 적고, 데모 이력 표 열 폭도 앱과 같게 맞췄다(front hitmonlee 리뷰 반영).
+* **Update**: [BP 마스터 계정 관리](/bp.md) · [점포 관리](/stores.md) — 출처(`src/app/bp-masters` · `src/app/stores`)의 변경이력 팝업 폭 · 열 폭만 바뀌었다. 본문에 폭 서술이 없어 고칠 문장은 없고 갱신 시각만 올렸다(자세한 값은 Whale ERP Frontend).
 
 ## 2026-10-30
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #206 적대적 리뷰 2차 블로커 반영: 공통코드 「그 사이 바뀜」으로 다시 받는 404 를 행이 지워진 것(「상세 코드를 찾을 수 없습니다」)으로 좁혔다 — 그룹 · BP 단위 404 를 다시 받으면 BP 패널이 다른 그룹으로 바뀌어 입력이 안내 없이 사라졌다.

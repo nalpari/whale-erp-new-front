@@ -7,7 +7,7 @@ import { STORE_HISTORY_PAGE_SIZE, type StoreHistory, type StoreHistoryList } fro
 import { getStoreHistoriesAction } from "../actions";
 
 // 변경이력 버튼과 그 팝업(플랫폼 관리자 history-dialog.tsx 와 같은 생김새 — 확인창(ConfirmDialog)과 같은 네이티브
-// <dialog> 다, 표가 넓어 이 창만 넓힌다). 등록 · 최종수정은 기본정보의 변경이력 행에 이미 보이므로 팝업에는
+// <dialog> 다, 표가 넓어 확인창보다 넓힌다). 등록 · 최종수정은 기본정보의 변경이력 행에 이미 보이므로 팝업에는
 // 다시 적지 않고 표를 바로 둔다. 표는 5줄 높이로 두고 넘치면 표 안에서 스크롤, 머리글은 고정한다(store-histories.tsx
 // 와 같다). 열 때마다 첫 쪽을 새로 받는다 — 방금 고친 내용이 이력에 바로 보여야 한다.
 const empty = (v: string | null) => (v ? v : <span className="text-erp-muted">-</span>);
@@ -82,8 +82,8 @@ export function HistoryButton({ storeId }: { storeId: number }) {
           e.preventDefault();
           onClose();
         }}
-        // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups). 폭은 회원가입
-        // 약관동의 팝업(terms-dialog.tsx)과 같은 860 으로 맞췄다(2026-10-16 점검). 1팀 변경이력 팝업 모두 860(2026-11-02).
+        // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups). 폭은 1팀 변경이력
+        // 팝업 모두 860(2026-11-02). 처음엔 회원가입 약관동의 팝업(terms-dialog.tsx)에 맞춘 값이었다(2026-10-16 점검).
         className="m-auto max-h-[calc(100dvh-48px)] w-[860px] max-w-[calc(100vw-32px)] overflow-y-auto rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
       >
         <h2 id={titleId} className="text-[18px] font-semibold">
