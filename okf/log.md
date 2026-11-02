@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-02
+* **Update**: [BP 환경설정](/config.md) — BP 권한 그룹 목록 「등록 N개」 기준을 api 갱신대로 고쳤다: 웨일ERP 메뉴만, 상위 메뉴까지 사용일 때만 센다(api sentret 74ee4422). 응답 모양은 그대로라 front 코드는 바꾸지 않았다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #208 리뷰 반영: BP 휴일 상세 점포 수를 휴일 상태로 가르는 `storeCountOf`(bp-holiday-view.ts, 테스트 포함)로 옮겼다 — 예외를 모두 푼 진행 중 휴일이 「예외점포 1개」로 보이던 것을 고침. BP 공통코드 · 권한 그룹의 플랫폼고정 잠금 시절 낡은 주석도 정리했다(front prinplup).
 
 ## 2026-10-30
