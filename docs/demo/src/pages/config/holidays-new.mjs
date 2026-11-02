@@ -8,29 +8,44 @@ import { erpHeader, link, STORES } from "../../site.mjs";
 
 // 적용 범위 — 선택 상자만 둔다(안내 문구 없음 · 2026-10-07). 전체 화면은 반 칸, 패널은 한 칸 전체.
 // 일부 점포면 대상 점포, 전체 점포면 예외 점포 고르기를 보인다(HOLIDAY_SCRIPT · 목업 data-reveal 과 같다).
-export const scopeField = (store, panel) => {
-  // 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(앱과 같다, 2026-10-30 사용자 지정)
-  const f = ui.select(["전체 점포", "일부 점포"], { value: store ? "일부 점포" : "전체 점포", "data-hscope": true, "aria-label": "적용 범위" });
+export const scopeField = (store, panel, locked = false) => {
+  // 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(앱과 같다, 2026-10-30 사용자 지정). 진행 중인 휴일은 막는다(locked)
+  const f = ui.select(["전체 점포", "일부 점포"], { value: store ? "일부 점포" : "전체 점포", "data-hscope": true, "aria-label": "적용 범위", disabled: locked });
   return panel ? f : c.row(f, c.blank);
 };
 
 // 점포 고르기 — BP 관리자 관리 등록의 점포 매핑과 같은 영역(점포 찾기 펼침 목록 · 일괄 검색 · 전체 제거 · 2026-10-08)
-export const holidayStorePicker = (A, picked, label = "대상 점포 찾기") =>
+// 찾기 칸 낭독 이름은 앱 공용 문구 그대로 — 대상은 「관리할 점포 찾기」, 예외는 「예외로 뺄 점포 찾기」(2026-10-30 재영)
+export const holidayStorePicker = (A, picked, exclude = false) =>
   c.storePicker(A, {
-    label,
+    label: exclude ? "예외로 뺄 점포 찾기" : "관리할 점포 찾기",
+    exclude,
     clearLabel: "전체 제거",
     bulk: [...STORES].sort((a, b) => a[0].localeCompare(b[0])).map(([code, name, type]) => [name, code, type]),
     picked,
   });
 
 const fieldLabel = (t) => `<span class="text-[14px] font-medium text-erp-label">${t}</span>`;
+// 칸 이름 오른쪽 「 · 무엇을 고르는 칸인지」(앱 holiday-form-panel.tsx 점포 칸, 2026-10-30 사용자 지정)
+const hint = (t) => `<span class="text-[13px] font-normal"> · ${t}</span>`;
+// 진행 중인 휴일의 수정에서 막히는 묶음(유형 · 날짜 · 반복) — 앱처럼 fieldset disabled 로 막는다. 막힌 칸 회색은 쓰지 않는다(DESIGN Inputs)
+const lockable = (locked, cls, html) => (locked ? `<fieldset disabled class="${cls}">${html}</fieldset>` : `<div class="${cls}">${html}</div>`);
+const REPEAT_WORD = { 매일: "", 매주: "매주", 매월: "매월", 매년: "매년" };
+// 반복 기준(앱 repeatBasis) — 매주는 요일, 매월은 일, 매년은 월 일. 매일은 없다
+const repeatBasis = (rep, date) => {
+  if (rep === "매일" || !date) return "";
+  if (rep === "매주") return `${"일월화수목금토"[new Date(date).getDay()]}요일`;
+  const day = Number(date.slice(8, 10));
+  return rep === "매월" ? `${day}일` : `${Number(date.slice(5, 7))}월 ${day}일`;
+};
 // 보일 조건이 맞을 때만 보이는 칸. key 는 data-hshow(휴일 유형) · data-hend(종료 조건) · data-hscope-show(적용 범위)
 const when = (key, values, on, html) => `<div ${key}="${values}" class="flex flex-col gap-[8px]"${on ? "" : " hidden"}>${html}</div>`;
 
 // 휴일 정보 + 반복 + 적용 대상(목업 holidays-new 의 입력 항목 전부 · 2026-10-08)
 //  · 휴일 유형 하루: 날짜 하나 / 기간: 시작일 ~ 종료일 / 반복: 시작일 + 반복 묶음(반복 유형 · 종료 조건 → 종료일 또는 횟수)
 //  · 적용 범위 일부 점포: 대상 점포 / 전체 점포: 예외 점포(고른 점포는 이 휴일의 모든 날짜에서 빠진다)
-// s: { id, name, type, date, end, desc, rep, until, untilDate, count, store, picked, excluded }
+// s: { id, name, type, date, end, desc, rep, until, untilDate, count, store, picked, excluded, locked }
+//  · locked: 진행 중인 휴일의 수정 — 유형 · 날짜 · 반복 · 적용 범위를 막는다(휴일명 · 설명 · 점포는 고친다, 앱 holiday-form-panel scheduleLocked)
 export const holidayForm = (A, s, { panel = false } = {}) => {
   const types = ["하루", "기간", "반복"];
   const ends = ["종료일 없음", "특정 날짜까지", "지정 횟수만큼"];
@@ -42,13 +57,19 @@ export const holidayForm = (A, s, { panel = false } = {}) => {
       s.type === "기간",
       `<div class="flex items-center gap-[6px]"><div class="min-w-px flex-1">${ui.dateField(A, { label: "시작일", value: s.date })}</div><span class="text-erp-label">~</span><div class="min-w-px flex-1">${ui.dateField(A, { label: "종료일", value: s.end || "" })}</div></div>`,
     );
+  const rep = s.rep || "매주";
+  const basis = repeatBasis(rep, s.date);
+  // 기준은 칸 이름 옆 꼬리표 「매주 월요일마다 반복」 — 회색 상자 위라 한 단계 짙은 바탕(erp-bar-line, 앱과 같다, 2026-10-30 사용자 지정)
+  const basisTag = basis
+    ? `<span class="inline-block rounded-[2px] border border-erp-bar-line bg-erp-bar-line px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub">${REPEAT_WORD[rep]} ${basis}마다 반복</span>`
+    : "";
   const repeat = when(
     "data-hshow",
     "반복",
     s.type === "반복",
     // 반복 칸은 날짜 바로 아래 · 설명 위의 회색 상자(앱과 같다, 2026-10-30 사용자 지정 — 전엔 맨 아래 「반복」 묶음)
-    `<div class="-mt-[8px] flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[12px]">${[
-      ui.field(c.req("반복유형"), ui.select(["매일", "매주", "매월", "매년"], { value: s.rep || "매주" })),
+    lockable(s.locked, "-mt-[8px] flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[12px]", [
+      `<label class="flex flex-col gap-[8px]"><span class="flex items-center gap-[6px] text-[14px] font-medium text-erp-label"><span>${c.req("반복유형")}</span>${basisTag}</span>${ui.select(["매일", "매주", "매월", "매년"], { value: rep })}</label>`,
       c.stack(
         fieldLabel(c.req("종료조건")),
         `<div data-hendpick>${c.radios(`${s.id}-end`, ends, ends.indexOf(s.until || "종료일 없음"))}</div>`,
@@ -57,23 +78,24 @@ export const holidayForm = (A, s, { panel = false } = {}) => {
           "data-hend",
           "지정 횟수만큼",
           s.until === "지정 횟수만큼",
-          `<div class="flex w-[160px] items-center gap-[6px]">${ui.textField({ value: s.count || "", inputmode: "numeric", "aria-label": "반복 횟수" })}<span class="shrink-0 text-[14px] text-erp-ink">회</span></div>`,
+          `<div class="flex w-[100px] items-center gap-[6px]">${ui.textField({ value: s.count || "", inputmode: "numeric", maxlength: 4, "aria-label": "반복 횟수" })}<span class="shrink-0 text-[14px] text-erp-ink">회</span></div>`,
         ),
       ),
-    ].join("")}</div>`,
+    ].join("")),
   );
   const info = ui.formGroup(
     "휴일정보", // 붙여 쓴다(앱과 같다, 2026-10-30 사용자 지정)
     ui.field(c.req("휴일명"), ui.textField({ value: s.name, maxlength: 30 })),
-    c.stack(fieldLabel(c.req("날짜")), `<div data-htype>${c.radios(`${s.id}-type`, types, types.indexOf(s.type))}</div>`, dates),
+    lockable(s.locked, "flex min-w-0 flex-col gap-[8px]", fieldLabel(c.req("날짜")) + `<div data-htype>${c.radios(`${s.id}-type`, types, types.indexOf(s.type))}</div>` + dates),
     repeat,
-    ui.field("설명", ui.textField({ value: s.desc, maxlength: 500 })) // 휴일명과 같은 한 줄 칸(앱과 같다, 2026-10-30),
+    // 설명은 한 줄 높이(34px)에서 시작해 Enter 로 줄을 더하면 늘어나는 여러 줄 칸(앱 Textarea grow=6, 2026-10-30 사용자 지정). 데모는 늘어나지 않고 줄 수만큼 그린다
+    ui.field("설명", `<textarea maxlength="500" rows="${Math.min(Math.max((s.desc || "").split("\n").length, 1), 6)}" class="${ui.FIELD_BOX} resize-none px-[10px] py-[5px] leading-[22px]">${s.desc || ""}</textarea>`),
   );
   const target = ui.formGroup(
     "적용 대상",
-    scopeField(s.store, panel),
-    when("data-hscope-show", "일부 점포", s.store, c.stack(fieldLabel(c.req("대상점포")), holidayStorePicker(A, s.picked || []))),
-    when("data-hscope-show", "전체 점포", !s.store, c.stack(fieldLabel("예외점포"), holidayStorePicker(A, s.excluded || [], "뺄 점포 찾기"))),
+    scopeField(s.store, panel, s.locked),
+    when("data-hscope-show", "일부 점포", s.store, c.stack(fieldLabel(c.req("대상점포") + hint("휴일을 적용할 점포를 선택해 주세요.")), holidayStorePicker(A, s.picked || []))),
+    when("data-hscope-show", "전체 점포", !s.store, c.stack(fieldLabel("예외점포" + hint("휴일을 적용하지 않을 점포를 선택해 주세요.")), holidayStorePicker(A, s.excluded || [], true))),
   );
   return `<div data-hform class="contents">${info}${target}</div>`;
 };

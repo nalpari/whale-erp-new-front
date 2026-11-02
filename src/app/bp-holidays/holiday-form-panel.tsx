@@ -335,7 +335,7 @@ export function HolidayFormPanel(props: Props) {
                 // 고른 점포 칸은 BP 관리자보다 1/3 낮게 — 패널이 길어 버튼이 화면 밖으로 밀렸다(2026-10-30 사용자 지정)
                 short
                 panelOpen={open}
-                // 후보는 로그인 정보의 관리 점포다. 폐점한 점포는 더할 수 없어(api 400) 후보에서 뺀다 — 이미 붙은 폐점 점포는 빼기만 된다
+                // 후보는 로그인 정보의 관리 점포다. 폐점한 점포는 대상으로 더할 수 없고(api 400) 휴일이 적용되지 않아 예외로 뺄 필요도 없어 후보에서 뺀다 — 이미 붙은 폐점 점포는 빼기만 된다
                 options={options}
                 picked={form.isAllStores ? excluded : targets}
                 exclude={form.isAllStores}
@@ -350,7 +350,7 @@ export function HolidayFormPanel(props: Props) {
             {err("storeIds")}
             {fixedStores.length > 0 && (
               <p className="text-[13px] text-erp-label">
-                맡지 않은 점포 {fixedStores.length}곳({fixedStores.map((s) => s.name).join(", ")})은 그대로 둡니다.
+                맡지 않은 점포 {fixedStores.length}개({fixedStores.map((s) => s.name).join(", ")})는 그대로 둡니다.
               </p>
             )}
           </div>

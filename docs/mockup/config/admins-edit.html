@@ -10,7 +10,7 @@
   <body data-root="../" data-page="config" data-sub="config/admins.html">
     <!-- BP 관리자 계정 수정 · /settings/admins/:아이디/edit · S-OENTFQ (F-OILWTZ) · 1팀
          상세의 수정 버튼으로만 들어온다. 저장 · 취소 · 뒤로는 모두 그 계정의 상세로 간다.
-         기본정보(계정 상태는 이메일 바로 다음 줄) · 계정 역할(역할과 권한 그룹을 한 줄에) · 대상 점포를 나눠 고친다. 대상 점포는 위 자동완성으로 찾아 더하고 아래 선택한 점포 영역에서 뺀다. 계정 역할은 읽기 전용이다.
+         기본정보(계정 상태는 이메일 바로 다음 줄) · 대상 점포를 나눠 고친다. 계정 역할 · 권한명은 기본정보 맨 아래 칸이고(따로 묶지 않는다), 권한명 선택지는 역할별로 묶지 않는다. [취소] [저장] 은 맨 아래 가운데다(코드대로, 2026-10-30). 대상 점포는 위 자동완성으로 찾아 더하고 아래 선택한 점포 영역에서 뺀다. 계정 역할은 읽기 전용이다.
          아이디는 칸이 아니라 제목 옆 꼬리표 「아이디 · xxx」로만 보인다. 등록일시 · 최근 로그인 칸은 두지 않는다 — 상세에서 본다 (2026-10-29 사용자 결정, 코드대로).
          BP 관리자 · 가맹 마스터 계정 = BP 마스터 · BP 관리자 · 플랫폼 사용자가 고친다. 가맹 마스터 · 가맹 관리자는 열 수 없다(가맹 마스터 본인 계정은 아래 예외).
          가맹 마스터 계정의 대상 점포는 ‘일부 점포’만 쓴다 — ‘전체 점포’는 BP 관리자에게만 준다 (확정 2026-09-29).
@@ -54,17 +54,6 @@
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-OENTFQ · /settings/admins/<span data-show="hr off dupmail miss conflict fail">hghr</span><span data-show="morinam fmoff fmshrink fmboth" hidden>morinam01</span><span data-show="yn badgroup scope relink" hidden>moriyn</span>/edit</span>
-              <a class="btn btn--secondary btn--sm" href="admins-detail.html" data-show="hr off dupmail miss conflict fail">취소</a>
-              <a class="btn btn--secondary btn--sm" href="admins-detail.html?state=morinam" data-show="morinam fmoff fmshrink fmboth" hidden>취소</a>
-              <a class="btn btn--secondary btn--sm" href="admins-detail.html?state=yn" data-show="yn badgroup scope relink" hidden>취소</a>
-
-              <a class="btn btn--primary btn--sm" href="admins-detail.html" data-show="hr off" data-show-role="bm bpall bppart plat">저장</a>
-              <a class="btn btn--primary btn--sm" href="admins-detail.html?state=morinam" data-show="morinam" data-show-role="bm bpall bppart fm plat" hidden>저장</a>
-              <button class="btn btn--primary btn--sm" type="button" data-open="pop-cascade" data-show="fmoff" data-show-role="bm bpall bppart plat" hidden>저장</button>
-              <button class="btn btn--primary btn--sm" type="button" data-open="pop-shrink" data-show="fmshrink fmboth" data-show-role="bm bpall plat" hidden>저장</button>
-              <button class="btn btn--primary btn--sm" type="button" data-show="dupmail miss conflict fail" data-show-role="bm bpall bppart plat" hidden>저장</button>
-              <a class="btn btn--primary btn--sm" href="admins-detail.html?state=yn" data-show="yn" data-show-role="fm" hidden>저장</a>
-              <button class="btn btn--primary btn--sm" type="button" data-show="badgroup scope relink" data-show-role="fm" hidden>저장</button>
               <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./config-admins-edit.screen-def.html', 'screenDef', 'width=1620,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
             </div>
           </div>
@@ -248,55 +237,36 @@
                       </select>
                       <span class="help" data-show="hr off dupmail miss conflict fail" data-show-role="bppart" hidden>본인 계정의 상태는 다른 사용자가 바꿔야 합니다.</span>
                     </div>
-                  </div>
-                  <p class="note" data-show="off" data-show-role="bppart" hidden>
-                    <span data-icon="info" data-icon-size="14"></span>
-                    <span>본인 계정이라 미사용을 고를 수 없다. 미사용 선택은 목업 권한을 다른 사용자로 두고 본다.</span>
-                  </p>
-                  <div class="band band--warn" data-show="off" data-show-role="bm bpall plat" hidden>
-                    <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
-                    <div class="band__body">
-                      <div class="band__title">미사용으로 저장하면 곧바로 로그인과 ERP 접근이 막힙니다</div>
-                      <p class="band__desc">열려 있는 세션은 닫지 않습니다. 계정 · 대상 점포 · 이력은 그대로 보존되고, 다시 사용으로 돌리면 기존 비밀번호로 들어옵니다.</p>
-                    </div>
-                  </div>
-                  <!-- 문구는 코드(admin-form-panel.tsx 의 InfoBand)대로 (2026-10-29 사용자 결정) -->
-                  <div class="band band--info" data-show="fmoff fmboth" hidden>
-                    <span class="band__ic" data-icon="info" data-icon-size="20"></span>
-                    <div class="band__body">
-                      <div class="band__title">가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 계정도 함께 멈춥니다.</div>
-                      <p class="band__desc">가맹 관리자 <span class="mono">moriyn</span> 외 1명 → 미사용</p>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">계정 역할</h2>
-                </div>
-                <div class="panel__body">
-                  <div class="grid grid--2">
                     <div class="field">
                       <label for="erole">계정 역할</label>
                       <input class="input" id="erole" value="BP 관리자" readonly data-show="hr off dupmail miss conflict fail" />
                       <input class="input" value="가맹 마스터" readonly aria-label="계정 역할" data-show="morinam fmoff fmshrink fmboth" hidden />
                     </div>
                     <div class="field">
-                      <label for="egrp">권한 그룹</label>
+                      <label for="egrp">권한명</label>
                       <select class="select" id="egrp" data-show="hr off dupmail miss conflict fail" data-show-role="bm bpall plat">
-                        <optgroup label="BP 관리자">
                           <option>운영 총괄 · BA000003</option>
                           <option selected>인사 담당 · BA000004</option>
                           <option>정산 조회 · BA000005</option>
                           <option>고객응대 · BA000006</option>
                           <option>점포 조회 전용 · BA000007</option>
-                        </optgroup>
                       </select>
-                      <input class="input" value="인사 담당 · BA000004" readonly aria-label="권한 그룹" data-show="hr off dupmail miss conflict fail" data-show-role="bppart" hidden />
-                      <input class="input" value="가맹 마스터(고정) · FM000001" readonly aria-label="권한 그룹" data-show="morinam fmoff fmshrink fmboth" hidden />
-                      <span class="help" data-show="hr off dupmail miss conflict fail" data-show-role="bppart" hidden>본인 권한 그룹은 다른 사용자가 바꿔야 합니다.</span>
+                      <input class="input" value="인사 담당 · BA000004" readonly aria-label="권한명" data-show="hr off dupmail miss conflict fail" data-show-role="bppart" hidden />
+                      <input class="input" value="가맹 마스터(고정) · FM000001" readonly aria-label="권한명" data-show="morinam fmoff fmshrink fmboth" hidden />
+                      <span class="help" data-show="hr off dupmail miss conflict fail" data-show-role="bppart" hidden>본인 권한명은 다른 사용자가 바꿔야 합니다.</span>
                       <span class="help" data-show="morinam fmoff fmshrink fmboth" hidden>가맹 마스터는 플랫폼이 정한 고정 권한만 씁니다.</span>
+                    </div>
+                  </div>
+                  <p class="note" data-show="off" data-show-role="bppart" hidden>
+                    <span data-icon="info" data-icon-size="14"></span>
+                    <span>본인 계정이라 미사용을 고를 수 없다. 미사용 선택은 목업 권한을 다른 사용자로 두고 본다.</span>
+                  </p>
+                  <!-- 문구는 코드(admin-form-panel.tsx 의 InfoBand)대로 (2026-10-29 사용자 결정) -->
+                  <div class="band band--info" data-show="fmoff fmboth" hidden>
+                    <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 계정도 함께 멈춥니다.</div>
+                      <p class="band__desc">가맹 관리자 <span class="mono">moriyn</span> 외 1명 → 미사용</p>
                     </div>
                   </div>
                 </div>
@@ -445,13 +415,13 @@
                     <div class="tblwrap">
                       <table class="tbl tbl--dense">
                         <thead>
-                          <tr><th scope="col" style="width: 40px"><span class="subtle">유지</span></th><th scope="col">점포명</th><th scope="col">점포코드</th><th scope="col">점포 유형</th><th scope="col">점포 상태</th></tr>
+                          <tr><th scope="col">점포명</th><th scope="col">점포코드</th><th scope="col">상태</th></tr>
                         </thead>
                         <tbody>
-                        <tr><td><span class="check" role="checkbox" aria-checked="true" disabled aria-label="모리커피 을지로점" data-icon="check" data-icon-size="11"></span></td><td class="k">모리커피 을지로점</td><td class="mono">ST000005</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
-                        <tr><td><span class="check" role="checkbox" aria-checked="true" disabled aria-label="모리커피 연남점" data-icon="check" data-icon-size="11"></span></td><td class="k">모리커피 연남점</td><td class="mono">ST000006</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
-                        <tr><td><span class="check" role="checkbox" aria-checked="true" disabled aria-label="모리커피 청담점" data-icon="check" data-icon-size="11"></span></td><td class="k">모리커피 청담점</td><td class="mono">ST000007</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
-                        <tr><td><span class="check" role="checkbox" aria-checked="true" disabled aria-label="모리커피 부평점" data-icon="check" data-icon-size="11"></span></td><td class="k">모리커피 부평점</td><td class="mono">ST000008</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
+                        <tr><td class="k">모리커피 을지로점</td><td class="mono">ST000005</td><td><span class="badge badge--ok">운영</span></td></tr>
+                        <tr><td class="k">모리커피 연남점</td><td class="mono">ST000006</td><td><span class="badge badge--ok">운영</span></td></tr>
+                        <tr><td class="k">모리커피 청담점</td><td class="mono">ST000007</td><td><span class="badge badge--ok">운영</span></td></tr>
+                        <tr><td class="k">모리커피 부평점</td><td class="mono">ST000008</td><td><span class="badge badge--ok">운영</span></td></tr>
                         </tbody>
                       </table>
                     </div>
@@ -489,22 +459,12 @@
                       <input class="input" id="mstat" value="사용" readonly />
                       <span class="help">본인 계정의 상태는 다른 사용자가 바꿔야 합니다.</span>
                     </div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">계정 역할</h2>
-                </div>
-                <div class="panel__body">
-                  <div class="grid grid--2">
                     <div class="field">
                       <label for="mrole">계정 역할</label>
                       <input class="input" id="mrole" value="가맹 마스터" readonly />
                     </div>
                     <div class="field">
-                      <label for="mgrp">권한 그룹</label>
+                      <label for="mgrp">권한명</label>
                       <input class="input" id="mgrp" value="가맹 마스터(고정) · FM000001" readonly />
                     </div>
                   </div>
@@ -566,29 +526,17 @@
                       </select>
                       <span class="help">가맹 관리자의 상태는 연결 가맹 마스터만 바꿉니다.</span>
                     </div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">계정 역할</h2>
-                </div>
-                <div class="panel__body">
-                  <div class="grid grid--2">
                     <div class="field">
                       <label for="frole">계정 역할</label>
                       <input class="input" id="frole" value="가맹 관리자" readonly />
                     </div>
                     <div class="field">
-                      <label for="fgrp">권한 그룹 <span class="req">*</span></label>
+                      <label for="fgrp">권한명 <span class="req">*</span></label>
                       <select class="select" id="fgrp" data-show="yn scope relink">
-                        <optgroup label="가맹 관리자 · 관리계정ID morinam01">
                           <option selected>모리 점장 · FA000002</option>
                           <option>모리 매니저 · FA000003</option>
-                        </optgroup>
                       </select>
-                      <select class="select" aria-label="권한 그룹" aria-invalid="true" data-show="badgroup" hidden>
+                      <select class="select" aria-label="권한명" aria-invalid="true" data-show="badgroup" hidden>
                         <option selected>온기 점장 · FA000004</option>
                       </select>
                       <span class="err" data-show="badgroup" hidden><span data-icon="alert" data-icon-size="13"></span>선택할 수 없는 권한입니다.</span>
@@ -636,7 +584,7 @@
                   <div class="field"><label for="rnm">이름</label><input class="input" id="rnm" value="한지수" readonly /></div>
                   <div class="field"><label for="rtel">연락처</label><input class="input mono" id="rtel" value="010-6672-1180" readonly /></div>
                   <div class="field"><label for="rmail">이메일</label><input class="input mono" id="rmail" value="jisu.han@morinam.kr" readonly /></div>
-                  <div class="field"><label for="rgrp">권한 그룹</label><input class="input" id="rgrp" value="모리 점장 · FA000002" readonly /></div>
+                  <div class="field"><label for="rgrp">권한명</label><input class="input" id="rgrp" value="모리 점장 · FA000002" readonly /></div>
                   <div class="field"><label for="rst">대상 점포</label><input class="input" id="rst" value="모리커피 연남점 · ST000006" readonly /></div>
                   <div class="field"><label for="rstat">계정 상태</label><input class="input" id="rstat" value="사용" readonly /></div>
                 </div>
@@ -647,6 +595,21 @@
               <span data-icon="info" data-icon-size="14"></span>
               <span>어느 항목을 바꿔도 사유는 받지 않는다. 저장하면 바뀐 항목마다 변경 전후 값과 처리자가 상세의 변경 이력에 쌓이고, 권한 그룹 · 대상 점포는 그 계정의 다음 요청부터 반영된다.</span>
             </p>
+            <!-- 미사용 안내 · [취소] [저장] 은 맨 아래 가운데 — 코드(admin-form-panel.tsx)대로, 사용 계정을 미사용으로 고를 때만 안내한다 (2026-10-30 사용자 결정) -->
+            <p class="note" data-show="off" data-show-role="bm bpall plat" hidden><span data-icon="info" data-icon-size="14"></span><span>미사용으로 변경하면 해당 계정의 로그인 및 서비스 접근이 즉시 차단됩니다.<br />단, 현재 로그인 중인 세션은 유지됩니다.</span></p>
+            <p class="note" data-show="fmoff fmboth" data-show-role="bm bpall bppart plat" hidden><span data-icon="info" data-icon-size="14"></span><span>미사용으로 변경하면 해당 계정의 로그인 및 서비스 접근이 즉시 차단됩니다.<br />단, 현재 로그인 중인 세션은 유지됩니다.</span></p>
+            <div class="inline" style="justify-content: center">
+              <a class="btn btn--secondary" href="admins-detail.html" data-show="hr off dupmail miss conflict fail">취소</a>
+              <a class="btn btn--secondary" href="admins-detail.html?state=morinam" data-show="morinam fmoff fmshrink fmboth" hidden>취소</a>
+              <a class="btn btn--secondary" href="admins-detail.html?state=yn" data-show="yn badgroup scope relink" hidden>취소</a>
+              <a class="btn btn--primary" href="admins-detail.html" data-show="hr off" data-show-role="bm bpall bppart plat">저장</a>
+              <a class="btn btn--primary" href="admins-detail.html?state=morinam" data-show="morinam" data-show-role="bm bpall bppart fm plat" hidden>저장</a>
+              <button class="btn btn--primary" type="button" data-open="pop-cascade" data-show="fmoff" data-show-role="bm bpall bppart plat" hidden>저장</button>
+              <button class="btn btn--primary" type="button" data-open="pop-shrink" data-show="fmshrink fmboth" data-show-role="bm bpall plat" hidden>저장</button>
+              <button class="btn btn--primary" type="button" data-show="dupmail miss conflict fail" data-show-role="bm bpall bppart plat" hidden>저장</button>
+              <a class="btn btn--primary" href="admins-detail.html?state=yn" data-show="yn" data-show-role="fm" hidden>저장</a>
+              <button class="btn btn--primary" type="button" data-show="badgroup scope relink" data-show-role="fm" hidden>저장</button>
+            </div>
           </div>
 
           <!-- 가맹 마스터 미사용 확인 — 연쇄 전환을 저장 전에 한 번 더 보인다 -->
@@ -669,7 +632,7 @@
                   <div class="inline" style="justify-content: flex-end">
                     <button class="btn btn--ghost" type="button" data-close>취소</button>
                     <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 저장 실패 결과 보기">실패로 보기</button>
-                    <a class="btn btn--danger" href="admins-detail.html?state=fmoff">미사용으로 저장</a>
+                    <a class="btn btn--primary" href="admins-detail.html?state=fmoff">미사용으로 저장</a>
                   </div>
                 </div>
                 <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">
@@ -713,7 +676,7 @@
                     <button class="btn btn--ghost" type="button" data-close>취소</button>
                     <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 저장 실패 결과 보기">실패로 보기</button>
                     <a class="btn btn--primary" href="admins-detail.html?state=morinam" data-show="fmshrink">저장</a>
-                    <a class="btn btn--danger" href="admins-detail.html?state=fmoff" data-show="fmboth" hidden>미사용으로 저장</a>
+                    <a class="btn btn--primary" href="admins-detail.html?state=fmoff" data-show="fmboth" hidden>미사용으로 저장</a>
                   </div>
                 </div>
                 <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">

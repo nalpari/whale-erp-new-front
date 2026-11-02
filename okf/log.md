@@ -1,11 +1,23 @@
 # Bundle history
 
 ## 2026-11-02
+* **Update**: main 병합(front hitmonlee, main #208 까지): 데모 소스 · 목업은 main 쪽(휴일 [강제 종료] · 새 이력 팝업 · 아래 가운데 버튼)을 받고 [취소] · 이력 팝업 860 · 열 폭을 다시 넣은 뒤 데모를 다시 빌드했다. okf 충돌은 양쪽 기록을 살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 등록 · 수정 패널 아래 [닫기]를 [취소]로 바꾸고(상세 패널 [닫기]는 그대로), 1팀 변경이력 팝업 폭을 모두 860px · 열 폭을 변경일시 140 · 변경자 140 · 항목 120(휴일 90) · 휴일명 140 으로 맞췄다(사용자 지정).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 변경이력 열 폭의 근거를 개발 DB 데이터 대신 api 항목 이름 길이로 적고, 데모 이력 표 열 폭도 앱과 같게 맞췄다(front hitmonlee 리뷰 반영).
 * **Update**: [BP 마스터 계정 관리](/bp.md) · [점포 관리](/stores.md) — 출처(`src/app/bp-masters` · `src/app/stores`)의 변경이력 팝업 폭 · 열 폭만 바뀌었다. 본문에 폭 서술이 없어 고칠 문장은 없고 갱신 시각만 올렸다(자세한 값은 Whale ERP Frontend).
+* **Update**: [BP 환경설정](/config.md) — BP 권한 그룹 목록 「등록 N개」 기준을 api 갱신대로 고쳤다: 웨일ERP 메뉴만, 상위 메뉴까지 사용일 때만 센다(api sentret 74ee4422). 응답 모양은 그대로라 front 코드는 바꾸지 않았다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #208 리뷰 반영: BP 휴일 상세 점포 수를 휴일 상태로 가르는 `storeCountOf`(bp-holiday-view.ts, 테스트 포함)로 옮겼다 — 예외를 모두 푼 진행 중 휴일이 「예외점포 1개」로 보이던 것을 고침. BP 공통코드 · 권한 그룹의 플랫폼고정 잠금 시절 낡은 주석도 정리했다(front prinplup).
 
 ## 2026-10-30
+* **Update**: main 병합(front prinplup, main #206 까지): okf 충돌은 양쪽 기록을 살렸다.
+* **Update**: [BP 환경설정](/config.md) · [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일을 새 main(#207) 기준으로 문서 ↔ 구현 대조했다: 상세 점포 수는 지금 열린 점포만(끝난 휴일은 걸렸던 수), 변경이력 빈 문구 「변경이력이 없습니다.」, 「맡지 않은 점포 N개」, 안 쓰는 `sameSchedule` 삭제. 목록 「첫 점포 외 N개」는 그날 적용 점포 전부 · 짧은 휴일유형 · 꼬리표 · 미리보기 · 오류 요약 띠 없음을 적고, 입력 순서 · 막힌 사유 띠 서술을 코드대로 고쳤다(front prinplup, 2026-10-30 재영).
+* **Update**: main 병합(front prinplup, main #207 까지): 생성물(docs/demo/*.html · erp.css)은 다시 빌드해 맞추고, okf 충돌은 양쪽 기록을 살렸다.
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 목록 열 순서를 지금 코드대로 고쳤다(대상점포는 역할 다음, 등록일시 열 없음 — PR #200 반영이 okf 에 빠져 있었다, front prinplup).
+* **Update**: [BP 환경설정](/config.md) · [Whale ERP Frontend](/whale-erp-front.md) — BP 공통코드를 문서 ↔ 구현 대조로 맞췄다: 목업 `config/codes.html` · 화면정의서를 front대로(왼쪽 필터 · 쪽 없음 · 관리주체 꼬리표 · 사용여부 · 삭제 열 · 순서 변경 빨간 상자 · 플랫폼 사용중지 코드 다시 켬 등 21곳) 고치고 그림을 다시 찍었다. 플랫폼 계정은 회색 「플랫폼 계정은 BP 공통코드를 조회만 합니다.」(전엔 빨간 상자), 쓰이지 않던 플랫폼고정 잠금(`bpPanelLock` fixed)을 지웠다. 지운 코드 다시 등록 · 받지 않은 플랫폼 원본과의 중복은 api 기준을 적고, 낡은 「api 다시 켜기 409 대기」 문장을 걷었다(front prinplup, 2026-10-30 재영).
+* **Update**: [BP 환경설정](/config.md) — BP 권한 그룹을 문서 ↔ 구현 대조로 맞췄다: 데모 `config/roles.html` · 화면정의서를 front대로(목록 열 · [설정] · 464px 상세 · 「권한별 메뉴설정」 · 삭제 확인창 기본 버튼 등 19곳) 고치고 그림을 다시 찍었다. 본인 연결 그룹은 BP 에서 가맹 관리자 것뿐이라 역할 문구로 보인다고 고쳤고, 플랫폼 계정 조회만 안내 · 「등록 N개」는 사용 메뉴만(api mareep 2d899188) · 서비스 탭은 지금 웨일ERP 하나 · 화면 주소를 적었다(front prinplup, 2026-10-30 재영).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 권한 그룹 상세: 플랫폼 계정에게는 그룹마다 뜨던 빨간 상자(수정 권한 없음) 대신 회색 안내 「플랫폼 계정은 BP 권한 그룹을 조회만 합니다.」를 보인다. 가맹마스터 계정 · 등록 · 최종수정 줄 설명을 지금 코드(상세 표의 줄, BP 관리자 그룹은 i 만)에 맞췄다(front prinplup, 2026-10-30 재영).
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 수정 데모를 코드대로 맞췄다: 미사용 안내는 노란 띠 대신 버튼 위 안내문, 확인창 버튼은 기본 모양, [취소] [저장] 은 맨 아래 가운데, 범위 밖 매핑 표는 점포명 · 점포코드 · 상태 세 열, 계정 역할 · 권한명은 기본정보 안 한 줄(라벨 「권한명」 · 역할별 묶음 없음). 수정 화면정의서 그림도 다시 찍었다(front prinplup, 2026-10-30 사용자 결정).
+* **Update**: 목업 BP 관리자 목록 화면정의서 그림을 PR #200 뒤 데모(역할 필터 · 대상점포 열 이동 · 등록일시 열 없음)로 다시 찍고 번호 위치 · 열 순서를 맞췄다(front prinplup).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #206 적대적 리뷰 2차 블로커 반영: 공통코드 「그 사이 바뀜」으로 다시 받는 404 를 행이 지워진 것(「상세 코드를 찾을 수 없습니다」)으로 좁혔다 — 그룹 · BP 단위 404 를 다시 받으면 BP 패널이 다른 그룹으로 바뀌어 입력이 안내 없이 사라졌다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #206 리뷰(code-review · pr-review-toolkit) 반영: 공통코드 실패 띠 아랫줄을 문구가 아니라 판정 값(`stale`)으로 고르고(문구 꼴이 다른 404 도), 관리주체 필터를 둘 다 꺼도 [추가]할 수 있게(순서는 api 가 매김), 낡은 주석 정리, 공통코드 저장 · 그 사이 바뀜 처리를 본문에 적었다(2026-10-30 재영).
 * **Update**: [플랫폼 시스템 관리](/system.md) · [Whale ERP Frontend](/whale-erp-front.md) — front #206 적대적 리뷰 반영: 공통코드 「그 사이 바뀜」 처리에서 보내지 않은 새 행 · 지울 행 표시를 버리던 것을 잇게(기준을 지금 목록으로), 이미 지운 행의 404 「…찾을 수 없습니다」도 같은 띠 · 다시 받기로, 같은 내용이 다시 오면 띠 표시를 푼다(플랫폼 · BP).
