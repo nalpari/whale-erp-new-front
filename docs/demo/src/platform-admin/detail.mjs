@@ -75,7 +75,7 @@ function platformAdminDetailBody(A, R) {
 
   // 변경이력 — BP 관리자 상세처럼 버튼을 누르면 팝업으로 본다(2026-10-08). 표가 넓어 이 창만 넓힌다. 제목·칸
   // 이름은 1팀 영역 모두(점포·BP·휴일 등) 같은 말을 쓴다(2026-10-20 디자인 수정).
-  // 폭 760px(앱 history-dialog.tsx 와 같다, 2026-10-26). 쪽 나눔은 한 쪽(앱 HISTORY_PAGE_SIZE)을 넘을 때만 보여, 네 건인 표본에는 두지 않는다
+  // 폭 860px(앱 history-dialog.tsx 와 같다 — 1팀 변경이력 팝업 모두 860, 2026-11-02). 쪽 나눔은 한 쪽(앱 HISTORY_PAGE_SIZE)을 넘을 때만 보여, 네 건인 표본에는 두지 않는다
   const historyDialog = x
     .dialog(
       histId,
@@ -83,7 +83,7 @@ function platformAdminDetailBody(A, R) {
       `<div class="overflow-x-auto">${history}</div>`,
       ui.button("닫기", { variant: "off", "data-close": true }),
     )
-    .replace("w-[420px]", "w-[760px] max-h-[calc(100dvh-48px)] overflow-y-auto");
+    .replace("w-[420px]", "w-[860px] max-h-[calc(100dvh-48px)] overflow-y-auto");
 
   const editBtn = ui.slideTrigger("수정", "platform-admin-edit-panel");
   const actions = `${x.dialogTrigger("삭제", deleteId, "soft")}${editBtn}${x.dialogTrigger("변경이력", histId, "soft")}`;

@@ -19,7 +19,7 @@ type LoadResult = ({ ok: true } & HistoryList) | { ok: false; message: string };
 
 const COLUMNS: Column<History>[] = [
   { header: "변경일시", width: "w-[140px]", cell: (h) => formatDateTime(h.changedAt) },
-  { header: "변경자", width: "w-[80px]", cell: (h) => h.changedByName ?? <span className="text-erp-muted">시스템</span> },
+  { header: "변경자", width: "w-[140px]", cell: (h) => h.changedByName ?? <span className="text-erp-muted">시스템</span> },
   { header: "항목", width: "w-[120px]", align: "left", cell: (h) => h.field },
   { header: "변경 전", align: "left", cell: (h) => h.beforeValue },
   { header: "변경 후", align: "left", cell: (h) => h.afterValue },
@@ -93,8 +93,8 @@ export function HistoryButton({
           e.preventDefault();
           onClose();
         }}
-        // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups).
-        className="m-auto max-h-[calc(100dvh-48px)] w-[760px] max-w-[calc(100vw-32px)] overflow-y-auto rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
+        // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups). 폭은 1팀 변경이력 팝업 모두 860(2026-11-02).
+        className="m-auto max-h-[calc(100dvh-48px)] w-[860px] max-w-[calc(100vw-32px)] overflow-y-auto rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
       >
         <h2 id={titleId} className="text-[18px] font-semibold">
           변경이력

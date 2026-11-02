@@ -168,7 +168,7 @@ export default ({ A, R }) => {
       ).join("")}</div></div>`,
       ui.button("닫기", { "data-close": true }),
     ),
-    "w-[720px]",
+    "w-[860px]", // 1팀 변경이력 팝업 모두 860(2026-11-02)
   );
 
   // 슬라이드 패널: 상세(삭제는 확인창 · 수정은 수정 패널) · 수정(저장은 범위 확인창) · 등록
@@ -186,12 +186,12 @@ export default ({ A, R }) => {
     "BP 휴일 수정",
     ui.sectionHead("BP 휴일 수정") +
       `<div class="flex flex-col gap-[18px]">${editForm(A, { panel: true })}</div>` +
-      c.buttons(ui.button("닫기", { variant: "off", "data-close": true }), ui.button("저장", { "data-save-panel": PANEL.detail })),
+      c.buttons(ui.button("취소", { variant: "off", "data-close": true }), ui.button("저장", { "data-save-panel": PANEL.detail })),
   );
   const newPanel = ui.slidePanel(
     PANEL.new,
     "BP 휴일 등록",
-    ui.sectionHead("BP 휴일 등록") + `<div class="flex flex-col gap-[18px]">${newForm(A, { panel: true })}</div>` + c.buttons(ui.button("닫기", { variant: "off", "data-close": true }), ui.button("저장", { "data-save-panel": PANEL.detail })),
+    ui.sectionHead("BP 휴일 등록") + `<div class="flex flex-col gap-[18px]">${newForm(A, { panel: true })}</div>` + c.buttons(ui.button("취소", { variant: "off", "data-close": true }), ui.button("저장", { "data-save-panel": PANEL.detail })),
   );
 
   return {

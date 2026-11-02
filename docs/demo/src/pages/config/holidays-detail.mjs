@@ -74,7 +74,7 @@ export function detailParts(A, R, delId, { panel = false } = {}) {
       )}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
       ui.button("닫기", { variant: "off", "data-close": true }),
     ),
-    "w-[720px] max-h-[calc(100dvh-48px)] overflow-y-auto",
+    "w-[860px] max-h-[calc(100dvh-48px)] overflow-y-auto", // 1팀 변경이력 팝업 모두 860(2026-11-02)
   );
 
   const delDialog = x.dialog(

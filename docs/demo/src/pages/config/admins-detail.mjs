@@ -82,7 +82,7 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
       `<div class="overflow-x-auto">${history}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
       ui.button("닫기", { variant: "off", "data-close": true }),
     ),
-    "w-[640px] max-h-[calc(100dvh-48px)] overflow-y-auto",
+    "w-[860px] max-h-[calc(100dvh-48px)] overflow-y-auto", // 1팀 변경이력 팝업 모두 860(2026-11-02)
   );
 
   const editBtn = ui.slideTrigger("수정", "admin-edit-panel");
