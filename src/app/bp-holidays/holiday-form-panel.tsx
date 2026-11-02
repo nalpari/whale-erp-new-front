@@ -356,10 +356,10 @@ export function HolidayFormPanel(props: Props) {
           </div>
         </FormGroup>
 
-        {/* [닫기] [저장]은 가운데, 위 구분선 없이(2026-10-30 사용자 지정 — 전엔 [취소] … [저장] 양 끝 · 위 1px 선) */}
+        {/* [취소] [저장]은 가운데, 위 구분선 없이(2026-10-30 사용자 지정 — 전엔 양 끝 · 위 1px 선. 글자는 2026-11-02 [닫기] → [취소]) */}
         <div className="flex items-center justify-center gap-[6px]">
           <Button variant="off" onClick={onClose} disabled={saving}>
-            닫기
+            취소
           </Button>
           <Button onClick={() => handleSave()} disabled={saving || bpBlocked}>
             저장
