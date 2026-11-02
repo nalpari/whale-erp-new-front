@@ -62,7 +62,7 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
     ["업태 · 종목", ui.detailValues(["도소매업", "식자재 유통"])],
   ]));
   const history = ui.dataTable(
-    [{ header: "변경 일시", width: "w-[180px]" }, { header: "변경자", width: "w-[140px]" }, { header: "변경 항목", width: "w-[180px]", align: "left" }, { header: "변경 전", align: "left" }, { header: "변경 후", align: "left" }],
+    [{ header: "변경 일시", width: "w-[140px]" }, { header: "변경자", width: "w-[140px]" }, { header: "변경 항목", width: "w-[120px]", align: "left" }, { header: "변경 전", align: "left" }, { header: "변경 후", align: "left" }],
     [
       ["2026-09-02 14:05", "platkim", "비밀번호", "", "초기화"],
       ["2026-08-14 10:31", "platkim", "이메일", "hayoon@hangang.kr", "hayoon@hangang.co.kr"],

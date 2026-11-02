@@ -61,9 +61,9 @@ export function detailParts(A, R, delId, { panel = false } = {}) {
       "변경이력",
       `<div class="overflow-x-auto">${ui.dataTable(
         [
-          { header: "변경 일시", width: "w-[160px]" },
-          { header: "변경자", width: "w-[110px]" },
-          { header: "변경 항목", width: "w-[100px]", align: "left" },
+          { header: "변경 일시", width: "w-[140px]" },
+          { header: "변경자", width: "w-[140px]" },
+          { header: "변경 항목", width: "w-[90px]", align: "left" },
           { header: "변경 전", align: "left" },
           { header: "변경 후", align: "left" },
         ],

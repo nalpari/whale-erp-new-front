@@ -45,8 +45,8 @@ function platformAdminDetailBody(A, R) {
   const history = ui.dataTable(
     [
       { header: "변경일시", width: "w-[140px]" },
-      { header: "변경자", width: "w-[80px]" },
-      { header: "항목", width: "w-[120px]", align: "left" }, // 앱 history-dialog.tsx 와 같다(2026-10-26)
+      { header: "변경자", width: "w-[140px]" },
+      { header: "항목", width: "w-[120px]", align: "left" }, // 열 폭은 앱 platform-admins/history-dialog.tsx 와 같다(2026-11-02)
       { header: "변경 전", align: "left" },
       { header: "변경 후", align: "left" },
     ],
@@ -73,9 +73,9 @@ function platformAdminDetailBody(A, R) {
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "system/admins.html") }),
   );
 
-  // 변경이력 — BP 관리자 상세처럼 버튼을 누르면 팝업으로 본다(2026-10-08). 표가 넓어 이 창만 넓힌다. 제목·칸
+  // 변경이력 — BP 관리자 상세처럼 버튼을 누르면 팝업으로 본다(2026-10-08). 표가 넓어 확인창(420)보다 넓힌다. 제목·칸
   // 이름은 1팀 영역 모두(점포·BP·휴일 등) 같은 말을 쓴다(2026-10-20 디자인 수정).
-  // 폭 860px(앱 history-dialog.tsx 와 같다 — 1팀 변경이력 팝업 모두 860, 2026-11-02). 쪽 나눔은 한 쪽(앱 HISTORY_PAGE_SIZE)을 넘을 때만 보여, 네 건인 표본에는 두지 않는다
+  // 폭 860px(앱 platform-admins/history-dialog.tsx 와 같다 — 1팀 변경이력 팝업 모두 860, 2026-11-02). 쪽 나눔은 한 쪽(앱 HISTORY_PAGE_SIZE)을 넘을 때만 보여, 네 건인 표본에는 두지 않는다
   const historyDialog = x
     .dialog(
       histId,

@@ -53,9 +53,9 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
 
   const history = ui.dataTable(
     [
-      { header: "일시", width: "w-[170px]" },
-      { header: "처리자", width: "w-[130px]" },
-      { header: "항목", width: "w-[160px]", align: "left" },
+      { header: "일시", width: "w-[140px]" },
+      { header: "처리자", width: "w-[140px]" },
+      { header: "항목", width: "w-[120px]", align: "left" },
       { header: "변경 전", align: "left" },
       { header: "변경 후", align: "left" },
     ],
