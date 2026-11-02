@@ -19,6 +19,7 @@ import {
   repeatEndText,
   repeatSkipNote,
   shiftBpHolidayMonth,
+  storeCountOf,
   targetText,
   validateHolidayForm,
   yesterdayOf,
@@ -207,6 +208,24 @@ test("열린 점포 — 닫힌 기간 · 끝난 휴일의 열린 기간은 빼�
     { storeId: 4, effectiveEndDate: null, periodState: "ENDED" as const },
   ];
   assert.deepEqual(openStores(rows).map((s) => s.storeId), [2, 3]);
+});
+
+test("상세 점포 수 — 진행 중이면 열린 점포만, 끝난 휴일이면 걸렸던 점포를 하나씩", () => {
+  // 진행 중인 전체 점포 휴일에서 하나뿐인 예외를 풀었다 — 빠진 기간만 남아 0개
+  assert.equal(storeCountOf([{ storeId: 3, effectiveEndDate: "2026-10-25", periodState: "ENDED" as const }], false), 0);
+  // 뺐다 다시 더한 점포는 한 번
+  const readded = [
+    { storeId: 2, effectiveEndDate: "2026-10-25", periodState: "ENDED" as const },
+    { storeId: 2, effectiveEndDate: null, periodState: "ACTIVE" as const },
+  ];
+  assert.equal(storeCountOf(readded, false), 1);
+  // 끝난 휴일 — 모든 기간이 ENDED 여도 걸렸던 점포 수
+  const ended = [
+    { storeId: 2, effectiveEndDate: null, periodState: "ENDED" as const },
+    { storeId: 2, effectiveEndDate: "2026-10-25", periodState: "ENDED" as const },
+    { storeId: 5, effectiveEndDate: null, periodState: "ENDED" as const },
+  ];
+  assert.equal(storeCountOf(ended, true), 2);
 });
 
 test("반복 기준 · 건너뛰는 날 안내", () => {

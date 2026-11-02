@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-02
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #208 리뷰 반영: BP 휴일 상세 점포 수를 휴일 상태로 가르는 `storeCountOf`(bp-holiday-view.ts, 테스트 포함)로 옮겼다 — 예외를 모두 푼 진행 중 휴일이 「예외점포 1개」로 보이던 것을 고침. BP 공통코드 · 권한 그룹의 플랫폼고정 잠금 시절 낡은 주석도 정리했다(front prinplup).
+
 ## 2026-10-30
 * **Update**: main 병합(front prinplup, main #206 까지): okf 충돌은 양쪽 기록을 살렸다.
 * **Update**: [BP 환경설정](/config.md) · [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일을 새 main(#207) 기준으로 문서 ↔ 구현 대조했다: 상세 점포 수는 지금 열린 점포만(끝난 휴일은 걸렸던 수), 변경이력 빈 문구 「변경이력이 없습니다.」, 「맡지 않은 점포 N개」, 안 쓰는 `sameSchedule` 삭제. 목록 「첫 점포 외 N개」는 그날 적용 점포 전부 · 짧은 휴일유형 · 꼬리표 · 미리보기 · 오류 요약 띠 없음을 적고, 입력 순서 · 막힌 사유 띠 서술을 코드대로 고쳤다(front prinplup, 2026-10-30 재영).
