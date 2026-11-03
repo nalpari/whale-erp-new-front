@@ -5,6 +5,7 @@ import { useState, useTransition, type ReactNode, type RefObject } from "react";
 import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, type Column, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
+import { usePagePermission } from "@/components/site/session-gate";
 import { FailedBand, InfoBand, WarnBand } from "@/components/site/side-parts";
 import { WhoList } from "@/app/platform-admins/admin-parts";
 import { repeatBasis, repeatEndText, storeCountOf, weekdayName, yesterdayOf, type RepeatType } from "@/lib/bp-holiday-view";
@@ -91,6 +92,11 @@ function DetailBody({
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, startBusy] = useTransition();
   const { actions } = h;
+  // api 가 준 actions(이 휴일의 상태로 할 수 있는 일)에 지금 메뉴 권한을 함께 건다 — actions 는 상세를 받을 때의 권한이라, 그 뒤 권한이
+  // 빠지면 다시 받기 전까지 버튼이 남았다. 수정은 update, 강제 종료 · 삭제는 delete 다(api 와 같다).
+  const can = usePagePermission();
+  const canDelete = actions.canDelete && can.delete;
+  const canTerminate = actions.canTerminate && can.delete;
 
   /** 실패 띠를 세운다. 지금 상태가 화면과 다를 수 있는 실패(404 · 409 · 결과 모름)면 상세 · 목록을 다시 받는다. */
   const fail = (status: number | undefined, message: string) => {
@@ -167,7 +173,7 @@ function DetailBody({
     { label: "등록", value: <span>{formatDateTime(h.createdAt)} <span className="text-erp-label">· {h.createdByName ?? "시스템"}</span></span> },
     { label: "최종수정", value: edited ? <span>{formatDateTime(h.updatedAt)} <span className="text-erp-label">· {h.updatedByName}</span></span> : <Muted>-</Muted> },
   ];
-  const canEdit = actions.canUpdate || actions.canUpdateStores;
+  const canEdit = (actions.canUpdate || actions.canUpdateStores) && can.update;
   const yesterday = yesterdayOf(today);
 
   return (
@@ -202,12 +208,12 @@ function DetailBody({
           닫기
         </Button>
         <span className="flex-1" />
-        {actions.canDelete && (
+        {canDelete && (
           <Button variant="soft" onClick={() => setConfirm("delete")} disabled={busy}>
             삭제
           </Button>
         )}
-        {actions.canTerminate && (
+        {canTerminate && (
           <Button variant="soft" onClick={() => setConfirm("terminate")} disabled={busy}>
             강제 종료
           </Button>
@@ -222,13 +228,13 @@ function DetailBody({
 
       {/* 확인창은 대상(회색 상자) + 빨간 안내 상자로 짧게 — BP · 플랫폼 관리자 비밀번호 초기화 확인창과 같은 모양(2026-10-30 사용자 지정 — 전엔 긴 설명 두 문단).
           확인 버튼은 다른 삭제 확인창과 같은 기본 버튼(빨간 Danger 버튼은 쓰지 않는다, 2026-10-30 사용자 지정) */}
-      <ConfirmDialog open={confirm === "terminate"} title="휴일을 강제 종료하시겠습니까?" confirmLabel="강제 종료" busy={busy} onConfirm={handleTerminate} onCancel={() => setConfirm(null)}>
+      <ConfirmDialog open={confirm === "terminate" && canTerminate} title="휴일을 강제 종료하시겠습니까?" confirmLabel="강제 종료" busy={busy} onConfirm={handleTerminate} onCancel={() => setConfirm(null)}>
         <div className="flex flex-col gap-[12px] break-keep">
           <WhoList rows={[["휴일명", h.name], ["종료일", `${yesterday}(어제)`]]} />
           <WarnBand>{"오늘부터 이 휴일은 적용되지 않으며, 강제 종료는 되돌릴 수 없습니다."}</WarnBand>
         </div>
       </ConfirmDialog>
-      <ConfirmDialog open={confirm === "delete"} title="휴일을 삭제하시겠습니까?" confirmLabel="삭제" busy={busy} onConfirm={handleDelete} onCancel={() => setConfirm(null)}>
+      <ConfirmDialog open={confirm === "delete" && canDelete} title="휴일을 삭제하시겠습니까?" confirmLabel="삭제" busy={busy} onConfirm={handleDelete} onCancel={() => setConfirm(null)}>
         <div className="flex flex-col gap-[12px] break-keep">
           <WhoList rows={[["휴일명", h.name]]} />
           <WarnBand>삭제한 휴일은 변경이력에서 확인할 수 있으며, 복구할 수 없습니다.</WarnBand>

@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-03
+* **Update**: [근무스케줄](/screens/work-schedules.md) — 지난 주 복사 미리보기도 등록 권한을 본다: 없으면 표 · [n명 복사] 대신 안내와 [닫기]만(주소로 열거나 연 뒤 권한이 빠진 경우, front machop). 같은 작업에서 플랫폼 게시판 넷(공지 · FAQ · 문의 · 도입문의)과 BP 휴일 상세 · 수정 버튼도 메뉴 권한(`usePagePermission`)으로 가렸다.
 * **Update**: [BP 관리](/bp.md) — 탈퇴 사유 팝업: 상호명 · BP코드를 표 위 머리 대신 표의 줄로 옮겼다(상호명 · BP코드 · 아이디 · 탈퇴 일시 · 탈퇴 사유, front espeon).
 * **Update**: [BP 관리](/bp.md) — BP 마스터 [삭제]가 막혔을 때 말풍선은 api 이유 중 가장 앞의 하나만 보인다(front espeon).
 * **Update**: [점포 정보 관리](/stores.md) — 상세 위치정보 줄: 위도 칸만 100px 고정 · 경도는 값만큼(위도 · 경도 사이가 경도 · 출퇴근 위치적용 사이보다 넓어 보였다), 변경이력 등록 칸 342 → 330px, 라벨 「출퇴근 위치적용」(front espeon).

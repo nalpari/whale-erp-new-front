@@ -48,6 +48,8 @@ export function CopyPreviewPanel({ query, today, preview }: { query: ScheduleQue
   const store = useStores().find((s) => s.storeId === query.storeId);
   const closed = !!store && isClosedStore(store);
   const close = () => navigate({ ...query, copy: false });
+  // 복사는 등록이다(api create). 열기 버튼(CopyButton)만 가리면 주소(copy=1)로 바로 열거나 연 뒤 권한이 빠졌을 때 [N명 복사]가 남았다
+  const canCreate = usePagePermission().create;
   const data = "error" in preview ? null : preview;
   const count = data ? data.staff.filter((s) => s.copied.days > 0).length : 0;
 
@@ -58,6 +60,18 @@ export function CopyPreviewPanel({ query, today, preview }: { query: ScheduleQue
       <section id="schedule-copy" aria-label="지난 주 복사 미리보기" className="flex items-center gap-[8px] rounded-[2px] border border-erp-thead-line p-[16px]">
         <p role="alert" className={`flex-1 ${NOTE}`}>
           폐점 점포는 근무스케줄을 등록할 수 없어 지난 주 복사도 할 수 없습니다.
+        </p>
+        <Button variant="off" onClick={close}>
+          닫기
+        </Button>
+      </section>
+    );
+  // 폐점과 같은 모양으로 막는다
+  if (!canCreate)
+    return (
+      <section id="schedule-copy" aria-label="지난 주 복사 미리보기" className="flex items-center gap-[8px] rounded-[2px] border border-erp-thead-line p-[16px]">
+        <p role="alert" className={`flex-1 ${NOTE}`}>
+          근무스케줄 등록 권한이 없어 지난 주 복사를 할 수 없습니다.
         </p>
         <Button variant="off" onClick={close}>
           닫기

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode } from "react";
 import { Badge, Button, ConfirmDialog, DataTable, DetailTable, DetailValues, PageBar, Tag, Textarea, useToast, type Column } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
+import { usePagePermission } from "@/components/site/session-gate";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import type { InquiryDetail, LeadDetail, Target } from "@/lib/community";
 import {
@@ -60,14 +61,17 @@ const STEP_COLUMNS: Column<Step>[] = [
   { header: "상태", width: "w-[80px]", cell: (s) => (s[2] ? <Badge tone="on">완료</Badge> : <Badge tone="off">대기</Badge>) },
 ];
 
-/** 접수 · 확인 · 답변. 「확인」은 처리중을 거친 건만 완료로 그리고, 처리 시작 없이 바로 답한 건은 줄을 숨긴다(#274). */
-function steps(d: InquiryDetail | LeadDetail, answered: string | null): Step[] {
+/**
+ * 접수 · 확인 · 답변. 「확인」은 처리중을 거친 건만 완료로 그리고, 처리 시작 없이 바로 답한 건은 줄을 숨긴다(#274).
+ * canEdit(수정 권한)이 없으면 누를 버튼이 없으므로 「[처리 시작]을 누르면」 · 「저장하면」 대신 대기 상태만 적는다.
+ */
+function steps(d: InquiryDetail | LeadDetail, answered: string | null, canEdit: boolean): Step[] {
   const confirm: Step[] = d.processingStartedAt
     ? [["확인", `${dt(d.processingStartedAt)} · ${d.processingStartedByName ?? "-"} · 처리중으로 바꿈`, true]]
     : d.status === "RECEIVED"
-      ? [["확인", "[처리 시작]을 누르면 처리중 · 시각 · 운영자가 남음", false]]
+      ? [["확인", canEdit ? "[처리 시작]을 누르면 처리중 · 시각 · 운영자가 남음" : "처리 시작 전", false]]
       : [];
-  return [["접수", dt(d.createdAt), true], ...confirm, answered ? ["답변", answered, true] : ["답변", "저장하면 답변 완료 · 그 뒤에도 고칠 수 있음", false]];
+  return [["접수", dt(d.createdAt), true], ...confirm, answered ? ["답변", answered, true] : ["답변", canEdit ? "저장하면 답변 완료 · 그 뒤에도 고칠 수 있음" : "답변 전", false]];
 }
 
 function History({ rows }: { rows: Step[] }) {
@@ -176,6 +180,7 @@ function AnswerBox({
   firstNote,
   editNote,
   busy,
+  canEdit,
   onSave,
   draft,
   onDraft,
@@ -188,12 +193,20 @@ function AnswerBox({
   firstNote: string;
   editNote: string;
   busy: boolean;
+  /** 수정 권한. 없으면 저장된 답변만 읽기로 보이고 입력칸 · 버튼을 두지 않는다 */
+  canEdit: boolean;
   onSave: (body: string) => void;
   /** 쓰던 답변. 없으면(undefined) 저장된 답변을 읽기로 보인다. */
   draft: Draft | undefined;
   /** 쓰던 글을 바꾼다. base 는 지금 저장된 값 — 새로 쓰기 시작할 때만 남는다. undefined 면 비운다. */
   onDraft: (text: string | undefined, base: string) => void;
 }) {
+  if (!canEdit)
+    return (
+      <Box title="답변" hint={hint}>
+        {current !== null ? view : <Note>아직 답변이 없습니다.</Note>}
+      </Box>
+    );
   const saved = current ?? "";
   const shown = draftView(draft, saved);
   const editing = shown.text !== undefined || current === null;
@@ -234,16 +247,25 @@ function AnswerBox({
 function MemoBox({
   memo,
   busy,
+  canEdit,
   onSave,
   draft,
   onDraft,
 }: {
   memo: string | null;
   busy: boolean;
+  /** 수정 권한. 없으면 저장된 메모만 읽기로 보인다 */
+  canEdit: boolean;
   onSave: (memo: string) => void;
   draft: Draft | undefined;
   onDraft: (text: string | undefined, base: string) => void;
 }) {
+  if (!canEdit)
+    return (
+      <Box title="운영자 메모" hint="문의자에게 보이지 않습니다.">
+        {memo ? <Prose>{memo}</Prose> : <Note>메모가 없습니다.</Note>}
+      </Box>
+    );
   const saved = memo ?? "";
   const shown = draftView(draft, saved);
   const text = shown.text ?? saved;
@@ -281,6 +303,8 @@ function useCommon(target: Target, id: number, updatedAt: string, answered: bool
   const edited = (["answer", "memo"] as const).some((f) => drafts[f] && drafts[f].text !== drafts[f].base);
   const act = useAct(target === "inquiry" ? INQUIRY_BASE : LEAD_BASE, edited);
   const { run, setErrors } = act;
+  // 처리 시작 · 답변 · 메모 · 답변 메일 다시 보내기는 수정, 도입문의 삭제는 삭제 권한이다(api 와 같다). 권한이 빠지면 버튼 · 입력칸 · 열려 있던 확인창을 거둔다.
+  const can = usePagePermission();
   // base 는 쓰기 시작할 때의 저장값 — 이어 쓰는 동안은 처음 base 를 지킨다. 버려진 글(draftView 가 undefined)에 이어 쓰면 새로 시작한다.
   const setDraft = (field: "answer" | "memo") => (text: string | undefined, base: string) =>
     setDrafts((d) => {
@@ -294,6 +318,7 @@ function useCommon(target: Target, id: number, updatedAt: string, answered: bool
   };
   return {
     ...act,
+    can,
     drafts,
     setDraft,
     startProcessing: () => run(() => startProcessingAction(target, id), "처리중으로 바꿨습니다."),
@@ -383,11 +408,12 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         firstNote="저장하면 상태가 즉시 답변 완료로 바뀌고 문의자에게 알림함과 메일로 알립니다. 처리 시작을 거치지 않고 바로 답해도 됩니다."
         editNote="고쳐도 상태는 답변 완료 그대로입니다. 문의자에게 알림은 다시 가지 않습니다."
         busy={c.busy}
+        canEdit={c.can.update}
         onSave={c.saveReply}
         draft={c.drafts.answer}
         onDraft={c.setDraft("answer")}
       />
-      <MemoBox memo={d.internalMemo} busy={c.busy} onSave={c.saveMemo} draft={c.drafts.memo} onDraft={c.setDraft("memo")} />
+      <MemoBox memo={d.internalMemo} busy={c.busy} canEdit={c.can.update} onSave={c.saveMemo} draft={c.drafts.memo} onDraft={c.setDraft("memo")} />
     </>
   );
 
@@ -403,7 +429,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         ]}
       />
       <History
-        rows={steps(d, first && last ? `${dt(first.repliedAt)} · ${first.repliedByName ?? "-"}${previous.length ? ` · ${dt(last.repliedAt)} ${last.repliedByName ?? "-"} 수정` : ""}` : null)}
+        rows={steps(d, first && last ? `${dt(first.repliedAt)} · ${first.repliedByName ?? "-"}${previous.length ? ` · ${dt(last.repliedAt)} ${last.repliedByName ?? "-"} 수정` : ""}` : null, c.can.update)}
       />
     </>
   );
@@ -417,7 +443,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
       right={right}
       buttons={
         <div className="flex items-center gap-[6px]">
-          {d.status === "RECEIVED" && (
+          {d.status === "RECEIVED" && c.can.update && (
             <Button variant="soft" disabled={c.busy} onClick={c.startProcessing}>
               처리 시작
             </Button>
@@ -506,11 +532,12 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
         firstNote="저장하면 상태가 답변 완료로 바뀌고 오늘이 상담 완료일로 남습니다. 처음 저장할 때만 문의자 이메일로 답변이 갑니다."
         editNote="고치면 지금 답변을 덮어씁니다. 상태는 답변 완료 그대로이고 운영 알림 · 메일은 다시 가지 않습니다."
         busy={c.busy}
+        canEdit={c.can.update}
         onSave={c.saveReply}
         draft={c.drafts.answer}
         onDraft={c.setDraft("answer")}
       />
-      <MemoBox memo={d.internalMemo} busy={c.busy} onSave={c.saveMemo} draft={c.drafts.memo} onDraft={c.setDraft("memo")} />
+      <MemoBox memo={d.internalMemo} busy={c.busy} canEdit={c.can.update} onSave={c.saveMemo} draft={c.drafts.memo} onDraft={c.setDraft("memo")} />
     </>
   );
 
@@ -545,13 +572,15 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
         />
         <Note>
           {deletable
-            ? "상담하지 않은 건은 [삭제]로 지웁니다. 지우면 기록이 남지 않습니다."
+            ? c.can.delete
+              ? "상담하지 않은 건은 [삭제]로 지웁니다. 지우면 기록이 남지 않습니다."
+              : "상담하지 않은 건이라 지울 수 있지만, 삭제 권한이 없습니다."
             : d.consultedDate
               ? "상담을 마친 건이라 지울 수 없고, 상담 완료일로부터 1년 뒤 배치가 파기합니다."
               : "답변을 마친 건이라 지울 수 없습니다."}
         </Note>
       </div>
-      <History rows={steps(d, d.repliedAt && `${dt(d.repliedAt)} · ${d.repliedByName ?? "-"}`)} />
+      <History rows={steps(d, d.repliedAt && `${dt(d.repliedAt)} · ${d.repliedByName ?? "-"}`, c.can.update)} />
     </>
   );
 
@@ -564,12 +593,12 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
       right={right}
       buttons={
         <div className="flex items-center gap-[6px]">
-          {deletable && (
+          {deletable && c.can.delete && (
             <Button variant="soft" disabled={c.busy} onClick={() => setConfirmDelete(true)}>
               삭제
             </Button>
           )}
-          {d.status === "RECEIVED" && (
+          {d.status === "RECEIVED" && c.can.update && (
             <Button variant="soft" disabled={c.busy} onClick={c.startProcessing}>
               처리 시작
             </Button>
@@ -580,10 +609,10 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
         </div>
       }
     >
-      <ConfirmDialog open={confirmDelete} title="도입문의를 삭제하시겠습니까?" confirmLabel="삭제" confirmVariant="danger" busy={c.busy} onConfirm={remove} onCancel={() => setConfirmDelete(false)}>
+      <ConfirmDialog open={confirmDelete && c.can.delete} title="도입문의를 삭제하시겠습니까?" confirmLabel="삭제" confirmVariant="danger" busy={c.busy} onConfirm={remove} onCancel={() => setConfirmDelete(false)}>
         {d.contactName} · {dt(d.createdAt)} 접수 건을 지웁니다. 지우면 기록이 남지 않고 되돌릴 수 없습니다.
       </ConfirmDialog>
-      <ConfirmDialog open={confirmResend} title="답변 메일을 다시 보내시겠습니까?" confirmLabel="보내기" busy={c.busy} onConfirm={resend} onCancel={() => setConfirmResend(false)}>
+      <ConfirmDialog open={confirmResend && c.can.update} title="답변 메일을 다시 보내시겠습니까?" confirmLabel="보내기" busy={c.busy} onConfirm={resend} onCancel={() => setConfirmResend(false)}>
         {d.email} 로 지금 저장된 답변을 한 번 더 보냅니다.
       </ConfirmDialog>
     </Frame>

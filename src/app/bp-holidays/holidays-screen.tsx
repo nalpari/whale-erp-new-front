@@ -47,7 +47,8 @@ export function HolidaysScreen({
   const router = useRouter();
   const toast = useToast();
   const bp = useCurrentBp().bpCodeId;
-  // 등록 버튼만 메뉴 권한으로 가린다(조회만 권한에는 등록이 없다 · S-YAFRYZ). 상세의 버튼은 api 가 준 actions 로 가린다.
+  // 등록은 메뉴 권한으로 가린다(조회만 권한에는 등록이 없다 · S-YAFRYZ). 상세의 버튼 · 수정 패널은 api 가 준 actions 에 메뉴 권한을 함께 건다 —
+  // actions 는 상세를 받을 때의 권한이라, 로그인한 채 권한이 빠지면 다시 받기 전까지 남았다.
   const can = usePagePermission();
   const typeText = useHolidayTypeText();
   const [newOpen, setNewOpen] = useState(false);
@@ -65,7 +66,7 @@ export function HolidaysScreen({
   if (detail && detail !== shown) setShown(detail);
   const holiday = shown && "holiday" in shown ? shown.holiday : null;
   // 수정 패널은 주소에 ?edit=1 이 있고, 고칠 수 있는 그 휴일의 상세가 지금 열려 있을 때만 선다(isEditOpen)
-  const canEditShown = !!holiday && (holiday.actions.canUpdate || holiday.actions.canUpdateStores);
+  const canEditShown = !!holiday && (holiday.actions.canUpdate || holiday.actions.canUpdateStores) && can.update;
   const editOpen = isEditOpen(query, canEditShown, holiday?.bpHolidayId ?? null);
 
   // 지금 수정 · 상세가 열려 있는지를 최신 값으로 본다 — 저장 · 삭제 결과는 누른 때의 화면으로 돌아오므로, 그 사이 뒤로 가기로 이미 닫혔으면

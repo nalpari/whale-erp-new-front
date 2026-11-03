@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type ReactNode } from "react";
-import { Badge, Button, Checkbox, ConfirmDialog, DateField, PageBar, Select, Tag, Textarea, TextField, Toggle, useToast } from "@/components/common";
-import { useCodes } from "@/components/site/session-gate";
+import { Badge, Button, Checkbox, ConfirmDialog, DateField, NoticeBand, PageBar, Select, Tag, Textarea, TextField, Toggle, useToast } from "@/components/common";
+import { useCodes, usePagePermission } from "@/components/site/session-gate";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import type { PostDetail } from "@/lib/community";
 import {
@@ -107,6 +107,10 @@ export function PostForm({
   const fileInput = useRef<HTMLInputElement>(null);
   const nextKey = useRef(0);
 
+  // 저장(게시 · 임시저장 · 비공개)은 등록 화면이면 등록, 수정 화면이면 수정 권한이다. 삭제는 삭제 권한. 권한이 빠지면 버튼과
+  // 열려 있던 삭제 확인창도 거둔다 — 막는 것은 api 다(create · update · delete).
+  const can = usePagePermission();
+  const canSave = detail ? can.update : can.create;
   const notice = kind === "NOTICE";
   const name = notice ? "공지사항" : "FAQ";
   const listHref = POST_BASE[kind];
@@ -212,24 +216,36 @@ export function PostForm({
           <Button variant="off" href={listHref}>
             목록
           </Button>
-          {detail && (
+          {detail && can.delete && (
             <Button variant="soft" disabled={busy} onClick={() => setConfirmDelete(true)}>
               삭제
             </Button>
           )}
-          <Button variant="soft" disabled={busy} onClick={() => save("PRIVATE")}>
-            비공개
-          </Button>
-          <Button variant="soft" disabled={busy} onClick={() => save("DRAFT")}>
-            임시저장
-          </Button>
-          <Button disabled={busy} onClick={() => save("PUBLISHED")}>
-            게시
-          </Button>
+          {canSave && (
+            <>
+              <Button variant="soft" disabled={busy} onClick={() => save("PRIVATE")}>
+                비공개
+              </Button>
+              <Button variant="soft" disabled={busy} onClick={() => save("DRAFT")}>
+                임시저장
+              </Button>
+              <Button disabled={busy} onClick={() => save("PUBLISHED")}>
+                게시
+              </Button>
+            </>
+          )}
         </div>
       </PageBar>
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="flex flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
+          {/* 저장 버튼이 없는 까닭을 알린다 — 막힌 실패가 아니라 조회만 가능 안내라 info 띠다(DESIGN.md Notice Band) */}
+          {!canSave && (
+            <NoticeBand
+              tone="info"
+              title={`${notice ? "공지사항을" : "FAQ 를"} ${detail ? "고칠" : "등록할"} 권한이 없습니다.`}
+              detail={detail ? "내용만 볼 수 있습니다." : "입력해도 저장할 수 없습니다."}
+            />
+          )}
           {errors.length > 0 && (
             <div ref={errorRef} role="alert" className="flex items-start gap-[12px] rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
               <div className="flex flex-1 flex-col gap-[4px]">
@@ -293,9 +309,11 @@ export function PostForm({
                             {a.fileName}
                           </button>
                           <span className="text-erp-muted">{sizeLabel(a.sizeBytes)}</span>
-                          <Button variant="off" disabled={busy} onClick={() => setRemoveIds((ids) => [...ids, a.postAttachmentId])}>
-                            빼기
-                          </Button>
+                          {canSave && (
+                            <Button variant="off" disabled={busy} onClick={() => setRemoveIds((ids) => [...ids, a.postAttachmentId])}>
+                              빼기
+                            </Button>
+                          )}
                         </li>
                       ))}
                       {files.map(({ key, file }) => (
@@ -310,13 +328,17 @@ export function PostForm({
                       ))}
                     </ul>
                   )}
-                  <div>
-                    <input ref={fileInput} type="file" multiple accept={FILE_ACCEPT} hidden onChange={(e) => addFiles(e.target.files)} />
-                    <Button variant="soft" disabled={busy || kept.length + files.length >= MAX_ATTACHMENTS} onClick={() => fileInput.current?.click()}>
-                      파일 선택
-                    </Button>
-                  </div>
-                  <Note>이미지(JPG · PNG)와 PDF 를 올릴 수 있습니다. {MAX_ATTACHMENTS}개까지, 파일당 10MB. 저장할 때 함께 올라갑니다.</Note>
+                  {canSave && (
+                    <>
+                      <div>
+                        <input ref={fileInput} type="file" multiple accept={FILE_ACCEPT} hidden onChange={(e) => addFiles(e.target.files)} />
+                        <Button variant="soft" disabled={busy || kept.length + files.length >= MAX_ATTACHMENTS} onClick={() => fileInput.current?.click()}>
+                          파일 선택
+                        </Button>
+                      </div>
+                      <Note>이미지(JPG · PNG)와 PDF 를 올릴 수 있습니다. {MAX_ATTACHMENTS}개까지, 파일당 10MB. 저장할 때 함께 올라갑니다.</Note>
+                    </>
+                  )}
                 </div>
               )}
             </Box>
@@ -380,7 +402,7 @@ export function PostForm({
       </div>
 
       <ConfirmDialog
-        open={confirmDelete}
+        open={confirmDelete && can.delete}
         title={notice ? "공지사항을 삭제하시겠습니까?" : "FAQ 를 삭제하시겠습니까?"}
         confirmLabel="삭제"
         confirmVariant="danger"
