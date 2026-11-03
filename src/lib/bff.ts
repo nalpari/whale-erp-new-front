@@ -44,17 +44,5 @@ export const isPasswordRequired = (e: unknown): boolean =>
 export const isAccountUnavailable = (e: unknown): boolean =>
   e instanceof BffError && e.status === 403 && e.message.startsWith(ACCOUNT_UNAVAILABLE_MESSAGE);
 
-/**
- * 로그아웃 서버 액션(logout → /login)을 부른다. 성공하면 서버 액션의 redirect 로 이동한다.
- * 액션 자체가 실패하면(연결 끊김) 쿠키가 남아 proxy 가 /login 을 다시 자기 홈으로 돌려보내므로, 이동하지 않고 알린 뒤 false 를 돌려준다.
- */
-export async function signOut(logout: () => Promise<void>): Promise<boolean> {
-  try {
-    await logout();
-    return true;
-  } catch (e) {
-    console.error("로그아웃 실패", e);
-    alert("로그아웃하지 못했습니다. 다시 시도해 주세요.");
-    return false;
-  }
-}
+// 로그아웃 호출(signOut)은 node --test 로 시험하려고 sign-out.ts 에 두고 여기서 다시 내보낸다.
+export { signOut } from "./sign-out.ts";
