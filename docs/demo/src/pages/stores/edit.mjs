@@ -1,7 +1,7 @@
 // 점포 수정. 목업 docs/mockup/stores/edit.html 의 기본 상태(모리커피 연남점 · 인증된 점포 · 이미지 있음)를 BP 마스터로 본 것.
 // 배치는 점포 등록 화면에 맞춘다(재영 2026-10-06). 폼은 1팀 FormGroup·FormRow·Field. 2026-10-30 앱(store-form-view.tsx)대로 맞춤(재영).
 // render 의 bpStatus(「탈퇴」 · 「미사용」)를 주면 소속 BP 가 그 상태인 점포를 플랫폼 계정으로 본 것이다(edit-bp-unused.mjs, 앱 store-form-view.tsx 와 같다, 2026-10-28).
-// 폐점 점포 수정(「폐점 점포는 수정할 수 없습니다.」 info 띠)은 상세에 [수정]이 없어 들어올 길이 없어 데모 화면을 두지 않는다.
+// 폐점 점포 수정(「폐점 점포는 조회만 할 수 있습니다. 영업을 다시 시작하려면 신규 점포로 등록해 주세요.」 info 띠)은 상세에 [수정]이 없어 들어올 길이 없어 데모 화면을 두지 않는다.
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as f from "../../biz-form.mjs";
@@ -63,7 +63,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
       ui.formRow(
         ui.field("위도", ui.textField({ value: "37.562104", inputmode: "decimal", placeholder: "예: 37.556312" }), "w-[160px]"),
         ui.field("경도", ui.textField({ value: "126.925631", inputmode: "decimal", placeholder: "예: 126.901845" }), "w-[160px]"),
-        ui.field("출퇴근 위치 적용 여부", ui.select(["사용", "미사용"], { value: "사용" }), "w-[150px]"),
+        ui.field("출퇴근 위치적용", ui.select(["사용", "미사용"], { value: "사용" }), "w-[150px]"),
         `<div class="self-end">${ui.button("주소로 다시 계산", { variant: "soft", disabled: off })}</div>`,
       ) +
       LOCATION_NOTE +
@@ -126,7 +126,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
   const closeSave = x.dialog(
     closeSaveId,
     "폐점으로 저장할까요?",
-    "<p>폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다. 다른 수정 내용도 함께 저장됩니다.</p>",
+    "<p>폐점으로 저장하면 되돌릴 수 없습니다.</p><p>폐점일은 오늘(2026-11-03)이며, 다른 수정 내용도 함께 저장됩니다.</p>",
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("폐점으로 저장", { href: link(R, "stores/detail-closed.html") }),
   );
 

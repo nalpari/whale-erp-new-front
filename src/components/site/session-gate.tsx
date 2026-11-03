@@ -85,8 +85,9 @@ interface LoginState {
 
 type LoginActions = {
   setScope: (scope: Scope) => void;
-  /** 점포 목록을 지금 서버 값에 맞춘다 — 점포를 등록 · 수정 · 상태 변경 · 삭제했거나 그 결과를 모를 때(409 · 404 · 연결 끊김) 화면이 부른다. 버전이 같으면 다시 받지 않는다. */
-  refreshStores: () => void;
+  /** 점포 목록을 지금 서버 값에 맞춘다 — 점포를 등록 · 수정 · 상태 변경 · 삭제했거나 그 결과를 모를 때(409 · 404 · 연결 끊김) 화면이 부른다. 버전이 같으면 다시 받지 않는다.
+   * quiet 면 「점포 목록이 변경되었습니다.」를 띄우지 않는다 — 상태 변경처럼 화면이 이미 토스트로 알렸을 때. */
+  refreshStores: (options?: { quiet?: boolean }) => void;
   /** 내 정보(마이페이지)에서 이름 · 이메일을 바꾸면 GNB 등 이 값을 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
    * 이름 · 이메일만 받고 둘 다 빈 값을 허락하지 않는다 — 소속 BP · 권한 · 비밀번호 변경 대기 같은 칸은 이 통로로
    * 바뀌면 안 되고, 호출자(MyPagePanel)는 늘 toUpdateInput 이 다듬은 값만 준다. */
@@ -397,7 +398,9 @@ function Ready({
   // disposed: 이 Ready 가 내려갔다 — 다른 BP 주소로 가면 SessionGate 가 로딩을 그려 Ready 가 내려가는데, 그때 묻던 결과가 늦게 와서
   // 새 BP 의 상태 · 탭 저장값을 옛 BP 의 점포로 덮지 않게 한다(코드 리뷰로 찾음, 2026-10-30)
   // stopped: 다시 물어도 같은 실패(403 · 404)를 받았다 — 이 화면에서는 더 묻지 않는다(이동마다 실패 요청이 쌓이지 않게)
-  const sync = useRef({ running: false, again: false, announce: false, checkedAt: 0, disposed: false, stopped: false });
+  // quiet: 이번 맞추기에서 「점포 목록이 변경되었습니다.」를 띄우지 않는다 — 화면이 이미 자기 토스트로 알린 상태 변경(폐점 · 운영)이 그렇다.
+  // 맞추기가 끝나면 푼다 — 바뀐 게 없어 남은 표시가 뒤의 다른 탭 알림까지 삼키지 않게(2026-11-03 사용자 지정)
+  const sync = useRef({ running: false, again: false, announce: false, quiet: false, checkedAt: 0, disposed: false, stopped: false });
   useEffect(() => {
     const s = sync.current;
     // 개발 모드(StrictMode)는 effect 를 두 번 돌린다 — 다시 올라올 때 표시를 되돌린다
@@ -406,20 +409,25 @@ function Ready({
       s.disposed = true;
     };
   }, []);
-  const syncStores = async (fromOtherTab = false) => {
+  const syncStores = async (fromOtherTab = false, quiet = false) => {
     const s = sync.current;
     if (s.running) {
       s.again = true;
       s.announce ||= !fromOtherTab;
+      s.quiet ||= quiet;
       return;
     }
     s.running = true;
     s.announce = !fromOtherTab;
+    s.quiet = quiet;
     try {
       do {
         const announce = s.announce;
+        // quiet 도 차례마다 — 돌던 중에 들어온 quiet 은 다음 차례(그 변경을 보는 차례)에만 쓴다. 판 전체에 걸면 다른 탭의 변경까지 조용히 지나간다(코드 리뷰)
+        const quiet = s.quiet;
         s.again = false;
         s.announce = false;
+        s.quiet = false;
         s.checkedAt = Date.now();
         const v = latest.current;
         // 플랫폼 탭(자기 BP)은 점포가 없다. 비밀번호를 바꾸기 전에는 점포 api 가 403 이다
@@ -466,10 +474,11 @@ function Ready({
         // 상태에 넣는 순간에도 같은 BP 인지 한 번 더 본다 — 그 사이 다른 BP 로 준비됐으면 그대로 둔다
         onChange((cur) => (cur.currentBp.bpCodeId === bpCodeId ? { ...cur, stores: changed.items, scope } : cur));
         if (announce) announceStoresChanged(v.loginKey, bpCodeId);
-        toast(STORES_CHANGED_MESSAGE);
+        if (!quiet) toast(STORES_CHANGED_MESSAGE);
       } while (s.again);
     } finally {
       s.running = false;
+      s.quiet = false;
     }
   };
   // 로그인 정보 맞추기(2026-11-02). 로그인한 뒤 계정 상태 · 권한 그룹 · 메뉴 권한 · 메뉴가 바뀌면 다시 로그인하지 않아도 따라온다.
@@ -524,9 +533,9 @@ function Ready({
     }
   };
   // 맞추는 중의 예외(주소 · 범위 계산 등)는 화면을 깨지 않고 남기기만 한다 — 실행 중 표시는 finally 가 푼다
-  const runSync = (fromOtherTab: boolean) => void syncStores(fromOtherTab).catch((e: unknown) => console.error("점포 목록 맞추기 중 예외", e));
+  const runSync = (fromOtherTab: boolean, quiet = false) => void syncStores(fromOtherTab, quiet).catch((e: unknown) => console.error("점포 목록 맞추기 중 예외", e));
   const runLoginInfoSync = () => void syncLoginInfo().catch((e: unknown) => console.error("로그인 정보 맞추기 중 예외", e));
-  const refreshStores = () => runSync(false);
+  const refreshStores = (options?: { quiet?: boolean }) => runSync(false, options?.quiet);
   // 다른 탭의 점포 알림(fromOtherTab)은 점포만 다시 맞춘다 — 로그인 정보는 그 탭이 저장값으로 알려 준다(아래 storage)
   const syncOnEvent = useEffectEvent((fromOtherTab: boolean) => {
     runSync(fromOtherTab);

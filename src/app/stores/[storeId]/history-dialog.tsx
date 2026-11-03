@@ -20,7 +20,8 @@ const COLUMNS: Column<StoreHistory>[] = [
   { header: "변경 후", align: "left", cell: (h) => empty(h.afterValue) },
 ];
 
-export function HistoryButton({ storeId }: { storeId: number }) {
+/** variant — 표 안 버튼이 무거우면 outline(흰 바탕 · 브랜드 테두리)으로 둔다(점포 상세 변경이력 줄, 2026-11-03 사용자 지정) */
+export function HistoryButton({ storeId, variant = "soft" }: { storeId: number; variant?: "soft" | "outline" }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const [open, setOpen] = useState(false);
@@ -64,7 +65,7 @@ export function HistoryButton({ storeId }: { storeId: number }) {
   return (
     <>
       <Button
-        variant="soft"
+        variant={variant}
         onClick={() => {
           // 지난 번 열었을 때의 줄 · 쪽 번호 · 오류가 새로 열 때까지 그대로 보이지 않게 비운다(2026-10-16 코드리뷰).
           setOpen(true);

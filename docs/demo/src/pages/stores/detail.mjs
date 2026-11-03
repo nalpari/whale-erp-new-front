@@ -5,16 +5,20 @@
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as f from "../../biz-form.mjs";
-import { tag } from "../../config-parts.mjs";
+import { tag, warnBand } from "../../config-parts.mjs";
 import { STORES, erpHeader, link } from "../../site.mjs";
-import { CLOSED_STORE, blocked, noticeBand, statusBadge, storeImage } from "../../store-parts.mjs";
+import { CLOSED_STORE, blocked, noticeBand, statusBadge } from "../../store-parts.mjs";
 
-// DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸(들) 너비 — 위치정보 · 변경이력처럼 짝을 이루는 줄들이
+// DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸 너비 — 사업자등록번호 · 대표자정보처럼 짝을 이루는 줄들이
 // 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다(2026-10-19 점검 — 실사용자 확인).
 const FIRST_COL = "inline-block min-w-[140px]";
-// 변경이력 줄의 등록 칸 너비 — 위치정보 줄의 위도 · 경도 두 칸(140 + 10 + 구분선 1 + 10 + 140)과 같아, 최종수정 앞 구분선이 바로 위
-// 줄 출퇴근 위치 적용 여부 앞 구분선과 같은 세로줄에 선다(2026-10-23 사용자 요청 — 앱 stores/[storeId]/page.tsx 와 같다).
-const REGISTERED_COL = "w-[301px]";
+// 위치정보 줄의 위도 칸만 고정폭(100) — 경도는 값만큼, 출퇴근 위치적용이 가장 넓게 선다(앱과 같다, 2026-11-03).
+const LAT_COL = "inline-block w-[100px] whitespace-nowrap";
+// 대표 이미지 칸 — 사진 194px + 둘레 여백 18px 씩 = 230px, 사진 옆 다섯 줄(46 × 5)과 높이가 같다(앱과 같다, 2026-11-03).
+const PHOTO_BOX = "size-[194px]";
+// 변경이력 줄의 등록 칸 너비 — 이 줄은 사진 아래 카드 왼쪽 끝에서 시작한다. 사진 칸(230) + 위도 칸(100) = 330 으로 최종수정 앞
+// 구분선이 위치정보 줄의 경도 앞 구분선과 같은 세로줄에 선다(앱 stores/[storeId]/page.tsx 와 같다, 2026-11-03 — 줄맞춤).
+const REGISTERED_COL = "w-[330px]";
 const muted = (t) => `<span class="text-erp-muted">${t}</span>`;
 const dash = (v) => v || muted("-");
 
@@ -118,13 +122,11 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
         : x.dialogTrigger("상태 변경", statusId, "soft") +
           (state === "미운영" ? x.dialogTrigger("삭제", deleteId, "soft") : blocked("삭제", "미운영 점포만 삭제할 수 있습니다. 점포 운영을 종료하려면 '상태 변경'에서 '폐점'으로 변경해 주세요.")) +
           ui.button("수정", { variant: "soft", href: editHref });
-  // 대표 이미지 · 점포명 · 점포코드 · 유형 · 폐점일 · 실행 버튼을 한 머리 카드에 묶는다(2026-10-19 점검 —
-  // 실사용자 확인, 디자인 데모 1안 채택). 이미지가 없으면 48px 아이콘(목록 카드와 같은 크기)이 72px 자리 대신 선다(앱과 같다).
-  // 점포명과 점포코드 줄 사이는 6px, 점포코드 줄 안 간격은 10px(앱과 같다).
-  const head = `<div class="flex items-center gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[18px]">
-    ${photo ? storeImage(72, `${A}img/${photo}`, name) : storeImage(48)}
+  // 점포명 · 점포코드 · 유형 · 폐점일 · 실행 버튼을 한 줄에 묶는다. 테두리 없이 점포명 20px — 대표 이미지는 점포 기본정보 카드로
+  // 옮겼다(앱과 같다, 2026-11-03). 점포명과 점포코드 줄 사이는 6px, 점포코드 줄 안 간격은 10px.
+  const head = `<div class="flex items-center gap-[18px] py-[6px]">
     <div class="flex min-w-0 flex-1 flex-col gap-[6px]">
-      <h2 class="truncate text-[18px] font-semibold text-erp-ink">${name}</h2>
+      <h2 class="truncate text-[20px] font-semibold text-erp-ink">${name}</h2>
       <!-- 운영 상태 배지는 여기 두지 않는다 — 점포 기본정보 표의 점포상태 줄과 정보가 겹쳐 보였다(2026-10-19 점검). -->
       <div class="flex items-center gap-[10px] text-[14px] font-medium text-erp-label">
         <span>점포코드 ${code}</span>
@@ -138,28 +140,41 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
     </div>
   </div>`;
 
-  // 점포 기본정보: 대표 이미지 · 점포코드는 위 머리 카드로 옮겨 다시 적지 않는다. 표 맨 위는 점포상태(2026-10-19 점검).
-  const basic = ui.detailTable("점포 기본정보", [
+  // 점포 기본정보: 점포코드는 위 점포명 줄에 있어 다시 적지 않는다. 표 맨 위는 점포상태(2026-10-19 점검).
+  const basicRows = [
     ["점포상태", statusBadge(state)],
     ["점포 연락처", phone],
     // 한 줄 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」 — 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)(2026-10-19 점검).
     ["점포주소", addressLine(d.address), true],
-    // 위도 · 경도 · 출퇴근 위치 적용 여부 각각 라벨과 같은 회색 글자를 앞에 둔다(2026-10-16 점검).
+    // 위도 · 경도 · 출퇴근 위치적용 각각 라벨과 같은 회색 글자를 앞에 둔다(2026-10-16 점검).
     [
       "위치정보",
       ui.detailValues([
-        `<span class="${FIRST_COL}"><span class="mr-[10px] text-erp-label">위도</span>${d.lat}</span>`,
-        `<span class="${FIRST_COL}"><span class="mr-[10px] text-erp-label">경도</span>${d.lng}</span>`,
-        `<span class="mr-[10px] text-erp-label">출퇴근 위치 적용 여부</span>${d.location}`,
+        `<span class="${LAT_COL}"><span class="mr-[10px] text-erp-label">위도</span>${d.lat}</span>`,
+        `<span class="whitespace-nowrap"><span class="mr-[10px] text-erp-label">경도</span>${d.lng}</span>`,
+        `<span class="mr-[10px] text-erp-label">출퇴근 위치적용</span>${d.location}`,
       ]),
     ],
     ["재직직원", `${staff}명`],
     // 등록 · 최종수정 두 칸 + [변경이력]. 고친 적 없으면 최종수정은 「-」(앱 wasUpdated). 처리자 이름이 길면 말줄임해 버튼은 자리를 지킨다(2026-10-19 점검).
     [
       "변경이력",
-      `<span class="flex w-full items-center gap-[12px]"><span class="flex min-w-0 flex-1 items-center gap-[10px] overflow-hidden"><span class="${REGISTERED_COL} min-w-0 shrink-0 truncate"><span class="mr-[10px] text-erp-label">등록</span>${d.created}</span><span class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span><span class="min-w-0 flex-1 truncate"><span class="mr-[10px] text-erp-label">최종수정</span>${dash(d.updated)}</span></span>${x.dialogTrigger("변경이력", histId, "soft")}</span>`,
+      `<span class="flex w-full items-center gap-[12px]"><span class="flex min-w-0 flex-1 items-center gap-[10px] overflow-hidden"><span class="${REGISTERED_COL} min-w-0 shrink-0 truncate"><span class="mr-[10px] text-erp-label">등록</span>${d.created}</span><span class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span><span class="min-w-0 flex-1 truncate"><span class="mr-[10px] text-erp-label">최종수정</span>${dash(d.updated)}</span></span>${x.dialogTrigger("변경이력", histId, "outline")}</span>`,
     ],
-  ]);
+  ];
+  // 대표 이미지 — 점포 기본정보 카드 안 왼쪽 위(194px · 8px 모서리), 사진 옆은 재직직원까지 다섯 줄, 변경이력은 사진 아래에서 카드 폭을 다 쓴다.
+  // 사진은 칸에 맞게 가운데를 잘라 채우고, 오른쪽 아래 돋보기를 누르면 원본을 크게 본다. 없으면 회색 바탕 · 점포 아이콘(앱과 같다, 2026-11-03)
+  const zoomId = x.dialogId();
+  const photoCell = photo
+    ? `<button type="button" data-dialog="${zoomId}" aria-label="${name} 대표 이미지 크게 보기" class="group/photo relative block shrink-0 cursor-zoom-in overflow-hidden rounded-[8px] ${PHOTO_BOX}"><img src="${A}img/${photo}" alt="${name} 대표 이미지" class="size-full rounded-[8px] object-cover"><span class="pointer-events-none absolute right-[8px] bottom-[8px] grid size-[28px] place-items-center rounded-full bg-erp-nav/50 text-white transition-colors duration-150 ease-out group-hover/photo:bg-erp-nav/80"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.75" stroke="currentColor" stroke-width="1.5"/><path d="M12.75 12.75 17 17M8.5 6v5M6 8.5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span></button>`
+    : `<span role="img" aria-label="대표 이미지 없음" class="grid shrink-0 place-items-center rounded-[8px] bg-erp-thead-bg text-erp-label ${PHOTO_BOX}"><svg viewBox="0 0 24 24" width="48" height="48" class="shrink-0 fill-none stroke-current" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${x.ICON.store}</svg></span>`;
+  const basic = `<div class="w-full">${ui.detailTable("점포 기본정보", [])}<div class="flex"><div class="shrink-0 border-b border-l border-erp-thead-line bg-white p-[18px]">${photoCell}</div><div class="min-w-0 flex-1 [&_dt]:border-l-0">${ui.detailTable(null, basicRows.filter(([l]) => l !== "변경이력"))}</div></div>${ui.detailTable(null, basicRows.filter(([l]) => l === "변경이력"))}</div>`;
+  const zoomDialog = photo
+    ? x
+        .dialog(zoomId, `${name} 대표 이미지`, `<img src="${A}img/${photo}" alt="${name} 대표 이미지" class="block max-h-[calc(100dvh-200px)] max-w-[min(960px,calc(100vw-80px))] rounded-[2px] object-contain">`, ui.button("닫기", { variant: "off", "data-close": true }))
+        .replace("w-[420px]", "w-auto")
+    : "";
+
   // 미인증이면 진위확인 세 값은 「-」다(앱과 같다). 순서는 상호명 · 사업자등록번호 · 대표자정보 · 개업일자 · 업태종목 · 사업자주소(2026-10-16 점검).
   const b = d.biz ?? {};
   const bizInfo = ui.detailTable(f.titleBadge("사업자정보", d.biz ? "on" : "off", d.biz ? "인증 완료" : "미인증"), [
@@ -223,16 +238,16 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
         x.dialog(
           closeId,
           "폐점으로 변경할까요?",
-          "<p>폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다.</p>",
+          "<p>폐점으로 변경하면 되돌릴 수 없습니다.</p><p>폐점일은 오늘(2026-11-03)입니다.</p>",
           ui.button("이전", { variant: "off", "data-dialog": statusId, "data-close": true }) + ui.button("폐점으로 변경", { href: link(R, "stores/detail-closed.html") }),
         );
-  // 삭제 확인 — 미운영 점포만. 확인 버튼만 위험 색(앱과 같다, 2026-10-29 사용자 결정)
+  // 삭제 확인 — 미운영 점포만. 1팀 화면은 빨간 버튼을 쓰지 않아 확인 버튼도 기본 색(앱과 같다, 2026-11-03)
   const deleteDialog = notOperating && !bpBlocked
     ? x.dialog(
         deleteId,
         "점포를 삭제하시겠습니까?",
-        `<div class="flex flex-col gap-[12px]">${whoList([["점포명", name], ["점포유형", type], ["점포코드", code]])}<p>삭제한 점포는 복구할 수 없습니다.</p></div>`,
-        ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { variant: "danger", href: link(R, "stores/index.html") }),
+        `<div class="flex flex-col gap-[12px]">${whoList([["점포명", name], ["점포유형", type], ["점포코드", code]])}${warnBand("점포를 삭제하면 점포 목록과 상단 점포 선택 항목에서 제외됩니다.\n삭제된 점포는 복구할 수 없습니다.")}</div>`,
+        ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "stores/index.html") }),
       )
     : "";
 
@@ -242,15 +257,16 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
     .replace("w-[420px]", "w-[860px] max-h-[calc(100dvh-48px)] overflow-y-auto");
 
   const body = ui.detailBody(
-    // BP 탈퇴 · 미사용 안내는 점포명 머리 카드 위 맨 위, 폐점 안내는 머리 카드 아래(앱 stores/[storeId]/page.tsx 와 같다)
+    // BP 탈퇴 · 미사용 안내는 점포명 머리 카드 위 맨 위, 폐점 안내(한 줄)는 머리 카드 아래(앱 stores/[storeId]/page.tsx 와 같다)
     // 등록 직후 대표 이미지만 실패했을 때의 띠(「점포는 저장했습니다.」)는 데모에 두지 않는다
     `<div class="flex flex-col gap-[12px]">${bpBlocked ? f.noticeBand(bpBlocked) : ""}${head}${
-      state === "폐점" ? noticeBand("info", "폐점한 점포는 조회만 가능하며, 수정할 수 없습니다. 다시 운영하려면 신규 점포로 등록해 주세요.") : ""
+      state === "폐점" ? noticeBand("info", "폐점 점포는 조회만 할 수 있습니다. 영업을 다시 시작하려면 신규 점포로 등록해 주세요.") : ""
     }<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${bizInfo}</div></div>` +
       floors +
       statusDialog +
       deleteDialog +
-      historyDialog,
+      historyDialog +
+      zoomDialog,
   );
 
   const title = bpStatus ? `점포 상세 · BP ${bpStatus}` : code === "ST000006" ? "점포 상세" : `점포 상세 · ${state}`;

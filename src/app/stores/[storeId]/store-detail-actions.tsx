@@ -13,7 +13,9 @@ import { withoutDeletedStore } from "@/lib/store-scope";
 import { closeBlockText, finalEuro, nextStatuses } from "@/lib/store-view";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
+import { WarnBand } from "@/components/site/side-parts";
 import { withBack } from "../stores-query";
+import { kstToday } from "@/lib/staff-members";
 
 /** 확인창 안에서 어떤 점포인지 — platform-admins/admin-parts.tsx 의 WhoList 와 같은 모양(화면마다 로컬로 둔다). */
 function WhoList({ rows }: { rows: [string, React.ReactNode][] }) {
@@ -126,9 +128,10 @@ export function StoreDetailActions({
       const result = await updateStoreAction(store.storeId, input).catch(UNKNOWN("상태 변경"));
       if (!result.ok) return fail(result.status, result.message);
       setDialog(null);
-      toast(`점포상태를 ${statusLabel(target)}${finalEuro(statusLabel(target))} 바꿨습니다.`);
+      // 토스트는 짧게 하나만 — 바꾼 상태는 화면에 보이고, 헤더 점포 목록이 바뀐 것은 따로 알리지 않는다(2026-11-03 사용자 지정)
+      toast("점포상태가 변경되었습니다.");
       router.refresh();
-      refreshStores();
+      refreshStores({ quiet: true });
     });
 
   // 삭제 뒤 목록은 점포 검색이 헤더 범위와 어긋나지 않게 한다(2026-10-30 사용자 결정 — 전엔 「전체」로 비워 헤더 「직영 9개」 · 필터 「전체」로 갈렸다).
@@ -282,7 +285,9 @@ export function StoreDetailActions({
           onConfirm={handleStatusChange}
           onCancel={handleBackToStatus}
         >
-          <p>폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다.</p>
+          {/* 폐점일 · 되돌릴 수 없음을 한 문장에 이어 어색했다 — 두 줄로 나누고 날짜를 적는다. BP 휴일 안내는 뺐다(2026-11-03 사용자 지정) */}
+          <p>폐점으로 변경하면 되돌릴 수 없습니다.</p>
+          <p>폐점일은 오늘({kstToday()})입니다.</p>
           {failure && <p role="alert" className="mt-[10px] text-erp-off">{failure}</p>}
         </ConfirmDialog>
       )}
@@ -292,8 +297,7 @@ export function StoreDetailActions({
           open={dialog === "delete"}
           title="점포를 삭제하시겠습니까?"
           confirmLabel="삭제"
-          // 되돌릴 수 없어 확인 버튼만 위험 색 — 머리의 [삭제]는 Soft 그대로(BP 마스터 계정 삭제와 같다, 2026-10-29 사용자 결정)
-          confirmVariant="danger"
+          // 1팀 화면은 빨간 버튼을 쓰지 않는다 — 되돌릴 수 없는 삭제도 기본 버튼(2026-11-03 사용자 지적, 전엔 2026-10-29 위험 색)
           busy={busy}
           onConfirm={handleDelete}
           onCancel={() => setDialog(null)}
@@ -306,7 +310,8 @@ export function StoreDetailActions({
                 ["점포코드", store.storeCode],
               ]}
             />
-            <p>삭제한 점포는 복구할 수 없습니다.</p>
+            {/* 삭제하면 어떻게 되는지까지 알린다 — 놓치면 안 되는 안내라 빨간 안내 상자(WarnBand)로 둔다(2026-11-03 사용자 지정) */}
+            <WarnBand>{"점포를 삭제하면 점포 목록과 상단 점포 선택 항목에서 제외됩니다.\n삭제된 점포는 복구할 수 없습니다."}</WarnBand>
           </div>
           {failure && <p role="alert" className="mt-[10px] text-erp-off">{failure}</p>}
         </ConfirmDialog>

@@ -145,7 +145,8 @@ function RolesBody({
             </h2>
             {/* 가맹 관리자에게는 숨긴다(S-LYKAEI) — api 도 403 이다 */}
             {account.roleTypeCode !== "FA" && (
-              <Button variant="soft" onClick={() => setFranchiseMasterOpen(true)}>
+              // 보기만 하는 버튼이라 흰 바탕 · 브랜드 테두리(outline) — 점포 상세 [변경이력]과 같다(2026-11-03 사용자 지정)
+              <Button variant="outline" onClick={() => setFranchiseMasterOpen(true)}>
                 가맹마스터 메뉴설정 보기
               </Button>
             )}

@@ -17,7 +17,7 @@
          BP 마스터 고정 권한 BM000001 은 BA 그룹의 상한, FM000001 은 FA 그룹의 상한이다 (PL-AMTMVC). 두 마스터의 본인 권한이 곧 상한이라 설정자 범위와 상한이 같다.
          BP 마스터는 BA 그룹만, 가맹 마스터는 관리계정이 자기 아이디인 FA 그룹만 등록·수정·삭제한다. BP 관리자·가맹 관리자·플랫폼 사용자는 조회만 한다 (PL-RWJYLJ).
          고칠 수 없는 그룹 — 메뉴 수정 권한이 있으면 빨간 상자로 이유를 말하고(가맹관리자 그룹 「내 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다.」 ·
-           그 밖 「선택한 권한 그룹에 대한 수정 권한이 없습니다.」), 조회 권한만이면 안내 없이 상세만 선다. 플랫폼 계정은 회색 안내 「플랫폼 계정은 BP 권한 그룹을 조회만 합니다.」 (코드대로, 2026-10-30).
+           그 밖 「선택한 권한 그룹에 대한 수정 권한이 없습니다.」), 조회 권한만이면 안내 없이 상세만 선다. 플랫폼 계정은 회색 안내 「플랫폼 계정은 BP 권한 그룹을 조회만 할 수 있습니다.」 (코드대로, 2026-10-30).
          본인 연결 띠는 두지 않는다 — 그룹을 고칠 수 있는 BP 마스터·가맹 마스터의 본인 권한은 목록에 없는 고정 권한이고, 목록에서 본인이 연결된 그룹은
            가맹 관리자의 것뿐이라 위 역할 문구로 보인다 (코드대로, 2026-10-30).
          권한 코드는 유형 코드 + 6자리 순번으로 등록할 때 채번한다 (PL-EIMSQF). 신규 미리보기는 BA000008 · FA000005 다.
@@ -99,7 +99,7 @@
                   <span class="badge badge--quiet" id="rg-count">8건</span>
                   <div class="panel__end">
                     <!-- 가맹 관리자에게는 숨긴다(S-LYKAEI) -->
-                    <button class="btn btn--secondary btn--sm" type="button" data-rg-menu="FM000001" data-show-role="bpm fm bpa plat">가맹마스터 메뉴설정 보기</button>
+                    <button class="btn btn--ghost btn--sm" type="button" data-rg-menu="FM000001" data-show-role="bpm fm bpa plat">가맹마스터 메뉴설정 보기</button>
                   </div>
                 </div>
                 <div class="tblwrap" id="rg-list">
@@ -408,7 +408,7 @@
               '<button class="btn btn--primary btn--sm" type="button" data-rg-save>저장</button></div>';
           } else {
             var notice = "";
-            if (v.plat) notice = grayBox("플랫폼 계정은 BP 권한 그룹을 조회만 합니다.");
+            if (v.plat) notice = grayBox("플랫폼 계정은 BP 권한 그룹을 조회만 할 수 있습니다.");
             else if (can(v, "U")) notice = redBox(g.type === "FA" ? "내 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다." : "선택한 권한 그룹에 대한 수정 권한이 없습니다.");
             /* 조회 권한만이면 안내 없이 상세만 */
             body = notice + '<dl class="kv"><dt>권한명</dt><dd>' + g.name + "</dd><dt>설명</dt><dd>" + (g.desc || MUTED) + "</dd>" + recordRows(g) + "</dl>";

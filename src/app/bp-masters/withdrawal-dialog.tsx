@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { Button, DetailTable, Tag } from "@/components/common";
+import { Button, DetailTable } from "@/components/common";
 import type { BpMasterDetail } from "@/lib/bp-masters";
 import { formatDateTime } from "@/lib/format";
 
 // 탈퇴 사유 팝업(WHALEERP-626). 탈퇴 BP 는 변경 이력을 보이지 않으므로(예전 개인정보가 이력에 남는다, api 409) 탈퇴 사유는 여기서 본다.
 // 상세 응답의 withdrawal 로 그린다 — 따로 조회하지 않는다. 변경 이력 팝업(history-dialog.tsx)과 같은 네이티브 <dialog> 다.
-// 머리는 상호명 + BP 코드 꼬리표, 아이디 · 탈퇴 일시 · 사유는 상세와 같은 DetailTable, 직접 입력한 긴 글은 표 밖 읽기 전용 상자에 둔다.
+// 상호명 · BP코드 · 아이디 · 탈퇴 일시 · 사유를 모두 상세와 같은 DetailTable 줄로 둔다(2026-11-03 사용자 지정 — 전엔 상호명 + BP 코드 꼬리표를 표 위 머리에 뒀다).
+// 직접 입력한 긴 글은 표 밖 읽기 전용 상자에 둔다.
 
 type Withdrawal = NonNullable<BpMasterDetail["withdrawal"]>;
 
@@ -55,13 +56,11 @@ export function WithdrawalButton({
         <h2 id={titleId} className="text-[18px] font-semibold">
           탈퇴 사유
         </h2>
-        <p className="mt-[18px] flex flex-wrap items-center gap-[6px] text-[15px] font-semibold">
-          <span>{bp.tradeName}</span>
-          <Tag>{bp.bpCode}</Tag>
-        </p>
         <div className="mt-[18px]">
           <DetailTable
             rows={[
+              { label: "상호명", value: bp.tradeName || "-" },
+              { label: "BP코드", value: bp.bpCode },
               { label: "아이디", value: bp.loginId },
               { label: "탈퇴 일시", value: formatDateTime(withdrawal.withdrawnAt) || "-" },
               { label: "탈퇴 사유", value: withdrawal.reasonLabel ?? "-" },

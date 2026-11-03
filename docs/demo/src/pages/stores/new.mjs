@@ -30,13 +30,13 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
       f.group("점포 연락처", f.tel()),
     ),
     address(A, "점포 주소"),
-    // 출퇴근 위치 적용 여부는 처음 「미사용」이고, 좌표가 없으면 사용으로 고를 수 없다(막힌 이유는 도움말 셋째 줄에도). [주소로 다시 계산]은
+    // 출퇴근 위치적용은 처음 「미사용」이고, 좌표가 없으면 사용으로 고를 수 없다(막힌 이유는 도움말 셋째 줄에도). [주소로 다시 계산]은
     // 주소를 고르기 전에는 막힌다 — 자동 채워진 뒤 직접 고친 좌표를 주소 기준 값으로 되돌릴 때 쓴다(2026-10-19).
     `<div class="flex flex-col gap-[8px]">` +
       ui.formRow(
         ui.field("위도", ui.textField({ inputmode: "decimal", placeholder: "예: 37.556312" }), "w-[160px]"),
         ui.field("경도", ui.textField({ inputmode: "decimal", placeholder: "예: 126.901845" }), "w-[160px]"),
-        ui.field("출퇴근 위치 적용 여부", ui.select(["사용", "미사용"], { value: "미사용", disabled: true, title: "위도 · 경도가 있어야 사용으로 고를 수 있습니다." }), "w-[150px]"),
+        ui.field("출퇴근 위치적용", ui.select(["사용", "미사용"], { value: "미사용", disabled: true, title: "위도 · 경도가 있어야 사용으로 고를 수 있습니다." }), "w-[150px]"),
         `<div class="self-end">${ui.button("주소로 다시 계산", { variant: "soft", disabled: true })}</div>`,
       ) +
       LOCATION_NOTE +

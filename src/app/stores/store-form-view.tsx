@@ -64,6 +64,7 @@ import {
 } from "./actions";
 import { FieldMessage, StoreImage, StoreStatusBadge, StoreTypeCards } from "./store-parts";
 import { withBack } from "./stores-query";
+import { kstToday } from "@/lib/staff-members";
 
 /** 동시 수정 409 문구(api). 이때만 최신 정보를 다시 불러온다 */
 const STALE = "먼저 수정했습니다";
@@ -226,7 +227,7 @@ export function StoreFormView(props: Props) {
   const handleAddressChoose = (item: AddressItem) => {
     const mine = ++locateNumber.current;
     setCoordinateNote(null);
-    // 출퇴근 위치 적용 여부는 여기서 건드리지 않는다 — 같은 주소를 다시 고르거나 오타를 고치는 흔한 경우까지
+    // 출퇴근 위치적용은 여기서 건드리지 않는다 — 같은 주소를 다시 고르거나 오타를 고치는 흔한 경우까지
     // "사용"을 꺼 버려 운영 점포의 위치 확인이 조용히 멈추는 문제가 있었다(2026-10-19 코드 리뷰 2차 — 처음엔
     // 화면·저장 어긋남을 막으려 껐는데, 그러면 새 좌표를 받아도 되살리지 않아 더 나쁜 쪽으로 지나쳤다). 좌표가
     // 비는 동안은 선택칸이 막히고(disabled) 저장(bodyOf)도 좌표 없이는 사용을 보내지 않으니 이미 막혀 있다.
@@ -283,7 +284,7 @@ export function StoreFormView(props: Props) {
     locateNumber.current++;
     setCoordinateNote(null);
     // 숫자 · 마침표 · 마이너스만 받는다 — 문자는 칠 수 없다(2026-10-19).
-    // 출퇴근 위치 적용 여부는 여기서 건드리지 않는다 — 오타를 고치려 한 칸을 지웠다 바로 채워도 "사용"이
+    // 출퇴근 위치적용은 여기서 건드리지 않는다 — 오타를 고치려 한 칸을 지웠다 바로 채워도 "사용"이
     // 꺼진 채 남는 문제가 있었다(2026-10-19 코드 리뷰 2차). 좌표가 비는 동안은 선택칸이 막히고 저장(bodyOf)도
     // 좌표 없이는 사용을 보내지 않으니 이미 막혀 있다.
     set(key, value.replace(/[^0-9.-]/g, ""), key);
@@ -462,8 +463,9 @@ export function StoreFormView(props: Props) {
           });
         }
         toast("updated");
-        // 점포명 · 상태가 바뀌었으면 헤더 범위 선택기 · 점포 고르기에 바로 넣는다(바뀐 게 없으면 알리지 않는다)
-        refreshStores();
+        // 점포명 · 상태가 바뀌었으면 헤더 범위 선택기 · 점포 고르기에 바로 넣는다(바뀐 게 없으면 알리지 않는다).
+        // 상태를 바꿨으면(폐점 · 운영) 토스트는 「수정되었습니다.」 하나만 — 상세의 상태 변경과 같다(2026-11-03 사용자 지정)
+        refreshStores({ quiet: form.storeStatus !== props.store.storeStatusCode });
         return router.push(at(withBack(`/stores/${props.store.storeId}`, backHref)));
       }
       // 다른 사람이 먼저 고쳤거나 결과를 모르면 최신 정보를 불러온다 — 저장됐으면 updatedAt 이 바뀌어 칸이 새 값으로 다시 채워진다
@@ -514,9 +516,10 @@ export function StoreFormView(props: Props) {
           ? "저장하면 대표 이미지를 지웁니다."
           : (
               <>
-                {storeImageTypesText(imageTypes)} 파일 1장만 등록할 수 있습니다. (최대 5MB)
+                {/* 더 쉬운 말로 — 저장 버튼이 화면 위에 있어 자리를 함께 말한다(2026-11-03 사용자 지정) */}
+                점포 사진 1장을 등록할 수 있습니다. ({storeImageTypesText(imageTypes)}, 5MB까지)
                 <br />
-                이미지를 선택한 후 ‘저장’을 눌러야 반영됩니다.
+                이미지를 선택한 뒤 화면 상단 ‘저장’ 버튼을 눌러야 적용됩니다.
               </>
             );
   // 인증 상자 상태(S-VRNTHD — 인증하면 잠그고 재인증으로 연다, 2026-10-22 사용자 확정). 이번 화면에서 지금 칸 값으로
@@ -562,7 +565,7 @@ export function StoreFormView(props: Props) {
         </Button>
       </div>
       {failure && <NoticeBand title={failure.title} detail={failure.detail} />}
-      {store && store.storeStatusCode === "CLOSED" && <NoticeBand tone="info" title="폐점 점포는 수정할 수 없습니다." detail="다시 운영하려면 새 점포로 등록하세요." />}
+      {store && store.storeStatusCode === "CLOSED" && <NoticeBand tone="info" title="폐점 점포는 조회만 할 수 있습니다. 영업을 다시 시작하려면 신규 점포로 등록해 주세요." />}
 
       {/* 두 묶음은 같은 선에서 끝나게 높이를 맞춘다(FormGroup 상자가 flex-1 로 늘어난다, 2026-10-16 점검) */}
       <div className="grid grid-cols-2 gap-[24px]">
@@ -641,7 +644,7 @@ export function StoreFormView(props: Props) {
             label="점포 주소"
             value={{ zipCode: form.zipCode, address: form.address, addressDetail: form.addressDetail }}
             onChange={(a) => {
-              // [지우기]로 주소를 비우면 그 주소에서 나온 좌표도, 출퇴근 위치 적용 여부도 함께 미사용으로
+              // [지우기]로 주소를 비우면 그 주소에서 나온 좌표도, 출퇴근 위치적용도 함께 미사용으로
               // 돌린다 — 주소 없이는 좌표도 없고, 좌표 없이 사용으로 남아 있으면 상세 화면에 잘못된 상태가
               // 보인다(2026-10-19 재확인 — 실사용자 지시로 되돌림. 전에는 이 값을 건드리지 않는 쪽이 근본
               // 수정이라 봤으나, 주소 없는 사용 상태 자체가 더 큰 문제로 판단해 다시 바꿨다).
@@ -681,7 +684,7 @@ export function StoreFormView(props: Props) {
                   aria-describedby={describe("longitude")}
                 />
               </Field>
-              <Field label="출퇴근 위치 적용 여부" width="w-[150px]">
+              <Field label="출퇴근 위치적용" width="w-[150px]">
                 {/* 좌표(위도 · 경도)가 없으면 사용으로 고를 수 없다 — 주소를 지우거나 좌표를 손으로 비우면
                     미사용으로 되돌리는 것과 같은 규칙이다. 주소가 아니라 좌표로 가린다 — 주소는 골랐는데
                     지오코딩이 늦거나 실패한 사이, 또는 주소 없이 좌표만 손으로 적은 점포를 놓치지 않는다
@@ -715,9 +718,9 @@ export function StoreFormView(props: Props) {
             <Note>
               점포주소가 입력되면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.
               <br />
-              <b className="font-semibold">출퇴근 위치 적용 여부</b>를 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.
+              <b className="font-semibold">출퇴근 위치적용</b>을 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.
               <br />
-              위도 · 경도가 없으면 <b className="font-semibold">출퇴근 위치 적용 여부</b>를 사용으로 고를 수 없습니다.
+              위도 · 경도가 없으면 <b className="font-semibold">출퇴근 위치적용</b>을 사용으로 고를 수 없습니다.
             </Note>
           </Stack>
           <Labeled label="대표 이미지">
@@ -901,7 +904,9 @@ export function StoreFormView(props: Props) {
         onConfirm={handleSaveConfirm}
         onCancel={() => setDialog(null)}
       >
-        <p>폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다. 다른 수정 내용도 함께 저장됩니다.</p>
+        {/* 상세의 폐점 확인창과 같은 문구 + 다른 수정 내용 안내(2026-11-03 사용자 지정) */}
+        <p>폐점으로 저장하면 되돌릴 수 없습니다.</p>
+        <p>폐점일은 오늘({kstToday()})이며, 다른 수정 내용도 함께 저장됩니다.</p>
       </ConfirmDialog>
     </div>
   );

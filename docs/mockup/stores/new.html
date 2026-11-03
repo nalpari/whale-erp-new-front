@@ -112,7 +112,7 @@
                       </div>
                       <input class="input" value="1층 101호" maxlength="100" placeholder="상세주소를 입력하세요." aria-label="상세주소" data-addr-detail />
                     </div>
-                    <!-- 위도 · 경도 · 출퇴근 위치 적용 여부 · [주소로 다시 계산]. 위치 적용은 기본 미사용, 좌표가 있을 때만 사용을 고를 수 있다(10-19) -->
+                    <!-- 위도 · 경도 · 출퇴근 위치적용 · [주소로 다시 계산]. 위치 적용은 기본 미사용, 좌표가 있을 때만 사용을 고를 수 있다(10-19) -->
                     <div class="inline" style="align-items: flex-end; gap: 6px; flex-wrap: nowrap">
                       <div class="field" style="flex: 1">
                         <label for="nlat">위도</label>
@@ -125,7 +125,7 @@
                         <input class="input mono" value="" placeholder="예: 126.901845" data-show="coord" hidden aria-label="경도" />
                       </div>
                       <div class="field" style="flex: 1">
-                        <label for="nloc">출퇴근 위치 적용 여부</label>
+                        <label for="nloc">출퇴근 위치적용</label>
                         <select class="select" id="nloc">
                           <option>사용</option>
                           <option selected>미사용</option>
@@ -134,7 +134,7 @@
                       <button class="btn btn--secondary" type="button">주소로 다시 계산</button>
                     </div>
                     <span class="err" data-show="coord" hidden><span data-icon="alert" data-icon-size="13"></span>좌표를 가져오지 못했습니다. 위도 · 경도를 직접 적어 주세요.</span>
-                    <p class="help" style="margin: 0">점포주소가 입력되면 <b>위도 · 경도</b> 좌표값이 자동으로 표시됩니다.<br /><b>출퇴근 위치 적용 여부를 사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.<br />위도 · 경도가 없으면 <b>출퇴근 위치 적용 여부</b>를 사용으로 고를 수 없습니다.</p>
+                    <p class="help" style="margin: 0">점포주소가 입력되면 <b>위도 · 경도</b> 좌표값이 자동으로 표시됩니다.<br /><b>출퇴근 위치적용을 사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.<br />위도 · 경도가 없으면 <b>출퇴근 위치적용</b>을 사용으로 고를 수 없습니다.</p>
                     <!-- 대표 이미지 — 선택 · 1장 · JPG · PNG(GET /enums/StoreImageFileType) · 5MB. 고르면 미리보기만 하고 점포를 저장한 뒤 올린다 -->
                     <div class="field">
                       <label>대표 이미지</label>
@@ -142,7 +142,7 @@
                         <div class="imgup__box"><span data-icon="store" data-icon-size="28"></span></div>
                         <div class="imgup__side">
                           <button class="btn btn--secondary btn--sm" type="button"><span data-icon="upload" data-icon-size="14"></span>이미지 올리기</button>
-                          <span class="help">JPG · PNG 파일 1장만 등록할 수 있습니다. (최대 5MB)<br />이미지를 선택한 후 ‘저장’을 눌러야 반영됩니다.</span>
+                          <span class="help">점포 사진 1장을 등록할 수 있습니다. (JPG · PNG, 5MB까지)<br />이미지를 선택한 뒤 화면 상단 ‘저장’ 버튼을 눌러야 적용됩니다.</span>
                         </div>
                       </div>
                     </div>

@@ -47,13 +47,11 @@
               </div>
             </div>
 
-            <!-- 머리 카드 — 대표 이미지 · 점포명 · 점포코드 | 점포유형 · 폐점일 · 실행 버튼(2026-10-19) -->
-            <section class="panel">
-              <div class="panel__body" style="display: flex; flex-direction: row; align-items: center; gap: 18px">
-                <div class="imgup__box is-filled" style="width: 72px; height: 72px" data-show="run bpoff closed"><img src="../assets/img/store-photo-1.jpg" alt="모리커피 연남점 대표 이미지" /></div>
-                <div class="imgup__box" style="width: 72px; height: 72px" data-show="unop" hidden><span data-icon="store" data-icon-size="24"></span></div>
+            <!-- 점포명 줄 — 테두리 없이 점포명(20px) · 점포코드 | 점포유형 · 폐점일 · 실행 버튼. 대표 이미지는 점포 기본정보 카드로 옮겼다(2026-11-03) -->
+            <section>
+              <div style="display: flex; flex-direction: row; align-items: center; gap: 18px; padding: 6px 0">
                 <div class="stack" style="flex: 1; min-width: 0; gap: 6px">
-                  <h2 class="t-h2" style="margin: 0; font-size: 18px">
+                  <h2 class="t-h2" style="margin: 0; font-size: 20px">
                     <span data-show="run bpoff">모리커피 연남점</span><span data-show="unop" hidden>모리커피 청담점</span><span data-show="closed" hidden>모리커피 합정점</span>
                   </h2>
                   <span class="inline subtle" style="gap: 10px; font-size: 14px">
@@ -82,31 +80,39 @@
             <div class="band band--info" data-show="closed" hidden>
               <span class="band__ic" data-icon="info" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">폐점한 점포는 조회만 가능하며, 수정할 수 없습니다. 다시 운영하려면 신규 점포로 등록해 주세요.</div>
+                <div class="band__title">폐점 점포는 조회만 할 수 있습니다. 영업을 다시 시작하려면 신규 점포로 등록해 주세요.</div>
               </div>
             </div>
 
             <div class="grid grid--2" style="align-items: start">
               <section class="panel">
                 <div class="panel__head"><h2 class="t-h2">점포 기본정보</h2></div>
-                <div class="panel__body">
-                  <dl class="kv">
+                <!-- 대표 이미지 — 카드 안 왼쪽 위 194px · 8px 모서리 · 둘레 여백 18px. 옆은 재직직원까지 다섯 줄, 변경이력은 사진 아래에서 카드 폭 전체.
+                     사진은 칸에 맞게 가운데를 잘라 채우고, 오른쪽 아래 돋보기를 누르면 원본을 크게 본다. 없으면 회색 바탕 · 점포 아이콘(2026-11-03) -->
+                <div class="panel__body" style="display: flex; gap: 18px; align-items: flex-start">
+                  <div class="imgup__box is-filled" style="position: relative; width: 194px; height: 194px; flex: none; border-radius: 8px; overflow: hidden; cursor: zoom-in" data-show="run bpoff closed"><img src="../assets/img/store-photo-1.jpg" alt="모리커피 연남점 대표 이미지" style="object-fit: cover" /><span style="position: absolute; right: 8px; bottom: 8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(40, 47, 55, 0.5); color: #fff; display: grid; place-items: center" data-icon="search" data-icon-size="16"></span></div>
+                  <div class="imgup__box" style="width: 194px; height: 194px; flex: none; border-radius: 8px" data-show="unop" hidden><span data-icon="store" data-icon-size="48"></span></div>
+                  <dl class="kv" style="flex: 1; min-width: 0">
                     <dt>점포상태</dt>
                     <dd><span class="badge badge--ok" data-show="run bpoff">운영</span><span class="badge badge--quiet" data-show="unop" hidden>미운영</span><span class="badge badge--risk" data-show="closed" hidden>폐점</span></dd>
                     <dt>점포 연락처</dt><dd class="mono">02-322-1180</dd>
                     <dt>점포주소</dt><dd><span class="subtle">[ 우편번호</span> 03991 <span class="subtle">]</span> <b>서울 마포구 동교로 256</b>, 1층</dd>
                     <dt>위치정보</dt>
-                    <dd data-show="run bpoff closed"><span class="subtle">위도</span> 37.562104 | <span class="subtle">경도</span> 126.925631 | <span class="subtle">출퇴근 위치 적용 여부</span> 사용</dd>
-                    <dd data-show="unop" hidden><span class="subtle">위도</span> - | <span class="subtle">경도</span> - | <span class="subtle">출퇴근 위치 적용 여부</span> 미사용</dd>
+                    <dd data-show="run bpoff closed"><span class="subtle">위도</span> 37.562104 | <span class="subtle">경도</span> 126.925631 | <span class="subtle">출퇴근 위치적용</span> 사용</dd>
+                    <dd data-show="unop" hidden><span class="subtle">위도</span> - | <span class="subtle">경도</span> - | <span class="subtle">출퇴근 위치적용</span> 미사용</dd>
                     <dt>재직직원</dt>
                     <dd><span data-show="run bpoff">6명</span><span data-show="unop closed" hidden>0명</span></dd>
+                  </dl>
+                </div>
+                <div class="panel__body" style="padding-top: 0">
+                  <dl class="kv">
                     <dt>변경이력</dt>
                     <dd class="spread">
                       <span>
                         <span class="subtle">등록</span> <span data-show="run bpoff">2025-08-01 09:12</span><span data-show="unop" hidden>2026-09-10 14:05</span><span data-show="closed" hidden>2025-02-14 10:30</span> · 정하윤
                         | <span class="subtle">최종수정</span> <span data-show="run bpoff">2026-08-14 10:31 · 정하윤</span><span data-show="closed" hidden>2025-12-31 18:02 · 정하윤</span><span class="nil" data-show="unop" hidden>-</span>
                       </span>
-                      <button class="btn btn--secondary btn--sm" type="button" data-open="pop-history">변경이력</button>
+                      <button class="btn btn--ghost btn--sm" type="button" data-open="pop-history">변경이력</button>
                     </dd>
                   </dl>
                 </div>
@@ -220,7 +226,7 @@
               <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
               <div class="band__body">
                 <div class="band__title">폐점으로 변경할까요?</div>
-                <p class="band__desc">폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다.</p>
+                <p class="band__desc">폐점으로 변경하면 되돌릴 수 없습니다.<br>폐점일은 오늘(2026-11-03)입니다.</p>
               </div>
             </div>
             <!-- 두 번째 확인 — 수정 화면의 「폐점으로 저장할까요?」와 같은 문구(2026-10-29 사용자 결정) -->
@@ -275,7 +281,7 @@
               <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
               <div class="band__body">
                 <div class="band__title">폐점으로 변경할까요?</div>
-                <p class="band__desc">폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다.</p>
+                <p class="band__desc">폐점으로 변경하면 되돌릴 수 없습니다.<br>폐점일은 오늘(2026-11-03)입니다.</p>
               </div>
             </div>
             <div class="inline" style="justify-content: flex-end">
@@ -287,7 +293,7 @@
       </div>
     </div>
 
-    <!-- 점포 삭제 확인 — 머리의 [삭제]는 보조 색, 이 창의 [삭제]만 위험 색(2026-10-29, BP 마스터 계정 삭제와 같다) -->
+    <!-- 점포 삭제 확인 — 1팀 화면은 빨간 버튼을 쓰지 않아 이 창의 [삭제]도 기본 색(2026-11-03) -->
     <div class="modal" id="pop-delete" hidden role="dialog" aria-modal="true" aria-labelledby="pd-t">
       <div class="modal__box">
         <div class="modal__head">
@@ -296,11 +302,11 @@
         </div>
         <div class="modal__body">
           <dl class="kv" style="margin: 0; font-size: 13.5px"><dt>점포명</dt><dd>모리커피 청담점</dd><dt>점포유형</dt><dd>가맹점포</dd><dt>점포코드</dt><dd>ST000007</dd></dl>
-          <p style="margin: 0; font-size: 13.5px">삭제한 점포는 복구할 수 없습니다.</p>
+          <div class="band band--risk"><div class="band__body"><p class="band__desc" style="margin: 0">점포를 삭제하면 점포 목록과 상단 점포 선택 항목에서 제외됩니다.<br />삭제된 점포는 복구할 수 없습니다.</p></div></div>
         </div>
         <div class="modal__foot">
           <button class="btn btn--ghost" type="button" data-close>취소</button>
-          <a class="btn btn--danger" href="index.html">삭제</a>
+          <a class="btn btn--primary" href="index.html">삭제</a>
         </div>
       </div>
     </div>

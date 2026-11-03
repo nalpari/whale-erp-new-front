@@ -15,7 +15,23 @@ export type DetailRow = {
 // 제목 줄의 사방 테두리와 겹치지 않게 한다. 마지막 줄만 아래 모서리를 둥글린다.
 // action 은 제목 줄(42) 오른쪽 끝에 붙는 버튼(34) — 지금 쓰는 화면은 없다(처음 쓴 BP 마스터 [BP상태변경]은 표 줄로 옮겼다, 2026-10-28 · 작은 버튼은 너무 작았다, 1팀 동의 2026-10-28 · DESIGN.md Tables).
 // title 을 주지 않으면 제목 줄 없이 표만 — 위 선 · 위 모서리를 표가 맡는다(권한 그룹 상세, 2026-10-26 사용자 지정 · 데모 role-side.mjs plainTable 과 같다).
-export function DetailTable({ title, action, rows }: { title?: ReactNode; action?: ReactNode; rows: DetailRow[] }) {
+/**
+ * aside — 줄들 왼쪽에 둘 칸(점포 상세의 대표 이미지). 줄 높이만큼 늘고, 칸과 줄 사이 세로선은 두지 않는다.
+ * attached — 바로 위 표에 붙여 그릴 때 맨 위 선을 두지 않는다(위 표의 아래 선이 그 자리다). 둘 다 2026-11-03 점포 상세(1팀 확인 필요).
+ */
+export function DetailTable({
+  title,
+  action,
+  rows,
+  aside,
+  attached,
+}: {
+  title?: ReactNode;
+  action?: ReactNode;
+  rows: DetailRow[];
+  aside?: ReactNode;
+  attached?: boolean;
+}) {
   return (
     <div className="w-full">
       {title !== undefined && (
@@ -24,16 +40,19 @@ export function DetailTable({ title, action, rows }: { title?: ReactNode; action
           {action}
         </div>
       )}
-      <dl className={`flex w-full flex-col ${title === undefined ? "rounded-t-[2px] border-t border-erp-thead-line" : ""}`}>
+      {/* aside 가 있으면 칸과 줄을 나란히 — 칸이 왼쪽 선을 맡고 줄의 라벨은 왼쪽 선을 두지 않는다 */}
+      <div className={aside ? "flex" : "contents"}>
+        {aside && <div className="shrink-0 rounded-bl-[2px] border-b border-l border-erp-thead-line bg-white">{aside}</div>}
+      <dl className={`flex min-w-0 w-full flex-col ${title === undefined && !attached ? "rounded-t-[2px] border-t border-erp-thead-line" : ""}`}>
         {rows.map(({ label, value, multiline }, i) => {
           const last = i === rows.length - 1;
           const height = multiline ? "min-h-[46px]" : "h-[46px]";
           return (
             <div key={i} className="flex w-full">
               <dt
-                className={`flex ${height} w-[110px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
-                  last ? "rounded-bl-[2px]" : ""
-                }`}
+                className={`flex ${height} w-[110px] shrink-0 items-center truncate border-b border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
+                  aside ? "" : "border-l"
+                } ${last && !aside ? "rounded-bl-[2px]" : ""}`}
               >
                 {label}
               </dt>
@@ -48,6 +67,7 @@ export function DetailTable({ title, action, rows }: { title?: ReactNode; action
           );
         })}
       </dl>
+      </div>
     </div>
   );
 }
