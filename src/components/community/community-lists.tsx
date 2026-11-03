@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { Badge, Button, Checkbox, DataTable, FilterPanel, FilterSection, ListToolbar, Pagination, SearchField, Select, Tag, type Column } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
+import { usePagePermission } from "@/components/site/session-gate";
 import type { InquiryListItem, LeadListItem, PostListItem } from "@/lib/community";
 import { INQUIRY_BASE, LEAD_BASE, POST_BASE, queryString, type InquiryQuery, type LeadQuery, type ListQuery, type PostKind, type PostQuery } from "@/lib/community-view";
 import { labelOf, type EnumValue } from "@/lib/enums";
@@ -121,6 +122,8 @@ export function PostList({
 }) {
   const go = useGo(query);
   const faqLabel = useCodeLabel("FAQ_CATEGORY");
+  // 등록 권한이 없으면 [새 공지] · [새 FAQ] 를 숨긴다 — 막는 것은 api(create)다
+  const can = usePagePermission();
   const base = POST_BASE[kind];
   const notice = kind === "NOTICE";
   const columns: Column<PostListItem>[] = [
@@ -151,7 +154,7 @@ export function PostList({
           <Checks label="상태" values={statuses} value={query.status} onPick={(status) => go({ status })} last />
         </FilterPanel>
       }
-      action={<Button href={`${base}/new`}>{notice ? "새 공지" : "새 FAQ"}</Button>}
+      action={can.create && <Button href={`${base}/new`}>{notice ? "새 공지" : "새 FAQ"}</Button>}
     >
       <DataTable columns={columns} rows={items} rowKey={(p) => p.postId} empty={notice ? "공지사항이 없습니다." : "FAQ 가 없습니다."} />
     </Frame>
