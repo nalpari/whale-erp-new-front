@@ -13,15 +13,17 @@ import { unknownResult, WideDialog } from "./holiday-parts";
 // 상세의 [변경이력]은 그 휴일의 이력(상세 응답에 함께 온다)만 같은 표로 보인다. 칸 이름은 1팀 영역의 다른 이력과 같다.
 // 미입력 값(변경 전후 값이 없을 때)은 빈 칸으로 둔다(상세 표와 같다).
 
+// 항목 90 은 api(bp-holiday-changes.service.ts)가 주는 항목 이름이 띄어쓰기 포함 다섯 자 이하라서다(적용 범위 ·
+// 예외 점포 · 강제 종료 …) — api 에 더 긴 항목이 생기면 넓힌다.
 const COLUMNS: Column<BpHolidayHistory>[] = [
   { header: "변경일시", width: "w-[140px]", cell: (h) => formatDateTime(h.changedAt) },
-  { header: "변경자", width: "w-[80px]", cell: (h) => h.changedByName ?? <span className="text-erp-muted">시스템</span> },
+  { header: "변경자", width: "w-[140px]", cell: (h) => h.changedByName ?? <span className="text-erp-muted">시스템</span> },
   { header: "항목", width: "w-[90px]", align: "left", cell: (h) => h.field },
   { header: "변경 전", align: "left", cell: (h) => h.beforeValue },
   { header: "변경 후", align: "left", cell: (h) => h.afterValue },
 ];
 
-const WITH_HOLIDAY: Column<BpHolidayHistory>[] = [...COLUMNS.slice(0, 2), { header: "휴일명", width: "w-[120px]", align: "left", cell: (h) => h.holidayName }, ...COLUMNS.slice(2)];
+const WITH_HOLIDAY: Column<BpHolidayHistory>[] = [...COLUMNS.slice(0, 2), { header: "휴일명", width: "w-[140px]", align: "left", cell: (h) => h.holidayName }, ...COLUMNS.slice(2)];
 
 /** 화면 위 [변경이력] — 기간으로 찾는다. 열 때마다 기본 기간 첫 쪽을 새로 받는다(방금 고친 내용이 바로 보여야 한다). */
 export function HolidayHistoryButton({ today }: { today: string }) {

@@ -39,7 +39,8 @@ export function useHolidayTypeText() {
 export const Muted = ({ children }: { children: ReactNode }) => <span className="text-erp-muted">{children}</span>;
 
 /**
- * 넓은 팝업(네이티브 <dialog>, 최상위 레이어) — 변경 이력처럼 표가 들어가는 창. ConfirmDialog 와 같은 껍데기이고 폭만 넓다.
+ * 넓은 팝업(네이티브 <dialog>, 최상위 레이어) — 변경 이력처럼 표가 들어가는 창. ConfirmDialog 와 같은 껍데기이고 폭만 넓다
+ * (860 — 1팀 변경이력 팝업 모두 같은 폭, 2026-11-02).
  * Esc 는 onClose 로 돌린다(닫는 것은 부르는 쪽 상태).
  */
 export function WideDialog({ open, title, onClose, children, footer }: { open: boolean; title: string; onClose: () => void; children: ReactNode; footer: ReactNode }) {
@@ -60,7 +61,7 @@ export function WideDialog({ open, title, onClose, children, footer }: { open: b
         onClose();
       }}
       // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups).
-      className="m-auto max-h-[calc(100dvh-48px)] w-[760px] max-w-[calc(100vw-32px)] overflow-y-auto rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
+      className="m-auto max-h-[calc(100dvh-48px)] w-[860px] max-w-[calc(100vw-32px)] overflow-y-auto rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
     >
       <h2 id={titleId} className="text-[18px] font-semibold">
         {title}

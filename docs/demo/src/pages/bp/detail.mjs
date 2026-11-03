@@ -62,7 +62,7 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
     ["업태 · 종목", ui.detailValues(["도소매업", "식자재 유통"])],
   ]));
   const history = ui.dataTable(
-    [{ header: "변경 일시", width: "w-[180px]" }, { header: "변경자", width: "w-[140px]" }, { header: "변경 항목", width: "w-[180px]", align: "left" }, { header: "변경 전", align: "left" }, { header: "변경 후", align: "left" }],
+    [{ header: "변경 일시", width: "w-[140px]" }, { header: "변경자", width: "w-[140px]" }, { header: "변경 항목", width: "w-[120px]", align: "left" }, { header: "변경 전", align: "left" }, { header: "변경 후", align: "left" }],
     [
       ["2026-09-02 14:05", "platkim", "비밀번호", "", "초기화"],
       ["2026-08-14 10:31", "platkim", "이메일", "hayoon@hangang.kr", "hayoon@hangang.co.kr"],
@@ -100,7 +100,7 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
       `<div class="overflow-x-auto">${history}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
       ui.button("닫기", { variant: "off", "data-close": true }),
     )
-    .replace("w-[420px]", "w-[640px] max-h-[calc(100dvh-48px)] overflow-y-auto");
+    .replace("w-[420px]", "w-[860px] max-h-[calc(100dvh-48px)] overflow-y-auto"); // 1팀 변경이력 팝업 모두 860(2026-11-02)
 
   const infoLayout = panel ? `<div class="flex flex-col gap-[24px]">${basic}${biz}</div>` : `<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${biz}</div>`;
   return (

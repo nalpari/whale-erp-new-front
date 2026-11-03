@@ -10,7 +10,7 @@
   <body data-root="../" data-page="config" data-sub="config/holidays.html">
     <!-- BP 휴일 등록 · /settings/holidays/new · S-UCPMYB (F-YQTLQE BP 휴일 관리) · 1팀
          앱(src/app/bp-holidays/holiday-form-panel.tsx)대로 고쳤다(코드대로, 2026-10-30 — 사용자 결정 「front대로」). 앱에서는 페이지 제목 줄의 [등록]으로 목록 위에 여는 슬라이드 패널이다.
-         휴일정보(휴일명 → 날짜 → 반복 상자 → 설명)를 위로, 적용 대상(적용 범위 → 대상점포 또는 예외점포)을 아래로 받는다. 버튼은 맨 아래 가운데 [닫기] [저장]이다(위 구분선 없음).
+         휴일정보(휴일명 → 날짜 → 반복 상자 → 설명)를 위로, 적용 대상(적용 범위 → 대상점포 또는 예외점포)을 아래로 받는다. 버튼은 맨 아래 가운데 [취소] [저장]이다(위 구분선 없음).
          휴일 하나는 규칙 한 건으로 저장한다 — 하루, 기간(시작일~종료일), 반복(시작일 + 반복 유형 + 종료 조건) 중 하나다. 날짜는 목록·캘린더에서 볼 때 규칙으로 계산한다.
          날짜는 라디오 하루 · 기간 · 반복 중 하나다(기본 하루). 반복을 고르면 날짜 바로 아래 회색 상자에 반복유형(매일 · 매주 · 매월 · 매년, 처음 값 매주) · 종료조건이 열린다.
            반복유형 칸 이름 옆 꼬리표가 기준을 말한다(「매주 수요일마다 반복」, 매일은 없음). 그 날짜가 없는 달 · 해는 건너뛰고 미리 알린다.
@@ -560,9 +560,9 @@
                 </div>
               </section>
 
-              <!-- [닫기] [저장]은 맨 아래 가운데, 위 구분선 없이(코드대로, 2026-10-30 — 전엔 제목 줄 오른쪽) -->
+              <!-- [취소] [저장]은 맨 아래 가운데, 위 구분선 없이(코드대로, 2026-10-30 — 전엔 제목 줄 오른쪽) -->
               <div class="inline" style="justify-content: center; gap: 6px">
-                <a class="btn btn--ghost" href="holidays.html">닫기</a>
+                <a class="btn btn--ghost" href="holidays.html">취소</a>
                 <a class="btn btn--primary" href="holidays-detail.html?state=created" data-show="in allst allex range noend m31 dup">저장</a>
                 <button class="btn btn--primary" type="button" data-show="rangebad past oos miss fail" hidden>저장</button>
               </div>

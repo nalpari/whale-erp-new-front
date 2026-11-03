@@ -63,7 +63,7 @@ export function detailParts(A, R, delId, { panel = false } = {}) {
       ui.dataTable(
         [
           { header: "변경일시", width: "w-[140px]" },
-          { header: "변경자", width: "w-[80px]" },
+          { header: "변경자", width: "w-[140px]" },
           { header: "항목", width: "w-[90px]", align: "left" },
           { header: "변경 전", align: "left" },
           { header: "변경 후", align: "left" },
@@ -76,7 +76,7 @@ export function detailParts(A, R, delId, { panel = false } = {}) {
       ),
       ui.button("닫기", { variant: "off", "data-close": true }),
     ),
-    "w-[760px] max-h-[calc(100dvh-48px)] overflow-y-auto",
+    "w-[860px] max-h-[calc(100dvh-48px)] overflow-y-auto", // 1팀 변경이력 팝업 모두 860(2026-11-02)
   );
 
   // 삭제 · 강제 종료 확인창 — 대상(회색 상자) + 빨간 안내 상자, 확인 버튼은 기본 버튼(앱 holiday-detail-panel.tsx, 2026-10-30 사용자 지정)
