@@ -13,9 +13,6 @@ import { formatBizNumber } from "@/lib/store-view";
 import { FailedBand, WhoList } from "../platform-admins/admin-parts";
 import { changeBpMasterStatusAction, deleteBpMasterAction, resetBpMasterPasswordAction } from "./actions";
 import { BpStatusBadge, unknownResult, WITHDRAWN_TEXT } from "./bp-master-parts";
-
-/** 탈퇴 BP 의 [삭제] 막힘 이유 — api 의 삭제 이유 첫 문장과 같다(bp-masters.service deletionReasons) */
-const WITHDRAWN_DELETE = "탈퇴한 BP는 삭제할 수 없습니다.";
 import { HistoryButton } from "./history-dialog";
 import { WithdrawalButton } from "./withdrawal-dialog";
 
@@ -303,12 +300,11 @@ function DetailBody({
           닫기
         </Button>
         <span className="flex-1" />
-        {/* 탈퇴 BP 에도 흐린 [삭제]를 두고 「탈퇴한 BP는 삭제할 수 없습니다.」를 말풍선으로 — 전엔 버튼을 숨겼다(2026-11-03 사용자 지정) */}
-        {can.delete && (
+        {canDelete && (
           // 조건(사용 · 미사용 · 로그인 기록 없음 · 하위 관리자 0 · 등록 점포 0)을 못 채우면 흐리게 두고 이유를 말풍선으로(S-GZDODB)
           // 이유는 가장 앞의 하나만 — 여럿을 이으면 「…삭제할 수 없습니다」가 되풀이됐다(2026-11-03 사용자 지정). api 가 탈퇴 · 로그인 이력 · 하위 관리자 · 등록 점포 순으로 준다
-          <Blocked reason={withdrawn ? WITHDRAWN_DELETE : bp.deletion.isDeletable ? undefined : bp.deletion.reasons[0]} floating>
-            <Button variant="soft" onClick={() => setConfirm("delete")} disabled={withdrawn || !bp.deletion.isDeletable || busy}>
+          <Blocked reason={bp.deletion.isDeletable ? undefined : bp.deletion.reasons[0]} floating>
+            <Button variant="soft" onClick={() => setConfirm("delete")} disabled={!bp.deletion.isDeletable || busy}>
               삭제
             </Button>
           </Blocked>
