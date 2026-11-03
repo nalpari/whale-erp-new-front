@@ -11,7 +11,8 @@ const TIP =
  * 전엔 브라우저 title 이라 한참 멈춰야 떠 거의 보이지 않았다(2026-11-02 사용자 지적).
  * 막힌 버튼은 오른쪽 끝 버튼 줄에 서므로 말풍선 오른쪽 끝을 버튼에 맞춘다 — 가운데 맞춤이면 패널 밖으로 잘린다.
  * place 는 위(기본) · 아래 — 스크롤 칸 맨 위에 선 버튼(점포 상세 제목 줄 등)은 아래로 띄워야 잘리지 않는다.
- * 잘리는 칸 안(DataTable 칸은 truncate 라 overflow 를 숨긴다)이면 floating 을 켠다 — HelpTip floating 처럼 popover 로 최상위 레이어에 띄운다.
+ * 잘리는 상자 안이면 floating 을 켠다 — HelpTip floating 처럼 popover 로 최상위 레이어에 띄운다. DataTable 칸(truncate)과
+ * 슬라이드 패널(464px, overflow-y-auto) 버튼 줄이 그렇다 — 패널의 [삭제] 뒤에 [수정] · [변경이력]이 서서 말풍선이 패널 왼쪽 밖으로 넘쳤다(PR #211 리뷰).
  * 말풍선 글은 숨기지 않아 화면 낭독기가 버튼 옆 글로 읽는다(막힌 버튼은 포커스를 받지 않는다).
  */
 export function Blocked({
@@ -36,7 +37,11 @@ export function Blocked({
     box.showPopover();
     const size = box.getBoundingClientRect();
     box.style.left = `${Math.max(8, at.right - size.width)}px`;
-    box.style.top = `${place === "top" ? at.top - 6 - size.height : at.bottom + 6}px`;
+    // 고른 쪽에 자리가 모자라면(화면 맨 위 · 맨 아래 줄) 반대쪽에 띄운다 — body 는 스크롤하지 않아 잘린 말풍선을 볼 길이 없다
+    const above = at.top - 6 - size.height;
+    const below = at.bottom + 6;
+    const fitsBelow = below + size.height <= document.documentElement.clientHeight - 8;
+    box.style.top = `${(place === "top" ? above >= 8 || !fitsBelow : !fitsBelow && above >= 8) ? above : below}px`;
     // 자리는 열 때 한 번 잡는다 — 표를 밀거나 창 크기가 바뀌면 버튼에서 떨어지지 않게 닫는다
     window.addEventListener("scroll", hide, { capture: true, once: true });
     window.addEventListener("resize", hide, { once: true });
