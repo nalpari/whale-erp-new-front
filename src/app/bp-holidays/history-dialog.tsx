@@ -65,6 +65,10 @@ export function HolidayHistoryButton({ today }: { today: string }) {
         onClick={() => {
           const initial = defaultHistoryRange(today);
           setRange(initial);
+          // 다시 열면 지난번 조회 기간 · 건수를 남기지 않는다 — 첫 조회가 실패해도 칸과 표의 기준이 같게(코드 리뷰)
+          setShown(initial);
+          setPageSize(20);
+          setFailure(null);
           setData(null);
           setOpen(true);
           load(initial, 1, 20);
@@ -95,7 +99,7 @@ export function HolidayHistoryButton({ today }: { today: string }) {
           </Button>
           {/* 조회 줄 오른쪽 끝에 총 건수 · 한 쪽 건수 — 목록 화면(ListToolbar)과 같은 모양(2026-11-03 사용자 지정) */}
           <p className="ml-auto text-[14px] text-erp-ink">
-            총 <b className="font-semibold">{(data?.total ?? 0).toLocaleString("ko-KR")}</b> 건
+            총 <b className="font-semibold">{data ? data.total.toLocaleString("ko-KR") : "-"}</b> 건
           </p>
           <div className="w-[80px] shrink-0">
             <Select aria-label="페이지당 건수" value={String(pageSize)} disabled={loading} onChange={(e) => load(shown, 1, Number(e.target.value) as HistoryPageSize)}>
@@ -110,7 +114,7 @@ export function HolidayHistoryButton({ today }: { today: string }) {
         <div className="flex min-h-0 flex-1 flex-col gap-[12px]" aria-busy={loading}>
           {failure && <FailedBand message={failure} />}
           <HistoryScroll>
-            <DataTable columns={WITH_HOLIDAY} rows={data?.items ?? []} rowKey={(h) => h.changeId} empty={loading && !data ? "불러오는 중입니다." : "변경이력이 없습니다."} />
+            <DataTable columns={WITH_HOLIDAY} rows={data?.items ?? []} rowKey={(h) => h.changeId} empty={failure && !data ? "변경이력을 불러오지 못했습니다." : loading && !data ? "불러오는 중입니다." : "변경이력이 없습니다."} />
           </HistoryScroll>
           {/* 한 쪽뿐이어도 쪽 이동(1)을 보인다 — 목록 화면과 같다. 20 에서는 2쪽이 보이다 50 으로 바꾸면 사라져 헷갈렸다(2026-11-03 사용자 지적) */}
           {data && data.total > 0 && (

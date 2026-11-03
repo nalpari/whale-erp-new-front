@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, type ReactNode } from "react";
+import { useRef, useState, useTransition, type ReactNode } from "react";
 import { Button, DataTable, Tag, type Column } from "@/components/common";
 import { FailedBand } from "@/components/site/side-parts";
 import { getBpHolidayStoresAction, type HolidayStoresOnDate } from "./actions";
@@ -31,13 +31,17 @@ export function HolidayStoresButton({ bpHolidayId, date, children }: { bpHoliday
   const [data, setData] = useState<HolidayStoresOnDate | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [loading, startLoading] = useTransition();
+  // 닫았다 다시 열면 늦게 온 앞 요청의 응답이 새 결과를 덮지 않게 마지막 요청 번호만 받는다(변경이력과 같다, 코드 리뷰)
+  const requestNumber = useRef(0);
 
   const handleOpen = () => {
     setData(null);
     setFailure(null);
     setOpen(true);
+    const mine = ++requestNumber.current;
     startLoading(async () => {
       const result = await getBpHolidayStoresAction(bpHolidayId, date).catch(unknownResult("점포 조회", false));
+      if (mine !== requestNumber.current) return;
       if (!result.ok) return setFailure(result.message);
       setData(result);
     });
@@ -67,7 +71,7 @@ export function HolidayStoresButton({ bpHolidayId, date, children }: { bpHoliday
         {failure && <FailedBand message={failure} />}
         <div className="flex min-h-0 flex-1 flex-col" aria-busy={loading}>
           <HistoryScroll>
-            <DataTable columns={COLUMNS} rows={data?.stores ?? []} rowKey={(s) => s.storeId} empty={loading || (!data && !failure) ? "불러오는 중입니다." : "점포가 없습니다."} />
+            <DataTable columns={COLUMNS} rows={data?.stores ?? []} rowKey={(s) => s.storeId} empty={failure ? "점포 목록을 불러오지 못했습니다." : loading || !data ? "불러오는 중입니다." : "점포가 없습니다."} />
           </HistoryScroll>
         </div>
       </WideDialog>
