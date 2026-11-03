@@ -402,6 +402,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/admin/me/login-info-version": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 로그인 정보 버전 — 계정 상태 · 권한 그룹 · 메뉴 권한 · 메뉴 · 소속 BP 가 바뀌었는지. 관리자 웹이 새로고침 · 메뉴
+         *     이동 · 창 포커스 때 점포 목록 버전과 같이 묻고, 바뀌었으면 login-info 를 다시 받는다. `me/stores` 와 같이 강제
+         *     비밀번호 변경 중에는 403 이다. 지웠거나 사용 중이 아닌 계정은 403.
+         */
+        get: operations["AdminAuthController_getMyLoginInfoVersion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/admin/password-change": {
         parameters: {
             query?: never;
@@ -752,7 +773,7 @@ export interface paths {
         get: operations["CodeGroupsController_listGroups"];
         /** 그룹 수정. 기존 그룹 여러 개를 한 번에 — 하나라도 없거나 그 사이 고쳐졌으면(행마다 updatedAt) 아무것도 고치지 않는다. */
         put: operations["CodeGroupsController_updateGroups"];
-        /** 그룹 등록. 새 그룹 여러 개를 한 번에 — 하나라도 막히면 아무것도 생기지 않는다. 표시 순서는 api 가 전체의 최대 + 1 부터 매긴다. */
+        /** 그룹 등록. 새 그룹 여러 개를 한 번에 — 하나라도 막히면 아무것도 생기지 않는다. 표시 순서는 api 가 지우지 않은 플랫폼고정 · 플랫폼제공 그룹 전체의 최대 + 1 부터 요청 순서대로 매긴다. */
         post: operations["CodeGroupsController_createGroups"];
         delete?: never;
         options?: never;
@@ -4759,6 +4780,13 @@ export interface components {
             items: components["schemas"]["AdminStoreDto"][];
             total: number;
         };
+        AdminLoginInfoVersionResponseDto: {
+            /**
+             * @description 로그인 정보 버전 — 이전에 받은 값과 다르면 login-info 를 다시 받는다. 형식은 정해 두지 않으니 비교에만 쓴다.
+             * @example k3J9xQ0b2nXyK1pV0aWmTg
+             */
+            version: string;
+        };
         AdminPasswordChangeDto: {
             /** @description 새 비밀번호 — 영문 · 숫자 · 특수문자 각 1자 이상 8~20자. 규칙 위반은 400 과 정책 문구 하나. */
             newPassword: string;
@@ -6240,14 +6268,11 @@ export interface components {
              */
             holidayDate: string;
             /**
-             * @description 휴일명.
-             * @example 삼일절
+             * @description 휴일명. 공공 API 표기 — 대체공휴일도 이름에 담는다.
+             * @example 대체공휴일(삼일절)
              */
             name: string;
-            /**
-             * @description 비고. 없으면 null(대체공휴일이면 그 사유).
-             * @example 대체공휴일 — 삼일절
-             */
+            /** @description 비고. 지금은 모두 null 이다 — 동기화도 규칙 계산 행도 대체공휴일을 이름에 담는다(2026-10-30). */
             note: string | null;
         };
         PublicHolidaySynchronizationResponseDto: {
@@ -10334,6 +10359,7 @@ export interface components {
             bpHolidayId: number;
             /** @example 정기휴무 */
             holidayName: string;
+            /** @example 대상점포 */
             field: string;
             beforeValue: string | null;
             /** @example 온기식당 판교점 추가(2026-10-26부터) */
@@ -11369,6 +11395,32 @@ export interface operations {
             };
         };
     };
+    AdminAuthController_getMyLoginInfoVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLoginInfoVersionResponseDto"];
+                };
+            };
+            /** @description 사용할 수 없는 관리자 계정 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AdminAuthController_changeRequiredPassword: {
         parameters: {
             query?: never;
@@ -12073,7 +12125,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 이미 있는(지운 것 포함) 그룹 코드 · 요청 안에서 겹친 그룹 코드 */
+            /** @description 이미 있는(지운 것 포함) 그룹 코드 · 요청 안에서 겹친 그룹 코드 · 매길 표시 순서가 integer 최댓값을 넘음 */
             409: {
                 headers: {
                     [name: string]: unknown;

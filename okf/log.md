@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-02
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 정보 맞추기: 계정 상태 · 권한이 바뀌면 새로고침 · 메뉴 이동 · 창 포커스 때 버전(`GET /auth/admin/me/login-info-version`, api scyther)으로 알아채 메뉴 · 버튼을 다시 그리고(토스트 「권한 정보가 변경되었습니다.」), 사용중지 · 탈퇴 계정은 로그아웃해 로그인 화면에 「계정 상태가 변경되어 로그아웃되었습니다.」를 보인다(front hitmonchan).
 * **Update**: main 병합(front hitmonlee, main #208 까지): 데모 소스 · 목업은 main 쪽(휴일 [강제 종료] · 새 이력 팝업 · 아래 가운데 버튼)을 받고 [취소] · 이력 팝업 860 · 열 폭을 다시 넣은 뒤 데모를 다시 빌드했다. okf 충돌은 양쪽 기록을 살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 등록 · 수정 패널 아래 [닫기]를 [취소]로 바꾸고(상세 패널 [닫기]는 그대로), 1팀 변경이력 팝업 폭을 모두 860px · 열 폭을 변경일시 140 · 변경자 140 · 항목 120(휴일 90) · 휴일명 140 으로 맞췄다(사용자 지정).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 변경이력 열 폭의 근거를 개발 DB 데이터 대신 api 항목 이름 길이로 적고, 데모 이력 표 열 폭도 앱과 같게 맞췄다(front hitmonlee 리뷰 반영).

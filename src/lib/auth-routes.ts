@@ -30,6 +30,14 @@ export function redirectsSignedIn(pathname: string, method: string, session: { a
   return pathname === "/" && session.accessTokenExpiresAt > now;
 }
 
+/** 로그인 화면이 밀려난 이유를 알리는 쿼리 — /login?reason=account. 값은 아래 이유뿐이고, 모르는 값은 무시한다. */
+export const LOGOUT_REASON_PARAM = "reason";
+/** 계정 상태(사용중지 · 탈퇴 · 소속 BP)가 바뀌어 로그아웃됨 — 경우를 나누지 않고 한 문장으로 알린다(2026-11-02 사용자 지정). */
+export const ACCOUNT_CHANGED_REASON = "account";
+export const ACCOUNT_CHANGED_MESSAGE = "계정 상태가 변경되어 로그아웃되었습니다.";
+/** 로그인 화면 쿼리의 이유 → 안내 문구. 모르는 값이면 null. */
+export const logoutNoticeOf = (value: unknown): string | null => (value === ACCOUNT_CHANGED_REASON ? ACCOUNT_CHANGED_MESSAGE : null);
+
 /** 로그인 화면 주소의 돌아올 곳 쿼리 이름 — /login?next=/excel-downloads/41 */
 export const RETURN_PARAM = "next";
 
