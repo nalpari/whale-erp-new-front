@@ -26,7 +26,7 @@ import {
 } from "@/lib/bp-holiday-view";
 import type { BpHolidayDetail, BpHolidayOverlaps } from "@/lib/bp-holidays";
 import { checkBpHolidayOverlapsAction, createBpHolidayAction, updateBpHolidayAction } from "./actions";
-import { unknownResult } from "./holiday-parts";
+import { HistoryScroll, unknownResult } from "./holiday-parts";
 
 // BP 휴일 등록(S-UCPMYB) · 수정(S-BXEAEZ) 슬라이드 패널. 휴일정보(휴일명 → 날짜 → 반복 상자 → 설명)를 위로, 적용 대상을 맨 아래로 둔다(데모 2026-10-08, 반복 위치 2026-10-30).
 // 「BP 휴일 변경 · 종료 정책」(1팀, 2026-10-26)에 맞춰 수정할 수 있는 칸이 상태로 갈린다 — api 가 같은 규칙으로 다시 막는다.
@@ -60,6 +60,14 @@ const without = (key: keyof FormErrors) => (e: FormErrors): FormErrors => (key i
 /** 상세의 점포를 고르기 칸 모양으로 */
 const picked = (stores: BpHolidayDetail["stores"]): MappingStore[] => stores.map(({ storeId, name, storeCode }) => ({ storeId, name, storeCode }));
 
+/**
+ * 바꿀 수 없는 칸의 음영 — 이 패널 안에서만 막힌 입력칸 · 선택칸 · 날짜칸에 읽기 전용 바탕(#f8f9fb, DESIGN 읽기 전용)을 깔고 글자 · 라디오를 흐리게,
+ * 커서는 금지 표시로 둔다(2026-11-03 사용자 지정 — 막힌 칸이 다른 칸과 똑같아 왜 안 바뀌는지 몰랐다). 공통 입력칸 토큰은 바꾸지 않는다
+ * (막힌 칸 회색은 전체 화면에 적용하지 않는다 — DESIGN.md, 근로계약서 작성 화면과 같은 방식).
+ */
+const LOCKED =
+  "[&_:is(input,select,textarea,button):disabled]:cursor-not-allowed [&_:is(input,select,textarea):disabled]:bg-erp-thead-bg [&_:is(input,select,textarea):disabled]:text-erp-muted [&_label:has(input:disabled)]:cursor-not-allowed [&_label:has(input:disabled)]:text-erp-muted [&_label:has(input:disabled)_input]:bg-erp-thead-bg";
+
 export function HolidayFormPanel(props: Props) {
   const { id, mode, open, today, onClose, onBackdropClose, trigger } = props;
   const router = useRouter();
@@ -77,6 +85,15 @@ export function HolidayFormPanel(props: Props) {
   // api 가 점포 말고 다른 칸이 바뀌면 403 이다(bp-holiday-changes update). 브라우저 시험(가맹 마스터)으로 찾음, 2026-10-27
   const scheduleLocked = !!h && (h.state !== "UPCOMING" || infoLocked);
   const storesLocked = !!h && !h.actions.canUpdateStores;
+  // 일정 칸이 막힌 이유 — 「날짜」 라벨 옆에 한 줄로 둔다. 「적용 대상」이 아니라 「적용 범위」 — 대상점포 고르기는 진행 중에도 고칠 수 있다(코드 리뷰)(막힌 칸이 다른 칸과 똑같아 왜 안 바뀌는지 몰랐다, 2026-11-03 사용자 지정). 띠는 두지 않는다(2026-10-27)
+  const scheduleLockReason = !scheduleLocked
+    ? null
+    : h?.state === "ONGOING"
+      ? "진행 중인 휴일은 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다."
+      : h?.state === "ENDED"
+        ? "지난 휴일은 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다."
+        : // 시작 전인데 막힌 경우는 이유가 여럿일 수 있어(맡지 않은 점포가 묶임 · 권한 등) 단정하지 않고 api 사유를 먼저 쓴다(코드 리뷰)
+          (h?.actions.blockedReason ?? "이 휴일은 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다.");
   // 맡지 않은 점포 — 고르기 칸 밖에 두고 그대로 다시 보낸다
   // 상세의 점포는 빠진 기간까지 모두라 지금 열린 기간만 쓴다 — 빠진 점포를 다시 보내면 다시 더해진다
   const openPeriods = h ? openStores(h.stores) : [];
@@ -211,10 +228,11 @@ export function HolidayFormPanel(props: Props) {
             </Field>
             {err("name")}
           </div>
-          <fieldset className="flex flex-col gap-[8px]" disabled={scheduleLocked}>
+          <fieldset className={`flex flex-col gap-[8px] ${scheduleLocked ? LOCKED : ""}`} disabled={scheduleLocked}>
             <legend className="mb-[8px] text-[14px] font-medium text-erp-label">
               날짜
               <RequiredMark />
+              {scheduleLockReason && <span className="text-[13px] font-normal text-erp-label"> · {scheduleLockReason}</span>}
             </legend>
             <div className="flex gap-[18px]">
               {(types.length ? types : (["DAY", "PERIOD", "REPEAT"] as const).map((value) => ({ value, label: value }))).map((t) => (
@@ -241,7 +259,7 @@ export function HolidayFormPanel(props: Props) {
           {form.type === "REPEAT" && (
             // 바로 위 날짜 칸과는 10px — 묶음 칸 간격(18)보다 붙여 날짜에 딸린 칸으로 보이게. 회색 상자로 묶어 날짜 · 설명과 가른다
             // — 점포 고르기 상자와 같은 모양(표 머리 바탕 · 패널 선)(2026-10-30 사용자 지정). 안의 반복 기준 꼬리표만 선 색(erp-bar-line) 바탕 — DESIGN 두 바탕 규칙의 예외로 적었다
-            <fieldset className="-mt-[8px] flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[12px]" disabled={scheduleLocked}>
+            <fieldset className={`-mt-[8px] flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[12px] ${scheduleLocked ? LOCKED : ""}`} disabled={scheduleLocked}>
               {/* 기준(시작일의 요일 · 날짜)은 칸 이름 옆 꼬리표 「매주 금요일마다 반복」으로 — 아랫줄 글로 두면 반복유형과 떨어져 보였다(2026-10-30 사용자 지정). 매일은 기준이 없다 */}
               <label className="flex flex-col gap-[8px]">
                 <span className="flex items-center gap-[6px] text-[14px] font-medium text-erp-label">
@@ -306,6 +324,7 @@ export function HolidayFormPanel(props: Props) {
         <FormGroup title="적용 대상">
           {/* 전체 점포는 BP 마스터 · 전체 점포 BP 관리자 · 플랫폼 계정만(CONFIG-10). 진행 중이면 적용 범위를 바꿀 수 없다 */}
           {/* 「적용 범위」 칸 이름은 뺐다 — 묶음 제목 「적용 대상」과 값(전체 · 일부 점포)만으로 뜻이 분명하다(2026-10-30 사용자 지정). 화면 낭독기용 이름은 남긴다 */}
+          <div className={h && (scheduleLocked || infoLocked) ? LOCKED : ""}>
           <Select
               aria-label="적용 범위"
               value={form.isAllStores ? "ALL" : "SOME"}
@@ -319,6 +338,7 @@ export function HolidayFormPanel(props: Props) {
               {(allowAll || form.isAllStores) && <option value="ALL">전체 점포</option>}
               <option value="SOME">일부 점포</option>
           </Select>
+          </div>
           <div className="flex flex-col gap-[8px]">
             <span className="text-[14px] font-medium text-erp-label">
               {form.isAllStores ? "예외점포" : "대상점포"}
@@ -369,7 +389,7 @@ export function HolidayFormPanel(props: Props) {
 
       <ConfirmDialog
         open={overlaps !== null}
-        title="같은 날 등록된 휴일이 있습니다." // 2026-10-30 사용자 지정 — 전엔 「같은 날짜에 이미 휴일이 있습니다.」
+        title="같은 날짜에 이미 등록된 휴일이 있습니다." // 2026-11-03 사용자 지정 — 전엔 「같은 날 등록된 휴일이 있습니다.」
         confirmLabel="저장" // 「그래도 저장」은 어색해 「저장」(2026-10-28 사용자 지정)
         wide="large" // 점포 · 날짜 · 휴일 표를 담아 넓은 창(2026-10-30 사용자 지정)
         busy={saving}
@@ -387,23 +407,37 @@ function OverlapSummary({ overlaps }: { overlaps: BpHolidayOverlaps }) {
   // 점포 · 날짜 · 이미 있는 휴일 세 칸 표 — 점포마다 겹치는 날짜를 한 줄씩, 점포 이름은 그 점포의 첫 줄에만(2026-10-30 사용자 지정 — 전엔 점포 이름 아래 「날짜 휴일명 · 휴일명, …」 글줄이라
   // 무엇이 어디서 겹치는지 알기 어려웠다). 앞 10일만 보이고 나머지는 「외 N일」 줄로 센다(api)
   const rows: OverlapRow[] = overlaps.stores.flatMap((s) => [
-    ...s.dates.map((d, i) => ({ key: `${s.storeId}-${d.date}`, store: i === 0 ? s.storeName : "", date: `${d.date}(${weekdayName(d.date).slice(0, 1)})`, names: d.holidayNames.join(", ") })),
-    ...(s.moreDateCount > 0 ? [{ key: `${s.storeId}-more`, store: "", date: `외 ${s.moreDateCount}일`, names: "" }] : []),
+    ...s.dates.map((d, i) => ({ key: `${s.storeId}-${d.date}`, store: i === 0 ? s.storeName : "", date: `${d.date}(${weekdayName(d.date).slice(0, 1)})`, names: d.holidayNames })),
+    ...(s.moreDateCount > 0 ? [{ key: `${s.storeId}-more`, store: "", date: `외 ${s.moreDateCount}일`, names: [] }] : []),
   ]);
   return (
     <div className="flex flex-col gap-[12px] break-keep">
-      <p>저장하면 겹치는 휴일이 모두 적용됩니다. 저장하시겠습니까?</p>
-      <div className="max-h-[280px] overflow-y-auto overscroll-contain [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-[1]">
+      {/* 제목 「같은 날짜에 이미 등록된 휴일이 있습니다.」 · 본문은 결과만 — 전엔 「저장하면 겹치는 휴일이 모두 적용됩니다.」(2026-11-03 사용자 지정) */}
+      <p>저장하면, 휴일이 추가됩니다. 저장하시겠습니까?</p>
+      <HistoryScroll height="280">
         <DataTable columns={OVERLAP_COLUMNS} rows={rows} rowKey={(r) => r.key} />
-      </div>
+      </HistoryScroll>
     </div>
   );
 }
 
-type OverlapRow = { key: string; store: string; date: string; names: string };
+type OverlapRow = { key: string; store: string; date: string; names: string[] };
 const OVERLAP_COLUMNS: Column<OverlapRow>[] = [
   // 점포 칸은 폭을 정해 날짜가 점포 쪽으로 붙게 하고, 남는 폭은 휴일 이름이 쓴다(2026-10-30 사용자 지정)
   { header: "점포", width: "w-[170px]", align: "left", cell: (r) => <span className="block truncate" title={r.store}>{r.store}</span> },
   { header: "날짜", width: "w-[120px]", align: "left", cell: (r) => r.date }, // 왼쪽 정렬로 점포 바로 옆에(2026-10-30 사용자 지정). 겹침은 1년 범위라 해를 넘을 수 있어 연도까지 쓴다(코드 리뷰로 찾음)
-  { header: "이미 등록된 휴일", align: "left", cell: (r) => r.names },
+  // 이미 등록된 휴일은 달력의 BP 휴일 칩과 같은 모양(연한 파랑 바탕 · 파랑 글자)으로 — 이름만 글자로 두면 고치는 휴일과 헷갈렸다(2026-11-03 사용자 지정)
+  {
+    header: "이미 등록된 휴일",
+    align: "left",
+    cell: (r) => (
+      <span className="flex min-w-0 flex-wrap gap-[6px]">
+        {r.names.map((name, i) => (
+          <span key={i} title={name} className="max-w-full truncate rounded-[2px] bg-erp-on-bg px-[4px] py-[2px] text-[13px] font-medium text-erp-on">
+            {name}
+          </span>
+        ))}
+      </span>
+    ),
+  },
 ];

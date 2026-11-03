@@ -12,6 +12,12 @@
       .hide-official td[data-official] { background: none; }
       .hide-official .off-name { display: none !important; }
       .hide-official .off-num { color: var(--ink) !important; font-weight: 400 !important; }
+      /* 변경이력 · 점포 목록 팝업 — 제목 · 열 이름 줄 · [닫기](변경이력은 조회 줄 · 쪽 이동도)는 고정, 표 줄만 스크롤한다.
+         위아래 선은 스크롤 상자가 긋고 머리 줄 아래 선은 그림자로 붙인다(앱대로, 2026-11-03). 폭은 변경이력 1000 · 점포 목록 480 */
+      .modal__box--hist { max-width: 1000px; }
+      .modal__box--stores { max-width: 480px; }
+      .histscroll { max-height: min(52vh, 460px); overflow-y: auto; border-block: 1px solid var(--hairline-strong); }
+      .histscroll .tbl th { position: sticky; top: 0; z-index: 1; box-shadow: 0 1px 0 var(--hairline-strong); }
     </style>
   </head>
   <body data-root="../" data-page="config" data-sub="config/holidays.html">
@@ -21,10 +27,12 @@
          들어오면 이번 달(2026년 9월) 캘린더다. 맨 위는 캘린더 · 목록 탭이고 그 줄 오른쪽에 [변경이력]이 선다. [등록]은 페이지 제목 줄 오른쪽이다(코드대로, 2026-10-30 — 1팀 목록과 같은 자리). 달 이동은 캘린더 · 목록 제목 자리의 한 줄이다 — [2026년 9월 ●](누르면 연 · 월 고르기 판) ‹ › [오늘 · 2026-09-21(월)], 캘린더는 이어서 「공식 휴일 숨기기」, 오른쪽에 범례 BP 휴일 · 공식 휴일(2026-10-30 앱과 같다 — 전엔 탭 위 조작 줄에 오늘 · 이전달 · 다음달 · 연도 · 월 선택이 따로 있고 캘린더 제목 「2026년 9월」이 또 있었다).
          조회 기간 검색 조건은 없다. 기간은 달 이동 줄에서 고른 달 하나이고, 캘린더와 목록 모두 월 단위다.
          연도 선택은 플랫폼 휴일 관리와 같이 2000년부터 2100년까지다 — 공식 휴일이 있는 범위와 같다 (CONFIG-8 · 확정 2026-09-30).
-         목록은 플랫폼 휴일 관리(목록 = 고른 연도 한 해)와 달리 고른 달의 BP 휴일만 싣는다 — 그래서 목록 보기에서도 같은 달 이동 줄과 ‘BP 휴일 N건’이 선다. 그 달 줄을 모두 보이고 쪽 이동은 없다. 빈 달은 ‘이 달에 등록된 BP 휴일이 없습니다.’(코드대로, 2026-10-30).
+         목록은 플랫폼 휴일 관리(목록 = 고른 연도 한 해)와 달리 고른 달의 BP 휴일만 싣는다 — 그래서 목록 보기에서도 같은 달 이동 줄과 ‘선택한 월의 BP 휴일은 N건입니다.’가 선다. 그 달 줄을 모두 보이고 쪽 이동은 없다. 빈 달은 ‘이 달에 등록된 BP 휴일이 없습니다.’(코드대로, 2026-10-30).
          검색 조건(필터)은 두지 않는다(2026-10-07). 두 보기 모두 보는 사람의 접근 범위 안 점포 휴일만 싣는다.
          휴일은 규칙 한 건(하루 · 기간 · 반복)이고, 캘린더와 목록의 날짜는 고른 달 안에서 규칙으로 계산한다. 목록은 계산한 날짜마다 한 줄이다.
          목록 열은 날짜(요일, 가운데) · 휴일명 · 휴일유형 · 적용범위(꼬리표만) · 대상점포 · 예외점포 · 최종수정이다(2026-10-30 앱과 같다 — 전엔 「적용 대상」 한 칸). 대상점포는 일부 점포일 때 점포명(여러 개면 ‘첫 점포명 외 N개’ — 그날 적용되는 점포를 맡은 범위와 관계없이 모두 센다. 고치는 것만 맡은 점포로 제한한다, 2026-10-30 재영), 예외점포는 전체 점포일 때 ‘N개’이고 해당 없는 칸은 ‘-’다. 최종수정은 ‘일시 · 사람’(사람은 회색).
+           열 폭: 휴일명 240(전엔 200) · 최종수정 230 으로 정하고 남는 폭은 대상점포 · 예외점포가 반씩 쓴다. 대상점포 글자 · 예외점포 ‘N개’는 파란 링크라 누르면 점포 목록 팝업(480)이 뜬다 —
+           제목 「대상점포 · 휴일명 (날짜)」(예외는 「예외점포 · …」), 표 점포명 | 점포코드(이름순, 그 줄 날짜에 걸린 점포), 열 이름 줄 · [닫기]는 고정하고 줄만 스크롤. ‘-’ 칸은 누를 수 없다(앱대로, 2026-11-03).
          휴일유형은 앱 표기 그대로 짧게 하루 · 기간 · 매일 반복 · 매주 반복 · 매월 반복 · 매년 반복이다(2026-10-30 재영 — 전엔 기간 ‘n일 중 m일째’ · 반복 요약 ‘매주 · 월요일’). 표본에는 예외 점포 · 여러 점포 · 기간 휴일이 없다.
          공식 휴일은 목록의 줄이 아니다 — 캘린더에서 날짜를 빨갛게 칠하고 휴일명을 적는 표시용이며, 플랫폼 공식 휴일 테이블(system/holidays.html 과 같은 값)에서 읽는다. BP·점포 휴일과 별개다.
          일부 점포 휴일은 한 휴일에 여러 점포를 묶을 수 있고, 전체 점포 휴일은 예외 점포를 둘 수 있다 — 예외 점포는 그 휴일의 모든 날짜에서 빠진다.
@@ -35,6 +43,8 @@
          지난 날짜 휴일은 흐린 글자로만 보인다 — ‘지난 날짜’ · ‘조회만’ 꼬리표는 없다(앱대로, 2026-10-30 재영). 고칠 수 있는지는 상세의 버튼으로 갈린다.
          제목 줄의 [등록]은 등록 권한이 있는 사람(BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 사용자)에게만 보인다. 조회만 권한은 버튼이 없다.
          [변경이력]은 팝업이다 — 고른 기간의 이력을 표(변경일시 · 변경자 · 휴일명 · 항목 · 변경 전 · 변경 후)로 보이고 아래에 쪽 이동을 둔다. 표 위 안내문은 없다. 삭제된 휴일은 여기서만 보인다(코드대로, 2026-10-30).
+           폭 1000(전엔 860). 제목 · 기간 · [조회] 줄 · 열 이름 줄 · 쪽 이동 · [닫기]는 고정하고 표 줄만 스크롤한다. 조회 줄 오른쪽 끝에 「총 N 건」(숫자 굵게) · 한 쪽 건수 20 / 50(기본 20, 바꾸면 첫 쪽부터 다시).
+           쪽 이동은 이력이 한 건이라도 있으면 한 쪽뿐이어도(1) 보인다(앱대로, 2026-11-03).
          폐점한 점포는 폐점일 다음 날부터 적용 대상에서 빠지고, 그 점포만 대상으로 하던 휴일은 목록·캘린더에서 감춘다 — 표본 점포는 모두 운영 중이라 감춰진 줄이 없다.
          반복 휴일의 다른 날짜(HD-0114 의 다른 월요일)도 같은 휴일 상세로 간다. HD 번호는 목업 표본이다(앱 화면에는 휴일 번호가 없다).
          2026년 8월은 표본 BP 휴일이 없는 달이다(정기휴무 HD-0114 는 09-21 부터) — 목록의 빈 달 표본이다. 8월 캘린더는 그리지 않았다.
@@ -44,6 +54,7 @@
          - 수정·삭제는 상세 팝업에서만 한다. 목록 · 캘린더 우측 목록의 줄에는 실행 항목이 없다.
          - [변경이력]은 이력이 생긴 일시로 찾고 기본 기간은 이달 1일~오늘이다.
          - 목록과 우측 목록은 날짜순이고, 같은 날짜에 여러 건이면 등록 순서다.
+         - 적용 범위 꼬리표는 「전체 점포」를 연한 분홍 바탕, 「일부 점포」를 회색으로 가른다(글자는 그대로). 목록 위 건수는 「선택한 월의 BP 휴일은 N건입니다.」 — 플랫폼 휴일 관리와 같은 말투(앱대로, 2026-11-03).
          - 보는 동안 다른 사람이 바꾼 내용은 달 이동 · 패널을 닫을 때 다시 조회하며 반영한다. 실시간 감지는 없다.
          - 폐점 점포만 대상인 휴일은 폐점일 다음 날부터만 감춘다 — 폐점일까지의 날짜는 계속 보인다.
          - 조회 권한이 없으면 전 메뉴 공통 규칙(PL-AMTMVC)을 따른다 — 메뉴를 숨기고, 주소로 들어오면 권한 없음 안내 화면을 보인다.
@@ -590,7 +601,7 @@
               <!-- 공식 휴일 안내 줄은 두지 않는다 — 공식 휴일은 캘린더의 빨간 날짜로만 보인다(코드대로, 2026-10-30) -->
               <div class="rows rows--hover">
                 <a class="row" href="holidays-detail.html?state=hd0120" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none">
-                  <span class="badge badge--info">전체 점포</span>
+                  <span class="badge badge--quiet" style="background: var(--risk-wash)">전체 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
                     <b style="font-size: 13px; font-weight: 600">추석 당일 휴무</b>
                     <span class="subtle" style="font-size: 12px">하루 · ㈜한강상회</span>
@@ -626,7 +637,7 @@
               </div>
               <div class="rows rows--hover">
                 <a class="row" href="holidays-detail.html?state=hd0122" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none">
-                  <span class="badge badge--info">전체 점포</span>
+                  <span class="badge badge--quiet" style="background: var(--risk-wash)">전체 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
                     <b style="font-size: 13px; font-weight: 600">창립기념일</b>
                     <span class="subtle" style="font-size: 12px">매년 반복 · ㈜한강상회</span>
@@ -674,7 +685,7 @@
                 <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="listoct" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
                 <button class="btn btn--secondary btn--sm" type="button" data-state-go="list">오늘<span class="mono" style="font-size: 11px; font-weight: 400; color: var(--muted-tert)">· 2026-09-21(월)</span></button>
               </div>
-              <span class="subtle" data-show-role="fm" hidden>BP 휴일 2건</span><span class="subtle" data-show-role="bp" hidden>BP 휴일 4건</span><span class="subtle" data-show-role="bm pf ba view">BP 휴일 5건</span>
+              <span class="subtle" data-show-role="fm" hidden>선택한 월의 BP 휴일은 <b>2건</b>입니다.</span><span class="subtle" data-show-role="bp" hidden>선택한 월의 BP 휴일은 <b>4건</b>입니다.</span><span class="subtle" data-show-role="bm pf ba view">선택한 월의 BP 휴일은 <b>5건</b>입니다.</span>
             </div>
             <div class="tblwrap">
               <table class="tbl tbl--dense">
@@ -695,7 +706,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0101" data-pagepop>정전 점검 휴무</a></td>
                     <td>하루</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>모리커피 서초점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0101" data-stores-title="대상점포 · 정전 점검 휴무 (2026-09-10)">모리커피 서초점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-01 09:40</span> <span class="subtle">· hgops</span></td>
                   </tr>
@@ -704,7 +715,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
                     <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 판교점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0114" data-stores-title="대상점포 · 정기휴무 (2026-09-21)">온기식당 판교점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">· hangang01</span></td>
                   </tr>
@@ -712,7 +723,7 @@
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-09-25</span> <span class="subtle">(금)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0120" data-pagepop>추석 당일 휴무</a></td>
                     <td>하루</td>
-                    <td><span class="badge badge--info">전체 점포</span></td>
+                    <td><span class="badge badge--quiet" style="background: var(--risk-wash)">전체 점포</span></td>
                     <td><span class="subtle">-</span></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-02 11:00</span> <span class="subtle">· hangang01</span></td>
@@ -722,7 +733,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
                     <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 판교점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0114" data-stores-title="대상점포 · 정기휴무 (2026-09-28)">온기식당 판교점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">· hangang01</span></td>
                   </tr>
@@ -731,7 +742,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0121" data-pagepop>내부 공사</a></td>
                     <td>하루</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>모리커피 연남점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0121" data-stores-title="대상점포 · 내부 공사 (2026-09-29)">모리커피 연남점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-08 16:20</span> <span class="subtle">· morinam01</span></td>
                   </tr>
@@ -747,7 +758,7 @@
                 <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
                 <button class="btn btn--secondary btn--sm" type="button" data-state-go="list">오늘<span class="mono" style="font-size: 11px; font-weight: 400; color: var(--muted-tert)">· 2026-09-21(월)</span></button>
               </div>
-              <span class="subtle" data-show-role="fm" hidden>BP 휴일 1건</span><span class="subtle" data-show-role="bm pf ba bp view">BP 휴일 6건</span>
+              <span class="subtle" data-show-role="fm" hidden>선택한 월의 BP 휴일은 <b>1건</b>입니다.</span><span class="subtle" data-show-role="bm pf ba bp view">선택한 월의 BP 휴일은 <b>6건</b>입니다.</span>
             </div>
             <div class="tblwrap">
               <table class="tbl tbl--dense">
@@ -767,7 +778,7 @@
                     <td style="white-space: nowrap; text-align: center"><span class="mono">2026-10-01</span> <span class="subtle">(목)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0122" data-pagepop>창립기념일</a></td>
                     <td>매년 반복</td>
-                    <td><span class="badge badge--info">전체 점포</span></td>
+                    <td><span class="badge badge--quiet" style="background: var(--risk-wash)">전체 점포</span></td>
                     <td><span class="subtle">-</span></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-17 15:30</span> <span class="subtle">· hangang01</span></td>
@@ -777,7 +788,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영)</a></td>
                     <td>하루</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 광화문점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0123" data-stores-title="대상점포 · 오후 휴무(단축 운영) (2026-10-01)">온기식당 광화문점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-14 09:15</span> <span class="subtle">· hghr</span></td>
                   </tr>
@@ -786,7 +797,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
                     <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 판교점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0114" data-stores-title="대상점포 · 정기휴무 (2026-10-05)">온기식당 판교점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">· hangang01</span></td>
                   </tr>
@@ -795,7 +806,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
                     <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 판교점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0114" data-stores-title="대상점포 · 정기휴무 (2026-10-12)">온기식당 판교점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">· hangang01</span></td>
                   </tr>
@@ -804,7 +815,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
                     <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 판교점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0114" data-stores-title="대상점포 · 정기휴무 (2026-10-19)">온기식당 판교점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">· hangang01</span></td>
                   </tr>
@@ -813,7 +824,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
                     <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 판교점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0114" data-stores-title="대상점포 · 정기휴무 (2026-10-26)">온기식당 판교점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">· hangang01</span></td>
                   </tr>
@@ -829,7 +840,7 @@
                 <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="list" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
                 <button class="btn btn--secondary btn--sm" type="button" data-state-go="list">오늘<span class="mono" style="font-size: 11px; font-weight: 400; color: var(--muted-tert)">· 2026-09-21(월)</span></button>
               </div>
-              <span class="subtle">BP 휴일 0건</span>
+              <span class="subtle">선택한 월의 BP 휴일은 <b>0건</b>입니다.</span>
             </div>
             <div class="empty">
               <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
@@ -844,7 +855,7 @@
                 <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" style="width: 30px; height: 30px; border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); background: var(--surface-card); color: var(--ink)"></button>
                 <button class="btn btn--secondary btn--sm" type="button" data-state-go="list">오늘<span class="mono" style="font-size: 11px; font-weight: 400; color: var(--muted-tert)">· 2026-09-21(월)</span></button>
               </div>
-              <span class="subtle" data-show-role="fm" hidden>BP 휴일 0건</span><span class="subtle" data-show-role="bm pf ba bp view">BP 휴일 5건</span>
+              <span class="subtle" data-show-role="fm" hidden>선택한 월의 BP 휴일은 <b>0건</b>입니다.</span><span class="subtle" data-show-role="bm pf ba bp view">선택한 월의 BP 휴일은 <b>5건</b>입니다.</span>
             </div>
             <div class="tblwrap" data-show-role="bm pf ba bp view">
               <table class="tbl tbl--dense">
@@ -865,7 +876,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영)</a></td>
                     <td>하루</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 광화문점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0123" data-stores-title="대상점포 · 오후 휴무(단축 운영) (2026-10-01)">온기식당 광화문점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-14 09:15</span> <span class="subtle">· hghr</span></td>
                   </tr>
@@ -874,7 +885,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
                     <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 판교점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0114" data-stores-title="대상점포 · 정기휴무 (2026-10-05)">온기식당 판교점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">· hangang01</span></td>
                   </tr>
@@ -883,7 +894,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
                     <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 판교점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0114" data-stores-title="대상점포 · 정기휴무 (2026-10-12)">온기식당 판교점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">· hangang01</span></td>
                   </tr>
@@ -892,7 +903,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
                     <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 판교점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0114" data-stores-title="대상점포 · 정기휴무 (2026-10-19)">온기식당 판교점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">· hangang01</span></td>
                   </tr>
@@ -901,7 +912,7 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a></td>
                     <td>매주 반복</td>
                     <td><span class="badge badge--quiet">일부 점포</span></td>
-                    <td>온기식당 판교점</td>
+                    <td><button class="tlink" type="button" data-stores="hd0114" data-stores-title="대상점포 · 정기휴무 (2026-10-26)">온기식당 판교점</button></td>
                     <td><span class="subtle">-</span></td>
                     <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">· hangang01</span></td>
                   </tr>
@@ -916,7 +927,7 @@
 
           <!-- 변경이력 — 고른 기간(이력이 생긴 날 기준, 기본 이달 1일~오늘)의 이력을 표로, 아래에 쪽 이동. 표 위 안내문은 없다. 삭제된 휴일은 여기서만 보인다(코드대로, 2026-10-30) -->
           <div class="modal" id="pop-hist" hidden role="dialog" aria-modal="true" aria-labelledby="ph-t">
-            <div class="modal__box modal__box--wide">
+            <div class="modal__box modal__box--wide modal__box--hist">
               <div class="modal__head">
                 <h2 class="t-h2" id="ph-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
@@ -927,9 +938,12 @@
                   <span class="subtle">~</span>
                   <input class="input mono" value="2026-09-21" aria-label="이력 종료일" />
                   <button class="btn btn--secondary" type="button">조회</button>
+                  <!-- 조회 줄 오른쪽 끝에 총 건수 · 한 쪽 건수 20 / 50(기본 20, 바꾸면 첫 쪽부터 다시) — 목록 화면과 같은 모양(앱대로, 2026-11-03) -->
+                  <span style="margin-left: auto; white-space: nowrap">총 <b>12</b> 건</span>
+                  <select class="select select--sm" aria-label="페이지당 건수" style="width: 80px"><option selected>20</option><option>50</option></select>
                 </div>
-                <div class="modal__scroll">
-                  <div class="tblwrap">
+                <div>
+                  <div class="tblwrap histscroll">
                     <table class="tbl tbl--dense">
                       <thead>
                         <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">휴일명</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
@@ -950,7 +964,33 @@
                       </tbody>
                     </table>
                   </div>
-                  <div data-pager="12"></div>
+                  <!-- 쪽 이동은 한 쪽뿐이어도(1) 이력이 한 건이라도 있으면 보인다(앱대로, 2026-11-03) -->
+                  <div class="pager" style="justify-content: center"><nav class="pager__nav" aria-label="페이지" style="margin-inline: auto"><button type="button" aria-label="이전" disabled data-icon="arrowleft" data-icon-size="14"></button><button type="button" aria-current="page">1</button><button type="button" aria-label="다음" disabled data-icon="arrowright" data-icon-size="14"></button></nav></div>
+                </div>
+              </div>
+              <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
+            </div>
+          </div>
+
+          <!-- 점포 목록 — 목록의 대상점포(점포명 · 「… 외 N개」) · 예외점포(「N개」) 글자를 누르면 그날 걸린 점포를 보인다. 점포명 | 점포코드, 이름순.
+               제목 「대상점포 · 휴일명 (날짜)」(전체 점포 휴일은 「예외점포 · …」), 열 이름 줄 · [닫기]는 고정, 줄만 스크롤. 「-」 칸은 누를 수 없다(앱대로, 2026-11-03) -->
+          <div class="modal" id="pop-stores" hidden role="dialog" aria-modal="true" aria-labelledby="ps-t">
+            <div class="modal__box modal__box--stores">
+              <div class="modal__head">
+                <h2 class="t-h2" id="ps-t">대상점포</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div class="tblwrap histscroll">
+                  <table class="tbl tbl--dense" style="min-width: 0">
+                    <thead>
+                      <tr><th scope="col">점포명</th><th scope="col" style="width: 120px; text-align: center">점포코드</th></tr>
+                    </thead>
+                      <tbody data-stores-of="hd0101" hidden><tr><td class="k">모리커피 서초점</td><td class="mono" style="width: 120px; text-align: center">ST000001</td></tr></tbody>
+                      <tbody data-stores-of="hd0114" hidden><tr><td class="k">온기식당 판교점</td><td class="mono" style="width: 120px; text-align: center">ST000003</td></tr></tbody>
+                      <tbody data-stores-of="hd0121" hidden><tr><td class="k">모리커피 연남점</td><td class="mono" style="width: 120px; text-align: center">ST000006</td></tr></tbody>
+                      <tbody data-stores-of="hd0123" hidden><tr><td class="k">온기식당 광화문점</td><td class="mono" style="width: 120px; text-align: center">ST000004</td></tr></tbody>
+                  </table>
                 </div>
               </div>
               <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
@@ -962,6 +1002,17 @@
     <script src="../assets/app.js"></script>
     <script src="../assets/auth.js"></script>
     <script>
+      // 대상점포 · 예외점포 링크 — 줄의 상세 팝업(data-pagepop)보다 먼저 받아 점포 목록 팝업만 연다
+      document.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-stores]");
+        if (!b) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var m = document.getElementById("pop-stores");
+        document.getElementById("ps-t").textContent = b.dataset.storesTitle;
+        m.querySelectorAll("tbody[data-stores-of]").forEach(function (t) { t.hidden = t.dataset.storesOf !== b.dataset.stores; });
+        m.hidden = false;
+      }, true);
       document.getElementById("hide-official").addEventListener("change", function (e) { document.body.classList.toggle("hide-official", e.target.checked); });
     </script>
   </body>

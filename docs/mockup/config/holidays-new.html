@@ -22,7 +22,7 @@
            탈퇴 · 미사용 BP 에는 등록하지 않는다 — 위에 「BP가 탈퇴 또는 미사용 상태로, 휴일을 등록할 수 없습니다.」 띠를 두고 [저장]을 막는다.
          조회만 권한은 등록 화면 자체를 쓸 수 없다(제목 줄에 [등록]이 없다).
          휴일명은 30자까지다. 지난 날짜는 등록할 수 없다(대한민국 표준시). 처음 날짜는 캘린더에서 고른 날짜(오늘 이후일 때), 아니면 오늘이다.
-         저장 전에 겹치는 휴일을 확인해 확인창 「같은 날 등록된 휴일이 있습니다.」(점포 · 날짜 · 이미 등록된 휴일 표)로 알리고, [저장]하면 그대로 저장한다 — 막지 않는다. 공식 휴일은 보지 않는다.
+         저장 전에 겹치는 휴일을 확인해 확인창 「같은 날짜에 이미 등록된 휴일이 있습니다.」(점포 · 날짜 · 이미 등록된 휴일 표 — 휴일 이름은 달력 BP 휴일과 같은 파란 칩)로 알리고, [저장]하면 그대로 저장한다 — 막지 않는다. 공식 휴일은 보지 않는다.
          저장하면 패널을 닫고 토스트 「저장되었습니다.」 뒤 새 휴일의 상세(시작일 기준)를 연다. 실패하면 위에 실패 띠(api 문장 + 「입력한 내용은 그대로 두었습니다.」)를 둔다.
          전체 점포 휴일에서 예외 점포로 모든 점포를 빼 적용 점포가 0곳이어도 저장된다 — 막지 않고 안내 띠도 없다(2026-10-30 재영).
          날짜 · 반복을 고르는 동안 미리보기 띠(기간 일수 · 첫 날짜 · 다음 날짜 · 마지막 날짜)는 없다 — 반복유형 옆 「매주 수요일마다 반복」 꼬리표와 건너뛰는 날 안내만 둔다(앱대로, 2026-10-30 재영).
@@ -87,20 +87,21 @@
               <span class="band__ic" data-icon="info" data-icon-size="20"></span>
               <div class="band__body">
                 <!-- 저장할 때 같은 날 휴일이 있으면 묻는다 — 제목 · 한 줄 · 점포 · 날짜 · 이미 등록된 휴일 표(앱 2026-10-30, 넓은 확인창 — 전엔 「N개 점포에서 N일이 겹칩니다」와 펼쳐보기 목록).
-                     목업은 확인창 대신 이 띠로 그린다. 점포 이름은 그 점포의 첫 줄에만, 앞 10일만 보이고 나머지는 「외 N일」 줄로 센다 -->
-                <div class="band__title">같은 날 등록된 휴일이 있습니다.</div>
-                <p class="band__desc">저장하면 겹치는 휴일이 모두 적용됩니다. 저장하시겠습니까?</p>
+                     목업은 확인창 대신 이 띠로 그린다. 점포 이름은 그 점포의 첫 줄에만, 앞 10일만 보이고 나머지는 「외 N일」 줄로 센다.
+                     제목 · 본문은 2026-11-03 앱대로 고쳤다(전엔 「같은 날 등록된 휴일이 있습니다.」 · 「저장하면 겹치는 휴일이 모두 적용됩니다.」). 이미 등록된 휴일은 이름마다 달력 BP 휴일과 같은 파란 칩 -->
+                <div class="band__title">같은 날짜에 이미 등록된 휴일이 있습니다.</div>
+                <p class="band__desc">저장하면, 휴일이 추가됩니다. 저장하시겠습니까?</p>
                 <div class="tblwrap" style="margin-top: 8px; max-height: 280px; overflow-y: auto">
                   <table class="tbl tbl--dense">
                     <thead>
                       <tr><th scope="col" style="width: 170px">점포</th><th scope="col" style="width: 120px">날짜</th><th scope="col">이미 등록된 휴일</th></tr>
                     </thead>
                     <tbody>
-                      <tr><td class="k">온기식당 판교점</td><td style="white-space: nowrap"><span class="mono">2026-09-28</span>(월)</td><td>정기휴무</td></tr>
-                      <tr><td class="k"></td><td style="white-space: nowrap"><span class="mono">2026-10-05</span>(월)</td><td>정기휴무</td></tr>
-                      <tr><td class="k"></td><td style="white-space: nowrap"><span class="mono">2026-10-12</span>(월)</td><td>정기휴무</td></tr>
-                      <tr><td class="k">온기식당 광화문점</td><td style="white-space: nowrap"><span class="mono">2026-10-01</span>(목)</td><td>창립기념일</td></tr>
-                      <tr><td class="k">모리커피 을지로점</td><td style="white-space: nowrap"><span class="mono">2026-10-01</span>(목)</td><td>창립기념일</td></tr>
+                      <tr><td class="k">온기식당 판교점</td><td style="white-space: nowrap"><span class="mono">2026-09-28</span>(월)</td><td><span title="정기휴무" style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 2px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 13px; font-weight: 500">정기휴무</span></td></tr>
+                      <tr><td class="k"></td><td style="white-space: nowrap"><span class="mono">2026-10-05</span>(월)</td><td><span title="정기휴무" style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 2px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 13px; font-weight: 500">정기휴무</span></td></tr>
+                      <tr><td class="k"></td><td style="white-space: nowrap"><span class="mono">2026-10-12</span>(월)</td><td><span title="정기휴무" style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 2px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 13px; font-weight: 500">정기휴무</span></td></tr>
+                      <tr><td class="k">온기식당 광화문점</td><td style="white-space: nowrap"><span class="mono">2026-10-01</span>(목)</td><td><span title="창립기념일" style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 2px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 13px; font-weight: 500">창립기념일</span></td></tr>
+                      <tr><td class="k">모리커피 을지로점</td><td style="white-space: nowrap"><span class="mono">2026-10-01</span>(목)</td><td><span title="창립기념일" style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 2px 4px; border-radius: 2px; background: var(--info-wash); color: var(--info); font-size: 13px; font-weight: 500">창립기념일</span></td></tr>
                     </tbody>
                   </table>
                 </div>

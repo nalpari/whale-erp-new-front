@@ -162,6 +162,17 @@ export function openStores<T extends StorePeriod>(stores: T[]): T[] {
   return stores.filter((s) => s.effectiveEndDate === null && s.periodState !== "ENDED" && !seen.has(s.storeId) && seen.add(s.storeId));
 }
 
+/**
+ * 그 날짜에 걸린 점포 — 기간이 그 날을 덮는 줄(시작일 ≤ 날짜 ≤ 종료일, 종료일은 빠진 날 전날이라 그날까지 포함 — api store-periods). 같은 점포는 한 번만, 이름순.
+ * 목록의 대상점포 · 예외점포 칸을 눌러 여는 점포 목록 팝업이 쓴다(2026-11-03 사용자 지정).
+ */
+export function storesOnDate<T extends StorePeriod & { effectiveStartDate: string; name: string }>(stores: T[], date: string): T[] {
+  const seen = new Set<number>();
+  return stores
+    .filter((s) => s.effectiveStartDate <= date && (s.effectiveEndDate === null || s.effectiveEndDate >= date) && !seen.has(s.storeId) && seen.add(s.storeId))
+    .sort((a, b) => a.name.localeCompare(b.name, "ko"));
+}
+
 /** 상세 점포 표 머리의 점포 수 — 지금 열린 점포(openStores)만 센다. 끝난 휴일은 열린 점포가 없으므로 걸렸던 점포를 하나씩 센다(2026-10-30 재영). */
 export function storeCountOf(stores: StorePeriod[], ended: boolean): number {
   return ended ? new Set(stores.map((s) => s.storeId)).size : openStores(stores).length;

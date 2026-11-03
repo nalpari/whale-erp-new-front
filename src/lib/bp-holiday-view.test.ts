@@ -24,6 +24,7 @@ import {
   validateHolidayForm,
   yesterdayOf,
   type BpHolidayQuery,
+  storesOnDate,
   type HolidayForm,
 } from "./bp-holiday-view.ts";
 
@@ -257,4 +258,25 @@ test("어제 · 이력 기본 기간 · 전체 점포 역할", () => {
   assert.equal(canChooseAllStores("PA"), true);
   assert.equal(canChooseAllStores("FM"), false);
   assert.equal(canChooseAllStores("FA"), false);
+});
+
+test("그날 걸린 점포 — 시작일 · 종료일 포함, 열린 기간, 같은 점포 한 번, 이름순(점포 목록 팝업)", () => {
+  const p = (storeId: number, name: string, effectiveStartDate: string, effectiveEndDate: string | null) => ({
+    storeId,
+    name,
+    effectiveStartDate,
+    effectiveEndDate,
+    periodState: "ACTIVE" as const,
+  });
+  const stores = [
+    p(1, "다점", "2026-11-03", null), // 시작일 = 날짜
+    p(2, "가점", "2026-10-01", "2026-11-03"), // 종료일 = 날짜(그날까지 포함)
+    p(3, "나점", "2026-10-01", "2026-11-02"), // 전날 빠짐
+    p(4, "라점", "2026-11-04", null), // 다음 날부터
+    p(1, "다점", "2026-09-01", "2026-09-30"), // 같은 점포의 지난 기간
+  ];
+  assert.deepEqual(
+    storesOnDate(stores, "2026-11-03").map((s) => s.storeId),
+    [2, 1],
+  );
 });
