@@ -140,7 +140,7 @@ export const imageBox = (src, alt = "대표 이미지") =>
     : `<div class="grid size-[120px] shrink-0 place-items-center rounded-[2px] border border-erp-field-line bg-erp-thead-bg text-[13px] text-erp-muted">이미지 없음</div>`;
 
 // 비활성 버튼 — 공통 Blocked(blocked.tsx)와 같다. 이유는 버튼 위 말풍선
-export const disabledButton = (label, why, variant = "soft") => ui.blocked(ui.button(label, { variant, disabled: true }), why);
+export const disabledButton = (label, why, variant = "soft", opts = {}) => ui.blocked(ui.button(label, { variant, disabled: true }), why, opts);
 
 // 실패 · 막힘 안내 띠(빨강) — 화면 위에 하나만 선다(앱 공통 components/common/notice-band.tsx NoticeBand 와 같다, 2026-10-28 · 2026-10-29 공통으로 올림)
 export const noticeBand = (title) =>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 const TIP =
   "pointer-events-none w-max max-w-[360px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[8px] text-left text-[14px] leading-[1.6] font-medium break-keep whitespace-pre-line text-erp-ink";
@@ -28,6 +28,7 @@ export function Blocked({
 }) {
   const wrap = useRef<HTMLSpanElement>(null);
   const tip = useRef<HTMLSpanElement>(null);
+  const frame = useRef(0);
 
   // floating — 칸의 오른쪽 끝에 맞춰 위 · 아래에 띄운다. popover 를 모르는 브라우저에서는 뜨지 않는다(HelpTip 과 같다)
   const show = () => {
@@ -45,11 +46,23 @@ export function Blocked({
     // 자리는 열 때 한 번 잡는다 — 표를 밀거나 창 크기가 바뀌면 버튼에서 떨어지지 않게 닫는다
     window.addEventListener("scroll", hide, { capture: true, once: true });
     window.addEventListener("resize", hide, { once: true });
+    // 마우스를 움직이지 않은 채 패널이 닫히면(Esc · 뒤로 가기) 패널은 inert 가 되어 밀려날 뿐 남아 있어 pointerleave 가 오지 않는다.
+    // 떠 있는 동안 프레임마다 보고, 버튼이 빠지거나 inert 안에 들어가거나 자리가 바뀌면 닫는다(PR #211 리뷰)
+    const watch = () => {
+      const el = wrap.current;
+      const now = el?.getBoundingClientRect();
+      if (!el?.isConnected || el.closest("[inert]") || !now || Math.abs(now.left - at.left) > 1 || Math.abs(now.top - at.top) > 1) hide();
+      else frame.current = requestAnimationFrame(watch);
+    };
+    frame.current = requestAnimationFrame(watch);
   };
   function hide() {
+    cancelAnimationFrame(frame.current);
     const box = tip.current;
     if (box && "hidePopover" in box && box.matches(":popover-open")) box.hidePopover();
   }
+  // 칸이 사라질 때 돌던 확인을 멈춘다
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
   // 문장마다 줄을 바꾼다(2026-11-02 사용자 지정) — api 가 여러 이유를 한 칸 띄워 잇는 것(BP 마스터 삭제)도 줄로 갈린다
   const text = reason?.replace(/([.?!])\s+/g, "$1\n");
@@ -71,14 +84,19 @@ export function Blocked({
       {children}
       {reason &&
         (floating ? (
-          // popover 의 기본 자리(가운데 · 바깥 여백)를 풀고 show 가 잡은 자리에 선다. 열 때 투명도를 150ms 로 올린다
-          <span
-            ref={tip}
-            popover="manual"
-            className={`fixed inset-auto m-0 ${TIP} transition-opacity duration-150 ease-out starting:opacity-0 motion-reduce:transition-none`}
-          >
-            {text}
-          </span>
+          // popover 의 기본 자리(가운데 · 바깥 여백)를 풀고 show 가 잡은 자리에 선다. 열 때 투명도를 150ms 로 올린다.
+          // 닫힌 popover 는 display:none 이라 화면 낭독기가 읽지 못한다 — 같은 글을 sr-only 로 버튼 옆에 둔다(aria-hidden 은 떠 있는 쪽)
+          <>
+            <span className="sr-only">{reason}</span>
+            <span
+              ref={tip}
+              popover="manual"
+              aria-hidden
+              className={`fixed inset-auto m-0 ${TIP} transition-opacity duration-150 ease-out starting:opacity-0 motion-reduce:transition-none`}
+            >
+              {text}
+            </span>
+          </>
         ) : (
           <span
             className={`absolute right-0 z-30 ${TIP} translate-y-[4px] opacity-0 transition-[opacity,translate] duration-150 ease-out group-hover/blocked:translate-y-0 group-hover/blocked:opacity-100 motion-reduce:translate-y-0 ${

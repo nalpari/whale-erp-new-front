@@ -17,7 +17,7 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
   const closeBtn = panel ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("닫기", { variant: "off", href: link(R, "bp/index.html") });
   // [BP상태변경]은 기본정보 표 맨 위 「계정상태」 줄(앱과 같다, 2026-10-28 사용자 지정)
   const actionButtons =
-    f.disabledButton("삭제", "BP 마스터 계정으로 로그인한 이력이 있어 삭제할 수 없습니다. 하위 관리자 계정이 등록되어 있어 삭제할 수 없습니다. 등록된 점포가 있어 삭제할 수 없습니다.") +
+    f.disabledButton("삭제", "BP 마스터 계정으로 로그인한 이력이 있어 삭제할 수 없습니다. 하위 관리자 계정이 등록되어 있어 삭제할 수 없습니다. 등록된 점포가 있어 삭제할 수 없습니다.", "soft", { narrow: true }) +
     ui.slideTrigger("수정", "bp-edit-panel") +
     x.dialogTrigger("변경이력", histId, "soft");
 
