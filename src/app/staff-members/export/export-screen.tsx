@@ -210,7 +210,7 @@ function ExportBody() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto p-[24px]">
-      <PendingNotice message="BP 가 탈퇴하면 관리자 계정이 모두 미사용이 되어 자료를 볼 수 없습니다. 탈퇴한 뒤에는 보존 기간이 남아 있어도 이 화면이 열리지 않으니, 필요한 자료는 탈퇴 전에 받아 두세요. 평소에도 언제든 받을 수 있습니다." />
+      <PendingNotice message="BP가 탈퇴하면 관리자 계정이 모두 미사용이 되어 자료를 볼 수 없습니다. 탈퇴한 뒤에는 보존 기간이 남아 있어도 이 화면이 열리지 않으니, 필요한 자료는 탈퇴 전에 받아 두세요. 평소에도 언제든 받을 수 있습니다." />
       {error && <FailedBand message={error} />}
       <div className="grid grid-cols-[7fr_5fr] items-start gap-[18px]">
         <div className="flex min-w-0 flex-col gap-[18px]">

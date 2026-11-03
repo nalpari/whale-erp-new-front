@@ -35,7 +35,12 @@ const STORE_FILTER_SCRIPT = `<style>[data-store-out]{display:none!important}</st
     const excel = document.querySelector("[data-excel]");
     if (excel) {
       excel.disabled = visible === 0;
-      excel.parentElement.title = visible === 0 ? "받을 점포가 없습니다." : "";
+      // 말풍선 글과 손가락 커서 · 호버를 함께 켜고 끈다(앱 Blocked 와 같다)
+      const wrap = excel.closest("[data-blocked]");
+      const tip = wrap.querySelector("[data-blocked-tip]");
+      tip.textContent = visible === 0 ? "엑셀로 다운로드할 점포 정보가 없습니다." : "";
+      tip.hidden = visible !== 0;
+      for (const c of ${JSON.stringify(ui.BLOCKED_HOVER_CLASSES.split(" "))}) wrap.classList.toggle(c, visible === 0);
     }
   };
   // 받는 동안 「파일 만드는 중 · N%」로 바뀌고 잠긴다 — 데모는 파일을 만들지 않고 글자만 보여 준다
@@ -130,7 +135,7 @@ export const render = ({ A, R }, { missing = 0 } = {}) => {
       { id: "cards", label: "카드", icon: x.ICON.grid },
       { id: "table", label: "표", icon: x.ICON.table },
     ]) +
-      `<span class="inline-flex">${ui.button("엑셀 다운로드", { variant: "soft", "data-excel": true })}</span>` +
+      ui.blocked(ui.button("엑셀 다운로드", { variant: "soft", "data-excel": true }), "", { place: "bottom" }) +
       `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
   );
   // 찾지 못한 점포 안내(앱 page.tsx) — 지워졌거나 볼 수 없게 된 점포를 조건에서 뺐다

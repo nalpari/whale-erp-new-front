@@ -43,6 +43,22 @@ export function button(label, { variant = "primary", href, ...a } = {}) {
     : `<button type="button"${attrs(a)} class="${cls}">${label}</button>`;
 }
 
+// blocked.tsx — 막힌 버튼의 이유 말풍선(헤더 툴팁 모양, 문장마다 줄바꿈). 이유가 있으면 손가락 커서와 다른 버튼 호버를 60% 흐림으로(2026-11-02).
+// place 는 top(기본) · bottom. 말풍선 오른쪽 끝을 버튼에 맞춘다. 이유를 바꿔 끼우는 화면(엑셀 받기)은 [data-blocked-tip] 의 글을 고친다.
+const BLOCKED_HOVER =
+  "cursor-pointer hover:[&>button:disabled]:border-erp-brand hover:[&>button:disabled]:bg-white hover:[&>button:disabled]:text-erp-ink hover:[&>button:disabled]:opacity-60";
+// narrow — 슬라이드 패널(464px, overflow-y-auto) 버튼 줄처럼 왼쪽 자리가 좁은 곳. 앱은 floating(popover)으로 띄우지만 데모는 자리 계산이 없어 폭을 패널 안으로 줄인다
+const blockedTip = (place, narrow) =>
+  `pointer-events-none absolute right-0 z-30 w-max ${narrow ? "max-w-[220px]" : "max-w-[360px]"} translate-y-[4px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[8px] text-left text-[14px] leading-[1.6] font-medium break-keep whitespace-pre-line text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out group-hover/blocked:translate-y-0 group-hover/blocked:opacity-100 motion-reduce:translate-y-0 ${
+    place === "top" ? "bottom-[calc(100%+6px)]" : "top-[calc(100%+6px)]"
+  }`;
+export const blockedLines = (reason) => reason.replace(/([.?!])\s+/g, "$1\n");
+export function blocked(buttonHtml, reason, { place = "top", narrow = false } = {}) {
+  return `<span class="group/blocked relative inline-flex ${reason ? BLOCKED_HOVER : ""}" data-blocked>${buttonHtml}<span data-blocked-tip class="${blockedTip(place, narrow)}"${reason ? "" : " hidden"}>${reason ? blockedLines(reason) : ""}</span></span>`;
+}
+/** 이유를 바꿔 끼운다(브라우저 쪽) — 빈 문자열이면 말풍선 · 호버를 끈다 */
+export const BLOCKED_HOVER_CLASSES = BLOCKED_HOVER;
+
 // badge.tsx
 // closed: 폐점처럼 더는 다루지 않는 상태 — 회색(앱 badge.tsx 와 같다)
 const BADGE_TONE = { on: "min-w-[44px] bg-erp-on-bg text-erp-on", off: "bg-erp-off-bg text-erp-off", closed: "bg-erp-thead-bg text-erp-sub" };

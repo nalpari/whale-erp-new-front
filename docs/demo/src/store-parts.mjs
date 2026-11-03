@@ -14,8 +14,8 @@ export const detailPageOf = (code) =>
 // 점포상태 배지 — 운영 파랑 · 미운영 빨강 · 폐점 회색(앱 StoreStatusBadge)
 export const statusBadge = (state) => ui.badge(state === "운영" ? "on" : state === "폐점" ? "closed" : "off", state);
 
-// 막힌 버튼의 이유 — 공통 Blocked(blocked.tsx)와 같다. 막힌 버튼은 호버를 받지 않아 감싸는 칸에 title 을 단다
-export const blocked = (label, why, variant = "soft") => `<span title="${why}" class="inline-flex">${ui.button(label, { variant, disabled: true })}</span>`;
+// 막힌 버튼의 이유 — 공통 Blocked(blocked.tsx)와 같다. 점포 상세 제목 줄이라 말풍선을 아래로 띄운다(앱 place="bottom")
+export const blocked = (label, why, variant = "soft") => ui.blocked(ui.button(label, { variant, disabled: true }), why, { place: "bottom" });
 
 // 화면 위 안내 띠(공통 NoticeBand). risk 는 빨강 · info 는 표 머리 바탕, detail 은 아랫줄 먹색 설명
 export const noticeBand = (tone, title, detail = "") =>

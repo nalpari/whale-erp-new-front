@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { DataTable, NoticeBand, PageBar, type Column } from "@/components/common";
 import { deniedMessage, ListFailure } from "@/components/community/list-load";
 import { ApiError } from "@/lib/api";
@@ -48,47 +47,44 @@ export default async function PublicHolidaysPage({ searchParams }: PageProps<"/p
       <HolidayNavigation query={query}>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
           <main className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
-            {/* 연도 선택칸은 목록 보기에만 — 캘린더는 제목 줄의 「2026년 10월 ▾」에서 연 · 월을 함께 고른다(2026-10-30 사용자 지정) */}
-            <div className="flex flex-wrap items-center gap-[12px]">
-              {query.view === "list" && <YearSelect />}
-              {lastSynchronizedAt && <span className="text-[14px] text-erp-label">최종 동기화 {formatDateTime(lastSynchronizedAt)}</span>}
-              {needsAnnouncementNote(query.year, Number(today.slice(0, 4))) && <span className="text-[14px] text-erp-label">임시공휴일 · 선거일은 정부 발표 후 반영됩니다.</span>}
-            </div>
+            {/* 연도 선택칸은 목록 보기의 제목 자리에(HolidayList), 최근 동기화는 탭 바로 오른쪽에 있다 — 캘린더는 제목 줄의 「2026년 10월 ▾」에서 연 · 월을 함께 고른다(2026-10-30 · 11-02 사용자 지정) */}
+            {needsAnnouncementNote(query.year, Number(today.slice(0, 4))) && <span className="text-[14px] text-erp-label">임시공휴일 · 선거일은 정부 발표 후 반영됩니다.</span>}
             {showsSyncFailure(failedYears, query.year) && (
-              // 실패 띠는 공통 NoticeBand(risk · role=alert) — 화면 낭독기가 바로 읽는다(2026-10-30 재영)
+              // 실패 띠는 공통 NoticeBand(risk · role=alert) — 화면 낭독기가 바로 읽는다(2026-10-30 재영). 문구는 2026-11-02 사용자 지정
               <NoticeBand
-                title={`${query.year}년 공식 휴일 동기화가 실패했습니다 — 저장된 휴일을 그대로 보여 드립니다.`}
-                detail="실패한 동기화는 휴일을 바꾸지 않았습니다. 아래 휴일은 직전 동기화 값 또는 규칙으로 계산한 값이며, 다음 정기 동기화에서 다시 맞춥니다."
+                title={`${query.year}년 공식 휴일 정보를 동기화하지 못했습니다.`}
+                detail={
+                  <>
+                    <p>이전에 등록된 휴일 정보는 그대로 유지되며, 다음 정기 동기화 때 최신 정보를 가져오도록 재시도합니다.</p>
+                    {/* api public-holiday-sync.scheduler.ts 의 @Cron(매월 1일 04:00, Asia/Seoul) — 바뀌면 같이 고친다 */}
+                    <p>※ 정기 동기화: 매월 1일 오전 4시(한국 시간)</p>
+                  </>
+                }
               />
             )}
             <div className="flex min-h-0 flex-col gap-[12px]">
-              <nav aria-label="보기" className="flex shrink-0 border-b border-erp-bar-line">
-                <ViewTab view="calendar">캘린더</ViewTab>
-                <ViewTab view="list">목록</ViewTab>
-              </nav>
+              <div className="flex shrink-0 items-center border-b border-erp-bar-line">
+                <nav aria-label="보기" className="mr-[18px] flex">
+                  <ViewTab view="calendar">캘린더</ViewTab>
+                  <ViewTab view="list">목록</ViewTab>
+                </nav>
+                {/* 탭 바로 오른쪽 꼬리표 — 공통 Tag 와 같은 바탕 · 선 · 글자색에 탭 글자와 같은 15px(2026-11-02 사용자 지정, 1팀 확인 필요 — Tag 는 14px) */}
+                {lastSynchronizedAt && (
+                  <span className="rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[8px] py-[2px] text-[15px] font-medium whitespace-nowrap text-erp-sub">
+                    최근 동기화 <span className="ml-[4px] text-erp-ink">{formatDateTime(lastSynchronizedAt)}</span>
+                  </span>
+                )}
+              </div>
               {query.view === "calendar" ? (
                 <HolidayCalendar query={query} today={today} holidays={data.items} total={data.total} />
               ) : (
-                <HolidayList year={query.year} holidays={data.items} total={data.total} />
+                <HolidayList holidays={data.items} total={data.total} />
               )}
             </div>
           </main>
         </div>
       </HolidayNavigation>
     </>
-  );
-}
-
-// 카드 안 묶음 제목 줄(데모 sectionHead) — 제목 옆에 휴일 수를 작게
-function SectionHead({ title, count, children }: { title: string; count: number; children?: ReactNode }) {
-  return (
-    <div className="flex items-end gap-[6px]">
-      <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">
-        {title}
-        <span className="ml-[10px] text-[14px] font-normal text-erp-label">공식 휴일 {count}일</span>
-      </h2>
-      {children}
-    </div>
   );
 }
 
@@ -107,7 +103,7 @@ function HolidayCalendar({ query, today, holidays, total }: { query: HolidayQuer
 
   return (
     <>
-      {/* 제목 자리에 달 이동 — [2026년 10월 ●] ‹ › [오늘 · 날짜] 공식 휴일 N일, 오른쪽 범례는 「공식 휴일」 하나(BP 휴일 관리와 같다, 2026-10-30 사용자 지정 —
+      {/* 제목 자리에 달 이동 — [2026년 10월 ●] ‹ › [오늘 · 날짜] 「선택한 월의 공식 휴일은 N일입니다.」, 오른쪽 범례는 「공식 휴일」 하나(BP 휴일 관리와 같다, 2026-10-30 사용자 지정 —
           전엔 [오늘] ‹ › [월] 줄 아래 「2026년 10월」 제목이 따로 있고 범례에 「오늘 날짜」가 있었다) */}
       <div className="flex items-center gap-[6px]">
         <div role="group" aria-label="달 이동" className="flex flex-1 items-center gap-[6px]">
@@ -115,7 +111,9 @@ function HolidayCalendar({ query, today, holidays, total }: { query: HolidayQuer
           <MonthStep shift={-1} />
           <MonthStep shift={1} />
           <TodayButton today={today} />
-          <span className="ml-[12px] text-[14px] text-erp-label">공식 휴일 {total}일</span>
+          <span className="ml-[12px] text-[14px] text-erp-label">
+            선택한 월의 공식 휴일은 <span className="font-semibold">{total}일</span>입니다.
+          </span>
         </div>
         <Legend mark="bg-erp-off" text="공식 휴일" />
       </div>
@@ -176,12 +174,16 @@ const LIST_COLUMNS: Column<PublicHoliday>[] = [
 ];
 
 /** 목록 보기 — 고른 연도 한 해를 날짜순으로(SYSTEM-9). 월 이동 · 월 선택은 없다. */
-function HolidayList({ year, holidays, total }: { year: number; holidays: PublicHoliday[]; total: number }) {
+function HolidayList({ holidays, total }: { holidays: PublicHoliday[]; total: number }) {
   return (
     <>
-      <SectionHead title={`${year}년`} count={total}>
-        <span className="text-[14px] text-erp-label">선택한 연도의 공식 휴일을 모두 표시합니다.</span>
-      </SectionHead>
+      {/* 제목 자리에 연도 선택칸 — 캘린더의 「2026년 10월 ▾」 자리와 같다(2026-11-02 사용자 지정 — 전엔 맨 위 줄에 선택칸, 여기엔 「2026년」 제목) */}
+      <div className="flex items-center gap-[12px]">
+        <YearSelect />
+        <span className="text-[14px] text-erp-label">
+          선택한 연도의 공식 휴일은 <span className="font-semibold">{total}일</span>입니다.
+        </span>
+      </div>
       <DataTable columns={LIST_COLUMNS} rows={holidays} rowKey={(h) => h.publicHolidayId} />
     </>
   );

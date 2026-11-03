@@ -16,7 +16,7 @@ import { NoticeBand } from "./notice-band";
 //   <ExcelDownloadProvider fileName="점포목록.xlsx">
 //     <ExcelDownloadNotice href={excelHref} />
 //     <ListToolbar total={total}>
-//       <ExcelDownloadButton href={excelHref} empty={total === 0} emptyTitle="받을 점포가 없습니다" />
+//       <ExcelDownloadButton href={excelHref} empty={total === 0} emptyTitle="엑셀로 다운로드할 점포 정보가 없습니다." />
 //     </ListToolbar>
 //   </ExcelDownloadProvider>
 
@@ -142,7 +142,7 @@ export function ExcelDownloadButton({ href, empty, emptyTitle }: { href: string;
         : "파일 만드는 중";
   // 막힌 버튼은 호버를 받지 않아(disabled:pointer-events-none) 이유를 감싸는 칸(Blocked)에 단다 — 버튼에 달면 말풍선이 뜨지 않았다
   return (
-    <Blocked reason={empty ? emptyTitle : undefined}>
+    <Blocked reason={empty ? emptyTitle : undefined} place="bottom">
       <Button variant="soft" onClick={() => download(href)} disabled={busy || empty} aria-busy={busy || undefined}>
         {label}
       </Button>

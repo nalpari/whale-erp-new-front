@@ -9,7 +9,7 @@ import { parseBpMastersQuery } from "../bp-masters-href";
 export async function GET(request: Request) {
   const { searchType, keyword, statuses, verification, statusNone } = parseBpMastersQuery(Object.fromEntries(new URL(request.url).searchParams));
   // 계정상태를 셋 다 껐으면(status=NONE) 받을 것이 없다 — 화면 버튼은 0건이라 막히지만, 주소로 직접 와도 전체를 내려보내지 않는다
-  if (statusNone) return Response.json({ message: "받을 BP 가 없습니다." }, { status: 400 });
+  if (statusNone) return Response.json({ message: "엑셀로 다운로드할 BP 마스터 정보가 없습니다." }, { status: 400 });
 
   let response: Response;
   try {

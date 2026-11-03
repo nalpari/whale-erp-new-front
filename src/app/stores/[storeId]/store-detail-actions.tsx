@@ -81,9 +81,9 @@ export function StoreDetailActions({
   const deleteReason =
     blockedReason ??
     (store.storeStatusCode !== "NOT_OPERATING"
-      ? "미운영 점포만 삭제할 수 있습니다. 운영을 끝내려면 상태 변경에서 폐점하세요."
+      ? "미운영 점포만 삭제할 수 있습니다. 점포 운영을 종료하려면 '상태 변경'에서 '폐점'으로 변경해 주세요."
       : !transitions.canDelete
-        ? (closeBlockText(transitions) ?? "삭제 조건을 채우지 못했습니다.")
+        ? (closeBlockText(transitions) ?? "삭제 조건을 충족하지 않아 삭제할 수 없습니다.")
         : undefined);
 
   /** 실패를 팝업에 보인다. 결과를 모르거나 그 사이 바뀌었으면(404 · 409) 화면을 새로 받고, 결과를 모르면 확인해 달라고 덧붙인다 */
@@ -156,14 +156,14 @@ export function StoreDetailActions({
       {!closed && (
         <>
           {can.update && targets.length > 0 && (
-            <Blocked reason={blockedReason}>
+            <Blocked reason={blockedReason} place="bottom">
               <Button variant="soft" onClick={handleStatusOpen} disabled={bpInactive}>
                 상태 변경
               </Button>
             </Blocked>
           )}
           {can.delete && (
-            <Blocked reason={deleteReason}>
+            <Blocked reason={deleteReason} place="bottom">
               <Button
                 variant="soft"
                 onClick={() => {
@@ -178,7 +178,7 @@ export function StoreDetailActions({
           )}
           {can.update &&
             (bpInactive ? (
-              <Blocked reason={blockedReason}>
+              <Blocked reason={blockedReason} place="bottom">
                 <Button variant="soft" disabled>
                   수정
                 </Button>
