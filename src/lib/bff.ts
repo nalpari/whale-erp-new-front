@@ -5,6 +5,8 @@ import { BP_HEADER, bpOfPath } from "./bp-path";
 export const PASSWORD_REQUIRED_EVENT = "whale-erp:password-required";
 // api src/auth/access-messages.ts PASSWORD_CHANGE_REQUIRED_MESSAGE(2026-10-14)와 같은 문구 — retirement.ts 와 같다
 const PASSWORD_REQUIRED_MESSAGE = "서비스 이용을 위해 비밀번호를 변경해 주세요.";
+/** api ACCOUNT_UNAVAILABLE_MESSAGE 와 같은 문구 — 사용중지 · 탈퇴 계정의 403. 받으면 로그아웃한다(SessionGate). */
+const ACCOUNT_UNAVAILABLE_MESSAGE = "사용할 수 없는 계정입니다. 관리자에게 문의해 주세요.";
 
 export class BffError extends Error {
   constructor(
@@ -33,6 +35,14 @@ export async function bff<T>(path: string): Promise<T> {
     dispatchEvent(new Event(PASSWORD_REQUIRED_EVENT));
   throw new BffError(response.status, typeof message === "string" ? message : `요청이 실패했습니다 (HTTP ${response.status})`);
 }
+
+/** 비밀번호 강제 변경 전이라는 403 인가 — 바꾸면 풀리는 거절이라 맞추기를 멈추지 않는다(SessionGate). */
+export const isPasswordRequired = (e: unknown): boolean =>
+  e instanceof BffError && e.status === 403 && e.message.startsWith(PASSWORD_REQUIRED_MESSAGE);
+
+/** 계정을 쓸 수 없게 됐다는 403 인가(사용중지 · 탈퇴) — 권한 없음 403 과 가른다. */
+export const isAccountUnavailable = (e: unknown): boolean =>
+  e instanceof BffError && e.status === 403 && e.message.startsWith(ACCOUNT_UNAVAILABLE_MESSAGE);
 
 /**
  * 로그아웃 서버 액션(logout → /login)을 부른다. 성공하면 서버 액션의 redirect 로 이동한다.

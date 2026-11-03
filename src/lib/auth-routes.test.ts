@@ -2,7 +2,26 @@
 // Node 24 가 타입을 벗겨 그대로 실행한다. 테스트 도구를 따로 깔지 않는다(date-math.test.ts 와 같다).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { homeOf, isFranchiseRole, isPlatformRole, isPublicPath, loginPathOf, redirectsSignedIn, returnPathOf, signedInTargetOf } from "./auth-routes.ts";
+import {
+  ACCOUNT_CHANGED_MESSAGE,
+  homeOf,
+  isFranchiseRole,
+  isPlatformRole,
+  isPublicPath,
+  loginPathOf,
+  logoutNoticeOf,
+  redirectsSignedIn,
+  returnPathOf,
+  signedInTargetOf,
+} from "./auth-routes.ts";
+
+test("로그인 화면 ?reason= — 계정 상태 변경만 문구로 바꾸고, 모르는 값 · 배열 · 없음은 무시한다", () => {
+  assert.equal(logoutNoticeOf("account"), ACCOUNT_CHANGED_MESSAGE);
+  assert.equal(ACCOUNT_CHANGED_MESSAGE, "계정 상태가 변경되어 로그아웃되었습니다.");
+  assert.equal(logoutNoticeOf("<script>"), null);
+  assert.equal(logoutNoticeOf(["account"]), null);
+  assert.equal(logoutNoticeOf(undefined), null);
+});
 
 test("로그인한 채 홈 · 로그인 · 찾기를 열면 자기 홈으로 — 홈은 접근 토큰이 살아 있을 때만", () => {
   const now = 1_000_000;
