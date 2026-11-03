@@ -37,8 +37,8 @@ export async function getBpHoliday(id: number, date: string | null): Promise<BpH
 }
 
 /** GET /bp-holidays/histories?from&to&page&pageSize — 이력이 생긴 날짜(한국)로 찾는다. 지운 휴일도 여기는 나온다. */
-export async function getBpHolidayHistories(q: { from: string; to: string; page: number }): Promise<BpHolidayHistoryList> {
-  const search = new URLSearchParams({ from: q.from, to: q.to, page: String(q.page), pageSize: String(BP_HOLIDAY_HISTORY_PAGE_SIZE) });
+export async function getBpHolidayHistories(q: { from: string; to: string; page: number; pageSize?: number }): Promise<BpHolidayHistoryList> {
+  const search = new URLSearchParams({ from: q.from, to: q.to, page: String(q.page), pageSize: String(q.pageSize ?? BP_HOLIDAY_HISTORY_PAGE_SIZE) });
   return request(`/bp-holidays/histories?${search}`, await json("GET"));
 }
 

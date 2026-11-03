@@ -15,6 +15,7 @@ import { DETAIL_PANEL_ID, EDIT_PANEL_ID, HolidayDetailPanel } from "./holiday-de
 import { HolidayFormPanel } from "./holiday-form-panel";
 import { Muted, ScopeTag, useHolidayTypeText } from "./holiday-parts";
 import { HolidayHistoryButton } from "./history-dialog";
+import { HolidayStoresButton } from "./holiday-stores-dialog";
 
 const NEW_PANEL_ID = "bp-holiday-new-panel";
 /** 이 화면이 상세 위에 쌓은 수정 기록에 다는 history.state 꼬리표 — 값은 그 상세의 휴일 id(플랫폼 관리자 관리와 같다) */
@@ -165,7 +166,8 @@ export function HolidaysScreen({
   const newStart = query.day && query.day >= today ? query.day : today;
 
   // 열: 날짜 · 휴일명 · 휴일유형 · 적용범위 · 대상점포 · 예외점포 · 최종수정(2026-10-30 사용자 지정 — 전엔 날짜 · 휴일명 · 적용 대상 · 휴일유형 · 최종수정일시).
-  // 「적용 대상」 한 칸을 적용범위(꼬리표만) · 대상점포 · 예외점포 셋으로 나눴고, 해당 없는 칸은 「-」. 폭은 정하고 남는 폭은 최종수정이 쓴다
+  // 「적용 대상」 한 칸을 적용범위(꼬리표만) · 대상점포 · 예외점포 셋으로 나눴고, 해당 없는 칸은 「-」. 최종수정은 폭을 정하고(230) 남는 폭은 대상점포 · 예외점포가 반씩 쓴다
+  // (2026-11-03 사용자 지정 — 전엔 최종수정이 남는 폭을 다 써 넓고 점포 칸이 좁았다)
   const columns: Column<BpHolidayDateRow>[] = [
     {
       header: "날짜",
@@ -179,7 +181,7 @@ export function HolidaysScreen({
     },
     {
       header: "휴일명",
-      width: "w-[200px]",
+      width: "w-[240px]", // 200 → 240(2026-11-03 사용자 지정)
       align: "left",
       cell: (r) => (
         <button type="button" aria-controls={DETAIL_PANEL_ID} onClick={(e) => openDetail(r.bpHolidayId, r.date, e.currentTarget)} className="max-w-full truncate text-erp-link hover:underline">
@@ -190,27 +192,36 @@ export function HolidaysScreen({
     // 휴일유형은 휴일명 바로 옆(2026-10-30 사용자 지정)
     { header: "휴일유형", width: "w-[120px]", cell: (r) => typeText(r.holidayTypeCode, r.holidayRepeatTypeCode) },
     { header: "적용범위", width: "w-[110px]", cell: (r) => <ScopeTag isAllStores={r.target.isAllStores} /> },
-    // 대상점포 · 예외점포는 같은 폭(2026-10-30 사용자 지정)
+    // 대상점포 · 예외점포는 같은 폭(2026-10-30 사용자 지정) — 폭을 정하지 않아 남는 폭을 반씩 쓴다
     {
       header: "대상점포",
-      width: "w-[180px]",
       align: "left",
       cell: (r) =>
         r.target.isAllStores ? (
           <Muted>-</Muted>
         ) : (
-          <span className="block truncate">{storesText(r.target.firstStoreName, r.target.otherStoreCount)}</span>
+          // 누르면 그날 걸린 점포를 팝업으로(2026-11-03 사용자 지정)
+          <HolidayStoresButton bpHolidayId={r.bpHolidayId} date={r.date}>
+            {storesText(r.target.firstStoreName, r.target.otherStoreCount)}
+          </HolidayStoresButton>
         ),
     },
     {
       header: "예외점포",
-      width: "w-[180px]",
-      cell: (r) => (r.target.isAllStores && r.target.excludedStoreCount ? `${r.target.excludedStoreCount}개` : <Muted>-</Muted>),
+      cell: (r) =>
+        r.target.isAllStores && r.target.excludedStoreCount ? (
+          <HolidayStoresButton bpHolidayId={r.bpHolidayId} date={r.date}>
+            {r.target.excludedStoreCount}개
+          </HolidayStoresButton>
+        ) : (
+          <Muted>-</Muted>
+        ),
     },
     // 「최종수정」 한 칸에 「일시 · 사람」(사람은 회색) — BP · 플랫폼 권한 그룹 목록과 같은 모양(2026-10-30 사용자 지정 — 전엔 「최종수정일시」 · 「일시 | 사람」).
     // 목록 줄에는 등록일시가 없어(api) 고친 적 없는 휴일도 「-」 대신 등록 때 값이 보인다
     {
       header: "최종수정",
+      width: "w-[230px]",
       align: "left",
       cell: (r) => (
         <span className="block truncate">

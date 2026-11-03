@@ -51,6 +51,17 @@ export const Muted = ({ children }: { children: ReactNode }) => <span className=
  * (860 — 1팀 변경이력 팝업 모두 같은 폭, 2026-11-02).
  * Esc 는 onClose 로 돌린다(닫는 것은 부르는 쪽 상태).
  */
+/** 변경이력 표 감싸기 — 남는 높이를 쓰고 넘치면 이 안에서만 스크롤, 열 이름 줄은 위에 고정한다(WideDialog 안) */
+export function HistoryScroll({ children }: { children: ReactNode }) {
+  // 표가 border-collapse 라 머리 줄의 선은 표에 붙어 스크롤된다 — 그 틈으로 아래 글자가 비쳤다(2026-11-03 사용자 지적). 점포 변경이력(stores/[storeId]/history-dialog.tsx)처럼
+  // 위아래 선은 감싸는 칸이 긋고, 머리 줄 아래 선은 그림자(1px)로 붙여 머리와 함께 고정한다
+  return (
+    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain border-y border-erp-thead-line [&_tbody_tr:last-child]:border-b-0 [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-[1] [&_thead]:shadow-[0_1px_0_var(--color-erp-thead-line)] [&_thead_tr]:border-y-0">
+      {children}
+    </div>
+  );
+}
+
 export function WideDialog({ open, title, onClose, children, footer }: { open: boolean; title: string; onClose: () => void; children: ReactNode; footer: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -69,13 +80,15 @@ export function WideDialog({ open, title, onClose, children, footer }: { open: b
         onClose();
       }}
       // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups).
-      className="m-auto max-h-[calc(100dvh-48px)] w-[860px] max-w-[calc(100vw-32px)] overflow-y-auto rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
+      className="m-auto max-h-[calc(100dvh-48px)] w-[1000px] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-[2px] open:flex border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
     >
-      <h2 id={titleId} className="text-[18px] font-semibold">
+      <h2 id={titleId} className="shrink-0 text-[18px] font-semibold">
         {title}
       </h2>
-      <div className="mt-[12px] flex flex-col gap-[12px] text-[14px]">{children}</div>
-      <div className="mt-[24px] flex justify-end gap-[6px]">{footer}</div>
+      {/* 제목 · [닫기]는 늘 그 자리 — 본문은 남는 높이만 쓰고, 그 안의 표(HistoryScroll)가 머리 줄을 고정한 채 줄만 스크롤한다(2026-11-03 사용자 지정 —
+          길면 [닫기]가 아래로 밀려 안 보였다). 폭은 860 → 1000(2026-11-03 사용자 지정). 열렸을 때만 flex(닫힌 dialog 는 숨김 그대로) */}
+      <div className="mt-[12px] flex min-h-0 flex-1 flex-col gap-[12px] text-[14px]">{children}</div>
+      <div className="mt-[24px] flex shrink-0 justify-end gap-[6px]">{footer}</div>
     </dialog>
   );
 }
