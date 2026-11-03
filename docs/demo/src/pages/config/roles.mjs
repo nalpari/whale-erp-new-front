@@ -149,7 +149,7 @@ export const render = ({ A, R }, { title = "BP 권한 그룹 관리", platform =
   // [등록]은 제목 줄, 카드 머리에는 [가맹마스터 메뉴설정 보기]만(앱 roles-screen.tsx)
   const left = c.card(
     "min-w-0 flex-1",
-    sideHead(`권한 그룹 목록 <span class="ml-[6px] text-[14px] font-normal text-erp-label"><span data-role-count>${listed.length}</span>건</span>`, x.dialogTrigger("가맹마스터 메뉴설정 보기", fmId, "soft")) +
+    sideHead(`권한 그룹 목록 <span class="ml-[6px] text-[14px] font-normal text-erp-label"><span data-role-count>${listed.length}</span>건</span>`, x.dialogTrigger("가맹마스터 메뉴설정 보기", fmId, "outline")) +
       table +
       ui.pagination(A, 1, 1),
   );
@@ -206,7 +206,7 @@ export const render = ({ A, R }, { title = "BP 권한 그룹 관리", platform =
         plainTable(recordRows) +
         `<div class="flex justify-center gap-[6px]">${ui.button("삭제", { variant: "soft", "data-dialog": del[code], id: `role-delete-${code}` })}${ui.button("저장", { "data-role-edit-save": true, "data-toast": "" })}</div>`
       : // 고칠 수 없으면 이유 상자 + 권한명 · 설명 · 기록을 표 하나에(앱 role-side.tsx). 플랫폼 계정은 회색 안내 한 줄(2026-10-30 재영)
-        (platform ? band("플랫폼 계정은 BP 권한 그룹을 조회만 합니다.") : c.warnBand("내 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다.")) +
+        (platform ? band("플랫폼 계정은 BP 권한 그룹을 조회만 할 수 있습니다.") : c.warnBand("내 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다.")) +
         plainTable([["권한명", name], ["설명", desc || c.muted("-")], ...recordRows]);
     return (
       `<div data-role-view="${code}" class="flex flex-col gap-[18px]" hidden>` +
