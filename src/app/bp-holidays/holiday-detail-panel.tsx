@@ -16,7 +16,8 @@ import { OwnHistoryButton } from "./history-dialog";
 import { Muted, unknownResult, useHolidayTypeText } from "./holiday-parts";
 
 // BP 휴일 상세(S-MQELTV). 등록 화면과 같은 순서로 묶는다 — 휴일정보(휴일명 · 날짜(반복) · 설명 · 등록 · 최종수정) · 점포(데모 2026-10-08, 「적용 대상」 표는 2026-10-30 뺐다).
-// 무엇을 할 수 있는지는 api 가 휴일마다 준 actions 로 가린다 — 메뉴 권한 · 점포 범위 · 상태(시작 전 · 진행 중 · 종료)를 api 가 이미 셈했다.
+// 무엇을 할 수 있는지는 api 가 휴일마다 준 actions(메뉴 권한 · 점포 범위 · 상태(시작 전 · 진행 중 · 종료)를 api 가 셈함)에 지금 메뉴 권한
+// (usePagePermission)을 함께 걸어 가린다 — actions 는 상세를 받을 때의 권한이다.
 // 「BP 휴일 변경 · 종료 정책」(1팀, 2026-10-26): 시작 전이면 삭제, 지난 날짜가 있으면 삭제 대신 강제 종료(어제로 끝냄, 되돌리지 않음),
 // 끝난 휴일은 읽기만 한다. 막힌 동작이 있으면 그 사유(blockedReason)를 띠로 보인다.
 // 실행 버튼은 닫기만 맨 왼쪽, 나머지는 오른쪽 끝(BP 관리자 상세와 같다).

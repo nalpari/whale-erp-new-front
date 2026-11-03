@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Badge, Button, useToast } from "@/components/common";
+import { Badge, Button, NoticeBand, useToast } from "@/components/common";
 import { usePagePermission, useStores } from "@/components/site/session-gate";
 import { isClosedStore } from "@/lib/store-scope";
 import type { CopyPreview } from "@/lib/work-schedules-api";
@@ -14,7 +14,7 @@ import { copyStatus, totalsLabel } from "./work-schedule-view";
 
 // 지난 주 복사(#204, STAFF-13). 빈 주에서만 켜지고, 누르면 도구 줄 아래에 미리보기를 연다(주소 copy=1 — 서버가 GET /copy-last-week 를 읽는다).
 // 원본은 직전 주 고정이고 받을 수 없는 날은 빠진다. 복사하면 바로 반영되고 생긴 직원마다 알림이 한 번 간다(2026-10-08 재영).
-// 폐점 점포는 등록과 같이 막는다(운영 정책 ATT-33).
+// 폐점 점포는 등록과 같이 막는다(운영 정책 ATT-33). 등록 권한이 없으면 열기 버튼을 두지 않고 미리보기도 막는다(api 는 미리보기 GET · 복사 POST 모두 create).
 
 const NOTE = "text-[13px] text-erp-off";
 
@@ -48,7 +48,8 @@ export function CopyPreviewPanel({ query, today, preview }: { query: ScheduleQue
   const store = useStores().find((s) => s.storeId === query.storeId);
   const closed = !!store && isClosedStore(store);
   const close = () => navigate({ ...query, copy: false });
-  // 복사는 등록이다(api create). 열기 버튼(CopyButton)만 가리면 주소(copy=1)로 바로 열거나 연 뒤 권한이 빠졌을 때 [N명 복사]가 남았다
+  // 복사는 등록이다 — api 는 미리보기 GET 도 create 라, 권한 없이 주소(copy=1)로 열면 api 403 문장이 온다. 미리보기를 받은 뒤
+  // 권한이 빠지면(SessionGate 가 창 포커스 · 메뉴 이동 때 로그인 정보를 다시 받으면) [N명 복사]가 남으므로 여기서도 막는다
   const canCreate = usePagePermission().create;
   const data = "error" in preview ? null : preview;
   const count = data ? data.staff.filter((s) => s.copied.days > 0).length : 0;
@@ -66,13 +67,13 @@ export function CopyPreviewPanel({ query, today, preview }: { query: ScheduleQue
         </Button>
       </section>
     );
-  // 폐점과 같은 모양으로 막는다
+  // 등록 권한이 없으면 표와 복사 버튼 대신 안내와 [닫기]만 — 실패가 아니라 권한 안내라 info 띠다(DESIGN.md Notice Band, 공지 · FAQ 폼과 같다)
   if (!canCreate)
     return (
-      <section id="schedule-copy" aria-label="지난 주 복사 미리보기" className="flex items-center gap-[8px] rounded-[2px] border border-erp-thead-line p-[16px]">
-        <p role="alert" className={`flex-1 ${NOTE}`}>
-          근무스케줄 등록 권한이 없어 지난 주 복사를 할 수 없습니다.
-        </p>
+      <section id="schedule-copy" aria-label="지난 주 복사 미리보기" className="flex items-center gap-[8px]">
+        <div className="min-w-0 flex-1">
+          <NoticeBand tone="info" title="근무스케줄 등록 권한이 없어 지난 주 복사를 할 수 없습니다." />
+        </div>
         <Button variant="off" onClick={close}>
           닫기
         </Button>

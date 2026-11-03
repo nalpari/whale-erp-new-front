@@ -107,8 +107,8 @@ export function PostForm({
   const fileInput = useRef<HTMLInputElement>(null);
   const nextKey = useRef(0);
 
-  // 저장(게시 · 임시저장 · 비공개)은 등록 화면이면 등록, 수정 화면이면 수정 권한이다. 삭제는 삭제 권한. 권한이 빠지면 버튼과
-  // 열려 있던 삭제 확인창도 거둔다 — 막는 것은 api 다(create · update · delete).
+  // 저장(게시 · 임시저장 · 비공개)은 등록 화면이면 등록, 수정 화면이면 수정 권한이다. 삭제는 삭제 권한. 권한이 빠지면 저장 버튼 · 첨부
+  // 고르기 · 빼기와 열려 있던 삭제 확인창을 거둔다 — 막는 것은 api 다(create · update · delete). 입력칸은 잠그지 않는다(안내 띠가 알린다).
   const can = usePagePermission();
   const canSave = detail ? can.update : can.create;
   const notice = kind === "NOTICE";
@@ -243,7 +243,7 @@ export function PostForm({
             <NoticeBand
               tone="info"
               title={`${notice ? "공지사항을" : "FAQ 를"} ${detail ? "고칠" : "등록할"} 권한이 없습니다.`}
-              detail={detail ? "내용만 볼 수 있습니다." : "입력해도 저장할 수 없습니다."}
+              detail={detail ? "고쳐도 저장할 수 없습니다." : "입력해도 저장할 수 없습니다."}
             />
           )}
           {errors.length > 0 && (

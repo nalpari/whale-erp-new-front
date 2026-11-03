@@ -26,6 +26,8 @@ import { formatDateTime, formatPhone } from "@/lib/format";
 // 그 칸을 저장했으면 손대지 않은 글은 버리고, 고쳐 쓰던 글은 남기되 새로 저장된 값을 함께 보인다(draftView, front #87 리뷰).
 // 그사이 다른 운영자가 저장했으면(409) 까닭을 띠에 보이고 최신 내용을 다시 불러온다(#274). 그사이 지워졌으면(404) 목록으로 간다. 세션이 끊겨도(401) 화면을 옮기지 않고 띠로만 알린다(공지 폼과 같다).
 // 문의사항 답변은 이력이 남고(고치면 새 답변을 더함, 「수정됨 · 이전 답변」), 도입문의 답변은 하나를 덮어쓴다(CNT-17 v144).
+// 처리 시작 · 답변 · 메모 · 답변 메일 다시 보내기는 수정, 도입문의 삭제는 삭제 권한으로 가린다(usePagePermission, api 와 같다). 수정 권한이
+// 없으면 답변 · 메모는 읽기로 보이고 처리 이력은 대기 상태만 적는다.
 
 const ANSWER_MAX = 20_000;
 const MEMO_MAX = 2_000;
@@ -193,7 +195,7 @@ function AnswerBox({
   firstNote: string;
   editNote: string;
   busy: boolean;
-  /** 수정 권한. 없으면 저장된 답변만 읽기로 보이고 입력칸 · 버튼을 두지 않는다 */
+  /** 수정 권한. 없으면 저장된 답변만 읽기로 보이고 입력칸 · 버튼 · actions(답변 메일 다시 보내기)를 두지 않는다 */
   canEdit: boolean;
   onSave: (body: string) => void;
   /** 쓰던 답변. 없으면(undefined) 저장된 답변을 읽기로 보인다. */
@@ -304,6 +306,7 @@ function useCommon(target: Target, id: number, updatedAt: string, answered: bool
   const act = useAct(target === "inquiry" ? INQUIRY_BASE : LEAD_BASE, edited);
   const { run, setErrors } = act;
   // 처리 시작 · 답변 · 메모 · 답변 메일 다시 보내기는 수정, 도입문의 삭제는 삭제 권한이다(api 와 같다). 권한이 빠지면 버튼 · 입력칸 · 열려 있던 확인창을 거둔다.
+  // 쓰던 글(drafts)은 지우지 않고 숨기기만 한다 — 권한이 돌아오면 다시 보인다.
   const can = usePagePermission();
   // base 는 쓰기 시작할 때의 저장값 — 이어 쓰는 동안은 처음 base 를 지킨다. 버려진 글(draftView 가 undefined)에 이어 쓰면 새로 시작한다.
   const setDraft = (field: "answer" | "memo") => (text: string | undefined, base: string) =>
