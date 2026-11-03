@@ -302,8 +302,8 @@ function DetailBody({
         <span className="flex-1" />
         {canDelete && (
           // 조건(사용 · 미사용 · 로그인 기록 없음 · 하위 관리자 0 · 등록 점포 0)을 못 채우면 흐리게 두고 이유를 말풍선으로(S-GZDODB)
-          // api 의 이유 문장이 「…삭제할 수 없습니다」로 끝나므로 그대로 잇는다
-          <Blocked reason={bp.deletion.isDeletable ? undefined : bp.deletion.reasons.join(" ")} floating>
+          // 이유는 가장 앞의 하나만 — 여럿을 이으면 「…삭제할 수 없습니다」가 되풀이됐다(2026-11-03 사용자 지정). api 가 탈퇴 · 로그인 이력 · 하위 관리자 · 등록 점포 순으로 준다
+          <Blocked reason={bp.deletion.isDeletable ? undefined : bp.deletion.reasons[0]} floating>
             <Button variant="soft" onClick={() => setConfirm("delete")} disabled={!bp.deletion.isDeletable || busy}>
               삭제
             </Button>
