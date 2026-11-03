@@ -227,7 +227,7 @@ export function StoreFormView(props: Props) {
   const handleAddressChoose = (item: AddressItem) => {
     const mine = ++locateNumber.current;
     setCoordinateNote(null);
-    // 출퇴근 위치 적용 여부는 여기서 건드리지 않는다 — 같은 주소를 다시 고르거나 오타를 고치는 흔한 경우까지
+    // 출퇴근 위치 적용은 여기서 건드리지 않는다 — 같은 주소를 다시 고르거나 오타를 고치는 흔한 경우까지
     // "사용"을 꺼 버려 운영 점포의 위치 확인이 조용히 멈추는 문제가 있었다(2026-10-19 코드 리뷰 2차 — 처음엔
     // 화면·저장 어긋남을 막으려 껐는데, 그러면 새 좌표를 받아도 되살리지 않아 더 나쁜 쪽으로 지나쳤다). 좌표가
     // 비는 동안은 선택칸이 막히고(disabled) 저장(bodyOf)도 좌표 없이는 사용을 보내지 않으니 이미 막혀 있다.
@@ -284,7 +284,7 @@ export function StoreFormView(props: Props) {
     locateNumber.current++;
     setCoordinateNote(null);
     // 숫자 · 마침표 · 마이너스만 받는다 — 문자는 칠 수 없다(2026-10-19).
-    // 출퇴근 위치 적용 여부는 여기서 건드리지 않는다 — 오타를 고치려 한 칸을 지웠다 바로 채워도 "사용"이
+    // 출퇴근 위치 적용은 여기서 건드리지 않는다 — 오타를 고치려 한 칸을 지웠다 바로 채워도 "사용"이
     // 꺼진 채 남는 문제가 있었다(2026-10-19 코드 리뷰 2차). 좌표가 비는 동안은 선택칸이 막히고 저장(bodyOf)도
     // 좌표 없이는 사용을 보내지 않으니 이미 막혀 있다.
     set(key, value.replace(/[^0-9.-]/g, ""), key);
@@ -644,7 +644,7 @@ export function StoreFormView(props: Props) {
             label="점포 주소"
             value={{ zipCode: form.zipCode, address: form.address, addressDetail: form.addressDetail }}
             onChange={(a) => {
-              // [지우기]로 주소를 비우면 그 주소에서 나온 좌표도, 출퇴근 위치 적용 여부도 함께 미사용으로
+              // [지우기]로 주소를 비우면 그 주소에서 나온 좌표도, 출퇴근 위치 적용도 함께 미사용으로
               // 돌린다 — 주소 없이는 좌표도 없고, 좌표 없이 사용으로 남아 있으면 상세 화면에 잘못된 상태가
               // 보인다(2026-10-19 재확인 — 실사용자 지시로 되돌림. 전에는 이 값을 건드리지 않는 쪽이 근본
               // 수정이라 봤으나, 주소 없는 사용 상태 자체가 더 큰 문제로 판단해 다시 바꿨다).
@@ -684,7 +684,7 @@ export function StoreFormView(props: Props) {
                   aria-describedby={describe("longitude")}
                 />
               </Field>
-              <Field label="출퇴근 위치 적용 여부" width="w-[150px]">
+              <Field label="출퇴근 위치 적용" width="w-[150px]">
                 {/* 좌표(위도 · 경도)가 없으면 사용으로 고를 수 없다 — 주소를 지우거나 좌표를 손으로 비우면
                     미사용으로 되돌리는 것과 같은 규칙이다. 주소가 아니라 좌표로 가린다 — 주소는 골랐는데
                     지오코딩이 늦거나 실패한 사이, 또는 주소 없이 좌표만 손으로 적은 점포를 놓치지 않는다
@@ -718,9 +718,9 @@ export function StoreFormView(props: Props) {
             <Note>
               점포주소가 입력되면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.
               <br />
-              <b className="font-semibold">출퇴근 위치 적용 여부</b>를 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.
+              <b className="font-semibold">출퇴근 위치 적용</b>을 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.
               <br />
-              위도 · 경도가 없으면 <b className="font-semibold">출퇴근 위치 적용 여부</b>를 사용으로 고를 수 없습니다.
+              위도 · 경도가 없으면 <b className="font-semibold">출퇴근 위치 적용</b>을 사용으로 고를 수 없습니다.
             </Note>
           </Stack>
           <Labeled label="대표 이미지">

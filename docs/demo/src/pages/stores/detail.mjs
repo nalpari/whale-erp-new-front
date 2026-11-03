@@ -12,7 +12,7 @@ import { CLOSED_STORE, blocked, noticeBand, statusBadge } from "../../store-part
 // DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸 너비 — 사업자등록번호 · 대표자정보처럼 짝을 이루는 줄들이
 // 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다(2026-10-19 점검 — 실사용자 확인).
 const FIRST_COL = "inline-block min-w-[140px]";
-// 위치정보 줄의 위도 · 경도 칸 — 값 길이에 맞게 좁혀(140 → 112) 출퇴근 위치 적용 여부가 가장 넓게 선다(앱과 같다, 2026-11-03).
+// 위치정보 줄의 위도 · 경도 칸 — 값 길이에 맞게 좁혀(140 → 112) 출퇴근 위치 적용이 가장 넓게 선다(앱과 같다, 2026-11-03).
 const LAT_LNG_COL = "inline-block min-w-[112px]";
 // 대표 이미지 칸 — 사진 194px + 둘레 여백 18px 씩 = 230px, 사진 옆 다섯 줄(46 × 5)과 높이가 같다(앱과 같다, 2026-11-03).
 const PHOTO_BOX = "size-[194px]";
@@ -146,13 +146,13 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
     ["점포 연락처", phone],
     // 한 줄 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」 — 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)(2026-10-19 점검).
     ["점포주소", addressLine(d.address), true],
-    // 위도 · 경도 · 출퇴근 위치 적용 여부 각각 라벨과 같은 회색 글자를 앞에 둔다(2026-10-16 점검).
+    // 위도 · 경도 · 출퇴근 위치 적용 각각 라벨과 같은 회색 글자를 앞에 둔다(2026-10-16 점검).
     [
       "위치정보",
       ui.detailValues([
         `<span class="${LAT_LNG_COL}"><span class="mr-[10px] text-erp-label">위도</span>${d.lat}</span>`,
         `<span class="${LAT_LNG_COL}"><span class="mr-[10px] text-erp-label">경도</span>${d.lng}</span>`,
-        `<span class="mr-[10px] text-erp-label">출퇴근 위치 적용 여부</span>${d.location}`,
+        `<span class="mr-[10px] text-erp-label">출퇴근 위치 적용</span>${d.location}`,
       ]),
     ],
     ["재직직원", `${staff}명`],
