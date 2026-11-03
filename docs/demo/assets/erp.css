@@ -1356,6 +1356,9 @@
   .w-\[880px\] {
     width: 880px;
   }
+  .w-\[1000px\] {
+    width: 1000px;
+  }
   .w-\[1200px\] {
     width: 1200px;
   }
@@ -3410,6 +3413,9 @@
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 0px;
   }
+  .open\:flex:is([open], :popover-open, :open) {
+    display: flex;
+  }
   .open\:translate-y-0:is([open], :popover-open, :open) {
     --tw-translate-y: 0px;
     translate: var(--tw-translate-x) var(--tw-translate-y);
@@ -3719,6 +3725,15 @@
   .\[\&_\:is\(input\,select\)\[readonly\]\]\:bg-erp-thead-bg :is(input, select)[readonly] {
     background-color: var(--color-erp-thead-bg);
   }
+  .\[\&_\:is\(input\,select\,textarea\)\:disabled\]\:bg-erp-thead-bg :is(input, select, textarea):disabled {
+    background-color: var(--color-erp-thead-bg);
+  }
+  .\[\&_\:is\(input\,select\,textarea\)\:disabled\]\:text-erp-muted :is(input, select, textarea):disabled {
+    color: var(--color-erp-muted);
+  }
+  .\[\&_\:is\(input\,select\,textarea\,button\)\:disabled\]\:cursor-not-allowed :is(input, select, textarea, button):disabled {
+    cursor: not-allowed;
+  }
   .\[\&_button\]\:cursor-pointer button {
     cursor: pointer;
   }
@@ -3756,6 +3771,15 @@
   .\[\&_label\]\:text-erp-muted label {
     color: var(--color-erp-muted);
   }
+  .\[\&_label\:has\(input\:disabled\)\]\:cursor-not-allowed label:has(input:disabled) {
+    cursor: not-allowed;
+  }
+  .\[\&_label\:has\(input\:disabled\)\]\:text-erp-muted label:has(input:disabled) {
+    color: var(--color-erp-muted);
+  }
+  .\[\&_label\:has\(input\:disabled\)_input\]\:bg-erp-thead-bg label:has(input:disabled) input {
+    background-color: var(--color-erp-thead-bg);
+  }
   .\[\&_select\:disabled\]\:bg-erp-thead-bg select:disabled {
     background-color: var(--color-erp-thead-bg);
   }
@@ -3774,6 +3798,9 @@
   }
   .\[\&_thead\]\:top-0 thead {
     top: 0px;
+  }
+  .\[\&_thead\]\:z-\[1\] thead {
+    z-index: 1;
   }
   .\[\&_thead\]\:shadow-\[0_1px_0_var\(--color-erp-thead-line\)\] thead {
     --tw-shadow: 0 1px 0 var(--tw-shadow-color, var(--color-erp-thead-line));

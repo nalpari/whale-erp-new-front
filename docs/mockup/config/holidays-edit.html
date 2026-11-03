@@ -17,7 +17,8 @@
            · 맡지 않은 점포가 함께 묶인 휴일(일부 점포만 맡은 사람): 맡은 점포만 더하거나 뺀다. 휴일명 · 설명도 막히고, 「맡지 않은 점포 N개(…)는 그대로 둡니다.」를 적는다.
            · 종료: 고칠 수 없다 — 상세에 [수정]이 없다. 고칠 수 없는 휴일에 주소로 들어오면 수정 패널을 열지 않고 안내 없이 상세만 보인다.
          전체 점포는 BP 마스터 · BP 관리자 · 플랫폼 사용자에게만 선택지로 보인다(가맹 역할은 선택지 없이 칸이 막힌다). 일부 점포만 맡은 BP 관리자가 고르면 저장할 때 api 가 막는다.
-         저장 전에 겹치는 휴일을 확인해 확인창 「같은 날 등록된 휴일이 있습니다.」로 알리고, [저장]하면 그대로 저장한다.
+         저장 전에 겹치는 휴일을 확인해 확인창 「같은 날짜에 이미 등록된 휴일이 있습니다.」 · 「저장하면, 휴일이 추가됩니다. 저장하시겠습니까?」로 알리고, [저장]하면 그대로 저장한다.
+         막힌 칸(날짜 유형 · 날짜 · 반복 · 종료조건 · 적용 범위)은 회색 바탕으로 음영을 깔고, 「날짜」 칸 이름 옆에 이유를 한 줄로 적는다 — 진행 중 「진행 중인 휴일은 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다.」 · 지난 휴일 「지난 휴일은 …」 · 맡지 않은 점포가 묶인 휴일 「다른 관리자의 점포가 함께 묶인 휴일이라 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다.」(앱대로, 2026-11-03). 막힘 안내 띠는 없다.
          입력 오류는 칸 아래 문구로만 알린다 — 위쪽 요약 띠는 없다(앱대로, 2026-10-30 재영).
          저장하면 패널을 닫고 토스트 「수정되었습니다.」. 다른 사람이 먼저 고쳤으면(409) 토스트와 함께 최신 값으로 다시 채우고 위에 실패 띠를 둔다.
          수정하는 사람은 표본 상태로 다르다 — HD-0121 은 가맹 마스터(morinam01), HD-0123 · partial 은 일부 점포 BP 관리자(hghr), 나머지는 BP 마스터(hangang01). 위쪽 점선 줄은 목업 전용이다. -->
@@ -199,7 +200,7 @@
                     
                   </div>
                   <div class="field">
-                    <label for="f0114-date">날짜 <span class="req">*</span></label>
+                    <label for="f0114-date">날짜 <span class="req">*</span> <span style="font-size: 13px; font-weight: 400; color: var(--muted-tert)">· 진행 중인 휴일은 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다.</span></label>
                     <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" disabled aria-pressed="false">하루</button><button type="button" disabled aria-pressed="false">기간</button><button type="button" disabled aria-pressed="true">반복</button></div>
                     <input class="input mono" id="f0114-date" value="2026-09-21" style="max-width: 180px" disabled />
                   </div>
@@ -381,7 +382,7 @@
                     
                   </div>
                   <div class="field">
-                    <label for="f0116-date">날짜 <span class="req">*</span></label>
+                    <label for="f0116-date">날짜 <span class="req">*</span> <span style="font-size: 13px; font-weight: 400; color: var(--muted-tert)">· 진행 중인 휴일은 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다.</span></label>
                     <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" disabled aria-pressed="false">하루</button><button type="button" disabled aria-pressed="true">기간</button><button type="button" disabled aria-pressed="false">반복</button></div>
                     <div class="inline" style="flex-wrap: nowrap"><input class="input mono" id="f0116-date" value="2026-09-16" aria-label="시작일" disabled /><span class="subtle">~</span><input class="input mono" value="2026-09-25" aria-label="종료일" disabled /></div>
                   </div>
@@ -675,7 +676,7 @@
                     <input class="input" id="fpart-name" value="재고 정리 휴무" maxlength="30" disabled />
                   </div>
                   <div class="field">
-                    <label for="fpart-date">날짜 <span class="req">*</span></label>
+                    <label for="fpart-date">날짜 <span class="req">*</span> <span style="font-size: 13px; font-weight: 400; color: var(--muted-tert)">· 다른 관리자의 점포가 함께 묶인 휴일이라 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다.</span></label>
                     <div class="seg" role="group" aria-label="휴일유형" style="align-self: flex-start"><button type="button" disabled aria-pressed="true">하루</button><button type="button" disabled aria-pressed="false">기간</button><button type="button" disabled aria-pressed="false">반복</button></div>
                     <input class="input mono" id="fpart-date" value="2026-10-15" style="max-width: 180px" disabled />
                   </div>

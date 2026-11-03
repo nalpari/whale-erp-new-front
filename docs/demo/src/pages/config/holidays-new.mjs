@@ -9,8 +9,9 @@ import { erpHeader, link, STORES } from "../../site.mjs";
 // 적용 범위 — 선택 상자만 둔다(안내 문구 없음 · 2026-10-07). 전체 화면은 반 칸, 패널은 한 칸 전체.
 // 일부 점포면 대상 점포, 전체 점포면 예외 점포 고르기를 보인다(HOLIDAY_SCRIPT · 목업 data-reveal 과 같다).
 export const scopeField = (store, panel, locked = false) => {
-  // 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(앱과 같다, 2026-10-30 사용자 지정). 진행 중인 휴일은 막는다(locked)
-  const f = ui.select(["전체 점포", "일부 점포"], { value: store ? "일부 점포" : "전체 점포", "data-hscope": true, "aria-label": "적용 범위", disabled: locked });
+  // 칸 이름 「적용 범위」는 뺐다 — 묶음 제목 「적용 대상」으로 충분하다(앱과 같다, 2026-10-30 사용자 지정). 진행 중인 휴일은 막고 음영을 깐다(locked · LOCKED)
+  const sel = ui.select(["전체 점포", "일부 점포"], { value: store ? "일부 점포" : "전체 점포", "data-hscope": true, "aria-label": "적용 범위", disabled: locked });
+  const f = locked ? `<div class="${LOCKED}">${sel}</div>` : sel;
   return panel ? f : c.row(f, c.blank);
 };
 
@@ -28,8 +29,12 @@ export const holidayStorePicker = (A, picked, exclude = false) =>
 const fieldLabel = (t) => `<span class="text-[14px] font-medium text-erp-label">${t}</span>`;
 // 칸 이름 오른쪽 「 · 무엇을 고르는 칸인지」(앱 holiday-form-panel.tsx 점포 칸, 2026-10-30 사용자 지정)
 const hint = (t) => `<span class="text-[13px] font-normal"> · ${t}</span>`;
-// 진행 중인 휴일의 수정에서 막히는 묶음(유형 · 날짜 · 반복) — 앱처럼 fieldset disabled 로 막는다. 막힌 칸 회색은 쓰지 않는다(DESIGN Inputs)
-const lockable = (locked, cls, html) => (locked ? `<fieldset disabled class="${cls}">${html}</fieldset>` : `<div class="${cls}">${html}</div>`);
+// 바꿀 수 없는 칸의 음영 — 이 양식 안에서만 막힌 입력칸 · 선택칸 · 날짜칸에 읽기 전용 바탕(erp-thead-bg)을 깔고 글자 · 라디오를 흐리게, 커서는 금지 표시(앱 holiday-form-panel LOCKED, 2026-11-03 사용자 지정).
+// 공통 입력칸 토큰은 바꾸지 않는다(DESIGN Inputs — 근로계약서 작성 화면과 같은 방식)
+const LOCKED =
+  "[&_:is(input,select,textarea,button):disabled]:cursor-not-allowed [&_:is(input,select,textarea):disabled]:bg-erp-thead-bg [&_:is(input,select,textarea):disabled]:text-erp-muted [&_label:has(input:disabled)]:cursor-not-allowed [&_label:has(input:disabled)]:text-erp-muted [&_label:has(input:disabled)_input]:bg-erp-thead-bg";
+// 진행 중인 휴일의 수정에서 막히는 묶음(유형 · 날짜 · 반복) — 앱처럼 fieldset disabled 로 막고 LOCKED 음영을 깐다
+const lockable = (locked, cls, html) => (locked ? `<fieldset disabled class="${cls} ${LOCKED}">${html}</fieldset>` : `<div class="${cls}">${html}</div>`);
 const REPEAT_WORD = { 매일: "", 매주: "매주", 매월: "매월", 매년: "매년" };
 // 반복 기준(앱 repeatBasis) — 매주는 요일, 매월은 일, 매년은 월 일. 매일은 없다
 const repeatBasis = (rep, date) => {
@@ -44,8 +49,9 @@ const when = (key, values, on, html) => `<div ${key}="${values}" class="flex fle
 // 휴일 정보 + 반복 + 적용 대상(목업 holidays-new 의 입력 항목 전부 · 2026-10-08)
 //  · 휴일 유형 하루: 날짜 하나 / 기간: 시작일 ~ 종료일 / 반복: 시작일 + 반복 묶음(반복 유형 · 종료 조건 → 종료일 또는 횟수)
 //  · 적용 범위 일부 점포: 대상 점포 / 전체 점포: 예외 점포(고른 점포는 이 휴일의 모든 날짜에서 빠진다)
-// s: { id, name, type, date, end, desc, rep, until, untilDate, count, store, picked, excluded, locked }
+// s: { id, name, type, date, end, desc, rep, until, untilDate, count, store, picked, excluded, locked, lockReason }
 //  · locked: 진행 중인 휴일의 수정 — 유형 · 날짜 · 반복 · 적용 범위를 막는다(휴일명 · 설명 · 점포는 고친다, 앱 holiday-form-panel scheduleLocked)
+//  · lockReason: 막힌 이유 — 「날짜」 라벨 옆 회색 한 줄(앱 scheduleLockReason, 2026-11-03 사용자 지정). 띠는 두지 않는다
 export const holidayForm = (A, s, { panel = false } = {}) => {
   const types = ["하루", "기간", "반복"];
   const ends = ["종료일 없음", "특정 날짜까지", "지정 횟수만큼"];
@@ -86,7 +92,7 @@ export const holidayForm = (A, s, { panel = false } = {}) => {
   const info = ui.formGroup(
     "휴일정보", // 붙여 쓴다(앱과 같다, 2026-10-30 사용자 지정)
     ui.field(c.req("휴일명"), ui.textField({ value: s.name, maxlength: 30 })),
-    lockable(s.locked, "flex min-w-0 flex-col gap-[8px]", fieldLabel(c.req("날짜")) + `<div data-htype>${c.radios(`${s.id}-type`, types, types.indexOf(s.type))}</div>` + dates),
+    lockable(s.locked, "flex min-w-0 flex-col gap-[8px]", fieldLabel(c.req("날짜") + (s.locked && s.lockReason ? `<span class="text-[13px] font-normal text-erp-label"> · ${s.lockReason}</span>` : "")) + `<div data-htype>${c.radios(`${s.id}-type`, types, types.indexOf(s.type))}</div>` + dates),
     repeat,
     // 설명은 한 줄 높이(34px)에서 시작해 Enter 로 줄을 더하면 늘어나는 여러 줄 칸(앱 Textarea grow=6, 2026-10-30 사용자 지정). 데모는 늘어나지 않고 줄 수만큼 그린다
     ui.field("설명", `<textarea maxlength="500" rows="${Math.min(Math.max((s.desc || "").split("\n").length, 1), 6)}" class="${ui.FIELD_BOX} resize-none px-[10px] py-[5px] leading-[22px]">${s.desc || ""}</textarea>`),

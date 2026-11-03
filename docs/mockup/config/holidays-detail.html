@@ -6,6 +6,14 @@
     <title>BP 휴일 상세 · WHALE ERP</title>
     <link rel="icon" href="../assets/img/favicon.svg" />
     <link rel="stylesheet" href="../assets/whale.css" />
+    <style>
+      /* 변경이력 · 점포 목록 팝업 — 제목 · 열 이름 줄 · [닫기](변경이력은 조회 줄 · 쪽 이동도)는 고정, 표 줄만 스크롤한다.
+         위아래 선은 스크롤 상자가 긋고 머리 줄 아래 선은 그림자로 붙인다(앱대로, 2026-11-03). 폭은 변경이력 1000 · 점포 목록 480 */
+      .modal__box--hist { max-width: 1000px; }
+      .modal__box--stores { max-width: 480px; }
+      .histscroll { max-height: min(52vh, 460px); overflow-y: auto; border-block: 1px solid var(--hairline-strong); }
+      .histscroll .tbl th { position: sticky; top: 0; z-index: 1; box-shadow: 0 1px 0 var(--hairline-strong); }
+    </style>
   </head>
   <body data-root="../" data-page="config" data-sub="config/holidays.html">
     <!-- BP 휴일 상세 · /settings/holidays/:id · S-MQELTV (F-YQTLQE BP 휴일 관리) · 1팀
@@ -23,6 +31,7 @@
            · 맡지 않은 점포가 함께 묶인 휴일(일부 점포만 맡은 사람): [수정]으로 맡은 점포만 빼거나 더한다. 휴일을 나누지 않는다.
          막힌 동작이 있으면 api 가 준 사유 문장을 그대로 회색 띠로 보인다(끝난 휴일 · 오늘 시작한 휴일은 띠 없음).
          [변경이력]은 이 휴일의 이력 팝업이다 — 변경일시 · 변경자 · 항목 · 변경 전 · 변경 후, 쪽 이동 없음. 화면 아래 표는 없다.
+           폭 1000(전엔 860), 제목 · 열 이름 줄 · [닫기]는 고정하고 표 줄만 스크롤한다(앱대로, 2026-11-03).
          못 보거나 지운 휴일을 열면 실패 띠 「삭제되었거나 볼 수 없는 휴일입니다.」와 [닫기]만 보인다.
          확인창은 대상(회색 상자) + 빨간 안내 상자이고 확인 버튼은 기본 모양이다 — 삭제 「휴일을 삭제하시겠습니까?」, 강제 종료 「휴일을 강제 종료하시겠습니까?」(종료일 = 어제).
          삭제하면 상세를 닫고 토스트 「삭제되었습니다.」, 강제 종료하면 토스트 「강제 종료했습니다. 어제 날짜로 끝났습니다.」. 그사이 다른 사람이 고쳤으면(409) 실패 띠와 함께 새로 받는다.
@@ -516,13 +525,13 @@
           </div>
 
           <div class="modal" id="pop-hist-hd0122" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0122-t">
-            <div class="modal__box modal__box--wide">
+            <div class="modal__box modal__box--wide modal__box--hist">
               <div class="modal__head">
                 <h2 class="t-h2" id="ph-hd0122-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div class="tblwrap">
+                <div class="tblwrap histscroll">
                   <table class="tbl tbl--dense">
                     <thead>
                       <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
@@ -560,13 +569,13 @@
             </div>
           </div>
           <div class="modal" id="pop-hist-hd0114" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0114-t">
-            <div class="modal__box modal__box--wide">
+            <div class="modal__box modal__box--wide modal__box--hist">
               <div class="modal__head">
                 <h2 class="t-h2" id="ph-hd0114-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div class="tblwrap">
+                <div class="tblwrap histscroll">
                   <table class="tbl tbl--dense">
                     <thead>
                       <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
@@ -604,13 +613,13 @@
             </div>
           </div>
           <div class="modal" id="pop-hist-hd0120" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0120-t">
-            <div class="modal__box modal__box--wide">
+            <div class="modal__box modal__box--wide modal__box--hist">
               <div class="modal__head">
                 <h2 class="t-h2" id="ph-hd0120-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div class="tblwrap">
+                <div class="tblwrap histscroll">
                   <table class="tbl tbl--dense">
                     <thead>
                       <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
@@ -647,13 +656,13 @@
             </div>
           </div>
           <div class="modal" id="pop-hist-hd0121" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0121-t">
-            <div class="modal__box modal__box--wide">
+            <div class="modal__box modal__box--wide modal__box--hist">
               <div class="modal__head">
                 <h2 class="t-h2" id="ph-hd0121-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div class="tblwrap">
+                <div class="tblwrap histscroll">
                   <table class="tbl tbl--dense">
                     <thead>
                       <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
@@ -690,13 +699,13 @@
             </div>
           </div>
           <div class="modal" id="pop-hist-hd0123" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0123-t">
-            <div class="modal__box modal__box--wide">
+            <div class="modal__box modal__box--wide modal__box--hist">
               <div class="modal__head">
                 <h2 class="t-h2" id="ph-hd0123-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div class="tblwrap">
+                <div class="tblwrap histscroll">
                   <table class="tbl tbl--dense">
                     <thead>
                       <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
@@ -735,13 +744,13 @@
             </div>
           </div>
           <div class="modal" id="pop-hist-hd0101" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0101-t">
-            <div class="modal__box modal__box--wide">
+            <div class="modal__box modal__box--wide modal__box--hist">
               <div class="modal__head">
                 <h2 class="t-h2" id="ph-hd0101-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div class="tblwrap">
+                <div class="tblwrap histscroll">
                   <table class="tbl tbl--dense">
                     <thead>
                       <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
@@ -756,13 +765,13 @@
             </div>
           </div>
           <div class="modal" id="pop-hist-hd0116" hidden role="dialog" aria-modal="true" aria-labelledby="ph-hd0116-t">
-            <div class="modal__box modal__box--wide">
+            <div class="modal__box modal__box--wide modal__box--hist">
               <div class="modal__head">
                 <h2 class="t-h2" id="ph-hd0116-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div class="tblwrap">
+                <div class="tblwrap histscroll">
                   <table class="tbl tbl--dense">
                     <thead>
                       <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
@@ -801,13 +810,13 @@
             </div>
           </div>
           <div class="modal" id="pop-hist-created" hidden role="dialog" aria-modal="true" aria-labelledby="ph-created-t">
-            <div class="modal__box modal__box--wide">
+            <div class="modal__box modal__box--wide modal__box--hist">
               <div class="modal__head">
                 <h2 class="t-h2" id="ph-created-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div class="tblwrap">
+                <div class="tblwrap histscroll">
                   <table class="tbl tbl--dense">
                     <thead>
                       <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
@@ -844,13 +853,13 @@
             </div>
           </div>
           <div class="modal" id="pop-hist-stale" hidden role="dialog" aria-modal="true" aria-labelledby="ph-stale-t">
-            <div class="modal__box modal__box--wide">
+            <div class="modal__box modal__box--wide modal__box--hist">
               <div class="modal__head">
                 <h2 class="t-h2" id="ph-stale-t">변경이력</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div class="tblwrap">
+                <div class="tblwrap histscroll">
                   <table class="tbl tbl--dense">
                     <thead>
                       <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
