@@ -111,7 +111,7 @@ export const EMPTY_STORE_FORM: StoreForm = {
   addressDetail: "",
   latitude: "",
   longitude: "",
-  // 새 점포는 주소가 없어 좌표도 없다 — 출퇴근 위치 적용은 미사용이 기본이다(2026-10-19 점검 — 실사용자 확인).
+  // 새 점포는 주소가 없어 좌표도 없다 — 출퇴근 위치적용은 미사용이 기본이다(2026-10-19 점검 — 실사용자 확인).
   isLocationApplied: false,
   savedBizNumber: "",
   savedCeoName: "",

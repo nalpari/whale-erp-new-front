@@ -18,17 +18,17 @@ import { StorePhotoViewer } from "./store-photo-viewer";
 const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
 const orDash = (v: string | null | undefined) => (v ? v : muted("-"));
 /** DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸 너비 — 사업자등록번호 · 대표자정보처럼 같은 표 안에서 짝을 이루는 줄들이
- * 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다(2026-10-19 점검 — 실사용자 확인). 위치정보 줄은 LAT_LNG_WIDTH 를 쓴다. */
+ * 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다(2026-10-19 점검 — 실사용자 확인). 위치정보 줄은 LAT_WIDTH 를 쓴다. */
 const FIRST_COLUMN_WIDTH = "inline-block min-w-[140px]";
-/** 위치정보 줄의 위도 · 경도 칸 — 좁혀(140 → 120) 출퇴근 위치 적용이 가장 넓게 선다(2026-11-03 사용자 지정). 「경도 127.000000」(약 114px)이
- * 들어가는 고정폭이라 글꼴이 조금 달라도 아래 변경이력 줄과의 구분선 맞춤이 흔들리지 않는다(코드 리뷰). */
-const LAT_LNG_WIDTH = "inline-block w-[120px] whitespace-nowrap";
+/** 위치정보 줄의 위도 칸 — 값에 맞게 좁힌 고정폭(「위도 37.000000」 약 102px). 경도는 고정폭 없이 값만큼만 써 출퇴근 위치적용이 가장 넓다(2026-11-03 사용자 지정 —
+ * 위도 · 경도 사이를 줄이고 출퇴근 위치를 넓힘). 위도 칸만 고정이라 아래 변경이력 줄의 최종수정을 경도 앞 구분선에 맞출 수 있다. */
+const LAT_WIDTH = "inline-block w-[110px] whitespace-nowrap";
 /** 대표 이미지 칸 — 사진 194px + 둘레 여백 18px 씩 = 230px. 사진 옆 다섯 줄(46px × 5 = 230)과 높이가 같다(2026-11-03 사용자 지정 — 206 에서 조금 줄임) */
 const PHOTO_BOX = "size-[194px]";
-/** 변경이력 줄의 등록 칸 너비 — 이 줄은 사진 아래 카드 왼쪽 끝에서 시작한다. 사진 칸(230) + 위도 칸(120) = 350 으로 두어 최종수정 앞
- * 구분선이 위치정보 줄의 경도 앞 구분선과 같은 세로줄에 선다(2026-11-03 사용자 지정 — 줄맞춤, 전엔 출퇴근 위치 적용에 맞춘 301).
+/** 변경이력 줄의 등록 칸 너비 — 이 줄은 사진 아래 카드 왼쪽 끝에서 시작한다. 사진 칸(230) + 위도 칸(110) = 340 으로 두어 최종수정 앞
+ * 구분선이 위치정보 줄의 경도 앞 구분선과 같은 세로줄에 선다(2026-11-03 사용자 지정 — 줄맞춤, 전엔 출퇴근 위치적용에 맞춘 301).
  * 처리자 이름이 길면 이 너비 안에서 말줄임된다. 사진 크기나 위도 칸 너비를 바꾸면 이 값도 같이 바꾼다. */
-const REGISTERED_COLUMN_WIDTH = "w-[350px]";
+const REGISTERED_COLUMN_WIDTH = "w-[340px]";
 /** 주소 한 줄 — 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」. 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)이다.
  * 없으면 「-」(2026-10-19 점검 — 두 줄이던 걸 한 줄로, 번호 색·괄호 안쪽 띄어쓰기는 뒤이은 요청으로 다시 손봄) */
 const addressLines = (zip: string | null, address: string | null, detail: string | null) => {
@@ -77,21 +77,21 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
     { label: "점포주소", value: addressLines(store.zipCode, store.address, store.addressDetail), multiline: true },
     {
       label: "위치정보",
-      // 변경이력과 같은 모양 — 위도 · 경도 · 출퇴근 위치 적용 각각 라벨과 같은 회색 글자를 앞에 둔다.
-      // 위도 · 경도 칸은 고정폭(LAT_LNG_WIDTH)이라 둘 다 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않다. 변경이력 줄의 최종수정은 경도 앞 구분선에 맞춘다.
+      // 변경이력과 같은 모양 — 위도 · 경도 · 출퇴근 위치적용 각각 라벨과 같은 회색 글자를 앞에 둔다.
+      // 위도 칸은 고정폭(LAT_WIDTH)이라 비어 있을 때도 경도 앞 구분선이 흔들리지 않는다. 변경이력 줄의 최종수정은 경도 앞 구분선에 맞춘다.
       value: (
         <DetailValues
           items={[
-            <span key="lat" className={LAT_LNG_WIDTH}>
+            <span key="lat" className={LAT_WIDTH}>
               <span className="mr-[10px] text-erp-label">위도</span>
               {store.latitude !== null ? store.latitude.toFixed(6) : muted("-")}
             </span>,
-            <span key="lng" className={LAT_LNG_WIDTH}>
+            <span key="lng" className="whitespace-nowrap">
               <span className="mr-[10px] text-erp-label">경도</span>
               {store.longitude !== null ? store.longitude.toFixed(6) : muted("-")}
             </span>,
             <span key="loc">
-              <span className="mr-[10px] text-erp-label">출퇴근 위치 적용</span>
+              <span className="mr-[10px] text-erp-label">출퇴근 위치적용</span>
               {/* 좌표가 없으면 저장된 값과 상관없이 미사용으로 보인다 — 주소가 아니라 좌표로 가린다(수정 화면 ·
                   bodyOf 와 같은 규칙, 2026-10-19 점검 — 실사용자 확인, 코드 리뷰로 주소에서 좌표로 바꿈). */}
               {hasStoreCoordinates(store.latitude, store.longitude) && store.isLocationApplied ? "사용" : "미사용"}

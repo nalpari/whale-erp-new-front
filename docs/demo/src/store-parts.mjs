@@ -40,8 +40,8 @@ export const IMAGE_NOTE = "점포 사진 1장을 등록할 수 있습니다. (JP
 // 위치 도움말 세 줄(등록 · 수정 같다)
 export const LOCATION_NOTE = note(
   `점포주소가 입력되면 <b class="font-semibold">위도</b> · <b class="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.<br>` +
-    `<b class="font-semibold">출퇴근 위치 적용</b>을 <b class="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.<br>` +
-    `위도 · 경도가 없으면 <b class="font-semibold">출퇴근 위치 적용</b>을 사용으로 고를 수 없습니다.`,
+    `<b class="font-semibold">출퇴근 위치적용</b>을 <b class="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.<br>` +
+    `위도 · 경도가 없으면 <b class="font-semibold">출퇴근 위치적용</b>을 사용으로 고를 수 없습니다.`,
 );
 
 // 주소(앱 AddressField). [주소 검색] 버튼 없이 돋보기 검색칸에 치면 바로 아래 목록이 뜬다. 우편번호 80px, 값이 있으면 [지우기].
