@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
-import { Tag } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import type { ActionFailure } from "@/lib/role-group-actions";
 
@@ -23,8 +22,17 @@ export const unknownResult =
     };
   };
 
-/** 적용 범위 꼬리표 — 「전체 점포」 · 「일부 점포」(데모 c.tag) */
-export const ScopeTag = ({ isAllStores }: { isAllStores: boolean }) => <Tag>{isAllStores ? "전체 점포" : "일부 점포"}</Tag>;
+/**
+ * 적용 범위 꼬리표 — 「전체 점포」는 연한 분홍(erp-off-bg) 바탕, 「일부 점포」는 그대로 회색으로 가른다 — 파랑은 달력 BP 휴일 칩과 겹쳐 분홍으로(DESIGN 「색은 상태다」 예외, 1팀 확인 필요)(2026-11-03 사용자 지정 — 둘이 같은 회색이라 구분이 안 됐다).
+ * 공통코드 관리주체 꼬리표(OwnerTag)와 같은 방식 — 글자 · 선은 그대로 두고 바탕만 가른다. 글자가 달라 색만으로 말하지 않는다.
+ */
+export const ScopeTag = ({ isAllStores }: { isAllStores: boolean }) => (
+  <span
+    className={`inline-block rounded-[2px] border border-erp-thead-line px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub ${isAllStores ? "bg-erp-off-bg" : "bg-erp-thead-bg"}`}
+  >
+    {isAllStores ? "전체 점포" : "일부 점포"}
+  </span>
+);
 
 /**
  * 휴일 유형 문구 — 「하루」 「기간」 「매주 반복」. 한글은 공통코드 HOLIDAY_TYPE · HOLIDAY_REPEAT_TYPE(플랫폼고정)에서 읽는다(naming.md 화면 문구).

@@ -258,7 +258,10 @@ export function HolidaysScreen({
             <>
               <div className="flex items-center gap-[10px]">
                 {monthNav}
-                <span className="text-[14px] text-erp-label">BP 휴일 {list.total}건</span>
+                {/* 플랫폼 휴일 관리의 「선택한 월의 공식 휴일은 N일입니다.」와 같은 말투(2026-11-03 사용자 지정 — 전엔 「BP 휴일 N건」). 목록은 날짜마다 한 줄이라 「건」 */}
+                <span className="ml-[12px] text-[14px] text-erp-label">
+                  선택한 월의 BP 휴일은 <span className="font-semibold">{list.total.toLocaleString("ko-KR")}건</span>입니다.
+                </span>
               </div>
               {/* 계산한 날짜마다 한 줄 · 날짜순(같은 날은 전체 점포 먼저, 그다음 등록 순서). 공식 휴일은 목록에 없다(CONFIG-10) */}
               <DataTable
