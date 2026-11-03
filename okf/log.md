@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-03
+* **Update**: [BP 관리](/bp.md) — 탈퇴 사유 팝업: 상호명 · BP코드를 표 위 머리 대신 표의 줄로 옮겼다(상호명 · BP코드 · 아이디 · 탈퇴 일시 · 탈퇴 사유, front espeon).
 * **Update**: [BP 관리](/bp.md) — BP 마스터 [삭제]가 막혔을 때 말풍선은 api 이유 중 가장 앞의 하나만 보인다(front espeon).
 * **Update**: [점포 정보 관리](/stores.md) — 상세 위치정보 줄: 위도 칸만 100px 고정 · 경도는 값만큼(위도 · 경도 사이가 경도 · 출퇴근 위치적용 사이보다 넓어 보였다), 변경이력 등록 칸 342 → 330px, 라벨 「출퇴근 위치적용」(front espeon).
 * **Update**: [BP 환경설정](/config.md) · [Whale ERP Frontend](/whale-erp-front.md) — BP 공통코드도 플랫폼 계정 안내를 「플랫폼 계정은 BP 공통코드를 조회만 할 수 있습니다.」로 맞췄다(BP 권한 그룹 문구와 같게, front espeon).
