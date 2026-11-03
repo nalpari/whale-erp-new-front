@@ -21,7 +21,7 @@ export const editForm = (A, { panel = false } = {}) =>
       rep: "매주",
       until: "종료일 없음",
       locked: true,
-      lockReason: "진행 중인 휴일은 날짜 · 반복 · 적용 대상을 바꿀 수 없습니다.",
+      lockReason: "진행 중인 휴일은 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다.",
       store: true,
       picked: [["온기식당 판교점", "ST000003", "직영점포"]],
     },
