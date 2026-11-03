@@ -116,7 +116,7 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
       : bpBlocked
         ? blocked("상태 변경", bpBlocked) + blocked("삭제", bpBlocked) + blocked("수정", bpBlocked)
         : x.dialogTrigger("상태 변경", statusId, "soft") +
-          (state === "미운영" ? x.dialogTrigger("삭제", deleteId, "soft") : blocked("삭제", "미운영 점포만 삭제할 수 있습니다. 운영을 끝내려면 상태 변경에서 폐점하세요.")) +
+          (state === "미운영" ? x.dialogTrigger("삭제", deleteId, "soft") : blocked("삭제", "미운영 점포만 삭제할 수 있습니다. 점포 운영을 종료하려면 '상태 변경'에서 '폐점'으로 변경해 주세요.")) +
           ui.button("수정", { variant: "soft", href: editHref });
   // 대표 이미지 · 점포명 · 점포코드 · 유형 · 폐점일 · 실행 버튼을 한 머리 카드에 묶는다(2026-10-19 점검 —
   // 실사용자 확인, 디자인 데모 1안 채택). 이미지가 없으면 48px 아이콘(목록 카드와 같은 크기)이 72px 자리 대신 선다(앱과 같다).

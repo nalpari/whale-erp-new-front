@@ -430,6 +430,9 @@
   .bottom-\[46px\] {
     bottom: 46px;
   }
+  .bottom-\[calc\(100\%\+6px\)\] {
+    bottom: calc(100% + 6px);
+  }
   .left-0 {
     left: 0px;
   }
@@ -669,6 +672,12 @@
   }
   .ml-\[10px\] {
     margin-left: 10px;
+  }
+  .ml-\[12px\] {
+    margin-left: 12px;
+  }
+  .ml-\[18px\] {
+    margin-left: 18px;
   }
   .ml-auto {
     margin-left: auto;
@@ -1370,6 +1379,9 @@
   }
   .max-w-\[320px\] {
     max-width: 320px;
+  }
+  .max-w-\[360px\] {
+    max-width: 360px;
   }
   .max-w-\[416px\] {
     max-width: 416px;
@@ -3276,6 +3288,13 @@
     .group-hover\:opacity-100:is(:where(.group):hover *) {
       opacity: 100%;
     }
+    .group-hover\/blocked\:translate-y-0:is(:where(.group\/blocked):hover *) {
+      --tw-translate-y: 0px;
+      translate: var(--tw-translate-x) var(--tw-translate-y);
+    }
+    .group-hover\/blocked\:opacity-100:is(:where(.group\/blocked):hover *) {
+      opacity: 100%;
+    }
     .group-hover\/help\:text-erp-brand:is(:where(.group\/help):hover *) {
       color: var(--color-erp-brand);
     }
@@ -3760,6 +3779,20 @@
   }
   .\[\&\>\:not\(\[data-table-scroll\]\)\]\:shrink-0 > :not([data-table-scroll]) {
     flex-shrink: 0;
+  }
+  @media (hover: hover) {
+    .hover\:\[\&\>button\:disabled\]\:border-erp-brand:hover > button:disabled {
+      border-color: var(--color-erp-brand);
+    }
+    .hover\:\[\&\>button\:disabled\]\:bg-white:hover > button:disabled {
+      background-color: var(--color-white);
+    }
+    .hover\:\[\&\>button\:disabled\]\:text-erp-ink:hover > button:disabled {
+      color: var(--color-erp-ink);
+    }
+    .hover\:\[\&\>button\:disabled\]\:opacity-60:hover > button:disabled {
+      opacity: 60%;
+    }
   }
   .\[\&\>img\]\:transition-opacity > img {
     transition-property: opacity;

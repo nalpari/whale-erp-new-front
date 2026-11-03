@@ -1,10 +1,88 @@
-import type { ReactNode } from "react";
+"use client";
 
-/** 막힌 버튼의 이유 안내. 막힌 버튼은 호버를 받지 않으므로(Button 의 disabled:pointer-events-none) 감싸는 칸에 단다. */
-export function Blocked({ reason, children }: { reason?: string; children: ReactNode }) {
+import { useRef, type ReactNode } from "react";
+
+const TIP =
+  "pointer-events-none w-max max-w-[360px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[8px] text-left text-[14px] leading-[1.6] font-medium break-keep whitespace-pre-line text-erp-ink";
+
+/**
+ * 막힌 버튼의 이유 안내. 막힌 버튼은 호버를 받지 않으므로(Button 의 disabled:pointer-events-none) 감싸는 칸에 단다.
+ * 이유는 헤더 툴팁(HeaderTip)과 같은 말풍선 — 흰 바탕 · 회청 테두리 · 먹색 500 · 6px 모서리, 꼬리 없음 — 으로 바로 띄운다.
+ * 전엔 브라우저 title 이라 한참 멈춰야 떠 거의 보이지 않았다(2026-11-02 사용자 지적).
+ * 막힌 버튼은 오른쪽 끝 버튼 줄에 서므로 말풍선 오른쪽 끝을 버튼에 맞춘다 — 가운데 맞춤이면 패널 밖으로 잘린다.
+ * place 는 위(기본) · 아래 — 스크롤 칸 맨 위에 선 버튼(점포 상세 제목 줄 등)은 아래로 띄워야 잘리지 않는다.
+ * 잘리는 칸 안(DataTable 칸은 truncate 라 overflow 를 숨긴다)이면 floating 을 켠다 — HelpTip floating 처럼 popover 로 최상위 레이어에 띄운다.
+ * 말풍선 글은 숨기지 않아 화면 낭독기가 버튼 옆 글로 읽는다(막힌 버튼은 포커스를 받지 않는다).
+ */
+export function Blocked({
+  reason,
+  place = "top",
+  floating,
+  children,
+}: {
+  reason?: string;
+  place?: "top" | "bottom";
+  floating?: boolean;
+  children: ReactNode;
+}) {
+  const wrap = useRef<HTMLSpanElement>(null);
+  const tip = useRef<HTMLSpanElement>(null);
+
+  // floating — 칸의 오른쪽 끝에 맞춰 위 · 아래에 띄운다. popover 를 모르는 브라우저에서는 뜨지 않는다(HelpTip 과 같다)
+  const show = () => {
+    const box = tip.current;
+    const at = wrap.current?.getBoundingClientRect();
+    if (!box || !at || !("showPopover" in box) || box.matches(":popover-open")) return;
+    box.showPopover();
+    const size = box.getBoundingClientRect();
+    box.style.left = `${Math.max(8, at.right - size.width)}px`;
+    box.style.top = `${place === "top" ? at.top - 6 - size.height : at.bottom + 6}px`;
+    // 자리는 열 때 한 번 잡는다 — 표를 밀거나 창 크기가 바뀌면 버튼에서 떨어지지 않게 닫는다
+    window.addEventListener("scroll", hide, { capture: true, once: true });
+    window.addEventListener("resize", hide, { once: true });
+  };
+  function hide() {
+    const box = tip.current;
+    if (box && "hidePopover" in box && box.matches(":popover-open")) box.hidePopover();
+  }
+
+  // 문장마다 줄을 바꾼다(2026-11-02 사용자 지정) — api 가 여러 이유를 한 칸 띄워 잇는 것(BP 마스터 삭제)도 줄로 갈린다
+  const text = reason?.replace(/([.?!])\s+/g, "$1\n");
+
+  // 이유가 있든 없든 같은 칸으로 감싼다 — 칸이 바뀌면 안의 버튼이 다시 그려져 포커스를 잃는다.
+  // 이유가 있으면 손가락 커서와, 다른 버튼과 같은 호버(흰 바탕 · 브랜드 테두리 · 먹색 글자)를 칸에서 막힌 버튼에 건다.
+  // 다만 흐림을 다 걷지 않아(40 → 60%) 누를 수 있는 버튼과 갈린다(2026-11-02 사용자 지정)
   return (
-    <span title={reason} className="inline-flex">
+    <span
+      ref={wrap}
+      onPointerEnter={floating && reason ? show : undefined}
+      onPointerLeave={floating && reason ? hide : undefined}
+      className={`group/blocked relative inline-flex ${
+        reason
+          ? "cursor-pointer hover:[&>button:disabled]:border-erp-brand hover:[&>button:disabled]:bg-white hover:[&>button:disabled]:text-erp-ink hover:[&>button:disabled]:opacity-60"
+          : ""
+      }`}
+    >
       {children}
+      {reason &&
+        (floating ? (
+          // popover 의 기본 자리(가운데 · 바깥 여백)를 풀고 show 가 잡은 자리에 선다. 열 때 투명도를 150ms 로 올린다
+          <span
+            ref={tip}
+            popover="manual"
+            className={`fixed inset-auto m-0 ${TIP} transition-opacity duration-150 ease-out starting:opacity-0 motion-reduce:transition-none`}
+          >
+            {text}
+          </span>
+        ) : (
+          <span
+            className={`absolute right-0 z-30 ${TIP} translate-y-[4px] opacity-0 transition-[opacity,translate] duration-150 ease-out group-hover/blocked:translate-y-0 group-hover/blocked:opacity-100 motion-reduce:translate-y-0 ${
+              place === "top" ? "bottom-[calc(100%+6px)]" : "top-[calc(100%+6px)]"
+            }`}
+          >
+            {text}
+          </span>
+        ))}
     </span>
   );
 }
