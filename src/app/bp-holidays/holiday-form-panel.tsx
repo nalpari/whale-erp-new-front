@@ -26,7 +26,7 @@ import {
 } from "@/lib/bp-holiday-view";
 import type { BpHolidayDetail, BpHolidayOverlaps } from "@/lib/bp-holidays";
 import { checkBpHolidayOverlapsAction, createBpHolidayAction, updateBpHolidayAction } from "./actions";
-import { unknownResult } from "./holiday-parts";
+import { HistoryScroll, unknownResult } from "./holiday-parts";
 
 // BP 휴일 등록(S-UCPMYB) · 수정(S-BXEAEZ) 슬라이드 패널. 휴일정보(휴일명 → 날짜 → 반복 상자 → 설명)를 위로, 적용 대상을 맨 아래로 둔다(데모 2026-10-08, 반복 위치 2026-10-30).
 // 「BP 휴일 변경 · 종료 정책」(1팀, 2026-10-26)에 맞춰 수정할 수 있는 칸이 상태로 갈린다 — api 가 같은 규칙으로 다시 막는다.
@@ -85,14 +85,14 @@ export function HolidayFormPanel(props: Props) {
   // api 가 점포 말고 다른 칸이 바뀌면 403 이다(bp-holiday-changes update). 브라우저 시험(가맹 마스터)으로 찾음, 2026-10-27
   const scheduleLocked = !!h && (h.state !== "UPCOMING" || infoLocked);
   const storesLocked = !!h && !h.actions.canUpdateStores;
-  // 일정 칸이 막힌 이유 — 「날짜」 라벨 옆에 한 줄로 둔다(막힌 칸이 다른 칸과 똑같아 왜 안 바뀌는지 몰랐다, 2026-11-03 사용자 지정). 띠는 두지 않는다(2026-10-27)
+  // 일정 칸이 막힌 이유 — 「날짜」 라벨 옆에 한 줄로 둔다. 「적용 대상」이 아니라 「적용 범위」 — 대상점포 고르기는 진행 중에도 고칠 수 있다(코드 리뷰)(막힌 칸이 다른 칸과 똑같아 왜 안 바뀌는지 몰랐다, 2026-11-03 사용자 지정). 띠는 두지 않는다(2026-10-27)
   const scheduleLockReason = !scheduleLocked
     ? null
     : h?.state === "ONGOING"
-      ? "진행 중인 휴일은 날짜 · 반복 · 적용 대상을 바꿀 수 없습니다."
+      ? "진행 중인 휴일은 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다."
       : h?.state === "ENDED"
-        ? "지난 휴일은 날짜 · 반복 · 적용 대상을 바꿀 수 없습니다."
-        : "다른 관리자의 점포가 함께 묶인 휴일이라 날짜 · 반복 · 적용 대상을 바꿀 수 없습니다.";
+        ? "지난 휴일은 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다."
+        : "다른 관리자의 점포가 함께 묶인 휴일이라 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다.";
   // 맡지 않은 점포 — 고르기 칸 밖에 두고 그대로 다시 보낸다
   // 상세의 점포는 빠진 기간까지 모두라 지금 열린 기간만 쓴다 — 빠진 점포를 다시 보내면 다시 더해진다
   const openPeriods = h ? openStores(h.stores) : [];
@@ -323,7 +323,7 @@ export function HolidayFormPanel(props: Props) {
         <FormGroup title="적용 대상">
           {/* 전체 점포는 BP 마스터 · 전체 점포 BP 관리자 · 플랫폼 계정만(CONFIG-10). 진행 중이면 적용 범위를 바꿀 수 없다 */}
           {/* 「적용 범위」 칸 이름은 뺐다 — 묶음 제목 「적용 대상」과 값(전체 · 일부 점포)만으로 뜻이 분명하다(2026-10-30 사용자 지정). 화면 낭독기용 이름은 남긴다 */}
-          <div className={scheduleLocked || infoLocked || !allowAll ? LOCKED : ""}>
+          <div className={h && (scheduleLocked || infoLocked) ? LOCKED : ""}>
           <Select
               aria-label="적용 범위"
               value={form.isAllStores ? "ALL" : "SOME"}
@@ -413,9 +413,9 @@ function OverlapSummary({ overlaps }: { overlaps: BpHolidayOverlaps }) {
     <div className="flex flex-col gap-[12px] break-keep">
       {/* 제목 「같은 날짜에 이미 등록된 휴일이 있습니다.」 · 본문은 결과만 — 전엔 「저장하면 겹치는 휴일이 모두 적용됩니다.」(2026-11-03 사용자 지정) */}
       <p>저장하면, 휴일이 추가됩니다. 저장하시겠습니까?</p>
-      <div className="max-h-[280px] overflow-y-auto overscroll-contain border-y border-erp-thead-line [&_tbody_tr:last-child]:border-b-0 [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-[1] [&_thead]:shadow-[0_1px_0_var(--color-erp-thead-line)] [&_thead_tr]:border-y-0">
+      <HistoryScroll height="280">
         <DataTable columns={OVERLAP_COLUMNS} rows={rows} rowKey={(r) => r.key} />
-      </div>
+      </HistoryScroll>
     </div>
   );
 }

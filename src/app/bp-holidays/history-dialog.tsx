@@ -33,6 +33,8 @@ export function HolidayHistoryButton({ today }: { today: string }) {
   const [open, setOpen] = useState(false);
   const [range, setRange] = useState(() => defaultHistoryRange(today));
   const [page, setPage] = useState(1);
+  // 표가 보이는 기간 — 쪽 이동 · 건수 바꾸기는 칸에 적다 만 기간이 아니라 마지막으로 조회한 기간으로 받는다(코드 리뷰)
+  const [shown, setShown] = useState(() => defaultHistoryRange(today));
   // 한 쪽 건수 — 20 · 50(2026-11-03 사용자 지정). 바꾸면 지금 기간으로 첫 쪽부터 다시 받는다
   const [pageSize, setPageSize] = useState<HistoryPageSize>(20);
   const [data, setData] = useState<BpHolidayHistoryList | null>(null);
@@ -51,6 +53,7 @@ export function HolidayHistoryButton({ today }: { today: string }) {
       setFailure(null);
       setPage(nextPage);
       setPageSize(size);
+      setShown(next);
       setData(result);
     });
   };
@@ -95,7 +98,7 @@ export function HolidayHistoryButton({ today }: { today: string }) {
             총 <b className="font-semibold">{(data?.total ?? 0).toLocaleString("ko-KR")}</b> 건
           </p>
           <div className="w-[80px] shrink-0">
-            <Select aria-label="페이지당 건수" value={String(pageSize)} disabled={loading} onChange={(e) => load(range, 1, Number(e.target.value) as HistoryPageSize)}>
+            <Select aria-label="페이지당 건수" value={String(pageSize)} disabled={loading} onChange={(e) => load(shown, 1, Number(e.target.value) as HistoryPageSize)}>
               {HISTORY_PAGE_SIZES.map((size) => (
                 <option key={size} value={size}>
                   {size}
@@ -112,7 +115,7 @@ export function HolidayHistoryButton({ today }: { today: string }) {
           {/* 한 쪽뿐이어도 쪽 이동(1)을 보인다 — 목록 화면과 같다. 20 에서는 2쪽이 보이다 50 으로 바꾸면 사라져 헷갈렸다(2026-11-03 사용자 지적) */}
           {data && data.total > 0 && (
             <div className="shrink-0 pt-[6px]">
-              <Pagination page={page} totalPages={Math.max(1, Math.ceil(data.total / pageSize))} onPageChange={(p) => load(range, p)} />
+              <Pagination page={page} totalPages={Math.max(1, Math.ceil(data.total / pageSize))} onPageChange={(p) => load(shown, p)} />
             </div>
           )}
         </div>
