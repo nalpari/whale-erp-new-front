@@ -1,5 +1,4 @@
 // 브라우저에서 api 를 부를 때 쓴다. /api/* (src/app/api/[...path]/route.ts)가 토큰을 붙여 대신 부른다.
-import { unstable_rethrow } from "next/navigation";
 import { BP_HEADER, bpOfPath } from "./bp-path";
 
 /** api 403 「서비스 이용을 위해 비밀번호를 변경해 주세요.」를 받으면 window 에 보내는 이벤트. SessionGate 가 강제 변경 팝업을 다시 띄운다. */
@@ -45,31 +44,5 @@ export const isPasswordRequired = (e: unknown): boolean =>
 export const isAccountUnavailable = (e: unknown): boolean =>
   e instanceof BffError && e.status === 403 && e.message.startsWith(ACCOUNT_UNAVAILABLE_MESSAGE);
 
-/** Next 의 이동 신호(redirect · notFound 등)인가 — unstable_rethrow 는 그런 오류만 다시 던진다. */
-function isNextNavigation(e: unknown): boolean {
-  try {
-    unstable_rethrow(e);
-    return false;
-  } catch {
-    return true;
-  }
-}
-
-/**
- * 로그아웃 서버 액션(logout → /login)을 부른다. 성공하면 서버 액션의 redirect 로 이동한다.
- * 이때 Next 는 화면을 옮기면서 await 을 NEXT_REDIRECT 로 reject 한다 — 성공이므로 true 다. 다시 던지면 받을 곳 없는
- * 비동기 콜백(SessionGate 맞추기 등)에서 처리되지 않은 오류가 된다. 전에는 이것을 실패로 읽어, 다른 PC 에서 미사용으로 돌린
- * 계정이 로그인 화면으로 가면서 「로그아웃하지 못했습니다」를 띄웠다(2026-11-03).
- * 액션 자체가 실패하면(연결 끊김) 쿠키가 남아 proxy 가 /login 을 다시 자기 홈으로 돌려보내므로, 이동하지 않고 알린 뒤 false 를 돌려준다.
- */
-export async function signOut(logout: () => Promise<void>): Promise<boolean> {
-  try {
-    await logout();
-    return true;
-  } catch (e) {
-    if (isNextNavigation(e)) return true;
-    console.error("로그아웃 실패", e);
-    alert("로그아웃하지 못했습니다. 다시 시도해 주세요.");
-    return false;
-  }
-}
+// 로그아웃 호출(signOut)은 node --test 로 시험하려고 sign-out.ts 에 두고 여기서 다시 내보낸다.
+export { signOut } from "./sign-out.ts";

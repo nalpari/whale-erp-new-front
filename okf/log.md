@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-03
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 리뷰 반영: `signOut` 을 `src/lib/sign-out.ts` 로 옮기고 성공 판정을 redirect 신호(`isActionRedirect`, digest `NEXT_REDIRECT;`)로 좁혔다 — `unstable_rethrow` 판정은 액션의 notFound(이동 없음)까지 성공으로 읽어 로딩 화면에 멈출 수 있었다. BP 불일치 · 강제 변경 팝업의 로그아웃 등 `signOut` 을 거치는 모든 로그아웃이 같은 수정을 받는다. 테스트 `sign-out.test.ts`(front dragonite).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `signOut` 이 서버 액션 `redirect` 의 `NEXT_REDIRECT` 를 실패로 읽어, 다른 PC 에서 미사용으로 돌린 계정이 로그인 화면으로 가면서 「로그아웃하지 못했습니다. 다시 시도해 주세요.」를 띄우던 것을 고쳤다 — Next 이동 신호(`unstable_rethrow`)는 성공으로 본다(front dragonite).
 
 ## 2026-11-02
