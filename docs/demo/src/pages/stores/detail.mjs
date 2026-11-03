@@ -12,13 +12,13 @@ import { CLOSED_STORE, blocked, noticeBand, statusBadge } from "../../store-part
 // DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸 너비 — 사업자등록번호 · 대표자정보처럼 짝을 이루는 줄들이
 // 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다(2026-10-19 점검 — 실사용자 확인).
 const FIRST_COL = "inline-block min-w-[140px]";
-// 위치정보 줄의 위도 · 경도 칸 — 값 길이에 맞게 좁혀(140 → 112) 출퇴근 위치적용이 가장 넓게 선다(앱과 같다, 2026-11-03).
-const LAT_COL = "inline-block w-[100px] whitespace-nowrap"; // 위도만 고정폭, 경도는 값만큼(앱과 같다, 2026-11-03)
+// 위치정보 줄의 위도 칸만 고정폭(100) — 경도는 값만큼, 출퇴근 위치적용이 가장 넓게 선다(앱과 같다, 2026-11-03).
+const LAT_COL = "inline-block w-[100px] whitespace-nowrap";
 // 대표 이미지 칸 — 사진 194px + 둘레 여백 18px 씩 = 230px, 사진 옆 다섯 줄(46 × 5)과 높이가 같다(앱과 같다, 2026-11-03).
 const PHOTO_BOX = "size-[194px]";
-// 변경이력 줄의 등록 칸 너비 — 이 줄은 사진 아래 카드 왼쪽 끝에서 시작한다. 사진 칸(230) + 위도 칸(112) = 342 로 최종수정 앞
+// 변경이력 줄의 등록 칸 너비 — 이 줄은 사진 아래 카드 왼쪽 끝에서 시작한다. 사진 칸(230) + 위도 칸(100) = 330 으로 최종수정 앞
 // 구분선이 위치정보 줄의 경도 앞 구분선과 같은 세로줄에 선다(앱 stores/[storeId]/page.tsx 와 같다, 2026-11-03 — 줄맞춤).
-const REGISTERED_COL = "w-[330px]"; // 사진 칸 230 + 위도 칸 100
+const REGISTERED_COL = "w-[330px]";
 const muted = (t) => `<span class="text-erp-muted">${t}</span>`;
 const dash = (v) => v || muted("-");
 
