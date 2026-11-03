@@ -496,7 +496,9 @@ function Ready({
           const status = e instanceof BffError ? e.status : undefined;
           if (isAccountUnavailable(e)) {
             s.stopped = true;
-            await signOut(logoutForAccountChange);
+            // 로그아웃이 실패하면(연결 끊김 · 배포 직후 옛 화면이 서버 액션을 못 찾음) 멈춤을 풀어 다음 이동 · 포커스에 다시 시도한다 —
+            // 멈춘 채 두면 쓸 수 없는 계정이 쿠키와 옛 메뉴를 가진 채 남는다(적대적 리뷰로 찾음, PR #210)
+            if (!(await signOut(logoutForAccountChange))) s.stopped = false;
           } else if (status === 401) {
             s.stopped = true;
             router.replace(loginPathOf(location.pathname));
