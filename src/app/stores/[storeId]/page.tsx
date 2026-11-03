@@ -20,14 +20,15 @@ const orDash = (v: string | null | undefined) => (v ? v : muted("-"));
 /** DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸 너비 — 사업자등록번호 · 대표자정보처럼 같은 표 안에서 짝을 이루는 줄들이
  * 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다(2026-10-19 점검 — 실사용자 확인). 위치정보 줄은 LAT_LNG_WIDTH 를 쓴다. */
 const FIRST_COLUMN_WIDTH = "inline-block min-w-[140px]";
-/** 위치정보 줄의 위도 · 경도 칸 — 값 길이에 맞게 좁혀(140 → 112) 출퇴근 위치 적용 여부가 가장 넓게 선다(2026-11-03 사용자 지정) */
-const LAT_LNG_WIDTH = "inline-block min-w-[112px]";
+/** 위치정보 줄의 위도 · 경도 칸 — 좁혀(140 → 120) 출퇴근 위치 적용 여부가 가장 넓게 선다(2026-11-03 사용자 지정). 「경도 127.000000」(약 114px)이
+ * 들어가는 고정폭이라 글꼴이 조금 달라도 아래 변경이력 줄과의 구분선 맞춤이 흔들리지 않는다(코드 리뷰). */
+const LAT_LNG_WIDTH = "inline-block w-[120px] whitespace-nowrap";
 /** 대표 이미지 칸 — 사진 194px + 둘레 여백 18px 씩 = 230px. 사진 옆 다섯 줄(46px × 5 = 230)과 높이가 같다(2026-11-03 사용자 지정 — 206 에서 조금 줄임) */
 const PHOTO_BOX = "size-[194px]";
-/** 변경이력 줄의 등록 칸 너비 — 이 줄은 사진 아래 카드 왼쪽 끝에서 시작한다. 사진 칸(230) + 위도 칸(112) = 342 로 두어 최종수정 앞
+/** 변경이력 줄의 등록 칸 너비 — 이 줄은 사진 아래 카드 왼쪽 끝에서 시작한다. 사진 칸(230) + 위도 칸(120) = 350 으로 두어 최종수정 앞
  * 구분선이 위치정보 줄의 경도 앞 구분선과 같은 세로줄에 선다(2026-11-03 사용자 지정 — 줄맞춤, 전엔 출퇴근 위치 적용 여부에 맞춘 301).
  * 처리자 이름이 길면 이 너비 안에서 말줄임된다. 사진 크기나 위도 칸 너비를 바꾸면 이 값도 같이 바꾼다. */
-const REGISTERED_COLUMN_WIDTH = "w-[342px]";
+const REGISTERED_COLUMN_WIDTH = "w-[350px]";
 /** 주소 한 줄 — 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」. 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)이다.
  * 없으면 「-」(2026-10-19 점검 — 두 줄이던 걸 한 줄로, 번호 색·괄호 안쪽 띄어쓰기는 뒤이은 요청으로 다시 손봄) */
 const addressLines = (zip: string | null, address: string | null, detail: string | null) => {
@@ -231,26 +232,16 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
           {/* 미운영 점포에 "운영으로 바꾸려면 ~ 필요합니다" 띠를 여기 두지 않는다(2026-10-16 디자인 점검으로 뺐다) — 같은
               안내는 상태 변경 팝업(StoreDetailActions)이 이미 운영 조건 체크리스트로 보여준다(2026-10-19 점검 — 실사용자 확인). */}
           <div className="grid grid-cols-2 items-start gap-[24px]">
-            {/* 유형 태그는 위 머리 카드로 옮겨 여기서는 다시 적지 않는다. 상태는 배지 대신 표 맨 위 점포상태
+            {/* 유형 태그는 위 점포명 줄로 옮겨 여기서는 다시 적지 않는다. 상태는 배지 대신 표 맨 위 점포상태
                 줄로 보인다(2026-10-19 점검). */}
             <div className="w-full">
-              <DetailTable title="점포 기본정보" rows={[]} />
-              <div className="flex">
-                {/* 사진 칸 — 위쪽에 붙이고, 표와 사이 세로선은 두지 않는다(2026-11-03 사용자 지정). 칸에 맞게 가운데를 잘라 채우고 누르면 원본을 크게 본다 */}
-                <div className="shrink-0 border-b border-l border-erp-thead-line bg-white p-[18px]">
-                  {store.image?.url ? (
-                    <StorePhotoViewer url={store.image.url} name={store.name} className={`overflow-hidden rounded-[8px] [&_img]:rounded-[8px] ${PHOTO_BOX}`} fallback={noPhoto} />
-                  ) : (
-                    noPhoto
-                  )}
-                </div>
-                <div className="min-w-0 flex-1 [&_dl]:border-t-0 [&_dt]:border-l-0">
-                  <DetailTable rows={photoRows} />
-                </div>
-              </div>
-              <div className="[&_dl]:border-t-0">
-                <DetailTable rows={historyRows} />
-              </div>
+              {/* 사진 칸 — 위쪽에 붙이고, 표와 사이 세로선은 두지 않는다(2026-11-03 사용자 지정). 칸에 맞게 가운데를 잘라 채우고 누르면 원본을 크게 본다 */}
+              <DetailTable
+                title="점포 기본정보"
+                rows={photoRows}
+                aside={<div className="p-[18px]">{store.image?.url ? <StorePhotoViewer url={store.image.url} name={store.name} boxClass={PHOTO_BOX} fallback={noPhoto} /> : noPhoto}</div>}
+              />
+              <DetailTable rows={historyRows} attached />
             </div>
             <DetailTable
               title={

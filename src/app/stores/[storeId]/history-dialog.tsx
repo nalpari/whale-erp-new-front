@@ -20,7 +20,7 @@ const COLUMNS: Column<StoreHistory>[] = [
   { header: "변경 후", align: "left", cell: (h) => empty(h.afterValue) },
 ];
 
-/** variant — 표 안 버튼이 무거우면 outline(흰 바탕 · 브랜드 테두리)으로 둔다(점포 상세 D안, 2026-11-03 사용자 지정) */
+/** variant — 표 안 버튼이 무거우면 outline(흰 바탕 · 브랜드 테두리)으로 둔다(점포 상세 변경이력 줄, 2026-11-03 사용자 지정) */
 export function HistoryButton({ storeId, variant = "soft" }: { storeId: number; variant?: "soft" | "outline" }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();

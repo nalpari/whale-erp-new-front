@@ -423,8 +423,11 @@ function Ready({
     try {
       do {
         const announce = s.announce;
+        // quiet 도 차례마다 — 돌던 중에 들어온 quiet 은 다음 차례(그 변경을 보는 차례)에만 쓴다. 판 전체에 걸면 다른 탭의 변경까지 조용히 지나간다(코드 리뷰)
+        const quiet = s.quiet;
         s.again = false;
         s.announce = false;
+        s.quiet = false;
         s.checkedAt = Date.now();
         const v = latest.current;
         // 플랫폼 탭(자기 BP)은 점포가 없다. 비밀번호를 바꾸기 전에는 점포 api 가 403 이다
@@ -471,7 +474,7 @@ function Ready({
         // 상태에 넣는 순간에도 같은 BP 인지 한 번 더 본다 — 그 사이 다른 BP 로 준비됐으면 그대로 둔다
         onChange((cur) => (cur.currentBp.bpCodeId === bpCodeId ? { ...cur, stores: changed.items, scope } : cur));
         if (announce) announceStoresChanged(v.loginKey, bpCodeId);
-        if (!s.quiet) toast(STORES_CHANGED_MESSAGE);
+        if (!quiet) toast(STORES_CHANGED_MESSAGE);
       } while (s.again);
     } finally {
       s.running = false;

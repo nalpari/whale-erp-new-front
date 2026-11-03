@@ -29,7 +29,20 @@ export const drawnUrlOf = (url: string) => drawn.get(imageKeyOf(url))?.url ?? ur
  * 바뀌어도 그대로 둔다. 그린 주소를 더 쓸 수 없으면(만료 · 브라우저가 비움) 새로 받은 주소로 한 번 더 그리고, 그것도 안 되면 점포 아이콘(fallback)이다.
  * 서명 주소는 S3 라 next/image 의 최적화 서버를 거치지 않고 그대로 그린다.
  */
-export function StoreImagePicture({ url, alt, sizeClass, fallback }: { url: string; alt: string; sizeClass: string; fallback: ReactNode }) {
+/** onBroken — 새로 받은 주소로도 그리지 못해 점포 아이콘으로 바꿀 때 부른다(원본 보기 버튼을 거두려고, store-photo-viewer.tsx) */
+export function StoreImagePicture({
+  url,
+  alt,
+  sizeClass,
+  fallback,
+  onBroken,
+}: {
+  url: string;
+  alt: string;
+  sizeClass: string;
+  fallback: ReactNode;
+  onBroken?: () => void;
+}) {
   const [src, setSrc] = useState(() => drawn.get(imageKeyOf(url))?.url ?? url);
   const [failed, setFailed] = useState(false);
   if (failed && url !== src) {
@@ -46,6 +59,8 @@ export function StoreImagePicture({ url, alt, sizeClass, fallback }: { url: stri
       onError={() => {
         // 기억한 주소를 더 쓸 수 없다 — 다음에는 새로 받은 주소로 그린다
         if (drawn.get(imageKeyOf(src))?.url === src) drawn.delete(imageKeyOf(src));
+        // 받은 주소로 그리던 것이면 더 해 볼 주소가 없다
+        if (src === url) onBroken?.();
         setFailed(true);
       }}
       className={`shrink-0 rounded-[8px] border border-erp-panel-line bg-white object-cover ${sizeClass}`}
