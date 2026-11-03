@@ -3719,6 +3719,15 @@
   .\[\&_\:is\(input\,select\)\[readonly\]\]\:bg-erp-thead-bg :is(input, select)[readonly] {
     background-color: var(--color-erp-thead-bg);
   }
+  .\[\&_\:is\(input\,select\,textarea\)\:disabled\]\:bg-erp-thead-bg :is(input, select, textarea):disabled {
+    background-color: var(--color-erp-thead-bg);
+  }
+  .\[\&_\:is\(input\,select\,textarea\)\:disabled\]\:text-erp-muted :is(input, select, textarea):disabled {
+    color: var(--color-erp-muted);
+  }
+  .\[\&_\:is\(input\,select\,textarea\,button\)\:disabled\]\:cursor-not-allowed :is(input, select, textarea, button):disabled {
+    cursor: not-allowed;
+  }
   .\[\&_button\]\:cursor-pointer button {
     cursor: pointer;
   }
@@ -3755,6 +3764,15 @@
   }
   .\[\&_label\]\:text-erp-muted label {
     color: var(--color-erp-muted);
+  }
+  .\[\&_label\:has\(input\:disabled\)\]\:cursor-not-allowed label:has(input:disabled) {
+    cursor: not-allowed;
+  }
+  .\[\&_label\:has\(input\:disabled\)\]\:text-erp-muted label:has(input:disabled) {
+    color: var(--color-erp-muted);
+  }
+  .\[\&_label\:has\(input\:disabled\)_input\]\:bg-erp-thead-bg label:has(input:disabled) input {
+    background-color: var(--color-erp-thead-bg);
   }
   .\[\&_select\:disabled\]\:bg-erp-thead-bg select:disabled {
     background-color: var(--color-erp-thead-bg);

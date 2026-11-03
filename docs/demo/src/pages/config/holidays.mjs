@@ -94,7 +94,7 @@ export default ({ A, R }) => {
       ? names
           .map((n) => {
             const [scope, type, target] = INFO[n] || ["일부 점포", "하루", "모리커피 성수점"];
-            return `<button type="button" aria-controls="${PANEL.detail}" aria-expanded="false" class="block w-full text-left hover:bg-erp-thead-bg">${itemRow(c.tag(scope), n, `${type} · ${target}`, ui.img(A, "next.svg", 16, 16))}</button>`;
+            return `<button type="button" aria-controls="${PANEL.detail}" aria-expanded="false" class="block w-full text-left hover:bg-erp-thead-bg">${itemRow(c.scopeTag(scope), n, `${type} · ${target}`, ui.img(A, "next.svg", 16, 16))}</button>`;
           })
           .join("")
       : `<p class="border-b border-erp-thead-line py-[24px] text-center text-[14px] text-erp-muted">등록된 휴일이 없습니다.</p>`;
@@ -108,8 +108,8 @@ export default ({ A, R }) => {
   const ON0114 = (t) => panelLink(t, PANEL.detail);
   // 적용 대상: 일부 점포는 ‘첫 점포 외 N건’, 전체 점포는 예외가 있으면 ‘첫 점포 외 N건 예외’(2026-10-08)
   // 적용범위(꼬리표) · 대상점포 · 예외점포 세 칸(앱과 같다, 2026-10-30 사용자 지정 — 전엔 「적용 대상」 한 칸). 해당 없는 칸은 「-」, 단위는 「개」. 대상점포 수는 그날 적용되는 점포 전부다 — 맡은 범위와 관계없이 센다(2026-10-30 재영)
-  const some = (names) => [c.tag("일부 점포"), `${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}개` : ""}`, c.muted("-")];
-  const all = (except) => [c.tag("전체 점포"), c.muted("-"), except.length ? `${except.length}개` : c.muted("-")];
+  const some = (names) => [c.scopeTag("일부 점포"), `${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}개` : ""}`, c.muted("-")];
+  const all = (except) => [c.scopeTag("전체 점포"), c.muted("-"), except.length ? `${except.length}개` : c.muted("-")];
   // 최종수정: 「일시 · 사람」 — 사람은 회색(앱 · 권한 그룹 목록과 같다, 2026-10-30 사용자 지정)
   const mod = (at, by) => `${at} <span class="text-erp-label">· ${by}</span>`;
   const HD0114 = ["온기식당 판교점", "모리커피 서초점", "모리커피 성수점", "온기식당 광화문점", "모리커피 을지로점", "모리커피 연남점"];
@@ -121,8 +121,8 @@ export default ({ A, R }) => {
     [`2026-09-29 ${c.muted("(화)")}`, ui.link("내부 공사", "#"), "하루", ...some(["모리커피 연남점"]), mod("2026-09-08 16:20", "morinam01")],
   ];
   const list =
-    // 달 이동 줄 + 「BP 휴일 N건」, 쪽 이동 없음 — 한 달 치를 다 보인다(앱 holidays-screen.tsx)
-    `<div class="flex items-center gap-[10px]">${monthNav()}<span class="text-[14px] text-erp-label">BP 휴일 ${listRows.length}건</span></div>` +
+    // 달 이동 줄 + 「선택한 월의 BP 휴일은 N건입니다.」(플랫폼 휴일 관리와 같은 말투, 2026-11-03 사용자 지정 — 전엔 「BP 휴일 N건」), 쪽 이동 없음 — 한 달 치를 다 보인다(앱 holidays-screen.tsx)
+    `<div class="flex items-center gap-[10px]">${monthNav()}<span class="ml-[12px] text-[14px] text-erp-label">선택한 월의 BP 휴일은 <span class="font-semibold">${listRows.length}건</span>입니다.</span></div>` +
     c.dimRows(
       ui.dataTable(
         [

@@ -17,6 +17,9 @@ export const tag = (t) => `<span class="inline-block rounded-[2px] border border
 // 관리주체 띠지 — 글자 · 선은 tag 그대로, 바탕만 플랫폼고정 연한 파랑(앱 OwnerTag, 2026-10-27)
 export const ownerTag = (t) =>
   `<span class="inline-block rounded-[2px] border border-erp-thead-line px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub ${t === "플랫폼고정" ? "bg-erp-on-bg" : "bg-erp-thead-bg"}">${t}</span>`;
+// BP 휴일 적용 범위 꼬리표 — 글자 · 선은 tag 그대로, 바탕만 「전체 점포」 연한 분홍(erp-off-bg) · 「일부 점포」 회색(앱 ScopeTag, 2026-11-03 사용자 지정, 1팀 확인 필요)
+export const scopeTag = (t) =>
+  `<span class="inline-block rounded-[2px] border border-erp-thead-line px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub ${t === "전체 점포" ? "bg-erp-off-bg" : "bg-erp-thead-bg"}">${t}</span>`;
 // 입력칸 + 도움말을 세로로
 // 제목 옆 값 줄 「라벨 값 | 라벨 값 | 띠지」 — 라벨 회색, 값 굵게, 11px #d9d9d9 구분선. 라벨 없는 칸([, html])은 그대로(앱 components/site/head-values.tsx, 2026-10-27)
 const HEAD_BAR = '<span aria-hidden="true" class="h-[11px] w-px shrink-0 self-center bg-[#d9d9d9]"></span>';
