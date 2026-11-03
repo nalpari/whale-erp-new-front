@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-03
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `signOut` 이 서버 액션 `redirect` 의 `NEXT_REDIRECT` 를 실패로 읽어, 다른 PC 에서 미사용으로 돌린 계정이 로그인 화면으로 가면서 「로그아웃하지 못했습니다. 다시 시도해 주세요.」를 띄우던 것을 고쳤다 — Next 이동 신호(`unstable_rethrow`)는 성공으로 본다(front dragonite).
+
 ## 2026-11-02
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #211 리뷰 반영: 슬라이드 패널 버튼 줄의 말풍선(BP 마스터 · 플랫폼 관리자 [삭제])이 패널(464px, overflow-y-auto) 왼쪽 밖으로 넘쳐 잘려 `floating`(popover)으로 띄운다. floating 말풍선은 고른 쪽에 자리가 모자라면 반대쪽에 뜬다. 재리뷰 반영: 패널이 마우스를 움직이지 않은 채 닫혀도(Esc · 뒤로 가기, 패널은 inert 로 남음) 말풍선이 남지 않게 떠 있는 동안 버튼이 빠지거나 inert 안에 들거나 자리가 바뀌면 닫고, 닫힌 popover 는 화면 낭독기가 못 읽어 같은 이유를 sr-only 로 둔다. 데모는 자리 계산이 없어 패널 [삭제] 말풍선 폭을 220px 로 줄였다(`ui.blocked` narrow).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 막힌 버튼 이유(`Blocked`)를 브라우저 title 대신 헤더 툴팁 모양 말풍선으로 바로 띄우고 문장마다 줄을 바꿨다. 막힌 버튼에 마우스를 올리면 손가락 커서와 다른 버튼과 같은 호버를 60% 흐림으로 보인다. 점포 상세 제목 줄 · 엑셀 받기 · 공통코드 [BP 적용]은 말풍선을 아래로(place="bottom"). DESIGN.md 버튼 절에 적었다(1팀 확인 필요, front staryu). 말풍선 이유 문구도 고쳤다(사용자 지정): 점포 삭제 「…점포 운영을 종료하려면 '상태 변경'에서 '폐점'으로 변경해 주세요.」 · 「삭제 조건을 충족하지 않아 삭제할 수 없습니다.」, 「내 계정은 삭제할 수 없습니다.」, 「공통코드 그룹을 저장한 후 BP적용할 수 있습니다.」, 엑셀 0건 「엑셀로 다운로드할 점포 정보가 없습니다.」 · 「…BP 마스터 정보가 없습니다.」(BP 마스터 삭제 이유는 api 문구). 직원 화면 「BP 가」 → 「BP가」. 데모(ui.blocked · 점포 · BP 마스터)와 목업도 맞췄다.
