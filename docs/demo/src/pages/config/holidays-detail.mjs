@@ -7,6 +7,18 @@ import * as c from "../../config-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
 
 export const TITLE = "정기휴무";
+
+// 변경이력 · 점포 목록 팝업 틀 — 제목 · [닫기]는 늘 그 자리, 본문은 남는 높이만 쓰고 그 안의 표 상자(scrollBox)가 열 이름 줄을 고정한 채 줄만 스크롤한다
+// (앱 holiday-parts.tsx WideDialog · HistoryScroll, 2026-11-03 사용자 지정 — 길면 [닫기]가 아래로 밀려 안 보였다). 열렸을 때만 flex(닫힌 dialog 는 숨김 그대로)
+export const fixedDialog = (dialogHtml, w) =>
+  dialogHtml
+    .replace("w-[420px]", `${w} max-h-[calc(100dvh-48px)] flex-col overflow-hidden open:flex`)
+    .replace('class="text-[18px] font-semibold"', 'class="shrink-0 text-[18px] font-semibold"')
+    .replace('class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink"', 'class="mt-[12px] flex min-h-0 flex-1 flex-col gap-[12px] text-[14px] leading-[1.6] text-erp-ink"')
+    .replace('class="mt-[24px] flex justify-end gap-[6px]"', 'class="mt-[24px] flex shrink-0 justify-end gap-[6px]"');
+// 표가 border-collapse 라 머리 줄 선은 표에 붙어 스크롤된다 — 위아래 선은 감싸는 상자가 긋고, 머리 줄 아래 선은 그림자(1px)로 붙여 머리와 함께 고정한다(앱과 같다, 2026-11-03)
+export const scrollBox = (table) =>
+  `<div class="min-h-0 flex-1 overflow-y-auto overscroll-contain border-y border-erp-thead-line [&_tbody_tr:last-child]:border-b-0 [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-[1] [&_thead]:shadow-[0_1px_0_var(--color-erp-thead-line)] [&_thead_tr]:border-y-0">${table}</div>`;
 // 머리: 첫 줄 휴일명, 둘째 줄 「적용 범위 값 | 휴일유형 값 | 상태 배지」 — BP 관리자 상세 머리와 같은 형식(앱과 같다, 2026-10-30 사용자 지정 — 전엔 제목 옆 꼬리표)
 export const HEAD = `<div class="flex flex-col items-start gap-[6px]"><h2 class="text-[18px] font-semibold text-erp-ink">${TITLE}</h2><span class="text-[14px]">${c.headValues([["적용 범위", "일부 점포"], ["휴일유형", "매주 반복"], ["", ui.badge("on", "진행 중")]])}</span></div>`;
 
@@ -54,13 +66,13 @@ export function detailParts(A, R, delId, { panel = false } = {}) {
     ? `<div class="flex flex-col gap-[24px]">${info}${stores}</div>`
     : `<div class="grid grid-cols-2 items-start gap-[24px]"><div class="flex flex-col gap-[24px]">${info}</div><div class="flex flex-col gap-[24px]">${stores}</div></div>`;
 
-  // 변경이력 — 이 휴일의 이력만, 쪽 이동 없음(앱 history-dialog.tsx OwnHistoryButton · WideDialog 760px). 값은 api bp-holiday-changes 의 문구
+  // 변경이력 — 이 휴일의 이력만, 쪽 이동 없음(앱 history-dialog.tsx OwnHistoryButton · WideDialog 1000px · HistoryScroll). 값은 api bp-holiday-changes 의 문구
   const cut = (t) => `<span class="block truncate" title="${t}">${t}</span>`;
-  const histDialog = c.wide(
+  const histDialog = fixedDialog(
     x.dialog(
       histId,
       "변경이력",
-      ui.dataTable(
+      scrollBox(ui.dataTable(
         [
           { header: "변경일시", width: "w-[140px]" },
           { header: "변경자", width: "w-[140px]" },
@@ -73,10 +85,10 @@ export function detailParts(A, R, delId, { panel = false } = {}) {
           ["2026-09-15 14:10", "hangang01", "등록", "", cut("정기휴무 · 온기식당 판교점 · 모리커피 서초점 · 모리커피 성수점 · 온기식당 광화문점 · 모리커피 을지로점 · 모리커피 연남점 · 매주 · 시작 2026-09-21 · 종료일 없음")],
         ],
         "변경이력이 없습니다.",
-      ),
+      )),
       ui.button("닫기", { variant: "off", "data-close": true }),
     ),
-    "w-[860px] max-h-[calc(100dvh-48px)] overflow-y-auto", // 1팀 변경이력 팝업 모두 860(2026-11-02)
+    "w-[1000px]", // 860 → 1000(앱과 같다, 2026-11-03 사용자 지정)
   );
 
   // 삭제 · 강제 종료 확인창 — 대상(회색 상자) + 빨간 안내 상자, 확인 버튼은 기본 버튼(앱 holiday-detail-panel.tsx, 2026-10-30 사용자 지정)
