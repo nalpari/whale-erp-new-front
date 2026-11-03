@@ -21,6 +21,9 @@ function rememberDrawn(url: string) {
   if (drawn.size > DRAWN_MAX) drawn.delete(drawn.keys().next().value as string);
 }
 
+/** 이 탭에서 이미 그린 같은 이미지의 주소 — 없으면 받은 주소. 서명 주소(5분)가 만료돼도 브라우저가 받아 둔 이미지를 그대로 보인다(원본 보기 팝업이 쓴다) */
+export const drawnUrlOf = (url: string) => drawn.get(imageKeyOf(url))?.url ?? url;
+
 /**
  * 대표 이미지 한 장. 같은 이미지(서명을 뺀 주소가 같은 것 — 부모 StoreImage 가 key 로 준다)면 이 탭에서 이미 그린 주소로 그리고, 받은 주소가
  * 바뀌어도 그대로 둔다. 그린 주소를 더 쓸 수 없으면(만료 · 브라우저가 비움) 새로 받은 주소로 한 번 더 그리고, 그것도 안 되면 점포 아이콘(fallback)이다.
@@ -45,7 +48,7 @@ export function StoreImagePicture({ url, alt, sizeClass, fallback }: { url: stri
         if (drawn.get(imageKeyOf(src))?.url === src) drawn.delete(imageKeyOf(src));
         setFailed(true);
       }}
-      className={`shrink-0 rounded-[2px] border border-erp-panel-line bg-white object-cover ${sizeClass}`}
+      className={`shrink-0 rounded-[8px] border border-erp-panel-line bg-white object-cover ${sizeClass}`}
     />
   );
 }

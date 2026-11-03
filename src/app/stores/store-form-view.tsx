@@ -64,6 +64,7 @@ import {
 } from "./actions";
 import { FieldMessage, StoreImage, StoreStatusBadge, StoreTypeCards } from "./store-parts";
 import { withBack } from "./stores-query";
+import { kstToday } from "@/lib/staff-members";
 
 /** 동시 수정 409 문구(api). 이때만 최신 정보를 다시 불러온다 */
 const STALE = "먼저 수정했습니다";
@@ -462,8 +463,9 @@ export function StoreFormView(props: Props) {
           });
         }
         toast("updated");
-        // 점포명 · 상태가 바뀌었으면 헤더 범위 선택기 · 점포 고르기에 바로 넣는다(바뀐 게 없으면 알리지 않는다)
-        refreshStores();
+        // 점포명 · 상태가 바뀌었으면 헤더 범위 선택기 · 점포 고르기에 바로 넣는다(바뀐 게 없으면 알리지 않는다).
+        // 상태를 바꿨으면(폐점 · 운영) 토스트는 「수정되었습니다.」 하나만 — 상세의 상태 변경과 같다(2026-11-03 사용자 지정)
+        refreshStores({ quiet: form.storeStatus !== props.store.storeStatusCode });
         return router.push(at(withBack(`/stores/${props.store.storeId}`, backHref)));
       }
       // 다른 사람이 먼저 고쳤거나 결과를 모르면 최신 정보를 불러온다 — 저장됐으면 updatedAt 이 바뀌어 칸이 새 값으로 다시 채워진다
@@ -514,9 +516,10 @@ export function StoreFormView(props: Props) {
           ? "저장하면 대표 이미지를 지웁니다."
           : (
               <>
-                {storeImageTypesText(imageTypes)} 파일 1장만 등록할 수 있습니다. (최대 5MB)
+                {/* 더 쉬운 말로 — 저장 버튼이 화면 위에 있어 자리를 함께 말한다(2026-11-03 사용자 지정) */}
+                점포 사진 1장을 등록할 수 있습니다. ({storeImageTypesText(imageTypes)}, 5MB까지)
                 <br />
-                이미지를 선택한 후 ‘저장’을 눌러야 반영됩니다.
+                이미지를 선택한 뒤 화면 상단 ‘저장’ 버튼을 눌러야 적용됩니다.
               </>
             );
   // 인증 상자 상태(S-VRNTHD — 인증하면 잠그고 재인증으로 연다, 2026-10-22 사용자 확정). 이번 화면에서 지금 칸 값으로
@@ -562,7 +565,7 @@ export function StoreFormView(props: Props) {
         </Button>
       </div>
       {failure && <NoticeBand title={failure.title} detail={failure.detail} />}
-      {store && store.storeStatusCode === "CLOSED" && <NoticeBand tone="info" title="폐점 점포는 수정할 수 없습니다." detail="다시 운영하려면 새 점포로 등록하세요." />}
+      {store && store.storeStatusCode === "CLOSED" && <NoticeBand tone="info" title="폐점 점포는 조회만 할 수 있습니다. 영업을 다시 시작하려면 신규 점포로 등록해 주세요." />}
 
       {/* 두 묶음은 같은 선에서 끝나게 높이를 맞춘다(FormGroup 상자가 flex-1 로 늘어난다, 2026-10-16 점검) */}
       <div className="grid grid-cols-2 gap-[24px]">
@@ -901,7 +904,9 @@ export function StoreFormView(props: Props) {
         onConfirm={handleSaveConfirm}
         onCancel={() => setDialog(null)}
       >
-        <p>폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다. 다른 수정 내용도 함께 저장됩니다.</p>
+        {/* 상세의 폐점 확인창과 같은 문구 + 다른 수정 내용 안내(2026-11-03 사용자 지정) */}
+        <p>폐점으로 저장하면 되돌릴 수 없습니다.</p>
+        <p>폐점일은 오늘({kstToday()})이며, 다른 수정 내용도 함께 저장됩니다.</p>
       </ConfirmDialog>
     </div>
   );

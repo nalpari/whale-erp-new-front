@@ -121,7 +121,10 @@ export function detailTable(title, rows, action = "") {
       return `<div class="flex w-full"><dt class="flex ${height} w-[110px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${last ? "rounded-bl-[2px]" : ""}">${label}</dt><dd class="flex ${height} min-w-px flex-1 items-center gap-[10px] overflow-hidden border-r border-b border-erp-thead-line bg-white p-[12px] text-[14px] text-erp-ink ${last ? "rounded-br-[2px]" : ""} ${multiline ? "leading-[1.6] break-keep" : ""}">${value}</dd></div>`;
     })
     .join("");
-  const head = action
+  // 제목이 null 이면 줄만 그린다 — 점포 상세의 사진 옆 · 아래 줄(앱 DetailTable title 없음과 같다, 2026-11-03)
+  const head = title === null
+    ? ""
+    : action
     ? `<div class="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px]"><h3 class="flex min-w-0 flex-1 items-center text-[15px] font-semibold text-erp-ink">${title}</h3>${action}</div>`
     : `<h3 class="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">${title}</h3>`;
   return `<div class="w-full">${head}<dl class="flex w-full flex-col">${items}</dl></div>`; // 제목은 마이페이지 「계정 정보」와 같은 15px 600(앱 detail-table.tsx, 2026-10-27 사용자 지정)

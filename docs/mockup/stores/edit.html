@@ -63,7 +63,7 @@
               <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                 <div class="band band--info" data-show="closed" hidden>
                   <span class="band__ic" data-icon="info" data-icon-size="20"></span>
-                  <div class="band__body"><div class="band__title">폐점 점포는 수정할 수 없습니다.</div><p class="band__desc">다시 운영하려면 새 점포로 등록하세요.</p></div>
+                  <div class="band__body"><div class="band__title">폐점 점포는 조회만 할 수 있습니다. 영업을 다시 시작하려면 신규 점포로 등록해 주세요.</div></div>
                 </div>
                 <!-- 동시 수정 — 칸은 이미 최신 값으로 다시 채워져 있다(2026-10-29, 권한 그룹 · 메뉴와 같은 폼 띠) -->
                 <div class="band band--risk" data-show="stale" hidden>
@@ -146,7 +146,7 @@
                             <button class="btn btn--secondary btn--sm" type="button"><span data-icon="upload" data-icon-size="14"></span><span data-show="run reauth opmiss stale closed bpoff">이미지 바꾸기</span><span data-show="unop" hidden>이미지 올리기</span></button>
                             <button class="btn btn--ghost btn--sm" type="button" data-show="run reauth opmiss stale closed bpoff">이미지 삭제</button>
                           </div>
-                          <span class="help">JPG · PNG 파일 1장만 등록할 수 있습니다. (최대 5MB)<br />이미지를 선택한 후 ‘저장’을 눌러야 반영됩니다.</span>
+                          <span class="help">점포 사진 1장을 등록할 수 있습니다. (JPG · PNG, 5MB까지)<br />이미지를 선택한 뒤 화면 상단 ‘저장’ 버튼을 눌러야 적용됩니다.</span>
                         </div>
                       </div>
                     </div>
@@ -284,7 +284,7 @@
           <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
         </div>
         <div class="modal__body">
-          <p style="margin: 0; font-size: 13.5px">폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다. 다른 수정 내용도 함께 저장됩니다.</p>
+          <p style="margin: 0; font-size: 13.5px">폐점으로 저장하면 되돌릴 수 없습니다.<br>폐점일은 오늘(2026-11-03)이며, 다른 수정 내용도 함께 저장됩니다.</p>
         </div>
         <div class="modal__foot">
           <button class="btn btn--ghost" type="button" data-close>취소</button>
