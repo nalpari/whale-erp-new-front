@@ -128,7 +128,7 @@ export const render = ({ A, R }, { title = "BP 공통코드 관리", platform = 
     "min-w-0 flex-1",
     head(`상세 코드${c.sub(groupHead)}`, manage ? ui.button("추가", { variant: "soft", "data-code-add": true }) + ui.button("저장", { "data-code-save": true, "data-toast": "" }) : "") +
       // 플랫폼 계정은 조회만 — BP 권한 그룹과 같은 회색 안내 한 줄(2026-10-30 재영)
-      (platform ? band("플랫폼 계정은 BP 공통코드를 조회만 합니다.") : "") +
+      (platform ? band("플랫폼 계정은 BP 공통코드를 조회만 할 수 있습니다.") : "") +
       // 순서를 옮기면 표 위 빨간 상자(앱 code-panel.tsx PendingNotice · REORDERED)
       (manage ? `<div data-code-reordered hidden>${c.warnBand("표시 순서가 변경되었습니다. 저장 시 반영됩니다.").replace("<div ", '<div role="status" ')}</div>` : "") +
       ui.scrollTable(codeTable) +

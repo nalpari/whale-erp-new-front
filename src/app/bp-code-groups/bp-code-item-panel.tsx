@@ -362,7 +362,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       }
     >
       {/* 플랫폼 계정은 조회만 — BP 권한 그룹과 같은 회색 안내 한 줄(2026-10-30 재영, 전엔 빨간 상자 「BP 공통코드는 BP 계정만 수정할 수 있습니다.」) */}
-      {lock === "platform-user" && <InfoBand>플랫폼 계정은 BP 공통코드를 조회만 합니다.</InfoBand>}
+      {lock === "platform-user" && <InfoBand>플랫폼 계정은 BP 공통코드를 조회만 할 수 있습니다.</InfoBand>}
       {reordered && <PendingNotice message={REORDERED} />}
       {failure && <SaveFailedBand message={failure} detail={failureStale ? STALE_DETAIL : undefined} />}
       <DataTable
