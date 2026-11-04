@@ -2810,7 +2810,8 @@ export interface paths {
         get: operations["StoresController_detail"];
         /**
          * 수정 · 상태 전환. 상세에서 받은 updatedAt 을 함께 보낸다 — 그 사이 다른 사람이 고쳤으면 409.
-         *     폐점이면 같은 트랜잭션에서 소속 직원 퇴직(퇴직일 오늘) · 대기 계약 종료 · 초대 만료를 하고, 처리한 수를 closing 으로 준다.
+         *     폐점이면 같은 트랜잭션에서 소속 직원의 퇴직일을 폐점일로 정하고(이미 더 이르면 그대로) 대기 계약 종료 · 초대 만료를 하고,
+         *     처리한 수를 closing 으로 준다.
          */
         put: operations["StoresController_update"];
         post?: never;
@@ -8378,28 +8379,11 @@ export interface components {
          * @enum {string}
          */
         StoreOperationRequirement: "BUSINESS_VERIFICATION" | "COORDINATES" | "BP_INACTIVE";
-        StoreClosingOpenCheckInDto: {
-            /** @description 그 출근의 점포 */
-            storeId: number;
-            attendanceRecordId: number;
-            staffMemberId: number;
-            /** @description 직원 이름 */
-            name: string;
-            /**
-             * Format: date-time
-             * @description 출근 시각
-             */
-            recordedAt: string;
-            /** @description 출근한 다음 날이 지나 직원 앱으로는 퇴근할 수 없다 — 출퇴근 현황에서 관리자 보정으로 닫는다 */
-            isCheckOutExpired: boolean;
-        };
         StoreClosingOpenCheckInsDto: {
-            /** @description 이름을 내보내는 열린 출근 수 */
+            /** @description 본사 역할에게도 이름이 보이는 직원의 열린 출근 수 */
             count: number;
-            /** @description 본사 역할에게 가려지는 직원(본사 제공 동의를 하지 않은 가맹 직원 등)의 열린 출근 수 — 이름 없이 수만 */
+            /** @description 본사 역할에게 가려지는 직원(본사 제공 동의를 하지 않은 가맹 직원 등)의 열린 출근 수 */
             hiddenCount: number;
-            /** @description 이름을 내보내는 것 가운데 출근 시각이 가장 이른 것. 없으면 null */
-            first: components["schemas"]["StoreClosingOpenCheckInDto"] | null;
         };
         StoreClosingStoreCheckDto: {
             storeId: number;
@@ -8408,32 +8392,38 @@ export interface components {
             /** @description 점포코드 */
             storeCode: string;
             openCheckIns: components["schemas"]["StoreClosingOpenCheckInsDto"];
-            /** @description 폐점하면 퇴직될 직원 수(퇴직일 오늘) */
+            /**
+             * @description 폐점하면 퇴직될 직원 수 — 퇴직일이 없거나 폐점일보다 뒤면 폐점일(한국 날짜 오늘)로 정하고, 이미 그 이전이면 그대로 둔다.
+             *     임시저장 계약만 있는 가입 전 레코드는 세지 않는다(그 임시저장은 draftContracts 로 드러난다)
+             */
             retiringStaff: number;
             /** @description 폐점하면 종료될 임시저장 계약 수 */
             draftContracts: number;
-            /** @description 폐점하면 종료될 발송 대기 계약 수(초대도 무효) */
+            /** @description 폐점하면 종료될 발송 대기 계약 수 */
             pendingSendContracts: number;
             /** @description 폐점하면 종료될 서명 대기 + 수정 요청 계약 수 */
             pendingSignatureContracts: number;
             /** @description 확정하지 않은(작성 중 · 검토 중) 급여명세서 수 — 폐점 뒤에도 처리할 수 있다 */
             unconfirmedPayslips: number;
-            /** @description 폐점할 수 없다 — 퇴근하지 않은 출근이 있다(openCheckIns.count + hiddenCount > 0) */
+            /** @description 폐점할 수 없다 — 퇴근하지 않은 출근이 있다(openCheckIns.count + hiddenCount > 0). 합계의 값은 응답 최상위 isBlocked 와 같다 */
             isBlocked: boolean;
         };
         StoreClosingCountsDto: {
             openCheckIns: components["schemas"]["StoreClosingOpenCheckInsDto"];
-            /** @description 폐점하면 퇴직될 직원 수(퇴직일 오늘) */
+            /**
+             * @description 폐점하면 퇴직될 직원 수 — 퇴직일이 없거나 폐점일보다 뒤면 폐점일(한국 날짜 오늘)로 정하고, 이미 그 이전이면 그대로 둔다.
+             *     임시저장 계약만 있는 가입 전 레코드는 세지 않는다(그 임시저장은 draftContracts 로 드러난다)
+             */
             retiringStaff: number;
             /** @description 폐점하면 종료될 임시저장 계약 수 */
             draftContracts: number;
-            /** @description 폐점하면 종료될 발송 대기 계약 수(초대도 무효) */
+            /** @description 폐점하면 종료될 발송 대기 계약 수 */
             pendingSendContracts: number;
             /** @description 폐점하면 종료될 서명 대기 + 수정 요청 계약 수 */
             pendingSignatureContracts: number;
             /** @description 확정하지 않은(작성 중 · 검토 중) 급여명세서 수 — 폐점 뒤에도 처리할 수 있다 */
             unconfirmedPayslips: number;
-            /** @description 폐점할 수 없다 — 퇴근하지 않은 출근이 있다(openCheckIns.count + hiddenCount > 0) */
+            /** @description 폐점할 수 없다 — 퇴근하지 않은 출근이 있다(openCheckIns.count + hiddenCount > 0). 합계의 값은 응답 최상위 isBlocked 와 같다 */
             isBlocked: boolean;
         };
         StoreClosingCheckResponseDto: {
@@ -8441,13 +8431,13 @@ export interface components {
             stores: components["schemas"]["StoreClosingStoreCheckDto"][];
             /** @description 같은 칸의 합계 */
             total: components["schemas"]["StoreClosingCountsDto"];
-            /** @description 하나라도 막히면 true — total.isBlocked 와 같다 */
+            /** @description 하나라도 막히면 true — total.isBlocked 와 같은 값(편의용) */
             isBlocked: boolean;
         };
         StoreTransitionCheckResponseDto: {
             /** @description 운영으로 바꾸는 데 모자란 것. 비어 있으면 운영할 수 있다. 한글은 GET /enums/StoreOperationRequirement. */
             missingForOperation: components["schemas"]["StoreOperationRequirement"][];
-            /** @description 진행 중인 근로계약 수 — 거부 · 만료 · 종료되지 않은 계약. 0 이어야 삭제된다(폐점은 막지 않는다 — 대기 계약은 폐점이 닫는다). */
+            /** @description 진행 중인 근로계약 수 — 거부 · 만료 · 종료되지 않은 계약. 0 이어야 삭제된다(폐점은 막지 않는다 — 대기 계약은 폐점이 종료하고 체결 완료는 남는다). */
             inProgressContractCount: number;
             /** @description 폐점할 수 있는가 — 소속 BP 사용 중 · 폐점 아님 · 퇴근하지 않은 출근 없음(closing.isBlocked false) */
             canClose: boolean;
@@ -8667,9 +8657,12 @@ export interface components {
             storeName: string;
             /** @description 점포코드 */
             storeCode: string;
-            /** @description 퇴직될 직원 수(퇴직일 = 폐점일) */
+            /**
+             * @description 퇴직될 직원 수 — 확인의 retiringStaff 와 같은 기준(퇴직일이 없거나 폐점일보다 뒤면 폐점일로 정함, 이미 그 이전이면 그대로,
+             *     임시저장 계약만 있는 가입 전 레코드는 세지 않음)
+             */
             retiringStaff: number;
-            /** @description 퇴직일을 폐점일로 당긴 직원 수 */
+            /** @description 퇴직일을 폐점일로 당긴 직원 수. 늘 retiringStaff 안에 드는 것은 아니다 — 세지 않는 가입 전 레코드의 당김도 들어간다 */
             pulledForwardStaff: number;
             /** @description 종료로 닫은 임시저장 계약 수 */
             draftContracts: number;
@@ -8677,13 +8670,16 @@ export interface components {
             pendingSendContracts: number;
             /** @description 종료로 닫은 서명 대기 + 수정 요청 계약 수 */
             pendingSignatureContracts: number;
-            /** @description 만료로 바꾼 초대 수 */
+            /** @description 만료로 바꾼 초대 수 — 그 점포 직원에게 발송한(SENT) 초대 전부 */
             expiredInvitations: number;
         };
         StoreClosingRetirementDto: {
-            /** @description 퇴직될 직원 수(퇴직일 = 폐점일) */
+            /**
+             * @description 퇴직될 직원 수 — 확인의 retiringStaff 와 같은 기준(퇴직일이 없거나 폐점일보다 뒤면 폐점일로 정함, 이미 그 이전이면 그대로,
+             *     임시저장 계약만 있는 가입 전 레코드는 세지 않음)
+             */
             retiringStaff: number;
-            /** @description 퇴직일을 폐점일로 당긴 직원 수 */
+            /** @description 퇴직일을 폐점일로 당긴 직원 수. 늘 retiringStaff 안에 드는 것은 아니다 — 세지 않는 가입 전 레코드의 당김도 들어간다 */
             pulledForwardStaff: number;
             /** @description 종료로 닫은 임시저장 계약 수 */
             draftContracts: number;
@@ -8691,7 +8687,7 @@ export interface components {
             pendingSendContracts: number;
             /** @description 종료로 닫은 서명 대기 + 수정 요청 계약 수 */
             pendingSignatureContracts: number;
-            /** @description 만료로 바꾼 초대 수 */
+            /** @description 만료로 바꾼 초대 수 — 그 점포 직원에게 발송한(SENT) 초대 전부 */
             expiredInvitations: number;
         };
         StoreClosingResultResponseDto: {
@@ -19433,7 +19429,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 동시 수정 · 폐점한 점포 · 소속 BP 미사용 · 사업자등록번호 중복 · 퇴근하지 않은 출근(폐점, code OPEN_CHECK_IN · storeId — 출퇴근 현황에서 보정 뒤 다시) */
+            /** @description 동시 수정 · 폐점한 점포 · 소속 BP 미사용 · 사업자등록번호 중복 · 퇴근하지 않은 출근(폐점, code OPEN_CHECK_IN · storeId — 퇴근 등록 또는 출퇴근 현황 보정 뒤 다시) · 다른 처리와 겹침(폐점, 교착이 다시 해도 나면 — 바뀐 것 없음, 다시 시도) */
             409: {
                 headers: {
                     [name: string]: unknown;
