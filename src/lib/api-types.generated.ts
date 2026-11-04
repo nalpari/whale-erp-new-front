@@ -369,7 +369,8 @@ export interface paths {
         };
         /**
          * 화면을 그릴 정보 — 계정 · 메뉴(+권한) · 관리 점포 · 공통코드. 부르는 시점의 값이다. 관리자 웹은 로그인
-         *     직후 한 번 받아 쓰고, 바뀐 값은 다시 로그인할 때 받는다. 업무 API 의 판정은 요청마다 현재 값으로 한다.
+         *     직후 받아 쓰고, 로그인 정보 버전(`me/login-info-version`)이 바뀌면 다시 받는다. 업무 API 의 판정은 요청마다
+         *     현재 값으로 한다. 지운 계정 401, 사용중지 · 탈퇴 계정 403.
          */
         get: operations["AdminAuthController_getLoginInfo"];
         put?: never;
@@ -410,7 +411,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 로그인 정보 버전 — 계정 상태 · 권한 그룹 · 메뉴 권한 · 메뉴 · 소속 BP 가 바뀌었는지. 관리자 웹이 새로고침 · 메뉴
+         * 로그인 정보 버전 — 내 계정 행 · 권한 그룹 · 메뉴 권한 · 메뉴 · 소속 BP 가 바뀌었는지. 관리자 웹이 새로고침 · 메뉴
          *     이동 · 창 포커스 때 점포 목록 버전과 같이 묻고, 바뀌었으면 login-info 를 다시 받는다. `me/stores` 와 같이 강제
          *     비밀번호 변경 중에는 403 이다. 지웠거나 사용 중이 아닌 계정은 403.
          */
@@ -524,7 +525,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 회원 탈퇴 조건 조회(마이페이지, S-JHQQNR). 탈퇴 버튼을 누르기 전에 보여줄 영향 범위 — BP명 · 함께 탈퇴될
+         * 회원 탈퇴 조건 조회(마이페이지, S-JHQQNR). 탈퇴 버튼을 누르기 전에 보여줄 영향 범위 — BP명 · 함께 미사용(개인정보 지움)될
          *     하위 관리자 수 · 함께 강제 폐점될 점포 수 · 가로막는 진행 중 계약 여부. BP 마스터만 받는다 — 그 밖의
          *     권한은 403, 계정이 지워졌으면 404. 조회만 하고 실제 탈퇴는 하지 않는다.
          */
@@ -547,8 +548,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 회원 탈퇴 실행(마이페이지, S-JHQQNR). BP 마스터가 현재 비밀번호와 사유를 보내면 본인 · 같은 BP 의 하위 관리자가
-         *     모두 탈퇴하고 점포는 모두 폐점된다. 진행 중인 근로계약이 있으면 막는다(조건 조회와 같은 기준). 비밀번호를
+         * 회원 탈퇴 실행(마이페이지, S-JHQQNR). BP 마스터가 현재 비밀번호와 사유를 보내면 본인은 탈퇴, 같은 BP 의 하위 관리자는
+         *     미사용(개인정보는 지움)이 되고 점포는 모두 폐점된다. 진행 중인 근로계약이 있으면 막는다(조건 조회와 같은 기준). 비밀번호를
          *     받는 경로라 내 비밀번호 변경과 같은 한도를 건다.
          */
         post: operations["AdminAuthController_withdraw"];
@@ -2807,7 +2808,10 @@ export interface paths {
             cookie?: never;
         };
         get: operations["StoresController_detail"];
-        /** 수정 · 상태 전환. 상세에서 받은 updatedAt 을 함께 보낸다 — 그 사이 다른 사람이 고쳤으면 409. */
+        /**
+         * 수정 · 상태 전환. 상세에서 받은 updatedAt 을 함께 보낸다 — 그 사이 다른 사람이 고쳤으면 409.
+         *     폐점이면 같은 트랜잭션에서 소속 직원 퇴직(퇴직일 오늘) · 대기 계약 종료 · 초대 만료를 하고, 처리한 수를 closing 으로 준다.
+         */
         put: operations["StoresController_update"];
         post?: never;
         /** 삭제(논리 삭제). 미운영이면서 진행 중인 근로계약이 없을 때만. */
@@ -3859,6 +3863,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/attendance-records/open-check-ins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 점포의 열린 출근(퇴근하지 않은 출근, WHALEERP-644) — 폐점 전에 묻는다. 보정할 수 있는 3개월 안의 것, 출근 시각순. 본사에게
+         *     가려지는 직원은 줄을 빼고 수만 `hiddenCount` 로(ATT-30)
+         */
+        get: operations["AttendanceRecordsController_openCheckIns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/attendance-records/proxy-staff": {
         parameters: {
             query?: never;
@@ -4868,7 +4892,7 @@ export interface components {
         WithdrawEligibilityResponseDto: {
             /** @description BP 상호명. */
             bpName: string;
-            /** @description 함께 탈퇴될 하위 관리자 수(BP 관리자 · 가맹마스터 · 가맹관리자) — 요청한 BP 마스터 자신은 빼고 센다. */
+            /** @description 함께 미사용(개인정보 지움)될 하위 관리자 수(BP 관리자 · 가맹마스터 · 가맹관리자) — 요청한 BP 마스터 자신은 빼고 센다. */
             adminCount: number;
             /** @description 함께 강제 폐점될 점포 수 — 이미 폐점한 점포는 빼고 센다. */
             storeCount: number;
@@ -8354,17 +8378,88 @@ export interface components {
          * @enum {string}
          */
         StoreOperationRequirement: "BUSINESS_VERIFICATION" | "COORDINATES" | "BP_INACTIVE";
+        StoreClosingOpenCheckInDto: {
+            /** @description 그 출근의 점포 */
+            storeId: number;
+            attendanceRecordId: number;
+            staffMemberId: number;
+            /** @description 직원 이름 */
+            name: string;
+            /**
+             * Format: date-time
+             * @description 출근 시각
+             */
+            recordedAt: string;
+            /** @description 출근한 다음 날이 지나 직원 앱으로는 퇴근할 수 없다 — 출퇴근 현황에서 관리자 보정으로 닫는다 */
+            isCheckOutExpired: boolean;
+        };
+        StoreClosingOpenCheckInsDto: {
+            /** @description 이름을 내보내는 열린 출근 수 */
+            count: number;
+            /** @description 본사 역할에게 가려지는 직원(본사 제공 동의를 하지 않은 가맹 직원 등)의 열린 출근 수 — 이름 없이 수만 */
+            hiddenCount: number;
+            /** @description 이름을 내보내는 것 가운데 출근 시각이 가장 이른 것. 없으면 null */
+            first: components["schemas"]["StoreClosingOpenCheckInDto"] | null;
+        };
+        StoreClosingStoreCheckDto: {
+            storeId: number;
+            /** @description 점포명 */
+            storeName: string;
+            /** @description 점포코드 */
+            storeCode: string;
+            openCheckIns: components["schemas"]["StoreClosingOpenCheckInsDto"];
+            /** @description 폐점하면 퇴직될 직원 수(퇴직일 오늘) */
+            retiringStaff: number;
+            /** @description 폐점하면 종료될 임시저장 계약 수 */
+            draftContracts: number;
+            /** @description 폐점하면 종료될 발송 대기 계약 수(초대도 무효) */
+            pendingSendContracts: number;
+            /** @description 폐점하면 종료될 서명 대기 + 수정 요청 계약 수 */
+            pendingSignatureContracts: number;
+            /** @description 확정하지 않은(작성 중 · 검토 중) 급여명세서 수 — 폐점 뒤에도 처리할 수 있다 */
+            unconfirmedPayslips: number;
+            /** @description 폐점할 수 없다 — 퇴근하지 않은 출근이 있다(openCheckIns.count + hiddenCount > 0) */
+            isBlocked: boolean;
+        };
+        StoreClosingCountsDto: {
+            openCheckIns: components["schemas"]["StoreClosingOpenCheckInsDto"];
+            /** @description 폐점하면 퇴직될 직원 수(퇴직일 오늘) */
+            retiringStaff: number;
+            /** @description 폐점하면 종료될 임시저장 계약 수 */
+            draftContracts: number;
+            /** @description 폐점하면 종료될 발송 대기 계약 수(초대도 무효) */
+            pendingSendContracts: number;
+            /** @description 폐점하면 종료될 서명 대기 + 수정 요청 계약 수 */
+            pendingSignatureContracts: number;
+            /** @description 확정하지 않은(작성 중 · 검토 중) 급여명세서 수 — 폐점 뒤에도 처리할 수 있다 */
+            unconfirmedPayslips: number;
+            /** @description 폐점할 수 없다 — 퇴근하지 않은 출근이 있다(openCheckIns.count + hiddenCount > 0) */
+            isBlocked: boolean;
+        };
+        StoreClosingCheckResponseDto: {
+            /** @description 점포별 결과 — 점포 id 오름차순 */
+            stores: components["schemas"]["StoreClosingStoreCheckDto"][];
+            /** @description 같은 칸의 합계 */
+            total: components["schemas"]["StoreClosingCountsDto"];
+            /** @description 하나라도 막히면 true — total.isBlocked 와 같다 */
+            isBlocked: boolean;
+        };
         StoreTransitionCheckResponseDto: {
             /** @description 운영으로 바꾸는 데 모자란 것. 비어 있으면 운영할 수 있다. 한글은 GET /enums/StoreOperationRequirement. */
             missingForOperation: components["schemas"]["StoreOperationRequirement"][];
-            /** @description 진행 중인 근로계약 수 — 거부 · 만료 · 종료되지 않은 계약. 0 이어야 폐점 · 삭제된다. */
+            /** @description 진행 중인 근로계약 수 — 거부 · 만료 · 종료되지 않은 계약. 0 이어야 삭제된다(폐점은 막지 않는다 — 대기 계약은 폐점이 닫는다). */
             inProgressContractCount: number;
-            /** @description 폐점할 수 있는가 */
+            /** @description 폐점할 수 있는가 — 소속 BP 사용 중 · 폐점 아님 · 퇴근하지 않은 출근 없음(closing.isBlocked false) */
             canClose: boolean;
-            /** @description 삭제할 수 있는가 — 미운영이면서 폐점 조건을 채울 때 */
+            /** @description 삭제할 수 있는가 — 소속 BP 사용 중 · 미운영 · 진행 중인 근로계약 없음 */
             canDelete: boolean;
             /** @description 구독 · 정산 조건은 1차 범위 밖이라 보지 않는다 — 화면은 「1차 범위 밖」으로 보인다 */
             isSubscriptionChecked: boolean;
+            /**
+             * @description 폐점 확인 — 막힘(퇴근하지 않은 출근)과 폐점하면 처리될 것(퇴직될 직원 · 종료될 대기 계약 · 확정하지 않은 급여명세서).
+             *     점포 하나라 stores 는 한 건이고 total 과 같다. 이미 폐점한 점포는 null.
+             */
+            closing: components["schemas"]["StoreClosingCheckResponseDto"] | null;
         };
         StoreDetailResponseDto: {
             /** @enum {string} */
@@ -8565,6 +8660,48 @@ export interface components {
              *     저장한다. 이미 번호가 있는 점포는 재인증이라 번호 · 개업일자가 저장된 값과 같아야 한다.
              */
             businessVerification?: components["schemas"]["BusinessIdentityInputDto"];
+        };
+        StoreClosingStoreResultDto: {
+            storeId: number;
+            /** @description 점포명 */
+            storeName: string;
+            /** @description 점포코드 */
+            storeCode: string;
+            /** @description 퇴직될 직원 수(퇴직일 = 폐점일) */
+            retiringStaff: number;
+            /** @description 퇴직일을 폐점일로 당긴 직원 수 */
+            pulledForwardStaff: number;
+            /** @description 종료로 닫은 임시저장 계약 수 */
+            draftContracts: number;
+            /** @description 종료로 닫은 발송 대기 계약 수 */
+            pendingSendContracts: number;
+            /** @description 종료로 닫은 서명 대기 + 수정 요청 계약 수 */
+            pendingSignatureContracts: number;
+            /** @description 만료로 바꾼 초대 수 */
+            expiredInvitations: number;
+        };
+        StoreClosingRetirementDto: {
+            /** @description 퇴직될 직원 수(퇴직일 = 폐점일) */
+            retiringStaff: number;
+            /** @description 퇴직일을 폐점일로 당긴 직원 수 */
+            pulledForwardStaff: number;
+            /** @description 종료로 닫은 임시저장 계약 수 */
+            draftContracts: number;
+            /** @description 종료로 닫은 발송 대기 계약 수 */
+            pendingSendContracts: number;
+            /** @description 종료로 닫은 서명 대기 + 수정 요청 계약 수 */
+            pendingSignatureContracts: number;
+            /** @description 만료로 바꾼 초대 수 */
+            expiredInvitations: number;
+        };
+        StoreClosingResultResponseDto: {
+            /** @description 점포별 결과 — 점포 id 오름차순 */
+            stores: components["schemas"]["StoreClosingStoreResultDto"][];
+            /** @description 같은 칸의 합계 */
+            total: components["schemas"]["StoreClosingRetirementDto"];
+        };
+        UpdateStoreResponseDto: {
+            closing: components["schemas"]["StoreClosingResultResponseDto"] | null;
         };
         /**
          * @description 게시 상태. 게시하려면 노출 대상이 하나 이상 있어야 한다.
@@ -9611,8 +9748,8 @@ export interface components {
         };
         CheckInBlockDto: {
             /** @enum {string} */
-            reason: "CONTRACT_PENDING_SIGNATURE" | "NO_CONTRACT";
-            /** @description 서명 대기 계약 — 「계약서 보기」로 연다. NO_CONTRACT 면 null */
+            reason: "STORE_CLOSED" | "CONTRACT_PENDING_SIGNATURE" | "NO_CONTRACT";
+            /** @description 서명 대기 계약 — 「계약서 보기」로 연다. 그 밖에는 null */
             contractId: number | null;
         };
         OpenCheckInDto: {
@@ -9870,6 +10007,33 @@ export interface components {
              *     줄에 나온 직원만(가려진 직원 없음)
              */
             weekStaff?: components["schemas"]["AttendanceWeekStaffDto"][];
+        };
+        OpenCheckInItemDto: {
+            /** @description 출근 기록 */
+            attendanceRecordId: number;
+            /** @description 직원 레코드 — 퇴직한 직원의 것도 나온다 */
+            staffMemberId: number;
+            /** @description 직원 이름 */
+            name: string;
+            /**
+             * Format: date-time
+             * @description 출근 시각
+             */
+            recordedAt: string;
+            /** @description 출근한 다음 날이 지나 직원 앱으로는 퇴근할 수 없다 — 관리자 보정으로 닫는다. false 면 아직 근무 중일 수 있다 */
+            isCheckOutExpired: boolean;
+        };
+        OpenCheckInsResponseDto: {
+            storeId: number;
+            /** @description items 의 수 — 가려진 것은 빠진다. 폐점 전 확인은 `count + hiddenCount` 로 한다 */
+            count: number;
+            /**
+             * @description 본사 역할에게 가려지는 직원(`hidesPersonalData` — 동의 없는 가맹 직원, 폐점한 가맹 점포면 동의했어도)의 열린 출근 수. 줄은 주지
+             *     않고 수만(2026-11-03 재영). 그 밖에는 0
+             */
+            hiddenCount: number;
+            /** @description 출근 시각이 이른 것부터 */
+            items: components["schemas"]["OpenCheckInItemDto"][];
         };
         ProxyStaffItemDto: {
             staffMemberId: number;
@@ -11374,6 +11538,13 @@ export interface operations {
                     "application/json": components["schemas"]["AdminLoginInfoResponseDto"];
                 };
             };
+            /** @description 사용할 수 없는 관리자 계정 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     AdminAuthController_getMyStores: {
@@ -11472,6 +11643,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AdminProfileResponseDto"];
                 };
+            };
+            /** @description 사용할 수 없는 관리자 계정 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -18157,7 +18335,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 가입 초대 · 소속 추가 확인 요청 알림톡일 때만 — 직원 앱 주소(STAFF_APP_URL)가 없음 · 대체 문자 발신번호(BIZPPURIO_SMS_FROM)가 없음 · 그 알림톡 템플릿이 없거나 꺼짐 */
+            /** @description 가입 초대 · 소속 추가 확인 요청 알림톡일 때만 — 직원 앱 주소(STAFF_APP_URL)가 없거나 https 가 아님(가입 초대만 — 소속 추가 확인 요청 알림톡은 링크가 없다) · 대체 문자 발신번호(BIZPPURIO_SMS_FROM)가 없음 · 그 알림톡 템플릿이 없거나 꺼졌거나 버튼 설정이 맞지 않음 */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -19226,11 +19404,13 @@ export interface operations {
             };
         };
         responses: {
-            204: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["UpdateStoreResponseDto"];
+                };
             };
             /** @description 입력 형식 · 위도 · 경도 중 하나만 있음 · 바꿀 수 없는 상태 전환 · 운영으로 바꿀 때 운영 조건(인증 · 좌표) 미충족 · 운영 중인 점포의 좌표 삭제 · 국세청 정보와 다름 · 재인증 번호 불일치 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
@@ -19253,7 +19433,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 동시 수정 · 폐점한 점포 · 소속 BP 미사용 · 진행 중인 근로계약(폐점) · 사업자등록번호 중복 */
+            /** @description 동시 수정 · 폐점한 점포 · 소속 BP 미사용 · 사업자등록번호 중복 · 퇴근하지 않은 출근(폐점, code OPEN_CHECK_IN · storeId — 출퇴근 현황에서 보정 뒤 다시) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -22532,7 +22712,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_PENDING_SIGNATURE — 서명 대기 계약(contractId) / NO_CONTRACT — 오늘이 체결 완료 근로계약 기간 밖이거나 퇴직일이 지남 (ATT-12) */
+            /** @description STORE_CLOSED — 폐점한 근무지 / CONTRACT_PENDING_SIGNATURE — 서명 대기 계약(contractId) / NO_CONTRACT — 오늘이 체결 완료 근로계약 기간 밖이거나 퇴직일이 지남 (ATT-12) */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -22735,6 +22915,52 @@ export interface operations {
                 content?: never;
             };
             /** @description 직원이 점포 조건 안의 직원이 아니거나 본사에게 가려진 직원 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRecordsController_openCheckIns: {
+        parameters: {
+            query: {
+                /** @description 점포 */
+                storeId: number;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpenCheckInsResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 점포가 없거나 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
