@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
+import { codeOf } from "@/lib/api-error";
+import type { StoreClosingResult } from "@/lib/store-closing";
 import type {
   BusinessVerificationInput,
   BusinessVerificationResult,
@@ -28,9 +30,9 @@ import {
 /**
  * 실패 결과. status 가 있으면 api 가 거절한 것이 확실하다(4xx · 503). status 가 없으면 결과를 확신할 수 없다
  * (그 밖의 5xx · 연결 실패 · 응답을 읽지 못함) — 저장됐을 수도 있으니 화면은 상태를 다시 받고 「확인해 달라」고 알린다.
- * messages 는 검증 실패(400)의 문장 목록이다 — 화면이 칸마다 나눠 붙인다.
+ * messages 는 검증 실패(400)의 문장 목록이다 — 화면이 칸마다 나눠 붙인다. code 는 api 오류 본문의 업무 code 다(폐점 409 OPEN_CHECK_IN).
  */
-export type ActionFailure = { ok: false; status?: number; message: string; messages?: string[] };
+export type ActionFailure = { ok: false; status?: number; message: string; messages?: string[]; code?: string };
 export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
 
 /**
@@ -40,7 +42,10 @@ export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
 function failureOf(error: unknown, what: string): ActionFailure {
   if (error instanceof ApiError) {
     if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
-    if (error.status < 500 || error.status === 503) return { ok: false, status: error.status, message: error.message, messages: error.messages };
+    if (error.status < 500 || error.status === 503) {
+      const code = codeOf(error.body);
+      return { ok: false, status: error.status, message: error.message, messages: error.messages, ...(code === undefined ? {} : { code }) };
+    }
   }
   console.error(`점포 ${what} 결과 모름`, error);
   return { ok: false, message: `${what} 결과를 확인하지 못했습니다.` };
@@ -69,12 +74,14 @@ export async function createStoreAction(input: CreateStoreInput): Promise<Action
   }
 }
 
-export async function updateStoreAction(id: number, input: UpdateStoreInput): Promise<ActionResult> {
+/** 수정 · 상태 전환. 폐점이면 closing 에 처리한 수(퇴직 · 계약 종료 · 초대 만료)가 온다 — 그 밖에는 null */
+export async function updateStoreAction(id: number, input: UpdateStoreInput): Promise<ActionResult<{ closing: StoreClosingResult | null }>> {
   if (!validId(id)) return NOT_FOUND;
   try {
-    await updateStore(id, input);
+    const result = await updateStore(id, input);
     refresh();
-    return { ok: true };
+    // 본문이 없어도(204) 저장은 끝났다 — 결과 안내만 빼고 성공으로 둔다
+    return { ok: true, closing: result?.closing ?? null };
   } catch (error) {
     return failureOf(error, "수정");
   }

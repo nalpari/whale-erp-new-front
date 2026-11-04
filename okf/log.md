@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-04
+* **Update**: [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) — 점포 폐점: 폐점 조건을 진행 중 근로계약에서 퇴근하지 않은 출근(가려진 직원 포함, 첫 건 · 할 일)으로 바꿨다. 확인 창에 폐점하면 함께 처리될 것(퇴직 · 대기 계약 종료 · 미확정 급여명세서 안내), 저장 뒤 처리 결과 창, 확인과 저장 사이 출근 409 `OPEN_CHECK_IN` 처리. 삭제 조건은 그대로(`deleteBlockText`). api scizor 의 openapi 로 타입을 다시 만들었다(PUT 응답 200 `{ closing }`). 목업 · 데모 점포 상세 · 수정 팝업도 맞췄다(front gastly).
 * **Update**: [플랫폼 시스템 관리](/system.md) · [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 메뉴 관리: 메뉴 URL 은 등록할 때만 넣고 수정 양식에서는 읽기 전용(메뉴 코드 · 순서와 같은 칸)으로 막았다(사용자 지정, front machamp). 목업 · 데모 메뉴 화면도 같이 맞췄다.
 * **Update**: [플랫폼 시스템 관리](/system.md) — PR #216 리뷰 반영: 수정 저장의 메뉴 URL 겹침 409(겹치는 URL 을 가진 미사용 메뉴를 켤 때)를 칸 아래가 아니라 실패 띠로 보인다 — 읽기 전용 칸이라 문구 자리가 없어 아무것도 안 보였다. 「수정에서 URL 을 바꿀 때 건다」 낡은 문장도 고쳤다(front machamp).
 * **Update**: [로그인](/auth.md) — 상위 BP 가 탈퇴했으면 계정 상태와 상관없이 로그인 불가(미사용과 같은 문구), 탈퇴 중 사용으로 저장된 하위 관리자도 탈퇴 시점 기준 미사용(api #243 리뷰 반영 · 사용자 지정, front glaceon).

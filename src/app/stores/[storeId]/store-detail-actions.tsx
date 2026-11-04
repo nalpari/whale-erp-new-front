@@ -10,9 +10,11 @@ import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp, usePagePermission, useRefreshStores, useScope } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import { withoutDeletedStore } from "@/lib/store-scope";
-import { closeBlockText, finalEuro, nextStatuses } from "@/lib/store-view";
+import { deleteBlockText, finalEuro, nextStatuses } from "@/lib/store-view";
+import { OPEN_CHECK_IN, type StoreClosingResult } from "@/lib/store-closing";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
+import { ClosingCheckList, ClosingCondition, ClosingResultDialog, hasClosingResult } from "../store-closing-parts";
 import { WarnBand } from "@/components/site/side-parts";
 import { withBack } from "../stores-query";
 import { kstToday } from "@/lib/staff-members";
@@ -43,6 +45,8 @@ const UNKNOWN =
  * 상세 제목 줄의 버튼 — [상태 변경] [삭제] [수정] [목록](데모 stores/detail).
  * 상태 변경 팝업은 열 때 운영 · 폐점 조건을 지금 기준으로 다시 받고, 갈 수 있는 상태만 보인다(미운영→운영 · 폐점, 운영→폐점).
  * 폐점은 되돌릴 수 없어 조건 팝업 다음에 확인 창을 한 번 더 거친다([이전]은 조건 팝업으로 돌아간다).
+ * 폐점 조건은 퇴근하지 않은 출근 0건이다(근로계약은 막지 않는다). 확인 창에 폐점하면 함께 처리될 것(퇴직 · 대기 계약 종료)을 보이고,
+ * 저장 뒤 처리한 것이 있으면 결과 창을 띄운다. 확인과 저장 사이에 출근이 생기면(409 OPEN_CHECK_IN) 조건 팝업으로 돌아간다.
  * 상태만 바꾸는 저장도 수정(PUT)으로 보낸다 — 화면 전체를 보내야 해서 상세 값을 그대로 싣고 상태만 바꾼다.
  * 폐점 점포는 수정 · 삭제 · 상태 변경이 없다. 소속 BP 가 미사용이면 쓰는 버튼을 막는다(api 도 409 로 막는다).
  * 메뉴 권한(로그인 정보)으로 상태 변경 · 수정은 update, 삭제는 delete 가 있을 때 보인다 — 막는 것은 api 다.
@@ -71,6 +75,8 @@ export function StoreDetailActions({
   const [target, setTarget] = useState<StoreStatus | null>(null);
   const [transitions, setTransitions] = useState<StoreTransitions>(store.transitions);
   const [failure, setFailure] = useState<string | null>(null);
+  /** 폐점 저장 결과 — 처리한 것이 있을 때 결과 창을 연다 */
+  const [closingResult, setClosingResult] = useState<StoreClosingResult | null>(null);
   const [busy, startBusy] = useTransition();
 
   const closed = store.storeStatusCode === "CLOSED";
@@ -85,7 +91,7 @@ export function StoreDetailActions({
     (store.storeStatusCode !== "NOT_OPERATING"
       ? "미운영 점포만 삭제할 수 있습니다. 점포 운영을 종료하려면 '상태 변경'에서 '폐점'으로 변경해 주세요."
       : !transitions.canDelete
-        ? (closeBlockText(transitions) ?? "삭제 조건을 충족하지 않아 삭제할 수 없습니다.")
+        ? (deleteBlockText(transitions) ?? "삭제 조건을 충족하지 않아 삭제할 수 없습니다.")
         : undefined);
 
   /** 실패를 팝업에 보인다. 결과를 모르거나 그 사이 바뀌었으면(404 · 409) 화면을 새로 받고, 결과를 모르면 확인해 달라고 덧붙인다 */
@@ -97,12 +103,13 @@ export function StoreDetailActions({
     }
   };
 
-  // 조건은 그 사이 바뀌었을 수 있어 지금 기준으로 다시 받는다(진행 중 근로계약 등)
-  const reloadTransitions = () =>
+  // 조건은 그 사이 바뀌었을 수 있어 지금 기준으로 다시 받는다(퇴근하지 않은 출근 · 폐점하면 처리될 것 등).
+  // keep 은 먼저 보인 문구(409 OPEN_CHECK_IN 의 api 문구) — 다시 받기가 실패해도 지우지 않고 뒤에 잇는다
+  const reloadTransitions = (keep?: string) =>
     startBusy(async () => {
       const result = await getStoreTransitionsAction(store.storeId).catch(UNKNOWN("상태 확인"));
       if (result.ok) setTransitions(result);
-      else setFailure(result.message);
+      else setFailure(keep ? `${keep} ${result.message}` : result.message);
     });
 
   const handleStatusOpen = () => {
@@ -126,10 +133,18 @@ export function StoreDetailActions({
       if (!target) return;
       const input = toUpdateStoreInput({ ...formOfStore(store), storeStatus: target }, store.updatedAt);
       const result = await updateStoreAction(store.storeId, input).catch(UNKNOWN("상태 변경"));
+      // 확인과 저장 사이에 퇴근하지 않은 출근이 생겼다 — 아무것도 저장되지 않았다. api 문구를 보이고 조건 팝업으로 돌아가 막힘을 다시 받는다
+      if (!result.ok && result.code === OPEN_CHECK_IN) {
+        setFailure(result.message);
+        setDialog("status");
+        return reloadTransitions(result.message);
+      }
       if (!result.ok) return fail(result.status, result.message);
       setDialog(null);
-      // 토스트는 짧게 하나만 — 바꾼 상태는 화면에 보이고, 헤더 점포 목록이 바뀐 것은 따로 알리지 않는다(2026-11-03 사용자 지정)
-      toast("점포상태가 변경되었습니다.");
+      // 폐점으로 직원 퇴직 · 계약 종료를 했으면 결과 창으로 알린다. 그 밖에는 토스트 하나만 — 바꾼 상태는 화면에 보이고,
+      // 헤더 점포 목록이 바뀐 것은 따로 알리지 않는다(2026-11-03 사용자 지정)
+      if (hasClosingResult(result.closing)) setClosingResult(result.closing);
+      else toast("점포상태가 변경되었습니다.");
       router.refresh();
       refreshStores({ quiet: true });
     });
@@ -258,17 +273,9 @@ export function StoreDetailActions({
               </div>
             )}
             {target === "CLOSED" && (
-              // 부가서비스 구독 · 정산 대기 금액은 1차 범위 밖이라 뺐다 — 그 기능을 만들 때 다시 더한다.
-              // 폐점일 안내 문구도 같이 뺐다(2026-10-19 점검 — 실사용자 확인).
-              <div className="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]">
-                <p className="font-semibold">폐점 조건</p>
-                <ul className="mt-[6px] list-disc pl-[18px]">
-                  <li className={transitions.inProgressContractCount ? "text-erp-off" : undefined}>
-                    진행 중인 근로계약 <b className="font-semibold">{transitions.inProgressContractCount.toLocaleString("ko-KR")}건</b>
-                    {transitions.inProgressContractCount ? " — 정리해야 할 근로계약이 있습니다." : ""}
-                  </li>
-                </ul>
-              </div>
+              // 폐점 조건은 퇴근하지 않은 출근 0건 하나다 — 근로계약은 막지 않는다(api 2026-11-04). 부가서비스 구독 · 정산 대기 금액은
+              // 1차 범위 밖이라 뺐다 — 그 기능을 만들 때 다시 더한다. 폐점일 안내 문구도 같이 뺐다(2026-10-19 점검 — 실사용자 확인).
+              <ClosingCondition counts={transitions.closing?.total} />
             )}
             {failure && <p role="alert" className="text-erp-off">{failure}</p>}
           </div>
@@ -279,6 +286,7 @@ export function StoreDetailActions({
         <ConfirmDialog
           open={dialog === "close-confirm"}
           title="폐점으로 변경할까요?"
+          wide
           confirmLabel="폐점으로 변경"
           cancelLabel="이전"
           busy={busy}
@@ -288,9 +296,13 @@ export function StoreDetailActions({
           {/* 폐점일 · 되돌릴 수 없음을 한 문장에 이어 어색했다 — 두 줄로 나누고 날짜를 적는다. BP 휴일 안내는 뺐다(2026-11-03 사용자 지정) */}
           <p>폐점으로 변경하면 되돌릴 수 없습니다.</p>
           <p>폐점일은 오늘({kstToday()})입니다.</p>
+          {/* 폐점하면 함께 처리될 것 — 조건 팝업을 열 때 받은 확인 값이다. 그 사이 바뀌면 저장(PUT)이 다시 보고 막는다(409) */}
+          {transitions.closing && <ClosingCheckList counts={transitions.closing.total} />}
           {failure && <p role="alert" className="mt-[10px] text-erp-off">{failure}</p>}
         </ConfirmDialog>
       )}
+
+      <ClosingResultDialog result={closingResult} onClose={() => setClosingResult(null)} />
 
       {can.delete && !closed && (
         <ConfirmDialog

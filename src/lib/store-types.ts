@@ -23,6 +23,8 @@ export type CreateStoreInput = Schemas["CreateStoreDto"];
 export type CreateStoreResult = Schemas["CreateStoreResponseDto"];
 /** PUT /stores/:id — 화면 전체를 보낸다(빠진 선택 칸은 지운다). 층별 정보는 보낸 목록으로 통째로 바뀐다 */
 export type UpdateStoreInput = Schemas["UpdateStoreDto"];
+/** PUT /stores/:id 응답 — 폐점이면 처리 결과(closing), 그 밖의 수정이면 closing null */
+export type UpdateStoreResult = Schemas["UpdateStoreResponseDto"];
 export type StoreBusinessInput = Schemas["StoreBusinessInputDto"];
 /** POST /stores/business-verifications — 진위확인 세 값 + 수정 중이면 storeId. 서버가 저장할 때 국세청에 다시 확인한다. 연동 전에는 503 */
 export type BusinessVerificationInput = Schemas["VerifyStoreBusinessDto"];
