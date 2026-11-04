@@ -90,33 +90,34 @@ const personas = (A, R) => `<section class="flex flex-col gap-[60px] px-[80px] p
   (p) => `<article class="flex flex-col rounded-b-[6px] border border-guest-line"><span class="h-[6px] bg-guest-navy"></span><div class="flex flex-1 flex-col gap-[30px] px-[34px] pt-[80px] pb-[34px]"><div class="flex flex-col gap-[25px] font-semibold text-guest-navy"><p class="text-[16px] leading-[1.6] ${TRIM}">${p.kind}</p><p class="text-[clamp(26px,calc(2.222vw-10.67px),32px)] leading-[1.3] ${TRIM}">${p.pitch[0]}<br>${p.pitch[1]}</p></div><div class="flex flex-1 flex-col gap-[32px]"><div class="flex flex-col gap-[24px] text-[16px]"><div class="flex flex-col gap-[22px]"><p class="leading-[1.6] font-semibold text-guest-ink ${TRIM}">이런 기능부터 써보세요</p><p class="leading-[1.6] text-guest-body ${TRIM}">${p.features.map((l) => `<span class="block">${l}</span>`).join("")}</p></div><div class="flex flex-col gap-[22px] border-t border-[#e7e7e7] pt-[24px]"><p class="leading-[1.6] font-semibold text-guest-ink ${TRIM}">함께 쓰면 좋은 부가서비스</p>${divided(p.services, "text-guest-body")}</div></div><div class="mt-auto flex">${g.button(A, p.cta, { tone: "navy", href: p.href ? link(R, p.href) : "#", arrow: true, grow: true })}</div></div></div></article>`,
 ).join("")}</div></section>`;
 
-// 둘째·셋째 사진은 시안에서 첫 사진(connect-photo)이 위에 덮여 있다. 시안 그대로 겹쳐 두고, 사진이 정해지면 위 겹을 뺀다.
+// 카드마다 제 사진을 둔다(2026-11-04 — 시안의 한옥 사진 한 장을 세 카드가 덮어 쓰던 것을 바꿨다). Unsplash 무료 라이선스:
+// 01 Vitaly Gariev QGg-vsPYbu8 · 02 Petr Sevcovic qE1jxYXiwOA · 03 Vitaly Gariev 4g_M9D0rn8M. 데모만 바꿨고 앱(public/guest)은 그대로다.
 const CONNECTIONS = [
   {
     label: "01 BUSINESS PARTNER",
     title: "사장님이 가입하면",
     desc: ["대표자 계정에 모든 관리 권한이 자동으로 주어집니다.", "점장·가맹점주 계정도 필요한 만큼 만들 수 있어요."],
     tags: ["대표자 권한", "관리자 추가", "가맹주 계정"],
-    under: null,
+    photo: "connect-photo-bp.jpg",
   },
   {
     label: "02 STORE",
     title: "내 매장이 등록되고",
     desc: ["직영점도 가맹점도 같은 화면에서 관리합니다.", "가맹계약서만 연결하면 가맹점 관리가 바로 시작됩니다."],
     tags: ["직영점", "가맹점", "시설물·점검"],
-    under: "connect-photo-store.png",
+    photo: "connect-photo-store.jpg",
   },
   {
     label: "03 STAFF & CUSTOMER",
     title: "직원과 손님이 이어집니다",
     desc: ["직원은 전용 앱으로 계약서 서명과 출퇴근을, 손님은 키오스크·QR로", "주문과 결제를 편하게."],
     tags: ["직원 앱", "POS·KIOSK", "Pick up·QR Order"],
-    under: "connect-photo-staff.png",
+    photo: "connect-photo-staff.jpg",
   },
 ];
 
 const connections = (A) => `<section class="relative flex flex-col gap-[80px] overflow-hidden bg-guest-ink px-[80px] py-[120px]">${g.cover(A, "connect-bg.png", "object-cover object-bottom")}<div class="relative">${g.sectionTitle("가입 한 번으로,", "매장 전체가 연결됩니다", true)}</div><div class="relative grid grid-cols-3 gap-[34px]">${CONNECTIONS.map(
-  (c) => `<div class="flex flex-col gap-[34px]"><div class="relative flex h-[348px] items-end overflow-hidden rounded-[16px] pb-[22px] pl-[26px]">${c.under ? g.cover(A, c.under) : ""}${g.cover(A, "connect-photo.png")}<span class="relative text-[24px] leading-[1.6] font-bold tracking-normal text-white">${c.label}</span></div><div class="flex flex-col gap-[8px] pl-[2px] text-[17px] text-[#afafaf]"><h3 class="text-[24px] leading-[1.6] font-semibold text-[#f5f5f5]">${c.title}</h3><p class="leading-[1.5]">${c.desc[0]}<br>${c.desc[1]}</p>${divided(c.tags, "pt-[8px]")}</div></div>`,
+  (c) => `<div class="flex flex-col gap-[34px]"><div class="relative flex h-[348px] items-end overflow-hidden rounded-[16px] pb-[22px] pl-[26px]">${g.cover(A, c.photo)}<span class="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black/55 to-transparent"></span><span class="relative text-[24px] leading-[1.6] font-bold tracking-normal text-white">${c.label}</span></div><div class="flex flex-col gap-[8px] pl-[2px] text-[17px] text-[#afafaf]"><h3 class="text-[24px] leading-[1.6] font-semibold text-[#f5f5f5]">${c.title}</h3><p class="leading-[1.5]">${c.desc[0]}<br>${c.desc[1]}</p>${divided(c.tags, "pt-[8px]")}</div></div>`,
 ).join("")}</div></section>`;
 
 // 시안이 줄을 직접 나눈 설명은 줄마다 나눠 둔다.
