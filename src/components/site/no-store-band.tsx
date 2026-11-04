@@ -11,8 +11,8 @@ import { useAccount, useCurrentBp, useMenus, useService, useStores } from "./ses
 // 폐점 점포만 있어도 띄운다 — 「점포가 없다」는 쓸 수 있는(미운영 · 운영) 점포가 없다는 뜻이다(2026-11-04 사용자 지정).
 // 웨일ERP 탭의 BP 쪽 계정만 본다(플랫폼 계정은 점포를 운영하지 않는다). 점포 목록은 로그인 정보의 관리 점포(useStores)다.
 // 가맹 마스터 · 가맹 관리자는 점포를 등록하지 못해(api 403) 배정을 요청하라고만 한다 — 홈 안내(HOME-4)와 같은 규칙.
-// 토스식 회색 띠 — 바탕 erp-subtle(#f0f1f3) · 먹색 500 글자 · 앞에 정보 아이콘, 할 일(「점포를 등록」)과 [점포 등록하기]만 파랑 #4a7ae0
-// (2026-11-04 사용자 지정 — 파랑 띠는 화면이 칙칙해 보였다. 파랑은 점포 없음 띠 · 시작 가이드에 쓰는 색이라 토큰 없이 여기 적는다).
+// 토스식 회색 띠 — 바탕 erp-subtle(#f0f1f3) · 먹색 500 글자 · 앞에 정보 아이콘, 할 일(「점포를 등록」)과 [점포 등록하기]만 포인트 파랑(erp-point, #4a7ae0)
+// (2026-11-04 사용자 지정 — 파랑 띠는 화면이 칙칙해 보였다).
 export function NoStoreBand() {
   const account = useAccount();
   const bp = useCurrentBp().bpCodeId;
@@ -34,17 +34,17 @@ export function NoStoreBand() {
       </svg>
       {franchise ? (
         <p>
-          {lead} <b className="font-semibold text-[#4a7ae0]">관리자에게 점포 배정을 요청</b>해 주세요.
+          {lead} <b className="font-semibold text-erp-point">관리자에게 점포 배정을 요청</b>해 주세요.
         </p>
       ) : (
         <p>
-          {lead} <b className="font-semibold text-[#4a7ae0]">점포를 등록</b>하면 직원 · 근무 · 급여 관리를 바로 시작할 수 있습니다.
+          {lead} <b className="font-semibold text-erp-point">점포를 등록</b>하면 직원 · 근무 · 급여 관리를 바로 시작할 수 있습니다.
         </p>
       )}
       {canCreate && (
         <Link
           href={bpPath(bp, "/stores/new")}
-          className="ml-[2px] flex h-[26px] items-center rounded-[6px] border border-[#4a7ae0] bg-[#4a7ae0] px-[12px] text-[13px] leading-none font-semibold text-white transition-colors duration-150 ease-out hover:bg-white hover:text-[#4a7ae0]"
+          className="ml-[2px] flex h-[26px] items-center rounded-[6px] border border-erp-point bg-erp-point px-[12px] text-[13px] leading-none font-semibold text-white transition-colors duration-150 ease-out hover:bg-white hover:text-erp-point"
         >
           점포 등록하기
         </Link>

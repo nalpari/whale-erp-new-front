@@ -206,14 +206,17 @@ const num = (n: number | null) => (n ? n : <span className="text-erp-muted">—<
 
 type CardsData = NonNullable<HomeSummary["cards"]>;
 
-/** 점포가 없을 때의 카드 — 모두 0. 조회 권한이 없는 메뉴의 카드는 api 처럼 null 로 숨긴다 */
+/**
+ * 점포가 없을 때의 카드 — 모두 0. 조회 권한이 없는 메뉴의 카드는 api 처럼 null 로 숨긴다(오늘 출근은 출퇴근 · 근무스케줄 둘 다 볼 때만, api showsAttendance).
+ * 내 문의는 점포와 상관없이 내가 쓴 문의를 세므로 0 으로 지어낼 수 없다 — 이 화면은 api 를 부르지 않아 숨긴다(리뷰 반영)
+ */
 function emptyCardsOf(canOpen: (path: string) => boolean): CardsData {
   return {
     staff: canOpen("/staff-members") ? { total: 0, fullTime: 0, partTime: 0 } : null,
     unsignedContractCount: null,
     stores: { total: 0, direct: 0, franchise: 0 },
-    todayAttendance: canOpen("/attendance-records") ? { scheduled: 0, checkedIn: 0, notCheckedIn: 0 } : null,
-    myInquiries: canOpen("/support-inquiries") ? { waiting: 0, answered: 0 } : null,
+    todayAttendance: canOpen("/attendance-records") && canOpen("/work-schedules") ? { scheduled: 0, checkedIn: 0, notCheckedIn: 0 } : null,
+    myInquiries: null,
   };
 }
 

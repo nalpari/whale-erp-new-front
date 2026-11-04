@@ -21,7 +21,9 @@ export function StartGuideButton() {
   const account = useAccount();
   const stores = useStores();
   const tracks = tracksOf(account.roleTypeCode);
-  const [track, setTrack] = useState<GuideTrack>(() => initialTrackOf(account.roleTypeCode, stores.map((s) => s.storeTypeCode)));
+  // 처음 탭은 점포 유형으로 짐작한다 — 점포 목록이 바뀌면(첫 가맹 점포 등록 등) 짐작도 따라간다. 사용자가 탭을 고르면 그 값을 쓴다(리뷰 반영)
+  const [picked, setTrack] = useState<GuideTrack | null>(null);
+  const track = picked ?? initialTrackOf(account.roleTypeCode, stores.map((s) => s.storeTypeCode));
   return (
     <div ref={ref} className="relative">
       <button
@@ -30,7 +32,7 @@ export function StartGuideButton() {
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen((v) => !v)}
-        className={`flex h-[42px] shrink-0 items-center gap-[6px] px-[6px] text-[14px] font-medium whitespace-nowrap transition-colors duration-150 ease-out hover:text-[#4a7ae0] ${open ? "text-[#4a7ae0]" : "text-erp-label"}`}
+        className={`flex h-[42px] shrink-0 items-center gap-[6px] px-[6px] text-[14px] font-medium whitespace-nowrap transition-colors duration-150 ease-out hover:text-erp-point ${open ? "text-erp-point" : "text-erp-label"}`}
       >
         시작 가이드
         {/* 꺾쇠는 글자색을 따른다(currentColor) — 호버 · 열림에 같이 파랑. 모양은 /icons/chevron-small.svg 와 같다 */}
@@ -48,7 +50,7 @@ export function StartGuideButton() {
         <div className="flex flex-col gap-[12px]">
           {tracks.length > 1 && (
             // 밑줄 탭 — 고른 칸만 파랑 글자 600 + 파랑 2px 밑줄, 아래는 표 선(erp-thead-line) 한 줄(2026-11-04 사용자 지정 — 회청 바탕은 칙칙했다).
-            // 파랑 #4a7ae0 은 점포 없음 띠와 같은 색, 연파랑(#eef4ff · STEP 꼬리표)은 토큰에 없어 여기 적는다
+            // 파랑은 점포 없음 띠와 같은 포인트 색(erp-point), STEP 꼬리표 바탕은 erp-point-bg
             <div role="tablist" aria-label="운영 형태" className="grid grid-cols-2 border-b border-erp-thead-line">
               {tracks.map((t) => (
                 <button
@@ -57,7 +59,7 @@ export function StartGuideButton() {
                   role="tab"
                   aria-selected={track === t}
                   onClick={() => setTrack(t)}
-                  className={`-mb-px h-[36px] border-b-2 text-[14px] transition-[border-color,color] duration-150 ease-out ${track === t ? "border-[#4a7ae0] font-semibold text-[#4a7ae0]" : "border-transparent font-medium text-erp-label hover:text-erp-ink"}`}
+                  className={`-mb-px h-[36px] border-b-2 text-[14px] transition-[border-color,color] duration-150 ease-out ${track === t ? "border-erp-point font-semibold text-erp-point" : "border-transparent font-medium text-erp-label hover:text-erp-ink"}`}
                 >
                   {TRACK_LABEL[t]}
                 </button>
@@ -92,7 +94,7 @@ function StepRow({ step, onGo }: { step: GuideStep; onGo: () => void }) {
     <>
       {/* STEP 꼬리표 — 연파랑 알약(20px · 11px 600 · 자간 조금), 하위 단계 번호는 꼬리표 폭에 맞춰 가운데(2026-11-04 사용자 지정) */}
       <span
-        className={`flex h-[20px] w-[52px] shrink-0 items-center justify-center rounded-full font-semibold ${step.sub ? "text-[12px] text-erp-label" : "bg-[#eef4ff] text-[11px] tracking-[0.02em] text-[#4a7ae0]"}`}
+        className={`flex h-[20px] w-[52px] shrink-0 items-center justify-center rounded-full font-semibold ${step.sub ? "text-[12px] text-erp-label" : "bg-erp-point-bg text-[11px] tracking-[0.02em] text-erp-point"}`}
       >
         {step.label}
       </span>
@@ -105,16 +107,16 @@ function StepRow({ step, onGo }: { step: GuideStep; onGo: () => void }) {
       </span>
       {/* 끝낸 단계는 오른쪽에 파랑 동그라미 체크(늘 보임) — 「완료」를 글로도 남겨 색만으로 말하지 않는다 */}
       {done && (
-        <span className="flex shrink-0 items-center gap-[4px] text-[12px] font-semibold text-[#4a7ae0]">
+        <span className="flex shrink-0 items-center gap-[4px] text-[12px] font-semibold text-erp-point">
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16">
-            <circle cx="8" cy="8" r="8" fill="#4a7ae0" />
+            <circle cx="8" cy="8" r="8" fill="var(--color-erp-point)" />
             <path d="M4.6 8.2l2.2 2.2 4.6-4.7" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           완료
         </span>
       )}
       {/* 갈 수 있는 단계는 마우스를 올리면 오른쪽 끝에 꺾쇠가 나타난다 */}
-      {step.path && <Image src="/icons/chevron-small.svg" alt="" width={5} height={8} className="shrink-0 rotate-180 opacity-0 transition-opacity duration-150 ease-out group-hover:opacity-100" />}
+      {step.path && allowed && <Image src="/icons/chevron-small.svg" alt="" width={5} height={8} className="shrink-0 rotate-180 opacity-0 transition-opacity duration-150 ease-out group-hover:opacity-100" />}
     </>
   );
   const row = `group flex w-full items-center gap-[10px] rounded-[4px] py-[7px] ${step.sub ? "pl-[20px]" : "pl-[6px]"} pr-[10px] text-left text-erp-ink`;
@@ -127,7 +129,7 @@ function StepRow({ step, onGo }: { step: GuideStep; onGo: () => void }) {
     );
   // 헤더 메뉴 · 홈 카드처럼 지금 범위(?scope=)를 싣는다 — 빼면 헤더 범위와 목록 검색 범위가 어긋난다(리뷰 반영)
   return (
-    <Link href={withScope(isBpPathScreen(step.path) ? bpPath(bp, step.path) : step.path, scope)} onClick={onGo} className={`${row} transition-colors duration-150 ease-out hover:bg-[#f5f8ff]`}>
+    <Link href={withScope(isBpPathScreen(step.path) ? bpPath(bp, step.path) : step.path, scope)} onClick={onGo} className={`${row} transition-colors duration-150 ease-out hover:bg-erp-point-subtle`}>
       {body}
     </Link>
   );
