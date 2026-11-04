@@ -2,6 +2,7 @@
 
 ## 2026-11-04
 * **Update**: [플랫폼 시스템 관리](/system.md) · [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 메뉴 관리: 메뉴 URL 은 등록할 때만 넣고 수정 양식에서는 읽기 전용(메뉴 코드 · 순서와 같은 칸)으로 막았다(사용자 지정, front machamp). 목업 · 데모 메뉴 화면도 같이 맞췄다.
+* **Update**: [플랫폼 시스템 관리](/system.md) — PR #216 리뷰 반영: 수정 저장의 메뉴 URL 겹침 409(겹치는 URL 을 가진 미사용 메뉴를 켤 때)를 칸 아래가 아니라 실패 띠로 보인다 — 읽기 전용 칸이라 문구 자리가 없어 아무것도 안 보였다. 「수정에서 URL 을 바꿀 때 건다」 낡은 문장도 고쳤다(front machamp).
 
 ## 2026-11-03
 * **Update**: [근무스케줄](/screens/work-schedules.md) · [Whale ERP Frontend](/whale-erp-front.md) — 지난 주 복사 미리보기도 등록 권한을 본다: 없으면 표 · [n명 복사] 대신 info 안내와 [닫기]만(미리보기를 연 뒤 권한이 빠진 경우 · 주소로 열면 api 403 문장 대신 같은 안내, front machop). 같은 작업에서 플랫폼 게시판 넷(공지 · FAQ · 문의 · 도입문의)과 BP 휴일 상세 · 수정 버튼도 메뉴 권한(`usePagePermission`)으로 가렸다 — BP 휴일은 api `actions` 에 지금 메뉴 권한을 함께 건다.
