@@ -33,7 +33,7 @@ function Lines({ lines }: { lines: ClosingLine[] }) {
 }
 
 /**
- * 폐점 조건 — 퇴근하지 않은 출근 N건(가려진 직원 것 포함). 막히면 첫 건(이름 · 출근 시각)과 할 일을 덧붙인다.
+ * 폐점 조건 — 퇴근하지 않은 출근 N건(가려진 직원 것 포함). 막히면 할 일을 덧붙인다 — api 는 직원 이름 · 시각을 주지 않는다.
  * counts 가 없으면(이미 폐점 · 확인 실패 · 출근 말고 다른 이유로 막힘) 그리지 않는다.
  */
 export function ClosingCondition({ counts }: { counts: Pick<StoreClosingCounts, "openCheckIns"> | null | undefined }) {
@@ -48,15 +48,7 @@ export function ClosingCondition({ counts }: { counts: Pick<StoreClosingCounts, 
         </li>
       </ul>
       {block && (
-        <p className="mt-[6px] text-erp-label">
-          {block.first && (
-            <>
-              첫 건: {block.first.name} · {block.first.recordedAt} 출근
-              <br />
-            </>
-          )}
-          {block.guide}
-        </p>
+        <p className="mt-[6px] text-erp-label">{block.guide}</p>
       )}
     </div>
   );

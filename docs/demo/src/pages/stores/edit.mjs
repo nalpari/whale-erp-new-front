@@ -121,7 +121,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
     "폐점할 수 없습니다.",
     `<div class="flex flex-col gap-[12px]"><div class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">폐점 조건</p>` +
       `<ul class="mt-[6px] list-disc pl-[18px]"><li class="text-erp-off">퇴근하지 않은 출근 <b class="font-semibold">1건</b></li></ul>` +
-      `<p class="mt-[6px] text-erp-label">첫 건: 김민지 · 2026-11-03 09:03 출근<br>퇴근이 등록된 뒤 다시 해 주세요.</p></div>` +
+      `<p class="mt-[6px] text-erp-label">출퇴근 현황에서 퇴근 등록 · 보정한 뒤 다시 해 주세요.</p></div>` +
       `<p class="text-erp-label">점포상태를 이전 값으로 되돌렸습니다.</p></div>`,
     ui.button("확인", { "data-close": true }),
     "w-[480px]",

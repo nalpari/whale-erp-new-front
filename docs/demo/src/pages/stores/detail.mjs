@@ -211,8 +211,8 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
   // 부가서비스 구독 · 정산 대기 금액은 1차 범위 밖이라 뺐다(2026-10-19 점검).
   const closeItem =
     `<li${d.openCheckIns ? ' class="text-erp-off"' : ""}>퇴근하지 않은 출근 <b class="font-semibold">${d.openCheckIns}건</b></li>`;
-  // 막히면 첫 건(이름 · 출근 시각)과 할 일 — 다음 날이 지나 앱으로 퇴근할 수 없는 출근은 보정으로 닫는다
-  const closeAfter = d.openCheckIns ? `<p class="mt-[6px] text-erp-label">첫 건: 김민지 · 2026-11-02 09:03 출근<br>출퇴근 현황에서 보정으로 닫아 주세요.</p>` : "";
+  // 막히면 할 일 — 직원 이름 · 출근 시각은 보이지 않는다(api 가 건수만 준다, 2026-11-04)
+  const closeAfter = d.openCheckIns ? `<p class="mt-[6px] text-erp-label">출퇴근 현황에서 퇴근 등록 · 보정한 뒤 다시 해 주세요.</p>` : "";
   // 폐점하면 함께 처리될 것 — 0건인 줄은 뺀다(앱 closingCheckLines)
   const c = d.closing ?? {};
   const closingLines = [

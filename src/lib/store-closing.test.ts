@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { closingBlockOf, closingCheckLines, closingPayslipText, closingResultLines, type StoreClosingCounts } from "./store-closing.ts";
 
 const counts = (patch: Partial<StoreClosingCounts> = {}): StoreClosingCounts => ({
-  openCheckIns: { count: 0, hiddenCount: 0, first: null },
+  openCheckIns: { count: 0, hiddenCount: 0 },
   retiringStaff: 0,
   draftContracts: 0,
   pendingSendContracts: 0,
@@ -14,40 +14,24 @@ const counts = (patch: Partial<StoreClosingCounts> = {}): StoreClosingCounts => 
   ...patch,
 });
 
-const first = (isCheckOutExpired: boolean) => ({
-  storeId: 1,
-  attendanceRecordId: 9,
-  staffMemberId: 3,
-  name: "김직원",
-  recordedAt: "2026-11-04T00:12:00.000Z",
-  isCheckOutExpired,
-});
-
 test("열린 출근이 없으면 막지 않는다", () => {
   assert.equal(closingBlockOf(counts()), null);
 });
 
-test("막힘 건수는 가려진 직원 것까지 더하고, 첫 건 시각은 한국 시간이다", () => {
-  const block = closingBlockOf(counts({ openCheckIns: { count: 2, hiddenCount: 1, first: first(true) } }));
-  assert.deepEqual(block, { count: 3, first: { name: "김직원", recordedAt: "2026-11-04 09:12" }, guide: "출퇴근 현황에서 보정으로 닫아 주세요." });
+test("본사가 볼 수 있는 출근이 있으면 출퇴근 현황에서 닫게 한다 — 이름 · 시각 없이 건수만", () => {
+  assert.deepEqual(closingBlockOf(counts({ openCheckIns: { count: 2, hiddenCount: 0 } })), { count: 2, guide: "출퇴근 현황에서 퇴근 등록 · 보정한 뒤 다시 해 주세요." });
 });
 
-test("아직 퇴근할 수 있는 출근이면 퇴근을 기다리게 한다", () => {
-  assert.equal(closingBlockOf(counts({ openCheckIns: { count: 1, hiddenCount: 0, first: first(false) } }))?.guide, "퇴근이 등록된 뒤 다시 해 주세요.");
-});
-
-test("가려진 건만 있으면 이름 없이 건수만", () => {
-  const block = closingBlockOf(counts({ openCheckIns: { count: 0, hiddenCount: 2, first: null } }));
+test("가려진 건만 있으면 가맹점이 닫게 한다", () => {
+  const block = closingBlockOf(counts({ openCheckIns: { count: 0, hiddenCount: 2 } }));
   assert.equal(block?.count, 2);
-  assert.equal(block?.first, null);
-  // 본사는 출퇴근 현황에서도 그 줄을 못 본다 — 가맹점이 닫게 한다
+  // 본사는 출퇴근 현황에서도 그 줄을 못 본다
   assert.match(block?.guide ?? "", /가맹점에서/);
 });
 
-test("보이는 건과 가려진 건이 섞이면 건수는 합하고 첫 건은 보이는 것이다", () => {
-  const block = closingBlockOf(counts({ openCheckIns: { count: 1, hiddenCount: 2, first: first(false) } }));
-  assert.equal(block?.count, 3);
-  assert.equal(block?.first?.name, "김직원");
+test("보이는 건과 가려진 건이 섞이면 건수는 합하고 출퇴근 현황 안내다", () => {
+  const block = closingBlockOf(counts({ openCheckIns: { count: 1, hiddenCount: 2 } }));
+  assert.deepEqual(block, { count: 3, guide: "출퇴근 현황에서 퇴근 등록 · 보정한 뒤 다시 해 주세요." });
 });
 
 test("확인 목록은 0건인 줄을 빼고, 급여명세서는 처리 목록이 아니라 따로 안내한다", () => {

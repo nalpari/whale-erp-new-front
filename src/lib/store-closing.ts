@@ -1,7 +1,6 @@
 // 점포 폐점 확인 · 결과의 표기. 상세의 상태 변경 · 수정 화면의 폐점이 같이 쓴다(나중에 회원 탈퇴도 같은 모양을 받는다).
 // 서버 · 클라이언트가 함께 쓰고 node --test 가 직접 읽는다(상대 경로 + .ts).
 // api: GET /stores/:id/transition-check 의 closing(막힘 + 폐점하면 처리될 것), PUT /stores/:id 폐점 응답의 closing(처리한 수).
-import { formatDateTime } from "./format.ts";
 import type { components } from "./api-types.generated.ts";
 
 type Schemas = components["schemas"];
@@ -15,29 +14,24 @@ export type StoreClosingRetirement = Schemas["StoreClosingRetirementDto"];
 
 /**
  * 폐점을 막는 퇴근하지 않은 출근 — 건수는 가려진 직원 것까지 더한다(api isBlocked 와 같은 기준: count + hiddenCount > 0).
- * first 는 이름을 보일 수 있는 것 중 가장 이른 건이고, recordedAt 은 이미 화면 표기(한국 시간)로 바꾼 글자다
+ * api 는 직원 이름 · 출근 시각을 주지 않는다 — 점포 메뉴 조회 권한만으로 보이는 응답이라 수만 안내한다(2026-11-04 사용자 결정, api 0a9fc92e).
+ * 어느 출근인지는 출퇴근 현황에서 찾고, 저장 때의 409 OPEN_CHECK_IN 문구가 가장 이른 출근 시각을 알려 준다
  */
 export type ClosingBlock = {
   count: number;
-  first: { name: string; recordedAt: string } | null;
-  /** 할 일 — 다음 날이 지나 직원 앱으로 퇴근할 수 없으면 보정, 아니면 퇴근을 기다린다 */
+  /** 할 일 — 본사가 볼 수 있는 출근이 있으면 출퇴근 현황에서, 가려진 출근만 있으면 가맹점이 닫게 한다 */
   guide: string;
 };
 
 /** 폐점 확인에서 막힘을 꺼낸다. 막히지 않았으면 null */
 export function closingBlockOf(counts: Pick<StoreClosingCounts, "openCheckIns">): ClosingBlock | null {
-  const { count, hiddenCount, first } = counts.openCheckIns;
+  const { count, hiddenCount } = counts.openCheckIns;
   const total = count + hiddenCount;
   if (total <= 0) return null;
   return {
     count: total,
-    first: first ? { name: first.name, recordedAt: formatDateTime(first.recordedAt) } : null,
     // 가려진 건만 있으면 본사는 출퇴근 현황에서도 그 줄을 볼 수 없다(ATT-30) — 가맹점이 퇴근 등록 · 보정하게 한다
-    guide: first
-      ? first.isCheckOutExpired
-        ? "출퇴근 현황에서 보정으로 닫아 주세요."
-        : "퇴근이 등록된 뒤 다시 해 주세요."
-      : "본사에서 볼 수 없는 직원의 출근입니다. 가맹점에서 퇴근 등록 · 보정한 뒤 다시 해 주세요.",
+    guide: count > 0 ? "출퇴근 현황에서 퇴근 등록 · 보정한 뒤 다시 해 주세요." : "본사에서 볼 수 없는 직원의 출근입니다. 가맹점에서 퇴근 등록 · 보정한 뒤 다시 해 주세요.",
   };
 }
 
