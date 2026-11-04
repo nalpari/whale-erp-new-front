@@ -12,6 +12,7 @@ import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, s
 import { BpSelectDialog } from "./bp-select-dialog";
 import { useCodeLabel } from "./code-label";
 import { useCurrentBpStatus } from "./current-bp-status";
+import { isPlatformRole } from "@/lib/auth-routes";
 import { StartGuideButton } from "./start-guide-button";
 import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, usePasswordChangeOpen, useScope, useService, useStores, useWithdrawOpen } from "./session-gate";
 
@@ -72,7 +73,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
         <>
           {service === "WHALE_ERP" ? <HeaderScopeSelect /> : <div className="flex-1" />}
           {/* 시작 가이드는 서비스 바로가기 바로 앞 — 글자 버튼이라 붐비지 않는다(2026-11-04 사용자 지정). 플랫폼 탭은 점포를 운영하지 않아 숨긴다 */}
-          {service === "WHALE_ERP" && <StartGuideButton />}
+          {service === "WHALE_ERP" && !isPlatformRole(account.roleTypeCode) && <StartGuideButton />}
           <ServiceLinks targets={{ ...serviceTargets(account.bp, service, home, () => setBpSelectOpen(true)), addon: () => setAddonNoticeOpen(true) }} hideAddon={service === "PLATFORM"} />
           {alarm}
           <UserPop name={account.name ?? account.loginId} items={userItems} triggerRef={myPageTrigger} />

@@ -403,7 +403,16 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
             <span className="text-erp-label">직원</span> <b className="font-medium">{edit.staffName}</b>
           </p>
         ) : loading ? (
-          <p className={HELP}>직원 목록을 불러오는 중입니다…</p>
+          // 여러 명 일괄의 오류 문구는 직원 칸 안에 있어 목록을 불러오는 동안엔 그려지지 않는다 — 그새 [저장]을 누르면 이유가 안 보여 여기에도 둔다(리뷰 반영).
+          // 불러오기 실패면 그 실패 문구가 이미 빨갛게 보인다
+          <div className="flex flex-col gap-[6px]">
+            <p className={HELP}>직원 목록을 불러오는 중입니다…</p>
+            {mode === "bulk" && tried && bulkProblem && (
+              <p role="alert" className={ERROR}>
+                {bulkProblem}
+              </p>
+            )}
+          </div>
         ) : pool?.state === "error" ? (
           <p role="alert" className={ERROR}>
             {pool.message}

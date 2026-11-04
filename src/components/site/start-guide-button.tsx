@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useDropdown } from "@/components/common/popup";
-import { useAccount, useCurrentBp, useMenus, useService, useStores } from "./session-gate";
+import { withScope } from "@/lib/store-scope";
+import { useAccount, useCurrentBp, useMenus, useScope, useService, useStores } from "./session-gate";
 import { bpPath, isBpPathScreen } from "@/lib/bp-path";
 import { menuOfPath } from "@/lib/menus";
 import { GUIDE_STEPS, initialTrackOf, TRACK_LABEL, tracksOf, type GuideStep, type GuideTrack } from "@/lib/start-guide";
@@ -81,6 +82,7 @@ function StepRow({ step, onGo }: { step: GuideStep; onGo: () => void }) {
   const service = useService();
   const bp = useCurrentBp().bpCodeId;
   const stores = useStores();
+  const [scope] = useScope();
   // 점포를 하나라도 등록했으면(폐점 포함 — 등록은 한 것이다) 끝낸 단계로 체크한다
   const done = step.doneWhen === "stores" && stores.length > 0;
   // 묶음 단계(STEP 2 · 3 의 머리)는 갈 화면이 없다. 권한은 그 메뉴의 조회 권한 — 점포 등록은 등록 권한까지 본다
@@ -123,8 +125,9 @@ function StepRow({ step, onGo }: { step: GuideStep; onGo: () => void }) {
         {body}
       </div>
     );
+  // 헤더 메뉴 · 홈 카드처럼 지금 범위(?scope=)를 싣는다 — 빼면 헤더 범위와 목록 검색 범위가 어긋난다(리뷰 반영)
   return (
-    <Link href={isBpPathScreen(step.path) ? bpPath(bp, step.path) : step.path} onClick={onGo} className={`${row} transition-colors duration-150 ease-out hover:bg-[#f5f8ff]`}>
+    <Link href={withScope(isBpPathScreen(step.path) ? bpPath(bp, step.path) : step.path, scope)} onClick={onGo} className={`${row} transition-colors duration-150 ease-out hover:bg-[#f5f8ff]`}>
       {body}
     </Link>
   );

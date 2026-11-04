@@ -46,5 +46,3 @@ export function useHolidayTypeText() {
 /** 회색 보조 글자 */
 export const Muted = ({ children }: { children: ReactNode }) => <span className="text-erp-muted">{children}</span>;
 
-// 표가 들어가는 팝업 껍데기 · 머리 고정 표 감싸기는 1팀 변경이력 팝업이 같이 쓰게 components/site/wide-dialog.tsx 로 옮겼다(2026-11-04).
-export { HistoryScroll, WideDialog } from "@/components/site/wide-dialog";

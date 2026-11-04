@@ -300,7 +300,8 @@ function StoreTable({ table, hq, staffHref }: { table: HomeSummary["storeTable"]
       />
       <div className="flex items-center text-[14px]">
         <p className="flex-1 text-erp-label">
-          {table.total}개점 중 상위 {table.items.length}개 · 미조치 많은 순
+          {/* 점포가 없는 홈(값 0)에서는 「0개점 중 상위 0개」가 어색해 숨긴다(리뷰 반영) */}
+          {table.total > 0 && `${table.total}개점 중 상위 ${table.items.length}개 · 미조치 많은 순`}
           {/* 출근 수만 가린 값이라 「1 / 5」처럼 보일 수 있다 — 수치 카드와 같은 안내(운영 정책 ATT-30). 보이는 열만 적는다 */}
           {hqNote && <span className="ml-[8px] text-[12px] text-erp-muted">동의하지 않은 가맹 직원은 {hqNote}에 세지 않습니다.</span>}
         </p>
