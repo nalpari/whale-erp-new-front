@@ -93,14 +93,8 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
     cancel + ui.button("초기화", { "data-close": true, "data-toast": "초기화되었습니다." }),
     "w-[480px]",
   );
-  const historyDialog = x
-    .dialog(
-      histId,
-      "변경이력",
-      `<div class="overflow-x-auto">${history}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
-      ui.button("닫기", { variant: "off", "data-close": true }),
-    )
-    .replace("w-[420px]", "w-[860px] max-h-[calc(100dvh-48px)] overflow-y-auto"); // 1팀 변경이력 팝업 모두 860(2026-11-02)
+  // 1팀 변경이력 팝업 공통 — 폭 1000 · 제목 줄 오른쪽 총 건수 · 한 쪽 건수(20 · 50) · 표 줄만 스크롤 · 쪽 이동(1). 화면 아래 「변경 사유는 받지 않습니다.」 안내는 없다(앱과 같다, 2026-11-04 사용자 지정)
+  const historyDialog = x.historyDialog(A, histId, history, { total: 4 });
 
   const infoLayout = panel ? `<div class="flex flex-col gap-[24px]">${basic}${biz}</div>` : `<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${biz}</div>`;
   return (

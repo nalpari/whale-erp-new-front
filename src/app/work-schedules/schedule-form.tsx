@@ -300,6 +300,12 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const oneProblem = !workDate ? "근무일을 골라 주세요." : staffId === null ? "직원을 골라 주세요." : shiftProblem(shift);
   const bulkProblems = Object.fromEntries(picked.map((id) => [id, shiftProblem(rows[id] ?? EMPTY_SHIFT)]));
   const bulkProblem = !workDate ? "근무일을 골라 주세요." : picked.length === 0 ? "직원을 한 명 이상 골라 주세요." : null;
+  // 일괄 저장을 막는 이유 — 직원 칸 아래, 직원 목록을 불러오는 중 · 실패 문구 아래 같은 자리에 쓴다
+  const bulkError = tried && bulkProblem ? (
+    <p role="alert" className={ERROR}>
+      {bulkProblem}
+    </p>
+  ) : null;
 
   /** 실패 처리 — 결과 모름이면 화면을 새로 받고 닫는다(다시 저장하면 겹칠 수 있다) */
   const fail = (result: { ok: false; status?: number; message: string }) => {
@@ -403,11 +409,18 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
             <span className="text-erp-label">직원</span> <b className="font-medium">{edit.staffName}</b>
           </p>
         ) : loading ? (
-          <p className={HELP}>직원 목록을 불러오는 중입니다…</p>
+          // 여러 명 일괄의 오류 문구는 직원 칸 안에 있어 목록을 불러오는 동안 · 실패했을 때는 그려지지 않는다 — 그새 [저장]을 누르면 이유가 안 보여 여기에도 둔다(리뷰 반영)
+          <div className="flex flex-col gap-[6px]">
+            <p className={HELP}>직원 목록을 불러오는 중입니다…</p>
+            {mode === "bulk" && bulkError}
+          </div>
         ) : pool?.state === "error" ? (
-          <p role="alert" className={ERROR}>
-            {pool.message}
-          </p>
+          <div className="flex flex-col gap-[6px]">
+            <p role="alert" className={ERROR}>
+              {pool.message}
+            </p>
+            {mode === "bulk" && bulkError}
+          </div>
         ) : mode === "one" ? (
           <Field label="직원" required>
             <Select aria-label="직원" value={staffId ?? ""} onChange={(e) => handlePickOne(e.target.value)}>
@@ -436,6 +449,8 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
             ) : (
               <p className={HELP}>이 근무일에 받을 수 있는 직원이 없습니다.</p>
             )}
+            {/* 직원을 고르지 않은 오류는 직원 칸 바로 아래 — 고른 직원 줄들 뒤(카드 줄 간격 18px)에 두면 칸과 떨어져 보였다(2026-11-04 사용자 지적) */}
+            {bulkError}
             <p className={HELP}>그 근무일에 체결 완료 근로계약이 있고 가입을 마친 직원만 보입니다.</p>
           </div>
         )}
@@ -443,12 +458,15 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
         {mode === "one" && (
           <>
             {staffId !== null && revert(staffId, setShift)}
-            <ShiftFields shift={shift} onChange={setShift} />
-            {tried && oneProblem && (
-              <p role="alert" className={ERROR}>
-                {oneProblem}
-              </p>
-            )}
+            {/* 칸과 그 칸의 오류 문구는 한 묶음(6px) — 카드 줄 간격(18px)으로 떨어져 다음 줄에 붙은 것처럼 보였다(2026-11-04 사용자 지적) */}
+            <div className="flex flex-col gap-[6px]">
+              <ShiftFields shift={shift} onChange={setShift} />
+              {tried && oneProblem && (
+                <p role="alert" className={ERROR}>
+                  {oneProblem}
+                </p>
+              )}
+            </div>
           </>
         )}
         {mode === "bulk" && (
@@ -467,11 +485,6 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
                 )}
               </div>
             ))}
-            {tried && bulkProblem && (
-              <p role="alert" className={ERROR}>
-                {bulkProblem}
-              </p>
-            )}
             <p className={HELP}>일부가 실패해도 성공한 등록은 남고 실패한 직원만 남겨 사유를 보입니다.</p>
           </>
         )}

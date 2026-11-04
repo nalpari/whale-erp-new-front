@@ -47,7 +47,6 @@ export const FLOOR_TYPES = orderOf({ GROUND: 1, BASEMENT: 2 } satisfies Record<F
 /** 페이지당 건수 — api 는 이 셋 밖이면 400 이다 */
 export const STORE_PAGE_SIZES = [20, 50, 100] as const;
 export type StorePageSize = (typeof STORE_PAGE_SIZES)[number];
-export const STORE_HISTORY_PAGE_SIZE = 10;
 /** 대표 이미지 한 장의 상한 — 정책 「JPG · PNG 5MB 이하」, api 와 DB CHECK 가 같은 값으로 막는다 */
 export const STORE_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
 

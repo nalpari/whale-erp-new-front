@@ -77,7 +77,9 @@ export default ({ A, R }) => {
   const all = `<div data-scope-view="all" class="flex flex-col gap-[12px]">${top}${figures}<div class="grid grid-cols-[7fr_5fr] items-start gap-[12px]">${stores}${waiting}</div></div>`;
   const body = `<div class="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto p-[24px]">${all}${oneStore(A, R)}</div>`;
   const titleRight = `<div class="flex items-center gap-[10px]"><span class="text-[13px] text-erp-label">09-03 09:40 기준</span><button type="button" aria-label="다시 불러오기" class="grid h-[32px] w-[38px] place-items-center rounded-[2px] border border-erp-button-line bg-white">${ui.img(A, "reset.svg", 14, 14)}</button></div>`;
-  return { title: "홈", html: ui.erpFrame({ header: erpHeader(A, R), title: "안녕하세요, 정하윤님", titleRight, body }) };
+  // 「안녕하세요,」는 회색(erp-label) 400, 「정하윤님」은 먹색 600 · 문장 제목이라 18px(앱 home-screen.tsx, 2026-11-04 사용자 지정)
+  const title = '<span class="font-normal text-erp-label">안녕하세요,</span> 정하윤님';
+  return { title: "홈", html: ui.erpFrame({ header: erpHeader(A, R), title, titleSize: "sentence", titleRight, body }) };
 };
 
 // ── 점포 하나 화면(HOME-6 B) ──

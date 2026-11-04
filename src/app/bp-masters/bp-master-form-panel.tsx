@@ -228,7 +228,8 @@ export function BpMasterFormPanel(props: Props) {
         // 그 밖은 점포 · 회원가입과 같은 글자가 보이도록 상태 코드로 공통 문구를 고른다(bizVerifyFailure, S-VRNTHD)
         if (result.status === 401 || result.status === 403) return setVerifyFailure(result.message);
         const text = result.status === 400 ? result.message : bizVerifyFailure(result.status).message;
-        return setVerifyFailure(`${text} 인증 없이도 저장할 수 있습니다.`);
+        // 실패 이유와 다음 길을 두 줄로 가른다(2026-11-04 사용자 지정)
+        return setVerifyFailure(`${text}\n인증하지 않고 저장할 수 있습니다.`);
       }
       setVerifyFailure(null);
       setForm((f) => ({ ...f, verifying: false, verified: { ...values, token: result.verificationToken, verifiedAt }, bizNumber: "", ceoName: "", openDate: "" }));
@@ -378,8 +379,11 @@ export function BpMasterFormPanel(props: Props) {
           </Field>
           {message("name")}
         </Stack>
-        <PhoneGroup label="연락처" required value={form.phone} onChange={(v) => set("phone", v, "phone")} invalid={invalid("phone")} describedBy={describe("phone")} />
-        {message("phone")}
+        {/* 칸과 그 칸의 오류 문구는 한 묶음 — 카드 줄 간격(18px)으로 떨어져 다음 칸에 붙은 것처럼 보였다(2026-11-04 사용자 지적) */}
+        <Stack>
+          <PhoneGroup label="연락처" required value={form.phone} onChange={(v) => set("phone", v, "phone")} invalid={invalid("phone")} describedBy={describe("phone")} />
+          {message("phone")}
+        </Stack>
         <Stack>
           <Field label="이메일" required>
             <TextField
@@ -483,16 +487,19 @@ export function BpMasterFormPanel(props: Props) {
           </LabelWithExtra>
           {message("ceoEmail")}
         </Stack>
-        <FormRow>
-          <Field label="업태">
-            <TextField value={form.category} onChange={(e) => set("category", e.target.value, "category")} maxLength={50} aria-invalid={invalid("category")} aria-describedby={describe("category")} />
-          </Field>
-          <Field label="종목">
-            <TextField value={form.item} onChange={(e) => set("item", e.target.value, "item")} maxLength={50} aria-invalid={invalid("item")} aria-describedby={describe("item")} />
-          </Field>
-        </FormRow>
-        {message("category")}
-        {message("item")}
+        {/* 칸과 그 칸의 오류 문구는 한 묶음 — 카드 줄 간격(18px)으로 떨어져 다음 칸에 붙은 것처럼 보였다(2026-11-04 사용자 지적) */}
+        <Stack>
+          <FormRow>
+            <Field label="업태">
+              <TextField value={form.category} onChange={(e) => set("category", e.target.value, "category")} maxLength={50} aria-invalid={invalid("category")} aria-describedby={describe("category")} />
+            </Field>
+            <Field label="종목">
+              <TextField value={form.item} onChange={(e) => set("item", e.target.value, "item")} maxLength={50} aria-invalid={invalid("item")} aria-describedby={describe("item")} />
+            </Field>
+          </FormRow>
+          {message("category")}
+          {message("item")}
+        </Stack>
         <AddressField
           key={openCount}
           label="사업자주소"

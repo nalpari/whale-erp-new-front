@@ -485,15 +485,19 @@ export function SignupForm({ loggedInHomeHref }: { loggedInHomeHref?: string }) 
 
         <BizAuthSection value={biz} onChange={setBiz} onVerifyingChange={setBizVerifying} />
 
-        <AgreeSection value={agree} onChange={setAgree} />
+        {/* 약관 동의 오류는 약관 칸 바로 아래 한 묶음(6px) — [회원가입] 버튼 위에 두면 폼 간격(40px)으로 약관과 떨어져 버튼에 붙은 것처럼 보였다(2026-11-04 사용자 지적) */}
+        <div className="flex flex-col gap-[6px]">
+          <AgreeSection value={agree} onChange={setAgree} />
+          {agreeError ? (
+            // 다른 칸 오류 · 로그인 오류와 같은 14px(2026-11-04 사용자 지정, 전엔 15px)
+            <span role="alert" className="text-[14px] leading-[1.5] text-[#e93737]">
+              {agreeError}
+            </span>
+          ) : null}
+        </div>
       </fieldset>
 
       <div className="flex flex-col gap-[16px]">
-        {agreeError ? (
-          <span role="alert" className="text-[15px] text-[#e93737]">
-            {agreeError}
-          </span>
-        ) : null}
         <button type="submit" disabled={pending || uncertain || bizVerifying} className={SUBMIT}>
           {pending ? "처리 중..." : "회원가입"}
         </button>

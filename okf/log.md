@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-11-04
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [홈](/home.md) · [로그인](/auth.md) · [근무스케줄 화면](/screens/work-schedules.md) — 변경이력 팝업 1000px · 건수 고르기, 점포 없음 안내를 홈 상자에서 메뉴 줄 아래 띠로, 로그인 실패 문구 자리, 칸 오류 문구 자리(리뷰 반영, front tyrogue).
+* **Update**: [BP](/bp.md) · [점포](/stores.md) · [운영 알림](/notify.md) — 1팀 변경이력 팝업 통일(폭 1000 · 총 건수 · 한 쪽 20/50 · 표만 스크롤), 점포 없음 띠, BP 마스터 인증 실패 두 줄, 알림함 위 줄 · 뱃지 정렬(front tyrogue).
 * **Update**: [플랫폼 시스템 관리](/system.md) · [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 메뉴 관리: 메뉴 URL 은 등록할 때만 넣고 수정 양식에서는 읽기 전용(메뉴 코드 · 순서와 같은 칸)으로 막았다(사용자 지정, front machamp). 목업 · 데모 메뉴 화면도 같이 맞췄다.
 * **Update**: [플랫폼 시스템 관리](/system.md) — PR #216 리뷰 반영: 수정 저장의 메뉴 URL 겹침 409(겹치는 URL 을 가진 미사용 메뉴를 켤 때)를 칸 아래가 아니라 실패 띠로 보인다 — 읽기 전용 칸이라 문구 자리가 없어 아무것도 안 보였다. 「수정에서 URL 을 바꿀 때 건다」 낡은 문장도 고쳤다(front machamp).
 * **Update**: [로그인](/auth.md) — 상위 BP 가 탈퇴했으면 계정 상태와 상관없이 로그인 불가(미사용과 같은 문구), 탈퇴 중 사용으로 저장된 하위 관리자도 탈퇴 시점 기준 미사용(api #243 리뷰 반영 · 사용자 지정, front glaceon).

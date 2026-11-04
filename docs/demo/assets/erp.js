@@ -1329,10 +1329,27 @@
     sync();
   }
 
-  // ── 목록에서 골라 지우기: 머리 체크(data-pick-all)로 모두 고르고, 확인창의 버튼(data-remove-picked="표 id")이 고른 줄을 지운다 ──
+  // ── 목록에서 골라 지우기: 「전체 선택」 체크(data-pick-all, 값이 있으면 그 표 id · 없으면 감싼 표)로 모두 고르고, 확인창의 버튼(data-remove-picked="표 id")이 고른 줄을 지운다 ──
+  // 고른 줄이 없으면 [선택 삭제](data-need-pick="표 id")는 막힌 버튼이고 말풍선으로 이유를 보인다(운영 알림함, 앱 notification-list.tsx 2026-11-04)
+  const pickTable = (all) => (all.dataset.pickAll && all.dataset.pickAll !== "true" ? document.getElementById(all.dataset.pickAll) : all.closest("table"));
+  const syncPicked = (table) => {
+    if (!table) return;
+    const rows = $$("[data-pick-row]", table);
+    const picked = rows.filter((c) => c.checked).length;
+    $$(`[data-pick-all="${CSS.escape(table.id)}"]`).forEach((all) => (all.checked = rows.length > 0 && picked === rows.length));
+    $$(`button[data-need-pick="${CSS.escape(table.id)}"]`).forEach((b) => {
+      b.disabled = !picked;
+      const tip = b.closest("[data-blocked]")?.querySelector("[data-blocked-tip]");
+      if (tip) tip.hidden = !!picked;
+    });
+  };
   document.addEventListener("change", (e) => {
-    if (!e.target.matches("[data-pick-all]")) return;
-    $$("[data-pick-row]", e.target.closest("table")).forEach((c) => (c.checked = e.target.checked));
+    if (e.target.matches("[data-pick-all]")) {
+      const table = pickTable(e.target);
+      if (table) $$("[data-pick-row]", table).forEach((c) => (c.checked = e.target.checked));
+      return syncPicked(table);
+    }
+    if (e.target.matches("[data-pick-row]")) syncPicked(e.target.closest("table"));
   });
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-remove-picked]");
@@ -1341,11 +1358,14 @@
     $$("[data-pick-row]:checked", table).forEach((c) => c.closest("tr").remove());
     const all = $("[data-pick-all]", table);
     if (all) all.checked = false;
+    syncPicked(table);
     const body = table.tBodies[0];
     if (!body.rows.length)
       body.innerHTML = `<tr class="h-[92px] border-b border-erp-thead-line"><td colspan="${table.tHead.rows[0].cells.length}" class="text-center text-erp-muted">${table.dataset.empty}</td></tr>`;
     const total = table.closest("main")?.querySelector("p b");
     if (total) total.textContent = $$("[data-pick-row]", table).length;
+    const unread = table.closest("main")?.querySelector("[data-unread-count]");
+    if (unread) unread.textContent = $$("[data-unread]", table).length;
   });
 
   // ── 모두 읽음(data-read-all="표 id"): 미확인 점을 지우고 제목을 읽은 글자로 ──
@@ -1356,11 +1376,13 @@
     $$("[data-unread]", table).forEach((d) => {
       const tr = d.closest("tr");
       d.parentElement.textContent = "";
-      $$("a.font-semibold", tr).forEach((a) => {
+      $$("a.font-semibold, a .font-semibold", tr).forEach((a) => {
         a.classList.remove("font-semibold");
         a.classList.replace("text-erp-ink", "text-erp-muted");
       });
     });
+    const unread = table.closest("main")?.querySelector("[data-unread-count]");
+    if (unread) unread.textContent = "0";
   });
 
   // ── 첨부 파일 칸(data-file): 고른 파일 이름을 옆 칸에 보인다 ──

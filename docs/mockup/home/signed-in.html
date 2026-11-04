@@ -18,7 +18,8 @@
     <div class="shell">
       <main class="main" id="main">
         <div class="titlebar">
-          <h1 class="t-h1">안녕하세요, 정하윤님</h1>
+          <!-- 문장 제목이라 18px — 「안녕하세요,」는 회색 400, 「정하윤님」은 먹색 600(앱 PageBar titleSize="sentence", 2026-11-04 사용자 지정) -->
+          <h1 class="t-h1" style="font-size: 18px; font-weight: 600"><span style="color: #888888; font-weight: 400">안녕하세요,</span> 정하윤님</h1>
           <span class="badge badge--quiet">읽기 전용</span>
           <div class="titlebar__end">
             <span class="mono subtle" style="font-size: 12px">09-03 09:40 기준</span>
@@ -74,7 +75,9 @@
                   폐점이나 권한 회수로 무효가 될 값이 없고, 늘 “전체”에서 시작하니 고르지 않은 상태도 없다.
                   이 화면이 <b>전체 11개점</b> 을 보여주는 것이 그래서 기본 모습이다.
                   남는 것은 <b>점포를 아직 등록하지 않은 BP</b> 하나인데, 그때는 “범위를 고르세요”가 아니라
-                  “점포를 먼저 등록하세요”로 안내한다.
+                  점포 등록으로 안내한다. 홈은 안내 상자 없이 평소 화면을 <b>값 0</b> 으로 그리고, 안내는 모든 화면 상단바 바로 아래
+                  회색 <b>점포 없음 띠</b>(「아직 등록된 점포가 없습니다. 점포를 등록하면 …」 + [점포 등록하기])가 맡는다(2026-11-04 사용자 지정 —
+                  전엔 홈 안 「점포를 먼저 등록하세요」 상자). 주소에 <span class="mono">?scope=nostore</span> 를 붙이면 띠를 볼 수 있다.
                 </p>
               </div>
 

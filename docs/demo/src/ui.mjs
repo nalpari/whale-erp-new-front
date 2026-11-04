@@ -68,9 +68,9 @@ export const badge = (tone, text) =>
 export const link = (text, href, label) =>
   `<a${label ? ` aria-label="${label}"` : ""} class="text-erp-link hover:underline" href="${href}">${text}</a>`;
 
-// page-bar.tsx
-export const pageBar = (title, right = "") =>
-  `<div class="flex h-[59px] items-center border-b border-erp-bar-line bg-white px-[24px]"><h1 class="flex-1 text-[22px] font-semibold text-erp-ink">${title}</h1>${right}</div>`;
+// page-bar.tsx. 문장으로 된 제목(홈 인사말)은 sentence 로 18px(앱 PageBar titleSize="sentence", 2026-11-04 사용자 지정)
+export const pageBar = (title, right = "", size = "display") =>
+  `<div class="flex h-[59px] items-center border-b border-erp-bar-line bg-white px-[24px]"><h1 class="flex-1 ${size === "sentence" ? "text-[18px]" : "text-[22px]"} font-semibold text-erp-ink">${title}</h1>${right}</div>`;
 
 // list-toolbar.tsx
 export const listToolbar = (total, right = "") =>
@@ -298,8 +298,8 @@ const PANEL_BACKDROP =
   '<div data-panel-backdrop inert class="fixed inset-0 z-[5] bg-erp-nav/40 opacity-0 transition-opacity duration-250 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none"></div>';
 
 // 화면 틀. /design/full 과 같은 조합이다: 헤더 · 제목 줄 · 본문(남는 높이). 등록 패널은 바깥 relative 영역 오른쪽에 겹친다.
-export function erpFrame({ header, title, titleRight = "", body, panels = "" }) {
-  return `<div class="${ERP_THEME} min-h-[100dvh]"><div class="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg"><div class="relative flex h-full min-w-[1720px] flex-col overflow-x-clip">${header}${pageBar(title, titleRight)}${body}${panels}${PANEL_BACKDROP}</div></div></div>`;
+export function erpFrame({ header, title, titleRight = "", titleSize, body, panels = "" }) {
+  return `<div class="${ERP_THEME} min-h-[100dvh]"><div class="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg"><div class="relative flex h-full min-w-[1720px] flex-col overflow-x-clip">${header}${pageBar(title, titleRight, titleSize)}${body}${panels}${PANEL_BACKDROP}</div></div></div>`;
 }
 
 // 목록 화면 본문: 왼쪽 필터 + 오른쪽 목록 카드

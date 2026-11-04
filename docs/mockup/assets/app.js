@@ -458,10 +458,13 @@
          「웨일ERP」의 BP 선택은 실제로는 플랫폼 마스터 · 플랫폼 관리자에게만 열린다(그 밖의 계정은 자기 BP 홈 링크). 목업에는
          플랫폼 사용자로 들어오는 경로가 없어 우선 누구에게나 열고, 팝업 안에 플랫폼 사용자 전용이라는 안내를 둔다. */
       (SCOPE_MODE === "nostore"
-        ? /* 점포가 없으면 안내만 둔다. 점포 등록 안내와 링크는 홈 진입 팝업이 맡는다(3팀 · 점포 등록 권한이 있을 때만). */
-          '<span class="scopebtn scopebtn--empty">' + ic("store", 14) + "<span>접근할 점포가 없습니다</span></span>"
+        ? /* 점포가 없으면 선택기 자리엔 안내만 둔다. 점포 등록 안내와 [점포 등록하기]는 상단바 아래 점포 없음 띠(noStoreBandHTML)가 모든 화면에서 맡는다
+             (2026-11-04 사용자 지정 — 전엔 홈 안 안내 상자). */
+          '<span class="scopebtn scopebtn--empty">' + ic("store", 14) + "<span>접근할 점포가 없습니다</span></span>" + guideBtnHTML()
         : '<button class="scopebtn" type="button" aria-haspopup="listbox" aria-expanded="false" title="점포 범위 선택">' +
           '<b class="scopebtn__bp"></b><span class="sep">·</span><span class="scopebtn__val"></span>' + ic("selector", 14) + "</button>" +
+          /* [시작 가이드]는 서비스 바로가기(웨일ERP) 바로 앞 글자 버튼 — 플랫폼 계정에는 없다(앱 start-guide-button.tsx, 2026-11-04 사용자 지정) */
+          guideBtnHTML() +
           '<button class="scopebp" type="button" aria-haspopup="dialog" title="서비스 바로가기 · 웨일ERP — BP 를 골라 새 탭으로 엽니다">' + ic("whale", 14) + "웨일ERP</button>") +
       '<div class="topnav__end">' +
       '<button class="iconbtn bellbtn" type="button" aria-label="알림 3건" aria-haspopup="true" aria-expanded="false" data-dot="1" data-icon="bell" data-icon-size="18"></button>' +
@@ -472,6 +475,88 @@
       ic("selector", 14) + "</button>" +
       "</div></header>"
     );
+  }
+
+  /* ---------- 시작 가이드 (헤더, 2026-11-04 사용자 지정 — 앱 start-guide-button.tsx · lib/start-guide.ts) ----------
+     회색 14px 글자 버튼 + 꺾쇠, 호버 · 열림에 포인트 파랑(#4a7ae0). 누르면 흰 바탕 · 회청 1px · 6px 모서리 400px 상자에 단계 목록이 펼쳐진다.
+     BP 마스터 · BP 관리자는 위 밑줄 탭 「매장 사장님 | 프랜차이즈 본사」로 고르고(처음 값은 가맹 점포가 있으면 본사), 가맹 마스터 · 가맹 관리자는 「가맹점」 단계만 본다.
+     점포를 하나라도 등록했으면 STEP 1 오른쪽에 파랑 체크 「완료」. 단계를 누르면 그 화면으로 간다(조회 권한이 없으면 흐리게 둔다). 플랫폼 계정에는 없다. */
+  var GUIDE_ADMIN = function (t) {
+    return [
+      { label: "2-1", title: "권한 그룹 등록하기", href: "config/roles.html", sub: true },
+      { label: "2-2", title: "메뉴 권한 설정하기", href: "config/roles.html", sub: true },
+      { label: "2-3", title: t, href: "config/admins.html", sub: true }
+    ];
+  };
+  var GUIDE = {
+    STORE: { label: "매장 사장님", steps: [
+      { label: "STEP 1", title: "점포 등록하기", href: "stores/new.html", stores: true },
+      { label: "STEP 2", title: "함께 일할 관리자 추가하기", optional: true }
+    ].concat(GUIDE_ADMIN("관리자 계정 등록하기"), [
+      { label: "STEP 3", title: "직원 초대 · 근로계약 보내기", href: "staff/index.html" },
+      { label: "STEP 4", title: "근무스케줄 짜기", href: "staff/index.html#sched" },
+      { label: "STEP 5", title: "출퇴근 확인하기", href: "staff/index.html#sched" },
+      { label: "STEP 6", title: "급여명세서 보내기", href: "staff/index.html#payroll" }
+    ]) },
+    HQ: { label: "프랜차이즈 본사", steps: [
+      { label: "STEP 1", title: "점포 등록하기(직영 · 가맹 구분)", href: "stores/new.html", stores: true },
+      { label: "STEP 2", title: "본사 관리자 추가하기", optional: true }
+    ].concat(GUIDE_ADMIN("BP 관리자 등록하기"), [
+      { label: "STEP 3", title: "가맹점주 계정 만들기" },
+      { label: "3-1", title: "가맹 마스터 메뉴 권한 확인하기", href: "config/roles.html", sub: true },
+      { label: "3-2", title: "가맹 마스터 등록하기(맡을 가맹 점포 지정)", href: "config/admins.html", sub: true },
+      { label: "STEP 4", title: "직영점 직원 초대 · 근로계약 보내기", href: "staff/index.html", note: "가맹점 직원은 가맹점주가 초대합니다." },
+      { label: "STEP 5", title: "근무스케줄 · 출퇴근 확인하기", href: "staff/index.html#sched" },
+      { label: "STEP 6", title: "급여명세서 보내기 · 가맹점 현황 보기", href: "staff/index.html#payroll", note: "가맹점 직원 정보는 본사 제공에 동의한 직원만 보입니다." }
+    ]) }
+    /* 가맹 마스터 · 가맹 관리자(FRANCHISEE 「가맹점」)는 탭 없이 맡은 점포 확인하기 · 가맹 관리자 등록하기(선택 · 가맹 마스터만) · 직원 초대 · 근무스케줄 · 출퇴근 · 급여명세서
+       여섯 단계다. 목업의 로그인 사용자가 BP 마스터라 그리지 않는다. */
+  };
+  var guideTrack = null;
+  function guideBtnHTML() {
+    return '<button class="guidebtn" type="button" aria-haspopup="true" aria-expanded="false">시작 가이드' + ic("right", 12) + "</button>";
+  }
+  function guideHTML() {
+    var hasStores = SCOPE_MODE !== "nostore";
+    var track = guideTrack || (hasStores ? "HQ" : "STORE");
+    var tabs = '<div class="guide__tabs" role="tablist" aria-label="운영 형태">' + ["STORE", "HQ"].map(function (t) {
+      return '<button type="button" role="tab" data-track="' + t + '" aria-selected="' + (t === track) + '">' + GUIDE[t].label + "</button>";
+    }).join("") + "</div>";
+    var rows = GUIDE[track].steps.map(function (s) {
+      var body = '<span class="guide__no' + (s.sub ? " guide__no--sub" : "") + '">' + s.label + "</span>" +
+        '<span class="guide__main"><span class="guide__title' + (s.sub ? " guide__title--sub" : "") + '">' + s.title +
+        (s.optional ? '<span class="guide__opt">선택</span>' : "") + "</span>" +
+        (s.note ? '<span class="guide__note">' + s.note + "</span>" : "") + "</span>" +
+        (s.stores && hasStores ? '<span class="guide__done">' + ic("check", 12) + "완료</span>" : "") +
+        (s.href ? '<span class="guide__go">' + ic("right", 12) + "</span>" : "");
+      return "<li>" + (s.href ? '<a class="guide__row' + (s.sub ? " is-sub" : "") + '" href="' + url(s.href) + '">' + body + "</a>"
+        : '<div class="guide__row' + (s.sub ? " is-sub" : "") + '">' + body + "</div>") + "</li>";
+    }).join("");
+    return tabs + '<ol class="guide__list">' + rows + "</ol>";
+  }
+  function wireGuide() {
+    var btn = document.querySelector(".guidebtn");
+    if (!btn) return;
+    wirePop(btn, "left", guideHTML, null, function (pop) {
+      pop.classList.add("pop--guide");
+      pop.addEventListener("click", function (e) {
+        var t = e.target.closest("[data-track]");
+        if (!t) return;
+        guideTrack = t.dataset.track;
+        pop.innerHTML = guideHTML();
+        hydrateIcons(pop);
+      });
+    });
+  }
+
+  /* ---------- 점포 없음 띠 (2026-11-04 사용자 지정 — 앱 no-store-band.tsx) ----------
+     미운영 · 운영 점포가 하나도 없으면(?scope=nostore) 상단바 바로 아래 40px 회색 띠가 모든 화면에 선다. 홈은 안내 상자 없이 값 0 의 평소 화면이다.
+     폐점 점포만 있으면 앞 문장이 「운영 중이거나 운영 예정인 점포가 없습니다.」, BP 마스터 밖의 계정은 「아직 담당 점포가 없습니다.」.
+     가맹 마스터 · 가맹 관리자는 점포를 등록하지 못해 「관리자에게 점포 배정을 요청해 주세요.」만 두고 버튼이 없다. [점포 등록하기]는 점포 등록 권한이 있을 때만. */
+  function noStoreBandHTML() {
+    return '<div class="nostoreband" role="status">' + ic("info", 16) +
+      "<p>아직 등록된 점포가 없습니다. <b>점포를 등록</b>하면 직원 · 근무 · 급여 관리를 바로 시작할 수 있습니다.</p>" +
+      '<a class="nostoreband__btn" href="' + url("stores/new.html") + '">점포 등록하기</a></div>';
   }
 
   function badge(text, kind) {
@@ -1108,10 +1193,13 @@
     if (embed) document.documentElement.classList.add("is-embed");
     if (shell && page && !embed) {
       shell.insertAdjacentHTML("afterbegin", topnavHTML(page) + sideHTML(page, document.body.dataset.sub));
+      var main = shell.querySelector(".main");
+      if (SCOPE_MODE === "nostore" && main) main.insertAdjacentHTML("afterbegin", noStoreBandHTML());
     }
     hydrateIcons(document);
     bpSwitch();
     wireScope();
+    wireGuide();
     wireMe();
     wireBell();
     wireAccordion();

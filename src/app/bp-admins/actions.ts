@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
 import { withPeriod } from "@/lib/format";
+import { historyPageSizeOf } from "@/lib/history-paging";
 import {
   checkBpAdminEmailAvailable,
   checkBpAdminLoginIdAvailable,
@@ -133,10 +134,10 @@ export async function resetBpAdminPasswordAction(id: number): Promise<ActionResu
   }
 }
 
-export async function getBpAdminHistoriesAction(id: number, page: number): Promise<ActionResult<BpAdminHistoryList>> {
+export async function getBpAdminHistoriesAction(id: number, page: number, pageSize: number): Promise<ActionResult<BpAdminHistoryList>> {
   if (!validId(id)) return NOT_FOUND;
   try {
-    return { ok: true, ...(await getBpAdminHistories(id, Number.isInteger(page) && page >= 1 ? page : 1)) };
+    return { ok: true, ...(await getBpAdminHistories(id, Number.isInteger(page) && page >= 1 ? page : 1, historyPageSizeOf(pageSize))) };
   } catch (error) {
     return failureOf(error, "이력 조회");
   }
