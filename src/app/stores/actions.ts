@@ -36,7 +36,7 @@ export type ActionFailure = { ok: false; status?: number; message: string; messa
 export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
 
 /**
- * api 오류를 화면 문구로. 이 api 는 4xx(400 형식 · 운영 조건, 403 권한, 404 없음, 409 동시 수정 · 상태, 429 횟수)와
+ * api 오류를 화면 문구로. 이 api 는 4xx(400 형식 · 운영 조건, 403 권한, 404 없음, 409 동시 수정 · 상태 · 폐점 막힘(code OPEN_CHECK_IN — code 도 함께 넘긴다), 429 횟수)와
  * 503(진위확인 연동 · 저장소 없음)을 한국어로 알리므로 그대로 보인다. 401 은 할 일을 알 수 있게 고정 문구로 바꾼다.
  */
 function failureOf(error: unknown, what: string): ActionFailure {
@@ -80,7 +80,7 @@ export async function updateStoreAction(id: number, input: UpdateStoreInput): Pr
   try {
     const result = await updateStore(id, input);
     refresh();
-    // 본문이 없어도(204) 저장은 끝났다 — 결과 안내만 빼고 성공으로 둔다
+    // api 는 200 { closing } 을 준다. 옛 배포처럼 204(본문 없음)면 request 가 undefined 를 돌려주는데, 저장은 끝났으니 결과 안내만 빼고 성공으로 둔다
     return { ok: true, closing: result?.closing ?? null };
   } catch (error) {
     return failureOf(error, "수정");

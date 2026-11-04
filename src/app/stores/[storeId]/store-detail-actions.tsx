@@ -11,7 +11,7 @@ import { useCurrentBp, usePagePermission, useRefreshStores, useScope } from "@/c
 import { bpPath } from "@/lib/bp-path";
 import { withoutDeletedStore } from "@/lib/store-scope";
 import { deleteBlockText, finalEuro, nextStatuses } from "@/lib/store-view";
-import { OPEN_CHECK_IN, type StoreClosingResult } from "@/lib/store-closing";
+import { CLOSING_UNKNOWN_RESULT_NOTE, OPEN_CHECK_IN, type StoreClosingResult } from "@/lib/store-closing";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
 import { ClosingCheckList, ClosingCondition, ClosingResultDialog, hasClosingResult } from "../store-closing-parts";
@@ -133,13 +133,17 @@ export function StoreDetailActions({
       if (!target) return;
       const input = toUpdateStoreInput({ ...formOfStore(store), storeStatus: target }, store.updatedAt);
       const result = await updateStoreAction(store.storeId, input).catch(UNKNOWN("상태 변경"));
-      // 확인과 저장 사이에 퇴근하지 않은 출근이 생겼다 — 아무것도 저장되지 않았다. api 문구를 보이고 조건 팝업으로 돌아가 막힘을 다시 받는다
+      // 확인과 저장 사이에 퇴근하지 않은 출근이 생겼다 — 아무것도 저장되지 않았다. api 문구를 보이고 조건 팝업으로 돌아가 막힘을 다시 받는다.
+      // 다시 받기가 실패해도 옛 「0건」 · 열린 버튼이 남지 않게, 받기 전에 막힘으로 두고 옛 확인 값을 지운다
       if (!result.ok && result.code === OPEN_CHECK_IN) {
         setFailure(result.message);
+        setTransitions((t) => ({ ...t, canClose: false, closing: null }));
         setDialog("status");
         return reloadTransitions(result.message);
       }
-      if (!result.ok) return fail(result.status, result.message);
+      // 폐점 결과를 모르면 퇴직 · 계약 종료도 이미 끝났을 수 있다 — 그 사실을 덧붙인다
+      if (!result.ok)
+        return fail(result.status, target === "CLOSED" && result.status === undefined ? `${result.message} ${CLOSING_UNKNOWN_RESULT_NOTE}` : result.message);
       setDialog(null);
       // 폐점으로 직원 퇴직 · 계약 종료를 했으면 결과 창으로 알린다. 그 밖에는 토스트 하나만 — 바꾼 상태는 화면에 보이고,
       // 헤더 점포 목록이 바뀐 것은 따로 알리지 않는다(2026-11-03 사용자 지정)
@@ -296,8 +300,9 @@ export function StoreDetailActions({
           {/* 폐점일 · 되돌릴 수 없음을 한 문장에 이어 어색했다 — 두 줄로 나누고 날짜를 적는다. BP 휴일 안내는 뺐다(2026-11-03 사용자 지정) */}
           <p>폐점으로 변경하면 되돌릴 수 없습니다.</p>
           <p>폐점일은 오늘({kstToday()})입니다.</p>
-          {/* 폐점하면 함께 처리될 것 — 조건 팝업을 열 때 받은 확인 값이다. 그 사이 바뀌면 저장(PUT)이 다시 보고 막는다(409) */}
-          {transitions.closing && <ClosingCheckList counts={transitions.closing.total} />}
+          {/* 폐점하면 함께 처리될 것 — 조건 팝업을 열 때 받은 확인 값이다. 그 사이 수가 바뀌어도 저장은 그대로 되고 실제 처리한 수는 결과 창이 보인다.
+              그 사이 퇴근하지 않은 출근이 생겼을 때만 저장(PUT)이 막는다(409 OPEN_CHECK_IN). 확인 값이 없으면 목록 대신 무엇이 처리되는지 알린다 */}
+          <ClosingCheckList counts={transitions.closing?.total ?? null} />
           {failure && <p role="alert" className="mt-[10px] text-erp-off">{failure}</p>}
         </ConfirmDialog>
       )}

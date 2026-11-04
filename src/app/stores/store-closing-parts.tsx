@@ -3,6 +3,7 @@
 import { ConfirmDialog } from "@/components/common";
 import { WarnBand } from "@/components/site/side-parts";
 import {
+  CLOSING_COUNTS_UNKNOWN,
   closingBlockOf,
   closingCheckLines,
   closingPayslipText,
@@ -33,7 +34,7 @@ function Lines({ lines }: { lines: ClosingLine[] }) {
 
 /**
  * 폐점 조건 — 퇴근하지 않은 출근 N건(가려진 직원 것 포함). 막히면 첫 건(이름 · 출근 시각)과 할 일을 덧붙인다.
- * counts 가 없으면(이미 폐점했거나 확인 전) 그리지 않는다.
+ * counts 가 없으면(이미 폐점 · 확인 실패 · 출근 말고 다른 이유로 막힘) 그리지 않는다.
  */
 export function ClosingCondition({ counts }: { counts: Pick<StoreClosingCounts, "openCheckIns"> | null | undefined }) {
   if (!counts) return null;
@@ -64,13 +65,16 @@ export function ClosingCondition({ counts }: { counts: Pick<StoreClosingCounts, 
 /**
  * 폐점하면 함께 처리될 것 — 폐점 확인 창 안. 되돌릴 수 없는 결과(퇴직 · 계약 종료)라 빨간 안내 상자로 둔다(DESIGN.md 1팀 확인창).
  * 0건인 줄은 뺀다. 확정하지 않은 급여명세서는 처리하지 않으므로 상자 밖 회색 안내로 둔다. 체결 완료 계약은 남고 직원 알림은 가지 않는다.
+ * counts 가 없으면(확인 값을 받지 못함) 목록을 빼지 않고 무엇이 처리되는지만 같은 상자로 알린다.
  */
-export function ClosingCheckList({ counts }: { counts: StoreClosingCounts }) {
-  const lines = closingCheckLines(counts);
-  const payslip = closingPayslipText(counts);
+export function ClosingCheckList({ counts }: { counts: StoreClosingCounts | null }) {
+  const lines = counts ? closingCheckLines(counts) : [];
+  const payslip = counts ? closingPayslipText(counts) : null;
   return (
     <div className="mt-[12px] flex flex-col gap-[6px]">
-      {lines.length ? (
+      {!counts ? (
+        <WarnBand>{CLOSING_COUNTS_UNKNOWN}</WarnBand>
+      ) : lines.length ? (
         <WarnBand>
           <p className="font-medium">폐점하면 함께 처리됩니다.</p>
           <Lines lines={lines} />

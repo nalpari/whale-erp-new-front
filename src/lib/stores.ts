@@ -94,7 +94,8 @@ export async function createStore(input: CreateStoreInput): Promise<CreateStoreR
  * 폐점이면 같은 트랜잭션에서 직원 퇴직 · 대기 계약 종료 · 초대 만료를 하고 처리한 수를 closing 으로 준다(그 밖에는 null).
  * 확인과 저장 사이에 출근이 생겼으면 409 code OPEN_CHECK_IN — 다른 칸도 저장되지 않는다
  */
-export async function updateStore(id: number, input: UpdateStoreInput): Promise<UpdateStoreResult> {
+// 옛 api 배포는 204(본문 없음)를 줘 request 가 undefined 를 돌려준다 — 타입에 드러내 부르는 쪽이 ?. 로 받게 한다
+export async function updateStore(id: number, input: UpdateStoreInput): Promise<UpdateStoreResult | undefined> {
   return request(`/stores/${id}`, await json("PUT", input));
 }
 

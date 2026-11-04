@@ -13,7 +13,10 @@ export type StoreClosingCounts = Schemas["StoreClosingCountsDto"];
 export type StoreClosingResult = Schemas["StoreClosingResultResponseDto"];
 export type StoreClosingRetirement = Schemas["StoreClosingRetirementDto"];
 
-/** 폐점을 막는 퇴근하지 않은 출근 — 건수는 가려진 직원 것까지 더한다. first 는 이름을 보일 수 있는 것 중 가장 이른 건 */
+/**
+ * 폐점을 막는 퇴근하지 않은 출근 — 건수는 가려진 직원 것까지 더한다(api isBlocked 와 같은 기준: count + hiddenCount > 0).
+ * first 는 이름을 보일 수 있는 것 중 가장 이른 건이고, recordedAt 은 이미 화면 표기(한국 시간)로 바꾼 글자다
+ */
 export type ClosingBlock = {
   count: number;
   first: { name: string; recordedAt: string } | null;
@@ -81,6 +84,13 @@ export function closingResultLines(total: StoreClosingRetirement): ClosingLine[]
   ];
   return lines.filter((line): line is ClosingLine => Boolean(line));
 }
+
+/** 확인 값(closing)을 받지 못했을 때 확인 창에 대신 보이는 안내 — 되돌릴 수 없는 결과를 모른 채 폐점하지 않게 무엇이 처리되는지는 말한다 */
+export const CLOSING_COUNTS_UNKNOWN =
+  "함께 처리될 직원 · 근로계약 수를 확인하지 못했습니다. 폐점하면 근무 중인 직원은 오늘 날짜로 퇴직되고, 대기 중인 근로계약은 종료됩니다.";
+
+/** 폐점 저장 결과를 모를 때(5xx · 연결 끊김) 덧붙이는 안내 — 폐점됐다면 퇴직 · 계약 종료도 이미 끝났다 */
+export const CLOSING_UNKNOWN_RESULT_NOTE = "폐점됐다면 근무 중인 직원 퇴직 · 대기 근로계약 종료도 함께 처리됐습니다. 직원 목록에서 확인해 주세요.";
 
 /** 폐점 저장이 확인과 저장 사이에 생긴 출근으로 막혔다(409) — api 오류 본문의 code */
 export const OPEN_CHECK_IN = "OPEN_CHECK_IN";

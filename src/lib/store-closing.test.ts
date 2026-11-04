@@ -61,6 +61,26 @@ test("확인 목록은 0건인 줄을 빼고, 급여명세서는 처리 목록�
   assert.equal(closingPayslipText(counts()), null);
 });
 
+test("확인 목록은 직원 · 임시저장 · 발송 대기 · 서명 대기 순서이고 줄마다 자기 수를 쓴다", () => {
+  const lines = closingCheckLines(counts({ retiringStaff: 4, draftContracts: 3, pendingSendContracts: 2, pendingSignatureContracts: 1 }));
+  assert.deepEqual(
+    lines.map((l) => [l.key, l.text]),
+    [
+      ["staff", "근무 중인 직원 4명 퇴직(퇴직일 오늘)"],
+      ["draft", "임시저장 근로계약 3건 종료"],
+      ["send", "발송 대기 근로계약 2건 종료 · 초대 무효"],
+      ["sign", "서명 대기 · 수정 요청 근로계약 1건 종료"],
+    ],
+  );
+});
+
+test("결과 안내의 계약 종류는 임시저장 · 발송 대기 · 서명 대기 순서다", () => {
+  const base = { retiringStaff: 0, pulledForwardStaff: 0, draftContracts: 1, pendingSendContracts: 2, pendingSignatureContracts: 3, expiredInvitations: 0 };
+  assert.deepEqual(closingResultLines(base), [
+    { key: "contracts", text: "근로계약 6건 종료", note: "임시저장 1건, 발송 대기 2건, 서명 대기 · 수정 요청 3건" },
+  ]);
+});
+
 test("결과 안내는 계약을 한 줄로 묶고, 앞당긴 퇴직을 덧붙인다", () => {
   const base = { retiringStaff: 0, pulledForwardStaff: 0, draftContracts: 0, pendingSendContracts: 0, pendingSignatureContracts: 0, expiredInvitations: 0 };
   assert.deepEqual(closingResultLines(base), []);
