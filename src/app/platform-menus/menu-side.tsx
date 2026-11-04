@@ -225,10 +225,16 @@ function MenuForm(
     });
   };
 
-  /** api 가 칸 하나의 것이라고 말하면(형식 · URL 겹침) 그 칸 아래, 그 밖은 띠로 */
+  /**
+   * api 가 칸 하나의 것이라고 말하면(형식 · URL 겹침) 그 칸 아래, 그 밖은 띠로. 수정에서는 URL 칸이 읽기 전용이라 칸 아래 문구 자리가
+   * 없고 고칠 수도 없다 — URL 오류는 띠로 알린다. api 는 URL 을 그대로 둬도 사용으로 저장하면 겹침을 검사해, 다른 사용 중 메뉴와 겹치는
+   * 미사용 메뉴를 켜면 409 가 온다(PR #216 리뷰).
+   */
   const fail = (result: { status?: number; message: string }) => {
     const field = menuFieldOf(result.message);
-    if (field && (result.status === 400 || result.status === 409)) return setErrors({ [field]: result.message });
+    const fieldShown = field === "name" || (field === "url" && props.mode === "create");
+    if (field && fieldShown && (result.status === 400 || result.status === 409)) return setErrors({ [field]: result.message });
+    if (field === "url" && props.mode === "edit") return setFailure({ message: result.message, detail: "메뉴 URL 은 수정할 수 없습니다. 겹치는 메뉴를 먼저 확인해 주세요." });
     // 동시 수정 409 만 최신 값으로 칸을 다시 채운다. 그 밖은 입력을 그대로 둔다
     const reload = result.status === 409 && props.mode === "edit" && isChangedMeanwhile(result.message);
     setFailure({ message: result.message, detail: reload ? "최신 정보로 칸을 다시 채웠습니다. 확인한 뒤 다시 저장해 주세요." : "입력한 값은 그대로 두었습니다." });
