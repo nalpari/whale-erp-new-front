@@ -26,7 +26,8 @@ import {
 } from "@/lib/bp-holiday-view";
 import type { BpHolidayDetail, BpHolidayOverlaps } from "@/lib/bp-holidays";
 import { checkBpHolidayOverlapsAction, createBpHolidayAction, updateBpHolidayAction } from "./actions";
-import { HistoryScroll, unknownResult } from "./holiday-parts";
+import { HistoryScroll } from "@/components/site/wide-dialog";
+import { unknownResult } from "./holiday-parts";
 
 // BP 휴일 등록(S-UCPMYB) · 수정(S-BXEAEZ) 슬라이드 패널. 휴일정보(휴일명 → 날짜 → 반복 상자 → 설명)를 위로, 적용 대상을 맨 아래로 둔다(데모 2026-10-08, 반복 위치 2026-10-30).
 // 「BP 휴일 변경 · 종료 정책」(1팀, 2026-10-26)에 맞춰 수정할 수 있는 칸이 상태로 갈린다 — api 가 같은 규칙으로 다시 막는다.

@@ -314,16 +314,20 @@
 
     // 제출: 브라우저 기본 검사를 통과한 뒤 비밀번호 확인과 필수 약관만 따로 본다.
     // 가입 API 가 없어 완료 화면에 보일 값을 주소로 넘긴다.
+    // 약관 동의 오류는 약관 칸 바로 아래(data-agree-error), 그 밖은 [회원가입] 위(앱 signup-form.tsx, 2026-11-04)
     const error = signup.querySelector("[data-signup-error]");
-    const fail = (msg) => {
-      error.textContent = msg;
-      error.hidden = !msg;
+    const agreeError = signup.querySelector("[data-agree-error]");
+    const fail = (msg, at = error) => {
+      for (const el of [error, agreeError]) {
+        el.textContent = el === at ? msg : "";
+        el.hidden = el !== at || !msg;
+      }
     };
     signup.addEventListener("submit", (e) => {
       e.preventDefault();
       const form = new FormData(signup);
       if (form.get("password") !== form.get("passwordConfirm")) return fail("비밀번호가 서로 다릅니다.");
-      if (!each.every((c) => c.checked)) return fail("이용약관과 개인정보 수집·이용에 모두 동의해 주세요.");
+      if (!each.every((c) => c.checked)) return fail("이용약관과 개인정보 수집·이용에 모두 동의해 주세요.", agreeError);
       fail("");
       const shown = new URLSearchParams({ companyName: form.get("companyName"), loginId: form.get("loginId"), email: form.get("email") });
       location.href = `${signup.dataset.done}?${shown}`;

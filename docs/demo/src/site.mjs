@@ -427,6 +427,94 @@ export function withdrawPanel(A, R) {
 const bpStatusNote = (status) =>
   `<span role="status" class="flex shrink-0 items-center gap-[6px] text-[14px] text-erp-off">${ui.badge("off", status)}조회 기능만 이용할 수 있는 BP입니다.</span>`;
 
+// 헤더 [시작 가이드](앱 start-guide-button.tsx · lib/start-guide.ts, 2026-11-04 사용자 지정) — 서비스 바로가기 바로 앞의 글자 버튼(회색 14px 500 + 꺾쇠,
+// 호버 · 열림에 포인트 파랑 #4a7ae0). 누르면 서비스 바로가기 툴팁과 같은 상자(흰 바탕 · 회청 1px · 6px 모서리, 꼬리 · 그림자 없음, 400px)로 단계가 펼쳐진다.
+// BP 마스터 · BP 관리자는 위 밑줄 탭 「매장 사장님 | 프랜차이즈 본사」로 고르고 처음 값은 가맹 점포가 있으면 본사다(데모 BP 는 가맹 점포가 있어 본사).
+// 가맹 마스터 · 가맹 관리자는 「가맹점」 단계만, 플랫폼 계정에는 없다(데모 ERP 헤더는 BP 마스터라 두 탭). 점포를 하나라도 등록했으면 STEP 1 에 파랑 체크 「완료」.
+// 단계 주소는 데모 화면으로 바꿨다 — 데모에 없는 화면은 # 이다.
+const GUIDE_PATH = {
+  "/stores/new": "stores/new.html",
+  "/stores": "stores/index.html",
+  "/bp-role-groups": "config/roles.html",
+  "/bp-admins": "config/admins.html",
+  "/staff-members": "staff/index.html",
+  "/work-schedules": "staff/work-schedules.html",
+  "/attendance-records": "staff/attendance.html",
+  "/payslips": "staff/payslips.html",
+};
+const GUIDE_ADMIN = (adminTitle) => [
+  { label: "2-1", title: "권한 그룹 등록하기", path: "/bp-role-groups", sub: true },
+  { label: "2-2", title: "메뉴 권한 설정하기", path: "/bp-role-groups", sub: true },
+  { label: "2-3", title: adminTitle, path: "/bp-admins", sub: true },
+];
+const GUIDE = [
+  [
+    "STORE",
+    "매장 사장님",
+    [
+      { label: "STEP 1", title: "점포 등록하기", path: "/stores/new", doneWhen: "stores" },
+      { label: "STEP 2", title: "함께 일할 관리자 추가하기", optional: true },
+      ...GUIDE_ADMIN("관리자 계정 등록하기"),
+      { label: "STEP 3", title: "직원 초대 · 근로계약 보내기", path: "/staff-members" },
+      { label: "STEP 4", title: "근무스케줄 짜기", path: "/work-schedules" },
+      { label: "STEP 5", title: "출퇴근 확인하기", path: "/attendance-records" },
+      { label: "STEP 6", title: "급여명세서 보내기", path: "/payslips" },
+    ],
+  ],
+  [
+    "HQ",
+    "프랜차이즈 본사",
+    [
+      { label: "STEP 1", title: "점포 등록하기(직영 · 가맹 구분)", path: "/stores/new", doneWhen: "stores" },
+      { label: "STEP 2", title: "본사 관리자 추가하기", optional: true },
+      ...GUIDE_ADMIN("BP 관리자 등록하기"),
+      { label: "STEP 3", title: "가맹점주 계정 만들기" },
+      { label: "3-1", title: "가맹 마스터 메뉴 권한 확인하기", path: "/bp-role-groups", sub: true },
+      { label: "3-2", title: "가맹 마스터 등록하기(맡을 가맹 점포 지정)", path: "/bp-admins", sub: true },
+      { label: "STEP 4", title: "직영점 직원 초대 · 근로계약 보내기", path: "/staff-members", note: "가맹점 직원은 가맹점주가 초대합니다." },
+      { label: "STEP 5", title: "근무스케줄 · 출퇴근 확인하기", path: "/work-schedules" },
+      { label: "STEP 6", title: "급여명세서 보내기 · 가맹점 현황 보기", path: "/payslips", note: "가맹점 직원 정보는 본사 제공에 동의한 직원만 보입니다." },
+    ],
+  ],
+];
+const GUIDE_DONE = `<span class="flex shrink-0 items-center gap-[4px] text-[12px] font-semibold text-erp-point"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="var(--color-erp-point)"/><path d="M4.6 8.2l2.2 2.2 4.6-4.7" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>완료</span>`;
+function guideStep(A, R, step, hasStores) {
+  const tag = step.sub
+    ? `<span class="flex h-[20px] w-[52px] shrink-0 items-center justify-center rounded-full text-[12px] font-semibold text-erp-label">${step.label}</span>`
+    : `<span class="flex h-[20px] w-[52px] shrink-0 items-center justify-center rounded-full bg-erp-point-bg text-[11px] font-semibold tracking-[0.02em] text-erp-point">${step.label}</span>`;
+  const optional = step.optional ? '<span class="rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] text-[12px] text-erp-sub">선택</span>' : "";
+  const note = step.note ? `<span class="text-[12px] text-erp-label">${step.note}</span>` : "";
+  const body =
+    tag +
+    `<span class="flex min-w-0 flex-1 flex-col gap-[2px]"><span class="flex items-center gap-[6px]"><span class="${step.sub ? "text-[13px]" : "text-[14px] font-medium"}">${step.title}</span>${optional}</span>${note}</span>` +
+    (step.doneWhen === "stores" && hasStores ? GUIDE_DONE : "") +
+    (step.path ? ui.img(A, "chevron-small.svg", 5, 8, "shrink-0 rotate-180 opacity-0 transition-opacity duration-150 ease-out group-hover:opacity-100") : "");
+  const row = `group flex w-full items-center gap-[10px] rounded-[4px] py-[7px] ${step.sub ? "pl-[20px]" : "pl-[6px]"} pr-[10px] text-left text-erp-ink`;
+  return step.path
+    ? `<li><a href="${to(R, GUIDE_PATH[step.path])}" class="${row} transition-colors duration-150 ease-out hover:bg-erp-point-subtle">${body}</a></li>`
+    : `<li><div class="${row}">${body}</div></li>`;
+}
+const GUIDE_TAB_ON = "border-erp-point font-semibold text-erp-point";
+const GUIDE_TAB_OFF = "border-transparent font-medium text-erp-label hover:text-erp-ink";
+export function startGuide(A, R, { initial = "HQ", hasStores = true } = {}) {
+  const id = ui.uid("guide");
+  const tabs = GUIDE.map(
+    ([key, label]) =>
+      `<button type="button" role="tab" id="tab-${id}-${key}" aria-controls="${id}-${key}" aria-selected="${key === initial}" data-on="${GUIDE_TAB_ON}" data-off="${GUIDE_TAB_OFF}" class="-mb-px h-[36px] border-b-2 text-[14px] transition-[border-color,color] duration-150 ease-out ${key === initial ? GUIDE_TAB_ON : GUIDE_TAB_OFF}">${label}</button>`,
+  ).join("");
+  const panels = GUIDE.map(
+    ([key, , steps]) =>
+      `<div role="tabpanel" id="${id}-${key}" aria-labelledby="tab-${id}-${key}"${key === initial ? "" : " hidden"}><ol class="flex flex-col gap-[2px]">${steps.map((s) => guideStep(A, R, s, hasStores)).join("")}</ol></div>`,
+  ).join("");
+  // 상자는 ui.popup(fade) 위에 서비스 바로가기 툴팁 모양(회청 테두리 · 6px · 안쪽 16/14)을 덧입힌다
+  return `<div class="relative"><button type="button" aria-expanded="false" aria-controls="${id}" class="group flex h-[42px] shrink-0 items-center gap-[6px] px-[6px] text-[14px] font-medium whitespace-nowrap text-erp-label transition-colors duration-150 ease-out hover:text-erp-point aria-expanded:text-erp-point">시작 가이드<svg aria-hidden="true" width="5" height="8" viewBox="0 0 5.09 8.06" fill="none" class="shrink-0 rotate-180 transition-transform duration-150 ease-out group-aria-expanded:-rotate-90"><path d="M4.56 0.53L1.06 4.03l3.5 3.5" stroke="currentColor" stroke-width="1.5"/></svg></button>${ui.popup(
+    id,
+    "fade",
+    "right-0 w-[400px] rounded-[6px]! border-erp-brand! px-[16px]! py-[14px]! text-left text-erp-ink",
+    `<div class="flex flex-col gap-[12px]"><div role="tablist" aria-label="운영 형태" class="grid grid-cols-2 border-b border-erp-thead-line">${tabs}</div>${panels}</div>`,
+  )}</div>`;
+}
+
 export function erpHeader(A, R, { bpStatus } = {}) {
   const menus = ERP_MENUS.map(([label, items]) => ({ label, items: items.map(([l, p]) => ({ label: l, href: to(R, p) })) }));
   const user = [
@@ -443,6 +531,8 @@ export function erpHeader(A, R, { bpStatus } = {}) {
       (bpStatus
         ? `<div class="flex min-w-0 flex-1 items-center gap-[12px]">${scopeDropdown(A).replace('<div class="relative flex-1">', '<div class="relative w-[420px] shrink-0">')}${bpStatusNote(bpStatus)}</div>`
         : scopeDropdown(A)) +
+        // 시작 가이드는 서비스 바로가기 바로 앞 — 플랫폼 계정이 BP 를 볼 때(bpStatus)는 숨긴다(앱 admin-header.tsx 와 같다)
+        (bpStatus ? "" : startGuide(A, R)) +
         ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: to(R, "bp/index.html") }) +
         ui.alarmLink(A, to(R, "notify/index.html")) +
         ui.userPop(A, USER, user),

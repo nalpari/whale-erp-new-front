@@ -1,13 +1,15 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { Button, DataTable, DateField, Pagination, Select, type Column } from "@/components/common";
+import { Button, DataTable, DateField, Pagination, type Column } from "@/components/common";
 import { FailedBand } from "@/components/site/side-parts";
+import { HistoryScroll, HistoryTotalBar, WideDialog } from "@/components/site/wide-dialog";
 import { defaultHistoryRange } from "@/lib/bp-holiday-view";
 import type { BpHolidayHistory, BpHolidayHistoryList } from "@/lib/bp-holidays";
 import { formatDateTime } from "@/lib/format";
+import { FIRST_HISTORY_PAGE_SIZE, type HistoryPageSize } from "@/lib/history-paging";
 import { getBpHolidayHistoriesAction } from "./actions";
-import { HistoryScroll, unknownResult, WideDialog } from "./holiday-parts";
+import { unknownResult } from "./holiday-parts";
 
 // 변경 이력. 화면 위 [변경이력]은 이력이 생긴 날짜로 찾는 팝업이고 기본 기간은 이달 1일~오늘이다 — 지운 휴일은 여기서만 보인다(S-YAFRYZ).
 // 상세의 [변경이력]은 그 휴일의 이력(상세 응답에 함께 온다)만 같은 표로 보인다. 칸 이름은 1팀 영역의 다른 이력과 같다.
@@ -25,9 +27,6 @@ const COLUMNS: Column<BpHolidayHistory>[] = [
 
 const WITH_HOLIDAY: Column<BpHolidayHistory>[] = [...COLUMNS.slice(0, 2), { header: "휴일명", width: "w-[140px]", align: "left", cell: (h) => h.holidayName }, ...COLUMNS.slice(2)];
 
-const HISTORY_PAGE_SIZES = [20, 50] as const;
-type HistoryPageSize = (typeof HISTORY_PAGE_SIZES)[number];
-
 /** 화면 위 [변경이력] — 기간으로 찾는다. 열 때마다 기본 기간 첫 쪽을 새로 받는다(방금 고친 내용이 바로 보여야 한다). */
 export function HolidayHistoryButton({ today }: { today: string }) {
   const [open, setOpen] = useState(false);
@@ -36,7 +35,7 @@ export function HolidayHistoryButton({ today }: { today: string }) {
   // 표가 보이는 기간 — 쪽 이동 · 건수 바꾸기는 칸에 적다 만 기간이 아니라 마지막으로 조회한 기간으로 받는다(코드 리뷰)
   const [shown, setShown] = useState(() => defaultHistoryRange(today));
   // 한 쪽 건수 — 20 · 50(2026-11-03 사용자 지정). 바꾸면 지금 기간으로 첫 쪽부터 다시 받는다
-  const [pageSize, setPageSize] = useState<HistoryPageSize>(20);
+  const [pageSize, setPageSize] = useState<HistoryPageSize>(FIRST_HISTORY_PAGE_SIZE);
   const [data, setData] = useState<BpHolidayHistoryList | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [loading, startLoading] = useTransition();
@@ -67,11 +66,11 @@ export function HolidayHistoryButton({ today }: { today: string }) {
           setRange(initial);
           // 다시 열면 지난번 조회 기간 · 건수를 남기지 않는다 — 첫 조회가 실패해도 칸과 표의 기준이 같게(코드 리뷰)
           setShown(initial);
-          setPageSize(20);
+          setPageSize(FIRST_HISTORY_PAGE_SIZE);
           setFailure(null);
           setData(null);
           setOpen(true);
-          load(initial, 1, 20);
+          load(initial, 1, FIRST_HISTORY_PAGE_SIZE);
         }}
       >
         변경이력
@@ -86,7 +85,8 @@ export function HolidayHistoryButton({ today }: { today: string }) {
           </Button>
         }
       >
-        <div className="flex shrink-0 items-center gap-[6px]">
+        {/* 기간 조회는 왼쪽, 총 건수 · 한 쪽 건수는 오른쪽 끝 — 다른 1팀 변경이력 팝업과 같은 줄(HistoryTotalBar) */}
+        <HistoryTotalBar total={data?.total ?? null} pageSize={pageSize} disabled={loading} onPageSizeChange={(size) => load(shown, 1, size)}>
           <div className="w-[150px]">
             <DateField aria-label="이력 시작일" value={range.from} onChange={(from) => setRange((r) => ({ ...r, from }))} />
           </div>
@@ -97,20 +97,7 @@ export function HolidayHistoryButton({ today }: { today: string }) {
           <Button variant="soft" onClick={() => load(range, 1)} disabled={loading}>
             조회
           </Button>
-          {/* 조회 줄 오른쪽 끝에 총 건수 · 한 쪽 건수 — 목록 화면(ListToolbar)과 같은 모양(2026-11-03 사용자 지정) */}
-          <p className="ml-auto text-[14px] text-erp-ink">
-            총 <b className="font-semibold">{data ? data.total.toLocaleString("ko-KR") : "-"}</b> 건
-          </p>
-          <div className="w-[80px] shrink-0">
-            <Select aria-label="페이지당 건수" value={String(pageSize)} disabled={loading} onChange={(e) => load(shown, 1, Number(e.target.value) as HistoryPageSize)}>
-              {HISTORY_PAGE_SIZES.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </Select>
-          </div>
-        </div>
+        </HistoryTotalBar>
         <div className="flex min-h-0 flex-1 flex-col gap-[12px]" aria-busy={loading}>
           {failure && <FailedBand message={failure} />}
           <HistoryScroll>

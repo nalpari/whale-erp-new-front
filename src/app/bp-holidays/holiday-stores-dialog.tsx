@@ -4,7 +4,8 @@ import { useRef, useState, useTransition, type ReactNode } from "react";
 import { Button, DataTable, Tag, type Column } from "@/components/common";
 import { FailedBand } from "@/components/site/side-parts";
 import { getBpHolidayStoresAction, type HolidayStoresOnDate } from "./actions";
-import { HistoryScroll, unknownResult, WideDialog } from "./holiday-parts";
+import { HistoryScroll, WideDialog } from "@/components/site/wide-dialog";
+import { unknownResult } from "./holiday-parts";
 
 // 목록의 대상점포 · 예외점포 칸 — 글자(「오퍼카페 외 2개」 · 「3개」)를 누르면 그날 걸린 점포를 작은 팝업으로 보인다(2026-11-03 사용자 지정 —
 // 목록 api 는 첫 점포 · 수만 주어 「어디 어디」를 알 수 없었다). 누를 때 상세를 받아 그 날짜 기준으로 고른다(반복 휴일은 날짜마다 점포가 다를 수 있다).

@@ -36,6 +36,10 @@
   --color-erp-off: #ef6363;
   --color-erp-off-bg: #fff1f1;
   --color-erp-link: #366fe3;
+  /* 포인트 파랑 — 점포 없음 띠 · 시작 가이드 강조와 그 연한 바탕 · 호버 바탕(2026-11-04 사용자 지정) */
+  --color-erp-point: #4a7ae0;
+  --color-erp-point-bg: #eef4ff;
+  --color-erp-point-subtle: #f5f8ff;
   --color-erp-nav: #282f37;
   --color-erp-sub: #53606f;
   --font-erp: var(--font-pretendard), Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;

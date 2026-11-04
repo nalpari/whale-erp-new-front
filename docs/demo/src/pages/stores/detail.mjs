@@ -22,7 +22,7 @@ const REGISTERED_COL = "w-[330px]";
 const muted = (t) => `<span class="text-erp-muted">${t}</span>`;
 const dash = (v) => v || muted("-");
 
-// 견본 점포의 상세 값(목록 STORES 에 없는 칸). history 는 변경이력 팝업의 첫 쪽, historyTotal 은 전체 건수(10건 넘을 때만 쪽 넘기기).
+// 견본 점포의 상세 값(목록 STORES 에 없는 칸). history 는 변경이력 팝업의 첫 쪽(한 쪽 20건), historyTotal 은 전체 건수(이력이 있으면 한 쪽뿐이어도 쪽 이동 1).
 // 변경자가 없는 줄(null)은 시스템이 바꾼 것이다(앱 history-dialog.tsx — 회색 「시스템」).
 const DETAIL = {
   ST000006: {
@@ -49,6 +49,10 @@ const DETAIL = {
       ["2025-09-15 13:27", "정하윤", "업태 · 종목", "음식점업 · 카페", "음식점업 · 커피전문점"],
       ["2025-08-20 11:00", "정하윤", "점포상태", "미운영", "운영"],
       ["2025-08-12 17:48", "정하윤", "상호명", "모리커피", "모리커피 연남"],
+      ["2025-08-05 15:30", "정하윤", "점포 연락처", "", "02-322-1100"],
+      ["2025-08-01 14:22", "박서윤", "사업자정보 인증", "미인증", "인증"],
+      ["2025-07-28 10:12", null, "위도 · 경도", "", "37.562000 · 126.925500"],
+      ["2025-07-28 10:10", "정하윤", "점포", "", "등록 · 모리커피 · 가맹점포"],
     ],
     historyTotal: 14,
     // 폐점을 막는 퇴근하지 않은 출근(앱 transition-check closing) · 폐점하면 함께 처리될 것
@@ -196,14 +200,13 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
     d.floors.length ? d.floors.map((fl) => ["층구분", ui.detailValues(fl)]) : [["층구분", muted("등록한 층별 정보가 없습니다.")]],
   );
 
-  // 변경 이력: 한 쪽 10건. 표는 5줄 높이(머리 42 + 줄 46×5)로 두고 넘치면 표 안에서 스크롤, 머리글은 고정.
-  // 쪽 넘기기는 10건이 넘을 때만, 표와 6px 띄운다(앱 history-dialog.tsx). 불러오는 중(「불러오는 중입니다.」) · 실패 띠는 데모에 두지 않는다
-  const history =
-    `<div class="max-h-[273px] overflow-y-auto border-y border-erp-thead-line [&_thead]:sticky [&_thead]:top-0 [&_thead]:shadow-[0_1px_0_var(--color-erp-thead-line)] [&_thead_tr]:border-y-0 [&_tbody_tr:last-child]:border-b-0">${ui.dataTable(
-      [{ header: "변경일시", width: "w-[140px]" }, { header: "변경자", width: "w-[140px]" }, { header: "항목", width: "w-[120px]", align: "left" }, { header: "변경 전", align: "left" }, { header: "변경 후", align: "left" }],
-      d.history.map(([at, by, ...rest]) => [at, by ?? muted("시스템"), ...rest]),
-      "변경이력이 없습니다.",
-    )}</div>` + (d.historyTotal > 10 ? `<div class="pt-[6px]">${ui.pagination(A, 1, Math.ceil(d.historyTotal / 10))}</div>` : "");
+  // 변경 이력 표 — 팝업(x.historyDialog)이 열 이름 줄을 고정한 채 줄만 스크롤하고, 총 건수 · 한 쪽 건수(20 · 50) · 쪽 이동(1)을 붙인다
+  // (앱 stores/[storeId]/history-dialog.tsx · WideDialog, 2026-11-04 사용자 지정 — 전엔 표를 5줄 높이 273px 로 묶고 한 쪽 10건). 불러오는 중 · 실패 띠는 데모에 두지 않는다
+  const history = ui.dataTable(
+    [{ header: "변경일시", width: "w-[140px]" }, { header: "변경자", width: "w-[140px]" }, { header: "항목", width: "w-[120px]", align: "left" }, { header: "변경 전", align: "left" }, { header: "변경 후", align: "left" }],
+    d.history.map(([at, by, ...rest]) => [at, by ?? muted("시스템"), ...rest]),
+    "변경이력이 없습니다.",
+  );
 
   // 상태 변경(앱 ConfirmDialog wide · 480). 갈 수 있는 상태만 보인다 — 미운영 → 운영 · 폐점(라디오), 운영 → 폐점.
   // 운영은 운영 조건이 모자라면, 폐점은 퇴근하지 않은 출근이 있으면 확인 버튼이 막힌다(근로계약은 막지 않는다 — 대기 계약은 폐점이 닫는다, 2026-11-04).
@@ -274,10 +277,8 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
       )
     : "";
 
-  // 변경이력 팝업(BP 상세 · 플랫폼 관리자 history-dialog 와 같은 생김새) — 표가 넓어 이 창만 860 으로 넓힌다(2026-10-16 점검).
-  const historyDialog = x
-    .dialog(histId, "변경이력", `<div class="flex flex-col gap-[12px]">${history}</div>`, ui.button("닫기", { variant: "off", "data-close": true }))
-    .replace("w-[420px]", "w-[860px] max-h-[calc(100dvh-48px)] overflow-y-auto");
+  // 변경이력 팝업 — 1팀 변경이력 팝업 공통(폭 1000, 2026-11-04 사용자 지정)
+  const historyDialog = x.historyDialog(A, histId, history, { total: d.historyTotal });
 
   const body = ui.detailBody(
     // BP 탈퇴 · 미사용 안내는 점포명 머리 카드 위 맨 위, 폐점 안내(한 줄)는 머리 카드 아래(앱 stores/[storeId]/page.tsx 와 같다)

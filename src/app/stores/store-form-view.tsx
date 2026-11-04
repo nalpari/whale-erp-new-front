@@ -950,13 +950,16 @@ export function StoreFormView(props: Props) {
       </div>
 
       <FormGroup title="점포 공간정보">
-        <FloorTable
-          rows={form.floors}
-          onChange={(rows) => set("floors", rows, "floors")}
-          invalid={invalid("floors")}
-          describedBy={describe("floors")}
-        />
-        {message("floors")}
+        {/* 표와 그 표의 오류 문구는 한 묶음 — 카드 줄 간격(18px)으로 떨어져 보였다(2026-11-04 사용자 지적) */}
+        <Stack>
+          <FloorTable
+            rows={form.floors}
+            onChange={(rows) => set("floors", rows, "floors")}
+            invalid={invalid("floors")}
+            describedBy={describe("floors")}
+          />
+          {message("floors")}
+        </Stack>
       </FormGroup>
 
       <ConfirmDialog

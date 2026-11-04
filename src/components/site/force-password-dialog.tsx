@@ -111,41 +111,46 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
             />
           )}
 
-          <InkField label="새 비밀번호">
-            {/* 크롬 비밀번호 생성 제안 창을 막는다 — new-password 대신 off, 1Password · LastPass 도 빼 둔다(2026-10-28 사용자 지정). 크롬 버전에 따라 다 막히지 않을 수 있다 */}
-            {/* 칸 끝에 보기 · 숨기기 눈 아이콘 — 다른 비밀번호 변경 화면과 같은 공통 PasswordInput(2026-10-28 사용자 지정) */}
-            <PasswordInput
-              fieldLabel="새 비밀번호"
-              autoComplete="off"
-              data-1p-ignore
-              data-lpignore="true"
-              placeholder="영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요."
-              maxLength={20}
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onBlur={() => setPasswordTouched(true)}
-              aria-invalid={(passwordTouched && Boolean(ruleError)) || undefined}
-            />
-          </InkField>
-          {passwordTouched && ruleError && <ErrorText>{ruleError}</ErrorText>}
-          {/* 약관 제목 · 전체 동의 문구는 회원가입(agree-section.tsx)과 같다 — 「약관동의」 · 「모두 동의합니다.」(2026-10-28 사용자 지정).
-              조건 체크 줄 · 「현재 비밀번호는 묻지 않습니다」 · 약관 동의 옆 설명은 지웠다(2026-10-28 사용자 지정) — 조건은 칸 안내와 저장 때 검사가 알린다 */}
-          {error?.at === "password" && <ErrorText>{error.message}</ErrorText>}
-          <InkField label="새 비밀번호 확인">
-            <PasswordInput
-              fieldLabel="새 비밀번호 확인"
-              autoComplete="off"
-              data-1p-ignore
-              data-lpignore="true"
-              maxLength={20}
-              required
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              aria-invalid={mismatch || undefined}
-            />
-          </InkField>
-          {mismatch && <ErrorText>비밀번호가 일치하지 않습니다.</ErrorText>}
+          {/* 칸과 그 칸의 오류 문구는 한 묶음(6px) — 폼 줄 간격(18px)으로 떨어져 다음 칸에 붙은 것처럼 보였다(2026-11-04 사용자 지적) */}
+          <div className="flex flex-col gap-[6px]">
+            <InkField label="새 비밀번호">
+              {/* 크롬 비밀번호 생성 제안 창을 막는다 — new-password 대신 off, 1Password · LastPass 도 빼 둔다(2026-10-28 사용자 지정). 크롬 버전에 따라 다 막히지 않을 수 있다 */}
+              {/* 칸 끝에 보기 · 숨기기 눈 아이콘 — 다른 비밀번호 변경 화면과 같은 공통 PasswordInput(2026-10-28 사용자 지정) */}
+              <PasswordInput
+                fieldLabel="새 비밀번호"
+                autoComplete="off"
+                data-1p-ignore
+                data-lpignore="true"
+                placeholder="영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요."
+                maxLength={20}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => setPasswordTouched(true)}
+                aria-invalid={(passwordTouched && Boolean(ruleError)) || undefined}
+              />
+            </InkField>
+            {passwordTouched && ruleError && <ErrorText>{ruleError}</ErrorText>}
+            {/* 약관 제목 · 전체 동의 문구는 회원가입(agree-section.tsx)과 같다 — 「약관동의」 · 「모두 동의합니다.」(2026-10-28 사용자 지정).
+                조건 체크 줄 · 「현재 비밀번호는 묻지 않습니다」 · 약관 동의 옆 설명은 지웠다(2026-10-28 사용자 지정) — 조건은 칸 안내와 저장 때 검사가 알린다 */}
+            {error?.at === "password" && <ErrorText>{error.message}</ErrorText>}
+          </div>
+          <div className="flex flex-col gap-[6px]">
+            <InkField label="새 비밀번호 확인">
+              <PasswordInput
+                fieldLabel="새 비밀번호 확인"
+                autoComplete="off"
+                data-1p-ignore
+                data-lpignore="true"
+                maxLength={20}
+                required
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                aria-invalid={mismatch || undefined}
+              />
+            </InkField>
+            {mismatch && <ErrorText>비밀번호가 일치하지 않습니다.</ErrorText>}
+          </div>
 
           {needTerms && (
             <fieldset className="flex flex-col gap-[12px] border-t border-erp-divider pt-[18px]">

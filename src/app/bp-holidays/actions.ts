@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { isDate, storesOnDate } from "@/lib/bp-holiday-view";
+import { historyPageSizeOf } from "@/lib/history-paging";
 import {
   checkBpHolidayOverlaps,
   createBpHoliday,
@@ -108,8 +109,8 @@ export async function getBpHolidayHistoriesAction(q: { from: string; to: string;
   if (!isDate(q.from) || !isDate(q.to)) return { ok: false, status: 400, message: "기간을 YYYY-MM-DD 로 입력해 주세요." };
   if (q.from > q.to) return { ok: false, status: 400, message: "시작 날짜는 끝 날짜보다 늦을 수 없습니다." };
   const page = Number.isInteger(q.page) && q.page >= 1 && q.page <= 100_000 ? q.page : 1;
-  // 한 쪽 건수는 20 · 50 둘 중 하나만(변경이력 팝업의 선택지) — 그 밖의 값은 20
-  const pageSize = q.pageSize === 50 ? 50 : 20;
+  // 한 쪽 건수는 1팀 변경이력 팝업 공통 선택지(20 · 50) — 그 밖의 값은 20
+  const pageSize = historyPageSizeOf(q.pageSize);
   try {
     return { ok: true, ...(await getBpHolidayHistories({ ...q, page, pageSize })) };
   } catch (error) {

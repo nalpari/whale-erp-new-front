@@ -183,7 +183,7 @@ function detailBody(A, R, key) {
       )
     : "";
 
-  // 변경이력(앱 platform-admins/history-dialog.tsx) — 폭 860(1팀 변경이력 팝업 모두 같다, 2026-11-02), 쪽 넘기기는 10건 넘을 때만이라 견본에는 없다
+  // 변경이력(앱 platform-admins/history-dialog.tsx · WideDialog) — 1팀 변경이력 팝업 공통: 폭 1000 · 제목 줄 오른쪽 총 건수 · 한 쪽 건수(20 · 50) · 표 줄만 스크롤 · 쪽 이동(1)(2026-11-04 사용자 지정)
   const history = ui.dataTable(
     [
       { header: "변경일시", width: "w-[140px]" },
@@ -195,9 +195,7 @@ function detailBody(A, R, key) {
     d.history,
     "변경이력이 없습니다.",
   );
-  const historyDialog = x
-    .dialog(histId, "변경이력", `<div class="flex flex-col gap-[12px]">${history}</div>`, ui.button("닫기", { variant: "off", "data-close": true }))
-    .replace("w-[420px]", "w-[860px] max-h-[calc(100dvh-48px)] overflow-y-auto");
+  const historyDialog = x.historyDialog(A, histId, history, { total: d.history.length });
 
   const edit = d.canUpdate ? ui.button("수정", { id: "admin-edit-open", "aria-expanded": "false", "aria-controls": "admin-edit-panel" }) : "";
   const buttons = `<div class="flex flex-wrap items-center gap-[6px] pt-[8px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${edit}${x.dialogTrigger("변경이력", histId, "soft")}</div>`;

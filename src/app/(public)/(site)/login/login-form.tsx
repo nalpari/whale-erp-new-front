@@ -37,6 +37,9 @@ export function LoginForm({
   const [save, setSave] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [empty, setEmpty] = useState<Partial<Record<EmptyField, true>>>({});
+  // 빈칸으로 막힌 제출이면 지난 제출의 실패 문구(· 밀려난 안내)를 숨긴다 — 빈칸 문구와 함께 두 개가 떠 헷갈렸다(2026-11-04 사용자 지적).
+  // 다음에 실제로 보낼 때 다시 보인다(그때는 새 결과가 온다).
+  const [hideLast, setHideLast] = useState(false);
 
   useEffect(() => {
     // 로그아웃·세션 만료로 왔다. 앞 로그인의 메뉴·점포·공통코드를 지운다(남아 있어도 login-key 가 달라 쓰이지 않지만 이 브라우저에 두지 않는다).
@@ -60,6 +63,7 @@ export function LoginForm({
       if (save) localStorage.setItem(SAVED_ID, String(form.get("loginId") ?? "").trim());
       else localStorage.removeItem(SAVED_ID);
     } catch {}
+    setHideLast(false);
     return action(form);
   };
 
@@ -73,6 +77,7 @@ export function LoginForm({
     setEmpty(next);
     const first = (Object.keys(EMPTY) as EmptyField[]).find((key) => next[key]);
     if (!first) return;
+    setHideLast(true);
     e.preventDefault();
     e.currentTarget.querySelector<HTMLInputElement>(`input[name="${first}"]`)?.focus();
   };
@@ -142,13 +147,15 @@ export function LoginForm({
               {EMPTY.password}
             </span>
           )}
+          {/* 로그인 실패 · 잠김 · 밀려난 안내도 빈칸 문구와 같은 자리(비밀번호 칸 바로 아래) · 같은 14px — 전엔 [LOGIN] 위에 따로
+              15px 로 떠 크기 · 자리가 달랐다(2026-11-04 사용자 지적). 빈칸으로 막히면 숨겨(hideLast) 한 번에 하나만 보인다 */}
+          {!hideLast && (state.error ?? notice) && (
+            <p role="alert" className={FIELD_ERROR}>
+              {state.error ?? notice}
+            </p>
+          )}
         </div>
       </div>
-      {(state.error ?? notice) && (
-        <p role="alert" className="text-[15px] text-[#e93737]">
-          {state.error ?? notice}
-        </p>
-      )}
       <button type="submit" disabled={pending} className={SUBMIT}>
         {pending ? "로그인 중" : "LOGIN"}
       </button>

@@ -5,7 +5,8 @@
 export function FieldMessage({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <p id={id} role="alert" className="text-[13px] leading-[1.5] text-erp-off">
+    // whitespace-pre-line — 문구 안의 \n 을 줄바꿈으로 보인다(BP 마스터 인증 실패 「…일치하지 않습니다.\n인증하지 않고 저장할 수 있습니다.」, 2026-11-04 사용자 지정)
+    <p id={id} role="alert" className="whitespace-pre-line text-[13px] leading-[1.5] text-erp-off">
       {message}
     </p>
   );

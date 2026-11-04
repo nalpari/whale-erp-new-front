@@ -3,7 +3,8 @@
 // 계약은 docs/plans/2026-10-22-bp-masters.md 「API 작업 지시서」다.
 import { authHeaders, request, requestRaw } from "./api";
 import type { components } from "./api-types.generated";
-import { BP_MASTER_HISTORY_PAGE_SIZE, type BpMasterListQuery } from "./bp-master-paging";
+import { type BpMasterListQuery } from "./bp-master-paging";
+import type { HistoryPageSize } from "./history-paging";
 
 // 타입은 손으로 짓지 않고 api 의 openapi.json 에서 만든 것(api-types.generated.ts)을 쓴다.
 type Schemas = components["schemas"];
@@ -55,8 +56,8 @@ export async function getBpMaster(bpCodeId: number): Promise<BpMasterDetail> {
 }
 
 /** GET /bp-masters/{bpCodeId}/histories — BP 정보와 BP 마스터 계정 이력을 합친 것, 최신순. */
-export async function getBpMasterHistories(bpCodeId: number, page = 1): Promise<BpMasterHistoryList> {
-  return request(`/bp-masters/${bpCodeId}/histories?page=${page}&pageSize=${BP_MASTER_HISTORY_PAGE_SIZE}`, await json("GET"));
+export async function getBpMasterHistories(bpCodeId: number, page: number, pageSize: HistoryPageSize): Promise<BpMasterHistoryList> {
+  return request(`/bp-masters/${bpCodeId}/histories?page=${page}&pageSize=${pageSize}`, await json("GET"));
 }
 
 /** GET /bp-masters/login-id-availability — 탈퇴 · 삭제한 계정의 아이디도 쓸 수 없다. */

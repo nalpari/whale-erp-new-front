@@ -4,4 +4,3 @@ export const ADMIN_PAGE_SIZE = 20;
 /** 목록의 한 쪽 건수 선택지 — 목록 오른쪽 위 드롭다운. BP 관리자 관리와 같다(2026-10-27 사용자 지정). 첫 값이 기본이다. */
 export const ADMIN_PAGE_SIZES = [ADMIN_PAGE_SIZE, 50, 100] as const;
 export type AdminPageSize = (typeof ADMIN_PAGE_SIZES)[number];
-export const HISTORY_PAGE_SIZE = 10;
