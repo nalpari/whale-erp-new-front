@@ -213,7 +213,7 @@ const detail: StoreDetail = {
   },
   image: null,
   floors: [{ storeFloorId: 5, floorTypeCode: "GROUND", floorNumber: 1, floorAreaPyeong: 30.5, floorAreaSqm: 100.83, seatCount: 40 }],
-  transitions: { missingForOperation: [], inProgressContractCount: 0, canClose: true, canDelete: false, isSubscriptionChecked: false },
+  transitions: { missingForOperation: [], inProgressContractCount: 0, canClose: true, canDelete: false, isSubscriptionChecked: false, closing: null },
   createdAt: "2026-10-01T00:00:00.000Z",
   createdByName: "김마스터",
   updatedAt: "2026-10-02T00:00:00.000Z",

@@ -43,7 +43,8 @@ import {
 } from "@/lib/store-form";
 import type { EnumValue } from "@/lib/enums";
 import { FLOOR_TYPES, floorTypeOf, type StoreDetail, type StoreImageFileType, type StoreStatus } from "@/lib/store-types";
-import { closeBlockText, formatBizNumber, nextStatuses } from "@/lib/store-view";
+import { formatBizNumber, nextStatuses } from "@/lib/store-view";
+import { CLOSING_UNKNOWN_RESULT_NOTE, OPEN_CHECK_IN, type StoreClosingCounts, type StoreClosingResult } from "@/lib/store-closing";
 import { BizVerificationBox, BizVerifiedStatus } from "@/components/site/biz-verification-box";
 import { BIZ_MESSAGE, bizDigits, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
 import { formatDateTime } from "@/lib/format";
@@ -63,6 +64,7 @@ import {
   type ActionFailure,
 } from "./actions";
 import { FieldMessage, StoreImage, StoreStatusBadge, StoreTypeCards } from "./store-parts";
+import { ClosingCheckList, ClosingCondition, ClosingResultDialog, hasClosingResult } from "./store-closing-parts";
 import { withBack } from "./stores-query";
 import { kstToday } from "@/lib/staff-members";
 
@@ -134,7 +136,20 @@ export function StoreFormView(props: Props) {
   // 등록 결과를 모르면(저장됐을 수도) 다시 저장해 둘이 생기지 않게 저장을 잠근다
   const [createUncertain, setCreateUncertain] = useState(false);
   const [dialog, setDialog] = useState<"close-blocked" | "close-confirm" | null>(null);
-  const [closeBlock, setCloseBlock] = useState<string | null>(null);
+  /**
+   * 폐점을 막은 까닭 — message 는 확인을 못 했거나 api 가 거절한 문구, counts 는 막힘(퇴근하지 않은 출근)을 보일 폐점 확인 값.
+   * notSaved 는 저장(PUT)이 막혀 다른 수정 내용도 저장되지 않은 때다 — 폐점 저장은 대표 이미지를 먼저 보내므로 이미지는 바뀌었을 수 있다(image:
+   * 저장 · 지움). canRetry 는 저장이 막힌 뒤 다시 보니 그 사이 퇴근이 등록되어 막힘이 풀린 때다
+   */
+  const [closeBlock, setCloseBlock] = useState<{
+    message: string | null;
+    counts: StoreClosingCounts | null;
+    notSaved?: { image: "saved" | "removed" | null; canRetry: boolean };
+  } | null>(null);
+  /** 폐점 확인 창에 보일 「폐점하면 함께 처리될 것」 — 저장을 누를 때 지금 기준으로 다시 받는다 */
+  const [closingCheck, setClosingCheck] = useState<StoreClosingCounts | null>(null);
+  /** 폐점 저장 결과 — 처리한 것이 있으면 결과 창을 띄우고, 닫으면 상세로 간다 */
+  const [closingResult, setClosingResult] = useState<StoreClosingResult | null>(null);
   const [saving, startSaving] = useTransition();
   const [checkingClose, startCheckingClose] = useTransition();
   const [verifying, startVerifying] = useTransition();
@@ -169,6 +184,8 @@ export function StoreFormView(props: Props) {
   }
 
   const store = props.mode === "edit" ? props.store : null;
+  /** 수정 뒤 돌아갈 상세(목록 쿼리를 싣는다) */
+  const detailHref = store ? withBack(`/stores/${store.storeId}`, backHref) : "";
   const requirementLabels = props.mode === "edit" ? props.requirementLabels : [];
   const closedOrBlocked = store ? store.storeStatusCode === "CLOSED" || store.bpAccountStatusCode !== "ACTIVE" : false;
 
@@ -377,17 +394,47 @@ export function StoreFormView(props: Props) {
     return null;
   };
 
+  /**
+   * 폐점 조건(퇴근하지 않은 출근 0건)을 지금 기준으로 확인한다. 채웠으면 { counts }(폐점 확인 값 — 없으면 null, 확인 창은 「수를 확인하지
+   * 못했습니다」 안내로 연다)를 돌려주고, 못 채웠으면(확인을 못 한 것도), 또는 blocked 를 넘기면(저장이 이미 막혔으므로) 지금 확인 결과와
+   * 상관없이 막힘 팝업을 띄우고 점포상태를 previous 로 되돌린 뒤 null 이다.
+   * blocked 는 저장(PUT)이 막혀 다시 확인할 때 — api 문구와, 먼저 보낸 대표 이미지를 저장 · 지웠는지를 싣는다
+   */
+  const checkClose = async (
+    storeId: number,
+    previous: StoreStatus,
+    blocked?: { message: string; image: "saved" | "removed" | null },
+  ): Promise<{ counts: StoreClosingCounts | null } | null> => {
+    const result = await getStoreTransitionsAction(storeId).catch(unknownResult("폐점 조건 확인"));
+    if (!blocked && result.ok && result.canClose) return { counts: result.closing?.total ?? null };
+    const counts = result.ok && result.closing?.isBlocked ? result.closing.total : null;
+    // 저장이 막힌 뒤 다시 확인도 실패했으면 두 문구를 잇는다(상세 화면과 같다) — 확인 실패 까닭을 버리지 않는다
+    const message = blocked
+      ? result.ok
+        ? blocked.message
+        : `${blocked.message} ${result.message}`
+      : !result.ok
+        ? result.message
+        : counts
+          ? null
+          : "폐점 조건을 채우지 못했습니다.";
+    setCloseBlock({
+      message,
+      counts,
+      notSaved: blocked ? { image: blocked.image, canRetry: result.ok && result.canClose } : undefined,
+    });
+    setDialog("close-blocked");
+    setForm((f) => ({ ...f, storeStatus: previous }));
+    return null;
+  };
+
   /** 폐점을 고르는 순간 조건을 지금 기준으로 확인한다 — 못 채우면 알리고 이전 상태로 되돌린다. 확인하는 동안 상태 칸 · 저장은 잠근다 */
   const handleStatusSelect = (next: StoreStatus) => {
     const previous = form.storeStatus;
     set("storeStatus", next, "storeStatus");
     if (next !== "CLOSED" || !store) return;
     startCheckingClose(async () => {
-      const result = await getStoreTransitionsAction(store.storeId).catch(unknownResult("폐점 조건 확인"));
-      if (result.ok && result.canClose) return;
-      setCloseBlock(result.ok ? (closeBlockText(result) ?? "폐점 조건을 채우지 못했습니다.") : result.message);
-      setDialog("close-blocked");
-      setForm((f) => ({ ...f, storeStatus: previous }));
+      await checkClose(store.storeId, previous);
     });
   };
 
@@ -451,6 +498,13 @@ export function StoreFormView(props: Props) {
       }
       const result = await updateStoreAction(storeId, toUpdateStoreInput(form, props.store.updatedAt)).catch(unknownResult("수정"));
       setDialog(null);
+      // 확인과 저장 사이에 퇴근하지 않은 출근이 생겼다 — 같이 고친 칸까지 아무것도 저장되지 않았다(이미지는 위에서 먼저 보냈을 수 있다).
+      // api 문구와 지금의 막힘을 보이고 점포상태를 되돌린다. 다른 칸은 입력한 그대로 둔다
+      if (!result.ok && result.code === OPEN_CHECK_IN) {
+        const imageDone = closing && imageSent && image.kind !== "keep" ? (image.kind === "remove" ? "removed" : "saved") : null;
+        await checkClose(storeId, props.store.storeStatusCode, { message: result.message, image: imageDone });
+        return;
+      }
       if (result.ok) {
         const imageResult = closing ? null : await applyImage(storeId);
         if (imageResult && !imageResult.ok) {
@@ -462,11 +516,13 @@ export function StoreFormView(props: Props) {
             detail: "고른 이미지는 그대로 두었습니다. 다시 저장해 주세요.",
           });
         }
-        toast("updated");
         // 점포명 · 상태가 바뀌었으면 헤더 범위 선택기 · 점포 고르기에 바로 넣는다(바뀐 게 없으면 알리지 않는다).
-        // 상태를 바꿨으면(폐점 · 운영) 토스트는 「수정되었습니다.」 하나만 — 상세의 상태 변경과 같다(2026-11-03 사용자 지정)
+        // 상태를 바꿨으면(폐점 · 운영) 알림은 하나만 — 「수정되었습니다.」 토스트, 폐점으로 처리한 것이 있으면 토스트 대신 결과 창(2026-11-03 사용자 지정)
         refreshStores({ quiet: form.storeStatus !== props.store.storeStatusCode });
-        return router.push(at(withBack(`/stores/${props.store.storeId}`, backHref)));
+        // 폐점으로 직원 퇴직 · 계약 종료를 했으면 토스트 대신 결과 창으로 알리고, 창을 닫으면 상세로 간다
+        if (hasClosingResult(result.closing)) return setClosingResult(result.closing);
+        toast("updated");
+        return router.push(at(detailHref));
       }
       // 다른 사람이 먼저 고쳤거나 결과를 모르면 최신 정보를 불러온다 — 저장됐으면 updatedAt 이 바뀌어 칸이 새 값으로 다시 채워진다
       // 점포 목록도 같은 까닭으로 맞춘다
@@ -475,7 +531,10 @@ export function StoreFormView(props: Props) {
         router.refresh();
         return setFailure({
           title: "수정 결과를 확인하지 못했습니다.",
-          detail: `최신 정보를 다시 불러왔습니다. 칸이 바뀌었으면 저장된 것입니다.${imageSent ? "" : " 대표 이미지는 아직 보내지 않았습니다."}`,
+          detail: `최신 정보를 다시 불러왔습니다. 칸이 바뀌었으면 저장된 것입니다.${imageSent ? "" : " 대표 이미지는 아직 보내지 않았습니다."}${
+            // 폐점 결과를 모르면 퇴직 · 계약 종료도 이미 끝났을 수 있다
+            closing ? ` ${CLOSING_UNKNOWN_RESULT_NOTE}` : ""
+          }`,
         });
       }
       if (result.status === 409 && result.message.includes(STALE)) {
@@ -498,8 +557,16 @@ export function StoreFormView(props: Props) {
     // 막은 이유가 인증 상자의 한 줄뿐이면 커서를 옮길 칸이 없다 — 상자를 보이게 끌어온다
     if (found.bizVerify && Object.keys(found).length === 1) return scrollToBizBox();
     if (Object.keys(found).length) return focusFirstError();
-    // 폐점은 되돌릴 수 없어 한 번 더 묻는다. 조건은 저장(PUT)을 받은 api 가 다시 본다(화면은 고를 때 한 번 확인했다)
-    if (store && form.storeStatus === "CLOSED" && store.storeStatusCode !== "CLOSED") return setDialog("close-confirm");
+    // 폐점은 되돌릴 수 없어 한 번 더 묻는다. 고른 뒤 시간이 지났을 수 있어 조건과 「함께 처리될 것」을 지금 기준으로 다시 받아
+    // 확인 창에 보인다 — 그 사이 출근이 생겼으면 막힘 팝업으로 알리고 되돌린다. 저장(PUT)을 받은 api 도 다시 본다(409 OPEN_CHECK_IN)
+    if (store && form.storeStatus === "CLOSED" && store.storeStatusCode !== "CLOSED") {
+      return startCheckingClose(async () => {
+        const checked = await checkClose(store.storeId, store.storeStatusCode);
+        if (!checked) return;
+        setClosingCheck(checked.counts);
+        setDialog("close-confirm");
+      });
+    }
     handleSaveConfirm();
   };
 
@@ -895,13 +962,34 @@ export function StoreFormView(props: Props) {
         </Stack>
       </FormGroup>
 
-      <ConfirmDialog open={dialog === "close-blocked"} title="폐점할 수 없습니다." confirmLabel="확인" onConfirm={() => setDialog(null)} onCancel={() => setDialog(null)}>
-        <p>{closeBlock}</p>
-        <p className="mt-[6px] text-erp-label">점포상태를 이전 값으로 되돌렸습니다.</p>
+      <ConfirmDialog
+        open={dialog === "close-blocked"}
+        title="폐점할 수 없습니다."
+        wide
+        confirmLabel="확인"
+        cancelLabel={null}
+        onConfirm={() => setDialog(null)}
+        onCancel={() => setDialog(null)}
+      >
+        <div className="flex flex-col gap-[12px]">
+          {closeBlock?.message && <p>{closeBlock.message}</p>}
+          <ClosingCondition counts={closeBlock?.counts} />
+          <p className="text-erp-label">
+            점포상태를 이전 값으로 되돌렸습니다.
+            {closeBlock?.notSaved &&
+              (closeBlock.notSaved.image === "saved"
+                ? " 대표 이미지는 먼저 저장했고, 다른 수정 내용은 저장되지 않았습니다 — 입력한 값은 그대로 두었습니다."
+                : closeBlock.notSaved.image === "removed"
+                  ? " 대표 이미지는 먼저 지웠고, 다른 수정 내용은 저장되지 않았습니다 — 입력한 값은 그대로 두었습니다."
+                  : " 다른 수정 내용도 저장되지 않았습니다 — 입력한 값은 그대로 두었습니다.")}
+            {closeBlock?.notSaved?.canRetry && " 지금은 퇴근이 등록되어 다시 폐점할 수 있습니다."}
+          </p>
+        </div>
       </ConfirmDialog>
       <ConfirmDialog
         open={dialog === "close-confirm"}
         title="폐점으로 저장할까요?"
+        wide
         confirmLabel="폐점으로 저장"
         busy={saving}
         onConfirm={handleSaveConfirm}
@@ -910,7 +998,16 @@ export function StoreFormView(props: Props) {
         {/* 상세의 폐점 확인창과 같은 문구 + 다른 수정 내용 안내(2026-11-03 사용자 지정) */}
         <p>폐점으로 저장하면 되돌릴 수 없습니다.</p>
         <p>폐점일은 오늘({kstToday()})이며, 다른 수정 내용도 함께 저장됩니다.</p>
+        {/* 확인 값이 없으면 목록 대신 무엇이 처리되는지 알린다 */}
+        <ClosingCheckList counts={closingCheck} />
       </ConfirmDialog>
+      <ClosingResultDialog
+        result={closingResult}
+        onClose={() => {
+          setClosingResult(null);
+          router.push(at(detailHref));
+        }}
+      />
     </div>
   );
 }

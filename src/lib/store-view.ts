@@ -53,7 +53,10 @@ export function finalEuro(text: string): string {
   return final === 0 || final === 8 ? "로" : "으로";
 }
 
-/** 폐점 · 삭제를 막는 조건 — 1차에서는 진행 중 근로계약만 본다(구독 · 정산은 범위 밖) */
-export function closeBlockText(t: Pick<StoreTransitions, "inProgressContractCount">): string | null {
+/**
+ * 삭제를 막는 조건 — 진행 중 근로계약(체결 완료 포함)이 있으면 지우지 않는다(구독 · 정산은 1차 범위 밖).
+ * 폐점은 근로계약으로 막지 않는다 — 퇴근하지 않은 출근으로 막고 대기 계약은 폐점이 닫는다(store-closing.ts, api 2026-11-04).
+ */
+export function deleteBlockText(t: Pick<StoreTransitions, "inProgressContractCount">): string | null {
   return t.inProgressContractCount > 0 ? `진행 중인 근로계약이 ${t.inProgressContractCount.toLocaleString("ko-KR")}건 있습니다.` : null;
 }

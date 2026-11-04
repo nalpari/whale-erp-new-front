@@ -1,7 +1,7 @@
 // node --test src/lib/store-view.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { closeBlockText, finalEuro, finalJosa, floorLabel, formatBizNumber, hasStoreCoordinates, nextStatuses } from "./store-view.ts";
+import { deleteBlockText, finalEuro, finalJosa, floorLabel, formatBizNumber, hasStoreCoordinates, nextStatuses } from "./store-view.ts";
 
 test("상태는 한 방향 — 미운영→운영 · 폐점, 운영→폐점, 폐점은 그대로", () => {
   assert.deepEqual(nextStatuses("NOT_OPERATING"), ["NOT_OPERATING", "OPERATING", "CLOSED"]);
@@ -48,6 +48,6 @@ test("으로 · 로 — 받침 없거나 ㄹ받침이면 로, 그 밖의 받침�
 });
 
 test("폐점 조건 문구", () => {
-  assert.equal(closeBlockText({ inProgressContractCount: 0 }), null);
-  assert.equal(closeBlockText({ inProgressContractCount: 1200 }), "진행 중인 근로계약이 1,200건 있습니다.");
+  assert.equal(deleteBlockText({ inProgressContractCount: 0 }), null);
+  assert.equal(deleteBlockText({ inProgressContractCount: 1200 }), "진행 중인 근로계약이 1,200건 있습니다.");
 });
