@@ -293,19 +293,25 @@ function MenuForm(
         </Field>
         <FieldMessage id={`${id}-name-error`} message={errors.name} />
       </div>
-      <div className="flex flex-col gap-[8px]">
-        <Field label="메뉴 URL (선택)">
-          <TextField
-            value={form.url}
-            onChange={(e) => handleFieldChange("url", e.target.value)}
-            maxLength={MENU_URL_MAX}
-            placeholder="예: /staff-content"
-            aria-invalid={errors.url ? true : undefined}
-            aria-describedby={describe("url")}
-          />
-        </Field>
-        <FieldMessage id={`${id}-url-error`} message={errors.url} />
-      </div>
+      {/* 메뉴 URL 은 등록할 때만 넣는다 — 수정에서는 읽기 전용(2026-11-04 사용자 지정). 메뉴 URL 은 화면 주소이자 api 권한 판정의
+          메뉴 찾기 기준이라 운영 중에 바꾸면 화면 · 권한이 함께 어긋난다. 저장은 지금 값을 그대로 보낸다 */}
+      {props.mode === "edit" ? (
+        <Field label="메뉴 URL">{readOnly(form.url, "없음")}</Field>
+      ) : (
+        <div className="flex flex-col gap-[8px]">
+          <Field label="메뉴 URL (선택)">
+            <TextField
+              value={form.url}
+              onChange={(e) => handleFieldChange("url", e.target.value)}
+              maxLength={MENU_URL_MAX}
+              placeholder="예: /staff-content"
+              aria-invalid={errors.url ? true : undefined}
+              aria-describedby={describe("url")}
+            />
+          </Field>
+          <FieldMessage id={`${id}-url-error`} message={errors.url} />
+        </div>
+      )}
       <fieldset className="flex flex-col gap-[8px]">
         <legend className="mb-[8px] text-[14px] font-medium text-erp-label">사용여부</legend>
         <div className="flex h-[34px] items-center gap-[18px]">
