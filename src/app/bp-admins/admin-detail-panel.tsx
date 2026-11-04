@@ -6,6 +6,8 @@ import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, useTo
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
+import { WITHDRAWN_TEXT } from "@/app/bp-masters/bp-master-parts";
 import { FailedBand, InfoBand, SuccessBand, WarnBand } from "@/components/site/side-parts";
 import { WhoList } from "@/app/platform-admins/admin-parts";
 import { HistoryButton } from "@/app/platform-admins/history-dialog";
@@ -92,7 +94,9 @@ function DetailBody({
   const { canUpdate, showReset, resetBlocked } = detailButtonsOf(admin.actions, can);
   // 안내 상자의 「비밀번호 초기화가 필요합니다.」는 그 버튼을 누를 수 있는 사람에게만 — 권한 없음 · 본인 계정은 앞 문장만(리뷰로 찾음)
   const canReset = showReset && !resetBlocked;
-  const name = admin.name ?? admin.loginId;
+  // 탈퇴한 BP 의 하위 관리자는 미사용 · 개인정보 지움으로 남는다(api 회원 탈퇴, 2026-11-04 사용자 지정) — 지운 칸은 BP 마스터 화면처럼 「탈퇴로 삭제됨」
+  const bpWithdrawn = useCurrentBpStatus() === "WITHDRAWN";
+  const name = admin.name ?? (bpWithdrawn ? WITHDRAWN_TEXT : admin.loginId);
 
   const handleReset = () =>
     startBusy(async () => {
@@ -126,9 +130,9 @@ function DetailBody({
   const edited = admin.updatedByName !== null && wasUpdated(admin.createdAt, admin.updatedAt);
   const rows: DetailRow[] = [
     { label: "아이디", value: admin.loginId },
-    { label: "이름", value: name },
-    { label: "연락처", value: admin.phone ? formatPhone(admin.phone) : null },
-    { label: "이메일", value: admin.email ?? null },
+    { label: "이름", value: admin.name === null && bpWithdrawn ? muted(WITHDRAWN_TEXT) : name },
+    { label: "연락처", value: admin.phone ? formatPhone(admin.phone) : bpWithdrawn ? muted(WITHDRAWN_TEXT) : null },
+    { label: "이메일", value: admin.email ?? (bpWithdrawn ? muted(WITHDRAWN_TEXT) : null) },
     {
       label: "비밀번호",
       // 미사용 계정 · 초기화 버튼을 못 보는 계정은 「-」 — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다, 플랫폼 관리자와 같다, 2026-10-28).

@@ -5,6 +5,8 @@ import { Badge, DataTable, type Column } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { formatDateTime } from "@/lib/format";
 import type { BpAdmin } from "@/lib/bp-admins";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
+import { WITHDRAWN_TEXT } from "@/app/bp-masters/bp-master-parts";
 
 // BP 관리자 목록 표(S-AJHXFU · 데모 config/admins). 이름을 누르면 상세 패널이 열린다 — 목록에는 수정 링크가 없다(수정은 상세를 거친다).
 // 아이디는 링크 없이 본문 글자로 둔다 — 플랫폼 관리자 목록과 같다(2026-10-27 사용자 지정).
@@ -27,6 +29,8 @@ export function AdminTable({
   noRole?: boolean;
 }) {
   const roleType = useCodeLabel("ROLE_TYPE");
+  // 탈퇴한 BP 의 하위 관리자는 미사용 · 개인정보 지움으로 남는다(api 회원 탈퇴, 2026-11-04 사용자 지정) — 이름이 없으면 BP 마스터 화면처럼 「탈퇴로 삭제됨」
+  const bpWithdrawn = useCurrentBpStatus() === "WITHDRAWN";
   const inactive = (a: BpAdmin) => a.accountStatus === "INACTIVE";
   const dim = (a: BpAdmin, node: ReactNode) => (inactive(a) ? <span className="text-erp-muted">{node}</span> : node);
   const open = (a: BpAdmin, text: string) => (
@@ -48,7 +52,7 @@ export function AdminTable({
     // 등록일시 열은 뺐다 — 상세에서 본다(2026-10-30 사용자 지정)
     // 아이디도 가운데 정렬 — 플랫폼 관리자 목록과 같다(2026-10-27 사용자 지정)
     { header: "아이디", width: "w-[180px]", cell: (a) => dim(a, <span className="block truncate">{a.loginId}</span>) },
-    { header: "이름", width: "w-[220px]", cell: (a) => open(a, a.name ?? a.loginId) },
+    { header: "이름", width: "w-[220px]", cell: (a) => open(a, a.name ?? (bpWithdrawn ? WITHDRAWN_TEXT : a.loginId)) },
     // 역할은 이름 바로 다음, 폭 120
     { header: "역할", width: "w-[120px]", cell: (a) => dim(a, roleType(a.roleTypeCode)) },
     // 역할 다음에 대상점포 — 열 이름은 상세와 같게(2026-10-30 사용자 지정 — 전엔 계정상태 다음 「매핑 점포」)
