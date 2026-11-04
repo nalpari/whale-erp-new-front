@@ -603,7 +603,10 @@ function Ready({
       {allowed && !switching && !firstMenu && (
         <>
           {header}
-          <NoStoreBand />
+          {/* 점포 없음 띠도 헤더처럼 바탕창이 뜨면 inert — 안 그러면 Tab 이 바탕창 뒤 [점포 등록하기]로 빠진다(리뷰 반영) */}
+          <div className="contents" inert={backdropActive}>
+            <NoStoreBand />
+          </div>
           {/* 마이페이지 · 비밀번호 변경 패널이 맨 위일 때만 본문을 inert 로 뺀다 — 그냥 backdropActive 를 쓰면 화면
               자신의 closeOnBackdrop 패널(platform-admins 상세·수정 등)이 맨 위일 때 그 패널까지 children 안에
               있어 함께 inert 가 되어 버튼을 못 눌렀다(ip-code-review-claude 적대적 리뷰로 찾음, 2026-10-21).

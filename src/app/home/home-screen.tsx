@@ -63,11 +63,12 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
   const key = `${search}#${reloads}`;
   // 점포 하나면 점포 하나 화면(HOME-6) — 홈 집계(summary · pending)는 부르지 않는다. 플랫폼 계정 · 쓸 수 없는 범위는 아래에서 먼저 가른다
   const oneStore = search === null || isPlatformRole(account.roleTypeCode) ? null : oneStoreIdOf(scope, account.roleTypeCode, stores);
-  const many = search !== null && oneStore === null;
-  const summary = useApi<HomeSummary>(many ? `/home/summary${search}` : null, key, "현황");
-  // 점포가 없는 BP 계정도 처리 대기는 받는다 — 문의 답변 완료처럼 점포와 상관없는 일이 있다. 점포를 빼고 부르면 api 가 관리 점포(없음) 안에서만 세서
-  // 점포 쪽 항목은 0, 문의 답변은 그대로 온다(api home.service contextOf, 리뷰 블로커 반영)
+  // 점포가 없는 BP 계정 — 범위가 「전체」라 search 가 "" 여도 여러 점포 화면이 아니라 값 0 화면(아래 !stores.length 분기)이다.
+  // 그래도 현황 · 처리 대기는 점포 없이 부른다 — 내 문의 · 문의 답변 완료처럼 점포와 상관없는 값이 있다. api 는 관리 점포(없음) 안에서만 세서
+  // 점포 쪽 값은 0, 문의 쪽은 그대로 온다(api home.service contextOf, 리뷰 반영)
   const noStores = !isPlatformRole(account.roleTypeCode) && stores.length === 0;
+  const many = search !== null && oneStore === null && !noStores;
+  const summary = useApi<HomeSummary>(many ? `/home/summary${search}` : noStores ? "/home/summary" : null, key, "현황");
   const pending = useApi<HomePending>(many ? `/home/pending${search}` : noStores ? "/home/pending" : null, key, "처리 대기");
 
   const menus = useMenus();
@@ -94,11 +95,11 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
     );
   } else if (!stores.length) {
     // 점포가 없는 BP — 안내는 메뉴 줄 아래 띠(NoStoreBand, 모든 화면)가 맡고, 홈은 평소 화면을 값 0 으로 그린다(2026-11-04 사용자 지정 —
-    // 전엔 이 자리에 「등록된 점포가 없습니다」 상자와 [점포 등록]을 두었다, HOME-4). 현황(summary)은 점포가 없어 부르지 않고 0 으로 채운다 —
-    // 카드는 api 와 같은 규칙(그 메뉴의 조회 권한이 없으면 숨긴다). 처리 대기만 실제로 받는다(위 noStores).
+    // 전엔 이 자리에 「등록된 점포가 없습니다」 상자와 [점포 등록]을 두었다, HOME-4). 점포 쪽 카드는 0 으로 채우고(그 메뉴의 조회 권한이 없으면 숨긴다),
+    // 내 문의 카드와 처리 대기는 점포 없이 받은 실제 값을 쓴다(위 noStores).
     body = (
       <>
-        <Cards cards={emptyCardsOf(canOpen)} hq={false} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />
+        <Cards cards={{ ...emptyCardsOf(canOpen), myInquiries: s?.cards?.myInquiries ?? null }} hq={false} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />
         <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
           <StoreTable table={{ total: 0, items: [] }} hq={false} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />
           {!pending ? <Notice text="처리 대기를 불러오는 중입니다." /> : "error" in pending ? <Notice text={`처리 대기를 불러오지 못했습니다. ${pending.error}`} /> : <Pending data={pending.data} bp={bp} />}
@@ -211,7 +212,7 @@ type CardsData = NonNullable<HomeSummary["cards"]>;
 
 /**
  * 점포가 없을 때의 카드 — 모두 0. 조회 권한이 없는 메뉴의 카드는 api 처럼 null 로 숨긴다(오늘 출근은 출퇴근 · 근무스케줄 둘 다 볼 때만, api showsAttendance).
- * 내 문의는 점포와 상관없이 내가 쓴 문의를 세므로 0 으로 지어낼 수 없다 — 이 화면은 api 를 부르지 않아 숨긴다(리뷰 반영)
+ * 내 문의는 점포와 상관없이 내가 쓴 문의를 세므로 0 으로 지어낼 수 없다 — 여기서는 비워 두고, 점포 없이 받은 현황의 값으로 채운다(리뷰 반영)
  */
 function emptyCardsOf(canOpen: (path: string) => boolean): CardsData {
   return {

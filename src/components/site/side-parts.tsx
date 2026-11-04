@@ -38,7 +38,8 @@ export function SuccessBand({ children }: { children: ReactNode }) {
 export function FieldMessage({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <p id={id} role="alert" className="text-[13px] leading-[1.5] text-erp-off">
+    // whitespace-pre-line — 문구 안 줄바꿈 문자를 줄바꿈으로(BP 마스터 사업자 인증 실패 두 줄, 2026-11-04 사용자 지정 — 인증 상자가 이 사본을 쓴다)
+    <p id={id} role="alert" className="whitespace-pre-line text-[13px] leading-[1.5] text-erp-off">
       {message}
     </p>
   );
