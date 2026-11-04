@@ -91,11 +91,15 @@ function DetailBody({
   const resetSent = resetMark !== null && resetMark.statusChangedAt === (admin.statusChangedAt ?? null);
 
   const can = usePagePermission();
-  const { canUpdate, showReset, resetBlocked } = detailButtonsOf(admin.actions, can);
-  // 안내 상자의 「비밀번호 초기화가 필요합니다.」는 그 버튼을 누를 수 있는 사람에게만 — 권한 없음 · 본인 계정은 앞 문장만(리뷰로 찾음)
-  const canReset = showReset && !resetBlocked;
+  const buttons = detailButtonsOf(admin.actions, can);
   // 탈퇴한 BP 의 하위 관리자는 미사용 · 개인정보 지움으로 남는다(api 회원 탈퇴, 2026-11-04 사용자 지정) — 지운 칸은 BP 마스터 화면처럼 「탈퇴로 삭제됨」
   const bpWithdrawn = useCurrentBpStatus() === "WITHDRAWN";
+  // 탈퇴 BP 의 관리자는 고칠 수 없다(api 409, 상세 actions 도 모두 끔) — api 가 아직 옛 응답이어도 [수정] · [초기화]를 띄우지 않는다
+  const canUpdate = buttons.canUpdate && !bpWithdrawn;
+  const showReset = buttons.showReset && !bpWithdrawn;
+  const { resetBlocked } = buttons;
+  // 안내 상자의 「비밀번호 초기화가 필요합니다.」는 그 버튼을 누를 수 있는 사람에게만 — 권한 없음 · 본인 계정은 앞 문장만(리뷰로 찾음)
+  const canReset = showReset && !resetBlocked;
   const name = admin.name ?? (bpWithdrawn ? WITHDRAWN_TEXT : admin.loginId);
 
   const handleReset = () =>
