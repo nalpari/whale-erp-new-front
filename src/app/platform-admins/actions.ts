@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
 import { withPeriod } from "@/lib/format";
+import { historyPageSizeOf } from "@/lib/history-paging";
 import {
   checkEmailAvailable,
   checkLoginIdAvailable,
@@ -118,10 +119,10 @@ export async function resetPlatformAdminPasswordAction(id: number): Promise<Acti
   }
 }
 
-export async function getPlatformAdminHistoriesAction(id: number, page: number): Promise<ActionResult<PlatformAdminHistoryList>> {
+export async function getPlatformAdminHistoriesAction(id: number, page: number, pageSize: number): Promise<ActionResult<PlatformAdminHistoryList>> {
   if (!validId(id)) return NOT_FOUND;
   try {
-    return { ok: true, ...(await getPlatformAdminHistories(id, Number.isInteger(page) && page >= 1 ? page : 1)) };
+    return { ok: true, ...(await getPlatformAdminHistories(id, Number.isInteger(page) && page >= 1 ? page : 1, historyPageSizeOf(pageSize))) };
   } catch (error) {
     return failureOf(error, "이력 조회");
   }

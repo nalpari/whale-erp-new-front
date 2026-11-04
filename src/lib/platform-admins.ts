@@ -3,7 +3,8 @@
 // 타입은 손으로 짓지 않고 api 의 openapi.json 에서 만든 것(api-types.generated.ts)을 쓴다.
 import type { components } from "./api-types.generated";
 import { authHeaders, request } from "./api";
-import { ADMIN_PAGE_SIZE, HISTORY_PAGE_SIZE } from "./platform-admin-paging";
+import type { HistoryPageSize } from "./history-paging";
+import { ADMIN_PAGE_SIZE } from "./platform-admin-paging";
 
 type Schemas = components["schemas"];
 export type PlatformAdmin = Schemas["PlatformAdminSummaryResponseDto"];
@@ -59,8 +60,8 @@ export async function getPlatformAdmin(id: number): Promise<PlatformAdminDetail>
 }
 
 /** GET /platform-admins/{id}/histories — 생성 · 변경 이력, 최신순. */
-export async function getPlatformAdminHistories(id: number, page = 1): Promise<PlatformAdminHistoryList> {
-  return request(`/platform-admins/${id}/histories?page=${page}&pageSize=${HISTORY_PAGE_SIZE}`, await json("GET"));
+export async function getPlatformAdminHistories(id: number, page: number, pageSize: HistoryPageSize): Promise<PlatformAdminHistoryList> {
+  return request(`/platform-admins/${id}/histories?page=${page}&pageSize=${pageSize}`, await json("GET"));
 }
 
 /** GET /platform-admins/email-availability — 사용 · 미사용 관리자 계정과 겹치면 쓸 수 없다(저장 409 와 같은 판정). 등록 권한이 필요하다. */

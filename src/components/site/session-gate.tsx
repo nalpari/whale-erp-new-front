@@ -23,6 +23,7 @@ import {
 } from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
 import { MyPagePanel } from "./my-page-panel";
+import { NoStoreBand } from "./no-store-band";
 import { PasswordChangePanel } from "./password-change-panel";
 import { WithdrawPanel } from "./withdraw-panel";
 import {
@@ -602,6 +603,7 @@ function Ready({
       {allowed && !switching && !firstMenu && (
         <>
           {header}
+          <NoStoreBand />
           {/* 마이페이지 · 비밀번호 변경 패널이 맨 위일 때만 본문을 inert 로 뺀다 — 그냥 backdropActive 를 쓰면 화면
               자신의 closeOnBackdrop 패널(platform-admins 상세·수정 등)이 맨 위일 때 그 패널까지 children 안에
               있어 함께 inert 가 되어 버튼을 못 눌렀다(ip-code-review-claude 적대적 리뷰로 찾음, 2026-10-21).

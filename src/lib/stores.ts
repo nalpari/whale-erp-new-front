@@ -3,8 +3,8 @@
 // 동작마다 판정한다 — 화면은 미리 숨기거나 흐리게만 한다. 서버에서만 부른다(next/headers 를 쓰는 api.ts 를 쓴다).
 import { authHeaders, getEnum, request, requestRaw } from "./api";
 import { storeImageTypesOf } from "./store-image";
+import type { HistoryPageSize } from "./history-paging";
 import {
-  STORE_HISTORY_PAGE_SIZE,
   type BusinessVerificationInput,
   type BusinessVerificationResult,
   type CreateStoreInput,
@@ -70,9 +70,9 @@ export async function getStore(id: number): Promise<StoreDetail> {
   return request(`/stores/${id}`, await json("GET"));
 }
 
-/** GET /stores/:id/histories — 최신순, 한 쪽 10건 */
-export async function getStoreHistories(id: number, page = 1): Promise<StoreHistoryList> {
-  return request(`/stores/${id}/histories?page=${page}&pageSize=${STORE_HISTORY_PAGE_SIZE}`, await json("GET"));
+/** GET /stores/:id/histories — 최신순, 한 쪽 20 · 50건 */
+export async function getStoreHistories(id: number, page: number, pageSize: HistoryPageSize): Promise<StoreHistoryList> {
+  return request(`/stores/${id}/histories?page=${page}&pageSize=${pageSize}`, await json("GET"));
 }
 
 /** GET /stores/:id/transition-check — 운영 · 폐점 · 삭제 가능 여부를 지금 기준으로 다시 본다 */

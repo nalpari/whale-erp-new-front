@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
 import { withPeriod } from "@/lib/format";
+import { historyPageSizeOf } from "@/lib/history-paging";
 import {
   changeBpMasterStatus,
   checkBpMasterEmailAvailable,
@@ -116,10 +117,10 @@ export async function deleteBpMasterAction(bpCodeId: number): Promise<ActionResu
   }
 }
 
-export async function getBpMasterHistoriesAction(bpCodeId: number, page: number): Promise<ActionResult<BpMasterHistoryList>> {
+export async function getBpMasterHistoriesAction(bpCodeId: number, page: number, pageSize: number): Promise<ActionResult<BpMasterHistoryList>> {
   if (!validId(bpCodeId)) return NOT_FOUND;
   try {
-    return { ok: true, ...(await getBpMasterHistories(bpCodeId, Number.isInteger(page) && page >= 1 ? page : 1)) };
+    return { ok: true, ...(await getBpMasterHistories(bpCodeId, Number.isInteger(page) && page >= 1 ? page : 1, historyPageSizeOf(pageSize))) };
   } catch (error) {
     return failureOf(error, "이력 조회");
   }

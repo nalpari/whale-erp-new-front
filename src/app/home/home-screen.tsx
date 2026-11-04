@@ -10,7 +10,7 @@ import { bpPath } from "@/lib/bp-path";
 import { HOME, MENU_CODE, menuOfPath } from "@/lib/menus";
 import { formatAt } from "@/lib/notification-view";
 import { withScope } from "@/lib/store-scope";
-import { isFranchiseRole, isPlatformRole } from "@/lib/auth-routes";
+import { isPlatformRole } from "@/lib/auth-routes";
 import { OneStoreScreen } from "./one-store-screen";
 import { oneStoreIdOf } from "./one-store-view";
 import { useApi } from "@/lib/use-load";
@@ -27,13 +27,21 @@ export function HomeScreen() {
   const account = useAccount();
   const bp = useCurrentBp().bpCodeId;
   const [scope] = useScope();
-  const greeting = account.name ? `안녕하세요, ${account.name}님` : "안녕하세요";
+  // 「안녕하세요, OOO님」 — 모든 계정 「님」(2026-11-04 사용자 지정, 「OOO 대표님, 오늘의 현황입니다」를 거쳐 되돌렸다). 문장 제목이라 18px(PageBar sentence)
+  // 「안녕하세요,」는 회색(erp-label) 400, 「OOO님」은 제목 그대로 먹색 600 — 인사보다 이름에 무게(2026-11-04 사용자 지정, 이름만 파랑은 어색했다)
+  const greeting: ReactNode = account.name ? (
+    <>
+      <span className="font-normal text-erp-label">안녕하세요,</span> {account.name}님
+    </>
+  ) : (
+    "안녕하세요"
+  );
   return (
     <LoadGroup
       key={`${bp}|${JSON.stringify(scope)}`}
       fallback={
         <>
-          <PageBar title={greeting} />
+          <PageBar title={greeting} titleSize="sentence" />
           <div className="flex min-h-0 flex-1 flex-col">
             <LoadingNotice />
           </div>
@@ -45,7 +53,7 @@ export function HomeScreen() {
   );
 }
 
-function HomeBody({ greeting }: { greeting: string }) {
+function HomeBody({ greeting }: { greeting: ReactNode }) {
   const account = useAccount();
   const bp = useCurrentBp().bpCodeId;
   const stores = useStores();
@@ -62,7 +70,6 @@ function HomeBody({ greeting }: { greeting: string }) {
   const menus = useMenus();
   const service = useService();
   const canOpen = (path: string) => menuOfPath(menus, path, service) !== null;
-  const canCreateStore = !!menuOfPath(menus, "/stores", service)?.permission.create;
 
   const s = summary && "data" in summary ? summary.data : null;
   const p = pending && "data" in pending ? pending.data : null;
@@ -83,14 +90,17 @@ function HomeBody({ greeting }: { greeting: string }) {
       </Notice>
     );
   } else if (!stores.length) {
-    // 점포가 없는 BP — 빈 현황 대신 등록으로 안내한다(HOME-4). 가맹 마스터 · 가맹 관리자는 점포를 등록하지 못해(api 403)
-    // 매핑된 점포가 없으면 배정을 요청하게 하고 [점포 등록]을 두지 않는다(2026-10-29 사용자 결정 — 점포 목록 [등록]과 같은 규칙)
-    body = isFranchiseRole(account.roleTypeCode) ? (
-      <Notice text="등록된 점포가 없습니다. 관리자에게 점포 배정을 요청하세요." />
-    ) : (
-      <Notice text="등록된 점포가 없습니다. 점포를 먼저 등록하세요.">
-        {canCreateStore && <Button href={bpPath(bp, "/stores/new")}>점포 등록</Button>}
-      </Notice>
+    // 점포가 없는 BP — 안내는 메뉴 줄 아래 띠(NoStoreBand, 모든 화면)가 맡고, 홈은 평소 화면을 값 0 으로 그린다(2026-11-04 사용자 지정 —
+    // 전엔 이 자리에 「등록된 점포가 없습니다」 상자와 [점포 등록]을 두었다, HOME-4). 점포가 없으니 api 는 부르지 않는다.
+    // 카드는 api 와 같은 규칙 — 그 메뉴의 조회 권한이 없으면 숨긴다(null).
+    body = (
+      <>
+        <Cards cards={emptyCardsOf(canOpen)} hq={false} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />
+        <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
+          <StoreTable table={{ total: 0, items: [] }} hq={false} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />
+          <Pending data={{ asOf: "", platform: false, renewals: null, items: [] }} bp={bp} />
+        </div>
+      </>
     );
   } else if (search === null) {
     // 범위에 드는 점포가 이 탭에 없다(다른 BP 탭에서 복사한 범위 등) — 쿼리를 빼면 BP 전체가 보이므로 부르지 않는다
@@ -114,7 +124,7 @@ function HomeBody({ greeting }: { greeting: string }) {
 
   return (
     <>
-      <PageBar title={greeting}>
+      <PageBar title={greeting} titleSize="sentence">
         <div className="flex items-center gap-[10px]">
           {asOf && <span className="text-[13px] text-erp-label">{formatAt(asOf)} 기준</span>}
           <button
@@ -195,6 +205,17 @@ const warn = (text: string) => <span className="text-erp-off">{text}</span>;
 const num = (n: number | null) => (n ? n : <span className="text-erp-muted">—</span>);
 
 type CardsData = NonNullable<HomeSummary["cards"]>;
+
+/** 점포가 없을 때의 카드 — 모두 0. 조회 권한이 없는 메뉴의 카드는 api 처럼 null 로 숨긴다 */
+function emptyCardsOf(canOpen: (path: string) => boolean): CardsData {
+  return {
+    staff: canOpen("/staff-members") ? { total: 0, fullTime: 0, partTime: 0 } : null,
+    unsignedContractCount: null,
+    stores: { total: 0, direct: 0, franchise: 0 },
+    todayAttendance: canOpen("/attendance-records") ? { scheduled: 0, checkedIn: 0, notCheckedIn: 0 } : null,
+    myInquiries: canOpen("/support-inquiries") ? { waiting: 0, answered: 0 } : null,
+  };
+}
 
 // 수치 카드 넷 — api 가 null 을 준 카드(그 메뉴의 조회 권한 없음)는 숨긴다. 「준비 중」 자리를 남기지 않고 남은 카드가 칸을 나눠 채운다(HOME-5).
 // 미체결 계약 수는 카드에 두지 않는다 — 직원 정보 관리 권한이 없으면 재직 직원 카드와 함께 사라졌다. 점포별 현황 표에만 둔다(WHALEERP-620 A안, 2026-10-28 재영)

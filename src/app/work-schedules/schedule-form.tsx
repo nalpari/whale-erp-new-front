@@ -436,6 +436,12 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
             ) : (
               <p className={HELP}>이 근무일에 받을 수 있는 직원이 없습니다.</p>
             )}
+            {/* 직원을 고르지 않은 오류는 직원 칸 바로 아래 — 고른 직원 줄들 뒤(카드 줄 간격 18px)에 두면 칸과 떨어져 보였다(2026-11-04 사용자 지적) */}
+            {tried && bulkProblem && (
+              <p role="alert" className={ERROR}>
+                {bulkProblem}
+              </p>
+            )}
             <p className={HELP}>그 근무일에 체결 완료 근로계약이 있고 가입을 마친 직원만 보입니다.</p>
           </div>
         )}
@@ -443,12 +449,15 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
         {mode === "one" && (
           <>
             {staffId !== null && revert(staffId, setShift)}
-            <ShiftFields shift={shift} onChange={setShift} />
-            {tried && oneProblem && (
-              <p role="alert" className={ERROR}>
-                {oneProblem}
-              </p>
-            )}
+            {/* 칸과 그 칸의 오류 문구는 한 묶음(6px) — 카드 줄 간격(18px)으로 떨어져 다음 줄에 붙은 것처럼 보였다(2026-11-04 사용자 지적) */}
+            <div className="flex flex-col gap-[6px]">
+              <ShiftFields shift={shift} onChange={setShift} />
+              {tried && oneProblem && (
+                <p role="alert" className={ERROR}>
+                  {oneProblem}
+                </p>
+              )}
+            </div>
           </>
         )}
         {mode === "bulk" && (
@@ -467,11 +476,6 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
                 )}
               </div>
             ))}
-            {tried && bulkProblem && (
-              <p role="alert" className={ERROR}>
-                {bulkProblem}
-              </p>
-            )}
             <p className={HELP}>일부가 실패해도 성공한 등록은 남고 실패한 직원만 남겨 사유를 보입니다.</p>
           </>
         )}

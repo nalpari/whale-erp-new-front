@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useEffectEvent, useRef, useSyncExternalStore, type ReactNode, type RefObject } from "react";
+import { useEffect, useEffectEvent, useLayoutEffect, useRef, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import { EASE_OUT } from "./theme";
 
 // Figma Slide. 목록 화면 오른쪽에서 밀려 나오는 등록·수정 패널(RNB).
@@ -11,7 +11,8 @@ import { EASE_OUT } from "./theme";
 // 닫힌 패널은 화면 오른쪽 바깥에 서 있어서, 잘라 내지 않으면 그만큼 가로 스크롤이 생긴다.
 // hidden 이 아니라 clip 이다 — hidden 은 세로축까지 auto 로 끌어올려 헤더 팝업·툴팁이 잘린다.
 // 트리거와 패널 사이 어느 요소에도 relative 를 주면 안 된다. 그 순간 패널이 그 안으로 들어가 잘린다.
-// 버튼 줄까지 내용에 들어 있어 함께 스크롤한다.
+// 버튼 줄까지 내용에 들어 있어 함께 스크롤한다. 열 때마다 스크롤을 맨 위로 되돌린다 — 패널은 닫혀도 그려진 채라
+// 지난번 스크롤 자리에서 열리면 위쪽 정보가 없는 것처럼 보였다(2026-11-04 사용자 지적).
 // 열린 패널은 바탕창(PanelBackdrop)에 자신을 등록한다. closeOnBackdrop 의 기본값(false)은 빈 칸에서 시작해
 // 입력을 잃으면 되돌릴 수 없는 등록 패널을 위한 것이다 — 바깥을 눌러도 그대로 열려 있고, 그 패널이 가장 위일
 // 때는 바탕창 자체가 뜨지 않아 뒤 목록을 그대로 누를 수 있다(전체를 덮는 바탕창이 목록 클릭을 가로채던 문제를
@@ -75,6 +76,12 @@ export function SlidePanel({
   const wasOpen = useRef(false);
   /** 열려 있는 동안의 내 Set 자리(entry) — closeOnBackdrop 이 바뀔 때 이 자리를 그대로 두고 값만 고친다. */
   const entryRef = useRef<PanelEntry | null>(null);
+  const asideRef = useRef<HTMLElement>(null);
+
+  // 그리기 전에(useLayoutEffect) 맨 위로 — 밀려 나오는 동안 중간 자리가 잠깐 보이지 않게
+  useLayoutEffect(() => {
+    if (open && asideRef.current) asideRef.current.scrollTop = 0;
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -130,6 +137,7 @@ export function SlidePanel({
 
   return (
     <aside
+      ref={asideRef}
       id={id}
       aria-label={label}
       inert={!open || blockedByModal}
