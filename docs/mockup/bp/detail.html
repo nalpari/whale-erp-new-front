@@ -205,7 +205,7 @@
               <span data-show-role="all" data-show="off" hidden data-tip="삭제할 수 없습니다 — 로그인 기록이 있고 등록 점포 3곳이 있습니다." tabindex="0"><button class="btn btn--danger" type="button" disabled>삭제</button></span>
               <a class="btn btn--primary" href="edit.html" data-show-role="all" data-show="use fresh created">수정</a>
               <a class="btn btn--primary" href="edit.html?state=off" data-show-role="all" data-show="off" hidden>수정</a>
-              <button class="btn btn--secondary" type="button" data-open="pop-history" data-show="use fresh created off">변경 이력</button>
+              <button class="btn btn--secondary" type="button" data-open="pop-history" data-show="use fresh created off">변경이력</button>
             </div>
 
           </div>
@@ -213,15 +213,19 @@
       </main>
     </div>
 
-    <!-- 변경 이력 팝업 — BP 정보와 BP 마스터 계정 이력을 한 표로, 최신순 · 페이지 나눔(플랫폼 관리자 이력 팝업과 같다) -->
+    <!-- 변경이력 팝업 — BP 정보와 BP 마스터 계정 이력을 한 표로, 최신순. 1팀 변경이력 팝업 공통 틀(2026-11-04 사용자 지정, 앱 WideDialog):
+         폭 1000 · 제목 줄 오른쪽 끝 「총 N 건」 · 한 쪽 건수 20 / 50(처음 20 — 전엔 10 고정, 바꾸면 첫 쪽부터 다시) · 제목 · 열 이름 줄 · [닫기] 고정, 표 줄만 스크롤 ·
+         한 쪽뿐이어도 쪽 이동(1). 화면 아래 「변경 사유는 받지 않습니다.」 안내는 기획 메모가 화면에 들어간 것이라 지웠다 -->
     <div class="modal" id="pop-history" hidden role="dialog" aria-modal="true" aria-labelledby="ph-t">
-      <div class="modal__box modal__box--wide" style="max-width: 900px">
+      <div class="modal__box modal__box--wide modal__box--hist">
         <div class="modal__head">
-          <h2 class="t-h2" id="ph-t">변경 이력</h2>
+          <h2 class="t-h2" id="ph-t">변경이력</h2>
+          <span class="histcount" data-show="use off gone"><span>총 <b data-show="use">3</b><b data-show="off" hidden>2</b><b data-show="gone" hidden>1</b> 건</span><select class="select select--sm" aria-label="페이지당 건수"><option selected>20</option><option>50</option></select></span>
+          <span class="histcount" data-show="fresh created" hidden><span>총 <b>0</b> 건</span><select class="select select--sm" aria-label="페이지당 건수"><option selected>20</option><option>50</option></select></span>
           <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
         </div>
         <div class="modal__body">
-              <div class="tblwrap" data-show="use off gone">
+              <div class="tblwrap histscroll" data-show="use off gone">
                 <table class="tbl tbl--dense">
                   <thead>
                     <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
@@ -239,11 +243,10 @@
                 <span class="empty__ic" data-icon="clock" data-icon-size="22"></span>
                 <p>변경 이력이 없습니다.</p>
               </div>
-              <div data-show="use off gone"><div data-pager="3" data-pager-unit="건"></div></div>
-              <p class="subtle" style="margin: 0; font-size: 12px">변경 사유는 받지 않는다. 사유는 회원 탈퇴 때 받은 탈퇴 사유만 탈퇴 줄에 붙는다. 비밀번호 초기화는 「비밀번호 → 초기화」 한 줄로 남는다.</p>
+              <div data-show="use off gone"><div class="pager" style="justify-content: center"><nav class="pager__nav" aria-label="페이지" style="margin-inline: auto"><button type="button" aria-label="이전" disabled data-icon="arrowleft" data-icon-size="14"></button><button type="button" aria-current="page">1</button><button type="button" aria-label="다음" disabled data-icon="arrowright" data-icon-size="14"></button></nav></div></div>
         </div>
         <div class="modal__foot">
-          <button class="btn btn--primary" type="button" data-close>닫기</button>
+          <button class="btn btn--ghost" type="button" data-close>닫기</button>
         </div>
       </div>
     </div>

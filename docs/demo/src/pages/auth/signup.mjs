@@ -236,7 +236,9 @@ ${field("개업일자", box(`<input name="bizOpenDate" type="date" class="${g.IN
     `<div class="flex flex-col gap-[18px] text-[16px] leading-[1.5] font-medium text-[#5e697b]"><label class="flex items-center gap-[8px] text-guest-ink"><input type="checkbox" data-agree-all class="${g.CHECKBOX}">모두 동의합니다.</label><hr class="border-[#ebebeb]">${AGREEMENTS.map(
       ([key, label, title, body]) =>
         `<div class="flex items-center justify-between"><label class="flex items-center gap-[8px]"><input type="checkbox" data-agree class="${g.CHECKBOX}">${label} (필수)</label><button type="button" data-terms-open="${key}" class="text-[15px] text-guest-slate underline underline-offset-[3px] hover:text-guest-navy ${g.HOVER}">내용보기</button>${termsDialog(key, title, body())}</div>`,
-    ).join("")}</div>`,
+    ).join("")}</div>` +
+      // 약관 동의 오류는 약관 칸 바로 아래 6px · 14px — [회원가입] 위에 두면 약관과 떨어져 버튼에 붙은 것처럼 보였다(앱 signup-form.tsx, 2026-11-04 사용자 지적)
+      `<span data-agree-error role="alert" hidden class="-mt-[18px] text-[14px] leading-[1.5] text-[#e93737]"></span>`,
   );
 
   const main = `<section class="mx-auto flex w-[800px] flex-col gap-[40px] pt-[80px] text-guest-ink"><div class="flex flex-col gap-[8px]"><h1 class="text-[28px] leading-[1.2] font-bold">회원가입</h1><p class="text-[16px] leading-[1.5]">사업자 계정을 만들고 매장 관리를 시작하세요.</p></div>
@@ -244,7 +246,7 @@ ${field("개업일자", box(`<input name="bizOpenDate" type="date" class="${g.IN
 ${basic}
 ${biz}
 ${agree}
-<div class="flex flex-col gap-[16px]"><p data-signup-error role="alert" hidden class="text-[15px] text-[#e93737]"></p><button type="submit" class="${g.SUBMIT}">회원가입</button><p class="flex justify-center gap-[10px] text-[16px] leading-[1.5] text-[#767676]">이미 계정이 있나요?<a href="${link(R, "auth/login.html")}" class="font-semibold text-guest-ink hover:text-guest-navy ${g.HOVER}">로그인</a></p></div>
+<div class="flex flex-col gap-[16px]"><p data-signup-error role="alert" hidden class="text-[14px] leading-[1.5] text-[#e93737]"></p><button type="submit" class="${g.SUBMIT}">회원가입</button><p class="flex justify-center gap-[10px] text-[16px] leading-[1.5] text-[#767676]">이미 계정이 있나요?<a href="${link(R, "auth/login.html")}" class="font-semibold text-guest-ink hover:text-guest-navy ${g.HOVER}">로그인</a></p></div>
 </form></section>`;
 
   return { title: "회원가입", head: g.head(A), html: g.page(A, R, { current: "auth/signup.html", main }) };

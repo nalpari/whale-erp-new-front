@@ -351,16 +351,18 @@
             </div>
           </div>
 
-          <!-- 변경이력 팝업 — [변경이력] 버튼으로 연다. 최신순, 한 쪽 10건. 변경자는 이름(없으면 「시스템」), 빈 값은 빈 칸.
+          <!-- 변경이력 팝업 — [변경이력] 버튼으로 연다. 최신순. 1팀 변경이력 팝업 공통 틀(2026-11-04 사용자 지정, 앱 WideDialog) — 폭 1000 · 제목 줄 오른쪽 끝 「총 N 건」 ·
+               한 쪽 건수 20 / 50(처음 20) · 제목 · 열 이름 줄 · [닫기] 고정, 표 줄만 스크롤 · 한 쪽뿐이어도 쪽 이동(1). 변경자는 이름(없으면 「시스템」), 빈 값은 빈 칸.
                비밀번호 줄은 관리자 초기화 「초기화」 · 본인 강제 변경 「강제 변경」. 메일 발송 결과 · 비밀번호 값은 남기지 않는다(2026-10-29) -->
           <div class="modal" id="pop-history" hidden role="dialog" aria-modal="true" aria-labelledby="ph-t">
-            <div class="modal__box" style="width: 760px">
+            <div class="modal__box modal__box--wide modal__box--hist">
               <div class="modal__head">
                 <h2 class="t-h2" id="ph-t">변경이력</h2>
+                <span class="histcount"><span>총 <b data-show="hr">5</b><b data-show="ops" hidden>1</b><b data-show="acct" hidden>2</b><b data-show="created" hidden>1</b><b data-show="morinam" hidden>1</b><b data-show="fmoff" hidden>2</b><b data-show="yn" hidden>2</b> 건</span><select class="select select--sm" aria-label="페이지당 건수"><option selected>20</option><option>50</option></select></span>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <div class="tblwrap">
+                <div class="tblwrap histscroll">
                   <table class="tbl tbl--dense">
                     <thead>
                       <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
@@ -382,11 +384,9 @@
                     </tbody>
                   </table>
                 </div>
-                <p class="subtle" style="margin: 0; font-size: 12.5px">이력이 없으면 「이력이 없습니다.」 한 줄로 대신한다. 10건이 넘으면 아래에 쪽 번호가 붙는다.</p>
-                <div class="inline" style="justify-content: flex-end">
-                  <button class="btn btn--ghost" type="button" data-close>닫기</button>
-                </div>
+                <div class="pager" style="justify-content: center"><nav class="pager__nav" aria-label="페이지" style="margin-inline: auto"><button type="button" aria-label="이전" disabled data-icon="arrowleft" data-icon-size="14"></button><button type="button" aria-current="page">1</button><button type="button" aria-label="다음" disabled data-icon="arrowright" data-icon-size="14"></button></nav></div>
               </div>
+              <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
             </div>
           </div>
 

@@ -13,11 +13,9 @@
       .hide-official .off-name { display: none !important; }
       .hide-official .off-num { color: var(--ink) !important; font-weight: 400 !important; }
       /* 변경이력 · 점포 목록 팝업 — 제목 · 열 이름 줄 · [닫기](변경이력은 조회 줄 · 쪽 이동도)는 고정, 표 줄만 스크롤한다.
-         위아래 선은 스크롤 상자가 긋고 머리 줄 아래 선은 그림자로 붙인다(앱대로, 2026-11-03). 폭은 변경이력 1000 · 점포 목록 480 */
-      .modal__box--hist { max-width: 1000px; }
+         위아래 선은 스크롤 상자가 긋고 머리 줄 아래 선은 그림자로 붙인다(앱대로, 2026-11-03). 폭은 변경이력 1000 · 점포 목록 480.
+         변경이력 틀(.modal__box--hist · .histscroll · .histcount)은 1팀 변경이력 팝업 모두 같아 whale.css 로 옮겼다(2026-11-04) */
       .modal__box--stores { max-width: 480px; }
-      .histscroll { max-height: min(52vh, 460px); overflow-y: auto; border-block: 1px solid var(--hairline-strong); }
-      .histscroll .tbl th { position: sticky; top: 0; z-index: 1; box-shadow: 0 1px 0 var(--hairline-strong); }
     </style>
   </head>
   <body data-root="../" data-page="config" data-sub="config/holidays.html">

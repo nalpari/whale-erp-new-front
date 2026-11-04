@@ -165,31 +165,28 @@ export default ({ A, R }) => {
 
   // 확인창들
   // 전체 변경이력 — 기간 · [조회] 아래 표 + 쪽 이동, 안내문 없음(앱 history-dialog.tsx HolidayHistoryButton · WideDialog 1000px). 지운 휴일은 여기서만 보인다
-  // 제목 · 조회 줄 · 열 이름 줄 · 쪽 이동 · [닫기]는 고정, 표 줄만 스크롤. 조회 줄 오른쪽 끝에 「총 N 건」(숫자 굵게, 목록 ListToolbar 와 같다) · 한 쪽 건수 20 / 50(기본 20, 바꾸면 첫 쪽부터 다시).
-  // 쪽 이동은 한 쪽뿐이어도(1) 이력이 한 건이라도 있으면 보인다(앱과 같다, 2026-11-03 사용자 지정)
+  // 1팀 변경이력 팝업 공통(x.historyDialog) — 제목 · 열 이름 줄 · [닫기]는 고정, 표 줄만 스크롤. 제목은 위에 혼자 두고 「총 N 건」 · 한 쪽 건수 20 / 50 은
+  // 기간 조회 줄 오른쪽 끝이다(다른 이력 팝업은 제목 줄 오른쪽, 2026-11-04 사용자 지정). 쪽 이동은 한 쪽뿐이어도(1) 보인다
   const cut = (t) => `<span class="block truncate" title="${t}">${t}</span>`;
-  const histDialog = fixedDialog(
-    x.dialog(
-      ids.hist,
-      "변경이력",
-      `<div class="flex shrink-0 items-center gap-[6px]"><div class="w-[150px]">${ui.dateField(A, { label: "이력 시작일", value: "2026-09-01" })}</div><span class="text-erp-label">~</span><div class="w-[150px]">${ui.dateField(A, {
-        label: "이력 종료일",
-        value: "2026-09-21",
-      })}</div>${ui.button("조회", { variant: "soft" })}<p class="ml-auto text-[14px] text-erp-ink">총 <b class="font-semibold">${HISTORY.length}</b> 건</p><div class="w-[80px] shrink-0">${ui.select(["20", "50"], { value: "20", "aria-label": "페이지당 건수" })}</div></div>${scrollBox(ui.dataTable(
-        [
-          { header: "변경일시", width: "w-[140px]" },
-          { header: "변경자", width: "w-[140px]" },
-          { header: "휴일명", width: "w-[140px]", align: "left" },
-          { header: "항목", width: "w-[90px]", align: "left" },
-          { header: "변경 전", align: "left" },
-          { header: "변경 후", align: "left" },
-        ],
-        HISTORY.map(([at, by, name, field, before, after]) => [at, by, cut(name), field, cut(before), cut(after)]),
-        "변경이력이 없습니다.",
-      ))}<div class="shrink-0 pt-[6px]">${ui.pagination(A, 1, 1)}</div>`,
-      ui.button("닫기", { variant: "off", "data-close": true }),
+  const histDialog = x.historyDialog(
+    A,
+    ids.hist,
+    ui.dataTable(
+      [
+        { header: "변경일시", width: "w-[140px]" },
+        { header: "변경자", width: "w-[140px]" },
+        { header: "휴일명", width: "w-[140px]", align: "left" },
+        { header: "항목", width: "w-[90px]", align: "left" },
+        { header: "변경 전", align: "left" },
+        { header: "변경 후", align: "left" },
+      ],
+      HISTORY.map(([at, by, name, field, before, after]) => [at, by, cut(name), field, cut(before), cut(after)]),
+      "변경이력이 없습니다.",
     ),
-    "w-[1000px]", // 860 → 1000(앱과 같다, 2026-11-03 사용자 지정)
+    {
+      total: HISTORY.length,
+      toolbar: `<div class="w-[150px]">${ui.dateField(A, { label: "이력 시작일", value: "2026-09-01" })}</div><span class="text-erp-label">~</span><div class="w-[150px]">${ui.dateField(A, { label: "이력 종료일", value: "2026-09-21" })}</div>${ui.button("조회", { variant: "soft" })}`,
+    },
   );
 
   // 슬라이드 패널: 상세(삭제는 확인창 · 수정은 수정 패널) · 수정(저장은 범위 확인창) · 등록

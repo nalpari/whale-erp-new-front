@@ -153,8 +153,9 @@
                       <input class="input mono" id="popen" type="date" value="2026-08-20" />
                     </div>
                   </div>
-                  <span class="err" data-show-biz="mismatch" hidden><span data-icon="alert" data-icon-size="13"></span>입력한 사업자정보가 국세청 정보와 일치하지 않습니다.</span>
-                  <span class="err" data-show-biz="unavailable" hidden><span data-icon="alert" data-icon-size="13"></span>국세청 확인이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.</span>
+                  <!-- 인증 실패는 이유와 다음 길을 두 줄로 가른다 — 「…일치하지 않습니다.」 / 「인증하지 않고 저장할 수 있습니다.」(앱 bp-master-form-panel.tsx, 2026-11-04 사용자 지정) -->
+                  <span class="err" data-show-biz="mismatch" hidden style="align-items: flex-start"><span data-icon="alert" data-icon-size="13" style="margin-top: 2px"></span><span>입력한 사업자정보가 국세청 정보와 일치하지 않습니다.<br />인증하지 않고 저장할 수 있습니다.</span></span>
+                  <span class="err" data-show-biz="unavailable" hidden style="align-items: flex-start"><span data-icon="alert" data-icon-size="13" style="margin-top: 2px"></span><span>국세청 확인이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.<br />인증하지 않고 저장할 수 있습니다.</span></span>
                   <div class="inline" style="gap: 8px">
                     <button class="btn btn--secondary btn--sm" type="button" data-show-biz="done" data-state-go="reverify" hidden>재인증</button>
                     <button class="btn btn--secondary btn--sm" type="button" data-show-biz="in reverify" data-state-go="done">인증하기</button>
