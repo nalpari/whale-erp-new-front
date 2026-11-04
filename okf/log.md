@@ -5,6 +5,7 @@
 * **Update**: [마이페이지](/mypage.md) · [BP 환경설정](/config.md) · [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — 회원 탈퇴 때 하위 관리자(BP 관리자 · 가맹 마스터 · 가맹 관리자)는 탈퇴가 아니라 미사용 + 개인정보(이름 · 연락처 · 이메일) 지움 · 세션 끊음(이미 미사용이면 개인정보만), 상태 변경이력은 바뀐 계정만, 탈퇴 BP 관리자 계정은 등록 · 수정 409. BP 관리자 목록 · 상세는 지운 값을 「탈퇴로 삭제됨」으로 보인다. 마이페이지 보류(「미사용 처리」 표기) 해소, 목업 mypage · auth 문구 맞춤(2026-11-04 사용자 결정, front glaceon).
 
 ## 2026-11-03
+* **Update**: [근무스케줄](/screens/work-schedules.md) · [Whale ERP Frontend](/whale-erp-front.md) — 지난 주 복사 미리보기도 등록 권한을 본다: 없으면 표 · [n명 복사] 대신 info 안내와 [닫기]만(미리보기를 연 뒤 권한이 빠진 경우 · 주소로 열면 api 403 문장 대신 같은 안내, front machop). 같은 작업에서 플랫폼 게시판 넷(공지 · FAQ · 문의 · 도입문의)과 BP 휴일 상세 · 수정 버튼도 메뉴 권한(`usePagePermission`)으로 가렸다 — BP 휴일은 api `actions` 에 지금 메뉴 권한을 함께 건다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #214 재리뷰 반영: 시작 전인데 막힌 휴일의 이유는 api `blockedReason` 을 쓴다(단정하지 않음), 점포 목록 팝업 늦은 응답 버림 · 실패 문구, 변경이력 팝업 다시 열 때 기간 · 건수 초기화 · 실패 문구(front umbreon).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #214 리뷰 반영: 막힌 이유 문구 「…적용 대상을…」 → 「…적용 범위를 바꿀 수 없습니다.」(대상점포 고르기는 진행 중에도 고칠 수 있다), 점포 목록 팝업에 폐점 점포는 「폐점」 꼬리표(목록 수는 그날 폐점한 점포를 빼고 센다), 막힌 칸 음영은 수정 패널에만, 변경이력 쪽 이동 · 건수는 마지막으로 조회한 기간으로(front umbreon).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일: 변경이력 팝업 폭 1000 · 머리 고정 스크롤 · 「총 N 건」 · 20/50 · 한 쪽이어도 쪽 이동, 목록 열 폭(휴일명 240 · 최종수정 230 · 대상/예외점포 남는 폭 반씩), 대상점포 · 예외점포 링크로 그날 점포 목록 팝업(480), 겹침 확인창 표 머리 고정 수정(front umbreon).
