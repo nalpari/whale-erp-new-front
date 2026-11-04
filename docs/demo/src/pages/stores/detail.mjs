@@ -51,7 +51,9 @@ const DETAIL = {
       ["2025-08-12 17:48", "정하윤", "상호명", "모리커피", "모리커피 연남"],
     ],
     historyTotal: 14,
-    contracts: 6,
+    // 폐점을 막는 퇴근하지 않은 출근(앱 transition-check closing) · 폐점하면 함께 처리될 것
+    openCheckIns: 1,
+    closing: { retiringStaff: 8, pendingSignatureContracts: 1, unconfirmedPayslips: 2 },
   },
   // 미운영 · 사업자 미인증 · 이미지 없음 · 층별 정보 없음 · 고친 적 없음. 주소를 골라 좌표는 있다
   ST000007: {
@@ -65,7 +67,8 @@ const DETAIL = {
     floors: [],
     history: [],
     historyTotal: 0,
-    contracts: 0,
+    openCheckIns: 0,
+    closing: { retiringStaff: 0, draftContracts: 1 },
     missing: ["BUSINESS_VERIFICATION"],
   },
   ST000012: {
@@ -83,7 +86,8 @@ const DETAIL = {
       ["2026-09-22 09:41", null, "위도 · 경도", "-", "35.158712 · 129.160384"],
     ],
     historyTotal: 3,
-    contracts: 0,
+    openCheckIns: 0,
+    closing: { retiringStaff: 0, draftContracts: 1 },
     closedDate: "2026-10-20",
   },
 };
@@ -99,8 +103,8 @@ const whoList = (rows) =>
   `<dl class="grid grid-cols-[60px_1fr] gap-y-[6px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg p-[12px]">${rows
     .map(([k, v]) => `<div class="contents"><dt class="text-erp-label">${k}</dt><dd>${v}</dd></div>`)
     .join("")}</dl>`;
-const conditionBox = (title, items, attrs = "") =>
-  `<div${attrs} class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">${title}</p><ul class="mt-[6px] list-disc pl-[18px]">${items}</ul></div>`;
+const conditionBox = (title, items, attrs = "", after = "") =>
+  `<div${attrs} class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">${title}</p><ul class="mt-[6px] list-disc pl-[18px]">${items}</ul>${after}</div>`;
 
 export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
   const [, name, type, state, biz, phone, staff, , , photo] = [CLOSED_STORE, ...STORES].find((s) => s[0] === code);
@@ -202,9 +206,28 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
     )}</div>` + (d.historyTotal > 10 ? `<div class="pt-[6px]">${ui.pagination(A, 1, Math.ceil(d.historyTotal / 10))}</div>` : "");
 
   // 상태 변경(앱 ConfirmDialog wide · 480). 갈 수 있는 상태만 보인다 — 미운영 → 운영 · 폐점(라디오), 운영 → 폐점.
-  // 운영은 운영 조건이 모자라면, 폐점은 진행 중인 근로계약이 있으면 확인 버튼이 막힌다. 폐점은 확인 창(「폐점으로 변경할까요?」)을 한 번 더 거친다.
+  // 운영은 운영 조건이 모자라면, 폐점은 퇴근하지 않은 출근이 있으면 확인 버튼이 막힌다(근로계약은 막지 않는다 — 대기 계약은 폐점이 닫는다, 2026-11-04).
+  // 폐점은 확인 창(「폐점으로 변경할까요?」)을 한 번 더 거치고, 그 창에 폐점하면 함께 처리될 것을 빨간 상자로 보인다(앱 store-closing-parts.tsx).
   // 부가서비스 구독 · 정산 대기 금액은 1차 범위 밖이라 뺐다(2026-10-19 점검).
-  const closeItem = `<li${d.contracts ? ' class="text-erp-off"' : ""}>진행 중인 근로계약 <b class="font-semibold">${d.contracts}건</b>${d.contracts ? " — 정리해야 할 근로계약이 있습니다." : ""}</li>`;
+  const closeItem =
+    `<li${d.openCheckIns ? ' class="text-erp-off"' : ""}>퇴근하지 않은 출근 <b class="font-semibold">${d.openCheckIns}건</b></li>`;
+  // 막히면 첫 건(이름 · 출근 시각)과 할 일 — 다음 날이 지나 앱으로 퇴근할 수 없는 출근은 보정으로 닫는다
+  const closeAfter = d.openCheckIns ? `<p class="mt-[6px] text-erp-label">첫 건: 김민지 · 2026-11-02 09:03 출근<br>출퇴근 현황에서 보정으로 닫아 주세요.</p>` : "";
+  // 폐점하면 함께 처리될 것 — 0건인 줄은 뺀다(앱 closingCheckLines)
+  const c = d.closing ?? {};
+  const closingLines = [
+    c.retiringStaff && `근무 중인 직원 ${c.retiringStaff}명 퇴직(퇴직일 오늘)`,
+    c.draftContracts && `임시저장 근로계약 ${c.draftContracts}건 종료`,
+    c.pendingSendContracts && `발송 대기 근로계약 ${c.pendingSendContracts}건 종료 · 초대 무효`,
+    c.pendingSignatureContracts && `서명 대기 · 수정 요청 근로계약 ${c.pendingSignatureContracts}건 종료`,
+  ].filter(Boolean);
+  const closingList =
+    `<div class="mt-[12px] flex flex-col gap-[6px]">` +
+    (closingLines.length
+      ? `<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p class="font-medium">폐점하면 함께 처리됩니다.</p><ul class="mt-[6px] list-disc pl-[18px]">${closingLines.map((l) => `<li>${l}</li>`).join("")}</ul></div>`
+      : `<p class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]">함께 처리할 직원 · 근로계약이 없습니다.</p>`) +
+    // 확정하지 않은 급여명세서는 폐점이 처리하지 않아 상자 밖 회색 안내로 둔다(앱 closingPayslipText)
+    `<p class="text-[13px] text-erp-label">${c.unconfirmedPayslips ? `확정하지 않은 급여명세서 ${c.unconfirmedPayslips}건은 폐점 뒤에도 처리할 수 있습니다.<br>` : ""}체결 완료 근로계약은 그대로 남고, 직원에게 알림을 보내지 않습니다.</p></div>`;
   const notOperating = state === "미운영";
   const missing = d.missing ?? [];
   const opItems = REQUIREMENTS.map(
@@ -216,9 +239,9 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
     ? `<div class="flex flex-col gap-[12px]"><p class="flex items-center gap-[6px]">현재 상태 ${statusBadge(state)}</p>` +
       `<div role="radiogroup" aria-label="바꿀 상태" class="flex gap-[18px]">${ui.radio("운영", "storeStatus", true, { "data-target": "op" })}${ui.radio("폐점", "storeStatus", false, { "data-target": "close" })}</div>` +
       conditionBox("운영 조건", opItems, ' data-show="op"') +
-      conditionBox("폐점 조건", closeItem, ' data-show="close" hidden') +
+      conditionBox("폐점 조건", closeItem, ' data-show="close" hidden', closeAfter) +
       `</div>`
-    : `<div class="flex flex-col gap-[12px]"><p class="flex items-center gap-[6px]">현재 상태 ${statusBadge(state)}</p>${conditionBox("폐점 조건", closeItem)}</div>`;
+    : `<div class="flex flex-col gap-[12px]"><p class="flex items-center gap-[6px]">현재 상태 ${statusBadge(state)}</p>${conditionBox("폐점 조건", closeItem, "", closeAfter)}</div>`;
   const statusDialog =
     state === "폐점" || bpBlocked
       ? ""
@@ -227,18 +250,18 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
           "상태 변경",
           statusBody,
           ui.button("취소", { variant: "off", "data-close": true }) +
-            (notOperating ? confirmBtn("운영으로 변경", missing.length > 0) : confirmBtn("폐점으로 변경", d.contracts > 0)),
+            (notOperating ? confirmBtn("운영으로 변경", missing.length > 0) : confirmBtn("폐점으로 변경", d.openCheckIns > 0)),
           "w-[480px]",
         ) +
         // 라디오를 바꾸면 조건 상자 · 확인 버튼 글자 · 막힘을 바꾼다(앱은 상태로 다시 그린다)
         (notOperating
-          ? `<script>(()=>{const d=document.getElementById("${statusId}"),c=d.querySelector("[data-status-confirm]");d.addEventListener("change",(e)=>{const t=e.target.dataset.target;if(!t)return;d.querySelectorAll("[data-show]").forEach((b)=>(b.hidden=b.dataset.show!==t));c.textContent=t==="op"?"운영으로 변경":"폐점으로 변경";c.disabled=t==="op"?${missing.length > 0}:${d.contracts > 0};});})();</script>`
+          ? `<script>(()=>{const d=document.getElementById("${statusId}"),c=d.querySelector("[data-status-confirm]");d.addEventListener("change",(e)=>{const t=e.target.dataset.target;if(!t)return;d.querySelectorAll("[data-show]").forEach((b)=>(b.hidden=b.dataset.show!==t));c.textContent=t==="op"?"운영으로 변경":"폐점으로 변경";c.disabled=t==="op"?${missing.length > 0}:${d.openCheckIns > 0};});})();</script>`
           : "") +
         // 폐점 확인 — [이전]은 조건 팝업으로 돌아간다(앱 store-detail-actions.tsx)
         x.dialog(
           closeId,
           "폐점으로 변경할까요?",
-          "<p>폐점으로 변경하면 되돌릴 수 없습니다.</p><p>폐점일은 오늘(2026-11-03)입니다.</p>",
+          "<p>폐점으로 변경하면 되돌릴 수 없습니다.</p><p>폐점일은 오늘(2026-11-03)입니다.</p>" + closingList,
           ui.button("이전", { variant: "off", "data-dialog": statusId, "data-close": true }) + ui.button("폐점으로 변경", { href: link(R, "stores/detail-closed.html") }),
         );
   // 삭제 확인 — 미운영 점포만. 1팀 화면은 빨간 버튼을 쓰지 않아 확인 버튼도 기본 색(앱과 같다, 2026-11-03)
