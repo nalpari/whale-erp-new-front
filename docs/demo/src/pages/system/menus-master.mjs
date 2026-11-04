@@ -150,7 +150,7 @@ function treeTab(key, s) {
     return `<tr class="h-[46px] border-b border-erp-thead-line ${cls}${top}" data-row="${key}" data-code="${n.code}" data-lvl="${n.lvl}" data-name="${n.name}" data-label="${n.code} · ${path(n)}" data-kids="${n.kids}"${hides(n) ? " data-hides" : ""}>`;
   });
 
-  // 라벨 · 입력 예시는 앱 menu-side.tsx 그대로 — 메뉴명 예시는 등록에만, URL 예시는 등록 · 수정 모두(2026-10-26)
+  // 라벨 · 입력 예시는 앱 menu-side.tsx 그대로 — 메뉴명 · URL 예시는 등록에만(URL 은 수정에서 읽기 전용, 2026-11-04)
   // 미사용 안내 빨간 박스는 use 값(처음 그릴 때 상태)에 맞춰서만 보인다 — 데모는 라디오를 눌러도 다시 그리지
   // 않아 앱처럼 그 자리에서 즉시 뜨고 꺼지지는 않는다(사용자 지정, 2026-10-26 · 앱 menu-side.tsx 와 같은 문구).
   const kidsWarn = (kids) =>
@@ -158,7 +158,10 @@ function treeTab(key, s) {
   const useWarn = (kids) => `<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">미사용으로 변경하면 사용자 메뉴와 권한 설정에서 표시되지 않습니다.<br>다시 '사용'으로 변경하면 기존 설정값이 그대로 적용됩니다.${kidsWarn(kids)}</div>`;
   const nameFields = (name, url, use, id, isNew, kids = 0) =>
     ui.field(req("메뉴명"), ui.textField({ value: name, placeholder: isNew ? "예: 플랫폼 배치 관리" : undefined, "data-new-name": isNew })) +
-    ui.field("메뉴 URL (선택)", ui.textField({ value: url, placeholder: "예: /staff-content" })) +
+    // 메뉴 URL 은 등록에서만 넣고 수정에서는 읽기 전용(앱 menu-side.tsx 와 같다, 2026-11-04 사용자 지정)
+    (isNew
+      ? ui.field("메뉴 URL (선택)", ui.textField({ value: url, placeholder: "예: /staff-content" }))
+      : ui.field("메뉴 URL", ui.textField({ value: url, readonly: true, placeholder: "없음" }))) +
     `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">사용여부</span>${useRadios(id, use)}${use ? "" : useWarn(kids)}</div>`;
 
   // 메뉴 하나의 수정 칸. 고른 줄의 것만 보인다(위치 옮기기는 두지 않는다 · 2026-10-08).

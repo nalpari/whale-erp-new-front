@@ -3,7 +3,7 @@ type: Area
 title: 플랫폼 시스템 관리
 description: 플랫폼 운영 인력의 계정·권한과 모든 BP 가 함께 쓰는 기준정보(메뉴·공통코드·공식 휴일)를 다루는 영역.
 tags: [mockup, system]
-generated: { by: claude-code/opus-5.5, at: 2026-10-30T16:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-04T10:00:00Z }
 ---
 
 근거: `docs/mockup/system/` (목업 · 1차 · R-KJGJXP)
@@ -99,7 +99,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-30T16:00:00Z }
 * 서비스 코드·이름·사용 상태는 공통코드 '서비스' 그룹에서 읽고 여기서 바꾸지 않는다 — `S-GXMZOU` · `F-LOUVWE`
 * 메뉴는 서비스 단위로 최대 3단계다. 같은 서비스 안에서만 옮기고 하위가 함께 간다 — `F-CWWQUR`
 * 메뉴 삭제와 메뉴 변경 이력은 두지 않는다. 안 쓰는 메뉴는 사용중지로 돌린다 — `F-CWWQUR`
-* 상세에서 고치는 것은 노출 메뉴명(필수)·메뉴 URL·메뉴 사용 상태뿐이다. 서비스 코드·상위 메뉴·메뉴 코드·메뉴 순서는 읽기 전용이다 — `S-GXMZOU`
+* 상세에서 고치는 것은 노출 메뉴명(필수)·메뉴 사용 상태뿐이다. 서비스 코드·상위 메뉴·메뉴 코드·메뉴 순서·메뉴 URL 은 읽기 전용이다 — `S-GXMZOU`. 메뉴 URL 은 등록할 때만 넣는다 — 화면 주소이자 api 권한 판정의 메뉴 기준이라 운영 중에 바꾸지 않는다(2026-11-04 사용자 지정, 전엔 수정에서도 고쳤다)
 * 상위 메뉴와 메뉴 순서는 트리에서 끌거나 위치 옮기기로만 바꾼다. 새 메뉴의 기본 위치는 고른 묶음의 맨 끝이다 — `S-GXMZOU` · `SYSTEM-7`
 * 트리에는 검색 칸을 두지 않는다 — `S-GXMZOU` · `SYSTEM-7`
 * 메뉴 URL 은 선택 입력이다. 하위를 묶기만 하는 메뉴는 비워 둔다 — `S-GXMZOU`
@@ -108,7 +108,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-30T16:00:00Z }
 * 사용중지 메뉴 아래에도 신규 메뉴를 만들 수 있다. 등록 양식에서 따로 알리지 않고, 저장하면 트리에서 사용여부 옆 「상위 미사용」 꼬리표로 보인다(2026-10-30 재영) — `S-GXMZOU`
 * 조회 권한만 있으면 끌기·신규 메뉴·저장·위치 옮기기가 없고 상세는 읽기만 한다 — `S-GXMZOU`
 * 구현 메모(front 2026-10-16): 메뉴 코드는 api 가 저장할 때 매겨 등록 양식에 미리 보이지 않는다. 이 화면(MN000215)이나 그 상위를 미사용으로 저장하면 확인을 받는다 — api 는 막지 않고, 끄면 이 화면으로는 되돌릴 수 없다
-* 메뉴 URL 은 새로 넣을 때 1뎁스 한 구간만 받는다 — `/staff/content` 가 아니라 `/staff-content`(소문자 · 숫자 · '-'). 등록과, 수정에서 URL 을 바꿀 때 건다. 그대로 둔 기존 URL 은 여러 구간이어도 받는다. 1팀 메뉴 10개는 2026-10-19 에 1뎁스로 옮겼다(api `20261019144438_team1_menu_single_level_urls` — `/platform-admins` · `/platform-role-groups` · `/platform-menus` · `/code-groups` · `/public-holidays` · `/bp-masters` · `/bp-admins` · `/bp-role-groups` · `/bp-code-groups` · `/bp-holidays`, front 라우트도 같이 옮김). 3팀 커뮤니티 메뉴 넷은 2026-10-20 에 옮겼다(api `20261020161147_team3_community_menu_single_level_urls` — `/platform-notices` · `/platform-faqs` · `/platform-inquiries` · `/platform-leads`). 사용중지 메뉴는 아직 여러 구간이라 예외를 남긴다. API 권한 주소(경로 방식 `@MenuPermission` 컨트롤러의 경로 첫 단계 — 이 화면 `/platform-menus` 포함)를 가진 메뉴의 URL 은 바꾸거나 비울 수 없고 다른 메뉴가 가져갈 수도 없다 — api 가 409 로 막는다(2026-10-21, api `dc804ee7`). 그래서 이 화면 메뉴의 URL 변경 확인창은 두지 않는다(2026-10-30 재영). api 서비스도 같은 규칙으로 400 을 준다 (2026-10-19)
+* 메뉴 URL 은 새로 넣을 때 1뎁스 한 구간만 받는다 — `/staff/content` 가 아니라 `/staff-content`(소문자 · 숫자 · '-'). 등록할 때 건다 — 수정에서는 URL 을 바꿀 수 없어(2026-11-04) 기존 URL 은 여러 구간이어도 그대로 남는다. 다만 api 는 URL 을 그대로 둬도 사용으로 저장하면 사용 중 메뉴와 겹치는지 다시 보므로, 겹치는 URL 을 가진 미사용 메뉴를 켜면 409 로 막히고 화면은 실패 띠로 알린다. 1팀 메뉴 10개는 2026-10-19 에 1뎁스로 옮겼다(api `20261019144438_team1_menu_single_level_urls` — `/platform-admins` · `/platform-role-groups` · `/platform-menus` · `/code-groups` · `/public-holidays` · `/bp-masters` · `/bp-admins` · `/bp-role-groups` · `/bp-code-groups` · `/bp-holidays`, front 라우트도 같이 옮김). 3팀 커뮤니티 메뉴 넷은 2026-10-20 에 옮겼다(api `20261020161147_team3_community_menu_single_level_urls` — `/platform-notices` · `/platform-faqs` · `/platform-inquiries` · `/platform-leads`). 사용중지 메뉴는 아직 여러 구간이라 예외를 남긴다. API 권한 주소(경로 방식 `@MenuPermission` 컨트롤러의 경로 첫 단계 — 이 화면 `/platform-menus` 포함)를 가진 메뉴의 URL 은 바꾸거나 비울 수 없고 다른 메뉴가 가져갈 수도 없다 — api 가 409 로 막는다(2026-10-21, api `dc804ee7`). 그래서 이 화면 메뉴의 URL 변경 확인창은 두지 않는다(2026-10-30 재영). api 서비스도 같은 규칙으로 400 을 준다 (2026-10-19)
 
 ## 플랫폼 공통코드 관리
 
