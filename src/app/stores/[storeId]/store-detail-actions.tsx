@@ -77,6 +77,11 @@ export function StoreDetailActions({
   const [failure, setFailure] = useState<string | null>(null);
   /** 폐점 저장 결과 — 처리한 것이 있을 때 결과 창을 연다 */
   const [closingResult, setClosingResult] = useState<StoreClosingResult | null>(null);
+  /**
+   * 폐점 결과를 모를 때(5xx · 연결 끊김)의 안내 — 폐점이 실제로 됐으면 화면을 다시 받으며 폐점 점포가 되어 상태 변경 창이 사라지므로,
+   * 그 창 밖의 따로 띄우는 창으로 알린다(결과 창과 같은 자리)
+   */
+  const [closingUnknown, setClosingUnknown] = useState<string | null>(null);
   const [busy, startBusy] = useTransition();
 
   const closed = store.storeStatusCode === "CLOSED";
@@ -104,12 +109,14 @@ export function StoreDetailActions({
   };
 
   // 조건은 그 사이 바뀌었을 수 있어 지금 기준으로 다시 받는다(퇴근하지 않은 출근 · 폐점하면 처리될 것 등).
-  // keep 은 먼저 보인 문구(409 OPEN_CHECK_IN 의 api 문구) — 다시 받기가 실패해도 지우지 않고 뒤에 잇는다
+  // keep 은 먼저 보인 문구(409 OPEN_CHECK_IN 의 api 문구) — 다시 받기가 실패해도 지우지 않고 뒤에 잇는다.
+  // 다시 받기가 실패하면 페이지를 불러올 때의 옛 값으로 되돌릴 수 없는 폐점을 하지 않게 폐점을 막고 옛 확인 값을 지운다(수정 화면 checkClose 와 같다)
   const reloadTransitions = (keep?: string) =>
     startBusy(async () => {
       const result = await getStoreTransitionsAction(store.storeId).catch(UNKNOWN("상태 확인"));
-      if (result.ok) setTransitions(result);
-      else setFailure(keep ? `${keep} ${result.message}` : result.message);
+      if (result.ok) return setTransitions(result);
+      setTransitions((t) => ({ ...t, canClose: false, closing: null }));
+      setFailure(`${keep ? `${keep} ` : ""}${result.message} 조건을 확인하지 못해 폐점은 할 수 없습니다. 창을 닫고 다시 열어 주세요.`);
     });
 
   const handleStatusOpen = () => {
@@ -141,9 +148,16 @@ export function StoreDetailActions({
         setDialog("status");
         return reloadTransitions(result.message);
       }
-      // 폐점 결과를 모르면 퇴직 · 계약 종료도 이미 끝났을 수 있다 — 그 사실을 덧붙인다
-      if (!result.ok)
-        return fail(result.status, target === "CLOSED" && result.status === undefined ? `${result.message} ${CLOSING_UNKNOWN_RESULT_NOTE}` : result.message);
+      // 폐점 결과를 모르면 퇴직 · 계약 종료도 이미 끝났을 수 있다. 폐점됐으면 화면을 다시 받아 상태 변경 창이 사라지므로
+      // 창 안 문구가 아니라 따로 띄우는 창으로 알린다
+      if (!result.ok && target === "CLOSED" && result.status === undefined) {
+        setDialog(null);
+        setClosingUnknown(`${result.message} ${CLOSING_UNKNOWN_RESULT_NOTE}`);
+        router.refresh();
+        refreshStores();
+        return;
+      }
+      if (!result.ok) return fail(result.status, result.message);
       setDialog(null);
       // 폐점으로 직원 퇴직 · 계약 종료를 했으면 결과 창으로 알린다. 그 밖에는 토스트 하나만 — 바꾼 상태는 화면에 보이고,
       // 헤더 점포 목록이 바뀐 것은 따로 알리지 않는다(2026-11-03 사용자 지정)
@@ -308,6 +322,18 @@ export function StoreDetailActions({
       )}
 
       <ClosingResultDialog result={closingResult} onClose={() => setClosingResult(null)} />
+      {/* 폐점 결과를 모를 때 — 폐점 점포가 되어도 남도록 !closed 조건 밖에 둔다 */}
+      <ConfirmDialog
+        open={Boolean(closingUnknown)}
+        title="폐점 결과를 확인하지 못했습니다."
+        wide
+        cancelLabel={null}
+        onConfirm={() => setClosingUnknown(null)}
+        onCancel={() => setClosingUnknown(null)}
+      >
+        <p>{closingUnknown}</p>
+        <p className="mt-[6px] text-erp-label">화면을 다시 불러왔습니다. 점포상태가 폐점이면 폐점된 것입니다.</p>
+      </ConfirmDialog>
 
       {can.delete && !closed && (
         <ConfirmDialog
