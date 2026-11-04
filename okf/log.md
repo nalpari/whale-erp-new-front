@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-04
+* **Update**: [점포 관리](/stores.md) — 폐점 저장 409 `OPEN_CHECK_IN` 문구가 시각 없이 바뀐다(api 폐점 서비스가 3팀 단건 퇴직 문구를 바꿔 던진다, 가려진 직원의 출근 시각이 보이지 않게). 「409 문구가 가장 이른 출근 시각을 알려 준다」 설명을 고쳤다(front gastly).
 * **Update**: [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) — 점포 폐점: 폐점 조건을 진행 중 근로계약에서 퇴근하지 않은 출근(가려진 직원 포함, 첫 건 · 할 일)으로 바꿨다. 확인 창에 폐점하면 함께 처리될 것(퇴직 · 대기 계약 종료 · 미확정 급여명세서 안내), 저장 뒤 처리 결과 창, 확인과 저장 사이 출근 409 `OPEN_CHECK_IN` 처리. 삭제 조건은 그대로(`deleteBlockText`). api scizor 의 openapi 로 타입을 다시 만들었다(PUT 응답 200 `{ closing }`). 목업 · 데모 점포 상세 · 수정 팝업도 맞췄다. PR 리뷰로 확인 값 · 저장 결과를 모를 때의 안내, 409 뒤 다시 받기 실패 · 이미지 지움 · 막힘 풀림 문구를 더했다. 머지 블로커 리뷰로 상세의 조건 다시 받기 실패 때 폐점을 막고, 결과 모름 안내를 창 밖으로 옮겼다. api 가 열린 출근의 첫 건(직원 이름 · 시각)을 빼고 수만 주게 바뀌어(api 0a9fc92e) 막힘은 건수와 할 일만 보이고 타입을 다시 만들었다(front gastly).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [홈](/home.md) · [로그인](/auth.md) · [근무스케줄 화면](/screens/work-schedules.md) — 변경이력 팝업 1000px · 건수 고르기, 점포 없음 안내를 홈 상자에서 메뉴 줄 아래 띠로, 로그인 실패 문구 자리, 칸 오류 문구 자리(리뷰 반영, front tyrogue).
 * **Update**: [BP](/bp.md) · [점포](/stores.md) · [운영 알림](/notify.md) — 1팀 변경이력 팝업 통일(폭 1000 · 총 건수 · 한 쪽 20/50 · 표만 스크롤), 점포 없음 띠, BP 마스터 인증 실패 두 줄, 알림함 위 줄 · 뱃지 정렬(front tyrogue).

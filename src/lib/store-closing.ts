@@ -15,7 +15,7 @@ export type StoreClosingRetirement = Schemas["StoreClosingRetirementDto"];
 /**
  * 폐점을 막는 퇴근하지 않은 출근 — 건수는 가려진 직원 것까지 더한다(api isBlocked 와 같은 기준: count + hiddenCount > 0).
  * api 는 직원 이름 · 출근 시각을 주지 않는다 — 점포 메뉴 조회 권한만으로 보이는 응답이라 수만 안내한다(2026-11-04 사용자 결정, api 0a9fc92e).
- * 어느 출근인지는 출퇴근 현황에서 찾고, 저장 때의 409 OPEN_CHECK_IN 문구가 가장 이른 출근 시각을 알려 준다
+ * 어느 출근인지는 출퇴근 현황에서 찾는다. 저장 때의 409 OPEN_CHECK_IN 문구도 시각 없이 「퇴근하지 않은 출근이 있습니다. …」다(api 폐점 서비스가 바꿔 던진다)
  */
 export type ClosingBlock = {
   count: number;
