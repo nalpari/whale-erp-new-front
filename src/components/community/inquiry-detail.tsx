@@ -456,7 +456,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         }
         placeholder="문의한 분이 그대로 읽습니다. 어떤 화면에서 무엇을 하면 되는지 적어 주세요."
         firstNote="저장하면 상태가 즉시 답변 완료로 바뀌고 문의자에게 알림함과 메일로 알립니다. 처리 시작을 거치지 않고 바로 답해도 됩니다."
-        editNote="고쳐도 상태는 답변 완료 그대로입니다. 문의자에게 알림은 다시 가지 않습니다."
+        editNote="답변을 수정해도 처리상태는 '답변완료'로 유지되며, 문의자에게 알림이 발송되지 않습니다."
         busy={c.busy}
         canEdit={c.can.update}
         onSave={c.saveReply}

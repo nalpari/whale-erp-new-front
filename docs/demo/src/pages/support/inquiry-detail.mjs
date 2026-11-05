@@ -27,7 +27,7 @@ const fold = (summary, body) =>
 const doneAnswer = (c) =>
   prose(c.answer) +
   `<p class="text-[13px] text-erp-label">수정됨 · ${c.editedAt}</p>` +
-  fold("답변 수정", ui.field("내용", ui.textarea({ rows: 6, value: c.answer })) + spread(note("고쳐도 상태는 답변 완료 그대로입니다. 문의자에게 알림은 다시 가지 않습니다."), ui.button("답변 저장"))) +
+  fold("답변 수정", ui.field("내용", ui.textarea({ rows: 6, value: c.answer })) + spread(note("답변을 수정해도 처리상태는 '답변완료'로 유지되며, 문의자에게 알림이 발송되지 않습니다."), ui.button("답변 저장"))) +
   fold("이전 답변 1개", `<p class="text-[13px] text-erp-label">${c.firstAt}</p>` + prose(c.firstAnswer));
 
 // 첨부파일(운영 정책 CNT-18): 이미지는 작은 미리보기, PDF 는 이름 + 내려받기.
