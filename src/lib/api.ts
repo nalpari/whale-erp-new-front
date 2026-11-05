@@ -6,6 +6,7 @@ import { BP_HEADER, bpPath } from "./bp-path";
 import { forwardedForHeader } from "./forwarded-headers";
 import type { EnumValue } from "./enums";
 import { parseSession, SESSION_COOKIE, type Session } from "./session";
+import { expiredCookie, marksExpiry } from "./session-expiry.ts";
 
 // 세션 모양·쿠키 헬퍼는 next/headers 없이 proxy 도 쓰도록 session.ts 에 있다.
 export * from "./session";
@@ -28,6 +29,21 @@ export function baseUrl(): string {
   return url;
 }
 
+/**
+ * 서버 액션이 api 401 을 받으면 세션 쿠키를 지우고 표시 쿠키를 심는다 — 브라우저의 감싼 fetch 가 보고 만료 팝업을 띄운다(session-expiry.ts).
+ * 서버가 그리는 화면은 쿠키를 쓸 수 없어 빼고(redirectExpired), /api 라우트는 BFF 가 지운다. 쿠키 쓰기가 실패해도 401 처리는 그대로 간다.
+ */
+async function markSessionExpired(path: string, init: RequestInit): Promise<void> {
+  try {
+    if (!marksExpiry(path, init, (await headers()).has("next-action"))) return;
+    const jar = await cookies();
+    jar.delete(SESSION_COOKIE);
+    jar.set(expiredCookie(Date.now()));
+  } catch (e) {
+    console.error("세션 만료 표시를 남기지 못함", path, e);
+  }
+}
+
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${baseUrl()}${path}`, {
     ...init,
@@ -35,7 +51,10 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     cache: "no-store",
   });
 
-  if (!response.ok) throw await apiError(response);
+  if (!response.ok) {
+    if (response.status === 401) await markSessionExpired(path, init);
+    throw await apiError(response);
+  }
 
   // 204(로그아웃)는 본문이 없다. json() 을 부르면 파싱에서 터진다.
   return response.status === 204
@@ -48,7 +67,9 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
  * 연결 실패만 던진다.
  */
 export async function requestRaw(path: string, init: RequestInit = {}): Promise<Response> {
-  return fetch(`${baseUrl()}${path}`, { ...init, cache: "no-store" });
+  const response = await fetch(`${baseUrl()}${path}`, { ...init, cache: "no-store" });
+  if (response.status === 401) await markSessionExpired(path, init);
+  return response;
 }
 
 /** 실패 응답을 ApiError 로. 본문은 한 번만 읽어 이은 문장 · 문장 목록 · 본문을 모두 싣는다 */
