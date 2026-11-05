@@ -13,7 +13,7 @@ export type CodeGroupSearch = { groupCode: string; groupName: string; manageOwne
  * 점포 · 직원 목록과 같다(2026-11-05 사용자 지정, 전엔 「그룹 코드 ‘…’에 맞는 공통코드 그룹이 없습니다.」 두 줄).
  * 0건이면 화면(page)이 조건 없이 한 번 더 물어 noGroupsAtAll 을 넘긴다.
  */
-export function groupListEmpty(search: CodeGroupSearch, noGroupsAtAll: boolean): ReactNode {
+export function groupListEmpty(noGroupsAtAll: boolean): ReactNode {
   // 관리주체를 둘 다 꺼도(NONE) 이유를 따로 말하지 않고 다른 조건과 같은 문구다(2026-11-05 사용자 지정 — 전엔 「관리주체를 하나 이상 선택해 주세요.」)
   return noGroupsAtAll ? "등록된 공통코드 그룹이 없습니다." : "조건에 맞는 공통코드 그룹이 없습니다.";
 }

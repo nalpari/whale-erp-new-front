@@ -45,7 +45,8 @@ export default async function BpAdminsPage({ searchParams }: PageProps<"/bp-admi
   const allQuery = bpAdminListQueryOf({ ...parseBpAdminsQuery({}), storesCleared: true, pageSize: query.pageSize });
   const noAdminsAtAll =
     list.total === 0 &&
-    (JSON.stringify(bpAdminListQueryOf({ ...query, page: 1 })) === JSON.stringify(allQuery) ||
+    // 계정상태 · 역할을 모두 끈 조회는 api 조건에서 사라져 「조건 없음」과 같아 보인다 — 그때는 지름길을 타지 않고 다시 묻는다(리뷰 반영)
+    ((!isEmptyByFilter(query) && JSON.stringify(bpAdminListQueryOf({ ...query, page: 1 })) === JSON.stringify(allQuery)) ||
       (await getBpAdmins(allQuery)
         .then((all) => all.total === 0)
         .catch((error: unknown) => {

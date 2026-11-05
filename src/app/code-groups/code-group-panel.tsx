@@ -365,7 +365,7 @@ export function CodeGroupPanel({
         rowState={(d) => (d.added ? "added" : d.groupCode === selected ? "current" : undefined)}
         // 비었으면 열 이름 줄 아래 빈 칸이 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정)
         fillEmpty
-        empty={groupListEmpty(search, noGroupsAtAll)}
+        empty={groupListEmpty(noGroupsAtAll)}
       />
       {/* 칸에 붙은 오류는 그 칸 아래에 있다 — 새 행이 없는데 온 그룹 코드 409 만 여기 */}
       <FieldErrors messages={!added && errors.code ? [errors.code] : []} />

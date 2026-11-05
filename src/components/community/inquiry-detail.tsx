@@ -463,7 +463,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         // 답변이 있으면 「운영자 · 등록 첫 답변 (수정됨 마지막)」을 제목 옆 왼쪽에, 없으면 오른쪽 끝 안내(2026-11-05 사용자 지정)
         hint={
           first && last
-            ? `${last.repliedByName ?? "-"} · 등록 ${dt(first.repliedAt)}${previous.length ? ` (수정됨 ${dt(last.repliedAt)})` : ""}`
+            ? `${first.repliedByName ?? "-"} · 등록 ${dt(first.repliedAt)}${previous.length ? ` (수정됨 ${dt(last.repliedAt)} · ${last.repliedByName ?? "-"})` : ""}`
             : "문의자에게 표시됩니다."
         }
         hintLeft={answered}

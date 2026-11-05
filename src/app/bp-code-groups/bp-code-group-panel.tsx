@@ -64,7 +64,7 @@ export function BpCodeGroupPanel({
         rowState={(g) => (g.groupCode === selected ? "current" : undefined)}
         // 비었으면 열 이름 줄 아래 빈 칸이 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정, 전엔 「볼 수 있는 공통코드 그룹이 없습니다.」)
         fillEmpty
-        empty={groupListEmpty(search, noGroupsAtAll)}
+        empty={groupListEmpty(noGroupsAtAll)}
       />
     </CodePanel>
   );
