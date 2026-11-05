@@ -491,14 +491,19 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
       {/* 관리자 쪽은 누가 언제 무엇을 했는지 남기는 「단계 · 내용 · 상태」 표 그대로 — 문의자 쪽(고객지원)만 처리현황 목록으로 바꿨다(2026-11-05 사용자 지정) */}
       <History
         stepWidth="w-[100px]"
-        // 답변은 처음 등록 한 줄, 고칠 때마다 한 줄씩 더한다 — 「일시 · 운영자 등록 / 수정」(2026-11-05 사용자 지정)
+        // 답변은 처음 등록 한 줄, 고칠 때마다 한 줄씩 더한다 — 「등록 | 일시 · 운영자」 · 「수정 | 일시 · 운영자」(2026-11-05 사용자 지정)
         rows={steps(
           d,
           answered && (
             <span className="flex flex-col py-[12px] leading-[1.6]">
               {d.replies.map((r, i) => (
-                <span key={r.inquiryReplyId} className="truncate">
-                  {dt(r.repliedAt)} · {r.repliedByName ?? "-"} {i === 0 ? "등록" : "수정"}
+                <span key={r.inquiryReplyId} className="flex min-w-0 items-center gap-[10px]">
+                  <span className="shrink-0 text-erp-label">{i === 0 ? "등록" : "수정"}</span>
+                  {/* #d9d9d9 — DESIGN.md 의 값 구분선 */}
+                  <span aria-hidden="true" className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
+                  <span className="truncate">
+                    {dt(r.repliedAt)} · {r.repliedByName ?? "-"}
+                  </span>
                 </span>
               ))}
             </span>
