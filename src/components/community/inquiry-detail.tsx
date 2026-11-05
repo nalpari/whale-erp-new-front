@@ -453,8 +453,8 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
               <Prose>{last.body}</Prose>
               {previous.length > 0 && (
                 <details className="group rounded-[2px] border border-erp-panel-line">
-                  {/* 펼치는 줄로 보이게 오른쪽에 꺾쇠 — 닫히면 아래, 펼치면 위(FAQ 와 같다, 2026-11-05 사용자 지정) */}
-                  <summary className="flex h-[34px] cursor-pointer items-center gap-[10px] px-[12px] text-[14px] font-medium text-erp-ink [&::-webkit-details-marker]:hidden">
+                  {/* 펼치는 줄로 보이게 오른쪽에 꺾쇠(닫히면 아래, 펼치면 위 — FAQ 와 같다) · 표 머리 바탕(#f8f9fb), 호버하면 erp-subtle(2026-11-05 사용자 지정) */}
+                  <summary className="flex h-[34px] cursor-pointer items-center gap-[10px] bg-erp-thead-bg px-[12px] text-[14px] font-medium text-erp-ink transition-colors duration-150 hover:bg-erp-subtle [&::-webkit-details-marker]:hidden">
                     <span className="flex-1">이전 답변 {previous.length}개</span>
                     <Image src="/icons/chevron-small.svg" alt="" width={5} height={8} className="-rotate-90 transition-transform duration-150 group-open:rotate-90 motion-reduce:transition-none" />
                   </summary>
