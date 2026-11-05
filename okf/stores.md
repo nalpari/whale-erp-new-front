@@ -10,7 +10,7 @@ sources:
   - { id: store-view, resource: ../src/lib/store-view.ts, title: 점포 표기 }
   - { id: store-closing, resource: ../src/lib/store-closing.ts, title: 점포 폐점 확인 · 결과 표기 }
   - { id: excel-downloads-app, resource: ../src/app/excel-downloads, title: 엑셀 내려받기 화면(메일 링크) }
-generated: { by: claude-code/opus-5.5, at: 2026-11-05T07:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-05T10:00:00Z }
 ---
 
 근거: `docs/mockup/stores/` (목업 · 1차 · R-QTPRUQ)

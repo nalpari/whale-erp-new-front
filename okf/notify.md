@@ -3,7 +3,7 @@ type: Area
 title: 운영 알림
 description: 문의·도입문의의 접수와 상태 변경, 직원 근로계약의 날인·거부·만료·갱신 예정을 관리자 웹 알림함으로 알린다. 메일은 업무 쪽이 따로 보낸다(운영 정책 NTF-03).
 tags: [mockup, notify]
-generated: { by: claude-code/opus-5.5, at: 2026-11-05T08:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-05T10:00:00Z }
 sources:
   - id: notifications-page
     resource: ../src/app/notifications/page.tsx

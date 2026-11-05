@@ -51,6 +51,7 @@ export default ({ A, R }) => {
     `<ul class="flex flex-col gap-[14px] text-[14px]">${stepRow("접수", p.tag("warn", "접수"), "08-30 16:12")}${stepRow("처리중", p.tag("quiet", "처리중"), "08-31 09:12")}${stepRow("답변완료", p.tag("ok", "답변완료"), "08-31 09:40")}</ul>`,
     { pad: true },
   );
-  const body = ui.detailBody(`${head}${p.cols(mine + files + answers, progress)}`);
+  // 상자 제목 바는 앱 support-detail Box 와 같은 15px 600(2026-11-05 사용자 지정) — 공통 p.box 는 16px 500 이라 이 화면에서만 바꾼다
+  const body = ui.detailBody(`${head}${p.cols(mine + files + answers, progress)}`.replaceAll("px-[10px] text-[16px] font-medium text-erp-ink", "px-[10px] text-[15px] font-semibold text-erp-ink"));
   return { title: "문의상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "문의하기", body }) };
 };

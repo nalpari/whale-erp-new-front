@@ -3,7 +3,7 @@ type: Area
 title: BP 환경설정
 description: BP 가 자기 관리자 계정·권한 그룹·공통코드·휴일을 스스로 정하는 설정 영역.
 tags: [mockup, config]
-generated: { by: claude-code/opus-5.5, at: 2026-11-05T08:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-05T10:00:00Z }
 ---
 
 근거: `docs/mockup/config/` (목업 · 1차 · R-DJGLEO)
