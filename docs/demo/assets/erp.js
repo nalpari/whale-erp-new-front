@@ -1560,11 +1560,17 @@
       const key = iso(mon);
       const hit = blocks.find((b) => b.dataset.week === key) || blocks.find((b) => b.dataset.week === "");
       blocks.forEach((b) => (b.hidden = b !== hit));
+      // data-label="md" 는 「11월 4일 (화)」 · 「11월 2일 ~ 11월 8일」 — 출퇴근 현황의 날 · 주 이동(앱 dayLabel · monthDayLabel, 2026-11-05 사용자 지정)
+      const kd = (d) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
       trigger.textContent = month
         ? `${mon.getFullYear()}년 ${mon.getMonth() + 1}월`
-        : day
-          ? `${iso(mon)} (${WEEK[mon.getDay()]})`
-          : `${mon.getFullYear()}년 ${md(mon)} ~ ${md(addDays(mon, 6))}`;
+        : nav.dataset.label === "md"
+          ? day
+            ? `${kd(mon)} (${WEEK[mon.getDay()]})`
+            : `${kd(mon)} ~ ${kd(addDays(mon, 6))}`
+          : day
+            ? `${iso(mon)} (${WEEK[mon.getDay()]})`
+            : `${mon.getFullYear()}년 ${md(mon)} ~ ${md(addDays(mon, 6))}`;
     };
     const head = (y, m) => `
         <div class="flex items-center justify-between">
@@ -1868,6 +1874,8 @@
       (set.tagName === "TABLE" ? set.tBodies[0] : set).append(empty);
     }
     empty.hidden = shown > 0 || !items.length;
+    // 목록 화면(data-fill-empty — 표 · 점포 카드)은 비면 남는 높이까지 늘린다. 표는 열 이름 줄을 두고 빈 줄이 채운다(앱 DataTable fillEmpty, 2026-11-05 사용자 지정)
+    if (set.hasAttribute("data-fill-empty")) set.style.flex = empty.hidden ? "" : "1 0 134px";
     // 목록 위 「총 N 건」(보이는 목록일 때만)
     const panel = set.closest('[role="tabpanel"]');
     if (set === first && (!panel || !panel.hidden)) {

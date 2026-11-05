@@ -580,6 +580,9 @@
   .-mx-\[16px\] {
     margin-inline: calc(16px * -1);
   }
+  .mx-\[6px\] {
+    margin-inline: 6px;
+  }
   .mx-\[12px\] {
     margin-inline: 12px;
   }
@@ -591,6 +594,9 @@
   }
   .-mt-\[2px\] {
     margin-top: calc(2px * -1);
+  }
+  .-mt-\[6px\] {
+    margin-top: calc(6px * -1);
   }
   .-mt-\[8px\] {
     margin-top: calc(8px * -1);
@@ -1049,6 +1055,9 @@
   }
   .min-h-\[64px\] {
     min-height: 64px;
+  }
+  .min-h-\[92px\] {
+    min-height: 92px;
   }
   .min-h-\[100dvh\] {
     min-height: 100dvh;
@@ -1775,6 +1784,9 @@
   }
   .gap-\[34px\] {
     gap: 34px;
+  }
+  .gap-\[36px\] {
+    gap: 36px;
   }
   .gap-\[40px\] {
     gap: 40px;
@@ -2669,6 +2681,9 @@
   }
   .pl-\[12px\] {
     padding-left: 12px;
+  }
+  .pl-\[13px\] {
+    padding-left: 13px;
   }
   .pl-\[16px\] {
     padding-left: 16px;
@@ -3989,6 +4004,13 @@
   }
   .\[\&\>span\>span\]\:bg-erp-on > span > span {
     background-color: var(--color-erp-on);
+  }
+  .\[\&\>table\]\:-mb-px > table {
+    margin-bottom: -1px;
+  }
+  .\[\&\>table\]\:border-x-0 > table {
+    border-inline-style: var(--tw-border-style);
+    border-inline-width: 0px;
   }
   .\[\&\>td\]\:border-t > td {
     border-top-style: var(--tw-border-style);

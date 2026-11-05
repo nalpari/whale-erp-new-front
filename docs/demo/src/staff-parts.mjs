@@ -175,11 +175,12 @@ export const fileField = (label, accept = ".pdf,.jpg,.jpeg,.png") =>
 // blocks: 주마다 바꿔 보일 묶음의 id([data-week="월요일"]). 비우면 날짜 표시만 바뀐다.
 // day: true 면 하루씩(‹ 2026-09-06 (일) ›, 달력에서 날짜 하나) — 묶음 키는 그 날짜.
 // month: true 면 한 달씩(‹ 2026년 8월 ›, 열두 달 판) — 묶음 키는 그 달 1일.
-export const weekNav = (A, blocks = "", start = "2026-08-31", { day = false, month = false } = {}) => {
+// md — 날 · 주 글자를 「11월 4일 (화)」 · 「11월 2일 ~ 11월 8일」로(출퇴근 현황, 앱과 같다 2026-11-05 사용자 지정)
+export const weekNav = (A, blocks = "", start = "2026-08-31", { day = false, month = false, md = false } = {}) => {
   const pop = ui.uid("week");
   const unit = month ? "달" : day ? "날" : "주";
   const step = month ? "month" : day ? "day" : "";
-  return `<span data-weeks="${blocks}" data-week-start="${start}"${step ? ` data-step="${step}"` : ""} class="relative flex items-center gap-[6px]">${iconButton(A, "prev.svg", `이전 ${unit}`)}<button type="button" popovertarget="${pop}" aria-haspopup="dialog" aria-expanded="false" data-week-label class="h-[34px] min-w-[190px] rounded-[2px] border border-erp-button-line bg-white px-[12px] text-[14px] font-semibold text-erp-ink transition-[border-color] duration-150 ease-out hover:border-erp-brand"></button>${iconButton(A, "next.svg", `다음 ${unit}`)}<div id="${pop}" popover="auto" role="dialog" aria-label="${month ? "달" : day ? "날짜" : "주"} 선택" class="${ui.POPOVER}"></div></span>`;
+  return `<span data-weeks="${blocks}" data-week-start="${start}"${step ? ` data-step="${step}"` : ""}${md ? ' data-label="md"' : ""} class="relative flex items-center gap-[6px]">${iconButton(A, "prev.svg", `이전 ${unit}`)}<button type="button" popovertarget="${pop}" aria-haspopup="dialog" aria-expanded="false" data-week-label class="h-[34px] min-w-[190px] rounded-[2px] border border-erp-button-line bg-white px-[12px] text-[14px] font-semibold text-erp-ink transition-[border-color] duration-150 ease-out hover:border-erp-brand"></button>${iconButton(A, "next.svg", `다음 ${unit}`)}<div id="${pop}" popover="auto" role="dialog" aria-label="${month ? "달" : day ? "날짜" : "주"} 선택" class="${ui.POPOVER}"></div></span>`;
 };
 
 // 상세 화면 틀(2026-10-02 재영): 본문 첫 줄은 「○○ 상세」 + 오른쪽 끝 버튼, 묶음 제목은 회색 머리 칸 안(왼쪽 제목, 오른쪽 끝 요약·이동·버튼).

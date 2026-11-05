@@ -276,6 +276,10 @@ export function dayLabel(day: string): string {
   const d = new Date(`${day}T00:00:00Z`);
   return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일 (${"일월화수목금토"[d.getUTCDay()]})`;
 }
+/** 「10월 23일」 — 근태 요약 주 이동 칸이 일별 칸(「10월 23일 (금)」)과 같은 표기를 쓰게(2026-11-04 사용자 지정, 전엔 「10-23 ~ 10-29」) */
+export function monthDayLabel(day: string): string {
+  return `${Number(day.slice(5, 7))}월 ${Number(day.slice(8, 10))}일`;
+}
 /** 「10-23」 */
 export const shortDay = (day: string) => day.slice(5);
 

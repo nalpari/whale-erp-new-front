@@ -113,6 +113,8 @@ export function StaffTable({
       // 가린 행은 api 가 staffMemberId 를 null 로 준다 — 순번으로 가른다(한 쪽 안에서 겹치지 않는다)
       rowKey={(r) => r.item.staffMemberId ?? `masked-${r.no}`}
       empty={empty}
+      // 비었을 때 열 이름 줄은 두고 그 아래 빈 칸이 목록 영역 남는 높이를 채운다(점포 목록과 같다, 2026-11-04 사용자 지정)
+      fillEmpty
     />
   );
 }
