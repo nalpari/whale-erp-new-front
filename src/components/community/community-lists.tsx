@@ -180,8 +180,9 @@ export function InquiryList({ items, total, query, answers }: { items: InquiryLi
 
   const columns: Column<InquiryListItem>[] = [
     { header: "제목", align: "left", cell: (i) => titleLink(`${INQUIRY_BASE}/${i.inquiryId}`, i.title) },
-    { header: "문의자", width: "w-[220px]", cell: senderText },
-    { header: "분류", width: "w-[140px]", cell: (i) => categoryLabel(i.inquiryCategoryCode) },
+    // 제목 열은 남는 폭이라, 문의자 · 분류 칸을 넓혀 제목을 줄인다 — 문의자에 BP · 점포 · 이름이 함께 들어가 잘렸다(2026-11-05 사용자 지정 — 전엔 220 · 140)
+    { header: "문의자", width: "w-[300px]", cell: senderText },
+    { header: "분류", width: "w-[160px]", cell: (i) => categoryLabel(i.inquiryCategoryCode) },
     { ...STATE, cell: (i) => <AnswerCell status={i.status} answers={answers} /> },
     { header: "접수", width: "w-[110px]", cell: (i) => formatDateTime(i.createdAt).slice(0, 10) },
   ];
