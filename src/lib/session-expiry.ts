@@ -37,14 +37,18 @@ const isActionRequest = (input: RequestInfo | URL, init?: RequestInit) =>
 
 /** base 를 감싼 fetch. 감쌀 때 있던 표시는 본 것으로 둔다 — 앞 탭의 표시로 이 탭이 팝업을 띄우지 않게. */
 export function watchedFetch(base: typeof fetch, readMark: () => string | null, onExpired: () => void): typeof fetch {
-  let seen = readMark();
+  const initial = readMark();
+  let notified: string | null = null;
   return async (input, init) => {
     const response = await base(input, init);
     if (!isActionRequest(input, init)) return response;
     const mark = readMark();
-    if (mark === null || mark === seen) return response;
-    seen = mark;
-    onExpired();
+    if (mark === null || mark === initial) return response;
+    // 같은 표시로 동시에 온 나머지 응답도 끝내지 않는다(화면 실패 처리 방지). 팝업은 표시당 한 번만.
+    if (mark !== notified) {
+      notified = mark;
+      onExpired();
+    }
     // 화면의 실패 처리가 돌지 않게 끝나지 않는다. 팝업 [확인]이 location.replace 로 화면을 떠난다.
     return new Promise<Response>(() => {});
   };

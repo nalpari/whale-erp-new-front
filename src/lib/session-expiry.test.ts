@@ -45,13 +45,25 @@ test("watchedFetch — 처음 보는 표시가 붙은 서버 액션 응답은 �
   mark = "1";
   assert.equal(await settled(f("/stores", action)), false);
   assert.equal(calls, 1);
-  // 같은 표시로 두 번 알리지 않는다
-  assert.equal(await settled(f("/stores", action)), true);
+  // 같은 표시로 두 번 알리지 않는다 — 넘기지 않는 것은 그대로
+  assert.equal(await settled(f("/stores", action)), false);
   assert.equal(calls, 1);
   // 새 표시면 다시
   mark = "2";
   assert.equal(await settled(f("/stores", action)), false);
   assert.equal(calls, 2);
+});
+
+test("watchedFetch — 동시에 온 서버 액션 401 도 모두 넘기지 않고 팝업은 한 번만", async () => {
+  let mark: string | null = null;
+  let calls = 0;
+  const f = watchedFetch(ok, () => mark, () => calls++);
+  mark = "1";
+  const a = f("/stores", action);
+  const b = f("/stores", action);
+  assert.equal(await settled(a), false);
+  assert.equal(await settled(b), false);
+  assert.equal(calls, 1);
 });
 
 test("watchedFetch — 일반 요청 · 표시 없는 응답 · 감싸기 전 표시는 그대로 넘긴다", async () => {
