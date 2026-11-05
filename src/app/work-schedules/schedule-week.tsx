@@ -32,7 +32,7 @@ export function CoverLegend() {
 }
 
 /**
- * hrefBase · readOnly 는 로그인 후 홈 점포 하나 화면(WHALEERP-342)이 쓴다 — 관리 화면은 주지 않아 그대로다.
+ * hrefBase · readOnly 는 로그인 후 홈 점포 하나 화면(WHALEERP-342)이 쓴다. 관리 화면은 hrefBase 에 탭 BP 주소(/bp/{id}/work-schedules)를 준다.
  * readOnly 면 그날 근무가 있는 직원만(휴무 직원 행 없음, 가린 직원은 readOnlyRows), 막대는 누를 수 없는 글자, 공백 줄 · 배정 버튼 없음.
  */
 export function ScheduleWeek({

@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-05
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) · [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 직원 정보 · 근무스케줄 · TO-DO 를 탭 BP 주소 `/bp/{bpCodeId}/staff-members…` · `/work-schedules` · `/todos…` 로 옮겼다(`BP_PATH_SCREENS`). 목록 · 상세 · 등록 · 수정 · 일괄 저장 · 오류 화면의 링크와 이동이 주소의 BP 를 잃지 않고(`bpPath` · `screenPath()` · `bpHref`), api 거절(BP 를 고르지 않음 400 · 403 · 404)은 그 문장으로 보인다(`deniedMessageOf`). 홈의 직원 · 근무스케줄 · TO-DO 링크도 탭 BP 를 붙인다. `revalidatePath` 는 rewrite 목적지(폴더) 경로라 그대로다. api 타입은 다시 만들지 않았다(api 의 탭 BP 전환 뒤 따로).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 등록 · 수정 화면 오류 문구 해제 규칙(manyfast 공통 정책 PL-SPGSWC): 연결된 값을 고치면 이전 오류가 남지 않는다. 적용 예와 개발 점검 방법을 적었다.
 * **Update**: [급여명세서 관리 화면 (구현)](/screens/payslips.md) · [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) · [Whale ERP Frontend](/whale-erp-front.md) — 가린 직원 표시 글자 「본사 제공 동의 없음」 → 「본사에 정보제공 미동의」(급여명세서 직원 칸 · 발송 실패 대상, 근무스케줄 월간 「그 밖에 N명(…)」 · 복사 제외 사유, TO-DO 담당 · 이력), TO-DO 목록 열 「담당직원」 · 등록 · 수정 버튼 늘 [저장]. 정책 · 칸 이름 「본사 제공 동의」는 그대로다(2026-11-05 사용자 지정, 3팀 확인 필요, front snorunt).
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 목록: 본사 역할에게 가린 가맹 점포 직원의 직원 칸을 회색 한 줄 「본사에 정보제공 미동의」로(전엔 「본사 제공 동의 없음 · 가맹 점포 직원」 두 줄), 직원 열 110 → 160px, 휴대전화번호 열 160px · 가운데 · 휴대폰 아이콘(`WithIcon`). 데모 직원 목록도 맞췄다(2026-11-05 사용자 지정, 3팀 확인 필요, front snorunt).

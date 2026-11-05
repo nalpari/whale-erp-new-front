@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [정정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-05T06:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-05T07:03:27Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -163,6 +163,13 @@ sources:
 
 상세 api(599)는 api main 에 머지됐고, `:id` 는 목록의 `staffMemberId` 다.
 
+화면 주소는 탭 BP 주소 `/bp/{bpCodeId}/staff-members…` 다(`BP_PATH_SCREENS`) — proxy 가 그 BP 를 `X-Bp-Code-Id` 로 실어 플랫폼 계정은 고른 BP 의
+직원만 본다. 쿼리 · `?back=` 은 옛 경로로 두고 링크 · 이동에서만 탭 BP 를 붙인다 — 목록 표 · 상세 · 일괄 저장(서버)은 `screenPath()` · `bpHref`, 필터 ·
+건수 · 쪽 · [일괄 저장] · 상세 [목록] · 오류 화면(클라이언트)은 `bpPath`. 상세 영역의 「관리」 · 글자 링크(`MenuManageLink` · `MenuTextLink` ·
+`TodoTitleLink`)는 가는 화면이 모두 탭 BP 주소라 컴포넌트 안에서 붙인다. 목록 · 상세가 api 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 ·
+없는 BP 404)을 받으면 오류 화면 대신 그 문장을 보인다(`deniedMessageOf`). 처리 뒤 `revalidatePath("/staff-members", "layout")` 는 폴더 경로
+그대로다 — rewrite 의 목적지 경로를 받는다(Next 문서 「Using revalidatePath with rewrites」).
+
 # 공통 틀 안에서 그린다
 
 로그인 후 화면이라 루트 layout 의 공통 틀(`AdminFrame` — 로그인 정보 게이트 · 공통 헤더 · 알림 종 · 메뉴 권한 확인)이
@@ -287,7 +294,7 @@ sources:
 
 # 근로계약 칸 (WHALEERP-184)
 
-* 근로계약 화면은 탭 BP 주소(`/bp/{id}/contracts…`, WHALEERP-618)로 옮겼지만, 직원 정보 관리는 아직 BP 주소가 아니라 이 칸의 「관리」 · 「근로계약서 작성」 · 직원 초대 링크는 옛 `/contracts…` 그대로다 — SessionGate 가 탭 BP 주소로 보낸다. 이 화면을 옮길 때 `bpPath()` 로 바꾼다.
+* 이 칸의 「관리」 · 「근로계약서 작성」 · 직원 초대 링크는 탭 BP 를 붙인 `/bp/{id}/contracts…` 다(직원 정보 관리도 탭 BP 주소로 옮겼다).
 * 근로계약 영역 요약(`GET /staff-members/:id/summary/contracts`)으로 가장 최근 계약 하나를 받는다(전에는 상세 응답의 `contract` 로 계약 상세를
   한 번 더 받았다). 「근로계약 관리」 조회 권한이 없으면 영역 403 이라 「근로계약을 볼 권한이 없습니다.」(front #79 와 같은 자리), 나머지 실패는
   「근로계약을 불러오지 못했습니다.」 + 「다시 하기」다(위 영역 규칙).

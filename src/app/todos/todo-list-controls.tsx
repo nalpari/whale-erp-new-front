@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useOptimistic, useTransition } from "react";
 import { Button, Pagination, Select } from "@/components/common";
-import { useMenuRole } from "@/components/site/session-gate";
+import { useCurrentBp, useMenuRole } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { MENU_CODE } from "@/lib/menus";
 import { PAGE_SIZES, type PageSize } from "@/lib/staff-members";
 import { toTodoListSearch, withFilter, type TodoListQuery } from "./todo-list-query";
@@ -11,12 +12,14 @@ import { toTodoListSearch, withFilter, type TodoListQuery } from "./todo-list-qu
 /** 낙관적 쿼리로 URL 을 바꾼다(직원 목록 staff-list-controls 와 같은 방식) */
 function useTodoListNavigation(query: TodoListQuery) {
   const router = useRouter();
+  // 목록 주소는 탭 BP 주소다(/bp/{id}/todos)
+  const bp = useCurrentBp().bpCodeId;
   const [, startTransition] = useTransition();
   const [current, setCurrent] = useOptimistic(query);
   const navigate = (next: TodoListQuery) =>
     startTransition(() => {
       setCurrent(next);
-      router.replace(`/todos${toTodoListSearch(next)}`, { scroll: false });
+      router.replace(bpPath(bp, `/todos${toTodoListSearch(next)}`), { scroll: false });
     });
   return { current, navigate };
 }

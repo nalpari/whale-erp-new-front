@@ -40,6 +40,7 @@ export function StaffTable({
   today,
   listHref,
   empty = "조회된 직원이 없습니다.",
+  at = (path) => path,
 }: {
   items: StaffMemberListItem[];
   total: number;
@@ -50,6 +51,8 @@ export function StaffTable({
   listHref: string;
   /** 빈 목록 문구 */
   empty?: string;
+  /** 상세 링크에 탭 BP 를 붙인다(목록 화면의 screenPath) — listHref 는 옛 경로 그대로다 */
+  at?: (path: string) => string;
 }) {
   const columns: Column<Row>[] = [
     { header: "순번", width: "w-[60px]", cell: (r) => r.no },
@@ -63,7 +66,7 @@ export function StaffTable({
           // (2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「본사 제공 동의 없음 · 가맹 점포 직원」 두 줄)
           <span className="whitespace-nowrap text-erp-muted">본사에 정보제공 미동의</span>
         ) : item.staffMemberId !== null && item.joinState === "JOINED" && item.employmentStatus === "EMPLOYED" ? (
-          <Link href={withBack(`/staff-members/${item.staffMemberId}`, listHref)} className="text-erp-link hover:underline">
+          <Link href={at(withBack(`/staff-members/${item.staffMemberId}`, listHref))} className="text-erp-link hover:underline">
             {item.name}
           </Link>
         ) : (

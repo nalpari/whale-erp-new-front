@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge, DataTable, DetailTable, PageBar, type DetailRow } from "@/components/common";
-import { getEnum } from "@/lib/api";
+import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
 import { getTodo, type TodoDetail } from "@/lib/todos-api";
@@ -30,13 +30,29 @@ export default async function TodoDetailPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [todo, statusLabels, assigneeTypeLabels, executionModeLabels] = await Promise.all([
-    getTodo((await params).id),
+    // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다(근로계약 상세와 같다)
+    getTodo((await params).id).catch((e: unknown) => {
+      const notice = deniedMessageOf(e);
+      if (notice === null) throw e;
+      return { notice };
+    }),
     getEnum("TodoStatus"),
     getEnum("TodoAssigneeType"),
     getEnum("TodoExecutionMode"),
   ]);
   if (!todo) notFound();
+  if ("notice" in todo)
+    return (
+      <>
+        <PageBar title="TO-DO 리스트 관리" />
+        <p role="alert" className="p-[24px] text-[14px] text-erp-label">
+          {todo.notice}
+        </p>
+      </>
+    );
   const listHref = backHrefOf((await searchParams).back);
+  // 링크는 옛 경로에 탭 BP 를 붙여 그린다. ?back= 은 옛 경로 그대로다
+  const at = await screenPath();
   const status = statusCells({ ...todo, todoCount: 1, doneCount: 0 }, statusLabels);
 
   const rows: DetailRow[] = [
@@ -94,7 +110,7 @@ export default async function TodoDetailPage({
                       ) : r.todoId === todo.todoId ? (
                         <b className="font-medium">{r.staffMemberName ?? "배정 풀림"}</b>
                       ) : (
-                        <Link href={withBack(`/todos/${r.todoId}`, listHref)} className="text-erp-link hover:underline">
+                        <Link href={at(withBack(`/todos/${r.todoId}`, listHref))} className="text-erp-link hover:underline">
                           {r.staffMemberName ?? "배정 풀림"}
                         </Link>
                       ),
