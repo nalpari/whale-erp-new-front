@@ -37,7 +37,7 @@ export function HomeScreen() {
       {/* 플랫폼 계정이 BP 를 골라 웨일ERP 탭에 들어왔으면 어느 BP 의 화면인지 인사 옆 회색 한 줄로 알린다(2026-11-05 사용자 지정) */}
       {isPlatformRole(account.roleTypeCode) && service === "WHALE_ERP" && (
         // BP 는 회색 꼬리표(Tag) — BP 마스터 수정 패널 제목의 「BP 코드 · …」 꼬리표와 같은 모양(2026-11-05 사용자 지정)
-        <span className="ml-[12px] inline-flex items-center gap-[4px] align-middle text-[14px] font-normal text-erp-label">
+        <span className="ml-[12px] inline-flex items-center gap-[6px] align-middle text-[14px] font-normal text-erp-label">
           <Tag>
             {currentBp.tradeName} · {currentBp.bpCode}
           </Tag>
