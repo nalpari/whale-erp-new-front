@@ -36,6 +36,19 @@ const EDITED_TOAST = "답변을 고쳤습니다. 문의자에게 알림은 다�
 
 const dt = formatDateTime;
 const Note = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.6] text-erp-label">{children}</p>;
+/**
+ * 저장 버튼 옆 안내 — 입력칸 플레이스홀더(회색)와 갈리게 느낌표 동그라미 아이콘(회청) + 먹색 13px 500 으로 둔다(2026-11-05 사용자 지정 — 전엔 회색 14px Note).
+ */
+const Guide = ({ children }: { children: ReactNode }) => (
+  <p className="flex items-start gap-[6px] text-[13px] leading-[1.6] font-medium text-erp-ink">
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" className="mt-[3px] shrink-0 text-erp-brand">
+      <circle cx="8" cy="8" r="8" fill="currentColor" />
+      <rect x="7.3" y="3.6" width="1.4" height="5.6" rx="0.7" fill="#fff" />
+      <circle cx="8" cy="11.6" r="0.95" fill="#fff" />
+    </svg>
+    <span>{children}</span>
+  </p>
+);
 /** 쓰던 글이 그사이 저장된 값과 어긋났다는 알림(front #87 리뷰). */
 const Stale = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.6] text-erp-off">{children}</p>;
 const Prose = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.7] whitespace-pre-wrap break-keep text-erp-ink">{children}</p>;
@@ -266,7 +279,7 @@ function AnswerBox({
           {shown.stale && <Stale>그사이 다른 운영자가 답변을 저장했습니다(위). 확인한 뒤 고쳐 저장하거나 [취소]하세요.</Stale>}
           <div className="flex items-center gap-[12px]">
             <div className="flex-1">
-              <Note>{current === null ? firstNote : editNote}</Note>
+              <Guide>{current === null ? firstNote : editNote}</Guide>
             </div>
             {current !== null && (
               <Button variant="off" disabled={busy} onClick={() => onDraft(undefined, saved)}>
@@ -331,7 +344,7 @@ function MemoBox({
       <Textarea rows={4} value={text} maxLength={MEMO_MAX} aria-label="내부 기록" onChange={(e) => onDraft(e.target.value, saved)} />
       <div className="flex items-center gap-[12px]">
         <div className="flex-1">
-          <Note>작성한 메모는 다른 운영자와 공유됩니다. 내용을 모두 지우고 저장하면 메모가 삭제됩니다.</Note>
+          <Guide>작성한 메모는 다른 운영자와 공유됩니다. 내용을 모두 지우고 저장하면 메모가 삭제됩니다.</Guide>
         </div>
         <Button variant="soft" disabled={busy} onClick={() => onSave(text)}>
           메모 저장
