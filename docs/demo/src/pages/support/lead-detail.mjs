@@ -73,7 +73,7 @@ export const render = ({ A, R }, state = "wait") => {
       : ui.field("내용", ui.textarea({ placeholder: "계정이 없는 분이라 이 내용이 메일로 그대로 갑니다." })) +
           spread(note("저장하면 상태가 답변 완료로 바뀌고 오늘이 상담 완료일로 남습니다. 처음 저장할 때만 문의자 이메일로 답변이 갑니다. 다른 운영자가 먼저 저장했으면 막고 최신 내용을 다시 보입니다."), ui.button("답변 저장")),
     ) +
-    box("운영자 메모", hint("문의자에게 보이지 않습니다."),
+    box("운영자 메모", hint("운영자에게만 표시됩니다."),
       ui.field(
         "내부 기록",
         ui.textarea({ rows: 4, value: c.memo }),

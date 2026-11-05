@@ -308,7 +308,7 @@ function MemoBox({
 }) {
   if (!canEdit)
     return (
-      <Box title="운영자 메모" hint="문의자에게 보이지 않습니다.">
+      <Box title="운영자 메모" hint="운영자에게만 표시됩니다.">
         {memo ? <Prose>{memo}</Prose> : <Note>메모가 없습니다.</Note>}
       </Box>
     );
@@ -316,7 +316,7 @@ function MemoBox({
   const shown = draftView(draft, saved);
   const text = shown.text ?? saved;
   return (
-    <Box title="운영자 메모" hint="문의자에게 보이지 않습니다.">
+    <Box title="운영자 메모" hint="운영자에게만 표시됩니다.">
       {/* 그사이 다른 운영자가 메모를 저장했다 — 쓰던 글로 덮어쓰기 전에 그 메모를 보인다. */}
       {shown.stale && (
         <Stale>
