@@ -5,6 +5,7 @@ import { useRef, useState, useTransition, type ReactNode } from "react";
 import { Badge, Button, Checkbox, ConfirmDialog, DateField, PageBar, Select, Tag, Textarea, TextField, Toggle, useToast } from "@/components/common";
 import { useCodes } from "@/components/site/session-gate";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
+import { notifySessionExpired } from "@/lib/session-expiry";
 import type { PostDetail } from "@/lib/community";
 import {
   AUDIENCES,
@@ -192,7 +193,8 @@ export function PostForm({
         const { url } = await bff<{ url: string }>(`${listHref}/${detail.postId}/attachments/${attachmentId}/download-url`);
         window.location.assign(url);
       } catch (e) {
-        showErrors([e instanceof BffError ? (e.status === 401 ? SESSION_EXPIRED : e.message) : "첨부파일을 받지 못했습니다."]);
+        if (e instanceof BffError && e.status === 401) return notifySessionExpired();
+        showErrors([e instanceof BffError ? e.message : "첨부파일을 받지 못했습니다."]);
       }
     });
 

@@ -5,10 +5,11 @@ import { useState, useTransition, type ReactNode } from "react";
 import { Button, DataTable, DetailTable, DetailValues, PageBar, type Column } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp } from "@/components/site/session-gate";
+import { notifySessionExpired } from "@/lib/session-expiry";
 import { bff, BffError } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
 import type { SupportInquiry, SupportNotice } from "@/lib/community";
-import { SESSION_EXPIRED, sizeLabel, SUPPORT_INQUIRY_BASE, SUPPORT_NOTICE_BASE, type InquiryStatus } from "@/lib/community-view";
+import { sizeLabel, SUPPORT_INQUIRY_BASE, SUPPORT_NOTICE_BASE, type InquiryStatus } from "@/lib/community-view";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
 import { InquiryStatusBadge } from "./support-lists";
@@ -70,7 +71,8 @@ function useDownload() {
         setError("");
         window.location.assign(url);
       } catch (e) {
-        setError(e instanceof BffError ? (e.status === 401 ? SESSION_EXPIRED : e.message) : "첨부파일을 받지 못했습니다.");
+        if (e instanceof BffError && e.status === 401) return notifySessionExpired();
+        setError(e instanceof BffError ? e.message : "첨부파일을 받지 못했습니다.");
       }
     });
   return { error, busy, download };

@@ -1,12 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button, DetailTable, NoticeBand } from "@/components/common";
 import type { components } from "@/lib/api-types.generated";
-import { loginPathOf } from "@/lib/auth-routes";
 import { bff, BffError } from "@/lib/bff";
 import { formatDateTime } from "@/lib/format";
+import { notifySessionExpired } from "@/lib/session-expiry";
 import { type Failure, failureOf, remainingOf } from "../excel-download-model";
 
 type ExcelDownloadLink = components["schemas"]["ExcelDownloadLinkResponseDto"];
@@ -35,7 +34,6 @@ function fetchInFrame(url: string) {
  */
 export function ExcelDownloadView({ id }: { id: number | null }) {
   const [view, setView] = useState<View>(id === null ? { kind: "failed", ...failureOf(404, "") } : { kind: "loading" });
-  const router = useRouter();
   const [pending, setPending] = useState(false);
   // 남은 기한을 1분마다 다시 그린다
   const [now, setNow] = useState(() => Date.now());
@@ -52,8 +50,8 @@ export function ExcelDownloadView({ id }: { id: number | null }) {
       fetchInFrame(link.url);
     } catch (error) {
       const status = error instanceof BffError ? error.status : 0;
-      // 세션이 끝났다 — 로그인한 뒤 이 화면으로 돌아오게 한다
-      if (status === 401) return router.replace(loginPathOf(`/excel-downloads/${id}`));
+      // 세션이 끝났다 — 팝업 [확인]이 ?next= 를 붙여 로그인 뒤 이 화면으로 돌아오게 한다
+      if (status === 401) return notifySessionExpired();
       if (!(error instanceof BffError)) console.error("엑셀 내려받기 주소 받기 실패", error);
       setView({ kind: "failed", ...failureOf(status, error instanceof Error ? error.message : "") });
     } finally {

@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState, useTransition, type ReactNode } fro
 import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FieldMessage, FormGroup, FormRow, Radio, Select, Textarea, TextField, useAction } from "@/components/common";
 import { FieldErrors, useInvalid } from "../field-errors";
 import { useCurrentBp } from "@/components/site/session-gate";
+import { notifySessionExpired } from "@/lib/session-expiry";
 import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
@@ -413,9 +414,9 @@ export function ContractForm({
       let result: SaveResult & { ok?: boolean; status?: string | null; draftAction?: string | null };
       try {
         const res = await postPaper(data);
-        // 세션이 끊겼다 — proxy · 핸들러가 쿠키를 지우고 401 을 준다. 로그인 화면으로 보낸다.
+        // 세션이 끊겼다 — proxy · 핸들러가 쿠키를 지우고 401 을 준다. 만료 팝업 신호를 보낸다.
         if (res.status === 401) {
-          router.push("/login");
+          notifySessionExpired();
           return;
         }
         result = (res.body ?? { error: `요청이 실패했습니다 (HTTP ${res.status})` }) as typeof result;

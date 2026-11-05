@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { EXPIRED_REASON, loginPathOf } from "@/lib/auth-routes";
 import { ApiError, authHeaders, deniedMessageOf, request, screenPath, SESSION_COOKIE } from "@/lib/api";
 import type { DocumentNotice } from "../../document-notice";
 
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/contracts/[contr
   const back = (notice: DocumentNotice) =>
     NextResponse.redirect(new URL(at(isId(contractId) ? `/contracts/${contractId}?document=${notice}` : "/contracts"), req.url));
   const toLogin = () => {
-    const res = NextResponse.redirect(new URL("/login", req.url));
+    const res = NextResponse.redirect(new URL(loginPathOf("/", "GET", EXPIRED_REASON), req.url));
     res.cookies.delete(SESSION_COOKIE);
     return res;
   };
