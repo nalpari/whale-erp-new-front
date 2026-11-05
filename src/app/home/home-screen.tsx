@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { Badge, Button, DataTable, LoadGroup, LoadingNotice, PageBar, type Column } from "@/components/common";
+import { Badge, Button, DataTable, LoadGroup, LoadingNotice, PageBar, Tag, type Column } from "@/components/common";
 import { CodeLabel } from "@/components/site/code-label";
 import { useAccount, useCurrentBp, useMenuRole, useMenus, useScope, useService, useStores } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
@@ -25,13 +25,25 @@ const CARD = "rounded-[4px] border border-erp-panel-line bg-white";
 // (범위가 바뀌면 화면 전체가 다른 데이터라서 key 로 묶음을 다시 건다 — 점포 하나 ↔ 여러 점포 전환도 같이 덮인다). 새로고침 · 영역 다시 하기 · 근무스케줄 보기 전환은 묶지 않는다(그 영역만).
 export function HomeScreen() {
   const account = useAccount();
-  const bp = useCurrentBp().bpCodeId;
+  const currentBp = useCurrentBp();
+  const bp = currentBp.bpCodeId;
+  const service = useService();
   const [scope] = useScope();
   // 「안녕하세요, OOO님」 — 모든 계정 「님」(2026-11-04 사용자 지정, 「OOO 대표님, 오늘의 현황입니다」를 거쳐 되돌렸다). 문장 제목이라 18px(PageBar sentence)
   // 「안녕하세요,」는 회색(erp-label) 400, 「OOO님」은 제목 그대로 먹색 600 — 인사보다 이름에 무게(2026-11-04 사용자 지정, 이름만 파랑은 어색했다)
   const greeting: ReactNode = account.name ? (
     <>
       <span className="font-normal text-erp-label">안녕하세요,</span> {account.name}님
+      {/* 플랫폼 계정이 BP 를 골라 웨일ERP 탭에 들어왔으면 어느 BP 의 화면인지 인사 옆 회색 한 줄로 알린다(2026-11-05 사용자 지정) */}
+      {isPlatformRole(account.roleTypeCode) && service === "WHALE_ERP" && (
+        // BP 는 회색 꼬리표(Tag) — BP 마스터 수정 패널 제목의 「BP 코드 · …」 꼬리표와 같은 모양(2026-11-05 사용자 지정)
+        <span className="ml-[12px] inline-flex items-center gap-[6px] align-middle text-[14px] font-normal text-erp-label">
+          <Tag>
+            {currentBp.tradeName} · {currentBp.bpCode}
+          </Tag>
+          의 홈화면을 보고 있습니다.
+        </span>
+      )}
     </>
   ) : (
     "안녕하세요"
@@ -101,7 +113,7 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
       <>
         <Cards cards={{ ...emptyCardsOf(canOpen), myInquiries: s?.cards?.myInquiries ?? null }} hq={false} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />
         <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
-          <StoreTable table={{ total: 0, items: [] }} hq={false} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />
+          <StoreTable table={{ total: 0, items: [] }} hq={false} staffHref={canOpen("/staff-members") ? bpPath(bp, withScope("/staff-members", scope)) : null} />
           {!pending ? <Notice text="처리 대기를 불러오는 중입니다." /> : "error" in pending ? <Notice text={`처리 대기를 불러오지 못했습니다. ${pending.error}`} /> : <Pending data={pending.data} bp={bp} />}
         </div>
       </>
@@ -119,7 +131,7 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
         {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={renewalItem ? (pendingLineOf(renewalItem, bp)?.href ?? bpPath(bp, "/contracts")) : bpPath(bp, "/contracts")} newHref={bpPath(bp, "/contracts/new")} /> : null}
         {s?.cards && <Cards cards={s.cards} hq={hq && s.cards.stores.franchise > 0} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
         <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
-          {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} hq={hq && !!s?.cards?.stores.franchise} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />}
+          {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} hq={hq && !!s?.cards?.stores.franchise} staffHref={canOpen("/staff-members") ? bpPath(bp, withScope("/staff-members", scope)) : null} />}
           {!pending ? <Notice text="처리 대기를 불러오는 중입니다." /> : "error" in pending ? failed("처리 대기를", pending.error) : <Pending data={pending.data} bp={bp} />}
         </div>
       </>
@@ -232,7 +244,7 @@ function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: bo
     <div className="grid auto-cols-fr grid-flow-col gap-[12px]">
       {staff && (
         <Figure
-          href={canOpen("/staff-members") ? scopeHref("/staff-members") : null}
+          href={canOpen("/staff-members") ? bpPath(bp, scopeHref("/staff-members")) : null}
           label="재직 직원"
           note={hq ? "동의하지 않은 가맹 직원은 고용 형태에 세지 않습니다." : undefined}
           value={staff.total}

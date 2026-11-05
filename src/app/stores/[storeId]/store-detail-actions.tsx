@@ -303,7 +303,7 @@ export function StoreDetailActions({
       {can.update && !closed && targets.includes("CLOSED") && (
         <ConfirmDialog
           open={dialog === "close-confirm"}
-          title="폐점으로 변경할까요?"
+          title="폐점으로 변경하시겠습니까?"
           wide
           confirmLabel="폐점으로 변경"
           cancelLabel="이전"
@@ -313,7 +313,7 @@ export function StoreDetailActions({
         >
           {/* 폐점일 · 되돌릴 수 없음을 한 문장에 이어 어색했다 — 두 줄로 나누고 날짜를 적는다. BP 휴일 안내는 뺐다(2026-11-03 사용자 지정) */}
           <p>폐점으로 변경하면 되돌릴 수 없습니다.</p>
-          <p>폐점일은 오늘({kstToday()})입니다.</p>
+          <p>폐점일은 오늘({kstToday()})로 설정됩니다.</p>
           {/* 폐점하면 함께 처리될 것 — 조건 팝업을 열 때 받은 확인 값이다. 그 사이 수가 바뀌어도 저장은 그대로 되고 실제 처리한 수는 결과 창이 보인다.
               그 사이 퇴근하지 않은 출근이 생겼을 때만 저장(PUT)이 막는다(409 OPEN_CHECK_IN). 확인 값이 없으면 목록 대신 무엇이 처리되는지 알린다 */}
           <ClosingCheckList counts={transitions.closing?.total ?? null} />

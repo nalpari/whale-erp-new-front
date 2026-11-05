@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMenuRole } from "@/components/site/session-gate";
+import { useCurrentBp, useMenuRole } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { MENU_CODE } from "@/lib/menus";
 
 // 직원 상세 TO-DO 영역의 제목 링크(영역 머리의 「관리」는 manage-link.tsx). 직원 상세는 「직원 정보 관리」 권한으로 열리고 TO-DO 화면은 「TO-DO 리스트 관리」(MN000026) 조회 권한이라,
@@ -10,8 +11,9 @@ import { MENU_CODE } from "@/lib/menus";
 /** TO-DO 제목. 조회 권한이 없으면 글자만 */
 export function TodoTitleLink({ todoId, title }: { todoId: number; title: string }) {
   const canRead = useMenuRole(MENU_CODE.todos, "read");
+  const bp = useCurrentBp().bpCodeId;
   return canRead ? (
-    <Link href={`/todos/${todoId}`} className="min-w-0 truncate text-erp-link hover:underline">
+    <Link href={bpPath(bp, `/todos/${todoId}`)} className="min-w-0 truncate text-erp-link hover:underline">
       {title}
     </Link>
   ) : (

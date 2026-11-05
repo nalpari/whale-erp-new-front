@@ -1122,7 +1122,8 @@
     // 달력 칸은 여기서 그린다. ‹ › 로 달을 바꾸면 그 달 1일(이번 달이면 오늘)을 고른다.
     const { crew, holiday, today, all } = JSON.parse(root.dataset.dayplan);
     const WD = "일월화수목금토";
-    const pane = root.firstElementChild;
+    // 근무스케줄 관리는 달 이동 줄을 도구 줄로 올려 판 앞에 둔다(staff-parts schedMonth bar) — 고른 날 상자는 data-daypane 으로 찾는다
+    const pane = $("[data-daypane]", root) || root.firstElementChild;
     const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     const work = (c, wd) => c[2][wd];
     const crewOn = (key) => crew.filter((c) => !c[3] || (c[3][0] <= key && key <= c[3][1]));
@@ -1159,8 +1160,9 @@
       $("[data-daytitle]", pane).textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;
       $("[data-daysum]", pane).innerHTML = off ? `${holiday[key]} 연휴 · 점포 휴무` : `근무 <b class="text-erp-ink">${list.filter(on).length}명</b> · ${key === today ? "오늘" : key < today ? "지난 날" : "예정"}`;
       $("[data-daylist]", pane).innerHTML = list.length
-        ? list.map((c) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]"><span class="flex-1">${c[0]} <span class="text-erp-muted">${c[1]}</span></span>${on(c) ? `<span class="text-right text-[13px] text-erp-muted">${c[2][d.getDay()]}</span>` : `<span class="text-right text-[13px] text-erp-muted">휴무</span>`}</li>`).join("")
-        : '<li class="py-[8px] text-[13px] text-erp-muted">근무 없음</li>';
+        ? list.map((c) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[10px] first:pt-0 last:border-b-0 last:pb-0"><span class="flex-1">${c[0]} <span class="text-erp-muted">${c[1]}</span></span>${on(c) ? `<span class="text-right text-[13px] text-erp-muted">${c[2][d.getDay()]}</span>` : `<span class="text-right text-[13px] text-erp-muted">휴무</span>`}</li>`).join("")
+        : // 목록 줄 위아래 10 · 상자 위아래 여백은 같게(첫 줄 위 · 끝 줄 아래 여백 · 끝 줄 선 없음), 빈 문구 14px 회색 — 근무스케줄 관리(all)는 「근무 가능한 직원이 없습니다.」(앱 schedule-month.tsx, 2026-11-05 사용자 지정)
+          `<li class="text-[14px] text-erp-label">${all ? "근무 가능한 직원이 없습니다." : "근무 없음"}</li>`;
       $$("[data-day]", root).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.day === key)));
     };
     root.addEventListener("click", (e) => {
@@ -1564,9 +1566,17 @@
       blocks.forEach((b) => (b.hidden = b !== hit));
       // data-label="md" 는 「11월 4일 (화)」 · 「11월 2일 ~ 11월 8일」 — 출퇴근 현황의 날 · 주 이동(앱 dayLabel · monthDayLabel, 2026-11-05 사용자 지정)
       const kd = (d) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
+      // data-label="range" 는 「2026년 11월 2일 ~ 8일」 — 근무스케줄 관리 도구 줄(앱 weekRangeLabel, 2026-11-05 사용자 지정). 달 · 해가 바뀌면 끝에도 붙인다
+      const range = (a) => {
+        const b = addDays(a, 6);
+        const end = b.getFullYear() !== a.getFullYear() ? `${b.getFullYear()}년 ${kd(b)}` : b.getMonth() !== a.getMonth() ? kd(b) : `${b.getDate()}일`;
+        return `${a.getFullYear()}년 ${kd(a)} ~ ${end}`;
+      };
       trigger.textContent = month
         ? `${mon.getFullYear()}년 ${mon.getMonth() + 1}월`
-        : nav.dataset.label === "md"
+        : nav.dataset.label === "range" && !day
+          ? range(mon)
+          : nav.dataset.label === "md"
           ? day
             ? `${kd(mon)} (${WEEK[mon.getDay()]})`
             : `${kd(mon)} ~ ${kd(addDays(mon, 6))}`

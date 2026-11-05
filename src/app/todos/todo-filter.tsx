@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useOptimistic, useTransition } from "react";
 import { Checkbox, DateField, FilterPanel, FilterSection, Select, useToast } from "@/components/common";
-import { useScope, useStores } from "@/components/site/session-gate";
+import { useCurrentBp, useScope, useStores } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { StorePicker } from "@/components/site/store-picker";
 import type { EnumValue } from "@/lib/enums";
 import { isUnusableScope, scopeStores, toPickedStore } from "@/lib/store-scope";
@@ -29,6 +30,8 @@ const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? lis
 // 그래서 로그인 정보에 없는 점포(다른 BP 탭에서 복사한 주소 · 지운 점포)는 조건에서 빼고 알린다. 쓸 수 없는 범위는 「전체」로 바꾸고 알린다.
 export function TodoFilter({ query, statusLabels, assigneeTypeLabels }: { query: TodoListQuery; statusLabels: EnumValue[]; assigneeTypeLabels: EnumValue[] }) {
   const router = useRouter();
+  // 화면 주소는 탭 BP 주소다(/bp/{id}/todos)
+  const bp = useCurrentBp().bpCodeId;
   const stores = useStores();
   const [headerScope] = useScope();
   const toast = useToast();
@@ -37,7 +40,7 @@ export function TodoFilter({ query, statusLabels, assigneeTypeLabels }: { query:
   const navigate = (next: TodoListQuery) =>
     startTransition(() => {
       setCurrent(next);
-      router.replace(`/todos${toTodoListSearch(next)}`, { scroll: false });
+      router.replace(bpPath(bp, `/todos${toTodoListSearch(next)}`), { scroll: false });
     });
   const go = (next: Partial<TodoListQuery>) => navigate(withFilter(current, next));
 

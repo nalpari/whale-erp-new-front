@@ -61,7 +61,6 @@ test("isBpPathScreen 은 옮긴 화면만", () => {
   assert.equal(isBpPathScreen("/bp/8/stores-x"), false);
   // 엑셀 중계 경로도 옮긴 화면 아래라 /bp/{id} 로 부른다
   assert.equal(isBpPathScreen("/stores/excel"), true);
-  assert.equal(isBpPathScreen("/staff-members"), false);
   assert.equal(isBpPathScreen("/bp/8/bp-admins"), true);
 });
 
@@ -88,4 +87,17 @@ test("isBpPathScreen 은 고객지원 셋과 문의 등록 창구도", () => {
   assert.equal(isBpPathScreen("/support-inquiries/save"), true);
   assert.equal(isBpPathScreen("/support-notices-x"), false);
   assert.equal(isBpPathScreen("/platform-notices"), false);
+});
+
+test("isBpPathScreen 은 직원 정보 · 근무스케줄 · TO-DO 도", () => {
+  assert.equal(isBpPathScreen("/staff-members"), true);
+  assert.equal(isBpPathScreen("/bp/8/staff-members/12"), true);
+  assert.equal(isBpPathScreen("/staff-members/export"), true);
+  assert.equal(isBpPathScreen("/work-schedules"), true);
+  assert.equal(isBpPathScreen("/bp/8/work-schedules"), true);
+  assert.equal(isBpPathScreen("/todos"), true);
+  assert.equal(isBpPathScreen("/bp/8/todos/3/edit"), true);
+  assert.equal(isBpPathScreen("/todos/new"), true);
+  assert.equal(isBpPathScreen("/staff-members-x"), false);
+  assert.equal(isBpPathScreen("/todos-x"), false);
 });

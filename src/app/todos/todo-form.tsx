@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type ReactNode } from "react";
 import { Button, DateField, Field, FormGroup, FormRow, Radio, RequiredMark, SearchField, Select, Textarea, TextField, Toggle, useToast } from "@/components/common";
-import { useMenuRole, useStores } from "@/components/site/session-gate";
+import { useCurrentBp, useMenuRole, useStores } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { MENU_CODE } from "@/lib/menus";
 import { withoutStoreSearch } from "@/lib/store-scope";
@@ -52,11 +53,12 @@ type Pool = { storeId: string; state: "loading" } | { storeId: string; state: "o
  */
 export function TodoForm(props: Parameters<typeof TodoFormFields>[0]) {
   const allowed = useMenuRole(MENU_CODE.todos, props.detail ? "update" : "create");
+  const bp = useCurrentBp().bpCodeId;
   if (allowed) return <TodoFormFields {...props} />;
   return (
     <div className="flex flex-col items-center gap-[16px] py-[80px] text-[14px] text-erp-muted">
       <p>{props.detail ? "TO-DO 를 수정할 권한이 없습니다." : "TO-DO 를 등록할 권한이 없습니다."}</p>
-      <Button variant="off" href={props.detail ? withBack(`/todos/${props.detail.todoId}`, props.backHref) : props.backHref}>
+      <Button variant="off" href={bpPath(bp, props.detail ? withBack(`/todos/${props.detail.todoId}`, props.backHref) : props.backHref)}>
         {props.detail ? "상세로" : "목록으로"}
       </Button>
     </div>
@@ -79,6 +81,8 @@ function TodoFormFields({
 }) {
   const router = useRouter();
   const toast = useToast();
+  // 목록 주소(backHref)는 옛 경로다 — 이동할 때 탭 BP 를 붙인다(/bp/{id}/todos)
+  const bp = useCurrentBp().bpCodeId;
   // 근무지는 로그인 정보의 관리 점포에서 폐점만 뺀다(목록 필터와 같은 출처). GET /contracts/store-options(근로계약 근무지 선택지)는 본사 제공 동의 기준이 걸려
   // BP 마스터 · BP 관리자에게 가맹 점포가 빠지는데, TO-DO 는 점포 단위라 본사 제공 동의와 상관없다(운영 정책 ATT-30).
   const stores = useStores().filter((s) => s.storeStatusCode !== "CLOSED");
@@ -93,9 +97,9 @@ function TodoFormFields({
   const seq = useRef(0);
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
   const issues = problems(form, today, detail);
-  const cancelHref = detail ? withBack(`/todos/${detail.todoId}`, backHref) : backHref;
+  const cancelHref = bpPath(bp, detail ? withBack(`/todos/${detail.todoId}`, backHref) : backHref);
   // 등록 뒤에는 점포 검색을 「전체」로 비운다 — 고른 점포 밖에 등록했으면 목록에 보이지 않는다(근로계약 목록과 같다. 점포 목록은 2026-10-30 부터 헤더 범위를 따른다)
-  const createdHref = withoutStoreSearch(backHref);
+  const createdHref = bpPath(bp, withoutStoreSearch(backHref));
 
   /**
    * 개인 배정일 때 그 근무지에서 배정할 수 있는 직원을 받는다. 이미 받은(받는 중인) 근무지면 다시 받지 않는다 — 실패했으면 다시 받는다.
@@ -189,7 +193,8 @@ function TodoFormFields({
           취소
         </Button>
         <Button onClick={handleSave} disabled={saving}>
-          {saving ? "저장 중" : detail ? "저장" : "등록하고 배정"}
+          {/* 등록 · 수정 모두 [저장](2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 등록이면 「등록하고 배정」) */}
+          {saving ? "저장 중" : "저장"}
         </Button>
       </div>
 

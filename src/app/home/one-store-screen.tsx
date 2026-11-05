@@ -159,7 +159,7 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
       </Card>
     ),
     canOpen("/todos") && (
-      <Card key="todo" title="TO-DO" actions={soft("TO-DO 리스트", `/todos${toTodoListSearch({ ...DEFAULT_TODO_LIST_QUERY, storeIds: [storeId] })}`)}>
+      <Card key="todo" title="TO-DO" actions={soft("TO-DO 리스트", at(`/todos${toTodoListSearch({ ...DEFAULT_TODO_LIST_QUERY, storeIds: [storeId] })}`))}>
         <Body section={todos} what="TO-DO 를">
           {([todayList, urgentList]) => {
             const n = todoSummaryOf(todayList, urgentList.total);
@@ -184,7 +184,7 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
                     {todayList.items.slice(0, 2).map((t) => (
                       <li key={t.todoId} className={ROW}>
                         {t.isUrgent && <Badge tone="off">긴급</Badge>}
-                        <Link href={`/todos/${t.todoId}`} className="min-w-0 flex-1 truncate hover:underline">
+                        <Link href={at(`/todos/${t.todoId}`)} className="min-w-0 flex-1 truncate hover:underline">
                           {t.title}
                         </Link>
                         {sub(`${dueText(t.dueDate, t.dueTime, today)} · ${assigneeText(t)}`)}
@@ -257,7 +257,7 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
         // 보기 상태는 홈 주소의 쿼리(useSearchParams)라 Suspense 가 필요하다 — LoadGroupArea 는 Suspense 경계이면서, 경계가 풀리기 전(안쪽 로더가 아직
         // 마운트되지 않은 때)에도 묶음을 붙잡아 다른 로더만 끝났다고 일찍 풀리지 않게 한다
         <LoadGroupArea fallback={<Card title="근무스케줄">{null}</Card>}>
-          <ScheduleCard storeId={storeId} reloadKey={key} today={today} />
+          <ScheduleCard storeId={storeId} reloadKey={key} today={today} at={at} />
         </LoadGroupArea>
       )}
       {canOpen("/staff-members") && (
@@ -274,7 +274,7 @@ const ICON_BUTTON =
   "grid size-[34px] shrink-0 place-items-center rounded-[2px] border border-erp-button-line bg-white transition-[border-color] duration-150 ease-out hover:border-erp-brand";
 
 // 근무스케줄 — 근무스케줄 관리의 ScheduleWeek · ScheduleMonth 를 읽기 전용으로(hrefBase=/home · readOnly). 공백 안내 · 휴무 직원 행 · 등록은 관리에만 있다(HOME-7)
-function ScheduleCard({ storeId, reloadKey, today }: { storeId: number; reloadKey: string; today: string }) {
+function ScheduleCard({ storeId, reloadKey, today, at }: { storeId: number; reloadKey: string; today: string; at: (path: string) => string }) {
   const params = useSearchParams();
   // 점포는 헤더 범위가 정한다 — 주소의 store · scope 는 읽지 않고 링크에도 싣지 않는다
   const query: ScheduleQuery = { ...parseScheduleQuery(Object.fromEntries(params), today), storeId: null };
@@ -294,7 +294,7 @@ function ScheduleCard({ storeId, reloadKey, today }: { storeId: number; reloadKe
               월간 보기
             </Link>
           </nav>
-          {soft("근무스케줄 관리", `/work-schedules?store=${storeId}`)}
+          {soft("근무스케줄 관리", at(`/work-schedules?store=${storeId}`))}
         </>
       }
     >
@@ -340,7 +340,7 @@ function StaffCard({
   canContracts: boolean;
   canCreateContract: boolean;
   today: string;
-  /** 탭 BP 주소로 옮긴 화면(근로계약)의 링크에 탭 BP 를 붙인다 */
+  /** 탭 BP 주소로 옮긴 화면(근로계약 · 직원 정보)의 링크에 탭 BP 를 붙인다 */
   at: (path: string) => string;
 }) {
   const create = canCreateContract && <Button href={at("/contracts/new")}>계약서 작성</Button>;
@@ -364,7 +364,7 @@ function StaffCard({
       actions={
         <>
           {canContracts && soft("근로계약 관리", at(listHrefOf({ page: 1, pageSize: 20, staffMemberName: "", status: [], storeIds: [storeId], storesCleared: false, scope: null })))}
-          {soft("직원 관리", staffListHrefOf({ ...DEFAULT_STAFF_LIST_QUERY, storeIds: [storeId] }))}
+          {soft("직원 관리", at(staffListHrefOf({ ...DEFAULT_STAFF_LIST_QUERY, storeIds: [storeId] })))}
           {create}
         </>
       }
@@ -382,7 +382,7 @@ function StaffCard({
                       // 칸이 좁아 할 일 · 급여명세서와 같은 짧은 문구다
                       <span className="text-erp-muted">{MASKED_STAFF}</span>
                     ) : item.staffMemberId !== null && item.joinState === "JOINED" ? (
-                      <Link href={`/staff-members/${item.staffMemberId}`} className="text-erp-link hover:underline">
+                      <Link href={at(`/staff-members/${item.staffMemberId}`)} className="text-erp-link hover:underline">
                         {item.name}
                       </Link>
                     ) : (

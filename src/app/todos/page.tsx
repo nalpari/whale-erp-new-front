@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { ListToolbar, PageBar } from "@/components/common";
-import { getEnum } from "@/lib/api";
+import { bpHref, deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import { kstToday } from "@/lib/staff-members";
 import { getTodos } from "@/lib/todos-api";
 import { TodoFilter } from "./todo-filter";
@@ -13,20 +13,36 @@ import { TodoTable } from "./todo-table";
 // 목업의 상태별 건수 줄은 api 가 상태별 건수를 주지 않아 총 건수만 보인다.
 // 점포 조건은 점포 목록과 같은 네 가지(todo-list-query.ts)이고, 고른 점포 · 점포 하나 범위는 storeIds, 직영 · 가맹 범위는 storeTypes 로 api 에 보낸다.
 // 상세 · 등록으로 갈 때 지금 목록 주소를 ?back= 으로 넘긴다.
+// 화면 주소는 탭 BP 주소 /bp/{id}/todos 다 — proxy 가 그 BP 를 X-Bp-Code-Id 로 실어, 플랫폼 계정은 고른 BP 의 TO-DO 만 본다(BP_PATH_SCREENS).
 export default async function TodosPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const query = parseTodoListQuery(await searchParams);
-  const [{ items, total }, statusLabels, assigneeTypeLabels] = await Promise.all([
-    getTodos(todoListApiSearch(query)),
+  // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 · 없는 BP 404 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다(근로계약 목록과 같다)
+  const [listed, statusLabels, assigneeTypeLabels] = await Promise.all([
+    getTodos(todoListApiSearch(query)).catch((e: unknown) => {
+      const notice = deniedMessageOf(e);
+      if (notice === null) throw e;
+      return { notice };
+    }),
     getEnum("TodoStatus"),
     getEnum("TodoAssigneeType"),
   ]);
+  if ("notice" in listed)
+    return (
+      <>
+        <PageBar title="TO-DO 리스트 관리" />
+        <p role="alert" className="p-[24px] text-[14px] text-erp-label">
+          {listed.notice}
+        </p>
+      </>
+    );
+  const { items, total } = listed;
   // 상세에서 지우고 돌아온 쪽이 비었으면 남은 마지막 쪽으로 — 「등록된 TO-DO 가 없습니다」가 보이지 않게
   const moveTo = emptyPageHref(query, items.length, total);
-  if (moveTo) redirect(moveTo);
+  if (moveTo) redirect(await bpHref(moveTo));
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
   // 0건이면 조건 없이(전체 점포 · 상태 전체 · 담당 전체 · 기간 없음) 한 번 더 물어 「TO-DO 가 아예 없는지」와 「조건에 맞는 TO-DO 가 없는지」를 가른다
   // (직원 · 점포 목록과 같은 방식, 2026-11-04 사용자 지정). 묻지 못하면 「조건에 맞는 TO-DO 가 없습니다.」
@@ -43,11 +59,13 @@ export default async function TodosPage({
         return false;
       })));
   const listHref = `/todos${toTodoListSearch(query)}`;
+  // 쿼리 · 돌아갈 주소(back)는 옛 경로로 두고, 링크로 그릴 때만 탭 BP 를 붙인다
+  const at = await screenPath();
 
   return (
     <>
       <PageBar title="TO-DO 리스트 관리">
-        <TodoCreateButton href={withBack("/todos/new", listHref)} />
+        <TodoCreateButton href={at(withBack("/todos/new", listHref))} />
       </PageBar>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         <TodoFilter query={query} statusLabels={statusLabels} assigneeTypeLabels={assigneeTypeLabels} />
@@ -62,6 +80,7 @@ export default async function TodosPage({
             today={kstToday()}
             statusLabels={statusLabels}
             listHref={listHref}
+            at={at}
             empty={noTodosAtAll ? "등록된 TO-DO 가 없습니다." : "조건에 맞는 TO-DO 가 없습니다."}
           />
           <div className="pt-[14px]">

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DetailTable, LoadGroup, LoadGroupArea, PageBar } from "@/components/common";
-import { getEnum } from "@/lib/api";
+import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import type { EnumValue } from "@/lib/enums";
 import { hqSharingConsentText, kstToday, staffEmailText } from "@/lib/staff-members";
 import { MENU_CODE } from "@/lib/menus";
@@ -75,12 +75,26 @@ export default async function StaffMemberDetailPage({
   const { id: rawId } = await params;
   const search = await searchParams;
   const [staff, joinStateLabels, invitationTypeLabels, invitationStatusLabels, hqConsentLabels] = await Promise.all([
-    getStaffMember(rawId),
+    // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다. 404(없는 직원 · 업무 범위 밖 · 고른 BP 에 없음)는 getStaffMember 가 null 로 바꿔 notFound 다(근로계약 상세와 같다)
+    getStaffMember(rawId).catch((e: unknown) => {
+      const notice = deniedMessageOf(e);
+      if (notice === null) throw e;
+      return { notice };
+    }),
     loadJoinStateLabels(),
     loadEnumOrEmpty("InvitationType"),
     loadEnumOrEmpty("InvitationStatus"),
     loadEnumOrEmpty("HqSharingConsentState"),
   ]);
+  if (staff && "notice" in staff)
+    return (
+      <>
+        <PageBar title="직원 정보 관리" />
+        <p role="alert" className="p-[24px] text-[14px] text-erp-label">
+          {staff.notice}
+        </p>
+      </>
+    );
   const staffMemberId = staffMemberIdOf(rawId);
   if (!staff || staffMemberId === null) notFound();
   const employmentStatus = employmentStatusCells(staff);
@@ -92,6 +106,8 @@ export default async function StaffMemberDetailPage({
   const today = kstToday();
   // 근무스케줄 영역이 볼 주(월요일). 주소 week 가 없거나 날짜가 아니면 이번 주(데모 weekNav, 2026-10-22 노영주 — WHALEERP-185 기간 선택을 걷었다)
   const monday = scheduleWeekOf(search, today);
+  // 서버가 그리는 링크(재직 이력)에 탭 BP 를 붙인다. 목록 주소 · ?back= 은 옛 경로 그대로다. 「관리」 링크(MenuManageLink)는 화면이 붙인다
+  const at = await screenPath();
 
   const basicRows = [
     // 재직 상태는 이름 옆 칩이다(184 완료 조건 2 「이름 아래」 — 줄 높이 46 이 고정이라 옆에 둔다). 본인인증은 1차 범위 밖이라(WHALEERP-612 → 2차)
@@ -123,7 +139,7 @@ export default async function StaffMemberDetailPage({
         <span className="flex flex-col gap-[4px]">
           {line.links.map((link, i) => (
             <span key={`${i}-${link.href}`}>
-              <Link href={link.href} aria-label={`${line.label} ${link.text} 직원 상세`} className="text-erp-link hover:underline">
+              <Link href={at(link.href)} aria-label={`${line.label} ${link.text} 직원 상세`} className="text-erp-link hover:underline">
                 {link.text}
               </Link>
               {line.note && <span className="text-erp-muted"> · {line.note}</span>}

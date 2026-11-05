@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge, DataTable, type Column } from "@/components/common";
 import type { StaffMemberListItem } from "@/lib/staff-members";
+import { WithIcon } from "../platform-admins/admin-table";
 import { ResendInvitationButton } from "./resend-invitation-button";
 import { withBack } from "./staff-list-query";
 import { canResendInvitation, contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, rowNumber, statusCells, type Cell } from "./staff-row";
@@ -39,6 +40,7 @@ export function StaffTable({
   today,
   listHref,
   empty = "조건에 맞는 직원이 없습니다.",
+  at = (path) => path,
 }: {
   items: StaffMemberListItem[];
   total: number;
@@ -49,28 +51,30 @@ export function StaffTable({
   listHref: string;
   /** 빈 목록 문구 */
   empty?: string;
+  /** 상세 링크에 탭 BP 를 붙인다(목록 화면의 screenPath) — listHref 는 옛 경로 그대로다 */
+  at?: (path: string) => string;
 }) {
   const columns: Column<Row>[] = [
     { header: "순번", width: "w-[60px]", cell: (r) => r.no },
     {
       header: "직원",
-      width: "w-[110px]",
+      // 「본사에 정보제공 미동의」가 한 줄에 들게 110 → 160(2026-11-05 사용자 지정, 3팀 확인 필요)
+      width: "w-[160px]",
       cell: ({ item }) =>
         item.isMasked ? (
-          // 본사 역할에게 가린 가맹 점포 직원(STAFF-23 · ATT-30). 칸이 좁아 두 줄로 둔다 — 한 줄이면 말줄임으로 「가맹 점포 직원」이 잘린다
-          <span className="block whitespace-normal leading-[17px] text-erp-muted">
-            본사 제공 동의 없음 ·<br />
-            가맹 점포 직원
-          </span>
+          // 본사 역할에게 가린 가맹 점포 직원(STAFF-23 · ATT-30) — 「본사에 정보제공 미동의」 한 줄. 가맹점포인 것은 옆 점포 열이 말해 「가맹 점포 직원」은 뺐다
+          // (2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「본사 제공 동의 없음 · 가맹 점포 직원」 두 줄)
+          <span className="whitespace-nowrap text-erp-muted">본사에 정보제공 미동의</span>
         ) : item.staffMemberId !== null && item.joinState === "JOINED" && item.employmentStatus === "EMPLOYED" ? (
-          <Link href={withBack(`/staff-members/${item.staffMemberId}`, listHref)} className="text-erp-link hover:underline">
+          <Link href={at(withBack(`/staff-members/${item.staffMemberId}`, listHref))} className="text-erp-link hover:underline">
             {item.name}
           </Link>
         ) : (
           item.name
         ),
     },
-    { header: "휴대전화번호", width: "w-[140px]", cell: personal((item) => (item.phone ? formatPhone(item.phone) : DASH)) },
+    // 플랫폼 관리자 · BP 마스터 목록의 연락처처럼 휴대폰 아이콘을 붙인다. 열 이름은 직원이라 「휴대전화번호」 그대로, 가운데 정렬(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 글자만)
+    { header: "휴대전화번호", width: "w-[160px]", cell: personal((item) => (item.phone ? <WithIcon icon="phone">{formatPhone(item.phone)}</WithIcon> : DASH)) },
     { header: "점포", cell: (r) => r.item.store.name },
     { header: "고용형태", width: "w-[110px]", cell: personal((item) => (item.employmentType ? EMPLOYMENT_TYPE_LABELS[item.employmentType] : DASH)) },
     {

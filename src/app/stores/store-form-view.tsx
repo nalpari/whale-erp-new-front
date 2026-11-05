@@ -988,16 +988,16 @@ export function StoreFormView(props: Props) {
       </ConfirmDialog>
       <ConfirmDialog
         open={dialog === "close-confirm"}
-        title="폐점으로 저장할까요?"
+        title="폐점으로 저장하시겠습니까?"
         wide
         confirmLabel="폐점으로 저장"
         busy={saving}
         onConfirm={handleSaveConfirm}
         onCancel={() => setDialog(null)}
       >
-        {/* 상세의 폐점 확인창과 같은 문구 + 다른 수정 내용 안내(2026-11-03 사용자 지정) */}
+        {/* 상세의 폐점 확인창과 같은 문구 + 다른 수정 내용 안내(2026-11-03 사용자 지정, 2026-11-05 「…하시겠습니까?」 · 「…로 설정되며」로 맞춤) */}
         <p>폐점으로 저장하면 되돌릴 수 없습니다.</p>
-        <p>폐점일은 오늘({kstToday()})이며, 다른 수정 내용도 함께 저장됩니다.</p>
+        <p>폐점일은 오늘({kstToday()})로 설정되며, 다른 수정 내용도 함께 저장됩니다.</p>
         {/* 확인 값이 없으면 목록 대신 무엇이 처리되는지 알린다 */}
         <ClosingCheckList counts={closingCheck} />
       </ConfirmDialog>

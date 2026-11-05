@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useOptimistic, useTransition } from "react";
 import { Pagination, Select } from "@/components/common";
+import { useCurrentBp } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { PAGE_SIZES, type PageSize, type StaffListQuery } from "@/lib/staff-members";
 import { toStaffListSearch, withFilter } from "./staff-list-query";
 
@@ -12,12 +14,14 @@ import { toStaffListSearch, withFilter } from "./staff-list-query";
  */
 function useStaffListNavigation(query: StaffListQuery) {
   const router = useRouter();
+  // 목록 주소는 탭 BP 주소다(/bp/{id}/staff-members)
+  const bp = useCurrentBp().bpCodeId;
   const [, startTransition] = useTransition();
   const [current, setCurrent] = useOptimistic(query);
   const navigate = (next: StaffListQuery) =>
     startTransition(() => {
       setCurrent(next);
-      router.replace(`/staff-members${toStaffListSearch(next)}`, { scroll: false });
+      router.replace(bpPath(bp, `/staff-members${toStaffListSearch(next)}`), { scroll: false });
     });
   return { current, navigate };
 }

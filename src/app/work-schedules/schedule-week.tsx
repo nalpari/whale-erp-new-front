@@ -12,15 +12,18 @@ const WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"];
 const COVER = { empty: "bg-erp-off-bg text-erp-off", alone: "bg-erp-subtle text-erp-ink", many: "bg-erp-on-bg text-erp-on" } as const;
 const HOURS = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, "0"));
 
+// 범례 색 칸 — 옅은 바탕만으로는 흰 화면에서 잘 안 보여 같은 계열 테두리를 두르고 14px 로 키웠다. 글자도 14px(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 12px 칸 · 13px 글자)
+const SWATCH_LINE = { empty: "border-erp-off/40", alone: "border-erp-button-line", many: "border-erp-on/40" } as const;
+
 export function CoverLegend() {
   const swatch = (tone: keyof typeof COVER, label: string) => (
     <span className="flex items-center gap-[6px]">
-      <span className={`size-[12px] rounded-[2px] ${COVER[tone]}`} aria-hidden />
+      <span className={`size-[14px] rounded-[2px] border ${COVER[tone]} ${SWATCH_LINE[tone]}`} aria-hidden />
       {label}
     </span>
   );
   return (
-    <div className="flex items-center gap-[18px] pt-[12px] text-[13px] text-erp-label">
+    <div className="flex items-center gap-[18px] pt-[12px] text-[14px] text-erp-label">
       {swatch("empty", "아무도 없음")}
       {swatch("alone", "혼자 근무 · 휴게 불가")}
       {swatch("many", "2명 이상")}
@@ -29,7 +32,7 @@ export function CoverLegend() {
 }
 
 /**
- * hrefBase · readOnly 는 로그인 후 홈 점포 하나 화면(WHALEERP-342)이 쓴다 — 관리 화면은 주지 않아 그대로다.
+ * hrefBase · readOnly 는 로그인 후 홈 점포 하나 화면(WHALEERP-342)이 쓴다. 관리 화면은 hrefBase 에 탭 BP 주소(/bp/{id}/work-schedules)를 준다.
  * readOnly 면 그날 근무가 있는 직원만(휴무 직원 행 없음, 가린 직원은 readOnlyRows), 막대는 누를 수 없는 글자, 공백 줄 · 배정 버튼 없음.
  */
 export function ScheduleWeek({
@@ -89,8 +92,9 @@ export function ScheduleWeek({
           </div>
         </div>
         {rows.length === 0 && (
-          <p className="border-b border-erp-thead-line px-[10px] py-[14px] text-[14px] text-erp-label">
-            {readOnly ? "이날 근무가 없습니다." : "이날 근무스케줄을 받을 수 있는 직원이 없습니다."}
+          // 빈 줄 문구는 다른 빈 표처럼 가운데(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 왼쪽 위)
+          <p className="border-b border-erp-thead-line px-[10px] py-[28px] text-center text-[14px] text-erp-label">
+            {readOnly ? "이날 근무가 없습니다." : "근무 가능한 직원이 없습니다."}
           </p>
         )}
         {rows.map((s, i) => {

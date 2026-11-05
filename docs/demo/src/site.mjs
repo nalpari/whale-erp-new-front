@@ -531,8 +531,8 @@ export function erpHeader(A, R, { bpStatus } = {}) {
       (bpStatus
         ? `<div class="flex min-w-0 flex-1 items-center gap-[12px]">${scopeDropdown(A).replace('<div class="relative flex-1">', '<div class="relative w-[420px] shrink-0">')}${bpStatusNote(bpStatus)}</div>`
         : scopeDropdown(A)) +
-        // 시작 가이드는 서비스 바로가기 바로 앞 — 플랫폼 계정이 BP 를 볼 때(bpStatus)는 숨긴다(앱 admin-header.tsx 와 같다)
-        (bpStatus ? "" : startGuide(A, R)) +
+        // 시작 가이드는 서비스 바로가기 바로 앞 — 플랫폼 계정이 BP 를 볼 때(bpStatus)도 보인다(앱 admin-header.tsx 와 같다, 2026-11-05 사용자 지정 — 전엔 숨겼다)
+        startGuide(A, R) +
         ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: to(R, "bp/index.html") }) +
         ui.alarmLink(A, to(R, "notify/index.html")) +
         ui.userPop(A, USER, user),
