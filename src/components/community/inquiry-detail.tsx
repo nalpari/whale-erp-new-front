@@ -86,8 +86,8 @@ function Box({ title, hint, hintLeft, flush, children }: { title: ReactNode; hin
   );
 }
 
-/** 처리 이력 한 줄 — [단계, 내용, 끝났는가]. */
-type Step = [string, string, boolean];
+/** 처리 이력 한 줄 — [단계, 내용, 끝났는가]. 내용은 여러 줄일 수 있다(답변 등록 · 수정). */
+type Step = [string, ReactNode, boolean];
 /**
  * 단계 칸은 왼쪽 정렬, 폭은 위 「문의자」 표의 라벨 칸과 같게 둬 세로줄을 맞춘다(2026-11-05 사용자 지정 — 전엔 150px 가운데).
  * 표 칸 여백(10px)이 상세 표 라벨(12px)보다 2px 좁아 글 시작을 2px 밀어 맞춘다.
@@ -102,9 +102,9 @@ const stepColumns = (stepWidth: `w-[${number}px]`): Column<Step>[] => [
  * 접수 · 확인 · 답변. 「확인」은 처리중을 거친 건만 완료로 그리고, 처리 시작 없이 바로 답한 건은 줄을 숨긴다(#274).
  * canEdit(수정 권한)이 없으면 누를 버튼이 없으므로 「[처리 시작]을 누르면」 · 「저장하면」 대신 대기 상태만 적는다.
  */
-function steps(d: InquiryDetail | LeadDetail, answered: string | null, canEdit: boolean): Step[] {
+function steps(d: InquiryDetail | LeadDetail, answered: ReactNode, canEdit: boolean): Step[] {
   const confirm: Step[] = d.processingStartedAt
-    ? [["확인", `${dt(d.processingStartedAt)} · ${d.processingStartedByName ?? "-"} · 처리중으로 바꿈`, true]]
+    ? [["확인", `${dt(d.processingStartedAt)} · ${d.processingStartedByName ?? "-"}`, true]]
     : d.status === "RECEIVED"
       ? [["확인", canEdit ? "[처리 시작]을 누르면 문의자에게 처리중으로 표시됩니다." : "처리 시작 전", false]]
       : [];
@@ -491,7 +491,20 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
       {/* 관리자 쪽은 누가 언제 무엇을 했는지 남기는 「단계 · 내용 · 상태」 표 그대로 — 문의자 쪽(고객지원)만 처리현황 목록으로 바꿨다(2026-11-05 사용자 지정) */}
       <History
         stepWidth="w-[100px]"
-        rows={steps(d, first && last ? `${dt(first.repliedAt)} · ${first.repliedByName ?? "-"}${previous.length ? ` · ${dt(last.repliedAt)} ${last.repliedByName ?? "-"} 수정` : ""}` : null, c.can.update)}
+        // 답변은 처음 등록 한 줄, 고칠 때마다 한 줄씩 더한다 — 「일시 · 운영자 등록 / 수정」(2026-11-05 사용자 지정)
+        rows={steps(
+          d,
+          answered && (
+            <span className="flex flex-col py-[12px] leading-[1.6]">
+              {d.replies.map((r, i) => (
+                <span key={r.inquiryReplyId} className="truncate">
+                  {dt(r.repliedAt)} · {r.repliedByName ?? "-"} {i === 0 ? "등록" : "수정"}
+                </span>
+              ))}
+            </span>
+          ),
+          c.can.update,
+        )}
       />
     </>
   );
