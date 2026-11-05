@@ -19,21 +19,23 @@ import {
 /** 회색 안내 상자 — 상태 변경 팝업의 운영 · 폐점 조건과 같은 모양 */
 const BOX = "rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]";
 
-function Lines({ lines }: { lines: ClosingLine[] }) {
+/** 줄 목록 — 설명(note)은 다음 줄에 작은 회색 글씨로 둔다(2026-11-05 사용자 지정, 전엔 「 — 설명」으로 이어 붙였다) */
+function Lines({ lines, numbered = false }: { lines: ClosingLine[]; numbered?: boolean }) {
+  const List = numbered ? "ol" : "ul";
   return (
-    <ul className="mt-[6px] list-disc pl-[18px]">
+    <List className={`mt-[6px] space-y-[6px] pl-[18px] ${numbered ? "list-decimal" : "list-disc"}`}>
       {lines.map((line) => (
         <li key={line.key}>
           {line.text}
-          {line.note && <span className="text-erp-label"> — {line.note}</span>}
+          {line.note && <span className="block text-[13px] text-erp-label">{line.note}</span>}
         </li>
       ))}
-    </ul>
+    </List>
   );
 }
 
 /**
- * 폐점 조건 — 퇴근하지 않은 출근 N건(가려진 직원 것 포함). 막히면 할 일을 덧붙인다 — api 는 직원 이름 · 시각을 주지 않는다.
+ * 폐점 조건 — 「퇴근 기록이 없는 출근 N건」(가려진 직원 것 포함, 2026-11-05 「퇴근하지 않은 출근」에서 바꿈). 건수만 보인다 — api 는 직원 이름 · 시각을 주지 않고, 할 일 안내는 두지 않는다(2026-11-05 사용자 지정).
  * counts 가 없으면(이미 폐점 · 확인 실패 · 출근 말고 다른 이유로 막힘) 그리지 않는다.
  */
 export function ClosingCondition({ counts }: { counts: Pick<StoreClosingCounts, "openCheckIns"> | null | undefined }) {
@@ -44,19 +46,16 @@ export function ClosingCondition({ counts }: { counts: Pick<StoreClosingCounts, 
       <p className="font-semibold">폐점 조건</p>
       <ul className="mt-[6px] list-disc pl-[18px]">
         <li className={block ? "text-erp-off" : undefined}>
-          퇴근하지 않은 출근 <b className="font-semibold">{(block?.count ?? 0).toLocaleString("ko-KR")}건</b>
+          퇴근 기록이 없는 출근 <b className="font-semibold">{(block?.count ?? 0).toLocaleString("ko-KR")}건</b>
         </li>
       </ul>
-      {block && (
-        <p className="mt-[6px] text-erp-label">{block.guide}</p>
-      )}
     </div>
   );
 }
 
 /**
  * 폐점하면 함께 처리될 것 — 폐점 확인 창 안. 되돌릴 수 없는 결과(퇴직 · 계약 종료)라 빨간 안내 상자로 둔다(DESIGN.md 1팀 확인창).
- * 0건인 줄은 뺀다. 확정하지 않은 급여명세서는 처리하지 않으므로 상자 밖 회색 안내로 둔다. 체결 완료 계약은 남고 직원 알림은 가지 않는다.
+ * 0건인 줄은 뺀다. 확정하지 않은 급여명세서는 처리하지 않으므로 상자 밖 회색 안내로 둔다. 체결 완료 계약 · 직원 알림 안내는 두지 않는다(2026-11-05 사용자 지정).
  * counts 가 없으면(확인 값을 받지 못함) 목록을 빼지 않고 무엇이 처리되는지만 같은 상자로 알린다.
  */
 export function ClosingCheckList({ counts }: { counts: StoreClosingCounts | null }) {
@@ -68,21 +67,14 @@ export function ClosingCheckList({ counts }: { counts: StoreClosingCounts | null
         <WarnBand>{CLOSING_COUNTS_UNKNOWN}</WarnBand>
       ) : lines.length ? (
         <WarnBand>
-          <p className="font-medium">폐점하면 함께 처리됩니다.</p>
-          <Lines lines={lines} />
+          <p className="font-medium">폐점 시 다음 항목이 함께 처리됩니다.</p>
+          {/* 확인 창은 번호를 매긴다(2026-11-05 사용자 지정) — 결과 창은 점 목록 그대로 */}
+          <Lines lines={lines} numbered />
         </WarnBand>
       ) : (
         <p className={BOX}>함께 처리할 직원 · 근로계약이 없습니다.</p>
       )}
-      <p className="text-[13px] text-erp-label">
-        {payslip && (
-          <>
-            {payslip}
-            <br />
-          </>
-        )}
-        체결 완료 근로계약은 그대로 남고, 직원에게 알림을 보내지 않습니다.
-      </p>
+      {payslip && <p className="text-[13px] text-erp-label">{payslip}</p>}
     </div>
   );
 }
