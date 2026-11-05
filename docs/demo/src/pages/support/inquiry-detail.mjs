@@ -87,7 +87,7 @@ export const render = ({ A, R }, state = "wait") => {
     plain(
       // 이름 · 역할 · BP · 점포는 api 상세의 senderName · senderRoleTypeCode · bpName · storeName.
       // 운영 점포 · 요금 PLAN · 이전 문의는 1차에 두지 않는다(2026-10-14 재영). 요금 PLAN 은 1팀 영역이다.
-      ui.detailTable("보낸 곳", [
+      ui.detailTable("문의자", [
         ...c.sender,
         ["점포", p.sub("BP 단위 문의")],
       ]),
@@ -96,8 +96,8 @@ export const render = ({ A, R }, state = "wait") => {
       steps([
         ["접수", `${c.at} · 운영 알림 발송됨`, true],
         // 「확인」 줄은 처리중을 거친 건만 완료로 그린다. 처리 시작 없이 바로 답했으면 api 가 processingStartedAt 을 null 로 주므로 이 줄을 숨긴다.
-        received ? ["확인", "[처리 시작]을 누르면 처리중 · 시각 · 운영자가 남음", false] : ["확인", `${c.processing} · 처리중으로 바꿈`, true],
-        done ? ["답변", c.replied, true] : ["답변", "저장하면 답변 완료 · 그 뒤에도 고칠 수 있음", false],
+        received ? ["확인", "[처리 시작]을 누르면 문의자에게 처리중으로 표시됩니다.", false] : ["확인", `${c.processing} · 처리중으로 바꿈`, true],
+        done ? ["답변", c.replied, true] : ["답변", "답변을 저장하면 문의자에게 답변완료로 표시됩니다.", false],
       ]),
     );
 
