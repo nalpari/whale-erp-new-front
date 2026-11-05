@@ -50,3 +50,10 @@
 - 직영 · 가맹 범위는 api 에 `storeTypes` 로 보내고 폐점 점포는 api 가 뺀다 — 칩(폐점 제외)과 목록이 맞는다. 로그인 정보의 점포는 브라우저에만 있어 서버가 id 로 풀지 않는다. 폐점 점포 TO-DO 는 「전체」나 점포를 골라 본다(2026-10-22 재영).
 - 상세 · 등록 · 수정은 목록 주소를 `?back=` 으로 받는다(`/todos` 주소만). 등록 뒤에는 점포 검색을 「전체」로 비운 목록(`withoutStoreSearch` — 새 TO-DO 가 보이게)으로, 삭제 뒤에는 들어올 때의 목록 조건 그대로 돌아간다(하나 지워도 점포 조건은 틀어지지 않는다, 2026-10-22 재영).
 - 확인: `node --test src/app/todos/todo-list-query.test.ts` (네 가지 상태 · 범위 종류 · api 변환 · back 거르기)
+
+## 탭 BP 주소 (2026-11-05)
+
+플랫폼 계정이 BP 를 골라 들어와도 TO-DO 목록 · 상세 · 등록 · 수정이 고른 BP 기준으로 조회되지 않았다. `/todos` 를 `BP_PATH_SCREENS` 에 더해 화면 주소를 `/bp/{bpCodeId}/todos…` 로 옮긴다 — proxy 가 그 BP 를 `X-Bp-Code-Id` 로 api 에 싣는다. 근로계약(WHALEERP-618) · 급여명세서 · 출퇴근(WHALEERP-637)과 같은 방식이다.
+
+- 쿼리와 `?back=` 은 옛 경로로 두고, 링크 · 이동에서만 탭 BP 를 씌운다 — 서버 화면은 `screenPath()`, 클라이언트는 `bpPath`, 서버 액션의 이동은 `bpHref`.
+- api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP · 권한 403 · 없는 BP 404)은 오류 화면 대신 그 문장으로 보인다(`deniedMessageOf`).
