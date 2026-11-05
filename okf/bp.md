@@ -6,7 +6,7 @@ tags: [mockup, bp]
 sources:
   - { id: bp-masters-app, resource: ../src/app/bp-masters, title: BP 마스터 계정 관리 화면 }
   - { id: bp-masters-lib, resource: ../src/lib/bp-masters.ts, title: BP 마스터 계정 api 호출 }
-generated: { by: claude-code/opus-5.5, at: 2026-11-04T09:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-05T08:00:00Z }
 ---
 
 근거: `docs/mockup/bp/` (목업 · 1차 · R-NMDCYH)
@@ -21,6 +21,8 @@ BP 마스터 계정 하나라 목록은 BP 를 기준으로 선다. 상태는 �
 # 화면
 
 목록 한 화면 위에 상세 · 등록 · 수정이 오른쪽에서 밀려 나오는 슬라이드 패널로 열린다. 플랫폼 관리자 관리와 같은 틀이고, 주소는 `/bp-masters` 하나에 상세만 `?bp=<bpCodeId>` 로 남긴다. 목업은 페이지로 나눠 내용과 버튼 자리만 보인다 — `BP-6`
+
+빈 목록(2026-11-05 사용자 지정): 0건이면 조건 없이 한 번 더 물어 BP 가 아예 없으면 「등록된 BP가 없습니다.」, 조건에 맞는 BP 가 없으면 「조건에 맞는 BP가 없습니다.」(전엔 「일치하는 BP가 없습니다.」). 계정상태를 모두 풀어도 이유 문구(「… 하나 이상 선택해 주세요.」) 없이 같은 규칙이다. 비어도 열 이름 줄을 두고 빈 칸이 남는 높이를 채운다(DataTable `fillEmpty`).
 
 | 주소 | 이름 | 하는 일 | 스펙 |
 |------|------|---------|------|

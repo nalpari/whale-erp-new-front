@@ -107,7 +107,7 @@ export async function deleteStoreAction(id: number): Promise<ActionResult> {
 export async function putStoreImageAction(id: number, data: FormData): Promise<ActionResult> {
   if (!validId(id)) return NOT_FOUND;
   const file = data instanceof FormData ? data.get("file") : null;
-  if (!(file instanceof File) || file.size === 0) return { ok: false, status: 400, message: "대표 이미지 파일을 골라 주세요." };
+  if (!(file instanceof File) || file.size === 0) return { ok: false, status: 400, message: "대표 이미지 파일을 선택해 주세요." };
   try {
     await putStoreImage(id, file);
     refresh();

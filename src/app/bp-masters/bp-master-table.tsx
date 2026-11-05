@@ -18,14 +18,14 @@ export function BpMasterTable({
   rows,
   selected,
   onOpen,
-  noStatus,
+  noneRegistered,
 }: {
   rows: BpMaster[];
   /** 상세를 연 BP — 그 줄에 바탕을 깐다 */
   selected?: number;
   onOpen: (bpCodeId: number, from: HTMLElement) => void;
-  /** 상태를 셋 다 껐다 — 빈 칸 문구를 가른다 */
-  noStatus?: boolean;
+  /** 조건 없이도 0건 — 「등록된 BP가 없습니다.」(2026-11-05 사용자 지정) */
+  noneRegistered?: boolean;
 }) {
   const gone = <span className="text-erp-muted">{WITHDRAWN_TEXT}</span>;
   const withdrawn = (b: BpMaster) => b.accountStatus === "WITHDRAWN";
@@ -65,7 +65,10 @@ export function BpMasterTable({
       rows={rows}
       rowKey={(b) => b.bpCodeId}
       rowState={(b) => (b.bpCodeId === selected ? "selected" : undefined)}
-      empty={noStatus ? "선택한 계정상태가 없어 표시할 BP가 없습니다. 계정상태를 하나 이상 선택해 주세요." : "일치하는 BP가 없습니다."}
+      // 계정상태를 모두 풀어도 이유를 따로 말하지 않는다 — 관리자 목록과 같다(2026-11-05 사용자 지정, 전엔 「… 하나 이상 선택해 주세요.」 · 「일치하는 BP가 없습니다.」)
+      empty={noneRegistered ? "등록된 BP가 없습니다." : "조건에 맞는 BP가 없습니다."}
+      // 비어도 열 이름 줄을 두고 빈 칸이 목록 영역 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정)
+      fillEmpty
     />
   );
 }

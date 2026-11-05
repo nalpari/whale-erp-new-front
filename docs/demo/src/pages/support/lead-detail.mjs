@@ -73,7 +73,7 @@ export const render = ({ A, R }, state = "wait") => {
       : ui.field("내용", ui.textarea({ placeholder: "계정이 없는 분이라 이 내용이 메일로 그대로 갑니다." })) +
           spread(note("저장하면 상태가 답변 완료로 바뀌고 오늘이 상담 완료일로 남습니다. 처음 저장할 때만 문의자 이메일로 답변이 갑니다. 다른 운영자가 먼저 저장했으면 막고 최신 내용을 다시 보입니다."), ui.button("답변 저장")),
     ) +
-    box("운영자 메모", hint("문의자에게 보이지 않습니다."),
+    box("운영자 메모", hint("운영자에게만 표시됩니다."),
       ui.field(
         "내부 기록",
         ui.textarea({ rows: 4, value: c.memo }),
@@ -110,7 +110,7 @@ export const render = ({ A, R }, state = "wait") => {
         ["운영 알림 발송", "플랫폼 마스터 · 플랫폼 관리자", true],
         // 「도입문의 처리 상태 변경」 운영 알림(NTF_LEAD_ANSWERED)은 처리중으로 바꿀 때와 처음 답변 완료가 될 때 한 번씩 간다. 답변 수정은 알리지 않는다.
         // 「확인」 줄은 처리중을 거친 건만 그린다 — 처리 시작 없이 바로 답했으면 api 가 processingStartedAt 을 null 로 주고 이 줄을 숨긴다(답변 완료 데모가 그 경우).
-        ...(done ? [] : [["확인", "[처리 시작]을 누르면 처리중 · 시각 · 운영자가 남음", false]]),
+        ...(done ? [] : [["확인", "[처리 시작]을 누르면 문의자에게 처리중으로 표시됩니다.", false]]),
         done ? ["답변", "08-28 14:05 · 이서준", true] : ["답변", "-", false],
       ]),
     );
@@ -124,7 +124,7 @@ export const render = ({ A, R }, state = "wait") => {
       body: ui.detailBody(
         p.detailHead(
           "도입문의 상세",
-          `<div class="flex items-center gap-[6px]">${c.consulted ? "" : x.dialogTrigger("삭제", delId, "soft")}${done ? "" : ui.button("처리 시작", { variant: "soft" })}${ui.button("목록", { variant: "off", href: link(R, "support/community-leads.html") })}</div>`,
+          `<div class="flex items-center gap-[6px]">${c.consulted ? "" : x.dialogTrigger("삭제", delId, "soft")}${done ? "" : ui.button("처리 시작", { variant: "soft" })}${ui.button("목록", { href: link(R, "support/community-leads.html") })}</div>`,
         ) + p.cols(left, right) + (c.consulted ? "" : delDialog),
       ),
     }),

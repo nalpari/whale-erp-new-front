@@ -383,7 +383,9 @@ export function CodeItemPanel({
         rowKey={(d) => d.key}
         rowState={(d) => (d.added ? "added" : reorder.dragging === d.key ? "selected" : undefined)}
         rowProps={manage ? reorder.rowProps : undefined}
-        empty={loadFailed ? "상세 코드를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." : group ? "데이터가 없습니다." : "왼쪽에서 공통코드 그룹을 고르세요."}
+        // 비었으면 열 이름 줄 아래 빈 칸이 남는 높이를 채운다. 상세 코드에는 검색이 없어 「등록된 …」만 쓴다 — 점포 · 직원 목록과 같은 말(2026-11-05 사용자 지정, 전엔 「데이터가 없습니다.」)
+        fillEmpty
+        empty={loadFailed ? "상세 코드를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." : group ? "등록된 상세 코드가 없습니다." : "공통코드 그룹을 선택하세요."}
       />
       {/* 칸에 붙은 오류는 그 칸 아래에 있다 — 어느 새 행인지 모르는 409 만 여기 */}
       <FieldErrors messages={errors["code:server"] ? [errors["code:server"]] : []} />

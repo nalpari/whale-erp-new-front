@@ -39,8 +39,24 @@ export default async function BpAdminsPage({ searchParams }: PageProps<"/bp-admi
       </>
     );
 
+  // 0건이면 조건 없이(점포 전체 · 역할 · 권한명 · 계정상태 전체 · 검색어 없음) 한 번 더 물어 「관리자 계정이 아예 없는지」와
+  // 「조건에 맞는 계정이 없는지」를 가른다(점포 · 직원 목록과 같은 방식, 2026-11-05 사용자 지정). 계정상태 · 역할을 모두 끈 0건도 같다(이유를 따로 말하지 않는다).
+  // 조건 없는 조회는 기본 조건에서 점포만 「전체」로 바꿔 만든다. 지금 조회가 이미 그것이면 다시 묻지 않고, 묻지 못하면 「조건에 맞는 …」
+  const allQuery = bpAdminListQueryOf({ ...parseBpAdminsQuery({}), storesCleared: true, pageSize: query.pageSize });
+  const noAdminsAtAll =
+    list.total === 0 &&
+    // 계정상태 · 역할을 모두 끈 조회는 api 조건에서 사라져 「조건 없음」과 같아 보인다 — 그때는 지름길을 타지 않고 다시 묻는다(리뷰 반영)
+    ((!isEmptyByFilter(query) && JSON.stringify(bpAdminListQueryOf({ ...query, page: 1 })) === JSON.stringify(allQuery)) ||
+      (await getBpAdmins(allQuery)
+        .then((all) => all.total === 0)
+        .catch((error: unknown) => {
+          // 확인에 실패하면 「조건에 맞는 …」 — 장애를 알아챌 수 있게 로그만 남긴다
+          console.warn("BP 관리자 전체 건수 확인 실패", error);
+          return false;
+        })));
+
   // 제목 줄은 AdminsScreen 이 그린다 — [등록]이 그 줄에 선다
-  return <AdminsScreen list={list} roleGroups={roleGroups} query={query} detail={detail} />;
+  return <AdminsScreen list={list} noAdminsAtAll={noAdminsAtAll} roleGroups={roleGroups} query={query} detail={detail} />;
 }
 
 /** 목록을 api 가 거절했으면(deniedMessageOf) 오류 화면 대신 그 문장을 보인다. 거절이 아닌 것은 그대로 던져 error.tsx 가 받는다. */

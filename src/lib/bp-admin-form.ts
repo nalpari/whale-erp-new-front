@@ -84,8 +84,8 @@ export function validateBpAdminForm(
   if (!PHONE_PATTERN.test(phone)) errors.phone = phone ? "연락처는 숫자 9~12자리입니다." : "연락처를 입력해 주세요."; // 라벨 「연락처」 — 플랫폼 관리자와 같은 문구(2026-10-27 사용자 지정), 자릿수는 1팀 9~12자리
   const email = emailError(form.email);
   if (email) errors.email = email;
-  if (mode === "create" && !form.roleTypeCode) errors.roleTypeCode = "계정 역할을 골라 주세요.";
-  if (!form.roleGroupId) errors.roleGroupId = "권한명을 골라 주세요."; // 칸 라벨 「권한명」(2026-10-27 사용자 지정)
+  if (mode === "create" && !form.roleTypeCode) errors.roleTypeCode = "계정 역할을 선택해 주세요.";
+  if (!form.roleGroupId) errors.roleGroupId = "권한명을 선택해 주세요."; // 칸 라벨 「권한명」(2026-10-27 사용자 지정)
   if (!storesLocked && !form.isAllStores && form.stores.length + outOfScopeCount === 0) errors.stores = "대상점포를 1개 이상 선택해 주세요.";
   return errors;
 }

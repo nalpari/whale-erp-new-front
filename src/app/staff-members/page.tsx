@@ -41,7 +41,7 @@ export default async function StaffMembersPage({
   const at = await screenPath();
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
   // 0건이면 조건 없이(전체 점포 · 모든 유형 · 재직 상태 전체) 한 번 더 물어 「직원이 아예 없는지」와 「조건에 맞는 직원이 없는지」를 가른다
-  // (점포 목록과 같은 방식, 2026-11-04 사용자 지정). 묻지 못하면 예전처럼 「조회된 직원이 없습니다.」
+  // (점포 목록과 같은 방식, 2026-11-04 사용자 지정). 묻지 못하면 예전처럼 「조건에 맞는 직원이 없습니다.」
   // 조건 없는 조회는 기본 조건에서 재직 상태를 전체로 · 점포를 「전체」로 바꿔 만든다(리뷰 반영 — 손으로 다시 적으면 기본값이 바뀔 때 어긋난다)
   const allQuery = { ...DEFAULT_STAFF_LIST_QUERY, storesCleared: true, employmentStatus: "ALL" as const, pageSize: query.pageSize };
   // 지금 조회가 이미 「전체」(조건 없음)면 다시 묻지 않는다 — 같은 요청을 두 번 보내지 않게(리뷰 반영)
@@ -51,7 +51,7 @@ export default async function StaffMembersPage({
       (await getStaffMembers(allQuery)
         .then((all) => all.total === 0)
         .catch((error: unknown) => {
-        // 확인에 실패하면 예전처럼 「조회된 …」 — 장애를 알아챌 수 있게 로그만 남긴다(리뷰 반영)
+        // 확인에 실패하면 예전처럼 「조건에 맞는 …」 — 장애를 알아챌 수 있게 로그만 남긴다(리뷰 반영)
         console.warn("직원 전체 건수 확인 실패", error);
         return false;
       })));
@@ -79,7 +79,7 @@ export default async function StaffMembersPage({
             today={kstToday()}
             listHref={staffListHrefOf(query)}
             at={at}
-            empty={noStaffAtAll ? "등록된 직원이 없습니다." : "조회된 직원이 없습니다."}
+            empty={noStaffAtAll ? "등록된 직원이 없습니다." : "조건에 맞는 직원이 없습니다."}
           />
           <div className="pt-[14px]">
             <StaffPagination query={query} totalPages={totalPages} />

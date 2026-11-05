@@ -320,7 +320,7 @@ export function paperFileError(file: { name: string; type: string; size: number 
   const name = file.name.toLowerCase();
   if (!types.some((t) => file.type === PAPER_FORMAT[t].mime || PAPER_FORMAT[t].extensions.some((e) => name.endsWith(e))))
     return `${types.join(" · ")} 파일만 올릴 수 있습니다.`;
-  if (file.size === 0) return "빈 파일입니다. 다른 파일을 골라 주세요.";
+  if (file.size === 0) return "빈 파일입니다. 다른 파일을 선택해 주세요.";
   if (file.size > PAPER_FILE_MAX_BYTES) return "파일은 10MB까지 올릴 수 있습니다.";
   return null;
 }
@@ -514,8 +514,8 @@ export function fieldProblems(
   if (!/^[0-9]{10,11}$/.test(digits(f.phone))) add("phone", "휴대전화번호는 숫자 10~11자리입니다.");
   need("birthDate", !f.birthDate, "생년월일을 입력하세요.");
   if (isMinor(f)) add("birthDate", "만 19세 미만 직원은 등록할 수 없습니다.");
-  need("gender", !f.gender, "성별을 고르세요.");
-  if (!f.storeId) add("storeId", "소속 근무지를 고르세요.");
+  need("gender", !f.gender, "성별을 선택하세요.");
+  if (!f.storeId) add("storeId", "소속 근무지를 선택하세요.");
   if (!f.jobTitle.trim()) add("jobTitle", "직무를 입력하세요.");
   // 종이 계약 등록은 당사자가 모두 날인한 근로계약서가 있어야 한다(CTR-23). 임시저장은 파일 없이 둔다
   if (f.contractMethod === "PAPER" && !temporary && !hasEmploymentFile) add("employmentFile", "당사자가 모두 날인한 근로계약서 파일을 올려 주세요.");
@@ -523,7 +523,7 @@ export function fieldProblems(
   // 재계약은 직전 계약 시작일 다음 날부터 — 그 뒤로는 직전 계약과 겹쳐도 된다(WHALEERP-156, 2026-10-26 김민식 · 재영 확인)
   if (previousStartDate && f.startDate && f.startDate <= previousStartDate) add("startDate", renewalStartProblem(previousStartDate));
   if (f.startDate && f.endDate && f.endDate < f.startDate) add("endDate", "계약 종료일은 시작일보다 앞설 수 없습니다.");
-  need("days", f.days.length === 0, "근무요일을 하나 이상 고르세요.");
+  need("days", f.days.length === 0, "근무요일을 하나 이상 선택하세요.");
   const top = timeProblems(f);
   top.work.forEach((m) => add("work", m));
   top.rest.forEach((m) => add("rest", m));

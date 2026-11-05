@@ -16,17 +16,14 @@ export function AdminTable({
   rows,
   selected,
   onOpen,
-  noStatus,
-  noRole,
+  noneRegistered,
 }: {
   rows: BpAdmin[];
+  /** 조건 없이도 0건 — 「등록된 관리자 계정이 없습니다.」(2026-11-05 사용자 지정) */
+  noneRegistered?: boolean;
   /** 상세를 연 계정 — 그 줄에 바탕을 깐다 */
   selected?: number;
   onOpen: (id: number, from: HTMLElement) => void;
-  /** 계정상태를 둘 다 껐다(NONE) — 결과가 없는 이유를 말한다 */
-  noStatus?: boolean;
-  /** 역할을 모두 껐다 — 결과가 없는 이유를 말한다 */
-  noRole?: boolean;
 }) {
   const roleType = useCodeLabel("ROLE_TYPE");
   // 탈퇴한 BP 의 하위 관리자는 미사용 · 개인정보 지움으로 남는다(api 회원 탈퇴, 2026-11-04 사용자 지정) — 이름이 없으면 BP 마스터 화면처럼 「탈퇴로 삭제됨」
@@ -95,13 +92,10 @@ export function AdminTable({
       rows={rows}
       rowKey={(a) => a.adminAccountId}
       rowState={(a) => (a.adminAccountId === selected ? "selected" : undefined)}
-      empty={
-        noStatus
-          ? "선택한 계정상태가 없어 표시할 관리자 계정이 없습니다. 계정상태를 하나 이상 선택해 주세요."
-          : noRole
-            ? "선택한 역할이 없어 표시할 관리자 계정이 없습니다. 역할을 하나 이상 선택해 주세요."
-            : "조건에 맞는 관리자 계정이 없습니다."
-      }
+      // 역할 · 계정상태를 모두 풀어도 이유를 따로 말하지 않고 다른 조건과 같은 문구다(2026-11-05 사용자 지정)
+      empty={noneRegistered ? "등록된 관리자 계정이 없습니다." : "조건에 맞는 관리자 계정이 없습니다."}
+      // 비어도 열 이름 줄을 두고 빈 칸이 목록 영역 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정)
+      fillEmpty
     />
   );
 }

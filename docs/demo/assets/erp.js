@@ -1364,6 +1364,8 @@
     const body = table.tBodies[0];
     if (!body.rows.length)
       body.innerHTML = `<tr class="h-[92px] border-b border-erp-thead-line"><td colspan="${table.tHead.rows[0].cells.length}" class="text-center text-erp-muted">${table.dataset.empty}</td></tr>`;
+    // 목록 화면 표(data-fill-empty)는 비면 남는 높이까지 늘린다(앱 DataTable fillEmpty — 운영 알림함, 2026-11-05 사용자 지정)
+    if (table.hasAttribute("data-fill-empty")) table.style.flex = body.querySelector("[data-pick-row]") ? "" : "1 0 134px";
     const total = table.closest("main")?.querySelector("p b");
     if (total) total.textContent = $$("[data-pick-row]", table).length;
     const unread = table.closest("main")?.querySelector("[data-unread-count]");

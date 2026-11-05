@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { Badge, Button, DataTable, FilterPanel, FilterSection, SearchField, Tag, type Column } from "@/components/common";
+import { Badge, Button, DataTable, FilterPanel, FilterSection, PageBar, SearchField, Tag, type Column } from "@/components/common";
 import { Checks, Frame, useGo } from "@/components/community/community-lists";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCodes, useCurrentBp, usePagePermission } from "@/components/site/session-gate";
@@ -12,6 +12,8 @@ import type { SupportInquiryListItem, SupportPost } from "@/lib/community";
 import {
   SUPPORT_INQUIRY_BASE,
   SUPPORT_NOTICE_BASE,
+  NONE_CHECKED,
+  noneChecked,
   type InquiryStatus,
   type SupportFaqQuery,
   type SupportInquiryQuery,
@@ -40,6 +42,26 @@ function Search({ label, placeholder, value, maxLength, onSearch }: { label: str
   );
 }
 
+/**
+ * 고객지원 체크박스 필터 — 모두 고른 것이 기본이다(직원 목록과 같다, 2026-11-05 사용자 지정). 주소의 빈 배열(전체)은 모두 체크로,
+ * NONE(모두 끔)은 모두 해제로 보인다. 다시 모두 고르면 빈 배열로, 모두 끄면 NONE 으로 돌려 같은 조건이면 주소도 같다.
+ */
+function SupportChecks<T extends string>({ label, values, value, onPick }: { label: string; values: EnumValue[]; value: readonly T[]; onPick: (next: T[]) => void }) {
+  const shown = noneChecked(value) ? [] : value.length ? value : values.map((v) => v.value as T);
+  return (
+    <Checks
+      label={label}
+      values={values}
+      value={shown}
+      onPick={(next) => onPick(next.length === 0 ? [NONE_CHECKED as T] : values.every((v) => next.includes(v.value as T)) ? [] : next)}
+      last
+    />
+  );
+}
+
+// 빈 목록 문구는 화면마다 한 문구다 — 아예 없든 조건에 맞는 것이 없든 같다. 다른 목록의 「등록된 / 조건에 맞는 …」 가르기를 하지 않는다
+// (고객지원은 볼 글 · 내 문의만 보여 둘을 가를 까닭이 없다, 2026-11-05 사용자 지정)
+
 /** 공지사항 — 상단 고정 먼저, 나머지는 게시일 내림차순(api 순서 그대로). 제목 검색 · 구분 필터(#282). */
 export function SupportNoticeList({ items, total, query, noticeTypes }: { items: SupportPost[]; total: number; query: SupportNoticeQuery; noticeTypes: EnumValue[] }) {
   const go = useGo(query);
@@ -67,11 +89,11 @@ export function SupportNoticeList({ items, total, query, noticeTypes }: { items:
       filter={
         <FilterPanel onReset={() => go({ keyword: "", noticeType: [] })}>
           <Search label="제목" placeholder="제목으로 검색" value={query.keyword} maxLength={100} onSearch={(keyword) => go({ keyword })} />
-          <Checks label="구분" values={noticeTypes} value={query.noticeType} onPick={(noticeType) => go({ noticeType })} last />
+          <SupportChecks label="구분" values={noticeTypes} value={query.noticeType} onPick={(noticeType) => go({ noticeType })} />
         </FilterPanel>
       }
     >
-      <DataTable columns={columns} rows={items} rowKey={(p) => p.postId} empty="공지사항이 없습니다." />
+      <DataTable columns={columns} rows={items} rowKey={(p) => p.postId} empty="공지사항이 없습니다." fillEmpty />
     </Frame>
   );
 }
@@ -88,13 +110,13 @@ export function SupportFaqList({ items, total, query }: { items: SupportPost[]; 
       filter={
         <FilterPanel onReset={() => go({ keyword: "", faqCategoryCode: [] })}>
           <Search label="질문" placeholder="질문으로 검색" value={query.keyword} maxLength={100} onSearch={(keyword) => go({ keyword })} />
-          <Checks label="카테고리" values={categories} value={query.faqCategoryCode} onPick={(faqCategoryCode) => go({ faqCategoryCode })} last />
+          <SupportChecks label="카테고리" values={categories} value={query.faqCategoryCode} onPick={(faqCategoryCode) => go({ faqCategoryCode })} />
         </FilterPanel>
       }
     >
       {items.length === 0 ? (
-        // DataTable 의 빈 줄과 같은 92px 한 줄(DESIGN.md 빈 상태).
-        <p className="flex h-[92px] items-center justify-center border-y border-erp-thead-line text-[14px] text-erp-muted">{query.keyword || query.faqCategoryCode.length ? "찾는 FAQ 가 없습니다." : "FAQ 가 없습니다."}</p>
+        // 표가 아니라 열 이름 줄이 없다 — 점포 카드 보기처럼 테두리 상자가 목록 영역 남는 높이를 채운다(최소 92px, 2026-11-05 사용자 지정)
+        <p className="flex min-h-[92px] flex-1 items-center justify-center border-y border-erp-thead-line text-[14px] text-erp-muted">FAQ가 없습니다.</p>
       ) : (
         <div className="border-t border-erp-thead-line">
           {items.map((f) => (
@@ -153,24 +175,26 @@ export function MyInquiryList({ items, total, query, statuses }: { items: Suppor
   ];
   return (
     <>
+      {/* [문의하기]는 제목 줄 오른쪽 — 관리자 관리 등 다른 화면의 [등록]과 같은 자리(2026-11-05 사용자 지정 — 전엔 목록 건수 줄).
+          패널을 여는 상태와 같은 곳에 있어야 해서 제목 줄을 이 컴포넌트가 그린다 */}
+      <PageBar title="문의하기">
+        {can.create && (
+          <Button ref={trigger} aria-controls="support-inquiry-new-panel" aria-expanded={open} onClick={() => setOpen(true)}>
+            문의하기
+          </Button>
+        )}
+      </PageBar>
       <Frame
           query={query}
           total={total}
           filter={
             <FilterPanel onReset={() => go({ title: "", status: [] })}>
               <Search label="제목" placeholder="제목으로 검색" value={query.title} maxLength={200} onSearch={(title) => go({ title })} />
-              <Checks label="상태" values={statuses} value={query.status} onPick={(status) => go({ status })} last />
+              <SupportChecks label="상태" values={statuses} value={query.status} onPick={(status) => go({ status })} />
             </FilterPanel>
           }
-          action={
-            can.create && (
-              <Button ref={trigger} aria-controls="support-inquiry-new-panel" aria-expanded={open} onClick={() => setOpen(true)}>
-                문의하기
-              </Button>
-            )
-          }
         >
-          <DataTable columns={columns} rows={items} rowKey={(i) => i.inquiryId} empty={query.title || query.status.length ? "찾는 문의가 없습니다." : "등록한 문의사항이 없습니다."} />
+          <DataTable columns={columns} rows={items} rowKey={(i) => i.inquiryId} empty="문의사항이 없습니다." fillEmpty />
       </Frame>
       {can.create && <InquiryFormPanel id="support-inquiry-new-panel" open={open} onClose={() => setOpen(false)} trigger={trigger} />}
     </>

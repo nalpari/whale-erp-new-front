@@ -25,7 +25,7 @@ function failureOf(error: unknown, what: string, log: Record<string, unknown>, u
 /** 일괄 저장 요청. storeIds 가 비면 관리 점포 전체다. 결과 모름(5xx · 끊김)이면 화면이 지난 요청을 다시 읽어 만들어졌는지 보인다 */
 export async function requestBulkExport(storeIds: unknown): Promise<ActionResult<{ item: BulkExport }>> {
   if (!Array.isArray(storeIds) || storeIds.length > 1000 || !storeIds.every(validId))
-    return { ok: false, status: 400, message: "업무 범위를 다시 골라 주세요.", messages: ["업무 범위를 다시 골라 주세요."] };
+    return { ok: false, status: 400, message: "업무 범위를 다시 선택해 주세요.", messages: ["업무 범위를 다시 선택해 주세요."] };
   try {
     const item = await send<BulkExport>("/staff-members/bulk-exports", "POST", storeIds.length ? { storeIds } : {});
     return { ok: true, item };

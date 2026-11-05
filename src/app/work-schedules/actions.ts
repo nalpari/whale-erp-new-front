@@ -24,7 +24,7 @@ import type { ActionFailure, ActionResult } from "../staff-members/[id]/actions"
 const validId = (id: unknown): id is number => typeof id === "number" && Number.isInteger(id) && id >= 1 && id <= 2_147_483_647;
 const validDate = (d: unknown): d is string => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d);
 const NOT_FOUND: ActionFailure = { ok: false, status: 404, message: "근무스케줄을 찾을 수 없습니다." };
-const BAD_INPUT: ActionFailure = { ok: false, status: 400, message: "직원과 근무일을 골라 주세요." };
+const BAD_INPUT: ActionFailure = { ok: false, status: 400, message: "직원과 근무일을 선택해 주세요." };
 /** 등록 결과를 모를 때 — 이미 저장됐을 수 있어 다시 저장하게 두지 않는다(같은 시각이면 겹침으로 막히지만, 화면을 새로 받아 확인하게 한다) */
 const SAVE_UNKNOWN = "저장 결과를 확인하지 못했습니다. 화면을 새로 불러왔으니 확인해 주세요.";
 
@@ -123,7 +123,7 @@ export async function deleteScheduleAction(id: unknown): Promise<ActionResult> {
 
 /** 지난 주 복사(#204) — 넣을 주의 월요일. 빈 주가 아니면 409 문장 그대로 */
 export async function copyLastWeekAction(storeId: unknown, weekStart: unknown): Promise<ActionResult<{ copied: number }>> {
-  if (!validId(storeId) || !validDate(weekStart)) return { ok: false, status: 400, message: "점포와 주를 다시 골라 주세요." };
+  if (!validId(storeId) || !validDate(weekStart)) return { ok: false, status: 400, message: "점포와 주를 다시 선택해 주세요." };
   try {
     const result = await copyLastWeek(storeId, weekStart);
     refresh();

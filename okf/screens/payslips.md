@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-05T07:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-05T08:00:00Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -55,7 +55,7 @@ sources:
 `screenPath()`, 목록 조작 · 초안 팝업 · 검토 화면(클라이언트)은 `bpPath`, 초안 작성 뒤 이동(서버 액션)은 `bpHref`. 상세의 출퇴근 기록 · 근로계약 링크도
 탭 BP 주소 화면이라 같이 씌운다. 목록이 api 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 · 없는 BP 404, `deniedMessageOf`)을 받으면 오류 화면이
 아니라 그 문장을 보인다(근로계약 목록과 같다). 보통은 오지 않는다 — SessionGate 가 BP 없는 주소를 마지막으로 고른 BP 의 탭 BP 주소로 보내고, 고른 BP 가
-없으면 플랫폼 탭으로 열어 「BP 를 먼저 골라 주세요」로 막는다. 상세의 404(없는 BP 포함)는 그대로 찾을 수 없음이다.
+없으면 플랫폼 탭으로 열어 「BP 를 먼저 선택해 주세요」로 막는다. 상세의 404(없는 BP 포함)는 그대로 찾을 수 없음이다.
 상태 · 검토 사유 · 처리 구분 · 근로계약 상태 · 계약 유형 · 발송 채널 · 발송 결과 한글은 `getEnum` 으로 받는다(`PayslipStatus` ·
 `PayslipReviewReason` · `PayslipLogType` · `ContractStatus` · `EmploymentType` · `PayslipDispatchChannel` · `DispatchResult`).
 

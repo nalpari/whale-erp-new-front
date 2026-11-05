@@ -99,7 +99,7 @@ function CheckGroup({ label, name, options, message }: { label: string; name: st
           </label>
         ))}
       </div>
-      <span className="-mt-[2px] text-[14px] leading-[1.5] text-[#767676]">하나 이상 고릅니다. 여러 개 골라도 됩니다.</span>
+      <span className="-mt-[2px] text-[14px] leading-[1.5] text-[#767676]">하나 이상 선택해 주세요.</span>
     </fieldset>
   );
 }
@@ -266,7 +266,7 @@ export function LeadForm({ options, submit = sampleSubmit }: { options: LeadOpti
           </div>
         </Section>
         <Section title="도입 문의 내용">
-          <CheckGroup label="관심 서비스" name="interests" options={options.interests} message="관심 서비스를 하나 이상 골라 주세요." />
+          <CheckGroup label="관심 서비스" name="interests" options={options.interests} message="관심 서비스를 하나 이상 선택해 주세요." />
           <div className="grid grid-cols-2 gap-[16px]">
             <Field label="도입 예정 시기">
               <Select name="planPeriodCode" options={options.periods} />

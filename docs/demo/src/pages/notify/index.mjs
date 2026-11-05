@@ -33,7 +33,8 @@ export default ({ A, R }) => {
   // 왼쪽 필터 없이 목록만(2026-10-02 재영)
   const body = ui.listBody(
     "",
-    `<div class="flex flex-col gap-[12px]">` +
+    // 목록 칸은 남는 높이를 받는다 — 다 지워 비면 표(data-fill-empty)가 열 이름 줄을 두고 남는 높이를 채운다(앱 DataTable fillEmpty, 2026-11-05 사용자 지정)
+    `<div class="flex flex-1 flex-col gap-[12px]">` +
       // 위 줄(앱 notification-list.tsx, 2026-11-04 사용자 지정): 왼쪽 「총 N 건 · 미확인 N 건」(미확인은 표의 점과 같은 빨강), 오른쪽 「전체 선택」 체크 · [모두 읽음] ·
       // [선택 삭제] · 한 쪽 건수. 한 줄 가운데에 맞춘다. 고른 알림이 없으면 [선택 삭제]는 막힌 버튼이고 이유를 말풍선으로 보인다(전엔 누른 뒤 「선택된 알림이 없습니다」 창)
       `<div class="flex items-center gap-[6px]"><p class="mr-auto text-[14px] text-erp-ink">총 <b class="font-semibold">${rows.length}</b> 건<span class="px-[6px] text-erp-muted">·</span><span class="text-erp-off">미확인 <b data-unread-count class="font-semibold">${unread}</b> 건</span></p>` +
@@ -54,7 +55,7 @@ export default ({ A, R }) => {
         ],
         rows,
         "받은 알림이 없습니다.",
-      ).replace("<table ", '<table id="notify-list" data-empty="받은 알림이 없습니다." ') +
+      ).replace("<table ", '<table id="notify-list" data-fill-empty data-empty="받은 알림이 없습니다." ') +
       `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div></div>`,
   );
   return {

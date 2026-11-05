@@ -14,7 +14,7 @@ export default ({ A, R }) => {
 
   const head = ui.sectionHead(
     `서지안 <span class="pl-[6px] text-[14px] font-normal text-erp-label">2026-08 · 모리커피 서초점</span>`,
-    ui.button("목록", { variant: "off", href: L("staff/payslips.html") }) +
+    ui.button("목록", { href: L("staff/payslips.html") }) +
       p.ask("임시저장", "soft", "급여명세서를 임시저장하시겠습니까?") +
       x.dialogTrigger("확정", confirmId),
   );

@@ -359,7 +359,7 @@ function Ready({
     // 없을 때다. 강제 팝업 대신 바로가기에서 고르라고 알린다(2026-10-19 재영).
     // shortcut: 안내는 브라우저 alert 다. 공통 확인 팝업이 생기면 바꾼다.
     const needsBp = value.serviceCode === "PLATFORM" && serviceOfPath(value.menus, pathname) === "WHALE_ERP";
-    alert(needsBp ? "웨일ERP 바로가기에서 BP 를 먼저 골라 주세요." : "접근 권한이 없는 메뉴입니다.");
+    alert(needsBp ? "웨일ERP 바로가기에서 BP 를 먼저 선택해 주세요." : "접근 권한이 없는 메뉴입니다.");
     if (history.length > 1) history.back();
     else router.replace(home);
   }, [allowed, home, pathname, router, value.menus, value.serviceCode]);

@@ -122,10 +122,10 @@ export const render = ({ A, R }, { missing = 0 } = {}) => {
     }),
   );
   // 빈 상태 — 카드 보기는 테두리 상자가 목록 영역 남는 높이를 채우고 문구는 그 가운데, 표 보기는 열 이름 줄을 남기고 그 아래를 채운다
-  // (앱 page.tsx · DataTable fillEmpty, 2026-11-05 사용자 지정 — 전엔 위쪽 92px 상자). 데모 목록은 늘 점포가 있어 거른 결과가 비었을 때의 「조회된 …」만 둔다 —
+  // (앱 page.tsx · DataTable fillEmpty, 2026-11-05 사용자 지정 — 전엔 위쪽 92px 상자). 데모 목록은 늘 점포가 있어 거른 결과가 비었을 때의 「조건에 맞는 …」만 둔다 —
   // 점포가 아예 없으면 앱은 「등록된 점포가 없습니다.」(BP 마스터) · 「담당 점포가 없습니다.」(그 밖 역할)다. 상단 범위와 고른 점포유형이 겹치지 않으면 앱은
-  // 「상단 범위와 고른 점포유형이 겹치지 않아 조회된 점포가 없습니다.」다 — 데모 헤더 범위는 목록을 거르지 않아 이 문구는 두지 않는다
-  const EMPTY = "조회된 점포가 없습니다.";
+  // 「상단 범위와 고른 점포유형이 겹치지 않아 조건에 맞는 점포가 없습니다.」다 — 데모 헤더 범위는 목록을 거르지 않아 이 문구는 두지 않는다
+  const EMPTY = "조건에 맞는 점포가 없습니다.";
   const cardEmpty = `<p data-empty hidden class="col-span-full flex min-h-[92px] items-center justify-center rounded-[4px] border border-erp-panel-line text-[14px] text-erp-muted">${EMPTY}</p>`;
   const table = ui.fillTable(cols, rows, EMPTY);
 
@@ -141,7 +141,7 @@ export const render = ({ A, R }, { missing = 0 } = {}) => {
       `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
   );
   // 찾지 못한 점포 안내(앱 page.tsx) — 지워졌거나 볼 수 없게 된 점포를 조건에서 뺐다
-  const missingBand = missing ? noticeBand("info", `고른 점포 ${missing}곳을 찾을 수 없어 조건에서 뺐습니다.`, "지워졌거나 볼 수 없게 된 점포입니다.") : "";
+  const missingBand = missing ? noticeBand("info", `선택한 점포 ${missing}곳을 찾을 수 없어 조건에서 뺐습니다.`, "지워졌거나 볼 수 없게 된 점포입니다.") : "";
 
   return {
     title: missing ? "점포 정보 관리 · 찾지 못한 점포" : "점포 정보 관리",

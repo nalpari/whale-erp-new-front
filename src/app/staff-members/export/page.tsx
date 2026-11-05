@@ -9,7 +9,7 @@ export default async function StaffExportPage() {
   return (
     <>
       <PageBar title="직원 자료 일괄 저장">
-        <Button variant="off" href={await bpHref("/staff-members")}>
+        <Button href={await bpHref("/staff-members")}>
           목록
         </Button>
       </PageBar>

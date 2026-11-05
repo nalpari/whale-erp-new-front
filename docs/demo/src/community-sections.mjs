@@ -35,7 +35,7 @@ export function communitySections({ A, R }) {
     ["파트타이머 주휴수당이 계산되지 않습니다", "㈜한강상회 · 정하윤", "직원·근로", "답변 대기", "09-04", "support/inquiry-detail.html"],
     ["KIOSK 구독을 늘리고 싶습니다", "온기식당 · 배정숙", "요금·구독", "답변 대기", "09-02", "support/inquiry-detail-received.html"],
     ["가맹점 초대 메일이 반송됩니다", "㈜한강상회 · 정하윤", "점포·설비", "답변 완료", "08-30", "support/inquiry-detail-done.html"],
-  ].map(([t, from, c, s, d, to]) => [ui.link(t, link(R, to)), from, c, answer(s), d]);
+  ].map(([t, from, c, s, d, to]) => [c, ui.link(t, link(R, to)), from, answer(s), d]); // 분류 · 제목 · 문의자 · 상태 · 접수(앱과 같다)
   // 도입문의 목록은 api GET /leads 의 칸(문의자 · 전화번호 · 업종 · 관심 서비스 · 상태 · 접수 일시). 상호 · 운영 형태는 접수 때 받지 않는다(WHALEERP-288).
   const leadDetail = link(R, "support/lead-detail.html");
   const leads = [
@@ -62,11 +62,11 @@ export function communitySections({ A, R }) {
         pager(A),
     },
     asks: {
-      filter: ui.filterPanel(A, [search(A, "제목", "제목으로 검색"), search(A, "보낸 곳", "BP·점포 또는 이름으로 검색"), pick(A, "상태", ["답변 대기", "답변 완료"])]),
+      filter: ui.filterPanel(A, [search(A, "제목", "제목으로 검색"), search(A, "문의자", "BP·점포 또는 이름으로 검색"), pick(A, "상태", ["답변 대기", "답변 완료"])]),
       content:
         ui.listToolbar(7, "") +
         ui.dataTable(
-          [{ header: "제목", align: "left" }, { header: "보낸 곳", width: "w-[220px]" }, { header: "분류", width: "w-[140px]" }, STATE, { header: "접수", width: "w-[110px]" }],
+          [{ header: "분류", width: "w-[160px]" }, { header: "제목", align: "left" }, { header: "문의자", width: "w-[300px]" }, STATE, { header: "접수", width: "w-[110px]" }],
           asks,
         ) +
         pager(A),

@@ -33,7 +33,7 @@ export default ({ A, R }) => {
     "도입 문의 내용",
     "",
     // 관심 서비스는 하나 이상 여러 개(api interests 배열) — 하나도 안 고르면 guest.js 「하나 이상 고르기」가 제출을 막는다.
-    `<fieldset data-check-group="관심 서비스를 하나 이상 골라 주세요." class="flex flex-col gap-[10px]"><legend class="${g.LABEL} mb-[10px]">관심 서비스${REQUIRED}</legend><div class="flex h-[56px] items-center gap-[32px] text-[16px] leading-[1.5]">${["매장운영", "재무관리", "프랜차이즈", "기타"]
+    `<fieldset data-check-group="관심 서비스를 하나 이상 선택해 주세요." class="flex flex-col gap-[10px]"><legend class="${g.LABEL} mb-[10px]">관심 서비스${REQUIRED}</legend><div class="flex h-[56px] items-center gap-[32px] text-[16px] leading-[1.5]">${["매장운영", "재무관리", "프랜차이즈", "기타"]
       .map((t) => `<label class="flex items-center gap-[8px] text-guest-ink"><input type="checkbox" name="interests" value="${t}" class="${g.CHECKBOX}">${t}</label>`)
       .join("")}</div><span class="-mt-[2px] text-[14px] leading-[1.5] text-[#767676]">하나 이상 고릅니다. 여러 개 골라도 됩니다.</span></fieldset>` +
       // 도입 예정 시기는 선택(api planPeriodCode 없어도 됨).

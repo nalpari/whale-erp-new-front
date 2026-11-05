@@ -27,7 +27,7 @@ const fold = (summary, body) =>
 const doneAnswer = (c) =>
   prose(c.answer) +
   `<p class="text-[13px] text-erp-label">수정됨 · ${c.editedAt}</p>` +
-  fold("답변 수정", ui.field("내용", ui.textarea({ rows: 6, value: c.answer })) + spread(note("고쳐도 상태는 답변 완료 그대로입니다. 문의자에게 알림은 다시 가지 않습니다."), ui.button("답변 저장"))) +
+  fold("답변 수정", ui.field("내용", ui.textarea({ rows: 6, value: c.answer })) + spread(note("답변을 수정해도 처리상태는 '답변완료'로 유지되며, 문의자에게 알림이 발송되지 않습니다."), ui.button("답변 저장"))) +
   fold("이전 답변 1개", `<p class="text-[13px] text-erp-label">${c.firstAt}</p>` + prose(c.firstAnswer));
 
 // 첨부파일(운영 정책 CNT-18): 이미지는 작은 미리보기, PDF 는 이름 + 내려받기.
@@ -72,11 +72,11 @@ export const render = ({ A, R }, state = "wait") => {
     box(c.title, hint(c.hint),
       prose(c.body) + (c.files ? ui.detailTable("첨부파일", [["이미지", thumb(...c.files[0])], ["PDF", pdf(...c.files[1])]]) : ""),
     ) +
-    box("답변", hint("문의한 사람에게 보입니다."), done ? doneAnswer(c) :
-      ui.field("내용", ui.textarea({ placeholder: "문의한 분이 그대로 읽습니다. 어떤 화면에서 무엇을 하면 되는지 적어 주세요." })) +
-        spread(note("저장하면 상태가 즉시 답변 완료로 바뀌고 문의자에게 알림함과 메일로 알립니다. 처리 시작을 거치지 않고 바로 답해도 됩니다. 그 뒤에도 답변은 고칠 수 있습니다. 다른 운영자가 먼저 저장했으면 막고 최신 내용을 다시 보입니다."), ui.button("답변 저장")),
+    box("답변", hint("문의자에게 표시됩니다."), done ? doneAnswer(c) :
+      ui.field("내용", ui.textarea({ placeholder: "문의자가 확인할 답변을 작성해 주세요.\n문제 해결 방법이나 필요한 조치를 구체적으로 안내해 주세요." })) +
+        spread(note("답변을 저장하면 처리 상태가 '답변완료'로 변경되며, 문의자에게 알림함과 이메일로 안내됩니다. 그 뒤에도 답변은 고칠 수 있습니다. 다른 운영자가 먼저 저장했으면 막고 최신 내용을 다시 보입니다."), ui.button("답변 저장")),
     ) +
-    box("운영자 메모", hint("문의자에게 보이지 않습니다."),
+    box("운영자 메모", hint("운영자에게만 표시됩니다."),
       ui.field(
         "내부 기록",
         ui.textarea({ rows: 4, value: c.memo }),
@@ -87,7 +87,7 @@ export const render = ({ A, R }, state = "wait") => {
     plain(
       // 이름 · 역할 · BP · 점포는 api 상세의 senderName · senderRoleTypeCode · bpName · storeName.
       // 운영 점포 · 요금 PLAN · 이전 문의는 1차에 두지 않는다(2026-10-14 재영). 요금 PLAN 은 1팀 영역이다.
-      ui.detailTable("보낸 곳", [
+      ui.detailTable("문의자", [
         ...c.sender,
         ["점포", p.sub("BP 단위 문의")],
       ]),
@@ -96,8 +96,8 @@ export const render = ({ A, R }, state = "wait") => {
       steps([
         ["접수", `${c.at} · 운영 알림 발송됨`, true],
         // 「확인」 줄은 처리중을 거친 건만 완료로 그린다. 처리 시작 없이 바로 답했으면 api 가 processingStartedAt 을 null 로 주므로 이 줄을 숨긴다.
-        received ? ["확인", "[처리 시작]을 누르면 처리중 · 시각 · 운영자가 남음", false] : ["확인", `${c.processing} · 처리중으로 바꿈`, true],
-        done ? ["답변", c.replied, true] : ["답변", "저장하면 답변 완료 · 그 뒤에도 고칠 수 있음", false],
+        received ? ["확인", "[처리 시작]을 누르면 문의자에게 처리중으로 표시됩니다.", false] : ["확인", `${c.processing} · 처리중으로 바꿈`, true],
+        done ? ["답변", c.replied, true] : ["답변", "답변을 저장하면 문의자에게 답변완료로 표시됩니다.", false],
       ]),
     );
 
@@ -110,7 +110,7 @@ export const render = ({ A, R }, state = "wait") => {
       body: ui.detailBody(
         p.detailHead(
           "문의사항 상세",
-          `<div class="flex items-center gap-[6px]">${received ? ui.button("처리 시작", { variant: "soft" }) : ""}${ui.button("목록", { variant: "off", href: link(R, "support/community-asks.html") })}</div>`,
+          `<div class="flex items-center gap-[6px]">${received ? ui.button("처리 시작", { variant: "soft" }) : ""}${ui.button("목록", { href: link(R, "support/community-asks.html") })}</div>`,
         ) + p.cols(left, right),
       ),
     }),

@@ -120,7 +120,7 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
     );
   } else if (search === null) {
     // 범위에 드는 점포가 이 탭에 없다(다른 BP 탭에서 복사한 범위 등) — 쿼리를 빼면 BP 전체가 보이므로 부르지 않는다
-    body = <Notice text="상단 범위에 해당하는 점포가 이 탭에 없습니다. 상단에서 범위를 다시 고르세요." />;
+    body = <Notice text="상단 범위에 해당하는 점포가 이 탭에 없습니다. 상단에서 범위를 다시 선택하세요." />;
   } else if (oneStore !== null) {
     body = <OneStoreScreen storeId={oneStore} reloadKey={String(reloads)} />;
   } else {

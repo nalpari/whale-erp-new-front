@@ -513,7 +513,7 @@ export function StoreFormView(props: Props) {
           refreshStores();
           return setFailure({
             title: `점포 정보는 저장했지만 대표 이미지는 저장하지 못했습니다 — ${imageResult.message}`,
-            detail: "고른 이미지는 그대로 두었습니다. 다시 저장해 주세요.",
+            detail: "선택한 이미지는 그대로 두었습니다. 다시 저장해 주세요.",
           });
         }
         // 점포명 · 상태가 바뀌었으면 헤더 범위 선택기 · 점포 고르기에 바로 넣는다(바뀐 게 없으면 알리지 않는다).
@@ -765,7 +765,7 @@ export function StoreFormView(props: Props) {
                   value={hasCoordinateInput(form.latitude, form.longitude) && form.isLocationApplied ? "Y" : "N"}
                   onChange={(e) => set("isLocationApplied", e.target.value === "Y")}
                   disabled={!hasCoordinateInput(form.latitude, form.longitude)}
-                  title={hasCoordinateInput(form.latitude, form.longitude) ? undefined : "위도 · 경도가 있어야 사용으로 고를 수 있습니다."}
+                  title={hasCoordinateInput(form.latitude, form.longitude) ? undefined : "위도 · 경도가 있어야 사용으로 바꿀 수 있습니다."}
                 >
                   <option value="Y">사용</option>
                   <option value="N">미사용</option>
@@ -787,7 +787,7 @@ export function StoreFormView(props: Props) {
               <br />
               <b className="font-semibold">출퇴근 위치적용</b>을 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.
               <br />
-              위도 · 경도가 없으면 <b className="font-semibold">출퇴근 위치적용</b>을 사용으로 고를 수 없습니다.
+              위도 · 경도가 없으면 <b className="font-semibold">출퇴근 위치적용</b>을 사용으로 바꿀 수 없습니다.
             </Note>
           </Stack>
           <Labeled label="대표 이미지">

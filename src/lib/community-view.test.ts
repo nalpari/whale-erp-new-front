@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   faqBody,
+  noneChecked,
   parseInquiryQuery,
   parseSupportFaqQuery,
   parseSupportInquiryQuery,
@@ -83,13 +84,13 @@ test("validatePost — 맞으면 빈 목록", () => {
 });
 
 test("validatePost — 게시만 노출 대상이 있어야 한다", () => {
-  assert.deepEqual(validatePost(notice({ audiences: [] }), "PUBLISHED", 0, []), ["게시하려면 노출 대상을 하나 이상 골라 주세요."]);
+  assert.deepEqual(validatePost(notice({ audiences: [] }), "PUBLISHED", 0, []), ["게시하려면 노출 대상을 하나 이상 선택해 주세요."]);
   assert.deepEqual(validatePost(notice({ audiences: [] }), "DRAFT", 0, []), []);
 });
 
 test("validatePost — 공지는 유형, FAQ 는 카테고리가 필수", () => {
-  assert.deepEqual(validatePost(notice({ noticeType: "" }), "DRAFT", 0, []), ["공지사항 유형을 골라 주세요."]);
-  assert.deepEqual(validatePost(faq({ faqCategoryCode: "" }), "DRAFT", 0, []), ["FAQ 카테고리를 골라 주세요."]);
+  assert.deepEqual(validatePost(notice({ noticeType: "" }), "DRAFT", 0, []), ["공지사항 유형을 선택해 주세요."]);
+  assert.deepEqual(validatePost(faq({ faqCategoryCode: "" }), "DRAFT", 0, []), ["FAQ 카테고리를 선택해 주세요."]);
 });
 
 test("validatePost — 제목 · 본문 공백과 길이", () => {
@@ -108,7 +109,7 @@ test("validatePost — 첨부는 남는 것 + 더하는 것 5개, 종류 · 크�
   assert.deepEqual(validatePost(notice(), "DRAFT", 4, [ok]), []);
   assert.equal(validatePost(notice(), "DRAFT", 4, [ok, ok]).length, 1);
   assert.deepEqual(validatePost(notice(), "DRAFT", 0, [{ name: "a.gif", size: 1 }]), ["a.gif: JPG · PNG · PDF 만 올릴 수 있습니다."]);
-  assert.deepEqual(validatePost(notice(), "DRAFT", 0, [{ name: "a.jpg", size: 10 * 1024 * 1024 + 1 }]), ["a.jpg: 파일 하나는 10MB 까지 올릴 수 있습니다."]);
+  assert.deepEqual(validatePost(notice(), "DRAFT", 0, [{ name: "a.jpg", size: 10 * 1024 * 1024 + 1 }]), ["a.jpg: 10MB 이하 파일만 첨부할 수 있습니다."]);
 });
 
 test("postFields — 공지 칸은 공지에만, 노출 대상은 이름을 되풀이", () => {
@@ -151,9 +152,11 @@ test("pickInquiryFiles — 6번째 · 10MB 초과 · 다른 종류는 그 파일
   ]);
   assert.deepEqual(accepted.map((f) => f.name), ["a.png", "d.JPG"]);
   assert.equal(rejected.length, 3);
-  assert.match(rejected[0], /^b\.hwp: /);
-  assert.match(rejected[1], /^c\.pdf: .*10MB/);
-  assert.match(rejected[2], /^e\.pdf: .*5개/);
+  // 파일명과 까닭을 나눠 돌려준다 — 화면이 두 줄로 보인다(2026-11-05 사용자 지정)
+  assert.deepEqual(rejected.map((r) => r.name), ["b.hwp", "c.pdf", "e.pdf"]);
+  assert.equal(rejected[0].reason, "JPG, PNG, PDF 파일만 첨부할 수 있습니다.");
+  assert.equal(rejected[1].reason, "10MB 이하 파일만 첨부할 수 있습니다.");
+  assert.equal(rejected[2].reason, "최대 5개까지 첨부할 수 있습니다.");
 });
 
 test("draftView — 그사이 저장된 값이 바뀌면 손대지 않은 글은 버리고, 고쳐 쓰던 글은 남기되 알린다", () => {
@@ -177,6 +180,16 @@ test("체크박스 필터 — 여러 값을 받고, 모르는 값 · 겹친 값�
   assert.deepEqual(parseSupportFaqQuery({ faqCategoryCode: ["A".repeat(20), "B".repeat(25)] }).faqCategoryCode, ["A".repeat(20)]);
   const noisy = [...Array(10).fill(""), ...Array.from({ length: 50 }, (_, i) => `C${i}`)];
   assert.equal(parseSupportFaqQuery({ faqCategoryCode: noisy }).faqCategoryCode.length, 50);
+});
+
+test("고객지원 체크박스 — 모두 고르면 전체(빈 배열), 모두 끄면 NONE 하나", () => {
+  assert.deepEqual(parseSupportNoticeQuery({ noticeType: ["MAINTENANCE", "FEATURE", "TERMS", "GENERAL"] }).noticeType, []);
+  assert.deepEqual(parseSupportInquiryQuery({ status: ["RECEIVED", "IN_PROGRESS", "ANSWERED"] }).status, []);
+  assert.deepEqual(parseSupportNoticeQuery({ noticeType: ["_NONE", "TERMS"] }).noticeType, ["_NONE"]);
+  assert.deepEqual(parseSupportInquiryQuery({ status: "_NONE" }).status, ["_NONE"]);
+  assert.deepEqual(parseSupportFaqQuery({ faqCategoryCode: ["_NONE", "A"] }).faqCategoryCode, ["_NONE"]);
+  assert.ok(noneChecked(["_NONE"]) && !noneChecked(["NONE"]) && !noneChecked([]) && !noneChecked(["TERMS"]));
+  assert.equal(queryString(parseSupportNoticeQuery({ noticeType: "_NONE" })), "?noticeType=_NONE");
 });
 
 test("pageWindow — 10개 묶음과 앞 · 뒤 묶음", () => {

@@ -547,7 +547,7 @@ export function ContractForm({
       </div>
 
       <div className="flex flex-col gap-[24px]">
-        {!signedIn && <Band risk title="로그인이 필요합니다." desc="관리자 로그인이 생기면 근무지를 고르고 저장할 수 있습니다." />}
+        {!signedIn && <Band risk title="로그인이 필요합니다." desc="관리자 로그인이 생기면 근무지를 선택하고 저장할 수 있습니다." />}
 
         <FormGroup title="직원 정보">
           <FormRow>
@@ -776,7 +776,7 @@ export function ContractForm({
             <Item
               label="주휴일"
               required={holiday !== null}
-              help="특정 요일로 정해 계약서 휴일 조항에 적는다. 근무하는 요일은 고를 수 없고, 주 15시간 미만이면 주휴가 없다."
+              help="특정 요일로 정해 계약서 휴일 조항에 적는다. 근무하는 요일은 선택할 수 없고, 주 15시간 미만이면 주휴가 없다."
               errors={errs.weeklyHoliday}
             >
               {(id) =>

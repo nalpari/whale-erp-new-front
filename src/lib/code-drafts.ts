@@ -194,3 +194,10 @@ export const ownerTerm = (raw: string | string[] | undefined): OwnerFilter | und
 
 /** api 에 실을 관리주체 — 하나만 고른 때만. NONE(둘 다 끔)은 api 를 부르지 않고 빈 목록으로 보이므로 부르는 쪽이 먼저 가른다. */
 export const ownerQuery = (v: OwnerFilter | undefined): GroupOwner | undefined => (v === "NONE" ? undefined : v);
+
+/**
+ * 그룹 목록에 검색 조건이 걸렸는가 — 관리주체는 하나만 고르거나 둘 다 끈 때 조건이다(둘 다 고름 = 전체). 0건일 때 조건 없이 한 번 더 물을지 가른다
+ * (점포 · 직원 목록과 같다, 2026-11-05 사용자 지정). 서버 화면(page)이 부르므로 클라이언트 파일(code-group-filter)에 두지 않는다.
+ */
+export const hasGroupSearch = ({ groupCode, groupName, manageOwnerCode }: { groupCode: string; groupName: string; manageOwnerCode?: OwnerFilter }) =>
+  Boolean(groupCode || groupName || manageOwnerCode); // 하나만 고름 · 둘 다 끔(NONE)이 조건이다

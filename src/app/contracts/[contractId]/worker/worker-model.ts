@@ -38,7 +38,7 @@ export function workerProblemsByField(f: WorkerForm): Partial<Record<WorkerField
   if (!f.name.trim()) out.name = "이름을 입력하세요.";
   if (!/^[0-9]{10,11}$/.test(digits(f.phone))) out.phone = "휴대전화번호는 숫자 10~11자리입니다.";
   if (!f.birthDate) out.birthDate = "생년월일을 입력하세요.";
-  if (!f.gender) out.gender = "성별을 고르세요.";
+  if (!f.gender) out.gender = "성별을 선택하세요.";
   return out;
 }
 

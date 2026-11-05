@@ -20,7 +20,7 @@ const STAFF_LOAD_FAILED = "직원 목록을 불러오지 못했습니다. 다시
 // 등록 결과 모름. 서버 액션 호출 자체가 끊긴 경우의 문구로, 서버 액션의 결과 모름 문구와 같다
 const CREATE_UNKNOWN = "등록 결과를 확인하지 못했습니다. 목록에서 등록됐는지 확인해 주세요.";
 // 배정 대상 · 수행 방식 설명. 데모의 ⓘ 툴팁 문구(2026-10-08 재영)를 공통 툴팁이 없어 칸 아래 안내로 둔다.
-const TIP_TARGET = "개인: 고른 직원에게만 보입니다. 여러 명을 고르면 한 사람에 한 건씩 생깁니다. 근무지 전체: 그 근무지의 체결 완료 근로계약이 있고 가입을 마친 재직 직원(퇴직 예정 포함) 모두에게 보입니다.";
+const TIP_TARGET = "개인: 선택한 직원에게만 보입니다. 여러 명을 선택하면 한 사람에 한 건씩 생깁니다. 근무지 전체: 그 근무지의 체결 완료 근로계약이 있고 가입을 마친 재직 직원(퇴직 예정 포함) 모두에게 보입니다.";
 const TIP_MODE = "각자 수행: 직원마다 한 건씩 생기고 저마다 완료합니다. 한 명 수행: 한 건을 함께 보고, 한 명이 완료하면 모두에게 완료로 보입니다. 등록한 뒤에는 바꿀 수 없습니다.";
 
 // 입력이 여럿인 칸(라디오 · 직원 고르기). <label> 하나로 묶을 수 없어 group 으로 둔다(근로계약서 초안 작성의 Group 과 같다).
@@ -248,9 +248,9 @@ function TodoFormFields({
                 </div>
               </Group>
               {form.assigneeType === "INDIVIDUAL" ? (
-                <Group label="직원" required help="고른 근무지의 체결 완료 근로계약이 있고 가입을 마친 재직 직원(퇴직 예정 포함) 중 한 명 이상 고르고, 직원마다 1건씩 생긴다. 근무지를 바꾸면 고른 직원을 비운다.">
+                <Group label="직원" required help="선택한 근무지의 체결 완료 근로계약이 있고 가입을 마친 재직 직원(퇴직 예정 포함) 중 한 명 이상 선택하고, 직원마다 1건씩 생긴다. 근무지를 바꾸면 선택한 직원을 비운다.">
                   {!form.storeId ? (
-                    <span className="text-[14px] text-erp-muted">근무지를 먼저 골라 주세요.</span>
+                    <span className="text-[14px] text-erp-muted">근무지를 먼저 선택해 주세요.</span>
                   ) : (
                     <>
                       <SearchField value={word} onValueChange={setWord} placeholder="이름 또는 휴대전화번호 끝자리" aria-label="직원 찾기" />
@@ -266,7 +266,7 @@ function TodoFormFields({
                         </span>
                       )}
                       {pool?.state === "ok" && (
-                        <ul aria-label="고를 수 있는 직원" className="flex max-h-[160px] flex-wrap gap-[6px] overflow-y-auto">
+                        <ul aria-label="선택할 수 있는 직원" className="flex max-h-[160px] flex-wrap gap-[6px] overflow-y-auto">
                           {candidates.length === 0 ? (
                             <li className="text-[14px] text-erp-muted">{pool.staff.length ? "맞는 직원이 없습니다." : "이 근무지에 배정할 수 있는 직원이 없습니다(체결 완료 근로계약이 있고 가입을 마친 재직 직원(퇴직 예정 포함)만)."}</li>
                           ) : (
@@ -281,7 +281,7 @@ function TodoFormFields({
                         </ul>
                       )}
                       {form.staff.length > 0 && (
-                        <ul aria-label="고른 직원" className="flex flex-wrap gap-[6px]">
+                        <ul aria-label="선택한 직원" className="flex flex-wrap gap-[6px]">
                           {form.staff.map((s) => (
                             <li key={s.staffMemberId} className={CHIP}>
                               <span className="font-medium">{staffChipText(s)}</span>
@@ -330,7 +330,7 @@ function TodoFormFields({
           <div className="flex flex-col gap-[4px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-ink">
             <p className="font-semibold">배정 방식이 만드는 차이</p>
             <p>
-              <b className="font-medium">개인 배정</b> — 고른 직원 각각에게 1건씩(한 명 이상). 수행 방식은 고르지 않는다.
+              <b className="font-medium">개인 배정</b> — 선택한 직원 각각에게 1건씩(한 명 이상). 수행 방식은 선택하지 않는다.
             </p>
             <p>
               <b className="font-medium">근무지 전체 · 각자 수행</b> — 등록할 때의 체결 완료 근로계약이 있고 가입을 마친 재직 직원(퇴직 예정 포함) 수만큼 생긴다. 나중에 들어온 직원에게는 생기지 않는다.

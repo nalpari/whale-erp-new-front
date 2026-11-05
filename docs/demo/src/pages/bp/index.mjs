@@ -79,7 +79,7 @@ export default ({ A, R }) => {
       header: platformHeader(A, R),
       title: "BP 마스터 계정 관리",
       titleRight: ui.slideTrigger("등록", "bp-new-panel"),
-      body: ui.listBody(filter, toolbar + ui.dataTable(cols, rows, "일치하는 BP가 없습니다.") + `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`),
+      body: ui.listBody(filter, toolbar + ui.dataTable(cols, rows, "조건에 맞는 BP가 없습니다.") + `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`),
       panels: bpNewPanel(A, R) + bpDetailPanel(A, R) + bpEditPanel(A, R),
     }),
   };

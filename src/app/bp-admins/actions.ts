@@ -104,8 +104,8 @@ export async function getBpAdminUpdateImpactAction(
   input: Pick<UpdateBpAdminInput, "accountStatus" | "storeIds">,
 ): Promise<ActionResult<BpAdminUpdateImpact>> {
   if (!validId(id)) return NOT_FOUND;
-  if (input?.accountStatus !== "ACTIVE" && input?.accountStatus !== "INACTIVE") return { ok: false, status: 400, message: "계정상태를 골라 주세요." };
-  if (!Array.isArray(input.storeIds) || !input.storeIds.every(validId)) return { ok: false, status: 400, message: "점포를 다시 골라 주세요." };
+  if (input?.accountStatus !== "ACTIVE" && input?.accountStatus !== "INACTIVE") return { ok: false, status: 400, message: "계정상태를 선택해 주세요." };
+  if (!Array.isArray(input.storeIds) || !input.storeIds.every(validId)) return { ok: false, status: 400, message: "점포를 다시 선택해 주세요." };
   try {
     const impact = await getBpAdminUpdateImpact(id, input);
     // 수가 빠지면 패널의 `deactivatedCount || unmappedCount` 검사가 거짓이 되어 확인창 없이 저장된다 — 모양이 다르면 실패로 돌려 저장을 막는다
@@ -148,7 +148,7 @@ export async function getBpAdminStoreOptionsAction(
   roleTypeCode: BpAdminRoleType,
   adminAccountId?: number,
 ): Promise<ActionResult<{ items: BpAdminStoreOption[] }>> {
-  if (!ROLE_TYPES.includes(roleTypeCode)) return { ok: false, status: 400, message: "계정 역할을 골라 주세요." };
+  if (!ROLE_TYPES.includes(roleTypeCode)) return { ok: false, status: 400, message: "계정 역할을 선택해 주세요." };
   if (adminAccountId !== undefined && !validId(adminAccountId)) return NOT_FOUND;
   try {
     return { ok: true, items: await getBpAdminStoreOptions(roleTypeCode, adminAccountId) };

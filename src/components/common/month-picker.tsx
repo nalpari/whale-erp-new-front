@@ -35,7 +35,7 @@ export function MonthPicker({
         type="button"
         aria-expanded={open}
         aria-controls={id}
-        aria-label={`${year}년 ${month}월 — 연 · 월 고르기`}
+        aria-label={`${year}년 ${month}월 — 연 · 월 선택`}
         onClick={() => {
           setShown(year);
           setOpen(!open);

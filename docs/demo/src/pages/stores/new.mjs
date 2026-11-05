@@ -36,7 +36,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
       ui.formRow(
         ui.field("위도", ui.textField({ inputmode: "decimal", placeholder: "예: 37.556312" }), "w-[160px]"),
         ui.field("경도", ui.textField({ inputmode: "decimal", placeholder: "예: 126.901845" }), "w-[160px]"),
-        ui.field("출퇴근 위치적용", ui.select(["사용", "미사용"], { value: "미사용", disabled: true, title: "위도 · 경도가 있어야 사용으로 고를 수 있습니다." }), "w-[150px]"),
+        ui.field("출퇴근 위치적용", ui.select(["사용", "미사용"], { value: "미사용", disabled: true, title: "위도 · 경도가 있어야 사용으로 바꿀 수 있습니다." }), "w-[150px]"),
         `<div class="self-end">${ui.button("주소로 다시 계산", { variant: "soft", disabled: true })}</div>`,
       ) +
       LOCATION_NOTE +

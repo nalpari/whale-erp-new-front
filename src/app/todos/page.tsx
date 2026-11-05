@@ -45,7 +45,7 @@ export default async function TodosPage({
   if (moveTo) redirect(await bpHref(moveTo));
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
   // 0건이면 조건 없이(전체 점포 · 상태 전체 · 담당 전체 · 기간 없음) 한 번 더 물어 「TO-DO 가 아예 없는지」와 「조건에 맞는 TO-DO 가 없는지」를 가른다
-  // (직원 · 점포 목록과 같은 방식, 2026-11-04 사용자 지정). 묻지 못하면 「조회된 TO-DO 가 없습니다.」
+  // (직원 · 점포 목록과 같은 방식, 2026-11-04 사용자 지정). 묻지 못하면 「조건에 맞는 TO-DO 가 없습니다.」
   // 지금 조회가 이미 「전체」(조건 없음)면 다시 묻지 않는다 — 같은 요청을 두 번 보내지 않게(리뷰 반영)
   const allSearch = todoListApiSearch({ ...DEFAULT_TODO_LIST_QUERY, storesCleared: true, pageSize: query.pageSize });
   const noTodosAtAll =
@@ -54,7 +54,7 @@ export default async function TodosPage({
       (await getTodos(allSearch)
         .then((all) => all.total === 0)
         .catch((error: unknown) => {
-        // 확인에 실패하면 예전처럼 「조회된 …」 — 장애를 알아챌 수 있게 로그만 남긴다(리뷰 반영)
+        // 확인에 실패하면 예전처럼 「조건에 맞는 …」 — 장애를 알아챌 수 있게 로그만 남긴다(리뷰 반영)
         console.warn("TO-DO 전체 건수 확인 실패", error);
         return false;
       })));
@@ -81,7 +81,7 @@ export default async function TodosPage({
             statusLabels={statusLabels}
             listHref={listHref}
             at={at}
-            empty={noTodosAtAll ? "등록된 TO-DO 가 없습니다." : "조회된 TO-DO 가 없습니다."}
+            empty={noTodosAtAll ? "등록된 TO-DO 가 없습니다." : "조건에 맞는 TO-DO 가 없습니다."}
           />
           <div className="pt-[14px]">
             <TodoPagination query={query} totalPages={totalPages} />

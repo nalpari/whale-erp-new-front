@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
+import { HelpTip } from "./help-tip";
 
 export type DetailRow = {
   label: string;
+  /** 라벨 옆 도움말 — 마우스를 올리면 뜬다(HelpTip floating). 문의사항 상세 「점포」(2026-11-05 사용자 지정) */
+  help?: ReactNode;
   value: ReactNode;
   /** 값이 여러 줄인 줄(주소처럼). 높이를 46 최소로 두고 내용만큼 늘린다 — 이 줄만 고정 높이에서 잘리지 않는다. */
   multiline?: boolean;
@@ -18,6 +21,7 @@ export type DetailRow = {
 /**
  * aside — 줄들 왼쪽에 둘 칸(점포 상세의 대표 이미지). 줄 높이만큼 늘고, 칸과 줄 사이 세로선은 두지 않는다.
  * attached — 바로 위 표에 붙여 그릴 때 맨 위 선을 두지 않는다(위 표의 아래 선이 그 자리다). 둘 다 2026-11-03 점포 상세(1팀 확인 필요).
+ * labelWidth — 라벨이 두 글자뿐이고 값이 길 수 있는 좁은 표에서 라벨 칸을 줄인다(문의사항 상세 「문의자」 80px — BP 상호명이 길 수 있다, 2026-11-05 사용자 지정). 기본 110px.
  */
 export function DetailTable({
   title,
@@ -25,12 +29,14 @@ export function DetailTable({
   rows,
   aside,
   attached,
+  labelWidth = "w-[110px]",
 }: {
   title?: ReactNode;
   action?: ReactNode;
   rows: DetailRow[];
   aside?: ReactNode;
   attached?: boolean;
+  labelWidth?: `w-[${number}px]`;
 }) {
   return (
     <div className="w-full">
@@ -44,17 +50,24 @@ export function DetailTable({
       <div className={aside ? "flex" : "contents"}>
         {aside && <div className="shrink-0 rounded-bl-[2px] border-b border-l border-erp-thead-line bg-white">{aside}</div>}
       <dl className={`flex min-w-0 w-full flex-col ${title === undefined && !attached ? "rounded-t-[2px] border-t border-erp-thead-line" : ""}`}>
-        {rows.map(({ label, value, multiline }, i) => {
+        {rows.map(({ label, help, value, multiline }, i) => {
           const last = i === rows.length - 1;
           const height = multiline ? "min-h-[46px]" : "h-[46px]";
           return (
             <div key={i} className="flex w-full">
               <dt
-                className={`flex ${height} w-[110px] shrink-0 items-center truncate border-b border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
+                className={`flex ${height} ${labelWidth} shrink-0 items-center truncate border-b border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
                   aside ? "" : "border-l"
                 } ${last && !aside ? "rounded-bl-[2px]" : ""}`}
               >
-                {label}
+                {help ? (
+                  <span className="flex min-w-0 items-center gap-[4px]">
+                    <span className="truncate">{label}</span>
+                    <HelpTip text={help} label={`${label} 도움말`} floating />
+                  </span>
+                ) : (
+                  label
+                )}
               </dt>
               <dd
                 className={`flex ${height} min-w-px flex-1 items-center gap-[10px] overflow-hidden border-r border-b border-erp-thead-line bg-white p-[12px] text-[14px] text-erp-ink ${

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode } from "react";
 import { Badge, Button, ConfirmDialog, DataTable, DetailTable, DetailValues, PageBar, Tag, Textarea, useToast, type Column } from "@/components/common";
@@ -36,29 +37,92 @@ const EDITED_TOAST = "답변을 고쳤습니다. 문의자에게 알림은 다�
 
 const dt = formatDateTime;
 const Note = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.6] text-erp-label">{children}</p>;
+/**
+ * 저장 버튼 옆 안내 — 입력칸 플레이스홀더(회색)와 갈리게 느낌표 동그라미 아이콘(회청) + 먹색 13px 500 으로 둔다(2026-11-05 사용자 지정 — 전엔 회색 14px Note).
+ */
+const GuideIcon = ({ className = "" }: { className?: string }) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" className={`shrink-0 text-erp-brand ${className}`}>
+    <circle cx="8" cy="8" r="8" fill="currentColor" />
+    <rect x="7.3" y="3.6" width="1.4" height="5.6" rx="0.7" fill="#fff" />
+    <circle cx="8" cy="11.6" r="0.95" fill="#fff" />
+  </svg>
+);
+const Guide = ({ children }: { children: ReactNode }) => (
+  <p className="flex items-start gap-[6px] text-[13px] leading-[1.6] font-medium text-erp-ink">
+    <GuideIcon className="mt-[3px]" />
+    <span>{children}</span>
+  </p>
+);
+/**
+ * 쓸 수 있는 답변 · 메모 칸은 테두리를 연회청(erp-brand-soft)으로 진하게 — 공통 입력칸의 옅은 테두리(#ededee)로는 열린 칸이 잘 안 보였다
+ * (2026-11-05 사용자 지정). 포커스하면 공통 규칙대로 회청(erp-brand). 공통 입력칸 토큰은 그대로 두고 이 화면에서만 감싸서 칠한다.
+ */
+const ACTIVE_FIELD = "[&_textarea]:border-erp-brand-soft [&_textarea:focus]:border-erp-brand";
+/** 처리이력의 할 일 안내(대기 줄) — 같은 느낌표 아이콘을 붙인다(2026-11-05 사용자 지정). 글자는 표 칸 그대로 14px */
+const Pending = ({ children }: { children: ReactNode }) => (
+  <span className="flex min-w-0 items-center gap-[6px]">
+    <GuideIcon />
+    <span className="truncate">{children}</span>
+  </span>
+);
 /** 쓰던 글이 그사이 저장된 값과 어긋났다는 알림(front #87 리뷰). */
 const Stale = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.6] text-erp-off">{children}</p>;
 const Prose = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.7] whitespace-pre-wrap break-keep text-erp-ink">{children}</p>;
-const Meta = ({ children }: { children: ReactNode }) => <p className="text-[13px] text-erp-label">{children}</p>;
+// 보조 글자는 점포 정보 관리 상세와 같은 14px(2026-11-05 사용자 지정 — 전엔 13px)
+const Meta = ({ children }: { children: ReactNode }) => <p className="text-[14px] text-erp-label">{children}</p>;
 const Sub = ({ children }: { children: ReactNode }) => <span className="text-erp-muted">{children}</span>;
 
+/** 문의자 「점포」 도움말 — 글 대신 작은 표로(2026-11-05 사용자 지정). 점포는 문의를 등록할 때 api 가 채운다(api support-inquiries targetStoreOf). */
+const STORE_HELP = (
+  <table className="border-collapse text-[13px] leading-[1.5] whitespace-nowrap">
+    <thead>
+      <tr className="text-erp-label">
+        <th className="pr-[12px] pb-[4px] text-left font-medium">권한유형</th>
+        <th className="pr-[12px] pb-[4px] text-left font-medium">대상점포</th>
+        <th className="pb-[4px] text-left font-medium">점포</th>
+      </tr>
+    </thead>
+    <tbody className="font-normal">
+      {/* 대상점포 1곳 · 여러 곳으로 나눈다(2026-11-05 사용자 지정). 관리 점포가 없을 때도 여러 곳과 같이 BP 단위 문의다 */}
+      {[
+        ["가맹마스터 · 가맹관리자", "1곳", "그 점포"],
+        ["가맹마스터 · 가맹관리자", "여러 곳", "BP 단위 문의"],
+        ["BP 마스터 · BP 관리자", "-", "BP 단위 문의"],
+      ].map(([role, count, store]) => (
+        <tr key={role + count} className="border-t border-erp-thead-line">
+          <td className="py-[4px] pr-[12px]">{role}</td>
+          <td className="py-[4px] pr-[12px]">{count}</td>
+          <td className="py-[4px]">{store}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
+
 // 제목 줄이 있는 카드(데모 staff-parts.mjs 의 box). 글 · 입력은 안쪽 여백, 표만 든 상자(처리 이력)는 flush 로 여백 없이.
-function Box({ title, hint, flush, children }: { title: ReactNode; hint?: string; flush?: boolean; children: ReactNode }) {
+// 제목 바 글자는 DetailTable 제목과 같은 15px 600(2026-11-05 사용자 지정 — 전엔 16px 500). hintLeft 면 보조 글자를 제목 바로 옆에 구분선과 함께 붙인다
+// (답변의 「운영자 · 등록 … (수정됨 …)」 — 고객지원 문의상세와 같다), 기본은 오른쪽 끝.
+function Box({ title, hint, hintLeft, flush, children }: { title: ReactNode; hint?: string; hintLeft?: boolean; flush?: boolean; children: ReactNode }) {
   return (
     <section className="min-w-0">
-      <h3 className="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">
-        <span className="min-w-0 flex-1 truncate">{title}</span>
-        {hint && <span className="text-[14px] font-normal text-erp-label">{hint}</span>}
+      <h3 className={`flex h-[42px] items-center ${hintLeft ? "gap-[10px]" : "gap-[6px]"} rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink`}>
+        <span className={`min-w-0 truncate ${hintLeft ? "shrink-0" : "flex-1"}`}>{title}</span>
+        {hint && hintLeft && <span aria-hidden="true" className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />}
+        {hint && <span className="min-w-0 truncate text-[14px] font-normal text-erp-label">{hint}</span>}
       </h3>
       {flush ? children : <div className="flex flex-col gap-[18px] rounded-b-[2px] border border-erp-thead-line bg-white p-[16px]">{children}</div>}
     </section>
   );
 }
 
-/** 처리 이력 한 줄 — [단계, 내용, 끝났는가]. */
-type Step = [string, string, boolean];
-const STEP_COLUMNS: Column<Step>[] = [
-  { header: "단계", width: "w-[150px]", cell: (s) => s[0] },
+/** 처리 이력 한 줄 — [단계, 내용, 끝났는가]. 내용은 여러 줄일 수 있다(답변 등록 · 수정). */
+type Step = [string, ReactNode, boolean];
+/**
+ * 단계 칸은 왼쪽 정렬, 폭은 위 「문의자」 표의 라벨 칸과 같게 둬 세로줄을 맞춘다(2026-11-05 사용자 지정 — 전엔 150px 가운데).
+ * 표 칸 여백(10px)이 상세 표 라벨(12px)보다 2px 좁아 글 시작을 2px 밀어 맞춘다. 글자도 상세 표 라벨과 같은 회색 500(2026-11-05 사용자 지정).
+ */
+const stepColumns = (stepWidth: `w-[${number}px]`): Column<Step>[] => [
+  { header: "단계", width: stepWidth, align: "left", cell: (s) => <span className="pl-[2px] font-medium text-erp-label">{s[0]}</span> },
   { header: "내용", align: "left", cell: (s) => s[1] },
   { header: "상태", width: "w-[80px]", cell: (s) => (s[2] ? <Badge tone="on">완료</Badge> : <Badge tone="off">대기</Badge>) },
 ];
@@ -67,19 +131,21 @@ const STEP_COLUMNS: Column<Step>[] = [
  * 접수 · 확인 · 답변. 「확인」은 처리중을 거친 건만 완료로 그리고, 처리 시작 없이 바로 답한 건은 줄을 숨긴다(#274).
  * canEdit(수정 권한)이 없으면 누를 버튼이 없으므로 「[처리 시작]을 누르면」 · 「저장하면」 대신 대기 상태만 적는다.
  */
-function steps(d: InquiryDetail | LeadDetail, answered: string | null, canEdit: boolean): Step[] {
+function steps(d: InquiryDetail | LeadDetail, answered: ReactNode, canEdit: boolean): Step[] {
   const confirm: Step[] = d.processingStartedAt
-    ? [["확인", `${dt(d.processingStartedAt)} · ${d.processingStartedByName ?? "-"} · 처리중으로 바꿈`, true]]
+    ? [["확인", `${dt(d.processingStartedAt)} · ${d.processingStartedByName ?? "-"}`, true]]
     : d.status === "RECEIVED"
-      ? [["확인", canEdit ? "[처리 시작]을 누르면 처리중 · 시각 · 운영자가 남음" : "처리 시작 전", false]]
+      ? [["확인", canEdit ? <Pending>[처리 시작]을 누르면 문의자에게 처리중으로 표시됩니다.</Pending> : "처리 시작 전", false]]
       : [];
-  return [["접수", dt(d.createdAt), true], ...confirm, answered ? ["답변", answered, true] : ["답변", canEdit ? "저장하면 답변 완료 · 그 뒤에도 고칠 수 있음" : "답변 전", false]];
+  return [["접수", dt(d.createdAt), true], ...confirm, answered ? ["답변", answered, true] : ["답변", canEdit ? <Pending>답변을 저장하면 문의자에게 답변완료로 표시됩니다.</Pending> : "답변 전", false]];
 }
 
-function History({ rows }: { rows: Step[] }) {
+/** stepWidth 는 같은 쪽 「문의자」 표의 라벨 칸 폭(문의사항 100px · 도입문의 110px) */
+function History({ rows, stepWidth = "w-[110px]" }: { rows: Step[]; stepWidth?: `w-[${number}px]` }) {
   return (
-    <Box title="처리 이력" flush>
-      <DataTable columns={STEP_COLUMNS} rows={rows} rowKey={(s) => s[0]} />
+    <Box title="처리이력" flush>
+      {/* 열 이름 줄(단계 · 내용 · 상태)은 두지 않는다 — 값만으로 뜻이 분명하다(2026-11-05 사용자 지정) */}
+      <DataTable headVariant="none" columns={stepColumns(stepWidth)} rows={rows} rowKey={(s) => s[0]} />
     </Box>
   );
 }
@@ -140,16 +206,21 @@ function Errors({ errors }: { errors: string[] }) {
 }
 
 /** 본문 첫 줄 「○○ 상세」 + 상태 + 오른쪽 끝 버튼, 아래 7:5 두 단(데모 detailHead · cols). */
-function Frame({ title, status, buttons, errors, left, right, children }: { title: string; status: ReactNode; buttons: ReactNode; errors: string[]; left: ReactNode; right: ReactNode; children?: ReactNode }) {
+/** head 를 넘기면 「○○ 상세 [상태]」 대신 그 머리 줄(점포 정보 관리 상세의 점포명 줄 모양)을 보인다 — 문의사항. */
+function Frame({ title, head, status, buttons, errors, left, right, children }: { title: string; head?: ReactNode; status: ReactNode; buttons: ReactNode; errors: string[]; left: ReactNode; right: ReactNode; children?: ReactNode }) {
   return (
     <>
       <PageBar title={title} />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
-          <div className="flex items-center gap-[6px]">
-            <h2 className="flex flex-1 items-center gap-[8px] text-[18px] font-semibold text-erp-ink">
-              {title} 상세 {status}
-            </h2>
+          <div className={`flex items-center ${head ? "gap-[18px]" : "gap-[6px]"}`}>
+            {head ? (
+              <div className="min-w-0 flex-1">{head}</div>
+            ) : (
+              <h2 className="flex flex-1 items-center gap-[8px] text-[18px] font-semibold text-erp-ink">
+                {title} 상세 {status}
+              </h2>
+            )}
             {buttons}
           </div>
           <Errors errors={errors} />
@@ -175,6 +246,7 @@ const StatusBadge = ({ status, statuses }: { status: InquiryDetail["status"]; st
  */
 function AnswerBox({
   hint,
+  hintLeft,
   current,
   view,
   actions,
@@ -188,6 +260,8 @@ function AnswerBox({
   onDraft,
 }: {
   hint: string;
+  /** 답변이 있을 때 보조 글자(운영자 · 등록 …)를 제목 옆 왼쪽에 둔다 */
+  hintLeft?: boolean;
   current: string | null;
   view: ReactNode;
   actions?: ReactNode;
@@ -205,8 +279,8 @@ function AnswerBox({
 }) {
   if (!canEdit)
     return (
-      <Box title="답변" hint={hint}>
-        {current !== null ? view : <Note>아직 답변이 없습니다.</Note>}
+      <Box title="답변" hint={hint} hintLeft={hintLeft}>
+        {current !== null ? view : <Note>등록된 답변이 없습니다.</Note>}
       </Box>
     );
   const saved = current ?? "";
@@ -214,15 +288,18 @@ function AnswerBox({
   const editing = shown.text !== undefined || current === null;
   const text = shown.text ?? saved;
   return (
-    <Box title="답변" hint={hint}>
+    <Box title="답변" hint={hint} hintLeft={hintLeft}>
       {current !== null && view}
       {editing ? (
         <>
-          <Textarea rows={6} value={text} maxLength={ANSWER_MAX} placeholder={placeholder} aria-label="답변 내용" onChange={(e) => onDraft(e.target.value, saved)} />
+          {/* [답변 수정]으로 연 칸은 바로 포커스해 테두리가 회청으로 바뀐다 — 옅은 테두리라 열린 칸이 잘 안 보였다(2026-11-05 사용자 지정). 첫 답변 칸은 화면을 열 때부터 있어 포커스를 빼앗지 않는다 */}
+          <div className={ACTIVE_FIELD}>
+            <Textarea rows={6} value={text} maxLength={ANSWER_MAX} placeholder={placeholder} aria-label="답변 내용" autoFocus={current !== null} onChange={(e) => onDraft(e.target.value, saved)} />
+          </div>
           {shown.stale && <Stale>그사이 다른 운영자가 답변을 저장했습니다(위). 확인한 뒤 고쳐 저장하거나 [취소]하세요.</Stale>}
           <div className="flex items-center gap-[12px]">
             <div className="flex-1">
-              <Note>{current === null ? firstNote : editNote}</Note>
+              <Guide>{current === null ? firstNote : editNote}</Guide>
             </div>
             {current !== null && (
               <Button variant="off" disabled={busy} onClick={() => onDraft(undefined, saved)}>
@@ -235,7 +312,8 @@ function AnswerBox({
           </div>
         </>
       ) : (
-        <div className="flex items-center gap-[6px]">
+        // 저장 · 메모 저장 버튼처럼 오른쪽 끝에(2026-11-05 사용자 지정 — 전엔 왼쪽)
+        <div className="flex items-center justify-end gap-[6px]">
           <Button variant="soft" onClick={() => onDraft(saved, saved)}>
             답변 수정
           </Button>
@@ -264,7 +342,7 @@ function MemoBox({
 }) {
   if (!canEdit)
     return (
-      <Box title="운영자 메모" hint="문의자에게 보이지 않습니다.">
+      <Box title="운영자 메모" hint="운영자에게만 표시됩니다.">
         {memo ? <Prose>{memo}</Prose> : <Note>메모가 없습니다.</Note>}
       </Box>
     );
@@ -272,7 +350,7 @@ function MemoBox({
   const shown = draftView(draft, saved);
   const text = shown.text ?? saved;
   return (
-    <Box title="운영자 메모" hint="문의자에게 보이지 않습니다.">
+    <Box title="운영자 메모" hint="운영자에게만 표시됩니다.">
       {/* 그사이 다른 운영자가 메모를 저장했다 — 쓰던 글로 덮어쓰기 전에 그 메모를 보인다. */}
       {shown.stale && (
         <Stale>
@@ -284,10 +362,12 @@ function MemoBox({
           </span>
         </Stale>
       )}
-      <Textarea rows={4} value={text} maxLength={MEMO_MAX} aria-label="내부 기록" onChange={(e) => onDraft(e.target.value, saved)} />
+      <div className={ACTIVE_FIELD}>
+        <Textarea rows={4} value={text} maxLength={MEMO_MAX} aria-label="내부 기록" onChange={(e) => onDraft(e.target.value, saved)} />
+      </div>
       <div className="flex items-center gap-[12px]">
         <div className="flex-1">
-          <Note>다른 운영자와 함께 봅니다. 비우고 저장하면 지웁니다.</Note>
+          <Guide>작성한 메모는 다른 운영자와 공유됩니다. 내용을 모두 지우고 저장하면 메모가 삭제됩니다.</Guide>
         </div>
         <Button variant="soft" disabled={busy} onClick={() => onSave(text)}>
           메모 저장
@@ -355,43 +435,50 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
 
   const left = (
     <>
-      <Box title={d.title} hint={`${categoryLabel(d.inquiryCategoryCode)} · ${dt(d.createdAt)} 접수`}>
+      {/* 제목 · 접수일시 · 분류 · 상태는 머리 줄로 옮겼다 — 고객지원 문의상세와 같은 「문의내용」 상자(2026-11-05 사용자 지정) */}
+      <Box title="문의내용">
         <Prose>{d.body}</Prose>
-        {/* 첨부(CNT-18): 이미지는 작은 미리보기, PDF 는 이름 + 크기. 누르면 내려받는다. */}
-        {d.attachments.length > 0 && (
-          <DetailTable
-            title="첨부파일"
-            rows={d.attachments.map((a) => ({
-              label: a.fileType === "PDF" ? "PDF" : "이미지",
-              multiline: !!a.thumbnailUrl,
-              value: (
-                <button type="button" disabled={c.busy} onClick={() => download(a.inquiryAttachmentId)} title={`${a.fileName} 내려받기`} className="flex min-w-0 items-center gap-[10px] text-left">
+      </Box>
+      {/* 첨부(CNT-18): 이미지는 작은 미리보기(8px 둥글게), PDF 는 이름 + 크기. 누르면 내려받는다.
+          종류 칸(이미지 · PDF) 없이 줄만 — 고객지원 문의상세와 같다(2026-11-05 사용자 지정) */}
+      {d.attachments.length > 0 && (
+        <Box title="첨부파일" flush>
+          <ul className="rounded-b-[2px] border border-erp-thead-line bg-white">
+            {d.attachments.map((a) => (
+              <li key={a.inquiryAttachmentId} className={`flex items-center border-b border-erp-thead-line px-[12px] last:border-b-0 ${a.thumbnailUrl ? "py-[12px]" : "h-[46px]"}`}>
+                <button type="button" disabled={c.busy} onClick={() => download(a.inquiryAttachmentId)} title={`${a.fileName} 내려받기`} className="flex min-w-0 items-center gap-[10px] text-left text-[14px]">
                   {a.thumbnailUrl && (
                     // eslint-disable-next-line @next/next/no-img-element -- 5분짜리 서명 주소라 이미지 최적화 캐시에 둘 수 없다
-                    <img src={a.thumbnailUrl} alt="" className="size-[64px] shrink-0 rounded-[2px] border border-erp-panel-line object-cover" />
+                    <img src={a.thumbnailUrl} alt="" className="size-[64px] shrink-0 rounded-[8px] border border-erp-panel-line object-cover" />
                   )}
                   <span className="truncate text-erp-link hover:underline">{a.fileName}</span>
                   <Sub>{sizeLabel(a.sizeBytes)}</Sub>
                 </button>
-              ),
-            }))}
-          />
-        )}
-      </Box>
+              </li>
+            ))}
+          </ul>
+        </Box>
+      )}
       <AnswerBox
-        hint="문의한 사람에게 보입니다."
+        // 답변이 있으면 「운영자 · 등록 첫 답변 (수정됨 마지막)」을 제목 옆 왼쪽에, 없으면 오른쪽 끝 안내(2026-11-05 사용자 지정)
+        hint={
+          first && last
+            ? `${first.repliedByName ?? "-"} · 등록 ${dt(first.repliedAt)}${previous.length ? ` (수정됨 ${dt(last.repliedAt)} · ${last.repliedByName ?? "-"})` : ""}`
+            : "문의자에게 표시됩니다."
+        }
+        hintLeft={answered}
         current={last?.body ?? null}
         view={
           last && (
             <>
               <Prose>{last.body}</Prose>
-              <Meta>
-                {previous.length ? "수정됨 · " : ""}
-                {dt(last.repliedAt)} · {last.repliedByName ?? "-"}
-              </Meta>
               {previous.length > 0 && (
-                <details className="rounded-[2px] border border-erp-panel-line">
-                  <summary className="flex h-[34px] cursor-pointer items-center px-[12px] text-[14px] font-medium text-erp-ink [&::-webkit-details-marker]:hidden">이전 답변 {previous.length}개</summary>
+                <details className="group rounded-[2px] border border-erp-panel-line">
+                  {/* 펼치는 줄로 보이게 오른쪽에 꺾쇠(닫히면 아래, 펼치면 위 — FAQ 와 같다) · 표 머리 바탕(#f8f9fb), 호버하면 erp-subtle(2026-11-05 사용자 지정) */}
+                  <summary className="flex h-[34px] cursor-pointer items-center gap-[10px] bg-erp-thead-bg px-[12px] text-[14px] font-medium text-erp-ink transition-colors duration-150 hover:bg-erp-subtle [&::-webkit-details-marker]:hidden">
+                    <span className="flex-1">이전 답변 {previous.length}개</span>
+                    <Image src="/icons/chevron-small.svg" alt="" width={5} height={8} className="-rotate-90 transition-transform duration-150 group-open:rotate-90 motion-reduce:transition-none" />
+                  </summary>
                   <div className="flex flex-col gap-[12px] border-t border-erp-panel-line p-[12px]">
                     {previous.map((r) => (
                       <div key={r.inquiryReplyId} className="flex flex-col gap-[4px]">
@@ -407,9 +494,9 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
             </>
           )
         }
-        placeholder="문의한 분이 그대로 읽습니다. 어떤 화면에서 무엇을 하면 되는지 적어 주세요."
-        firstNote="저장하면 상태가 즉시 답변 완료로 바뀌고 문의자에게 알림함과 메일로 알립니다. 처리 시작을 거치지 않고 바로 답해도 됩니다."
-        editNote="고쳐도 상태는 답변 완료 그대로입니다. 문의자에게 알림은 다시 가지 않습니다."
+        placeholder={"문의자가 확인할 답변을 작성해 주세요.\n문제 해결 방법이나 필요한 조치를 구체적으로 안내해 주세요."}
+        firstNote="답변을 저장하면 처리 상태가 '답변완료'로 변경되며, 문의자에게 알림함과 이메일로 안내됩니다."
+        editNote="답변을 수정해도 처리상태는 '답변완료'로 유지되며, 문의자에게 알림이 발송되지 않습니다."
         busy={c.busy}
         canEdit={c.can.update}
         onSave={c.saveReply}
@@ -422,17 +509,47 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
 
   const right = (
     <>
+      {/* 문의를 보낸 사람 — 도입문의 상세와 같은 「문의자」(2026-11-05 사용자 지정 — 전엔 「보낸 곳」) */}
       <DetailTable
-        title="보낸 곳"
+        title="문의자"
+        labelWidth="w-[100px]"
         rows={[
           { label: "이름", value: d.senderName ?? "-" },
-          { label: "역할", value: d.senderRoleTypeCode ? roleLabel(d.senderRoleTypeCode) : "-" },
-          { label: "BP", value: d.bpName ?? "-" },
-          { label: "점포", value: d.storeName ?? <Sub>BP 단위 문의</Sub> },
+          // BP 상호명은 길 수 있어 자르지 않고 줄을 바꾼다(2026-11-05 사용자 지정)
+          { label: "BP상호명", value: <span className="break-keep">{d.bpName ?? "-"}</span>, multiline: true },
+          // 이름 · BP상호명 · 권한유형 · 점포(2026-11-05 사용자 지정). 권한유형은(BP 마스터 등) — 아이디 · 권한명은 api 가 내려주지 않는다.
+          { label: "권한유형", value: d.senderRoleTypeCode ? roleLabel(d.senderRoleTypeCode) : "-" },
+          // 점포는 api 가 채운다 — 가맹마스터 · 가맹관리자가 관리 점포 하나뿐이면 그 점포, 그 밖(BP 단위 관리자 · 점포 여럿)은 비어 「BP 단위 문의」
+          // 「점포」 라벨 옆 도움말 — 마우스를 올리면 어떤 점포가 들어가는지 알린다(2026-11-05 사용자 지정)
+          {
+            label: "점포",
+            help: STORE_HELP,
+            value: d.storeName ?? <Sub>BP 단위 문의</Sub>,
+          },
         ]}
       />
+      {/* 관리자 쪽은 누가 언제 무엇을 했는지 남기는 「단계 · 내용 · 상태」 표 그대로 — 문의자 쪽(고객지원)만 처리현황 목록으로 바꿨다(2026-11-05 사용자 지정) */}
       <History
-        rows={steps(d, first && last ? `${dt(first.repliedAt)} · ${first.repliedByName ?? "-"}${previous.length ? ` · ${dt(last.repliedAt)} ${last.repliedByName ?? "-"} 수정` : ""}` : null, c.can.update)}
+        stepWidth="w-[100px]"
+        // 답변은 처음 등록 한 줄, 고칠 때마다 한 줄씩 더한다 — 「등록 | 일시 · 운영자」 · 「수정 | 일시 · 운영자」(2026-11-05 사용자 지정)
+        rows={steps(
+          d,
+          answered && (
+            <span className="flex flex-col py-[12px] leading-[1.6]">
+              {d.replies.map((r, i) => (
+                <span key={r.inquiryReplyId} className="flex min-w-0 items-center gap-[10px]">
+                  <span className="shrink-0 text-erp-label">{i === 0 ? "등록" : "수정"}</span>
+                  {/* #d9d9d9 — DESIGN.md 의 값 구분선 */}
+                  <span aria-hidden="true" className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
+                  <span className="truncate">
+                    {dt(r.repliedAt)} · {r.repliedByName ?? "-"}
+                  </span>
+                </span>
+              ))}
+            </span>
+          ),
+          c.can.update,
+        )}
       />
     </>
   );
@@ -440,6 +557,21 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
   return (
     <Frame
       title="문의사항"
+      head={
+        // 점포 정보 관리 상세의 점포명 줄과 같은 모양 — 제목 20px(자르지 않음), 아래 줄 「접수일시 … | 분류 [꼬리표] | [상태]」(2026-11-05 사용자 지정)
+        <div className="flex flex-col gap-[6px] py-[6px]">
+          <h2 className="break-all text-[20px] font-semibold text-erp-ink">{d.title}</h2>
+          <div className="flex flex-wrap items-center gap-[10px] text-[14px] font-medium text-erp-label">
+            <span>접수일시 {dt(d.createdAt)}</span>
+            <span className="h-[11px] w-px bg-[#d9d9d9]" />
+            <span className="flex items-center gap-[6px]">
+              분류 <Tag>{categoryLabel(d.inquiryCategoryCode)}</Tag>
+            </span>
+            <span className="h-[11px] w-px bg-[#d9d9d9]" />
+            <StatusBadge status={d.status} statuses={statuses} />
+          </div>
+        </div>
+      }
       status={<StatusBadge status={d.status} statuses={statuses} />}
       errors={c.errors}
       left={left}
@@ -451,7 +583,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
               처리 시작
             </Button>
           )}
-          <Button variant="off" href={INQUIRY_BASE}>
+          <Button href={INQUIRY_BASE}>
             목록
           </Button>
         </div>
@@ -606,7 +738,7 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
               처리 시작
             </Button>
           )}
-          <Button variant="off" href={LEAD_BASE}>
+          <Button href={LEAD_BASE}>
             목록
           </Button>
         </div>

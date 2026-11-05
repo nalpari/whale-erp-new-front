@@ -191,7 +191,7 @@ export default ({ A, R }) => {
     { header: "메뉴설정", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "메뉴설정 여부", width: "w-[120px]" },
   ];
-  const table = tagRows(ui.dataTable(cols, rows), ROLES, SELECTED).replaceAll('<td class="truncate px-[10px]', '<td class="truncate px-[10px] leading-[1.3]');
+  const table = tagRows(ui.dataTable(cols, rows, "등록된 권한 그룹이 없습니다."), ROLES, SELECTED).replaceAll('<td class="truncate px-[10px]', '<td class="truncate px-[10px] leading-[1.3]');
 
   const left =
     `<section class="${CARD} flex-1">` +
