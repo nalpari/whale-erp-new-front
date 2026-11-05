@@ -294,7 +294,8 @@ function AnswerBox({
           </div>
         </>
       ) : (
-        <div className="flex items-center gap-[6px]">
+        // 저장 · 메모 저장 버튼처럼 오른쪽 끝에(2026-11-05 사용자 지정 — 전엔 왼쪽)
+        <div className="flex items-center justify-end gap-[6px]">
           <Button variant="soft" onClick={() => onDraft(saved, saved)}>
             답변 수정
           </Button>
