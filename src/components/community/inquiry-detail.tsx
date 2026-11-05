@@ -53,6 +53,11 @@ const Guide = ({ children }: { children: ReactNode }) => (
     <span>{children}</span>
   </p>
 );
+/**
+ * 쓸 수 있는 답변 · 메모 칸은 테두리를 연회청(erp-brand-soft)으로 진하게 — 공통 입력칸의 옅은 테두리(#ededee)로는 열린 칸이 잘 안 보였다
+ * (2026-11-05 사용자 지정). 포커스하면 공통 규칙대로 회청(erp-brand). 공통 입력칸 토큰은 그대로 두고 이 화면에서만 감싸서 칠한다.
+ */
+const ACTIVE_FIELD = "[&_textarea]:border-erp-brand-soft [&_textarea:focus]:border-erp-brand";
 /** 처리이력의 할 일 안내(대기 줄) — 같은 느낌표 아이콘을 붙인다(2026-11-05 사용자 지정). 글자는 표 칸 그대로 14px */
 const Pending = ({ children }: { children: ReactNode }) => (
   <span className="flex min-w-0 items-center gap-[6px]">
@@ -287,7 +292,10 @@ function AnswerBox({
       {current !== null && view}
       {editing ? (
         <>
-          <Textarea rows={6} value={text} maxLength={ANSWER_MAX} placeholder={placeholder} aria-label="답변 내용" onChange={(e) => onDraft(e.target.value, saved)} />
+          {/* [답변 수정]으로 연 칸은 바로 포커스해 테두리가 회청으로 바뀐다 — 옅은 테두리라 열린 칸이 잘 안 보였다(2026-11-05 사용자 지정). 첫 답변 칸은 화면을 열 때부터 있어 포커스를 빼앗지 않는다 */}
+          <div className={ACTIVE_FIELD}>
+            <Textarea rows={6} value={text} maxLength={ANSWER_MAX} placeholder={placeholder} aria-label="답변 내용" autoFocus={current !== null} onChange={(e) => onDraft(e.target.value, saved)} />
+          </div>
           {shown.stale && <Stale>그사이 다른 운영자가 답변을 저장했습니다(위). 확인한 뒤 고쳐 저장하거나 [취소]하세요.</Stale>}
           <div className="flex items-center gap-[12px]">
             <div className="flex-1">
@@ -354,7 +362,9 @@ function MemoBox({
           </span>
         </Stale>
       )}
-      <Textarea rows={4} value={text} maxLength={MEMO_MAX} aria-label="내부 기록" onChange={(e) => onDraft(e.target.value, saved)} />
+      <div className={ACTIVE_FIELD}>
+        <Textarea rows={4} value={text} maxLength={MEMO_MAX} aria-label="내부 기록" onChange={(e) => onDraft(e.target.value, saved)} />
+      </div>
       <div className="flex items-center gap-[12px]">
         <div className="flex-1">
           <Guide>작성한 메모는 다른 운영자와 공유됩니다. 내용을 모두 지우고 저장하면 메모가 삭제됩니다.</Guide>
