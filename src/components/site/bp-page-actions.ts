@@ -13,7 +13,6 @@ export type BpActionResult<T = object> = ({ ok: true } & T) | Failure;
 // 내보내지 않는다.
 function failureOf(error: unknown, what: string): Failure {
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     // 점포(stores/actions.ts)와 같은 기준 — 4xx 는 다 거절 문장이고 503 (국세청 장애)도 알려 줄 문구가 있다.
     // 전엔 429(한도 초과)가 빠져 있어, 상자가 쓰는 bizVerifyFailure 가 status 를 못 받고 "확인하지 못했습니다"
     // 기본 문구로만 떴다(코드 리뷰로 찾음, 2026-10-23 — 사용자가 재인증을 반복하다 한도(429)에 걸렸을 때 발견).

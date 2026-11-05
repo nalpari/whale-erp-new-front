@@ -188,8 +188,6 @@ export function AdminFormPanel(props: Props) {
       .then((result) => {
         if (!live) return;
         if (result.ok) setDeactivation({ key: impactKey, impact: result });
-        // 로그인이 끝났으면 띠가 없는 것이 「연결된 계정 없음」으로 읽히지 않게 알린다(중복 확인과 같다)
-        else if (result.status === 401) setFailure(result.message);
         else console.warn("함께 미사용이 될 가맹 관리자를 세지 못했습니다 — 저장할 때 다시 센다", result.status, result.message);
       })
       .catch((error: unknown) => console.warn("함께 미사용이 될 가맹 관리자 조회 호출 실패 — 저장할 때 다시 센다", error));
@@ -282,9 +280,8 @@ export function AdminFormPanel(props: Props) {
           setCheck(result.available ? "available" : "idle");
           return;
         }
-        setCheck(result.status === 400 || result.status === 401 ? "idle" : "failed");
+        setCheck(result.status === 400 ? "idle" : "failed");
         if (result.status === 400) setErrors((e) => ({ ...e, [field]: result.message }));
-        else if (result.status === 401) setFailure(result.message);
         else console.warn(`${field} 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다`, result.status, result.message);
       })
       .catch((error: unknown) => {
@@ -342,10 +339,10 @@ export function AdminFormPanel(props: Props) {
           console.error("BP 관리자 함께 바뀌는 계정 조회 호출 실패", error);
           return { ok: false as const, status: undefined, message: "" };
         });
-        // 모르고 저장하면 가맹 관리자가 말없이 바뀔 수 있다 — 세지 못하면 저장하지 않는다. 로그인 만료는 할 일이 다르므로 그 문구를 그대로 둔다
+        // 모르고 저장하면 가맹 관리자가 말없이 바뀔 수 있다 — 세지 못하면 저장하지 않는다.
         if (!impact.ok)
           return setFailure(
-            impact.status === 401 ? impact.message : `저장하지 않았습니다. 함께 바뀌는 가맹 관리자를 확인하지 못했습니다. ${impact.status ? impact.message : "잠시 후 다시 시도해 주세요."}`,
+            `저장하지 않았습니다. 함께 바뀌는 가맹 관리자를 확인하지 못했습니다. ${impact.status ? impact.message : "잠시 후 다시 시도해 주세요."}`,
           );
         if (impact.deactivatedCount || impact.unmappedCount) return setCascade({ input, impact, deactivating, removed });
       }

@@ -28,10 +28,9 @@ const BAD_INPUT: ActionFailure = { ok: false, status: 400, message: "직원과 �
 /** 등록 결과를 모를 때 — 이미 저장됐을 수 있어 다시 저장하게 두지 않는다(같은 시각이면 겹침으로 막히지만, 화면을 새로 받아 확인하게 한다) */
 const SAVE_UNKNOWN = "저장 결과를 확인하지 못했습니다. 화면을 새로 불러왔으니 확인해 주세요.";
 
-/** api 의 400 · 403 · 404 · 409 문장은 한국어라 그대로 보인다. 401 은 고정 문구, 5xx · 연결 실패는 결과 모름(status 없음) */
+/** api 의 400 · 403 · 404 · 409 문장은 한국어라 그대로 보인다. 5xx · 연결 실패는 결과 모름(status 없음) */
 function failureOf(error: unknown, what: string, log: object): ActionFailure {
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status < 500) return { ok: false, status: error.status, message: error.message };
   }
   console.error(`근무스케줄 ${what} 결과 모름`, log, error);

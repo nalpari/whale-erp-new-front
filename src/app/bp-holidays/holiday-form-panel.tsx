@@ -152,7 +152,7 @@ export function HolidayFormPanel(props: Props) {
       if (!force) {
         const check = await checkBpHolidayOverlapsAction({ ...body, ...(h ? { bpHolidayId: h.bpHolidayId } : {}) }).catch(unknownResult("겹침 확인", false));
         // 칸 · 권한 문제면 저장도 같은 이유로 막히니 여기서 알린다. 그 밖의 실패(5xx · 연결)는 저장을 막지 않는다 — 겹침 확인은 안내일 뿐이다.
-        if (!check.ok && check.status !== undefined && [400, 401, 403, 404, 409].includes(check.status)) return setFailure(check.message);
+        if (!check.ok && check.status !== undefined && [400, 403, 404, 409].includes(check.status)) return setFailure(check.message);
         if (!check.ok) console.warn("겹침 확인을 하지 못해 그대로 저장한다", check.message);
         if (check.ok && check.storeCount > 0) return setOverlaps(check);
       }

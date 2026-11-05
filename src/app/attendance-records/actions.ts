@@ -28,7 +28,6 @@ export type EditResult = ActionResult<{ isPayslipConfirmed: boolean }> & { code?
 /** api 의 4xx 문장은 한국어라 그대로 보인다(코드도 함께 — 409 ATTENDANCE_CHANGED 면 화면이 최신 기록을 다시 받는다). 5xx · 끊김은 결과 모름 */
 function failureOf(error: unknown, what: string, log: object): ActionFailure & { code?: string } {
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     const code = (error.body as { code?: unknown } | null)?.code;
     if (error.status < 500) return { ok: false, status: error.status, message: error.message, ...(typeof code === "string" ? { code } : {}) };
   }

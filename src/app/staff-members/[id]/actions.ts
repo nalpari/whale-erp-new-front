@@ -23,12 +23,11 @@ export type ActionFailure = { ok: false; status?: number; message: string; today
 export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
 
 /**
- * api 는 400 · 403 · 404 · 409 를 한국어로 알리므로 그대로 보인다. 401 은 할 일을 알 수 있게 고정 문구로 바꾼다.
+ * api 는 400 · 403 · 404 · 409 를 한국어로 알리므로 그대로 보인다.
  * what 은 화면 문구에 들어가는 동작 이름, feature 는 로그에서 기능을 가르는 이름이다(퇴직 · 비밀번호 초기화 · 생년월일 정정).
  */
 function failureOf(error: unknown, what: string, log: { feature: string; staffMemberId: number }): ActionFailure {
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status < 500) {
       const code = codeOf(error.body);
       return { ok: false, status: error.status, message: error.message, ...(code === undefined ? {} : { code }) };

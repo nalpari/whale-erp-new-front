@@ -234,7 +234,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
       .then((result) => {
         if (n !== seq.current) return;
         if (result.ok) return setPool({ workDate, state: "ok", staff: result.staff });
-        const message = result.status === 401 || result.status === 403 ? onFailure(result) : STAFF_FAILED;
+        const message = result.status === 403 ? onFailure(result) : STAFF_FAILED;
         setPool(message === null ? null : { workDate, state: "error", message });
       })
       .catch((error: unknown) => {
@@ -254,7 +254,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
     getScheduleDefaultsAction(id, workDate)
       .then((result) => {
         if (!result.ok) {
-          if (result.status === 401 || result.status === 403) onFailure(result);
+          if (result.status === 403) onFailure(result);
           return;
         }
         setDefaults((d) => ({ ...d, [`${id}|${workDate}`]: result.defaults }));

@@ -20,7 +20,6 @@ async function run(what: string, act: () => Promise<unknown>): Promise<ActionRes
   try {
     await act();
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) return { ok: false, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error instanceof ApiError && error.status === 403) return { ok: false, message: "운영 알림을 볼 권한이 없습니다." };
     if (error instanceof InvalidNotificationIdError) return { ok: false, message: "고른 알림을 다시 확인해 주세요." };
     console.error(`${what} 실패`, error);

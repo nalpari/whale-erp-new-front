@@ -2,7 +2,7 @@
 
 import { unstable_rethrow } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type MouseEvent, type RefObject } from "react";
-import { logout, logoutAfterWithdrawal } from "@/app/actions";
+import { logoutAfterWithdrawal } from "@/app/actions";
 import { Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
 import { IN_PROGRESS_CONTRACTS_HREF, moveTargetOf, withdrawFormField, withdrawWarningText, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
 import { useCanOpen, useCodes, useCurrentBp, useStores } from "./session-gate";
@@ -162,8 +162,6 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
         const result = await verifyWithdrawPasswordAction(form.currentPassword);
         if (mine !== saveNumber.current) return;
         if (result.ok) return setStep("content");
-        // 1단계라 아직 탈퇴 전이다 — 세션만 끝난 것이니 로그인 화면으로 간다(logout). 최종 제출의 401 과 다르다
-        if (result.status === 401) return void logout();
         if (result.status === 400) return setFieldError({ at: "currentPassword", message: result.message });
         setFailure(result.message);
       } catch (error: unknown) {

@@ -241,7 +241,7 @@ export const BpProfileTab = forwardRef<
         // 로그인 만료(401) · 형식(400) · 권한(403) · 계정 없음(404)은 할 일을 알리는 api 문구라 그대로 보인다
         // (점포 store-form-view.tsx keepApiText 와 같다, 코드 리뷰로 찾음 — 전엔 이 네 상태도 bizVerifyFailure
         // 를 타서 "확인하지 못했습니다" 기본 문구로 뭉개졌다)
-        const keepApiText = result.status === 400 || result.status === 401 || result.status === 403 || result.status === 404;
+        const keepApiText = result.status === 400 || result.status === 403 || result.status === 404;
         const failure = keepApiText ? { field: null, message: result.message } : bizVerifyFailure(result.status);
         if (failure.field) return setVerifyErrors((e) => ({ ...e, bizRegistrationNumber: failure.message }));
         return setVerifyFailure(failure.message);

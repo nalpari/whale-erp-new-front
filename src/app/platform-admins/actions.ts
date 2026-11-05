@@ -27,11 +27,10 @@ export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; status?
 /**
  * api 오류를 화면 문구로 바꾼다. 이 api 는 400(형식 · 줄 수 없는 권한) · 403(마스터 보호 · 본인 보호) ·
  * 404(없거나 지운 계정) · 409(중복 · 동시 수정 · 마지막 마스터 · 이메일 없는 계정 초기화) 를 모두 한국어로 알리므로 그대로 보인다.
- * 401 은 할 일을 알 수 있게 고정 문구로, 그 밖(5xx · 연결 실패)은 일반 문구로 바꾼다.
+ * 그 밖(5xx · 연결 실패)은 일반 문구로 바꾼다.
  */
 function failureOf(error: unknown, what: string): { ok: false; status?: number; message: string } {
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: withPeriod(error.message) };
   }
   console.error(`플랫폼 관리자 ${what} 실패`, error);

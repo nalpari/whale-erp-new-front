@@ -99,7 +99,7 @@ function TodoFormFields({
 
   /**
    * 개인 배정일 때 그 근무지에서 배정할 수 있는 직원을 받는다. 이미 받은(받는 중인) 근무지면 다시 받지 않는다 — 실패했으면 다시 받는다.
-   * 실패는 이 칸에 고정 문구로 보인다. 401 · 403 은 useFailure 로 넘긴다 — 로그인 만료 · 비밀번호 변경 요구 · 권한 없음(쫓아냄)을 공통으로 처리한다.
+   * 실패는 이 칸에 고정 문구로 보인다. 403 은 useFailure 로 넘긴다 — 비밀번호 변경 요구 · 권한 없음(쫓아냄)을 공통으로 처리한다.
    */
   const loadStaff = (storeId: string, assigneeType: Form["assigneeType"]) => {
     if (!storeId || assigneeType !== "INDIVIDUAL" || (pool?.storeId === storeId && pool.state !== "error")) return;
@@ -109,8 +109,8 @@ function TodoFormFields({
       .then((result) => {
         if (n !== seq.current) return;
         if (result.ok) return setPool({ storeId, state: "ok", staff: result.staff });
-        // 401(로그인 만료) · 403(비밀번호 변경 요구 · 권한 없음)은 공통 처리로 넘긴다. 문구가 돌아오면 그 문구를 이 칸에 보인다
-        if (result.status === 401 || result.status === 403) {
+        // 403(비밀번호 변경 요구 · 권한 없음)은 공통 처리로 넘긴다. 문구가 돌아오면 그 문구를 이 칸에 보인다
+        if (result.status === 403) {
           const message = onFailure(result);
           return setPool(message === null ? null : { storeId, state: "error", message });
         }

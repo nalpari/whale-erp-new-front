@@ -14,7 +14,7 @@ export type WithdrawEligibility = {
 /** link 는 본문 아래 붙는 이동 버튼 — 탈퇴 전에 할 일을 하는 화면으로 보낸다(직원 자료 일괄 저장, WHALEERP-339). */
 export type WithdrawWarningBlock = string | { head: string; text?: string; link?: { href: string; label: string } };
 
-/** api 가 거절한 이유를 붙일 칸. 400 만 본다 — 401 등(세션 만료 · 연결 실패)은 칸이 아니라 띠로 보인다.
+/** api 가 거절한 이유를 붙일 칸. 400 만 본다 — 그 밖(연결 실패 등)은 칸이 아니라 띠로 보인다.
  * 진행 중인 근로계약이 있어 막힌 경우도 특정 칸을 가리킬 수 없어 띠로 보인다. */
 export function withdrawFormField(status: number | undefined, message: string): "currentPassword" | "reasonDetail" | null {
   if (status !== 400) return null;
@@ -23,13 +23,12 @@ export function withdrawFormField(status: number | undefined, message: string): 
   return null;
 }
 
-export type WithdrawVerifyFailure = { ok: false; status?: 400 | 401; message: string };
+export type WithdrawVerifyFailure = { ok: false; status?: 400; message: string };
 
 /** 탈퇴 1단계 비밀번호 확인이 던진 것을 화면 결과로(S-JHQQNR, 2026-10-29 재영). 확인하지 못한 경우(경로가 없는 404 · 5xx ·
  * 연결 실패)는 통과가 아니라 실패다 — 비밀번호를 모르는 사람이 탈퇴 화면을 보지 않게 하는 단계라서다. */
 export function withdrawVerifyFailureOf(error: unknown): WithdrawVerifyFailure {
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     // 400 은 현재 비밀번호 불일치 — api 문구(「현재 비밀번호가 올바르지 않습니다.」)를 그대로 쓴다.
     if (error.status === 400) return { ok: false, status: 400, message: error.message };
     // 429 는 @nestjs/throttler 기본 예외라 한글 문구가 없다(api 한도 10분 10번).

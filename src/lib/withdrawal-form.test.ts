@@ -51,8 +51,7 @@ test("BP명·관리자수·점포수가 실제 값으로 들어간다(굵게 표
 test("탈퇴 1단계 비밀번호 확인 실패 — 확인하지 못하면 모두 막는다(통과로 보지 않는다)", () => {
   assert.deepEqual(withdrawVerifyFailureOf(new ApiError(401, "Unauthorized")), {
     ok: false,
-    status: 401,
-    message: "로그인이 만료되었습니다. 다시 로그인해 주세요.",
+    message: "비밀번호를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.",
   });
   assert.deepEqual(withdrawVerifyFailureOf(new ApiError(400, "현재 비밀번호가 올바르지 않습니다.")), {
     ok: false,

@@ -167,7 +167,7 @@ export function AdminFormPanel(props: Props) {
    * 아이디 중복 확인(등록만) — 칸을 벗어나거나 Enter 를 칠 때. 형식이 틀리면 api 에 묻지 않고 형식 문구를 단다.
    * 비어 있으면 저장할 때 알린다. 서버가 거절한 값(저장 때 중복 · 400, 확인 때 「사용 중」 · 400)을 고치지 않았으면 다시 묻지 않는다.
    * 묻는 사이 아이디를 고치거나 · 패널을 되돌리거나 · 저장이 거절되면 늦게 온 답은 버린다.
-   * 400(형식)이면 화면의 형식 문구를 칸 아래에(고칠 때까지 남긴다), 401(로그인 만료) · 403(등록 권한 없음)이면 위 띠로 바로
+   * 400(형식)이면 화면의 형식 문구를 칸 아래에(고칠 때까지 남긴다), 403(등록 권한 없음)이면 위 띠로 바로
    * 알린다 — 저장해도 같은 이유로 막히니 다 채운 뒤에야 알면 늦다. 그 밖(429 · 5xx · 연결 실패)은 칸 아래에 회색으로 "확인하지 못했다"고만 알린다 — 저장은 막지 않고 api 가 다시 본다.
    * 원인은 콘솔에 남긴다.
    */
@@ -213,7 +213,7 @@ export function AdminFormPanel(props: Props) {
    * 이메일 중복 확인(등록 · 수정 모두) — 칸을 벗어나거나 Enter 를 칠 때. 형식이 틀리면 묻지 않는다(2026-10-29 재영 — 전엔 형식만 봤다).
    * 수정 화면에서 원래 이메일 그대로면 묻지 않는다 — 바꾸지 않은 값은 확인 대상이 아니다(마이페이지와 같다).
    * 서버가 거절한 값을 고치지 않고 다시 벗어난 것이면 묻지 않는다(아이디와 같다). 400 은 화면 형식 문구로 칸에(고칠 때까지 남긴다),
-   * 401 은 패널 위 띠로, 403 은 등록 권한 없이 수정만 하는 사람이라 조용히(콘솔만), 그 밖(5xx · 연결 실패)은 「확인하지 못했습니다」 —
+   * 403 은 등록 권한 없이 수정만 하는 사람이라 조용히(콘솔만), 그 밖(5xx · 연결 실패)은 「확인하지 못했습니다」 —
    * 저장할 때 api 가 다시 본다.
    */
   const checkEmail = (value: string) => {
@@ -240,15 +240,14 @@ export function AdminFormPanel(props: Props) {
           setEmailCheck(result.available ? "available" : "idle");
           return;
         }
-        setEmailCheck(result.status === 400 || result.status === 401 || result.status === 403 ? "idle" : "failed");
+        setEmailCheck(result.status === 400 || result.status === 403 ? "idle" : "failed");
         if (result.status === 400) {
           // 아이디 확인과 같다 — 화면 형식 문구로, 고칠 때까지 같은 값으로 다시 묻지 않는다
           const text = serverFieldMessage("email", 400, result.message);
           console.warn("이메일 중복 확인 400 — 화면 형식 문구로 보인다", result.message);
           setServerErrors((e) => ({ ...e, email: text }));
           setErrors((e) => ({ ...e, email: text }));
-        } else if (result.status === 401) setFailure(result.message);
-        else if (result.status === 403) console.warn("이메일 중복 확인 403 — 등록 권한이 없어 저장할 때 api 가 본다", result.message);
+        } else if (result.status === 403) console.warn("이메일 중복 확인 403 — 등록 권한이 없어 저장할 때 api 가 본다", result.message);
         else console.warn("이메일 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
       })
       .catch((error: unknown) => {

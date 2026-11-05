@@ -15,10 +15,9 @@ const validId = (id: unknown): id is number => typeof id === "number" && Number.
 const CREATE_UNKNOWN = "등록 결과를 확인하지 못했습니다. 목록에서 등록됐는지 확인해 주세요.";
 const NOT_FOUND: ActionFailure = { ok: false, status: 404, message: "TO-DO 를 찾을 수 없습니다." };
 
-/** api 의 400 · 403 · 404 · 409 문장은 한국어라 그대로 보인다. 401 은 고정 문구, 5xx · 연결 실패는 결과 모름(status 없음 → 화면을 다시 받는다) */
+/** api 의 400 · 403 · 404 · 409 문장은 한국어라 그대로 보인다. 5xx · 연결 실패는 결과 모름(status 없음 → 화면을 다시 받는다) */
 function failureOf(error: unknown, what: string, todoId?: number): ActionFailure {
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status < 500) return { ok: false, status: error.status, message: error.message };
   }
   console.error(`TO-DO ${what} 결과 모름`, { todoId }, error);

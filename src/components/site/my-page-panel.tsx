@@ -194,8 +194,6 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
         if (result.ok) {
           if (result.available) setEmailChecked(email);
           else setErrors((e) => ({ ...e, email: EMAIL_TAKEN }));
-        } else if (result.status === 401) {
-          setFailure(result.message);
         } else {
           console.warn("이메일 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
           setEmailChecked(email);

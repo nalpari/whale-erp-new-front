@@ -21,10 +21,9 @@ const validId = (id: unknown): id is number => typeof id === "number" && Number.
 const validMonth = (month: unknown): month is string => typeof month === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(month);
 const BAD_INPUT: DraftFailure = { ok: false, message: "직원 또는 급여 월이 올바르지 않습니다." };
 
-/** api 의 4xx 문장과 api 가 code 를 붙인 5xx(메일 · 직원 앱 주소 설정 없음 503 · 메일 실패 502 — 원인이 정해진 실패) 문장은 그대로 보인다. 401 은 할 일을 알 수 있게, 그 밖의 5xx · 연결 실패는 결과 모름으로 바꾼다. */
+/** api 의 4xx 문장과 api 가 code 를 붙인 5xx(메일 · 직원 앱 주소 설정 없음 503 · 메일 실패 502 — 원인이 정해진 실패) 문장은 그대로 보인다. 그 밖의 5xx · 연결 실패는 결과 모름으로 바꾼다. */
 function failureOf(error: unknown, what: string): DraftFailure {
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status < 500 || typeof (error.body as { code?: unknown } | null)?.code === "string") {
       const payslipId = (error.body as { payslipId?: unknown } | null)?.payslipId;
       return { ok: false, message: error.message, ...(validId(payslipId) && { payslipId }) };

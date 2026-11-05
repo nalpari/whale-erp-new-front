@@ -17,11 +17,10 @@ const FAILED = "상세 코드를 저장하지 못했습니다. 잠시 후 다시
 
 /**
  * api 오류를 화면 문구로 바꾼다. api 가 한국어 문구를 주는 400(형식 · BP 를 고르지 않음) · 403(권한 · 다른 BP · 플랫폼 사용자) ·
- * 404(없는 그룹 · 코드) · 409(중복 · 그 사이 바뀜)는 그대로 보인다. 401 은 고정 문구로, 그 밖(5xx · 연결 실패)은 일반 문구로.
+ * 404(없는 그룹 · 코드) · 409(중복 · 그 사이 바뀜)는 그대로 보인다. 그 밖(5xx · 연결 실패)은 일반 문구로.
  */
 function failureOf(error: unknown, what: string): SaveFailure {
   if (error instanceof ApiError) {
-    if (error.status === 401) return { status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if ([400, 403, 404, 409].includes(error.status)) return { status: error.status, message: error.message };
   }
   console.error(`${what} 실패`, error);

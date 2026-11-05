@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ApiError } from "./api-error.ts";
-import { failureOf, SESSION_EXPIRED } from "./action-failure.ts";
+import { failureOf } from "./action-failure.ts";
 
 test("4xx 는 api 문구와 상태 · 문장 목록 · 업무 code 를 그대로 싣는다", () => {
   const e = new ApiError(409, "이미 있습니다", ["이미 있습니다"], { code: "DUP" });
@@ -14,10 +14,10 @@ test("4xx 는 api 문구와 상태 · 문장 목록 · 업무 code 를 그대로
   assert.equal("code" in r, false);
 });
 
-test("401 은 고정 문구다", () => {
+test("401 은 다른 4xx 처럼 api 문구다", () => {
   const r = failureOf(new ApiError(401, "Unauthorized"), "저장");
   assert.equal(r.status, 401);
-  assert.equal(r.message, SESSION_EXPIRED);
+  assert.equal(r.message, "Unauthorized");
 });
 
 test("5xx · 연결 실패 · ApiError 가 아닌 오류는 로그를 남기고 일반 문구이며 status 가 없다", () => {

@@ -20,10 +20,9 @@ type Result<T = object> = ({ ok: true } & T) | EditFailure;
 const validId = (id: unknown): id is number => typeof id === "number" && Number.isInteger(id) && id >= 1 && id <= 2_147_483_647;
 const NOT_FOUND: EditFailure = { ok: false, message: "급여명세서를 찾을 수 없습니다." };
 
-/** api 의 4xx 문장과 api 가 code 를 붙인 5xx(메일 · 직원 앱 주소 설정 없음 503 · 메일 실패 502 — 원인이 정해진 실패) 문장은 그대로 보인다. 401 은 할 일을 알 수 있게, 그 밖의 5xx · 연결 실패는 결과 모름으로 바꾼다. */
+/** api 의 4xx 문장과 api 가 code 를 붙인 5xx(메일 · 직원 앱 주소 설정 없음 503 · 메일 실패 502 — 원인이 정해진 실패) 문장은 그대로 보인다. 그 밖의 5xx · 연결 실패는 결과 모름으로 바꾼다. */
 function failureOf(error: unknown, what: string): EditFailure {
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status < 500 || typeof (error.body as { code?: unknown } | null)?.code === "string") {
       const items = (error.body as { items?: unknown } | null)?.items;
       const missing = Array.isArray(items)

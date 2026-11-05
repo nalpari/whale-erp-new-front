@@ -171,9 +171,8 @@ export function BpMasterFormPanel(props: Props) {
           setCheck(result.available ? "available" : "idle");
           return;
         }
-        setCheck(result.status === 400 || result.status === 401 ? "idle" : "failed");
+        setCheck(result.status === 400 ? "idle" : "failed");
         if (result.status === 400) setErrors((e) => ({ ...e, [key]: result.message }));
-        else if (result.status === 401) setFailure(result.message);
         else console.warn(`${what} 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다`, result.status, result.message);
       })
       .catch((error: unknown) => {
@@ -224,9 +223,9 @@ export function BpMasterFormPanel(props: Props) {
       });
       if (mine !== verifyNumber.current) return;
       if (!result.ok) {
-        // 로그인 만료(401) · 권한 없음(403) · 입력 형식(400)은 api 문구 그대로 — 401 · 403 은 저장도 막혀 「인증 없이 저장」을 붙이지 않는다.
+        // 권한 없음(403) · 입력 형식(400)은 api 문구 그대로 — 403 은 저장도 막혀 「인증 없이 저장」을 붙이지 않는다.
         // 그 밖은 점포 · 회원가입과 같은 글자가 보이도록 상태 코드로 공통 문구를 고른다(bizVerifyFailure, S-VRNTHD)
-        if (result.status === 401 || result.status === 403) return setVerifyFailure(result.message);
+        if (result.status === 403) return setVerifyFailure(result.message);
         const text = result.status === 400 ? result.message : bizVerifyFailure(result.status).message;
         return setVerifyFailure(`${text} 인증 없이도 저장할 수 있습니다.`);
       }

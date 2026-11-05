@@ -11,12 +11,11 @@ export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
 
 /**
  * api 오류를 화면 문구로. 이 api 들은 400(형식 · 줄 수 없는 칸 · 대체 권한) · 403(권한 · 본인 연결) · 404(없거나 지운 권한) ·
- * 409(이름 중복 · 동시 수정 · 고정 권한) 를 한국어로 알리므로 그대로 보인다. 401 은 고정 문구로, 5xx 는 상태를 실어 일반 문구로,
+ * 409(이름 중복 · 동시 수정 · 고정 권한) 를 한국어로 알리므로 그대로 보인다. 5xx 는 상태를 실어 일반 문구로,
  * 응답을 못 받은 것은 상태 없이 — 쓰기(wrote)면 「결과를 확인하지 못했다」, 읽기면 「실패했다」로 알린다. subject 는 로그에만 쓴다.
  */
 export function failureOf(error: unknown, subject: string, what: string, wrote = true): ActionFailure {
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: error.message };
     console.error(`${subject} ${what} 실패`, error);
     return { ok: false, status: error.status, message: `${what}에 실패했습니다. 잠시 후 다시 시도해 주세요.` };

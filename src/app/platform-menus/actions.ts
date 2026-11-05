@@ -20,12 +20,11 @@ export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
 
 /**
  * api 오류를 화면 문구로. 이 api 는 400(형식 · 상위 · 3단계 · 자기 하위) · 403(권한) · 404(없거나 지운 메뉴 · 서비스) ·
- * 409(URL 겹침 · 동시 수정 · 코드 소진)를 한국어로 알리므로 그대로 보인다. 401 은 고정 문구로, 그 밖의 5xx 는 상태를 실어 일반 문구로,
+ * 409(URL 겹침 · 동시 수정 · 코드 소진)를 한국어로 알리므로 그대로 보인다. 그 밖의 5xx 는 상태를 실어 일반 문구로,
  * 응답을 못 받았거나 502 · 503 · 504 면 상태 없이 「결과를 확인하지 못했다」로 알린다.
  */
 function failureOf(error: unknown, what: string): ActionFailure {
   if (error instanceof ApiError && ![502, 503, 504].includes(error.status)) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: error.message };
     console.error(`플랫폼 메뉴 ${what} 실패`, error);
     return { ok: false, status: error.status, message: `${what}에 실패했습니다. 잠시 후 다시 시도해 주세요.` };

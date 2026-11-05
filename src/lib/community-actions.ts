@@ -1,8 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
-import { ApiError, SESSION_COOKIE } from "./api";
+import { ApiError } from "./api";
 import {
   createFaq,
   deleteLead,
@@ -17,13 +16,13 @@ import {
   type PostDetail,
   type Target,
 } from "./community";
-import { INQUIRY_BASE, LEAD_BASE, PASSWORD_REQUIRED_PREFIX, POST_BASE, postIdOf, SESSION_EXPIRED, type PostKind } from "./community-view";
+import { INQUIRY_BASE, LEAD_BASE, PASSWORD_REQUIRED_PREFIX, POST_BASE, postIdOf, type PostKind } from "./community-view";
 
 // FAQ 등록 · 수정과 공지사항 · FAQ 지우기(지움 표시). 공지사항 등록 · 수정은 첨부 때문에 라우트 핸들러(platform-notices/save)가 한다.
 // 문의사항 · 도입문의 상세의 처리중 전환 · 답변 · 메모 · 도입문의 지우기 · 답변 메일 다시 보내기(#277 · #597)도 여기 있다.
 // 로그인 · 권한(플랫폼 관리자 + 메뉴 권한)은 api 가 본다 — 세션 토큰을 싣고, 없거나 끝났으면 api 가 401 을 준다.
 
-/** 실패면 폼 위 띠에 한 줄씩 보일 문장 목록. 4xx 는 api 문장 그대로다(401 · 권한 없음 403 만 고정 문구). */
+/** 실패면 폼 위 띠에 한 줄씩 보일 문장 목록. 4xx 는 api 문장 그대로다(권한 없음 403 만 고정 문구). */
 export type SaveResult = { ok: true; detail: PostDetail } | { ok: false; status?: number; messages: string[] };
 export type DeleteResult = { ok: true } | { ok: false; status?: number; messages: string[] };
 
@@ -32,12 +31,6 @@ const NOT_FOUND: { ok: false; status: number; messages: string[] } = { ok: false
 async function messageOf(error: unknown, what: string, object = "게시물을"): Promise<{ status?: number; messages: string[] }> {
   if (error instanceof ApiError) {
     const { status } = error;
-    if (status === 401) {
-      // 쿠키를 지워야 /login 이 「로그인한 채 오면 홈으로」로 되돌려 보내지 않는다(라우트 핸들러 · BFF 와 같다).
-      // 서버 액션 요청은 proxy 가 토큰을 갱신하지 않아(proxy.ts) 오래 쓰다 저장하면 여기로 온다.
-      (await cookies()).delete(SESSION_COOKIE);
-      return { status, messages: [SESSION_EXPIRED] };
-    }
     // 비밀번호 강제 변경 403 은 권한 없음이 아니다 — api 문장을 그대로 두고, 화면이 변경 팝업을 띄운다.
     if (status === 403 && !error.message.startsWith(PASSWORD_REQUIRED_PREFIX)) return { status, messages: [`${object} ${what}할 권한이 없습니다.`] };
     // 그 밖의 4xx(검증 400 · 없는 글 404 · 그사이 고침 409 · 1분 안에 다시 보냄 409 등)는 api 문장이 정확하다.

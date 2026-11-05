@@ -34,11 +34,10 @@ export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; status?
  * api 오류를 화면 문구로 바꾼다. 400(형식 · 고를 수 없는 권한 · 점포 범위) · 403(역할 · 본인 보호) · 404(없거나 볼 수 없는 계정) ·
  * 409(중복 · 동시 수정 · 한 점포 한 가맹 마스터 · 이메일 없는 계정 초기화)는 api 가 한국어로 알리므로 api 문구를 그대로 넘긴다.
  * 아이디 · 이메일 중복은 등록 · 수정 패널이(bpAdminFieldMessage), 이메일 없는 계정 초기화는 아래 resetBpAdminPasswordAction 이 화면 문구로 바꾼다.
- * 401 은 할 일을 알 수 있게 고정 문구로, 그 밖(5xx · 연결 실패)은 일반 문구로 바꾼다.
+ * 그 밖(5xx · 연결 실패)은 일반 문구로 바꾼다.
  */
 function failureOf(error: unknown, what: string): { ok: false; status?: number; message: string } {
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: withPeriod(error.message) };
   }
   console.error(`BP 관리자 ${what} 실패`, error);

@@ -35,11 +35,10 @@ export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
 
 /**
  * api 오류를 화면 문구로. 이 api 는 4xx(400 형식 · 운영 조건, 403 권한, 404 없음, 409 동시 수정 · 상태, 429 횟수)와
- * 503(진위확인 연동 · 저장소 없음)을 한국어로 알리므로 그대로 보인다. 401 은 할 일을 알 수 있게 고정 문구로 바꾼다.
+ * 503(진위확인 연동 · 저장소 없음)을 한국어로 알리므로 그대로 보인다.
  */
 function failureOf(error: unknown, what: string): ActionFailure {
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status < 500 || error.status === 503) return { ok: false, status: error.status, message: error.message, messages: error.messages };
   }
   console.error(`점포 ${what} 결과 모름`, error);
@@ -152,8 +151,8 @@ export async function verifyStoreBusinessAction(
   try {
     return { ok: true, ...(await verifyStoreBusiness(input)) };
   } catch (error) {
-    // 예상한 거절(400 형식 · 409 중복 · 422 불일치)과 화면이 할 일을 알리는 401 · 403 · 404 는 남기지 않는다
-    if (error instanceof ApiError && ![400, 401, 403, 404, 409, 422].includes(error.status)) console.error("점포 사업자정보 인증 api 오류", error.status, error.message);
+    // 예상한 거절(400 형식 · 409 중복 · 422 불일치)과 화면이 할 일을 알리는 403 · 404 는 남기지 않는다
+    if (error instanceof ApiError && ![400, 403, 404, 409, 422].includes(error.status)) console.error("점포 사업자정보 인증 api 오류", error.status, error.message);
     return failureOf(error, "사업자정보 인증");
   }
 }
