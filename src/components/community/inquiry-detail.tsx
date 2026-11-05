@@ -103,10 +103,10 @@ function Box({ title, hint, hintLeft, flush, children }: { title: ReactNode; hin
 type Step = [string, ReactNode, boolean];
 /**
  * 단계 칸은 왼쪽 정렬, 폭은 위 「문의자」 표의 라벨 칸과 같게 둬 세로줄을 맞춘다(2026-11-05 사용자 지정 — 전엔 150px 가운데).
- * 표 칸 여백(10px)이 상세 표 라벨(12px)보다 2px 좁아 글 시작을 2px 밀어 맞춘다.
+ * 표 칸 여백(10px)이 상세 표 라벨(12px)보다 2px 좁아 글 시작을 2px 밀어 맞춘다. 글자도 상세 표 라벨과 같은 회색 500(2026-11-05 사용자 지정).
  */
 const stepColumns = (stepWidth: `w-[${number}px]`): Column<Step>[] => [
-  { header: "단계", width: stepWidth, align: "left", cell: (s) => <span className="pl-[2px]">{s[0]}</span> },
+  { header: "단계", width: stepWidth, align: "left", cell: (s) => <span className="pl-[2px] font-medium text-erp-label">{s[0]}</span> },
   { header: "내용", align: "left", cell: (s) => s[1] },
   { header: "상태", width: "w-[80px]", cell: (s) => (s[2] ? <Badge tone="on">완료</Badge> : <Badge tone="off">대기</Badge>) },
 ];
