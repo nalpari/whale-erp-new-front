@@ -94,7 +94,7 @@ export function ScheduleMonth({
               <span className="text-right text-[13px] text-erp-muted">{shifts.length ? shifts.map(shiftLabel).join(", ") : "휴무"}</span>
             </li>
           ))}
-          {hidden > 0 && <li className="pt-[10px] text-[14px] text-erp-label">그 밖에 {hidden}명(본사 제공 동의 없음)</li>}
+          {hidden > 0 && <li className="pt-[10px] text-[14px] text-erp-label">그 밖에 {hidden}명(본사에 정보제공 미동의)</li>}
           {/* 상자 위아래 여백은 같게(18) — 첫 줄 위 · 끝 줄 아래 여백과 끝 줄 선을 없앤다. 빈 줄도 여백 없이(2026-11-05 사용자 지적) */}
           {rows.length === 0 && hidden <= 0 && <li className="text-[14px] text-erp-label">{readOnly ? "근무 없음" : "근무 가능한 직원이 없습니다."}</li>}
         </ul>

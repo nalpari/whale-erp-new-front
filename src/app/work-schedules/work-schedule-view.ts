@@ -149,7 +149,7 @@ const EXCLUDE_REASON: Record<string, string> = {
   WORK_SCHEDULE_NO_CONTRACT: "근로계약 미체결",
   WORK_SCHEDULE_NOT_JOINED: "가입 전",
   WORK_SCHEDULE_OVERLAP: "시간 겹침",
-  WORK_SCHEDULE_HIDDEN: "본사 제공 동의 없음",
+  WORK_SCHEDULE_HIDDEN: "본사에 정보제공 미동의",
 };
 const excludeReason = (code: string | null, retiredDate: string | null) =>
   code === "WORK_SCHEDULE_AFTER_RETIREMENT" ? (retiredDate ? `${mmdd(retiredDate)} 퇴직` : "퇴직") : ((code && EXCLUDE_REASON[code]) ?? "규칙에 맞지 않음");

@@ -101,7 +101,7 @@ export function PayslipListActions({
         <div className="mt-[12px] max-h-[280px] overflow-y-auto">
           <DataTable
             columns={[
-              { header: "직원", width: "w-[120px]", cell: (f) => f.staffName ?? <span className="text-erp-muted">본사 제공 동의 없음</span> },
+              { header: "직원", width: "w-[120px]", cell: (f) => f.staffName ?? <span className="text-erp-muted">본사에 정보제공 미동의</span> },
               { header: "이유", align: "left", cell: (f) => f.message },
             ]}
             rows={failedRows}
