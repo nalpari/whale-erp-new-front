@@ -68,7 +68,9 @@ export default ({ A, R }) => {
 
   // [등록]은 제목 줄(앱 platform-admins admins-screen, 2026-10-23), 목록 오른쪽 위엔 한 쪽 건수 — BP 관리자 관리와 같다(2026-10-27 사용자 지정)
   const toolbar = ui.listToolbar(ADMINS.length, `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`);
-  const table = dimRows(ui.dataTable(cols, rows, "조건에 맞는 플랫폼 관리자 계정이 없습니다."), [2]);
+  // 비면 열 이름 줄을 두고 빈 줄이 남는 높이를 채운다(앱 DataTable fillEmpty). 데모 목록은 늘 계정이 있어 거른 결과의 「조건에 맞는 …」만 둔다 —
+  // 계정이 아예 없으면 앱은 「등록된 플랫폼 관리자 계정이 없습니다.」(2026-11-05 사용자 지정, 전엔 「조건에 맞는 …」)
+  const table = dimRows(ui.fillTable(cols, rows, "조건에 맞는 플랫폼 관리자 계정이 없습니다."), [2]);
 
   return {
     title: "플랫폼 관리자 관리",

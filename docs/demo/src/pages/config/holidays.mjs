@@ -31,7 +31,7 @@ function monthGrid() {
     const off = OFFICIAL[d];
     const num =
       d === TODAY
-        ? `<span aria-label="고른 날짜 · 오늘" class="inline-grid h-[24px] min-w-[24px] place-items-center rounded-[2px] border border-erp-brand px-[4px] text-[14px] font-semibold text-erp-brand">${d}</span>`
+        ? `<span aria-label="선택한 날짜 · 오늘" class="inline-grid h-[24px] min-w-[24px] place-items-center rounded-[2px] border border-erp-brand px-[4px] text-[14px] font-semibold text-erp-brand">${d}</span>`
         : `<span class="text-[14px] ${off ? `font-semibold text-erp-off in-[.hide-official]:font-normal in-[.hide-official]:text-erp-ink` : "text-erp-ink"}">${d}</span>`;
     const name = off ? `<p class="mt-[6px] text-[13px] font-medium text-erp-off in-[.hide-official]:hidden">${off}</p>` : "";
     const hols = (NAMES[d] || []).map((n) => `<p title="${n}" class="mt-[6px] truncate rounded-[2px] bg-erp-on-bg px-[4px] py-[2px] text-[13px] font-medium text-erp-on">${n}</p>`).join("");
@@ -48,7 +48,7 @@ const legend = (cls, text) => `<span class="flex items-center gap-[6px] text-[14
 const ICON_BOX = "grid size-[34px] shrink-0 place-items-center rounded-[2px] border border-erp-button-line bg-white transition-[border-color] duration-150 ease-out hover:border-erp-brand";
 const arrow = (d) => `<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="size-[16px] text-erp-ink"><path d="${d}" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
 const monthNav = () =>
-  `<div role="group" aria-label="달 이동" class="flex items-center gap-[6px]"><button type="button" aria-expanded="false" aria-label="2026년 9월 — 연 · 월 고르기" class="flex h-[34px] items-center gap-[8px] rounded-[2px] border border-erp-button-line bg-white pr-[8px] pl-[12px] text-[16px] font-semibold text-erp-ink transition-[border-color] duration-150 hover:border-erp-brand">2026년 9월<span class="ml-[2px] grid size-[20px] place-items-center rounded-full bg-erp-brand-soft"><svg viewBox="0 0 10 6" fill="none" aria-hidden="true" class="h-[6px] w-[10px]"><path d="M1 1L5 5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button><button type="button" aria-label="이전달" class="${ICON_BOX}">${arrow("M11 14L5 8L11 2")}</button><button type="button" aria-label="다음달" class="${ICON_BOX}">${arrow("M5 14L11 8L5 2")}</button><button type="button" class="flex h-[34px] shrink-0 items-center rounded-[2px] border border-erp-button-line bg-white px-[14px] text-[14px] font-medium whitespace-nowrap text-erp-ink transition-[border-color] duration-150 ease-out hover:border-erp-brand">오늘<span class="ml-[6px] text-[12px] font-normal text-erp-label">· 2026-09-21(월)</span></button></div>`;
+  `<div role="group" aria-label="달 이동" class="flex items-center gap-[6px]"><button type="button" aria-expanded="false" aria-label="2026년 9월 — 연 · 월 선택" class="flex h-[34px] items-center gap-[8px] rounded-[2px] border border-erp-button-line bg-white pr-[8px] pl-[12px] text-[16px] font-semibold text-erp-ink transition-[border-color] duration-150 hover:border-erp-brand">2026년 9월<span class="ml-[2px] grid size-[20px] place-items-center rounded-full bg-erp-brand-soft"><svg viewBox="0 0 10 6" fill="none" aria-hidden="true" class="h-[6px] w-[10px]"><path d="M1 1L5 5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button><button type="button" aria-label="이전달" class="${ICON_BOX}">${arrow("M11 14L5 8L11 2")}</button><button type="button" aria-label="다음달" class="${ICON_BOX}">${arrow("M5 14L11 8L5 2")}</button><button type="button" class="flex h-[34px] shrink-0 items-center rounded-[2px] border border-erp-button-line bg-white px-[14px] text-[14px] font-medium whitespace-nowrap text-erp-ink transition-[border-color] duration-150 ease-out hover:border-erp-brand">오늘<span class="ml-[6px] text-[12px] font-normal text-erp-label">· 2026-09-21(월)</span></button></div>`;
 // 글자 링크 모양의 패널 열기 버튼. close 면 버튼이 든 확인창을 닫는다(변경 이력 확인창에서 상세로 갈 때).
 const PANEL = { detail: "hol-detail-panel", edit: "hol-edit-panel", new: "hol-new-panel" };
 const panelLink = (text, id, close) => `<button type="button" aria-controls="${id}" aria-expanded="false"${close ? " data-close" : ""} class="text-erp-link hover:underline">${text}</button>`;
@@ -137,7 +137,8 @@ export default ({ A, R }) => {
     // 달 이동 줄 + 「선택한 월의 BP 휴일은 N건입니다.」(플랫폼 휴일 관리와 같은 말투, 2026-11-03 사용자 지정 — 전엔 「BP 휴일 N건」), 쪽 이동 없음 — 한 달 치를 다 보인다(앱 holidays-screen.tsx)
     `<div class="flex items-center gap-[10px]">${monthNav()}<span class="ml-[12px] text-[14px] text-erp-label">선택한 월의 BP 휴일은 <span class="font-semibold">${listRows.length}건</span>입니다.</span></div>` +
     c.dimRows(
-      ui.dataTable(
+      // 비면 열 이름 줄을 두고 빈 줄이 남는 높이를 채운다(앱 DataTable fillEmpty). 달마다 보는 목록이라 「이 달의 …」(급여명세서와 같다, 2026-11-05 사용자 지정)
+      ui.fillTable(
         [
           // 날짜 · 휴일명 · 휴일유형 · 적용범위 · 대상점포 · 예외점포 · 최종수정(앱과 같다, 2026-10-30 사용자 지정)
           { header: "날짜", width: "w-[150px]" },
@@ -150,7 +151,7 @@ export default ({ A, R }) => {
           { header: "최종수정", width: "w-[230px]", align: "left" },
         ],
         listRows,
-        "이 달에 등록된 BP 휴일이 없습니다.",
+        "이 달의 BP 휴일이 없습니다.",
       ),
       [0],
     );

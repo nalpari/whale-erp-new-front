@@ -23,10 +23,9 @@ const ADMINS = [
 ];
 const ROLES = Object.keys(GROUPS);
 
-// 빈 문구 3종(앱 admin-table.tsx) — 계정상태를 다 끈 이유가 먼저다
+// 빈 문구(앱 admin-table.tsx) — 역할 · 계정상태를 모두 꺼도 이유를 따로 말하지 않는다(2026-11-05 사용자 지정). 데모 목록은 늘 계정이 있어 거른 결과의 「조건에 맞는 …」만 둔다 —
+// 계정이 아예 없으면 앱은 「등록된 관리자 계정이 없습니다.」(2026-11-05 사용자 지정, 전엔 「조건에 맞는 …」)
 const EMPTY = {
-  status: "선택한 계정상태가 없어 표시할 관리자 계정이 없습니다. 계정상태를 하나 이상 선택해 주세요.",
-  role: "선택한 역할이 없어 표시할 관리자 계정이 없습니다. 역할을 하나 이상 선택해 주세요.",
   none: "조건에 맞는 관리자 계정이 없습니다.",
 };
 
@@ -76,7 +75,9 @@ export const render = ({ A, R }, { title = "BP 관리자 관리", detail = "hghr
       const [, , role, , state] = ADMINS[++n];
       return `<tr data-role="${role}" data-status="${state}" class="h-[46px] border-b border-erp-thead-line has-aria-expanded:bg-erp-thead-bg${state === "미사용" ? " text-erp-muted" : ""}">`;
     })
-    .replace("</tbody>", ui.tableEmptyRow(cols, "").replace("<tr ", "<tr data-empty hidden ") + "</tbody>");
+    .replace("</tbody>", ui.tableEmptyRow(cols, "").replace("<tr ", "<tr data-empty hidden ") + "</tbody>")
+    // 비면 열 이름 줄을 두고 빈 줄이 목록 영역 남는 높이를 채운다(앱 DataTable fillEmpty, 2026-11-05 사용자 지정)
+    .replace("<table ", "<table data-fill-empty ");
 
   const toolbar = ui.listToolbar(ADMINS.length, `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`);
   const d = DETAILS[detail];
@@ -100,6 +101,6 @@ export const render = ({ A, R }, { title = "BP 관리자 관리", detail = "hghr
 // 역할 · 계정상태로 줄을 거르고 건수 · 빈 문구를 바꾼다. 끈 역할의 권한명은 선택지에서 숨기고, 골라 둔 것이면 「전체」로 돌린다
 const FILTER_SCRIPT = `<script>(()=>{const roles=[...document.querySelectorAll("[data-role-filter]")],states=[...document.querySelectorAll("[data-status-filter]")],sel=document.querySelector("[data-group-filter]"),rows=[...document.querySelectorAll("tr[data-role]")],empty=document.querySelector("tr[data-empty]"),total=document.querySelector("main p b"),E=${JSON.stringify(
   EMPTY,
-)};const on=(list,k)=>list.filter((b)=>b.checked).map((b)=>b.dataset[k]);const sync=()=>{const r=on(roles,"roleFilter"),s=on(states,"statusFilter");for(const o of sel.options){if(!o.dataset.role)continue;o.hidden=!r.includes(o.dataset.role);if(o.hidden&&o.selected)sel.selectedIndex=0;}let n=0;rows.forEach((tr)=>{const show=r.includes(tr.dataset.role)&&s.includes(tr.dataset.status);tr.hidden=!show;n+=show;});total.textContent=n;empty.hidden=n>0;empty.firstElementChild.textContent=!s.length?E.status:!r.length?E.role:E.none;};[...roles,...states].forEach((b)=>b.addEventListener("change",sync));})();</script>`;
+)};const on=(list,k)=>list.filter((b)=>b.checked).map((b)=>b.dataset[k]);const sync=()=>{const r=on(roles,"roleFilter"),s=on(states,"statusFilter");for(const o of sel.options){if(!o.dataset.role)continue;o.hidden=!r.includes(o.dataset.role);if(o.hidden&&o.selected)sel.selectedIndex=0;}let n=0;rows.forEach((tr)=>{const show=r.includes(tr.dataset.role)&&s.includes(tr.dataset.status);tr.hidden=!show;n+=show;});total.textContent=n;empty.hidden=n>0;empty.closest("table").style.flex=n>0?"":"1 0 134px";empty.firstElementChild.textContent=E.none;};[...roles,...states].forEach((b)=>b.addEventListener("change",sync));})();</script>`;
 
 export default (ctx) => render(ctx);

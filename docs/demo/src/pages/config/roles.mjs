@@ -141,7 +141,7 @@ export const render = ({ A, R }, { title = "BP 권한 그룹 관리", platform =
     n ? ui.badge("on", `등록 ${n.toLocaleString("ko-KR")}개`) : ui.badge("off", "미등록"),
   ]);
   let k = -1;
-  const table = ui.dataTable(cols, rows).replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, () => {
+  const table = ui.dataTable(cols, rows, "등록된 권한 그룹이 없습니다.").replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, () => {
     const g = groups[++k];
     return `<tr class="h-[46px] border-b border-erp-thead-line" data-role-row="${g[1]}"${g[11] ? " data-role-fresh hidden" : ""}>`;
   });

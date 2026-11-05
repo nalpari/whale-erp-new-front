@@ -98,7 +98,7 @@ export function dataTable(columns, rows, empty = "데이터가 없습니다.") {
 
 // data-table.tsx 의 fillEmpty — 목록 화면 표. 비었을 때 열 이름 줄은 두고 그 아래 빈 칸이 부모(flex 세로 묶음)의 남는 높이를 채워 문구를 가운데 둔다
 // (최소 머리 42 + 빈 칸 92 = 134px, 2026-11-05 사용자 지정). 줄이 있으면 숨긴 빈 줄(data-empty)을 넣어 둔다 — erp.js 목록 거르기가 줄을 모두 숨기면
-// 그 줄을 보이고 표(data-fill-empty)를 남는 높이까지 늘린다. empty 는 그 상태의 문구(줄이 있으면 거른 결과 「조회된 …」, 없으면 「등록된 …」)
+// 그 줄을 보이고 표(data-fill-empty)를 남는 높이까지 늘린다. empty 는 그 상태의 문구(줄이 있으면 거른 결과 「조건에 맞는 …」, 없으면 「등록된 …」)
 export function fillTable(columns, rows, empty) {
   const table = dataTable(columns, rows, empty);
   if (rows.length)

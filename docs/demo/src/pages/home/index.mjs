@@ -148,7 +148,7 @@ const PLANS = [
     cta: "부가서비스 둘러보기",
     href: "home/add-on-services.html",
     name: "부가서비스",
-    summary: "매장에 필요한 서비스만 골라서",
+    summary: "매장에 필요한 서비스만 선택해서",
     listTitle: "점포별 월 구독",
     note: "요금 확정 예정",
     items: ["POS · KIOSK · Table Order", "Pick up Order · QR Order", "레시피 · 발주 · 재고 관리", "대기 순번 · 예약 관리"],

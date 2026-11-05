@@ -53,7 +53,7 @@ export function staffSections({ A, R }) {
   const offBtn = (label, a = {}) => ui.button(label, { variant: "off", ...a });
   // 직원관리의 목록은 맨 앞에 순번(2026-10-02 재영). 순번은 내림차순 — 첫 줄이 전체 건수다(2026-10-13 재영).
   // 목록 화면 표 — 비면 열 이름 줄을 두고 빈 칸이 남는 높이를 채운다(ui.fillTable, 앱 DataTable fillEmpty, 2026-11-05 사용자 지정, 3팀 확인 필요).
-  // 데모 목록은 늘 줄이 있어 거른 결과가 비었을 때의 「조회된 …」 문구를 넘긴다 — 「등록된 …」(아예 없음)은 앱만 가른다
+  // 데모 목록은 늘 줄이 있어 거른 결과가 비었을 때의 「조건에 맞는 …」 문구를 넘긴다 — 「등록된 …」(아예 없음)은 앱만 가른다
   const numberedList = (columns, rows, empty, total = rows.length) =>
     ui.fillTable([{ header: "순번", width: "w-[60px]" }, ...columns], rows.map((r, i) => [total - i, ...r]), empty);
   const pageNav = (n) => `<div class="pt-[14px]">${ui.pagination(A, 1, n)}</div>`;
@@ -105,7 +105,7 @@ export function staffSections({ A, R }) {
         `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
     ) +
     // 순번은 내림차순 — 최근 등록이 먼저라 1쪽 첫 줄이 전체 건수다(2026-10-12).
-    ui.fillTable(staffCols, staffRows.map((r, i) => [63 - i, ...r]), "조회된 직원이 없습니다.") +
+    ui.fillTable(staffCols, staffRows.map((r, i) => [63 - i, ...r]), "조건에 맞는 직원이 없습니다.") +
     pageNav(4);
 
   // ── 근로계약 ──
@@ -151,7 +151,7 @@ export function staffSections({ A, R }) {
         { header: "상태", width: "w-[220px]" },
       ],
       contractRows,
-      "조회된 근로계약이 없습니다.",
+      "조건에 맞는 근로계약이 없습니다.",
     ) +
     p.note("「무기계약 전환」은 파트타이머를 반복 갱신해 첫 계약부터 2년이 넘는 계약입니다. 다시 갱신하면 기간의 정함이 없는 계약이 됩니다.") +
     pageNav(7);
@@ -463,7 +463,7 @@ export function staffSections({ A, R }) {
         ["전체 · 한 명", "온기식당 판교점", "여름 프로모션 POP 철거", "08-25", `${p.tag("ok", "완료")} ${p.sub("문태경")}`, ""],
         ["권도윤", "모리커피 서초점", "신메뉴 시식 교육 참석", "08-28 14:00", p.tag("ok", "완료"), ""],
       ],
-      "조회된 TO-DO 가 없습니다.",
+      "조건에 맞는 TO-DO 가 없습니다.",
       12,
     ) +
     pageNav(2);
@@ -539,11 +539,11 @@ export function staffSections({ A, R }) {
         ui.formRow(p.fieldH(req("출근"), p.timeField("09:00", "출근"), ""), p.fieldH("퇴근", p.timeField("", "퇴근"), "")),
         p.fieldH(req("사유"), ui.textarea({ rows: 4, placeholder: "예: 위치 수집 일시 중지 · 점장 확인" }), ""),
       ) +
-      p.note("위치정보 동의를 거부·철회했거나 위치 수집을 일시 중지한 직원만 고를 수 있습니다. 동의한 직원은 그날 출근·퇴근 기록이 모두 없어도 「보정」으로 두 시각을 넣습니다.") +
+      p.note("위치정보 동의를 거부·철회했거나 위치 수집을 일시 중지한 직원만 선택할 수 있습니다. 동의한 직원은 그날 출근·퇴근 기록이 모두 없어도 「보정」으로 두 시각을 넣습니다.") +
       ui.panelButtons("취소", "대신 등록"),
   );
   // 배정 대상·수행 방식 라벨과 ⓘ 툴팁(2026-10-08 재영)
-  const TIP_TARGET = "개인: 고른 직원에게만 보입니다. 여러 명을 고르면 한 사람에 한 건씩 생깁니다.\n근무지 전체: 그 근무지의 재직 직원 모두에게 보입니다.";
+  const TIP_TARGET = "개인: 선택한 직원에게만 보입니다. 여러 명을 선택하면 한 사람에 한 건씩 생깁니다.\n근무지 전체: 그 근무지의 재직 직원 모두에게 보입니다.";
   const TIP_MODE = "각자 수행: 직원마다 한 건씩 생기고 저마다 완료합니다.\n한 명 수행: 한 건을 함께 보고, 한 명이 완료하면 모두에게 완료로 보입니다. 등록한 뒤에는 바꿀 수 없습니다.";
   const tipLabel = (label, text) => `<span class="flex items-center gap-[6px] text-[14px] font-medium text-erp-label">${label}${p.infoTip(label, text)}</span>`;
   // 개인 배정 직원 고르기(STAFF-25 확정 — 한 명 이상, 직원마다 1건). 개인일 때만 보이고, 수행 방식은 근무지 전체일 때만 보인다(data-when).
@@ -551,7 +551,7 @@ export function staffSections({ A, R }) {
   const staffChip = (name) =>
     `<li class="flex h-[34px] items-center gap-[8px] rounded-[2px] border border-erp-field-line bg-white pr-[4px] pl-[10px] text-[14px]"><span class="font-medium">${name}</span><button type="button" aria-label="${name} 빼기" class="grid size-[26px] place-items-center rounded-[2px] text-erp-label hover:text-erp-ink">×</button></li>`;
   const staffPick = (radio, picked = []) =>
-    `<div class="flex flex-col gap-[8px]" data-when="${radio}:개인"><span class="text-[14px] font-medium text-erp-label">직원</span>${ui.searchField(A, { placeholder: "이름 또는 휴대전화번호 끝자리" })}<ul aria-label="고른 직원" class="flex flex-wrap gap-[6px]">${picked.map(staffChip).join("")}</ul>${p.help("고른 근무지의 재직 직원 중 한 명 이상 고르고, 직원마다 1건씩 생긴다. 근무지를 바꾸면 비우고, 아무도 고르지 않으면 「직원을 한 명 이상 골라 주세요.」로 막는다.")}</div>`;
+    `<div class="flex flex-col gap-[8px]" data-when="${radio}:개인"><span class="text-[14px] font-medium text-erp-label">직원</span>${ui.searchField(A, { placeholder: "이름 또는 휴대전화번호 끝자리" })}<ul aria-label="선택한 직원" class="flex flex-wrap gap-[6px]">${picked.map(staffChip).join("")}</ul>${p.help("선택한 근무지의 재직 직원 중 한 명 이상 선택하고, 직원마다 1건씩 생긴다. 근무지를 바꾸면 비우고, 아무도 선택하지 않으면 「직원을 한 명 이상 선택해 주세요.」로 막는다.")}</div>`;
   const todoForm = ui.slidePanel(
     todoPanel,
     "TO-DO 등록",
