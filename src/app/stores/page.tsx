@@ -9,6 +9,7 @@ import { StoreDenied, StoreFrame } from "./store-frame";
 import { StoreListNavigationProvider } from "./store-list-navigation";
 import { StorePageSizeSelect, StorePagination, StoreViewToggle } from "./store-list-controls";
 import { StoreCard } from "./store-parts";
+import { NoStoresText } from "./store-empty-text";
 import { StoreTable } from "./store-table";
 import { detailHrefOf, parseStoresQuery, pickedIdsOf, resolveStoresQuery, scopeTypeMismatch, storeListQueryOf, storesExcelHref, storesHref, withBack, type ParsedStoresQuery } from "./stores-query";
 
@@ -39,9 +40,13 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
     total === 0 &&
     (await getStores({ page: 1, pageSize: 20, storeIds: [], bizRegistrationNumber: "", statuses: [...STORE_STATUSES], storeTypes: [...STORE_TYPES] })
       .then((all) => all.total === 0)
-      .catch(() => false));
+      .catch((error: unknown) => {
+        // 확인에 실패하면 예전처럼 「조회된 …」 — 장애를 알아챌 수 있게 로그만 남긴다(리뷰 반영)
+        console.warn("점포 전체 건수 확인 실패", error);
+        return false;
+      }));
   const emptyText = noStoresAtAll
-    ? "등록된 점포가 없습니다."
+    ? <NoStoresText />
     : scopeTypeMismatch(query)
       ? "상단 범위와 고른 점포유형이 겹치지 않아 조회된 점포가 없습니다."
       : "조회된 점포가 없습니다.";

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { DataTable, Tag, type Column } from "@/components/common";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import type { StoreSummary } from "@/lib/store-types";
@@ -25,7 +26,7 @@ export function StoreTable({
   pageSize: number;
   detailHref: (id: number) => string;
   /** 빈 목록 문구 — 점포가 아예 없는지 · 조건에 맞는 점포가 없는지는 목록 화면이 가른다 */
-  empty: string;
+  empty: ReactNode;
 }) {
   const columns: Column<Row>[] = [
     { header: "순번", width: "w-[60px]", cell: (r) => r.no.toLocaleString("ko-KR") },

@@ -168,7 +168,8 @@ export function DataTable<T>({
     );
   if (fillEmpty && rows.length === 0)
     return (
-      <div className="flex min-h-0 flex-1 flex-col">
+      // 남는 높이가 모자라도 머리(42) + 빈 칸(92)은 지킨다 — min-h-0 이면 상자가 0 까지 줄어 아래 쪽 이동과 겹쳤다(리뷰 반영)
+      <div className="flex min-h-[134px] flex-1 flex-col">
         <table className={table}>
           {cols}
           {head}

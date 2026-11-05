@@ -93,7 +93,14 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
             reviewReasonLabels={reviewReasonLabels}
             at={at}
             // 거른 목록이 비면 그달 명세서가 없는 것이 아니다
-            filtered={query.reviewPending || !!query.staffName || query.statuses.length !== PAYSLIP_STATUSES.length}
+            // 점포로 좁힌 것도 거른 목록이다 — 빠뜨리면 점포만 골라 0건일 때 「이 달의 급여명세서가 없습니다」로 잘못 말했다(리뷰 반영)
+            filtered={
+              query.reviewPending ||
+              !!query.staffName ||
+              query.statuses.length !== PAYSLIP_STATUSES.length ||
+              query.storeIds.length > 0 ||
+              (query.scope !== null && query.scope.type !== "ALL")
+            }
           />
           {total > 0 && (
             <div className="pt-[14px]">

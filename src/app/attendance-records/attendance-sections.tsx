@@ -139,7 +139,7 @@ export function DaySection({
     // 줄은 위에서부터 쌓이고 남는 높이는 틀 안 빈칸이다. 비었으면 안내가 그 가운데(fillEmpty)
     <Section title="일별 출퇴근" fill right={<StepNav label={dayLabel(date)} unit="날" prev={hrefOfDate(addDays(date, -1))} next={hrefOfDate(addDays(date, 1))} />}>
       {rows.length ? (
-        <div className="flex min-h-0 flex-1 flex-col border-x border-b border-erp-thead-line [&>table]:border-x-0">
+        <div className="flex min-h-0 flex-1 flex-col border-x border-b border-erp-thead-line [&>table]:-mb-px [&>table]:border-x-0">
           <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} />
         </div>
       ) : (
