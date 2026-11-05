@@ -331,7 +331,7 @@ function MemoBox({
       <Textarea rows={4} value={text} maxLength={MEMO_MAX} aria-label="내부 기록" onChange={(e) => onDraft(e.target.value, saved)} />
       <div className="flex items-center gap-[12px]">
         <div className="flex-1">
-          <Note>다른 운영자와 함께 봅니다. 비우고 저장하면 지웁니다.</Note>
+          <Note>작성한 메모는 다른 운영자와 공유됩니다. 내용을 모두 삭제한 후 저장하면 메모가 삭제됩니다.</Note>
         </div>
         <Button variant="soft" disabled={busy} onClick={() => onSave(text)}>
           메모 저장
