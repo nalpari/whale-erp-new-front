@@ -2,9 +2,10 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, use, useEffect, useEffectEvent, useRef, useState, type ReactNode, type RefObject } from "react";
-import { Button, LoadingNotice, useBackdropActive, useToast } from "@/components/common";
+import { Button, ConfirmDialog, LoadingNotice, useBackdropActive, useToast } from "@/components/common";
 import { logout, logoutForAccountChange } from "@/app/actions";
-import { loginPathOf, returnPathOf } from "@/lib/auth-routes";
+import { EXPIRED_MESSAGE, EXPIRED_REASON, loginPathOf, returnPathOf } from "@/lib/auth-routes";
+import { installSessionExpiryWatch, notifySessionExpired, SESSION_EXPIRED_EVENT } from "@/lib/session-expiry";
 import { bff, BffError, isAccountUnavailable, isPasswordRequired, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
 import { bpOfPath, bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
 import {
@@ -204,6 +205,28 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
   const [switchNotice, setSwitchNotice] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
 
+  // 만료 팝업(2026-11-05). 쓰는 중 401(서버 액션은 감싼 fetch, BFF 조회 · 업로드 창구는 그 자리)이 신호를 보낸다. 여럿 와도 하나만 연다.
+  const [expired, setExpired] = useState(false);
+  useEffect(() => {
+    installSessionExpiryWatch();
+    const open = () => setExpired(true);
+    addEventListener(SESSION_EXPIRED_EVENT, open);
+    return () => removeEventListener(SESSION_EXPIRED_EVENT, open);
+  }, []);
+  // [확인]은 앱 안 이동이 아니라 location.replace — 끝나지 않는 서버 액션이 Next 의 액션 줄을 막아 router 이동이 막힐 수 있다.
+  // 쿠키가 남아 있어도 proxy 가 /login?reason=expired 에서 갱신으로 확인해 정리한다.
+  const expiredDialog = (
+    <ConfirmDialog
+      open={expired}
+      title="로그인 만료"
+      cancelLabel={null}
+      onConfirm={() => location.replace(loginPathOf(location.pathname, "GET", EXPIRED_REASON))}
+      onCancel={() => {}} // 닫을 수 없다 — Esc 로도 닫지 않는다
+    >
+      {EXPIRED_MESSAGE}
+    </ConfirmDialog>
+  );
+
   // 주소의 탭 BP. 바뀌면(주소창 입력 · 뒤로 가기 · 다른 BP 링크) 그 BP 로 다시 준비하고, 옮긴 화면에 BP 없이 오면 다시 돌려 탭 BP 주소로 보낸다.
   // usePathname 은 클라이언트에서 브라우저 주소(/bp/8/...)를 준다(2026-10-21 확인). location 은 렌더 중에 읽지 않는다 — 앱 안 이동(Link ·
   // router.push)은 Next 가 커밋한 뒤에 주소를 바꿔 렌더에서는 이전 주소다. 준비(prepare)는 effect 에서 돌아 그때의 location 을 읽는다.
@@ -234,7 +257,7 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
         if (e instanceof BffError && e.status === 401) {
           // 세션이 이미 끊겼으면(proxy·BFF 가 쿠키를 지움) 로그인 화면으로 바로 간다. login-key 가 없는 옛 세션만 로그아웃으로 끝낸다.
           // 메일 링크(엑셀 내려받기)로 왔으면 ?next= 를 붙여 로그인 뒤 그 화면으로 돌아온다(loginPathOf).
-          if (readLoginKey()) router.replace(loginPathOf(location.pathname));
+          if (readLoginKey()) router.replace(loginPathOf(location.pathname, "GET", EXPIRED_REASON));
           else if (!(await signOut(logout))) setState(LOGOUT_FAILED);
           return;
         }
@@ -272,25 +295,37 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
     // tabKey: 주소의 탭 BP 가 바뀌면 다시 준비한다. 같은 BP 안의 이동이나 안 옮긴 화면끼리의 이동은 그대로다.
   }, [attempt, router, tabKey]);
 
-  if (state.status === "loading" || stale) return <LoadingNotice text={switchNotice ?? (pathname === BP_SWITCH_PATH ? "BP 로 이동하는 중입니다." : "불러오는 중입니다.")} />;
+  if (state.status === "loading" || stale)
+    return (
+      <>
+        <LoadingNotice text={switchNotice ?? (pathname === BP_SWITCH_PATH ? "BP 로 이동하는 중입니다." : "불러오는 중입니다.")} />
+        {expiredDialog}
+      </>
+    );
   if (state.status === "error")
     return (
-      <Notice>
-        {state.message}
-        <Button
-          onClick={() => {
-            setState({ status: "loading" });
-            setAttempt(attempt + 1);
-          }}
-        >
-          다시 시도
-        </Button>
-      </Notice>
+      <>
+        <Notice>
+          {state.message}
+          <Button
+            onClick={() => {
+              setState({ status: "loading" });
+              setAttempt(attempt + 1);
+            }}
+          >
+            다시 시도
+          </Button>
+        </Notice>
+        {expiredDialog}
+      </>
     );
   return (
-    <Ready value={state.value} onChange={(update) => setState((s) => (s.status === "ready" ? { status: "ready", value: update(s.value) } : s))} header={header}>
-      {children}
-    </Ready>
+    <>
+      <Ready value={state.value} onChange={(update) => setState((s) => (s.status === "ready" ? { status: "ready", value: update(s.value) } : s))} header={header}>
+        {children}
+      </Ready>
+      {expiredDialog}
+    </>
   );
 }
 
@@ -432,7 +467,7 @@ function Ready({
           const status = e instanceof BffError ? e.status : undefined;
           // 비밀번호 강제 변경 403 은 bff() 가 팝업을 다시 띄우고, 바꾸기 전에는 위에서 묻지 않는다
           if (status === 401) {
-            router.replace(loginPathOf(location.pathname));
+            notifySessionExpired();
             s.stopped = true;
           } else if (isPasswordRequired(e)) {
             // 비밀번호 강제 변경 403 은 멈추지 않는다 — 다른 탭에서 바꾸면 이 탭은 새로고침 없이 팝업만 닫힌다(로그인 정보 맞추기와 같다)
@@ -501,7 +536,7 @@ function Ready({
             if (!(await signOut(logoutForAccountChange))) s.stopped = false;
           } else if (status === 401) {
             s.stopped = true;
-            router.replace(loginPathOf(location.pathname));
+            notifySessionExpired();
           } else if (isPasswordRequired(e)) {
             // 비밀번호 강제 변경 403 — bff() 가 팝업을 다시 띄우고, 바꾸기 전에는 위의 isPasswordChangeRequired 가 묻지 않게 막는다.
             // 멈추지 않는다: 다른 탭에서 바꾸면 이 탭은 새로고침 없이 팝업만 닫히므로(storage) 멈춰 두면 맞추기가 영영 꺼진다(코드 리뷰로 찾음)
