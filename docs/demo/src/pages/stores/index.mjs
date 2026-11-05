@@ -121,11 +121,13 @@ export const render = ({ A, R }, { missing = 0 } = {}) => {
       data: { 점포코드: code, 점포명: name, 점포유형: type, 점포상태: state, 사업자등록번호: biz },
     }),
   );
-  // 빈 상태 — 표와 같은 92px 한 줄(앱 page.tsx). 상단 범위와 고른 점포유형이 겹치지 않으면 앱은
+  // 빈 상태 — 카드 보기는 테두리 상자가 목록 영역 남는 높이를 채우고 문구는 그 가운데, 표 보기는 열 이름 줄을 남기고 그 아래를 채운다
+  // (앱 page.tsx · DataTable fillEmpty, 2026-11-05 사용자 지정 — 전엔 위쪽 92px 상자). 데모 목록은 늘 점포가 있어 거른 결과가 비었을 때의 「조회된 …」만 둔다 —
+  // 점포가 아예 없으면 앱은 「등록된 점포가 없습니다.」(BP 마스터) · 「담당 점포가 없습니다.」(그 밖 역할)다. 상단 범위와 고른 점포유형이 겹치지 않으면 앱은
   // 「상단 범위와 고른 점포유형이 겹치지 않아 조회된 점포가 없습니다.」다 — 데모 헤더 범위는 목록을 거르지 않아 이 문구는 두지 않는다
   const EMPTY = "조회된 점포가 없습니다.";
-  const cardEmpty = `<p data-empty hidden class="col-span-full grid h-[92px] place-items-center rounded-[4px] border border-erp-panel-line text-[14px] text-erp-muted">${EMPTY}</p>`;
-  const table = ui.dataTable(cols, rows, EMPTY).replace("</tbody>", ui.tableEmptyRow(cols, EMPTY).replace("<tr ", "<tr data-empty hidden ") + "</tbody>");
+  const cardEmpty = `<p data-empty hidden class="col-span-full flex min-h-[92px] items-center justify-center rounded-[4px] border border-erp-panel-line text-[14px] text-erp-muted">${EMPTY}</p>`;
+  const table = ui.fillTable(cols, rows, EMPTY);
 
   // [엑셀 다운로드]는 공통 ExcelDownloadButton — 막힌 이유를 감싸는 칸(Blocked)에 단다. 받기 실패 · 예약 생성 안내 띠(ExcelDownloadNotice)는
   // 툴바 바로 위에 선다 — 데모는 받지 않아 띠를 그리지 않는다. [등록]은 툴바가 아니라 제목 줄 오른쪽(앱 page.tsx)
@@ -153,8 +155,9 @@ export const render = ({ A, R }, { missing = 0 } = {}) => {
         filter,
         missingBand +
           toolbar +
-          x.tabPanel("cards", x.cardGrid([...cards, cardEmpty]), true) +
-          x.tabPanel("table", table, false) +
+          // 보기 칸은 남는 높이를 받아 빈 상태가 채울 수 있게 한다(카드 묶음 · 표는 data-fill-empty — 비면 erp.js 가 늘린다)
+          x.tabPanel("cards", x.cardGrid([...cards, cardEmpty]).replace("<div data-filter-items ", "<div data-filter-items data-fill-empty "), true).replace('class="flex flex-col gap-[12px]"', 'class="flex flex-1 flex-col gap-[12px]"') +
+          x.tabPanel("table", table, false).replace('class="flex flex-col gap-[12px]"', 'class="flex flex-1 flex-col gap-[12px]"') +
           `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
       ) + STORE_FILTER_SCRIPT,
     }),

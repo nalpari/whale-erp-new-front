@@ -52,8 +52,10 @@ export function staffSections({ A, R }) {
   const L = (path) => link(R, path);
   const offBtn = (label, a = {}) => ui.button(label, { variant: "off", ...a });
   // 직원관리의 목록은 맨 앞에 순번(2026-10-02 재영). 순번은 내림차순 — 첫 줄이 전체 건수다(2026-10-13 재영).
-  const numbered = (columns, rows, empty, total = rows.length) =>
-    ui.dataTable([{ header: "순번", width: "w-[60px]" }, ...columns], rows.map((r, i) => [total - i, ...r]), empty);
+  // 목록 화면 표 — 비면 열 이름 줄을 두고 빈 칸이 남는 높이를 채운다(ui.fillTable, 앱 DataTable fillEmpty, 2026-11-05 사용자 지정, 3팀 확인 필요).
+  // 데모 목록은 늘 줄이 있어 거른 결과가 비었을 때의 「조회된 …」 문구를 넘긴다 — 「등록된 …」(아예 없음)은 앱만 가른다
+  const numberedList = (columns, rows, empty, total = rows.length) =>
+    ui.fillTable([{ header: "순번", width: "w-[60px]" }, ...columns], rows.map((r, i) => [total - i, ...r]), empty);
   const pageNav = (n) => `<div class="pt-[14px]">${ui.pagination(A, 1, n)}</div>`;
 
   // 필터의 점포 칸. 헤더 점포 선택이 점포 1개면 그 점포로 고정, 전체·일반·가맹 묶음이면 검색(erp.js initScopeStore, 2026-10-02 재영).
@@ -103,7 +105,7 @@ export function staffSections({ A, R }) {
         `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
     ) +
     // 순번은 내림차순 — 최근 등록이 먼저라 1쪽 첫 줄이 전체 건수다(2026-10-12).
-    ui.dataTable(staffCols, staffRows.map((r, i) => [63 - i, ...r]), "조회된 직원이 없습니다.") +
+    ui.fillTable(staffCols, staffRows.map((r, i) => [63 - i, ...r]), "조회된 직원이 없습니다.") +
     pageNav(4);
 
   // ── 근로계약 ──
@@ -139,7 +141,7 @@ export function staffSections({ A, R }) {
   ]);
   const contractsTab =
     ui.listToolbar(contractRows.length, "") +
-    numbered(
+    numberedList(
       [
         { header: "직원", width: "w-[90px]" },
         { header: "점포", width: "w-[140px]" },
@@ -208,20 +210,22 @@ export function staffSections({ A, R }) {
   ];
   const today = p.section(
     "일별 출퇴근",
-    p.weekNav(A, "attend-days", "2026-09-06", { day: true }),
-    `<div id="attend-days">${days
-      .map(
-        ([d, rows]) =>
-          `<div data-week="${d}" hidden>${ui.dataTable(
-            [{ header: "직원" }, { header: "예정" }, { header: "출근" }, { header: "퇴근" }, { header: "비고" }],
-            rows,
-            "이 날의 출퇴근 기록이 없습니다.",
-          )}</div>`,
-      )
+    p.weekNav(A, "attend-days", "2026-09-06", { day: true, md: true }),
+    // 표 틀을 옆 근태 요약 아래 끝까지 늘려 두 칸의 아래 선을 맞춘다 — 줄은 위에서부터 쌓이고 남는 높이는 틀 안 빈칸, 비었으면 안내가 그 가운데
+    // (앱 attendance-sections.tsx DaySection, 2026-11-05 사용자 지정, 3팀 확인 필요)
+    `<div id="attend-days" class="flex flex-1 flex-col">${days
+      .map(([d, rows]) => {
+        const cols = [{ header: "직원" }, { header: "예정" }, { header: "출근" }, { header: "퇴근" }, { header: "비고" }];
+        const body = rows.length
+          ? `<div class="flex min-h-0 flex-1 flex-col border-x border-b border-erp-thead-line [&>table]:-mb-px [&>table]:border-x-0">${ui.dataTable(cols, rows)}</div>`
+          : ui.fillTable(cols, rows, "이 날의 출퇴근 기록이 없습니다.");
+        return `<div data-week="${d}" hidden class="flex flex-1 flex-col">${body}</div>`;
+      })
       .join("")}</div>`,
-  );
+  ).replace('<section class="flex min-w-0 flex-col', '<section class="flex min-w-0 flex-1 flex-col'); // 묶음이 본문 남는 높이를 채운다(앱 Section fill)
   const rate = (label, pct, n) =>
-    `<div class="flex h-[34px] items-center gap-[12px] text-[14px]"><span class="w-[80px] shrink-0 text-erp-label">${label}</span><span class="w-[200px]">${p.meter(pct)}</span><span>${n}</span></div>`;
+    // 라벨 시작선을 아래 근로시간 표 라벨과 맞추고(들여쓰기 13px) 굵기도 표 라벨과 같은 500, 라벨 98px 이라 막대가 표 값과 같은 세로줄(123px)에서 시작한다(앱 Rate, 2026-11-05 사용자 지정, 3팀 확인 필요)
+    `<div class="flex h-[34px] items-center gap-[12px] pl-[13px] text-[14px]"><span class="w-[98px] shrink-0 font-medium text-erp-label">${label}</span><span class="w-[200px]">${p.meter(pct)}</span><span>${n}</span></div>`;
   const weekSum = (week, [ok, late, miss], [total, over, night, paid]) => {
     const n = ok + late + miss;
     const pct = (v) => (n ? Math.round((v / n) * 100) : 0);
@@ -235,7 +239,7 @@ export function staffSections({ A, R }) {
   // 본사 계정의 근태 요약 숫자에서는 본사 제공 동의가 없는 가맹 점포 직원을 뺀다 — 근로계약 목록 상태별 개수와 같은 기준(WHALEERP-133, 2026-10-26 재영).
   const summary = p.section(
     "근태 요약",
-    p.weekNav(A, "attend-sums", "2026-08-31"),
+    p.weekNav(A, "attend-sums", "2026-08-31", { md: true }),
     `<div id="attend-sums">${weekSum("2026-08-31", [54, 5, 2], ["1,284h", "42h", "18h", "38명"])}${weekSum("2026-08-24", [58, 3, 1], ["1,312h", "36h", "16h", "38명"])}${weekSum("", [0, 0, 0], ["0h", "0h", "0h", "-"])}</div>`,
   );
   // 「이력」은 그 기록의 변경 이력을 확인창으로 보인다(변경 전후 값·일시·처리한 사람·사유, 2026-10-02 재영).
@@ -264,7 +268,7 @@ export function staffSections({ A, R }) {
     "보정이 필요한 기록",
     // 기간 지정 조회는 이 목록에만, 최근 3개월 안에서 고른다(STAFF-31).
     `<span class="flex items-center gap-[6px]">${ui.dateField(A, { label: "기간 시작", value: "2026-08-06" })}<span>~</span>${ui.dateField(A, { label: "기간 끝", value: "2026-09-06" })}${ui.slideTrigger("출퇴근 대신 등록", proxyPanel, "soft")}</span>`,
-    ui.dataTable(
+    ui.fillTable(
       [
         { header: "직원", width: "w-[100px]" },
         { header: "날짜", width: "w-[80px]" },
@@ -282,8 +286,10 @@ export function staffSections({ A, R }) {
         ["문태경", "08-29", "09:02", "18:30", `${p.tag("info", "수정됨")} ${p.sub("08-30 정하윤")}`, x.dialogTrigger("이력", histId.문태경, "off")],
         ["오세라", "08-27", "10:00", "16:00", `${p.tag("info", "대신 등록")} ${p.sub("위치 수집 일시 중지 · 정하윤")}`, x.dialogTrigger("이력", histId.오세라, "off")],
       ],
+      // 기간이 늘 걸려 있어 문구는 하나다(앱 attendance-fix-list.tsx)
+      "이 기간에 보정이 필요한 기록이 없습니다.",
     ),
-  );
+  ).replace('<section class="flex min-w-0 flex-col', '<section class="flex min-w-0 flex-1 flex-col'); // 묶음이 본문 남는 높이를 채운다(앱 Section fill)
   const schedTab =
     p.bar(
       // 날짜 선택은 직원 상세와 같은 주 이동(2026-10-02 재영). 데모라 근무표 내용은 주를 바꿔도 그대로다.
@@ -315,7 +321,8 @@ export function staffSections({ A, R }) {
     ui.filterSection("기록 구분", ["직원 등록", "대신 등록", "보정됨"].map((t) => ui.checkbox(A, t, true)).join("")),
     ui.filterSection("재직 상태", ui.select(["재직", "퇴직", "전체"], { "aria-label": "재직 상태" }), { tight: true, last: true }),
   ]);
-  const attendTab = `<div class="flex flex-col gap-[24px]">${p.cols(today, summary, "grid-cols-2")}${fixList}</div>${histDialogs}`;
+  // 두 칸 사이 36px — 24px 는 왼쪽 표 끝과 「근태 요약」이 붙어 보였다. 두 칸 높이를 같게(stretch) 해 일별 표 틀이 근태 요약 아래 끝까지 늘어난다(앱 page.tsx, 2026-11-05 사용자 지정, 3팀 확인 필요)
+  const attendTab = `<div class="flex flex-1 flex-col gap-[24px]"><div class="grid grid-cols-2 items-stretch gap-[36px]">${today}${summary}</div>${fixList}</div>${histDialogs}`;
 
   // ── 급여명세서 ──
   const PD = L("staff/payrolls-detail.html");
@@ -323,11 +330,9 @@ export function staffSections({ A, R }) {
   // 검토 대기 목록은 두지 않는다 — 사유는 명세서 상세에서만 보인다(STAFF-32, 2026-10-12 재영).
   // 검토 대기는 상태가 아니라 분류다 — 상태는 작성 중 그대로, 목록에는 「검토 대기」 배지와 필터(운영 정책 PAY-01·06, 2026-10-26 재영).
   const payRow = (name, store, h, base, extra, ded, net, st) => [ui.link(name, PD), store, h, base, extra, ded, `<b class="font-semibold">${net}</b>`, st];
-  const payList = (title, right, rows) =>
-    p.section(
-      title,
-      right,
-      numbered(
+  // 비면 열 이름 줄을 두고 빈 칸이 남는 높이를 채운다 — 거른 결과는 「조건에 맞는 급여명세서가 없습니다.」, 그달 명세서가 없으면 「이 달의 급여명세서가 없습니다.」(앱 payslip-table.tsx)
+  const payList = (rows) =>
+    numberedList(
         [
           { header: "직원" },
           { header: "점포" },
@@ -339,12 +344,15 @@ export function staffSections({ A, R }) {
           { header: "상태", width: "w-[180px]" },
         ],
         rows,
-        "이 달의 급여명세서가 없습니다.",
-      ),
-      rows.length ? pageNav(4) : "",
-    );
-  const counts = (a, c, d) =>
-    `<p class="text-[14px] text-erp-label">작성 중 <b class="font-semibold text-erp-ink">${a}</b> · 확정 <b class="font-semibold text-erp-ink">${c}</b> · 발송 완료 <b class="font-semibold text-erp-ink">${d}</b></p>`;
+        rows.length ? "조건에 맞는 급여명세서가 없습니다." : "이 달의 급여명세서가 없습니다.",
+      ) + (rows.length ? pageNav(4) : "");
+  // 총 건수 · 상태별 건수 · 검토 대기를 한 줄로, 버튼 · 건수 고르기는 오른쪽 — 모든 칸을 줄 가운데에 맞춘다(앱 page.tsx, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 상태 건수 줄과
+  // 「총 N 건」 줄이 따로 있었다). 검토 대기는 상태가 아니라 분류라 세로선 뒤 꼬리표로 뗀다(운영 정책 v221 PAY-06)
+  const vline = `<span aria-hidden="true" class="h-[11px] w-px bg-[#d9d9d9]"></span>`;
+  const counts = ([a, b, c, d], review, right) =>
+    `<div class="flex flex-wrap items-center gap-x-[12px] gap-y-[6px] text-[14px]"><p class="text-erp-ink">총 <b class="font-semibold">${(a + b + c + d).toLocaleString("ko-KR")}</b> 건</p>${vline}<p class="flex items-center text-erp-label">${[["작성 중", a], ["검토 중", b], ["확정", c], ["발송 완료", d]]
+      .map(([l, n], i) => `<span class="flex items-center">${i ? '<span class="mx-[6px] text-erp-muted">·</span>' : ""}${l}<b class="ml-[4px] font-semibold text-erp-ink">${n}</b></span>`)
+      .join("")}</p>${vline}${p.tag("quiet", `검토 대기 ${review}`)}<div class="ml-auto flex items-center gap-[6px]">${right}</div></div>`;
   // 목록 오른쪽 위 버튼: 「급여명세서 작성」은 어느 달이든 늘 보인다(2026-10-02 재영). 누르면 점포·직원을 고르는 팝업이 뜨고, 고른 직원으로 작성하면 데모라 명세서 화면으로 간다.
   // 근로계약이 없거나 이 달 명세서가 이미 있는 직원은 고를 수 없다(WHALEERP-226). 점포 · 이름으로 좁히기와 「작성」 켜기는 PICK_SCRIPT.
   const pickId = x.dialogId();
@@ -363,8 +371,9 @@ export function staffSections({ A, R }) {
     pickRow("남도현", "모리커피 성수점", "정직원", "계약 없음", "미작성"),
   ];
   const pickBody =
-    `<div data-staff-pick class="flex flex-col gap-[12px]">` +
-    `<p class="text-erp-label">근로계약이 있고 이 달 명세서가 없는 직원만 고를 수 있습니다.</p>` +
+    // 안내는 제목과 한 묶음(6px), 입력칸과는 18px 뗀다 — 「이 달」은 「이번 달」로 읽혀 뺐다(앱, 2026-11-05 사용자 지정, 3팀 확인 필요)
+    `<p class="-mt-[6px] text-[13px] text-erp-label">근로계약을 맺은 직원 중 급여명세서가 작성되지 않은 직원만 선택할 수 있습니다.</p>` +
+    `<div data-staff-pick class="mt-[18px] flex flex-col gap-[12px]">` +
     ui.formRow(
       ui.field("점포", ui.select(["전체 점포", ...new Set(pickRows.map((r) => r[2]))], { "data-pick-store": true, "aria-label": "점포" }), "w-[220px]"),
       ui.field("직원", ui.searchField(A, { placeholder: "이름" }).replace("<input ", "<input data-pick-name ")),
@@ -377,19 +386,23 @@ export function staffSections({ A, R }) {
   const pickDialog =
     x.dialog(
       pickId,
-      "급여명세서 작성",
+      // 달 꼬리표 — 어느 달 명세서인지가 이 팝업의 핵심이라 포인트 꼬리표(연파랑 바탕 · 파랑 16px 600 · 28px · 알약형)로 보인다(앱 payslip-draft-dialog.tsx, 2026-11-05 사용자 지정, 3팀 확인 필요)
+      `급여명세서 작성<span class="ml-[10px] inline-flex h-[28px] items-center rounded-full bg-erp-point-bg px-[12px] align-middle text-[16px] font-semibold text-erp-point">2026년 8월</span>`,
       pickBody,
       ui.button("취소", { variant: "off", "data-close": true }) + ui.button("작성", { href: PD, "data-pick-ok": true, "aria-disabled": "true", style: "opacity:.4;pointer-events:none" }),
       "w-[720px]",
     ) + PICK_SCRIPT;
-  const payButtons = (n) => x.dialogTrigger("급여명세서 작성", pickId, "soft") + (n ? p.ask(`확정 ${n}건 발송`, "primary", `확정한 급여명세서 ${n}건을 발송하시겠습니까?`, "직원 근무 앱으로 보냅니다.", "발송") : "");
-  const month = (key, body) => `<div data-week="${key}" hidden class="flex flex-col gap-[24px]">${body}</div>`;
+  const payButtons = (n) =>
+    x.dialogTrigger("급여명세서 작성", pickId, "soft") +
+    (n ? p.ask(`확정 ${n}건 발송`, "primary", `확정한 급여명세서 ${n}건을 발송하시겠습니까?`, "직원 근무 앱으로 보냅니다.", "발송") : "") +
+    `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`;
+  const month = (key, body) => `<div data-week="${key}" hidden class="flex flex-1 flex-col gap-[12px]">${body}</div>`;
   const sent = p.tag("ok", "발송 완료");
   const months =
     month(
       "2026-08-01",
-      counts(60, 0, 3, 0) +
-        payList("급여명세서", payButtons(3), [
+      counts([60, 0, 3, 0], 2, payButtons(3)) +
+        payList([
           payRow("오세라", "모리커피 서초점", "180.0", "3,420,000", "184,000", "-", "3,604,000", p.tag("quiet", "작성 중")),
           payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "186,000", "-", "3,026,000", `${p.tag("quiet", "작성 중")} ${p.tag("warn", "검토 대기")}`),
           payRow("문태경", "온기식당 판교점", "184.0", "3,680,000", "276,000", "-", "3,956,000", p.tag("quiet", "작성 중")),
@@ -400,8 +413,8 @@ export function staffSections({ A, R }) {
     ) +
     month(
       "2026-07-01",
-      counts(0, 0, 61) +
-        payList("급여명세서", payButtons(0), [
+      counts([0, 0, 0, 61], 0, payButtons(0)) +
+        payList([
           payRow("오세라", "모리커피 서초점", "176.0", "3,420,000", "142,000", "241,800", "3,320,200", sent),
           payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "142,000", "241,800", "2,740,200", sent),
           payRow("문태경", "온기식당 판교점", "180.0", "3,680,000", "232,000", "268,400", "3,643,600", sent),
@@ -409,7 +422,7 @@ export function staffSections({ A, R }) {
           payRow("권도윤", "모리커피 서초점", "172.0", "1,926,400", "158,000", "68,780", "2,015,620", sent),
         ]),
     ) +
-    month("", counts(0, 0, 0) + payList("급여명세서", payButtons(0), []));
+    month("", counts([0, 0, 0, 0], 0, payButtons(0)) + payList([]));
   // 급여명세서 관리: 왼쪽 필터(점포 · 직원 · 명세서 상태) + 달 이동 · 상태 건수 · 명세서 목록. 「급여 월」 선택칸은 달 이동으로 옮겼다.
   const payslipsFilter = ui.filterPanel(A, [
     storeFilter(),
@@ -418,7 +431,7 @@ export function staffSections({ A, R }) {
     ui.filterSection("분류", ui.checkbox(A, "검토 대기만", false), { last: true }),
   ]);
   // 직원 고르기 팝업은 달 묶음(hidden) 밖에 한 번만 둔다 — 숨긴 묶음 안의 dialog 는 열어도 보이지 않는다.
-  const payrollTab = `<div class="flex flex-col gap-[12px]">${p.weekNav(A, "pay-months", "2026-08-01", { month: true })}<div id="pay-months">${months}</div></div>${pickDialog}`;
+  const payrollTab = `<div class="flex flex-1 flex-col gap-[12px]">${p.weekNav(A, "pay-months", "2026-08-01", { month: true })}<div id="pay-months" class="flex flex-1 flex-col">${months}</div></div>${pickDialog}`;
 
   // ── TO-DO ──
   const todoPanel = "todo-form";
@@ -433,7 +446,7 @@ export function staffSections({ A, R }) {
   const editBtn = (i) => ui.slideTrigger("수정", todoEditIds[i], "off");
   const todoTab =
     ui.listToolbar(12, ui.slideTrigger("TO-DO 등록", todoPanel)) +
-    numbered(
+    numberedList(
       [
         { header: "담당", width: "w-[140px]" },
         { header: "근무지", width: "w-[140px]" },
@@ -450,7 +463,7 @@ export function staffSections({ A, R }) {
         ["전체 · 한 명", "온기식당 판교점", "여름 프로모션 POP 철거", "08-25", `${p.tag("ok", "완료")} ${p.sub("문태경")}`, ""],
         ["권도윤", "모리커피 서초점", "신메뉴 시식 교육 참석", "08-28 14:00", p.tag("ok", "완료"), ""],
       ],
-      "등록된 TO-DO 가 없습니다.",
+      "조회된 TO-DO 가 없습니다.",
       12,
     ) +
     pageNav(2);

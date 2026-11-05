@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-05
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) · [급여명세서 관리 화면 (구현)](/screens/payslips.md) · [직원 정보 관리 화면 (구현)](/screens/staff-members.md) · [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) · [홈·계정 진입](/home.md) · [BP 환경설정](/config.md) — 빈 목록은 열 이름 줄을 두고 남는 높이를 채움(DataTable `fillEmpty`) · 「등록된 …」/「조회된 …」 문구 가르기(점포는 BP 마스터 밖 「담당 점포가 없습니다.」), 급여명세서 건수 한 줄 · 작성 팝업 달 꼬리표 · 안내 문구 · [일괄 작성] · 대상 0명 문구, 출퇴근 현황 두 칸 36px · 근태 요약 주 표기 · 라벨 시작선 · 일별 표 틀 높이, BP 휴일 캘린더 날짜 칸 88px · 빈 안내 가운데, 점포 없음 띠 문구에서 「아직」을 뺐다(2026-11-05 사용자 지정, front sobble).
+
 ## 2026-11-04
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [홈](/home.md) · [로그인](/auth.md) · [근무스케줄 화면](/screens/work-schedules.md) — 변경이력 팝업 1000px · 건수 고르기, 점포 없음 안내를 홈 상자에서 메뉴 줄 아래 띠로, 로그인 실패 문구 자리, 칸 오류 문구 자리(리뷰 반영, front tyrogue).
 * **Update**: [BP](/bp.md) · [점포](/stores.md) · [운영 알림](/notify.md) — 1팀 변경이력 팝업 통일(폭 1000 · 총 건수 · 한 쪽 20/50 · 표만 스크롤), 점포 없음 띠, BP 마스터 인증 실패 두 줄, 알림함 위 줄 · 뱃지 정렬(front tyrogue).
