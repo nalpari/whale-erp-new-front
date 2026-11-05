@@ -30,7 +30,8 @@ export function closingBlockOf(counts: Pick<StoreClosingCounts, "openCheckIns">)
   if (total <= 0) return null;
   return {
     count: total,
-    // 본사에게 가려진 출근만 있어도 같은 문구다 — 둘로 가르던 「가맹점에서 …」 안내는 뺐다(2026-11-05 사용자 지정)
+    // 본사에게 가려진 출근(ATT-30)만 있으면 본사는 출퇴근 현황에서 그 줄을 볼 수 없지만, 알고도 같은 문구로 둔다
+    // (2026-11-05 사용자 지정 — 전엔 「가맹점에서 …」로 갈랐다. 버그로 보고 되살리지 않는다)
     guide: "출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다.",
   };
 }
