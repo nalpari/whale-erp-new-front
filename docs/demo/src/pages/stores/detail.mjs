@@ -210,27 +210,27 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
 
   // 상태 변경(앱 ConfirmDialog wide · 480). 갈 수 있는 상태만 보인다 — 미운영 → 운영 · 폐점(라디오), 운영 → 폐점.
   // 운영은 운영 조건이 모자라면, 폐점은 퇴근하지 않은 출근이 있으면 확인 버튼이 막힌다(근로계약은 막지 않는다 — 대기 계약은 폐점이 닫는다, 2026-11-04).
-  // 폐점은 확인 창(「폐점으로 변경할까요?」)을 한 번 더 거치고, 그 창에 폐점하면 함께 처리될 것을 빨간 상자로 보인다(앱 store-closing-parts.tsx).
+  // 폐점은 확인 창(「폐점으로 변경하시겠습니까?」)을 한 번 더 거치고, 그 창에 폐점하면 함께 처리될 것을 빨간 상자로 보인다(앱 store-closing-parts.tsx).
   // 부가서비스 구독 · 정산 대기 금액은 1차 범위 밖이라 뺐다(2026-10-19 점검).
   const closeItem =
-    `<li${d.openCheckIns ? ' class="text-erp-off"' : ""}>퇴근하지 않은 출근 <b class="font-semibold">${d.openCheckIns}건</b></li>`;
+    `<li${d.openCheckIns ? ' class="text-erp-off"' : ""}>퇴근 기록이 없는 출근 <b class="font-semibold">${d.openCheckIns}건</b></li>`;
   // 막히면 할 일 — 직원 이름 · 출근 시각은 보이지 않는다(api 가 건수만 준다, 2026-11-04)
   const closeAfter = d.openCheckIns ? `<p class="mt-[6px] text-erp-label">출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다.</p>` : "";
-  // 폐점하면 함께 처리될 것 — 0건인 줄은 뺀다(앱 closingCheckLines)
+  // 폐점하면 함께 처리될 것 — 0건인 줄은 빼고, 줄마다 무슨 뜻인지 회색으로 덧붙인다(앱 closingCheckLines)
   const c = d.closing ?? {};
   const closingLines = [
-    c.retiringStaff && `근무 중인 직원 ${c.retiringStaff}명 퇴직(퇴직일 오늘)`,
-    c.draftContracts && `임시저장 근로계약 ${c.draftContracts}건 종료`,
-    c.pendingSendContracts && `발송 대기 근로계약 ${c.pendingSendContracts}건 종료 · 초대 무효`,
-    c.pendingSignatureContracts && `서명 대기 · 수정 요청 근로계약 ${c.pendingSignatureContracts}건 종료`,
+    c.retiringStaff && `근무 중인 직원 : ${c.retiringStaff}명 퇴직 처리<span class="block text-[13px] text-erp-label">퇴직일이 없거나 오늘 이후인 직원의 퇴직일은 오늘로 변경됩니다.</span>`,
+    c.draftContracts && `임시저장된 근로계약 : ${c.draftContracts}건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 더 이상 작성하거나 발송할 수 없습니다.</span>`,
+    c.pendingSendContracts && `발송 대기 중인 근로계약 : ${c.pendingSendContracts}건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다.</span>`,
+    c.pendingSignatureContracts && `서명 대기·수정 요청 중인 근로계약 : ${c.pendingSignatureContracts}건 종료<span class="block text-[13px] text-erp-label">직원은 해당 근로계약에 더 이상 서명할 수 없습니다.</span>`,
   ].filter(Boolean);
   const closingList =
     `<div class="mt-[12px] flex flex-col gap-[6px]">` +
     (closingLines.length
-      ? `<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p class="font-medium">폐점하면 함께 처리됩니다.</p><ul class="mt-[6px] list-disc pl-[18px]">${closingLines.map((l) => `<li>${l}</li>`).join("")}</ul></div>`
+      ? `<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p class="font-medium">폐점 시 다음 항목이 함께 처리됩니다.</p><ol class="mt-[6px] list-decimal pl-[18px]">${closingLines.map((l, i) => `<li${i ? ' class="mt-[6px]"' : ""}>${l}</li>`).join("")}</ol></div>`
       : `<p class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]">함께 처리할 직원 · 근로계약이 없습니다.</p>`) +
     // 확정하지 않은 급여명세서는 폐점이 처리하지 않아 상자 밖 회색 안내로 둔다(앱 closingPayslipText)
-    `${c.unconfirmedPayslips ? `<p class="text-[13px] text-erp-label">확정하지 않은 급여명세서 ${c.unconfirmedPayslips}건은 폐점 뒤에도 처리할 수 있습니다.</p>` : ""}</div>`;
+    `${c.unconfirmedPayslips ? `<p class="text-[13px] text-erp-label">확정되지 않은 급여명세서 ${c.unconfirmedPayslips}건은 폐점 후에도 처리할 수 있습니다.</p>` : ""}</div>`;
   const notOperating = state === "미운영";
   const missing = d.missing ?? [];
   const opItems = REQUIREMENTS.map(
@@ -263,8 +263,8 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
         // 폐점 확인 — [이전]은 조건 팝업으로 돌아간다(앱 store-detail-actions.tsx)
         x.dialog(
           closeId,
-          "폐점으로 변경할까요?",
-          "<p>폐점으로 변경하면 되돌릴 수 없습니다.</p><p>폐점일은 오늘(2026-11-03)입니다.</p>" + closingList,
+          "폐점으로 변경하시겠습니까?",
+          "<p>폐점으로 변경하면 되돌릴 수 없습니다.</p><p>폐점일은 오늘(2026-11-03)로 설정됩니다.</p>" + closingList,
           ui.button("이전", { variant: "off", "data-dialog": statusId, "data-close": true }) + ui.button("폐점으로 변경", { href: link(R, "stores/detail-closed.html") }),
         );
   // 삭제 확인 — 미운영 점포만. 1팀 화면은 빨간 버튼을 쓰지 않아 확인 버튼도 기본 색(앱과 같다, 2026-11-03)

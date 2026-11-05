@@ -41,15 +41,21 @@ export type ClosingLine = { key: string; text: string; note?: string };
 
 const n = (value: number) => value.toLocaleString("ko-KR");
 
-/** 폐점하면 함께 처리될 것(확인 팝업). 급여명세서는 처리하지 않으므로 여기 넣지 않는다 — closingPayslipText */
+/**
+ * 폐점하면 함께 처리될 것(확인 팝업). 급여명세서는 처리하지 않으므로 여기 넣지 않는다 — closingPayslipText.
+ * 줄은 「대상 : N건 처리」, 그 뜻은 note 로 덧붙인다(2026-11-05 사용자가 준 글 그대로 — 전엔 「퇴직(퇴직일 오늘)」 · 「초대 무효」라 모호했다).
+ * 퇴직일: 비어 있거나 오늘보다 뒤면 오늘로 정하고, 이미 그 전이면 그대로 둔다(api retiringStaff). 초대: 그 점포 직원에게 보낸 가입 초대가 모두 만료된다 —
+ * 확인 값에는 초대 수가 없어 발송 대기 줄에 덧붙인다(결과 창은 「초대 N건 만료」).
+ */
 export function closingCheckLines(counts: StoreClosingCounts): ClosingLine[] {
   const lines: (ClosingLine | false)[] = [
-    counts.retiringStaff > 0 && { key: "staff", text: `근무 중인 직원 ${n(counts.retiringStaff)}명 퇴직(퇴직일 오늘)` },
-    counts.draftContracts > 0 && { key: "draft", text: `임시저장 근로계약 ${n(counts.draftContracts)}건 종료` },
-    counts.pendingSendContracts > 0 && { key: "send", text: `발송 대기 근로계약 ${n(counts.pendingSendContracts)}건 종료 · 초대 무효` },
+    counts.retiringStaff > 0 && { key: "staff", text: `근무 중인 직원 : ${n(counts.retiringStaff)}명 퇴직 처리`, note: "퇴직일이 없거나 오늘 이후인 직원의 퇴직일은 오늘로 변경됩니다." },
+    counts.draftContracts > 0 && { key: "draft", text: `임시저장된 근로계약 : ${n(counts.draftContracts)}건 종료`, note: "해당 근로계약은 더 이상 작성하거나 발송할 수 없습니다." },
+    counts.pendingSendContracts > 0 && { key: "send", text: `발송 대기 중인 근로계약 : ${n(counts.pendingSendContracts)}건 종료`, note: "해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다." },
     counts.pendingSignatureContracts > 0 && {
       key: "sign",
-      text: `서명 대기 · 수정 요청 근로계약 ${n(counts.pendingSignatureContracts)}건 종료`,
+      text: `서명 대기·수정 요청 중인 근로계약 : ${n(counts.pendingSignatureContracts)}건 종료`,
+      note: "직원은 해당 근로계약에 더 이상 서명할 수 없습니다.",
     },
   ];
   return lines.filter((line): line is ClosingLine => Boolean(line));
@@ -57,7 +63,7 @@ export function closingCheckLines(counts: StoreClosingCounts): ClosingLine[] {
 
 /** 확정하지 않은 급여명세서 안내 — 폐점이 처리하지 않고 알리기만 한다. 없으면 null */
 export function closingPayslipText(counts: Pick<StoreClosingCounts, "unconfirmedPayslips">): string | null {
-  return counts.unconfirmedPayslips > 0 ? `확정하지 않은 급여명세서 ${n(counts.unconfirmedPayslips)}건은 폐점 뒤에도 처리할 수 있습니다.` : null;
+  return counts.unconfirmedPayslips > 0 ? `확정되지 않은 급여명세서 ${n(counts.unconfirmedPayslips)}건은 폐점 후에도 처리할 수 있습니다.` : null;
 }
 
 /** 폐점 저장 뒤 처리한 것(결과 안내). 처리한 것이 없으면 빈 목록 */

@@ -19,21 +19,23 @@ import {
 /** 회색 안내 상자 — 상태 변경 팝업의 운영 · 폐점 조건과 같은 모양 */
 const BOX = "rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]";
 
-function Lines({ lines }: { lines: ClosingLine[] }) {
+/** 줄 목록 — 설명(note)은 다음 줄에 작은 회색 글씨로 둔다(2026-11-05 사용자 지정, 전엔 「 — 설명」으로 이어 붙였다) */
+function Lines({ lines, numbered = false }: { lines: ClosingLine[]; numbered?: boolean }) {
+  const List = numbered ? "ol" : "ul";
   return (
-    <ul className="mt-[6px] list-disc pl-[18px]">
+    <List className={`mt-[6px] space-y-[6px] pl-[18px] ${numbered ? "list-decimal" : "list-disc"}`}>
       {lines.map((line) => (
         <li key={line.key}>
           {line.text}
-          {line.note && <span className="text-erp-label"> — {line.note}</span>}
+          {line.note && <span className="block text-[13px] text-erp-label">{line.note}</span>}
         </li>
       ))}
-    </ul>
+    </List>
   );
 }
 
 /**
- * 폐점 조건 — 퇴근하지 않은 출근 N건(가려진 직원 것 포함). 막히면 할 일을 덧붙인다 — api 는 직원 이름 · 시각을 주지 않는다.
+ * 폐점 조건 — 「퇴근 기록이 없는 출근 N건」(가려진 직원 것 포함, 2026-11-05 「퇴근하지 않은 출근」에서 바꿈). 막히면 할 일을 덧붙인다 — api 는 직원 이름 · 시각을 주지 않는다.
  * counts 가 없으면(이미 폐점 · 확인 실패 · 출근 말고 다른 이유로 막힘) 그리지 않는다.
  */
 export function ClosingCondition({ counts }: { counts: Pick<StoreClosingCounts, "openCheckIns"> | null | undefined }) {
@@ -44,7 +46,7 @@ export function ClosingCondition({ counts }: { counts: Pick<StoreClosingCounts, 
       <p className="font-semibold">폐점 조건</p>
       <ul className="mt-[6px] list-disc pl-[18px]">
         <li className={block ? "text-erp-off" : undefined}>
-          퇴근하지 않은 출근 <b className="font-semibold">{(block?.count ?? 0).toLocaleString("ko-KR")}건</b>
+          퇴근 기록이 없는 출근 <b className="font-semibold">{(block?.count ?? 0).toLocaleString("ko-KR")}건</b>
         </li>
       </ul>
       {block && (
@@ -68,8 +70,9 @@ export function ClosingCheckList({ counts }: { counts: StoreClosingCounts | null
         <WarnBand>{CLOSING_COUNTS_UNKNOWN}</WarnBand>
       ) : lines.length ? (
         <WarnBand>
-          <p className="font-medium">폐점하면 함께 처리됩니다.</p>
-          <Lines lines={lines} />
+          <p className="font-medium">폐점 시 다음 항목이 함께 처리됩니다.</p>
+          {/* 확인 창은 번호를 매긴다(2026-11-05 사용자 지정) — 결과 창은 점 목록 그대로 */}
+          <Lines lines={lines} numbered />
         </WarnBand>
       ) : (
         <p className={BOX}>함께 처리할 직원 · 근로계약이 없습니다.</p>

@@ -12,7 +12,7 @@
          등록과 같은 배치다(2026-10-29): 「점포 수정 · 점포코드 · 점포유형」 카드 머리 오른쪽 [취소] [저장], 왼쪽 점포 기본정보 · 오른쪽 사업자정보, 아래 점포 공간정보.
          점포코드 · 점포유형은 바꾸지 않는다 — 유형 카드 없이 머리에만 적는다(10-19). 점포상태는 선택칸이고 현재 상태에서 갈 수 있는 곳만 보인다(미운영 → 운영 · 폐점, 운영 → 폐점).
          운영은 사업자정보 인증 · 좌표가 있어야 저장된다 — 모자라면 저장 때 점포상태 칸 아래 「운영으로 바꾸려면 … 필요합니다.」(라벨은 GET /enums/StoreOperationRequirement).
-         폐점을 고르는 순간 조건(퇴근하지 않은 출근 0건 — 근로계약은 막지 않는다, 2026-11-04)을 확인하고, 못 채우면 「폐점할 수 없습니다」 팝업 뒤 이전 상태로 돌린다. 조건을 채운 폐점은 저장 때 확인 창 「폐점으로 저장할까요?」를 거친다.
+         폐점을 고르는 순간 조건(퇴근하지 않은 출근 0건 — 근로계약은 막지 않는다, 2026-11-04)을 확인하고, 못 채우면 「폐점할 수 없습니다」 팝업 뒤 이전 상태로 돌린다. 조건을 채운 폐점은 저장 때 확인 창 「폐점으로 저장하시겠습니까?」를 거친다.
          운영 점포는 점포 주소 [지우기]를 숨긴다(좌표가 그 주소에서 나온다).
          사업자정보: 번호가 없으면 등록과 같은 최초 인증. 있으면 공통 인증 상자(S-VRNTHD, 10-22)가 「인증 완료 · 저장된 인증일」로 잠겨 열리고 [재인증]은 대표자명만 연다, [재인증 취소]로 돌아간다, [지우기]는 없다. 안내는 두 줄.
          다른 사람이 먼저 고쳤으면(409) 저장하지 않고 칸을 최신 값으로 다시 채운 뒤 폼 띠로 알린다(2026-10-29). 폐점 점포 · 소속 BP 미사용 점포는 저장하지 않는다.
@@ -269,7 +269,7 @@
           <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
         </div>
         <div class="modal__body">
-          <p style="margin: 0; font-size: 13.5px; color: var(--risk-text)">퇴근하지 않은 출근 <b>1건</b></p>
+          <p style="margin: 0; font-size: 13.5px; color: var(--risk-text)">퇴근 기록이 없는 출근 <b>1건</b></p>
           <p class="subtle" style="margin: 0; font-size: 13px">출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다.</p>
           <p class="subtle" style="margin: 0; font-size: 13px">점포상태를 이전 값으로 되돌렸습니다.</p>
         </div>
@@ -281,13 +281,13 @@
     <div class="modal" id="pop-close-confirm" hidden role="dialog" aria-modal="true" aria-labelledby="pcc-t">
       <div class="modal__box">
         <div class="modal__head">
-          <h2 class="t-h2" id="pcc-t">폐점으로 저장할까요?</h2>
+          <h2 class="t-h2" id="pcc-t">폐점으로 저장하시겠습니까?</h2>
           <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
         </div>
         <div class="modal__body">
-          <p style="margin: 0; font-size: 13.5px">폐점으로 저장하면 되돌릴 수 없습니다.<br>폐점일은 오늘(2026-11-03)이며, 다른 수정 내용도 함께 저장됩니다.</p>
-          <div class="band band--risk"><div class="band__body"><div class="band__title">폐점하면 함께 처리됩니다.</div><ul class="band__desc" style="margin: 4px 0 0; padding-left: 18px"><li>근무 중인 직원 8명 퇴직(퇴직일 오늘)</li><li>서명 대기 · 수정 요청 근로계약 1건 종료</li></ul></div></div>
-          <p class="subtle" style="margin: 0; font-size: 13px">확정하지 않은 급여명세서 2건은 폐점 뒤에도 처리할 수 있습니다.</p>
+          <p style="margin: 0; font-size: 13.5px">폐점으로 저장하면 되돌릴 수 없습니다.<br>폐점일은 오늘(2026-11-03)로 설정되며, 다른 수정 내용도 함께 저장됩니다.</p>
+          <div class="band band--risk"><div class="band__body"><div class="band__title">폐점 시 다음 항목이 함께 처리됩니다.</div><ol class="band__desc" style="margin: 4px 0 0; padding-left: 18px"><li style="margin-bottom: 6px">근무 중인 직원 : 8명 퇴직 처리<span style="display: block; font-size: 13px; color: #888">퇴직일이 없거나 오늘 이후인 직원의 퇴직일은 오늘로 변경됩니다.</span></li><li>서명 대기·수정 요청 중인 근로계약 : 1건 종료<span style="display: block; font-size: 13px; color: #888">직원은 해당 근로계약에 더 이상 서명할 수 없습니다.</span></li></ol></div></div>
+          <p class="subtle" style="margin: 0; font-size: 13px">확정되지 않은 급여명세서 2건은 폐점 후에도 처리할 수 있습니다.</p>
         </div>
         <div class="modal__foot">
           <button class="btn btn--ghost" type="button" data-close>취소</button>
