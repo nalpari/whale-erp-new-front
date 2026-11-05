@@ -29,8 +29,8 @@ export async function verifyWithdrawPasswordAction(currentPassword: string): Pro
     await verifyCurrentPassword(currentPassword);
     return { ok: true };
   } catch (error) {
-    // 판정한 거절(400 · 403 · 429) 말고는 화면이 모르는 실패라 서버 로그에 남긴다
-    if (!(error instanceof ApiError && [400, 403, 429].includes(error.status))) console.error("탈퇴 비밀번호 확인 실패", error);
+    // 판정한 거절(400 · 403 · 429)과 세션 만료 401 말고는 화면이 모르는 실패라 서버 로그에 남긴다
+    if (!(error instanceof ApiError && [400, 401, 403, 429].includes(error.status))) console.error("탈퇴 비밀번호 확인 실패", error);
     return withdrawVerifyFailureOf(error);
   }
 }
