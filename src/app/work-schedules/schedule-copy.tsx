@@ -30,7 +30,7 @@ export function CopyButton({ query, today, weekEmpty }: { query: ScheduleQuery &
   // 플랫폼 계정은 등록 권한이 없어도 BP 마스터와 같은 버튼을 두고, 누르면 권한 안내만 띄운다 — 버튼이 없으면 BP 화면이 다르게 보였다
   // (2026-11-05 사용자 지정, 3팀 확인 필요 — 점포 없음 띠 [점포 등록하기]와 같은 문구). 그 밖의 계정은 지금처럼 두지 않는다
   if (!canCreate && !platform) return null;
-  // 폐점은 등록 버튼 옆 안내가 함께 말한다
+  // 폐점은 근무지 칸 아래 안내가 함께 말한다
   return (
     <Button variant="soft" aria-expanded={query.copy} aria-controls="schedule-copy" disabled={!weekEmpty || closed} onClick={() => (canCreate ? navigate({ ...query, copy: !query.copy }) : toast("접근 권한이 없습니다."))}>
       지난 주 복사

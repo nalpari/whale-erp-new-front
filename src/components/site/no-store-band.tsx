@@ -28,7 +28,7 @@ export function NoStoreBand() {
   if (service !== "WHALE_ERP" || !stores.every(isClosedStore)) return null;
   const franchise = isFranchiseRole(account.roleTypeCode);
   // 폐점 점포만 있으면 「등록된 점포가 없다」가 틀린 말이라 앞 문장을 바꾼다
-  // BP 마스터만 BP 의 점포 전체를 본다 — 그 밖은 맡은 점포만 보이므로 BP 에 점포가 있어도 0 일 수 있어 「담당 점포」라 한다(리뷰 반영)
+  // BP 마스터 · 플랫폼 계정은 BP 의 점포 전체를 본다 — 그 밖은 맡은 점포만 보이므로 BP 에 점포가 있어도 0 일 수 있어 「담당 점포」라 한다(리뷰 반영)
   const lead = stores.length ? "운영 중이거나 운영 예정인 점포가 없습니다." : account.roleTypeCode === "BM" || isPlatformRole(account.roleTypeCode) ? "등록된 점포가 없습니다." : "담당 점포가 없습니다.";
   const canCreate = !franchise && !!menuOfPath(menus, "/stores", service)?.permission.create;
   return (

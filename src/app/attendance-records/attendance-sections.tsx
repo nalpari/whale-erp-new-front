@@ -150,8 +150,8 @@ export function DaySection({
   );
 }
 
-/** 근태 요약 줄 앞 점 색 — 표의 상태 꼬리표와 같은 뜻(정상 파랑 · 지각 노랑 · 미기록 빨강). 노랑은 꼬리표 warn 과 같은 계열로 토큰이 없다(2026-11-05 사용자 지정, 3팀 확인 필요) */
-// 근무스케줄 범례(CoverLegend)와 같은 14px 색 칸 — 옅은 바탕 + 같은 계열 테두리(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 8px 진한 점). 노랑은 급여명세서 경고 바탕(#fff6e5)과 같은 계열
+/** 근태 요약 줄 앞 14px 색 칸 — 표 상태 꼬리표와 같은 뜻(정상 파랑 · 지각 노랑 · 미기록 빨강), 근무스케줄 범례(CoverLegend)와 같은 모양(옅은 바탕 + 같은 계열 테두리).
+ * 노랑은 토큰이 없어 급여명세서 경고 바탕(#fff6e5) · #e8a33d 를 적는다(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 8px 진한 점) */
 const DOT = { ok: "bg-erp-on-bg border-erp-on/40", warn: "bg-[#fff6e5] border-[#e8a33d]/50", risk: "bg-erp-off-bg border-erp-off/40" } as const;
 
 // 막대 채움도 앞 색 칸과 같은 계열의 진한 색(정상 상태 파랑 · 지각 노랑 · 미기록 상태 빨강, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 셋 다 회청)
@@ -159,7 +159,7 @@ const BAR = { ok: "bg-erp-on", warn: "bg-[#e8a33d]", risk: "bg-erp-off" } as con
 
 function Rate({ label, count, total, dot }: { label: string; count: number; total: number; dot: keyof typeof DOT }) {
   const pct = total ? Math.round((count / total) * 100) : 0;
-  // 라벨 시작선을 아래 근로시간 표(DetailTable — 선 1px + 칸 여백 12px)의 라벨과 맞춘다(2026-11-04 사용자 지정 — 전엔 칸 왼쪽 끝에 붙어 시작선이 둘이었다)
+  // 색 칸 시작선을 아래 근로시간 표(DetailTable — 선 1px + 칸 여백 12px)의 라벨과 맞춘다(2026-11-04 사용자 지정 — 전엔 칸 왼쪽 끝에 붙어 시작선이 둘이었다)
   return (
     <div className="flex h-[34px] items-center gap-[12px] pl-[13px] text-[14px]">
       {/* 색 칸(14)은 들여쓰기 13px 에서 시작해 아래 근로시간 표 라벨(「총 근로시간」 · 「연장 근로」)과 같은 세로줄에 서고, 간격 6 뒤에 글자가 온다(범례와 같다).

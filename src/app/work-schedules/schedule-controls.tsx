@@ -30,7 +30,7 @@ export function SchedulePicker({ query, today }: { query: ScheduleQuery; today: 
     // 처음 한 번 — 주소에 점포가 없을 때만
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.storeId, fallback]);
-  // 점포가 없거나 고르는 중이면 같은 자리에 막힌 근무지 칸을 둔다 — 도구 줄 모양은 그대로, 안내는 본문 가운데(ScheduleNoStore)
+  // 점포가 없거나 고르는 중이면 같은 자리에 「선택」 하나뿐인 근무지 칸을 둔다(막지 않는다) — 도구 줄 모양은 그대로, 안내는 본문 가운데(ScheduleNoStore)
   if (query.storeId === null)
     return (
       <Labeled>

@@ -92,7 +92,7 @@ export function SchedulePanel({ storeId, children }: { storeId: number; children
   );
 }
 
-/** 도구 줄 「근무스케줄 등록」 — 등록 권한이 없으면 두지 않고, 폐점 점포면 흐리게 둔다 */
+/** 도구 줄 「근무스케줄 등록」 — 등록 권한이 없으면 두지 않는다(플랫폼 계정은 두고 누르면 권한 안내). 폐점 점포면 흐리게 둔다 */
 export function NewScheduleButton({ workDate }: { workDate: string }) {
   const { open, closed } = useSchedulePanel();
   const toast = useToast();
@@ -101,7 +101,7 @@ export function NewScheduleButton({ workDate }: { workDate: string }) {
   // 플랫폼 계정은 등록 권한이 없어도 BP 마스터와 같은 버튼을 두고, 누르면 권한 안내만 띄운다 — 버튼이 없으면 BP 화면이 다르게 보였다
   // (2026-11-05 사용자 지정, 3팀 확인 필요 — 점포 없음 띠 [점포 등록하기]와 같은 문구). 그 밖의 계정은 지금처럼 두지 않는다
   if (!canCreate && !platform) return null;
-  // 막힌 버튼은 마우스를 받지 않아(disabled:pointer-events-none) title 이 뜨지 않는다 — 이유는 옆에 글자로 둔다
+  // 막힌 버튼은 마우스를 받지 않아(disabled:pointer-events-none) title 이 뜨지 않는다 — 폐점 이유는 근무지 칸 아래 안내(SchedulePicker)가 말한다
   return (
     <>
       <Button aria-controls="schedule-form" disabled={closed} onClick={() => (canCreate ? open({ kind: "new", workDate }) : toast("접근 권한이 없습니다."))}>
@@ -227,6 +227,8 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const [pool, setPool] = useState<Pool | null>(null);
   const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
+  // 여러 명 일부 실패 요약 — 일부만 등록됐다는 유일한 알림이라 칸을 고쳐도 남기고 다음 저장 때만 내린다(serverError 와 따로, 리뷰 반영)
+  const [partialNotice, setPartialNotice] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [saving, startSaving] = useTransition();
   const seq = useRef(0);
@@ -342,6 +344,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const handleSave = () => {
     setTried(true);
     setServerError("");
+    setPartialNotice("");
     if (mode === "one" ? oneProblem : bulkProblem || picked.some((id) => bulkProblems[id])) return;
     startSaving(async () => {
       try {
@@ -360,7 +363,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
           const failedIds = result.result.failed.map((f) => f.staffMemberId);
           setPicked(failedIds);
           setRowErrors(Object.fromEntries(result.result.failed.map((f) => [f.staffMemberId, f.message])));
-          setServerError(`${result.result.created.length}명은 등록했고 ${failedIds.length}명은 등록하지 못했습니다.`);
+          setPartialNotice(`${result.result.created.length}명은 등록했고 ${failedIds.length}명은 등록하지 못했습니다.`);
           return;
         }
         const body = { workDate, ...shiftBody(shift) };
@@ -425,7 +428,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
       <FormGroup title="근무스케줄 정보">
         {/* 근무일 · 직원 · 시간 묶음 사이는 24 — 묶음 상자 기본 18 이면 칸들이 다닥다닥 붙어 보였다(2026-11-05 사용자 지적, 3팀 확인 필요).
             근무일이 먼저다 — 직원 목록이 근무일마다 달라(STAFF-29) 근무일을 바꾸면 고른 직원을 비운다 */}
-        {/* 등록 인원은 맨 위 칸 — 무엇을 할지 먼저 고르고 내용을 채운다(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 직원 라벨 아래 라디오). 수정은 한 건이라 없다 */}
+        {/* 등록 인원은 맨 위 칸 — 무엇을 할지 먼저 고르고 내용을 채운다(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 패널 제목 아래 라디오 「한 명 · 여러 명 일괄」). 수정은 한 건이라 없다 */}
         {!edit && (
           <div className="flex flex-col gap-[8px] pb-[6px]">
             <span className="text-[14px] font-medium text-erp-label">
@@ -562,6 +565,11 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
           "직원이 근무 앱에서 근무스케줄 알림을 끄면 알림은 근무 앱 알림함에만 표시됩니다.",
         ]}
       />
+      {partialNotice && (
+        <p role="alert" className={ERROR}>
+          {partialNotice}
+        </p>
+      )}
       {serverError && (
         <p role="alert" className={ERROR}>
           {serverError}

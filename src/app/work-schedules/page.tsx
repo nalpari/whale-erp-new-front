@@ -17,7 +17,7 @@ import { addDays, addMonths, historyApiSearch, mondayOf, moved, parseScheduleQue
 // 데이터는 GET /work-schedules(주간 8일 — 전주 일요일 포함 · 월간 42일), GET /work-schedules/histories(근무표 아래 변경 이력),
 // GET /work-schedules/copy-last-week(지난 주 복사 미리보기가 열렸을 때, #204)다. 화면 상태는 주소에만 둔다.
 // 등록 · 수정 · 삭제는 오른쪽 패널(schedule-form.tsx, #203)이고, 지난 주 복사는 도구 줄 아래 미리보기다(schedule-copy.tsx).
-// 배치는 데모 schedTab(2026-10-22 재영): 첫 줄 근무지 · 주 이동 | 지난 주 복사 · 근무스케줄 등록, 둘째 줄 주간 · 월간 전환, 근무표, 변경 이력.
+// 배치는 데모 schedTab(2026-10-22 재영)에서 순서를 바꿨다(2026-11-05 사용자 지정): 첫 줄 주간 · 월간 전환, 둘째 줄 근무지 · 주/달 이동 | 지난 주 복사 · 근무스케줄 등록, 근무표, 변경 이력.
 // 주 이동 옆의 날짜 고르기 칸과 「이번 주」는 데모에 없지만 남긴다(재영).
 
 // 데모 segment — 고른 쪽은 회색 바탕 · 굵게, 다른 쪽은 흰 바탕 · 라벨 회색(점포 목록 카드/표 전환과 같다)
@@ -46,7 +46,7 @@ async function loadCopyPreview(storeId: number, weekStart: string): Promise<Copy
 /** 달을 옮길 때 고를 날 — 이번 달이면 오늘, 아니면 그 달 1일(schedule-month.tsx toMonth 와 같다) */
 const toMonth = (month: string, today: string) => ({ month, day: month === today.slice(0, 7) ? today : `${month}-01` });
 
-/** 본문 틀 — 도구 줄(근무지 · 주 이동 | 동작) · 주간/월간 전환 · 본문. 점포가 없어도 같은 틀에 안내만 넣는다(2026-11-05 사용자 지정) */
+/** 본문 틀 — 주간/월간 전환 · 도구 줄(근무지 · 주/달 이동 | 동작) · 본문. 점포가 없어도 같은 틀에 안내만 넣는다(2026-11-05 사용자 지정) */
 function ScheduleFrame({ query, today, actions, children }: { query: ScheduleQuery; today: string; actions?: ReactNode; children: ReactNode }) {
   const href = (next: ScheduleQuery) => `/work-schedules${toScheduleSearch(next, today)}`;
   return (

@@ -496,6 +496,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
     setStaff(null);
     setStaffId(null);
     setError(null);
+    setFutureRejected(false);
     setListError(null);
     // 직원이 비면 퇴근 필수 여부(보정 대상)도 바뀐다 — 퇴근 문구도 함께 내린다
     setErrors((x) => clearError(clearError(x, "staff"), "checkOut"));
@@ -551,6 +552,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
                 // 직원이 바뀌면 퇴근 필수 여부(보정 대상)도 바뀐다 — 퇴근 문구도 함께 내린다
                 setErrors((x) => clearError(clearError(x, "staff"), "checkOut"));
                 setError(null); // 직원이 바뀌면 지난 거절(계약 기간 · 그날 기록 등)은 맞지 않는다
+                setFutureRejected(false);
               }}
               disabled={!staff}
             >

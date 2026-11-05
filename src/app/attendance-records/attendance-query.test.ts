@@ -176,3 +176,14 @@ test("미래 시각 — 거절 문장을 내릴 때를 api 와 같은 순간으�
   assert.equal(hasFutureTime(fixPoints("2026-11-05", false, "23:00", "08:00", false), now), false); // 출근은 전날 23:00
   assert.equal(hasFutureTime(proxyPoints("2026-11-05", "", ""), now), false);
 });
+
+test("저장 순간 — 대신 등록은 퇴근이 출근보다 이르거나 같으면 다음 날, 보정은 고른 값 · 강제 다음 날 · 출근 없는 짝의 전날(api shiftOf · correct)", () => {
+  assert.deepEqual(proxyPoints("2026-11-04", "22:00", "06:00"), [["2026-11-04", "22:00"], ["2026-11-05", "06:00"]]);
+  assert.deepEqual(proxyPoints("2026-11-05", "09:00", "09:00"), [["2026-11-05", "09:00"], ["2026-11-06", "09:00"]]);
+  assert.deepEqual(proxyPoints("2026-11-05", "09:00", ""), [["2026-11-05", "09:00"], ["2026-11-05", ""]]);
+  assert.deepEqual(fixPoints("2026-11-05", true, "23:00", "01:00", false), [["2026-11-05", "23:00"], ["2026-11-06", "01:00"]]);
+  assert.deepEqual(fixPoints("2026-11-05", false, "08:00", "12:00", false), [["2026-11-05", "08:00"], ["2026-11-05", "12:00"]]);
+  assert.deepEqual(fixPoints("2026-11-05", false, "08:00", "08:00", false), [["2026-11-04", "08:00"], ["2026-11-05", "08:00"]]);
+  const now = Date.parse("2026-11-05T14:00:00+09:00");
+  assert.equal(hasFutureTime(fixPoints("2026-11-04", true, "23:00", "01:00", false), now), false);
+});
