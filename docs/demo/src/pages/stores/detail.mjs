@@ -212,10 +212,9 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
   // 운영은 운영 조건이 모자라면, 폐점은 퇴근하지 않은 출근이 있으면 확인 버튼이 막힌다(근로계약은 막지 않는다 — 대기 계약은 폐점이 닫는다, 2026-11-04).
   // 폐점은 확인 창(「폐점으로 변경하시겠습니까?」)을 한 번 더 거치고, 그 창에 폐점하면 함께 처리될 것을 빨간 상자로 보인다(앱 store-closing-parts.tsx).
   // 부가서비스 구독 · 정산 대기 금액은 1차 범위 밖이라 뺐다(2026-10-19 점검).
+  // 막혀도 건수만 — 직원 이름 · 출근 시각(api 가 건수만 준다, 2026-11-04) · 할 일 안내(2026-11-05 사용자 지정)는 보이지 않는다
   const closeItem =
     `<li${d.openCheckIns ? ' class="text-erp-off"' : ""}>퇴근 기록이 없는 출근 <b class="font-semibold">${d.openCheckIns}건</b></li>`;
-  // 막히면 할 일 — 직원 이름 · 출근 시각은 보이지 않는다(api 가 건수만 준다, 2026-11-04)
-  const closeAfter = d.openCheckIns ? `<p class="mt-[6px] text-erp-label">출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다.</p>` : "";
   // 폐점하면 함께 처리될 것 — 0건인 줄은 빼고, 줄마다 무슨 뜻인지 회색으로 덧붙인다(앱 closingCheckLines)
   const c = d.closing ?? {};
   const closingLines = [
@@ -242,9 +241,9 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
     ? `<div class="flex flex-col gap-[12px]"><p class="flex items-center gap-[6px]">현재 상태 ${statusBadge(state)}</p>` +
       `<div role="radiogroup" aria-label="바꿀 상태" class="flex gap-[18px]">${ui.radio("운영", "storeStatus", true, { "data-target": "op" })}${ui.radio("폐점", "storeStatus", false, { "data-target": "close" })}</div>` +
       conditionBox("운영 조건", opItems, ' data-show="op"') +
-      conditionBox("폐점 조건", closeItem, ' data-show="close" hidden', closeAfter) +
+      conditionBox("폐점 조건", closeItem, ' data-show="close" hidden') +
       `</div>`
-    : `<div class="flex flex-col gap-[12px]"><p class="flex items-center gap-[6px]">현재 상태 ${statusBadge(state)}</p>${conditionBox("폐점 조건", closeItem, "", closeAfter)}</div>`;
+    : `<div class="flex flex-col gap-[12px]"><p class="flex items-center gap-[6px]">현재 상태 ${statusBadge(state)}</p>${conditionBox("폐점 조건", closeItem)}</div>`;
   const statusDialog =
     state === "폐점" || bpBlocked
       ? ""

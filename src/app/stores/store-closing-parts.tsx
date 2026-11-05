@@ -35,7 +35,7 @@ function Lines({ lines, numbered = false }: { lines: ClosingLine[]; numbered?: b
 }
 
 /**
- * 폐점 조건 — 「퇴근 기록이 없는 출근 N건」(가려진 직원 것 포함, 2026-11-05 「퇴근하지 않은 출근」에서 바꿈). 막히면 할 일을 덧붙인다 — api 는 직원 이름 · 시각을 주지 않는다.
+ * 폐점 조건 — 「퇴근 기록이 없는 출근 N건」(가려진 직원 것 포함, 2026-11-05 「퇴근하지 않은 출근」에서 바꿈). 건수만 보인다 — api 는 직원 이름 · 시각을 주지 않고, 할 일 안내는 두지 않는다(2026-11-05 사용자 지정).
  * counts 가 없으면(이미 폐점 · 확인 실패 · 출근 말고 다른 이유로 막힘) 그리지 않는다.
  */
 export function ClosingCondition({ counts }: { counts: Pick<StoreClosingCounts, "openCheckIns"> | null | undefined }) {
@@ -49,9 +49,6 @@ export function ClosingCondition({ counts }: { counts: Pick<StoreClosingCounts, 
           퇴근 기록이 없는 출근 <b className="font-semibold">{(block?.count ?? 0).toLocaleString("ko-KR")}건</b>
         </li>
       </ul>
-      {block && (
-        <p className="mt-[6px] text-erp-label">{block.guide}</p>
-      )}
     </div>
   );
 }

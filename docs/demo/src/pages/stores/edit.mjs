@@ -120,8 +120,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
     blockedId,
     "폐점할 수 없습니다.",
     `<div class="flex flex-col gap-[12px]"><div class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">폐점 조건</p>` +
-      `<ul class="mt-[6px] list-disc pl-[18px]"><li class="text-erp-off">퇴근 기록이 없는 출근 <b class="font-semibold">1건</b></li></ul>` +
-      `<p class="mt-[6px] text-erp-label">출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다.</p></div>` +
+      `<ul class="mt-[6px] list-disc pl-[18px]"><li class="text-erp-off">퇴근 기록이 없는 출근 <b class="font-semibold">1건</b></li></ul></div>` +
       `<p class="text-erp-label">점포상태를 이전 값으로 되돌렸습니다.</p></div>`,
     ui.button("확인", { "data-close": true }),
     "w-[480px]",

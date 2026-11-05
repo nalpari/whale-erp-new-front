@@ -15,12 +15,11 @@ export type StoreClosingRetirement = Schemas["StoreClosingRetirementDto"];
 /**
  * 폐점을 막는 퇴근하지 않은 출근 — 건수는 가려진 직원 것까지 더한다(api isBlocked 와 같은 기준: count + hiddenCount > 0).
  * api 는 직원 이름 · 출근 시각을 주지 않는다 — 점포 메뉴 조회 권한만으로 보이는 응답이라 수만 안내한다(2026-11-04 사용자 결정, api 0a9fc92e).
- * 어느 출근인지는 출퇴근 현황에서 찾는다. 저장 때의 409 OPEN_CHECK_IN 문구도 시각 없이 「퇴근하지 않은 출근이 있습니다. …」다(api 폐점 서비스가 바꿔 던진다)
+ * 할 일 안내는 두지 않는다 — 건수만 보인다(2026-11-05 사용자 지정, 전엔 「출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다.」 —
+ * 본사에게 가려진 출근은 출퇴근 현황에서도 보이지 않아 따를 수 없는 안내였다). 저장 때의 409 OPEN_CHECK_IN 문구도 시각 없이 「퇴근하지 않은 출근이 있습니다. …」다(api 폐점 서비스가 바꿔 던진다)
  */
 export type ClosingBlock = {
   count: number;
-  /** 할 일 — 출퇴근 현황에서 퇴근 시간을 보정하게 한다(가려진 출근만 있어도 같다) */
-  guide: string;
 };
 
 /** 폐점 확인에서 막힘을 꺼낸다. 막히지 않았으면 null */
@@ -28,12 +27,7 @@ export function closingBlockOf(counts: Pick<StoreClosingCounts, "openCheckIns">)
   const { count, hiddenCount } = counts.openCheckIns;
   const total = count + hiddenCount;
   if (total <= 0) return null;
-  return {
-    count: total,
-    // 본사에게 가려진 출근(ATT-30)만 있으면 본사는 출퇴근 현황에서 그 줄을 볼 수 없지만, 알고도 같은 문구로 둔다
-    // (2026-11-05 사용자 지정 — 전엔 「가맹점에서 …」로 갈랐다. 버그로 보고 되살리지 않는다)
-    guide: "출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다.",
-  };
+  return { count: total };
 }
 
 /** 확인 팝업의 한 줄 — 수가 0 인 줄은 뺀다 */
