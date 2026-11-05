@@ -373,13 +373,10 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
         rowKey={(d) => d.key}
         rowState={(d) => (d.added ? "added" : reorder.dragging === d.key ? "selected" : undefined)}
         rowProps={manage ? reorder.rowProps : undefined}
-        empty={
-          loadFailed
-            ? "상세 코드를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
-            : group
-              ? "이 그룹에 상세 코드가 없습니다."
-              : "왼쪽 목록에서 공통코드 그룹을 고르면 상세 코드가 여기에 나옵니다."
-        }
+        // 비었으면 열 이름 줄 아래 빈 칸이 남는 높이를 채운다. 문구는 플랫폼 공통코드 관리와 같게(2026-11-05 사용자 지정 —
+        // 전엔 「이 그룹에 상세 코드가 없습니다.」 · 「왼쪽 목록에서 공통코드 그룹을 고르면 상세 코드가 여기에 나옵니다.」)
+        fillEmpty
+        empty={loadFailed ? "상세 코드를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." : group ? "등록된 상세 코드가 없습니다." : "공통코드 그룹을 선택하세요."}
       />
       {/* 칸에 붙은 오류는 그 칸 아래에 있다 — 어느 새 행인지 모르는 409 만 여기 */}
       <FieldErrors messages={errors["code:server"] ? [errors["code:server"]] : []} />

@@ -1,5 +1,5 @@
 import { PageBar } from "@/components/common";
-import { ownerQuery, ownerTerm, searchTerm } from "@/lib/code-drafts";
+import { hasGroupSearch, ownerQuery, ownerTerm, searchTerm } from "@/lib/code-drafts";
 import { getCodeGroups, getCodeItems } from "@/lib/codes";
 import { CodeFilter } from "./code-filter";
 import { CodeGroupPanel } from "./code-group-panel";
@@ -21,6 +21,18 @@ export default async function PlatformCodesPage({ searchParams }: PageProps<"/co
     // 관리 주체 한글은 화면에 상수로 두지 않고 공통코드 MANAGE_OWNER 에서 읽는다(naming.md 화면 문구).
     getCodeItems("MANAGE_OWNER"),
   ]);
+  // 0건이면 조건 없이 한 번 더 물어 「그룹이 아예 없는지」와 「조건에 맞는 그룹이 없는지」를 가른다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정).
+  // 지금 조회가 이미 조건 없음이면 다시 묻지 않는다. 관리주체를 둘 다 끈 것(NONE)도 같다. 묻지 못하면 「조건에 맞는 …」
+  const search = { groupCode, groupName, manageOwnerCode };
+  const noGroupsAtAll =
+    groups.total === 0 &&
+    (!hasGroupSearch(search) ||
+      (await getCodeGroups()
+        .then((all) => all.total === 0)
+        .catch((error: unknown) => {
+          console.warn("공통코드 그룹 전체 건수 확인 실패", error);
+          return false;
+        })));
   const selected = groups.items.find((g) => g.groupCode === params.group) ?? groups.items[0];
   // 고른 그룹의 상세 코드만 못 불러오면 화면 전체를 오류로 넘기지 않는다 — 주소에 ?group= 이 남아 [다시 시도]도 같은 그룹을 다시 불러
   // 다른 그룹으로 갈 수 없게 된다. 그룹 목록은 그대로 그리고 오른쪽 패널만 실패를 보인다.
@@ -44,7 +56,8 @@ export default async function PlatformCodesPage({ searchParams }: PageProps<"/co
             key={`${groupCode}|${groupName}|${manageOwnerCode}`}
             groups={groups.items}
             total={groups.total}
-            search={{ groupCode, groupName, manageOwnerCode }}
+            search={search}
+            noGroupsAtAll={noGroupsAtAll}
             selected={selected?.groupCode}
             ownerLabels={ownerLabels}
           />

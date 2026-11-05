@@ -613,7 +613,7 @@ export function AdminFormPanel(props: Props) {
             <div className="flex flex-col gap-[8px]">
               {optionsFailure && (
                 <div className="flex flex-col items-start gap-[6px]">
-                  <FailedBand message={optionsFailure} detail="고른 점포와 입력한 값은 그대로 두었습니다." />
+                  <FailedBand message={optionsFailure} detail="선택한 점포와 입력한 값은 그대로 두었습니다." />
                   <Button variant="soft" onClick={() => setOptionsRetry((n) => n + 1)}>
                     다시 불러오기
                   </Button>
@@ -728,7 +728,7 @@ export function AdminFormPanel(props: Props) {
             </dl>
             <p className="text-[13px] text-erp-label">아이디는 첫 계정만 보입니다.</p>
             {cascade.impact.unmappedCount > 0 && (
-              <p>점포가 하나도 남지 않는 가맹 관리자도 계정상태는 사용 그대로입니다. 그 계정을 다음에 수정할 때 관리 점포를 한 곳 이상 골라야 저장됩니다.</p>
+              <p>점포가 하나도 남지 않는 가맹 관리자도 계정상태는 사용 그대로입니다. 그 계정을 다음에 수정할 때 관리 점포를 한 곳 이상 선택해야 저장됩니다.</p>
             )}
             {cascade.impact.deactivatedCount > 0 && (
               <p>

@@ -152,7 +152,16 @@ export function NotificationList({
           </Select>
         </div>
       </div>
-      <DataTable columns={columns} rows={items} rowKey={(n) => n.id} rowState={(n) => (picked.has(n.id) ? "selected" : undefined)} empty="받은 알림이 없습니다." />
+      {/* 비어도 열 이름 줄을 두고 빈 칸이 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정). 거르는 조건이 없어 0건이면 「받은 …」,
+          알림은 있는데 이 쪽이 비었으면(마지막 쪽을 넘긴 주소 · 지운 뒤) 「이 페이지에 …」(2026-11-05 사용자 지정)(전엔 「받은 알림이 없습니다.」 하나) */}
+      <DataTable
+        columns={columns}
+        rows={items}
+        rowKey={(n) => n.id}
+        rowState={(n) => (picked.has(n.id) ? "selected" : undefined)}
+        empty={total === 0 ? "받은 알림이 없습니다." : "이 페이지에 알림이 없습니다."}
+        fillEmpty
+      />
       <div className="pt-[14px]">
         <Pagination page={query.page} totalPages={totalPages} onPageChange={(page) => go({ ...query, page })} />
       </div>

@@ -148,7 +148,7 @@ function Preview({ channel, title, body, button }: { channel: Channel | ""; titl
         </div>
       </>
     );
-  return <span className={HELP}>채널을 고르고 본문을 넣으면 채널 모양으로 보입니다.</span>;
+  return <span className={HELP}>채널을 선택하고 본문을 넣으면 채널 모양으로 보입니다.</span>;
 }
 
 export function TemplateForm({ detail, channels, categories }: { detail?: TemplateDetail; channels: EnumValue[]; categories: EnumValue[] }) {
@@ -233,7 +233,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
   // 저장 — 화면 검사를 먼저 하고, 등록 · 수정 모두 확인창을 거쳐 보낸다(데모와 같게, 2026-10-13 재영).
   const codeChanged = !!saved && draft.templateCode.trim() !== saved.templateCode;
   const handleSave = () => {
-    const messages = draft.channel ? validateTemplate(templateInput({ ...draft, channel: draft.channel })) : ["발송 채널을 골라 주세요."];
+    const messages = draft.channel ? validateTemplate(templateInput({ ...draft, channel: draft.channel })) : ["발송 채널을 선택해 주세요."];
     showErrors(messages);
     if (messages.length) return;
     setDialog("save");
@@ -366,7 +366,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
                 <div className="flex w-full gap-[6px]">
                   <Item
                     label="템플릿 코드"
-                    help={isNew ? "채널을 고르면 접두(NTF_ · PUSH_ · EMAIL_ · TALK_)가 채워지고, 나머지는 직접 넣습니다." : "바꾸면 발송 코드도 함께 바꿔야 할 수 있습니다."}
+                    help={isNew ? "채널을 선택하면 접두(NTF_ · PUSH_ · EMAIL_ · TALK_)가 채워지고, 나머지는 직접 넣습니다." : "바꾸면 발송 코드도 함께 바꿔야 할 수 있습니다."}
                   >
                     {(id) => <TextField id={id} value={draft.templateCode} onChange={(e) => set("templateCode", e.target.value)} />}
                   </Item>

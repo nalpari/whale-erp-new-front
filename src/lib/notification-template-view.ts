@@ -150,11 +150,11 @@ export function validateTemplate(t: TemplateInput): string[] {
   }
 
   if (t.channel === "PUSH") {
-    if (!t.preferenceCategory) add("앱 푸시는 수신 설정 묶음을 골라 주세요.");
+    if (!t.preferenceCategory) add("앱 푸시는 수신 설정 묶음을 선택해 주세요.");
     if (title.length > PUSH_LIMIT.title) add(`제목은 ${PUSH_LIMIT.title}자를 넘을 수 없습니다(지금 ${title.length}자).`);
     if (t.body.length > PUSH_LIMIT.body) add(`본문은 ${PUSH_LIMIT.body}자를 넘을 수 없습니다(지금 ${t.body.length}자).`);
   } else if (t.preferenceCategory) {
-    add("수신 설정 묶음은 앱 푸시에만 고릅니다.");
+    add("수신 설정 묶음은 앱 푸시에서만 선택할 수 있습니다.");
   }
 
   if (t.variables.length > 50) add("변수는 50개까지 둘 수 있습니다.");

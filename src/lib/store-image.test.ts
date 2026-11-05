@@ -17,7 +17,7 @@ test("JPG · PNG 5MB 이하만 통과", () => {
   assert.equal(storeImageFileError({ name: "a.png", type: "", size: 5 * MB }, TYPES), null);
   assert.equal(storeImageFileError({ name: "a.gif", type: "image/gif", size: MB }, TYPES), "JPG · PNG 파일만 올릴 수 있습니다.");
   assert.equal(storeImageFileError({ name: "a.png", type: "image/png", size: 5 * MB + 1 }, TYPES), "파일은 5MB까지 올릴 수 있습니다.");
-  assert.equal(storeImageFileError({ name: "a.png", type: "image/png", size: 0 }, TYPES), "빈 파일입니다. 다른 파일을 골라 주세요.");
+  assert.equal(storeImageFileError({ name: "a.png", type: "image/png", size: 0 }, TYPES), "빈 파일입니다. 다른 파일을 선택해 주세요.");
 });
 
 test("이미지만 실패한 상태 코드 → 고정 문구, 없으면 null", () => {

@@ -153,7 +153,7 @@ export function ScheduleBar({
 
 const ERROR = "text-[13px] text-erp-off";
 const HELP = "text-[12px] leading-[1.5] text-erp-muted";
-const STAFF_FAILED = "직원 목록을 불러오지 못했습니다. 근무일을 다시 골라 주세요.";
+const STAFF_FAILED = "직원 목록을 불러오지 못했습니다. 근무일을 다시 선택해 주세요.";
 
 type Pool =
   { workDate: string; state: "ok"; staff: ScheduleStaff[] } | { workDate: string; state: "error"; message: string };
@@ -297,9 +297,9 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const loading = !edit && !!workDate && pool?.workDate !== workDate;
   const staff = pool?.state === "ok" && pool.workDate === workDate ? pool.staff : [];
   const nameOf = (id: number) => staff.find((s) => s.staffMemberId === id)?.name ?? "";
-  const oneProblem = !workDate ? "근무일을 골라 주세요." : staffId === null ? "직원을 골라 주세요." : shiftProblem(shift);
+  const oneProblem = !workDate ? "근무일을 선택해 주세요." : staffId === null ? "직원을 선택해 주세요." : shiftProblem(shift);
   const bulkProblems = Object.fromEntries(picked.map((id) => [id, shiftProblem(rows[id] ?? EMPTY_SHIFT)]));
-  const bulkProblem = !workDate ? "근무일을 골라 주세요." : picked.length === 0 ? "직원을 한 명 이상 골라 주세요." : null;
+  const bulkProblem = !workDate ? "근무일을 선택해 주세요." : picked.length === 0 ? "직원을 한 명 이상 선택해 주세요." : null;
   // 일괄 저장을 막는 이유 — 직원 칸 아래, 직원 목록을 불러오는 중 · 실패 문구 아래 같은 자리에 쓴다
   const bulkError = tried && bulkProblem ? (
     <p role="alert" className={ERROR}>

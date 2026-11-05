@@ -3,9 +3,9 @@ import { test } from "node:test";
 import { ApiError, codeOf, deniedMessageOf, isApiSendRefusal } from "./api-error.ts";
 
 test("deniedMessageOf: api 거절(400 · 403 · 404 문장 하나)은 그 문장", () => {
-  assert.equal(deniedMessageOf(new ApiError(400, "점포를 볼 BP 를 골라 주세요")), "점포를 볼 BP 를 골라 주세요");
+  assert.equal(deniedMessageOf(new ApiError(400, "점포를 볼 BP 를 선택해 주세요")), "점포를 볼 BP 를 선택해 주세요");
   // 본문의 message 가 문자열이면 검증 실패가 아니다
-  assert.equal(deniedMessageOf(new ApiError(400, "BP 를 골라 주세요", undefined, { message: "BP 를 골라 주세요" })), "BP 를 골라 주세요");
+  assert.equal(deniedMessageOf(new ApiError(400, "BP 를 선택해 주세요", undefined, { message: "BP 를 선택해 주세요" })), "BP 를 선택해 주세요");
   assert.equal(deniedMessageOf(new ApiError(403, "다른 BP 의 정보는 다룰 수 없습니다.")), "다른 BP 의 정보는 다룰 수 없습니다.");
   assert.equal(deniedMessageOf(new ApiError(404, "BP 를 찾을 수 없습니다")), "BP 를 찾을 수 없습니다");
 });

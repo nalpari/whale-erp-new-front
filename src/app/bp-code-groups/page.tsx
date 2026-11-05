@@ -2,7 +2,7 @@ import { PageBar } from "@/components/common";
 import { UnsavedChangesProvider } from "@/components/site/code-editor/unsaved-changes";
 import { SaveFailedBand } from "@/components/site/code-editor/code-panel";
 import { ApiError } from "@/lib/api";
-import { searchTerm } from "@/lib/code-drafts";
+import { hasGroupSearch, searchTerm } from "@/lib/code-drafts";
 import { getBpCodeGroups, getBpCodeItems } from "@/lib/bp-codes";
 import { BpCodeFilter } from "./bp-code-filter";
 import { BpCodeGroupPanel } from "./bp-code-group-panel";
@@ -32,6 +32,17 @@ export default async function BpCodesPage({ searchParams }: PageProps<"/bp-code-
       </>
     );
 
+  // 0건이면 조건 없이 한 번 더 물어 「그룹이 아예 없는지」와 「조건에 맞는 그룹이 없는지」를 가른다 — 플랫폼 공통코드 · 점포 · 직원 목록과 같다
+  // (2026-11-05 사용자 지정). 지금 조회가 이미 조건 없음이면 다시 묻지 않는다. 묻지 못하면 「조건에 맞는 …」
+  const noGroupsAtAll =
+    list.total === 0 &&
+    (!hasGroupSearch({ groupCode, groupName }) ||
+      (await getBpCodeGroups()
+        .then((all) => all.total === 0)
+        .catch((error: unknown) => {
+          console.warn("BP 공통코드 그룹 전체 건수 확인 실패", error);
+          return false;
+        })));
   const selected = list.items.find((g) => g.groupCode === params.group) ?? list.items[0];
   const items = selected
     ? await getBpCodeItems(selected.groupCode).catch((error: unknown) => {
@@ -49,6 +60,7 @@ export default async function BpCodesPage({ searchParams }: PageProps<"/bp-code-
           <BpCodeGroupPanel
             groups={list.items}
             search={{ groupCode, groupName }}
+            noGroupsAtAll={noGroupsAtAll}
             selected={selected?.groupCode}
           />
           <BpCodeItemPanel

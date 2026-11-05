@@ -189,7 +189,7 @@ export function MyInquiryView({ inquiry: d, statuses }: { inquiry: SupportInquir
                 <Prose>{d.reply.body}</Prose>
               </>
             ) : (
-              <Sub>아직 답변이 없습니다. 답변이 달리면 알림함으로 알려 드립니다.</Sub>
+              <Sub>등록된 답변이 없습니다. 답변이 등록되면 알림함에서 확인할 수 있습니다.</Sub>
             )}
           </Box>
         </div>

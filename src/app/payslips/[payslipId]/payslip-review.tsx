@@ -493,7 +493,7 @@ export function PayslipReview({
         onCancel={close}
       >
         <Select aria-label="추가 공제 항목" value={adding} onChange={(e) => setAdding(e.target.value)} disabled={!addable}>
-          <option value="">{addable ? (remaining.length > 0 ? "항목을 고르세요" : "붙일 항목이 없습니다") : "불러오는 중"}</option>
+          <option value="">{addable ? (remaining.length > 0 ? "항목을 선택하세요" : "붙일 항목이 없습니다") : "불러오는 중"}</option>
           {remaining.map((a) => (
             <option key={a.payslipItemMasterId} value={a.payslipItemMasterId}>
               {a.name}

@@ -206,7 +206,7 @@ function AnswerBox({
   if (!canEdit)
     return (
       <Box title="답변" hint={hint}>
-        {current !== null ? view : <Note>아직 답변이 없습니다.</Note>}
+        {current !== null ? view : <Note>등록된 답변이 없습니다.</Note>}
       </Box>
     );
   const saved = current ?? "";

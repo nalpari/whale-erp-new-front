@@ -30,7 +30,7 @@ export function storeImageFileError(file: { name: string; type: string; size: nu
   const name = file.name.toLowerCase();
   const matches = types.some((t) => file.type === FORMAT[t].mime || FORMAT[t].extensions.some((e) => name.endsWith(e)));
   if (!matches) return `${storeImageTypesText(types)} 파일만 올릴 수 있습니다.`;
-  if (file.size === 0) return "빈 파일입니다. 다른 파일을 골라 주세요.";
+  if (file.size === 0) return "빈 파일입니다. 다른 파일을 선택해 주세요.";
   if (file.size > STORE_IMAGE_MAX_BYTES) return `파일은 ${STORE_IMAGE_MAX_BYTES / 1024 / 1024}MB까지 올릴 수 있습니다.`;
   return null;
 }

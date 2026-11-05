@@ -3,34 +3,19 @@
 import { useState, type ReactNode } from "react";
 import { Checkbox, FilterPanel, FilterSection, SearchField } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
-import { GROUP_OWNERS, ownerQuery, type GroupOwner, type OwnerFilter } from "@/lib/code-drafts";
+import { GROUP_OWNERS, type GroupOwner, type OwnerFilter } from "@/lib/code-drafts";
 
 /** 공통코드 그룹 검색 조건 — 그룹 코드 · 그룹명(일부 일치 · 대소문자 무시) · 관리주체(하나만 고른 때만 값, 비면 전체). api 가 거른다. */
 export type CodeGroupSearch = { groupCode: string; groupName: string; manageOwnerCode?: OwnerFilter };
 
-/** 검색 결과가 없을 때 그룹 목록의 빈 칸 문구(두 줄). 검색하지 않았으면 undefined — 부르는 쪽 문구를 쓴다. */
-export function searchedEmpty({ groupCode, groupName, manageOwnerCode: owner }: CodeGroupSearch, ownerLabel?: string): ReactNode {
-  // 관리주체를 둘 다 끄면(NONE) 고른 관리주체가 없어 결과가 없다(2026-10-27 사용자 지정)
-  if (owner === "NONE")
-    return (
-      <>
-        선택한 관리주체가 없어 표시할 공통코드 그룹이 없습니다.
-        <br />
-        관리주체를 하나 이상 선택해 주세요.
-      </>
-    );
-  const manageOwnerCode = ownerQuery(owner);
-  if (!groupCode && !groupName && !manageOwnerCode) return undefined;
-  const terms = [groupCode && `그룹 코드 ‘${groupCode}’`, groupName && `그룹명 ‘${groupName}’`, manageOwnerCode && `관리주체 ‘${ownerLabel ?? manageOwnerCode}’`]
-    .filter(Boolean)
-    .join(" · ");
-  return (
-    <>
-      {terms}에 맞는 공통코드 그룹이 없습니다.
-      <br />
-      검색 조건을 바꿔 다시 검색해 주세요.
-    </>
-  );
+/**
+ * 그룹 목록이 비었을 때의 문구. 그룹이 아예 없으면(noGroupsAtAll) 「등록된 …」, 조건에 맞는 그룹이 없으면 「조건에 맞는 …」 —
+ * 점포 · 직원 목록과 같다(2026-11-05 사용자 지정, 전엔 「그룹 코드 ‘…’에 맞는 공통코드 그룹이 없습니다.」 두 줄).
+ * 0건이면 화면(page)이 조건 없이 한 번 더 물어 noGroupsAtAll 을 넘긴다.
+ */
+export function groupListEmpty(search: CodeGroupSearch, noGroupsAtAll: boolean): ReactNode {
+  // 관리주체를 둘 다 꺼도(NONE) 이유를 따로 말하지 않고 다른 조건과 같은 문구다(2026-11-05 사용자 지정 — 전엔 「관리주체를 하나 이상 선택해 주세요.」)
+  return noGroupsAtAll ? "등록된 공통코드 그룹이 없습니다." : "조건에 맞는 공통코드 그룹이 없습니다.";
 }
 
 // 왼쪽 필터 — 플랫폼 공통코드 관리와 BP 공통코드 관리가 함께 쓴다. 어느 칸에서 Enter · 돋보기를 눌러도 두 칸 값으로 함께 검색한다.

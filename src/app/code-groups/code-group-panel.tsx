@@ -12,7 +12,7 @@ import { applyCodeGroupToBpsAction, saveCodeGroupsAction } from "./actions";
 import { BpApplyDialog } from "./bp-apply-dialog";
 import { CellError, CodePanel, DoneNotice, FieldErrors, focusFirstInvalid, recheck, SaveFailedBand, UNKNOWN_RESULT, UNREACHABLE } from "@/components/site/code-editor/code-panel";
 import { codesHref } from "./codes-href";
-import { searchedEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
+import { groupListEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
 import { GuardedLink, useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 
@@ -34,6 +34,7 @@ export function CodeGroupPanel({
   groups,
   total,
   search,
+  noGroupsAtAll,
   selected,
   ownerLabels,
 }: {
@@ -41,6 +42,8 @@ export function CodeGroupPanel({
   total: number;
   /** 왼쪽 필터의 검색 조건 — 그룹을 옮겨도 이어 간다. */
   search: CodeGroupSearch;
+  /** 조건 없이도 그룹이 없다 — 빈 목록 문구를 「등록된 …」으로(화면이 0건일 때 한 번 더 물어 정한다) */
+  noGroupsAtAll: boolean;
   selected?: string;
   /** 관리 주체 한글 — 공통코드 MANAGE_OWNER 에서 읽은 값. */
   ownerLabels: Record<string, string>;
@@ -141,7 +144,7 @@ export function CodeGroupPanel({
       if (formatError) next.code = formatError;
       // 아이디 중복 확인 문구와 같은 꼴(2026-10-27 사용자 지정)
       else if (duplicateCodes(groups.map((g) => g.groupCode), [code]).size) next.code = "이미 사용 중인 그룹 코드입니다.";
-      if (!added.manageOwnerCode) next.owner = "관리주체를 골라 주세요.";
+      if (!added.manageOwnerCode) next.owner = "관리주체를 선택해 주세요.";
     }
     return next;
   };
@@ -360,7 +363,9 @@ export function CodeGroupPanel({
         rowKey={(d) => (d.added ? "__added" : d.groupCode)}
         // 고른 그룹은 한 단계 어두운 바탕 + 왼쪽 브랜드색 선 — 플랫폼 메뉴 관리 트리와 같다(2026-10-27 사용자 지정)
         rowState={(d) => (d.added ? "added" : d.groupCode === selected ? "current" : undefined)}
-        empty={searchedEmpty(search, search.manageOwnerCode && search.manageOwnerCode !== "NONE" ? ownerLabels[search.manageOwnerCode] : undefined) ?? "등록한 공통코드 그룹이 없습니다."}
+        // 비었으면 열 이름 줄 아래 빈 칸이 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정)
+        fillEmpty
+        empty={groupListEmpty(search, noGroupsAtAll)}
       />
       {/* 칸에 붙은 오류는 그 칸 아래에 있다 — 새 행이 없는데 온 그룹 코드 409 만 여기 */}
       <FieldErrors messages={!added && errors.code ? [errors.code] : []} />

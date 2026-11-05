@@ -142,7 +142,7 @@ export function useTreeDrag({
       </div>
     ) : null;
 
-  return { wrapProps, dragging, hint: dragging === null ? null : (label?.hint ?? "놓을 자리를 고르세요 — 줄 위 · 아래 끝은 앞 · 뒤로, 가운데는 그 안으로"), handle, rowProps, endProps, indicator };
+  return { wrapProps, dragging, hint: dragging === null ? null : (label?.hint ?? "놓을 자리로 옮기세요 — 줄 위 · 아래 끝은 앞 · 뒤로, 가운데는 그 안으로"), handle, rowProps, endProps, indicator };
 }
 
 /** 자리 이름 — 놓을 수 있으면 「‘시스템관리’ 아래 3번째 · 2단계」, 없으면 이유 */

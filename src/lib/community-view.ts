@@ -125,9 +125,9 @@ export function validatePost(f: PostForm, status: PostStatus, kept: number, file
   else if (f.title.length > TITLE_MAX) errors.push(`제목은 ${TITLE_MAX}자까지 쓸 수 있습니다.`);
   if (!f.body.trim()) errors.push("본문을 입력해 주세요.");
   else if (f.body.length > BODY_MAX) errors.push(`본문은 ${BODY_MAX.toLocaleString("ko-KR")}자까지 쓸 수 있습니다.`);
-  if (notice && !f.noticeType) errors.push("공지사항 유형을 골라 주세요.");
-  if (!notice && !f.faqCategoryCode) errors.push("FAQ 카테고리를 골라 주세요.");
-  if (status === "PUBLISHED" && f.audiences.length === 0) errors.push("게시하려면 노출 대상을 하나 이상 골라 주세요.");
+  if (notice && !f.noticeType) errors.push("공지사항 유형을 선택해 주세요.");
+  if (!notice && !f.faqCategoryCode) errors.push("FAQ 카테고리를 선택해 주세요.");
+  if (status === "PUBLISHED" && f.audiences.length === 0) errors.push("게시하려면 노출 대상을 하나 이상 선택해 주세요.");
   // YYYY-MM-DD 는 글자 순서가 날짜 순서다.
   if (notice && f.publishStartDate && f.publishEndDate && f.publishEndDate < f.publishStartDate) errors.push("게시 종료일이 시작일보다 앞설 수 없습니다.");
   if (notice) {
@@ -183,29 +183,47 @@ export const SUPPORT_FAQ_BASE = "/support-faqs";
 export const SUPPORT_INQUIRY_BASE = "/support-inquiries";
 
 export type InquiryStatus = Schemas["InquiryStatus"];
-export type SupportNoticeQuery = ListQuery & { keyword: string; noticeType: NoticeType[] };
+/**
+ * 고객지원 체크박스 필터는 모두 고른 것이 기본이다(2026-11-05 사용자 지정). 모두 고르면 주소에 싣지 않고(빈 배열 = 전체),
+ * 모두 끄면 NONE 하나만 남긴다 — 결과 없음이라 api 를 부르지 않는다(관리자 관리의 계정상태와 같다).
+ */
+export const NONE_CHECKED = "NONE";
+export type SupportNoticeQuery = ListQuery & { keyword: string; noticeType: (NoticeType | typeof NONE_CHECKED)[] };
 export type SupportFaqQuery = ListQuery & { keyword: string; faqCategoryCode: string[] };
-export type SupportInquiryQuery = ListQuery & { title: string; status: InquiryStatus[] };
+export type SupportInquiryQuery = ListQuery & { title: string; status: (InquiryStatus | typeof NONE_CHECKED)[] };
+
+/** 체크박스를 모두 껐는가 — 결과 없음 */
+export const noneChecked = (value: readonly string[]) => value.length === 1 && value[0] === NONE_CHECKED;
 
 const NOTICE_TYPES: readonly NoticeType[] = ["MAINTENANCE", "FEATURE", "TERMS", "GENERAL"];
 const INQUIRY_STATUSES: readonly InquiryStatus[] = ["RECEIVED", "IN_PROGRESS", "ANSWERED"];
+
+/** 모두 고른 것(전체)은 빈 배열로, 모두 끈 것은 NONE 하나로 — 같은 조건이면 주소도 같다 */
+const checkedOf = <T extends string>(values: readonly T[], v: string | string[] | undefined): (T | typeof NONE_CHECKED)[] => {
+  if (all(v).includes(NONE_CHECKED)) return [NONE_CHECKED];
+  const picked = someOf(values, v);
+  return picked.length === values.length ? [] : picked;
+};
 
 // 검색어 한도는 api 와 같다(공지 · FAQ keyword 100자, 문의 제목 200자). FAQ 카테고리는 공통코드 상세 코드 20자.
 export const parseSupportNoticeQuery = (raw: Raw): SupportNoticeQuery => ({
   ...pageOf(raw),
   keyword: textOf(first(raw.keyword), 100),
-  noticeType: someOf(NOTICE_TYPES, raw.noticeType),
+  noticeType: checkedOf(NOTICE_TYPES, raw.noticeType),
 });
 export const parseSupportFaqQuery = (raw: Raw): SupportFaqQuery => ({
   ...pageOf(raw),
   keyword: textOf(first(raw.keyword), 100),
   // 카테고리는 공통코드라 목록을 모른다 — 다듬어 빈 값 · 겹친 값만 빼고, api 가 400 을 내는 값(20자 넘음 · 50개 넘음)은 버린다.
-  faqCategoryCode: [...new Set(all(raw.faqCategoryCode).map((v) => textOf(v, 21)))].filter((v) => v && v.length <= 20).slice(0, 50),
+  // 모두 끈 것(NONE)은 그것 하나만. 「모두 고름 = 빈 배열」은 목록을 아는 화면(체크박스)이 맞춘다
+  faqCategoryCode: all(raw.faqCategoryCode).includes(NONE_CHECKED)
+    ? [NONE_CHECKED]
+    : [...new Set(all(raw.faqCategoryCode).map((v) => textOf(v, 21)))].filter((v) => v && v.length <= 20).slice(0, 50),
 });
 export const parseSupportInquiryQuery = (raw: Raw): SupportInquiryQuery => ({
   ...pageOf(raw),
   title: textOf(first(raw.title), 200),
-  status: someOf(INQUIRY_STATUSES, raw.status),
+  status: checkedOf(INQUIRY_STATUSES, raw.status),
 });
 
 /**

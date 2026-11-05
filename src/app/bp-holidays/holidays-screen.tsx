@@ -281,7 +281,10 @@ export function HolidaysScreen({
                 rows={list.items}
                 rowKey={(r) => `${r.date}-${r.bpHolidayId}`}
                 rowState={(r) => (r.bpHolidayId === query.holiday && r.date === query.at ? "selected" : undefined)}
-                empty="이 달에 등록된 BP 휴일이 없습니다."
+                // 비어도 열 이름 줄을 두고 빈 칸이 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정).
+                // 달마다 보고 거르는 조건이 없어 급여명세서처럼 「이 달의 …」(전엔 「이 달에 등록된 BP 휴일이 없습니다.」)
+                empty="이 달의 BP 휴일이 없습니다."
+                fillEmpty
               />
             </>
           )}

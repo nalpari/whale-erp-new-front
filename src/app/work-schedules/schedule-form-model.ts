@@ -50,7 +50,7 @@ export const endOptionLabel = (startTime: string, endTime: string) => (startTime
 
 /** 근무 한 줄의 문제. 없으면 null */
 export function shiftProblem(s: ShiftInput): string | null {
-  if (!s.startTime || !s.endTime) return "시작과 종료를 골라 주세요.";
+  if (!s.startTime || !s.endTime) return "시작과 종료를 선택해 주세요.";
   if (workMinutes(s.startTime, s.endTime) >= 24 * 60) return "근무시간은 24시간보다 짧아야 합니다.";
   if (!/^\d{1,4}$/.test(s.breakMinutes)) return "휴게시간을 0 이상의 분으로 넣어 주세요.";
   if (Number(s.breakMinutes) >= workMinutes(s.startTime, s.endTime)) return "휴게시간은 근무시간보다 짧아야 합니다.";

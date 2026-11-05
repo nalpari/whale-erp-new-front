@@ -31,10 +31,13 @@ const EDIT_PUSHED_STATE = "bpMasterEditPushedFor";
 // 브라우저 뒤로 가기가 수정 → 상세 → 목록 순으로 하나씩 접힌다. 바탕 클릭은 겹친 패널을 모두 닫는다(platform-admins 와 같다, 2026-10-22).
 export function BpMastersScreen({
   list,
+  noBpAtAll,
   query,
   detail,
 }: {
   list: BpMasterList;
+  /** 조건 없이도 0건 — 「등록된 BP가 없습니다.」 */
+  noBpAtAll: boolean;
   query: BpMastersQuery;
   detail: { bp: BpMasterDetail } | { failed: string } | null;
 }) {
@@ -165,7 +168,7 @@ export function BpMastersScreen({
                 </div>
               </ListToolbar>
             </ExcelDownloadProvider>
-            <BpMasterTable rows={list.items} selected={query.bp} onOpen={openDetail} noStatus={query.statusNone} />
+            <BpMasterTable rows={list.items} selected={query.bp} onOpen={openDetail} noneRegistered={noBpAtAll} />
             <div className="pt-[14px]">
               <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / query.pageSize))} onPageChange={(page) => go({ page, bp: undefined })} />
             </div>

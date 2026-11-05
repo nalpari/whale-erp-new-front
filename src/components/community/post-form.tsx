@@ -376,8 +376,8 @@ export function PostForm({
                     />
                   ))}
                 </div>
-                {form.audiences.includes("GUEST") ? <Band>비회원이 포함되어 로그인 전 홈에 공개됩니다.</Band> : <Note>비회원을 고르면 로그인 전 홈에 공개됩니다.</Note>}
-                <Note>게시하려면 하나 이상 골라야 합니다. 임시저장 · 비공개는 비워 둬도 됩니다.</Note>
+                {form.audiences.includes("GUEST") ? <Band>비회원이 포함되어 로그인 전 홈에 공개됩니다.</Band> : <Note>비회원을 선택하면 로그인 전 홈에 공개됩니다.</Note>}
+                <Note>게시하려면 하나 이상 선택해야 합니다. 임시저장 · 비공개는 비워 둬도 됩니다.</Note>
               </Box>
 
               {detail && (

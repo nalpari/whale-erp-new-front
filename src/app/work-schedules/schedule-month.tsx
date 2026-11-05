@@ -49,7 +49,7 @@ export function ScheduleMonth({
 
   return (
     <div className="grid grid-cols-[268px_minmax(0,1fr)] items-start gap-[18px]">
-      <section aria-label="고른 날" className="flex flex-col gap-[8px] rounded-[2px] border border-erp-thead-line p-[14px]">
+      <section aria-label="선택한 날" className="flex flex-col gap-[8px] rounded-[2px] border border-erp-thead-line p-[14px]">
         <div className="flex items-center justify-between">
           <Link
             href={href({ day: prevDay, month: prevDay.slice(0, 7) })}

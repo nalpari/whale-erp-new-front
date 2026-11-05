@@ -72,7 +72,7 @@ export function AttendanceFilter({
   const unusable = !!current.scope && isUnusableScope(current.scope, stores);
   const dropUnknown = useEffectEvent(() => {
     if (missingCount > 0) {
-      toast(`고른 점포 ${missingCount}곳을 찾을 수 없어 조건에서 뺐습니다.`);
+      toast(`선택한 점포 ${missingCount}곳을 찾을 수 없어 조건에서 뺐습니다.`);
       withPicked(found.map((s) => s.storeId));
     } else if (unusable) {
       toast("상단 범위에 해당하는 점포가 이 탭에 없어 전체로 조회합니다.");

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   faqBody,
+  noneChecked,
   parseInquiryQuery,
   parseSupportFaqQuery,
   parseSupportInquiryQuery,
@@ -83,13 +84,13 @@ test("validatePost — 맞으면 빈 목록", () => {
 });
 
 test("validatePost — 게시만 노출 대상이 있어야 한다", () => {
-  assert.deepEqual(validatePost(notice({ audiences: [] }), "PUBLISHED", 0, []), ["게시하려면 노출 대상을 하나 이상 골라 주세요."]);
+  assert.deepEqual(validatePost(notice({ audiences: [] }), "PUBLISHED", 0, []), ["게시하려면 노출 대상을 하나 이상 선택해 주세요."]);
   assert.deepEqual(validatePost(notice({ audiences: [] }), "DRAFT", 0, []), []);
 });
 
 test("validatePost — 공지는 유형, FAQ 는 카테고리가 필수", () => {
-  assert.deepEqual(validatePost(notice({ noticeType: "" }), "DRAFT", 0, []), ["공지사항 유형을 골라 주세요."]);
-  assert.deepEqual(validatePost(faq({ faqCategoryCode: "" }), "DRAFT", 0, []), ["FAQ 카테고리를 골라 주세요."]);
+  assert.deepEqual(validatePost(notice({ noticeType: "" }), "DRAFT", 0, []), ["공지사항 유형을 선택해 주세요."]);
+  assert.deepEqual(validatePost(faq({ faqCategoryCode: "" }), "DRAFT", 0, []), ["FAQ 카테고리를 선택해 주세요."]);
 });
 
 test("validatePost — 제목 · 본문 공백과 길이", () => {
@@ -177,6 +178,16 @@ test("체크박스 필터 — 여러 값을 받고, 모르는 값 · 겹친 값�
   assert.deepEqual(parseSupportFaqQuery({ faqCategoryCode: ["A".repeat(20), "B".repeat(25)] }).faqCategoryCode, ["A".repeat(20)]);
   const noisy = [...Array(10).fill(""), ...Array.from({ length: 50 }, (_, i) => `C${i}`)];
   assert.equal(parseSupportFaqQuery({ faqCategoryCode: noisy }).faqCategoryCode.length, 50);
+});
+
+test("고객지원 체크박스 — 모두 고르면 전체(빈 배열), 모두 끄면 NONE 하나", () => {
+  assert.deepEqual(parseSupportNoticeQuery({ noticeType: ["MAINTENANCE", "FEATURE", "TERMS", "GENERAL"] }).noticeType, []);
+  assert.deepEqual(parseSupportInquiryQuery({ status: ["RECEIVED", "IN_PROGRESS", "ANSWERED"] }).status, []);
+  assert.deepEqual(parseSupportNoticeQuery({ noticeType: ["NONE", "TERMS"] }).noticeType, ["NONE"]);
+  assert.deepEqual(parseSupportInquiryQuery({ status: "NONE" }).status, ["NONE"]);
+  assert.deepEqual(parseSupportFaqQuery({ faqCategoryCode: ["NONE", "A"] }).faqCategoryCode, ["NONE"]);
+  assert.ok(noneChecked(["NONE"]) && !noneChecked([]) && !noneChecked(["TERMS"]));
+  assert.equal(queryString(parseSupportNoticeQuery({ noticeType: "NONE" })), "?noticeType=NONE");
 });
 
 test("pageWindow — 10개 묶음과 앞 · 뒤 묶음", () => {

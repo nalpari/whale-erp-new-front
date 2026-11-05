@@ -112,7 +112,7 @@ export function HolidayCalendar({
 
       {/* 오른쪽 그날 칸(데모 dayView) — 범위 꼬리표 · 휴일명, 아랫줄에는 휴일 유형 · 적용 대상 */}
       {/* self-stretch — 왼쪽 달력 높이만큼 늘여 빈 안내를 그 가운데에 둔다(2026-11-04 사용자 지정) */}
-      <section aria-label="고른 날짜의 휴일" className="flex w-[340px] shrink-0 flex-col gap-[12px] self-stretch">
+      <section aria-label="선택한 날짜의 휴일" className="flex w-[340px] shrink-0 flex-col gap-[12px] self-stretch">
         <h2 className="text-[18px] font-semibold text-erp-ink">
           {/* 「고르세요」 말투를 「선택해 주세요」로(2026-10-30 사용자 지정) */}
           {selected ? `${Number(selected.slice(5, 7))}월 ${Number(selected.slice(8, 10))}일 (${weekdayName(selected).slice(0, 1)})` : "날짜를 선택해 주세요"}

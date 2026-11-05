@@ -353,7 +353,7 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
         {/* 「다음 날 퇴근」 체크는 출근이 있는 짝에만 선다 — 출근 미등록 줄은 출근을 전날로 저장한다(위 안내) */}
         <p className="text-[13px] text-erp-label">
           {pair.checkIn
-            ? "퇴근이 출근보다 이르거나 같으면 다음 날 퇴근입니다. 그 밖에 다음 날 퇴근이면 「다음 날 퇴근」을 고릅니다. "
+            ? "퇴근이 출근보다 이르거나 같으면 다음 날 퇴근입니다. 그 밖에 다음 날 퇴근이면 「다음 날 퇴근」을 선택하세요. "
             : "출근이 퇴근보다 늦거나 같으면 전날 출근입니다. "}
           보정하면 확인 필요 꼬리표와 사유도 지웁니다.
         </p>
@@ -448,7 +448,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
           // 서버 액션 호출 자체가 실패(연결 끊김 등) — 선택지를 비우고 알린다. 날짜를 다시 고르면 다시 받는다
           if (wanted.current !== day) return;
           setStaff([]);
-          setListError("직원 목록을 불러오지 못했습니다. 날짜를 다시 골라 주세요.");
+          setListError("직원 목록을 불러오지 못했습니다. 날짜를 다시 선택해 주세요.");
         });
     },
     [stores],
@@ -472,7 +472,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   const save = () => {
     // 저장할 때 칸마다 검사해 그 칸 아래에 알린다(화면 설계 공통 기준 1번, WHALEERP-633)
     const next = pickErrors({
-      staff: staffId === null ? "직원을 골라 주세요." : undefined,
+      staff: staffId === null ? "직원을 선택해 주세요." : undefined,
       checkIn: TIME.test(checkIn) ? undefined : "출근 시각을 입력해 주세요.",
       checkOut: !isProxy && !checkOut ? "퇴근 시각을 입력해 주세요." : checkOut && !TIME.test(checkOut) ? "퇴근 시각을 시 · 분까지 입력해 주세요." : undefined,
       reason: reason.trim() ? undefined : "사유를 입력해 주세요.",

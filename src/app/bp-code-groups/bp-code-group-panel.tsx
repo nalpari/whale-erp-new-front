@@ -1,7 +1,7 @@
 "use client";
 
 import { DataTable, type Column } from "@/components/common";
-import { searchedEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
+import { groupListEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
 import { CodePanel } from "@/components/site/code-editor/code-panel";
 import { GuardedLink } from "@/components/site/code-editor/unsaved-changes";
 import { OwnerTag } from "@/components/site/code-editor/owner-tag";
@@ -19,10 +19,13 @@ import { bpPath } from "@/lib/bp-path";
 export function BpCodeGroupPanel({
   groups,
   search,
+  noGroupsAtAll,
   selected,
 }: {
   groups: BpCodeGroup[];
   search: CodeGroupSearch;
+  /** 조건 없이도 볼 그룹이 없다 — 빈 목록 문구를 「등록된 …」으로(화면이 0건일 때 한 번 더 물어 정한다) */
+  noGroupsAtAll: boolean;
   selected?: string;
 }) {
   const bp = useCurrentBp().bpCodeId;
@@ -59,7 +62,9 @@ export function BpCodeGroupPanel({
         rowKey={(g) => g.groupCode}
         // 고른 그룹은 한 단계 어두운 바탕 + 왼쪽 브랜드색 선 — 플랫폼 메뉴 관리 트리와 같다(2026-10-27 사용자 지정)
         rowState={(g) => (g.groupCode === selected ? "current" : undefined)}
-        empty={searchedEmpty(search) ?? "볼 수 있는 공통코드 그룹이 없습니다."}
+        // 비었으면 열 이름 줄 아래 빈 칸이 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정, 전엔 「볼 수 있는 공통코드 그룹이 없습니다.」)
+        fillEmpty
+        empty={groupListEmpty(search, noGroupsAtAll)}
       />
     </CodePanel>
   );

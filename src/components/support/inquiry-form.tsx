@@ -45,7 +45,7 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
 
   const handleSubmit = async () => {
     const missing = [
-      !form.inquiryCategoryCode && "문의 유형을 골라 주세요.",
+      !form.inquiryCategoryCode && "문의 유형을 선택해 주세요.",
       !form.title.trim() && "제목을 입력해 주세요.",
       !form.body.trim() && "문의 내용을 입력해 주세요.",
     ].filter((m): m is string => !!m);

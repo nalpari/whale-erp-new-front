@@ -69,7 +69,7 @@ export async function reviewAttendanceAction(recordId: unknown): Promise<EditRes
 }
 
 export async function proxyAttendanceAction(body: ProxyAttendance): Promise<EditResult> {
-  if (!validId(body?.staffMemberId) || !validDate(body?.date)) return { ok: false, status: 400, message: "직원과 날짜를 골라 주세요." };
+  if (!validId(body?.staffMemberId) || !validDate(body?.date)) return { ok: false, status: 400, message: "직원과 날짜를 선택해 주세요." };
   try {
     const result = await proxyAttendance(body);
     refresh();
@@ -81,7 +81,7 @@ export async function proxyAttendanceAction(body: ProxyAttendance): Promise<Edit
 }
 
 export async function getProxyStaffAction(stores: string, date: unknown): Promise<ActionResult<{ staff: ProxyStaff[] }>> {
-  if (!validDate(date) || typeof stores !== "string" || stores.length > 20_000) return { ok: false, status: 400, message: "날짜를 골라 주세요." };
+  if (!validDate(date) || typeof stores !== "string" || stores.length > 20_000) return { ok: false, status: 400, message: "날짜를 선택해 주세요." };
   try {
     return { ok: true, staff: await getProxyStaff(new URLSearchParams(stores), date) };
   } catch (error) {

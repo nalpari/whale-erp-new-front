@@ -35,7 +35,7 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
   const { query, picked, missingCount, fromScope, items, total } = loaded;
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
   // 0건이면 조건 없이(모든 상태 · 유형) 한 번 더 물어 「점포가 아예 없는지」와 「조건에 맞는 점포가 없는지」를 가른다(2026-11-04 사용자 지정).
-  // 묻지 못하면 예전처럼 「조회된 점포가 없습니다.」로 둔다
+  // 묻지 못하면 예전처럼 「조건에 맞는 점포가 없습니다.」로 둔다
   // 조건 없는 조회는 기본 조건에서 상태를 모두로 · 점포를 「전체」로 바꿔 만든다. 지금 조회가 이미 그것이면 다시 묻지 않는다(리뷰 반영)
   const allQuery = storeListQueryOf({ ...DEFAULT_STORES_QUERY, statuses: [...STORE_STATUSES], storesCleared: true, pageSize: query.pageSize });
   const noStoresAtAll =
@@ -44,15 +44,15 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
       (await getStores(allQuery)
       .then((all) => all.total === 0)
       .catch((error: unknown) => {
-        // 확인에 실패하면 예전처럼 「조회된 …」 — 장애를 알아챌 수 있게 로그만 남긴다(리뷰 반영)
+        // 확인에 실패하면 예전처럼 「조건에 맞는 …」 — 장애를 알아챌 수 있게 로그만 남긴다(리뷰 반영)
         console.warn("점포 전체 건수 확인 실패", error);
         return false;
       })));
   const emptyText = noStoresAtAll
     ? <NoStoresText />
     : scopeTypeMismatch(query)
-      ? "상단 범위와 고른 점포유형이 겹치지 않아 조회된 점포가 없습니다."
-      : "조회된 점포가 없습니다.";
+      ? "상단 범위와 선택한 점포유형이 겹치지 않아 조건에 맞는 점포가 없습니다."
+      : "조건에 맞는 점포가 없습니다.";
   // 쿼리 · 돌아갈 주소(back)는 옛 경로로 두고, 링크로 그릴 때만 탭 BP 를 붙인다 — 엑셀 중계 경로도 /bp/{id} 아래로 불러야 proxy 가 헤더를 싣는다
   const at = await screenPath();
   const listHref = storesHref(query);
@@ -78,9 +78,9 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
             <ExcelDownloadProvider fileName="점포목록.xlsx">
               {missingCount > 0 &&
                 (fromScope ? (
-                  <NoticeBand tone="info" title="상단에서 고른 점포를 찾을 수 없어 전체로 조회했습니다." detail="지워졌거나 볼 수 없게 된 점포입니다." />
+                  <NoticeBand tone="info" title="상단에서 선택한 점포를 찾을 수 없어 전체로 조회했습니다." detail="지워졌거나 볼 수 없게 된 점포입니다." />
                 ) : (
-                  <NoticeBand tone="info" title={`고른 점포 ${missingCount}곳을 찾을 수 없어 조건에서 뺐습니다.`} detail="지워졌거나 볼 수 없게 된 점포입니다." />
+                  <NoticeBand tone="info" title={`선택한 점포 ${missingCount}곳을 찾을 수 없어 조건에서 뺐습니다.`} detail="지워졌거나 볼 수 없게 된 점포입니다." />
                 ))}
               <ExcelDownloadNotice href={excelHref} />
               <ListToolbar total={total}>
