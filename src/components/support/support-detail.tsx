@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition, type ReactNode } from "react";
-import { Button, DataTable, DetailTable, DetailValues, PageBar, Tag, type Column } from "@/components/common";
+import { Button, DetailTable, DetailValues, PageBar, Tag } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { bff, BffError } from "@/lib/bff";
@@ -186,23 +186,6 @@ export function MyInquiryView({ inquiry: d, statuses }: { inquiry: SupportInquir
     [d.processingStartedAt ? formatDateTime(d.processingStartedAt) : null, "IN_PROGRESS"],
     [d.reply ? formatDateTime(d.reply.repliedAt) : null, "ANSWERED"],
   ];
-  // 상태가 먼저, 일시가 뒤 · 둘 다 왼쪽 정렬(2026-11-05 사용자 지정)
-  const stepColumns: Column<Step>[] = [
-    {
-      header: "상태",
-      align: "left",
-      width: "w-[140px]",
-      cell: ([at, status]) => (
-        <span className="inline-flex items-center gap-[8px]">
-          <span className={`flex shrink-0 ${at ? "text-erp-brand" : "text-erp-muted"}`}>
-            <StepIcon status={status} />
-          </span>
-          {at ? <InquiryStatusBadge status={status} statuses={statuses} /> : <span className="text-erp-muted">{labelOf(statuses, status)}</span>}
-        </span>
-      ),
-    },
-    { header: "일시", align: "left", cell: ([at]) => at ?? <span className="text-erp-muted">-</span> },
-  ];
 
   return (
     <Frame
@@ -230,14 +213,13 @@ export function MyInquiryView({ inquiry: d, statuses }: { inquiry: SupportInquir
           <Box title="문의내용">
             <Prose>{d.body}</Prose>
           </Box>
-          {/* 첨부(CNT-18): 이미지는 작은 미리보기, PDF 는 이름 + 크기. 누르면 내려받는다. */}
+          {/* 첨부(CNT-18): 이미지는 작은 미리보기, PDF 는 이름 + 크기. 누르면 내려받는다.
+              문의자 쪽은 종류 칸(이미지 · PDF) 없이 줄만 둔다 — 미리보기와 파일 이름으로 알 수 있다(2026-11-05 사용자 지정). 커뮤니티 관리(운영자) 쪽은 종류 칸을 둔다 */}
           {d.attachments.length > 0 && (
-            <DetailTable
-              title="첨부파일"
-              rows={d.attachments.map((a) => ({
-                label: a.fileType === "PDF" ? "PDF" : "이미지",
-                multiline: !!a.thumbnailUrl,
-                value: (
+            <Box title="첨부파일" flush>
+              <ul className="rounded-b-[2px] border border-erp-thead-line bg-white">
+                {d.attachments.map((a) => (
+                  <li key={a.inquiryAttachmentId} className={`flex items-center border-b border-erp-thead-line px-[12px] last:border-b-0 ${a.thumbnailUrl ? "py-[12px]" : "h-[46px]"}`}>
                   <button
                     type="button"
                     disabled={busy}
@@ -252,9 +234,10 @@ export function MyInquiryView({ inquiry: d, statuses }: { inquiry: SupportInquir
                     <span className="truncate text-erp-link hover:underline">{a.fileName}</span>
                     <Sub>{sizeLabel(a.sizeBytes)}</Sub>
                   </button>
-                ),
-              }))}
-            />
+                  </li>
+                ))}
+              </ul>
+            </Box>
           )}
           {/* 마지막 답변 하나만, 고친 답변이면 수정 시각만 붙인다(CNT-17). */}
           {/* 「답변 | WHALE ERP 운영팀 · 등록 일시 (수정됨 일시)」 — 제목 바로 옆 왼쪽에 구분선과 함께(2026-11-05 사용자 지정 — 전엔 본문 위 「일시 · WHALE ERP 운영팀 · 수정됨 …」 한 줄) */}
@@ -270,9 +253,21 @@ export function MyInquiryView({ inquiry: d, statuses }: { inquiry: SupportInquir
             )}
           </Box>
         </div>
-        <Box title="처리현황" flush>
-          {/* 일시 · 상태는 값만으로 뜻이 분명해 열 이름 줄을 두지 않는다 — 제목 바 아래 표 규칙(DESIGN.md, 2026-11-05 사용자 지정) */}
-          <DataTable headVariant="none" columns={stepColumns} rows={steps} rowKey={(s) => s[1]} />
+        {/* 표 대신 줄 목록 — 열 이름 줄 · 줄 사이 선 없이 상태(아이콘 + 배지) 140px, 일시를 왼쪽 정렬로(2026-11-05 사용자 지정) */}
+        <Box title="처리현황">
+          <ul className="flex flex-col gap-[14px] text-[14px]">
+            {steps.map(([at, status]) => (
+              <li key={status} className="flex items-center">
+                <span className="inline-flex w-[140px] shrink-0 items-center gap-[8px]">
+                  <span className={`flex shrink-0 ${at ? "text-erp-brand" : "text-erp-muted"}`}>
+                    <StepIcon status={status} />
+                  </span>
+                  {at ? <InquiryStatusBadge status={status} statuses={statuses} /> : <span className="text-erp-muted">{labelOf(statuses, status)}</span>}
+                </span>
+                <span className={at ? "text-erp-ink" : "text-erp-muted"}>{at ?? "-"}</span>
+              </li>
+            ))}
+          </ul>
         </Box>
       </div>
     </Frame>
