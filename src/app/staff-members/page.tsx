@@ -1,10 +1,10 @@
 import { Button, ListToolbar, PageBar } from "@/components/common";
-import { EMPLOYMENT_TYPES, JOIN_GROUPS, kstToday, staffListApiSearch } from "@/lib/staff-members";
+import { kstToday, staffListApiSearch } from "@/lib/staff-members";
 import { getStaffMembers } from "@/lib/staff-members-api";
 import { BulkExportButton } from "./bulk-export-button";
 import { StaffFilter } from "./staff-filter";
 import { StaffPageSize, StaffPagination } from "./staff-list-controls";
-import { parseStaffListQuery, staffListHrefOf } from "./staff-list-query";
+import { DEFAULT_STAFF_LIST_QUERY, parseStaffListQuery, staffListHrefOf } from "./staff-list-query";
 import { StaffTable } from "./staff-table";
 import { ContractMenuPermission } from "../contracts/contract-permission";
 
@@ -23,17 +23,8 @@ export default async function StaffMembersPage({
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
   // 0건이면 조건 없이(전체 점포 · 모든 유형 · 재직 상태 전체) 한 번 더 물어 「직원이 아예 없는지」와 「조건에 맞는 직원이 없는지」를 가른다
   // (점포 목록과 같은 방식, 2026-11-04 사용자 지정). 묻지 못하면 예전처럼 「조회된 직원이 없습니다.」
-  const allQuery = {
-    storeIds: [],
-    storesCleared: true,
-    scope: null,
-    keyword: "",
-    employmentTypes: [...EMPLOYMENT_TYPES],
-    joinGroups: [...JOIN_GROUPS],
-    employmentStatus: "ALL" as const,
-    page: 1,
-    pageSize: query.pageSize,
-  };
+  // 조건 없는 조회는 기본 조건에서 재직 상태를 전체로 · 점포를 「전체」로 바꿔 만든다(리뷰 반영 — 손으로 다시 적으면 기본값이 바뀔 때 어긋난다)
+  const allQuery = { ...DEFAULT_STAFF_LIST_QUERY, storesCleared: true, employmentStatus: "ALL" as const, pageSize: query.pageSize };
   // 지금 조회가 이미 「전체」(조건 없음)면 다시 묻지 않는다 — 같은 요청을 두 번 보내지 않게(리뷰 반영)
   const noStaffAtAll =
     total === 0 &&

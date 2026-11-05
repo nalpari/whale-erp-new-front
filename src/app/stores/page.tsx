@@ -11,7 +11,7 @@ import { StorePageSizeSelect, StorePagination, StoreViewToggle } from "./store-l
 import { StoreCard } from "./store-parts";
 import { NoStoresText } from "./store-empty-text";
 import { StoreTable } from "./store-table";
-import { detailHrefOf, parseStoresQuery, pickedIdsOf, resolveStoresQuery, scopeTypeMismatch, storeListQueryOf, storesExcelHref, storesHref, withBack, type ParsedStoresQuery } from "./stores-query";
+import { DEFAULT_STORES_QUERY, detailHrefOf, parseStoresQuery, pickedIdsOf, resolveStoresQuery, scopeTypeMismatch, storeListQueryOf, storesExcelHref, storesHref, withBack, type ParsedStoresQuery } from "./stores-query";
 
 // 점포 정보 관리 목록(S-BAYAJS). 데모 docs/demo/stores/index.html 을 공통 컴포넌트로 옮겼다. api 는 GET /stores.
 // 카드 목록이 기본이고 표로 바꿀 수 있다. 조건 · 쪽 · 보기는 URL 에만 둔다. 점포 조건은 목록에서 고른 점포(storeIds) 또는 헤더가 실어 온
@@ -36,15 +36,18 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
   // 0건이면 조건 없이(모든 상태 · 유형) 한 번 더 물어 「점포가 아예 없는지」와 「조건에 맞는 점포가 없는지」를 가른다(2026-11-04 사용자 지정).
   // 묻지 못하면 예전처럼 「조회된 점포가 없습니다.」로 둔다
+  // 조건 없는 조회는 기본 조건에서 상태를 모두로 · 점포를 「전체」로 바꿔 만든다. 지금 조회가 이미 그것이면 다시 묻지 않는다(리뷰 반영)
+  const allQuery = storeListQueryOf({ ...DEFAULT_STORES_QUERY, statuses: [...STORE_STATUSES], storesCleared: true, pageSize: query.pageSize });
   const noStoresAtAll =
     total === 0 &&
-    (await getStores({ page: 1, pageSize: 20, storeIds: [], bizRegistrationNumber: "", statuses: [...STORE_STATUSES], storeTypes: [...STORE_TYPES] })
+    (JSON.stringify({ ...storeListQueryOf(query), page: 1 }) === JSON.stringify(allQuery) ||
+      (await getStores(allQuery)
       .then((all) => all.total === 0)
       .catch((error: unknown) => {
         // 확인에 실패하면 예전처럼 「조회된 …」 — 장애를 알아챌 수 있게 로그만 남긴다(리뷰 반영)
         console.warn("점포 전체 건수 확인 실패", error);
         return false;
-      }));
+      })));
   const emptyText = noStoresAtAll
     ? <NoStoresText />
     : scopeTypeMismatch(query)
