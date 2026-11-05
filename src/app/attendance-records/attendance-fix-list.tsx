@@ -17,6 +17,8 @@ import { byLabel, editTail, fixPairIndex, fixSaveNote, fixPoints, forcedNextDay,
 // 토스트로 알린다(218 「급여에 영향이 갈 수 있다」).
 
 const TIME = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+/** api 의 미래 시각 거절 문장 앞부분(attendance-edit.service assertNotFuture) — 이 거절만 출퇴근이 정상이 될 때까지 문장을 둔다. 코드가 없어 글자로 가른다 */
+const FUTURE_REJECTION = "아직 오지 않은 시각";
 const TONE = {
   warn: "bg-[#fff6e5] text-[#956013]",
   risk: "bg-erp-off-bg text-erp-off",
@@ -260,7 +262,12 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
   // 지난 거절이 미래 시각 때문이었나 — 그렇다면 출퇴근이 정상이 될 때까지 문장을 둔다(사유 등 다른 칸을 고쳐도 남긴다, 2026-11-05 사용자 지정)
   const [futureRejected, setFutureRejected] = useState(false);
   const future = hasFutureTime(fixPoints(fix.row.date, !!pair.checkIn, checkIn, checkOut, nextDay));
-  const shownError = futureRejected && !future ? null : error;
+  // 칸을 고치면 지난 거절 문장을 내린다 — 미래 시각 거절이면 고친 값이 더는 미래가 아닐 때만(그 밖의 거절은 바로)
+  const clearRejection = (points: [string, string][]) => {
+    if (futureRejected && hasFutureTime(points)) return;
+    setError(null);
+    setFutureRejected(false);
+  };
   const [errors, setErrors] = useState<FieldErrors>({});
   const ids = useId();
   const [busy, startTransition] = useTransition();
@@ -285,7 +292,7 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
         ...(pair.checkOut ? { expectedCheckOutAt: pair.checkOut.recordedAt } : {}),
       });
       if (!result.ok && result.code !== "ATTENDANCE_CHANGED" && result.status !== undefined && result.status < 500) {
-        setFutureRejected(future);
+        setFutureRejected(future && result.message.includes(FUTURE_REJECTION));
         return setError(result.message);
       }
       onDone(result);
@@ -324,7 +331,7 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
               onChange={(e) => {
                 setCheckIn(e.target.value);
                 setErrors((x) => clearError(x, "checkIn"));
-                if (!futureRejected) setError(null); // 미래 시각 거절은 출퇴근이 정상이 될 때만 내린다(아래 shownError) · 그 밖의 거절은 칸을 고치면 내린다
+                clearRejection(fixPoints(fix.row.date, !!pair.checkIn, e.target.value, checkOut, nextDay));
               }}
             />
           </HelpField>
@@ -341,13 +348,16 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
               onChange={(e) => {
                 setCheckOut(e.target.value);
                 setErrors((x) => clearError(x, "checkOut"));
-                if (!futureRejected) setError(null); // 미래 시각 거절은 출퇴근이 정상이 될 때만 내린다(아래 shownError) · 그 밖의 거절은 칸을 고치면 내린다
+                clearRejection(fixPoints(fix.row.date, !!pair.checkIn, checkIn, e.target.value, nextDay));
               }}
             />
           </HelpField>
         </MessageRow>
         {pair.checkIn && checkOut && (
-          <Checkbox label="다음 날 퇴근" checked={forced || nextDay} disabled={forced} onChange={(e) => setNextDay(e.target.checked)} />
+          <Checkbox label="다음 날 퇴근" checked={forced || nextDay} disabled={forced} onChange={(e) => {
+              setNextDay(e.target.checked);
+              clearRejection(fixPoints(fix.row.date, !!pair.checkIn, checkIn, checkOut, e.target.checked));
+            }} />
         )}
         <SaveNote note={fixSaveNote(fix.row.date, !!pair.checkIn, checkIn, checkOut, nextDay)} />
         <MessageField label="수정 사유" required message={<FieldMessage id={`${ids}-reason`} message={errors.reason} />}>
@@ -379,9 +389,9 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
             : ["출근 시각이 퇴근 시각과 같거나 이후인 경우, 전날 출근한 것으로 처리됩니다."]),
         ]}
       />
-      {shownError && (
+      {error && (
         <p role="alert" className="text-[14px] text-erp-off">
-          {shownError}
+          {error}
         </p>
       )}
       {/* [취소] [저장]은 패널 가운데 — 1팀 등록 · 수정 패널과 같다(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 오른쪽 끝, 버튼 이름은 「보정 저장」) */}
@@ -497,7 +507,12 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   const isProxy = picked?.isProxy ?? true;
 
   const future = hasFutureTime(proxyPoints(date, checkIn, checkOut));
-  const shownError = futureRejected && !future ? null : error;
+  // 칸을 고치면 지난 거절 문장을 내린다 — 미래 시각 거절이면 고친 값이 더는 미래가 아닐 때만(그 밖의 거절은 바로)
+  const clearRejection = (points: [string, string][]) => {
+    if (futureRejected && hasFutureTime(points)) return;
+    setError(null);
+    setFutureRejected(false);
+  };
   const save = () => {
     // 저장할 때 칸마다 검사해 그 칸 아래에 알린다(화면 설계 공통 기준 1번, WHALEERP-633)
     const next = pickErrors({
@@ -513,7 +528,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
     startTransition(async () => {
       const result = await proxyAttendanceAction({ staffMemberId: staffId, date, checkInTime: checkIn, ...(checkOut ? { checkOutTime: checkOut } : {}), reason: reason.trim() });
       if (!result.ok && result.status !== undefined && result.status < 500) {
-        setFutureRejected(future);
+        setFutureRejected(future && result.message.includes(FUTURE_REJECTION));
         return setError(result.message);
       }
       onDone({ ...result, isProxy });
@@ -566,7 +581,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
               onChange={(e) => {
                 setCheckIn(e.target.value);
                 setErrors((x) => clearError(x, "checkIn"));
-                if (!futureRejected) setError(null); // 미래 시각 거절은 출퇴근이 정상이 될 때만 내린다(아래 shownError) · 그 밖의 거절은 칸을 고치면 내린다
+                clearRejection(proxyPoints(date, e.target.value, checkOut));
               }}
             />
           </MessageField>
@@ -579,7 +594,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
               onChange={(e) => {
                 setCheckOut(e.target.value);
                 setErrors((x) => clearError(x, "checkOut"));
-                if (!futureRejected) setError(null); // 미래 시각 거절은 출퇴근이 정상이 될 때만 내린다(아래 shownError) · 그 밖의 거절은 칸을 고치면 내린다
+                clearRejection(proxyPoints(date, checkIn, e.target.value));
               }}
             />
           </MessageField>
@@ -611,7 +626,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
           "퇴근 시각이 출근 시각과 같거나 이전인 경우, 다음 날 퇴근한 것으로 처리됩니다.",
         ]}
       />
-      {[listError, shownError].map(
+      {[listError, error].map(
         (text, i) =>
           text && (
             <p key={i} role="alert" className="text-[14px] text-erp-off">
