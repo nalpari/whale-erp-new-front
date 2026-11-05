@@ -39,16 +39,47 @@ const Note = ({ children }: { children: ReactNode }) => <p className="text-[14px
 /** 쓰던 글이 그사이 저장된 값과 어긋났다는 알림(front #87 리뷰). */
 const Stale = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.6] text-erp-off">{children}</p>;
 const Prose = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.7] whitespace-pre-wrap break-keep text-erp-ink">{children}</p>;
-const Meta = ({ children }: { children: ReactNode }) => <p className="text-[13px] text-erp-label">{children}</p>;
+// 보조 글자는 점포 정보 관리 상세와 같은 14px(2026-11-05 사용자 지정 — 전엔 13px)
+const Meta = ({ children }: { children: ReactNode }) => <p className="text-[14px] text-erp-label">{children}</p>;
 const Sub = ({ children }: { children: ReactNode }) => <span className="text-erp-muted">{children}</span>;
 
+/** 문의자 「점포」 도움말 — 글 대신 작은 표로(2026-11-05 사용자 지정). 점포는 문의를 등록할 때 api 가 채운다(api support-inquiries targetStoreOf). */
+const STORE_HELP = (
+  <table className="border-collapse text-[13px] leading-[1.5] whitespace-nowrap">
+    <thead>
+      <tr className="text-erp-label">
+        <th className="pr-[12px] pb-[4px] text-left font-medium">권한유형</th>
+        <th className="pr-[12px] pb-[4px] text-left font-medium">대상점포</th>
+        <th className="pb-[4px] text-left font-medium">점포</th>
+      </tr>
+    </thead>
+    <tbody className="font-normal">
+      {/* 대상점포 1곳 · 여러 곳으로 나눈다(2026-11-05 사용자 지정). 관리 점포가 없을 때도 여러 곳과 같이 BP 단위 문의다 */}
+      {[
+        ["가맹마스터 · 가맹관리자", "1곳", "그 점포"],
+        ["가맹마스터 · 가맹관리자", "여러 곳", "BP 단위 문의"],
+        ["BP 마스터 · BP 관리자", "-", "BP 단위 문의"],
+      ].map(([role, count, store]) => (
+        <tr key={role + count} className="border-t border-erp-thead-line">
+          <td className="py-[4px] pr-[12px]">{role}</td>
+          <td className="py-[4px] pr-[12px]">{count}</td>
+          <td className="py-[4px]">{store}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
+
 // 제목 줄이 있는 카드(데모 staff-parts.mjs 의 box). 글 · 입력은 안쪽 여백, 표만 든 상자(처리 이력)는 flush 로 여백 없이.
-function Box({ title, hint, flush, children }: { title: ReactNode; hint?: string; flush?: boolean; children: ReactNode }) {
+// 제목 바 글자는 DetailTable 제목과 같은 15px 600(2026-11-05 사용자 지정 — 전엔 16px 500). hintLeft 면 보조 글자를 제목 바로 옆에 구분선과 함께 붙인다
+// (답변의 「운영자 · 등록 … (수정됨 …)」 — 고객지원 문의상세와 같다), 기본은 오른쪽 끝.
+function Box({ title, hint, hintLeft, flush, children }: { title: ReactNode; hint?: string; hintLeft?: boolean; flush?: boolean; children: ReactNode }) {
   return (
     <section className="min-w-0">
-      <h3 className="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">
-        <span className="min-w-0 flex-1 truncate">{title}</span>
-        {hint && <span className="text-[14px] font-normal text-erp-label">{hint}</span>}
+      <h3 className={`flex h-[42px] items-center ${hintLeft ? "gap-[10px]" : "gap-[6px]"} rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink`}>
+        <span className={`min-w-0 truncate ${hintLeft ? "shrink-0" : "flex-1"}`}>{title}</span>
+        {hint && hintLeft && <span aria-hidden="true" className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />}
+        {hint && <span className="min-w-0 truncate text-[14px] font-normal text-erp-label">{hint}</span>}
       </h3>
       {flush ? children : <div className="flex flex-col gap-[18px] rounded-b-[2px] border border-erp-thead-line bg-white p-[16px]">{children}</div>}
     </section>
@@ -57,8 +88,12 @@ function Box({ title, hint, flush, children }: { title: ReactNode; hint?: string
 
 /** 처리 이력 한 줄 — [단계, 내용, 끝났는가]. */
 type Step = [string, string, boolean];
-const STEP_COLUMNS: Column<Step>[] = [
-  { header: "단계", width: "w-[150px]", cell: (s) => s[0] },
+/**
+ * 단계 칸은 왼쪽 정렬, 폭은 위 「문의자」 표의 라벨 칸과 같게 둬 세로줄을 맞춘다(2026-11-05 사용자 지정 — 전엔 150px 가운데).
+ * 표 칸 여백(10px)이 상세 표 라벨(12px)보다 2px 좁아 글 시작을 2px 밀어 맞춘다.
+ */
+const stepColumns = (stepWidth: `w-[${number}px]`): Column<Step>[] => [
+  { header: "단계", width: stepWidth, align: "left", cell: (s) => <span className="pl-[2px]">{s[0]}</span> },
   { header: "내용", align: "left", cell: (s) => s[1] },
   { header: "상태", width: "w-[80px]", cell: (s) => (s[2] ? <Badge tone="on">완료</Badge> : <Badge tone="off">대기</Badge>) },
 ];
@@ -71,15 +106,16 @@ function steps(d: InquiryDetail | LeadDetail, answered: string | null, canEdit: 
   const confirm: Step[] = d.processingStartedAt
     ? [["확인", `${dt(d.processingStartedAt)} · ${d.processingStartedByName ?? "-"} · 처리중으로 바꿈`, true]]
     : d.status === "RECEIVED"
-      ? [["확인", canEdit ? "[처리 시작]을 누르면 처리중 · 시각 · 운영자가 남음" : "처리 시작 전", false]]
+      ? [["확인", canEdit ? "[처리 시작]을 누르면 문의자에게 처리중으로 표시됩니다." : "처리 시작 전", false]]
       : [];
-  return [["접수", dt(d.createdAt), true], ...confirm, answered ? ["답변", answered, true] : ["답변", canEdit ? "저장하면 답변 완료 · 그 뒤에도 고칠 수 있음" : "답변 전", false]];
+  return [["접수", dt(d.createdAt), true], ...confirm, answered ? ["답변", answered, true] : ["답변", canEdit ? "답변을 저장하면 문의자에게 답변완료로 표시됩니다." : "답변 전", false]];
 }
 
-function History({ rows }: { rows: Step[] }) {
+/** stepWidth 는 같은 쪽 「문의자」 표의 라벨 칸 폭(문의사항 100px · 도입문의 110px) */
+function History({ rows, stepWidth = "w-[110px]" }: { rows: Step[]; stepWidth?: `w-[${number}px]` }) {
   return (
-    <Box title="처리 이력" flush>
-      <DataTable columns={STEP_COLUMNS} rows={rows} rowKey={(s) => s[0]} />
+    <Box title="처리이력" flush>
+      <DataTable columns={stepColumns(stepWidth)} rows={rows} rowKey={(s) => s[0]} />
     </Box>
   );
 }
@@ -140,16 +176,21 @@ function Errors({ errors }: { errors: string[] }) {
 }
 
 /** 본문 첫 줄 「○○ 상세」 + 상태 + 오른쪽 끝 버튼, 아래 7:5 두 단(데모 detailHead · cols). */
-function Frame({ title, status, buttons, errors, left, right, children }: { title: string; status: ReactNode; buttons: ReactNode; errors: string[]; left: ReactNode; right: ReactNode; children?: ReactNode }) {
+/** head 를 넘기면 「○○ 상세 [상태]」 대신 그 머리 줄(점포 정보 관리 상세의 점포명 줄 모양)을 보인다 — 문의사항. */
+function Frame({ title, head, status, buttons, errors, left, right, children }: { title: string; head?: ReactNode; status: ReactNode; buttons: ReactNode; errors: string[]; left: ReactNode; right: ReactNode; children?: ReactNode }) {
   return (
     <>
       <PageBar title={title} />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
-          <div className="flex items-center gap-[6px]">
-            <h2 className="flex flex-1 items-center gap-[8px] text-[18px] font-semibold text-erp-ink">
-              {title} 상세 {status}
-            </h2>
+          <div className={`flex items-center ${head ? "gap-[18px]" : "gap-[6px]"}`}>
+            {head ? (
+              <div className="min-w-0 flex-1">{head}</div>
+            ) : (
+              <h2 className="flex flex-1 items-center gap-[8px] text-[18px] font-semibold text-erp-ink">
+                {title} 상세 {status}
+              </h2>
+            )}
             {buttons}
           </div>
           <Errors errors={errors} />
@@ -175,6 +216,7 @@ const StatusBadge = ({ status, statuses }: { status: InquiryDetail["status"]; st
  */
 function AnswerBox({
   hint,
+  hintLeft,
   current,
   view,
   actions,
@@ -188,6 +230,8 @@ function AnswerBox({
   onDraft,
 }: {
   hint: string;
+  /** 답변이 있을 때 보조 글자(운영자 · 등록 …)를 제목 옆 왼쪽에 둔다 */
+  hintLeft?: boolean;
   current: string | null;
   view: ReactNode;
   actions?: ReactNode;
@@ -205,7 +249,7 @@ function AnswerBox({
 }) {
   if (!canEdit)
     return (
-      <Box title="답변" hint={hint}>
+      <Box title="답변" hint={hint} hintLeft={hintLeft}>
         {current !== null ? view : <Note>등록된 답변이 없습니다.</Note>}
       </Box>
     );
@@ -214,7 +258,7 @@ function AnswerBox({
   const editing = shown.text !== undefined || current === null;
   const text = shown.text ?? saved;
   return (
-    <Box title="답변" hint={hint}>
+    <Box title="답변" hint={hint} hintLeft={hintLeft}>
       {current !== null && view}
       {editing ? (
         <>
@@ -355,10 +399,12 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
 
   const left = (
     <>
-      <Box title={d.title} hint={`${categoryLabel(d.inquiryCategoryCode)} · ${dt(d.createdAt)} 접수`}>
+      {/* 제목 · 접수일시 · 분류 · 상태는 머리 줄로 옮겼다 — 고객지원 문의상세와 같은 「문의내용」 상자(2026-11-05 사용자 지정) */}
+      <Box title="문의내용">
         <Prose>{d.body}</Prose>
-        {/* 첨부(CNT-18): 이미지는 작은 미리보기, PDF 는 이름 + 크기. 누르면 내려받는다. */}
-        {d.attachments.length > 0 && (
+      </Box>
+      {/* 첨부(CNT-18): 이미지는 작은 미리보기(8px 둥글게), PDF 는 이름 + 크기. 누르면 내려받는다. 운영자 쪽은 종류 칸(이미지 · PDF)을 둔다 */}
+      {d.attachments.length > 0 && (
           <DetailTable
             title="첨부파일"
             rows={d.attachments.map((a) => ({
@@ -368,7 +414,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
                 <button type="button" disabled={c.busy} onClick={() => download(a.inquiryAttachmentId)} title={`${a.fileName} 내려받기`} className="flex min-w-0 items-center gap-[10px] text-left">
                   {a.thumbnailUrl && (
                     // eslint-disable-next-line @next/next/no-img-element -- 5분짜리 서명 주소라 이미지 최적화 캐시에 둘 수 없다
-                    <img src={a.thumbnailUrl} alt="" className="size-[64px] shrink-0 rounded-[2px] border border-erp-panel-line object-cover" />
+                    <img src={a.thumbnailUrl} alt="" className="size-[64px] shrink-0 rounded-[8px] border border-erp-panel-line object-cover" />
                   )}
                   <span className="truncate text-erp-link hover:underline">{a.fileName}</span>
                   <Sub>{sizeLabel(a.sizeBytes)}</Sub>
@@ -376,19 +422,20 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
               ),
             }))}
           />
-        )}
-      </Box>
+      )}
       <AnswerBox
-        hint="문의한 사람에게 보입니다."
+        // 답변이 있으면 「운영자 · 등록 첫 답변 (수정됨 마지막)」을 제목 옆 왼쪽에, 없으면 오른쪽 끝 안내(2026-11-05 사용자 지정)
+        hint={
+          first && last
+            ? `${last.repliedByName ?? "-"} · 등록 ${dt(first.repliedAt)}${previous.length ? ` (수정됨 ${dt(last.repliedAt)})` : ""}`
+            : "문의한 사람에게 보입니다."
+        }
+        hintLeft={answered}
         current={last?.body ?? null}
         view={
           last && (
             <>
               <Prose>{last.body}</Prose>
-              <Meta>
-                {previous.length ? "수정됨 · " : ""}
-                {dt(last.repliedAt)} · {last.repliedByName ?? "-"}
-              </Meta>
               {previous.length > 0 && (
                 <details className="rounded-[2px] border border-erp-panel-line">
                   <summary className="flex h-[34px] cursor-pointer items-center px-[12px] text-[14px] font-medium text-erp-ink [&::-webkit-details-marker]:hidden">이전 답변 {previous.length}개</summary>
@@ -422,16 +469,28 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
 
   const right = (
     <>
+      {/* 문의를 보낸 사람 — 도입문의 상세와 같은 「문의자」(2026-11-05 사용자 지정 — 전엔 「보낸 곳」) */}
       <DetailTable
-        title="보낸 곳"
+        title="문의자"
+        labelWidth="w-[100px]"
         rows={[
           { label: "이름", value: d.senderName ?? "-" },
-          { label: "역할", value: d.senderRoleTypeCode ? roleLabel(d.senderRoleTypeCode) : "-" },
-          { label: "BP", value: d.bpName ?? "-" },
-          { label: "점포", value: d.storeName ?? <Sub>BP 단위 문의</Sub> },
+          // BP 상호명은 길 수 있어 자르지 않고 줄을 바꾼다(2026-11-05 사용자 지정)
+          { label: "BP상호명", value: <span className="break-keep">{d.bpName ?? "-"}</span>, multiline: true },
+          // 이름 · BP상호명 · 권한유형 · 점포(2026-11-05 사용자 지정). 권한유형은(BP 마스터 등) — 아이디 · 권한명은 api 가 내려주지 않는다.
+          { label: "권한유형", value: d.senderRoleTypeCode ? roleLabel(d.senderRoleTypeCode) : "-" },
+          // 점포는 api 가 채운다 — 가맹마스터 · 가맹관리자가 관리 점포 하나뿐이면 그 점포, 그 밖(BP 단위 관리자 · 점포 여럿)은 비어 「BP 단위 문의」
+          // 「점포」 라벨 옆 도움말 — 마우스를 올리면 어떤 점포가 들어가는지 알린다(2026-11-05 사용자 지정)
+          {
+            label: "점포",
+            help: STORE_HELP,
+            value: d.storeName ?? <Sub>BP 단위 문의</Sub>,
+          },
         ]}
       />
+      {/* 관리자 쪽은 누가 언제 무엇을 했는지 남기는 「단계 · 내용 · 상태」 표 그대로 — 문의자 쪽(고객지원)만 처리현황 목록으로 바꿨다(2026-11-05 사용자 지정) */}
       <History
+        stepWidth="w-[100px]"
         rows={steps(d, first && last ? `${dt(first.repliedAt)} · ${first.repliedByName ?? "-"}${previous.length ? ` · ${dt(last.repliedAt)} ${last.repliedByName ?? "-"} 수정` : ""}` : null, c.can.update)}
       />
     </>
@@ -440,6 +499,21 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
   return (
     <Frame
       title="문의사항"
+      head={
+        // 점포 정보 관리 상세의 점포명 줄과 같은 모양 — 제목 20px(자르지 않음), 아래 줄 「접수일시 … | 분류 [꼬리표] | [상태]」(2026-11-05 사용자 지정)
+        <div className="flex flex-col gap-[6px] py-[6px]">
+          <h2 className="break-all text-[20px] font-semibold text-erp-ink">{d.title}</h2>
+          <div className="flex flex-wrap items-center gap-[10px] text-[14px] font-medium text-erp-label">
+            <span>접수일시 {dt(d.createdAt)}</span>
+            <span className="h-[11px] w-px bg-[#d9d9d9]" />
+            <span className="flex items-center gap-[6px]">
+              분류 <Tag>{categoryLabel(d.inquiryCategoryCode)}</Tag>
+            </span>
+            <span className="h-[11px] w-px bg-[#d9d9d9]" />
+            <StatusBadge status={d.status} statuses={statuses} />
+          </div>
+        </div>
+      }
       status={<StatusBadge status={d.status} statuses={statuses} />}
       errors={c.errors}
       left={left}

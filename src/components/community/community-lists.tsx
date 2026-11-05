@@ -161,7 +161,7 @@ export function PostList({
   );
 }
 
-/** 보낸 곳 — 「점포(점포 대상 문의가 아니면 BP) · 보낸 사람」 중 있는 것. */
+/** 문의자(2026-11-05 사용자 지정 — 전엔 「보낸 곳」) — 「점포(점포 대상 문의가 아니면 BP) · 보낸 사람」 중 있는 것. */
 const senderText = (i: InquiryListItem) => [i.storeName ?? i.bpName, i.senderName].filter(Boolean).join(" · ") || "-";
 
 /** 문의사항 목록. 필터는 제목 · 보낸 곳(BP 이름 · 점포 이름 · 보낸 사람 이름) · 상태다(#275, 데모 front 5a0f586). */
@@ -180,7 +180,7 @@ export function InquiryList({ items, total, query, answers }: { items: InquiryLi
 
   const columns: Column<InquiryListItem>[] = [
     { header: "제목", align: "left", cell: (i) => titleLink(`${INQUIRY_BASE}/${i.inquiryId}`, i.title) },
-    { header: "보낸 곳", width: "w-[220px]", cell: senderText },
+    { header: "문의자", width: "w-[220px]", cell: senderText },
     { header: "분류", width: "w-[140px]", cell: (i) => categoryLabel(i.inquiryCategoryCode) },
     { ...STATE, cell: (i) => <AnswerCell status={i.status} answers={answers} /> },
     { header: "접수", width: "w-[110px]", cell: (i) => formatDateTime(i.createdAt).slice(0, 10) },
@@ -195,8 +195,8 @@ export function InquiryList({ items, total, query, answers }: { items: InquiryLi
           <FilterSection label="제목" tight>
             <SearchField value={title} onValueChange={setTitle} onSearch={(v) => go({ title: v.trim() })} placeholder="제목으로 검색" aria-label="제목" maxLength={200} />
           </FilterSection>
-          <FilterSection label="보낸 곳" tight>
-            <SearchField value={sender} onValueChange={setSender} onSearch={(v) => go({ sender: v.trim() })} placeholder="BP·점포 또는 이름으로 검색" aria-label="보낸 곳" maxLength={100} />
+          <FilterSection label="문의자" tight>
+            <SearchField value={sender} onValueChange={setSender} onSearch={(v) => go({ sender: v.trim() })} placeholder="BP·점포 또는 이름으로 검색" aria-label="문의자" maxLength={100} />
           </FilterSection>
           <Checks label="상태" values={answers} value={query.answerStatus} onPick={(answerStatus) => go({ answerStatus })} last />
         </FilterPanel>
