@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { Badge, Button, DataTable, FilterPanel, FilterSection, PageBar, SearchField, Tag, type Column } from "@/components/common";
+import { Badge, Button, DataTable, FilterPanel, FilterSection, PageBar, SearchField, Tag, useBackdropActive, type Column } from "@/components/common";
 import { Checks, Frame, useGo } from "@/components/community/community-lists";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCodes, useCurrentBp, usePagePermission } from "@/components/site/session-gate";
@@ -158,6 +158,7 @@ export function MyInquiryList({ items, total, query, statuses }: { items: Suppor
   const categoryLabel = useCodeLabel("INQUIRY_CATEGORY");
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
+  const backdropActive = useBackdropActive();
   const columns: Column<SupportInquiryListItem>[] = [
     {
       header: "제목",
@@ -177,6 +178,8 @@ export function MyInquiryList({ items, total, query, statuses }: { items: Suppor
     <>
       {/* [문의하기]는 제목 줄 오른쪽 — 관리자 관리 등 다른 화면의 [등록]과 같은 자리(2026-11-05 사용자 지정 — 전엔 목록 건수 줄).
           패널을 여는 상태와 같은 곳에 있어야 해서 제목 줄을 이 컴포넌트가 그린다 */}
+      {/* 패널 바탕창이 떠 있는 동안 제목 줄 · 목록을 inert 로 뺀다 — 바탕창은 클릭만 막고 Tab 은 막지 않는다(slide-panel useBackdropActive, 리뷰 반영) */}
+      <div className="contents" inert={backdropActive}>
       <PageBar title="문의하기">
         {can.create && (
           <Button ref={trigger} aria-controls="support-inquiry-new-panel" aria-expanded={open} onClick={() => setOpen(true)}>
@@ -196,6 +199,7 @@ export function MyInquiryList({ items, total, query, statuses }: { items: Suppor
         >
           <DataTable columns={columns} rows={items} rowKey={(i) => i.inquiryId} empty="문의사항이 없습니다." fillEmpty />
       </Frame>
+      </div>
       {can.create && <InquiryFormPanel id="support-inquiry-new-panel" open={open} onClose={() => setOpen(false)} trigger={trigger} />}
     </>
   );
