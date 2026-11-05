@@ -47,17 +47,18 @@ export function SchedulePicker({ query, today }: { query: ScheduleQuery; today: 
   // 점포를 바꾸면 복사 미리보기를 닫고, 앞 점포 직원으로 건 변경 이력 조건 · 쪽을 푼다
   return (
     <Labeled>
-      <div className="w-[300px]">
-      <Select aria-label="근무지" value={query.storeId} onChange={(e) => navigate({ ...query, storeId: Number(e.target.value), copy: false, historyStaffId: null, historyPage: 1 })}>
-        {stores.map((s) => (
-          <option key={s.storeId} value={s.storeId}>
-            {s.name}
-          </option>
-        ))}
-      </Select>
+      {/* 폐점 점포를 고르면 근무지 칸 바로 아래에 빨간 안내 — 도구 줄 높이를 늘리지 않게 칸 아래로 띄운다(아래 요일 줄과는 24px 사이).
+          등록 · 복사 버튼은 흐리게 막힌다(2026-11-05 사용자 지정, 3팀 확인 필요) */}
+      <div className="relative w-[300px]">
+        <Select aria-label="근무지" value={query.storeId} onChange={(e) => navigate({ ...query, storeId: Number(e.target.value), copy: false, historyStaffId: null, historyPage: 1 })}>
+          {stores.map((s) => (
+            <option key={s.storeId} value={s.storeId}>
+              {s.name}
+            </option>
+          ))}
+        </Select>
+        {closed && <p className="absolute top-full left-0 mt-[4px] text-[13px] whitespace-nowrap text-erp-off">폐점 점포는 근무스케줄을 등록할 수 없습니다.</p>}
       </div>
-      {/* 폐점 점포를 고르면 근무지 칸 바로 옆에 빨간 안내 — 등록 · 복사 버튼은 흐리게 막힌다(2026-11-05 사용자 지정, 3팀 확인 필요) */}
-      {closed && <span className="text-[13px] whitespace-nowrap text-erp-off">폐점 점포는 근무스케줄을 등록할 수 없습니다.</span>}
     </Labeled>
   );
 }

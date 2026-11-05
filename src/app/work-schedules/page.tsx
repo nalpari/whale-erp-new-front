@@ -52,9 +52,8 @@ function ScheduleFrame({ query, today, actions, children }: { query: ScheduleQue
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
       <main className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
-        {/* 첫 줄은 보기 전환 · 근무지(두 보기에 공통), 둘째 줄은 그 보기의 기간 이동 · 동작 버튼. 폐점 안내는 근무지 칸 옆(2026-11-05 사용자 지정, 3팀 확인 필요 —
-            전엔 근무지가 둘째 줄 맨 앞, 폐점 안내는 [지난 주 복사] · [근무스케줄 등록] 사이) */}
-        <div className="flex flex-wrap items-center gap-[18px]">
+        {/* 첫 줄은 보기 전환, 둘째 줄은 근무지 · 그 보기의 기간 이동 · 동작 버튼. 폐점 안내는 근무지 칸 바로 아래(2026-11-05 사용자 지정, 3팀 확인 필요 —
+            전엔 폐점 안내가 [지난 주 복사] · [근무스케줄 등록] 사이) */}
         <nav aria-label="보기" className="flex shrink-0 self-start overflow-hidden rounded-[2px] border border-erp-button-line">
           <Link href={href(moved(query, { view: "week", week: mondayOf(query.day), day: query.day }))} aria-current={query.view === "week" ? "page" : undefined} className={segment(query.view === "week")} scroll={false}>
             <svg aria-hidden="true" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
@@ -70,9 +69,8 @@ function ScheduleFrame({ query, today, actions, children }: { query: ScheduleQue
             월간 보기
           </Link>
         </nav>
-        <SchedulePicker query={query} today={today} />
-        </div>
         <div className="flex flex-wrap items-center gap-[6px]">
+          <SchedulePicker query={query} today={today} />
           {query.view === "week" && (
             <>
               <Link href={href(moved(query, { week: addDays(query.week, -7), day: addDays(query.day, -7) }))} aria-label="이전 주" scroll={false} className={ICON_BUTTON}>
