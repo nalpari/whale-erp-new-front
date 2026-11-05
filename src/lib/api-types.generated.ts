@@ -4593,7 +4593,7 @@ export interface components {
             /**
              * @description 맞는 계정의 로그인 이메일을 가린 것. 휴대전화번호는 고유하지 않아 여럿일 수 있고(탈퇴 계정은 뺀다),
              *     가입 순서대로다. @ 앞은 처음 2글자와 마지막 1글자만 보이고(3글자 이하면 첫 글자만), 도메인은 그대로다.
-             *     예: st*****m@gmail.com
+             *     예: st*****m@example.com
              */
             emails: string[];
         };
@@ -7695,7 +7695,7 @@ export interface components {
             payMethod?: components["schemas"]["PayMethod"];
             /** @description 앞뒤 공백은 지운다(NFC) — 같은 사람의 가입 전 레코드를 이름으로 찾으므로 공백 하나로 갈리지 않게. */
             name: string;
-            /** @description 숫자만 10~11자리 (예: 01090145563) */
+            /** @description 숫자만 10~11자리 (예: 01012345678) */
             phone: string;
             /** @description YYYY-MM-DD. 계약 시작일 기준 만 19세 미만이면 저장하지 않는다 */
             birthDate?: string;
@@ -7942,7 +7942,7 @@ export interface components {
             gender?: components["schemas"]["Gender"];
             /** @description 앞뒤 공백은 지운다(NFC) — 같은 사람의 가입 전 레코드를 이름으로 찾으므로 공백 하나로 갈리지 않게. */
             name: string;
-            /** @description 숫자만 10~11자리 (예: 01090145563) */
+            /** @description 숫자만 10~11자리 (예: 01012345678) */
             phone: string;
             /** @description YYYY-MM-DD. 계약 시작일 기준 만 19세 미만이면 저장하지 않는다 */
             birthDate?: string;
@@ -11292,14 +11292,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 직원 정보 관리 수정 권한 없음 · 접속이 살아 있는 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 수정 권한 없음 · 접속이 살아 있는 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원이거나 관리 범위 밖 */
+            /** @description 없는 직원이거나 관리 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16083,15 +16083,22 @@ export interface operations {
                     "application/json": components["schemas"]["StaffMemberListResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류 */
+            /** @description 쿼리 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -16121,14 +16128,14 @@ export interface operations {
                     "application/json": components["schemas"]["StaffMemberDetailResponseDto"];
                 };
             };
-            /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 */
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16159,14 +16166,14 @@ export interface operations {
                     "application/json": components["schemas"]["StaffMemberContractSummaryResponseDto"];
                 };
             };
-            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 */
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16214,14 +16221,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 */
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16252,14 +16259,14 @@ export interface operations {
                     "application/json": components["schemas"]["StaffMemberPayslipSummaryResponseDto"];
                 };
             };
-            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 */
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16290,14 +16297,14 @@ export interface operations {
                     "application/json": components["schemas"]["StaffMemberSendLogResponseDto"];
                 };
             };
-            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 */
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16328,14 +16335,14 @@ export interface operations {
                     "application/json": components["schemas"]["StaffMemberTodoSummaryResponseDto"];
                 };
             };
-            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 */
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16387,14 +16394,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 직원 정보 관리 조회 권한 없음(가드, 쿼리 · ID 검사보다 먼저) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 근무스케줄 관리 조회 권한 없음(「조회 권한이 없습니다.」, ID 형식 404 뒤 · 범위 404 앞 — 형식이 맞는 어떤 ID 든 같은 403) */
+            /** @description 직원 정보 관리 조회 권한 없음(가드, 쿼리 · ID 검사보다 먼저) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 근무스케줄 관리 조회 권한 없음(「조회 권한이 없습니다.」, ID 형식 404 뒤 · 범위 404 앞 — 형식이 맞는 어떤 ID 든 같은 403) · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description ID 형식 오류(쿼리 400 뒤 · 영역 403 앞) · 없는 직원 · 관리 범위 밖 · 가려지는 직원(영역 403 뒤) */
+            /** @description ID 형식 오류(쿼리 400 뒤 · 영역 403 앞) · 없는 직원 · 관리 범위 밖 · 가려지는 직원(영역 403 뒤) · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16438,14 +16445,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원이거나 관리 범위 밖 */
+            /** @description 없는 직원이거나 관리 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16492,14 +16499,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원이거나 관리 범위 밖 */
+            /** @description 없는 직원이거나 관리 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16546,14 +16553,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원이거나 관리 범위 밖 */
+            /** @description 없는 직원이거나 관리 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16596,14 +16603,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원이거나 관리 범위 밖 */
+            /** @description 없는 직원이거나 관리 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16651,14 +16658,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원이거나 관리 범위 밖 · 본사 제공 동의로 가려진 직원 */
+            /** @description 없는 직원이거나 관리 범위 밖 · 본사 제공 동의로 가려진 직원 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -21604,15 +21611,22 @@ export interface operations {
                     "application/json": components["schemas"]["TodoListResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류 */
+            /** @description 쿼리 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -21644,21 +21658,21 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedTodoResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 지난 날짜 · 배정 대상과 수행 방식이 맞지 않음 · 퇴직했거나 체결 완료 계약이 없거나 가입 전이거나 다른 근무지 직원 · 그런 재직 직원 없음 */
+            /** @description 입력 오류 · 지난 날짜 · 배정 대상과 수행 방식이 맞지 않음 · 퇴직했거나 체결 완료 계약이 없거나 가입 전이거나 다른 근무지 직원 · 그런 재직 직원 없음 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무지 점포가 없거나 업무 범위 밖 */
+            /** @description 근무지 점포가 없거나 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -21690,21 +21704,21 @@ export interface operations {
                     "application/json": components["schemas"]["AssignableStaffResponseDto"];
                 };
             };
-            /** @description storeId 형식 오류 */
+            /** @description storeId 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무지 점포가 없거나 업무 범위 밖 */
+            /** @description 근무지 점포가 없거나 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -21735,14 +21749,21 @@ export interface operations {
                     "application/json": components["schemas"]["TodoDetailDto"];
                 };
             };
-            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 */
+            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -21773,14 +21794,21 @@ export interface operations {
                     "application/json": components["schemas"]["TodoDeleteResponseDto"];
                 };
             };
-            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 */
+            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -21822,21 +21850,21 @@ export interface operations {
                     "application/json": components["schemas"]["TodoDetailDto"];
                 };
             };
-            /** @description 입력 오류 · 지난 날짜 · 바꿀 수 없는 칸 */
+            /** @description 입력 오류 · 지난 날짜 · 바꿀 수 없는 칸 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 */
+            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -21871,14 +21899,21 @@ export interface operations {
                     "application/json": components["schemas"]["TodoItemDto"];
                 };
             };
-            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 */
+            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -21928,14 +21963,14 @@ export interface operations {
                     "application/json": components["schemas"]["TodoItemListResponseDto"];
                 };
             };
-            /** @description 직원 정보 관리 · TO-DO 관리 조회 권한 없음(TO-DO 관리는 「조회 권한이 없습니다.」) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 · TO-DO 관리 조회 권한 없음(TO-DO 관리는 「조회 권한이 없습니다.」) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 */
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22055,21 +22090,21 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleListResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류 · 기간이 42일 넘음 · 끝이 시작보다 앞 */
+            /** @description 쿼리 형식 오류 · 기간이 42일 넘음 · 끝이 시작보다 앞 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무지 점포가 없거나 업무 범위 밖 */
+            /** @description 근무지 점포가 없거나 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22102,21 +22137,21 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleDto"];
                 };
             };
-            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) */
+            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 직원이 없거나 업무 범위 밖 */
+            /** @description 직원이 없거나 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22165,21 +22200,21 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleHistoryListResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류(날짜 · 페이지 · 페이지당 건수 20 · 50 · 100) */
+            /** @description 쿼리 형식 오류(날짜 · 페이지 · 페이지당 건수 20 · 50 · 100) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무지 점포가 없거나 업무 범위 밖 · 직원 필터가 그 점포 직원이 아니거나 본사에게 가려진 직원 */
+            /** @description 근무지 점포가 없거나 업무 범위 밖 · 직원 필터가 그 점포 직원이 아니거나 본사에게 가려진 직원 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22213,21 +22248,21 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleStaffResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류 */
+            /** @description 쿼리 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무지 점포가 없거나 업무 범위 밖 */
+            /** @description 근무지 점포가 없거나 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22261,21 +22296,21 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleDefaultsDto"];
                 };
             };
-            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) */
+            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 직원이 없거나 업무 범위 밖 */
+            /** @description 직원이 없거나 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22308,15 +22343,22 @@ export interface operations {
                     "application/json": components["schemas"]["BulkCreateWorkSchedulesResponseDto"];
                 };
             };
-            /** @description 요청 형식 오류(근무일 · 줄 수 1~100 · 줄의 시각 형식) — 이때는 아무 줄도 저장하지 않는다 */
+            /** @description 요청 형식 오류(근무일 · 줄 수 1~100 · 줄의 시각 형식) — 이때는 아무 줄도 저장하지 않는다 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22349,21 +22391,21 @@ export interface operations {
                     "application/json": components["schemas"]["CopyLastWeekResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류 · weekStart 가 월요일이 아님 · WORK_SCHEDULE_STORE_CLOSED(폐점 점포) */
+            /** @description 쿼리 형식 오류 · weekStart 가 월요일이 아님 · WORK_SCHEDULE_STORE_CLOSED(폐점 점포) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무지 점포가 없거나 업무 범위 밖 */
+            /** @description 근무지 점포가 없거나 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22403,21 +22445,21 @@ export interface operations {
                     "application/json": components["schemas"]["CopyLastWeekResponseDto"];
                 };
             };
-            /** @description 요청 형식 오류 · weekStart 가 월요일이 아님 · WORK_SCHEDULE_STORE_CLOSED(폐점 점포) */
+            /** @description 요청 형식 오류 · weekStart 가 월요일이 아님 · WORK_SCHEDULE_STORE_CLOSED(폐점 점포) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무지 점포가 없거나 업무 범위 밖 */
+            /** @description 근무지 점포가 없거나 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22455,14 +22497,21 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleDeleteResponseDto"];
                 };
             };
-            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 근무스케줄 · 지움 · 업무 범위 밖 */
+            /** @description 없는 근무스케줄 · 지움 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22497,21 +22546,21 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleDto"];
                 };
             };
-            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) */
+            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없는 근무스케줄 · 지움 · 업무 범위 밖 */
+            /** @description 없는 근무스케줄 · 지움 · 업무 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;

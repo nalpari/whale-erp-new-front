@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-05
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) · [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 직원 정보 · 근무스케줄 · TO-DO 를 탭 BP 주소 `/bp/{bpCodeId}/staff-members…` · `/work-schedules` · `/todos…` 로 옮겼다(`BP_PATH_SCREENS`). 목록 · 상세 · 등록 · 수정 · 일괄 저장 · 오류 화면의 링크와 이동이 주소의 BP 를 잃지 않고(`bpPath` · `screenPath()` · `bpHref`), api 거절(BP 를 고르지 않음 400 · 403 · 404)은 그 문장으로 보인다(`deniedMessageOf`). 홈의 직원 · 근무스케줄 · TO-DO 링크도 탭 BP 를 붙인다. `revalidatePath` 는 rewrite 목적지(폴더) 경로라 그대로다. api 타입은 다시 만들지 않았다(api 의 탭 BP 전환 뒤 따로).
 * **Update**: [점포 관리](/stores.md) — 폐점 저장 409 `OPEN_CHECK_IN` 문구가 「퇴근 기록이 없는 출근이 있어 폐점할 수 없습니다.」로 바뀐 것을 반영했다(api 폐점 서비스, front 문구와 같은 이름 · 할 일 안내 없음, front jolteon).
 * **Update**: [점포 관리](/stores.md) — 폐점 막힘 안내 「출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다.」를 뺐다. 막히면 「퇴근 기록이 없는 출근 N건」만 보인다(사용자 지정, front jolteon). 목업 · 데모도 맞췄다.
 * **Update**: [점포 관리](/stores.md) — 폐점 확인 창을 사용자가 준 글로 바꿨다: 제목 「폐점으로 변경하시겠습니까?」 · 「폐점으로 저장하시겠습니까?」, 「폐점일은 오늘(…)로 설정됩니다」, 머리말 「폐점 시 다음 항목이 함께 처리됩니다.」 아래 번호 목록 「대상 : N건 처리」 + 회색 설명, 급여명세서 「확정되지 않은 … 폐점 후에도 …」(front jolteon). 목업 · 데모도 맞췄다.

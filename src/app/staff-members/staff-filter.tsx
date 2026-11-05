@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useOptimistic, useState, useTransition } from "react";
 import { Checkbox, FilterPanel, FilterSection, SearchField, Select, useToast } from "@/components/common";
-import { useScope, useStores } from "@/components/site/session-gate";
+import { useCurrentBp, useScope, useStores } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import { EMPLOYMENT_TYPES, JOIN_GROUPS, pickedStoreIdsOf, type EmploymentStatusFilter, type StaffListQuery } from "@/lib/staff-members";
 import { isUnusableScope, scopeStores, toPickedStore } from "@/lib/store-scope";
@@ -26,6 +27,8 @@ const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? lis
 // 않는 조건이 된다. 업무 범위 밖 id 는 api 가 조용히 뺀다. 주소의 범위를 이 탭에서 쓸 수 없으면(isUnusableScope) 「전체」로 바꾸고 알린다.
 export function StaffFilter({ query }: { query: StaffListQuery }) {
   const router = useRouter();
+  // 화면 주소는 탭 BP 주소다(/bp/{id}/staff-members)
+  const bp = useCurrentBp().bpCodeId;
   const stores = useStores();
   const [headerScope] = useScope();
   const toast = useToast();
@@ -35,7 +38,7 @@ export function StaffFilter({ query }: { query: StaffListQuery }) {
   const navigate = (next: StaffListQuery) =>
     startTransition(() => {
       setCurrent(next);
-      router.replace(`/staff-members${toStaffListSearch(next)}`, { scroll: false });
+      router.replace(bpPath(bp, `/staff-members${toStaffListSearch(next)}`), { scroll: false });
     });
   const go = (next: Partial<StaffListQuery>) => navigate(withFilter(current, next));
 

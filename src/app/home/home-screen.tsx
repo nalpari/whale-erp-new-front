@@ -113,7 +113,7 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
       <>
         <Cards cards={{ ...emptyCardsOf(canOpen), myInquiries: s?.cards?.myInquiries ?? null }} hq={false} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />
         <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
-          <StoreTable table={{ total: 0, items: [] }} hq={false} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />
+          <StoreTable table={{ total: 0, items: [] }} hq={false} staffHref={canOpen("/staff-members") ? bpPath(bp, withScope("/staff-members", scope)) : null} />
           {!pending ? <Notice text="처리 대기를 불러오는 중입니다." /> : "error" in pending ? <Notice text={`처리 대기를 불러오지 못했습니다. ${pending.error}`} /> : <Pending data={pending.data} bp={bp} />}
         </div>
       </>
@@ -131,7 +131,7 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
         {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={renewalItem ? (pendingLineOf(renewalItem, bp)?.href ?? bpPath(bp, "/contracts")) : bpPath(bp, "/contracts")} newHref={bpPath(bp, "/contracts/new")} /> : null}
         {s?.cards && <Cards cards={s.cards} hq={hq && s.cards.stores.franchise > 0} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
         <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
-          {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} hq={hq && !!s?.cards?.stores.franchise} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />}
+          {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} hq={hq && !!s?.cards?.stores.franchise} staffHref={canOpen("/staff-members") ? bpPath(bp, withScope("/staff-members", scope)) : null} />}
           {!pending ? <Notice text="처리 대기를 불러오는 중입니다." /> : "error" in pending ? failed("처리 대기를", pending.error) : <Pending data={pending.data} bp={bp} />}
         </div>
       </>
@@ -244,7 +244,7 @@ function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: bo
     <div className="grid auto-cols-fr grid-flow-col gap-[12px]">
       {staff && (
         <Figure
-          href={canOpen("/staff-members") ? scopeHref("/staff-members") : null}
+          href={canOpen("/staff-members") ? bpPath(bp, scopeHref("/staff-members")) : null}
           label="재직 직원"
           note={hq ? "동의하지 않은 가맹 직원은 고용 형태에 세지 않습니다." : undefined}
           value={staff.total}

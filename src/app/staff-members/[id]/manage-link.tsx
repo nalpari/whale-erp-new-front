@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useMenuRole } from "@/components/site/session-gate";
+import { useCurrentBp, useMenuRole } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import type { MenuCode } from "@/lib/menus";
 
 // 직원 상세 영역 머리의 「관리」. 직원 상세는 「직원 정보 관리」 권한으로 열리고 각 관리 화면은 그 메뉴의 조회 권한이라, 권한이 없는
 // 관리자를 공통 틀이 막는 곳으로 보내지 않게 흐리게 두고 누를 수 없게 한다(화면이 없을 때의 「관리」와 같은 모양, front #90 리뷰).
-// 막는 것은 공통 틀과 api 다.
+// 막는 것은 공통 틀과 api 다. href 는 옛 경로로 받고 탭 BP 를 붙인다 — 가는 화면(근로계약 · 근무스케줄 · 출퇴근 · 급여명세서 · TO-DO)이 모두 탭 BP 주소다.
 export function MenuManageLink({ menuCode, menuName, href }: { menuCode: MenuCode; menuName: string; href: string }) {
   const canRead = useMenuRole(menuCode, "read");
+  const bp = useCurrentBp().bpCodeId;
   return canRead ? (
-    <Link href={href} className="text-erp-link hover:underline">
+    <Link href={bpPath(bp, href)} className="text-erp-link hover:underline">
       관리
     </Link>
   ) : (
@@ -27,8 +29,9 @@ export function MenuManageLink({ menuCode, menuName, href }: { menuCode: MenuCod
  */
 export function MenuTextLink({ menuCode, href, children }: { menuCode: MenuCode; href: string; children: ReactNode }) {
   const canRead = useMenuRole(menuCode, "read");
+  const bp = useCurrentBp().bpCodeId;
   return canRead ? (
-    <Link href={href} className="text-erp-link hover:underline">
+    <Link href={bpPath(bp, href)} className="text-erp-link hover:underline">
       {children}
     </Link>
   ) : (

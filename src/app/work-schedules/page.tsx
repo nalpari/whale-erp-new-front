@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Button, PageBar } from "@/components/common";
-import { ApiError } from "@/lib/api";
+import { ApiError, deniedMessageOf, screenPath } from "@/lib/api";
 import { kstToday } from "@/lib/staff-members";
 import { getCopyPreview, getWorkScheduleHistories, getWorkSchedules } from "@/lib/work-schedules-api";
 import { SchedulePicker, ScheduleHistory, ScheduleNoStore, WeekJump } from "./schedule-controls";
@@ -47,8 +47,8 @@ async function loadCopyPreview(storeId: number, weekStart: string): Promise<Copy
 const toMonth = (month: string, today: string) => ({ month, day: month === today.slice(0, 7) ? today : `${month}-01` });
 
 /** 본문 틀 — 주간/월간 전환 · 도구 줄(근무지 · 주/달 이동 | 동작) · 본문. 점포가 없어도 같은 틀에 안내만 넣는다(2026-11-05 사용자 지정) */
-function ScheduleFrame({ query, today, actions, children }: { query: ScheduleQuery; today: string; actions?: ReactNode; children: ReactNode }) {
-  const href = (next: ScheduleQuery) => `/work-schedules${toScheduleSearch(next, today)}`;
+function ScheduleFrame({ base, query, today, actions, children }: { base: string; query: ScheduleQuery; today: string; actions?: ReactNode; children: ReactNode }) {
+  const href = (next: ScheduleQuery) => `${base}${toScheduleSearch(next, today)}`;
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
       <main className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
@@ -118,11 +118,14 @@ function ScheduleFrame({ query, today, actions, children }: { query: ScheduleQue
 export default async function WorkSchedulesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const today = kstToday();
   const query = parseScheduleQuery(await searchParams, today);
+  // 화면 주소는 탭 BP 주소 /bp/{id}/work-schedules 다 — proxy 가 그 BP 를 X-Bp-Code-Id 로 실어, 플랫폼 계정은 고른 BP 의 근무스케줄만 본다(BP_PATH_SCREENS).
+  // 쿼리는 옛 경로로 두고, 링크로 그릴 때만 탭 BP 를 붙인다
+  const base = (await screenPath())("/work-schedules");
   if (query.storeId === null)
     return (
       <>
         <PageBar title="근무스케줄 관리" />
-        <ScheduleFrame query={query} today={today}>
+        <ScheduleFrame base={base} query={query} today={today}>
           <ScheduleNoStore />
         </ScheduleFrame>
       </>
@@ -130,7 +133,12 @@ export default async function WorkSchedulesPage({ searchParams }: { searchParams
 
   const withStore = { ...query, storeId: query.storeId };
   const [data, history, copyPreview] = await Promise.all([
-    getWorkSchedules(scheduleApiSearch(withStore)),
+    // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다. 업무 범위 밖 점포 404 는 그대로 notFound
+    getWorkSchedules(scheduleApiSearch(withStore)).catch((e: unknown) => {
+      const notice = deniedMessageOf(e);
+      if (notice === null) throw e;
+      return { notice };
+    }),
     // 이력을 받지 못해도 화면은 그린다 — 이력 표 안에만 안내하고 원인은 서버 로그에 남긴다(front #93 리뷰)
     getWorkScheduleHistories(historyApiSearch(withStore)).catch((error: unknown) => {
       console.error("근무스케줄: GET /work-schedules/histories 를 받지 못했습니다", error);
@@ -139,6 +147,15 @@ export default async function WorkSchedulesPage({ searchParams }: { searchParams
     query.copy ? loadCopyPreview(query.storeId, query.week) : Promise.resolve(null),
   ]);
   if (!data) notFound();
+  if ("notice" in data)
+    return (
+      <>
+        <PageBar title="근무스케줄 관리" />
+        <p role="alert" className="p-[24px] text-[14px] text-erp-label">
+          {data.notice}
+        </p>
+      </>
+    );
   // 그 주(월~일)에 근무스케줄이 한 건이라도 있으면 복사를 끈다(STAFF-13). 전주 일요일은 넘어온 근무용이라 세지 않는다
   const weekEmpty = !data.items.some((it) => it.workDate >= query.week && it.workDate <= addDays(query.week, 6));
   const staffOptions = data.staff.flatMap((s) => (s.staffMemberId !== null && s.name !== null ? [{ staffMemberId: s.staffMemberId, name: s.name }] : []));
@@ -149,6 +166,7 @@ export default async function WorkSchedulesPage({ searchParams }: { searchParams
         {/* 제목 줄도 패널 바탕이 깔리면 inert 로 막히게 패널 안쪽(본문 쪽)에 둔다 */}
         <PageBar title="근무스케줄 관리" />
         <ScheduleFrame
+          base={base}
           query={query}
           today={today}
           actions={
@@ -159,7 +177,7 @@ export default async function WorkSchedulesPage({ searchParams }: { searchParams
           }
         >
           {copyPreview && <CopyPreviewPanel query={withStore} today={today} preview={copyPreview} />}
-          {query.view === "week" ? <ScheduleWeek data={data} query={query} today={today} /> : <ScheduleMonth data={data} query={query} today={today} showMonthNav={false} fitList />}
+          {query.view === "week" ? <ScheduleWeek data={data} query={query} today={today} hrefBase={base} /> : <ScheduleMonth data={data} query={query} today={today} hrefBase={base} showMonthNav={false} fitList />}
           <ScheduleHistory query={query} today={today} data={history} staffOptions={staffOptions} />
         </ScheduleFrame>
       </SchedulePanel>

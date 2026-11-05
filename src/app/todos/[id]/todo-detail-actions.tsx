@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, ConfirmDialog, Select, useToast } from "@/components/common";
-import { useMenuPermission } from "@/components/site/session-gate";
+import { useCurrentBp, useMenuPermission } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import type { EnumValue } from "@/lib/enums";
 import { MENU_CODE } from "@/lib/menus";
 import { useFailure } from "../../staff-members/[id]/use-action-failure";
@@ -12,15 +13,17 @@ import { withBack, type TodoStatus } from "../todo-list-query";
 import { deletePreview, deleteResultMessage, type TodoDetail } from "../todo-row";
 
 // 상세 제목 줄 오른쪽 — 수정(수정 권한) · 삭제(삭제 권한, 지울 대기 행이 있을 때) · 목록. 권한은 로그인 정보의 메뉴 권한으로 미리 가리고 막는 것은 api 다.
+// listHref 는 옛 경로다 — 링크 · 이동에서 탭 BP 를 붙인다(/bp/{id}/todos)
 export function TodoDetailActions({ detail, listHref }: { detail: TodoDetail; listHref: string }) {
   const can = useMenuPermission(MENU_CODE.todos);
+  const bp = useCurrentBp().bpCodeId;
   const [open, setOpen] = useState(false);
   const { pending } = deletePreview(detail);
 
   return (
     <>
       {can.update && (
-        <Button variant="soft" href={withBack(`/todos/${detail.todoId}/edit`, listHref)}>
+        <Button variant="soft" href={bpPath(bp, withBack(`/todos/${detail.todoId}/edit`, listHref))}>
           수정
         </Button>
       )}
@@ -29,7 +32,7 @@ export function TodoDetailActions({ detail, listHref }: { detail: TodoDetail; li
           삭제
         </Button>
       )}
-      <Button href={listHref}>목록</Button>
+      <Button href={bpPath(bp, listHref)}>목록</Button>
       {open && <DeleteTodoDialog detail={detail} listHref={listHref} onClose={() => setOpen(false)} />}
     </>
   );
@@ -40,6 +43,7 @@ function DeleteTodoDialog({ detail, listHref, onClose }: { detail: TodoDetail; l
   const router = useRouter();
   const toast = useToast();
   const onFailure = useFailure();
+  const bp = useCurrentBp().bpCodeId;
   const [busy, startDeleting] = useTransition();
   const [error, setError] = useState("");
   const { pending, remaining } = deletePreview(detail);
@@ -53,7 +57,7 @@ function DeleteTodoDialog({ detail, listHref, onClose }: { detail: TodoDetail; l
         if (result.ok) {
           toast(deleteResultMessage(result));
           // 들어올 때의 목록 조건으로 돌아간다 — TO-DO 하나를 지워도 점포 조건은 틀어지지 않아 점포 검색도 그대로 둔다(2026-10-22 재영)
-          router.push(listHref);
+          router.push(bpPath(bp, listHref));
           return;
         }
         const message = onFailure(result);

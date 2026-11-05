@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useTransition, type ReactNode } from "react";
 import { DataTable, DateField, Pagination, Select, type Column } from "@/components/common";
-import { useAccount, useScope, useStores } from "@/components/site/session-gate";
+import { useAccount, useCurrentBp, useScope, useStores } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { isPlatformRole } from "@/lib/auth-routes";
 import { formatDateTime } from "@/lib/format";
 import { PAGE_SIZES, type PageSize } from "@/lib/staff-members";
@@ -14,8 +15,10 @@ import { CHANGE_LABEL, historyLine } from "./work-schedule-view";
 
 export function useScheduleNavigation(today: string) {
   const router = useRouter();
+  // 화면 주소는 탭 BP 주소다(/bp/{id}/work-schedules)
+  const bp = useCurrentBp().bpCodeId;
   const [, startTransition] = useTransition();
-  return (next: ScheduleQuery) => startTransition(() => router.replace(`/work-schedules${toScheduleSearch(next, today)}`, { scroll: false }));
+  return (next: ScheduleQuery) => startTransition(() => router.replace(bpPath(bp, `/work-schedules${toScheduleSearch(next, today)}`), { scroll: false }));
 }
 
 // 근무지. 로그인 정보의 관리 점포(useStores)에서 고른다 — 점포 목록 api 는 「점포 정보 관리」 권한이 있어야 열린다.

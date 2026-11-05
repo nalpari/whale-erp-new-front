@@ -132,6 +132,8 @@ test("이동 버튼 주소 — 메뉴 판정은 쿼리 뗀 경로, 탭 BP 주소
   const contracts = moveTargetOf(IN_PROGRESS_CONTRACTS_HREF, 8);
   assert.equal(contracts.menuPath, "/contracts");
   assert.equal(contracts.href, `/bp/8${IN_PROGRESS_CONTRACTS_HREF}`);
-  // 일괄 저장 화면은 아직 옮기지 않은 화면이라 접두가 없다
-  assert.deepEqual(moveTargetOf("/staff-members/export", 8), { menuPath: "/staff-members/export", href: "/staff-members/export" });
+  // 일괄 저장 화면도 직원 정보 관리 아래라 탭 BP 를 씌운다
+  assert.deepEqual(moveTargetOf("/staff-members/export", 8), { menuPath: "/staff-members/export", href: "/bp/8/staff-members/export" });
+  // 옮기지 않은 화면은 접두가 없다
+  assert.deepEqual(moveTargetOf("/notifications", 8), { menuPath: "/notifications", href: "/notifications" });
 });

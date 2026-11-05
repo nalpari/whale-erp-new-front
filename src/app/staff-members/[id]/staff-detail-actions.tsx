@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/common";
-import { useAccount, usePagePermission } from "@/components/site/session-gate";
+import { useAccount, useCurrentBp, usePagePermission } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { canResetPassword } from "@/lib/password-reset";
 import { retirementActions } from "@/lib/retirement";
 import type { StaffMember } from "@/lib/staff-members";
@@ -15,6 +16,8 @@ import { CancelRetirementDialog, RetirementDialog } from "./retirement-dialog";
 // 「목록」은 목록이 ?back= 으로 실어 보낸 목록 주소로 돌아간다(backHrefOf).
 export function StaffDetailActions({ staff, today, listHref }: { staff: StaffMember; today: string; listHref: string }) {
   const canUpdate = usePagePermission().update;
+  // 목록 주소(listHref)는 옛 경로다 — 탭 BP 를 붙여 돌아간다
+  const bp = useCurrentBp().bpCodeId;
   const [dialog, setDialog] = useState<"retire" | "change" | "cancel" | null>(null);
   const actions = retirementActions(staff, today, canUpdate);
   const close = () => setDialog(null);
@@ -38,7 +41,7 @@ export function StaffDetailActions({ staff, today, listHref }: { staff: StaffMem
           </Button>
         </>
       )}
-      <Button href={listHref}>목록</Button>
+      <Button href={bpPath(bp, listHref)}>목록</Button>
       {id !== null && (dialog === "retire" || dialog === "change") && (
         <RetirementDialog staffMemberId={id} mode={dialog} currentDate={staff.retiredDate} today={today} onClose={close} />
       )}
