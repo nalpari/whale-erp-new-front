@@ -171,17 +171,45 @@ export function staffSections({ A, R }) {
     ["권도윤", "바리스타", { 1: [13, 22], 3: [13, 22], 4: [13, 22], 5: [13, 22], 0: [13, 22] }, ["2025-08-24", "2026-08-23"]],
   ];
   const schedWeekView = p.schedWeek(schedCrew, { open: 0, close: 24, dates: { 1: 17, 2: 18, 3: 19, 4: 20, 5: 21, 6: 22, 0: 23 }, pick: 6, all: true, gap: schedPanel });
-  const schedMonthView = p.schedMonth(A, schedCrew, { year: 2026, month: 7, today: "2026-08-22", all: true });
+  // 지난 주 복사 미리보기(앱 schedule-copy.tsx). 앱은 도구 줄 아래 카드 안에 펼치지만 데모는 창으로 띄운다.
+  // 제목 줄: 「지난 주 복사」 18px | 기간 16px 회색 + 오른쪽 [취소] [복사], 표 직원 200 · 지난 주 근무 · 이번 주 근무 140 가운데 · 처리 앞 36px, 아래 안내 박스(2026-11-05 사용자 지정, 3팀 확인 필요)
+  const copyId = x.dialogId();
+  const copyCell = "border-b border-erp-thead-line px-[10px]";
+  const copyRow = (name, last, now, status) =>
+    `<tr class="h-[46px]"><td class="${copyCell} truncate">${name}</td><td class="${copyCell} text-center tabular-nums${last === "-" ? " text-erp-muted" : ""}">${last}</td><td class="${copyCell} text-center tabular-nums${now === "-" ? " text-erp-muted" : ""}">${now}</td><td class="border-b border-erp-thead-line pr-[10px] pl-[36px]">${status}</td></tr>`;
+  const copyDialog =
+    `<dialog id="${copyId}" aria-labelledby="${copyId}-title" class="m-auto w-[760px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40">` +
+    `<div class="flex items-center gap-[10px]"><h2 id="${copyId}-title" class="text-[18px] font-semibold">지난 주 복사</h2><span aria-hidden="true" class="h-[14px] w-px bg-[#d9d9d9]"></span><span class="flex-1 text-[16px] font-medium text-erp-label">8월 10일 ~ 16일 → 8월 17일 ~ 23일</span><span class="flex gap-[6px]">${offBtn("취소", { "data-close": true })}${ui.button("3명 복사", { "data-close": true })}</span></div>` +
+    `<div class="mt-[18px] flex flex-col gap-[16px] text-[14px]"><table class="w-full table-fixed border-collapse text-[14px]"><thead><tr class="h-[42px] border-y border-erp-thead-line bg-erp-thead-bg text-left text-erp-thead-text"><th scope="col" class="w-[200px] px-[10px] font-medium">직원</th><th scope="col" class="w-[140px] px-[10px] text-center font-medium">지난 주 근무</th><th scope="col" class="w-[140px] px-[10px] text-center font-medium">이번 주 근무</th><th scope="col" class="pr-[10px] pl-[36px] font-medium">처리</th></tr></thead><tbody>` +
+    copyRow("오세라", "5일 · 40.0h", "5일 · 40.0h", ui.badge("on", "복사")) +
+    copyRow("유하람", "5일 · 28.0h", "5일 · 28.0h", ui.badge("on", "복사")) +
+    copyRow("서지안", "5일 · 40.0h", "4일 · 32.0h", `${ui.badge("on", "일부 제외")} ${p.sub("08-23 시간 겹침")}`) +
+    copyRow("권도윤", "5일 · 45.0h", "-", ui.badge("closed", "제외 · 근로계약 미체결")) +
+    copyRow("배정숙", "-", "-", ui.badge("closed", "지난 주 근무 없음")) +
+    `</tbody></table>` +
+    p.guideBand("지난 주 복사", [
+      "관리자가 [복사]를 누르면 지난 주 근무스케줄이 이번 주에 바로 등록됩니다.",
+      "지난 주 근무가 없는 직원은 복사 대상에서 제외됩니다. 해당 직원은 [근무스케줄 등록]에서 직접 등록합니다.",
+      "복사한 근무스케줄은 해당 <u>직원의 근무 앱</u>과 <u>이메일</u>로 알림이 발송됩니다.",
+    ]) +
+    `</div></dialog>`;
+  // 도구 줄 둘째 줄: 「근무지」 라벨 + 300px 선택칸 · 기간 이동 · 오른쪽 [지난 주 복사] [근무스케줄 등록](앱 page.tsx ScheduleFrame · schedule-controls.tsx SchedulePicker, 2026-11-05 사용자 지정, 3팀 확인 필요).
+  // 폐점 점포를 고르면 근무지 칸 바로 아래에 빨간 13px 「폐점 점포는 근무스케줄을 등록할 수 없습니다.」 — 데모 점포는 모두 운영 중이라 그리지 않는다.
+  const schedTools = (nav) =>
+    `<div class="flex flex-wrap items-center gap-[6px]"><span class="flex shrink-0 items-center gap-[8px]"><span aria-hidden="true" class="text-[14px] font-medium text-erp-label">근무지</span><span class="w-[300px]">${ui.select(["모리커피 서초점", "모리커피 연남점", "모리커피 성수점"], { "aria-label": "근무지" })}</span></span>${nav}<span class="flex-1"></span>${x.dialogTrigger("지난 주 복사", copyId, "soft")}${ui.slideTrigger("근무스케줄 등록", schedPanel)}</div>`;
+  // 월간 보기는 달 이동을 달력 위가 아니라 도구 줄에 둔다(앱 showMonthNav={false})
+  const schedMonthView = p.schedMonth(A, schedCrew, { year: 2026, month: 7, today: "2026-08-22", all: true, bar: schedTools });
 
   const schedLog = p.section(
     "변경이력",
     "",
     ui.dataTable(
-      [{ header: "일시", width: "w-[120px]" }, { header: "구분", width: "w-[80px]" }, { header: "내용", align: "left" }],
+      // 변경일시는 연도까지(점포 · BP 변경이력과 같다, 앱 schedule-controls.tsx ScheduleHistory, 2026-11-05 사용자 지정, 3팀 확인 필요)
+      [{ header: "변경일시", width: "w-[180px]" }, { header: "구분", width: "w-[80px]" }, { header: "내용", align: "left" }],
       [
-        ["09-01 14:22", "수정", "서지안 09-04 13:00-21:30 → 09:00-17:00 · 정하윤"],
-        ["08-31 10:05", "추가", "09-08 일괄 등록 3명 · 정하윤"],
-        ["08-28 17:41", p.mark("risk", "삭제"), "배정숙 08-30 16:00-22:00 삭제 · 정하윤"],
+        ["2026-09-01 14:22", "수정", "서지안 09-04 13:00-21:30 → 09:00-17:00 · 정하윤"],
+        ["2026-08-31 10:05", "추가", "09-08 일괄 등록 3명 · 정하윤"],
+        ["2026-08-28 17:41", p.mark("risk", "삭제"), "배정숙 08-30 16:00-22:00 삭제 · 정하윤"],
       ],
     ),
   );
@@ -218,18 +246,24 @@ export function staffSections({ A, R }) {
         const cols = [{ header: "직원" }, { header: "예정" }, { header: "출근" }, { header: "퇴근" }, { header: "비고" }];
         const body = rows.length
           ? `<div class="flex min-h-0 flex-1 flex-col border-x border-b border-erp-thead-line [&>table]:-mb-px [&>table]:border-x-0">${ui.dataTable(cols, rows)}</div>`
-          : ui.fillTable(cols, rows, "이 날의 출퇴근 기록이 없습니다.");
+          : ui.fillTable(cols, rows, "출·퇴근 기록이 없습니다.");
         return `<div data-week="${d}" hidden class="flex flex-1 flex-col">${body}</div>`;
       })
       .join("")}</div>`,
   ).replace('<section class="flex min-w-0 flex-col', '<section class="flex min-w-0 flex-1 flex-col'); // 묶음이 본문 남는 높이를 채운다(앱 Section fill)
-  const rate = (label, pct, n) =>
+  // 라벨 앞 색 칸은 근무스케줄 범례와 같은 14px(옅은 바탕 + 같은 계열 테두리), 막대도 같은 계열 진한 색(앱 Rate DOT · BAR, 2026-11-05 사용자 지정, 3팀 확인 필요)
+  const RATE = {
+    ok: ["bg-erp-on-bg border-erp-on/40", "bg-erp-on"],
+    warn: ["bg-[#fff6e5] border-[#e8a33d]/50", "bg-[#e8a33d]"],
+    risk: ["bg-erp-off-bg border-erp-off/40", "bg-erp-off"],
+  };
+  const rate = (label, pct, n, tone) =>
     // 라벨 시작선을 아래 근로시간 표 라벨과 맞추고(들여쓰기 13px) 굵기도 표 라벨과 같은 500, 라벨 98px 이라 막대가 표 값과 같은 세로줄(123px)에서 시작한다(앱 Rate, 2026-11-05 사용자 지정, 3팀 확인 필요)
-    `<div class="flex h-[34px] items-center gap-[12px] pl-[13px] text-[14px]"><span class="w-[98px] shrink-0 font-medium text-erp-label">${label}</span><span class="w-[200px]">${p.meter(pct)}</span><span>${n}</span></div>`;
+    `<div class="flex h-[34px] items-center gap-[12px] pl-[13px] text-[14px]"><span class="flex w-[98px] shrink-0 items-center gap-[6px] font-medium text-erp-label"><span aria-hidden="true" class="size-[14px] shrink-0 rounded-[2px] border ${RATE[tone][0]}"></span>${label}</span><span class="w-[200px]">${p.meter(pct, RATE[tone][1])}</span><span>${n}</span></div>`;
   const weekSum = (week, [ok, late, miss], [total, over, night, paid]) => {
     const n = ok + late + miss;
     const pct = (v) => (n ? Math.round((v / n) * 100) : 0);
-    return `<div data-week="${week}" hidden class="flex flex-col gap-[12px]"><div class="flex flex-col">${rate("정상 출근", pct(ok), `${ok}회`)}${rate("지각", pct(late), `${late}회`)}${rate("미기록", pct(miss), `${miss}회`)}</div>${ui.detailTable("근로시간", [
+    return `<div data-week="${week}" hidden class="flex flex-col gap-[12px]"><div class="flex flex-col">${rate("정상 출근", pct(ok), `${ok}회`, "ok")}${rate("지각", pct(late), `${late}회`, "warn")}${rate("미기록", pct(miss), `${miss}회`, "risk")}</div>${ui.detailTable("근로시간", [
       ["총 근로시간", total],
       ["연장 근로", over],
       ["야간 근로", night],
@@ -287,29 +321,25 @@ export function staffSections({ A, R }) {
         ["오세라", "08-27", "10:00", "16:00", `${p.tag("info", "대신 등록")} ${p.sub("위치 수집 일시 중지 · 정하윤")}`, x.dialogTrigger("이력", histId.오세라, "off")],
       ],
       // 기간이 늘 걸려 있어 문구는 하나다(앱 attendance-fix-list.tsx)
-      "이 기간에 보정이 필요한 기록이 없습니다.",
+      "보정이 필요한 출·퇴근 기록이 없습니다.",
     ),
   ).replace('<section class="flex min-w-0 flex-col', '<section class="flex min-w-0 flex-1 flex-col'); // 묶음이 본문 남는 높이를 채운다(앱 Section fill)
+  // 첫 줄은 보기 전환(아이콘 + 글자)만, 둘째 줄은 근무지 · 기간 이동 · 동작 버튼(앱 page.tsx ScheduleFrame, 2026-11-05 사용자 지정, 3팀 확인 필요).
+  // 데모는 탭마다 둘째 줄을 따로 그린다 — 주간은 ‹ 「2026년 8월 17일 ~ 23일」 › [이번 주], 월간은 ‹ 「2026년 8월」 › [이번 달]([이번 주] · [이번 달] outline).
+  // 날짜 선택은 직원 상세와 같은 주 이동(2026-10-02 재영). 데모라 근무표 내용은 주를 바꿔도 그대로다.
+  // 확정 단계는 없다 — 저장하면 바로 직원 근무 앱에 반영되고 바뀐 직원에게 알림이 간다(2026-10-08 재영, STAFF-15).
+  // 근무지는 점포 하나씩 본다 — 등록은 고른 점포에 한다(2026-10-22 재영).
   const schedTab =
-    p.bar(
-      // 날짜 선택은 직원 상세와 같은 주 이동(2026-10-02 재영). 데모라 근무표 내용은 주를 바꿔도 그대로다.
-      // 확정 단계는 없다 — 저장하면 바로 직원 근무 앱에 반영되고 바뀐 직원에게 알림이 간다(2026-10-08 재영, STAFF-15).
-      // 근무지는 점포 하나씩 본다 — 관리자 웹 근무스케줄 관리처럼 맨 앞 선택칸에서 고르고, 등록은 고른 점포에 한다(2026-10-22 재영).
-      `<div class="w-[220px] shrink-0">${ui.select(["모리커피 서초점", "모리커피 연남점", "모리커피 성수점"], { "aria-label": "근무지" })}</div>` +
-        p.weekNav(A, "", "2026-08-17"),
-      p.ask("지난 주 복사", "soft", "지난 주 근무스케줄을 복사하시겠습니까?", "지난 주 근무스케줄을 지금 보고 있는 주에 그대로 넣습니다. 복사하면 바로 반영되고 해당 직원에게 알림이 갑니다.", "복사") +
-        ui.slideTrigger("근무스케줄 등록", schedPanel),
-    ) +
-    p.bar(
-      x.segment("근무스케줄 보기", [
-        { id: "sched-week", label: "주간 보기" },
-        { id: "sched-month", label: "월간 보기" },
-      ]),
-      `<span class="text-[14px] text-erp-label">00~24시</span>`,
-    ) +
-    x.tabPanel("sched-week", schedWeekView, true) +
+    `<div class="flex flex-col gap-[24px]">` +
+    `<div class="flex">${x.segment("근무스케줄 보기", [
+      { id: "sched-week", label: "주간 보기", icon: '<path d="M3 6h18M3 12h12M3 18h15"/>' },
+      { id: "sched-month", label: "월간 보기", icon: '<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.75h18M8.25 2.25v4.5M15.75 2.25v4.5"/>' },
+    ]).replaceAll('class="flex h-[32px] items-center', 'class="[&+&]:border-l [&+&]:border-erp-button-line flex h-[32px] items-center')}</div>` +
+    x.tabPanel("sched-week", schedTools(p.weekNav(A, "", "2026-08-17", { range: true }) + ui.button("이번 주", { variant: "outline" })) + schedWeekView, true).replace('class="flex flex-col gap-[12px]"', 'class="flex flex-col gap-[24px]"') +
     x.tabPanel("sched-month", schedMonthView) +
-    `<div class="flex flex-col gap-[24px] pt-[12px]">${schedLog}</div>`;
+    `<div class="flex flex-col gap-[24px]">${schedLog}</div>` +
+    `</div>` +
+    copyDialog;
   // 출퇴근 현황 필터 (STAFF-31, 2026-10-08 재영). 근태 요약에는 점포·고용형태·재직 상태만 걸린다. 유지하지 않는다.
   const attendFilter = ui.filterPanel(A, [
     storeFilter(),
@@ -473,37 +503,49 @@ export function staffSections({ A, R }) {
   const delId = x.dialogId();
   // 여러 명 일괄(STAFF-27, 2026-10-08 재영): 근무지 재직자 체크 목록 → 고른 직원마다 줄. 줄은 그 직원의 계약 근무시간으로 채우고 줄마다 고친다.
   // 체크 목록에는 근무일에 체결 완료 계약이 있는 직원만 나온다(STAFF-29). 데모는 서지안·오세라를 고른 장면 하나다.
-  const bulkRow = (name, role, c) =>
-    `<div class="flex flex-col gap-[8px] border-b border-erp-divider pb-[12px]"><p class="flex items-center gap-[6px] text-[14px] font-medium">${name} <span class="font-normal text-erp-label">${role}</span></p>` +
-    ui.formRow(ui.field("시작", p.timeField(c[0], "시작")), ui.field("종료", p.timeField(c[1], "종료")), ui.field("휴게시간", ui.textField({ value: c[2] }))) +
-    `</div>`;
+  // 직원마다 상자 — 회색 머리 줄(42px)에 이름과 [근로계약 시간적용](26px · 13px outline 모양), 아래 시작시간 · 종료시간 · 휴게시간
+  // (앱 schedule-form.tsx, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 이름 줄 + 아래 선, off 34px 「계약 값으로 되돌리기」). 1명도 같은 상자다.
+  const contractTimeBtn = `<button type="button" class="h-[26px] shrink-0 rounded-[2px] border border-erp-brand bg-white px-[10px] text-[13px] font-medium whitespace-nowrap text-erp-ink transition-colors duration-150 ease-out hover:bg-erp-subtle">근로계약 시간적용</button>`;
+  const shiftBox = (name, c) =>
+    `<div class="flex flex-col overflow-hidden rounded-[2px] border border-erp-panel-line"><div class="flex h-[42px] items-center gap-[6px] border-b border-erp-thead-line bg-erp-thead-bg pr-[8px] pl-[12px]"><p class="flex-1 truncate text-[14px] font-semibold text-erp-ink">${name}</p>${contractTimeBtn}</div><div class="flex flex-col gap-[8px] p-[12px]">` +
+    ui.formRow(ui.field(req("시작시간"), p.timeField(c[0], "시작시간")), ui.field(req("종료시간"), p.timeField(c[1], "종료시간")), ui.field("휴게시간", ui.textField({ value: c[2] }))) +
+    `</div></div>`;
+  // 여러 명: 체크 목록에는 근무일에 체결 완료 계약이 있는 직원만(STAFF-29). 데모는 서지안 · 오세라를 고른 장면 하나다.
   const bulkPane =
-    `<div class="flex flex-col gap-[18px]" data-when="sched-mode:여러 명 일괄">` +
-    `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">직원 <span class="font-normal">· 모리커피 서초점 재직자</span></span><div class="flex flex-wrap gap-x-[18px] gap-y-[8px]">${ui.checkbox(A, "서지안 · 바리스타", true)}${ui.checkbox(A, "오세라 · 점장", true)}</div></div>` +
-    bulkRow("서지안", "바리스타", ["09:00", "16:00", "60분"]) +
-    bulkRow("오세라", "점장", ["09:00", "18:00", "60분"]) +
-    p.note("일부가 실패해도 성공한 등록은 남고 실패 대상만 표시됩니다.") +
+    `<div class="flex flex-col gap-[18px]" data-when="sched-mode:여러 명">` +
+    `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">${req("직원")}</span><div class="flex flex-wrap gap-x-[18px] gap-y-[8px]">${ui.checkbox(A, "서지안 · 바리스타", true)}${ui.checkbox(A, "오세라 · 점장", true)}</div></div>` +
+    shiftBox("서지안", ["09:00", "16:00", "60분"]) +
+    shiftBox("오세라", ["09:00", "18:00", "60분"]) +
     `</div>`;
+  // 묶음 「근무스케줄 정보」 — 등록 인원(1명 · 여러 명) → 근무일 → 직원 → 시간, 묶음 사이 24(앱 schedule-form.tsx, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 묶음 「근무」, 라디오가 제목 위).
+  // 근무지는 목록에서 고른 점포라 패널에 두지 않는다. 여러 명도 근무일은 하루 하나(주 단위는 지난 주 복사, STAFF-27).
+  // 시작 · 종료 · 휴게는 계약 값으로 미리 채운다(STAFF-14). 직원 선택지는 근무일에 체결 완료 계약이 있는 직원만이다(STAFF-29) — 권도윤은 재계약 서명 대기라 빠졌다.
+  // 버튼 줄은 가운데 [취소] [삭제](soft, 수정으로 열 때만 — 데모는 1명일 때 보인다) [저장], 1명 · 여러 명 모두 「저장」(전엔 삭제 왼쪽 끝 · 「2명 등록」).
   const schedForm = ui.slidePanel(
     schedPanel,
     "근무스케줄 등록·수정",
     panelHead("근무스케줄 등록·수정") +
-      p.radios("sched-mode", ["한 명", "여러 명 일괄"]) +
       ui.formGroup(
-        "근무",
-        // 근무지는 목록에서 고른 점포로 정해져 보이기만 한다(2026-10-22 재영). 근무지·근무일은 두 방식이 함께 쓴다. 여러 명 일괄도 근무일은 하루 하나(주 단위는 지난 주 복사, STAFF-27).
-        ui.formRow(ui.field("근무지", ui.textField({ value: "모리커피 서초점", readonly: true, "aria-label": "근무지" })), ui.field("근무일", ui.dateField(A, { label: "근무일", value: "2026-09-08" }))),
-        `<div class="flex flex-col gap-[18px]" data-when="sched-mode:한 명">` +
-        ui.field("직원", ui.select(["서지안 · 바리스타", "오세라 · 점장"])),
-        // 시작·종료·휴게는 계약 값으로 미리 채운다(STAFF-14). 안내 띠는 두지 않고 「계약 값으로 되돌리기」만 둔다(2026-10-08 재영).
-        // 직원 선택지는 근무일에 체결 완료 계약이 있는 직원만이다(STAFF-29). 권도윤은 재계약 서명 대기라 빠졌다.
-        `<div class="flex justify-end">${offBtn("계약 값으로 되돌리기")}</div>`,
-        ui.formRow(ui.field("시작", p.timeField("09:00", "시작")), ui.field("종료", p.timeField("16:00", "종료")), ui.field("휴게시간", ui.textField({ value: "60분" }))),
-        `</div>`,
-        bulkPane,
+        "근무스케줄 정보",
+        `<div class="flex flex-col gap-[24px]">` +
+          `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">${req("등록 인원")}</span>${p.radios("sched-mode", ["1명", "여러 명"])}</div>` +
+          ui.field(req("근무일"), ui.dateField(A, { label: "근무일", value: "2026-09-08" })) +
+          `<div class="flex flex-col gap-[18px]" data-when="sched-mode:1명">` +
+          ui.field(req("직원"), ui.select(["선택", "서지안 · 바리스타", "오세라 · 점장"], { value: "서지안 · 바리스타" })) +
+          shiftBox("서지안", ["09:00", "16:00", "60분"]) +
+          `</div>` +
+          bulkPane +
+          `</div>`,
       ) +
-      p.note("저장하면 바로 직원 근무 앱에 반영되고, 바뀐 직원에게 알림이 갑니다.") +
-      `<div class="flex justify-between gap-[6px]"><span data-when="sched-mode:한 명">${x.dialogTrigger("삭제", delId, "soft")}</span><span data-when="sched-mode:여러 명 일괄"></span><span class="flex gap-[6px]">${offBtn("취소", { "data-close": true })}<span data-when="sched-mode:한 명">${ui.button("저장", { "data-close": true })}</span><span data-when="sched-mode:여러 명 일괄">${ui.button("2명 등록", { "data-close": true })}</span></span></div>`,
+      // 직원 칸 아래 회색 줄 대신 안내 박스(앱 GuideBand 「근무스케줄 등록 안내」, 수정이면 「근무스케줄 수정 안내」)
+      p.guideBand("근무스케줄 등록 안내", [
+        "직원 목록에는 선택한 근무일에 <u>근로계약이 체결 완료</u>된 직원 중 <u>직원 근무 앱에 가입</u>한 직원만 표시됩니다.",
+        "퇴직일이 정해진 직원은 퇴직일까지만 근무스케줄을 등록할 수 있습니다.",
+        "여러 명을 등록할 때 일부가 실패하면, 성공한 직원은 등록되고 실패한 직원만 사유와 함께 남습니다.",
+        "관리자가 근무스케줄을 저장하면 해당 <u>직원의 근무 앱</u>과 <u>이메일</u>로 알림이 발송됩니다.",
+        "직원이 근무 앱에서 근무스케줄 알림을 끄면 알림은 근무 앱 알림함에만 표시됩니다.",
+      ]) +
+      `<div class="flex justify-center gap-[6px]">${offBtn("취소", { "data-close": true })}<span data-when="sched-mode:1명">${x.dialogTrigger("삭제", delId, "soft")}</span>${ui.button("저장", { "data-close": true })}</div>`,
   );
   const delDialog = x.dialog(
     delId,
@@ -518,9 +560,17 @@ export function staffSections({ A, R }) {
       ui.formGroup(
         "출퇴근 기록",
         ui.formRow(p.fieldH("출근", p.timeField("12:58", "출근"), "원본 12:58"), p.fieldH("퇴근", p.timeField("21:30", "퇴근"), "원본 없음")),
-        p.fieldH("수정 사유", ui.textarea({ rows: 4, value: "퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인." }), ""),
+        p.fieldH("수정 사유", ui.textarea({ rows: 2, value: "퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인." }), ""),
       ) +
-      ui.panelButtons("취소", "보정 저장"),
+      // 안내는 묶음 상자 밖 안내 박스, 버튼은 가운데 [취소] [저장](앱 attendance-fix-list.tsx FixForm, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「보정 저장」, 사유 4줄)
+      p.guideBand("보정 안내", [
+        "최근 3개월 이내의 기록만 보정할 수 있으며, 미래 시각은 등록할 수 없습니다.",
+        "관리자가 보정한 기록은 직원 근무 앱에 연필 아이콘으로 표시됩니다.",
+        "보정한 기록의 확인 필요 표시와 사유는 삭제됩니다.",
+        "퇴근 시각이 출근 시각과 같거나 이전인 경우, 다음 날 퇴근한 것으로 처리됩니다.",
+        "그 외에 다음 날 퇴근한 경우, 관리자가 「다음 날 퇴근」을 체크합니다.",
+      ]) +
+      ui.panelButtons("취소", "저장"),
   );
   // 출퇴근 대신 등록(운영 정책 ATT-20): 직원 · 날짜 · 출근 · 퇴근 · 사유(필수). 직원 근무 앱에는 연필 표시로 보인다.
   // 그 날짜에 체결 완료 계약이 없는 직원은 선택지에서 뺀다(STAFF-29) — 09-06의 권도윤은 재계약 서명 대기라 빠졌다.
@@ -532,15 +582,19 @@ export function staffSections({ A, R }) {
     panelHead("출퇴근 대신 등록") +
       ui.formGroup(
         "출퇴근 기록",
-        ui.formRow(
-          p.fieldH(req("직원"), ui.select(["오세라", "서지안", "배정숙", "유하람"]), ""),
-          p.fieldH(req("날짜"), ui.dateField(A, { label: "날짜", value: "2026-09-06" }), ""),
-        ),
+        // 직원 칸은 한 줄 전체 폭(「이름 · 점포 (보정)」이 넘치지 않게), 날짜는 그 아래 줄. 선택지 첫 줄 「선택」(앱 ProxyForm, 2026-11-05 사용자 지정, 3팀 확인 필요)
+        p.fieldH(req("직원"), ui.select(["선택", "오세라", "서지안", "배정숙", "유하람"]), ""),
+        p.fieldH(req("날짜"), ui.dateField(A, { label: "날짜", value: "2026-09-06" }), ""),
         ui.formRow(p.fieldH(req("출근"), p.timeField("09:00", "출근"), ""), p.fieldH("퇴근", p.timeField("", "퇴근"), "")),
-        p.fieldH(req("사유"), ui.textarea({ rows: 4, placeholder: "예: 위치 수집 일시 중지 · 점장 확인" }), ""),
+        p.fieldH(req("사유"), ui.textarea({ rows: 2, placeholder: "예: 위치 수집 일시 중지 · 점장 확인" }), ""),
       ) +
-      p.note("위치정보 동의를 거부·철회했거나 위치 수집을 일시 중지한 직원만 고를 수 있습니다. 동의한 직원은 그날 출근·퇴근 기록이 모두 없어도 「보정」으로 두 시각을 넣습니다.") +
-      ui.panelButtons("취소", "대신 등록"),
+      p.guideBand("대신 등록 안내", [
+        "위치정보 수집에 동의하지 않았거나 수집을 중지한 직원의 출·퇴근 기록은 관리자가 대신 등록합니다.",
+        "최근 3개월 이내의 기록만 등록할 수 있으며, 미래 시각은 등록할 수 없습니다.",
+        "관리자가 대신 등록한 기록은 직원 근무 앱에 연필 아이콘으로 표시됩니다.",
+        "퇴근 시각이 출근 시각과 같거나 이전인 경우, 다음 날 퇴근한 것으로 처리됩니다.",
+      ]) +
+      ui.panelButtons("취소", "저장"),
   );
   // 배정 대상·수행 방식 라벨과 ⓘ 툴팁(2026-10-08 재영)
   const TIP_TARGET = "개인: 고른 직원에게만 보입니다. 여러 명을 고르면 한 사람에 한 건씩 생깁니다.\n근무지 전체: 그 근무지의 재직 직원 모두에게 보입니다.";
