@@ -30,7 +30,7 @@ export default async function TodoDetailPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [todo, statusLabels, assigneeTypeLabels, executionModeLabels] = await Promise.all([
-    // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다(근로계약 상세와 같다)
+    // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다. 404(없는 · 지운 · 업무 범위 밖 TO-DO)는 getTodo 가 null 로 바꿔 notFound 다(근로계약 상세와 같다)
     getTodo((await params).id).catch((e: unknown) => {
       const notice = deniedMessageOf(e);
       if (notice === null) throw e;
