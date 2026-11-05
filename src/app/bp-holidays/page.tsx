@@ -51,6 +51,7 @@ async function loadDetail(id: number, at: string | null): Promise<{ holiday: BpH
     // 시작일 기준으로 다시 받는다(브라우저 시험으로 찾음, 2026-10-27)
     return { holiday: at && outsideHoliday(holiday, at) ? await getBpHoliday(id, holiday.startDate) : holiday };
   } catch (error) {
+    if (error instanceof ApiError && error.status === 401) redirectExpired();
     if (error instanceof ApiError && error.status === 404) return { failed: "삭제되었거나 볼 수 없는 휴일입니다." };
     if (error instanceof ApiError && [400, 403].includes(error.status)) return { failed: error.message };
     console.error("BP 휴일 상세 조회 실패", id, error);

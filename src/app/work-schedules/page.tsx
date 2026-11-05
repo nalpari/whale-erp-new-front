@@ -60,9 +60,13 @@ export default async function WorkSchedulesPage({ searchParams }: { searchParams
 
   const withStore = { ...query, storeId: query.storeId };
   const [data, history, copyPreview] = await Promise.all([
-    getWorkSchedules(scheduleApiSearch(withStore)),
+    getWorkSchedules(scheduleApiSearch(withStore)).catch((error: unknown) => {
+      if (error instanceof ApiError && error.status === 401) redirectExpired();
+      throw error;
+    }),
     // 이력을 받지 못해도 화면은 그린다 — 이력 표 안에만 안내하고 원인은 서버 로그에 남긴다(front #93 리뷰)
     getWorkScheduleHistories(historyApiSearch(withStore)).catch((error: unknown) => {
+      if (error instanceof ApiError && error.status === 401) redirectExpired();
       console.error("근무스케줄: GET /work-schedules/histories 를 받지 못했습니다", error);
       return "failed" as const;
     }),
