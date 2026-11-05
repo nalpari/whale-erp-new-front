@@ -323,7 +323,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
     <>
       <PageBar title={isNew ? "알림 템플릿 등록" : "알림 템플릿 수정"}>
         <div className="flex items-center gap-[6px]">
-          <Button variant="off" href={`${BASE}${saved ? `?channel=${saved.channel}` : ""}`}>
+          <Button href={`${BASE}${saved ? `?channel=${saved.channel}` : ""}`}>
             목록
           </Button>
           {saved?.hasDefault && (

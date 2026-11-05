@@ -213,7 +213,7 @@ export function PostForm({
     <>
       <PageBar title={detail ? `${name} 수정` : `${name} 등록`}>
         <div className="flex items-center gap-[6px]">
-          <Button variant="off" href={listHref}>
+          <Button href={listHref}>
             목록
           </Button>
           {detail && can.delete && (

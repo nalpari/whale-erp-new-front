@@ -109,7 +109,7 @@ test("validatePost — 첨부는 남는 것 + 더하는 것 5개, 종류 · 크�
   assert.deepEqual(validatePost(notice(), "DRAFT", 4, [ok]), []);
   assert.equal(validatePost(notice(), "DRAFT", 4, [ok, ok]).length, 1);
   assert.deepEqual(validatePost(notice(), "DRAFT", 0, [{ name: "a.gif", size: 1 }]), ["a.gif: JPG · PNG · PDF 만 올릴 수 있습니다."]);
-  assert.deepEqual(validatePost(notice(), "DRAFT", 0, [{ name: "a.jpg", size: 10 * 1024 * 1024 + 1 }]), ["a.jpg: 파일 하나는 10MB 까지 올릴 수 있습니다."]);
+  assert.deepEqual(validatePost(notice(), "DRAFT", 0, [{ name: "a.jpg", size: 10 * 1024 * 1024 + 1 }]), ["a.jpg: 10MB 이하 파일만 첨부할 수 있습니다."]);
 });
 
 test("postFields — 공지 칸은 공지에만, 노출 대상은 이름을 되풀이", () => {
@@ -152,9 +152,11 @@ test("pickInquiryFiles — 6번째 · 10MB 초과 · 다른 종류는 그 파일
   ]);
   assert.deepEqual(accepted.map((f) => f.name), ["a.png", "d.JPG"]);
   assert.equal(rejected.length, 3);
-  assert.match(rejected[0], /^b\.hwp: /);
-  assert.match(rejected[1], /^c\.pdf: .*10MB/);
-  assert.match(rejected[2], /^e\.pdf: .*5개/);
+  // 파일명과 까닭을 나눠 돌려준다 — 화면이 두 줄로 보인다(2026-11-05 사용자 지정)
+  assert.deepEqual(rejected.map((r) => r.name), ["b.hwp", "c.pdf", "e.pdf"]);
+  assert.equal(rejected[0].reason, "JPG, PNG, PDF 파일만 첨부할 수 있습니다.");
+  assert.equal(rejected[1].reason, "10MB 이하 파일만 첨부할 수 있습니다.");
+  assert.equal(rejected[2].reason, "최대 5개까지 첨부할 수 있습니다.");
 });
 
 test("draftView — 그사이 저장된 값이 바뀌면 손대지 않은 글은 버리고, 고쳐 쓰던 글은 남기되 알린다", () => {

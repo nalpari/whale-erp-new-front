@@ -451,7 +451,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
               처리 시작
             </Button>
           )}
-          <Button variant="off" href={INQUIRY_BASE}>
+          <Button href={INQUIRY_BASE}>
             목록
           </Button>
         </div>
@@ -606,7 +606,7 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
               처리 시작
             </Button>
           )}
-          <Button variant="off" href={LEAD_BASE}>
+          <Button href={LEAD_BASE}>
             목록
           </Button>
         </div>

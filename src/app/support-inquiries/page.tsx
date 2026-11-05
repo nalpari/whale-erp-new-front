@@ -23,7 +23,7 @@ export default async function SupportInquiriesPage({ searchParams }: PageProps<"
   const [list, statuses] = loaded.data;
   return (
     <>
-      <PageBar title="문의하기" />
+      {/* 제목 줄은 MyInquiryList 가 그린다 — [문의하기]가 그 줄에 선다 */}
       <MyInquiryList items={list.items} total={list.total} query={query} statuses={statuses} />
     </>
   );

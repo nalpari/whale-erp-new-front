@@ -293,7 +293,7 @@ export function PayslipReview({
             </>
           }
         >
-          <Button variant="off" href={listHref}>
+          <Button href={listHref}>
             목록
           </Button>
           {editable && (

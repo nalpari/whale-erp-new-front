@@ -134,7 +134,7 @@ export function validatePost(f: PostForm, status: PostStatus, kept: number, file
     if (kept + files.length > MAX_ATTACHMENTS) errors.push(`첨부파일은 공지사항 하나에 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다.`);
     for (const file of files) {
       if (!FILE_EXT.test(file.name)) errors.push(`${file.name}: JPG · PNG · PDF 만 올릴 수 있습니다.`);
-      else if (file.size > MAX_FILE_BYTES) errors.push(`${file.name}: 파일 하나는 10MB 까지 올릴 수 있습니다.`);
+      else if (file.size > MAX_FILE_BYTES) errors.push(`${file.name}: 10MB 이하 파일만 첨부할 수 있습니다.`);
     }
   }
   return errors;
@@ -229,14 +229,15 @@ export const parseSupportInquiryQuery = (raw: Raw): SupportInquiryQuery => ({
 /**
  * 문의 첨부 고르기(CNT-18). 6번째 · 10MB 초과 · JPG · PNG · PDF 가 아닌 파일은 그 파일만 빼고 까닭을 돌려준다 —
  * 이미 올린 파일과 쓴 내용은 그대로 둔다. had 는 이미 올린 파일 수다.
+ * 화면은 파일명 줄 아래에 까닭을 빨간 글자로 보인다 — 그래서 둘을 나눠 돌려준다(2026-11-05 사용자 지정, 전엔 「파일명: 까닭」 한 줄).
  */
-export function pickInquiryFiles<F extends NewFile>(had: number, picked: readonly F[]): { accepted: F[]; rejected: string[] } {
+export function pickInquiryFiles<F extends NewFile>(had: number, picked: readonly F[]): { accepted: F[]; rejected: { name: string; reason: string }[] } {
   const accepted: F[] = [];
-  const rejected: string[] = [];
+  const rejected: { name: string; reason: string }[] = [];
   for (const file of picked) {
-    if (!FILE_EXT.test(file.name)) rejected.push(`${file.name}: 이미지(JPG · PNG)와 PDF 만 올릴 수 있습니다.`);
-    else if (file.size > MAX_FILE_BYTES) rejected.push(`${file.name}: 파일 하나는 10MB 까지 올릴 수 있습니다.`);
-    else if (had + accepted.length >= MAX_ATTACHMENTS) rejected.push(`${file.name}: 첨부파일은 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다.`);
+    if (!FILE_EXT.test(file.name)) rejected.push({ name: file.name, reason: "JPG, PNG, PDF 파일만 첨부할 수 있습니다." });
+    else if (file.size > MAX_FILE_BYTES) rejected.push({ name: file.name, reason: "10MB 이하 파일만 첨부할 수 있습니다." });
+    else if (had + accepted.length >= MAX_ATTACHMENTS) rejected.push({ name: file.name, reason: `최대 ${MAX_ATTACHMENTS}개까지 첨부할 수 있습니다.` });
     else accepted.push(file);
   }
   return { accepted, rejected };

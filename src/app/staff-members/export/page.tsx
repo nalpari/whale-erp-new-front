@@ -8,7 +8,7 @@ export default function StaffExportPage() {
   return (
     <>
       <PageBar title="직원 자료 일괄 저장">
-        <Button variant="off" href="/staff-members">
+        <Button href="/staff-members">
           목록
         </Button>
       </PageBar>

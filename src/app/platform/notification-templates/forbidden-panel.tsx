@@ -8,7 +8,7 @@ export function ForbiddenPanel({ title }: { title: string }) {
       <div className="flex min-h-0 flex-1 p-[24px]">
         <section className="flex flex-1 flex-col items-center justify-center gap-[16px] rounded-[4px] border border-erp-panel-line bg-white p-[25px] text-[14px] text-erp-muted">
           <p>알림 템플릿을 볼 권한이 없습니다.</p>
-          <Button variant="off" href="/platform/notification-templates">
+          <Button href="/platform/notification-templates">
             목록
           </Button>
         </section>
