@@ -29,7 +29,9 @@ export default ({ A, R }) => {
     prose("점포관리에서 가맹점 두 곳에 초대 메일을 보냈는데 둘 다 반송됩니다. 주소는 맞게 넣었고, 같은 주소로 제가 직접 보내면 잘 갑니다.", "반송 사유가 “발신 도메인 인증 실패”라고 나옵니다."),
     { pad: true },
   );
-  const files = ui.detailTable("첨부파일", [["이미지", thumb("반송_메일_화면.png", "286 KB")], ["PDF", pdf("반송_사유_원문.pdf", "96 KB")]]);
+  // 첨부파일 — 문의자 쪽은 종류 칸(이미지 · PDF) 없이 줄만(앱과 같다, 2026-11-05 사용자 지정)
+  const fileRow = (inner) => `<li class="flex items-center gap-[10px] border-b border-erp-thead-line px-[12px] py-[12px] last:border-b-0">${inner}</li>`;
+  const files = p.box("첨부파일", "", `<ul class="rounded-b-[2px] border border-erp-thead-line bg-white">${fileRow(thumb("반송_메일_화면.png", "286 KB") + `${ui.link("반송_메일_화면.png", "#")}<span class="text-erp-muted">286 KB</span>`)}${fileRow(pdf("반송_사유_원문.pdf", "96 KB"))}</ul>`);
   const answers = p.box(
     // 「답변 | 등록 일시 (수정됨 일시)」 — 제목 바로 옆 왼쪽(앱과 같다, 2026-11-05 사용자 지정)
     `<span class="inline-flex items-center gap-[10px]">답변<span class="h-[11px] w-px bg-[#d9d9d9]"></span><span class="text-[14px] font-normal text-erp-label">WHALE ERP 운영팀 · 등록 2026-08-31 09:40 (수정됨 2026-09-02 11:05)</span></span>`,
@@ -40,22 +42,14 @@ export default ({ A, R }) => {
     )}</div>`,
     { pad: true },
   );
+  // 처리현황 — 세 단계를 진행 순서로 고정한 줄 목록(열 이름 줄 · 줄 사이 선 없음), 상태(아이콘 + 배지) 140px · 일시 왼쪽 정렬(앱과 같다, 2026-11-05 사용자 지정).
+  // 아직 안 된 단계는 앱에서 회색 아이콘 · 회색 글자 · 「-」로 흐리게 보인다 — 이 데모 문의는 답변까지 끝나 셋 다 진하다
+  const stepRow = (label, badge, at) => `<li class="flex items-center"><span class="w-[140px] shrink-0">${step(label, badge)}</span><span class="text-erp-ink">${at}</span></li>`;
   const progress = p.box(
     "처리현황",
     "",
-    // 세 단계를 진행 순서로 고정, 상태가 먼저(앞에 단계 아이콘) · 열 이름 줄 없음(앱 headVariant="none", 2026-11-05 사용자 지정).
-    // 아직 안 된 단계는 앱에서 회색 아이콘 · 회색 글자 · 「-」로 흐리게 보인다 — 이 데모 문의는 답변까지 끝나 셋 다 진하다
-    ui
-      .dataTable(
-        [{ header: "상태", align: "left", width: "w-[140px]" }, { header: "일시", align: "left" }],
-        [
-          [step("접수", p.tag("warn", "접수")), "08-30 16:12"],
-          [step("처리중", p.tag("quiet", "처리중")), "08-31 09:12"],
-          [step("답변완료", p.tag("ok", "답변완료")), "08-31 09:40"],
-        ],
-      )
-      .replace(/<thead>[\s\S]*?<\/thead>/, "")
-      .replace("border-x ", "border "),
+    `<ul class="flex flex-col gap-[14px] text-[14px]">${stepRow("접수", p.tag("warn", "접수"), "08-30 16:12")}${stepRow("처리중", p.tag("quiet", "처리중"), "08-31 09:12")}${stepRow("답변완료", p.tag("ok", "답변완료"), "08-31 09:40")}</ul>`,
+    { pad: true },
   );
   const body = ui.detailBody(`${head}${p.cols(mine + files + answers, progress)}`);
   return { title: "문의상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "문의하기", body }) };
