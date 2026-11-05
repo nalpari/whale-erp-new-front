@@ -19,7 +19,7 @@ export type StoreClosingRetirement = Schemas["StoreClosingRetirementDto"];
  */
 export type ClosingBlock = {
   count: number;
-  /** 할 일 — 본사가 볼 수 있는 출근이 있으면 출퇴근 현황에서, 가려진 출근만 있으면 가맹점이 닫게 한다 */
+  /** 할 일 — 출퇴근 현황에서 퇴근 시간을 보정하게 한다(가려진 출근만 있어도 같다) */
   guide: string;
 };
 
@@ -30,8 +30,8 @@ export function closingBlockOf(counts: Pick<StoreClosingCounts, "openCheckIns">)
   if (total <= 0) return null;
   return {
     count: total,
-    // 가려진 건만 있으면 본사는 출퇴근 현황에서도 그 줄을 볼 수 없다(ATT-30) — 가맹점이 퇴근 등록 · 보정하게 한다
-    guide: count > 0 ? "출퇴근 현황에서 퇴근 등록 · 보정한 뒤 다시 해 주세요." : "본사에서 볼 수 없는 직원의 출근입니다. 가맹점에서 퇴근 등록 · 보정한 뒤 다시 해 주세요.",
+    // 본사에게 가려진 출근만 있어도 같은 문구다 — 둘로 가르던 「가맹점에서 …」 안내는 뺐다(2026-11-05 사용자 지정)
+    guide: "출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다.",
   };
 }
 

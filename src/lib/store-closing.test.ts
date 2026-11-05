@@ -18,20 +18,17 @@ test("열린 출근이 없으면 막지 않는다", () => {
   assert.equal(closingBlockOf(counts()), null);
 });
 
-test("본사가 볼 수 있는 출근이 있으면 출퇴근 현황에서 닫게 한다 — 이름 · 시각 없이 건수만", () => {
-  assert.deepEqual(closingBlockOf(counts({ openCheckIns: { count: 2, hiddenCount: 0 } })), { count: 2, guide: "출퇴근 현황에서 퇴근 등록 · 보정한 뒤 다시 해 주세요." });
+test("막히면 건수와 출퇴근 현황 보정 안내 — 이름 · 시각 없이", () => {
+  assert.deepEqual(closingBlockOf(counts({ openCheckIns: { count: 2, hiddenCount: 0 } })), { count: 2, guide: "출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다." });
 });
 
-test("가려진 건만 있으면 가맹점이 닫게 한다", () => {
-  const block = closingBlockOf(counts({ openCheckIns: { count: 0, hiddenCount: 2 } }));
-  assert.equal(block?.count, 2);
-  // 본사는 출퇴근 현황에서도 그 줄을 못 본다
-  assert.match(block?.guide ?? "", /가맹점에서/);
+test("가려진 건만 있어도 건수와 같은 안내다", () => {
+  assert.deepEqual(closingBlockOf(counts({ openCheckIns: { count: 0, hiddenCount: 2 } })), { count: 2, guide: "출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다." });
 });
 
-test("보이는 건과 가려진 건이 섞이면 건수는 합하고 출퇴근 현황 안내다", () => {
+test("보이는 건과 가려진 건이 섞이면 건수는 합한다", () => {
   const block = closingBlockOf(counts({ openCheckIns: { count: 1, hiddenCount: 2 } }));
-  assert.deepEqual(block, { count: 3, guide: "출퇴근 현황에서 퇴근 등록 · 보정한 뒤 다시 해 주세요." });
+  assert.deepEqual(block, { count: 3, guide: "출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다." });
 });
 
 test("확인 목록은 0건인 줄을 빼고, 급여명세서는 처리 목록이 아니라 따로 안내한다", () => {

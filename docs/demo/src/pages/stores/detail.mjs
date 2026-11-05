@@ -215,7 +215,7 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
   const closeItem =
     `<li${d.openCheckIns ? ' class="text-erp-off"' : ""}>퇴근하지 않은 출근 <b class="font-semibold">${d.openCheckIns}건</b></li>`;
   // 막히면 할 일 — 직원 이름 · 출근 시각은 보이지 않는다(api 가 건수만 준다, 2026-11-04)
-  const closeAfter = d.openCheckIns ? `<p class="mt-[6px] text-erp-label">출퇴근 현황에서 퇴근 등록 · 보정한 뒤 다시 해 주세요.</p>` : "";
+  const closeAfter = d.openCheckIns ? `<p class="mt-[6px] text-erp-label">출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다.</p>` : "";
   // 폐점하면 함께 처리될 것 — 0건인 줄은 뺀다(앱 closingCheckLines)
   const c = d.closing ?? {};
   const closingLines = [
@@ -230,7 +230,7 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
       ? `<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p class="font-medium">폐점하면 함께 처리됩니다.</p><ul class="mt-[6px] list-disc pl-[18px]">${closingLines.map((l) => `<li>${l}</li>`).join("")}</ul></div>`
       : `<p class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]">함께 처리할 직원 · 근로계약이 없습니다.</p>`) +
     // 확정하지 않은 급여명세서는 폐점이 처리하지 않아 상자 밖 회색 안내로 둔다(앱 closingPayslipText)
-    `<p class="text-[13px] text-erp-label">${c.unconfirmedPayslips ? `확정하지 않은 급여명세서 ${c.unconfirmedPayslips}건은 폐점 뒤에도 처리할 수 있습니다.<br>` : ""}체결 완료 근로계약은 그대로 남고, 직원에게 알림을 보내지 않습니다.</p></div>`;
+    `${c.unconfirmedPayslips ? `<p class="text-[13px] text-erp-label">확정하지 않은 급여명세서 ${c.unconfirmedPayslips}건은 폐점 뒤에도 처리할 수 있습니다.</p>` : ""}</div>`;
   const notOperating = state === "미운영";
   const missing = d.missing ?? [];
   const opItems = REQUIREMENTS.map(

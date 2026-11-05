@@ -121,7 +121,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
     "폐점할 수 없습니다.",
     `<div class="flex flex-col gap-[12px]"><div class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">폐점 조건</p>` +
       `<ul class="mt-[6px] list-disc pl-[18px]"><li class="text-erp-off">퇴근하지 않은 출근 <b class="font-semibold">1건</b></li></ul>` +
-      `<p class="mt-[6px] text-erp-label">출퇴근 현황에서 퇴근 등록 · 보정한 뒤 다시 해 주세요.</p></div>` +
+      `<p class="mt-[6px] text-erp-label">출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다.</p></div>` +
       `<p class="text-erp-label">점포상태를 이전 값으로 되돌렸습니다.</p></div>`,
     ui.button("확인", { "data-close": true }),
     "w-[480px]",
@@ -134,7 +134,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
       // 폐점하면 함께 처리될 것 — 저장을 누를 때 지금 기준으로 다시 받는다(앱 ClosingCheckList)
       `<div class="mt-[12px] flex flex-col gap-[6px]"><div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p class="font-medium">폐점하면 함께 처리됩니다.</p>` +
       `<ul class="mt-[6px] list-disc pl-[18px]"><li>근무 중인 직원 8명 퇴직(퇴직일 오늘)</li><li>발송 대기 근로계약 1건 종료 · 초대 무효</li></ul></div>` +
-      `<p class="text-[13px] text-erp-label">체결 완료 근로계약은 그대로 남고, 직원에게 알림을 보내지 않습니다.</p></div>`,
+      `</div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("폐점으로 저장", { href: link(R, "stores/detail-closed.html") }),
     "w-[480px]",
   );

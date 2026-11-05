@@ -56,7 +56,7 @@ export function ClosingCondition({ counts }: { counts: Pick<StoreClosingCounts, 
 
 /**
  * 폐점하면 함께 처리될 것 — 폐점 확인 창 안. 되돌릴 수 없는 결과(퇴직 · 계약 종료)라 빨간 안내 상자로 둔다(DESIGN.md 1팀 확인창).
- * 0건인 줄은 뺀다. 확정하지 않은 급여명세서는 처리하지 않으므로 상자 밖 회색 안내로 둔다. 체결 완료 계약은 남고 직원 알림은 가지 않는다.
+ * 0건인 줄은 뺀다. 확정하지 않은 급여명세서는 처리하지 않으므로 상자 밖 회색 안내로 둔다. 체결 완료 계약 · 직원 알림 안내는 두지 않는다(2026-11-05 사용자 지정).
  * counts 가 없으면(확인 값을 받지 못함) 목록을 빼지 않고 무엇이 처리되는지만 같은 상자로 알린다.
  */
 export function ClosingCheckList({ counts }: { counts: StoreClosingCounts | null }) {
@@ -74,15 +74,7 @@ export function ClosingCheckList({ counts }: { counts: StoreClosingCounts | null
       ) : (
         <p className={BOX}>함께 처리할 직원 · 근로계약이 없습니다.</p>
       )}
-      <p className="text-[13px] text-erp-label">
-        {payslip && (
-          <>
-            {payslip}
-            <br />
-          </>
-        )}
-        체결 완료 근로계약은 그대로 남고, 직원에게 알림을 보내지 않습니다.
-      </p>
+      {payslip && <p className="text-[13px] text-erp-label">{payslip}</p>}
     </div>
   );
 }
