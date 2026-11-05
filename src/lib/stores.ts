@@ -19,6 +19,7 @@ import {
   type StoreTransitions,
   type StoreType,
   type UpdateStoreInput,
+  type UpdateStoreResult,
 } from "./store-types";
 
 export type StoreListQuery = {
@@ -75,7 +76,10 @@ export async function getStoreHistories(id: number, page: number, pageSize: Hist
   return request(`/stores/${id}/histories?page=${page}&pageSize=${pageSize}`, await json("GET"));
 }
 
-/** GET /stores/:id/transition-check — 운영 · 폐점 · 삭제 가능 여부를 지금 기준으로 다시 본다 */
+/**
+ * GET /stores/:id/transition-check — 운영 · 폐점 · 삭제 가능 여부를 지금 기준으로 다시 본다.
+ * closing 은 폐점 확인(퇴근하지 않은 출근 막힘 + 폐점하면 처리될 것)이고 이미 폐점한 점포면 null 이다
+ */
 export async function getStoreTransitions(id: number): Promise<StoreTransitions> {
   return request(`/stores/${id}/transition-check`, await json("GET"));
 }
@@ -85,12 +89,17 @@ export async function createStore(input: CreateStoreInput): Promise<CreateStoreR
   return request("/stores", await json("POST", input));
 }
 
-/** PUT /stores/:id — 상세에서 받은 updatedAt 을 함께 보낸다. 그 사이 다른 사람이 고쳤으면 409 */
-export async function updateStore(id: number, input: UpdateStoreInput): Promise<void> {
-  await request(`/stores/${id}`, await json("PUT", input));
+/**
+ * PUT /stores/:id — 상세에서 받은 updatedAt 을 함께 보낸다. 그 사이 다른 사람이 고쳤으면 409.
+ * 폐점이면 같은 트랜잭션에서 직원 퇴직 · 대기 계약 종료 · 초대 만료를 하고 처리한 수를 closing 으로 준다(그 밖에는 null).
+ * 확인과 저장 사이에 출근이 생겼으면 409 code OPEN_CHECK_IN — 다른 칸도 저장되지 않는다
+ */
+// 옛 api 배포는 204(본문 없음)를 줘 request 가 undefined 를 돌려준다 — 타입에 드러내 부르는 쪽이 ?. 로 받게 한다
+export async function updateStore(id: number, input: UpdateStoreInput): Promise<UpdateStoreResult | undefined> {
+  return request(`/stores/${id}`, await json("PUT", input));
 }
 
-/** DELETE /stores/:id — 미운영이면서 진행 중 근로계약이 없는 점포만. 논리 삭제 */
+/** DELETE /stores/:id — 미운영이면서 진행 중 근로계약(체결 완료 포함)이 없는 점포만. 논리 삭제 */
 export async function deleteStore(id: number): Promise<void> {
   await request(`/stores/${id}`, await json("DELETE"));
 }
