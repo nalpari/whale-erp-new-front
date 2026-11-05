@@ -40,15 +40,25 @@ const Note = ({ children }: { children: ReactNode }) => <p className="text-[14px
 /**
  * 저장 버튼 옆 안내 — 입력칸 플레이스홀더(회색)와 갈리게 느낌표 동그라미 아이콘(회청) + 먹색 13px 500 으로 둔다(2026-11-05 사용자 지정 — 전엔 회색 14px Note).
  */
+const GuideIcon = ({ className = "" }: { className?: string }) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" className={`shrink-0 text-erp-brand ${className}`}>
+    <circle cx="8" cy="8" r="8" fill="currentColor" />
+    <rect x="7.3" y="3.6" width="1.4" height="5.6" rx="0.7" fill="#fff" />
+    <circle cx="8" cy="11.6" r="0.95" fill="#fff" />
+  </svg>
+);
 const Guide = ({ children }: { children: ReactNode }) => (
   <p className="flex items-start gap-[6px] text-[13px] leading-[1.6] font-medium text-erp-ink">
-    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" className="mt-[3px] shrink-0 text-erp-brand">
-      <circle cx="8" cy="8" r="8" fill="currentColor" />
-      <rect x="7.3" y="3.6" width="1.4" height="5.6" rx="0.7" fill="#fff" />
-      <circle cx="8" cy="11.6" r="0.95" fill="#fff" />
-    </svg>
+    <GuideIcon className="mt-[3px]" />
     <span>{children}</span>
   </p>
+);
+/** 처리이력의 할 일 안내(대기 줄) — 같은 느낌표 아이콘을 붙인다(2026-11-05 사용자 지정). 글자는 표 칸 그대로 14px */
+const Pending = ({ children }: { children: ReactNode }) => (
+  <span className="flex min-w-0 items-center gap-[6px]">
+    <GuideIcon />
+    <span className="truncate">{children}</span>
+  </span>
 );
 /** 쓰던 글이 그사이 저장된 값과 어긋났다는 알림(front #87 리뷰). */
 const Stale = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.6] text-erp-off">{children}</p>;
@@ -120,9 +130,9 @@ function steps(d: InquiryDetail | LeadDetail, answered: ReactNode, canEdit: bool
   const confirm: Step[] = d.processingStartedAt
     ? [["확인", `${dt(d.processingStartedAt)} · ${d.processingStartedByName ?? "-"}`, true]]
     : d.status === "RECEIVED"
-      ? [["확인", canEdit ? "[처리 시작]을 누르면 문의자에게 처리중으로 표시됩니다." : "처리 시작 전", false]]
+      ? [["확인", canEdit ? <Pending>[처리 시작]을 누르면 문의자에게 처리중으로 표시됩니다.</Pending> : "처리 시작 전", false]]
       : [];
-  return [["접수", dt(d.createdAt), true], ...confirm, answered ? ["답변", answered, true] : ["답변", canEdit ? "답변을 저장하면 문의자에게 답변완료로 표시됩니다." : "답변 전", false]];
+  return [["접수", dt(d.createdAt), true], ...confirm, answered ? ["답변", answered, true] : ["답변", canEdit ? <Pending>답변을 저장하면 문의자에게 답변완료로 표시됩니다.</Pending> : "답변 전", false]];
 }
 
 /** stepWidth 는 같은 쪽 「문의자」 표의 라벨 칸 폭(문의사항 100px · 도입문의 110px) */
