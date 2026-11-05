@@ -3,7 +3,7 @@ import { UnsavedChangesProvider } from "@/components/site/code-editor/unsaved-ch
 import { SaveFailedBand } from "@/components/site/code-editor/code-panel";
 import { ApiError } from "@/lib/api";
 import { hasGroupSearch, searchTerm } from "@/lib/code-drafts";
-import { getBpCodeGroups, getBpCodeItems } from "@/lib/bp-codes";
+import { countBpCodeGroups, getBpCodeGroups, getBpCodeItems } from "@/lib/bp-codes";
 import { BpCodeFilter } from "./bp-code-filter";
 import { BpCodeGroupPanel } from "./bp-code-group-panel";
 import { BpCodeItemPanel } from "./bp-code-item-panel";
@@ -37,8 +37,8 @@ export default async function BpCodesPage({ searchParams }: PageProps<"/bp-code-
   const noGroupsAtAll =
     list.total === 0 &&
     (!hasGroupSearch({ groupCode, groupName }) ||
-      (await getBpCodeGroups()
-        .then((all) => all.total === 0)
+      (await countBpCodeGroups()
+        .then((total) => total === 0)
         .catch((error: unknown) => {
           console.warn("BP 공통코드 그룹 전체 건수 확인 실패", error);
           return false;

@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, type RefObject } from "react";
 import { Button, Field, FormGroup, Select, SlidePanel, Textarea, TextField, useToast } from "@/components/common";
 import { useCodes, useCurrentBp } from "@/components/site/session-gate";
-import { FailedBand } from "@/components/site/side-parts";
 import { PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
 import { BODY_MAX, FILE_ACCEPT, MAX_ATTACHMENTS, PASSWORD_REQUIRED_PREFIX, pickInquiryFiles, SESSION_EXPIRED, sizeLabel, TITLE_MAX } from "@/lib/community-view";
@@ -31,6 +30,8 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
   const [files, setFiles] = useState<{ key: number; file: File }[]>([]);
   const [rejected, setRejected] = useState<{ name: string; reason: string }[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
+  /** 등록 요청을 보냈다가 실패했다 — 그때만 「입력한 값 … 그대로 두었습니다」를 붙인다(빈 칸 확인은 보낸 적이 없다, 리뷰 반영) */
+  const [sentFailed, setSentFailed] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const nextKey = useRef(0);
@@ -50,7 +51,10 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
       !form.title.trim() && "제목을 입력해 주세요.",
       !form.body.trim() && "문의 내용을 입력해 주세요.",
     ].filter((m): m is string => !!m);
-    if (missing.length) return setErrors(missing);
+    if (missing.length) {
+      setSentFailed(false);
+      return setErrors(missing);
+    }
     const data = new FormData();
     for (const [key, value] of Object.entries(form)) data.set(key, value);
     for (const { file } of files) data.append("files", file);
@@ -65,6 +69,7 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
         const messages = res.status === 401 ? [SESSION_EXPIRED] : (body?.messages ?? [`등록하지 못했습니다 (HTTP ${res.status}).`]);
         // 비밀번호 강제 변경 403 이면 SessionGate 가 변경 팝업을 다시 띄운다(BFF 와 같은 이벤트).
         if (messages[0]?.startsWith(PASSWORD_REQUIRED_PREFIX)) dispatchEvent(new Event(PASSWORD_REQUIRED_EVENT));
+        setSentFailed(true);
         return setErrors(messages);
       }
       setForm(EMPTY);
@@ -75,6 +80,7 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
       toast(res.ok ? "문의를 등록했습니다." : (body?.messages?.[0] ?? "등록했습니다. 목록에서 확인해 주세요."));
       router.refresh();
     } catch {
+      setSentFailed(true);
       setErrors(["서버에 연결하지 못했습니다. 연결을 확인해 주세요."]);
     } finally {
       setSaving(false);
@@ -90,8 +96,18 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
     // 바탕창을 깔고 바깥을 누르면 닫는다 — BP 관리자 등록 패널과 같다(2026-11-05 사용자 지정). 등록 중에는 닫지 않는다
     <SlidePanel id={id} open={open} onClose={handleClose} onBackdropClose={handleClose} label="문의하기" trigger={trigger} closeOnBackdrop>
       <h2 className="text-[18px] font-semibold text-erp-ink">문의하기</h2>
-      {/* 실패 띠는 BP 관리자 등록 패널과 같은 FailedBand — 첫 줄 이유, 둘째 줄 입력값을 남겼다는 말(2026-11-05 사용자 지정) */}
-      {errors.length > 0 && <FailedBand message={errors.join(" ")} detail={RETRY} />}
+      {/* 실패 띠는 BP 관리자 등록 패널의 FailedBand 와 같은 모양 — 이유는 한 줄씩(한 문장으로 이으면 무엇이 문제인지 가르기 어려웠다, 리뷰 반영),
+          「입력한 값 … 그대로」는 실제로 보냈다가 실패했을 때만 먹색으로 덧붙인다(2026-11-05 사용자 지정) */}
+      {errors.length > 0 && (
+        <div role="alert" className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
+          {errors.map((m, i) => (
+            <p key={i} className="font-medium">
+              {m}
+            </p>
+          ))}
+          {sentFailed && <p className="text-erp-ink">{RETRY}</p>}
+        </div>
+      )}
       <FormGroup title="문의 내용">
         <Field label="분류" required>
           <Select value={form.inquiryCategoryCode} onChange={(e) => set("inquiryCategoryCode", e.target.value)}>

@@ -41,6 +41,12 @@ const json = async (method: string, body?: unknown): Promise<RequestInit> => ({
  * GET /code-groups — 플랫폼고정 · 플랫폼제공 그룹을 표시 순서대로 전부. 쪽을 나누지 않고 한 목록으로 보인다(2026-10-27 사용자 지정) —
  * api 쪽 크기 상한씩 끝까지 받아 이어 붙인다. 그룹 코드 · 그룹명은 일부 일치(대소문자 무시)이고 빈 값은 보내지 않는다. 관리주체를 주면 그 그룹만.
  */
+/** 공통코드 그룹이 몇 개인지만 — 한 쪽(1건)만 받아 total 을 본다. 빈 목록의 「등록된 / 조건에 맞는」 가르기용(리뷰 반영 — 전엔 전부 받았다) */
+export async function countCodeGroups(): Promise<number> {
+  const list: CodeGroupList = await request(`/code-groups?${new URLSearchParams({ page: "1", pageSize: "1" })}`, await json("GET"));
+  return list.total;
+}
+
 export async function getCodeGroups({
   groupCode = "",
   groupName = "",

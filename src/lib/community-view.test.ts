@@ -185,11 +185,11 @@ test("체크박스 필터 — 여러 값을 받고, 모르는 값 · 겹친 값�
 test("고객지원 체크박스 — 모두 고르면 전체(빈 배열), 모두 끄면 NONE 하나", () => {
   assert.deepEqual(parseSupportNoticeQuery({ noticeType: ["MAINTENANCE", "FEATURE", "TERMS", "GENERAL"] }).noticeType, []);
   assert.deepEqual(parseSupportInquiryQuery({ status: ["RECEIVED", "IN_PROGRESS", "ANSWERED"] }).status, []);
-  assert.deepEqual(parseSupportNoticeQuery({ noticeType: ["NONE", "TERMS"] }).noticeType, ["NONE"]);
-  assert.deepEqual(parseSupportInquiryQuery({ status: "NONE" }).status, ["NONE"]);
-  assert.deepEqual(parseSupportFaqQuery({ faqCategoryCode: ["NONE", "A"] }).faqCategoryCode, ["NONE"]);
-  assert.ok(noneChecked(["NONE"]) && !noneChecked([]) && !noneChecked(["TERMS"]));
-  assert.equal(queryString(parseSupportNoticeQuery({ noticeType: "NONE" })), "?noticeType=NONE");
+  assert.deepEqual(parseSupportNoticeQuery({ noticeType: ["_NONE", "TERMS"] }).noticeType, ["_NONE"]);
+  assert.deepEqual(parseSupportInquiryQuery({ status: "_NONE" }).status, ["_NONE"]);
+  assert.deepEqual(parseSupportFaqQuery({ faqCategoryCode: ["_NONE", "A"] }).faqCategoryCode, ["_NONE"]);
+  assert.ok(noneChecked(["_NONE"]) && !noneChecked(["NONE"]) && !noneChecked([]) && !noneChecked(["TERMS"]));
+  assert.equal(queryString(parseSupportNoticeQuery({ noticeType: "_NONE" })), "?noticeType=_NONE");
 });
 
 test("pageWindow — 10개 묶음과 앞 · 뒤 묶음", () => {

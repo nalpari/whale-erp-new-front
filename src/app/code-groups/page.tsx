@@ -1,6 +1,6 @@
 import { PageBar } from "@/components/common";
 import { hasGroupSearch, ownerQuery, ownerTerm, searchTerm } from "@/lib/code-drafts";
-import { getCodeGroups, getCodeItems } from "@/lib/codes";
+import { countCodeGroups, getCodeGroups, getCodeItems } from "@/lib/codes";
 import { CodeFilter } from "./code-filter";
 import { CodeGroupPanel } from "./code-group-panel";
 import { CodeItemPanel } from "./code-item-panel";
@@ -27,8 +27,8 @@ export default async function PlatformCodesPage({ searchParams }: PageProps<"/co
   const noGroupsAtAll =
     groups.total === 0 &&
     (!hasGroupSearch(search) ||
-      (await getCodeGroups()
-        .then((all) => all.total === 0)
+      (await countCodeGroups()
+        .then((total) => total === 0)
         .catch((error: unknown) => {
           console.warn("공통코드 그룹 전체 건수 확인 실패", error);
           return false;

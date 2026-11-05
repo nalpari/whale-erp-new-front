@@ -187,7 +187,8 @@ export type InquiryStatus = Schemas["InquiryStatus"];
  * 고객지원 체크박스 필터는 모두 고른 것이 기본이다(2026-11-05 사용자 지정). 모두 고르면 주소에 싣지 않고(빈 배열 = 전체),
  * 모두 끄면 NONE 하나만 남긴다 — 결과 없음이라 api 를 부르지 않는다(관리자 관리의 계정상태와 같다).
  */
-export const NONE_CHECKED = "NONE";
+// 공통코드 상세 코드(영문 대문자로 시작)가 될 수 없는 값 — 「NONE」이면 같은 이름의 FAQ 카테고리와 부딪힌다(리뷰 반영)
+export const NONE_CHECKED = "_NONE";
 export type SupportNoticeQuery = ListQuery & { keyword: string; noticeType: (NoticeType | typeof NONE_CHECKED)[] };
 export type SupportFaqQuery = ListQuery & { keyword: string; faqCategoryCode: string[] };
 export type SupportInquiryQuery = ListQuery & { title: string; status: (InquiryStatus | typeof NONE_CHECKED)[] };
