@@ -15,12 +15,11 @@ export type StoreClosingRetirement = Schemas["StoreClosingRetirementDto"];
 /**
  * 폐점을 막는 퇴근하지 않은 출근 — 건수는 가려진 직원 것까지 더한다(api isBlocked 와 같은 기준: count + hiddenCount > 0).
  * api 는 직원 이름 · 출근 시각을 주지 않는다 — 점포 메뉴 조회 권한만으로 보이는 응답이라 수만 안내한다(2026-11-04 사용자 결정, api 0a9fc92e).
- * 어느 출근인지는 출퇴근 현황에서 찾는다. 저장 때의 409 OPEN_CHECK_IN 문구도 시각 없이 「퇴근하지 않은 출근이 있습니다. …」다(api 폐점 서비스가 바꿔 던진다)
+ * 할 일 안내는 두지 않는다 — 건수만 보인다(2026-11-05 사용자 지정, 전엔 「출퇴근 현황에서 퇴근 시간을 보정한 뒤 폐점할 수 있습니다.」 —
+ * 본사에게 가려진 출근은 출퇴근 현황에서도 보이지 않아 따를 수 없는 안내였다). 저장 때의 409 OPEN_CHECK_IN 문구도 시각 · 할 일 없이 「퇴근 기록이 없는 출근이 있어 폐점할 수 없습니다.」다(api 폐점 서비스가 바꿔 던진다, 2026-11-05 같은 이름으로 맞춤)
  */
 export type ClosingBlock = {
   count: number;
-  /** 할 일 — 본사가 볼 수 있는 출근이 있으면 출퇴근 현황에서, 가려진 출근만 있으면 가맹점이 닫게 한다 */
-  guide: string;
 };
 
 /** 폐점 확인에서 막힘을 꺼낸다. 막히지 않았으면 null */
@@ -28,11 +27,7 @@ export function closingBlockOf(counts: Pick<StoreClosingCounts, "openCheckIns">)
   const { count, hiddenCount } = counts.openCheckIns;
   const total = count + hiddenCount;
   if (total <= 0) return null;
-  return {
-    count: total,
-    // 가려진 건만 있으면 본사는 출퇴근 현황에서도 그 줄을 볼 수 없다(ATT-30) — 가맹점이 퇴근 등록 · 보정하게 한다
-    guide: count > 0 ? "출퇴근 현황에서 퇴근 등록 · 보정한 뒤 다시 해 주세요." : "본사에서 볼 수 없는 직원의 출근입니다. 가맹점에서 퇴근 등록 · 보정한 뒤 다시 해 주세요.",
-  };
+  return { count: total };
 }
 
 /** 확인 팝업의 한 줄 — 수가 0 인 줄은 뺀다 */
@@ -40,15 +35,21 @@ export type ClosingLine = { key: string; text: string; note?: string };
 
 const n = (value: number) => value.toLocaleString("ko-KR");
 
-/** 폐점하면 함께 처리될 것(확인 팝업). 급여명세서는 처리하지 않으므로 여기 넣지 않는다 — closingPayslipText */
+/**
+ * 폐점하면 함께 처리될 것(확인 팝업). 급여명세서는 처리하지 않으므로 여기 넣지 않는다 — closingPayslipText.
+ * 줄은 「대상 : N건 처리」, 그 뜻은 note 로 덧붙인다(2026-11-05 사용자가 준 글 그대로 — 전엔 「퇴직(퇴직일 오늘)」 · 「초대 무효」라 모호했다).
+ * 퇴직일: 비어 있거나 오늘보다 뒤면 오늘로 정하고, 이미 그 전이면 그대로 둔다(api retiringStaff). 초대: 그 점포 직원에게 보낸 가입 초대가 모두 만료된다 —
+ * 확인 값에는 초대 수가 없어 발송 대기 줄에 덧붙인다(결과 창은 「초대 N건 만료」).
+ */
 export function closingCheckLines(counts: StoreClosingCounts): ClosingLine[] {
   const lines: (ClosingLine | false)[] = [
-    counts.retiringStaff > 0 && { key: "staff", text: `근무 중인 직원 ${n(counts.retiringStaff)}명 퇴직(퇴직일 오늘)` },
-    counts.draftContracts > 0 && { key: "draft", text: `임시저장 근로계약 ${n(counts.draftContracts)}건 종료` },
-    counts.pendingSendContracts > 0 && { key: "send", text: `발송 대기 근로계약 ${n(counts.pendingSendContracts)}건 종료 · 초대 무효` },
+    counts.retiringStaff > 0 && { key: "staff", text: `근무 중인 직원 : ${n(counts.retiringStaff)}명 퇴직 처리`, note: "퇴직일이 없거나 오늘 이후인 직원의 퇴직일은 오늘로 변경됩니다." },
+    counts.draftContracts > 0 && { key: "draft", text: `임시저장된 근로계약 : ${n(counts.draftContracts)}건 종료`, note: "해당 근로계약은 더 이상 작성하거나 발송할 수 없습니다." },
+    counts.pendingSendContracts > 0 && { key: "send", text: `발송 대기 중인 근로계약 : ${n(counts.pendingSendContracts)}건 종료`, note: "해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다." },
     counts.pendingSignatureContracts > 0 && {
       key: "sign",
-      text: `서명 대기 · 수정 요청 근로계약 ${n(counts.pendingSignatureContracts)}건 종료`,
+      text: `서명 대기·수정 요청 중인 근로계약 : ${n(counts.pendingSignatureContracts)}건 종료`,
+      note: "직원은 해당 근로계약에 더 이상 서명할 수 없습니다.",
     },
   ];
   return lines.filter((line): line is ClosingLine => Boolean(line));
@@ -56,7 +57,7 @@ export function closingCheckLines(counts: StoreClosingCounts): ClosingLine[] {
 
 /** 확정하지 않은 급여명세서 안내 — 폐점이 처리하지 않고 알리기만 한다. 없으면 null */
 export function closingPayslipText(counts: Pick<StoreClosingCounts, "unconfirmedPayslips">): string | null {
-  return counts.unconfirmedPayslips > 0 ? `확정하지 않은 급여명세서 ${n(counts.unconfirmedPayslips)}건은 폐점 뒤에도 처리할 수 있습니다.` : null;
+  return counts.unconfirmedPayslips > 0 ? `확정되지 않은 급여명세서 ${n(counts.unconfirmedPayslips)}건은 폐점 후에도 처리할 수 있습니다.` : null;
 }
 
 /** 폐점 저장 뒤 처리한 것(결과 안내). 처리한 것이 없으면 빈 목록 */

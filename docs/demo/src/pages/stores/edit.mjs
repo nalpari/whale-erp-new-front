@@ -40,7 +40,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
   );
 
   // 점포상태: 갈 수 있는 상태만 — 운영 점포는 운영 · 폐점(앱 nextStatuses). 폐점을 고르는 순간 조건을 확인하고, 못 채우면 「폐점할 수 없습니다.」 창 뒤 이전 값으로 돌린다.
-  // 조건을 채운 폐점은 [저장] 때 「폐점으로 저장할까요?」를 거친다 — 이 견본은 진행 중 근로계약이 6건이라 그 창까지 가지 않는다.
+  // 조건을 채운 폐점은 [저장] 때 「폐점으로 저장하시겠습니까?」를 거친다 — 이 견본은 진행 중 근로계약이 6건이라 그 창까지 가지 않는다.
   // 점포명과 같은 폭이 되게 반 칸에 둔다(오른쪽은 빈 자리)
   const status = ui.formRow(
     ui.field(
@@ -120,8 +120,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
     blockedId,
     "폐점할 수 없습니다.",
     `<div class="flex flex-col gap-[12px]"><div class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">폐점 조건</p>` +
-      `<ul class="mt-[6px] list-disc pl-[18px]"><li class="text-erp-off">퇴근하지 않은 출근 <b class="font-semibold">1건</b></li></ul>` +
-      `<p class="mt-[6px] text-erp-label">출퇴근 현황에서 퇴근 등록 · 보정한 뒤 다시 해 주세요.</p></div>` +
+      `<ul class="mt-[6px] list-disc pl-[18px]"><li class="text-erp-off">퇴근 기록이 없는 출근 <b class="font-semibold">1건</b></li></ul></div>` +
       `<p class="text-erp-label">점포상태를 이전 값으로 되돌렸습니다.</p></div>`,
     ui.button("확인", { "data-close": true }),
     "w-[480px]",
@@ -129,12 +128,12 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
   // 조건을 채운 폐점의 저장 확인 — 이 견본에서는 열리지 않는다(위 점포상태 주석)
   const closeSave = x.dialog(
     closeSaveId,
-    "폐점으로 저장할까요?",
-    "<p>폐점으로 저장하면 되돌릴 수 없습니다.</p><p>폐점일은 오늘(2026-11-03)이며, 다른 수정 내용도 함께 저장됩니다.</p>" +
+    "폐점으로 저장하시겠습니까?",
+    "<p>폐점으로 저장하면 되돌릴 수 없습니다.</p><p>폐점일은 오늘(2026-11-03)로 설정되며, 다른 수정 내용도 함께 저장됩니다.</p>" +
       // 폐점하면 함께 처리될 것 — 저장을 누를 때 지금 기준으로 다시 받는다(앱 ClosingCheckList)
-      `<div class="mt-[12px] flex flex-col gap-[6px]"><div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p class="font-medium">폐점하면 함께 처리됩니다.</p>` +
-      `<ul class="mt-[6px] list-disc pl-[18px]"><li>근무 중인 직원 8명 퇴직(퇴직일 오늘)</li><li>발송 대기 근로계약 1건 종료 · 초대 무효</li></ul></div>` +
-      `<p class="text-[13px] text-erp-label">체결 완료 근로계약은 그대로 남고, 직원에게 알림을 보내지 않습니다.</p></div>`,
+      `<div class="mt-[12px] flex flex-col gap-[6px]"><div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p class="font-medium">폐점 시 다음 항목이 함께 처리됩니다.</p>` +
+      `<ol class="mt-[6px] list-decimal pl-[18px]"><li>근무 중인 직원 : 8명 퇴직 처리<span class="block text-[13px] text-erp-label">퇴직일이 없거나 오늘 이후인 직원의 퇴직일은 오늘로 변경됩니다.</span></li><li class="mt-[6px]">발송 대기 중인 근로계약 : 1건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다.</span></li></ol></div>` +
+      `</div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("폐점으로 저장", { href: link(R, "stores/detail-closed.html") }),
     "w-[480px]",
   );
