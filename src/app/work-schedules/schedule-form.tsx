@@ -491,7 +491,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
                 <p className={STATUS}>근무 가능한 직원이 없습니다.</p>
               )}
               {/* 직원을 고르지 않은 오류는 직원 칸 바로 아래 — 고른 직원 줄들 뒤(카드 줄 간격 18px)에 두면 칸과 떨어져 보였다(2026-11-04 사용자 지적) */}
-                {bulkError}
+              {bulkError}
             </div>
           )}
         </div>
