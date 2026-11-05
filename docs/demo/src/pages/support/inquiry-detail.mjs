@@ -72,7 +72,7 @@ export const render = ({ A, R }, state = "wait") => {
     box(c.title, hint(c.hint),
       prose(c.body) + (c.files ? ui.detailTable("첨부파일", [["이미지", thumb(...c.files[0])], ["PDF", pdf(...c.files[1])]]) : ""),
     ) +
-    box("답변", hint("문의한 사람에게 보입니다."), done ? doneAnswer(c) :
+    box("답변", hint("문의자에게 표시됩니다."), done ? doneAnswer(c) :
       ui.field("내용", ui.textarea({ placeholder: "문의한 분이 그대로 읽습니다. 어떤 화면에서 무엇을 하면 되는지 적어 주세요." })) +
         spread(note("저장하면 상태가 즉시 답변 완료로 바뀌고 문의자에게 알림함과 메일로 알립니다. 처리 시작을 거치지 않고 바로 답해도 됩니다. 그 뒤에도 답변은 고칠 수 있습니다. 다른 운영자가 먼저 저장했으면 막고 최신 내용을 다시 보입니다."), ui.button("답변 저장")),
     ) +

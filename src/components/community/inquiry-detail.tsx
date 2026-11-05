@@ -428,7 +428,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         hint={
           first && last
             ? `${last.repliedByName ?? "-"} · 등록 ${dt(first.repliedAt)}${previous.length ? ` (수정됨 ${dt(last.repliedAt)})` : ""}`
-            : "문의한 사람에게 보입니다."
+            : "문의자에게 표시됩니다."
         }
         hintLeft={answered}
         current={last?.body ?? null}
