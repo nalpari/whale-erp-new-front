@@ -1,9 +1,22 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { homeOf, isPlatformRole, isPublicPath, loginPathOf, redirectsSignedIn, RETURN_PARAM, signedInTargetOf } from "@/lib/auth-routes";
+import {
+  checksExpiredLogin,
+  EXPIRED_REASON,
+  expiredLoginStepOf,
+  homeOf,
+  isPlatformRole,
+  isPublicPath,
+  loginPathOf,
+  LOGOUT_REASON_PARAM,
+  redirectsSignedIn,
+  RETURN_PARAM,
+  signedInTargetOf,
+} from "@/lib/auth-routes";
 import { BP_HEADER, bpRouteOf, stripBp } from "@/lib/bp-path";
 import { answersWith401, TOO_LARGE, tooLarge } from "@/lib/paper-request";
 import {
   ACCESS_TOKEN_TTL_MS,
+  LOGIN_KEY_COOKIE,
   parseSession,
   SESSION_COOKIE,
   sessionCookie,
@@ -31,6 +44,28 @@ export async function proxy(req: NextRequest) {
   if (tooLarge(stripBp(pathname), req.headers.get("content-length"), req.headers.get("transfer-encoding"))) return NextResponse.json({ error: TOO_LARGE, messages: [TOO_LARGE] }, { status: 413 });
 
   if (isPublicPath(pathname)) {
+    // 서버가 그리는 화면의 401(redirectExpired)은 쿠키를 지우지 못하고 /login?reason=expired 로 온다. 쿠키만 보고 홈으로 되돌리면
+    // 홈에서 또 401 이다 — 갱신으로 세션이 정말 끝났는지 묻는다. 판정은 auth-routes.ts(checksExpiredLogin · expiredLoginStepOf).
+    if (session && checksExpiredLogin(pathname, req.method, req.headers.has("next-action"), req.nextUrl.searchParams.get(LOGOUT_REASON_PARAM))) {
+      const refreshed = await refresh(session);
+      const step = expiredLoginStepOf(refreshed === "unauthorized" ? "unauthorized" : refreshed ? "ok" : "failed");
+      if (step === "clear") {
+        req.cookies.delete(SESSION_COOKIE);
+        req.headers.delete(BP_HEADER);
+        const res = NextResponse.next({ request: { headers: req.headers } });
+        res.cookies.delete(SESSION_COOKIE);
+        return res;
+      }
+      if (step === "home" && refreshed && refreshed !== "unauthorized") {
+        const target = signedInTargetOf(pathname, req.nextUrl.searchParams.get(RETURN_PARAM), homeOf(refreshed.roleTypeCode));
+        const res = NextResponse.redirect(new URL(target, req.url));
+        res.cookies.set(sessionCookie(refreshed));
+        return res;
+      }
+      // stay — api 가 응답하지 않는다. 쿠키를 두고 로그인 화면을 보인다(로그아웃시키지 않는다).
+      req.headers.delete(BP_HEADER);
+      return NextResponse.next({ request: { headers: req.headers } });
+    }
     // 로그인한 채 로그인 전 홈 · 로그인 · 찾기에 오면 자기 홈으로 보낸다 — 조건은 redirectsSignedIn(auth-routes.ts).
     // 로그인 화면에 돌아올 곳(?next=, 메일 링크)이 있으면 홈 대신 그리로(signedInTargetOf).
     if (session && redirectsSignedIn(pathname, req.method, session)) {
@@ -124,11 +159,13 @@ async function refresh(session: Session): Promise<Session | "unauthorized" | nul
 // BFF(/api/*)와 종이 계약 등록(/contracts/paper)은 fetch 가 부르므로 로그인 화면 HTML 대신 401 을 준다 — 화면이 받아 /login 으로 보낸다.
 // 리다이렉트를 주면 fetch 가 따라가 날인본을 실은 채 /login 으로 다시 POST 하고, 화면은 로그인으로 가지 못한다(answersWith401).
 // 메일 링크(엑셀 내려받기)처럼 돌아올 수 있는 화면이면 /login?next= 로 보내 로그인 뒤 그 화면으로 돌아오게 한다(loginPathOf).
+// 로그인 키 쿠키는 브라우저를 닫거나 직접 로그아웃해야 사라진다 — 남아 있으면 「이 브라우저에서 로그인해 있다가 끊겼다」라 만료 문구를 붙인다.
 function toLogin(req: NextRequest) {
+  const reason = req.cookies.has(LOGIN_KEY_COOKIE) ? EXPIRED_REASON : undefined;
   // 탭 BP 주소(/bp/{id}/contracts/paper)로 부른 창구도 같은 판정을 받게 접두를 떼고 본다.
   const res = answersWith401(stripBp(req.nextUrl.pathname))
     ? NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 })
-    : NextResponse.redirect(new URL(loginPathOf(req.nextUrl.pathname, req.method), req.url));
+    : NextResponse.redirect(new URL(loginPathOf(req.nextUrl.pathname, req.method, reason), req.url));
   res.cookies.delete(SESSION_COOKIE);
   return res;
 }
