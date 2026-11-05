@@ -35,8 +35,12 @@ export const LOGOUT_REASON_PARAM = "reason";
 /** 계정 상태(사용중지 · 탈퇴 · 소속 BP)가 바뀌어 로그아웃됨 — 경우를 나누지 않고 한 문장으로 알린다(2026-11-02 사용자 지정). */
 export const ACCOUNT_CHANGED_REASON = "account";
 export const ACCOUNT_CHANGED_MESSAGE = "계정 상태가 변경되어 로그아웃되었습니다.";
+/** 이 브라우저에서 로그인해 있다가 세션이 끝남(시간 만료 · 다른 곳 로그인 · 관리자 초기화) — api 가 이유를 알리지 않아 한 문장(2026-11-05 결정). */
+export const EXPIRED_REASON = "expired";
+export const EXPIRED_MESSAGE = "로그인이 만료되었습니다. 다시 로그인해 주세요.";
+const NOTICES: Record<string, string> = { [ACCOUNT_CHANGED_REASON]: ACCOUNT_CHANGED_MESSAGE, [EXPIRED_REASON]: EXPIRED_MESSAGE };
 /** 로그인 화면 쿼리의 이유 → 안내 문구. 모르는 값이면 null. */
-export const logoutNoticeOf = (value: unknown): string | null => (value === ACCOUNT_CHANGED_REASON ? ACCOUNT_CHANGED_MESSAGE : null);
+export const logoutNoticeOf = (value: unknown): string | null => (typeof value === "string" && Object.hasOwn(NOTICES, value) ? NOTICES[value] : null);
 
 /** 로그인 화면 주소의 돌아올 곳 쿼리 이름 — /login?next=/excel-downloads/41 */
 export const RETURN_PARAM = "next";
@@ -52,10 +56,15 @@ export function returnPathOf(value: unknown): string | null {
 /**
  * 로그인 없이 이 주소에 온 사람을 보낼 로그인 화면 주소(proxy · 화면의 401). 화면을 여는 GET 이고 돌아올 수 있는 주소(returnPathOf)면
  * /login?next= 로, 아니면 /login. 서버 액션 POST 에는 붙이지 않는다 — 로그인 뒤 POST 주소로 돌아갈 수 없다.
+ * reason 이 있으면 ?reason= 도 붙인다.
  */
-export function loginPathOf(pathname: string, method = "GET"): string {
+export function loginPathOf(pathname: string, method = "GET", reason?: string): string {
   const back = method === "GET" ? returnPathOf(pathname) : null;
-  return back ? `/login?${new URLSearchParams({ [RETURN_PARAM]: back })}` : "/login";
+  const params = new URLSearchParams();
+  if (back) params.set(RETURN_PARAM, back);
+  if (reason) params.set(LOGOUT_REASON_PARAM, reason);
+  const query = params.toString();
+  return query ? `/login?${query}` : "/login";
 }
 
 /**
@@ -69,4 +78,19 @@ export function signedInTargetOf(pathname: string, next: string | null, home: st
 /** okf/auth.md — BP·가맹 계정은 웨일ERP(BP) 홈, 플랫폼 계정은 플랫폼관리 사이트. */
 export function homeOf(roleTypeCode: string): "/platform" | "/home" {
   return isPlatformRole(roleTypeCode) ? "/platform" : "/home";
+}
+
+/**
+ * 세션 쿠키를 들고 /login?reason=expired 를 연 요청을 proxy 가 갱신으로 확인할지. 서버가 그리는 화면은 쿠키를 지울 수 없어
+ * 이 주소로 보내고 proxy 가 정리한다(redirectExpired). 화면을 여는 GET 만 — 로그인 제출(서버 액션 POST)도 이 주소로 가므로,
+ * 거기서 쿠키를 지우면 로그인 액션이 쓰는 새 쿠키와 같은 응답에서 겹친다(proxy 의 서버 액션 갱신 건너뛰기와 같은 이유).
+ */
+export function checksExpiredLogin(pathname: string, method: string, isAction: boolean, reason: string | null): boolean {
+  return pathname === "/login" && method === "GET" && !isAction && reason === EXPIRED_REASON;
+}
+
+export type ExpiredLoginStep = "clear" | "home" | "stay";
+/** 위 확인의 갱신 결과 → 할 일. 401 = 세션이 끝남(쿠키 삭제 후 로그인 화면), 200 = 살아 있음(새 쿠키 · 홈), 그 밖(api 꺼짐 · 시간 초과 · 5xx) = 쿠키를 두고 로그인 화면. */
+export function expiredLoginStepOf(refreshed: "unauthorized" | "ok" | "failed"): ExpiredLoginStep {
+  return refreshed === "unauthorized" ? "clear" : refreshed === "ok" ? "home" : "stay";
 }

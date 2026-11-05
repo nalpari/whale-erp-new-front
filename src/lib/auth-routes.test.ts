@@ -4,6 +4,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   ACCOUNT_CHANGED_MESSAGE,
+  checksExpiredLogin,
+  EXPIRED_MESSAGE,
+  EXPIRED_REASON,
+  expiredLoginStepOf,
   homeOf,
   isFranchiseRole,
   isPlatformRole,
@@ -86,4 +90,39 @@ test("로그인한 채 로그인 전 화면에 오면 — /login 의 받을 수 
     assert.equal(signedInTargetOf("/login", next, "/home"), "/home", String(next));
   assert.equal(signedInTargetOf("/find", "/excel-downloads/41", "/home"), "/home");
   assert.equal(signedInTargetOf("/", "/excel-downloads/41", "/platform"), "/platform");
+});
+
+test("로그인 화면 ?reason=expired — 만료 문구. account 는 그대로, 모르는 값은 무시", () => {
+  assert.equal(EXPIRED_REASON, "expired");
+  assert.equal(EXPIRED_MESSAGE, "로그인이 만료되었습니다. 다시 로그인해 주세요.");
+  assert.equal(logoutNoticeOf("expired"), EXPIRED_MESSAGE);
+  assert.equal(logoutNoticeOf("account"), ACCOUNT_CHANGED_MESSAGE);
+  assert.equal(logoutNoticeOf("other"), null);
+  assert.equal(logoutNoticeOf(["expired"]), null);
+});
+
+test("loginPathOf — 이유를 붙이고, 돌아올 곳(?next=)과 함께 붙는다", () => {
+  assert.equal(loginPathOf("/stores", "GET", EXPIRED_REASON), "/login?reason=expired");
+  assert.equal(loginPathOf("/excel-downloads/41", "GET", EXPIRED_REASON), "/login?next=%2Fexcel-downloads%2F41&reason=expired");
+  // 서버 액션 POST 에는 next 를 붙이지 않지만 이유는 붙인다
+  assert.equal(loginPathOf("/excel-downloads/41", "POST", EXPIRED_REASON), "/login?reason=expired");
+  // 이유가 없으면 지금과 같다
+  assert.equal(loginPathOf("/stores"), "/login");
+  assert.equal(loginPathOf("/excel-downloads/41"), "/login?next=%2Fexcel-downloads%2F41");
+});
+
+test("checksExpiredLogin — /login?reason=expired 를 여는 GET 만 갱신으로 확인한다", () => {
+  assert.equal(checksExpiredLogin("/login", "GET", false, "expired"), true);
+  // 로그인 제출(서버 액션 POST)은 건드리지 않는다 — 로그인 액션의 새 쿠키와 겹친다
+  assert.equal(checksExpiredLogin("/login", "POST", true, "expired"), false);
+  assert.equal(checksExpiredLogin("/login", "GET", true, "expired"), false);
+  assert.equal(checksExpiredLogin("/login", "GET", false, "account"), false);
+  assert.equal(checksExpiredLogin("/login", "GET", false, null), false);
+  assert.equal(checksExpiredLogin("/find", "GET", false, "expired"), false);
+});
+
+test("expiredLoginStepOf — 401 이면 쿠키 삭제, 살아 있으면 홈, 그 밖은 그대로", () => {
+  assert.equal(expiredLoginStepOf("unauthorized"), "clear");
+  assert.equal(expiredLoginStepOf("ok"), "home");
+  assert.equal(expiredLoginStepOf("failed"), "stay");
 });
