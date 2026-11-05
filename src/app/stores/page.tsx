@@ -33,6 +33,18 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
   if ("denied" in loaded) return <StoreDenied message={loaded.denied} />;
   const { query, picked, missingCount, fromScope, items, total } = loaded;
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
+  // 0건이면 조건 없이(모든 상태 · 유형) 한 번 더 물어 「점포가 아예 없는지」와 「조건에 맞는 점포가 없는지」를 가른다(2026-11-04 사용자 지정).
+  // 묻지 못하면 예전처럼 「조회된 점포가 없습니다.」로 둔다
+  const noStoresAtAll =
+    total === 0 &&
+    (await getStores({ page: 1, pageSize: 20, storeIds: [], bizRegistrationNumber: "", statuses: [...STORE_STATUSES], storeTypes: [...STORE_TYPES] })
+      .then((all) => all.total === 0)
+      .catch(() => false));
+  const emptyText = noStoresAtAll
+    ? "등록된 점포가 없습니다."
+    : scopeTypeMismatch(query)
+      ? "상단 범위와 고른 점포유형이 겹치지 않아 조회된 점포가 없습니다."
+      : "조회된 점포가 없습니다.";
   // 쿼리 · 돌아갈 주소(back)는 옛 경로로 두고, 링크로 그릴 때만 탭 BP 를 붙인다 — 엑셀 중계 경로도 /bp/{id} 아래로 불러야 proxy 가 헤더를 싣는다
   const at = await screenPath();
   const listHref = storesHref(query);
@@ -68,9 +80,13 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
                 <ExcelDownloadButton href={excelHref} empty={total === 0} emptyTitle="엑셀로 다운로드할 점포 정보가 없습니다." />
                 <StorePageSizeSelect />
               </ListToolbar>
-              {query.view === "table" ? (
-                <StoreTable items={items} total={total} page={query.page} pageSize={query.pageSize} detailHref={detailHref} />
-              ) : items.length ? (
+              {!items.length && query.view !== "table" ? (
+                // 빈 상태(카드 보기) — 테두리 상자가 목록 영역 남는 높이를 채우고 문구는 그 가운데(2026-11-04 사용자 지정 — 전엔 위쪽 92px 상자, 테두리 없이는 허전했다).
+                // 표 보기는 열 이름 줄을 남기고 그 아래를 같은 방식으로 채운다(DataTable fillEmpty)
+                <p className="flex min-h-[92px] flex-1 items-center justify-center rounded-[4px] border border-erp-panel-line text-[14px] text-erp-muted">{emptyText}</p>
+              ) : query.view === "table" ? (
+                <StoreTable items={items} total={total} page={query.page} pageSize={query.pageSize} detailHref={detailHref} empty={emptyText} />
+              ) : (
                 <ul aria-label="점포 목록" className="grid grid-cols-4 gap-[12px]">
                   {items.map((store) => (
                     <li key={store.storeId} className="contents">
@@ -78,11 +94,6 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
                     </li>
                   ))}
                 </ul>
-              ) : (
-                // 빈 상태 — 표와 같은 92px 한 줄(DESIGN.md Tables)
-                <p className="grid h-[92px] place-items-center rounded-[4px] border border-erp-panel-line text-[14px] text-erp-muted">
-                  {scopeTypeMismatch(query) ? "상단 범위와 고른 점포유형이 겹치지 않아 조회된 점포가 없습니다." : "조회된 점포가 없습니다."}
-                </p>
               )}
               <div className="pt-[14px]">
                 <StorePagination totalPages={totalPages} />

@@ -167,7 +167,8 @@ export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; 
 
   return (
     <>
-      <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} empty="이 기간에 보정이 필요한 기록이 없습니다." />
+      {/* 비었을 때 열 이름 줄은 두고 그 아래 빈 칸이 본문 남는 높이를 채운다 — 기간이 늘 걸려 있어 문구는 하나다(직원 · 점포 목록과 같다, 2026-11-04 사용자 지정) */}
+      <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} empty="이 기간에 보정이 필요한 기록이 없습니다." fillEmpty />
       <SlidePanel id="attendance-fix" open={fix !== null} onClose={() => setFix(null)} label="기록 보정" trigger={trigger}>
         {fix && (
           <FixForm

@@ -1,5 +1,5 @@
 import { Button, ListToolbar, PageBar } from "@/components/common";
-import { kstToday } from "@/lib/staff-members";
+import { EMPLOYMENT_TYPES, JOIN_GROUPS, kstToday } from "@/lib/staff-members";
 import { getStaffMembers } from "@/lib/staff-members-api";
 import { BulkExportButton } from "./bulk-export-button";
 import { StaffFilter } from "./staff-filter";
@@ -21,6 +21,23 @@ export default async function StaffMembersPage({
   const query = parseStaffListQuery(await searchParams);
   const { items, total } = await getStaffMembers(query);
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
+  // 0건이면 조건 없이(전체 점포 · 모든 유형 · 재직 상태 전체) 한 번 더 물어 「직원이 아예 없는지」와 「조건에 맞는 직원이 없는지」를 가른다
+  // (점포 목록과 같은 방식, 2026-11-04 사용자 지정). 묻지 못하면 예전처럼 「조회된 직원이 없습니다.」
+  const noStaffAtAll =
+    total === 0 &&
+    (await getStaffMembers({
+      storeIds: [],
+      storesCleared: true,
+      scope: null,
+      keyword: "",
+      employmentTypes: [...EMPLOYMENT_TYPES],
+      joinGroups: [...JOIN_GROUPS],
+      employmentStatus: "ALL",
+      page: 1,
+      pageSize: query.pageSize,
+    })
+      .then((all) => all.total === 0)
+      .catch(() => false));
 
   return (
     <>
@@ -44,6 +61,7 @@ export default async function StaffMembersPage({
             pageSize={query.pageSize}
             today={kstToday()}
             listHref={staffListHrefOf(query)}
+            empty={noStaffAtAll ? "등록된 직원이 없습니다." : "조회된 직원이 없습니다."}
           />
           <div className="pt-[14px]">
             <StaffPagination query={query} totalPages={totalPages} />

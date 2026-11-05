@@ -5,7 +5,7 @@ import { DataTable, DetailTable, type Column } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { FixList, ProxyButton } from "./attendance-fix-list";
 import { FixPeriod } from "./attendance-fix-period";
-import { addDays, dayLabel, hoursLabel, lateMinutes, shortDay, type DayRow, type FixRow, type WeekSummary } from "./attendance-query";
+import { addDays, dayLabel, hoursLabel, lateMinutes, monthDayLabel, type DayRow, type FixRow, type WeekSummary } from "./attendance-query";
 
 // 출·퇴근 현황 본문 세 묶음(데모 staff-sections.mjs today · summary · fixList). 묶음 머리는 데모 sectionHead(18px 제목 + 오른쪽 이동),
 // 날 · 주 이동은 데모 weekNav(‹ 라벨 ›)를 링크로 옮겼다 — 화면 상태는 주소에만 둔다.
@@ -41,9 +41,10 @@ const Stack = ({ lines }: { lines: ReactNode[] }) =>
     <span>-</span>
   );
 
-function Section({ title, right, children }: { title: string; right?: ReactNode; children: ReactNode }) {
+/** fill — 본문 아래 남는 높이를 채운다. 빈 표(DataTable fillEmpty)가 그 높이까지 늘어난다(보정이 필요한 기록, 2026-11-04 사용자 지정) */
+function Section({ title, right, fill = false, children }: { title: string; right?: ReactNode; fill?: boolean; children: ReactNode }) {
   return (
-    <section className="flex min-w-0 flex-col gap-[12px]">
+    <section className={`flex min-w-0 flex-col gap-[12px] ${fill ? "flex-1" : ""}`}>
       <div className="flex items-end gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">{title}</h2>
         {right}
@@ -134,17 +135,27 @@ export function DaySection({
     },
   ];
   return (
-    <Section title="일별 출퇴근" right={<StepNav label={dayLabel(date)} unit="날" prev={hrefOfDate(addDays(date, -1))} next={hrefOfDate(addDays(date, 1))} />}>
-      <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} empty="이 날의 출퇴근 기록이 없습니다." />
+    // 표 틀을 옆 근태 요약 아래 끝까지 늘려 두 칸의 아래 선을 맞춘다(2026-11-04 사용자 지정 — 직원이 적으면 표가 짧게 끝나 아래가 비어 보였다).
+    // 줄은 위에서부터 쌓이고 남는 높이는 틀 안 빈칸이다. 비었으면 안내가 그 가운데(fillEmpty)
+    <Section title="일별 출퇴근" fill right={<StepNav label={dayLabel(date)} unit="날" prev={hrefOfDate(addDays(date, -1))} next={hrefOfDate(addDays(date, 1))} />}>
+      {rows.length ? (
+        <div className="flex min-h-0 flex-1 flex-col border-x border-b border-erp-thead-line [&>table]:border-x-0">
+          <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} />
+        </div>
+      ) : (
+        <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} empty="이 날의 출퇴근 기록이 없습니다." fillEmpty />
+      )}
     </Section>
   );
 }
 
 function Rate({ label, count, total }: { label: string; count: number; total: number }) {
   const pct = total ? Math.round((count / total) * 100) : 0;
+  // 라벨 시작선을 아래 근로시간 표(DetailTable — 선 1px + 칸 여백 12px)의 라벨과 맞춘다(2026-11-04 사용자 지정 — 전엔 칸 왼쪽 끝에 붙어 시작선이 둘이었다)
   return (
-    <div className="flex h-[34px] items-center gap-[12px] text-[14px]">
-      <span className="w-[80px] shrink-0 text-erp-label">{label}</span>
+    <div className="flex h-[34px] items-center gap-[12px] pl-[13px] text-[14px]">
+      {/* 라벨 98px — 들여쓰기 13 + 98 + 간격 12 = 123px 에서 막대가 시작해 아래 근로시간 표 값(선 1 + 라벨 칸 110 + 여백 12)과 같은 세로줄에 선다. 굵기도 표 라벨과 같은 500(2026-11-04 사용자 지정) */}
+      <span className="w-[98px] shrink-0 font-medium text-erp-label">{label}</span>
       <span className="block h-[6px] w-[200px] overflow-hidden rounded-[2px] bg-erp-subtle" role="img" aria-label={`${label} ${pct}%`}>
         <span className="block h-full bg-erp-brand" style={{ width: `${pct}%` }} />
       </span>
@@ -160,7 +171,7 @@ function Rate({ label, count, total }: { label: string; count: number; total: nu
 export function SummarySection({ summary, week, hrefOfWeek }: { summary: WeekSummary; week: string; hrefOfWeek: (week: string) => string }) {
   const total = summary.normal + summary.late + summary.missing;
   return (
-    <Section title="근태 요약" right={<StepNav label={`${shortDay(week)} ~ ${shortDay(addDays(week, 6))}`} unit="주" prev={hrefOfWeek(addDays(week, -7))} next={hrefOfWeek(addDays(week, 7))} />}>
+    <Section title="근태 요약" right={<StepNav label={`${monthDayLabel(week)} ~ ${monthDayLabel(addDays(week, 6))}`} unit="주" prev={hrefOfWeek(addDays(week, -7))} next={hrefOfWeek(addDays(week, 7))} />}>
       <div className="flex flex-col gap-[12px]">
         <div className="flex flex-col">
           <Rate label="정상 출근" count={summary.normal} total={total} />
@@ -205,6 +216,7 @@ export function FixSection({
   return (
     <Section
       title="보정이 필요한 기록"
+      fill
       right={
         <span className="flex items-center gap-[6px]">
           <FixPeriod from={query.fixFrom} to={query.fixTo} today={today} />

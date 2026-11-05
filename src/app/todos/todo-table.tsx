@@ -16,7 +16,7 @@ export function TodoTable({
   today,
   statusLabels,
   listHref,
-  filtered,
+  empty,
 }: {
   items: TodoListItem[];
   page: number;
@@ -25,8 +25,8 @@ export function TodoTable({
   statusLabels: EnumValue[];
   /** 지금 목록 주소. 상세 링크에 ?back= 으로 붙여 상세의 「목록」이 같은 조건으로 돌아오게 한다 */
   listHref: string;
-  /** 거르는 조건이 있으면 빈 목록 문구를 「조건에 맞는」으로 바꾼다(hasTodoFilter) */
-  filtered: boolean;
+  /** 빈 목록 문구 — TO-DO 가 아예 없는지 · 조건에 맞는 TO-DO 가 없는지는 목록 화면이 가른다(2026-11-04 사용자 지정) */
+  empty: string;
 }) {
   const columns: Column<Row>[] = [
     { header: "순번", width: "w-[60px]", cell: (r) => r.no },
@@ -68,7 +68,9 @@ export function TodoTable({
       columns={columns}
       rows={items.map((item, i) => ({ no: (page - 1) * pageSize + i + 1, item }))}
       rowKey={(r) => r.item.todoId}
-      empty={filtered ? "조건에 맞는 TO-DO 가 없습니다." : "등록된 TO-DO 가 없습니다."}
+      empty={empty}
+      // 비었을 때 열 이름 줄은 두고 그 아래 빈 칸이 목록 영역 남는 높이를 채운다(직원 · 점포 목록과 같다, 2026-11-04 사용자 지정)
+      fillEmpty
     />
   );
 }

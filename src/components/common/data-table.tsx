@@ -60,6 +60,7 @@ export function DataTable<T>({
   empty = "데이터가 없습니다.",
   headVariant = "default",
   scroll = false,
+  fillEmpty = false,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -69,6 +70,11 @@ export function DataTable<T>({
   empty?: ReactNode;
   headVariant?: TableHeadVariant;
   scroll?: boolean;
+  /**
+   * 비었을 때 열 이름 줄은 그대로 두고, 그 아래 빈 안내 칸이 감싸는 flex 세로 영역의 남는 높이를 채워 문구를 가운데에 둔다(점포 목록 표 보기, 2026-11-04 사용자 지정).
+   * 감싸는 쪽이 flex 세로여야 한다. 고정 머리 표(scroll)에는 쓰지 않는다
+   */
+  fillEmpty?: boolean;
 }) {
   const table = `w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px] ${headVariant === "none" ? "border-t" : ""}`;
   const cols = (
@@ -158,6 +164,16 @@ export function DataTable<T>({
             </table>
           }
         />
+      </div>
+    );
+  if (fillEmpty && rows.length === 0)
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <table className={table}>
+          {cols}
+          {head}
+        </table>
+        <p className="flex min-h-[92px] flex-1 items-center justify-center border-x border-b border-erp-thead-line text-[14px] text-erp-muted">{empty}</p>
       </div>
     );
   return (

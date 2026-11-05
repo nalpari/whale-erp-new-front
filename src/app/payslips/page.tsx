@@ -1,4 +1,4 @@
-import { ListToolbar, PageBar, Tag } from "@/components/common";
+import { PageBar, Tag } from "@/components/common";
 import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import { PAYSLIP_STATUSES } from "@/lib/payslips";
 import { getPayslips } from "@/lib/payslips-api";
@@ -57,24 +57,31 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
         <PayslipFilter query={query} today={today} statusLabels={statusLabels} />
         <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
           <PayslipMonthNav key={query.month} query={query} />
-          <p className="flex flex-wrap items-center gap-[10px] text-[14px] text-erp-label">
-            <span>
+          {/* 총 건수 · 상태별 건수 · 검토 대기를 한 줄로, 버튼 · 건수 고르기는 오른쪽 — 모든 칸을 줄 가운데에 맞춘다(2026-11-04 사용자 지정 — 전엔 상태 건수 줄과
+              총 건수 줄이 따로 있었고, 공통 ListToolbar 가 아래 끝에 맞춰 「총 N 건」이 처졌다) */}
+          <div className="flex flex-wrap items-center gap-x-[12px] gap-y-[6px] text-[14px]">
+            <p className="text-erp-ink">
+              총 <b className="font-semibold">{total.toLocaleString("ko-KR")}</b> 건
+            </p>
+            <span aria-hidden="true" className="h-[11px] w-px bg-[#d9d9d9]" />
+            <p className="flex items-center text-erp-label">
               {counts.map((c, i) => (
-                <span key={c.label}>
-                  {i > 0 && " · "}
-                  {c.label} <b className="font-semibold text-erp-ink">{c.count}</b>
+                <span key={c.label} className="flex items-center">
+                  {i > 0 && <span className="mx-[6px] text-erp-muted">·</span>}
+                  {c.label}
+                  <b className="ml-[4px] font-semibold text-erp-ink">{c.count}</b>
                 </span>
               ))}
-            </span>
+            </p>
             {/* 검토 대기는 작성 중 · 검토 중 모두에 생기는 분류라 상태 넷과 떼어 꼬리표로 보인다 — 다섯째 상태로 읽혀 합계가 맞지 않아
                 보이지 않게(운영 정책 v221 PAY-06) */}
             <span aria-hidden="true" className="h-[11px] w-px bg-[#d9d9d9]" />
             <Tag>검토 대기 {reviewPendingCount}</Tag>
-          </p>
-          <ListToolbar total={total}>
-            <PayslipListActions query={query} confirmedCount={statusCounts.CONFIRMED} />
-            <PayslipPageSize query={query} />
-          </ListToolbar>
+            <div className="ml-auto flex items-center gap-[6px]">
+              <PayslipListActions query={query} confirmedCount={statusCounts.CONFIRMED} />
+              <PayslipPageSize query={query} />
+            </div>
+          </div>
           <PayslipTable
             items={items}
             total={total}

@@ -54,7 +54,8 @@ export default async function AttendanceRecordsPage({ searchParams }: { searchPa
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         <AttendanceFilter query={query} today={today} statusLabels={statusLabels} reasonLabels={reasonLabels} employmentTypeLabels={employmentTypeLabels} />
         <main className="flex min-h-0 flex-1 flex-col gap-[24px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
-          <div className="grid grid-cols-2 items-start gap-[24px]">
+          {/* 두 칸 사이 36px — 24px 는 왼쪽 표 끝과 「근태 요약」이 붙어 보였다. 두 칸 높이를 같게(stretch) 해 일별 표 틀이 근태 요약 아래 끝까지 늘어난다(2026-11-04 사용자 지정) */}
+          <div className="grid grid-cols-2 items-stretch gap-[36px]">
             <DaySection
               rows={day.items.filter((r) => matchesFilter(r, query))}
               date={query.date}

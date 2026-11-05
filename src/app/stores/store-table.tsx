@@ -11,7 +11,22 @@ type Row = { no: number; store: StoreSummary };
 const DASH = "-";
 
 /** 점포 목록 표 보기(데모 stores/index 의 표). 점포명을 누르면 상세로 간다. 순번은 전체 건수에서 거꾸로 센다 — 맨 위(최신 등록)가 total, 가장 오래된 점포가 1 */
-export function StoreTable({ items, total, page, pageSize, detailHref }: { items: StoreSummary[]; total: number; page: number; pageSize: number; detailHref: (id: number) => string }) {
+export function StoreTable({
+  items,
+  total,
+  page,
+  pageSize,
+  detailHref,
+  empty,
+}: {
+  items: StoreSummary[];
+  total: number;
+  page: number;
+  pageSize: number;
+  detailHref: (id: number) => string;
+  /** 빈 목록 문구 — 점포가 아예 없는지 · 조건에 맞는 점포가 없는지는 목록 화면이 가른다 */
+  empty: string;
+}) {
   const columns: Column<Row>[] = [
     { header: "순번", width: "w-[60px]", cell: (r) => r.no.toLocaleString("ko-KR") },
     { header: "점포코드", width: "w-[110px]", cell: (r) => r.store.storeCode },
@@ -38,5 +53,5 @@ export function StoreTable({ items, total, page, pageSize, detailHref }: { items
     { header: "등록일", width: "w-[120px]", cell: (r) => formatDateTime(r.store.createdAt).slice(0, 10) || DASH },
   ];
   const rows = items.map((store, i) => ({ no: total - ((page - 1) * pageSize + i), store }));
-  return <DataTable columns={columns} rows={rows} rowKey={(r) => String(r.store.storeId)} empty="조회된 점포가 없습니다." />;
+  return <DataTable columns={columns} rows={rows} rowKey={(r) => String(r.store.storeId)} empty={empty} fillEmpty />;
 }
