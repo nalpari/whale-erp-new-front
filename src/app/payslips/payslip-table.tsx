@@ -99,6 +99,8 @@ export function PayslipTable({
       // 가린 줄은 payslipId 가 null 이라 순번으로 가른다(직원 목록과 같다)
       rowKey={(r) => r.payslip.payslipId ?? `masked-${r.no}`}
       empty={filtered ? "조건에 맞는 급여명세서가 없습니다." : "이 달의 급여명세서가 없습니다."}
+      // 비었을 때 열 이름 줄은 두고 빈 칸이 목록 영역 남는 높이를 채운다(직원 · 점포 목록과 같다, 2026-11-04 사용자 지정)
+      fillEmpty
     />
   );
 }

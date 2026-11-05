@@ -35,7 +35,7 @@ export const shiftOf = (s: { startTime: string; endTime: string; breakMinutes: n
 export function shiftOfDefaults(d: { startTime: string | null; endTime: string | null; breakMinutes: number | null }): ShiftInput {
   return { startTime: d.startTime ?? "", endTime: d.endTime ? endInput(d.endTime) : "", breakMinutes: d.breakMinutes === null ? "" : String(d.breakMinutes) };
 }
-/** 「계약 값으로 되돌리기」를 보일까 — 계약에 시작 · 종료가 있을 때만(#203) */
+/** 「근로계약 시간적용」을 보일까 — 계약에 시작 · 종료가 있을 때만(#203) */
 export const hasDefaults = (d: { startTime: string | null; endTime: string | null } | null | undefined) => !!d?.startTime && !!d.endTime;
 
 /** 근무 길이(분). 종료가 시작보다 이르거나 같으면 다음 날 */
@@ -50,7 +50,7 @@ export const endOptionLabel = (startTime: string, endTime: string) => (startTime
 
 /** 근무 한 줄의 문제. 없으면 null */
 export function shiftProblem(s: ShiftInput): string | null {
-  if (!s.startTime || !s.endTime) return "시작과 종료를 골라 주세요.";
+  if (!s.startTime || !s.endTime) return "시작시간과 종료시간을 골라 주세요.";
   if (workMinutes(s.startTime, s.endTime) >= 24 * 60) return "근무시간은 24시간보다 짧아야 합니다.";
   if (!/^\d{1,4}$/.test(s.breakMinutes)) return "휴게시간을 0 이상의 분으로 넣어 주세요.";
   if (Number(s.breakMinutes) >= workMinutes(s.startTime, s.endTime)) return "휴게시간은 근무시간보다 짧아야 합니다.";

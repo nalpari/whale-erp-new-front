@@ -144,12 +144,6 @@ export const withPickedStores = (query: TodoListQuery, ids: number[]) => withFil
 /** 헤더 범위로 점포 조건을 건다(목록에서 고른 점포는 비운다) */
 export const withScopeCondition = (query: TodoListQuery, scope: Scope) => withFilter(query, { storeIds: [], storesCleared: false, scope });
 
-/** 기본값과 다른 거르는 조건이 있는가. 빈 목록 문구를 가를 때 쓴다 — 쪽 · 건수 · 점포 「전체」(헤더 범위 전체 · 비운 것)는 조건이 아니다 */
-export function hasTodoFilter(query: TodoListQuery): boolean {
-  const scope = query.scope?.type === "ALL" ? null : query.scope;
-  return toTodoListSearch({ ...query, scope, storesCleared: false, page: 1, pageSize: DEFAULT_TODO_LIST_QUERY.pageSize }) !== "";
-}
-
 /**
  * 쪽이 비었을 때 갈 주소. 1쪽이 아닌데 줄이 없으면(마지막 쪽의 마지막 줄을 지우고 돌아옴 · 손으로 친 쪽) 남은 마지막 쪽, 0건이면 1쪽.
  * 그대로 두면 되는 경우는 null — 조건은 그대로 둔다.

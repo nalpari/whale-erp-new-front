@@ -25,7 +25,8 @@ function monthGrid() {
   const days = 30;
   const cells = Array.from({ length: Math.ceil((first + days) / 7) * 7 }, (_, i) => i - first + 1);
   const td = (d, i) => {
-    const line = `h-[92px] border-b border-erp-thead-line p-[10px] align-top ${i % 7 ? "border-l" : ""}`;
+    // 날짜 칸 88px — 92px 이면 점포 없음 띠가 뜬 1080 화면에서 5주 달이 넘쳤다(앱 holiday-calendar.tsx, 2026-11-05 사용자 지정)
+    const line = `h-[88px] border-b border-erp-thead-line p-[10px] align-top ${i % 7 ? "border-l" : ""}`;
     if (d < 1 || d > days) return `<td class="${line} bg-erp-thead-bg"></td>`;
     const off = OFFICIAL[d];
     const num =
@@ -95,13 +96,15 @@ export default ({ A, R }) => {
             return `<button type="button" aria-controls="${PANEL.detail}" aria-expanded="false" class="block w-full text-left hover:bg-erp-thead-bg">${itemRow(c.scopeTag(scope), n, `${type} · ${target}`, ui.img(A, "next.svg", 16, 16))}</button>`;
           })
           .join("")
-      : `<p class="border-b border-erp-thead-line py-[24px] text-center text-[14px] text-erp-muted">등록된 휴일이 없습니다.</p>`;
-    return `<div data-day-view="${d}" class="flex flex-col gap-[12px]"${d === TODAY ? "" : " hidden"}>${ui.sectionHead(`9월 ${d}일 (${WEEK[new Date(2026, 8, d).getDay()]})${c.sub(`${names.length}건`)}`)}<div class="flex flex-col">${list}</div></div>`;
+      : // 빈 안내는 아래 선 없이 달력 높이의 가운데에(앱 holiday-calendar.tsx, 2026-11-05 사용자 지정 — 전엔 맨 위에 선과 함께 붙어 있었다)
+        `<p class="flex flex-1 items-center justify-center py-[24px] text-center text-[14px] text-erp-muted">등록된 휴일이 없습니다.</p>`;
+    return `<div data-day-view="${d}" class="flex flex-1 flex-col gap-[12px]"${d === TODAY ? "" : " hidden"}>${ui.sectionHead(`9월 ${d}일 (${WEEK[new Date(2026, 8, d).getDay()]})${c.sub(`${names.length}건`)}`)}<div class="flex min-h-0 flex-1 flex-col">${list}</div></div>`;
   };
   const day = Array.from({ length: 30 }, (_, i) => dayView(i + 1)).join("");
-  // 달력 아래가 카드 선에 붙지 않게 아래 여백을 둔다(2026-10-08)
+  // 아래 여백은 카드 안쪽 여백에 맡긴다 — 따로 둔 24px 까지 더하면 점포 없음 띠가 뜨는 화면에서 5주 달도 넘쳤다(앱, 2026-11-05 사용자 지정).
+  // 오른쪽 그날 칸은 달력 높이만큼 늘여(self-stretch) 빈 안내를 그 가운데에 둔다
   // 제목 자리에 달 이동 줄 + 「공식 휴일 숨기기」, 오른쪽 범례는 BP 휴일 · 공식 휴일 순(앱 holiday-calendar.tsx, 2026-10-30 사용자 지정 — 전엔 「2026년 9월」 제목 · 「선택한 날짜 · 오늘」 범례)
-  const calendar = `<div class="flex items-start gap-[24px] pb-[24px]"><div data-cal class="flex min-w-0 flex-1 flex-col gap-[12px]"><div class="flex items-center gap-[6px]"><div class="flex flex-1 flex-wrap items-center gap-[18px]">${monthNav()}${ui.checkbox(A, "공식 휴일 숨기기", false, { "data-hide-official": true })}</div><span class="flex flex-wrap items-center gap-[18px]">${legend("bg-erp-on", "BP 휴일")}${legend("bg-erp-off", "공식 휴일")}</span></div>${monthGrid()}</div><div class="flex w-[340px] shrink-0 flex-col gap-[12px]">${day}</div></div>`;
+  const calendar = `<div class="flex items-start gap-[24px]"><div data-cal class="flex min-w-0 flex-1 flex-col gap-[12px]"><div class="flex items-center gap-[6px]"><div class="flex flex-1 flex-wrap items-center gap-[18px]">${monthNav()}${ui.checkbox(A, "공식 휴일 숨기기", false, { "data-hide-official": true })}</div><span class="flex flex-wrap items-center gap-[18px]">${legend("bg-erp-on", "BP 휴일")}${legend("bg-erp-off", "공식 휴일")}</span></div>${monthGrid()}</div><div class="flex w-[340px] shrink-0 flex-col gap-[12px] self-stretch">${day}</div></div>`;
 
   const ON0114 = (t) => panelLink(t, PANEL.detail);
   // 적용 대상: 일부 점포는 ‘첫 점포 외 N건’, 전체 점포는 예외가 있으면 ‘첫 점포 외 N건 예외’(2026-10-08)

@@ -96,6 +96,16 @@ export function dataTable(columns, rows, empty = "데이터가 없습니다.") {
   return `<table class="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]"><colgroup>${cols}</colgroup><thead><tr class="h-[42px] border-y border-erp-thead-line bg-erp-thead-bg">${head}</tr></thead><tbody class="text-erp-ink">${body}</tbody></table>`;
 }
 
+// data-table.tsx 의 fillEmpty — 목록 화면 표. 비었을 때 열 이름 줄은 두고 그 아래 빈 칸이 부모(flex 세로 묶음)의 남는 높이를 채워 문구를 가운데 둔다
+// (최소 머리 42 + 빈 칸 92 = 134px, 2026-11-05 사용자 지정). 줄이 있으면 숨긴 빈 줄(data-empty)을 넣어 둔다 — erp.js 목록 거르기가 줄을 모두 숨기면
+// 그 줄을 보이고 표(data-fill-empty)를 남는 높이까지 늘린다. empty 는 그 상태의 문구(줄이 있으면 거른 결과 「조회된 …」, 없으면 「등록된 …」)
+export function fillTable(columns, rows, empty) {
+  const table = dataTable(columns, rows, empty);
+  if (rows.length)
+    return table.replace("<table ", "<table data-fill-empty ").replace("</tbody>", tableEmptyRow(columns, empty).replace("<tr ", "<tr data-empty hidden ") + "</tbody>");
+  return `<div class="flex min-h-[134px] flex-1 flex-col">${table.slice(0, table.indexOf("<tbody"))}</table><p class="flex min-h-[92px] flex-1 items-center justify-center border-x border-b border-erp-thead-line text-[14px] text-erp-muted">${empty}</p></div>`;
+}
+
 // data-table.tsx 의 scroll — 열 이름 줄을 고정하고 그 아래 줄만 스크롤한다. 부모(flex 세로 묶음)가 정한 높이를 채운다(2026-10-26).
 // 머리 · 본문을 두 표로 나누고 둘 다 스크롤바 자리를 비워 열이 어긋나지 않는다. table: dataTable 결과(줄 표시를 얹은 뒤에 감싼다)
 export function scrollTable(table) {

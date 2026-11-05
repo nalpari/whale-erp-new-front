@@ -14,7 +14,7 @@ import { bulkSummary, canDraft, candidateStores, contractCell, filterCandidates,
 
 // 「급여명세서 작성」 버튼과 그 팝업(데모 staff-sections.mjs pickId, 720px). 미리 고른 직원은 없다 — 점포 · 이름으로 좁혀 한 명을
 // 고르고 「작성」하면 초안을 만들어 그 검토 화면으로 간다(WHALEERP-226). 근로계약이 없거나 이 달 명세서가 있는 직원은 고를 수 없다.
-// 「이 달 일괄 작성」은 확인창을 거쳐 만들고 결과 한 줄을 띄운 뒤 목록을 다시 받는다. 확인창(ConfirmDialog)과 같은 네이티브
+// 「일괄 작성」은 확인창을 거쳐 만들고 결과 한 줄을 띄운 뒤 목록을 다시 받는다. 확인창(ConfirmDialog)과 같은 네이티브
 // <dialog> 다. 확인창은 이 <dialog> 밖에 둔다 — 안에 두면 확인창의 Esc(cancel)가 React 트리를 따라 이 팝업까지 닫는다.
 // 작성 대상은 열 때마다 새로 받고(GET /payslips/candidates), 닫으면 고른 직원 · 좁히기 · 오류를 지운다.
 export function PayslipDraftButton({ month, employmentTypeLabels }: { month: string; employmentTypeLabels: EnumValue[] }) {
@@ -160,11 +160,16 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
         // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups).
         className="m-auto max-h-[calc(100dvh-48px)] w-[720px] max-w-[calc(100vw-32px)] overflow-y-auto rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
       >
-        <h2 id={titleId} className="text-[18px] font-semibold">
-          급여명세서 작성 <span className="text-[14px] font-normal text-erp-label">{monthLabel(month)}</span>
-        </h2>
-        <div className="mt-[12px] flex flex-col gap-[12px] text-[14px]" aria-busy={loading}>
-          <p className="text-erp-label">근로계약이 있고 이 달 명세서가 없는 직원만 고를 수 있습니다.</p>
+        {/* 제목 · 달 · 안내를 한 묶음(6px)으로, 입력칸과는 18px 떼어 머리와 본문을 가른다(2026-11-04 사용자 지정 — 전엔 안내가 12px 간격으로 입력칸에 붙어
+            본문 첫 줄처럼 보였다). 어느 달 명세서인지가 이 팝업의 핵심이라 달을 포인트 꼬리표(연파랑 바탕 · 파랑 600)로 보이고, 문구에서는 「이 달」을 뺐다(「이번 달」로 읽혔다) */}
+        <div className="flex flex-col gap-[6px]">
+          <h2 id={titleId} className="flex items-center gap-[10px] text-[18px] font-semibold">
+            급여명세서 작성
+            <span className="inline-flex h-[28px] items-center rounded-full bg-erp-point-bg px-[12px] text-[16px] font-semibold text-erp-point">{monthLabel(month)}</span>
+          </h2>
+          <p className="text-[13px] text-erp-label">근로계약을 맺은 직원 중 급여명세서가 작성되지 않은 직원만 선택할 수 있습니다.</p>
+        </div>
+        <div className="mt-[18px] flex flex-col gap-[12px] text-[14px]" aria-busy={loading}>
           <FormRow>
             <Field label="점포" width="w-[220px]">
               <Select
@@ -200,13 +205,22 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
               rows={shown}
               rowKey={(c) => c.staffMemberId}
               rowState={(c) => (c.staffMemberId === pickedShown ? "selected" : undefined)}
-              empty={items === null ? (loading ? "불러오는 중입니다." : "작성 대상을 불러오지 못했습니다.") : "조건에 맞는 직원이 없습니다."}
+              // 대상이 아예 없을 때(근로계약이 없거나 모두 작성함)와 점포 · 이름으로 좁혀 없을 때를 가른다(2026-11-04 사용자 지정)
+              empty={
+                items === null
+                  ? loading
+                    ? "불러오는 중입니다."
+                    : "작성 대상을 불러오지 못했습니다."
+                  : items.length === 0
+                    ? "급여명세서를 작성할 직원이 없습니다."
+                    : "조건에 맞는 직원이 없습니다."
+              }
             />
           </div>
         </div>
         <div className="mt-[24px] flex items-center gap-[6px]">
           <Button variant="soft" disabled={busy || creatable === 0} onClick={() => setConfirming(true)}>
-            이 달 일괄 작성
+            일괄 작성
           </Button>
           <span className="flex-1" />
           <Button variant="off" disabled={busy} onClick={close}>

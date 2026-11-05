@@ -189,7 +189,8 @@ function TodoFormFields({
           취소
         </Button>
         <Button onClick={handleSave} disabled={saving}>
-          {saving ? "저장 중" : detail ? "저장" : "등록하고 배정"}
+          {/* 등록 · 수정 모두 [저장](2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 등록이면 「등록하고 배정」) */}
+          {saving ? "저장 중" : "저장"}
         </Button>
       </div>
 

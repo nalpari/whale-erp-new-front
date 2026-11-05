@@ -25,7 +25,7 @@ export const STATUS_STYLE: Record<PayslipStatus, CellStyle> = {
 export const REVIEW_PENDING_TEXT = "검토 대기";
 
 /** 가린 줄(본사 제공 동의 없는 가맹 점포 직원)의 직원명 칸. 직원 목록과 같은 글자다(ATT-30). */
-export const MASKED_TEXT = "본사 제공 동의 없음";
+export const MASKED_TEXT = "본사에 정보제공 미동의";
 
 /** 「급여 기간」 칸 — 2026-09-01 ~ 2026-09-30 */
 export const periodText = (item: Pick<PayslipListItem, "periodStartDate" | "periodEndDate">) => `${item.periodStartDate} ~ ${item.periodEndDate}`;

@@ -276,6 +276,10 @@ export function dayLabel(day: string): string {
   const d = new Date(`${day}T00:00:00Z`);
   return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일 (${"일월화수목금토"[d.getUTCDay()]})`;
 }
+/** 「10월 23일」 — 근태 요약 주 이동 칸이 일별 칸(「10월 23일 (금)」)과 같은 표기를 쓰게(2026-11-04 사용자 지정, 전엔 「10-23 ~ 10-29」) */
+export function monthDayLabel(day: string): string {
+  return `${Number(day.slice(5, 7))}월 ${Number(day.slice(8, 10))}일`;
+}
 /** 「10-23」 */
 export const shortDay = (day: string) => day.slice(5);
 
@@ -296,6 +300,26 @@ export function overnightNote(date: string, checkIn: string, checkOut: string): 
   if (!hhmm.test(checkIn) || !hhmm.test(checkOut) || checkOut > checkIn) return null;
   const next = addDays(date, 1);
   return `다음 날(${Number(next.slice(5, 7))}/${Number(next.slice(8, 10))}) ${checkOut} 퇴근으로 저장합니다.`;
+}
+
+/**
+ * 저장할 출근 · 퇴근 순간이 하나라도 지금보다 뒤인가 — api 는 그런 값을 「아직 오지 않은 시각은 등록할 수 없습니다.」로 거절한다(assertNotFuture).
+ * 화면은 이 판정으로 새 오류를 띄우지 않고, 그 거절 문장을 언제 내릴지(출퇴근이 정상이 됐을 때)만 정한다(2026-11-05 사용자 지정, 3팀 확인 필요).
+ * points 는 [날, HH:mm] — 덜 들어온 시각은 보지 않는다. now 는 시험용.
+ */
+export function hasFutureTime(points: [day: string, time: string][], now = Date.now()): boolean {
+  const hhmm = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+  return points.some(([day, time]) => hhmm.test(time) && Date.parse(`${day}T${time}:00+09:00`) > now);
+}
+/** 대신 등록이 저장할 순간 — 퇴근이 출근보다 이르거나 같으면 다음 날 퇴근(api shiftOf) */
+export const proxyPoints = (date: string, checkIn: string, checkOut: string): [string, string][] => [
+  [date, checkIn],
+  [checkIn && checkOut && checkOut <= checkIn ? addDays(date, 1) : date, checkOut],
+];
+/** 보정이 저장할 순간 — 출근이 있는 짝은 퇴근을 다음 날로(고른 값 · 이르거나 같으면 늘), 출근 없는 퇴근에 채운 출근은 늦거나 같으면 전날(api correct) */
+export function fixPoints(date: string, hasCheckIn: boolean, checkIn: string, checkOut: string, nextDay: boolean): [string, string][] {
+  if (!hasCheckIn) return [[checkIn && checkOut && checkOut <= checkIn ? addDays(date, -1) : date, checkIn], [date, checkOut]];
+  return [[date, checkIn], [nextDay || forcedNextDay(checkIn, checkOut) ? addDays(date, 1) : date, checkOut]];
 }
 
 const kstDateOf = (iso: string) => new Date(new Date(iso).getTime() + 9 * 60 * 60_000).toISOString().slice(0, 10);

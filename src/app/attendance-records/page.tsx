@@ -4,6 +4,7 @@ import { getDailyAttendance, getPeriodAttendance } from "@/lib/attendance-record
 import { kstToday } from "@/lib/staff-members";
 import { AttendanceFilter } from "./attendance-filter";
 import { addDays, editableFromOf, matchesFilter, matchesSummary, needsFix, parseAttendanceQuery, storeParams, toAttendanceSearch, weekSummary, type AttendanceQuery } from "./attendance-query";
+import { BackdropInert } from "./backdrop-inert";
 import { DaySection, FixSection, SummarySection } from "./attendance-sections";
 
 // 출·퇴근 현황 조회(/attendance-records, MN000025, WHALEERP-219). 데모 docs/demo/staff/attendance.html 을 공통 컴포넌트로 옮겼다 — 왼쪽 필터 7개
@@ -48,23 +49,31 @@ export default async function AttendanceRecordsPage({ searchParams }: { searchPa
     );
   const [day, week, fix] = records.lists;
 
+  // 패널(보정 · 대신 등록)이 바탕을 깔면 패널이 아닌 본문은 inert — 패널은 보정 목록 안에 있어 패널을 뺀 자리마다 감싼다
   return (
     <>
-      <PageBar title="출·퇴근 현황 조회" />
+      <BackdropInert>
+        <PageBar title="출·퇴근 현황 조회" />
+      </BackdropInert>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
-        <AttendanceFilter query={query} today={today} statusLabels={statusLabels} reasonLabels={reasonLabels} employmentTypeLabels={employmentTypeLabels} />
+        <BackdropInert>
+          <AttendanceFilter query={query} today={today} statusLabels={statusLabels} reasonLabels={reasonLabels} employmentTypeLabels={employmentTypeLabels} />
+        </BackdropInert>
         <main className="flex min-h-0 flex-1 flex-col gap-[24px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
-          <div className="grid grid-cols-2 items-start gap-[24px]">
-            <DaySection
-              rows={day.items.filter((r) => matchesFilter(r, query))}
-              date={query.date}
-              today={today}
-              hrefOfDate={(date) => href({ date })}
-              statusLabels={statusLabels}
-              reasonLabels={reasonLabels}
-            />
-            <SummarySection summary={weekSummary(week.items.filter((r) => matchesSummary(r, query)), week.weekStaff ?? [])} week={query.week} hrefOfWeek={(w) => href({ week: w })} />
-          </div>
+          {/* 두 칸 사이 36px — 24px 는 왼쪽 표 끝과 「근태 요약」이 붙어 보였다. 두 칸 높이를 같게(stretch) 해 일별 표 틀이 근태 요약 아래 끝까지 늘어난다(2026-11-04 사용자 지정) */}
+          <BackdropInert>
+            <div className="grid grid-cols-2 items-stretch gap-[36px]">
+              <DaySection
+                rows={day.items.filter((r) => matchesFilter(r, query))}
+                date={query.date}
+                today={today}
+                hrefOfDate={(date) => href({ date })}
+                statusLabels={statusLabels}
+                reasonLabels={reasonLabels}
+              />
+              <SummarySection summary={weekSummary(week.items.filter((r) => matchesSummary(r, query)), week.weekStaff ?? [])} week={query.week} hrefOfWeek={(w) => href({ week: w })} />
+            </div>
+          </BackdropInert>
           <FixSection
             rows={fix.items.filter((r) => needsFix(r) && matchesFilter(r, query))}
             query={query}

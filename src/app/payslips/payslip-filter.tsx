@@ -20,7 +20,7 @@ const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? lis
 // 메뉴 권한이 있어야 열린다. 직영 · 가맹 범위의 칩은 폐점을 뺀 점포이고, api 도 그 유형의 폐점 점포를 뺀다(storeTypes). 점포 조건이 주소에
 // 없으면(주소 직접 입력 · 예전 점포명 주소) 헤더 범위로 채우고, 주소의 범위를 이 탭에서 쓸 수 없으면 「전체」로 바꾸고 알린다.
 // 직원명 검색칸은 Enter 나 돋보기로 반영한다. key 에 URL 값과 초기화 횟수를 넣어 초기화 · 링크 이동 때 칸도 따라 바뀌게 한다. 직원명으로
-// 거르면 본사 역할에게 가린 줄(본사 제공 동의 없음)은 api 가 목록 · 상태 건수에서 뺀다.
+// 거르면 본사 역할에게 가린 줄(본사에 정보제공 미동의)은 api 가 목록 · 상태 건수에서 뺀다.
 export function PayslipFilter({ query, today, statusLabels }: { query: PayslipListQuery; today: string; statusLabels: EnumValue[] }) {
   const stores = useStores();
   const [headerScope] = useScope();

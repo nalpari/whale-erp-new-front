@@ -6,7 +6,6 @@ import {
   backHrefOf,
   DEFAULT_TODO_LIST_QUERY,
   emptyPageHref,
-  hasTodoFilter,
   parseTodoListQuery,
   todoListApiSearch,
   toTodoListSearch,
@@ -142,19 +141,6 @@ test("상세 · 등록은 목록 주소를 ?back= 으로 받고, TO-DO 목록 �
   assert.equal(backHrefOf(undefined), "/todos");
   assert.equal(backHrefOf(["/todos?urgent=1"]), "/todos");
   for (const bad of ["//evil.example", "https://evil.example/todos", "/todos/5", "/todosx", "/stores?scope=ALL", "/todos#x"]) assert.equal(backHrefOf(bad), "/todos", bad);
-});
-
-test("거르는 조건이 있는가 — 쪽 · 건수는 조건이 아니다", () => {
-  assert.equal(hasTodoFilter(DEFAULT_TODO_LIST_QUERY), false);
-  assert.equal(hasTodoFilter({ ...DEFAULT_TODO_LIST_QUERY, page: 3, pageSize: 50 }), false);
-  assert.equal(hasTodoFilter({ ...DEFAULT_TODO_LIST_QUERY, urgentOnly: true }), true);
-  assert.equal(hasTodoFilter({ ...DEFAULT_TODO_LIST_QUERY, statuses: ["DONE"] }), true);
-  assert.equal(hasTodoFilter({ ...DEFAULT_TODO_LIST_QUERY, dueDateTo: "2026-10-31" }), true);
-  // 점포 「전체」(헤더 전체 · 목록에서 비움)는 조건이 아니고, 고른 점포 · 좁은 범위는 조건이다
-  assert.equal(hasTodoFilter(parseTodoListQuery({ scope: "ALL" })), false);
-  assert.equal(hasTodoFilter(parseTodoListQuery({ storeIds: "" })), false);
-  assert.equal(hasTodoFilter(parseTodoListQuery({ storeIds: "3" })), true);
-  assert.equal(hasTodoFilter(parseTodoListQuery({ scope: "DIRECT" })), true);
 });
 
 test("빈 쪽 — 1쪽이 아니면 남은 마지막 쪽(없으면 1쪽)으로, 조건은 그대로", () => {

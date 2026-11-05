@@ -38,8 +38,8 @@ export function HolidayCalendar({
   const dayRows = selected ? (byDate.get(selected) ?? []) : [];
 
   return (
-    // 달력 아래가 카드 선에 붙지 않게 아래 여백을 둔다(데모 2026-10-08)
-    <div className="flex items-start gap-[24px] pb-[24px]">
+    // 아래 여백은 카드 안쪽 여백(25px)에 맡긴다 — 따로 둔 24px 까지 더하면 점포 없음 띠(40px)가 뜨는 화면에서 5주 달도 넘쳐 스크롤이 생겼다(2026-11-04 사용자 지적)
+    <div className="flex items-start gap-[24px]">
       <div className="flex min-w-0 flex-1 flex-col gap-[12px]">
         {/* 제목 자리에 달 이동([2026년 11월 ▾] ‹ › [오늘])을 둔다 — 화면이 넘겨준다(2026-10-30 사용자 지정, 전엔 「2026년 11월」 글자 제목) */}
         <div className="flex items-center gap-[6px]">
@@ -69,7 +69,8 @@ export function HolidayCalendar({
             {calendarWeeks(year, month).map((week, w) => (
               <tr key={w}>
                 {week.map((day, i) => {
-                  const line = `h-[92px] border-b border-erp-thead-line p-[10px] align-top ${i ? "border-l" : ""}`;
+                  // 날짜 칸 88px — 92px 이면 띠가 뜬 1080 화면에서 5주 달이 몇 px 넘쳤다(2026-11-04)
+                  const line = `h-[88px] border-b border-erp-thead-line p-[10px] align-top ${i ? "border-l" : ""}`;
                   if (day === null) return <td key={i} className={`${line} bg-erp-thead-bg`} />;
                   const date = dateKey(year, month, day);
                   const off = hideOfficial ? undefined : official.get(date);
@@ -110,13 +111,14 @@ export function HolidayCalendar({
       </div>
 
       {/* 오른쪽 그날 칸(데모 dayView) — 범위 꼬리표 · 휴일명, 아랫줄에는 휴일 유형 · 적용 대상 */}
-      <section aria-label="고른 날짜의 휴일" className="flex w-[340px] shrink-0 flex-col gap-[12px]">
+      {/* self-stretch — 왼쪽 달력 높이만큼 늘여 빈 안내를 그 가운데에 둔다(2026-11-04 사용자 지정) */}
+      <section aria-label="고른 날짜의 휴일" className="flex w-[340px] shrink-0 flex-col gap-[12px] self-stretch">
         <h2 className="text-[18px] font-semibold text-erp-ink">
           {/* 「고르세요」 말투를 「선택해 주세요」로(2026-10-30 사용자 지정) */}
           {selected ? `${Number(selected.slice(5, 7))}월 ${Number(selected.slice(8, 10))}일 (${weekdayName(selected).slice(0, 1)})` : "날짜를 선택해 주세요"}
           {selected && <span className="ml-[10px] text-[14px] font-normal text-erp-label">{dayRows.length}건</span>}
         </h2>
-        <div className="flex flex-col">
+        <div className="flex min-h-0 flex-1 flex-col">
           {dayRows.length ? (
             dayRows.map((h) => (
               <button
@@ -137,7 +139,8 @@ export function HolidayCalendar({
               </button>
             ))
           ) : (
-            <p className="border-b border-erp-thead-line py-[24px] text-center text-[14px] text-erp-muted">{selected ? "등록된 휴일이 없습니다." : "캘린더에서 날짜를 선택하면 그날의 휴일이 표시됩니다."}</p>
+            // 빈 안내는 아래 선 없이 달력 높이의 가운데에(2026-11-04 사용자 지정 — 전엔 맨 위에 선과 함께 붙어 있었다)
+            <p className="flex flex-1 items-center justify-center py-[24px] text-center text-[14px] text-erp-muted">{selected ? "등록된 휴일이 없습니다." : "캘린더에서 날짜를 선택하면 그날의 휴일이 표시됩니다."}</p>
           )}
         </div>
       </section>
