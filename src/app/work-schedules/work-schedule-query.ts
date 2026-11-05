@@ -148,3 +148,15 @@ export function moved(q: ScheduleQuery, next: Partial<Pick<ScheduleQuery, "view"
   const sameWeek = (next.view ?? q.view) === "week" && (next.week ?? q.week) === q.week;
   return { ...q, ...next, copy: q.copy && sameWeek };
 }
+
+/**
+ * 근무스케줄 관리 도구 줄의 주 표시 — 「2026년 11월 2일 ~ 8일」. 달이 바뀌면 「2026년 10월 26일 ~ 11월 1일」, 해가 바뀌면 끝에도 연도를 붙인다.
+ * 출·퇴근 현황의 「11월 5일 (목)」과 같은 말투(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「2026년 11-02 ~ 11-08」). 홈 · 직원 상세는 weekLabel 그대로다.
+ */
+export function weekRangeLabel(monday: string): string {
+  const sunday = addDays(monday, 6);
+  const [y1, m1, d1] = monday.split("-").map(Number);
+  const [y2, m2, d2] = sunday.split("-").map(Number);
+  const end = y2 !== y1 ? `${y2}년 ${m2}월 ${d2}일` : m2 !== m1 ? `${m2}월 ${d2}일` : `${d2}일`;
+  return `${y1}년 ${m1}월 ${d1}일 ~ ${end}`;
+}

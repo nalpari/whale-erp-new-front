@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { Badge, Button, DataTable, LoadGroup, LoadingNotice, PageBar, type Column } from "@/components/common";
+import { Badge, Button, DataTable, LoadGroup, LoadingNotice, PageBar, Tag, type Column } from "@/components/common";
 import { CodeLabel } from "@/components/site/code-label";
 import { useAccount, useCurrentBp, useMenuRole, useMenus, useScope, useService, useStores } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
@@ -25,13 +25,25 @@ const CARD = "rounded-[4px] border border-erp-panel-line bg-white";
 // (범위가 바뀌면 화면 전체가 다른 데이터라서 key 로 묶음을 다시 건다 — 점포 하나 ↔ 여러 점포 전환도 같이 덮인다). 새로고침 · 영역 다시 하기 · 근무스케줄 보기 전환은 묶지 않는다(그 영역만).
 export function HomeScreen() {
   const account = useAccount();
-  const bp = useCurrentBp().bpCodeId;
+  const currentBp = useCurrentBp();
+  const bp = currentBp.bpCodeId;
+  const service = useService();
   const [scope] = useScope();
   // 「안녕하세요, OOO님」 — 모든 계정 「님」(2026-11-04 사용자 지정, 「OOO 대표님, 오늘의 현황입니다」를 거쳐 되돌렸다). 문장 제목이라 18px(PageBar sentence)
   // 「안녕하세요,」는 회색(erp-label) 400, 「OOO님」은 제목 그대로 먹색 600 — 인사보다 이름에 무게(2026-11-04 사용자 지정, 이름만 파랑은 어색했다)
   const greeting: ReactNode = account.name ? (
     <>
       <span className="font-normal text-erp-label">안녕하세요,</span> {account.name}님
+      {/* 플랫폼 계정이 BP 를 골라 웨일ERP 탭에 들어왔으면 어느 BP 의 화면인지 인사 옆 회색 한 줄로 알린다(2026-11-05 사용자 지정) */}
+      {isPlatformRole(account.roleTypeCode) && service === "WHALE_ERP" && (
+        // BP 는 회색 꼬리표(Tag) — BP 마스터 수정 패널 제목의 「BP 코드 · …」 꼬리표와 같은 모양(2026-11-05 사용자 지정)
+        <span className="ml-[12px] inline-flex items-center gap-[6px] align-middle text-[14px] font-normal text-erp-label">
+          <Tag>
+            {currentBp.tradeName} · {currentBp.bpCode}
+          </Tag>
+          의 홈화면을 보고 있습니다.
+        </span>
+      )}
     </>
   ) : (
     "안녕하세요"

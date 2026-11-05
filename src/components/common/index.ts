@@ -10,7 +10,7 @@ export { Button, type ButtonVariant } from "./button";
 export { Checkbox, Field, FormGroup, FormRow, Radio, RequiredMark, Select, Textarea, TextField } from "./form";
 export { PasswordInput } from "./password-input";
 export { FieldMessage, FailedBand } from "./field-message";
-export { NoticeBand } from "./notice-band";
+export { GuideBand, NoticeBand } from "./notice-band";
 export { ExcelDownloadButton, ExcelDownloadNotice, ExcelDownloadProvider } from "./excel-download";
 export { DateField } from "./date-field";
 export { MonthPicker } from "./month-picker";
