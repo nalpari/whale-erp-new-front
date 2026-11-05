@@ -6,6 +6,7 @@ import * as x from "./extra.mjs";
 import * as p from "./staff-parts.mjs";
 import { link } from "./site.mjs";
 import { req } from "./biz-form.mjs";
+import { withIcon } from "./pages/system/admins.mjs";
 
 // 급여명세서 작성 팝업: 점포 · 이름으로 표 줄을 좁히고, 직원을 고르면 「작성」을 켠다. erp.js 목록 거르기는 dialog 안을 건너뛰어 이 부품에 붙여 둔다.
 const PICK_SCRIPT = `<script>
@@ -65,8 +66,9 @@ export function staffSections({ A, R }) {
   // ── 직원 목록 ──
   const staffCols = [
     { header: "순번", width: "w-[60px]" },
-    { header: "직원", width: "w-[110px]" },
-    { header: "휴대전화번호", width: "w-[140px]" },
+    // 직원 160 — 가린 행 「본사에 정보제공 미동의」가 한 줄에 든다. 휴대전화번호 160 · 휴대폰 아이콘 + 번호(앱 staff-table.tsx, 2026-11-05 사용자 지정, 3팀 확인 필요)
+    { header: "직원", width: "w-[160px]" },
+    { header: "휴대전화번호", width: "w-[160px]" },
     { header: "점포" },
     { header: "고용형태", width: "w-[110px]" },
     { header: "가입·인증", width: "w-[210px]" },
@@ -86,7 +88,7 @@ export function staffSections({ A, R }) {
     [who("정유담"), "010-5518-7734", "온기식당 판교점", "파트타이머", p.tag("info", "소속 추가 확인"), p.tag("quiet", "발송 대기"), p.mark("subtle", "응답 대기")],
     [who("권도윤", D), "010-7742-1160", "모리커피 서초점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "서명 대기 · D-24"), p.mark("warn", "날인 대기")],
     [who("유하람", D), "010-2093-8875", "모리커피 연남점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("risk", "거부 · 09-02"), p.mark("risk", "재발송 필요")],
-    [p.sub("본사 제공 동의 없음"), "-", "모리커피 연남점", "-", "-", "-", "-"],
+    [`<span class="whitespace-nowrap text-erp-muted">본사에 정보제공 미동의</span>`, "-", "모리커피 연남점", "-", "-", "-", "-"],
     [who("민세하"), "010-7725-3390", "모리커피 성수점", "파트타이머", p.tag("risk", "가입 불가(만 19세 미만)"), p.tag("quiet", "발송 대기"), p.mark("risk", "삭제 대상")],
     [who("임채운"), "010-6613-0284", "모리커피 연남점", "파트타이머", p.tag("quiet", "가입 완료"), p.tag("quiet", "종료"), p.mark("subtle", "퇴직 07-31")],
   ];
@@ -105,7 +107,7 @@ export function staffSections({ A, R }) {
         `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
     ) +
     // 순번은 내림차순 — 최근 등록이 먼저라 1쪽 첫 줄이 전체 건수다(2026-10-12).
-    ui.fillTable(staffCols, staffRows.map((r, i) => [63 - i, ...r]), "조회된 직원이 없습니다.") +
+    ui.fillTable(staffCols, staffRows.map(([name, tel, ...rest], i) => [63 - i, name, tel === "-" ? tel : withIcon("phone", tel), ...rest]), "조회된 직원이 없습니다.") +
     pageNav(4);
 
   // ── 근로계약 ──
