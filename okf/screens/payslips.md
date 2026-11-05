@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-05T00:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-05T07:00:00Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -92,7 +92,7 @@ sources:
 * 상태 건수는 `statusCounts`(상태 필터와 상관없이 점포 · 직원명 필터만 건 그 달 건수, 직원명으로 거르면 가린 줄은 뺀다). 쪽 넘김은 `total` · `page` · `pageSize`,
   건수는 20 · 50 · 100(기본 20, URL 에서 뺀다). 명세서가 없으면 「이 달의 급여명세서가 없습니다.」
 * 가린 줄(`isMasked`, 본사 제공 동의 없는 가맹 점포 직원, ATT-30)은 근무지 · 급여 기간 밖은 「-」, 직원명은
-  「본사 제공 동의 없음」이며 링크가 없다(payslipId 가 null 이라 순번으로 줄을 가른다).
+  「본사에 정보제공 미동의」(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「본사 제공 동의 없음」)이며 링크가 없다(payslipId 가 null 이라 순번으로 줄을 가른다).
 
 # api 에 칸이 없어 뺀 것
 
@@ -110,7 +110,7 @@ sources:
 
 확정 건이 있고 수정 권한이 있을 때 선다. 확인창 뒤 `POST /payslips/send`(server action `sendPayslips`)로 목록과 같은 달 · 점포 ·
 직원명(`sendTargetOf` — 건수와 같은 조건)의 확정 명세서를 보낸다. 모두 보내면 토스트 「N건을 발송했습니다.」, 실패가 있으면 결과 창
-「N건 발송, M건 실패」에 실패 대상(직원 · 이유)을 따로 보인다 — 가린 명세서는 이름 대신 「본사 제공 동의 없음」. 끝나면 목록을
+「N건 발송, M건 실패」에 실패 대상(직원 · 이유)을 따로 보인다 — 가린 명세서는 이름 대신 「본사에 정보제공 미동의」. 끝나면 목록을
 다시 받는다. 보내지 못한 명세서는 확정 그대로라 다시 보낼 수 있다.
 
 # 검토 화면에서 고치기 · 확정 (WHALEERP-228 · 230)

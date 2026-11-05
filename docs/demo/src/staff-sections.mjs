@@ -480,7 +480,7 @@ export function staffSections({ A, R }) {
     ui.listToolbar(12, ui.slideTrigger("TO-DO 등록", todoPanel)) +
     numberedList(
       [
-        { header: "담당", width: "w-[140px]" },
+        { header: "담당직원", width: "w-[140px]" }, // 앱 todo-table.tsx, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「담당」
         { header: "근무지", width: "w-[140px]" },
         { header: "TO-DO", align: "left" },
         { header: "수행 예정", width: "w-[140px]" },
@@ -626,7 +626,7 @@ export function staffSections({ A, R }) {
         ui.formRow(p.fieldH("수행 예정 날짜", ui.dateField(A, { label: "수행 예정 날짜", value: "2026-09-03" }), ""), p.fieldH("시간", p.timeField("", "시간"), "선택")),
         `<div class="flex flex-col gap-[8px]">${x.toggle("긴급", true)}</div>`,
       ) +
-      ui.panelButtons("취소", "등록하고 배정"),
+      ui.panelButtons("취소", "저장"), // 등록 · 수정 모두 [저장](앱 todo-form.tsx, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「등록하고 배정」)
   );
 
   // TO-DO 수정: 등록과 같은 칸. 수행 방식은 등록 후에 바꿀 수 없어(목업) 글자로만 보인다. 아래에 삭제.
