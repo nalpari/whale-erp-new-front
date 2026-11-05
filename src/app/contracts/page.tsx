@@ -1,5 +1,6 @@
 import { Button, DataTable, ListToolbar, PageBar } from "@/components/common";
 import { ApiError, authHeaders, deniedMessageOf, getEnum, request, screenPath } from "@/lib/api";
+import { redirectExpired } from "@/lib/redirect-expired";
 import { contractColumns } from "./columns";
 import { ContractPermission } from "./contract-permission";
 import { SavedNotice } from "./saved-notice";
@@ -32,7 +33,8 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
     } catch (e) {
       // api 의 거절(BP 를 고르지 않음 400 · 권한 · 다른 BP 403 · 없는 BP 404 — deniedMessageOf)은 그 문장을 보인다
       const denied = deniedMessageOf(e);
-      if (!(e instanceof ApiError && e.status === 401) && denied === null) throw e;
+      if (e instanceof ApiError && e.status === 401) redirectExpired();
+      if (denied === null) throw e;
       if (denied !== null) notice = denied;
     }
   }

@@ -1,5 +1,6 @@
 import { Button, PageBar } from "@/components/common";
 import { ApiError } from "@/lib/api";
+import { redirectExpired } from "@/lib/redirect-expired";
 import { getNotifications, type NotificationList as ListData } from "@/lib/notifications";
 import { parseNotificationQuery } from "@/lib/notification-view";
 import { NotificationList } from "./notification-list";
@@ -17,8 +18,9 @@ export default async function NotificationsPage({
   try {
     data = await getNotifications(query);
   } catch (error) {
+    if (error instanceof ApiError && error.status === 401) redirectExpired();
     failure =
-      error instanceof ApiError && (error.status === 401 || error.status === 403)
+      error instanceof ApiError && error.status === 403
         ? "운영 알림을 볼 권한이 없습니다."
         : "알림을 불러오지 못했습니다.";
     if (!failure.startsWith("운영")) console.error("운영 알림함 조회 실패", error);

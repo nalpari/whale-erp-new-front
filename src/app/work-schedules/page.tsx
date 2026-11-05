@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button, PageBar } from "@/components/common";
 import { ApiError } from "@/lib/api";
+import { redirectExpired } from "@/lib/redirect-expired";
 import { kstToday } from "@/lib/staff-members";
 import { getCopyPreview, getWorkScheduleHistories, getWorkSchedules } from "@/lib/work-schedules-api";
 import { SchedulePicker, ScheduleHistory, WeekJump } from "./schedule-controls";
@@ -34,8 +35,8 @@ async function loadCopyPreview(storeId: number, weekStart: string): Promise<Copy
   try {
     return await getCopyPreview(storeId, weekStart);
   } catch (error) {
-    // 로그인 만료(401)는 화면 전체의 일이라 그대로 올린다
-    if (error instanceof ApiError && error.status === 401) throw error;
+    // 로그인 만료(401)는 화면 전체의 일이라 로그인 화면(만료)으로 보낸다
+    if (error instanceof ApiError && error.status === 401) redirectExpired();
     if (error instanceof ApiError && error.status >= 400 && error.status < 500) return { error: error.message };
     console.error("근무스케줄: GET /work-schedules/copy-last-week 를 받지 못했습니다", error);
     return { error: "지난 주 복사 미리보기를 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요." };

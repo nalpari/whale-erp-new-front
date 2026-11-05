@@ -1,6 +1,7 @@
 import { PageBar } from "@/components/common";
 import { CARD, FailedBand } from "@/components/site/side-parts";
 import { ApiError, deniedMessageOf } from "@/lib/api";
+import { redirectExpired } from "@/lib/redirect-expired";
 import { outsideHoliday, parseBpHolidayQuery } from "@/lib/bp-holiday-view";
 import { getBpHoliday, getBpHolidays, type BpHolidayDetail } from "@/lib/bp-holidays";
 import { kstToday } from "@/lib/staff-members";
@@ -31,11 +32,11 @@ export default async function BpHolidaysPage({ searchParams }: PageProps<"/bp-ho
 }
 
 /**
- * 목록을 api 가 거절했으면(400 플랫폼 계정의 BP 미선택 · 403 권한 · 404) 오류 화면 대신 그 문장을 보인다. 401 은 고정 문구로.
+ * 목록을 api 가 거절했으면(400 플랫폼 계정의 BP 미선택 · 403 권한 · 404) 오류 화면 대신 그 문장을 보인다.
  * 거절이 아닌 것은 그대로 던져 error.tsx 가 받는다.
  */
 const listDenied = (error: unknown): { denied: string } => {
-  if (error instanceof ApiError && error.status === 401) return { denied: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
+  if (error instanceof ApiError && error.status === 401) redirectExpired();
   const denied = deniedMessageOf(error);
   if (denied === null) throw error;
   console.warn("BP 휴일 목록 거절", error instanceof ApiError ? error.status : undefined, denied);

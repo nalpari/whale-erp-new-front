@@ -1,6 +1,7 @@
 import { DataTable, NoticeBand, PageBar, type Column } from "@/components/common";
-import { deniedMessage, ListFailure } from "@/components/community/list-load";
+import { ListFailure } from "@/components/community/list-load";
 import { ApiError } from "@/lib/api";
+import { redirectExpired } from "@/lib/redirect-expired";
 import { formatDateTime } from "@/lib/format";
 import { getPublicHolidays, type PublicHoliday, type PublicHolidayList } from "@/lib/public-holidays";
 import {
@@ -26,16 +27,17 @@ export default async function PublicHolidaysPage({ searchParams }: PageProps<"/p
   const today = kstToday();
   const query = parseHolidayQuery(await searchParams, today);
 
-  // 로그인 끊김(401) · 권한 없음(403)은 다시 해도 같아 다시 시도 없이 안내만 보인다(커뮤니티 목록과 같다). 그 밖의 오류는 error.tsx 가 받는다.
+  // 권한 없음(403)은 다시 해도 같아 다시 시도 없이 안내만 보인다(커뮤니티 목록과 같다). 그 밖의 오류는 error.tsx 가 받는다.
   let data: PublicHolidayList;
   try {
     data = await getPublicHolidays(query);
   } catch (error) {
-    if (!(error instanceof ApiError && (error.status === 401 || error.status === 403))) throw error;
+    if (error instanceof ApiError && error.status === 401) redirectExpired();
+    if (!(error instanceof ApiError && error.status === 403)) throw error;
     return (
       <>
         <PageBar title="플랫폼 휴일 관리" />
-        <ListFailure failure={deniedMessage(error.status, "플랫폼 휴일을 볼 권한이 없습니다.")} denied retryHref={holidaysHref(query)} />
+        <ListFailure failure="플랫폼 휴일을 볼 권한이 없습니다." denied retryHref={holidaysHref(query)} />
       </>
     );
   }

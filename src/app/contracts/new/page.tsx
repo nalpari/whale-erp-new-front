@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Button, PageBar } from "@/components/common";
 import { ApiError, authHeaders, bpHref, deniedMessageOf, request } from "@/lib/api";
+import { redirectExpired } from "@/lib/redirect-expired";
 import { backHrefOf, withBack } from "../contract-list";
 import { ContractPermission } from "../contract-permission";
 import { ContractForm } from "./contract-form";
@@ -28,7 +29,8 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) notFound();
       const denied = deniedMessageOf(e);
-      if (!(e instanceof ApiError && e.status === 401) && denied === null) throw e;
+      if (e instanceof ApiError && e.status === 401) redirectExpired();
+      if (denied === null) throw e;
       return denied !== null ? { previous: null, notice: denied } : none;
     }
   };

@@ -1,5 +1,6 @@
 import { Button, PageBar } from "@/components/common";
 import { ApiError, getEnum } from "@/lib/api";
+import { redirectExpired } from "@/lib/redirect-expired";
 import type { EnumValue } from "@/lib/enums";
 import { parseTemplateQuery } from "@/lib/notification-template-view";
 import { getTemplates, type TemplateList as ListData } from "@/lib/notification-templates";
@@ -17,7 +18,8 @@ export default async function NotificationTemplatesPage({ searchParams }: PagePr
   try {
     [channels, data] = await Promise.all([getEnum("NotificationTemplateChannel"), getTemplates(query)]);
   } catch (error) {
-    const denied = error instanceof ApiError && (error.status === 401 || error.status === 403);
+    if (error instanceof ApiError && error.status === 401) redirectExpired();
+    const denied = error instanceof ApiError && error.status === 403;
     failure = denied ? "알림 템플릿을 볼 권한이 없습니다." : "알림 템플릿을 불러오지 못했습니다.";
     if (!denied) console.error("알림 템플릿 목록 조회 실패", error);
   }
