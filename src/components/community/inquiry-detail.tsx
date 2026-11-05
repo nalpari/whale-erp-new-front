@@ -403,15 +403,14 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
       <Box title="문의내용">
         <Prose>{d.body}</Prose>
       </Box>
-      {/* 첨부(CNT-18): 이미지는 작은 미리보기(8px 둥글게), PDF 는 이름 + 크기. 누르면 내려받는다. 운영자 쪽은 종류 칸(이미지 · PDF)을 둔다 */}
+      {/* 첨부(CNT-18): 이미지는 작은 미리보기(8px 둥글게), PDF 는 이름 + 크기. 누르면 내려받는다.
+          종류 칸(이미지 · PDF) 없이 줄만 — 고객지원 문의상세와 같다(2026-11-05 사용자 지정) */}
       {d.attachments.length > 0 && (
-          <DetailTable
-            title="첨부파일"
-            rows={d.attachments.map((a) => ({
-              label: a.fileType === "PDF" ? "PDF" : "이미지",
-              multiline: !!a.thumbnailUrl,
-              value: (
-                <button type="button" disabled={c.busy} onClick={() => download(a.inquiryAttachmentId)} title={`${a.fileName} 내려받기`} className="flex min-w-0 items-center gap-[10px] text-left">
+        <Box title="첨부파일" flush>
+          <ul className="rounded-b-[2px] border border-erp-thead-line bg-white">
+            {d.attachments.map((a) => (
+              <li key={a.inquiryAttachmentId} className={`flex items-center border-b border-erp-thead-line px-[12px] last:border-b-0 ${a.thumbnailUrl ? "py-[12px]" : "h-[46px]"}`}>
+                <button type="button" disabled={c.busy} onClick={() => download(a.inquiryAttachmentId)} title={`${a.fileName} 내려받기`} className="flex min-w-0 items-center gap-[10px] text-left text-[14px]">
                   {a.thumbnailUrl && (
                     // eslint-disable-next-line @next/next/no-img-element -- 5분짜리 서명 주소라 이미지 최적화 캐시에 둘 수 없다
                     <img src={a.thumbnailUrl} alt="" className="size-[64px] shrink-0 rounded-[8px] border border-erp-panel-line object-cover" />
@@ -419,9 +418,10 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
                   <span className="truncate text-erp-link hover:underline">{a.fileName}</span>
                   <Sub>{sizeLabel(a.sizeBytes)}</Sub>
                 </button>
-              ),
-            }))}
-          />
+              </li>
+            ))}
+          </ul>
+        </Box>
       )}
       <AnswerBox
         // 답변이 있으면 「운영자 · 등록 첫 답변 (수정됨 마지막)」을 제목 옆 왼쪽에, 없으면 오른쪽 끝 안내(2026-11-05 사용자 지정)
