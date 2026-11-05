@@ -38,7 +38,7 @@ export default ({ A, R }) => {
 
   // 카테고리는 공통코드 FAQ_CATEGORY 의 사용 중인 것만. 사용 중지된 카테고리의 FAQ 는 게시하거나 내용을 고칠 때 카테고리를 바꿔야 한다(비공개 · 삭제는 그대로 된다).
   const list = link(R, "support/community-faq.html");
-  const right = `<div class="flex items-center gap-[6px]">${ui.button("목록", { variant: "off", href: list })}${ui.button("삭제", { variant: "soft" })}${ui.button("비공개", { variant: "soft", "data-toast": "비공개로 저장했습니다." })}${ui.button("임시저장", { variant: "soft", "data-toast": "임시저장했습니다." })}${ui.button("게시", { "data-toast": "게시했습니다." })}</div>`;
+  const right = `<div class="flex items-center gap-[6px]">${ui.button("목록", { href: list })}${ui.button("삭제", { variant: "soft" })}${ui.button("비공개", { variant: "soft", "data-toast": "비공개로 저장했습니다." })}${ui.button("임시저장", { variant: "soft", "data-toast": "임시저장했습니다." })}${ui.button("게시", { "data-toast": "게시했습니다." })}</div>`;
 
   return {
     title: "FAQ 수정",

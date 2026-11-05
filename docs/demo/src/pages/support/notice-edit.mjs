@@ -52,7 +52,7 @@ export default ({ A, R }) => {
   // 저장에 성공하면 토스트로 알리고 이 화면에 머문다(#276).
   // 게시 상태는 임시저장 · 게시 · 비공개 어느 쪽으로든 바꾼다. 게시로 저장할 때만 노출 대상이 하나 이상 있어야 한다(WHALEERP-272).
   // 삭제는 지움 표시라 사용자에게서만 감추고 보관한다. 이미 지운 글을 또 지우면 이미 지웠다고 알린다.
-  const right = `<div class="flex items-center gap-[6px]">${ui.button("목록", { variant: "off", href: link(R, "support/community-notices.html") })}${ui.button("삭제", { variant: "soft" })}${ui.button("비공개", { variant: "soft", "data-toast": "비공개로 저장했습니다." })}${ui.button("임시저장", { variant: "soft", "data-toast": "임시저장했습니다." })}${ui.button("게시", { "data-toast": "게시했습니다." })}</div>`;
+  const right = `<div class="flex items-center gap-[6px]">${ui.button("목록", { href: link(R, "support/community-notices.html") })}${ui.button("삭제", { variant: "soft" })}${ui.button("비공개", { variant: "soft", "data-toast": "비공개로 저장했습니다." })}${ui.button("임시저장", { variant: "soft", "data-toast": "임시저장했습니다." })}${ui.button("게시", { "data-toast": "게시했습니다." })}</div>`;
 
   return {
     title: "공지사항 수정",

@@ -124,7 +124,7 @@ export const render = ({ A, R }, state = "wait") => {
       body: ui.detailBody(
         p.detailHead(
           "도입문의 상세",
-          `<div class="flex items-center gap-[6px]">${c.consulted ? "" : x.dialogTrigger("삭제", delId, "soft")}${done ? "" : ui.button("처리 시작", { variant: "soft" })}${ui.button("목록", { variant: "off", href: link(R, "support/community-leads.html") })}</div>`,
+          `<div class="flex items-center gap-[6px]">${c.consulted ? "" : x.dialogTrigger("삭제", delId, "soft")}${done ? "" : ui.button("처리 시작", { variant: "soft" })}${ui.button("목록", { href: link(R, "support/community-leads.html") })}</div>`,
         ) + p.cols(left, right) + (c.consulted ? "" : delDialog),
       ),
     }),

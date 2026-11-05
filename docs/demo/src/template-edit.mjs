@@ -111,7 +111,7 @@ export function templateEdit(t) {
     const save =
       ui.button("저장", { "data-tpl-save": saveDlg, "data-toast": "" }) +
       x.dialog(saveDlg, "저장하시겠습니까?", isNew ? "" : `<span data-code-warn hidden>템플릿 코드를 바꿨습니다. 발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다.</span>`, `${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-close": true })}`);
-    const right = `<div class="flex items-center gap-[6px]">${ui.button("목록", { variant: "off", href: list })}${revert}${save}</div>`;
+    const right = `<div class="flex items-center gap-[6px]">${ui.button("목록", { href: list })}${revert}${save}</div>`;
     const prefixes = JSON.stringify(Object.fromEntries(CHANNELS)).replaceAll('"', "&quot;");
     // 템플릿 코드 겹침 검사용(저장 전, erp.js). 고치는 템플릿 자신의 코드는 뺀다.
     const codes = JSON.stringify(ALL_CODES.filter((c) => c !== t.templateCode)).replaceAll('"', "&quot;");

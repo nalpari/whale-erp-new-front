@@ -59,7 +59,8 @@ export function supportSections({ A, R }) {
   const askPanel = "inquiry-form";
   const inq = (title, cat, state, reg, ans) => [ui.link(title, IM), cat, state, reg, ans];
   const inquiries =
-    ui.listToolbar(7, ui.slideTrigger("문의하기", askPanel)) +
+    // [문의하기]는 제목 줄 오른쪽(pages/support/inquiries.mjs titleRight, 2026-11-05 사용자 지정)
+    ui.listToolbar(7) +
     ui.fillTable(
       [
         { header: "제목", align: "left" },
@@ -86,7 +87,7 @@ export function supportSections({ A, R }) {
   // 거절(6번째·10MB 초과·다른 종류)은 그 파일만 막고 쓴 내용과 올린 파일은 둔다 — 데모는 안내 문구로만 보인다.
   const fileRow = (name, size) =>
     `<li class="flex h-[34px] items-center gap-[10px] border-b border-erp-divider text-[14px]"><span class="flex-1 truncate">${name}</span><span class="text-erp-label">${size}</span><button type="button" class="text-erp-link hover:underline">빼기</button></li>`;
-  const attachField = `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">첨부파일</span><div class="flex gap-[6px]"><input readonly placeholder="이미지·PDF, 5개까지, 파일당 10MB" aria-label="첨부파일" class="${ui.FIELD}">${ui.button("파일 선택", { variant: "soft" })}</div><ul aria-label="올린 파일">${fileRow("주휴수당_0원_화면.png", "412 KB")}${fileRow("9월_급여명세서_배정숙.pdf", "1.2 MB")}</ul><p class="text-[13px] leading-[1.6] text-erp-label">6번째 파일, 10MB 가 넘는 파일, 이미지·PDF 가 아닌 파일은 그 파일만 올리지 않고 알려 줍니다. 쓴 내용과 올린 파일은 그대로 둡니다.</p></div>`;
+  const attachField = `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">첨부파일</span><div class="flex gap-[6px]"><input readonly placeholder="이미지·PDF, 5개까지, 파일당 10MB" aria-label="첨부파일" class="${ui.FIELD}">${ui.button("파일 선택", { variant: "soft" })}</div><ul aria-label="올린 파일">${fileRow("주휴수당_0원_화면.png", "412 KB")}${fileRow("9월_급여명세서_배정숙.pdf", "1.2 MB")}</ul><div class="flex flex-col break-keep text-[14px] leading-[1.6] text-erp-label"><p>JPG, PNG, PDF 파일을 최대 5개까지 첨부할 수 있습니다. <span class="whitespace-nowrap">(파일당 10MB 이하)</span></p></div></div>`;
 
   const askForm = ui.slidePanel(
     askPanel,
@@ -95,13 +96,12 @@ export function supportSections({ A, R }) {
       ui.formGroup(
         "문의 내용",
         ui.field("분류", ui.select(["가입·계정", "직원·근로", "요금·구독", "점포·설비", "기타"])),
-        ui.field("제목", ui.textField({ placeholder: "한 줄로 적어 주세요." })),
-        ui.field("내용", ui.textarea({ rows: 8, placeholder: "어떤 화면에서 무엇을 하려다 막혔는지 적어 주시면 빨리 답할 수 있습니다." })),
+        ui.field("제목", ui.textField({ placeholder: "제목을 입력해 주세요." })),
+        ui.field("내용", ui.textarea({ rows: 8, placeholder: "문의 내용을 입력해 주세요.\n이용 중 문제가 발생한 화면을 함께 알려 주시면 더 빠르게 답변해 드릴 수 있습니다." })),
         attachField,
       ) +
-      // 같은 문의를 잇달아 등록하면(409) 막는다. 실패하면 쓴 내용 · 올린 파일은 두고 사유와 다시 하는 방법을 보인다(#284).
-      `<p class="text-[13px] leading-[1.6] text-erp-label">방금 같은 문의를 등록했거나 저장에 실패하면 사유를 알려 드립니다. 쓴 내용과 올린 파일은 그대로 두니 다시 [문의 등록]을 누르세요.</p>` +
-      `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("문의 등록", { "data-close": true, "data-toast": "문의를 등록했습니다." })}</div>`,
+      // 실패하면 패널 위 띠에 사유를 보인다 — 미리 적어 두는 안내는 두지 않는다(2026-11-05 사용자 지정)
+      `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-close": true, "data-toast": "문의를 등록했습니다." })}</div>`,
   );
 
   const checkFilter = (search, items) =>

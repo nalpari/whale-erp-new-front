@@ -110,7 +110,7 @@ export const render = ({ A, R }, state = "wait") => {
       body: ui.detailBody(
         p.detailHead(
           "문의사항 상세",
-          `<div class="flex items-center gap-[6px]">${received ? ui.button("처리 시작", { variant: "soft" }) : ""}${ui.button("목록", { variant: "off", href: link(R, "support/community-asks.html") })}</div>`,
+          `<div class="flex items-center gap-[6px]">${received ? ui.button("처리 시작", { variant: "soft" }) : ""}${ui.button("목록", { href: link(R, "support/community-asks.html") })}</div>`,
         ) + p.cols(left, right),
       ),
     }),
