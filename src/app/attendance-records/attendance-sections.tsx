@@ -5,6 +5,7 @@ import { DataTable, DetailTable, type Column } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { FixList, ProxyButton } from "./attendance-fix-list";
 import { FixPeriod } from "./attendance-fix-period";
+import { BackdropInert } from "./backdrop-inert";
 import { addDays, dayLabel, hoursLabel, lateMinutes, monthDayLabel, type DayRow, type FixRow, type WeekSummary } from "./attendance-query";
 
 // 출·퇴근 현황 본문 세 묶음(데모 staff-sections.mjs today · summary · fixList). 묶음 머리는 데모 sectionHead(18px 제목 + 오른쪽 이동),
@@ -143,21 +144,33 @@ export function DaySection({
           <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} />
         </div>
       ) : (
-        <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} empty="이 날의 출퇴근 기록이 없습니다." fillEmpty />
+        <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} empty="출·퇴근 기록이 없습니다." fillEmpty />
       )}
     </Section>
   );
 }
 
-function Rate({ label, count, total }: { label: string; count: number; total: number }) {
+/** 근태 요약 줄 앞 점 색 — 표의 상태 꼬리표와 같은 뜻(정상 파랑 · 지각 노랑 · 미기록 빨강). 노랑은 꼬리표 warn 과 같은 계열로 토큰이 없다(2026-11-05 사용자 지정, 3팀 확인 필요) */
+// 근무스케줄 범례(CoverLegend)와 같은 14px 색 칸 — 옅은 바탕 + 같은 계열 테두리(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 8px 진한 점). 노랑은 급여명세서 경고 바탕(#fff6e5)과 같은 계열
+const DOT = { ok: "bg-erp-on-bg border-erp-on/40", warn: "bg-[#fff6e5] border-[#e8a33d]/50", risk: "bg-erp-off-bg border-erp-off/40" } as const;
+
+// 막대 채움도 앞 색 칸과 같은 계열의 진한 색(정상 상태 파랑 · 지각 노랑 · 미기록 상태 빨강, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 셋 다 회청)
+const BAR = { ok: "bg-erp-on", warn: "bg-[#e8a33d]", risk: "bg-erp-off" } as const;
+
+function Rate({ label, count, total, dot }: { label: string; count: number; total: number; dot: keyof typeof DOT }) {
   const pct = total ? Math.round((count / total) * 100) : 0;
   // 라벨 시작선을 아래 근로시간 표(DetailTable — 선 1px + 칸 여백 12px)의 라벨과 맞춘다(2026-11-04 사용자 지정 — 전엔 칸 왼쪽 끝에 붙어 시작선이 둘이었다)
   return (
     <div className="flex h-[34px] items-center gap-[12px] pl-[13px] text-[14px]">
-      {/* 라벨 98px — 들여쓰기 13 + 98 + 간격 12 = 123px 에서 막대가 시작해 아래 근로시간 표 값(선 1 + 라벨 칸 110 + 여백 12)과 같은 세로줄에 선다. 굵기도 표 라벨과 같은 500(2026-11-04 사용자 지정) */}
-      <span className="w-[98px] shrink-0 font-medium text-erp-label">{label}</span>
+      {/* 색 칸(14)은 들여쓰기 13px 에서 시작해 아래 근로시간 표 라벨(「총 근로시간」 · 「연장 근로」)과 같은 세로줄에 서고, 간격 6 뒤에 글자가 온다(범례와 같다).
+          라벨 칸 98 — 13 + 98 + 간격 12 = 123px 에서 막대가 시작해 표 값과 같은 세로줄에 선다. 라벨 글자는 표 라벨과 같은 14px 500 회색, 색만으로 말하지 않게 글자는 그대로 둔다
+          (2026-11-04 · 05 사용자 지정 — 줄맞춤. 전엔 점이 칸 왼쪽 끝, 글자가 표 라벨 줄이었다) */}
+      <span className="flex w-[98px] shrink-0 items-center gap-[6px] text-[14px] font-medium text-erp-label">
+        <span aria-hidden="true" className={`size-[14px] shrink-0 rounded-[2px] border ${DOT[dot]}`} />
+        {label}
+      </span>
       <span className="block h-[6px] w-[200px] overflow-hidden rounded-[2px] bg-erp-subtle" role="img" aria-label={`${label} ${pct}%`}>
-        <span className="block h-full bg-erp-brand" style={{ width: `${pct}%` }} />
+        <span className={`block h-full ${BAR[dot]}`} style={{ width: `${pct}%` }} />
       </span>
       <span>{count}회</span>
     </div>
@@ -174,9 +187,9 @@ export function SummarySection({ summary, week, hrefOfWeek }: { summary: WeekSum
     <Section title="근태 요약" right={<StepNav label={`${monthDayLabel(week)} ~ ${monthDayLabel(addDays(week, 6))}`} unit="주" prev={hrefOfWeek(addDays(week, -7))} next={hrefOfWeek(addDays(week, 7))} />}>
       <div className="flex flex-col gap-[12px]">
         <div className="flex flex-col">
-          <Rate label="정상 출근" count={summary.normal} total={total} />
-          <Rate label="지각" count={summary.late} total={total} />
-          <Rate label="미기록" count={summary.missing} total={total} />
+          <Rate label="정상 출근" count={summary.normal} total={total} dot="ok" />
+          <Rate label="지각" count={summary.late} total={total} dot="warn" />
+          <Rate label="미기록" count={summary.missing} total={total} dot="risk" />
         </div>
         <DetailTable
           title="근로시간"
@@ -219,7 +232,9 @@ export function FixSection({
       fill
       right={
         <span className="flex items-center gap-[6px]">
-          <FixPeriod from={query.fixFrom} to={query.fixTo} today={today} />
+          <BackdropInert>
+            <FixPeriod from={query.fixFrom} to={query.fixTo} today={today} />
+          </BackdropInert>
           <ProxyButton stores={stores} today={today} editableFrom={editableFrom} />
         </span>
       }

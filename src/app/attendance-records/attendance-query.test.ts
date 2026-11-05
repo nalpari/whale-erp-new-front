@@ -1,7 +1,7 @@
 // node --test src/app/attendance-records/attendance-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { byLabel, type DayRow, defaultQuery, editTail, fixPairIndex, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, fixSaveNote, forcedNextDay, initialNextDay, laterDayMark, overnightNote, parseAttendanceQuery, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
+import { byLabel, type DayRow, defaultQuery, editTail, fixPairIndex, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, overnightNote, parseAttendanceQuery, proxyPoints, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
 
 const TODAY = "2026-10-23";
 const def = defaultQuery(TODAY);
@@ -164,4 +164,15 @@ test("보정 퇴근 날 — 처음 값은 원래 퇴근이 다음 날인가, 퇴
   // 출근 없는 퇴근에 밤 출근을 채우면 출근이 전날이다
   assert.equal(fixSaveNote("2026-10-24", false, "22:00", "06:00", false), "전날(10/23) 22:00 출근으로 저장합니다.");
   assert.equal(fixSaveNote("2026-10-24", false, "05:00", "06:00", false), null);
+});
+
+test("미래 시각 — 거절 문장을 내릴 때를 api 와 같은 순간으로 가른다", () => {
+  const now = Date.parse("2026-11-05T14:00:00+09:00");
+  assert.equal(hasFutureTime(proxyPoints("2026-11-05", "09:00", "13:00"), now), false);
+  assert.equal(hasFutureTime(proxyPoints("2026-11-05", "15:00", ""), now), true);
+  assert.equal(hasFutureTime(proxyPoints("2026-11-05", "11:12", "00:14"), now), true); // 다음 날 00:14
+  assert.equal(hasFutureTime(proxyPoints("2026-11-04", "22:00", "06:00"), now), false); // 오늘 06:00 은 지났다
+  assert.equal(hasFutureTime(fixPoints("2026-11-05", true, "09:00", "10:00", true), now), true); // 다음 날 퇴근을 골랐다
+  assert.equal(hasFutureTime(fixPoints("2026-11-05", false, "23:00", "08:00", false), now), false); // 출근은 전날 23:00
+  assert.equal(hasFutureTime(proxyPoints("2026-11-05", "", ""), now), false);
 });

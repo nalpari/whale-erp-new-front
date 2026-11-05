@@ -21,12 +21,18 @@ export function ScheduleMonth({
   today,
   hrefBase = "/work-schedules",
   readOnly = false,
+  showMonthNav = true,
+  fitList = false,
 }: {
   data: WorkScheduleList;
   query: ScheduleQuery;
   today: string;
   hrefBase?: string;
   readOnly?: boolean;
+  /** 달 이동(‹ 2026년 11월 › · 이번 달)을 달력 위에 둘지 — 근무스케줄 관리는 도구 줄(근무지 줄)에 두므로 끈다(2026-11-05 사용자 지정). 홈은 그대로 */
+  showMonthNav?: boolean;
+  /** 고른 날 상자를 달력 높이에 맞추고 직원 목록만 상자 안에서 스크롤 — 직원이 많으면 상자가 달력보다 길어져 아래가 비었다(2026-11-05 사용자 지정, 3팀 확인 필요). 근무스케줄 관리만 켠다 */
+  fitList?: boolean;
 }) {
   const href = (next: Parameters<typeof moved>[1]) => `${hrefBase}${toScheduleSearch(moved(query, next), today)}`;
   const cells = monthCells(query.month);
@@ -48,9 +54,13 @@ export function ScheduleMonth({
   const wd = new Date(`${picked}T00:00:00Z`).getUTCDay();
 
   return (
-    <div className="grid grid-cols-[268px_minmax(0,1fr)] items-start gap-[18px]">
-      <section aria-label="고른 날" className="flex flex-col gap-[8px] rounded-[2px] border border-erp-thead-line p-[14px]">
-        <div className="flex items-center justify-between">
+    <div className={`grid grid-cols-[268px_minmax(0,1fr)] gap-[18px] ${fitList ? "items-stretch" : "items-start"}`}>
+      {/* fitList 면 상자를 바깥 칸(달력 높이)에 절대 위치로 붙여, 목록 길이가 줄 높이를 늘리지 않게 한다 */}
+      <div className={fitList ? "relative min-h-[240px]" : "contents"}>
+      {/* 고른 날 상자 — 간격 단계(DESIGN 6/10/12/18)에 맞춰 안쪽 18 · 줄 사이 12, 목록 줄 위아래 10(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 14 · 8 · 8) */}
+      <section aria-label="고른 날" className={`flex flex-col gap-[12px] rounded-[2px] border border-erp-thead-line p-[18px] ${fitList ? "absolute inset-0" : ""}`}>
+        {/* 날짜 줄 아래만 18 — 12 면 「근무 0명」이 날짜에 붙어 보였다(2026-11-05 사용자 지적) */}
+        <div className="mb-[6px] flex items-center justify-between">
           <Link
             href={href({ day: prevDay, month: prevDay.slice(0, 7) })}
             aria-label="이전 날"
@@ -71,47 +81,52 @@ export function ScheduleMonth({
             <Image src="/icons/next.svg" alt="" width={7} height={12} />
           </Link>
         </div>
-        <p className="text-[13px] text-erp-label">
+        {/* 근무 수 · 빈 문구는 14px 회색 — 13px 연회색은 너무 작았다(2026-11-05 사용자 지적, 3팀 확인 필요). 홈 월간 보기도 같다 */}
+        <p className="text-[14px] text-erp-label">
           근무 <b className="text-erp-ink">{headcount}명</b> · {when}
         </p>
-        <ul className="flex flex-col text-[14px]">
+        <ul className={`flex flex-col text-[14px] ${fitList ? "min-h-0 flex-1 overflow-y-auto" : ""}`}>
           {rows.map(({ s, shifts }) => (
-            <li key={s.staffMemberId} className="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]">
+            <li key={s.staffMemberId} className="flex items-center gap-[8px] border-b border-erp-thead-line py-[10px] first:pt-0 last:border-b-0 last:pb-0">
               <span className="flex-1">
                 {s.name} <span className="text-erp-muted">{s.jobTitle}</span>
               </span>
               <span className="text-right text-[13px] text-erp-muted">{shifts.length ? shifts.map(shiftLabel).join(", ") : "휴무"}</span>
             </li>
           ))}
-          {hidden > 0 && <li className="py-[8px] text-[13px] text-erp-muted">그 밖에 {hidden}명(본사 제공 동의 없음)</li>}
-          {rows.length === 0 && hidden <= 0 && <li className="py-[8px] text-[13px] text-erp-muted">근무 없음</li>}
+          {hidden > 0 && <li className="pt-[10px] text-[14px] text-erp-label">그 밖에 {hidden}명(본사 제공 동의 없음)</li>}
+          {/* 상자 위아래 여백은 같게(18) — 첫 줄 위 · 끝 줄 아래 여백과 끝 줄 선을 없앤다. 빈 줄도 여백 없이(2026-11-05 사용자 지적) */}
+          {rows.length === 0 && hidden <= 0 && <li className="text-[14px] text-erp-label">{readOnly ? "근무 없음" : "근무 가능한 직원이 없습니다."}</li>}
         </ul>
       </section>
+      </div>
       <div>
-        <div className="mb-[8px] flex items-center gap-[6px]">
-          <Link
-            href={href(toMonth(addMonths(query.month, -1)))}
-            aria-label="이전 달"
-            scroll={false}
-            className={ICON_BUTTON}
-          >
-            <Image src="/icons/prev.svg" alt="" width={16} height={16} />
-          </Link>
-          <b className="min-w-[120px] text-center text-[15px] font-semibold">
-            {y}년 {m}월
-          </b>
-          <Link
-            href={href(toMonth(addMonths(query.month, 1)))}
-            aria-label="다음 달"
-            scroll={false}
-            className={ICON_BUTTON}
-          >
-            <Image src="/icons/next.svg" alt="" width={16} height={16} />
-          </Link>
-          <Button variant="off" href={href({ month: today.slice(0, 7), day: today })} scroll={false}>
-            이번 달
-          </Button>
-        </div>
+        {showMonthNav && (
+          <div className="mb-[8px] flex items-center gap-[6px]">
+            <Link
+              href={href(toMonth(addMonths(query.month, -1)))}
+              aria-label="이전 달"
+              scroll={false}
+              className={ICON_BUTTON}
+            >
+              <Image src="/icons/prev.svg" alt="" width={16} height={16} />
+            </Link>
+            <b className="min-w-[120px] text-center text-[15px] font-semibold">
+              {y}년 {m}월
+            </b>
+            <Link
+              href={href(toMonth(addMonths(query.month, 1)))}
+              aria-label="다음 달"
+              scroll={false}
+              className={ICON_BUTTON}
+            >
+              <Image src="/icons/next.svg" alt="" width={16} height={16} />
+            </Link>
+            <Button variant="off" href={href({ month: today.slice(0, 7), day: today })} scroll={false}>
+              이번 달
+            </Button>
+          </div>
+        )}
         <div className="grid grid-cols-7 gap-px overflow-hidden rounded-[2px] border border-erp-thead-line bg-erp-thead-line">
           {HEAD.map((d, i) => (
             <div key={d} className={`bg-erp-thead-bg py-[6px] text-center text-[13px] ${i === 5 ? "text-erp-on" : i === 6 ? "text-erp-off" : "text-erp-thead-text"}`}>

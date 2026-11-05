@@ -11,6 +11,7 @@ import {
   scheduleApiSearch,
   toScheduleSearch,
   weekRange,
+  weekRangeLabel,
 } from "./work-schedule-query.ts";
 
 const TODAY = "2026-10-21"; // 수요일
@@ -121,4 +122,10 @@ test("지난 주 복사 미리보기 — 주간에서만 copy=1, 주를 바꾸�
   assert.equal(moved(q, { day: "2026-10-23" }).copy, true);
   assert.equal(moved(q, { week: "2026-10-26", day: "2026-10-26" }).copy, false);
   assert.equal(moved(q, { view: "month", month: "2026-10" }).copy, false);
+});
+
+test("weekRangeLabel — 같은 달 · 달이 바뀜 · 해가 바뀜", () => {
+  assert.equal(weekRangeLabel("2026-11-02"), "2026년 11월 2일 ~ 8일");
+  assert.equal(weekRangeLabel("2026-10-26"), "2026년 10월 26일 ~ 11월 1일");
+  assert.equal(weekRangeLabel("2026-12-28"), "2026년 12월 28일 ~ 2027년 1월 3일");
 });

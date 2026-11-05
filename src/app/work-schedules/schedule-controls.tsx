@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useTransition } from "react";
+import { useEffect, useTransition, type ReactNode } from "react";
 import { DataTable, DateField, Pagination, Select, type Column } from "@/components/common";
-import { useScope, useStores } from "@/components/site/session-gate";
+import { useAccount, useScope, useStores } from "@/components/site/session-gate";
+import { isPlatformRole } from "@/lib/auth-routes";
 import { formatDateTime } from "@/lib/format";
 import { PAGE_SIZES, type PageSize } from "@/lib/staff-members";
-import { openStores } from "@/lib/store-scope";
+import { isClosedStore, openStores } from "@/lib/store-scope";
 import type { WorkScheduleHistoryList } from "@/lib/work-schedules-api";
 import { mondayOf, moved, toScheduleSearch, type ScheduleQuery } from "./work-schedule-query";
 import { CHANGE_LABEL, historyLine } from "./work-schedule-view";
@@ -29,11 +30,24 @@ export function SchedulePicker({ query, today }: { query: ScheduleQuery; today: 
     // 처음 한 번 — 주소에 점포가 없을 때만
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.storeId, fallback]);
+  // 점포가 없거나 고르는 중이면 같은 자리에 막힌 근무지 칸을 둔다 — 도구 줄 모양은 그대로, 안내는 본문 가운데(ScheduleNoStore)
   if (query.storeId === null)
-    return <p className="text-[14px] text-erp-label">{stores.length ? "점포를 고르는 중입니다…" : "관리하는 점포가 없습니다."}</p>;
+    return (
+      <Labeled>
+        {/* 막지 않는다 — 막힌 칸은 생김새가 같아 눌러도 안 열리는 고장처럼 보였다. 열면 「선택」 하나뿐이다(2026-11-05 사용자 지적) */}
+        <div className="w-[300px]">
+          <Select aria-label="근무지" value="" onChange={() => undefined}>
+            <option value="">선택</option>
+          </Select>
+        </div>
+      </Labeled>
+    );
+  const picked = stores.find((s) => s.storeId === query.storeId);
+  const closed = !!picked && isClosedStore(picked);
   // 점포를 바꾸면 복사 미리보기를 닫고, 앞 점포 직원으로 건 변경 이력 조건 · 쪽을 푼다
   return (
-    <div className="w-[220px] shrink-0">
+    <Labeled>
+      <div className="w-[300px]">
       <Select aria-label="근무지" value={query.storeId} onChange={(e) => navigate({ ...query, storeId: Number(e.target.value), copy: false, historyStaffId: null, historyPage: 1 })}>
         {stores.map((s) => (
           <option key={s.storeId} value={s.storeId}>
@@ -41,6 +55,44 @@ export function SchedulePicker({ query, today }: { query: ScheduleQuery; today: 
           </option>
         ))}
       </Select>
+      </div>
+      {/* 폐점 점포를 고르면 근무지 칸 바로 옆에 빨간 안내 — 등록 · 복사 버튼은 흐리게 막힌다(2026-11-05 사용자 지정, 3팀 확인 필요) */}
+      {closed && <span className="text-[13px] whitespace-nowrap text-erp-off">폐점 점포는 근무스케줄을 등록할 수 없습니다.</span>}
+    </Labeled>
+  );
+}
+
+/** 근무지 칸 앞 회색 라벨 — 무엇을 고르는 칸인지 보이게(2026-11-05 사용자 지정, 3팀 확인 필요). 라벨은 폼 라벨과 같은 14px 500 회색 */
+function Labeled({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex shrink-0 items-center gap-[8px]">
+      <span aria-hidden="true" className="text-[14px] font-medium text-erp-label">
+        근무지
+      </span>
+      {/* 점포명이 길어 220 → 300px(2026-11-05 사용자 지정, 3팀 확인 필요) */}
+      {children}
+    </div>
+  );
+}
+
+/**
+ * 점포가 없을 때 근무표 자리 가운데 안내 — 홈처럼 기본 틀은 두고 데이터 없음으로 보인다(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 왼쪽 위 한 줄
+ * 「관리하는 점포가 없습니다.」만 있고 아래가 비었다). 앞 문장은 점포 화면 · 점포 없음 띠와 같은 규칙(BP 마스터 · 플랫폼은 「등록된」, 그 밖은 「담당」),
+ * 아랫줄은 무엇을 하면 쓸 수 있는지. 점포가 있는데 주소에 없으면 SchedulePicker 가 첫 점포로 옮기는 동안만 보인다.
+ */
+export function ScheduleNoStore() {
+  const account = useAccount();
+  const stores = useStores();
+  const owner = account.roleTypeCode === "BM" || isPlatformRole(account.roleTypeCode);
+  const [lead, next] = stores.length
+    ? ["점포를 불러오는 중입니다.", null]
+    : owner
+      ? ["등록된 점포가 없습니다.", "점포를 등록하면 직원의 근무스케줄을 등록하고 관리할 수 있습니다."]
+      : ["담당 점포가 없습니다.", "점포를 배정받으면 직원의 근무스케줄을 등록하고 관리할 수 있습니다."];
+  return (
+    <div className="flex min-h-[134px] flex-1 flex-col items-center justify-center gap-[6px] text-center text-[14px]">
+      <p className="font-medium text-erp-ink">{lead}</p>
+      {next && <p className="text-erp-muted">{next}</p>}
     </div>
   );
 }
@@ -73,10 +125,10 @@ export function ScheduleHistory({
   const go = (next: Partial<ScheduleQuery>) => navigate({ ...query, historyPage: 1, ...next });
   const list = data === "failed" ? null : data;
   const totalPages = list ? Math.max(1, Math.ceil(list.total / query.historyPageSize)) : 1;
-  // 「10-22 10:11」(한국 시간)
-  const time = (iso: string) => formatDateTime(iso).slice(5);
+  // 「2026-10-22 10:11」(한국 시간) — 연도까지 보인다, 점포 · BP 변경이력과 같다(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「10-22 10:11」)
+  const time = (iso: string) => formatDateTime(iso);
   const columns: Column<WorkScheduleHistoryList["items"][number]>[] = [
-    { header: "일시", width: "w-[120px]", cell: (h) => time(h.changedAt) },
+    { header: "변경일시", width: "w-[180px]", cell: (h) => time(h.changedAt) },
     { header: "구분", width: "w-[80px]", cell: (h) => <span className={h.changeType === "DELETED" ? "text-erp-off" : undefined}>{CHANGE_LABEL[h.changeType]}</span> },
     { header: "내용", align: "left", cell: (h) => <span title={historyLine(h)}>{historyLine(h)}</span> },
   ];
