@@ -47,6 +47,7 @@ export default async function BpAdminsPage({ searchParams }: PageProps<"/bp-admi
 
 /** 목록을 api 가 거절했으면(deniedMessageOf) 오류 화면 대신 그 문장을 보인다. 거절이 아닌 것은 그대로 던져 error.tsx 가 받는다. */
 const listDenied = (error: unknown): { denied: string } => {
+  if (error instanceof ApiError && error.status === 401) redirectExpired();
   const denied = deniedMessageOf(error);
   if (denied === null) throw error;
   console.warn("BP 관리자 목록 거절", error instanceof ApiError ? error.status : undefined, denied);
@@ -61,6 +62,7 @@ async function loadDetail(id: number): Promise<{ admin: BpAdminDetail } | { fail
   try {
     return { admin: await getBpAdmin(id) };
   } catch (error) {
+    if (error instanceof ApiError && error.status === 401) redirectExpired();
     if (error instanceof ApiError && error.status === 404) return { failed: "볼 수 없거나 없는 계정입니다." };
     // 볼 수 없는 BP · 권한이면 목록도 같은 이유로 거절돼 그쪽이 알린다 — 장애 로그를 남기지 않는다
     if (error instanceof ApiError && error.status === 403) return { failed: error.message };
