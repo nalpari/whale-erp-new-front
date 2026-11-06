@@ -25,7 +25,7 @@ export function LayeredIcon({ parts }: { parts: IconPart[] }) {
   );
 }
 
-// 직원 두 명 — 매장운영 「직원 초대」와 부가서비스 「직원수 추가」가 같은 그림을 쓴다.
+// 직원 두 명 — 매장운영 「직원 초대」. 부가서비스 「직원수 추가」는 2026-11-06 시안부터 다른 그림(사람 하나 + 더하기)이다.
 const STAFF = "/guest/store-operations";
 export const STAFF_ICON: IconPart[] = [
   { src: `${STAFF}/flow-invite-1.svg`, width: 41.3333, height: 20, left: 3.33, top: 38 },

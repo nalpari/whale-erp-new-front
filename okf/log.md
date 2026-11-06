@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-11-06
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 부가서비스 서비스 카드를 한 줄에서 같은 높이로 맞추고 꼬리표를 카드 아래에 붙였다(사용자 요청). 데모 같이 반영.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 부가서비스를 Figma 로그인전_공유(44:1792)에 맞췄다: 제목 옆 버튼 제거, 서비스 카드 · 꼬리표 색, 확장 옵션 카드 바탕, 구독 안내 회색 구역, 직원수 추가 · 점포수 추가 아이콘 교체. 데모 같이 반영, `store-3.svg` 삭제.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 프랜차이즈 소개(`/franchise`, Figma 로그인전_공유 44:1035)를 더했다. 매장운영 · 재무관리와 같은 구역을 쓰고, 사진 회색 바탕 끄기 · 카드 그림자 · 아이콘 조각 회전 옵션을 더했다. 머리말 · 메인 링크와 공개 경로 연결, 데모 같이 반영.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 재무관리 소개(`/finance-management`, Figma 로그인전_공유 44:1412)를 더했다. 매장운영과 같은 네 구역을 `intro-sections.tsx` 로 빼 두 화면이 함께 쓰고, 머리말 · 메인의 재무관리 링크와 공개 경로를 연결했다. 데모 같이 반영.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 이동 때 이전 화면 스냅숏을 모두 그리지 않고 새 본문만 떠오르게 했다. 사파리에서 홈이 전환 내내 새 화면 아래 남던 것(화면 녹화로 확인) 대응. 앱 · 데모.
