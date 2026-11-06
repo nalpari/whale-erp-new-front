@@ -1,6 +1,5 @@
-// 부가서비스 소개. 앱 디자인 샘플 src/app/design/guest/add-on-services/page.tsx(Figma 로그인전_부가서비스 1:1083)를 옮겼다.
+// 부가서비스 소개. 앱 디자인 샘플 src/app/design/guest/add-on-services/page.tsx(Figma 로그인전_공유 · 부가서비스 44:1792, 2026-11-06. 처음은 로그인전_부가서비스 1:1083)를 옮겼다.
 import * as g from "../../guest.mjs";
-import { link } from "../../site.mjs";
 
 const S = "add-on-services";
 
@@ -20,24 +19,26 @@ const waitingIcon = (A) =>
   `<span class="relative block h-[74px] w-[80.59px]">${g.gimg(A, `${S}/waiting.svg`, 95.7796, 90.708, "absolute top-0 left-0 max-w-none")}</span>`;
 
 
-// 구독 단위(사업자·점포 구독)는 주황, 나머지 조건은 회색 꼬리표다. 셋째 꼬리표는 남는 폭을 채운다.
+// 구독 단위(사업자·점포 구독)는 주황 바탕, 나머지 조건은 회청 바탕 꼬리표이고 글자는 모두 흰색이다(44:1792). 셋째 꼬리표는 남는 폭을 채운다.
 const badges = (list) =>
   `<div class="flex gap-[4px]">${list
     .map(
       (b, i) =>
-        `<span class="flex h-[30px] items-center justify-center rounded-[3px] px-[10px] text-[14px] leading-[1.4] font-semibold whitespace-nowrap ${b.endsWith("구독") ? "bg-[#ffeded] text-[#db8233]" : "bg-[#f5f5f5] text-[#999]"} ${i === 2 ? "flex-1" : ""}">${b}</span>`,
+        `<span class="flex h-[30px] items-center justify-center rounded-[3px] px-[10px] text-[14px] leading-[1.4] font-semibold whitespace-nowrap text-white ${b.endsWith("구독") ? "bg-[#ee882d]" : "bg-[#c1cfda]"} ${i === 2 ? "flex-1" : ""}">${b}</span>`,
     )
     .join("")}</div>`;
 
-// 부가서비스·구독 안내 카드. 시안의 큰 카드는 30px 로 둥글다.
-const CARD = "rounded-[30px] border border-guest-line bg-white px-[32px] py-[40px] shadow-[0_8px_24px_rgba(0,0,0,0.02)]";
+// 부가서비스 카드. 옅은 회청 바탕에 30px 로 둥글고 그림자는 없다(44:1861).
+const CARD = "rounded-[30px] border border-[#ecf1f4] bg-[#f6f9fb] px-[32px] py-[40px]";
 const lines = (list) => list.map((l) => `<span class="block">${l}</span>`).join("");
 
-const serviceSection = (A, R, { light, desc, services, last = false }) =>
-  `<section class="${g.FRAME} flex flex-col gap-[60px] pt-[120px] ${last ? "pb-[120px]" : ""}"><div class="flex items-end justify-between gap-[18px]"><div class="flex flex-col gap-[18px]">${g.sectionTitle(light, "부가서비스")}<p class="text-[18px] leading-[1.5] font-medium text-guest-ink">${desc[0]}<br>${desc[1]}</p></div><div class="flex gap-[8px]">${g.button(A, "요금 안내 보기", { tone: "navy", arrow: true })}${g.button(A, "도입문의", { tone: "soft", href: link(R, "home/inquiry.html") })}</div></div><ul class="grid grid-cols-5 gap-[16px]">${services
+// 시안이 제목 옆의 「요금 안내 보기」 · 「도입문의」를 뺐다(44:1792).
+// 한 줄의 카드는 그리드가 같은 높이로 늘리고, 설명이 남는 높이를 채워 꼬리표를 카드 아래에 맞춘다(2026-11-06 요청).
+const serviceSection = ({ light, desc, services, last = false }) =>
+  `<section class="${g.FRAME} flex flex-col gap-[60px] pt-[120px] ${last ? "pb-[120px]" : ""}"><div class="flex flex-col gap-[18px]">${g.sectionTitle(light, "부가서비스")}<p class="text-[18px] leading-[1.5] font-medium text-guest-ink">${desc[0]}<br>${desc[1]}</p></div><ul class="grid grid-cols-5 gap-[16px]">${services
     .map(
       (s) =>
-        `<li class="flex flex-col gap-[4px] ${CARD}"><span class="flex h-[88px] items-center pb-[14px]">${s.icon}</span><div class="flex flex-col gap-[10px]"><h3 class="text-[22px] leading-[1.5] font-extrabold text-[#222]">${s.name}</h3><div class="flex flex-col gap-[18px]"><p class="text-[16px] leading-[1.5] text-[#505050]">${lines(s.desc)}</p>${badges(s.badges)}</div></div></li>`,
+        `<li class="flex flex-col gap-[4px] ${CARD}"><span class="flex h-[88px] items-center pb-[14px]">${s.icon}</span><div class="flex flex-1 flex-col gap-[10px]"><h3 class="text-[22px] leading-[1.5] font-extrabold text-guest-navy">${s.name}</h3><div class="flex flex-1 flex-col gap-[18px]"><p class="flex-1 text-[16px] leading-[1.5] text-guest-navy">${lines(s.desc)}</p>${badges(s.badges)}</div></div></li>`,
     )
     .join("")}</ul></section>`;
 
@@ -66,12 +67,23 @@ const EXPANSIONS = [
     icon: [
       { src: `${S}/store-1.svg`, width: 57.3333, height: 17.3333, left: 3.33, top: 3.33 },
       { src: `${S}/store-2.svg`, width: 46.6667, height: 30.6667, left: 8.67, top: 30 },
-      { src: `${S}/store-3.svg`, width: 20, height: 20, left: 22, top: 40.67 },
+      { src: `${S}/plus.svg`, width: 18, height: 17, left: 23, top: 38 },
       { src: `${S}/store-4.svg`, width: 57.3333, height: 4, left: 3.33, top: 16.67 },
       { src: `${S}/store-5.svg`, width: 57.3333, height: 17.3333, left: 3.33, top: 16.67 },
     ],
   },
-  { name: "직원수 추가", desc: "사업자·점포 구독 · 기본 직원 5명", icon: g.STAFF_ICON },
+  // 사람 하나에 더하기 — 매장운영 「직원 초대」(두 사람)와 다른 그림이다(44:2195).
+  {
+    name: "직원수 추가",
+    desc: "사업자·점포 구독 · 기본 직원 5명",
+    icon: [
+      { src: `${S}/staff-1.svg`, width: 41.3333, height: 20, left: 3.33, top: 38 },
+      { src: `${S}/staff-2.svg`, width: 25.3333, height: 25.3333, left: 11.33, top: 6 },
+      { src: `${S}/staff-3.svg`, width: 10.0005, height: 16.0005, left: 50, top: 42 },
+      { src: `${S}/staff-4.svg`, width: 7.00053, height: 13.001, left: 45, top: 28 },
+      { src: `${S}/plus.svg`, width: 18, height: 17, left: 43, top: 4 },
+    ],
+  },
   {
     name: "재무관리",
     desc: "사업자·점포 구독",
@@ -85,9 +97,9 @@ const EXPANSIONS = [
 
 // 이 섹션만 굵은 줄이 위에 온다.
 const expansions = (A) =>
-  `<section class="relative overflow-hidden bg-guest-ink py-[120px]">${g.cover(A, "store-operations/flow-bg.png", "object-cover object-bottom")}<span class="absolute inset-0 bg-[rgba(37,37,37,0.8)]"></span><div class="${g.FRAME} relative flex flex-col gap-[60px]"><h2 class="text-[52px] leading-[1.2] tracking-[-0.025em] text-white"><span class="block font-bold">확장 옵션</span><span class="block font-normal">매장이 커지는 만큼 한도를 늘리세요</span></h2><ul class="grid grid-cols-3 gap-[28px]">${EXPANSIONS.map(
+  `<section class="relative overflow-hidden bg-guest-ink py-[120px]">${g.cover(A, "store-operations/flow-bg.png", "object-cover object-bottom")}<span class="absolute inset-0 bg-[rgba(31,31,31,0.8)]"></span><div class="${g.FRAME} relative flex flex-col gap-[60px]"><h2 class="text-[52px] leading-[1.2] tracking-[-0.025em] text-white"><span class="block font-bold">확장 옵션</span><span class="block font-normal">매장이 커지는 만큼 한도를 늘리세요</span></h2><ul class="grid grid-cols-3 gap-[28px]">${EXPANSIONS.map(
     (e) =>
-      `<li class="flex gap-[24px] rounded-[16px] border border-white/10 px-[48px] py-[42px] backdrop-blur-[12px]">${g.layeredIcon(A, e.icon)}<div class="flex flex-1 flex-col gap-[8px] leading-[1.5]"><h3 class="text-[24px] font-semibold text-[#fafafa]">${e.name}</h3><p class="text-[18px] text-[#ccc]">${e.desc}</p></div></li>`,
+      `<li class="flex gap-[24px] rounded-[16px] bg-white/10 px-[48px] py-[42px]">${g.layeredIcon(A, e.icon)}<div class="flex flex-1 flex-col gap-[8px] leading-[1.5]"><h3 class="text-[24px] font-semibold text-[#fafafa]">${e.name}</h3><p class="text-[18px] text-[#ccc]">${e.desc}</p></div></li>`,
   ).join("")}</ul></div></section>`;
 
 const SUBSCRIPTION = [
@@ -96,10 +108,11 @@ const SUBSCRIPTION = [
   { title: "계약 기간 유지", desc: ["구독 기간은 원하는 만큼 선택할 수 있고, 선택한 기간 동안은 중도 해약", "없이 유지됩니다."] },
 ];
 
+// 회색 바탕 구역이 푸터에 바로 붙는다 — 화면은 page 의 flush 로 그린다. 카드는 흰 바탕 16px 모서리다(44:2217).
 const subscription = () =>
-  `<section class="${g.FRAME} flex flex-col gap-[60px] pt-[120px]">${g.sectionTitle("WHALE ERP", "구독 안내")}<ul class="grid grid-cols-3 gap-[16px]">${SUBSCRIPTION.map(
-    (s) => `<li class="flex flex-col gap-[10px] ${CARD}"><h3 class="text-[22px] leading-[1.5] font-extrabold text-[#222]">${s.title}</h3><p class="text-[16px] leading-[1.5] text-[#505050]">${lines(s.desc)}</p></li>`,
-  ).join("")}</ul></section>`;
+  `<section class="bg-[#fafafa] pt-[120px] pb-[60px]"><div class="${g.FRAME} flex flex-col gap-[60px]">${g.sectionTitle("WHALE ERP", "구독 안내")}<ul class="grid grid-cols-3 gap-[16px]">${SUBSCRIPTION.map(
+    (s) => `<li class="flex flex-col gap-[10px] rounded-[16px] border border-guest-line bg-white px-[32px] py-[40px]"><h3 class="text-[22px] leading-[1.5] font-extrabold text-guest-ink">${s.title}</h3><p class="text-[16px] leading-[1.5] text-guest-ink">${lines(s.desc)}</p></li>`,
+  ).join("")}</ul></div></section>`;
 
 export default ({ A, R }) => ({
   title: "부가서비스",
@@ -107,9 +120,10 @@ export default ({ A, R }) => ({
   html: g.page(A, R, {
     current: "home/add-on-services.html",
     main:
-      serviceSection(A, R, { light: "판매용", desc: ["카운터, 테이블, 손님의 스마트폰까지.", "손님이 편한 방식으로 주문하고, 매출은 자동으로 한곳에 모입니다."], services: sales(A) }) +
-      serviceSection(A, R, { light: "관리용", desc: ["보이지 않는 곳에서 매장을 받쳐주는 기능들.", "매장이 커지면 점포·직원 한도도 함께 늘리세요."], services: management(A), last: true }) +
+      serviceSection({ light: "판매용", desc: ["카운터, 테이블, 손님의 스마트폰까지.", "손님이 편한 방식으로 주문하고, 매출은 자동으로 한곳에 모입니다."], services: sales(A) }) +
+      serviceSection({ light: "관리용", desc: ["보이지 않는 곳에서 매장을 받쳐주는 기능들.", "매장이 커지면 점포·직원 한도도 함께 늘리세요."], services: management(A), last: true }) +
       expansions(A) +
       subscription(),
+    flush: true,
   }),
 });
