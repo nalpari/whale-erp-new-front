@@ -1,11 +1,11 @@
 import Image from "next/image";
-import { type IconPart, InventoryIcon, KioskIcon, LayeredIcon, OrderIcon, RecipeIcon, STAFF_ICON } from "../guest-icons";
+import { CalendarIcon, type IconPart, LayeredIcon, STAFF_ICON } from "../guest-icons";
 import type { GuestRoutes } from "../guest-routes";
 import { GuestButton, GuestPage, SectionTitle, TitleRow, TRIM } from "../guest-ui";
 import { FRAME } from "../theme";
 import { FeatureShortcuts } from "./feature-shortcuts";
 
-// Figma 「로그인전_Sub」(8QSOuwFFBfCbFWR6RBUlps · 1:688). 비로그인 메인의 매장운영 소개 화면이다.
+// Figma 「매장운영」(RQmNVgT2NL0njIFXVQPVG6 · 44:661, 로그인전_공유 — 2026-11-06 반영. 처음은 8QSOuwFFBfCbFWR6RBUlps · 1:688). 비로그인 메인의 매장운영 소개 화면이다.
 // 실제 라우트((site))와 디자인 샘플이 함께 그린다. 링크는 받은 routes 로 건다(guest-routes.ts).
 
 const ASSET = "/guest/store-operations";
@@ -80,6 +80,7 @@ function Moments({ routes }: { routes: GuestRoutes }) {
 const FEATURES = [
   {
     id: "store",
+    photo: "feature-store.png",
     tab: "점포 관리",
     no: "01 점포 관리",
     title: ["매장 정보,", "찾지 말고 바로 꺼내세요"],
@@ -88,6 +89,7 @@ const FEATURES = [
   },
   {
     id: "inspection",
+    photo: "feature-inspection.png",
     tab: "점검 · 시설물",
     no: "02 점검 · 시설물",
     title: ["고장 나기 전에,", "점검 기록이 먼저 알려줍니다"],
@@ -96,6 +98,7 @@ const FEATURES = [
   },
   {
     id: "contract",
+    photo: "feature-contract.png",
     tab: "근로계약 · 급여",
     no: "03 근로계약 · 급여",
     title: ["계약서와 급여명세서,", "더는 미루지 마세요"],
@@ -104,6 +107,7 @@ const FEATURES = [
   },
   {
     id: "attendance",
+    photo: "feature-attendance.png",
     tab: "근무 · 출퇴근",
     no: "04 근무 · 출퇴근",
     title: ["몇 시에 왔더라?", "이제 기록이 답합니다"],
@@ -134,8 +138,9 @@ function Features() {
         {FEATURES.map((f, i) => (
           // 사진과 글이 번갈아 좌우를 바꾼다. 바로가기로 내려왔을 때 위에 붙는 머리말(110px)에 가리지 않게 띄운다.
           <article key={f.id} id={f.id} className={`flex scroll-mt-[130px] justify-center gap-[100px] ${i % 2 ? "flex-row-reverse" : ""}`}>
-            <div className="relative h-[540px] w-[400px] shrink-0">
-              <Image src={`${ASSET}/feature-photo.jpg`} alt="" fill sizes="400px" className="object-cover" />
+            {/* 사진 둘레가 비면 옅은 회색이 보이게 깐다(시안 그대로). */}
+            <div className="relative h-[540px] w-[400px] shrink-0 bg-[#f5f5f5]">
+              <Image src={`${ASSET}/${f.photo}`} alt="" fill sizes="400px" className="object-cover" />
             </div>
             <div className="flex flex-col gap-[64px] pt-[44px] text-guest-ink">
               <span className="h-[5px] w-[80px] bg-guest-ink" />
@@ -194,7 +199,7 @@ function Flow() {
   return (
     <section className="relative overflow-hidden bg-guest-ink py-[120px]">
       <Image src={`${ASSET}/flow-bg.png`} alt="" fill sizes="100vw" className="object-cover object-bottom" />
-      <span className="absolute inset-0 bg-[rgba(37,37,37,0.8)]" />
+      <span className="absolute inset-0 bg-[rgba(31,31,31,0.8)]" />
       {/* 배경 그림은 구역 전체를 채우고, 내용만 1760 틀에 담는다. */}
       <div className={`${FRAME} relative flex flex-col gap-[60px]`}>
         <SectionTitle light="채용부터 월급날까지," bold="끊김 없이" dark />
@@ -202,7 +207,7 @@ function Flow() {
           {FLOW.map((step) => (
             <li
               key={step.title}
-              className="flex flex-col items-center gap-[24px] rounded-[16px] border border-white/10 py-[42px] text-center backdrop-blur-[12px]"
+              className="flex flex-col items-center gap-[24px] rounded-[16px] bg-white/10 py-[42px] text-center"
             >
               <LayeredIcon parts={step.icon} />
               <div className="flex flex-col gap-[8px] leading-[1.5]">
@@ -217,52 +222,62 @@ function Flow() {
   );
 }
 
+// 아이콘 칸은 폭 74. 재고 · 대기 순번 SVG 는 그림자 여백만큼 칸보다 커서 그만큼 당겨 놓는다(Figma 44:903).
 const ADD_ONS = [
-  { name: "KIOSK", desc: "고객이 직접 터치로 주문·결제하는 비대면 무인 단말기", icon: <KioskIcon /> },
-  { name: "재고 관리", desc: "매장 내 식자재, 소모품 등의 재고를 실시간 확인 및 관리", icon: <InventoryIcon src={`${ASSET}/addon-inventory.svg`} /> },
   {
-    name: "발주 관리",
-    desc: "필요한 식자재나 물품을 본사나 거래처별로 손쉽게 발주",
-    icon: <OrderIcon back={`${ASSET}/addon-mail-back.svg`} front={`${ASSET}/addon-mail-front.svg`} />,
+    name: "점포 재고 관리",
+    desc: "떨어지기 전에 미리 확인하는 재고",
+    icon: (
+      <span className="relative block h-[74px] w-[71.94px]">
+        <Image src={`${ASSET}/addon-stock.svg`} alt="" width={88.1962} height={96.0942} className="absolute top-[-11.68px] left-[-12.98px] max-w-none" />
+      </span>
+    ),
   },
-  { name: "레시피 관리", desc: "가맹점의 메뉴 정보와 레시피를 본사에서 관리", icon: <RecipeIcon bookmark={`${ASSET}/addon-bookmark.svg`} /> },
+  { name: "예약 관리", desc: "방문 예약을 날짜·시간별로 한눈에", icon: <CalendarIcon /> },
+  {
+    name: "대기 순번 관리",
+    desc: "기다리는 손님에게 차례를 깔끔하게 안내",
+    icon: (
+      <span className="relative block h-[70.96px] w-[74px]">
+        <Image src={`${ASSET}/addon-waiting.svg`} alt="" width={89.1891} height={87.6633} className="absolute top-0 left-0 max-w-none" />
+      </span>
+    ),
+  },
 ];
 
 function AddOns({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className={`${FRAME} flex flex-col gap-[60px] pt-[120px]`}>
-      <TitleRow
-        light="함께 쓰면"
-        bold="더 편해지는 부가서비스"
-        action={
-          <GuestButton tone="navy" href={routes.addOnServices} arrow>
-            부가서비스 전체 보기
-          </GuestButton>
-        }
-      />
-      <ul className="grid grid-cols-4 gap-[16px]">
-        {ADD_ONS.map(({ name, desc, icon }) => (
-          <li
-            key={name}
-            className="flex flex-col gap-[4px] rounded-[16px] border border-guest-line bg-white px-[42px] py-[40px] shadow-[0_8px_24px_rgba(0,0,0,0.02)]"
-          >
-            <span className="flex h-[88px] items-center pb-[14px]">
-              {icon}
-            </span>
-            <div className="flex flex-col gap-[10px] leading-[1.5]">
-              <h3 className="text-[22px] font-bold text-[#222]">{name}</h3>
-              <p className="text-[16px] text-guest-body">{desc}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
+    <section className="bg-[#fafafa] pt-[120px] pb-[60px]">
+      <div className={`${FRAME} flex flex-col gap-[60px]`}>
+        <TitleRow
+          light="함께 쓰면"
+          bold="더 편해지는 부가서비스"
+          action={
+            <GuestButton tone="navy" href={routes.addOnServices} arrow>
+              부가서비스 전체 보기
+            </GuestButton>
+          }
+        />
+        <ul className="grid grid-cols-3 gap-[16px]">
+          {ADD_ONS.map(({ name, desc, icon }) => (
+            <li key={name} className="flex items-center gap-[24px] rounded-[16px] border border-guest-line bg-white px-[42px] pt-[40px] pb-[28px]">
+              <span className="flex w-[74px] shrink-0 items-center">{icon}</span>
+              <div className="flex flex-col gap-[2px] leading-[1.5] text-guest-ink">
+                <h3 className="text-[22px] font-bold">{name}</h3>
+                <p className="text-[16px]">{desc}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }
 
 export function StoreOperations({ routes }: { routes: GuestRoutes }) {
   return (
-    <GuestPage>
+    // 맨 아래 부가서비스 구역(회색 바탕)이 푸터에 바로 붙는 시안이라 본문 아래 60px 여백을 두지 않는다.
+    <GuestPage flush>
       <Moments routes={routes} />
       <Features />
       <Flow />

@@ -90,3 +90,30 @@ export function RecipeIcon({ bookmark }: { bookmark: string }) {
     </span>
   );
 }
+
+// 유리판 아이콘 조각 — 흰 반투명 판에 그림자와 안쪽 밝은 테두리를 준다(부가서비스 · 매장운영 아이콘이 함께 쓴다).
+export const GLASS = "bg-white/40 shadow-[0_1.3px_13px_rgba(0,0,0,0.09),inset_0_5.2px_4px_rgba(255,255,255,0.55)] backdrop-blur-[4.9px]";
+
+// 시안의 「Sun」은 그라데이션을 흰 바탕 위에 겹친 글자다.
+export function CalendarIcon() {
+  return (
+    <span className="relative block h-[74px] w-[56.8px] font-[family-name:var(--font-inter)] leading-[normal] font-bold tracking-normal">
+      <span
+        className="absolute top-[6.82px] left-0 h-[35.38px] w-[56.8px] rounded-[9.4px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]"
+        style={{ backgroundImage: ICON_GRADIENT }}
+      />
+      <span className={`absolute top-[22.39px] left-0 h-[51.61px] w-[56.8px] rounded-[9.4px] ${GLASS}`} />
+      <span
+        className="absolute top-[30.78px] left-[16.12px] bg-clip-text text-[12px] text-transparent"
+        style={{ backgroundImage: `${ICON_GRADIENT}, linear-gradient(#fff, #fff)` }}
+      >
+        Sun
+      </span>
+      <span className="absolute top-[42.19px] left-[21.42px] bg-clip-text text-[20.77px] text-transparent" style={{ backgroundImage: ICON_GRADIENT }}>
+        8
+      </span>
+      <span className="absolute top-0 left-[13.31px] h-[14.61px] w-[5.52px] rounded-full bg-white shadow-[0_1.3px_1.9px_rgba(0,0,0,0.1)]" />
+      <span className="absolute top-0 left-[37.97px] h-[14.61px] w-[5.52px] rounded-full bg-white shadow-[0_1.3px_1.9px_rgba(0,0,0,0.1)]" />
+    </span>
+  );
+}
