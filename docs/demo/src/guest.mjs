@@ -83,7 +83,7 @@ export const visual = (A, { eyebrow, title, body }) =>
 const MENUS = [
   ["매장운영", "home/store-operations.html"],
   ["재무관리", "home/finance-management.html"],
-  ["프랜차이즈", ""],
+  ["프랜차이즈", "home/franchise.html"],
   ["부가 서비스", "home/add-on-services.html"],
 ];
 // 본문이 머리말과 같은 흰 바탕인 화면은 맨 위에서도 선을 긋는다. 스크롤하면 guest.js 가 흰 바탕과 선을 깐다.
@@ -125,7 +125,7 @@ export const page = (A, R, { current, main, flush = false }) =>
 // ── 아이콘(앱 guest/guest-icons.tsx) ──
 // 선 아이콘 조각 { src, width, height, left, top } 을 64px 칸에 겹친다. src 는 assets/guest 아래 경로.
 export const layeredIcon = (A, parts) =>
-  `<span class="relative size-[64px]">${parts.map((p) => `<img alt="" src="${A}guest/${p.src}" class="absolute max-w-none" style="width:${p.width}px;height:${p.height}px;left:${p.left}px;top:${p.top}px">`).join("")}</span>`;
+  `<span class="relative size-[64px]">${parts.map((p) => `<img alt="" src="${A}guest/${p.src}" class="absolute max-w-none" style="width:${p.width}px;height:${p.height}px;left:${p.left}px;top:${p.top}px${p.rotate ? `;rotate:${p.rotate}deg` : ""}">`).join("")}</span>`;
 
 // 직원 두 명 — 매장운영 「직원 초대」와 부가서비스 「직원수 추가」가 같은 그림을 쓴다.
 export const STAFF_ICON = [

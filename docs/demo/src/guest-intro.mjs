@@ -31,11 +31,12 @@ const shortcuts = (items) =>
     .join("")}</nav>`;
 
 // 사진과 글이 번갈아 좌우를 바꾼다. 바로가기로 내려왔을 때 위에 붙는 머리말(110px)에 가리지 않게 띄운다. photo 는 assets/guest 아래 경로.
-export const features = (A, light, bold, items) =>
+// backdrop: 사진 둘레 회색 바탕. 프랜차이즈는 배경 없는 그림이라 깔지 않는다.
+export const features = (A, light, bold, items, backdrop = true) =>
   `<section class="${g.FRAME} flex flex-col gap-[60px] py-[120px]">${g.titleRow(light, bold, shortcuts(items))}<div class="flex flex-col gap-[120px]">${items
     .map(
       (f, i) =>
-        `<article id="${f.id}" class="flex scroll-mt-[130px] justify-center gap-[100px] ${i % 2 ? "flex-row-reverse" : ""}"><div class="relative h-[540px] w-[400px] shrink-0 bg-[#f5f5f5]">${g.cover(A, f.photo)}</div><div class="flex flex-col gap-[64px] pt-[44px] text-guest-ink"><span class="h-[5px] w-[80px] bg-guest-ink"></span><div class="flex flex-col gap-[32px]"><div class="flex flex-col gap-[18px]"><div class="flex flex-col gap-[8px]"><p class="text-[20px] leading-[1.5] font-semibold">${f.no}</p><h3 class="text-[34px] leading-[1.4] font-bold">${lines(f.title)}</h3></div><p class="text-[18px] leading-[1.5] font-semibold ${g.TRIM}">${lines(f.lead)}</p></div><p class="text-[18px] leading-[1.5] text-guest-body ${g.TRIM}">${lines(f.points)}</p></div></div></article>`,
+        `<article id="${f.id}" class="flex scroll-mt-[130px] justify-center gap-[100px] ${i % 2 ? "flex-row-reverse" : ""}"><div class="relative h-[540px] w-[400px] shrink-0 ${backdrop ? "bg-[#f5f5f5]" : ""}">${g.cover(A, f.photo)}</div><div class="flex flex-col gap-[64px] pt-[44px] text-guest-ink"><span class="h-[5px] w-[80px] bg-guest-ink"></span><div class="flex flex-col gap-[32px]"><div class="flex flex-col gap-[18px]"><div class="flex flex-col gap-[8px]"><p class="text-[20px] leading-[1.5] font-semibold">${f.no}</p><h3 class="text-[34px] leading-[1.4] font-bold">${lines(f.title)}</h3></div><p class="text-[18px] leading-[1.5] font-semibold ${g.TRIM}">${lines(f.lead)}</p></div><p class="text-[18px] leading-[1.5] text-guest-body ${g.TRIM}">${lines(f.points)}</p></div></div></article>`,
     )
     .join("")}</div></section>`;
 
@@ -47,8 +48,8 @@ export const flow = (A, light, bold, steps) =>
     )
     .join("")}</ol></div></section>`;
 
-// 맨 아래 회색 구역이 푸터에 바로 붙는다 — 화면은 page 의 flush 로 그린다.
-export const addOns = (A, R, items) =>
+// 맨 아래 회색 구역이 푸터에 바로 붙는다 — 화면은 page 의 flush 로 그린다. raised 는 카드의 옅은 그림자(프랜차이즈).
+export const addOns = (A, R, items, raised = false) =>
   `<section class="bg-[#fafafa] pt-[120px] pb-[60px]"><div class="${g.FRAME} flex flex-col gap-[60px]">${g.titleRow(
     "함께 쓰면",
     "더 편해지는 부가서비스",
@@ -56,6 +57,6 @@ export const addOns = (A, R, items) =>
   )}<ul class="grid grid-cols-3 gap-[16px]">${items
     .map(
       (it) =>
-        `<li class="flex items-center gap-[24px] rounded-[16px] border border-guest-line bg-white px-[42px] pt-[40px] pb-[28px]"><span class="flex w-[74px] shrink-0 items-center">${it.icon}</span><div class="flex flex-col gap-[2px] leading-[1.5] text-guest-ink"><h3 class="text-[22px] font-bold">${it.name}</h3><p class="text-[16px]">${it.desc}</p></div></li>`,
+        `<li class="flex items-center gap-[24px] rounded-[16px] border border-guest-line bg-white px-[42px] pt-[40px] pb-[28px] ${raised ? "shadow-[0_8px_24px_rgba(0,0,0,0.02)]" : ""}"><span class="flex w-[74px] shrink-0 items-center">${it.icon}</span><div class="flex flex-col gap-[2px] leading-[1.5] text-guest-ink"><h3 class="text-[22px] font-bold">${it.name}</h3><p class="text-[16px]">${it.desc}</p></div></li>`,
     )
     .join("")}</ul></div></section>`;
