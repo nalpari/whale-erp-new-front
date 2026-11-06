@@ -41,7 +41,7 @@ export const features = (A, light, bold, items, backdrop = true) =>
     .join("")}</div></section>`;
 
 export const flow = (A, light, bold, steps) =>
-  `<section class="relative overflow-hidden bg-guest-ink py-[120px]">${g.cover(A, "store-operations/flow-bg.png", "object-cover object-bottom")}<span class="absolute inset-0 bg-[rgba(31,31,31,0.8)]"></span><div class="${g.FRAME} relative flex flex-col gap-[60px]">${g.sectionTitle(light, bold, true)}<ol class="grid grid-cols-5 gap-[32px]">${steps
+  `<section class="relative overflow-hidden bg-guest-ink py-[120px]">${g.cover(A, "store-operations/flow-bg.png", "object-cover object-bottom")}<span class="absolute inset-0 bg-guest-scrim"></span><div class="${g.FRAME} relative flex flex-col gap-[60px]">${g.sectionTitle(light, bold, true)}<ol class="grid grid-cols-5 gap-[32px]">${steps
     .map(
       (s) =>
         `<li class="flex flex-col items-center gap-[24px] rounded-[16px] bg-white/10 py-[42px] text-center">${g.layeredIcon(A, s.icon)}<div class="flex flex-col gap-[8px] leading-[1.5]"><h3 class="text-[24px] font-semibold text-[#fafafa]">${s.title}</h3><p class="text-[18px] text-[#ccc]">${s.desc}</p></div></li>`,
@@ -50,7 +50,7 @@ export const flow = (A, light, bold, steps) =>
 
 // 맨 아래 회색 구역이 푸터에 바로 붙는다 — 화면은 page 의 flush 로 그린다. raised 는 카드의 옅은 그림자(프랜차이즈).
 export const addOns = (A, R, items, raised = false) =>
-  `<section class="bg-[#fafafa] pt-[120px] pb-[60px]"><div class="${g.FRAME} flex flex-col gap-[60px]">${g.titleRow(
+  `<section class="bg-guest-surface pt-[120px] pb-[60px]"><div class="${g.FRAME} flex flex-col gap-[60px]">${g.titleRow(
     "함께 쓰면",
     "더 편해지는 부가서비스",
     g.button(A, "부가서비스 전체 보기", { tone: "navy", href: link(R, "home/add-on-services.html"), arrow: true }),

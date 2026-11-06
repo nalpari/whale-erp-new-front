@@ -97,7 +97,7 @@ const EXPANSIONS = [
 
 // 이 섹션만 굵은 줄이 위에 온다.
 const expansions = (A) =>
-  `<section class="relative overflow-hidden bg-guest-ink py-[120px]">${g.cover(A, "store-operations/flow-bg.png", "object-cover object-bottom")}<span class="absolute inset-0 bg-[rgba(31,31,31,0.8)]"></span><div class="${g.FRAME} relative flex flex-col gap-[60px]"><h2 class="text-[52px] leading-[1.2] tracking-[-0.025em] text-white"><span class="block font-bold">확장 옵션</span><span class="block font-normal">매장이 커지는 만큼 한도를 늘리세요</span></h2><ul class="grid grid-cols-3 gap-[28px]">${EXPANSIONS.map(
+  `<section class="relative overflow-hidden bg-guest-ink py-[120px]">${g.cover(A, "store-operations/flow-bg.png", "object-cover object-bottom")}<span class="absolute inset-0 bg-guest-scrim"></span><div class="${g.FRAME} relative flex flex-col gap-[60px]"><h2 class="text-[52px] leading-[1.2] tracking-[-0.025em] text-white"><span class="block font-bold">확장 옵션</span><span class="block font-normal">매장이 커지는 만큼 한도를 늘리세요</span></h2><ul class="grid grid-cols-3 gap-[28px]">${EXPANSIONS.map(
     (e) =>
       `<li class="flex gap-[24px] rounded-[16px] bg-white/10 px-[48px] py-[42px]">${g.layeredIcon(A, e.icon)}<div class="flex flex-1 flex-col gap-[8px] leading-[1.5]"><h3 class="text-[24px] font-semibold text-[#fafafa]">${e.name}</h3><p class="text-[18px] text-[#ccc]">${e.desc}</p></div></li>`,
   ).join("")}</ul></div></section>`;
@@ -110,7 +110,7 @@ const SUBSCRIPTION = [
 
 // 회색 바탕 구역이 푸터에 바로 붙는다 — 화면은 page 의 flush 로 그린다. 카드는 흰 바탕 16px 모서리다(44:2217).
 const subscription = () =>
-  `<section class="bg-[#fafafa] pt-[120px] pb-[60px]"><div class="${g.FRAME} flex flex-col gap-[60px]">${g.sectionTitle("WHALE ERP", "구독 안내")}<ul class="grid grid-cols-3 gap-[16px]">${SUBSCRIPTION.map(
+  `<section class="bg-guest-surface pt-[120px] pb-[60px]"><div class="${g.FRAME} flex flex-col gap-[60px]">${g.sectionTitle("WHALE ERP", "구독 안내")}<ul class="grid grid-cols-3 gap-[16px]">${SUBSCRIPTION.map(
     (s) => `<li class="flex flex-col gap-[10px] rounded-[16px] border border-guest-line bg-white px-[32px] py-[40px]"><h3 class="text-[22px] leading-[1.5] font-extrabold text-guest-ink">${s.title}</h3><p class="text-[16px] leading-[1.5] text-guest-ink">${lines(s.desc)}</p></li>`,
   ).join("")}</ul></div></section>`;
 

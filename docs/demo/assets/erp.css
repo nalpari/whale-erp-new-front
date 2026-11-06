@@ -58,6 +58,8 @@
     --color-guest-line: #eeeeee;
     --color-guest-list-line: #eff2f4;
     --color-guest-button-line: #e0e5e9;
+    --color-guest-surface: #fafafa;
+    --color-guest-scrim: rgba(31, 31, 31, 0.8);
   }
 }
 @layer base {
@@ -2020,12 +2022,6 @@
   .bg-\[\#f6f9fb\] {
     background-color: #f6f9fb;
   }
-  .bg-\[\#fafafa\] {
-    background-color: #fafafa;
-  }
-  .bg-\[rgba\(31\,31\,31\,0\.8\)\] {
-    background-color: rgba(31,31,31,0.8);
-  }
   .bg-\[rgba\(58\,86\,112\,0\.9\)\] {
     background-color: rgba(58,86,112,0.9);
   }
@@ -2104,11 +2100,17 @@
   .bg-guest-navy-soft {
     background-color: var(--color-guest-navy-soft);
   }
+  .bg-guest-scrim {
+    background-color: var(--color-guest-scrim);
+  }
   .bg-guest-slate {
     background-color: var(--color-guest-slate);
   }
   .bg-guest-step {
     background-color: var(--color-guest-step);
+  }
+  .bg-guest-surface {
+    background-color: var(--color-guest-surface);
   }
   .bg-transparent {
     background-color: transparent;
