@@ -31,7 +31,8 @@ export function Arrow({ back = false }: { back?: boolean }) {
 const BUTTON_TONE = {
   navy: "border-guest-navy bg-guest-navy text-white hover:bg-white hover:text-guest-navy",
   soft: "border-guest-navy-soft bg-guest-navy-soft text-white hover:border-guest-navy hover:bg-white hover:text-guest-navy",
-  white: "border-white bg-white text-guest-navy text-[17px]! hover:border-guest-navy",
+  // 메인 「네 가지면 충분합니다」 카드의 「자세히 보기」. 연한 카드 위에 서는 회청 버튼이다(Figma 로그인전_공유 44:102, 2026-11-06).
+  steel: "border-[#728daa] bg-[#728daa] text-white text-[17px]! hover:border-guest-navy hover:bg-white hover:text-guest-navy",
   outline: "border-guest-button-line bg-white text-guest-ink hover:border-guest-navy hover:text-guest-navy",
   line: "border-guest-navy-soft bg-white text-guest-navy hover:border-guest-navy",
 };
@@ -126,7 +127,7 @@ export function GuestVisual({ eyebrow, title, children }: { eyebrow: string; tit
 // category 는 질문 앞의 카테고리 이름(공지사항 FAQ #294). 답변 평문의 줄바꿈은 그대로 살린다.
 export function FaqItem({ q, category, open = false, children }: { q: string; category?: string; open?: boolean; children?: ReactNode }) {
   return (
-    <details name="guest-faq" open={open} className="group rounded-[3px] bg-[#fafafa] pb-[4px] open:bg-[#f5f5f5]">
+    <details name="guest-faq" open={open} className="group rounded-[3px] bg-guest-surface pb-[4px] open:bg-[#f5f5f5]">
       <summary className={`flex cursor-pointer px-[20px] pt-[22px] pb-[18px] list-none items-center gap-[11px] text-[17px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy ${HOVER} [&::-webkit-details-marker]:hidden`}>
         <span className="flex size-[28px] shrink-0 items-center justify-center rounded-full bg-guest-navy text-[18px] font-bold tracking-normal text-white">Q</span>
         {category && <span className="shrink-0 text-[15px] font-medium text-guest-sub">{category}</span>}
