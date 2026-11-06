@@ -14,12 +14,13 @@ export function supportSections({ A, R }) {
   const checks = (items) => items.map((t) => ui.checkbox(A, t, true)).join("");
   const IM = L("support/inquiry-mine.html");
 
-  const notice = (title, kind, date, pinned) => [`${pinned ? `${p.tag("quiet", "고정")} ` : ""}${ui.link(title, ND)}`, kind, date];
+  // 구분 · 제목 · 게시일 순, 고정 글은 압정 아이콘(앱 PinIcon, 2026-11-06 사용자 지정)
+  const notice = (title, kind, date, pinned) => [kind, `<span class="flex min-w-0 items-center gap-[10px]">${pinned ? `<svg role="img" aria-label="고정" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-erp-brand"><title>고정</title><circle cx="12" cy="12" r="10.5"/><path d="M13.6 6.6 17.4 10.4 15.4 11.4 13.4 14.2 13.9 16.2 7.8 10.1 9.8 10.6 12.6 8.6Z" fill="currentColor" fill-opacity="0.15"/><path d="M10.4 13.6 7 17"/></svg>` : ""}${ui.link(title, ND)}</span>`, date];
   const notices =
     ui.listToolbar(9, "") +
     // 목록 표는 비면 열 이름 줄을 두고 빈 칸이 남는 높이를 채운다(앱 DataTable fillEmpty). 데모 목록은 늘 줄이 있어 거른 결과의 「조건에 맞는 …」을 둔다(2026-11-05 사용자 지정)
     ui.fillTable(
-      [{ header: "제목", align: "left" }, { header: "구분", width: "w-[120px]" }, { header: "게시일", width: "w-[140px]" }],
+      [{ header: "구분", width: "w-[120px]" }, { header: "제목", align: "left" }, { header: "게시일", width: "w-[140px]" }],
       [
         notice("9월 정기 점검 안내 (09-14 02:00~05:00)", "점검", "2026-09-05", true),
         notice("근로계약 전자날인 기능이 열렸습니다", "기능", "2026-09-01"),
@@ -71,12 +72,12 @@ export function supportSections({ A, R }) {
       ],
       [
         inq("파트타이머 주휴수당이 계산되지 않습니다", "직원·근로", p.tag("warn", "접수"), "09-04", "-"),
-        inq("급여명세서 PDF 가 한글이 깨져 보입니다", "직원·근로", p.tag("quiet", "처리중"), "09-02", "09-03"),
-        inq("가맹점 초대 메일이 반송됩니다", "점포·설비", p.tag("ok", "답변완료"), "08-30", "09-02"),
-        inq("요금 PLAN 을 바꾸면 언제부터 적용되나요", "요금·구독", p.tag("ok", "답변완료"), "08-21", "08-22"),
-        inq("근무스케줄 복사가 지난주 것을 가져오지 않습니다", "직원·근로", p.tag("ok", "답변완료"), "08-12", "08-13"),
-        inq("KIOSK 결제 내역이 매출조회에 안 잡힙니다", "점포·설비", p.tag("ok", "답변완료"), "07-30", "08-01"),
-        inq("관리자 계정을 다른 사람에게 넘길 수 있나요", "기타", p.tag("ok", "답변완료"), "07-18", "07-18"),
+        inq("급여명세서 PDF 가 한글이 깨져 보입니다", "직원·근로", p.tag("ok", "처리중"), "09-02", "09-03"),
+        inq("가맹점 초대 메일이 반송됩니다", "점포·설비", p.tag("quiet", "답변완료"), "08-30", "09-02"),
+        inq("요금 PLAN 을 바꾸면 언제부터 적용되나요", "요금·구독", p.tag("quiet", "답변완료"), "08-21", "08-22"),
+        inq("근무스케줄 복사가 지난주 것을 가져오지 않습니다", "직원·근로", p.tag("quiet", "답변완료"), "08-12", "08-13"),
+        inq("KIOSK 결제 내역이 매출조회에 안 잡힙니다", "점포·설비", p.tag("quiet", "답변완료"), "07-30", "08-01"),
+        inq("관리자 계정을 다른 사람에게 넘길 수 있나요", "기타", p.tag("quiet", "답변완료"), "07-18", "07-18"),
       ],
       "문의사항이 없습니다.",
     ) +

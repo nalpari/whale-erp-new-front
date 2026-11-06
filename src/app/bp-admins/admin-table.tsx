@@ -69,7 +69,7 @@ export function AdminTable({
     {
       header: "계정상태",
       width: "w-[100px]",
-      cell: (a) => (inactive(a) ? <Badge tone="off">미사용</Badge> : <Badge tone="on">사용</Badge>),
+      cell: (a) => (inactive(a) ? <Badge tone="closed">미사용</Badge> : <Badge tone="on">사용</Badge>),
     },
     {
       header: "최근 로그인",

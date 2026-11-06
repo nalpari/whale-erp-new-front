@@ -35,9 +35,11 @@ const notice = (over: Partial<PostForm> = {}): PostForm => ({
 const faq = (over: Partial<PostForm> = {}): PostForm => notice({ kind: "FAQ", noticeType: "", faqCategoryCode: "STAFF_LABOR", ...over });
 
 test("parsePostQuery — 이상한 값은 기본값(1쪽 · 20건 · 전체)으로", () => {
-  assert.deepEqual(parsePostQuery({}), { page: 1, pageSize: 20, status: [] });
-  assert.deepEqual(parsePostQuery({ page: "3", pageSize: "50", status: "PRIVATE" }), { page: 3, pageSize: 50, status: ["PRIVATE"] });
-  assert.deepEqual(parsePostQuery({ page: "0", pageSize: "30", status: "x" }), { page: 1, pageSize: 20, status: [] });
+  assert.deepEqual(parsePostQuery({}), { page: 1, pageSize: 20, status: [], none: false });
+  assert.deepEqual(parsePostQuery({ page: "3", pageSize: "50", status: "PRIVATE" }), { page: 3, pageSize: 50, status: ["PRIVATE"], none: false });
+  assert.deepEqual(parsePostQuery({ page: "0", pageSize: "30", status: "x" }), { page: 1, pageSize: 20, status: [], none: false });
+  // 상태를 모두 풀면(none=1) 고른 값은 버리고 none 만 남는다 — 화면은 목록을 부르지 않는다(2026-11-06)
+  assert.deepEqual(parsePostQuery({ none: "1", status: "PRIVATE" }), { page: 1, pageSize: 20, status: [], none: true });
   assert.equal(parsePostQuery({ page: "10000001" }).page, 1);
 });
 

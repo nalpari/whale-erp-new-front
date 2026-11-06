@@ -1653,6 +1653,9 @@
   .grid-cols-\[auto_minmax\(0\,1fr\)\] {
     grid-template-columns: auto minmax(0,1fr);
   }
+  .grid-cols-\[max-content_1fr\] {
+    grid-template-columns: max-content 1fr;
+  }
   .grid-cols-\[minmax\(max-content\,7fr\)_13fr\] {
     grid-template-columns: minmax(max-content,7fr) 13fr;
   }
@@ -1850,6 +1853,9 @@
   .gap-x-\[clamp\(9px\,calc\(1\.5vw-16\.8px\)\,12px\)\] {
     column-gap: clamp(9px, calc(1.5vw - 16.8px), 12px);
   }
+  .gap-y-\[2px\] {
+    row-gap: 2px;
+  }
   .gap-y-\[4px\] {
     row-gap: 4px;
   }
@@ -1870,6 +1876,16 @@
   }
   .gap-y-\[38px\] {
     row-gap: 38px;
+  }
+  :where(.divide-y > :not(:last-child)) {
+    --tw-divide-y-reverse: 0;
+    border-bottom-style: var(--tw-border-style);
+    border-top-style: var(--tw-border-style);
+    border-top-width: calc(1px * var(--tw-divide-y-reverse));
+    border-bottom-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
+  }
+  :where(.divide-\[\#d9d9d9\] > :not(:last-child)) {
+    border-color: #d9d9d9;
   }
   .self-center {
     align-self: center;
@@ -2004,6 +2020,10 @@
     border-top-style: var(--tw-border-style);
     border-top-width: 1px;
   }
+  .border-t-0 {
+    border-top-style: var(--tw-border-style);
+    border-top-width: 0px;
+  }
   .border-r {
     border-right-style: var(--tw-border-style);
     border-right-width: 1px;
@@ -2033,6 +2053,9 @@
   }
   .border-\[\#aab4c4\] {
     border-color: #aab4c4;
+  }
+  .border-\[\#d9d9d9\] {
+    border-color: #d9d9d9;
   }
   .border-\[\#e7e7e7\] {
     border-color: #e7e7e7;
@@ -2777,6 +2800,9 @@
   }
   .font-mono {
     font-family: var(--font-mono);
+  }
+  .text-\[10px\] {
+    font-size: 10px;
   }
   .text-\[11\.5px\] {
     font-size: 11.5px;
@@ -3585,6 +3611,9 @@
     .hover\:border-guest-navy:hover {
       border-color: var(--color-guest-navy);
     }
+    .hover\:bg-erp-bar-line:hover {
+      background-color: var(--color-erp-bar-line);
+    }
     .hover\:bg-erp-field-line:hover {
       background-color: var(--color-erp-field-line);
     }
@@ -4206,7 +4235,8 @@ details[name="guest-faq"][open]::details-content {
     top: anchor(bottom);
     left: anchor(left);
     width: anchor-size(width);
-    position-try-fallbacks: flip-block;
+    max-height: 320px;
+    overflow-y: auto;
     margin-block: 4px;
     padding: 6px;
     border: 1px solid #ebebeb;
@@ -4312,6 +4342,11 @@ details[name="guest-faq"][open]::details-content {
   inherits: false;
 }
 @property --tw-space-y-reverse {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-divide-y-reverse {
   syntax: "*";
   inherits: false;
   initial-value: 0;
@@ -4577,6 +4612,7 @@ details[name="guest-faq"][open]::details-content {
       --tw-skew-x: initial;
       --tw-skew-y: initial;
       --tw-space-y-reverse: 0;
+      --tw-divide-y-reverse: 0;
       --tw-border-style: solid;
       --tw-gradient-position: initial;
       --tw-gradient-from: #0000;

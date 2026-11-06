@@ -81,7 +81,7 @@ export function AdminTable({
     {
       header: "계정상태",
       width: "w-[100px]",
-      cell: (a) => (a.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge>),
+      cell: (a) => (a.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="closed">미사용</Badge>),
     },
     { header: "권한명", width: "w-[150px]", cell: (a) => dim(a, a.roleGroup.name) },
     { header: "연락처", width: "w-[150px]", align: "left", cell: (a) => (a.phone ? dim(a, <WithIcon icon="phone">{formatPhone(a.phone)}</WithIcon>) : "") },

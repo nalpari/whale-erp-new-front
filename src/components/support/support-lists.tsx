@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { Badge, Button, DataTable, FilterPanel, FilterSection, PageBar, SearchField, Tag, useBackdropActive, type Column } from "@/components/common";
-import { Checks, Frame, useGo } from "@/components/community/community-lists";
+import { Checks, Frame, PinIcon, useGo } from "@/components/community/community-lists";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCodes, useCurrentBp, usePagePermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
@@ -66,20 +66,21 @@ function SupportChecks<T extends string>({ label, values, value, onPick }: { lab
 export function SupportNoticeList({ items, total, query, noticeTypes }: { items: SupportPost[]; total: number; query: SupportNoticeQuery; noticeTypes: EnumValue[] }) {
   const go = useGo(query);
   const bp = useCurrentBp().bpCodeId;
+  // 구분 · 제목 · 게시일 순 — 관리자 공지사항 목록처럼 분류를 제목 앞에(2026-11-06 사용자 지정 — 전엔 제목 · 구분 · 게시일)
   const columns: Column<SupportPost>[] = [
+    { header: "구분", width: "w-[120px]", cell: (p) => (p.noticeType ? labelOf(noticeTypes, p.noticeType) : "-") },
     {
       header: "제목",
       align: "left",
       cell: (p) => (
-        <span className="flex min-w-0 items-center gap-[6px]">
-          {p.isPinned && <Tag>고정</Tag>}
+        <span className="flex min-w-0 items-center gap-[10px]">
+          {p.isPinned && <PinIcon />}
           <Link href={bpPath(bp, `${SUPPORT_NOTICE_BASE}/${p.postId}`)} className="truncate text-erp-link hover:underline">
             {p.title}
           </Link>
         </span>
       ),
     },
-    { header: "구분", width: "w-[120px]", cell: (p) => (p.noticeType ? labelOf(noticeTypes, p.noticeType) : "-") },
     { header: "게시일", width: "w-[140px]", cell: (p) => p.postedDate },
   ];
   return (
@@ -140,12 +141,15 @@ export function SupportFaqList({ items, total, query }: { items: SupportPost[]; 
   );
 }
 
-/** 문의 상태 — 접수(off) · 처리중(꼬리표) · 답변완료(on). 고객지원은 답변 대기를 접수 하나로 본다(api ListSupportInquiriesDto). */
+/**
+ * 문의 상태 — 접수(off) · 처리중(on) · 답변완료(회색 꼬리표). 고객지원은 답변 대기를 접수 하나로 본다(api ListSupportInquiriesDto).
+ * 관리자 커뮤니티 관리 목록 · 상세와 같은 색이다(2026-11-06 사용자 지정 — 전엔 처리중 꼬리표 · 답변완료 on).
+ */
 export function InquiryStatusBadge({ status, statuses }: { status: InquiryStatus; statuses: EnumValue[] }) {
   const label = labelOf(statuses, status);
-  if (status === "ANSWERED") return <Badge tone="on">{label}</Badge>;
+  if (status === "ANSWERED") return <Tag>{label}</Tag>;
   if (status === "RECEIVED") return <Badge tone="off">{label}</Badge>;
-  return <Tag>{label}</Tag>;
+  return <Badge tone="on">{label}</Badge>;
 }
 
 const day = (iso: string | null) => (iso ? formatDateTime(iso).slice(0, 10) : "-");

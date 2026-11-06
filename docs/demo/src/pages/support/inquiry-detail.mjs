@@ -2,7 +2,7 @@
 // 처리중은 이 화면, 접수(처리 시작 전)는 inquiry-detail-received, 답변 완료(답변 수정)는 inquiry-detail-done 이 state 를 바꿔 그린다.
 // 처리중은 운영자가 상세에서 [처리 시작]으로 직접 바꾼다 — 접수 상태에서만 되고 바꾼 시각 · 운영자가 남는다(POST /inquiries/{id}/processing, WHALEERP-274).
 // 모양은 2026-11-05 사용자 지정(front PR #226): 머리 줄(제목 20px + 접수일시 · 분류 · 상태), 「문의내용」 상자, 첨부는 종류 칸 없이,
-// 답변 제목 옆 「등록자 · 등록 … (수정됨 … · 수정자)」, 처리이력은 열 이름 줄 없이 단계 회색 500 · 할 일 안내에 느낌표 아이콘.
+// 답변 제목 옆 「최종 수정 … · 수정자」(고친 적 없으면 「등록 … · 등록자」), 처리이력은 열 이름 줄 없이 단계 회색 500 · 할 일 안내에 느낌표 아이콘.
 import * as ui from "../../ui.mjs";
 import * as p from "../../staff-parts.mjs";
 import { platformHeader, link } from "../../site.mjs";
@@ -11,11 +11,12 @@ import { floatingHelpTip } from "../../role-side.mjs";
 const DIVIDER = '<span aria-hidden="true" class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span>';
 const TAG = (text) => `<span class="inline-block rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub">${text}</span>`;
 // 상태 배지 — 답변완료 on · 처리중 꼬리표 · 접수 off(앱 StatusBadge)
-const STATUS = { RECEIVED: ui.badge("off", "접수"), IN_PROGRESS: TAG("처리중"), ANSWERED: ui.badge("on", "답변완료") };
+// 접수 빨강 배지 · 처리중 파랑 배지 · 답변완료 회색 꼬리표(앱 StatusBadge, 2026-11-06 사용자 지정 — 전엔 처리중 꼬리표 · 답변완료 파랑)
+const STATUS = { RECEIVED: ui.badge("off", "접수"), IN_PROGRESS: ui.badge("on", "처리중"), ANSWERED: TAG("답변완료") };
 // 상자 — 제목 바 15px 600(DetailTable 제목과 같다). left 면 보조 글자를 제목 옆에 구분선과 함께, 아니면 오른쪽 끝
 const box = (title, hint, body, { left = false, pad = true } = {}) =>
   `<section class="min-w-0"><h3 class="flex h-[42px] items-center ${left ? "gap-[10px]" : "gap-[6px]"} rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink"><span class="min-w-0 truncate ${left ? "shrink-0" : "flex-1"}">${title}</span>${
-    hint ? `${left ? DIVIDER : ""}<span class="min-w-0 truncate text-[14px] font-normal text-erp-label">${hint}</span>` : ""
+    hint ? `${left ? DIVIDER : ""}<span class="min-w-0 truncate text-[14px] ${left ? "font-medium text-erp-sub" : "font-normal text-erp-label"}">${hint}</span>` : ""
   }</h3>${pad ? `<div class="flex flex-col gap-[18px] rounded-b-[2px] border border-erp-thead-line bg-white p-[16px]">${body}</div>` : body}</section>`;
 const prose = (text) => `<p class="text-[14px] leading-[1.7] whitespace-pre-wrap break-keep text-erp-ink">${text}</p>`;
 // 저장 버튼 옆 안내 — 플레이스홀더(회색)와 갈리게 회청 느낌표 동그라미 + 먹색 13px 500(앱 Guide)
@@ -37,12 +38,12 @@ const steps = (rows) =>
   `<table class="w-full table-fixed border-collapse border border-erp-thead-line text-[14px]"><colgroup><col class="w-[100px]"><col><col class="w-[80px]"></colgroup><tbody class="text-erp-ink">${rows
     .map(
       ([t, meta, done]) =>
-        `<tr class="h-[46px] border-b border-erp-thead-line"><td class="truncate px-[10px] text-left"><span class="pl-[2px] font-medium text-erp-label">${t}</span></td><td class="truncate px-[10px] text-left">${meta}</td><td class="px-[10px] text-center">${done ? ui.badge("on", "완료") : ui.badge("off", "대기")}</td></tr>`,
+        `<tr class="h-[46px] border-b border-erp-thead-line"><td class="truncate px-[10px] text-left"><span class="pl-[2px] font-medium text-erp-label">${t}</span></td><td class="truncate px-[10px] text-left">${meta}</td><td class="px-[10px] text-center">${done ? `<span class="inline-flex items-center gap-[4px] text-[14px] text-erp-ink"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0 text-erp-brand"><circle cx="8" cy="8" r="6.25"/><path d="M5.25 8.25 7.1 10l3.65-3.75"/></svg>완료</span>` : `<span class="inline-flex items-center gap-[4px] text-[14px] text-erp-off"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0"><circle cx="8" cy="8" r="6.25"/><path d="M8 4.5V8l2.5 1.5"/></svg>대기</span>`}</td></tr>`,
     )
     .join("")}</tbody></table>`;
 const replyLines = (lines) =>
   `<span class="flex flex-col py-[12px] leading-[1.6]">${lines
-    .map(([kind, text]) => `<span class="flex min-w-0 items-center gap-[10px]"><span class="shrink-0 text-erp-label">${kind}</span>${DIVIDER}<span class="truncate">${text}</span></span>`)
+    .map(([kind, text]) => `<span class="flex min-w-0 items-center gap-[10px]"><span class="w-[56px] shrink-0 text-erp-label">${kind}</span>${DIVIDER}<span class="truncate">${text}</span></span>`)
     .join("")}</span>`;
 
 // 문의자 「점포」 도움말 — 작은 표(앱 STORE_HELP)
@@ -55,7 +56,7 @@ const STORE_HELP = `<table class="border-collapse text-[13px] leading-[1.5] whit
   .join("")}</tbody></table>`;
 const sender = ([name, bp, role]) =>
   ui
-    .detailTable("문의자", [
+    .detailTable("문의자 정보", [
       ["이름", name],
       ["BP상호명", bp],
       ["권한유형", role],
@@ -99,28 +100,22 @@ export const render = ({ A, R }, state = "wait") => {
   const first = done && c.replies[0];
   const last = done && c.replies.at(-1);
   const prevAnswer = done
-    ? `<details class="group rounded-[2px] border border-erp-panel-line"><summary class="flex h-[34px] cursor-pointer items-center gap-[10px] bg-erp-thead-bg px-[12px] text-[14px] font-medium text-erp-ink transition-colors duration-150 hover:bg-erp-subtle [&::-webkit-details-marker]:hidden"><span class="flex-1">이전 답변 1개</span>${ui.img(
+    ? `<details class="group rounded-[2px] border border-[#d9d9d9]"><summary class="flex h-[34px] cursor-pointer items-center gap-[10px] bg-erp-subtle px-[12px] text-[14px] font-medium text-erp-ink transition-colors duration-150 hover:bg-erp-bar-line [&::-webkit-details-marker]:hidden"><span class="flex-1">이전 답변 1개</span>${ui.img(
         A,
         "chevron-small.svg",
         5,
         8,
         "-rotate-90 transition-transform duration-150 group-open:rotate-90",
-      )}</summary><div class="flex flex-col gap-[12px] border-t border-erp-panel-line p-[12px]"><p class="text-[14px] text-erp-label">${first[0]} · ${first[1]}</p>${prose(first[2])}</div></details>`
+      )}</summary><ol class="flex flex-col divide-y divide-[#d9d9d9] border-t border-[#d9d9d9]"><li class="flex flex-col gap-[8px] p-[12px]"><p class="flex items-center gap-[8px] text-[14px] font-medium text-erp-ink">${TAG("등록")}${first[0]} · ${first[1]}</p>${prose(first[2])}</li></ol></details>`
     : "";
   const answerBody = done
     ? prose(c.answer) + prevAnswer + `<div class="flex items-center justify-end gap-[6px]">${ui.button("답변 수정", { variant: "soft" })}</div>`
     : active(ui.textarea({ rows: 6, placeholder: "문의자가 확인할 답변을 작성해 주세요.\n문제 해결 방법이나 필요한 조치를 구체적으로 안내해 주세요.", "aria-label": "답변 내용" })) +
-      spread(guide("답변을 저장하면 처리 상태가 '답변완료'로 변경되며, 문의자에게 알림함과 이메일로 안내됩니다."), ui.button("답변 저장"));
+      spread(guide("답변을 저장하면 처리상태는 '답변완료'로 변경되며, 문의자의 알림함과 이메일로 안내됩니다."), ui.button("답변 저장"));
   const left =
     box("문의내용", "", prose(c.body)) +
     (c.files ? files(c.files) : "") +
-    box("답변", done ? `${first[1]} · 등록 ${first[0]} (수정됨 ${last[0]} · ${last[1]})` : "문의자에게 표시됩니다.", answerBody, { left: done }) +
-    box(
-      "운영자 메모",
-      "운영자에게만 표시됩니다.",
-      active(ui.textarea({ rows: 4, value: c.memo, "aria-label": "내부 기록" })) +
-        spread(guide("작성한 메모는 다른 운영자와 공유됩니다. 내용을 모두 지우고 저장하면 메모가 삭제됩니다."), ui.button("메모 저장", { variant: "soft" })),
-    );
+    box("답변", done ? `최종 수정 ${last[0]} · ${last[1]}` : "문의자에게 표시됩니다.", answerBody, { left: done });
 
   const right =
     sender(c.sender) +
@@ -132,14 +127,21 @@ export const render = ({ A, R }, state = "wait") => {
         // 「확인」 줄은 처리중을 거친 건만 완료로 그린다. 처리 시작 없이 바로 답했으면 api 가 processingStartedAt 을 null 로 주므로 이 줄을 숨긴다.
         received ? ["확인", pending("[처리 시작]을 누르면 문의자에게 처리중으로 표시됩니다."), false] : ["확인", c.processing, true],
         done
-          ? ["답변", replyLines(c.replies.map(([at, by], i) => [i === 0 ? "등록" : "수정", `${at} · ${by}`])), true]
+          ? ["답변", replyLines(c.replies.map(([at, by], i) => [i === 0 ? "등록" : i === c.replies.length - 1 ? "최종 수정" : "수정", `${at} · ${by}`])), true]
           : ["답변", pending("답변을 저장하면 문의자에게 답변완료로 표시됩니다."), false],
       ]),
       { pad: false },
+    ) +
+    // 운영자 메모는 처리이력 아래(2026-11-06 사용자 지정 — 전엔 왼쪽 답변 아래)
+    box(
+      "운영자 메모",
+      "운영자에게만 표시됩니다.",
+      active(ui.textarea({ rows: 4, value: c.memo, "aria-label": "내부 기록" })) +
+        spread(guide("작성한 메모는 다른 운영자와 공유됩니다. 내용을 모두 지우고 저장하면 메모가 삭제됩니다."), ui.button("메모 저장", { variant: "soft" })),
     );
 
   // 머리 줄 — 점포 정보 관리 상세의 점포명 줄과 같은 모양(제목 20px, 아래 줄 「접수일시 … | 분류 [꼬리표] | [상태]」), [처리 시작] [목록] 오른쪽
-  const head = `<div class="flex items-center gap-[18px]"><div class="flex min-w-0 flex-1 flex-col gap-[6px] py-[6px]"><h2 class="break-all text-[20px] font-semibold text-erp-ink">${c.title}</h2><div class="flex flex-wrap items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>접수일시 ${c.at}</span>${DIVIDER}<span class="flex items-center gap-[6px]">분류 ${TAG(c.category)}</span>${DIVIDER}${STATUS[c.status]}</div></div><div class="flex items-center gap-[6px]">${received ? ui.button("처리 시작", { variant: "soft" }) : ""}${ui.button("목록", { href: link(R, "support/community-asks.html") })}</div></div>`;
+  const head = `<div class="flex items-center gap-[18px]"><div class="flex min-w-0 flex-1 flex-col gap-[6px] py-[6px]"><h2 class="break-all text-[20px] font-semibold text-erp-ink">${c.title}</h2><div class="flex flex-wrap items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>접수일시 ${c.at}</span>${DIVIDER}<span class="flex items-center gap-[6px]">분류 ${TAG(c.category)}</span>${DIVIDER}<span class="flex items-center gap-[6px]">상태 ${STATUS[c.status]}</span></div></div><div class="flex items-center gap-[6px]">${received ? ui.button("처리 시작", { variant: "soft" }) : ""}${ui.button("목록", { href: link(R, "support/community-asks.html") })}</div></div>`;
 
   return {
     title: "문의사항 상세",

@@ -58,7 +58,7 @@ export default ({ A, R }) => {
   const rows = ADMINS.map(([id, name, role, state, phone, mail, login, reg]) => [
     id,
     detailTrigger(name),
-    ui.badge(state === "사용" ? "on" : "off", state),
+    ui.badge(state === "사용" ? "on" : "closed", state),
     role,
     withIcon("phone", phone),
     withIcon("mail", mail),

@@ -1,7 +1,7 @@
 // node --test src/lib/leads.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { LEAD_FAILED, LEAD_INVALID, LEAD_UNKNOWN, leadBodyOf, leadFailureOf, leadInputProblem } from "./leads.ts";
+import { LEAD_FAILED, LEAD_INVALID, LEAD_UNKNOWN, leadBodyOf, leadFailureOf, leadInputProblems } from "./leads.ts";
 
 function formOf(entries: [string, string][]): FormData {
   const form = new FormData();
@@ -58,17 +58,28 @@ test("업종 직접 입력은 업종이 기타(ETC)일 때만 싣는다", () => 
   assert.equal("industryDetail" in leadBodyOf(formOf([...BASE, ["industryDetail", "꽃집"]])), false);
 });
 
-test("빈칸만 적은 칸과 api 가 받지 않는 전화번호를 확인 창 전에 잡는다", () => {
-  assert.equal(leadInputProblem(formOf(BASE)), null);
-  assert.equal(leadInputProblem(formOf(replaced("contactName", "   ")))?.name, "contactName");
-  assert.equal(leadInputProblem(formOf(replaced("body", "\n  ")))?.name, "body");
-  assert.equal(leadInputProblem(formOf([...replaced("industryCode", "ETC"), ["industryDetail", " "]]))?.name, "industryDetail");
+const keysOf = (entries: [string, string][]) => Object.keys(leadInputProblems(formOf(entries)));
+
+test("빈칸만 적은 칸과 api 가 받지 않는 전화번호 · 이메일을 확인 창 전에 잡는다", () => {
+  assert.deepEqual(keysOf(BASE), []);
+  assert.deepEqual(keysOf(replaced("contactName", "   ")), ["contactName"]);
+  assert.deepEqual(keysOf(replaced("body", "\n  ")), ["body"]);
+  assert.deepEqual(keysOf([...replaced("industryCode", "ETC"), ["industryDetail", " "]]), ["industryDetail"]);
   // 기타가 아니면 직접 입력칸은 보지 않는다.
-  assert.equal(leadInputProblem(formOf([...BASE, ["industryDetail", " "]])), null);
-  for (const ok of ["021234567", "010-1234-5678", " 031 123 4567 ", "1588-1234", "16001234"]) assert.equal(leadInputProblem(formOf(replaced("phone", ok))), null, ok);
-  for (const bad of ["1234", "010-1234-56789", "1700-1234", "02)1234-5678", "abc"]) assert.equal(leadInputProblem(formOf(replaced("phone", bad)))?.name, "phone", bad);
+  assert.deepEqual(keysOf([...BASE, ["industryDetail", " "]]), []);
+  for (const ok of ["021234567", "010-1234-5678", " 031 123 4567 ", "1588-1234", "16001234"]) assert.deepEqual(keysOf(replaced("phone", ok)), [], ok);
+  for (const bad of ["1234", "010-1234-56789", "1700-1234", "02)1234-5678", "abc"]) assert.deepEqual(keysOf(replaced("phone", bad)), ["phone"], bad);
   // 브라우저 type=email 은 통과시키지만 api @IsEmail 은 막는 값
-  for (const bad of ["kim@whale", "kim@whale.c", "kim@whale.co,"]) assert.equal(leadInputProblem(formOf(replaced("email", bad)))?.name, "email", bad);
+  for (const bad of ["kim@whale", "kim@whale.c", "kim@whale.co,"]) assert.deepEqual(keysOf(replaced("email", bad)), ["email"], bad);
+});
+
+test("빈 폼이면 모든 필수 칸을 화면 순서대로 한 번에 잡고, 빈칸과 형식 오류는 문구가 다르다", () => {
+  assert.deepEqual(keysOf([]), ["contactName", "phone", "industryCode", "email", "interests", "body", "privacyAgreed"]);
+  assert.equal(leadInputProblems(formOf(replaced("phone", " "))).phone, "전화번호를 입력해 주세요.");
+  assert.match(leadInputProblems(formOf(replaced("phone", "12"))).phone ?? "", /형식/);
+  assert.equal(leadInputProblems(formOf(replaced("email", ""))).email, "이메일을 입력해 주세요.");
+  assert.deepEqual(keysOf(without("interests")), ["interests"]);
+  assert.deepEqual(keysOf(without("privacyAgreed")), ["privacyAgreed"]);
 });
 
 test("429 · 한글 400 은 api 문구를, 영문 400 은 입력 확인 문구를, 응답 없음은 결과 모름을, 그 밖은 접수 실패를 보인다", () => {
