@@ -91,12 +91,15 @@ const LINED = ["auth/login.html", "auth/find.html", "auth/signup.html", "auth/si
 
 function header(A, R, current) {
   const lined = LINED.includes(current);
+  // 메뉴 화면에서는 지금 메뉴만 먹색이고 나머지는 #999 다. 고른 메뉴가 없는 화면은 네 메뉴 모두 먹색이고 호버하면 남색이다(앱 guest-header.tsx).
+  const onMenu = MENUS.some(([, path]) => path === current);
+  const tone = onMenu ? "text-[#999] hover:text-guest-ink aria-[current=page]:text-guest-ink" : "text-guest-ink hover:text-guest-navy";
   const menus = MENUS.map(([label, path]) => {
     const on = path && path === current;
-    return `<a href="${link(R, path)}"${on ? ' aria-current="page"' : ""} class="text-[20px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy aria-[current=page]:text-guest-navy ${HOVER}">${label}</a>`;
+    return `<a href="${link(R, path)}"${on ? ' aria-current="page"' : ""} class="text-[20px] leading-[1.5] font-semibold ${tone} ${HOVER}">${label}</a>`;
   }).join("");
   const side = (text, path) =>
-    `<a href="${link(R, path)}"${path === current ? ' aria-current="page"' : ""} class="hover:text-guest-ink aria-[current=page]:text-guest-navy ${HOVER}">${text}</a>`;
+    `<a href="${link(R, path)}"${path === current ? ' aria-current="page"' : ""} class="hover:text-guest-ink aria-[current=page]:text-guest-ink ${HOVER}">${text}</a>`;
   return `<header data-guest-header${lined ? " data-lined" : ""} style="view-transition-name:guest-header" class="sticky top-0 z-20 flex h-[110px] items-center border-b px-[80px] transition-[background-color,border-color] duration-150 ${EASE_OUT} motion-reduce:transition-none ${lined ? "border-guest-line" : "border-transparent"}">
 <a href="${link(R, "home/index.html")}" class="flex items-center gap-[8px] py-[5px]"><span class="relative size-[50px] opacity-95">${gimg(A, "logo-whale.svg", 49.6875, 37.4997, "absolute top-[12.5px] left-0")}${gimg(A, "logo-star.svg", 24.1664, 17.5001, "absolute top-0 left-[7.57px]")}</span><span class="flex flex-col leading-[1.4] [text-box:trim-both_cap_alphabetic]"><span class="font-[family-name:var(--font-rem)] text-[20px] font-extrabold tracking-normal text-guest-ink uppercase">whale ERP</span><span class="font-[family-name:var(--font-inter-tight)] text-[13px] tracking-normal text-[#353535]">STORE MANAGEMENT SYSTEM</span></span></a>
 <nav class="flex flex-1 justify-center gap-[80px]">${menus}</nav>

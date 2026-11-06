@@ -3429,8 +3429,8 @@
   .aria-\[checked\=mixed\]\:border-erp-brand[aria-checked="mixed"] {
     border-color: var(--color-erp-brand);
   }
-  .aria-\[current\=page\]\:text-guest-navy[aria-current="page"] {
-    color: var(--color-guest-navy);
+  .aria-\[current\=page\]\:text-guest-ink[aria-current="page"] {
+    color: var(--color-guest-ink);
   }
   .data-\[over\]\:border-erp-brand[data-over] {
     border-color: var(--color-erp-brand);
