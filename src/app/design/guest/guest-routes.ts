@@ -9,6 +9,7 @@ export const SITE_ROUTES = {
   notices: "/notices",
   storeOperations: "/store-operations",
   financeManagement: "/finance-management",
+  franchise: "/franchise",
   addOnServices: "/add-on-services",
   terms: "/terms",
 };
@@ -24,6 +25,7 @@ export const SAMPLE_ROUTES: GuestRoutes = {
   notices: "/design/guest/notices",
   storeOperations: "/design/guest/store-operations",
   financeManagement: "/design/guest/finance-management",
+  franchise: "/design/guest/franchise",
   addOnServices: "/design/guest/add-on-services",
   // 약관 전문은 샘플을 따로 두지 않고 실제 화면을 연다.
   terms: "/terms",

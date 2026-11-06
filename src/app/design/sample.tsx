@@ -109,6 +109,7 @@ export const PAGE_LINKS: PageLink[] = [
   { group: "비로그인", name: "메인", href: "/design/guest", source: "Figma 로그인전_Main (1:2)", entry: "샘플 이동 메뉴 「비로그인」 · 머리말 로고" },
   { group: "비로그인", name: "매장운영", href: "/design/guest/store-operations", source: "Figma 로그인전_Sub (1:688)", entry: "머리말 매장운영 · 메인 매장운영 카드" },
   { group: "비로그인", name: "재무관리", href: "/design/guest/finance-management", source: "Figma 로그인전_공유 (44:1412)", entry: "머리말 재무관리 · 메인 재무관리 카드" },
+  { group: "비로그인", name: "프랜차이즈", href: "/design/guest/franchise", source: "Figma 로그인전_공유 (44:1035)", entry: "머리말 프랜차이즈 · 메인 프랜차이즈 카드" },
   { group: "비로그인", name: "부가서비스", href: "/design/guest/add-on-services", source: "Figma 로그인전_부가서비스 (1:1083)", entry: "머리말 부가 서비스 · 메인 「부가서비스 둘러보기」" },
   { group: "비로그인", name: "로그인", href: "/design/guest/login", source: "Figma 로그인전_로그인 (1:1615)", entry: "머리말 Login · 메인 「본사 계정으로 로그인」" },
   { group: "비로그인", name: "아이디/비밀번호 찾기", href: "/design/guest/find-account", source: "Figma 아이디/비밀번호 찾기 (1:1811)", entry: "로그인 「아이디/비밀번호 찾기」" },

@@ -141,7 +141,7 @@ function Billboard({ routes }: { routes: GuestRoutes }) {
 const FEATURES: { title: string; route?: keyof GuestRoutes; lines: string[]; icon: { src: string; width: number } }[] = [
   { title: "매장운영", route: "storeOperations", icon: { src: "feature-store.png", width: 169 }, lines: ["매장·장비 정보를 한곳에", "종이 없는 근로계약·급여명세서", "근무표 공유와 QR 출퇴근"] },
   { title: "재무관리", route: "financeManagement", icon: { src: "feature-finance.png", width: 156 }, lines: ["통장 입출금을 한눈에", "현금 거래까지 빠짐없이", "돈이 나가는 곳을 비율로"] },
-  { title: "프랜차이즈", icon: { src: "feature-franchise.png", width: 147 }, lines: ["온라인으로 끝내는 가맹계약", "신메뉴·가격 한 번에 배포", "현장 점검 결과 바로 공유"] },
+  { title: "프랜차이즈", route: "franchise", icon: { src: "feature-franchise.png", width: 147 }, lines: ["온라인으로 끝내는 가맹계약", "신메뉴·가격 한 번에 배포", "현장 점검 결과 바로 공유"] },
   { title: "부가서비스", route: "addOnServices", icon: { src: "feature-add-on.png", width: 164 }, lines: ["POS · KIOSK 주문·결제", "테이블·픽업·QR 주문", "발주·재고·레시피 관리"] },
 ];
 
@@ -199,6 +199,7 @@ const PERSONAS = [
     features: ["온라인으로 끝내는 가맹계약", "신메뉴·가격 전 가맹점 일괄 배포", "가맹점 점검과 정보공개서 자료"],
     services: ["발주 관리", "레시피 관리", "점포수 추가"],
     cta: "프랜차이즈 자세히 보기",
+    route: "franchise" as const,
   },
   {
     head: "가맹점을 운영해요",

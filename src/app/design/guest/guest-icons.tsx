@@ -4,8 +4,8 @@ import { ICON_GRADIENT } from "./guest-ui";
 // 비로그인 화면들이 함께 쓰는 아이콘. 시안이 도형과 SVG 를 겹쳐 그린 것이라 같은 자리·크기로 겹친다.
 // SVG 는 화면마다 Figma 에서 따로 받은 파일이라 경로를 받는다.
 
-// 선 아이콘 조각. 선 굵기만큼 SVG 가 시안 칸보다 커서, 칸 위치에서 그만큼 당겨 놓은 좌표다.
-export type IconPart = { src: string; width: number; height: number; left: number; top: number };
+// 선 아이콘 조각. 선 굵기만큼 SVG 가 시안 칸보다 커서, 칸 위치에서 그만큼 당겨 놓은 좌표다. rotate 는 시안이 조각을 돌려 둔 각도(도).
+export type IconPart = { src: string; width: number; height: number; left: number; top: number; rotate?: number };
 
 export function LayeredIcon({ parts }: { parts: IconPart[] }) {
   return (
@@ -18,7 +18,7 @@ export function LayeredIcon({ parts }: { parts: IconPart[] }) {
           width={part.width}
           height={part.height}
           className="absolute max-w-none"
-          style={{ left: part.left, top: part.top }}
+          style={{ left: part.left, top: part.top, rotate: part.rotate ? `${part.rotate}deg` : undefined }}
         />
       ))}
     </span>
