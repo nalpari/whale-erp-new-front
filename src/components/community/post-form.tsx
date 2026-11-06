@@ -29,7 +29,6 @@ import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
 import { deletePostAction, saveFaqAction, type SaveResult } from "@/lib/community-actions";
 import { NOTICE_SAVE_ROUTE } from "@/lib/paper-request";
-import { kstToday } from "@/lib/staff-members";
 
 // 공지사항 · FAQ 등록 · 수정(#276, 목업 support/notice-edit.html, 데모 support/notice-edit · faq-edit). 플랫폼 관리자 전용.
 // 공지 · FAQ 는 메뉴가 달라 화면을 나눴고(2026-10-02 재영) 이 폼을 함께 쓴다 — FAQ 에서는 상단 고정 · 게시 기간 · 첨부를 감춘다.
@@ -229,22 +228,10 @@ export function PostForm({
     }
   };
 
-  /**
-   * 시작일을 비우고 게시하면 시작일을 채워 보낸다(종료일이 있든 없든) — 수정 화면에서도 게시일이 시작일 칸에 보이게(2026-11-06 사용자 지정 — 처음엔 종료일만 넣었을 때만).
-   * 게시할 때만 채운다: 임시저장 · 비공개 때 채우면 나중에 게시해도 게시일이 그날로 굳는다. 새 글 · 임시저장에서 처음 게시하면 오늘,
-   * 이미 게시했거나 비공개였던 글은 처음 등록한 날(api 가 시작일이 비었을 때 게시일로 쓰는 등록 일시와 같은 날이라 사용자 쪽 게시일은 그대로다).
-   * 다만 api 정렬 키가 시작일이면 그날 0시라, 같은 날 시작일 없이 등록된 글과의 순서는 바뀔 수 있다(시각 → 0시, code-review 지적).
-   */
-  const withStart = (f: Form, status: PostStatus): Form => {
-    if (!notice || status !== "PUBLISHED" || f.publishStartDate) return f;
-    const firstPublish = !detail || detail.status === "DRAFT";
-    return { ...f, publishStartDate: firstPublish ? kstToday() : formatDateTime(detail.createdAt).slice(0, 10) };
-  };
-
   const save = (status: PostStatus) => {
-    // 채운 시작일은 보내는 값에만 싣는다 — 폼에 먼저 넣으면 게시가 실패한 뒤 [임시저장]에 그 날짜가 함께 저장된다(리뷰 반영).
-    // 저장되면 화면이 저장된 값으로 다시 그려져 시작일이 보인다
-    const sending = withStart(form, status);
+    // 시작일은 화면이 지어내지 않는다 — 비우면 비운 채 보내 api 가 등록 일시를 게시일로 쓴다. 브라우저 시계로 채우면 PC 시계가 앞선 날
+    // 게시한 공지가 사용자 화면에서 빠지고, 내렸다 다시 게시하면 게시일이 바뀌었다(ip-code-review 블로커, 2026-11-06). 게시일은 칸 아래에 보인다
+    const sending = form;
     const found = postFieldErrors(sending, status, kept.length, files.map((f) => f.file));
     if (found.length) {
       const next: Partial<Record<PostField, string[]>> = {};
@@ -519,8 +506,10 @@ export function PostForm({
                   <Label strong>게시 기간</Label>
                   {/* 종료일 오류는 종료일 칸 바로 아래에 — 어느 칸을 고칠지 바로 보이게 */}
                   <div className="flex items-start gap-[6px]">
-                    <div className="flex-1">
+                    <div className="flex flex-1 flex-col gap-[8px]">
                       <DateField aria-label="게시 시작일" value={form.publishStartDate} onChange={(v) => set("publishStartDate", v)} />
+                      {/* 시작일을 비운 채 게시한 글은 api 가 등록일을 게시일로 쓴다 — 그 날짜를 칸 아래 연한 노랑 꼬리표(14px, #fff6e5 · #956013 — 지각 표시 · 급여명세서 경고와 같은 계열, 토큰이 없어 여기 적는다)로 알린다 — 회색 글자는 흐려 안내 문구와 섞였다(2026-11-06 사용자 지정) */}
+                      {detail && detail.status !== "DRAFT" && !form.publishStartDate && <p className="self-start rounded-[2px] border border-[#e8a33d]/50 bg-[#fff6e5] px-[8px] text-[14px] leading-[24px] font-medium text-[#956013]">게시일: {formatDateTime(detail.createdAt).slice(0, 10)} (등록일)</p>}
                     </div>
                     <span className="flex h-[34px] items-center text-erp-label">~</span>
                     <div className="flex flex-1 flex-col gap-[8px]">
