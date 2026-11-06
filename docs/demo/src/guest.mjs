@@ -63,7 +63,7 @@ export const arrow = (A, back = false) => arrowSvg(`h-[15.0674px] w-[16.7004px] 
 const BUTTON_TONE = {
   navy: "border-guest-navy bg-guest-navy text-white hover:bg-white hover:text-guest-navy",
   soft: "border-guest-navy-soft bg-guest-navy-soft text-white hover:border-guest-navy hover:bg-white hover:text-guest-navy",
-  white: "border-white bg-white text-guest-navy text-[17px]! hover:border-guest-navy",
+  steel: "border-[#728daa] bg-[#728daa] text-white text-[17px]! hover:border-guest-navy hover:bg-white hover:text-guest-navy",
   outline: "border-guest-button-line bg-white text-guest-ink hover:border-guest-navy hover:text-guest-navy",
   line: "border-guest-navy-soft bg-white text-guest-navy hover:border-guest-navy",
 };
