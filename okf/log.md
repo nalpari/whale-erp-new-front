@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-06
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 메인 · 매장운영 · 부가서비스(`guest-home.tsx` · `store-operations.tsx` · `add-on-services.tsx`) 본문 구역을 양옆 80px 여백 대신 최대 폭 1760px 가운데 정렬로 바꿨다(`design/guest/theme.ts` 의 `FRAME`, 사용자 요청). 머리말 · 푸터는 그대로 80px.
+
 ## 2026-10-29
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 고객지원 문의하기의 [문의하기](등록) 버튼을 목록 건수 줄에서 제목 줄 오른쪽으로 옮겼다(등록 버튼은 화면명 우측, 사용자 지정). 데모(`support/inquiries`)도 맞췄다.
 

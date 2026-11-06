@@ -5,7 +5,7 @@ import type { components } from "@/lib/api-types.generated";
 import type { GuestRoutes } from "./guest-routes";
 import { Arrow, FaqItem, GuestButton, GuestPage, ICON_GRADIENT, SectionTitle, TitleRow, TRIM } from "./guest-ui";
 import { Badges, dotDate } from "./notices/notice-views";
-import { BUTTON_MOTION, HOVER } from "./theme";
+import { BUTTON_MOTION, FRAME, HOVER } from "./theme";
 
 // Figma 「로그인전_Main」(8QSOuwFFBfCbFWR6RBUlps · 1:2). 1920 폭 데스크톱 시안이다.
 // 실제 홈((site)/page.tsx)과 디자인 샘플(design/guest/page.tsx)이 함께 그린다. 링크는 받은 routes 로 건다(guest-routes.ts).
@@ -141,7 +141,7 @@ const FEATURES: { title: string; route?: keyof GuestRoutes; lines: string[] }[] 
 
 function Features({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="flex flex-col gap-[60px] bg-white px-[80px] pt-[160px]">
+    <section className={`${FRAME} flex flex-col gap-[60px] bg-white pt-[160px]`}>
       <SectionTitle light="매장 운영," bold="네 가지면 충분합니다" />
       <div className="grid grid-cols-4 gap-[16px]">
         {FEATURES.map((f) => (
@@ -206,7 +206,7 @@ const PERSONAS = [
 
 function Personas({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="flex flex-col gap-[60px] px-[80px] pt-[125px] pb-[120px]">
+    <section className={`${FRAME} flex flex-col gap-[60px] pt-[125px] pb-[120px]`}>
       <SectionTitle light="당신은," bold="어떤 사장님이신가요?" />
       <div className="grid grid-cols-4 gap-x-[16px] gap-y-[38px]">
         {PERSONAS.map((p, i) => (
@@ -293,30 +293,31 @@ const CONNECTIONS = [
 
 function Connections() {
   return (
-    <section className="relative flex flex-col gap-[80px] overflow-hidden bg-guest-ink px-[80px] py-[120px]">
+    <section className="relative overflow-hidden bg-guest-ink py-[120px]">
       <Image src="/guest/connect-bg.png" alt="" fill sizes="100vw" className="object-cover object-bottom" />
-      <div className="relative">
+      {/* 배경 그림은 구역 전체를 채우고, 내용만 1760 틀에 담는다. */}
+      <div className={`${FRAME} relative flex flex-col gap-[80px]`}>
         <SectionTitle light="가입 한 번으로," bold="매장 전체가 연결됩니다" dark />
-      </div>
-      <div className="relative grid grid-cols-3 gap-[34px]">
-        {CONNECTIONS.map((c) => (
-          <div key={c.label} className="flex flex-col gap-[34px]">
-            <div className="relative flex h-[348px] items-end overflow-hidden rounded-[16px] pb-[22px] pl-[26px]">
-              {c.under && <Image src={c.under} alt="" fill sizes="33vw" className="object-cover" />}
-              <Image src="/guest/connect-photo.png" alt="" fill sizes="33vw" className="object-cover" />
-              <span className="relative text-[24px] leading-[1.6] font-bold tracking-normal text-white">{c.label}</span>
+        <div className="grid grid-cols-3 gap-[34px]">
+          {CONNECTIONS.map((c) => (
+            <div key={c.label} className="flex flex-col gap-[34px]">
+              <div className="relative flex h-[348px] items-end overflow-hidden rounded-[16px] pb-[22px] pl-[26px]">
+                {c.under && <Image src={c.under} alt="" fill sizes="33vw" className="object-cover" />}
+                <Image src="/guest/connect-photo.png" alt="" fill sizes="33vw" className="object-cover" />
+                <span className="relative text-[24px] leading-[1.6] font-bold tracking-normal text-white">{c.label}</span>
+              </div>
+              <div className="flex flex-col gap-[8px] pl-[2px] text-[17px] text-[#afafaf]">
+                <h3 className="text-[24px] leading-[1.6] font-semibold text-[#f5f5f5]">{c.title}</h3>
+                <p className="leading-[1.5]">
+                  {c.desc[0]}
+                  <br />
+                  {c.desc[1]}
+                </p>
+                <Divided items={c.tags} className="pt-[8px]" />
+              </div>
             </div>
-            <div className="flex flex-col gap-[8px] pl-[2px] text-[17px] text-[#afafaf]">
-              <h3 className="text-[24px] leading-[1.6] font-semibold text-[#f5f5f5]">{c.title}</h3>
-              <p className="leading-[1.5]">
-                {c.desc[0]}
-                <br />
-                {c.desc[1]}
-              </p>
-              <Divided items={c.tags} className="pt-[8px]" />
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -332,7 +333,7 @@ const STEPS = [
 
 function Steps({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="flex flex-col gap-[60px] px-[80px] py-[120px]">
+    <section className={`${FRAME} flex flex-col gap-[60px] py-[120px]`}>
       <TitleRow
         light="시작은"
         bold="세 단계면 충분합니다"
@@ -402,7 +403,7 @@ const PLANS = [
 
 function Plans({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="flex flex-col gap-[60px] px-[80px] pb-[120px]">
+    <section className={`${FRAME} flex flex-col gap-[60px] pb-[120px]`}>
       <TitleRow
         light="처음엔 가볍게,"
         bold="필요할 때 더하세요"
@@ -500,7 +501,7 @@ function BoardHead({ text, action, href }: { text: string; action: string; href:
 function Boards({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | null; news: ReactNode | null }) {
   if (!faq && !news) return null;
   return (
-    <section className={`grid gap-[16px] px-[80px] ${faq && news ? "grid-cols-2" : "grid-cols-1"}`}>
+    <section className={`${FRAME} grid gap-[16px] ${faq && news ? "grid-cols-2" : "grid-cols-1"}`}>
       {faq && (
         <div className="flex flex-col gap-[60px]">
           <SectionTitle light="시작 전에," bold="가장 많이 묻는 질문" />

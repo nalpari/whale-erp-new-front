@@ -2,6 +2,7 @@ import Image from "next/image";
 import { type IconPart, InventoryIcon, KioskIcon, LayeredIcon, OrderIcon, RecipeIcon, STAFF_ICON } from "../guest-icons";
 import type { GuestRoutes } from "../guest-routes";
 import { GuestButton, GuestPage, SectionTitle, TitleRow, TRIM } from "../guest-ui";
+import { FRAME } from "../theme";
 import { FeatureShortcuts } from "./feature-shortcuts";
 
 // Figma 「로그인전_Sub」(8QSOuwFFBfCbFWR6RBUlps · 1:688). 비로그인 메인의 매장운영 소개 화면이다.
@@ -41,7 +42,7 @@ function MomentBox({ kicker, title, desc, after }: { kicker: string; title: stri
 
 function Moments({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="flex flex-col gap-[60px] px-[80px] pt-[120px]">
+    <section className={`${FRAME} flex flex-col gap-[60px] pt-[120px]`}>
       <TitleRow
         light="사장님,"
         bold="이런 순간 있으셨죠?"
@@ -121,7 +122,7 @@ function Lines({ lines }: { lines: string[] }) {
 
 function Features() {
   return (
-    <section className="flex flex-col gap-[60px] px-[80px] py-[120px]">
+    <section className={`${FRAME} flex flex-col gap-[60px] py-[120px]`}>
       <TitleRow
         light="매장운영,"
         bold="이렇게 달라집니다"
@@ -191,26 +192,27 @@ const FLOW = [
 
 function Flow() {
   return (
-    <section className="relative flex flex-col gap-[60px] overflow-hidden bg-guest-ink px-[80px] py-[120px]">
+    <section className="relative overflow-hidden bg-guest-ink py-[120px]">
       <Image src={`${ASSET}/flow-bg.png`} alt="" fill sizes="100vw" className="object-cover object-bottom" />
       <span className="absolute inset-0 bg-[rgba(37,37,37,0.8)]" />
-      <div className="relative">
+      {/* 배경 그림은 구역 전체를 채우고, 내용만 1760 틀에 담는다. */}
+      <div className={`${FRAME} relative flex flex-col gap-[60px]`}>
         <SectionTitle light="채용부터 월급날까지," bold="끊김 없이" dark />
+        <ol className="grid grid-cols-5 gap-[32px]">
+          {FLOW.map((step) => (
+            <li
+              key={step.title}
+              className="flex flex-col items-center gap-[24px] rounded-[16px] border border-white/10 py-[42px] text-center backdrop-blur-[12px]"
+            >
+              <LayeredIcon parts={step.icon} />
+              <div className="flex flex-col gap-[8px] leading-[1.5]">
+                <h3 className="text-[24px] font-semibold text-[#fafafa]">{step.title}</h3>
+                <p className="text-[18px] text-[#ccc]">{step.desc}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
-      <ol className="relative grid grid-cols-5 gap-[32px]">
-        {FLOW.map((step) => (
-          <li
-            key={step.title}
-            className="flex flex-col items-center gap-[24px] rounded-[16px] border border-white/10 py-[42px] text-center backdrop-blur-[12px]"
-          >
-            <LayeredIcon parts={step.icon} />
-            <div className="flex flex-col gap-[8px] leading-[1.5]">
-              <h3 className="text-[24px] font-semibold text-[#fafafa]">{step.title}</h3>
-              <p className="text-[18px] text-[#ccc]">{step.desc}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
     </section>
   );
 }
@@ -228,7 +230,7 @@ const ADD_ONS = [
 
 function AddOns({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="flex flex-col gap-[60px] px-[80px] pt-[120px]">
+    <section className={`${FRAME} flex flex-col gap-[60px] pt-[120px]`}>
       <TitleRow
         light="함께 쓰면"
         bold="더 편해지는 부가서비스"

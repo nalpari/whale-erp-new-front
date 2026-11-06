@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { type IconPart, InventoryIcon, KioskIcon, LayeredIcon, OrderIcon, RecipeIcon, STAFF_ICON } from "../guest-icons";
 import type { GuestRoutes } from "../guest-routes";
 import { GuestButton, GuestPage, ICON_GRADIENT, SectionTitle } from "../guest-ui";
+import { FRAME } from "../theme";
 
 // Figma 「로그인전_부가서비스」(8QSOuwFFBfCbFWR6RBUlps · 1:1083).
 // 실제 라우트((site))와 디자인 샘플이 함께 그린다. 링크는 받은 routes 로 건다(guest-routes.ts).
@@ -130,7 +131,7 @@ function ServiceSection({
   routes: GuestRoutes;
 }) {
   return (
-    <section className={`flex flex-col gap-[60px] px-[80px] pt-[120px] ${last ? "pb-[120px]" : ""}`}>
+    <section className={`${FRAME} flex flex-col gap-[60px] pt-[120px] ${last ? "pb-[120px]" : ""}`}>
       <div className="flex items-end justify-between gap-[18px]">
         <div className="flex flex-col gap-[18px]">
           <SectionTitle light={light} bold="부가서비스" />
@@ -232,25 +233,28 @@ const EXPANSIONS: { name: string; desc: string; icon: IconPart[] }[] = [
 
 function Expansions() {
   return (
-    <section className="relative flex flex-col gap-[60px] overflow-hidden bg-guest-ink px-[80px] py-[120px]">
+    <section className="relative overflow-hidden bg-guest-ink py-[120px]">
       <Image src="/guest/store-operations/flow-bg.png" alt="" fill sizes="100vw" className="object-cover object-bottom" />
       <span className="absolute inset-0 bg-[rgba(37,37,37,0.8)]" />
-      {/* 이 섹션만 굵은 줄이 위에 온다. */}
-      <h2 className="relative text-[52px] leading-[1.2] tracking-[-0.025em] text-white">
-        <span className="block font-bold">확장 옵션</span>
-        <span className="block font-normal">매장이 커지는 만큼 한도를 늘리세요</span>
-      </h2>
-      <ul className="relative grid grid-cols-3 gap-[28px]">
-        {EXPANSIONS.map((e) => (
-          <li key={e.name} className="flex gap-[24px] rounded-[16px] border border-white/10 px-[48px] py-[42px] backdrop-blur-[12px]">
-            <LayeredIcon parts={e.icon} />
-            <div className="flex flex-1 flex-col gap-[8px] leading-[1.5]">
-              <h3 className="text-[24px] font-semibold text-[#fafafa]">{e.name}</h3>
-              <p className="text-[18px] text-[#ccc]">{e.desc}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {/* 배경 그림은 구역 전체를 채우고, 내용만 1760 틀에 담는다. */}
+      <div className={`${FRAME} relative flex flex-col gap-[60px]`}>
+        {/* 이 섹션만 굵은 줄이 위에 온다. */}
+        <h2 className="text-[52px] leading-[1.2] tracking-[-0.025em] text-white">
+          <span className="block font-bold">확장 옵션</span>
+          <span className="block font-normal">매장이 커지는 만큼 한도를 늘리세요</span>
+        </h2>
+        <ul className="grid grid-cols-3 gap-[28px]">
+          {EXPANSIONS.map((e) => (
+            <li key={e.name} className="flex gap-[24px] rounded-[16px] border border-white/10 px-[48px] py-[42px] backdrop-blur-[12px]">
+              <LayeredIcon parts={e.icon} />
+              <div className="flex flex-1 flex-col gap-[8px] leading-[1.5]">
+                <h3 className="text-[24px] font-semibold text-[#fafafa]">{e.name}</h3>
+                <p className="text-[18px] text-[#ccc]">{e.desc}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }
@@ -263,7 +267,7 @@ const SUBSCRIPTION = [
 
 function Subscription() {
   return (
-    <section className="flex flex-col gap-[60px] px-[80px] pt-[120px]">
+    <section className={`${FRAME} flex flex-col gap-[60px] pt-[120px]`}>
       <SectionTitle light="WHALE ERP" bold="구독 안내" />
       <ul className="grid grid-cols-3 gap-[16px]">
         {SUBSCRIPTION.map((s) => (

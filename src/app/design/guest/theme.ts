@@ -15,3 +15,8 @@ export const BUTTON_MOTION =
 export const ARROW_NUDGE = `transition-[translate] duration-250 ${EASE_OUT} group-hover:translate-x-[3px] motion-reduce:transition-none motion-reduce:group-hover:translate-x-0`;
 // 되돌아가는 버튼(「로그인 이동」)의 화살표는 뒤집혀 있어 반대쪽으로 민다.
 export const ARROW_NUDGE_BACK = `transition-[translate] duration-250 ${EASE_OUT} group-hover:-translate-x-[3px] motion-reduce:transition-none motion-reduce:group-hover:translate-x-0`;
+
+// 비로그인 화면의 본문 틀. 양옆 80px 여백 대신 폭을 1760px 로 막고 가운데에 둔다 — 1920 에서는 같은 자리이고,
+// 더 넓은 화면에서도 본문이 퍼지지 않는다. 배경을 꽉 채우는 구역은 바깥이 배경을, 안쪽 이 틀이 내용을 맡는다.
+// 머리말 · 푸터는 이 틀을 쓰지 않고 양옆 80px 그대로 화면 끝에 붙인다(2026-11-06 요청). 메인 · 매장운영 · 부가서비스 본문이 쓴다.
+export const FRAME = "mx-auto w-full max-w-[1760px]";
