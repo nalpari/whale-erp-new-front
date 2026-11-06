@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { LeadForm, LeadScreen, type LeadOptions } from "@/app/design/guest/inquiry/lead-form";
+import { SITE_ROUTES } from "@/app/design/guest/guest-routes";
 import { GuestPage } from "@/app/design/guest/guest-ui";
 import { GuestNote } from "@/app/design/guest/notices/notice-views";
 import { getEnum, request } from "@/lib/api";
@@ -32,7 +33,7 @@ export default async function LeadsPage() {
 
   return (
     <GuestPage>
-      <LeadScreen>{options ? <LeadForm options={options} submit={submitLead} /> : <GuestNote action={<RetryButton />}>도입문의 화면을 불러오지 못했습니다.</GuestNote>}</LeadScreen>
+      <LeadScreen>{options ? <LeadForm options={options} submit={submitLead} homeHref={SITE_ROUTES.home} /> : <GuestNote action={<RetryButton />}>도입문의 화면을 불러오지 못했습니다.</GuestNote>}</LeadScreen>
     </GuestPage>
   );
 }

@@ -35,7 +35,8 @@ import { NOTICE_SAVE_ROUTE } from "@/lib/paper-request";
 // 공지사항은 첨부 때문에 라우트 핸들러(platform-notices/save)로 multipart 를, FAQ 는 서버 액션으로 JSON 을 보낸다(api 가 FAQ 는 JSON 만 받는다).
 // 실패하면 입력값을 그대로 두고 폼 위 빨간 띠에 까닭을 보인다. 그사이 누가 고쳤으면(409) 최신 내용을 다시 불러오게 한다.
 
-const SAVED_TOAST: Record<PostStatus, string> = { PUBLISHED: "게시했습니다.", DRAFT: "임시저장했습니다.", PRIVATE: "비공개로 저장했습니다." };
+// 저장 토스트 — 짧게 동작만(2026-11-06 사용자 지정 — 전엔 비공개가 「비공개로 저장했습니다.」)
+const SAVED_TOAST: Record<PostStatus, string> = { PUBLISHED: "게시했습니다.", DRAFT: "임시저장했습니다.", PRIVATE: "비공개로 변경했습니다." };
 // 노출 대상 옆 설명(데모와 같다). 비회원은 설명 대신 아래 안내가 붙는다.
 const AUDIENCE_HINT: Partial<Record<Audience, string>> = { MEMBER: "로그인한 모든 사용자", BP: "사업자 관리자", STORE: "점포 단위 관리자" };
 
@@ -184,7 +185,7 @@ export function PostForm({
       setConfirmDelete(false);
       const result = await callAction(() => deletePostAction(kind, detail.postId));
       if (!result.ok) return showErrors(result.messages);
-      toast("deleted");
+      toast("삭제했습니다.");
       router.push(listHref);
     });
 
@@ -383,17 +384,12 @@ export function PostForm({
               {detail && (
                 <Box title="최근 수정">
                   <p className="flex items-center gap-[8px] text-[14px] text-erp-ink">
-                    {detail.status === "PUBLISHED" ? (
-                      <Badge tone="on">{labelOf(statuses, detail.status)}</Badge>
-                    ) : detail.status === "PRIVATE" ? (
-                      <Badge tone="off">{labelOf(statuses, detail.status)}</Badge>
-                    ) : (
-                      <Tag>{labelOf(statuses, detail.status)}</Tag>
-                    )}
+                    {/* 게시만 파랑 배지, 임시저장 · 비공개는 회색 꼬리표 — 목록과 같다(2026-11-06 사용자 지정 — 전엔 비공개가 빨강) */}
+                    {detail.status === "PUBLISHED" ? <Badge tone="on">{labelOf(statuses, detail.status)}</Badge> : <Tag>{labelOf(statuses, detail.status)}</Tag>}
                     {formatDateTime(detail.updatedAt)}
                     {detail.updatedByName && ` · ${detail.updatedByName}`}
                   </p>
-                  <Note>둘이 동시에 고치면 나중 저장이 막히고(409) 최신 내용을 다시 불러옵니다. 덮어쓰지 않습니다.</Note>
+                  <Note>다른 관리자가 먼저 저장하면 내 저장은 막히고, 최신 내용을 다시 불러옵니다.</Note>
                 </Box>
               )}
             </div>
@@ -403,14 +399,15 @@ export function PostForm({
 
       <ConfirmDialog
         open={confirmDelete && can.delete}
-        title={notice ? "공지사항을 삭제하시겠습니까?" : "FAQ 를 삭제하시겠습니까?"}
+        title={notice ? "공지사항을 삭제하시겠습니까?" : "FAQ를 삭제하시겠습니까?"}
+        // 커뮤니티 관리는 빨간 버튼을 두지 않는다 — 기본 버튼, 되돌릴 수 없다는 말은 굵은 글로(2026-11-06 사용자 지정 — 전엔 danger)
         confirmLabel="삭제"
-        confirmVariant="danger"
         busy={busy}
         onConfirm={handleDelete}
         onCancel={() => setConfirmDelete(false)}
       >
-        사용자에게 더는 보이지 않습니다. 기록은 남습니다.
+        <p>삭제한 {notice ? "공지사항은 사용자 화면과 공지사항" : "FAQ는 사용자 화면과 FAQ"} 목록에서 사라집니다.</p>
+        <p>삭제한 내용은 복구할 수 없습니다.</p>
       </ConfirmDialog>
     </>
   );

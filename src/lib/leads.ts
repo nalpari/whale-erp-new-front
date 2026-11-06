@@ -41,17 +41,29 @@ export function leadBodyOf(form: FormData): CreateLead {
   };
 }
 
+/** 칸 이름 → 그 칸 아래에 보일 오류 문구. 화면 위에서 아래 순서로 담는다. */
+export type LeadProblems = Partial<Record<"contactName" | "phone" | "industryCode" | "email" | "industryDetail" | "interests" | "body" | "privacyAgreed", string>>;
+
 /**
- * 브라우저 검사(required · type=email)가 놓치는 것 — 빈칸만 적은 칸, 전화번호 형식, api @IsEmail 이 막는 이메일(브라우저는 a@b 를 통과시킨다) — 을 접수 확인 창을 띄우기 전에 본다.
- * 걸린 칸 이름과 문구를 돌려주면 폼이 그 칸에 검사 오류를 건다. 없으면 null.
+ * [문의 접수하기]를 누르면 접수 확인 창을 띄우기 전에 모든 칸을 한 번에 본다 — 빈칸(빈칸만 적은 칸 포함), 전화번호 형식, api @IsEmail 이 막는 이메일
+ * (브라우저는 a@b 를 통과시킨다), 관심 서비스 · 개인정보 동의. 걸린 칸마다 문구를 돌려주고 폼이 각 입력칸 아래에 보인다(2026-11-06 사용자 지정 —
+ * 전엔 브라우저 검사 말풍선으로 첫 칸 하나만). 문제가 없으면 빈 객체다.
  */
-export function leadInputProblem(form: FormData): { name: string; message: string } | null {
-  if (!textOf(form, "contactName")) return { name: "contactName", message: "이름을 입력해 주세요." };
-  if (!PHONE.test(textOf(form, "phone").replace(/[\s-]/g, ""))) return { name: "phone", message: "전화번호 형식이 올바르지 않습니다. 예) 02-1234-5678, 1588-1234" };
-  if (!isEmailFormat(textOf(form, "email"))) return { name: "email", message: EMAIL_FORMAT_ERROR };
-  if (textOf(form, "industryCode") === INDUSTRY_OTHER && !textOf(form, "industryDetail")) return { name: "industryDetail", message: "업종을 입력해 주세요." };
-  if (!textOf(form, "body")) return { name: "body", message: "문의 내용을 입력해 주세요." };
-  return null;
+export function leadInputProblems(form: FormData): LeadProblems {
+  const problems: LeadProblems = {};
+  if (!textOf(form, "contactName")) problems.contactName = "이름을 입력해 주세요.";
+  const phone = textOf(form, "phone");
+  if (!phone) problems.phone = "전화번호를 입력해 주세요.";
+  else if (!PHONE.test(phone.replace(/[\s-]/g, ""))) problems.phone = "전화번호 형식이 올바르지 않습니다. 예) 02-1234-5678, 1588-1234";
+  if (!textOf(form, "industryCode")) problems.industryCode = "업종을 선택해 주세요.";
+  const email = textOf(form, "email");
+  if (!email) problems.email = "이메일을 입력해 주세요.";
+  else if (!isEmailFormat(email)) problems.email = EMAIL_FORMAT_ERROR;
+  if (textOf(form, "industryCode") === INDUSTRY_OTHER && !textOf(form, "industryDetail")) problems.industryDetail = "업종을 입력해 주세요.";
+  if (!form.getAll("interests").length) problems.interests = "관심 있는 서비스를 하나 이상 선택해 주세요.";
+  if (!textOf(form, "body")) problems.body = "문의 내용을 입력해 주세요.";
+  if (form.get("privacyAgreed") !== "on") problems.privacyAgreed = "개인정보 수집 및 이용에 동의해 주세요.";
+  return problems;
 }
 
 // 429(10분 안 중복 접수 「이미 접수된 문의가 있습니다…」 · IP 시간당 한도 「잠시 후 다시 시도해 주세요」)는 api 문구가 안내라 그대로 보인다.

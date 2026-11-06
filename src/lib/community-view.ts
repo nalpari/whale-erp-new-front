@@ -47,9 +47,10 @@ export function postIdOf(raw: unknown): number | null {
 
 export type ListQuery = { page: number; pageSize: PageSize };
 // 상태 · 구분 · 카테고리 필터는 체크박스라 여러 값을 함께 고른다. 빈 배열이 전체다(2026-10-22 재영, #275 · #282~284).
-export type PostQuery = ListQuery & { status: PostStatus[] };
-export type InquiryQuery = ListQuery & { answerStatus: AnswerStatus[]; title: string; sender: string };
-export type LeadQuery = ListQuery & { answerStatus: AnswerStatus[] };
+// none — 상태 칸을 모두 풀었다(?none=1). 빈 배열은 「전체」라 따로 둔다. 이때는 목록을 부르지 않고 0건으로 보인다(2026-11-06 사용자 지정)
+export type PostQuery = ListQuery & { status: PostStatus[]; none: boolean };
+export type InquiryQuery = ListQuery & { answerStatus: AnswerStatus[]; title: string; sender: string; none: boolean };
+export type LeadQuery = ListQuery & { answerStatus: AnswerStatus[]; none: boolean };
 
 type Raw = Record<string, string | string[] | undefined>;
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
@@ -76,20 +77,32 @@ function pageOf(raw: Raw): ListQuery {
 /** 검색어는 api 한도(제목 200자 · 보낸 곳 100자)로 자르고 NUL 을 뺀다 — 둘 다 api 가 400 을 내 목록이 통째로 실패한다. */
 const textOf = (v: string | undefined, max: number) => (v ?? "").replaceAll("\u0000", "").trim().slice(0, max);
 
-export const parsePostQuery = (raw: Raw): PostQuery => ({ ...pageOf(raw), status: someOf(POST_STATUSES, raw.status) });
-export const parseLeadQuery = (raw: Raw): LeadQuery => ({ ...pageOf(raw), answerStatus: someOf(ANSWER_STATUSES, raw.answerStatus) });
+/** 쪽 · 쪽당 건수 말고 거른 조건이 있는가 — 빈 문구를 「등록된 …」 / 「조건에 맞는 …」으로 가를 때 쓴다(2026-11-06) */
+export const hasCondition = (query: ListQuery & Record<string, unknown>): boolean =>
+  Object.entries(query).some(([k, v]) => k !== "page" && k !== "pageSize" && (Array.isArray(v) ? v.length > 0 : typeof v === "string" ? v.trim() !== "" : v === true));
+
+/** 상태를 모두 풀었는가 — 주소의 none=1. 그때 고른 상태 값은 버린다 */
+const noneOf = (raw: Raw) => first(raw.none) === "1";
+
+export const parsePostQuery = (raw: Raw): PostQuery => ({ ...pageOf(raw), status: noneOf(raw) ? [] : someOf(POST_STATUSES, raw.status), none: noneOf(raw) });
+export const parseLeadQuery = (raw: Raw): LeadQuery => ({ ...pageOf(raw), answerStatus: noneOf(raw) ? [] : someOf(ANSWER_STATUSES, raw.answerStatus), none: noneOf(raw) });
 export const parseInquiryQuery = (raw: Raw): InquiryQuery => ({
   ...pageOf(raw),
-  answerStatus: someOf(ANSWER_STATUSES, raw.answerStatus),
+  answerStatus: noneOf(raw) ? [] : someOf(ANSWER_STATUSES, raw.answerStatus),
+  none: noneOf(raw),
   title: textOf(first(raw.title), 200),
   sender: textOf(first(raw.sender), 100),
 });
 
 /** 화면 주소 · api 쿼리. 빈 값과 기본값(1쪽 · 20건)은 싣지 않는다. 여러 값은 같은 이름을 되풀이한다(`?status=A&status=B`, api 의 다른 목록과 같다). */
-export function queryString(q: ListQuery & Record<string, string | number | readonly string[]>): string {
+export function queryString(q: ListQuery & Record<string, string | number | boolean | readonly string[]>): string {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(q)) {
-    if (value === "" || (key === "page" && value === 1) || (key === "pageSize" && value === 20)) continue;
+    if (value === "" || value === false || (key === "page" && value === 1) || (key === "pageSize" && value === 20)) continue;
+    if (value === true) {
+      params.set(key, "1");
+      continue;
+    }
     if (Array.isArray(value)) for (const v of value) params.append(key, v);
     else params.set(key, String(value));
   }
