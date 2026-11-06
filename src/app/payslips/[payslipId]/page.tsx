@@ -56,7 +56,7 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
           empty="검토 사유가 없습니다."
         />
         {absentReasons.length > 0 && (
-          <DetailTable title="그 밖의 사유" rows={absentReasons.map((r) => ({ label: r.label, value: muted("해당 없음") }))} />
+          <DetailTable title="그 밖의 사유" labelWidth="w-[140px]" rows={absentReasons.map((r) => ({ label: r.label, value: muted("해당 없음") }))} />
         )}
       </section>
       <section className="flex min-w-0 flex-col gap-[12px]">
