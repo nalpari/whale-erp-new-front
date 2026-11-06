@@ -233,8 +233,8 @@ export function PostForm({
     // 시작일은 화면이 지어내지 않는다 — 비우면 비운 채 보내 api 가 등록 일시를 게시일로 쓴다. 브라우저 시계로 채우면 PC 시계가 앞선 날
     // 게시한 공지가 사용자 화면에서 빠지고, 내렸다 다시 게시하면 게시일이 바뀌었다(ip-code-review 블로커, 2026-11-06). 게시일은 칸 아래에 보인다
     const sending = form;
-    // 시작일이 비었을 때 견줄 게시일 — 새 글 · 임시저장은 오늘, 그 밖은 등록일(검사에만 쓴다)
-    const postedDate = !detail || detail.status === "DRAFT" ? kstToday() : formatDateTime(detail.createdAt).slice(0, 10);
+    // 시작일이 비었을 때 견줄 게시일 — 지금 게시 중인 글은 등록일, 새 글 · 임시저장 · 비공개는 지금 게시하는 오늘(검사에만 쓴다, 리뷰 반영)
+    const postedDate = detail?.status === "PUBLISHED" ? formatDateTime(detail.createdAt).slice(0, 10) : kstToday();
     const found = postFieldErrors(sending, status, kept.length, files.map((f) => f.file), postedDate);
     if (found.length) {
       const next: Partial<Record<PostField, string[]>> = {};
