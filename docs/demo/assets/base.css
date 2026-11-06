@@ -84,7 +84,10 @@ details[name="guest-faq"][open]::details-content {
     top: anchor(bottom);
     left: anchor(left);
     width: anchor-size(width);
-    position-try-fallbacks: flip-block;
+    /* 늘 칸 아래로 연다 — 아래 공간이 모자라도 위로 뒤집지 않고, 화면 아래 8px 까지만 늘려 목록 안에서 스크롤한다(2026-11-06 사용자 지정 — 전엔 flip-block 으로 위로 열렸다). */
+    bottom: 8px;
+    height: fit-content;
+    overflow-y: auto;
     margin-block: 4px;
     padding: 6px;
     border: 1px solid #ebebeb;

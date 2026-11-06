@@ -62,7 +62,7 @@ export const render = ({ A, R }, { title = "BP 관리자 관리", detail = "hghr
       role,
       stores,
       `<span class="truncate">${g} <span class="text-[12px] text-erp-muted">· ${code}</span></span>`,
-      ui.badge(state === "사용" ? "on" : "off", state),
+      ui.badge(state === "사용" ? "on" : "closed", state),
       // 사용 계정의 메일 실패는 빨간 글자, 로그인한 적 없으면 회색 「-」
       login === UNSENT ? (state === "사용" ? '<span class="text-erp-off">초기화 비밀번호 미발송</span>' : '<span class="text-erp-muted">-</span>') : (login ?? '<span class="text-erp-muted">-</span>'),
     ];

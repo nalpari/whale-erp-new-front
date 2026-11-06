@@ -173,9 +173,10 @@
                 <div class="panel__head">
                   <h2 class="t-h2">문의사항</h2>
                   <div class="panel__end">
-                    <div class="seg">
-                      <button type="button" aria-pressed="true">답변 대기 <span class="count">3</span></button>
-                      <button type="button" aria-pressed="false">답변 완료</button>
+                    <!-- 상태 필터는 체크박스 — 처음에 모두 체크(= 전체), 마지막 남은 하나는 풀지 않는다(2026-11-06 사용자 지정) -->
+                    <div class="inline" style="gap: var(--s-4)">
+                      <label class="inline" style="gap: 6px; cursor: pointer"><input type="checkbox" checked /> 답변대기 <span class="count">3</span></label>
+                      <label class="inline" style="gap: 6px; cursor: pointer"><input type="checkbox" checked /> 답변완료</label>
                     </div>
                   </div>
                 </div>
@@ -183,33 +184,37 @@
                   <table class="tbl">
                     <thead>
                       <tr>
-                        <th scope="col">제목</th>
-                        <th scope="col">문의자</th>
-                        <th scope="col">분류</th>
                         <th scope="col">상태</th>
+                        <th scope="col">분류</th>
+                        <th scope="col" style="width: 400px">제목</th>
+                        <th scope="col" style="width: 160px">문의자</th>
+                        <th scope="col" style="width: 240px">BP상호명</th>
                         <th scope="col">접수</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td class="k"><a class="tlink" href="inquiry-detail.html">파트타이머 주휴수당이 계산되지 않습니다</a></td>
-                        <td>㈜한강상회 · 정하윤</td>
+                        <td><span class="badge badge--warn">답변대기</span></td>
                         <td>직원·근로</td>
-                        <td><span class="badge badge--warn">답변 대기</span></td>
+                        <td class="k"><a class="tlink" href="inquiry-detail.html">파트타이머 주휴수당이 계산되지 않습니다</a></td>
+                        <td>정하윤</td>
+                        <td>㈜한강상회</td>
                         <td class="mono">09-04</td>
                       </tr>
                       <tr>
-                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">가맹점 초대 메일이 반송됩니다</a></td>
-                        <td>㈜한강상회 · 정하윤</td>
+                        <td><span class="badge badge--quiet">답변완료</span></td>
                         <td>가입·계정</td>
-                        <td><span class="badge badge--ok">답변 완료</span></td>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">가맹점 초대 메일이 반송됩니다</a></td>
+                        <td class="subtle">탈퇴한 회원</td>
+                        <td>㈜한강상회</td>
                         <td class="mono">08-30</td>
                       </tr>
                       <tr>
-                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">KIOSK 구독을 늘리고 싶습니다</a></td>
-                        <td>온기식당 · 배정숙</td>
+                        <td><span class="badge badge--warn">답변대기</span></td>
                         <td>요금·구독</td>
-                        <td><span class="badge badge--warn">답변 대기</span></td>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">KIOSK 구독을 늘리고 싶습니다</a></td>
+                        <td>배정숙</td>
+                        <td>온기식당</td>
                         <td class="mono">09-02</td>
                       </tr>
                     </tbody>
@@ -219,6 +224,8 @@
                   답변을 저장하면 상태가 <b>즉시 답변 완료</b>로 바뀐다. 따로 상태를 고르지 않는다.
                   상태는 접수·처리중·답변 완료 셋이고, 목록은 <b>답변 대기(접수 + 처리중)</b>와 답변 완료로 나눈다(WHALEERP-332).
                   처리중은 운영자가 상세에서 [처리 시작]으로 바꾼다(WHALEERP-274).
+                  열은 상태 · 분류 · 제목 · 문의자(이름) · BP상호명 · 접수다. 답변대기는 빨간 배지, 답변완료는 회색 꼬리표다.
+                  문의자 이름이 비었으면(탈퇴가 이름을 비운다) 회색 「탈퇴한 회원」(2026-11-06 사용자 지정 — 전엔 제목 · 문의자 「BP · 이름」 · 분류 · 상태 · 접수, 답변완료 파랑).
                 </div>
               </div>
             </div>
@@ -228,9 +235,10 @@
                 <div class="panel__head">
                   <h2 class="t-h2">도입문의</h2>
                   <div class="panel__end">
-                    <div class="seg">
-                      <button type="button" aria-pressed="true">답변 대기 <span class="count">2</span></button>
-                      <button type="button" aria-pressed="false">답변 완료</button>
+                    <!-- 상태 필터는 체크박스 — 처음에 모두 체크(= 전체), 마지막 남은 하나는 풀지 않는다(2026-11-06 사용자 지정) -->
+                    <div class="inline" style="gap: var(--s-4)">
+                      <label class="inline" style="gap: 6px; cursor: pointer"><input type="checkbox" checked /> 답변대기 <span class="count">2</span></label>
+                      <label class="inline" style="gap: 6px; cursor: pointer"><input type="checkbox" checked /> 답변완료</label>
                     </div>
                   </div>
                 </div>
@@ -238,33 +246,37 @@
                   <table class="tbl">
                     <thead>
                       <tr>
-                        <th scope="col">문의자</th>
-                        <th scope="col">업종</th>
-                        <th scope="col">관심 서비스</th>
                         <th scope="col">상태</th>
+                        <th scope="col" style="width: 200px">문의자</th>
+                        <th scope="col" style="width: 220px">연락처</th>
+                        <th scope="col" style="width: 220px">업종</th>
+                        <th scope="col" style="width: 220px">관심 서비스</th>
                         <th scope="col">접수</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td class="k"><a class="tlink" href="lead-detail.html">조민석 · 02-514-7741</a></td>
+                        <td><span class="badge badge--warn">답변대기</span></td>
+                        <td style="text-align: center"><a class="tlink" href="lead-detail.html">조민석</a></td>
+                        <td><span class="inline mono" style="gap: 6px"><span data-icon="phone-circle" data-icon-size="16"></span>02-514-7741</span></td>
                         <td>카페·음료</td>
                         <td>매장운영 · 프랜차이즈</td>
-                        <td><span class="badge badge--warn">답변 대기</span></td>
                         <td class="mono">09-06</td>
                       </tr>
                       <tr>
-                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">윤서린 · 010-3320-8814</a></td>
+                        <td><span class="badge badge--warn">답변대기</span></td>
+                        <td style="text-align: center"><a class="tlink is-na" href="#" aria-disabled="true">윤서린</a></td>
+                        <td><span class="inline mono" style="gap: 6px"><span data-icon="phone-circle" data-icon-size="16"></span>010-3320-8814</span></td>
                         <td>음식점</td>
                         <td>매장운영</td>
-                        <td><span class="badge badge--warn">답변 대기</span></td>
                         <td class="mono">09-03</td>
                       </tr>
                       <tr>
-                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">한도윤 · 010-9902-1177</a></td>
+                        <td><span class="badge badge--quiet">답변완료</span></td>
+                        <td style="text-align: center"><a class="tlink is-na" href="#" aria-disabled="true">한도윤</a></td>
+                        <td><span class="inline mono" style="gap: 6px"><span data-icon="phone-circle" data-icon-size="16"></span>010-9902-1177</span></td>
                         <td>기타 (꽃집)</td>
                         <td>재무관리</td>
-                        <td><span class="badge badge--ok">답변 완료</span></td>
                         <td class="mono">08-27</td>
                       </tr>
                     </tbody>
@@ -273,7 +285,7 @@
                 <div class="panel__note">
                   <b>로그인하지 않은 방문자</b>가 남긴 건이다. 문의사항과 달리 계정이 없으므로 적어 준 이름·업종·전화번호·이메일이
                   그 자체로 신원이 된다. 상호·사업자등록번호·운영 형태·점포 수는 접수 때 받지 않는다(WHALEERP-288).
-                  목록 칸은 문의자·전화번호·업종·관심 서비스·상태·접수 일시뿐이고 답변 상태로만 거른다(WHALEERP-332).
+                  목록 칸은 상태·문의자(이름)·연락처(전화기 아이콘 + 번호)·업종·관심 서비스·접수 일시뿐이고 답변 상태로만 거른다(WHALEERP-332 · 2026-11-06 사용자 지정 — 전엔 「이름 · 번호」 한 칸, 상태는 끝에서 둘째).
                   개인정보는 상담 완료일로부터 <b>1년</b> 뒤 파기한다.
                 </div>
               </div>
