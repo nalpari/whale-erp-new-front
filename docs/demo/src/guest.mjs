@@ -82,7 +82,7 @@ export const visual = (A, { eyebrow, title, body }) =>
 // ── 머리말 · 푸터 ──
 const MENUS = [
   ["매장운영", "home/store-operations.html"],
-  ["재무관리", ""],
+  ["재무관리", "home/finance-management.html"],
   ["프랜차이즈", ""],
   ["부가 서비스", "home/add-on-services.html"],
 ];
@@ -137,6 +137,10 @@ export const STAFF_ICON = [
 
 export const kioskIcon = () =>
   `<span class="relative block h-[74px] w-[70px]"><span class="absolute top-0 left-[7px] h-[63px] w-[56px] rounded-[10px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" style="background-image:${ICON_GRADIENT}"></span><span class="absolute top-[5px] left-[12px] h-[39px] w-[46px] rounded-[10px] shadow-[inset_0_1px_3.8px_rgba(255,255,255,0.05)]" style="background-image:linear-gradient(108deg, rgba(255,255,255,0.04) 8.98%, rgba(255,255,255,0.24) 94.82%)"></span><span class="absolute top-[14px] left-[21px] h-[8px] w-[29px] rounded-[2px] bg-white/90"></span><span class="absolute top-[27px] left-[21px] h-[2px] w-[24px] rounded-full bg-white/60"></span><span class="absolute top-[33px] left-[21px] h-[2px] w-[17px] rounded-full bg-white/40"></span><span class="absolute top-[49px] left-0 h-[25px] w-[70px] rounded-[10px] bg-white/40 shadow-[0_1.3px_13px_rgba(0,0,0,0.09),inset_0_5.2px_4px_rgba(255,255,255,0.55)] backdrop-blur-[4.9px]"></span></span>`;
+
+// 부가서비스 「POS」와 재무관리 맨 아래 「POS」 카드가 같은 그림을 쓴다(앱 guest-icons.tsx 의 PosIcon).
+export const posIcon = (A) =>
+  `<span class="relative block h-[74px] w-[70px]"><span class="absolute top-[39px] left-0 h-[35px] w-[70px] rounded-[8px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" style="background-image:${ICON_GRADIENT}"></span><span class="absolute top-[65px] left-[23px] h-[2px] w-[24px] rounded-full bg-white/90"></span><span class="absolute top-0 left-[7px] h-[60px] w-[56px] rounded-[10px] bg-white/40 shadow-[0_1.9px_18.7px_rgba(0,0,0,0.09),inset_0_7.5px_5.8px_rgba(255,255,255,0.5)] backdrop-blur-[4.2px]"></span><span class="absolute top-[5px] left-[12px] h-[39px] w-[46px] rounded-[10px] bg-white/10 shadow-[0_1.9px_18.7px_rgba(0,0,0,0.03),inset_0_7.5px_5.8px_rgba(255,255,255,0.5)] backdrop-blur-[4.2px]"></span>${gimg(A, "add-on-services/pos-chart.svg", 26.9342, 20, "absolute top-[13px] left-[20.29px] max-w-none")}</span>`;
 
 export const inventoryIcon = (A, src) =>
   `<span class="relative block h-[74px] w-[67px]">${gimg(A, src, 83.3356, 91.3557, "absolute top-[-9.18px] left-[-12.98px] max-w-none")}</span>`;

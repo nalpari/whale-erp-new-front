@@ -10,9 +10,6 @@ const GRAD = `style="background-image:${g.ICON_GRADIENT}"`;
 const pickupIcon = (A) =>
   `<span class="relative block h-[74px] w-[62px]">${g.gimg(A, `${S}/pickup.svg`, 87.9649, 99.9648, "absolute top-[-11.68px] left-[-12.98px] max-w-none")}</span>`;
 
-const posIcon = (A) =>
-  `<span class="relative block h-[74px] w-[70px]"><span class="absolute top-[39px] left-0 h-[35px] w-[70px] rounded-[8px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" ${GRAD}></span><span class="absolute top-[65px] left-[23px] h-[2px] w-[24px] rounded-full bg-white/90"></span><span class="absolute top-0 left-[7px] h-[60px] w-[56px] rounded-[10px] bg-white/40 shadow-[0_1.9px_18.7px_rgba(0,0,0,0.09),inset_0_7.5px_5.8px_rgba(255,255,255,0.5)] backdrop-blur-[4.2px]"></span><span class="absolute top-[5px] left-[12px] h-[39px] w-[46px] rounded-[10px] bg-white/10 shadow-[0_1.9px_18.7px_rgba(0,0,0,0.03),inset_0_7.5px_5.8px_rgba(255,255,255,0.5)] backdrop-blur-[4.2px]"></span>${g.gimg(A, `${S}/pos-chart.svg`, 26.9342, 20, "absolute top-[13px] left-[20.29px] max-w-none")}</span>`;
-
 const tableOrderIcon = () =>
   `<span class="relative block h-[74px] w-[64px]"><span class="absolute top-[17px] left-0 h-[57px] w-[64px] rounded-[10px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" ${GRAD}></span><span class="absolute top-0 left-[7px] h-[67px] w-[50px] rounded-[8px] ${g.GLASS}"></span><span class="absolute top-[12px] left-[13px] h-[14px] w-[38px] rounded-[10px] bg-white/15 shadow-[0_1.9px_18.7px_rgba(0,0,0,0.03),inset_0_7.5px_5.8px_rgba(255,255,255,0.5)] backdrop-blur-[4.2px]"></span><span class="absolute top-[35px] left-[14px] h-[2px] w-[36px] rounded-full bg-white/90"></span><span class="absolute top-[42px] left-[19px] h-[2px] w-[26px] rounded-full bg-white/60"></span><span class="absolute top-[49px] left-[24px] h-[2px] w-[16px] rounded-full bg-white/20"></span></span>`;
 
@@ -48,7 +45,7 @@ const MEMBERSHIP = ["점포 구독", "비회원 이용", "전화번호 포인트
 
 const sales = (A) => [
   { name: "Pick up Order", desc: ["손님은 앱으로 미리 주문·결제하고, 도착하자마자 받아갑니다."], badges: ["점포 구독", "일반 회원 전용", "앱 주문 결제"], icon: pickupIcon(A) },
-  { name: "POS", desc: ["카운터 주문과 카드·간편결제를 빠르게.", "판매 기록은 매출 조회로 바로 이어집니다."], badges: MEMBERSHIP, icon: posIcon(A) },
+  { name: "POS", desc: ["카운터 주문과 카드·간편결제를 빠르게.", "판매 기록은 매출 조회로 바로 이어집니다."], badges: MEMBERSHIP, icon: g.posIcon(A) },
   { name: "KIOSK", desc: ["손님이 직접 주문하고 결제하니, 바쁜 시간에도 직원은 음식과 서비스에 집중합니다."], badges: MEMBERSHIP, icon: g.kioskIcon() },
   { name: "Table Order", desc: ["자리에 앉아 바로 주문하고, 추가 주문도 편하게. 직원을 부를 필요가 없습니다."], badges: MEMBERSHIP, icon: tableOrderIcon() },
   { name: "QR Order", desc: ["테이블 QR만 찍으면 앱 설치 없이 내 폰으로 주문 끝."], badges: MEMBERSHIP, icon: qrOrderIcon(A) },
