@@ -110,6 +110,26 @@ body {
   }
 }
 
+/* 비로그인 메인 첫 화면의 고래. 구름 위에 떠 있는 느낌만 주도록 위아래 6px · 0.6도를 7초에 한 번 오간다(2026-11-06 요청).
+   끝없이 도는 장식이라 CSS 애니메이션으로 둔다 — 화면이 바빠도 끊기지 않는다. 자리 잡기(-translate-1/2)는 translate 속성이라
+   여기서 쓰는 transform 과 겹치지 않는다. 움직임 줄이기 설정에서는 멈춘다. */
+@keyframes guest-whale-float {
+  from {
+    transform: translateY(-6px) rotate(-0.6deg);
+  }
+  to {
+    transform: translateY(6px) rotate(0.6deg);
+  }
+}
+.guest-whale {
+  animation: guest-whale-float 3.5s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .guest-whale {
+    animation: none;
+  }
+}
+
 /* 비로그인 자주 묻는 질문(<details name="guest-faq">) 펼침. 하나를 열면 다른 하나가 동시에 닫히므로 열림·닫힘을 같은 시간·고른 곡선으로
    맞춘다 — 시간이 다르거나 강한 감속 곡선이면 높이가 처음 수십 ms 에 몰려 목록이 툭 튀고 출렁인다(2026-10-14). 바탕색도 함께 바꾼다.
    ::details-content 를 모르는 브라우저는 움직임 없이 바로 열고 닫는다. 데모(docs/demo/assets/base.css)에도 같은 규칙이 있다. */

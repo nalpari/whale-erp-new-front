@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-06
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 메인 첫 화면의 고래가 위아래로 천천히 떠다니게 했다(`guest-whale`, 움직임 줄이기에서는 멈춤). 데모 같이 반영.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 메인을 Figma 로그인전_공유(44:2)에 맞췄다: 회색 바탕 구역, 기능 카드 3D 아이콘 · 회청 버튼, 연결 구역 사진 교체, 세 단계 아이콘, 「도입문의」 · 「요금제 자세히 보기」 제거. 데모 같이 반영, 안 쓰는 그림 삭제.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 메인 · 매장운영 · 부가서비스(`guest-home.tsx` · `store-operations.tsx` · `add-on-services.tsx`) 본문 구역을 양옆 80px 여백 대신 최대 폭 1760px 가운데 정렬로 바꿨다(`design/guest/theme.ts` 의 `FRAME`, 사용자 요청). 머리말 · 푸터는 그대로 80px.
 
