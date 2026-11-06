@@ -1,6 +1,6 @@
 "use client";
 
-import { BUTTON_MOTION } from "../theme";
+import { BUTTON_MOTION } from "./theme";
 
 // 같은 화면의 기능 설명으로 부드럽게 내려가는 바로가기.
 // #주소 링크로 두면 누를 때마다 방문 기록이 쌓여 뒤로가기를 여러 번 눌러야 이전 화면으로 돌아가므로, 주소는 바꾸지 않는다.
