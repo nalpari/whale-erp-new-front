@@ -32,10 +32,12 @@ export default ({ A, R }) => {
   );
 
   // 상단 고정(칸 이름 앞 · 스위치 뒤) · 게시 기간 — 한 상자, 묶음 사이 24px · 칸과 안내 사이 8px.
-  // 게시로 저장할 때 시작일이 비어 있으면 게시일(처음 게시면 오늘)로 채운다. 종료일이 시작일보다 앞서면 종료일 칸 아래 「게시 종료일은 시작일 이후로 선택해 주세요.」
+  // 시작일은 화면이 채우지 않는다 — 비운 채 게시하면 api 가 등록일을 게시일로 쓰고, 게시 중 · 비공개 글은 시작일 칸 아래 「게시일: … (등록일)」 연한 노랑 꼬리표(앱 post-form.tsx).
+  // 종료일이 시작일(비었으면 게시일 — 게시 중인 글은 등록일, 그 밖은 오늘)보다 앞서면 종료일 칸 아래 「게시 종료일은 시작일 이후로 선택해 주세요.」(2026-11-06 사용자 지정)
+  const postedTag = `<span class="self-start rounded-[2px] border border-[#e8a33d]/50 bg-[#fff6e5] px-[8px] text-[14px] leading-[24px] font-medium text-[#956013]">게시일: 2026-09-05 (등록일)</span>`;
   const period =
     q.name("게시 기간") +
-    `<div class="flex items-center gap-[6px]"><div class="flex-1">${ui.dateField(A, { label: "게시 시작일", value: "2026-09-05" })}</div><span class="text-erp-label">~</span><div class="flex-1">${ui.dateField(A, { label: "게시 종료일", value: "2026-09-14" })}</div></div>` +
+    `<div class="flex items-start gap-[6px]"><div class="flex flex-1 flex-col gap-[8px]">${ui.dateField(A, { label: "게시 시작일" })}${postedTag}</div><span class="flex h-[34px] items-center text-erp-label">~</span><div class="flex-1">${ui.dateField(A, { label: "게시 종료일", value: "2026-09-14" })}</div></div>` +
     q.note("기간 미설정 시 <u>게시 후 계속 표시</u>됩니다. 종료일만 설정하면 시작일은 게시일로 자동 적용됩니다.");
   const settings = q.bare(
     q.group(`<span class="flex items-center gap-[10px]">${q.name("상단 고정")}${x.toggle("", true)}</span>` + q.note("상단 고정 시 공지 목록 맨 위에 표시되며, 여러 개일 경우 최신 게시일순으로 정렬됩니다.")) + q.group(period),
