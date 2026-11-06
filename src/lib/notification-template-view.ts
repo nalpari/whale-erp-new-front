@@ -1,4 +1,4 @@
-// 알림 템플릿 관리 화면의 순수 규칙 — 채널 접두 · 받는 사람 · URL 쿼리 · 최근 수정 · 미리보기 채우기 · 저장 전 검사.
+// 알림 템플릿 관리 화면의 순수 규칙 — 채널 접두 · 받는 사람 · URL 쿼리 · 최종수정 · 미리보기 채우기 · 저장 전 검사.
 // 저장 전 검사는 api 의 validate-template.ts 를 문구까지 그대로 옮긴 것이다. api 가 최종으로 다시 보고, 화면은 먼저 띄울 뿐이다.
 // 채널 · 수신 설정 묶음의 한글은 여기 두지 않고 getEnum 으로 받는다(naming.md 화면 문구).
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
@@ -64,7 +64,7 @@ export function parseTemplateQuery(raw: Record<string, string | string[] | undef
   };
 }
 
-/** 최근 수정 — 아무도 고치지 않았으면 「기본 문구」, 고쳤으면 「MM-DD HH:mm 이름」(한국 시간). */
+/** 최종수정 — 아무도 고치지 않았으면 「기본 문구」, 고쳤으면 「MM-DD HH:mm 이름」(한국 시간). */
 export function updatedLabel(updatedByName: string | null, updatedAt: string): string {
   return updatedByName === null ? "기본 문구" : `${formatAt(updatedAt)} ${updatedByName}`;
 }

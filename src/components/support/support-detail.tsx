@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition, type ReactNode } from "react";
-import { Button, DetailTable, DetailValues, PageBar, Tag } from "@/components/common";
+import { useEffect, useState, useTransition, type ReactNode } from "react";
+import { Button, PageBar, Tag } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { bff, BffError } from "@/lib/bff";
@@ -17,7 +17,8 @@ import { InquiryStatusBadge } from "./support-lists";
 // 노출 대상 · 이력 · 내부 메모 · 이전 답변 · 운영자는 api 가 싣지 않는다(CNT-17). 첨부는 누를 때마다 5분짜리 서명 주소를 새로 받는다.
 // 화면 안 링크(목록 · 이전 · 다음)는 탭 BP 를 붙인다(bpPath, front #82). 첨부 주소는 api 경로라 bff() 가 BP 를 싣는다.
 
-const Prose = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.7] whitespace-pre-wrap break-keep text-erp-ink">{children}</p>;
+// 본문은 14px, 공지 본문만 15px(large) — 공지 상세는 읽는 글이라 키웠다(2026-11-06 사용자 지정). 문의 · 답변은 14px 그대로
+const Prose = ({ children, large = false }: { children: ReactNode; large?: boolean }) => <p className={`${large ? "text-[15px]" : "text-[14px]"} leading-[1.7] whitespace-pre-wrap break-keep text-erp-ink`}>{children}</p>;
 // 보조 글자는 점포 정보 관리 상세와 같은 14px(2026-11-05 사용자 지정 — 전엔 13px)
 const Meta = ({ children }: { children: ReactNode }) => <span className="text-[14px] text-erp-label">{children}</span>;
 const Sub = ({ children }: { children: ReactNode }) => <span className="text-erp-muted">{children}</span>;
@@ -63,7 +64,7 @@ function Frame({ menu, title, listHref, error, children }: { menu: string; title
             </Button>
           </div>
           {error && (
-            <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">
+            <p role="alert" className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">
               {error}
             </p>
           )}
@@ -94,51 +95,107 @@ function useDownload() {
 export function SupportNoticeView({ notice: n, noticeTypes }: { notice: SupportNotice; noticeTypes: EnumValue[] }) {
   const { error, busy, download } = useDownload();
   const bp = useCurrentBp().bpCodeId;
+  // 그림 첨부 미리보기 — 문의 상세 첨부처럼 64px 썸네일을 이름 앞에 둔다(2026-11-06 사용자 지정). api 가 공지 첨부의 썸네일 주소를 주지 않아
+  // 내려받기 주소(5분짜리 서명 주소)를 받아 쓴다. 못 받으면 이름 · 크기만 보인다
+  const [previews, setPreviews] = useState<Record<number, string>>({});
+  useEffect(() => {
+    let alive = true;
+    for (const a of n.attachments) {
+      if (a.fileType === "PDF") continue;
+      bff<{ url: string }>(`${SUPPORT_NOTICE_BASE}/${n.postId}/attachments/${a.postAttachmentId}/download-url`)
+        .then(({ url }) => alive && setPreviews((prev) => ({ ...prev, [a.postAttachmentId]: url })))
+        // 미리보기만 못 그린다 — 이름 · 크기 · 내려받기는 그대로 쓴다. 까닭은 콘솔에 남긴다(리뷰 반영)
+        .catch((e) => console.warn("첨부 미리보기 주소를 받지 못했습니다", { postId: n.postId, postAttachmentId: a.postAttachmentId }, e));
+    }
+    return () => {
+      alive = false;
+    };
+  }, [n.attachments, n.postId]);
+  // 이전 · 다음 줄 값 — 본문과 같은 15px(2026-11-06 사용자 지정). 제목 링크 · 회색 게시일 사이는 값 구분선
   const neighbor = (p: SupportNotice["prev"], none: string) =>
     p ? (
-      <DetailValues
-        items={[
-          <Link key="t" href={bpPath(bp, `${SUPPORT_NOTICE_BASE}/${p.postId}`)} className="truncate text-erp-link hover:underline">
-            {p.title}
-          </Link>,
-          <Meta key="d">{p.postedDate}</Meta>,
-        ]}
-      />
+      <span className="flex min-w-0 items-center gap-[10px]">
+        <Link href={bpPath(bp, `${SUPPORT_NOTICE_BASE}/${p.postId}`)} className="truncate text-erp-link hover:underline">
+          {p.title}
+        </Link>
+        {/* #d9d9d9 — DESIGN.md 의 값 구분선 */}
+        <span aria-hidden="true" className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
+        <span className="shrink-0 text-erp-label">{p.postedDate}</span>
+      </span>
     ) : (
       <Sub>{none}</Sub>
     );
   return (
-    <Frame menu="공지사항" title="공지사항 상세" listHref={bpPath(bp, SUPPORT_NOTICE_BASE)} error={error}>
-      <Box title={n.title} hint={[n.noticeType && labelOf(noticeTypes, n.noticeType), n.postedDate].filter(Boolean).join(" · ")}>
-        {/* 본문은 평문이다 — HTML 로 그리지 않는다. */}
-        <Prose>{n.body}</Prose>
-      </Box>
+    <Frame
+      menu="공지사항"
+      title={
+        // 「공지사항 상세」 대신 공지 제목을 그 자리에 — 제목 20px, 아래 줄에 「구분 [꼬리표]」 | 「게시일 [꼬리표]」(2026-11-06 사용자 지정).
+        // 이름은 회색 14px 500 — 문의 상세 「분류 [꼬리표]」와 같은 모양
+        <div className="flex flex-col gap-[8px] py-[6px]">
+          <h2 className="break-all text-[20px] font-semibold text-erp-ink">{n.title}</h2>
+          <div className="flex items-center gap-[10px] text-[14px] font-medium text-erp-label">
+            {n.noticeType && (
+              <>
+                <span className="flex items-center gap-[6px]">
+                  구분 <Tag>{labelOf(noticeTypes, n.noticeType)}</Tag>
+                </span>
+                {/* #d9d9d9 — DESIGN.md 의 값 구분선, Figma 전용 색이라 토큰이 없다 */}
+                <span aria-hidden="true" className="h-[11px] w-px bg-[#d9d9d9]" />
+              </>
+            )}
+            <span className="flex items-center gap-[6px]">
+              게시일 <Tag>{n.postedDate}</Tag>
+            </span>
+          </div>
+        </div>
+      }
+      listHref={bpPath(bp, SUPPORT_NOTICE_BASE)}
+      error={error}
+    >
+      {/* 본문은 제목 바 없이 테두리 상자에 바로 — 제목 · 구분 · 게시일은 머리 줄에 있다(2026-11-06 사용자 지정). 본문은 평문이다 — HTML 로 그리지 않는다. */}
+      <div className="rounded-[2px] border border-erp-thead-line bg-white p-[16px]">
+        <Prose large>{n.body}</Prose>
+      </div>
+      {/* 첨부 — 문의 상세 첨부와 같은 목록: 그림은 64px 둥근 썸네일, PDF 는 이름 + 크기. 누르면 내려받는다(2026-11-06 사용자 지정 — 전엔 「파일 | 이름 크기」 상세 표) */}
       {n.attachments.length > 0 && (
-        <DetailTable
-          title="첨부파일"
-          rows={n.attachments.map((a) => ({
-            label: "파일",
-            value: (
-              <DetailValues
-                items={[
-                  <button key="n" type="button" disabled={busy} onClick={() => download(`${SUPPORT_NOTICE_BASE}/${n.postId}/attachments/${a.postAttachmentId}/download-url`)} className="truncate text-left text-erp-link hover:underline">
-                    {a.fileName}
-                  </button>,
-                  <Meta key="s">{sizeLabel(a.sizeBytes)}</Meta>,
-                ]}
-              />
-            ),
-          }))}
-        />
+        <Box title="첨부파일" flush>
+          <ul className="rounded-b-[2px] border border-erp-thead-line bg-white">
+            {n.attachments.map((a) => (
+              <li key={a.postAttachmentId} className={`flex items-center border-b border-erp-thead-line px-[12px] last:border-b-0 ${previews[a.postAttachmentId] ? "py-[12px]" : "h-[46px]"}`}>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => download(`${SUPPORT_NOTICE_BASE}/${n.postId}/attachments/${a.postAttachmentId}/download-url`)}
+                  title={`${a.fileName} 내려받기`}
+                  className="flex min-w-0 items-center gap-[10px] text-left"
+                >
+                  {previews[a.postAttachmentId] && (
+                    // eslint-disable-next-line @next/next/no-img-element -- 5분짜리 서명 주소라 이미지 최적화 캐시에 둘 수 없다
+                    <img src={previews[a.postAttachmentId]} alt="" className="size-[64px] shrink-0 rounded-[8px] border border-erp-panel-line object-cover" onError={(e) => (e.currentTarget.hidden = true)} />
+                  )}
+                  <span className="truncate text-erp-link hover:underline">{a.fileName}</span>
+                  <Sub>{sizeLabel(a.sizeBytes)}</Sub>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </Box>
       )}
       {/* 이전은 목록에서 바로 아래 글, 다음은 바로 위 글이다(api SupportPostResponseDto). 상단 고정 글이 먼저 서므로 맨 위 · 맨 아래가 가장 최근 · 오래된 글과 다를 수 있다. */}
-      <DetailTable
-        title="이전 · 다음"
-        rows={[
-          { label: "이전", value: neighbor(n.prev, "목록의 맨 아래 공지입니다.") },
-          { label: "다음", value: neighbor(n.next, "목록의 맨 위 공지입니다.") },
-        ]}
-      />
+      {/* 상세 표(DetailTable)와 같은 선 · 높이 · 라벨 칸(110px)이되 글자는 본문과 같은 15px — 공통 표는 14px 이라 이 화면에서 그린다(2026-11-06 사용자 지정) */}
+      <Box title="이전 · 다음" flush>
+        <dl className="rounded-b-[2px] border border-erp-thead-line bg-white text-[15px]">
+          {[
+            ["이전", neighbor(n.prev, "목록의 맨 아래 공지입니다.")],
+            ["다음", neighbor(n.next, "목록의 맨 위 공지입니다.")],
+          ].map(([label, value], i) => (
+            <div key={i} className="flex h-[46px] border-b border-erp-thead-line last:border-b-0">
+              <dt className="flex w-[110px] shrink-0 items-center px-[12px] font-medium text-erp-label">{label}</dt>
+              <dd className="flex min-w-0 flex-1 items-center px-[12px] text-erp-ink">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </Box>
     </Frame>
   );
 }

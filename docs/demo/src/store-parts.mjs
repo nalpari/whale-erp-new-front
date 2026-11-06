@@ -17,11 +17,11 @@ export const statusBadge = (state) => ui.badge(state === "운영" ? "on" : state
 // 막힌 버튼의 이유 — 공통 Blocked(blocked.tsx)와 같다. 점포 상세 제목 줄이라 말풍선을 아래로 띄운다(앱 place="bottom")
 export const blocked = (label, why, variant = "soft") => ui.blocked(ui.button(label, { variant, disabled: true }), why, { place: "bottom" });
 
-// 화면 위 안내 띠(공통 NoticeBand). risk 는 빨강 · info 는 표 머리 바탕, detail 은 아랫줄 먹색 설명
+// 화면 위 안내 띠(공통 NoticeBand). risk 는 빨강 · info 는 표 머리 바탕, detail 은 아랫줄 설명(risk 는 빨강, info 는 먹색 — 2026-11-06 사용자 지정)
 export const noticeBand = (tone, title, detail = "") =>
   `<div role="${tone === "risk" ? "alert" : "status"}" class="rounded-[2px] border px-[16px] py-[12px] text-[14px] leading-[1.6] ${
     tone === "risk" ? "border-erp-off bg-erp-off-bg text-erp-off" : "border-erp-panel-line bg-erp-thead-bg text-erp-ink"
-  }"><p class="font-medium">${title}</p>${detail ? `<div class="text-erp-ink">${detail}</div>` : ""}</div>`;
+  }"><p class="font-medium">${title}</p>${detail ? `<div${tone === "risk" ? "" : ' class="text-erp-ink"'}>${detail}</div>` : ""}</div>`;
 
 // 대표 이미지 자리(앱 StoreImage) — 주소가 없으면 점포 아이콘. 48 목록 카드 · 72 상세 머리 카드 · 184 등록 · 수정
 export const storeImage = (size, url, name) => {

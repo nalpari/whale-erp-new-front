@@ -27,7 +27,7 @@ function FieldMessage({ id, message }: { id: string; message?: string }) {
 
 function FailedBand({ message }: { message: string }) {
   return (
-    <div role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
+    <div role="alert" className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
       {message}
     </div>
   );

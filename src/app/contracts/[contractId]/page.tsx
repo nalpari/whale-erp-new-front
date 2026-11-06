@@ -210,12 +210,12 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
               <Button href={at(backHrefOf(query.back))}>목록</Button>
             </div>
             {sendNotice && (
-              <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
+              <p role="alert" className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
                 {sendNotice}
               </p>
             )}
             {documentNotice && (
-              <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
+              <p role="alert" className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
                 {documentNotice}
               </p>
             )}

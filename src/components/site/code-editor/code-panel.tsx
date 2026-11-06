@@ -68,7 +68,7 @@ export function SaveFailedBand({ message, detail = "입력한 값은 그대로 �
   return (
     <div role="alert" className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
       <p className="font-medium">{message}</p>
-      {detail && <p className="text-erp-ink">{detail}</p>}
+      {detail && <p>{detail}</p>}
     </div>
   );
 }
