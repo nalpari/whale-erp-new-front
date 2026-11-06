@@ -1149,9 +1149,6 @@
   .w-\[38px\] {
     width: 38px;
   }
-  .w-\[40px\] {
-    width: 40px;
-  }
   .w-\[46px\] {
     width: 46px;
   }
@@ -2098,9 +2095,6 @@
   }
   .border-erp-off {
     border-color: var(--color-erp-off);
-  }
-  .border-erp-off-bg {
-    border-color: var(--color-erp-off-bg);
   }
   .border-erp-off\/40 {
     border-color: color-mix(in srgb, #ef6363 40%, transparent);

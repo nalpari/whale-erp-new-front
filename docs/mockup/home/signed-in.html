@@ -124,18 +124,19 @@
 
               <!-- 지표 넷 : 시안의 매출·구독 자리를 오늘 출근·문의로 바꿨다. 각 칸은 조회 조건을 넘기며 이동한다. -->
               <div class="figures">
-                <a class="figure" href="../staff/index.html" title="/staff?status=active">
-                  <div class="figure__label">재직 직원 <span data-icon="arrowright" data-icon-size="12"></span></div>
-                  <div class="stat">63<span class="stat__unit">명</span></div>
-                  <div class="figure__delta">
-                    <span class="subtle">정직원 21 · 파트 42</span>
-                  </div>
-                </a>
+                <!-- 운영 점포 → 재직 직원 → 오늘 출근 → 내 문의 순(2026-11-06 사용자 지정 — 전엔 재직 직원이 맨 앞) -->
                 <a class="figure" href="#" title="점포관리는 1팀 영역">
                   <div class="figure__label">운영 점포 <span data-icon="arrowright" data-icon-size="12"></span></div>
                   <div class="stat">11<span class="stat__unit">개점</span></div>
                   <div class="figure__delta">
                     <span class="subtle">직영 4 · 가맹 7</span>
+                  </div>
+                </a>
+                <a class="figure" href="../staff/index.html" title="/staff?status=active">
+                  <div class="figure__label">재직 직원 <span data-icon="arrowright" data-icon-size="12"></span></div>
+                  <div class="stat">63<span class="stat__unit">명</span></div>
+                  <div class="figure__delta">
+                    <span class="subtle">정직원 21 · 파트 42</span>
                   </div>
                 </a>
                 <a class="figure" href="../staff/index.html#sched" title="/staff/schedules?date=today">

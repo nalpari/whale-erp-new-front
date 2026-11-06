@@ -17,20 +17,20 @@ const pager = (A) => `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`;
 
 export function communitySections({ A, R }) {
   const edit = link(R, "support/notice-edit.html");
-  // 공지 · FAQ 목록은 api GET /posts 의 칸(제목 · 유형/카테고리 · 고정 · 상태 · 최근 수정 일시 · 수정자)만 보인다.
-  // 최근 수정일 내림차순이고 고정 글을 위로 올리지 않는다(WHALEERP-332). 노출 대상은 편집 화면에서 본다.
+  // 공지 · FAQ 목록은 api GET /posts 의 칸(제목 · 유형/카테고리 · 고정 · 상태 · 최종수정 일시 · 수정자)만 보인다.
+  // 최종수정일 내림차순이고 고정 글을 위로 올리지 않는다(WHALEERP-332). 노출 대상은 편집 화면에서 본다.
   const notices = [
-    [`<span class="flex items-center gap-[10px]"><svg role="img" aria-label="고정" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-erp-brand"><title>고정</title><circle cx="12" cy="12" r="10.5"/><path d="M13.6 6.6 17.4 10.4 15.4 11.4 13.4 14.2 13.9 16.2 7.8 10.1 9.8 10.6 12.6 8.6Z" fill="currentColor" fill-opacity="0.15"/><path d="M10.4 13.6 7 17"/></svg>${ui.link("9월 정기 점검 안내 (09-14 02:00~05:00)", edit)}</span>`, "점검", ui.badge("on", "게시"), "09-05 14:20 · 이서준"],
-    [ui.link("10월 요금 PLAN 개편 사전 안내", edit), "안내", tag("임시저장"), "09-04 18:02 · 김하린"],
-    [ui.link("근로계약 전자날인 기능이 열렸습니다", edit), "기능", ui.badge("on", "게시"), "09-01 10:00 · 이서준"],
-    [ui.link("8월 점검 안내 (종료)", edit), "점검", tag("비공개"), "08-11 09:30 · 이서준"],
+    [`<span class="flex items-center gap-[10px]"><svg role="img" aria-label="고정" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-erp-brand"><title>고정</title><circle cx="12" cy="12" r="10.5"/><path d="M13.6 6.6 17.4 10.4 15.4 11.4 13.4 14.2 13.9 16.2 7.8 10.1 9.8 10.6 12.6 8.6Z" fill="currentColor" fill-opacity="0.15"/><path d="M10.4 13.6 7 17"/></svg>${ui.link("9월 정기 점검 안내 (09-14 02:00~05:00)", edit)}</span>`, "점검", ui.badge("on", "게시"), "2026-09-05 14:20 · 이서준"],
+    [ui.link("10월 요금 PLAN 개편 사전 안내", edit), "안내", tag("임시저장"), "2026-09-04 18:02 · 김하린"],
+    [ui.link("근로계약 전자날인 기능이 열렸습니다", edit), "기능", ui.badge("on", "게시"), "2026-09-01 10:00 · 이서준"],
+    [ui.link("8월 점검 안내 (종료)", edit), "점검", tag("비공개"), "2026-08-11 09:30 · 이서준"],
   ];
   const faqEdit = link(R, "support/faq-edit.html");
   const faqs = [
-    ["근로계약서를 보냈는데 직원이 못 받았다고 합니다", "직원·근로", "09-03 10:20 · 이서준"],
-    ["퇴사한 직원의 급여명세서는 어떻게 보나요", "직원·근로", "08-28 16:40 · 김하린"],
-    ["가입은 누가 할 수 있나요?", "가입·계정", "08-20 15:11 · 이서준"],
-    ["직원도 이 사이트로 로그인하나요?", "가입·계정", "08-20 15:02 · 이서준"],
+    ["근로계약서를 보냈는데 직원이 못 받았다고 합니다", "직원·근로", "2026-09-03 10:20 · 이서준"],
+    ["퇴사한 직원의 급여명세서는 어떻게 보나요", "직원·근로", "2026-08-28 16:40 · 김하린"],
+    ["가입은 누가 할 수 있나요?", "가입·계정", "2026-08-20 15:11 · 이서준"],
+    ["직원도 이 사이트로 로그인하나요?", "가입·계정", "2026-08-20 15:02 · 이서준"],
   ].map(([q, c, u]) => [c, ui.link(q, faqEdit), ui.badge("on", "게시"), u]); // 카테고리 · 질문 순(앱과 같다, 2026-11-06)
   // 답변완료는 끝난 일이라 회색 꼬리표, 답변대기만 빨간 배지(앱 AnswerCell, 2026-11-06 사용자 지정 — 전엔 답변완료가 파란 배지)
   const answer = (s) => (s === "답변 완료" ? tag(s) : ui.badge("off", s));
@@ -58,7 +58,7 @@ export function communitySections({ A, R }) {
       create: ui.button("공지사항 등록", { href: edit }),
       content:
         ui.listToolbar(12, "") +
-        ui.dataTable([STATE, { header: "유형", width: "w-[120px]" }, { header: "제목", align: "left" }, { header: "최근 수정", width: "w-[200px]" }], notices.map(([t, ty, st, u]) => [st, ty, t, u])) +
+        ui.dataTable([STATE, { header: "유형", width: "w-[120px]" }, { header: "제목", align: "left" }, { header: "최종수정", width: "w-[240px]" }], notices.map(([t, ty, st, u]) => [st, ty, t, u])) +
         pager(A),
     },
     faq: {
@@ -66,7 +66,7 @@ export function communitySections({ A, R }) {
       create: ui.button("FAQ 등록", { href: faqEdit }),
       content:
         ui.listToolbar(18, "") +
-        ui.dataTable([STATE, { header: "카테고리", width: "w-[160px]" }, { header: "질문", align: "left" }, { header: "최근 수정", width: "w-[200px]" }], faqs.map(([c, q, st, u]) => [st, c, q, u])) +
+        ui.dataTable([STATE, { header: "카테고리", width: "w-[160px]" }, { header: "질문", align: "left" }, { header: "최종수정", width: "w-[240px]" }], faqs.map(([c, q, st, u]) => [st, c, q, u])) +
         pager(A),
     },
     asks: {

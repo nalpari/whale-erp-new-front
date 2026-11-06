@@ -9,6 +9,7 @@ import {
   parseSupportInquiryQuery,
   parseSupportNoticeQuery,
   pickInquiryFiles,
+  postFieldErrors,
   postIdOf,
   parsePostQuery,
   postFields,
@@ -86,7 +87,7 @@ test("validatePost — 맞으면 빈 목록", () => {
 });
 
 test("validatePost — 게시만 노출 대상이 있어야 한다", () => {
-  assert.deepEqual(validatePost(notice({ audiences: [] }), "PUBLISHED", 0, []), ["게시하려면 노출 대상을 하나 이상 선택해 주세요."]);
+  assert.deepEqual(validatePost(notice({ audiences: [] }), "PUBLISHED", 0, []), ["노출대상을 선택해주세요."]);
   assert.deepEqual(validatePost(notice({ audiences: [] }), "DRAFT", 0, []), []);
 });
 
@@ -102,8 +103,16 @@ test("validatePost — 제목 · 본문 공백과 길이", () => {
 
 test("validatePost — 게시 종료일이 시작일보다 앞서면 막는다(FAQ 는 기간을 보지 않는다)", () => {
   const swapped = { publishStartDate: "2026-09-14", publishEndDate: "2026-09-05" };
-  assert.deepEqual(validatePost(notice(swapped), "DRAFT", 0, []), ["게시 종료일이 시작일보다 앞설 수 없습니다."]);
+  assert.deepEqual(validatePost(notice(swapped), "DRAFT", 0, []), ["게시 종료일은 시작일 이후로 선택해 주세요."]);
   assert.deepEqual(validatePost(faq(swapped), "DRAFT", 0, []), []);
+});
+
+test("postFieldErrors — 시작일을 비우고 게시하면 종료일을 게시일(오늘 · 등록일)과 견준다", () => {
+  const endOnly = notice({ publishStartDate: "", publishEndDate: "2026-11-05" });
+  assert.deepEqual(postFieldErrors(endOnly, "PUBLISHED", 0, [], "2026-11-06"), [["period", "게시 종료일은 시작일 이후로 선택해 주세요."]]);
+  assert.deepEqual(postFieldErrors(endOnly, "PUBLISHED", 0, [], "2026-11-05"), []);
+  // 임시저장 · 비공개는 아직 게시일이 없어 견주지 않는다
+  assert.deepEqual(postFieldErrors(endOnly, "DRAFT", 0, [], "2026-11-06"), []);
 });
 
 test("validatePost — 첨부는 남는 것 + 더하는 것 5개, 종류 · 크기", () => {

@@ -88,7 +88,7 @@ test("서명 기한이 지났으면 D-day 없이 서명 대기 — 만료 배치
   );
 });
 
-test("거부는 최종 수정일을 한국 날짜로 붙인다 — 거부일을 따로 저장하지 않는다", () => {
+test("거부는 최종수정일을 한국 날짜로 붙인다 — 거부일을 따로 저장하지 않는다", () => {
   assert.deepEqual(
     contractCell(item(contract("REJECTED", { updatedAt: "2026-09-01T15:30:00Z" })), TODAY),
     { text: "거부 · 09-02", style: "badge-off" },

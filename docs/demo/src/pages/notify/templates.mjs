@@ -57,7 +57,7 @@ export default ({ A, R }) => {
     { header: "템플릿 코드", width: "w-[280px]" },
     { header: "받는 사람", width: "w-[220px]" },
     { header: "제목", align: "left" },
-    { header: "최근 수정", width: "w-[170px]" },
+    { header: "최종수정", width: "w-[170px]" },
     { header: "사용 여부", width: "w-[100px]" },
   ];
   // 삭제 대신 사용 / 사용 안 함(NOTIFY-10). 사용 안 함은 줄을 흐리게.
@@ -92,7 +92,7 @@ export default ({ A, R }) => {
       { header: "템플릿 코드", width: "w-[280px]" },
       { header: "카카오 템플릿 코드", width: "w-[220px]" },
       { header: "본문 요약", align: "left" },
-      { header: "최근 수정", width: "w-[170px]" },
+      { header: "최종수정", width: "w-[170px]" },
       { header: "사용 여부", width: "w-[100px]" },
     ],
     [[name("가입 초대", L("notify/templates-edit-talk.html")), code("TALK", "가입 초대"), "WHALE_INVITE_01", "#{근무지}에서 근로계약서를 보내려고 합니다…", edited(["09-30 14:05", "이서준"]), use()]],

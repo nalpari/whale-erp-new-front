@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { HeaderTip } from "@/components/common";
 import type { NotificationItem } from "@/lib/notifications";
-import { badgeText, formatAt, relatedLabel } from "@/lib/notification-view";
+import { formatDateTime } from "@/lib/format";
+import { badgeText } from "@/lib/notification-view";
 
 // 전역 종(#253 · 목업 assets/app.js 의 종 팝오버). 미확인 건수 배지와 최근 알림 팝오버, 알림함 전체 보기.
 // 공통 GNB(공통 헤더 · 레이아웃)가 아직 없어 헤더와 떨어진 조각으로 둔다 — 공통 헤더가 생기면 종 자리에 <NotificationBellSlot /> 를 넣는다.
@@ -59,10 +60,11 @@ export function NotificationBell({ data }: { data: { unreadCount: number; recent
           </span>
         )}
       </button>
+      {/* 헤더에서 여는 상자는 시작 가이드 · 서비스 바로가기 툴팁과 같은 모양 — 회청 1px · 6px 모서리 · 그림자 없음(2026-11-06 사용자 지정, 전엔 #ebebeb · 2px · 그림자) */}
       {open && (
         <div
           id={panelId}
-          className="absolute top-[50px] right-0 z-50 w-[360px] rounded-[2px] border border-[#ebebeb] bg-white text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)]"
+          className="absolute top-[50px] right-0 z-50 w-[400px] overflow-hidden rounded-[6px] border border-erp-brand bg-white text-erp-ink"
         >
           <p className="border-b border-erp-thead-line px-[16px] py-[12px] text-[14px] font-semibold">미확인 알림 {data.unreadCount}건</p>
           {data.recent.length === 0 ? (
@@ -72,15 +74,24 @@ export function NotificationBell({ data }: { data: { unreadCount: number; recent
               {data.recent.map((n) => (
                 <li key={n.id} className="border-b border-erp-thead-line last:border-b-0">
                   {/* prefetch 가 읽음을 일으키지 않게 <a> 로 건다. */}
-                  <a href={`/notifications/${n.id}/open`} className="flex gap-[10px] px-[16px] py-[10px] hover:bg-erp-thead-bg">
-                    <span className={`mt-[7px] size-[6px] shrink-0 rounded-full ${n.isRead ? "" : "bg-erp-off"}`}>
-                      {!n.isRead && <span className="sr-only">미확인</span>}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className={`block truncate text-[14px] ${n.isRead ? "text-erp-muted" : "font-semibold"}`}>{n.title}</span>
-                      {n.body && <span className="block truncate text-[13px] text-erp-ink">{n.body}</span>}
-                      <span className="mt-[2px] block text-[12px] text-erp-muted">
-                        {formatAt(n.createdAt)} · {n.kind} · {relatedLabel(n.relatedType, n.relatedId)}
+                  {/* 왼쪽 · 오른쪽 여백을 같은 16px 로 — 전엔 점 자리(6 + 10px)를 늘 비워 둬 왼쪽만 넓었다. 빨간 점은 안 읽은 알림 제목 앞에만 붙는다(2026-11-06 사용자 지정) */}
+                  <a href={`/notifications/${n.id}/open`} className="block px-[16px] py-[12px] hover:bg-erp-thead-bg">
+                    <span className="block min-w-0">
+                      {/* 제목은 읽어도 먹색 — 흐리면 막힌 글처럼 보였다. 안 읽은 것만 굵게 + 빨간 점. 내용은 14px 회색 한 줄(행마다 제목 · 내용 · 아래 줄 세 줄),
+                          아래 줄은 「연-월-일 시:분 · 구분(템플릿 이름)」 13px — 관련 업무 번호(#30)는 내부 번호라 뺐다(2026-11-06 사용자 지정, A안) */}
+                      <span className={`flex min-w-0 items-center gap-[6px] text-[14px] ${n.isRead ? "font-medium" : "font-semibold"}`}>
+                        {!n.isRead && (
+                          <span className="size-[6px] shrink-0 rounded-full bg-erp-off">
+                            <span className="sr-only">미확인</span>
+                          </span>
+                        )}
+                        <span className="truncate">{n.title}</span>
+                      </span>
+                      {n.body && <span className="mt-[2px] block truncate text-[14px] text-erp-label">{n.body}</span>}
+                      {/* 아래 줄 — 구분(알림 종류)은 옅은 꼬리표로 앞에, 일시는 회색 글자로 뒤에(2026-11-06 사용자 지정). 공통 Tag(14px 500)는 다섯 줄에 반복되니 너무 강해 12px 400 회색 글자로 줄였다 */}
+                      <span className="mt-[6px] flex items-center gap-[8px]">
+                        <span className="rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] text-[12px] leading-[18px] text-erp-label">{n.kind}</span>
+                        <span className="text-[12px] text-erp-muted">{formatDateTime(n.createdAt)}</span>
                       </span>
                     </span>
                   </a>

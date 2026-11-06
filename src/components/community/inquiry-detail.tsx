@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode } from "react";
-import { Badge, Button, ConfirmDialog, DataTable, DetailTable, DetailValues, PageBar, Tag, Textarea, useToast, type Column } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DataTable, DetailTable, DetailValues, GuideIcon, GuideNote, PageBar, Tag, Textarea, useToast, type Column } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
@@ -40,23 +40,8 @@ const EDITED_TOAST = "답변을 수정했습니다.";
 
 const dt = formatDateTime;
 const Note = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.6] text-erp-label">{children}</p>;
-/**
- * 저장 버튼 옆 안내 — 입력칸 플레이스홀더(회색)와 갈리게 느낌표 동그라미 아이콘(회청) + 먹색 13px 500 으로 둔다(2026-11-05 사용자 지정 — 전엔 회색 14px Note).
- */
-const GuideIcon = ({ className = "" }: { className?: string }) => (
-  <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" className={`shrink-0 ${className || "text-erp-brand"}`}>
-    <circle cx="8" cy="8" r="8" fill="currentColor" />
-    <rect x="7.3" y="3.6" width="1.4" height="5.6" rx="0.7" fill="#fff" />
-    <circle cx="8" cy="11.6" r="0.95" fill="#fff" />
-  </svg>
-);
-/** risk — 놓치면 안 되는 안내(탈퇴한 회원의 문의)는 아이콘 · 글자를 빨강(erp-off)으로(2026-11-06 사용자 지정) */
-const Guide = ({ children, risk = false }: { children: ReactNode; risk?: boolean }) => (
-  <p className={`flex items-start gap-[6px] text-[13px] leading-[1.6] font-medium ${risk ? "text-erp-off" : "text-erp-ink"}`}>
-    <GuideIcon className={`mt-[3px] ${risk ? "text-erp-off" : "text-erp-brand"}`} />
-    <span>{children}</span>
-  </p>
-);
+/** 저장 버튼 옆 안내 — 공통 느낌표 안내(GuideNote). risk 면 빨강(탈퇴한 회원의 문의) */
+const Guide = ({ children, risk = false }: { children: ReactNode; risk?: boolean }) => <GuideNote risk={risk}>{children}</GuideNote>;
 /**
  * 쓸 수 있는 답변 · 메모 칸은 테두리를 연회청(erp-brand-soft)으로 진하게 — 공통 입력칸의 옅은 테두리(#ededee)로는 열린 칸이 잘 안 보였다
  * (2026-11-05 사용자 지정). 포커스하면 공통 규칙대로 회청(erp-brand). 공통 입력칸 토큰은 그대로 두고 이 화면에서만 감싸서 칠한다.
@@ -514,12 +499,12 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         </Box>
       )}
       <AnswerBox
-        // 답변이 있으면 지금 보이는 답변이 언제 · 누가 쓴 것인지만 제목 옆 왼쪽에 — 고친 적이 없으면 「등록 시각 · 운영자」, 고쳤으면 「최종 수정 시각 · 운영자」
+        // 답변이 있으면 지금 보이는 답변이 언제 · 누가 쓴 것인지만 제목 옆 왼쪽에 — 고친 적이 없으면 「등록 시각 · 운영자」, 고쳤으면 「최종수정 시각 · 운영자」
         // (2026-11-06 사용자 지정 — 전엔 「운영자 · 등록 시각 (수정됨 시각 · 운영자)」). 첫 등록 · 중간 수정은 처리이력 · 이전 답변이 보인다. 없으면 오른쪽 끝 안내
         hint={
           first && last
             ? previous.length
-              ? `최종 수정 ${dt(last.repliedAt)} · ${last.repliedByName ?? "-"}`
+              ? `최종수정 ${dt(last.repliedAt)} · ${last.repliedByName ?? "-"}`
               : `등록 ${dt(first.repliedAt)} · ${first.repliedByName ?? "-"}`
             : "문의자에게 표시됩니다."
         }
@@ -609,8 +594,8 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
             <span className="flex flex-col py-[12px] leading-[1.6]">
               {d.replies.map((r, i) => (
                 <span key={r.inquiryReplyId} className="flex min-w-0 items-center gap-[10px]">
-                  {/* 「등록 · 수정 · 최종 수정」 칸 폭을 같게 둬 구분선 · 시각 시작선을 맞춘다(2026-11-06 사용자 지정) */}
-                  <span className="w-[56px] shrink-0 text-erp-label">{i === 0 ? "등록" : i === d.replies.length - 1 ? "최종 수정" : "수정"}</span>
+                  {/* 「등록 · 수정 · 최종수정」 칸 폭을 같게 둬 구분선 · 시각 시작선을 맞춘다(2026-11-06 사용자 지정) */}
+                  <span className="w-[56px] shrink-0 text-erp-label">{i === 0 ? "등록" : i === d.replies.length - 1 ? "최종수정" : "수정"}</span>
                   {/* #d9d9d9 — DESIGN.md 의 값 구분선 */}
                   <span aria-hidden="true" className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
                   <span className="truncate">

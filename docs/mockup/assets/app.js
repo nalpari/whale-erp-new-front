@@ -954,11 +954,13 @@
   }
 
   /* 종을 누르면 미확인 알림 몇 건이 뜬다 (NOTIFY-2). 눌러 들어가면 그것으로 읽음이다 (NOTIFY-1).
+     한 건은 세 줄 — 제목(안 읽으면 앞에 빨간 점 · 굵게, 읽어도 먹색) · 내용 14px 회색 한 줄 · 아래 줄 「[구분 옅은 꼬리표] 연-월-일 시:분」(12px).
+     관련 업무 번호(#30)는 내부 번호라 두지 않는다. 상자는 시작 가이드와 같은 회청 1px · 6px · 그림자 없음, 폭 400, 양쪽 여백 16px 같게(2026-11-06 사용자 지정).
      목업은 BP 마스터 한 사람 기준이라 알림함의 미확인 셋과 같은 것을 보여 준다. */
   var BELL = [
-    { tone: "risk", kind: "계약 거부", title: "서지안 님이 근로계약서를 거부했습니다", meta: "사유 · 근무 시작일이 협의한 날과 다릅니다", when: "09-06 09:12", href: "staff/contracts-detail.html" },
-    { tone: "ok", kind: "계약 날인", title: "문태경 님이 근로계약서에 날인했습니다", meta: "온기식당 판교점 · 정직원", when: "09-05 18:40", href: "staff/contracts-detail.html" },
-    { tone: "info", kind: "문의 답변", title: "문의에 답변이 등록되었습니다", meta: "가맹점 초대 메일이 반송됩니다", when: "09-02 11:05", href: "support/inquiry-mine.html" }
+    { tone: "risk", kind: "계약 거부", title: "서지안 님이 근로계약서를 거부했습니다", meta: "사유 · 근무 시작일이 협의한 날과 다릅니다", when: "2026-09-06 09:12", href: "staff/contracts-detail.html" },
+    { tone: "ok", kind: "계약 날인", title: "문태경 님이 근로계약서에 날인했습니다", meta: "온기식당 판교점 · 정직원", when: "2026-09-05 18:40", href: "staff/contracts-detail.html" },
+    { tone: "info", kind: "문의 답변", title: "문의에 답변이 등록되었습니다", meta: "가맹점 초대 메일이 반송됩니다", when: "2026-09-02 11:05", href: "support/inquiry-mine.html" }
   ];
 
   function wireBell() {
@@ -967,10 +969,9 @@
       return '<div class="pop__label">미확인 알림 ' + BELL.length + "건</div>" +
         BELL.map(function (n) {
           return "<a" + linkAttrs(n.href) + ' class="pop__item">' +
-            '<span class="badge badge--dot badge--' + n.tone + '"></span>' +
-            '<span class="pop__body"><b>' + n.title + "</b>" +
+            '<span class="pop__body"><b><span class="badge badge--dot badge--risk"></span> ' + n.title + "</b>" +
             "<span>" + n.meta + "</span>" +
-            '<span class="mono">' + n.when + " · " + n.kind + "</span></span></a>";
+            '<span><span class="tag">' + n.kind + '</span> <span class="mono">' + n.when + "</span></span></span></a>";
         }).join("") +
         '<hr><a href="' + url("notify/index.html") + '">' + ic("inbox", 14) + "알림함 전체 보기</a>";
     });

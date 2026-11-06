@@ -84,7 +84,7 @@ export function templateEdit(t) {
     const form = box(
       "문구",
       "",
-      `<div data-tpl-errors hidden class="flex flex-col gap-[4px] rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off"></div>` +
+      `<div data-tpl-errors hidden class="flex flex-col gap-[4px] rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off"></div>` +
         `<div data-tpl-title${talk ? " hidden" : ""}>${ui.field(req("제목") + counted(titleId, 40), ui.textField({ id: titleId, value: t.title ?? "", "data-tpl-check": true }), "w-full")}</div>` +
         (t.notice ? `<div data-tpl-talk${talk ? "" : " hidden"}>${p.note(t.notice)}</div>` : "") +
         ui.field(req("본문") + counted(bodyId, 100), ui.textarea({ id: bodyId, rows: t.kind === "mail" ? 8 : 4, value: t.body ?? "", "data-tpl-check": true, "data-tpl-body": true })) +

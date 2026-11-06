@@ -30,7 +30,7 @@ export function BpApplyDialog({
             <dt className="font-medium text-erp-label">대상</dt>
             <dd>사용 중인 모든 BP{group.isBpApplied && <span className="text-erp-label"> (이미 적용한 그룹)</span>}</dd>
           </dl>
-          <div className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px]">
+          <div className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-erp-off">
             <p className="font-medium text-erp-off">사용 중인 모든 BP에 적용되며, 적용 후에는 취소할 수 없습니다.</p>
             <p>BP에 등록된 기존 코드는 유지되며, 새로 추가된 코드만 반영됩니다.</p>
           </div>

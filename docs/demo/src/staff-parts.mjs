@@ -133,10 +133,10 @@ export const help = (text) => `<span class="text-[12px] leading-[1.5] text-erp-m
 export const fieldH = (label, control, text, width) =>
   `<div class="flex flex-col gap-[8px] ${width ?? "min-w-px flex-1"}">${ui.field(label, control, "w-full")}${text ? help(text) : ""}</div>`;
 
-// 경고 밴드: 제목 아래 즉시 조치 영역. tone 이 risk 면 빨강 계열 바탕.
+// 경고 밴드: 제목 아래 즉시 조치 영역. tone 이 risk 면 빨간 테두리 · 연한 빨강 바탕 · 설명까지 빨간 글자(앱 payslip-review · contract-form Band, 2026-11-06 사용자 지정).
 export function band(title, { desc = "", actions = "", tone } = {}) {
   const risk = tone === "risk";
-  return `<div class="flex min-h-[46px] items-center gap-[12px] rounded-[2px] border px-[16px] py-[12px] ${risk ? "border-erp-off-bg bg-erp-off-bg" : "border-erp-panel-line bg-erp-thead-bg"}"><div class="flex min-w-0 flex-1 flex-col gap-[4px]"><p class="text-[14px] font-semibold ${risk ? "text-erp-off" : "text-erp-ink"}">${title}</p>${desc ? `<p class="text-[14px] leading-[1.6] text-erp-ink">${desc}</p>` : ""}</div>${actions ? `<div class="flex shrink-0 gap-[6px]">${actions}</div>` : ""}</div>`;
+  return `<div class="flex min-h-[46px] items-center gap-[12px] rounded-[2px] border px-[16px] py-[12px] ${risk ? "border-erp-off bg-erp-off-bg" : "border-erp-panel-line bg-erp-thead-bg"}"><div class="flex min-w-0 flex-1 flex-col gap-[4px]"><p class="text-[14px] font-semibold ${risk ? "text-erp-off" : "text-erp-ink"}">${title}</p>${desc ? `<p class="text-[14px] leading-[1.6] ${risk ? "text-erp-off" : "text-erp-ink"}">${desc}</p>` : ""}</div>${actions ? `<div class="flex shrink-0 gap-[6px]">${actions}</div>` : ""}</div>`;
 }
 
 // 진행 단계. items: [state(done|now|wait), title, meta]
