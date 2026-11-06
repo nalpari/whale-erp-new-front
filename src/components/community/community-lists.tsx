@@ -11,7 +11,6 @@ import type { InquiryListItem, LeadListItem, PostListItem } from "@/lib/communit
 import { INQUIRY_BASE, LEAD_BASE, POST_BASE, queryString, type InquiryQuery, type LeadQuery, type ListQuery, type PostKind, type PostQuery } from "@/lib/community-view";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatDateTime, formatPhone } from "@/lib/format";
-import { formatAt } from "@/lib/notification-view";
 import { PAGE_SIZES, type PageSize } from "@/lib/staff-members";
 
 // 커뮤니티 관리 목록 넷(#275, 데모 src/community-sections.mjs). 헤더 커뮤니티관리 소메뉴마다 화면을 나눴다(2026-10-02 재영).
@@ -129,8 +128,8 @@ const titleLink = (href: string, text: string) => (
   </Link>
 );
 
-/** 최근 수정 — 「MM-DD HH:mm · 이름」(한국 시간). 수정자를 모르면 시각만. */
-const updatedText = (at: string, name: string | null) => (name ? `${formatAt(at)} · ${name}` : formatAt(at));
+/** 최종수정 — 「YYYY-MM-DD HH:mm · 이름」(한국 시간, 2026-11-06 사용자 지정 — 전엔 연도 없이 「MM-DD HH:mm」). 수정자를 모르면 시각만. */
+const updatedText = (at: string, name: string | null) => (name ? `${formatDateTime(at)} · ${name}` : formatDateTime(at));
 
 /**
  * 게시 상태 — 사용자에게 보이는 게시만 파랑 배지, 보이지 않는 임시저장 · 비공개는 회색 꼬리표(글자로 가른다).
@@ -150,7 +149,7 @@ function AnswerCell({ status, answers }: { status: InquiryListItem["status"]; an
 }
 
 const STATE: Pick<Column<unknown>, "header" | "width"> = { header: "상태", width: "w-[110px]" };
-const UPDATED: Pick<Column<unknown>, "header" | "width"> = { header: "최근 수정", width: "w-[200px]" };
+const UPDATED: Pick<Column<unknown>, "header" | "width"> = { header: "최종수정", width: "w-[240px]" };
 
 /**
  * 화면명 줄(PageBar) 오른쪽 끝 등록 버튼 — 「공지사항 등록」 · 「FAQ 등록」(2026-11-06 사용자 지정 — 전엔 목록 위 도구 줄의 [새 공지] · [새 FAQ]).
@@ -162,7 +161,7 @@ export function PostCreateButton({ kind }: { kind: PostKind }) {
   return <Button href={`${POST_BASE[kind]}/new`}>{kind === "NOTICE" ? "공지사항 등록" : "FAQ 등록"}</Button>;
 }
 
-/** 공지사항 · FAQ 목록. 최근 수정일 내림차순이고 고정 글을 위로 올리지 않는다 — 고정 글에는 「고정」 꼬리표만 붙인다(#275). */
+/** 공지사항 · FAQ 목록. 최종수정일 내림차순이고 고정 글을 위로 올리지 않는다 — 고정 글에는 「고정」 꼬리표만 붙인다(#275). */
 export function PostList({
   kind,
   items,

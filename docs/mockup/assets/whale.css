@@ -3098,10 +3098,10 @@ a.tile:hover {
   min-width: 0;
 }
 
-/* 읽은 알림 — 미확인과 눈으로 갈린다. 문서가 "시각적으로 구분"을 요구했다. */
+/* 읽은 알림 — 미확인(제목 앞 빨간 점 · 굵게)과 갈린다. 읽은 제목도 먹색 500 — 흐리면 막힌 글처럼 보였다(2026-11-06 사용자 지정) */
 .tbl tr.is-read .k a {
-  color: var(--muted-tert);
-  font-weight: 400;
+  color: var(--ink);
+  font-weight: 500;
 }
 .tbl tr.is-read td {
   color: var(--muted);

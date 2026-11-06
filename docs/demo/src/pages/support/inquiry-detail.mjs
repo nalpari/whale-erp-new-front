@@ -2,7 +2,7 @@
 // 처리중은 이 화면, 접수(처리 시작 전)는 inquiry-detail-received, 답변 완료(답변 수정)는 inquiry-detail-done 이 state 를 바꿔 그린다.
 // 처리중은 운영자가 상세에서 [처리 시작]으로 직접 바꾼다 — 접수 상태에서만 되고 바꾼 시각 · 운영자가 남는다(POST /inquiries/{id}/processing, WHALEERP-274).
 // 모양은 2026-11-05 사용자 지정(front PR #226): 머리 줄(제목 20px + 접수일시 · 분류 · 상태), 「문의내용」 상자, 첨부는 종류 칸 없이,
-// 답변 제목 옆 「최종 수정 … · 수정자」(고친 적 없으면 「등록 … · 등록자」), 처리이력은 열 이름 줄 없이 단계 회색 500 · 할 일 안내에 느낌표 아이콘.
+// 답변 제목 옆 「최종수정 … · 수정자」(고친 적 없으면 「등록 … · 등록자」), 처리이력은 열 이름 줄 없이 단계 회색 500 · 할 일 안내에 느낌표 아이콘.
 import * as ui from "../../ui.mjs";
 import * as p from "../../staff-parts.mjs";
 import { platformHeader, link } from "../../site.mjs";
@@ -115,7 +115,7 @@ export const render = ({ A, R }, state = "wait") => {
   const left =
     box("문의내용", "", prose(c.body)) +
     (c.files ? files(c.files) : "") +
-    box("답변", done ? `최종 수정 ${last[0]} · ${last[1]}` : "문의자에게 표시됩니다.", answerBody, { left: done });
+    box("답변", done ? `최종수정 ${last[0]} · ${last[1]}` : "문의자에게 표시됩니다.", answerBody, { left: done });
 
   const right =
     sender(c.sender) +
@@ -127,7 +127,7 @@ export const render = ({ A, R }, state = "wait") => {
         // 「확인」 줄은 처리중을 거친 건만 완료로 그린다. 처리 시작 없이 바로 답했으면 api 가 processingStartedAt 을 null 로 주므로 이 줄을 숨긴다.
         received ? ["확인", pending("[처리 시작]을 누르면 문의자에게 처리중으로 표시됩니다."), false] : ["확인", c.processing, true],
         done
-          ? ["답변", replyLines(c.replies.map(([at, by], i) => [i === 0 ? "등록" : i === c.replies.length - 1 ? "최종 수정" : "수정", `${at} · ${by}`])), true]
+          ? ["답변", replyLines(c.replies.map(([at, by], i) => [i === 0 ? "등록" : i === c.replies.length - 1 ? "최종수정" : "수정", `${at} · ${by}`])), true]
           : ["답변", pending("답변을 저장하면 문의자에게 답변완료로 표시됩니다."), false],
       ]),
       { pad: false },

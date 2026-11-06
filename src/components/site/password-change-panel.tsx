@@ -132,6 +132,9 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
         <>
           {failure && <FailedBand message={failure} />}
 
+{/* 비밀번호 칸을 제 form 안에 둔다 — 이 패널은 닫혀도 마운트돼 있어, form 이 없으면 크롬이 화면의 다른 글자 칸(필터 검색칸)을 아이디 칸으로 보고
+              로그인 아이디를 채웠다(2026-11-06 사용자 제보). Enter 로 보내지는 않는다 — 저장은 아래 버튼이 한다 */}
+          <form onSubmit={(e) => e.preventDefault()}>
           <FormGroup title="새 비밀번호 설정">
             <div className="flex flex-col gap-[8px]">
               <Field label="현재 비밀번호" required>
@@ -192,6 +195,7 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
               <FieldMessage id={messageId("newPasswordConfirm")} message={fieldError?.at === "newPasswordConfirm" ? fieldError.message : undefined} />
             </div>
           </FormGroup>
+          </form>
 
           <div className="flex justify-center gap-[6px]">
             <Button variant="off" onClick={handleClose} disabled={saving}>

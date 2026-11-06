@@ -4,7 +4,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Blocked, Button, Checkbox, ConfirmDialog, DataTable, Pagination, Select, useToast, type Column } from "@/components/common";
 import type { NotificationItem } from "@/lib/notifications";
-import { formatAt, relatedLabel, type NotificationQuery } from "@/lib/notification-view";
+import { formatDateTime } from "@/lib/format";
+import { type NotificationQuery } from "@/lib/notification-view";
 import { PAGE_SIZES } from "@/lib/staff-members";
 import { deleteAction, readAllAction } from "./actions";
 
@@ -88,16 +89,6 @@ export function NotificationList({
       ),
     },
     {
-      header: "",
-      width: "w-[40px]",
-      cell: (n) =>
-        n.isRead ? null : (
-          <span className="inline-block size-[8px] rounded-full bg-erp-off">
-            <span className="sr-only">미확인</span>
-          </span>
-        ),
-    },
-    {
       header: "알림",
       align: "left",
       // 제목 아래 둘째 줄에 내용(템플릿 둘째 줄)을 보인다(목업 notify/index.html 의 sub 줄). <Link> 대신 <a> 다 —
@@ -106,14 +97,24 @@ export function NotificationList({
         // 제목 · 내용 두 줄 사이를 띄운다 — 46px 줄 안에 줄간 없이 붙어 답답했다(2026-11-04 사용자 지적). 줄 높이 20 · 18px + 사이 3px, 위아래 7px 라
         // 이 표의 줄은 55px 로 조금 높다(한 줄짜리 표는 46px 그대로)
         <a href={`/notifications/${n.id}/open`} className="flex min-w-0 flex-col gap-[3px] py-[7px] hover:underline">
-          <span className={`truncate leading-[20px] ${n.isRead ? "text-erp-muted" : "font-semibold text-erp-ink"}`}>{n.title}</span>
-          {n.body && <span className="truncate text-[13px] leading-[18px] text-erp-muted">{n.body}</span>}
+          {/* 종 팝업과 같은 규칙(2026-11-06 사용자 지정): 제목은 읽어도 먹색, 안 읽은 것만 굵게 + 제목 앞 빨간 점(전엔 따로 둔 점 칸이라 왼쪽만 비었다).
+              내용은 14px 회색 */}
+          <span className={`flex min-w-0 items-center gap-[6px] leading-[20px] text-erp-ink ${n.isRead ? "font-medium" : "font-semibold"}`}>
+            {!n.isRead && (
+              <span className="size-[6px] shrink-0 rounded-full bg-erp-off">
+                <span className="sr-only">미확인</span>
+              </span>
+            )}
+            <span className="truncate">{n.title}</span>
+          </span>
+          {n.body && <span className="truncate text-[14px] leading-[18px] text-erp-label">{n.body}</span>}
         </a>
       ),
     },
-    { header: "관련 업무", width: "w-[140px]", cell: (n) => <span className="text-erp-muted">{relatedLabel(n.relatedType, n.relatedId)}</span> },
+    // 「관련 업무」(근로계약 #30) 열은 뺐다 — 내부 번호라 고객이 다른 화면에서 찾을 수 없다. 어떤 업무인지는 구분이 말하고, 누르면 그 화면으로 간다(2026-11-06 사용자 지정)
     { header: "구분", width: "w-[140px]", cell: (n) => <span className={NEUTRAL}>{n.kind}</span> },
-    { header: "일시", width: "w-[130px]", cell: (n) => <span className="font-mono text-erp-muted">{formatAt(n.createdAt)}</span> },
+    // 일시는 연도까지 「2026-11-03 14:31」, 글자는 표 기본(14px 먹색) — 고객지원 공지사항 목록 게시일과 같다(2026-11-06 사용자 지정 — 전엔 흐린 회색)
+    { header: "일시", width: "w-[160px]", cell: (n) => formatDateTime(n.createdAt) },
   ];
 
   return (

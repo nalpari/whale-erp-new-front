@@ -63,11 +63,12 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
             {
               label: "근로계약",
               value: (
+                // 「상태 · [근로계약 보기]」 — 전엔 「근로계약 #30」으로 내부 번호를 보였는데 고객이 다른 화면에서 찾을 수 없는 숫자라 뺐다(2026-11-06 사용자 지정, 3팀 확인 필요)
                 <span>
+                  {contract.status ? labelOf(contractStatuses, contract.status) : "-"} ·{" "}
                   <Link href={at(`/contracts/${contract.contractId}`)} className="text-erp-link hover:underline">
-                    근로계약 #{contract.contractId}
-                  </Link>{" "}
-                  · {contract.status ? labelOf(contractStatuses, contract.status) : "-"}
+                    근로계약 보기
+                  </Link>
                 </span>
               ),
             },
