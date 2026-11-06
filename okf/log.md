@@ -1,7 +1,8 @@
 # Bundle history
 
 ## 2026-11-06
-* **Update**: [점포 관리](/stores.md) · [BP 마스터 계정 관리](/bp.md) — 점포 · BP 마스터 목록 엑셀이 화면 표와 같은 열 · 순서로만 담기고(사업자정보 열 뺌), 서식이 9pt · 회색 가운데 머리글로 바뀐 것을 반영했다. 가리는 칸은 BP 마스터 연락처뿐이다(api glaceon, 2026-11-06 사용자 지정, front ponyta). front 코드는 바뀌지 않았다. 목업 점포 · BP 목록 안내 문구와 점포 상세 화면정의서 「대표자정보」(엑셀에서 가린다 → 엑셀에 담지 않는다)도 맞췄다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면 (구현)](/screens/staff-members.md) · [급여명세서 관리 화면 (구현)](/screens/payslips.md) — api glaceon(PR #255)의 openapi.json 으로 `src/lib/api-types.generated.ts` 를 다시 만들었다. 설명 주석만 바뀌었다 — 점포 · BP 엑셀 경로(표와 같은 열 · 가림), 점포 409 `OPEN_CHECK_IN`(「퇴근 기록이 없는 출근」). 타입은 그대로라 본문은 고칠 것이 없다(front ponyta).
+* **Update**: [점포 관리](/stores.md) · [BP 마스터 계정 관리](/bp.md) — 점포 · BP 마스터 목록 엑셀이 화면 표와 같은 열 · 순서로만 담기고(사업자정보 열 뺌), 서식이 9pt · 회색 가운데 머리글로 바뀐 것을 반영했다. 가리는 칸은 BP 마스터 연락처뿐이다(api glaceon, 2026-11-06 사용자 지정, front ponyta). front 화면 · 중계 코드는 바뀌지 않았다. 목업 점포 · BP 목록 안내 문구와 점포 상세 화면정의서 「대표자정보」(엑셀에서 가린다 → 엑셀에 담지 않는다)도 맞췄다.
 
 ## 2026-11-05
 * **Update**: [고객지원·커뮤니티](/support.md) · [Whale ERP Frontend](/whale-erp-front.md) · [BP 환경설정](/config.md) · [BP](/bp.md) · [운영 알림](/notify.md) · [점포 관리](/stores.md) · [직원](/staff.md) · [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #226 머지분을 맞췄다: support.md 에 「화면 문구 · 표시 규칙」 절(고객지원 빈 목록 한 문구, 체크박스 모두 체크 기본 · `_NONE`, 문의 등록 패널 문구 · 첨부 거절 「└ 까닭」, 문의상세 · 처리현황, 운영자 문의 상세 · 답변/메모 안내 · 문의자 · 점포 값 규칙 · 처리이력)을 더하고 「보낸 곳」→「문의자」, 나머지는 generated.at 갱신(2026-11-05 사용자 지정, front lotad).
