@@ -26,7 +26,7 @@ const momentBox = (kicker, { title, desc }, after) =>
   `<div class="flex flex-col gap-[10px] pt-[34px] pr-[34px] pb-[42px] pl-[44px] ${after ? "bg-guest-slate text-white" : "bg-guest-card text-guest-slate"}"><div class="flex flex-col gap-[4px]"><p class="text-[16px] leading-[1.5] font-semibold">${kicker}</p><p class="text-[28px] leading-[1.4] font-bold">${title}</p></div><p class="text-[16px] leading-[1.5] ${g.TRIM}">${desc}</p></div>`;
 
 const moments = (A, R) =>
-  `<section class="flex flex-col gap-[60px] px-[80px] pt-[120px]">${g.titleRow(
+  `<section class="${g.FRAME} flex flex-col gap-[60px] pt-[120px]">${g.titleRow(
     "사장님,",
     "이런 순간 있으셨죠?",
     `<div class="flex gap-[8px]">${g.button(A, "사업자 회원가입", { tone: "navy", href: link(R, "auth/signup.html"), arrow: true })}${g.button(A, "도입문의", { tone: "soft", href: link(R, "home/inquiry.html") })}</div>`,
@@ -81,7 +81,7 @@ const shortcuts = () =>
 
 // 사진과 글이 번갈아 좌우를 바꾼다. 바로가기로 내려왔을 때 위에 붙는 머리말(110px)에 가리지 않게 띄운다.
 const features = (A) =>
-  `<section class="flex flex-col gap-[60px] px-[80px] py-[120px]">${g.titleRow("매장운영,", "이렇게 달라집니다", shortcuts())}<div class="flex flex-col gap-[120px]">${FEATURES.map(
+  `<section class="${g.FRAME} flex flex-col gap-[60px] py-[120px]">${g.titleRow("매장운영,", "이렇게 달라집니다", shortcuts())}<div class="flex flex-col gap-[120px]">${FEATURES.map(
     (f, i) =>
       `<article id="${f.id}" class="flex scroll-mt-[130px] justify-center gap-[100px] ${i % 2 ? "flex-row-reverse" : ""}"><div class="relative h-[540px] w-[400px] shrink-0">${g.cover(A, `${S}/feature-photo.jpg`)}</div><div class="flex flex-col gap-[64px] pt-[44px] text-guest-ink"><span class="h-[5px] w-[80px] bg-guest-ink"></span><div class="flex flex-col gap-[32px]"><div class="flex flex-col gap-[18px]"><div class="flex flex-col gap-[8px]"><p class="text-[20px] leading-[1.5] font-semibold">${f.no}</p><h3 class="text-[34px] leading-[1.4] font-bold">${lines(f.title)}</h3></div><p class="text-[18px] leading-[1.5] font-semibold ${g.TRIM}">${lines(f.lead)}</p></div><p class="text-[18px] leading-[1.5] text-guest-body ${g.TRIM}">${lines(f.points)}</p></div></div></article>`,
   ).join("")}</div></section>`;
@@ -110,10 +110,10 @@ const FLOW = [
 ];
 
 const flow = (A) =>
-  `<section class="relative flex flex-col gap-[60px] overflow-hidden bg-guest-ink px-[80px] py-[120px]">${g.cover(A, `${S}/flow-bg.png`, "object-cover object-bottom")}<span class="absolute inset-0 bg-[rgba(37,37,37,0.8)]"></span><div class="relative">${g.sectionTitle("채용부터 월급날까지,", "끊김 없이", true)}</div><ol class="relative grid grid-cols-5 gap-[32px]">${FLOW.map(
+  `<section class="relative overflow-hidden bg-guest-ink py-[120px]">${g.cover(A, `${S}/flow-bg.png`, "object-cover object-bottom")}<span class="absolute inset-0 bg-[rgba(37,37,37,0.8)]"></span><div class="${g.FRAME} relative flex flex-col gap-[60px]">${g.sectionTitle("채용부터 월급날까지,", "끊김 없이", true)}<ol class="grid grid-cols-5 gap-[32px]">${FLOW.map(
     (s) =>
       `<li class="flex flex-col items-center gap-[24px] rounded-[16px] border border-white/10 py-[42px] text-center backdrop-blur-[12px]">${g.layeredIcon(A, s.icon)}<div class="flex flex-col gap-[8px] leading-[1.5]"><h3 class="text-[24px] font-semibold text-[#fafafa]">${s.title}</h3><p class="text-[18px] text-[#ccc]">${s.desc}</p></div></li>`,
-  ).join("")}</ol></section>`;
+  ).join("")}</ol></div></section>`;
 
 const addOns = (A, R) => {
   const items = [
@@ -122,7 +122,7 @@ const addOns = (A, R) => {
     { name: "발주 관리", desc: "필요한 식자재나 물품을 본사나 거래처별로 손쉽게 발주", icon: g.orderIcon(A, `${S}/addon-mail-back.svg`, `${S}/addon-mail-front.svg`) },
     { name: "레시피 관리", desc: "가맹점의 메뉴 정보와 레시피를 본사에서 관리", icon: g.recipeIcon(A, `${S}/addon-bookmark.svg`) },
   ];
-  return `<section class="flex flex-col gap-[60px] px-[80px] pt-[120px]">${g.titleRow(
+  return `<section class="${g.FRAME} flex flex-col gap-[60px] pt-[120px]">${g.titleRow(
     "함께 쓰면",
     "더 편해지는 부가서비스",
     g.button(A, "부가서비스 전체 보기", { tone: "navy", href: link(R, "home/add-on-services.html"), arrow: true }),

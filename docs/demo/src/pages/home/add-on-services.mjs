@@ -41,7 +41,7 @@ const CARD = "rounded-[30px] border border-guest-line bg-white px-[32px] py-[40p
 const lines = (list) => list.map((l) => `<span class="block">${l}</span>`).join("");
 
 const serviceSection = (A, R, { light, desc, services, last = false }) =>
-  `<section class="flex flex-col gap-[60px] px-[80px] pt-[120px] ${last ? "pb-[120px]" : ""}"><div class="flex items-end justify-between gap-[18px]"><div class="flex flex-col gap-[18px]">${g.sectionTitle(light, "부가서비스")}<p class="text-[18px] leading-[1.5] font-medium text-guest-ink">${desc[0]}<br>${desc[1]}</p></div><div class="flex gap-[8px]">${g.button(A, "요금 안내 보기", { tone: "navy", arrow: true })}${g.button(A, "도입문의", { tone: "soft", href: link(R, "home/inquiry.html") })}</div></div><ul class="grid grid-cols-5 gap-[16px]">${services
+  `<section class="${g.FRAME} flex flex-col gap-[60px] pt-[120px] ${last ? "pb-[120px]" : ""}"><div class="flex items-end justify-between gap-[18px]"><div class="flex flex-col gap-[18px]">${g.sectionTitle(light, "부가서비스")}<p class="text-[18px] leading-[1.5] font-medium text-guest-ink">${desc[0]}<br>${desc[1]}</p></div><div class="flex gap-[8px]">${g.button(A, "요금 안내 보기", { tone: "navy", arrow: true })}${g.button(A, "도입문의", { tone: "soft", href: link(R, "home/inquiry.html") })}</div></div><ul class="grid grid-cols-5 gap-[16px]">${services
     .map(
       (s) =>
         `<li class="flex flex-col gap-[4px] ${CARD}"><span class="flex h-[88px] items-center pb-[14px]">${s.icon}</span><div class="flex flex-col gap-[10px]"><h3 class="text-[22px] leading-[1.5] font-extrabold text-[#222]">${s.name}</h3><div class="flex flex-col gap-[18px]"><p class="text-[16px] leading-[1.5] text-[#505050]">${lines(s.desc)}</p>${badges(s.badges)}</div></div></li>`,
@@ -92,10 +92,10 @@ const EXPANSIONS = [
 
 // 이 섹션만 굵은 줄이 위에 온다.
 const expansions = (A) =>
-  `<section class="relative flex flex-col gap-[60px] overflow-hidden bg-guest-ink px-[80px] py-[120px]">${g.cover(A, "store-operations/flow-bg.png", "object-cover object-bottom")}<span class="absolute inset-0 bg-[rgba(37,37,37,0.8)]"></span><h2 class="relative text-[52px] leading-[1.2] tracking-[-0.025em] text-white"><span class="block font-bold">확장 옵션</span><span class="block font-normal">매장이 커지는 만큼 한도를 늘리세요</span></h2><ul class="relative grid grid-cols-3 gap-[28px]">${EXPANSIONS.map(
+  `<section class="relative overflow-hidden bg-guest-ink py-[120px]">${g.cover(A, "store-operations/flow-bg.png", "object-cover object-bottom")}<span class="absolute inset-0 bg-[rgba(37,37,37,0.8)]"></span><div class="${g.FRAME} relative flex flex-col gap-[60px]"><h2 class="text-[52px] leading-[1.2] tracking-[-0.025em] text-white"><span class="block font-bold">확장 옵션</span><span class="block font-normal">매장이 커지는 만큼 한도를 늘리세요</span></h2><ul class="grid grid-cols-3 gap-[28px]">${EXPANSIONS.map(
     (e) =>
       `<li class="flex gap-[24px] rounded-[16px] border border-white/10 px-[48px] py-[42px] backdrop-blur-[12px]">${g.layeredIcon(A, e.icon)}<div class="flex flex-1 flex-col gap-[8px] leading-[1.5]"><h3 class="text-[24px] font-semibold text-[#fafafa]">${e.name}</h3><p class="text-[18px] text-[#ccc]">${e.desc}</p></div></li>`,
-  ).join("")}</ul></section>`;
+  ).join("")}</ul></div></section>`;
 
 const SUBSCRIPTION = [
   { title: "기본은 점포 단위", desc: ["부가서비스는 점포마다 필요한 것만 구독합니다.", "발주 관리와 점포수 추가는 사업자(본사) 단위로 구독합니다."] },
@@ -104,7 +104,7 @@ const SUBSCRIPTION = [
 ];
 
 const subscription = () =>
-  `<section class="flex flex-col gap-[60px] px-[80px] pt-[120px]">${g.sectionTitle("WHALE ERP", "구독 안내")}<ul class="grid grid-cols-3 gap-[16px]">${SUBSCRIPTION.map(
+  `<section class="${g.FRAME} flex flex-col gap-[60px] pt-[120px]">${g.sectionTitle("WHALE ERP", "구독 안내")}<ul class="grid grid-cols-3 gap-[16px]">${SUBSCRIPTION.map(
     (s) => `<li class="flex flex-col gap-[10px] ${CARD}"><h3 class="text-[22px] leading-[1.5] font-extrabold text-[#222]">${s.title}</h3><p class="text-[16px] leading-[1.5] text-[#505050]">${lines(s.desc)}</p></li>`,
   ).join("")}</ul></section>`;
 

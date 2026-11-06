@@ -41,7 +41,7 @@ const FEATURES = [
   { title: "부가서비스", href: "home/add-on-services.html", lines: ["POS · KIOSK 주문·결제", "테이블·픽업·QR 주문", "발주·재고·레시피 관리"] },
 ];
 
-const features = (A, R) => `<section class="flex flex-col gap-[60px] bg-white px-[80px] pt-[160px]">${g.sectionTitle("매장 운영,", "네 가지면 충분합니다")}<div class="grid grid-cols-4 gap-[16px]">${FEATURES.map(
+const features = (A, R) => `<section class="${g.FRAME} flex flex-col gap-[60px] bg-white pt-[160px]">${g.sectionTitle("매장 운영,", "네 가지면 충분합니다")}<div class="grid grid-cols-4 gap-[16px]">${FEATURES.map(
   (f) => `<div class="flex flex-col gap-[32px] rounded-[16px] bg-guest-card py-[38px] pl-[72px] text-guest-navy">${calendarIcon}<div class="flex flex-col items-start"><h3 class="text-[32px] leading-[1.6] font-bold">${f.title}</h3><p class="pb-[20px] text-[18px] leading-[1.7]">${f.lines.map((l) => `<span class="block">${l}</span>`).join("")}</p>${g.button(A, "자세히 보기", { tone: "white", href: f.href ? link(R, f.href) : "#", arrow: true })}</div></div>`,
 ).join("")}</div></section>`;
 
@@ -84,7 +84,7 @@ const PERSONAS = [
 
 // 내용은 띠 바로 아래부터 채우고 버튼만 바닥에 붙인다. 어느 카드의 줄이 꺾여도 제목 줄과 버튼 줄이 카드끼리 맞는다.
 // pitch 글자는 카드 안쪽 폭에 맞춰 1920 에서 32px, 1720 에서 27.6px 로 줄인다 — 안 줄이면 첫 줄이 넘쳐 세 줄이 된다.
-const personas = (A, R) => `<section class="flex flex-col gap-[60px] px-[80px] pt-[125px] pb-[120px]">${g.sectionTitle("당신은,", "어떤 사장님이신가요?")}<div class="grid grid-cols-4 gap-x-[16px] gap-y-[38px]">${PERSONAS.map(
+const personas = (A, R) => `<section class="${g.FRAME} flex flex-col gap-[60px] pt-[125px] pb-[120px]">${g.sectionTitle("당신은,", "어떤 사장님이신가요?")}<div class="grid grid-cols-4 gap-x-[16px] gap-y-[38px]">${PERSONAS.map(
   (p, i) => `<div class="flex gap-[10px] pl-[2px] text-guest-ink"><span class="text-[16px] leading-[2.3] font-bold">${no(i)}</span><span class="leading-[1.6]"><strong class="block text-[24px] font-bold">${p.head}</strong><span class="text-[18px]">${p.kind}</span></span></div>`,
 ).join("")}${PERSONAS.map(
   (p) => `<article class="flex flex-col rounded-b-[6px] border border-guest-line"><span class="h-[6px] bg-guest-navy"></span><div class="flex flex-1 flex-col gap-[30px] px-[34px] pt-[80px] pb-[34px]"><div class="flex flex-col gap-[25px] font-semibold text-guest-navy"><p class="text-[16px] leading-[1.6] ${TRIM}">${p.kind}</p><p class="text-[clamp(26px,calc(2.222vw-10.67px),32px)] leading-[1.3] ${TRIM}">${p.pitch[0]}<br>${p.pitch[1]}</p></div><div class="flex flex-1 flex-col gap-[32px]"><div class="flex flex-col gap-[24px] text-[16px]"><div class="flex flex-col gap-[22px]"><p class="leading-[1.6] font-semibold text-guest-ink ${TRIM}">이런 기능부터 써보세요</p><p class="leading-[1.6] text-guest-body ${TRIM}">${p.features.map((l) => `<span class="block">${l}</span>`).join("")}</p></div><div class="flex flex-col gap-[22px] border-t border-[#e7e7e7] pt-[24px]"><p class="leading-[1.6] font-semibold text-guest-ink ${TRIM}">함께 쓰면 좋은 부가서비스</p>${divided(p.services, "text-guest-body")}</div></div><div class="mt-auto flex">${g.button(A, p.cta, { tone: "navy", href: p.href ? link(R, p.href) : "#", arrow: true, grow: true })}</div></div></div></article>`,
@@ -115,9 +115,9 @@ const CONNECTIONS = [
   },
 ];
 
-const connections = (A) => `<section class="relative flex flex-col gap-[80px] overflow-hidden bg-guest-ink px-[80px] py-[120px]">${g.cover(A, "connect-bg.png", "object-cover object-bottom")}<div class="relative">${g.sectionTitle("가입 한 번으로,", "매장 전체가 연결됩니다", true)}</div><div class="relative grid grid-cols-3 gap-[34px]">${CONNECTIONS.map(
+const connections = (A) => `<section class="relative overflow-hidden bg-guest-ink py-[120px]">${g.cover(A, "connect-bg.png", "object-cover object-bottom")}<div class="${g.FRAME} relative flex flex-col gap-[80px]">${g.sectionTitle("가입 한 번으로,", "매장 전체가 연결됩니다", true)}<div class="grid grid-cols-3 gap-[34px]">${CONNECTIONS.map(
   (c) => `<div class="flex flex-col gap-[34px]"><div class="relative flex h-[348px] items-end overflow-hidden rounded-[16px] pb-[22px] pl-[26px]">${c.under ? g.cover(A, c.under) : ""}${g.cover(A, "connect-photo.png")}<span class="relative text-[24px] leading-[1.6] font-bold tracking-normal text-white">${c.label}</span></div><div class="flex flex-col gap-[8px] pl-[2px] text-[17px] text-[#afafaf]"><h3 class="text-[24px] leading-[1.6] font-semibold text-[#f5f5f5]">${c.title}</h3><p class="leading-[1.5]">${c.desc[0]}<br>${c.desc[1]}</p>${divided(c.tags, "pt-[8px]")}</div></div>`,
-).join("")}</div></section>`;
+).join("")}</div></div></section>`;
 
 // 시안이 줄을 직접 나눈 설명은 줄마다 나눠 둔다.
 const STEPS = [
@@ -127,7 +127,7 @@ const STEPS = [
 ];
 
 // 시안의 줄바꿈은 1920 폭에서만 둔다. 좁으면 그 줄이 한 번 더 꺾여 「끝.」 같은 낱말이 홀로 남는다.
-const steps = (A, R) => `<section class="flex flex-col gap-[60px] px-[80px] py-[120px]">${g.titleRow("시작은", "세 단계면 충분합니다", g.button(A, "가입하고 시작하기", { tone: "navy", href: link(R, "auth/signup.html"), arrow: true }))}<ol class="grid grid-cols-3 gap-[24px]">${STEPS.map(
+const steps = (A, R) => `<section class="${g.FRAME} flex flex-col gap-[60px] py-[120px]">${g.titleRow("시작은", "세 단계면 충분합니다", g.button(A, "가입하고 시작하기", { tone: "navy", href: link(R, "auth/signup.html"), arrow: true }))}<ol class="grid grid-cols-3 gap-[24px]">${STEPS.map(
   (s, i) => `<li class="flex gap-[42px] rounded-[16px] border border-guest-line bg-white px-[42px] pt-[48px] pb-[42px]"><div class="flex flex-1 flex-col items-start gap-[26px]"><span class="rounded-full bg-guest-step px-[14px] py-[12px] text-[16px] leading-[1.5] font-bold tracking-normal text-white ${TRIM}">STEP ${no(i)}</span><div class="flex flex-col gap-[20px] pl-[4px] leading-[1.5]"><h3 class="text-[24px] font-semibold text-guest-navy ${TRIM}">${s.title}</h3><p class="text-[17px] text-guest-body ${TRIM}">${s.desc.join(' <br class="hidden min-[1920px]:inline">')}</p></div></div><span class="self-end">${mailIcon(A)}</span></li>`,
 ).join("")}</ol></section>`;
 
@@ -154,7 +154,7 @@ const PLANS = [
   },
 ];
 
-const plans = (A, R) => `<section class="flex flex-col gap-[60px] px-[80px] pb-[120px]">${g.titleRow("처음엔 가볍게,", "필요할 때 더하세요", g.button(A, "요금제 자세히 보기", { tone: "navy", arrow: true }))}<div class="grid grid-cols-2 gap-[16px]">${PLANS.map(
+const plans = (A, R) => `<section class="${g.FRAME} flex flex-col gap-[60px] pb-[120px]">${g.titleRow("처음엔 가볍게,", "필요할 때 더하세요", g.button(A, "요금제 자세히 보기", { tone: "navy", arrow: true }))}<div class="grid grid-cols-2 gap-[16px]">${PLANS.map(
   (plan) => `<article class="flex flex-col gap-[48px] rounded-b-[6px] border border-guest-line pb-[34px]"><span class="h-[6px] bg-guest-navy"></span><div class="flex flex-col gap-[34px] px-[34px]"><div><div class="flex items-center justify-between gap-[18px]"><p class="text-[16px] leading-[1.6] font-semibold tracking-normal text-guest-navy ${TRIM}">${plan.kicker}</p>${g.button(A, plan.cta, { tone: "outline", href: plan.href ? link(R, plan.href) : "#", arrow: true })}</div><div class="flex flex-col gap-[22px] text-guest-navy"><h3 class="text-[32px] leading-[1.3] font-semibold ${TRIM}">${plan.name}</h3><p class="text-[16px] leading-[1.6] font-medium ${TRIM}">${plan.summary}</p></div></div><div class="flex flex-col gap-[18px]"><div class="flex h-[17px] items-center gap-[14px] whitespace-nowrap"><h4 class="text-[24px] leading-[1.6] font-semibold text-guest-ink ${TRIM}">${plan.listTitle}</h4>${plan.note ? `<span class="text-[16px] leading-[1.5] font-medium text-[#e0914a]">${plan.note}</span>` : ""}</div><ul class="flex flex-col gap-[12px] border-t border-guest-list-line pt-[24px] text-[17px] leading-[1.5] text-[#222]">${plan.items.map(
     (item) => `<li class="flex items-center gap-[11px] px-px">${g.gimg(A, "check-circle.svg", 18, 18)}${item}</li>`,
   ).join("")}</ul></div></div></article>`,
@@ -184,7 +184,7 @@ const boardHead = (A, text, action, href = "#") =>
   `<div class="flex items-center justify-between gap-[18px]"><p class="text-[22px] leading-[1.6] font-medium text-guest-ink ${TRIM}">${text}</p>${g.button(A, action, { tone: "outline", href, arrow: true })}</div>`;
 
 // FAQ 는 name 을 같이 준 <details> 라 하나를 열면 나머지가 닫힌다(앱과 같은 네이티브 동작).
-const boards = (A, R) => `<section class="grid grid-cols-2 gap-[16px] px-[80px]"><div class="flex flex-col gap-[60px]">${g.sectionTitle("시작 전에,", "가장 많이 묻는 질문")}<div class="flex flex-1 flex-col gap-[34px] rounded-[6px] border border-guest-line bg-white p-[34px]">${boardHead(A, "궁금한 점이 더 있다면 언제든 편하게 물어보세요.", "전체 질문 보기", link(R, "home/notices.html#faq"))}<div class="flex flex-col gap-[8px]">${FAQS.map(
+const boards = (A, R) => `<section class="${g.FRAME} grid grid-cols-2 gap-[16px]"><div class="flex flex-col gap-[60px]">${g.sectionTitle("시작 전에,", "가장 많이 묻는 질문")}<div class="flex flex-1 flex-col gap-[34px] rounded-[6px] border border-guest-line bg-white p-[34px]">${boardHead(A, "궁금한 점이 더 있다면 언제든 편하게 물어보세요.", "전체 질문 보기", link(R, "home/notices.html#faq"))}<div class="flex flex-col gap-[8px]">${FAQS.map(
   (faq) => `<details name="guest-faq"${faq.a !== null ? " open" : ""} class="group rounded-[3px] bg-[#fafafa] pb-[4px] open:bg-[#f5f5f5]"><summary class="flex cursor-pointer px-[20px] pt-[22px] pb-[18px] list-none items-center gap-[11px] text-[17px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy ${HOVER} [&::-webkit-details-marker]:hidden"><span class="flex size-[28px] shrink-0 items-center justify-center rounded-full bg-guest-navy text-[18px] font-bold tracking-normal text-white">Q</span><span class="flex-1">${faq.q}</span>${g.gimg(A, "faq-plus.svg", 28, 28, "group-open:hidden")}${g.gimg(A, "faq-close.svg", 28, 28, "hidden group-open:block")}</summary>${faq.a ? `<p class="pr-[20px] pb-[18px] pl-[60px] text-[16px] leading-[1.5] text-guest-sub">${faq.a}</p>` : ""}</details>`,
 ).join("")}</div></div></div><div class="flex flex-col gap-[60px]">${g.sectionTitle("Whale ERP", "새로운 소식 안내")}<div class="flex flex-1 flex-col gap-[32px] rounded-[6px] border border-guest-line bg-white p-[34px]">${boardHead(A, "Whale ERP의 새로운 소식을 알려 드립니다.", "전체 보기", link(R, "home/notices.html"))}<ul class="border-t border-guest-list-line text-[17px] leading-[1.5]">${NEWS.map(
   (n) => `<li class="flex items-center gap-[8px] border-b border-guest-list-line py-[18px] last:border-b-0">${n.badge ? `<span class="flex h-[30px] items-center rounded-[3px] px-[10px] text-[15px] leading-[1.4] font-semibold ${n.badge.cls}">${n.badge.text}</span>` : ""}<a href="${link(R, "home/notice-detail.html")}" class="flex-1 text-guest-ink hover:text-guest-navy ${HOVER}">${n.title}</a><span class="text-guest-sub">2026.10.30</span></li>`,

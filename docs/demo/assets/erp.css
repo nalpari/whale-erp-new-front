@@ -1367,6 +1367,9 @@
   .max-w-\[1680px\] {
     max-width: 1680px;
   }
+  .max-w-\[1760px\] {
+    max-width: 1760px;
+  }
   .max-w-\[calc\(100vw-32px\)\] {
     max-width: calc(100vw - 32px);
   }
