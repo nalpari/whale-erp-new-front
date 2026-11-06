@@ -2,6 +2,7 @@
 
 import { Button, ReadonlyCard, ReadonlyValue } from "@/components/common";
 import { logout } from "@/app/actions";
+import { signOut } from "@/lib/bff";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useAccount, useMenus, useMyPageOpen } from "@/components/site/session-gate";
 import { firstMenuUrl } from "@/lib/menus";
@@ -45,11 +46,9 @@ export function NoMenuNotice() {
         <Button variant="soft" onClick={() => setMyPageOpen(true)}>
           내정보 관리
         </Button>
-        <form action={logout}>
-          <Button type="submit" variant="off">
-            로그아웃
-          </Button>
-        </form>
+        <Button variant="off" onClick={() => void signOut(logout)}>
+          로그아웃
+        </Button>
       </div>
     </section>
   );

@@ -3,6 +3,7 @@
 import { unstable_rethrow } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type MouseEvent, type RefObject } from "react";
 import { logoutAfterWithdrawal } from "@/app/actions";
+import { signOut } from "@/lib/bff";
 import { Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
 import { IN_PROGRESS_CONTRACTS_HREF, moveTargetOf, withdrawFormField, withdrawWarningText, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
 import { useCanOpen, useCodes, useCurrentBp, useStores } from "./session-gate";
@@ -146,7 +147,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
   const handleClose = () => {
     if (saving || confirmOpen) return;
     if (step === "done") {
-      void logoutAfterWithdrawal();
+      void signOut(logoutAfterWithdrawal);
       return;
     }
     onClose();
@@ -191,9 +192,9 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
           // 재시도한 경우도 여기로 온다(탈퇴 쪽 execute()가 커밋과 같은 트랜잭션에서 세션을 revoke 한다).
           // 되돌릴 수 없는 동작이라 "실패"로 남겨 다시 시도하게 하면 안 된다 — 바로 로그아웃으로 보낸다
           // (ip-code-review-claude 블로커 #2, 2026-10-27). 탈퇴를 마쳤을 수 있어 완료 화면의 [확인]과 같이 로그인 전 홈으로 간다(logoutAfterWithdrawal).
-          // 기다려서, 액션 요청이 실패하면(연결 끊김) 아래 catch 의 띠로 알린다
+          // signOut 으로 부른다 — 실패하면 알린다
           if (result.status === 401) {
-            await logoutAfterWithdrawal();
+            await signOut(logoutAfterWithdrawal);
             return;
           }
           const field = withdrawFormField(result.status, result.message);
@@ -396,10 +397,10 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
               회원 탈퇴 완료 안내 메일이 등록된 이메일로 발송되었습니다.
             </p>
           </div>
-          {/* admin-header.tsx 의 UserPop 로그아웃 항목과 같은 호출 방식(<form action={}>)이지만, 탈퇴 뒤라 logoutAfterWithdrawal(→ /)을 부른다. */}
-          <form action={logoutAfterWithdrawal} className="flex justify-center gap-[6px]">
-            <Button type="submit">확인</Button>
-          </form>
+          {/* 탈퇴 뒤라 logoutAfterWithdrawal(→ /)을 signOut 으로 부른다. */}
+          <div className="flex justify-center gap-[6px]">
+            <Button onClick={() => void signOut(logoutAfterWithdrawal)}>확인</Button>
+          </div>
         </>
       )}
 

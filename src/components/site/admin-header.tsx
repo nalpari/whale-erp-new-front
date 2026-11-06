@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useEffectEvent, useState, type ReactNode } from "react";
 import { ConfirmDialog, GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
+import { signOut } from "@/lib/bff";
 import { bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
 import type { ServiceCode } from "@/lib/browser-storage";
 import { entryUrlOf, findMenu, firstMenuUrl, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
@@ -60,7 +61,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   ];
   // 회원 탈퇴는 BP 마스터(BM)에게만 보인다(S-JHQQNR) — 다른 유형은 항목 자체가 없다.
   const withdraw: UserPopItem[] = service === "WHALE_ERP" && account.roleTypeCode === "BM" ? [{ label: "회원 탈퇴", onSelect: () => setWithdrawOpen(true) }] : [];
-  const userItems: UserPopItem[] = [...mine, ...withdraw, { label: "로그아웃", action: logout, danger: true }];
+  const userItems: UserPopItem[] = [...mine, ...withdraw, { label: "로그아웃", onSelect: () => void signOut(logout), danger: true }];
 
   return (
     <GlobalHeader

@@ -55,7 +55,7 @@ test("signOut — 연결 끊김 · notFound 는 실패로 알리고 false", asyn
   try {
     assert.equal(await signOut(() => Promise.reject(new TypeError("fetch failed"))), false);
     assert.equal(await signOut(() => Promise.reject(thrown(() => notFound()))), false);
-    assert.deepEqual(s.alerts, ["로그아웃하지 못했습니다. 다시 시도해 주세요.", "로그아웃하지 못했습니다. 다시 시도해 주세요."]);
+    assert.deepEqual(s.alerts, ["로그아웃하지 못했습니다. 새로고침 후 다시 시도해 주세요.", "로그아웃하지 못했습니다. 새로고침 후 다시 시도해 주세요."]);
   } finally {
     s.restore();
   }

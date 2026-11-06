@@ -26,7 +26,8 @@ export async function signOut(logout: () => Promise<void>): Promise<boolean> {
   } catch (e) {
     if (isActionRedirect(e)) return true;
     console.error("로그아웃 실패", logout.name, e);
-    alert("로그아웃하지 못했습니다. 다시 시도해 주세요.");
+    // 새로 고침을 안내한다 — 배포 직후 옛 화면은 새로 고쳐야만 서버 액션을 찾는다
+    alert("로그아웃하지 못했습니다. 새로고침 후 다시 시도해 주세요.");
     return false;
   }
 }
