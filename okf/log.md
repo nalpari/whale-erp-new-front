@@ -1,6 +1,10 @@
 # Bundle history
 
 ## 2026-11-06
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 이동 때 이전 화면 스냅숏을 모두 그리지 않고 새 본문만 떠오르게 했다. 사파리에서 홈이 전환 내내 새 화면 아래 남던 것(화면 녹화로 확인) 대응. 앱 · 데모.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 이동 때 화면 전체 스냅숏(old root)을 바로 지운다. 사파리에서 이전 화면이 남아 겹쳐 보이던 것 대응(앱 · 데모).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 기본 바탕을 흰색으로 고정했다(다크 모드에서 #0a0a0a 로 바뀌던 템플릿 설정 삭제, html 에도 깔음). 앱 · 데모.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 이동 때 이전 화면이 새 화면 아래 겹쳐 보이던 것을 고쳤다. 나가는 본문 애니메이션을 reverse 대신 전용 `guest-fade-out` 으로 바꿨다(앱 · 데모).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 매장운영을 Figma 로그인전_공유(44:661)에 맞췄다: 기능 사진 넷 교체, 「끊김 없이」 카드 바탕, 부가서비스 가로 카드 셋(점포 재고 · 예약 · 대기 순번). 달력 아이콘을 공용으로 옮기고 안 쓰는 그림을 지웠다. 데모 같이 반영.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 메인 첫 화면의 고래가 위아래로 천천히 떠다니게 했다(`guest-whale`, 움직임 줄이기에서는 멈춤). 데모 같이 반영.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 메인을 Figma 로그인전_공유(44:2)에 맞췄다: 회색 바탕 구역, 기능 카드 3D 아이콘 · 회청 버튼, 연결 구역 사진 교체, 세 단계 아이콘, 「도입문의」 · 「요금제 자세히 보기」 제거. 데모 같이 반영, 안 쓰는 그림 삭제.

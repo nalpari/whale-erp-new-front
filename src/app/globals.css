@@ -56,35 +56,37 @@
   --color-guest-button-line: #e0e5e9;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* 기본 바탕은 운영체제가 다크 모드여도 흰색이다 — 화면들이 밝은 테마 하나뿐이다. 다크 모드에서 바탕이 #0a0a0a 로 바뀌던
+   템플릿 설정을 지웠다. html 에도 깔아, 화면 이동 전환 중 두 화면 사이 빈틈에 어두운 바탕이 비치지 않게 한다(2026-11-06). */
+html,
 body {
   background: var(--background);
+}
+body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* 비로그인 화면 사이 이동(design/guest 의 GuestPage). 나가는 본문은 빠르게 흐려지고(150ms), 들어오는 본문은
-   그 뒤를 이어 10px 아래에서 떠오른다(300ms). 머리말은 기준점으로 제자리에 둔다. 곡선은 ERP 와 같은 감속 곡선이다. */
-::view-transition-old(.guest-page) {
-  animation: 150ms cubic-bezier(0.23, 1, 0.32, 1) both guest-fade reverse;
+/* 비로그인 화면 사이 이동(design/guest 의 GuestPage). 이전 화면은 전환이 시작되면 바로 빠지고, 들어오는 본문이
+   10px 아래에서 흐려진 채 떠오른다(300ms). 머리말은 기준점으로 제자리에 둔다. 곡선은 ERP 와 같은 감속 곡선이다.
+   이전 화면 스냅숏은 모두(본문 · 바탕 · 머리말) 그리지 않는다 — 사파리는 긴 본문(홈)의 이전 화면 스냅숏에 애니메이션을
+   걸지 못해 전환이 끝날 때까지 새 화면 아래 그대로 남았다(2026-11-06 화면 녹화로 확인). 이름 대신 old(*) 에 걸어
+   어떤 스냅숏이든 남지 않게 한다. 전에 두던 150ms 흐려짐(guest-fade-out)은 이 때문에 뺐다. */
+::view-transition-old(*) {
+  display: none;
 }
 ::view-transition-new(.guest-page) {
   animation:
-    300ms cubic-bezier(0.23, 1, 0.32, 1) 100ms both guest-fade,
-    300ms cubic-bezier(0.23, 1, 0.32, 1) 100ms both guest-rise;
+    300ms cubic-bezier(0.23, 1, 0.32, 1) both guest-fade,
+    300ms cubic-bezier(0.23, 1, 0.32, 1) both guest-rise;
+}
+/* 본문 밖(바탕 · 푸터) 새 화면은 움직이지 않고 그대로 보인다. */
+::view-transition-new(root) {
+  animation: none;
 }
 ::view-transition-group(guest-header) {
   animation: none;
   z-index: 100;
-}
-::view-transition-old(guest-header) {
-  display: none;
 }
 ::view-transition-new(guest-header) {
   animation: none;
