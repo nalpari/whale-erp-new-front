@@ -134,7 +134,7 @@ export type PostField = "type" | "title" | "body" | "audiences" | "period" | "at
  * 필수 · 유형 · 카테고리 · 첨부 개수 문구는 api 와 같다. 게시 기간 · 노출 대상 문구는 화면 것이다(2026-11-06 사용자 지정 — api 문구와 다르다),
  * 길이 · 파일 종류 · 크기 문구도 화면 것이다. kept 는 남겨 둘 기존 첨부 수(수정), files 는 새로 더할 파일이다.
  */
-export function postFieldErrors(f: PostForm, status: PostStatus, kept: number, files: readonly NewFile[]): [PostField, string][] {
+export function postFieldErrors(f: PostForm, status: PostStatus, kept: number, files: readonly NewFile[], postedDate?: string): [PostField, string][] {
   const errors: [PostField, string][] = [];
   const notice = f.kind === "NOTICE";
   if (notice && !f.noticeType) errors.push(["type", "공지사항 유형을 선택해 주세요."]);
@@ -151,7 +151,9 @@ export function postFieldErrors(f: PostForm, status: PostStatus, kept: number, f
     }
   }
   // YYYY-MM-DD 는 글자 순서가 날짜 순서다.
-  if (notice && f.publishStartDate && f.publishEndDate && f.publishEndDate < f.publishStartDate) errors.push(["period", "게시 종료일은 시작일 이후로 선택해 주세요."]);
+  // 시작일을 비우면 api 가 등록일을 게시일로 쓴다 — 그때는 postedDate(새 글은 오늘, 그 밖은 등록일)와 견준다. 지난 종료일만 넣고 게시하면 사용자 화면에 한 번도 나오지 않았다(리뷰 반영)
+  const start = f.publishStartDate || (status === "PUBLISHED" ? postedDate : undefined);
+  if (notice && start && f.publishEndDate && f.publishEndDate < start) errors.push(["period", "게시 종료일은 시작일 이후로 선택해 주세요."]);
   if (status === "PUBLISHED" && f.audiences.length === 0) errors.push(["audiences", "노출대상을 선택해주세요."]);
   return errors;
 }
