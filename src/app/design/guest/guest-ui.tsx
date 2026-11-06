@@ -127,7 +127,7 @@ export function GuestVisual({ eyebrow, title, children }: { eyebrow: string; tit
 // category 는 질문 앞의 카테고리 이름(공지사항 FAQ #294). 답변 평문의 줄바꿈은 그대로 살린다.
 export function FaqItem({ q, category, open = false, children }: { q: string; category?: string; open?: boolean; children?: ReactNode }) {
   return (
-    <details name="guest-faq" open={open} className="group rounded-[3px] bg-[#fafafa] pb-[4px] open:bg-[#f5f5f5]">
+    <details name="guest-faq" open={open} className="group rounded-[3px] bg-guest-surface pb-[4px] open:bg-[#f5f5f5]">
       <summary className={`flex cursor-pointer px-[20px] pt-[22px] pb-[18px] list-none items-center gap-[11px] text-[17px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy ${HOVER} [&::-webkit-details-marker]:hidden`}>
         <span className="flex size-[28px] shrink-0 items-center justify-center rounded-full bg-guest-navy text-[18px] font-bold tracking-normal text-white">Q</span>
         {category && <span className="shrink-0 text-[15px] font-medium text-guest-sub">{category}</span>}

@@ -183,7 +183,7 @@ function Expansions() {
   return (
     <section className="relative overflow-hidden bg-guest-ink py-[120px]">
       <Image src="/guest/store-operations/flow-bg.png" alt="" fill sizes="100vw" className="object-cover object-bottom" />
-      <span className="absolute inset-0 bg-[rgba(31,31,31,0.8)]" />
+      <span className="absolute inset-0 bg-guest-scrim" />
       {/* 배경 그림은 구역 전체를 채우고, 내용만 1760 틀에 담는다. */}
       <div className={`${FRAME} relative flex flex-col gap-[60px]`}>
         {/* 이 섹션만 굵은 줄이 위에 온다. */}
@@ -216,7 +216,7 @@ const SUBSCRIPTION = [
 // 회색 바탕 구역이 푸터에 바로 붙는다 — 화면은 GuestPage flush 로 감싼다. 카드는 흰 바탕 16px 모서리다(44:2217).
 function Subscription() {
   return (
-    <section className="bg-[#fafafa] pt-[120px] pb-[60px]">
+    <section className="bg-guest-surface pt-[120px] pb-[60px]">
       <div className={`${FRAME} flex flex-col gap-[60px]`}>
         <SectionTitle light="WHALE ERP" bold="구독 안내" />
         <ul className="grid grid-cols-3 gap-[16px]">

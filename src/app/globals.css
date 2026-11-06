@@ -54,6 +54,10 @@
   --color-guest-line: #eeeeee;
   --color-guest-list-line: #eff2f4;
   --color-guest-button-line: #e0e5e9;
+  /* 회색 구역 바탕(메인 · 소개 화면 맨 아래 부가서비스 · 구독 안내)과 자주 묻는 질문 줄 바탕. */
+  --color-guest-surface: #fafafa;
+  /* 사진을 깐 어두운 구역(「끊김 없이」 · 확장 옵션) 위에 덮는 막. */
+  --color-guest-scrim: rgba(31, 31, 31, 0.8);
 }
 
 /* 기본 바탕은 운영체제가 다크 모드여도 흰색이다 — 화면들이 밝은 테마 하나뿐이다. 다크 모드에서 바탕이 #0a0a0a 로 바뀌던

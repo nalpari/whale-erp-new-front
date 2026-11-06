@@ -118,7 +118,7 @@ export function IntroFlow({ light, bold, steps }: { light: string; bold: string;
   return (
     <section className="relative overflow-hidden bg-guest-ink py-[120px]">
       <Image src="/guest/store-operations/flow-bg.png" alt="" fill sizes="100vw" className="object-cover object-bottom" />
-      <span className="absolute inset-0 bg-[rgba(31,31,31,0.8)]" />
+      <span className="absolute inset-0 bg-guest-scrim" />
       {/* 배경 그림은 구역 전체를 채우고, 내용만 1760 틀에 담는다. */}
       <div className={`${FRAME} relative flex flex-col gap-[60px]`}>
         <SectionTitle light={light} bold={bold} dark />
@@ -143,7 +143,7 @@ export type AddOn = { name: string; desc: string; icon: ReactNode };
 // 맨 아래 회색 구역이 푸터에 바로 붙는다 — 화면은 GuestPage flush 로 감싼다.
 export function IntroAddOns({ routes, items, raised = false }: { routes: GuestRoutes; items: AddOn[]; raised?: boolean }) {
   return (
-    <section className="bg-[#fafafa] pt-[120px] pb-[60px]">
+    <section className="bg-guest-surface pt-[120px] pb-[60px]">
       <div className={`${FRAME} flex flex-col gap-[60px]`}>
         <TitleRow
           light="함께 쓰면"

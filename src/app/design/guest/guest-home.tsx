@@ -214,7 +214,7 @@ const PERSONAS = [
 
 function Personas({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="bg-[#fafafa] pt-[125px] pb-[80px]">
+    <section className="bg-guest-surface pt-[125px] pb-[80px]">
       <div className={`${FRAME} flex flex-col gap-[60px]`}>
         <SectionTitle light="당신은," bold="어떤 사장님이신가요?" />
         <div className="grid grid-cols-4 gap-x-[16px] gap-y-[38px]">
@@ -337,7 +337,7 @@ const STEPS = [
 
 function Steps({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="bg-[#fafafa] pt-[120px] pb-[80px]">
+    <section className="bg-guest-surface pt-[120px] pb-[80px]">
       <div className={`${FRAME} flex flex-col gap-[60px]`}>
         <TitleRow
           light="시작은"
@@ -498,7 +498,7 @@ function BoardHead({ text, action, href }: { text: string; action: string; href:
 function Boards({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | null; news: ReactNode | null }) {
   if (!faq && !news) return null;
   return (
-    <section className="bg-[#fafafa] pt-[120px] pb-[60px]">
+    <section className="bg-guest-surface pt-[120px] pb-[60px]">
       <div className={`${FRAME} grid gap-[16px] ${faq && news ? "grid-cols-2" : "grid-cols-1"}`}>
         {faq && (
           <div className="flex flex-col gap-[60px]">

@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-06
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 여러 곳에 직접 적던 회색 구역 바탕(#fafafa)과 어두운 구역 덮개(rgba(31,31,31,0.8))를 `guest-surface` · `guest-scrim` 토큰으로 올렸다(규칙 점검). 앱 · 데모, 생김새는 그대로.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 부가서비스 서비스 카드를 한 줄에서 같은 높이로 맞추고 꼬리표를 카드 아래에 붙였다(사용자 요청). 데모 같이 반영.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 부가서비스를 Figma 로그인전_공유(44:1792)에 맞췄다: 제목 옆 버튼 제거, 서비스 카드 · 꼬리표 색, 확장 옵션 카드 바탕, 구독 안내 회색 구역, 직원수 추가 · 점포수 추가 아이콘 교체. 데모 같이 반영, `store-3.svg` 삭제.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 프랜차이즈 소개(`/franchise`, Figma 로그인전_공유 44:1035)를 더했다. 매장운영 · 재무관리와 같은 구역을 쓰고, 사진 회색 바탕 끄기 · 카드 그림자 · 아이콘 조각 회전 옵션을 더했다. 머리말 · 메인 링크와 공개 경로 연결, 데모 같이 반영.
