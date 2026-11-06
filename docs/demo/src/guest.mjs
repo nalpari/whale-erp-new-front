@@ -146,3 +146,9 @@ export const orderIcon = (A, back, front) =>
 
 export const recipeIcon = (A, bookmark) =>
   `<span class="relative block h-[74px] w-[68px]"><span class="absolute top-0 left-[13.87px] h-[52.42px] w-[53.96px] rounded-[8.9px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" style="background-image:${ICON_GRADIENT}"></span>${gimg(A, bookmark, 79.9233, 83.7806, "absolute top-[-1.21px] left-[-12.98px] max-w-none")}<span class="absolute top-[30px] left-[19px] h-[2px] w-[17px] rounded-full bg-white/90"></span><span class="absolute top-[23px] left-[26.5px] h-[17px] w-[2px] rounded-full bg-white/90"></span></span>`;
+
+// 유리판 아이콘 조각 · 예약(달력) 아이콘(앱 guest-icons.tsx 의 GLASS · CalendarIcon). 부가서비스 · 매장운영이 함께 쓴다.
+export const GLASS = "bg-white/40 shadow-[0_1.3px_13px_rgba(0,0,0,0.09),inset_0_5.2px_4px_rgba(255,255,255,0.55)] backdrop-blur-[4.9px]";
+// 시안의 「Sun」은 그라데이션을 흰 바탕 위에 겹친 글자다.
+export const calendarIcon = () =>
+  `<span class="relative block h-[74px] w-[56.8px] font-[family-name:var(--font-inter)] leading-[normal] font-bold tracking-normal"><span class="absolute top-[6.82px] left-0 h-[35.38px] w-[56.8px] rounded-[9.4px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" style="background-image:${ICON_GRADIENT}"></span><span class="absolute top-[22.39px] left-0 h-[51.61px] w-[56.8px] rounded-[9.4px] ${GLASS}"></span><span class="absolute top-[30.78px] left-[16.12px] bg-clip-text text-[12px] text-transparent" style="background-image:${ICON_GRADIENT}, linear-gradient(#fff, #fff)">Sun</span><span class="absolute top-[42.19px] left-[21.42px] bg-clip-text text-[20.77px] text-transparent" style="background-image:${ICON_GRADIENT}">8</span><span class="absolute top-0 left-[13.31px] h-[14.61px] w-[5.52px] rounded-full bg-white shadow-[0_1.3px_1.9px_rgba(0,0,0,0.1)]"></span><span class="absolute top-0 left-[37.97px] h-[14.61px] w-[5.52px] rounded-full bg-white shadow-[0_1.3px_1.9px_rgba(0,0,0,0.1)]"></span></span>`;

@@ -5,7 +5,6 @@ import { link } from "../../site.mjs";
 const S = "add-on-services";
 
 // 유리판 아이콘 조각 — 흰 반투명 판에 그림자와 안쪽 밝은 테두리를 준다.
-const GLASS = "bg-white/40 shadow-[0_1.3px_13px_rgba(0,0,0,0.09),inset_0_5.2px_4px_rgba(255,255,255,0.55)] backdrop-blur-[4.9px]";
 const GRAD = `style="background-image:${g.ICON_GRADIENT}"`;
 
 const pickupIcon = (A) =>
@@ -15,7 +14,7 @@ const posIcon = (A) =>
   `<span class="relative block h-[74px] w-[70px]"><span class="absolute top-[39px] left-0 h-[35px] w-[70px] rounded-[8px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" ${GRAD}></span><span class="absolute top-[65px] left-[23px] h-[2px] w-[24px] rounded-full bg-white/90"></span><span class="absolute top-0 left-[7px] h-[60px] w-[56px] rounded-[10px] bg-white/40 shadow-[0_1.9px_18.7px_rgba(0,0,0,0.09),inset_0_7.5px_5.8px_rgba(255,255,255,0.5)] backdrop-blur-[4.2px]"></span><span class="absolute top-[5px] left-[12px] h-[39px] w-[46px] rounded-[10px] bg-white/10 shadow-[0_1.9px_18.7px_rgba(0,0,0,0.03),inset_0_7.5px_5.8px_rgba(255,255,255,0.5)] backdrop-blur-[4.2px]"></span>${g.gimg(A, `${S}/pos-chart.svg`, 26.9342, 20, "absolute top-[13px] left-[20.29px] max-w-none")}</span>`;
 
 const tableOrderIcon = () =>
-  `<span class="relative block h-[74px] w-[64px]"><span class="absolute top-[17px] left-0 h-[57px] w-[64px] rounded-[10px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" ${GRAD}></span><span class="absolute top-0 left-[7px] h-[67px] w-[50px] rounded-[8px] ${GLASS}"></span><span class="absolute top-[12px] left-[13px] h-[14px] w-[38px] rounded-[10px] bg-white/15 shadow-[0_1.9px_18.7px_rgba(0,0,0,0.03),inset_0_7.5px_5.8px_rgba(255,255,255,0.5)] backdrop-blur-[4.2px]"></span><span class="absolute top-[35px] left-[14px] h-[2px] w-[36px] rounded-full bg-white/90"></span><span class="absolute top-[42px] left-[19px] h-[2px] w-[26px] rounded-full bg-white/60"></span><span class="absolute top-[49px] left-[24px] h-[2px] w-[16px] rounded-full bg-white/20"></span></span>`;
+  `<span class="relative block h-[74px] w-[64px]"><span class="absolute top-[17px] left-0 h-[57px] w-[64px] rounded-[10px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" ${GRAD}></span><span class="absolute top-0 left-[7px] h-[67px] w-[50px] rounded-[8px] ${g.GLASS}"></span><span class="absolute top-[12px] left-[13px] h-[14px] w-[38px] rounded-[10px] bg-white/15 shadow-[0_1.9px_18.7px_rgba(0,0,0,0.03),inset_0_7.5px_5.8px_rgba(255,255,255,0.5)] backdrop-blur-[4.2px]"></span><span class="absolute top-[35px] left-[14px] h-[2px] w-[36px] rounded-full bg-white/90"></span><span class="absolute top-[42px] left-[19px] h-[2px] w-[26px] rounded-full bg-white/60"></span><span class="absolute top-[49px] left-[24px] h-[2px] w-[16px] rounded-full bg-white/20"></span></span>`;
 
 const qrOrderIcon = (A) =>
   `<span class="relative block h-[74px] w-[61px]">${g.gimg(A, `${S}/qr-phone.svg`, 122.937, 138.937, "absolute top-[-23.72px] left-[-37.47px] max-w-none")}<span class="absolute top-[67px] left-[9px] h-[3px] w-[30px] rounded-full bg-white/90"></span>${g.gimg(A, `${S}/qr-code.svg`, 36.85, 36.85, "absolute top-[26px] left-[5.2px] max-w-none")}</span>`;
@@ -23,9 +22,6 @@ const qrOrderIcon = (A) =>
 const waitingIcon = (A) =>
   `<span class="relative block h-[74px] w-[80.59px]">${g.gimg(A, `${S}/waiting.svg`, 95.7796, 90.708, "absolute top-0 left-0 max-w-none")}</span>`;
 
-// 시안의 「Sun」은 그라데이션을 흰 바탕 위에 겹친 글자다.
-const calendarIcon = () =>
-  `<span class="relative block h-[74px] w-[56.8px] font-[family-name:var(--font-inter)] leading-[normal] font-bold tracking-normal"><span class="absolute top-[6.82px] left-0 h-[35.38px] w-[56.8px] rounded-[9.4px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" ${GRAD}></span><span class="absolute top-[22.39px] left-0 h-[51.61px] w-[56.8px] rounded-[9.4px] ${GLASS}"></span><span class="absolute top-[30.78px] left-[16.12px] bg-clip-text text-[12px] text-transparent" style="background-image:${g.ICON_GRADIENT}, linear-gradient(#fff, #fff)">Sun</span><span class="absolute top-[42.19px] left-[21.42px] bg-clip-text text-[20.77px] text-transparent" ${GRAD}>8</span><span class="absolute top-0 left-[13.31px] h-[14.61px] w-[5.52px] rounded-full bg-white shadow-[0_1.3px_1.9px_rgba(0,0,0,0.1)]"></span><span class="absolute top-0 left-[37.97px] h-[14.61px] w-[5.52px] rounded-full bg-white shadow-[0_1.3px_1.9px_rgba(0,0,0,0.1)]"></span></span>`;
 
 // 구독 단위(사업자·점포 구독)는 주황, 나머지 조건은 회색 꼬리표다. 셋째 꼬리표는 남는 폭을 채운다.
 const badges = (list) =>
@@ -63,7 +59,7 @@ const management = (A) => [
   { name: "발주 관리", desc: ["점포는 필요한 자재를 본사에 바로 주문하고 결제까지 끝냅니다."], badges: ["사업자 구독", "자재 정보 연동"], icon: g.orderIcon(A, `${S}/order-mail-back.svg`, `${S}/order-mail-front.svg`) },
   { name: "점포 재고 관리", desc: ["다 떨어지고 나서 알게 되는 재고는 이제 그만. 부족한 품목을 미리 확인하세요."], badges: ["점포 구독"], icon: g.inventoryIcon(A, `${S}/inventory.svg`) },
   { name: "대기 순번 관리", desc: ["줄 선 손님에게 차례를 알려드려, 기다리는 시간도 기분 좋게 만듭니다."], badges: ["점포 구독"], icon: waitingIcon(A) },
-  { name: "예약 관리", desc: ["방문 예약을 날짜·시간별로 한눈에. 놓치는 예약 없이 손님을 맞이하세요."], badges: ["점포 구독"], icon: calendarIcon() },
+  { name: "예약 관리", desc: ["방문 예약을 날짜·시간별로 한눈에. 놓치는 예약 없이 손님을 맞이하세요."], badges: ["점포 구독"], icon: g.calendarIcon() },
 ];
 
 const EXPANSIONS = [

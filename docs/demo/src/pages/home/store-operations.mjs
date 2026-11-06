@@ -1,4 +1,4 @@
-// 매장운영 소개. 앱 디자인 샘플 src/app/design/guest/store-operations/page.tsx(Figma 로그인전_Sub 1:688)를 옮겼다.
+// 매장운영 소개. 앱 디자인 샘플 src/app/design/guest/store-operations/page.tsx(Figma 로그인전_공유 · 매장운영 44:661, 2026-11-06)를 옮겼다.
 import * as g from "../../guest.mjs";
 import { link } from "../../site.mjs";
 
@@ -38,6 +38,7 @@ const moments = (A, R) =>
 const FEATURES = [
   {
     id: "store",
+    photo: "feature-store.png",
     tab: "점포 관리",
     no: "01 점포 관리",
     title: ["매장 정보,", "찾지 말고 바로 꺼내세요"],
@@ -46,6 +47,7 @@ const FEATURES = [
   },
   {
     id: "inspection",
+    photo: "feature-inspection.png",
     tab: "점검 · 시설물",
     no: "02 점검 · 시설물",
     title: ["고장 나기 전에,", "점검 기록이 먼저 알려줍니다"],
@@ -54,6 +56,7 @@ const FEATURES = [
   },
   {
     id: "contract",
+    photo: "feature-contract.png",
     tab: "근로계약 · 급여",
     no: "03 근로계약 · 급여",
     title: ["계약서와 급여명세서,", "더는 미루지 마세요"],
@@ -62,6 +65,7 @@ const FEATURES = [
   },
   {
     id: "attendance",
+    photo: "feature-attendance.png",
     tab: "근무 · 출퇴근",
     no: "04 근무 · 출퇴근",
     title: ["몇 시에 왔더라?", "이제 기록이 답합니다"],
@@ -83,7 +87,7 @@ const shortcuts = () =>
 const features = (A) =>
   `<section class="${g.FRAME} flex flex-col gap-[60px] py-[120px]">${g.titleRow("매장운영,", "이렇게 달라집니다", shortcuts())}<div class="flex flex-col gap-[120px]">${FEATURES.map(
     (f, i) =>
-      `<article id="${f.id}" class="flex scroll-mt-[130px] justify-center gap-[100px] ${i % 2 ? "flex-row-reverse" : ""}"><div class="relative h-[540px] w-[400px] shrink-0">${g.cover(A, `${S}/feature-photo.jpg`)}</div><div class="flex flex-col gap-[64px] pt-[44px] text-guest-ink"><span class="h-[5px] w-[80px] bg-guest-ink"></span><div class="flex flex-col gap-[32px]"><div class="flex flex-col gap-[18px]"><div class="flex flex-col gap-[8px]"><p class="text-[20px] leading-[1.5] font-semibold">${f.no}</p><h3 class="text-[34px] leading-[1.4] font-bold">${lines(f.title)}</h3></div><p class="text-[18px] leading-[1.5] font-semibold ${g.TRIM}">${lines(f.lead)}</p></div><p class="text-[18px] leading-[1.5] text-guest-body ${g.TRIM}">${lines(f.points)}</p></div></div></article>`,
+      `<article id="${f.id}" class="flex scroll-mt-[130px] justify-center gap-[100px] ${i % 2 ? "flex-row-reverse" : ""}"><div class="relative h-[540px] w-[400px] shrink-0 bg-[#f5f5f5]">${g.cover(A, `${S}/${f.photo}`)}</div><div class="flex flex-col gap-[64px] pt-[44px] text-guest-ink"><span class="h-[5px] w-[80px] bg-guest-ink"></span><div class="flex flex-col gap-[32px]"><div class="flex flex-col gap-[18px]"><div class="flex flex-col gap-[8px]"><p class="text-[20px] leading-[1.5] font-semibold">${f.no}</p><h3 class="text-[34px] leading-[1.4] font-bold">${lines(f.title)}</h3></div><p class="text-[18px] leading-[1.5] font-semibold ${g.TRIM}">${lines(f.lead)}</p></div><p class="text-[18px] leading-[1.5] text-guest-body ${g.TRIM}">${lines(f.points)}</p></div></div></article>`,
   ).join("")}</div></section>`;
 
 const FLOW = [
@@ -110,32 +114,40 @@ const FLOW = [
 ];
 
 const flow = (A) =>
-  `<section class="relative overflow-hidden bg-guest-ink py-[120px]">${g.cover(A, `${S}/flow-bg.png`, "object-cover object-bottom")}<span class="absolute inset-0 bg-[rgba(37,37,37,0.8)]"></span><div class="${g.FRAME} relative flex flex-col gap-[60px]">${g.sectionTitle("채용부터 월급날까지,", "끊김 없이", true)}<ol class="grid grid-cols-5 gap-[32px]">${FLOW.map(
+  `<section class="relative overflow-hidden bg-guest-ink py-[120px]">${g.cover(A, `${S}/flow-bg.png`, "object-cover object-bottom")}<span class="absolute inset-0 bg-[rgba(31,31,31,0.8)]"></span><div class="${g.FRAME} relative flex flex-col gap-[60px]">${g.sectionTitle("채용부터 월급날까지,", "끊김 없이", true)}<ol class="grid grid-cols-5 gap-[32px]">${FLOW.map(
     (s) =>
-      `<li class="flex flex-col items-center gap-[24px] rounded-[16px] border border-white/10 py-[42px] text-center backdrop-blur-[12px]">${g.layeredIcon(A, s.icon)}<div class="flex flex-col gap-[8px] leading-[1.5]"><h3 class="text-[24px] font-semibold text-[#fafafa]">${s.title}</h3><p class="text-[18px] text-[#ccc]">${s.desc}</p></div></li>`,
+      `<li class="flex flex-col items-center gap-[24px] rounded-[16px] bg-white/10 py-[42px] text-center">${g.layeredIcon(A, s.icon)}<div class="flex flex-col gap-[8px] leading-[1.5]"><h3 class="text-[24px] font-semibold text-[#fafafa]">${s.title}</h3><p class="text-[18px] text-[#ccc]">${s.desc}</p></div></li>`,
   ).join("")}</ol></div></section>`;
 
+// 아이콘 칸은 폭 74. 재고 · 대기 순번 SVG 는 그림자 여백만큼 칸보다 커서 그만큼 당겨 놓는다(Figma 44:903).
 const addOns = (A, R) => {
   const items = [
-    { name: "KIOSK", desc: "고객이 직접 터치로 주문·결제하는 비대면 무인 단말기", icon: g.kioskIcon() },
-    { name: "재고 관리", desc: "매장 내 식자재, 소모품 등의 재고를 실시간 확인 및 관리", icon: g.inventoryIcon(A, `${S}/addon-inventory.svg`) },
-    { name: "발주 관리", desc: "필요한 식자재나 물품을 본사나 거래처별로 손쉽게 발주", icon: g.orderIcon(A, `${S}/addon-mail-back.svg`, `${S}/addon-mail-front.svg`) },
-    { name: "레시피 관리", desc: "가맹점의 메뉴 정보와 레시피를 본사에서 관리", icon: g.recipeIcon(A, `${S}/addon-bookmark.svg`) },
+    {
+      name: "점포 재고 관리",
+      desc: "떨어지기 전에 미리 확인하는 재고",
+      icon: `<span class="relative block h-[74px] w-[71.94px]">${g.gimg(A, `${S}/addon-stock.svg`, 88.1962, 96.0942, "absolute top-[-11.68px] left-[-12.98px] max-w-none")}</span>`,
+    },
+    { name: "예약 관리", desc: "방문 예약을 날짜·시간별로 한눈에", icon: g.calendarIcon() },
+    {
+      name: "대기 순번 관리",
+      desc: "기다리는 손님에게 차례를 깔끔하게 안내",
+      icon: `<span class="relative block h-[70.96px] w-[74px]">${g.gimg(A, `${S}/addon-waiting.svg`, 89.1891, 87.6633, "absolute top-0 left-0 max-w-none")}</span>`,
+    },
   ];
-  return `<section class="${g.FRAME} flex flex-col gap-[60px] pt-[120px]">${g.titleRow(
+  return `<section class="bg-[#fafafa] pt-[120px] pb-[60px]"><div class="${g.FRAME} flex flex-col gap-[60px]">${g.titleRow(
     "함께 쓰면",
     "더 편해지는 부가서비스",
     g.button(A, "부가서비스 전체 보기", { tone: "navy", href: link(R, "home/add-on-services.html"), arrow: true }),
-  )}<ul class="grid grid-cols-4 gap-[16px]">${items
+  )}<ul class="grid grid-cols-3 gap-[16px]">${items
     .map(
       (it) =>
-        `<li class="flex flex-col gap-[4px] rounded-[16px] border border-guest-line bg-white px-[42px] py-[40px] shadow-[0_8px_24px_rgba(0,0,0,0.02)]"><span class="flex h-[88px] items-center pb-[14px]">${it.icon}</span><div class="flex flex-col gap-[10px] leading-[1.5]"><h3 class="text-[22px] font-bold text-[#222]">${it.name}</h3><p class="text-[16px] text-guest-body">${it.desc}</p></div></li>`,
+        `<li class="flex items-center gap-[24px] rounded-[16px] border border-guest-line bg-white px-[42px] pt-[40px] pb-[28px]"><span class="flex w-[74px] shrink-0 items-center">${it.icon}</span><div class="flex flex-col gap-[2px] leading-[1.5] text-guest-ink"><h3 class="text-[22px] font-bold">${it.name}</h3><p class="text-[16px]">${it.desc}</p></div></li>`,
     )
-    .join("")}</ul></section>`;
+    .join("")}</ul></div></section>`;
 };
 
 export default ({ A, R }) => ({
   title: "매장운영",
   head: g.head(A),
-  html: g.page(A, R, { current: "home/store-operations.html", main: moments(A, R) + features(A) + flow(A) + addOns(A, R) }),
+  html: g.page(A, R, { current: "home/store-operations.html", main: moments(A, R) + features(A) + flow(A) + addOns(A, R), flush: true }),
 });
