@@ -4,7 +4,7 @@
 // 범위(scope) · 정해지지 않음(필터가 헤더 범위로 채운다). 예전 점포명 주소(?store=)는 읽지 않는다 — 함께 실린 storeIds 도 버리고 필터가
 // 상단 범위로 채운다(직원 목록과 같다). 직원명은 staffName(api 와 같은 이름).
 // 기본 건수(20)는 URL 에서 뺀다. 이상한 month · page · pageSize 는 오류 없이 기본값으로 돌린다. 상태 체크는 모르는 값만
-// 버린다 — 남는 게 없으면 하나도 고르지 않은 것(0건)이다.
+// 버린다 — 남는 게 없으면 하나도 고르지 않은 것(0건, 「검토 대기만」을 켰으면 검토 대기 건)이다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { Scope } from "../../lib/browser-storage.ts";
 import { PAGE_SIZES, PAYSLIP_STATUSES, payslipStoreCondition, previousMonth, type PayslipListQuery } from "../../lib/payslips.ts";
