@@ -1700,35 +1700,35 @@
                             본사 위생점검 대비 냉장고 정리
                             <span class="badge badge--risk">긴급</span>
                           </td>
-                          <td class="mono">09-03</td>
+                          <td class="mono">2026-09-03</td>
                           <td><span class="badge badge--warn">진행 중</span></td>
                         </tr>
                         <tr>
                           <td class="k">전체 · 한 명</td>
                           <td>서초점</td>
                           <td>가을 신메뉴 POP 교체</td>
-                          <td class="mono">09-04 10:00</td>
+                          <td class="mono">2026-09-04 10:00</td>
                           <td><span class="badge badge--quiet">대기</span></td>
                         </tr>
                         <tr>
                           <td class="k">서지안</td>
                           <td>서초점</td>
                           <td>신규 원두 시음 기록 제출</td>
-                          <td class="mono">09-05</td>
+                          <td class="mono">2026-09-05</td>
                           <td><span class="badge badge--quiet">대기</span></td>
                         </tr>
                         <tr>
                           <td class="k">오세라</td>
                           <td>서초점</td>
                           <td>분기 재물조사 입회</td>
-                          <td class="mono">09-08 14:00</td>
+                          <td class="mono">2026-09-08 14:00</td>
                           <td><span class="badge badge--quiet">대기</span></td>
                         </tr>
                         <tr>
                           <td class="k">전체 · 한 명</td>
                           <td>판교점</td>
                           <td>여름 프로모션 POP 철거</td>
-                          <td class="mono">08-25</td>
+                          <td class="mono">2026-08-25</td>
                           <td>
                             <span class="badge badge--ok">완료</span>
                             <span class="subtle">문태경</span>
@@ -1738,7 +1738,7 @@
                           <td class="k">권도윤</td>
                           <td>서초점</td>
                           <td>신메뉴 시식 교육 참석</td>
-                          <td class="mono">08-28 14:00</td>
+                          <td class="mono">2026-08-28 14:00</td>
                           <td><span class="badge badge--ok">완료</span></td>
                         </tr>
                       </tbody>
@@ -1752,15 +1752,16 @@
 
                 <section class="stack--lg" style="display: flex; flex-direction: column">
                   <div class="panel">
+                    <!-- 개발 화면 · 데모는 목록 옆 칸이 아니라 별도 화면이다 — 왼쪽 제목 · 내용, 오른쪽 배정 묶음 두 단, 배정 대상 · 수행 방식은 큰 선택 카드(2026-11-06 사용자 지정, 점포 등록 참고) -->
                     <div class="panel__head"><h2 class="t-h2">TO-DO 등록</h2></div>
                     <div class="panel__body">
                       <div class="field">
                         <label for="tt">제목</label>
-                        <input class="input" id="tt" value="본사 위생점검 대비 냉장고 정리" />
+                        <input class="input" id="tt" value="본사 위생점검 대비 냉장고 정리" placeholder="100자 이내로 입력해 주세요." />
                       </div>
                       <div class="field">
                         <label for="tb">내용</label>
-                        <textarea class="textarea" id="tb" rows="2">선반별로 비우고 유통기한 지난 재료는 폐기 후 사진 남길 것</textarea>
+                        <textarea class="textarea" id="tb" rows="2" placeholder="2,000자 이내로 입력해 주세요.">선반별로 비우고 유통기한 지난 재료는 폐기 후 사진 남길 것</textarea>
                       </div>
                       <div class="field">
                         <label for="tw">근무지</label>
@@ -1772,8 +1773,8 @@
                       <div class="field">
                         <label>배정 대상 <span class="subtle" tabindex="0" data-tip="개인: 선택한 직원에게만 보입니다. 여러 명을 선택하면 한 사람에 한 건씩 생깁니다. / 근무지 전체: 그 근무지의 재직 직원 모두에게 보입니다." aria-label="배정 대상 설명">ⓘ</span></label>
                         <div class="seg" data-todo-target>
-                          <button type="button" aria-pressed="false">개인</button>
-                          <button type="button" aria-pressed="true">근무지 전체</button>
+                          <button type="button" aria-pressed="false">개인 배정</button>
+                          <button type="button" aria-pressed="true">근무지 전체 직원에게 배정</button>
                         </div>
                       </div>
                       <!-- 개인일 때만 · 고른 근무지의 재직 직원 · 이름·휴대전화번호 끝자리로 찾는다 (STAFF-25 확정: 한 명 이상, 직원마다 1건) -->
@@ -1787,12 +1788,12 @@
                       </div>
                       <!-- 수행 방식은 근무지 전체일 때만 -->
                       <div class="field" data-todo-mode>
-                        <label>수행 방식 <span class="subtle" tabindex="0" data-tip="각자 수행: 직원마다 한 건씩 생기고 저마다 완료합니다. / 한 명 수행: 한 건을 함께 보고, 한 명이 완료하면 모두에게 완료로 보입니다. 등록한 뒤에는 바꿀 수 없습니다." aria-label="수행 방식 설명">ⓘ</span></label>
+                        <label>수행 방식 <span class="subtle" tabindex="0" data-tip="각자 수행: 배정된 직원이 모두 수행해야 완료됩니다. / 한 명만 수행: 한 명이 완료하면 모든 직원에게 완료로 표시됩니다. 등록한 뒤에는 변경할 수 없습니다." aria-label="수행 방식 설명">ⓘ</span></label>
                         <div class="seg">
                           <button type="button" aria-pressed="true">각자 수행</button>
-                          <button type="button" aria-pressed="false">한 명 수행</button>
+                          <button type="button" aria-pressed="false">한 명만 수행</button>
                         </div>
-                        <span class="help">등록 후에는 바꿀 수 없다 · 각자 수행은 직원당 1건, 한 명 수행은 공유 1건</span>
+                        <span class="help">각자 수행: 배정된 직원이 모두 수행해야 완료 · 한 명만 수행: 배정된 직원 중 한 명만 수행하면 완료. 등록 후에는 변경할 수 없다</span>
                       </div>
                       <div class="grid grid--2" style="gap: var(--s-4)">
                         <div class="field">
@@ -1810,7 +1811,7 @@
                           <span class="toggle" id="tu" role="switch" aria-pressed="true" tabindex="0"></span>
                           긴급
                         </label>
-                        <span class="help">직원 근무 앱 홈·근무 탭 맨 위에 강조되고 관리자 웹 미조치에 센다. 푸시는 보내지 않는다.</span>
+                        <span class="help">직원 근무 앱의 홈 및 근무 탭 최상단에 강조 표시되며, 관리자 웹의 미조치 건수에 포함됩니다.<br />별도의 푸시 알림은 발송하지 않습니다.</span>
                       </div>
                       <hr class="hr" />
                       <button class="btn btn--primary btn--block" type="button" data-todo-save>저장</button>
@@ -1822,16 +1823,17 @@
 
                   <div class="panel" style="flex: 1">
                     <div class="panel__head">
-                      <h2 class="t-h2">배정 방식이 만드는 차이</h2>
+                      <h2 class="t-h2">TO-DO 안내</h2>
                     </div>
                     <div class="panel__body">
+                      <p style="margin: 0">TO-DO는 <b>근로계약이 체결 완료되고 가입을 마친 재직 직원(퇴직 예정 포함)</b>에게만 배정할 수 있습니다.</p>
                       <dl class="kv">
                         <dt>개인 배정</dt>
-                        <dd>선택한 직원 각각에게 1건씩(한 명 이상). 담당자가 명확하다. 수행 방식은 선택하지 않는다.</dd>
-                        <dt>전체 · 각자 수행</dt>
-                        <dd>근무지 재직자 수만큼 생성된다. 전원이 해야 하는 일.</dd>
-                        <dt>전체 · 한 명 수행</dt>
-                        <dd>공유 1건. 먼저 완료한 사람이 수행자가 되고 나머지에게는 완료로 보인다.</dd>
+                        <dd>선택한 직원 한 명당 1건씩 등록됩니다. 근무지를 변경하면 선택한 직원이 초기화됩니다.</dd>
+                        <dt>근무지 전체 · 각자 수행</dt>
+                        <dd>모든 직원이 완료해야 완료됩니다. 등록 후 입사한 직원에게는 배정되지 않습니다.</dd>
+                        <dt>근무지 전체 · 한 명만 수행</dt>
+                        <dd>한 명이 완료하면 모든 직원에게 완료로 표시됩니다.</dd>
                       </dl>
                     </div>
                     <div class="panel__note">
@@ -1918,7 +1920,7 @@
           });
         }
         target.addEventListener("click", function () {
-          setTimeout(function () { box.hidden = target.querySelector('[aria-pressed="true"]').textContent !== "개인"; mode.hidden = !box.hidden; err.hidden = true; });
+          setTimeout(function () { box.hidden = target.querySelector('[aria-pressed="true"]').textContent !== "개인 배정"; mode.hidden = !box.hidden; err.hidden = true; });
         });
         store.addEventListener("change", function () { picked = []; q.value = ""; draw(); });
         q.addEventListener("input", draw);

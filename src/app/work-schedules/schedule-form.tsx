@@ -593,9 +593,9 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
       {edit && (
         <ConfirmDialog
           open={confirmDelete}
-          title="이 근무스케줄을 삭제하시겠습니까?"
+          // 다른 화면 삭제 확인창과 같게 — 기본 버튼 · 「…을 삭제하시겠습니까?」(2026-11-06 사용자 지정, 전엔 빨간 버튼 · 「이 근무스케줄을」)
+          title="근무스케줄을 삭제하시겠습니까?"
           confirmLabel="삭제"
-          confirmVariant="danger"
           busy={saving}
           onConfirm={handleDelete}
           onCancel={() => setConfirmDelete(false)}
