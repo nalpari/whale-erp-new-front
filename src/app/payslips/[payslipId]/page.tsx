@@ -16,8 +16,6 @@ export const metadata: Metadata = {
   title: "급여명세서 검토 · Whale ERP",
 };
 
-const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
-
 // 급여명세서 검토. 데모 docs/demo/staff/payrolls-detail.html(원본 src/pages/staff/payrolls-detail.mjs)의 틀 — 머리(목록 · 임시저장 ·
 // 확정 · 발송) + 경고 띠, 7:5 두 단(왼쪽 지급 내역, 오른쪽 검토 사유 · 참조한 것 · 처리 이력 · 발송 이력). 데이터는 GET /payslips/:id(getPayslip)이고
 // 상태 · 사유 · 처리 구분 한글은 GET /enums 로 받는다. 없는 명세서 · 관리 범위 밖 · 가린 명세서 · 이상한 id 는 404 다.
@@ -37,9 +35,6 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
   const reasonOf = (value: string) => labelOf(reasonLabels, value);
   // 공제 미입력은 사유 줄로 저장되지 않아 저장된 공제 칸으로 판정해 더한다 — 목록의 검토 대기 사유와 같다(v221 PAY-06).
   const reviewReasons = detailReviewReasons(payslip);
-  const present = new Set<string>(reviewReasons.map((r) => r.reviewReason));
-  // 사유 목록은 api 가 준 것으로 그린다 — 새 사유가 생겨도 front 는 따로 고치지 않는다(naming.md 「조회한 목록으로 그린다」).
-  const absentReasons = reasonLabels.filter((r) => !present.has(r.value));
   const { contract } = payslip;
 
   const aside = (
@@ -55,9 +50,6 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
           rowKey={(r) => r.payslipReviewReasonId}
           empty="검토 사유가 없습니다."
         />
-        {absentReasons.length > 0 && (
-          <DetailTable title="그 밖의 사유" labelWidth="w-[140px]" rows={absentReasons.map((r) => ({ label: r.label, value: muted("해당 없음") }))} />
-        )}
       </section>
       <section className="flex min-w-0 flex-col gap-[12px]">
         <SectionHead title="참조한 것">
