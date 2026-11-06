@@ -63,6 +63,9 @@
     });
   }
 
+  // 로그인 만료 안내: 앱은 /login?reason=expired 로 보낸다. 같은 주소로 열면 LOGIN 위에 문구가 선다.
+  for (const el of $$("[data-expired-notice]")) el.hidden = new URLSearchParams(location.search).get("reason") !== "expired";
+
   // 입력 지우기 버튼: 값이 있을 때만 보인다.
   for (const btn of $$("[data-clear]")) {
     const input = btn.closest("label").querySelector("input");

@@ -11,7 +11,7 @@
     <!-- 로그인 화면 · /login · S-XJDKSI (F-DZVFIC) · 1팀 인증 및 계정 관리 R-LYZWGG
          판정 순서는 명세 그대로다 — 잠금 확인 → 아이디·비밀번호 → 계정 상태 → 강제 비밀번호 변경.
          아이디로 로그인한다(이메일이 아니다). 아이디 저장은 있고 로그인 유지는 없다.
-         세션 만료는 이 화면이 아니라 쓰던 화면에서 경고창으로 알리고 확인하면 여기로 온다 — 이 화면에는 세션 만료 문구가 없다.
+         세션 만료는 두 갈래다. 쓰던 화면에서 알게 되면 경고창 → 확인 → 여기로 오고, 메뉴 이동 · 새로고침 · 첫 화면에서 알게 되면 경고창 없이 바로 여기로 와서 LOGIN 버튼 위에 만료 문구가 선다(2026-11-05).
          임시 비밀번호 만료로 돌아온 경우만 아이디 저장 아래에 안내를 띄운다.
          위쪽 점선 줄은 목업 전용 상태 전환이다. 실제 화면에는 없다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
@@ -36,6 +36,7 @@
             <button type="button" data-state="inactive" aria-pressed="false">미사용 계정</button>
             <button type="button" data-state="locked" aria-pressed="false">잠김</button>
             <button type="button" data-state="error" aria-pressed="false">시스템 오류</button>
+            <button type="button" data-state="expired" aria-pressed="false">로그인 만료</button>
             <button type="button" data-state="tempexpired" aria-pressed="false">임시 비밀번호 만료</button>
             <button type="button" data-state="initexpired" aria-pressed="false">초기 비밀번호 만료</button>
             <button type="button" data-state="force" aria-pressed="false">강제 변경 대상</button>
@@ -122,6 +123,13 @@
                     <p class="band__desc">잠긴 동안에는 아이디·비밀번호를 확인하지 않습니다. 바로 들어가야 하면 임시 비밀번호를 받으세요 — 발급하면 잠금이 풀립니다. 없는 아이디·탈퇴 계정은 잠기지 않고 계속 공통 문구가 나옵니다 — 잠김으로 아이디가 있는 것이 드러나는 것은 받아들였습니다(2026-10-22, WHALEERP-392). 비밀번호 찾기는 이 안내에 따로 두지 않고 아래 「아이디/비밀번호 찾기」 링크로 갑니다(2026-10-28).</p>
                   </div>
                 </div>
+                <!-- 세션 만료 — 메뉴 이동 · 새로고침 · 첫 화면에서 알게 된 경우. 쓰던 화면에서 알면 경고창 확인 뒤 같은 문구로 온다 (S-QCNVFC, 2026-11-05) -->
+                <div class="band band--risk" data-show="expired" hidden>
+                  <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">로그인이 만료되었습니다. 다시 로그인해 주세요.</div>
+                  </div>
+                </div>
                 <div class="band band--risk" data-show="error" hidden>
                   <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
                   <div class="band__body">
@@ -132,7 +140,7 @@
                 <!-- 로그인 버튼의 도착지는 계정에 따라 갈린다. 강제 변경 대상이면 홈 위에 닫을 수 없는 팝업이 뜬다. -->
                 <a class="btn btn--primary btn--lg btn--block" href="../home/signed-in.html" data-show="base">로그인</a>
                 <a class="btn btn--primary btn--lg btn--block" href="force-password.html" data-show="force" hidden>로그인</a>
-                <button class="btn btn--primary btn--lg btn--block" type="button" data-show="empty fail inactive locked error tempexpired initexpired" hidden>로그인</button>
+                <button class="btn btn--primary btn--lg btn--block" type="button" data-show="empty fail inactive locked error expired tempexpired initexpired" hidden>로그인</button>
 
                 <!-- 찾기 링크는 하나(/find)이고 회원가입은 버튼이다. 직원은 이 화면으로 로그인하지 않는다 — 데모·실제 화면(PR #52, 2026-10-19)과 같다. -->
                 <div class="auth__links">
