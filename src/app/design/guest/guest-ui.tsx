@@ -31,7 +31,8 @@ export function Arrow({ back = false }: { back?: boolean }) {
 const BUTTON_TONE = {
   navy: "border-guest-navy bg-guest-navy text-white hover:bg-white hover:text-guest-navy",
   soft: "border-guest-navy-soft bg-guest-navy-soft text-white hover:border-guest-navy hover:bg-white hover:text-guest-navy",
-  white: "border-white bg-white text-guest-navy text-[17px]! hover:border-guest-navy",
+  // 메인 「네 가지면 충분합니다」 카드의 「자세히 보기」. 연한 카드 위에 서는 회청 버튼이다(Figma 로그인전_공유 44:102, 2026-11-06).
+  steel: "border-[#728daa] bg-[#728daa] text-white text-[17px]! hover:border-guest-navy hover:bg-white hover:text-guest-navy",
   outline: "border-guest-button-line bg-white text-guest-ink hover:border-guest-navy hover:text-guest-navy",
   line: "border-guest-navy-soft bg-white text-guest-navy hover:border-guest-navy",
 };
