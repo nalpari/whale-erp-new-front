@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-06
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 재무관리 소개(`/finance-management`, Figma 로그인전_공유 44:1412)를 더했다. 매장운영과 같은 네 구역을 `intro-sections.tsx` 로 빼 두 화면이 함께 쓰고, 머리말 · 메인의 재무관리 링크와 공개 경로를 연결했다. 데모 같이 반영.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 이동 때 이전 화면 스냅숏을 모두 그리지 않고 새 본문만 떠오르게 했다. 사파리에서 홈이 전환 내내 새 화면 아래 남던 것(화면 녹화로 확인) 대응. 앱 · 데모.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 이동 때 화면 전체 스냅숏(old root)을 바로 지운다. 사파리에서 이전 화면이 남아 겹쳐 보이던 것 대응(앱 · 데모).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 기본 바탕을 흰색으로 고정했다(다크 모드에서 #0a0a0a 로 바뀌던 템플릿 설정 삭제, html 에도 깔음). 앱 · 데모.

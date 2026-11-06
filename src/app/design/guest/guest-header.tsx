@@ -11,7 +11,7 @@ import { HOVER } from "./theme";
 // 아직 화면이 없는 메뉴는 href 가 "#" 다. 화면이 생기면 GuestRoutes 에 더하고 키를 채운다.
 const MENUS: { label: string; route?: keyof GuestRoutes }[] = [
   { label: "매장운영", route: "storeOperations" },
-  { label: "재무관리" },
+  { label: "재무관리", route: "financeManagement" },
   { label: "프랜차이즈" },
   { label: "부가 서비스", route: "addOnServices" },
 ];
@@ -34,9 +34,9 @@ export function GuestHeader({ homeHref }: { homeHref?: string }) {
   // 실제 라우트와 디자인 샘플이 이 머리말을 함께 쓴다. 샘플 안에서는 링크도 샘플로 건다(guest-routes.ts).
   const routes = pathname.startsWith(SAMPLE_ROUTES.home) ? SAMPLE_ROUTES : SITE_ROUTES;
   const [scrolled, setScrolled] = useState(false);
-  // 맨 위에서 Billboard 그림 위에 겹치는 화면(메인·매장운영·부가서비스) 말고는 본문이 머리말과 같은 흰 바탕이라
+  // 맨 위에서 Billboard 그림 위에 겹치는 화면(메인·매장운영·재무관리·부가서비스) 말고는 본문이 머리말과 같은 흰 바탕이라
   // 맨 위에서도 선을 그어 구분한다 — 로그인·계정 찾기·회원가입·가입 완료·도입문의·공지사항.
-  const lined = ![routes.home, routes.storeOperations, routes.addOnServices].includes(pathname);
+  const lined = ![routes.home, routes.storeOperations, routes.financeManagement, routes.addOnServices].includes(pathname);
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 0);
     update();

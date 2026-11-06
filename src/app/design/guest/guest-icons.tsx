@@ -53,6 +53,22 @@ export function KioskIcon() {
   );
 }
 
+// 부가서비스 「POS」와 재무관리 맨 아래 「POS」 카드가 같은 그림을 쓴다.
+export function PosIcon() {
+  return (
+    <span className="relative block h-[74px] w-[70px]">
+      <span
+        className="absolute top-[39px] left-0 h-[35px] w-[70px] rounded-[8px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]"
+        style={{ backgroundImage: ICON_GRADIENT }}
+      />
+      <span className="absolute top-[65px] left-[23px] h-[2px] w-[24px] rounded-full bg-white/90" />
+      <span className="absolute top-0 left-[7px] h-[60px] w-[56px] rounded-[10px] bg-white/40 shadow-[0_1.9px_18.7px_rgba(0,0,0,0.09),inset_0_7.5px_5.8px_rgba(255,255,255,0.5)] backdrop-blur-[4.2px]" />
+      <span className="absolute top-[5px] left-[12px] h-[39px] w-[46px] rounded-[10px] bg-white/10 shadow-[0_1.9px_18.7px_rgba(0,0,0,0.03),inset_0_7.5px_5.8px_rgba(255,255,255,0.5)] backdrop-blur-[4.2px]" />
+      <Image src="/guest/add-on-services/pos-chart.svg" alt="" width={26.9342} height={20} className="absolute top-[13px] left-[20.29px] max-w-none" />
+    </span>
+  );
+}
+
 export function InventoryIcon({ src }: { src: string }) {
   return (
     <span className="relative block h-[74px] w-[67px]">
