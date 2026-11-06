@@ -585,7 +585,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         labelWidth="w-[100px]"
         rows={[
           // 탈퇴한 회원은 빨강 — 답변이 가지 않는 문의라 눈에 띄게(2026-11-06 사용자 지정)
-          { label: "이름", value: d.senderName ?? <span className="text-erp-off">탈퇴한 회원</span> },
+          { label: "이름", value: d.senderName || <span className="text-erp-off">탈퇴한 회원</span> },
           // BP 상호명은 길 수 있어 자르지 않고 줄을 바꾼다(2026-11-05 사용자 지정)
           { label: "BP상호명", value: <span className="break-keep">{d.bpName ?? "-"}</span>, multiline: true },
           // 이름 · BP상호명 · 권한유형 · 점포(2026-11-05 사용자 지정). 권한유형은(BP 마스터 등) — 아이디 · 권한명은 api 가 내려주지 않는다.
@@ -675,7 +675,6 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
   const answered = d.reply !== null;
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmResend, setConfirmResend] = useState(false);
-  // 답변을 고쳐 저장한 직후에 연 재발송 확인창인가 — 제목 · 안내 · 취소 버튼 이름이 다르다
   // 답변을 고쳐 저장한 직후에 연 창인가 — 「resend」는 재발송 확인, 「wait」는 1분 제한 안내(재발송 버튼 없이 [확인]만)
   const [afterEdit, setAfterEdit] = useState<false | "resend" | "wait">(false);
   // 답변 메일은 한 건에 1분에 한 번만 보낸다(api RESEND_TOO_SOON). 마지막 발송이 1분 안이면 고친 뒤 재발송 확인창을 띄우지 않는다 —
@@ -695,6 +694,8 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
     setConfirmResend(false);
     setAfterEdit(false);
   };
+  // 열린 동안 수정 권한이 빠지면 창 상태도 거둔다 — 권한이 돌아와도 옛 창이 저절로 다시 열리지 않게(리뷰 반영)
+  if (!c.can.update && (confirmResend || afterEdit)) closeResend();
   // api 와 같은 조건 — 상담 완료일이 없어도 답변 완료면 못 지운다(상담 완료일 없이 답변 완료된 옛 행, front #75 리뷰).
   const deletable = !d.consultedDate && d.status !== "ANSWERED";
   const industry = d.industryDetail ? `${industryLabel(d.industryCode)} (${d.industryDetail})` : industryLabel(d.industryCode);
@@ -768,7 +769,10 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
         }
         // 처음 답할 때만 메일이 가고 고쳐도 다시 가지 않는다. [다시 보내기]는 저장된 지금 답변을 보낸다(같은 도입문의 1분 간격).
         actions={
-          <Button variant="soft" disabled={c.busy || d.status !== "ANSWERED"} onClick={() => setConfirmResend(true)}>
+          <Button variant="soft" disabled={c.busy || d.status !== "ANSWERED"} onClick={() => {
+              setAfterEdit(false);
+              setConfirmResend(true);
+            }}>
             답변 메일 재발송
           </Button>
         }

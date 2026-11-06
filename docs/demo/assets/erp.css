@@ -4235,8 +4235,7 @@ details[name="guest-faq"][open]::details-content {
     top: anchor(bottom);
     left: anchor(left);
     width: anchor-size(width);
-    bottom: 8px;
-    height: fit-content;
+    max-height: 320px;
     overflow-y: auto;
     margin-block: 4px;
     padding: 6px;

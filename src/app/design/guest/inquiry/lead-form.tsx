@@ -29,23 +29,27 @@ function Required() {
 function Below({ help, error, errorId }: { help?: string; error?: string; errorId?: string }) {
   if (error)
     return (
-      <span id={errorId} role="alert" className="-mt-[2px] text-[14px] leading-[1.5] text-[#e93737]">
+      <span id={errorId} className="-mt-[2px] text-[14px] leading-[1.5] text-[#e93737]">
         {error}
       </span>
     );
   return help ? <span className="-mt-[2px] text-[14px] leading-[1.5] text-[#767676]">{help}</span> : null;
 }
 
+// 도움말 · 오류는 label 밖에 둔다 — label 안이면 칸 이름에 섞여 읽히고, aria-describedby 로 한 번 더 읽힌다(리뷰 반영).
+// 칸마다 role="alert" 을 두지 않는다 — 빈 폼이면 알림이 한꺼번에 읽힌다. aria-invalid · aria-describedby · 첫 칸 커서 이동으로 알린다.
 function Field({ label, required = false, help, error, errorId, children }: { label: string; required?: boolean; help?: string; error?: string; errorId?: string; children: ReactNode }) {
   return (
-    <label className="flex flex-col gap-[10px]">
-      <span className={LABEL}>
-        {label}
-        {required && <Required />}
-      </span>
-      {children}
+    <div className="flex flex-col gap-[10px]">
+      <label className="flex flex-col gap-[10px]">
+        <span className={LABEL}>
+          {label}
+          {required && <Required />}
+        </span>
+        {children}
+      </label>
       <Below help={help} error={error} errorId={errorId} />
-    </label>
+    </div>
   );
 }
 
@@ -201,7 +205,8 @@ export function LeadForm({ options, submit = sampleSubmit, homeHref = SAMPLE_ROU
     setProblems((prev) => (keys.some((k) => k in prev) ? Object.fromEntries(Object.entries(prev).filter(([k]) => !keys.includes(k as keyof LeadProblems))) : prev));
   }
 
-  // 완료 창을 닫으면([확인] · Esc) 메인 화면으로 간다(2026-11-06 사용자 지정 — 전엔 비운 폼에 머물렀다).
+  // 완료 창이 닫히면([확인] · Esc 모두 dialog close 이벤트를 거친다) 메인 화면으로 간다(2026-11-06 사용자 지정 — 전엔 비운 폼에 머물렀다).
+  // [확인]은 창만 닫는다 — 여기서도 이동하면 close 이벤트와 겹쳐 두 번 이동한다(리뷰 반영).
   function handleDoneClose() {
     setDone(false);
     router.push(homeHref);
@@ -319,7 +324,7 @@ export function LeadForm({ options, submit = sampleSubmit, homeHref = SAMPLE_ROU
             </label>
             {/* 동의 오류는 동의 줄 바로 아래 — 다른 칸 오류와 같은 14px 빨강(2026-11-06 사용자 지정) */}
             {problems.privacyAgreed && (
-              <span id={idOf("privacyAgreed")} role="alert" className="-mt-[8px] text-[14px] leading-[1.5] text-[#e93737]">
+              <span id={idOf("privacyAgreed")} className="-mt-[8px] text-[14px] leading-[1.5] text-[#e93737]">
                 {problems.privacyAgreed}
               </span>
             )}
@@ -370,7 +375,7 @@ export function LeadForm({ options, submit = sampleSubmit, homeHref = SAMPLE_ROU
         title="도입 문의가 접수되었습니다."
         onClose={handleDoneClose}
         actions={
-          <GuestButton tone="navy" onClick={handleDoneClose}>
+          <GuestButton tone="navy" onClick={() => setDone(false)}>
             확인
           </GuestButton>
         }

@@ -246,7 +246,7 @@ export function InquiryList({ items, total, query, answers, emptyAll = false }: 
     // 모든 열이 정한 폭이라 남는 폭은 같은 비율로 나눠 늘어난다
     { header: "제목", width: "w-[400px]", align: "left", cell: (i) => titleLink(`${INQUIRY_BASE}/${i.inquiryId}`, i.title) },
     // 이름이 비었으면 탈퇴한 회원(탈퇴가 이름 · 연락처를 비운다) — 「-」 대신 회색으로 알린다(2026-11-06 사용자 지정)
-    { header: "문의자", width: "w-[160px]", cell: (i) => i.senderName ?? <span className="text-erp-muted">탈퇴한 회원</span> },
+    { header: "문의자", width: "w-[160px]", cell: (i) => i.senderName || <span className="text-erp-muted">탈퇴한 회원</span> },
     { header: "BP상호명", width: "w-[240px]", cell: (i) => i.bpName ?? "-" },
     { header: "접수", width: "w-[110px]", cell: (i) => formatDateTime(i.createdAt).slice(0, 10) },
   ];

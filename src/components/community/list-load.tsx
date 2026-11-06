@@ -30,7 +30,8 @@ export async function emptyKindOf(total: number, filtered: boolean, probe: () =>
   if (!filtered) return "all";
   try {
     return (await probe()).total > 0 ? "filtered" : "all";
-  } catch {
+  } catch (error) {
+    console.error("빈 목록 구분 조회 실패", error);
     return "filtered";
   }
 }
