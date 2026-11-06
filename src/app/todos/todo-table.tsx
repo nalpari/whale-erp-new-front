@@ -3,7 +3,7 @@ import { Badge, DataTable, type Column } from "@/components/common";
 import type { EnumValue } from "@/lib/enums";
 import { CellView } from "../staff-members/staff-table";
 import { withBack } from "./todo-list-query";
-import { assigneeText, dueText, statusCells, type TodoListItem } from "./todo-row";
+import { assigneeText, dueFullText, statusCells, type TodoListItem } from "./todo-row";
 
 type Row = { no: number; item: TodoListItem };
 
@@ -13,7 +13,6 @@ export function TodoTable({
   items,
   page,
   pageSize,
-  today,
   statusLabels,
   listHref,
   empty,
@@ -22,7 +21,6 @@ export function TodoTable({
   items: TodoListItem[];
   page: number;
   pageSize: number;
-  today: string;
   statusLabels: EnumValue[];
   /** 지금 목록 주소. 상세 링크에 ?back= 으로 붙여 상세의 「목록」이 같은 조건으로 돌아오게 한다 */
   listHref: string;
@@ -35,11 +33,11 @@ export function TodoTable({
     { header: "순번", width: "w-[60px]", cell: (r) => r.no },
     {
       header: "담당직원", // 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「담당」
-      width: "w-[140px]",
+      width: "w-[240px]", // 근무지와 같은 폭(2026-11-06 사용자 지정 — 전엔 140px, 「본사에 정보제공 미동의」 · 「OOO 외 N명」이 잘렸다)
       // 개인 배정의 첫 직원을 가렸으면 직원 목록처럼 흐린 글자(글자는 MASKED_STAFF 「본사에 정보제공 미동의」)
       cell: (r) => <span className={r.item.assigneeType === "INDIVIDUAL" && r.item.assignees[0]?.isMasked ? "text-erp-muted" : undefined}>{assigneeText(r.item)}</span>,
     },
-    { header: "근무지", width: "w-[160px]", cell: (r) => r.item.storeName ?? "-" },
+    { header: "근무지", width: "w-[240px]", cell: (r) => r.item.storeName ?? "-" },
     {
       header: "TO-DO",
       align: "left",
@@ -52,7 +50,7 @@ export function TodoTable({
         </span>
       ),
     },
-    { header: "수행 예정", width: "w-[140px]", cell: (r) => dueText(r.item.dueDate, r.item.dueTime, today) },
+    { header: "수행 예정", width: "w-[140px]", cell: (r) => dueFullText(r.item.dueDate, r.item.dueTime) },
     {
       header: "상태",
       width: "w-[180px]",

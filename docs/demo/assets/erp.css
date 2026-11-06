@@ -867,6 +867,9 @@
   .h-\[15\.0674px\] {
     height: 15.0674px;
   }
+  .h-\[16px\] {
+    height: 16px;
+  }
   .h-\[17px\] {
     height: 17px;
   }
@@ -2383,6 +2386,9 @@
   }
   .stroke-current {
     stroke: currentcolor;
+  }
+  .stroke-erp-brand {
+    stroke: var(--color-erp-brand);
   }
   .stroke-erp-label {
     stroke: var(--color-erp-label);
@@ -4116,6 +4122,9 @@
   .\[\&\>td\:first-child\]\:shadow-\[inset_3px_0_0_var\(--color-erp-brand\)\] > td:first-child {
     --tw-shadow: inset 3px 0 0 var(--tw-shadow-color, var(--color-erp-brand));
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .\[\&\>textarea\]\:flex-1 > textarea {
+    flex: 1;
   }
   .\[\&\[readonly\]\]\:bg-erp-thead-bg[readonly] {
     background-color: var(--color-erp-thead-bg);

@@ -185,7 +185,7 @@ export function todoHistoryText(h: Pick<TodoHistory, "fromStatus" | "toStatus" |
   return statusLabel ? `${statusLabel(h.fromStatus)} → ${statusLabel(h.toStatus)}` : "상태 변경";
 }
 
-/** 수행 예정 — 오늘과 같은 해면 MM-DD, 아니면 YYYY-MM-DD. 시간이 있으면 뒤에 붙인다(TO-DO 목록 todo-row.ts dueText 와 같은 규칙) */
+/** 수행 예정 — 오늘과 같은 해면 MM-DD, 아니면 YYYY-MM-DD. 시간이 있으면 뒤에 붙인다(홈 TO-DO 카드 todo-row.ts dueText 와 같은 규칙 — TO-DO 목록은 늘 연도까지인 dueFullText) */
 function dueText(dueDate: string, dueTime: string | null, today: string): string {
   const date = dueDate.slice(0, 4) === today.slice(0, 4) ? md(dueDate) : dueDate;
   return dueTime ? `${date} ${dueTime}` : date;

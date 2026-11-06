@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { components } from "../../lib/api-types.generated.ts";
-import { assigneeText, deletePreview, deleteResultMessage, dueText, historyActorText, historyText, MASKED_STAFF, staffNameText, statusCells } from "./todo-row.ts";
+import { assigneeText, deletePreview, deleteResultMessage, dueFullText, dueText, historyActorText, historyText, MASKED_STAFF, staffNameText, statusCells } from "./todo-row.ts";
 
 type Item = components["schemas"]["TodoListItemDto"];
 type Detail = components["schemas"]["TodoDetailDto"];
@@ -49,6 +49,11 @@ test("수행 예정 — 올해면 MM-DD, 시간이 있으면 붙이고, 다른 �
   assert.equal(dueText("2026-10-20", null, "2026-10-19"), "10-20");
   assert.equal(dueText("2026-10-20", "18:00", "2026-10-19"), "10-20 18:00");
   assert.equal(dueText("2027-01-05", "09:30", "2026-12-30"), "2027-01-05 09:30");
+});
+
+test("목록 수행 예정 — 늘 연도까지, 시간은 뒤에", () => {
+  assert.equal(dueFullText("2026-11-09", null), "2026-11-09");
+  assert.equal(dueFullText("2026-11-09", "10:00"), "2026-11-09 10:00");
 });
 
 test("상태 — 대기 회색 · 진행 중 파랑 · 완료 흐림, 그룹은 완료 건수를 붙인다", () => {
