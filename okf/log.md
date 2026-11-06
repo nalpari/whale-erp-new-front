@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-06
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 머리말의 켜진 메뉴 표시를 Figma 로그인전_공유(44:1794)에 맞췄다: 메뉴 화면에서는 지금 메뉴만 먹색 · 나머지 #999, 고른 메뉴가 없는 화면은 모두 먹색. 켜진 글자를 남색 대신 먹색으로. 앱 · 데모.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 여러 곳에 직접 적던 회색 구역 바탕(#fafafa)과 어두운 구역 덮개(rgba(31,31,31,0.8))를 `guest-surface` · `guest-scrim` 토큰으로 올렸다(규칙 점검). 앱 · 데모, 생김새는 그대로.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 부가서비스 서비스 카드를 한 줄에서 같은 높이로 맞추고 꼬리표를 카드 아래에 붙였다(사용자 요청). 데모 같이 반영.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 부가서비스를 Figma 로그인전_공유(44:1792)에 맞췄다: 제목 옆 버튼 제거, 서비스 카드 · 꼬리표 색, 확장 옵션 카드 바탕, 구독 안내 회색 구역, 직원수 추가 · 점포수 추가 아이콘 교체. 데모 같이 반영, `store-3.svg` 삭제.
