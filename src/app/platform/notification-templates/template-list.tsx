@@ -47,7 +47,7 @@ export function TemplateList({ items, total, query, totalPages }: { items: Templ
           column("본문 요약", undefined, (t) => t.bodySummary, "left"),
         ]
       : [column("받는 사람", "w-[220px]", (t) => recipientLabel(t.channel)), column("제목", undefined, (t) => t.title ?? "-", "left")]),
-    column("최근 수정", "w-[170px]", (t) => <span className={t.updatedByName === null ? "text-erp-muted" : ""}>{updatedLabel(t.updatedByName, t.updatedAt)}</span>),
+    column("최종수정", "w-[170px]", (t) => <span className={t.updatedByName === null ? "text-erp-muted" : ""}>{updatedLabel(t.updatedByName, t.updatedAt)}</span>),
     // 사용 여부는 흐리게 하지 않는다 — 배지 색이 이미 말한다.
     { header: "사용 여부", width: "w-[100px]", cell: (t) => (t.isActive ? <Badge tone="on">사용</Badge> : <Badge tone="off">사용 안 함</Badge>) },
   ];

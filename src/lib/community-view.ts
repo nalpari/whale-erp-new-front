@@ -126,31 +126,39 @@ export type PostForm = {
 /** 새로 더할 파일 — 검사에 쓰는 칸만. */
 export type NewFile = { name: string; size: number };
 
+/** 오류가 서는 칸 — 칸 아래에 문구를 보인다(공통 규칙: 저장할 때 검사해 그 입력칸 하단에, 2026-11-06 사용자 지정) */
+export type PostField = "type" | "title" | "body" | "audiences" | "period" | "attachments";
+
 /**
- * 저장 전 검사. 고칠 문장 목록을 돌려주고, 비어 있으면 보내도 된다. 필수 · 유형 · 카테고리 · 노출 대상 · 게시 기간 · 첨부 개수 문구는
- * api 와 같고, 길이 · 파일 종류 · 크기 문구는 화면 것이다(api 는 기본 문구이거나 파일 이름을 붙이지 않는다).
- * kept 는 남겨 둘 기존 첨부 수(수정), files 는 새로 더할 파일이다.
+ * 저장 전 검사 — 칸마다의 오류를 화면 위에서 아래 순서(유형 · 제목 · 본문 · 첨부 · 게시 기간 · 노출 대상)로 담는다. 비어 있으면 보내도 된다.
+ * 필수 · 유형 · 카테고리 · 첨부 개수 문구는 api 와 같다. 게시 기간 · 노출 대상 문구는 화면 것이다(2026-11-06 사용자 지정 — api 문구와 다르다),
+ * 길이 · 파일 종류 · 크기 문구도 화면 것이다. kept 는 남겨 둘 기존 첨부 수(수정), files 는 새로 더할 파일이다.
  */
-export function validatePost(f: PostForm, status: PostStatus, kept: number, files: readonly NewFile[]): string[] {
-  const errors: string[] = [];
+export function postFieldErrors(f: PostForm, status: PostStatus, kept: number, files: readonly NewFile[]): [PostField, string][] {
+  const errors: [PostField, string][] = [];
   const notice = f.kind === "NOTICE";
-  if (!f.title.trim()) errors.push("제목을 입력해 주세요.");
-  else if (f.title.length > TITLE_MAX) errors.push(`제목은 ${TITLE_MAX}자까지 쓸 수 있습니다.`);
-  if (!f.body.trim()) errors.push("본문을 입력해 주세요.");
-  else if (f.body.length > BODY_MAX) errors.push(`본문은 ${BODY_MAX.toLocaleString("ko-KR")}자까지 쓸 수 있습니다.`);
-  if (notice && !f.noticeType) errors.push("공지사항 유형을 선택해 주세요.");
-  if (!notice && !f.faqCategoryCode) errors.push("FAQ 카테고리를 선택해 주세요.");
-  if (status === "PUBLISHED" && f.audiences.length === 0) errors.push("게시하려면 노출 대상을 하나 이상 선택해 주세요.");
-  // YYYY-MM-DD 는 글자 순서가 날짜 순서다.
-  if (notice && f.publishStartDate && f.publishEndDate && f.publishEndDate < f.publishStartDate) errors.push("게시 종료일이 시작일보다 앞설 수 없습니다.");
+  if (notice && !f.noticeType) errors.push(["type", "공지사항 유형을 선택해 주세요."]);
+  if (!notice && !f.faqCategoryCode) errors.push(["type", "FAQ 카테고리를 선택해 주세요."]);
+  if (!f.title.trim()) errors.push(["title", notice ? "제목을 입력해 주세요." : "질문을 입력해 주세요."]);
+  else if (f.title.length > TITLE_MAX) errors.push(["title", `${notice ? "제목" : "질문"}은 ${TITLE_MAX}자까지 쓸 수 있습니다.`]);
+  if (!f.body.trim()) errors.push(["body", notice ? "본문을 입력해 주세요." : "답변을 입력해 주세요."]);
+  else if (f.body.length > BODY_MAX) errors.push(["body", `${notice ? "본문" : "답변"}은 ${BODY_MAX.toLocaleString("ko-KR")}자까지 쓸 수 있습니다.`]);
   if (notice) {
-    if (kept + files.length > MAX_ATTACHMENTS) errors.push(`첨부파일은 공지사항 하나에 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다.`);
+    if (kept + files.length > MAX_ATTACHMENTS) errors.push(["attachments", `첨부파일은 공지사항 하나에 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다.`]);
     for (const file of files) {
-      if (!FILE_EXT.test(file.name)) errors.push(`${file.name}: JPG · PNG · PDF 만 올릴 수 있습니다.`);
-      else if (file.size > MAX_FILE_BYTES) errors.push(`${file.name}: 10MB 이하 파일만 첨부할 수 있습니다.`);
+      if (!FILE_EXT.test(file.name)) errors.push(["attachments", `${file.name}: JPG · PNG · PDF 만 올릴 수 있습니다.`]);
+      else if (file.size > MAX_FILE_BYTES) errors.push(["attachments", `${file.name}: 10MB 이하 파일만 첨부할 수 있습니다.`]);
     }
   }
+  // YYYY-MM-DD 는 글자 순서가 날짜 순서다.
+  if (notice && f.publishStartDate && f.publishEndDate && f.publishEndDate < f.publishStartDate) errors.push(["period", "게시 종료일은 시작일 이후로 선택해 주세요."]);
+  if (status === "PUBLISHED" && f.audiences.length === 0) errors.push(["audiences", "노출대상을 선택해주세요."]);
   return errors;
+}
+
+/** 문구만 — 화면 위에서 아래 순서. 비어 있으면 보내도 된다. */
+export function validatePost(f: PostForm, status: PostStatus, kept: number, files: readonly NewFile[]): string[] {
+  return postFieldErrors(f, status, kept, files).map(([, message]) => message);
 }
 
 /**

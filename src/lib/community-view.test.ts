@@ -86,7 +86,7 @@ test("validatePost — 맞으면 빈 목록", () => {
 });
 
 test("validatePost — 게시만 노출 대상이 있어야 한다", () => {
-  assert.deepEqual(validatePost(notice({ audiences: [] }), "PUBLISHED", 0, []), ["게시하려면 노출 대상을 하나 이상 선택해 주세요."]);
+  assert.deepEqual(validatePost(notice({ audiences: [] }), "PUBLISHED", 0, []), ["노출대상을 선택해주세요."]);
   assert.deepEqual(validatePost(notice({ audiences: [] }), "DRAFT", 0, []), []);
 });
 
@@ -102,7 +102,7 @@ test("validatePost — 제목 · 본문 공백과 길이", () => {
 
 test("validatePost — 게시 종료일이 시작일보다 앞서면 막는다(FAQ 는 기간을 보지 않는다)", () => {
   const swapped = { publishStartDate: "2026-09-14", publishEndDate: "2026-09-05" };
-  assert.deepEqual(validatePost(notice(swapped), "DRAFT", 0, []), ["게시 종료일이 시작일보다 앞설 수 없습니다."]);
+  assert.deepEqual(validatePost(notice(swapped), "DRAFT", 0, []), ["게시 종료일은 시작일 이후로 선택해 주세요."]);
   assert.deepEqual(validatePost(faq(swapped), "DRAFT", 0, []), []);
 });
 

@@ -13,60 +13,67 @@
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
+        <!-- 페이지 제목 줄은 메뉴명 「공지사항」. 「공지사항 상세」 제목은 빼고 그 자리에 공지 제목(20px)을 두고, 아래 줄에 「구분 [꼬리표] | 게시일 [꼬리표]」
+             (이름은 회색 14px 500 — 문의 상세 「분류 [꼬리표]」와 같은 모양), 오른쪽 끝 [목록](2026-11-06 사용자 지정). -->
         <div class="titlebar">
-          <a class="iconbtn" href="index.html#notices" aria-label="공지 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
-          <h1 class="t-h1">9월 정기 점검 안내 (09-14 02:00~05:00)</h1>
-          <span class="badge badge--warn">점검</span>
-          <div class="titlebar__end">
-            <span class="filters__count mono">S-ITFILU · /support-notices/[id]</span>
-          </div>
+          <h1 class="t-h1">공지사항</h1>
         </div>
 
         <div class="content">
-          <div class="grid grid--7-5">
-            <section class="panel">
-              <div class="panel__head">
-                <span class="mono subtle" style="font-size: 12px">게시 2026-09-05 · WHALE ERP 운영팀</span>
-                <div class="panel__end">
-                  <span class="badge badge--risk">상단 고정</span>
+          <div class="stack--lg" style="display: flex; flex-direction: column">
+            <div class="spread" style="align-items: center">
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <h2 style="font-size: 20px; font-weight: 600; margin: 0">9월 정기 점검 안내 (09-14 02:00~05:00)</h2>
+                <div class="row subtle" style="gap: 10px; font-weight: 500">
+                  <span>구분 <span class="tag">점검</span></span>
+                  <span>|</span>
+                  <span>게시일 <span class="tag">2026-09-05</span></span>
                 </div>
               </div>
-              <div class="panel__body" style="font-size: 14px; line-height: 1.7">
+              <a class="btn btn--primary" href="index.html#notices">목록</a>
+            </div>
+
+            <!-- 본문은 제목 바 없이 테두리 상자에 바로, 15px(목록 · 문의 상세 본문은 14px — 공지 상세만 읽는 글이라 키웠다, 2026-11-06 사용자 지정). 평문이다. -->
+            <section class="panel">
+              <div class="panel__body" style="font-size: 15px; line-height: 1.7">
                 <p>9월 14일(일) 새벽 2시부터 5시까지 정기 점검이 있습니다.</p>
                 <p>점검 시간에는 관리자 웹과 직원 전용 앱을 모두 사용할 수 없습니다. 직원 근무 앱의 출퇴근 등록은 점검 중에도 기기에 기록되고 점검이 끝나면 자동으로 반영됩니다.</p>
                 <p>점검이 일찍 끝나면 공지 없이 서비스를 재개합니다.</p>
               </div>
-              <div class="panel__foot">
-                <span data-icon="file" data-icon-size="15"></span>
-                <a class="tbtn" href="#">점검_안내_2026-09.pdf</a>
-                <span class="mono">184 KB</span>
-              </div>
             </section>
 
-            <section class="stack--lg" style="display: flex; flex-direction: column">
-              <div class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">이전 · 다음</h2>
-                </div>
-                <div class="tblwrap">
-                  <table class="tbl tbl--dense tbl--fit">
-                    <tbody>
-                      <tr>
-                        <td class="subtle" style="width: 44px">이전</td>
-                        <td class="k"><a class="tlink" href="notice-detail.html">근로계약 전자날인 기능이 열렸습니다</a></td>
-                        <td class="mono">09-01</td>
-                      </tr>
-                      <tr>
-                        <td class="subtle">다음</td>
-                        <td class="k subtle">가장 최근 공지입니다</td>
-                        <td></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div class="panel__note">
-                  목록으로 돌아가면 <b>보던 페이지</b>로 온다. 목록 공통 규칙이다.
-                </div>
+            <!-- 첨부 — 문의 상세 첨부와 같은 목록: 그림은 64px 둥근 썸네일, PDF 는 이름 + 크기. 누르면 내려받는다(2026-11-06 사용자 지정 — 전엔 「파일 | 이름 크기」 상세 표) -->
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">첨부파일</h2>
+              </div>
+              <ul style="list-style: none; margin: 0; padding: 0">
+                <li class="row" style="gap: 10px; padding: 12px; border-bottom: 1px solid #e9edf5"><span style="display:grid;place-items:center;width:64px;height:64px;flex:none;border:1px solid #edeef1;border-radius:8px;background:#f8f9fb;font-size:12px;color:#888">PNG</span><a class="tlink" href="#">점검_시간표.png</a><span class="mono subtle">212KB</span></li>
+                <li class="row" style="gap: 10px; height: 46px; padding: 0 12px"><a class="tlink" href="#">점검_안내_2026-09.pdf</a><span class="mono subtle">184KB</span></li>
+              </ul>
+            </section>
+
+            <!-- 이전 · 다음 — 상세 표와 같은 선 · 46px 줄 · 110px 라벨 칸이되 글자는 본문과 같은 15px. 제목 링크 | 회색 게시일(2026-11-06 사용자 지정) -->
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">이전 · 다음</h2>
+              </div>
+              <div class="tblwrap">
+                <table class="tbl tbl--fit" style="font-size: 15px">
+                  <tbody>
+                    <tr>
+                      <td class="subtle" style="width: 110px; text-align: left; font-weight: 500">이전</td>
+                      <td class="k" style="text-align: left"><a class="tlink" href="notice-detail.html">근로계약 전자날인 기능이 열렸습니다</a> <span class="subtle">| 2026-09-01</span></td>
+                    </tr>
+                    <tr>
+                      <td class="subtle" style="text-align: left; font-weight: 500">다음</td>
+                      <td class="k subtle" style="text-align: left">목록의 맨 위 공지입니다.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="panel__note">
+                목록으로 돌아가면 <b>보던 페이지</b>로 온다. 목록 공통 규칙이다.
               </div>
             </section>
           </div>

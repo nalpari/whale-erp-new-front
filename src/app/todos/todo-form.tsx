@@ -342,9 +342,9 @@ function TodoFormFields({
         )}
 
         {(serverError || (tried && issues.length > 0)) && (
-          <div role="alert" className="flex flex-col gap-[4px] rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px]">
+          <div role="alert" className="flex flex-col gap-[4px] rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px]">
             <p className="text-[14px] font-semibold text-erp-off">저장하지 못했습니다.</p>
-            <ul className="list-disc pl-[18px] text-[14px] leading-[1.6] text-erp-ink">
+            <ul className="list-disc pl-[18px] text-[14px] leading-[1.6] text-erp-off">
               {(serverError ? [serverError] : issues).map((m) => (
                 <li key={m}>{m}</li>
               ))}
