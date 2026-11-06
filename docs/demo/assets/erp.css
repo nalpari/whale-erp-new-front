@@ -3805,6 +3805,22 @@ details[name="guest-faq"][open]::details-content {
     transition: none;
   }
 }
+@keyframes guest-whale-float {
+  from {
+    transform: translateY(-6px) rotate(-0.6deg);
+  }
+  to {
+    transform: translateY(6px) rotate(0.6deg);
+  }
+}
+.guest-whale {
+  animation: guest-whale-float 3.5s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .guest-whale {
+    animation: none;
+  }
+}
 @property --tw-translate-x {
   syntax: "*";
   inherits: false;
