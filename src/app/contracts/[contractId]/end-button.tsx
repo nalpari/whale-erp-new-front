@@ -2,8 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, ConfirmDialog } from "@/components/common";
+import { Button, ConfirmDialog, useAction } from "@/components/common";
 import { withBack } from "../contract-list";
+import { useCurrentBp } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { endContract, type EndContractResult } from "./actions";
 import { END_UNKNOWN, sendFailureOf } from "./send-model";
 
@@ -15,9 +17,12 @@ import { END_UNKNOWN, sendFailureOf } from "./send-model";
 // 닫으면 보내기 실패 안내(?send=)를 지운다 — 종료한 계약에 「재발송해 주세요」가 남지 않게(재발송 버튼과 같다).
 export function EndContractButton({ contractId, name, back }: { contractId: number; name: string | null; back: string }) {
   const router = useRouter();
+  // 상세 주소는 탭 BP 를 붙인다. back 은 옛 경로(목록 쿼리)다
+  const bp = useCurrentBp().bpCodeId;
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
+  const end = useAction(endContract, { text: "종료중입니다." });
 
   return (
     <>
@@ -37,15 +42,16 @@ export function EndContractButton({ contractId, name, back }: { contractId: numb
           start(async () => {
             let result: EndContractResult;
             try {
-              result = await endContract(contractId);
-            } catch {
+              result = await end(contractId);
+            } catch (e) {
+              console.error("근로계약 종료 호출이 끊김", contractId, e);
               // 서버 액션 호출 자체가 끊겼다(브라우저 ↔ Next, 배포 중 재시작) — api 는 이미 닫았을 수 있다
               result = sendFailureOf(null, undefined, "", END_UNKNOWN);
             }
             if (result.ok) {
               setOpen(false);
               setError("");
-              router.replace(withBack(`/contracts/${contractId}`, back));
+              router.replace(bpPath(bp, withBack(`/contracts/${contractId}`, back)));
               router.refresh();
               return;
             }
@@ -55,7 +61,7 @@ export function EndContractButton({ contractId, name, back }: { contractId: numb
         }
       >
         <p>채용을 접을 때 씁니다. {name ? `${name} 님에게 ` : ""}보낸 가입 초대(초대 코드 · 링크)를 쓸 수 없게 되고, 종료한 계약은 다시 열 수 없습니다.</p>
-        <p className="mt-[6px]">계약은 지우지 않고 상태 변경 이력에 남습니다. 남은 직원 정보는 직원 정보 관리에서 퇴직 처리로 정리합니다.</p>
+        <p className="mt-[6px]">계약은 지우지 않고 상태 변경이력에 남습니다. 남은 직원 정보는 직원 정보 관리에서 퇴직 처리로 정리합니다.</p>
         {error && (
           <p className="mt-[6px] text-erp-off" aria-live="polite">
             {error}

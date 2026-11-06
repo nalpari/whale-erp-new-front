@@ -23,6 +23,8 @@ export type CreateStoreInput = Schemas["CreateStoreDto"];
 export type CreateStoreResult = Schemas["CreateStoreResponseDto"];
 /** PUT /stores/:id — 화면 전체를 보낸다(빠진 선택 칸은 지운다). 층별 정보는 보낸 목록으로 통째로 바뀐다 */
 export type UpdateStoreInput = Schemas["UpdateStoreDto"];
+/** PUT /stores/:id 응답 — 폐점이면 처리 결과(closing), 그 밖의 수정이면 closing null */
+export type UpdateStoreResult = Schemas["UpdateStoreResponseDto"];
 export type StoreBusinessInput = Schemas["StoreBusinessInputDto"];
 /** POST /stores/business-verifications — 진위확인 세 값 + 수정 중이면 storeId. 서버가 저장할 때 국세청에 다시 확인한다. 연동 전에는 503 */
 export type BusinessVerificationInput = Schemas["VerifyStoreBusinessDto"];
@@ -47,7 +49,6 @@ export const FLOOR_TYPES = orderOf({ GROUND: 1, BASEMENT: 2 } satisfies Record<F
 /** 페이지당 건수 — api 는 이 셋 밖이면 400 이다 */
 export const STORE_PAGE_SIZES = [20, 50, 100] as const;
 export type StorePageSize = (typeof STORE_PAGE_SIZES)[number];
-export const STORE_HISTORY_PAGE_SIZE = 10;
 /** 대표 이미지 한 장의 상한 — 정책 「JPG · PNG 5MB 이하」, api 와 DB CHECK 가 같은 값으로 막는다 */
 export const STORE_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
 

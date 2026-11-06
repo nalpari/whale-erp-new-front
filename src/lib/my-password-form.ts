@@ -1,4 +1,4 @@
-// 내 비밀번호 변경(MY PAGE, S-PTWREE) — 화면이 api message 를 어느 칸에 붙일지만 가른다. 오류 문구 자체는
+// 내 비밀번호 변경(마이페이지, S-PTWREE) — 화면이 api message 를 어느 칸에 붙일지만 가른다. 오류 문구 자체는
 // 화면이 만들지 않고 api 의 message 를 그대로 쓴다(force-password-dialog.tsx 의 같은 규칙, 정책 PL-QSBSYY).
 
 export type MyPasswordFormField = "current" | "newPassword" | "newPasswordConfirm";

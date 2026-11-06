@@ -24,11 +24,14 @@ const EDIT_PUSHED_STATE = "bpAdminEditPushedFor";
 // 고칠 수 있는지를 api 가 준 actions 로 보는 것이다.
 export function AdminsScreen({
   list,
+  noAdminsAtAll,
   roleGroups,
   query,
   detail,
 }: {
   list: BpAdminList;
+  /** 조건 없이도 0건 — 「등록된 …」 빈 문구(page.tsx 가 가른다) */
+  noAdminsAtAll: boolean;
   /** null 이면 받지 못했다 — 필터 · 폼이 알린다 */
   roleGroups: BpAdminRoleGroup[] | null;
   query: BpAdminsQuery;
@@ -147,7 +150,7 @@ export function AdminsScreen({
                 </Select>
               </div>
             </ListToolbar>
-            <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} noStatus={query.accountStatus === "NONE"} />
+            <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} noneRegistered={noAdminsAtAll} />
             <div className="pt-[14px]">
               <Pagination
                 page={query.page}
@@ -170,7 +173,7 @@ export function AdminsScreen({
             onSaved={(result) => {
               setNewOpen(false);
               // 초기 비밀번호 메일이 실패해도 계정은 만들어졌다 — 상세의 비밀번호 초기화로 다시 보낸다(SYSTEM-3 과 같다).
-              toast(result.isMailSent ? "saved" : "저장되었습니다. 초기 비밀번호 메일은 보내지 못했습니다 — 상세에서 비밀번호를 초기화해 주세요.");
+              toast("saved"); // 늘 「저장되었습니다.」 — 메일 실패는 열리는 상세 위 빨간 상자가 알린다(BP 마스터와 같다, 2026-10-28)
               detailTrigger.current = newTrigger.current;
               go({ admin: result.adminAccountId, edit: undefined });
             }}

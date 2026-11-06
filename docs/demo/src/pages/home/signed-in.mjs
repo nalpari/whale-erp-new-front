@@ -19,12 +19,12 @@ const warn = (t) => `<span class="text-erp-off">${t}</span>`;
 export default ({ A, R }) => {
   const top = band(
     ui.badge("off", "갱신 예정"),
-    "계약 갱신 예정 2건이 7일 안에 끝납니다",
+    "계약 갱신 예정 2건이 7일 안에 끝납니다.",
     ui.button("계약 보기", { variant: "soft", href: link(R, "staff/contracts.html") }) + ui.button("새 계약 작성", { href: link(R, "staff/contracts-new.html") }),
   );
 
   const figures = `<div class="grid grid-cols-4 gap-[12px]">${[
-    figure(A, link(R, "staff/index.html"), "재직 직원", "63", "명", `${warn("미체결 계약 3")} · 정직원 21 · 파트 42`),
+    figure(A, link(R, "staff/index.html"), "재직 직원", "63", "명", "정직원 21 · 파트 42"),
     figure(A, link(R, "stores/index.html"), "운영 점포", "11", "개점", "직영 4 · 가맹 7"),
     figure(A, link(R, "staff/attendance.html"), "오늘 출근", "27", "명", `근무 예정 31 · ${warn("미출근 4")}`),
     figure(A, link(R, "support/inquiries.html"), "내 문의", "2", "건", "답변 대기 1 · 답변 완료 1"),
@@ -77,7 +77,9 @@ export default ({ A, R }) => {
   const all = `<div data-scope-view="all" class="flex flex-col gap-[12px]">${top}${figures}<div class="grid grid-cols-[7fr_5fr] items-start gap-[12px]">${stores}${waiting}</div></div>`;
   const body = `<div class="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto p-[24px]">${all}${oneStore(A, R)}</div>`;
   const titleRight = `<div class="flex items-center gap-[10px]"><span class="text-[13px] text-erp-label">09-03 09:40 기준</span><button type="button" aria-label="다시 불러오기" class="grid h-[32px] w-[38px] place-items-center rounded-[2px] border border-erp-button-line bg-white">${ui.img(A, "reset.svg", 14, 14)}</button></div>`;
-  return { title: "홈", html: ui.erpFrame({ header: erpHeader(A, R), title: "안녕하세요, 정하윤님", titleRight, body }) };
+  // 「안녕하세요,」는 회색(erp-label) 400, 「정하윤님」은 먹색 600 · 문장 제목이라 18px(앱 home-screen.tsx, 2026-11-04 사용자 지정)
+  const title = '<span class="font-normal text-erp-label">안녕하세요,</span> 정하윤님';
+  return { title: "홈", html: ui.erpFrame({ header: erpHeader(A, R), title, titleSize: "sentence", titleRight, body }) };
 };
 
 // ── 점포 하나 화면(HOME-6 B) ──

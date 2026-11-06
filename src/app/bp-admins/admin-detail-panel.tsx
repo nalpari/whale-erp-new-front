@@ -6,11 +6,13 @@ import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, useTo
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
-import { FailedBand, InfoBand } from "@/components/site/side-parts";
-import { Blocked, WhoList } from "@/app/platform-admins/admin-parts";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
+import { WITHDRAWN_TEXT } from "@/app/bp-masters/bp-master-parts";
+import { FailedBand, InfoBand, SuccessBand, WarnBand } from "@/components/site/side-parts";
+import { WhoList } from "@/app/platform-admins/admin-parts";
 import { HistoryButton } from "@/app/platform-admins/history-dialog";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
-import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
+import { formatDateTime, formatPhone, wasUpdated, withinPasswordHour } from "@/lib/format";
 import { detailButtonsOf } from "@/lib/bp-admin-rules";
 import type { BpAdminDetail, BpAdminStore } from "@/lib/bp-admins";
 import type { StoreStatus } from "@/lib/store-types";
@@ -21,9 +23,9 @@ import { unknownResult } from "./bp-admin-parts";
 // 계정 상태 · 역할 · 권한 그룹은 이름 아랫줄에 「역할 | 권한명 | 상태 배지」(HeadValues)로 보인다(2026-10-27, 전엔 제목 줄 꼬리표). 가맹 관리자는 기본정보에 연결 가맹 마스터 줄을 둔다(2026-10-23).
 // [수정] · [비밀번호 초기화]는 메뉴 수정 권한과 api 가 준 actions 를 함께 본다(bp-admin-rules.ts) — 막는 것은 api 다.
 // 미사용 계정은 초기화 버튼 · 미발송 표시를 숨긴다 — 플랫폼 관리자와 같다(2026-10-27 사용자 지정). 본인 계정은 초기화 버튼을 막는다(내 정보에서 바꾼다).
-// 등록 · 최종수정은 화면 맨 아래 권한 그룹 상세와 같은 테두리 없는 카드로, 적용 대상(전체 · 일부 점포)은 대상점포 제목 바 옆에 보인다. 최근 로그인은 기본정보 표의 비밀번호 아래 줄이다(2026-10-27 사용자 지정).
-// 본인 계정은 수정 범위를 제목 아래 띠로 알린다(가맹 관리자 본인은 늘, 그 밖은 [수정]이 보일 때만). 수정할 수 없는 가맹 관리자 계정은
-// 수정 · 초기화를 막은 이유를 띠로 보인다(2026-10-27).
+// 등록 · 최종수정은 기본정보 표 안 두 줄, 적용 대상(전체 · 일부 점포)은 대상점포 제목 바 옆에 보인다. 최근 로그인은 기본정보 표의 비밀번호 아래 줄이다(2026-10-27 사용자 지정).
+// 본인 계정은 「내 계정입니다.」 한 줄(가맹 관리자 본인은 늘, 그 밖은 [수정]이 보일 때만). 연결 가맹마스터가 아닌 사람이 보는 가맹 관리자
+// 계정은 빨간 상자로 막힌 이유를 보인다 — 안내 상자들은 10px 간격 한 묶음(2026-10-30).
 
 export function AdminDetailPanel({
   open,
@@ -81,10 +83,24 @@ function DetailBody({
   if (!panelOpen && confirmOpen) setConfirmOpen(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, startBusy] = useTransition();
+  /** 이 상세에서 초기화 메일을 보냈다 — 로그인한 적이 있어도 하늘색 안내를 띄운다(BP 마스터 상세와 같다, 2026-10-28 사용자 지정) */
+  const [resetMark, setResetMark] = useState<{ statusChangedAt: string | null } | null>(null);
+  // 패널을 닫으면 방금 초기화 안내를 내린다 — 같은 계정을 다시 열어도 띄우지 않는다(로그인한 적 있는 계정은 그 뒤 안내 없음, 2026-10-29 사용자 지정)
+  if (!panelOpen && resetMark) setResetMark(null);
+  // 초기화한 뒤 상태를 바꾸면(수정 패널에서 미사용 → 사용) 방금 초기화 안내를 내린다 — 그때의 상태 변경 일시와 같을 때만(리뷰로 찾음)
+  const resetSent = resetMark !== null && resetMark.statusChangedAt === (admin.statusChangedAt ?? null);
 
   const can = usePagePermission();
-  const { canUpdate, showReset, resetBlocked } = detailButtonsOf(admin.actions, can);
-  const name = admin.name ?? admin.loginId;
+  const buttons = detailButtonsOf(admin.actions, can);
+  // 탈퇴한 BP 의 하위 관리자는 미사용 · 개인정보 지움으로 남는다(api 회원 탈퇴, 2026-11-04 사용자 지정) — 지운 칸은 BP 마스터 화면처럼 「탈퇴로 삭제됨」
+  const bpWithdrawn = useCurrentBpStatus() === "WITHDRAWN";
+  // 탈퇴 BP 의 관리자는 고칠 수 없다(api 409, 상세 actions 도 모두 끔) — api 가 아직 옛 응답이어도 [수정] · [초기화]를 띄우지 않는다
+  const canUpdate = buttons.canUpdate && !bpWithdrawn;
+  const showReset = buttons.showReset && !bpWithdrawn;
+  const { resetBlocked } = buttons;
+  // 안내 상자의 「비밀번호 초기화가 필요합니다.」는 그 버튼을 누를 수 있는 사람에게만 — 권한 없음 · 본인 계정은 앞 문장만(리뷰로 찾음)
+  const canReset = showReset && !resetBlocked;
+  const name = admin.name ?? (bpWithdrawn ? WITHDRAWN_TEXT : admin.loginId);
 
   const handleReset = () =>
     startBusy(async () => {
@@ -97,8 +113,9 @@ function DetailBody({
         return;
       }
       setFailure(null);
-      // 메일이 실패해도 기존 비밀번호는 이미 막혔다 — 다시 초기화하면 보낸다
-      toast(result.isMailSent ? "초기 비밀번호를 계정 이메일로 보냈습니다." : "초기화했지만 메일을 보내지 못했습니다. 다시 초기화해 주세요.");
+      // 메일이 실패해도 기존 비밀번호는 이미 막혔다 — 다시 초기화하면 보낸다. 결과는 상세 위 상자로(액션이 refresh 해 미발송이 켜진다)
+      setResetMark(result.isMailSent ? { statusChangedAt: admin.statusChangedAt ?? null } : null);
+      if (result.isMailSent) toast("초기화되었습니다.");
     });
 
   const muted = (text: string) => <span className="font-normal text-erp-muted">{text}</span>;
@@ -117,24 +134,22 @@ function DetailBody({
   const edited = admin.updatedByName !== null && wasUpdated(admin.createdAt, admin.updatedAt);
   const rows: DetailRow[] = [
     { label: "아이디", value: admin.loginId },
-    { label: "이름", value: name },
-    { label: "연락처", value: admin.phone ? formatPhone(admin.phone) : null },
-    { label: "이메일", value: admin.email ?? null },
+    { label: "이름", value: admin.name === null && bpWithdrawn ? muted(WITHDRAWN_TEXT) : name },
+    { label: "연락처", value: admin.phone ? formatPhone(admin.phone) : bpWithdrawn ? muted(WITHDRAWN_TEXT) : null },
+    { label: "이메일", value: admin.email ?? (bpWithdrawn ? muted(WITHDRAWN_TEXT) : null) },
     {
       label: "비밀번호",
-      // 미사용 계정은 초기화 버튼 · 미발송 표시 없이 빈칸으로 둔다 — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다, 플랫폼 관리자와 같다)
-      value: admin.accountStatus === "INACTIVE" ? null : (
-        <span className="flex items-center gap-[10px]">
-          {showReset && (
-            <Blocked reason={resetBlocked ? "본인 비밀번호는 내 정보에서 바꿉니다" : undefined}>
-              <Button variant="soft" onClick={() => setConfirmOpen(true)} disabled={resetBlocked || busy}>
-                초기화
-              </Button>
-            </Blocked>
-          )}
-          {admin.isInitialPasswordUnsent && <span className="text-erp-off">초기 비밀번호 미발송</span>}
-        </span>
-      ),
+      // 미사용 계정 · 초기화 버튼을 못 보는 계정은 「-」 — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다, 플랫폼 관리자와 같다, 2026-10-28).
+      // 본인 계정도 「-」 — 초기화할 수 없는 버튼을 흐리게 두지 않고 뺀다(2026-10-29 사용자 지정, 비밀번호는 내 정보에서 바꾼다).
+      // 미발송은 상세 위 빨간 상자가 알린다
+      value:
+        admin.accountStatus === "INACTIVE" || !canReset ? (
+          muted("-")
+        ) : (
+          <Button variant="soft" onClick={() => setConfirmOpen(true)} disabled={busy}>
+            초기화
+          </Button>
+        ),
     },
     // 비밀번호 아래 줄 — 플랫폼 관리자 상세와 같이 표에 둔다(2026-10-27 사용자 지정)
     { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("-") },
@@ -170,37 +185,52 @@ function DetailBody({
             items={[
               { label: "역할", value: roleType(admin.roleTypeCode) },
               { label: "권한명", value: admin.roleGroup.name }, // 라벨 「권한명」(2026-10-27 사용자 지정 — 전엔 「권한그룹」)
-              { value: admin.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge> },
+              { value: admin.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="closed">미사용</Badge> },
             ]}
           />
         </span>
       </div>
-      {failure && <FailedBand message={failure} />}
-      {/* 버튼을 숨기거나 막은 이유(목업 admins-detail). 연결 가맹 마스터가 아닌 사람이 보는 가맹 관리자 문구는 2026-10-27 사용자 지정 */}
-      {admin.actions.isSelf ? (
-        admin.roleTypeCode === "FA" ? (
-          <InfoBand>
-            <p>내 계정입니다 — 조회만 합니다</p>
-            <p className="font-normal text-erp-label">
-              가맹 관리자는 계정을 수정하지 않습니다. 계정 정보 · 권한명 · 점포 · 계정상태는 연결된 가맹 마스터가 바꾸고, 비밀번호는 내 정보에서 직접 바꿉니다.
-            </p>
-          </InfoBand>
-        ) : (
-          // 수정 화면을 설명하는 띠라 [수정]이 보일 때만(메뉴 수정 권한 + api canUpdate)
-          canUpdate && (
+      {/* 안내 상자끼리는 10 — 패널 칸 간격(16)보다 붙여 한 묶음으로 보이게(2026-10-30 사용자 지정). 상자가 하나도 없으면 칸을 숨겨 간격이 생기지 않는다 */}
+      <div className="flex flex-col gap-[10px] empty:hidden">
+        {/* 초기화 비밀번호 안내 — BP 마스터 상세와 같은 상자(2026-10-28 사용자 지정). 메일 실패는 빨간 상자(비밀번호 줄의 「미발송」 글자 대신) */}
+        {/* 방금 한 동작의 실패는 머리 바로 아래, 다른 안내 상자보다 위에(2026-10-28 사용자 지정) */}
+        {failure && <FailedBand message={failure} />}
+        {admin.accountStatus === "ACTIVE" && admin.isInitialPasswordUnsent && <WarnBand>{`초기화 비밀번호가 발송되지 않았습니다.${canReset ? "\n비밀번호 [초기화] 버튼을 눌러 다시 발송해 주세요." : ""}`}</WarnBand>}
+        {/* 버튼을 숨기거나 막은 이유(목업 admins-detail). 연결 가맹 마스터가 아닌 사람이 보는 가맹 관리자 문구는 2026-10-27 사용자 지정.
+            로그인 안내(하늘색)보다 위에 둔다(2026-10-30 사용자 지정) */}
+        {/* 본인 계정은 사람 아이콘 + 한 줄만 — 설명문은 뺐다(2026-10-29 사용자 지정, 전엔 수정 범위 · 비밀번호 바꾸는 곳까지 적었다). 가맹 관리자는 [수정]이 없어도 둔다 */}
+        {admin.actions.isSelf ? (
+          (admin.roleTypeCode === "FA" || canUpdate) && (
             <InfoBand>
-              <p>내 계정입니다</p>
-              <p className="font-normal text-erp-label">
-                수정 화면에서는 기본정보(이름 · 연락처 · 이메일)만 바뀝니다. 권한명 · 계정상태 · 대상점포는 BP 마스터 · BP 관리자 · 플랫폼 사용자가,
-                비밀번호는 내 정보에서 직접 바꿉니다.
-              </p>
+              {/* 사람 아이콘 — 헤더 사람 아이콘(avatar.svg)과 같은 모양 · 선 굵기(2026-10-29 사용자 지정) */}
+              <span className="flex items-center gap-[6px]">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden className="size-[16px] shrink-0 stroke-erp-brand">
+                  <path d="M2.5 14c2.4-2.7 8.6-2.8 11 0M10.6 6.1a2.6 2.6 0 1 1-5.2 0 2.6 2.6 0 0 1 5.2 0Z" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                내 계정입니다.
+              </span>
             </InfoBand>
           )
-        )
-      ) : (
-        admin.roleTypeCode === "FA" &&
-        !admin.actions.canUpdate && <InfoBand>가맹 관리자 계정은 연결된 가맹 마스터만 수정 · 비밀번호 초기화할 수 있습니다.</InfoBand>
-      )}
+        ) : (
+          admin.roleTypeCode === "FA" &&
+          // 빨간 상자 · 「[연결된 가맹마스터]」 굵게 — 놓치지 않게(2026-10-30 사용자 지정 — 전엔 회색 InfoBand)
+          !admin.actions.canUpdate && (
+            <WarnBand>
+              이 계정은 <strong className="font-semibold">[연결된 가맹마스터]</strong>만 수정할 수 있습니다.
+            </WarnBand>
+          )
+        )}
+        {/* 보냈고 첫 로그인 전이거나 이 상세에서 방금 초기화했으면 하늘색 상자. 초기화 비밀번호는 1시간만 유효하다(api) */}
+        {admin.accountStatus === "ACTIVE" && !admin.isInitialPasswordUnsent && (resetSent || (!admin.lastLoginAt && !admin.statusChangedAt)) && (
+          <SuccessBand>
+            {/* 방금 이 화면에서 보냈거나 계정을 만든 지 1시간이 안 됐으면(만들 때 초기 비밀번호를 보낸다) 발송 안내, 아니면(한 번도 로그인하지 않은 계정) 로그인하지 않았다는 사실만 — 발송 시각을 api 가 주지 않아
+              「1시간」은 방금 보냈을 때만 쓴다(2026-10-29 사용자 지정, 전엔 며칠 지나도 「발송했습니다」가 남았다) */}
+            {resetSent || withinPasswordHour(admin.createdAt)
+              ? "초기화 비밀번호를 발송했습니다.\n비밀번호는 1시간 동안 유효합니다."
+              : `아직 로그인하지 않은 계정입니다.${canReset ? "\n비밀번호 초기화가 필요합니다." : ""}`}
+          </SuccessBand>
+        )}
+      </div>
       <DetailTable title="기본정보" rows={rows} />
       {/* 적용 대상은 대상점포 제목 바 옆에 「전체 점포 · 일부 점포」로 합쳤다(2026-10-27 사용자 지정 — 전엔 따로 「적용 대상」 줄) */}
       <MappedStores admin={admin} />
@@ -231,14 +261,10 @@ function DetailBody({
           onCancel={() => setConfirmOpen(false)}
         >
           <div className="flex flex-col gap-[12px]">
-            <WhoList rows={[["아이디", admin.loginId], ["이름", name]]} />
-            <p>
-              임시 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.
-              <br />
-              임시 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.
-              <br />
-              현재 로그인 중인 세션은 유지됩니다.
-            </p>
+            <WhoList rows={[["아이디", admin.loginId], ["이름", name ?? "-"], ["이메일", admin.email ?? "-"]]} />
+            {/* 세 관리 화면 같은 문구 · 대상은 아이디 · 이름 · 이메일 각각(「아이디/이름」 한 줄은 라벨이 잘렸다)(2026-10-28 사용자 지정) */}
+            {/* 안내는 빨간 안내 상자로 — 되돌릴 수 없는 동작이라 놓치지 않게(2026-10-28 사용자 지정) */}
+            <WarnBand>{"비밀번호 초기화 시 새로운 비밀번호가 등록된 이메일로 발송됩니다.\n새 비밀번호는 1시간 동안 유효하며, 로그인 시 변경해야 합니다.\n기존 비밀번호는 즉시 사용할 수 없게 됩니다."}</WarnBand>
           </div>
         </ConfirmDialog>
       )}

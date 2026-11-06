@@ -1,5 +1,6 @@
 // 근로계약 상세의 칸 표기. 테스트: node --test "src/app/contracts/[contractId]/detail-format.test.ts"
 import { WEEKDAYS, WEEKS_PER_MONTH, type ContractDetail } from "../new/contract-form-model.ts";
+import { payrollAccountText } from "../../staff-members/[id]/contract-summary.ts";
 
 const minutes = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
 
@@ -47,6 +48,24 @@ export function insuranceText(healthPension: boolean | null, employmentInjury: b
   return on.length ? on.join(", ") : "가입 안 함";
 }
 
+/** 신고 정보를 풀 수 없을 때(api UNAVAILABLE — 키 없음 · 복호화 실패) 주민등록번호 · 급여 계좌 칸에 보이는 글자 */
+export const TAX_PROFILE_UNAVAILABLE = "신고 정보를 지금 볼 수 없습니다.";
+
+/**
+ * 「주민등록번호」 · 「급여 계좌」 칸 글자(WHALEERP-155). 주민등록번호는 api 가 가린 값(900101-1******) 그대로, 급여 계좌는 직원 상세 근로계약
+ * 요약과 같은 「은행이름 계좌번호」다. 미입력(NONE)과 본사 역할이 가맹 점포 직원을 볼 때(HIDDEN)는 같은 「-」다 — 줄은 그대로 둔다(직원 상세와 다르다).
+ * 칸이 없는 옛 api 응답이 와도 「-」로 둔다.
+ */
+export function taxProfileTexts(t: ContractDetail["taxProfile"] | undefined): { rrn: string; account: string } {
+  if (t?.status === "UNAVAILABLE") return { rrn: TAX_PROFILE_UNAVAILABLE, account: TAX_PROFILE_UNAVAILABLE };
+  if (t?.status !== "OK") return { rrn: "-", account: "-" };
+  return {
+    // 빈 글자 · 빠진 칸도 비었다고 본다 — 빈 칸이나 「은행 undefined」를 보이지 않게
+    rrn: t.rrnMasked || "-",
+    account: payrollAccountText(t.bankName && t.accountNumber ? { bankName: t.bankName, accountNumber: t.accountNumber } : null),
+  };
+}
+
 /** 이력 시각. 한국 시간 YYYY-MM-DD HH:mm (서버가 UTC 로 그려도 같게) */
 export function kstDateTime(iso: string): string {
   const k = new Date(new Date(iso).getTime() + 9 * 3600_000).toISOString();
@@ -62,7 +81,7 @@ type ProcessFields = Pick<
   | "signDeadlineAt"
   | "lastProcessedAt"
   | "resendCount"
-  | "rejectReason"
+  | "correctionReason"
   | "registeredAt"
   | "registeredBy"
 >;
@@ -72,8 +91,9 @@ const DEADLINE_SHOWN = new Set(["PENDING_SEND", "PENDING_SIGNATURE", "EXPIRED"])
 
 /**
  * 근로계약 상세의 발송 · 처리 정보 줄(WHALEERP-155 · 328). 전자계약은 발송일 · (재발송했으면) 재발송 횟수와 마지막 발송 · (날인을
- * 기다리는 동안 · 만료) 날인 기한, 종이 계약은 발송 칸 대신 등록일 · 등록 관리자다. 그 뒤 최종 처리일(가장 최근 상태 변경), 거부된
- * 계약은 거부 사유(직원이 쓴 글이라 길면 줄이 늘어난다). 값이 없는 칸은 줄을 두지 않는다. 시각은 한국 시간.
+ * 기다리는 동안 · 만료) 날인 기한, 종이 계약은 발송 칸 대신 등록일 · 등록 관리자다. 그 뒤 최종 처리일(가장 최근 상태 변경), 수정
+ * 요청된 계약은 직원이 남긴 수정 요청 사유(직원이 쓴 글이라 길면 줄이 늘어난다, 없으면 「-」). 거부 사유는 받지 않아 줄이 없다
+ * (WHALEERP-635). 값이 없는 칸은 줄을 두지 않는다. 시각은 한국 시간.
  */
 export function processRows(c: ProcessFields): { label: string; value: string; multiline?: boolean }[] {
   const rows: { label: string; value: string; multiline?: boolean }[] = [];
@@ -86,7 +106,8 @@ export function processRows(c: ProcessFields): { label: string; value: string; m
     if (c.signDeadlineAt && c.status && DEADLINE_SHOWN.has(c.status)) rows.push({ label: "날인 기한", value: kstDateTime(c.signDeadlineAt) });
   }
   if (c.lastProcessedAt) rows.push({ label: "최종 처리일", value: kstDateTime(c.lastProcessedAt) });
-  if (c.status === "REJECTED") rows.push({ label: "거부 사유", value: c.rejectReason ?? "-", multiline: true });
+  // api 도 수정 요청일 때만 사유를 주지만(그 밖은 null), 줄 자체도 수정 요청일 때만 둔다
+  if (c.status === "CORRECTION_REQUESTED") rows.push({ label: "수정 요청 사유", value: c.correctionReason ?? "-", multiline: true });
   return rows;
 }
 

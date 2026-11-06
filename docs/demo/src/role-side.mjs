@@ -62,19 +62,19 @@ export function menuScroll(table) {
   );
 }
 
-// 권한 그룹 상세의 고칠 수 없는 값 — MY PAGE 「계정 정보」 모양에서 제목 바 · 테두리를 뺐다(앱 components/common/readonly-card.tsx, 2026-10-26 사용자 지정).
+// 권한 그룹 상세의 고칠 수 없는 값 — 마이페이지 「계정 정보」 모양에서 제목 바 · 테두리를 뺐다(앱 components/common/readonly-card.tsx, 2026-10-26 사용자 지정).
 // manager: 가맹마스터 계정 — undefined 면 줄 없음(플랫폼), null 이면 「-」(BP 관리자 그룹), 값이면 가맹 마스터 아이디 · 이름. reg · mod: [일시, 사람]
 // 라벨 옆 도움말 정보 아이콘 — 마우스를 올리거나 키보드로 닿으면 안내가 뜬다(앱 components/common/help-tip.tsx 와 같다, 2026-10-26 사용자 지정)
 const helpTip = (text, label) =>
   `<span class="group/help relative inline-flex shrink-0"><button type="button" aria-label="${label} 도움말" class="grid size-[16px] place-items-center rounded-full text-erp-muted transition-colors duration-150 group-hover/help:text-erp-brand focus-visible:text-erp-brand"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="7" width="1.4" height="5" rx="0.7" fill="#fff"/><circle cx="8" cy="4.8" r="0.9" fill="#fff"/></svg></button>` +
-  `<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-[-8px] z-10 w-max max-w-[260px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[8px] text-[13px] leading-[1.5] font-normal break-keep whitespace-normal text-erp-ink opacity-0 shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-opacity duration-150 group-focus-within/help:opacity-100 group-hover/help:opacity-100">${text}</span></span>`;
+  `<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-[-8px] z-10 w-max max-w-[260px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[8px] text-[14px] leading-[1.6] font-medium break-keep whitespace-normal text-erp-ink opacity-0 transition-opacity duration-150 group-focus-within/help:opacity-100 group-hover/help:opacity-100">${text}</span></span>`;
 // 넘치는 부분을 자르는 상자 안(고정 머리 표의 열 이름)에 두는 도움말 — 상자를 popover 로 최상위 레이어에 띄우고 창 오른쪽 안으로 당긴다(앱 HelpTip floating, 2026-10-27)
 const SHOW_TIP =
   "const t=this.nextElementSibling,r=this.getBoundingClientRect();if(!t.showPopover||t.matches(':popover-open'))return;t.style.top=(r.bottom+6)+'px';t.style.left=(r.left-8)+'px';t.showPopover();const tb=this.closest('table'),b=Math.min(document.documentElement.clientWidth-8,tb?tb.getBoundingClientRect().right:Infinity),o=t.getBoundingClientRect().right-b;if(o>0)t.style.left=Math.max(8,r.left-8-o)+'px'";
 const HIDE_TIP = "const t=this.nextElementSibling;if(t.matches(':popover-open'))t.hidePopover()";
 export const floatingHelpTip = (html, label) =>
   `<span class="relative inline-flex shrink-0"><button type="button" aria-label="${label} 도움말" tabindex="-1" onmouseenter="${SHOW_TIP}" onmouseleave="${HIDE_TIP}" class="grid size-[16px] place-items-center rounded-full text-erp-muted transition-colors duration-150 hover:text-erp-brand"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="7" width="1.4" height="5" rx="0.7" fill="#fff"/><circle cx="8" cy="4.8" r="0.9" fill="#fff"/></svg></button>` +
-  `<span popover="manual" role="tooltip" class="pointer-events-none fixed inset-auto m-0 w-max max-w-[320px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[8px] text-left text-[13px] leading-[1.5] font-normal break-keep text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)]">${html}</span></span>`;
+  `<span popover="manual" role="tooltip" class="pointer-events-none fixed inset-auto m-0 w-max max-w-[320px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[8px] text-left text-[14px] leading-[1.6] font-medium break-keep text-erp-ink">${html}</span></span>`;
 const helpField = (label, value, text) =>
   `<div class="flex min-w-px flex-1 flex-col gap-[4px]"><span class="flex min-w-0 items-center gap-[4px]"><span class="truncate text-[14px] font-medium text-erp-label">${label}</span>${helpTip(text, label)}</span><span class="truncate text-[14px] text-erp-ink font-semibold">${value}</span></div>`;
 export function recordCard({ manager, reg, mod }) {
@@ -174,7 +174,7 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
     return (
       `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${locked ? "" : " data-dirty-scope"}${code === selected ? "" : " hidden"}>` +
       sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[10px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}<span aria-hidden="true" class="h-[11px] w-px bg-[#d9d9d9]"></span><span class="text-[14px] font-normal"><span class="text-erp-label">권한코드</span> <b class="font-semibold">${code}</b></span></span>`) +
-      (locked ? band("본인 계정에 연결된 권한그룹은 수정할 수 없습니다.") : "") +
+      (locked ? band("내 계정에 연결된 권한 그룹은 수정할 수 없습니다.") : "") +
       fields +
       (rows.length ? plainTable(rows) : "") +
       recordCard({ reg: [reg, regBy], mod: [mod, modBy] }) +

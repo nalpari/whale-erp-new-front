@@ -25,7 +25,7 @@ const PREVIEW = {
   ops: (v) => caption("관리자 웹 운영 알림함 한 줄") + inboxLine(v.title, v.sub),
   mail: (v) =>
     caption("메일 · 공통 메일 틀") +
-    `<div class="overflow-hidden rounded-[2px] border border-erp-panel-line bg-white"><div class="border-b border-erp-panel-line px-[16px] py-[12px] text-[14px] font-semibold text-erp-ink">${v.title}</div><div class="flex flex-col gap-[16px] px-[16px] py-[16px] text-[14px] leading-[1.7] text-erp-ink"><p class="whitespace-pre-line">${v.body}</p><span>${ui.button(v.button)}</span></div><div class="border-t border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[12px] text-erp-muted">WHALE ERP 운영 알림 · 이 메일은 발신 전용입니다</div></div>`,
+    `<div class="overflow-hidden rounded-[2px] border border-erp-panel-line bg-white"><div class="border-b border-erp-panel-line px-[16px] py-[12px] text-[14px] font-semibold text-erp-ink">${v.title}</div><div class="flex flex-col gap-[16px] px-[16px] py-[16px] text-[14px] leading-[1.7] text-erp-ink"><p class="whitespace-pre-line">${v.body}</p><span>${ui.button(v.button)}</span></div><div class="border-t border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[12px] text-erp-muted">WHALE ERP 운영 알림 · 이 메일은 발신 전용입니다.</div></div>`,
   push: (v) =>
     caption("잠금 화면 푸시") +
     `<div class="grid grid-cols-[28px_1fr] gap-x-[12px] gap-y-[4px] rounded-[8px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px]"><span class="row-span-2 size-[28px] rounded-[2px] bg-erp-nav" aria-hidden="true"></span><b class="text-[14px] font-semibold text-erp-ink">${v.title}</b><span class="text-[14px] leading-[1.5] text-erp-ink">${v.body}</span></div>` +
@@ -66,7 +66,7 @@ export function templateEdit(t) {
           p.fieldH(
             req("템플릿 코드"),
             ui.textField({ value: t.templateCode ?? "", "data-tpl-code": true, ...(isNew ? {} : { "data-code-original": t.templateCode }), "aria-label": "템플릿 코드" }),
-            isNew ? "채널을 고르면 접두(NTF_·PUSH_·EMAIL_·TALK_)가 채워지고, 나머지는 직접 넣습니다." : "바꾸면 발송 코드도 함께 바꿔야 할 수 있습니다.",
+            isNew ? "채널을 선택하면 접두(NTF_·PUSH_·EMAIL_·TALK_)가 채워지고, 나머지는 직접 넣습니다." : "바꾸면 발송 코드도 함께 바꿔야 할 수 있습니다.",
           ),
           `<div class="min-w-px flex-1" data-tpl-talk${talk ? "" : " hidden"}>${p.fieldH(req("카카오 템플릿 코드"), ui.textField({ value: t.kakaoCode ?? "", "aria-label": "카카오 템플릿 코드" }), "카카오에 등록한 코드입니다.", "w-full")}</div>`,
         ) +
@@ -90,9 +90,9 @@ export function templateEdit(t) {
         ui.field(req("본문") + counted(bodyId, 100), ui.textarea({ id: bodyId, rows: t.kind === "mail" ? 8 : 4, value: t.body ?? "", "data-tpl-check": true, "data-tpl-body": true })) +
         `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">변수</span><div class="flex flex-wrap gap-[6px]" data-var-buttons data-target="${bodyId}"></div>${p.help("누르면 본문 커서 자리에 들어갑니다. 단추는 변수 목록에서 만들어집니다.")}</div>`,
     );
-    const preview = t.preview ? box("미리보기", "", PREVIEW[t.kind](t.preview)) : box("미리보기", "", p.help("채널을 고르고 본문을 넣으면 채널 모양으로 보입니다."));
+    const preview = t.preview ? box("미리보기", "", PREVIEW[t.kind](t.preview)) : box("미리보기", "", p.help("채널을 선택하고 본문을 넣으면 채널 모양으로 보입니다."));
     const history = t.history
-      ? p.box("변경 이력", "", ui.dataTable([{ header: "일시", width: "w-[120px]" }, { header: "수정자", width: "w-[90px]" }, { header: "내용", align: "left" }], t.history))
+      ? p.box("변경이력", "", ui.dataTable([{ header: "일시", width: "w-[120px]" }, { header: "수정자", width: "w-[90px]" }, { header: "내용", align: "left" }], t.history))
       : "";
 
     const list = link(R, "notify/templates.html");
@@ -102,7 +102,7 @@ export function templateEdit(t) {
           "soft",
           "기본 문구로 되돌리시겠습니까?",
           // 되돌리기는 제목·본문·변수 목록만(NOTIFY-18). 알림톡은 카카오 템플릿 코드가 그대로라 검수 본문과 맞는지 확인을 청한다.
-          "제목 · 본문 · 변수 목록이 처음 배포된 것으로 바뀝니다. 되돌린 것도 변경 이력에 남습니다." +
+          "제목 · 본문 · 변수 목록이 처음 배포된 것으로 바뀝니다. 되돌린 것도 변경이력에 남습니다." +
             (talk ? " 카카오 템플릿 코드는 바뀌지 않으니, 검수받은 본문과 맞는지 확인해 주세요." : ""),
           "되돌리기",
         )
@@ -111,7 +111,7 @@ export function templateEdit(t) {
     const save =
       ui.button("저장", { "data-tpl-save": saveDlg, "data-toast": "" }) +
       x.dialog(saveDlg, "저장하시겠습니까?", isNew ? "" : `<span data-code-warn hidden>템플릿 코드를 바꿨습니다. 발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다.</span>`, `${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-close": true })}`);
-    const right = `<div class="flex items-center gap-[6px]">${ui.button("목록", { variant: "off", href: list })}${revert}${save}</div>`;
+    const right = `<div class="flex items-center gap-[6px]">${ui.button("목록", { href: list })}${revert}${save}</div>`;
     const prefixes = JSON.stringify(Object.fromEntries(CHANNELS)).replaceAll('"', "&quot;");
     // 템플릿 코드 겹침 검사용(저장 전, erp.js). 고치는 템플릿 자신의 코드는 뺀다.
     const codes = JSON.stringify(ALL_CODES.filter((c) => c !== t.templateCode)).replaceAll('"', "&quot;");

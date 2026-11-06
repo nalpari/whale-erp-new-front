@@ -1,11 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { DataTable, type Column } from "@/components/common";
+import { DataTable, Tag, type Column } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import type { PayslipListItem } from "@/lib/payslips";
 import { rowNumber } from "../staff-members/staff-row";
 import { CellView } from "../staff-members/staff-table";
-import { MASKED_TEXT, STATUS_STYLE, attendanceCell, periodText, sentDateText } from "./payslip-row";
+import { MASKED_TEXT, REVIEW_PENDING_TEXT, STATUS_STYLE, attendanceCell, periodText, sentDateText } from "./payslip-row";
 
 const DASH = "-";
 
@@ -24,6 +24,9 @@ export function PayslipTable({
   listSearch,
   statusLabels,
   employmentTypeLabels,
+  reviewReasonLabels,
+  filtered = false,
+  at = (path) => path,
 }: {
   items: PayslipListItem[];
   total: number;
@@ -33,6 +36,11 @@ export function PayslipTable({
   listSearch: string;
   statusLabels: EnumValue[];
   employmentTypeLabels: EnumValue[];
+  reviewReasonLabels: EnumValue[];
+  /** 상태 · 직원명 · 검토 대기만으로 거른 목록인가 — 비었을 때 문구가 다르다 */
+  filtered?: boolean;
+  /** 상세 링크에 탭 BP 를 붙인다(목록 화면의 screenPath, WHALEERP-637) — listSearch 는 쿼리 문자열이라 BP 와 상관없다 */
+  at?: (path: string) => string;
 }) {
   const rows: Row[] = items.map((payslip, i) => ({ no: rowNumber(total, page, pageSize, i), payslip }));
   const columns: Column<Row>[] = [
@@ -44,7 +52,7 @@ export function PayslipTable({
         payslip.isMasked || payslip.payslipId === null ? (
           <span className="text-erp-muted">{MASKED_TEXT}</span>
         ) : (
-          <Link href={`/payslips/${payslip.payslipId}${listSearch}`} className="text-erp-link hover:underline">
+          <Link href={at(`/payslips/${payslip.payslipId}${listSearch}`)} className="text-erp-link hover:underline">
             {payslip.staffName}
           </Link>
         ),
@@ -62,7 +70,24 @@ export function PayslipTable({
     {
       header: "상태",
       width: "w-[180px]",
-      cell: shown((p) => (p.status ? <CellView cell={{ text: labelOf(statusLabels, p.status), style: STATUS_STYLE[p.status] }} /> : DASH)),
+      // 검토 대기는 상태가 아니라 분류라 상태 배지 옆에 꼬리표(Tag)로 붙인다 — 「검토 중」 상태 배지(빨강)와 다른 모양으로(운영 정책
+      // v221 PAY-06). 사유는 꼬리표에 마우스를 올리면 보이고(화면 낭독기는 숨긴 글자로 읽는다), 내용은 상세에서 본다
+      cell: shown((p) => {
+        const reasons = p.pendingReviewReasons?.map((r) => labelOf(reviewReasonLabels, r)).join(" · ");
+        return p.status ? (
+          <span className="inline-flex flex-wrap items-center gap-[4px]">
+            <CellView cell={{ text: labelOf(statusLabels, p.status), style: STATUS_STYLE[p.status] }} />
+            {reasons && (
+              <span title={reasons}>
+                <Tag>{REVIEW_PENDING_TEXT}</Tag>
+                <span className="sr-only"> — {reasons}</span>
+              </span>
+            )}
+          </span>
+        ) : (
+          DASH
+        );
+      }),
     },
     { header: "발송일", width: "w-[100px]", cell: shown(sentDateText) },
   ];
@@ -73,7 +98,9 @@ export function PayslipTable({
       rows={rows}
       // 가린 줄은 payslipId 가 null 이라 순번으로 가른다(직원 목록과 같다)
       rowKey={(r) => r.payslip.payslipId ?? `masked-${r.no}`}
-      empty="이 달의 급여명세서가 없습니다."
+      empty={filtered ? "조건에 맞는 급여명세서가 없습니다." : "이 달의 급여명세서가 없습니다."}
+      // 비었을 때 열 이름 줄은 두고 빈 칸이 목록 영역 남는 높이를 채운다(직원 · 점포 목록과 같다, 2026-11-04 사용자 지정)
+      fillEmpty
     />
   );
 }

@@ -3,7 +3,8 @@
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode } from "react";
 import { Button, ConfirmDialog, DetailTable, Field, FormGroup, FormRow, Select, TextField, Toggle, useToast } from "@/components/common";
-import { usePagePermission } from "@/components/site/session-gate";
+import { useCurrentBp, usePagePermission } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import {
   formatAmount,
   isItemShown,
@@ -70,7 +71,12 @@ function AmountField({
           placeholder={readOnly ? undefined : "직접 입력"}
           readOnly={readOnly}
           aria-invalid={invalid || undefined}
-          onChange={(e) => onChange(e.target.value)}
+          // 숫자와 쉼표만 받는다(화면 설계 공통 기준 1번 — 저장 때 칸 오류가 생기지 않게, WHALEERP-633). 붙여 넣은 「원」 · 「₩」 · 공백은 떼고, 그 밖의
+          // 글자가 섞인 입력은 통째로 받지 않는다 — 글자만 지우면 「1,000.50」이 「100050」처럼 다른 금액이 된다
+          onChange={(e) => {
+            const text = e.target.value.replace(/[\s원₩]/g, "");
+            if (/^[\d,]*$/.test(text)) onChange(text);
+          }}
           // 다 친 뒤에 쉼표를 넣는다 — 치는 중에 넣으면 커서가 끝으로 튄다
           onBlur={(e) => {
             const amount = parseAmount(e.target.value);
@@ -148,6 +154,8 @@ export function PayslipReview({
   const router = useRouter();
   const toast = useToast();
   const canUpdate = usePagePermission().update;
+  // 출퇴근 현황도 탭 BP 주소 화면이다(WHALEERP-637)
+  const bp = useCurrentBp().bpCodeId;
   const editable = canUpdate && (payslip.status === "DRAFTING" || payslip.status === "REVIEWING");
   const isPartTime = payslip.employmentType === "PART_TIME";
   const month = payslip.periodStartDate.slice(0, 7);
@@ -189,14 +197,21 @@ export function PayslipReview({
   );
   const earnings = shown.filter((i) => i.itemCategory === "EARNING");
   const deductionHelp = (item: PayslipItem) =>
-    item.itemCategory === "WITHHOLDING" ? `3.3% 원천징수 · 비과세를 포함한 지급 총액 ${formatAmount(totals.gross)}원에 매긴다` : "직접 입력";
+    item.itemCategory === "WITHHOLDING" ? `3.3% 원천징수 · 비과세를 포함한 지급 총액 ${formatAmount(totals.gross)}원에 매긴다.` : "직접 입력";
 
   // 끄면 연장수당을 가산 없이 1배로 계산한다(PAY-05). 금액은 임시저장 때 api 가 그 값으로 다시 계산한다 — 칸을 고치지 않았으면 새 계산값을 따르고,
   // 앞서 직접 고쳐 둔 연장수당은 그대로 두고 계산값만 바꾼다(PR #159 리뷰). 저장하기 전에는 칸이 저장된 가산 값의 금액이라, 도움말도 저장된 값으로
   // 쓰고 스위치 아래에 다시 계산한다고 알린다.
   const togglePremium = (on: boolean) => setPremium(on);
   const premiumPending = premium !== payslip.isPremiumApplied;
-  const adjustedOvertime = payslip.items.find((i) => i.itemCode === "OVERTIME_PAY" && i.adjustedAmount !== null);
+  // 가산을 바꿔도 지키는 연장수당 — api 와 같은 기준: 지금 칸 값이 저장된 금액과 다르거나(이번에 고침) 앞서 고쳐 둔 값이 있다. 저장된 값만 보면
+  // 저장 전에 칸을 고쳤을 때 안내와 결과가 어긋난다(PR #137 리뷰)
+  const overtimeItem = payslip.items.find((i) => i.itemCode === "OVERTIME_PAY");
+  const overtimeText = overtimeItem ? parseAmount(texts.get(overtimeItem.payslipItemId) ?? "") : null;
+  const keptOvertime =
+    overtimeItem && overtimeText !== null && !Number.isNaN(overtimeText) && (overtimeText !== itemAmount(overtimeItem) || overtimeItem.adjustedAmount !== null)
+      ? overtimeText
+      : null;
 
   /** api 를 부르고, 성공하면 확인창을 닫고 알린 뒤 상세를 다시 받는다. 실패하면 확인창에 남기고, 결과를 모르면 상세도 다시 받는다. */
   const run = (call: () => Promise<{ ok: true } | EditFailure>, done: string) =>
@@ -278,7 +293,7 @@ export function PayslipReview({
             </>
           }
         >
-          <Button variant="off" href={listHref}>
+          <Button href={listHref}>
             목록
           </Button>
           {editable && (
@@ -307,7 +322,7 @@ export function PayslipReview({
             title={band.title}
             desc={band.desc}
             actions={
-              <Button variant="soft" href={attendanceHref(payslip)}>
+              <Button variant="soft" href={bpPath(bp, attendanceHref(payslip))}>
                 출퇴근 보정
               </Button>
             }
@@ -335,8 +350,8 @@ export function PayslipReview({
             <Toggle label="연장·야간·휴일 가산 적용" checked={premium} disabled={!editable} onChange={(e) => togglePremium(e.target.checked)} />
             {premiumPending && (
               <span className={HELP}>
-                {adjustedOvertime
-                  ? `임시저장하면 연장수당 계산값을 ${premium ? "1.5배" : "가산 없이 1배"}로 다시 계산합니다. 직접 고친 연장수당(${formatAmount(adjustedOvertime.adjustedAmount!)}원)은 그대로 둡니다.`
+                {keptOvertime !== null
+                  ? `임시저장하면 연장수당 계산값을 ${premium ? "1.5배" : "가산 없이 1배"}로 다시 계산합니다. 직접 고친 연장수당(${formatAmount(keptOvertime)}원)은 그대로 둡니다.`
                   : `임시저장하면 연장수당을 ${premium ? "1.5배" : "가산 없이 1배"}로 다시 계산합니다.`}
               </span>
             )}
@@ -383,7 +398,7 @@ export function PayslipReview({
           {totals.blankDeductions > 0 && (
             <Band
               risk
-              title={`공제 ${totals.blankDeductions}칸이 아직 비어 있습니다`}
+              title={`공제 ${totals.blankDeductions}칸이 아직 비어 있습니다.`}
               desc={`${totals.deduction === 0 ? "지금 실지급액은 지급 총액과 같습니다. " : ""}기본 공제나 붙인 추가 공제가 비어 있으면 확정할 수 없습니다. 공제 대상이 아닌 항목에는 0 을 넣으세요.`}
             />
           )}
@@ -414,7 +429,7 @@ export function PayslipReview({
           : totals.blankDeductions > 0
             ? "비어 있는 공제 칸이 있어 확정할 수 없습니다. 공제 대상이 아닌 항목에는 0 을 넣으세요."
             : `확정하면 수정할 수 없습니다. 확정 취소하면 검토 중으로 돌아옵니다. 발송은 이 화면의 「발송」이나 급여명세서 목록에서 확정 건을 모아 보냅니다.${
-                band ? " 검토 사유는 확인한 것으로 남습니다." : ""
+                band ? " 검토 사유는 확인한 것으로 남고, 확정 취소하면 다시 검토 대기가 됩니다." : ""
               }`}
         {failureText}
       </ConfirmDialog>
@@ -478,7 +493,7 @@ export function PayslipReview({
         onCancel={close}
       >
         <Select aria-label="추가 공제 항목" value={adding} onChange={(e) => setAdding(e.target.value)} disabled={!addable}>
-          <option value="">{addable ? (remaining.length > 0 ? "항목을 고르세요" : "붙일 항목이 없습니다") : "불러오는 중"}</option>
+          <option value="">{addable ? (remaining.length > 0 ? "항목을 선택하세요" : "붙일 항목이 없습니다") : "불러오는 중"}</option>
           {remaining.map((a) => (
             <option key={a.payslipItemMasterId} value={a.payslipItemMasterId}>
               {a.name}

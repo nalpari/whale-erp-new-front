@@ -3917,6 +3917,33 @@ a.tile:hover {
 .modal__box--wide {
   max-width: 560px;
 }
+/* 1팀 변경이력 팝업(BP 마스터 · 플랫폼 관리자 · BP 관리자 · 점포 · BP 휴일) — 폭 1000. 제목 줄 오른쪽 끝에 「총 N 건」 · 한 쪽 건수(20 · 50),
+   기간 조회가 있는 BP 휴일만 그 줄 오른쪽이다. 제목 · 열 이름 줄 · [닫기]는 고정하고 표 줄만 스크롤한다 — 위아래 선은 스크롤 상자가 긋고
+   머리 줄 아래 선은 그림자로 붙인다. 한 쪽뿐이어도 쪽 이동(1)을 보인다(앱 WideDialog · HistoryTotalBar, 2026-11-04 사용자 지정) */
+.modal__box--hist {
+  max-width: 1000px;
+}
+.histcount {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  white-space: nowrap;
+  font-size: 14px;
+}
+.histcount .select {
+  width: 80px;
+}
+.histscroll {
+  max-height: min(52vh, 460px);
+  overflow-y: auto;
+  border-block: 1px solid var(--hairline-strong);
+}
+.histscroll .tbl th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  box-shadow: 0 1px 0 var(--hairline-strong);
+}
 .modal__scroll {
   max-height: min(52vh, 460px);
   overflow-y: auto;
@@ -5113,4 +5140,211 @@ a.tile:hover {
   background: var(--surface-strong);
   text-align: center;
   font-size: 13px;
+}
+
+/* 시작 가이드 (헤더, 2026-11-04 사용자 지정 — 앱 start-guide-button.tsx) — 서비스 바로가기 바로 앞 글자 버튼. 회색 14px 500 + 꺾쇠,
+   호버 · 열림에 포인트 파랑 #4a7ae0, 열리면 꺾쇠가 아래를 본다. 상자는 흰 바탕 · 회청(#6b7988) 1px · 6px 모서리 · 그림자 없음 · 400px. */
+.guidebtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 6px;
+  background: none;
+  border: 0;
+  color: #888888;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 150ms ease-out;
+}
+.guidebtn svg {
+  transition: transform 150ms ease-out;
+}
+.guidebtn:hover,
+.guidebtn[aria-expanded="true"] {
+  color: #4a7ae0;
+}
+.guidebtn[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+.pop.pop--guide {
+  width: 400px;
+  padding: 14px 16px;
+  gap: 12px;
+  border: 1px solid #6b7988;
+  border-radius: 6px;
+  box-shadow: none;
+}
+.guide__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #e9edf5;
+}
+.pop .guide__tabs button {
+  justify-content: center;
+  height: 36px;
+  margin-bottom: -1px;
+  padding: 0;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: #888888;
+  font-size: 14px;
+  font-weight: 500;
+}
+.pop .guide__tabs button:hover {
+  background: none;
+  color: var(--ink);
+}
+.pop .guide__tabs button[aria-selected="true"] {
+  border-bottom-color: #4a7ae0;
+  color: #4a7ae0;
+  font-weight: 600;
+}
+.guide__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pop .guide__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px 7px 6px;
+  border-radius: 4px;
+  color: var(--ink);
+}
+.pop .guide__row.is-sub {
+  padding-left: 20px;
+}
+.pop a.guide__row:hover {
+  background: #f5f8ff;
+}
+.guide__no {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 20px;
+  border-radius: 100px;
+  background: #eef4ff;
+  color: #4a7ae0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.guide__no--sub {
+  background: none;
+  color: #888888;
+  font-size: 12px;
+}
+.guide__main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+.guide__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.guide__title--sub {
+  font-size: 13px;
+  font-weight: 400;
+}
+.guide__opt {
+  padding: 0 4px;
+  border: 1px solid #e9edf5;
+  border-radius: 2px;
+  background: #f8f9fb;
+  color: #53606f;
+  font-size: 12px;
+  font-weight: 400;
+}
+.guide__note {
+  color: #888888;
+  font-size: 12px;
+}
+.guide__done {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  color: #4a7ae0;
+  font-size: 12px;
+  font-weight: 600;
+}
+.guide__done svg {
+  box-sizing: content-box;
+  padding: 2px;
+  border-radius: 100px;
+  background: #4a7ae0;
+  color: #ffffff;
+}
+.guide__go {
+  display: inline-flex;
+  flex: none;
+  color: #888888;
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+.pop a.guide__row:hover .guide__go {
+  opacity: 1;
+}
+
+/* 점포 없음 띠 (2026-11-04 사용자 지정 — 앱 no-store-band.tsx) — 미운영 · 운영 점포가 없으면(?scope=nostore) 상단바 바로 아래 40px.
+   연회색(#f0f1f3) 바탕 · 아래 1px #e6e7ea · 정보 아이콘 · 먹색 500, 할 일만 포인트 파랑 #4a7ae0 600. [점포 등록하기]는 파랑 바탕 흰 13px 600 · 26px · 6px 모서리 */
+.nostoreband {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 40px;
+  border-bottom: 1px solid #e6e7ea;
+  background: #f0f1f3;
+  color: #3c4046;
+  font-size: 14px;
+  font-weight: 500;
+}
+.nostoreband > svg {
+  flex: none;
+  color: #53606f;
+}
+.nostoreband p {
+  margin: 0;
+}
+.nostoreband b {
+  color: #4a7ae0;
+  font-weight: 600;
+}
+.nostoreband__btn {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  margin-left: 2px;
+  padding: 0 12px;
+  border: 1px solid #4a7ae0;
+  border-radius: 6px;
+  background: #4a7ae0;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transition: background-color 150ms ease-out, color 150ms ease-out;
+}
+.nostoreband__btn:hover {
+  background: #ffffff;
+  color: #4a7ae0;
 }

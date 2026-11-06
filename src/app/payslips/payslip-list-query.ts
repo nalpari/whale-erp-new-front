@@ -37,6 +37,7 @@ export function defaultPayslipListQuery(today: string): PayslipListQuery {
     scope: null,
     staffName: "",
     statuses: [...PAYSLIP_STATUSES],
+    reviewPending: false,
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
   };
@@ -60,6 +61,8 @@ export function parsePayslipListQuery(raw: RawSearch, today: string): PayslipLis
     scope: legacy || rawStoreIds !== undefined ? null : scopeOfParam(first(raw[SCOPE_PARAM])),
     staffName: textOf(first(raw.staffName)),
     statuses: picked ? PAYSLIP_STATUSES.filter((s) => picked.has(s)) : [...PAYSLIP_STATUSES],
+    // 「검토 대기만」은 reviewPending=true 일 때만 — 다른 값은 거르지 않는다
+    reviewPending: first(raw.reviewPending) === "true",
     page: Number.isInteger(page) && page >= 1 && page <= MAX_PAGE ? page : 1,
     pageSize: PAGE_SIZES.find((s) => s === pageSize) ?? DEFAULT_PAGE_SIZE,
   };
@@ -74,6 +77,7 @@ export function toPayslipListSearch(query: PayslipListQuery): string {
   if (query.staffName) params.set("staffName", query.staffName);
   if (query.statuses.length !== PAYSLIP_STATUSES.length)
     params.set("status", PAYSLIP_STATUSES.filter((s) => query.statuses.includes(s)).join(","));
+  if (query.reviewPending) params.set("reviewPending", "true");
   if (query.page !== 1) params.set("page", String(query.page));
   if (query.pageSize !== DEFAULT_PAGE_SIZE) params.set("pageSize", String(query.pageSize));
   return `?${params}`;

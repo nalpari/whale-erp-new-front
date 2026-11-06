@@ -27,7 +27,7 @@ import { failureOf as sharedFailureOf, menusFailure, validId, type ActionFailure
 const PATH = "/bp-role-groups";
 
 const failureOf = (error: unknown, what: string, wrote = true) => sharedFailureOf(error, "BP 권한 그룹", what, wrote);
-const NOT_FOUND = { ok: false, status: 404, message: "권한 그룹을 찾을 수 없습니다" } satisfies ActionFailure;
+const NOT_FOUND = { ok: false, status: 404, message: "권한 그룹을 찾을 수 없습니다." } satisfies ActionFailure;
 
 /** 저장이 끝났으면 목록 · 상세를 새로 받는다. 무효화가 실패해도 저장은 끝났으므로 성공으로 돌려준다. */
 function refresh() {

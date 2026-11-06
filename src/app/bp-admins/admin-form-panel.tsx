@@ -4,15 +4,20 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useLayoutEffect, useRef, useState, useTransition, type KeyboardEvent, type ReactNode, type RefObject } from "react";
 import { Button, ConfirmDialog, DataTable, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, Tag, TextField } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
-import { useAccount } from "@/components/site/session-gate";
-import { FailedBand, FieldMessage, InfoBand } from "@/components/site/side-parts";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
+import { useAccount, useCurrentBp } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
+import { FailedBand, FieldMessage, InfoBand, WarnBand } from "@/components/site/side-parts";
 import { StoreMappingPicker, type MappingStoreOption } from "@/components/site/store-mapping-picker";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
 import {
+  bpAdminFieldMessage,
   bpAdminFormOf,
   bpAdminServerErrorField,
+  EMAIL_TAKEN,
   EMPTY_BP_ADMIN_FORM,
   emailError,
+  LOGIN_ID_TAKEN,
   toCreateBpAdminInput,
   toUpdateBpAdminInput,
   validateBpAdminForm,
@@ -30,7 +35,8 @@ import type {
   BpAdminUpdateImpact,
   UpdateBpAdminInput,
 } from "@/lib/bp-admins";
-import { loginIdError } from "@/lib/platform-admin-form";
+import { loginIdError, type LoginIdCheck } from "@/lib/platform-admin-form";
+import { EmailAvailability, LoginIdAvailability } from "@/app/platform-admins/admin-parts";
 import type { StoreStatus } from "@/lib/store-types";
 import {
   checkBpAdminEmailAction,
@@ -52,10 +58,6 @@ import { unknownResult } from "./bp-admin-parts";
 
 /** 동시 수정 409 문구(작업 지시서). 이때만 최신 정보를 다시 불러온다. */
 const STALE = "먼저 바꿨습니다";
-/** 중복 확인에서 쓸 수 없다고 온 아이디의 문구 */
-const LOGIN_ID_TAKEN = "이미 사용 중인 아이디입니다. 지우거나 탈퇴한 계정의 아이디도 다시 쓸 수 없습니다.";
-/** 중복 확인에서 쓸 수 없다고 온 이메일의 문구 */
-const EMAIL_TAKEN = "이미 사용 중인 이메일입니다.";
 
 type Props = {
   id: string;
@@ -82,6 +84,7 @@ const optionOf = (s: BpAdminStoreOption): MappingStoreOption => ({
 export function AdminFormPanel(props: Props) {
   const { id, mode, open, onClose, onBackdropClose, trigger, roleGroups } = props;
   const me = useAccount();
+  const currentBp = useCurrentBp();
   const roleType = useCodeLabel("ROLE_TYPE");
   const locks =
     mode === "edit" ? editLocksOf(props.admin) : { roleGroup: false, status: false, scope: false, stores: false };
@@ -94,6 +97,13 @@ export function AdminFormPanel(props: Props) {
   const [form, setForm] = useState<BpAdminForm>(initialForm);
   const [errors, setErrors] = useState<Partial<Record<BpAdminFormField, string>>>({});
   const [failure, setFailure] = useState<string | null>(null);
+  /**
+   * 아이디 중복확인 대기 · 성공 · 실패 상태(platform-admins 와 같다). 오류는 errors.loginId 에 두고, 오류를 달 때는 "idle" 로 내린다.
+   * 플랫폼 관리자 등록과 같은 문구를 칸 아래에 보인다(2026-10-28 사용자 지정).
+   */
+  const [loginIdCheck, setLoginIdCheck] = useState<LoginIdCheck>("idle");
+  /** 이메일 중복확인 대기 · 성공 · 실패 상태 — 아이디와 같다. 오류는 errors.email 에 둔다(2026-10-28 사용자 지정) */
+  const [emailCheck, setEmailCheck] = useState<LoginIdCheck>("idle");
   /** 칸을 되돌릴 때마다 올라간다 — 아래 layout effect 가 이 값을 보고 중복 확인 차례(ref)를 올린다(platform-admins 와 같다) */
   const [resetSignal, setResetSignal] = useState(0);
 
@@ -109,6 +119,9 @@ export function AdminFormPanel(props: Props) {
       setForm(initialForm());
       setErrors({});
       if (reopened) setFailure(null);
+      // 되돌린 빈 칸에 이전에 확인했던 "사용가능합니다."가 남지 않게 아이디 · 이메일 확인 표시도 내린다
+      setLoginIdCheck("idle");
+      setEmailCheck("idle");
       // 닫는 사이 떠 있던 중복 확인이 늦게 와 되돌린 칸에 옛 결과를 칠하지 않게 차례를 올린다 — ref 는 그리는 중에 건드릴 수 없어
       // (react-hooks/refs) 아래 layout effect 가 올린다(platform-admins 4f17a7c3 와 같다)
       setResetSignal((n) => n + 1);
@@ -213,12 +226,25 @@ export function AdminFormPanel(props: Props) {
   const focusFirstError = () =>
     requestAnimationFrame(() => (document.getElementById(id)?.querySelector('[aria-invalid="true"]') as HTMLElement | null)?.focus());
 
-  const applyServerError = (status: number | undefined, text: string) => {
-    const field = bpAdminServerErrorField(status, text, mode);
+  const applyServerError = (status: number | undefined, apiText: string) => {
+    const field = bpAdminServerErrorField(status, apiText, mode);
+    // 칸 아래에는 중복 확인과 같은 문구(bpAdminFieldMessage). 띠는 api 문구 그대로 — 저장 중 이미 고친 칸에 「다른 아이디를 입력해 주세요」는 맞지 않고, 저장하지 않았다는 사실도 api 문구에 있다
+    const text = field ? bpAdminFieldMessage(field, status, apiText) : apiText;
     // 보낸 뒤 고친 칸의 거절이면 지금 값에 붙이지 않고 띠로만 알린다. 점포 칸이 숨어 있으면(전체 점포 · 본인 계정) 붙여도 안 보이므로 띠로
     // 범위는 저장을 누른 때의 값이라, 그 뒤 범위를 바꿨으면(editedWhileSaving) 지금 점포 칸이 숨었을 수 있다
     const hidden = field === "stores" && (form.isAllStores || locks.stores || editedWhileSaving.current.has("isAllStores" as BpAdminFormField));
-    if (!field || hidden || editedWhileSaving.current.has(field)) return setFailure(text);
+    // 아이디가 거절됐거나 칸을 가를 수 없는 거절(띠)이면 아이디의 "사용가능합니다."를 내리고 떠 있던 확인 답도 버린다(platform-admins 와 같다).
+    // 보낸 뒤 고친 아이디의 거절이면 고친 값은 따로 확인되므로 그대로 둔다.
+    if ((!field || field === "loginId") && !editedWhileSaving.current.has("loginId")) {
+      checkNumber.current.loginId++;
+      setLoginIdCheck("idle");
+    }
+    // 이메일도 같다(2026-10-28 사용자 지정)
+    if ((!field || field === "email") && !editedWhileSaving.current.has("email")) {
+      checkNumber.current.email++;
+      setEmailCheck("idle");
+    }
+    if (!field || hidden || editedWhileSaving.current.has(field)) return setFailure(apiText);
     setErrors((e) => ({ ...e, [field]: text }));
     focusFirstError();
   };
@@ -226,6 +252,8 @@ export function AdminFormPanel(props: Props) {
   /**
    * 아이디 · 이메일 중복 확인(등록만) — 칸을 벗어나거나 Enter 를 칠 때, 두 칸 모두 같은 때에 묻는다(2026-10-26 사용자 요청).
    * 형식이 틀리면 api 에 묻지 않는다. 그 밖의 실패(403 · 404 · 5xx)는 칸에 달지 않고 넘어간다 — 저장할 때 api 가 다시 본다.
+   * 아이디는 묻는 동안 · 쓸 수 있을 때 · 확인하지 못했을 때를 칸 아래에 플랫폼 관리자 등록과 같은 문구로 보인다(LoginIdAvailability,
+   * 2026-10-28 사용자 지정). 이메일도 같은 세 상태를 이메일 문구로 보인다(EmailAvailability, 2026-10-28 사용자 지정).
    */
   const CHECKS = {
     loginId: { formatError: loginIdError, ask: checkBpAdminLoginIdAction, taken: LOGIN_ID_TAKEN, value: (v: string) => v.trim() },
@@ -234,23 +262,36 @@ export function AdminFormPanel(props: Props) {
   const checkAvailable = (field: "loginId" | "email", raw: string) => {
     if (mode !== "create" || !raw.trim()) return;
     const check = CHECKS[field];
+    const setCheck = field === "loginId" ? setLoginIdCheck : setEmailCheck;
     const formatError = check.formatError(raw);
     if (formatError) {
       setErrors((e) => ({ ...e, [field]: formatError }));
+      setCheck("idle");
       return;
     }
     const mine = ++checkNumber.current[field];
+    // 같은 값을 다시 물을 때(Enter 재확인 등)도 앞서 달렸던 오류를 지운다 — 안 그러면 묻는 동안 확인 중 문구 대신 옛 오류가 보인다
+    clearError(field);
+    setCheck("checking");
     check
       .ask(check.value(raw))
       .then((result) => {
         if (mine !== checkNumber.current[field]) return;
         if (result.ok) {
           if (!result.available) setErrors((e) => ({ ...e, [field]: check.taken }));
-        } else if (result.status === 400) setErrors((e) => ({ ...e, [field]: result.message }));
+          setCheck(result.available ? "available" : "idle");
+          return;
+        }
+        setCheck(result.status === 400 || result.status === 401 ? "idle" : "failed");
+        if (result.status === 400) setErrors((e) => ({ ...e, [field]: result.message }));
         else if (result.status === 401) setFailure(result.message);
         else console.warn(`${field} 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다`, result.status, result.message);
       })
-      .catch((error: unknown) => console.warn(`${field} 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다`, error));
+      .catch((error: unknown) => {
+        if (mine !== checkNumber.current[field]) return;
+        setCheck("failed");
+        console.warn(`${field} 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다`, error);
+      });
   };
   /** Enter 로 중복을 묻는다 — 한글 조합 중 Enter 는 글자 확정이라 넘긴다 */
   const isEnter = (e: KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && !e.nativeEvent.isComposing;
@@ -264,12 +305,17 @@ export function AdminFormPanel(props: Props) {
   const groupOptions = groups.filter((r) => r.roleTypeCode === form.roleTypeCode);
   // 고른 역할에 붙일 그룹이 없으면 저장할 수 없다 — 가맹 마스터가 가맹 관리자 그룹을 아직 만들지 않은 때 등(BP 관리자 등록 정책)
   const noGroupForRole = mode === "create" && !groupsFailed && !!form.roleTypeCode && !groupOptions.length;
+  // 탈퇴 · 미사용 BP 에는 등록하지 않는다 — 점포 등록과 같다(플랫폼 계정만 본다, 2026-10-29 사용자 지정). 확인하지 못하면(null) 막지 않는다
+  const bpStatus = useCurrentBpStatus();
+  const bpBlocked = mode === "create" && bpStatus !== null && bpStatus !== "ACTIVE";
   // 지금 권한 그룹이 선택지에 없으면(보는 사람이 고를 수 없는 그룹) 그 그룹도 남겨 값이 비지 않게 한다
   if (mode === "edit" && !groupOptions.some((r) => r.roleGroupId === props.admin.roleGroup.roleGroupId)) groupOptions.unshift(props.admin.roleGroup);
 
   const handleSave = () => {
     const found = validateBpAdminForm(form, { mode, outOfScopeCount: outOfScope.length, storesLocked: locks.stores });
     setErrors(found);
+    if (found.loginId) setLoginIdCheck("idle");
+    if (found.email) setEmailCheck("idle");
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();
 
@@ -356,23 +402,19 @@ export function AdminFormPanel(props: Props) {
           </span>
         )}
       </h2>
+      {bpBlocked && <WarnBand>BP가 탈퇴 또는 미사용 상태로, 관리자를 등록할 수 없습니다.</WarnBand>}
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}
-      {locks.stores && (
-        <Note>
-          수정 화면에서는 기본정보(이름 · 연락처 · 이메일)만 바뀝니다. 권한명 · 계정상태 · 대상점포는 이 계정을 관리할 수 있는 다른 사용자가,
-          비밀번호는 내 정보에서 직접 바꿉니다.
-        </Note>
-      )}
 
       {/* 막힌 칸만 회색으로 그린다 — 공통 입력칸 토큰은 그대로 두고 이 화면 테두리에서만 셈한다(platform-admins 와 같다) */}
       <div className="flex flex-col gap-[24px] [&_select:disabled]:bg-erp-thead-bg">
         <FormGroup title="기본정보">
           {mode === "create" ? (
-            <Labeled label="아이디" required message={message("loginId")}>
+            <Labeled label="아이디" required message={<LoginIdAvailability id={messageId("loginId")} check={loginIdCheck} message={errors.loginId} />}>
               <TextField
                 value={form.loginId}
                 onChange={(e) => {
                   checkNumber.current.loginId++;
+                  setLoginIdCheck("idle");
                   set("loginId", e.target.value);
                 }}
                 onBlur={(e) => checkAvailable("loginId", e.currentTarget.value)}
@@ -384,7 +426,8 @@ export function AdminFormPanel(props: Props) {
                 maxLength={20}
                 placeholder="영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요."
                 aria-invalid={invalid("loginId")}
-                aria-describedby={describe("loginId")}
+                aria-describedby={describe("loginId") ?? (loginIdCheck !== "idle" ? messageId("loginId") : undefined)}
+                aria-busy={loginIdCheck === "checking" || undefined}
                 aria-required
                 autoComplete="off"
               />
@@ -423,12 +466,13 @@ export function AdminFormPanel(props: Props) {
             </FormRow>
             {message("phone")}
           </Group>
-          <Labeled label="이메일" required message={message("email")}>
+          <Labeled label="이메일" required message={<EmailAvailability id={messageId("email")} check={emailCheck} message={errors.email} />}>
             <TextField
               type="email"
               value={form.email}
               onChange={(e) => {
                 checkNumber.current.email++;
+                setEmailCheck("idle");
                 set("email", e.target.value);
               }}
               onBlur={(e) => checkAvailable("email", e.currentTarget.value)}
@@ -439,7 +483,8 @@ export function AdminFormPanel(props: Props) {
               }}
               maxLength={100}
               aria-invalid={invalid("email")}
-              aria-describedby={describe("email")}
+              aria-describedby={describe("email") ?? (emailCheck !== "idle" ? messageId("email") : undefined)}
+              aria-busy={emailCheck === "checking" || undefined}
               aria-required
             />
           </Labeled>
@@ -450,7 +495,7 @@ export function AdminFormPanel(props: Props) {
                   value={form.accountStatus}
                   onChange={(e) => set("accountStatus", e.target.value as BpAdminForm["accountStatus"])}
                   disabled={locks.status}
-                  title={locks.status ? "본인 계정의 상태는 바꿀 수 없습니다" : undefined}
+                  title={locks.status ? "내 계정의 상태는 바꿀 수 없습니다." : undefined}
                   aria-required
                 >
                   <option value="ACTIVE">사용</option>
@@ -459,7 +504,7 @@ export function AdminFormPanel(props: Props) {
               </Field>
               {deactivationImpact && deactivationImpact.deactivatedCount > 0 && (
                 <InfoBand>
-                  <p>가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 계정도 함께 멈춥니다</p>
+                  <p>가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 계정도 함께 멈춥니다.</p>
                   <p className="font-normal text-erp-label">
                     가맹 관리자 {andOthers(deactivationImpact.firstDeactivatedLoginId, deactivationImpact.deactivatedCount)} → 미사용
                   </p>
@@ -469,8 +514,6 @@ export function AdminFormPanel(props: Props) {
             </>
           )}
           {/* 계정 역할 · 권한명은 기본정보 안 맨 아래 — 따로 있던 「계정 역할」 묶음 제목은 없앴다(2026-10-27 사용자 지정) */}
-          {groupsFailed && <FailedBand message="권한 그룹 목록을 불러오지 못했습니다. 화면을 새로 고쳐 주세요." />}
-          {noGroupForRole && <FailedBand message="붙일 권한 그룹이 없습니다. BP 권한 그룹 관리에서 먼저 만들어 주세요." />}
           {/* 계정 역할 · 권한명은 한 줄에 나란히(2026-10-27 사용자 지정 — 전엔 두 줄). 역할 이름은 7자를 넘지 않아
               계정 역할 칸은 그 폭(글자 + 화살표 30, 150 → 130)으로 줄이고 권한명이 남는 폭을 쓴다(2026-10-27 사용자 지정) */}
           {/* 위쪽 정렬 — 한 칸에만 오류 문구가 붙어 줄이 높아져도 두 입력칸이 같은 높이에 선다(사용자가 찾음). FormRow 는 늘여 세워 옆 칸이 가운데로 내려갔다 */}
@@ -497,17 +540,36 @@ export function AdminFormPanel(props: Props) {
                 <TextField value={form.roleTypeCode ? roleType(form.roleTypeCode) : ""} readOnly />
               </Field>
             )}
-            <Labeled label="권한명" required={!locks.roleGroup} message={message("roleGroupId")}>
+            {/* 권한명을 고를 수 없는 이유(목록을 못 받음 · 이 역할의 권한명이 없음)는 위 띠 대신 이 칸 아래에 둔다(2026-10-28 사용자 지정 — 전엔 계정 역할 줄 위 띠) */}
+            <Labeled
+              label="권한명"
+              required={!locks.roleGroup}
+              message={
+                groupsFailed ? (
+                  <FieldMessage id={messageId("roleGroupId")} message="권한명 목록을 불러오지 못했습니다. 화면을 새로 고쳐 주세요." />
+                ) : noGroupForRole ? (
+                  // [이동]은 환경설정 > 권한그룹 관리(/bp-role-groups, 이 탭 BP 주소)로 간다 — 권한명이 없으면 어차피 저장할 수 없다(2026-10-28 사용자 지정 문구)
+                  <span className="flex items-center gap-[10px]">
+                    <FieldMessage id={messageId("roleGroupId")} message="선택할 수 있는 권한명이 없습니다. 먼저 권한명을 등록해 주세요." />
+                    <Button variant="soft" href={bpPath(currentBp.bpCodeId, "/bp-role-groups")}>
+                      이동
+                    </Button>
+                  </span>
+                ) : (
+                  message("roleGroupId")
+                )
+              }
+            >
               <Select
                 value={form.roleGroupId}
                 onChange={(e) => set("roleGroupId", e.target.value)}
                 disabled={locks.roleGroup || !form.roleTypeCode}
-                title={locks.roleGroup ? "이 계정의 권한명은 여기서 바꿀 수 없습니다" : undefined}
+                title={locks.roleGroup ? "이 계정의 권한명은 여기서 바꿀 수 없습니다." : undefined}
                 aria-invalid={invalid("roleGroupId")}
-                aria-describedby={describe("roleGroupId")}
+                aria-describedby={groupsFailed || noGroupForRole ? messageId("roleGroupId") : describe("roleGroupId")}
                 aria-required
               >
-                {!form.roleGroupId && <option value="">{form.roleTypeCode ? "선택" : "계정 역할을 먼저 골라 주세요"}</option>}
+                {!form.roleGroupId && <option value="">{form.roleTypeCode ? "선택" : "계정역할을 먼저 선택하세요."}</option>}
                 {groupOptions.map((r) => (
                   <option key={r.roleGroupId} value={r.roleGroupId}>
                     {r.name} · {r.roleCode}
@@ -521,34 +583,37 @@ export function AdminFormPanel(props: Props) {
         {/* 상세와 같은 「대상점포」(2026-10-27 사용자 지정) */}
         <FormGroup title="대상점포">
           {/* 「전체 점포」가 막힌 이유를 라벨 옆에 둔다(2026-10-27 사용자 지정 문구 · 자리). 공통코드 이름은 띄어 쓰지 않아(가맹마스터) 문구를 적어 둔다 */}
-          <HintedField
-            label="범위"
-            required={!locks.scope}
-            hint={form.roleTypeCode === "FM" || form.roleTypeCode === "FA" ? `${form.roleTypeCode === "FM" ? "가맹 마스터" : "가맹 관리자"}는 점포를 골라서 맡습니다.` : undefined}
-          >
-            <Select
-              value={form.isAllStores ? "ALL" : "PART"}
-              onChange={(e) => {
-                set("isAllStores", e.target.value === "ALL");
-                clearError("stores");
-              }}
-              disabled={locks.scope || !allowsAllStores(form.roleTypeCode)}
-              aria-required={!locks.scope}
-              title={
-                locks.scope && mode === "edit" && props.admin.isAllStores
-                  ? "관리 범위가 일부 점포인 사용자는 전체 점포 계정의 범위를 바꿀 수 없습니다"
-                  : undefined
-              }
+          {/* 점포를 고칠 수 없는 계정(본인 계정)은 범위 칸을 두지 않고 맡은 점포만 글로 보인다(2026-10-29 사용자 지정) */}
+          {!locks.stores && (
+            <HintedField
+              label="범위"
+              required={!locks.scope}
+              hint={form.roleTypeCode === "FM" || form.roleTypeCode === "FA" ? `${form.roleTypeCode === "FM" ? "가맹마스터" : "가맹관리자"}는 '일부 점포'만 선택할 수 있습니다.` : undefined}
             >
-              <option value="ALL">전체 점포</option>
-              <option value="PART">일부 점포</option>
-            </Select>
-          </HintedField>
+              <Select
+                value={form.isAllStores ? "ALL" : "PART"}
+                onChange={(e) => {
+                  set("isAllStores", e.target.value === "ALL");
+                  clearError("stores");
+                }}
+                disabled={locks.scope || !allowsAllStores(form.roleTypeCode)}
+                aria-required={!locks.scope}
+                title={
+                  locks.scope && mode === "edit" && props.admin.isAllStores
+                    ? "관리 범위가 일부 점포인 사용자는 전체 점포 계정의 범위를 바꿀 수 없습니다."
+                    : undefined
+                }
+              >
+                <option value="ALL">전체 점포</option>
+                <option value="PART">일부 점포</option>
+              </Select>
+            </HintedField>
+          )}
           {!form.isAllStores && !locks.stores && (
             <div className="flex flex-col gap-[8px]">
               {optionsFailure && (
                 <div className="flex flex-col items-start gap-[6px]">
-                  <FailedBand message={optionsFailure} detail="고른 점포와 입력한 값은 그대로 두었습니다." />
+                  <FailedBand message={optionsFailure} detail="선택한 점포와 입력한 값은 그대로 두었습니다." />
                   <Button variant="soft" onClick={() => setOptionsRetry((n) => n + 1)}>
                     다시 불러오기
                   </Button>
@@ -561,17 +626,32 @@ export function AdminFormPanel(props: Props) {
                 onChange={(next) => set("stores", next)}
                 loading={!!optionsRole && !optionsReady && !optionsFailure}
                 failed={!!optionsFailure}
+                // 후보는 계정 역할마다 다르다(가맹 마스터면 다른 가맹 마스터 담당 점포가 빠진다) — 역할을 고르기 전엔 받지 않으니 찾기를 막는다. 권한명은 상관없다
+                blocked={form.roleTypeCode ? undefined : "계정역할을 먼저 선택하세요."}
                 invalid={invalid("stores")}
                 describedBy={describe("stores")}
               />
               {message("stores")}
             </div>
           )}
-          {!form.isAllStores && locks.stores && mode === "edit" && (
-            <p className="text-[14px] text-erp-label">
-              {props.admin.stores.map((s) => s.name).join(", ") || "매핑된 점포가 없습니다."}
-            </p>
-          )}
+          {/* 고칠 수 없으면 맡은 점포를 한 줄씩 — 점포명 + 점포 상태(2026-10-29 사용자 지정, 전엔 쉼표로 이은 이름만). 유형은 api 가 주지 않아 두지 않는다.
+              위의 막힌 칸(계정 역할 · 권한명)과 같은 회색 바탕 · 회색 글자 상자에 담아 고칠 수 없다는 것을 보인다(2026-10-29 사용자 지정) */}
+          {locks.stores &&
+            mode === "edit" &&
+            (props.admin.isAllStores || !props.admin.stores.length ? (
+              <p className="rounded-[2px] border border-erp-field-line bg-erp-thead-bg px-[10px] py-[7px] text-[14px] text-erp-label">
+                {props.admin.isAllStores ? "전체 점포" : "매핑된 점포가 없습니다."}
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-[8px] rounded-[2px] border border-erp-field-line bg-erp-thead-bg px-[10px] py-[8px] text-[14px] text-erp-label">
+                {props.admin.stores.map((s) => (
+                  <li key={s.storeId} className="flex items-center justify-between gap-[10px]">
+                    <span className="min-w-0 truncate">{s.name}</span>
+                    <StoreStatusBadge status={s.storeStatusCode as StoreStatus} />
+                  </li>
+                ))}
+              </ul>
+            ))}
           {outOfScope.length > 0 && !locks.stores && (
             <div className="flex flex-col gap-[8px]">
               <p className="text-[14px] font-medium text-erp-ink">
@@ -593,7 +673,7 @@ export function AdminFormPanel(props: Props) {
       </div>
 
       {/* 안내 문구는 플랫폼 관리자 등록 · 수정과 같다(2026-10-27 사용자 지정) */}
-      {mode === "create" && <Note>관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.</Note>}
+      {mode === "create" && <Note>초기화 비밀번호는 등록한 이메일로 발송됩니다.</Note>}
       {mode === "edit" && form.accountStatus === "INACTIVE" && props.admin.accountStatus === "ACTIVE" && (
         <Note>
           미사용으로 변경하면 해당 계정의 로그인 및 서비스 접근이 즉시 차단됩니다.
@@ -606,7 +686,7 @@ export function AdminFormPanel(props: Props) {
           취소
         </Button>
         {/* 권한 그룹을 받지 못하면 등록은 고를 그룹이 없어 저장할 수 없다(수정은 지금 그룹을 그대로 둔다) */}
-        <Button onClick={handleSave} disabled={saving || (mode === "create" && (groupsFailed || noGroupForRole))}>
+        <Button onClick={handleSave} disabled={saving || bpBlocked || (mode === "create" && (groupsFailed || noGroupForRole))}>
           저장
         </Button>
       </div>
@@ -636,7 +716,7 @@ export function AdminFormPanel(props: Props) {
               {cascade.impact.unmappedCount > 0 && (
                 <>
                   <dt className="text-erp-label">매핑 해제</dt>
-                  <dd>가맹 관리자 {andOthers(cascade.impact.firstUnmappedLoginId, cascade.impact.unmappedCount)} · 뺀 점포의 매핑만 풀립니다</dd>
+                  <dd>가맹 관리자 {andOthers(cascade.impact.firstUnmappedLoginId, cascade.impact.unmappedCount)} · 뺀 점포의 매핑만 풀립니다.</dd>
                 </>
               )}
               {cascade.impact.deactivatedCount > 0 && (
@@ -648,7 +728,7 @@ export function AdminFormPanel(props: Props) {
             </dl>
             <p className="text-[13px] text-erp-label">아이디는 첫 계정만 보입니다.</p>
             {cascade.impact.unmappedCount > 0 && (
-              <p>점포가 하나도 남지 않는 가맹 관리자도 계정상태는 사용 그대로입니다. 그 계정을 다음에 수정할 때 관리 점포를 한 곳 이상 골라야 저장됩니다.</p>
+              <p>점포가 하나도 남지 않는 가맹 관리자도 계정상태는 사용 그대로입니다. 그 계정을 다음에 수정할 때 관리 점포를 한 곳 이상 선택해야 저장됩니다.</p>
             )}
             {cascade.impact.deactivatedCount > 0 && (
               <p>
@@ -656,7 +736,7 @@ export function AdminFormPanel(props: Props) {
                 남습니다.
               </p>
             )}
-            <p>가맹 관리자 변경 이력에는 저장하는 사람이 처리자로 남고, 변경 후 값에 사유가 붙습니다.</p>
+            <p>가맹 관리자 변경이력에는 저장하는 사람이 처리자로 남고, 변경 후 값에 사유가 붙습니다.</p>
           </div>
         </ConfirmDialog>
       )}

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useId, useOptimistic, useRef, useState, useTransition } from "react";
 import { Pagination, Select } from "@/components/common";
 import { EASE_OUT } from "@/components/common/theme";
+import { useCurrentBp } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { PAGE_SIZES, monthLabel, shiftMonth, type PageSize, type PayslipListQuery } from "@/lib/payslips";
 import { toPayslipListSearch, withFilter } from "./payslip-list-query";
 
@@ -14,12 +16,14 @@ import { toPayslipListSearch, withFilter } from "./payslip-list-query";
  */
 export function usePayslipListNavigation(query: PayslipListQuery) {
   const router = useRouter();
+  // 목록 주소는 탭 BP 주소다(/bp/{id}/payslips, WHALEERP-637)
+  const bp = useCurrentBp().bpCodeId;
   const [, startTransition] = useTransition();
   const [current, setCurrent] = useOptimistic(query);
   const navigate = (next: PayslipListQuery) =>
     startTransition(() => {
       setCurrent(next);
-      router.replace(`/payslips${toPayslipListSearch(next)}`, { scroll: false });
+      router.replace(bpPath(bp, `/payslips${toPayslipListSearch(next)}`), { scroll: false });
     });
   return { current, navigate };
 }

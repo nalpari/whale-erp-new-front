@@ -12,7 +12,7 @@ export function normalizeLoginId(value: string): string {
 const LOGIN_ID = /^(?=.*[A-Za-z])[A-Za-z0-9]{4,20}$/;
 export function validateLoginId(value: string): string | undefined {
   if (!value) return "아이디를 입력해 주세요.";
-  if (!LOGIN_ID.test(value)) return "영문·숫자 조합으로 4~20자로 입력해 주세요.";
+  if (!LOGIN_ID.test(value)) return "영문 또는 영문·숫자 조합으로 4~20자로 입력해 주세요.";
   return undefined;
 }
 

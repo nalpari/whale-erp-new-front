@@ -60,6 +60,7 @@ export function DataTable<T>({
   empty = "데이터가 없습니다.",
   headVariant = "default",
   scroll = false,
+  fillEmpty = false,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -69,6 +70,11 @@ export function DataTable<T>({
   empty?: ReactNode;
   headVariant?: TableHeadVariant;
   scroll?: boolean;
+  /**
+   * 비었을 때 열 이름 줄은 그대로 두고, 그 아래 빈 안내 칸이 감싸는 flex 세로 영역의 남는 높이를 채워 문구를 가운데에 둔다(점포 목록 표 보기, 2026-11-04 사용자 지정).
+   * 감싸는 쪽이 flex 세로여야 한다. 고정 머리 표(scroll)와 함께 써도 된다(공통코드 관리, 2026-11-05)
+   */
+  fillEmpty?: boolean;
 }) {
   const table = `w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px] ${headVariant === "none" ? "border-t" : ""}`;
   const cols = (
@@ -131,7 +137,9 @@ export function DataTable<T>({
 
   // 화면 읽기 도구는 본문 표 하나만 읽는다 — 보이는 머리 표(글자뿐)는 숨기고, 본문 표에 같은 열 이름을 sr-only 로 둬 칸과 열 이름이 이어진다.
   // 최소 높이는 머리 42 + 줄 둘(46 × 2) — 패널이 낮아 모자라면 표가 0 으로 줄어 머리가 아래 형제와 겹치는 대신 바깥 카드가 스크롤한다.
-  if (scroll && headVariant !== "none")
+  // 고정 머리 표도 fillEmpty 로 비었으면 아래 빈 칸 모양으로 그린다 — 스크롤할 줄이 없다(공통코드 관리, 2026-11-05 사용자 지정)
+  const emptyFill = fillEmpty && rows.length === 0;
+  if (scroll && headVariant !== "none" && !emptyFill)
     return (
       <div data-table-scroll className="flex min-h-[134px] flex-1 flex-col">
         {/* 본문을 가로로 밀면 머리도 따라간다(ScrollHeadSync) */}
@@ -158,6 +166,18 @@ export function DataTable<T>({
             </table>
           }
         />
+      </div>
+    );
+  if (emptyFill)
+    return (
+      // 남는 높이가 모자라도 머리(42) + 빈 칸(92)은 지킨다 — min-h-0 이면 상자가 0 까지 줄어 아래 쪽 이동과 겹쳤다(리뷰 반영).
+      // scroll 표면 data-table-scroll 을 그대로 달아 감싸는 패널(CodePanel)이 이 상자를 줄이지 않는 대상(shrink-0)에서 뺀다
+      <div data-table-scroll={scroll || undefined} className="flex min-h-[134px] flex-1 flex-col">
+        <table className={table}>
+          {cols}
+          {head}
+        </table>
+        <p className="flex min-h-[92px] flex-1 items-center justify-center border-x border-b border-erp-thead-line text-[14px] text-erp-muted">{empty}</p>
       </div>
     );
   return (

@@ -11,7 +11,7 @@ export type PublicHolidayList = Schemas["PublicHolidayListResponseDto"];
 
 /**
  * GET /public-holidays?year=&month= — 캘린더면 그 달, 목록이면 그 해 전체(publicHolidaysApiPath). 날짜순, 페이지 없이.
- * synchronization 은 「최종 동기화」(어느 해든 마지막 성공)와 올해 · 다음 해 중 마지막 동기화가 실패한 연도다.
+ * synchronization 은 「최근 동기화」(어느 해든 마지막 성공)와 올해 · 다음 해 중 마지막 동기화가 실패한 연도다.
  */
 export async function getPublicHolidays(query: HolidayQuery): Promise<PublicHolidayList> {
   return request(publicHolidaysApiPath(query), { headers: await authHeaders() });

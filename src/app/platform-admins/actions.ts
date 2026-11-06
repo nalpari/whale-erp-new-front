@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
+import { withPeriod } from "@/lib/format";
+import { historyPageSizeOf } from "@/lib/history-paging";
 import {
+  checkEmailAvailable,
   checkLoginIdAvailable,
   createPlatformAdmin,
   deletePlatformAdmin,
@@ -30,14 +33,14 @@ export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; status?
 function failureOf(error: unknown, what: string): { ok: false; status?: number; message: string } {
   if (error instanceof ApiError) {
     if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
-    if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: error.message };
+    if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: withPeriod(error.message) };
   }
   console.error(`플랫폼 관리자 ${what} 실패`, error);
   return { ok: false, message: `${what}하지 못했습니다. 잠시 후 다시 시도해 주세요.` };
 }
 
 const validId = (id: number) => Number.isInteger(id) && id >= 1 && id <= 2_147_483_647;
-const NOT_FOUND = { ok: false as const, status: 404, message: "플랫폼 관리자 계정을 찾을 수 없습니다" };
+const NOT_FOUND = { ok: false as const, status: 404, message: "플랫폼 관리자 계정을 찾을 수 없습니다." };
 
 /** 등록 · 수정 · 비밀번호 초기화가 끝났으면 목록 · 상세를 새로 받는다(삭제는 화면이 목록으로 옮기며 받는다). 무효화가 실패해도 저장은 끝났으므로 성공으로 돌려준다. */
 function refresh() {
@@ -66,6 +69,15 @@ export async function checkLoginIdAvailableAction(loginId: string): Promise<Acti
     return { ok: true, available: await checkLoginIdAvailable(loginId) };
   } catch (error) {
     return failureOf(error, "아이디 확인");
+  }
+}
+
+/** 이메일 중복 확인 — 등록 · 수정 화면이 칸을 벗어나거나 Enter 를 칠 때 부른다. 형식은 화면이 먼저 본다(2026-10-29 재영). */
+export async function checkEmailAvailableAction(email: string): Promise<ActionResult<{ available: boolean }>> {
+  try {
+    return { ok: true, available: await checkEmailAvailable(email) };
+  } catch (error) {
+    return failureOf(error, "이메일 확인");
   }
 }
 
@@ -100,14 +112,17 @@ export async function resetPlatformAdminPasswordAction(id: number): Promise<Acti
     refresh();
     return { ok: true, ...result };
   } catch (error) {
-    return failureOf(error, "비밀번호 초기화");
+    // api 문구 「이메일이 없는 계정이라 보낼 곳이 없습니다」(409)는 화면 말투로 바꾼다 — 세 관리 화면 같다(2026-10-28 사용자 지정)
+    if (error instanceof ApiError && error.status === 409 && error.message.includes("이메일이 없는 계정"))
+      return { ok: false, status: 409, message: "해당 계정에는 등록된 이메일 주소가 없어 메일을 발송할 수 없습니다." };
+    return failureOf(error, "비밀번호를 초기화");
   }
 }
 
-export async function getPlatformAdminHistoriesAction(id: number, page: number): Promise<ActionResult<PlatformAdminHistoryList>> {
+export async function getPlatformAdminHistoriesAction(id: number, page: number, pageSize: number): Promise<ActionResult<PlatformAdminHistoryList>> {
   if (!validId(id)) return NOT_FOUND;
   try {
-    return { ok: true, ...(await getPlatformAdminHistories(id, Number.isInteger(page) && page >= 1 ? page : 1)) };
+    return { ok: true, ...(await getPlatformAdminHistories(id, Number.isInteger(page) && page >= 1 ? page : 1, historyPageSizeOf(pageSize))) };
   } catch (error) {
     return failureOf(error, "이력 조회");
   }

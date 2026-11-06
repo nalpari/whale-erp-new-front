@@ -33,6 +33,23 @@
     input.form?.addEventListener("reset", () => setTimeout(() => syncEmailFormat(input)));
   }
 
+  // data-required · data-phone-format 칸(도입문의)은 브라우저 기본 문구 대신 앱(src/lib/leads.ts leadInputProblems)과 같은 문구로 검사 오류를 건다.
+  // 빈칸(빈칸만 적은 칸 포함) → data-required, 전화번호 형식 → data-phone-format(앱 PHONE 과 같은 규칙), 이메일 형식 → data-email-format.
+  const PHONE = /^(0[0-9]{8,10}|1[568][0-9]{6})$/;
+  const syncRequired = (el) => {
+    const v = el.type === "checkbox" ? (el.checked ? "on" : "") : el.value.trim();
+    let message = "";
+    if (!v) message = el.dataset.required;
+    else if (el.dataset.phoneFormat && !PHONE.test(v.replace(/[\s-]/g, ""))) message = el.dataset.phoneFormat;
+    else if (el.dataset.emailFormat && !isEmailFormat(v)) message = el.dataset.emailFormat;
+    el.setCustomValidity(message);
+  };
+  for (const el of $$("[data-required]")) {
+    for (const type of ["input", "change"]) el.addEventListener(type, () => syncRequired(el));
+    el.form?.addEventListener("reset", () => setTimeout(() => syncRequired(el)));
+    syncRequired(el);
+  }
+
   // 머리말: 스크롤하면 흰 바탕과 선을 깐다. 본문이 흰 화면(data-lined)은 맨 위에서도 선이 있다.
   const header = document.querySelector("[data-guest-header]");
   if (header) {
@@ -132,16 +149,18 @@
   // 입력 검사: 브라우저 말풍선 대신 칸 아래 붉은 글씨로 알린다. 제출을 막는 것은 브라우저 검사가 그대로 맡는다.
   // data-guest-validate 를 단 폼(3팀 도입문의)에만 건다. 1팀 회원가입 · 찾기 · 로그인은 자기 안내 문구가 따로 있다.
   const guestForm = (el) => el.closest?.("form[data-guest-validate]");
-  // 글씨는 칸을 감싼 묶음(관심 서비스 fieldset · 연락처 group · 세로 label) 맨 아래에 둔다.
-  // 체크 상자 한 줄(개인정보 동의)은 가로 label 이라 문구 오른쪽에 붙는다.
+  // 글씨는 칸을 감싼 묶음(관심 서비스 fieldset · 연락처 group · 세로 label) 맨 아래, 도움말(data-help) 자리에 둔다.
+  // 체크 상자 한 줄(개인정보 동의)은 가로 label 이라 그 줄 바로 아래에 둔다(2026-11-06 사용자 지정 — 전엔 문구 오른쪽).
   const errorOf = (el) => {
-    const host = el.closest("fieldset") ?? el.closest("[role=group]")?.parentElement ?? el.closest("label") ?? el.parentElement;
-    let p = host.querySelector(":scope > [data-field-error]");
+    const line = el.type === "checkbox" && !el.closest("fieldset") ? el.closest("label") : null;
+    const host = line ? line.parentElement : (el.closest("fieldset") ?? el.closest("[role=group]")?.parentElement ?? el.closest("label") ?? el.parentElement);
+    let p = line ? (line.nextElementSibling?.matches("[data-field-error]") ? line.nextElementSibling : null) : host.querySelector(":scope > [data-field-error]");
     if (!p) {
       p = document.createElement("span");
       p.dataset.fieldError = "";
-      p.className = `${el.type === "checkbox" && host.tagName === "LABEL" ? "ml-[4px]" : "-mt-[2px]"} text-[14px] leading-[1.5] text-[#e93737]`;
-      host.append(p);
+      p.className = "-mt-[2px] text-[14px] leading-[1.5] text-[#e93737]";
+      if (line) line.after(p);
+      else host.append(p);
     }
     return p;
   };
@@ -156,6 +175,9 @@
     const p = errorOf(el);
     p.textContent = bad?.validationMessage ?? "";
     p.hidden = !bad;
+    // 오류가 뜬 동안은 같은 묶음의 도움말을 숨긴다 — 앱처럼 도움말 자리에 오류가 선다
+    const help = p.parentElement?.querySelector(":scope > [data-help]");
+    if (help) help.hidden = !!bad;
   };
   document.addEventListener(
     "invalid",
@@ -173,6 +195,7 @@
   document.addEventListener("reset", (e) => {
     if (!e.target.matches("form[data-guest-validate]")) return;
     for (const p of $$("[data-field-error]", e.target)) p.hidden = true;
+    for (const h of $$("[data-help]", e.target)) h.hidden = false;
     for (const el of $$("[aria-invalid]", e.target)) el.removeAttribute("aria-invalid");
   });
 
@@ -212,6 +235,8 @@
         input.disabled = true;
         input.closest("[data-other-wrap]").hidden = true;
       }
+      // 도입문의는 [확인] 뒤 메인 화면으로 간다(data-done-href, 2026-11-06 사용자 지정).
+      if (done.dataset.doneHref) location.href = done.dataset.doneHref;
     });
   }
 
@@ -314,16 +339,20 @@
 
     // 제출: 브라우저 기본 검사를 통과한 뒤 비밀번호 확인과 필수 약관만 따로 본다.
     // 가입 API 가 없어 완료 화면에 보일 값을 주소로 넘긴다.
+    // 약관 동의 오류는 약관 칸 바로 아래(data-agree-error), 그 밖은 [회원가입] 위(앱 signup-form.tsx, 2026-11-04)
     const error = signup.querySelector("[data-signup-error]");
-    const fail = (msg) => {
-      error.textContent = msg;
-      error.hidden = !msg;
+    const agreeError = signup.querySelector("[data-agree-error]");
+    const fail = (msg, at = error) => {
+      for (const el of [error, agreeError]) {
+        el.textContent = el === at ? msg : "";
+        el.hidden = el !== at || !msg;
+      }
     };
     signup.addEventListener("submit", (e) => {
       e.preventDefault();
       const form = new FormData(signup);
       if (form.get("password") !== form.get("passwordConfirm")) return fail("비밀번호가 서로 다릅니다.");
-      if (!each.every((c) => c.checked)) return fail("이용약관과 개인정보 수집·이용에 모두 동의해 주세요.");
+      if (!each.every((c) => c.checked)) return fail("이용약관과 개인정보 수집·이용에 모두 동의해 주세요.", agreeError);
       fail("");
       const shown = new URLSearchParams({ companyName: form.get("companyName"), loginId: form.get("loginId"), email: form.get("email") });
       location.href = `${signup.dataset.done}?${shown}`;

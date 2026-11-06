@@ -14,6 +14,7 @@ import {
   Field,
   FormGroup,
   FormRow,
+  NoticeBand,
   RequiredMark,
   Select,
   TextField,
@@ -27,6 +28,8 @@ import {
   hasCoordinateInput,
   newFloorRow,
   storeServerErrors,
+  isBpBlockedMessage,
+  BP_BLOCKED_TEXT,
   toCreateStoreInput,
   toUpdateStoreInput,
   validateStoreForm,
@@ -40,14 +43,16 @@ import {
 } from "@/lib/store-form";
 import type { EnumValue } from "@/lib/enums";
 import { FLOOR_TYPES, floorTypeOf, type StoreDetail, type StoreImageFileType, type StoreStatus } from "@/lib/store-types";
-import { closeBlockText, formatBizNumber, nextStatuses } from "@/lib/store-view";
+import { formatBizNumber, nextStatuses } from "@/lib/store-view";
+import { CLOSING_UNKNOWN_RESULT_NOTE, OPEN_CHECK_IN, type StoreClosingCounts, type StoreClosingResult } from "@/lib/store-closing";
 import { BizVerificationBox, BizVerifiedStatus } from "@/components/site/biz-verification-box";
 import { BIZ_MESSAGE, bizDigits, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
-import { formatDate } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
-import { useCurrentBp } from "@/components/site/session-gate";
+import { useCurrentBp, useRefreshStores } from "@/components/site/session-gate";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { bpPath } from "@/lib/bp-path";
-import { withoutStoreSearch } from "@/lib/store-scope";
+import { withHeaderStoreSearch } from "@/lib/store-scope";
 import { storeImageAccept, storeImageFileError, storeImageTypesText } from "@/lib/store-image";
 import {
   createStoreAction,
@@ -58,8 +63,10 @@ import {
   verifyStoreBusinessAction,
   type ActionFailure,
 } from "./actions";
-import { FieldMessage, NoticeBand, StoreImage, StoreStatusBadge, StoreTypeCards } from "./store-parts";
+import { FieldMessage, StoreImage, StoreStatusBadge, StoreTypeCards } from "./store-parts";
+import { ClosingCheckList, ClosingCondition, ClosingResultDialog, hasClosingResult } from "./store-closing-parts";
 import { withBack } from "./stores-query";
+import { kstToday } from "@/lib/staff-members";
 
 /** 동시 수정 409 문구(api). 이때만 최신 정보를 다시 불러온다 */
 const STALE = "먼저 수정했습니다";
@@ -113,9 +120,14 @@ export function StoreFormView(props: Props) {
   // 등록할 BP — 이 탭의 BP(플랫폼 계정이 고른 BP, 그 밖은 소속 BP). 주소 /bp/{id} 의 BP 와 같다(SessionGate 가 주소로 정한다) —
   // api 가 헤더로 대상 BP 를 정하면(점포 탭 BP 전환) 본문의 bpCodeId 가 proxy 가 실은 헤더와 다를 때 400 이다
   const currentBp = useCurrentBp();
+  // 등록할 BP 가 탈퇴 · 미사용인가 — 들어오자마자 알려 저장까지 가서야 거절당하지 않게 한다(2026-10-28 사용자 지정).
+  // 플랫폼 계정만 본다(useCurrentBpStatus). 확인하지 못하면(null) 아무것도 띄우지 않는다 — 저장 때 api 가 막고 같은 문구가 뜬다
+  const bpStatus = useCurrentBpStatus();
+  const bpBlocked = mode === "create" && bpStatus !== null && bpStatus !== "ACTIVE";
   // 화면 주소는 탭 BP 를 붙인다. backHref 는 옛 경로(목록 쿼리)다
   const at = (path: string) => bpPath(currentBp.bpCodeId, path);
   const toast = useToast();
+  const refreshStores = useRefreshStores();
   const ids = useId();
   const initialForm = () => (props.mode === "edit" ? formOfStore(props.store) : EMPTY_STORE_FORM);
   const [form, setForm] = useState<StoreForm>(initialForm);
@@ -124,7 +136,20 @@ export function StoreFormView(props: Props) {
   // 등록 결과를 모르면(저장됐을 수도) 다시 저장해 둘이 생기지 않게 저장을 잠근다
   const [createUncertain, setCreateUncertain] = useState(false);
   const [dialog, setDialog] = useState<"close-blocked" | "close-confirm" | null>(null);
-  const [closeBlock, setCloseBlock] = useState<string | null>(null);
+  /**
+   * 폐점을 막은 까닭 — message 는 확인을 못 했거나 api 가 거절한 문구, counts 는 막힘(퇴근하지 않은 출근)을 보일 폐점 확인 값.
+   * notSaved 는 저장(PUT)이 막혀 다른 수정 내용도 저장되지 않은 때다 — 폐점 저장은 대표 이미지를 먼저 보내므로 이미지는 바뀌었을 수 있다(image:
+   * 저장 · 지움). canRetry 는 저장이 막힌 뒤 다시 보니 그 사이 퇴근이 등록되어 막힘이 풀린 때다
+   */
+  const [closeBlock, setCloseBlock] = useState<{
+    message: string | null;
+    counts: StoreClosingCounts | null;
+    notSaved?: { image: "saved" | "removed" | null; canRetry: boolean };
+  } | null>(null);
+  /** 폐점 확인 창에 보일 「폐점하면 함께 처리될 것」 — 저장을 누를 때 지금 기준으로 다시 받는다 */
+  const [closingCheck, setClosingCheck] = useState<StoreClosingCounts | null>(null);
+  /** 폐점 저장 결과 — 처리한 것이 있으면 결과 창을 띄우고, 닫으면 상세로 간다 */
+  const [closingResult, setClosingResult] = useState<StoreClosingResult | null>(null);
   const [saving, startSaving] = useTransition();
   const [checkingClose, startCheckingClose] = useTransition();
   const [verifying, startVerifying] = useTransition();
@@ -159,6 +184,8 @@ export function StoreFormView(props: Props) {
   }
 
   const store = props.mode === "edit" ? props.store : null;
+  /** 수정 뒤 돌아갈 상세(목록 쿼리를 싣는다) */
+  const detailHref = store ? withBack(`/stores/${store.storeId}`, backHref) : "";
   const requirementLabels = props.mode === "edit" ? props.requirementLabels : [];
   const closedOrBlocked = store ? store.storeStatusCode === "CLOSED" || store.bpAccountStatusCode !== "ACTIVE" : false;
 
@@ -185,6 +212,8 @@ export function StoreFormView(props: Props) {
   /** api 가 거절한 이유를 칸마다 나눠 붙이고(검증 실패는 문장이 여럿), 칸을 못 찾은 문장은 위 띠로 */
   const applyServerError = (failure: ActionFailure) => {
     const messages = failure.messages?.length ? failure.messages : [failure.message];
+    // BP 가 미사용 · 탈퇴라 거절했으면 칸 오류로 나누지 않고 한 줄만 — 다시 눌러도 저장되지 않아 「입력한 값은 그대로 …」는 붙이지 않는다(2026-10-28 사용자 지정)
+    if (messages.some((m) => isBpBlockedMessage(failure.status, m))) return setFailure({ title: BP_BLOCKED_TEXT[mode] });
     const { fields, rest } = storeServerErrors(failure.status, messages);
     // 등록 화면에는 점포상태 칸이 없다 — 그 칸으로 갈 문장은 띠로 돌린다(안 보이는 칸에 붙으면 아무 말 없이 끝난다)
     if (mode === "create" && fields.storeStatus) {
@@ -215,7 +244,7 @@ export function StoreFormView(props: Props) {
   const handleAddressChoose = (item: AddressItem) => {
     const mine = ++locateNumber.current;
     setCoordinateNote(null);
-    // 출퇴근 위치 적용 여부는 여기서 건드리지 않는다 — 같은 주소를 다시 고르거나 오타를 고치는 흔한 경우까지
+    // 출퇴근 위치적용은 여기서 건드리지 않는다 — 같은 주소를 다시 고르거나 오타를 고치는 흔한 경우까지
     // "사용"을 꺼 버려 운영 점포의 위치 확인이 조용히 멈추는 문제가 있었다(2026-10-19 코드 리뷰 2차 — 처음엔
     // 화면·저장 어긋남을 막으려 껐는데, 그러면 새 좌표를 받아도 되살리지 않아 더 나쁜 쪽으로 지나쳤다). 좌표가
     // 비는 동안은 선택칸이 막히고(disabled) 저장(bodyOf)도 좌표 없이는 사용을 보내지 않으니 이미 막혀 있다.
@@ -272,7 +301,7 @@ export function StoreFormView(props: Props) {
     locateNumber.current++;
     setCoordinateNote(null);
     // 숫자 · 마침표 · 마이너스만 받는다 — 문자는 칠 수 없다(2026-10-19).
-    // 출퇴근 위치 적용 여부는 여기서 건드리지 않는다 — 오타를 고치려 한 칸을 지웠다 바로 채워도 "사용"이
+    // 출퇴근 위치적용은 여기서 건드리지 않는다 — 오타를 고치려 한 칸을 지웠다 바로 채워도 "사용"이
     // 꺼진 채 남는 문제가 있었다(2026-10-19 코드 리뷰 2차). 좌표가 비는 동안은 선택칸이 막히고 저장(bodyOf)도
     // 좌표 없이는 사용을 보내지 않으니 이미 막혀 있다.
     set(key, value.replace(/[^0-9.-]/g, ""), key);
@@ -365,17 +394,47 @@ export function StoreFormView(props: Props) {
     return null;
   };
 
+  /**
+   * 폐점 조건(퇴근하지 않은 출근 0건)을 지금 기준으로 확인한다. 채웠으면 { counts }(폐점 확인 값 — 없으면 null, 확인 창은 「수를 확인하지
+   * 못했습니다」 안내로 연다)를 돌려주고, 못 채웠으면(확인을 못 한 것도), 또는 blocked 를 넘기면(저장이 이미 막혔으므로) 지금 확인 결과와
+   * 상관없이 막힘 팝업을 띄우고 점포상태를 previous 로 되돌린 뒤 null 이다.
+   * blocked 는 저장(PUT)이 막혀 다시 확인할 때 — api 문구와, 먼저 보낸 대표 이미지를 저장 · 지웠는지를 싣는다
+   */
+  const checkClose = async (
+    storeId: number,
+    previous: StoreStatus,
+    blocked?: { message: string; image: "saved" | "removed" | null },
+  ): Promise<{ counts: StoreClosingCounts | null } | null> => {
+    const result = await getStoreTransitionsAction(storeId).catch(unknownResult("폐점 조건 확인"));
+    if (!blocked && result.ok && result.canClose) return { counts: result.closing?.total ?? null };
+    const counts = result.ok && result.closing?.isBlocked ? result.closing.total : null;
+    // 저장이 막힌 뒤 다시 확인도 실패했으면 두 문구를 잇는다(상세 화면과 같다) — 확인 실패 까닭을 버리지 않는다
+    const message = blocked
+      ? result.ok
+        ? blocked.message
+        : `${blocked.message} ${result.message}`
+      : !result.ok
+        ? result.message
+        : counts
+          ? null
+          : "폐점 조건을 채우지 못했습니다.";
+    setCloseBlock({
+      message,
+      counts,
+      notSaved: blocked ? { image: blocked.image, canRetry: result.ok && result.canClose } : undefined,
+    });
+    setDialog("close-blocked");
+    setForm((f) => ({ ...f, storeStatus: previous }));
+    return null;
+  };
+
   /** 폐점을 고르는 순간 조건을 지금 기준으로 확인한다 — 못 채우면 알리고 이전 상태로 되돌린다. 확인하는 동안 상태 칸 · 저장은 잠근다 */
   const handleStatusSelect = (next: StoreStatus) => {
     const previous = form.storeStatus;
     set("storeStatus", next, "storeStatus");
     if (next !== "CLOSED" || !store) return;
     startCheckingClose(async () => {
-      const result = await getStoreTransitionsAction(store.storeId).catch(unknownResult("폐점 조건 확인"));
-      if (result.ok && result.canClose) return;
-      setCloseBlock(result.ok ? (closeBlockText(result) ?? "폐점 조건을 채우지 못했습니다.") : result.message);
-      setDialog("close-blocked");
-      setForm((f) => ({ ...f, storeStatus: previous }));
+      await checkClose(store.storeId, previous);
     });
   };
 
@@ -403,8 +462,11 @@ export function StoreFormView(props: Props) {
         // 점포는 생겼다 — 이미지가 실패해도 등록을 되돌리지 않고 상세에서 알린다(상태 코드만 주소에 싣는다)
         const imageResult = await applyImage(result.storeId);
         toast("saved");
-        // 등록 뒤 목록에 돌아가면 점포 검색은 「전체」다 — 새 점포가 고른 점포 조건에 걸려 안 보이지 않게(상세의 [목록]이 이 주소로 간다)
-        const params = new URLSearchParams({ back: withoutStoreSearch(backHref) });
+        // 헤더 범위 선택기 · 점포 고르기에 새 점포를 바로 넣는다 — 화면에 보이는 점포가 바뀌었으면 저장 토스트 뒤에 「점포 목록이 변경되었습니다.」가 이어서 뜬다
+        refreshStores();
+        // 등록 뒤 목록에 돌아가면 점포 검색은 헤더 범위를 따른다 — 고른 점포는 지운다(상세의 [목록]이 이 주소로 간다, 2026-10-30 사용자 결정 —
+        // 전엔 「전체」라 헤더와 필터가 갈렸다). 새 점포가 헤더 범위 밖이면 목록에는 없다(withHeaderStoreSearch 주석)
+        const params = new URLSearchParams({ back: withHeaderStoreSearch(backHref) });
         if (imageResult && !imageResult.ok) params.set("imageFailed", String(imageResult.status ?? "error"));
         return router.push(at(`/stores/${result.storeId}?${params}`));
       }
@@ -436,25 +498,43 @@ export function StoreFormView(props: Props) {
       }
       const result = await updateStoreAction(storeId, toUpdateStoreInput(form, props.store.updatedAt)).catch(unknownResult("수정"));
       setDialog(null);
+      // 확인과 저장 사이에 퇴근하지 않은 출근이 생겼다 — 같이 고친 칸까지 아무것도 저장되지 않았다(이미지는 위에서 먼저 보냈을 수 있다).
+      // api 문구와 지금의 막힘을 보이고 점포상태를 되돌린다. 다른 칸은 입력한 그대로 둔다
+      if (!result.ok && result.code === OPEN_CHECK_IN) {
+        const imageDone = closing && imageSent && image.kind !== "keep" ? (image.kind === "remove" ? "removed" : "saved") : null;
+        await checkClose(storeId, props.store.storeStatusCode, { message: result.message, image: imageDone });
+        return;
+      }
       if (result.ok) {
         const imageResult = closing ? null : await applyImage(storeId);
         if (imageResult && !imageResult.ok) {
           // 점포 정보는 저장됐다. 새 수정 시각으로 다시 받고, 고른 이미지는 남겨 다시 저장할 수 있게 한다
           router.refresh();
+          refreshStores();
           return setFailure({
             title: `점포 정보는 저장했지만 대표 이미지는 저장하지 못했습니다 — ${imageResult.message}`,
-            detail: "고른 이미지는 그대로 두었습니다. 다시 저장해 주세요.",
+            detail: "선택한 이미지는 그대로 두었습니다. 다시 저장해 주세요.",
           });
         }
+        // 점포명 · 상태가 바뀌었으면 헤더 범위 선택기 · 점포 고르기에 바로 넣는다(바뀐 게 없으면 알리지 않는다).
+        // 상태를 바꿨으면(폐점 · 운영) 알림은 하나만 — 「수정되었습니다.」 토스트, 폐점으로 처리한 것이 있으면 토스트 대신 결과 창(2026-11-03 사용자 지정)
+        refreshStores({ quiet: form.storeStatus !== props.store.storeStatusCode });
+        // 폐점으로 직원 퇴직 · 계약 종료를 했으면 토스트 대신 결과 창으로 알리고, 창을 닫으면 상세로 간다
+        if (hasClosingResult(result.closing)) return setClosingResult(result.closing);
         toast("updated");
-        return router.push(at(withBack(`/stores/${props.store.storeId}`, backHref)));
+        return router.push(at(detailHref));
       }
       // 다른 사람이 먼저 고쳤거나 결과를 모르면 최신 정보를 불러온다 — 저장됐으면 updatedAt 이 바뀌어 칸이 새 값으로 다시 채워진다
+      // 점포 목록도 같은 까닭으로 맞춘다
+      if (result.status === undefined || result.status === 409) refreshStores();
       if (result.status === undefined) {
         router.refresh();
         return setFailure({
           title: "수정 결과를 확인하지 못했습니다.",
-          detail: `최신 정보를 다시 불러왔습니다. 칸이 바뀌었으면 저장된 것입니다.${imageSent ? "" : " 대표 이미지는 아직 보내지 않았습니다."}`,
+          detail: `최신 정보를 다시 불러왔습니다. 칸이 바뀌었으면 저장된 것입니다.${imageSent ? "" : " 대표 이미지는 아직 보내지 않았습니다."}${
+            // 폐점 결과를 모르면 퇴직 · 계약 종료도 이미 끝났을 수 있다
+            closing ? ` ${CLOSING_UNKNOWN_RESULT_NOTE}` : ""
+          }`,
         });
       }
       if (result.status === 409 && result.message.includes(STALE)) {
@@ -477,8 +557,16 @@ export function StoreFormView(props: Props) {
     // 막은 이유가 인증 상자의 한 줄뿐이면 커서를 옮길 칸이 없다 — 상자를 보이게 끌어온다
     if (found.bizVerify && Object.keys(found).length === 1) return scrollToBizBox();
     if (Object.keys(found).length) return focusFirstError();
-    // 폐점은 되돌릴 수 없어 한 번 더 묻는다. 조건은 저장(PUT)을 받은 api 가 다시 본다(화면은 고를 때 한 번 확인했다)
-    if (store && form.storeStatus === "CLOSED" && store.storeStatusCode !== "CLOSED") return setDialog("close-confirm");
+    // 폐점은 되돌릴 수 없어 한 번 더 묻는다. 고른 뒤 시간이 지났을 수 있어 조건과 「함께 처리될 것」을 지금 기준으로 다시 받아
+    // 확인 창에 보인다 — 그 사이 출근이 생겼으면 막힘 팝업으로 알리고 되돌린다. 저장(PUT)을 받은 api 도 다시 본다(409 OPEN_CHECK_IN)
+    if (store && form.storeStatus === "CLOSED" && store.storeStatusCode !== "CLOSED") {
+      return startCheckingClose(async () => {
+        const checked = await checkClose(store.storeId, store.storeStatusCode);
+        if (!checked) return;
+        setClosingCheck(checked.counts);
+        setDialog("close-confirm");
+      });
+    }
     handleSaveConfirm();
   };
 
@@ -495,9 +583,10 @@ export function StoreFormView(props: Props) {
           ? "저장하면 대표 이미지를 지웁니다."
           : (
               <>
-                {storeImageTypesText(imageTypes)} 파일 1장만 등록할 수 있습니다. (최대 5MB)
+                {/* 더 쉬운 말로 — 저장 버튼이 화면 위에 있어 자리를 함께 말한다(2026-11-03 사용자 지정) */}
+                점포 사진 1장을 등록할 수 있습니다. ({storeImageTypesText(imageTypes)}, 5MB까지)
                 <br />
-                이미지를 선택한 후 ‘저장’을 눌러야 반영됩니다.
+                이미지를 선택한 뒤 화면 상단 ‘저장’ 버튼을 눌러야 적용됩니다.
               </>
             );
   // 인증 상자 상태(S-VRNTHD — 인증하면 잠그고 재인증으로 연다, 2026-10-22 사용자 확정). 이번 화면에서 지금 칸 값으로
@@ -506,7 +595,7 @@ export function StoreFormView(props: Props) {
   const pending = currentVerification(form);
   const savedLocked = Boolean(form.savedBizNumber) && !reopenSaved && !pending;
   const verified = Boolean(pending) || savedLocked;
-  const savedVerifiedAt = props.mode === "edit" ? formatDate(props.store.business?.verifiedAt) : "";
+  const savedVerifiedAt = props.mode === "edit" ? formatDateTime(props.store.business?.verifiedAt) : "";
   // 인증일은 저장할 때 api 가 기록한다(store-management.service profileFields) — 저장 전 막 받은 인증은 날짜 없이 「인증 완료」만,
   // 저장된 인증은 그 인증일을 보인다. 인증만 하고 지우거나 저장하지 않으면 인증일은 그대로다(2026-10-22 사용자 확인)
   const verifiedDate = savedLocked ? savedVerifiedAt : "";
@@ -521,6 +610,9 @@ export function StoreFormView(props: Props) {
 
   return (
     <div id={`${ids}-form`} className="flex flex-col gap-[24px]">
+      {/* 등록: 고른 BP 가 탈퇴 · 미사용이면 들어올 때 알린다. 수정: 소속 BP 상태 이름(미사용 · 탈퇴)을 상세와 같은 문구 · 같은 자리(점포명 제목 줄 위)에(2026-10-28 사용자 지정) */}
+      {bpBlocked && <NoticeBand title={BP_BLOCKED_TEXT.create} />}
+      {store && store.bpAccountStatusCode !== "ACTIVE" && <NoticeBand title={<>이 점포가 속한 BP가 <CodeLabel group="ACCOUNT_STATUS" value={store.bpAccountStatusCode} /> 상태로, 조회 기능만 이용할 수 있습니다.</>} />}
       {/* 취소 · 저장은 제목 줄 오른쪽에 둔다 — 근로계약서 작성 화면(contract-form.tsx)과 같은 자리(2026-10-19 점검 — 실사용자 확인). 전에는
           화면 맨 아래에 있어 긴 폼에서 저장하려면 끝까지 스크롤해야 했다. */}
       <div className="flex items-center gap-[6px]">
@@ -535,13 +627,12 @@ export function StoreFormView(props: Props) {
         <Button variant="off" href={at(store ? withBack(`/stores/${store.storeId}`, backHref) : backHref)}>
           취소
         </Button>
-        <Button onClick={handleSave} disabled={saving || closedOrBlocked || locating || checkingClose || createUncertain}>
+        <Button onClick={handleSave} disabled={saving || closedOrBlocked || bpBlocked || locating || checkingClose || createUncertain}>
           저장
         </Button>
       </div>
       {failure && <NoticeBand title={failure.title} detail={failure.detail} />}
-      {store && store.storeStatusCode === "CLOSED" && <NoticeBand tone="info" title="폐점 점포는 수정할 수 없습니다." detail="다시 운영하려면 새 점포로 등록하세요." />}
-      {store && store.bpAccountStatusCode !== "ACTIVE" && <NoticeBand title="소속 BP 가 미사용 상태여서 이 업무를 할 수 없습니다." />}
+      {store && store.storeStatusCode === "CLOSED" && <NoticeBand tone="info" title="폐점 점포는 조회만 할 수 있습니다. 영업을 다시 시작하려면 신규 점포로 등록해 주세요." />}
 
       {/* 두 묶음은 같은 선에서 끝나게 높이를 맞춘다(FormGroup 상자가 flex-1 로 늘어난다, 2026-10-16 점검) */}
       <div className="grid grid-cols-2 gap-[24px]">
@@ -620,7 +711,7 @@ export function StoreFormView(props: Props) {
             label="점포 주소"
             value={{ zipCode: form.zipCode, address: form.address, addressDetail: form.addressDetail }}
             onChange={(a) => {
-              // [지우기]로 주소를 비우면 그 주소에서 나온 좌표도, 출퇴근 위치 적용 여부도 함께 미사용으로
+              // [지우기]로 주소를 비우면 그 주소에서 나온 좌표도, 출퇴근 위치적용도 함께 미사용으로
               // 돌린다 — 주소 없이는 좌표도 없고, 좌표 없이 사용으로 남아 있으면 상세 화면에 잘못된 상태가
               // 보인다(2026-10-19 재확인 — 실사용자 지시로 되돌림. 전에는 이 값을 건드리지 않는 쪽이 근본
               // 수정이라 봤으나, 주소 없는 사용 상태 자체가 더 큰 문제로 판단해 다시 바꿨다).
@@ -660,7 +751,7 @@ export function StoreFormView(props: Props) {
                   aria-describedby={describe("longitude")}
                 />
               </Field>
-              <Field label="출퇴근 위치 적용 여부" width="w-[150px]">
+              <Field label="출퇴근 위치적용" width="w-[150px]">
                 {/* 좌표(위도 · 경도)가 없으면 사용으로 고를 수 없다 — 주소를 지우거나 좌표를 손으로 비우면
                     미사용으로 되돌리는 것과 같은 규칙이다. 주소가 아니라 좌표로 가린다 — 주소는 골랐는데
                     지오코딩이 늦거나 실패한 사이, 또는 주소 없이 좌표만 손으로 적은 점포를 놓치지 않는다
@@ -674,7 +765,7 @@ export function StoreFormView(props: Props) {
                   value={hasCoordinateInput(form.latitude, form.longitude) && form.isLocationApplied ? "Y" : "N"}
                   onChange={(e) => set("isLocationApplied", e.target.value === "Y")}
                   disabled={!hasCoordinateInput(form.latitude, form.longitude)}
-                  title={hasCoordinateInput(form.latitude, form.longitude) ? undefined : "위도 · 경도가 있어야 사용으로 고를 수 있습니다."}
+                  title={hasCoordinateInput(form.latitude, form.longitude) ? undefined : "위도 · 경도가 있어야 사용으로 바꿀 수 있습니다."}
                 >
                   <option value="Y">사용</option>
                   <option value="N">미사용</option>
@@ -694,9 +785,9 @@ export function StoreFormView(props: Props) {
             <Note>
               점포주소가 입력되면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.
               <br />
-              <b className="font-semibold">출퇴근 위치 적용 여부</b>를 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.
+              <b className="font-semibold">출퇴근 위치적용</b>을 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.
               <br />
-              위도 · 경도가 없으면 <b className="font-semibold">출퇴근 위치 적용 여부</b>를 사용으로 고를 수 없습니다.
+              위도 · 경도가 없으면 <b className="font-semibold">출퇴근 위치적용</b>을 사용으로 바꿀 수 없습니다.
             </Note>
           </Stack>
           <Labeled label="대표 이미지">
@@ -859,29 +950,64 @@ export function StoreFormView(props: Props) {
       </div>
 
       <FormGroup title="점포 공간정보">
-        <FloorTable
-          rows={form.floors}
-          onChange={(rows) => set("floors", rows, "floors")}
-          invalid={invalid("floors")}
-          describedBy={describe("floors")}
-        />
-        {message("floors")}
+        {/* 표와 그 표의 오류 문구는 한 묶음 — 카드 줄 간격(18px)으로 떨어져 보였다(2026-11-04 사용자 지적) */}
+        <Stack>
+          <FloorTable
+            rows={form.floors}
+            onChange={(rows) => set("floors", rows, "floors")}
+            invalid={invalid("floors")}
+            describedBy={describe("floors")}
+          />
+          {message("floors")}
+        </Stack>
       </FormGroup>
 
-      <ConfirmDialog open={dialog === "close-blocked"} title="폐점할 수 없습니다" confirmLabel="확인" onConfirm={() => setDialog(null)} onCancel={() => setDialog(null)}>
-        <p>{closeBlock}</p>
-        <p className="mt-[6px] text-erp-label">점포상태를 이전 값으로 되돌렸습니다.</p>
+      <ConfirmDialog
+        open={dialog === "close-blocked"}
+        title="폐점할 수 없습니다."
+        wide
+        confirmLabel="확인"
+        cancelLabel={null}
+        onConfirm={() => setDialog(null)}
+        onCancel={() => setDialog(null)}
+      >
+        <div className="flex flex-col gap-[12px]">
+          {closeBlock?.message && <p>{closeBlock.message}</p>}
+          <ClosingCondition counts={closeBlock?.counts} />
+          <p className="text-erp-label">
+            점포상태를 이전 값으로 되돌렸습니다.
+            {closeBlock?.notSaved &&
+              (closeBlock.notSaved.image === "saved"
+                ? " 대표 이미지는 먼저 저장했고, 다른 수정 내용은 저장되지 않았습니다 — 입력한 값은 그대로 두었습니다."
+                : closeBlock.notSaved.image === "removed"
+                  ? " 대표 이미지는 먼저 지웠고, 다른 수정 내용은 저장되지 않았습니다 — 입력한 값은 그대로 두었습니다."
+                  : " 다른 수정 내용도 저장되지 않았습니다 — 입력한 값은 그대로 두었습니다.")}
+            {closeBlock?.notSaved?.canRetry && " 지금은 퇴근이 등록되어 다시 폐점할 수 있습니다."}
+          </p>
+        </div>
       </ConfirmDialog>
       <ConfirmDialog
         open={dialog === "close-confirm"}
-        title="폐점으로 저장할까요?"
+        title="폐점으로 저장하시겠습니까?"
+        wide
         confirmLabel="폐점으로 저장"
         busy={saving}
         onConfirm={handleSaveConfirm}
         onCancel={() => setDialog(null)}
       >
-        <p>폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다. 다른 수정 내용도 함께 저장됩니다.</p>
+        {/* 상세의 폐점 확인창과 같은 문구 + 다른 수정 내용 안내(2026-11-03 사용자 지정, 2026-11-05 「…하시겠습니까?」 · 「…로 설정되며」로 맞춤) */}
+        <p>폐점으로 저장하면 되돌릴 수 없습니다.</p>
+        <p>폐점일은 오늘({kstToday()})로 설정되며, 다른 수정 내용도 함께 저장됩니다.</p>
+        {/* 확인 값이 없으면 목록 대신 무엇이 처리되는지 알린다 */}
+        <ClosingCheckList counts={closingCheck} />
       </ConfirmDialog>
+      <ClosingResultDialog
+        result={closingResult}
+        onClose={() => {
+          setClosingResult(null);
+          router.push(at(detailHref));
+        }}
+      />
     </div>
   );
 }

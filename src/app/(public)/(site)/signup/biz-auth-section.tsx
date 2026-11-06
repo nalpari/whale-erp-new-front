@@ -65,7 +65,7 @@ function OptionalField({ label, message, messageId, children }: { label: string;
   );
 }
 
-// 사업자정보 인증 (선택). 네 화면(회원가입 · 점포 · MY PAGE · 플랫폼 BP 관리) 공통 정책 manyfast S-VRNTHD(2026-10-22 사용자
+// 사업자정보 인증 (선택). 네 화면(회원가입 · 점포 · 마이페이지 · 플랫폼 BP 관리) 공통 정책 manyfast S-VRNTHD(2026-10-22 사용자
 // 확정)를 따른다 — 관리자 웹의 components/site/biz-verification-box.tsx 와 같은 구성 · 같은 문구를, 이 화면은 1팀 비로그인
 // 폼 규격(guest-form.ts)으로 그린다. 상자 머리(제목 · 인증 상태) → 세 칸(형식 오류 · 중복은 칸 아래) → 버튼 위 한 줄(빈 칸 묶음 ·
 // 그 밖의 실패) → 버튼 → 안내.

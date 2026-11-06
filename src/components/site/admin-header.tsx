@@ -1,19 +1,25 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useEffectEvent, useState, type ReactNode } from "react";
-import { GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
+import { ConfirmDialog, GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
-import { bpPath, isBpPathScreen } from "@/lib/bp-path";
+import { bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
 import type { ServiceCode } from "@/lib/browser-storage";
-import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
+import { entryUrlOf, findMenu, firstMenuUrl, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
 import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, scopeOfKey, withScope } from "@/lib/store-scope";
 import { BpSelectDialog } from "./bp-select-dialog";
+import { useCodeLabel } from "./code-label";
+import { useCurrentBpStatus } from "./current-bp-status";
+import { StartGuideButton } from "./start-guide-button";
 import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, usePasswordChangeOpen, useScope, useService, useStores, useWithdrawOpen } from "./session-gate";
 
 /** ERP 메뉴 url 의 화면 주소 — /bp/{id} 주소로 옮긴 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다. */
 const screenOf = (url: string, tabBp: number) => (isBpPathScreen(url) ? bpPath(tabBp, url) : url);
+// 범위를 바꿔도 목록으로 가지 않고 머무는 화면 — 목록이 아니라 지금 범위로 일하는 화면이다(직원 자료 일괄 저장, 2026-10-29 front #179 리뷰).
+// 같은 주소에 새 scope 만 실어 바꾼다 — 주소의 옛 scope 가 남으면 복사한 주소와 헤더 범위가 어긋난다.
+const SCOPE_STAY_SCREENS = ["/staff-members/export"];
 
 // 로그인 후 화면의 헤더 하나. 메뉴·점포·이름은 로그인 정보(SessionGate)에서 그린다.
 // 메뉴는 이 탭 서비스(useService)의 것만, 2단계까지 그린다(3단계는 헤더에 보이지 않는다, 2026-10-13).
@@ -27,17 +33,20 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const all = useMenus();
   const backdropActive = useBackdropActive();
   const [bpSelectOpen, setBpSelectOpen] = useState(false);
+  const [addonNoticeOpen, setAddonNoticeOpen] = useState(false);
   const [, setMyPageOpen] = useMyPageOpen();
   const [, setPasswordChangeOpen] = usePasswordChangeOpen();
   const [, setWithdrawOpen] = useWithdrawOpen();
   const myPageTrigger = useMyPageTrigger();
   const tabBp = useCurrentBp().bpCodeId;
   const [scope] = useScope();
+  // 플랫폼은 홈이 없어 로고 · 플랫폼관리 바로가기가 첫 메뉴를 바로 가리킨다 — /platform 을 거쳐 같은 화면을 다시 열지 않게(firstMenuUrl 로 같은 첫 메뉴를 고른다).
+  const home = service === "PLATFORM" ? (firstMenuUrl(all, service) ?? HOME.PLATFORM) : HOME[service];
   const linkOf = (url: string) => withScope(service === "WHALE_ERP" ? screenOf(url, tabBp) : url, scope);
   const menus: HeaderMenu[] = all.map((m) => {
       const items = m.children.flatMap((c) => {
         // 하위 메뉴로 가는 길로만 들어온 메뉴는 조회 권한이 없다(isAllowed 가 막는다). 권한 있는 첫 하위 메뉴로 보내고, 없으면 뺀다.
-        const href = c.permission.read && c.url ? c.url : findMenu(c.children, (x) => x.permission.read && !!x.url)?.url;
+        const href = entryUrlOf(c);
         if (!href) return [];
         const item = { label: c.name, href: linkOf(href) };
         const pending = PENDING_PLATFORM_MENU;
@@ -58,17 +67,49 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
     <GlobalHeader
       menus={menus}
       inert={backdropActive}
-      logoHref={HOME[service]}
+      logoHref={home}
       right={
         <>
           {service === "WHALE_ERP" ? <HeaderScopeSelect /> : <div className="flex-1" />}
-          <ServiceLinks targets={serviceTargets(account.bp, service, () => setBpSelectOpen(true))} />
+          {/* 시작 가이드는 서비스 바로가기 바로 앞 — 글자 버튼이라 붐비지 않는다. 웨일ERP 탭이면 플랫폼 계정이 BP 를 골라 넘어온 경우도 보인다(2026-11-05 사용자 지정 — 전엔 플랫폼 계정에 숨겼다) */}
+          {service === "WHALE_ERP" && <StartGuideButton />}
+          <ServiceLinks targets={{ ...serviceTargets(account.bp, service, home, () => setBpSelectOpen(true)), addon: () => setAddonNoticeOpen(true) }} hideAddon={service === "PLATFORM"} />
           {alarm}
           <UserPop name={account.name ?? account.loginId} items={userItems} triggerRef={myPageTrigger} />
           {bpSelectOpen && <BpSelectDialog onClose={() => setBpSelectOpen(false)} />}
+          {/* 부가서비스 아이콘 — 고객지원 > 부가서비스구독관리 화면이 아직 없어 안내만 띄운다(2026-10-29 사용자 지정). 화면이 생기면 그 주소로 현재 창 이동한다. */}
+          <ConfirmDialog open={addonNoticeOpen} title="부가서비스구독관리" cancelLabel={null} onConfirm={() => setAddonNoticeOpen(false)} onCancel={() => setAddonNoticeOpen(false)}>
+            부가서비스구독관리 화면은 준비 중입니다.
+            <br />
+            현재 모든 서비스를 무료로 이용하실 수 있으며, 구독 관리 기능은 추후 제공될 예정입니다.
+          </ConfirmDialog>
         </>
       }
     />
+  );
+}
+
+/**
+ * 플랫폼 계정이 탈퇴 · 미사용 BP 를 보고 있으면 범위 선택기 옆에 상태 배지와 한 줄을 둔다 — 어느 화면에서든 조회만 된다는 것을 먼저 안다
+ * (2026-10-28 사용자 지정). 사용 중이거나 상태를 모르면(BP 계정 · 받기 전 · 받지 못함) 그리지 않는다.
+ */
+function BpStatusNote() {
+  // 헤더는 화면을 옮겨도 그대로 떠 있다 — 화면 주소가 바뀔 때마다 다시 묻게 한다(30초 캐시 안이면 그대로, 리뷰로 찾음)
+  const status = useCurrentBpStatus(usePathname());
+  const label = useCodeLabel("ACCOUNT_STATUS");
+  if (!status || status === "ACTIVE") return null;
+  return (
+    // 빨간 알약 칩 하나에 자물쇠 · 상태 · 「조회만 가능합니다.」 — 헤더의 알약형 컨트롤과 같은 모양(2026-10-29 사용자 지정, 시안 B+D · 전엔 배지 + 「조회 기능만 이용할 수 있는 BP입니다.」)
+    <span
+      role="status"
+      className="flex h-[34px] shrink-0 items-center gap-[6px] rounded-full border border-erp-off bg-erp-off-bg pr-[14px] pl-[10px] text-[14px] whitespace-nowrap text-erp-off"
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="size-[15px] shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <rect x="5" y="11" width="14" height="9" rx="1.5" />
+        <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+      </svg>
+      <b className="font-semibold">{label(status)}BP</b> · 조회만 가능합니다.
+    </span>
   );
 }
 
@@ -79,10 +120,11 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
 // noopener — 새 탭이 이 탭의 sessionStorage(ERP · 고른 BP)를 물려받지 않아, 주소(/platform)대로 자기 BP 의 플랫폼으로 열린다.
 // 플랫폼관리 아이콘은 플랫폼 계정에게만 보인다 — BP·가맹 계정은 애초에 그 화면에 들어갈 권한이 없어
 // platform 자리를 비워 ServiceLinks 가 아이콘을 그리지 않게 한다(사용자 지적, 2026-10-21).
-function serviceTargets(bp: AccountBp, service: ServiceCode, openBpSelect: () => void) {
+// home 은 이 탭의 홈 링크(플랫폼 탭이면 첫 메뉴)다. ERP 탭의 헤더 메뉴(useMenus)는 플랫폼 메뉴를 걸러 첫 메뉴를 모르므로, 새 탭은 /platform 으로 열고 SessionGate 가 첫 메뉴로 보낸다.
+function serviceTargets(bp: AccountBp, service: ServiceCode, home: string, openBpSelect: () => void) {
   if (!bp.isPlatform) return { erp: "/home" };
   const openPlatform = () => window.open(HOME.PLATFORM, "_blank", "noopener");
-  return { erp: openBpSelect, platform: service === "PLATFORM" ? HOME.PLATFORM : openPlatform };
+  return { erp: openBpSelect, platform: service === "PLATFORM" ? home : openPlatform };
 }
 
 // 범위 선택기 — 전체 · 직영 · 가맹 · 점포 하나 중 하나(okf/home.md). 모양은 데모 scopeDropdown(칸은 「BP 이름 · 고른 값」, 목록은 BP 묶음 · 직영 · 가맹 묶음 + 검색).
@@ -98,6 +140,7 @@ function HeaderScopeSelect() {
   const stores = useStores();
   const [scope, setScope] = useScope();
   const pageUrl = pageMenu?.url ?? null;
+  const pathname = usePathname();
   // 칸 앞의 BP 이름이 어느 BP 의 데이터인지 늘 보인다(플랫폼 계정이 고른 BP 의 탭도)
   return (
     <>
@@ -105,17 +148,24 @@ function HeaderScopeSelect() {
       <Suspense fallback={null}>
         <ScopeFromAddress />
       </Suspense>
-      <ScopeSelect
-        title={bp.tradeName}
-        sections={scopeSections(bp.tradeName, stores)}
-        value={scopeKeyOf(scope)}
-        onChange={(key) => {
-          const next = scopeOfKey(key);
-          if (!next) return;
-          setScope(next);
-          if (pageUrl) router.push(withScope(screenOf(pageUrl, bp.bpCodeId), next));
-        }}
-      />
+      {/* 상태 안내를 범위 선택기 바로 오른쪽(빈자리 왼쪽 끝)에 붙인다 — ScopeSelect 는 남는 폭을 다 받아(flex-1) 칸 폭(420)만큼 감싸 둔다(2026-10-28 사용자 지정) */}
+      <div className="flex min-w-0 flex-1 items-center gap-[12px]">
+        <div className="flex w-[420px] shrink-0">
+          <ScopeSelect
+            title={bp.tradeName}
+            sections={scopeSections(bp.tradeName, stores)}
+            value={scopeKeyOf(scope)}
+            onChange={(key) => {
+              const next = scopeOfKey(key);
+              if (!next) return;
+              setScope(next);
+              if (SCOPE_STAY_SCREENS.includes(stripBp(pathname))) router.replace(withScope(pathname, next));
+              else if (pageUrl) router.push(withScope(screenOf(pageUrl, bp.bpCodeId), next));
+            }}
+          />
+        </div>
+        <BpStatusNote />
+      </div>
     </>
   );
 }
@@ -133,7 +183,9 @@ function ScopeFromAddress() {
     const wanted = scopeFromAddress(param, scope, stores);
     if (wanted) setScope(wanted);
   });
-  useEffect(() => follow(), [param]);
+  // 점포 목록을 다시 맞추면(SessionGate) 처음엔 모르던 점포의 범위(다른 PC 에서 막 만든 점포가 담긴 주소)도 그때 따른다
+  const storeIdsKey = stores.map((s) => s.storeId).join(",");
+  useEffect(() => follow(), [param, storeIdsKey]);
   return null;
 }
 

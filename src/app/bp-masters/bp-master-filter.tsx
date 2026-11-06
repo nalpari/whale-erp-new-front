@@ -7,7 +7,7 @@ import type { BpMastersQuery } from "./bp-masters-href";
 
 // 왼쪽 필터(S-ALHCJS). 검색 기준 하나를 고르고 검색어 하나를 넣어 Enter · 돋보기로 건다. 상태(여럿)와 사업자정보 인증(BP-2)은 고르는 즉시 건다.
 // 조건은 모두 AND 다. 처음엔 조건 없이 전체(미사용 · 탈퇴 포함)를 본다.
-type Filters = Pick<BpMastersQuery, "searchType" | "keyword" | "statuses" | "verification">;
+type Filters = Pick<BpMastersQuery, "searchType" | "keyword" | "statuses" | "verification" | "statusNone">;
 
 const STATUS_LABEL: Record<BpMasterStatusValue, string> = { ACTIVE: "사용", INACTIVE: "미사용", WITHDRAWN: "탈퇴" };
 const VERIFICATIONS: { value: BpMasterVerification | undefined; label: string }[] = [
@@ -17,7 +17,7 @@ const VERIFICATIONS: { value: BpMasterVerification | undefined; label: string }[
 ];
 
 export function BpMasterFilter({ query, onApply }: { query: BpMastersQuery; onApply: (filters: Filters) => void }) {
-  const current: Filters = { searchType: query.searchType, keyword: query.keyword, statuses: query.statuses, verification: query.verification };
+  const current: Filters = { searchType: query.searchType, keyword: query.keyword, statuses: query.statuses, statusNone: query.statusNone, verification: query.verification };
   const [searchType, setSearchType] = useState<BpMasterSearchType>(query.searchType);
   const [keyword, setKeyword] = useState(query.keyword ?? "");
   // 초기화 · 뒤로 가기로 주소의 검색 조건이 바뀌면 칸도 따라간다
@@ -30,9 +30,12 @@ export function BpMasterFilter({ query, onApply }: { query: BpMastersQuery; onAp
 
   const apply = (patch: Partial<Filters>) => onApply({ ...current, ...patch });
 
-  // 상태는 빈 목록이 전체다. 마지막 하나를 끄면 셋 다 켜진 모양(전체)으로 돌아온다 — 빈 목록을 조건으로 만들지 않는다.
-  const shows = (s: BpMasterStatusValue) => !query.statuses.length || query.statuses.includes(s);
-  const toggle = (s: BpMasterStatusValue, checked: boolean) => apply({ statuses: BP_MASTER_STATUSES.filter((x) => (x === s ? checked : shows(x))) });
+  // 상태는 빈 목록이 전체다. 셋 다 끄면 결과 없음(statusNone — 플랫폼 관리자 계정상태와 같다, 2026-10-28 사용자 지정 · 전엔 마지막 하나를 끄면 전체로 돌아왔다)
+  const shows = (s: BpMasterStatusValue) => !query.statusNone && (!query.statuses.length || query.statuses.includes(s));
+  const toggle = (s: BpMasterStatusValue, checked: boolean) => {
+    const next = BP_MASTER_STATUSES.filter((x) => (x === s ? checked : shows(x)));
+    apply({ statuses: next, statusNone: next.length === 0 ? true : undefined });
+  };
 
   return (
     <FilterPanel
@@ -40,7 +43,7 @@ export function BpMasterFilter({ query, onApply }: { query: BpMastersQuery; onAp
         // 검색하지 않은 채 바꾼 기준 · 검색어는 주소에 없어 위 따라가기로 지워지지 않는다 — 칸도 직접 비운다
         setSearchType("BP_CODE");
         setKeyword("");
-        onApply({ searchType: "BP_CODE", keyword: undefined, statuses: [], verification: undefined });
+        onApply({ searchType: "BP_CODE", keyword: undefined, statuses: [], statusNone: undefined, verification: undefined });
       }}
     >
       <FilterSection label="검색" tight>
@@ -71,7 +74,7 @@ export function BpMasterFilter({ query, onApply }: { query: BpMastersQuery; onAp
           />
         </div>
       </FilterSection>
-      <FilterSection label="상태">
+      <FilterSection label="계정상태">
         {BP_MASTER_STATUSES.map((s) => (
           <Checkbox key={s} label={STATUS_LABEL[s]} checked={shows(s)} onChange={(e) => toggle(s, e.target.checked)} />
         ))}

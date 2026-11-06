@@ -19,6 +19,13 @@ export const sub = (text) => `<span class="text-erp-muted">${text}</span>`;
 // 사용자에게 보이는 안내 문구
 export const note = (text) => `<p class="text-[13px] leading-[1.6] text-erp-label">${text}</p>`;
 
+// 패널 아래 정책 안내 박스(앱 공통 GuideBand, notice-band.tsx) — info 띠에 느낌표 + 제목, 문장마다 가운뎃점 줄. 강조할 말은 <u>(2026-11-05 사용자 지정, 3팀 확인 필요)
+const GUIDE_ICON = '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" class="shrink-0 text-erp-sub"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.6v4.2" stroke-linecap="round"/><circle cx="8" cy="11" r="0.4" fill="currentColor"/></svg>';
+export const guideBand = (title, lines) =>
+  `<div role="status" class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-ink"><p class="flex items-center gap-[6px] font-medium">${GUIDE_ICON}${title}</p><ul class="mt-[6px] flex flex-col text-erp-label">${lines
+    .map((l) => `<li class="flex gap-[6px] [&_u]:underline-offset-[3px]"><span aria-hidden="true">·</span><span>${l}</span></li>`)
+    .join("")}</ul></div>`;
+
 // 입력칸 아래 도움말. ui.field 의 control 자리에 입력칸과 함께 넣는다.
 // 근무 인원 줄(근무스케줄 관리 일간 근무표). 칸마다 그 시간대에 근무 중인 인원 — 0 아무도 없음, 1 혼자 근무, 2 이상.
 // 로그인 후 홈 점포 하나 화면의 주간 보기도 같은 줄·같은 범례를 쓴다(2026-10-08 재영).
@@ -27,8 +34,10 @@ export const coverRow = (counts, attrs = "") =>
   `<div class="flex h-[46px] items-center border-b border-erp-thead-line"${attrs}><span class="w-[140px] shrink-0 px-[10px] text-[14px] text-erp-label">근무 인원</span><div class="grid h-[34px] flex-1 gap-px" style="grid-template-columns:repeat(${counts.length},minmax(0,1fr))">${counts
     .map((n) => (n === null ? "<span></span>" : `<span class="grid place-items-center text-[13px] font-medium ${COVER[Math.min(n, 2)]}">${n}</span>`))
     .join("")}</div></div>`;
-const swatch = (i, label) => `<span class="flex items-center gap-[6px]"><span class="size-[12px] rounded-[2px] ${COVER[i]}"></span>${label}</span>`;
-export const coverLegend = `<div class="flex items-center gap-[18px] pt-[12px] text-[13px] text-erp-label">${swatch(0, "아무도 없음")}${swatch(1, "혼자 근무 · 휴게 불가")}${swatch(2, "2명 이상")}</div>`;
+// 범례 색 칸 14px + 같은 계열 테두리, 글자 14px(앱 CoverLegend, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 12px 칸 · 13px 글자)
+const SWATCH_LINE = ["border-erp-off/40", "border-erp-button-line", "border-erp-on/40"];
+const swatch = (i, label) => `<span class="flex items-center gap-[6px]"><span class="size-[14px] rounded-[2px] border ${COVER[i]} ${SWATCH_LINE[i]}"></span>${label}</span>`;
+export const coverLegend = `<div class="flex items-center gap-[18px] pt-[12px] text-[14px] text-erp-label">${swatch(0, "아무도 없음")}${swatch(1, "혼자 근무 · 휴게 불가")}${swatch(2, "2명 이상")}</div>`;
 
 // ── 근무스케줄 보기(주간·월간) ──
 // 로그인 후 홈 점포 하나 화면과 근무스케줄 관리가 같은 틀을 쓴다(2026-10-08 재영).
@@ -98,22 +107,27 @@ export function schedWeek(crew, { open, close, dates, pick, all = false, gap = "
 // 월간 보기: 달력 + 왼쪽에 고른 날의 근무자. 달력 칸에는 인원만 둔다.
 // 달력 위 ‹ 이전 달 · 2026년 9월 · 다음 달 › · 이번 달 로 달을 바꾼다(2026-10-08 재영). 칸은 erp.js initDayPlan 이 그린다.
 // opts: { year, month(0부터), today, holiday: { 날짜: 이름 }, all }
-export function schedMonth(A, crew, { year, month, today, holiday = {}, all = false }) {
+// bar: 달 이동 줄을 받아 도구 줄을 그리는 함수 — 근무스케줄 관리는 달 이동을 도구 줄(근무지 줄)에 두고 달력 위에서 뺀다(앱 showMonthNav={false}, 2026-11-05 사용자 지정). 홈은 그대로
+export function schedMonth(A, crew, { year, month, today, holiday = {}, all = false, bar = null }) {
   // 하루 목록 한 줄: [이름, 보조 글자, { 요일: "09:00~18:00" }, 체결 완료 계약 기간 [시작, 끝]?]
   const plan = { crew: crew.map((c) => [c[0], c[1], Object.fromEntries(Object.entries(c[2]).map(([wd, s]) => [wd, shiftText(s)])), c[3] || null]), holiday, today, year, month, all };
   const nav = `<div class="mb-[8px] flex items-center gap-[6px]"><span data-monthmove="-1">${iconButton(A, "prev.svg", "이전 달")}</span><b data-monthtitle class="min-w-[120px] text-center text-[15px] font-semibold">${year}년 ${month + 1}월</b><span data-monthmove="1">${iconButton(A, "next.svg", "다음 달")}</span>${ui.button("이번 달", { variant: "off", "data-monthtoday": true })}</div>`;
+  // 도구 줄의 달 이동 — 주 이동과 같은 모양(가운데 34px · 최소 190px 칸), [이번 달] outline
+  const barNav = `<span class="flex items-center gap-[6px]"><span data-monthmove="-1">${iconButton(A, "prev.svg", "이전 달")}</span><b data-monthtitle class="grid h-[34px] min-w-[190px] place-items-center rounded-[2px] border border-erp-button-line bg-white px-[12px] text-[14px] font-semibold text-erp-ink">${year}년 ${month + 1}월</b><span data-monthmove="1">${iconButton(A, "next.svg", "다음 달")}</span>${ui.button("이번 달", { variant: "outline", "data-monthtoday": true })}</span>`;
   return (
-    `<div data-dayplan='${JSON.stringify(plan)}' class="grid grid-cols-[268px_minmax(0,1fr)] items-start gap-[18px]">` +
-    `<div class="flex flex-col gap-[8px] rounded-[2px] border border-erp-thead-line p-[14px]"><div class="flex items-center justify-between"><button type="button" data-daymove="-1" aria-label="이전 날" class="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line">${ui.img(A, "prev.svg", 7, 12)}</button><b data-daytitle class="text-[15px] font-semibold"></b><button type="button" data-daymove="1" aria-label="다음 날" class="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line">${ui.img(A, "next.svg", 7, 12)}</button></div><p data-daysum class="text-[13px] text-erp-label"></p><ul data-daylist class="flex flex-col text-[14px]"></ul></div>` +
-    `<div>${nav}<div class="grid grid-cols-7 gap-px overflow-hidden rounded-[2px] border border-erp-thead-line bg-erp-thead-line">${[..."월화수목금토일"]
+    `<div data-dayplan='${JSON.stringify(plan)}' class="${bar ? "flex flex-col gap-[24px]" : "grid grid-cols-[268px_minmax(0,1fr)] items-start gap-[18px]"}">` +
+    (bar ? `${bar(barNav)}<div class="grid grid-cols-[268px_minmax(0,1fr)] items-start gap-[18px]">` : "") +
+    // 고른 날 상자 — 안쪽 18 · 줄 사이 12, 날짜 줄 아래만 18, 근무 수 14px 회색(앱 schedule-month.tsx, 2026-11-05 사용자 지정)
+    `<div data-daypane class="flex flex-col gap-[12px] rounded-[2px] border border-erp-thead-line p-[18px]"><div class="mb-[6px] flex items-center justify-between"><button type="button" data-daymove="-1" aria-label="이전 날" class="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line">${ui.img(A, "prev.svg", 7, 12)}</button><b data-daytitle class="text-[15px] font-semibold"></b><button type="button" data-daymove="1" aria-label="다음 날" class="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line">${ui.img(A, "next.svg", 7, 12)}</button></div><p data-daysum class="text-[14px] text-erp-label"></p><ul data-daylist class="flex flex-col text-[14px]"></ul></div>` +
+    `<div>${bar ? "" : nav}<div class="grid grid-cols-7 gap-px overflow-hidden rounded-[2px] border border-erp-thead-line bg-erp-thead-line">${[..."월화수목금토일"]
       .map((d, i) => `<div class="bg-erp-thead-bg py-[6px] text-center text-[13px] ${i === 5 ? "text-erp-on" : i === 6 ? "text-erp-off" : "text-erp-thead-text"}">${d}</div>`)
-      .join("")}<div data-monthcells class="contents"></div></div></div></div>`
+      .join("")}<div data-monthcells class="contents"></div></div></div></div>${bar ? "</div>" : ""}`
   );
 }
 
 // 라벨 옆 ⓘ 툴팁. 헤더 서비스 바로가기 말풍선(ui.mjs tip)은 헤더 전용 알약형이라, 여기는 DESIGN.md 팝업 모양(2px·뜬 것 그림자)으로 그렸다.
 export const infoTip = (label, text) =>
-  `<span tabindex="0" aria-label="${label} 설명" class="group relative inline-grid size-[16px] cursor-help place-items-center text-[13px] text-erp-label">ⓘ<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-0 z-20 w-[280px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[13px] leading-[1.6] font-normal whitespace-pre-line text-erp-ink opacity-0 shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-opacity duration-150 ease-out group-hover:opacity-100 group-focus-visible:opacity-100">${text}</span></span>`;
+  `<span tabindex="0" aria-label="${label} 설명" class="group relative inline-grid size-[16px] cursor-help place-items-center text-[13px] text-erp-label">ⓘ<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-0 z-20 w-[280px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[1.6] font-medium whitespace-pre-line text-erp-ink opacity-0 transition-opacity duration-150 ease-out group-hover:opacity-100 group-focus-visible:opacity-100">${text}</span></span>`;
 export const help = (text) => `<span class="text-[12px] leading-[1.5] text-erp-muted">${text}</span>`;
 // 도움말이 있는 칸. 도움말 유무가 섞인 줄에서도 칸 위쪽이 맞도록 감싸서 위로 붙인다(도움말 없는 칸은 text 를 비운다).
 export const fieldH = (label, control, text, width) =>
@@ -140,8 +154,9 @@ export const steps = (items) =>
     .join("")}</ol>`;
 
 // 사용량 막대(63/100 등). 폭만 style 로 준다.
-export const meter = (pct) =>
-  `<span class="block h-[6px] w-full overflow-hidden rounded-[2px] bg-erp-subtle"><span class="block h-full bg-erp-brand" style="width:${pct}%"></span></span>`;
+// fill: 채움 색(기본 회청) — 근태 요약은 상태 색(앱 attendance-sections.tsx BAR)
+export const meter = (pct, fill = "bg-erp-brand") =>
+  `<span class="block h-[6px] w-full overflow-hidden rounded-[2px] bg-erp-subtle"><span class="block h-full ${fill}" style="width:${pct}%"></span></span>`;
 
 // 하나만 고르는 필터·선택(목업의 seg). 라디오 묶음으로 그린다.
 export const radios = (name, options, selected = options[0]) =>
@@ -175,11 +190,13 @@ export const fileField = (label, accept = ".pdf,.jpg,.jpeg,.png") =>
 // blocks: 주마다 바꿔 보일 묶음의 id([data-week="월요일"]). 비우면 날짜 표시만 바뀐다.
 // day: true 면 하루씩(‹ 2026-09-06 (일) ›, 달력에서 날짜 하나) — 묶음 키는 그 날짜.
 // month: true 면 한 달씩(‹ 2026년 8월 ›, 열두 달 판) — 묶음 키는 그 달 1일.
-export const weekNav = (A, blocks = "", start = "2026-08-31", { day = false, month = false } = {}) => {
+// md — 날 · 주 글자를 「11월 4일 (화)」 · 「11월 2일 ~ 11월 8일」로(출퇴근 현황, 앱과 같다 2026-11-05 사용자 지정)
+// range — 주 글자를 「2026년 11월 2일 ~ 8일」로(근무스케줄 관리 도구 줄, 앱 weekRangeLabel 2026-11-05 사용자 지정)
+export const weekNav = (A, blocks = "", start = "2026-08-31", { day = false, month = false, md = false, range = false } = {}) => {
   const pop = ui.uid("week");
   const unit = month ? "달" : day ? "날" : "주";
   const step = month ? "month" : day ? "day" : "";
-  return `<span data-weeks="${blocks}" data-week-start="${start}"${step ? ` data-step="${step}"` : ""} class="relative flex items-center gap-[6px]">${iconButton(A, "prev.svg", `이전 ${unit}`)}<button type="button" popovertarget="${pop}" aria-haspopup="dialog" aria-expanded="false" data-week-label class="h-[34px] min-w-[190px] rounded-[2px] border border-erp-button-line bg-white px-[12px] text-[14px] font-semibold text-erp-ink transition-[border-color] duration-150 ease-out hover:border-erp-brand"></button>${iconButton(A, "next.svg", `다음 ${unit}`)}<div id="${pop}" popover="auto" role="dialog" aria-label="${month ? "달" : day ? "날짜" : "주"} 선택" class="${ui.POPOVER}"></div></span>`;
+  return `<span data-weeks="${blocks}" data-week-start="${start}"${step ? ` data-step="${step}"` : ""}${md ? ' data-label="md"' : range ? ' data-label="range"' : ""} class="relative flex items-center gap-[6px]">${iconButton(A, "prev.svg", `이전 ${unit}`)}<button type="button" popovertarget="${pop}" aria-haspopup="dialog" aria-expanded="false" data-week-label class="h-[34px] min-w-[190px] rounded-[2px] border border-erp-button-line bg-white px-[12px] text-[14px] font-semibold text-erp-ink transition-[border-color] duration-150 ease-out hover:border-erp-brand"></button>${iconButton(A, "next.svg", `다음 ${unit}`)}<div id="${pop}" popover="auto" role="dialog" aria-label="${month ? "달" : day ? "날짜" : "주"} 선택" class="${ui.POPOVER}"></div></span>`;
 };
 
 // 상세 화면 틀(2026-10-02 재영): 본문 첫 줄은 「○○ 상세」 + 오른쪽 끝 버튼, 묶음 제목은 회색 머리 칸 안(왼쪽 제목, 오른쪽 끝 요약·이동·버튼).

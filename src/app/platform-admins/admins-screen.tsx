@@ -21,12 +21,18 @@ const EDIT_PUSHED_STATE = "platformAdminEditPushedFor";
 // 브라우저 뒤로 가기가 수정 → 상세 → 목록 순으로 하나씩 접힌다.
 export function AdminsScreen({
   list,
+  noAdminsAtAll,
   roleGroups,
+  filterRoleGroups,
   query,
   detail,
 }: {
   list: PlatformAdminList;
+  /** 조건 없이도 0건 — 「등록된 …」 빈 문구(page.tsx 가 가른다) */
+  noAdminsAtAll: boolean;
   roleGroups: PlatformRoleGroup[];
+  /** 목록 필터 「권한명」 선택지 — 플랫폼 권한 그룹 전부 */
+  filterRoleGroups: PlatformRoleGroup[];
   query: AdminsQuery;
   detail: { admin: PlatformAdminDetail } | { failed: string } | null;
 }) {
@@ -164,7 +170,7 @@ export function AdminsScreen({
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         {/* display:contents 로 레이아웃(gap-[12px])에 끼어들지 않으면서 둘을 함께 inert 로 뺀다 */}
         <div className="contents" inert={backdropActive}>
-          <AdminFilter query={query} roleGroups={roleGroups} onApply={(next) => go({ ...next, page: 1, admin: undefined })} />
+          <AdminFilter query={query} roleGroups={filterRoleGroups} onApply={(next) => go({ ...next, page: 1, admin: undefined })} />
           <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
             {/* 오른쪽 위에 한 쪽 건수 — BP 관리자 관리와 같다(2026-10-27 사용자 지정). 바꾸면 1쪽부터 */}
             <ListToolbar total={list.total}>
@@ -182,7 +188,7 @@ export function AdminsScreen({
                 </Select>
               </div>
             </ListToolbar>
-            <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} noStatus={query.status === "NONE"} />
+            <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} noneRegistered={noAdminsAtAll} />
             <div className="pt-[14px]">
               <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / query.pageSize))} onPageChange={(page) => go({ page, admin: undefined })} />
             </div>
@@ -201,7 +207,7 @@ export function AdminsScreen({
             onSaved={(result) => {
               setNewOpen(false);
               // 초기 비밀번호 메일이 실패해도 계정은 만들어졌다 — 상세의 비밀번호 초기화로 다시 보낸다(SYSTEM-3).
-              toast(result.isMailSent ? "saved" : "저장되었습니다. 초기 비밀번호 메일은 보내지 못했습니다 — 상세에서 비밀번호를 초기화해 주세요.");
+              toast("saved"); // 늘 「저장되었습니다.」 — 메일 실패는 열리는 상세 위 빨간 상자가 알린다(BP 마스터와 같다, 2026-10-28)
               detailTrigger.current = newTrigger.current;
               go({ admin: result.adminAccountId });
             }}

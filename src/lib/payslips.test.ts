@@ -57,6 +57,7 @@ test("합계 — 지급은 비과세 포함, 공제는 보이는 줄만, 비어 
 });
 
 const base: PayslipListQuery = {
+  reviewPending: false,
   month: "2026-09",
   storeIds: [],
   storesCleared: false,
@@ -73,6 +74,10 @@ test("api 쿼리 — 달 · 쪽 · 건수는 늘 싣고, 상태는 모두 골랐
     payslipListApiSearch({ ...base, statuses: ["CONFIRMED", "REVIEWING"], page: 2, pageSize: 50 }),
     "month=2026-09&status=REVIEWING%2CCONFIRMED&page=2&pageSize=50",
   );
+});
+
+test("api 쿼리 — 검토 대기만이면 reviewPending=true, 아니면 싣지 않는다", () => {
+  assert.equal(payslipListApiSearch({ ...base, reviewPending: true }), "month=2026-09&reviewPending=true&page=1&pageSize=20");
 });
 
 test("api 쿼리 — 상태를 하나도 고르지 않았으면 status 를 뺀다(빈 값은 api 가 400)", () => {

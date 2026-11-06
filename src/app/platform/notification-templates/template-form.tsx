@@ -111,7 +111,7 @@ function Preview({ channel, title, body, button }: { channel: Channel | ""; titl
               </span>
             )}
           </div>
-          <div className="border-t border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[12px] text-erp-muted">WHALE ERP 운영 알림 · 이 메일은 발신 전용입니다</div>
+          <div className="border-t border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[12px] text-erp-muted">WHALE ERP 운영 알림 · 이 메일은 발신 전용입니다.</div>
         </div>
       </>
     );
@@ -148,7 +148,7 @@ function Preview({ channel, title, body, button }: { channel: Channel | ""; titl
         </div>
       </>
     );
-  return <span className={HELP}>채널을 고르고 본문을 넣으면 채널 모양으로 보입니다.</span>;
+  return <span className={HELP}>채널을 선택하고 본문을 넣으면 채널 모양으로 보입니다.</span>;
 }
 
 export function TemplateForm({ detail, channels, categories }: { detail?: TemplateDetail; channels: EnumValue[]; categories: EnumValue[] }) {
@@ -233,7 +233,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
   // 저장 — 화면 검사를 먼저 하고, 등록 · 수정 모두 확인창을 거쳐 보낸다(데모와 같게, 2026-10-13 재영).
   const codeChanged = !!saved && draft.templateCode.trim() !== saved.templateCode;
   const handleSave = () => {
-    const messages = draft.channel ? validateTemplate(templateInput({ ...draft, channel: draft.channel })) : ["발송 채널을 골라 주세요."];
+    const messages = draft.channel ? validateTemplate(templateInput({ ...draft, channel: draft.channel })) : ["발송 채널을 선택해 주세요."];
     showErrors(messages);
     if (messages.length) return;
     setDialog("save");
@@ -323,7 +323,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
     <>
       <PageBar title={isNew ? "알림 템플릿 등록" : "알림 템플릿 수정"}>
         <div className="flex items-center gap-[6px]">
-          <Button variant="off" href={`${BASE}${saved ? `?channel=${saved.channel}` : ""}`}>
+          <Button href={`${BASE}${saved ? `?channel=${saved.channel}` : ""}`}>
             목록
           </Button>
           {saved?.hasDefault && (
@@ -366,7 +366,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
                 <div className="flex w-full gap-[6px]">
                   <Item
                     label="템플릿 코드"
-                    help={isNew ? "채널을 고르면 접두(NTF_ · PUSH_ · EMAIL_ · TALK_)가 채워지고, 나머지는 직접 넣습니다." : "바꾸면 발송 코드도 함께 바꿔야 할 수 있습니다."}
+                    help={isNew ? "채널을 선택하면 접두(NTF_ · PUSH_ · EMAIL_ · TALK_)가 채워지고, 나머지는 직접 넣습니다." : "바꾸면 발송 코드도 함께 바꿔야 할 수 있습니다."}
                   >
                     {(id) => <TextField id={id} value={draft.templateCode} onChange={(e) => set("templateCode", e.target.value)} />}
                   </Item>
@@ -441,7 +441,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
                 />
               </Box>
               {saved && (
-                <Box title="변경 이력" pad={false}>
+                <Box title="변경이력" pad={false}>
                   <DataTable
                     columns={[
                       { header: "일시", width: "w-[120px]", cell: (h) => <span className="font-mono text-erp-muted">{formatAt(h.changedAt)}</span> },
@@ -450,7 +450,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
                     ]}
                     rows={saved.histories}
                     rowKey={(h) => `${h.changedAt}-${h.summary}`}
-                    empty="변경 이력이 없습니다."
+                    empty="변경이력이 없습니다."
                   />
                 </Box>
               )}
@@ -470,7 +470,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
         onConfirm={handleRestore}
         onCancel={() => setDialog(null)}
       >
-        제목 · 본문 · 변수 목록이 처음 배포된 것으로 바뀝니다. 되돌린 것도 변경 이력에 남습니다.
+        제목 · 본문 · 변수 목록이 처음 배포된 것으로 바뀝니다. 되돌린 것도 변경이력에 남습니다.
         {saved?.channel === "ALIMTALK" && " 카카오 템플릿 코드는 바뀌지 않으니, 검수받은 본문과 맞는지 확인해 주세요."}
       </ConfirmDialog>
     </>

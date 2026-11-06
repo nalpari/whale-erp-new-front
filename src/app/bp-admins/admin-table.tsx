@@ -5,6 +5,8 @@ import { Badge, DataTable, type Column } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { formatDateTime } from "@/lib/format";
 import type { BpAdmin } from "@/lib/bp-admins";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
+import { WITHDRAWN_TEXT } from "@/app/bp-masters/bp-master-parts";
 
 // BP 관리자 목록 표(S-AJHXFU · 데모 config/admins). 이름을 누르면 상세 패널이 열린다 — 목록에는 수정 링크가 없다(수정은 상세를 거친다).
 // 아이디는 링크 없이 본문 글자로 둔다 — 플랫폼 관리자 목록과 같다(2026-10-27 사용자 지정).
@@ -14,16 +16,18 @@ export function AdminTable({
   rows,
   selected,
   onOpen,
-  noStatus,
+  noneRegistered,
 }: {
   rows: BpAdmin[];
+  /** 조건 없이도 0건 — 「등록된 관리자 계정이 없습니다.」(2026-11-05 사용자 지정) */
+  noneRegistered?: boolean;
   /** 상세를 연 계정 — 그 줄에 바탕을 깐다 */
   selected?: number;
   onOpen: (id: number, from: HTMLElement) => void;
-  /** 계정상태를 둘 다 껐다(NONE) — 결과가 없는 이유를 말한다 */
-  noStatus?: boolean;
 }) {
   const roleType = useCodeLabel("ROLE_TYPE");
+  // 탈퇴한 BP 의 하위 관리자는 미사용 · 개인정보 지움으로 남는다(api 회원 탈퇴, 2026-11-04 사용자 지정) — 이름이 없으면 BP 마스터 화면처럼 「탈퇴로 삭제됨」
+  const bpWithdrawn = useCurrentBpStatus() === "WITHDRAWN";
   const inactive = (a: BpAdmin) => a.accountStatus === "INACTIVE";
   const dim = (a: BpAdmin, node: ReactNode) => (inactive(a) ? <span className="text-erp-muted">{node}</span> : node);
   const open = (a: BpAdmin, text: string) => (
@@ -32,21 +36,27 @@ export function AdminTable({
       aria-controls="bp-admin-detail-panel"
       aria-expanded={selected === a.adminAccountId}
       onClick={(e) => onOpen(a.adminAccountId, e.currentTarget)}
-      className={`max-w-full truncate hover:underline ${inactive(a) ? "text-erp-muted" : "text-erp-link"}`}
+      // 미사용 계정도 이름 링크는 파란색 — 눌러서 상세를 여는 링크로 보이게(2026-10-28 사용자 지정, 플랫폼 관리자 목록과 같다 · 전엔 회색)
+      className="max-w-full truncate text-erp-link hover:underline"
     >
       {text}
     </button>
   );
 
   const columns: Column<BpAdmin>[] = [
-    // 아이디 · 이름 · 역할 · 권한명 · 코드 · 최근 로그인 · 등록일시는 폭을 정하지 않아 남는 폭을 똑같이 나눈다(2026-10-27 사용자 지정).
-    // 계정 상태 · 매핑 점포만 고정 폭이다
+    // 권한명 · 코드 · 최근 로그인은 폭을 정하지 않아 남는 폭을 똑같이 나눈다(2026-10-30 사용자 지정).
+    // 아이디 180 · 이름 220 · 역할 · 대상점포 · 계정 상태는 고정 폭이다 — 아이디 · 이름 · 역할이 너무 넓었다(2026-10-30 사용자 지정).
+    // 등록일시 열은 뺐다 — 상세에서 본다(2026-10-30 사용자 지정)
     // 아이디도 가운데 정렬 — 플랫폼 관리자 목록과 같다(2026-10-27 사용자 지정)
-    { header: "아이디", cell: (a) => dim(a, <span className="block truncate">{a.loginId}</span>) },
-    { header: "이름", cell: (a) => open(a, a.name ?? a.loginId) },
-    { header: "역할", cell: (a) => dim(a, roleType(a.roleTypeCode)) },
+    { header: "아이디", width: "w-[180px]", cell: (a) => dim(a, <span className="block truncate">{a.loginId}</span>) },
+    { header: "이름", width: "w-[220px]", cell: (a) => open(a, a.name ?? (bpWithdrawn ? WITHDRAWN_TEXT : a.loginId)) },
+    // 역할은 이름 바로 다음, 폭 120
+    { header: "역할", width: "w-[120px]", cell: (a) => dim(a, roleType(a.roleTypeCode)) },
+    // 역할 다음에 대상점포 — 열 이름은 상세와 같게(2026-10-30 사용자 지정 — 전엔 계정상태 다음 「매핑 점포」)
+    { header: "대상점포", width: "w-[110px]", cell: (a) => dim(a, a.isAllStores ? "전체" : a.storeCount.toLocaleString("ko-KR")) },
     {
-      header: "권한명 · 코드", // 열 이름도 값과 같은 「권한명 · 코드」(2026-10-27 사용자 지정 — 전엔 「권한 그룹」). 가운데 정렬(권한 그룹 목록과 같다)
+      header: "권한명 · 코드", // 열 이름도 값과 같은 「권한명 · 코드」(2026-10-27 사용자 지정 — 전엔 「권한 그룹」)
+      align: "left", // 값은 왼쪽 정렬, 머리글은 가운데 그대로(2026-10-30 사용자 지정 — 전엔 가운데)
       cell: (a) =>
         dim(
           a,
@@ -59,23 +69,21 @@ export function AdminTable({
     {
       header: "계정상태",
       width: "w-[100px]",
-      cell: (a) => (inactive(a) ? <Badge tone="off">미사용</Badge> : <Badge tone="on">사용</Badge>),
+      cell: (a) => (inactive(a) ? <Badge tone="closed">미사용</Badge> : <Badge tone="on">사용</Badge>),
     },
-    { header: "매핑 점포", width: "w-[110px]", cell: (a) => dim(a, a.isAllStores ? "전체" : a.storeCount.toLocaleString("ko-KR")) },
     {
       header: "최근 로그인",
-      // 초기 비밀번호 메일이 실패한 계정은 그 사실을 먼저 알린다 — 상세의 비밀번호 초기화로 다시 보낸다
+      // 초기 비밀번호 메일이 실패한 계정은 그 사실을 먼저 알린다 — 초기화할 수 있는 사람이 상세의 비밀번호 초기화로 다시 보낸다.
+      // 미사용 계정은 알리지 않는다 — 상세도 숨기고 초기화 버튼이 없다(2026-10-29 사용자 결정)
       cell: (a) =>
-        a.isInitialPasswordUnsent ? (
-          <span className="text-erp-off">초기 비밀번호 미발송</span>
+        a.accountStatus === "ACTIVE" && a.isInitialPasswordUnsent ? (
+          <span className="text-erp-off">초기화 비밀번호 미발송</span>
         ) : a.lastLoginAt ? (
           dim(a, formatDateTime(a.lastLoginAt))
         ) : (
           <span className="text-erp-muted">-</span>
         ),
     },
-    // 최근 로그인 다음에 등록일시(2026-10-27 사용자 지정 — 전엔 등록일시 · 최근 로그인 순)
-    { header: "등록일시", cell: (a) => dim(a, formatDateTime(a.createdAt)) },
   ];
 
   return (
@@ -84,7 +92,10 @@ export function AdminTable({
       rows={rows}
       rowKey={(a) => a.adminAccountId}
       rowState={(a) => (a.adminAccountId === selected ? "selected" : undefined)}
-      empty={noStatus ? "선택한 계정상태가 없어 표시할 관리자 계정이 없습니다. 계정상태를 하나 이상 선택해 주세요." : "조건에 맞는 관리자 계정이 없습니다."}
+      // 역할 · 계정상태를 모두 풀어도 이유를 따로 말하지 않고 다른 조건과 같은 문구다(2026-11-05 사용자 지정)
+      empty={noneRegistered ? "등록된 관리자 계정이 없습니다." : "조건에 맞는 관리자 계정이 없습니다."}
+      // 비어도 열 이름 줄을 두고 빈 칸이 목록 영역 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정)
+      fillEmpty
     />
   );
 }

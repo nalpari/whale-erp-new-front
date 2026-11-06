@@ -16,8 +16,10 @@ export type PayslipReviewReasonValue = Schemas["PayslipReviewReason"];
  * (본사 제공 동의 없는 가맹 점포 직원, ATT-30). isAttendanceConfirmed 는 출퇴근 누락 사유가 없거나 모두 확인됐는가다.
  */
 export type PayslipListItem = Schemas["PayslipListItemDto"];
-/** total 은 모든 필터를 건 건수, statusCounts 는 상태 필터와 상관없이 점포 · 직원명 필터만 건 그 달 건수다(직원명으로 거르면 가린 줄은 뺀다). */
+/** total 은 모든 필터를 건 건수, statusCounts 는 상태 필터와 상관없이 점포 · 직원명 필터만 건 그 달 건수다(직원명으로 거르면 가린 줄은 뺀다). reviewPendingCount 는 그 달 · 고른 점포(직원명이면 그 이름)의 검토 대기 수다 — 가린 줄은 세지 않는다(ATT-30 v218). */
 export type PayslipListResponse = Schemas["PayslipListResponseDto"];
+/** 점포 · 달 급여 요약(GET /payslips/summary) — 네 상태 모두, 본사 역할은 본사 제공 동의한 가맹 직원만 센다(api 가 거른다, ATT-30). 점포 하나 화면의 직원 급여 카드가 쓴다 */
+export type PayslipSummary = Schemas["PayslipSummaryResponseDto"];
 /** 명세서 상세(GET /payslips/:id). 가려지는 명세서는 404 라 늘 직원 이름이 있다. */
 export type PayslipDetail = Schemas["PayslipDetailResponseDto"];
 /** 명세서 금액 한 줄. 금액은 adjustedAmount ?? calculatedAmount, 아직 넣지 않았으면 isEntered = false. */
@@ -59,6 +61,11 @@ export interface PayslipListQuery {
   /** 직원명 검색어. 주면 본사 역할에게 가린 줄은 api 가 목록 · 상태 건수에서 뺀다 */
   staffName: string;
   statuses: PayslipStatus[];
+  /**
+   * 「분류 · 검토 대기만」 — 확인하지 않은 검토 사유가 남았거나 공제 미입력인 작성 중 · 검토 중 명세서만(공제 미입력은 api 가 공제 칸으로
+   * 판정, WHALEERP-234 · 운영 정책 v221 PAY-06). 검토 대기는 상태가 아니라 분류다
+   */
+  reviewPending: boolean;
   page: number;
   pageSize: PageSize;
 }
@@ -87,6 +94,7 @@ export function payslipListApiSearch(query: PayslipListQuery): string {
   if (storeIds) params.set("storeIds", storeIds.join(","));
   if (storeTypes) params.set("storeTypes", storeTypes.join(","));
   if (query.staffName) params.set("staffName", query.staffName);
+  if (query.reviewPending) params.set("reviewPending", "true");
   params.set("page", String(query.page));
   params.set("pageSize", String(query.pageSize));
   return params.toString();

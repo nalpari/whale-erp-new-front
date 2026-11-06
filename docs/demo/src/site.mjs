@@ -99,7 +99,7 @@ function scopeDropdown(A) {
 const saveRow = (label, closeSave, toast) =>
   `<div class="flex justify-center gap-[6px]">${closeSave ? ui.button("닫기", { variant: "off", "data-close": true }) : ""}${ui.button(label, { "data-toast": toast })}</div>`;
 
-// 내 정보 입력칸(기본정보·사업자정보 탭). MY PAGE 전체 화면(mypage/profile.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다.
+// 내 정보 입력칸(기본정보·사업자정보 탭). 마이페이지 전체 화면(mypage/profile.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다.
 // idPrefix: 사업자 인증 상자 id 접두 — 전체 화면과 패널이 한 페이지(mypage/profile.html)에 같이 실릴 수 있어 서로 다르게 둔다.
 // tabPrefix: 탭 id 접두. closeSave: 저장 버튼이 패널을 닫을지(패널에서는 닫는다, 전체 화면에서는 그대로 머문다).
 export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = false } = {}) {
@@ -138,7 +138,7 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
   // 「재인증」을 누르면 값은 그대로 둔 채 세 칸이 한꺼번에 열리고, 「인증하기」로 다시 검사해야 다시 잠긴다.
   // 「사용안함」을 누르면(struck) 확인창 없이 바로 세 칸이 지워질 값에 취소선을 긋고 잠기며, 「인증하기」
   // 버튼은 사라지고 「사용안함 취소」 하나만 남는다 — 저장을 눌러야 실제로 지워진다(점포는 저장 뒤 번호 ·
-  // 개업일자가 고정이라 이 기능 자체가 없다, MY PAGE 전용, 2026-10-23 사용자 결정).
+  // 개업일자가 고정이라 이 기능 자체가 없다, 마이페이지 전용, 2026-10-23 사용자 결정).
   const struckField = (value) =>
     `<div class="flex h-[34px] w-full items-center rounded-[2px] border border-erp-field-line bg-erp-thead-bg pl-[10px] text-[14px] text-erp-label"><span class="truncate line-through">${value || "&nbsp;"}</span></div>`;
   const bizFields = (state, num, ceo, open) => {
@@ -189,7 +189,7 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     `<div class="flex flex-col gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[16px]">` +
     bizFields(state, num, ceo, open) +
     bizButtons(state) +
-    (state === "struck" ? bizStruckGuide : bizGuide) +
+    (state === "struck" ? bizStruckGuide : state === "new" ? bizGuide : "") /* 국세청 안내는 인증 전에만(앱 BizVerificationBox, 2026-10-28) */ +
     `</div></section>`;
   // sameAsBasic: 대표자 연락처 · 이메일 칸에 "기본정보와 동일" 체크박스 — 체크하면 기본정보(이름 탭) 값을 그대로 쓴다(2026-10-22 사용자 지정).
   const ceoContact = (idp, checked) =>
@@ -205,7 +205,7 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     f.address(A, "사업자주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }) +
     `</section>`;
 
-  const biz = `<div class="flex flex-col gap-[18px]">${bizAuthBox("locked", "211-87-01234", "남도현", "2021-03-15", "2026-10-20")}${bizRest(`${idPrefix}-done`)}</div>${save}`;
+  const biz = `<div class="flex flex-col gap-[18px]">${bizAuthBox("locked", "211-87-01234", "남도현", "2021-03-15", "2026-10-20 14:32")}${bizRest(`${idPrefix}-done`)}</div>${save}`;
 
   // 가입 직후처럼 아직 사업자 인증을 받지 않은 초기 상태 — 인증완료 탭과 생김새를 견주어 보려고 따로 둔다(2026-10-07 피드백).
   const bizNew = `<div class="flex flex-col gap-[18px]">${bizAuthBox("new", "", "", "")}${bizRest(`${idPrefix}-new`)}</div>${save}`;
@@ -225,14 +225,14 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
   );
 }
 
-// MY PAGE 탭 줄만 앱 my-page-panel.tsx TabBar 모양으로 — 14px 500, 탭 사이 18px, 좌우 여백 없음, 아래 선 erp-thead-line.
+// 마이페이지 탭 줄만 앱 my-page-panel.tsx TabBar 모양으로 — 14px 500, 탭 사이 18px, 좌우 여백 없음, 아래 선 erp-thead-line.
 // 탭 내용 묶음 사이는 16px(계정 정보 ↔ 기본정보, 앱과 같다). 공통 x.tabs 는 다른 화면도 써서 그 결과를 여기서만 바꾼다(2026-10-26).
 // 탭 전환은 공통 erp.js 가 data-on · data-off 클래스로 한다.
 function mypageTabs(html) {
   const end = html.indexOf("</div>"); // 첫 </div> 가 탭 줄의 끝이다(탭 단추 안에는 div 가 없다)
   const bar = html
     .slice(0, end)
-    .replace('<div role="tablist" class="flex shrink-0 border-b border-erp-bar-line">', '<div role="tablist" aria-label="내 정보" class="flex h-[42px] shrink-0 gap-[18px] border-b border-erp-thead-line">')
+    .replace('<div role="tablist" class="flex shrink-0 border-b border-erp-bar-line">', '<div role="tablist" aria-label="내정보 관리" class="flex h-[42px] shrink-0 gap-[18px] border-b border-erp-thead-line">')
     .replaceAll("-mb-px flex h-[42px] items-center border-b-2 px-[18px] text-[15px]", "h-[42px] border-b-2 text-[14px]")
     .replaceAll("border-erp-brand font-semibold text-erp-ink", "border-erp-brand font-medium text-erp-ink");
   const panels = html.slice(end).replace(/(<div role="tabpanel"[^>]*?class=")flex min-h-0 flex-1 flex-col gap-\[12px\]"/g, '$1flex min-h-0 flex-1 flex-col gap-[16px]"');
@@ -243,10 +243,10 @@ function mypageTabs(html) {
 // 모든 ERP 화면의 헤더에 실리므로(erpHeader), id("mypage-panel")는 화면마다 한 번만 쓰인다. 전체 화면(mypage/profile.html)은
 // 회원 탈퇴 화면의 "취소"가 돌아갈 곳으로 그대로 둔다.
 export function mypagePanel(A) {
-  return ui.slidePanel("mypage-panel", "내 정보", ui.sectionHead("내 정보") + mypageBody(A, { idPrefix: "mpb", tabPrefix: "mp-", closeSave: true }));
+  return ui.slidePanel("mypage-panel", "내정보 관리", ui.sectionHead("내정보 관리") + mypageBody(A, { idPrefix: "mpb", tabPrefix: "mp-", closeSave: true }));
 }
 
-// MY PAGE 전체 화면(mypage/password.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다. 비밀번호 칸(눈 아이콘 보기 토글)은
+// 마이페이지 전체 화면(mypage/password.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다. 비밀번호 칸(눈 아이콘 보기 토글)은
 // biz-form.mjs 의 pwField. 안내 문구는 전부 칸 안 placeholder 로 두고, 칸 아래는 error 가 있을 때만 보인다(2026-10-26
 // 사용자 지정 — 전엔 긴 조건 문구가 칸 아래 늘 남아 있었다). errors 의 칸(current · newPassword · confirm)에 값이
 // 있으면 그 pwField 가 그 문구를 칸 아래에 보인다.
@@ -303,55 +303,69 @@ export function passwordPanel(A) {
   return ui.slidePanel("password-panel", "비밀번호 변경", ui.sectionHead("비밀번호 변경") + passwordBody(A, { closeSave: true }));
 }
 
-// 회원 탈퇴. MY PAGE 전체 화면(mypage/withdraw.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다.
+// 회원 탈퇴. 마이페이지 전체 화면(mypage/withdraw.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다.
 // panel 이 true 면: "취소"는 페이지 이동 대신 패널을 닫고, 비밀번호 확인은 따로 뜨는 확인창이 아니라 패널 맨 앞 단계로 넣는다
 // (2026-10-06 피드백) — 맞게 입력하고 [확인]을 누르면(데모라 항상 통과) 같은 패널 안에서 회원 탈퇴 내용으로 바뀐다.
 // 전체 화면에서는 기존대로 페이지에 들어오면 비밀번호 확인창이 뜬다.
-export function withdrawBody(R, { panel = false } = {}) {
+// blocked 가 true 면 진행 중인 근로계약이 있어 막힌 상태(조건 미충족)를 그린다 — [근로계약 확인]이 보이고 [회원 탈퇴]는 막힌다.
+export function withdrawBody(R, { panel = false, blocked = false } = {}) {
   const confirmId = x.dialogId();
   const doneId = x.dialogId();
-  // text 는 문단 하나(string), 여러 문단(array), 또는 소제목+문단({head,text})을 섞은 array 를 받는다.
+  // text 는 문단 하나(string), 여러 문단(array), 또는 소제목+문단({head,text,action})을 섞은 array 를 받는다. action 은 문단 아래 버튼이다.
   const notice = (title, text, danger) => {
     const blocks = Array.isArray(text) ? text : [text];
     const body = blocks
       .map((b) =>
         typeof b === "object"
-          ? `<p class="mt-[14px] font-semibold text-erp-ink">${b.head}</p><p class="mt-[4px] leading-[1.6] text-erp-ink">${b.text}</p>`
+          ? `<p class="mt-[14px] font-semibold text-erp-ink">${b.head}</p>${b.text ? `<p class="mt-[4px] leading-[1.6] text-erp-ink">${b.text}</p>` : ""}${b.action ? `<div class="mt-[10px]">${b.action}</div>` : ""}`
           : `<p class="mt-[6px] leading-[1.6] text-erp-ink">${b}</p>`,
       )
       .join("");
     return `<div class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px] text-[14px]"><p class="font-semibold ${danger ? "text-[#e93737]" : "text-erp-ink"}">${title}</p>${body}</div>`;
   };
 
-  // 실제 값으로 바뀌는 자리(BP 이름·계정 수·점포 수)는 굵게 + 밑줄로 표시한다.
-  const live = (t) => `<b class="font-semibold underline">${t}</b>`;
+  // 실제 값으로 바뀌는 자리(BP 이름·계정 수·점포 수)는 굵게 표시한다(밑줄은 2026-10-30 뺐다).
+  const live = (t) => `<b class="font-semibold">${t}</b>`;
   const warn = notice(
-    "탈퇴 전 꼭 확인해 주세요",
+    "탈퇴 전 꼭 확인해 주세요.",
     [
-      `탈퇴하면 ${live(BP.name)}의 서비스 이용이 종료됩니다. 동일한 BP에 속한 관리자·가맹 계정 ${live("6개")}도 함께 탈퇴되어 더 이상 로그인할 수 없습니다.`,
+      // 개발 화면은 관리자 계정 · 점포가 0개면 그 문장 · 블록을 뺀다(withdrawal-form.ts). 데모는 있는 경우만 보인다.
       {
-        head: `점포 ${live("11개")}가 모두 폐점 처리됩니다`,
-        text: `점포 보유 여부는 탈퇴를 제한하지 않습니다.<br>탈퇴 처리 시 점포의 현재 운영 상태나 폐점 조건을 별도로 확인하지 않고, 운영·미운영 점포 ${live("11개")}를 모두 폐점 처리합니다.`,
+        head: `「${live(BP.name)}」님의 서비스 이용이 종료됩니다.`,
+        text: `관리자 계정 ${live("6개")}도 미사용 처리되어 로그인할 수 없습니다.`,
       },
       {
-        head: "개인정보가 삭제됩니다",
-        text: "탈퇴 계정의 이름·연락처·이메일과 대표자의 연락처·이메일은 즉시 삭제되며, 아이디만 보관됩니다. 직원·계약·정산 정보와 변경 이력은 보존 정책에 따라 보관됩니다.",
+        head: `점포 ${live("11개")}의 상태가 「폐점」으로 바뀝니다.`,
+        text: "서비스상의 점포 상태로, 실제 매장 영업과는 관계없습니다.",
       },
-      "탈퇴한 계정은 복구할 수 없습니다.<br>정말 탈퇴하시겠습니까?",
+      {
+        head: "개인정보가 삭제됩니다.",
+        text: "관리자 이름·연락처·이메일은 즉시 삭제되며 아이디는 보관됩니다.",
+      },
+      // 직원 자료를 미리 받게 한다(3팀 WHALEERP-339, 운영 정책 RET-09) — 이 경고는 BP 마스터만 보므로 그 가맹마스터에게 알리게 한다.
+      {
+        head: "직원 자료는 조회할 수 없습니다.",
+        text: "필요한 자료는 탈퇴 전에 내려받아 주세요.<br>본사 제공에 동의하지 않은 가맹 점포 직원의 자료는 가맹마스터만 내려받을 수 있으니, 탈퇴 전에 가맹마스터에게 알려 주세요.",
+        action: ui.button("직원 자료 일괄 저장", { variant: "outline", href: to(R, "staff/export.html") }),
+      },
+      // 「정말 탈퇴하시겠습니까?」는 두지 않는다 — [회원 탈퇴]를 누르면 뜨는 확인창이 묻는다.
+      { head: "탈퇴한 계정은 복구할 수 없습니다." },
     ],
     true, // #e93737: DESIGN.md 의 위험 글자색
   );
 
-  // 표(조건·내용·상태 열) 대신 아이콘 + 제목 + 설명 한 줄짜리 목록으로 보인다(2026-10-06 피드백) — 열 이름 없이 충족 여부는 앞 표시(—/✓)로만 말한다.
-  // icon·iconCls 로 상태별 색을 따로 준다: 막는 조건은 빨강, 충족한 조건은 파랑, 그 밖(확인 안 함)은 무채색.
-  const condRow = (icon, iconCls, title, desc) => {
+  // 표(조건·내용·상태 열) 대신 아이콘 + 제목 + 설명 한 줄짜리 목록으로 보인다(2026-10-06 피드백) — 열 이름 없이 충족 여부는 앞 표시(–/✓/✕)로만 말한다.
+  // icon·iconCls 로 상태별 색을 따로 준다: 막는 조건(✕)은 빨강, 충족한 조건은 파랑, 그 밖(확인 안 함)은 무채색.
+  const condRow = (icon, iconCls, title, desc, end = "") => {
     const lines = (Array.isArray(desc) ? desc : [desc]).map((d) => `<p class="text-[13px] text-erp-label">${d}</p>`).join("");
-    return `<div class="flex items-start gap-[10px] border-b border-erp-divider py-[14px] last:border-b-0"><span class="w-[16px] shrink-0 text-center text-[14px] font-semibold ${iconCls}">${icon}</span><div class="flex flex-col gap-[2px]"><p class="text-[15px] font-semibold text-erp-ink">${title}</p>${lines}</div></div>`;
+    return `<div class="flex items-start gap-[10px] border-b border-erp-divider py-[14px] last:border-b-0"><span class="w-[16px] shrink-0 text-center text-[14px] font-semibold ${iconCls}">${icon}</span><div class="flex flex-1 flex-col gap-[2px]"><p class="text-[15px] font-semibold text-erp-ink">${title}</p>${lines}</div>${end}</div>`;
   };
   const conditions =
     condRow("–", "text-[#e93737]", "부가서비스 구독 해지", ["1차 범위 밖 — 1차에서는 확인하지 않습니다.", "직원추가 구독중"]) +
     condRow("–", "text-erp-muted font-normal", "미정산 금액 없음", "1차 범위 밖 — 1차에서는 확인하지 않습니다.") +
-    condRow("✓", "text-erp-link", "진행 중인 근로계약 없음", "진행 중인 근로계약이 없습니다.");
+    (blocked
+      ? condRow("✕", "text-[#e93737]", "진행 중인 근로계약 있음", "진행 중인 근로계약이 있습니다.")
+      : condRow("✓", "text-erp-link", "진행 중인 근로계약 없음", "진행 중인 근로계약이 없습니다."));
 
   // 탈퇴 사유를 "직접입력"으로 고를 때만 상세 사유 칸을 보인다. select 는 data-when(라디오 전용)을 못 쓰므로 onchange 로 직접 토글한다.
   const detailId = ui.uid("wd-detail");
@@ -378,9 +392,9 @@ export function withdrawBody(R, { panel = false } = {}) {
 
   const withdrawContent =
     warn +
-    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`탈퇴 조건<span class="ml-[10px] inline-flex align-middle">${ui.badge("on", "모두 충족")}</span>`)}${conditions}</div>` +
+    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`탈퇴 조건<span class="ml-[10px] inline-flex align-middle">${blocked ? ui.badge("off", "1개 미충족") : ui.badge("on", "모두 충족")}</span>`)}${conditions}${blocked ? `<div class="flex justify-end">${ui.button("근로계약 확인", { variant: "outline", href: to(R, "staff/contracts.html") })}</div>` : ""}</div>` +
     reason +
-    f.formButtons(ui.button("닫기", { variant: "off", ...dismiss }), x.dialogTrigger("회원 탈퇴", confirmId)) +
+    f.formButtons(ui.button("닫기", { variant: "off", ...dismiss }), blocked ? ui.button("회원 탈퇴", { disabled: true }) : x.dialogTrigger("회원 탈퇴", confirmId)) +
     confirmDoneDialogs;
 
   if (!panel) {
@@ -408,7 +422,100 @@ export function withdrawPanel(A, R) {
   return ui.slidePanel("withdraw-panel", "회원 탈퇴", ui.sectionHead("회원 탈퇴") + html + f.SWAP_SCRIPT);
 }
 
-export function erpHeader(A, R) {
+// 플랫폼 계정이 탈퇴 · 미사용 BP 를 보고 있으면 범위 선택기 바로 오른쪽에 빨간 상태 배지와 한 줄을 둔다(앱 admin-header.tsx BpStatusNote 와 같다, 2026-10-28).
+// 기본 화면은 사용 중인 BP 라 그리지 않는다 — bpStatus(「탈퇴」 · 「미사용」)를 넘기는 화면(점포 BP 탈퇴 · 미사용 보기)만 보인다.
+const bpStatusNote = (status) =>
+  `<span role="status" class="flex shrink-0 items-center gap-[6px] text-[14px] text-erp-off">${ui.badge("off", status)}조회 기능만 이용할 수 있는 BP입니다.</span>`;
+
+// 헤더 [시작 가이드](앱 start-guide-button.tsx · lib/start-guide.ts, 2026-11-04 사용자 지정) — 서비스 바로가기 바로 앞의 글자 버튼(회색 14px 500 + 꺾쇠,
+// 호버 · 열림에 포인트 파랑 #4a7ae0). 누르면 서비스 바로가기 툴팁과 같은 상자(흰 바탕 · 회청 1px · 6px 모서리, 꼬리 · 그림자 없음, 400px)로 단계가 펼쳐진다.
+// BP 마스터 · BP 관리자는 위 밑줄 탭 「매장 사장님 | 프랜차이즈 본사」로 고르고 처음 값은 가맹 점포가 있으면 본사다(데모 BP 는 가맹 점포가 있어 본사).
+// 가맹 마스터 · 가맹 관리자는 「가맹점」 단계만, 플랫폼 계정에는 없다(데모 ERP 헤더는 BP 마스터라 두 탭). 점포를 하나라도 등록했으면 STEP 1 에 파랑 체크 「완료」.
+// 단계 주소는 데모 화면으로 바꿨다 — 데모에 없는 화면은 # 이다.
+const GUIDE_PATH = {
+  "/stores/new": "stores/new.html",
+  "/stores": "stores/index.html",
+  "/bp-role-groups": "config/roles.html",
+  "/bp-admins": "config/admins.html",
+  "/staff-members": "staff/index.html",
+  "/work-schedules": "staff/work-schedules.html",
+  "/attendance-records": "staff/attendance.html",
+  "/payslips": "staff/payslips.html",
+};
+const GUIDE_ADMIN = (adminTitle) => [
+  { label: "2-1", title: "권한 그룹 등록하기", path: "/bp-role-groups", sub: true },
+  { label: "2-2", title: "메뉴 권한 설정하기", path: "/bp-role-groups", sub: true },
+  { label: "2-3", title: adminTitle, path: "/bp-admins", sub: true },
+];
+const GUIDE = [
+  [
+    "STORE",
+    "매장 사장님",
+    [
+      { label: "STEP 1", title: "점포 등록하기", path: "/stores/new", doneWhen: "stores" },
+      { label: "STEP 2", title: "함께 일할 관리자 추가하기", optional: true },
+      ...GUIDE_ADMIN("관리자 계정 등록하기"),
+      { label: "STEP 3", title: "직원 초대 · 근로계약 보내기", path: "/staff-members" },
+      { label: "STEP 4", title: "근무스케줄 짜기", path: "/work-schedules" },
+      { label: "STEP 5", title: "출퇴근 확인하기", path: "/attendance-records" },
+      { label: "STEP 6", title: "급여명세서 보내기", path: "/payslips" },
+    ],
+  ],
+  [
+    "HQ",
+    "프랜차이즈 본사",
+    [
+      { label: "STEP 1", title: "점포 등록하기(직영 · 가맹 구분)", path: "/stores/new", doneWhen: "stores" },
+      { label: "STEP 2", title: "본사 관리자 추가하기", optional: true },
+      ...GUIDE_ADMIN("BP 관리자 등록하기"),
+      { label: "STEP 3", title: "가맹점주 계정 만들기" },
+      { label: "3-1", title: "가맹 마스터 메뉴 권한 확인하기", path: "/bp-role-groups", sub: true },
+      { label: "3-2", title: "가맹 마스터 등록하기(맡을 가맹 점포 지정)", path: "/bp-admins", sub: true },
+      { label: "STEP 4", title: "직영점 직원 초대 · 근로계약 보내기", path: "/staff-members", note: "가맹점 직원은 가맹점주가 초대합니다." },
+      { label: "STEP 5", title: "근무스케줄 · 출퇴근 확인하기", path: "/work-schedules" },
+      { label: "STEP 6", title: "급여명세서 보내기 · 가맹점 현황 보기", path: "/payslips", note: "가맹점 직원 정보는 본사 제공에 동의한 직원만 보입니다." },
+    ],
+  ],
+];
+const GUIDE_DONE = `<span class="flex shrink-0 items-center gap-[4px] text-[12px] font-semibold text-erp-point"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="var(--color-erp-point)"/><path d="M4.6 8.2l2.2 2.2 4.6-4.7" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>완료</span>`;
+function guideStep(A, R, step, hasStores) {
+  const tag = step.sub
+    ? `<span class="flex h-[20px] w-[52px] shrink-0 items-center justify-center rounded-full text-[12px] font-semibold text-erp-label">${step.label}</span>`
+    : `<span class="flex h-[20px] w-[52px] shrink-0 items-center justify-center rounded-full bg-erp-point-bg text-[11px] font-semibold tracking-[0.02em] text-erp-point">${step.label}</span>`;
+  const optional = step.optional ? '<span class="rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] text-[12px] text-erp-sub">선택</span>' : "";
+  const note = step.note ? `<span class="text-[12px] text-erp-label">${step.note}</span>` : "";
+  const body =
+    tag +
+    `<span class="flex min-w-0 flex-1 flex-col gap-[2px]"><span class="flex items-center gap-[6px]"><span class="${step.sub ? "text-[13px]" : "text-[14px] font-medium"}">${step.title}</span>${optional}</span>${note}</span>` +
+    (step.doneWhen === "stores" && hasStores ? GUIDE_DONE : "") +
+    (step.path ? ui.img(A, "chevron-small.svg", 5, 8, "shrink-0 rotate-180 opacity-0 transition-opacity duration-150 ease-out group-hover:opacity-100") : "");
+  const row = `group flex w-full items-center gap-[10px] rounded-[4px] py-[7px] ${step.sub ? "pl-[20px]" : "pl-[6px]"} pr-[10px] text-left text-erp-ink`;
+  return step.path
+    ? `<li><a href="${to(R, GUIDE_PATH[step.path])}" class="${row} transition-colors duration-150 ease-out hover:bg-erp-point-subtle">${body}</a></li>`
+    : `<li><div class="${row}">${body}</div></li>`;
+}
+const GUIDE_TAB_ON = "border-erp-point font-semibold text-erp-point";
+const GUIDE_TAB_OFF = "border-transparent font-medium text-erp-label hover:text-erp-ink";
+export function startGuide(A, R, { initial = "HQ", hasStores = true } = {}) {
+  const id = ui.uid("guide");
+  const tabs = GUIDE.map(
+    ([key, label]) =>
+      `<button type="button" role="tab" id="tab-${id}-${key}" aria-controls="${id}-${key}" aria-selected="${key === initial}" data-on="${GUIDE_TAB_ON}" data-off="${GUIDE_TAB_OFF}" class="-mb-px h-[36px] border-b-2 text-[14px] transition-[border-color,color] duration-150 ease-out ${key === initial ? GUIDE_TAB_ON : GUIDE_TAB_OFF}">${label}</button>`,
+  ).join("");
+  const panels = GUIDE.map(
+    ([key, , steps]) =>
+      `<div role="tabpanel" id="${id}-${key}" aria-labelledby="tab-${id}-${key}"${key === initial ? "" : " hidden"}><ol class="flex flex-col gap-[2px]">${steps.map((s) => guideStep(A, R, s, hasStores)).join("")}</ol></div>`,
+  ).join("");
+  // 상자는 ui.popup(fade) 위에 서비스 바로가기 툴팁 모양(회청 테두리 · 6px · 안쪽 16/14)을 덧입힌다
+  return `<div class="relative"><button type="button" aria-expanded="false" aria-controls="${id}" class="group flex h-[42px] shrink-0 items-center gap-[6px] px-[6px] text-[14px] font-medium whitespace-nowrap text-erp-label transition-colors duration-150 ease-out hover:text-erp-point aria-expanded:text-erp-point">시작 가이드<svg aria-hidden="true" width="5" height="8" viewBox="0 0 5.09 8.06" fill="none" class="shrink-0 rotate-180 transition-transform duration-150 ease-out group-aria-expanded:-rotate-90"><path d="M4.56 0.53L1.06 4.03l3.5 3.5" stroke="currentColor" stroke-width="1.5"/></svg></button>${ui.popup(
+    id,
+    "fade",
+    "right-0 w-[400px] rounded-[6px]! border-erp-brand! px-[16px]! py-[14px]! text-left text-erp-ink",
+    `<div class="flex flex-col gap-[12px]"><div role="tablist" aria-label="운영 형태" class="grid grid-cols-2 border-b border-erp-thead-line">${tabs}</div>${panels}</div>`,
+  )}</div>`;
+}
+
+export function erpHeader(A, R, { bpStatus } = {}) {
   const menus = ERP_MENUS.map(([label, items]) => ({ label, items: items.map(([l, p]) => ({ label: l, href: to(R, p) })) }));
   const user = [
     { label: "내정보 관리", panel: "mypage-panel" },
@@ -420,7 +527,12 @@ export function erpHeader(A, R) {
     ui.globalHeader(
       A,
       menus,
-      scopeDropdown(A) +
+      // 상태 안내가 있으면 범위 선택기를 칸 폭(420)만큼 감싸 그 오른쪽에 붙인다 — 묶음이 남는 폭을 받는다(앱 admin-header.tsx 와 같다, 2026-10-28)
+      (bpStatus
+        ? `<div class="flex min-w-0 flex-1 items-center gap-[12px]">${scopeDropdown(A).replace('<div class="relative flex-1">', '<div class="relative w-[420px] shrink-0">')}${bpStatusNote(bpStatus)}</div>`
+        : scopeDropdown(A)) +
+        // 시작 가이드는 서비스 바로가기 바로 앞 — 플랫폼 계정이 BP 를 볼 때(bpStatus)도 보인다(앱 admin-header.tsx 와 같다, 2026-11-05 사용자 지정 — 전엔 숨겼다)
+        startGuide(A, R) +
         ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: to(R, "bp/index.html") }) +
         ui.alarmLink(A, to(R, "notify/index.html")) +
         ui.userPop(A, USER, user),
@@ -482,12 +594,20 @@ const PLATFORM_BPS = [
   ["BP000035", "㈜온기에프앤비", "사용"],
 ];
 function platformScopeDialog(A, R, id) {
-  const columns = [{ header: "BP코드", width: "w-[110px]" }, { header: "상호", align: "left" }, { header: "상태", width: "w-[80px]" }];
-  const rows = PLATFORM_BPS.map(([code, name, status]) => [code, ui.radio(name, `${id}-bp`, false, { "data-bp-code": code, "data-bp-name": name }), status]);
+  const columns = [{ header: "BP코드", width: "w-[110px]" }, { header: "상호명", align: "left" }, { header: "계정상태", width: "w-[80px]" }];
+  // 사용 BP 만 상호명을 굵게(앱 bp-select-dialog.tsx 와 같다, 2026-10-29)
+  const rows = PLATFORM_BPS.map(([code, name, status]) => {
+    const radio = ui.radio(name, `${id}-bp`, false, { "data-bp-code": code, "data-bp-name": name });
+    // 미사용 · 탈퇴는 BP코드 · 상호명 · 계정상태를 회색으로(앱과 같다, 2026-10-29)
+    const gray = (v) => (status === "사용" ? v : `<span class="text-erp-muted">${v}</span>`);
+    return [gray(code), status === "사용" ? `<div class="font-semibold">${radio}</div>` : `<div class="[&_label]:text-erp-muted">${radio}</div>`, gray(status)];
+  });
   const table = ui.dataTable(columns, rows).replace("</tbody>", `${ui.tableEmptyRow(columns).replace("<tr ", "<tr hidden data-bp-none ")}</tbody>`);
   const body =
-    `<div class="flex flex-col gap-[12px]"><p>고른 BP 의 웨일ERP 가 새 탭으로 열립니다.</p>${ui.searchField(A, { placeholder: "상호 또는 BP코드", label: "BP 찾기" })}` +
-    `<div class="max-h-[506px] overflow-y-auto [&_tbody_tr]:cursor-pointer [&_tbody_tr:has(:checked)]:bg-erp-thead-bg" data-bp-table>${table}</div>${ui.pagination(A, 1, Math.ceil(PLATFORM_BPS.length / 10), 5)}</div>`;
+    // 「총 N 건」 · 찾기 칸 · 한 쪽 건수를 한 줄에, 결과 자리는 높이 고정 · 열 이름 줄 고정 스크롤(앱과 같다, 2026-10-29)
+    `<div class="flex flex-col gap-[12px]"><p>BP를 선택하면 웨일ERP가 새 탭으로 열립니다.</p>` +
+    `<div class="flex items-center gap-[6px]"><p class="mr-[6px] shrink-0 text-[14px] text-erp-ink">총 <b class="font-semibold">${PLATFORM_BPS.length}</b> 건</p><div class="min-w-0 flex-1">${ui.searchField(A, { placeholder: "상호명 또는 BP코드", label: "BP 찾기" })}</div><div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div></div>` +
+    `<div class="flex h-[506px] flex-col [&_tbody_tr]:cursor-pointer [&_tbody_tr:has(:checked)]:bg-erp-thead-bg" data-bp-table>${ui.scrollTable(table)}</div>${ui.pagination(A, 1, Math.ceil(PLATFORM_BPS.length / 20), 5)}</div>`;
 
   return `<dialog id="${id}" data-scope-popup data-scope-all="전체 ${STORES.length}개점" aria-labelledby="${id}-t" class="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">BP 선택</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button(
     "취소",
@@ -496,8 +616,11 @@ function platformScopeDialog(A, R, id) {
 }
 
 // master: true 면 플랫폼 마스터로 로그인한 헤더(마스터 기준 화면용).
-export function platformHeader(A, R, { master = false } = {}) {
-  const menus = PLATFORM_MENUS.map(([label, items]) => ({ label, items: items.map(([l, p]) => ({ label: l, href: to(R, p) })) }));
+// noMenu: true 면 접근할 플랫폼 메뉴가 없는 계정의 헤더(권한 요청 안내 화면용) — 메뉴 줄이 비고 로고 · 플랫폼관리 바로가기가 안내 화면을 가리킨다.
+// 플랫폼은 홈이 없어 로고 · 플랫폼관리 바로가기는 GNB 순서상 첫 메뉴(BP 마스터 계정 관리)로 간다(2026-10-28 재영).
+export function platformHeader(A, R, { master = false, noMenu = false } = {}) {
+  const home = to(R, noMenu ? "auth/platform-no-menu.html" : "bp/index.html");
+  const menus = noMenu ? [] : PLATFORM_MENUS.map(([label, items]) => ({ label, items: items.map(([l, p]) => ({ label: l, href: to(R, p) })) }));
   const user = [
     // 내정보 관리 · 비밀번호 변경은 화면을 옮기지 않고 슬라이드에서 한다(ERP 헤더와 같다 · 2026-10-08)
     { label: "내정보 관리", panel: "platform-mypage-panel" },
@@ -511,10 +634,10 @@ export function platformHeader(A, R, { master = false } = {}) {
       menus,
       // 플랫폼 콘솔에는 BP 선택 드롭다운을 두지 않는다 — BP 는 서비스 바로가기 「웨일ERP」로 고른다(2026-10-19 재영). 빈 칸이 오른쪽 컨트롤을 민다.
       `<div class="flex-1"></div>` +
-        ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: to(R, "bp/index.html"), scopeDialog: scopeId }) +
+        ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: home, scopeDialog: scopeId, hideAddon: true }) +
         ui.alarmLink(A, "#") +
         ui.userPop(A, master ? PLATFORM_MASTER : PLATFORM_USER, user),
-      to(R, "bp/index.html"),
+      home,
     ) + platformScopeDialog(A, R, scopeId) + platformMyPanel(A, { master }) + passwordPanel(A)
   );
 }

@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { createContext, use, useEffect, useRef, useState, useTransition, type CSSProperties, type ReactNode } from "react";
-import { Button, Checkbox, ConfirmDialog, DateField, Field, FormGroup, FormRow, Radio, Select, SlidePanel, TextField, useToast } from "@/components/common";
-import { usePagePermission, useStores } from "@/components/site/session-gate";
+import { Button, Checkbox, ConfirmDialog, DateField, Field, FormGroup, FormRow, GuideBand, Radio, RequiredMark, Select, SlidePanel, TextField, useBackdropActive, useToast } from "@/components/common";
+import { useAccount, usePagePermission, useStores } from "@/components/site/session-gate";
+import { isPlatformRole } from "@/lib/auth-routes";
 import { isClosedStore } from "@/lib/store-scope";
 import type { ScheduleDefaults, ScheduleStaff, WorkSchedule } from "@/lib/work-schedules-api";
 import { useFailure } from "../staff-members/[id]/use-action-failure";
@@ -45,7 +46,6 @@ function useSchedulePanel() {
   return ctx;
 }
 
-const CLOSED_STORE = "폐점 점포는 근무스케줄을 등록할 수 없습니다.";
 
 /**
  * 화면에서 고른 점포의 등록 · 수정 패널. 안쪽 버튼(막대 · 공백 · 등록)은 useSchedulePanel 로 연다.
@@ -71,13 +71,18 @@ export function SchedulePanel({ storeId, children }: { storeId: number; children
     setRound((n) => n + 1);
   };
   const close = () => setOpening(null);
+  const backdropActive = useBackdropActive();
   return (
     <OpenContext value={{ open, closed }}>
-      {children}
+      {/* 출퇴근 대신 등록과 같이 바탕을 깔고 바탕을 누르면 닫는다 — 패널이 아닌 본문은 그동안 inert(2026-11-05 사용자 지정, 3팀 확인 필요) */}
+      <div className="contents" inert={backdropActive}>
+        {children}
+      </div>
       <SlidePanel
         id="schedule-form"
         open={opening !== null}
         onClose={close}
+        closeOnBackdrop
         label={opening?.kind === "edit" ? "근무스케줄 수정" : "근무스케줄 등록"}
         trigger={trigger}
       >
@@ -87,15 +92,19 @@ export function SchedulePanel({ storeId, children }: { storeId: number; children
   );
 }
 
-/** 도구 줄 「근무스케줄 등록」 — 등록 권한이 없으면 두지 않고, 폐점 점포면 흐리게 둔다 */
+/** 도구 줄 「근무스케줄 등록」 — 등록 권한이 없으면 두지 않는다(플랫폼 계정은 두고 누르면 권한 안내). 폐점 점포면 흐리게 둔다 */
 export function NewScheduleButton({ workDate }: { workDate: string }) {
   const { open, closed } = useSchedulePanel();
-  if (!usePagePermission().create) return null;
-  // 막힌 버튼은 마우스를 받지 않아(disabled:pointer-events-none) title 이 뜨지 않는다 — 이유는 옆에 글자로 둔다
+  const toast = useToast();
+  const platform = isPlatformRole(useAccount().roleTypeCode);
+  const canCreate = usePagePermission().create;
+  // 플랫폼 계정은 등록 권한이 없어도 BP 마스터와 같은 버튼을 두고, 누르면 권한 안내만 띄운다 — 버튼이 없으면 BP 화면이 다르게 보였다
+  // (2026-11-05 사용자 지정, 3팀 확인 필요 — 점포 없음 띠 [점포 등록하기]와 같은 문구). 그 밖의 계정은 지금처럼 두지 않는다
+  if (!canCreate && !platform) return null;
+  // 막힌 버튼은 마우스를 받지 않아(disabled:pointer-events-none) title 이 뜨지 않는다 — 폐점 이유는 근무지 칸 아래 안내(SchedulePicker)가 말한다
   return (
     <>
-      {closed && <span className="text-[13px] text-erp-off">{CLOSED_STORE}</span>}
-      <Button aria-controls="schedule-form" disabled={closed} onClick={() => open({ kind: "new", workDate })}>
+      <Button aria-controls="schedule-form" disabled={closed} onClick={() => (canCreate ? open({ kind: "new", workDate }) : toast("접근 권한이 없습니다."))}>
         근무스케줄 등록
       </Button>
     </>
@@ -152,8 +161,9 @@ export function ScheduleBar({
 }
 
 const ERROR = "text-[13px] text-erp-off";
-const HELP = "text-[12px] leading-[1.5] text-erp-muted";
-const STAFF_FAILED = "직원 목록을 불러오지 못했습니다. 근무일을 다시 골라 주세요.";
+// 직원 칸의 상태 문구(없음 · 불러오는 중) — 입력칸과 같은 14px 회색. 12px 는 너무 작았다(2026-11-05 사용자 지적, 3팀 확인 필요)
+const STATUS = "text-[14px] text-erp-label";
+const STAFF_FAILED = "직원 목록을 불러오지 못했습니다. 근무일을 다시 선택해 주세요.";
 
 type Pool =
   { workDate: string; state: "ok"; staff: ScheduleStaff[] } | { workDate: string; state: "error"; message: string };
@@ -162,8 +172,8 @@ function ShiftFields({ shift, onChange, label }: { shift: ShiftInput; onChange: 
   const prefix = label ? `${label} ` : "";
   return (
     <FormRow>
-      <Field label="시작" required>
-        <Select aria-label={`${prefix}시작`} value={shift.startTime} onChange={(e) => onChange({ ...shift, startTime: e.target.value })}>
+      <Field label="시작시간" required>
+        <Select aria-label={`${prefix}시작시간`} value={shift.startTime} onChange={(e) => onChange({ ...shift, startTime: e.target.value })}>
           <option value="">선택</option>
           {START_TIMES.map((t) => (
             <option key={t} value={t}>
@@ -172,8 +182,8 @@ function ShiftFields({ shift, onChange, label }: { shift: ShiftInput; onChange: 
           ))}
         </Select>
       </Field>
-      <Field label="종료" required>
-        <Select aria-label={`${prefix}종료`} value={shift.endTime} onChange={(e) => onChange({ ...shift, endTime: e.target.value })}>
+      <Field label="종료시간" required>
+        <Select aria-label={`${prefix}종료시간`} value={shift.endTime} onChange={(e) => onChange({ ...shift, endTime: e.target.value })}>
           <option value="">선택</option>
           {END_TIMES.map((t) => (
             <option key={t} value={t}>
@@ -200,7 +210,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const onFailure = useFailure();
   const can = usePagePermission();
   const edit = opening.kind === "edit" ? opening : null;
-  // 공백에서 열면 그 시각 · 휴게 0분으로 채운다 — 직원을 골라도 계약 값으로 덮지 않는다(「계약 값으로 되돌리기」로 바꾼다)
+  // 공백에서 열면 그 시각 · 휴게 0분으로 채운다 — 직원을 골라도 계약 값으로 덮지 않는다(「근로계약 시간적용」로 바꾼다)
   const gap: ShiftInput | null =
     opening.kind === "new" && opening.startTime && opening.endTime
       ? { startTime: opening.startTime, endTime: opening.endTime === "00:00" ? "24:00" : opening.endTime, breakMinutes: "0" }
@@ -217,6 +227,8 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const [pool, setPool] = useState<Pool | null>(null);
   const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
+  // 여러 명 일부 실패 요약 — 일부만 등록됐다는 유일한 알림이라 칸을 고쳐도 남기고 다음 저장 때만 내린다(serverError 와 따로, 리뷰 반영)
+  const [partialNotice, setPartialNotice] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [saving, startSaving] = useTransition();
   const seq = useRef(0);
@@ -269,7 +281,15 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workDate]);
 
+  // 등록 인원을 바꾸면 앞 방식의 저장 실패 문장 · 칸 오류를 내린다 — 1명에서 겹침으로 거절된 뒤 여러 명으로 바꾸면 그 문장과
+  // 「직원을 한 명 이상 골라 주세요.」가 아직 고르지도 않았는데 함께 보였다(2026-11-05 사용자 지적)
+  const changeMode = (next: "one" | "bulk") => {
+    setMode(next);
+    setTried(false);
+    setServerError("");
+  };
   const handleDateChange = (value: string) => {
+    setServerError("");
     setWorkDate(value);
     workDateNow.current = value;
     if (edit) return;
@@ -281,11 +301,13 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
     if (!gap) setShift(EMPTY_SHIFT);
   };
   const handlePickOne = (value: string) => {
+    setServerError("");
     const id = value ? Number(value) : null;
     setStaffId(id);
     if (id !== null) loadDefaults(id, gap ? undefined : (d) => setShift(shiftOfDefaults(d)));
   };
   const handleToggle = (id: number, on: boolean) => {
+    setServerError("");
     setPicked((p) => (on ? [...p, id] : p.filter((x) => x !== id)));
     setRowErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => Number(k) !== id)));
     if (!on) return;
@@ -297,9 +319,15 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const loading = !edit && !!workDate && pool?.workDate !== workDate;
   const staff = pool?.state === "ok" && pool.workDate === workDate ? pool.staff : [];
   const nameOf = (id: number) => staff.find((s) => s.staffMemberId === id)?.name ?? "";
-  const oneProblem = !workDate ? "근무일을 골라 주세요." : staffId === null ? "직원을 골라 주세요." : shiftProblem(shift);
+  const oneProblem = !workDate ? "근무일을 선택해 주세요." : staffId === null ? "직원을 선택해 주세요." : shiftProblem(shift);
   const bulkProblems = Object.fromEntries(picked.map((id) => [id, shiftProblem(rows[id] ?? EMPTY_SHIFT)]));
-  const bulkProblem = !workDate ? "근무일을 골라 주세요." : picked.length === 0 ? "직원을 한 명 이상 골라 주세요." : null;
+  const bulkProblem = !workDate ? "근무일을 선택해 주세요." : picked.length === 0 ? "직원을 한 명 이상 선택해 주세요." : null;
+  // 일괄 저장을 막는 이유 — 직원 칸 아래, 직원 목록을 불러오는 중 · 실패 문구 아래 같은 자리에 쓴다
+  const bulkError = tried && bulkProblem ? (
+    <p role="alert" className={ERROR}>
+      {bulkProblem}
+    </p>
+  ) : null;
 
   /** 실패 처리 — 결과 모름이면 화면을 새로 받고 닫는다(다시 저장하면 겹칠 수 있다) */
   const fail = (result: { ok: false; status?: number; message: string }) => {
@@ -316,6 +344,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const handleSave = () => {
     setTried(true);
     setServerError("");
+    setPartialNotice("");
     if (mode === "one" ? oneProblem : bulkProblem || picked.some((id) => bulkProblems[id])) return;
     startSaving(async () => {
       try {
@@ -334,7 +363,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
           const failedIds = result.result.failed.map((f) => f.staffMemberId);
           setPicked(failedIds);
           setRowErrors(Object.fromEntries(result.result.failed.map((f) => [f.staffMemberId, f.message])));
-          setServerError(`${result.result.created.length}명은 등록했고 ${failedIds.length}명은 등록하지 못했습니다.`);
+          setPartialNotice(`${result.result.created.length}명은 등록했고 ${failedIds.length}명은 등록하지 못했습니다.`);
           return;
         }
         const body = { workDate, ...shiftBody(shift) };
@@ -378,127 +407,188 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
     const d = defaults[key(id)];
     return hasDefaults(d) ? (
       <div className="flex justify-end">
-        <Button variant="off" onClick={() => apply(shiftOfDefaults(d))}>
-          계약 값으로 되돌리기
-        </Button>
+        {/* 직원 상자 머리 줄 안의 작은 흰 버튼(26px · 13px) — outline 34px 은 회색 머리 줄에서 너무 튀었다. 모양은 outline 과 같게 회청 테두리 · 먹색이 기본이고 호버하면 회색 바탕.
+            문구는 근로계약서의 근무시간을 넣는다는 것이 보이게(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 off 34px · 「계약 값으로 되돌리기」) */}
+        <button
+          type="button"
+          onClick={() => apply(shiftOfDefaults(d))}
+          className="h-[26px] shrink-0 rounded-[2px] border border-erp-brand bg-white px-[10px] text-[13px] font-medium whitespace-nowrap text-erp-ink transition-colors duration-150 ease-out hover:bg-erp-subtle"
+        >
+          근로계약 시간적용
+        </button>
       </div>
     ) : null;
   };
 
   return (
-    <div className="flex flex-col gap-[24px] p-[24px]">
+    <div className="contents">
+      {/* 패널(SlidePanel)이 이미 안쪽 24px · 칸 사이 16px 를 준다 — 출퇴근 대신 등록 패널과 같게(2026-11-05 사용자 지정, 3팀 확인 필요) */}
       <h2 className="text-[18px] font-semibold text-erp-ink">{edit ? "근무스케줄 수정" : "근무스케줄 등록"}</h2>
-      {!edit && (
-        <div role="radiogroup" aria-label="등록 방식" className="flex gap-[18px]">
-          <Radio label="한 명" name="schedule-mode" checked={mode === "one"} onChange={() => setMode("one")} />
-          <Radio label="여러 명 일괄" name="schedule-mode" checked={mode === "bulk"} onChange={() => setMode("bulk")} />
-        </div>
-      )}
-      <FormGroup title="근무">
-        <Field label="근무일" required>
-          <DateField aria-label="근무일" value={workDate} onChange={handleDateChange} />
-        </Field>
-        {edit ? (
-          <p className="text-[14px]">
-            <span className="text-erp-label">직원</span> <b className="font-medium">{edit.staffName}</b>
-          </p>
-        ) : loading ? (
-          <p className={HELP}>직원 목록을 불러오는 중입니다…</p>
-        ) : pool?.state === "error" ? (
-          <p role="alert" className={ERROR}>
-            {pool.message}
-          </p>
-        ) : mode === "one" ? (
-          <Field label="직원" required>
-            <Select aria-label="직원" value={staffId ?? ""} onChange={(e) => handlePickOne(e.target.value)}>
-              <option value="">{staff.length ? "선택" : "이 근무일에 받을 수 있는 직원이 없습니다"}</option>
-              {staff.map((s) => (
-                <option key={s.staffMemberId} value={s.staffMemberId}>
-                  {s.name} · {s.jobTitle}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        ) : (
-          <div role="group" aria-label="직원" className="flex flex-col gap-[8px]">
-            <span className="text-[14px] font-medium text-erp-label">직원</span>
-            {staff.length ? (
-              <div className="flex flex-wrap gap-x-[18px] gap-y-[8px]">
-                {staff.map((s) => (
-                  <Checkbox
-                    key={s.staffMemberId}
-                    label={`${s.name} · ${s.jobTitle}`}
-                    checked={picked.includes(s.staffMemberId)}
-                    onChange={(e) => handleToggle(s.staffMemberId, e.target.checked)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className={HELP}>이 근무일에 받을 수 있는 직원이 없습니다.</p>
-            )}
-            <p className={HELP}>그 근무일에 체결 완료 근로계약이 있고 가입을 마친 직원만 보입니다.</p>
+      {/* 묶음 제목은 「근무스케줄 정보」, 칸 순서는 근무일 → 직원 → 시간, 「1명 · 여러 명」은 맨 위 「등록 인원」 칸(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「근무」, 라디오 「한 명 · 여러 명 일괄」은 제목 아래) */}
+      <FormGroup title="근무스케줄 정보">
+        {/* 근무일 · 직원 · 시간 묶음 사이는 24 — 묶음 상자 기본 18 이면 칸들이 다닥다닥 붙어 보였다(2026-11-05 사용자 지적, 3팀 확인 필요).
+            근무일이 먼저다 — 직원 목록이 근무일마다 달라(STAFF-29) 근무일을 바꾸면 고른 직원을 비운다 */}
+        {/* 등록 인원은 맨 위 칸 — 무엇을 할지 먼저 고르고 내용을 채운다(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 패널 제목 아래 라디오 「한 명 · 여러 명 일괄」). 수정은 한 건이라 없다 */}
+        {!edit && (
+          <div className="flex flex-col gap-[8px] pb-[6px]">
+            <span className="text-[14px] font-medium text-erp-label">
+              등록 인원
+              <RequiredMark />
+            </span>
+            <div role="radiogroup" aria-label="등록 인원" className="flex gap-[18px]">
+              <Radio label="1명" name="schedule-mode" checked={mode === "one"} onChange={() => changeMode("one")} />
+              <Radio label="여러 명" name="schedule-mode" checked={mode === "bulk"} onChange={() => changeMode("bulk")} />
+            </div>
           </div>
         )}
+        <div className="pb-[6px]">
+          <Field label="근무일" required>
+            <DateField aria-label="근무일" value={workDate} onChange={handleDateChange} />
+          </Field>
+        </div>
+        <div className="flex flex-col gap-[8px] pb-[6px]">
+          <span className="text-[14px] font-medium text-erp-label">
+            직원
+            {!edit && <RequiredMark />}
+          </span>
+          {edit ? (
+            <p className="text-[14px] font-medium">{edit.staffName}</p>
+          ) : loading ? (
+            // 여러 명 일괄의 오류 문구는 직원 칸 안에 있어 목록을 불러오는 동안 · 실패했을 때는 그려지지 않는다 — 그새 [저장]을 누르면 이유가 안 보여 여기에도 둔다(리뷰 반영)
+            <div className="flex flex-col gap-[6px]">
+              <p className={STATUS}>직원 목록을 불러오는 중입니다…</p>
+              {mode === "bulk" && bulkError}
+            </div>
+          ) : pool?.state === "error" ? (
+            <div className="flex flex-col gap-[6px]">
+              <p role="alert" className={ERROR}>
+                {pool.message}
+              </p>
+              {mode === "bulk" && bulkError}
+            </div>
+          ) : mode === "one" ? (
+            <div className="flex flex-col gap-[6px]">
+              <Select aria-label="직원" value={staffId ?? ""} onChange={(e) => handlePickOne(e.target.value)}>
+                <option value="">{staff.length ? "선택" : "근무 가능한 직원이 없습니다"}</option>
+                {staff.map((s) => (
+                  <option key={s.staffMemberId} value={s.staffMemberId}>
+                    {s.name} · {s.jobTitle}
+                  </option>
+                ))}
+              </Select>
+              </div>
+          ) : (
+            <div role="group" aria-label="직원" className="flex flex-col gap-[8px]">
+              {staff.length ? (
+                <div className="flex flex-wrap gap-x-[18px] gap-y-[8px]">
+                  {staff.map((s) => (
+                    <Checkbox
+                      key={s.staffMemberId}
+                      label={`${s.name} · ${s.jobTitle}`}
+                      checked={picked.includes(s.staffMemberId)}
+                      onChange={(e) => handleToggle(s.staffMemberId, e.target.checked)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className={STATUS}>근무 가능한 직원이 없습니다.</p>
+              )}
+              {/* 직원을 고르지 않은 오류는 직원 칸 바로 아래 — 고른 직원 줄들 뒤(카드 줄 간격 18px)에 두면 칸과 떨어져 보였다(2026-11-04 사용자 지적) */}
+              {bulkError}
+            </div>
+          )}
+        </div>
 
         {mode === "one" && (
-          <>
-            {staffId !== null && revert(staffId, setShift)}
-            <ShiftFields shift={shift} onChange={setShift} />
-            {tried && oneProblem && (
-              <p role="alert" className={ERROR}>
-                {oneProblem}
-              </p>
-            )}
-          </>
+          // 1명 · 수정도 여러 명과 같은 직원 상자 — 머리 줄에 고른 직원 이름과 [근로계약 시간적용](2026-11-05 사용자 지정, 3팀 확인 필요).
+          // 아직 고르지 않았으면 머리 줄에 회색 안내만. 칸과 오류 문구는 한 묶음(2026-11-04 사용자 지적)
+          <div className="flex flex-col overflow-hidden rounded-[2px] border border-erp-panel-line">
+            <div className="flex h-[42px] items-center gap-[6px] border-b border-erp-thead-line bg-erp-thead-bg pr-[8px] pl-[12px]">
+              {edit || staffId !== null ? (
+                <p className="flex-1 truncate text-[14px] font-semibold text-erp-ink">{edit ? edit.staffName : nameOf(staffId!)}</p>
+              ) : (
+                <p className="flex-1 truncate text-[14px] text-erp-label">직원을 고르면 근무시간을 입력할 수 있습니다.</p>
+              )}
+              {staffId !== null && revert(staffId, setShift)}
+            </div>
+            <div className="flex flex-col gap-[8px] p-[12px]">
+              <ShiftFields shift={shift} onChange={setShift} />
+              {tried && oneProblem && (
+                <p role="alert" className={ERROR}>
+                  {oneProblem}
+                </p>
+              )}
+            </div>
+          </div>
         )}
         {mode === "bulk" && (
           <>
             {picked.map((id) => (
-              <div key={id} className="flex flex-col gap-[8px] border-b border-erp-thead-line pb-[12px]">
-                <div className="flex items-center gap-[6px]">
-                  <p className="flex-1 text-[14px] font-medium">{nameOf(id)}</p>
+              // 직원마다 작은 상자 — 회색 머리 줄(42px)에 이름과 [근로계약 시간적용]을 두어 버튼 · 시간 칸이 그 직원과 짝으로 보이게(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 이름 줄 + 아래 선)
+              <div key={id} className="flex flex-col overflow-hidden rounded-[2px] border border-erp-panel-line">
+                <div className="flex h-[42px] items-center gap-[6px] border-b border-erp-thead-line bg-erp-thead-bg pr-[8px] pl-[12px]">
+                  <p className="flex-1 truncate text-[14px] font-semibold text-erp-ink">{nameOf(id)}</p>
                   {revert(id, (s) => setRows((r) => ({ ...r, [id]: s })))}
                 </div>
-                <ShiftFields label={nameOf(id)} shift={rows[id] ?? EMPTY_SHIFT} onChange={(s) => setRows((r) => ({ ...r, [id]: s }))} />
-                {((tried && bulkProblems[id]) || rowErrors[id]) && (
-                  <p role="alert" className={ERROR}>
-                    {rowErrors[id] ?? bulkProblems[id]}
-                  </p>
-                )}
+                <div className="flex flex-col gap-[8px] p-[12px]">
+                  <ShiftFields label={nameOf(id)} shift={rows[id] ?? EMPTY_SHIFT} onChange={(s) => setRows((r) => ({ ...r, [id]: s }))} />
+                  {((tried && bulkProblems[id]) || rowErrors[id]) && (
+                    <p role="alert" className={ERROR}>
+                      {rowErrors[id] ?? bulkProblems[id]}
+                    </p>
+                  )}
+                </div>
               </div>
             ))}
-            {tried && bulkProblem && (
-              <p role="alert" className={ERROR}>
-                {bulkProblem}
-              </p>
-            )}
-            <p className={HELP}>일부가 실패해도 성공한 등록은 남고 실패한 직원만 남겨 사유를 보입니다.</p>
           </>
         )}
       </FormGroup>
 
-      <p className={HELP}>저장하면 바뀐 직원에게 알림이 갑니다.</p>
+      {/* 직원 칸에는 상태(없음 · 불러오는 중)만 두고, 규칙은 이 안내 박스에 모은다 — 회색 세 줄이 칸 아래 몰려 어수선했다(2026-11-05 사용자 지적, 3팀 확인 필요) */}
+      <GuideBand
+        title={edit ? "근무스케줄 수정 안내" : "근무스케줄 등록 안내"}
+        lines={[
+          ...(edit
+            ? []
+            : [
+                // 직원이 목록에 나오는 조건(STAFF-29 · CTR-24, api schedulable) — 체결 완료 근로계약 · 앱 가입이 중요해 밑줄(2026-11-05 사용자 지정)
+                <>
+                  직원 목록에는 선택한 근무일에 <u>근로계약이 체결 완료</u>된 직원 중 <u>직원 근무 앱에 가입</u>한 직원만 표시됩니다.
+                </>,
+                "퇴직일이 정해진 직원은 퇴직일까지만 근무스케줄을 등록할 수 있습니다.",
+              ]),
+          ...(mode === "bulk" && !edit ? ["여러 명을 등록할 때 일부가 실패하면, 성공한 직원은 등록되고 실패한 직원만 사유와 함께 남습니다."] : []),
+          // 알림이 가는 곳에 밑줄(2026-11-05 사용자 지정, 3팀 확인 필요)
+          <>
+            관리자가 근무스케줄을 저장하면 해당 <u>직원의 근무 앱</u>과 <u>이메일</u>로 알림이 발송됩니다.
+          </>,
+          "직원이 근무 앱에서 근무스케줄 알림을 끄면 알림은 근무 앱 알림함에만 표시됩니다.",
+        ]}
+      />
+      {partialNotice && (
+        <p role="alert" className={ERROR}>
+          {partialNotice}
+        </p>
+      )}
       {serverError && (
         <p role="alert" className={ERROR}>
           {serverError}
         </p>
       )}
-      <div className="flex justify-between gap-[6px]">
-        <span>
-          {edit && can.delete && (
-            <Button variant="off" disabled={saving} onClick={() => setConfirmDelete(true)}>
-              삭제
-            </Button>
-          )}
-        </span>
-        <span className="flex gap-[6px]">
-          <Button variant="off" onClick={onClose}>
-            취소
+      {/* [취소] [삭제] [저장]은 패널 가운데 — 출퇴근 대신 등록 패널 · 1팀 패널과 같다(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 삭제 왼쪽 끝 · 나머지 오른쪽 끝) */}
+      <div className="flex justify-center gap-[6px]">
+        <Button variant="off" onClick={onClose}>
+          취소
+        </Button>
+        {edit && can.delete && (
+          <Button variant="soft" disabled={saving} onClick={() => setConfirmDelete(true)}>
+            삭제
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "저장 중" : mode === "bulk" ? `${picked.length}명 등록` : "저장"}
-          </Button>
-        </span>
+        )}
+        <Button onClick={handleSave} disabled={saving}>
+          {/* 1명 · 여러 명 · 수정 모두 [저장](2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 여러 명이면 「N명 등록」) */}
+          {saving ? "저장 중" : "저장"}
+        </Button>
       </div>
       {edit && (
         <ConfirmDialog

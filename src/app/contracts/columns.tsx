@@ -18,12 +18,14 @@ type Row = ContractListItem & { no: number };
 
 // 상태별 버튼(이어 쓰기 · 삭제 · 재발송 · 새 계약)은 상세 화면 위쪽에 있다. 목록은 직원 이름으로 상세에 들어간다.
 // 임시저장은 상세를 거치지 않고 이어 쓰기 화면으로 바로 간다. 어느 쪽이든 지금 목록 주소(listHref)를 ?back= 으로 넘겨 [목록]이 같은 조건으로 돌아온다.
+// at 은 링크에 탭 BP 를 붙인다(목록 화면의 screenPath) — listHref · ?back= 은 옛 경로 그대로다.
 export function contractColumns(
   statuses: EnumValue[],
   now: Date,
   draftActions: EnumValue[] = [],
   employmentTypes: EnumValue[] = [],
   listHref = "/contracts",
+  at: (path: string) => string = (path) => path,
 ): Column<Row>[] {
   return [
     { header: "순번", width: "w-[60px]", cell: (r) => r.no },
@@ -31,7 +33,7 @@ export function contractColumns(
       header: "직원",
       cell: (r) => (
         <Link
-          href={withBack(r.status === "DRAFT" ? `/contracts/${r.contractId}/edit` : `/contracts/${r.contractId}`, listHref)}
+          href={at(withBack(r.status === "DRAFT" ? `/contracts/${r.contractId}/edit` : `/contracts/${r.contractId}`, listHref))}
           className="text-erp-link hover:underline"
         >
           {r.staffMemberName}

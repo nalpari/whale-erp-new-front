@@ -145,7 +145,8 @@ function RolesBody({
             </h2>
             {/* 가맹 관리자에게는 숨긴다(S-LYKAEI) — api 도 403 이다 */}
             {account.roleTypeCode !== "FA" && (
-              <Button variant="soft" onClick={() => setFranchiseMasterOpen(true)}>
+              // 보기만 하는 버튼이라 흰 바탕 · 브랜드 테두리(outline) — 점포 상세 [변경이력]과 같다(2026-11-03 사용자 지정)
+              <Button variant="outline" onClick={() => setFranchiseMasterOpen(true)}>
                 가맹마스터 메뉴설정 보기
               </Button>
             )}
@@ -155,6 +156,10 @@ function RolesBody({
             rows={list.items}
             rowKey={(r) => r.roleGroupId}
             rowState={(r) => (!creating && r.roleGroupId === selected ? "selected" : undefined)}
+            // 비었으면 열 이름 줄 아래 빈 칸이 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정).
+            // 검색 조건이 없어 0건이면 「등록된 …」, 마지막 쪽을 넘긴 주소로 왔을 때만 「이 페이지에 …」(2026-11-05 사용자 지정)
+            fillEmpty
+            empty={list.total === 0 ? "등록된 권한 그룹이 없습니다." : "이 페이지에 권한 그룹이 없습니다."}
           />
           <Pagination page={page} totalPages={totalPages} onPageChange={(p) => go({ page: p })} />
         </section>

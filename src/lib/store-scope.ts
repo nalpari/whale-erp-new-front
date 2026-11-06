@@ -50,6 +50,20 @@ export function scopeOfKey(key: string): Scope | null {
 }
 
 /**
+ * 두 점포 목록이 화면(헤더 범위 선택기 · 점포 고르기)에 같게 보이는가 — 다시 받은 목록이 바뀌었을 때만 알리려고 본다.
+ * 순서도 본다(api 가 점포 이름순으로 준다). 화면이 쓰는 칸만 비교하고, 그 밖의 칸이 바뀐 것은 같다고 본다.
+ */
+export function sameStores(a: readonly AdminStore[], b: readonly AdminStore[]): boolean {
+  return (
+    a.length === b.length &&
+    a.every((s, i) => {
+      const t = b[i];
+      return s.storeId === t.storeId && s.storeCode === t.storeCode && s.name === t.name && s.storeTypeCode === t.storeTypeCode && s.storeStatusCode === t.storeStatusCode;
+    })
+  );
+}
+
+/**
  * 저장된 범위를 이 탭의 점포 목록에 맞춘다 — 고른 점포가 없어졌거나(지움 · 범위 밖), 직영 · 가맹인데 그 유형에 폐점이 아닌 점포가
  * 없으면 「전체」다. 선택기에 없는 범위가 남아 표시와 실제 검색이 어긋나지 않게 한다.
  */
@@ -98,7 +112,13 @@ export function scopeFromAddress(param: string | undefined, current: Scope, stor
 export const toPickedStore = ({ storeId, name, storeCode }: { storeId: number; name: string; storeCode: string }) => ({ storeId, name, storeCode });
 
 /**
- * 등록 · 삭제 뒤 돌아갈 목록 주소 — 점포 검색을 「전체」로 비운다(2026-10-20). 빈 storeIds(목록에서 고른 점포 없음)를 적어 목록이 헤더 범위로
+ * 칩 목록의 지문 — 칩을 쥐고 있는 필터가 동기화 키에 넣는다. 칩을 이 탭의 점포 목록(useStores)으로 만드는 필터는, 점포 목록을 다시 맞추면
+ * (SessionGate — 다른 PC · 탭 · 이 화면의 등록 · 삭제 · 이름 변경) 주소는 그대로여도 칩이 바뀌어야 한다 — 이것 없이는 헤더는 10개, 칩은 9개로 남았다(2026-10-30).
+ */
+export const chipsKeyOf = (chips: readonly { storeId: number; name: string }[]) => chips.map((c) => `${c.storeId}:${c.name}`).join(",");
+
+/**
+ * 등록 · 삭제 뒤 돌아갈 목록 주소(근로계약 · TO-DO — 점포 목록은 2026-10-30 부터 withHeaderStoreSearch · withoutDeletedStore) — 점포 검색을 「전체」로 비운다(2026-10-20). 빈 storeIds(목록에서 고른 점포 없음)를 적어 목록이 헤더 범위로
  * 다시 채우지 않게 한다 — scope=ALL 로 적으면 헤더 범위까지 전체로 바뀐다. 점포 조건이 바뀌므로 쪽(page)도 뺀다. 다른 조건은 그대로 둔다.
  */
 export const withoutStoreSearch = (href: string) =>
@@ -106,4 +126,38 @@ export const withoutStoreSearch = (href: string) =>
     p.delete(SCOPE_PARAM);
     p.delete("page");
     p.set("storeIds", "");
+  });
+
+/**
+ * 점포를 등록한 뒤 돌아갈 목록 주소 — 점포 조건(목록에서 고른 점포 · 범위)을 지워 필터가 헤더 범위로 다시 채운다(2026-10-30 사용자 결정,
+ * 전엔 withoutStoreSearch 로 「전체」라 헤더와 필터가 갈렸다). 새 점포가 헤더 범위 밖이면 목록에는 없다 — 관리 점포에 든 점포면 헤더 개수와
+ * 「점포 목록이 변경되었습니다.」로 알 수 있고, 일부 점포만 맡은 계정이 맡지 않은 점포면 헤더에도 없다.
+ * 점포 조건이 바뀌므로 쪽(page)도 뺀다. 다른 조건은 그대로 둔다.
+ */
+export const withHeaderStoreSearch = (href: string) =>
+  withParams(href, (p) => {
+    p.delete("storeIds");
+    p.delete(SCOPE_PARAM);
+    p.delete("page");
+  });
+
+/**
+ * 점포를 지운 뒤 돌아갈 목록 주소 — 점포 검색이 헤더 범위와 어긋나지 않게 한다(2026-10-30 사용자 결정, 전엔 withoutStoreSearch 로 「전체」).
+ * 목록에서 고른 점포가 있으면 지운 점포만 뺀다. 남은 것이 없으면(또는 고른 점포가 없었으면) 점포 조건을 지워 필터가 헤더 범위로 다시 채운다.
+ * 남은 고른 점포가 없고 헤더 범위가 지운 그 점포였으면 범위를 「전체」(scope=ALL)로 적는다 — 헤더도 따라오고, 점포 목록 맞추기(SessionGate)도
+ * 같은 값으로 돌린다. 고른 점포가 남았으면 주소에는 범위를 적지 않고, 헤더는 점포 목록 맞추기가 전체로 돌린다.
+ * 점포 조건이 바뀌므로 쪽(page)도 뺀다. 다른 조건은 그대로 둔다.
+ */
+export const withoutDeletedStore = (href: string, storeId: number, headerScope: Scope) =>
+  withParams(href, (p) => {
+    // 목록 쿼리(parseStoresQuery)처럼 숫자로 읽어 가린다 — 「02」 · 「 2」도 2 라 남기면 지운 점포가 조건에 되살아난다
+    const kept = (p.get("storeIds") ?? "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter((id) => id && Number(id) !== storeId);
+    p.delete("storeIds");
+    p.delete(SCOPE_PARAM);
+    p.delete("page");
+    if (kept.length) p.set("storeIds", kept.join(","));
+    else if (headerScope.type === "STORE" && headerScope.storeId === storeId) p.set(SCOPE_PARAM, scopeKeyOf({ type: "ALL" }));
   });

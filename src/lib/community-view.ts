@@ -34,7 +34,7 @@ export const BODY_MAX = 20_000;
 /** 세션이 끊겼을 때 폼 위 띠 문구. 화면을 옮기지 않아 고치던 내용은 남는다. */
 export const SESSION_EXPIRED = "로그인이 만료되었습니다. 고친 내용을 옮겨 둔 뒤 다시 로그인해 주세요.";
 /** api 403 중 비밀번호 강제 변경(bff.ts 와 같은 문장 앞부분). 권한 없음과 갈라 api 문장을 그대로 보이고 변경 팝업을 띄운다. */
-export const PASSWORD_REQUIRED_PREFIX = "비밀번호를 변경한 뒤 이용할 수 있습니다";
+export const PASSWORD_REQUIRED_PREFIX = "서비스 이용을 위해 비밀번호를 변경해 주세요.";
 
 /**
  * 게시물 id — 1..2147483647 정수(api parseRouteId 와 같다). 서버 액션 · 라우트 핸들러 · 화면 주소가 api 경로에 붙이기 전에 본다 —
@@ -47,9 +47,10 @@ export function postIdOf(raw: unknown): number | null {
 
 export type ListQuery = { page: number; pageSize: PageSize };
 // 상태 · 구분 · 카테고리 필터는 체크박스라 여러 값을 함께 고른다. 빈 배열이 전체다(2026-10-22 재영, #275 · #282~284).
-export type PostQuery = ListQuery & { status: PostStatus[] };
-export type InquiryQuery = ListQuery & { answerStatus: AnswerStatus[]; title: string; sender: string };
-export type LeadQuery = ListQuery & { answerStatus: AnswerStatus[] };
+// none — 상태 칸을 모두 풀었다(?none=1). 빈 배열은 「전체」라 따로 둔다. 이때는 목록을 부르지 않고 0건으로 보인다(2026-11-06 사용자 지정)
+export type PostQuery = ListQuery & { status: PostStatus[]; none: boolean };
+export type InquiryQuery = ListQuery & { answerStatus: AnswerStatus[]; title: string; sender: string; none: boolean };
+export type LeadQuery = ListQuery & { answerStatus: AnswerStatus[]; none: boolean };
 
 type Raw = Record<string, string | string[] | undefined>;
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
@@ -76,20 +77,32 @@ function pageOf(raw: Raw): ListQuery {
 /** 검색어는 api 한도(제목 200자 · 보낸 곳 100자)로 자르고 NUL 을 뺀다 — 둘 다 api 가 400 을 내 목록이 통째로 실패한다. */
 const textOf = (v: string | undefined, max: number) => (v ?? "").replaceAll("\u0000", "").trim().slice(0, max);
 
-export const parsePostQuery = (raw: Raw): PostQuery => ({ ...pageOf(raw), status: someOf(POST_STATUSES, raw.status) });
-export const parseLeadQuery = (raw: Raw): LeadQuery => ({ ...pageOf(raw), answerStatus: someOf(ANSWER_STATUSES, raw.answerStatus) });
+/** 쪽 · 쪽당 건수 말고 거른 조건이 있는가 — 빈 문구를 「등록된 …」 / 「조건에 맞는 …」으로 가를 때 쓴다(2026-11-06) */
+export const hasCondition = (query: ListQuery & Record<string, unknown>): boolean =>
+  Object.entries(query).some(([k, v]) => k !== "page" && k !== "pageSize" && (Array.isArray(v) ? v.length > 0 : typeof v === "string" ? v.trim() !== "" : v === true));
+
+/** 상태를 모두 풀었는가 — 주소의 none=1. 그때 고른 상태 값은 버린다 */
+const noneOf = (raw: Raw) => first(raw.none) === "1";
+
+export const parsePostQuery = (raw: Raw): PostQuery => ({ ...pageOf(raw), status: noneOf(raw) ? [] : someOf(POST_STATUSES, raw.status), none: noneOf(raw) });
+export const parseLeadQuery = (raw: Raw): LeadQuery => ({ ...pageOf(raw), answerStatus: noneOf(raw) ? [] : someOf(ANSWER_STATUSES, raw.answerStatus), none: noneOf(raw) });
 export const parseInquiryQuery = (raw: Raw): InquiryQuery => ({
   ...pageOf(raw),
-  answerStatus: someOf(ANSWER_STATUSES, raw.answerStatus),
+  answerStatus: noneOf(raw) ? [] : someOf(ANSWER_STATUSES, raw.answerStatus),
+  none: noneOf(raw),
   title: textOf(first(raw.title), 200),
   sender: textOf(first(raw.sender), 100),
 });
 
 /** 화면 주소 · api 쿼리. 빈 값과 기본값(1쪽 · 20건)은 싣지 않는다. 여러 값은 같은 이름을 되풀이한다(`?status=A&status=B`, api 의 다른 목록과 같다). */
-export function queryString(q: ListQuery & Record<string, string | number | readonly string[]>): string {
+export function queryString(q: ListQuery & Record<string, string | number | boolean | readonly string[]>): string {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(q)) {
-    if (value === "" || (key === "page" && value === 1) || (key === "pageSize" && value === 20)) continue;
+    if (value === "" || value === false || (key === "page" && value === 1) || (key === "pageSize" && value === 20)) continue;
+    if (value === true) {
+      params.set(key, "1");
+      continue;
+    }
     if (Array.isArray(value)) for (const v of value) params.append(key, v);
     else params.set(key, String(value));
   }
@@ -121,20 +134,20 @@ export type NewFile = { name: string; size: number };
 export function validatePost(f: PostForm, status: PostStatus, kept: number, files: readonly NewFile[]): string[] {
   const errors: string[] = [];
   const notice = f.kind === "NOTICE";
-  if (!f.title.trim()) errors.push("제목을 입력해 주세요");
-  else if (f.title.length > TITLE_MAX) errors.push(`제목은 ${TITLE_MAX}자까지 쓸 수 있습니다`);
-  if (!f.body.trim()) errors.push("본문을 입력해 주세요");
-  else if (f.body.length > BODY_MAX) errors.push(`본문은 ${BODY_MAX.toLocaleString("ko-KR")}자까지 쓸 수 있습니다`);
-  if (notice && !f.noticeType) errors.push("공지사항 유형을 골라 주세요");
-  if (!notice && !f.faqCategoryCode) errors.push("FAQ 카테고리를 골라 주세요");
-  if (status === "PUBLISHED" && f.audiences.length === 0) errors.push("게시하려면 노출 대상을 하나 이상 골라 주세요");
+  if (!f.title.trim()) errors.push("제목을 입력해 주세요.");
+  else if (f.title.length > TITLE_MAX) errors.push(`제목은 ${TITLE_MAX}자까지 쓸 수 있습니다.`);
+  if (!f.body.trim()) errors.push("본문을 입력해 주세요.");
+  else if (f.body.length > BODY_MAX) errors.push(`본문은 ${BODY_MAX.toLocaleString("ko-KR")}자까지 쓸 수 있습니다.`);
+  if (notice && !f.noticeType) errors.push("공지사항 유형을 선택해 주세요.");
+  if (!notice && !f.faqCategoryCode) errors.push("FAQ 카테고리를 선택해 주세요.");
+  if (status === "PUBLISHED" && f.audiences.length === 0) errors.push("게시하려면 노출 대상을 하나 이상 선택해 주세요.");
   // YYYY-MM-DD 는 글자 순서가 날짜 순서다.
-  if (notice && f.publishStartDate && f.publishEndDate && f.publishEndDate < f.publishStartDate) errors.push("게시 종료일이 시작일보다 앞설 수 없습니다");
+  if (notice && f.publishStartDate && f.publishEndDate && f.publishEndDate < f.publishStartDate) errors.push("게시 종료일이 시작일보다 앞설 수 없습니다.");
   if (notice) {
-    if (kept + files.length > MAX_ATTACHMENTS) errors.push(`첨부파일은 공지사항 하나에 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다`);
+    if (kept + files.length > MAX_ATTACHMENTS) errors.push(`첨부파일은 공지사항 하나에 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다.`);
     for (const file of files) {
-      if (!FILE_EXT.test(file.name)) errors.push(`${file.name}: JPG · PNG · PDF 만 올릴 수 있습니다`);
-      else if (file.size > MAX_FILE_BYTES) errors.push(`${file.name}: 파일 하나는 10MB 까지 올릴 수 있습니다`);
+      if (!FILE_EXT.test(file.name)) errors.push(`${file.name}: JPG · PNG · PDF 만 올릴 수 있습니다.`);
+      else if (file.size > MAX_FILE_BYTES) errors.push(`${file.name}: 10MB 이하 파일만 첨부할 수 있습니다.`);
     }
   }
   return errors;
@@ -183,42 +196,62 @@ export const SUPPORT_FAQ_BASE = "/support-faqs";
 export const SUPPORT_INQUIRY_BASE = "/support-inquiries";
 
 export type InquiryStatus = Schemas["InquiryStatus"];
-export type SupportNoticeQuery = ListQuery & { keyword: string; noticeType: NoticeType[] };
+/**
+ * 고객지원 체크박스 필터는 모두 고른 것이 기본이다(2026-11-05 사용자 지정). 모두 고르면 주소에 싣지 않고(빈 배열 = 전체),
+ * 모두 끄면 NONE 하나만 남긴다 — 결과 없음이라 api 를 부르지 않는다(관리자 관리의 계정상태와 같다).
+ */
+// 공통코드 상세 코드(영문 대문자로 시작)가 될 수 없는 값 — 「NONE」이면 같은 이름의 FAQ 카테고리와 부딪힌다(리뷰 반영)
+export const NONE_CHECKED = "_NONE";
+export type SupportNoticeQuery = ListQuery & { keyword: string; noticeType: (NoticeType | typeof NONE_CHECKED)[] };
 export type SupportFaqQuery = ListQuery & { keyword: string; faqCategoryCode: string[] };
-export type SupportInquiryQuery = ListQuery & { title: string; status: InquiryStatus[] };
+export type SupportInquiryQuery = ListQuery & { title: string; status: (InquiryStatus | typeof NONE_CHECKED)[] };
+
+/** 체크박스를 모두 껐는가 — 결과 없음 */
+export const noneChecked = (value: readonly string[]) => value.length === 1 && value[0] === NONE_CHECKED;
 
 const NOTICE_TYPES: readonly NoticeType[] = ["MAINTENANCE", "FEATURE", "TERMS", "GENERAL"];
 const INQUIRY_STATUSES: readonly InquiryStatus[] = ["RECEIVED", "IN_PROGRESS", "ANSWERED"];
+
+/** 모두 고른 것(전체)은 빈 배열로, 모두 끈 것은 NONE 하나로 — 같은 조건이면 주소도 같다 */
+const checkedOf = <T extends string>(values: readonly T[], v: string | string[] | undefined): (T | typeof NONE_CHECKED)[] => {
+  if (all(v).includes(NONE_CHECKED)) return [NONE_CHECKED];
+  const picked = someOf(values, v);
+  return picked.length === values.length ? [] : picked;
+};
 
 // 검색어 한도는 api 와 같다(공지 · FAQ keyword 100자, 문의 제목 200자). FAQ 카테고리는 공통코드 상세 코드 20자.
 export const parseSupportNoticeQuery = (raw: Raw): SupportNoticeQuery => ({
   ...pageOf(raw),
   keyword: textOf(first(raw.keyword), 100),
-  noticeType: someOf(NOTICE_TYPES, raw.noticeType),
+  noticeType: checkedOf(NOTICE_TYPES, raw.noticeType),
 });
 export const parseSupportFaqQuery = (raw: Raw): SupportFaqQuery => ({
   ...pageOf(raw),
   keyword: textOf(first(raw.keyword), 100),
   // 카테고리는 공통코드라 목록을 모른다 — 다듬어 빈 값 · 겹친 값만 빼고, api 가 400 을 내는 값(20자 넘음 · 50개 넘음)은 버린다.
-  faqCategoryCode: [...new Set(all(raw.faqCategoryCode).map((v) => textOf(v, 21)))].filter((v) => v && v.length <= 20).slice(0, 50),
+  // 모두 끈 것(NONE)은 그것 하나만. 「모두 고름 = 빈 배열」은 목록을 아는 화면(체크박스)이 맞춘다
+  faqCategoryCode: all(raw.faqCategoryCode).includes(NONE_CHECKED)
+    ? [NONE_CHECKED]
+    : [...new Set(all(raw.faqCategoryCode).map((v) => textOf(v, 21)))].filter((v) => v && v.length <= 20).slice(0, 50),
 });
 export const parseSupportInquiryQuery = (raw: Raw): SupportInquiryQuery => ({
   ...pageOf(raw),
   title: textOf(first(raw.title), 200),
-  status: someOf(INQUIRY_STATUSES, raw.status),
+  status: checkedOf(INQUIRY_STATUSES, raw.status),
 });
 
 /**
  * 문의 첨부 고르기(CNT-18). 6번째 · 10MB 초과 · JPG · PNG · PDF 가 아닌 파일은 그 파일만 빼고 까닭을 돌려준다 —
  * 이미 올린 파일과 쓴 내용은 그대로 둔다. had 는 이미 올린 파일 수다.
+ * 화면은 파일명 줄 아래에 까닭을 빨간 글자로 보인다 — 그래서 둘을 나눠 돌려준다(2026-11-05 사용자 지정, 전엔 「파일명: 까닭」 한 줄).
  */
-export function pickInquiryFiles<F extends NewFile>(had: number, picked: readonly F[]): { accepted: F[]; rejected: string[] } {
+export function pickInquiryFiles<F extends NewFile>(had: number, picked: readonly F[]): { accepted: F[]; rejected: { name: string; reason: string }[] } {
   const accepted: F[] = [];
-  const rejected: string[] = [];
+  const rejected: { name: string; reason: string }[] = [];
   for (const file of picked) {
-    if (!FILE_EXT.test(file.name)) rejected.push(`${file.name}: 이미지(JPG · PNG)와 PDF 만 올릴 수 있습니다`);
-    else if (file.size > MAX_FILE_BYTES) rejected.push(`${file.name}: 파일 하나는 10MB 까지 올릴 수 있습니다`);
-    else if (had + accepted.length >= MAX_ATTACHMENTS) rejected.push(`${file.name}: 첨부파일은 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다`);
+    if (!FILE_EXT.test(file.name)) rejected.push({ name: file.name, reason: "JPG, PNG, PDF 파일만 첨부할 수 있습니다." });
+    else if (file.size > MAX_FILE_BYTES) rejected.push({ name: file.name, reason: "10MB 이하 파일만 첨부할 수 있습니다." });
+    else if (had + accepted.length >= MAX_ATTACHMENTS) rejected.push({ name: file.name, reason: `최대 ${MAX_ATTACHMENTS}개까지 첨부할 수 있습니다.` });
     else accepted.push(file);
   }
   return { accepted, rejected };

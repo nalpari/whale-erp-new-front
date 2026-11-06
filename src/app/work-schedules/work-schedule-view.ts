@@ -149,13 +149,13 @@ const EXCLUDE_REASON: Record<string, string> = {
   WORK_SCHEDULE_NO_CONTRACT: "근로계약 미체결",
   WORK_SCHEDULE_NOT_JOINED: "가입 전",
   WORK_SCHEDULE_OVERLAP: "시간 겹침",
-  WORK_SCHEDULE_HIDDEN: "본사 제공 동의 없음",
+  WORK_SCHEDULE_HIDDEN: "본사에 정보제공 미동의",
 };
 const excludeReason = (code: string | null, retiredDate: string | null) =>
   code === "WORK_SCHEDULE_AFTER_RETIREMENT" ? (retiredDate ? `${mmdd(retiredDate)} 퇴직` : "퇴직") : ((code && EXCLUDE_REASON[code]) ?? "규칙에 맞지 않음");
 
-/** 「5일 · 40.0h」(휴게를 뺀 시간). 없으면 「—」 */
-export const totalsLabel = (t: { days: number; minutes: number }) => (t.days ? `${t.days}일 · ${(t.minutes / 60).toFixed(1)}h` : "—");
+/** 「5일 · 40.0h」(휴게를 뺀 시간). 없으면 다른 표의 빈 값과 같은 짧은 「-」 — 긴 줄표(—)는 칸에서 너무 길어 보였다(2026-11-05 사용자 지적) */
+export const totalsLabel = (t: { days: number; minutes: number }) => (t.days ? `${t.days}일 · ${(t.minutes / 60).toFixed(1)}h` : "-");
 
 type CopyRow = { retiredDate: string | null; copied: { days: number }; excluded: { workDate: string; code: string | null }[] };
 

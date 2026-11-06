@@ -1,9 +1,10 @@
 import { Button } from "@/components/common";
+import { bpHref } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { getStaffMemberContractSummary } from "@/lib/staff-members-api";
 import { StatusBadge } from "../../contracts/columns";
 import { ContractMenuPermission } from "../../contracts/contract-permission";
-import { contractSummaryTexts } from "./contract-summary";
+import { contractSummaryTexts, payrollAccountRows } from "./contract-summary";
 import { AreaFailure, BoxMessage } from "./detail-box";
 import { loadArea, loadLabels } from "./summary-load";
 
@@ -28,7 +29,7 @@ export async function ContractBox({ staffMemberId }: { staffMemberId: number }) 
       <BoxMessage>
         등록된 근로계약이 없습니다.
         <ContractMenuPermission action="create">
-          <Button href="/contracts/new">
+          <Button href={await bpHref("/contracts/new")}>
             근로계약서 작성
           </Button>
         </ContractMenuPermission>
@@ -41,6 +42,7 @@ export async function ContractBox({ staffMemberId }: { staffMemberId: number }) 
     { label: "계약 유형", value: texts.type },
     { label: "계약 기간", value: texts.period },
     { label: "계약 상태", value: statusCell },
+    ...payrollAccountRows(result.data),
     { label: "최근 발송일", value: texts.lastSent },
     { label: "갱신 예정일", value: texts.renewal },
   ];

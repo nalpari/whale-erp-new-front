@@ -1,9 +1,10 @@
-import { ListToolbar, PageBar } from "@/components/common";
-import { getEnum } from "@/lib/api";
+import { PageBar, Tag } from "@/components/common";
+import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
+import { PAYSLIP_STATUSES } from "@/lib/payslips";
 import { getPayslips } from "@/lib/payslips-api";
 import { kstToday } from "@/lib/staff-members";
 import { PayslipFilter } from "./payslip-filter";
-import { PayslipListActions } from "./payslip-list-actions";
+import { PayslipCreateAction, PayslipListActions } from "./payslip-list-actions";
 import { PayslipMonthNav, PayslipPageSize, PayslipPagination } from "./payslip-list-controls";
 import { parsePayslipListQuery, toPayslipListSearch } from "./payslip-list-query";
 import { PayslipTable } from "./payslip-table";
@@ -11,38 +12,76 @@ import { PayslipTable } from "./payslip-table";
 // 급여명세서 관리 목록. 데모 docs/demo/staff/payslips.html(원본 src/pages/staff/payslips.mjs · staff-sections.mjs)을 공통 컴포넌트로 옮겼다.
 // 칸 · 필터는 Plane WHALEERP-233 을 따라 데모와 일부러 다르다 — 왼쪽 필터는 점포 · 직원명 · 명세서 상태(점포는 업무 범위 안에서 좁히고, 범위는 공통 틀 위 업무 범위
 // 선택기), 칸은 급여 기간 · 직원명 · 근무지 · 계약 유형 · 출퇴근 확인 여부 · 상태 · 발송일. 달 이동 · 상태 건수 · 명세서 목록.
-// 검토 대기 목록은 두지 않는다 — 사유는 상세에서만 보인다(STAFF-32, 2026-10-12 재영). 데이터는 GET /payslips(getPayslips)이고
-// 상태 · 계약 유형 한글은 GET /enums 로 받는다. 화면 상태는 URL 에만 둔다. api 오류는 error.tsx 가 받는다.
+// 검토 대기는 상태가 아니라 분류다 — 따로 목록을 두지 않고 상태 칸의 「검토 대기」 꼬리표 · 「분류 · 검토 대기만」 필터 · 건수 줄의 검토 대기
+// 꼬리표로 보이고, 사유 내용은 상세에서 본다(WHALEERP-234, 운영 정책 PAY-01 · 06 2026-10-26 재영). 데이터는 GET /payslips(getPayslips)이고
+// 상태 · 계약 유형 · 검토 사유 한글은 GET /enums 로 받는다. 화면 상태는 URL 에만 둔다. api 오류는 error.tsx 가 받는다.
 export default async function PayslipsPage({ searchParams }: PageProps<"/payslips">) {
   const today = kstToday();
   const query = parsePayslipListQuery(await searchParams, today);
-  const [{ items, total, statusCounts }, statusLabels, employmentTypeLabels] = await Promise.all([
-    getPayslips(query),
+  // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 · 없는 BP 404 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다(근로계약 목록과 같다)
+  const [listed, statusLabels, employmentTypeLabels, reviewReasonLabels] = await Promise.all([
+    getPayslips(query).then(
+      (page) => ({ page }),
+      (e: unknown) => {
+        const notice = deniedMessageOf(e);
+        if (notice === null) throw e;
+        return { notice };
+      },
+    ),
     getEnum("PayslipStatus"),
     getEnum("EmploymentType"),
+    getEnum("PayslipReviewReason"),
   ]);
+  if ("notice" in listed)
+    return (
+      <>
+        <PageBar title="급여명세서 관리" />
+        <p role="alert" className="p-[24px] text-[14px] text-erp-label">
+          {listed.notice}
+        </p>
+      </>
+    );
+  const { items, total, statusCounts, reviewPendingCount } = listed.page;
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
+  // 화면 주소는 탭 BP 주소 /bp/{id}/payslips 다 — proxy 가 그 BP 를 X-Bp-Code-Id 로 실어, 플랫폼 계정은 고른 BP 의 명세서만 본다(BP_PATH_SCREENS, WHALEERP-637).
+  // 쿼리는 옛 경로로 두고, 링크로 그릴 때만 탭 BP 를 붙인다
+  const at = await screenPath();
   const counts = statusLabels.map((s) => ({ label: s.label, count: statusCounts[s.value as keyof typeof statusCounts] ?? 0 }));
 
   return (
     <>
-      <PageBar title="급여명세서 관리" />
+      <PageBar title="급여명세서 관리">
+        <PayslipCreateAction month={query.month} employmentTypeLabels={employmentTypeLabels} />
+      </PageBar>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         <PayslipFilter query={query} today={today} statusLabels={statusLabels} />
         <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
           <PayslipMonthNav key={query.month} query={query} />
-          <p className="text-[14px] text-erp-label">
-            {counts.map((c, i) => (
-              <span key={c.label}>
-                {i > 0 && " · "}
-                {c.label} <b className="font-semibold text-erp-ink">{c.count}</b>
-              </span>
-            ))}
-          </p>
-          <ListToolbar total={total}>
-            <PayslipListActions query={query} confirmedCount={statusCounts.CONFIRMED} employmentTypeLabels={employmentTypeLabels} />
-            <PayslipPageSize query={query} />
-          </ListToolbar>
+          {/* 총 건수 · 상태별 건수 · 검토 대기를 한 줄로, 버튼 · 건수 고르기는 오른쪽 — 모든 칸을 줄 가운데에 맞춘다(2026-11-04 사용자 지정 — 전엔 상태 건수 줄과
+              총 건수 줄이 따로 있었고, 공통 ListToolbar 가 아래 끝에 맞춰 「총 N 건」이 처졌다) */}
+          <div className="flex flex-wrap items-center gap-x-[12px] gap-y-[6px] text-[14px]">
+            <p className="text-erp-ink">
+              총 <b className="font-semibold">{total.toLocaleString("ko-KR")}</b> 건
+            </p>
+            <span aria-hidden="true" className="h-[11px] w-px bg-[#d9d9d9]" />
+            <p className="flex items-center text-erp-label">
+              {counts.map((c, i) => (
+                <span key={c.label} className="flex items-center">
+                  {i > 0 && <span className="mx-[6px] text-erp-muted">·</span>}
+                  {c.label}
+                  <b className="ml-[4px] font-semibold text-erp-ink">{c.count}</b>
+                </span>
+              ))}
+            </p>
+            {/* 검토 대기는 작성 중 · 검토 중 모두에 생기는 분류라 상태 넷과 떼어 꼬리표로 보인다 — 다섯째 상태로 읽혀 합계가 맞지 않아
+                보이지 않게(운영 정책 v221 PAY-06) */}
+            <span aria-hidden="true" className="h-[11px] w-px bg-[#d9d9d9]" />
+            <Tag>검토 대기 {reviewPendingCount}</Tag>
+            <div className="ml-auto flex items-center gap-[6px]">
+              <PayslipListActions query={query} confirmedCount={statusCounts.CONFIRMED} />
+              <PayslipPageSize query={query} />
+            </div>
+          </div>
           <PayslipTable
             items={items}
             total={total}
@@ -51,6 +90,17 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
             listSearch={toPayslipListSearch(query)}
             statusLabels={statusLabels}
             employmentTypeLabels={employmentTypeLabels}
+            reviewReasonLabels={reviewReasonLabels}
+            at={at}
+            // 거른 목록이 비면 그달 명세서가 없는 것이 아니다
+            // 점포로 좁힌 것도 거른 목록이다 — 빠뜨리면 점포만 골라 0건일 때 「이 달의 급여명세서가 없습니다」로 잘못 말했다(리뷰 반영)
+            filtered={
+              query.reviewPending ||
+              !!query.staffName ||
+              query.statuses.length !== PAYSLIP_STATUSES.length ||
+              query.storeIds.length > 0 ||
+              (query.scope !== null && query.scope.type !== "ALL")
+            }
           />
           {total > 0 && (
             <div className="pt-[14px]">

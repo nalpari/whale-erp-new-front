@@ -5,7 +5,7 @@ import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
-import { TITLE, TAGS, detailParts } from "./holidays-detail.mjs";
+import { HEAD, detailParts, fixedDialog, scrollBox } from "./holidays-detail.mjs";
 import { newForm, HOLIDAY_SCRIPT } from "./holidays-new.mjs";
 import { editForm } from "./holidays-edit.mjs";
 
@@ -25,12 +25,13 @@ function monthGrid() {
   const days = 30;
   const cells = Array.from({ length: Math.ceil((first + days) / 7) * 7 }, (_, i) => i - first + 1);
   const td = (d, i) => {
-    const line = `h-[92px] border-b border-erp-thead-line p-[10px] align-top ${i % 7 ? "border-l" : ""}`;
+    // 날짜 칸 88px — 92px 이면 점포 없음 띠가 뜬 1080 화면에서 5주 달이 넘쳤다(앱 holiday-calendar.tsx, 2026-11-05 사용자 지정)
+    const line = `h-[88px] border-b border-erp-thead-line p-[10px] align-top ${i % 7 ? "border-l" : ""}`;
     if (d < 1 || d > days) return `<td class="${line} bg-erp-thead-bg"></td>`;
     const off = OFFICIAL[d];
     const num =
       d === TODAY
-        ? `<span aria-label="고른 날짜 · 오늘" class="inline-grid h-[24px] min-w-[24px] place-items-center rounded-[2px] border border-erp-brand px-[4px] text-[14px] font-semibold text-erp-brand">${d}</span>`
+        ? `<span aria-label="선택한 날짜 · 오늘" class="inline-grid h-[24px] min-w-[24px] place-items-center rounded-[2px] border border-erp-brand px-[4px] text-[14px] font-semibold text-erp-brand">${d}</span>`
         : `<span class="text-[14px] ${off ? `font-semibold text-erp-off in-[.hide-official]:font-normal in-[.hide-official]:text-erp-ink` : "text-erp-ink"}">${d}</span>`;
     const name = off ? `<p class="mt-[6px] text-[13px] font-medium text-erp-off in-[.hide-official]:hidden">${off}</p>` : "";
     const hols = (NAMES[d] || []).map((n) => `<p title="${n}" class="mt-[6px] truncate rounded-[2px] bg-erp-on-bg px-[4px] py-[2px] text-[13px] font-medium text-erp-on">${n}</p>`).join("");
@@ -42,141 +43,165 @@ function monthGrid() {
 }
 
 const legend = (cls, text) => `<span class="flex items-center gap-[6px] text-[14px] text-erp-ink"><i class="inline-block size-[10px] rounded-[2px] ${cls}"></i>${text}</span>`;
-const iconBtn = (A, icon, label) => `<button type="button" aria-label="${label}" class="grid size-[34px] place-items-center rounded-[2px] border border-erp-button-line bg-white">${ui.img(A, icon, 16, 16)}</button>`;
-const sel = (opts, value, label, w) => `<div class="${w} shrink-0">${ui.select(opts, { value, "aria-label": label })}</div>`;
+// 달 이동 줄 [2026년 9월 ▾] ‹ › [오늘 · 날짜] — 앱 holidays-screen.tsx monthNav · MonthPicker 와 같은 모양. 연 · 월 고르기 판은 그리지 않는다(데모라 버튼 모양만).
+// 화살표는 먹색 선 아이콘, [오늘]도 화살표와 같은 흰 상자(2026-10-30 사용자 지정). 캘린더 제목 자리와 목록 위에 같이 쓴다.
+const ICON_BOX = "grid size-[34px] shrink-0 place-items-center rounded-[2px] border border-erp-button-line bg-white transition-[border-color] duration-150 ease-out hover:border-erp-brand";
+const arrow = (d) => `<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="size-[16px] text-erp-ink"><path d="${d}" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
+const monthNav = () =>
+  `<div role="group" aria-label="달 이동" class="flex items-center gap-[6px]"><button type="button" aria-expanded="false" aria-label="2026년 9월 — 연 · 월 선택" class="flex h-[34px] items-center gap-[8px] rounded-[2px] border border-erp-button-line bg-white pr-[8px] pl-[12px] text-[16px] font-semibold text-erp-ink transition-[border-color] duration-150 hover:border-erp-brand">2026년 9월<span class="ml-[2px] grid size-[20px] place-items-center rounded-full bg-erp-brand-soft"><svg viewBox="0 0 10 6" fill="none" aria-hidden="true" class="h-[6px] w-[10px]"><path d="M1 1L5 5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button><button type="button" aria-label="이전달" class="${ICON_BOX}">${arrow("M11 14L5 8L11 2")}</button><button type="button" aria-label="다음달" class="${ICON_BOX}">${arrow("M5 14L11 8L5 2")}</button><button type="button" class="flex h-[34px] shrink-0 items-center rounded-[2px] border border-erp-button-line bg-white px-[14px] text-[14px] font-medium whitespace-nowrap text-erp-ink transition-[border-color] duration-150 ease-out hover:border-erp-brand">오늘<span class="ml-[6px] text-[12px] font-normal text-erp-label">· 2026-09-21(월)</span></button></div>`;
 // 글자 링크 모양의 패널 열기 버튼. close 면 버튼이 든 확인창을 닫는다(변경 이력 확인창에서 상세로 갈 때).
 const PANEL = { detail: "hol-detail-panel", edit: "hol-edit-panel", new: "hol-new-panel" };
 const panelLink = (text, id, close) => `<button type="button" aria-controls="${id}" aria-expanded="false"${close ? " data-close" : ""} class="text-erp-link hover:underline">${text}</button>`;
 // 항목 줄(그날의 휴일·변경 이력 한 건). 꼬리표 + 두 줄 글 + 오른쪽 끝.
 const itemRow = (lead, title, subText, end = "") =>
   `<div class="flex min-h-[46px] items-center gap-[10px] border-b border-erp-thead-line py-[8px]">${lead}<span class="flex min-w-0 flex-1 flex-col"><span class="truncate font-medium">${title}</span><span class="truncate text-[13px] text-erp-label">${subText}</span></span>${end}</div>`;
-// 넓은 확인창(폼·상세가 들어가 길어지면 안에서 스크롤)
-const big = (html, w) => c.wide(html, `${w} max-h-[calc(100dvh-48px)] overflow-y-auto`);
 
-// 변경 이력: [기록일, 요일, 구분, 휴일(링크면 true), 내용, "시각 | 수정자"] — 줄 오른쪽에 최종수정일시 | 수정자 아이디로 나온다
+// 전체 변경이력: [변경일시, 변경자, 휴일명, 항목, 변경 전, 변경 후] — 앱 history-dialog.tsx WITH_HOLIDAY 열. 값은 api bp-holiday-changes 의 문구(등록 · 휴일명 · 설명 · 날짜 · 강제 종료 · 삭제)
 const HISTORY = [
-  ["2026-09-18", "금", "삭제", "임시 휴무 - 모리커피 성수점", false, "휴일 날짜 2026-09-30 · 삭제되어 목록과 캘린더에 없음", "17:05 | hgops"],
-  ["2026-09-17", "목", "수정", "창립기념일 - ㈜한강상회", false, "설명 · 2026-10-01 부터 이후 모두(첫 날짜라 휴일 전체)", "15:30 | hangang01"],
-  ["2026-09-16", "수", "수정", "정기휴무 - 온기식당 판교점", true, "설명 · 2026-09-21 부터 이후 모두(첫 날짜라 휴일 전체)", "10:05 | hangang01"],
-  ["2026-09-15", "화", "등록", "정기휴무 - 온기식당 판교점", true, "매주 반복 · 시작 2026-09-21 · 종료일 없음", "14:10 | hangang01"],
-  ["2026-09-14", "월", "수정", "오후 휴무(단축 운영) - 온기식당 광화문점", false, "설명", "09:15 | hghr"],
-  ["2026-09-11", "금", "수정", "오후 휴무(단축 운영) - 온기식당 광화문점", false, "휴일명 · 오후 휴무 → 오후 휴무(단축 운영)", "18:02 | hghr"],
-  ["2026-09-10", "목", "등록", "오후 휴무(단축 운영) - 온기식당 광화문점", false, "휴일 날짜 2026-10-01", "13:20 | hghr"],
-  ["2026-09-08", "화", "등록", "내부 공사 - 모리커피 연남점", false, "휴일 날짜 2026-09-29", "16:20 | morinam01"],
-  ["2026-09-05", "토", "등록", "임시 휴무 - 모리커피 성수점", null, "휴일 날짜 2026-09-30", "11:30 | hgops"],
-  ["2026-09-02", "수", "등록", "추석 당일 휴무 - ㈜한강상회", false, "휴일 날짜 2026-09-25", "11:00 | hangang01"],
-  ["2026-09-01", "화", "등록", "정전 점검 휴무 - 모리커피 서초점", false, "휴일 날짜 2026-09-10", "09:40 | hgops"],
+  ["2026-09-18 17:05", "hgops", "임시 휴무", "삭제", "임시 휴무", ""],
+  ["2026-09-17 15:30", "hangang01", "창립기념일", "설명", "", "창립을 기념해 전 점포 휴무"],
+  ["2026-09-16 10:05", "hangang01", "정기휴무", "설명", "정기 휴무", "월요일마다 쉬는 정기 휴무"],
+  ["2026-09-15 14:10", "hangang01", "정기휴무", "등록", "", "정기휴무 · 온기식당 판교점 · 모리커피 서초점 · 모리커피 성수점 · 온기식당 광화문점 · 모리커피 을지로점 · 모리커피 연남점 · 매주 · 시작 2026-09-21 · 종료일 없음"],
+  ["2026-09-14 09:15", "hghr", "오후 휴무(단축 운영)", "강제 종료", "매주 · 시작 2026-08-03 · 종료일 없음", "매주 · 시작 2026-08-03 · 2026-09-13까지"],
+  ["2026-09-11 18:02", "hghr", "오후 휴무(단축 운영)", "휴일명", "오후 휴무", "오후 휴무(단축 운영)"],
+  ["2026-09-08 16:20", "morinam01", "내부 공사", "등록", "", "내부 공사 · 모리커피 연남점 · 하루 · 2026-09-29"],
+  ["2026-09-05 11:30", "hgops", "임시 휴무", "등록", "", "임시 휴무 · 모리커피 성수점 · 하루 · 2026-09-30"],
+  ["2026-09-02 11:00", "hangang01", "추석 당일 휴무", "등록", "", "추석 당일 휴무 · 전체 점포 · 예외 2개점 · 하루 · 2026-09-25"],
+  ["2026-09-01 09:40", "hgops", "정전 점검 휴무", "등록", "", "정전 점검 휴무 · 모리커피 서초점 · 하루 · 2026-09-10"],
 ];
 
 export default ({ A, R }) => {
   const ids = { del: x.dialogId(), hist: x.dialogId() };
 
-  const controls = `<div class="flex items-center gap-[6px]">${ui.button("오늘", { variant: "off" })}${iconBtn(A, "prev.svg", "이전달")}${iconBtn(A, "next.svg", "다음달")}${sel(
-    ["2000년", "…", "2025년", "2026년", "2027년", "…", "2100년"],
-    "2026년",
-    "연도",
-    "w-[96px]",
-  )}${sel(["8월", "9월", "10월"], "9월", "월", "w-[80px]")}<span class="flex-1"></span>${x.dialogTrigger("변경 이력 보기", ids.hist, "soft")}${ui.slideTrigger("등록", PANEL.new)}</div>`;
+  // [등록]은 페이지 제목 줄 오른쪽(앱 PageBar), [변경이력]은 탭 줄 오른쪽(앱 holidays-screen.tsx, 2026-10-30 사용자 지정 — 전엔 탭 위 도구 줄에 오늘 · 화살표 · 연/월 선택칸과 함께)
+  const histTrigger = x.dialogTrigger("변경이력", ids.hist, "soft");
 
   // 오른쪽 그날 칸 — 달력 날짜 칸을 누르면 그 날짜의 판으로 바뀐다(DAY_SCRIPT · 2026-10-08).
   const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
-  // 날짜별 휴일 줄 정보 [적용 범위, 적용 대상] · 반복 형태. 없는 이름은 일부 점포 · 하루로 본다(16일 여러 건 표본)
+  // 날짜별 휴일 줄 정보 [적용 범위, 휴일유형, 적용 대상]. 없는 이름은 일부 점포 · 하루로 본다(16일 여러 건 표본)
+  // 적용 대상은 앱 targetText — 일부 점포는 「첫 점포 외 N개」, 전체 점포는 「BP 상호 · 예외 N개」
   const INFO = {
-    "정전 점검 휴무": ["일부 점포", "모리커피 서초점", "하루"],
-    정기휴무: ["일부 점포", "온기식당 판교점 외 5건", "매주 반복"],
-    "추석 당일 휴무": ["전체 점포", "㈜한강상회", "하루"],
-    "내부 공사": ["일부 점포", "모리커피 연남점", "하루"],
+    "정전 점검 휴무": ["일부 점포", "하루", "모리커피 서초점"],
+    정기휴무: ["일부 점포", "매주 반복", "온기식당 판교점 외 5개"],
+    "추석 당일 휴무": ["전체 점포", "하루", "㈜한강상회 · 예외 2개"],
+    "내부 공사": ["일부 점포", "하루", "모리커피 연남점"],
   };
   const dayView = (d) => {
     const names = NAMES[d] || [];
-    // 줄 모양: 범위 꼬리표 · 휴일명, 아랫줄에는 반복 형태만 둔다(2026-10-08)
+    // 줄 모양: 범위 꼬리표 · 휴일명, 아랫줄에는 「휴일유형 · 적용 대상」(앱 holiday-calendar.tsx)
     const list = names.length
       ? names
           .map((n) => {
-            const [scope, target, repeat] = INFO[n] || ["일부 점포", "모리커피 성수점", "하루"];
-            return `<button type="button" aria-controls="${PANEL.detail}" aria-expanded="false" class="block w-full text-left hover:bg-erp-thead-bg">${itemRow(c.tag(scope), n, repeat, ui.img(A, "next.svg", 16, 16))}</button>`;
+            const [scope, type, target] = INFO[n] || ["일부 점포", "하루", "모리커피 성수점"];
+            return `<button type="button" aria-controls="${PANEL.detail}" aria-expanded="false" class="block w-full text-left hover:bg-erp-thead-bg">${itemRow(c.scopeTag(scope), n, `${type} · ${target}`, ui.img(A, "next.svg", 16, 16))}</button>`;
           })
           .join("")
-      : `<p class="border-b border-erp-thead-line py-[24px] text-center text-[14px] text-erp-muted">등록된 휴일이 없습니다.</p>`;
-    return `<div data-day-view="${d}" class="flex flex-col gap-[12px]"${d === TODAY ? "" : " hidden"}>${ui.sectionHead(`9월 ${d}일 (${WEEK[new Date(2026, 8, d).getDay()]})${c.sub(`${names.length}건`)}`)}<div class="flex flex-col">${list}</div></div>`;
+      : // 빈 안내는 아래 선 없이 달력 높이의 가운데에(앱 holiday-calendar.tsx, 2026-11-05 사용자 지정 — 전엔 맨 위에 선과 함께 붙어 있었다)
+        `<p class="flex flex-1 items-center justify-center py-[24px] text-center text-[14px] text-erp-muted">등록된 휴일이 없습니다.</p>`;
+    return `<div data-day-view="${d}" class="flex flex-1 flex-col gap-[12px]"${d === TODAY ? "" : " hidden"}>${ui.sectionHead(`9월 ${d}일 (${WEEK[new Date(2026, 8, d).getDay()]})${c.sub(`${names.length}건`)}`)}<div class="flex min-h-0 flex-1 flex-col">${list}</div></div>`;
   };
   const day = Array.from({ length: 30 }, (_, i) => dayView(i + 1)).join("");
-  // 달력 아래가 카드 선에 붙지 않게 아래 여백을 둔다(2026-10-08)
-  const calendar = `<div class="flex items-start gap-[24px] pb-[24px]"><div data-cal class="flex min-w-0 flex-1 flex-col gap-[12px]">${ui.sectionHead(
-    "2026년 9월",
-    `<span class="flex items-center gap-[18px]">${legend("bg-erp-off", "공식 휴일 · 플랫폼 공식 휴일")}${legend("bg-erp-on", "BP 휴일")}${legend("border border-erp-brand", "선택한 날짜 · 오늘 2026-09-21")}${ui.checkbox(A, "공식 휴일 숨기기", false, { "data-hide-official": true })}</span>`,
-  )}${monthGrid()}</div><div class="flex w-[340px] shrink-0 flex-col gap-[12px]">${day}</div></div>`;
+  // 아래 여백은 카드 안쪽 여백에 맡긴다 — 따로 둔 24px 까지 더하면 점포 없음 띠가 뜨는 화면에서 5주 달도 넘쳤다(앱, 2026-11-05 사용자 지정).
+  // 오른쪽 그날 칸은 달력 높이만큼 늘여(self-stretch) 빈 안내를 그 가운데에 둔다
+  // 제목 자리에 달 이동 줄 + 「공식 휴일 숨기기」, 오른쪽 범례는 BP 휴일 · 공식 휴일 순(앱 holiday-calendar.tsx, 2026-10-30 사용자 지정 — 전엔 「2026년 9월」 제목 · 「선택한 날짜 · 오늘」 범례)
+  const calendar = `<div class="flex items-start gap-[24px]"><div data-cal class="flex min-w-0 flex-1 flex-col gap-[12px]"><div class="flex items-center gap-[6px]"><div class="flex flex-1 flex-wrap items-center gap-[18px]">${monthNav()}${ui.checkbox(A, "공식 휴일 숨기기", false, { "data-hide-official": true })}</div><span class="flex flex-wrap items-center gap-[18px]">${legend("bg-erp-on", "BP 휴일")}${legend("bg-erp-off", "공식 휴일")}</span></div>${monthGrid()}</div><div class="flex w-[340px] shrink-0 flex-col gap-[12px] self-stretch">${day}</div></div>`;
 
   const ON0114 = (t) => panelLink(t, PANEL.detail);
   // 적용 대상: 일부 점포는 ‘첫 점포 외 N건’, 전체 점포는 예외가 있으면 ‘첫 점포 외 N건 예외’(2026-10-08)
-  const some = (names) => `${c.tag("일부 점포")} ${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}건` : ""}`;
-  const all = (except) =>
-    `${c.tag("전체 점포")} ${except.length ? `${except[0]}${except.length > 1 ? ` 외 ${except.length - 1}건` : ""} 예외` : c.muted("예외 없음")}`;
-  // 최종수정일시: 수정일시 | 수정자
-  const mod = (at, by) => `${at} ${c.muted(`| ${by}`)}`;
+  // 적용범위(꼬리표) · 대상점포 · 예외점포 세 칸(앱과 같다, 2026-10-30 사용자 지정 — 전엔 「적용 대상」 한 칸). 해당 없는 칸은 「-」, 단위는 「개」. 대상점포 수는 그날 적용되는 점포 전부다 — 맡은 범위와 관계없이 센다(2026-10-30 재영)
+  // 대상점포 · 예외점포 글자(「… 외 N개」 · 「N개」)는 파란 링크 — 누르면 그날 걸린 점포를 작은 팝업(480)으로 보인다. 점포명 | 점포코드, 이름순.
+  // 제목 「대상점포 · 휴일명 (날짜)」, 열 이름 줄 · [닫기]는 고정하고 줄만 스크롤. 「-」 칸은 누를 수 없다(앱 holiday-stores-dialog.tsx, 2026-11-03 사용자 지정)
+  const CODE = { "모리커피 서초점": "ST000001", "모리커피 성수점": "ST000002", "온기식당 판교점": "ST000003", "온기식당 광화문점": "ST000004", "모리커피 을지로점": "ST000005", "모리커피 연남점": "ST000006", "모리커피 청담점": "ST000007", "온기식당 일산점": "ST000011" };
+  const storeDialogs = [];
+  const storesLink = (text, kind, name, date, stores) => {
+    const id = x.dialogId();
+    const rows = [...stores].sort((a, b) => a.localeCompare(b, "ko")).map((n) => [`<span class="block truncate">${n}</span>`, CODE[n]]);
+    const table = ui.dataTable([{ header: "점포명", align: "left" }, { header: "점포코드", width: "w-[120px]" }], rows, "점포가 없습니다.");
+    const title = `${kind} <span class="text-[14px] font-normal text-erp-label">· ${name} (${date})</span>`;
+    storeDialogs.push(fixedDialog(x.dialog(id, title, scrollBox(table), ui.button("닫기", { variant: "off", "data-close": true })), "w-[480px]"));
+    return `<button type="button" data-dialog="${id}" class="block max-w-full truncate text-left text-erp-link hover:underline">${text}</button>`;
+  };
+  const some = (names, name, date) => [c.scopeTag("일부 점포"), storesLink(`${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}개` : ""}`, "대상점포", name, date, names), c.muted("-")];
+  const all = (except, name, date) => [c.scopeTag("전체 점포"), c.muted("-"), except.length ? storesLink(`${except.length}개`, "예외점포", name, date, except) : c.muted("-")];
+  // 최종수정: 「일시 · 사람」 — 사람은 회색(앱 · 권한 그룹 목록과 같다, 2026-10-30 사용자 지정)
+  const mod = (at, by) => `${at} <span class="text-erp-label">· ${by}</span>`;
   const HD0114 = ["온기식당 판교점", "모리커피 서초점", "모리커피 성수점", "온기식당 광화문점", "모리커피 을지로점", "모리커피 연남점"];
   const listRows = [
-    [`2026-09-10 ${c.muted("(목)")}`, ui.link("정전 점검 휴무", "#"), some(["모리커피 서초점"]), "하루", mod("2026-09-01 09:40", "hgops")],
-    [`2026-09-21 ${c.muted("(월)")}`, ON0114("정기휴무"), some(HD0114), `매주 · 월요일 ${c.muted("· 종료일 없음")}`, mod("2026-09-16 10:05", "hangang01")],
-    [`2026-09-25 ${c.muted("(금)")}`, ui.link("추석 당일 휴무", "#"), all(["모리커피 청담점", "온기식당 일산점"]), "하루", mod("2026-09-02 11:00", "hangang01")],
-    [`2026-09-28 ${c.muted("(월)")}`, ON0114("정기휴무"), some(HD0114), `매주 · 월요일 ${c.muted("· 종료일 없음")}`, mod("2026-09-16 10:05", "hangang01")],
-    [`2026-09-29 ${c.muted("(화)")}`, ui.link("내부 공사", "#"), some(["모리커피 연남점"]), "하루", mod("2026-09-08 16:20", "morinam01")],
+    [`2026-09-10 ${c.muted("(목)")}`, ui.link("정전 점검 휴무", "#"), "하루", ...some(["모리커피 서초점"], "정전 점검 휴무", "2026-09-10"), mod("2026-09-01 09:40", "hgops")],
+    [`2026-09-21 ${c.muted("(월)")}`, ON0114("정기휴무"), "매주 반복", ...some(HD0114, "정기휴무", "2026-09-21"), mod("2026-09-16 10:05", "hangang01")],
+    [`2026-09-25 ${c.muted("(금)")}`, ui.link("추석 당일 휴무", "#"), "하루", ...all(["모리커피 청담점", "온기식당 일산점"], "추석 당일 휴무", "2026-09-25"), mod("2026-09-02 11:00", "hangang01")],
+    [`2026-09-28 ${c.muted("(월)")}`, ON0114("정기휴무"), "매주 반복", ...some(HD0114, "정기휴무", "2026-09-28"), mod("2026-09-16 10:05", "hangang01")],
+    [`2026-09-29 ${c.muted("(화)")}`, ui.link("내부 공사", "#"), "하루", ...some(["모리커피 연남점"], "내부 공사", "2026-09-29"), mod("2026-09-08 16:20", "morinam01")],
   ];
   const list =
-    ui.sectionHead(`2026년 9월 BP 휴일${c.sub(`${listRows.length}건`)}`) +
+    // 달 이동 줄 + 「선택한 월의 BP 휴일은 N건입니다.」(플랫폼 휴일 관리와 같은 말투, 2026-11-03 사용자 지정 — 전엔 「BP 휴일 N건」), 쪽 이동 없음 — 한 달 치를 다 보인다(앱 holidays-screen.tsx)
+    `<div class="flex items-center gap-[10px]">${monthNav()}<span class="ml-[12px] text-[14px] text-erp-label">선택한 월의 BP 휴일은 <span class="font-semibold">${listRows.length}건</span>입니다.</span></div>` +
     c.dimRows(
-      ui.dataTable(
+      // 비면 열 이름 줄을 두고 빈 줄이 남는 높이를 채운다(앱 DataTable fillEmpty). 달마다 보는 목록이라 「이 달의 …」(급여명세서와 같다, 2026-11-05 사용자 지정)
+      ui.fillTable(
         [
-          { header: "날짜", width: "w-[220px]", align: "left" },
-          { header: "휴일명", width: "w-[180px]", align: "left" },
-          { header: "적용 대상", align: "left" },
-          { header: "휴일 유형", width: "w-[220px]", align: "left" },
-          { header: "최종수정일시", width: "w-[230px]" },
+          // 날짜 · 휴일명 · 휴일유형 · 적용범위 · 대상점포 · 예외점포 · 최종수정(앱과 같다, 2026-10-30 사용자 지정)
+          { header: "날짜", width: "w-[150px]" },
+          // 휴일명 200 → 240, 최종수정은 230 으로 정하고 남는 폭은 대상점포 · 예외점포가 반씩 쓴다(앱과 같다, 2026-11-03 사용자 지정)
+          { header: "휴일명", width: "w-[240px]", align: "left" },
+          { header: "휴일유형", width: "w-[120px]" },
+          { header: "적용범위", width: "w-[110px]" },
+          { header: "대상점포", align: "left" },
+          { header: "예외점포" },
+          { header: "최종수정", width: "w-[230px]", align: "left" },
         ],
         listRows,
-        "이 달에 등록된 BP 휴일이 없습니다.",
+        "이 달의 BP 휴일이 없습니다.",
       ),
       [0],
-    ) +
-    `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`;
+    );
 
-  const content =
-    controls +
-    x.tabs(
+  const content = x
+    .tabs(
       [
         { id: "calendar", label: "캘린더", html: calendar },
         { id: "list", label: "목록", html: list },
       ],
       "calendar",
-    );
+    )
+    .replace('<div role="tablist" class="flex shrink-0 border-b border-erp-bar-line">', '<div class="flex shrink-0 items-end gap-[6px] border-b border-erp-bar-line"><div role="tablist" class="flex flex-1">')
+    .replace("</div>", `</div><span class="pb-[6px]">${histTrigger}</span></div>`);
 
   // 확인창들
-  const histTone = { 삭제: (t) => ui.badge("off", t), 수정: c.tag, 등록: (t) => ui.badge("on", t) };
-  const histDialog = big(
-    x.dialog(
-      ids.hist,
-      "변경 이력 보기",
-      `<div class="flex flex-col gap-[12px]"><div class="flex items-center gap-[6px]"><div class="w-[150px]">${ui.dateField(A, { label: "이력 시작일", value: "2026-09-01" })}</div><span class="text-erp-label">~</span><div class="w-[150px]">${ui.dateField(A, {
-        label: "이력 종료일",
-        value: "2026-09-21",
-      })}</div>${ui.button("조회", { variant: "soft" })}</div><div class="max-h-[440px] overflow-y-auto">${HISTORY.map(
-        ([d, w, kind, name, isLink, text, by]) =>
-          `<p class="pt-[12px] text-[13px] font-medium text-erp-label">${d} (${w})</p>${itemRow(histTone[kind](kind), isLink ? panelLink(name, PANEL.detail, true) : isLink === false ? ui.link(name, "#") : name, text, `<span class="shrink-0 pr-[12px] text-[13px] text-erp-label">${d} ${by}</span>`)}`,
-      ).join("")}</div></div>`,
-      ui.button("닫기", { "data-close": true }),
+  // 전체 변경이력 — 기간 · [조회] 아래 표 + 쪽 이동, 안내문 없음(앱 history-dialog.tsx HolidayHistoryButton · WideDialog 1000px). 지운 휴일은 여기서만 보인다
+  // 1팀 변경이력 팝업 공통(x.historyDialog) — 제목 · 열 이름 줄 · [닫기]는 고정, 표 줄만 스크롤. 제목은 위에 혼자 두고 「총 N 건」 · 한 쪽 건수 20 / 50 은
+  // 기간 조회 줄 오른쪽 끝이다(다른 이력 팝업은 제목 줄 오른쪽, 2026-11-04 사용자 지정). 쪽 이동은 한 쪽뿐이어도(1) 보인다
+  const cut = (t) => `<span class="block truncate" title="${t}">${t}</span>`;
+  const histDialog = x.historyDialog(
+    A,
+    ids.hist,
+    ui.dataTable(
+      [
+        { header: "변경일시", width: "w-[140px]" },
+        { header: "변경자", width: "w-[140px]" },
+        { header: "휴일명", width: "w-[140px]", align: "left" },
+        { header: "항목", width: "w-[90px]", align: "left" },
+        { header: "변경 전", align: "left" },
+        { header: "변경 후", align: "left" },
+      ],
+      HISTORY.map(([at, by, name, field, before, after]) => [at, by, cut(name), field, cut(before), cut(after)]),
+      "변경이력이 없습니다.",
     ),
-    "w-[720px]",
+    {
+      total: HISTORY.length,
+      toolbar: `<div class="w-[150px]">${ui.dateField(A, { label: "이력 시작일", value: "2026-09-01" })}</div><span class="text-erp-label">~</span><div class="w-[150px]">${ui.dateField(A, { label: "이력 종료일", value: "2026-09-21" })}</div>${ui.button("조회", { variant: "soft" })}`,
+    },
   );
 
   // 슬라이드 패널: 상세(삭제는 확인창 · 수정은 수정 패널) · 수정(저장은 범위 확인창) · 등록
-  const { body: detailBody, delDialog, histDialog: detailHist, histId } = detailParts(A, R, ids.del, { panel: true });
+  const { body: detailBody, delDialog, endDialog, endId, histDialog: detailHist, histId } = detailParts(A, R, ids.del, { panel: true });
   // 이름(꼬리표)은 맨 위에 혼자, 기능 버튼은 닫기까지 모두 맨 아래로(BP 관리자 상세 패널과 같다 · 2026-10-08)
   const detailPanel = ui.slidePanel(
     PANEL.detail,
     "BP 휴일 상세",
-    ui.sectionHead(TITLE + TAGS) +
+    HEAD +
       detailBody +
-      `<div class="flex flex-wrap items-center gap-[6px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${x.dialogTrigger("삭제", ids.del, "soft")}${ui.slideTrigger("수정", PANEL.edit)}${x.dialogTrigger("변경 이력", histId, "soft")}</div>`,
+      `<div class="flex flex-wrap items-center gap-[6px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${x.dialogTrigger("삭제", ids.del, "soft")}${x.dialogTrigger("강제 종료", endId, "soft")}${ui.slideTrigger("수정", PANEL.edit)}${x.dialogTrigger("변경이력", histId, "soft")}</div>`,
   );
   const editPanel = ui.slidePanel(
     PANEL.edit,
@@ -196,7 +221,8 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: erpHeader(A, R),
       title: "BP 휴일 관리",
-      body: ui.listBody("", content) + histDialog + delDialog + detailHist + HIDE_SCRIPT + DAY_SCRIPT + HOLIDAY_SCRIPT,
+      titleRight: ui.slideTrigger("등록", PANEL.new),
+      body: ui.listBody("", content) + histDialog + storeDialogs.join("") + delDialog + endDialog + detailHist + HIDE_SCRIPT + DAY_SCRIPT + HOLIDAY_SCRIPT,
       panels: newPanel + detailPanel + editPanel,
     }),
   };

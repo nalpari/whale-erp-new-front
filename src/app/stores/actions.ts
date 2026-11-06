@@ -2,6 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
+import { codeOf } from "@/lib/api-error";
+import { historyPageSizeOf } from "@/lib/history-paging";
+import type { StoreClosingResult } from "@/lib/store-closing";
 import type {
   BusinessVerificationInput,
   BusinessVerificationResult,
@@ -28,26 +31,29 @@ import {
 /**
  * 실패 결과. status 가 있으면 api 가 거절한 것이 확실하다(4xx · 503). status 가 없으면 결과를 확신할 수 없다
  * (그 밖의 5xx · 연결 실패 · 응답을 읽지 못함) — 저장됐을 수도 있으니 화면은 상태를 다시 받고 「확인해 달라」고 알린다.
- * messages 는 검증 실패(400)의 문장 목록이다 — 화면이 칸마다 나눠 붙인다.
+ * messages 는 검증 실패(400)의 문장 목록이다 — 화면이 칸마다 나눠 붙인다. code 는 api 오류 본문의 업무 code 다(폐점 409 OPEN_CHECK_IN).
  */
-export type ActionFailure = { ok: false; status?: number; message: string; messages?: string[] };
+export type ActionFailure = { ok: false; status?: number; message: string; messages?: string[]; code?: string };
 export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
 
 /**
- * api 오류를 화면 문구로. 이 api 는 4xx(400 형식 · 운영 조건, 403 권한, 404 없음, 409 동시 수정 · 상태, 429 횟수)와
+ * api 오류를 화면 문구로. 이 api 는 4xx(400 형식 · 운영 조건, 403 권한, 404 없음, 409 동시 수정 · 상태 · 폐점 막힘(code OPEN_CHECK_IN — code 도 함께 넘긴다), 429 횟수)와
  * 503(진위확인 연동 · 저장소 없음)을 한국어로 알리므로 그대로 보인다. 401 은 할 일을 알 수 있게 고정 문구로 바꾼다.
  */
 function failureOf(error: unknown, what: string): ActionFailure {
   if (error instanceof ApiError) {
     if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
-    if (error.status < 500 || error.status === 503) return { ok: false, status: error.status, message: error.message, messages: error.messages };
+    if (error.status < 500 || error.status === 503) {
+      const code = codeOf(error.body);
+      return { ok: false, status: error.status, message: error.message, messages: error.messages, ...(code === undefined ? {} : { code }) };
+    }
   }
   console.error(`점포 ${what} 결과 모름`, error);
   return { ok: false, message: `${what} 결과를 확인하지 못했습니다.` };
 }
 
 const validId = (id: number) => Number.isInteger(id) && id >= 1 && id <= 2_147_483_647;
-const NOT_FOUND = { ok: false as const, status: 404, message: "점포를 찾을 수 없습니다" };
+const NOT_FOUND = { ok: false as const, status: 404, message: "점포를 찾을 수 없습니다." };
 
 /** 등록 · 수정 · 삭제가 끝났으면 목록 · 상세를 새로 받는다. 무효화가 실패해도 저장은 끝났으므로 성공으로 돌려준다 */
 function refresh() {
@@ -69,12 +75,14 @@ export async function createStoreAction(input: CreateStoreInput): Promise<Action
   }
 }
 
-export async function updateStoreAction(id: number, input: UpdateStoreInput): Promise<ActionResult> {
+/** 수정 · 상태 전환. 폐점이면 closing 에 처리한 수(퇴직 · 계약 종료 · 초대 만료)가 온다 — 그 밖에는 null */
+export async function updateStoreAction(id: number, input: UpdateStoreInput): Promise<ActionResult<{ closing: StoreClosingResult | null }>> {
   if (!validId(id)) return NOT_FOUND;
   try {
-    await updateStore(id, input);
+    const result = await updateStore(id, input);
     refresh();
-    return { ok: true };
+    // api 는 200 { closing } 을 준다. 옛 배포처럼 204(본문 없음)면 request 가 undefined 를 돌려주는데, 저장은 끝났으니 결과 안내만 빼고 성공으로 둔다
+    return { ok: true, closing: result?.closing ?? null };
   } catch (error) {
     return failureOf(error, "수정");
   }
@@ -99,7 +107,7 @@ export async function deleteStoreAction(id: number): Promise<ActionResult> {
 export async function putStoreImageAction(id: number, data: FormData): Promise<ActionResult> {
   if (!validId(id)) return NOT_FOUND;
   const file = data instanceof FormData ? data.get("file") : null;
-  if (!(file instanceof File) || file.size === 0) return { ok: false, status: 400, message: "대표 이미지 파일을 골라 주세요" };
+  if (!(file instanceof File) || file.size === 0) return { ok: false, status: 400, message: "대표 이미지 파일을 선택해 주세요." };
   try {
     await putStoreImage(id, file);
     refresh();
@@ -131,10 +139,10 @@ export async function getStoreTransitionsAction(id: number): Promise<ActionResul
   }
 }
 
-export async function getStoreHistoriesAction(id: number, page: number): Promise<ActionResult<StoreHistoryList>> {
+export async function getStoreHistoriesAction(id: number, page: number, pageSize: number): Promise<ActionResult<StoreHistoryList>> {
   if (!validId(id)) return NOT_FOUND;
   try {
-    return { ok: true, ...(await getStoreHistories(id, Number.isInteger(page) && page >= 1 ? page : 1)) };
+    return { ok: true, ...(await getStoreHistories(id, Number.isInteger(page) && page >= 1 ? page : 1, historyPageSizeOf(pageSize))) };
   } catch (error) {
     return failureOf(error, "이력 조회");
   }

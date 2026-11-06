@@ -132,7 +132,7 @@
       "kind": "card",
       "refersTo": "popup",
       "description": "트리거 아래 떠오르는 드롭다운·툴팁의 껍데기. 이 시스템에서 그림자가 붙는 유일한 것.",
-      "html": "<div class=\"ds-popup\"><p>MY PAGE</p><ul><li>내정보 관리</li><li>비밀번호 변경</li></ul></div>",
+      "html": "<div class=\"ds-popup\"><p>마이페이지</p><ul><li>내정보 관리</li><li>비밀번호 변경</li></ul></div>",
       "css": ".ds-popup { width: 154px; padding: 23px; border: 1px solid #ebebeb; border-radius: 2px; background: #fff; box-shadow: 0 2px 6px rgba(40,47,55,.08); font-size: 14px; letter-spacing: -0.025em; color: #3c4046; } .ds-popup p { margin: 0 0 12px; font-size: 15px; font-weight: 500; color: #111; } .ds-popup ul { margin: 0; padding: 0 0 0 0; list-style: none; line-height: 2; } .ds-popup li:hover { color: #6b7988; }"
     },
     {

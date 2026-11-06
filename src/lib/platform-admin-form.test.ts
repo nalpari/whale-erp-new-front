@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PlatformAdminDetail } from "./platform-admins";
 import {
+  EMAIL_TAKEN,
   EMPTY_FORM,
   emailError,
   formOf,
@@ -47,7 +48,7 @@ test("아이디 — 영문 하나 이상 · 영문 숫자만 · 4~20자, 수정�
 test("칸을 벗어날 때의 아이디 형식 검사 — 앞뒤 공백은 빼고 본다", () => {
   assert.equal(loginIdError(" seojun01 "), undefined);
   assert.equal(loginIdError(""), "아이디를 입력해 주세요.");
-  assert.equal(loginIdError("1234"), "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다.");
+  assert.equal(loginIdError("1234"), "영문 또는 영문·숫자 조합으로 4~20자로 입력해 주세요.");
 });
 
 test("칸을 벗어날 때의 이메일 형식 검사 — 앞뒤 공백은 빼고 본다", () => {
@@ -155,13 +156,14 @@ test("api 오류를 붙일 칸 — 400 · 409 의 아이디 · 이메일만, 수
   assert.equal(serverErrorField(undefined, "아이디 …", "create"), null);
 });
 
-test("칸에 붙일 api 오류 문구 — 아이디와 이메일 형식(400)은 화면 문구로, 이메일 중복은 api 문구 그대로", () => {
+test("칸에 붙일 api 오류 문구 — 아이디 · 이메일의 형식(400)과 중복(409)은 화면 문구로", () => {
   const apiTaken = "이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다";
   assert.equal(serverFieldMessage("loginId", 409, apiTaken), LOGIN_ID_TAKEN);
   assert.equal(serverFieldMessage("loginId", 400, "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다"), LOGIN_ID_FORMAT_ERROR);
   assert.equal(LOGIN_ID_FORMAT_ERROR, loginIdError("1234"), "화면 형식 검사와 같은 문구");
   const emailTaken = "이미 다른 관리자 계정에 등록된 이메일입니다";
-  assert.equal(serverFieldMessage("email", 409, emailTaken), emailTaken);
+  assert.equal(serverFieldMessage("email", 409, emailTaken), EMAIL_TAKEN);
+  assert.equal(serverFieldMessage("email", 404, "다른 오류"), "다른 오류", "그 밖은 api 문구 그대로");
   assert.equal(serverFieldMessage("email", 400, "이메일 형식이 아닙니다"), emailError("kim@whale.c"), "칸에서 본 형식 문구와 같다");
 });
 

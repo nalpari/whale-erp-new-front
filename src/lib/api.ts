@@ -1,4 +1,6 @@
 import { cookies, headers } from "next/headers";
+import { unstable_rethrow } from "next/navigation";
+import { failureOf, type ActionFailure, type ActionLog, type FailureOptions } from "./action-failure.ts";
 import { ApiError } from "./api-error";
 import { BP_HEADER, bpPath } from "./bp-path";
 import { forwardedForHeader } from "./forwarded-headers";
@@ -10,6 +12,8 @@ export * from "./session";
 
 // api 오류와 거절 판정은 node --test 가 읽도록 api-error.ts 에 있다.
 export { ApiError, deniedMessageOf } from "./api-error";
+// 쓰기 결과 모양과 실패 판정은 node --test 가 읽도록 action-failure.ts 에 있다.
+export type { ActionFailure, ActionResult } from "./action-failure.ts";
 
 /**
  * whale-erp-api 주소. 모듈 로드 시점이 아니라 호출 시점에 읽는다. 빌드할 때는
@@ -117,4 +121,26 @@ export async function screenPath(): Promise<(path: string) => string> {
 /** 서버 화면이 그리는 링크(다시 시도 · 목록) 하나. 탭 BP 주소로 들어온 요청이면 같은 BP 를 붙인다 — 옛 경로로 가 SessionGate 가 한 번 더 보내지 않게. */
 export async function bpHref(path: string): Promise<string> {
   return (await screenPath())(path);
+}
+
+/**
+ * 쓰기 요청(등록 · 수정 · 삭제 · 상태 변경) 하나 — 로그인 세션 · 탭 BP 헤더(authHeaders)와 JSON 본문(Content-Type)을 만들어 request 로 부른다.
+ * body 가 없으면 본문 없이 보낸다. 서버 액션 파일마다 두던 json · init · send 지역 함수 대신 쓴다.
+ */
+export async function send<T = void>(path: string, method: "POST" | "PUT" | "PATCH" | "DELETE", body?: unknown): Promise<T> {
+  const headers = await authHeaders();
+  return request<T>(path, {
+    method,
+    headers: body === undefined ? headers : { ...headers, "Content-Type": "application/json" },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  });
+}
+
+/**
+ * 서버 액션의 catch 에서 오류를 화면 결과로 바꾼다(판정은 action-failure.ts 의 failureOf). Next 내부 오류(redirect · notFound)는 다시 던진다 —
+ * 삼키면 이동하지 않는다. options.definite 는 결과 모름을 따로 처리한 뒤 남은 5xx 를 확정 실패 문구로 돌릴 때다. what 은 「저장」 · 「삭제」 같은 동작 이름, log 는 결과 모름 로그에 남길 기능 이름 · 대상 id 다.
+ */
+export function actionFailure(error: unknown, what: string, log?: ActionLog, options?: FailureOptions): ActionFailure {
+  unstable_rethrow(error);
+  return failureOf(error, what, log, options);
 }

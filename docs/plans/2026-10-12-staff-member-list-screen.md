@@ -1413,3 +1413,10 @@ Expected: `# fail 0`(pass 14 + 7 + 10 + 11 + 기존 date-math), 린트 · 빌드
 
 사용자가 바로 볼 수 있게 `pnpm dev --port 3100` 을 띄워 두고 주소 `http://localhost:3100/staff-members` 를 알린다.
 푸시 · PR 은 이 계획 밖이다 — 사용자에게 묻는다.
+
+## 탭 BP 주소 (2026-11-05)
+
+플랫폼 계정이 BP 를 골라 들어와도 직원 목록 · 직원 상세 · 일괄 저장이 고른 BP 기준으로 조회되지 않았다. `/staff-members` 를 `BP_PATH_SCREENS` 에 더해 화면 주소를 `/bp/{bpCodeId}/staff-members…` 로 옮긴다 — proxy 가 그 BP 를 `X-Bp-Code-Id` 로 api 에 싣는다. 근로계약(WHALEERP-618) · 급여명세서 · 출퇴근(WHALEERP-637)과 같은 방식이다.
+
+- 쿼리와 `?back=` 은 옛 경로로 두고, 링크 · 이동에서만 탭 BP 를 씌운다 — 서버 화면은 `screenPath()`, 클라이언트는 `bpPath`, 서버 액션의 이동은 `bpHref`.
+- api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP · 권한 403 · 없는 BP 404)은 오류 화면 대신 그 문장으로 보인다(`deniedMessageOf`).

@@ -4,7 +4,10 @@ import { test } from "node:test";
 import { endLabel } from "../../work-schedules/work-schedule-view.ts";
 import {
   AREA_READ_DENIED_MESSAGE,
+  ACCESS_DENIED_MESSAGE,
   areaFailureOf,
+  attendanceLines,
+  attendanceManageHref,
   isAreaForbidden,
   isPayslipSummaryEmpty,
   payAmountText,
@@ -240,4 +243,119 @@ test("TO-DO 상태 글자 — 완료는 파랑 「MM-DD 완료」(한국 날짜)
   assert.deepEqual(todoStatusMark({ status: "DONE", completedAt: "x" }, todoStatus, today), { text: "완료", style: "mark-on" });
   // 상태 한글을 받지 못했으면 null(칸은 「-」)
   assert.equal(todoStatusMark({ status: "PENDING", completedAt: null }, null, today), null);
+});
+
+// 출퇴근 현황 칸(WHALEERP-186, 2026-10-29 재영)
+const statusLabel = (v: string) => ({ NORMAL: "정상", LATE: "지각", MISSING_CHECK_OUT: "퇴근 미등록", ABSENT: "미출근" })[v as "NORMAL"] ?? v;
+const reasonLabel = (v: string) => ({ OUT_OF_RADIUS_CHECKIN: "반경 밖 출근", MOCK_LOCATION: "위치 조작 감지", LONG_SHIFT: "근무 12시간 초과" })[v as "LONG_SHIFT"] ?? v;
+type Punch = { time: string; next?: boolean; reviewReason?: string | null; isCorrected?: boolean; entryMethod?: string };
+// recordedAt 은 time(한국 HH:mm)을 날(기본 2026-10-26, 다음날이면 +1)에 붙인 한국 시각이다
+const punch = (p: Punch | null, date = "2026-10-26") => {
+  if (!p) return null;
+  const next = p.time < "06:30" && date === "2026-10-26" && p.next ? "2026-10-27" : date;
+  return { reviewReason: null, isCorrected: false, entryMethod: "SELF", ...p, recordedAt: `${next}T${p.time}:00+09:00` };
+};
+const day = (date: string, status: string | null, pairs: [Punch | null, Punch | null][]) =>
+  ({ date, status, pairs: pairs.map(([i, o]) => ({ checkIn: punch(i), checkOut: punch(o) })) }) as unknown as Parameters<typeof attendanceLines>[0][number];
+const lines = (items: Parameters<typeof attendanceLines>[0]) => attendanceLines(items, statusLabel, reasonLabel);
+
+test("출퇴근 현황 — 짝 하나는 그대로, 비고가 없으면 「-」", () => {
+  assert.deepEqual(lines([day("2026-10-26", "NORMAL", [[{ time: "09:00" }, { time: "18:00" }]])]), [
+    { date: "2026-10-26", checkIn: "09:00", checkOut: "18:00", status: "정상", remark: "-" },
+  ]);
+});
+
+test("출퇴근 현황 — 짝이 없는 날(근무스케줄만)은 출근 · 퇴근 「-」, 상태가 없으면(예정) 「-」", () => {
+  assert.deepEqual(lines([day("2026-10-27", "ABSENT", []), day("2026-10-28", null, [])]), [
+    { date: "2026-10-27", checkIn: "-", checkOut: "-", status: "미출근", remark: "-" },
+    { date: "2026-10-28", checkIn: "-", checkOut: "-", status: "-", remark: "-" },
+  ]);
+});
+
+test("출퇴근 현황 — 퇴근 없는 짝은 퇴근 「-」", () => {
+  const [l] = lines([day("2026-10-26", "MISSING_CHECK_OUT", [[{ time: "09:00" }, null]])]);
+  assert.equal(l.checkOut, "-");
+  assert.equal(l.status, "퇴근 미등록");
+});
+
+test("출퇴근 현황 — 짝이 여럿이면 첫 출근 · 마지막 퇴근, 비고 끝에 「외 N회」(짝 수 - 1)", () => {
+  const [l] = lines([
+    day("2026-10-26", "NORMAL", [
+      [{ time: "09:00" }, { time: "12:00" }],
+      [{ time: "13:00" }, { time: "15:00" }],
+      [{ time: "16:00" }, { time: "19:30" }],
+    ]),
+  ]);
+  assert.equal(l.checkIn, "09:00");
+  assert.equal(l.checkOut, "19:30");
+  assert.equal(l.remark, "외 2회");
+});
+
+test("출퇴근 현황 — 첫 짝에 출근이 없으면 출근이 있는 첫 짝의 출근, 마지막 짝에 퇴근이 없으면 퇴근이 있는 마지막 짝의 퇴근", () => {
+  const [l] = lines([day("2026-10-26", "NORMAL", [[null, { time: "02:00" }], [{ time: "09:00" }, { time: "18:00" }], [{ time: "20:00" }, null]])]);
+  assert.equal(l.checkIn, "09:00");
+  assert.equal(l.checkOut, "18:00");
+});
+
+test("출퇴근 현황 — 비고는 사유 · 보정됨 · 대신 등록 · 외 N회 순서로 「 · 」로 잇고 같은 사유는 한 번", () => {
+  const [l] = lines([
+    day("2026-10-26", "LATE", [
+      [{ time: "09:30", reviewReason: "OUT_OF_RADIUS_CHECKIN", isCorrected: true }, { time: "18:00", reviewReason: "OUT_OF_RADIUS_CHECKIN", entryMethod: "PROXY" }],
+      [{ time: "19:00", reviewReason: "LONG_SHIFT" }, { time: "23:00" }],
+    ]),
+  ]);
+  assert.equal(l.remark, "반경 밖 출근 · 근무 12시간 초과 · 보정됨 · 대신 등록 · 외 1회");
+});
+
+test("출퇴근 현황 — 확인 필요 사유가 아닌 위치 오차 초과는 비고에 쓰지 않는다", () => {
+  const [l] = lines([day("2026-10-26", "NORMAL", [[{ time: "09:00", reviewReason: "ACCURACY_EXCEEDED" }, { time: "18:00" }]])]);
+  assert.equal(l.remark, "-");
+});
+
+test("출퇴근 현황 — enum 한글을 받지 못하면 상태는 「-」, 사유는 빠진다(영문 값을 보이지 않는다)", () => {
+  const [l] = attendanceLines([day("2026-10-26", "LATE", [[{ time: "09:00", reviewReason: "MOCK_LOCATION", isCorrected: true }, { time: "18:00" }]])], null, null);
+  assert.equal(l.status, "-");
+  assert.equal(l.remark, "보정됨");
+});
+
+test("출퇴근 현황 — 날짜 오름차순, 같은 날은 api 순서 그대로", () => {
+  const out = lines([day("2026-10-28", "NORMAL", []), day("2026-10-26", "NORMAL", [[{ time: "08:00" }, null]]), day("2026-10-26", "NORMAL", [[{ time: "20:00" }, null]])]);
+  assert.deepEqual(out.map((l) => `${l.date} ${l.checkIn}`), ["2026-10-26 08:00", "2026-10-26 20:00", "2026-10-28 -"]);
+});
+
+test("출퇴근 현황 영역 403 은 일반 메뉴 가드 문구도 영역 권한 안내로 본다 — 옵션이 있을 때만", () => {
+  assert.equal(areaFailureOf(403, ACCESS_DENIED_MESSAGE, { includeAccessDenied: true }), "forbidden");
+  assert.equal(areaFailureOf(403, ACCESS_DENIED_MESSAGE), "error");
+  assert.equal(areaFailureOf(404, ACCESS_DENIED_MESSAGE, { includeAccessDenied: true }), "error");
+});
+
+test("출퇴근 현황 「관리」 주소 — 그 직원 · 근무지 · 보던 주(보정 목록 기간도 그 주)로 열고 퇴직 직원도 보이게 재직은 전체", () => {
+  const url = new URL(attendanceManageHref(42, 7, "2026-10-26", "2026-10-29"), "http://x");
+  assert.equal(url.pathname, "/attendance-records");
+  assert.deepEqual(Object.fromEntries(url.searchParams), {
+    storeIds: "7",
+    staffMemberId: "42",
+    employment: "ALL",
+    date: "2026-10-29",
+    week: "2026-10-26",
+    fixFrom: "2026-10-26",
+    fixTo: "2026-11-01",
+  });
+});
+
+test("출퇴근 현황 — api 순서(출근 없는 퇴근 orphan 이 맨 뒤)여도 가장 늦은 퇴근을 고른다", () => {
+  const [l] = lines([day("2026-10-26", "NORMAL", [[{ time: "13:00" }, { time: "18:00" }], [null, { time: "12:00" }]])]);
+  assert.equal(l.checkIn, "13:00");
+  assert.equal(l.checkOut, "18:00");
+});
+
+test("출퇴근 현황 — 자정을 넘긴 퇴근은 「(다음날)」, 같은 날 07:00 orphan 보다 익일 06:00 이 더 늦다", () => {
+  const [l] = lines([day("2026-10-26", "NORMAL", [[{ time: "22:00" }, { time: "06:00", next: true }], [null, { time: "07:00" }]])]);
+  assert.equal(l.checkIn, "22:00");
+  assert.equal(l.checkOut, "06:00(다음날)");
+});
+
+test("출퇴근 현황 「관리」 주소의 날 — 오늘이 그 주 밖이면 월요일", () => {
+  const url = new URL(attendanceManageHref(42, 7, "2026-10-19", "2026-10-29"), "http://x");
+  assert.equal(url.searchParams.get("date"), "2026-10-19");
 });

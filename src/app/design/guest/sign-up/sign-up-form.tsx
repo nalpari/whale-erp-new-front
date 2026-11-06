@@ -101,7 +101,7 @@ function CheckedInput({ kind, ...props }: { kind: CheckKind } & ComponentProps<"
         {status === "ok" && (
           <span className="flex items-center gap-[4px] text-[#5e8ce9]">
             <span aria-hidden className="size-[12px] bg-current mask-[url(/icons/check.svg)] mask-contain mask-center mask-no-repeat" />
-            사용가능합니다.
+            사용 가능합니다.
           </span>
         )}
         {status === "taken" && <span className="text-[#e93737]">{TAKEN_MESSAGE[kind]}</span>}

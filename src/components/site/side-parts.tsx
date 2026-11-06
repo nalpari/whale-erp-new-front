@@ -23,17 +23,23 @@ export function InfoBand({ children }: { children: ReactNode }) {
 
 /**
  * 막힌 이유 안내 — 플랫폼 메뉴 관리의 「미사용으로 변경하면 …」 안내와 같은 빨간 테두리 · 연한 빨간 바탕 상자(2026-10-27 사용자 지정).
- * 권한 그룹 상세에서 고칠 수 없는 이유(본인 연결 등) · 삭제 확인창의 대체 후보 없음에 쓴다. 글로 이유를 함께 말한다(DESIGN.md 색은 상태다 예외).
+ * 권한 그룹 상세에서 고칠 수 없는 이유(권한 없음 등) · 삭제 확인창의 대체 후보 없음에 쓴다. 글로 이유를 함께 말한다(DESIGN.md 색은 상태다 예외).
  */
 export function WarnBand({ children }: { children: ReactNode }) {
   return <div className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] whitespace-pre-line text-erp-off">{children}</div>;
+}
+
+/** 하늘색 안내 상자 — WarnBand 와 같은 모양에 상태 파랑(erp-on). 잘 된 일을 알리고 다음 할 일을 덧붙일 때(BP 마스터 상세 초기 비밀번호 발송, 2026-10-28 사용자 지정). */
+export function SuccessBand({ children }: { children: ReactNode }) {
+  return <div className="rounded-[2px] border border-erp-on bg-erp-on-bg px-[16px] py-[12px] text-[14px] whitespace-pre-line text-erp-on">{children}</div>;
 }
 
 /** 칸 오류 문구 — 입력칸 바로 아래 한 줄. 문구가 없으면 그리지 않는다. */
 export function FieldMessage({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <p id={id} role="alert" className="text-[13px] leading-[1.5] text-erp-off">
+    // whitespace-pre-line — 문구 안 줄바꿈 문자를 줄바꿈으로(BP 마스터 사업자 인증 실패 두 줄, 2026-11-04 사용자 지정 — 인증 상자가 이 사본을 쓴다)
+    <p id={id} role="alert" className="whitespace-pre-line text-[13px] leading-[1.5] text-erp-off">
       {message}
     </p>
   );

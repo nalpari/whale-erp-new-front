@@ -3,13 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Badge, Button, ConfirmDialog, DetailTable, Field, FormRow, Radio, TextField, useToast, type DetailRow } from "@/components/common";
-import { usePagePermission } from "@/components/site/session-gate";
+import { usePageMenu, usePagePermission } from "@/components/site/session-gate";
 import { CARD, FailedBand, FieldMessage } from "@/components/site/side-parts";
 import {
   afterConflict,
   bodyOf,
   isChangedMeanwhile,
-  isDirty,
   MENU_NAME_MAX,
   MENU_URL_MAX,
   menuFieldOf,
@@ -21,7 +20,6 @@ import {
   type MenuStatus,
 } from "@/lib/menu-form";
 import { findRow, pathNamesOf, type createPlacement } from "@/lib/menu-tree";
-import { MENU_CODE } from "@/lib/menus";
 import type { MenuDetail, MenuNode } from "@/lib/platform-menus";
 import { createMenuAction, updateMenuAction } from "./actions";
 import { statusText, unknownResult, type MenuDetailState } from "./menu-parts";
@@ -32,10 +30,6 @@ import { statusText, unknownResult, type MenuDetailState } from "./menu-parts";
 
 type Placement = ReturnType<typeof createPlacement<MenuNode>>;
 const ROOT_PARENT = "없음 · 최상위(1단계) 메뉴";
-// 이 화면의 메뉴 코드 — 끄면 메뉴 권한 판정이 이 화면까지 막아 화면으로는 되돌릴 수 없다(api 는 막지 않는다 · 2026-10-16 결정)
-const SELF_MENU_CODE = MENU_CODE.platformMenus;
-/** 이 화면을 막는 저장 — 미사용으로 돌리기 · 이 화면 메뉴의 URL 바꾸기 */
-type SelfLock = "inactive" | "url";
 
 export function MenuSide({
   serviceCode,
@@ -157,7 +151,9 @@ function MenuForm(
   const [form, setForm] = useState<MenuFormValues>(() => ({ name: base.name, url: base.url, status: base.status }));
   const [errors, setErrors] = useState<MenuFormErrors>({});
   const [failure, setFailure] = useState<{ message: string; detail: string } | null>(null);
-  const [confirmSelfLock, setConfirmSelfLock] = useState<SelfLock | null>(null);
+  const [confirmSelfLock, setConfirmSelfLock] = useState(false);
+  // 지금 화면(이 화면)의 메뉴 코드 — 끄면 이 화면이 닫히는지 볼 때 쓴다. 메뉴 코드를 적지 않고 화면이 열린 판정과 같은 메뉴로 찾는다
+  const selfCode = usePageMenu()?.menuCode;
   const [saving, startSaving] = useTransition();
   const id = props.mode === "edit" ? `menu-${props.menu.menuId}` : "menu-new";
   const [seenUpdatedAt, setSeenUpdatedAt] = useState(server?.updatedAt ?? "");
@@ -172,9 +168,6 @@ function MenuForm(
     setBase(next.base);
     if (next.form !== form) setForm(next.form);
   }
-  // 고친 것이 없으면 [저장]을 막는다 — 바뀐 것 없는 저장이 남의 변경을 덮어쓸 여지를 없앤다
-  const dirty = props.mode === "create" || isDirty(base, form);
-
   const handleFieldChange = <K extends keyof MenuFormValues>(key: K, value: MenuFormValues[K]) => {
     // 다시 채우기를 기다리는 동안 손으로 고치기 시작하면 그 입력을 우선한다
     setReloadOnRefresh(false);
@@ -184,33 +177,30 @@ function MenuForm(
   };
 
   /**
-   * 이 저장이 이 화면(MN000215)을 막는가 — 화면으로는 되돌릴 수 없다.
-   * inactive: 이 메뉴나 그 아래에 이 화면이 있는데 미사용으로 돌린다. url: 이 화면 메뉴의 URL 을 바꾼다 — 메뉴 URL 이 실제 화면 주소와
-   * 어긋나면 다음 로그인부터 URL 막기(isAllowed)가 이 화면을 연다고 보지 않는다(이 화면의 라우트는 /platform-menus 다).
+   * 이 저장이 이 화면을 막는가 — 이 메뉴나 그 아래에 지금 화면의 메뉴(usePageMenu)가 있는데 미사용으로 돌린다. api 는 막지 않고(2026-10-16 결정)
+   * 끄면 메뉴 권한 판정이 이 화면까지 막아 화면으로는 되돌릴 수 없다. 이 화면 메뉴의 URL 변경은 api 가 409 로 막아(API 권한 주소, 2026-10-21) 따로 묻지 않는다.
    */
-  const selfLockOf = (): SelfLock | null => {
-    if (props.mode !== "edit") return null;
-    if (props.menu.menuCode === SELF_MENU_CODE && form.url.trim() !== base.url.trim()) return "url";
-    if (base.status !== "ACTIVE" || form.status !== "INACTIVE") return null;
-    const has = (n: MenuNode): boolean => n.menuCode === SELF_MENU_CODE || n.children.some(has);
+  const locksSelf = (): boolean => {
+    if (props.mode !== "edit" || !selfCode || base.status !== "ACTIVE" || form.status !== "INACTIVE") return false;
+    const has = (n: MenuNode): boolean => n.menuCode === selfCode || n.children.some(has);
     const row = findRow(props.nodes, props.menu.menuId);
-    return row && has(row.node) ? "inactive" : null;
+    return !!row && has(row.node);
   };
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (saving || !dirty) return;
+    // 고친 것이 없어도 그대로 저장한다 — 점포 등록 · 수정과 같다(2026-10-30 재영)
+    if (saving) return;
     // 수정은 그대로 둔 URL 의 1뎁스 검사를 건너뛴다 — 아직 여러 구간인 메뉴(사용중지 메뉴)도 이름 · 상태를 고친다
     const found = validateMenuForm(form, props.mode === "edit" ? base.url : undefined);
     setErrors(found);
     if (Object.keys(found).length) return;
-    const lock = selfLockOf();
-    if (lock) return setConfirmSelfLock(lock);
+    if (locksSelf()) return setConfirmSelfLock(true);
     save();
   };
 
   const save = () => {
-    setConfirmSelfLock(null);
+    setConfirmSelfLock(false);
     const body = bodyOf(form);
     startSaving(async () => {
       if (props.mode === "create") {
@@ -235,10 +225,16 @@ function MenuForm(
     });
   };
 
-  /** api 가 칸 하나의 것이라고 말하면(형식 · URL 겹침) 그 칸 아래, 그 밖은 띠로 */
+  /**
+   * api 가 칸 하나의 것이라고 말하면(형식 · URL 겹침) 그 칸 아래, 그 밖은 띠로. 수정에서는 URL 칸이 읽기 전용이라 칸 아래 문구 자리가
+   * 없고 고칠 수도 없다 — URL 오류는 띠로 알린다. api 는 URL 을 그대로 둬도 사용으로 저장하면 겹침을 검사해, 다른 사용 중 메뉴와 겹치는
+   * 미사용 메뉴를 켜면 409 가 온다(PR #216 리뷰).
+   */
   const fail = (result: { status?: number; message: string }) => {
     const field = menuFieldOf(result.message);
-    if (field && (result.status === 400 || result.status === 409)) return setErrors({ [field]: result.message });
+    const fieldShown = field === "name" || (field === "url" && props.mode === "create");
+    if (field && fieldShown && (result.status === 400 || result.status === 409)) return setErrors({ [field]: result.message });
+    if (field === "url" && props.mode === "edit") return setFailure({ message: result.message, detail: "메뉴 URL 은 수정할 수 없습니다. 겹치는 메뉴를 먼저 확인해 주세요." });
     // 동시 수정 409 만 최신 값으로 칸을 다시 채운다. 그 밖은 입력을 그대로 둔다
     const reload = result.status === 409 && props.mode === "edit" && isChangedMeanwhile(result.message);
     setFailure({ message: result.message, detail: reload ? "최신 정보로 칸을 다시 채웠습니다. 확인한 뒤 다시 저장해 주세요." : "입력한 값은 그대로 두었습니다." });
@@ -303,19 +299,25 @@ function MenuForm(
         </Field>
         <FieldMessage id={`${id}-name-error`} message={errors.name} />
       </div>
-      <div className="flex flex-col gap-[8px]">
-        <Field label="메뉴 URL (선택)">
-          <TextField
-            value={form.url}
-            onChange={(e) => handleFieldChange("url", e.target.value)}
-            maxLength={MENU_URL_MAX}
-            placeholder="예: /staff-content"
-            aria-invalid={errors.url ? true : undefined}
-            aria-describedby={describe("url")}
-          />
-        </Field>
-        <FieldMessage id={`${id}-url-error`} message={errors.url} />
-      </div>
+      {/* 메뉴 URL 은 등록할 때만 넣는다 — 수정에서는 읽기 전용(2026-11-04 사용자 지정). 메뉴 URL 은 화면 주소이자 api 권한 판정의
+          메뉴 찾기 기준이라 운영 중에 바꾸면 화면 · 권한이 함께 어긋난다. 저장은 지금 값을 그대로 보낸다 */}
+      {props.mode === "edit" ? (
+        <Field label="메뉴 URL">{readOnly(form.url, "없음")}</Field>
+      ) : (
+        <div className="flex flex-col gap-[8px]">
+          <Field label="메뉴 URL (선택)">
+            <TextField
+              value={form.url}
+              onChange={(e) => handleFieldChange("url", e.target.value)}
+              maxLength={MENU_URL_MAX}
+              placeholder="예: /staff-content"
+              aria-invalid={errors.url ? true : undefined}
+              aria-describedby={describe("url")}
+            />
+          </Field>
+          <FieldMessage id={`${id}-url-error`} message={errors.url} />
+        </div>
+      )}
       <fieldset className="flex flex-col gap-[8px]">
         <legend className="mb-[8px] text-[14px] font-medium text-erp-label">사용여부</legend>
         <div className="flex h-[34px] items-center gap-[18px]">
@@ -326,14 +328,14 @@ function MenuForm(
         {/* 미사용을 고르면 저장 전에도 바로 보인다 — 저장 뒤 토스트(빠르게 사라짐)로만 알리면 놓치기 쉽다(사용자 지적, 2026-10-26). */}
         {form.status === "INACTIVE" && (
           <div className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">
-            {"미사용으로 변경하면 사용자 화면과 [권한관리 > 메뉴 설정]에 표시되지 않습니다."}
+            {"미사용으로 변경하면 사용자 메뉴와 권한 설정에서 표시되지 않습니다."}
             <br />
             {`다시 '사용'으로 변경하면 기존 설정값이 그대로 적용됩니다.`}
             {/* 하위 메뉴가 있으면 함께 숨는다는 것과, 하위의 사용여부는 바뀌지 않는다는 것을 덧붙인다(2026-10-27 사용자 지정) */}
             {childCount > 0 && (
               <>
                 <br />
-                {`하위 메뉴 ${childCount.toLocaleString("ko-KR")}개도 함께 표시되지 않습니다. 하위 메뉴의 사용여부는 바뀌지 않아, 다시 '사용'으로 바꾸면 하위 메뉴도 그대로 보입니다.`}
+                {`하위 메뉴 ${childCount.toLocaleString("ko-KR")}개도 함께 표시되지 않습니다.`}
               </>
             )}
           </div>
@@ -345,22 +347,24 @@ function MenuForm(
             취소
           </Button>
         )}
-        <Button type="submit" disabled={saving || !dirty}>
+        <Button type="submit" disabled={saving}>
           저장
         </Button>
       </div>
       <ConfirmDialog
-        open={confirmSelfLock !== null}
-        title="이 화면이 닫힙니다"
-        confirmLabel={confirmSelfLock === "url" ? "URL 바꿔 저장" : "미사용으로 저장"}
+        open={confirmSelfLock}
+        // 트리에서 미사용 메뉴 아래로 옮길 때의 확인창과 같은 틀(제목은 묻는 말, 본문은 결과 한 줄) — 메뉴 이름 · 코드는 넣지 않는다(2026-10-28 사용자 지정)
+        title="미사용으로 변경하시겠습니까?"
+        confirmLabel="미사용으로 저장"
         busy={saving}
         onConfirm={save}
-        onCancel={() => setConfirmSelfLock(null)}
+        onCancel={() => setConfirmSelfLock(false)}
       >
+        {/* 「다.」만 다음 줄로 넘어가지 않게 「접근할 수 없습니다.」 앞에서 줄을 바꾼다(2026-10-28 사용자 지정) */}
         <p className="text-[14px] leading-[1.6]">
-          {confirmSelfLock === "url"
-            ? `플랫폼 메뉴 관리(${SELF_MENU_CODE})의 URL 을 바꾸면 실제 화면 주소와 어긋나, 다음 로그인부터 이 화면에 들어올 수 없습니다. 계속할까요?`
-            : `이 메뉴를 미사용으로 돌리면 플랫폼 메뉴 관리(${SELF_MENU_CODE})도 사용자 화면과 메뉴 권한에서 빠져, 이 화면으로는 다시 켤 수 없습니다. 계속할까요?`}
+          변경 후에는 현재 화면이 사용자 메뉴에서 제외되어
+          <br />
+          접근할 수 없습니다.
         </p>
       </ConfirmDialog>
     </form>

@@ -19,10 +19,10 @@ CREATE TYPE "staff_tax_profile_field" AS ENUM ('RRN', 'PAYROLL_ACCOUNT');  -- �
 COMMENT ON TYPE "staff_tax_profile_field" IS '주민등록번호 · 급여 계좌';
 CREATE TYPE "location_consent_action" AS ENUM ('AGREE', 'WITHDRAW', 'PAUSE', 'RESUME');  -- 동의 · 철회 · 잠시 멈춤 · 다시 켜기
 COMMENT ON TYPE "location_consent_action" IS '동의 · 철회 · 잠시 멈춤 · 다시 켜기';
-CREATE TYPE "account_change_field" AS ENUM ('PHONE', 'EMAIL', 'ADDRESS', 'PASSWORD');  -- 휴대전화번호 · 이메일 · 주소 · 비밀번호
-COMMENT ON TYPE "account_change_field" IS '휴대전화번호 · 이메일 · 주소 · 비밀번호';
-CREATE TYPE "account_change_channel" AS ENUM ('SELF', 'PIN_RESET', 'ADMIN_RESET');  -- 본인 · 핀 재설정 · 관리자 초기화
-COMMENT ON TYPE "account_change_channel" IS '본인 · 핀 재설정 · 관리자 초기화';
+CREATE TYPE "account_change_field" AS ENUM ('PHONE', 'EMAIL', 'ADDRESS', 'PASSWORD', 'BIRTH_DATE');  -- 휴대전화번호 · 이메일 · 주소 · 비밀번호 · 생년월일
+COMMENT ON TYPE "account_change_field" IS '휴대전화번호 · 이메일 · 주소 · 비밀번호 · 생년월일';
+CREATE TYPE "account_change_channel" AS ENUM ('SELF', 'PIN_RESET', 'ADMIN_RESET', 'ADMIN_CORRECTION');  -- 본인 · 핀 재설정 · 관리자 초기화 · 관리자 정정
+COMMENT ON TYPE "account_change_channel" IS '본인 · 핀 재설정 · 관리자 초기화 · 관리자 정정';
 CREATE TYPE "account_login_failure_reason" AS ENUM ('PASSWORD_MISMATCH', 'ACCOUNT_NOT_FOUND', 'LOCKED');  -- 불일치 · 없는 계정 · 잠금
 COMMENT ON TYPE "account_login_failure_reason" IS '불일치 · 없는 계정 · 잠금';
 CREATE TYPE "location_access_action" AS ENUM ('COLLECT', 'USE', 'PROVIDE');  -- 수집 · 이용 · 제공
@@ -63,8 +63,8 @@ CREATE TYPE "work_schedule_change_type" AS ENUM ('CREATED', 'UPDATED', 'DELETED'
 COMMENT ON TYPE "work_schedule_change_type" IS '등록 · 수정 · 삭제';
 CREATE TYPE "attendance_kind" AS ENUM ('CHECK_IN', 'CHECK_OUT');  -- 출근 · 퇴근
 COMMENT ON TYPE "attendance_kind" IS '출근 · 퇴근';
-CREATE TYPE "attendance_review_reason" AS ENUM ('ACCURACY_EXCEEDED', 'OUT_OF_RADIUS_CHECKIN', 'OUT_OF_RADIUS_CHECKOUT', 'MOCK_LOCATION');  -- 위치 오차 초과 · 반경 밖 출근 · 반경 밖 퇴근 · 위치 조작 감지
-COMMENT ON TYPE "attendance_review_reason" IS '위치 오차 초과 · 반경 밖 출근 · 반경 밖 퇴근 · 위치 조작 감지';
+CREATE TYPE "attendance_review_reason" AS ENUM ('ACCURACY_EXCEEDED', 'OUT_OF_RADIUS_CHECKIN', 'OUT_OF_RADIUS_CHECKOUT', 'MOCK_LOCATION', 'LONG_SHIFT');  -- 위치 오차 초과 · 반경 밖 출근 · 반경 밖 퇴근 · 위치 조작 감지 · 근무 12시간 초과
+COMMENT ON TYPE "attendance_review_reason" IS '위치 오차 초과 · 반경 밖 출근 · 반경 밖 퇴근 · 위치 조작 감지 · 근무 12시간 초과';
 CREATE TYPE "attendance_entry_method" AS ENUM ('SELF', 'PROXY');  -- 직원 등록 · 대신 등록
 COMMENT ON TYPE "attendance_entry_method" IS '직원 등록 · 대신 등록';
 CREATE TYPE "todo_assignee_type" AS ENUM ('INDIVIDUAL', 'ALL');  -- 개인 · 근무지 전체
@@ -111,6 +111,8 @@ CREATE TYPE "lead_interest" AS ENUM ('STORE_OPERATION', 'FINANCE', 'FRANCHISE', 
 COMMENT ON TYPE "lead_interest" IS '매장운영 · 재무관리 · 프랜차이즈 · 기타';
 CREATE TYPE "reply_mail_result" AS ENUM ('SUCCEEDED', 'FAILED');  -- 성공 · 실패
 COMMENT ON TYPE "reply_mail_result" IS '성공 · 실패';
+CREATE TYPE "bulk_export_status" AS ENUM ('PENDING', 'PROCESSING', 'SUCCEEDED', 'FAILED');  -- 대기 · 만드는 중 · 완료 · 실패
+COMMENT ON TYPE "bulk_export_status" IS '대기 · 만드는 중 · 완료 · 실패';
 
 -- 본인인증 이력
 CREATE TABLE "identity_verifications" (
@@ -304,7 +306,6 @@ CREATE TABLE "invitations" (
     "expires_at" TIMESTAMPTZ(6) NOT NULL,
     "status" "invitation_status" NOT NULL,
     "responded_at" TIMESTAMPTZ(6),
-    "reject_reason" TEXT,
 
     CONSTRAINT "invitations_pkey" PRIMARY KEY ("invitation_id")
 );
@@ -368,6 +369,7 @@ CREATE TABLE "contracts" (
     "work_location" TEXT,
     "previous_contract_id" INTEGER,
     "employment_type" "employment_type",
+    "job_title" TEXT,
     "contract_method" "contract_method",
     "start_date" DATE,
     "end_date" DATE,
@@ -395,7 +397,8 @@ CREATE TABLE "contracts" (
     "sent_at" TIMESTAMPTZ(6),
     "sign_deadline_at" TIMESTAMPTZ(6),
     "resend_count" INTEGER DEFAULT 0,
-    "reject_reason" TEXT,
+    "renewal_notified_at" TIMESTAMPTZ(6),
+    "correction_reason" TEXT,
     "created_by" INTEGER NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
@@ -430,6 +433,15 @@ CREATE TABLE "contract_parties" (
     "address" TEXT,
     "address_detail" TEXT,
     "filled_at" TIMESTAMPTZ(6),
+    "employer_name" TEXT,
+    "employer_ceo_name" TEXT,
+    "employer_registration_number" TEXT,
+    "employer_address" TEXT,
+    "employer_address_detail" TEXT,
+    "employer_phone" TEXT,
+    "employer_fixed_at" TIMESTAMPTZ(6),
+    "fixed_work_location" TEXT,
+    "fixed_job_title" TEXT,
 
     CONSTRAINT "contract_parties_pkey" PRIMARY KEY ("contract_id")
 );
@@ -442,6 +454,7 @@ CREATE TABLE "contract_documents" (
     "storage_key" TEXT NOT NULL,
     "file_name" TEXT NOT NULL,
     "checksum" TEXT NOT NULL,
+    "sent_at" TIMESTAMPTZ(6),
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "contract_documents_pkey" PRIMARY KEY ("contract_document_id")
@@ -916,6 +929,40 @@ CREATE TABLE "leads" (
     CONSTRAINT "leads_pkey" PRIMARY KEY ("lead_id")
 );
 
+-- 직원 자료 일괄 저장 요청
+CREATE TABLE "bulk_exports" (
+    "bulk_export_id" INTEGER GENERATED ALWAYS AS IDENTITY NOT NULL,
+    "bp_code_id" INTEGER NOT NULL,
+    "requested_by" INTEGER NOT NULL,
+    "role_type_code" TEXT NOT NULL,
+    "store_ids" INTEGER[] NOT NULL,
+    "scope_key" TEXT NOT NULL,
+    "status" "bulk_export_status" NOT NULL DEFAULT 'PENDING',
+    "staff_count" INTEGER NOT NULL,
+    "staff_member_ids" INTEGER[] NOT NULL DEFAULT '{}',
+    "storage_key" TEXT,
+    "file_name" TEXT NOT NULL,
+    "file_size" INTEGER,
+    "attempt_count" INTEGER NOT NULL DEFAULT 0,
+    "failure_reason" TEXT,
+    "requested_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "started_at" TIMESTAMPTZ(6),
+    "completed_at" TIMESTAMPTZ(6),
+    "expires_at" TIMESTAMPTZ(6),
+
+    CONSTRAINT "bulk_exports_pkey" PRIMARY KEY ("bulk_export_id")
+);
+
+-- 직원 자료 일괄 저장 내려받기 이력
+CREATE TABLE "bulk_export_download_logs" (
+    "bulk_export_download_log_id" INTEGER GENERATED ALWAYS AS IDENTITY NOT NULL,
+    "bulk_export_id" INTEGER NOT NULL,
+    "downloaded_by" INTEGER NOT NULL,
+    "downloaded_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "bulk_export_download_logs_pkey" PRIMARY KEY ("bulk_export_download_log_id")
+);
+
 -- ── CHECK 제약 ──
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_email_lower" CHECK ("email" = lower("email"));
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_phone_format" CHECK ("phone" ~ '^[0-9]{10,11}$');
@@ -954,6 +1001,7 @@ ALTER TABLE "contracts" ADD CONSTRAINT "contracts_pay_day_range" CHECK ("pay_day
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_probation_months_range" CHECK ("probation_months" BETWEEN 1 AND 3);
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_probation_wage_reduction_rate_range" CHECK ("probation_wage_reduction_rate" BETWEEN 0 AND 10);
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_probation_pair" CHECK (("probation_months" IS NULL) = ("probation_wage_reduction_rate" IS NULL));
+ALTER TABLE "contract_documents" ADD CONSTRAINT "contract_documents_sent_at_for_generated" CHECK ("kind" NOT IN ('SENT_ORIGINAL', 'SIGNED_COPY') OR "sent_at" IS NOT NULL);
 ALTER TABLE "contract_work_days" ADD CONSTRAINT "contract_work_days_end_after_start" CHECK ("end_time" > "start_time");
 ALTER TABLE "contract_work_days" ADD CONSTRAINT "contract_work_days_break_pair" CHECK (("break_start_time" IS NULL) = ("break_end_time" IS NULL));
 ALTER TABLE "contract_work_days" ADD CONSTRAINT "contract_work_days_break_within_work" CHECK ("break_start_time" IS NULL OR ("break_start_time" >= "start_time" AND "break_end_time" > "break_start_time" AND "break_end_time" <= "end_time"));
@@ -985,6 +1033,11 @@ ALTER TABLE "notification_templates" ADD CONSTRAINT "notification_templates_titl
 ALTER TABLE "alimtalk_send_logs" ADD CONSTRAINT "alimtalk_send_logs_to_phone_format" CHECK ("to_phone" ~ '^01[0-9]{8,9}$');
 ALTER TABLE "alimtalk_send_logs" ADD CONSTRAINT "alimtalk_send_logs_related_pair" CHECK (num_nonnulls("related_type", "related_id") <> 1);
 ALTER TABLE "posts" ADD CONSTRAINT "posts_publish_end_after_start" CHECK ("publish_end_date" IS NULL OR "publish_end_date" >= "publish_start_date");
+ALTER TABLE "bulk_exports" ADD CONSTRAINT "bulk_exports_role_type_code_check" CHECK ("role_type_code" IN ('BM', 'FM'));
+ALTER TABLE "bulk_exports" ADD CONSTRAINT "bulk_exports_store_ids_not_empty" CHECK (cardinality("store_ids") > 0);
+ALTER TABLE "bulk_exports" ADD CONSTRAINT "bulk_exports_counts_nonnegative" CHECK ("staff_count" >= 0 AND "attempt_count" >= 0 AND ("file_size" IS NULL OR "file_size" >= 0));
+ALTER TABLE "bulk_exports" ADD CONSTRAINT "bulk_exports_started_when_processing" CHECK ("status" <> 'PROCESSING' OR "started_at" IS NOT NULL);
+ALTER TABLE "bulk_exports" ADD CONSTRAINT "bulk_exports_completed_when_succeeded" CHECK ("status" <> 'SUCCEEDED' OR ("completed_at" IS NOT NULL AND "expires_at" IS NOT NULL));
 
 -- ── 겹침 금지 ──
 ALTER TABLE "work_schedules" ADD CONSTRAINT "work_schedules_no_overlap" EXCLUDE USING gist ("staff_member_id" WITH =, tstzrange("start_at", "end_at") WITH &&) WHERE (NOT "is_deleted");  -- 같은 직원의 근무스케줄은 겹치지 않는다
@@ -1002,6 +1055,8 @@ CREATE UNIQUE INDEX "password_reset_links_token_hash_key" ON "password_reset_lin
 CREATE UNIQUE INDEX "post_attachments_post_id_sort_order_key" ON "post_attachments" ("post_id", "sort_order") WHERE "is_deleted" = false;  -- 공지 하나에 지우지 않은 첨부의 자리 하나 — 자리 1~5 CHECK 와 함께 공지당 5개를 DB 가 막는다 (WHALEERP-272)
 CREATE UNIQUE INDEX "inquiry_attachments_inquiry_id_sort_order_key" ON "inquiry_attachments" ("inquiry_id", "sort_order");  -- 문의 하나에 순서 하나 — 순서 1~5 CHECK 와 함께 문의당 5개를 DB 가 막는다 (운영 정책 CNT-18)
 CREATE UNIQUE INDEX "payslip_review_reasons_payslip_id_review_reason_key" ON "payslip_review_reasons" ("payslip_id", "review_reason");  -- 명세서 한 장에 같은 사유 한 건
+CREATE UNIQUE INDEX "contract_documents_contract_id_kind_sent_at_key" ON "contract_documents" ("contract_id", "kind", "sent_at") WHERE "kind" IN ('SENT_ORIGINAL', 'SIGNED_COPY');  -- 발송마다 보낸 원본 한 장, 계약마다 처리 완료본 한 장 — 함께 만들어도 하나만 남는다 (WHALEERP-131, 2026-10-29 김민식)
+CREATE UNIQUE INDEX "bulk_exports_bp_code_id_scope_key_key" ON "bulk_exports" ("bp_code_id", md5("scope_key")) WHERE "status" IN ('PENDING', 'PROCESSING');  -- 같은 BP · 같은 범위는 만드는 중인 요청이 하나뿐 — scope_key 는 md5 로 묶는다(KEY_EXPR)
 CREATE UNIQUE INDEX "notifications_dedupe_key_key" ON "notifications" ("dedupe_key") WHERE "dedupe_key" IS NOT NULL;  -- 같은 사건·수신자 1회
 CREATE UNIQUE INDEX "notification_templates_template_code_key" ON "notification_templates" ("template_code");  -- 화면·로그·문의 대응에서 템플릿 하나를 가리키는 코드 (2026-10-07 재영)
 CREATE UNIQUE INDEX "alimtalk_send_logs_reference_key_key" ON "alimtalk_send_logs" ("reference_key");  -- 결과 리포트의 REFKEY 로 이력 한 행을 찾는다 (PR #6 팀 리뷰)
@@ -1098,6 +1153,10 @@ ALTER TABLE "inquiry_replies" ADD CONSTRAINT "inquiry_replies_replied_by_fkey" F
 ALTER TABLE "inquiry_attachments" ADD CONSTRAINT "inquiry_attachments_inquiry_id_fkey" FOREIGN KEY ("inquiry_id") REFERENCES "inquiries" ("inquiry_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "leads" ADD CONSTRAINT "leads_processing_started_by_fkey" FOREIGN KEY ("processing_started_by") REFERENCES "admin_accounts" ("admin_account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "leads" ADD CONSTRAINT "leads_replied_by_fkey" FOREIGN KEY ("replied_by") REFERENCES "admin_accounts" ("admin_account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "bulk_exports" ADD CONSTRAINT "bulk_exports_bp_code_id_fkey" FOREIGN KEY ("bp_code_id") REFERENCES "bp_codes" ("bp_code_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "bulk_exports" ADD CONSTRAINT "bulk_exports_requested_by_fkey" FOREIGN KEY ("requested_by") REFERENCES "admin_accounts" ("admin_account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "bulk_export_download_logs" ADD CONSTRAINT "bulk_export_download_logs_bulk_export_id_fkey" FOREIGN KEY ("bulk_export_id") REFERENCES "bulk_exports" ("bulk_export_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "bulk_export_download_logs" ADD CONSTRAINT "bulk_export_download_logs_downloaded_by_fkey" FOREIGN KEY ("downloaded_by") REFERENCES "admin_accounts" ("admin_account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- ── 조회 인덱스 ──
 CREATE INDEX "identity_verifications_account_id_idx" ON "identity_verifications" ("account_id");
@@ -1147,6 +1206,9 @@ CREATE INDEX "post_attachments_post_id_idx" ON "post_attachments" ("post_id");
 CREATE INDEX "inquiries_bp_code_id_idx" ON "inquiries" ("bp_code_id");
 CREATE INDEX "inquiry_replies_inquiry_id_idx" ON "inquiry_replies" ("inquiry_id");
 CREATE INDEX "leads_created_at_idx" ON "leads" ("created_at");
+CREATE INDEX "bulk_exports_bp_code_id_role_type_code_requested_at_idx" ON "bulk_exports" ("bp_code_id", "role_type_code", "requested_at");
+CREATE INDEX "bulk_exports_status_requested_at_idx" ON "bulk_exports" ("status", "requested_at");
+CREATE INDEX "bulk_export_download_logs_bulk_export_id_idx" ON "bulk_export_download_logs" ("bulk_export_id");
 
 -- ── 주석 ──
 COMMENT ON TABLE "identity_verifications" IS '본인인증 이력';
@@ -1171,7 +1233,7 @@ COMMENT ON COLUMN "accounts"."account_id" IS '계정 ID';
 COMMENT ON COLUMN "accounts"."email" IS '이메일 아이디 — 로그인 아이디, 고유';
 COMMENT ON COLUMN "accounts"."password_hash" IS '비밀번호 해시';
 COMMENT ON COLUMN "accounts"."real_name" IS '실명 — 본인인증 값, 수정 불가';
-COMMENT ON COLUMN "accounts"."birth_date" IS '생년월일 — 본인인증 값, 수정 불가';
+COMMENT ON COLUMN "accounts"."birth_date" IS '생년월일 — 본인인증 값, 직원은 수정 불가 · 관리자 정정만 된다 (WHALEERP-602)';
 COMMENT ON COLUMN "accounts"."phone" IS '휴대전화번호 — 본인인증, 변경 시 재인증';
 COMMENT ON COLUMN "accounts"."gender" IS '성별 — 남 · 여 — 가입 때 직원이 넣은 값, 계약서 값과 본인 대조 (WHALEERP-601, 2026-10-20) (물리에서 추가)';
 COMMENT ON COLUMN "accounts"."is_foreigner" IS '외국인 여부 — 체크하지 않으면 내국인 — 가입 때 직원이 넣은 값, 계약서 값과 본인 대조 (WHALEERP-601, 2026-10-20) (물리에서 추가)';
@@ -1191,11 +1253,11 @@ COMMENT ON COLUMN "accounts"."updated_at" IS '최근 수정 일시 (물리에서
 COMMENT ON TABLE "account_change_histories" IS '계정 변경 이력';
 COMMENT ON COLUMN "account_change_histories"."account_change_history_id" IS '변경 이력 ID (논리 change_id)';
 COMMENT ON COLUMN "account_change_histories"."account_id" IS '계정';
-COMMENT ON COLUMN "account_change_histories"."field" IS '변경 항목 — 휴대전화번호·이메일·주소·비밀번호';
+COMMENT ON COLUMN "account_change_histories"."field" IS '변경 항목 — 휴대전화번호·이메일·주소·비밀번호·생년월일';
 COMMENT ON COLUMN "account_change_histories"."before_value" IS '변경 전 값 — 비밀번호는 저장 안 함';
 COMMENT ON COLUMN "account_change_histories"."after_value" IS '변경 후 값 — 비밀번호는 저장 안 함';
-COMMENT ON COLUMN "account_change_histories"."channel" IS '변경 경로 — 본인·핀 재설정·관리자 초기화';
-COMMENT ON COLUMN "account_change_histories"."requested_by" IS '요청 관리자 — 관리자 초기화일 때';
+COMMENT ON COLUMN "account_change_histories"."channel" IS '변경 경로 — 본인·핀 재설정·관리자 초기화·관리자 정정';
+COMMENT ON COLUMN "account_change_histories"."requested_by" IS '요청 관리자 — 관리자 초기화 · 관리자 정정일 때';
 COMMENT ON COLUMN "account_change_histories"."changed_at" IS '변경 일시';
 COMMENT ON TABLE "login_histories" IS '로그인 이력';
 COMMENT ON COLUMN "login_histories"."login_history_id" IS '로그인 이력 ID (논리 login_id)';
@@ -1280,7 +1342,6 @@ COMMENT ON COLUMN "invitations"."sent_at" IS '발송 일시';
 COMMENT ON COLUMN "invitations"."expires_at" IS '만료 일시 — 30일';
 COMMENT ON COLUMN "invitations"."status" IS '상태 — 발송·수락·만료·거절';
 COMMENT ON COLUMN "invitations"."responded_at" IS '응답 일시';
-COMMENT ON COLUMN "invitations"."reject_reason" IS '거절 사유 — 소속 확인 거절';
 COMMENT ON TABLE "link_holds" IS '가입 연결 보류';
 COMMENT ON COLUMN "link_holds"."link_hold_id" IS '보류 ID (논리 hold_id)';
 COMMENT ON COLUMN "link_holds"."invitation_id" IS '초대';
@@ -1319,6 +1380,7 @@ COMMENT ON COLUMN "contracts"."store_id" IS '근무지';
 COMMENT ON COLUMN "contracts"."work_location" IS '근무 장소 — 계약서 근무 장소 조항. 관리자가 직접 적는다 (목업 contracts-new, 2026-10-08) (물리에서 추가)';
 COMMENT ON COLUMN "contracts"."previous_contract_id" IS '직전 계약 — 재계약일 때';
 COMMENT ON COLUMN "contracts"."employment_type" IS '계약 유형 — 정직원·파트타이머 (논리 contract_type)';
+COMMENT ON COLUMN "contracts"."job_title" IS '직무 — 계약서에 적은 직무 — 그 계약이 시작하면 직원 레코드의 직무로 옮긴다(재계약을 저장만 해도 바뀌지 않게) (WHALEERP-156, 2026-10-27 김민식) (물리에서 추가)';
 COMMENT ON COLUMN "contracts"."contract_method" IS '계약 방식 — ELECTRONIC·PAPER (CTR-23)';
 COMMENT ON COLUMN "contracts"."start_date" IS '계약 시작일 — 종료일 비우면 무기한 (논리 start_date·end_date)';
 COMMENT ON COLUMN "contracts"."end_date" IS '계약 종료일 — 종료일 비우면 무기한 (논리 start_date·end_date)';
@@ -1346,7 +1408,8 @@ COMMENT ON COLUMN "contracts"."draft_action" IS '초안 처리 유형 — 가입
 COMMENT ON COLUMN "contracts"."sent_at" IS '발송 일시';
 COMMENT ON COLUMN "contracts"."sign_deadline_at" IS '날인 기한 — 발송일부터 30일';
 COMMENT ON COLUMN "contracts"."resend_count" IS '재발송 횟수';
-COMMENT ON COLUMN "contracts"."reject_reason" IS '거부 사유';
+COMMENT ON COLUMN "contracts"."renewal_notified_at" IS '갱신 예정 알림 일시 — 갱신 예정 알림 · 메일을 보낸 때 — 계약마다 한 번 (WHALEERP-152, 2026-10-26 김민식) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."correction_reason" IS '수정 요청 사유 — 직원이 쓴 글, 100자';
 COMMENT ON COLUMN "contracts"."created_by" IS '작성 관리자';
 COMMENT ON COLUMN "contracts"."created_at" IS '등록 일시 (물리에서 추가)';
 COMMENT ON COLUMN "contracts"."updated_at" IS '최근 수정 일시 (물리에서 추가)';
@@ -1371,6 +1434,15 @@ COMMENT ON COLUMN "contract_parties"."zip_code" IS '우편번호 — 직원 입�
 COMMENT ON COLUMN "contract_parties"."address" IS '기본주소 — 직원 입력, 검색 API 값 (물리에서 추가)';
 COMMENT ON COLUMN "contract_parties"."address_detail" IS '상세주소 — 직원 입력 (물리에서 추가)';
 COMMENT ON COLUMN "contract_parties"."filled_at" IS '반영 일시 — 가입 완료 시 채움';
+COMMENT ON COLUMN "contract_parties"."employer_name" IS '사용자 상호 — 날인 때 점포 상호(없으면 점포명)를 고정 — 처리 완료본 사용자 칸 (WHALEERP-131, 2026-10-29 김민식) (물리에서 추가)';
+COMMENT ON COLUMN "contract_parties"."employer_ceo_name" IS '사용자 대표자 — 날인 때 고정 — 처리 완료본 사용자 칸 (WHALEERP-131) (물리에서 추가)';
+COMMENT ON COLUMN "contract_parties"."employer_registration_number" IS '사용자 사업자등록번호 — 날인 때 고정 — 처리 완료본 사용자 칸 (WHALEERP-131) (물리에서 추가)';
+COMMENT ON COLUMN "contract_parties"."employer_address" IS '사용자 소재지 기본주소 — 날인 때 점포 사업자 주소를 고정 — 처리 완료본 사용자 칸 (WHALEERP-131) (물리에서 추가)';
+COMMENT ON COLUMN "contract_parties"."employer_address_detail" IS '사용자 소재지 상세주소 — 날인 때 고정 — 처리 완료본 사용자 칸 (WHALEERP-131) (물리에서 추가)';
+COMMENT ON COLUMN "contract_parties"."employer_phone" IS '사용자 전화번호 — 날인 때 점포 연락처를 고정 — 처리 완료본 사용자 칸 (WHALEERP-131) (물리에서 추가)';
+COMMENT ON COLUMN "contract_parties"."employer_fixed_at" IS '사용자 고정 일시 — 날인 때 사용자 칸을 고정한 시각. NULL 이면 고정 전에 체결된 계약 — 처리 완료본은 만드는 시점의 점포 정보로 만든다 (WHALEERP-131, 2026-10-29 김민식) (물리에서 추가)';
+COMMENT ON COLUMN "contract_parties"."fixed_work_location" IS '고정 근무 장소 — 날인 때 제2조 근무 장소(비었으면 그때 점포명)를 고정 — 체결된 계약의 본문 · 처리 완료본 (WHALEERP-131, 2026-10-30 김민식) (물리에서 추가)';
+COMMENT ON COLUMN "contract_parties"."fixed_job_title" IS '고정 직무 — 날인 때 제2조 직무(비었으면 그때 직원 직무)를 고정 — 체결된 계약의 본문 · 처리 완료본 (WHALEERP-131, 2026-10-30 김민식) (물리에서 추가)';
 COMMENT ON TABLE "contract_documents" IS '계약서 파일';
 COMMENT ON COLUMN "contract_documents"."contract_document_id" IS '파일 ID';
 COMMENT ON COLUMN "contract_documents"."contract_id" IS '근로계약';
@@ -1378,6 +1450,7 @@ COMMENT ON COLUMN "contract_documents"."kind" IS '파일 구분 — 발송 원�
 COMMENT ON COLUMN "contract_documents"."storage_key" IS '저장 위치';
 COMMENT ON COLUMN "contract_documents"."file_name" IS '원래 파일 이름 — 올린 파일의 원래 이름 — 내려받으면 이 이름으로 저장된다 (종이 계약 날인본, 2026-10-15) (물리에서 추가)';
 COMMENT ON COLUMN "contract_documents"."checksum" IS '파일 해시';
+COMMENT ON COLUMN "contract_documents"."sent_at" IS '발송 일시 — 보낸 원본 · 처리 완료본이 담은 계약의 발송 일시(contracts.sent_at). 다른 파일은 NULL (WHALEERP-131, 2026-10-29 김민식) (물리에서 추가)';
 COMMENT ON COLUMN "contract_documents"."created_at" IS '생성 일시';
 COMMENT ON TABLE "contract_status_histories" IS '계약 상태 이력';
 COMMENT ON COLUMN "contract_status_histories"."contract_status_history_id" IS '상태 이력 ID (논리 history_id)';
@@ -1425,7 +1498,7 @@ COMMENT ON COLUMN "attendance_records"."store_id" IS '근무지 — 여럿이면
 COMMENT ON COLUMN "attendance_records"."kind" IS '구분 — 출근·퇴근';
 COMMENT ON COLUMN "attendance_records"."recorded_at" IS '기록 시각 — 기기 시각';
 COMMENT ON COLUMN "attendance_records"."received_at" IS '서버 수신 시각 — 확정 기준';
-COMMENT ON COLUMN "attendance_records"."review_reason" IS '확인 필요 사유 — 반경 밖 출근·반경 밖 퇴근·위치 조작, 검토 후 null';
+COMMENT ON COLUMN "attendance_records"."review_reason" IS '확인 필요 사유 — 반경 밖 출근·반경 밖 퇴근·위치 조작·근무 12시간 초과, 검토 후 null';
 COMMENT ON COLUMN "attendance_records"."reviewed_by" IS '검토 관리자 — 보정 또는 이상 없음';
 COMMENT ON COLUMN "attendance_records"."reviewed_at" IS '검토 일시';
 COMMENT ON COLUMN "attendance_records"."entry_method" IS '등록 방식 — 직원 등록·대신 등록';
@@ -1698,3 +1771,27 @@ COMMENT ON COLUMN "leads"."reply_mail_attempted_at" IS '마지막 답변 메일 
 COMMENT ON COLUMN "leads"."created_at" IS '접수 일시';
 COMMENT ON COLUMN "leads"."updated_at" IS '최종 수정 일시 — 동시 저장 충돌 판정 (2026-10-12 재영, Plane #274)';
 COMMENT ON COLUMN "leads"."consulted_date" IS '상담 완료일 — 1년 뒤 파기';
+COMMENT ON TABLE "bulk_exports" IS '직원 자료 일괄 저장 요청';
+COMMENT ON COLUMN "bulk_exports"."bulk_export_id" IS '일괄 저장 요청 ID';
+COMMENT ON COLUMN "bulk_exports"."bp_code_id" IS '요청 BP — bp_codes FK';
+COMMENT ON COLUMN "bulk_exports"."requested_by" IS '요청한 관리자 — admin_accounts FK';
+COMMENT ON COLUMN "bulk_exports"."role_type_code" IS '요청 때 권한 유형 — BM · FM. 목록 · 내려받기는 같은 BP · 같은 권한 유형이고 store_ids 를 모두 관리하는 마스터만 (2026-10-29 재영)';
+COMMENT ON COLUMN "bulk_exports"."store_ids" IS '업무 범위 점포 — 오름차순. 비면 안 된다';
+COMMENT ON COLUMN "bulk_exports"."scope_key" IS '범위 키 — {role_type_code}:{store_ids}. 만드는 중인 요청이 (bp_code_id, md5(scope_key)) 마다 하나뿐';
+COMMENT ON COLUMN "bulk_exports"."status" IS '처리 상태 — 대기 · 만드는 중 · 완료 · 실패';
+COMMENT ON COLUMN "bulk_exports"."staff_count" IS '담은 직원 수 — 요청 때 센 수, 다 만들면 실제로 담은 수';
+COMMENT ON COLUMN "bulk_exports"."staff_member_ids" IS '파일에 담은 직원 레코드 ID — 다 만들 때 채운다. BP 마스터 파일은 내려받기 직전에 이 직원들의 본사 제공 동의 · 가맹 점포 폐점을 다시 보고 바뀌었으면 막는다 (2026-10-29 재영, RET-09)';
+COMMENT ON COLUMN "bulk_exports"."storage_key" IS '저장소 키 — bulk-exports/{bp_code_id}/{uuid}.zip. 기한이 지나 파일을 지우면 NULL';
+COMMENT ON COLUMN "bulk_exports"."file_name" IS '파일명 — 직원자료_{BP명}_{YYYYMMDD}.zip (요청한 한국 날짜)';
+COMMENT ON COLUMN "bulk_exports"."file_size" IS '파일 크기 — 바이트';
+COMMENT ON COLUMN "bulk_exports"."attempt_count" IS '시도 횟수 — 시도를 시작할 때 1씩 올린다(최대 2). 2에서 실패하거나 4xx 성격(권한 · 범위)이면 끝';
+COMMENT ON COLUMN "bulk_exports"."failure_reason" IS '실패 사유';
+COMMENT ON COLUMN "bulk_exports"."requested_at" IS '요청 일시';
+COMMENT ON COLUMN "bulk_exports"."started_at" IS '만들기 시작 일시 — 이번 시도를 시작한 시각. 멈춘 작업 판단 기준';
+COMMENT ON COLUMN "bulk_exports"."completed_at" IS '완료 일시';
+COMMENT ON COLUMN "bulk_exports"."expires_at" IS '받을 수 있는 기한 — 완료 + 7일';
+COMMENT ON TABLE "bulk_export_download_logs" IS '직원 자료 일괄 저장 내려받기 이력';
+COMMENT ON COLUMN "bulk_export_download_logs"."bulk_export_download_log_id" IS '내려받기 이력 ID';
+COMMENT ON COLUMN "bulk_export_download_logs"."bulk_export_id" IS '일괄 저장 요청 — bulk_exports FK';
+COMMENT ON COLUMN "bulk_export_download_logs"."downloaded_by" IS '내려받은 관리자 — admin_accounts FK';
+COMMENT ON COLUMN "bulk_export_download_logs"."downloaded_at" IS '내려받은 일시 — 내려받기 주소를 준 시각';

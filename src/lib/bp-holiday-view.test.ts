@@ -18,12 +18,13 @@ import {
   repeatBasis,
   repeatEndText,
   repeatSkipNote,
-  sameSchedule,
   shiftBpHolidayMonth,
+  storeCountOf,
   targetText,
   validateHolidayForm,
   yesterdayOf,
   type BpHolidayQuery,
+  storesOnDate,
   type HolidayForm,
 } from "./bp-holiday-view.ts";
 
@@ -196,9 +197,6 @@ test("상세 → 양식 → 같은 일정", () => {
   };
   const f = formOfDetail(detail);
   assert.deepEqual([f.type, f.repeatType, f.repeatEnd, f.repeatCount, f.storeIds], ["REPEAT", "WEEKLY", "COUNT", "10", [3, 4]]);
-  assert.equal(sameSchedule(f, { ...f, name: "바꾼 이름", storeIds: [3] }), true);
-  assert.equal(sameSchedule(f, { ...f, repeatCount: "11" }), false);
-  assert.equal(sameSchedule(f, { ...f, isAllStores: true }), false);
   assert.deepEqual(formOfDetail({ ...detail, isAllStores: true }).excludedStoreIds, [3, 4]);
 });
 
@@ -211,6 +209,24 @@ test("열린 점포 — 닫힌 기간 · 끝난 휴일의 열린 기간은 빼�
     { storeId: 4, effectiveEndDate: null, periodState: "ENDED" as const },
   ];
   assert.deepEqual(openStores(rows).map((s) => s.storeId), [2, 3]);
+});
+
+test("상세 점포 수 — 진행 중이면 열린 점포만, 끝난 휴일이면 걸렸던 점포를 하나씩", () => {
+  // 진행 중인 전체 점포 휴일에서 하나뿐인 예외를 풀었다 — 빠진 기간만 남아 0개
+  assert.equal(storeCountOf([{ storeId: 3, effectiveEndDate: "2026-10-25", periodState: "ENDED" as const }], false), 0);
+  // 뺐다 다시 더한 점포는 한 번
+  const readded = [
+    { storeId: 2, effectiveEndDate: "2026-10-25", periodState: "ENDED" as const },
+    { storeId: 2, effectiveEndDate: null, periodState: "ACTIVE" as const },
+  ];
+  assert.equal(storeCountOf(readded, false), 1);
+  // 끝난 휴일 — 모든 기간이 ENDED 여도 걸렸던 점포 수
+  const ended = [
+    { storeId: 2, effectiveEndDate: null, periodState: "ENDED" as const },
+    { storeId: 2, effectiveEndDate: "2026-10-25", periodState: "ENDED" as const },
+    { storeId: 5, effectiveEndDate: null, periodState: "ENDED" as const },
+  ];
+  assert.equal(storeCountOf(ended, true), 2);
 });
 
 test("반복 기준 · 건너뛰는 날 안내", () => {
@@ -229,9 +245,9 @@ test("종료 조건 · 적용 대상 문구", () => {
   assert.equal(repeatEndText("UNTIL_DATE", "2026-12-28", null), "2026-12-28까지");
   assert.equal(repeatEndText("COUNT", null, 10), "10회");
   const t = { isAllStores: false, bpTradeName: null, firstStoreName: "판교점", otherStoreCount: 2, excludedStoreCount: 0 };
-  assert.equal(targetText(t), "판교점 외 2곳");
+  assert.equal(targetText(t), "판교점 외 2개");
   assert.equal(targetText({ ...t, otherStoreCount: 0 }), "판교점");
-  assert.equal(targetText({ ...t, isAllStores: true, bpTradeName: "㈜한강상회", excludedStoreCount: 1 }), "㈜한강상회 · 예외 1곳");
+  assert.equal(targetText({ ...t, isAllStores: true, bpTradeName: "㈜한강상회", excludedStoreCount: 1 }), "㈜한강상회 · 예외 1개");
 });
 
 test("어제 · 이력 기본 기간 · 전체 점포 역할", () => {
@@ -242,4 +258,25 @@ test("어제 · 이력 기본 기간 · 전체 점포 역할", () => {
   assert.equal(canChooseAllStores("PA"), true);
   assert.equal(canChooseAllStores("FM"), false);
   assert.equal(canChooseAllStores("FA"), false);
+});
+
+test("그날 걸린 점포 — 시작일 · 종료일 포함, 열린 기간, 같은 점포 한 번, 이름순(점포 목록 팝업)", () => {
+  const p = (storeId: number, name: string, effectiveStartDate: string, effectiveEndDate: string | null) => ({
+    storeId,
+    name,
+    effectiveStartDate,
+    effectiveEndDate,
+    periodState: "ACTIVE" as const,
+  });
+  const stores = [
+    p(1, "다점", "2026-11-03", null), // 시작일 = 날짜
+    p(2, "가점", "2026-10-01", "2026-11-03"), // 종료일 = 날짜(그날까지 포함)
+    p(3, "나점", "2026-10-01", "2026-11-02"), // 전날 빠짐
+    p(4, "라점", "2026-11-04", null), // 다음 날부터
+    p(1, "다점", "2026-09-01", "2026-09-30"), // 같은 점포의 지난 기간
+  ];
+  assert.deepEqual(
+    storesOnDate(stores, "2026-11-03").map((s) => s.storeId),
+    [2, 1],
+  );
 });

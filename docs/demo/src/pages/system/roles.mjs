@@ -62,7 +62,7 @@ const OWN = "PA000001"; // 보는 사람(플랫폼 관리자)에게 연결된 �
 const SELECTED = null; // 처음 진입은 고른 권한 없이 빈 안내를 보인다
 
 const has = (map, code, op) => !!map?.[code]?.includes(op);
-const TIP = { self: "본인 권한 범위 밖", bp: "BP 마스터·가맹 마스터 권한에는 플랫폼 관리 메뉴를 줄 수 없습니다" };
+const TIP = { self: "본인 권한 범위 밖", bp: "BP 마스터·가맹 마스터 권한에는 플랫폼 관리 메뉴를 줄 수 없습니다." };
 // [메뉴설정] 팝업의 서비스 탭. POS 는 아직 메뉴가 없어 빈 표다
 // 공통코드 SERVICE 순서 그대로(2026-10-15). 탭이 팝업 폭을 넘으면 한 줄을 지키고 가로로 스크롤해 고른다(scrollTabs).
 // 메뉴가 아직 없는 서비스는 빈 표다
@@ -100,8 +100,10 @@ function menuDialog(A, R, role, id) {
     const map = GRANT[code][svc] || {};
     // top: 1단계 줄 — 켜진 칸을 「등록」 배지 모양(연한 파랑 바탕 · 파랑 테두리 · 파랑 체크)으로(앱 role-menu-dialog 와 같다, 2026-10-26 사용자 지정)
     const cell = (on, b, op, top = false) => {
+      // 내 권한 밖(self) 칸은 꺼져 있으면 체크박스를 두지 않고, 고를 수 있는 빈 칸은 테두리를 회청으로 진하게(앱과 같다, 2026-10-29 사용자 지정)
+      if (b === "self" && !on) return "";
       const box = ui.checkbox(A, "", on, { "aria-label": op, disabled: !!b });
-      return `<span class="inline-flex${b ? " opacity-40" : ""}${top ? " [&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on-bg [&_input:checked]:bg-[url(icons/check-on.svg)] [&_input:checked]:bg-center [&_input:checked]:bg-no-repeat [&_img]:hidden" : ""}">${box}</span>`;
+      return `<span class="inline-flex${b ? " opacity-40" : " [&_input:enabled:not(:checked)]:border-erp-brand"}${top ? " [&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on-bg [&_input:checked]:bg-[url(icons/check-on.svg)] [&_input:checked]:bg-center [&_input:checked]:bg-no-repeat [&_img]:hidden" : ""}">${box}</span>`;
     };
     const OPS = [["R", "조회"], ["C", "등록"], ["U", "수정"], ["D", "삭제"]];
     const rows = vis.map((m, i) => {
@@ -121,7 +123,7 @@ function menuDialog(A, R, role, id) {
         if (TIP[b]) reasons.add(TIP[b]);
         return cell(has(map, m[0], op), b, label, m[1] === 1);
       });
-      const nm = `<span style="padding-left:${(m[1] - 1) * 18}px">${m[1] > 1 ? sub("└ ") : ""}${m[1] === 1 ? `<b class="font-semibold">${m[2]}</b>` : m[2]}</span>${[...reasons].map((r) => ` <span class="text-[13px] text-erp-label">· ${r}</span>`).join("")}`;
+      const nm = `<span style="padding-left:${(m[1] - 1) * 18}px">${m[1] > 1 ? sub("└ ") : ""}${m[1] === 1 ? `<b class="font-semibold">${m[2]}</b>` : m[2]}</span>`; // 막힌 이유는 메뉴명 옆에 적지 않는다(앱과 같다, 2026-10-29 사용자 지정)
       return [nm, sub(`${m[1]}단계`), ...cells];
     });
     // 머리칸 전체 선택: 고를 수 있는 칸이 모두 켜져 있으면 켜짐, 일부만 켜졌으면 「–」, 고를 칸이 없으면 흐리게
@@ -152,7 +154,7 @@ function menuDialog(A, R, role, id) {
     `<div class="flex flex-col gap-[12px]">` +
     roleHead(type, code, name) +
     // 잠긴 팝업의 안내 띠(앱 role-menu-dialog lockedText 와 같다, 2026-10-26)
-    (canSave ? "" : `<p class="flex min-h-[42px] items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[12px] py-[8px] text-[14px] font-medium text-erp-ink">${code === "PM000001" ? "플랫폼마스터는 시스템 최상위 권한으로, 모든 메뉴의 접근·관리 권한이 자동 부여되며 현재 화면에서는 조작할 수 없습니다." : "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."}</p>`) +
+    (canSave ? "" : `<p class="flex min-h-[42px] items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[12px] py-[8px] text-[14px] font-medium text-erp-ink">${code === "PM000001" ? "플랫폼마스터는 시스템 최상위 권한으로, 모든 메뉴의 접근·관리 권한이 자동 부여되며 현재 화면에서는 조작할 수 없습니다." : "내 계정에 연결된 권한 그룹은 수정할 수 없습니다."}</p>`) +
     tabs +
     `</div>`;
   const foot = canSave
@@ -189,7 +191,7 @@ export default ({ A, R }) => {
     { header: "메뉴설정", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "메뉴설정 여부", width: "w-[120px]" },
   ];
-  const table = tagRows(ui.dataTable(cols, rows), ROLES, SELECTED).replaceAll('<td class="truncate px-[10px]', '<td class="truncate px-[10px] leading-[1.3]');
+  const table = tagRows(ui.dataTable(cols, rows, "등록된 권한 그룹이 없습니다."), ROLES, SELECTED).replaceAll('<td class="truncate px-[10px]', '<td class="truncate px-[10px] leading-[1.3]');
 
   const left =
     `<section class="${CARD} flex-1">` +

@@ -98,7 +98,7 @@ test("전날에서 넘어온 근무 — 공백은 그날 시작한 근무 사이
 test("지난 주 복사 처리 — 복사 · 일부 제외 · 제외 사유(STAFF-13)", () => {
   assert.equal(totalsLabel({ days: 5, minutes: 2400 }), "5일 · 40.0h");
   assert.equal(totalsLabel({ days: 3, minutes: 1290 }), "3일 · 21.5h");
-  assert.equal(totalsLabel({ days: 0, minutes: 0 }), "—");
+  assert.equal(totalsLabel({ days: 0, minutes: 0 }), "-");
   const row = (days: number, excluded: { workDate: string; code: string | null }[], retiredDate: string | null = null) => ({ retiredDate, copied: { days }, excluded });
   assert.deepEqual(copyStatus(row(5, [])), { kind: "copy", label: "복사", detail: null });
   assert.deepEqual(copyStatus(row(0, [{ workDate: "2026-10-26", code: "WORK_SCHEDULE_NO_CONTRACT" }, { workDate: "2026-10-27", code: "WORK_SCHEDULE_NO_CONTRACT" }])), {

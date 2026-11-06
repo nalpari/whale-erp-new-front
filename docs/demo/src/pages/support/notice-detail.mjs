@@ -17,7 +17,7 @@ export default ({ A, R }) => {
   const files = ui.detailTable("첨부파일", [["파일", ui.detailValues([ui.link("점검_안내_2026-09.pdf", "#"), `<span class="text-erp-label">184 KB</span>`])]]);
   const nav = ui.detailTable("이전 · 다음", [
     ["이전", ui.detailValues([ui.link("근로계약 전자날인 기능이 열렸습니다", L("support/notice-detail.html")), `<span class="text-erp-label">09-01</span>`])],
-    ["다음", p.sub("가장 최근 공지입니다")],
+    ["다음", p.sub("가장 최근 공지입니다.")],
   ]);
   const notice = p.box("9월 정기 점검 안내 (09-14 02:00~05:00)", `<span class="text-[13px] text-erp-label">2026-09-05 · WHALE ERP 운영팀</span>`, text, { pad: true });
   const body = ui.detailBody(`${head}${notice}${files}${nav}`);

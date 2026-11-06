@@ -63,6 +63,14 @@ export async function getStaffMemberPayslipSummary(id: number): Promise<Schemas[
   return request(`/staff-members/${id}/summary/payslips`, await init("GET"));
 }
 
+/**
+ * GET /staff-members/:id/summary/send-logs — 근로계약이 보낸 가입 초대 · 소속 추가 확인 요청(재발송 포함)의 결과 · 실패 사유 · 재시도 가능 여부,
+ * 최근 순(WHALEERP-136). 근로계약 관리 조회 권한
+ */
+export async function getStaffMemberSendLogs(id: number): Promise<Schemas["StaffMemberSendLogResponseDto"]> {
+  return request(`/staff-members/${id}/summary/send-logs`, await init("GET"));
+}
+
 /** GET /staff-members/:id/summary/todos — 배정된 TO-DO 의 전체 · 완료 · 미완료 건수와 최근 처리 이력. TO-DO 관리 조회 권한 */
 export async function getStaffMemberTodoSummary(id: number): Promise<Schemas["StaffMemberTodoSummaryResponseDto"]> {
   return request(`/staff-members/${id}/summary/todos`, await init("GET"));

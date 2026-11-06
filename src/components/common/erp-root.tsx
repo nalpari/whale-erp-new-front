@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ActionProvider } from "./action-overlay";
 import { ERP_THEME } from "./theme";
 import { ToastProvider } from "./toast";
 
@@ -9,7 +10,9 @@ import { ToastProvider } from "./toast";
 export function ErpRoot({ className = "", children }: { className?: string; children: ReactNode }) {
   return (
     <div className={`${ERP_THEME} ${className}`}>
-      <ToastProvider>{children}</ToastProvider>
+      <ToastProvider>
+        <ActionProvider>{children}</ActionProvider>
+      </ToastProvider>
     </div>
   );
 }

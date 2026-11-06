@@ -96,6 +96,14 @@
 - 타입은 api의 `openapi.json` 이 갱신된 뒤 `pnpm openapi:types` 로 받는다.
 - 오류: 401·403이면 「권한이 없습니다」를, 그 밖의 오류면 「알림을 불러오지 못했습니다」와 「다시 시도」 버튼(같은 URL로 새로고침)을 보인다.
 
+## 플랫폼 탭에서 열기 (2026-10-29 재영, A안)
+
+플랫폼 운영자도 문의사항 · 도입문의 접수 알림을 받는다(api `recipients.ts` platformOperators). 그런데 알림함 메뉴 MN000042(`/notifications`)는 1팀 초기 데이터에 WHALE_ERP 행만 있다. 그래서 플랫폼 탭에서 종의 「전체 보기」나 알림 한 건(`/notifications/{id}/open`)을 누르면 화면이 열리지 않았다(「접근 권한이 없는 메뉴입니다」).
+
+- `isAllowed` 에서 탭 서비스가 PLATFORM 이면 `/notifications` 아래를 연다. `PENDING_PLATFORM_MENU` 줄과 같은 방식이다. api `/notifications` 는 `@UserTypes('admin')` 이라 플랫폼 계정도 받는다.
+- 웨일ERP 탭은 지금처럼 MN000042 메뉴 권한으로 판정한다. 메뉴 데이터(1팀)와 `MENULESS_PATHS` 는 건드리지 않는다.
+- 확인: `menus.test.ts` 에 플랫폼은 메뉴 없이 열림, 웨일ERP는 메뉴 없으면 막힘, 접두만 같은 주소는 막힘을 더한다.
+
 ## 쟁점
 
 api 계획의 NOTIFY-12~15를 `docs/mockup/notify/overview.html` 쟁점 절에 미정으로 적는다. 이 화면에만 걸리는 새 쟁점은 없다.

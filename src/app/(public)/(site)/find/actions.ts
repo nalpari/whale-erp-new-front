@@ -18,7 +18,7 @@ const TIMEOUT_MS = 10_000;
 export async function findLoginId(_prev: FindLoginIdState, formData: FormData): Promise<FindLoginIdState> {
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
-  if (!name || !email) return { error: "이름과 이메일을 입력해 주세요", name, email };
+  if (!name || !email) return { error: "이름과 이메일을 입력해 주세요.", name, email };
   if (!isEmailFormat(email)) return { error: INVALID_INPUT, name, email };
 
   try {
@@ -43,13 +43,13 @@ export async function findLoginId(_prev: FindLoginIdState, formData: FormData): 
 
 /**
  * 임시 비밀번호 발급(S-EOMSRG). 일치하지 않으면 아이디 찾기처럼 일치 없음(404)을, 메일 발송 중 오류(503)면 메일이 오지 않을 때 다시 받으라고 안내한다
- * (2026-10-20 재영). api #77 머지 전에는 일치 여부 · 메일 발송 여부와 상관없이 202 라 늘 발송 안내다. 실패 판정은 find-failure.ts 의 temporaryPasswordOutcome.
+ * (2026-10-20 재영). 실패 판정은 find-failure.ts 의 temporaryPasswordOutcome.
  */
 export async function issueTemporaryPassword(_prev: TemporaryPasswordState, formData: FormData): Promise<TemporaryPasswordState> {
   const name = String(formData.get("name") ?? "").trim();
   const loginId = String(formData.get("loginId") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
-  if (!name || !loginId || !email) return { error: "이름 · 아이디 · 이메일을 입력해 주세요", name, loginId, email };
+  if (!name || !loginId || !email) return { error: "이름 · 아이디 · 이메일을 입력해 주세요.", name, loginId, email };
   if (!isEmailFormat(email)) return { error: INVALID_INPUT, name, loginId, email };
 
   try {

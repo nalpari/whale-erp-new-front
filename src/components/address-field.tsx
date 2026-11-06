@@ -178,7 +178,7 @@ export function AddressField({
               }
               // 그 밖의 Enter(이전 검색어의 흐린 목록 · 목록 없음)는 막지 않는다 — SearchField 가 onSearch 로 바로 찾는다
             }}
-            placeholder="지번/도로명을 입력해주세요."
+            placeholder="지번/도로명을 입력해 주세요."
             aria-label={`${label} 검색어`}
             role="combobox"
             aria-autocomplete="list"

@@ -28,8 +28,10 @@ const BTN_TONE = {
   primary: "border-erp-brand bg-erp-brand text-white",
   soft: "border-erp-brand-soft bg-erp-brand-soft text-white",
   off: "border-erp-subtle bg-erp-subtle text-erp-ink",
-  // 퇴직 처리처럼 되돌리기 어려운 동작(2026-10-08 재영). 미운영 배지와 같은 상태 빨강 토큰을 쓴다. 공통 Button 에는 아직 없다.
+  // 퇴직 처리처럼 되돌리기 어려운 동작(2026-10-08 재영). 미운영 배지와 같은 상태 빨강 토큰을 쓴다 — 앱 button.tsx 의 danger 와 같다.
   danger: "border-erp-off bg-erp-off text-white",
+  // 다른 버튼이 호버했을 때의 모양을 처음부터 쓴다 — 앱 button.tsx 의 outline 과 같다(2026-10-30, 회원 탈퇴 [직원 자료 일괄 저장] · [근로계약 확인]).
+  outline: "border-erp-brand bg-white text-erp-ink hover:bg-erp-subtle!",
 };
 // 막힌 버튼(disabled)은 흐리게 두고 호버하지 않는다 — 앱 button.tsx 에 있던 것을 옮겼다(2026-10-26, 수정 양식 [저장] · 권한 삭제 [삭제]가 막혀 보이게)
 const BTN_SHELL =
@@ -41,17 +43,34 @@ export function button(label, { variant = "primary", href, ...a } = {}) {
     : `<button type="button"${attrs(a)} class="${cls}">${label}</button>`;
 }
 
+// blocked.tsx — 막힌 버튼의 이유 말풍선(헤더 툴팁 모양, 문장마다 줄바꿈). 이유가 있으면 손가락 커서와 다른 버튼 호버를 60% 흐림으로(2026-11-02).
+// place 는 top(기본) · bottom. 말풍선 오른쪽 끝을 버튼에 맞춘다. 이유를 바꿔 끼우는 화면(엑셀 받기)은 [data-blocked-tip] 의 글을 고친다.
+const BLOCKED_HOVER =
+  "cursor-pointer hover:[&>button:disabled]:border-erp-brand hover:[&>button:disabled]:bg-white hover:[&>button:disabled]:text-erp-ink hover:[&>button:disabled]:opacity-60";
+// narrow — 슬라이드 패널(464px, overflow-y-auto) 버튼 줄처럼 왼쪽 자리가 좁은 곳. 앱은 floating(popover)으로 띄우지만 데모는 자리 계산이 없어 폭을 패널 안으로 줄인다
+const blockedTip = (place, narrow) =>
+  `pointer-events-none absolute right-0 z-30 w-max ${narrow ? "max-w-[220px]" : "max-w-[360px]"} translate-y-[4px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[8px] text-left text-[14px] leading-[1.6] font-medium break-keep whitespace-pre-line text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out group-hover/blocked:translate-y-0 group-hover/blocked:opacity-100 motion-reduce:translate-y-0 ${
+    place === "top" ? "bottom-[calc(100%+6px)]" : "top-[calc(100%+6px)]"
+  }`;
+export const blockedLines = (reason) => reason.replace(/([.?!])\s+/g, "$1\n");
+export function blocked(buttonHtml, reason, { place = "top", narrow = false } = {}) {
+  return `<span class="group/blocked relative inline-flex ${reason ? BLOCKED_HOVER : ""}" data-blocked>${buttonHtml}<span data-blocked-tip class="${blockedTip(place, narrow)}"${reason ? "" : " hidden"}>${reason ? blockedLines(reason) : ""}</span></span>`;
+}
+/** 이유를 바꿔 끼운다(브라우저 쪽) — 빈 문자열이면 말풍선 · 호버를 끈다 */
+export const BLOCKED_HOVER_CLASSES = BLOCKED_HOVER;
+
 // badge.tsx
-const BADGE_TONE = { on: "min-w-[44px] bg-erp-on-bg text-erp-on", off: "bg-erp-off-bg text-erp-off" };
+// closed: 폐점처럼 더는 다루지 않는 상태 — 회색(앱 badge.tsx 와 같다)
+const BADGE_TONE = { on: "min-w-[44px] bg-erp-on-bg text-erp-on", off: "bg-erp-off-bg text-erp-off", closed: "bg-erp-thead-bg text-erp-sub" };
 export const badge = (tone, text) =>
   `<span class="inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium ${BADGE_TONE[tone]}">${text}</span>`;
 
 export const link = (text, href, label) =>
   `<a${label ? ` aria-label="${label}"` : ""} class="text-erp-link hover:underline" href="${href}">${text}</a>`;
 
-// page-bar.tsx
-export const pageBar = (title, right = "") =>
-  `<div class="flex h-[59px] items-center border-b border-erp-bar-line bg-white px-[24px]"><h1 class="flex-1 text-[22px] font-semibold text-erp-ink">${title}</h1>${right}</div>`;
+// page-bar.tsx. 문장으로 된 제목(홈 인사말)은 sentence 로 18px(앱 PageBar titleSize="sentence", 2026-11-04 사용자 지정)
+export const pageBar = (title, right = "", size = "display") =>
+  `<div class="flex h-[59px] items-center border-b border-erp-bar-line bg-white px-[24px]"><h1 class="flex-1 ${size === "sentence" ? "text-[18px]" : "text-[22px]"} font-semibold text-erp-ink">${title}</h1>${right}</div>`;
 
 // list-toolbar.tsx
 export const listToolbar = (total, right = "") =>
@@ -77,6 +96,16 @@ export function dataTable(columns, rows, empty = "데이터가 없습니다.") {
   return `<table class="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]"><colgroup>${cols}</colgroup><thead><tr class="h-[42px] border-y border-erp-thead-line bg-erp-thead-bg">${head}</tr></thead><tbody class="text-erp-ink">${body}</tbody></table>`;
 }
 
+// data-table.tsx 의 fillEmpty — 목록 화면 표. 비었을 때 열 이름 줄은 두고 그 아래 빈 칸이 부모(flex 세로 묶음)의 남는 높이를 채워 문구를 가운데 둔다
+// (최소 머리 42 + 빈 칸 92 = 134px, 2026-11-05 사용자 지정). 줄이 있으면 숨긴 빈 줄(data-empty)을 넣어 둔다 — erp.js 목록 거르기가 줄을 모두 숨기면
+// 그 줄을 보이고 표(data-fill-empty)를 남는 높이까지 늘린다. empty 는 그 상태의 문구(줄이 있으면 거른 결과 「조건에 맞는 …」, 없으면 「등록된 …」)
+export function fillTable(columns, rows, empty) {
+  const table = dataTable(columns, rows, empty);
+  if (rows.length)
+    return table.replace("<table ", "<table data-fill-empty ").replace("</tbody>", tableEmptyRow(columns, empty).replace("<tr ", "<tr data-empty hidden ") + "</tbody>");
+  return `<div class="flex min-h-[134px] flex-1 flex-col">${table.slice(0, table.indexOf("<tbody"))}</table><p class="flex min-h-[92px] flex-1 items-center justify-center border-x border-b border-erp-thead-line text-[14px] text-erp-muted">${empty}</p></div>`;
+}
+
 // data-table.tsx 의 scroll — 열 이름 줄을 고정하고 그 아래 줄만 스크롤한다. 부모(flex 세로 묶음)가 정한 높이를 채운다(2026-10-26).
 // 머리 · 본문을 두 표로 나누고 둘 다 스크롤바 자리를 비워 열이 어긋나지 않는다. table: dataTable 결과(줄 표시를 얹은 뒤에 감싼다)
 export function scrollTable(table) {
@@ -93,7 +122,8 @@ export function scrollTable(table) {
 
 // detail-table.tsx. rows: [label, valueHtml, multiline?] — multiline 은 값이 여러 줄인 줄(주소 · 대표 이미지처럼)만
 // 46 을 최소로 내용만큼 늘린다(real DetailRow.multiline 과 같다). 라벨 칸 110px(180px에서 줄임, 2026-10-20 — 앱·DESIGN.md 와 같다).
-export function detailTable(title, rows) {
+// action 을 주면 제목 줄 오른쪽 끝에 버튼을 둔다(앱 detail-table.tsx action — BP 마스터 상세 [BP 상태 변경], 2026-10-28)
+export function detailTable(title, rows, action = "") {
   const items = rows
     .map(([label, value, multiline], i) => {
       const last = i === rows.length - 1;
@@ -101,7 +131,13 @@ export function detailTable(title, rows) {
       return `<div class="flex w-full"><dt class="flex ${height} w-[110px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${last ? "rounded-bl-[2px]" : ""}">${label}</dt><dd class="flex ${height} min-w-px flex-1 items-center gap-[10px] overflow-hidden border-r border-b border-erp-thead-line bg-white p-[12px] text-[14px] text-erp-ink ${last ? "rounded-br-[2px]" : ""} ${multiline ? "leading-[1.6] break-keep" : ""}">${value}</dd></div>`;
     })
     .join("");
-  return `<div class="w-full"><h3 class="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">${title}</h3><dl class="flex w-full flex-col">${items}</dl></div>`; // 제목은 MY PAGE 「계정 정보」와 같은 15px 600(앱 detail-table.tsx, 2026-10-27 사용자 지정)
+  // 제목이 null 이면 줄만 그린다 — 점포 상세의 사진 옆 · 아래 줄(앱 DetailTable title 없음과 같다, 2026-11-03)
+  const head = title === null
+    ? ""
+    : action
+    ? `<div class="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px]"><h3 class="flex min-w-0 flex-1 items-center text-[15px] font-semibold text-erp-ink">${title}</h3>${action}</div>`
+    : `<h3 class="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">${title}</h3>`;
+  return `<div class="w-full">${head}<dl class="flex w-full flex-col">${items}</dl></div>`; // 제목은 마이페이지 「계정 정보」와 같은 15px 600(앱 detail-table.tsx, 2026-10-27 사용자 지정)
 }
 export const detailValues = (items) =>
   items
@@ -222,11 +258,11 @@ export function userPop(A, name, items) {
         : `<li><a class="${cls}" href="${it.href}">${it.label}</a></li>`;
     })
     .join("");
-  return `<div class="relative"><button type="button" aria-expanded="false" aria-controls="${id}" class="flex items-center"><span class="flex items-center gap-[10px] text-[15px] font-medium text-erp-ink">${img(A, "avatar.svg", 42, 42)}${name}</span>${img(A, "user-more.svg", 34, 34, `transition-transform duration-200 ${EASE_OUT} `)}</button>${popup(
+  return `<div class="relative"><button type="button" aria-label="${name} 마이페이지" aria-expanded="false" aria-controls="${id}" class="group relative flex items-center"><span class="flex items-center gap-[10px] text-[15px] font-medium text-erp-ink">${img(A, "avatar.svg", 42, 42)}${name}</span>${img(A, "user-more.svg", 34, 34, `transition-transform duration-200 ${EASE_OUT} `)}${tip("마이페이지")}</button>${popup(
     id,
     "fade",
     "right-0 w-[154px]",
-    `<p class="text-[15px] leading-[2] font-medium text-[#111] [text-box:trim-both_cap_alphabetic]">MY PAGE</p><hr class="mt-[12px] mb-[18px] border-erp-button-line"><ul class="text-[14px] leading-[2] [text-box:trim-both_cap_alphabetic]">${list}</ul>`,
+    `<p class="text-[15px] leading-[2] font-medium text-[#111] [text-box:trim-both_cap_alphabetic]">마이페이지</p><hr class="mt-[12px] mb-[18px] border-erp-button-line"><ul class="text-[14px] leading-[2] [text-box:trim-both_cap_alphabetic]">${list}</ul>`,
     true,
   )}</div>`;
 }
@@ -235,20 +271,21 @@ export function userPop(A, name, items) {
 const ICON_HOVER =
   "group relative grid h-[32px] place-items-center rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70 [&>span:first-child]:transition-opacity hover:[&>span:first-child]:opacity-70";
 const tip = (label) =>
-  `<span class="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[14px] leading-[2] whitespace-nowrap text-erp-brand opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${TAIL}${label}</span>`;
+  `<span aria-hidden="true" class="pointer-events-none absolute top-[calc(50%+26px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${label}</span>`;
 // scopeDialog 를 주면(플랫폼 콘솔) 웨일ERP 아이콘이 바로 이동하지 않고 그 id 의 BP 선택 확인창을 먼저 연다(F-TLJOCK).
+// hideAddon 이면 부가서비스구독관리 아이콘을 뺀다 — 플랫폼관리 사이트(global-header.tsx 와 같다, 2026-10-28 사용자 지정).
 export const serviceLinks = (A, hrefs = {}) => {
   const erpLink = hrefs.scopeDialog
     ? `<button type="button" aria-label="웨일ERP" data-dialog="${hrefs.scopeDialog}" class="${ICON_HOVER} w-[32px]">${img(A, "service-erp.svg", 32, 32)}${tip("웨일ERP")}</button>`
     : `<a aria-label="웨일ERP" class="${ICON_HOVER} w-[32px]" href="${hrefs.erp ?? "#"}">${img(A, "service-erp.svg", 32, 32)}${tip("웨일ERP")}</a>`;
   // 플랫폼관리는 플랫폼 계정에게만 보인다 — hrefs.platform 을 안 주면 자리째 뺀다(BP·가맹 role, 사용자 지적 · global-header.tsx 와 같다, 2026-10-21).
   const platformLink = hrefs.platform
-    ? `<a aria-label="플랫폼관리" class="${ICON_HOVER} w-[20px] bg-white" href="${hrefs.platform}">${img(A, "service-platform.svg", 20, 20)}${tip("플랫폼관리")}</a>`
+    ? `<a aria-label="플랫폼관리" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.platform}">${img(A, "service-platform.svg", 22, 22)}${tip("플랫폼관리")}</a>`
     : "";
-  return `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]">${erpLink}<a aria-label="부가서비스 현황" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-chat.svg", 19, 19)}${tip("부가서비스 현황")}</a>${platformLink}</div></div>`;
+  return `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]">${erpLink}${hrefs.hideAddon ? "" : `<a aria-label="부가서비스구독관리" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-subscription.svg", 24, 24)}${tip("부가서비스구독관리")}</a>`}${platformLink}</div></div>`;
 };
 export const alarmLink = (A, href) =>
-  `<a aria-label="알림" class="shrink-0 rounded-full transition-opacity duration-150 ease-out hover:opacity-70" href="${href}">${img(A, "alarm.svg", 42, 42)}</a>`;
+  `<a aria-label="알림" class="group relative shrink-0 rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70" href="${href}">${img(A, "alarm.svg", 42, 42)}${tip("알림")}</a>`;
 
 // menus: { label, items: [{ label, href }] }. 2depth 줄은 처음엔 첫 메뉴 항목을 그려 두고 erp.js 가 바꾼다.
 export function globalHeader(A, menus, right, home = "#") {
@@ -256,7 +293,8 @@ export function globalHeader(A, menus, right, home = "#") {
     `<button type="button" aria-expanded="false" class="flex h-[52px] shrink-0 items-center text-[16px] font-semibold whitespace-nowrap transition-colors duration-150 ease-out hover:text-erp-brand-soft ${
       i === 0 ? "pr-[20px]" : "px-[20px]"
     } text-white">${m.label}</button>`;
-  const sub = menus[0].items
+  // 메뉴가 없는 계정(플랫폼 권한 요청 안내)은 짙은 줄만 남는다.
+  const sub = (menus[0]?.items ?? [])
     .map((it) => `<li><a class="whitespace-nowrap transition-colors duration-150 ease-out hover:text-erp-brand" href="${it.href}">${it.label}</a></li>`)
     .join("");
   return `<header class="bg-white" data-menus='${JSON.stringify(menus)}'><div class="flex h-[70px] items-center gap-[34px] px-[24px]"><a class="flex w-[177px] shrink-0 items-center gap-[10px]" href="${home}">${img(A, "logo-whale.svg", 53, 40)}<p class="leading-[1.3] text-[#252525]"><span class="block text-[16px] font-extrabold uppercase">Whale ERP</span><span class="block text-[12px]">Management System</span></p></a><div class="flex flex-1 items-center gap-[12px]">${right}</div></div><nav class="flex h-[52px] items-center gap-[54px] bg-erp-nav px-[24px]">${menus
@@ -270,8 +308,8 @@ const PANEL_BACKDROP =
   '<div data-panel-backdrop inert class="fixed inset-0 z-[5] bg-erp-nav/40 opacity-0 transition-opacity duration-250 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none"></div>';
 
 // 화면 틀. /design/full 과 같은 조합이다: 헤더 · 제목 줄 · 본문(남는 높이). 등록 패널은 바깥 relative 영역 오른쪽에 겹친다.
-export function erpFrame({ header, title, titleRight = "", body, panels = "" }) {
-  return `<div class="${ERP_THEME} min-h-[100dvh]"><div class="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg"><div class="relative flex h-full min-w-[1720px] flex-col overflow-x-clip">${header}${pageBar(title, titleRight)}${body}${panels}${PANEL_BACKDROP}</div></div></div>`;
+export function erpFrame({ header, title, titleRight = "", titleSize, body, panels = "" }) {
+  return `<div class="${ERP_THEME} min-h-[100dvh]"><div class="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg"><div class="relative flex h-full min-w-[1720px] flex-col overflow-x-clip">${header}${pageBar(title, titleRight, titleSize)}${body}${panels}${PANEL_BACKDROP}</div></div></div>`;
 }
 
 // 목록 화면 본문: 왼쪽 필터 + 오른쪽 목록 카드

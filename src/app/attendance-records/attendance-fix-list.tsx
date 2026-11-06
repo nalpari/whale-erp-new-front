@@ -1,13 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, Checkbox, ConfirmDialog, DataTable, DetailTable, Field, FormGroup, FormRow, Select, SlidePanel, TextField, Textarea, useToast, type Column } from "@/components/common";
+import { useCallback, useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
+import { Button, Checkbox, ConfirmDialog, DataTable, DetailTable, Field, FieldMessage, FormGroup, GuideBand, Select, SlidePanel, TextField, Textarea, useToast, type Column } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { labelOf, type EnumValue } from "@/lib/enums";
+import { BackdropInert } from "./backdrop-inert";
 import type { AttendanceHistory, ProxyStaff } from "@/lib/attendance-records-api";
 import { correctAttendanceAction, getAttendanceHistoryAction, getProxyStaffAction, proxyAttendanceAction, reviewAttendanceAction, type EditResult } from "./actions";
-import { byLabel, editTail, fixPairIndex, fixSaveNote, forcedNextDay, initialNextDay, laterDayMark, overnightNote, shortDay, type FixRow } from "./attendance-query";
+import { byLabel, editTail, fixPairIndex, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, overnightNote, proxyPoints, shortDay, type FixRow } from "./attendance-query";
 
 // 보정이 필요한 기록의 표와 동작(데모 staff-sections.mjs fixList · fixForm · proxyForm · histDialog, WHALEERP-220). 확인 필요 · 미등록 줄에는
 // 「보정」 · 「이상 없음」, 보정 · 대신 등록한 줄에는 「이력」. 보정 · 대신 등록은 오른쪽 패널, 「이상 없음」은 확인창, 이력은 창이다.
@@ -16,6 +17,8 @@ import { byLabel, editTail, fixPairIndex, fixSaveNote, forcedNextDay, initialNex
 // 토스트로 알린다(218 「급여에 영향이 갈 수 있다」).
 
 const TIME = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+/** api 의 미래 시각 거절 문장 앞부분(attendance-edit.service assertNotFuture) — 이 거절만 출퇴근이 정상이 될 때까지 문장을 둔다. 코드가 없어 글자로 가른다 */
+const FUTURE_REJECTION = "아직 오지 않은 시각";
 const TONE = {
   warn: "bg-[#fff6e5] text-[#956013]",
   risk: "bg-erp-off-bg text-erp-off",
@@ -167,8 +170,12 @@ export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; 
 
   return (
     <>
-      <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} empty="이 기간에 보정이 필요한 기록이 없습니다." />
-      <SlidePanel id="attendance-fix" open={fix !== null} onClose={() => setFix(null)} label="기록 보정" trigger={trigger}>
+      {/* 비었을 때 열 이름 줄은 두고 그 아래 빈 칸이 본문 남는 높이를 채운다 — 기간이 늘 걸려 있어 문구는 하나다(직원 · 점포 목록과 같다, 2026-11-04 사용자 지정) */}
+      <BackdropInert>
+        <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} empty="보정이 필요한 출·퇴근 기록이 없습니다." fillEmpty />
+      </BackdropInert>
+      {/* BP 마스터 등록처럼 바탕을 어둡게 깔고, 바탕을 누르면 닫는다(2026-11-05 사용자 지정, 3팀 확인 필요) */}
+      <SlidePanel id="attendance-fix" open={fix !== null} onClose={() => setFix(null)} label="기록 보정" trigger={trigger} closeOnBackdrop>
         {fix && (
           <FixForm
             // 고칠 기록(짝)을 바꾸면 입력칸을 그 짝 값으로 새로 채운다
@@ -252,15 +259,29 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
   const forced = forcedNextDay(checkIn, checkOut);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // 지난 거절이 미래 시각 때문이었나 — 그렇다면 출퇴근이 정상이 될 때까지 문장을 둔다(사유 등 다른 칸을 고쳐도 남긴다, 2026-11-05 사용자 지정)
+  const [futureRejected, setFutureRejected] = useState(false);
+  const future = hasFutureTime(fixPoints(fix.row.date, !!pair.checkIn, checkIn, checkOut, nextDay));
+  // 칸을 고치면 지난 거절 문장을 내린다 — 미래 시각 거절이면 고친 값이 더는 미래가 아닐 때만(그 밖의 거절은 바로)
+  const clearRejection = (points: [string, string][]) => {
+    if (futureRejected && hasFutureTime(points)) return;
+    setError(null);
+    setFutureRejected(false);
+  };
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const ids = useId();
   const [busy, startTransition] = useTransition();
 
   const save = () => {
-    if (checkIn && !TIME.test(checkIn)) return setError("출근 시각을 시 · 분까지 입력해 주세요.");
-    if (checkOut && !TIME.test(checkOut)) return setError("퇴근 시각을 시 · 분까지 입력해 주세요.");
-    if (pair.checkIn && !checkIn) return setError("출근 시각을 입력해 주세요.");
-    if (pair.checkOut && !checkOut) return setError("퇴근 시각을 입력해 주세요.");
-    if (!reason.trim()) return setError("수정 사유를 입력해 주세요.");
+    // 저장할 때 칸마다 검사해 그 칸 아래에 알린다(화면 설계 공통 기준 1번, WHALEERP-633)
+    const next = pickErrors({
+      checkIn: checkIn && !TIME.test(checkIn) ? "출근 시각을 시 · 분까지 입력해 주세요." : pair.checkIn && !checkIn ? "출근 시각을 입력해 주세요." : undefined,
+      checkOut: checkOut && !TIME.test(checkOut) ? "퇴근 시각을 시 · 분까지 입력해 주세요." : pair.checkOut && !checkOut ? "퇴근 시각을 입력해 주세요." : undefined,
+      reason: reason.trim() ? undefined : "수정 사유를 입력해 주세요.",
+    });
+    setErrors(next);
     setError(null);
+    if (Object.keys(next).length > 0) return focusFirstError(ids);
     startTransition(async () => {
       const result = await correctAttendanceAction(anchorOf(pair), {
         ...(checkIn ? { checkInTime: checkIn } : {}),
@@ -270,13 +291,17 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
         ...(pair.checkIn ? { expectedCheckInAt: pair.checkIn.recordedAt } : {}),
         ...(pair.checkOut ? { expectedCheckOutAt: pair.checkOut.recordedAt } : {}),
       });
-      if (!result.ok && result.code !== "ATTENDANCE_CHANGED" && result.status !== undefined && result.status < 500) return setError(result.message);
+      if (!result.ok && result.code !== "ATTENDANCE_CHANGED" && result.status !== undefined && result.status < 500) {
+        setFutureRejected(future && result.message.includes(FUTURE_REJECTION));
+        return setError(result.message);
+      }
       onDone(result);
     });
   };
 
   return (
-    <div className="flex flex-col gap-[24px] p-[24px]">
+    <div id={ids} className="contents">
+      {/* 패널(SlidePanel)이 이미 안쪽 24px · 칸 사이 16px 를 준다 — 여기서 또 주면 BP 마스터 등록보다 칸이 좁고 사이가 벌어졌다(2026-11-05 사용자 지정, 3팀 확인 필요) */}
       <div className="flex items-center gap-[8px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">기록 보정</h2>
         <span className="rounded-[2px] bg-erp-thead-bg px-[4px] py-px text-[14px] text-erp-sub">
@@ -296,34 +321,86 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
         </Field>
       )}
       <FormGroup title="출퇴근 기록">
-        <FormRow>
-          <HelpField label="출근" help={`원본 ${pair.checkIn?.time ?? "없음"}`}>
-            <TextField type="time" aria-label="출근" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
+        <MessageRow>
+          <HelpField label="출근" help={`원본 ${pair.checkIn?.time ?? "없음"}`} message={<FieldMessage id={`${ids}-checkIn`} message={errors.checkIn} />}>
+            <TextField
+              type="time"
+              aria-label="출근"
+              value={checkIn}
+              {...invalidProps(ids, errors, "checkIn")}
+              onChange={(e) => {
+                setCheckIn(e.target.value);
+                setErrors((x) => clearError(x, "checkIn"));
+                clearRejection(fixPoints(fix.row.date, !!pair.checkIn, e.target.value, checkOut, nextDay));
+              }}
+            />
           </HelpField>
-          <HelpField label="퇴근" help={`원본 ${pair.checkOut ? pair.checkOut.time + laterDayMark(fix.row.date, pair.checkOut.recordedAt) : "없음"}`}>
-            <TextField type="time" aria-label="퇴근" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
+          <HelpField
+            label="퇴근"
+            help={`원본 ${pair.checkOut ? pair.checkOut.time + laterDayMark(fix.row.date, pair.checkOut.recordedAt) : "없음"}`}
+            message={<FieldMessage id={`${ids}-checkOut`} message={errors.checkOut} />}
+          >
+            <TextField
+              type="time"
+              aria-label="퇴근"
+              value={checkOut}
+              {...invalidProps(ids, errors, "checkOut")}
+              onChange={(e) => {
+                setCheckOut(e.target.value);
+                setErrors((x) => clearError(x, "checkOut"));
+                clearRejection(fixPoints(fix.row.date, !!pair.checkIn, checkIn, e.target.value, nextDay));
+              }}
+            />
           </HelpField>
-        </FormRow>
+        </MessageRow>
         {pair.checkIn && checkOut && (
-          <Checkbox label="다음 날 퇴근" checked={forced || nextDay} disabled={forced} onChange={(e) => setNextDay(e.target.checked)} />
+          <Checkbox label="다음 날 퇴근" checked={forced || nextDay} disabled={forced} onChange={(e) => {
+              setNextDay(e.target.checked);
+              clearRejection(fixPoints(fix.row.date, !!pair.checkIn, checkIn, checkOut, e.target.checked));
+            }} />
         )}
         <SaveNote note={fixSaveNote(fix.row.date, !!pair.checkIn, checkIn, checkOut, nextDay)} />
-        <Field label="수정 사유" required>
-          <Textarea aria-label="수정 사유" rows={4} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인." />
-        </Field>
-        <p className="text-[13px] text-erp-label">퇴근이 출근보다 이르거나 같으면 다음 날 퇴근입니다. 그 밖에 다음 날 퇴근이면 「다음 날 퇴근」을 고릅니다. 보정하면 확인 필요 꼬리표와 사유도 지웁니다.</p>
+        <MessageField label="수정 사유" required message={<FieldMessage id={`${ids}-reason`} message={errors.reason} />}>
+          <Textarea
+            aria-label="수정 사유"
+            rows={2}
+            maxLength={500}
+            value={reason}
+            {...invalidProps(ids, errors, "reason")}
+            onChange={(e) => {
+              setReason(e.target.value);
+              setErrors((x) => clearError(x, "reason"));
+            }}
+            placeholder="예: 퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인."
+          />
+        </MessageField>
       </FormGroup>
+      {/* 「다음 날 퇴근」 체크는 출근이 있는 짝에만 선다 — 출근 미등록 줄은 출근을 전날로 저장한다(위 안내).
+          안내는 묶음 상자 밖 아래 14px · 줄간 1.6 — BP 마스터 등록 패널의 안내와 같다(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 상자 안 13px) */}
+      <GuideBand
+        title="보정 안내"
+        lines={[
+          // 대신 등록 안내와 같은 순서 · 말투 — 기간 · 직원 앱 표시 · 보정 결과, 끝에 시각 처리(2026-11-05 사용자 지정, 3팀 확인 필요)
+          "최근 3개월 이내의 기록만 보정할 수 있으며, 미래 시각은 등록할 수 없습니다.",
+          "관리자가 보정한 기록은 직원 근무 앱에 연필 아이콘으로 표시됩니다.",
+          "보정한 기록의 확인 필요 표시와 사유는 삭제됩니다.",
+          ...(pair.checkIn
+            ? ["퇴근 시각이 출근 시각과 같거나 이전인 경우, 다음 날 퇴근한 것으로 처리됩니다.", "그 외에 다음 날 퇴근한 경우, 관리자가 「다음 날 퇴근」을 체크합니다."]
+            : ["출근 시각이 퇴근 시각과 같거나 이후인 경우, 전날 출근한 것으로 처리됩니다."]),
+        ]}
+      />
       {error && (
         <p role="alert" className="text-[14px] text-erp-off">
           {error}
         </p>
       )}
-      <div className="flex justify-end gap-[6px]">
+      {/* [취소] [저장]은 패널 가운데 — 1팀 등록 · 수정 패널과 같다(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 오른쪽 끝, 버튼 이름은 「보정 저장」) */}
+      <div className="flex justify-center gap-[6px]">
         <Button variant="off" onClick={onClose} disabled={busy}>
           취소
         </Button>
         <Button onClick={save} disabled={busy}>
-          보정 저장
+          저장
         </Button>
       </div>
     </div>
@@ -342,17 +419,20 @@ export function ProxyButton({ stores, today, editableFrom }: { stores: string; t
   if (!permission.create) return null;
   return (
     <>
-      <Button
-        ref={trigger}
-        variant="soft"
-        onClick={() => {
-          setOpen(true);
-          setRound((n) => n + 1);
-        }}
-      >
-        출퇴근 대신 등록
-      </Button>
-      <SlidePanel id="attendance-proxy" open={open} onClose={() => setOpen(false)} label="출퇴근 대신 등록" trigger={trigger}>
+      <BackdropInert>
+        <Button
+          ref={trigger}
+          variant="soft"
+          onClick={() => {
+            setOpen(true);
+            setRound((n) => n + 1);
+          }}
+        >
+          출퇴근 대신 등록
+        </Button>
+      </BackdropInert>
+      {/* 기록 보정 패널과 같이 바탕을 깔고 바탕 클릭으로 닫는다(2026-11-05 사용자 지정, 3팀 확인 필요) */}
+      <SlidePanel id="attendance-proxy" open={open} onClose={() => setOpen(false)} label="출퇴근 대신 등록" trigger={trigger} closeOnBackdrop>
         {open && (
           <ProxyForm
             key={round}
@@ -383,6 +463,12 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   const [checkOut, setCheckOut] = useState("");
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // 지난 거절이 미래 시각 때문이었나 — 출퇴근이 정상이 될 때까지 문장을 둔다(기록 보정과 같다)
+  const [futureRejected, setFutureRejected] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  // 직원 목록을 받지 못한 까닭 — 저장 때 지우지 않는다(지우면 직원 칸을 왜 고를 수 없는지 사라진다). 날짜를 다시 고르면 내린다
+  const [listError, setListError] = useState<string | null>(null);
+  const ids = useId();
   const [busy, startTransition] = useTransition();
   // 직원 선택지는 그날 기준이다 — 날짜를 바꿀 때마다 다시 받고, 늦게 온 앞 날짜 응답은 버린다
   const wanted = useRef(today);
@@ -392,14 +478,14 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
       getProxyStaffAction(stores, day)
         .then((result) => {
           if (wanted.current !== day) return;
-          if (!result.ok) return setError(result.message);
+          if (!result.ok) return setListError(result.message);
           setStaff(result.staff);
         })
         .catch(() => {
           // 서버 액션 호출 자체가 실패(연결 끊김 등) — 선택지를 비우고 알린다. 날짜를 다시 고르면 다시 받는다
           if (wanted.current !== day) return;
           setStaff([]);
-          setError("직원 목록을 불러오지 못했습니다. 날짜를 다시 골라 주세요.");
+          setListError("직원 목록을 불러오지 못했습니다. 날짜를 다시 선택해 주세요.");
         });
     },
     [stores],
@@ -410,6 +496,10 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
     setStaff(null);
     setStaffId(null);
     setError(null);
+    setFutureRejected(false);
+    setListError(null);
+    // 직원이 비면 퇴근 필수 여부(보정 대상)도 바뀐다 — 퇴근 문구도 함께 내린다
+    setErrors((x) => clearError(clearError(x, "staff"), "checkOut"));
     loadStaff(day);
   };
   const manyStores = new Set((staff ?? []).map((s) => s.storeId)).size > 1;
@@ -417,28 +507,57 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   const picked = staff?.find((s) => s.staffMemberId === staffId);
   const isProxy = picked?.isProxy ?? true;
 
-  const save = () => {
-    if (staffId === null) return setError("직원을 골라 주세요.");
-    if (!TIME.test(checkIn)) return setError("출근 시각을 입력해 주세요.");
-    if (!isProxy && !checkOut) return setError("퇴근 시각을 입력해 주세요.");
-    if (checkOut && !TIME.test(checkOut)) return setError("퇴근 시각을 시 · 분까지 입력해 주세요.");
-    if (!reason.trim()) return setError("사유를 입력해 주세요.");
+  const future = hasFutureTime(proxyPoints(date, checkIn, checkOut));
+  // 칸을 고치면 지난 거절 문장을 내린다 — 미래 시각 거절이면 고친 값이 더는 미래가 아닐 때만(그 밖의 거절은 바로)
+  const clearRejection = (points: [string, string][]) => {
+    if (futureRejected && hasFutureTime(points)) return;
     setError(null);
+    setFutureRejected(false);
+  };
+  const save = () => {
+    // 저장할 때 칸마다 검사해 그 칸 아래에 알린다(화면 설계 공통 기준 1번, WHALEERP-633)
+    const next = pickErrors({
+      staff: staffId === null ? "직원을 선택해 주세요." : undefined,
+      checkIn: TIME.test(checkIn) ? undefined : "출근 시각을 입력해 주세요.",
+      checkOut: !isProxy && !checkOut ? "퇴근 시각을 입력해 주세요." : checkOut && !TIME.test(checkOut) ? "퇴근 시각을 시 · 분까지 입력해 주세요." : undefined,
+      reason: reason.trim() ? undefined : "사유를 입력해 주세요.",
+    });
+    setErrors(next);
+    setError(null);
+    // staffId === null 은 next.staff 와 같다 — 아래 호출에 number 로 좁히려고 둔다
+    if (staffId === null || Object.keys(next).length > 0) return focusFirstError(ids);
     startTransition(async () => {
       const result = await proxyAttendanceAction({ staffMemberId: staffId, date, checkInTime: checkIn, ...(checkOut ? { checkOutTime: checkOut } : {}), reason: reason.trim() });
-      if (!result.ok && result.status !== undefined && result.status < 500) return setError(result.message);
+      if (!result.ok && result.status !== undefined && result.status < 500) {
+        setFutureRejected(future && result.message.includes(FUTURE_REJECTION));
+        return setError(result.message);
+      }
       onDone({ ...result, isProxy });
     });
   };
 
   return (
-    <div className="flex flex-col gap-[24px] p-[24px]">
+    <div id={ids} className="contents">
+      {/* 패널(SlidePanel)이 이미 안쪽 24px · 칸 사이 16px 를 준다 — 여기서 또 주면 BP 마스터 등록보다 칸이 좁고 사이가 벌어졌다(2026-11-05 사용자 지정, 3팀 확인 필요) */}
       <h2 className="text-[18px] font-semibold text-erp-ink">출퇴근 대신 등록</h2>
       <FormGroup title="출퇴근 기록">
-        <FormRow>
-          <Field label="직원" required>
-            <Select aria-label="직원" value={staffId ?? ""} onChange={(e) => setStaffId(e.target.value ? Number(e.target.value) : null)} disabled={!staff}>
-              <option value="">{staff === null ? "불러오는 중…" : staff.length ? "직원 선택" : "등록할 수 있는 직원 없음"}</option>
+        <MessageRow>
+          <MessageField label="직원" required message={<FieldMessage id={`${ids}-staff`} message={errors.staff} />}>
+            <Select
+              aria-label="직원"
+              value={staffId ?? ""}
+              {...invalidProps(ids, errors, "staff")}
+              onChange={(e) => {
+                setStaffId(e.target.value ? Number(e.target.value) : null);
+                // 직원이 바뀌면 퇴근 필수 여부(보정 대상)도 바뀐다 — 퇴근 문구도 함께 내린다
+                setErrors((x) => clearError(clearError(x, "staff"), "checkOut"));
+                setError(null); // 직원이 바뀌면 지난 거절(계약 기간 · 그날 기록 등)은 맞지 않는다
+                setFutureRejected(false);
+              }}
+              disabled={!staff}
+            >
+              {/* 다른 선택칸과 같이 「선택」, 불러오는 동안만 「불러오는 중…」(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「직원 선택」 · 「등록할 수 있는 직원 없음」) */}
+              <option value="">{staff === null ? "불러오는 중…" : "선택"}</option>
               {(staff ?? []).map((s) => (
                 <option key={s.staffMemberId} value={s.staffMemberId}>
                   {manyStores ? `${s.name} · ${s.storeName}` : s.name}
@@ -446,39 +565,84 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
                 </option>
               ))}
             </Select>
-          </Field>
+          </MessageField>
+        </MessageRow>
+        {/* 날짜는 직원 아래 줄 — 직원 칸을 패널 폭만큼 넓혀야 「이름 · 점포 (보정)」 선택지가 칸 밖으로 넘치지 않는다(기본 선택칸 목록은 가장 긴 선택지 폭으로 펼쳐진다, 2026-11-05 사용자 지적, 3팀 확인 필요) */}
+        <MessageRow>
           <Field label="날짜" required>
             <TextField type="date" aria-label="날짜" min={editableFrom} max={today} value={date} onChange={(e) => e.target.value && changeDate(e.target.value)} />
           </Field>
-        </FormRow>
-        <FormRow>
-          <Field label="출근" required>
-            <TextField type="time" aria-label="출근" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
-          </Field>
-          <Field label="퇴근" required={!isProxy}>
-            <TextField type="time" aria-label="퇴근" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
-          </Field>
-        </FormRow>
+        </MessageRow>
+        <MessageRow>
+          <MessageField label="출근" required message={<FieldMessage id={`${ids}-checkIn`} message={errors.checkIn} />}>
+            <TextField
+              type="time"
+              aria-label="출근"
+              value={checkIn}
+              {...invalidProps(ids, errors, "checkIn")}
+              onChange={(e) => {
+                setCheckIn(e.target.value);
+                setErrors((x) => clearError(x, "checkIn"));
+                clearRejection(proxyPoints(date, e.target.value, checkOut));
+              }}
+            />
+          </MessageField>
+          <MessageField label="퇴근" required={!isProxy} message={<FieldMessage id={`${ids}-checkOut`} message={errors.checkOut} />}>
+            <TextField
+              type="time"
+              aria-label="퇴근"
+              value={checkOut}
+              {...invalidProps(ids, errors, "checkOut")}
+              onChange={(e) => {
+                setCheckOut(e.target.value);
+                setErrors((x) => clearError(x, "checkOut"));
+                clearRejection(proxyPoints(date, checkIn, e.target.value));
+              }}
+            />
+          </MessageField>
+        </MessageRow>
         <OvernightNote date={date} checkIn={checkIn} checkOut={checkOut} />
         {picked?.isPayslipConfirmed && <PayslipWarning />}
-        <Field label="사유" required>
-          <Textarea aria-label="사유" rows={4} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 위치 수집 일시 중지 · 점장 확인" />
-        </Field>
-        <p className="text-[13px] text-erp-label">
-          위치정보 동의를 하지 않았거나 일시 중지한 직원은 대신 등록합니다. 그 밖의 직원(보정)은 출근 · 퇴근을 모두 찍지 않은 날만 두 시각을 함께 넣어 보정합니다. 퇴근이 출근보다 이르거나 같으면 다음 날 퇴근이고, 아직 오지 않은 시각은 등록할 수 없습니다. 직원 근무 앱에는 연필 표시로 보입니다.
-        </p>
+        <MessageField label="사유" required message={<FieldMessage id={`${ids}-reason`} message={errors.reason} />}>
+          <Textarea
+            aria-label="사유"
+            rows={2}
+            maxLength={500}
+            value={reason}
+            {...invalidProps(ids, errors, "reason")}
+            onChange={(e) => {
+              setReason(e.target.value);
+              setErrors((x) => clearError(x, "reason"));
+            }}
+            placeholder="예: 위치 수집 일시 중지 · 점장 확인"
+          />
+        </MessageField>
       </FormGroup>
-      {error && (
-        <p role="alert" className="text-[14px] text-erp-off">
-          {error}
-        </p>
+      {/* 안내는 묶음 상자 밖 아래 14px · 줄간 1.6 — BP 마스터 등록 패널의 안내(Note)와 같다(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 상자 안 13px) */}
+      <GuideBand
+        title="대신 등록 안내"
+        lines={[
+          "위치정보 수집에 동의하지 않았거나 수집을 중지한 직원의 출·퇴근 기록은 관리자가 대신 등록합니다.",
+          "최근 3개월 이내의 기록만 등록할 수 있으며, 미래 시각은 등록할 수 없습니다.",
+          "관리자가 대신 등록한 기록은 직원 근무 앱에 연필 아이콘으로 표시됩니다.",
+          "퇴근 시각이 출근 시각과 같거나 이전인 경우, 다음 날 퇴근한 것으로 처리됩니다.",
+        ]}
+      />
+      {[listError, error].map(
+        (text, i) =>
+          text && (
+            <p key={i} role="alert" className="text-[14px] text-erp-off">
+              {text}
+            </p>
+          ),
       )}
-      <div className="flex justify-end gap-[6px]">
+      {/* [취소] [저장]은 패널 가운데(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 오른쪽 끝, 버튼 이름은 대신 등록이면 「대신 등록」 · 보정이면 「보정」) */}
+      <div className="flex justify-center gap-[6px]">
         <Button variant="off" onClick={onClose} disabled={busy}>
           취소
         </Button>
         <Button onClick={save} disabled={busy}>
-          {isProxy ? "대신 등록" : "보정"}
+          저장
         </Button>
       </div>
     </div>
@@ -491,8 +655,10 @@ function PayslipWarning() {
 }
 
 /** 퇴근이 출근보다 이르거나 같으면 다음 날 퇴근으로 저장된다는 것을 실제 날짜로 알린다(api 와 같은 규칙) */
+// 칸 오류(FieldMessage)와 같은 빨간 13px — 출근 날과 다른 날로 저장되는 것을 놓치지 않게(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 먹색 500). 막지는 않는다
 function OvernightNote({ date, checkIn, checkOut }: { date: string; checkIn: string; checkOut: string }) {
-  return <SaveNote note={overnightNote(date, checkIn, checkOut)} />;
+  const note = overnightNote(date, checkIn, checkOut);
+  return note && <p className="text-[13px] leading-[1.5] text-erp-off">{note}</p>;
 }
 
 /** 저장할 날 안내(보정 · 대신 등록) */
@@ -501,13 +667,41 @@ function SaveNote({ note }: { note: string | null }) {
 }
 
 /** 도움말이 칸 아래에 붙는 칸(데모 fieldH) — 기록 보정의 「원본 12:58」 */
-function HelpField({ label, help, children }: { label: string; help: string; children: ReactNode }) {
+function HelpField({ label, help, message, children }: { label: string; help: string; message: ReactNode; children: ReactNode }) {
   return (
     <div className="flex min-w-px flex-1 flex-col gap-[8px]">
       <Field label={label}>
         {children}
       </Field>
+      {message}
       <span className="text-[12px] leading-[1.5] text-erp-muted">{help}</span>
     </div>
   );
+}
+
+// 보정 · 대신 등록 폼의 칸 오류(칸 이름 → 문구). api 가 돌려준 거절은 칸을 가를 수 없어 폼 아래 한 줄(error)로 둔다.
+type FieldErrors = Partial<Record<"staff" | "checkIn" | "checkOut" | "reason", string>>;
+const pickErrors = (all: FieldErrors): FieldErrors => Object.fromEntries(Object.entries(all).filter(([, m]) => m)) as FieldErrors;
+const clearError = (errors: FieldErrors, key: keyof FieldErrors): FieldErrors => (errors[key] ? { ...errors, [key]: undefined } : errors);
+const invalidProps = (ids: string, errors: FieldErrors, key: keyof FieldErrors) =>
+  errors[key] ? { "aria-invalid": true, "aria-describedby": `${ids}-${key}` } : {};
+/** 첫 오류 칸으로 커서를 옮긴다 — 슬라이드 패널이 길어 아래 칸 오류는 보이지 않을 수 있다. 직원 목록을 받는 중이라 잠긴 직원 칸은 건너뛴다 */
+const focusFirstError = (ids: string) =>
+  requestAnimationFrame(() => (document.getElementById(ids)?.querySelector('[aria-invalid="true"]:not(:disabled)') as HTMLElement | null)?.focus());
+
+/** 입력칸 하나와 그 아래 오류 문구(bp-admins Labeled 와 같은 모양) */
+function MessageField({ label, required, message, children }: { label: string; required?: boolean; message: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex min-w-px flex-1 flex-col gap-[8px]">
+      <Field label={label} required={required}>
+        {children}
+      </Field>
+      {message}
+    </div>
+  );
+}
+
+/** 칸을 나란히 두는 줄 — 위쪽 정렬이라 한 칸에만 오류 문구가 붙어도 두 입력칸이 같은 높이에 선다(FormRow 는 늘여 세워 옆 칸이 가운데로 내려간다) */
+function MessageRow({ children }: { children: ReactNode }) {
+  return <div className="flex w-full items-start gap-[6px]">{children}</div>;
 }

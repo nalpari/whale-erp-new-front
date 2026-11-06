@@ -127,18 +127,18 @@ test("상태 이력 한 줄 — 등록 · 상태 변경 · 긴급 변경 · 배�
   assert.equal(historyText(history({ fromStatus: "PENDING", toStatus: "PENDING", unassignedStaffMemberName: "오세라" }), LABELS), "배정 풀림 · 오세라(퇴직)");
 });
 
-test("가린 직원 — 급여명세서와 같은 짧은 「본사 제공 동의 없음」", () => {
-  assert.equal(MASKED_STAFF, "본사 제공 동의 없음");
+test("가린 직원 — 급여명세서와 같은 짧은 「본사에 정보제공 미동의」", () => {
+  assert.equal(MASKED_STAFF, "본사에 정보제공 미동의");
   assert.equal(staffNameText(masked), MASKED_STAFF);
   assert.equal(staffNameText(person(1, "서지안")), "서지안");
   // 담당 · 완료 수행자
   assert.equal(assigneeText(item({ assignees: [masked] })), MASKED_STAFF);
-  assert.equal(assigneeText(item({ assignees: [masked, person(2, "오세라")] })), "본사 제공 동의 없음 외 1명");
+  assert.equal(assigneeText(item({ assignees: [masked, person(2, "오세라")] })), "본사에 정보제공 미동의 외 1명");
   assert.deepEqual(statusCells(item({ assigneeType: "ALL", executionMode: "ANY_ONE", status: "DONE", performer: masked }), LABELS)[1], { text: MASKED_STAFF, style: "muted" });
 });
 
 test("상태 이력 — 가린 직원은 바꾼 사람 · 배정 풀림 모두 가린 문구", () => {
-  assert.equal(historyText(history({ fromStatus: "PENDING", toStatus: "PENDING", isUnassignedStaffMemberMasked: true }), LABELS), "배정 풀림 · 본사 제공 동의 없음(퇴직)");
+  assert.equal(historyText(history({ fromStatus: "PENDING", toStatus: "PENDING", isUnassignedStaffMemberMasked: true }), LABELS), "배정 풀림 · 본사에 정보제공 미동의(퇴직)");
   assert.equal(historyActorText(history({ isStaffMemberMasked: true })), MASKED_STAFF);
   assert.equal(historyActorText(history({ staffMemberName: "서지안" })), "서지안");
   assert.equal(historyActorText(history({ changedByName: "김점장" })), "김점장");

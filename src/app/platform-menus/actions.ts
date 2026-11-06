@@ -35,8 +35,8 @@ function failureOf(error: unknown, what: string): ActionFailure {
 }
 
 const validId = (id: unknown): id is number => typeof id === "number" && Number.isInteger(id) && id >= 1 && id <= 2_147_483_647;
-const NOT_FOUND = { ok: false, status: 404, message: "메뉴를 찾을 수 없습니다" } satisfies ActionFailure;
-const BAD_SPOT = { ok: false, status: 400, message: "옮길 자리가 올바르지 않습니다" } satisfies ActionFailure;
+const NOT_FOUND = { ok: false, status: 404, message: "메뉴를 찾을 수 없습니다." } satisfies ActionFailure;
+const BAD_SPOT = { ok: false, status: 400, message: "옮길 자리가 올바르지 않습니다." } satisfies ActionFailure;
 // api MovePlatformMenuDto 의 index 상한
 const INDEX_MAX = 10_000;
 

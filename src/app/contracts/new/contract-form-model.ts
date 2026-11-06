@@ -98,6 +98,11 @@ export interface SaveResult {
   error: string;
   /** 있으면 같은 점포에 진행 중 계약이 있어 저장하지 않았다 — 대체를 확인받아 다시 보낸다 */
   inProgress?: InProgressContract[];
+  /**
+   * 있으면 종이 계약이 같은 점포 · 같은 번호의 체결 완료 계약과 기간이 겹쳐 등록하지 않았다(api SIGNED_CONTRACT_OVERLAP, WHALEERP-156).
+   * 잘못 올린 계약이면 「잘못 올린 계약 바로잡기」로 이 목록을 대체해 다시 보낸다
+   */
+  signedOverlap?: InProgressContract[];
   /** 저장 요청의 결과를 받지 못했다(저장 · 발송됐을 수 있음) — 같은 폼으로 다시 저장하지 못하게 막는다 */
   locked?: boolean;
 }
@@ -106,9 +111,14 @@ export interface SaveResult {
  * api 409 본문에서 대체할 진행 중 계약 목록을 꺼낸다(code CONTRACT_IN_PROGRESS). 다른 409(근무 시간 겹침 ·
  * 재직 중)는 undefined — 그 문장을 그대로 보이면 된다(겹침은 다른 점포의 요일 · 시각을 싣지 않는다, CTR-26).
  */
-export function inProgressOf(body: unknown): InProgressContract[] | undefined {
+export const inProgressOf = (body: unknown) => contractsOf(body, "CONTRACT_IN_PROGRESS");
+
+/** api 409 본문에서 종이 계약과 기간이 겹치는 체결 완료 — 바로잡기가 대체할 목록을 꺼낸다(code SIGNED_CONTRACT_OVERLAP, WHALEERP-156) */
+export const signedOverlapOf = (body: unknown) => contractsOf(body, "SIGNED_CONTRACT_OVERLAP");
+
+function contractsOf(body: unknown, code: string): InProgressContract[] | undefined {
   const b = body as { code?: unknown; contracts?: unknown } | null;
-  if (b?.code !== "CONTRACT_IN_PROGRESS" || !Array.isArray(b.contracts)) return undefined;
+  if (b?.code !== code || !Array.isArray(b.contracts)) return undefined;
   const text = (v: unknown) => (typeof v === "string" && v ? v : null);
   const list = b.contracts
     .filter((c): c is { contractId: number; status: string } & Record<string, unknown> => typeof c?.contractId === "number" && typeof c?.status === "string")
@@ -120,6 +130,22 @@ export function inProgressOf(body: unknown): InProgressContract[] | undefined {
 export function inProgressLine(c: InProgressContract, statusLabel: string): string {
   const period = c.startDate || c.endDate ? `${c.startDate ?? ""} ~ ${c.endDate ?? ""}`.trim() : null;
   return [c.name, period, statusLabel, `계약 ${c.contractId}`].filter(Boolean).join(" · ");
+}
+
+/** 바로잡기로 다시 보낸 뒤 진행 중 목록(CONTRACT_IN_PROGRESS)으로 다시 물을 때 — 바로잡기 문구는 목록에 체결 완료가 있을 때만 */
+export const stillCorrecting = (body: CreateContractBody, list: InProgressContract[]): boolean =>
+  body.correctSignedContracts === true && list.some((c) => c.status === "SIGNED");
+
+/**
+ * 대체 확인을 누르면 보낼 본문 — 대체할 계약은 확인창에 보인 목록(api checkReplace 는 지금 목록과 같은 집합만 받는다), 바로잡기
+ * (correctSignedContracts)는 확인창이 바로잡기 문구일 때만 싣는다. 한 곳에서 정한다 — 바로잡기 뒤 「대체」 문구로 다시 물었는데
+ * 본문에 바로잡기가 남으면 확인창을 띄워 둔 사이 체결된 계약이 대체 확인만으로 종료된다(빼면 api 가 SIGNED_CONTRACT_OVERLAP 으로
+ * 바로잡기를 다시 묻는다, front #135 재리뷰 · 셀프 code-review)
+ */
+export function replaceConfirmBody(body: CreateContractBody, list: InProgressContract[], correcting: boolean): CreateContractBody {
+  const plain = { ...body, replaceContractIds: list.map((c) => c.contractId) };
+  delete plain.correctSignedContracts;
+  return correcting ? { ...plain, correctSignedContracts: true } : plain;
 }
 
 const span = (sh: string, eh: string): TimeSpan => ({ start: { hour: sh, minute: "00" }, end: { hour: eh, minute: "00" } });
@@ -219,6 +245,38 @@ export function fromDetail(d: ContractDetail): ContractForm {
   };
 }
 
+/**
+ * 재계약(WHALEERP-156) 작성 화면의 처음 값 — 직전 계약 값을 채우고 기간을 새로 잡는다. 시작일은 직전 계약 종료일 다음 날인데, 그 날이
+ * 오늘(한국 날짜)보다 앞이면(기간이 끝난 지 오래된 계약) 비워 관리자가 고르게 한다 — 지난 날로 시작하는 계약이 그대로 나가지 않게.
+ * 종료일은 비운다. 수습은 이어 일하는 직원이라 끈다(관리자가 다시 켤 수 있다).
+ */
+export function renewalFromDetail(d: ContractDetail, now = new Date()): ContractForm {
+  const base = fromDetail(d);
+  const today = new Date(now.getTime() + 9 * 3600_000).toISOString().slice(0, 10);
+  const start = d.endDate ? nextDay(d.endDate) : "";
+  return { ...base, startDate: start && start >= today ? start : "", endDate: "", probation: false };
+}
+
+/** 재계약 시작일 안내 — api 400 과 같은 문장 */
+export const renewalStartProblem = (previousStartDate: string) => `재계약 시작일은 직전 계약 시작일(${previousStartDate}) 다음 날부터입니다.`;
+
+const nextDay = (iso: string) => {
+  const t = new Date(`${iso}T00:00:00Z`);
+  t.setUTCDate(t.getUTCDate() + 1);
+  return t.toISOString().slice(0, 10);
+};
+
+/**
+ * 재계약을 시작할 수 있는 계약 — 체결 완료이거나, 기간이 끝나 하루 배치가 체결 완료에서 닫은 것(api 의 SIGNED_ONCE 와 같다 — 이력
+ * 체결 완료 → 종료, 시스템). 대체로 닫힌 체결 완료(관리자)는 새 계약이 이미 그 자리를 이어 재계약하지 않는다(api #152 리뷰).
+ */
+export function canRenew(d: Pick<ContractDetail, "status" | "histories" | "renewedBy">): boolean {
+  // 이미 체결된 재계약이 이어져 있으면 다시 띄우지 않는다 — 다 쓰고 저장하면 api 가 막는다(front #135 code-review). 진행 중 재계약은
+  // api 가 싣지 않는다(저장 때 대체를 묻는다). 칸이 없는 옛 api 응답(undefined)은 막지 않는다
+  if (d.renewedBy != null) return false;
+  return d.status === "SIGNED" || (d.status === "ENDED" && d.histories.some((h) => h.fromStatus === "SIGNED" && h.toStatus === "ENDED" && h.actor === "SYSTEM"));
+}
+
 const moneyText = (n: number | null | undefined) => (n == null ? "" : n.toLocaleString("ko-KR"));
 const hoursText = (n: number | null | undefined) => (n == null ? "" : String(n));
 
@@ -262,7 +320,7 @@ export function paperFileError(file: { name: string; type: string; size: number 
   const name = file.name.toLowerCase();
   if (!types.some((t) => file.type === PAPER_FORMAT[t].mime || PAPER_FORMAT[t].extensions.some((e) => name.endsWith(e))))
     return `${types.join(" · ")} 파일만 올릴 수 있습니다.`;
-  if (file.size === 0) return "빈 파일입니다. 다른 파일을 골라 주세요.";
+  if (file.size === 0) return "빈 파일입니다. 다른 파일을 선택해 주세요.";
   if (file.size > PAPER_FILE_MAX_BYTES) return "파일은 10MB까지 올릴 수 있습니다.";
   return null;
 }
@@ -371,16 +429,24 @@ export function weeklyHolidayOf(f: Schedule & Partial<Pick<ContractForm, "weekly
   return FROM_SUNDAY.find((d) => !f.days.includes(d)) ?? "NO_DAY_OFF";
 }
 
-/** 최저임금(시급, 원). 시스템이 공통코드처럼 관리하기 전까지 화면에 둔다(2026-10-15) */
-export const MINIMUM_WAGE = 10320;
-/** 수습 중 시급의 하한 — 최저임금의 90%(노무사 확인 2026-10-14, 질문 19) */
-export const PROBATION_WAGE_FLOOR = Math.ceil(MINIMUM_WAGE * 0.9);
+/**
+ * 지금 최저임금 — api 공통코드 MINIMUM_WAGE · HOURLY 하나(`GET /contracts/minimum-wage`, WHALEERP-595). 계약 시작일과 상관없이
+ * 이 값으로 본다. 공통코드를 쓸 수 없으면 hourlyWage 는 null, problem 이 저장 400 문장이다
+ */
+export type MinimumWage = components["schemas"]["MinimumWageResponseDto"];
 
-/** 수습 중 시급 = 시급 × (1 − 감액률), 원 미만 반올림. 시급이 비었거나 감액률이 틀리면 null */
+/** 수습 중 시급의 하한 — 최저임금의 90%, 원 미만 올림(노무사 확인 2026-10-14, 질문 19). api 와 같다 */
+export const probationWageFloor = (minimumWage: number) => Math.ceil((minimumWage * 90) / 100);
+
+/** 「최저임금의 90%(9,288원)」 — 수습 중 시급 칸 도움말과 오류 문장이 같이 쓴다. 최저임금을 모르면 금액 없이 */
+export const probationFloorLabel = (minimumWage: number | null) =>
+  minimumWage ? `최저임금의 90%(${probationWageFloor(minimumWage).toLocaleString("ko-KR")}원)` : "최저임금의 90%";
+
+/** 수습 중 시급 = 시급 × (1 − 감액률), 원 미만 반올림(api 와 같은 정수 셈). 시급이 비었거나 감액률이 틀리면 null */
 export function probationWage(f: Pick<ContractForm, "wage" | "probationRate">): number | null {
   const rate = Number(f.probationRate);
   if (!wageOf(f) || !/^\d+$/.test(f.probationRate) || rate > 10) return null;
-  return Math.round(wageOf(f) * (1 - rate / 100));
+  return Math.round((wageOf(f) * (100 - rate)) / 100);
 }
 
 /** start 부터 1년이 되는 날(그날 포함) — 2026-01-01 이면 2026-12-31. api 와 같다 */
@@ -395,15 +461,16 @@ function oneYearLastDay(start: string): string {
 export const probationTermOk = (f: Pick<ContractForm, "startDate" | "endDate">) =>
   !f.startDate || !f.endDate || f.endDate >= oneYearLastDay(f.startDate);
 
-const DAY_KO: Record<Weekday, string> = { MON: "월", TUE: "화", WED: "수", THU: "목", FRI: "금", SAT: "토", SUN: "일" };
+export const DAY_KO: Record<Weekday, string> = { MON: "월", TUE: "화", WED: "수", THU: "목", FRI: "금", SAT: "토", SUN: "일" };
 
 /** 근무시간 · 휴게시간 한 벌의 문제. who 는 「월요일 」처럼 요일을 앞에 붙일 때 */
-function timeProblems(t: DayTimes, who = ""): string[] {
-  const out: string[] = [];
-  if (minutes(t.work.end) <= minutes(t.work.start)) out.push(`${who}근무시간은 끝이 시작보다 뒤여야 합니다`);
+function timeProblems(t: DayTimes, who = ""): { work: string[]; rest: string[] } {
+  const work: string[] = [];
+  const rest: string[] = [];
+  if (minutes(t.work.end) <= minutes(t.work.start)) work.push(`${who}근무시간은 끝이 시작보다 뒤여야 합니다.`);
   if (!(minutes(t.rest.start) >= minutes(t.work.start) && minutes(t.rest.end) > minutes(t.rest.start) && minutes(t.rest.end) <= minutes(t.work.end)))
-    out.push(`${who}휴게시간은 근무시간 안이어야 합니다`);
-  return out;
+    rest.push(`${who}휴게시간은 근무시간 안이어야 합니다.`);
+  return { work, rest };
 }
 
 /** on 날짜에 만 몇 살인지. 생일 당일에 한 살 는다. api ageOn 과 같다 */
@@ -418,52 +485,95 @@ export const isMinor = (f: Pick<ContractForm, "birthDate" | "startDate">) =>
   Boolean(f.birthDate && f.startDate) && ageOn(f.birthDate, f.startDate) < 19;
 
 /**
- * 저장 전에 화면이 먼저 막는 것. api 도 같은 것을 다시 본다.
+ * 오류를 보일 입력 칸 — 저장 때 찾은 유효성 오류는 그 칸 바로 아래에 보인다(WHALEERP-631, 2026-10-29 재영 공지 1번).
+ * schedule 은 요일별 소정근로시간 표, hours 는 급여항목 표(월 근로시간), allowances 는 비과세 항목 표다.
+ */
+export type ProblemField =
+  | "name" | "phone" | "birthDate" | "gender" | "storeId" | "jobTitle" | "employmentFile" | "startDate" | "endDate"
+  | "days" | "work" | "rest" | "schedule" | "wage" | "allowances" | "hours" | "weeklyHoliday" | "payDay"
+  | "probationMonths" | "probationRate" | "probationWage";
+export type Problem = { field: ProblemField; message: string };
+
+/**
+ * 저장 전에 화면이 먼저 막는 것을 칸과 함께. api 도 같은 것을 다시 본다. 순서는 화면 위에서 아래로다.
  * 임시저장은 직원 칸(이름 · 번호 · 직무)과 근무지만 필수이고, 비운 칸은 묻지 않되 넣은 값은 똑같이 본다.
  */
-export function problems(f: ContractForm, temporary = false, hasEmploymentFile = false): string[] {
-  const out: string[] = [];
-  const need = (empty: boolean, message: string) => {
-    if (empty && !temporary) out.push(message);
+export function fieldProblems(
+  f: ContractForm,
+  temporary = false,
+  hasEmploymentFile = false,
+  previousStartDate?: string,
+  minimumWage: MinimumWage | null = null,
+): Problem[] {
+  const out: Problem[] = [];
+  const add = (field: ProblemField, message: string) => out.push({ field, message });
+  const need = (field: ProblemField, empty: boolean, message: string) => {
+    if (empty && !temporary) add(field, message);
   };
-  if (!f.name.trim()) out.push("이름을 입력하세요");
-  if (!/^[0-9]{10,11}$/.test(digits(f.phone))) out.push("휴대전화번호는 숫자 10~11자리입니다");
-  need(!f.birthDate, "생년월일을 입력하세요");
-  need(!f.gender, "성별을 고르세요");
-  if (!f.storeId) out.push("소속 근무지를 고르세요");
-  if (!f.jobTitle.trim()) out.push("직무를 입력하세요");
-  need(!f.startDate, "계약 시작일을 입력하세요");
-  if (f.startDate && f.endDate && f.endDate < f.startDate) out.push("계약 종료일은 시작일보다 앞설 수 없습니다");
-  if (digits(f.wage) ? !(Number(digits(f.wage)) > 0) : !temporary) out.push("시급을 입력하세요"); // 고용 형태와 상관없이 시급(2026-10-12 재영)
-  need(f.days.length === 0, "근무요일을 하나 이상 고르세요");
-  out.push(...timeProblems(f));
+  if (!f.name.trim()) add("name", "이름을 입력하세요.");
+  if (!/^[0-9]{10,11}$/.test(digits(f.phone))) add("phone", "휴대전화번호는 숫자 10~11자리입니다.");
+  need("birthDate", !f.birthDate, "생년월일을 입력하세요.");
+  if (isMinor(f)) add("birthDate", "만 19세 미만 직원은 등록할 수 없습니다.");
+  need("gender", !f.gender, "성별을 선택하세요.");
+  if (!f.storeId) add("storeId", "소속 근무지를 선택하세요.");
+  if (!f.jobTitle.trim()) add("jobTitle", "직무를 입력하세요.");
+  // 종이 계약 등록은 당사자가 모두 날인한 근로계약서가 있어야 한다(CTR-23). 임시저장은 파일 없이 둔다
+  if (f.contractMethod === "PAPER" && !temporary && !hasEmploymentFile) add("employmentFile", "당사자가 모두 날인한 근로계약서 파일을 올려 주세요.");
+  need("startDate", !f.startDate, "계약 시작일을 입력하세요.");
+  // 재계약은 직전 계약 시작일 다음 날부터 — 그 뒤로는 직전 계약과 겹쳐도 된다(WHALEERP-156, 2026-10-26 김민식 · 재영 확인)
+  if (previousStartDate && f.startDate && f.startDate <= previousStartDate) add("startDate", renewalStartProblem(previousStartDate));
+  if (f.startDate && f.endDate && f.endDate < f.startDate) add("endDate", "계약 종료일은 시작일보다 앞설 수 없습니다.");
+  need("days", f.days.length === 0, "근무요일을 하나 이상 선택하세요.");
+  const top = timeProblems(f);
+  top.work.forEach((m) => add("work", m));
+  top.rest.forEach((m) => add("rest", m));
   // 파트타이머가 표에서 고친 요일은 그 요일 시간도 본다
   if (f.employmentType === "PART_TIME")
     for (const d of WEEKDAYS) {
       const t = f.dayTimes[d];
-      if (t && f.days.includes(d)) out.push(...timeProblems(t, `${DAY_KO[d]}요일 `));
+      if (!t || !f.days.includes(d)) continue;
+      const day = timeProblems(t, `${DAY_KO[d]}요일 `);
+      [...day.work, ...day.rest].forEach((m) => add("schedule", m));
     }
-  need(weeklyHolidayOf(f) === "NO_DAY_OFF", "주 15시간 이상이면 근무하지 않는 요일이 있어야 주휴일을 정할 수 있습니다");
-  const day = Number(f.payDay);
-  if (f.payDay ? !(Number.isInteger(day) && day >= 1 && day <= 31) : !temporary) out.push("임금지급일은 1~31입니다");
+  if (digits(f.wage) ? !(Number(digits(f.wage)) > 0) : !temporary) add("wage", "시급을 입력하세요."); // 고용 형태와 상관없이 시급(2026-10-12 재영)
+  if (Number(digits(f.wage)) > MAX_AMOUNT) add("wage", "시급은 2,147,483,647원 이하로 입력하세요.");
   if (f.employmentType === "FULL_TIME") {
-    if (HOUR_FIELDS.some((k) => Number.isNaN(hoursOf(f[k])))) out.push("월 근로시간은 0 이상, 30분(0.5시간) 단위로 입력하세요");
-    const base = hoursOf(f.baseHours), night = hoursOf(f.baseNightHours);
-    if (base !== null && night !== null && night > base) out.push("기본시간 중 야간근무는 월 기본시간보다 클 수 없습니다");
     if ([f.mealAllowance, f.carAllowance, f.childcareAllowance].some((t) => Number(digits(t)) > MAX_AMOUNT))
-      out.push("비과세 수당은 2,147,483,647원 이하로 입력하세요");
-    if (f.probation) {
-      if (!/^\d+$/.test(f.probationRate) || Number(f.probationRate) > 10) out.push("수습 임금 감액률은 0~10% 정수로 입력하세요");
-      if (!probationTermOk(f)) out.push("수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다");
-      const pw = probationWage(f);
-      if (pw !== null && pw < PROBATION_WAGE_FLOOR)
-        out.push(`수습 중 시급은 최저임금의 90%(${PROBATION_WAGE_FLOOR.toLocaleString("ko-KR")}원) 이상이어야 합니다`);
-    }
+      add("allowances", "비과세 수당은 2,147,483,647원 이하로 입력하세요.");
+    if (HOUR_FIELDS.some((k) => Number.isNaN(hoursOf(f[k])))) add("hours", "월 근로시간은 0 이상, 30분(0.5시간) 단위로 입력하세요.");
+    const base = hoursOf(f.baseHours), night = hoursOf(f.baseNightHours);
+    if (base !== null && night !== null && night > base) add("hours", "기본시간 중 야간근무는 월 기본시간보다 클 수 없습니다.");
   }
-  if (Number(digits(f.wage)) > MAX_AMOUNT) out.push("시급은 2,147,483,647원 이하로 입력하세요");
-  if (isMinor(f)) out.push("만 19세 미만 직원은 등록할 수 없습니다");
-  // 종이 계약 등록은 당사자가 모두 날인한 근로계약서가 있어야 한다(CTR-23). 임시저장은 파일 없이 둔다
-  if (f.contractMethod === "PAPER" && !temporary && !hasEmploymentFile) out.push("당사자가 모두 날인한 근로계약서 파일을 올려 주세요");
+  need("weeklyHoliday", weeklyHolidayOf(f) === "NO_DAY_OFF", "주 15시간 이상이면 근무하지 않는 요일이 있어야 주휴일을 정할 수 있습니다.");
+  const payDay = Number(f.payDay);
+  if (f.payDay ? !(Number.isInteger(payDay) && payDay >= 1 && payDay <= 31) : !temporary) add("payDay", "임금지급일은 1~31입니다.");
+  if (f.employmentType === "FULL_TIME" && f.probation) {
+    if (!probationTermOk(f)) add("probationMonths", "수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다.");
+    if (!/^\d+$/.test(f.probationRate) || Number(f.probationRate) > 10) add("probationRate", "수습 임금 감액률은 0~10% 정수로 입력하세요.");
+    // 지금 최저임금으로 본다(계약 시작일과 상관없이, api 와 같다). 값을 받지 못했거나 공통코드를 쓸 수 없으면(problem) 화면은
+    // 막지 않고 저장 때 api 가 본다 — 화면을 연 뒤 관리자가 공통코드를 고쳐도 새로 고침 없이 저장되게(front #203 code-review)
+    const pw = probationWage(f);
+    const hourly = minimumWage?.hourlyWage ?? null;
+    if (pw !== null && hourly && pw < probationWageFloor(hourly))
+      add("probationWage", `수습 중 시급은 ${probationFloorLabel(hourly)} 이상이어야 합니다.`);
+  }
+  return out;
+}
+
+/**
+ * 보일 칸 오류 — 저장을 누른 때 오류가 난 칸(shown)만 지금 값으로. 고쳐진 칸은 빠지고, 저장 뒤 고치다 새로 생긴 칸 오류는 다음
+ * 저장 때 보인다(칠 때마다 role="alert" 가 새로 울리지 않게, front #170 code-review). 두 화면(작성 · 근로자 정보 수정)이 같이 쓴다.
+ */
+export function shownProblems<K extends string, V>(live: Partial<Record<K, V>>, shown: ReadonlySet<K>): Partial<Record<K, V>> {
+  const out: Partial<Record<K, V>> = {};
+  for (const k of shown) if (live[k] !== undefined) out[k] = live[k];
+  return out;
+}
+
+/** 칸마다 오류 문장 — 화면이 칸 아래에 보인다 */
+export function problemsByField(list: readonly Problem[]): Partial<Record<ProblemField, string[]>> {
+  const out: Partial<Record<ProblemField, string[]>> = {};
+  for (const p of list) (out[p.field] ??= []).push(p.message);
   return out;
 }
 

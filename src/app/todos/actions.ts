@@ -62,7 +62,7 @@ export async function updateTodoAction(id: unknown, body: UpdateTodoBody): Promi
 
 export async function changeTodoStatusAction(id: unknown, status: unknown): Promise<ActionResult> {
   if (!validId(id)) return NOT_FOUND;
-  if (!TODO_STATUSES.includes(status as never)) return { ok: false, status: 400, message: "상태를 골라 주세요." };
+  if (!TODO_STATUSES.includes(status as never)) return { ok: false, status: 400, message: "상태를 선택해 주세요." };
   try {
     await changeTodoStatus(id, status as (typeof TODO_STATUSES)[number]);
     refresh();

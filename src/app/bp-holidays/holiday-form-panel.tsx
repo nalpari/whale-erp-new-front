@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useState, useTransition, type RefObject } from "react";
-import { Button, ConfirmDialog, DateField, Field, FormGroup, Radio, RequiredMark, Select, SlidePanel, Textarea, TextField } from "@/components/common";
+import { Button, ConfirmDialog, DataTable, DateField, Field, FormGroup, Radio, RequiredMark, Select, SlidePanel, Textarea, TextField, type Column } from "@/components/common";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { useAccount, useCodes, useStores } from "@/components/site/session-gate";
-import { FailedBand, FieldMessage } from "@/components/site/side-parts";
+import { FailedBand, FieldMessage, WarnBand } from "@/components/site/side-parts";
 import { StoreMappingPicker, type MappingStore } from "@/components/site/store-mapping-picker";
 import {
   canChooseAllStores,
@@ -16,6 +17,7 @@ import {
   repeatBasis,
   repeatSkipNote,
   validateHolidayForm,
+  weekdayName,
   type FormErrors,
   type HolidayForm,
   type HolidayType,
@@ -24,9 +26,10 @@ import {
 } from "@/lib/bp-holiday-view";
 import type { BpHolidayDetail, BpHolidayOverlaps } from "@/lib/bp-holidays";
 import { checkBpHolidayOverlapsAction, createBpHolidayAction, updateBpHolidayAction } from "./actions";
+import { HistoryScroll } from "@/components/site/wide-dialog";
 import { unknownResult } from "./holiday-parts";
 
-// BP 휴일 등록(S-UCPMYB) · 수정(S-BXEAEZ) 슬라이드 패널. 휴일 정보(휴일명 → 날짜 → 설명) · 반복을 위로, 적용 대상을 맨 아래로 둔다(데모 2026-10-08).
+// BP 휴일 등록(S-UCPMYB) · 수정(S-BXEAEZ) 슬라이드 패널. 휴일정보(휴일명 → 날짜 → 반복 상자 → 설명)를 위로, 적용 대상을 맨 아래로 둔다(데모 2026-10-08, 반복 위치 2026-10-30).
 // 「BP 휴일 변경 · 종료 정책」(1팀, 2026-10-26)에 맞춰 수정할 수 있는 칸이 상태로 갈린다 — api 가 같은 규칙으로 다시 막는다.
 //  · 시작 전: 모든 칸. 시작일을 옮기면 점포도 새 시작일부터다.
 //  · 진행 중: 휴일명 · 설명 · 점포만. 날짜 · 유형 · 반복 · 적용 범위는 막고 읽은 값 그대로 보낸다(바꾸면 409). 점포는 더하면 오늘부터, 빼면 어제까지.
@@ -49,11 +52,22 @@ type Props = {
   | { mode: "edit"; holiday: BpHolidayDetail; startDate?: never; onSaved: () => void; onStale: () => void }
 );
 
+/** 반복 기준 꼬리표의 앞말 — 매일은 기준이 없어 쓰지 않는다 */
+const REPEAT_WORD: Record<RepeatType, string> = { DAILY: "매일", WEEKLY: "매주", MONTHLY: "매월", YEARLY: "매년" };
+
 /** 칸을 고치면 그 칸의 오류는 바로 지운다 */
 const without = (key: keyof FormErrors) => (e: FormErrors): FormErrors => (key in e ? Object.fromEntries(Object.entries(e).filter(([k]) => k !== key)) : e);
 
 /** 상세의 점포를 고르기 칸 모양으로 */
 const picked = (stores: BpHolidayDetail["stores"]): MappingStore[] => stores.map(({ storeId, name, storeCode }) => ({ storeId, name, storeCode }));
+
+/**
+ * 바꿀 수 없는 칸의 음영 — 이 패널 안에서만 막힌 입력칸 · 선택칸 · 날짜칸에 읽기 전용 바탕(#f8f9fb, DESIGN 읽기 전용)을 깔고 글자 · 라디오를 흐리게,
+ * 커서는 금지 표시로 둔다(2026-11-03 사용자 지정 — 막힌 칸이 다른 칸과 똑같아 왜 안 바뀌는지 몰랐다). 공통 입력칸 토큰은 바꾸지 않는다
+ * (막힌 칸 회색은 전체 화면에 적용하지 않는다 — DESIGN.md, 근로계약서 작성 화면과 같은 방식).
+ */
+const LOCKED =
+  "[&_:is(input,select,textarea,button):disabled]:cursor-not-allowed [&_:is(input,select,textarea):disabled]:bg-erp-thead-bg [&_:is(input,select,textarea):disabled]:text-erp-muted [&_label:has(input:disabled)]:cursor-not-allowed [&_label:has(input:disabled)]:text-erp-muted [&_label:has(input:disabled)_input]:bg-erp-thead-bg";
 
 export function HolidayFormPanel(props: Props) {
   const { id, mode, open, today, onClose, onBackdropClose, trigger } = props;
@@ -72,6 +86,15 @@ export function HolidayFormPanel(props: Props) {
   // api 가 점포 말고 다른 칸이 바뀌면 403 이다(bp-holiday-changes update). 브라우저 시험(가맹 마스터)으로 찾음, 2026-10-27
   const scheduleLocked = !!h && (h.state !== "UPCOMING" || infoLocked);
   const storesLocked = !!h && !h.actions.canUpdateStores;
+  // 일정 칸이 막힌 이유 — 「날짜」 라벨 옆에 한 줄로 둔다. 「적용 대상」이 아니라 「적용 범위」 — 대상점포 고르기는 진행 중에도 고칠 수 있다(코드 리뷰)(막힌 칸이 다른 칸과 똑같아 왜 안 바뀌는지 몰랐다, 2026-11-03 사용자 지정). 띠는 두지 않는다(2026-10-27)
+  const scheduleLockReason = !scheduleLocked
+    ? null
+    : h?.state === "ONGOING"
+      ? "진행 중인 휴일은 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다."
+      : h?.state === "ENDED"
+        ? "지난 휴일은 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다."
+        : // 시작 전인데 막힌 경우는 이유가 여럿일 수 있어(맡지 않은 점포가 묶임 · 권한 등) 단정하지 않고 api 사유를 먼저 쓴다(코드 리뷰)
+          (h?.actions.blockedReason ?? "이 휴일은 날짜 · 반복 · 적용 범위를 바꿀 수 없습니다.");
   // 맡지 않은 점포 — 고르기 칸 밖에 두고 그대로 다시 보낸다
   // 상세의 점포는 빠진 기간까지 모두라 지금 열린 기간만 쓴다 — 빠진 점포를 다시 보내면 다시 더해진다
   const openPeriods = h ? openStores(h.stores) : [];
@@ -111,6 +134,14 @@ export function HolidayFormPanel(props: Props) {
     setState((s) => ({ ...s, form: { ...s.form, [key]: value } }));
     setErrors(without(key as keyof FormErrors));
   };
+  /**
+   * 날짜 유형 · 종료 조건을 바꾸면 날짜 칸 오류를 함께 지운다 — 기간에서 난 종료일 오류가 하루로 바꿔도 남아 있었다(2026-10-30 사용자 지적).
+   * 바뀐 유형으로 저장할 때 다시 검사한다
+   */
+  const setDateKind = <K extends "type" | "repeatEnd">(key: K, value: HolidayForm[K]) => {
+    set(key, value);
+    setErrors((e) => (["startDate", "endDate", "repeatEndDate", "repeatCount"] as const).reduce((acc, k) => without(k)(acc), e));
+  };
   const err = (key: keyof FormErrors) => <FieldMessage id={`${ids}-${key}`} message={errors[key]} />;
   const invalid = (key: keyof FormErrors) => (errors[key] ? true : undefined);
   const describe = (key: keyof FormErrors) => (errors[key] ? `${ids}-${key}` : undefined);
@@ -125,7 +156,7 @@ export function HolidayFormPanel(props: Props) {
     return { ...read, name: next.name, description: next.description, storeIds: next.storeIds, excludedStoreIds: next.excludedStoreIds };
   };
 
-  /** 저장 — 칸 검사 → 겹침 확인(겹치면 묻는다) → 저장. force 면 겹침 확인을 건너뛴다(확인창의 [그래도 저장]). */
+  /** 저장 — 칸 검사 → 겹침 확인(겹치면 묻는다) → 저장. force 면 겹침 확인을 건너뛴다(확인창의 [저장]). */
   const handleSave = (force = false) => {
     const f = outgoing();
     const found = validateHolidayForm(f, today, { scheduleLocked });
@@ -165,6 +196,9 @@ export function HolidayFormPanel(props: Props) {
     else if (status === undefined) router.refresh();
   };
 
+  // 탈퇴 · 미사용 BP 에는 등록하지 않는다 — 점포 등록과 같다(플랫폼 계정만 본다, 2026-10-29 사용자 지정). 확인하지 못하면(null) 막지 않는다
+  const bpStatus = useCurrentBpStatus();
+  const bpBlocked = mode === "create" && bpStatus !== null && bpStatus !== "ACTIVE";
   const repeatType = form.repeatType as RepeatType;
   const skip = form.type === "REPEAT" ? repeatSkipNote(repeatType, form.startDate) : null;
   const options = stores.filter((s) => s.storeStatusCode !== "CLOSED");
@@ -174,10 +208,13 @@ export function HolidayFormPanel(props: Props) {
     <SlidePanel id={id} open={open} onClose={() => !saving && onClose()} onBackdropClose={() => !saving && onBackdropClose()} label={title} trigger={trigger} closeOnBackdrop>
       <div className="flex flex-col gap-[18px]">
         <h2 className="text-[18px] font-semibold text-erp-ink">{title}</h2>
-        {/* 제목 아래 띠는 오류일 때만 둔다 — 진행 중 · 막힘 안내 띠는 두지 않는다(2026-10-27 사용자 요청). 막힌 칸은 disabled 로 그대로 막는다 */}
+        {/* 제목 아래 띠는 오류일 때만 둔다 — 진행 중 · 막힘 안내 띠는 두지 않는다(2026-10-27 사용자 요청). 막힌 칸은 disabled 로 그대로 막는다.
+            예외: 탈퇴 · 미사용 BP 의 등록 막기 띠는 둔다 — 점포 등록과 같다(2026-10-29 사용자 지정) */}
+        {bpBlocked && <WarnBand>BP가 탈퇴 또는 미사용 상태로, 휴일을 등록할 수 없습니다.</WarnBand>}
         {failure && <FailedBand message={failure} detail="입력한 내용은 그대로 두었습니다." />}
 
-        <FormGroup title="휴일 정보">
+        {/* 묶음 이름 · 칸 이름은 붙여 쓴다 — 「휴일정보」 · 「반복유형」 · 「종료조건」 · 「예외점포」 · 「대상점포」(2026-10-30 사용자 지정, BP 관리자의 「대상점포」와 같다) */}
+        <FormGroup title="휴일정보">
           <div className="flex flex-col gap-[8px]">
             <Field label="휴일명" required>
               <TextField
@@ -192,14 +229,15 @@ export function HolidayFormPanel(props: Props) {
             </Field>
             {err("name")}
           </div>
-          <fieldset className="flex flex-col gap-[8px]" disabled={scheduleLocked}>
+          <fieldset className={`flex flex-col gap-[8px] ${scheduleLocked ? LOCKED : ""}`} disabled={scheduleLocked}>
             <legend className="mb-[8px] text-[14px] font-medium text-erp-label">
               날짜
               <RequiredMark />
+              {scheduleLockReason && <span className="text-[13px] font-normal text-erp-label"> · {scheduleLockReason}</span>}
             </legend>
             <div className="flex gap-[18px]">
               {(types.length ? types : (["DAY", "PERIOD", "REPEAT"] as const).map((value) => ({ value, label: value }))).map((t) => (
-                <Radio key={t.value} name={`${ids}-type`} label={t.label} checked={form.type === t.value} onChange={() => set("type", t.value as HolidayType)} />
+                <Radio key={t.value} name={`${ids}-type`} label={t.label} checked={form.type === t.value} onChange={() => setDateKind("type", t.value as HolidayType)} />
               ))}
             </div>
             {form.type === "PERIOD" ? (
@@ -218,15 +256,26 @@ export function HolidayFormPanel(props: Props) {
             {err("startDate")}
             {err("endDate")}
           </fieldset>
-          <Field label="설명">
-            <Textarea rows={4} maxLength={500} value={form.description} disabled={infoLocked} onChange={(e) => set("description", e.target.value)} />
-          </Field>
-        </FormGroup>
-
-        {form.type === "REPEAT" && (
-          <FormGroup title="반복">
-            <fieldset className="contents" disabled={scheduleLocked}>
-              <Field label="반복 유형" required>
+          {/* 반복 칸은 날짜(반복) 바로 아래, 설명 위에 둔다 — 따로 「반복」 묶음으로 맨 아래에 뜨면 고른 것과 멀었다(2026-10-30 사용자 지정) */}
+          {form.type === "REPEAT" && (
+            // 바로 위 날짜 칸과는 10px — 묶음 칸 간격(18)보다 붙여 날짜에 딸린 칸으로 보이게. 회색 상자로 묶어 날짜 · 설명과 가른다
+            // — 점포 고르기 상자와 같은 모양(표 머리 바탕 · 패널 선)(2026-10-30 사용자 지정). 안의 반복 기준 꼬리표만 선 색(erp-bar-line) 바탕 — DESIGN 두 바탕 규칙의 예외로 적었다
+            <fieldset className={`-mt-[8px] flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[12px] ${scheduleLocked ? LOCKED : ""}`} disabled={scheduleLocked}>
+              {/* 기준(시작일의 요일 · 날짜)은 칸 이름 옆 꼬리표 「매주 금요일마다 반복」으로 — 아랫줄 글로 두면 반복유형과 떨어져 보였다(2026-10-30 사용자 지정). 매일은 기준이 없다 */}
+              <label className="flex flex-col gap-[8px]">
+                <span className="flex items-center gap-[6px] text-[14px] font-medium text-erp-label">
+                  <span>
+                    반복유형
+                    <RequiredMark />
+                  </span>
+                  {repeatBasis(repeatType, form.startDate) && (
+                    // 회색 상자(표 머리 바탕) 위라 공통 꼬리표(Tag)는 바탕이 같아 묻혔다 — 한 단계 짙은 바탕(헤더 구분선 회색 erp-bar-line)으로.
+                    // 테두리는 1px 그대로 두고 색만 짙게 한다(DESIGN 테두리는 늘 1px)
+                    <span className="inline-block rounded-[2px] border border-erp-bar-line bg-erp-bar-line px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub">
+                      {REPEAT_WORD[repeatType]} {repeatBasis(repeatType, form.startDate)}마다 반복
+                    </span>
+                  )}
+                </span>
                 <Select value={form.repeatType} onChange={(e) => set("repeatType", e.target.value as RepeatType)}>
                   {(repeats.length ? repeats : (["DAILY", "WEEKLY", "MONTHLY", "YEARLY"] as const).map((value) => ({ value, label: value }))).map((r) => (
                     <option key={r.value} value={r.value}>
@@ -234,23 +283,22 @@ export function HolidayFormPanel(props: Props) {
                     </option>
                   ))}
                 </Select>
-              </Field>
-              {/* 기준은 시작일의 요일 · 날짜다 — 그 날짜가 없는 달 · 해는 건너뛰고 미리 알린다(F-YQTLQE) */}
-              {repeatBasis(repeatType, form.startDate) && <p className="text-[13px] text-erp-label">기준 · {repeatBasis(repeatType, form.startDate)}</p>}
+              </label>
+              {/* 기준 날짜가 없는 달 · 해는 건너뛰고 미리 알린다(F-YQTLQE) */}
               {skip && <p className="text-[13px] text-erp-off">{skip}</p>}
               <div className="flex flex-col gap-[8px]">
                 <span className="text-[14px] font-medium text-erp-label">
-                  종료 조건
+                  종료조건
                   <RequiredMark />
                 </span>
                 <div className="flex flex-wrap gap-[18px]">
                   {REPEAT_ENDS.map((end) => (
-                    <Radio key={end.value} name={`${ids}-end`} label={end.label} checked={form.repeatEnd === end.value} onChange={() => set("repeatEnd", end.value as RepeatEnd)} />
+                    <Radio key={end.value} name={`${ids}-end`} label={end.label} checked={form.repeatEnd === end.value} onChange={() => setDateKind("repeatEnd", end.value as RepeatEnd)} />
                   ))}
                 </div>
                 {form.repeatEnd === "UNTIL_DATE" && <DateField aria-label="반복 종료일" value={form.repeatEndDate} disabled={scheduleLocked} onChange={(v) => set("repeatEndDate", v)} />}
                 {form.repeatEnd === "COUNT" && (
-                  <div className="flex w-[160px] items-center gap-[6px]">
+                  <div className="flex w-[100px] items-center gap-[6px]">
                     <TextField
                       value={form.repeatCount}
                       inputMode="numeric"
@@ -267,13 +315,19 @@ export function HolidayFormPanel(props: Props) {
                 {err("repeatCount")}
               </div>
             </fieldset>
-          </FormGroup>
-        )}
+          )}
+          <Field label="설명">
+            {/* 설명 칸은 휴일명과 같은 한 줄 높이(34px)로 시작해 Enter 로 줄을 더하면 늘어난다(최대 6줄, 2026-10-30 사용자 지정 — 4줄 → 2줄 → 1줄 → 한 줄 칸 → 늘어나는 칸). 500자 제한은 그대로 */}
+            <Textarea grow={6} maxLength={500} value={form.description} disabled={infoLocked} onChange={(e) => set("description", e.target.value)} />
+          </Field>
+        </FormGroup>
 
         <FormGroup title="적용 대상">
           {/* 전체 점포는 BP 마스터 · 전체 점포 BP 관리자 · 플랫폼 계정만(CONFIG-10). 진행 중이면 적용 범위를 바꿀 수 없다 */}
-          <Field label="적용 범위" required>
-            <Select
+          {/* 「적용 범위」 칸 이름은 뺐다 — 묶음 제목 「적용 대상」과 값(전체 · 일부 점포)만으로 뜻이 분명하다(2026-10-30 사용자 지정). 화면 낭독기용 이름은 남긴다 */}
+          <div className={h && (scheduleLocked || infoLocked) ? LOCKED : ""}>
+          <Select
+              aria-label="적용 범위"
               value={form.isAllStores ? "ALL" : "SOME"}
               disabled={scheduleLocked || infoLocked || !allowAll}
               onChange={(e) => {
@@ -284,22 +338,25 @@ export function HolidayFormPanel(props: Props) {
             >
               {(allowAll || form.isAllStores) && <option value="ALL">전체 점포</option>}
               <option value="SOME">일부 점포</option>
-            </Select>
-          </Field>
+          </Select>
+          </div>
           <div className="flex flex-col gap-[8px]">
             <span className="text-[14px] font-medium text-erp-label">
-              {form.isAllStores ? "예외 점포" : "대상 점포"}
+              {form.isAllStores ? "예외점포" : "대상점포"}
               {!form.isAllStores && <RequiredMark />}
+              {/* 무엇을 고르는 칸인지 칸 이름 오른쪽에 「 · 」로 붙여 말한다(2026-10-30 사용자 지정 — 전엔 아랫줄 「고른 점포는 이 휴일에서 빠집니다. 모두 빼도 저장할 수 있습니다.」) */}
+              <span className="text-[13px] font-normal"> · {form.isAllStores ? "휴일을 적용하지 않을 점포를 선택해 주세요." : "휴일을 적용할 점포를 선택해 주세요."}</span>
             </span>
-            {form.isAllStores && <p className="text-[13px] text-erp-label">고른 점포는 이 휴일에서 빠집니다. 모두 빼도 저장할 수 있습니다.</p>}
             {storesLocked ? (
               <p className="text-[14px] text-erp-muted">점포를 바꿀 수 없는 휴일입니다.</p>
             ) : (
               <StoreMappingPicker
                 // 대상 · 예외는 다른 목록이라 범위를 바꾸면 찾기 칸에 적던 글자도 새로 시작한다
                 key={form.isAllStores ? "excluded" : "targets"}
+                // 고른 점포 칸은 BP 관리자보다 1/3 낮게 — 패널이 길어 버튼이 화면 밖으로 밀렸다(2026-10-30 사용자 지정)
+                short
                 panelOpen={open}
-                // 후보는 로그인 정보의 관리 점포다. 폐점한 점포는 더할 수 없어(api 400) 후보에서 뺀다 — 이미 붙은 폐점 점포는 빼기만 된다
+                // 후보는 로그인 정보의 관리 점포다. 폐점한 점포는 대상으로 더할 수 없고(api 400) 휴일이 적용되지 않아 예외로 뺄 필요도 없어 후보에서 뺀다 — 이미 붙은 폐점 점포는 빼기만 된다
                 options={options}
                 picked={form.isAllStores ? excluded : targets}
                 exclude={form.isAllStores}
@@ -314,18 +371,18 @@ export function HolidayFormPanel(props: Props) {
             {err("storeIds")}
             {fixedStores.length > 0 && (
               <p className="text-[13px] text-erp-label">
-                맡지 않은 점포 {fixedStores.length}곳({fixedStores.map((s) => s.name).join(", ")})은 그대로 둡니다.
+                맡지 않은 점포 {fixedStores.length}개({fixedStores.map((s) => s.name).join(", ")})는 그대로 둡니다.
               </p>
             )}
           </div>
         </FormGroup>
 
-        <div className="flex items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">
+        {/* [취소] [저장]은 가운데, 위 구분선 없이(2026-10-30 사용자 지정 — 전엔 양 끝 · 위 1px 선. 글자는 10-30 에 [닫기]로 바꿨다가 2026-11-02 [취소]로 되돌림) */}
+        <div className="flex items-center justify-center gap-[6px]">
           <Button variant="off" onClick={onClose} disabled={saving}>
             취소
           </Button>
-          <span className="flex-1" />
-          <Button onClick={() => handleSave()} disabled={saving}>
+          <Button onClick={() => handleSave()} disabled={saving || bpBlocked}>
             저장
           </Button>
         </div>
@@ -333,9 +390,9 @@ export function HolidayFormPanel(props: Props) {
 
       <ConfirmDialog
         open={overlaps !== null}
-        title="같은 날짜에 이미 휴일이 있습니다"
-        confirmLabel="그래도 저장"
-        wide
+        title="같은 날짜에 이미 등록된 휴일이 있습니다." // 2026-11-03 사용자 지정 — 전엔 「같은 날 등록된 휴일이 있습니다.」
+        confirmLabel="저장" // 「그래도 저장」은 어색해 「저장」(2026-10-28 사용자 지정)
+        wide="large" // 점포 · 날짜 · 휴일 표를 담아 넓은 창(2026-10-30 사용자 지정)
         busy={saving}
         onConfirm={() => handleSave(true)}
         onCancel={() => setOverlaps(null)}
@@ -348,22 +405,40 @@ export function HolidayFormPanel(props: Props) {
 
 /** 겹침 요약 — 점포마다 겹치는 날짜 앞 10건과 나머지 수(오늘 또는 시작일부터 1년). 겹쳐도 저장할 수 있다. */
 function OverlapSummary({ overlaps }: { overlaps: BpHolidayOverlaps }) {
+  // 점포 · 날짜 · 이미 있는 휴일 세 칸 표 — 점포마다 겹치는 날짜를 한 줄씩, 점포 이름은 그 점포의 첫 줄에만(2026-10-30 사용자 지정 — 전엔 점포 이름 아래 「날짜 휴일명 · 휴일명, …」 글줄이라
+  // 무엇이 어디서 겹치는지 알기 어려웠다). 앞 10일만 보이고 나머지는 「외 N일」 줄로 센다(api)
+  const rows: OverlapRow[] = overlaps.stores.flatMap((s) => [
+    ...s.dates.map((d, i) => ({ key: `${s.storeId}-${d.date}`, store: i === 0 ? s.storeName : "", date: `${d.date}(${weekdayName(d.date).slice(0, 1)})`, names: d.holidayNames })),
+    ...(s.moreDateCount > 0 ? [{ key: `${s.storeId}-more`, store: "", date: `외 ${s.moreDateCount}일`, names: [] }] : []),
+  ]);
   return (
     <div className="flex flex-col gap-[12px] break-keep">
-      <p>
-        {overlaps.storeCount}개 점포 · {overlaps.dateCount}일이 다른 휴일과 겹칩니다. 겹쳐도 저장할 수 있습니다.
-      </p>
-      <ul className="flex max-h-[280px] flex-col gap-[10px] overflow-y-auto">
-        {overlaps.stores.map((s) => (
-          <li key={s.storeId} className="flex flex-col gap-[4px]">
-            <span className="font-medium">{s.storeName}</span>
-            <span className="text-[13px] text-erp-label">
-              {s.dates.map((d) => `${d.date} ${d.holidayNames.join(" · ")}`).join(", ")}
-              {s.moreDateCount > 0 && ` 외 ${s.moreDateCount}일`}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {/* 제목 「같은 날짜에 이미 등록된 휴일이 있습니다.」 · 본문은 결과만 — 전엔 「저장하면 겹치는 휴일이 모두 적용됩니다.」(2026-11-03 사용자 지정) */}
+      <p>저장하면, 휴일이 추가됩니다. 저장하시겠습니까?</p>
+      <HistoryScroll height="280">
+        <DataTable columns={OVERLAP_COLUMNS} rows={rows} rowKey={(r) => r.key} />
+      </HistoryScroll>
     </div>
   );
 }
+
+type OverlapRow = { key: string; store: string; date: string; names: string[] };
+const OVERLAP_COLUMNS: Column<OverlapRow>[] = [
+  // 점포 칸은 폭을 정해 날짜가 점포 쪽으로 붙게 하고, 남는 폭은 휴일 이름이 쓴다(2026-10-30 사용자 지정)
+  { header: "점포", width: "w-[170px]", align: "left", cell: (r) => <span className="block truncate" title={r.store}>{r.store}</span> },
+  { header: "날짜", width: "w-[120px]", align: "left", cell: (r) => r.date }, // 왼쪽 정렬로 점포 바로 옆에(2026-10-30 사용자 지정). 겹침은 1년 범위라 해를 넘을 수 있어 연도까지 쓴다(코드 리뷰로 찾음)
+  // 이미 등록된 휴일은 달력의 BP 휴일 칩과 같은 모양(연한 파랑 바탕 · 파랑 글자)으로 — 이름만 글자로 두면 고치는 휴일과 헷갈렸다(2026-11-03 사용자 지정)
+  {
+    header: "이미 등록된 휴일",
+    align: "left",
+    cell: (r) => (
+      <span className="flex min-w-0 flex-wrap gap-[6px]">
+        {r.names.map((name, i) => (
+          <span key={i} title={name} className="max-w-full truncate rounded-[2px] bg-erp-on-bg px-[4px] py-[2px] text-[13px] font-medium text-erp-on">
+            {name}
+          </span>
+        ))}
+      </span>
+    ),
+  },
+];

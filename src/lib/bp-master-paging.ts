@@ -10,7 +10,6 @@ export type BpMasterStatusValue = (typeof BP_MASTER_STATUSES)[number];
 
 export const BP_MASTER_PAGE_SIZES = [20, 50, 100] as const satisfies readonly ApiListQuery["pageSize"][];
 export type BpMasterPageSize = (typeof BP_MASTER_PAGE_SIZES)[number];
-export const BP_MASTER_HISTORY_PAGE_SIZE = 10;
 
 /** 검색 기준 — 검색어 하나를 어느 칸에서 찾을지(S-ALHCJS) */
 export const BP_MASTER_SEARCH_TYPES = [

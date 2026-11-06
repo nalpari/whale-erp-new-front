@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { bpOfSwitchUrl, bpSwitchUrl, isAllowed, MENU_CODE, menuOfPath, menuPermissionOf, menusOf, serviceOfPath } from "./menus.ts";
+import { bpOfSwitchUrl, bpSwitchUrl, firstMenuRedirect, firstMenuUrl, isAllowed, MENU_CODE, menuOfPath, menuPermissionOf, menusOf, sameMenus, serviceOfPath } from "./menus.ts";
 import type { AdminMenu } from "./session.ts";
 
 const menu = (url: string | null, read: boolean, children: AdminMenu[] = [], serviceCode = "WHALE_ERP"): AdminMenu => ({
@@ -32,6 +32,19 @@ test("탭 BP 접두(/bp/{id})는 떼고 메뉴와 비교한다", () => {
 test("isAllowed: 서비스 홈은 메뉴가 비어도 열린다", () => {
   assert.equal(isAllowed([], "/home", "WHALE_ERP"), true);
   assert.equal(isAllowed([], "/platform", "PLATFORM"), true);
+});
+
+test("isAllowed: 엑셀 내려받기(메일 링크)는 메뉴 없이 두 서비스에서 열린다 — 경로 마디가 맞아야 한다", () => {
+  assert.equal(isAllowed([], "/excel-downloads/41", "WHALE_ERP"), true);
+  assert.equal(isAllowed([], "/excel-downloads/41", "PLATFORM"), true);
+  assert.equal(isAllowed([], "/excel-downloads-x/41", "WHALE_ERP"), false);
+});
+
+test("isAllowed: 운영 알림함은 플랫폼 탭에서 메뉴 없이 열리고, 웨일ERP 탭은 메뉴 권한을 따른다", () => {
+  for (const p of ["/notifications", "/notifications/7/open"]) assert.equal(isAllowed(platformAccount, p, "PLATFORM"), true, p);
+  assert.equal(isAllowed(platformAccount, "/notifications-x", "PLATFORM"), false);
+  assert.equal(isAllowed([], "/bp/8/notifications", "WHALE_ERP"), false);
+  assert.equal(isAllowed([menu("/notifications", true)], "/bp/8/notifications/7/open", "WHALE_ERP"), true);
 });
 
 test("isAllowed: 조회 권한 있는 메뉴와 그 아래(상세·등록)는 열린다", () => {
@@ -103,7 +116,7 @@ test("menuPermissionOf: 다른 서비스 탭의 메뉴와 없는 코드는 false
   assert.equal(menuPermissionOf([staff], "WHALE_ERP", MENU_CODE.staffMembers, "create"), true);
   // 플랫폼 탭에서는 ERP 메뉴를 보지 않는다
   assert.equal(menuPermissionOf([staff], "PLATFORM", MENU_CODE.staffMembers, "create"), false);
-  assert.equal(menuPermissionOf([staff], "WHALE_ERP", MENU_CODE.platformMenus, "read"), false);
+  assert.equal(menuPermissionOf([staff], "WHALE_ERP", MENU_CODE.todos, "read"), false);
 });
 
 test("menuOfPath: 직원 상세(/staff-members/12)는 직원 정보 관리 메뉴 — 상세 버튼 권한(usePagePermission)이 이 메뉴의 권한 칸이다", () => {
@@ -166,4 +179,45 @@ test("bpOfSwitchUrl: ?bp= 는 BP 이동 화면의 것만, 숫자일 때만 받�
   // BP 코드 형식이 아니면(잘렸거나 손으로 고친 값) 검색어로 쓰지 않는다
   assert.deepEqual(read(`/bp-switch?bp=17&bpCode=${"X".repeat(60)}`), { bpCodeId: 17, bpCode: null });
   assert.deepEqual(read("/bp-switch?bp=17&bpCode=BP00001"), { bpCodeId: 17, bpCode: null });
+});
+
+test("플랫폼 첫 메뉴 — 헤더 순서상 첫 화면, 권한 없는 메뉴 · 다른 서비스 · 홈은 건너뛴다", () => {
+  const p = (url: string | null, read: boolean, children: AdminMenu[] = []) => menu(url, read, children, "PLATFORM");
+  // 하위로 가는 길로만 들어온 1단계(조회 false)의 첫 하위, 그 하위도 길뿐이면 3단계의 권한 있는 메뉴
+  assert.equal(firstMenuUrl([menu("/home/x", true), p(null, false, [p(null, false, [p("/bp-masters", true)]), p("/code-groups", true)])], "PLATFORM"), "/bp-masters");
+  // 1단계에 url 과 하위가 둘 다 있으면 헤더처럼 하위가 먼저다
+  assert.equal(firstMenuUrl([p("/settings", true, [p("/platform-admins", true)])], "PLATFORM"), "/platform-admins");
+  // 하위가 하나도 열리지 않으면 1단계 자신
+  assert.equal(firstMenuUrl([p("/settings", true, [p("/x", false)])], "PLATFORM"), "/settings");
+  // 1단계 자신도 조회 권한이 없으면 건너뛴다 — 권한 없는 메뉴로 보내면 「이전 화면으로」가 되돌아오며 맴돈다
+  assert.equal(firstMenuUrl([p("/settings", false, [p("/x", false)]), p("/code-groups", true)], "PLATFORM"), "/code-groups");
+  // 홈 주소는 맴돌므로 뺀다 — 1단계든, 같은 1단계 안의 하위 항목이든 다음 것을 본다
+  assert.equal(firstMenuUrl([p("/platform", true), p("/code-groups", true)], "PLATFORM"), "/code-groups");
+  assert.equal(firstMenuUrl([p(null, false, [p("/platform", true), p("/platform-admins", true)])], "PLATFORM"), "/platform-admins");
+  // 3단계로 가는 길만 있고 그 아래가 하나도 열리지 않으면 1단계 자신
+  assert.equal(firstMenuUrl([p("/settings", true, [p(null, false, [p("/y", false)])])], "PLATFORM"), "/settings");
+  // 메뉴가 없거나 ERP 메뉴뿐이면 null — 임시 메뉴(알림 템플릿)는 후보가 아니다
+  assert.equal(firstMenuUrl([], "PLATFORM"), null);
+  assert.equal(firstMenuUrl(menus, "PLATFORM"), null);
+});
+
+test("첫 메뉴로 넘기기 — 플랫폼 탭의 /platform 에서만, 비밀번호 강제 변경 전에는 넘기지 않는다", () => {
+  const platform = [menu("/code-groups", true, [], "PLATFORM")];
+  assert.equal(firstMenuRedirect(platform, "PLATFORM", "/platform", false), "/code-groups");
+  assert.equal(firstMenuRedirect(platform, "PLATFORM", "/platform", true), null);
+  assert.equal(firstMenuRedirect(platform, "PLATFORM", "/code-groups", false), null);
+  assert.equal(firstMenuRedirect(platform, "WHALE_ERP", "/platform", false), null);
+  // 메뉴가 없으면 /platform 에 머물러 권한 요청 안내를 그린다
+  assert.equal(firstMenuRedirect([], "PLATFORM", "/platform", false), null);
+});
+
+test("sameMenus — 권한 · 이름 · 순서 · 하위 메뉴가 하나라도 다르면 다른 메뉴다", () => {
+  const base = [menu("/stores", true, [menu("/stores/new", true)]), menu("/staff", true)];
+  assert.equal(sameMenus(base, structuredClone(base)), true);
+  const withDelete = structuredClone(base);
+  withDelete[0].permission.delete = true;
+  assert.equal(sameMenus(base, withDelete), false);
+  assert.equal(sameMenus(base, [base[1], base[0]]), false);
+  assert.equal(sameMenus(base, [{ ...base[0], name: "점포" }, base[1]]), false);
+  assert.equal(sameMenus(base, [{ ...base[0], children: [] }, base[1]]), false);
 });

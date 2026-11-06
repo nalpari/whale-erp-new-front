@@ -1,7 +1,7 @@
 // 1팀 공통 컴포넌트에 없는 부품. 데모를 그리려고 임시로 둔 것이고, 컴포넌트 제안의 대상이다.
 // 생김새는 DESIGN.md 토큰과 규칙(2px 모서리, 1px 선, 34/42/46 높이, 뜬 것만 그림자)으로만 만든다.
 // 여기 없는 부품이 필요하면 화면 파일 안에서 같은 규칙으로 만들고, 무엇을 만들었는지 보고한다.
-import { button, uid } from "./ui.mjs";
+import { button, pagination, select, uid } from "./ui.mjs";
 
 // 탭. 고른 탭은 erp.js 가 바꾼다. 주소의 #id 가 탭 패널 id 와 같으면 그 탭으로 연다(예: 화면.html#탭 id).
 // tabs: [{ id, label, html }]
@@ -25,6 +25,22 @@ export function tabs(items, selected = items[0].id) {
 export function dialog(id, title, body, buttons, width = "w-[420px]") {
   const foot = buttons ?? `${button("취소", { variant: "off", "data-close": true })}${button("확인", { "data-close": true })}`;
   return `<dialog id="${id}" aria-labelledby="${id}-title" class="m-auto ${width} max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-title" class="text-[18px] font-semibold">${title}</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${foot}</div></dialog>`;
+}
+// 1팀 변경이력 팝업(앱 components/site/wide-dialog.tsx 의 WideDialog · HistoryScroll · HistoryTotalBar, 2026-11-04 사용자 지정).
+// 폭 1000 — BP 마스터 · 플랫폼 관리자 · BP 관리자 · 점포 · BP 휴일 모두. 제목 · [닫기]는 늘 그 자리, 표는 열 이름 줄을 고정한 채 줄만 스크롤한다.
+// 제목 줄 오른쪽 끝에 「총 N 건」 · 한 쪽 건수(20 · 50, 처음 20). 기간 조회처럼 위에 둘 줄(toolbar)이 있으면 건수는 그 줄 오른쪽 끝으로 내린다(BP 휴일).
+// 쪽 이동은 한 쪽뿐이어도(1) 이력이 한 건이라도 있으면 보인다. total 을 비우면(그 휴일 이력만 보는 상세 팝업) 건수 · 쪽 이동을 두지 않는다.
+// 표가 border-collapse 라 머리 줄 선은 표에 붙어 스크롤된다 — 위아래 선은 감싸는 상자가 긋고, 머리 줄 아래 선은 그림자(1px)로 붙여 머리와 함께 고정한다
+export const historyScroll = (table) =>
+  `<div class="min-h-0 flex-1 overflow-y-auto overscroll-contain border-y border-erp-thead-line [&_tbody_tr:last-child]:border-b-0 [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-[1] [&_thead]:shadow-[0_1px_0_var(--color-erp-thead-line)] [&_thead_tr]:border-y-0">${table}</div>`;
+export const historyTotalBar = (total, left = "") =>
+  `<div class="flex shrink-0 items-center gap-[6px]">${left}<p class="ml-auto text-[14px] text-erp-ink">총 <b class="font-semibold">${total.toLocaleString("ko-KR")}</b> 건</p><div class="w-[80px] shrink-0">${select(["20", "50"], { value: "20", "aria-label": "페이지당 건수" })}</div></div>`;
+export function historyDialog(A, id, table, { total, toolbar, title = "변경이력" } = {}) {
+  const counted = typeof total === "number";
+  const aside = counted && !toolbar ? `<div class="ml-auto">${historyTotalBar(total)}</div>` : "";
+  const top = toolbar ? (counted ? historyTotalBar(total, toolbar) : `<div class="flex shrink-0 items-center gap-[6px]">${toolbar}</div>`) : "";
+  const pages = counted && total > 0 ? `<div class="shrink-0 pt-[6px]">${pagination(A, 1, Math.max(1, Math.ceil(total / 20)))}</div>` : "";
+  return `<dialog id="${id}" aria-labelledby="${id}-title" class="m-auto max-h-[calc(100dvh-48px)] w-[1000px] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40 open:flex"><div class="flex shrink-0 items-center gap-[12px]"><h2 id="${id}-title" class="text-[18px] font-semibold">${title}</h2>${aside}</div><div class="mt-[12px] flex min-h-0 flex-1 flex-col gap-[12px] text-[14px] leading-[1.6] text-erp-ink">${top}${historyScroll(table)}${pages}</div><div class="mt-[24px] flex shrink-0 justify-end gap-[6px]">${button("닫기", { variant: "off", "data-close": true })}</div></dialog>`;
 }
 export const dialogTrigger = (label, id, variant = "primary") => button(label, { variant, "data-dialog": id });
 export const dialogId = () => uid("dialog");

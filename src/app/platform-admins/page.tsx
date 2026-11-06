@@ -1,6 +1,6 @@
 import { ApiError } from "@/lib/api";
-import { getPlatformAdmin, getPlatformAdmins, getPlatformRoleGroups, type PlatformAdminDetail } from "@/lib/platform-admins";
-import { parseAdminsQuery } from "./admins-href";
+import { getPlatformAdmin, getPlatformAdmins, getPlatformRoleGroupFilterOptions, getPlatformRoleGroups, type PlatformAdminDetail } from "@/lib/platform-admins";
+import { adminsHref, parseAdminsQuery } from "./admins-href";
 import { AdminsScreen } from "./admins-screen";
 
 // 플랫폼 관리자 관리 (S-YTKWGG · 상세 S-BRSPGB · 등록 S-FOJJKB · 수정 S-CZGHBS · 삭제 S-NLVXWJ · 초기화 S-XKYOND).
@@ -11,7 +11,7 @@ export default async function PlatformAdminsPage({ searchParams }: PageProps<"/p
   const params = await searchParams;
   const query = parseAdminsQuery(params);
 
-  const [list, roleGroups, detail] = await Promise.all([
+  const [list, roleGroups, filterRoleGroups, detail] = await Promise.all([
     // 계정 상태를 모두 끄면(NONE) 결과 없음 — api 를 부르지 않는다(2026-10-27 사용자 지정)
     query.status === "NONE"
       ? { items: [], total: 0, inactiveCount: 0 }
@@ -23,11 +23,32 @@ export default async function PlatformAdminsPage({ searchParams }: PageProps<"/p
           statuses: query.status && [query.status],
         }),
     getPlatformRoleGroups(),
+    // 필터는 등록 · 수정 선택지와 달리 마스터 권한도 보인다 — 플랫폼 관리자도 목록의 마스터 계정을 거른다(2026-10-29 재영)
+    getPlatformRoleGroupFilterOptions().catch((error: unknown) => {
+      console.error("플랫폼 관리자 필터 권한 목록 조회 실패", error);
+      return null;
+    }),
     query.admin ? loadDetail(query.admin) : null,
   ]);
 
+  // 0건이면 조건 없이(검색어 없음 · 권한명 · 계정상태 전체) 한 번 더 물어 「관리자 계정이 아예 없는지」와 「조건에 맞는 계정이 없는지」를 가른다
+  // (점포 · 직원 목록과 같은 방식, 2026-11-05 사용자 지정). 계정상태를 모두 끈 0건도 같다(이유를 따로 말하지 않는다).
+  // 조건 없는 조회는 기본 조건에서 만든다. 지금 조회가 이미 그것이면 다시 묻지 않고, 묻지 못하면 「조건에 맞는 …」
+  const allQuery = { ...parseAdminsQuery({}), pageSize: query.pageSize };
+  const noAdminsAtAll =
+    list.total === 0 &&
+    (adminsHref({ ...query, page: 1, admin: undefined, edit: undefined }) === adminsHref(allQuery) ||
+      (await getPlatformAdmins({ page: 1, pageSize: allQuery.pageSize })
+        .then((all) => all.total === 0)
+        .catch((error: unknown) => {
+          // 확인에 실패하면 「조건에 맞는 …」 — 장애를 알아챌 수 있게 로그만 남긴다
+          console.warn("플랫폼 관리자 전체 건수 확인 실패", error);
+          return false;
+        })));
+
   // 제목 줄(PageBar)은 AdminsScreen 이 그린다 — [등록]이 등록 패널을 여는 상태와 같은 곳에 있어야 해서다
-  return <AdminsScreen list={list} roleGroups={roleGroups} query={query} detail={detail} />;
+  // 필터 선택지일 뿐이라 실패하면 등록용 목록으로 대신한다(2026-10-30 재영)
+  return <AdminsScreen list={list} noAdminsAtAll={noAdminsAtAll} roleGroups={roleGroups} filterRoleGroups={filterRoleGroups ?? roleGroups} query={query} detail={detail} />;
 }
 
 /** 상세를 못 불러오면 패널은 열되 실패 띠로 알린다 — 404(지웠거나 없는 계정)는 그 사실을, 그 밖은 일반 문구를. */

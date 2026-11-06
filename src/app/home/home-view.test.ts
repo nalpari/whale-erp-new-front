@@ -45,10 +45,10 @@ test("api 가 이 화면이 모르는 처리 대기 유형을 주면 null(그 �
   assert.equal(pendingLineOf(item({ type: "SOMETHING_NEW" as HomePendingItem["type"] }), 8), null);
 });
 
-test("서명 대기 — 이름 외 N명 · 발송 후 경과, 근로계약 목록의 점포 · 상태로 간다", () => {
+test("서명 대기 — 이름 외 N명 · 발송 후 경과, 탭 BP 의 근로계약 목록 점포 · 상태로 간다", () => {
   const line = pendingLineOf(item({}), 8)!;
   assert.deepEqual([line.kind, line.title, line.desc], ["계약", "근로계약 서명 대기 3건", "남도현 외 2명 · 발송 후 6일 경과"]);
-  assert.equal(line.href, "/contracts?storeIds=3%2C7&status=PENDING_SIGNATURE");
+  assert.equal(line.href, "/bp/8/contracts?storeIds=3%2C7&status=PENDING_SIGNATURE");
   const q = readListQuery(searchOf(line.href));
   assert.deepEqual([q.storeIds, q.status], [[3, 7], ["PENDING_SIGNATURE"]]);
 });
@@ -64,12 +64,12 @@ test("갱신 예정 — 경과 없이 「새 근로계약서 초안 없음」, �
   assert.deepEqual(readListQuery(searchOf(line.href)).status, ["SIGNED"]);
 });
 
-test("소속 확인 거절 — 직원 목록의 「초대」 묶음(거절이 든 묶음)과 점포로 간다", () => {
+test("소속 확인 거절 — 탭 BP 의 직원 목록 「초대」 묶음(거절이 든 묶음)과 점포로 간다", () => {
   const line = pendingLineOf(item({ type: "AFFILIATION_REJECTED", count: 1, othersCount: 0, filter: { storeIds: [3], status: ["REJECTED"] } }), 8)!;
   assert.equal(line.kind, "직원");
   const q = parseStaffListQuery(searchOf(line.href));
   assert.deepEqual([q.storeIds, q.joinGroups], [[3], ["INVITED"]]);
-  assert.ok(line.href.startsWith("/staff-members?"));
+  assert.ok(line.href.startsWith("/bp/8/staff-members?"));
 });
 
 test("문의 답변완료 — 탭 BP 의 문의하기, 제목 외 N건", () => {
@@ -77,9 +77,10 @@ test("문의 답변완료 — 탭 BP 의 문의하기, 제목 외 N건", () => {
   assert.deepEqual([line.title, line.desc, line.href], ["문의 답변완료 2건", "KIOSK 연동 문의 외 1건 · 답변 후 1일 경과", "/bp/8/support-inquiries?status=ANSWERED"]);
 });
 
-test("긴급 TO-DO — TO-DO 목록의 점포 · 대기 · 진행 중 · 긴급만", () => {
+test("긴급 TO-DO — 탭 BP 의 TO-DO 목록 점포 · 대기 · 진행 중 · 긴급만", () => {
   const line = pendingLineOf(item({ type: "URGENT_TODO", firstName: "냉장고 재료 폐기", count: 1, othersCount: 0, filter: { storeIds: [3], status: ["PENDING", "IN_PROGRESS"] } }), 8)!;
   assert.equal(line.title, "긴급 TO-DO 1건");
+  assert.ok(line.href.startsWith("/bp/8/todos?"));
   const q = parseTodoListQuery(searchOf(line.href));
   assert.deepEqual([q.storeIds, q.statuses, q.urgentOnly], [[3], ["PENDING", "IN_PROGRESS"], true]);
 });

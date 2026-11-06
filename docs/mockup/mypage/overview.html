@@ -100,7 +100,7 @@
                     <tr><td class="k">모든 화면</td><td>상단 이름 → 내 정보 관리</td><td><a class="tlink" href="profile.html">내 정보</a> — 기본정보 탭이 먼저 열림</td></tr>
                     <tr><td class="k">모든 화면</td><td>상단 이름 → 비밀번호 변경</td><td><a class="tlink" href="password.html">비밀번호 변경</a></td></tr>
                     <tr><td class="k">모든 화면</td><td>상단 이름 → 회원 탈퇴 (BP 마스터만)</td><td>비밀번호 확인 팝업 → <a class="tlink" href="withdraw.html">회원 탈퇴</a></td></tr>
-                    <tr><td class="k">모든 화면</td><td>상단 이름 → 로그아웃</td><td><a class="tlink" href="../home/index.html">로그인 전 홈</a> — 이 브라우저 세션만 끝남</td></tr>
+                    <tr><td class="k">모든 화면</td><td>상단 이름 → 로그아웃</td><td><a class="tlink" href="../auth/login.html">로그인 화면</a> — 이 브라우저 세션만 끝남(2026-10-29)</td></tr>
                     <tr><td class="k">비밀번호 확인 팝업</td><td>취소</td><td><a class="tlink" href="profile.html">내 정보</a></td></tr>
                     <tr><td class="k">회원 탈퇴</td><td>조건 충족 · 사유 선택 → 회원 탈퇴 → 확인</td><td>완료 안내 → <a class="tlink" href="../home/index.html">로그인 전 홈</a></td></tr>
                     <tr><td class="k">회원 탈퇴</td><td>조건 미충족 → 회원 탈퇴</td><td>해야 할 일 안내 팝업 (그 자리)</td></tr>
@@ -137,7 +137,7 @@
                 <ul class="pol">
                   <li><span class="pol__t">탈퇴는 BP 마스터 본인만 한다. 플랫폼 계정은 스스로 탈퇴하지 못하고, 플랫폼 사용자도 BP 를 탈퇴로 바꾸지 못한다(미사용까지만).</span><span class="pol__ref">S-JHQQNR</span></li>
                   <li><span class="pol__t">선행 조건은 구독 해지·미정산 없음·진행 중 근로계약 없음 셋. 구독·정산은 1차 범위 밖이라 「1차 범위 밖」으로만 표시하고, 1차에서 확인하는 조건은 근로계약 하나(3팀 점포별 건수를 BP 전체 점포로 합산). 점포는 조건이 아니고 탈퇴가 모두 폐점시킨다.</span><span class="pol__ref">S-JHQQNR</span></li>
-                  <li><span class="pol__t">탈퇴는 논리 삭제다. 이름·연락처·이메일은 완료 메일 요청 뒤 지우고, 같은 BP 의 하위 계정(BP 관리자·가맹 마스터·가맹 관리자)도 즉시 탈퇴 처리해 개인정보를 지운다 — 아이디만 남긴다. 업무 기록과 이력은 보존 정책대로 남긴다.</span><span class="pol__ref">S-JHQQNR</span></li>
+                  <li><span class="pol__t">탈퇴는 논리 삭제다. 이름·연락처·이메일은 완료 메일 요청 뒤 지우고, 같은 BP 의 하위 계정(BP 관리자·가맹 마스터·가맹 관리자)은 미사용으로 바꾸고 개인정보를 지우며 세션을 끊는다(이미 미사용이던 계정은 개인정보만 지운다) — 아이디만 남긴다. 탈퇴 BP 의 관리자 계정은 등록·수정할 수 없다(2026-11-04 사용자 결정). 업무 기록과 이력은 보존 정책대로 남긴다.</span><span class="pol__ref">S-JHQQNR</span></li>
                   <li><span class="pol__t">같은 이메일·사업자등록번호로 다시 가입할 수 있지만 아이디는 다시 못 쓰고 예전 기록도 잇지 않는다.</span><span class="pol__ref">S-JHQQNR · PL-OCJOFP</span></li>
                   <li><span class="pol__t">로그아웃은 이 브라우저의 두 토큰만 무효로 한다. 다른 기기 세션과 업무 데이터는 그대로다.</span><span class="pol__ref">S-TMRGOG</span></li>
                 </ul>
@@ -194,7 +194,7 @@
               <div class="gap__head">
                 <span class="gap__no">MYPAGE-3</span>
                 <b>로그아웃·탈퇴 뒤 가는 ‘로그인 전 홈’은 어느 화면인가</b>
-                <span class="gap__decided">확정 · 스스로 끝내면 홈, 만료면 로그인</span>
+                <span class="gap__decided">확정 · 로그아웃은 로그인 화면, 탈퇴만 홈 (2026-10-29 바꿈)</span>
                 <span class="gap__ref">S-TMRGOG · S-JHQQNR</span>
               </div>
               <div class="gap__opts">
@@ -207,7 +207,7 @@
                   <p>1팀 로그인 영역의 <b>로그인 화면</b>으로 보낸다. 완료 문구는 로그인 화면에 따로 띄우지 않는다.</p>
                 </div>
               </div>
-              <p class="gap__note">로그아웃 버튼·회원 탈퇴처럼 스스로 세션을 끝내면 로그인 전 홈으로, 세션 만료(타임아웃)로 끝나면 로그인 화면으로 보낸다 (확정 2026-09-29).</p>
+              <p class="gap__note">로그아웃 버튼·회원 탈퇴처럼 스스로 세션을 끝내면 로그인 전 홈으로, 세션 만료(타임아웃)로 끝나면 로그인 화면으로 보낸다 (확정 2026-09-29).<br /><b>2026-10-29 재영 — 바꿈:</b> 로그아웃은 스스로 하든 만료로 끝나든 모두 로그인 화면으로 간다. 회원 탈퇴를 마친 뒤만 로그인 전 홈으로 간다.</p>
             </div>
           </section>
         </div>

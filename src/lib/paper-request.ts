@@ -17,7 +17,7 @@ export function answersWith401(pathname: string): boolean {
 
 const MB = 1024 * 1024;
 const UPLOAD_ROUTES = [NOTICE_SAVE_ROUTE, INQUIRY_SAVE_ROUTE, PAPER_ROUTE];
-export const TOO_LARGE = "보낸 내용이 너무 큽니다. 첨부를 줄여서 다시 보내 주세요";
+export const TOO_LARGE = "보낸 내용이 너무 큽니다. 첨부를 줄여서 다시 보내 주세요.";
 
 /**
  * 경로별 요청 본문 상한. next.config 의 proxyClientMaxBodySize(51MB)는 모든 경로에 걸리므로, proxy 가 content-length 로 경로마다 다시 막는다.

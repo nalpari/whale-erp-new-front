@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Button, ConfirmDialog } from "@/components/common";
+import { Button, ConfirmDialog, useAction } from "@/components/common";
 import { deleteContract } from "./actions";
 
 // 임시저장 삭제. 누르면 확인창으로 한 번 더 묻는다.
@@ -9,6 +9,7 @@ export function DeleteDraftButton({ contractId, back }: { contractId: number; ba
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
+  const remove = useAction(deleteContract, { kind: "delete" });
 
   return (
     <>
@@ -27,7 +28,7 @@ export function DeleteDraftButton({ contractId, back }: { contractId: number; ba
         onConfirm={() =>
           start(async () => {
             // 성공하면 액션이 목록으로 보낸다. 돌아왔다면 실패다.
-            const { error } = await deleteContract(contractId, back);
+            const { error } = await remove(contractId, back);
             setError(error);
           })
         }

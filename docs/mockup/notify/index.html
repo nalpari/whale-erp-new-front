@@ -6,6 +6,12 @@
     <title>알림함 · WHALE ERP</title>
     <link rel="icon" href="../assets/img/favicon.svg" />
     <link rel="stylesheet" href="../assets/whale.css" />
+    <style>
+      /* 알림 한 줄 — 제목 · 내용 두 줄 사이를 3px 띄운다(줄 높이 20 · 18px, 위아래 7px → 줄 55px, 2026-11-04 사용자 지정). 한 줄짜리 표는 46px 그대로 */
+      .inbox td.k { padding-block: 7px; }
+      .inbox td.k > .tlink { display: block; line-height: 20px; }
+      .inbox td.k > .subtle { margin-top: 3px; line-height: 18px; }
+    </style>
   </head>
   <body data-root="../" data-page="notify" data-sub="notify/index.html">
     <!-- 알림함 · /notifications · S-GDUNIT
@@ -18,9 +24,7 @@
       <main class="main" id="main">
         <div class="titlebar">
           <h1 class="t-h1">알림함</h1>
-          <span class="badge badge--warn">미확인 3</span>
           <div class="titlebar__end">
-            <button class="btn btn--secondary btn--sm" type="button">모두 읽음으로</button>
             <span class="filters__count mono">S-GDUNIT · /notifications</span>
           </div>
         </div>
@@ -56,19 +60,23 @@
           <div id="who">
             <div data-panel="bp">
               <div class="panel">
+                <!-- 목록 위 한 줄(2026-11-04 사용자 지정, 앱 notification-list.tsx) — 왼쪽 「총 N 건 · 미확인 N 건」(미확인은 표의 미확인 점과 같은 빨강 #ef6363),
+                     오른쪽 「전체 선택」(보이는 쪽의 알림) · [모두 읽음] · [선택 삭제] · 한 쪽 건수. 고른 알림이 없으면 [선택 삭제]는 막힌 버튼이고 이유를 말풍선으로 보인다
+                     (전엔 누른 뒤 「선택된 알림이 없습니다」 창). 전엔 제목 「알림」 옆 전체 · 미확인 고르기와 제목 줄 [모두 읽음으로]였다. -->
                 <div class="panel__head">
-                  <h2 class="t-h2">알림</h2>
-                  <div class="panel__end">
-                    <div class="seg">
-                      <button type="button" aria-pressed="true">전체 <span class="count">6</span></button>
-                      <button type="button" aria-pressed="false">미확인 <span class="count">3</span></button>
-                    </div>
+                  <span style="font-size: 14px; color: var(--ink)">총 <b>6</b> 건<span class="subtle" style="padding-inline: 6px">·</span><span style="color: #ef6363">미확인 <b>3</b> 건</span></span>
+                  <div class="panel__end inline" style="gap: 6px">
+                    <span class="inline" style="gap: 6px; margin-right: 6px; font-size: 14px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="전체 선택" data-icon="check" data-icon-size="11"></span>전체 선택</span>
+                    <button class="btn btn--secondary btn--sm" type="button">모두 읽음</button>
+                    <span data-tip="삭제할 알림을 먼저 선택해 주세요." tabindex="0"><button class="btn btn--secondary btn--sm" type="button" disabled>선택 삭제</button></span>
+                    <select class="select select--sm" aria-label="페이지당 건수" style="width: 80px"><option selected>20</option><option>50</option><option>100</option></select>
                   </div>
                 </div>
-                <div class="tblwrap" data-pager="6">
-                  <table class="tbl">
+                <div class="tblwrap">
+                  <table class="tbl inbox">
                     <tbody>
                       <tr>
+                        <td style="width: 26px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="알림 선택" data-icon="check" data-icon-size="11"></span></td>
                         <td style="width: 26px"><span class="badge badge--dot badge--risk"></span></td>
                         <td class="k">
                           <a class="tlink" href="../staff/contracts-detail.html">서지안 님이 근로계약서를 거부했습니다</a>
@@ -78,6 +86,7 @@
                         <td class="mono">09-06 09:12</td>
                       </tr>
                       <tr>
+                        <td style="width: 26px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="알림 선택" data-icon="check" data-icon-size="11"></span></td>
                         <td><span class="badge badge--dot badge--ok"></span></td>
                         <td class="k">
                           <a class="tlink" href="../staff/contracts-detail.html">문태경 님이 근로계약서에 날인했습니다</a>
@@ -87,6 +96,7 @@
                         <td class="mono">09-05 18:40</td>
                       </tr>
                       <tr>
+                        <td style="width: 26px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="알림 선택" data-icon="check" data-icon-size="11"></span></td>
                         <td><span class="badge badge--dot badge--info"></span></td>
                         <td class="k">
                           <a class="tlink" href="../support/inquiry-mine.html">문의에 답변이 등록되었습니다</a>
@@ -96,6 +106,7 @@
                         <td class="mono">09-02 11:05</td>
                       </tr>
                       <tr class="is-read">
+                        <td style="width: 26px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="알림 선택" data-icon="check" data-icon-size="11"></span></td>
                         <td><span class="subtle">·</span></td>
                         <td class="k">
                           <a class="tlink" href="../staff/contracts-detail.html">오세라 님이 근로계약서에 날인했습니다</a>
@@ -105,6 +116,7 @@
                         <td class="mono">08-29 14:22</td>
                       </tr>
                       <tr class="is-read">
+                        <td style="width: 26px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="알림 선택" data-icon="check" data-icon-size="11"></span></td>
                         <td><span class="subtle">·</span></td>
                         <td class="k">
                           <a class="tlink is-na" href="#" aria-disabled="true">배정숙 님의 계약이 만료되었습니다</a>
@@ -116,6 +128,7 @@
                     </tbody>
                   </table>
                 </div>
+                <div class="pager" style="justify-content: center"><nav class="pager__nav" aria-label="페이지" style="margin-inline: auto"><button type="button" aria-label="이전" disabled data-icon="arrowleft" data-icon-size="14"></button><button type="button" aria-current="page">1</button><button type="button" aria-label="다음" disabled data-icon="arrowright" data-icon-size="14"></button></nav></div>
                 <div class="panel__note">
                   미확인은 <b>점과 진한 글씨</b>로, 읽은 것은 흐리게 구분한다. 읽음 상태는 <b>사람마다 따로</b> 관리되어
                   같은 알림을 다른 관리자가 읽어도 내 미확인 수는 줄지 않는다.
@@ -127,19 +140,23 @@
 
             <div data-panel="pf" hidden>
               <div class="panel">
+                <!-- 목록 위 한 줄(2026-11-04 사용자 지정, 앱 notification-list.tsx) — 왼쪽 「총 N 건 · 미확인 N 건」(미확인은 표의 미확인 점과 같은 빨강 #ef6363),
+                     오른쪽 「전체 선택」(보이는 쪽의 알림) · [모두 읽음] · [선택 삭제] · 한 쪽 건수. 고른 알림이 없으면 [선택 삭제]는 막힌 버튼이고 이유를 말풍선으로 보인다
+                     (전엔 누른 뒤 「선택된 알림이 없습니다」 창). 전엔 제목 「알림」 옆 전체 · 미확인 고르기와 제목 줄 [모두 읽음으로]였다. -->
                 <div class="panel__head">
-                  <h2 class="t-h2">알림</h2>
-                  <div class="panel__end">
-                    <div class="seg">
-                      <button type="button" aria-pressed="true">전체 <span class="count">4</span></button>
-                      <button type="button" aria-pressed="false">미확인 <span class="count">2</span></button>
-                    </div>
+                  <span style="font-size: 14px; color: var(--ink)">총 <b>4</b> 건<span class="subtle" style="padding-inline: 6px">·</span><span style="color: #ef6363">미확인 <b>2</b> 건</span></span>
+                  <div class="panel__end inline" style="gap: 6px">
+                    <span class="inline" style="gap: 6px; margin-right: 6px; font-size: 14px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="전체 선택" data-icon="check" data-icon-size="11"></span>전체 선택</span>
+                    <button class="btn btn--secondary btn--sm" type="button">모두 읽음</button>
+                    <span data-tip="삭제할 알림을 먼저 선택해 주세요." tabindex="0"><button class="btn btn--secondary btn--sm" type="button" disabled>선택 삭제</button></span>
+                    <select class="select select--sm" aria-label="페이지당 건수" style="width: 80px"><option selected>20</option><option>50</option><option>100</option></select>
                   </div>
                 </div>
-                <div class="tblwrap" data-pager="4">
-                  <table class="tbl">
+                <div class="tblwrap">
+                  <table class="tbl inbox">
                     <tbody>
                       <tr>
+                        <td style="width: 26px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="알림 선택" data-icon="check" data-icon-size="11"></span></td>
                         <td style="width: 26px"><span class="badge badge--dot badge--warn"></span></td>
                         <td class="k">
                           <a class="tlink" href="../support/lead-detail.html">새 도입문의가 접수되었습니다</a>
@@ -149,6 +166,7 @@
                         <td class="mono">09-06 15:47</td>
                       </tr>
                       <tr>
+                        <td style="width: 26px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="알림 선택" data-icon="check" data-icon-size="11"></span></td>
                         <td><span class="badge badge--dot badge--warn"></span></td>
                         <td class="k">
                           <a class="tlink" href="../support/inquiry-detail.html">새 문의사항이 접수되었습니다</a>
@@ -158,6 +176,7 @@
                         <td class="mono">09-04 10:32</td>
                       </tr>
                       <tr class="is-read">
+                        <td style="width: 26px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="알림 선택" data-icon="check" data-icon-size="11"></span></td>
                         <td><span class="subtle">·</span></td>
                         <td class="k">
                           <a class="tlink is-na" href="#" aria-disabled="true">도입문의가 답변 완료로 바뀌었습니다</a>
@@ -169,6 +188,7 @@
                     </tbody>
                   </table>
                 </div>
+                <div class="pager" style="justify-content: center"><nav class="pager__nav" aria-label="페이지" style="margin-inline: auto"><button type="button" aria-label="이전" disabled data-icon="arrowleft" data-icon-size="14"></button><button type="button" aria-current="page">1</button><button type="button" aria-label="다음" disabled data-icon="arrowright" data-icon-size="14"></button></nav></div>
                 <div class="panel__note">
                   플랫폼 운영자는 <b>문의사항과 도입문의</b>만 받는다. 직원 근로계약 알림은 그 직원이 속한
                   BP 의 관리자에게만 간다 — 자기에게 관리 권한이 있는 업무의 알림만 보이는 것이 규칙이다.

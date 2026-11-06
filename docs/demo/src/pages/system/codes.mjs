@@ -121,7 +121,7 @@ export default ({ A, R }) => {
   const left = card(
     "w-[750px] shrink-0", // 그룹 목록을 넓혔다가(2026-10-12) 상세 코드 칸이 좁아 그룹명 칸을 반으로 줄였다(앱 code-panel 과 같다, 2026-10-26)
     ui.sectionHead(`공통코드 그룹${sub(`${GROUPS.length}개`)}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-group" })) + ui.button("저장")) +
-      ui.scrollTable(markRow(ui.dataTable(groupCols, groupRows), 0)) + // 열 이름 줄까지 고정, 아래만 스크롤(앱과 같다, 2026-10-26)
+      ui.scrollTable(markRow(ui.dataTable(groupCols, groupRows, "등록된 공통코드 그룹이 없습니다."), 0)) + // 열 이름 줄까지 고정, 아래만 스크롤(앱과 같다, 2026-10-26)
       addRows(
         "new-group",
         [
@@ -152,7 +152,7 @@ export default ({ A, R }) => {
     "min-w-0 flex-1",
     // 고른 그룹: 그룹코드 · 그룹명 라벨은 회색, 값은 굵게, 관리주체는 띠지만(앱 code-panel GroupHead, 2026-10-27)
     ui.sectionHead(`상세 코드${sub(`<span class="inline-flex items-baseline gap-[10px] align-baseline"><span class="inline-flex items-baseline gap-[6px]"><span class="text-erp-label">그룹코드</span><b class="font-semibold text-erp-ink">SERVICE</b></span><span aria-hidden="true" class="h-[11px] w-px shrink-0 self-center bg-[#d9d9d9]"></span><span class="inline-flex items-baseline gap-[6px]"><span class="text-erp-label">그룹명</span><b class="font-semibold text-erp-ink">서비스</b></span><span aria-hidden="true" class="h-[11px] w-px shrink-0 self-center bg-[#d9d9d9]"></span>${c.ownerTag("플랫폼고정")}</span>`)}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
-      ui.scrollTable(ui.dataTable(codeCols, codeRows)) +
+      ui.scrollTable(ui.dataTable(codeCols, codeRows, "등록된 상세 코드가 없습니다.")) +
       addRows(
         "new-code",
         [
@@ -160,7 +160,7 @@ export default ({ A, R }) => {
           ['<button type="button" data-remove-row title="이 새 행 빼기" aria-label="새 행 빼기" class="px-[6px] text-[16px] text-erp-label hover:text-erp-ink">×</button>'],
           [codeField("서비스 코드 직접 입력", "상세 코드"), true],
           [ui.textField({ placeholder: "서비스명", "aria-label": "코드명" }), true],
-          [`<span data-new-order title="맨 끝에 붙습니다. 저장한 뒤 끌어서 옮길 수 있습니다">${SERVICES.length + 1}</span>`],
+          [`<span data-new-order title="맨 끝에 붙습니다. 저장한 뒤 끌어서 옮길 수 있습니다.">${SERVICES.length + 1}</span>`],
           [x.toggle("사용", true)],
         ],
       ),

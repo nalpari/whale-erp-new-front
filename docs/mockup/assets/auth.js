@@ -677,8 +677,10 @@
      검색 필터의 점포 고르기(data-spick-nocode)에서 열면 「매핑」 대신 「선택」 문구를 쓴다(점포 정보 관리 필터 · 2026-10-27). */
   var bulkPop = null, bulk = null;
   var BULK_TEXT = {
-    map: { guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.", left: "매핑 안 된 점포", right: "매핑된 점포", leftDone: "고를 수 있는 점포를 모두 매핑했습니다.", rightEmpty: "아직 매핑된 점포가 없습니다." },
-    filter: { guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 선택됩니다. 오른쪽에서 빼면 선택이 풀립니다.", left: "고를 수 있는 점포", right: "선택한 점포", leftDone: "고를 수 있는 점포를 모두 골랐습니다.", rightEmpty: "아직 고른 점포가 없습니다." }
+    map: { guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.", left: "매핑 안 된 점포", right: "매핑된 점포", leftDone: "선택할 수 있는 점포를 모두 매핑했습니다.", rightEmpty: "아직 매핑된 점포가 없습니다." },
+    /* BP 휴일 예외점포 고르기(data-spick-exclude) — 앱 store-mapping-picker.tsx TEXTS.exclude 문구(2026-10-30 재영) */
+    exclude: { guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 예외로 뺄 수 있습니다. 예외 해제는 [빼기] 버튼을 이용해 주세요.", left: "적용 점포", right: "예외점포", leftDone: "선택할 수 있는 점포를 모두 예외로 지정했습니다.", rightEmpty: "예외점포가 없습니다." },
+    filter: { guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 선택됩니다. 오른쪽에서 빼면 선택이 풀립니다.", left: "선택할 수 있는 점포", right: "선택한 점포", leftDone: "선택할 수 있는 점포를 모두 골랐습니다.", rightEmpty: "아직 고른 점포가 없습니다." }
   };
   function bulkIc(name, size) { return '<svg width="' + size + '" height="' + size + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
   function bulkSide(side) {
@@ -901,7 +903,7 @@
       found = pool.filter(function (s) { return picked.indexOf(s.code) < 0 && (!t || (s.name + " " + s.code).toLowerCase().indexOf(t) > -1); });
       var left = pool.length - picked.length;
       if (!found.length) {
-        list.innerHTML = '<div class="addr__note">' + (left ? "‘" + esc(q.value.trim()) + "’에 맞는 점포가 없습니다. 내 관리 점포 안에서만 찾습니다." : "고를 수 있는 점포를 모두 골랐습니다.") + "</div>";
+        list.innerHTML = '<div class="addr__note">' + (left ? "‘" + esc(q.value.trim()) + "’에 맞는 점포가 없습니다. 내 관리 점포 안에서만 찾습니다." : "선택할 수 있는 점포를 모두 선택했습니다.") + "</div>";
       } else {
         list.innerHTML = found.map(function (s, i) {
           return '<div class="spick__opt' + (s.lock ? " is-off" : "") + '" role="option" aria-selected="false"' + (s.lock ? ' aria-disabled="true"' : "") + ' id="' + list.id + "-" + i + '" data-i="' + i + '"><span>' + hi(s.name, t) + '</span>' + (box.hasAttribute("data-spick-nocode") ? "" : '<span class="mono spick__code">' + hi(s.code, t) + '</span>') + (s.lock ? '<span class="spick__type">' + esc(s.lock) + "</span>" : "") + "</div>";
@@ -949,7 +951,7 @@
       close();
       spickBulk({
         pool: pool, picked: picked,
-        texts: box.hasAttribute("data-spick-nocode") ? BULK_TEXT.filter : null,
+        texts: box.hasAttribute("data-spick-nocode") ? BULK_TEXT.filter : box.hasAttribute("data-spick-exclude") ? BULK_TEXT.exclude : null,
         apply: function (sel) {
           var keep = picked.filter(function (c) { return sel.indexOf(c) > -1; });
           var fresh = pool.filter(function (s) { return !s.lock && sel.indexOf(s.code) > -1 && picked.indexOf(s.code) < 0; }).map(function (s) { return s.code; });
@@ -1047,7 +1049,7 @@
     }
     function isPicked(code) { return picked.some(function (s) { return s[0] === code; }); }
     function renderList() {
-      list.innerHTML = '<div class="addr__count">' + (norm(q.value) ? "검색 결과 " : "고를 수 있는 점포 ") + found.length + "곳 · 여러 곳을 고를 수 있습니다</div>" + found.map(function (s, i) {
+      list.innerHTML = '<div class="addr__count">' + (norm(q.value) ? "검색 결과 " : "선택할 수 있는 점포 ") + found.length + "곳 · 여러 곳을 선택할 수 있습니다</div>" + found.map(function (s, i) {
         return '<div class="addr__opt sfilt__opt" role="option" aria-selected="' + (i === at) + '" id="' + list.id + "-" + i + '" data-i="' + i + '">' +
           '<span class="addr__zip mono">' + s[0] + "</span>" +
           '<span class="addr__txt"><b>' + esc(s[1]) + "</b>" +
@@ -1080,7 +1082,7 @@
       });
       at = -1;
       if (!found.length) {
-        note(t ? "검색 조건에 맞는 점포가 없습니다." : "고를 수 있는 점포를 모두 골랐습니다.");
+        note(t ? "검색 조건에 맞는 점포가 없습니다." : "선택할 수 있는 점포를 모두 선택했습니다.");
         return;
       }
       renderList();

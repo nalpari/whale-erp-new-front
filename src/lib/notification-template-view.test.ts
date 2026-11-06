@@ -14,17 +14,18 @@ import {
   type TemplateInput,
 } from "./notification-template-view.ts";
 
+// 검사용 견본 — 근로계약 거부 운영 알림 꼴(거부 사유는 받지 않는다, WHALEERP-635). 제목에 필수 변수, 본문에 선택 변수 하나를 둔다.
 const base = (over: Partial<TemplateInput> = {}): TemplateInput => ({
   channel: "NOTIFICATION",
   templateName: "근로계약 거부",
   templateCode: "NTF_CONTRACT_REJECTED",
   preferenceCategory: null,
-  title: "#{직원이름} 님이 근로계약서를 거부했습니다",
-  body: "사유 · #{거부사유}",
+  title: "#{직원이름} 님이 근로계약서 서명을 거부했습니다",
+  body: "- 근무지: #{근무지}",
   kakaoTemplateCode: null,
   variables: [
     { name: "직원이름", label: "직원 이름", isRequired: true, sampleValue: "유하람" },
-    { name: "거부사유", label: "거부 사유", isRequired: false, sampleValue: "근무 시작 시각이 다릅니다" },
+    { name: "근무지", label: "근무지 점포 이름", isRequired: false, sampleValue: "모리커피 연남점" },
   ],
   ...over,
 });
@@ -88,7 +89,7 @@ test("validateTemplate — 제목 필수(알림톡 제외), 알림톡은 카카�
 test("validateTemplate — 앱 푸시는 수신 설정 묶음 필수, 제목 40자 · 본문 100자", () => {
   const push = (over: Partial<TemplateInput>) => validateTemplate(base({ channel: "PUSH", preferenceCategory: "CONTRACT", ...over }));
   assert.deepEqual(push({}), []);
-  assert.ok(push({ preferenceCategory: null }).includes("앱 푸시는 수신 설정 묶음을 골라 주세요."));
+  assert.ok(push({ preferenceCategory: null }).includes("앱 푸시는 수신 설정 묶음을 선택해 주세요."));
   assert.ok(push({ title: `#{직원이름}${"가".repeat(40)}` }).includes("제목은 40자를 넘을 수 없습니다(지금 47자)."));
   assert.ok(push({ body: "가".repeat(101) }).includes("본문은 100자를 넘을 수 없습니다(지금 101자)."));
 });
@@ -114,8 +115,8 @@ test("validateTemplate — 변수 이름 필수 · 겹침 · # 중괄호 공백,
 });
 
 test("validateTemplate — 목록에 없는 변수 · 닫히지 않은 #{ 는 몇째 줄인지 알린다", () => {
-  const errors = validateTemplate(base({ body: "첫 줄\n#{근무지} 입니다\n#{직원이름" }));
-  assert.deepEqual(errors, ["본문 2번째 줄: #{근무지} 는 변수 목록에 없습니다.", "본문 3번째 줄: 닫히지 않은 #{ 가 있습니다."]);
+  const errors = validateTemplate(base({ body: "첫 줄\n#{종료일} 입니다\n#{직원이름" }));
+  assert.deepEqual(errors, ["본문 2번째 줄: #{종료일} 는 변수 목록에 없습니다.", "본문 3번째 줄: 닫히지 않은 #{ 가 있습니다."]);
 });
 
 test("validateTemplate — 필수 변수는 제목 · 본문에 있어야 하고, 버튼 링크는 빠진다", () => {

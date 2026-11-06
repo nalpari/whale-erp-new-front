@@ -15,7 +15,7 @@ const kv = (rows) =>
     .join("")}</dl>`;
 const WHO = kv([["아이디", "platpark"], ["이름", "박지우"]]);
 // 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」 — 공통코드 상세 코드 머리와 같은 모양(2026-10-27 사용자 지정 — 전엔 이름 옆 상태 배지 · 「사용자 권한 · 그룹명」 꼬리표)
-const HEAD = c.adminHead("박지우", "플랫폼 관리자", "고객지원 담당", ui.badge("on", "사용"));
+const HEAD = c.adminHead("박지우", "플랫폼 관리자", "고객지원 담당", ui.badge("on", "사용"), "이름");
 
 function platformAdminDetailBody(A, R) {
   const resetId = x.dialogId();
@@ -45,13 +45,13 @@ function platformAdminDetailBody(A, R) {
   const history = ui.dataTable(
     [
       { header: "변경일시", width: "w-[140px]" },
-      { header: "변경자", width: "w-[80px]" },
-      { header: "항목", width: "w-[120px]", align: "left" }, // 앱 history-dialog.tsx 와 같다(2026-10-26)
+      { header: "변경자", width: "w-[140px]" },
+      { header: "항목", width: "w-[120px]", align: "left" }, // 열 폭은 앱 platform-admins/history-dialog.tsx 와 같다(2026-11-02)
       { header: "변경 전", align: "left" },
       { header: "변경 후", align: "left" },
     ],
     [
-      ["2026-08-12 09:40", "platkim", "초기 비밀번호", "", `초기화 메일 발송 완료 ${muted("· 값은 남기지 않음")}`],
+      ["2026-08-12 09:40", "platkim", "초기화 비밀번호", "", `초기화 메일 발송 완료 ${muted("· 값은 남기지 않음")}`],
       ["2026-03-02 14:20", "platkim", "직책", "사원", "매니저"],
       ["2025-07-01 09:30", "platjung", "사용자 권한", `플랫폼 관리자 ${muted("PA000001")}`, `고객지원 담당 ${muted("PA000002")}`],
       ["2025-06-02 10:11", "platjung", "계정", "", `사용 · 플랫폼 관리자 ${muted("PA000001")}`],
@@ -62,28 +62,22 @@ function platformAdminDetailBody(A, R) {
   const resetDialog = x.dialog(
     resetId,
     "비밀번호를 초기화하시겠습니까?",
-    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>임시 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.<br>임시 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.<br>현재 로그인 중인 세션은 유지됩니다.</p></div>`,
+    `<div class="flex flex-col gap-[12px] break-keep">${kv([["아이디", "platpark"], ["이름", "박지우"], ["이메일", "jiwoo.park@whale-erp.example"]])}<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">비밀번호 초기화 시 새로운 비밀번호가 등록된 이메일로 발송됩니다.<br>새 비밀번호는 1시간 동안 유효하며, 로그인 시 변경해야 합니다.<br>기존 비밀번호는 즉시 사용할 수 없게 됩니다.</div></div>` /* 세 관리 화면 같은 문구(앱과 같다, 2026-10-28) */,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("초기화", { "data-close": true }),
     "w-[480px]",
   );
   const deleteDialog = x.dialog(
     deleteId,
     "관리자 계정을 삭제하시겠습니까?",
-    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p>삭제한 계정은 관리자 목록 및 검색 결과에서 제외되며, 해당 계정으로 더 이상 로그인할 수 없습니다.</p><p>삭제한 계정은 복구할 수 없습니다.</p></div></div>` /* 빨간 안내 상자 · 굵은 글씨 없음(앱과 같다, 2026-10-27) */,
+    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p>삭제한 계정은 관리자 목록 및 검색 결과에서 제외되며, 해당 계정으로 더 이상 로그인할 수 없습니다.</p></div></div>` /* 빨간 안내 상자 · 굵은 글씨 없음(앱과 같다, 2026-10-27) */,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "system/admins.html") }),
   );
 
-  // 변경이력 — BP 관리자 상세처럼 버튼을 누르면 팝업으로 본다(2026-10-08). 표가 넓어 이 창만 넓힌다. 제목·칸
+  // 변경이력 — BP 관리자 상세처럼 버튼을 누르면 팝업으로 본다(2026-10-08). 표가 넓어 확인창(420)보다 넓힌다. 제목·칸
   // 이름은 1팀 영역 모두(점포·BP·휴일 등) 같은 말을 쓴다(2026-10-20 디자인 수정).
-  // 폭 760px(앱 history-dialog.tsx 와 같다, 2026-10-26). 쪽 나눔은 한 쪽(앱 HISTORY_PAGE_SIZE)을 넘을 때만 보여, 네 건인 표본에는 두지 않는다
-  const historyDialog = x
-    .dialog(
-      histId,
-      "변경이력",
-      `<div class="overflow-x-auto">${history}</div>`,
-      ui.button("닫기", { variant: "off", "data-close": true }),
-    )
-    .replace("w-[420px]", "w-[760px] max-h-[calc(100dvh-48px)] overflow-y-auto");
+  // 1팀 변경이력 팝업 공통(앱 platform-admins/history-dialog.tsx · WideDialog) — 폭 1000 · 제목 줄 오른쪽 총 건수 · 한 쪽 건수(20 · 50) ·
+  // 표 줄만 스크롤 · 한 쪽뿐이어도 쪽 이동(1)(2026-11-04 사용자 지정)
+  const historyDialog = x.historyDialog(A, histId, history, { total: 4 });
 
   const editBtn = ui.slideTrigger("수정", "platform-admin-edit-panel");
   const actions = `${x.dialogTrigger("삭제", deleteId, "soft")}${editBtn}${x.dialogTrigger("변경이력", histId, "soft")}`;

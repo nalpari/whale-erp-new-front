@@ -78,12 +78,13 @@ export function joinCell(item: StaffMemberListItem, today: string): Cell {
 }
 
 /**
- * 가입 초대 재발송 버튼을 보일지(WHALEERP-138). api 의 invitation.canResend 를 그대로 따른다 — api 가 재발송(POST /contracts/:id/send)이
- * 가입 초대 알림톡을 실제로 보낼 수 있을 때만 참으로 준다(WHALEERP-611: 가입 전 · 계정 없는 휴대폰 번호 · 계약 발송 대기 또는
- * 서명 대기 · 수락하지 않은 초대). 가입한 직원의 앱 알림 재발송은 근로계약 상세에서 한다.
+ * 가입 초대 재발송 버튼을 보일지(WHALEERP-138). api 의 contract.canResend 를 그대로 따른다 — api 가 재발송(POST /contracts/:id/send)이
+ * 가입 초대 알림톡이나 소속 추가 확인 요청을 실제로 보낼 수 있을 때만 참으로 준다(WHALEERP-611 · 130: 가입 전 · 휴대폰 번호 · 계약 발송
+ * 대기 또는 서명 대기 · 수락하지 않은 초대). 초대 행이 없는 옛 소속 확인 계약도 보이도록 invitation 이 아니라 contract 에 실린다.
+ * 가입한 직원의 앱 알림 재발송은 근로계약 상세에서 한다.
  */
-export function canResendInvitation(item: Pick<StaffMemberListItem, "invitation">): boolean {
-  return !!item.invitation?.canResend;
+export function canResendInvitation(item: Pick<StaffMemberListItem, "contract">): boolean {
+  return !!item.contract?.canResend;
 }
 
 /**

@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
+import { withPeriod } from "@/lib/format";
+import { historyPageSizeOf } from "@/lib/history-paging";
 import {
   checkBpAdminEmailAvailable,
   checkBpAdminLoginIdAvailable,
@@ -31,20 +33,21 @@ export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; status?
 
 /**
  * api 오류를 화면 문구로 바꾼다. 400(형식 · 고를 수 없는 권한 · 점포 범위) · 403(역할 · 본인 보호) · 404(없거나 볼 수 없는 계정) ·
- * 409(중복 · 동시 수정 · 한 점포 한 가맹 마스터 · 이메일 없는 계정 초기화)는 api 가 한국어로 알리므로 그대로 보인다.
+ * 409(중복 · 동시 수정 · 한 점포 한 가맹 마스터 · 이메일 없는 계정 초기화)는 api 가 한국어로 알리므로 api 문구를 그대로 넘긴다.
+ * 아이디 · 이메일 중복은 등록 · 수정 패널이(bpAdminFieldMessage), 이메일 없는 계정 초기화는 아래 resetBpAdminPasswordAction 이 화면 문구로 바꾼다.
  * 401 은 할 일을 알 수 있게 고정 문구로, 그 밖(5xx · 연결 실패)은 일반 문구로 바꾼다.
  */
 function failureOf(error: unknown, what: string): { ok: false; status?: number; message: string } {
   if (error instanceof ApiError) {
     if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
-    if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: error.message };
+    if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: withPeriod(error.message) };
   }
   console.error(`BP 관리자 ${what} 실패`, error);
   return { ok: false, message: `${what}하지 못했습니다. 잠시 후 다시 시도해 주세요.` };
 }
 
 const validId = (id: number) => Number.isInteger(id) && id >= 1 && id <= 2_147_483_647;
-const NOT_FOUND = { ok: false as const, status: 404, message: "관리자 계정을 찾을 수 없습니다" };
+const NOT_FOUND = { ok: false as const, status: 404, message: "관리자 계정을 찾을 수 없습니다." };
 const ROLE_TYPES: readonly BpAdminRoleType[] = ["BA", "FM", "FA"];
 
 /** 저장이 끝났으면 목록 · 상세를 새로 받는다. 무효화가 실패해도 저장은 끝났으므로 성공으로 돌려준다. */
@@ -101,8 +104,8 @@ export async function getBpAdminUpdateImpactAction(
   input: Pick<UpdateBpAdminInput, "accountStatus" | "storeIds">,
 ): Promise<ActionResult<BpAdminUpdateImpact>> {
   if (!validId(id)) return NOT_FOUND;
-  if (input?.accountStatus !== "ACTIVE" && input?.accountStatus !== "INACTIVE") return { ok: false, status: 400, message: "계정상태를 골라 주세요." };
-  if (!Array.isArray(input.storeIds) || !input.storeIds.every(validId)) return { ok: false, status: 400, message: "점포를 다시 골라 주세요." };
+  if (input?.accountStatus !== "ACTIVE" && input?.accountStatus !== "INACTIVE") return { ok: false, status: 400, message: "계정상태를 선택해 주세요." };
+  if (!Array.isArray(input.storeIds) || !input.storeIds.every(validId)) return { ok: false, status: 400, message: "점포를 다시 선택해 주세요." };
   try {
     const impact = await getBpAdminUpdateImpact(id, input);
     // 수가 빠지면 패널의 `deactivatedCount || unmappedCount` 검사가 거짓이 되어 확인창 없이 저장된다 — 모양이 다르면 실패로 돌려 저장을 막는다
@@ -124,14 +127,17 @@ export async function resetBpAdminPasswordAction(id: number): Promise<ActionResu
     refresh();
     return { ok: true, isMailSent };
   } catch (error) {
-    return failureOf(error, "비밀번호 초기화");
+    // api 문구 「이메일이 없는 계정이라 보낼 곳이 없습니다」(409)는 화면 말투로 바꾼다 — 세 관리 화면 같다(2026-10-28 사용자 지정)
+    if (error instanceof ApiError && error.status === 409 && error.message.includes("이메일이 없는 계정"))
+      return { ok: false, status: 409, message: "해당 계정에는 등록된 이메일 주소가 없어 메일을 발송할 수 없습니다." };
+    return failureOf(error, "비밀번호를 초기화");
   }
 }
 
-export async function getBpAdminHistoriesAction(id: number, page: number): Promise<ActionResult<BpAdminHistoryList>> {
+export async function getBpAdminHistoriesAction(id: number, page: number, pageSize: number): Promise<ActionResult<BpAdminHistoryList>> {
   if (!validId(id)) return NOT_FOUND;
   try {
-    return { ok: true, ...(await getBpAdminHistories(id, Number.isInteger(page) && page >= 1 ? page : 1)) };
+    return { ok: true, ...(await getBpAdminHistories(id, Number.isInteger(page) && page >= 1 ? page : 1, historyPageSizeOf(pageSize))) };
   } catch (error) {
     return failureOf(error, "이력 조회");
   }
@@ -142,7 +148,7 @@ export async function getBpAdminStoreOptionsAction(
   roleTypeCode: BpAdminRoleType,
   adminAccountId?: number,
 ): Promise<ActionResult<{ items: BpAdminStoreOption[] }>> {
-  if (!ROLE_TYPES.includes(roleTypeCode)) return { ok: false, status: 400, message: "계정 역할을 골라 주세요." };
+  if (!ROLE_TYPES.includes(roleTypeCode)) return { ok: false, status: 400, message: "계정 역할을 선택해 주세요." };
   if (adminAccountId !== undefined && !validId(adminAccountId)) return NOT_FOUND;
   try {
     return { ok: true, items: await getBpAdminStoreOptions(roleTypeCode, adminAccountId) };

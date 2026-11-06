@@ -9,7 +9,7 @@ import { useScope, useStores } from "@/components/site/session-gate";
 import { StoreBulkDialog } from "@/components/site/store-mapping-picker";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { Scope } from "@/lib/browser-storage";
-import { isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
+import { chipsKeyOf, isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
 import { useStoreListNavigation } from "./store-list-navigation";
 import { DEFAULT_STORES_QUERY, droppedStoreIds, fillScopeOf, withPickedStores, withScopeCondition, withStatuses, withStoreFilter } from "./stores-query";
 
@@ -19,7 +19,7 @@ const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? lis
  * 점포 목록 왼쪽 필터(데모 stores/index). 조건은 모두 AND 이고, 값은 URL 에만 둔다 — 바꾸면 URL 을 바꾸고 서버가 목록을 다시 그린다.
  * 점포는 고르는 즉시, 사업자등록번호는 Enter · 돋보기에 건다. 처음엔 폐점을 뺀다.
  * 점포 칸은 목록에서 고른 점포(storeIds — 이름은 서버가 찾아 picked 로 넘긴다)를, 없으면 헤더가 실어 온 범위(scope)를 칩으로 그린다.
- * 직영 · 가맹 범위의 칩은 로그인 정보의 점포(폐점 제외)에서 만든다 — api 에는 점포유형으로 보내므로, 로그인 뒤 생긴 점포나 「폐점」을
+ * 직영 · 가맹 범위의 칩은 로그인 정보의 점포(폐점 제외)에서 만든다 — api 에는 점포유형으로 보내므로, 이 탭이 아직 맞추지 못한 새 점포나 「폐점」을
  * 켰을 때의 그 유형 폐점 점포는 목록에 나와도 칩에는 없다(받아들인 차이). 고르는 즉시 칩이 서도록 이 안에서도 쥔다.
  * 점포 조건이 주소에 없으면(주소 직접 입력 · 즐겨찾기 · 그런 주소로 뒤로 가기) 헤더 범위로 채워 다시 검색한다. 상세 · 등록 · 수정을 오갈 때는
  * 목록 주소를 ?back= 으로 넘겨 고른 점포가 그대로 돌아온다. 다른 메뉴로 갔다 헤더로 다시 들어오면 헤더 범위를 따른다.
@@ -42,8 +42,9 @@ export function StoreFilter({ picked, scope, requested }: { picked: PickedStore[
   const scopeChips = (s: Scope): PickedStore[] => scopeStores(s, stores).map(toPickedStore);
   /** 서버가 그린 조건의 칩 — 고른 점포 · 점포 하나 범위는 서버가 찾은 이름(picked), 직영 · 가맹 범위는 로그인 정보에서 */
   const chipsOf = (s: Scope | null): PickedStore[] => (s && (s.type === "DIRECT" || s.type === "FRANCHISE") ? scopeChips(s) : picked);
-  // 서버가 새로 그린 값(요청한 점포 · 고른 점포 · 범위)이 바뀌면 칩을 그 값으로 맞춘다(뒤로 가기 · 링크 이동 · 헤더 범위 변경 · 서버가 뺀 점포)
-  const shownKey = `${requested.join(",")}|${picked.map((p) => p.storeId).join(",")}|${scope ? scopeKeyOf(scope) : ""}`;
+  // 서버가 새로 그린 값(요청한 점포 · 고른 점포 · 범위)이 바뀌면 칩을 그 값으로 맞춘다(뒤로 가기 · 링크 이동 · 헤더 범위 변경 · 서버가 뺀 점포).
+  // 직영 · 가맹 범위의 칩은 로그인 정보의 점포로 만들므로, 점포 목록을 다시 맞췄을 때도 맞춘다(chipsKeyOf)
+  const shownKey = `${requested.join(",")}|${picked.map((p) => p.storeId).join(",")}|${scope ? scopeKeyOf(scope) : ""}|${chipsKeyOf(chipsOf(scope))}`;
   // 점포 조건이 주소에 없으면(주소 직접 입력 · 즐겨찾기) 헤더 범위로 채운다 — 칩은 처음부터 그 범위로 그리고, 검색은 마운트 뒤에 다시 건다
   const [fillScope] = useState(() => fillScopeOf(current, headerScope));
   const [chips, setChips] = useState(() => (fillScope ? scopeChips(fillScope) : chipsOf(scope)));

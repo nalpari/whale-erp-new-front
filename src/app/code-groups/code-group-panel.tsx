@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { Badge, Button, DataTable, Select, TextField, Toggle, useToast, type Column } from "@/components/common";
+import { Badge, Blocked, Button, DataTable, Select, TextField, Toggle, useToast, type Column } from "@/components/common";
 import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, withKeptPending, type GroupDraft } from "@/lib/code-drafts";
-import { failureView } from "@/lib/code-save";
+import { failureView, STALE_DETAIL } from "@/lib/code-save";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, ManageOwnerCode } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -12,7 +12,7 @@ import { applyCodeGroupToBpsAction, saveCodeGroupsAction } from "./actions";
 import { BpApplyDialog } from "./bp-apply-dialog";
 import { CellError, CodePanel, DoneNotice, FieldErrors, focusFirstInvalid, recheck, SaveFailedBand, UNKNOWN_RESULT, UNREACHABLE } from "@/components/site/code-editor/code-panel";
 import { codesHref } from "./codes-href";
-import { searchedEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
+import { groupListEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
 import { GuardedLink, useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 
@@ -34,6 +34,7 @@ export function CodeGroupPanel({
   groups,
   total,
   search,
+  noGroupsAtAll,
   selected,
   ownerLabels,
 }: {
@@ -41,6 +42,8 @@ export function CodeGroupPanel({
   total: number;
   /** 왼쪽 필터의 검색 조건 — 그룹을 옮겨도 이어 간다. */
   search: CodeGroupSearch;
+  /** 조건 없이도 그룹이 없다 — 빈 목록 문구를 「등록된 …」으로(화면이 0건일 때 한 번 더 물어 정한다) */
+  noGroupsAtAll: boolean;
   selected?: string;
   /** 관리 주체 한글 — 공통코드 MANAGE_OWNER 에서 읽은 값. */
   ownerLabels: Record<string, string>;
@@ -56,6 +59,10 @@ export function CodeGroupPanel({
   const [drafts, setDrafts] = useState(() => groups.map(toDraft));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
+  // 그 사이 바뀐 실패(409 · 404) 뒤 다시 받은 목록으로 칸을 채울 때 실패 띠를 지우지 않는다
+  const [staleBand, setStaleBand] = useState(false);
+  // 지금 실패 띠가 그 사이 바뀐 실패인가 — 아랫줄을 「최신 정보로 다시 채웠습니다.」로 고른다(failureView 의 판정 그대로)
+  const [failureStale, setFailureStale] = useState(false);
   const [saving, startSaving] = useTransition();
   const [applyTarget, setApplyTarget] = useState<Draft | null>(null);
   const [applying, startApplying] = useTransition();
@@ -75,6 +82,8 @@ export function CodeGroupPanel({
     setShown({ groups, selected });
     // 저장 중에 같은 내용의 목록이 새 참조로 오면(오른쪽 패널 저장 등) 저장 기준도 그 참조로 옮긴다(followSameRows)
     if (sameRows) {
+      // 다시 받은 목록이 같은 내용이면 staleBand 표시만 푼다 — 실패 띠(failure)는 그대로 둔다
+      setStaleBand(false);
       const followed = followSameRows(savingFrom?.groups ?? null, shown.groups, groups);
       if (savingFrom && followed !== savingFrom.groups) setSavingFrom({ ...savingFrom, groups });
     } else {
@@ -84,8 +93,10 @@ export function CodeGroupPanel({
       setDrafts(next);
       if (!next.some((d) => d.added)) {
         setErrors({});
-        setFailure(null);
+        // 그 사이 바뀐 실패(409 · 404)로 다시 받은 목록이면 실패 띠는 남긴다(staleBand) — 한 번 쓰고 푼다
+        if (!staleBand) setFailure(null);
       }
+      setStaleBand(false);
     }
   }
 
@@ -114,11 +125,10 @@ export function CodeGroupPanel({
   };
 
   const handleAdd = () => {
-    // 새 행은 마지막 다음 순서, 사용 상태로 시작한다.
-    const last = Math.max(total, ...drafts.map((d) => d.sortOrder));
+    // 새 행은 사용 상태로 시작한다. 표시 순서는 보내지 않고 api 가 전체 마지막 다음으로 매긴다 — 검색 · 쪽 결과로는 마지막을 모른다(2026-10-30)
     setDrafts((rows) => [
       ...rows,
-      { groupCode: "", groupName: "", manageOwnerCode: "", isBpApplied: false, status: "ACTIVE", sortOrder: last + 1, added: true },
+      { groupCode: "", groupName: "", manageOwnerCode: "", isBpApplied: false, status: "ACTIVE", sortOrder: 0, added: true },
     ]);
   };
 
@@ -134,7 +144,7 @@ export function CodeGroupPanel({
       if (formatError) next.code = formatError;
       // 아이디 중복 확인 문구와 같은 꼴(2026-10-27 사용자 지정)
       else if (duplicateCodes(groups.map((g) => g.groupCode), [code]).size) next.code = "이미 사용 중인 그룹 코드입니다.";
-      if (!added.manageOwnerCode) next.owner = "관리주체를 골라 주세요.";
+      if (!added.manageOwnerCode) next.owner = "관리주체를 선택해 주세요.";
     }
     return next;
   };
@@ -166,6 +176,7 @@ export function CodeGroupPanel({
     const found = validate();
     setErrors(found);
     setFailure(null);
+    setFailureStale(false);
     if (Object.keys(found).length) return focusFirstInvalid(PANEL_ID);
 
     const input = buildSaveGroupsInput(drafts, groups);
@@ -193,12 +204,19 @@ export function CodeGroupPanel({
         // 새로 만든 것이 있으면 ‘저장되었습니다.’, 고치기만 했으면 ‘수정되었습니다.’(공통 토스트)
         return toast(input.creates.length ? "saved" : "updated");
       }
-      // 아무것도 저장되지 않았으면 이어 둘 일이 없다. 수정만 저장됐으면 새 행은 다시 받은 목록 뒤에 남는다(savingFrom).
-      if (!result.anySaved) setSavingFrom(null);
+      // 아무것도 저장되지 않았으면 이어 둘 일이 없다(그 사이 바뀜은 빼고 — 다시 받은 목록에 잇는다). 수정만 저장됐으면 새 행은 다시 받은 목록 뒤에 남는다(savingFrom).
       // 그룹 코드가 겹치면 칸 오류로, 그 밖은 띠로 알린다. 수정분이 저장됐으면 띠에 그 사실을 먼저 적는다(failureView).
       const view = failureView(result);
+      if (!result.anySaved && !view.stale) setSavingFrom(null);
+      // 그 사이 다른 관리자가 고쳤거나 지웠다 — 띠로 알리고 최신 목록으로 칸을 다시 채운다. 저장 기준(savingFrom)은 저장을 시작할 때
+      // 잡아 둔(또는 같은 내용으로 따라간) 값을 그대로 두어, 기존 행만 최신 값으로 바꾸고 보내지 않은 새 행 · 지울 행 표시는 잇게 한다(PR #206 리뷰)
+      if (view.stale) {
+        setStaleBand(true);
+        router.refresh();
+      }
       if (view.conflict) setErrors({ code: view.conflict });
       setFailure(view.band);
+      setFailureStale(view.stale);
     });
   };
 
@@ -286,12 +304,11 @@ export function CodeGroupPanel({
       // 플랫폼제공 그룹만 [BP 적용]. 이미 적용한 그룹도 다시 누를 수 있다(BP 에 없는 코드만 들어간다). 새 그룹은 저장 뒤에 적용한다.
       cell: (d) =>
         !d.added && d.manageOwnerCode === "PLATFORM_PROVIDED" && manage ? (
-          // 막힌 버튼은 호버를 받지 않으므로(Button 의 disabled:pointer-events-none) 이유 안내는 감싸는 칸에 단다
-          <span title={applyBlocked ? "저장한 뒤 적용할 수 있습니다" : undefined} className="inline-flex">
+          <Blocked reason={applyBlocked ? "공통코드 그룹을 저장한 후 BP적용할 수 있습니다." : undefined} place="bottom" floating>
             <Button variant="soft" onClick={() => setApplyTarget(d)} disabled={applyBlocked || saving || applying}>
               BP 적용
             </Button>
-          </span>
+          </Blocked>
         ) : (
           <span className="text-erp-muted">{d.added ? "" : "-"}</span>
         ),
@@ -321,20 +338,21 @@ export function CodeGroupPanel({
       actions={
         canSave && (
           <>
-            {/* 저장 전 새 행은 하나만 둔다. 관리주체를 둘 다 끄면(목록 없음) 새 그룹의 표시 순서를 셀 목록이 없어 막는다(리뷰로 찾음) */}
+            {/* 저장 전 새 행은 하나만 둔다. 표시 순서는 api 가 매기므로 관리주체 필터와 상관없이 추가한다(2026-10-30 재영 — 전엔 둘 다 끄면 막음) */}
             {canAdd && (
-              <Button variant="soft" onClick={handleAdd} disabled={Boolean(added) || saving || search.manageOwnerCode === "NONE"}>
+              <Button variant="soft" onClick={handleAdd} disabled={Boolean(added) || saving}>
                 추가
               </Button>
             )}
-            <Button onClick={handleSave} disabled={!dirty || saving}>
+            {/* 고친 것이 없어도 누를 수 있다 — 보낼 것이 없으면 api 를 부르지 않고 저장 마무리만 한다(saveInOrder, 2026-10-30 재영) */}
+            <Button onClick={handleSave} disabled={saving}>
               저장
             </Button>
           </>
         )
       }
     >
-      {failure && <SaveFailedBand message={failure} />}
+      {failure && <SaveFailedBand message={failure} detail={failureStale ? STALE_DETAIL : undefined} />}
       {applyError && <SaveFailedBand message={applyError} detail={null} />}
       {notice && <DoneNotice message={notice} />}
       <DataTable
@@ -345,7 +363,9 @@ export function CodeGroupPanel({
         rowKey={(d) => (d.added ? "__added" : d.groupCode)}
         // 고른 그룹은 한 단계 어두운 바탕 + 왼쪽 브랜드색 선 — 플랫폼 메뉴 관리 트리와 같다(2026-10-27 사용자 지정)
         rowState={(d) => (d.added ? "added" : d.groupCode === selected ? "current" : undefined)}
-        empty={searchedEmpty(search, search.manageOwnerCode && search.manageOwnerCode !== "NONE" ? ownerLabels[search.manageOwnerCode] : undefined) ?? "등록한 공통코드 그룹이 없습니다."}
+        // 비었으면 열 이름 줄 아래 빈 칸이 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정)
+        fillEmpty
+        empty={groupListEmpty(noGroupsAtAll)}
       />
       {/* 칸에 붙은 오류는 그 칸 아래에 있다 — 새 행이 없는데 온 그룹 코드 409 만 여기 */}
       <FieldErrors messages={!added && errors.code ? [errors.code] : []} />

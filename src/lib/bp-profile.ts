@@ -1,4 +1,4 @@
-// 내 정보(MY PAGE) 사업자정보 — manyfast F-AMTDCK > S-UOJVUR 「BP 사업자정보 관리」. BP 마스터에게만 보인다.
+// 내 정보(마이페이지) 사업자정보 — manyfast F-AMTDCK > S-UOJVUR 「BP 사업자정보 관리」. BP 마스터에게만 보인다.
 // api(whale-erp-api auth/admin-auth.controller.ts)에 경로가 있지만 아직 openapi.json 에 실리지 않아
 // 타입을 손으로 적었다(my-profile.ts 와 같다 — api가 openapi:export 에 포함하면 api-types.generated.ts 로 바꾼다).
 import { authHeaders, request } from "./api";

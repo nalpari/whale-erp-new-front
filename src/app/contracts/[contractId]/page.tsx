@@ -1,29 +1,26 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Button, DataTable, DetailTable, DetailValues, PageBar } from "@/components/common";
-import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
+import { ApiError, authHeaders, deniedMessageOf, getEnum, request, screenPath } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { StatusBadge } from "../columns";
 import { backHrefOf, withBack } from "../contract-list";
 import { ContractPermission } from "../contract-permission";
-import { formatPhone, type ContractDetail } from "../new/contract-form-model";
+import { canRenew, formatPhone, type ContractDetail } from "../new/contract-form-model";
 import { documentNoticeOf } from "./document-notice";
+import { documentRowsOf } from "./document-rows";
 import { EndContractButton } from "./end-button";
 import { SendContractButton } from "./send-button";
-import { sendNoticeOf } from "./send-model";
-import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, processRows, weeklyHoursOf, workDayLines, type PartTimeRow } from "./detail-format";
+import { canShowResend, sendNoticeOf } from "./send-model";
+import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, processRows, taxProfileTexts, weeklyHoursOf, workDayLines, type PartTimeRow } from "./detail-format";
 
 type Status = Parameters<typeof StatusBadge>[0]["status"];
 
 // 상태마다 위쪽에 서는 버튼(CTR-19, 2026-10-19 재영). 보내기는 저장할 때 곧바로 한다 — 「발송」 버튼은 없다.
 // 발송 대기 · 서명 대기는 「재발송」과 「수정」(당사자 정보), 발송 대기는 「종료」도(채용을 접을 때, WHALEERP-327), 수정 요청은
-// 「수정」(계약서 전체). 재발송은 api 가 보낼 수 없다고 하면 숨긴다(canResend — 소속 추가 확인 · 복귀 확인은 아직 보낼 길이 없다. 칸이 없는
-// 옛 api 응답이면 보인다 — front 가 먼저 배포돼도 재발송 버튼이 모두 사라지지 않게). 만료 재발송(WHALEERP-153) ·
-// 새 계약은 아직 API 가 없어 비활성으로 둔다. 거부 · 종료는 버튼이 없다.
-const PENDING: Partial<Record<Status, string>> = {
-  EXPIRED: "재발송",
-  SIGNED: "새 계약",
-};
+// 「수정」(계약서 전체). 재발송은 api 가 보낼 수 없다고 하면 숨긴다(canShowResend — 소속 추가 확인 · 복귀 확인은 소속 추가 확인 요청을
+// 다시 보낸다, api #164). 거부 · 만료도 같은 조건으로 「재발송」한다(WHALEERP-153). 체결 완료와 체결 뒤 종료는 「새 계약」(재계약,
+// WHALEERP-156) — 이 계약 값을 채운 작성 화면을 연다.
 
 // 근로계약 상세. 데모 docs/demo/staff/contracts-detail 의 틀(제목 줄 + 계약 내용 + 상태 변경 이력).
 // 주휴일 · 급여 지급 방식 · 수습(정직원)도 보인다(데모 확인 2026-10-15).
@@ -48,20 +45,24 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
     authHeaders(),
   ]);
 
-  // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403)이면 api 문장을 그대로 보인다(목록과 같다)
+  // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403) · BP 를 고르지 않은 플랫폼 계정(400)이면 api 문장을 그대로 보인다(목록과 같다)
   let c: ContractDetail | null = null;
-  let notice = "로그인이 필요합니다";
+  let notice = "로그인이 필요합니다.";
   if (headers.Authorization) {
     try {
       c = await request<ContractDetail>(`/contracts/${contractId}`, { headers });
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) notFound();
-      if (!(e instanceof ApiError && (e.status === 401 || e.status === 403))) throw e;
-      if (e.status === 403) notice = e.message;
+      // api 의 거절(BP 를 고르지 않음 400 · 권한 · 다른 BP 403 — deniedMessageOf)은 그 문장을 보인다. 404(없는 계약 · 없는 BP)는 위에서 찾을 수 없음 화면이다
+      const denied = deniedMessageOf(e);
+      if (!(e instanceof ApiError && e.status === 401) && denied === null) throw e;
+      if (denied !== null) notice = denied;
     }
   }
 
   const status = (c?.status ?? null) as Status | null;
+  // 링크는 옛 경로에 탭 BP 를 붙여 그린다. ?back= 은 옛 경로 그대로다
+  const at = await screenPath();
   // 저장 · 고침 뒤 가입 초대 알림톡이 실패해 이 화면으로 왔다(?send=)
   const sendNotice = sendNoticeOf(query.send, status);
   const statusCell = (s: string | null): ReactNode => (s ? <StatusBadge status={s as Status} label={labelOf(statuses, s)} /> : "-");
@@ -70,21 +71,21 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
     // 버튼은 근로계약 관리 메뉴 권한으로 가린다 — 이어 쓰기는 작성(api 가 임시저장 이어 쓰기 저장에 작성 권한을 본다), 재발송 · 수정은 수정(WHALEERP-592)
     status === "DRAFT" ? (
       <ContractPermission action="create">
-        <Button variant="soft" href={withBack(`/contracts/${contractId}/edit`, query.back)}>
+        <Button variant="soft" href={at(withBack(`/contracts/${contractId}/edit`, query.back))}>
           이어 쓰기
         </Button>
       </ContractPermission>
     ) : (
       <>
-        {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && c?.canResend !== false && (
+        {canShowResend(status, c?.canResend) && (
           <ContractPermission action="update">
-            <SendContractButton contractId={contractId} status={status} name={c?.name ?? null} back={backHrefOf(query.back)} />
+            <SendContractButton contractId={contractId} status={status} sentAt={c?.lastSentAt ?? null} name={c?.name ?? null} back={backHrefOf(query.back)} staffJoined={c?.staffJoined ?? false} />
           </ContractPermission>
         )}
         {/* 직원이 수정을 요청했다 — 계약서 전체를 고치면 곧바로 서명 대기로 다시 보낸다(WHALEERP-125 · 126) */}
         {status === "CORRECTION_REQUESTED" && (
           <ContractPermission action="update">
-            <Button variant="soft" href={withBack(`/contracts/${contractId}/edit`, query.back)}>
+            <Button variant="soft" href={at(withBack(`/contracts/${contractId}/edit`, query.back))}>
               수정
             </Button>
           </ContractPermission>
@@ -92,7 +93,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         {/* 날인 전 당사자 정보(이름 · 번호 · 생년월일 · 성별 · 외국인 여부) — 본인 대조 값. 저장하면 다시 보낸다 */}
         {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && (
           <ContractPermission action="update">
-            <Button variant="soft" href={withBack(`/contracts/${contractId}/worker`, query.back)}>
+            <Button variant="soft" href={at(withBack(`/contracts/${contractId}/worker`, query.back))}>
               수정
             </Button>
           </ContractPermission>
@@ -103,10 +104,12 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             <EndContractButton contractId={contractId} name={c?.name ?? null} back={backHrefOf(query.back)} />
           </ContractPermission>
         )}
-        {status && PENDING[status] && (
-          <Button variant="soft" disabled title="준비 중">
-            {PENDING[status]}
-          </Button>
+        {c && canRenew(c) && (
+          <ContractPermission action="create">
+            <Button variant="soft" href={at(withBack(`/contracts/new?from=${contractId}`, query.back))}>
+              새 계약
+            </Button>
+          </ContractPermission>
         )}
       </>
     );
@@ -116,6 +119,8 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         { label: "직원", value: <DetailValues items={[c.name, formatPhone(c.phone)]} /> },
         // 가입 값과 본인 대조하는 성별 · 외국인 여부(WHALEERP-125)
         { label: "성별", value: [c.gender ? labelOf(genders, c.gender) : "-", ...(c.isForeigner ? ["외국인"] : [])].join(" · ") },
+        // 직원 신고 정보(WHALEERP-155) — 읽기만, 고치는 것은 직원 본인(TAX-07)
+        { label: "주민등록번호", value: taxProfileTexts(c.taxProfile).rrn },
         { label: "직무", value: c.jobTitle },
         { label: "근무지", value: c.storeName ?? "-" },
         { label: "고용 형태", value: labelOf(employmentTypes, c.employmentType) },
@@ -127,7 +132,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             />
           ),
         },
-        // 발송일 · 재발송 · 날인 기한 · 최종 처리일 · 거부 사유, 종이 계약은 등록일 · 등록 관리자(WHALEERP-155 · 328)
+        // 발송일 · 재발송 · 날인 기한 · 최종 처리일 · 수정 요청 사유(수정 요청일 때, WHALEERP-635), 종이 계약은 등록일 · 등록 관리자(WHALEERP-155 · 328)
         ...processRows(c),
         { label: "계약 기간", value: c.startDate ? `${c.startDate} ~ ${c.endDate ?? "무기한"}` : "-" },
         { label: "시급", value: c.wageAmount === null ? "-" : c.wageAmount.toLocaleString("ko-KR") },
@@ -163,28 +168,32 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         { label: "주휴일", value: c.weeklyHoliday ? `${labelOf(weekdays, c.weeklyHoliday)}요일` : "-" },
         { label: "임금지급일", value: payDayText(c.payMonth ? labelOf(payMonths, c.payMonth) : null, c.payDay) },
         { label: "급여 지급 방식", value: c.payMethod ? labelOf(payMethods, c.payMethod) : "-" },
+        { label: "급여 계좌", value: taxProfileTexts(c.taxProfile).account },
         ...(c.employmentType === "FULL_TIME" ? [{ label: "수습", value: probationText(c.probationMonths, c.probationWageReductionRate, c.wageAmount) }] : []),
         { label: "4대보험", value: insuranceText(c.isHealthPensionInsured, c.isEmploymentInjuryInsured) },
         { label: "근무 장소", value: c.workLocation ?? "-" },
         { label: "계약 방식", value: c.contractMethod ? labelOf(contractMethods, c.contractMethod) : "-" },
-        // 종이 계약 날인본(CTR-23). 누르면 라우트 핸들러가 300초짜리 주소를 받아 원래 파일 이름으로 내려받게 한다
-        // documents 는 api #49 부터 온다 — 그 전 api 와 함께 떠도 상세가 깨지지 않게 없으면 빈 것으로 본다.
-        ...(c.documents?.length
-          ? [
-              {
-                label: "날인본",
-                value: (
-                  <DetailValues
-                    items={c.documents.map((d) => (
-                      <a key={d.contractDocumentId} href={`/contracts/${c.contractId}/documents/${d.contractDocumentId}`} className="text-erp-link hover:underline">
-                        {labelOf(documentKinds, d.kind)} · {d.fileName}
-                      </a>
-                    ))}
-                  />
-                ),
-              },
-            ]
-          : []),
+        // 계약서 파일 — 종이 계약은 날인본(CTR-23), 전자계약은 처리 완료본(서명 확인)과 보낸 원본(WHALEERP-155 · 131). 누르면 라우트
+        // 핸들러가 300초짜리 주소를 받아 원래 파일 이름으로 내려받게 한다. documents 는 api #49 부터 온다 — 없으면 빈 것으로 본다.
+        ...documentRowsOf({
+          contractMethod: c.contractMethod,
+          status: c.status,
+          histories: c.histories ?? [],
+          documents: c.documents ?? [],
+        }).map((row) => ({
+          label: row.label,
+          value: row.empty ? (
+            <span className="text-erp-sub">{row.empty}</span>
+          ) : (
+            <DetailValues
+              items={row.documents.map((d) => (
+                <a key={d.contractDocumentId} href={at(`/contracts/${c.contractId}/documents/${d.contractDocumentId}`)} className="text-erp-link hover:underline">
+                  {row.withKind ? `${labelOf(documentKinds, d.kind)} · ${d.fileName}` : d.fileName}
+                </a>
+              ))}
+            />
+          ),
+        })),
       ]
     : [];
   const histories = c?.histories ?? [];
@@ -198,7 +207,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             <div className="flex items-center gap-[6px]">
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약 상세</h2>
               {buttons}
-              <Button href={backHrefOf(query.back)}>목록</Button>
+              <Button href={at(backHrefOf(query.back))}>목록</Button>
             </div>
             {sendNotice && (
               <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
@@ -218,7 +227,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
           </div>
           {c && (
             <div className="flex flex-col gap-[12px]">
-              <h3 className="text-[15px] font-semibold text-erp-ink">상태 변경 이력</h3>
+              <h3 className="text-[15px] font-semibold text-erp-ink">상태 변경이력</h3>
               <DataTable
                 columns={[
                   { header: "일시", width: "w-[160px]", cell: (h) => kstDateTime(h.changedAt) },

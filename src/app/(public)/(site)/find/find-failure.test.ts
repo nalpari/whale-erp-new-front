@@ -22,8 +22,8 @@ const named = (name: string) => Object.assign(new Error(name), { name });
 
 test("예상한 거절 — 일치 없음 404 는 화면 문구, 1시간 5회 429 는 api 문구 그대로", () => {
   assert.deepEqual(failureOf(api(404, "입력하신 정보와 일치하는 계정을 찾을 수 없습니다."), LOGIN_ID_NOT_FOUND), { message: LOGIN_ID_NOT_FOUND, log: false });
-  assert.deepEqual(failureOf(api(429, "임시 비밀번호는 1시간에 5번까지 받을 수 있습니다"), LOGIN_ID_NOT_FOUND), {
-    message: "임시 비밀번호는 1시간에 5번까지 받을 수 있습니다",
+  assert.deepEqual(failureOf(api(429, "임시 비밀번호는 1시간에 5번까지 받을 수 있습니다."), LOGIN_ID_NOT_FOUND), {
+    message: "임시 비밀번호는 1시간에 5번까지 받을 수 있습니다.",
     log: false,
   });
 });
@@ -55,8 +55,8 @@ test("임시 비밀번호: 5xx(502 · 504 포함)는 결과 모름 — 연결 �
 });
 
 test("임시 비밀번호: 4xx · 연결 실패는 두 탭 공통 판정을 따른다", () => {
-  assert.deepEqual(temporaryPasswordOutcome(api(429, "임시 비밀번호는 1시간에 5번까지 받을 수 있습니다")), {
-    message: "임시 비밀번호는 1시간에 5번까지 받을 수 있습니다",
+  assert.deepEqual(temporaryPasswordOutcome(api(429, "임시 비밀번호는 1시간에 5번까지 받을 수 있습니다.")), {
+    message: "임시 비밀번호는 1시간에 5번까지 받을 수 있습니다.",
     log: false,
   });
   assert.deepEqual(temporaryPasswordOutcome(api(400, "email must be an email")), { message: INVALID_INPUT, log: false });

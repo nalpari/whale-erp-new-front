@@ -121,7 +121,7 @@ export function weekdayOf(date: string): string {
 
 /**
  * 「임시공휴일 · 선거일은 정부 발표 후 반영됩니다」 한 줄을 보일 해인가 — 다다음 해 이후만(S-DDGJKQ · SYSTEM-9).
- * 올해 · 다음 해는 동기화 배치가 정부 발표값으로 맞춘다(S-PPAXGO). 배치(WHALEERP-543)는 아직 없어 지금은 모든 해가 규칙 계산값이다.
+ * 올해 · 다음 해는 동기화 배치(api public-holiday-sync — 매월 1일 04:00)가 정부 발표값으로 맞추고, 그 뒤 해는 규칙 계산값이다(S-PPAXGO).
  */
 export const needsAnnouncementNote = (year: number, todayYear: number) => year >= todayYear + 2;
 

@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
+import { NoticeBand } from "@/components/common";
 import { getEnum } from "@/lib/api";
 import { getStore, getStoreImageTypes } from "@/lib/stores";
 import { StoreCardBody, StoreDenied, StoreFrame, storeDenied } from "../../store-frame";
 import { StoreFormView } from "../../store-form-view";
-import { NoticeBand } from "../../store-parts";
 import { StorePermission } from "../../store-permission";
 import { backHrefOf } from "../../stores-query";
 

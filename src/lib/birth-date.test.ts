@@ -1,7 +1,7 @@
 // node --test src/lib/birth-date.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { BIRTH_DATE_NOTES, canCorrectBirthDate, confirmAfterDateChange, ignoresCheck, isPendingInput, checkBirthDate, refreshesAfterCorrection } from "./birth-date.ts";
+import { BIRTH_DATE_NOTES, canCorrectBirthDate, confirmAfterDateChange, ignoresCheck, isPendingInput, checkBirthDate, refreshesAfterCorrection, showsBelowBirthDateField } from "./birth-date.ts";
 
 test("버튼 — api 가 정정할 수 있다고 알렸고 수정 권한이 있으면 보인다", () => {
   assert.equal(canCorrectBirthDate({ birthDateCorrectable: true }, true), true);
@@ -26,8 +26,8 @@ test("입력 검사 — 맞는 날짜는 null", () => {
 
 test("입력 검사 — 빈 값 · 모양 · 없는 날짜", () => {
   assert.equal(checkBirthDate("", "2026-10-26", null), "새 생년월일을 입력해 주세요.");
-  assert.equal(checkBirthDate("1990-5-2", "2026-10-26", null), "생년월일은 YYYY-MM-DD 형식의 있는 날짜여야 합니다");
-  assert.equal(checkBirthDate("1990-02-30", "2026-10-26", null), "생년월일은 YYYY-MM-DD 형식의 있는 날짜여야 합니다");
+  assert.equal(checkBirthDate("1990-5-2", "2026-10-26", null), "생년월일은 YYYY-MM-DD 형식의 있는 날짜여야 합니다.");
+  assert.equal(checkBirthDate("1990-02-30", "2026-10-26", null), "생년월일은 YYYY-MM-DD 형식의 있는 날짜여야 합니다.");
 });
 
 test("입력 검사 — 오늘은 받고 내일부터 막는다", () => {
@@ -77,4 +77,11 @@ test("체크 클릭 무시 — 입력 중이면 무시, 마우스(pointerdown) �
   assert.equal(ignoresCheck(false, 100, null), false);
   assert.equal(ignoresCheck(false, null, 101), false);
   assert.equal(ignoresCheck(false, null, null), false);
+});
+
+test("날짜 칸 아래 — 생년월일 입력 400 만 칸 아래, 같은 값 409 · 권한 403 · 결과 모름은 맨 아래", () => {
+  assert.equal(showsBelowBirthDateField({ status: 400 }), true);
+  assert.equal(showsBelowBirthDateField({ status: 409 }), false);
+  assert.equal(showsBelowBirthDateField({ status: 403 }), false);
+  assert.equal(showsBelowBirthDateField({}), false);
 });

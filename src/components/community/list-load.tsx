@@ -21,6 +21,21 @@ export async function loadList<T>(what: string, load: () => Promise<T>): Promise
   }
 }
 
+/**
+ * 0건이면 조건 없이 한 번 더 물어 「아예 없음(all)」과 「조건에 맞는 것이 없음(filtered)」을 가른다 — 다른 목록과 같은 빈 문구 규칙(DESIGN.md 표 · 빈 문구).
+ * 지금 조회가 이미 조건 없음이면 다시 묻지 않는다. 묻지 못하면 「조건에 맞는 …」으로 둔다(2026-11-06 사용자 지정).
+ */
+export async function emptyKindOf(total: number, filtered: boolean, probe: () => Promise<{ total: number }>): Promise<"all" | "filtered"> {
+  if (total > 0) return "filtered";
+  if (!filtered) return "all";
+  try {
+    return (await probe()).total > 0 ? "filtered" : "all";
+  } catch (error) {
+    console.error("빈 목록 구분 조회 실패", error);
+    return "filtered";
+  }
+}
+
 /** 마지막 글자에 받침이 있는가. 한글이 아니면(FAQ) 받침 없음으로 읽는다. */
 function hasFinal(word: string): boolean {
   const code = word.charCodeAt(word.length - 1) - 0xac00;

@@ -36,3 +36,14 @@ export function codeOf(body: unknown): string | undefined {
   const code = (body as { code?: unknown }).code;
   return typeof code === "string" ? code : undefined;
 }
+
+/**
+ * 503 이 api 가 보내지 않았다고 알린 것인가 — 링크 주소 · 발송기가 없거나 발송에 실패하면 api 가 Nest 본문({ statusCode: 503, message })
+ * 으로 답하고, 앞서 보낸 링크는 그대로다(근로계약 저장의 발송 설정 503 도 같은 모양이다). 프록시 · 로드밸런서의 503(본문 없음 · HTML)은 api 에 닿았는지 몰라 결과 모름으로 둔다.
+ * 문구가 비었으면 확인창에 보일 것이 없어 결과 모름으로 둔다.
+ */
+export function isApiSendRefusal(status: number, body: unknown): boolean {
+  if (status !== 503 || typeof body !== "object" || body === null) return false;
+  const { statusCode, message } = body as { statusCode?: unknown; message?: unknown };
+  return statusCode === 503 && typeof message === "string" && message !== "";
+}

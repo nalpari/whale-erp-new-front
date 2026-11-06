@@ -52,21 +52,24 @@ export function pendingHrefOf(item: HomePendingItem, bpCodeId: number): string {
     case "CONTRACT_RENEWAL":
     case "CONTRACT_PENDING_SIGNATURE":
     case "CONTRACT_CORRECTION_REQUESTED":
-      return listHrefOf({ page: 1, pageSize: 20, staffMemberName: "", status, storeIds, storesCleared: false, scope: null });
+      return bpPath(bpCodeId, listHrefOf({ page: 1, pageSize: 20, staffMemberName: "", status, storeIds, storesCleared: false, scope: null }));
     case "AFFILIATION_REJECTED":
       // 직원 목록은 가입 상태를 묶음으로만 거른다 — 그 상태가 든 묶음(거절은 「초대」)
-      return staffListHrefOf({
-        ...DEFAULT_STAFF_LIST_QUERY,
-        storeIds,
-        joinGroups: JOIN_GROUPS.filter((g) => JOIN_GROUP_STATES[g].some((s) => status.includes(s))),
-      });
+      return bpPath(
+        bpCodeId,
+        staffListHrefOf({
+          ...DEFAULT_STAFF_LIST_QUERY,
+          storeIds,
+          joinGroups: JOIN_GROUPS.filter((g) => JOIN_GROUP_STATES[g].some((s) => status.includes(s))),
+        }),
+      );
     case "INQUIRY_ANSWERED": {
       const params = new URLSearchParams();
       for (const s of status) params.append("status", s);
       return bpPath(bpCodeId, `/support-inquiries?${params}`);
     }
     case "URGENT_TODO":
-      return `/todos${toTodoListSearch({ ...DEFAULT_TODO_LIST_QUERY, storeIds, statuses: TODO_STATUSES.filter((s) => status.includes(s)), urgentOnly: true })}`;
+      return bpPath(bpCodeId, `/todos${toTodoListSearch({ ...DEFAULT_TODO_LIST_QUERY, storeIds, statuses: TODO_STATUSES.filter((s) => status.includes(s)), urgentOnly: true })}`);
   }
 }
 

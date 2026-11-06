@@ -134,19 +134,22 @@ function LoginIdPanel({ onPasswordTab }: { onPasswordTab: () => void }) {
 
   return (
     <form action={action} onInput={handleInput} className="flex flex-col gap-[24px]">
-      <div className="flex flex-col gap-[16px]">
-        <Field label="이름">
-          <input name="name" autoComplete="name" placeholder="이름을 입력해 주세요." defaultValue={state.name} required maxLength={20} className={INPUT} />
-        </Field>
-        <Field label="이메일">
-          <input name="email" type="email" autoComplete="email" placeholder="가입 시 등록한 이메일 주소를 입력해 주세요." defaultValue={state.email} required maxLength={254} className={INPUT} />
-        </Field>
+      {/* 오류 문구는 마지막 칸 바로 아래 한 묶음(6px) — 폼 간격(24px)으로 칸과 버튼 사이에 떠 버튼에 붙은 것처럼 보였다(로그인과 같다, 2026-11-04 사용자 지적) */}
+      <div className="flex flex-col gap-[6px]">
+        <div className="flex flex-col gap-[16px]">
+          <Field label="이름">
+            <input name="name" autoComplete="name" placeholder="이름을 입력해 주세요." defaultValue={state.name} required maxLength={20} className={INPUT} />
+          </Field>
+          <Field label="이메일">
+            <input name="email" type="email" autoComplete="email" placeholder="가입 시 등록한 이메일 주소를 입력해 주세요." defaultValue={state.email} required maxLength={254} className={INPUT} />
+          </Field>
+        </div>
+        {state.error && (
+          <p role="alert" className={ERROR}>
+            {state.error}
+          </p>
+        )}
       </div>
-      {state.error && (
-        <p role="alert" className={ERROR}>
-          {state.error}
-        </p>
-      )}
       <Actions
         submit={
           <button type="submit" disabled={!filled || pending} className={`${SUBMIT} disabled:pointer-events-none disabled:opacity-40`}>
@@ -162,7 +165,7 @@ function PasswordPanel() {
   const [state, action, pending] = useActionState<TemporaryPasswordState, FormData>(issueTemporaryPassword, {});
   const [filled, handleInput] = useFilled();
 
-  // 응답이 10초를 넘겨도 이 안내가 뜬다. api #77 머지 전에는 일치하지 않거나 메일이 나가지 않아도 202 라 그때도 뜬다.
+  // 응답이 10초를 넘겨도 이 안내가 뜬다.
   if (state.sent)
     return (
       <div className="flex flex-col gap-[24px]">
@@ -180,22 +183,25 @@ function PasswordPanel() {
 
   return (
     <form action={action} onInput={handleInput} className="flex flex-col gap-[24px]">
-      <div className="flex flex-col gap-[16px]">
-        <Field label="이름">
-          <input name="name" autoComplete="name" placeholder="이름을 입력해 주세요." defaultValue={state.name} required maxLength={20} className={INPUT} />
-        </Field>
-        <Field label="아이디">
-          <input name="loginId" autoComplete="username" placeholder="아이디를 입력해 주세요." defaultValue={state.loginId} required maxLength={20} className={INPUT} />
-        </Field>
-        <Field label="이메일">
-          <input name="email" type="email" autoComplete="email" placeholder="가입 시 등록한 이메일 주소를 입력해 주세요." defaultValue={state.email} required maxLength={254} className={INPUT} />
-        </Field>
+      {/* 오류 문구는 마지막 칸 바로 아래 한 묶음(6px) — 아이디 찾기와 같다(2026-11-04 사용자 지적) */}
+      <div className="flex flex-col gap-[6px]">
+        <div className="flex flex-col gap-[16px]">
+          <Field label="이름">
+            <input name="name" autoComplete="name" placeholder="이름을 입력해 주세요." defaultValue={state.name} required maxLength={20} className={INPUT} />
+          </Field>
+          <Field label="아이디">
+            <input name="loginId" autoComplete="username" placeholder="아이디를 입력해 주세요." defaultValue={state.loginId} required maxLength={20} className={INPUT} />
+          </Field>
+          <Field label="이메일">
+            <input name="email" type="email" autoComplete="email" placeholder="가입 시 등록한 이메일 주소를 입력해 주세요." defaultValue={state.email} required maxLength={254} className={INPUT} />
+          </Field>
+        </div>
+        {state.error && (
+          <p role="alert" className={ERROR}>
+            {state.error}
+          </p>
+        )}
       </div>
-      {state.error && (
-        <p role="alert" className={ERROR}>
-          {state.error}
-        </p>
-      )}
       <Actions
         submit={
           <button type="submit" disabled={!filled || pending} className={`${SUBMIT} disabled:pointer-events-none disabled:opacity-40`}>

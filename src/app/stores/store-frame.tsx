@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import { PageBar } from "@/components/common";
+import { NoticeBand, PageBar } from "@/components/common";
 import { ApiError, deniedMessageOf } from "@/lib/api";
-import { NoticeBand } from "./store-parts";
 
 /**
  * 점포 정보 관리 화면들의 제목 줄(「점포 정보 관리」)과 본문. 헤더 · 화면 높이 · 가로 스크롤 · 밝은 테마는 로그인 후 공통 틀

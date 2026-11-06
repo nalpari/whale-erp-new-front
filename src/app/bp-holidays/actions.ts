@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { isDate } from "@/lib/bp-holiday-view";
+import { isDate, storesOnDate } from "@/lib/bp-holiday-view";
+import { historyPageSizeOf } from "@/lib/history-paging";
 import {
   checkBpHolidayOverlaps,
   createBpHoliday,
   deleteBpHoliday,
+  getBpHoliday,
   getBpHolidayHistories,
   terminateBpHoliday,
   updateBpHoliday,
@@ -25,7 +27,21 @@ import { failureOf as sharedFailureOf, validId, type ActionFailure, type ActionR
 const PATH = "/bp-holidays";
 
 const failureOf = (error: unknown, what: string, wrote = true) => sharedFailureOf(error, "BP 휴일", what, wrote);
-const NOT_FOUND = { ok: false, status: 404, message: "휴일을 찾을 수 없습니다" } satisfies ActionFailure;
+const NOT_FOUND = { ok: false, status: 404, message: "휴일을 찾을 수 없습니다." } satisfies ActionFailure;
+
+/** 목록의 대상점포 · 예외점포 칸을 눌러 여는 팝업 — 그 날짜에 걸린 점포(일부 점포면 대상, 전체 점포면 예외). 상세 응답에서 고른다 */
+export type HolidayStoresOnDate = { name: string; isAllStores: boolean; stores: { storeId: number; storeCode: string; name: string; storeStatusCode: string }[] };
+export async function getBpHolidayStoresAction(id: number, date: string): Promise<ActionResult<HolidayStoresOnDate>> {
+  if (!validId(id)) return NOT_FOUND;
+  if (!isDate(date)) return { ok: false, status: 400, message: "날짜를 YYYY-MM-DD 로 입력해 주세요." };
+  try {
+    const h = await getBpHoliday(id, date);
+    const stores = storesOnDate(h.stores, date).map((s) => ({ storeId: s.storeId, storeCode: s.storeCode, name: s.name, storeStatusCode: s.storeStatusCode }));
+    return { ok: true, name: h.name, isAllStores: h.isAllStores, stores };
+  } catch (error) {
+    return failureOf(error, "점포 조회", false);
+  }
+}
 
 /** 저장이 끝났으면 목록 · 상세를 새로 받는다. 무효화가 실패해도 저장은 끝났으므로 성공으로 돌려준다. */
 function refresh() {
@@ -89,13 +105,15 @@ export async function checkBpHolidayOverlapsAction(input: CheckBpHolidayOverlaps
   }
 }
 
-export async function getBpHolidayHistoriesAction(q: { from: string; to: string; page: number }): Promise<ActionResult<BpHolidayHistoryList>> {
+export async function getBpHolidayHistoriesAction(q: { from: string; to: string; page: number; pageSize?: number }): Promise<ActionResult<BpHolidayHistoryList>> {
   if (!isDate(q.from) || !isDate(q.to)) return { ok: false, status: 400, message: "기간을 YYYY-MM-DD 로 입력해 주세요." };
   if (q.from > q.to) return { ok: false, status: 400, message: "시작 날짜는 끝 날짜보다 늦을 수 없습니다." };
   const page = Number.isInteger(q.page) && q.page >= 1 && q.page <= 100_000 ? q.page : 1;
+  // 한 쪽 건수는 1팀 변경이력 팝업 공통 선택지(20 · 50) — 그 밖의 값은 20
+  const pageSize = historyPageSizeOf(q.pageSize);
   try {
-    return { ok: true, ...(await getBpHolidayHistories({ ...q, page })) };
+    return { ok: true, ...(await getBpHolidayHistories({ ...q, page, pageSize })) };
   } catch (error) {
-    return failureOf(error, "변경 이력 조회", false);
+    return failureOf(error, "변경이력 조회", false);
   }
 }

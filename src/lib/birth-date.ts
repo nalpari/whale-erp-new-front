@@ -28,7 +28,7 @@ function isDate(value: string): boolean {
  */
 export function checkBirthDate(value: string, today: string, current: string | null): string | null {
   if (value === "") return "새 생년월일을 입력해 주세요.";
-  if (!isDate(value)) return "생년월일은 YYYY-MM-DD 형식의 있는 날짜여야 합니다";
+  if (!isDate(value)) return "생년월일은 YYYY-MM-DD 형식의 있는 날짜여야 합니다.";
   if (value > today) return "오늘 이후 날짜는 넣을 수 없습니다.";
   if (value === current) return "지금 생년월일과 같습니다.";
   return null;
@@ -55,7 +55,7 @@ export const ignoresCheck = (pending: boolean, pointerDownAt: number | null, dat
   pending || (pointerDownAt !== null && dateChangedAt !== null && dateChangedAt >= pointerDownAt);
 
 /** 체크가 풀린 이유를 알리는 문구(날짜 입력 중이거나 날짜가 바뀌어 체크가 풀린 직후) */
-export const BIRTH_DATE_RECONFIRM_MESSAGE = "날짜를 다 입력한 뒤 다시 확인해 주세요";
+export const BIRTH_DATE_RECONFIRM_MESSAGE = "날짜를 다 입력한 뒤 다시 확인해 주세요.";
 
 /** 확인창 체크 문구. 체크해야 [정정]이 눌린다. */
 export const BIRTH_DATE_CONFIRM_LABEL = "신분증 등으로 본인의 생년월일을 확인했습니다";
@@ -81,3 +81,9 @@ const STATE_CHANGED_CODES: ReadonlySet<string> = new Set(["BIRTH_DATE_NOT_JOINED
  */
 export const refreshesAfterCorrection = (failure: { status?: number; code?: string }) =>
   failure.status === 409 && failure.code !== undefined && STATE_CHANGED_CODES.has(failure.code);
+
+/**
+ * 정정 실패를 날짜 칸 아래에 둘 것인가(재영 공지 2026-10-29). api 의 400 은 BIRTH_DATE_INVALID(형식 · 오늘 뒤) · BIRTH_DATE_UNDER_AGE(만 19세 미만)
+ * 모두 새 생년월일 입력 검증이다. 같은 값 409 · 권한 403 · 가입 전 · 퇴직 409 · 결과 모름은 맨 아래 문구나 토스트로 둔다.
+ */
+export const showsBelowBirthDateField = (failure: { status?: number }) => failure.status === 400;

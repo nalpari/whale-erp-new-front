@@ -82,17 +82,16 @@ export function StoreStatusBadge({ status }: { status: StoreStatus }) {
 }
 
 /** 대표 이미지 자리. 주소가 없거나(이미지 없음 · 저장소를 쓸 수 없음) 불러오지 못하면 점포 아이콘이 선다.
- * 72 는 상세 제목 줄의 머리 카드 전용(2026-10-19 점검 — 실사용자 확인, 1안 채택) — 목록 카드(48) · 등록 ·
- * 수정 화면(184) 과는 다른 자리라 셋째 크기로 더했다. 상세 표에는 더는 이미지를 두지 않는다(머리 카드로 옮김). */
-export function StoreImage({ size, onMuted = false, url, name }: { size: 48 | 72 | 184; onMuted?: boolean; url?: string | null; name?: string }) {
-  const sizeClass = size === 48 ? "size-[48px]" : size === 72 ? "size-[72px]" : "size-[184px]";
+ * 목록 카드(48) · 등록 · 수정 화면(184) 에 쓴다. 모서리는 상세 사진과 같은 8px — 2px 는 너무 각져 보였다(2026-11-03 사용자 지정). 상세는 점포 기본정보 카드 안 194px 사진(여백 18px 을 더한 칸 230px, store-photo-viewer.tsx)이다 — 머리 카드 72 는 작다는 의견으로 뺐다(2026-11-03). */
+export function StoreImage({ size, onMuted = false, url, name }: { size: 48 | 184; onMuted?: boolean; url?: string | null; name?: string }) {
+  const sizeClass = size === 48 ? "size-[48px]" : "size-[184px]";
   const icon = (
     <span
       role="img"
       aria-label="대표 이미지 없음"
-      className={`grid shrink-0 place-items-center rounded-[2px] text-erp-label ${onMuted ? "bg-white" : "bg-erp-thead-bg"} ${sizeClass}`}
+      className={`grid shrink-0 place-items-center rounded-[8px] text-erp-label ${onMuted ? "bg-white" : "bg-erp-thead-bg"} ${sizeClass}`}
     >
-      <LineIcon name="store" size={size === 184 ? 48 : size === 72 ? 28 : 20} />
+      <LineIcon name="store" size={size === 184 ? 48 : 20} />
     </span>
   );
   if (!url) return icon;
@@ -215,16 +214,5 @@ export function FieldMessage({ id, message }: { id: string; message?: string }) 
     <p id={id} role="alert" className="text-[13px] leading-[1.5] text-erp-off">
       {message}
     </p>
-  );
-}
-
-/** 실패 · 막힘 안내 띠 — 화면 위에 하나만 선다 */
-export function NoticeBand({ tone = "risk", title, detail }: { tone?: "risk" | "info"; title: string; detail?: ReactNode }) {
-  const color = tone === "risk" ? "border-erp-off bg-erp-off-bg text-erp-off" : "border-erp-panel-line bg-erp-thead-bg text-erp-ink";
-  return (
-    <div role={tone === "risk" ? "alert" : "status"} className={`rounded-[2px] border px-[16px] py-[12px] text-[14px] leading-[1.6] ${color}`}>
-      <p className="font-medium">{title}</p>
-      {detail && <div className="text-erp-ink">{detail}</div>}
-    </div>
   );
 }

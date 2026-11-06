@@ -6,5 +6,5 @@ import { erpHeader, mypageBody } from "../../site.mjs";
 
 export default ({ A, R }) => {
   const body = ui.detailBody(mypageBody(A, { idPrefix: "pb" }));
-  return { title: "내 정보", html: ui.erpFrame({ header: erpHeader(A, R), title: "내 정보", body }) };
+  return { title: "내정보 관리", html: ui.erpFrame({ header: erpHeader(A, R), title: "내정보 관리", body }) };
 };

@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
-import { logout } from "@/app/actions";
+import { unstable_rethrow } from "next/navigation";
+import { useEffect, useId, useRef, useState, useTransition, type MouseEvent, type RefObject } from "react";
+import { logout, logoutAfterWithdrawal } from "@/app/actions";
 import { Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
-import { withdrawFormField, withdrawWarningText, WITHDRAW_REASONS, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
-import { createWithdrawalAction, getWithdrawEligibilityAction } from "./withdraw-actions";
+import { IN_PROGRESS_CONTRACTS_HREF, moveTargetOf, withdrawFormField, withdrawWarningText, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
+import { useCanOpen, useCodes, useCurrentBp, useStores } from "./session-gate";
+import { createWithdrawalAction, getWithdrawEligibilityAction, verifyWithdrawPasswordAction } from "./withdraw-actions";
 
 type Step = "password" | "content" | "done";
 type Form = { currentPassword: string; reasonCode: string; reasonDetail: string };
@@ -13,26 +15,53 @@ const EMPTY: Form = { currentPassword: "", reasonCode: "", reasonDetail: "" };
 type FieldAt = "currentPassword" | "reasonDetail";
 
 // withdrawal-form.ts 의 withdrawWarningText 가 실제 값(BP 이름 · 관리자 수 · 점포 수) 자리를 `**...**` 로
-// 감싸 둔다(그 파일은 React 를 안 쓴다) — 여기서 갈라 데모의 live()(굵게+밑줄)와 같은 모양으로 그린다.
+// 감싸 둔다(그 파일은 React 를 안 쓴다) — 여기서 갈라 데모의 live()(굵게)와 같은 모양으로 그린다.
 function withEmphasis(text: string) {
-  return text.split("**").map((part, i) => (i % 2 === 1 ? <b key={i} className="font-semibold underline">{part}</b> : part));
+  return text.split("**").map((part, i) => (i % 2 === 1 ? <b key={i} className="font-semibold">{part}</b> : part));
 }
 
 // 경고 상자 — bp-apply-dialog.tsx 의 위험 띠(채도 높은 border-erp-off/bg-erp-off-bg)와는 다른 패턴이다. 이
-// 상자는 승인된 데모의 notice() 상자를 그대로 따른다(docs/demo/src/site.mjs:314-323) — 제목("탈퇴 전 꼭
+// 상자는 승인된 데모의 notice() 상자를 그대로 따른다(docs/demo/src/site.mjs 의 withdrawBody 안 notice()) — 제목("탈퇴 전 꼭
 // 확인해 주세요")과 본문 블록이 한 상자(border-erp-panel-line / bg-erp-thead-bg) 안에 함께 들어간다. 제목만
-// #e93737(DESIGN.md 가 토큰 없이 직접 쓰기로 둔 Figma 전용 색). head/text 블록은 head 를 굵게, text 는 \n 을
-// 그대로 줄바꿈으로 보인다(whitespace-pre-line).
-function WarningBlock({ block }: { block: WithdrawWarningBlock }) {
+// #e93737(DESIGN.md 가 토큰 없이 직접 쓰기로 둔 Figma 전용 색). 블록은 head 를 굵게, text(있을 때)는 \n 을 그대로
+// 줄바꿈으로 보이고(whitespace-pre-line), link 가 있으면 그 아래 이동 버튼(MoveButton)을 둔다. 문자열 블록은 지금
+// withdrawWarningText 가 만들지 않는다(타입에만 남아 있다).
+function WarningBlock({ block, onNavigate }: { block: WithdrawWarningBlock; onNavigate: () => void }) {
   if (typeof block === "string") return <p className="whitespace-pre-line">{withEmphasis(block)}</p>;
   return (
     <div>
       <p className="flex items-center gap-[6px] font-semibold">
         <span aria-hidden className="inline-block size-[6px] shrink-0 rounded-full bg-erp-ink" />
-        {withEmphasis(block.head)}
+        {/* 한 덩어리로 감싼다 — flex 줄에 글자와 <b> 가 따로 놓이면 칸마다 끊겨 「점포 / 27개 / 가」로 보였다 */}
+        <span>{withEmphasis(block.head)}</span>
       </p>
-      <p className="whitespace-pre-line">{withEmphasis(block.text)}</p>
+      {block.text && <p className="whitespace-pre-line">{withEmphasis(block.text)}</p>}
+      {block.link && (
+        <div className="mt-[10px]">
+          <MoveButton href={block.link.href} label={block.link.label} onNavigate={onNavigate} />
+        </div>
+      )}
     </div>
+  );
+}
+
+// 탈퇴 전에 할 일을 하는 화면으로 보내는 이동 버튼(outline — 호버 모양을 기본으로, DESIGN.md 「링크 버튼」 — 생김새는 버튼, 하는 일은 이동).
+// 글자 링크는 누를 곳으로 잘 안 보였다(2026-10-30 사용자 지정). 이 계정이 열 수 없는 화면이면(권한 그룹에서 그 메뉴 조회가 꺼짐) 숨긴다.
+// 판정 경로 · 실제 주소(탭 BP 주소)는 moveTargetOf 가 만든다. 누르면 패널을 닫는다(헤더에 붙은 패널이라 이동해도 열린 채 남는다).
+// 새 탭으로 여는 클릭(Ctrl/⌘ · Shift)은 닫지 않는다 — 돌아와 탈퇴를 이어 갈 수 있게. 가운데 버튼은 click 이 오지 않아 원래 닫히지 않는다.
+function MoveButton({ href, label, onNavigate }: { href: string; label: string; onNavigate: () => void }) {
+  const target = moveTargetOf(href, useCurrentBp().bpCodeId);
+  if (!useCanOpen(target.menuPath)) return null;
+  return (
+    <Button
+      variant="outline"
+      href={target.href}
+      onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+        if (!(e.metaKey || e.ctrlKey || e.shiftKey)) onNavigate();
+      }}
+    >
+      {label}
+    </Button>
   );
 }
 
@@ -44,13 +73,15 @@ function ConditionValue({ value, checked }: { value: string; checked: boolean | 
   return <span className={`font-semibold ${tone}`}>{value}</span>;
 }
 
-/** GNB 「회원 탈퇴」가 여는 슬라이드 패널(MY PAGE, S-JHQQNR). 1단계(비밀번호)는 api 를 부르지 않는다 — 별도
- * 비밀번호 확인 엔드포인트가 없고, 실제 확인은 최종 제출(POST /auth/admin/me/withdraw)에서만 일어난다(설계
- * 결정, Task 3 dispatch). 2단계(내용)에 들어가기 전부터 eligibility 를 미리 불러 둬 2단계 전환이 기다리지
+/** GNB 「회원 탈퇴」가 여는 슬라이드 패널(마이페이지, S-JHQQNR). 1단계(비밀번호)는 api(POST /auth/admin/me/password-verifications)로
+ * 확인해 맞아야 2단계로 간다 — 전엔 확인 없이 넘겨 틀린 비밀번호로도 탈퇴 화면이 보였다(2026-10-29 재영). 최종 제출(POST
+ * /auth/admin/me/withdraw)도 비밀번호를 다시 본다. 2단계(내용)에 들어가기 전부터 eligibility 를 미리 불러 둬 2단계 전환이 기다리지
  * 않게 한다. 성공하면 비밀번호 변경과 같은 패턴으로 패널을 닫지 않고 완료 화면으로 바꾼 뒤, 로그아웃은
  * 사용자가 "확인"을 눌러야 일어난다 — 탈퇴 안내 이메일을 보냈다는 문구를 반드시 보게 한다. */
 export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open: boolean; onClose: () => void; trigger: RefObject<HTMLElement | null> }) {
   const ids = useId();
+  // BP 마스터의 관리 점포는 BP 전체 점포다. 직영이 아닌 점포가 있을 때만 가맹마스터 안내 줄을 둔다(모르는 유형도 가맹으로 본다 — api 와 같다)
+  const hasFranchiseStore = useStores().some((s) => s.storeTypeCode !== "DIRECT");
   const [step, setStep] = useState<Step>("password");
   const [form, setForm] = useState<Form>(EMPTY);
   const [eligibility, setEligibility] = useState<WithdrawEligibility | null>(null);
@@ -59,6 +90,9 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
   const [failure, setFailure] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, startSaving] = useTransition();
+  const [verifying, startVerifying] = useTransition();
+  // 탈퇴 사유는 공통코드 WITHDRAW_REASON(플랫폼고정)의 사용 중인 값을 표시 순서대로 쓴다(S-JHQQNR · S-DHBTXZ)
+  const reasons = useCodes("WITHDRAW_REASON");
   // password-change-panel.tsx 의 saveNumber 와 같은 패턴 — 패널을 닫았다 다시 열면 지난 요청의 응답이 늦게
   // 와도 새 세션에 적용되지 않게 막는다.
   const saveNumber = useRef(0);
@@ -91,6 +125,11 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
     })();
   }, [open]);
 
+  // useCodes 는 그룹이 없으면 개발 중에만 경고한다 — 탈퇴를 막는 일이라 운영에서도 남긴다
+  useEffect(() => {
+    if (open && reasons.length === 0) console.error("탈퇴 사유 공통코드(WITHDRAW_REASON)가 비어 있습니다");
+  }, [open, reasons.length]);
+
   const doneHeadingId = `${ids}-done`;
   useEffect(() => {
     if (step === "done") requestAnimationFrame(() => document.getElementById(doneHeadingId)?.focus());
@@ -107,10 +146,33 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
   const handleClose = () => {
     if (saving || confirmOpen) return;
     if (step === "done") {
-      void logout();
+      void logoutAfterWithdrawal();
       return;
     }
     onClose();
+  };
+
+  // 1단계 [확인] — 비밀번호가 맞아야 탈퇴 화면으로 간다(S-JHQQNR, 2026-10-29 재영). 최종 제출에서도 api 가 한 번 더 본다.
+  const handleVerify = () => {
+    setFieldError(null);
+    setFailure(null);
+    const mine = saveNumber.current;
+    startVerifying(async () => {
+      try {
+        const result = await verifyWithdrawPasswordAction(form.currentPassword);
+        if (mine !== saveNumber.current) return;
+        if (result.ok) return setStep("content");
+        // 1단계라 아직 탈퇴 전이다 — 세션만 끝난 것이니 로그인 화면으로 간다(logout). 최종 제출의 401 과 다르다
+        if (result.status === 401) return void logout();
+        if (result.status === 400) return setFieldError({ at: "currentPassword", message: result.message });
+        setFailure(result.message);
+      } catch (error: unknown) {
+        // 서버 액션 요청 자체가 실패한 경우(연결 끊김 · 배포 뒤 액션을 못 찾음) — handleConfirm 과 같이 띠로 알린다
+        if (mine !== saveNumber.current) return;
+        console.error("탈퇴 비밀번호 확인 요청 실패", error);
+        setFailure("비밀번호를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+    });
   };
 
   const handleConfirm = () => {
@@ -130,9 +192,10 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
           // 401은 칸 오류가 아니라 세션이 이미 끝났다는 뜻이다 — 탈퇴가 서버에서 커밋된 뒤 응답만 잃고
           // 재시도한 경우도 여기로 온다(탈퇴 쪽 execute()가 커밋과 같은 트랜잭션에서 세션을 revoke 한다).
           // 되돌릴 수 없는 동작이라 "실패"로 남겨 다시 시도하게 하면 안 된다 — 바로 로그아웃으로 보낸다
-          // (ip-code-review-claude 블로커 #2, 2026-10-27).
+          // (ip-code-review-claude 블로커 #2, 2026-10-27). 탈퇴를 마쳤을 수 있어 완료 화면의 [확인]과 같이 로그인 전 홈으로 간다(logoutAfterWithdrawal).
+          // 기다려서, 액션 요청이 실패하면(연결 끊김) 아래 catch 의 띠로 알린다
           if (result.status === 401) {
-            void logout();
+            await logoutAfterWithdrawal();
             return;
           }
           const field = withdrawFormField(result.status, result.message);
@@ -151,6 +214,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
         setForm(EMPTY);
         setStep("done");
       } catch (error: unknown) {
+        unstable_rethrow(error); // 401 뒤 로그아웃의 redirect 는 성공해도 reject 로 온다 — 실패 띠 없이 그대로 넘긴다
         if (mine !== saveNumber.current) return;
         console.error("회원 탈퇴 처리 실패", error);
         setConfirmOpen(false);
@@ -179,6 +243,13 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                   maxLength={100}
                   value={form.currentPassword}
                   onChange={(e) => setForm((f) => ({ ...f, currentPassword: e.target.value }))}
+                  // Enter 는 [확인]과 같다 — 버튼이 막힌 조건(빈 칸 · 확인 중)도 같게 본다
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.nativeEvent.isComposing && form.currentPassword && !verifying) {
+                      e.preventDefault();
+                      handleVerify();
+                    }
+                  }}
                   aria-invalid={fieldError?.at === "currentPassword" ? true : undefined}
                   aria-describedby={fieldError?.at === "currentPassword" ? currentPasswordMessageId : undefined}
                   aria-required
@@ -188,11 +259,13 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
             </div>
           </FormGroup>
 
+          {failure && <FailedBand message={failure} />}
+
           <div className="flex justify-center gap-[6px]">
             <Button variant="off" onClick={handleClose}>
               닫기
             </Button>
-            <Button onClick={() => setStep("content")} disabled={!form.currentPassword}>
+            <Button onClick={handleVerify} disabled={!form.currentPassword || verifying}>
               확인
             </Button>
           </div>
@@ -222,9 +295,9 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
           ) : (
             <>
               <div className="flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[14px] text-[14px] leading-[1.6]">
-                <p className="font-semibold text-[#e93737]">탈퇴 전 꼭 확인해 주세요</p>
-                {withdrawWarningText(eligibility).map((block, i) => (
-                  <WarningBlock key={i} block={block} />
+                <p className="font-semibold text-[#e93737]">탈퇴 전 꼭 확인해 주세요.</p>
+                {withdrawWarningText(eligibility, hasFranchiseStore).map((block, i) => (
+                  <WarningBlock key={i} block={block} onNavigate={handleClose} />
                 ))}
               </div>
 
@@ -244,6 +317,13 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                   rows={[eligibility]}
                   rowKey={() => "conditions"}
                 />
+                {/* 탈퇴를 막는 조건이라 BP 마스터가 직접 정리해야 한다 — 진행 중 상태만 걸러 근로계약 관리로 보낸다(2026-10-30 사용자 지정).
+                 * 표 칸 안에 두면 좁은 패널(464px)에서 잘리므로, 표 아래 오른쪽(「진행 중인 근로계약」 칸 밑)에 둔다. */}
+                {eligibility.hasInProgressContract && (
+                  <div className="flex justify-end">
+                    <MoveButton href={IN_PROGRESS_CONTRACTS_HREF} label="근로계약 확인" onNavigate={handleClose} />
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col gap-[18px]">
@@ -255,13 +335,15 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                       aria-required
                     >
                       <option value="">탈퇴 사유를 선택하세요</option>
-                      {WITHDRAW_REASONS.map((r) => (
-                        <option key={r.code} value={r.code}>
+                      {reasons.map((r) => (
+                        <option key={r.value} value={r.value}>
                           {r.label}
                         </option>
                       ))}
                     </Select>
                   </Field>
+                  {/* 사유가 비면 고를 수 없어 탈퇴가 이유 없이 막힌다 — 공통코드가 빠졌거나 모두 미사용인 경우 */}
+                  {reasons.length === 0 && <FailedBand message="탈퇴 사유를 불러오지 못했습니다. 잠시 후 다시 시도하거나 관리자에게 문의해 주세요." />}
                 </div>
                 {form.reasonCode === "WD_INPUT" && (
                   <div className="flex flex-col gap-[8px]">
@@ -287,8 +369,8 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                 <Button variant="off" onClick={handleClose}>
                   닫기
                 </Button>
+                {/* 기본색(primary)이다 — 데모 · 목업과 같다(2026-10-30 사용자 지정, 전엔 danger) */}
                 <Button
-                  variant="danger"
                   onClick={() => setConfirmOpen(true)}
                   disabled={eligibility.hasInProgressContract || !form.reasonCode || (form.reasonCode === "WD_INPUT" && !form.reasonDetail.trim())}
                 >
@@ -316,8 +398,8 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
               회원 탈퇴 완료 안내 메일이 등록된 이메일로 발송되었습니다.
             </p>
           </div>
-          {/* admin-header.tsx 의 UserPop 로그아웃 항목과 같은 호출 방식 — <form action={}> 으로 서버 액션을 부른다. */}
-          <form action={logout} className="flex justify-center gap-[6px]">
+          {/* admin-header.tsx 의 UserPop 로그아웃 항목과 같은 호출 방식(<form action={}>)이지만, 탈퇴 뒤라 logoutAfterWithdrawal(→ /)을 부른다. */}
+          <form action={logoutAfterWithdrawal} className="flex justify-center gap-[6px]">
             <Button type="submit">확인</Button>
           </form>
         </>
@@ -327,7 +409,6 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
         open={confirmOpen}
         title="회원 탈퇴"
         confirmLabel="회원 탈퇴"
-        confirmVariant="danger"
         busy={saving}
         onConfirm={handleConfirm}
         onCancel={() => {

@@ -468,6 +468,9 @@
     $("[data-spick-count]", box).textContent = `${n}개점`;
     const none = $("[data-spick-none]", box);
     if (none) none.hidden = n > 0;
+    // 고른 점포가 없으면 [전체 제거]를 막는다 — data-spick-clear-empty 를 단 칸만(BP 관리자 등록 · 수정, 앱 store-mapping-picker.tsx)
+    const clear = $("[data-spick-clear-empty]", box);
+    if (clear) clear.disabled = n === 0;
   };
   function spickMark(dd, i) {
     const opts = $$('[role="option"]', dd);
@@ -489,7 +492,7 @@
               `<button type="button" role="option" tabindex="-1" aria-selected="false" data-i="${i}" class="flex w-full items-center gap-[10px] rounded-[2px] px-[10px] py-[8px] text-left text-[14px] text-erp-ink hover:bg-erp-thead-bg aria-selected:bg-erp-thead-bg"><span class="min-w-0 flex-1 truncate">${s.name}</span>${box.hasAttribute("data-spick-nocode") ? "" : `<span class="shrink-0 text-[12px] text-erp-muted">${s.code}</span>`}</button>`,
           )
           .join("")
-      : `<p class="px-[10px] py-[14px] text-center text-[13px] text-erp-label">${picked.length >= spickPool(box).length ? "고를 수 있는 점포를 모두 골랐습니다." : "맞는 점포가 없습니다."}</p>`;
+      : `<p class="px-[10px] py-[14px] text-center text-[13px] text-erp-label">${picked.length >= spickPool(box).length ? "선택할 수 있는 점포를 모두 선택했습니다." : "검색 결과가 없습니다."}</p>`;
     dd.hidden = false;
     input.setAttribute("aria-expanded", "true");
     spickMark(dd, found.length ? 0 : -1);
@@ -683,7 +686,7 @@
     const cover = document.createElement("div");
     cover.setAttribute("role", "status");
     cover.style.cssText = "position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#fff;font-size:14px;color:var(--color-erp-muted,#999)";
-    cover.textContent = `${data.bp}(${data.code}) · 전체 점포로 여는 중입니다`;
+    cover.textContent = `${data.bp}(${data.code}) · 전체 점포로 여는 중입니다.`;
     document.body.append(cover);
     setTimeout(() => cover.remove(), 900);
   }
@@ -1119,7 +1122,8 @@
     // 달력 칸은 여기서 그린다. ‹ › 로 달을 바꾸면 그 달 1일(이번 달이면 오늘)을 고른다.
     const { crew, holiday, today, all } = JSON.parse(root.dataset.dayplan);
     const WD = "일월화수목금토";
-    const pane = root.firstElementChild;
+    // 근무스케줄 관리는 달 이동 줄을 도구 줄로 올려 판 앞에 둔다(staff-parts schedMonth bar) — 고른 날 상자는 data-daypane 으로 찾는다
+    const pane = $("[data-daypane]", root) || root.firstElementChild;
     const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     const work = (c, wd) => c[2][wd];
     const crewOn = (key) => crew.filter((c) => !c[3] || (c[3][0] <= key && key <= c[3][1]));
@@ -1156,8 +1160,9 @@
       $("[data-daytitle]", pane).textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;
       $("[data-daysum]", pane).innerHTML = off ? `${holiday[key]} 연휴 · 점포 휴무` : `근무 <b class="text-erp-ink">${list.filter(on).length}명</b> · ${key === today ? "오늘" : key < today ? "지난 날" : "예정"}`;
       $("[data-daylist]", pane).innerHTML = list.length
-        ? list.map((c) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]"><span class="flex-1">${c[0]} <span class="text-erp-muted">${c[1]}</span></span>${on(c) ? `<span class="text-right text-[13px] text-erp-muted">${c[2][d.getDay()]}</span>` : `<span class="text-right text-[13px] text-erp-muted">휴무</span>`}</li>`).join("")
-        : '<li class="py-[8px] text-[13px] text-erp-muted">근무 없음</li>';
+        ? list.map((c) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[10px] first:pt-0 last:border-b-0 last:pb-0"><span class="flex-1">${c[0]} <span class="text-erp-muted">${c[1]}</span></span>${on(c) ? `<span class="text-right text-[13px] text-erp-muted">${c[2][d.getDay()]}</span>` : `<span class="text-right text-[13px] text-erp-muted">휴무</span>`}</li>`).join("")
+        : // 목록 줄 위아래 10 · 상자 위아래 여백은 같게(첫 줄 위 · 끝 줄 아래 여백 · 끝 줄 선 없음), 빈 문구 14px 회색 — 근무스케줄 관리(all)는 「근무 가능한 직원이 없습니다.」(앱 schedule-month.tsx, 2026-11-05 사용자 지정)
+          `<li class="text-[14px] text-erp-label">${all ? "근무 가능한 직원이 없습니다." : "근무 없음"}</li>`;
       $$("[data-day]", root).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.day === key)));
     };
     root.addEventListener("click", (e) => {
@@ -1326,10 +1331,27 @@
     sync();
   }
 
-  // ── 목록에서 골라 지우기: 머리 체크(data-pick-all)로 모두 고르고, 확인창의 버튼(data-remove-picked="표 id")이 고른 줄을 지운다 ──
+  // ── 목록에서 골라 지우기: 「전체 선택」 체크(data-pick-all, 값이 있으면 그 표 id · 없으면 감싼 표)로 모두 고르고, 확인창의 버튼(data-remove-picked="표 id")이 고른 줄을 지운다 ──
+  // 고른 줄이 없으면 [선택 삭제](data-need-pick="표 id")는 막힌 버튼이고 말풍선으로 이유를 보인다(운영 알림함, 앱 notification-list.tsx 2026-11-04)
+  const pickTable = (all) => (all.dataset.pickAll && all.dataset.pickAll !== "true" ? document.getElementById(all.dataset.pickAll) : all.closest("table"));
+  const syncPicked = (table) => {
+    if (!table) return;
+    const rows = $$("[data-pick-row]", table);
+    const picked = rows.filter((c) => c.checked).length;
+    $$(`[data-pick-all="${CSS.escape(table.id)}"]`).forEach((all) => (all.checked = rows.length > 0 && picked === rows.length));
+    $$(`button[data-need-pick="${CSS.escape(table.id)}"]`).forEach((b) => {
+      b.disabled = !picked;
+      const tip = b.closest("[data-blocked]")?.querySelector("[data-blocked-tip]");
+      if (tip) tip.hidden = !!picked;
+    });
+  };
   document.addEventListener("change", (e) => {
-    if (!e.target.matches("[data-pick-all]")) return;
-    $$("[data-pick-row]", e.target.closest("table")).forEach((c) => (c.checked = e.target.checked));
+    if (e.target.matches("[data-pick-all]")) {
+      const table = pickTable(e.target);
+      if (table) $$("[data-pick-row]", table).forEach((c) => (c.checked = e.target.checked));
+      return syncPicked(table);
+    }
+    if (e.target.matches("[data-pick-row]")) syncPicked(e.target.closest("table"));
   });
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-remove-picked]");
@@ -1338,11 +1360,16 @@
     $$("[data-pick-row]:checked", table).forEach((c) => c.closest("tr").remove());
     const all = $("[data-pick-all]", table);
     if (all) all.checked = false;
+    syncPicked(table);
     const body = table.tBodies[0];
     if (!body.rows.length)
       body.innerHTML = `<tr class="h-[92px] border-b border-erp-thead-line"><td colspan="${table.tHead.rows[0].cells.length}" class="text-center text-erp-muted">${table.dataset.empty}</td></tr>`;
+    // 목록 화면 표(data-fill-empty)는 비면 남는 높이까지 늘린다(앱 DataTable fillEmpty — 운영 알림함, 2026-11-05 사용자 지정)
+    if (table.hasAttribute("data-fill-empty")) table.style.flex = body.querySelector("[data-pick-row]") ? "" : "1 0 134px";
     const total = table.closest("main")?.querySelector("p b");
     if (total) total.textContent = $$("[data-pick-row]", table).length;
+    const unread = table.closest("main")?.querySelector("[data-unread-count]");
+    if (unread) unread.textContent = $$("[data-unread]", table).length;
   });
 
   // ── 모두 읽음(data-read-all="표 id"): 미확인 점을 지우고 제목을 읽은 글자로 ──
@@ -1353,11 +1380,13 @@
     $$("[data-unread]", table).forEach((d) => {
       const tr = d.closest("tr");
       d.parentElement.textContent = "";
-      $$("a.font-semibold", tr).forEach((a) => {
+      $$("a.font-semibold, a .font-semibold", tr).forEach((a) => {
         a.classList.remove("font-semibold");
         a.classList.replace("text-erp-ink", "text-erp-muted");
       });
     });
+    const unread = table.closest("main")?.querySelector("[data-unread-count]");
+    if (unread) unread.textContent = "0";
   });
 
   // ── 첨부 파일 칸(data-file): 고른 파일 이름을 옆 칸에 보인다 ──
@@ -1535,11 +1564,25 @@
       const key = iso(mon);
       const hit = blocks.find((b) => b.dataset.week === key) || blocks.find((b) => b.dataset.week === "");
       blocks.forEach((b) => (b.hidden = b !== hit));
+      // data-label="md" 는 「11월 4일 (화)」 · 「11월 2일 ~ 11월 8일」 — 출퇴근 현황의 날 · 주 이동(앱 dayLabel · monthDayLabel, 2026-11-05 사용자 지정)
+      const kd = (d) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
+      // data-label="range" 는 「2026년 11월 2일 ~ 8일」 — 근무스케줄 관리 도구 줄(앱 weekRangeLabel, 2026-11-05 사용자 지정). 달 · 해가 바뀌면 끝에도 붙인다
+      const range = (a) => {
+        const b = addDays(a, 6);
+        const end = b.getFullYear() !== a.getFullYear() ? `${b.getFullYear()}년 ${kd(b)}` : b.getMonth() !== a.getMonth() ? kd(b) : `${b.getDate()}일`;
+        return `${a.getFullYear()}년 ${kd(a)} ~ ${end}`;
+      };
       trigger.textContent = month
         ? `${mon.getFullYear()}년 ${mon.getMonth() + 1}월`
-        : day
-          ? `${iso(mon)} (${WEEK[mon.getDay()]})`
-          : `${mon.getFullYear()}년 ${md(mon)} ~ ${md(addDays(mon, 6))}`;
+        : nav.dataset.label === "range" && !day
+          ? range(mon)
+          : nav.dataset.label === "md"
+          ? day
+            ? `${kd(mon)} (${WEEK[mon.getDay()]})`
+            : `${kd(mon)} ~ ${kd(addDays(mon, 6))}`
+          : day
+            ? `${iso(mon)} (${WEEK[mon.getDay()]})`
+            : `${mon.getFullYear()}년 ${md(mon)} ~ ${md(addDays(mon, 6))}`;
     };
     const head = (y, m) => `
         <div class="flex items-center justify-between">
@@ -1843,6 +1886,8 @@
       (set.tagName === "TABLE" ? set.tBodies[0] : set).append(empty);
     }
     empty.hidden = shown > 0 || !items.length;
+    // 목록 화면(data-fill-empty — 표 · 점포 카드)은 비면 남는 높이까지 늘린다. 표는 열 이름 줄을 두고 빈 줄이 채운다(앱 DataTable fillEmpty, 2026-11-05 사용자 지정)
+    if (set.hasAttribute("data-fill-empty")) set.style.flex = empty.hidden ? "" : "1 0 134px";
     // 목록 위 「총 N 건」(보이는 목록일 때만)
     const panel = set.closest('[role="tabpanel"]');
     if (set === first && (!panel || !panel.hidden)) {

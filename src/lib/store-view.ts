@@ -30,7 +30,7 @@ export function floorLabel(floor: Pick<StoreFloor, "floorTypeCode" | "floorNumbe
  * 끝나도 그 앞의 마지막 한글 글자를 본다. 한글이 아예 없으면(모르는 값을 코드 그대로 보일 때) 「이(가)」로 그대로 둔다.
  * store-form.ts 의 수정 칸 아래 안내 문구가 쓴다.
  */
-/** 좌표(위도 · 경도)가 둘 다 있어야 저장된 출퇴근 위치 적용 여부를 그대로 믿을 수 있다 — formOfStore(store-form.ts) · 상세 화면이 같은 규칙을 쓴다 */
+/** 좌표(위도 · 경도)가 둘 다 있어야 저장된 출퇴근 위치적용을 그대로 믿을 수 있다 — formOfStore(store-form.ts) · 상세 화면이 같은 규칙을 쓴다 */
 export function hasStoreCoordinates(latitude: number | null, longitude: number | null): boolean {
   return latitude !== null && longitude !== null;
 }
@@ -53,7 +53,10 @@ export function finalEuro(text: string): string {
   return final === 0 || final === 8 ? "로" : "으로";
 }
 
-/** 폐점 · 삭제를 막는 조건 — 1차에서는 진행 중 근로계약만 본다(구독 · 정산은 범위 밖) */
-export function closeBlockText(t: Pick<StoreTransitions, "inProgressContractCount">): string | null {
+/**
+ * 삭제를 막는 조건 — 진행 중 근로계약(체결 완료 포함)이 있으면 지우지 않는다(구독 · 정산은 1차 범위 밖).
+ * 폐점은 근로계약으로 막지 않는다 — 퇴근하지 않은 출근으로 막고 대기 계약은 폐점이 닫는다(store-closing.ts, api 2026-11-04).
+ */
+export function deleteBlockText(t: Pick<StoreTransitions, "inProgressContractCount">): string | null {
   return t.inProgressContractCount > 0 ? `진행 중인 근로계약이 ${t.inProgressContractCount.toLocaleString("ko-KR")}건 있습니다.` : null;
 }

@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
-import { DetailTable, PageBar } from "@/components/common";
-import { getEnum } from "@/lib/api";
+import { DetailTable, LoadGroup, LoadGroupArea, PageBar } from "@/components/common";
+import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import type { EnumValue } from "@/lib/enums";
 import { hqSharingConsentText, kstToday, staffEmailText } from "@/lib/staff-members";
 import { MENU_CODE } from "@/lib/menus";
@@ -14,12 +13,13 @@ import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, for
 import { CellView } from "../staff-table";
 import { BirthDateCell } from "./birth-date-dialog";
 import { ContractBox } from "./contract-box";
-import { AreaLoading, Box, BoxMessage } from "./detail-box";
+import { Box } from "./detail-box";
 import { employmentHistoryLines, historySearch } from "./employment-history";
 import { MenuManageLink } from "./manage-link";
+import { SendLogBox } from "./send-log-box";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
-import { PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
-import { scheduleWeekOf } from "./summary-view";
+import { AttendanceBox, PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
+import { attendanceManageHref, scheduleWeekOf } from "./summary-view";
 import { WeekNav } from "./week-nav";
 
 export const metadata: Metadata = {
@@ -28,14 +28,17 @@ export const metadata: Metadata = {
 
 // 값이 없는 칸.
 const PENDING = "-";
+// 기다리는 동안의 빈 자리(영역 하나, 그리고 상세 본문 묶음) — 상세 진입 · 작은 영역에는 고래 로딩을 쓰지 않는다. 최소 높이만 잡아 영역이 들어올 때 상자 높이가 크게 출렁이지 않게 한다.
+const AREA_PENDING = <div aria-hidden="true" className="min-h-[92px]" />;
+// 바깥 LoadGroup(본문 전체) fallback 에만 스크린리더용 안내를 붙인다 — 영역 4곳까지 읽히면 「로딩중입니다.」가 여럿 겹친다
+const BODY_PENDING = (
+  <div role="status" className="min-h-[92px]">
+    <span className="sr-only">로딩중입니다.</span>
+  </div>
+);
 
-function NotReady() {
-  return <BoxMessage>준비 중입니다.</BoxMessage>;
-}
-
-// 오른쪽 영역의 「관리」. 출퇴근 현황은 아직 링크를 걸지 않는다 — 화면이 없다(메뉴 url #592 결정 /attendance-records).
-// TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이, 근무스케줄은 화면(#202)과 메뉴 url(MN000010 /work-schedules)이, 급여명세서는 화면과
-// 메뉴 url(MN000009 /payslips)이 있어 걸었다 — 근무스케줄은 그 직원의 근무지 · 칸이 보던 주로 연다.
+// 오른쪽 영역의 「관리」. TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이, 근무스케줄은 화면(#202)과 메뉴 url(MN000010 /work-schedules)이, 급여명세서는 화면과
+// 메뉴 url(MN000009 /payslips)이, 출퇴근 현황은 화면과 메뉴 url(MN000025 /attendance-records)이 있어 걸었다 — 근무스케줄 · 출퇴근 현황은 그 직원의 근무지 · 칸이 보던 주로 연다.
 
 // 가입 상태 한글(이메일 칸, WHALEERP-180). 받지 못해도 상세는 그린다 — 이메일 칸만 「-」가 되고 원인은 서버 로그에 남긴다.
 async function loadJoinStateLabels(): Promise<EnumValue[]> {
@@ -58,7 +61,7 @@ async function loadEnumOrEmpty(name: string): Promise<EnumValue[]> {
 }
 
 // 직원 상세(WHALEERP-184). 배치는 데모 docs/demo/staff/detail.html(원본 src/pages/staff/detail.mjs)과 같다 — 5:7 두 단,
-// 왼쪽은 기본 정보 · 비밀번호 초기화 · 근로계약, 오른쪽은 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO.
+// 왼쪽은 기본 정보 · 비밀번호 초기화 · 근로계약, 오른쪽은 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO. 두 단 아래에 발송 이력(WHALEERP-136, 데모에 없음).
 // 기본 정보는 상세 api(GET /staff-members/:id, WHALEERP-599 · 183)로 받는다 — 목록 한 줄에 계정 이메일 · 직무 · 입사일 · 생년월일을 더한 모양이다.
 // 근로계약 · 근무스케줄 · 급여명세서 · TO-DO 건수는 영역마다 상세 요약 api(GET /staff-members/:id/summary/…, WHALEERP-183)로 따로 받아
 // 한 영역만 실패하거나 그 영역 메뉴 권한이 없어도 나머지는 그린다(summary-boxes.tsx). 가린 직원 · 없는 직원 · 이상한 id 는 404 다.
@@ -72,12 +75,26 @@ export default async function StaffMemberDetailPage({
   const { id: rawId } = await params;
   const search = await searchParams;
   const [staff, joinStateLabels, invitationTypeLabels, invitationStatusLabels, hqConsentLabels] = await Promise.all([
-    getStaffMember(rawId),
+    // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다. 404(없는 직원 · 업무 범위 밖 · 고른 BP 에 없음)는 getStaffMember 가 null 로 바꿔 notFound 다(근로계약 상세와 같다)
+    getStaffMember(rawId).catch((e: unknown) => {
+      const notice = deniedMessageOf(e);
+      if (notice === null) throw e;
+      return { notice };
+    }),
     loadJoinStateLabels(),
     loadEnumOrEmpty("InvitationType"),
     loadEnumOrEmpty("InvitationStatus"),
     loadEnumOrEmpty("HqSharingConsentState"),
   ]);
+  if (staff && "notice" in staff)
+    return (
+      <>
+        <PageBar title="직원 정보 관리" />
+        <p role="alert" className="p-[24px] text-[14px] text-erp-label">
+          {staff.notice}
+        </p>
+      </>
+    );
   const staffMemberId = staffMemberIdOf(rawId);
   if (!staff || staffMemberId === null) notFound();
   const employmentStatus = employmentStatusCells(staff);
@@ -89,6 +106,8 @@ export default async function StaffMemberDetailPage({
   const today = kstToday();
   // 근무스케줄 영역이 볼 주(월요일). 주소 week 가 없거나 날짜가 아니면 이번 주(데모 weekNav, 2026-10-22 노영주 — WHALEERP-185 기간 선택을 걷었다)
   const monday = scheduleWeekOf(search, today);
+  // 서버가 그리는 링크(재직 이력)에 탭 BP 를 붙인다. 목록 주소 · ?back= 은 옛 경로 그대로다. 「관리」 링크(MenuManageLink)는 화면이 붙인다
+  const at = await screenPath();
 
   const basicRows = [
     // 재직 상태는 이름 옆 칩이다(184 완료 조건 2 「이름 아래」 — 줄 높이 46 이 고정이라 옆에 둔다). 본인인증은 1차 범위 밖이라(WHALEERP-612 → 2차)
@@ -120,7 +139,7 @@ export default async function StaffMemberDetailPage({
         <span className="flex flex-col gap-[4px]">
           {line.links.map((link, i) => (
             <span key={`${i}-${link.href}`}>
-              <Link href={link.href} aria-label={`${line.label} ${link.text} 직원 상세`} className="text-erp-link hover:underline">
+              <Link href={at(link.href)} aria-label={`${line.label} ${link.text} 직원 상세`} className="text-erp-link hover:underline">
                 {link.text}
               </Link>
               {line.note && <span className="text-erp-muted"> · {line.note}</span>}
@@ -138,7 +157,7 @@ export default async function StaffMemberDetailPage({
       value: (
         <span className="inline-flex items-center gap-[6px]">
           <CellView cell={joinCell(staff, today)} />
-          {staff.contract && canResendInvitation(staff) && <ResendInvitationButton contractId={staff.contract.contractId} name={staff.name} />}
+          {staff.contract && canResendInvitation(staff) && <ResendInvitationButton contractId={staff.contract.contractId} name={staff.name} status={staff.contract.status} lastSentAt={staff.contract.lastSentAt} />}
         </span>
       ),
     },
@@ -154,66 +173,90 @@ export default async function StaffMemberDetailPage({
       <PageBar title="직원 정보 관리" />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
-          <div className="flex flex-col gap-[12px]">
+          <div className="flex flex-1 flex-col gap-[12px]">
             <div className="flex items-center gap-[6px]">
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>
               <StaffDetailActions staff={staff} today={today} listHref={listHref} />
             </div>
-            <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
-              <div className="flex min-w-0 flex-col gap-[24px]">
-                <DetailTable title="기본 정보" rows={basicRows} />
-                <PasswordResetButton staff={staff} />
-                {/* 가장 최근 계약 1건 — 근로계약 영역 요약(api #183). 계약이 없으면 그 칸이 작성으로 넘긴다 */}
-                <Box
-                  title="근로계약"
-                  manage={
-                    <MenuManageLink
-                      menuCode={MENU_CODE.contracts}
-                      menuName="근로계약 관리"
-                      href={staff.contract ? `/contracts/${staff.contract.contractId}` : "/contracts"}
-                    />
-                  }
-                >
-                  <Suspense fallback={<AreaLoading />}>
-                    <ContractBox staffMemberId={staffMemberId} />
-                  </Suspense>
+            {/* 처음 들어올 때는 제목 줄 아래 본문 전체(기본 정보 · 영역들)를 LoadGroup 이 빈 자리로 덮고(상세 진입에는 고래를 쓰지 않는다), 영역이 모두(발송 이력 포함) 온 뒤 한 번에 보인다.
+                  영역은 LoadGroupArea 가 각자 세기만 한다 */}
+            <LoadGroup fallback={BODY_PENDING}>
+              <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
+                <div className="flex min-w-0 flex-col gap-[24px]">
+                  <DetailTable title="기본 정보" rows={basicRows} />
+                  <PasswordResetButton staff={staff} />
+                  {/* 가장 최근 계약 1건 — 근로계약 영역 요약(api #183). 계약이 없으면 그 칸이 작성으로 넘긴다 */}
+                  <Box
+                    title="근로계약"
+                    manage={
+                      <MenuManageLink
+                        menuCode={MENU_CODE.contracts}
+                        menuName="근로계약 관리"
+                        href={staff.contract ? `/contracts/${staff.contract.contractId}` : "/contracts"}
+                      />
+                    }
+                  >
+                    <LoadGroupArea fallback={AREA_PENDING}>
+                      <ContractBox staffMemberId={staffMemberId} />
+                    </LoadGroupArea>
+                  </Box>
+                </div>
+                {/* 영역마다 따로 받는다 — 한 영역이 실패해도 그 영역에만 안내 · 다시 하기를 그리고 나머지는 그대로다 */}
+                <div className="flex min-w-0 flex-col gap-[24px]">
+                  <Box
+                    title="근무스케줄"
+                    tools={<WeekNav monday={monday} search={search} today={today} />}
+                    manage={
+                      <MenuManageLink
+                        menuCode={MENU_CODE.workSchedules}
+                        menuName="근무스케줄 관리"
+                        href={`/work-schedules?${new URLSearchParams({ store: String(staff.store.storeId), week: monday })}`}
+                      />
+                    }
+                  >
+                    {/* 주를 바꾸면 이 영역만 다시 기다린다 — key 가 바뀌면 영역의 Suspense 경계가 새로 서고, 묶음은 이미 풀려 있어 이 영역만 로딩을 보인다 */}
+                    <LoadGroupArea key={monday} fallback={AREA_PENDING}>
+                      <ScheduleBox staffMemberId={staffMemberId} weekStart={monday} />
+                    </LoadGroupArea>
+                  </Box>
+                  {/* 출퇴근 현황은 근무스케줄과 같은 주를 따라간다 — 주 넘김이 monday 를 바꾸면 이 영역도 key 로 다시 기다린다 */}
+                  <Box
+                    title="출퇴근 현황"
+                    manage={
+                      <MenuManageLink
+                        menuCode={MENU_CODE.attendanceRecords}
+                        menuName="출·퇴근 현황 조회"
+                        href={attendanceManageHref(staffMemberId, staff.store.storeId, monday, today)}
+                      />
+                    }
+                  >
+                    <LoadGroupArea key={monday} fallback={AREA_PENDING}>
+                      <AttendanceBox staffMemberId={staffMemberId} weekStart={monday} />
+                    </LoadGroupArea>
+                  </Box>
+                  <Box title="급여명세서" manage={<MenuManageLink menuCode={MENU_CODE.payslips} menuName="급여명세서 관리" href="/payslips" />}>
+                    <LoadGroupArea fallback={AREA_PENDING}>
+                      <PayslipBox staffMemberId={staffMemberId} />
+                    </LoadGroupArea>
+                  </Box>
+                  <Box title="TO-DO" manage={<MenuManageLink menuCode={MENU_CODE.todos} menuName="TO-DO 리스트 관리" href="/todos" />}>
+                    {/* TO-DO 관리 조회 권한이 없으면 목록까지 영역 전체를 막는다(summary-boxes.tsx TodoBox) */}
+                    <LoadGroupArea fallback={AREA_PENDING}>
+                      <TodoBox staffMemberId={staffMemberId} />
+                    </LoadGroupArea>
+                  </Box>
+                </div>
+              </div>
+              {/* 발송 이력(WHALEERP-136) — 열이 많아 두 단 아래 전체 너비로 둔다. 따로 된 발송 이력 화면은 두지 않기로 해(2026-10-26 김민식)
+                  「관리」 자리를 비운다 — 흐린 「관리」(준비 중)는 생길 화면이 있다는 뜻이라 쓰지 않는다 */}
+              <div className="mt-[24px]">
+                <Box title="발송 이력" manage={false}>
+                  <LoadGroupArea fallback={AREA_PENDING}>
+                    <SendLogBox staffMemberId={staffMemberId} />
+                  </LoadGroupArea>
                 </Box>
               </div>
-              {/* 영역마다 따로 받는다 — 한 영역이 실패해도 그 영역에만 안내 · 다시 하기를 그리고 나머지는 그대로다 */}
-              <div className="flex min-w-0 flex-col gap-[24px]">
-                <Box
-                  title="근무스케줄"
-                  tools={<WeekNav monday={monday} search={search} today={today} />}
-                  manage={
-                    <MenuManageLink
-                      menuCode={MENU_CODE.workSchedules}
-                      menuName="근무스케줄 관리"
-                      href={`/work-schedules?${new URLSearchParams({ store: String(staff.store.storeId), week: monday })}`}
-                    />
-                  }
-                >
-                  {/* 주를 바꾸면 이 영역만 다시 기다린다 */}
-                  <Suspense key={monday} fallback={<AreaLoading />}>
-                    <ScheduleBox staffMemberId={staffMemberId} weekStart={monday} />
-                  </Suspense>
-                </Box>
-                {/* 출퇴근 현황 api 는 아직 없다(api #183 「하지 않은 것」) */}
-                <Box title="출퇴근 현황">
-                  <NotReady />
-                </Box>
-                <Box title="급여명세서" manage={<MenuManageLink menuCode={MENU_CODE.payslips} menuName="급여명세서 관리" href="/payslips" />}>
-                  <Suspense fallback={<AreaLoading />}>
-                    <PayslipBox staffMemberId={staffMemberId} />
-                  </Suspense>
-                </Box>
-                <Box title="TO-DO" manage={<MenuManageLink menuCode={MENU_CODE.todos} menuName="TO-DO 리스트 관리" href="/todos" />}>
-                  {/* TO-DO 관리 조회 권한이 없으면 목록까지 영역 전체를 막는다(summary-boxes.tsx TodoBox) */}
-                  <Suspense fallback={<AreaLoading />}>
-                    <TodoBox staffMemberId={staffMemberId} />
-                  </Suspense>
-                </Box>
-              </div>
-            </div>
+            </LoadGroup>
           </div>
         </div>
       </div>

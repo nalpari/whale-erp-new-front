@@ -13,7 +13,7 @@ export type BpCodeItem = Schemas["BpCodeItemResponseDto"];
 export type BpCodeItemList = Schemas["BpCodeItemListResponseDto"];
 /**
  * 상세 코드의 관리 주체. api #165 부터 BP 에게 플랫폼고정은 오지 않아(목록 · 상세에서 뺀다) 생성 타입에 없지만,
- * 막는 판단(bp-code-drafts.ts 의 bpPanelLock · bpDeletable)은 옛 응답 대비로 남겨 두므로 값으로 받아 둔다.
+ * 지울 수 있는지(bp-code-drafts.ts 의 bpDeletable)는 옛 응답 대비로 플랫폼고정을 빼 두므로 값으로 받아 둔다.
  */
 export type BpManageOwnerCode = BpCodeItem["manageOwnerCode"] | "PLATFORM_FIXED";
 export type { SaveCodeItemsInput };
@@ -33,6 +33,13 @@ const json = async (method: string, body?: unknown): Promise<RequestInit> => ({
  * 쪽을 나누지 않고 한 목록으로 보인다(2026-10-27 사용자 지정) — api 쪽 크기 상한씩 끝까지 받아 이어 붙인다.
  * 그룹 코드 · 그룹명은 일부 일치 · 대소문자 무시로 거른다.
  */
+/** BP 공통코드 그룹이 몇 개인지만 — 한 쪽(1건)만 받아 total 을 본다(리뷰 반영 — 전엔 전부 받았다) */
+export async function countBpCodeGroups(): Promise<number> {
+  const params = new URLSearchParams({ page: "1", pageSize: "1", manageOwnerCodes: "PLATFORM_PROVIDED" });
+  const list: BpCodeGroupList = await request(`/bp-code-groups?${params}`, await json("GET"));
+  return list.total;
+}
+
 export async function getBpCodeGroups({ groupCode = "", groupName = "" }: { groupCode?: string; groupName?: string } = {}): Promise<BpCodeGroupList> {
   const items: BpCodeGroup[] = [];
   for (let page = 1; ; page++) {
@@ -50,13 +57,13 @@ export async function getBpCodeGroups({ groupCode = "", groupName = "" }: { grou
   }
 }
 
-/** GET /bp-code-groups/{groupCode}/items — 플랫폼고정이면 플랫폼 원본, 플랫폼제공이면 이 BP 의 행(복사된 코드 · BP전용). 사용중지 포함, 쪽 나눔 없음. */
+/** GET /bp-code-groups/{groupCode}/items — 플랫폼제공 그룹의 이 BP 행(복사된 코드 · BP전용). 그 밖의 그룹은 404. 사용중지 포함, 쪽 나눔 없음. */
 export async function getBpCodeItems(groupCode: string): Promise<BpCodeItemList> {
   return request(`/bp-code-groups/${encodeURIComponent(groupCode)}/items`, await json("GET"));
 }
 
 // 등록 · 수정 · 삭제는 각자 한 트랜잭션이고 응답은 204 다. 한 요청 안에서 하나라도 막히면 아무것도 바뀌지 않는다.
-// 플랫폼고정 그룹(409), 사용중지 · 없는 그룹(404), 플랫폼 사용자(403)는 api 가 막는다.
+// 플랫폼고정 · 사용중지 · 없는 그룹(404), 플랫폼 사용자(403)는 api 가 막는다.
 
 /** POST /bp-code-groups/{groupCode}/items — 새 상세 코드 등록(등록 권한). 관리 주체는 api 가 BP전용으로 저장한다. */
 export async function createBpCodeItems(groupCode: string, input: { items: SaveCodeItemsInput["creates"] }): Promise<void> {

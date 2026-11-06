@@ -1,8 +1,12 @@
 // 로그인 정보를 브라우저에 두는 곳. 키·모양·확인을 여기 한 곳에서 한다(2026-10-13 계획).
 // localStorage — 모든 탭이 같이 쓴다. loginKey 가 쿠키 login-key 와 다르면 앞 로그인 것이라 버린다.
-//   login-info: 계정·메뉴 / login-bp-info: 자기 BP 의 점포·공통코드(탭에 자기 BP 값이 없을 때 — 새 탭, /bp-switch 로 자기 BP 에 돌아올 때 — 만 읽는다) / selected-bp: 플랫폼 계정이 마지막으로 고른 BP
+//   login-info: 계정·메뉴 / login-info-version: 그 계정·메뉴를 받을 때의 로그인 정보 버전(GET /auth/admin/me/login-info-version) / login-bp-info: 자기 BP 의 점포·공통코드(탭에 자기 BP 값이 없을 때 — 새 탭, /bp-switch 로 자기 BP 에 돌아올 때 — 만 읽는다.
+//   점포 목록 맞추기가 자기 BP 점포를 다시 받으면 이 값의 stores 도 고친다) / selected-bp: 플랫폼 계정이 마지막으로 고른 BP
+//   stores-changed: 한 탭이 점포 목록이 바뀐 것을 알면 적는다 — 같은 BP 의 다른 탭이 storage 이벤트로 받아 바로 다시 맞춘다.
 // sessionStorage — 탭마다 다르다. 화면은 이것만 읽는다.
 //   current-bp: 이 탭의 서비스(WHALE_ERP·PLATFORM)와 BP / stores·codes·scope: 그 BP 의 값. bpCodeId 가 이 탭의 BP 와 다르면 버린다.
+//   stores-version: 이 탭의 stores 를 받을 때의 점포 목록 버전(GET /bp-codes/{id}/stores-version). 없으면 아직 맞춰 보지 않은 것이다
+//   (stores 를 쓰면 지운다 — writeStores).
 //   store-picks: 2026-10-21 에 없앴다(목록에서 고른 점포는 주소의 storeIds). 앞서 쓰던 값을 지우려고 키만 남긴다(TAB_KEYS).
 //   bp-fix: BP · 가맹 계정이 남의 BP 주소로 와서 소속 BP 로 고쳐 보낸 표시(들어온 주소). 같은 주소로 다시 오면 쿠키와 로그인 정보가 어긋난 것이다.
 //   서비스와 BP 는 짝이 맞아야 해서(플랫폼 서비스 = 플랫폼 BP, ERP 서비스 = 고객 BP) 한 키에 함께 둔다.
@@ -46,22 +50,27 @@ export interface TabContext {
 const PREFIX = "whale-erp:v2:";
 const KEY = {
   loginInfo: `${PREFIX}login-info`,
+  loginInfoVersion: `${PREFIX}login-info-version`,
   loginBpInfo: `${PREFIX}login-bp-info`,
   selectedBp: `${PREFIX}selected-bp`,
   currentBp: `${PREFIX}current-bp`,
   stores: `${PREFIX}stores`,
+  storesVersion: `${PREFIX}stores-version`,
+  storesChanged: `${PREFIX}stores-changed`,
   codes: `${PREFIX}codes`,
   scope: `${PREFIX}scope`,
   /** 지금은 쓰지 않는다 — 목록에서 고른 점포는 주소(storeIds)에 둔다(2026-10-21). 로그아웃하거나 앞 로그인의 탭 값을 버릴 때 함께 지우려고 키만 둔다 */
   storePicks: `${PREFIX}store-picks`,
   bpFix: `${PREFIX}bp-fix`,
 } as const;
-const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope, KEY.storePicks, KEY.bpFix];
+const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.storesVersion, KEY.codes, KEY.scope, KEY.storePicks, KEY.bpFix];
 // 앞 버전의 키 — 읽지는 않지만 로그인 정보(아이디 · 이름 · 이메일 · 메뉴 권한 · 점포)가 들어 있어 로그아웃할 때 함께 지운다(공용 PC).
 const LEGACY_PREFIXES = ["whale-erp:v1:"];
 const LEGACY_KEYS = LEGACY_PREFIXES.flatMap((p) => Object.values(KEY).map((k) => p + k.slice(PREFIX.length)));
 /** 다른 탭이 로그인·로그아웃했는지 storage 이벤트로 알아챌 때 보는 키. */
 export const LOGIN_INFO_KEY = KEY.loginInfo;
+/** 다른 탭이 점포 목록이 바뀐 것을 알렸는지 storage 이벤트로 알아챌 때 보는 키. */
+export const STORES_CHANGED_KEY = KEY.storesChanged;
 
 // 저장소를 못 쓰는 브라우저(사생활 보호 등)면 읽기는 null, 쓰기는 버린다 — SessionGate 가 login-info 를 다시 받아 화면은 그린다.
 function read<T>(storage: () => Storage, key: string): T | null {
@@ -72,10 +81,14 @@ function read<T>(storage: () => Storage, key: string): T | null {
     return null;
   }
 }
-function write(storage: () => Storage, key: string, value: unknown) {
+/** 썼으면 true — 저장소가 가득 찼거나 못 쓰면 false */
+function write(storage: () => Storage, key: string, value: unknown): boolean {
   try {
     storage().setItem(key, JSON.stringify(value));
-  } catch {}
+    return true;
+  } catch {
+    return false;
+  }
 }
 function remove(storage: () => Storage, keys: string[]) {
   try {
@@ -89,7 +102,18 @@ const ofLogin = <T extends { loginKey: string }>(v: T | null, loginKey: string) 
 const ofBp = <T extends { bpCodeId: number }>(v: T | null, bpCodeId: number) => (v?.bpCodeId === bpCodeId ? v : null);
 
 export const readLoginInfo = (loginKey: string) => ofLogin(read<StoredLoginInfo>(local, KEY.loginInfo), loginKey);
-export const writeLoginInfo = (v: StoredLoginInfo) => write(local, KEY.loginInfo, v);
+/**
+ * 로그인 정보를 쓴다. 버전은 「그 정보를 받을 때의 버전」이라 먼저 지운다 — 버전만 남고 정보 쓰기가 실패하면 옛 정보를 최신으로 믿는다
+ * (writeStores 와 같은 이유). 그래서 이름 · 이메일 · 비밀번호 강제 변경 표시만 고쳐 써도 다음 맞추기가 login-info 를 한 번 다시 받는다.
+ * 썼으면 true. 다른 탭은 이 키의 storage 이벤트로 새 메뉴를 읽는다(SessionGate).
+ */
+export function writeLoginInfo(v: StoredLoginInfo): boolean {
+  remove(local, [KEY.loginInfoVersion]);
+  return write(local, KEY.loginInfo, v);
+}
+/** 로그인 정보 버전(GET /auth/admin/me/login-info-version) — 계정 단위라 탭들이 같이 쓴다. 없으면 아직 맞춰 보지 않은 것이다. */
+export const readLoginInfoVersion = (loginKey: string) => ofLogin(read<{ loginKey: string; version: string }>(local, KEY.loginInfoVersion), loginKey)?.version ?? null;
+export const writeLoginInfoVersion = (loginKey: string, version: string) => write(local, KEY.loginInfoVersion, { loginKey, version });
 export const readLoginBpInfo = (loginKey: string) => ofLogin(read<StoredLoginBpInfo>(local, KEY.loginBpInfo), loginKey);
 export const writeLoginBpInfo = (v: StoredLoginBpInfo) => write(local, KEY.loginBpInfo, v);
 export const readSelectedBp = (loginKey: string) => ofLogin(read<StoredSelectedBp>(local, KEY.selectedBp), loginKey);
@@ -107,7 +131,28 @@ export const writeCurrentBp = (loginKey: string, { serviceCode, bp }: TabContext
   write(tab, KEY.currentBp, { loginKey, serviceCode, ...pickBp(bp) });
 
 export const readStores = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; items: AdminStore[] }>(tab, KEY.stores), bpCodeId)?.items ?? null;
-export const writeStores = (bpCodeId: number, items: AdminStore[]) => write(tab, KEY.stores, { bpCodeId, items });
+/**
+ * 탭 점포 목록을 쓴다. 버전은 「그 목록을 받을 때의 버전」이라, 목록을 바꾸면 먼저 지운다 — 준비(prepare)가 다른 출처(login-bp-info ·
+ * 고른 BP 를 새로 받음)로 쓰면 다음 맞추기가 한 번 다시 받는다. 썼으면 true(코드 리뷰로 찾음, 2026-10-30 — 버전만 남고 목록 쓰기가
+ * 실패하면 새로고침 뒤 옛 목록을 「최신」으로 믿었다).
+ */
+export function writeStores(bpCodeId: number, items: AdminStore[]): boolean {
+  remove(tab, [KEY.storesVersion]);
+  return write(tab, KEY.stores, { bpCodeId, items });
+}
+export const readStoresVersion = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; version: string }>(tab, KEY.storesVersion), bpCodeId)?.version ?? null;
+export const writeStoresVersion = (bpCodeId: number, version: string) => write(tab, KEY.storesVersion, { bpCodeId, version });
+/** 점포 목록이 바뀐 것을 다른 탭에 알린다 — 같은 값을 다시 적으면 이벤트가 오지 않아 시각을 함께 적는다 */
+export const announceStoresChanged = (loginKey: string, bpCodeId: number) => write(local, KEY.storesChanged, { loginKey, bpCodeId, at: Date.now() });
+/** storage 이벤트의 새 값이 이 로그인 · 이 BP 의 알림인가 */
+export function isStoresChangedFor(raw: string | null, loginKey: string, bpCodeId: number): boolean {
+  try {
+    const v = raw ? (JSON.parse(raw) as { loginKey?: unknown; bpCodeId?: unknown }) : null;
+    return v?.loginKey === loginKey && v.bpCodeId === bpCodeId;
+  } catch {
+    return false;
+  }
+}
 export const readCodes = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; codes: Codes }>(tab, KEY.codes), bpCodeId)?.codes ?? null;
 export const writeCodes = (bpCodeId: number, codes: Codes) => write(tab, KEY.codes, { bpCodeId, codes });
 export const readScope = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; scope: Scope }>(tab, KEY.scope), bpCodeId)?.scope ?? null;
@@ -126,7 +171,7 @@ export const clearTabBp = () => remove(tab, TAB_KEYS);
 
 /** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). 앞 버전 키도 지운다. */
 export function clearLoginStorage() {
-  remove(local, [KEY.loginInfo, KEY.loginBpInfo, KEY.selectedBp, ...LEGACY_KEYS]);
+  remove(local, [KEY.loginInfo, KEY.loginInfoVersion, KEY.loginBpInfo, KEY.selectedBp, KEY.storesChanged, ...LEGACY_KEYS]);
   remove(tab, [...TAB_KEYS, ...LEGACY_KEYS]);
 }
 
@@ -141,7 +186,7 @@ function pickBp({ bpCodeId, bpCode, tradeName }: StoredBp): StoredBp {
  *   BP 선택 팝업이 연 주소는 서버에서 찾은 그 BP 가 selectedBp 로 함께 오고, 플랫폼관리 바로가기는 자기 BP 를 싣는다.
  *   둘 다 아니면 이름을 알 수 없어 무시한다.
  * - 탭 값이 없는 새 탭(주소 직접 입력·즐겨찾기)은 ERP 메뉴 주소면 마지막으로 고른 BP 의 ERP, 그 밖은 자기 BP 의 플랫폼이다.
- *   고른 BP 가 없는데 ERP 주소면 플랫폼으로 열려 메뉴 권한 확인이 막고 이전 화면(없으면 플랫폼 홈)으로 보낸다.
+ *   고른 BP 가 없는데 ERP 주소면 플랫폼으로 열려 메뉴 권한 확인이 막고 이전 화면(없으면 플랫폼 첫 주소 /platform)으로 보낸다.
  */
 export function resolveTab(o: {
   ownBp: StoredBp;

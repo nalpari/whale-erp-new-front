@@ -111,7 +111,7 @@ export const EMPTY_STORE_FORM: StoreForm = {
   addressDetail: "",
   latitude: "",
   longitude: "",
-  // 새 점포는 주소가 없어 좌표도 없다 — 출퇴근 위치 적용 여부는 미사용이 기본이다(2026-10-19 점검 — 실사용자 확인).
+  // 새 점포는 주소가 없어 좌표도 없다 — 출퇴근 위치적용은 미사용이 기본이다(2026-10-19 점검 — 실사용자 확인).
   isLocationApplied: false,
   savedBizNumber: "",
   savedCeoName: "",
@@ -251,7 +251,7 @@ export function hasCoordinateInput(latitude: string, longitude: string): boolean
  * 생겨 이 검증을 타지 않으므로 등록(create) 화면은 빈 배열을 넘겨도 된다. now 는 인증 10분 만료를 재는 지금 시각(ms) */
 export function validateStoreForm(f: StoreForm, mode: "create" | "edit", requirementLabels: EnumValue[] = [], now = Date.now()): StoreFormErrors {
   const errors: StoreFormErrors = {};
-  if (mode === "create" && !f.storeTypeCode) errors.storeTypeCode = "점포유형을 골라 주세요.";
+  if (mode === "create" && !f.storeTypeCode) errors.storeTypeCode = "점포유형을 선택해 주세요.";
 
   const name = f.name.trim();
   if (!name) errors.name = "점포명을 입력해 주세요.";
@@ -394,6 +394,17 @@ export function storeServerErrorField(status: number | undefined, message: strin
   if (message.includes("위도") || message.includes("좌표")) return "latitude";
   return null;
 }
+
+/**
+ * 소속 BP 가 사용 상태가 아니어서 api 가 거절한 문장인가(409). api 는 미사용 · 탈퇴를 가르지 않고 「소속 BP가 미사용 상태여서 …」 한 문장을 준다 —
+ * 화면은 이 문장 대신 「BP가 탈퇴 또는 미사용 상태로 …」를 보인다(2026-10-28 사용자 지정). api 에 오류 코드가 없어 문장 앞머리로 가른다.
+ */
+export const isBpBlockedMessage = (status: number | undefined, message: string) => status === 409 && message.startsWith("소속 BP가 미사용 상태");
+/** 등록 · 수정에서 그 거절을 받았을 때 띠에 보일 문장 */
+export const BP_BLOCKED_TEXT = {
+  create: "BP가 탈퇴 또는 미사용 상태로, 점포를 등록할 수 없습니다.",
+  edit: "이 점포가 속한 BP가 탈퇴 또는 미사용 상태로, 조회 기능만 이용할 수 있습니다.",
+} as const;
 
 /**
  * api 오류 문장들(검증 실패면 여러 개)을 칸별로 나눈다. 같은 칸에 여럿이면 이어 붙이고, 칸을 못 찾은 문장은 rest 로 남겨 띠에 보인다.

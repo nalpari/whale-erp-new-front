@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type ReactNode } from "react";
-import { Badge, Button, Checkbox, ConfirmDialog, DateField, PageBar, Select, Tag, Textarea, TextField, Toggle, useToast } from "@/components/common";
-import { useCodes } from "@/components/site/session-gate";
+import { Badge, Button, Checkbox, ConfirmDialog, DateField, NoticeBand, PageBar, Select, Tag, Textarea, TextField, Toggle, useToast } from "@/components/common";
+import { useCodes, usePagePermission } from "@/components/site/session-gate";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import type { PostDetail } from "@/lib/community";
 import {
@@ -35,7 +35,8 @@ import { NOTICE_SAVE_ROUTE } from "@/lib/paper-request";
 // 공지사항은 첨부 때문에 라우트 핸들러(platform-notices/save)로 multipart 를, FAQ 는 서버 액션으로 JSON 을 보낸다(api 가 FAQ 는 JSON 만 받는다).
 // 실패하면 입력값을 그대로 두고 폼 위 빨간 띠에 까닭을 보인다. 그사이 누가 고쳤으면(409) 최신 내용을 다시 불러오게 한다.
 
-const SAVED_TOAST: Record<PostStatus, string> = { PUBLISHED: "게시했습니다.", DRAFT: "임시저장했습니다.", PRIVATE: "비공개로 저장했습니다." };
+// 저장 토스트 — 짧게 동작만(2026-11-06 사용자 지정 — 전엔 비공개가 「비공개로 저장했습니다.」)
+const SAVED_TOAST: Record<PostStatus, string> = { PUBLISHED: "게시했습니다.", DRAFT: "임시저장했습니다.", PRIVATE: "비공개로 변경했습니다." };
 // 노출 대상 옆 설명(데모와 같다). 비회원은 설명 대신 아래 안내가 붙는다.
 const AUDIENCE_HINT: Partial<Record<Audience, string>> = { MEMBER: "로그인한 모든 사용자", BP: "사업자 관리자", STORE: "점포 단위 관리자" };
 
@@ -107,6 +108,10 @@ export function PostForm({
   const fileInput = useRef<HTMLInputElement>(null);
   const nextKey = useRef(0);
 
+  // 저장(게시 · 임시저장 · 비공개)은 등록 화면이면 등록, 수정 화면이면 수정 권한이다. 삭제는 삭제 권한. 권한이 빠지면 저장 버튼 · 첨부
+  // 고르기 · 빼기와 열려 있던 삭제 확인창을 거둔다 — 막는 것은 api 다(create · update · delete). 입력칸은 잠그지 않는다(안내 띠가 알린다).
+  const can = usePagePermission();
+  const canSave = detail ? can.update : can.create;
   const notice = kind === "NOTICE";
   const name = notice ? "공지사항" : "FAQ";
   const listHref = POST_BASE[kind];
@@ -180,7 +185,7 @@ export function PostForm({
       setConfirmDelete(false);
       const result = await callAction(() => deletePostAction(kind, detail.postId));
       if (!result.ok) return showErrors(result.messages);
-      toast("deleted");
+      toast("삭제했습니다.");
       router.push(listHref);
     });
 
@@ -209,27 +214,39 @@ export function PostForm({
     <>
       <PageBar title={detail ? `${name} 수정` : `${name} 등록`}>
         <div className="flex items-center gap-[6px]">
-          <Button variant="off" href={listHref}>
+          <Button href={listHref}>
             목록
           </Button>
-          {detail && (
+          {detail && can.delete && (
             <Button variant="soft" disabled={busy} onClick={() => setConfirmDelete(true)}>
               삭제
             </Button>
           )}
-          <Button variant="soft" disabled={busy} onClick={() => save("PRIVATE")}>
-            비공개
-          </Button>
-          <Button variant="soft" disabled={busy} onClick={() => save("DRAFT")}>
-            임시저장
-          </Button>
-          <Button disabled={busy} onClick={() => save("PUBLISHED")}>
-            게시
-          </Button>
+          {canSave && (
+            <>
+              <Button variant="soft" disabled={busy} onClick={() => save("PRIVATE")}>
+                비공개
+              </Button>
+              <Button variant="soft" disabled={busy} onClick={() => save("DRAFT")}>
+                임시저장
+              </Button>
+              <Button disabled={busy} onClick={() => save("PUBLISHED")}>
+                게시
+              </Button>
+            </>
+          )}
         </div>
       </PageBar>
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="flex flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
+          {/* 저장 버튼이 없는 까닭을 알린다 — 막힌 실패가 아니라 조회만 가능 안내라 info 띠다(DESIGN.md Notice Band) */}
+          {!canSave && (
+            <NoticeBand
+              tone="info"
+              title={`${notice ? "공지사항을" : "FAQ 를"} ${detail ? "고칠" : "등록할"} 권한이 없습니다.`}
+              detail={detail ? "고쳐도 저장할 수 없습니다." : "입력해도 저장할 수 없습니다."}
+            />
+          )}
           {errors.length > 0 && (
             <div ref={errorRef} role="alert" className="flex items-start gap-[12px] rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
               <div className="flex flex-1 flex-col gap-[4px]">
@@ -293,9 +310,11 @@ export function PostForm({
                             {a.fileName}
                           </button>
                           <span className="text-erp-muted">{sizeLabel(a.sizeBytes)}</span>
-                          <Button variant="off" disabled={busy} onClick={() => setRemoveIds((ids) => [...ids, a.postAttachmentId])}>
-                            빼기
-                          </Button>
+                          {canSave && (
+                            <Button variant="off" disabled={busy} onClick={() => setRemoveIds((ids) => [...ids, a.postAttachmentId])}>
+                              빼기
+                            </Button>
+                          )}
                         </li>
                       ))}
                       {files.map(({ key, file }) => (
@@ -310,13 +329,17 @@ export function PostForm({
                       ))}
                     </ul>
                   )}
-                  <div>
-                    <input ref={fileInput} type="file" multiple accept={FILE_ACCEPT} hidden onChange={(e) => addFiles(e.target.files)} />
-                    <Button variant="soft" disabled={busy || kept.length + files.length >= MAX_ATTACHMENTS} onClick={() => fileInput.current?.click()}>
-                      파일 선택
-                    </Button>
-                  </div>
-                  <Note>이미지(JPG · PNG)와 PDF 를 올릴 수 있습니다. {MAX_ATTACHMENTS}개까지, 파일당 10MB. 저장할 때 함께 올라갑니다.</Note>
+                  {canSave && (
+                    <>
+                      <div>
+                        <input ref={fileInput} type="file" multiple accept={FILE_ACCEPT} hidden onChange={(e) => addFiles(e.target.files)} />
+                        <Button variant="soft" disabled={busy || kept.length + files.length >= MAX_ATTACHMENTS} onClick={() => fileInput.current?.click()}>
+                          파일 선택
+                        </Button>
+                      </div>
+                      <Note>이미지(JPG · PNG)와 PDF 를 올릴 수 있습니다. {MAX_ATTACHMENTS}개까지, 파일당 10MB. 저장할 때 함께 올라갑니다.</Note>
+                    </>
+                  )}
                 </div>
               )}
             </Box>
@@ -354,24 +377,19 @@ export function PostForm({
                     />
                   ))}
                 </div>
-                {form.audiences.includes("GUEST") ? <Band>비회원이 포함되어 로그인 전 홈에 공개됩니다.</Band> : <Note>비회원을 고르면 로그인 전 홈에 공개됩니다.</Note>}
-                <Note>게시하려면 하나 이상 골라야 합니다. 임시저장 · 비공개는 비워 둬도 됩니다.</Note>
+                {form.audiences.includes("GUEST") ? <Band>비회원이 포함되어 로그인 전 홈에 공개됩니다.</Band> : <Note>비회원을 선택하면 로그인 전 홈에 공개됩니다.</Note>}
+                <Note>게시하려면 하나 이상 선택해야 합니다. 임시저장 · 비공개는 비워 둬도 됩니다.</Note>
               </Box>
 
               {detail && (
                 <Box title="최근 수정">
                   <p className="flex items-center gap-[8px] text-[14px] text-erp-ink">
-                    {detail.status === "PUBLISHED" ? (
-                      <Badge tone="on">{labelOf(statuses, detail.status)}</Badge>
-                    ) : detail.status === "PRIVATE" ? (
-                      <Badge tone="off">{labelOf(statuses, detail.status)}</Badge>
-                    ) : (
-                      <Tag>{labelOf(statuses, detail.status)}</Tag>
-                    )}
+                    {/* 게시만 파랑 배지, 임시저장 · 비공개는 회색 꼬리표 — 목록과 같다(2026-11-06 사용자 지정 — 전엔 비공개가 빨강) */}
+                    {detail.status === "PUBLISHED" ? <Badge tone="on">{labelOf(statuses, detail.status)}</Badge> : <Tag>{labelOf(statuses, detail.status)}</Tag>}
                     {formatDateTime(detail.updatedAt)}
                     {detail.updatedByName && ` · ${detail.updatedByName}`}
                   </p>
-                  <Note>둘이 동시에 고치면 나중 저장이 막히고(409) 최신 내용을 다시 불러옵니다. 덮어쓰지 않습니다.</Note>
+                  <Note>다른 관리자가 먼저 저장하면 내 저장은 막히고, 최신 내용을 다시 불러옵니다.</Note>
                 </Box>
               )}
             </div>
@@ -380,15 +398,16 @@ export function PostForm({
       </div>
 
       <ConfirmDialog
-        open={confirmDelete}
-        title={notice ? "공지사항을 삭제하시겠습니까?" : "FAQ 를 삭제하시겠습니까?"}
+        open={confirmDelete && can.delete}
+        title={notice ? "공지사항을 삭제하시겠습니까?" : "FAQ를 삭제하시겠습니까?"}
+        // 커뮤니티 관리는 빨간 버튼을 두지 않는다 — 기본 버튼, 되돌릴 수 없다는 말은 굵은 글로(2026-11-06 사용자 지정 — 전엔 danger)
         confirmLabel="삭제"
-        confirmVariant="danger"
         busy={busy}
         onConfirm={handleDelete}
         onCancel={() => setConfirmDelete(false)}
       >
-        사용자에게 더는 보이지 않습니다. 기록은 남습니다.
+        <p>삭제한 {notice ? "공지사항은 사용자 화면과 공지사항" : "FAQ는 사용자 화면과 FAQ"} 목록에서 사라집니다.</p>
+        <p>삭제한 내용은 복구할 수 없습니다.</p>
       </ConfirmDialog>
     </>
   );

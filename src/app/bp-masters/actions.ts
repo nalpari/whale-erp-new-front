@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
+import { withPeriod } from "@/lib/format";
+import { historyPageSizeOf } from "@/lib/history-paging";
 import {
   changeBpMasterStatus,
   checkBpMasterEmailAvailable,
@@ -30,20 +32,21 @@ export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; status?
 /**
  * api 오류를 화면 문구로 바꾼다. 400 · 403 · 404 · 409 · 422(국세청 불일치) · 429(진위확인 시간당 한도)는 api 가 한국어로 알리므로 그대로,
  * 503(국세청 장애)은 인증 없이 저장할 수 있다는 것을 함께, 401 은 고정 문구로, 그 밖(5xx · 연결 실패)은 일반 문구로 바꾼다.
+ * 비밀번호 초기화의 503 은 국세청이 아니라 메일 설정 없음이라 일반 문구(「비밀번호를 초기화하지 못했습니다. 잠시 후 다시 시도해 주세요.」)로 — 세 관리 화면 같다(2026-10-28 사용자 지정).
  */
-function failureOf(error: unknown, what: string): { ok: false; status?: number; message: string } {
+function failureOf(error: unknown, what: string, notNts = false): { ok: false; status?: number; message: string } {
   if (error instanceof ApiError) {
     if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     // 429 는 사업자 진위확인 시간당 한도(10건)
-    if ([400, 403, 404, 409, 422, 429].includes(error.status)) return { ok: false, status: error.status, message: error.message };
-    if (error.status === 503) return { ok: false, status: 503, message: "지금은 국세청 확인을 할 수 없습니다. 인증 없이 저장하고 나중에 인증할 수 있습니다." };
+    if ([400, 403, 404, 409, 422, 429].includes(error.status)) return { ok: false, status: error.status, message: withPeriod(error.message) };
+    if (error.status === 503 && !notNts) return { ok: false, status: 503, message: "지금은 국세청 확인을 할 수 없습니다. 인증 없이 저장하고 나중에 인증할 수 있습니다." };
   }
   console.error(`BP 마스터 계정 ${what} 실패`, error);
   return { ok: false, message: `${what}하지 못했습니다. 잠시 후 다시 시도해 주세요.` };
 }
 
 const validId = (id: number) => Number.isInteger(id) && id >= 1 && id <= 2_147_483_647;
-const NOT_FOUND = { ok: false as const, status: 404, message: "BP 를 찾을 수 없습니다" };
+const NOT_FOUND = { ok: false as const, status: 404, message: "BP 를 찾을 수 없습니다." };
 
 /** 저장이 끝났으면 목록 · 상세를 새로 받는다. 무효화가 실패해도 저장은 끝났으므로 성공으로 돌려준다. */
 function refresh() {
@@ -77,7 +80,7 @@ export async function updateBpMasterAction(bpCodeId: number, input: UpdateBpMast
 
 export async function changeBpMasterStatusAction(bpCodeId: number, status: Exclude<BpMasterStatus, "WITHDRAWN">): Promise<ActionResult> {
   if (!validId(bpCodeId)) return NOT_FOUND;
-  if (status !== "ACTIVE" && status !== "INACTIVE") return { ok: false, status: 400, message: "사용 또는 미사용으로만 바꿀 수 있습니다" };
+  if (status !== "ACTIVE" && status !== "INACTIVE") return { ok: false, status: 400, message: "사용 또는 미사용으로만 바꿀 수 있습니다." };
   try {
     await changeBpMasterStatus(bpCodeId, status);
     refresh();
@@ -95,7 +98,10 @@ export async function resetBpMasterPasswordAction(bpCodeId: number): Promise<Act
     refresh();
     return { ok: true, ...result };
   } catch (error) {
-    return failureOf(error, "비밀번호 초기화");
+    // api 문구 「이메일이 없는 계정이라 보낼 곳이 없습니다」(409)는 화면 말투로 바꾼다 — 세 관리 화면 같다(2026-10-28 사용자 지정)
+    if (error instanceof ApiError && error.status === 409 && error.message.includes("이메일이 없는 계정"))
+      return { ok: false, status: 409, message: "해당 계정에는 등록된 이메일 주소가 없어 메일을 발송할 수 없습니다." };
+    return failureOf(error, "비밀번호를 초기화", true);
   }
 }
 
@@ -111,10 +117,10 @@ export async function deleteBpMasterAction(bpCodeId: number): Promise<ActionResu
   }
 }
 
-export async function getBpMasterHistoriesAction(bpCodeId: number, page: number): Promise<ActionResult<BpMasterHistoryList>> {
+export async function getBpMasterHistoriesAction(bpCodeId: number, page: number, pageSize: number): Promise<ActionResult<BpMasterHistoryList>> {
   if (!validId(bpCodeId)) return NOT_FOUND;
   try {
-    return { ok: true, ...(await getBpMasterHistories(bpCodeId, Number.isInteger(page) && page >= 1 ? page : 1)) };
+    return { ok: true, ...(await getBpMasterHistories(bpCodeId, Number.isInteger(page) && page >= 1 ? page : 1, historyPageSizeOf(pageSize))) };
   } catch (error) {
     return failureOf(error, "이력 조회");
   }

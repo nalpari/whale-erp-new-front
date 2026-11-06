@@ -15,7 +15,7 @@ const sameValues = (a: MenuFormValues, b: MenuFormValues) => {
   return x.name === y.name && x.url === y.url && x.status === y.status;
 };
 
-/** 고친 것이 있는가 — 없으면 [저장]을 막는다 */
+/** 고친 것이 있는가 — 새 서버 값이 왔을 때 칸을 다시 채울지 가른다(sync…). [저장]은 막지 않는다(2026-10-30 재영) */
 export const isDirty = (base: MenuFormValues, form: MenuFormValues) => !sameValues(base, form);
 
 const valuesOf = (b: MenuFormBase): MenuFormValues => ({ name: b.name, url: b.url, status: b.status });
@@ -62,9 +62,9 @@ export function validateMenuForm(f: MenuFormValues, keptUrl?: string): MenuFormE
   // 화면 문구는 「메뉴명」(2026-10-26 사용자 지정). api 거절 문구는 아직 「노출 메뉴명」이라 아래 menuFieldOf 는 그 말로 가른다
   if (!name) errors.name = "메뉴명을 입력해 주세요.";
   else if (name.length > MENU_NAME_MAX) errors.name = `메뉴명은 ${MENU_NAME_MAX}자까지입니다.`;
-  if (url.length > MENU_URL_MAX) errors.url = `메뉴 URL 은 ${MENU_URL_MAX}자까지입니다.`;
+  if (url.length > MENU_URL_MAX) errors.url = `메뉴 URL은 ${MENU_URL_MAX}자까지입니다.`;
   else if (url && url !== keptUrl?.trim() && !MENU_URL_PATTERN.test(url))
-    errors.url = "메뉴 URL 은 '/' 하나로 시작하는 1뎁스 경로만 됩니다 — 소문자 · 숫자 · '-' 로, 구간은 '-' 로 잇습니다(예: /staff-content).";
+    errors.url = "메뉴 URL은 '/' 하나로 시작하는 1뎁스 경로만 됩니다 — 소문자 · 숫자 · '-'로, 구간은 '-'로 잇습니다(예: /staff-content).";
   return errors;
 }
 
@@ -75,7 +75,7 @@ export const bodyOf = (f: MenuFormValues) => {
 };
 
 /**
- * api 거절 문구를 붙일 칸 — 노출 메뉴명 형식은 이름 칸, URL 형식 · 겹침(409)은 URL 칸, 그 밖(동시 수정 · 상위 · 서비스)은 null(띠로 보인다).
+ * api 거절 문구를 붙일 칸 — 노출 메뉴명 형식은 이름 칸, URL 형식 · 겹침(409)은 URL 칸, 그 밖(동시 수정 · 상위 · 서비스 · API 권한 주소)은 null(띠로 보인다).
  * api 는 오류에 칸 이름을 싣지 않아 문구로 가른다(platform-menus DTO · assertUrlFree).
  */
 export function menuFieldOf(message: string): "name" | "url" | null {

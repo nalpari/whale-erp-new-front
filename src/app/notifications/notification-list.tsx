@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { Button, Checkbox, ConfirmDialog, DataTable, ListToolbar, Pagination, Select, useToast, type Column } from "@/components/common";
+import { Blocked, Button, Checkbox, ConfirmDialog, DataTable, Pagination, Select, useToast, type Column } from "@/components/common";
 import type { NotificationItem } from "@/lib/notifications";
 import { formatAt, relatedLabel, type NotificationQuery } from "@/lib/notification-view";
 import { PAGE_SIZES } from "@/lib/staff-members";
@@ -36,7 +36,7 @@ export function NotificationList({
   const search = useSearchParams();
   const toast = useToast();
   const [picked, setPicked] = useState<Set<number>>(new Set());
-  const [dialog, setDialog] = useState<"readAll" | "delete" | "none" | null>(null);
+  const [dialog, setDialog] = useState<"readAll" | "delete" | null>(null);
   const [busy, startTransition] = useTransition();
 
   useEffect(() => {
@@ -103,9 +103,11 @@ export function NotificationList({
       // 제목 아래 둘째 줄에 내용(템플릿 둘째 줄)을 보인다(목업 notify/index.html 의 sub 줄). <Link> 대신 <a> 다 —
       // 이동 페이지는 화면에 뜬 뒤에만 읽음 처리하지만, 미리 불러오기를 일으킬 까닭도 없다.
       cell: (n) => (
-        <a href={`/notifications/${n.id}/open`} className="block truncate py-[4px] hover:underline">
-          <span className={n.isRead ? "text-erp-muted" : "font-semibold text-erp-ink"}>{n.title}</span>
-          {n.body && <span className="block truncate text-[13px] text-erp-muted">{n.body}</span>}
+        // 제목 · 내용 두 줄 사이를 띄운다 — 46px 줄 안에 줄간 없이 붙어 답답했다(2026-11-04 사용자 지적). 줄 높이 20 · 18px + 사이 3px, 위아래 7px 라
+        // 이 표의 줄은 55px 로 조금 높다(한 줄짜리 표는 46px 그대로)
+        <a href={`/notifications/${n.id}/open`} className="flex min-w-0 flex-col gap-[3px] py-[7px] hover:underline">
+          <span className={`truncate leading-[20px] ${n.isRead ? "text-erp-muted" : "font-semibold text-erp-ink"}`}>{n.title}</span>
+          {n.body && <span className="truncate text-[13px] leading-[18px] text-erp-muted">{n.body}</span>}
         </a>
       ),
     },
@@ -116,24 +118,26 @@ export function NotificationList({
 
   return (
     <>
-      <ListToolbar total={total}>
-        <span className="pl-[12px]">
-          <Checkbox
-            label="이 쪽 모두 선택"
-            checked={allPicked}
-            disabled={items.length === 0}
-            onChange={() => setPicked(allPicked ? new Set() : new Set(items.map((i) => i.id)))}
-          />
-        </span>
-        <p className="mr-auto pl-[12px] text-[14px] text-erp-muted">
-          미확인 <b className="font-semibold text-erp-ink">{unreadCount.toLocaleString("ko-KR")}</b> 건
+      {/* 총 · 미확인 건수는 왼쪽에 함께, 버튼 · 건수 고르기는 오른쪽 — 한 줄 가운데에 맞춘다(2026-11-04 사용자 지정 — 공통 ListToolbar 는 아래 끝에
+          맞춰 체크박스 · 글자가 34px 버튼보다 처져 줄이 제각각이었다). */}
+      <div className="flex items-center gap-[6px]">
+        <p className="mr-auto text-[14px] text-erp-ink">
+          총 <b className="font-semibold">{total.toLocaleString("ko-KR")}</b> 건<span className="px-[6px] text-erp-muted">·</span>
+          {/* 미확인은 빨강(erp-off) — 표의 미확인 빨간 점과 같은 색(2026-11-04 사용자 지정) */}<span className="text-erp-off">미확인 <b className="font-semibold">{unreadCount.toLocaleString("ko-KR")}</b> 건</span>
         </p>
+        {/* 전체 선택(보이는 쪽의 알림) — [모두 읽음] 앞, 줄 가운데에 맞춘다(2026-11-04 사용자 지정 — 「이 쪽 모두 선택」에서 이름을 바꿨다) */}
+        <span className="mr-[6px] flex items-center">
+          <Checkbox label="전체 선택" checked={allPicked} disabled={items.length === 0} onChange={() => setPicked(allPicked ? new Set() : new Set(items.map((i) => i.id)))} />
+        </span>
         <Button variant="off" disabled={unreadCount === 0} onClick={() => setDialog("readAll")}>
           모두 읽음
         </Button>
-        <Button variant="off" onClick={() => setDialog(picked.size ? "delete" : "none")}>
-          선택 삭제
-        </Button>
+        {/* 고른 알림이 없으면 막고 이유를 띄운다(막힌 버튼) — 전엔 누른 뒤에 「선택된 알림이 없습니다」 창이 떴다 */}
+        <Blocked floating reason={picked.size ? undefined : "삭제할 알림을 먼저 선택해 주세요."}>
+          <Button variant="off" disabled={!picked.size} onClick={() => setDialog("delete")}>
+            선택 삭제
+          </Button>
+        </Blocked>
         <div className="w-[80px] shrink-0">
           <Select
             aria-label="페이지당 건수"
@@ -147,8 +151,17 @@ export function NotificationList({
             ))}
           </Select>
         </div>
-      </ListToolbar>
-      <DataTable columns={columns} rows={items} rowKey={(n) => n.id} rowState={(n) => (picked.has(n.id) ? "selected" : undefined)} empty="받은 알림이 없습니다." />
+      </div>
+      {/* 비어도 열 이름 줄을 두고 빈 칸이 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정). 거르는 조건이 없어 0건이면 「받은 …」,
+          알림은 있는데 이 쪽이 비었으면(마지막 쪽을 넘긴 주소 · 지운 뒤) 「이 페이지에 …」(2026-11-05 사용자 지정)(전엔 「받은 알림이 없습니다.」 하나) */}
+      <DataTable
+        columns={columns}
+        rows={items}
+        rowKey={(n) => n.id}
+        rowState={(n) => (picked.has(n.id) ? "selected" : undefined)}
+        empty={total === 0 ? "받은 알림이 없습니다." : "이 페이지에 알림이 없습니다."}
+        fillEmpty
+      />
       <div className="pt-[14px]">
         <Pagination page={query.page} totalPages={totalPages} onPageChange={(page) => go({ ...query, page })} />
       </div>
@@ -171,9 +184,6 @@ export function NotificationList({
         onCancel={() => setDialog(null)}
       >
         삭제한 알림은 되돌릴 수 없습니다.
-      </ConfirmDialog>
-      <ConfirmDialog open={dialog === "none"} title="선택된 알림이 없습니다" onConfirm={() => setDialog(null)} onCancel={() => setDialog(null)}>
-        삭제할 알림을 먼저 골라 주세요.
       </ConfirmDialog>
     </>
   );

@@ -3,7 +3,7 @@
 // 역할 규칙(누가 누구를 보고 고치는지)은 api 가 판정하고, 상세의 actions 로 화면에 알려 준다 — 화면은 미리 숨기거나 막기만 한다.
 import { authHeaders, request } from "./api";
 // 이력 팝업(platform-admins/history-dialog.tsx)을 함께 써서 한 쪽 건수도 같은 값을 쓴다
-import { HISTORY_PAGE_SIZE } from "./platform-admin-paging";
+import type { HistoryPageSize } from "./history-paging";
 
 // shortcut: api 의 bp-admins 모듈이 아직 main 에 없어 작업 지시서의 DTO 를 손으로 옮겼다 — api 가 머지되면 pnpm openapi:types 로
 // 만든 components["schemas"] 로 바꾸고 이 주석을 지운다(플랜 「api 머지 뒤」).
@@ -111,6 +111,8 @@ export type BpAdminListQuery = {
   pageSize: number;
   keyword?: string;
   roleGroupId?: number;
+  /** 고른 역할만 — 없거나 비면 세 역할 모두 */
+  roleTypeCodes?: BpAdminRoleType[];
   accountStatus?: BpAdminStatus;
   /** 고른 점포 — 그 점포를 관리하는 계정(전체 점포 계정 포함) */
   storeIds: number[];
@@ -129,6 +131,7 @@ export async function getBpAdmins(query: BpAdminListQuery): Promise<BpAdminList>
   const params = new URLSearchParams({ page: String(query.page), pageSize: String(query.pageSize) });
   if (query.keyword) params.set("keyword", query.keyword);
   if (query.roleGroupId) params.set("roleGroupId", String(query.roleGroupId));
+  if (query.roleTypeCodes?.length) params.set("roleTypeCodes", query.roleTypeCodes.join(","));
   if (query.accountStatus) params.set("accountStatus", query.accountStatus);
   if (query.storeIds.length) params.set("storeIds", query.storeIds.join(","));
   if (query.storeTypeCode) params.set("storeTypeCode", query.storeTypeCode);
@@ -156,8 +159,8 @@ export async function getBpAdmin(id: number): Promise<BpAdminDetail> {
 }
 
 /** GET /bp-admins/{id}/histories — 변경 이력, 최신순. */
-export async function getBpAdminHistories(id: number, page = 1): Promise<BpAdminHistoryList> {
-  return request(`/bp-admins/${id}/histories?page=${page}&pageSize=${HISTORY_PAGE_SIZE}`, await json("GET"));
+export async function getBpAdminHistories(id: number, page: number, pageSize: HistoryPageSize): Promise<BpAdminHistoryList> {
+  return request(`/bp-admins/${id}/histories?page=${page}&pageSize=${pageSize}`, await json("GET"));
 }
 
 /**

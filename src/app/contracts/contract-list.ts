@@ -200,14 +200,27 @@ const JOIN_NOTES: Partial<Record<ContractListItem["staffJoinState"], string>> = 
   REJECTED: "초대 거절",
 };
 const WAITING_SIGNATURE_NOTES = new Set<ContractListItem["staffJoinState"]>(["AFFILIATION_PENDING", "RETURN_PENDING"]);
+const IN_PROGRESS_NOTES = new Set<NonNullable<ContractListItem["status"]>>(["DRAFT", "PENDING_SEND", "PENDING_SIGNATURE", "CORRECTION_REQUESTED"]);
 
 /**
- * 상태 칸 뒤에 「 · 」로 붙일 안내(목록 끝 칸에 두던 것, WHALEERP-133). 가입 · 초대 안내, 서명 대기의 남은 날, 퇴직한 직원이면 「퇴직」.
- * 재계약 서명 대기는 재계약(WHALEERP-156) 때 넣는다. 발송 대기인데 가입 · 초대 안내가 없으면(나간 초대가 없는 초안 직원 · api 가 가입
- * 상태를 아직 싣지 않은 먼저 배포된 화면) 판별한 초대 유형을 붙이던 예전 안내로 둔다(draftActionLabel).
+ * 체결 완료의 갱신 예정 안내(WHALEERP-156). 갱신 예정일(종료일 30일 전)이 오늘이거나 지났으면 직원 목록 배지와 같이 종료일까지 남은 날
+ * (「갱신 예정 D-n」), 아직이면 그 날짜(「갱신 예정 YYYY-MM-DD」 — 해가 바뀌어도 읽히게). 지난 날짜를 앞으로 올 날처럼 보이지 않게 한다.
+ */
+function renewalNote(renewalDate: string, now: Date): string {
+  const today = kstDate(now.toISOString());
+  if (renewalDate > today) return `갱신 예정 ${renewalDate}`;
+  const left = Math.round((Date.parse(renewalDate) + 30 * 86_400_000 - Date.parse(today)) / 86_400_000);
+  return `갱신 예정 D-${Math.max(left, 0)}`;
+}
+
+/**
+ * 상태 칸 뒤에 「 · 」로 붙일 안내(목록 끝 칸에 두던 것, WHALEERP-133). 가입 · 초대 안내, 재계약 서명 대기의 「재계약」, 서명 대기의 남은
+ * 날, 체결 완료의 갱신 예정일(WHALEERP-156 — 이미 재계약했으면 api 가 비운다), 퇴직한 직원이면 「퇴직」. 발송 대기인데 가입 · 초대
+ * 안내가 없으면(나간 초대가 없는 초안 직원 · api 가 가입 상태를 아직 싣지 않은 먼저 배포된 화면) 판별한 초대 유형을 붙이던 예전 안내로
+ * 둔다(draftActionLabel).
  */
 export function statusNotes(
-  row: Pick<ContractListItem, "status" | "signDeadlineAt" | "draftAction" | "staffJoinState" | "staffRetired">,
+  row: Pick<ContractListItem, "status" | "signDeadlineAt" | "draftAction" | "staffJoinState" | "staffRetired" | "renewalDate" | "previousContractId">,
   now: Date,
   draftActionLabel: (v: string) => string = (v) => v,
 ): string[] {
@@ -218,8 +231,11 @@ export function statusNotes(
     else if ((row.staffJoinState == null || row.staffJoinState === "DRAFT") && row.draftAction) notes.push(draftActionLabel(row.draftAction));
   }
   if (row.status === "PENDING_SIGNATURE" && join && WAITING_SIGNATURE_NOTES.has(row.staffJoinState)) notes.push(join);
+  // 재계약은 체결 전까지(임시저장 · 발송 대기 · 서명 대기 · 수정 요청) 표시한다 — 퇴직 뒤 재입사는 가입 초대(발송 대기)로 시작한다
+  if (row.previousContractId && row.status && IN_PROGRESS_NOTES.has(row.status)) notes.push("재계약");
   const deadline = deadlineNote(row, now);
   if (deadline) notes.push(deadline);
+  if (row.status === "SIGNED" && row.renewalDate) notes.push(renewalNote(row.renewalDate, now));
   if (row.staffRetired) notes.push("퇴직");
   return notes;
 }

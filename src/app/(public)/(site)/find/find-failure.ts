@@ -3,14 +3,13 @@
 
 import { EMAIL_FORMAT_ERROR } from "../../../../lib/email-format.ts";
 
-export const CONNECT_FAILED = "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요";
-export const THROTTLED = "요청이 많습니다. 잠시 뒤 다시 시도해 주세요";
+export const CONNECT_FAILED = "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.";
+export const THROTTLED = "요청이 많습니다. 잠시 뒤 다시 시도해 주세요.";
 // 이메일 칸이 있는 화면 모두 같은 형식 문구다(lib/email-format.ts)
 export const INVALID_INPUT = EMAIL_FORMAT_ERROR;
 // 일치 없음(404). 미사용 · 탈퇴 계정과만 맞아도 같은 문구다.
 export const LOGIN_ID_NOT_FOUND = "입력하신 정보와 일치하는 회원정보가 없습니다. 이름, 이메일 주소를 다시 확인해 주세요.";
 // 임시 비밀번호도 일치 여부를 알린다(2026-10-20 재영). 줄바꿈은 화면이 그대로 보인다(whitespace-pre-line).
-// api #77 머지 전에는 일치 여부와 상관없이 202 라 이 문구가 뜨지 않고 늘 발송 안내다.
 export const TEMPORARY_PASSWORD_NOT_FOUND =
   "회원정보를 찾을 수 없습니다.\n입력하신 정보와 일치하는 회원정보가 없습니다.\n이름, 아이디, 이메일 주소를 다시 확인해 주세요.";
 // 메일 발송 중 오류(503 + code, api #77). Gmail 과 통신하다 끊긴 것이라 메일이 실제로 갔을 수도 있다 — 그래도 그 비밀번호는
@@ -21,7 +20,7 @@ const SEND_FAILED_CODE = "TEMPORARY_PASSWORD_SEND_FAILED";
 // 메일 뒤 저장 실패(온 메일은 못 쓰고 앞의 임시 비밀번호가 살아 있다) · 발급을 마친 뒤 게이트웨이 502 · 504(온 메일이 유효)가
 // 섞이므로 둘 다에 맞게 「받은 것으로 안 되면 다시」로 안내한다 — 바로 다시 받게 하면 둘째의 유효한 것을 만료시킨다.
 export const TEMPORARY_PASSWORD_UNKNOWN =
-  "처리 결과를 확인하지 못했습니다. 메일이 오지 않았거나 받은 임시 비밀번호로 로그인되지 않으면 잠시 뒤 다시 요청해 주세요";
+  "처리 결과를 확인하지 못했습니다. 메일이 오지 않았거나 받은 임시 비밀번호로 로그인되지 않으면 잠시 뒤 다시 요청해 주세요.";
 
 type Failure = { status?: unknown; message?: unknown; name?: unknown; body?: unknown } | null | undefined;
 

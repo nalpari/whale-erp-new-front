@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { NoticeBand } from "../store-parts";
+import { NoticeBand } from "@/components/common";
 
 /**
  * 등록 직후 대표 이미지만 실패했을 때의 띠. 주소의 `?imageFailed=` 는 한 번 알리는 데만 쓰고 바로 지운다 —

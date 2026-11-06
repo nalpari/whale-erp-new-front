@@ -6,8 +6,8 @@ import { apiFailure, BUSY_MESSAGE } from "./api-failure.ts";
 const FALLBACK = "중복 확인을 하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 
 test("400 · 409 는 예상한 거절이라 api 문구를 그대로 보이고 로그를 남기지 않는다", () => {
-  assert.deepEqual(apiFailure(400, "영문·숫자 조합으로 4~20자로 입력해 주세요.", FALLBACK), {
-    message: "영문·숫자 조합으로 4~20자로 입력해 주세요.",
+  assert.deepEqual(apiFailure(400, "영문 또는 영문·숫자 조합으로 4~20자로 입력해 주세요.", FALLBACK), {
+    message: "영문 또는 영문·숫자 조합으로 4~20자로 입력해 주세요.",
     log: false,
     conflict: false,
   });

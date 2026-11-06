@@ -1,4 +1,4 @@
-// 1팀 화면(점포·BP·MY PAGE) 폼이 같이 쓰는 임시 부품. 1팀 공통 컴포넌트에 없는 것들이라 컴포넌트 제안 대상이다.
+// 1팀 화면(점포·BP·마이페이지) 폼이 같이 쓰는 임시 부품. 1팀 공통 컴포넌트에 없는 것들이라 컴포넌트 제안 대상이다.
 // 생김새는 DESIGN.md 토큰과 규칙(2px 모서리, 1px 선, 34px 높이)으로만 만든다.
 import * as ui from "./ui.mjs";
 import * as x from "./extra.mjs";
@@ -42,7 +42,7 @@ export const tel = (a = "", b = "", c = "") =>
 export const address = (A, label, { zip = "", base = "", detail = "" } = {}, { top = "", bottom = "", labelExtra = "" } = {}) => {
   const body =
     top +
-    `<div class="flex gap-[6px]"><div class="flex-1">${ui.searchField(A, { placeholder: "지번/도로명을 입력해주세요.", label: `${label} 검색어` })}</div>${ui.button("주소 검색", { variant: "soft" })}</div>` +
+    `<div class="flex gap-[6px]"><div class="flex-1">${ui.searchField(A, { placeholder: "지번/도로명을 입력해 주세요.", label: `${label} 검색어` })}</div>${ui.button("주소 검색", { variant: "soft" })}</div>` +
     `<div class="flex gap-[6px]"><div class="w-[120px] shrink-0 text-center">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": `${label} 우편번호` })}</div>${ui.textField({ value: base, readonly: true, placeholder: "기본주소", "aria-label": `${label} 기본주소` })}</div>` +
     ui.textField({ value: detail, maxlength: 100, placeholder: base ? "상세주소" : "상세주소를 입력하세요.", "aria-label": `${label} 상세주소` }) +
     bottom;
@@ -139,21 +139,29 @@ export const imageBox = (src, alt = "대표 이미지") =>
     ? `<img src="${src}" alt="${alt}" width="120" height="120" class="size-[120px] shrink-0 rounded-[2px] border border-erp-field-line object-cover">`
     : `<div class="grid size-[120px] shrink-0 place-items-center rounded-[2px] border border-erp-field-line bg-erp-thead-bg text-[13px] text-erp-muted">이미지 없음</div>`;
 
-// 비활성 버튼. 1팀 버튼에 비활성 생김새가 없어 검색 버튼(disabled:opacity-40)과 같은 값으로 흐리게 둔다. 이유는 말풍선(title).
-export const disabledButton = (label, why, variant = "soft") => `<span class="opacity-40" title="${why}">${ui.button(label, { variant, disabled: true })}</span>`;
+// 비활성 버튼 — 공통 Blocked(blocked.tsx)와 같다. 이유는 버튼 위 말풍선
+export const disabledButton = (label, why, variant = "soft", opts = {}) => ui.blocked(ui.button(label, { variant, disabled: true }), why, opts);
+
+// 실패 · 막힘 안내 띠(빨강) — 화면 위에 하나만 선다(앱 공통 components/common/notice-band.tsx NoticeBand 와 같다, 2026-10-28 · 2026-10-29 공통으로 올림)
+export const noticeBand = (title) =>
+  `<div role="alert" class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off"><p class="font-medium">${title}</p></div>`;
+// 소속 BP 가 탈퇴 · 미사용인 점포의 상세 · 수정 안내 — 상태 이름(공통코드 ACCOUNT_STATUS)을 밝힌다(앱 stores/[storeId]/page.tsx · store-form-view.tsx 와 같다, 2026-10-28)
+export const bpBlockedText = (status) => `이 점포가 속한 BP가 ${status} 상태로, 조회 기능만 이용할 수 있습니다.`;
 
 // 상세 표 제목 옆 배지
 export const titleBadge = (title, tone, text) => `${title}<span class="ml-[10px] inline-flex align-middle">${ui.badge(tone, text)}</span>`;
 
-// 층별 정보 표의 입력 한 줄. 표 줄 46px 안에 34px 입력칸을 둔다.
+// 층별 정보 표의 입력 한 줄. 표 줄 46px 안에 34px 입력칸을 둔다. 점포 등록 · 수정만 쓴다.
+// 칸에 견본값(placeholder)을 두지 않고 단위는 라벨 회색이다(앱 store-form-view.tsx FloorTable 과 같다, 견본값 삭제는 2026-10-30 사용자 결정).
+const floorUnit = (u) => `<span class="shrink-0 text-[14px] text-erp-label">${u}</span>`;
 export const floorRow = ([pos, floor, py, m2, seats] = ["지상", "", "", "", ""]) => {
-  const unit = (v, label, ph, u, w = "w-[96px]") =>
-    `<div class="flex items-center justify-center gap-[6px]"><div class="${w}">${ui.textField({ value: v, placeholder: ph, "aria-label": label, inputmode: "decimal" })}</div>${u}</div>`;
+  const unit = (v, label, u, w = "w-[96px]") =>
+    `<div class="flex items-center justify-center gap-[6px]"><div class="${w}">${ui.textField({ value: v, "aria-label": label, inputmode: "decimal" })}</div>${floorUnit(u)}</div>`;
   return [
-    `<div class="flex items-center justify-center gap-[6px]"><div class="w-[80px]">${ui.select(["지상", "지하"], { value: pos, "aria-label": "지상·지하" })}</div><div class="w-[64px]">${ui.textField({ value: floor, placeholder: "1", "aria-label": "층", inputmode: "numeric" })}</div>층</div>`,
-    unit(py, "매장평수", "18", "평"),
-    unit(m2, "전용면적", "59.5", "㎡"),
-    unit(seats, "좌석수", "32", "석", "w-[80px]"),
+    `<div class="flex items-center justify-center gap-[6px]"><div class="w-[80px]">${ui.select(["지상", "지하"], { value: pos, "aria-label": "지상·지하" })}</div><div class="w-[64px]">${ui.textField({ value: floor, "aria-label": "층", inputmode: "numeric" })}</div>${floorUnit("층")}</div>`,
+    unit(py, "매장평수", "평"),
+    unit(m2, "전용면적", "㎡"),
+    unit(seats, "좌석수", "석", "w-[80px]"),
     ui.button("삭제", { variant: "off", "aria-label": "이 층 삭제", "data-floor-del": true }),
   ];
 };
@@ -168,13 +176,15 @@ const FLOOR_COLUMNS = [
   { header: "좌석 수", width: FLOOR_COLUMN_WIDTH },
   { header: "삭제", width: FLOOR_COLUMN_WIDTH },
 ];
+// 줄이 없을 때(등록 화면 처음 · 줄을 다 지움)의 안내 — 앱 FloorTable 의 empty 와 같다
+const FLOOR_EMPTY = "등록된 층별 정보가 없습니다. ‘층 추가’를 눌러 면적과 좌석 수를 입력해 주세요.";
 export const floorTable = (rows) =>
   `<div data-floors class="flex flex-col gap-[18px]">` +
   // [층 추가]는 맨 왼쪽(2026-10-16 점검 — justify-end 였다).
   `<div>${ui.button("층 추가", { variant: "soft", "data-floor-add": true })}</div>` +
-  ui.dataTable(FLOOR_COLUMNS, rows.map(floorRow)) +
+  ui.dataTable(FLOOR_COLUMNS, rows.map(floorRow), FLOOR_EMPTY) +
   `<template data-floor-row>${ui.tableRow(FLOOR_COLUMNS, floorRow())}</template>` +
-  `<template data-floor-empty>${ui.tableEmptyRow(FLOOR_COLUMNS)}</template>` +
+  `<template data-floor-empty>${ui.tableEmptyRow(FLOOR_COLUMNS, FLOOR_EMPTY)}</template>` +
   `</div>`;
 
 // 사업자정보 인증 상자 — 앱의 공통 상자(src/components/site/biz-verification-box.tsx, manyfast S-VRNTHD 2026-10-22 사용자 확정)와
@@ -194,7 +204,8 @@ export const bizVerifyBox = (A, { id, values = ["", "", ""], locked = [], row = 
     // 나란히(row)일 땐 위로 맞춘다 — 한 칸에만 오류 문구가 붙으면 다른 칸이 늘어나 입력칸 줄이 어긋났다(앱 biz-verification-box.tsx 와 같다, 2026-10-23)
     `<div class="${row ? "flex items-start gap-[6px]" : "flex flex-col gap-[12px]"}"><div class="${cell}">${numField}</div><div class="${cell}">${ceoField}</div><div class="${cell}">${openField}</div></div>` +
     `<div class="flex gap-[6px]">${buttons}</div>` +
-    `<p class="text-[13px] leading-[1.5] text-erp-label">${guide}</p>` +
+    // 인증해 잠근 상자는 안내를 빼고 넘겨 받는다(앱 biz-verification-box.tsx — 인증한 뒤에는 안내 줄을 뺀다, 2026-10-28)
+    (guide ? `<p class="text-[13px] leading-[1.5] text-erp-label">${guide}</p>` : "") +
     `</section>`
   );
 };

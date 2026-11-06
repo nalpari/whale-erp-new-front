@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Badge, DetailTable, DetailValues, Tag, type DetailRow } from "@/components/common";
+import { Badge, DetailTable, DetailValues, NoticeBand, Tag, type DetailRow } from "@/components/common";
 import { getEnum } from "@/lib/api";
 import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { storeImageFailureText } from "@/lib/store-image";
@@ -8,23 +8,27 @@ import { CodeLabel } from "@/components/site/code-label";
 import { formatBizNumber, hasStoreCoordinates } from "@/lib/store-view";
 import { StoreCardBody, StoreDenied, StoreFrame, storeDenied } from "../store-frame";
 import { StoreFloorLabel } from "../store-floor-label";
-import { NoticeBand, StoreImage, StoreStatusBadge } from "../store-parts";
+import { LineIcon, StoreStatusBadge } from "../store-parts";
 import { backHrefOf } from "../stores-query";
 import { HistoryButton } from "./history-dialog";
 import { ImageFailedNotice } from "./image-failed-notice";
 import { StoreDetailActions } from "./store-detail-actions";
+import { StorePhotoViewer } from "./store-photo-viewer";
 
 const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
 const orDash = (v: string | null | undefined) => (v ? v : muted("-"));
-/** DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸(들) 너비 — 사업자등록번호 · 대표자정보, 위치정보의
- * 위도 · 경도처럼 같은 표 안에서 짝을 이루는 줄들이 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다
- * (2026-10-19 점검 — 실사용자 확인). 변경이력 줄의 등록 칸은 이 너비 두 칸에서 셈한 고정폭(REGISTERED_COLUMN_WIDTH)을
- * 쓴다 — 이 값을 바꾸면 그것도 같이 바꾼다. */
+/** DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸 너비 — 사업자등록번호 · 대표자정보처럼 같은 표 안에서 짝을 이루는 줄들이
+ * 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다(2026-10-19 점검 — 실사용자 확인). 위치정보 줄은 LAT_WIDTH 를 쓴다. */
 const FIRST_COLUMN_WIDTH = "inline-block min-w-[140px]";
-/** 변경이력 줄의 등록 칸 너비 — 위치정보 줄의 위도 · 경도 두 칸(140 + 칸 사이 10 + 구분선 1 + 10 + 140)과 같게 두어, 최종수정 앞
- * 구분선이 바로 위 줄 출퇴근 위치 적용 여부 앞 구분선과 같은 세로줄에 선다(2026-10-23 사용자 요청 — 들쑥날쑥해 보였다).
- * 처리자 이름이 길면 이 너비 안에서 말줄임된다. */
-const REGISTERED_COLUMN_WIDTH = "w-[301px]";
+/** 위치정보 줄의 위도 칸 — 값에 맞게 좁힌 고정폭(「위도 37.000000」 약 98px, 화면에서 잼 — 110 · 104 는 위도 · 경도 사이가 경도 · 출퇴근 위치적용 사이보다 넓어 보였다). 경도는 고정폭 없이 값만큼만 써 출퇴근 위치적용이 가장 넓다(2026-11-03 사용자 지정 —
+ * 위도 · 경도 사이를 줄이고 출퇴근 위치를 넓힘). 위도 칸만 고정이라 아래 변경이력 줄의 최종수정을 경도 앞 구분선에 맞출 수 있다. */
+const LAT_WIDTH = "inline-block w-[100px] whitespace-nowrap";
+/** 대표 이미지 칸 — 사진 194px + 둘레 여백 18px 씩 = 230px. 사진 옆 다섯 줄(46px × 5 = 230)과 높이가 같다(2026-11-03 사용자 지정 — 206 에서 조금 줄임) */
+const PHOTO_BOX = "size-[194px]";
+/** 변경이력 줄의 등록 칸 너비 — 이 줄은 사진 아래 카드 왼쪽 끝에서 시작한다. 사진 칸(230) + 위도 칸(100) = 330 으로 두어 최종수정 앞
+ * 구분선이 위치정보 줄의 경도 앞 구분선과 같은 세로줄에 선다(2026-11-03 사용자 지정 — 줄맞춤, 전엔 출퇴근 위치적용에 맞춘 301).
+ * 처리자 이름이 길면 이 너비 안에서 말줄임된다. 사진 크기나 위도 칸 너비를 바꾸면 이 값도 같이 바꾼다. */
+const REGISTERED_COLUMN_WIDTH = "w-[330px]";
 /** 주소 한 줄 — 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」. 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)이다.
  * 없으면 「-」(2026-10-19 점검 — 두 줄이던 걸 한 줄로, 번호 색·괄호 안쪽 띄어쓰기는 뒤이은 요청으로 다시 손봄) */
 const addressLines = (zip: string | null, address: string | null, detail: string | null) => {
@@ -65,31 +69,29 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
   if ("denied" in store) return <StoreDenied message={store.denied} />;
 
   const b = store.business;
-  // 대표 이미지만 표에 두지 않고 제목 줄의 머리 카드로 옮겼다(2026-10-19 점검 — 실사용자 확인, 디자인 데모
-  // 1안 채택). 표 맨 위는 점포코드에서 점포상태로 바꿨다 — 머리 카드에는 더는 상태 배지가 없어(정보 중복으로
-  // 뺐다) 이 표가 유일하게 상태를 보여준다.
+  // 대표 이미지는 점포 기본정보 카드 안 왼쪽에 둔다 — 머리 카드의 72px 은 작다는 의견이 있었다(2026-11-03 사용자 지정, 전엔 2026-10-19 머리 카드).
+  // 표 맨 위는 점포상태다 — 점포명 줄에는 상태 배지가 없어(정보 중복으로 뺐다) 이 표가 유일하게 상태를 보여준다.
   const basicRows: DetailRow[] = [
     { label: "점포상태", value: <StoreStatusBadge status={store.storeStatusCode} /> },
     { label: "점포 연락처", value: store.phone ? formatPhone(store.phone) : muted("-") },
     { label: "점포주소", value: addressLines(store.zipCode, store.address, store.addressDetail), multiline: true },
     {
       label: "위치정보",
-      // 변경이력과 같은 모양 — 위도 · 경도 · 출퇴근 위치 적용 여부 각각 라벨과 같은 회색 글자를 앞에 둔다.
-      // 위도 · 경도 칸은 변경이력 줄의 등록 칸과 너비를 맞춰, 둘 다 비어 있을 때도 구분선(|)이 들쑥날쑥하지
-      // 않게 한다(2026-10-19 점검 — 실사용자 확인).
+      // 변경이력과 같은 모양 — 위도 · 경도 · 출퇴근 위치적용 각각 라벨과 같은 회색 글자를 앞에 둔다.
+      // 위도 칸은 고정폭(LAT_WIDTH)이라 비어 있을 때도 경도 앞 구분선이 흔들리지 않는다. 변경이력 줄의 최종수정은 경도 앞 구분선에 맞춘다.
       value: (
         <DetailValues
           items={[
-            <span key="lat" className={FIRST_COLUMN_WIDTH}>
+            <span key="lat" className={LAT_WIDTH}>
               <span className="mr-[10px] text-erp-label">위도</span>
               {store.latitude !== null ? store.latitude.toFixed(6) : muted("-")}
             </span>,
-            <span key="lng" className={FIRST_COLUMN_WIDTH}>
+            <span key="lng" className="whitespace-nowrap">
               <span className="mr-[10px] text-erp-label">경도</span>
               {store.longitude !== null ? store.longitude.toFixed(6) : muted("-")}
             </span>,
             <span key="loc">
-              <span className="mr-[10px] text-erp-label">출퇴근 위치 적용 여부</span>
+              <span className="mr-[10px] text-erp-label">출퇴근 위치적용</span>
               {/* 좌표가 없으면 저장된 값과 상관없이 미사용으로 보인다 — 주소가 아니라 좌표로 가린다(수정 화면 ·
                   bodyOf 와 같은 규칙, 2026-10-19 점검 — 실사용자 확인, 코드 리뷰로 주소에서 좌표로 바꿈). */}
               {hasStoreCoordinates(store.latitude, store.longitude) && store.isLocationApplied ? "사용" : "미사용"}
@@ -123,7 +125,8 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
               {wasUpdated(store.createdAt, store.updatedAt) ? `${formatDateTime(store.updatedAt)} · ${store.updatedByName ?? "-"}` : muted("-")}
             </span>
           </span>
-          <HistoryButton storeId={store.storeId} />
+          {/* 표 안 버튼이 무거워 흰 바탕 · 브랜드 테두리(outline)로 둔다(2026-11-03 사용자 지정) */}
+          <HistoryButton storeId={store.storeId} variant="outline" />
         </span>
       ),
     },
@@ -186,24 +189,29 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
 
   const bpInactive = store.bpAccountStatusCode !== "ACTIVE";
   const imageFailure = storeImageFailureText(search.imageFailed);
+  // 사진 옆은 재직직원까지 다섯 줄, 변경이력은 사진 아래에서 카드 폭을 다 쓴다(2026-11-03 사용자 지정)
+  const photoRows = basicRows.filter((r) => r.label !== "변경이력");
+  const historyRows = basicRows.filter((r) => r.label === "변경이력");
+  // 사진이 없으면 원래 쓰던 회색 바탕 · 점포 아이콘(2026-11-03 사용자 지정)
+  const noPhoto = (
+    <span role="img" aria-label="대표 이미지 없음" className={`grid shrink-0 place-items-center rounded-[8px] bg-erp-thead-bg text-erp-label ${PHOTO_BOX}`}>
+      <LineIcon name="store" size={48} />
+    </span>
+  );
 
   return (
     <StoreFrame>
       <StoreCardBody>
         <div className="flex flex-col gap-[12px]">
-          {/* 대표 이미지 · 점포명 · 점포코드 · 유형 · 폐점일 · 실행 버튼을 한 머리 카드에 묶는다(2026-10-19 점검 —
-              실사용자 확인, 디자인 데모 1안 채택). 운영 상태는 아래 점포 기본정보 표의 점포상태 줄로만 보인다
-              (바로 아래 주석 참고). 이미지가 없으면 48px 아이콘(목록 카드와 같은 크기)을 그대로 쓴다 — 머리 카드
-              전용 72px 칸 안에 작게 보인다. */}
-          <div className="flex items-center gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[18px]">
-            {store.image ? (
-              <StoreImage size={72} url={store.image.url} name={store.name} />
-            ) : (
-              <StoreImage size={48} />
-            )}
+          {/* 소속 BP 가 미사용인지 탈퇴인지 상태 이름(공통코드 ACCOUNT_STATUS)으로 밝힌다(2026-10-28 사용자 지정 — 전엔 늘 「미사용」). 문구는 「이 점포가 속한 BP가 … 상태로, 조회 기능만 이용할 수 있습니다.」(사용자 지정).
+              미사용 · 탈퇴 BP 의 점포는 플랫폼 사용자만 열 수 있어 그들에게만 보인다 — 점포명 머리 카드 위에 둔다(2026-10-28 사용자 지정) */}
+          {bpInactive && <NoticeBand title={<>이 점포가 속한 BP가 <CodeLabel group="ACCOUNT_STATUS" value={store.bpAccountStatusCode} /> 상태로, 조회 기능만 이용할 수 있습니다.</>} />}
+          {/* 점포명 · 점포코드 · 유형 · 폐점일 · 실행 버튼을 한 줄에 묶는다(2026-10-19 점검 — 실사용자 확인). 운영 상태는 아래 점포 기본정보 표의
+              점포상태 줄로만 보인다. 대표 이미지는 점포 기본정보 카드로 옮기고, 테두리를 빼고 점포명을 20px 로 키웠다(2026-11-03 사용자 지정). */}
+          <div className="flex items-center gap-[18px] py-[6px]">
             {/* 점포명과 점포코드 줄 사이는 6px — 12px 는 떨어져 보였다(2026-10-23 사용자 요청) */}
             <div className="flex min-w-0 flex-1 flex-col gap-[6px]">
-              <h2 className="truncate text-[18px] font-semibold text-erp-ink">{store.name}</h2>
+              <h2 className="truncate text-[20px] font-semibold text-erp-ink">{store.name}</h2>
               {/* 운영 상태 배지는 여기 두지 않는다 — 점포 기본정보 표의 점포상태 줄과 정보가 겹쳐 보였다
                   (2026-10-19 점검 — 실사용자 확인). */}
               <div className="flex items-center gap-[10px] text-[14px] font-medium text-erp-label">
@@ -219,16 +227,22 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             </div>
           </div>
           <ImageFailedNotice message={imageFailure} />
-          {bpInactive && <NoticeBand title="소속 BP 가 미사용 상태여서 이 업무를 할 수 없습니다." detail="조회만 됩니다. 등록 · 수정 · 상태 변경 · 삭제는 BP 를 다시 사용하면 할 수 있습니다." />}
-          {store.storeStatusCode === "CLOSED" && (
-            <NoticeBand tone="info" title="폐점한 점포는 조회만 가능하며, 수정할 수 없습니다. 다시 운영하려면 신규 점포로 등록해 주세요." />
-          )}
+          {/* 폐점 안내는 한 줄로(2026-11-03 사용자 지정) */}
+          {store.storeStatusCode === "CLOSED" && <NoticeBand tone="info" title="폐점 점포는 조회만 할 수 있습니다. 영업을 다시 시작하려면 신규 점포로 등록해 주세요." />}
           {/* 미운영 점포에 "운영으로 바꾸려면 ~ 필요합니다" 띠를 여기 두지 않는다(2026-10-16 디자인 점검으로 뺐다) — 같은
               안내는 상태 변경 팝업(StoreDetailActions)이 이미 운영 조건 체크리스트로 보여준다(2026-10-19 점검 — 실사용자 확인). */}
           <div className="grid grid-cols-2 items-start gap-[24px]">
-            {/* 유형 태그는 위 머리 카드로 옮겨 여기서는 다시 적지 않는다. 상태는 배지 대신 표 맨 위 점포상태
+            {/* 유형 태그는 위 점포명 줄로 옮겨 여기서는 다시 적지 않는다. 상태는 배지 대신 표 맨 위 점포상태
                 줄로 보인다(2026-10-19 점검). */}
-            <DetailTable title="점포 기본정보" rows={basicRows} />
+            <div className="w-full">
+              {/* 사진 칸 — 위쪽에 붙이고, 표와 사이 세로선은 두지 않는다(2026-11-03 사용자 지정). 칸에 맞게 가운데를 잘라 채우고 누르면 원본을 크게 본다 */}
+              <DetailTable
+                title="점포 기본정보"
+                rows={photoRows}
+                aside={<div className="p-[18px]">{store.image?.url ? <StorePhotoViewer url={store.image.url} name={store.name} boxClass={PHOTO_BOX} fallback={noPhoto} /> : noPhoto}</div>}
+              />
+              <DetailTable rows={historyRows} attached />
+            </div>
             <DetailTable
               title={
                 <>

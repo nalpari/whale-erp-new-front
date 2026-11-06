@@ -15,14 +15,14 @@ const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => (
   joinState: "JOINED",
   invitation: null,
   linkHold: null,
-  contract: { contractId: 1, status: "SIGNED", signDeadlineAt: null, endDate: null, updatedAt: null, workDays: null },
+  contract: { contractId: 1, status: "SIGNED", signDeadlineAt: null, lastSentAt: null, endDate: null, updatedAt: null, canResend: false, workDays: null },
   employmentStatus: "EMPLOYED",
   retiredDate: null,
   ...over,
 });
 const contract = (status: NonNullable<StaffMemberListItem["contract"]>["status"], over = {}) => ({
   // workDays 는 api #171 이 더한 대표 계약의 근무 요일(조회 권한이 없으면 null) — 이 테스트는 쓰지 않는다
-  contract: { contractId: 1, status, signDeadlineAt: null, endDate: null, updatedAt: null, workDays: null, ...over },
+  contract: { contractId: 1, status, signDeadlineAt: null, lastSentAt: null, endDate: null, updatedAt: null, canResend: false, workDays: null, ...over },
 });
 
 test("번호는 3-4-4, 10자리는 3-3-4", () => {
@@ -163,18 +163,19 @@ const invitation = (over: Partial<NonNullable<StaffMemberListItem["invitation"]>
   ...over,
 });
 
-test("재발송 — api 의 canResend 하나로 정한다(WHALEERP-611)", () => {
-  // 가입 전 직원은 계약이 발송 대기든 서명 대기든 api 가 보낼 수 있다고 하면 보인다
-  for (const status of ["PENDING_SEND", "PENDING_SIGNATURE"] as const)
-    assert.equal(canResendInvitation(item({ joinState: "INVITED", invitation: invitation(), ...contract(status) })), true, status);
-  // api 가 보낼 수 없다고 했다 — 가입한 직원 · 계정 있는 번호(소속 추가 확인 · 복귀 확인) · 유선번호 · 수락한 초대 · 재발송 못 하는 계약 상태
+test("재발송 — api 의 contract.canResend 하나로 정한다(WHALEERP-611 · 130)", () => {
+  // 가입 전 직원 · 소속 추가 확인은 계약이 발송 대기든 서명 대기든 api 가 보낼 수 있다고 하면 보인다
+  for (const status of ["PENDING_SEND", "PENDING_SIGNATURE"] as const) {
+    assert.equal(canResendInvitation(item({ joinState: "INVITED", invitation: invitation(), ...contract(status, { canResend: true }) })), true, status);
+    assert.equal(canResendInvitation(item({ joinState: "AFFILIATION_PENDING", invitation: invitation({ invitationType: "AFFILIATION_CONFIRM" }), ...contract(status, { canResend: true }) })), true, status);
+  }
+  // 초대 행이 없는 옛 소속 확인 계약도 api 가 참이면 보인다
+  assert.equal(canResendInvitation(item({ joinState: "DRAFT", invitation: null, ...contract("PENDING_SIGNATURE", { canResend: true }) })), true);
+  // api 가 보낼 수 없다고 했다 — 가입한 직원 · 유선번호 · 수락한 초대 · 재발송 못 하는 계약 상태. contract 값이 있으면 초대 쪽 값은 보지 않는다
   for (const status of ["PENDING_SEND", "PENDING_SIGNATURE", "EXPIRED", "REJECTED"] as const)
-    assert.equal(canResendInvitation(item({ joinState: "AFFILIATION_PENDING", invitation: invitation({ invitationType: "AFFILIATION_CONFIRM", canResend: false }), ...contract(status) })), false, status);
-  // 화면은 api 값만 따른다 — 계약 상태를 따로 보지 않는다. 계약이 없으면 호출부(item.contract &&)가 버튼을 막는다
-  assert.equal(canResendInvitation(item({ joinState: "INVITED", invitation: invitation(), ...contract("EXPIRED") })), true);
-  assert.equal(canResendInvitation(item({ joinState: "INVITED", invitation: invitation(), contract: null })), true);
-  // 초대가 없으면 보내지 않는다
-  assert.equal(canResendInvitation(item({ invitation: null, ...contract("PENDING_SEND") })), false);
+    assert.equal(canResendInvitation(item({ joinState: "INVITED", invitation: invitation({ canResend: true }), ...contract(status) })), false, status);
+  // 계약이 없으면(가린 줄 등) 버튼이 없다
+  assert.equal(canResendInvitation(item({ joinState: "INVITED", invitation: invitation(), contract: null })), false);
 });
 
 test("상세 초대 줄 — 유형 · 상태 · 보낸 한국 날짜, 모르는 한글은 뺀다", () => {

@@ -70,6 +70,16 @@
                     <button class="iconbtn" type="button" data-pw-toggle aria-pressed="false" aria-label="비밀번호 보기" data-icon="eye" data-icon-size="16"></button>
                   </div>
                   <span class="err" data-show="empty" hidden><span data-icon="alert" data-icon-size="13"></span>비밀번호를 입력해주세요.</span>
+                  <!-- 판정 결과 안내 — 비밀번호 칸 바로 아래 빈칸 문구 자리에 같은 크기(14px)로 하나만 선다. 전엔 [로그인] 위에 따로 15px 띠로 떠
+                       크기 · 자리가 달랐다(2026-11-04 사용자 지정). 빈칸으로 막힌 제출이면 지난 실패 문구는 숨겨 한 번에 하나만 보인다.
+                       - 불일치: 없는 아이디 · 비밀번호 불일치 · 임시 비밀번호 불일치 · 탈퇴 계정 모두 이 문구 하나다. 불일치는 연속 실패 횟수에 쌓인다.
+                       - 사용 제한: 아이디와 비밀번호가 모두 맞을 때만 나온다.
+                       - 잠김: 잠긴 동안에는 아이디 · 비밀번호를 확인하지 않는다. 임시 비밀번호를 발급하면 잠금이 풀린다. 없는 아이디 · 탈퇴 계정은 잠기지 않고 공통 문구가 나온다 —
+                         잠김으로 아이디가 있는 것이 드러나는 것은 받아들였다(2026-10-22, WHALEERP-392). 비밀번호 찾기는 아래 「아이디/비밀번호 찾기」 링크로 간다(2026-10-28). -->
+                  <span class="err" data-show="fail" hidden style="font-size: 14px"><span data-icon="alert" data-icon-size="13"></span>아이디 또는 비밀번호가 올바르지 않습니다.</span>
+                  <span class="err" data-show="inactive" hidden style="font-size: 14px"><span data-icon="lock" data-icon-size="13"></span>사용이 제한된 계정입니다. 관리자에게 문의해 주세요.</span>
+                  <span class="err" data-show="locked" hidden style="font-size: 14px"><span data-icon="lock" data-icon-size="13"></span>로그인이 잠겼습니다. 5분 뒤에 다시 시도해주세요.</span>
+                  <span class="err" data-show="error" hidden style="font-size: 14px"><span data-icon="warn" data-icon-size="13"></span>시스템 오류로 로그인할 수 없습니다. 잠시 후 다시 시도해 주세요.</span>
                 </div>
 
                 <div class="inline">
@@ -100,37 +110,6 @@
                   </div>
                 </div>
 
-                <!-- 판정 결과 안내. 같은 자리에 하나만 선다. -->
-                <div class="band band--risk" data-show="fail" hidden>
-                  <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-                  <div class="band__body">
-                    <div class="band__title">아이디 또는 비밀번호가 올바르지 않습니다.</div>
-                    <p class="band__desc">없는 아이디·비밀번호 불일치·임시 비밀번호 불일치·탈퇴 계정 모두 이 문구 하나다. 불일치는 연속 실패 횟수에 쌓인다.</p>
-                  </div>
-                </div>
-                <div class="band band--warn" data-show="inactive" hidden>
-                  <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
-                  <div class="band__body">
-                    <div class="band__title">사용이 제한된 계정입니다. 플랫폼 운영자에게 문의해 주세요.</div>
-                    <p class="band__desc">아이디와 비밀번호가 모두 맞을 때만 이 문구가 나온다.</p>
-                  </div>
-                </div>
-                <div class="band band--risk" data-show="locked" hidden>
-                  <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
-                  <div class="band__body">
-                    <div class="band__title">로그인 실패 횟수를 초과하여 계정이 잠겼습니다. 4분 후 다시 시도해 주세요.</div>
-                    <p class="band__desc">잠긴 동안에는 아이디·비밀번호를 확인하지 않습니다. 바로 들어가야 하면 임시 비밀번호를 받으세요 — 발급하면 잠금이 풀립니다.</p>
-                  </div>
-                  <div class="band__act">
-                    <a class="btn btn--secondary btn--sm" href="find.html#pw">비밀번호 찾기</a>
-                  </div>
-                </div>
-                <div class="band band--risk" data-show="error" hidden>
-                  <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
-                  <div class="band__body">
-                    <div class="band__title">시스템 오류로 로그인할 수 없습니다. 잠시 후 다시 시도해 주세요.</div>
-                  </div>
-                </div>
 
                 <!-- 로그인 버튼의 도착지는 계정에 따라 갈린다. 강제 변경 대상이면 홈 위에 닫을 수 없는 팝업이 뜬다. -->
                 <a class="btn btn--primary btn--lg btn--block" href="../home/signed-in.html" data-show="base">로그인</a>

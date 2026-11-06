@@ -7,14 +7,14 @@ import { stripBp } from "./bp-path.ts";
 /**
  * 코드로 직접 찾는 메뉴(api 메뉴 시드 — 업무 API 도 이 코드로 메뉴 권한을 판정한다). 화면 자기 버튼의 권한은 코드 없이 주소로 찾는다(usePagePermission).
  * 여기 남는 것: 아직 usePagePermission 으로 옮기지 않은 화면(todos), 다른 메뉴의 권한을 보는 버튼(직원 상세의 TO-DO · 근무스케줄 · 급여명세서 링크 → todos · workSchedules · payslips,
- * 직원 정보 관리의 「직원 초대」 → contracts 등록, 직원 목록 · 상세의 가입 초대 재발송 → contracts 수정),
- * 권한이 아닌 용도(메뉴 관리의 자기 잠금 확인 → platformMenus). staffMembers 는 화면에서 쓰지 않는다 — 메뉴 판정 테스트가 MenuCode 로 쓰는 시드 값이다.
+ * 직원 정보 관리의 「직원 초대」 → contracts 등록, 직원 목록 · 상세의 가입 초대 재발송 → contracts 수정).
+ * staffMembers 는 화면에서 쓰지 않는다 — 메뉴 판정 테스트가 MenuCode 로 쓰는 시드 값이다.
  */
-export const MENU_CODE = { platformMenus: "MN000215", staffMembers: "MN000005", contracts: "MN000006", payslips: "MN000009", workSchedules: "MN000010", todos: "MN000026" } as const;
+export const MENU_CODE = { staffMembers: "MN000005", contracts: "MN000006", payslips: "MN000009", workSchedules: "MN000010", attendanceRecords: "MN000025", todos: "MN000026" } as const;
 export type MenuCode = (typeof MENU_CODE)[keyof typeof MENU_CODE];
 export type MenuAction = keyof AdminMenu["permission"];
 
-/** 서비스마다의 홈. 메뉴에 없어도 늘 열린다. */
+/** 서비스마다 들어오는 주소. 메뉴에 없어도 늘 열린다. ERP 는 홈 화면, 플랫폼은 홈이 없어 첫 메뉴로 넘겨 준다(firstMenuRedirect). */
 export const HOME: Record<ServiceCode, string> = { WHALE_ERP: "/home", PLATFORM: "/platform" };
 /** BP 이동 화면 — ?bp= 의 BP 로 이 탭을 준비하고 그 서비스의 홈으로 간다(SessionGate). 주소 자체로 이동해야(전체 로드) 준비가 돈다. */
 export const BP_SWITCH_PATH = "/bp-switch";
@@ -46,6 +46,42 @@ export function findMenu(menus: AdminMenu[], match: (m: AdminMenu) => boolean): 
   }
 }
 
+/** 헤더 2단계 항목이 가리키는 주소 — 조회 권한이 있으면 자기 url, 하위 메뉴로 가는 길로만 들어온 메뉴면 권한 있는 첫 하위 메뉴. 없으면 undefined. */
+export function entryUrlOf(menu: AdminMenu): string | undefined {
+  return menu.permission.read && menu.url ? menu.url : findMenu(menu.children, (m) => m.permission.read && !!m.url)?.url ?? undefined;
+}
+
+/**
+ * 플랫폼 계정은 홈이 없다 — /platform 에 오면 헤더 순서상 첫 화면으로 보낸다(2026-10-28 재영). 그 첫 화면의 주소이고, 없으면 null.
+ * 1단계 순서대로 그 안의 첫 하위 항목(entryUrlOf), 열 수 있는 하위 항목이 없으면 조회 권한이 있는 1단계 자신 — 헤더(admin-header.tsx)가 그리는 순서와 같다.
+ * 계정에 등록된 메뉴만 본다 — 임시로 여는 PENDING_PLATFORM_MENU 는 넣지 않는다. 홈 주소는 다시 홈으로 돌아와 맴돌므로 뺀다.
+ */
+export function firstMenuUrl(menus: AdminMenu[], service: ServiceCode): string | null {
+  for (const m of menusOf(menus, service)) {
+    // 헤더는 열 수 있는 하위 항목이 하나라도 있으면 그것들만, 없을 때만 1단계 자신을 건다. 홈 주소인 항목은 건너뛰고 다음 항목을 본다.
+    const entries = m.children.map(entryUrlOf).filter((u): u is string => !!u);
+    const url = entries.length ? entries.find((u) => u !== HOME[service]) : m.permission.read ? m.url : null;
+    if (url && url !== HOME[service]) return url;
+  }
+  return null;
+}
+
+/**
+ * 이 주소에서 첫 메뉴로 넘겨야 하면 그 주소, 아니면 null(SessionGate). 플랫폼 탭의 /platform 에서만 넘긴다.
+ * 비밀번호 강제 변경(약관 동의 포함) 전에는 메뉴 화면의 api 가 403 이라 넘기지 않는다 — 바꾸면 /platform 을 다시 열어 넘어간다.
+ */
+export function firstMenuRedirect(menus: AdminMenu[], service: ServiceCode, pathname: string, isPasswordChangeRequired: boolean): string | null {
+  return service === "PLATFORM" && pathname === HOME.PLATFORM && !isPasswordChangeRequired ? firstMenuUrl(menus, service) : null;
+}
+
+/**
+ * 두 메뉴 트리가 같은가 — 이름 · 주소 · 순서 · 권한까지. 로그인 정보를 다시 받았을 때 메뉴가 바뀌었으면 「권한 정보가 변경되었습니다.」를
+ * 띄우고, 이름 · 이메일 같은 계정 정보만 바뀌었으면 조용히 표시만 바꾼다(2026-11-02 사용자 지정). api 가 늘 같은 순서로 준다.
+ */
+export function sameMenus(a: AdminMenu[], b: AdminMenu[]): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 /** 그 서비스의 메뉴만 남긴다(하위 메뉴까지). 플랫폼 계정은 두 서비스 메뉴를 모두 받으므로 탭의 서비스로 거른다. */
 export function menusOf(menus: AdminMenu[], service: ServiceCode): AdminMenu[] {
   return menus.filter((m) => m.serviceCode === service).map((m) => ({ ...m, children: menusOf(m.children, service) }));
@@ -54,6 +90,13 @@ export function menusOf(menus: AdminMenu[], service: ServiceCode): AdminMenu[] {
 // shortcut: 알림 템플릿 관리는 api 메뉴 데이터에 아직 없어(1팀 전달 사항 14번) 플랫폼 서비스에서 임시로 열고 헤더에도 공통코드 관리 다음에 넣는다.
 // api 에 메뉴 행이 생기면 이 상수와 쓰는 곳(isAllowed · serviceOfPath · admin-header)을 지운다. 메뉴에 이미 있으면 따로 더하지 않는다.
 export const PENDING_PLATFORM_MENU = { name: "알림 템플릿 관리", url: "/platform/notification-templates", after: "/code-groups" };
+
+/**
+ * 메뉴 없이 로그인한 관리자면 어느 탭 서비스에서나 여는 화면. 권한은 메뉴가 아니라 api 가 따로 본다.
+ * /excel-downloads/{id} — 1만 건 이상 엑셀 예약 생성 완료 메일의 링크. 요청한 본인인지(404)와 그 화면 조회 권한이 아직 있는지(403)는
+ * api 가 내려받을 때 다시 본다.
+ */
+export const MENULESS_PATHS = ["/excel-downloads"];
 
 const isUnder = (pathname: string, url: string) => pathname === url || pathname.startsWith(`${url}/`);
 
@@ -72,7 +115,7 @@ export function serviceOfPath(menus: AdminMenu[], path: string): ServiceCode | n
 }
 
 /**
- * 이 탭(서비스)에서 이 주소를 열 수 있는가 — 그 서비스의 홈, 임시 플랫폼 메뉴(PENDING_PLATFORM_MENU), 또는 menuOfPath 가 메뉴를 찾는 주소.
+ * 이 탭(서비스)에서 이 주소를 열 수 있는가 — 그 서비스의 홈, 메뉴 없는 화면(MENULESS_PATHS), 임시 플랫폼 메뉴(PENDING_PLATFORM_MENU), 또는 menuOfPath 가 메뉴를 찾는 주소.
  * 다른 서비스의 화면은 권한이 있어도 열지 않는다 — 플랫폼 탭에서 ERP 주소를 치면 BP 없이 ERP 화면이 열리게 된다.
  * 하위 메뉴로 가는 길로만 들어온 상위 메뉴는 조회 권한이 false 라, 그 url 아래의 권한 없는 화면을 열어 주지 않는다(2026-10-14).
  * 헤더는 2단계까지 그리지만 판정은 모든 깊이(메뉴는 최대 3단계)를 본다.
@@ -80,7 +123,10 @@ export function serviceOfPath(menus: AdminMenu[], path: string): ServiceCode | n
 export function isAllowed(menus: AdminMenu[], path: string, service: ServiceCode): boolean {
   const pathname = stripBp(path);
   if (pathname === HOME[service]) return true;
+  if (MENULESS_PATHS.some((url) => isUnder(pathname, url))) return true;
   if (service === "PLATFORM" && isUnder(pathname, PENDING_PLATFORM_MENU.url)) return true;
+  // 운영 알림함 — 메뉴 MN000042 는 웨일ERP 행뿐이라 플랫폼 운영자가 받은 문의 알림을 열 수 없었다(2026-10-29 재영 A안). 웨일ERP 는 메뉴 권한 그대로
+  if (service === "PLATFORM" && isUnder(pathname, "/notifications")) return true;
   return menuOfPath(menus, pathname, service) !== null;
 }
 

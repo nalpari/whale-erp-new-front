@@ -34,7 +34,7 @@ function Done({ headingId, onClose }: { headingId: string; onClose: () => void }
   );
 }
 
-/** GNB 「비밀번호 변경」이 여는 슬라이드 패널(MY PAGE, S-PTWREE). 바꾸면 패널을 닫지 않고 완료 화면(Done)으로
+/** GNB 「비밀번호 변경」이 여는 슬라이드 패널(마이페이지, S-PTWREE). 바꾸면 패널을 닫지 않고 완료 화면(Done)으로
  * 바꾼다(사용자 지정, 2026-10-26). 오류 문구는 화면이 만들지 않고 api 의 message 를 그대로 보인다
  * (force-password-dialog.tsx 와 같은 규칙, 정책 PL-QSBSYY) — myPasswordErrorField 가 어느 칸 탓인지만
  * 가른다. 바꿔도 이 기기 · 다른 기기의 로그인은 모두 이어진다(S-PTWREE outcome) — 재로그인을 요구하지 않는다. */

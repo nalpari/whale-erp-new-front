@@ -8,15 +8,15 @@ import { areaFailureOf, type AreaResult } from "./summary-view";
 
 /**
  * 영역 하나를 받는다. 영역 메뉴 조회 권한이 없는 403(「조회 권한이 없습니다.」)은 정상이라 로그를 남기지 않는다 — 직원 정보 관리
- * 권한만 켠 그룹이 있다. 나머지 실패는 원인을 서버 로그에 남긴다.
+ * 권한만 켠 그룹이 있다. includeAccessDenied 는 영역 전용 문구 없이 일반 메뉴 가드 403 을 내는 영역(출퇴근 현황)용이다. 나머지 실패는 원인을 서버 로그에 남긴다.
  */
-export async function loadArea<T>(what: string, load: () => Promise<T>): Promise<AreaResult<T>> {
+export async function loadArea<T>(what: string, load: () => Promise<T>, options?: { includeAccessDenied?: boolean }): Promise<AreaResult<T>> {
   try {
     return { kind: "ok", data: await load() };
   } catch (error) {
     unstable_rethrow(error);
     const status = error instanceof ApiError ? error.status : null;
-    const kind = areaFailureOf(status, error instanceof ApiError ? error.message : null);
+    const kind = areaFailureOf(status, error instanceof ApiError ? error.message : null, options);
     if (kind === "error") console.error(`직원 상세 ${what}: 받지 못했습니다 (status ${status ?? "연결 실패"})`, error);
     return { kind };
   }

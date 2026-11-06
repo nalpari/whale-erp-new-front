@@ -5,7 +5,7 @@ const COMMUNITY = /^support\/(community-|notice-edit|faq-edit|inquiry-detail|lea
 const AREAS = [
   ["home", "홈", "3팀"],
   ["auth", "로그인 · 가입", "1팀"],
-  ["mypage", "MY PAGE", "1팀"],
+  ["mypage", "마이페이지", "1팀"],
   ["stores", "점포관리", "1팀"],
   ["staff", "직원관리", "3팀"],
   ["config", "환경설정", "1팀"],

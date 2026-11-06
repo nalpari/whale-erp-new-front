@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, type FormEvent } from "react";
 import { CHECKBOX, INPUT, INPUT_BOX, SUBMIT } from "@/app/design/guest/guest-form";
 import { SITE_ROUTES } from "@/app/design/guest/guest-routes";
 import { HOVER } from "@/app/design/guest/theme";
+import { RETURN_PARAM } from "@/lib/auth-routes";
 import { clearLoginStorage } from "@/lib/browser-storage";
 import { login, type LoginFormState } from "./actions";
 
@@ -13,15 +14,32 @@ import { login, type LoginFormState } from "./actions";
 const SAVED_ID = "whale-erp:saved-login-id";
 
 const ICON_BUTTON = "flex size-[16px] items-center justify-center";
+// 칸 아래 오류 문구 — 회원가입(required-field.tsx)과 같은 모양.
+const FIELD_ERROR = "text-[14px] leading-[1.5] text-[#e93737]";
+// 빈칸 문구는 화면 정의(S-XJDKSI)대로다. 형식은 검사하지 않는다(okf/auth.md).
+const EMPTY = { loginId: "아이디를 입력해 주세요.", password: "비밀번호를 입력해 주세요." } as const;
+type EmptyField = keyof typeof EMPTY;
 
 // 모양은 Figma 「로그인전_로그인」 샘플(design/guest/login/login-form.tsx)의 폼 규격(guest-form.ts)을 쓴다(2026-10-19).
 // 샘플의 「로그인 상태 유지」 자리에는 아이디 저장을 둔다 — 로그인 유지 선택은 없다.
-export function LoginForm() {
+export function LoginForm({
+  returnPath,
+  notice,
+}: {
+  /** 로그인 뒤 돌아갈 화면(메일 링크로 왔을 때) — 없으면 자기 홈 */
+  returnPath?: string | null;
+  /** 밀려난 이유 안내(계정 상태 변경) — 로그인 실패 문구가 생기면 그것을 대신 보인다 */
+  notice?: string | null;
+}) {
   const [state, action, pending] = useActionState<LoginFormState, FormData>(login, {});
   // 제어 입력 — 실패 뒤 React 가 비제어 폼을 비워도 아이디·체크가 남아야 다시 치지 않고, 다음 제출에서 저장값이 지워지지 않는다.
   const [loginId, setLoginId] = useState("");
   const [save, setSave] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [empty, setEmpty] = useState<Partial<Record<EmptyField, true>>>({});
+  // 빈칸으로 막힌 제출이면 지난 제출의 실패 문구(· 밀려난 안내)를 숨긴다 — 빈칸 문구와 함께 두 개가 떠 헷갈렸다(2026-11-04 사용자 지적).
+  // 다음에 실제로 보낼 때 다시 보인다(그때는 새 결과가 온다).
+  const [hideLast, setHideLast] = useState(false);
 
   useEffect(() => {
     // 로그아웃·세션 만료로 왔다. 앞 로그인의 메뉴·점포·공통코드를 지운다(남아 있어도 login-key 가 달라 쓰이지 않지만 이 브라우저에 두지 않는다).
@@ -45,57 +63,99 @@ export function LoginForm() {
       if (save) localStorage.setItem(SAVED_ID, String(form.get("loginId") ?? "").trim());
       else localStorage.removeItem(SAVED_ID);
     } catch {}
+    setHideLast(false);
     return action(form);
   };
 
+  // 브라우저 말풍선 대신 빈칸마다 칸 아래에 문구를 둔다. 막을 때는 action 전에 멈춰야 친 비밀번호가 폼 초기화로 지워지지 않는다.
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const form = new FormData(e.currentTarget);
+    const next = {
+      ...(String(form.get("loginId") ?? "").trim() ? {} : { loginId: true as const }),
+      ...(String(form.get("password") ?? "") ? {} : { password: true as const }),
+    };
+    setEmpty(next);
+    const first = (Object.keys(EMPTY) as EmptyField[]).find((key) => next[key]);
+    if (!first) return;
+    setHideLast(true);
+    e.preventDefault();
+    e.currentTarget.querySelector<HTMLInputElement>(`input[name="${first}"]`)?.focus();
+  };
+  const clearEmpty = (key: EmptyField) => empty[key] && setEmpty((current) => ({ ...current, [key]: undefined }));
+
   return (
-    <form action={remember} className="flex flex-col gap-[24px]">
+    <form action={remember} onSubmit={handleSubmit} noValidate className="flex flex-col gap-[24px]">
+      {returnPath && <input type="hidden" name={RETURN_PARAM} value={returnPath} />}
       <div className="flex flex-col gap-[10px]">
-        <label className={INPUT_BOX}>
-          <span className="sr-only">아이디</span>
-          <input
-            name="loginId"
-            autoComplete="username"
-            placeholder="User ID"
-            value={loginId}
-            onChange={(e) => setLoginId(e.target.value)}
-            required
-            maxLength={20}
-            className={INPUT}
-          />
-          {loginId && (
-            <button type="button" aria-label="아이디 지우기" onClick={() => setLoginId("")} className={ICON_BUTTON}>
-              <Image src="/guest/login/clear.svg" alt="" width={16} height={16} />
-            </button>
+        <div className="flex flex-col gap-[6px]">
+          <label className={INPUT_BOX}>
+            <span className="sr-only">아이디</span>
+            <input
+              name="loginId"
+              autoComplete="username"
+              placeholder="User ID"
+              value={loginId}
+              onChange={(e) => {
+                setLoginId(e.target.value);
+                clearEmpty("loginId");
+              }}
+              required
+              aria-invalid={empty.loginId}
+              aria-describedby={empty.loginId ? "login-id-error" : undefined}
+              maxLength={20}
+              className={INPUT}
+            />
+            {loginId && (
+              <button type="button" aria-label="아이디 지우기" onClick={() => setLoginId("")} className={ICON_BUTTON}>
+                <Image src="/guest/login/clear.svg" alt="" width={16} height={16} />
+              </button>
+            )}
+          </label>
+          {empty.loginId && (
+            <span id="login-id-error" role="alert" className={FIELD_ERROR}>
+              {EMPTY.loginId}
+            </span>
           )}
-        </label>
-        <label className={INPUT_BOX}>
-          <span className="sr-only">비밀번호</span>
-          <input
-            name="password"
-            type={showPassword ? "text" : "password"}
-            autoComplete="current-password"
-            placeholder="Password"
-            required
-            maxLength={128}
-            className={INPUT}
-          />
-          <button
-            type="button"
-            aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
-            aria-pressed={showPassword}
-            onClick={() => setShowPassword((v) => !v)}
-            className={ICON_BUTTON}
-          >
-            <Image src={showPassword ? "/guest/login/eye-off.svg" : "/guest/login/eye-on.svg"} alt="" width={16} height={16} />
-          </button>
-        </label>
+        </div>
+        <div className="flex flex-col gap-[6px]">
+          <label className={INPUT_BOX}>
+            <span className="sr-only">비밀번호</span>
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              placeholder="Password"
+              onChange={() => clearEmpty("password")}
+              required
+              aria-invalid={empty.password}
+              aria-describedby={empty.password ? "login-password-error" : undefined}
+              maxLength={128}
+              className={INPUT}
+            />
+            <button
+              type="button"
+              aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
+              aria-pressed={showPassword}
+              onClick={() => setShowPassword((v) => !v)}
+              className={ICON_BUTTON}
+            >
+              <Image src={showPassword ? "/guest/login/eye-off.svg" : "/guest/login/eye-on.svg"} alt="" width={16} height={16} />
+            </button>
+          </label>
+          {empty.password && (
+            <span id="login-password-error" role="alert" className={FIELD_ERROR}>
+              {EMPTY.password}
+            </span>
+          )}
+          {/* 로그인 실패 · 잠김 · 밀려난 안내도 빈칸 문구와 같은 자리(비밀번호 칸 바로 아래) · 같은 14px — 전엔 [LOGIN] 위에 따로
+              15px 로 떠 크기 · 자리가 달랐다(2026-11-04 사용자 지적). 빈칸으로 막히면 숨겨(hideLast) 한 번에 하나만 보인다 */}
+          {!hideLast && (state.error ?? notice) && (
+            <p role="alert" className={FIELD_ERROR}>
+              {state.error ?? notice}
+            </p>
+          )}
+        </div>
       </div>
-      {state.error && (
-        <p role="alert" className="text-[15px] text-[#e93737]">
-          {state.error}
-        </p>
-      )}
       <button type="submit" disabled={pending} className={SUBMIT}>
         {pending ? "로그인 중" : "LOGIN"}
       </button>

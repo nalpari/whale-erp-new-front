@@ -8,7 +8,6 @@ import type { ActionResult } from "@/lib/role-group-actions";
 import {
   afterConflict,
   isChangedMeanwhile,
-  isDirty,
   ROLE_DESCRIPTION_MAX,
   ROLE_NAME_MAX,
   roleFieldOf,
@@ -18,7 +17,7 @@ import {
   type RoleFormErrors,
   type RoleFormValues,
 } from "@/lib/role-form-sync";
-import { FailedBand, FieldMessage, unknownResult } from "./role-parts";
+import { FailedBand, FieldMessage, unknownResult, WarnBand } from "./role-parts";
 
 // 권한 등록 · 수정 양식(권한명 · 설명). 플랫폼 권한 관리와 BP 권한 그룹 관리가 같이 쓴다 — 저장은 화면마다 다른 api 라 actions 로 받는다.
 // 등록은 유형을 고르지 않는다 — 만들 유형(createTypeCode)은 화면이 정하고 읽기 전용으로 보인다.
@@ -34,7 +33,17 @@ type EditedRole = { roleGroupId: number; name: string; description: string | nul
 
 export function RoleForm(
   props: { actions: RoleFormActions } & (
-    | { mode: "create"; createTypeCode: string; onCancel: () => void; onDone: (id: number) => void; role?: never; extra?: never; deleteButton?: never }
+    | {
+        mode: "create";
+        createTypeCode: string;
+        onCancel: () => void;
+        onDone: (id: number) => void;
+        /** 등록을 막는 이유 — 있으면 맨 위 빨간 안내 상자로 보이고 [저장]을 막는다(BP 권한 그룹: 탈퇴 · 미사용 BP, 2026-10-29 사용자 지정) */
+        blockedNotice?: string;
+        role?: never;
+        extra?: never;
+        deleteButton?: never;
+      }
     | { mode: "edit"; role: EditedRole; extra: ReactNode; deleteButton: ReactNode; createTypeCode?: never; onCancel?: never; onDone?: never }
   ),
 ) {
@@ -65,9 +74,6 @@ export function RoleForm(
     setBase(next.base);
     if (next.form !== form) setForm(next.form);
   }
-  // 고친 것이 없으면 [저장]을 막는다 — 바뀐 것 없는 저장이 남의 변경을 덮어쓸 여지를 없앤다
-  const dirty = props.mode === "create" || isDirty(base, form);
-
   const handleFieldChange = (key: keyof Form, value: string) => {
     // 다시 채우기를 기다리는 동안 손으로 고치기 시작하면 그 입력을 우선한다
     setReloadOnRefresh(false);
@@ -75,6 +81,7 @@ export function RoleForm(
     if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
   };
 
+  // 고친 것이 없어도 [저장]을 막지 않고 그대로 저장한다 — 점포 등록 · 수정과 같다(2026-10-30 재영)
   const handleSave = () => {
     const found = validateRoleForm(form);
     setErrors(found);
@@ -125,6 +132,7 @@ export function RoleForm(
   return (
     <>
       {props.mode === "create" && <h2 className="flex min-h-[34px] items-end text-[18px] font-semibold text-erp-ink">권한 등록</h2>}
+      {props.mode === "create" && props.blockedNotice && <WarnBand>{props.blockedNotice}</WarnBand>}
       {failure && <FailedBand message={failure.message} detail={failure.detail} />}
       <div className="flex flex-col gap-[18px]">
         {props.mode === "create" && (
@@ -165,7 +173,7 @@ export function RoleForm(
         </div>
       </div>
       {props.extra}
-      {/* 버튼 줄은 가운데 — MY PAGE 패널(my-page-panel.tsx)과 같다(2026-10-26 사용자 지정, 전엔 양 끝 · 오른쪽 정렬) */}
+      {/* 버튼 줄은 가운데 — 마이페이지 패널(my-page-panel.tsx)과 같다(2026-10-26 사용자 지정, 전엔 양 끝 · 오른쪽 정렬) */}
       {/* 위 내용(최종수정)과의 간격을 입력칸 사이(18)와 같게 — 칸 간격 12 + 6(2026-10-26 사용자 지정) */}
       <div className="mt-[6px] flex justify-center gap-[6px]">
         {props.mode === "create" ? (
@@ -175,7 +183,7 @@ export function RoleForm(
         ) : (
           props.deleteButton
         )}
-        <Button onClick={handleSave} disabled={saving || !dirty}>
+        <Button onClick={handleSave} disabled={saving || (props.mode === "create" && Boolean(props.blockedNotice))}>
           저장
         </Button>
       </div>

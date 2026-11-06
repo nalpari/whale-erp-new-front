@@ -1,12 +1,13 @@
 "use client";
 
-import { DetailTable, FormRow, ReadonlyCard, ReadonlyValue, Tag, type DetailRow } from "@/components/common";
+import { DetailTable, HelpTip, Tag, type DetailRow } from "@/components/common";
 import { RoleDeleteDialog } from "@/components/role-groups/role-delete-dialog";
 import { RoleForm } from "@/components/role-groups/role-form";
-import { actorOf, CARD, FailedBand, reasonLabel, WarnBand } from "@/components/role-groups/role-parts";
+import { actorOf, CARD, FailedBand, InfoBand, reasonLabel, WarnBand } from "@/components/role-groups/role-parts";
 import { CodeLabel } from "@/components/site/code-label";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { HeadValues } from "@/components/site/head-values";
-import { usePagePermission } from "@/components/site/session-gate";
+import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import type { BpRoleGroupDetail, BpRoleType } from "@/lib/bp-role-groups";
 import type { EnumValue } from "@/lib/enums";
 import { formatDateTime, wasUpdated } from "@/lib/format";
@@ -14,7 +15,7 @@ import { useBpActions, type BpRoleDetailState } from "./bp-actions";
 
 // 오른쪽 고정 칸(S-LYKAEI 상세 · 데모 config/roles) — 고른 그룹 없음 · 수정 · 상세(고칠 수 없는 그룹) · 등록 네 상태.
 // 권한 유형 · 권한 코드 · 가맹마스터 계정은 읽기 전용이고 권한명 · 설명만 고친다. 따로 수정 단계는 없다(2026-10-07).
-// 고칠 수 있는지 · 지울 수 있는지와 막힌 이유(권한 없음 · 본인 연결)는 api 상세가 준다. 등록 유형은 등록자로 정해진다(BM → BA, FM → FA).
+// 고칠 수 있는지 · 지울 수 있는지와 막힌 이유는 api 상세가 준다 — 수정은 권한 없음이, 삭제는 여기에 본인 연결 · 고정 권한까지 막는다(2026-10-30 재영). 등록 유형은 등록자로 정해진다(BM → BA, FM → FA).
 
 export function BpRoleSide({
   creating,
@@ -39,11 +40,21 @@ export function BpRoleSide({
   const actions = useBpActions();
   const can = usePagePermission();
   const role = !creating && detail && "role" in detail ? detail.role : null;
+  // 탈퇴 · 미사용 BP 에는 등록하지 않는다 — 점포 등록과 같다(플랫폼 계정만 본다, 2026-10-29 사용자 지정). 확인하지 못하면(null) 막지 않는다
+  const bpStatus = useCurrentBpStatus();
+  const bpBlocked = bpStatus !== null && bpStatus !== "ACTIVE";
   return (
     <section className={`${CARD} w-[464px] shrink-0`} aria-label={creating ? "권한 등록" : "권한 그룹 상세"}>
       {creating && createTypeCode ? (
         // 제목(「권한 등록」)은 양식이 단다
-        <RoleForm mode="create" actions={actions.form} createTypeCode={createTypeCode} onCancel={onCancelCreate} onDone={onCreated} />
+        <RoleForm
+          mode="create"
+          actions={actions.form}
+          createTypeCode={createTypeCode}
+          onCancel={onCancelCreate}
+          onDone={onCreated}
+          blockedNotice={bpBlocked ? "BP가 탈퇴 또는 미사용 상태로, 권한 그룹을 등록할 수 없습니다." : undefined}
+        />
       ) : role ? (
         <RoleView role={role} lockReasons={lockReasons} onDeleted={onDeleted} />
       ) : (
@@ -74,6 +85,8 @@ export function BpRoleSide({
 function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; lockReasons: EnumValue[]; onDeleted: () => void }) {
   const can = usePagePermission();
   const actions = useBpActions();
+  const isPlatform = useAccount().bp.isPlatform;
+  // 고칠 수 있는지 · 지울 수 있는지는 api 가 정한다 — 플랫폼 계정이면 isEditable · isDeletable 이 늘 false 로 와서 화면이 따로 막지 않는다
   const editable = can.update && role.isEditable;
   const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
   const rows: DetailRow[] = [
@@ -84,53 +97,39 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
           { label: "설명", value: role.description || muted("-"), multiline: Boolean(role.description) },
         ]),
   ];
-  // 고칠 수 없는 값은 MY PAGE 「계정 정보」와 같은 카드로(2026-10-26 사용자 지정 — 전엔 「기본 정보」 상세 표 세 줄).
-  // 일시는 굵게, 사람은 회색으로 「일시 · 사람」.
-  const whenText = (at: string, actor: Parameters<typeof actorOf>[0]) => `${formatDateTime(at)} · ${actorOf(actor)}`;
+  // 가맹마스터 계정 · 등록 · 최종수정도 상세 표의 줄로(2026-10-28 사용자 지정 — 전엔 표 밖 테두리 없는 카드). 값은 「일시 · 사람」, 사람은 회색
   const when = (at: string, actor: Parameters<typeof actorOf>[0]) => (
-    <>
-      {formatDateTime(at)} <span className="font-normal text-erp-label">· {actorOf(actor)}</span>
-    </>
+    <span className="truncate" title={`${formatDateTime(at)} · ${actorOf(actor)}`}>
+      {formatDateTime(at)} <span className="text-erp-label">· {actorOf(actor)}</span>
+    </span>
   );
-  // 위 · 아래 항목과의 간격을 입력칸 사이(18)와 같게 — 칸 간격 12 에 6 을 더한다(2026-10-26 사용자 지정)
+  const recordRows: DetailRow[] = [
+    {
+      // 가맹마스터 계정(api manager) — 가맹 관리자 그룹을 만든 가맹 마스터. BP 관리자 그룹은 값이 없다(S-LYKAEI). 줄은 늘 둔다.
+      // 도움말 i 는 값 칸에 — 라벨 옆에 두면 라벨이 잘렸다. 가맹 관리자 그룹에만 값이 있고, 없으면 「-」 없이 i 만 둔다(2026-10-28 사용자 지정).
+      // 값 칸이 넘치면 잘려 도움말 상자는 최상위 레이어에 띄운다(floating)
+      label: "가맹마스터 계정",
+      value: (
+        // i 를 앞에, 가맹마스터 정보는 그 뒤에(2026-10-28 사용자 지정)
+        <span className="flex min-w-0 items-center gap-[6px]">
+          <HelpTip text="가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다." floating />
+          {role.manager && (
+            <span className="truncate" title={[role.manager.loginId, role.manager.name].filter(Boolean).join(" · ")}>
+              {role.manager.loginId}
+              {role.manager.name && <span className="text-erp-label"> · {role.manager.name}</span>}
+            </span>
+          )}
+        </span>
+      ),
+    },
+    { label: "등록", value: when(role.createdAt, role.createdBy) },
+    // 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청)
+    { label: "최종수정", value: wasUpdated(role.createdAt, role.updatedAt) ? when(role.updatedAt, role.updatedBy) : muted("-") },
+  ];
+  // 위 입력칸과 18px(칸 간격 12 + 6) — 입력칸 사이와 같다(2026-10-26 권한 그룹 다듬기와 같은 간격)
   const record = (
     <div className="mt-[6px]">
-      <ReadonlyCard>
-        {/* 제목 바는 두지 않는다(2026-10-26 사용자 지정) */}
-        {/* 가맹마스터 계정(api manager) — 가맹 관리자 그룹을 만든 가맹 마스터. BP 관리자 그룹은 없어서 「-」(S-LYKAEI). 줄은 늘 둔다(2026-10-26 사용자 지정) */}
-        <FormRow>
-          <ReadonlyValue
-            label="가맹마스터 계정"
-            help="가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다."
-            // 아이디는 굵게, 이름은 등록 · 최종수정의 사람처럼 회색 · 보통 굵기(2026-10-27 사용자 지정)
-            value={
-              role.manager ? (
-                <>
-                  {role.manager.loginId}
-                  {role.manager.name && <span className="font-normal text-erp-label"> · {role.manager.name}</span>}
-                </>
-              ) : (
-                <span className="font-normal text-erp-muted">-</span>
-              )
-            }
-            title={role.manager ? [role.manager.loginId, role.manager.name].filter(Boolean).join(" · ") : undefined}
-            bold
-          />
-        </FormRow>
-        <hr className="border-erp-divider" />
-        {/* 등록 · 최종수정은 한 줄에 하나씩, 사이 선 없이(2026-10-26 사용자 지정) */}
-        <FormRow>
-          <ReadonlyValue label="등록" value={when(role.createdAt, role.createdBy)} title={whenText(role.createdAt, role.createdBy)} bold />
-        </FormRow>
-        <FormRow>
-          {/* 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청) */}
-          {wasUpdated(role.createdAt, role.updatedAt) ? (
-            <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
-          ) : (
-            <ReadonlyValue label="최종수정" value={<span className="font-normal text-erp-muted">-</span>} bold />
-          )}
-        </FormRow>
-      </ReadonlyCard>
+      <DetailTable rows={recordRows} />
     </div>
   );
   const heading = (
@@ -157,7 +156,8 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
       </span>
     </h2>
   );
-  // 지울 수 없는 그룹(역할 · 본인 연결)은 버튼을 숨긴다. 막힌 이유는 수정 권한이 있으면 위 띠(editBlockedReason, 같은 값)로 보인다.
+  // 지울 수 없는 그룹(역할 · 본인 연결)은 버튼을 숨긴다. 고칠 수 있는 화면이면 폼 위 회색 안내 한 줄(deleteBlockedReason)로 삭제가 막힌
+  // 이유를, 고칠 수 없으면 빨간 상자(editBlockedReason)가 고칠 수 없는 이유를 말한다(2026-10-30 재영).
   const deleteButton = can.delete && role.isDeletable ? (
     <RoleDeleteDialog
       role={role}
@@ -172,27 +172,38 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
     return (
       <>
         {heading}
-        {/* 조회 권한만 있으면 이유 띠 없이 상세로만 보인다 */}
-        {/* 본인 연결(SELF_LINKED)은 api 이유 문구(「본인이 연결된 권한」) 대신 문장으로 풀어 쓴다(2026-10-26 사용자 지정).
-            가맹 마스터가 아닌 사람이 보는 가맹 관리자 그룹(NO_PERMISSION · FA)도 문장으로(2026-10-27 사용자 지정) */}
-        {/* 막힌 이유는 빨간 안내 상자(WarnBand — 2026-10-27 사용자 지정, 전엔 회색 띠) */}
-        {can.update && role.editBlockedReason && (
+        {/* BP 계정이 조회 권한만 있으면 이유 띠 없이 상세로만 보인다 */}
+        {/* 가맹 마스터가 아닌 사람이 보는 가맹 관리자 그룹(NO_PERMISSION · FA)은 문장으로(2026-10-27 사용자 지정) */}
+        {/* BP 계정의 막힌 이유는 빨간 안내 상자(WarnBand — 2026-10-27 사용자 지정, 전엔 회색 띠) */}
+        {/* 플랫폼 계정은 BP 권한 그룹을 늘 조회만 한다(api) — 그룹마다 빨간 상자 대신 안내 한 줄(2026-10-30 재영) */}
+        {isPlatform && <InfoBand>플랫폼 계정은 BP 권한 그룹을 조회만 할 수 있습니다.</InfoBand>}
+        {!isPlatform && can.update && role.editBlockedReason && (
           <WarnBand>
-            {role.editBlockedReason === "SELF_LINKED"
-              ? "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."
-              : role.editBlockedReason === "NO_PERMISSION" && role.roleTypeCode === "FA"
-                ? "본인 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다."
-                : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다")}
+            {/* 본인 연결은 수정을 막지 않는다 — 권한명 · 설명은 고친다(2026-10-30 재영) */}
+            {role.editBlockedReason === "NO_PERMISSION" && role.roleTypeCode === "FA"
+                ? "내 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다."
+                : // 남은 이유도 문장으로(2026-10-28 사용자 지정 — 전엔 api 이유 이름 「권한 관리 메뉴 권한 없음」 · 「고정 권한」)
+                  role.editBlockedReason === "NO_PERMISSION"
+                  ? "선택한 권한 그룹에 대한 수정 권한이 없습니다."
+                  : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다.")}
           </WarnBand>
         )}
-        {rows.length > 0 && <DetailTable rows={rows} />}
-        {record}
+        {/* 수정할 수 없으면 권한명 · 설명과 같은 표 하나에 */}
+        <DetailTable rows={[...rows, ...recordRows]} />
         {deleteButton && <div className="mt-[6px] flex justify-center gap-[6px]">{deleteButton}</div>}
       </>
     );
   return (
     <>
       {heading}
+      {/* 삭제만 막힌 이유(본인 연결 등) — 고정 권한(api FIXED_ROLE)은 원래 [삭제]가 없어 두지 않는다(2026-10-30 재영) */}
+      {can.delete && !role.isDeletable && role.deleteBlockedReason && role.deleteBlockedReason !== "FIXED_ROLE" && (
+        <InfoBand>
+          {role.deleteBlockedReason === "SELF_LINKED"
+            ? "내 계정에 연결된 권한 그룹은 삭제할 수 없습니다."
+            : reasonLabel(lockReasons, role.deleteBlockedReason, "삭제할 수 없는 권한 그룹입니다.")}
+        </InfoBand>
+      )}
       <RoleForm mode="edit" actions={actions.form} role={role} extra={record} deleteButton={deleteButton} />
     </>
   );

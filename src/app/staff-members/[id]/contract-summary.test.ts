@@ -1,7 +1,7 @@
 // pnpm test 로 함께 돈다. 이 파일만: node --test "src/**/contract-summary.test.ts" — 경로의 [id] 를 node 가 glob 으로 읽어 그대로 적으면 찾지 못한다
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { contractSummaryTexts, labelsOrNull } from "./contract-summary.ts";
+import { contractSummaryTexts, labelsOrNull, payrollAccountRows, payrollAccountText } from "./contract-summary.ts";
 
 const contract = (startDate: string | null, endDate: string | null, more: { lastSentAt?: string | null; renewalDate?: string | null } = {}) => ({
   startDate,
@@ -45,4 +45,34 @@ test("보낸 적이 없으면 최근 발송일은 -", () => {
 test("갱신 예정일은 api 값 그대로, 없으면 -", () => {
   assert.equal(contractSummaryTexts(contract("2026-03-01", "2026-12-31", { renewalDate: "2026-12-01" }), "정직원").renewal, "2026-12-01");
   assert.equal(contractSummaryTexts(contract("2026-03-01", "2026-12-31"), "정직원").renewal, "-");
+});
+
+test("급여 계좌는 은행 이름 + 계좌번호 그대로다 — 하이픈 · 가림 없음", () => {
+  assert.equal(payrollAccountText({ bankName: "KB국민은행", accountNumber: "123456789012" }), "KB국민은행 123456789012");
+});
+
+test("급여 계좌 신고 정보가 없으면 - 다", () => {
+  assert.equal(payrollAccountText(null), "-");
+  assert.equal(payrollAccountText(undefined), "-");
+});
+
+const account = { bankName: "KB국민은행", accountNumber: "123456789012" };
+
+test("급여 계좌 줄: 볼 수 있고 계좌가 있으면 값이 있는 줄", () => {
+  assert.deepEqual(payrollAccountRows({ canViewPayrollAccount: true, payrollAccount: account }), [
+    { label: "급여 계좌", value: "KB국민은행 123456789012" },
+  ]);
+});
+
+test("급여 계좌 줄: 볼 수 있고 계좌가 null 이면 - 인 줄", () => {
+  assert.deepEqual(payrollAccountRows({ canViewPayrollAccount: true, payrollAccount: null }), [{ label: "급여 계좌", value: "-" }]);
+});
+
+test("급여 계좌 줄: 볼 수 없으면 줄이 없다", () => {
+  assert.deepEqual(payrollAccountRows({ canViewPayrollAccount: false, payrollAccount: null }), []);
+});
+
+test("급여 계좌 줄: 칸이 없는 옛 응답(undefined)은 안전하게 숨긴다", () => {
+  // 타입은 필수 boolean — 칸이 빠진 옛 응답을 흉내 내려고 테스트에서만 캐스트한다
+  assert.deepEqual(payrollAccountRows({ payrollAccount: account } as Parameters<typeof payrollAccountRows>[0]), []);
 });

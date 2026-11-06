@@ -110,7 +110,7 @@
             <div class="band band--info" data-show="self" hidden>
               <span class="band__ic" data-icon="info" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">본인 계정의 권한 및 상태는 변경할 수 없습니다</div>
+                <div class="band__title">내 계정의 권한과 상태는 변경할 수 없습니다</div>
                 <p class="band__desc">기본정보만 수정할 수 있습니다. 권한·상태를 바꿔야 하면 이 계정을 관리할 수 있는 다른 플랫폼 마스터에게 요청하세요.</p>
               </div>
             </div>
@@ -151,16 +151,17 @@
                   </div>
                   <div class="field">
                     <label for="email">이메일 <span class="req">*</span></label>
-                    <!-- 아이디와 달리 바로 물어볼 중복확인 API 가 없어(저장 시점에만 api 가 409 로 막는다) 형식만 본다
-                         — data-taken 이 없어 auth.js checkDup 이 지연 없이 바로 답한다(2026-10-20). -->
-                    <input class="input mono" id="email" value="jiwoo.park@whale-erp.example" maxlength="100" data-show="base off denied conflict fail" data-dupcheck="mail" data-dup-enter />
-                    <span class="pass" data-dup="ok" hidden><span data-icon="check" data-icon-size="13"></span>올바른 이메일 형식입니다.</span>
+                    <!-- 바꾸면 칸을 벗어나거나 Enter 때 형식과 중복을 확인해 칸 아래에 알린다 — 등록 · BP 관리자 · BP 마스터 · 내 정보와 같다.
+                         원래 값은 확인하지 않는다. 저장 때 api 409 도 같은 문구다 (2026-10-29 재영). 목업의 ‘이미 있는 이메일’은 data-taken 값이다. -->
+                    <input class="input mono" id="email" value="jiwoo.park@whale-erp.example" maxlength="100" data-show="base off denied conflict fail" data-dupcheck="mail" data-dup-enter data-dup-keep data-taken="seoyeon.kim@whale-erp.example,minjae.jung@whale-erp.example" />
+                    <span class="pass" data-dup="ok" hidden><span data-icon="check" data-icon-size="13"></span>사용 가능합니다.</span>
+                    <span class="err" data-dup="bad" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요.</span>
                     <span class="err" data-dup="fmt" hidden><span data-icon="alert" data-icon-size="13"></span>이메일 형식이 아닙니다.</span>
                     <input class="input mono" value="seoyeon.kim@whale-erp.example" maxlength="100" aria-invalid="true" aria-label="이메일" data-show="dupmail" hidden />
                     <input class="input mono" value="" maxlength="100" aria-invalid="true" aria-label="이메일" data-show="miss" hidden />
                     <input class="input mono" value="minjae.jung@whale-erp.example" maxlength="100" aria-label="이메일" data-show="self" hidden />
                     <input class="input mono" value="seoyeon.kim@whale-erp.example" maxlength="100" aria-label="이메일" data-show="lastfail" hidden />
-                    <span class="err" data-show="dupmail" hidden><span data-icon="alert" data-icon-size="13"></span>이미 다른 관리자 계정에 등록된 이메일입니다.</span>
+                    <span class="err" data-show="dupmail" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요.</span>
                     <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>이메일을 입력해 주세요.</span>
                   </div>
                   <div class="field">

@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { Button, type ButtonVariant } from "./button";
 
-const WIDTH = { base: "w-[420px]", wide: "w-[480px]" };
+const WIDTH = { base: "w-[420px]", wide: "w-[480px]", large: "w-[600px]" };
 
 // 확인창. 네이티브 <dialog> 를 showModal 로 띄워 최상위 레이어 · 포커스 가두기 · Esc 닫기를 브라우저에 맡긴다.
 // 떠 있는 것이라 그림자는 팝업 하나의 값만 쓴다(DESIGN.md Elevation). 닫히면 포커스는 브라우저가 연 요소로 돌려준다.
@@ -33,8 +33,8 @@ export function ConfirmDialog({
   busy?: boolean;
   /** 확인 버튼만 막는다 — 조건을 못 채운 동작(예: 폐점 조건 미충족). 취소는 그대로 누를 수 있다. */
   confirmDisabled?: boolean;
-  /** 안내가 긴 창은 480 으로 넓힌다(기본 420). */
-  wide?: boolean;
+  /** 안내가 긴 창은 480 으로 넓힌다(기본 420). "large" 는 표를 담는 창 600(BP 휴일 겹침 확인, 2026-10-30 사용자 지정) */
+  wide?: boolean | "large";
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -60,7 +60,7 @@ export function ConfirmDialog({
       }}
       // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups).
       className={`m-auto max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40 ${
-        wide ? WIDTH.wide : WIDTH.base
+        wide === "large" ? WIDTH.large : wide ? WIDTH.wide : WIDTH.base
       }`}
     >
       <h2 id={titleId} className="text-[18px] font-semibold">

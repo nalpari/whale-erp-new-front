@@ -14,7 +14,7 @@ okf_version: "0.2"
 * [고객지원·커뮤니티](support.md) - 사용자가 읽는 고객지원과 운영자가 쓰는 커뮤니티관리. 목업 `docs/mockup/support/` 기준.
 * [운영 알림](notify.md) - 문의·계약 사건을 관리자 웹 알림함으로 알린다(메일은 업무 쪽이 따로 보낸다). 목업 `docs/mockup/notify/` 기준.
 * [로그인](auth.md) - 로그인·계정 찾기·BP 회원가입·강제 비밀번호 변경·세션 만료. 목업 `docs/mockup/auth/` 기준.
-* [MY PAGE](mypage.md) - 내 정보·비밀번호 변경·회원 탈퇴·로그아웃. 목업 `docs/mockup/mypage/` 기준.
+* [마이페이지](mypage.md) - 내 정보·비밀번호 변경·회원 탈퇴·로그아웃. 목업 `docs/mockup/mypage/` 기준.
 * [BP 마스터 계정 관리](bp.md) - 플랫폼 사용자가 BP 와 BP 마스터 계정을 조회·등록·수정하고 상태를 바꾼다. 목업 `docs/mockup/bp/` 기준.
 * [점포 관리](stores.md) - 점포 등록·조회·수정과 미운영→운영→폐점 상태 전환. 목업 `docs/mockup/stores/` 기준.
 * [BP 환경설정](config.md) - BP 의 관리자 계정·권한 그룹·공통코드·휴일. 목업 `docs/mockup/config/` 기준.
