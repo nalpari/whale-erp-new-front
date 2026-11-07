@@ -316,7 +316,7 @@ export function StoreFormView(props: Props) {
       if (mine !== verifyNumber.current) return;
       // 문구 · 자리는 네 화면 공통(S-VRNTHD) — 중복은 번호 칸 아래, 나머지는 인증하기 버튼 바로 위 한 줄
       if (!result.ok) {
-        // 로그인 만료 · 형식(400) · 권한(403) · 점포 없음(404)은 할 일을 알리는 api 문구라 그대로 보인다(회원가입의 400 과 같다)
+        // 형식(400) · 권한(403) · 점포 없음(404)은 할 일을 알리는 api 문구라 그대로 보인다(회원가입의 400 과 같다)
         const keepApiText = result.status === 400 || result.status === 403 || result.status === 404;
         const failure = keepApiText ? { field: null, message: result.message } : bizVerifyFailure(result.status);
         return setErrors((e) => ({ ...e, [failure.field ?? "bizVerify"]: failure.message }));
