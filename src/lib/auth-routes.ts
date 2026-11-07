@@ -30,7 +30,7 @@ export function redirectsSignedIn(pathname: string, method: string, session: { a
   return pathname === "/" && session.accessTokenExpiresAt > now;
 }
 
-/** 로그인 화면이 밀려난 이유를 알리는 쿼리 — /login?reason=account. 값은 아래 이유뿐이고, 모르는 값은 무시한다. */
+/** 로그인 화면이 밀려난 이유를 알리는 쿼리 — /login?reason=account · /login?reason=expired. 값은 아래 이유뿐이고, 모르는 값은 무시한다. */
 export const LOGOUT_REASON_PARAM = "reason";
 /** 계정 상태(사용중지 · 탈퇴 · 소속 BP)가 바뀌어 로그아웃됨 — 경우를 나누지 않고 한 문장으로 알린다(2026-11-02 사용자 지정). */
 export const ACCOUNT_CHANGED_REASON = "account";
@@ -39,6 +39,8 @@ export const ACCOUNT_CHANGED_MESSAGE = "계정 상태가 변경되어 로그아�
 export const EXPIRED_REASON = "expired";
 export const EXPIRED_MESSAGE = "로그인이 만료되었습니다. 다시 로그인해 주세요.";
 const NOTICES: Record<string, string> = { [ACCOUNT_CHANGED_REASON]: ACCOUNT_CHANGED_MESSAGE, [EXPIRED_REASON]: EXPIRED_MESSAGE };
+/** 세션 없이 온 서버 액션이 만료 표시 쿠키를 받아야 하는가 — 로그인 키가 있으면 이 브라우저에서 로그인해 있다가 끊긴 것이다. */
+export const marksExpiredOnLogin = (isAction: boolean, hasLoginKey: boolean): boolean => isAction && hasLoginKey;
 /** 로그인 화면 쿼리의 이유 → 안내 문구. 모르는 값이면 null. */
 export const logoutNoticeOf = (value: unknown): string | null => (typeof value === "string" && Object.hasOwn(NOTICES, value) ? NOTICES[value] : null);
 

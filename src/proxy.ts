@@ -8,12 +8,14 @@ import {
   isPublicPath,
   loginPathOf,
   LOGOUT_REASON_PARAM,
+  marksExpiredOnLogin,
   redirectsSignedIn,
   RETURN_PARAM,
   signedInTargetOf,
 } from "@/lib/auth-routes";
 import { BP_HEADER, bpRouteOf, stripBp } from "@/lib/bp-path";
 import { answersWith401, TOO_LARGE, tooLarge } from "@/lib/paper-request";
+import { expiredCookie } from "@/lib/session-expiry";
 import {
   ACCESS_TOKEN_TTL_MS,
   LOGIN_KEY_COOKIE,
@@ -161,12 +163,15 @@ async function refresh(session: Session): Promise<Session | "unauthorized" | nul
 // 메일 링크(엑셀 내려받기)처럼 돌아올 수 있는 화면이면 /login?next= 로 보내 로그인 뒤 그 화면으로 돌아오게 한다(loginPathOf).
 // 로그인 키 쿠키는 브라우저를 닫거나 직접 로그아웃해야 사라진다 — 남아 있으면 「이 브라우저에서 로그인해 있다가 끊겼다」라 만료 문구를 붙인다.
 function toLogin(req: NextRequest) {
-  const reason = req.cookies.has(LOGIN_KEY_COOKIE) ? EXPIRED_REASON : undefined;
+  const hasLoginKey = req.cookies.has(LOGIN_KEY_COOKIE);
+  const reason = hasLoginKey ? EXPIRED_REASON : undefined;
   // 탭 BP 주소(/bp/{id}/contracts/paper)로 부른 창구도 같은 판정을 받게 접두를 떼고 본다.
   const res = answersWith401(stripBp(req.nextUrl.pathname))
     ? NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 })
     : NextResponse.redirect(new URL(loginPathOf(req.nextUrl.pathname, req.method, reason), req.url));
   res.cookies.delete(SESSION_COOKIE);
+  // 브라우저가 따라간 리다이렉트의 쿠키도 받아 감싼 fetch 가 팝업을 띄운다.
+  if (marksExpiredOnLogin(req.headers.has("next-action"), hasLoginKey)) res.cookies.set(expiredCookie(Date.now()));
   return res;
 }
 

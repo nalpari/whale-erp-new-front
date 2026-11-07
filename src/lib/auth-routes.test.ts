@@ -14,6 +14,7 @@ import {
   isPublicPath,
   loginPathOf,
   logoutNoticeOf,
+  marksExpiredOnLogin,
   redirectsSignedIn,
   returnPathOf,
   signedInTargetOf,
@@ -125,4 +126,10 @@ test("expiredLoginStepOf — 401 이면 쿠키 삭제, 살아 있으면 홈, 그
   assert.equal(expiredLoginStepOf("unauthorized"), "clear");
   assert.equal(expiredLoginStepOf("ok"), "home");
   assert.equal(expiredLoginStepOf("failed"), "stay");
+});
+
+test("marksExpiredOnLogin: 서버 액션이고 로그인 키가 있을 때만", () => {
+  assert.equal(marksExpiredOnLogin(true, true), true);
+  assert.equal(marksExpiredOnLogin(true, false), false);
+  assert.equal(marksExpiredOnLogin(false, true), false);
 });
