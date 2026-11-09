@@ -60,7 +60,7 @@ export function sendFailureOf(status: number | null, code: string | undefined, m
 export function signingResendCopy(name: string | null | undefined): { title: string; body: string } {
   return {
     title: "계약서를 다시 보내시겠습니까?",
-    body: `같은 조건의 계약서를 ${name ? `${name} 님에게 ` : ""}다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.`,
+    body: `같은 조건의 계약서를 ${name ? `${name} 님에게 ` : ""}다시 보냅니다. 서명 기한은 발송일로부터 30일입니다.`,
   };
 }
 
@@ -76,7 +76,7 @@ export function inviteResendCopy(name: string | null | undefined): { title: stri
     title: "계약서를 다시 보내시겠습니까?",
     body: [
       `${name ? `${name} 님의 ` : "직원 "}휴대전화번호로 다시 보냅니다. 그 번호로 가입한 계정이 없으면 가입 초대 알림톡(초대 코드)을, 있으면 소속 추가 확인 요청(알림톡 · 메일)을 보냅니다.`,
-      "초대 코드와 요청은 보낸 날부터 30일 동안 유효하고, 앞서 보낸 것은 쓸 수 없습니다. 날인 기한은 가입 초대면 보낸 날부터, 소속 추가 확인이면 직원이 수락한 날부터 30일입니다 — 소속 추가 확인은 직원이 수락할 때까지 계약이 발송 대기로 남습니다.",
+      "초대 코드와 요청은 보낸 날부터 30일 동안 유효하고, 앞서 보낸 것은 쓸 수 없습니다. 서명 기한은 가입 초대면 보낸 날부터, 소속 추가 확인이면 직원이 수락한 날부터 30일입니다 — 소속 추가 확인은 직원이 수락할 때까지 계약이 서명 요청 전으로 남습니다.",
     ],
     done: "계약서를 다시 보냈습니다.",
   };
@@ -94,9 +94,9 @@ export function resendDialogCopy(status: string | null | undefined, name: string
   const base = staffJoined ? { title: signing.title, body: [signing.body] } : { title: invite.title, body: invite.body };
   const again =
     status === "REJECTED"
-      ? "거부된 근로계약서를 같은 조건으로 다시 보냅니다."
+      ? "서명 거절된 근로계약서를 같은 조건으로 다시 보냅니다."
       : status === "EXPIRED"
-        ? "날인 기한이 지나 만료된 근로계약서를 같은 조건으로 다시 보냅니다."
+        ? "서명 기한이 지나 만료된 근로계약서를 같은 조건으로 다시 보냅니다."
         : null;
   return again ? { title: base.title, body: [again, ...base.body] } : base;
 }
@@ -146,9 +146,9 @@ export function sendNoticeOf(raw: unknown, status: string | null): string | null
     return "저장 요청의 결과를 받지 못했습니다. 아래 상태로 저장됐는지 확인하고, 보냈다면 직원에게 받았는지 확인한 뒤 필요할 때만 다시 보내 주세요.";
   if (raw !== "failed") return null;
   if (status === "DRAFT")
-    return "가입 초대 알림톡을 보내지 못해 임시저장으로 두었습니다. 휴대전화번호를 확인하고 이어 쓰기에서 다시 저장해 주세요.";
+    return "가입 초대 알림톡을 보내지 못해 작성 중으로 두었습니다. 휴대전화번호를 확인하고 이어 쓰기에서 다시 저장해 주세요.";
   if (status === "CORRECTION_REQUESTED")
-    return "고친 내용은 저장했지만 가입 초대 알림톡을 보내지 못해 수정 요청으로 두었습니다. 휴대전화번호를 확인하고 「수정」에서 다시 저장해 주세요.";
+    return "고친 내용은 저장했지만 가입 초대 알림톡을 보내지 못해 직원 수정 요청으로 두었습니다. 휴대전화번호를 확인하고 「수정」에서 다시 저장해 주세요.";
   return "고친 내용은 저장했지만 가입 초대 알림톡을 보내지 못했습니다. 휴대전화번호를 확인하고 재발송해 주세요.";
 }
 

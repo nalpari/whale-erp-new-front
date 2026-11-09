@@ -103,7 +103,7 @@ export function processRows(c: ProcessFields): { label: string; value: string; m
   } else {
     if (c.firstSentAt) rows.push({ label: "발송일", value: kstDateTime(c.firstSentAt) });
     if (c.resendCount > 0 && c.lastSentAt) rows.push({ label: "재발송", value: `${c.resendCount}회 · 마지막 ${kstDateTime(c.lastSentAt)}` });
-    if (c.signDeadlineAt && c.status && DEADLINE_SHOWN.has(c.status)) rows.push({ label: "날인 기한", value: kstDateTime(c.signDeadlineAt) });
+    if (c.signDeadlineAt && c.status && DEADLINE_SHOWN.has(c.status)) rows.push({ label: "서명 기한", value: kstDateTime(c.signDeadlineAt) });
   }
   if (c.lastProcessedAt) rows.push({ label: "최종 처리일", value: kstDateTime(c.lastProcessedAt) });
   // api 도 수정 요청일 때만 사유를 주지만(그 밖은 null), 줄 자체도 수정 요청일 때만 둔다

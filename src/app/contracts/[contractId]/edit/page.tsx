@@ -79,7 +79,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
               )}
             </ContractPermission>
           ) : detail.status !== "DRAFT" ? (
-            <Notice title="임시저장 · 수정 요청 근로계약서만 고칠 수 있습니다." back={back} />
+            <Notice title="작성 중 · 직원 수정 요청 근로계약서만 고칠 수 있습니다." back={back} />
           ) : (
             // 임시저장 이어 쓰기는 작성의 연장이라 작성 권한으로 연다(api 도 저장에 작성 권한을 본다). 삭제 버튼은 삭제 권한이 있을 때만 —
             // 이어 쓸 수 없어도 삭제 권한이 있으면 안내 줄에서 지울 수 있다

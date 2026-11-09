@@ -383,9 +383,9 @@ test("수습: 정직원만, 기간과 감액률을 함께 보내고 조건을 �
   assert.equal("probationMonths" in toBody(filled({ ...on, probation: false })), false);
 });
 
-test("종이 계약: 등록은 근로계약서 날인본이 있어야 하고, 임시저장은 파일 없이 된다", () => {
+test("종이 계약: 등록은 근로계약서 서명본이 있어야 하고, 임시저장은 파일 없이 된다", () => {
   const paper = filled({ contractMethod: "PAPER" });
-  assert.ok(problems(paper).includes("당사자가 모두 날인한 근로계약서 파일을 올려 주세요."));
+  assert.ok(problems(paper).includes("당사자가 모두 서명한 근로계약서 파일을 올려 주세요."));
   assert.deepEqual(problems(paper, false, true), []);
   assert.deepEqual(problems(paper, true), []);
   // 전자계약은 파일을 묻지 않는다
@@ -396,7 +396,7 @@ test("종이 계약: 등록은 근로계약서 날인본이 있어야 하고, �
   assert.equal(fromDetail(detailOf()).contractMethod, "ELECTRONIC");
 });
 
-test("종이 계약 날인본 파일: 형식은 enum 값으로, 10MB 까지", () => {
+test("종이 계약 서명본 파일: 형식은 enum 값으로, 10MB 까지", () => {
   const types = paperFileTypesOf(["PDF", "JPG", "PNG", "GIF"]);
   assert.deepEqual(types, ["PDF", "JPG", "PNG"]);
   assert.equal(paperFileAccept(["PDF"]), "application/pdf,.pdf");
@@ -483,8 +483,8 @@ test("유효성 오류는 칸과 함께 — 화면이 그 칸 아래에 보인�
   const rest: Partial<ContractForm> = { rest: { start: { hour: "08", minute: "00" }, end: { hour: "09", minute: "00" } } };
   assert.deepEqual(problemsByField(fieldProblems(filled(rest))).rest, ["휴게시간은 근무시간 안이어야 합니다."]);
   assert.equal(problemsByField(fieldProblems(filled(rest))).work, undefined);
-  // 종이 계약 날인본 · 재계약 시작일
-  assert.deepEqual(problemsByField(fieldProblems(filled({ contractMethod: "PAPER" }))).employmentFile, ["당사자가 모두 날인한 근로계약서 파일을 올려 주세요."]);
+  // 종이 계약 서명본 · 재계약 시작일
+  assert.deepEqual(problemsByField(fieldProblems(filled({ contractMethod: "PAPER" }))).employmentFile, ["당사자가 모두 서명한 근로계약서 파일을 올려 주세요."]);
   assert.ok(problemsByField(fieldProblems(filled({ startDate: "2026-11-01" }), false, false, "2026-11-01")).startDate?.length);
 });
 

@@ -620,7 +620,7 @@ export function ContractForm({
               ))}
             </div>
           </Group>
-          <Group label="계약 방식" hint={paper ? "당사자가 모두 날인한 근로계약서를 올려 등록하면 발송 · 날인 없이 체결 완료로 저장된다." : undefined}>
+          <Group label="계약 방식" hint={paper ? "당사자가 모두 서명한 근로계약서를 올려 등록하면 발송 · 서명 없이 서명 완료로 저장된다." : undefined}>
             <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
               {(["ELECTRONIC", "PAPER"] as const).map((v) => (
                 <Radio
@@ -637,7 +637,7 @@ export function ContractForm({
           {/* 종이 계약 날인본(CTR-23, 데모 contracts-new 의 파일 칸). 근로계약서는 필수, 임금계약서는 따로 작성한 경우만 */}
           {paper && (
             <FormRow>
-              <Item label="근로계약서" required help={`당사자가 모두 날인한 파일. ${paperTypes.join(" · ")}, 10MB까지`}>
+              <Item label="근로계약서" required help={`당사자가 모두 서명한 파일. ${paperTypes.join(" · ")}, 10MB까지`}>
                 {(id) => <PaperFile id={id} label="근로계약서" file={files.employment} error={fileErrors.employment ?? errs.employmentFile?.[0]} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("employment", f)} />}
               </Item>
               <Item label="임금계약서">
@@ -886,8 +886,8 @@ export function ContractForm({
         <div className="flex items-center gap-[6px]">
           <span className="flex-1 text-[14px] text-erp-label">
             {correction
-              ? "직원이 수정을 요청한 근로계약서다. 다 채워 수정 저장하면 곧바로 서명 대기로 다시 보낸다(새 날인 기한 30일). 근무지는 바꿀 수 없다."
-              : paper && "임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 되고 날인본은 올리지 않는다. 종이 계약 등록은 다 채우고 근로계약서 날인본을 올려야 하며 체결 완료로 남는다."}
+              ? "직원이 수정을 요청한 근로계약서다. 다 채워 수정 저장하면 곧바로 직원 서명 대기로 다시 보낸다(새 서명 기한 30일). 근무지는 바꿀 수 없다."
+              : paper && "임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 되고 서명본은 올리지 않는다. 종이 계약 등록은 다 채우고 근로계약서 서명본을 올려야 하며 서명 완료로 남는다."}
           </span>
           {saveButtons}
         </div>
@@ -914,7 +914,7 @@ export function ContractForm({
       >
         <p>
           {replace?.correcting
-            ? "이 점포에 같은 휴대전화번호로 계약 기간이 겹치는 체결 완료 근로계약이 있습니다."
+            ? "이 점포에 같은 휴대전화번호로 계약 기간이 겹치는 서명 완료 근로계약이 있습니다."
             : "이 점포에 같은 휴대전화번호로 진행 중인 근로계약이 있습니다."}
         </p>
         <ul className="mt-[6px] list-disc pl-[18px]">
@@ -924,10 +924,10 @@ export function ContractForm({
         </ul>
         {replace?.correcting ? (
           <p className="mt-[6px]">
-            같은 계약서를 다시 올렸다면 등록하지 않아도 됩니다. 재계약이면 기존 계약 상세의 [재계약]으로 작성해 주세요. 잘못 올린 계약이면 바로잡기로 위 계약을 종료하고 이 계약서로 등록합니다(임시저장은 지웁니다).
+            같은 계약서를 다시 올렸다면 등록하지 않아도 됩니다. 재계약이면 기존 계약 상세의 [재계약]으로 작성해 주세요. 잘못 올린 계약이면 바로잡기로 위 계약을 종료하고 이 계약서로 등록합니다(작성 중인 계약은 지웁니다).
           </p>
         ) : (
-          <p className="mt-[6px]">대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 · 수정 요청 계약은 종료합니다.</p>
+          <p className="mt-[6px]">대체하면 작성 중인 계약은 지우고, 서명 요청 전 · 직원 서명 대기 · 직원 수정 요청 계약은 종료합니다.</p>
         )}
       </ConfirmDialog>
     </div>

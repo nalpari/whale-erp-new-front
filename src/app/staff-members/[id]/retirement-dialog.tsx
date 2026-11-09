@@ -188,7 +188,7 @@ export function RetirementDialog({
                 배정 해제되는 TO-DO {preview.value.todosToUnassign}건 <span className="text-erp-label">· 완료하지 않은 개인 배정</span>
               </li>
               <li>
-                종료되는 근로계약 {preview.value.contractsToEnd.length}건 <span className="text-erp-label">· 임시저장·발송 대기·서명 대기·수정 요청</span>
+                종료되는 근로계약 {preview.value.contractsToEnd.length}건 <span className="text-erp-label">· 작성 중·서명 요청 전·직원 서명 대기·직원 수정 요청</span>
               </li>
             </ul>
           )}
