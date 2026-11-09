@@ -103,12 +103,24 @@ export default async function TodoDetailPage({
           {
             label: "상태",
             value: (
-              <span className="flex min-w-0 flex-wrap items-center gap-x-[18px] gap-y-[6px]">
+              <span className="flex min-w-0 flex-wrap items-center gap-x-[10px] gap-y-[6px]">
                 <TodoStatusControl todoId={todo.todoId} status={todo.status} labels={statusLabels} fallback={<CellView cell={statusCells(todo, statusLabels)[0]} />} />
                 {completedAt && (
-                  <span className="text-erp-label">
-                    완료 일시 <span className="text-erp-ink">{formatDateTime(completedAt)}</span>
-                    {performer && <> · {performer}</>}
+                  // [상태 변경]과 사이 #d9d9d9 세로선(머리 줄 구분과 같다), 앞에 문의 상세 처리이력 「완료」의 회청 동그라미 체크 아이콘,
+                  // 이름과 값 사이 10px — 값이 붙어 보이지 않게(2026-11-09 사용자 지정)
+                  <span className="flex items-center gap-[10px] text-erp-label">
+                    <span aria-hidden="true" className="h-[11px] w-px bg-[#d9d9d9]" />
+                    <span className="inline-flex items-center gap-[4px]">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="shrink-0 text-erp-brand">
+                        <circle cx="8" cy="8" r="6.25" />
+                        <path d="M5.25 8.25 7.1 10l3.65-3.75" />
+                      </svg>
+                      완료 일시
+                    </span>
+                    <span>
+                      <span className="text-erp-ink">{formatDateTime(completedAt)}</span>
+                      {performer && <> · {performer}</>}
+                    </span>
                   </span>
                 )}
               </span>
@@ -150,7 +162,9 @@ export default async function TodoDetailPage({
                 {/* TO-DO 전체 값 — 목록 한 줄과 같은 상태 배지 + 「완료 / 배정 직원」(여러 명에게 나눈 TO-DO 는 묶음 전체, 2026-11-09 사용자 지정) */}
                 <span aria-hidden="true" className="h-[11px] w-px bg-[#d9d9d9]" />
                 <span className="flex items-center gap-[6px]">
-                  상태 <CellView cell={statusCells(overall, statusLabels)[0]} />
+                  {/* 완료는 목록처럼 흐린 글자면 값이 묻혀 수행예정과 같은 꼬리표로(2026-11-09 사용자 지정). 대기 · 진행 중은 목록과 같은 배지 */}
+                  상태{" "}
+                  {overall.status === "DONE" ? <Tag>{labelOf(statusLabels, "DONE")}</Tag> : <CellView cell={statusCells(overall, statusLabels)[0]} />}
                   <span className="font-normal text-erp-ink tabular-nums">{overall.count}</span>
                 </span>
                 {todo.isUrgent && (
