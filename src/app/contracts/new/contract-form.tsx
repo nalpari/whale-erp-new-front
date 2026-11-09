@@ -97,7 +97,8 @@ type PayRow = { key: string; label: string; cells?: ReactNode[]; hours?: ReactNo
 
 // 제목(라벨) 옆 짧은 설명 — 계산식 · 범위처럼 칸을 읽는 데 필요한 것만 둔다. 입력칸 아래는 오류 자리로 비운다
 function Hint({ children }: { children: ReactNode }) {
-  return <span className="min-w-px truncate text-[12px] text-erp-muted">{children}</span>;
+  // 좁은 칸(3등분)에서 잘리지 않게 줄바꿈한다 — 말줄임이면 계산식 뒤쪽을 볼 방법이 없다(PR #239 리뷰)
+  return <span className="min-w-px break-keep text-[12px] leading-[18px] text-erp-muted">{children}</span>;
 }
 
 // 라벨 · 입력 · 도움말 한 칸. 공통 Field 는 라벨이 글자뿐이라 필수 표시(*)를 달 수 없어 여기서 묶는다.
