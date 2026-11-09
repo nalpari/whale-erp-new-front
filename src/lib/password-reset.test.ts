@@ -25,7 +25,7 @@ test("버튼 — 퇴직 직원에게는 숨긴다", () => {
   assert.equal(canResetPassword(retired, "FM", true), false);
 });
 
-test("버튼 — 가입 전 직원(초안 · 초대 · 연결 보류 등)에게는 숨긴다", () => {
+test("버튼 — 가입 전 직원(초안 · 초대 · 정보 확인 필요 등)에게는 숨긴다", () => {
   for (const joinState of ["DRAFT", "INVITED", "EXPIRED", "REJECTED", "LINK_HOLD", "AFFILIATION_PENDING", "RETURN_PENDING", "UNDER_AGE", null] as const)
     assert.equal(canResetPassword({ ...joined, joinState }, "FM", true), false, String(joinState));
 });
