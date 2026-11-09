@@ -75,13 +75,13 @@ function DeleteTodoDialog({ detail, listHref, onClose }: { detail: TodoDetail; l
   return (
     <ConfirmDialog open title="TO-DO를 삭제하시겠습니까?" confirmLabel={busy ? "삭제 중" : "삭제"} busy={busy} onConfirm={handleConfirm} onCancel={onClose}>
       {/* 경우마다 한 문장 — 한 명 · 모두 대기 · 일부만 대기. 진행 중 · 완료가 지워지지 않는다는 말은 놓치면 안 돼 줄을 나눈다.
-          「남습니다 · 사라집니다」 대신 「삭제되며 · 볼 수 없습니다 · 삭제되지 않습니다」(2026-11-09 사용자 지정) */}
+          「남습니다 · 사라집니다」 대신 「삭제되며 · 확인할 수 없습니다 · 삭제되지 않습니다」(2026-11-09 사용자 지정) */}
       <p>
         {!group
-          ? "삭제하면 직원 근무 앱에서도 더 이상 볼 수 없습니다."
+          ? "삭제하면 직원에게 배정된 TO-DO가 삭제되며, 직원 근무 앱에서도 확인할 수 없습니다."
           : remaining
-            ? `대기 ${pending}건만 삭제되며, 직원 근무 앱에서도 더 이상 볼 수 없습니다.`
-            : `배정한 ${pending}건이 모두 삭제되며, 직원 근무 앱에서도 더 이상 볼 수 없습니다.`}
+            ? `삭제하면 직원에게 배정된 TO-DO 중 대기 ${pending}건만 삭제되며, 직원 근무 앱에서도 확인할 수 없습니다.`
+            : `삭제하면 직원에게 배정된 TO-DO ${pending}건이 모두 삭제되며, 직원 근무 앱에서도 확인할 수 없습니다.`}
       </p>
       {group && remaining > 0 && <p className="mt-[6px]">진행 중 · 완료 {remaining}건은 삭제되지 않습니다.</p>}
       {error && (
