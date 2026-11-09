@@ -71,7 +71,8 @@ export function readListQuery(params: SearchParams): ListQuery {
   ].slice(0, MAX_PICKED_STORES);
   return {
     // 숫자가 아니거나 1보다 작으면 첫 페이지. api 는 page=0 을 400 으로 돌려준다.
-    page: Number.isInteger(page) && page >= 1 ? page : 1,
+    // 상태를 모두 끈 목록은 늘 빈 한 쪽이다 — 쪽 번호가 남으면 없는 쪽이 골라진 채 그려진다
+    page: Number.isInteger(page) && page >= 1 && !statusNone ? page : 1,
     // 고를 수 있는 값이 아니면 기본(20) — 주소에 직접 넣은 큰 값으로 api 상한(200)을 넘기지 않게
     pageSize: PAGE_SIZES.find((n) => n === pageSize) ?? DEFAULT_PAGE_SIZE,
     // api 는 50자를 넘으면 400 이다(@MaxLength(50)). 주소에 직접 넣은 긴 값은 잘라 보낸다.
@@ -113,11 +114,10 @@ export const listHrefOf = (q: ListQuery) => `/contracts${toSearch(q)}`;
  * 관계없이 오므로 그대로 받아 체크박스에 붙이고 목록만 page.tsx 가 비운다.
  */
 export function apiSearch(q: ListQuery): string {
-  // 모두 끈 것은 목록을 버리고 개수만 쓴다 — 개수는 쪽과 상관없으니 첫 쪽 한 줄만 받는다(api pageSize 하한 1)
-  if (q.statusNone) q = { ...q, page: 1, pageSize: 1 as PageSize };
   const s = new URLSearchParams();
-  if (q.page > 1) s.set("page", String(q.page));
-  s.set("pageSize", String(q.pageSize));
+  // 모두 끈 것은 목록을 버리고 개수만 쓴다 — 개수는 쪽과 상관없으니 첫 쪽 한 줄만 받는다(api pageSize 하한 1)
+  if (q.page > 1 && !q.statusNone) s.set("page", String(q.page));
+  s.set("pageSize", q.statusNone ? "1" : String(q.pageSize));
   const ids = q.storeIds.length ? q.storeIds : q.scope?.type === "STORE" ? [q.scope.storeId] : [];
   if (ids.length) s.set("storeIds", ids.join(","));
   else if (q.scope?.type === "DIRECT" || q.scope?.type === "FRANCHISE") s.set("storeTypes", q.scope.type);
@@ -176,8 +176,9 @@ export function listAfterSave(back: string | string[] | undefined, savedStoreId:
 
 /** 상태 「모두 끔」을 「전체」로 푼 목록 주소 */
 function withoutStatusNone(list: string): string {
-  const [path, search = ""] = list.split("?");
-  const params = new URLSearchParams(search);
+  const at = list.indexOf("?");
+  const path = at < 0 ? list : list.slice(0, at);
+  const params = new URLSearchParams(at < 0 ? "" : list.slice(at + 1));
   if (!params.getAll("status").includes(STATUS_NONE)) return list;
   params.delete("status");
   const text = params.toString();

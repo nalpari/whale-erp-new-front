@@ -59,6 +59,8 @@ test("상태를 모두 끈 것은 status=NONE — 주소를 다시 읽어도 같
   assert.deepEqual(readListQuery({ status: "NONE" }), none);
   // NONE 이 다른 값과 섞여 있어도 모두 끈 것이다 — 주소를 직접 고친 경우
   assert.deepEqual(readListQuery({ status: ["SIGNED", "NONE"] }), none);
+  // 빈 한 쪽이라 쪽 번호는 1로 맞춘다
+  assert.equal(readListQuery({ status: "NONE", page: "3" }).page, 1);
   assert.deepEqual(withKnownStatus(none, [{ value: "SIGNED" }]), none);
   // 개수만 쓰므로 첫 쪽 한 줄만 받는다 — 깊은 쪽 · 큰 쪽 크기여도 같다
   assert.equal(apiSearch(none), "?pageSize=1");
