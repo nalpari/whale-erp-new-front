@@ -49,7 +49,7 @@ test("가맹 역할은 가맹 마스터 · 가맹 관리자뿐", () => {
 });
 
 test("공개 경로만 로그인 없이 열린다 — 접두가 경로 마디와 맞아야 한다", () => {
-  for (const p of ["/", "/login", "/find", "/signup", "/leads", "/notices", "/store-operations", "/add-on-services", "/terms", "/design", "/design/full"]) assert.equal(isPublicPath(p), true, p);
+  for (const p of ["/", "/login", "/find", "/signup", "/leads", "/notices", "/store-operations", "/finance-management", "/franchise", "/add-on-services", "/terms", "/design", "/design/full"]) assert.equal(isPublicPath(p), true, p);
   for (const p of ["/home", "/settings/admins", "/platform", "/platform/bp", "/staff-members/1"]) assert.equal(isPublicPath(p), false, p);
   // 마디 단위 비교. /loginx 는 /login 이 아니다.
   for (const p of ["/loginx", "/designer", "/signupx"]) assert.equal(isPublicPath(p), false, p);
