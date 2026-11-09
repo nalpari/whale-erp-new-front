@@ -6,14 +6,14 @@ import { NO_SIGNED_COPY, documentRowsOf } from "./document-rows.ts";
 const doc = (contractDocumentId: number, kind: string, fileName = `${kind}.pdf`) => ({ contractDocumentId, kind, fileName });
 const signedHistory = [{ fromStatus: "PENDING_SIGNATURE", toStatus: "SIGNED" }];
 
-test("documentRowsOf — 종이 계약은 날인본 한 줄(근로계약서 먼저, 종류 이름을 붙인다)", () => {
+test("documentRowsOf — 종이 계약은 서명본 한 줄(근로계약서 먼저, 종류 이름을 붙인다)", () => {
   const rows = documentRowsOf({
     contractMethod: "PAPER",
     status: "SIGNED",
     histories: [],
     documents: [doc(2, "WAGE_CONTRACT"), doc(1, "PAPER_EMPLOYMENT_CONTRACT")],
   });
-  assert.deepEqual(rows, [{ label: "날인본", documents: [doc(1, "PAPER_EMPLOYMENT_CONTRACT"), doc(2, "WAGE_CONTRACT")], withKind: true }]);
+  assert.deepEqual(rows, [{ label: "서명본", documents: [doc(1, "PAPER_EMPLOYMENT_CONTRACT"), doc(2, "WAGE_CONTRACT")], withKind: true }]);
 });
 
 test("documentRowsOf — 체결된 전자계약은 처리 완료본(서명 확인)과 보낸 원본(최근 것 먼저), 필기 서명은 보이지 않는다", () => {
@@ -52,7 +52,7 @@ test("documentRowsOf — 체결 없이 종료 · 서명 대기 · 거부는 보�
     ]);
 });
 
-test("documentRowsOf — 줄은 파일 종류로 나눈다: 계약 방식이 빈 옛 계약의 날인본 · 방식이 섞인 파일 · 모르는 종류도 빠지지 않는다", () => {
+test("documentRowsOf — 줄은 파일 종류로 나눈다: 계약 방식이 빈 옛 계약의 서명본 · 방식이 섞인 파일 · 모르는 종류도 빠지지 않는다", () => {
   assert.deepEqual(
     documentRowsOf({
       contractMethod: null,
@@ -61,7 +61,7 @@ test("documentRowsOf — 줄은 파일 종류로 나눈다: 계약 방식이 빈
       documents: [doc(1, "PAPER_EMPLOYMENT_CONTRACT"), doc(5, "SIGNED_COPY"), doc(7, "NEW_KIND")],
     }),
     [
-      { label: "날인본", documents: [doc(1, "PAPER_EMPLOYMENT_CONTRACT")], withKind: true },
+      { label: "서명본", documents: [doc(1, "PAPER_EMPLOYMENT_CONTRACT")], withKind: true },
       { label: "처리 완료본", documents: [doc(5, "SIGNED_COPY")], withKind: false },
       { label: "기타 파일", documents: [doc(7, "NEW_KIND")], withKind: true },
     ],
@@ -72,9 +72,9 @@ test("documentRowsOf — 줄은 파일 종류로 나눈다: 계약 방식이 빈
   );
 });
 
-test("documentRowsOf — 계약 방식이 빈 옛 종이 계약(날인본만)에는 「처리 완료본 없음」을 붙이지 않는다", () => {
+test("documentRowsOf — 계약 방식이 빈 옛 종이 계약(서명본만)에는 「처리 완료본 없음」을 붙이지 않는다", () => {
   assert.deepEqual(
     documentRowsOf({ contractMethod: null, status: "SIGNED", histories: [], documents: [doc(1, "PAPER_EMPLOYMENT_CONTRACT")] }),
-    [{ label: "날인본", documents: [doc(1, "PAPER_EMPLOYMENT_CONTRACT")], withKind: true }],
+    [{ label: "서명본", documents: [doc(1, "PAPER_EMPLOYMENT_CONTRACT")], withKind: true }],
   );
 });

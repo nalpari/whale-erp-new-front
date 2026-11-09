@@ -219,9 +219,9 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
   const c = d.closing ?? {};
   const closingLines = [
     c.retiringStaff && `근무 중인 직원 : ${c.retiringStaff}명 퇴직 처리<span class="block text-[13px] text-erp-label">퇴직일이 없거나 오늘 이후인 직원의 퇴직일은 오늘로 변경됩니다.</span>`,
-    c.draftContracts && `임시저장된 근로계약 : ${c.draftContracts}건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 더 이상 작성하거나 발송할 수 없습니다.</span>`,
-    c.pendingSendContracts && `발송 대기 중인 근로계약 : ${c.pendingSendContracts}건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다.</span>`,
-    c.pendingSignatureContracts && `서명 대기·수정 요청 중인 근로계약 : ${c.pendingSignatureContracts}건 종료<span class="block text-[13px] text-erp-label">직원은 해당 근로계약에 더 이상 서명할 수 없습니다.</span>`,
+    c.draftContracts && `작성 중인 근로계약 : ${c.draftContracts}건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 더 이상 작성하거나 발송할 수 없습니다.</span>`,
+    c.pendingSendContracts && `서명 요청 전인 근로계약 : ${c.pendingSendContracts}건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다.</span>`,
+    c.pendingSignatureContracts && `직원 서명 대기·직원 수정 요청 중인 근로계약 : ${c.pendingSignatureContracts}건 종료<span class="block text-[13px] text-erp-label">직원은 해당 근로계약에 더 이상 서명할 수 없습니다.</span>`,
   ].filter(Boolean);
   const closingList =
     `<div class="mt-[12px] flex flex-col gap-[6px]">` +

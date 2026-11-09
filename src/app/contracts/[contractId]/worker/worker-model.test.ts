@@ -44,7 +44,7 @@ test("저장 뒤 상태 안내 — 서명 기한 30일 · 가입 초대 대상�
     assert.match(workerSaveNote(s), /서명 기한은 새로 30일/, s);
     assert.match(workerSaveNote(s), /가입 초대 대상이면 곧바로 다시 보내고/, s);
   }
-  assert.match(workerSaveNote("CORRECTION_REQUESTED"), /서명 대기로/);
+  assert.match(workerSaveNote("CORRECTION_REQUESTED"), /직원 서명 대기로/);
   assert.match(workerSaveNote("PENDING_SEND"), /계정이 있는 번호로 고치면 보내지 않고/);
 });
 

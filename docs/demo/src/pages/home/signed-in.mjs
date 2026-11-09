@@ -60,8 +60,8 @@ export default ({ A, R }) => {
   // 순서는 api 처리 대기 순서(갱신 예정 → 계약 → 직원 → 문의 → TO-DO). 「가입 연결 확인 필요」는 없앤 규칙이라 뺐다(목업 HOME-8)
   const todo = [
     ["계약", "계약 갱신 예정 2건", "서지안 외 1명 · 새 근로계약서 초안 없음", "staff/contracts.html"],
-    ["계약", "근로계약 서명 대기 3건", "남도현 외 2명 · 발송 후 6일 경과", "staff/contracts.html"],
-    ["계약", "근로계약 수정 요청 1건", "정우진 · 요청 후 2일 경과", "staff/contracts.html"],
+    ["계약", "근로계약 직원 서명 대기 3건", "남도현 외 2명 · 발송 후 6일 경과", "staff/contracts.html"],
+    ["계약", "근로계약 직원 수정 요청 1건", "정우진 · 요청 후 2일 경과", "staff/contracts.html"],
     ["직원", "소속 확인 거절 1건", "이준호 · 거절 후 3일 경과", "staff/index.html"],
     ["문의", "문의 답변완료 1건", "KIOSK 영수증 프린터 연동 문의 · 답변 후 1일 경과", "support/inquiries.html"],
     ["TO-DO", "긴급 TO-DO 1건", "냉장고 재료 폐기 · 오늘 등록", "staff/todos.html"],
@@ -197,17 +197,17 @@ function oneStore(A, R) {
       span(c),
       days(c),
       [
-        `${p.tag("ok", "체결 완료")} ${p.sub("무기한")}`,
-        `${p.tag("ok", "체결 완료")} ${p.sub("무기한")}`,
+        `${p.tag("ok", "서명 완료")} ${p.sub("무기한")}`,
+        `${p.tag("ok", "서명 완료")} ${p.sub("무기한")}`,
         `${p.tag("warn", "갱신 예정 · D-18")} ${p.sub("~09-21")}`,
-        `${p.tag("warn", "서명 대기")} ${p.sub("날인 기한 09-27")}`,
-        `${p.tag("ok", "체결 완료")} ${p.sub("~2027-02-28")}`,
-        `${p.tag("ok", "체결 완료")} ${p.sub("~2027-05-31")}`,
+        `${p.tag("warn", "직원 서명 대기")} ${p.sub("서명 기한 09-27")}`,
+        `${p.tag("ok", "서명 완료")} ${p.sub("~2027-02-28")}`,
+        `${p.tag("ok", "서명 완료")} ${p.sub("~2027-05-31")}`,
       ][i],
       "재직",
     ]),
     // 아직 가입하지 않은 직원은 상태 칸이 「가입 대기」다(목업 HOME-9). 「연결 보류」는 없앤 규칙이다
-    [ui.link("박서연", link(R, "staff/index.html")), "파트타이머", p.sub("—"), p.sub("—"), `${p.tag("warn", "발송 대기")} ${p.sub("초대 발송 09-02")}`, p.sub("가입 대기")],
+    [ui.link("박서연", link(R, "staff/index.html")), "파트타이머", p.sub("—"), p.sub("—"), `${p.tag("warn", "서명 요청 전")} ${p.sub("초대 발송 09-02")}`, p.sub("가입 대기")],
   ];
   const staff = card(
     head(

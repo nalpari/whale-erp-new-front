@@ -22,7 +22,7 @@ const KNOWN = new Set([...PAPER_ORDER, "SIGNED_COPY", "SENT_ORIGINAL", "SIGNATUR
  * 체결됐는데 처리 완료본이 없을 때. 날인 직후면 곧 생기지만, 필기 서명 없이 체결된 옛 계약처럼 api 가 만들 수 없는 경우도 있어
  * 「잠시 뒤 생긴다」고 약속하지 않는다.
  */
-export const NO_SIGNED_COPY = "처리 완료본이 아직 없습니다. 날인 직후라면 잠시 뒤 새로 고쳐 주세요.";
+export const NO_SIGNED_COPY = "처리 완료본이 아직 없습니다. 서명 직후라면 잠시 뒤 새로 고쳐 주세요.";
 
 /**
  * 체결된 계약 — api 의 직원 앱 처리 완료본 내려받기(MyContractDocumentsService.executed)와 같은 기준: 체결 완료, 체결 완료에서 닫힌
@@ -40,7 +40,7 @@ export function documentRowsOf(c: Source): DocumentRow[] {
   const paper = c.documents
     .filter((d) => PAPER_ORDER.includes(d.kind))
     .sort((a, b) => PAPER_ORDER.indexOf(a.kind) - PAPER_ORDER.indexOf(b.kind));
-  if (paper.length) rows.push({ label: "날인본", documents: paper, withKind: true });
+  if (paper.length) rows.push({ label: "서명본", documents: paper, withKind: true });
   const signed = ofKind("SIGNED_COPY");
   if (signed.length) rows.push({ label: "처리 완료본", documents: signed, withKind: false });
   // 종이 계약이면(계약 방식이 빈 옛 계약은 날인본이 있으면) 처리 완료본이 없다 — 「아직 없음」이 영영 남지 않게(front #196 리뷰)

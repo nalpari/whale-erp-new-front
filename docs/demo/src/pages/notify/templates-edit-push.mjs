@@ -12,11 +12,11 @@ export default templateEdit({
   to: "직원",
   count: true,
   title: "근로계약서가 도착했습니다",
-  body: "#{근무지} 근로계약서를 확인하고 날인해 주세요. 날인 기한은 #{날인기한}까지입니다.",
-  vars: [{ name: "근무지", label: "근무지", required: true, example: "모리커피 연남점" }, { name: "날인기한", label: "날인 기한", required: false, example: "10-30" }],
+  body: "#{근무지} 근로계약서를 확인하고 서명해 주세요. 서명 기한은 #{서명기한}까지입니다.",
+  vars: [{ name: "근무지", label: "근무지", required: true, example: "모리커피 연남점" }, { name: "서명기한", label: "서명 기한", required: false, example: "10-30" }],
   preview: {
     title: "근로계약서가 도착했습니다",
-    body: "모리커피 연남점 근로계약서를 확인하고 날인해 주세요. 날인 기한은 10-30까지입니다.",
+    body: "모리커피 연남점 근로계약서를 확인하고 서명해 주세요. 서명 기한은 10-30까지입니다.",
     sub: "모리커피 연남점 · 10-07 09:41",
   },
   history: [

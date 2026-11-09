@@ -56,7 +56,7 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
 const Note = ({ children }: { children: ReactNode }) => <p className="text-[13px] leading-[1.6] text-erp-label">{children}</p>;
 
 const CONTENTS = [
-  { name: "근로계약서", what: "체결 완료본과 종이 계약 날인본, 전체 목록", format: "PDF · CSV" },
+  { name: "근로계약서", what: "서명 완료본과 종이 계약 서명본, 전체 목록", format: "PDF · CSV" },
   { name: "출퇴근 기록", what: "기록 시각과 보정 · 대신 등록 이력", format: "CSV" },
   { name: "급여명세서", what: "발송 완료된 급여명세서와 전체 목록", format: "PDF · CSV" },
   { name: "근무스케줄", what: "등록된 근무스케줄 전체", format: "CSV" },
