@@ -1,10 +1,24 @@
 // node --test src/app/staff-members/staff-row.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import type { EnumValue } from "../../lib/enums.ts";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
 import { canResendInvitation, contractCell, employmentStatusCells, formatPhone, invitationText, joinCell, rowNumber, statusCells } from "./staff-row.ts";
 
 const TODAY = "2026-10-12";
+// GET /enums/ContractStatus 가 주는 이름(WHALEERP-659) — 칸은 이 이름에 날수 · 날짜 꼬리만 붙인다
+const STATUSES: EnumValue[] = (
+  [
+    ["DRAFT", "작성 중"],
+    ["PENDING_SEND", "서명 요청 전"],
+    ["PENDING_SIGNATURE", "직원 서명 대기"],
+    ["CORRECTION_REQUESTED", "직원 수정 요청"],
+    ["SIGNED", "서명 완료"],
+    ["REJECTED", "서명 거절"],
+    ["EXPIRED", "계약 기간 만료"],
+    ["ENDED", "계약 종료"],
+  ] as const
+).map(([value, label], i) => ({ value, label, order: i + 1 }));
 const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => ({
   staffMemberId: 1,
   isMasked: false,
@@ -65,53 +79,58 @@ test("가입·인증 — 퇴직한 가입 완료는 회색", () => {
 });
 
 test("계약 — 상태별 표시", () => {
-  assert.equal(contractCell(item({ contract: null }), TODAY), null);
-  assert.deepEqual(contractCell(item(contract("DRAFT")), TODAY), { text: "임시저장", style: "badge-neutral" });
-  assert.deepEqual(contractCell(item(contract("PENDING_SEND")), TODAY), { text: "발송 대기", style: "badge-neutral" });
-  assert.deepEqual(contractCell(item(contract("SIGNED")), TODAY), { text: "체결 완료", style: "badge-on" });
-  assert.deepEqual(contractCell(item(contract("REJECTED")), TODAY), { text: "거부", style: "badge-off" });
-  assert.deepEqual(contractCell(item(contract("EXPIRED")), TODAY), { text: "만료", style: "badge-off" });
-  assert.deepEqual(contractCell(item(contract("ENDED")), TODAY), { text: "종료", style: "badge-neutral" });
+  assert.equal(contractCell(item({ contract: null }), TODAY, STATUSES), null);
+  assert.deepEqual(contractCell(item(contract("DRAFT")), TODAY, STATUSES), { text: "작성 중", style: "badge-neutral" });
+  assert.deepEqual(contractCell(item(contract("PENDING_SEND")), TODAY, STATUSES), { text: "서명 요청 전", style: "badge-neutral" });
+  assert.deepEqual(contractCell(item(contract("SIGNED")), TODAY, STATUSES), { text: "서명 완료", style: "badge-on" });
+  assert.deepEqual(contractCell(item(contract("REJECTED")), TODAY, STATUSES), { text: "서명 거절", style: "badge-off" });
+  assert.deepEqual(contractCell(item(contract("EXPIRED")), TODAY, STATUSES), { text: "계약 기간 만료", style: "badge-off" });
+  assert.deepEqual(contractCell(item(contract("ENDED")), TODAY, STATUSES), { text: "계약 종료", style: "badge-neutral" });
+});
+
+test("계약 — 상태 이름을 받지 못했으면 영문 값 대신 「-」(null)", () => {
+  assert.equal(contractCell(item(contract("SIGNED")), TODAY, []), null);
+  assert.equal(contractCell(item(contract("PENDING_SIGNATURE")), TODAY, STATUSES.filter((s) => s.value !== "PENDING_SIGNATURE")), null);
 });
 
 test("계약 — 서명 대기 D-day 는 한국 날짜로", () => {
   assert.deepEqual(
-    contractCell(item(contract("PENDING_SIGNATURE", { signDeadlineAt: "2026-11-05T09:00:00+09:00" })), TODAY),
-    { text: "서명 대기 · D-24", style: "badge-off" },
+    contractCell(item(contract("PENDING_SIGNATURE", { signDeadlineAt: "2026-11-05T09:00:00+09:00" })), TODAY, STATUSES),
+    { text: "직원 서명 대기 · D-24", style: "badge-off" },
   );
 });
 
-test("서명 기한이 지났으면 D-day 없이 서명 대기 — 만료 배치 전의 잠깐", () => {
+test("서명 기한이 지났으면 D-day 없이 직원 서명 대기 — 만료 배치 전의 잠깐", () => {
   assert.deepEqual(
-    contractCell(item(contract("PENDING_SIGNATURE", { signDeadlineAt: "2026-10-11T09:00:00+09:00" })), TODAY),
-    { text: "서명 대기", style: "badge-off" },
+    contractCell(item(contract("PENDING_SIGNATURE", { signDeadlineAt: "2026-10-11T09:00:00+09:00" })), TODAY, STATUSES),
+    { text: "직원 서명 대기", style: "badge-off" },
   );
 });
 
-test("거부는 최종수정일을 한국 날짜로 붙인다 — 거부일을 따로 저장하지 않는다", () => {
+test("서명 거절은 최종수정일을 한국 날짜로 붙인다 — 거절일을 따로 저장하지 않는다", () => {
   assert.deepEqual(
-    contractCell(item(contract("REJECTED", { updatedAt: "2026-09-01T15:30:00Z" })), TODAY),
-    { text: "거부 · 09-02", style: "badge-off" },
+    contractCell(item(contract("REJECTED", { updatedAt: "2026-09-01T15:30:00Z" })), TODAY, STATUSES),
+    { text: "서명 거절 · 09-02", style: "badge-off" },
   );
 });
 
 test("오늘이 기한이면 D-0", () => {
-  assert.equal(contractCell(item(contract("PENDING_SIGNATURE", { signDeadlineAt: "2026-10-12T23:00:00+09:00" })), TODAY)?.text, "서명 대기 · D-0");
-  assert.equal(contractCell(item(contract("SIGNED", { endDate: TODAY })), TODAY)?.text, "갱신 예정 D-0");
+  assert.equal(contractCell(item(contract("PENDING_SIGNATURE", { signDeadlineAt: "2026-10-12T23:00:00+09:00" })), TODAY, STATUSES)?.text, "직원 서명 대기 · D-0");
+  assert.equal(contractCell(item(contract("SIGNED", { endDate: TODAY })), TODAY, STATUSES)?.text, "갱신 예정 D-0");
 });
 
-test("계약 — 종료일 30일 안이면 갱신 예정, 31일이면 체결 완료", () => {
-  assert.deepEqual(contractCell(item(contract("SIGNED", { endDate: "2026-11-01" })), TODAY), { text: "갱신 예정 D-20", style: "badge-off" });
-  assert.equal(contractCell(item(contract("SIGNED", { endDate: "2026-11-11" })), TODAY)?.text, "갱신 예정 D-30");
-  assert.equal(contractCell(item(contract("SIGNED", { endDate: "2026-11-12" })), TODAY)?.text, "체결 완료");
+test("계약 — 종료일 30일 안이면 갱신 예정, 31일이면 서명 완료", () => {
+  assert.deepEqual(contractCell(item(contract("SIGNED", { endDate: "2026-11-01" })), TODAY, STATUSES), { text: "갱신 예정 D-20", style: "badge-off" });
+  assert.equal(contractCell(item(contract("SIGNED", { endDate: "2026-11-11" })), TODAY, STATUSES)?.text, "갱신 예정 D-30");
+  assert.equal(contractCell(item(contract("SIGNED", { endDate: "2026-11-12" })), TODAY, STATUSES)?.text, "서명 완료");
 });
 
 test("수정 요청 — 직원이 가입 값과 달라 수정을 요청한 계약(본인 대조, WHALEERP-125)", () => {
-  assert.deepEqual(contractCell(item(contract("CORRECTION_REQUESTED")), TODAY), { text: "수정 요청", style: "badge-off" });
+  assert.deepEqual(contractCell(item(contract("CORRECTION_REQUESTED")), TODAY, STATUSES), { text: "직원 수정 요청", style: "badge-off" });
 });
 
-test("종료일이 지났으면 체결 완료", () => {
-  assert.equal(contractCell(item(contract("SIGNED", { endDate: "2026-10-11" })), TODAY)?.text, "체결 완료");
+test("종료일이 지났으면 서명 완료", () => {
+  assert.equal(contractCell(item(contract("SIGNED", { endDate: "2026-10-11" })), TODAY, STATUSES)?.text, "서명 완료");
 });
 
 test("재직 칸 — 위에서부터 처음 맞는 것", () => {
@@ -122,7 +141,7 @@ test("재직 칸 — 위에서부터 처음 맞는 것", () => {
     [{ joinState: "AFFILIATION_PENDING" }, [{ text: "응답 대기", style: "muted" }]],
     [{ joinState: "RETURN_PENDING" }, [{ text: "응답 대기", style: "muted" }]],
     [{ joinState: "INVITED" }, [{ text: "가입 대기", style: "muted" }]],
-    [contract("PENDING_SIGNATURE"), [{ text: "날인 대기", style: "mark-off" }]],
+    [contract("PENDING_SIGNATURE"), [{ text: "서명 대기", style: "mark-off" }]],
     [contract("CORRECTION_REQUESTED"), [{ text: "수정 필요", style: "mark-off" }]],
     [contract("REJECTED"), [{ text: "재발송 필요", style: "mark-off" }]],
     [contract("EXPIRED"), [{ text: "재발송 필요", style: "mark-off" }]],
