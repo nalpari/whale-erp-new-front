@@ -415,10 +415,13 @@ function TodoFormFields({
           </FormRow>
           <Stack>
             {/* 칸 이름을 앞에, 스위치를 뒤에 — 공지사항 등록 「상단 고정」과 같은 모양. 이름은 다른 칸과 같은 15px 600 먹색(2026-11-09 사용자 지정, 3팀 확인 필요) */}
-            <label className="flex w-fit cursor-pointer items-center gap-[10px]">
-              <span className="text-[15px] font-semibold text-erp-ink">긴급요청</span>
-              <Toggle label="" aria-label="긴급요청" checked={form.isUrgent} onChange={(e) => set("isUrgent", e.target.checked)} />
-            </label>
+            {/* 이름은 스위치 칸에 htmlFor 로 잇는다 — 이름을 눌러도 켜지고, 스위치 안에도 label 이 있어 바깥을 label 로 감싸면 label 안 label 이 됐다(리뷰로 찾음) */}
+            <div className="flex w-fit items-center gap-[10px]">
+              <label htmlFor={`${ids}-urgent`} className="cursor-pointer text-[15px] font-semibold text-erp-ink">
+                긴급요청
+              </label>
+              <Toggle id={`${ids}-urgent`} label="" checked={form.isUrgent} onChange={(e) => set("isUrgent", e.target.checked)} />
+            </div>
             <Note>
               직원 근무 앱의 홈 및 근무 탭 최상단에 강조 표시되며, 관리자 웹의 미조치 건수에 포함됩니다.
               <br />
