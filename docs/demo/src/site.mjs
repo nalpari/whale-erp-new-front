@@ -341,7 +341,7 @@ export function withdrawBody(R, { panel = false, blocked = false } = {}) {
         // 폐점할 점포 전체 합계 — 점포 관리 폐점 확인 창과 같은 목록(앱 ClosingCheckList). 탈퇴가 같은 폐점 서비스로 점포를 한꺼번에 닫는다
         action:
           `<div class="flex flex-col gap-[6px]"><div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p class="font-medium">폐점 시 다음 항목이 함께 처리됩니다.</p>` +
-          `<ol class="mt-[6px] list-decimal pl-[18px]"><li>근무 중인 직원 : 39명 퇴직 처리<span class="block text-[13px] text-erp-label">퇴직일이 없거나 오늘 이후인 직원의 퇴직일은 오늘로 변경됩니다.</span></li>` +
+          `<ol class="mt-[6px] list-decimal pl-[18px]"><li>근무 중인 직원 : 39명 퇴직 처리<span class="block text-[13px] text-erp-label">퇴직일이 등록되지 않았거나 오늘 이후인 직원은 퇴직일이 오늘 날짜로 변경됩니다.</span></li>` +
           `<li class="mt-[6px]">임시저장된 근로계약 : 5건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 더 이상 작성하거나 발송할 수 없습니다.</span></li>` +
           `<li class="mt-[6px]">발송 대기 중인 근로계약 : 1건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다.</span></li>` +
           `<li class="mt-[6px]">서명 대기·수정 요청 중인 근로계약 : 3건 종료<span class="block text-[13px] text-erp-label">직원은 해당 근로계약에 더 이상 서명할 수 없습니다.</span></li></ol></div>` +

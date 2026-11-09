@@ -132,7 +132,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
     "<p>폐점으로 저장하면 되돌릴 수 없습니다.</p><p>폐점일은 오늘(2026-11-03)로 설정되며, 다른 수정 내용도 함께 저장됩니다.</p>" +
       // 폐점하면 함께 처리될 것 — 저장을 누를 때 지금 기준으로 다시 받는다(앱 ClosingCheckList)
       `<div class="mt-[12px] flex flex-col gap-[6px]"><div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p class="font-medium">폐점 시 다음 항목이 함께 처리됩니다.</p>` +
-      `<ol class="mt-[6px] list-decimal pl-[18px]"><li>근무 중인 직원 : 8명 퇴직 처리<span class="block text-[13px] text-erp-label">퇴직일이 없거나 오늘 이후인 직원의 퇴직일은 오늘로 변경됩니다.</span></li><li class="mt-[6px]">발송 대기 중인 근로계약 : 1건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다.</span></li></ol></div>` +
+      `<ol class="mt-[6px] list-decimal pl-[18px]"><li>근무 중인 직원 : 8명 퇴직 처리<span class="block text-[13px] text-erp-label">퇴직일이 등록되지 않았거나 오늘 이후인 직원은 퇴직일이 오늘 날짜로 변경됩니다.</span></li><li class="mt-[6px]">발송 대기 중인 근로계약 : 1건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다.</span></li></ol></div>` +
       `</div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("폐점으로 저장", { href: link(R, "stores/detail-closed.html") }),
     "w-[480px]",
