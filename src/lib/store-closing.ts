@@ -43,7 +43,7 @@ const n = (value: number) => value.toLocaleString("ko-KR");
  */
 export function closingCheckLines(counts: StoreClosingCounts): ClosingLine[] {
   const lines: (ClosingLine | false)[] = [
-    counts.retiringStaff > 0 && { key: "staff", text: `근무 중인 직원 : ${n(counts.retiringStaff)}명 퇴직 처리`, note: "퇴직일이 없거나 오늘 이후인 직원의 퇴직일은 오늘로 변경됩니다." },
+    counts.retiringStaff > 0 && { key: "staff", text: `근무 중인 직원 : ${n(counts.retiringStaff)}명 퇴직 처리`, note: "퇴직일이 등록되지 않았거나 오늘 이후인 직원은 퇴직일이 오늘 날짜로 변경됩니다." },
     counts.draftContracts > 0 && { key: "draft", text: `임시저장된 근로계약 : ${n(counts.draftContracts)}건 종료`, note: "해당 근로계약은 더 이상 작성하거나 발송할 수 없습니다." },
     counts.pendingSendContracts > 0 && { key: "send", text: `발송 대기 중인 근로계약 : ${n(counts.pendingSendContracts)}건 종료`, note: "해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다." },
     counts.pendingSignatureContracts > 0 && {
