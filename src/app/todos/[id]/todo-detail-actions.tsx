@@ -70,8 +70,9 @@ function DeleteTodoDialog({ detail, listHref, onClose }: { detail: TodoDetail; l
       }
     });
 
+  // 다른 화면 삭제 확인창과 같게 — 기본 버튼 · 「…를 삭제하시겠습니까?」(2026-11-06 사용자 지정, 전엔 빨간 버튼 · 「이 TO-DO 를」)
   return (
-    <ConfirmDialog open title="이 TO-DO 를 삭제하시겠습니까?" confirmLabel={busy ? "삭제 중" : "삭제"} confirmVariant="danger" busy={busy} onConfirm={handleConfirm} onCancel={onClose}>
+    <ConfirmDialog open title="TO-DO를 삭제하시겠습니까?" confirmLabel={busy ? "삭제 중" : "삭제"} busy={busy} onConfirm={handleConfirm} onCancel={onClose}>
       <p>
         「{detail.title}」을 지웁니다. 배정된 직원 근무 앱에서도 사라집니다.
         {group && ` 같이 배정한 ${pending + remaining}건 가운데 대기 ${pending}건만 지우고${remaining ? `, 진행 중 · 완료 ${remaining}건은 남깁니다` : ""}.`}

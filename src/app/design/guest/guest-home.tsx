@@ -3,11 +3,11 @@ import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
 import type { components } from "@/lib/api-types.generated";
 import type { GuestRoutes } from "./guest-routes";
-import { Arrow, FaqItem, GuestButton, GuestPage, ICON_GRADIENT, SectionTitle, TitleRow, TRIM } from "./guest-ui";
+import { Arrow, FaqItem, GuestButton, GuestPage, SectionTitle, TitleRow, TRIM } from "./guest-ui";
 import { Badges, dotDate } from "./notices/notice-views";
-import { BUTTON_MOTION, HOVER } from "./theme";
+import { BUTTON_MOTION, FRAME, HOVER } from "./theme";
 
-// Figma 「로그인전_Main」(8QSOuwFFBfCbFWR6RBUlps · 1:2). 1920 폭 데스크톱 시안이다.
+// Figma 「로그인전_Main」(RQmNVgT2NL0njIFXVQPVG6 · 44:2, 로그인전_공유 — 2026-11-06 반영). 1920 폭 데스크톱 시안이다.
 // 실제 홈((site)/page.tsx)과 디자인 샘플(design/guest/page.tsx)이 함께 그린다. 링크는 받은 routes 로 건다(guest-routes.ts).
 
 // 세로선(11px)으로 나눈 짧은 낱말 줄 — 부가서비스 이름 등. 글자 위아래 여백 자르기(TRIM)는 flex 줄에 걸면 듣지 않아 낱말마다 건다.
@@ -26,39 +26,44 @@ function Divided({ items, className }: { items: string[]; className: string }) {
 }
 
 
-function CalendarIcon() {
+// 「세 단계」 아이콘. 회청 그라데이션 면 위에 반투명 유리 면(SVG)과 흰 + 를 겹친다. 자리는 Figma 82×74 칸 기준이다(44:338 · 44:355 · 44:372).
+// 유리 SVG 는 안쪽 그림자 · 흐림 여백만큼 칸 밖으로 넘친다 — 왼쪽 · 위가 음수인 까닭이다.
+const STEP_ICON_BASE = "/guest/home";
+function Plus({ x, y }: { x: number; y: number }) {
   return (
-    <span className="relative block h-[150px] w-[114px] font-[family-name:var(--font-inter)] font-bold tracking-normal">
-      <span
-        className="absolute top-[15.63px] left-0 h-[70.75px] w-[113.6px] rounded-[18.8px] shadow-[inset_0_8px_8px_rgba(255,255,255,0.25)]"
-        style={{ backgroundImage: ICON_GRADIENT }}
-      />
-      <span className="absolute top-[46.79px] left-0 h-[103.21px] w-[113.6px] rounded-[18.8px] border border-[rgba(97,120,141,0.1)] bg-white/40 shadow-[inset_0_10.4px_8px_rgba(255,255,255,0.5)] backdrop-blur-[9.7px]" />
-      <span className="absolute top-[67.56px] left-[40.24px] text-[15.58px] text-[#8397a9]">Sun</span>
-      <span
-        className="absolute top-[86.39px] left-[42.84px] bg-clip-text text-[41.54px] text-transparent"
-        style={{ backgroundImage: ICON_GRADIENT }}
-      >
-        8
-      </span>
-      <span className="absolute top-[2px] left-[26.61px] h-[29.21px] w-[11.04px] rounded-full bg-white shadow-[0_2.6px_3.8px_rgba(0,0,0,0.1)]" />
-      <span className="absolute top-[2px] left-[75.94px] h-[29.21px] w-[11.04px] rounded-full bg-white shadow-[0_2.6px_3.8px_rgba(0,0,0,0.1)]" />
-    </span>
+    <>
+      <span className="absolute h-[2px] w-[17px] rounded-[3.815px] bg-white/90" style={{ left: x, top: y + 7 }} />
+      <span className="absolute h-[17px] w-[2px] rounded-[3.815px] bg-white/90" style={{ left: x + 8, top: y }} />
+    </>
   );
 }
-
-function MailIcon() {
+function StepIcon({ step }: { step: 0 | 1 | 2 }) {
   return (
-    <span className="relative block h-[94px] w-[91.65px] shrink-0">
-      <Image src="/guest/mail-back.svg" alt="" width={91.65} height={77.618} className="absolute top-[16.38px] left-0" />
-      <span
-        className="absolute top-0 left-[13.09px] h-[82.25px] w-[65.13px] rounded-[11.4px] shadow-[inset_0_5px_5px_rgba(255,255,255,0.25)]"
-        style={{ backgroundImage: ICON_GRADIENT }}
-      />
-      <span className="absolute top-[17.78px] left-[26.93px] h-[2.54px] w-[36.84px] rounded-full bg-white/90" />
-      <span className="absolute top-[26.67px] left-[26.93px] h-[2.54px] w-[30.49px] rounded-full bg-white/60" />
-      <span className="absolute top-[35.56px] left-[26.93px] h-[2.54px] w-[21.6px] rounded-full bg-white/40" />
-      <Image src="/guest/mail-front.svg" alt="" width={91.65} height={51.8066} className="absolute top-[42.19px] left-0" />
+    <span className="relative block h-[74px] w-[82px] shrink-0">
+      {step === 0 && (
+        <>
+          <span
+            className="absolute top-0 left-[20.91px] h-[52.33px] w-[54.09px] rounded-[8.942px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]"
+            style={{ backgroundImage: "linear-gradient(106deg, rgba(174,190,206,0.8) 8.98%, rgba(32,96,154,0.8) 94.82%)" }}
+          />
+          <Image src={`${STEP_ICON_BASE}/step-signup-glass.svg`} alt="" width={80.0558} height={89.4992} className="absolute top-[-1.21px] left-[-5.98px] max-w-none" />
+          <Plus x={26.05} y={33.94} />
+        </>
+      )}
+      {step === 1 && (
+        <>
+          <Image src={`${STEP_ICON_BASE}/step-store-back.svg`} alt="" width={68} height={54.4419} className="absolute top-[0.98px] left-[7px] max-w-none" />
+          <Image src={`${STEP_ICON_BASE}/step-store-glass.svg`} alt="" width={79.9649} height={82.5263} className="absolute top-[5.75px] left-[1.02px] max-w-none" />
+          <Plus x={32} y={35.14} />
+        </>
+      )}
+      {step === 2 && (
+        <>
+          <Image src={`${STEP_ICON_BASE}/step-staff-person.svg`} alt="" width={56.49} height={63.3369} className="absolute top-[5.25px] left-[5.93px] max-w-none" />
+          <Image src={`${STEP_ICON_BASE}/step-staff-glass.svg`} alt="" width={69.5281} height={70.1473} className="absolute top-[15.31px] left-[21.74px] max-w-none" />
+          <Plus x={48} y={41.14} />
+        </>
+      )}
     </span>
   );
 }
@@ -77,17 +82,17 @@ function Billboard({ routes }: { routes: GuestRoutes }) {
       <Image src="/guest/billboard-bg.png" alt="" fill loading="eager" sizes="100vw" className="object-cover" />
       {/* 정사각 그림을 677×375 에 늘여 채운 것이 시안이다 — object-cover 로 바꾸면 고래가 잘린다.
           시안의 2px 흐림은 너무 뿌옇다는 요청(2026-10-13)으로 뺐다. */}
-      <div className="absolute top-1/2 left-1/2 h-[375px] w-[677px] -translate-1/2">
+      <div className="guest-whale absolute top-1/2 left-1/2 h-[375px] w-[677px] -translate-1/2">
         <Image src="/guest/billboard-whale.png" alt="" fill loading="eager" sizes="677px" />
       </div>
       <div className="absolute top-[478px] left-1/2 flex w-[1520px] -translate-x-1/2 flex-col gap-[80px]">
         <div className="flex items-end justify-between">
           <div className="flex w-[445px] flex-col gap-[48px]">
-            <p className="flex flex-col gap-[23px] bg-gradient-to-r from-[rgba(58,86,112,0.5)] to-[rgba(58,86,112,0.22)] bg-clip-text font-[family-name:var(--font-rem)] font-black text-transparent">
-              <span className={`text-[70px] tracking-[-0.025em] ${TRIM}`}>WHALE</span>
-              <span className={`text-[216px] tracking-[-0.025em] ${TRIM}`}>ERP</span>
+            <p className="flex flex-col gap-[23px] font-[family-name:var(--font-rem)] font-black text-transparent">
+              <span className={`bg-gradient-to-r from-[rgba(58,86,112,0.5)] to-[rgba(58,86,112,0.22)] bg-clip-text text-[70px] tracking-[-0.025em] ${TRIM}`}>WHALE</span>
+              <span className={`bg-gradient-to-r from-[rgba(58,86,112,0.8)] to-[rgba(58,86,112,0.36)] bg-clip-text text-[216px] tracking-[-0.025em] ${TRIM}`}>ERP</span>
             </p>
-            <div className="flex flex-col gap-[24px] pl-[12px] text-[rgba(58,86,112,0.4)]">
+            <div className="flex flex-col gap-[24px] pl-[12px] text-guest-navy">
               <p className={`font-[family-name:var(--font-inter-tight)] text-[32px] leading-[1.5] font-bold tracking-normal capitalize ${TRIM}`}>
                 your smart choice
               </p>
@@ -116,7 +121,7 @@ function Billboard({ routes }: { routes: GuestRoutes }) {
             </Link>
           </div>
         </div>
-        <ul className="flex justify-between border-t border-[rgba(130,151,168,0.15)] pt-[24px] pl-[2px] text-[rgba(58,86,112,0.7)]">
+        <ul className="flex justify-center gap-[280px] border-t border-[rgba(130,151,168,0.15)] pt-[24px] pl-[2px] text-guest-navy">
           {HIGHLIGHTS.map((h) => (
             <li key={h.no} className="flex gap-[10px]">
               <span className="text-[16px] leading-[2.3] font-bold">{h.no}</span>
@@ -132,21 +137,22 @@ function Billboard({ routes }: { routes: GuestRoutes }) {
   );
 }
 
-const FEATURES: { title: string; route?: keyof GuestRoutes; lines: string[] }[] = [
-  { title: "매장운영", route: "storeOperations", lines: ["매장·장비 정보를 한곳에", "종이 없는 근로계약·급여명세서", "근무표 공유와 QR 출퇴근"] },
-  { title: "재무관리", lines: ["통장 입출금을 한눈에", "현금 거래까지 빠짐없이", "돈이 나가는 곳을 비율로"] },
-  { title: "프랜차이즈", lines: ["온라인으로 끝내는 가맹계약", "신메뉴·가격 한 번에 배포", "현장 점검 결과 바로 공유"] },
-  { title: "부가서비스", route: "addOnServices", lines: ["POS · KIOSK 주문·결제", "테이블·픽업·QR 주문", "발주·재고·레시피 관리"] },
+// 아이콘은 정사각 그림을 칸 크기(폭은 카드마다 다르고 높이 148)에 늘여 채운 것이 시안이다.
+const FEATURES: { title: string; route?: keyof GuestRoutes; lines: string[]; icon: { src: string; width: number } }[] = [
+  { title: "매장운영", route: "storeOperations", icon: { src: "feature-store.png", width: 169 }, lines: ["매장·장비 정보를 한곳에", "종이 없는 근로계약·급여명세서", "근무표 공유와 QR 출퇴근"] },
+  { title: "재무관리", route: "financeManagement", icon: { src: "feature-finance.png", width: 156 }, lines: ["통장 입출금을 한눈에", "현금 거래까지 빠짐없이", "돈이 나가는 곳을 비율로"] },
+  { title: "프랜차이즈", route: "franchise", icon: { src: "feature-franchise.png", width: 147 }, lines: ["온라인으로 끝내는 가맹계약", "신메뉴·가격 한 번에 배포", "현장 점검 결과 바로 공유"] },
+  { title: "부가서비스", route: "addOnServices", icon: { src: "feature-add-on.png", width: 164 }, lines: ["POS · KIOSK 주문·결제", "테이블·픽업·QR 주문", "발주·재고·레시피 관리"] },
 ];
 
 function Features({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="flex flex-col gap-[60px] bg-white px-[80px] pt-[160px]">
+    <section className={`${FRAME} flex flex-col gap-[60px] pt-[160px] pb-[80px]`}>
       <SectionTitle light="매장 운영," bold="네 가지면 충분합니다" />
       <div className="grid grid-cols-4 gap-[16px]">
         {FEATURES.map((f) => (
-          <div key={f.title} className="flex flex-col gap-[32px] rounded-[16px] bg-guest-card py-[38px] pl-[72px] text-guest-navy">
-            <CalendarIcon />
+          <div key={f.title} className="flex flex-col gap-[32px] rounded-[16px] bg-[#f1f7fc] py-[38px] pl-[72px] text-guest-navy">
+            <Image src={`/guest/home/${f.icon.src}`} alt="" width={f.icon.width} height={148} sizes={`${f.icon.width}px`} className="h-[148px] max-w-none" style={{ width: f.icon.width }} />
             <div className="flex flex-col items-start">
               <h3 className="text-[32px] leading-[1.6] font-bold">{f.title}</h3>
               <p className="pb-[20px] text-[18px] leading-[1.7]">
@@ -156,7 +162,7 @@ function Features({ routes }: { routes: GuestRoutes }) {
                   </span>
                 ))}
               </p>
-              <GuestButton tone="white" href={f.route && routes[f.route]} arrow>
+              <GuestButton tone="steel" href={f.route && routes[f.route]} arrow>
                 자세히 보기
               </GuestButton>
             </div>
@@ -184,6 +190,7 @@ const PERSONAS = [
     features: ["매장별 매출 비교와 통계", "매장별 직원·근무 현황", "매장별 관리자 지정과 권한 분리"],
     services: ["점포수 추가", "직원수 추가", "재무관리"],
     cta: "재무관리 자세히 보기",
+    route: "financeManagement" as const,
   },
   {
     head: "프랜차이즈 본사예요",
@@ -192,6 +199,7 @@ const PERSONAS = [
     features: ["온라인으로 끝내는 가맹계약", "신메뉴·가격 전 가맹점 일괄 배포", "가맹점 점검과 정보공개서 자료"],
     services: ["발주 관리", "레시피 관리", "점포수 추가"],
     cta: "프랜차이즈 자세히 보기",
+    route: "franchise" as const,
   },
   {
     head: "가맹점을 운영해요",
@@ -206,117 +214,114 @@ const PERSONAS = [
 
 function Personas({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="flex flex-col gap-[60px] px-[80px] pt-[125px] pb-[120px]">
-      <SectionTitle light="당신은," bold="어떤 사장님이신가요?" />
-      <div className="grid grid-cols-4 gap-x-[16px] gap-y-[38px]">
-        {PERSONAS.map((p, i) => (
-          <div key={p.head} className="flex gap-[10px] pl-[2px] text-guest-ink">
-            <span className="text-[16px] leading-[2.3] font-bold">{String(i + 1).padStart(2, "0")}</span>
-            <span className="leading-[1.6]">
-              <strong className="block text-[24px] font-bold">{p.head}</strong>
-              <span className="text-[18px]">{p.kind}</span>
-            </span>
-          </div>
-        ))}
-        {PERSONAS.map((p) => (
-          <article key={p.cta} className="flex flex-col rounded-b-[6px] border border-guest-line">
-            <span className="h-[6px] bg-guest-navy" />
-            {/* 내용은 띠 바로 아래부터 채우고 버튼만 바닥에 붙인다. 어느 카드의 줄이 꺾여도 제목 줄과 버튼 줄이 카드끼리 맞는다. */}
-            <div className="flex flex-1 flex-col gap-[30px] px-[34px] pt-[80px] pb-[34px]">
-              <div className={`flex flex-col gap-[25px] font-semibold text-guest-navy`}>
-                <p className={`text-[16px] leading-[1.6] ${TRIM}`}>{p.kind}</p>
-                {/* 카드 안쪽 폭(1920 에서 360px)에 맞춰 줄인다 — 1920 에서 32px, 1720 에서 27.6px. 안 줄이면 첫 줄이 넘쳐 세 줄이 된다. */}
-                <p className={`text-[clamp(26px,calc(2.222vw-10.67px),32px)] leading-[1.3] ${TRIM}`}>
-                  {p.pitch[0]}
-                  <br />
-                  {p.pitch[1]}
-                </p>
-              </div>
-              <div className="flex flex-1 flex-col gap-[32px]">
-                <div className="flex flex-col gap-[24px] text-[16px]">
-                  <div className="flex flex-col gap-[22px]">
-                    <p className={`leading-[1.6] font-semibold text-guest-ink ${TRIM}`}>이런 기능부터 써보세요</p>
-                    <p className={`leading-[1.6] text-guest-body ${TRIM}`}>
-                      {p.features.map((line) => (
-                        <span key={line} className="block">
-                          {line}
-                        </span>
-                      ))}
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-[22px] border-t border-[#e7e7e7] pt-[24px]">
-                    <p className={`leading-[1.6] font-semibold text-guest-ink ${TRIM}`}>함께 쓰면 좋은 부가서비스</p>
-                    <Divided items={p.services} className="text-guest-body" />
-                  </div>
-                </div>
-                <div className="mt-auto flex gap-[8px]">
-                  <GuestButton tone="navy" href={p.route && routes[p.route]} arrow grow>
-                    {p.cta}
-                  </GuestButton>
-                  <GuestButton tone="soft" href={routes.leads}>
-                    도입문의
-                  </GuestButton>
-                </div>
-              </div>
+    <section className="bg-guest-surface pt-[125px] pb-[80px]">
+      <div className={`${FRAME} flex flex-col gap-[60px]`}>
+        <SectionTitle light="당신은," bold="어떤 사장님이신가요?" />
+        <div className="grid grid-cols-4 gap-x-[16px] gap-y-[38px]">
+          {PERSONAS.map((p, i) => (
+            <div key={p.head} className="flex gap-[10px] pl-[2px] text-guest-ink">
+              <span className="text-[16px] leading-[2.3] font-bold">{String(i + 1).padStart(2, "0")}</span>
+              <span className="leading-[1.6]">
+                <strong className="block text-[24px] font-bold">{p.head}</strong>
+                <span className="text-[18px]">{p.kind}</span>
+              </span>
             </div>
-          </article>
-        ))}
+          ))}
+          {PERSONAS.map((p) => (
+            <article key={p.cta} className="flex flex-col rounded-b-[6px] border border-guest-line bg-white">
+              <span className="h-[6px] bg-guest-navy" />
+              {/* 내용은 띠 바로 아래부터 채우고 버튼만 바닥에 붙인다. 어느 카드의 줄이 꺾여도 제목 줄과 버튼 줄이 카드끼리 맞는다. */}
+              <div className="flex flex-1 flex-col gap-[30px] px-[34px] pt-[80px] pb-[34px]">
+                <div className={`flex flex-col gap-[25px] font-semibold text-guest-navy`}>
+                  <p className={`text-[16px] leading-[1.6] ${TRIM}`}>{p.kind}</p>
+                  {/* 카드 안쪽 폭(1920 에서 360px)에 맞춰 줄인다 — 1920 에서 32px, 1720 에서 27.6px. 안 줄이면 첫 줄이 넘쳐 세 줄이 된다. */}
+                  <p className={`text-[clamp(26px,calc(2.222vw-10.67px),32px)] leading-[1.3] ${TRIM}`}>
+                    {p.pitch[0]}
+                    <br />
+                    {p.pitch[1]}
+                  </p>
+                </div>
+                <div className="flex flex-1 flex-col gap-[32px]">
+                  <div className="flex flex-col gap-[24px] text-[16px]">
+                    <div className="flex flex-col gap-[22px]">
+                      <p className={`leading-[1.6] font-semibold text-guest-ink ${TRIM}`}>이런 기능부터 써보세요</p>
+                      <p className={`leading-[1.6] text-guest-body ${TRIM}`}>
+                        {p.features.map((line) => (
+                          <span key={line} className="block">
+                            {line}
+                          </span>
+                        ))}
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-[22px] border-t border-[#e7e7e7] pt-[24px]">
+                      <p className={`leading-[1.6] font-semibold text-guest-ink ${TRIM}`}>함께 쓰면 좋은 부가서비스</p>
+                      <Divided items={p.services} className="text-guest-body" />
+                    </div>
+                  </div>
+                  <div className="mt-auto flex">
+                    <GuestButton tone="navy" href={p.route && routes[p.route]} arrow grow>
+                      {p.cta}
+                    </GuestButton>
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
-// 둘째·셋째 사진은 시안에서 첫 사진(connect-photo)이 위에 덮여 있다. 시안 그대로 겹쳐 두고, 사진이 정해지면 위 겹을 뺀다.
 const CONNECTIONS = [
   {
     label: "01 BUSINESS PARTNER",
     title: "사장님이 가입하면",
     desc: ["대표자 계정에 모든 관리 권한이 자동으로 주어집니다.", "점장·가맹점주 계정도 필요한 만큼 만들 수 있어요."],
     tags: ["대표자 권한", "관리자 추가", "가맹주 계정"],
-    under: null,
+    photo: "connect-partner.png",
   },
   {
     label: "02 STORE",
     title: "내 매장이 등록되고",
     desc: ["직영점도 가맹점도 같은 화면에서 관리합니다.", "가맹계약서만 연결하면 가맹점 관리가 바로 시작됩니다."],
     tags: ["직영점", "가맹점", "시설물·점검"],
-    under: "/guest/connect-photo-store.png",
+    photo: "connect-store.png",
   },
   {
     label: "03 STAFF & CUSTOMER",
     title: "직원과 손님이 이어집니다",
     desc: ["직원은 전용 앱으로 계약서 서명과 출퇴근을, 손님은 키오스크·QR로", "주문과 결제를 편하게."],
     tags: ["직원 앱", "POS·KIOSK", "Pick up·QR Order"],
-    under: "/guest/connect-photo-staff.png",
+    photo: "connect-staff.png",
   },
 ];
 
 function Connections() {
   return (
-    <section className="relative flex flex-col gap-[80px] overflow-hidden bg-guest-ink px-[80px] py-[120px]">
-      <Image src="/guest/connect-bg.png" alt="" fill sizes="100vw" className="object-cover object-bottom" />
-      <div className="relative">
+    <section className="bg-[#1f1f1f] py-[120px]">
+      <div className={`${FRAME} flex flex-col gap-[80px]`}>
         <SectionTitle light="가입 한 번으로," bold="매장 전체가 연결됩니다" dark />
-      </div>
-      <div className="relative grid grid-cols-3 gap-[34px]">
-        {CONNECTIONS.map((c) => (
-          <div key={c.label} className="flex flex-col gap-[34px]">
-            <div className="relative flex h-[348px] items-end overflow-hidden rounded-[16px] pb-[22px] pl-[26px]">
-              {c.under && <Image src={c.under} alt="" fill sizes="33vw" className="object-cover" />}
-              <Image src="/guest/connect-photo.png" alt="" fill sizes="33vw" className="object-cover" />
-              <span className="relative text-[24px] leading-[1.6] font-bold tracking-normal text-white">{c.label}</span>
+        <div className="grid grid-cols-3 gap-[34px]">
+          {CONNECTIONS.map((c) => (
+            <div key={c.label} className="flex flex-col gap-[34px]">
+              {/* 사진 뒤에 옅은 흰 면을 깔아, 사진이 덜 찬 곳도 어두운 바탕과 갈린다. */}
+              <div className="relative flex h-[348px] items-end overflow-hidden rounded-[16px] bg-white/10 pb-[22px] pl-[26px]">
+                <Image src={`/guest/home/${c.photo}`} alt="" fill sizes="33vw" className="object-cover" />
+                <span className="relative text-[24px] leading-[1.6] font-bold tracking-normal text-[#f5f5f5]">{c.label}</span>
+              </div>
+              <div className="flex flex-col gap-[8px] pl-[2px] text-[17px] text-[#999]">
+                <h3 className="text-[24px] leading-[1.6] font-semibold text-[#f5f5f5]">{c.title}</h3>
+                <p className="leading-[1.5]">
+                  {c.desc[0]}
+                  <br />
+                  {c.desc[1]}
+                </p>
+                <Divided items={c.tags} className="pt-[8px]" />
+              </div>
             </div>
-            <div className="flex flex-col gap-[8px] pl-[2px] text-[17px] text-[#afafaf]">
-              <h3 className="text-[24px] leading-[1.6] font-semibold text-[#f5f5f5]">{c.title}</h3>
-              <p className="leading-[1.5]">
-                {c.desc[0]}
-                <br />
-                {c.desc[1]}
-              </p>
-              <Divided items={c.tags} className="pt-[8px]" />
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -332,47 +337,47 @@ const STEPS = [
 
 function Steps({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="flex flex-col gap-[60px] px-[80px] py-[120px]">
-      <TitleRow
-        light="시작은"
-        bold="세 단계면 충분합니다"
-        action={
-          <GuestButton tone="navy" href={routes.signUp} arrow>
-            가입하고 시작하기
-          </GuestButton>
-        }
-      />
-      <ol className="grid grid-cols-3 gap-[24px]">
-        {STEPS.map((s, i) => (
-          <li key={s.title} className="flex gap-[42px] rounded-[16px] border border-guest-line bg-white px-[42px] pt-[48px] pb-[42px]">
-            <div className="flex flex-1 flex-col items-start gap-[26px]">
-              <span className={`rounded-full bg-guest-step px-[14px] py-[12px] text-[16px] leading-[1.5] font-bold tracking-normal text-white ${TRIM}`}>
-                STEP {String(i + 1).padStart(2, "0")}
-              </span>
-              <div className="flex flex-col gap-[20px] pl-[4px] leading-[1.5]">
-                <h3 className={`text-[24px] font-semibold text-guest-navy ${TRIM}`}>{s.title}</h3>
-                <p className={`text-[17px] text-guest-body ${TRIM}`}>
-                  {/* 시안의 줄바꿈은 1920 폭에서만 둔다. 좁으면 그 줄이 한 번 더 꺾여 「끝.」 같은 낱말이 홀로 남는다. */}
-                  {s.desc.map((line, j) => (
-                    <Fragment key={line}>
-                      {j > 0 && (
-                        <>
-                          {" "}
-                          <br className="hidden min-[1920px]:inline" />
-                        </>
-                      )}
-                      {line}
-                    </Fragment>
-                  ))}
-                </p>
+    <section className="bg-guest-surface pt-[120px] pb-[80px]">
+      <div className={`${FRAME} flex flex-col gap-[60px]`}>
+        <TitleRow
+          light="시작은"
+          bold="세 단계면 충분합니다"
+          action={
+            <GuestButton tone="navy" href={routes.signUp} arrow>
+              가입하고 시작하기
+            </GuestButton>
+          }
+        />
+        <ol className="grid grid-cols-3 gap-[24px]">
+          {STEPS.map((s, i) => (
+            <li key={s.title} className="flex items-end gap-[42px] rounded-[16px] border border-guest-line bg-white px-[42px] pt-[48px] pb-[42px]">
+              <StepIcon step={i as 0 | 1 | 2} />
+              <div className="flex flex-1 flex-col items-start gap-[26px]">
+                <span className={`rounded-full bg-guest-step px-[14px] py-[12px] text-[16px] leading-[1.5] font-bold tracking-normal text-white ${TRIM}`}>
+                  STEP {String(i + 1).padStart(2, "0")}
+                </span>
+                <div className="flex flex-col gap-[20px] pl-[4px] leading-[1.5]">
+                  <h3 className={`text-[24px] font-semibold text-guest-navy ${TRIM}`}>{s.title}</h3>
+                  <p className={`text-[17px] text-guest-body ${TRIM}`}>
+                    {/* 시안의 줄바꿈은 1920 폭에서만 둔다. 좁으면 그 줄이 한 번 더 꺾여 「끝.」 같은 낱말이 홀로 남는다. */}
+                    {s.desc.map((line, j) => (
+                      <Fragment key={line}>
+                        {j > 0 && (
+                          <>
+                            {" "}
+                            <br className="hidden min-[1920px]:inline" />
+                          </>
+                        )}
+                        {line}
+                      </Fragment>
+                    ))}
+                  </p>
+                </div>
               </div>
-            </div>
-            <span className="self-end">
-              <MailIcon />
-            </span>
-          </li>
-        ))}
-      </ol>
+            </li>
+          ))}
+        </ol>
+      </div>
     </section>
   );
 }
@@ -402,16 +407,9 @@ const PLANS = [
 
 function Plans({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="flex flex-col gap-[60px] px-[80px] pb-[120px]">
-      <TitleRow
-        light="처음엔 가볍게,"
-        bold="필요할 때 더하세요"
-        action={
-          <GuestButton tone="navy" arrow>
-            요금제 자세히 보기
-          </GuestButton>
-        }
-      />
+    <section className={`${FRAME} flex flex-col gap-[60px] pt-[120px] pb-[80px]`}>
+      {/* 「요금제 자세히 보기」는 요금제 화면이 없어 시안에서 감췄다(2026-11-06). */}
+      <SectionTitle light="처음엔 가볍게," bold="필요할 때 더하세요" />
       <div className="grid grid-cols-2 gap-[16px]">
         {PLANS.map((plan) => (
           <article key={plan.kicker} className="flex flex-col gap-[48px] rounded-b-[6px] border border-guest-line pb-[34px]">
@@ -500,25 +498,27 @@ function BoardHead({ text, action, href }: { text: string; action: string; href:
 function Boards({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | null; news: ReactNode | null }) {
   if (!faq && !news) return null;
   return (
-    <section className={`grid gap-[16px] px-[80px] ${faq && news ? "grid-cols-2" : "grid-cols-1"}`}>
-      {faq && (
-        <div className="flex flex-col gap-[60px]">
-          <SectionTitle light="시작 전에," bold="가장 많이 묻는 질문" />
-          <div className="flex flex-col gap-[34px] rounded-[6px] border border-guest-line bg-white p-[34px]">
-            <BoardHead text="궁금한 점이 더 있다면 언제든 편하게 물어보세요." action="전체 질문 보기" href={`${routes.notices}#faq`} />
-            {faq}
+    <section className="bg-guest-surface pt-[120px] pb-[60px]">
+      <div className={`${FRAME} grid gap-[16px] ${faq && news ? "grid-cols-2" : "grid-cols-1"}`}>
+        {faq && (
+          <div className="flex flex-col gap-[60px]">
+            <SectionTitle light="시작 전에," bold="가장 많이 묻는 질문" />
+            <div className="flex flex-col gap-[34px] rounded-[6px] border border-guest-line bg-white p-[34px]">
+              <BoardHead text="궁금한 점이 더 있다면 언제든 편하게 물어보세요." action="전체 질문 보기" href={`${routes.notices}#faq`} />
+              {faq}
+            </div>
           </div>
-        </div>
-      )}
-      {news && (
-        <div className="flex flex-col gap-[60px]">
-          <SectionTitle light="Whale ERP" bold="새로운 소식 안내" />
-          <div className="flex flex-1 flex-col gap-[32px] rounded-[6px] border border-guest-line bg-white p-[34px]">
-            <BoardHead text="Whale ERP의 새로운 소식을 알려 드립니다." action="전체 보기" href={routes.notices} />
-            {news}
+        )}
+        {news && (
+          <div className="flex flex-col gap-[60px]">
+            <SectionTitle light="Whale ERP" bold="새로운 소식 안내" />
+            <div className="flex flex-1 flex-col gap-[32px] rounded-[6px] border border-guest-line bg-white p-[34px]">
+              <BoardHead text="Whale ERP의 새로운 소식을 알려 드립니다." action="전체 보기" href={routes.notices} />
+              {news}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </section>
   );
 }
@@ -526,7 +526,8 @@ function Boards({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | n
 /** faq · news 는 「가장 많이 묻는 질문」 · 「새로운 소식」 칸에 넣을 목록(HomeFaqList · HomeNewsList)이다. 실제 홈은 api 에서, 샘플은 예시로 채운다. */
 export function GuestHome({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | null; news: ReactNode | null }) {
   return (
-    <GuestPage>
+    // 맨 아래 구역(회색 바탕)이 푸터에 바로 붙는 시안이라 본문 아래 60px 여백(GuestPage 기본)을 두지 않는다.
+    <GuestPage flush>
       <Billboard routes={routes} />
       <Features routes={routes} />
       <Personas routes={routes} />

@@ -1,8 +1,27 @@
 # Bundle history
 
+## 2026-11-09
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 본문 틀(`FRAME`)에 양옆 80px 여백을 다시 넣었다(내용 폭은 1760px 에서 멈춤). 1760px 이하 화면에서 본문이 화면 끝에 붙던 것(front #230 리뷰). 데모 같이. main 병합(#234 까지): okf/log 충돌은 양쪽 기록을 살렸고 데모는 다시 빌드했다.
+
 ## 2026-11-06
 * **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 상세에서 걸리지 않은 사유를 「해당 없음」으로 보이던 「그 밖의 사유」 표를 뺐다(사용자 지정). 걸린 사유는 그대로 「검토 사유」 표에 보인다.
 * **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 명세서 상태를 모두 풀고 「검토 대기만」을 켜면 0건이던 것을 검토 대기 명세서가 보이게 고쳤다(`dropsPayslipRows`, WHALEERP-655, 사용자 지정). 상태도 검토 대기도 고르지 않으면 그대로 0건이다.
+* **Update**: main 병합(front torchic, main #229 까지): okf/log 충돌은 양쪽 기록을 살렸다. 문의하기 [문의하기] 버튼 위치는 main 쪽 구현(제목 줄 · inert)을 받았고, 데모 홈 연결 칸 사진은 로그인전_공유 시안(44:2) 반영본을 남기고 main 이 더한 `connect-photo-*.jpg` 는 지웠다. 데모 HTML 은 합쳐진 원본으로 다시 빌드했다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 머리말의 켜진 메뉴 표시를 Figma 로그인전_공유(44:1794)에 맞췄다: 메뉴 화면에서는 지금 메뉴만 먹색 · 나머지 #999, 고른 메뉴가 없는 화면은 모두 먹색. 켜진 글자를 남색 대신 먹색으로. 앱 · 데모.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 여러 곳에 직접 적던 회색 구역 바탕(#fafafa)과 어두운 구역 덮개(rgba(31,31,31,0.8))를 `guest-surface` · `guest-scrim` 토큰으로 올렸다(규칙 점검). 앱 · 데모, 생김새는 그대로.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 부가서비스 서비스 카드를 한 줄에서 같은 높이로 맞추고 꼬리표를 카드 아래에 붙였다(사용자 요청). 데모 같이 반영.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 부가서비스를 Figma 로그인전_공유(44:1792)에 맞췄다: 제목 옆 버튼 제거, 서비스 카드 · 꼬리표 색, 확장 옵션 카드 바탕, 구독 안내 회색 구역, 직원수 추가 · 점포수 추가 아이콘 교체. 데모 같이 반영, `store-3.svg` 삭제.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 프랜차이즈 소개(`/franchise`, Figma 로그인전_공유 44:1035)를 더했다. 매장운영 · 재무관리와 같은 구역을 쓰고, 사진 회색 바탕 끄기 · 카드 그림자 · 아이콘 조각 회전 옵션을 더했다. 머리말 · 메인 링크와 공개 경로 연결, 데모 같이 반영.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 재무관리 소개(`/finance-management`, Figma 로그인전_공유 44:1412)를 더했다. 매장운영과 같은 네 구역을 `intro-sections.tsx` 로 빼 두 화면이 함께 쓰고, 머리말 · 메인의 재무관리 링크와 공개 경로를 연결했다. 데모 같이 반영.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 이동 때 이전 화면 스냅숏을 모두 그리지 않고 새 본문만 떠오르게 했다. 사파리에서 홈이 전환 내내 새 화면 아래 남던 것(화면 녹화로 확인) 대응. 앱 · 데모.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 이동 때 화면 전체 스냅숏(old root)을 바로 지운다. 사파리에서 이전 화면이 남아 겹쳐 보이던 것 대응(앱 · 데모).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 기본 바탕을 흰색으로 고정했다(다크 모드에서 #0a0a0a 로 바뀌던 템플릿 설정 삭제, html 에도 깔음). 앱 · 데모.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 이동 때 이전 화면이 새 화면 아래 겹쳐 보이던 것을 고쳤다. 나가는 본문 애니메이션을 reverse 대신 전용 `guest-fade-out` 으로 바꿨다(앱 · 데모).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 매장운영을 Figma 로그인전_공유(44:661)에 맞췄다: 기능 사진 넷 교체, 「끊김 없이」 카드 바탕, 부가서비스 가로 카드 셋(점포 재고 · 예약 · 대기 순번). 달력 아이콘을 공용으로 옮기고 안 쓰는 그림을 지웠다. 데모 같이 반영.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 메인 첫 화면의 고래가 위아래로 천천히 떠다니게 했다(`guest-whale`, 움직임 줄이기에서는 멈춤). 데모 같이 반영.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 메인을 Figma 로그인전_공유(44:2)에 맞췄다: 회색 바탕 구역, 기능 카드 3D 아이콘 · 회청 버튼, 연결 구역 사진 교체, 세 단계 아이콘, 「도입문의」 · 「요금제 자세히 보기」 제거. 데모 같이 반영, 안 쓰는 그림 삭제.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 메인 · 매장운영 · 부가서비스(`guest-home.tsx` · `store-operations.tsx` · `add-on-services.tsx`) 본문 구역을 양옆 80px 여백 대신 최대 폭 1760px 가운데 정렬로 바꿨다(`design/guest/theme.ts` 의 `FRAME`, 사용자 요청). 머리말 · 푸터는 그대로 80px.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [근무스케줄](/screens/work-schedules.md) — TO-DO 등록 · 수정을 점포 등록 모양의 두 단으로 바꿨다(제목 · 내용 / 배정, 큰 선택 카드, 칸별 오류 · 첫 오류 칸 커서, 안내 박스). 등록 뒤 상세로 가고, 목록 수행 예정은 늘 연도까지, 담당직원 · 근무지 열 240px, 삭제 확인창은 기본 버튼 — 근무스케줄 삭제 확인창도 같이 맞췄다(2026-11-06 사용자 지정).
 * **Update**: [고객지원·커뮤니티](/support.md) · [Whale ERP Frontend](/whale-erp-front.md) — PR #232 리뷰 뒤 고친 것을 반영했다: 공지 시작일을 화면이 채우지 않고 「게시일 (등록일)」을 보이는 것, 시작일 없이 지난 종료일로 게시하면 막는 것, 공통 검색칸 자동 완성 끔과 비밀번호 칸 form 처리. 데모 · 목업 · DESIGN.md 도 맞췄다(2026-11-06 사용자 지정).
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 출처 코드(`staff-row.ts` · `lib/staff-members.ts`)의 주석 「최종 수정」을 「최종수정」으로 맞춘 것뿐이라 본문은 그대로다(용어 통일, 2026-11-06 사용자 지정).
 * **Update**: [운영 알림](/notify.md) · [급여명세서 관리 화면 (구현)](/screens/payslips.md) · [고객지원·커뮤니티](/support.md) · [Whale ERP Frontend](/whale-erp-front.md) — 헤더 알림 종 팝오버(회청 1px · 6px · 400px, 제목 앞 빨간 점, 구분 옅은 꼬리표 + 연도 일시)와 알림함 목록(점 칸 · 「관련 업무」 열 뺌, 읽은 제목 먹색, 일시 연도), 급여명세서 상세 「근로계약 보기」(내부 번호 안 보임), 고객지원 공지사항 상세(제목 머리 줄 · 구분 · 게시일 꼬리표 · 본문 15px · 이전 · 다음 15px · 첨부 썸네일), 홈 수치 카드 순서(운영 점포 → 재직 직원 → 오늘 출근 → 내 문의), 공지사항 · FAQ 등록(노출 대상 표 · 변경이력 · 칸 아래 오류)을 DESIGN.md 와 맞췄다(2026-11-06 사용자 지정).
@@ -135,6 +154,7 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 계약서 파일 줄을 나눴다(WHALEERP-155): 전자계약은 처리 완료본(서명 확인) · 보낸 원본, 종이 계약은 날인본(`document-rows.ts`, `node --test`). 체결됐는데 처리 완료본이 아직 없으면 「아직 없음」 안내. api #211(WHALEERP-131)이 두 파일을 만든다. `docs/erd/physical` 은 api 물리 생성기로 다시 만들었다(당사자 사용자 칸 · 파일 발송 일시).
 
 ## 2026-10-29
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 고객지원 문의하기의 [문의하기](등록) 버튼을 목록 건수 줄에서 제목 줄 오른쪽으로 옮겼다(등록 버튼은 화면명 우측, 사용자 지정). 데모(`support/inquiries`)도 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 관리: 이메일 중복 미리 확인(`EmailAvailability`, api email-availability) · 필터 권한명은 `purpose=filter` 로 마스터까지 · 목록 미발송은 사용 계정만 · 삭제 확인창 「복구할 수 없습니다」 · 빈 변경이력 「변경이력이 없습니다.」(BP 관리자도) · 아이디 형식 문구를 회원가입과 같게(BP 관리자 · BP 마스터도) · 이메일 409 공통 문구. BP 마스터 [삭제] · [미사용으로 변경] 확인 버튼은 기본 모양(2026-10-29 재영).
 * **Update**: [플랫폼 시스템 관리](/system.md) — 플랫폼 관리자 관리를 문서 ↔ 구현 대조로 맞췄다: 목록의 등록일시 검색을 걷어 냈고(2026-10-08 데모 결정), 권한명 필터는 보는 사람과 상관없이 플랫폼 마스터를 포함한 모든 플랫폼 권한을 보인다. 미사용 계정은 상세 비밀번호 [초기화] 대신 「-」, 「초기화 비밀번호 미발송」은 목록·상세 모두 사용 계정만이다. 이메일은 칸을 벗어날 때 중복을 확인하고(저장 409 도 같은 문구), 아이디 형식 문구는 회원가입과 같다. 초기화 이력에 메일 발송 결과를 남기지 않고, 이력이 없으면 「변경이력이 없습니다.」, 삭제 확인창은 「삭제한 계정은 복구할 수 없습니다.」와 기본(회청) 확인 버튼이다 — BP 마스터 상세의 [삭제] · [미사용으로 변경] 확인 버튼도 Danger 에서 기본으로 바꿨다. 데모(`docs/mockup/system/admins*.html` · `docs/mockup/bp/detail.html`) 같이 (2026-10-29 재영).
 * **Update**: [BP 환경설정](/config.md) — BP 관리자 목록 화면정의서(그림 · 항목 17개)를 오늘 정한 목록 데모대로 다시 만들었다. 목록 아래 안내문은 그림에 없이 「보충 설명」 항목으로 남겼다(front piplup).
