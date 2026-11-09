@@ -58,6 +58,9 @@ export default ({ A, R }) => {
     ),
   );
 
+  // 지금 보는 직원(서지안) 줄은 공통 「고른 줄」(DataTable current — 옅은 회색 바탕 + 왼쪽 회청 3px 선, 2026-11-09 사용자 지정)
+  const currentRow = (html) => html.replace(/<tr class="([^"]*)">(\s*<td[^>]*>\s*<span class="font-semibold">서지안)/, '<tr class="$1 bg-erp-subtle [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]">$2');
+
   // 상태 변경이력 — 변경일시 · 변경자 · 상태, 10건씩 쪽 나눔(데모는 한 쪽)
   const historyTable = plainHead(
     ui.dataTable(
@@ -85,7 +88,7 @@ export default ({ A, R }) => {
     headBlock +
       `<div class="grid grid-cols-[7fr_5fr] items-start gap-[24px]"><div class="flex min-w-0 flex-col gap-[24px]">` +
       ui.detailTable("TO-DO", todoRows) +
-      titled("직원별 상태", groupTable) +
+      titled("직원별 상태", currentRow(groupTable)) +
       `</div><div class="flex min-w-0 flex-col gap-[24px]">` +
       // 여러 명에게 나눈 TO-DO 는 지금 보는 직원 한 명의 이력이라 제목에 이름을 적는다(앱 todo-history.tsx who, 2026-11-09 사용자 지정)
       titled("상태 변경이력 · 서지안", historyTable) +

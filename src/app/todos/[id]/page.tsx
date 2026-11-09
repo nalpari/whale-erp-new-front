@@ -207,6 +207,8 @@ export default async function TodoDetailPage({
                     ]}
                     rows={todo.groupTodos}
                     rowKey={(r) => r.todoId}
+                    // 지금 보는 직원(오른쪽 이력의 주인) 줄은 공통코드 그룹 목록과 같은 「고른 줄」 — 옅은 회색 바탕 + 왼쪽 회청 3px 선 + 굵은 이름(2026-11-09 사용자 지정)
+                    rowState={(r) => (r.todoId === todo.todoId ? "current" : undefined)}
                   />
                 </TitledBox>
               )}
