@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { DataTable, Pagination, Tag } from "@/components/common";
+import { DataTable, Pagination } from "@/components/common";
 import type { EnumValue } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
 import type { TodoDetail } from "@/lib/todos-api";
@@ -48,7 +48,9 @@ export function TodoHistory({ histories, statusLabels, who }: { histories: TodoD
       meta={
         who && (
           <>
-            직원 <Tag>{who}</Tag>
+            직원{" "}
+            {/* 이름 꼬리표는 눈에 잘 띄게 연한 분홍 바탕 + 굵은 먹색 — BP 휴일 「전체 점포」 꼬리표(ScopeTag)와 같은 바탕 · 모양(2026-11-09 사용자 지정) */}
+            <span className="inline-block rounded-[2px] border border-erp-thead-line bg-erp-off-bg px-[4px] py-px text-[14px] font-semibold whitespace-nowrap text-erp-ink">{who}</span>
           </>
         )
       }

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, DateField, DetailTable, FieldMessage, FormGroup, FormRow, GuideBand, NoticeBand, RequiredMark, SearchField, Select, Textarea, TextField, Toggle, useToast } from "@/components/common";
+import { Button, DateField, DetailTable, FieldMessage, FormGroup, FormRow, GuideBand, GuideNote, NoticeBand, RequiredMark, SearchField, Select, Textarea, TextField, Toggle, useToast } from "@/components/common";
 import { useCurrentBp, useMenuRole, useStores } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
@@ -415,7 +415,7 @@ function TodoFormFields({
         {locked && detail ? (
           // 수정 화면 — 바꿀 수 없는 배정내역은 상세 화면 「TO-DO」 표와 같은 상세 표로 보인다. 위에 붙여 늘어나지 않게
           // (2026-11-09 사용자 지정, 3팀 확인 필요 — 막힌 입력칸 · 카드로 두니 고칠 수 있는 칸처럼 보였다)
-          <div className="min-w-0 self-start">
+          <div className="flex min-w-0 flex-col gap-[8px] self-start">
             <DetailTable
               title="배정내역"
               rows={[
@@ -427,6 +427,8 @@ function TodoFormFields({
                 ...(detail.assigneeType === "INDIVIDUAL" ? [{ label: "직원", value: <span><StaffNames staff={detail.assignees} /></span>, multiline: true }] : []),
               ]}
             />
+            {/* 바꿀 수 없는 이유를 표 바로 아래 느낌표 안내로(공통 GuideNote — 저장 옆 안내 · 삭제 안내와 같은 모양, 2026-11-09 사용자 지정) */}
+            <GuideNote>배정내역(근무지 · 배정대상 · 직원)은 등록한 뒤에 변경할 수 없습니다.</GuideNote>
           </div>
         ) : (
           <FormGroup title="배정내역">

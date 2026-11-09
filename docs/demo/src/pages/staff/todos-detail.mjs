@@ -92,7 +92,7 @@ export default ({ A, R }) => {
       titled("직원별 상태", currentRow(groupTable)) +
       `</div><div class="flex min-w-0 flex-col gap-[24px]">` +
       // 여러 명에게 나눈 TO-DO 는 지금 보는 직원 한 명의 이력이라 제목에 이름을 적는다(앱 todo-history.tsx who, 2026-11-09 사용자 지정)
-      titled("상태 변경이력", historyTable, `직원 ${p.tag("quiet", "서지안")}`) +
+      titled("상태 변경이력", historyTable, `직원 <span class="inline-block rounded-[2px] border border-erp-thead-line bg-erp-off-bg px-[4px] py-px text-[14px] font-semibold whitespace-nowrap text-erp-ink">서지안</span>`) +
       `</div></div>`,
   );
   return { title: "TO-DO 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "TO-DO 리스트 관리", body, panels: delDialog }) };
