@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입 상태 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [수정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-09T05:36:58Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-09T06:53:29Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -52,7 +52,7 @@ sources:
     last_modified: 2026-11-09T05:36:58Z
   - id: staff-list-page
     resource: ../../src/app/staff-members/page.tsx
-    title: 직원 목록 화면 — 도구 줄 [엑셀 다운로드]는 BP 마스터 · 가맹마스터에게만(bulk-export-button.tsx), 빈 목록 문구 가르기
+    title: 직원 목록 화면 — 도구 줄 [일괄 저장]는 BP 마스터 · 가맹마스터에게만(bulk-export-button.tsx), 빈 목록 문구 가르기
     last_modified: 2026-11-09T03:19:00Z
   - id: staff-export-screen
     resource: ../../src/app/staff-members/export/export-screen.tsx
@@ -165,7 +165,7 @@ sources:
 
 화면 주소는 탭 BP 주소 `/bp/{bpCodeId}/staff-members…` 다(`BP_PATH_SCREENS`) — proxy 가 그 BP 를 `X-Bp-Code-Id` 로 실어 플랫폼 계정은 고른 BP 의
 직원만 본다. 쿼리 · `?back=` 은 옛 경로로 두고 링크 · 이동에서만 탭 BP 를 붙인다 — 목록 표 · 상세 · 일괄 저장(서버)은 `screenPath()` · `bpHref`, 필터 ·
-건수 · 쪽 · [엑셀 다운로드] · 상세 [목록] · 오류 화면(클라이언트)은 `bpPath`. 상세 영역의 「관리」 · 글자 링크(`MenuManageLink` · `MenuTextLink` ·
+건수 · 쪽 · [일괄 저장] · 상세 [목록] · 오류 화면(클라이언트)은 `bpPath`. 상세 영역의 「관리」 · 글자 링크(`MenuManageLink` · `MenuTextLink` ·
 `TodoTitleLink`)는 가는 화면이 모두 탭 BP 주소라 컴포넌트 안에서 붙인다. 목록 · 상세가 api 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 ·
 없는 BP 404)을 받으면 오류 화면 대신 그 문장을 보인다(`deniedMessageOf`). 처리 뒤 `revalidatePath("/staff-members", "layout")` 는 폴더 경로
 그대로다 — rewrite 의 목적지 경로를 받는다(Next 문서 「Using revalidatePath with rewrites」).
@@ -453,7 +453,7 @@ sources:
 # 직원 자료 일괄 저장 (WHALEERP-337)
 
 `/staff-members/export`(운영 정책 RET-09, 목업 `docs/mockup/staff/export.html`, 계획 `docs/plans/2026-10-29-staff-records-export-screen.md`).
-목록 도구 줄의 [엑셀 다운로드]와 이 화면은 BP 마스터(`BM`) · 가맹마스터(`FM`)에게만 보이고(`canBulkExport`), 다른 역할이 주소로 오면
+목록 도구 줄의 [일괄 저장]와 이 화면은 BP 마스터(`BM`) · 가맹마스터(`FM`)에게만 보이고(`canBulkExport`), 다른 역할이 주소로 오면
 「일괄 저장은 BP 마스터와 가맹마스터만 쓸 수 있습니다」를 보인다 — 막는 것은 api 403 이다. 업무 범위는 헤더 범위(`useScope`)를
 `storeIdsOfScope`(`scopeStores` — 직영 · 가맹은 폐점 점포를 뺀다, 전체는 빈 목록)로 바꿔 미리 보기 · 요청에 싣는다.
 미리 보기(`GET /staff-members/bulk-exports/preview`) · 지난 요청(`GET /staff-members/bulk-exports`)은 BFF, 요청 · 내려받기 주소는 서버 액션이고,

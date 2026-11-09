@@ -441,7 +441,7 @@ export function PayslipReview({
         onConfirm={() => run(() => recalculatePayslip(payslip.payslipId, payslip.updatedAt), "출퇴근 기록으로 다시 계산했습니다.")}
         onCancel={close}
       >
-        {payslip.periodStartDate} ~ {payslip.periodEndDate.slice(5)} 기록으로 기본급·주휴수당·연장수당이 재계산되며, 직접 수정하거나 저장하지 않은 내용은 초기화됩니다.
+        {payslip.periodStartDate} ~ {payslip.periodEndDate.slice(5)} 출퇴근 기록으로 기본급·주휴수당·연장수당이 재계산되며, 세 칸에서 직접 고친 값과 임시저장하지 않은 내용은 초기화됩니다.
         {failureText}
       </ConfirmDialog>
       <ConfirmDialog

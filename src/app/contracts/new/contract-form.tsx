@@ -620,7 +620,7 @@ export function ContractForm({
               ))}
             </div>
           </Group>
-          <Group label="계약 방식">
+          <Group label="계약 방식" hint={paper ? "당사자가 모두 날인한 근로계약서를 올려 등록하면 발송 · 날인 없이 체결 완료로 저장된다." : undefined}>
             <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
               {(["ELECTRONIC", "PAPER"] as const).map((v) => (
                 <Radio
@@ -637,7 +637,7 @@ export function ContractForm({
           {/* 종이 계약 날인본(CTR-23, 데모 contracts-new 의 파일 칸). 근로계약서는 필수, 임금계약서는 따로 작성한 경우만 */}
           {paper && (
             <FormRow>
-              <Item label="근로계약서" required>
+              <Item label="근로계약서" required help={`당사자가 모두 날인한 파일. ${paperTypes.join(" · ")}, 10MB까지`}>
                 {(id) => <PaperFile id={id} label="근로계약서" file={files.employment} error={fileErrors.employment ?? errs.employmentFile?.[0]} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("employment", f)} />}
               </Item>
               <Item label="임금계약서">
@@ -830,7 +830,7 @@ export function ContractForm({
                 )
               }
             </Item>
-            <Group label="임금지급일" errors={errs.payDay}>
+            <Group label="임금지급일" hint="31 을 넣으면 말일로 본다." errors={errs.payDay}>
               <span className="flex gap-[6px]">
                 <span className="w-[100px] shrink-0">
                   <Select aria-label="임금지급 월" value={form.payMonth} onChange={(e) => set("payMonth", e.target.value as Form["payMonth"])}>
@@ -885,7 +885,9 @@ export function ContractForm({
         )}
         <div className="flex items-center gap-[6px]">
           <span className="flex-1 text-[14px] text-erp-label">
-            {correction && "직원이 수정을 요청한 근로계약서다. 다 채워 수정 저장하면 곧바로 서명 대기로 다시 보낸다(새 날인 기한 30일). 근무지는 바꿀 수 없다."}
+            {correction
+              ? "직원이 수정을 요청한 근로계약서다. 다 채워 수정 저장하면 곧바로 서명 대기로 다시 보낸다(새 날인 기한 30일). 근무지는 바꿀 수 없다."
+              : paper && "임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 되고 날인본은 올리지 않는다. 종이 계약 등록은 다 채우고 근로계약서 날인본을 올려야 하며 체결 완료로 남는다."}
           </span>
           {saveButtons}
         </div>
