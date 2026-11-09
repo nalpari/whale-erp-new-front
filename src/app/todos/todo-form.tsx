@@ -249,7 +249,7 @@ function TodoFormFields({
    */
   const prechecks = (storeId: string, assigneeType: Form["assigneeType"]) =>
     assigneeType === "INDIVIDUAL" || franchiseRole || stores.find((st) => String(st.storeId) === storeId)?.storeTypeCode === "DIRECT";
-  // 배정할 직원이 0명 — 개인 배정 · 근무지 전체 모두 「배정대상」 아래 빨간 문구로 알리고 저장을 막는다(2026-11-09 사용자 지정).
+  // 배정할 직원이 0명 — 개인 배정 · 근무지 전체 모두 「근무지」 칸 아래 빨간 문구로 알리고 저장을 막는다(2026-11-09 사용자 지정).
   // 본사 계정의 가맹 점포 · 근무지 전체는 개인 배정으로 받아 둔 0명 목록이 남아 있어도 막지 않는다(본사 제공 미동의 직원이 빠진 목록이다)
   const noAssignableStaff =
     !detail && prechecks(form.storeId, form.assigneeType) && pool?.storeId === form.storeId && pool.state === "ok" && pool.staff.length === 0;
@@ -277,11 +277,13 @@ function TodoFormFields({
   const handleSave = () => {
     setServerError("");
     const found = fieldProblems(form, today, detail);
-    // 배정할 직원이 없으면 「배정대상」 아래 문구가 이미 보인다 — 직원 칸 「선택해 주세요」를 겹쳐 띄우지 않고 저장만 막는다
+    // 배정할 직원이 없으면 「근무지」 칸 아래 문구가 이미 보인다 — 직원 칸 「선택해 주세요」를 겹쳐 띄우지 않고 저장만 막는다
     if (noAssignableStaff) delete found.staff;
     setErrors(found);
     if (noAssignableStaff && !Object.keys(found).length) {
       document.getElementById(`${ids}-target`)?.scrollIntoView({ block: "center" });
+      // 처음 받은 0명이 그새 바뀌었을 수 있다(계약 체결 · 앱 가입) — 다시 받아 직원이 생겼으면 문구가 내려가고 다시 저장할 수 있다
+      loadStaff(form.storeId, form.assigneeType);
       return;
     }
     if (Object.keys(found).length) {
@@ -457,6 +459,8 @@ function TodoFormFields({
                 </Select>
               </TopField>
               {message("storeId")}
+              {/* 배정할 직원이 없으면 개인 배정 · 근무지 전체 모두 근무지 칸 바로 아래 빨간 13px 로 알린다 — 「선택한 근무지는 …」이라 근무지 칸 문구다(칸 오류와 같은 모양, 2026-11-09 사용자 지정) */}
+              <FieldMessage id={`${ids}-target`} message={noAssignableStaff ? NO_ASSIGNABLE_STAFF : undefined} />
             </Stack>
             <Group label="배정대상" required>
               <ChoiceCards
@@ -465,8 +469,6 @@ function TodoFormFields({
                 onChange={handleTargetChange}
                 items={(["INDIVIDUAL", "ALL"] as const).map((v) => ({ value: v, title: `${labelOf(labels.assigneeType, v)} ${TARGET_SUFFIX[v]}`, icon: TARGET_ICON[v] }))}
               />
-              {/* 배정할 직원이 없으면 개인 배정 · 근무지 전체 모두 저장 전에 여기 바로 알린다(빨간 13px — 칸 오류와 같은 모양, 2026-11-09 사용자 지정) */}
-              <FieldMessage id={`${ids}-target`} message={noAssignableStaff ? NO_ASSIGNABLE_STAFF : undefined} />
             </Group>
             {form.assigneeType === "INDIVIDUAL" ? (
               <Group label="직원" required>
