@@ -78,10 +78,10 @@ function DeleteTodoDialog({ detail, listHref, onClose }: { detail: TodoDetail; l
           「남습니다 · 사라집니다」 대신 「삭제되며 · 확인할 수 없습니다 · 삭제되지 않습니다」(2026-11-09 사용자 지정) */}
       <p>
         {!group
-          ? "삭제하면 직원에게 배정된 TO-DO가 삭제되며, 직원 근무 앱에서도 확인할 수 없습니다."
+          ? "직원에게 배정된 TO-DO가 삭제되며, 직원 근무 앱에서도 확인할 수 없습니다."
           : remaining
-            ? `삭제하면 직원에게 배정된 TO-DO 중 대기 ${pending}건만 삭제되며, 직원 근무 앱에서도 확인할 수 없습니다.`
-            : `삭제하면 직원에게 배정된 TO-DO ${pending}건이 모두 삭제되며, 직원 근무 앱에서도 확인할 수 없습니다.`}
+            ? `직원에게 배정된 TO-DO 중 대기 ${pending}건만 삭제되며, 직원 근무 앱에서도 확인할 수 없습니다.`
+            : `직원에게 배정된 TO-DO ${pending}건이 모두 삭제되며, 직원 근무 앱에서도 확인할 수 없습니다.`}
       </p>
       {group && remaining > 0 && <p className="mt-[6px]">진행 중 · 완료 {remaining}건은 삭제되지 않습니다.</p>}
       {error && (
