@@ -252,9 +252,10 @@ function TodoFormFields({
   const prechecks = (storeId: string, assigneeType: Form["assigneeType"]) =>
     assigneeType === "INDIVIDUAL" || franchiseRole || stores.find((st) => String(st.storeId) === storeId)?.storeTypeCode === "DIRECT";
   // 배정할 직원이 0명 — 개인 배정 · 근무지 전체 모두 「근무지」 칸 아래 빨간 문구로 알리고 저장을 막는다(2026-11-09 사용자 지정).
-  // 본사 계정의 가맹 점포 · 근무지 전체는 개인 배정으로 받아 둔 0명 목록이 남아 있어도 막지 않는다(본사 제공 미동의 직원이 빠진 목록이다)
+  // 본사 계정의 가맹 점포는 받은 목록에서 본사 제공 미동의 직원이 빠져 0명이어도 근무지 전체로는 배정된다 — 근무지 칸 문구를 띄우지 않는다.
+  // 개인 배정이면 직원 상자 안 「선택할 수 있는 직원이 없습니다.」만 보이고 저장은 직원 칸 검사가 막는다(리뷰로 찾음, 2026-11-09)
   const noAssignableStaff =
-    !detail && prechecks(form.storeId, form.assigneeType) && pool?.storeId === form.storeId && pool.state === "ok" && pool.staff.length === 0;
+    !detail && prechecks(form.storeId, "ALL") && pool?.storeId === form.storeId && pool.state === "ok" && pool.staff.length === 0;
   const handleStoreChange = (storeId: string) => {
     setForm((f) => ({ ...f, storeId, staff: [] }));
     clearError("storeId", "staff");
