@@ -220,12 +220,14 @@ function TodoFormFields({
    * 개인 배정일 때 그 근무지에서 배정할 수 있는 직원을 받는다. 이미 받은(받는 중인) 근무지면 다시 받지 않는다 — 실패했으면 다시 받는다.
    * 실패는 이 칸에 고정 문구로 보인다. 401 · 403 은 useFailure 로 넘긴다 — 로그인 만료 · 비밀번호 변경 요구 · 권한 없음(쫓아냄)을 공통으로 처리한다.
    */
-  const loadStaff = (storeId: string, assigneeType: Form["assigneeType"]) => {
+  const loadStaff = (storeId: string, assigneeType: Form["assigneeType"], refresh = false) => {
     if (!storeId || !prechecks(storeId, assigneeType)) return;
-    // 이미 받은(받는 중인) 근무지는 다시 받지 않는다 — 실패했거나 0명이었으면 다시 받는다
-    if (pool?.storeId === storeId && pool.state !== "error" && !(pool.state === "ok" && pool.staff.length === 0)) return;
+    // 이미 받은(받는 중인) 근무지는 다시 받지 않는다 — 실패했으면 다시 받는다. 배정대상을 오갈 때 0명 목록을 다시 받으면
+    // 받는 동안 문구 · 상자가 사라졌다 나타나 화면이 깜빡였다(2026-11-09 사용자 지정) — 0명 다시 확인은 저장을 누를 때만(refresh)
+    if (!refresh && pool?.storeId === storeId && pool.state !== "error") return;
     const n = ++seq.current;
-    setPool({ storeId, state: "loading" });
+    // 다시 확인(refresh)할 때는 받는 동안 지금 결과를 그대로 둔다 — 「불러오는 중」으로 바꾸면 깜빡인다
+    if (!(refresh && pool?.storeId === storeId && pool.state === "ok")) setPool({ storeId, state: "loading" });
     getAssignableStaffAction(Number(storeId))
       .then((result) => {
         if (n !== seq.current) return;
@@ -283,7 +285,7 @@ function TodoFormFields({
     if (noAssignableStaff && !Object.keys(found).length) {
       document.getElementById(`${ids}-target`)?.scrollIntoView({ block: "center" });
       // 처음 받은 0명이 그새 바뀌었을 수 있다(계약 체결 · 앱 가입) — 다시 받아 직원이 생겼으면 문구가 내려가고 다시 저장할 수 있다
-      loadStaff(form.storeId, form.assigneeType);
+      loadStaff(form.storeId, form.assigneeType, true);
       return;
     }
     if (Object.keys(found).length) {
