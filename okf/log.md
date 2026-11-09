@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-09
+* **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — 로그아웃 실패를 브라우저 경고창 대신 「로그아웃 실패」 팝업(본문 「로그아웃하지 못했습니다. 새로고침 후 다시 시도해 주세요.」, [새로고침] 하나)으로 바꿨다(사용자 지정, front marill).
+
 ## 2026-11-05
 * **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — 세션 만료 문구 · 만료 팝업 · 로그아웃 실패 문구(C6, front marill). 메뉴 이동 · 새로고침 · 첫 화면에서 알면 로그인 화면 LOGIN 위에 「로그인이 만료되었습니다. 다시 로그인해 주세요.」, 쓰던 화면에서 알면 「로그인 만료」 팝업 → 로그인 화면. 목업 · 데모도 맞췄다.
 
