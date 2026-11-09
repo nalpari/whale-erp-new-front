@@ -39,8 +39,9 @@ export default ({ A, R }) => {
   ];
 
   // 회색 제목 줄 상자(상세 표 제목과 같은 42px · 15px 600) + 흰 열 이름 줄 표
-  const titled = (title, inner) =>
-    `<section class="min-w-0"><h3 class="flex h-[42px] items-center rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">${title}</h3>${inner}</section>`;
+  // meta 는 제목 뒤 세로선 다음 「이름 [꼬리표]」(앱 TitledBox meta — 문의 상세 「분류 [꼬리표]」와 같은 모양)
+  const titled = (title, inner, meta = "") =>
+    `<section class="min-w-0"><div class="flex h-[42px] items-center gap-[10px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px]"><h3 class="text-[15px] font-semibold text-erp-ink">${title}</h3>${meta ? `<span aria-hidden="true" class="h-[11px] w-px bg-[#d9d9d9]"></span><span class="flex min-w-0 items-center gap-[6px] text-[14px] font-medium text-erp-label">${meta}</span>` : ""}</div>${inner}</section>`;
   const plainHead = (html) => html.replace(/<thead>\s*<tr class="h-\[42px\] border-y border-erp-thead-line bg-erp-thead-bg">/, '<thead><tr class="h-[42px] border-y border-erp-thead-line bg-white">');
 
   // 직원별 상태 — 줄마다 상태를 바로 바꾼다. 직원 이름을 누르면 그 직원의 상세로 가고 오른쪽 이력이 그 직원 것이 된다 — 지금 보는 직원(서지안)은 링크 없이 굵게(앱 page.tsx, 2026-11-09 사용자 지정)
@@ -91,7 +92,7 @@ export default ({ A, R }) => {
       titled("직원별 상태", currentRow(groupTable)) +
       `</div><div class="flex min-w-0 flex-col gap-[24px]">` +
       // 여러 명에게 나눈 TO-DO 는 지금 보는 직원 한 명의 이력이라 제목에 이름을 적는다(앱 todo-history.tsx who, 2026-11-09 사용자 지정)
-      titled("상태 변경이력 · 서지안", historyTable) +
+      titled("상태 변경이력", historyTable, `직원 ${p.tag("quiet", "서지안")}`) +
       `</div></div>`,
   );
   return { title: "TO-DO 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "TO-DO 리스트 관리", body, panels: delDialog }) };
