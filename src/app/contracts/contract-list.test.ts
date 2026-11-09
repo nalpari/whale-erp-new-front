@@ -24,7 +24,7 @@ import {
   type ListQuery,
 } from "./contract-list.ts";
 
-const EMPTY: ListQuery = { page: 1, pageSize: 20, staffMemberName: "", status: [], storeIds: [], storesCleared: false, scope: null };
+const EMPTY: ListQuery = { page: 1, pageSize: 20, staffMemberName: "", status: [], statusNone: false, storeIds: [], storesCleared: false, scope: null };
 
 test("readListQuery 는 빈 값 · 잘못된 page 를 기본값으로 바꾼다", () => {
   assert.deepEqual(readListQuery({}), EMPTY);
@@ -50,6 +50,16 @@ test("readListQuery 는 상태가 하나여도 배열로 준다", () => {
 test("toSearch 는 기본값을 빼고, 상태는 같은 키를 되풀이한다", () => {
   assert.equal(toSearch(EMPTY), "");
   assert.equal(toSearch({ ...EMPTY, page: 2, status: ["SIGNED", "REJECTED"] }), "?page=2&status=SIGNED&status=REJECTED");
+});
+
+test("상태를 모두 끈 것은 status=NONE — 주소를 다시 읽어도 같고, api 에는 상태 조건 없이 보낸다(개수는 받고 목록은 화면이 비운다)", () => {
+  const none = { ...EMPTY, statusNone: true };
+  assert.equal(toSearch(none), "?status=NONE");
+  assert.deepEqual(readListQuery({ status: "NONE" }), none);
+  // NONE 이 다른 값과 섞여 있어도 모두 끈 것이다 — 주소를 직접 고친 경우
+  assert.deepEqual(readListQuery({ status: ["SIGNED", "NONE"] }), none);
+  assert.deepEqual(withKnownStatus(none, [{ value: "SIGNED" }]), none);
+  assert.equal(apiSearch(none), "?pageSize=20");
 });
 
 test("toSearch 점포 조건 — 고른 점포 · 비운 「전체」 · 헤더 범위 순, 주소를 다시 읽으면 같은 조건이다", () => {

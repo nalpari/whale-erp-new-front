@@ -363,7 +363,7 @@ function StaffCard({
       }
       actions={
         <>
-          {canContracts && soft("근로계약 관리", at(listHrefOf({ page: 1, pageSize: 20, staffMemberName: "", status: [], storeIds: [storeId], storesCleared: false, scope: null })))}
+          {canContracts && soft("근로계약 관리", at(listHrefOf({ page: 1, pageSize: 20, staffMemberName: "", status: [], statusNone: false, storeIds: [storeId], storesCleared: false, scope: null })))}
           {soft("직원 관리", at(staffListHrefOf({ ...DEFAULT_STAFF_LIST_QUERY, storeIds: [storeId] })))}
           {create}
         </>

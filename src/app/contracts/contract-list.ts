@@ -16,7 +16,8 @@ export type ContractListItem = components["schemas"]["ContractListItemDto"];
 export type ContractListPage = components["schemas"]["ContractListResponseDto"];
 
 /**
- * 화면 주소의 쿼리. 상태가 비어 있으면 전체다.
+ * 화면 주소의 쿼리. 상태가 비어 있으면 전체다. 상태를 모두 끈 것은 statusNone(주소 status=NONE)이고 빈 목록이다(공통 정책 「목록 필터
+ * 체크박스」, WHALEERP-654).
  * 점포 조건은 점포 정보 관리 목록(stores-query.ts)과 같은 짝이다(WHALEERP-133, 1팀 front #88 「상단 점포 범위 ↔ 목록 점포 필터 연동」):
  * 목록에서 고른 점포(storeIds — 주소 storeIds=3,7), 목록에서 비운 「전체」(storesCleared — 주소 storeIds=), 헤더 범위(scope — 주소
  * scope=ALL · DIRECT · FRANCHISE · STORE:12, 헤더가 메뉴로 이동할 때 싣는다). 셋 다 없으면 정해지지 않은 것이라 필터가 헤더 범위로 채운다.
@@ -26,6 +27,7 @@ export interface ListQuery {
   pageSize: PageSize;
   staffMemberName: string;
   status: string[];
+  statusNone: boolean;
   storeIds: number[];
   storesCleared: boolean;
   scope: Scope | null;
@@ -43,6 +45,9 @@ const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v
 
 const NAME_MAX = 50;
 
+/** 상태를 모두 끈 것의 주소 값 */
+const STATUS_NONE = "NONE";
+
 /** 상태는 api 가 아는 값만 남긴다. 주소에 직접 넣은 ?status=FOO 를 그대로 보내면 api 가 400 이다. */
 export function withKnownStatus(q: ListQuery, known: { value: string }[]): ListQuery {
   return { ...q, status: q.status.filter((v) => known.some((k) => k.value === v)) };
@@ -51,7 +56,9 @@ export function withKnownStatus(q: ListQuery, known: { value: string }[]): ListQ
 export function readListQuery(params: SearchParams): ListQuery {
   const page = Number.parseInt(first(params.page), 10);
   const pageSize = Number(first(params.pageSize));
-  const status = params.status;
+  const status = (Array.isArray(params.status) ? params.status : params.status ? [params.status] : []).filter(Boolean);
+  // NONE 이 섞여 있으면 다른 값과 함께여도 모두 끈 것이다(주소를 직접 고친 경우)
+  const statusNone = status.includes(STATUS_NONE);
   const rawStoreIds = params.storeIds === undefined ? undefined : first(params.storeIds);
   // 숫자가 아닌 조각은 버리고 겹친 것은 하나로 — 주소에 직접 넣은 값으로 api 가 400 을 내지 않게
   const storeIds = [
@@ -69,7 +76,8 @@ export function readListQuery(params: SearchParams): ListQuery {
     pageSize: PAGE_SIZES.find((n) => n === pageSize) ?? DEFAULT_PAGE_SIZE,
     // api 는 50자를 넘으면 400 이다(@MaxLength(50)). 주소에 직접 넣은 긴 값은 잘라 보낸다.
     staffMemberName: first(params.staffMemberName).trim().slice(0, NAME_MAX),
-    status: (Array.isArray(status) ? status : status ? [status] : []).filter(Boolean),
+    status: statusNone ? [] : status,
+    statusNone,
     storeIds,
     // 빈 storeIds 는 목록에서 비운 것 — 「전체」다(헤더 범위가 아니다). 고른 점포 · 비운 전체가 있으면 범위는 쓰지 않는다
     storesCleared: rawStoreIds !== undefined && !storeIds.length,
@@ -89,6 +97,7 @@ export function toSearch(q: ListQuery): string {
   else if (q.storesCleared) s.set("storeIds", "");
   else if (q.scope) s.set(SCOPE_PARAM, scopeKeyOf(q.scope));
   if (q.staffMemberName) s.set("staffMemberName", q.staffMemberName);
+  if (q.statusNone) s.set("status", STATUS_NONE);
   for (const v of q.status) s.append("status", v);
   const text = s.toString();
   return text ? `?${text}` : "";
@@ -100,6 +109,8 @@ export const listHrefOf = (q: ListQuery) => `/contracts${toSearch(q)}`;
 /**
  * api(GET /contracts) 쿼리. 고른 점포는 storeIds, 범위가 점포 하나면 그 id, 직영 · 가맹 전체면 점포를 풀지 않고 점포 유형(storeTypes)으로
  * 보낸다. 범위 「전체」 · 비운 「전체」는 점포 조건이 없다. 업무 범위 밖의 id 는 api 가 조용히 뺀다.
+ * 상태를 모두 끈 것(statusNone)은 상태 조건 없이 보낸다 — api 에 「없음」 값이 없고, 상태별 개수는 상태 조건과 관계없이 오므로 그대로
+ * 받아 체크박스에 붙이고 목록만 page.tsx 가 비운다.
  */
 export function apiSearch(q: ListQuery): string {
   const s = new URLSearchParams();

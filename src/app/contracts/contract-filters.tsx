@@ -45,8 +45,8 @@ export function ContractFilters({
   const [headerScope] = useScope();
   const stores = useStores();
   const [staffMemberName, setStaffMemberName] = useState(query.staffMemberName);
-  // 상태를 하나도 고르지 않은 주소는 「전체」다. 화면에서는 모두 켜진 것으로 보인다.
-  const checked = query.status.length ? query.status : statuses.map((s) => s.value);
+  // 상태를 하나도 고르지 않은 주소는 「전체」다. 화면에서는 모두 켜진 것으로 보인다. 모두 끈 것(statusNone)은 따로 적는다.
+  const checked = query.statusNone ? [] : query.status.length ? query.status : statuses.map((s) => s.value);
   const fillScope = fillScopeOf(query, headerScope);
   const shown = fillScope ? withScopeCondition(query, fillScope) : query;
   const byId = new Map(stores.map((s) => [s.storeId, s]));
@@ -90,10 +90,10 @@ export function ContractFilters({
 
   const toggle = (value: string, on: boolean) => {
     const next = on ? [...checked, value] : checked.filter((v) => v !== value);
-    // 마지막 하나는 끄지 않는다. 빈 목록은 「전체」로 읽혀 끈 것과 반대가 된다.
-    if (next.length === 0) return;
+    // 모두 끌 수 있다 — 빈 상태 목록은 「전체」라 statusNone 으로 따로 적고, 목록은 비운다(공통 정책 「목록 필터 체크박스」, WHALEERP-654)
+    if (next.length === 0) return apply({ status: [], statusNone: true });
     // 다 켜면 쿼리에서 빼 「전체」로 둔다. 새 상태가 생겨도 전체에 들어간다.
-    apply({ status: next.length === statuses.length ? [] : statuses.map((s) => s.value).filter((v) => next.includes(v)) });
+    apply({ status: next.length === statuses.length ? [] : statuses.map((s) => s.value).filter((v) => next.includes(v)), statusNone: false });
   };
 
   return (
@@ -103,7 +103,7 @@ export function ContractFilters({
         // 초기화는 헤더 범위로 돌아간다
         // 페이지당 건수는 보는 방식이라 그대로 둔다
         const reset = withScopeCondition(
-          { page: 1, pageSize: query.pageSize, staffMemberName: "", status: [], storeIds: [], storesCleared: false, scope: null },
+          { page: 1, pageSize: query.pageSize, staffMemberName: "", status: [], statusNone: false, storeIds: [], storesCleared: false, scope: null },
           headerScope,
         );
         setChips(chipsOf(reset));
