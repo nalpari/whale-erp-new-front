@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { components } from "../../lib/api-types.generated.ts";
-import { assigneeText, deletePreview, deleteResultMessage, doneCountText, dueFullText, dueText, historyActorText, historyText, MASKED_STAFF, staffNameText, statusCells, targetText } from "./todo-row.ts";
+import { assigneeText, deletePreview, deleteResultMessage, doneCountText, dueFullText, dueText, historyActorText, historyText, MASKED_STAFF, overallOf, staffNameText, statusCells, targetText } from "./todo-row.ts";
 
 type Item = components["schemas"]["TodoListItemDto"];
 type Detail = components["schemas"]["TodoDetailDto"];
@@ -70,6 +70,22 @@ test("완료 / 배정 직원 — 한 명 수행은 행 하나에 붙은 대상 �
   assert.equal(doneCountText(item({ assigneeType: "ALL", executionMode: "ANY_ONE", todoCount: 1, doneCount: 1, assignees: all })), "1 / 3명");
   // 각자 수행은 직원마다 행
   assert.equal(doneCountText(item({ assigneeType: "ALL", executionMode: "EACH", todoCount: 3, doneCount: 1, assignees: all })), "1 / 3명");
+});
+
+test("상세 머리 줄 전체 값 — 묶음은 모두 완료면 완료 · 모두 대기면 대기 · 그 밖은 진행 중, 완료 인원은 목록과 같다", () => {
+  const group = (statuses: ("PENDING" | "IN_PROGRESS" | "DONE")[]) => ({
+    status: statuses[0],
+    assigneeType: "ALL" as const,
+    executionMode: "EACH" as const,
+    assignees: [],
+    groupTodos: statuses.map((status, i) => ({ todoId: i + 1, status }) as Detail["groupTodos"][number]),
+  });
+  assert.deepEqual(overallOf(group(["IN_PROGRESS", "DONE", "PENDING"])), { status: "IN_PROGRESS", count: "1 / 3명" });
+  assert.deepEqual(overallOf(group(["DONE", "DONE"])), { status: "DONE", count: "2 / 2명" });
+  assert.deepEqual(overallOf(group(["PENDING", "PENDING"])), { status: "PENDING", count: "0 / 2명" });
+  // 한 명 수행 — 행 하나에 대상 전원
+  const all = [person(1, "서지안"), person(2, "오세라"), person(3, "권도윤")];
+  assert.deepEqual(overallOf({ status: "DONE", assigneeType: "ALL", executionMode: "ANY_ONE", assignees: all.map((a) => ({ ...a, completedAt: null, isCompleted: false })), groupTodos: [] }), { status: "DONE", count: "1 / 3명" });
 });
 
 test("담당직원 — 개인은 「개인 · 이름」(여러 명이면 「외 N명」), 근무지 전체는 수행 방식", () => {

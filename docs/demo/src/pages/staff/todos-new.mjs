@@ -59,11 +59,11 @@ export const render = ({ A, R }, edit) => {
   // 묶음 제목은 등록 · 수정 모두 「배정내역」(2026-11-09 사용자 지정)
   // 수정 화면은 바꿀 수 없는 배정내역을 상세 화면 「TO-DO」 표와 같은 상세 표로 보인다 — 위에 붙여 늘어나지 않게(앱 todo-form.tsx, 2026-11-09 사용자 지정, 3팀 확인 필요)
   const assign = edit
-    ? // 표 바로 아래 느낌표 안내(앱 공통 GuideNote, 2026-11-09 사용자 지정)
-      `<div class="flex min-w-0 flex-col gap-[8px] self-start">${ui.detailTable("배정내역", [
+    ? // 제목 「배정내역」은 왼쪽 칸 이름과 같은 15px 600 으로 표 밖에, 항목만 상세 표, 표 바로 아래 느낌표 안내(앱 todo-form.tsx · 공통 GuideNote, 2026-11-09 사용자 지정)
+      `<section class="flex min-w-0 flex-col gap-[10px] self-start"><h3 class="text-[15px] font-semibold text-erp-ink">배정내역</h3><div class="flex min-w-0 flex-col gap-[8px]"><div class="rounded-t-[2px] border-t border-erp-thead-line">${ui.detailTable(null, [
         ["근무지", edit.store],
         ["배정대상", edit.target],
-      ])}<p class="flex items-start gap-[6px] text-[13px] leading-[1.6] font-medium text-erp-ink"><span class="mt-[3px] flex"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" class="shrink-0 text-erp-brand"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="3.6" width="1.4" height="5.6" rx="0.7" fill="#fff"/><circle cx="8" cy="11.6" r="0.95" fill="#fff"/></svg></span><span>배정내역(근무지 · 배정대상 · 직원)은 등록한 뒤에 변경할 수 없습니다.</span></p></div>`
+      ])}</div><p class="flex items-start gap-[6px] text-[13px] leading-[1.6] font-medium text-erp-ink"><span class="mt-[3px] flex"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" class="shrink-0 text-erp-brand"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="3.6" width="1.4" height="5.6" rx="0.7" fill="#fff"/><circle cx="8" cy="11.6" r="0.95" fill="#fff"/></svg></span><span>배정내역(근무지 · 배정대상 · 직원)은 등록한 뒤에 변경할 수 없습니다.</span></p></div></section>`
     : ui.formGroup(
     "배정내역",
     ...([

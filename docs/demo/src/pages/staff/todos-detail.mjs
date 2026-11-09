@@ -46,7 +46,8 @@ export default ({ A, R }) => {
 
   // 직원별 상태 — 줄마다 상태를 바로 바꾼다. 직원 이름을 누르면 그 직원의 상세로 가고 오른쪽 이력이 그 직원 것이 된다 — 지금 보는 직원(서지안)은 링크 없이 굵게(앱 page.tsx, 2026-11-09 사용자 지정)
   const staffLink = (name) => `<a class="text-erp-link hover:underline" href="${link(R, "staff/todos-detail.html")}">${name}</a>`;
-  const groupTable = plainHead(
+  // 표는 기본 회색 열 이름 줄(제목이 표 밖 글자 제목이라 회색이 두 겹이 되지 않는다)
+  const groupTable = (
     ui.dataTable(
       [{ header: "직원" }, { header: "상태" }, { header: "완료 일시" }],
       [
@@ -56,7 +57,7 @@ export default ({ A, R }) => {
         // 가린 직원 · 퇴직으로 배정이 풀린 줄도 상태를 바꾼다(링크 없음)
         ['<span class="text-erp-muted">본사에 정보제공 미동의</span>', control("대기", "본사에 정보제공 미동의"), "-"],
       ],
-    ),
+    )
   );
 
   // 지금 보는 직원(서지안) 줄은 공통 「고른 줄」(DataTable current — 옅은 회색 바탕 + 왼쪽 회청 3px 선, 2026-11-09 사용자 지정)
@@ -82,14 +83,15 @@ export default ({ A, R }) => {
   const headBlock =
     `<div class="flex items-start gap-[18px]"><div class="flex min-w-0 flex-1 flex-col gap-[8px] py-[6px]">` +
     `<h2 class="min-w-0 text-[20px] font-semibold break-all text-erp-ink">본사 위생점검 대비 냉장고 정리</h2>` +
-    `<div class="flex flex-wrap items-center gap-[10px] text-[14px] font-medium text-erp-label"><span class="flex items-center gap-[6px]">수행예정 ${p.tag("quiet", "2026-09-03")}</span>${sep}${urgent}</div>` +
+    `<div class="flex flex-wrap items-center gap-[10px] text-[14px] font-medium text-erp-label"><span class="flex items-center gap-[6px]">수행예정 ${p.tag("quiet", "2026-09-03")}</span>${sep}<span class="flex items-center gap-[6px]">상태 ${p.tag("ok", "진행 중")}<span class="font-normal text-erp-ink tabular-nums">2 / 4명</span></span>${sep}${urgent}</div>` +
     `</div><div class="flex shrink-0 items-center gap-[6px]">${actions}</div></div>`;
 
   const body = ui.detailBody(
     headBlock +
       `<div class="grid grid-cols-[7fr_5fr] items-start gap-[24px]"><div class="flex min-w-0 flex-col gap-[24px]">` +
       ui.detailTable("TO-DO", todoRows) +
-      titled("직원별 상태", currentRow(groupTable)) +
+      // 「직원별 상태」는 회색 제목 바 없이 표 위 글자 제목 + 느낌표 안내, 표는 기본 회색 열 이름 줄(앱 page.tsx, 2026-11-09 사용자 지정)
+      `<section class="flex min-w-0 flex-col gap-[10px]"><div class="flex flex-wrap items-center gap-x-[12px] gap-y-[6px]"><h3 class="text-[15px] font-semibold text-erp-ink">직원별 상태</h3><span class="inline-flex items-center gap-[6px] text-[13px] leading-[1.6] font-medium text-erp-ink"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" class="shrink-0 text-erp-brand"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="3.6" width="1.4" height="5.6" rx="0.7" fill="#fff"/><circle cx="8" cy="11.6" r="0.95" fill="#fff"/></svg><span>직원을 선택하면 직원의 상태 변경이력을 확인할 수 있습니다.</span></span></div>${currentRow(groupTable)}</section>` +
       `</div><div class="flex min-w-0 flex-col gap-[24px]">` +
       // 여러 명에게 나눈 TO-DO 는 지금 보는 직원 한 명의 이력이라 제목에 이름을 적는다(앱 todo-history.tsx who, 2026-11-09 사용자 지정)
       titled("상태 변경이력", historyTable, `직원 <span class="inline-block rounded-[2px] border border-erp-thead-line bg-erp-off-bg px-[4px] py-px text-[14px] font-semibold whitespace-nowrap text-erp-ink">서지안</span>`) +

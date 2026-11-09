@@ -415,9 +415,11 @@ function TodoFormFields({
         {locked && detail ? (
           // 수정 화면 — 바꿀 수 없는 배정내역은 상세 화면 「TO-DO」 표와 같은 상세 표로 보인다. 위에 붙여 늘어나지 않게
           // (2026-11-09 사용자 지정, 3팀 확인 필요 — 막힌 입력칸 · 카드로 두니 고칠 수 있는 칸처럼 보였다)
-          <div className="flex min-w-0 flex-col gap-[8px] self-start">
+          // 제목 「배정내역」은 왼쪽 「제목」 · 「내용」 칸 이름과 같은 단계(15px 600 먹색, 칸 이름과 같은 10px 아래)로 표 밖에 두고, 항목만 상세 표로(2026-11-09 사용자 지정)
+          <section className="flex min-w-0 flex-col gap-[10px] self-start">
+            <h3 className="text-[15px] font-semibold text-erp-ink">배정내역</h3>
+            <div className="flex min-w-0 flex-col gap-[8px]">
             <DetailTable
-              title="배정내역"
               rows={[
                 { label: "근무지", value: storeName },
                 {
@@ -429,7 +431,8 @@ function TodoFormFields({
             />
             {/* 바꿀 수 없는 이유를 표 바로 아래 느낌표 안내로(공통 GuideNote — 저장 옆 안내 · 삭제 안내와 같은 모양, 2026-11-09 사용자 지정) */}
             <GuideNote>배정내역(근무지 · 배정대상 · 직원)은 등록한 뒤에 변경할 수 없습니다.</GuideNote>
-          </div>
+            </div>
+          </section>
         ) : (
           <FormGroup title="배정내역">
             <Stack>

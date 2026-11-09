@@ -72,6 +72,26 @@ export function doneCountText(item: Pick<TodoListItem, "todoCount" | "doneCount"
   return `${item.doneCount} / ${assigned}명`;
 }
 
+/**
+ * 상세 머리 줄의 TO-DO 전체 값 — 목록 한 줄과 같은 상태 · 완료 인원(2026-11-09 사용자 지정). 여러 명에게 나눈 TO-DO 는 묶음 전체로 센다 —
+ * 모두 완료면 완료, 모두 대기면 대기, 그 밖은 진행 중(api 목록 groupStatus 와 같다)
+ */
+export function overallOf(detail: Pick<TodoDetail, "status" | "groupTodos" | "assigneeType" | "executionMode" | "assignees">): {
+  status: TodoStatus;
+  count: string;
+} {
+  const rows = detail.groupTodos.length ? detail.groupTodos : [detail];
+  const status: TodoStatus = rows.every((r) => r.status === "DONE") ? "DONE" : rows.every((r) => r.status === "PENDING") ? "PENDING" : "IN_PROGRESS";
+  const count = doneCountText({
+    todoCount: rows.length,
+    doneCount: rows.filter((r) => r.status === "DONE").length,
+    assigneeType: detail.assigneeType,
+    executionMode: detail.executionMode,
+    assignees: detail.assignees,
+  });
+  return { status, count };
+}
+
 /** 지우면 몇 건이 지워지고 몇 건이 남는가(T-2). 그룹은 대기인 행만 지운다. 그룹이 아니면 이 행 하나 */
 export function deletePreview(detail: Pick<TodoDetail, "status" | "groupTodos">): { pending: number; remaining: number } {
   const rows = detail.groupTodos.length ? detail.groupTodos : [detail];

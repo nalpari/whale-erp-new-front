@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge, DataTable, DetailTable, GuideIcon, PageBar, Tag, type DetailRow } from "@/components/common";
+import { Badge, DataTable, DetailTable, GuideIcon, GuideNote, PageBar, Tag, type DetailRow } from "@/components/common";
 import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
@@ -9,9 +9,9 @@ import { getTodo, type TodoDetail } from "@/lib/todos-api";
 import { CellView } from "../../staff-members/staff-table";
 import { backHrefOf, withBack } from "../todo-list-query";
 import { StaffNames } from "../staff-names";
-import { staffNameText, statusCells } from "../todo-row";
+import { overallOf, staffNameText, statusCells } from "../todo-row";
 import { TodoDetailActions, TodoStatusControl } from "./todo-detail-actions";
-import { TitledBox, TodoHistory } from "./todo-history";
+import { TodoHistory } from "./todo-history";
 
 export const metadata: Metadata = {
   title: "TO-DO 상세 · Whale ERP",
@@ -125,6 +125,7 @@ export default async function TodoDetailPage({
     },
   ];
   const due = todo.dueTime ? `${todo.dueDate} ${todo.dueTime}` : todo.dueDate;
+  const overall = overallOf(todo);
 
   return (
     <>
@@ -136,10 +137,16 @@ export default async function TodoDetailPage({
               {/* 제목 20px 600 — 자르지 않고 줄을 바꾼다. 긴급은 아래 줄 수행예정 뒤(2026-11-09 사용자 지정, 3팀 확인 필요) */}
               <h2 className="min-w-0 text-[20px] font-semibold break-all text-erp-ink">{todo.title}</h2>
               {/* 「수행예정 [꼬리표] | [긴급]」 — 공지사항 상세 「구분 | 게시일」과 같은 모양(이름 회색 14px 500, 사이 #d9d9d9 세로선).
-                  상태는 여기 두지 않는다 — 아래 「TO-DO」 상자에서 보고 바로 바꾼다(2026-11-09 사용자 지정, 3팀 확인 필요 — 떨어져 있어 어색했다) */}
+                  상태 바꾸기는 아래 「TO-DO」 상자 · 직원별 상태에서 한다(2026-11-09 사용자 지정, 3팀 확인 필요) */}
               <div className="flex flex-wrap items-center gap-[10px] text-[14px] font-medium text-erp-label">
                 <span className="flex items-center gap-[6px]">
                   수행예정 <Tag>{due}</Tag>
+                </span>
+                {/* TO-DO 전체 값 — 목록 한 줄과 같은 상태 배지 + 「완료 / 배정 직원」(여러 명에게 나눈 TO-DO 는 묶음 전체, 2026-11-09 사용자 지정) */}
+                <span aria-hidden="true" className="h-[11px] w-px bg-[#d9d9d9]" />
+                <span className="flex items-center gap-[6px]">
+                  상태 <CellView cell={statusCells(overall, statusLabels)[0]} />
+                  <span className="font-normal text-erp-ink tabular-nums">{overall.count}</span>
                 </span>
                 {todo.isUrgent && (
                   <>
@@ -165,9 +172,14 @@ export default async function TodoDetailPage({
               {/* 「TO-DO」 한 상자에 상태 · 완료 일시 · 내용 · 근무지 · 배정대상 · 직원 · 등록 — 「내용」 · 「상태 변경」 · 「배정」 · 「등록 · 수정」 상자를 합쳤다(2026-11-09 사용자 지정, 3팀 확인 필요) */}
               <DetailTable title="TO-DO" rows={[...todoRows, ...assignRows, ...editRows]} />
               {isGroup && (
-                <TitledBox title="직원별 상태">
+                // 「직원별 상태」 제목은 회색 제목 바 없이 표 위 글자 제목(15px 600)으로 두고 옆에 느낌표 안내 — 표는 기본 회색 열 이름 줄(2026-11-09 사용자 지정)
+                <section className="flex min-w-0 flex-col gap-[10px]">
+                  <div className="flex flex-wrap items-center gap-x-[12px] gap-y-[6px]">
+                    <h3 className="text-[15px] font-semibold text-erp-ink">직원별 상태</h3>
+                    {/* 문의 상세 저장 옆 안내와 같은 공통 느낌표 안내 */}
+                    <GuideNote inline>직원을 선택하면 직원의 상태 변경이력을 확인할 수 있습니다.</GuideNote>
+                  </div>
                   <DataTable<GroupRow>
-                    headVariant="plain"
                     columns={[
                       // 직원 이름을 누르면 그 직원의 TO-DO 상세로 간다 — 오른쪽 「상태 변경이력」은 그 직원의 이력이다(api 가 행 하나의 이력만 준다,
                       // 2026-11-09 사용자 지정). 지금 보는 직원은 링크 없이 굵게, 가린 직원은 흐린 글자(링크 없음)
@@ -210,7 +222,7 @@ export default async function TodoDetailPage({
                     // 지금 보는 직원(오른쪽 이력의 주인) 줄은 공통코드 그룹 목록과 같은 「고른 줄」 — 옅은 회색 바탕 + 왼쪽 회청 3px 선 + 굵은 이름(2026-11-09 사용자 지정)
                     rowState={(r) => (r.todoId === todo.todoId ? "current" : undefined)}
                   />
-                </TitledBox>
+                </section>
               )}
             </div>
             <div className="flex min-w-0 flex-col gap-[24px]">
