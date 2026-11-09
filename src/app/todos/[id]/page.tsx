@@ -83,33 +83,38 @@ export default async function TodoDetailPage({
     ...(isGroup ? [] : [{ label: "직원", value: <span><StaffNames staff={todo.assignees} /></span>, multiline: true }]),
   ];
   // 「TO-DO」 상자 — 상태(관리자가 직원 대신 바꾼다, T-1 · 그룹이면 이 행만) · 완료 일시 · 내용
+  const completedText = completedAt ? (
+    <span>
+      {formatDateTime(completedAt)}
+      {performer && <span className="text-erp-label"> · {performer}</span>}
+    </span>
+  ) : null;
   const todoRows: DetailRow[] = [
     // 상태 줄은 선택칸 하나(지금 상태가 골라진 채) + [상태 변경] — 상태 배지를 따로 두지 않는다(2026-11-09 사용자 지정, 3팀 확인 필요 — 전엔 배지 · 선택칸에 같은 값이 두 번)
     // 수정 권한이 없으면 지금 상태 배지만
+    // 완료 시각 — 「완료 일시 2026-11-09 12:41 · 이름」(한 명 수행을 끝낸 직원은 회색 이름). 여러 명에게 나눈 TO-DO 는 모든 직원이 완료해야 완료라(목록 상태와 같다)
+    // 그때 마지막 완료 시각이다 — 한 명만 끝냈을 때 그 한 명의 시각을 두면 전체가 끝난 것처럼 읽혔다. 직원마다의 시각은 아래 「직원별 상태」 표에 있다
+    // 개인 배정 · 한 명 수행은 따로 줄을 두지 않고 상태 줄의 [상태 변경] 오른쪽에 붙인다 — 상태와 완료 시각을 한눈에(2026-11-09 사용자 지정)
     ...(isGroup
-      ? []
+      ? completedAt
+        ? [{ label: "완료 일시", value: completedText }]
+        : []
       : [
           {
             label: "상태",
-            value: <TodoStatusControl todoId={todo.todoId} status={todo.status} labels={statusLabels} fallback={<CellView cell={statusCells(todo, statusLabels)[0]} />} />,
-          },
-        ]),
-    // 완료면 완료 일시, 한 명 수행을 끝낸 직원은 그 뒤 회색 이름(목록 상태 칸과 같은 값)
-    // 완료면 완료 일시. 여러 명에게 나눈 TO-DO 는 모든 직원이 완료해야 완료라(목록 상태와 같다) 그때 마지막 완료 시각을 보인다 — 한 명만 끝냈을 때
-    // 그 한 명의 시각을 두면 전체가 끝난 것처럼 읽혔다. 직원마다의 시각은 아래 「직원별 상태」 표에 있다(2026-11-09 사용자 지정)
-    ...(completedAt
-      ? [
-          {
-            label: "완료 일시",
             value: (
-              <span>
-                {formatDateTime(completedAt)}
-                {performer && <span className="text-erp-label"> · {performer}</span>}
+              <span className="flex min-w-0 flex-wrap items-center gap-x-[18px] gap-y-[6px]">
+                <TodoStatusControl todoId={todo.todoId} status={todo.status} labels={statusLabels} fallback={<CellView cell={statusCells(todo, statusLabels)[0]} />} />
+                {completedAt && (
+                  <span className="text-erp-label">
+                    완료 일시 <span className="text-erp-ink">{formatDateTime(completedAt)}</span>
+                    {performer && <> · {performer}</>}
+                  </span>
+                )}
               </span>
             ),
           },
-        ]
-      : []),
+        ]),
     { label: "내용", value: todo.body || "-", multiline: true },
   ];
   // 등록은 다른 화면처럼 「시각 · 사람」(사람은 회색). 최종수정 줄은 api 가 고친 사람을 주지 않아 일단 뺐다 — 「최종수정자」가 생기면 넣는다(2026-11-09 사용자 지정).
