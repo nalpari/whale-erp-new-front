@@ -1,4 +1,4 @@
-// 점포 폐점 확인 · 결과의 표기. 상세의 상태 변경 · 수정 화면의 폐점이 같이 쓴다(나중에 회원 탈퇴도 같은 모양을 받는다).
+// 점포 폐점 확인 · 결과의 표기. 상세의 상태 변경 · 수정 화면의 폐점과 회원 탈퇴가 같이 쓴다.
 // 서버 · 클라이언트가 함께 쓰고 node --test 가 직접 읽는다(상대 경로 + .ts).
 // api: GET /stores/:id/transition-check 의 closing(막힘 + 폐점하면 처리될 것), PUT /stores/:id 폐점 응답의 closing(처리한 수).
 import type { components } from "./api-types.generated.ts";

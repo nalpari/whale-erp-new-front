@@ -7,8 +7,10 @@ import {
   moveTargetOf,
   openCheckInConditionText,
   withdrawBlockedReason,
+  withdrawFailureOf,
   withdrawFormField,
   withdrawVerifyFailureOf,
+  withdrawPayslipText,
   withdrawWarningText,
   type WithdrawEligibility,
   type WithdrawWarningBlock,
@@ -40,8 +42,28 @@ test("상세 사유 누락 메시지는 reasonDetail 칸", () => {
   assert.equal(withdrawFormField(400, "탈퇴 사유 상세를 입력해 주세요."), "reasonDetail");
 });
 
-test("폐점이 막은 409 는 칸이 아니라 띠(null)", () => {
+test("폐점이 막은 409 는 칸이 아니라 띠(null) — 칸 문구가 들어 있어도 400 이 아니면 칸으로 보내지 않는다", () => {
   assert.equal(withdrawFormField(409, "퇴근 기록이 없는 출근이 있어 폐점할 수 없습니다."), null);
+  assert.equal(withdrawFormField(409, "현재 비밀번호가 올바르지 않습니다."), null);
+});
+
+test("400 이어도 칸을 가리킬 수 없는 문구는 띠(null) — 비밀번호 단계로 되돌리지 않는다", () => {
+  assert.equal(withdrawFormField(400, "reasonCode must be one of the following values"), null);
+});
+
+test("회원 탈퇴 저장 실패 — 409 는 status 를 유지하고 탈퇴되지 않았다고 말한다(화면이 이 status 로 조건을 다시 받는다)", () => {
+  assert.deepEqual(withdrawFailureOf(new ApiError(409, "이미 폐점한 점포입니다. (역삼점)")), {
+    ok: false,
+    status: 409,
+    message: "회원 탈퇴가 처리되지 않았습니다. 이미 폐점한 점포입니다. (역삼점)",
+  });
+  assert.deepEqual(withdrawFailureOf(new ApiError(401, "Unauthorized")), { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." });
+  assert.deepEqual(withdrawFailureOf(new ApiError(400, "현재 비밀번호가 올바르지 않습니다.")), { ok: false, status: 400, message: "현재 비밀번호가 올바르지 않습니다." });
+  assert.deepEqual(withdrawFailureOf(new ApiError(429, "ThrottlerException")), { ok: false, message: "너무 많이 시도했습니다. 10분 뒤 다시 시도해 주세요." });
+  assert.deepEqual(withdrawFailureOf(new ApiError(403, "권한이 없습니다.")), { ok: false, message: "권한이 없습니다." });
+  // 탈퇴됐는지 모르는 경우는 실패라고 단정하지 않는다
+  for (const error of [new ApiError(500, "Internal"), new TypeError("fetch failed")])
+    assert.deepEqual(withdrawFailureOf(error), { ok: false, message: "회원 탈퇴 결과를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." });
 });
 
 test("400이 아니면 null", () => {
@@ -164,4 +186,9 @@ test("10개 중 3개 막힘 — 막힌 점포만 api 순서대로, 건수는 가
   assert.deepEqual(blockedStoresOf(e).map((s) => s.storeId), [2, 5, 8]);
   assert.equal(openCheckInConditionText(e), "있음 · 점포 3개 7건");
   assert.equal(withdrawBlockedReason(e), "퇴근 기록이 없는 출근이 있는 점포가 3개 있어 탈퇴할 수 없습니다.");
+});
+
+test("탈퇴 급여명세서 안내 — 탈퇴 뒤에는 처리할 수 없다고 말하고, 없으면 null", () => {
+  assert.equal(withdrawPayslipText({ unconfirmedPayslips: 1200 }), "확정되지 않은 급여명세서 1,200건은 탈퇴 후 처리할 수 없습니다. 탈퇴 전에 확정해 주세요.");
+  assert.equal(withdrawPayslipText({ unconfirmedPayslips: 0 }), null);
 });

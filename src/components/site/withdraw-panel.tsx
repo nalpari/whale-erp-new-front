@@ -11,12 +11,13 @@ import {
   openCheckInConditionText,
   withdrawBlockedReason,
   withdrawFormField,
+  withdrawPayslipText,
   withdrawWarningText,
   type WithdrawEligibility,
   type WithdrawWarningBlock,
 } from "@/lib/withdrawal-form";
 import { useCanOpen, useCodes, useCurrentBp, useStores } from "./session-gate";
-import { createWithdrawalAction, getWithdrawEligibilityAction, verifyWithdrawPasswordAction } from "./withdraw-actions";
+import { createWithdrawalAction, getWithdrawEligibilityAction, verifyWithdrawPasswordAction, type EligibilityResult } from "./withdraw-actions";
 
 type Step = "password" | "content" | "done";
 type Form = { currentPassword: string; reasonCode: string; reasonDetail: string };
@@ -47,7 +48,7 @@ function WarningBlock({ block, closing, onNavigate }: { block: WithdrawWarningBl
         <span>{withEmphasis(block.head)}</span>
       </p>
       {block.text && <p className="whitespace-pre-line">{withEmphasis(block.text)}</p>}
-      {block.closing && <ClosingCheckList counts={closing.total} />}
+      {block.closing && <ClosingCheckList counts={closing.total} payslipText={withdrawPayslipText} />}
       {block.link && (
         <div className="mt-[10px]">
           <MoveButton href={block.link.href} label={block.link.label} onNavigate={onNavigate} />
@@ -128,12 +129,19 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
 
   // 열릴 때마다 eligibility 를 미리 받아 둔다 — 2단계는 비밀번호 칸을 지난 뒤에야 보이지만, 그 전환이
   // 기다리지 않도록 1단계에 있는 동안 백그라운드로 불러 둔다. saveNumber 로 지난 세션의 응답을 거른다.
-  // 저장이 폐점에 막혀(409) 다시 받을 때도 쓴다 — 그땐 받는 동안 지난 조건을 그대로 둔다.
-  const loadEligibility = async (mine: number) => {
-    const result = await getWithdrawEligibilityAction();
+  // 저장이 폐점에 막혀(409) 다시 받을 때는 keepCurrent — 실패해도 지난 조건과 409 문구를 그대로 둔다(탈퇴가 되돌려진 것을 이미 안다).
+  const loadEligibility = async (mine: number, keepCurrent = false) => {
+    let result: EligibilityResult;
+    try {
+      result = await getWithdrawEligibilityAction();
+    } catch (error: unknown) {
+      unstable_rethrow(error);
+      console.error("탈퇴 조건 조회 요청 실패", error);
+      result = { ok: false, message: "탈퇴 조건을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." };
+    }
     if (mine !== saveNumber.current) return;
     if (result.ok) setEligibility(result.data);
-    else setLoadError(result.message);
+    else if (!keepCurrent) setLoadError(result.message);
   };
   useEffect(() => {
     if (!open) return;
@@ -229,7 +237,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
           }
           setFailure(result.message); // 특정 칸을 가리킬 수 없는 거절 — content 단계에 남긴다
           // 폐점이 막았다(확인 뒤 생긴 퇴근 기록 없는 출근 등) — 조건을 다시 받아 막힌 점포를 보인다
-          if (result.status === 409) await loadEligibility(mine);
+          if (result.status === 409) await loadEligibility(mine, true);
           return;
         }
         setForm(EMPTY);
