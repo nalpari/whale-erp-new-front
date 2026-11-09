@@ -2,6 +2,7 @@ import { ApiError } from "@/lib/api";
 import { getPlatformAdmin, getPlatformAdmins, getPlatformRoleGroupFilterOptions, getPlatformRoleGroups, type PlatformAdminDetail } from "@/lib/platform-admins";
 import { parseAdminsQuery } from "./admins-href";
 import { AdminsScreen } from "./admins-screen";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 // 플랫폼 관리자 관리 (S-YTKWGG · 상세 S-BRSPGB · 등록 S-FOJJKB · 수정 S-CZGHBS · 삭제 S-NLVXWJ · 초기화 S-XKYOND).
 // 왼쪽 필터, 오른쪽 목록. 상세 · 등록 · 수정은 목록 위로 밀려 나오는 슬라이드 패널이다(데모와 같다 · 2026-10-08).
@@ -25,6 +26,7 @@ export default async function PlatformAdminsPage({ searchParams }: PageProps<"/p
     getPlatformRoleGroups(),
     // 필터는 등록 · 수정 선택지와 달리 마스터 권한도 보인다 — 플랫폼 관리자도 목록의 마스터 계정을 거른다(2026-10-29 재영)
     getPlatformRoleGroupFilterOptions().catch((error: unknown) => {
+      rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
       console.error("플랫폼 관리자 필터 권한 목록 조회 실패", error);
       return null;
     }),
@@ -41,6 +43,7 @@ async function loadDetail(id: number): Promise<{ admin: PlatformAdminDetail } | 
   try {
     return { admin: await getPlatformAdmin(id) };
   } catch (error) {
+    rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
     if (error instanceof ApiError && error.status === 404) return { failed: "삭제되었거나 없는 계정입니다." };
     console.error("플랫폼 관리자 상세 조회 실패", id, error);
     return { failed: "상세를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." };

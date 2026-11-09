@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { ApiError, getEnum } from "@/lib/api";
-import { redirectExpired } from "@/lib/redirect-expired";
 import { isNotificationId } from "@/lib/notification-view";
 import { getTemplate } from "@/lib/notification-templates";
 import { ForbiddenPanel } from "../forbidden-panel";
@@ -16,7 +15,6 @@ export default async function TemplateDetailPage({ params }: PageProps<"/platfor
   const loaded = await Promise.all([getTemplate(id), getEnum("NotificationTemplateChannel"), getEnum("PreferenceCategory")]).catch((error: unknown) => {
     if (!(error instanceof ApiError)) throw error;
     if (error.status === 404) notFound();
-    if (error.status === 401) redirectExpired();
     if (error.status !== 403) throw error;
     return null;
   });

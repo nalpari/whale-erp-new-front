@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button, PageBar } from "@/components/common";
 import { ApiError } from "@/lib/api";
-import { redirectExpired } from "@/lib/redirect-expired";
 import { kstToday } from "@/lib/staff-members";
 import { getCopyPreview, getWorkScheduleHistories, getWorkSchedules } from "@/lib/work-schedules-api";
 import { SchedulePicker, ScheduleHistory, WeekJump } from "./schedule-controls";
@@ -13,6 +12,7 @@ import { ScheduleMonth } from "./schedule-month";
 import { ScheduleWeek } from "./schedule-week";
 import { weekLabel } from "../staff-members/[id]/summary-view";
 import { addDays, historyApiSearch, mondayOf, moved, parseScheduleQuery, scheduleApiSearch, toScheduleSearch, type ScheduleQuery } from "./work-schedule-query";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 // 근무스케줄 관리(#202 · #343 · #608). 목업 docs/mockup/staff/index.html 근무스케줄 탭 · 데모 docs/demo/staff/work-schedules.html 을 공통 컴포넌트로 옮겼다.
 // 데이터는 GET /work-schedules(주간 8일 — 전주 일요일 포함 · 월간 42일), GET /work-schedules/histories(근무표 아래 변경 이력),
@@ -35,8 +35,7 @@ async function loadCopyPreview(storeId: number, weekStart: string): Promise<Copy
   try {
     return await getCopyPreview(storeId, weekStart);
   } catch (error) {
-    // 로그인 만료(401)는 화면 전체의 일이라 로그인 화면(만료)으로 보낸다
-    if (error instanceof ApiError && error.status === 401) redirectExpired();
+    rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
     if (error instanceof ApiError && error.status >= 400 && error.status < 500) return { error: error.message };
     console.error("근무스케줄: GET /work-schedules/copy-last-week 를 받지 못했습니다", error);
     return { error: "지난 주 복사 미리보기를 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요." };
@@ -60,13 +59,10 @@ export default async function WorkSchedulesPage({ searchParams }: { searchParams
 
   const withStore = { ...query, storeId: query.storeId };
   const [data, history, copyPreview] = await Promise.all([
-    getWorkSchedules(scheduleApiSearch(withStore)).catch((error: unknown) => {
-      if (error instanceof ApiError && error.status === 401) redirectExpired();
-      throw error;
-    }),
+    getWorkSchedules(scheduleApiSearch(withStore)),
     // 이력을 받지 못해도 화면은 그린다 — 이력 표 안에만 안내하고 원인은 서버 로그에 남긴다(front #93 리뷰)
     getWorkScheduleHistories(historyApiSearch(withStore)).catch((error: unknown) => {
-      if (error instanceof ApiError && error.status === 401) redirectExpired();
+      rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
       console.error("근무스케줄: GET /work-schedules/histories 를 받지 못했습니다", error);
       return "failed" as const;
     }),

@@ -2,6 +2,9 @@
 // 로그인 후 화면은 루트 layout 의 AdminLayout 이 이 목록(isPublicPath)으로 가려 공통 틀을 씌우고, ERP·플랫폼은 탭의 서비스(SessionGate)로 가른다.
 // next/* 를 import 하지 않는다 — node --test 로 바로 돌리기 위해서다.
 
+import { stripBp } from "./bp-path.ts";
+import { answersWith401 } from "./paper-request.ts";
+
 // 공개 경로만 목록으로 두고 나머지는 모두 로그인을 요구한다 — 새 화면 폴더를 깜빡해도 열리지 않고 막힌다(2026-10-12).
 // 찾기·가입·도입문의·공지사항·매장운영·부가서비스·약관 전문은 로그인 전 화면이다. 공지사항(/notices, 상세 · 첨부 받기 포함)은 2026-10-21, 도입문의(/leads)는 2026-10-22 에 열렸다.
 const PUBLIC_PATHS = ["/login", "/find", "/signup", "/leads", "/notices", "/store-operations", "/add-on-services", "/terms", "/design"];
@@ -84,7 +87,7 @@ export function homeOf(roleTypeCode: string): "/platform" | "/home" {
 
 /**
  * 세션 쿠키를 들고 /login?reason=expired 를 연 요청을 proxy 가 갱신으로 확인할지. 서버가 그리는 화면은 쿠키를 지울 수 없어
- * 이 주소로 보내고 proxy 가 정리한다(redirectExpired). 화면을 여는 GET 만 — 로그인 제출(서버 액션 POST)도 이 주소로 가므로,
+ * 이 주소로 보내고 proxy 가 정리한다(request() 의 redirectExpired). 화면을 여는 GET 만 — 로그인 제출(서버 액션 POST)도 이 주소로 가므로,
  * 거기서 쿠키를 지우면 로그인 액션이 쓰는 새 쿠키와 같은 응답에서 겹친다(proxy 의 서버 액션 갱신 건너뛰기와 같은 이유).
  */
 export function checksExpiredLogin(pathname: string, method: string, isAction: boolean, reason: string | null): boolean {
@@ -96,3 +99,12 @@ export type ExpiredLoginStep = "clear" | "home" | "stay";
 export function expiredLoginStepOf(refreshed: "unauthorized" | "ok" | "failed"): ExpiredLoginStep {
   return refreshed === "unauthorized" ? "clear" : refreshed === "ok" ? "home" : "stay";
 }
+
+/** 서버가 그리는 화면 요청 표시 — proxy 가 붙이는 내부 요청 헤더. request() 가 보고 api 401 이면 만료 로그인으로 보낸다. 브라우저가 보낸 값은 proxy 가 늘 지운다. */
+export const RENDER_HEADER = "x-whale-render";
+/** 화면 · RSC 를 그리는 GET 인가(proxy). 서버 액션과 401 JSON 을 주는 창구(BFF /api/* · 업로드, 탭 BP 주소 포함)는 아니다 — 거기서 이동하면 fetch 가 따라간다. */
+export function marksRenderRequest(pathname: string, method: string, isAction: boolean): boolean {
+  return method === "GET" && !isAction && !answersWith401(stripBp(pathname));
+}
+/** request() 가 받은 api 응답으로 만료 로그인(/login?reason=expired)으로 보낼지 — 토큰을 실은 화면 요청의 401 만. 토큰 없이 받은 401 은 끝난 로그인이 아니다. */
+export const redirectsOnExpiry = (status: number, hasAuthorization: boolean, isRender: boolean): boolean => status === 401 && hasAuthorization && isRender;

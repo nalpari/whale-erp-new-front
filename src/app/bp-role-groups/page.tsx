@@ -4,6 +4,7 @@ import { ApiError, deniedMessageOf, getEnum } from "@/lib/api";
 import { BP_ROLE_PAGE_SIZE, getBpRoleGroup, getBpRoleGroups } from "@/lib/bp-role-groups";
 import type { BpRoleDetailState } from "./bp-actions";
 import { BpRolesScreen } from "./roles-screen";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 // BP 권한 그룹 관리(MN000013 · S-LYKAEI · 메뉴 등록 S-KUDELB). 플랫폼 권한 관리와 같은 틀 — 왼쪽 그룹 목록(쪽 나눔), 오른쪽 고정 칸에
 // 고른 그룹의 수정(고칠 수 없으면 상세) · 등록 양식. 메뉴 권한은 줄마다 [메뉴설정] 팝업, 가맹 마스터 고정 권한은 [가맹마스터 메뉴설정 보기] 팝업이다.
@@ -63,6 +64,7 @@ async function loadDetail(id: number): Promise<NonNullable<BpRoleDetailState>> {
   try {
     return { role: await getBpRoleGroup(id) };
   } catch (error) {
+    rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
     if (error instanceof ApiError && error.status === 404) return { failed: "삭제되었거나 없는 권한 그룹입니다." };
     // 볼 수 없는 BP · 권한이면 목록도 같은 이유로 거절돼 그쪽이 알린다 — 장애 로그를 남기지 않는다
     if (error instanceof ApiError && error.status === 403) return { failed: error.message };

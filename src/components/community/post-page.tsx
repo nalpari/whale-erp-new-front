@@ -1,20 +1,18 @@
 import { notFound } from "next/navigation";
 import { PageBar } from "@/components/common";
 import { ApiError, getEnum } from "@/lib/api";
-import { redirectExpired } from "@/lib/redirect-expired";
 import { getPost, type PostDetail } from "@/lib/community";
 import { POST_BASE, postIdOf, type PostKind } from "@/lib/community-view";
 import { ListFailure } from "./list-load";
 import { PostForm } from "./post-form";
 
 // 공지사항 · FAQ 등록 · 수정 화면(platform-notices · platform-faqs 의 new · [id])이 함께 쓰는 서버 쪽. 없는 글 · 다른 종류의 글은 404(api 가 경로로 가른다),
-// 로그인이 끊기면(401) 로그인 화면(만료)으로 보내고 권한이 없으면(403) 안내한다. 그 밖의 실패는 error.tsx 가 받는다.
+// 로그인이 끊기면(401) request() 가 로그인 화면(만료)으로 보내고 권한이 없으면(403) 안내한다. 그 밖의 실패는 error.tsx 가 받는다.
 
 const enums = () => Promise.all([getEnum("PostStatus"), getEnum("NoticeType"), getEnum("PostAudienceType")]);
 
-/** 403 이면 그 상태 코드를, 401 은 로그인 화면(만료)으로, 그 밖의 실패는 다시 던진다. */
+/** 403 이면 그 상태 코드를, 그 밖의 실패는 다시 던진다(401 은 request() 가 먼저 로그인 화면(만료)으로 보낸다). */
 function denied(error: unknown): 403 {
-  if (error instanceof ApiError && error.status === 401) redirectExpired();
   if (error instanceof ApiError && error.status === 403) return error.status;
   throw error;
 }

@@ -7,6 +7,7 @@ import { getBpCodeGroups, getBpCodeItems } from "@/lib/bp-codes";
 import { BpCodeFilter } from "./bp-code-filter";
 import { BpCodeGroupPanel } from "./bp-code-group-panel";
 import { BpCodeItemPanel } from "./bp-code-item-panel";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 // BP 공통코드 관리(MN000014 · S-FHVSAV · okf/config.md 공통코드). 데모 docs/demo/config/codes.html 의 배치 — 왼쪽 필터(그룹 코드 · 그룹명),
 // 그룹 목록 카드(읽기만 — 그룹은 플랫폼이 만든다), 고른 그룹의 상세 코드 카드. BP 는 상세 코드만 더하고 고치고 지운다(플랫폼제공 · BP전용, bpDeletable).
@@ -35,6 +36,7 @@ export default async function BpCodesPage({ searchParams }: PageProps<"/bp-code-
   const selected = list.items.find((g) => g.groupCode === params.group) ?? list.items[0];
   const items = selected
     ? await getBpCodeItems(selected.groupCode).catch((error: unknown) => {
+        rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
         console.error("BP 상세 코드 조회 실패", selected.groupCode, error);
         return null;
       })

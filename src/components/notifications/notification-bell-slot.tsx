@@ -2,6 +2,7 @@ import { ApiError } from "@/lib/api";
 import { getNotifications } from "@/lib/notifications";
 import { PASSWORD_CHANGE_REQUIRED_MESSAGE } from "@/lib/retirement";
 import { NotificationBell } from "./notification-bell";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 const RECENT = 5;
 
@@ -11,6 +12,7 @@ export async function NotificationBellSlot() {
   const data = await getNotifications({ pageSize: RECENT })
     .then((list) => ({ unreadCount: list.unreadCount, recent: list.items }))
     .catch((error: unknown) => {
+      rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
       // 강제 비밀번호 변경 전에는 api 가 모든 요청을 403 으로 막는다 — 정해진 동작이라 오류로 남기지 않는다(2026-10-28, 개발 서버 Issues 로 잡혔다)
       const passwordPending = error instanceof ApiError && error.status === 403 && error.message === PASSWORD_CHANGE_REQUIRED_MESSAGE;
       if (!passwordPending) console.error("운영 알림 종 조회 실패", error);

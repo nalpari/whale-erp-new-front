@@ -1,7 +1,6 @@
 import { DataTable, NoticeBand, PageBar, type Column } from "@/components/common";
 import { ListFailure } from "@/components/community/list-load";
 import { ApiError } from "@/lib/api";
-import { redirectExpired } from "@/lib/redirect-expired";
 import { formatDateTime } from "@/lib/format";
 import { getPublicHolidays, type PublicHoliday, type PublicHolidayList } from "@/lib/public-holidays";
 import {
@@ -32,7 +31,6 @@ export default async function PublicHolidaysPage({ searchParams }: PageProps<"/p
   try {
     data = await getPublicHolidays(query);
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) redirectExpired();
     if (!(error instanceof ApiError && error.status === 403)) throw error;
     return (
       <>

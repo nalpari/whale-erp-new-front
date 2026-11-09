@@ -1,9 +1,9 @@
 import { Button, PageBar } from "@/components/common";
 import { ApiError } from "@/lib/api";
-import { redirectExpired } from "@/lib/redirect-expired";
 import { getNotifications, type NotificationList as ListData } from "@/lib/notifications";
 import { parseNotificationQuery } from "@/lib/notification-view";
 import { NotificationList } from "./notification-list";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 // 운영 알림함(#254 · 데모 docs/demo/src/pages/notify/index.mjs). 화면 상태(쪽 · 건수)는 URL 에만 둔다.
 // 플랫폼 운영자와 사업자 관리자가 같은 화면을 쓴다 — 무엇을 받는지는 api 가 로그인한 계정으로 정한다.
@@ -18,7 +18,7 @@ export default async function NotificationsPage({
   try {
     data = await getNotifications(query);
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) redirectExpired();
+    rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
     failure =
       error instanceof ApiError && error.status === 403
         ? "운영 알림을 볼 권한이 없습니다."

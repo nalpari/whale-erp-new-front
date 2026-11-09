@@ -2,9 +2,11 @@ import { cookies, headers } from "next/headers";
 import { unstable_rethrow } from "next/navigation";
 import { failureOf, type ActionFailure, type ActionLog, type FailureOptions } from "./action-failure.ts";
 import { ApiError } from "./api-error";
+import { RENDER_HEADER, redirectsOnExpiry } from "./auth-routes";
 import { BP_HEADER, bpPath } from "./bp-path";
 import { forwardedForHeader } from "./forwarded-headers";
 import type { EnumValue } from "./enums";
+import { redirectExpired } from "./redirect-expired";
 import { parseSession, SESSION_COOKIE, type Session } from "./session";
 import { expiredCookie, marksExpiry } from "./session-expiry.ts";
 
@@ -31,7 +33,7 @@ export function baseUrl(): string {
 
 /**
  * 서버 액션이 api 401 을 받으면 세션 쿠키를 지우고 표시 쿠키를 심는다 — 브라우저의 감싼 fetch 가 보고 만료 팝업을 띄운다(session-expiry.ts).
- * 서버가 그리는 화면은 쿠키를 쓸 수 없어 빼고(redirectExpired), /api 라우트는 BFF 가 지운다. 쿠키 쓰기가 실패해도 401 처리는 그대로 간다.
+ * 서버가 그리는 화면은 쿠키를 쓸 수 없어 빼고(request() 가 redirectExpired 로 보낸다), /api 라우트는 BFF 가 지운다. 쿠키 쓰기가 실패해도 401 처리는 그대로 간다.
  */
 async function markSessionExpired(path: string, init: RequestInit): Promise<void> {
   try {
@@ -52,7 +54,10 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
   });
 
   if (!response.ok) {
-    if (response.status === 401) await markSessionExpired(path, init);
+    if (response.status === 401) {
+      await markSessionExpired(path, init);
+      if (redirectsOnExpiry(401, new Headers(init.headers).has("Authorization"), await isRenderRequest())) redirectExpired();
+    }
     throw await apiError(response);
   }
 
@@ -60,6 +65,16 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
   return response.status === 204
     ? (undefined as T)
     : ((await response.json()) as T);
+}
+
+/** proxy 가 화면 · RSC GET 에 붙인 표시(RENDER_HEADER)가 있는가. 요청 밖(빌드 · 캐시 함수)이라 headers() 를 못 부르면 아니다 — 지금처럼 던진다. */
+async function isRenderRequest(): Promise<boolean> {
+  try {
+    return (await headers()).get(RENDER_HEADER) === "1";
+  } catch (e) {
+    unstable_rethrow(e); // 정적 렌더링을 멈추는 Next 신호는 삼키지 않는다.
+    return false;
+  }
 }
 
 /**

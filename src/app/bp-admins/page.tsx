@@ -1,10 +1,10 @@
 import { PageBar } from "@/components/common";
 import { CARD, FailedBand } from "@/components/site/side-parts";
 import { ApiError, deniedMessageOf } from "@/lib/api";
-import { redirectExpired } from "@/lib/redirect-expired";
 import { getBpAdmin, getBpAdminRoleGroups, getBpAdmins, type BpAdminDetail } from "@/lib/bp-admins";
 import { AdminsScreen } from "./admins-screen";
 import { bpAdminListQueryOf, isEmptyByFilter, parseBpAdminsQuery } from "./bp-admins-href";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 // BP 관리자 관리(MN000012 · 목록 S-AJHXFU · 등록 S-NIMSMQ · 상세 S-EBIPGZ · 초기화 S-TKSRJX · 수정 S-OENTFQ).
 // 왼쪽 필터, 오른쪽 목록. 상세 · 등록 · 수정은 목록 위로 밀려 나오는 슬라이드 패널이다(데모 config/admins · 플랫폼 관리자와 같은 동작).
@@ -22,7 +22,7 @@ export default async function BpAdminsPage({ searchParams }: PageProps<"/bp-admi
     // 권한 그룹 선택지를 못 받아도 목록은 연다 — null 로 넘겨 필터 · 폼이 받지 못한 것을 알린다(빈 선택지로 조용히 두지 않는다).
     // 권한 없음은 목록도 같은 이유로 막혀 그쪽이 알리므로 장애 로그를 남기지 않는다
     getBpAdminRoleGroups().catch((error: unknown) => {
-      if (error instanceof ApiError && error.status === 401) redirectExpired();
+      rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
       if (!(error instanceof ApiError && error.status === 403)) console.error("BP 관리자 권한 그룹 선택지 조회 실패", error);
       return null;
     }),
@@ -47,7 +47,6 @@ export default async function BpAdminsPage({ searchParams }: PageProps<"/bp-admi
 
 /** 목록을 api 가 거절했으면(deniedMessageOf) 오류 화면 대신 그 문장을 보인다. 거절이 아닌 것은 그대로 던져 error.tsx 가 받는다. */
 const listDenied = (error: unknown): { denied: string } => {
-  if (error instanceof ApiError && error.status === 401) redirectExpired();
   const denied = deniedMessageOf(error);
   if (denied === null) throw error;
   console.warn("BP 관리자 목록 거절", error instanceof ApiError ? error.status : undefined, denied);
@@ -62,7 +61,7 @@ async function loadDetail(id: number): Promise<{ admin: BpAdminDetail } | { fail
   try {
     return { admin: await getBpAdmin(id) };
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) redirectExpired();
+    rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
     if (error instanceof ApiError && error.status === 404) return { failed: "볼 수 없거나 없는 계정입니다." };
     // 볼 수 없는 BP · 권한이면 목록도 같은 이유로 거절돼 그쪽이 알린다 — 장애 로그를 남기지 않는다
     if (error instanceof ApiError && error.status === 403) return { failed: error.message };

@@ -2,6 +2,7 @@ import { ApiError } from "@/lib/api";
 import { getBpMaster, getBpMasters, type BpMasterDetail } from "@/lib/bp-masters";
 import { parseBpMastersQuery } from "./bp-masters-href";
 import { BpMastersScreen } from "./bp-masters-screen";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 // BP 마스터 계정 관리 (S-ALHCJS · 상세 S-GZDODB · 초기화 S-PRRLMA · 등록 S-OJEYQJ · 수정 S-CQGGZS · okf/bp.md).
 // 왼쪽 필터, 오른쪽 목록. 상세 · 등록 · 수정은 목록 위로 밀려 나오는 슬라이드 패널이다(플랫폼 관리자 관리와 같은 틀, BP-6).
@@ -21,6 +22,7 @@ async function loadDetail(bpCodeId: number): Promise<{ bp: BpMasterDetail } | { 
   try {
     return { bp: await getBpMaster(bpCodeId) };
   } catch (error) {
+    rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
     if (error instanceof ApiError && error.status === 404) return { failed: "삭제되었거나 없는 BP 입니다." };
     console.error("BP 마스터 계정 상세 조회 실패", bpCodeId, error);
     return { failed: "상세를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." };

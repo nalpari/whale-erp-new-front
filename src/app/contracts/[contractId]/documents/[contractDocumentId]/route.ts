@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { EXPIRED_REASON, loginPathOf } from "@/lib/auth-routes";
 import { ApiError, authHeaders, deniedMessageOf, request, screenPath, SESSION_COOKIE } from "@/lib/api";
 import type { DocumentNotice } from "../../document-notice";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 // 계약서 파일 내려받기 — 종이 계약 날인본 · 임금계약서, 전자계약 처리 완료본 · 보낸 원본(WHALEERP-155). api 가 업무 범위를 본 뒤 주는 300초짜리 서명 주소로 보낸다 — 받으면 원래 파일 이름으로 저장된다.
 // 상세 화면을 오래 열어 두어도 링크를 누를 때마다 새 주소를 받으므로 만료되지 않는다.
@@ -28,6 +29,8 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/contracts/[contr
     });
     return NextResponse.redirect(url);
   } catch (e) {
+    // 화면 GET 이라 api 401 이면 request() 가 만료 로그인으로 보낸다(쿠키는 proxy 가 그 주소에서 정리) — 그 이동을 삼키지 않는다.
+    rethrowExpired(e); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
     if (e instanceof ApiError && e.status === 401) return toLogin();
     if (e instanceof ApiError && e.status === 404) return back("missing");
     // BP 를 고르지 않음(400) · 권한 · 다른 BP(403) — 옛 /contracts/… 주소는 라우트 핸들러라 SessionGate 가 옮기지 못한다. 거절이라 오류로 남기지 않는다

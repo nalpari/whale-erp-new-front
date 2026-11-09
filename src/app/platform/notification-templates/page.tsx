@@ -1,11 +1,11 @@
 import { Button, PageBar } from "@/components/common";
 import { ApiError, getEnum } from "@/lib/api";
-import { redirectExpired } from "@/lib/redirect-expired";
 import type { EnumValue } from "@/lib/enums";
 import { parseTemplateQuery } from "@/lib/notification-template-view";
 import { getTemplates, type TemplateList as ListData } from "@/lib/notification-templates";
 import { ChannelTabs } from "./channel-tabs";
 import { TemplateList } from "./template-list";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 // 알림 템플릿 관리 목록(#575 · #579, 목업 notify/templates.html · 데모 pages/notify/templates.mjs). 플랫폼 운영자 전용.
 // 채널 탭 넷(운영 알림 · 앱 푸시 · 메일 · 알림톡). 화면 상태(채널 · 쪽 · 건수)는 URL 에만 둔다.
@@ -18,7 +18,7 @@ export default async function NotificationTemplatesPage({ searchParams }: PagePr
   try {
     [channels, data] = await Promise.all([getEnum("NotificationTemplateChannel"), getTemplates(query)]);
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) redirectExpired();
+    rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
     const denied = error instanceof ApiError && error.status === 403;
     failure = denied ? "알림 템플릿을 볼 권한이 없습니다." : "알림 템플릿을 불러오지 못했습니다.";
     if (!denied) console.error("알림 템플릿 목록 조회 실패", error);

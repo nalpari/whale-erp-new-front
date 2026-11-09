@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { Button, PageBar } from "@/components/common";
 import { ApiError, authHeaders, bpHref, deniedMessageOf, getEnum, request } from "@/lib/api";
-import { redirectExpired } from "@/lib/redirect-expired";
 import type { ContractDetail } from "../../new/contract-form-model";
 import { backHrefOf, withBack } from "../../contract-list";
 import { ContractPermission } from "../../contract-permission";
@@ -27,7 +26,6 @@ export default async function ContractWorkerPage({ params, searchParams }: PageP
       if (e instanceof ApiError && e.status === 404) notFound();
       // api 의 거절(BP 를 고르지 않음 400 · 권한 · 다른 BP 403 — deniedMessageOf)은 그 문장을 보인다. 404(없는 계약 · 없는 BP)는 위에서 찾을 수 없음 화면이다
       const denied = deniedMessageOf(e);
-      if (e instanceof ApiError && e.status === 401) redirectExpired();
       if (denied === null) throw e;
       if (denied !== null) notice = denied;
     }

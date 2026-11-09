@@ -9,7 +9,9 @@ import {
   loginPathOf,
   LOGOUT_REASON_PARAM,
   marksExpiredOnLogin,
+  marksRenderRequest,
   redirectsSignedIn,
+  RENDER_HEADER,
   RETURN_PARAM,
   signedInTargetOf,
 } from "@/lib/auth-routes";
@@ -44,9 +46,11 @@ export async function proxy(req: NextRequest) {
   // 받는 화면이 공지사항 저장은 messages, 종이 계약은 error 를 읽어 둘 다 싣는다.
   // 탭 BP 주소(/bp/{id}/contracts/paper)로 부른 창구도 그 경로의 상한을 받게 접두를 떼고 본다(toLogin 의 answersWith401 과 같다).
   if (tooLarge(stripBp(pathname), req.headers.get("content-length"), req.headers.get("transfer-encoding"))) return NextResponse.json({ error: TOO_LARGE, messages: [TOO_LARGE] }, { status: 413 });
+  // 화면 요청 표시는 늘 proxy 가 정한다 — 브라우저가 보낸 값은 공개 경로에서도 버린다(BP_HEADER 와 같다).
+  req.headers.delete(RENDER_HEADER);
 
   if (isPublicPath(pathname)) {
-    // 서버가 그리는 화면의 401(redirectExpired)은 쿠키를 지우지 못하고 /login?reason=expired 로 온다. 쿠키만 보고 홈으로 되돌리면
+    // 서버가 그리는 화면의 401(request() 의 redirectExpired)은 쿠키를 지우지 못하고 /login?reason=expired 로 온다. 쿠키만 보고 홈으로 되돌리면
     // 홈에서 또 401 이다 — 갱신으로 세션이 정말 끝났는지 묻는다. 판정은 auth-routes.ts(checksExpiredLogin · expiredLoginStepOf).
     if (session && checksExpiredLogin(pathname, req.method, req.headers.has("next-action"), req.nextUrl.searchParams.get(LOGOUT_REASON_PARAM))) {
       const refreshed = await refresh(session);
@@ -82,6 +86,8 @@ export async function proxy(req: NextRequest) {
 
   const route = bpRoute(req, session);
   if (route instanceof URL) return NextResponse.redirect(route);
+  // 화면 · RSC GET 이면 표시를 붙여, 그리다 api 401 을 받은 request() 가 만료 로그인으로 보내게 한다(auth-routes.ts 의 marksRenderRequest).
+  if (marksRenderRequest(pathname, req.method, req.headers.has("next-action"))) req.headers.set(RENDER_HEADER, "1");
   // 요청 헤더(탭 BP · 갱신한 쿠키)를 바꿔 넘긴다. /bp/{id} 주소면 옛 경로(폴더)로 rewrite 한다 — 브라우저 주소는 그대로다.
   const pass = () => (route ? NextResponse.rewrite(route.rewrite, { request: { headers: req.headers } }) : NextResponse.next({ request: { headers: req.headers } }));
 

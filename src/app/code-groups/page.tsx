@@ -5,6 +5,7 @@ import { CodeFilter } from "./code-filter";
 import { CodeGroupPanel } from "./code-group-panel";
 import { CodeItemPanel } from "./code-item-panel";
 import { UnsavedChangesProvider } from "@/components/site/code-editor/unsaved-changes";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 // 플랫폼 공통코드 관리 (S-UQPNIH). 한 화면에 왼쪽 필터(그룹 코드 · 그룹명 · 관리주체 — BP 공통코드 관리는 관리주체 없이 둘만), 그룹 목록, 고른 그룹의 상세 코드를 둔다.
 // 검색 · 고른 그룹은 주소(?groupCode · ?groupName · ?manageOwnerCode · ?group)에 둔다. 고른 그룹이 목록에 없으면 첫 그룹을 고른다.
@@ -26,6 +27,7 @@ export default async function PlatformCodesPage({ searchParams }: PageProps<"/co
   // 다른 그룹으로 갈 수 없게 된다. 그룹 목록은 그대로 그리고 오른쪽 패널만 실패를 보인다.
   const items = selected
     ? await getCodeItems(selected.groupCode).catch((error: unknown) => {
+        rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
         console.error("상세 코드 조회 실패", selected.groupCode, error);
         return null;
       })

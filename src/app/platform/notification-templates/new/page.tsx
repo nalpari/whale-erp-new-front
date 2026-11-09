@@ -1,5 +1,4 @@
 import { ApiError, getEnum } from "@/lib/api";
-import { redirectExpired } from "@/lib/redirect-expired";
 import { getTemplates } from "@/lib/notification-templates";
 import { ForbiddenPanel } from "../forbidden-panel";
 import { TemplateForm } from "../template-form";
@@ -13,7 +12,6 @@ export default async function NewTemplatePage() {
     getEnum("PreferenceCategory"),
     getTemplates({ channel: "NOTIFICATION", page: 1, pageSize: 20 }),
   ]).catch((error: unknown) => {
-    if (error instanceof ApiError && error.status === 401) redirectExpired();
     if (!(error instanceof ApiError) || error.status !== 403) throw error;
     return null;
   });

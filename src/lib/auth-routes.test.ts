@@ -15,6 +15,8 @@ import {
   loginPathOf,
   logoutNoticeOf,
   marksExpiredOnLogin,
+  marksRenderRequest,
+  redirectsOnExpiry,
   redirectsSignedIn,
   returnPathOf,
   signedInTargetOf,
@@ -132,4 +134,25 @@ test("marksExpiredOnLogin: 서버 액션이고 로그인 키가 있을 때만", 
   assert.equal(marksExpiredOnLogin(true, true), true);
   assert.equal(marksExpiredOnLogin(true, false), false);
   assert.equal(marksExpiredOnLogin(false, true), false);
+});
+
+test("marksRenderRequest: 화면 · RSC GET 만 — POST · 서버 액션 · BFF · 업로드 창구는 아니다", () => {
+  assert.equal(marksRenderRequest("/stores", "GET", false), true);
+  assert.equal(marksRenderRequest("/bp/3/stores", "GET", false), true);
+  assert.equal(marksRenderRequest("/stores", "POST", false), false);
+  assert.equal(marksRenderRequest("/stores", "POST", true), false);
+  assert.equal(marksRenderRequest("/stores", "GET", true), false);
+  assert.equal(marksRenderRequest("/api/x", "GET", false), false);
+  assert.equal(marksRenderRequest("/bp/3/api/x", "GET", false), false);
+  assert.equal(marksRenderRequest("/contracts/paper", "GET", false), false);
+  assert.equal(marksRenderRequest("/bp/3/contracts/paper", "GET", false), false);
+  assert.equal(marksRenderRequest("/platform-notices/save", "GET", false), false);
+  assert.equal(marksRenderRequest("/support-inquiries/save", "GET", false), false);
+});
+
+test("redirectsOnExpiry: 401 이고 토큰을 실었고 화면 요청일 때만", () => {
+  assert.equal(redirectsOnExpiry(401, true, true), true);
+  assert.equal(redirectsOnExpiry(403, true, true), false);
+  assert.equal(redirectsOnExpiry(401, false, true), false);
+  assert.equal(redirectsOnExpiry(401, true, false), false);
 });

@@ -2,6 +2,7 @@ import { ApiError, getEnum } from "@/lib/api";
 import { getRoleGroup, getRoleGroups } from "@/lib/platform-role-groups";
 import { type RoleDetailState } from "./role-parts";
 import { RolesScreen } from "./roles-screen";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 // 플랫폼 권한 관리(MN000214 · S-JDCOAG · 메뉴 등록 S-EFQREM). 데모 docs/demo/system/roles.html 을 공통 컴포넌트로 옮겼다.
 // 왼쪽 권한 목록(쪽 나눔 없음), 오른쪽 고정 칸에 고른 권한의 수정(고칠 수 없으면 상세) · 등록 양식. 메뉴 권한은 줄마다 [메뉴설정] 팝업이다.
@@ -31,6 +32,7 @@ async function loadDetail(id: number): Promise<NonNullable<RoleDetailState>> {
   try {
     return { role: await getRoleGroup(id) };
   } catch (error) {
+    rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
     if (error instanceof ApiError && error.status === 404) return { failed: "삭제되었거나 없는 권한입니다." };
     console.error("플랫폼 권한 상세 조회 실패", id, error);
     return { failed: "상세를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." };

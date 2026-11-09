@@ -1,11 +1,11 @@
 import { PageBar } from "@/components/common";
 import { CARD, FailedBand } from "@/components/site/side-parts";
 import { ApiError, deniedMessageOf } from "@/lib/api";
-import { redirectExpired } from "@/lib/redirect-expired";
 import { outsideHoliday, parseBpHolidayQuery } from "@/lib/bp-holiday-view";
 import { getBpHoliday, getBpHolidays, type BpHolidayDetail } from "@/lib/bp-holidays";
 import { kstToday } from "@/lib/staff-members";
 import { HolidaysScreen } from "./holidays-screen";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 // BP 휴일 관리(MN000015 · S-YAFRYZ · 등록 S-UCPMYB · 상세 S-MQELTV · 수정 S-BXEAEZ). 데모 docs/demo/config/holidays*.html 을 공통 컴포넌트로 옮겼다.
 // 한 달씩 캘린더 · 목록으로 보고, 등록 · 상세 · 수정은 목록 위로 밀려 나오는 슬라이드 패널이다(데모와 같다).
@@ -36,7 +36,6 @@ export default async function BpHolidaysPage({ searchParams }: PageProps<"/bp-ho
  * 거절이 아닌 것은 그대로 던져 error.tsx 가 받는다.
  */
 const listDenied = (error: unknown): { denied: string } => {
-  if (error instanceof ApiError && error.status === 401) redirectExpired();
   const denied = deniedMessageOf(error);
   if (denied === null) throw error;
   console.warn("BP 휴일 목록 거절", error instanceof ApiError ? error.status : undefined, denied);
@@ -51,7 +50,7 @@ async function loadDetail(id: number, at: string | null): Promise<{ holiday: BpH
     // 시작일 기준으로 다시 받는다(브라우저 시험으로 찾음, 2026-10-27)
     return { holiday: at && outsideHoliday(holiday, at) ? await getBpHoliday(id, holiday.startDate) : holiday };
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) redirectExpired();
+    rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
     if (error instanceof ApiError && error.status === 404) return { failed: "삭제되었거나 볼 수 없는 휴일입니다." };
     if (error instanceof ApiError && [400, 403].includes(error.status)) return { failed: error.message };
     console.error("BP 휴일 상세 조회 실패", id, error);

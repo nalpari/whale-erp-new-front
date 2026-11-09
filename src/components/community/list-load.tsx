@@ -1,6 +1,6 @@
 import { Button } from "@/components/common";
 import { ApiError } from "@/lib/api";
-import { redirectExpired } from "@/lib/redirect-expired";
+import { rethrowExpired } from "@/lib/redirect-expired";
 
 // 커뮤니티 관리 목록을 불러오다 실패하면 목록 자리에 문장을 보인다. 권한 없음(403)은 다시 해도 같아 다시 시도를 두지 않는다.
 
@@ -11,7 +11,7 @@ export async function loadList<T>(what: string, load: () => Promise<T>): Promise
     return { data: await load() };
   } catch (error) {
     const object = `${what}${hasFinal(what) ? "을" : "를"}`;
-    if (error instanceof ApiError && error.status === 401) redirectExpired();
+    rethrowExpired(error); // 세션 만료(401)면 로그인 화면으로 보낸다 — 아래 실패 처리로 삼키지 않는다
     if (error instanceof ApiError && error.status === 403) return { failure: `${object} 볼 권한이 없습니다.`, denied: true };
     console.error(`${what} 목록 조회 실패`, error);
     return { failure: `${object} 불러오지 못했습니다.`, denied: false };
