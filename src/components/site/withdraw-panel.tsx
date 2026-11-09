@@ -4,7 +4,7 @@ import { unstable_rethrow } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type MouseEvent, type RefObject } from "react";
 import { logout, logoutAfterWithdrawal } from "@/app/actions";
 import { ClosingCheckList, ClosingCondition } from "@/app/stores/store-closing-parts";
-import { Blocked, Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
+import { Blocked, Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, GuideNote, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
 import {
   blockedStoresOf,
   moveTargetOf,
@@ -344,7 +344,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                     { header: "미정산 금액", cell: () => <ConditionValue value="-" checked={null} /> },
                     {
                       header: "퇴근 기록 없는 출근",
-                      cell: (e) => <ConditionValue value={openCheckInConditionText(e)} checked={!blockedStores.length} />,
+                      cell: (e) => <ConditionValue value={openCheckInConditionText(e)} checked={blockedStores.length ? false : null} />,
                     },
                   ]}
                   rows={[eligibility]}
@@ -369,6 +369,8 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                   <div className="text-[14px] leading-[1.6] text-erp-ink">
                     <ClosingCondition counts={blockedStore} />
                   </div>
+                  {/* 본사에게 가려진 출근은 BP 마스터가 출퇴근 현황에서도 찾을 수 없다 — 그 출근이 있는 점포에만 누가 볼 수 있는지 알린다(2026-11-09 사용자 지정) */}
+                  {blockedStore.openCheckIns.hiddenCount > 0 && <GuideNote>가맹마스터에게만 확인 가능한 출근이 포함되어 있습니다.</GuideNote>}
                 </div>
               )}
 
@@ -419,7 +421,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                 <Blocked reason={withdrawBlockedReason(eligibility)} floating>
                   <Button
                     onClick={() => setConfirmOpen(true)}
-                    disabled={blockedStores.length > 0 || !form.reasonCode || (form.reasonCode === "WD_INPUT" && !form.reasonDetail.trim())}
+                    disabled={saving || blockedStores.length > 0 || !form.reasonCode || (form.reasonCode === "WD_INPUT" && !form.reasonDetail.trim())}
                   >
                     회원 탈퇴
                   </Button>

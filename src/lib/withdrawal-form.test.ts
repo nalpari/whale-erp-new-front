@@ -61,8 +61,11 @@ test("회원 탈퇴 저장 실패 — 409 는 status 를 유지하고 탈퇴되�
   assert.deepEqual(withdrawFailureOf(new ApiError(400, "현재 비밀번호가 올바르지 않습니다.")), { ok: false, status: 400, message: "현재 비밀번호가 올바르지 않습니다." });
   assert.deepEqual(withdrawFailureOf(new ApiError(429, "ThrottlerException")), { ok: false, message: "너무 많이 시도했습니다. 10분 뒤 다시 시도해 주세요." });
   assert.deepEqual(withdrawFailureOf(new ApiError(403, "권한이 없습니다.")), { ok: false, message: "권한이 없습니다." });
-  // 탈퇴됐는지 모르는 경우는 실패라고 단정하지 않는다
-  for (const error of [new ApiError(500, "Internal"), new TypeError("fetch failed")])
+  // 폐점 시간 초과는 전체가 되돌아간 것이 확실하다 — 조건은 그대로라 status 는 주지 않는다(다시 받지 않는다)
+  const timedOut = "처리 시간이 초과되어 폐점하지 못했습니다.";
+  assert.deepEqual(withdrawFailureOf(new ApiError(503, timedOut, [timedOut], { code: "STORE_CLOSING_TIMEOUT" })), { ok: false, message: `회원 탈퇴가 처리되지 않았습니다. ${timedOut}` });
+  // 탈퇴됐는지 모르는 경우는 실패라고 단정하지 않는다 — code 없는 503(게이트웨이)도 같다
+  for (const error of [new ApiError(500, "Internal"), new ApiError(503, "요청이 실패했습니다 (HTTP 503)"), new TypeError("fetch failed")])
     assert.deepEqual(withdrawFailureOf(error), { ok: false, message: "회원 탈퇴 결과를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." });
 });
 
@@ -168,13 +171,13 @@ test("점포 블록에만 폐점 시 함께 처리될 것(closing)을 붙인다"
   assert.equal((withClosing[0] as Block).head, "점포 **7개**의 상태가 「폐점」으로 바뀝니다.");
 });
 
-test("막힌 점포 없음 — 칸은 「없음」, [회원 탈퇴] 막힘 이유 없음", () => {
+test("막힌 점포 없음 — 칸은 「-」, [회원 탈퇴] 막힘 이유 없음", () => {
   const e = eligibilityOf({ bpName: "웨일분식", adminCount: 0, storeCount: 2 }, [store(1), store(2)]);
   assert.deepEqual(blockedStoresOf(e), []);
-  assert.equal(openCheckInConditionText(e), "없음");
+  assert.equal(openCheckInConditionText(e), "-");
   assert.equal(withdrawBlockedReason(e), undefined);
   // 점포가 하나도 없어도 같다
-  assert.equal(openCheckInConditionText(eligibilityOf({ bpName: "웨일분식", adminCount: 0, storeCount: 0 })), "없음");
+  assert.equal(openCheckInConditionText(eligibilityOf({ bpName: "웨일분식", adminCount: 0, storeCount: 0 })), "-");
 });
 
 test("10개 중 3개 막힘 — 막힌 점포만 api 순서대로, 건수는 가려진 직원 것까지 더한다", () => {
@@ -184,7 +187,7 @@ test("10개 중 3개 막힘 — 막힌 점포만 api 순서대로, 건수는 가
   stores[7] = store(8, 0, 4);
   const e = eligibilityOf({ bpName: "웨일분식", adminCount: 0, storeCount: 10 }, stores);
   assert.deepEqual(blockedStoresOf(e).map((s) => s.storeId), [2, 5, 8]);
-  assert.equal(openCheckInConditionText(e), "있음 · 점포 3개 7건");
+  assert.equal(openCheckInConditionText(e), "점포 3개 7건");
   assert.equal(withdrawBlockedReason(e), "퇴근 기록이 없는 출근이 있는 점포가 3개 있어 탈퇴할 수 없습니다.");
 });
 

@@ -89,3 +89,6 @@ export const CLOSING_UNKNOWN_RESULT_NOTE = "폐점됐다면 근무 중인 직원
 
 /** 폐점 저장이 확인과 저장 사이에 생긴 출근으로 막혔다(409) — api 오류 본문의 code */
 export const OPEN_CHECK_IN = "OPEN_CHECK_IN";
+
+/** 폐점 트랜잭션이 시간을 넘겨 전체가 되돌아갔다(503) — api 오류 본문의 code. 게이트웨이의 503 과 갈라 준다 */
+export const STORE_CLOSING_TIMEOUT = "STORE_CLOSING_TIMEOUT";

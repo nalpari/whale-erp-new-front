@@ -4,7 +4,7 @@
 import { ApiError } from "./api-error.ts";
 import type { components } from "./api-types.generated.ts";
 import { bpPath, isBpPathScreen } from "./bp-path.ts";
-import { closingBlockOf, type StoreClosingCounts } from "./store-closing.ts";
+import { closingBlockOf, STORE_CLOSING_TIMEOUT, type StoreClosingCounts } from "./store-closing.ts";
 
 /** 탈퇴 전 확인 — closing 은 폐점 안 한 점포 전부의 폐점 확인(점포 관리 폐점과 같은 값). 막는 조건은 closing.isBlocked 하나뿐이다
  * (퇴근 기록이 없는 출근, api 2026-11-05 ponyta — 전엔 진행 중 근로계약이 막았다). */
@@ -51,6 +51,9 @@ export function withdrawFailureOf(error: unknown): WithdrawFailure {
     // 409 는 함께 하는 폐점이 막혔다(확인 뒤 생긴 퇴근 기록 없는 출근 OPEN_CHECK_IN · 이미 폐점 · 교착) — 탈퇴 전체가 되돌아갔다.
     // api 문구는 폐점 이야기뿐이라 탈퇴 결과를 앞에 붙인다(2026-11-09 사용자 지정). 화면은 status 409 로 탈퇴 조건을 다시 받는다(출근이 막았으면 막힌 점포가 보인다).
     if (error.status === 409) return { ok: false, status: 409, message: `회원 탈퇴가 처리되지 않았습니다. ${error.message}` };
+    // 폐점 시간 초과도 전체가 되돌아갔다 — 같은 503 이라도 code 가 없으면(게이트웨이) 결과를 모른다. 조건은 그대로라 다시 받지 않는다(status 없음).
+    if (error.status === 503 && (error.body as { code?: unknown } | null)?.code === STORE_CLOSING_TIMEOUT)
+      return { ok: false, message: `회원 탈퇴가 처리되지 않았습니다. ${error.message}` };
     // 429 는 @nestjs/throttler 기본 예외라 한글 문구가 없다 — changeMyPasswordAction 과 같은 이유로 바꾼다.
     if (error.status === 429) return { ok: false, message: "너무 많이 시도했습니다. 10분 뒤 다시 시도해 주세요." };
     if (error.status < 500) return { ok: false, message: error.message };
@@ -63,12 +66,12 @@ export function blockedStoresOf(eligibility: WithdrawEligibility): ClosingStore[
   return eligibility.closing.stores.filter((store) => closingBlockOf(store));
 }
 
-/** 「탈퇴 조건」 표의 퇴근 기록 없는 출근 칸 — 막혔으면 점포 수와 건수(가려진 직원 것 포함)를 붙인다 */
+/** 「탈퇴 조건」 표의 퇴근 기록 없는 출근 칸 — 없으면 「-」, 막혔으면 점포 수와 건수(가려진 직원 것 포함)만 — 464px 패널의 세 칸 표라 「있음 · 」을 붙이면 두 자리 수에서 잘렸다(2026-11-09 사용자 지정) */
 export function openCheckInConditionText(eligibility: WithdrawEligibility): string {
   const stores = blockedStoresOf(eligibility);
-  if (!stores.length) return "없음";
+  if (!stores.length) return "-";
   const count = closingBlockOf(eligibility.closing.total)?.count ?? 0;
-  return `있음 · 점포 ${stores.length.toLocaleString("ko-KR")}개 ${count.toLocaleString("ko-KR")}건`;
+  return `점포 ${stores.length.toLocaleString("ko-KR")}개 ${count.toLocaleString("ko-KR")}건`;
 }
 
 /** 탈퇴 경고의 미확정 급여명세서 안내 — 탈퇴하면 그 BP 의 관리자 모두 로그인할 수 없어 점포 폐점 문구(「폐점 후에도 처리할 수 있습니다」)를 쓰면 틀린다(2026-11-09 사용자 지정). 없으면 null */
