@@ -370,7 +370,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                     <ClosingCondition counts={blockedStore} />
                   </div>
                   {/* 본사에게 가려진 출근은 BP 마스터가 출퇴근 현황에서도 찾을 수 없다 — 그 출근이 있는 점포에만 누가 볼 수 있는지 알린다(2026-11-09 사용자 지정) */}
-                  {blockedStore.openCheckIns.hiddenCount > 0 && <GuideNote>가맹마스터에게만 확인 가능한 출근이 포함되어 있습니다.</GuideNote>}
+                  {blockedStore.openCheckIns.hiddenCount > 0 && <GuideNote>가맹점포 출근이 포함되어 있습니다. 해당 점포의 가맹마스터에게 요청해 주세요.</GuideNote>}
                 </div>
               )}
 
