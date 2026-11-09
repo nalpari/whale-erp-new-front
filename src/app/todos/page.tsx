@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { ListToolbar, PageBar } from "@/components/common";
 import { bpHref, deniedMessageOf, getEnum, screenPath } from "@/lib/api";
-import { kstToday } from "@/lib/staff-members";
 import { getTodos } from "@/lib/todos-api";
 import { TodoFilter } from "./todo-filter";
 import { TodoCreateButton, TodoPageSize, TodoPagination } from "./todo-list-controls";
@@ -77,7 +76,6 @@ export default async function TodosPage({
             items={items}
             page={query.page}
             pageSize={query.pageSize}
-            today={kstToday()}
             statusLabels={statusLabels}
             listHref={listHref}
             at={at}

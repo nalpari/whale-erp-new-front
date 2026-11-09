@@ -242,6 +242,8 @@ function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: bo
   const { staff, stores, todayAttendance: today, myInquiries: inquiries } = cards;
   return (
     <div className="grid auto-cols-fr grid-flow-col gap-[12px]">
+      {/* 운영 점포 → 재직 직원 → 오늘 출근 → 내 문의 순 — 점포가 먼저, 그 점포의 사람 · 출근이 뒤(2026-11-06 사용자 지정 — 전엔 재직 직원이 맨 앞) */}
+      <Figure href={canOpen("/stores") ? bpPath(bp, scopeHref("/stores")) : null} label="운영 점포" value={stores.total} unit="개점" sub={`직영 ${stores.direct} · 가맹 ${stores.franchise}`} />
       {staff && (
         <Figure
           href={canOpen("/staff-members") ? bpPath(bp, scopeHref("/staff-members")) : null}
@@ -252,7 +254,6 @@ function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: bo
           sub={`정직원 ${staff.fullTime} · 파트 ${staff.partTime}`}
         />
       )}
-      <Figure href={canOpen("/stores") ? bpPath(bp, scopeHref("/stores")) : null} label="운영 점포" value={stores.total} unit="개점" sub={`직영 ${stores.direct} · 가맹 ${stores.franchise}`} />
       {today && (
         <Figure
           href={canOpen("/attendance-records") ? bpPath(bp, scopeHref("/attendance-records")) : null}

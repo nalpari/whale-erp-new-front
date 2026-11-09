@@ -12,7 +12,6 @@ export default ({ A, R }) => {
       title: "TO-DO 리스트 관리",
       titleRight: "",
       body: ui.listBody(s.todosFilter, s.todoTab),
-      panels: s.todoForm + s.todoEdits,
     }),
   };
 };

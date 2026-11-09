@@ -250,10 +250,10 @@ function Band({ title, desc, risk }: { title: string; desc?: ReactNode; risk?: b
   return (
     <div
       role={risk ? "alert" : undefined}
-      className={`flex flex-col gap-[4px] rounded-[2px] border px-[16px] py-[12px] ${risk ? "border-erp-off-bg bg-erp-off-bg" : "border-erp-panel-line bg-erp-thead-bg"}`}
+      className={`flex flex-col gap-[4px] rounded-[2px] border px-[16px] py-[12px] ${risk ? "border-erp-off bg-erp-off-bg" : "border-erp-panel-line bg-erp-thead-bg"}`}
     >
       <p className={`text-[14px] font-semibold ${risk ? "text-erp-off" : "text-erp-ink"}`}>{title}</p>
-      {desc && <div className="text-[14px] leading-[1.6] text-erp-ink">{desc}</div>}
+      {desc && <div className={`text-[14px] leading-[1.6] ${risk ? "text-erp-off" : "text-erp-ink"}`}>{desc}</div>}
     </div>
   );
 }

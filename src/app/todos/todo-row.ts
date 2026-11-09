@@ -31,7 +31,12 @@ export function assigneeText(item: Pick<TodoListItem, "assigneeType" | "executio
   return rest.length ? `${staffNameText(head)} 외 ${rest.length}명` : staffNameText(head);
 }
 
-/** 수행 예정. 오늘과 같은 해면 MM-DD, 아니면 YYYY-MM-DD. 시간이 있으면 뒤에 붙인다. today 는 kstToday() */
+/** 목록의 수행 예정 — 늘 YYYY-MM-DD, 시간이 있으면 뒤에 붙인다(상세와 같다, 2026-11-06 사용자 지정 — 전엔 올해면 MM-DD) */
+export function dueFullText(dueDate: string, dueTime: string | null): string {
+  return dueTime ? `${dueDate} ${dueTime}` : dueDate;
+}
+
+/** 수행 예정(홈 TO-DO 카드). 오늘과 같은 해면 MM-DD, 아니면 YYYY-MM-DD. 시간이 있으면 뒤에 붙인다. today 는 kstToday() */
 export function dueText(dueDate: string, dueTime: string | null, today: string): string {
   const date = dueDate.slice(0, 4) === today.slice(0, 4) ? dueDate.slice(5) : dueDate;
   return dueTime ? `${date} ${dueTime}` : date;

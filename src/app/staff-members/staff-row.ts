@@ -126,7 +126,7 @@ export function contractCell(item: StaffMemberListItem, today: string): Cell | n
         : { text: "체결 완료", style: "badge-on" };
     }
     case "REJECTED":
-      // 거부일은 따로 저장하지 않고 근로계약서의 최종 수정일로 보인다(2026-10-12 재영).
+      // 거부일은 따로 저장하지 않고 근로계약서의 최종수정일로 보인다(2026-10-12 재영).
       return { text: c.updatedAt ? `거부 · ${mmdd(kstDate(c.updatedAt))}` : "거부", style: "badge-off" };
     case "EXPIRED":
       return { text: "만료", style: "badge-off" };

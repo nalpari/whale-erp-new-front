@@ -55,23 +55,31 @@ export function fromDetail(d: TodoDetail): TodoForm {
   };
 }
 
+/** 저장 전에 막는 문구만 모은 목록(fieldProblems 의 값). 비면 저장할 수 있다 — 테스트가 쓴다 */
+export function problems(f: TodoForm, today: string, original?: Pick<TodoDetail, "dueDate">): string[] {
+  return Object.values(fieldProblems(f, today, original));
+}
+
+export type TodoField = "title" | "body" | "storeId" | "staff" | "dueDate" | "dueTime";
+
 /**
- * 저장 전에 막는 것. original 이 있으면 수정이다 — 배정 칸은 보지 않고, 지난 수행 예정 날짜는 바꿨을 때만 막는다
+ * 저장 전에 막는 것을 칸별로 — 칸마다 첫 문제 하나. 화면은 그 칸 바로 아래에 보인다(점포 등록과 같다). 문제가 없는 칸은 키가 없다.
+ * original 이 있으면 수정이다 — 배정 칸은 보지 않고, 지난 수행 예정 날짜는 바꿨을 때만 막는다
  * (그대로 두고 제목만 고치는 것은 된다. 바꾼 칸만 보내므로 api 도 날짜를 다시 보지 않는다).
  */
-export function problems(f: TodoForm, today: string, original?: Pick<TodoDetail, "dueDate">): string[] {
-  const out: string[] = [];
-  if (!f.title.trim()) out.push("제목을 입력해 주세요.");
-  else if (f.title.trim().length > MAX_TITLE) out.push("제목은 100자까지입니다.");
-  if (f.body.trim().length > MAX_BODY) out.push("내용은 2,000자까지입니다.");
+export function fieldProblems(f: TodoForm, today: string, original?: Pick<TodoDetail, "dueDate">): Partial<Record<TodoField, string>> {
+  const out: Partial<Record<TodoField, string>> = {};
+  if (!f.title.trim()) out.title = "제목을 입력해 주세요.";
+  else if (f.title.trim().length > MAX_TITLE) out.title = "제목은 100자까지입니다.";
+  if (f.body.trim().length > MAX_BODY) out.body = "내용은 2,000자까지입니다.";
   if (!original) {
-    if (!f.storeId) out.push("근무지를 선택해 주세요.");
-    if (f.assigneeType === "INDIVIDUAL" && f.staff.length === 0) out.push("직원을 한 명 이상 선택해 주세요.");
-    if (f.assigneeType === "INDIVIDUAL" && f.staff.length > MAX_STAFF) out.push("직원은 200명까지 선택할 수 있습니다.");
+    if (!f.storeId) out.storeId = "근무지를 선택해 주세요.";
+    if (f.assigneeType === "INDIVIDUAL" && f.staff.length === 0) out.staff = "직원을 한 명 이상 선택해 주세요.";
+    else if (f.assigneeType === "INDIVIDUAL" && f.staff.length > MAX_STAFF) out.staff = "직원은 200명까지 선택할 수 있습니다.";
   }
-  if (!f.dueDate) out.push("수행 예정 날짜를 입력해 주세요.");
-  else if (f.dueDate < today && f.dueDate !== original?.dueDate) out.push("지난 날짜는 선택할 수 없습니다.");
-  if (f.dueTime && !TIME.test(f.dueTime)) out.push("수행 시간은 HH:mm 입니다.");
+  if (!f.dueDate) out.dueDate = "수행 예정 날짜를 입력해 주세요.";
+  else if (f.dueDate < today && f.dueDate !== original?.dueDate) out.dueDate = "지난 날짜는 선택할 수 없습니다.";
+  if (f.dueTime && !TIME.test(f.dueTime)) out.dueTime = "수행 시간은 HH:mm 입니다.";
   return out;
 }
 
