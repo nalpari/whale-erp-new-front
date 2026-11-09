@@ -61,6 +61,9 @@ export default async function TodoDetailPage({
   // 제목은 맨 위 한 번만 — 공지사항 상세 머리 줄과 같은 모양
   // 근무지 전체 · 각자 수행은 직원마다 TO-DO 가 한 건씩이다 — 직원별 상태 표 한곳에서 줄마다 상태를 바꾼다(2026-11-09 사용자 지정, 3팀 확인 필요 — 전엔 이름 링크로 그 직원 TO-DO 로 옮겨 가 바꿨다)
   const isGroup = todo.groupTodos.length > 0;
+  // 여러 명에게 나눈 TO-DO 면 오른쪽 이력은 지금 보는 직원 한 명의 것이다 — 이력 제목에 그 이름을 적는다(가렸으면 MASKED_STAFF, 퇴직으로 풀렸으면 「배정 풀림」)
+  const mine = todo.groupTodos.find((r) => r.todoId === todo.todoId);
+  const who = mine ? (mine.isMasked ? staffNameText(mine) : (mine.staffMemberName ?? "배정 풀림")) : undefined;
   // 묶음 전체의 완료 시각 — 모두 완료면 가장 늦은 완료 시각, 아니면 없음(ISO 문자열이라 글자 비교로 가장 늦은 것을 고른다)
   const completedAt = !isGroup
     ? todo.completedAt
@@ -210,7 +213,7 @@ export default async function TodoDetailPage({
             </div>
             <div className="flex min-w-0 flex-col gap-[24px]">
               {/* 「상태 변경이력」 — 왼쪽 상자들과 같은 회색 제목 줄, 10건씩 쪽 나눔(2026-11-09 사용자 지정, 3팀 확인 필요) */}
-              <TodoHistory histories={todo.histories} statusLabels={statusLabels} />
+              <TodoHistory histories={todo.histories} statusLabels={statusLabels} who={who} />
             </div>
           </div>
         </div>

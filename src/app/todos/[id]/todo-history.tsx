@@ -23,14 +23,17 @@ export function TitledBox({ title, children }: { title: string; children: ReactN
   );
 }
 
-/** 상태 변경이력 — 변경일시 · 변경자 · 상태, 최근 것이 위. 10건씩 쪽으로 나눈다 */
-export function TodoHistory({ histories, statusLabels }: { histories: TodoDetail["histories"]; statusLabels: EnumValue[] }) {
+/**
+ * 상태 변경이력 — 변경일시 · 변경자 · 상태, 최근 것이 위. 10건씩 쪽으로 나눈다.
+ * who 는 여러 명에게 나눈 TO-DO 에서 이 이력의 직원 — api 가 행 하나의 이력만 주므로 제목에 「상태 변경이력 · 서지안」으로 누구 것인지 적는다(2026-11-09 사용자 지정)
+ */
+export function TodoHistory({ histories, statusLabels, who }: { histories: TodoDetail["histories"]; statusLabels: EnumValue[]; who?: string }) {
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(histories.length / PAGE_SIZE));
   const current = Math.min(page, totalPages);
   const rows: HistoryRow[] = histories.map((h, i) => ({ ...h, key: i })).slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
   return (
-    <TitledBox title="상태 변경이력">
+    <TitledBox title={who ? `상태 변경이력 · ${who}` : "상태 변경이력"}>
       <DataTable<HistoryRow>
         headVariant="plain"
         columns={[

@@ -87,7 +87,8 @@ export default ({ A, R }) => {
       ui.detailTable("TO-DO", todoRows) +
       titled("직원별 상태", groupTable) +
       `</div><div class="flex min-w-0 flex-col gap-[24px]">` +
-      titled("상태 변경이력", historyTable) +
+      // 여러 명에게 나눈 TO-DO 는 지금 보는 직원 한 명의 이력이라 제목에 이름을 적는다(앱 todo-history.tsx who, 2026-11-09 사용자 지정)
+      titled("상태 변경이력 · 서지안", historyTable) +
       `</div></div>`,
   );
   return { title: "TO-DO 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "TO-DO 리스트 관리", body, panels: delDialog }) };
