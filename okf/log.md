@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-09
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 관리 목록의 상태 체크를 모두 끌 수 있게 했다(공통 정책 「목록 필터 체크박스」, WHALEERP-654). 모두 끄면 주소 `status=NONE`, 상태별 개수는 남기고 목록은 비우며 「조건에 맞는 근로계약이 없습니다.」. DESIGN 「체크박스 필터」의 근로계약 예외를 지웠다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 본문 틀(`FRAME`)에 양옆 80px 여백을 다시 넣었다(내용 폭은 1760px 에서 멈춤). 1760px 이하 화면에서 본문이 화면 끝에 붙던 것(front #230 리뷰). 데모 같이. main 병합(#234 까지): okf/log 충돌은 양쪽 기록을 살렸고 데모는 다시 빌드했다.
 
 ## 2026-11-06
