@@ -35,6 +35,8 @@ export const ICON_BUTTON = "flex size-[16px] items-center justify-center";
 
 // ── 조각(앱 guest/guest-ui.tsx) ──
 export const TRIM = "[text-box:trim-both_cap_alphabetic]";
+// 본문 틀 — 앱 design/guest/theme.ts 의 FRAME 과 같다. 양옆 80px 여백을 늘 두고 내용 폭은 1760px 에서 멈춘다. 머리말 · 푸터는 쓰지 않는다(2026-11-09).
+export const FRAME = "mx-auto w-full max-w-[1920px] px-[80px]";
 export const ICON_GRADIENT = "linear-gradient(114deg, rgba(174,190,206,0.8) 8.98%, rgba(32,96,154,0.8) 94.82%)";
 
 // 그림. 앱의 next/image 를 옮긴 것이다. 소수 크기는 시안 좌표 그대로라 style 로 준다.
@@ -61,7 +63,7 @@ export const arrow = (A, back = false) => arrowSvg(`h-[15.0674px] w-[16.7004px] 
 const BUTTON_TONE = {
   navy: "border-guest-navy bg-guest-navy text-white hover:bg-white hover:text-guest-navy",
   soft: "border-guest-navy-soft bg-guest-navy-soft text-white hover:border-guest-navy hover:bg-white hover:text-guest-navy",
-  white: "border-white bg-white text-guest-navy text-[17px]! hover:border-guest-navy",
+  steel: "border-[#728daa] bg-[#728daa] text-white text-[17px]! hover:border-guest-navy hover:bg-white hover:text-guest-navy",
   outline: "border-guest-button-line bg-white text-guest-ink hover:border-guest-navy hover:text-guest-navy",
   line: "border-guest-navy-soft bg-white text-guest-navy hover:border-guest-navy",
 };
@@ -80,8 +82,8 @@ export const visual = (A, { eyebrow, title, body }) =>
 // ── 머리말 · 푸터 ──
 const MENUS = [
   ["매장운영", "home/store-operations.html"],
-  ["재무관리", ""],
-  ["프랜차이즈", ""],
+  ["재무관리", "home/finance-management.html"],
+  ["프랜차이즈", "home/franchise.html"],
   ["부가 서비스", "home/add-on-services.html"],
 ];
 // 본문이 머리말과 같은 흰 바탕인 화면은 맨 위에서도 선을 긋는다. 스크롤하면 guest.js 가 흰 바탕과 선을 깐다.
@@ -89,12 +91,15 @@ const LINED = ["auth/login.html", "auth/find.html", "auth/signup.html", "auth/si
 
 function header(A, R, current) {
   const lined = LINED.includes(current);
+  // 메뉴 화면에서는 지금 메뉴만 먹색이고 나머지는 #999 다. 고른 메뉴가 없는 화면은 네 메뉴 모두 먹색이고 호버하면 남색이다(앱 guest-header.tsx).
+  const onMenu = MENUS.some(([, path]) => path === current);
+  const tone = onMenu ? "text-[#999] hover:text-guest-ink aria-[current=page]:text-guest-ink" : "text-guest-ink hover:text-guest-navy";
   const menus = MENUS.map(([label, path]) => {
     const on = path && path === current;
-    return `<a href="${link(R, path)}"${on ? ' aria-current="page"' : ""} class="text-[20px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy aria-[current=page]:text-guest-navy ${HOVER}">${label}</a>`;
+    return `<a href="${link(R, path)}"${on ? ' aria-current="page"' : ""} class="text-[20px] leading-[1.5] font-semibold ${tone} ${HOVER}">${label}</a>`;
   }).join("");
   const side = (text, path) =>
-    `<a href="${link(R, path)}"${path === current ? ' aria-current="page"' : ""} class="hover:text-guest-ink aria-[current=page]:text-guest-navy ${HOVER}">${text}</a>`;
+    `<a href="${link(R, path)}"${path === current ? ' aria-current="page"' : ""} class="hover:text-guest-ink aria-[current=page]:text-guest-ink ${HOVER}">${text}</a>`;
   return `<header data-guest-header${lined ? " data-lined" : ""} style="view-transition-name:guest-header" class="sticky top-0 z-20 flex h-[110px] items-center border-b px-[80px] transition-[background-color,border-color] duration-150 ${EASE_OUT} motion-reduce:transition-none ${lined ? "border-guest-line" : "border-transparent"}">
 <a href="${link(R, "home/index.html")}" class="flex items-center gap-[8px] py-[5px]"><span class="relative size-[50px] opacity-95">${gimg(A, "logo-whale.svg", 49.6875, 37.4997, "absolute top-[12.5px] left-0")}${gimg(A, "logo-star.svg", 24.1664, 17.5001, "absolute top-0 left-[7.57px]")}</span><span class="flex flex-col leading-[1.4] [text-box:trim-both_cap_alphabetic]"><span class="font-[family-name:var(--font-rem)] text-[20px] font-extrabold tracking-normal text-guest-ink uppercase">whale ERP</span><span class="font-[family-name:var(--font-inter-tight)] text-[13px] tracking-normal text-[#353535]">STORE MANAGEMENT SYSTEM</span></span></a>
 <nav class="flex flex-1 justify-center gap-[80px]">${menus}</nav>
@@ -123,7 +128,7 @@ export const page = (A, R, { current, main, flush = false }) =>
 // ── 아이콘(앱 guest/guest-icons.tsx) ──
 // 선 아이콘 조각 { src, width, height, left, top } 을 64px 칸에 겹친다. src 는 assets/guest 아래 경로.
 export const layeredIcon = (A, parts) =>
-  `<span class="relative size-[64px]">${parts.map((p) => `<img alt="" src="${A}guest/${p.src}" class="absolute max-w-none" style="width:${p.width}px;height:${p.height}px;left:${p.left}px;top:${p.top}px">`).join("")}</span>`;
+  `<span class="relative size-[64px]">${parts.map((p) => `<img alt="" src="${A}guest/${p.src}" class="absolute max-w-none" style="width:${p.width}px;height:${p.height}px;left:${p.left}px;top:${p.top}px${p.rotate ? `;rotate:${p.rotate}deg` : ""}">`).join("")}</span>`;
 
 // 직원 두 명 — 매장운영 「직원 초대」와 부가서비스 「직원수 추가」가 같은 그림을 쓴다.
 export const STAFF_ICON = [
@@ -136,6 +141,10 @@ export const STAFF_ICON = [
 export const kioskIcon = () =>
   `<span class="relative block h-[74px] w-[70px]"><span class="absolute top-0 left-[7px] h-[63px] w-[56px] rounded-[10px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" style="background-image:${ICON_GRADIENT}"></span><span class="absolute top-[5px] left-[12px] h-[39px] w-[46px] rounded-[10px] shadow-[inset_0_1px_3.8px_rgba(255,255,255,0.05)]" style="background-image:linear-gradient(108deg, rgba(255,255,255,0.04) 8.98%, rgba(255,255,255,0.24) 94.82%)"></span><span class="absolute top-[14px] left-[21px] h-[8px] w-[29px] rounded-[2px] bg-white/90"></span><span class="absolute top-[27px] left-[21px] h-[2px] w-[24px] rounded-full bg-white/60"></span><span class="absolute top-[33px] left-[21px] h-[2px] w-[17px] rounded-full bg-white/40"></span><span class="absolute top-[49px] left-0 h-[25px] w-[70px] rounded-[10px] bg-white/40 shadow-[0_1.3px_13px_rgba(0,0,0,0.09),inset_0_5.2px_4px_rgba(255,255,255,0.55)] backdrop-blur-[4.9px]"></span></span>`;
 
+// 부가서비스 「POS」와 재무관리 맨 아래 「POS」 카드가 같은 그림을 쓴다(앱 guest-icons.tsx 의 PosIcon).
+export const posIcon = (A) =>
+  `<span class="relative block h-[74px] w-[70px]"><span class="absolute top-[39px] left-0 h-[35px] w-[70px] rounded-[8px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" style="background-image:${ICON_GRADIENT}"></span><span class="absolute top-[65px] left-[23px] h-[2px] w-[24px] rounded-full bg-white/90"></span><span class="absolute top-0 left-[7px] h-[60px] w-[56px] rounded-[10px] bg-white/40 shadow-[0_1.9px_18.7px_rgba(0,0,0,0.09),inset_0_7.5px_5.8px_rgba(255,255,255,0.5)] backdrop-blur-[4.2px]"></span><span class="absolute top-[5px] left-[12px] h-[39px] w-[46px] rounded-[10px] bg-white/10 shadow-[0_1.9px_18.7px_rgba(0,0,0,0.03),inset_0_7.5px_5.8px_rgba(255,255,255,0.5)] backdrop-blur-[4.2px]"></span>${gimg(A, "add-on-services/pos-chart.svg", 26.9342, 20, "absolute top-[13px] left-[20.29px] max-w-none")}</span>`;
+
 export const inventoryIcon = (A, src) =>
   `<span class="relative block h-[74px] w-[67px]">${gimg(A, src, 83.3356, 91.3557, "absolute top-[-9.18px] left-[-12.98px] max-w-none")}</span>`;
 
@@ -144,3 +153,9 @@ export const orderIcon = (A, back, front) =>
 
 export const recipeIcon = (A, bookmark) =>
   `<span class="relative block h-[74px] w-[68px]"><span class="absolute top-0 left-[13.87px] h-[52.42px] w-[53.96px] rounded-[8.9px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" style="background-image:${ICON_GRADIENT}"></span>${gimg(A, bookmark, 79.9233, 83.7806, "absolute top-[-1.21px] left-[-12.98px] max-w-none")}<span class="absolute top-[30px] left-[19px] h-[2px] w-[17px] rounded-full bg-white/90"></span><span class="absolute top-[23px] left-[26.5px] h-[17px] w-[2px] rounded-full bg-white/90"></span></span>`;
+
+// 유리판 아이콘 조각 · 예약(달력) 아이콘(앱 guest-icons.tsx 의 GLASS · CalendarIcon). 부가서비스 · 매장운영이 함께 쓴다.
+export const GLASS = "bg-white/40 shadow-[0_1.3px_13px_rgba(0,0,0,0.09),inset_0_5.2px_4px_rgba(255,255,255,0.55)] backdrop-blur-[4.9px]";
+// 시안의 「Sun」은 그라데이션을 흰 바탕 위에 겹친 글자다.
+export const calendarIcon = () =>
+  `<span class="relative block h-[74px] w-[56.8px] font-[family-name:var(--font-inter)] leading-[normal] font-bold tracking-normal"><span class="absolute top-[6.82px] left-0 h-[35.38px] w-[56.8px] rounded-[9.4px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" style="background-image:${ICON_GRADIENT}"></span><span class="absolute top-[22.39px] left-0 h-[51.61px] w-[56.8px] rounded-[9.4px] ${GLASS}"></span><span class="absolute top-[30.78px] left-[16.12px] bg-clip-text text-[12px] text-transparent" style="background-image:${ICON_GRADIENT}, linear-gradient(#fff, #fff)">Sun</span><span class="absolute top-[42.19px] left-[21.42px] bg-clip-text text-[20.77px] text-transparent" style="background-image:${ICON_GRADIENT}">8</span><span class="absolute top-0 left-[13.31px] h-[14.61px] w-[5.52px] rounded-full bg-white shadow-[0_1.3px_1.9px_rgba(0,0,0,0.1)]"></span><span class="absolute top-0 left-[37.97px] h-[14.61px] w-[5.52px] rounded-full bg-white shadow-[0_1.3px_1.9px_rgba(0,0,0,0.1)]"></span></span>`;
