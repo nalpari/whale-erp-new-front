@@ -5190,7 +5190,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <path data-edge-from="correct" data-edge-to="send" data-edge-label="관리자가 고쳐 저장 · 새 30일" data-edge-key="2" data-edge-id="e-correct-send" data-composition-points="978,398;978,440;791,440;791,398" d="M 978 398 L 978 440 L 791 440 L 791 398" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
         <path data-edge-from="draft" data-edge-to="kind" data-edge-key="3" data-edge-id="e-draft-kind" data-composition-points="128,154;128,170;20,170;20,372;163,372" d="M 128 154 L 128 170 L 20 170 L 20 372 L 163 372" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="kind" data-edge-to="affil" data-edge-label="계정은 있고 레코드 미연결" data-edge-key="4" data-edge-id="e-kind-affil" data-composition-points="333,372;471,372" d="M 333 372 L 471 372" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="kind" data-edge-to="send" data-edge-label="재직 중이면 즉시 발송" data-edge-key="5" data-edge-id="e-kind-send" data-composition-points="248,346;248,166;791,166;791,346" d="M 248 346 L 248 166 L 791 166 L 791 346" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="kind" data-edge-to="send" data-edge-label="그 점포 레코드에 계정이 이어져 있으면 즉시 발송" data-edge-key="5" data-edge-id="e-kind-send" data-composition-points="248,346;248,166;791,166;791,346" d="M 248 346 L 248 166 L 791 166 L 791 346" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
         <path data-edge-from="kind" data-edge-to="signup" data-edge-label="가입 초대 · 재초대" data-edge-key="6" data-edge-id="e-kind-signup" data-composition-points="248,346;248,246;481,246" d="M 248 346 L 248 246 L 481 246" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="reject" data-edge-to="send" data-edge-label="재발송 · 새 이력" data-edge-key="7" data-edge-id="e-reject-send" data-composition-points="908,498;791,498;791,398" d="M 908 498 L 791 498 L 791 398" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
         <path data-edge-from="send" data-edge-to="sign" data-edge-key="8" data-edge-id="e-send-sign" data-composition-points="866,372;882,372;882,246;898,246" d="M 866 372 L 882 372 L 882 246 L 898 246" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
@@ -5280,8 +5280,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <text data-detail="context" x="551" y="384" class="t-muted" font-size="8" text-anchor="middle">알림톡 · 메일 · 30일</text>
         </g>
 
-        <g id="node-send" data-node-id="send" data-node-label="계약서 발송" tabindex="0" role="button" aria-label="Focus 계약서 발송, 관리자 개입 없이 자동, 시스템 › 발송과 날인" aria-pressed="false" data-node-kind="messagebus" data-node-sublabel="관리자 개입 없이 자동" data-node-context="시스템 › 발송과 날인">
-          <title>계약서 발송 · 관리자 개입 없이 자동 · 시스템 › 발송과 날인</title>
+        <g id="node-send" data-node-id="send" data-node-label="계약서 발송" tabindex="0" role="button" aria-label="Focus 계약서 발송, 저장하면 바로 발송, 시스템 › 발송과 날인" aria-pressed="false" data-node-kind="messagebus" data-node-sublabel="저장하면 바로 발송" data-node-context="시스템 › 발송과 날인">
+          <title>계약서 발송 · 저장하면 바로 발송 · 시스템 › 발송과 날인</title>
           <rect x="716" y="346" width="150" height="52" rx="6" class="c-mask"/>
           <rect x="716" y="346" width="150" height="52" rx="6" class="c-messagebus" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="messagebus" class="semantic-sigil s-messagebus" transform="translate(722 352) scale(0.6875)">
@@ -5291,7 +5291,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <circle cx="7" cy="11.5" r="1" class="sigil-fill"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="791" y="367" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">계약서 발송</text>
-          <text data-detail="context" x="791" y="384" class="t-muted" font-size="8" text-anchor="middle">관리자 개입 없이 자동</text>
+          <text data-detail="context" x="791" y="384" class="t-muted" font-size="8" text-anchor="middle">저장하면 바로 발송</text>
         </g>
 
         <g id="node-correct" data-node-id="correct" data-node-label="수정 요청" tabindex="0" role="button" aria-label="Focus 수정 요청, 사유 필수 · 날인 기한 멈춤, 시스템 › 발송과 날인" aria-pressed="false" data-node-kind="security" data-node-sublabel="사유 필수 · 날인 기한 멈춤" data-node-context="시스템 › 발송과 날인">
@@ -5336,9 +5336,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="337" y="352" width="130" height="14" rx="3" class="c-mask"/>
           <text x="402" y="362" class="t-muted" font-size="8" text-anchor="middle">계정은 있고 레코드 미연결</text>
         </g>
-        <g data-detail="context" data-edge-from="kind" data-edge-to="send" data-edge-label="재직 중이면 즉시 발송" data-edge-key="5" data-edge-id="e-kind-send">
-          <rect x="464.1" y="146" width="110.8" height="14" rx="3" class="c-mask"/>
-          <text x="519.5" y="156" class="t-database" font-size="8" text-anchor="middle">재직 중이면 즉시 발송</text>
+        <g data-detail="context" data-edge-from="kind" data-edge-to="send" data-edge-label="그 점포 레코드에 계정이 이어져 있으면 즉시 발송" data-edge-key="5" data-edge-id="e-kind-send">
+          <rect x="401.7" y="146" width="235.6" height="14" rx="3" class="c-mask"/>
+          <text x="519.5" y="156" class="t-database" font-size="8" text-anchor="middle">그 점포 레코드에 계정이 이어져 있으면 즉시 발송</text>
         </g>
         <g data-detail="context" data-edge-from="kind" data-edge-to="signup" data-edge-label="가입 초대 · 재초대" data-edge-key="6" data-edge-id="e-kind-signup">
           <rect x="316.3" y="226" width="96.39999999999999" height="14" rx="3" class="c-mask"/>

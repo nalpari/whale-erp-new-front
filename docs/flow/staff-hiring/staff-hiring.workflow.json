@@ -170,7 +170,7 @@
       "col": 4,
       "type": "messagebus",
       "label": "계약서 발송",
-      "sublabel": "관리자 개입 없이 자동",
+      "sublabel": "저장하면 바로 발송",
       "width": 150
     },
     {
@@ -248,7 +248,7 @@
       "id": "e-kind-send",
       "from": "kind",
       "to": "send",
-      "label": "재직 중이면 즉시 발송",
+      "label": "그 점포 레코드에 계정이 이어져 있으면 즉시 발송",
       "variant": "dashed",
       "role": "branch",
       "fromSide": "top",
