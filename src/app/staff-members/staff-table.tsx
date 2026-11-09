@@ -78,7 +78,7 @@ export function StaffTable({
     { header: "점포", cell: (r) => r.item.store.name },
     { header: "고용형태", width: "w-[110px]", cell: personal((item) => (item.employmentType ? EMPLOYMENT_TYPE_LABELS[item.employmentType] : DASH)) },
     {
-      header: "가입·인증",
+      header: "가입 상태",
       // 데모는 210 — 재발송 버튼(WHALEERP-138)이 배지 옆에 서도록 넓혔다. 데모에는 목록 재발송 자리가 없다
       width: "w-[300px]",
       cell: personal((item) => (
@@ -97,7 +97,7 @@ export function StaffTable({
       }),
     },
     {
-      header: "재직",
+      header: "재직 상태",
       // 데모는 110 인데 「재직 · 퇴직 예정 MM-DD」가 두 줄로 꺾이며 잘린다 — 한 줄에 들어가게 넓혔다(WHALEERP-585 화면 확인)
       width: "w-[180px]",
       cell: personal((item) => (
