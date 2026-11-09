@@ -225,13 +225,13 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 
 | 표준 표기 | 영문 식별자 | 비고 |
 |---|---|---|
-| 근로계약(서) | `contract` | 초안은 상태 `PENDING_SEND`인 계약. 다 쓰기 전에 저장해 둔 것은 `DRAFT`(임시저장) |
-| 근로계약 상태 7종 | `DRAFT` · `PENDING_SEND` · `PENDING_SIGNATURE` · `SIGNED` · `REJECTED` · `EXPIRED` · `ENDED` | 임시저장 · 발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료. 임시저장은 초대·계약서를 보내지 않는다 (2026-10-12 재영) |
+| 근로계약(서) | `contract` | 초안은 상태 `PENDING_SEND`인 계약. 다 쓰기 전에 저장해 둔 것은 `DRAFT`(작성 중) |
+| 근로계약 상태 8종 | `DRAFT` · `PENDING_SEND` · `PENDING_SIGNATURE` · `CORRECTION_REQUESTED` · `SIGNED` · `REJECTED` · `EXPIRED` · `ENDED` | 작성 중 · 서명 요청 전 · 직원 서명 대기 · 직원 수정 요청 · 서명 완료 · 서명 거절 · 계약 기간 만료 · 계약 종료(2026-11-09 WHALEERP-659, 이름은 api `GET /enums/ContractStatus`). 작성 중은 초대·계약서를 보내지 않는다 (2026-10-12 재영) |
 | 전자계약 / 종이 계약 | `ELECTRONIC` / `PAPER` | `contract_method` |
-| 임금계약서 | `wage_contract` | 종이 계약에서 따로 날인한 임금 약정 문서 |
-| 계약서 파일 구분 | `SENT_ORIGINAL` · `SIGNED_COPY` · `PAPER_EMPLOYMENT_CONTRACT` · `WAGE_CONTRACT` | `contract_documents.kind` — 발송 원본 · 날인 완료본 · 종이 계약 근로계약서 · 임금계약서 |
+| 임금계약서 | `wage_contract` | 종이 계약에서 따로 서명한 임금 약정 문서 |
+| 계약서 파일 구분 | `SENT_ORIGINAL` · `SIGNED_COPY` · `PAPER_EMPLOYMENT_CONTRACT` · `WAGE_CONTRACT` | `contract_documents.kind` — 발송 원본 · 서명 완료본 · 종이 계약 근로계약서 · 임금계약서 |
 | 4대보험 가입 여부 | `is_health_pension_insured` · `is_employment_injury_insured` | 근로계약 칸 두 개 — 건강보험·국민연금 / 고용보험·산재보험 |
-| 날인 · 필기 서명 · 날인 기한 | `sign` · `handwritten_signature` · `sign_deadline_at` | |
+| 서명 · 필기 서명 · 서명 기한 | `sign` · `handwritten_signature` · `sign_deadline_at` | 화면에는 「날인」을 쓰지 않는다(2026-11-09 WHALEERP-659) |
 | 재발송 | `resend` | |
 | 초대 · 초대 토큰 | `invitation` · `invitation_token` | |
 | 초대 유형 4종 | `SIGNUP` · `REINVITE` · `AFFILIATION_CONFIRM` · `RETURN_CONFIRM` | 가입 초대 · 재초대 · 소속 추가 확인 · 복귀 확인 |
