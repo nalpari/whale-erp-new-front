@@ -35,8 +35,8 @@ export const ICON_BUTTON = "flex size-[16px] items-center justify-center";
 
 // ── 조각(앱 guest/guest-ui.tsx) ──
 export const TRIM = "[text-box:trim-both_cap_alphabetic]";
-// 본문 틀 — 앱 design/guest/theme.ts 의 FRAME 과 같다. 양옆 80px 대신 최대 폭 1760px 가운데. 머리말 · 푸터는 쓰지 않는다(2026-11-06).
-export const FRAME = "mx-auto w-full max-w-[1760px]";
+// 본문 틀 — 앱 design/guest/theme.ts 의 FRAME 과 같다. 양옆 80px 여백을 늘 두고 내용 폭은 1760px 에서 멈춘다. 머리말 · 푸터는 쓰지 않는다(2026-11-09).
+export const FRAME = "mx-auto w-full max-w-[1920px] px-[80px]";
 export const ICON_GRADIENT = "linear-gradient(114deg, rgba(174,190,206,0.8) 8.98%, rgba(32,96,154,0.8) 94.82%)";
 
 // 그림. 앱의 next/image 를 옮긴 것이다. 소수 크기는 시안 좌표 그대로라 style 로 준다.

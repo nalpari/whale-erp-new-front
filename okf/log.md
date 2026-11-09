@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-09
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 본문 틀(`FRAME`)에 양옆 80px 여백을 다시 넣었다(내용 폭은 1760px 에서 멈춤). 1760px 이하 화면에서 본문이 화면 끝에 붙던 것(front #230 리뷰). 데모 같이. main 병합(#234 까지): okf/log 충돌은 양쪽 기록을 살렸고 데모는 다시 빌드했다.
+
 ## 2026-11-06
 * **Update**: main 병합(front torchic, main #229 까지): okf/log 충돌은 양쪽 기록을 살렸다. 문의하기 [문의하기] 버튼 위치는 main 쪽 구현(제목 줄 · inert)을 받았고, 데모 홈 연결 칸 사진은 로그인전_공유 시안(44:2) 반영본을 남기고 main 이 더한 `connect-photo-*.jpg` 는 지웠다. 데모 HTML 은 합쳐진 원본으로 다시 빌드했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 머리말의 켜진 메뉴 표시를 Figma 로그인전_공유(44:1794)에 맞췄다: 메뉴 화면에서는 지금 메뉴만 먹색 · 나머지 #999, 고른 메뉴가 없는 화면은 모두 먹색. 켜진 글자를 남색 대신 먹색으로. 앱 · 데모.
