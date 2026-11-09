@@ -45,9 +45,12 @@ export default async function StaffMembersPage({
   // 조건 없는 조회는 기본 조건에서 재직 상태를 전체로 · 점포를 「전체」로 바꿔 만든다(리뷰 반영 — 손으로 다시 적으면 기본값이 바뀔 때 어긋난다)
   const allQuery = { ...DEFAULT_STAFF_LIST_QUERY, storesCleared: true, employmentStatus: "ALL" as const, pageSize: query.pageSize };
   // 지금 조회가 이미 「전체」(조건 없음)면 다시 묻지 않는다 — 같은 요청을 두 번 보내지 않게(리뷰 반영)
+  // 묶음 · 고용형태를 하나도 고르지 않았으면(null) 다시 묻지 않고 늘 「조건에 맞는 …」 — 목록 필터 체크박스 공통 정책(2026-11-09 공지)
+  const search = staffListApiSearch({ ...query, page: 1 });
   const noStaffAtAll =
     total === 0 &&
-    (staffListApiSearch({ ...query, page: 1 }) === staffListApiSearch(allQuery) ||
+    search !== null &&
+    (search === staffListApiSearch(allQuery) ||
       (await getStaffMembers(allQuery)
         .then((all) => all.total === 0)
         .catch((error: unknown) => {
