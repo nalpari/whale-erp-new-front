@@ -116,6 +116,8 @@
 - 갱신 판정은 api `admin-auth.service.ts:200` `refresh()` — 세션 테이블에서 갱신 토큰을 찾지 못하거나(만료 · 로그아웃 · 종료) 계정이 없으면 401. api 는 요청마다 토큰이 아니라 세션 번호로 살아 있는지 본다(`jwt-auth.guard.ts:68`).
 - 바꿀 곳: `contracts/page.tsx:35` · `contracts/new/page.tsx:31` · `contracts/new/load-form-data.ts:40 · 49` · `contracts/[contractId]/page.tsx:58` · `[contractId]/edit/page.tsx:33` · `[contractId]/worker/page.tsx:29` · `bp-admins/page.tsx:24` · `bp-holidays/page.tsx:38` · `work-schedules/page.tsx:38` · `public-holidays/page.tsx:34` · `notifications/page.tsx:21` · `platform/notification-templates/page.tsx:20` · `components/community/post-page.tsx:16` · `inquiry-page.tsx:22` · `list-load.tsx:10 · 17`. 각자의 401 처리(삼키기 · 문구 · 오류 화면)를 `redirectExpired()` 로 바꾸고, 401 · 403 을 같이 다루던 곳은 403 만 남긴다. 지금 근로계약 화면은 401 을 삼켜 빈 목록으로 보인다.
 
+**2026-11-09 중앙 처리로 바꿈.** 위의 화면별 분기(「바꿀 곳」 목록의 `redirectExpired()`)는 목록 밖 화면(점포 · 플랫폼 메뉴 · 급여명세서 · TO-DO · BP 마스터 등)의 401 을 `error.tsx` 로 흘려보냈다. 이제 proxy 가 로그인이 필요한 경로의 화면 · RSC GET(서버 액션 · BFF `/api/*` · 업로드 창구 제외, `marksRenderRequest`)에 내부 헤더 `x-whale-render: 1` 을 붙이고(들어온 값은 공개 경로에서도 늘 지운다), `request()` 가 401 을 받으면 표시 쿠키 처리(`markSessionExpired`) 다음에 토큰을 실은 그 화면 요청이면(`redirectsOnExpiry`) `redirectExpired()` 를 부른다. 화면별 분기는 지웠고, 모든 오류를 받아 대체값으로 바꾸는 서버 화면 catch 는 첫 줄에 `unstable_rethrow` 를 둔다. `requestRaw()`(엑셀 중계)는 그대로다.
+
 ### 2-7. 로그인 성공 — `login/actions.ts`
 
 - 표시 쿠키를 지운다.

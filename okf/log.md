@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-11-09
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 화면 작업 규칙에 「브라우저에서 `bff()` · `fetch` 를 직접 부르면 401 에 `notifySessionExpired()`」를 더하고, 「아직 없는 것」의 세션 만료 경고창을 지웠다(구현됨).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 서버가 그리는 화면의 401 을 한 곳에서 처리한다: proxy 가 화면 · RSC GET 에 `x-whale-render` 를 붙이고 `request()` 가 그 요청의 api 401 이면 `/login?reason=expired` 로 보낸다. 화면별 `redirectExpired()` 분기를 지우고, 모든 오류를 받는 서버 화면 catch 에 우리 함수 `rethrowExpired(error)`(안은 `unstable_rethrow`) 규칙을 더했다(front marill).
 * **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — 로그아웃 실패를 브라우저 경고창 대신 「로그아웃 실패」 팝업(본문 「로그아웃하지 못했습니다. 새로고침 후 다시 시도해 주세요.」, [새로고침] 하나)으로 바꿨다(사용자 지정, front marill).
 
 ## 2026-11-05
