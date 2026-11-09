@@ -109,10 +109,12 @@ export const listHrefOf = (q: ListQuery) => `/contracts${toSearch(q)}`;
 /**
  * api(GET /contracts) 쿼리. 고른 점포는 storeIds, 범위가 점포 하나면 그 id, 직영 · 가맹 전체면 점포를 풀지 않고 점포 유형(storeTypes)으로
  * 보낸다. 범위 「전체」 · 비운 「전체」는 점포 조건이 없다. 업무 범위 밖의 id 는 api 가 조용히 뺀다.
- * 상태를 모두 끈 것(statusNone)은 상태 조건 없이 보낸다 — api 에 「없음」 값이 없고, 상태별 개수는 상태 조건과 관계없이 오므로 그대로
- * 받아 체크박스에 붙이고 목록만 page.tsx 가 비운다.
+ * 상태를 모두 끈 것(statusNone)은 상태 조건 없이 첫 쪽 한 줄로 보낸다 — api 에 「없음」 값이 없고, 상태별 개수는 상태 조건 · 쪽과
+ * 관계없이 오므로 그대로 받아 체크박스에 붙이고 목록만 page.tsx 가 비운다.
  */
 export function apiSearch(q: ListQuery): string {
+  // 모두 끈 것은 목록을 버리고 개수만 쓴다 — 개수는 쪽과 상관없으니 첫 쪽 한 줄만 받는다(api pageSize 하한 1)
+  if (q.statusNone) q = { ...q, page: 1, pageSize: 1 as PageSize };
   const s = new URLSearchParams();
   if (q.page > 1) s.set("page", String(q.page));
   s.set("pageSize", String(q.pageSize));
@@ -163,12 +165,33 @@ export function withBack(href: string, back: string | string[] | undefined): str
  * 저장 · 삭제 뒤 돌아갈 목록. 새로 만들었거나(등록) 지웠으면(savedStoreId null) 점포 조건을 「전체」로 비운다(1팀 withoutStoreSearch — 새
  * 계약의 점포가 고른 점포 밖일 수 있다). 이어 쓰기 · 수정 저장은 저장한 점포가 목록의 고른 점포(점포 하나 범위 포함) 밖이면 비운다 — 임시저장
  * 이어 쓰기는 점포를 바꿀 수 있어 그대로 돌아가면 방금 저장한 계약이 안 보인다(#109 리뷰). 직영 · 가맹 범위는 점포 유형을 몰라 그대로 둔다.
+ * 상태를 모두 끈 목록(status=NONE)에서 왔으면 상태 조건을 「전체」로 푼다 — 그대로 돌아가면 방금 저장한 계약이 반드시 안 보인다.
  */
 export function listAfterSave(back: string | string[] | undefined, savedStoreId: number | null): string {
-  const list = backHrefOf(back);
+  const list = withoutStatusNone(backHrefOf(back));
   if (savedStoreId === null) return withoutStoreSearch(list);
   const picked = pickedIdsOf(readListQuery(Object.fromEntries(new URLSearchParams(list.split("?")[1] ?? ""))));
   return picked.length && !picked.includes(savedStoreId) ? withoutStoreSearch(list) : list;
+}
+
+/** 상태 「모두 끔」을 「전체」로 푼 목록 주소 */
+function withoutStatusNone(list: string): string {
+  const [path, search = ""] = list.split("?");
+  const params = new URLSearchParams(search);
+  if (!params.getAll("status").includes(STATUS_NONE)) return list;
+  params.delete("status");
+  const text = params.toString();
+  return text ? `${path}?${text}` : path;
+}
+
+/**
+ * 상태 체크 하나를 켜거나 끈 뒤의 조건. 모두 끄면 statusNone(빈 상태 목록은 「전체」라 따로 적는다), 모두 켜면 쿼리에서 빼 「전체」로
+ * 둔다 — 새 상태가 생겨도 전체에 들어간다. 그 밖에는 enum 순서대로 고른 값이다.
+ */
+export function toggledStatus(checked: string[], all: string[], value: string, on: boolean): Pick<ListQuery, "status" | "statusNone"> {
+  const next = on ? [...checked, value] : checked.filter((v) => v !== value);
+  if (next.length === 0) return { status: [], statusNone: true };
+  return { status: next.length === all.length ? [] : all.filter((v) => next.includes(v)), statusNone: false };
 }
 
 /** 돌아갈 목록 주소. 근로계약 목록 주소가 아니면(다른 곳으로 보내려는 값) 기본 목록으로 — 서버 액션에 온 값도 이것으로 거른다 */

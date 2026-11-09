@@ -7,7 +7,7 @@ import { useScope, useStores } from "@/components/site/session-gate";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { EnumValue } from "@/lib/enums";
 import { chipsKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
-import { PAGE_SIZES, fillScopeOf, pickedIdsOf, toSearch, unusableScopeOf, withPickedStores, withScopeCondition, type ContractListPage, type ListQuery, type PageSize } from "./contract-list";
+import { PAGE_SIZES, fillScopeOf, pickedIdsOf, toSearch, toggledStatus, unusableScopeOf, withPickedStores, withScopeCondition, type ContractListPage, type ListQuery, type PageSize } from "./contract-list";
 
 // 필터와 페이지는 주소 쿼리에 둔다. 서버 페이지가 그 쿼리로 목록을 다시 받아 그린다.
 function useGo() {
@@ -88,13 +88,8 @@ export function ContractFilters({
   });
   useEffect(() => dropUnusable(), [unusable]);
 
-  const toggle = (value: string, on: boolean) => {
-    const next = on ? [...checked, value] : checked.filter((v) => v !== value);
-    // 모두 끌 수 있다 — 빈 상태 목록은 「전체」라 statusNone 으로 따로 적고, 목록은 비운다(공통 정책 「목록 필터 체크박스」, WHALEERP-654)
-    if (next.length === 0) return apply({ status: [], statusNone: true });
-    // 다 켜면 쿼리에서 빼 「전체」로 둔다. 새 상태가 생겨도 전체에 들어간다.
-    apply({ status: next.length === statuses.length ? [] : statuses.map((s) => s.value).filter((v) => next.includes(v)), statusNone: false });
-  };
+  // 모두 끌 수 있다 — 목록은 비운다(공통 정책 「목록 필터 체크박스」, WHALEERP-654)
+  const toggle = (value: string, on: boolean) => apply(toggledStatus(checked, statuses.map((s) => s.value), value, on));
 
   return (
     <FilterPanel
