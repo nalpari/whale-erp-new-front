@@ -18,7 +18,7 @@ import type { TodoDetail } from "./todo-row";
 
 const STAFF_LOAD_FAILED = "직원 목록을 불러오지 못했습니다. 다시 시도해 주세요.";
 // 배정할 직원이 없는 근무지 — api 문장(「근무지에 체결 완료 근로계약이 있고 가입을 마친 재직 직원이 없습니다.」)을 읽기 쉽게 바꾼 것(2026-11-09 사용자 지정, 3팀 확인 필요)
-const NO_ASSIGNABLE_STAFF = "선택한 근무지는 직원에게 TO-DO를 배정할 수 없습니다.\nTO-DO는 근로계약을 체결하고 앱 가입을 마친 재직 직원에게만 배정할 수 있습니다.";
+const NO_ASSIGNABLE_STAFF = "선택한 근무지에 배정 가능한 직원이 없습니다.\nTO-DO는 근로계약을 체결하고 앱 가입을 완료한 재직 직원에게만 배정할 수 있습니다.";
 const NO_ASSIGNABLE_STAFF_API = "근무지에 체결 완료 근로계약이 있고 가입을 마친 재직 직원이 없습니다.";
 /** api 거절 문장 가운데 화면 문구로 바꿔 보일 것 */
 const friendly = (message: string) => (message === NO_ASSIGNABLE_STAFF_API ? NO_ASSIGNABLE_STAFF : message);
