@@ -1,7 +1,7 @@
 // node --test src/lib/payslips.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { PAYSLIP_STATUSES, dropsPayslipRows, isItemShown, monthLabel, parseAmount, payslipListApiSearch, payslipTotals, previousMonth, shiftMonth, type PayslipListQuery } from "./payslips.ts";
+import { PAYSLIP_STATUSES, isItemShown, monthLabel, parseAmount, payslipListApiSearch, payslipTotals, previousMonth, shiftMonth, type PayslipListQuery } from "./payslips.ts";
 
 test("지난달 · 달 이동은 해를 넘긴다", () => {
   assert.equal(previousMonth("2026-10-19"), "2026-09");
@@ -82,14 +82,6 @@ test("api 쿼리 — 검토 대기만이면 reviewPending=true, 아니면 싣지
 
 test("api 쿼리 — 상태를 하나도 고르지 않았으면 status 를 뺀다(빈 값은 api 가 400)", () => {
   assert.equal(payslipListApiSearch({ ...base, statuses: [] }), "month=2026-09&page=1&pageSize=20");
-  assert.equal(payslipListApiSearch({ ...base, statuses: [], reviewPending: true }), "month=2026-09&reviewPending=true&page=1&pageSize=20");
-});
-
-test("목록 줄 — 상태를 하나도 고르지 않으면 0건이지만, 검토 대기만을 켰으면 api 결과를 보인다", () => {
-  assert.equal(dropsPayslipRows({ ...base, statuses: [] }), true);
-  assert.equal(dropsPayslipRows({ ...base, statuses: [], reviewPending: true }), false);
-  assert.equal(dropsPayslipRows(base), false);
-  assert.equal(dropsPayslipRows({ ...base, reviewPending: true }), false);
 });
 
 test("api 쿼리 — 고른 점포는 storeIds, 직원명은 그대로 싣는다", () => {

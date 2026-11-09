@@ -84,7 +84,7 @@ export function payslipStoreCondition(query: Pick<PayslipListQuery, "storeIds" |
 
 /**
  * GET /payslips 쿼리. 상태를 모두 골랐으면 status 를 뺀다(전체). 하나도 고르지 않았을 때도 빼고 부른다 — api 는 빈 값을 400 으로 막는다.
- * 그때 줄은 버리고 상태 건수만 쓴다 — 「검토 대기만」을 켰으면 버리지 않는다(dropsPayslipRows). 점포 조건은 payslipStoreCondition.
+ * 그때 줄은 버리고 상태 건수만 쓴다(payslips-api.ts getPayslips). 점포 조건은 payslipStoreCondition.
  */
 export function payslipListApiSearch(query: PayslipListQuery): string {
   const params = new URLSearchParams({ month: query.month });
@@ -99,9 +99,6 @@ export function payslipListApiSearch(query: PayslipListQuery): string {
   params.set("pageSize", String(query.pageSize));
   return params.toString();
 }
-
-/** 상태를 하나도 고르지 않았으면 줄은 0건이다. 「검토 대기만」을 켰으면 버리지 않는다 — 검토 대기는 상태가 아니라 분류라, api 가 작성 중 · 검토 중의 검토 대기만 돌려준다 */
-export const dropsPayslipRows = (query: PayslipListQuery) => query.statuses.length === 0 && !query.reviewPending;
 
 // ── 달 ──
 
