@@ -19,7 +19,7 @@ export async function getWithdrawEligibilityAction(): Promise<EligibilityResult>
   }
 }
 
-type Failure = { ok: false; status?: 400 | 401; message: string };
+type Failure = { ok: false; status?: 400 | 401 | 409; message: string };
 export type WithdrawActionResult = { ok: true } | Failure;
 
 /** 1단계 본인 확인 — 맞아야 탈퇴 화면으로 간다(S-JHQQNR, 2026-10-29 재영). 실패 판정은 withdrawal-form.ts 의
@@ -42,8 +42,11 @@ export async function createWithdrawalAction(input: CreateWithdrawalInput): Prom
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
-      // 400 은 현재 비밀번호 불일치 · 진행 중인 근로계약 · 상세 사유 누락 — api 문구를 그대로 쓴다(화면이 만들지 않는다).
+      // 400 은 현재 비밀번호 불일치 · 상세 사유 누락 — api 문구를 그대로 쓴다(화면이 만들지 않는다).
       if (error.status === 400) return { ok: false, status: 400, message: error.message };
+      // 409 는 함께 하는 폐점이 막혔다(확인 뒤 생긴 퇴근 기록 없는 출근 OPEN_CHECK_IN · 이미 폐점 · 교착) — 탈퇴 전체가 되돌아갔다.
+      // 문구는 api 그대로, 화면은 탈퇴 조건을 다시 받아 막힌 점포를 보인다.
+      if (error.status === 409) return { ok: false, status: 409, message: error.message };
       // 429 는 @nestjs/throttler 기본 예외라 한글 문구가 없다 — changeMyPasswordAction 과 같은 이유로 바꾼다.
       if (error.status === 429) return { ok: false, message: "너무 많이 시도했습니다. 10분 뒤 다시 시도해 주세요." };
       if (error.status < 500) return { ok: false, message: error.message };

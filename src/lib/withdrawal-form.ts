@@ -2,20 +2,21 @@
 // 갈라 둔다 — api.ts 가 next/headers 를 써서 node --test 가 플레인으로 풀 수 없기 때문이다
 // (my-password-form.ts 가 my-password.ts 와 갈라진 것과 같은 이유).
 import { ApiError } from "./api-error.ts";
+import type { components } from "./api-types.generated.ts";
 import { bpPath, isBpPathScreen } from "./bp-path.ts";
+import { closingBlockOf } from "./store-closing.ts";
 
-export type WithdrawEligibility = {
-  bpName: string;
-  adminCount: number;
-  storeCount: number;
-  hasInProgressContract: boolean;
-};
+/** 탈퇴 전 확인 — closing 은 폐점 안 한 점포 전부의 폐점 확인(점포 관리 폐점과 같은 값). 막는 조건은 closing.isBlocked 하나뿐이다
+ * (퇴근 기록이 없는 출근, api 2026-11-05 ponyta — 전엔 진행 중 근로계약이 막았다). */
+export type WithdrawEligibility = components["schemas"]["WithdrawEligibilityResponseDto"];
+type ClosingStore = WithdrawEligibility["closing"]["stores"][number];
 
-/** link 는 본문 아래 붙는 이동 버튼 — 탈퇴 전에 할 일을 하는 화면으로 보낸다(직원 자료 일괄 저장, WHALEERP-339). */
-export type WithdrawWarningBlock = string | { head: string; text?: string; link?: { href: string; label: string } };
+/** link 는 본문 아래 붙는 이동 버튼 — 탈퇴 전에 할 일을 하는 화면으로 보낸다(직원 자료 일괄 저장, WHALEERP-339).
+ * closing 이면 본문 아래 폐점 시 함께 처리될 것(점포 전체 합계)을 붙인다 — 점포 관리 폐점 확인 창과 같은 목록이다. */
+export type WithdrawWarningBlock = string | { head: string; text?: string; link?: { href: string; label: string }; closing?: true };
 
 /** api 가 거절한 이유를 붙일 칸. 400 만 본다 — 401 등(세션 만료 · 연결 실패)은 칸이 아니라 띠로 보인다.
- * 진행 중인 근로계약이 있어 막힌 경우도 특정 칸을 가리킬 수 없어 띠로 보인다. */
+ * 폐점이 막은 409(퇴근 기록이 없는 출근 등)도 특정 칸을 가리킬 수 없어 띠로 보인다. */
 export function withdrawFormField(status: number | undefined, message: string): "currentPassword" | "reasonDetail" | null {
   if (status !== 400) return null;
   if (message.includes("현재 비밀번호가 올바르지")) return "currentPassword";
@@ -39,19 +40,24 @@ export function withdrawVerifyFailureOf(error: unknown): WithdrawVerifyFailure {
   return { ok: false, message: "비밀번호를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." };
 }
 
-/** 탈퇴를 막는 「진행 중」 근로계약 — api IN_PROGRESS_CONTRACT_STATUSES(whale-erp-api src/stores/store-format.ts)와 같다. */
-export const IN_PROGRESS_CONTRACT_STATUSES = ["DRAFT", "PENDING_SEND", "PENDING_SIGNATURE", "CORRECTION_REQUESTED", "SIGNED"] as const;
+/** 함께 폐점할 점포 중 막힌 점포 — 선택 상자에 담는다(api 순서 그대로, storeId 오름차순) */
+export function blockedStoresOf(eligibility: WithdrawEligibility): ClosingStore[] {
+  return eligibility.closing.stores.filter((store) => closingBlockOf(store));
+}
 
-/** 근로계약 관리 화면 경로(쿼리 없음). [근로계약 확인] 주소의 앞부분이다. */
-export const CONTRACTS_PATH = "/contracts";
+/** 「탈퇴 조건」 표의 퇴근 기록 없는 출근 칸 — 막혔으면 점포 수와 건수(가려진 직원 것 포함)를 붙인다 */
+export function openCheckInConditionText(eligibility: WithdrawEligibility): string {
+  const stores = blockedStoresOf(eligibility);
+  if (!stores.length) return "없음";
+  const count = closingBlockOf(eligibility.closing.total)?.count ?? 0;
+  return `있음 · 점포 ${stores.length.toLocaleString("ko-KR")}개 ${count.toLocaleString("ko-KR")}건`;
+}
 
-/** [근로계약 확인]이 여는 주소 — 근로계약 목록을 진행 중 상태로만 거른다(목록은 status 를 여러 번 받는다).
- * 빈 storeIds 로 점포를 「전체」로 연다 — 없으면 목록이 헤더 범위(점포 하나 · 직영만 등)로 채워져, 탈퇴를 막은 다른 점포의
- * 계약이 안 보일 수 있다(탈퇴 조건은 BP 전체를 본다). 빈 storeIds 는 헤더 범위를 바꾸지 않는다(src/app/contracts/contract-list.ts 의 storesCleared).
- * 그래도 다 보이지는 않는다 — 탈퇴 판정(api countInProgressContracts)은 지운 · 폐점한 점포까지 세지만, 목록은 본사 역할에게
- * 본사 제공에 동의하지 않은 가맹 점포 직원과 폐점한 가맹 점포 · 지운 점포의 계약을 가린다. 그런 계약만 남으면 목록이 비고
- * BP 마스터 혼자 풀 수 없다(가맹마스터가 정리해야 한다) — 탈퇴 차단 조건 자체를 manyfast S-JHQQNR 정책 질문으로 올렸다(2026-10-30). */
-export const IN_PROGRESS_CONTRACTS_HREF = `${CONTRACTS_PATH}?storeIds=&${IN_PROGRESS_CONTRACT_STATUSES.map((s) => `status=${s}`).join("&")}`;
+/** [회원 탈퇴]가 막힌 이유(말풍선). 막히지 않았으면 undefined */
+export function withdrawBlockedReason(eligibility: WithdrawEligibility): string | undefined {
+  const stores = blockedStoresOf(eligibility);
+  return stores.length ? `퇴근 기록이 없는 출근이 있는 점포가 ${stores.length.toLocaleString("ko-KR")}개 있어 탈퇴할 수 없습니다.` : undefined;
+}
 
 /**
  * 이동 버튼이 쓸 두 주소. menuPath 는 메뉴 권한 판정(useCanOpen)용 — 메뉴 판정은 경로만 보므로 쿼리를 뗀다(붙이면 메뉴를 못 찾아
@@ -85,6 +91,7 @@ export function withdrawWarningText(eligibility: WithdrawEligibility, hasFranchi
           {
             head: `점포 **${storeCount}개**의 상태가 「폐점」으로 바뀝니다.`,
             text: "서비스상의 점포 상태로, 실제 매장 영업과는 관계없습니다.",
+            closing: true as const,
           },
         ]
       : []),

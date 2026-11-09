@@ -2,8 +2,35 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ApiError } from "./api-error.ts";
-import { readListQuery } from "../app/contracts/contract-list.ts";
-import { IN_PROGRESS_CONTRACTS_HREF, moveTargetOf, withdrawFormField, withdrawVerifyFailureOf, withdrawWarningText, type WithdrawWarningBlock } from "./withdrawal-form.ts";
+import {
+  blockedStoresOf,
+  moveTargetOf,
+  openCheckInConditionText,
+  withdrawBlockedReason,
+  withdrawFormField,
+  withdrawVerifyFailureOf,
+  withdrawWarningText,
+  type WithdrawEligibility,
+  type WithdrawWarningBlock,
+} from "./withdrawal-form.ts";
+
+type ClosingStore = WithdrawEligibility["closing"]["stores"][number];
+const counts = { retiringStaff: 0, draftContracts: 0, pendingSendContracts: 0, pendingSignatureContracts: 0, unconfirmedPayslips: 0 };
+const store = (storeId: number, count = 0, hiddenCount = 0): ClosingStore => ({
+  storeId,
+  storeName: `점포${storeId}`,
+  storeCode: `ST${String(storeId).padStart(6, "0")}`,
+  openCheckIns: { count, hiddenCount },
+  ...counts,
+  isBlocked: count + hiddenCount > 0,
+});
+/** 점포 목록으로 탈퇴 조건을 만든다 — total 은 점포 합계 */
+function eligibilityOf(base: { bpName: string; adminCount: number; storeCount: number }, stores: ClosingStore[] = []): WithdrawEligibility {
+  const count = stores.reduce((n, s) => n + s.openCheckIns.count, 0);
+  const hiddenCount = stores.reduce((n, s) => n + s.openCheckIns.hiddenCount, 0);
+  const isBlocked = count + hiddenCount > 0;
+  return { ...base, closing: { stores, total: { openCheckIns: { count, hiddenCount }, ...counts, isBlocked }, isBlocked } };
+}
 
 test("비밀번호 불일치 메시지는 currentPassword 칸", () => {
   assert.equal(withdrawFormField(400, "현재 비밀번호가 올바르지 않습니다."), "currentPassword");
@@ -13,11 +40,8 @@ test("상세 사유 누락 메시지는 reasonDetail 칸", () => {
   assert.equal(withdrawFormField(400, "탈퇴 사유 상세를 입력해 주세요."), "reasonDetail");
 });
 
-test("진행중 근로계약 메시지는 칸이 아니라 띠(null)", () => {
-  assert.equal(
-    withdrawFormField(400, "진행 중인 근로계약이 있어 탈퇴할 수 없습니다. 근로계약을 모두 종료한 뒤 다시 시도해 주세요."),
-    null,
-  );
+test("폐점이 막은 409 는 칸이 아니라 띠(null)", () => {
+  assert.equal(withdrawFormField(409, "퇴근 기록이 없는 출근이 있어 폐점할 수 없습니다."), null);
 });
 
 test("400이 아니면 null", () => {
@@ -27,20 +51,20 @@ test("400이 아니면 null", () => {
 type Block = { head: string; text?: string };
 
 test("관리자 계정·점포가 0개면 그 줄·블록을 뺀다 — 첫 블록은 제목 한 줄만", () => {
-  const blocks = withdrawWarningText({ bpName: "웨일분식", adminCount: 0, storeCount: 0, hasInProgressContract: false });
+  const blocks = withdrawWarningText(eligibilityOf({ bpName: "웨일분식", adminCount: 0, storeCount: 0 }));
   assert.equal(blocks.length, 4);
   assert.deepEqual(blocks[0], { head: "「**웨일분식**」님의 서비스 이용이 종료됩니다." });
   assert.ok(!blocks.some((b) => typeof b !== "string" && b.head.includes("폐점")));
 });
 
 test("관리자 계정만 0개면 점포 블록은 남는다", () => {
-  const blocks = withdrawWarningText({ bpName: "웨일분식", adminCount: 0, storeCount: 2, hasInProgressContract: false });
+  const blocks = withdrawWarningText(eligibilityOf({ bpName: "웨일분식", adminCount: 0, storeCount: 2 }));
   assert.equal((blocks[0] as Block).text, undefined);
   assert.equal((blocks[1] as Block).head, "점포 **2개**의 상태가 「폐점」으로 바뀝니다.");
 });
 
 test("BP명·관리자수·점포수가 실제 값으로 들어간다(굵게 표시용 ** 로 감싼다)", () => {
-  const blocks = withdrawWarningText({ bpName: "테스트상회", adminCount: 3, storeCount: 7, hasInProgressContract: false });
+  const blocks = withdrawWarningText(eligibilityOf({ bpName: "테스트상회", adminCount: 3, storeCount: 7 }));
   assert.deepEqual(blocks[0], {
     head: "「**테스트상회**」님의 서비스 이용이 종료됩니다.",
     text: "관리자 계정 **3개**도 미사용 처리되어 로그인할 수 없습니다.",
@@ -73,7 +97,7 @@ test("탈퇴 1단계 비밀번호 확인 실패 — 확인하지 못하면 모�
 });
 
 test("블록 제목은 마침표로 끝난다", () => {
-  const blocks = withdrawWarningText({ bpName: "테스트상회", adminCount: 3, storeCount: 7, hasInProgressContract: false });
+  const blocks = withdrawWarningText(eligibilityOf({ bpName: "테스트상회", adminCount: 3, storeCount: 7 }));
   for (const b of blocks) if (typeof b !== "string") assert.match(b.head, /\.$/);
 });
 
@@ -86,7 +110,7 @@ function staffBlockOf(blocks: WithdrawWarningBlock[]) {
 }
 
 test("직원 자료 안내는 일괄 저장 화면으로 보내고, 가맹 점포 직원은 가맹마스터가 받는다고 말한다", () => {
-  const block = staffBlockOf(withdrawWarningText({ bpName: "테스트상회", adminCount: 3, storeCount: 7, hasInProgressContract: false }));
+  const block = staffBlockOf(withdrawWarningText(eligibilityOf({ bpName: "테스트상회", adminCount: 3, storeCount: 7 })));
   assert.ok(block.text.startsWith("필요한 자료는 탈퇴 전에 내려받아 주세요.\n"));
   assert.equal(block.link?.label, "직원 자료 일괄 저장");
   assert.match(block.text, /가맹마스터만 내려받을 수 있으니, 탈퇴 전에 가맹마스터에게 알려 주세요\.$/);
@@ -94,46 +118,50 @@ test("직원 자료 안내는 일괄 저장 화면으로 보내고, 가맹 점�
 });
 
 test("마지막 블록은 복구할 수 없다는 제목 한 줄이고, 「정말 탈퇴하시겠습니까?」는 두지 않는다", () => {
-  const blocks = withdrawWarningText({ bpName: "테스트상회", adminCount: 3, storeCount: 7, hasInProgressContract: false });
+  const blocks = withdrawWarningText(eligibilityOf({ bpName: "테스트상회", adminCount: 3, storeCount: 7 }));
   assert.deepEqual(blocks.at(-1), { head: "탈퇴한 계정은 복구할 수 없습니다." });
   assert.ok(!JSON.stringify(blocks).includes("정말 탈퇴하시겠습니까"));
 });
 
-test("[근로계약 확인]은 근로계약 목록을 점포 「전체」 · 진행 중 다섯 상태로 연다", () => {
-  const url = new URL(IN_PROGRESS_CONTRACTS_HREF, "http://x");
-  assert.equal(url.pathname, "/contracts");
-  assert.deepEqual(url.searchParams.getAll("status"), ["DRAFT", "PENDING_SEND", "PENDING_SIGNATURE", "CORRECTION_REQUESTED", "SIGNED"]);
-  // 빈 storeIds 가 없으면 목록이 헤더 범위(점포 하나 등)로 채워져 탈퇴를 막은 다른 점포의 계약이 안 보일 수 있다
-  assert.equal(url.searchParams.get("storeIds"), "");
-});
-
 test("직영만 있는 BP 는 가맹마스터에게 알리라는 줄을 빼고, 일괄 저장 버튼은 남긴다", () => {
-  const block = staffBlockOf(withdrawWarningText({ bpName: "테스트상회", adminCount: 3, storeCount: 0, hasInProgressContract: false }, false));
+  const block = staffBlockOf(withdrawWarningText(eligibilityOf({ bpName: "테스트상회", adminCount: 3, storeCount: 0 }), false));
   assert.equal(block.text, "필요한 자료는 탈퇴 전에 내려받아 주세요.");
   assert.equal(block.link?.href, "/staff-members/export");
 });
 
-test("[근로계약 확인] 주소는 근로계약 목록이 점포 「전체」 · 진행 중 다섯 상태로 읽는다", () => {
-  const url = new URL(IN_PROGRESS_CONTRACTS_HREF, "http://x");
-  const params: Record<string, string | string[]> = {};
-  for (const key of new Set(url.searchParams.keys())) {
-    const values = url.searchParams.getAll(key);
-    params[key] = values.length > 1 ? values : values[0];
-  }
-  const query = readListQuery(params);
-  // 헤더 범위가 아니라 목록에서 비운 「전체」로 읽혀야 탈퇴를 막은 다른 점포의 계약도 보인다
-  assert.equal(query.storesCleared, true);
-  assert.deepEqual(query.storeIds, []);
-  assert.equal(query.scope, null);
-  assert.deepEqual(query.status, ["DRAFT", "PENDING_SEND", "PENDING_SIGNATURE", "CORRECTION_REQUESTED", "SIGNED"]);
-});
-
 test("이동 버튼 주소 — 메뉴 판정은 쿼리 뗀 경로, 탭 BP 주소로 옮긴 화면만 /bp/{id} 를 씌우고 쿼리를 다시 붙인다", () => {
-  const contracts = moveTargetOf(IN_PROGRESS_CONTRACTS_HREF, 8);
+  const contracts = moveTargetOf("/contracts?status=DRAFT", 8);
   assert.equal(contracts.menuPath, "/contracts");
-  assert.equal(contracts.href, `/bp/8${IN_PROGRESS_CONTRACTS_HREF}`);
+  assert.equal(contracts.href, "/bp/8/contracts?status=DRAFT");
   // 일괄 저장 화면도 직원 정보 관리 아래라 탭 BP 를 씌운다
   assert.deepEqual(moveTargetOf("/staff-members/export", 8), { menuPath: "/staff-members/export", href: "/bp/8/staff-members/export" });
   // 옮기지 않은 화면은 접두가 없다
   assert.deepEqual(moveTargetOf("/notifications", 8), { menuPath: "/notifications", href: "/notifications" });
+});
+
+test("점포 블록에만 폐점 시 함께 처리될 것(closing)을 붙인다", () => {
+  const blocks = withdrawWarningText(eligibilityOf({ bpName: "테스트상회", adminCount: 3, storeCount: 7 }));
+  const withClosing = blocks.filter((b) => typeof b !== "string" && b.closing);
+  assert.equal(withClosing.length, 1);
+  assert.equal((withClosing[0] as Block).head, "점포 **7개**의 상태가 「폐점」으로 바뀝니다.");
+});
+
+test("막힌 점포 없음 — 칸은 「없음」, [회원 탈퇴] 막힘 이유 없음", () => {
+  const e = eligibilityOf({ bpName: "웨일분식", adminCount: 0, storeCount: 2 }, [store(1), store(2)]);
+  assert.deepEqual(blockedStoresOf(e), []);
+  assert.equal(openCheckInConditionText(e), "없음");
+  assert.equal(withdrawBlockedReason(e), undefined);
+  // 점포가 하나도 없어도 같다
+  assert.equal(openCheckInConditionText(eligibilityOf({ bpName: "웨일분식", adminCount: 0, storeCount: 0 })), "없음");
+});
+
+test("10개 중 3개 막힘 — 막힌 점포만 api 순서대로, 건수는 가려진 직원 것까지 더한다", () => {
+  const stores = Array.from({ length: 10 }, (_, i) => store(i + 1));
+  stores[1] = store(2, 1, 1);
+  stores[4] = store(5, 1);
+  stores[7] = store(8, 0, 4);
+  const e = eligibilityOf({ bpName: "웨일분식", adminCount: 0, storeCount: 10 }, stores);
+  assert.deepEqual(blockedStoresOf(e).map((s) => s.storeId), [2, 5, 8]);
+  assert.equal(openCheckInConditionText(e), "있음 · 점포 3개 7건");
+  assert.equal(withdrawBlockedReason(e), "퇴근 기록이 없는 출근이 있는 점포가 3개 있어 탈퇴할 수 없습니다.");
 });
