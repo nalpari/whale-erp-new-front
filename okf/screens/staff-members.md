@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입 상태 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [수정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-09T06:53:29Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-09T12:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -170,7 +170,7 @@ sources:
 없는 BP 404)을 받으면 오류 화면 대신 그 문장을 보인다(`deniedMessageOf`). 처리 뒤 `revalidatePath("/staff-members", "layout")` 는 폴더 경로
 그대로다 — rewrite 의 목적지 경로를 받는다(Next 문서 「Using revalidatePath with rewrites」).
 * 목록 「계약 상태」 칸(`contractCell`)의 상태 이름은 `GET /enums/ContractStatus` 이름을 그대로 쓰고 「· D-n」(직원 서명 대기) · 「· MM-DD」(서명 거절)
-  꼬리만 화면이 붙인다. 이름을 받지 못하면 영문 값 대신 「-」(상세 근로계약 칸과 같다). 「직원 서명 대기 · D-24」가 한 줄에 들게 칸을 160 → 200px 로
+  꼬리만 화면이 붙인다. 이름을 받지 못하면(enum 조회 실패도 목록은 그린다) 영문 값 대신 「-」(상세 근로계약 칸과 같다), 「갱신 예정 D-n」은 이름을 쓰지 않아 그대로 보인다. 「직원 서명 대기 · D-24」가 한 줄에 들게 칸을 160 → 200px 로
   넓혔다(WHALEERP-659, 2026-11-09). 홈 점포 하나 화면의 직원 정보 카드도 같은 칸을 쓴다.
 
 # 공통 틀 안에서 그린다
