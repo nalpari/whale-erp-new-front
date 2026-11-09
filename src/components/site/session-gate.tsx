@@ -23,6 +23,7 @@ import {
   type MenuCode,
 } from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
+import { LogoutFailedDialog } from "./logout-failed-dialog";
 import { MyPagePanel } from "./my-page-panel";
 import { PasswordChangePanel } from "./password-change-panel";
 import { WithdrawPanel } from "./withdraw-panel";
@@ -215,16 +216,20 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
   }, []);
   // [확인]은 앱 안 이동이 아니라 location.replace — 끝나지 않는 서버 액션이 Next 의 액션 줄을 막아 router 이동이 막힐 수 있다.
   // 쿠키가 남아 있어도 proxy 가 /login?reason=expired 에서 갱신으로 확인해 정리한다.
+  // 로그아웃 실패 팝업도 같이 둔다 — signOut() 을 부르는 곳(헤더 · 탈퇴 · 강제 비밀번호 · 이 파일)이 모두 이 안에 있다.
   const expiredDialog = (
-    <ConfirmDialog
-      open={expired}
-      title="로그인 만료"
-      cancelLabel={null}
-      onConfirm={() => location.replace(loginPathOf(location.pathname, "GET", EXPIRED_REASON))}
-      onCancel={() => {}} // 닫을 수 없다 — Esc 로도 닫지 않는다
-    >
-      {EXPIRED_MESSAGE}
-    </ConfirmDialog>
+    <>
+      <ConfirmDialog
+        open={expired}
+        title="로그인 만료"
+        cancelLabel={null}
+        onConfirm={() => location.replace(loginPathOf(location.pathname, "GET", EXPIRED_REASON))}
+        onCancel={() => {}} // 닫을 수 없다 — Esc 로도 닫지 않는다
+      >
+        {EXPIRED_MESSAGE}
+      </ConfirmDialog>
+      <LogoutFailedDialog />
+    </>
   );
 
   // 주소의 탭 BP. 바뀌면(주소창 입력 · 뒤로 가기 · 다른 BP 링크) 그 BP 로 다시 준비하고, 옮긴 화면에 BP 없이 오면 다시 돌려 탭 BP 주소로 보낸다.

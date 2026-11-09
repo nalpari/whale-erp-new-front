@@ -17,7 +17,7 @@ export function isActionRedirect(e: unknown): boolean {
  * await 이 NEXT_REDIRECT 로 끝나도 성공이다. 다시 던지지 않는다: 호출부의 판단(`if (!(await signOut(...)))`)이 건너뛰어지고,
  * Next 의 전역 처리(app-router 의 unhandledrejection)가 같은 주소로 한 번 더 옮긴다.
  * 액션 자체가 실패하면(연결 끊김 · 배포 직후 옛 화면이 서버 액션을 못 찾음 · 서버 오류) 쿠키가 남아 proxy 가 /login 을 다시 자기 홈으로
- * 돌려보내므로, 이동하지 않고 알린 뒤 false 를 돌려준다.
+ * 돌려보내므로, 이동하지 않고 로그아웃 실패 팝업 신호를 보낸 뒤 false 를 돌려준다.
  */
 export async function signOut(logout: () => Promise<void>): Promise<boolean> {
   try {
@@ -26,8 +26,12 @@ export async function signOut(logout: () => Promise<void>): Promise<boolean> {
   } catch (e) {
     if (isActionRedirect(e)) return true;
     console.error("로그아웃 실패", logout.name, e);
-    // 새로 고침을 안내한다 — 배포 직후 옛 화면은 새로 고쳐야만 서버 액션을 찾는다
-    alert("로그아웃하지 못했습니다. 새로고침 후 다시 시도해 주세요.");
+    // 로그아웃 실패 팝업(logout-failed-dialog.tsx, SessionGate 가 그린다)에 알린다
+    dispatchEvent(new Event(LOGOUT_FAILED_EVENT));
     return false;
   }
 }
+
+export const LOGOUT_FAILED_EVENT = "whale-erp:logout-failed";
+/** 새로 고침을 안내한다 — 배포 직후 옛 화면은 새로 고쳐야만 서버 액션을 찾는다 */
+export const LOGOUT_FAILED_MESSAGE = "로그아웃하지 못했습니다. 새로고침 후 다시 시도해 주세요.";
