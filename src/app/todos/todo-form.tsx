@@ -361,8 +361,8 @@ function TodoFormFields({
         </Button>
       </div>
       {/* 서버 실패는 제목 줄 아래 띠 — 칸 오류는 칸 바로 아래에 둔다(점포 등록과 같다) */}
-      {/* 띠는 폭이 넓어 문장들을 한 줄로 잇는다 — 칸 아래 문구(근무지)는 좁아 두 줄 그대로(2026-11-09 사용자 지정) */}
-      {serverError && <NoticeBand title="저장하지 못했습니다." detail={serverError.split("\n").join(" ")} />}
+      {/* 띠 제목은 「TO-DO를 등록 · 수정할 수 없습니다.」(2026-11-09 사용자 지정 — 전엔 「저장하지 못했습니다.」). 띠는 폭이 넓어 문장들을 한 줄로 잇는다 — 칸 아래 문구(근무지)는 좁아 두 줄 그대로(2026-11-09 사용자 지정) */}
+      {serverError && <NoticeBand title={detail ? "TO-DO를 수정할 수 없습니다." : "TO-DO를 등록할 수 없습니다."} detail={serverError.split("\n").join(" ")} />}
 
       {/* 두 단 — 왼쪽 제목 · 내용 · 수행예정 · 긴급, 오른쪽 「배정내역」 묶음(근무지 · 배정대상 · 직원 / 수행 방식)(2026-11-09 사용자 지정) */}
       <div className="grid grid-cols-2 gap-[24px]">
