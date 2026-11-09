@@ -90,6 +90,8 @@ test("계약 — 상태별 표시", () => {
 
 test("계약 — 상태 이름을 받지 못했으면 영문 값 대신 「-」(null)", () => {
   assert.equal(contractCell(item(contract("SIGNED")), TODAY, []), null);
+  // 갱신 예정은 상태 이름을 쓰지 않아 이름이 없어도 보인다
+  assert.equal(contractCell(item(contract("SIGNED", { endDate: "2026-11-01" })), TODAY, [])?.text, "갱신 예정 D-20");
   assert.equal(contractCell(item(contract("PENDING_SIGNATURE")), TODAY, STATUSES.filter((s) => s.value !== "PENDING_SIGNATURE")), null);
 });
 

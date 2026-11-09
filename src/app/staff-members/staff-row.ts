@@ -103,10 +103,16 @@ export function invitationText(
 }
 
 /** 계약 상태 칸. 상태 이름은 GET /enums/ContractStatus(statusLabels)에서 받고, 날수 · 날짜 꼬리만 여기서 붙인다(WHALEERP-659).
- * 이름을 받지 못했으면(enum 실패 · 빈 목록 · 모르는 값) 영문 값을 보이지 않고 null(「-」) — 상세 근로계약 칸과 같다. */
+ * 이름을 받지 못했으면(enum 실패 · 빈 목록 · 모르는 값) 영문 값을 보이지 않고 null(「-」) — 상세 근로계약 칸과 같다.
+ * 「갱신 예정 D-n」은 상태 이름을 쓰지 않으니 이름이 없어도 보인다. */
 export function contractCell(item: StaffMemberListItem, today: string, statusLabels: readonly EnumValue[]): Cell | null {
   const c = item.contract;
   if (!c || !c.status) return null;
+  if (c.status === "SIGNED" && c.endDate) {
+    const left = dayDiff(today, c.endDate);
+    // 종료일이 지난 서명 완료는 종료 배치 전의 잠깐이다. 갱신 예정이 아니다.
+    if (left >= 0 && left <= RENEWAL_NOTICE_DAYS) return { text: `갱신 예정 D-${left}`, style: "badge-off" };
+  }
   const name = statusLabels.find((v) => v.value === c.status)?.label;
   if (!name) return null;
   switch (c.status) {
@@ -122,13 +128,8 @@ export function contractCell(item: StaffMemberListItem, today: string, statusLab
     case "CORRECTION_REQUESTED":
       // 직원이 가입 값과 계약서 값이 달라 수정을 요청했다(본인 대조, WHALEERP-125) — 관리자가 고쳐 다시 보낼 차례
       return { text: name, style: "badge-off" };
-    case "SIGNED": {
-      const left = c.endDate ? dayDiff(today, c.endDate) : null;
-      // 종료일이 지난 서명 완료는 종료 배치 전의 잠깐이다. 갱신 예정이 아니다.
-      return left !== null && left >= 0 && left <= RENEWAL_NOTICE_DAYS
-        ? { text: `갱신 예정 D-${left}`, style: "badge-off" }
-        : { text: name, style: "badge-on" };
-    }
+    case "SIGNED":
+      return { text: name, style: "badge-on" };
     case "REJECTED":
       // 거절일은 따로 저장하지 않고 근로계약서의 최종수정일로 보인다(2026-10-12 재영).
       return { text: c.updatedAt ? `${name} · ${mmdd(kstDate(c.updatedAt))}` : name, style: "badge-off" };

@@ -19,9 +19,13 @@ import type { TodoDetail } from "./todo-row";
 const STAFF_LOAD_FAILED = "직원 목록을 불러오지 못했습니다. 다시 시도해 주세요.";
 // 배정할 직원이 없는 근무지 — api 문장(「근무지에 서명 완료 근로계약이 있고 가입을 마친 재직 직원이 없습니다.」)을 읽기 쉽게 바꾼 것(2026-11-09 사용자 지정, 3팀 확인 필요)
 const NO_ASSIGNABLE_STAFF = "선택한 근무지에 배정 가능한 직원이 없습니다.\nTO-DO는 근로계약을 체결하고 앱 가입을 완료한 재직 직원에게만 배정할 수 있습니다.";
-const NO_ASSIGNABLE_STAFF_API = "근무지에 서명 완료 근로계약이 있고 가입을 마친 재직 직원이 없습니다.";
+// api 가 「체결 완료」를 「서명 완료」로 바꾼다(WHALEERP-659). 두 저장소의 배포가 어긋나도 바꾼 문구가 보이게 옛 문장도 받는다 — api 배포 뒤 옛 문장은 지운다
+const NO_ASSIGNABLE_STAFF_API = new Set([
+  "근무지에 서명 완료 근로계약이 있고 가입을 마친 재직 직원이 없습니다.",
+  "근무지에 체결 완료 근로계약이 있고 가입을 마친 재직 직원이 없습니다.",
+]);
 /** api 거절 문장 가운데 화면 문구로 바꿔 보일 것 */
-const friendly = (message: string) => (message === NO_ASSIGNABLE_STAFF_API ? NO_ASSIGNABLE_STAFF : message);
+const friendly = (message: string) => (NO_ASSIGNABLE_STAFF_API.has(message) ? NO_ASSIGNABLE_STAFF : message);
 // 등록 결과 모름. 서버 액션 호출 자체가 끊긴 경우의 문구로, 서버 액션의 결과 모름 문구와 같다
 const CREATE_UNKNOWN = "등록 결과를 확인하지 못했습니다. 목록에서 등록됐는지 확인해 주세요.";
 // 배정 대상 카드 앞 아이콘 — BP 관리자 상세 「내 계정입니다.」의 사람 아이콘(헤더 avatar.svg 모양 · 선 굵기)을 그대로 쓰고, 근무지 전체는 그 양옆에 사람을 둘 더 둔다(2026-11-06 사용자 지정)
