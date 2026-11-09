@@ -98,8 +98,9 @@ export function DataTable<T>({
     ) : (
       <thead>
         <tr className={`h-[42px] border-y border-erp-thead-line ${HEAD_ROW[headVariant]}`}>
+          {/* 열 이름은 늘 가운데 — 팝업(dialog)처럼 글자 정렬을 물려주는 곳에서는 브라우저 기본 가운데가 풀려 왼쪽으로 붙었다(변경이력 팝업, 2026-11-09 사용자 지정) */}
           {columns.map((c, i) => (
-            <th key={i} scope="col" className={`px-[10px] ${HEAD_CELL[headVariant]}`}>
+            <th key={i} scope="col" className={`px-[10px] text-center ${HEAD_CELL[headVariant]}`}>
               {headLabel(c, !scroll)}
             </th>
           ))}

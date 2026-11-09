@@ -1,6 +1,7 @@
 // TO-DO 등록. 앱(src/app/todos/new · todo-form.tsx)처럼 목록 옆 패널이 아니라 별도 화면이다.
-// 점포 등록(stores/new.mjs)을 본떠 두 단으로 둔다 — 왼쪽 제목 · 내용(묶음 상자 없이, 라벨은 「배정」 묶음 제목과 같은 15px 600),
-// 오른쪽 「배정」 묶음. 배정 대상 · 수행 방식은 점포유형과 같은 큰 선택 카드다(2026-11-06 사용자 지정).
+// 점포 등록(stores/new.mjs)을 본떠 두 단으로 둔다 — 왼쪽 제목 · 내용(6줄) · 수행예정 날짜 · 시간 · 긴급요청(묶음 상자 없이, 라벨은 15px 600),
+// 오른쪽 「배정내역」 묶음(근무지 · 배정대상 · 직원 / 수행 방식). 배정대상 · 수행 방식은 점포유형과 같은 큰 선택 카드다
+// (2026-11-06 사용자 지정, 배치 · 이름은 2026-11-09 사용자 지정, 3팀 확인 필요).
 // 처음 값은 앱 initialForm 과 같다 — 근무지 전체 · 각자 수행, 날짜는 오늘.
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
@@ -29,41 +30,64 @@ const choiceCards = (name, items, checked) =>
     )
     .join("")}</div>`;
 
+// 직원 고르기 상자(앱 STAFF_BOX · STAFF_BOX_HEAD) — 4px 테두리 · 제목 줄은 바탕 없이 아래 회색 선(erp-bar-line) · 회색 인원수
+const CHIP = "flex h-[34px] items-center gap-[8px] rounded-[2px] border border-erp-field-line bg-white pr-[4px] pl-[10px] text-[14px] text-erp-ink";
+const CANDIDATE = "h-[34px] rounded-[2px] border border-erp-field-line bg-white px-[10px] text-[14px] text-erp-ink transition-colors duration-150 ease-out hover:border-erp-brand";
+const staffBox = (bg, title, count, inner) =>
+  `<section class="flex min-w-0 flex-col overflow-hidden rounded-[4px] border border-erp-panel-line ${bg}"><h4 class="flex h-[42px] shrink-0 items-center gap-[8px] border-b border-erp-bar-line px-[12px] text-[14px] font-medium text-erp-ink">${title} <span class="font-normal text-erp-label">${count}명</span></h4>${inner}</section>`;
+
 const group = (label, control, when) =>
   `<div role="group" aria-label="${label}" class="flex flex-col gap-[10px]"${when ? ` data-when="${when}"` : ""}><span class="text-[15px] font-semibold text-erp-ink">${req(label)}</span>${control}</div>`;
 
 // edit 를 주면 TO-DO 수정(앱 /todos/{id}/edit, 같은 폼) — 근무지 · 배정 대상 · 수행 방식 · 직원은 바꾸지 않아 글자로만 보이고(api 가 받지 않는다),
-// 안내 박스는 등록에만 둔다. 앱은 등록 저장 · 수정 취소 · 수정 저장 뒤 상세로 가고 등록 취소만 목록으로 간다 — 데모는 모두 목록.
+// 안내 박스는 등록에만 둔다. 앱은 등록 저장 · 수정 취소 · 수정 저장 뒤 상세로 가고 등록 취소만 목록으로 간다 — 데모는 수정만 상세(todos-detail.html)로 간다.
 export const render = ({ A, R }, edit) => {
-  const content = `<div class="flex flex-col gap-[18px]">${topField(req("제목"), ui.textField({ maxlength: 100, placeholder: "100자 이내로 입력해 주세요.", value: edit?.title ?? "" }))}${topField(
-    "내용",
-    ui.textarea({ rows: 8, maxlength: 2000, placeholder: "2,000자 이내로 입력해 주세요.", value: edit?.body ?? "" }),
-    true,
-  )}</div>`;
+  // 긴급요청 — 칸 이름(15px 600)을 앞에, 스위치를 뒤에(공지사항 등록 「상단 고정」과 같은 모양)
+  const urgent = `<div class="flex flex-col gap-[8px]"><span class="flex items-center gap-[10px]"><span class="text-[15px] font-semibold text-erp-ink">긴급요청</span>${x.toggle("", edit?.urgent ?? false)}</span>${p.note("직원 근무 앱의 홈 및 근무 탭 최상단에 강조 표시되며, 관리자 웹의 미조치 건수에 포함됩니다.<br>별도의 푸시 알림은 발송하지 않습니다.")}</div>`;
+  const content =
+    `<div class="flex flex-col gap-[18px]">${topField(req("제목"), ui.textField({ maxlength: 100, placeholder: "100자 이내로 입력해 주세요.", value: edit?.title ?? "" }))}${topField(
+      "내용",
+      ui.textarea({ rows: 6, maxlength: 2000, placeholder: "2,000자 이내로 입력해 주세요.", value: edit?.body ?? "" }),
+    )}` +
+    ui.formRow(
+      `<div class="flex min-w-0 flex-1 flex-col">${topField(req("수행예정 날짜"), ui.dateField(A, { label: "수행예정 날짜", value: edit?.date ?? "2026-11-09" }))}</div>`,
+      `<div class="flex min-w-0 flex-1 flex-col">${topField("시간 (선택)", p.timeField(edit?.time ?? "", "시간"))}</div>`,
+    ) +
+    urgent +
+    `</div>`;
 
-  const readonly = (label, value) =>
-    `<div role="group" aria-label="${label}" class="flex flex-col gap-[10px]"><span class="text-[15px] font-semibold text-erp-ink">${label}</span>${value}</div>`;
-  const fixed = edit && [
-    readonly("근무지", `<span class="text-[14px] text-erp-ink">${edit.store}</span>`),
-    readonly("배정 대상", `<span class="text-[14px] text-erp-ink">${edit.target}</span>${p.note("등록한 뒤에는 근무지 · 배정 대상 · 수행 방식을 변경할 수 없습니다.")}`),
-  ];
-  const assign = ui.formGroup(
-    "배정",
-    ...(fixed || [
-    topField(req("근무지"), ui.select(["선택", "모리커피 서초점", "온기식당 판교점"])),
+  // 묶음 제목은 등록 · 수정 모두 「배정내역」(2026-11-09 사용자 지정)
+  // 수정 화면은 바꿀 수 없는 배정내역을 상세 화면 「TO-DO」 표와 같은 상세 표로 보인다 — 위에 붙여 늘어나지 않게(앱 todo-form.tsx, 2026-11-09 사용자 지정, 3팀 확인 필요)
+  const assign = edit
+    ? `<div class="min-w-0 self-start">${ui.detailTable("배정내역", [
+        ["근무지", edit.store],
+        ["배정대상", edit.target],
+      ])}</div>`
+    : ui.formGroup(
+    "배정내역",
+    ...([
+    topField(req("근무지"), ui.select(["선택", "모리커피 서초점", "온기식당 판교점"], { value: "모리커피 서초점" })),
     group(
-      "배정 대상",
+      "배정대상",
       choiceCards(
         "todo-target",
         [
           ["개인", "개인 배정", "", ONE],
           ["근무지 전체", "근무지 전체 직원에게 배정", "", MANY],
         ],
-        "근무지 전체",
+        // 앱 처음 값은 근무지 전체 — 데모는 직원 고르기 상자를 보이려고 개인 배정을 고른 장면이다
+        "개인",
       ),
     ),
-    // 개인이면 직원 찾기 · 칩. 근무지를 고르기 전이라 안내 한 줄만 보인다(앱과 같다)
-    group("직원", `<span class="text-[14px] text-erp-muted">근무지를 먼저 선택해 주세요.</span>`, "todo-target:개인 배정"),
+    // 개인이면 직원 찾기 + 두 상자 — 「선택할 수 있는 직원 N명」(옅은 회청 바탕 · 제목 줄 바탕 없음 · 아래 회색 선)과 「선택한 직원 N명」(흰 바탕).
+    // 칩을 누르면 아래로 옮겨 가고 × 로 뺀다(앱 todo-form.tsx, 2026-11-09 사용자 지정, 3팀 확인 필요). 데모는 근무지를 고른 뒤 한 명을 고른 장면
+    group(
+      "직원",
+      ui.searchField(A, { placeholder: "이름 또는 휴대전화번호 끝자리", label: "직원 찾기" }) +
+        staffBox("bg-erp-thead-bg", "선택할 수 있는 직원", 2, `<ul aria-label="선택할 수 있는 직원" class="flex flex-wrap gap-[6px] p-[12px]">${["오세라 · 5678", "권도윤 · 9012"].map((t) => `<li><button type="button" class="${CANDIDATE}">${t}</button></li>`).join("")}</ul>`) +
+        staffBox("bg-white", "선택한 직원", 1, `<ul aria-label="선택한 직원" class="flex flex-wrap gap-[6px] p-[12px]"><li class="${CHIP}"><span class="font-medium">서지안 · 1234</span><button type="button" aria-label="서지안 빼기" class="grid size-[26px] place-items-center rounded-[2px] text-erp-label hover:text-erp-ink">×</button></li></ul>`),
+      "todo-target:개인 배정",
+    ),
     group(
       "수행 방식",
       choiceCards(
@@ -77,11 +101,6 @@ export const render = ({ A, R }, edit) => {
       "todo-target:근무지 전체 직원에게 배정",
     ),
     ]),
-    ui.formRow(
-      `<div class="flex min-w-0 flex-1 flex-col">${topField(req("수행 예정 날짜"), ui.dateField(A, { label: "수행 예정 날짜", value: edit?.date ?? "2026-11-06" }))}</div>`,
-      `<div class="flex min-w-0 flex-1 flex-col">${topField("시간 (선택)", p.timeField(edit?.time ?? "", "시간"))}</div>`,
-    ),
-    `<div class="flex flex-col gap-[8px]">${x.toggle("긴급", edit?.urgent ?? false)}${p.note("직원 근무 앱의 홈 및 근무 탭 최상단에 강조 표시되며, 관리자 웹의 미조치 건수에 포함됩니다.<br>별도의 푸시 알림은 발송하지 않습니다.")}</div>`,
   );
 
   const guide = p.guideBand("TO-DO 안내", [
@@ -89,10 +108,11 @@ export const render = ({ A, R }, edit) => {
     `<b class="font-medium text-erp-ink">개인 배정</b> – 선택한 직원 한 명당 1건씩 등록됩니다. 근무지를 변경하면 선택한 직원이 초기화됩니다.`,
     `<b class="font-medium text-erp-ink">근무지 전체 · 각자 수행</b> – 모든 직원이 완료해야 완료됩니다. <u>등록 후 입사한 직원에게는 배정되지 않습니다.</u>`,
     `<b class="font-medium text-erp-ink">근무지 전체 · 한 명만 수행</b> – 한 명이 완료하면 모든 직원에게 완료로 표시됩니다.`,
-    `<span class="text-erp-off">근무지 · 배정 대상 · 수행 방식은 등록한 뒤에 변경할 수 없습니다.</span>`, // 빨간 글자(앱과 같다, 2026-11-06 사용자 지정)
+    `<span class="text-erp-off">근무지 · 배정대상 · 수행 방식은 등록한 뒤에 변경할 수 없습니다.</span>`, // 빨간 글자(앱과 같다, 2026-11-06 사용자 지정)
   ]);
 
-  const back = link(R, "staff/todos.html");
+  // 등록 취소 · 저장은 목록으로, 수정 취소 · 저장은 그 TO-DO 상세로 간다(앱 cancelHref · 저장 뒤 이동, 2026-11-09 사용자 지정)
+  const back = link(R, edit ? "staff/todos-detail.html" : "staff/todos.html");
   const body = ui.detailBody(
     // 취소 · 저장은 제목 줄 오른쪽 — 점포 등록과 같은 자리(앱 todo-form.tsx)
     ui.sectionHead(edit ? "TO-DO 수정" : "TO-DO 등록", ui.button("취소", { variant: "off", href: back }) + ui.button("저장", { href: back })) +

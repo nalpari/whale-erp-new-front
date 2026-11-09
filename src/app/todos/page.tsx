@@ -74,6 +74,7 @@ export default async function TodosPage({
           </ListToolbar>
           <TodoTable
             items={items}
+            total={total}
             page={query.page}
             pageSize={query.pageSize}
             statusLabels={statusLabels}

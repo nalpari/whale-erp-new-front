@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { components } from "../../lib/api-types.generated.ts";
-import { assigneeText, deletePreview, deleteResultMessage, dueFullText, dueText, historyActorText, historyText, MASKED_STAFF, staffNameText, statusCells } from "./todo-row.ts";
+import { assigneeText, deletePreview, deleteResultMessage, doneCountText, dueFullText, dueText, historyActorText, historyText, MASKED_STAFF, staffNameText, statusCells, targetText } from "./todo-row.ts";
 
 type Item = components["schemas"]["TodoListItemDto"];
 type Detail = components["schemas"]["TodoDetailDto"];
@@ -58,15 +58,31 @@ test("목록 수행 예정 — 늘 연도까지, 시간은 뒤에", () => {
 
 test("상태 — 대기 회색 · 진행 중 파랑 · 완료 흐림, 그룹은 완료 건수를 붙인다", () => {
   assert.deepEqual(statusCells(item(), LABELS), [{ text: "대기", style: "badge-neutral" }]);
-  assert.deepEqual(statusCells(item({ status: "IN_PROGRESS", todoCount: 5, doneCount: 2 }), LABELS), [{ text: "진행 중 · 2/5", style: "badge-on" }]);
+  assert.deepEqual(statusCells(item({ status: "IN_PROGRESS", todoCount: 5, doneCount: 2 }), LABELS), [{ text: "진행 중", style: "badge-on" }]);
+  assert.equal(doneCountText(item({ todoCount: 5, doneCount: 2 })), "2 / 5명");
+  assert.equal(doneCountText(item({ todoCount: 1, doneCount: 0 })), "0 / 1명");
   assert.deepEqual(statusCells(item({ status: "DONE" }), LABELS), [{ text: "완료", style: "muted" }]);
 });
 
-test("상태 — 한 명 수행을 완료하면 수행자 이름을 옆에", () => {
-  assert.deepEqual(statusCells(item({ assigneeType: "ALL", executionMode: "ANY_ONE", status: "DONE", performer: person(9, "문태경") }), LABELS), [
-    { text: "완료", style: "muted" },
-    { text: "문태경", style: "muted" },
-  ]);
+test("완료 / 배정 직원 — 한 명 수행은 행 하나에 붙은 대상 전원을 배정 직원으로 센다", () => {
+  const all = [person(1, "서지안"), person(2, "오세라"), person(3, "권도윤")];
+  assert.equal(doneCountText(item({ assigneeType: "ALL", executionMode: "ANY_ONE", todoCount: 1, doneCount: 0, assignees: all })), "0 / 3명");
+  assert.equal(doneCountText(item({ assigneeType: "ALL", executionMode: "ANY_ONE", todoCount: 1, doneCount: 1, assignees: all })), "1 / 3명");
+  // 각자 수행은 직원마다 행
+  assert.equal(doneCountText(item({ assigneeType: "ALL", executionMode: "EACH", todoCount: 3, doneCount: 1, assignees: all })), "1 / 3명");
+});
+
+test("담당직원 — 개인은 「개인 · 이름」(여러 명이면 「외 N명」), 근무지 전체는 수행 방식", () => {
+  assert.equal(targetText(item()), "개인 · 서지안");
+  assert.equal(targetText(item({ assignees: [person(1, "서지안"), person(2, "오세라")] })), "개인 · 서지안 외 1명");
+  assert.equal(targetText(item({ assignees: [masked] })), `개인 · ${MASKED_STAFF}`);
+  assert.equal(targetText(item({ assignees: [] })), "개인 · -");
+  assert.equal(targetText(item({ assigneeType: "ALL", executionMode: "EACH" })), "전체 · 각자 수행");
+  assert.equal(targetText(item({ assigneeType: "ALL", executionMode: "ANY_ONE" })), "전체 · 한 명만 수행");
+});
+
+test("상태 — 한 명 수행을 완료해도 상태 하나만(수행자 이름은 상세에서)", () => {
+  assert.deepEqual(statusCells(item({ assigneeType: "ALL", executionMode: "ANY_ONE", status: "DONE", performer: person(9, "문태경") }), LABELS), [{ text: "완료", style: "muted" }]);
 });
 
 const detail = (over: Partial<Detail> = {}): Detail => ({
@@ -139,7 +155,6 @@ test("가린 직원 — 급여명세서와 같은 짧은 「본사에 정보제�
   // 담당 · 완료 수행자
   assert.equal(assigneeText(item({ assignees: [masked] })), MASKED_STAFF);
   assert.equal(assigneeText(item({ assignees: [masked, person(2, "오세라")] })), "본사에 정보제공 미동의 외 1명");
-  assert.deepEqual(statusCells(item({ assigneeType: "ALL", executionMode: "ANY_ONE", status: "DONE", performer: masked }), LABELS)[1], { text: MASKED_STAFF, style: "muted" });
 });
 
 test("상태 이력 — 가린 직원은 바꾼 사람 · 배정 풀림 모두 가린 문구", () => {

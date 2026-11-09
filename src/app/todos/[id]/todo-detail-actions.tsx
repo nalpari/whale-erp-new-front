@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { Button, ConfirmDialog, Select, useToast } from "@/components/common";
 import { useCurrentBp, useMenuPermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
@@ -20,16 +20,17 @@ export function TodoDetailActions({ detail, listHref }: { detail: TodoDetail; li
   const [open, setOpen] = useState(false);
   const { pending } = deletePreview(detail);
 
+  // 버튼 순서는 [삭제] [수정] [목록](2026-11-09 사용자 지정, 3팀 확인 필요 — 전엔 수정 · 삭제 · 목록)
   return (
     <>
-      {can.update && (
-        <Button variant="soft" href={bpPath(bp, withBack(`/todos/${detail.todoId}/edit`, listHref))}>
-          수정
-        </Button>
-      )}
       {can.delete && pending > 0 && (
         <Button variant="soft" onClick={() => setOpen(true)}>
           삭제
+        </Button>
+      )}
+      {can.update && (
+        <Button variant="soft" href={bpPath(bp, withBack(`/todos/${detail.todoId}/edit`, listHref))}>
+          수정
         </Button>
       )}
       <Button href={bpPath(bp, listHref)}>목록</Button>
@@ -86,8 +87,24 @@ function DeleteTodoDialog({ detail, listHref, onClose }: { detail: TodoDetail; l
   );
 }
 
-/** 관리자가 직원 대신 상태를 바꾼다(T-1). 그룹이면 이 행만 바뀐다. 수정 권한이 없으면 그리지 않는다 */
-export function TodoStatusControl({ todoId, status, labels }: { todoId: number; status: TodoStatus; labels: EnumValue[] }) {
+/**
+ * 관리자가 직원 대신 상태를 바꾼다(T-1, 그룹이면 이 행만). 상태 선택칸 + [상태 변경]이고 직원별 상태 표의 줄마다도 쓴다.
+ * name 은 직원 이름 — 화면 낭독용(「서지안 바꿀 상태」)이고, 줄 안 칸은 좁아 실패 문구를 옆에 두지 않고 「서지안: …」 토스트로 알린다.
+ * fallback 은 수정 권한이 없을 때 대신 보일 지금 상태다.
+ */
+export function TodoStatusControl({
+  todoId,
+  status,
+  labels,
+  name,
+  fallback,
+}: {
+  todoId: number;
+  status: TodoStatus;
+  labels: EnumValue[];
+  name?: string;
+  fallback: ReactNode;
+}) {
   const router = useRouter();
   const toast = useToast();
   const onFailure = useFailure();
@@ -95,7 +112,14 @@ export function TodoStatusControl({ todoId, status, labels }: { todoId: number; 
   const [next, setNext] = useState<TodoStatus>(status);
   const [error, setError] = useState("");
   const [busy, startChanging] = useTransition();
-  if (!can.update) return null;
+  // 새로 받은 상태로 선택칸을 맞춘다 — key 로 다시 그리면 409 문구까지 지워져, 그리는 중에 맞춘다(실패 문구는 남긴다)
+  const [seen, setSeen] = useState(status);
+  if (seen !== status) {
+    setSeen(status);
+    setNext(status);
+  }
+  if (!can.update) return <>{fallback}</>;
+  const fail = (message: string) => (name ? toast(`${name}: ${message}`) : setError(message));
 
   const handleChange = () =>
     startChanging(async () => {
@@ -109,18 +133,18 @@ export function TodoStatusControl({ todoId, status, labels }: { todoId: number; 
         }
         // 409(다른 직원이 먼저 완료 · 그사이 상태가 바뀜)는 문장을 보이고 지금 상태를 다시 받는다. 404(그사이 지움 · 범위 밖)는 다시 받아 404 화면으로
         const message = onFailure(result);
-        if (message) setError(message);
+        if (message) fail(message);
         if (result.status === 409 || result.status === 404) router.refresh();
       } catch (e) {
         console.error("TO-DO 상태 변경 실패", e);
-        setError("상태 변경 결과를 확인하지 못했습니다. 화면을 새로 불러와 확인해 주세요.");
+        fail("상태 변경 결과를 확인하지 못했습니다. 화면을 새로 불러와 확인해 주세요.");
       }
     });
 
   return (
     <span className="flex items-center gap-[6px]">
       <span className="w-[120px]">
-        <Select aria-label="바꿀 상태" value={next} disabled={busy} onChange={(e) => setNext(e.target.value as TodoStatus)}>
+        <Select aria-label={name ? `${name} 바꿀 상태` : "바꿀 상태"} value={next} disabled={busy} onChange={(e) => setNext(e.target.value as TodoStatus)}>
           {labels.map((s) => (
             <option key={s.value} value={s.value}>
               {s.label}
