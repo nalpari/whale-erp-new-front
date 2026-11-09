@@ -10,7 +10,7 @@ import { MENU_CODE } from "@/lib/menus";
 import { useFailure } from "../../staff-members/[id]/use-action-failure";
 import { changeTodoStatusAction, deleteTodoAction } from "../actions";
 import { withBack, type TodoStatus } from "../todo-list-query";
-import { deletePreview, deleteResultMessage, type TodoDetail } from "../todo-row";
+import { deletePreview, type TodoDetail } from "../todo-row";
 
 // 상세 제목 줄 오른쪽 — 수정(수정 권한) · 삭제(삭제 권한, 지울 대기 행이 있을 때) · 목록. 권한은 로그인 정보의 메뉴 권한으로 미리 가리고 막는 것은 api 다.
 // listHref 는 옛 경로다 — 링크 · 이동에서 탭 BP 를 붙인다(/bp/{id}/todos)
@@ -39,7 +39,7 @@ export function TodoDetailActions({ detail, listHref }: { detail: TodoDetail; li
   );
 }
 
-/** 삭제 확인창(T-2). 그룹이면 대기인 행만 지우고 진행 중 · 완료는 남는다고 미리 알리고, 지운 뒤 api 가 준 건수로 다시 알린다 */
+/** 삭제 확인창(T-2). 그룹이면 대기인 행만 지우고 진행 중 · 완료는 지우지 않는다고 미리 알린다. 지운 뒤는 늘 「삭제되었습니다.」 토스트 */
 function DeleteTodoDialog({ detail, listHref, onClose }: { detail: TodoDetail; listHref: string; onClose: () => void }) {
   const router = useRouter();
   const toast = useToast();
@@ -56,7 +56,8 @@ function DeleteTodoDialog({ detail, listHref, onClose }: { detail: TodoDetail; l
       try {
         const result = await deleteTodoAction(detail.todoId);
         if (result.ok) {
-          toast(deleteResultMessage(result));
+          // 삭제 뒤 토스트는 다른 화면과 같은 「삭제되었습니다.」 — 일부만 지운 경우도 같다(남는 건수는 삭제창에서 미리 알린다, 2026-11-09 사용자 지정)
+          toast("deleted");
           // 들어올 때의 목록 조건으로 돌아간다 — TO-DO 하나를 지워도 점포 조건은 틀어지지 않아 점포 검색도 그대로 둔다(2026-10-22 재영)
           router.push(bpPath(bp, listHref));
           return;

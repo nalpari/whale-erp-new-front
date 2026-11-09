@@ -99,12 +99,6 @@ export function deletePreview(detail: Pick<TodoDetail, "status" | "groupTodos">)
   return { pending, remaining: rows.length - pending };
 }
 
-/** 삭제 뒤 토스트. 남은 행이 있으면 함께 알린다 */
-export function deleteResultMessage({ deleted, remaining }: Schemas["TodoDeleteResponseDto"]): string {
-  // 「남았습니다」 대신 「삭제하지 않았습니다」(삭제창 문구와 같은 말, 2026-11-09 사용자 지정)
-  return remaining ? `대기 ${deleted}건을 삭제했습니다. 진행 중 · 완료 ${remaining}건은 삭제하지 않았습니다.` : "삭제되었습니다.";
-}
-
 /** 상태 이력 한 줄의 「변경」 칸 */
 export function historyText(h: Schemas["TodoStatusHistoryDto"], labels: EnumValue[]): string {
   if (h.isUnassignedStaffMemberMasked) return `배정 풀림 · ${MASKED_STAFF}(퇴직)`;

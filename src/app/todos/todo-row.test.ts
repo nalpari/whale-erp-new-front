@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { components } from "../../lib/api-types.generated.ts";
-import { assigneeText, deletePreview, deleteResultMessage, doneCountText, dueFullText, dueText, historyActorText, historyText, MASKED_STAFF, overallOf, staffNameText, statusCells, targetText } from "./todo-row.ts";
+import { assigneeText, deletePreview, doneCountText, dueFullText, dueText, historyActorText, historyText, MASKED_STAFF, overallOf, staffNameText, statusCells, targetText } from "./todo-row.ts";
 
 type Item = components["schemas"]["TodoListItemDto"];
 type Detail = components["schemas"]["TodoDetailDto"];
@@ -136,10 +136,6 @@ test("삭제 미리 보기 — 그룹은 대기 행만 지우고 나머지는 �
   );
 });
 
-test("삭제 결과 문구 — 남은 건이 있으면 함께 알린다", () => {
-  assert.equal(deleteResultMessage({ deleted: 1, remaining: 0 }), "삭제되었습니다.");
-  assert.equal(deleteResultMessage({ deleted: 3, remaining: 2 }), "대기 3건을 삭제했습니다. 진행 중 · 완료 2건은 삭제하지 않았습니다.");
-});
 
 const history = (over: Partial<History> = {}): History => ({
   fromStatus: "PENDING",
