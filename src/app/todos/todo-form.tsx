@@ -426,7 +426,7 @@ function TodoFormFields({
           </Stack>
         </div>
 
-        {/* 묶음 이름은 등록 · 수정 모두 「배정내역」(2026-11-09 사용자 지정, 3팀 확인 필요 — 전엔 「배정」) */}
+        {/* 묶음 이름은 등록 「배정 설정」 · 수정 「배정내역」(바꿀 수 없어 보기만 한다)(2026-11-09 사용자 지정, 3팀 확인 필요 — 전엔 「배정」) */}
         {locked && detail ? (
           // 수정 화면 — 바꿀 수 없는 배정내역은 상세 화면 「TO-DO」 표와 같은 상세 표로 보인다. 위에 붙여 늘어나지 않게
           // (2026-11-09 사용자 지정, 3팀 확인 필요 — 막힌 입력칸 · 카드로 두니 고칠 수 있는 칸처럼 보였다)
@@ -449,7 +449,7 @@ function TodoFormFields({
             </div>
           </section>
         ) : (
-          <FormGroup title="배정내역">
+          <FormGroup title="배정 설정">
             <Stack>
               <TopField label="근무지" required>
                 <Select value={form.storeId} aria-required aria-describedby={describe("storeId")} onChange={(e) => handleStoreChange(e.target.value)}>
