@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { Button, DateField, DetailTable, FieldMessage, FormGroup, FormRow, GuideBand, GuideNote, NoticeBand, RequiredMark, SearchField, Select, Textarea, TextField, Toggle, useToast } from "@/components/common";
-import { useCurrentBp, useMenuRole, useStores } from "@/components/site/session-gate";
+import { useAccount, useCurrentBp, useMenuRole, useStores } from "@/components/site/session-gate";
+import { isFranchiseRole } from "@/lib/auth-routes";
 import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { MENU_CODE } from "@/lib/menus";
@@ -175,6 +176,8 @@ function TodoFormFields({
   // BP 마스터 · BP 관리자에게 가맹 점포가 빠지는데, TO-DO 는 점포 단위라 본사 제공 동의와 상관없다(운영 정책 ATT-30).
   const stores = useStores().filter((s) => s.storeStatusCode !== "CLOSED");
   const onFailure = useFailure();
+  // 가맹 마스터 · 가맹 관리자 — 자기 점포 직원을 모두 봐서 근무지 전체도 미리 확인한다(prechecks)
+  const franchiseRole = isFranchiseRole(useAccount().roleTypeCode);
   const [form, setForm] = useState<Form>(() => (detail ? fromDetail(detail) : initialForm(today, stores.length === 1 ? String(stores[0].storeId) : "")));
   // 저장을 눌렀을 때의 칸 오류. 그 칸 값을 고치면 그 칸 문구만 내린다(DESIGN 「오류 문구 내리기」)
   const [errors, setErrors] = useState<Partial<Record<TodoField, string>>>({});
@@ -240,12 +243,12 @@ function TodoFormFields({
       });
   };
   /**
-   * 직원 목록을 미리 받을까 — 개인 배정은 늘, 근무지 전체는 직영 점포만(2026-11-09 사용자 지정, 3팀 확인 필요). 근무지 전체에 배정할 직원이 0명이면
-   * 저장을 누르기 전에 「배정대상」 아래에 알리고 저장을 막는다. 가맹 점포는 본사 계정에게 본사 제공에 동의하지 않은 직원이 목록에서 빠져(ATT-30)
-   * 0명으로 잘못 보일 수 있어 미리 막지 않고 api 가 판단한다.
+   * 직원 목록을 미리 받을까 — 개인 배정은 늘, 근무지 전체는 직영 점포이거나 가맹 마스터 · 가맹 관리자일 때(2026-11-09 사용자 지정, 3팀 확인 필요).
+   * 근무지 전체에 배정할 직원이 0명이면 저장을 누르기 전에 「배정대상」 아래에 알리고 저장을 막는다. 본사 계정(BP 마스터 · BP 관리자 · 플랫폼)이 가맹 점포를 고르면
+   * 본사 제공에 동의하지 않은 직원이 목록에서 빠져(ATT-30) 0명으로 잘못 보일 수 있어 미리 막지 않고 api 가 판단한다. 가맹 역할은 자기 점포 직원을 모두 본다.
    */
   const prechecks = (storeId: string, assigneeType: Form["assigneeType"]) =>
-    assigneeType === "INDIVIDUAL" || stores.find((st) => String(st.storeId) === storeId)?.storeTypeCode === "DIRECT";
+    assigneeType === "INDIVIDUAL" || franchiseRole || stores.find((st) => String(st.storeId) === storeId)?.storeTypeCode === "DIRECT";
   // 가맹 점포는 개인 배정으로 받아 둔 0명 목록이 남아 있어도 막지 않는다(본사 제공 미동의 직원이 빠진 목록이다)
   const noAssignableStaff =
     form.assigneeType === "ALL" && prechecks(form.storeId, "ALL") && pool?.storeId === form.storeId && pool.state === "ok" && pool.staff.length === 0;
