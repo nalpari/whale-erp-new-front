@@ -194,7 +194,7 @@ const JOIN_NOTES: Partial<Record<ContractListItem["staffJoinState"], string>> = 
   INVITED: "가입 대기 중",
   AFFILIATION_PENDING: "소속 확인 중",
   RETURN_PENDING: "복귀 확인 중",
-  LINK_HOLD: "연결 보류",
+  LINK_HOLD: "정보 확인 필요",
   UNDER_AGE: "가입 불가",
   EXPIRED: "초대 만료",
   REJECTED: "초대 거절",

@@ -2,8 +2,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { EnumValue } from "../../lib/enums.ts";
-import type { StaffMemberListItem } from "../../lib/staff-members.ts";
-import { canResendInvitation, contractCell, employmentStatusCells, formatPhone, invitationText, joinCell, rowNumber, statusCells } from "./staff-row.ts";
+import { JOIN_GROUPS, type StaffMemberListItem } from "../../lib/staff-members.ts";
+import { canResendInvitation, contractCell, employmentStatusCells, formatPhone, invitationText, joinCell, JOIN_GROUP_LABELS, rowNumber, statusCells } from "./staff-row.ts";
 
 const TODAY = "2026-10-12";
 // GET /enums/ContractStatus 가 주는 이름(WHALEERP-659) — 칸은 이 이름에 날수 · 날짜 꼬리만 붙인다
@@ -45,28 +45,30 @@ test("번호는 3-4-4, 10자리는 3-3-4", () => {
   assert.equal(formatPhone("12345"), "12345");
 });
 
-test("가입·인증 — 가입 완료 · 초대 발송 · 연결 보류", () => {
+test("가입·인증 — 가입 완료 · 가입 대기 · 정보 확인 필요", () => {
   assert.deepEqual(joinCell(item(), TODAY), { text: "가입 완료", style: "badge-on" });
   assert.deepEqual(
     joinCell(item({ joinState: "INVITED", invitation: { invitationType: "SIGNUP", status: "SENT", lastSentAt: "2026-08-31T09:12:00+09:00", expiresAt: "2026-09-30T09:12:00+09:00", canResend: true } }), TODAY),
-    { text: "초대 발송 · 08-31", style: "badge-off" },
+    { text: "가입 대기 · 08-31", style: "badge-off" },
   );
   assert.deepEqual(
     joinCell(item({ joinState: "LINK_HOLD", linkHold: { linkHoldId: 1, mismatchReason: "PHONE_MISMATCH", verifiedPhoneLast4: "4418", heldAt: "2026-10-08T09:00:00+09:00" } }), TODAY),
-    { text: "연결 보류 · 4일", style: "badge-off" },
+    { text: "정보 확인 필요 · 4일", style: "badge-off" },
   );
 });
 
-test("가입·인증 — 초대 발송일은 한국 날짜다(UTC 로 전날이어도)", () => {
+test("가입·인증 — 가입 대기 날짜는 한국 날짜다(UTC 로 전날이어도)", () => {
   const cell = joinCell(item({ joinState: "INVITED", invitation: { invitationType: "SIGNUP", status: "SENT", lastSentAt: "2026-08-30T15:30:00Z", expiresAt: "2026-09-29T15:30:00Z", canResend: true } }), TODAY);
-  assert.equal(cell.text, "초대 발송 · 08-31");
+  assert.equal(cell.text, "가입 대기 · 08-31");
 });
 
 test("가입·인증 — 나머지 상태", () => {
   const cases: [StaffMemberListItem["joinState"], string, string][] = [
+    ["INVITED", "가입 대기", "badge-off"],
+    ["LINK_HOLD", "정보 확인 필요", "badge-off"],
     ["EXPIRED", "초대 만료", "badge-off"],
     ["REJECTED", "거절", "badge-off"],
-    ["AFFILIATION_PENDING", "소속 추가 확인", "badge-on"],
+    ["AFFILIATION_PENDING", "소속 승인 대기", "badge-on"],
     ["RETURN_PENDING", "복귀 확인", "badge-on"],
     ["UNDER_AGE", "가입 불가(만 19세 미만)", "badge-off"],
     ["DRAFT", "초안", "badge-neutral"],
@@ -205,4 +207,11 @@ test("상세 초대 줄 — 유형 · 상태 · 보낸 한국 날짜, 모르는 
   assert.equal(invitationText(invitation(), types, statuses), "가입 초대 · 발송 · 보낸 날 2026-08-31");
   assert.equal(invitationText(invitation(), [], []), "보낸 날 2026-08-31");
   assert.equal(invitationText(null, types, statuses), "-");
+});
+
+test("가입 상태 필터 라벨 — 목록 필터 체크박스 문구(WHALEERP-660)", () => {
+  assert.deepEqual(
+    JOIN_GROUPS.map((g) => JOIN_GROUP_LABELS[g]),
+    ["가입 완료", "가입 대기", "정보 확인 필요", "소속 승인 대기", "가입 불가"],
+  );
 });

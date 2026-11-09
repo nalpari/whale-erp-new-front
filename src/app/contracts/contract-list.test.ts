@@ -185,6 +185,7 @@ test("상태 칸 안내 — 발송 대기는 직원의 지금 가입 · 초대 �
   assert.deepEqual(statusNotes(base, now), ["가입 대기 중"]);
   // 초대가 만료되면 저장 때 판별한 초대 유형(가입 초대)이 아니라 만료다
   assert.deepEqual(statusNotes({ ...base, staffJoinState: "EXPIRED" }, now), ["초대 만료"]);
+  assert.deepEqual(statusNotes({ ...base, staffJoinState: "LINK_HOLD" }, now), ["정보 확인 필요"]);
   assert.deepEqual(statusNotes({ ...base, status: "PENDING_SIGNATURE", staffJoinState: "AFFILIATION_PENDING" }, now), ["소속 확인 중", "D-24"]);
   // 가입한 직원의 서명 대기는 남은 날만
   assert.deepEqual(statusNotes({ ...base, status: "PENDING_SIGNATURE", staffJoinState: "JOINED" }, now), ["D-24"]);

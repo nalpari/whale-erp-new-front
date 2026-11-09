@@ -56,7 +56,7 @@ test("퇴직한 직원은 버튼 없음", () => {
   assert.equal(retirementActions({ ...joined, employmentStatus: "RETIRED", retiredDate: "2026-10-01" }, today, true), null);
 });
 
-test("가입 전 레코드(초안 · 초대 발송 등)는 버튼 없음", () => {
+test("가입 전 레코드(초안 · 가입 대기 등)는 버튼 없음", () => {
   for (const joinState of ["DRAFT", "INVITED", "EXPIRED", "REJECTED", "LINK_HOLD", "UNDER_AGE", null] as const)
     assert.equal(retirementActions({ ...joined, joinState }, today, true), null, String(joinState));
 });

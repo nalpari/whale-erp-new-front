@@ -67,7 +67,7 @@ test("공지 띠 — 고정 공지가 먼저 와도 게시일 최신 3건, 같�
   assert.deepEqual(got.map((p) => p.postId), [5, 4, 3]);
 });
 
-test("직원 상태 칸 — 초대 발송 · 만료 · 거절 · 소속 추가 확인 · 복귀 확인은 가입 대기, 만 19세 미만은 가입 불가, 가입은 재직 · 퇴직 예정, 가린 행은 비움", () => {
+test("직원 상태 칸 — 가입 대기 · 만료 · 거절 · 소속 승인 대기 · 복귀 확인은 가입 대기, 만 19세 미만은 가입 불가, 가입은 재직 · 퇴직 예정, 가린 행은 비움", () => {
   assert.deepEqual(oneStoreStatusCells(staff({ joinState: "INVITED" })), [{ text: "가입 대기", style: "muted" }]);
   assert.deepEqual(oneStoreStatusCells(staff({ joinState: "AFFILIATION_PENDING" })), [{ text: "가입 대기", style: "muted" }]);
   assert.deepEqual(
