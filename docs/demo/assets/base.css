@@ -10,6 +10,8 @@
 /* 앱 루트 layout 의 html h-full antialiased · body min-h-full */
 html { height: 100%; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 body { min-height: 100%; margin: 0; }
+/* 기본 바탕은 흰색 — 앱 globals.css 와 같다. 화면 이동 전환 중 빈틈에 다른 바탕이 비치지 않게 html 에도 깐다. */
+html, body { background: #fff; }
 
 /* Select 화살표. 컴포넌트는 /icons/... 절대 경로를 쓰는데, 데모는 어느 경로 아래에서 열릴지 몰라 erp.css 기준 상대 경로로 덮는다.
    데모 HTML 에 상대 경로를 쓴 배경 클래스를 새로 만들지 않는다. 앱의 Tailwind 가 docs/ 까지 훑어 그 클래스를 앱 CSS 에 넣고,
@@ -18,12 +20,14 @@ select.bg-\[url\(\/icons\/select-arrow\.svg\)\] { background-image: url(icons/se
 
 /* 비로그인 화면(guest) 사이 이동. 앱의 globals.css 와 같은 전환을 문서 사이 전환(@view-transition)으로 건다.
    @view-transition 은 guest 화면 머리에만 둔다(src/guest.mjs 의 head) — 두 화면이 모두 켜야 전환한다. */
-::view-transition-old(.guest-page) { animation: 150ms cubic-bezier(0.23, 1, 0.32, 1) both guest-fade reverse; }
+/* 이전 화면 스냅숏은 모두 그리지 않고, 들어오는 본문만 흐려진 채 떠오른다 — 사파리에서 긴 본문(홈)의 이전 화면이
+   전환이 끝날 때까지 새 화면 아래 남았다(앱 globals.css 와 같다, 2026-11-06). */
+::view-transition-old(*) { display: none; }
 ::view-transition-new(.guest-page) {
-  animation: 300ms cubic-bezier(0.23, 1, 0.32, 1) 100ms both guest-fade, 300ms cubic-bezier(0.23, 1, 0.32, 1) 100ms both guest-rise;
+  animation: 300ms cubic-bezier(0.23, 1, 0.32, 1) both guest-fade, 300ms cubic-bezier(0.23, 1, 0.32, 1) both guest-rise;
 }
+::view-transition-new(root) { animation: none; }
 ::view-transition-group(guest-header) { animation: none; z-index: 100; }
-::view-transition-old(guest-header) { display: none; }
 ::view-transition-new(guest-header) { animation: none; }
 ::view-transition { pointer-events: none; }
 @keyframes guest-fade { from { opacity: 0; } }
@@ -84,7 +88,9 @@ details[name="guest-faq"][open]::details-content {
     top: anchor(bottom);
     left: anchor(left);
     width: anchor-size(width);
-    position-try-fallbacks: flip-block;
+    /* 늘 칸 아래로 연다 — 아래 공간이 모자라도 위로 뒤집지 않고, 최대 320px 로 두고 넘치면 목록 안에서 스크롤한다(2026-11-06 사용자 지정 — 전엔 flip-block 으로 위로 열렸다). */
+    max-height: 320px;
+    overflow-y: auto;
     margin-block: 4px;
     padding: 6px;
     border: 1px solid #ebebeb;
@@ -140,3 +146,8 @@ details[name="guest-faq"][open]::details-content {
     transition: none;
   }
 }
+
+/* 비로그인 메인 첫 화면의 고래 — 앱 globals.css 의 guest-whale 과 같다. */
+@keyframes guest-whale-float { from { transform: translateY(-6px) rotate(-0.6deg); } to { transform: translateY(6px) rotate(0.6deg); } }
+.guest-whale { animation: guest-whale-float 3.5s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) { .guest-whale { animation: none; } }

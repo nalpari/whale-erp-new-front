@@ -172,6 +172,8 @@
                     <input class="input" type="search" placeholder="제목으로 검색" />
                   </div>
                   <div class="panel__end">
+                    <!-- 실제 화면은 페이지 제목 줄 오른쪽 [문의하기] — 누르면 오른쪽에서 등록 패널이 밀려 나온다(2026-11-06 사용자 지정) -->
+                    <button class="btn btn--primary" type="button">문의하기</button>
                     <div class="seg">
                       <button type="button" aria-pressed="true">전체 <span class="count">7</span></button>
                       <button type="button" aria-pressed="false">답변 대기 <span class="count">1</span></button>
@@ -209,35 +211,35 @@
                         <tr>
                           <td class="k"><a class="tlink" href="inquiry-mine.html">가맹점 초대 메일이 반송됩니다</a></td>
                           <td>점포·설비</td>
-                          <td><span class="badge badge--ok">답변 완료</span></td>
+                          <td><span class="badge badge--quiet">답변 완료</span></td>
                           <td class="mono">08-30</td>
                           <td class="mono">09-02</td>
                         </tr>
                         <tr>
                           <td class="k"><a class="tlink" href="inquiry-mine.html">요금 PLAN 을 바꾸면 언제부터 적용되나요</a></td>
                           <td>요금·구독</td>
-                          <td><span class="badge badge--ok">답변 완료</span></td>
+                          <td><span class="badge badge--quiet">답변 완료</span></td>
                           <td class="mono">08-21</td>
                           <td class="mono">08-22</td>
                         </tr>
                         <tr>
                           <td class="k"><a class="tlink" href="inquiry-mine.html">근무스케줄 복사가 지난주 것을 가져오지 않습니다</a></td>
                           <td>직원·근로</td>
-                          <td><span class="badge badge--ok">답변 완료</span></td>
+                          <td><span class="badge badge--quiet">답변 완료</span></td>
                           <td class="mono">08-12</td>
                           <td class="mono">08-13</td>
                         </tr>
                         <tr>
                           <td class="k"><a class="tlink" href="inquiry-mine.html">KIOSK 결제 내역이 매출조회에 안 잡힙니다</a></td>
                           <td>점포·설비</td>
-                          <td><span class="badge badge--ok">답변 완료</span></td>
+                          <td><span class="badge badge--quiet">답변 완료</span></td>
                           <td class="mono">07-30</td>
                           <td class="mono">08-01</td>
                         </tr>
                         <tr>
                           <td class="k"><a class="tlink" href="inquiry-mine.html">관리자 계정을 다른 사람에게 넘길 수 있나요</a></td>
                           <td>기타</td>
-                          <td><span class="badge badge--ok">답변 완료</span></td>
+                          <td><span class="badge badge--quiet">답변 완료</span></td>
                           <td class="mono">07-18</td>
                           <td class="mono">07-18</td>
                         </tr>
@@ -245,20 +247,24 @@
                   </table>
                 </div>
                 <div class="panel__note">
-                  <b>자기가 등록한 문의만</b> 보인다. 상태는 접수 → 처리 중 → 답변 완료 셋이고, 답변이 달리면 알림함으로 알려 준다. 메일은 업무 쪽이 따로 보낸다(운영 정책 NTF-03, 2026-10-13).
+                  <b>자기가 등록한 문의만</b> 보인다. 상태는 접수 → 처리 중 → 답변 완료 셋이고(접수 빨강 · 처리 중 파랑 · 답변 완료 회색 꼬리표 — 커뮤니티 관리 목록 · 상세와 같은 색, 2026-11-06 사용자 지정), 답변이 달리면 알림함으로 알려 준다. 메일은 업무 쪽이 따로 보낸다(운영 정책 NTF-03, 2026-10-13).
                 </div>
               </div>
                 </section>
                 <section class="stack--lg" style="display: flex; flex-direction: column">
+                <!-- 문의하기 등록 패널 — 실제 화면은 목록 위로 오른쪽에서 464px 패널이 밀려 나오고(바탕창 · 바깥을 누르면 닫힘, 저장 중엔 닫히지 않음),
+                     BP 관리자 등록 패널과 같은 모양이다. 이 목업은 내용과 버튼 자리만 보인다(2026-11-06 사용자 지정 — 전엔 탭 안 상자 · [문의 등록]). -->
                 <div class="panel">
                   <div class="panel__head">
                     <h2 class="t-h2">문의하기</h2>
+                    <div class="panel__end"><span class="tag">슬라이드 패널 · 464px</span></div>
                   </div>
                   <div class="panel__body">
                     <div class="field">
-                      <label for="q-cat">분류</label>
+                      <label for="q-cat">분류 <span style="color:#ef6363">*</span></label>
                       <!-- 분류는 공통코드 INQUIRY_CATEGORY(WHALEERP-284). -->
                       <select class="select" id="q-cat">
+                        <option>선택</option>
                         <option>가입·계정</option>
                         <option>직원·근로</option>
                         <option>요금·구독</option>
@@ -267,32 +273,34 @@
                       </select>
                     </div>
                     <div class="field" style="margin-top: var(--s-3)">
-                      <label for="q-title">제목</label>
-                      <input class="input" id="q-title" placeholder="한 줄로 적어 주세요" />
+                      <label for="q-title">제목 <span style="color:#ef6363">*</span></label>
+                      <input class="input" id="q-title" placeholder="제목을 입력해 주세요." />
                     </div>
                     <div class="field" style="margin-top: var(--s-3)">
-                      <label for="q-body">내용</label>
-                      <textarea class="textarea" id="q-body" rows="5" placeholder="어떤 화면에서 무엇을 하려다 막혔는지 적어 주시면 빨리 답할 수 있습니다."></textarea>
+                      <label for="q-body">내용 <span style="color:#ef6363">*</span></label>
+                      <textarea class="textarea" id="q-body" rows="5" placeholder="문의 내용을 입력해 주세요.&#10;이용 중 문제가 발생한 화면을 함께 알려 주시면 더 빠르게 답변해 드릴 수 있습니다."></textarea>
                     </div>
-                    <!-- 첨부파일 · 운영 정책 CNT-18 (2026-10-08 재영). 등록할 때만 붙이고 뒤에는 더하거나 빼지 않는다. 저장소가 정해져(WHALEERP-587) 1차에서 첨부를 함께 만든다(WHALEERP-281, 2026-10-19 재영). -->
-                    <div class="field" style="margin-top: var(--s-3)" data-attach>
-                      <label for="q-file">첨부파일</label>
-                      <input class="input" id="q-file" type="file" multiple accept=".jpg,.jpeg,.png,.pdf" />
-                      <span class="help">이미지·PDF, 5개까지, 파일당 10MB</span>
-                      <ul style="list-style: none; margin: var(--s-2) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-1)" data-attach-list>
-                        <li class="spread"><span>주휴수당_0원_화면.png <span class="mono subtle">412 KB</span></span><button class="tbtn" type="button" data-attach-del>빼기</button></li>
-                        <li class="spread"><span>9월_급여명세서_배정숙.pdf <span class="mono subtle">1.2 MB</span></span><button class="tbtn" type="button" data-attach-del>빼기</button></li>
+                    <!-- 첨부파일 · 운영 정책 CNT-18 (2026-10-08 재영). 등록할 때만 붙이고 뒤에는 더하거나 빼지 않는다.
+                         공통 첨부 칸(AttachmentField) — 공지사항 등록과 같은 모양: [파일 선택] · 안내 · 목록(34px 줄 · 이름 · 크기 · 「빼기」, 그림은 64px 둥근 썸네일),
+                         형식 · 10MB 초과 · 6번째 파일은 고를 때 빼고 목록 아래 파일명과 「└ 까닭」(빨간 글자)을 보인다(2026-11-06 사용자 지정). -->
+                    <div class="field" style="margin-top: var(--s-3)">
+                      <label>첨부파일 <span class="subtle">2 / 5</span></label>
+                      <div><button class="btn btn--secondary" type="button">파일 선택</button></div>
+                      <span class="help">JPG, PNG, PDF 파일을 최대 5개까지 첨부할 수 있습니다. (파일당 10MB 이하)</span>
+                      <ul style="list-style: none; margin: var(--s-2) 0 0; padding: 0; display: flex; flex-direction: column">
+                        <li class="spread" style="gap:10px;padding:12px 0;border-bottom:1px solid #eeeeee"><span style="display:flex;align-items:center;gap:10px"><span style="display:grid;place-items:center;width:64px;height:64px;flex:none;border:1px solid var(--line, #edeef1);border-radius:8px;background:#f8f9fb;font-size:12px;color:#888">PNG</span><span>주휴수당_0원_화면.png</span></span><span><span class="mono subtle">412KB</span> <button class="tbtn" type="button">빼기</button></span></li>
+                        <li class="spread" style="height:34px;border-bottom:1px solid #eeeeee"><span>9월_급여명세서_배정숙.pdf</span><span><span class="mono subtle">1.2MB</span> <button class="tbtn" type="button">빼기</button></span></li>
+                        <li style="padding:6px 0;border-bottom:1px solid #eeeeee"><div>근로기준법_질의회시집.pdf</div><div style="padding-left:6px;color:#ef6363"><span style="color:#999">└</span> 10MB 이하 파일만 첨부할 수 있습니다.</div></li>
                       </ul>
-                      <p class="note" style="margin: var(--s-2) 0 0" data-attach-err hidden>
-                        <span data-icon="alert" data-icon-size="14"></span>
-                        <span></span>
-                      </p>
                     </div>
-                    <button class="btn btn--primary btn--block" type="button" style="margin-top: var(--s-4)">문의 등록</button>
+                    <div style="display:flex;justify-content:center;gap:6px;margin-top: var(--s-4)">
+                      <button class="btn btn--ghost" type="button">취소</button>
+                      <button class="btn btn--primary" type="button">저장</button>
+                    </div>
                   </div>
                   <div class="panel__note">
                     등록 건수에 제한은 없다(429 접수 제한 없음). 같은 관리자가 제목·내용이 같은 문의를 5분 안에 다시 올리면 409 로 막고 알린다(2026-10-14 재영).
-                    등록에 성공하면 「문의를 등록했습니다」 토스트를 띄운다. 409 나 저장 실패 때는 쓴 내용과 올린 파일을 그대로 두고 사유와 다시 [문의 등록]을 누르라는 안내를 보인다(WHALEERP-284).
+                    빈 칸은 그 칸 바로 아래 빨간 글자로 알린다. 등록에 성공하면 토스트를 띄우고 패널을 닫는다. 409 나 저장 실패 때는 쓴 내용과 올린 파일을 그대로 두고 패널 위 빨간 띠에 사유와 「입력한 값과 올린 파일은 그대로 두었습니다.」를 보인다(WHALEERP-284).
                   </div>
                 </div>
                 </section>

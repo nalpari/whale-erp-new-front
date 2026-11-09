@@ -115,6 +115,9 @@ export function RolesScreen({
             rows={roles}
             rowKey={(r) => r.roleGroupId}
             rowState={(r) => (!creating && r.roleGroupId === selected ? "selected" : undefined)}
+            // 비었으면 열 이름 줄 아래 빈 칸이 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정). 검색 조건이 없어 「등록된 …」만 쓴다
+            fillEmpty
+            empty="등록된 권한 그룹이 없습니다."
           />
         </section>
 

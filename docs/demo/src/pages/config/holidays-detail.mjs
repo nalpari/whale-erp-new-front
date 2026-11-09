@@ -118,7 +118,7 @@ export default ({ A, R }) => {
         HEAD +
           body +
           c.buttons(
-            ui.button("목록", { variant: "off", href: link(R, "config/holidays.html") }),
+            ui.button("목록", { href: link(R, "config/holidays.html") }),
             x.dialogTrigger("삭제", delId, "soft"),
             x.dialogTrigger("강제 종료", endId, "soft"),
             ui.button("수정", { href: link(R, "config/holidays-edit.html") }),

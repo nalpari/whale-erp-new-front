@@ -39,7 +39,7 @@ export function StaffTable({
   pageSize,
   today,
   listHref,
-  empty = "조회된 직원이 없습니다.",
+  empty = "조건에 맞는 직원이 없습니다.",
   at = (path) => path,
 }: {
   items: StaffMemberListItem[];

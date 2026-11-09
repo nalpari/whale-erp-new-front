@@ -120,7 +120,7 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
     );
   } else if (search === null) {
     // 범위에 드는 점포가 이 탭에 없다(다른 BP 탭에서 복사한 범위 등) — 쿼리를 빼면 BP 전체가 보이므로 부르지 않는다
-    body = <Notice text="상단 범위에 해당하는 점포가 이 탭에 없습니다. 상단에서 범위를 다시 고르세요." />;
+    body = <Notice text="상단 범위에 해당하는 점포가 이 탭에 없습니다. 상단에서 범위를 다시 선택하세요." />;
   } else if (oneStore !== null) {
     body = <OneStoreScreen storeId={oneStore} reloadKey={String(reloads)} />;
   } else {
@@ -242,6 +242,8 @@ function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: bo
   const { staff, stores, todayAttendance: today, myInquiries: inquiries } = cards;
   return (
     <div className="grid auto-cols-fr grid-flow-col gap-[12px]">
+      {/* 운영 점포 → 재직 직원 → 오늘 출근 → 내 문의 순 — 점포가 먼저, 그 점포의 사람 · 출근이 뒤(2026-11-06 사용자 지정 — 전엔 재직 직원이 맨 앞) */}
+      <Figure href={canOpen("/stores") ? bpPath(bp, scopeHref("/stores")) : null} label="운영 점포" value={stores.total} unit="개점" sub={`직영 ${stores.direct} · 가맹 ${stores.franchise}`} />
       {staff && (
         <Figure
           href={canOpen("/staff-members") ? bpPath(bp, scopeHref("/staff-members")) : null}
@@ -252,7 +254,6 @@ function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: bo
           sub={`정직원 ${staff.fullTime} · 파트 ${staff.partTime}`}
         />
       )}
-      <Figure href={canOpen("/stores") ? bpPath(bp, scopeHref("/stores")) : null} label="운영 점포" value={stores.total} unit="개점" sub={`직영 ${stores.direct} · 가맹 ${stores.franchise}`} />
       {today && (
         <Figure
           href={canOpen("/attendance-records") ? bpPath(bp, scopeHref("/attendance-records")) : null}

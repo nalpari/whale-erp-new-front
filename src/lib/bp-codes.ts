@@ -33,6 +33,13 @@ const json = async (method: string, body?: unknown): Promise<RequestInit> => ({
  * 쪽을 나누지 않고 한 목록으로 보인다(2026-10-27 사용자 지정) — api 쪽 크기 상한씩 끝까지 받아 이어 붙인다.
  * 그룹 코드 · 그룹명은 일부 일치 · 대소문자 무시로 거른다.
  */
+/** BP 공통코드 그룹이 몇 개인지만 — 한 쪽(1건)만 받아 total 을 본다(리뷰 반영 — 전엔 전부 받았다) */
+export async function countBpCodeGroups(): Promise<number> {
+  const params = new URLSearchParams({ page: "1", pageSize: "1", manageOwnerCodes: "PLATFORM_PROVIDED" });
+  const list: BpCodeGroupList = await request(`/bp-code-groups?${params}`, await json("GET"));
+  return list.total;
+}
+
 export async function getBpCodeGroups({ groupCode = "", groupName = "" }: { groupCode?: string; groupName?: string } = {}): Promise<BpCodeGroupList> {
   const items: BpCodeGroup[] = [];
   for (let page = 1; ; page++) {

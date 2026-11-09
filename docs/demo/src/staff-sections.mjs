@@ -7,6 +7,7 @@ import * as p from "./staff-parts.mjs";
 import { link } from "./site.mjs";
 import { req } from "./biz-form.mjs";
 import { withIcon } from "./pages/system/admins.mjs";
+import { storeFilter as pickStores } from "./store-filter.mjs";
 
 // 급여명세서 작성 팝업: 점포 · 이름으로 표 줄을 좁히고, 직원을 고르면 「작성」을 켠다. erp.js 목록 거르기는 dialog 안을 건너뛰어 이 부품에 붙여 둔다.
 const PICK_SCRIPT = `<script>
@@ -54,7 +55,7 @@ export function staffSections({ A, R }) {
   const offBtn = (label, a = {}) => ui.button(label, { variant: "off", ...a });
   // 직원관리의 목록은 맨 앞에 순번(2026-10-02 재영). 순번은 내림차순 — 첫 줄이 전체 건수다(2026-10-13 재영).
   // 목록 화면 표 — 비면 열 이름 줄을 두고 빈 칸이 남는 높이를 채운다(ui.fillTable, 앱 DataTable fillEmpty, 2026-11-05 사용자 지정, 3팀 확인 필요).
-  // 데모 목록은 늘 줄이 있어 거른 결과가 비었을 때의 「조회된 …」 문구를 넘긴다 — 「등록된 …」(아예 없음)은 앱만 가른다
+  // 데모 목록은 늘 줄이 있어 거른 결과가 비었을 때의 「조건에 맞는 …」 문구를 넘긴다 — 「등록된 …」(아예 없음)은 앱만 가른다
   const numberedList = (columns, rows, empty, total = rows.length) =>
     ui.fillTable([{ header: "순번", width: "w-[60px]" }, ...columns], rows.map((r, i) => [total - i, ...r]), empty);
   const pageNav = (n) => `<div class="pt-[14px]">${ui.pagination(A, 1, n)}</div>`;
@@ -107,7 +108,7 @@ export function staffSections({ A, R }) {
         `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
     ) +
     // 순번은 내림차순 — 최근 등록이 먼저라 1쪽 첫 줄이 전체 건수다(2026-10-12).
-    ui.fillTable(staffCols, staffRows.map(([name, tel, ...rest], i) => [63 - i, name, tel === "-" ? tel : withIcon("phone", tel), ...rest]), "조회된 직원이 없습니다.") +
+    ui.fillTable(staffCols, staffRows.map(([name, tel, ...rest], i) => [63 - i, name, tel === "-" ? tel : withIcon("phone", tel), ...rest]), "조건에 맞는 직원이 없습니다.") +
     pageNav(4);
 
   // ── 근로계약 ──
@@ -153,7 +154,7 @@ export function staffSections({ A, R }) {
         { header: "상태", width: "w-[220px]" },
       ],
       contractRows,
-      "조회된 근로계약이 없습니다.",
+      "조건에 맞는 근로계약이 없습니다.",
     ) +
     p.note("「무기계약 전환」은 파트타이머를 반복 갱신해 첫 계약부터 2년이 넘는 계약입니다. 다시 갱신하면 기간의 정함이 없는 계약이 됩니다.") +
     pageNav(7);
@@ -466,39 +467,49 @@ export function staffSections({ A, R }) {
   const payrollTab = `<div class="flex flex-1 flex-col gap-[12px]">${p.weekNav(A, "pay-months", "2026-08-01", { month: true })}<div id="pay-months" class="flex flex-1 flex-col">${months}</div></div>${pickDialog}`;
 
   // ── TO-DO ──
-  const todoPanel = "todo-form";
-  // TO-DO 리스트 관리: 왼쪽 필터(점포 · 담당 · 상태) + 목록. 근무지 체크는 점포 칸으로 바꿨다(2026-10-02 재영).
+  // TO-DO 리스트 관리 — 앱 src/app/todos(page.tsx · todo-filter.tsx · todo-table.tsx)와 같게 맞췄다(2026-11-09 사용자 지정, 3팀 확인 필요).
+  // 왼쪽 필터: 근무지(점포 고르기 칩) · 상태(모두 체크) · 담당(배정 유형 선택칸) · 긴급(「긴급만」) · 수행예정(기간 두 칸)
   const todosFilter = ui.filterPanel(A, [
-    storeFilter(),
-    ui.filterSection("담당", ui.searchField(A, { placeholder: "이름" }), { tight: true }),
-    ui.filterSection("상태", ["대기", "진행 중", "완료"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
+    ui.filterSection("근무지", pickStores(A), { tight: true }),
+    ui.filterSection("상태", ["대기", "진행 중", "완료"].map((t) => ui.checkbox(A, t, true)).join("")),
+    ui.filterSection("담당직원", ui.select(["전체", "개인", "근무지 전체"], { "aria-label": "담당직원" }), { tight: true }),
+    ui.filterSection("긴급", ui.checkbox(A, "긴급만", false)),
+    ui.filterSection(
+      "수행예정",
+      `<div class="flex flex-col gap-[6px]">${ui.dateField(A, { label: "수행예정 시작" })}${ui.dateField(A, { label: "수행예정 끝" })}</div>`,
+      { tight: true, last: true },
+    ),
   ]);
-  // 대기 중인 TO-DO 는 「수정」으로 슬라이드 패널을 열어 고친다(2026-10-02 재영). 패널은 아래 todoEdits.
-  const todoEditIds = [0, 1, 2].map(() => ui.uid("todo-edit"));
-  const editBtn = (i) => ui.slideTrigger("수정", todoEditIds[i], "off");
+  // 상태 칸 — 앱 todo-row.ts statusCells: 상태 하나만(대기 회색 꼬리표 · 진행 중 파랑 배지 · 완료 흐린 글자). 완료 인원은 옆 「완료 / 배정 직원」 칸(2026-11-09 사용자 지정)
+  const todoStatus = (label) => (label === "대기" ? p.tag("quiet", label) : label === "진행 중" ? p.tag("ok", label) : p.sub(label));
+  // TO-DO 제목은 상세로 가는 파란 링크, 긴급이면 빨간 배지(앱 todo-table.tsx). 수정은 상세에서 한다 — 목록의 [수정] 열은 뺐다
+  const todoTitle = (title, urgent = false) =>
+    `<span class="inline-flex max-w-full items-center gap-[6px]"><a class="truncate text-erp-link hover:underline" href="${link(R, "staff/todos-detail.html")}">${title}</a>${urgent ? ui.badge("off", "긴급") : ""}</span>`;
   const todoTab =
-    ui.listToolbar(12, ui.slideTrigger("TO-DO 등록", todoPanel)) +
+    // [TO-DO 등록]은 화면 제목 줄 오른쪽(todos.mjs titleRight) — 목록 위 줄은 「총 N 건」과 페이지당 건수(앱 ListToolbar · TodoPageSize)
+    ui.listToolbar(12, `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`) +
     numberedList(
       [
-        { header: "담당직원", width: "w-[140px]" }, // 앱 todo-table.tsx, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「담당」
-        { header: "근무지", width: "w-[140px]" },
+        { header: "근무지", width: "w-[300px]", align: "left" }, // 왼쪽 정렬(2026-11-09 사용자 지정)
         { header: "TO-DO", align: "left" },
-        { header: "수행 예정", width: "w-[140px]" },
-        { header: "상태", width: "w-[160px]" },
-        { header: "", width: "w-[100px]" },
+        { header: "수행예정", width: "w-[180px]", align: "left" }, // 늘 YYYY-MM-DD, 시간이 있으면 뒤에(앱 dueFullText)
+        { header: "담당직원", width: "w-[200px]", align: "left" }, // 앱 todo-table.tsx — 「개인 · 이름」 · 「개인 · 이름 외 N명」 · 「전체 · 각자 수행」 · 「전체 · 한 명만 수행」(2026-11-09 사용자 지정)
+        { header: "상태", width: "w-[120px]" }, // 상태 배지 하나 · 옆 칸 완료 / 배정 직원(앱 todo-table.tsx, 2026-11-09 사용자 지정)
+        { header: "완료 / 배정 직원", width: "w-[130px]" },
       ],
       [
-        ["전체 · 각자", "모리커피 서초점", `본사 위생점검 대비 냉장고 정리 ${p.tag("risk", "긴급")}`, "09-03", p.tag("warn", "진행 중"), ""],
-        ["전체 · 한 명", "모리커피 서초점", "가을 신메뉴 POP 교체", "09-04 10:00", p.tag("quiet", "대기"), editBtn(0)],
-        ["서지안", "모리커피 서초점", "신규 원두 시음 기록 제출", "09-05", p.tag("quiet", "대기"), editBtn(1)],
-        ["오세라", "모리커피 서초점", "분기 재물조사 입회", "09-08 14:00", p.tag("quiet", "대기"), editBtn(2)],
-        ["전체 · 한 명", "온기식당 판교점", "여름 프로모션 POP 철거", "08-25", `${p.tag("ok", "완료")} ${p.sub("문태경")}`, ""],
-        ["권도윤", "모리커피 서초점", "신메뉴 시식 교육 참석", "08-28 14:00", p.tag("ok", "완료"), ""],
+        ["모리커피 서초점", todoTitle("본사 위생점검 대비 냉장고 정리", true), "2026-09-03", "전체 · 각자 수행", todoStatus("진행 중"), "2 / 4명"],
+        ["모리커피 서초점", todoTitle("가을 신메뉴 POP 교체"), "2026-09-04 10:00", "전체 · 한 명만 수행", todoStatus("대기"), "0 / 4명"],
+        ["모리커피 서초점", todoTitle("신규 원두 시음 기록 제출"), "2026-09-05", "개인 · 서지안", todoStatus("대기"), "0 / 1명"],
+        ["모리커피 서초점", todoTitle("분기 재물조사 입회"), "2026-09-08 14:00", "개인 · 오세라 외 1명", todoStatus("대기"), "0 / 2명"],
+        ["온기식당 판교점", todoTitle("여름 프로모션 POP 철거"), "2026-08-25", "전체 · 한 명만 수행", todoStatus("완료"), "1 / 3명"],
+        ["모리커피 서초점", todoTitle("신메뉴 시식 교육 참석"), "2026-08-28 14:00", "개인 · 권도윤", todoStatus("완료"), "1 / 1명"],
       ],
-      "조회된 TO-DO 가 없습니다.",
+      // 앱은 아예 없으면 「등록된 TO-DO 가 없습니다.」, 거른 결과가 없으면 아래 문구
+      "조건에 맞는 TO-DO 가 없습니다.",
       12,
     ) +
-    pageNav(2);
+    pageNav(1);
 
   // ── 슬라이드 패널 ──
   const panelHead = (title, right = "") => `<div class="flex items-center gap-[6px]"><h2 class="flex-1 text-[18px] font-semibold text-erp-ink">${title}</h2>${right}</div>`;
@@ -551,7 +562,7 @@ export function staffSections({ A, R }) {
   );
   const delDialog = x.dialog(
     delId,
-    "이 근무스케줄을 삭제하시겠습니까?",
+    "근무스케줄을 삭제하시겠습니까?", // 앱 schedule-form.tsx 와 같은 제목 · 기본 버튼(2026-11-06 사용자 지정)
     "서지안 · 2026-09-08 근무스케줄을 삭제합니다.",
     offBtn("취소", { "data-close": true }) + ui.button("삭제", { "data-close": true }),
   );
@@ -598,65 +609,6 @@ export function staffSections({ A, R }) {
       ]) +
       ui.panelButtons("취소", "저장"),
   );
-  // 배정 대상·수행 방식 라벨과 ⓘ 툴팁(2026-10-08 재영)
-  const TIP_TARGET = "개인: 고른 직원에게만 보입니다. 여러 명을 고르면 한 사람에 한 건씩 생깁니다.\n근무지 전체: 그 근무지의 재직 직원 모두에게 보입니다.";
-  const TIP_MODE = "각자 수행: 직원마다 한 건씩 생기고 저마다 완료합니다.\n한 명 수행: 한 건을 함께 보고, 한 명이 완료하면 모두에게 완료로 보입니다. 등록한 뒤에는 바꿀 수 없습니다.";
-  const tipLabel = (label, text) => `<span class="flex items-center gap-[6px] text-[14px] font-medium text-erp-label">${label}${p.infoTip(label, text)}</span>`;
-  // 개인 배정 직원 고르기(STAFF-25 확정 — 한 명 이상, 직원마다 1건). 개인일 때만 보이고, 수행 방식은 근무지 전체일 때만 보인다(data-when).
-  // 고른 근무지의 재직 직원을 이름·휴대전화번호 끝자리로 찾고, 고른 직원은 칩. 데모라 칩의 ×·근무지 변경 비우기·저장 막기는 안내 문구로만 보인다.
-  const staffChip = (name) =>
-    `<li class="flex h-[34px] items-center gap-[8px] rounded-[2px] border border-erp-field-line bg-white pr-[4px] pl-[10px] text-[14px]"><span class="font-medium">${name}</span><button type="button" aria-label="${name} 빼기" class="grid size-[26px] place-items-center rounded-[2px] text-erp-label hover:text-erp-ink">×</button></li>`;
-  const staffPick = (radio, picked = []) =>
-    `<div class="flex flex-col gap-[8px]" data-when="${radio}:개인"><span class="text-[14px] font-medium text-erp-label">직원</span>${ui.searchField(A, { placeholder: "이름 또는 휴대전화번호 끝자리" })}<ul aria-label="고른 직원" class="flex flex-wrap gap-[6px]">${picked.map(staffChip).join("")}</ul>${p.help("고른 근무지의 재직 직원 중 한 명 이상 고르고, 직원마다 1건씩 생긴다. 근무지를 바꾸면 비우고, 아무도 고르지 않으면 「직원을 한 명 이상 골라 주세요.」로 막는다.")}</div>`;
-  const todoForm = ui.slidePanel(
-    todoPanel,
-    "TO-DO 등록",
-    panelHead("TO-DO 등록") +
-      ui.formGroup(
-        "내용",
-        ui.field("제목", ui.textField({ value: "본사 위생점검 대비 냉장고 정리" })),
-        ui.field("내용", ui.textarea({ rows: 3, value: "선반별로 비우고 유통기한 지난 재료는 폐기 후 사진 남길 것" })),
-      ) +
-      ui.formGroup(
-        "배정",
-        ui.field("근무지", ui.select(["모리커피 서초점", "온기식당 판교점"])),
-        `<div class="flex flex-col gap-[8px]">${tipLabel("배정 대상", TIP_TARGET)}${p.radios("todo-target", ["개인", "근무지 전체"], "근무지 전체")}</div>`,
-        staffPick("todo-target"),
-        `<div class="flex flex-col gap-[8px]" data-when="todo-target:근무지 전체">${tipLabel("수행 방식", TIP_MODE)}${p.radios("todo-mode", ["각자 수행", "한 명 수행"])}${p.help("등록 후에는 바꿀 수 없다 · 각자 수행은 직원당 1건, 한 명 수행은 공유 1건")}</div>`,
-        ui.formRow(p.fieldH("수행 예정 날짜", ui.dateField(A, { label: "수행 예정 날짜", value: "2026-09-03" }), ""), p.fieldH("시간", p.timeField("", "시간"), "선택")),
-        `<div class="flex flex-col gap-[8px]">${x.toggle("긴급", true)}</div>`,
-      ) +
-      ui.panelButtons("취소", "저장"), // 등록 · 수정 모두 [저장](앱 todo-form.tsx, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「등록하고 배정」)
-  );
-
-  // TO-DO 수정: 등록과 같은 칸. 수행 방식은 등록 후에 바꿀 수 없어(목업) 글자로만 보인다. 아래에 삭제.
-  const todoEdit = (id, { title, body, store, person, mode, date, time = "", urgent = false }) => {
-    const target = person ? "개인" : "근무지 전체";
-    return ui.slidePanel(
-      id,
-      "TO-DO 수정",
-      panelHead("TO-DO 수정", p.tag("quiet", "대기")) +
-        ui.formGroup("내용", ui.field("제목", ui.textField({ value: title })), ui.field("내용", ui.textarea({ rows: 3, value: body }))) +
-        ui.formGroup(
-          "배정",
-          ui.field("근무지", ui.select(["모리커피 서초점", "온기식당 판교점"], { value: store })),
-          `<div class="flex flex-col gap-[8px]">${tipLabel("배정 대상", TIP_TARGET)}${p.radios(`${id}-target`, ["개인", "근무지 전체"], target)}</div>`,
-          staffPick(`${id}-target`, person ? [person] : []),
-          `<div class="flex flex-col gap-[8px]" data-when="${id}-target:근무지 전체">${tipLabel("수행 방식", TIP_MODE)}<span class="text-[14px] text-erp-ink">${mode}</span>${p.help("등록 후에는 바꿀 수 없다.")}</div>`,
-          ui.formRow(p.fieldH("수행 예정 날짜", ui.dateField(A, { label: "수행 예정 날짜", value: date }), ""), p.fieldH("시간", p.timeField(time, "시간"), "선택")),
-          `<div class="flex flex-col gap-[8px]">${x.toggle("긴급", urgent)}</div>`,
-        ) +
-        `<div class="flex justify-between gap-[6px]">${p.ask("삭제", "soft", "이 TO-DO 를 삭제하시겠습니까?", `「${title}」을 지웁니다. 배정된 직원 근무 앱에서도 사라집니다.`)}<span class="flex gap-[6px]">${offBtn("취소", { "data-close": true })}${ui.button("저장", { "data-close": true })}</span></div>`,
-    );
-  };
-  const todoEdits = [
-    { title: "가을 신메뉴 POP 교체", body: "여름 POP 를 떼고 가을 신메뉴 POP 를 붙인다", store: "모리커피 서초점", mode: "한 명 수행", date: "2026-09-04", time: "10:00" },
-    { title: "신규 원두 시음 기록 제출", body: "시음 노트 양식에 맛·향을 적어 제출", store: "모리커피 서초점", person: "서지안", mode: "각자 수행", date: "2026-09-05" },
-    { title: "분기 재물조사 입회", body: "본사 담당자 방문 때 재고 수량 확인에 입회", store: "모리커피 서초점", person: "오세라", mode: "각자 수행", date: "2026-09-08", time: "14:00" },
-  ]
-    .map((t, i) => todoEdit(todoEditIds[i], t))
-    .join("");
-
   // 가입 연결 확인: 목업 docs/mockup/staff/invites-holds.html 의 별도 화면을 직원 목록의 슬라이드 패널로 흡수했다(2026-10-02 재영, 데모만). 하준서 이름을 누르면 열린다.
   const approveId = x.dialogId();
   const reinviteId = x.dialogId();
@@ -688,5 +640,5 @@ export function staffSections({ A, R }) {
       ui.button("취소", { variant: "off", "data-close": true }) + ui.button("재초대", { "data-close": true }),
     );
 
-  return { L, N, holdPanel, holdForm, proxyForm, todoEdits, listFilter, attendFilter, contractsFilter, payslipsFilter, todosFilter, listTab, contractsTab, schedTab, attendTab, payrollTab, todoTab, schedForm, delDialog, fixForm, todoForm };
+  return { L, N, holdPanel, holdForm, proxyForm, listFilter, attendFilter, contractsFilter, payslipsFilter, todosFilter, listTab, contractsTab, schedTab, attendTab, payrollTab, todoTab, schedForm, delDialog, fixForm };
 }

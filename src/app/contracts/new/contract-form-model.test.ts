@@ -113,7 +113,7 @@ test("다 채운 폼은 막을 것이 없다", () => {
 test("빈 폼 · 잘못된 값은 이유를 말한다", () => {
   const p = problems(initialForm());
   assert.ok(p.includes("이름을 입력하세요."));
-  assert.ok(p.includes("소속 근무지를 고르세요."));
+  assert.ok(p.includes("소속 근무지를 선택하세요."));
   // 정직원도 시급이다
   assert.ok(p.includes("시급을 입력하세요."));
   assert.ok(problems(filled({ employmentType: "FULL_TIME", wage: "" })).includes("시급을 입력하세요."));
@@ -402,7 +402,7 @@ test("종이 계약 날인본 파일: 형식은 enum 값으로, 10MB 까지", ()
   assert.equal(paperFileAccept(["PDF"]), "application/pdf,.pdf");
   assert.equal(paperFileError({ name: "계약서.PDF", type: "", size: 10 }, types), null);
   assert.equal(paperFileError({ name: "a.hwp", type: "application/x-hwp", size: 10 }, types), "PDF · JPG · PNG 파일만 올릴 수 있습니다.");
-  assert.equal(paperFileError({ name: "a.pdf", type: "application/pdf", size: 0 }, types), "빈 파일입니다. 다른 파일을 골라 주세요.");
+  assert.equal(paperFileError({ name: "a.pdf", type: "application/pdf", size: 0 }, types), "빈 파일입니다. 다른 파일을 선택해 주세요.");
   assert.equal(paperFileError({ name: "a.jpg", type: "image/jpeg", size: PAPER_FILE_MAX_BYTES + 1 }, types), "파일은 10MB까지 올릴 수 있습니다.");
 });
 
@@ -414,8 +414,8 @@ test("확인창 한 줄 — 누구 계약인지 이름 · 기간을 앞에 둔�
 });
 
 test("성별 · 외국인 여부 — 초안 저장은 성별을 골라야 하고, 본문에 실린다(WHALEERP-125 본인 대조)", () => {
-  assert.ok(problems(filled({ gender: "" })).includes("성별을 고르세요."));
-  assert.ok(!problems(filled({ gender: "" }), true).includes("성별을 고르세요.")); // 임시저장은 비워도 된다
+  assert.ok(problems(filled({ gender: "" })).includes("성별을 선택하세요."));
+  assert.ok(!problems(filled({ gender: "" }), true).includes("성별을 선택하세요.")); // 임시저장은 비워도 된다
   assert.deepEqual(problems(filled()), []);
   const body = toBody(filled({ gender: "FEMALE", isForeigner: true }));
   assert.equal(body.gender, "FEMALE");

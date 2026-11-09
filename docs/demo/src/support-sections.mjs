@@ -9,15 +9,18 @@ export function supportSections({ A, R }) {
   const L = (path) => link(R, path);
   const pageNav = (n) => `<div class="pt-[14px]">${ui.pagination(A, 1, n)}</div>`;
   const ND = L("support/notice-detail.html");
-  // 구분 · 카테고리 · 상태 필터는 다른 목록처럼 체크박스로 여러 개를 함께 고른다. 아무것도 고르지 않으면 전체다(2026-10-22 재영, #282~284).
-  const checks = (items) => items.map((t) => ui.checkbox(A, t)).join("");
+  // 구분 · 카테고리 · 상태 필터는 다른 목록처럼 체크박스로 여러 개를 함께 고른다(2026-10-22 재영, #282~284). 처음엔 모두 체크한 상태다 —
+  // 직원 목록과 같다(2026-11-05 사용자 지정). 앱은 모두 끄면 0건(「등록된 …」 / 「조건에 맞는 …」), 데모 거르기는 모두 끄면 거르지 않는다(직원 데모와 같다)
+  const checks = (items) => items.map((t) => ui.checkbox(A, t, true)).join("");
   const IM = L("support/inquiry-mine.html");
 
-  const notice = (title, kind, date, pinned) => [`${pinned ? `${p.tag("quiet", "고정")} ` : ""}${ui.link(title, ND)}`, kind, date];
+  // 구분 · 제목 · 게시일 순, 고정 글은 압정 아이콘(앱 PinIcon, 2026-11-06 사용자 지정)
+  const notice = (title, kind, date, pinned) => [kind, `<span class="flex min-w-0 items-center gap-[10px]">${pinned ? `<svg role="img" aria-label="고정" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-erp-brand"><title>고정</title><circle cx="12" cy="12" r="10.5"/><path d="M13.6 6.6 17.4 10.4 15.4 11.4 13.4 14.2 13.9 16.2 7.8 10.1 9.8 10.6 12.6 8.6Z" fill="currentColor" fill-opacity="0.15"/><path d="M10.4 13.6 7 17"/></svg>` : ""}${ui.link(title, ND)}</span>`, date];
   const notices =
     ui.listToolbar(9, "") +
-    ui.dataTable(
-      [{ header: "제목", align: "left" }, { header: "구분", width: "w-[120px]" }, { header: "게시일", width: "w-[140px]" }],
+    // 목록 표는 비면 열 이름 줄을 두고 빈 칸이 남는 높이를 채운다(앱 DataTable fillEmpty). 데모 목록은 늘 줄이 있어 거른 결과의 「조건에 맞는 …」을 둔다(2026-11-05 사용자 지정)
+    ui.fillTable(
+      [{ header: "구분", width: "w-[120px]" }, { header: "제목", align: "left" }, { header: "게시일", width: "w-[140px]" }],
       [
         notice("9월 정기 점검 안내 (09-14 02:00~05:00)", "점검", "2026-09-05", true),
         notice("근로계약 전자날인 기능이 열렸습니다", "기능", "2026-09-01"),
@@ -29,7 +32,7 @@ export function supportSections({ A, R }) {
         notice("직원 초대 문자 발신번호 변경 안내", "안내", "2026-07-29"),
         notice("이용약관 개정 안내 (07-15 시행)", "약관", "2026-07-01"),
       ],
-      "등록된 공지사항이 없습니다.",
+      "공지사항이 없습니다.",
     ) +
     pageNav(1);
 
@@ -39,7 +42,8 @@ export function supportSections({ A, R }) {
     `<details class="group border-b border-erp-thead-line"><summary class="flex h-[46px] cursor-pointer list-none items-center gap-[10px] px-[10px] text-[14px] text-erp-ink [&::-webkit-details-marker]:hidden"><span class="font-semibold text-erp-brand">Q</span><span class="w-[72px] shrink-0 text-erp-label">${cat}</span><span class="flex-1 truncate">${q}</span>${ui.img(A, "chevron-small.svg", 5, 8, "-rotate-90 transition-transform duration-150 group-open:rotate-90")}</summary><div class="flex gap-[10px] bg-erp-thead-bg px-[10px] py-[12px] text-[14px] leading-[1.6] text-erp-ink"><span class="font-semibold text-erp-label">A</span><p class="flex-1">${a}</p></div></details>`;
   const faq =
     ui.listToolbar(11, "") +
-    `<div data-filter-items class="border-t border-erp-thead-line">${[
+    // 비면 테두리 상자가 남는 높이를 채운다 — 표가 아니라 열 이름 줄이 없다(앱 support-lists.tsx, 2026-11-05 사용자 지정)
+    `<div data-filter-items data-fill-empty class="flex flex-col border-t border-erp-thead-line">${[
       qa("직원·근로", "근로계약서를 보냈는데 직원이 못 받았다고 합니다", "계약 상세에서 <b>발송 이력</b>을 먼저 확인하세요. 직원이 아직 가입하지 않았다면 상태가 <b>발송 대기</b>로 남고, 가입이 끝나는 순간 자동으로 발송됩니다."),
       qa("직원·근로", "퇴사한 직원의 급여명세서는 어떻게 보나요", "급여명세서 목록에서 재직 상태 필터를 <b>전체</b>로 바꾸면 보입니다. 인사 기록은 법정 보존 기간인 3년 이상 보관합니다."),
       qa("직원·근로", "직원이 계약서를 거부하면 어떻게 되나요", "계약은 <b>거부</b> 상태로 남고 알림이 옵니다. 사유를 보고 내용을 고쳐 재발송하면 새 서명 요청이 나갑니다."),
@@ -50,14 +54,15 @@ export function supportSections({ A, R }) {
         "비밀번호를 잊은 직원은 어떻게 하나요",
         "직원이 앱의 비밀번호 찾기에서 이메일 핀으로 직접 재설정할 수 있습니다. 그래도 안 되면 직원 상세에서 <b>비밀번호 초기화</b>를 누르세요. 재설정 링크가 직원 이메일로 가고 직원이 열어 새 비밀번호를 정합니다. 링크는 24시간 유효하고 한 번만 쓸 수 있습니다. 새 비밀번호를 정하면 그 링크는 무효가 되고, 초기화를 다시 누르면 앞서 보낸 링크도 바로 무효가 됩니다. 관리자는 그 값을 보지 못합니다.",
       ),
-    ].join("")}</div>` +
+    ].join("")}<p data-empty hidden class="flex min-h-[92px] flex-1 items-center justify-center border-b border-erp-thead-line text-[14px] text-erp-muted">FAQ가 없습니다.</p></div>` +
     pageNav(2);
 
   const askPanel = "inquiry-form";
   const inq = (title, cat, state, reg, ans) => [ui.link(title, IM), cat, state, reg, ans];
   const inquiries =
-    ui.listToolbar(7, ui.slideTrigger("문의하기", askPanel)) +
-    ui.dataTable(
+    // [문의하기]는 제목 줄 오른쪽(pages/support/inquiries.mjs titleRight, 2026-11-05 사용자 지정)
+    ui.listToolbar(7) +
+    ui.fillTable(
       [
         { header: "제목", align: "left" },
         { header: "분류", width: "w-[120px]" },
@@ -67,23 +72,28 @@ export function supportSections({ A, R }) {
       ],
       [
         inq("파트타이머 주휴수당이 계산되지 않습니다", "직원·근로", p.tag("warn", "접수"), "09-04", "-"),
-        inq("급여명세서 PDF 가 한글이 깨져 보입니다", "직원·근로", p.tag("quiet", "처리중"), "09-02", "09-03"),
-        inq("가맹점 초대 메일이 반송됩니다", "점포·설비", p.tag("ok", "답변완료"), "08-30", "09-02"),
-        inq("요금 PLAN 을 바꾸면 언제부터 적용되나요", "요금·구독", p.tag("ok", "답변완료"), "08-21", "08-22"),
-        inq("근무스케줄 복사가 지난주 것을 가져오지 않습니다", "직원·근로", p.tag("ok", "답변완료"), "08-12", "08-13"),
-        inq("KIOSK 결제 내역이 매출조회에 안 잡힙니다", "점포·설비", p.tag("ok", "답변완료"), "07-30", "08-01"),
-        inq("관리자 계정을 다른 사람에게 넘길 수 있나요", "기타", p.tag("ok", "답변완료"), "07-18", "07-18"),
+        inq("급여명세서 PDF 가 한글이 깨져 보입니다", "직원·근로", p.tag("ok", "처리중"), "09-02", "09-03"),
+        inq("가맹점 초대 메일이 반송됩니다", "점포·설비", p.tag("quiet", "답변완료"), "08-30", "09-02"),
+        inq("요금 PLAN 을 바꾸면 언제부터 적용되나요", "요금·구독", p.tag("quiet", "답변완료"), "08-21", "08-22"),
+        inq("근무스케줄 복사가 지난주 것을 가져오지 않습니다", "직원·근로", p.tag("quiet", "답변완료"), "08-12", "08-13"),
+        inq("KIOSK 결제 내역이 매출조회에 안 잡힙니다", "점포·설비", p.tag("quiet", "답변완료"), "07-30", "08-01"),
+        inq("관리자 계정을 다른 사람에게 넘길 수 있나요", "기타", p.tag("quiet", "답변완료"), "07-18", "07-18"),
       ],
-      "등록한 문의사항이 없습니다.",
+      "문의사항이 없습니다.",
     ) +
     pageNav(1);
 
   // 첨부파일(운영 정책 CNT-18, 2026-10-08 재영): 이미지·PDF, 5개까지, 파일당 10MB. 등록할 때만 붙인다.
   // 저장소가 정해져(#587) 1차에서 첨부를 함께 만든다(#281, 2026-10-19 재영).
   // 거절(6번째·10MB 초과·다른 종류)은 그 파일만 막고 쓴 내용과 올린 파일은 둔다 — 데모는 안내 문구로만 보인다.
-  const fileRow = (name, size) =>
-    `<li class="flex h-[34px] items-center gap-[10px] border-b border-erp-divider text-[14px]"><span class="flex-1 truncate">${name}</span><span class="text-erp-label">${size}</span><button type="button" class="text-erp-link hover:underline">빼기</button></li>`;
-  const attachField = `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">첨부파일</span><div class="flex gap-[6px]"><input readonly placeholder="이미지·PDF, 5개까지, 파일당 10MB" aria-label="첨부파일" class="${ui.FIELD}">${ui.button("파일 선택", { variant: "soft" })}</div><ul aria-label="올린 파일">${fileRow("주휴수당_0원_화면.png", "412 KB")}${fileRow("9월_급여명세서_배정숙.pdf", "1.2 MB")}</ul><p class="text-[13px] leading-[1.6] text-erp-label">6번째 파일, 10MB 가 넘는 파일, 이미지·PDF 가 아닌 파일은 그 파일만 올리지 않고 알려 줍니다. 쓴 내용과 올린 파일은 그대로 둡니다.</p></div>`;
+  // 공통 첨부 칸(앱 common/attachment-field.tsx — 공지사항 등록과 같다, 2026-11-06 사용자 지정): [파일 선택] · 안내 · 목록(34px 줄 · 이름 · 크기 · 「빼기」),
+  // 그림은 이름 앞 64px 둥근(8px) 썸네일, 형식 · 10MB 초과 · 6번째 파일은 목록 아래 파일명과 「└ 까닭」(빨간 글자)
+  const thumb = `<span class="grid size-[64px] shrink-0 place-items-center rounded-[8px] border border-erp-panel-line bg-erp-thead-bg text-[12px] text-erp-label">PNG</span>`;
+  const fileRow = (name, size, image = false) =>
+    `<li class="flex items-center gap-[10px] border-b border-erp-divider ${image ? "py-[12px]" : "h-[34px]"}"><span class="flex min-w-0 flex-1 items-center gap-[10px]">${image ? thumb : ""}<span class="truncate">${name}</span></span><span class="text-erp-label">${size}</span><button type="button" class="text-erp-link hover:underline">빼기</button></li>`;
+  const rejectRow = (name, reason) =>
+    `<li role="status" class="flex flex-col justify-center gap-[2px] border-b border-erp-divider py-[6px] leading-[1.6] break-keep"><p class="break-all text-erp-ink">${name}</p><p class="flex gap-[4px] pl-[6px] text-erp-off"><span aria-hidden="true" class="text-erp-muted">└</span><span>${reason}</span></p></li>`;
+  const attachField = `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">첨부파일 <span class="ml-[4px] text-[12px] font-normal text-erp-muted">2 / 5</span></span><div>${ui.button("파일 선택", { variant: "soft" })}</div><p class="break-keep text-[14px] leading-[1.6] text-erp-label">JPG, PNG, PDF 파일을 최대 5개까지 첨부할 수 있습니다. <span class="whitespace-nowrap">(파일당 10MB 이하)</span></p><ul aria-label="첨부파일" class="text-[14px]">${fileRow("주휴수당_0원_화면.png", "412KB", true)}${fileRow("9월_급여명세서_배정숙.pdf", "1.2MB")}${rejectRow("근로기준법 질의회시집(2018.4.~2023.6.).pdf", "10MB 이하 파일만 첨부할 수 있습니다.")}</ul></div>`;
 
   const askForm = ui.slidePanel(
     askPanel,
@@ -92,13 +102,12 @@ export function supportSections({ A, R }) {
       ui.formGroup(
         "문의 내용",
         ui.field("분류", ui.select(["가입·계정", "직원·근로", "요금·구독", "점포·설비", "기타"])),
-        ui.field("제목", ui.textField({ placeholder: "한 줄로 적어 주세요." })),
-        ui.field("내용", ui.textarea({ rows: 8, placeholder: "어떤 화면에서 무엇을 하려다 막혔는지 적어 주시면 빨리 답할 수 있습니다." })),
+        ui.field("제목", ui.textField({ placeholder: "제목을 입력해 주세요." })),
+        ui.field("내용", ui.textarea({ rows: 8, placeholder: "문의 내용을 입력해 주세요.\n이용 중 문제가 발생한 화면을 함께 알려 주시면 더 빠르게 답변해 드릴 수 있습니다." })),
         attachField,
       ) +
-      // 같은 문의를 잇달아 등록하면(409) 막는다. 실패하면 쓴 내용 · 올린 파일은 두고 사유와 다시 하는 방법을 보인다(#284).
-      `<p class="text-[13px] leading-[1.6] text-erp-label">방금 같은 문의를 등록했거나 저장에 실패하면 사유를 알려 드립니다. 쓴 내용과 올린 파일은 그대로 두니 다시 [문의 등록]을 누르세요.</p>` +
-      `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("문의 등록", { "data-close": true, "data-toast": "문의를 등록했습니다." })}</div>`,
+      // 실패하면 패널 위 띠에 사유를 보인다 — 미리 적어 두는 안내는 두지 않는다(2026-11-05 사용자 지정)
+      `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-close": true, "data-toast": "문의를 등록했습니다." })}</div>`,
   );
 
   const checkFilter = (search, items) =>

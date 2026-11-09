@@ -24,11 +24,14 @@ const EDIT_PUSHED_STATE = "bpAdminEditPushedFor";
 // 고칠 수 있는지를 api 가 준 actions 로 보는 것이다.
 export function AdminsScreen({
   list,
+  noAdminsAtAll,
   roleGroups,
   query,
   detail,
 }: {
   list: BpAdminList;
+  /** 조건 없이도 0건 — 「등록된 …」 빈 문구(page.tsx 가 가른다) */
+  noAdminsAtAll: boolean;
   /** null 이면 받지 못했다 — 필터 · 폼이 알린다 */
   roleGroups: BpAdminRoleGroup[] | null;
   query: BpAdminsQuery;
@@ -147,7 +150,7 @@ export function AdminsScreen({
                 </Select>
               </div>
             </ListToolbar>
-            <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} noStatus={query.accountStatus === "NONE"} noRole={query.roleTypeCodes?.length === 0} />
+            <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} noneRegistered={noAdminsAtAll} />
             <div className="pt-[14px]">
               <Pagination
                 page={query.page}

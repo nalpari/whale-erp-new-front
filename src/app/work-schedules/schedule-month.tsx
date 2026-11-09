@@ -58,7 +58,7 @@ export function ScheduleMonth({
       {/* fitList 면 상자를 바깥 칸(달력 높이)에 절대 위치로 붙여, 목록 길이가 줄 높이를 늘리지 않게 한다 */}
       <div className={fitList ? "relative min-h-[240px]" : "contents"}>
       {/* 고른 날 상자 — 간격 단계(DESIGN 6/10/12/18)에 맞춰 안쪽 18 · 줄 사이 12, 목록 줄 위아래 10(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 14 · 8 · 8) */}
-      <section aria-label="고른 날" className={`flex flex-col gap-[12px] rounded-[2px] border border-erp-thead-line p-[18px] ${fitList ? "absolute inset-0" : ""}`}>
+      <section aria-label="선택한 날" className={`flex flex-col gap-[12px] rounded-[2px] border border-erp-thead-line p-[18px] ${fitList ? "absolute inset-0" : ""}`}>
         {/* 날짜 줄 아래만 18 — 12 면 「근무 0명」이 날짜에 붙어 보였다(2026-11-05 사용자 지적) */}
         <div className="mb-[6px] flex items-center justify-between">
           <Link

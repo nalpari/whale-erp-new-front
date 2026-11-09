@@ -2,7 +2,7 @@
 // 왼쪽 필터, 그 오른쪽에 그룹 목록 카드와 상세 코드 카드를 나란히 둔다(system 공통코드와 같은 배치). 보는 사람은 BP 마스터 · EMP_TYPE 고용 형태 선택.
 // 상세 코드는 [추가]로 맨 끝에 새 행, 손잡이로 끌거나 ↑ · ↓ 로 순서, 휴지통으로 「삭제 예정」을 표시해 두었다가 [저장] 한 번에 반영한다(CODE_SCRIPT).
 // render 의 platform 은 플랫폼 계정으로 본 견본(조회만 — codes-platform.mjs)이다.
-// 생략: 상세 코드 불러오기 실패 · 저장 실패 띠 · 서버 409(지운 코드와 겹침) · 그룹 0건(「볼 수 있는 공통코드 그룹이 없습니다.」) — 데모 데이터로 생기지 않는다.
+// 생략: 상세 코드 불러오기 실패 · 저장 실패 띠 · 서버 409(지운 코드와 겹침) · 그룹 0건(「등록된 공통코드 그룹이 없습니다.」) — 데모 데이터로 생기지 않는다.
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
@@ -66,7 +66,7 @@ export const render = ({ A, R }, { title = "BP 공통코드 관리", platform = 
   ]);
   let g = -1;
   const groupTable = c
-    .markCurrent(ui.dataTable(groupCols, groupRows, "볼 수 있는 공통코드 그룹이 없습니다."), SELECTED)
+    .markCurrent(ui.dataTable(groupCols, groupRows, "등록된 공통코드 그룹이 없습니다."), SELECTED)
     .replace(/<tr class="h-\[46px\] border-b border-erp-thead-line/g, (m) => `<tr data-group-row="${GROUPS[++g][0]}|${GROUPS[g][1]}" class="h-[46px] border-b border-erp-thead-line`);
   const left = c.card(
     "w-[560px] shrink-0",
@@ -103,7 +103,7 @@ export const render = ({ A, R }, { title = "BP 공통코드 관리", platform = 
   );
   let r = -1;
   const codeTable = ui
-    .dataTable(codeCols, codeRows, "이 그룹에 상세 코드가 없습니다.")
+    .dataTable(codeCols, codeRows, "등록된 상세 코드가 없습니다.")
     .replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, () => `<tr data-code-row="${CODES[++r][0]}" class="group h-[46px] border-b border-erp-thead-line">`);
   // [추가]가 붙이는 새 행 — 바탕을 깔고(앱 DataTable added) 이동 칸에 빼기 [×], 새 행은 BP전용으로 저장된다(api)
   const newRow =
@@ -355,13 +355,13 @@ const CODE_SCRIPT = `<script>
     const tbody = groupRows[0].closest("tbody");
     tbody.querySelector("[data-group-empty]")?.remove();
     if (shown) return;
-    const terms = [code && "그룹 코드 ‘" + code + "’", name && "그룹명 ‘" + name + "’"].filter(Boolean).join(" · ");
+    // 검색어가 있으면 「조건에 맞는 …」, 없으면 「등록된 …」(앱 groupListEmpty, 2026-11-05 사용자 지정 — 전엔 「그룹 코드 ‘…’에 맞는 …」 두 줄)
+    const terms = code || name;
     const empty = document.createElement("tr");
     empty.dataset.groupEmpty = "";
     empty.className = "h-[92px] border-b border-erp-thead-line";
     empty.innerHTML = '<td colspan="3" class="text-center text-erp-muted"></td>';
-    empty.firstChild.innerHTML = terms ? "" : "볼 수 있는 공통코드 그룹이 없습니다.";
-    if (terms) empty.firstChild.append(terms + "에 맞는 공통코드 그룹이 없습니다.", document.createElement("br"), "검색 조건을 바꿔 다시 검색해 주세요.");
+    empty.firstChild.textContent = terms ? "조건에 맞는 공통코드 그룹이 없습니다." : "등록된 공통코드 그룹이 없습니다.";
     tbody.append(empty);
   };
   const trySearch = () => (dirty() ? ask(search) : search());

@@ -37,16 +37,22 @@ function refresh() {
 /**
  * 등록. 결과 모름(5xx · 연결 끊김)이면 status 없이 「목록에서 확인」 문구를 돌려준다 — 화면은 다시 저장하게 두지 않고 목록으로 보낸다.
  * api 가 이미 만들었다면 다시 저장할 때 직원 수만큼 한 번 더 생긴다.
+ * 성공하면 만든 행의 첫 id(todoId)를 돌려준다 — 화면이 저장 뒤 그 상세로 간다(그룹이면 목록 줄과 같이 첫 행의 상세).
+ * 응답에 id 가 없으면(api 계약 위반 — 직원이 없으면 api 는 400 이다) 남기고 null 로 돌려 화면이 목록으로 간다.
  */
-export async function createTodoAction(body: CreateTodoBody): Promise<ActionResult> {
+export async function createTodoAction(body: CreateTodoBody): Promise<ActionResult<{ todoId: number | null }>> {
+  let created: Awaited<ReturnType<typeof createTodo>>;
   try {
-    await createTodo(body);
-    refresh();
-    return { ok: true };
+    created = await createTodo(body);
   } catch (error) {
     const failure = failureOf(error, "등록");
     return failure.status === undefined ? { ...failure, message: CREATE_UNKNOWN } : failure;
   }
+  refresh();
+  // 응답 모양 검사는 try 밖에서 — 만든 뒤라 「결과 모름」으로 섞이면 안 된다
+  const todoId = Array.isArray(created?.todoIds) ? created.todoIds[0] : undefined;
+  if (todoId === undefined) console.error("TO-DO 등록 응답에 todoIds 가 없습니다", created);
+  return { ok: true, todoId: todoId ?? null };
 }
 
 export async function updateTodoAction(id: unknown, body: UpdateTodoBody): Promise<ActionResult> {
@@ -62,7 +68,7 @@ export async function updateTodoAction(id: unknown, body: UpdateTodoBody): Promi
 
 export async function changeTodoStatusAction(id: unknown, status: unknown): Promise<ActionResult> {
   if (!validId(id)) return NOT_FOUND;
-  if (!TODO_STATUSES.includes(status as never)) return { ok: false, status: 400, message: "상태를 골라 주세요." };
+  if (!TODO_STATUSES.includes(status as never)) return { ok: false, status: 400, message: "상태를 선택해 주세요." };
   try {
     await changeTodoStatus(id, status as (typeof TODO_STATUSES)[number]);
     refresh();

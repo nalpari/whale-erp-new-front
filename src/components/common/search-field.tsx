@@ -29,7 +29,10 @@ export function SearchField({ value: controlled, defaultValue = "", onValueChang
 
   return (
     <div className="relative">
+      {/* 크롬 비밀번호 관리자가 이 칸을 아이디 칸으로 보고 로그인 아이디를 채우지 않게 자동 완성을 끈다 — 화면에 비밀번호 칸(강제 변경 팝업 등)이 함께 있으면
+          그 앞 첫 글자 칸을 아이디로 짐작한다(2026-11-06 사용자 제보). 쓰는 쪽이 넘기면 그 값을 따른다 */}
       <input
+        autoComplete="off"
         {...props}
         ref={input}
         type="search"

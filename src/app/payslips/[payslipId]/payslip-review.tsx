@@ -117,11 +117,11 @@ export function Band({ title, desc, actions, risk }: { title: string; desc?: str
   return (
     <div
       role={risk ? "alert" : undefined}
-      className={`flex min-h-[46px] items-center gap-[12px] rounded-[2px] border px-[16px] py-[12px] ${risk ? "border-erp-off-bg bg-erp-off-bg" : "border-erp-panel-line bg-erp-thead-bg"}`}
+      className={`flex min-h-[46px] items-center gap-[12px] rounded-[2px] border px-[16px] py-[12px] ${risk ? "border-erp-off bg-erp-off-bg" : "border-erp-panel-line bg-erp-thead-bg"}`}
     >
       <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
         <p className={`text-[14px] font-semibold ${risk ? "text-erp-off" : "text-erp-ink"}`}>{title}</p>
-        {desc && <p className="text-[14px] leading-[1.6] text-erp-ink">{desc}</p>}
+        {desc && <p className={`text-[14px] leading-[1.6] ${risk ? "text-erp-off" : "text-erp-ink"}`}>{desc}</p>}
       </div>
       {actions && <div className="flex shrink-0 gap-[6px]">{actions}</div>}
     </div>
@@ -293,7 +293,7 @@ export function PayslipReview({
             </>
           }
         >
-          <Button variant="off" href={listHref}>
+          <Button href={listHref}>
             목록
           </Button>
           {editable && (
@@ -493,7 +493,7 @@ export function PayslipReview({
         onCancel={close}
       >
         <Select aria-label="추가 공제 항목" value={adding} onChange={(e) => setAdding(e.target.value)} disabled={!addable}>
-          <option value="">{addable ? (remaining.length > 0 ? "항목을 고르세요" : "붙일 항목이 없습니다") : "불러오는 중"}</option>
+          <option value="">{addable ? (remaining.length > 0 ? "항목을 선택하세요" : "붙일 항목이 없습니다") : "불러오는 중"}</option>
           {remaining.map((a) => (
             <option key={a.payslipItemMasterId} value={a.payslipItemMasterId}>
               {a.name}

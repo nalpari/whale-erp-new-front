@@ -1,5 +1,5 @@
 // 운영 알림함. 목업 docs/mockup/notify/index.html 의 BP 마스터 쪽만 그렸다(역할 전환 탭은 목업용이라 뺐다).
-// 누르고 들어가면 읽음이다. 미확인은 점과 굵은 글자, 읽은 것은 흐린 글자.
+// 누르고 들어가면 읽음이다. 제목은 읽어도 먹색이고, 미확인만 굵게 + 제목 앞 빨간 점(앱 notification-list.tsx, 2026-11-06 사용자 지정 — 전엔 점 칸을 따로 두고 읽은 것은 흐린 글자).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as p from "../../staff-parts.mjs";
@@ -9,31 +9,32 @@ export default ({ A, R }) => {
   const L = (path) => link(R, path);
   // 「미확인」 글자를 화면 밖에 둬서 읽기 도구와 목록 거르기(확인 상태 필터)가 함께 읽는다.
   const dot = `<span data-unread class="inline-block size-[6px] rounded-full bg-erp-off" aria-hidden="true"></span><span class="sr-only">미확인</span>`;
-  // [미확인?, 제목, 내용, 이동할 곳, 구분 배지, 일시] — 메일 열은 뺐다(2026-10-02 재영)
+  // [미확인?, 제목, 내용, 이동할 곳, 구분, 일시] — 메일 열은 뺐다(2026-10-02 재영). 관련 업무(근로계약 #30) 열은 내부 번호라 두지 않는다(2026-11-06 사용자 지정)
   // 알림 칸은 제목 · 내용 두 줄, 사이 3px · 위아래 7px 라 이 표의 줄은 55px 다(앱 notification-list.tsx, 2026-11-04 사용자 지적 — 46px 줄에 붙어 답답했다)
   // 맨 앞 체크로 골라 「선택 삭제」(2026-10-02 재영). 동작은 erp.js(data-pick-row · data-pick-all · data-remove-picked).
   const pick = (a) => ui.checkbox(A, "", false, a);
   const row = (unread, title, body, href, kind, at) => [
     pick({ "aria-label": `${title} 선택`, "data-pick-row": true }),
-    unread ? dot : "",
-    `<a class="flex min-w-0 flex-col gap-[3px] py-[7px] hover:underline" href="${href ?? "#"}"><span class="truncate leading-[20px] ${unread ? "font-semibold text-erp-ink" : "text-erp-muted"}">${title}</span><span class="truncate text-[13px] leading-[18px] text-erp-muted">${body}</span></a>`,
+    `<a class="flex min-w-0 flex-col gap-[3px] py-[7px] hover:underline" href="${href ?? "#"}"><span class="flex min-w-0 items-center gap-[6px] leading-[20px] text-erp-ink ${unread ? "font-semibold" : "font-medium"}">${unread ? dot : ""}<span class="truncate">${title}</span></span><span class="truncate text-[14px] leading-[18px] text-erp-label">${body}</span></a>`,
     kind,
-    unread ? at : p.sub(at),
+    // 일시는 연도까지, 표 기본 글자(14px 먹색) — 고객지원 공지사항 목록 게시일과 같다
+    at,
   ];
   const CD = L("staff/contracts-detail.html");
   const rows = [
-    row(true, "서지안 님이 근로계약서를 거부했습니다", "사유 · 근무 시작일이 협의한 날과 다릅니다", CD, p.tag("risk", "계약 거부"), "09-06 09:12"),
-    row(true, "문태경 님이 근로계약서에 날인했습니다", "온기식당 판교점 · 정직원", CD, p.tag("ok", "계약 날인"), "09-05 18:40"),
-    row(true, "문의에 답변이 등록되었습니다", "직원 초대 문자가 발송되지 않습니다", L("support/inquiry-mine.html"), p.tag("info", "문의 답변"), "09-02 11:05"),
-    row(false, "오세라 님이 근로계약서에 날인했습니다", "모리커피 서초점 · 정직원", CD, p.tag("quiet", "계약 날인"), "08-29 14:22"),
-    row(false, "배정숙 님의 계약이 만료되었습니다", "날인 기한 30일 경과 · 재발송 가능", null, p.tag("quiet", "계약 만료"), "08-24 00:05"),
+    row(true, "서지안 님이 근로계약서를 거부했습니다", "사유 · 근무 시작일이 협의한 날과 다릅니다", CD, p.tag("quiet", "근로계약 거부"), "2026-09-06 09:12"),
+    row(true, "문태경 님이 근로계약서에 날인했습니다", "온기식당 판교점 · 정직원", CD, p.tag("quiet", "근로계약 날인"), "2026-09-05 18:40"),
+    row(true, "문의에 답변이 등록되었습니다", "직원 초대 문자가 발송되지 않습니다", L("support/inquiry-mine.html"), p.tag("quiet", "문의사항 답변"), "2026-09-02 11:05"),
+    row(false, "오세라 님이 근로계약서에 날인했습니다", "모리커피 서초점 · 정직원", CD, p.tag("quiet", "근로계약 날인"), "2026-08-29 14:22"),
+    row(false, "배정숙 님의 계약이 만료되었습니다", "날인 기한 30일 경과 · 재발송 가능", null, p.tag("quiet", "근로계약 만료"), "2026-08-24 00:05"),
   ];
-  const unread = rows.filter((r) => r[1]).length;
+  const unread = rows.filter((r) => r[1].includes("data-unread")).length;
 
   // 왼쪽 필터 없이 목록만(2026-10-02 재영)
   const body = ui.listBody(
     "",
-    `<div class="flex flex-col gap-[12px]">` +
+    // 목록 칸은 남는 높이를 받는다 — 다 지워 비면 표(data-fill-empty)가 열 이름 줄을 두고 남는 높이를 채운다(앱 DataTable fillEmpty, 2026-11-05 사용자 지정)
+    `<div class="flex flex-1 flex-col gap-[12px]">` +
       // 위 줄(앱 notification-list.tsx, 2026-11-04 사용자 지정): 왼쪽 「총 N 건 · 미확인 N 건」(미확인은 표의 점과 같은 빨강), 오른쪽 「전체 선택」 체크 · [모두 읽음] ·
       // [선택 삭제] · 한 쪽 건수. 한 줄 가운데에 맞춘다. 고른 알림이 없으면 [선택 삭제]는 막힌 버튼이고 이유를 말풍선으로 보인다(전엔 누른 뒤 「선택된 알림이 없습니다」 창)
       `<div class="flex items-center gap-[6px]"><p class="mr-auto text-[14px] text-erp-ink">총 <b class="font-semibold">${rows.length}</b> 건<span class="px-[6px] text-erp-muted">·</span><span class="text-erp-off">미확인 <b data-unread-count class="font-semibold">${unread}</b> 건</span></p>` +
@@ -47,14 +48,13 @@ export default ({ A, R }) => {
       ui.dataTable(
         [
           { header: "선택", width: "w-[48px]" },
-          { header: "", width: "w-[40px]" },
           { header: "알림", align: "left" },
-          { header: "구분", width: "w-[120px]" },
-          { header: "일시", width: "w-[130px]" },
+          { header: "구분", width: "w-[140px]" },
+          { header: "일시", width: "w-[160px]" },
         ],
         rows,
         "받은 알림이 없습니다.",
-      ).replace("<table ", '<table id="notify-list" data-empty="받은 알림이 없습니다." ') +
+      ).replace("<table ", '<table id="notify-list" data-fill-empty data-empty="받은 알림이 없습니다." ') +
       `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div></div>`,
   );
   return {

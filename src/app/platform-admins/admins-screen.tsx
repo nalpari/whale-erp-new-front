@@ -21,12 +21,15 @@ const EDIT_PUSHED_STATE = "platformAdminEditPushedFor";
 // 브라우저 뒤로 가기가 수정 → 상세 → 목록 순으로 하나씩 접힌다.
 export function AdminsScreen({
   list,
+  noAdminsAtAll,
   roleGroups,
   filterRoleGroups,
   query,
   detail,
 }: {
   list: PlatformAdminList;
+  /** 조건 없이도 0건 — 「등록된 …」 빈 문구(page.tsx 가 가른다) */
+  noAdminsAtAll: boolean;
   roleGroups: PlatformRoleGroup[];
   /** 목록 필터 「권한명」 선택지 — 플랫폼 권한 그룹 전부 */
   filterRoleGroups: PlatformRoleGroup[];
@@ -185,7 +188,7 @@ export function AdminsScreen({
                 </Select>
               </div>
             </ListToolbar>
-            <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} noStatus={query.status === "NONE"} />
+            <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} noneRegistered={noAdminsAtAll} />
             <div className="pt-[14px]">
               <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / query.pageSize))} onPageChange={(page) => go({ page, admin: undefined })} />
             </div>

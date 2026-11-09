@@ -1,12 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState, type ReactNode, type RefObject } from "react";
-import { Button, Field, FormGroup, Select, SlidePanel, Textarea, TextField, useToast } from "@/components/common";
+import { useRef, useState, type RefObject } from "react";
+import { AttachmentField, FieldMessage, Button, Field, FormGroup, Select, SlidePanel, Textarea, TextField, useFilePreviews, useToast } from "@/components/common";
 import { useCodes, useCurrentBp } from "@/components/site/session-gate";
 import { PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
-import { BODY_MAX, FILE_ACCEPT, MAX_ATTACHMENTS, PASSWORD_REQUIRED_PREFIX, pickInquiryFiles, SESSION_EXPIRED, sizeLabel, TITLE_MAX } from "@/lib/community-view";
+import { BODY_MAX, FILE_ACCEPT, MAX_ATTACHMENTS, PASSWORD_REQUIRED_PREFIX, pickInquiryFiles, SESSION_EXPIRED, TITLE_MAX } from "@/lib/community-view";
 import { INQUIRY_SAVE_ROUTE } from "@/lib/paper-request";
 
 // 문의 등록 패널(#284, 데모 support/inquiries 의 inquiry-form). 문의 유형 · 제목 · 내용 · 첨부(CNT-18)를 multipart 로
@@ -16,9 +16,9 @@ import { INQUIRY_SAVE_ROUTE } from "@/lib/paper-request";
 
 type Form = { inquiryCategoryCode: string; title: string; body: string };
 const EMPTY: Form = { inquiryCategoryCode: "", title: "", body: "" };
-const RETRY = "쓴 내용과 올린 파일은 그대로 두었습니다. 고친 뒤 다시 [문의 등록]을 눌러 주세요.";
+// 실패 띠의 둘째 줄 — BP 관리자 등록 패널의 「입력한 값은 그대로 두었습니다.」와 같은 말(2026-11-05 사용자 지정)
+const RETRY = "입력한 값과 올린 파일은 그대로 두었습니다.";
 
-const Note = ({ children }: { children: ReactNode }) => <p className="text-[13px] leading-[1.6] text-erp-label">{children}</p>;
 
 export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; open: boolean; onClose: () => void; trigger: RefObject<HTMLElement | null> }) {
   const router = useRouter();
@@ -28,28 +28,39 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
   const [form, setForm] = useState<Form>(EMPTY);
   /** key 는 같은 이름 파일을 둘 올려도 줄을 가르려고 붙인다. */
   const [files, setFiles] = useState<{ key: number; file: File }[]>([]);
-  const [rejected, setRejected] = useState<string[]>([]);
+  const [rejected, setRejected] = useState<{ name: string; reason: string }[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
+  /** 등록 요청을 보냈다가 실패했다 — 그때만 「입력한 값 … 그대로 두었습니다」를 붙인다(빈 칸 확인은 보낸 적이 없다, 리뷰 반영) */
+  const [sentFailed, setSentFailed] = useState(false);
   const [saving, setSaving] = useState(false);
-  const fileInput = useRef<HTMLInputElement>(null);
   const nextKey = useRef(0);
-  const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
+  // 빈 칸은 그 입력칸 바로 아래 8px 에 문구로만 알린다 — 칸 테두리는 칠하지 않는다(공통 FieldMessage · BP 관리자 등록 패널과 같은 자리, 2026-11-06 사용자 지정).
+  // 띠에 모으지 않는다. 칸을 고치면 그 칸 것만 내린다(PL-SPGSWC)
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<"inquiryCategoryCode" | "title" | "body", string>>>({});
+  const set = <K extends keyof Form>(key: K, value: Form[K]) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    setFieldErrors((prev) => (key in prev ? { ...prev, [key]: undefined } : prev));
+  };
 
-  const handleFiles = (list: FileList | null) => {
-    const { accepted, rejected } = pickInquiryFiles(files.length, Array.from(list ?? []));
+  const previews = useFilePreviews(files);
+  const handleFiles = (picked: File[]) => {
+    const { accepted, rejected } = pickInquiryFiles(files.length, picked);
     setFiles((prev) => [...prev, ...accepted.map((file) => ({ key: nextKey.current++, file }))]);
     setRejected(rejected);
-    // 같은 파일을 빼고 다시 고를 수 있게 비운다.
-    if (fileInput.current) fileInput.current.value = "";
   };
 
   const handleSubmit = async () => {
-    const missing = [
-      !form.inquiryCategoryCode && "문의 유형을 골라 주세요.",
-      !form.title.trim() && "제목을 입력해 주세요.",
-      !form.body.trim() && "문의 내용을 입력해 주세요.",
-    ].filter((m): m is string => !!m);
-    if (missing.length) return setErrors(missing);
+    const missing: Partial<Record<"inquiryCategoryCode" | "title" | "body", string>> = {
+      ...(!form.inquiryCategoryCode && { inquiryCategoryCode: "문의 유형을 선택해 주세요." }),
+      ...(!form.title.trim() && { title: "제목을 입력해 주세요." }),
+      ...(!form.body.trim() && { body: "문의 내용을 입력해 주세요." }),
+    };
+    if (Object.keys(missing).length) {
+      setSentFailed(false);
+      setErrors([]);
+      return setFieldErrors(missing);
+    }
+    setFieldErrors({});
     const data = new FormData();
     for (const [key, value] of Object.entries(form)) data.set(key, value);
     for (const { file } of files) data.append("files", file);
@@ -64,17 +75,20 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
         const messages = res.status === 401 ? [SESSION_EXPIRED] : (body?.messages ?? [`등록하지 못했습니다 (HTTP ${res.status}).`]);
         // 비밀번호 강제 변경 403 이면 SessionGate 가 변경 팝업을 다시 띄운다(BFF 와 같은 이벤트).
         if (messages[0]?.startsWith(PASSWORD_REQUIRED_PREFIX)) dispatchEvent(new Event(PASSWORD_REQUIRED_EVENT));
-        return setErrors([...messages, RETRY]);
+        setSentFailed(true);
+        return setErrors(messages);
       }
       setForm(EMPTY);
       setFiles([]);
       setRejected([]);
       setErrors([]);
+      setFieldErrors({});
       onClose();
       toast(res.ok ? "문의를 등록했습니다." : (body?.messages?.[0] ?? "등록했습니다. 목록에서 확인해 주세요."));
       router.refresh();
     } catch {
-      setErrors(["서버에 연결하지 못했습니다. 연결을 확인해 주세요.", RETRY]);
+      setSentFailed(true);
+      setErrors(["서버에 연결하지 못했습니다. 연결을 확인해 주세요."]);
     } finally {
       setSaving(false);
     }
@@ -86,16 +100,23 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
   };
 
   return (
-    <SlidePanel id={id} open={open} onClose={handleClose} label="문의하기" trigger={trigger}>
+    // 바탕창을 깔고 바깥을 누르면 닫는다 — BP 관리자 등록 패널과 같다(2026-11-05 사용자 지정). 등록 중에는 닫지 않는다
+    <SlidePanel id={id} open={open} onClose={handleClose} onBackdropClose={handleClose} label="문의하기" trigger={trigger} closeOnBackdrop>
       <h2 className="text-[18px] font-semibold text-erp-ink">문의하기</h2>
+      {/* 실패 띠는 BP 관리자 등록 패널의 FailedBand 와 같은 모양 — 이유는 한 줄씩(한 문장으로 이으면 무엇이 문제인지 가르기 어려웠다, 리뷰 반영),
+          「입력한 값 … 그대로」는 실제로 보냈다가 실패했을 때만 먹색으로 덧붙인다(2026-11-05 사용자 지정) */}
       {errors.length > 0 && (
-        <div role="alert" className="flex flex-col gap-[4px] rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
+        <div role="alert" className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
           {errors.map((m, i) => (
-            <p key={i}>{m}</p>
+            <p key={i} className="font-medium">
+              {m}
+            </p>
           ))}
+          {sentFailed && <p className="text-erp-ink">{RETRY}</p>}
         </div>
       )}
       <FormGroup title="문의 내용">
+        <div className="flex flex-col gap-[8px]">
         <Field label="분류" required>
           <Select value={form.inquiryCategoryCode} onChange={(e) => set("inquiryCategoryCode", e.target.value)}>
             <option value="">선택</option>
@@ -106,52 +127,56 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
             ))}
           </Select>
         </Field>
+        <FieldMessage id="inquiry-category-error" message={fieldErrors.inquiryCategoryCode} />
+        </div>
+        <div className="flex flex-col gap-[8px]">
         <Field label="제목" required>
-          <TextField value={form.title} onChange={(e) => set("title", e.target.value)} maxLength={TITLE_MAX} placeholder="한 줄로 적어 주세요." />
+          <TextField value={form.title} onChange={(e) => set("title", e.target.value)} maxLength={TITLE_MAX} placeholder="제목을 입력해 주세요." aria-describedby={fieldErrors.title ? "inquiry-title-error" : undefined} />
         </Field>
+        <FieldMessage id="inquiry-title-error" message={fieldErrors.title} />
+        </div>
+        <div className="flex flex-col gap-[8px]">
         <Field label="내용" required>
-          <Textarea rows={8} value={form.body} onChange={(e) => set("body", e.target.value)} maxLength={BODY_MAX} placeholder="어떤 화면에서 무엇을 하려다 막혔는지 적어 주시면 빨리 답할 수 있습니다." />
+          <Textarea rows={8} value={form.body} onChange={(e) => set("body", e.target.value)} maxLength={BODY_MAX} placeholder={"문의 내용을 입력해 주세요.\n이용 중 문제가 발생한 화면을 함께 알려 주시면 더 빠르게 답변해 드릴 수 있습니다."} aria-describedby={fieldErrors.body ? "inquiry-body-error" : undefined} />
         </Field>
+        <FieldMessage id="inquiry-body-error" message={fieldErrors.body} />
+        </div>
         <div className="flex flex-col gap-[8px]">
           <span className="text-[14px] font-medium text-erp-label">
             첨부파일 <span className="ml-[4px] text-[12px] font-normal text-erp-muted">{files.length} / {MAX_ATTACHMENTS}</span>
           </span>
-          <div>
-            <input ref={fileInput} type="file" multiple accept={FILE_ACCEPT} hidden onChange={(e) => handleFiles(e.target.files)} />
-            <Button variant="soft" disabled={saving || files.length >= MAX_ATTACHMENTS} onClick={() => fileInput.current?.click()}>
-              파일 선택
-            </Button>
-          </div>
-          {files.length > 0 && (
-            <ul aria-label="올린 파일">
-              {files.map(({ key, file }) => (
-                <li key={key} className="flex h-[34px] items-center gap-[10px] border-b border-erp-divider text-[14px]">
-                  <span className="min-w-0 flex-1 truncate">{file.name}</span>
-                  <span className="text-erp-label">{sizeLabel(file.size)}</span>
-                  <button type="button" disabled={saving} onClick={() => setFiles((prev) => prev.filter((f) => f.key !== key))} className="text-erp-link hover:underline">
-                    빼기
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          {rejected.length > 0 && (
-            <div role="status" className="flex flex-col gap-[2px] text-[13px] leading-[1.6] text-erp-off">
-              {rejected.map((m, i) => (
-                <p key={i}>{m}</p>
-              ))}
-            </div>
-          )}
-          <Note>이미지(JPG · PNG) · PDF, {MAX_ATTACHMENTS}개까지, 파일당 10MB. 맞지 않는 파일은 그 파일만 올리지 않고 알려 드립니다. 등록한 뒤에는 첨부를 더하거나 뺄 수 없습니다.</Note>
+          {/* 공통 첨부 칸 — 공지사항 등록과 같은 모양: 그림은 64px 썸네일, 맞지 않는 파일은 파일명 아래 「└ 까닭」(2026-11-06 사용자 지정) */}
+          <AttachmentField
+            busy={saving}
+            accept={FILE_ACCEPT}
+            canPick={files.length < MAX_ATTACHMENTS}
+            onPick={handleFiles}
+            rejected={rejected}
+            note={
+              <>
+                JPG, PNG, PDF 파일을 최대 {MAX_ATTACHMENTS}개까지 첨부할 수 있습니다. <span className="whitespace-nowrap">(파일당 10MB 이하)</span>
+              </>
+            }
+            rows={files.map(({ key, file }) => ({
+              key,
+              name: file.name,
+              size: file.size,
+              preview: previews.get(key),
+              onRemove: () => {
+                setFiles((prev) => prev.filter((f) => f.key !== key));
+                setRejected([]);
+              },
+            }))}
+          />
         </div>
       </FormGroup>
-      <Note>같은 문의를 5분 안에 다시 등록하거나 등록에 실패하면 까닭을 알려 드립니다. 쓴 내용과 올린 파일은 그대로 두니 고친 뒤 다시 [문의 등록]을 누르세요.</Note>
       <div className="flex justify-center gap-[6px]">
         <Button variant="off" onClick={onClose} disabled={saving}>
           취소
         </Button>
+        {/* 버튼 이름은 다른 등록 패널과 같은 [저장](2026-11-05 사용자 지정 — 전엔 [문의 등록]) */}
         <Button onClick={handleSubmit} disabled={saving}>
-          문의 등록
+          저장
         </Button>
       </div>
     </SlidePanel>

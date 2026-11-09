@@ -89,7 +89,7 @@ test("validateTemplate — 제목 필수(알림톡 제외), 알림톡은 카카�
 test("validateTemplate — 앱 푸시는 수신 설정 묶음 필수, 제목 40자 · 본문 100자", () => {
   const push = (over: Partial<TemplateInput>) => validateTemplate(base({ channel: "PUSH", preferenceCategory: "CONTRACT", ...over }));
   assert.deepEqual(push({}), []);
-  assert.ok(push({ preferenceCategory: null }).includes("앱 푸시는 수신 설정 묶음을 골라 주세요."));
+  assert.ok(push({ preferenceCategory: null }).includes("앱 푸시는 수신 설정 묶음을 선택해 주세요."));
   assert.ok(push({ title: `#{직원이름}${"가".repeat(40)}` }).includes("제목은 40자를 넘을 수 없습니다(지금 47자)."));
   assert.ok(push({ body: "가".repeat(101) }).includes("본문은 100자를 넘을 수 없습니다(지금 101자)."));
 });

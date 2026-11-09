@@ -106,7 +106,7 @@ export function StorePicker({
             {options.length === 0 ? (
               <p className="px-[6px] py-[6px] text-erp-muted">검색 결과가 없습니다.</p>
             ) : (
-              <ul id={listId} role="listbox" aria-label="고를 수 있는 점포">
+              <ul id={listId} role="listbox" aria-label="선택할 수 있는 점포">
                 {options.map((store, i) => (
                   <li
                     key={store.storeId}

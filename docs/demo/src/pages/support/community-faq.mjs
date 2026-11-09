@@ -4,6 +4,6 @@ import { communitySections } from "../../community-sections.mjs";
 import { platformHeader } from "../../site.mjs";
 
 export default ({ A, R }) => {
-  const { filter, content } = communitySections({ A, R }).faq;
-  return { title: "FAQ", html: ui.erpFrame({ header: platformHeader(A, R), title: "FAQ", body: ui.listBody(filter, content) }) };
+  const { filter, content, create } = communitySections({ A, R }).faq;
+  return { title: "FAQ", html: ui.erpFrame({ header: platformHeader(A, R), title: "FAQ", titleRight: create, body: ui.listBody(filter, content) }) };
 };

@@ -1364,24 +1364,24 @@
     const body = table.tBodies[0];
     if (!body.rows.length)
       body.innerHTML = `<tr class="h-[92px] border-b border-erp-thead-line"><td colspan="${table.tHead.rows[0].cells.length}" class="text-center text-erp-muted">${table.dataset.empty}</td></tr>`;
+    // 목록 화면 표(data-fill-empty)는 비면 남는 높이까지 늘린다(앱 DataTable fillEmpty — 운영 알림함, 2026-11-05 사용자 지정)
+    if (table.hasAttribute("data-fill-empty")) table.style.flex = body.querySelector("[data-pick-row]") ? "" : "1 0 134px";
     const total = table.closest("main")?.querySelector("p b");
     if (total) total.textContent = $$("[data-pick-row]", table).length;
     const unread = table.closest("main")?.querySelector("[data-unread-count]");
     if (unread) unread.textContent = $$("[data-unread]", table).length;
   });
 
-  // ── 모두 읽음(data-read-all="표 id"): 미확인 점을 지우고 제목을 읽은 글자로 ──
+  // ── 모두 읽음(data-read-all="표 id"): 제목 앞 미확인 점을 지우고 제목을 보통 굵기로(읽어도 먹색, 2026-11-06) ──
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-read-all]");
     const table = b && document.getElementById(b.dataset.readAll);
     if (!table) return;
     $$("[data-unread]", table).forEach((d) => {
       const tr = d.closest("tr");
-      d.parentElement.textContent = "";
-      $$("a.font-semibold, a .font-semibold", tr).forEach((a) => {
-        a.classList.remove("font-semibold");
-        a.classList.replace("text-erp-ink", "text-erp-muted");
-      });
+      if (d.nextElementSibling?.classList.contains("sr-only")) d.nextElementSibling.remove();
+      d.remove();
+      $$(".font-semibold", tr).forEach((t) => t.classList.replace("font-semibold", "font-medium"));
     });
     const unread = table.closest("main")?.querySelector("[data-unread-count]");
     if (unread) unread.textContent = "0";

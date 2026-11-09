@@ -106,7 +106,7 @@ export function WeekJump({ query, today }: { query: ScheduleQuery; today: string
   const navigate = useScheduleNavigation(today);
   return (
     <div className="w-[150px] shrink-0">
-      <DateField aria-label="날짜로 주 고르기" value={query.day} onChange={(v) => v && navigate(moved(query, { week: mondayOf(v), day: v }))} />
+      <DateField aria-label="날짜로 주 선택" value={query.day} onChange={(v) => v && navigate(moved(query, { week: mondayOf(v), day: v }))} />
     </div>
   );
 }
@@ -153,7 +153,7 @@ export function ScheduleHistory({
           <Select aria-label="직원" value={query.historyStaffId ?? ""} onChange={(e) => go({ historyStaffId: e.target.value ? Number(e.target.value) : null })}>
             <option value="">전체 직원</option>
             {/* 주를 옮겨 고른 직원이 이 주 목록에 없어도 조건은 남아 있다 — 「전체 직원」으로 보이지 않게 둔다 */}
-            {query.historyStaffId !== null && !staffOptions.some((s) => s.staffMemberId === query.historyStaffId) && <option value={query.historyStaffId}>고른 직원</option>}
+            {query.historyStaffId !== null && !staffOptions.some((s) => s.staffMemberId === query.historyStaffId) && <option value={query.historyStaffId}>선택한 직원</option>}
             {staffOptions.map((s) => (
               <option key={s.staffMemberId} value={s.staffMemberId}>
                 {s.name}

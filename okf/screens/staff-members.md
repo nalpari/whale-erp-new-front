@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [정정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-05T09:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-09T04:32:26Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -53,7 +53,7 @@ sources:
   - id: staff-list-page
     resource: ../../src/app/staff-members/page.tsx
     title: 직원 목록 화면 — 도구 줄 [일괄 저장]은 BP 마스터 · 가맹마스터에게만(bulk-export-button.tsx), 빈 목록 문구 가르기
-    last_modified: 2026-11-05T00:20:33Z
+    last_modified: 2026-11-09T03:19:00Z
   - id: staff-export-screen
     resource: ../../src/app/staff-members/export/export-screen.tsx
     title: 직원 자료 일괄 저장 화면(WHALEERP-337) — 미리 보기 · 지난 요청(BFF) · 요청 · 내려받기(서버 액션 actions.ts) · 판정 bulk-export-model.ts
@@ -100,7 +100,7 @@ sources:
     last_modified: 2026-10-22T06:09:19Z
   - id: data-table
     resource: ../../src/components/common/data-table.tsx
-    title: 공통 표 — 열 이름 줄 모양 headVariant(default · plain · none). 직원 상세만 plain · none 을 켠다. 목록 빈 상태 fillEmpty
+    title: 공통 표 — 열 이름 줄 모양 headVariant(default · plain · none). 직원 상세만 plain · none 을 켠다. 목록 빈 상태 fillEmpty(고정 머리 scroll 표와 함께 써도 된다, 2026-11-05)
     last_modified: 2026-11-05T00:20:33Z
   - id: attendance-query
     resource: ../../src/app/attendance-records/attendance-query.ts
@@ -202,7 +202,7 @@ sources:
 * **예전 점포명 주소(`?store=`)는 읽지 않는다** — 그 주소로 오면 함께 실린 `storeIds` 도 버리고 점포 조건이 없는 것으로 보아 상단 범위로 채운다(상단이 전체면 주소는 그대로 두고 읽지만 않는다)
   (근로계약 `?storeName=` 과 같다). 그래서 「점포를 찾는 중입니다.」 · 「점포명을 더 좁혀 주세요」 빈 목록 문구와 `staffListEmptyMessage` · `tooManyStores` 는 걷었다.
   `storeIdsByName` 은 급여명세서 목록도 점포 고르기로 바꾸며 지웠다(2026-10-26).
-* **빈 목록**: 0건이면 조건 없이(전체 점포 · 모든 묶음 · 고용형태 · 재직 상태 전체) 한 번 더 물어, 직원이 아예 없으면 「등록된 직원이 없습니다.」, 조건에 맞는 직원이 없으면 「조회된 직원이 없습니다.」다. 지금 조회가 이미 조건 없음이면 다시 묻지 않고, 묻지 못하면 「조회된 …」로 두고 로그만 남긴다. 비어도 열 이름 줄은 두고 그 아래 빈 칸이 목록 영역 남는 높이를 채운다(DataTable `fillEmpty` — 점포 · 근로계약 · TO-DO · 급여명세서 목록과 같다, 2026-11-05 사용자 지정, 3팀 확인 필요).
+* **빈 목록**: 묶음 · 고용형태를 하나도 고르지 않았으면 다시 묻지 않고 늘 「조건에 맞는 직원이 없습니다.」다(목록 필터 체크박스 공통 정책, 2026-11-09 공지). 그 밖에 0건이면 조건 없이(전체 점포 · 모든 묶음 · 고용형태 · 재직 상태 전체) 한 번 더 물어, 직원이 아예 없으면 「등록된 직원이 없습니다.」, 조건에 맞는 직원이 없으면 「조건에 맞는 직원이 없습니다.」다. 지금 조회가 이미 조건 없음이면 다시 묻지 않고, 묻지 못하면 「조건에 맞는 …」로 두고 로그만 남긴다. 비어도 열 이름 줄은 두고 그 아래 빈 칸이 목록 영역 남는 높이를 채운다(DataTable `fillEmpty` — 점포 · 근로계약 · TO-DO · 급여명세서 목록과 같다, 2026-11-05 사용자 지정, 3팀 확인 필요).
 * **api 상한을 화면이 먼저 막는다**(PR #36 리뷰). 넘기면 api 400 으로 목록 전체가 오류 화면이 되기 때문이다 — 검색어(이름 ·
   번호)는 50자(검색칸 `maxLength` + 파서가 자름), 쪽은 1,000,000 을 넘으면 1, 주소의 `storeIds` 는 int4 양의 정수만 남기고 1000개(`MAX_STORE_IDS`,
   api 상한 — 500 에서 1000 으로 올림)에서 자른다. 직영 · 가맹 범위 칩을 지워 점포 id 목록으로 바뀔 때 1000개를 넘으면 뒤가 빠진다 — 근로계약 · 1팀 점포 정보 관리와 같은 한계다.
@@ -280,6 +280,7 @@ sources:
   시작일의 `YYYY-MM`(`payMonthText`)이고 모든 줄이 명세서 상세(`/payslips/{payslipId}`)로 가며, 「급여명세서 관리」(MN000009) 조회 권한이 없으면 글자만이다(`MenuTextLink`).
   금액이 없거나(null) 0 이면 「-」(데모의 검토 중 줄 공제), 아니면 쉼표 글자다(`payAmountText`). 열 너비는 데모처럼 똑같이 나눈다. 칸 머리 「관리」는 `/payslips`.
   최근 명세서도 미발송도 없으면 「급여명세서가 없습니다.」(`isPayslipSummaryEmpty`) — api 는 둘을 같은 직원의 명세서 전체에서 세어 `recent` 가 비면 미발송도 0 이고, `unsentCount` 는 api 가 바뀔 때를 대비해 함께 본다. 옛 「구분」 열(이번 달 · 최근 확정)과 급여 기간 글자는 걷었다.
+* **공통 표 머리**: `DataTable` 열 이름 칸은 가운데 정렬을 직접 둔다 — 팝업 안에서 왼쪽으로 붙던 것을 막는다(2026-11-09 사용자 지정).
 * **TO-DO** 는 목록(`GET /staff-members/:id/todos`, #118 — 앞쪽 5건)을 데모처럼 열 이름 줄 없는 표(공통 `DataTable` `headVariant="none"`)로 그린다 — 제목(+ 긴급 배지) ·
   배정(220px) · 상태(110px). 배정은 `TodoAssigneeType` · `TodoExecutionMode` 한글(`getEnum`)과 수행 예정으로 「개인 · 08-28 14:00」 · 「근무지 전체 · 각자 수행 · 09-03」이다(`todoAssignText` —
   데모는 「개인 배정」이지만 enum 한글은 「개인」이라 enum 을 따른다). 상태는 배지가 아닌 색 글자(`todoStatusMark`) — 완료는 파랑 「MM-DD 완료」(`completedAt` 의 한국 날짜),

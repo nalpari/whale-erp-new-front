@@ -37,7 +37,7 @@ const init = async (method = "GET", body?: unknown): Promise<RequestInit> => ({
   body: body === undefined ? undefined : JSON.stringify(body),
 });
 
-/** GET /platform-notices · /platform-faqs — 최근 수정일 내림차순이고 고정 글을 위로 올리지 않는다. */
+/** GET /platform-notices · /platform-faqs — 최종수정일 내림차순이고 고정 글을 위로 올리지 않는다. */
 export async function getPosts(kind: PostKind, q: PostQuery): Promise<PostList> {
   return request(`${POST_BASE[kind]}${queryString(q)}`, await init());
 }

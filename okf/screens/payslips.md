@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-05T07:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-06T07:22:08Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -55,7 +55,7 @@ sources:
 `screenPath()`, 목록 조작 · 초안 팝업 · 검토 화면(클라이언트)은 `bpPath`, 초안 작성 뒤 이동(서버 액션)은 `bpHref`. 상세의 출퇴근 기록 · 근로계약 링크도
 탭 BP 주소 화면이라 같이 씌운다. 목록이 api 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 · 없는 BP 404, `deniedMessageOf`)을 받으면 오류 화면이
 아니라 그 문장을 보인다(근로계약 목록과 같다). 보통은 오지 않는다 — SessionGate 가 BP 없는 주소를 마지막으로 고른 BP 의 탭 BP 주소로 보내고, 고른 BP 가
-없으면 플랫폼 탭으로 열어 「BP 를 먼저 골라 주세요」로 막는다. 상세의 404(없는 BP 포함)는 그대로 찾을 수 없음이다.
+없으면 플랫폼 탭으로 열어 「BP 를 먼저 선택해 주세요」로 막는다. 상세의 404(없는 BP 포함)는 그대로 찾을 수 없음이다.
 상태 · 검토 사유 · 처리 구분 · 근로계약 상태 · 계약 유형 · 발송 채널 · 발송 결과 한글은 `getEnum` 으로 받는다(`PayslipStatus` ·
 `PayslipReviewReason` · `PayslipLogType` · `ContractStatus` · `EmploymentType` · `PayslipDispatchChannel` · `DispatchResult`).
 
@@ -103,7 +103,7 @@ sources:
 * 상세 「참조한 것」의 집계 근로시간 · 덧붙임 · 근무스케줄 기준 시간.
 * 지급 칸 도움말의 계산 근거 글자(데모 「8.0h × 1.5배 · 가산 적용」) — 「계산값」 · 「계산값 A 을 B 으로 고침」만 남는다. 가산을 끈
   명세서의 연장수당은 앞에 「가산 미적용 · 1배로 계산」이 붙는다(PAY-05, 2026-10-26 재영). 가산 스위치를 바꾸면 「임시저장하면 연장수당을 … 다시 계산합니다」를 보이고, 지금 칸 값이 저장된 금액과 다르거나 앞서 고쳐 둔 값이 있으면 「직접 고친 연장수당(N원)은 그대로 둡니다」를 붙인다(api 와 같은 기준 — 지금 칸 값으로 판단).
-* 근로계약 번호(데모 `CTR-2026-0143`)는 contracts 에 칸이 없어 `근로계약 #id` 링크로 보인다. 계약 급여는 근로계약 급여액이
+* 근로계약 번호(데모 `CTR-2026-0143`)는 contracts 에 칸이 없다. 내부 번호(`근로계약 #id`)는 고객이 찾을 수 없어 보이지 않고, 「근로계약」 줄은 「상태 · 근로계약 보기」 링크다(2026-11-06 사용자 지정, 3팀 확인 필요). 계약 급여는 근로계약 급여액이
   고용형태와 상관없이 시급이라(2026-10-12) 「원 / 시간」이다 — 월 기본시간 · 월간 연장은 api 응답에 칸이 없어 보이지 않는다. 근로계약 상태가 null 이면 「-」.
 
 # 목록 「확정 N건 발송」 (WHALEERP-231 · 237)

@@ -190,7 +190,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
             </Field>
           </FormRow>
           {failure && (
-            <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] font-semibold text-erp-off">
+            <p role="alert" className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] font-semibold text-erp-off">
               {failure.message}
               {failure.payslipId !== undefined && (
                 <Link href={bpPath(bp, `/payslips/${failure.payslipId}`)} className="ml-[8px] font-normal text-erp-link hover:underline">

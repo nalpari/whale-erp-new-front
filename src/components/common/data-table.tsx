@@ -72,7 +72,7 @@ export function DataTable<T>({
   scroll?: boolean;
   /**
    * 비었을 때 열 이름 줄은 그대로 두고, 그 아래 빈 안내 칸이 감싸는 flex 세로 영역의 남는 높이를 채워 문구를 가운데에 둔다(점포 목록 표 보기, 2026-11-04 사용자 지정).
-   * 감싸는 쪽이 flex 세로여야 한다. 고정 머리 표(scroll)에는 쓰지 않는다
+   * 감싸는 쪽이 flex 세로여야 한다. 고정 머리 표(scroll)와 함께 써도 된다(공통코드 관리, 2026-11-05)
    */
   fillEmpty?: boolean;
 }) {
@@ -98,8 +98,9 @@ export function DataTable<T>({
     ) : (
       <thead>
         <tr className={`h-[42px] border-y border-erp-thead-line ${HEAD_ROW[headVariant]}`}>
+          {/* 열 이름은 늘 가운데 — 팝업(dialog)처럼 글자 정렬을 물려주는 곳에서는 브라우저 기본 가운데가 풀려 왼쪽으로 붙었다(변경이력 팝업, 2026-11-09 사용자 지정) */}
           {columns.map((c, i) => (
-            <th key={i} scope="col" className={`px-[10px] ${HEAD_CELL[headVariant]}`}>
+            <th key={i} scope="col" className={`px-[10px] text-center ${HEAD_CELL[headVariant]}`}>
               {headLabel(c, !scroll)}
             </th>
           ))}
@@ -137,7 +138,9 @@ export function DataTable<T>({
 
   // 화면 읽기 도구는 본문 표 하나만 읽는다 — 보이는 머리 표(글자뿐)는 숨기고, 본문 표에 같은 열 이름을 sr-only 로 둬 칸과 열 이름이 이어진다.
   // 최소 높이는 머리 42 + 줄 둘(46 × 2) — 패널이 낮아 모자라면 표가 0 으로 줄어 머리가 아래 형제와 겹치는 대신 바깥 카드가 스크롤한다.
-  if (scroll && headVariant !== "none")
+  // 고정 머리 표도 fillEmpty 로 비었으면 아래 빈 칸 모양으로 그린다 — 스크롤할 줄이 없다(공통코드 관리, 2026-11-05 사용자 지정)
+  const emptyFill = fillEmpty && rows.length === 0;
+  if (scroll && headVariant !== "none" && !emptyFill)
     return (
       <div data-table-scroll className="flex min-h-[134px] flex-1 flex-col">
         {/* 본문을 가로로 밀면 머리도 따라간다(ScrollHeadSync) */}
@@ -166,10 +169,11 @@ export function DataTable<T>({
         />
       </div>
     );
-  if (fillEmpty && rows.length === 0)
+  if (emptyFill)
     return (
-      // 남는 높이가 모자라도 머리(42) + 빈 칸(92)은 지킨다 — min-h-0 이면 상자가 0 까지 줄어 아래 쪽 이동과 겹쳤다(리뷰 반영)
-      <div className="flex min-h-[134px] flex-1 flex-col">
+      // 남는 높이가 모자라도 머리(42) + 빈 칸(92)은 지킨다 — min-h-0 이면 상자가 0 까지 줄어 아래 쪽 이동과 겹쳤다(리뷰 반영).
+      // scroll 표면 data-table-scroll 을 그대로 달아 감싸는 패널(CodePanel)이 이 상자를 줄이지 않는 대상(shrink-0)에서 뺀다
+      <div data-table-scroll={scroll || undefined} className="flex min-h-[134px] flex-1 flex-col">
         <table className={table}>
           {cols}
           {head}

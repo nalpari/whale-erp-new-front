@@ -163,7 +163,7 @@ export function ScheduleBar({
 const ERROR = "text-[13px] text-erp-off";
 // 직원 칸의 상태 문구(없음 · 불러오는 중) — 입력칸과 같은 14px 회색. 12px 는 너무 작았다(2026-11-05 사용자 지적, 3팀 확인 필요)
 const STATUS = "text-[14px] text-erp-label";
-const STAFF_FAILED = "직원 목록을 불러오지 못했습니다. 근무일을 다시 골라 주세요.";
+const STAFF_FAILED = "직원 목록을 불러오지 못했습니다. 근무일을 다시 선택해 주세요.";
 
 type Pool =
   { workDate: string; state: "ok"; staff: ScheduleStaff[] } | { workDate: string; state: "error"; message: string };
@@ -319,9 +319,9 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const loading = !edit && !!workDate && pool?.workDate !== workDate;
   const staff = pool?.state === "ok" && pool.workDate === workDate ? pool.staff : [];
   const nameOf = (id: number) => staff.find((s) => s.staffMemberId === id)?.name ?? "";
-  const oneProblem = !workDate ? "근무일을 골라 주세요." : staffId === null ? "직원을 골라 주세요." : shiftProblem(shift);
+  const oneProblem = !workDate ? "근무일을 선택해 주세요." : staffId === null ? "직원을 선택해 주세요." : shiftProblem(shift);
   const bulkProblems = Object.fromEntries(picked.map((id) => [id, shiftProblem(rows[id] ?? EMPTY_SHIFT)]));
-  const bulkProblem = !workDate ? "근무일을 골라 주세요." : picked.length === 0 ? "직원을 한 명 이상 골라 주세요." : null;
+  const bulkProblem = !workDate ? "근무일을 선택해 주세요." : picked.length === 0 ? "직원을 한 명 이상 선택해 주세요." : null;
   // 일괄 저장을 막는 이유 — 직원 칸 아래, 직원 목록을 불러오는 중 · 실패 문구 아래 같은 자리에 쓴다
   const bulkError = tried && bulkProblem ? (
     <p role="alert" className={ERROR}>
@@ -593,9 +593,9 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
       {edit && (
         <ConfirmDialog
           open={confirmDelete}
-          title="이 근무스케줄을 삭제하시겠습니까?"
+          // 다른 화면 삭제 확인창과 같게 — 기본 버튼 · 「…을 삭제하시겠습니까?」(2026-11-06 사용자 지정, 전엔 빨간 버튼 · 「이 근무스케줄을」)
+          title="근무스케줄을 삭제하시겠습니까?"
           confirmLabel="삭제"
-          confirmVariant="danger"
           busy={saving}
           onConfirm={handleDelete}
           onCancel={() => setConfirmDelete(false)}

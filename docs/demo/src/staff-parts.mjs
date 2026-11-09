@@ -127,16 +127,16 @@ export function schedMonth(A, crew, { year, month, today, holiday = {}, all = fa
 
 // 라벨 옆 ⓘ 툴팁. 헤더 서비스 바로가기 말풍선(ui.mjs tip)은 헤더 전용 알약형이라, 여기는 DESIGN.md 팝업 모양(2px·뜬 것 그림자)으로 그렸다.
 export const infoTip = (label, text) =>
-  `<span tabindex="0" aria-label="${label} 설명" class="group relative inline-grid size-[16px] cursor-help place-items-center text-[13px] text-erp-label">ⓘ<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-0 z-20 w-[280px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[13px] leading-[1.6] font-normal whitespace-pre-line text-erp-ink opacity-0 shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-opacity duration-150 ease-out group-hover:opacity-100 group-focus-visible:opacity-100">${text}</span></span>`;
+  `<span tabindex="0" aria-label="${label} 설명" class="group relative inline-grid size-[16px] cursor-help place-items-center text-[13px] text-erp-label">ⓘ<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-0 z-20 w-[280px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[1.6] font-medium whitespace-pre-line text-erp-ink opacity-0 transition-opacity duration-150 ease-out group-hover:opacity-100 group-focus-visible:opacity-100">${text}</span></span>`;
 export const help = (text) => `<span class="text-[12px] leading-[1.5] text-erp-muted">${text}</span>`;
 // 도움말이 있는 칸. 도움말 유무가 섞인 줄에서도 칸 위쪽이 맞도록 감싸서 위로 붙인다(도움말 없는 칸은 text 를 비운다).
 export const fieldH = (label, control, text, width) =>
   `<div class="flex flex-col gap-[8px] ${width ?? "min-w-px flex-1"}">${ui.field(label, control, "w-full")}${text ? help(text) : ""}</div>`;
 
-// 경고 밴드: 제목 아래 즉시 조치 영역. tone 이 risk 면 빨강 계열 바탕.
+// 경고 밴드: 제목 아래 즉시 조치 영역. tone 이 risk 면 빨간 테두리 · 연한 빨강 바탕 · 설명까지 빨간 글자(앱 payslip-review · contract-form Band, 2026-11-06 사용자 지정).
 export function band(title, { desc = "", actions = "", tone } = {}) {
   const risk = tone === "risk";
-  return `<div class="flex min-h-[46px] items-center gap-[12px] rounded-[2px] border px-[16px] py-[12px] ${risk ? "border-erp-off-bg bg-erp-off-bg" : "border-erp-panel-line bg-erp-thead-bg"}"><div class="flex min-w-0 flex-1 flex-col gap-[4px]"><p class="text-[14px] font-semibold ${risk ? "text-erp-off" : "text-erp-ink"}">${title}</p>${desc ? `<p class="text-[14px] leading-[1.6] text-erp-ink">${desc}</p>` : ""}</div>${actions ? `<div class="flex shrink-0 gap-[6px]">${actions}</div>` : ""}</div>`;
+  return `<div class="flex min-h-[46px] items-center gap-[12px] rounded-[2px] border px-[16px] py-[12px] ${risk ? "border-erp-off bg-erp-off-bg" : "border-erp-panel-line bg-erp-thead-bg"}"><div class="flex min-w-0 flex-1 flex-col gap-[4px]"><p class="text-[14px] font-semibold ${risk ? "text-erp-off" : "text-erp-ink"}">${title}</p>${desc ? `<p class="text-[14px] leading-[1.6] ${risk ? "text-erp-off" : "text-erp-ink"}">${desc}</p>` : ""}</div>${actions ? `<div class="flex shrink-0 gap-[6px]">${actions}</div>` : ""}</div>`;
 }
 
 // 진행 단계. items: [state(done|now|wait), title, meta]

@@ -38,7 +38,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
   }
 
   // 0건이면 조건 없이(전체 점포 · 직원명 없음 · 상태 전체) 한 번 더 물어 「근로계약이 아예 없는지」와 「조건에 맞는 근로계약이 없는지」를 가른다
-  // (직원 · 점포 목록과 같은 방식, 2026-11-04 사용자 지정). 묻지 못하면 「조회된 근로계약이 없습니다.」
+  // (직원 · 점포 목록과 같은 방식, 2026-11-04 사용자 지정). 묻지 못하면 「조건에 맞는 근로계약이 없습니다.」
   // 지금 조회가 이미 「전체」(조건 없음)면 다시 묻지 않는다 — 같은 요청을 두 번 보내지 않게(리뷰 반영)
   const allSearch = apiSearch({ ...query, page: 1, staffMemberName: "", status: [], storeIds: [], storesCleared: true, scope: null });
   const noContractsAtAll =
@@ -47,7 +47,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
       (await request<ContractListPage>(`/contracts${allSearch}`, { headers })
         .then((all) => all.total === 0)
         .catch((error: unknown) => {
-        // 확인에 실패하면 예전처럼 「조회된 …」 — 장애를 알아챌 수 있게 로그만 남긴다(리뷰 반영)
+        // 확인에 실패하면 예전처럼 「조건에 맞는 …」 — 장애를 알아챌 수 있게 로그만 남긴다(리뷰 반영)
         console.warn("근로계약 전체 건수 확인 실패", error);
         return false;
       })));
@@ -76,7 +76,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
             columns={contractColumns(statuses, new Date(), draftActions, employmentTypes, listHrefOf(query), at)}
             rows={rows}
             rowKey={(r) => r.contractId}
-            empty={page ? (noContractsAtAll ? "등록된 근로계약이 없습니다." : "조회된 근로계약이 없습니다.") : notice}
+            empty={page ? (noContractsAtAll ? "등록된 근로계약이 없습니다." : "조건에 맞는 근로계약이 없습니다.") : notice}
             // 비었을 때 열 이름 줄은 두고 그 아래 빈 칸이 목록 영역 남는 높이를 채운다(직원 · 점포 목록과 같다, 2026-11-04 사용자 지정)
             fillEmpty
           />

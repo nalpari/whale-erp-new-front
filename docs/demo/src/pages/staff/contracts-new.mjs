@@ -153,7 +153,7 @@ export const contractForm = (d) => ({ A, R }) => {
       ),
       ui.formRow(
         // 주휴일은 특정 요일로 정해 계약서 휴일 조항에 적는다(노무사 확인 2026-10-14, 질문 4). 주 15시간 미만이면 없음.
-        p.fieldH(req("주휴일"), ui.select([...DAYS, "없음 (주 15시간 미만)"], { value: "일", "data-weekly-holiday": "" }), "특정 요일로 정해 계약서 휴일 조항에 적는다. 주 15시간 미만이면 주휴가 없어 고를 수 없다."),
+        p.fieldH(req("주휴일"), ui.select([...DAYS, "없음 (주 15시간 미만)"], { value: "일", "data-weekly-holiday": "" }), "특정 요일로 정해 계약서 휴일 조항에 적는다. 주 15시간 미만이면 주휴가 없어 선택할 수 없다."),
         p.fieldH(
           "임금지급일",
           `<span class="flex gap-[6px]">${p.w("w-[100px]", ui.select(["익월", "당월"], { "aria-label": "임금지급 월" }))}${ui.textField({ value: "10", "aria-label": "임금지급일 날짜", inputmode: "numeric" })}</span>`,

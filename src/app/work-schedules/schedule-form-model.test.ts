@@ -21,7 +21,7 @@ test("근무 길이 — 종료가 이르면 다음 날", () => {
 test("화면에서 막는 것 — 빈칸 · 24시간 · 휴게", () => {
   const ok = { startTime: "09:00", endTime: "18:00", breakMinutes: "60" };
   assert.equal(shiftProblem(ok), null);
-  assert.equal(shiftProblem({ ...ok, endTime: "" }), "시작시간과 종료시간을 골라 주세요.");
+  assert.equal(shiftProblem({ ...ok, endTime: "" }), "시작시간과 종료시간을 선택해 주세요.");
   assert.equal(shiftProblem({ ...ok, endTime: "09:00" }), "근무시간은 24시간보다 짧아야 합니다.");
   assert.equal(shiftProblem({ startTime: "00:00", endTime: "24:00", breakMinutes: "0" }), "근무시간은 24시간보다 짧아야 합니다.");
   assert.equal(shiftProblem({ ...ok, breakMinutes: "" }), "휴게시간을 0 이상의 분으로 넣어 주세요.");

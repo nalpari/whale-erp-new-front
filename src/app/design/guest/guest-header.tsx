@@ -11,8 +11,8 @@ import { HOVER } from "./theme";
 // 아직 화면이 없는 메뉴는 href 가 "#" 다. 화면이 생기면 GuestRoutes 에 더하고 키를 채운다.
 const MENUS: { label: string; route?: keyof GuestRoutes }[] = [
   { label: "매장운영", route: "storeOperations" },
-  { label: "재무관리" },
-  { label: "프랜차이즈" },
+  { label: "재무관리", route: "financeManagement" },
+  { label: "프랜차이즈", route: "franchise" },
   { label: "부가 서비스", route: "addOnServices" },
 ];
 
@@ -34,9 +34,10 @@ export function GuestHeader({ homeHref }: { homeHref?: string }) {
   // 실제 라우트와 디자인 샘플이 이 머리말을 함께 쓴다. 샘플 안에서는 링크도 샘플로 건다(guest-routes.ts).
   const routes = pathname.startsWith(SAMPLE_ROUTES.home) ? SAMPLE_ROUTES : SITE_ROUTES;
   const [scrolled, setScrolled] = useState(false);
-  // 맨 위에서 Billboard 그림 위에 겹치는 화면(메인·매장운영·부가서비스) 말고는 본문이 머리말과 같은 흰 바탕이라
+  // 맨 위에서 Billboard 그림 위에 겹치는 화면(메인·매장운영·재무관리·프랜차이즈·부가서비스) 말고는 본문이 머리말과 같은 흰 바탕이라
   // 맨 위에서도 선을 그어 구분한다 — 로그인·계정 찾기·회원가입·가입 완료·도입문의·공지사항.
-  const lined = ![routes.home, routes.storeOperations, routes.addOnServices].includes(pathname);
+  const lined = ![routes.home, routes.storeOperations, routes.financeManagement, routes.franchise, routes.addOnServices].includes(pathname);
+  const onMenu = MENUS.some((menu) => menu.route && routes[menu.route] === pathname);
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 0);
     update();
@@ -66,6 +67,8 @@ export function GuestHeader({ homeHref }: { homeHref?: string }) {
           </span>
         </span>
       </Link>
+      {/* 메뉴 화면(매장운영 등)에서는 지금 메뉴만 먹색이고 나머지는 #999 로 물러난다. 고른 메뉴가 없는 화면(메인 · 로그인 · 공지사항 …)은
+          네 메뉴 모두 먹색이고 호버하면 남색이다(Figma 로그인전_공유 44:1794 · 44:2, 2026-11-06). */}
       <nav className="flex flex-1 justify-center gap-[80px]">
         {MENUS.map((menu) => {
           const href = menu.route ? routes[menu.route] : "#";
@@ -75,7 +78,9 @@ export function GuestHeader({ homeHref }: { homeHref?: string }) {
               key={menu.label}
               href={href}
               aria-current={current ? "page" : undefined}
-              className={`text-[20px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy aria-[current=page]:text-guest-navy ${HOVER}`}
+              className={`text-[20px] leading-[1.5] font-semibold ${
+                onMenu ? "text-[#999] hover:text-guest-ink aria-[current=page]:text-guest-ink" : "text-guest-ink hover:text-guest-navy"
+              } ${HOVER}`}
             >
               {menu.label}
             </Link>
@@ -92,9 +97,9 @@ export function GuestHeader({ homeHref }: { homeHref?: string }) {
           <Link
             key={menu.route}
             href={routes[menu.route]}
-            // 공지사항 상세(/notices/{id})에서도 공지사항을 켠다.
+            // 공지사항 상세(/notices/{id})에서도 공지사항을 켠다. 켜진 글자는 메뉴와 같이 먹색이다.
             aria-current={pathname === routes[menu.route] || pathname.startsWith(`${routes[menu.route]}/`) ? "page" : undefined}
-            className={`hover:text-guest-ink aria-[current=page]:text-guest-navy ${HOVER}`}
+            className={`hover:text-guest-ink aria-[current=page]:text-guest-ink ${HOVER}`}
           >
             {menu.label}
           </Link>

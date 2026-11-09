@@ -57,9 +57,10 @@ export function HelpTip({ text, label = "도움말", floating, focusable = true 
       </svg>
     </button>
   );
-  // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups). 가운데 정렬 칸(표 머리) 안에서도 글은 왼쪽부터
+  // 상자는 헤더 서비스 바로가기 툴팁(HeaderTip)과 같다 — 흰 바탕 · 회청 테두리 · 6px · 먹색 14px 500 · 그림자 없음(2026-11-05 사용자 지정 —
+  // 전엔 #ebebeb 테두리 · 2px · 13px · 그림자라 테두리가 흐려 보였다). 가운데 정렬 칸(표 머리) 안에서도 글은 왼쪽부터
   const box =
-    "w-max rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[8px] text-left text-[13px] leading-[1.5] font-normal break-keep whitespace-pre-line text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)]";
+    "w-max rounded-[6px] border border-erp-brand bg-white px-[12px] py-[8px] text-left text-[14px] leading-[1.6] font-medium break-keep whitespace-pre-line text-erp-ink";
 
   if (floating)
     return (
@@ -72,7 +73,7 @@ export function HelpTip({ text, label = "도움말", floating, focusable = true 
           popover="manual"
           role="tooltip"
           id={id}
-          className={`pointer-events-none fixed inset-auto m-0 max-w-[320px] ${box} transition-opacity duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] starting:opacity-0 motion-reduce:transition-none`}
+          className={`pointer-events-none fixed inset-auto m-0 max-w-[360px] ${box} transition-opacity duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] starting:opacity-0 motion-reduce:transition-none`}
         >
           {text}
         </span>
