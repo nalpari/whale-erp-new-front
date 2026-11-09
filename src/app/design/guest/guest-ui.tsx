@@ -7,12 +7,27 @@ import { ARROW_NUDGE, ARROW_NUDGE_BACK, BUTTON_MOTION, HOVER } from "./theme";
 
 export const TRIM = "[text-box:trim-both_cap_alphabetic]";
 // 시안의 제목은 모두 「옅은 첫 줄 + 굵은 둘째 줄」 52px 두 줄이다.
-export function SectionTitle({ light, bold, dark = false }: { light: string; bold: string; dark?: boolean }) {
-  return (
-    <h2 className={`text-[52px] leading-[1.2] tracking-[-0.025em] ${dark ? "text-[#f5f5f5]" : "text-guest-ink"}`}>
-      <span className="block font-normal">{light}</span>
-      <span className="block font-bold">{bold}</span>
+// 띠지(알약) — 시작 세 단계의 STEP 꼬리표와 같은 모양이다. 홈 「매장 유형별 안내」 · 「기본 제공 혜택」이 쓴다(2026-11-09 사용자 지정).
+export function GuestTag({ children }: { children: ReactNode }) {
+  return <span className={`rounded-full bg-guest-step px-[14px] py-[12px] text-[16px] leading-[1.5] font-bold tracking-normal text-white ${TRIM}`}>{children}</span>;
+}
+
+// tag 는 제목 위 띠지(GuestTag). oneLine 은 얇은 앞말 · 굵은 뒷말을 한 줄로 잇는다 — 홈 화면 섹션 제목(2026-11-09 사용자 지정).
+export function SectionTitle({ light, bold, dark = false, tag, oneLine = false }: { light: string; bold: string; dark?: boolean; tag?: string; oneLine?: boolean }) {
+  const part = oneLine ? "" : "block ";
+  const title = (
+    <h2 className={`text-[52px] leading-[1.2] tracking-[-0.025em] ${oneLine ? "whitespace-nowrap " : ""}${dark ? "text-[#f5f5f5]" : "text-guest-ink"}`}>
+      <span className={`${part}font-normal`}>{light}</span>
+      {oneLine && " "}
+      <span className={`${part}font-bold`}>{bold}</span>
     </h2>
+  );
+  if (!tag) return title;
+  return (
+    <div className="flex flex-col items-start gap-[24px]">
+      <GuestTag>{tag}</GuestTag>
+      {title}
+    </div>
   );
 }
 
@@ -31,10 +46,10 @@ export function Arrow({ back = false }: { back?: boolean }) {
 const BUTTON_TONE = {
   navy: "border-guest-navy bg-guest-navy text-white hover:bg-white hover:text-guest-navy",
   soft: "border-guest-navy-soft bg-guest-navy-soft text-white hover:border-guest-navy hover:bg-white hover:text-guest-navy",
-  // 메인 「네 가지면 충분합니다」 카드의 「자세히 보기」. 연한 카드 위에 서는 회청 버튼이다(Figma 로그인전_공유 44:102, 2026-11-06).
-  steel: "border-[#728daa] bg-[#728daa] text-white text-[17px]! hover:border-guest-navy hover:bg-white hover:text-guest-navy",
   outline: "border-guest-button-line bg-white text-guest-ink hover:border-guest-navy hover:text-guest-navy",
   line: "border-guest-navy-soft bg-white text-guest-navy hover:border-guest-navy",
+  // 흰 바탕 · 남색 테두리 · 남색 글자, 호버하면 남색으로 채운다 — 메인 첫 화면 [무료로 시작하기] · [도입문의]와 같은 모양. 메인 사장님 유형 카드 버튼(2026-11-09 사용자 지정).
+  invert: "border-guest-navy bg-white text-guest-navy hover:bg-[rgba(58,86,112,0.9)] hover:text-white",
 };
 export function GuestButton({
   tone,
@@ -81,10 +96,10 @@ export function GuestButton({
   );
 }
 
-export function TitleRow({ light, bold, action }: { light: string; bold: string; action: ReactNode }) {
+export function TitleRow({ light, bold, action, oneLine = false, tag }: { light: string; bold: string; action: ReactNode; oneLine?: boolean; tag?: string }) {
   return (
     <div className="flex items-end justify-between">
-      <SectionTitle light={light} bold={bold} />
+      <SectionTitle light={light} bold={bold} oneLine={oneLine} tag={tag} />
       {action}
     </div>
   );

@@ -54,18 +54,25 @@ export const userCircle = (cls) =>
 const arrowSvg = (cls) =>
   svg(cls, "0 0 16.7004 15.0674", '<path d="M9.20037 0.833331L15.867 7.50001M0.833331 7.58926H15.8452M9.20037 14.2341L15.867 7.56741"/>', 1.66666);
 
-export const sectionTitle = (light, bold, dark = false) =>
-  `<h2 class="text-[52px] leading-[1.2] tracking-[-0.025em] ${dark ? "text-[#f5f5f5]" : "text-guest-ink"}"><span class="block font-normal">${light}</span><span class="block font-bold">${bold}</span></h2>`;
-export const titleRow = (light, bold, action) => `<div class="flex items-end justify-between">${sectionTitle(light, bold)}${action}</div>`;
+// 띠지(알약) — 앱 guest-ui.tsx 의 GuestTag. 시작 세 단계의 STEP 꼬리표와 같은 모양이다(2026-11-09 사용자 지정).
+export const tag = (text) => `<span class="rounded-full bg-guest-step px-[14px] py-[12px] text-[16px] leading-[1.5] font-bold tracking-normal text-white ${TRIM}">${text}</span>`;
+// oneLine 은 얇은 앞말 · 굵은 뒷말을 한 줄로 잇는다(메인 섹션 제목). tag 를 주면 제목 위에 띠지를 둔다.
+export const sectionTitle = (light, bold, dark = false, { tag: t, oneLine = false } = {}) => {
+  const part = oneLine ? "" : "block ";
+  const title = `<h2 class="text-[52px] leading-[1.2] tracking-[-0.025em] ${oneLine ? "whitespace-nowrap " : ""}${dark ? "text-[#f5f5f5]" : "text-guest-ink"}"><span class="${part}font-normal">${light}</span>${oneLine ? " " : ""}<span class="${part}font-bold">${bold}</span></h2>`;
+  return t ? `<div class="flex flex-col items-start gap-[24px]">${tag(t)}${title}</div>` : title;
+};
+export const titleRow = (light, bold, action, opts = {}) => `<div class="flex items-end justify-between">${sectionTitle(light, bold, false, opts)}${action}</div>`;
 
 export const arrow = (A, back = false) => arrowSvg(`h-[15.0674px] w-[16.7004px] shrink-0 ${back ? `-scale-x-100 ${ARROW_NUDGE_BACK}` : ARROW_NUDGE}`);
 
 const BUTTON_TONE = {
   navy: "border-guest-navy bg-guest-navy text-white hover:bg-white hover:text-guest-navy",
   soft: "border-guest-navy-soft bg-guest-navy-soft text-white hover:border-guest-navy hover:bg-white hover:text-guest-navy",
-  steel: "border-[#728daa] bg-[#728daa] text-white text-[17px]! hover:border-guest-navy hover:bg-white hover:text-guest-navy",
   outline: "border-guest-button-line bg-white text-guest-ink hover:border-guest-navy hover:text-guest-navy",
   line: "border-guest-navy-soft bg-white text-guest-navy hover:border-guest-navy",
+  // 흰 바탕 · 남색 테두리 · 남색 글자, 호버하면 남색으로 채운다 — 메인 첫 화면 버튼 · 사장님 유형 카드 버튼(2026-11-09 사용자 지정).
+  invert: "border-guest-navy bg-white text-guest-navy hover:bg-[rgba(58,86,112,0.9)] hover:text-white",
 };
 // arrow: true 는 글 뒤에 나아가는 화살표, "back" 은 글 앞에 되돌아가는 화살표. tall 은 폼 아래 66px 버튼 줄.
 export const button = (A, text, { tone, href = "#", arrow: arr = false, grow = false, tall = false }) =>
