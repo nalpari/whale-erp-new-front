@@ -84,9 +84,9 @@ export function staffSections({ A, R }) {
     [who("오세라", D), "010-3392-4418", "모리커피 서초점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), p.mark("ok", "재직")],
     [who("문태경", D), "010-4471-2298", "온기식당 판교점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), `${p.mark("ok", "재직")} ${p.tag("warn", "퇴직 예정 09-30")}`], // 퇴직 예정은 재직으로 센다(2026-10-08 재영)
     [who("배정숙", D), "010-8820-3317", "온기식당 판교점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "갱신 예정 D-20"), p.mark("ok", "재직")],
-    [who("남도현"), "010-9014-5563", "모리커피 성수점", "파트타이머", p.tag("warn", "초대 발송 · 08-31"), p.tag("quiet", "발송 대기"), p.mark("subtle", "가입 대기")],
-    [`<button type="button" aria-expanded="false" aria-controls="${holdPanel}" class="text-erp-link hover:underline">하준서</button>`, "010-3392-4418", "모리커피 성수점", "파트타이머", p.tag("risk", "연결 보류 · 4일"), p.tag("quiet", "발송 대기"), p.mark("risk", "확인 필요")],
-    [who("정유담"), "010-5518-7734", "온기식당 판교점", "파트타이머", p.tag("info", "소속 추가 확인"), p.tag("quiet", "발송 대기"), p.mark("subtle", "응답 대기")],
+    [who("남도현"), "010-9014-5563", "모리커피 성수점", "파트타이머", p.tag("warn", "가입 대기 · 08-31"), p.tag("quiet", "발송 대기"), p.mark("subtle", "가입 대기")],
+    [`<button type="button" aria-expanded="false" aria-controls="${holdPanel}" class="text-erp-link hover:underline">하준서</button>`, "010-3392-4418", "모리커피 성수점", "파트타이머", p.tag("risk", "정보 확인 필요 · 4일"), p.tag("quiet", "발송 대기"), p.mark("risk", "확인 필요")],
+    [who("정유담"), "010-5518-7734", "온기식당 판교점", "파트타이머", p.tag("info", "소속 승인 대기"), p.tag("quiet", "발송 대기"), p.mark("subtle", "응답 대기")],
     [who("권도윤", D), "010-7742-1160", "모리커피 서초점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "서명 대기 · D-24"), p.mark("warn", "날인 대기")],
     [who("유하람", D), "010-2093-8875", "모리커피 연남점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("risk", "거부 · 09-02"), p.mark("risk", "재발송 필요")],
     [`<span class="whitespace-nowrap text-erp-muted">본사에 정보제공 미동의</span>`, "-", "모리커피 연남점", "-", "-", "-", "-"],
@@ -98,7 +98,7 @@ export function staffSections({ A, R }) {
     storeFilter(),
     ui.filterSection("이름·휴대전화번호", ui.searchField(A, { placeholder: "이름 또는 번호" }), { tight: true }),
     ui.filterSection("고용형태", ui.checkbox(A, "정직원", true) + ui.checkbox(A, "파트타이머", true)),
-    ui.filterSection("가입·인증", ["가입 완료", "초대 발송", "연결 보류", "소속 추가 확인", "가입 불가"].map((t) => ui.checkbox(A, t, true)).join("")),
+    ui.filterSection("가입·인증", ["가입 완료", "가입 대기", "정보 확인 필요", "소속 승인 대기", "가입 불가"].map((t) => ui.checkbox(A, t, true)).join("")),
     ui.filterSection("재직 상태", ui.select(["재직", "퇴직", "전체"], { "aria-label": "재직 상태" }), { tight: true, last: true }),
   ]);
   const listTab =
@@ -121,7 +121,7 @@ export function staffSections({ A, R }) {
   const contractRows = [
     [ui.link("한서윤", CDraft), "모리커피 성수점", "-", "-", "-", p.tag("quiet", "임시저장")],
     [ui.link("남도현", C("pending")), "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("quiet", "발송 대기")],
-    [ui.link("하준서", C("hold")), "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("risk", "발송 대기 · 연결 보류")],
+    [ui.link("하준서", C("hold")), "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("risk", "발송 대기 · 정보 확인 필요")],
     [ui.link("정유담", C("pending")), "온기식당 판교점", "2026-09-18 ~ 2027-03-17", "10,800 /h", "-", p.tag("quiet", "발송 대기 · 소속 확인 중")],
     [ui.link("권도윤", C("signing")), "모리커피 서초점", "2026-09-01 ~ 2027-08-31", "11,600 /h", "09-01", p.tag("warn", "서명 대기 · D-24")],
     // 권도윤은 앞 계약이 체결 완료라 08-23까지만 근무스케줄·출퇴근을 받는다(STAFF-29).

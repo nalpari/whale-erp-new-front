@@ -526,7 +526,7 @@ export interface paths {
         };
         /**
          * 회원 탈퇴 조건 조회(마이페이지, S-JHQQNR). 탈퇴 버튼을 누르기 전에 보여줄 영향 범위 — BP명 · 함께 미사용(개인정보 지움)될
-         *     하위 관리자 수 · 함께 강제 폐점될 점포 수 · 가로막는 진행 중 계약 여부. BP 마스터만 받는다 — 그 밖의
+         *     하위 관리자 수 · 함께 강제 폐점될 점포 수 · 그 점포들의 폐점 확인(closing). 탈퇴를 막는 조건은 퇴근 기록이 없는 출근(closing.isBlocked) 하나다. BP 마스터만 받는다 — 그 밖의
          *     권한은 403, 계정이 지워졌으면 404. 조회만 하고 실제 탈퇴는 하지 않는다.
          */
         get: operations["AdminAuthController_getWithdrawEligibility"];
@@ -549,7 +549,7 @@ export interface paths {
         put?: never;
         /**
          * 회원 탈퇴 실행(마이페이지, S-JHQQNR). BP 마스터가 현재 비밀번호와 사유를 보내면 본인은 탈퇴, 같은 BP 의 하위 관리자는
-         *     미사용(개인정보는 지움)이 되고 점포는 모두 폐점된다. 진행 중인 근로계약이 있으면 막는다(조건 조회와 같은 기준). 비밀번호를
+         *     미사용(개인정보는 지움)이 되고 점포는 모두 폐점된다. 퇴근 기록이 없는 출근이 있으면 막는다(조건 조회의 closing.isBlocked 와 같은 기준). 비밀번호를
          *     받는 경로라 내 비밀번호 변경과 같은 한도를 건다.
          */
         post: operations["AdminAuthController_withdraw"];
@@ -5191,7 +5191,7 @@ export interface components {
              *     상세에서). 이 칸의 버튼은 이 값 하나만 본다. 참이면 이 계약으로 근로계약 재발송(POST
              *     /contracts/{contractId}/send)이 가입 초대 알림톡 또는 소속 추가 확인 요청을 보낸다(설정 누락 503 · 그사이 바뀐 상태 409 · 발송
              *     실패 502 는 남는다). 발송 대기 · 서명 대기(거부 · 만료 재발송은 근로계약 상세에서, WHALEERP-153) 위에 모두 맞을 때만 참이다: 가입 전 ·
-             *     가입 상태가 초대 발송 · 초대 만료 · 소속 추가 확인 · 복귀 확인(연결 보류 · 만 19세 미만 · 거절은 거짓), 또는 초안이고 이
+             *     가입 상태가 가입 대기 · 초대 만료 · 소속 승인 대기 · 복귀 확인(정보 확인 필요 · 만 19세 미만 · 거절은 거짓), 또는 초안이고 이
              *     계약이 소속 추가 확인 · 복귀 확인으로 판별된 것(WHALEERP-130 전 요청 없이 서명 대기가 된 옛 계약) · 보이는 초대가 수락되지
              *     않음 · 휴대폰 번호 · 가린 줄 아님. 간격 제한은 없다.
              */
@@ -11802,7 +11802,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 현재 비밀번호 불일치 · 직접입력 사유 상세 누락 · 진행 중인 근로계약 있음 */
+            /** @description 현재 비밀번호 불일치 · 직접입력 사유 상세 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -11818,6 +11818,20 @@ export interface operations {
             };
             /** @description 관리자 계정을 찾을 수 없음 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 폐점이 막힘 — 퇴근 기록이 없는 출근(code OPEN_CHECK_IN + storeId) · 다른 처리와 교착. 탈퇴 전체를 되돌린다 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 폐점 트랜잭션이 시간을 넘김(code STORE_CLOSING_TIMEOUT). 탈퇴 전체를 되돌린다 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -12033,7 +12047,7 @@ export interface operations {
                  */
                 employmentType?: string;
                 /**
-                 * @description 쉼표로 구분한 가입·인증 상태(StaffJoinState). 고른 상태 중 하나라도 맞으면 나온다 — 화면의 묶음(초대 발송 =
+                 * @description 쉼표로 구분한 가입·인증 상태(StaffJoinState). 고른 상태 중 하나라도 맞으면 나온다 — 화면의 묶음(가입 대기 =
                  *     INVITED,EXPIRED,REJECTED)을 그대로 보낸다. 없으면 전체. 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
                  *     화면에서 하나도 고르지 않았으면 이 api 를 부르지 않고 0건으로 그린다.
                  */
@@ -19453,7 +19467,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 사업자 인증을 보냈는데 진위확인 연동이 없거나 실패함 */
+            /** @description 사업자 인증을 보냈는데 진위확인 연동이 없거나 실패함 · 폐점 트랜잭션이 시간을 넘김(code STORE_CLOSING_TIMEOUT, 바뀐 것 없음) */
             503: {
                 headers: {
                     [name: string]: unknown;

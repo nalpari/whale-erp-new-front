@@ -27,7 +27,7 @@ export const TODO_TODAY_LIMIT = 200;
 export const NOTICE_FETCH = 20;
 const NOTICE_SHOWN = 3;
 
-/** 가입 대기로 보이는 가입 상태(HOME-9) — 초대 발송 · 초대 만료 · 거절 · 소속 추가 확인 · 복귀 확인 */
+/** 가입 대기로 보이는 가입 상태(HOME-9) — 가입 대기 · 초대 만료 · 거절 · 소속 승인 대기 · 복귀 확인 */
 const WAITING_STATES: ReadonlySet<string> = new Set(["INVITED", "EXPIRED", "REJECTED", "AFFILIATION_PENDING", "RETURN_PENDING"]);
 /**
  * 직원 정보 표에서 빼는 가입 상태 — 임시저장만 있는 레코드(DRAFT)는 재직이 아니고(운영 정책 CTR-29), 연결 보류(LINK_HOLD)는 없앤 규칙이다.

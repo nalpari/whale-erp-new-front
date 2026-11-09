@@ -24,13 +24,13 @@ export type StaffMember = Schemas["StaffMemberDetailResponseDto"];
 /** 퇴직 확인창의 미리 보기 — 퇴직일이 지나면 정리될 건수 */
 export type RetirementPreview = Schemas["RetirementPreviewResponseDto"];
 
-/** 이메일이 없을 때 「가입 전」으로 묶는 가입 상태 — 계정이 아직 없는 초안 · 초대 발송. 화면 문구라 enum 한글을 쓰지 않는다. */
+/** 이메일이 없을 때 「가입 전」으로 묶는 가입 상태 — 계정이 아직 없는 초안 · 가입 대기. 화면 문구라 enum 한글을 쓰지 않는다. */
 const NOT_JOINED_YET: ReadonlySet<StaffJoinState> = new Set(["DRAFT", "INVITED"]);
 
 /**
  * 상세 기본 정보의 「이메일」 칸. 이메일은 회원 ID 라 보이기만 하고 어디에서도 고치지 못한다(ACC-17, WHALEERP-180).
- * 없을 때 초안 · 초대 발송은 「가입 전」, 나머지 가입 전 상태는 api enum(GET /enums/StaffJoinState)의 한글이다 — 초대 만료 · 거절은
- * 이미 계정이 있는 직원의 소속 추가 확인 · 복귀 확인에서도 생기고, 연결 보류 · 소속 추가 확인 · 복귀 확인은 계정이 있는 직원이라
+ * 없을 때 초안 · 가입 대기는 「가입 전」, 나머지 가입 전 상태는 api enum(GET /enums/StaffJoinState)의 한글이다 — 초대 만료 · 거절은
+ * 이미 계정이 있는 직원의 소속 추가 확인 · 복귀 확인에서도 생기고, 정보 확인 필요 · 소속 승인 대기 · 복귀 확인은 계정이 있는 직원이라
  * 「가입 전」이라 하면 가입하라고 잘못 안내하게 된다. 가입 완료(퇴직 · 탈퇴 · 본사 역할이 보는 가맹 점포 직원)나 가입 상태를 모르면
  * 「-」다 — 탈퇴와 본사 미제공은 응답만으로 확실히 가를 수 없어 짐작해 적지 않는다(2026-10-16 노영주). enum 을 받지 못했거나
  * 목록에 없는 값도 영문 값 대신 「-」다.

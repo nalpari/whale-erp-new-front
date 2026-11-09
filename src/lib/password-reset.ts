@@ -29,11 +29,11 @@ export function canResetPassword(
 }
 
 /**
- * 확인창 본문의 받는 곳 — 「재설정 링크가 {이것} 발송됩니다」. email 은 상세 응답의 계정 이메일(회원가입 때 쓴 것, 링크가 가는 곳)이다.
+ * 확인창 본문의 받는 곳 — 「{이것} 비밀번호 재설정 링크를 보냅니다」. email 은 상세 응답의 계정 이메일(회원가입 때 쓴 것, 링크가 가는 곳)이다.
  * 보낼 수 없는 경우(가입 전 · 탈퇴 · 퇴직 · 본사 역할의 가맹 직원)면 null 이라 버튼이 없다 — 비었을 때의 문구는 api #56 전 배포(응답에 email 이
  * 없을 때)를 위한 것이다.
  */
-export const resetRecipientText = (email: string | null) => (email ? `이메일 아이디 ${email} 으로` : "직원의 이메일 아이디로");
+export const resetRecipientText = (email: string | null) => (email ? `직원 이메일(${email})로` : "직원 이메일로");
 
 /**
  * 서버가 api 결과를 모를 때(5xx · 프록시 503 · 연결 실패). 발송 여부는 화면을 새로 받아도 알 수 없어, 다시 보내도 되는지를 알린다.
