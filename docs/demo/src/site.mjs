@@ -345,7 +345,7 @@ export function withdrawBody(R, { panel = false, blocked = false } = {}) {
           `<li class="mt-[6px]">임시저장된 근로계약 : 5건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 더 이상 작성하거나 발송할 수 없습니다.</span></li>` +
           `<li class="mt-[6px]">발송 대기 중인 근로계약 : 1건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다.</span></li>` +
           `<li class="mt-[6px]">서명 대기·수정 요청 중인 근로계약 : 3건 종료<span class="block text-[13px] text-erp-label">직원은 해당 근로계약에 더 이상 서명할 수 없습니다.</span></li></ol></div>` +
-          `<p class="text-[13px] text-erp-label">확정되지 않은 급여명세서 2건은 폐점 후에도 처리할 수 있습니다.</p></div>`,
+          `<p class="text-[13px] text-erp-label">확정되지 않은 급여명세서 2건은 탈퇴 후 처리할 수 없습니다. 탈퇴 전에 확정해 주세요.</p></div>`,
       },
       {
         head: "개인정보가 삭제됩니다.",
