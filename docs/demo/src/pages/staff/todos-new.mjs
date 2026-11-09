@@ -105,7 +105,7 @@ export const render = ({ A, R }, edit) => {
   );
 
   const guide = p.guideBand("TO-DO 안내", [
-    `TO-DO는 <u>근로계약이 체결 완료되고 가입을 마친 재직 직원(퇴직 예정 포함)</u>에게만 배정할 수 있습니다.`,
+    `TO-DO는 <u>근로계약이 체결 완료되고 가입을 완료한 재직 직원(퇴직 예정 포함)</u>에게만 배정할 수 있습니다.`,
     `<b class="font-medium text-erp-ink">개인 배정</b> – 선택한 직원 한 명당 1건씩 등록됩니다. 근무지를 변경하면 선택한 직원이 초기화됩니다.`,
     `<b class="font-medium text-erp-ink">근무지 전체 · 각자 수행</b> – 모든 직원이 완료해야 완료됩니다. <u>등록 후 입사한 직원에게는 배정되지 않습니다.</u>`,
     `<b class="font-medium text-erp-ink">근무지 전체 · 한 명만 수행</b> – 한 명이 완료하면 모든 직원에게 완료로 표시됩니다.`,
