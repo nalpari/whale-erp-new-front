@@ -196,7 +196,7 @@ export default async function TodoDetailPage({
                   <div className="flex flex-wrap items-center gap-x-[12px] gap-y-[6px]">
                     <h3 className="text-[15px] font-semibold text-erp-ink">직원별 상태</h3>
                     {/* 문의 상세 저장 옆 안내와 같은 공통 느낌표 안내 */}
-                    <GuideNote inline>직원을 선택하면 직원의 상태 변경이력을 확인할 수 있습니다.</GuideNote>
+                    <GuideNote inline>직원을 선택하면 해당 직원의 상태 변경이력을 확인할 수 있습니다.</GuideNote>
                   </div>
                   <DataTable<GroupRow>
                     columns={[
