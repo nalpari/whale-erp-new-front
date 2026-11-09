@@ -99,7 +99,7 @@ export default ({ A, R }) => {
     ui.button("출퇴근 기록 보기", { variant: "soft", href: L("staff/attendance.html") }),
     ui.detailTable("근로계약 · 출퇴근", [
       // 「상태 · [근로계약 보기]」 — 내부 번호는 고객이 다른 화면에서 찾을 수 없어 두지 않는다(앱 payslips/[payslipId]/page.tsx, 2026-11-06 사용자 지정, 3팀 확인 필요)
-      ["근로계약", `체결 완료 · ${ui.link("근로계약 보기", L("staff/contracts-detail.html"))}`],
+      ["근로계약", `서명 완료 · ${ui.link("근로계약 보기", L("staff/contracts-detail.html"))}`],
       ["계약 급여", "13,590 원 / 시간 · 기본시간 209h"],
       ["출퇴근 기간", "2026-08-01 ~ 08-31"],
       ["집계 근로시간", `168.0h ${p.sub("(누락 2일 제외)")}`],

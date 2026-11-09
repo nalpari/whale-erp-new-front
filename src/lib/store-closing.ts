@@ -44,11 +44,11 @@ const n = (value: number) => value.toLocaleString("ko-KR");
 export function closingCheckLines(counts: StoreClosingCounts): ClosingLine[] {
   const lines: (ClosingLine | false)[] = [
     counts.retiringStaff > 0 && { key: "staff", text: `근무 중인 직원 : ${n(counts.retiringStaff)}명 퇴직 처리`, note: "퇴직일이 등록되지 않았거나 오늘 이후인 직원은 퇴직일이 오늘 날짜로 변경됩니다." },
-    counts.draftContracts > 0 && { key: "draft", text: `임시저장된 근로계약 : ${n(counts.draftContracts)}건 종료`, note: "해당 근로계약은 더 이상 작성하거나 발송할 수 없습니다." },
-    counts.pendingSendContracts > 0 && { key: "send", text: `발송 대기 중인 근로계약 : ${n(counts.pendingSendContracts)}건 종료`, note: "해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다." },
+    counts.draftContracts > 0 && { key: "draft", text: `작성 중인 근로계약 : ${n(counts.draftContracts)}건 종료`, note: "해당 근로계약은 더 이상 작성하거나 발송할 수 없습니다." },
+    counts.pendingSendContracts > 0 && { key: "send", text: `서명 요청 전인 근로계약 : ${n(counts.pendingSendContracts)}건 종료`, note: "해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다." },
     counts.pendingSignatureContracts > 0 && {
       key: "sign",
-      text: `서명 대기·수정 요청 중인 근로계약 : ${n(counts.pendingSignatureContracts)}건 종료`,
+      text: `직원 서명 대기·직원 수정 요청 중인 근로계약 : ${n(counts.pendingSignatureContracts)}건 종료`,
       note: "직원은 해당 근로계약에 더 이상 서명할 수 없습니다.",
     },
   ];
@@ -64,9 +64,9 @@ export function closingPayslipText(counts: Pick<StoreClosingCounts, "unconfirmed
 export function closingResultLines(total: StoreClosingRetirement): ClosingLine[] {
   const contracts = total.draftContracts + total.pendingSendContracts + total.pendingSignatureContracts;
   const contractParts = [
-    total.draftContracts > 0 && `임시저장 ${n(total.draftContracts)}건`,
-    total.pendingSendContracts > 0 && `발송 대기 ${n(total.pendingSendContracts)}건`,
-    total.pendingSignatureContracts > 0 && `서명 대기 · 수정 요청 ${n(total.pendingSignatureContracts)}건`,
+    total.draftContracts > 0 && `작성 중 ${n(total.draftContracts)}건`,
+    total.pendingSendContracts > 0 && `서명 요청 전 ${n(total.pendingSendContracts)}건`,
+    total.pendingSignatureContracts > 0 && `직원 서명 대기 · 직원 수정 요청 ${n(total.pendingSignatureContracts)}건`,
   ].filter(Boolean);
   const lines: (ClosingLine | false)[] = [
     total.retiringStaff > 0 && {

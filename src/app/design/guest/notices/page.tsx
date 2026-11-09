@@ -26,7 +26,7 @@ export default function NoticesPage() {
       </FaqItem>
       <FaqItem q="직원도 이 사이트로 로그인하나요?" category="가입·계정">
         아닙니다. 직원은 <b className={STRONG}>직원 전용 앱</b>으로 들어갑니다. 관리자가 근로계약서 초안을 저장하면 초대가 문자로 나가고, 직원은 앱에서 가입과 계약서
-        날인을 합니다.
+        서명을 합니다.
       </FaqItem>
       <FaqItem q="점포가 여러 개면 어떻게 보나요?" category="점포·설비">
         화면 위쪽에서 조회 범위를 선택합니다. 전체·직영·가맹 또는 점포 하나를 선택하면 그 뒤의 모든 조회가 그 범위로 맞춰집니다.

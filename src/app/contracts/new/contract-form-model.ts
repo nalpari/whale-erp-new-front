@@ -518,7 +518,7 @@ export function fieldProblems(
   if (!f.storeId) add("storeId", "소속 근무지를 선택하세요.");
   if (!f.jobTitle.trim()) add("jobTitle", "직무를 입력해 주세요.");
   // 종이 계약 등록은 당사자가 모두 날인한 근로계약서가 있어야 한다(CTR-23). 임시저장은 파일 없이 둔다
-  if (f.contractMethod === "PAPER" && !temporary && !hasEmploymentFile) add("employmentFile", "당사자가 모두 날인한 근로계약서 파일을 올려 주세요.");
+  if (f.contractMethod === "PAPER" && !temporary && !hasEmploymentFile) add("employmentFile", "당사자가 모두 서명한 근로계약서 파일을 올려 주세요.");
   need("startDate", !f.startDate, "계약 시작일을 입력해 주세요.");
   // 재계약은 직전 계약 시작일 다음 날부터 — 그 뒤로는 직전 계약과 겹쳐도 된다(WHALEERP-156, 2026-10-26 김민식 · 재영 확인)
   if (previousStartDate && f.startDate && f.startDate <= previousStartDate) add("startDate", renewalStartProblem(previousStartDate));

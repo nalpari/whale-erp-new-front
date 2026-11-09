@@ -16,7 +16,8 @@ export type ContractListItem = components["schemas"]["ContractListItemDto"];
 export type ContractListPage = components["schemas"]["ContractListResponseDto"];
 
 /**
- * 화면 주소의 쿼리. 상태가 비어 있으면 전체다.
+ * 화면 주소의 쿼리. 상태가 비어 있으면 전체다. 상태를 모두 끈 것은 statusNone(주소 status=NONE)이고 빈 목록이다(공통 정책 「목록 필터
+ * 체크박스」, WHALEERP-654).
  * 점포 조건은 점포 정보 관리 목록(stores-query.ts)과 같은 짝이다(WHALEERP-133, 1팀 front #88 「상단 점포 범위 ↔ 목록 점포 필터 연동」):
  * 목록에서 고른 점포(storeIds — 주소 storeIds=3,7), 목록에서 비운 「전체」(storesCleared — 주소 storeIds=), 헤더 범위(scope — 주소
  * scope=ALL · DIRECT · FRANCHISE · STORE:12, 헤더가 메뉴로 이동할 때 싣는다). 셋 다 없으면 정해지지 않은 것이라 필터가 헤더 범위로 채운다.
@@ -26,6 +27,7 @@ export interface ListQuery {
   pageSize: PageSize;
   staffMemberName: string;
   status: string[];
+  statusNone: boolean;
   storeIds: number[];
   storesCleared: boolean;
   scope: Scope | null;
@@ -43,6 +45,9 @@ const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v
 
 const NAME_MAX = 50;
 
+/** 상태를 모두 끈 것의 주소 값 */
+const STATUS_NONE = "NONE";
+
 /** 상태는 api 가 아는 값만 남긴다. 주소에 직접 넣은 ?status=FOO 를 그대로 보내면 api 가 400 이다. */
 export function withKnownStatus(q: ListQuery, known: { value: string }[]): ListQuery {
   return { ...q, status: q.status.filter((v) => known.some((k) => k.value === v)) };
@@ -51,7 +56,9 @@ export function withKnownStatus(q: ListQuery, known: { value: string }[]): ListQ
 export function readListQuery(params: SearchParams): ListQuery {
   const page = Number.parseInt(first(params.page), 10);
   const pageSize = Number(first(params.pageSize));
-  const status = params.status;
+  const status = (Array.isArray(params.status) ? params.status : params.status ? [params.status] : []).filter(Boolean);
+  // NONE 이 섞여 있으면 다른 값과 함께여도 모두 끈 것이다(주소를 직접 고친 경우)
+  const statusNone = status.includes(STATUS_NONE);
   const rawStoreIds = params.storeIds === undefined ? undefined : first(params.storeIds);
   // 숫자가 아닌 조각은 버리고 겹친 것은 하나로 — 주소에 직접 넣은 값으로 api 가 400 을 내지 않게
   const storeIds = [
@@ -64,12 +71,14 @@ export function readListQuery(params: SearchParams): ListQuery {
   ].slice(0, MAX_PICKED_STORES);
   return {
     // 숫자가 아니거나 1보다 작으면 첫 페이지. api 는 page=0 을 400 으로 돌려준다.
-    page: Number.isInteger(page) && page >= 1 ? page : 1,
+    // 상태를 모두 끈 목록은 늘 빈 한 쪽이다 — 쪽 번호가 남으면 없는 쪽이 골라진 채 그려진다
+    page: Number.isInteger(page) && page >= 1 && !statusNone ? page : 1,
     // 고를 수 있는 값이 아니면 기본(20) — 주소에 직접 넣은 큰 값으로 api 상한(200)을 넘기지 않게
     pageSize: PAGE_SIZES.find((n) => n === pageSize) ?? DEFAULT_PAGE_SIZE,
     // api 는 50자를 넘으면 400 이다(@MaxLength(50)). 주소에 직접 넣은 긴 값은 잘라 보낸다.
     staffMemberName: first(params.staffMemberName).trim().slice(0, NAME_MAX),
-    status: (Array.isArray(status) ? status : status ? [status] : []).filter(Boolean),
+    status: statusNone ? [] : status,
+    statusNone,
     storeIds,
     // 빈 storeIds 는 목록에서 비운 것 — 「전체」다(헤더 범위가 아니다). 고른 점포 · 비운 전체가 있으면 범위는 쓰지 않는다
     storesCleared: rawStoreIds !== undefined && !storeIds.length,
@@ -89,6 +98,7 @@ export function toSearch(q: ListQuery): string {
   else if (q.storesCleared) s.set("storeIds", "");
   else if (q.scope) s.set(SCOPE_PARAM, scopeKeyOf(q.scope));
   if (q.staffMemberName) s.set("staffMemberName", q.staffMemberName);
+  if (q.statusNone) s.set("status", STATUS_NONE);
   for (const v of q.status) s.append("status", v);
   const text = s.toString();
   return text ? `?${text}` : "";
@@ -100,11 +110,14 @@ export const listHrefOf = (q: ListQuery) => `/contracts${toSearch(q)}`;
 /**
  * api(GET /contracts) 쿼리. 고른 점포는 storeIds, 범위가 점포 하나면 그 id, 직영 · 가맹 전체면 점포를 풀지 않고 점포 유형(storeTypes)으로
  * 보낸다. 범위 「전체」 · 비운 「전체」는 점포 조건이 없다. 업무 범위 밖의 id 는 api 가 조용히 뺀다.
+ * 상태를 모두 끈 것(statusNone)은 상태 조건 없이 첫 쪽 한 줄로 보낸다 — api 에 「없음」 값이 없고, 상태별 개수는 상태 조건 · 쪽과
+ * 관계없이 오므로 그대로 받아 체크박스에 붙이고 목록만 page.tsx 가 비운다.
  */
 export function apiSearch(q: ListQuery): string {
   const s = new URLSearchParams();
-  if (q.page > 1) s.set("page", String(q.page));
-  s.set("pageSize", String(q.pageSize));
+  // 모두 끈 것은 목록을 버리고 개수만 쓴다 — 개수는 쪽과 상관없으니 첫 쪽 한 줄만 받는다(api pageSize 하한 1)
+  if (q.page > 1 && !q.statusNone) s.set("page", String(q.page));
+  s.set("pageSize", q.statusNone ? "1" : String(q.pageSize));
   const ids = q.storeIds.length ? q.storeIds : q.scope?.type === "STORE" ? [q.scope.storeId] : [];
   if (ids.length) s.set("storeIds", ids.join(","));
   else if (q.scope?.type === "DIRECT" || q.scope?.type === "FRANCHISE") s.set("storeTypes", q.scope.type);
@@ -152,12 +165,34 @@ export function withBack(href: string, back: string | string[] | undefined): str
  * 저장 · 삭제 뒤 돌아갈 목록. 새로 만들었거나(등록) 지웠으면(savedStoreId null) 점포 조건을 「전체」로 비운다(1팀 withoutStoreSearch — 새
  * 계약의 점포가 고른 점포 밖일 수 있다). 이어 쓰기 · 수정 저장은 저장한 점포가 목록의 고른 점포(점포 하나 범위 포함) 밖이면 비운다 — 임시저장
  * 이어 쓰기는 점포를 바꿀 수 있어 그대로 돌아가면 방금 저장한 계약이 안 보인다(#109 리뷰). 직영 · 가맹 범위는 점포 유형을 몰라 그대로 둔다.
+ * 상태를 모두 끈 목록(status=NONE)에서 왔으면 상태 조건을 「전체」로 푼다 — 그대로 돌아가면 방금 저장한 계약이 반드시 안 보인다.
  */
 export function listAfterSave(back: string | string[] | undefined, savedStoreId: number | null): string {
-  const list = backHrefOf(back);
+  const list = withoutStatusNone(backHrefOf(back));
   if (savedStoreId === null) return withoutStoreSearch(list);
   const picked = pickedIdsOf(readListQuery(Object.fromEntries(new URLSearchParams(list.split("?")[1] ?? ""))));
   return picked.length && !picked.includes(savedStoreId) ? withoutStoreSearch(list) : list;
+}
+
+/** 상태 「모두 끔」을 「전체」로 푼 목록 주소 */
+function withoutStatusNone(list: string): string {
+  const at = list.indexOf("?");
+  const path = at < 0 ? list : list.slice(0, at);
+  const params = new URLSearchParams(at < 0 ? "" : list.slice(at + 1));
+  if (!params.getAll("status").includes(STATUS_NONE)) return list;
+  params.delete("status");
+  const text = params.toString();
+  return text ? `${path}?${text}` : path;
+}
+
+/**
+ * 상태 체크 하나를 켜거나 끈 뒤의 조건. 모두 끄면 statusNone(빈 상태 목록은 「전체」라 따로 적는다), 모두 켜면 쿼리에서 빼 「전체」로
+ * 둔다 — 새 상태가 생겨도 전체에 들어간다. 그 밖에는 enum 순서대로 고른 값이다.
+ */
+export function toggledStatus(checked: string[], all: string[], value: string, on: boolean): Pick<ListQuery, "status" | "statusNone"> {
+  const next = on ? [...checked, value] : checked.filter((v) => v !== value);
+  if (next.length === 0) return { status: [], statusNone: true };
+  return { status: next.length === all.length ? [] : all.filter((v) => next.includes(v)), statusNone: false };
 }
 
 /** 돌아갈 목록 주소. 근로계약 목록 주소가 아니면(다른 곳으로 보내려는 값) 기본 목록으로 — 서버 액션에 온 값도 이것으로 거른다 */
@@ -251,9 +286,9 @@ export const SAVED_COOKIE_MAX_AGE = 60;
 
 const SAVED_NOTICES: Record<string, string> = {
   DRAFT: "임시저장했습니다. 직원 이름을 눌러 이어 쓸 수 있습니다.",
-  PAPER: "종이 계약을 등록했습니다. 발송 · 날인 없이 체결 완료입니다.",
-  SIGNUP_INVITE: "근로계약서를 저장하고 직원 휴대전화로 가입 초대 알림톡을 보냈습니다. 직원이 가입하면 서명 대기로 넘어갑니다.",
-  IMMEDIATE_SEND: "근로계약서를 저장하고 직원 앱으로 보냈습니다. 직원이 날인하면 체결 완료입니다.",
+  PAPER: "종이 계약을 등록했습니다. 발송 · 전자서명 없이 바로 서명 완료입니다.",
+  SIGNUP_INVITE: "근로계약서를 저장하고 직원 휴대전화로 가입 초대 알림톡을 보냈습니다. 직원이 가입하면 직원 서명 대기로 넘어갑니다.",
+  IMMEDIATE_SEND: "근로계약서를 저장하고 직원 앱으로 보냈습니다. 직원이 서명하면 서명 완료입니다.",
   AFFILIATION_CONFIRM: "근로계약서를 저장했습니다. 이 번호로 가입한 계정이 있어 소속 추가 확인을 기다립니다 — 직원이 이 점포 소속을 확인하면 앱에서 계약서를 봅니다.",
   RETURN_CONFIRM: "근로계약서를 저장했습니다. 이 점포에서 퇴직한 직원의 계정이라 복귀 확인을 기다립니다 — 직원이 복귀를 확인하면 앱에서 계약서를 봅니다.",
 };

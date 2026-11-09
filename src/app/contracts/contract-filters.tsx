@@ -7,7 +7,7 @@ import { useScope, useStores } from "@/components/site/session-gate";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { EnumValue } from "@/lib/enums";
 import { chipsKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
-import { PAGE_SIZES, fillScopeOf, pickedIdsOf, toSearch, unusableScopeOf, withPickedStores, withScopeCondition, type ContractListPage, type ListQuery, type PageSize } from "./contract-list";
+import { PAGE_SIZES, fillScopeOf, pickedIdsOf, toSearch, toggledStatus, unusableScopeOf, withPickedStores, withScopeCondition, type ContractListPage, type ListQuery, type PageSize } from "./contract-list";
 
 // 필터와 페이지는 주소 쿼리에 둔다. 서버 페이지가 그 쿼리로 목록을 다시 받아 그린다.
 function useGo() {
@@ -45,8 +45,8 @@ export function ContractFilters({
   const [headerScope] = useScope();
   const stores = useStores();
   const [staffMemberName, setStaffMemberName] = useState(query.staffMemberName);
-  // 상태를 하나도 고르지 않은 주소는 「전체」다. 화면에서는 모두 켜진 것으로 보인다.
-  const checked = query.status.length ? query.status : statuses.map((s) => s.value);
+  // 상태를 하나도 고르지 않은 주소는 「전체」다. 화면에서는 모두 켜진 것으로 보인다. 모두 끈 것(statusNone)은 따로 적는다.
+  const checked = query.statusNone ? [] : query.status.length ? query.status : statuses.map((s) => s.value);
   const fillScope = fillScopeOf(query, headerScope);
   const shown = fillScope ? withScopeCondition(query, fillScope) : query;
   const byId = new Map(stores.map((s) => [s.storeId, s]));
@@ -88,13 +88,8 @@ export function ContractFilters({
   });
   useEffect(() => dropUnusable(), [unusable]);
 
-  const toggle = (value: string, on: boolean) => {
-    const next = on ? [...checked, value] : checked.filter((v) => v !== value);
-    // 마지막 하나는 끄지 않는다. 빈 목록은 「전체」로 읽혀 끈 것과 반대가 된다.
-    if (next.length === 0) return;
-    // 다 켜면 쿼리에서 빼 「전체」로 둔다. 새 상태가 생겨도 전체에 들어간다.
-    apply({ status: next.length === statuses.length ? [] : statuses.map((s) => s.value).filter((v) => next.includes(v)) });
-  };
+  // 모두 끌 수 있다 — 목록은 비운다(공통 정책 「목록 필터 체크박스」, WHALEERP-654)
+  const toggle = (value: string, on: boolean) => apply(toggledStatus(checked, statuses.map((s) => s.value), value, on));
 
   return (
     <FilterPanel
@@ -103,7 +98,7 @@ export function ContractFilters({
         // 초기화는 헤더 범위로 돌아간다
         // 페이지당 건수는 보는 방식이라 그대로 둔다
         const reset = withScopeCondition(
-          { page: 1, pageSize: query.pageSize, staffMemberName: "", status: [], storeIds: [], storesCleared: false, scope: null },
+          { page: 1, pageSize: query.pageSize, staffMemberName: "", status: [], statusNone: false, storeIds: [], storesCleared: false, scope: null },
           headerScope,
         );
         setChips(chipsOf(reset));

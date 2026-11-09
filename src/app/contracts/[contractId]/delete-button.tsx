@@ -18,7 +18,7 @@ export function DeleteDraftButton({ contractId, back }: { contractId: number; ba
       </Button>
       <ConfirmDialog
         open={open}
-        title="임시저장한 근로계약서를 삭제하시겠습니까?"
+        title="작성 중인 근로계약서를 삭제하시겠습니까?"
         confirmLabel={pending ? "삭제 중" : "삭제"}
         busy={pending}
         onCancel={() => {

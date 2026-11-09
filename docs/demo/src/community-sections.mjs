@@ -22,7 +22,7 @@ export function communitySections({ A, R }) {
   const notices = [
     [`<span class="flex items-center gap-[10px]"><svg role="img" aria-label="고정" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-erp-brand"><title>고정</title><circle cx="12" cy="12" r="10.5"/><path d="M13.6 6.6 17.4 10.4 15.4 11.4 13.4 14.2 13.9 16.2 7.8 10.1 9.8 10.6 12.6 8.6Z" fill="currentColor" fill-opacity="0.15"/><path d="M10.4 13.6 7 17"/></svg>${ui.link("9월 정기 점검 안내 (09-14 02:00~05:00)", edit)}</span>`, "점검", ui.badge("on", "게시"), "2026-09-05 14:20 · 이서준"],
     [ui.link("10월 요금 PLAN 개편 사전 안내", edit), "안내", tag("임시저장"), "2026-09-04 18:02 · 김하린"],
-    [ui.link("근로계약 전자날인 기능이 열렸습니다", edit), "기능", ui.badge("on", "게시"), "2026-09-01 10:00 · 이서준"],
+    [ui.link("근로계약 전자서명 기능이 열렸습니다", edit), "기능", ui.badge("on", "게시"), "2026-09-01 10:00 · 이서준"],
     [ui.link("8월 점검 안내 (종료)", edit), "점검", tag("비공개"), "2026-08-11 09:30 · 이서준"],
   ];
   const faqEdit = link(R, "support/faq-edit.html");

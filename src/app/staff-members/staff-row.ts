@@ -102,36 +102,39 @@ export function invitationText(
   return parts.filter(Boolean).join(" · ");
 }
 
-export function contractCell(item: StaffMemberListItem, today: string): Cell | null {
+/** 계약 상태 칸. 상태 이름은 GET /enums/ContractStatus(statusLabels)에서 받고, 날수 · 날짜 꼬리만 여기서 붙인다(WHALEERP-659).
+ * 이름을 받지 못했으면(enum 실패 · 빈 목록 · 모르는 값) 영문 값을 보이지 않고 null(「-」) — 상세 근로계약 칸과 같다.
+ * 「갱신 예정 D-n」은 상태 이름을 쓰지 않으니 이름이 없어도 보인다. */
+export function contractCell(item: StaffMemberListItem, today: string, statusLabels: readonly EnumValue[]): Cell | null {
   const c = item.contract;
   if (!c || !c.status) return null;
+  if (c.status === "SIGNED" && c.endDate) {
+    const left = dayDiff(today, c.endDate);
+    // 종료일이 지난 서명 완료는 종료 배치 전의 잠깐이다. 갱신 예정이 아니다.
+    if (left >= 0 && left <= RENEWAL_NOTICE_DAYS) return { text: `갱신 예정 D-${left}`, style: "badge-off" };
+  }
+  const name = statusLabels.find((v) => v.value === c.status)?.label;
+  if (!name) return null;
   switch (c.status) {
     case "DRAFT":
-      return { text: "임시저장", style: "badge-neutral" };
     case "PENDING_SEND":
-      return { text: "발송 대기", style: "badge-neutral" };
+    case "ENDED":
+      return { text: name, style: "badge-neutral" };
     case "PENDING_SIGNATURE": {
       const left = c.signDeadlineAt ? dayDiff(today, kstDate(c.signDeadlineAt)) : null;
       // 기한이 지났는데 아직 서명 대기면 만료 배치 전의 잠깐이다. 「D--1」로 보이지 않게 날수를 뺀다.
-      return { text: left !== null && left >= 0 ? `서명 대기 · D-${left}` : "서명 대기", style: "badge-off" };
+      return { text: left !== null && left >= 0 ? `${name} · D-${left}` : name, style: "badge-off" };
     }
     case "CORRECTION_REQUESTED":
       // 직원이 가입 값과 계약서 값이 달라 수정을 요청했다(본인 대조, WHALEERP-125) — 관리자가 고쳐 다시 보낼 차례
-      return { text: "수정 요청", style: "badge-off" };
-    case "SIGNED": {
-      const left = c.endDate ? dayDiff(today, c.endDate) : null;
-      // 종료일이 지난 체결 완료는 종료 배치 전의 잠깐이다. 갱신 예정이 아니다.
-      return left !== null && left >= 0 && left <= RENEWAL_NOTICE_DAYS
-        ? { text: `갱신 예정 D-${left}`, style: "badge-off" }
-        : { text: "체결 완료", style: "badge-on" };
-    }
+      return { text: name, style: "badge-off" };
+    case "SIGNED":
+      return { text: name, style: "badge-on" };
     case "REJECTED":
-      // 거부일은 따로 저장하지 않고 근로계약서의 최종수정일로 보인다(2026-10-12 재영).
-      return { text: c.updatedAt ? `거부 · ${mmdd(kstDate(c.updatedAt))}` : "거부", style: "badge-off" };
+      // 거절일은 따로 저장하지 않고 근로계약서의 최종수정일로 보인다(2026-10-12 재영).
+      return { text: c.updatedAt ? `${name} · ${mmdd(kstDate(c.updatedAt))}` : name, style: "badge-off" };
     case "EXPIRED":
-      return { text: "만료", style: "badge-off" };
-    case "ENDED":
-      return { text: "종료", style: "badge-neutral" };
+      return { text: name, style: "badge-off" };
   }
 }
 
@@ -145,7 +148,7 @@ export function statusCells(item: StaffMemberListItem): Cell[] {
     return [{ text: "응답 대기", style: "muted" }];
   if (item.joinState !== "JOINED") return [{ text: "가입 대기", style: "muted" }];
   const status = item.contract?.status;
-  if (status === "PENDING_SIGNATURE") return [{ text: "날인 대기", style: "mark-off" }];
+  if (status === "PENDING_SIGNATURE") return [{ text: "서명 대기", style: "mark-off" }];
   if (status === "CORRECTION_REQUESTED") return [{ text: "수정 필요", style: "mark-off" }];
   if (status === "REJECTED" || status === "EXPIRED") return [{ text: "재발송 필요", style: "mark-off" }];
   const cells: Cell[] = [{ text: "재직", style: "mark-on" }];
