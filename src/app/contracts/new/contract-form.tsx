@@ -30,7 +30,6 @@ import {
   partTimePay,
   type MinimumWage,
   probationWage,
-  probationFloorLabel,
   problemsByField,
   shownProblems,
   type ProblemField,
@@ -83,25 +82,31 @@ function Calc({ children, strong }: { children: ReactNode; strong?: boolean }) {
 
 // 표 위 제목과 표. 급여 표가 둘씩 나란히 선다.
 // 표(급여항목 · 비과세)는 칸이 많아 입력마다 빨갛게 하지 않고 표 아래 오류만 보인다
-function PayTable({ title, help, errors, children }: { title: string; help?: string; errors?: string[]; children: ReactNode }) {
+function PayTable({ title, errors, children }: { title: string; errors?: string[]; children: ReactNode }) {
   const errorId = useId();
   return (
     <div data-invalid={errors?.length ? true : undefined} className="flex min-w-px flex-1 flex-col gap-[8px]">
       <span className={LABEL}>{title}</span>
       {children}
       <FieldErrors id={errorId} errors={errors} />
-      {help && <span className={HELP}>{help}</span>}
     </div>
   );
 }
 
 type PayRow = { key: string; label: string; cells?: ReactNode[]; hours?: ReactNode; wage?: ReactNode; amount: ReactNode };
 
+// 제목(라벨) 옆 짧은 설명 — 계산식 · 범위처럼 칸을 읽는 데 필요한 것만 둔다. 입력칸 아래는 오류 자리로 비운다
+function Hint({ children }: { children: ReactNode }) {
+  // 좁은 칸(3등분)에서 잘리지 않게 줄바꿈한다 — 말줄임이면 계산식 뒤쪽을 볼 방법이 없다(PR #239 리뷰)
+  return <span className="min-w-px break-keep text-[12px] leading-[18px] text-erp-muted">{children}</span>;
+}
+
 // 라벨 · 입력 · 도움말 한 칸. 공통 Field 는 라벨이 글자뿐이라 필수 표시(*)를 달 수 없어 여기서 묶는다.
 // 필수 표시 색 #e93737 은 DESIGN.md 의 「위험」 한 번 쓰는 색이다(데모 biz-form REQ 와 같다).
 function Item({
   label,
   required,
+  hint,
   help,
   width,
   errors,
@@ -109,6 +114,7 @@ function Item({
 }: {
   label: string;
   required?: boolean;
+  hint?: string;
   help?: string;
   width?: string;
   errors?: string[];
@@ -121,18 +127,21 @@ function Item({
   useInvalid(box, `${id}-errors`, invalid);
   return (
     <div ref={box} data-invalid={invalid || undefined} className={`flex flex-col gap-[8px] ${width ?? "min-w-px flex-1"}`}>
-      <label htmlFor={id} className="truncate text-[14px] font-medium text-erp-label">
-        {label}
-        {required && (
-          <>
-            {" "}
-            <span aria-hidden className="text-[#e93737]">
-              *
-            </span>
-            <span className="sr-only">(필수)</span>
-          </>
-        )}
-      </label>
+      <span className="flex items-baseline gap-[8px]">
+        <label htmlFor={id} className="shrink-0 text-[14px] font-medium text-erp-label">
+          {label}
+          {required && (
+            <>
+              {" "}
+              <span aria-hidden className="text-[#e93737]">
+                *
+              </span>
+              <span className="sr-only">(필수)</span>
+            </>
+          )}
+        </label>
+        {hint && <Hint>{hint}</Hint>}
+      </span>
       {children(id)}
       <FieldErrors id={`${id}-errors`} errors={errors} />
       {help && <span className={HELP}>{help}</span>}
@@ -151,7 +160,7 @@ function PaperFile({ id, label, file, error, accept, onPick }: { id: string; lab
           id={id}
           readOnly
           value={file?.name ?? ""}
-          placeholder="PDF · JPG · PNG"
+          placeholder={`${label} 파일을 첨부해 주세요.`}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${id}-error` : undefined}
         />
@@ -181,7 +190,7 @@ function PaperFile({ id, label, file, error, accept, onPick }: { id: string; lab
 }
 
 // 입력이 여럿인 칸(라디오 · 요일 · 시각). <label> 하나로 묶을 수 없어 group 으로 둔다.
-function Group({ label, required, children, help, errors }: { label: string; required?: boolean; children: ReactNode; help?: string; errors?: string[] }) {
+function Group({ label, required, hint, children, errors }: { label: string; required?: boolean; hint?: string; children: ReactNode; errors?: string[] }) {
   const errorId = useId();
   const box = useRef<HTMLDivElement>(null);
   const invalid = !!errors?.length;
@@ -195,21 +204,23 @@ function Group({ label, required, children, help, errors }: { label: string; req
       data-invalid={invalid || undefined}
       className="flex min-w-px flex-1 flex-col gap-[8px]"
     >
-      <span className="truncate text-[14px] font-medium text-erp-label">
-        {label}
-        {required && (
-          <>
-            {" "}
-            <span aria-hidden className="text-[#e93737]">
-              *
-            </span>
-            <span className="sr-only">(필수)</span>
-          </>
-        )}
+      <span className="flex items-baseline gap-[8px]">
+        <span className="shrink-0 text-[14px] font-medium text-erp-label">
+          {label}
+          {required && (
+            <>
+              {" "}
+              <span aria-hidden className="text-[#e93737]">
+                *
+              </span>
+              <span className="sr-only">(필수)</span>
+            </>
+          )}
+        </span>
+        {hint && <Hint>{hint}</Hint>}
       </span>
       {children}
       <FieldErrors id={errorId} errors={errors} />
-      {help && <span className={HELP}>{help}</span>}
     </div>
   );
 }
@@ -359,7 +370,7 @@ export function ContractForm({
   const holiday = weeklyHolidayOf(form);
   const dayLabel = (d: Weekday) => labelOf(labels.weekday, d);
 
-  // 임시저장(DRAFT)은 직원 칸과 근무지만 있으면 되고, 초안 저장(발송 대기)은 다 채워야 한다(근로계약은 키만 NOT NULL).
+  // 임시저장(DRAFT)은 직원 칸과 근무지만 있으면 되고, 서명 요청(발송 대기)은 다 채워야 한다(근로계약은 키만 NOT NULL).
   const save = (temporary: boolean) => {
     setLastTemporary(temporary);
     setServerError("");
@@ -468,7 +479,7 @@ export function ContractForm({
   const partTime = form.employmentType === "PART_TIME";
 
   // 소정근로시간 표. 파트타이머면 같은 표에 근무시간 · 시급 · 소계 열과 주휴수당 · 주급 · 월급여 줄을 붙이고,
-  // 근무하는 요일의 시업 · 종업 · 휴게는 위 근무시간과 같은 시 · 분 상자로 요일마다 고친다(데모 확인 2026-10-15).
+  // 근무하는 요일의 근무 시작 · 근무 종료 · 휴게는 위 근무시간과 같은 시 · 분 상자로 요일마다 고친다(데모 확인 2026-10-15).
   const hourRows: PayRow[] = WEEKDAYS.map((d, i) => {
     const on = form.days.includes(d);
     const t = timesOf(form, d);
@@ -484,7 +495,7 @@ export function ContractForm({
       key: d,
       label: dayLabel(d),
       cells: partTime
-        ? [pick("work", "start", "시업"), pick("work", "end", "종업"), pick("rest", "start", "휴게 시작"), pick("rest", "end", "휴게 종료")]
+        ? [pick("work", "start", "근무 시작"), pick("work", "end", "근무 종료"), pick("rest", "start", "휴게 시작"), pick("rest", "end", "휴게 종료")]
         : [text(t.work.start), text(t.work.end), text(t.rest.start), text(t.rest.end)],
       hours: hoursLabel(day.hours),
       wage: won(wageNumber),
@@ -529,7 +540,7 @@ export function ContractForm({
         </Button>
       )}
       <Button onClick={() => save(false)} disabled={blocked}>
-        {saving ? "저장 중" : correction ? "수정 저장" : paper ? "종이 계약 등록" : "초안 저장"}
+        {saving ? "저장 중" : correction ? "수정 저장" : paper ? "종이 계약 등록" : "서명 요청"}
       </Button>
     </>
   );
@@ -554,7 +565,7 @@ export function ContractForm({
             <Item label="이름" required errors={errs.name}>
               {(id) => <TextField id={id} value={form.name} maxLength={50} onChange={(e) => set("name", e.target.value)} />}
             </Item>
-            <Item label="휴대전화번호" required help="초대 발송과 가입 연결의 기준값" errors={errs.phone}>
+            <Item label="휴대전화번호" required errors={errs.phone}>
               {(id) => (
                 <TextField
                   id={id}
@@ -569,11 +580,11 @@ export function ContractForm({
             </Item>
           </FormRow>
           <FormRow>
-            <Item label="생년월일" required help="계약 시작일 기준 만 19세 미만이면 저장할 수 없다." errors={errs.birthDate}>
+            <Item label="생년월일" required help="계약 시작일 기준 만 19세 미만이면 저장할 수 없습니다." errors={errs.birthDate}>
               {() => <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />}
             </Item>
             {/* 성별 · 외국인 여부 — 직원이 가입하며 넣는 값과 이름 · 번호 · 생년월일과 함께 대조해 본인만 날인한다(WHALEERP-125) */}
-            <Group label="성별" required help="가입 값과 대조해 본인만 날인한다." errors={errs.gender}>
+            <Group label="성별" required errors={errs.gender}>
               <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
                 {GENDERS.map((v) => (
                   <Radio key={v} name="gender" label={labelOf(labels.gender, v)} checked={form.gender === v} onChange={() => set("gender", v)} />
@@ -599,10 +610,6 @@ export function ContractForm({
             </Item>
           </FormRow>
           {/* 기재사항 · 주민등록번호는 받지 않는다(WHALEERP-132). 가입 값은 계약서에 채우지 않고 날인 전 본인 대조에만 쓴다(2026-10-23, WHALEERP-130) */}
-          <span className={HELP}>
-            주소 등 직원 기재사항은 받지 않는다 — 직원이 가입하며 넣는 값은 계약서에 채우지 않고 날인 전 본인 대조에만 쓴다. 주민등록번호는 날인을
-            마친 뒤 직원이 앱에서 넣는다.
-          </span>
         </FormGroup>
 
         <FormGroup title="계약 방식">
@@ -613,10 +620,7 @@ export function ContractForm({
               ))}
             </div>
           </Group>
-          <Group
-            label="계약 방식"
-            help={paper ? "당사자가 모두 날인한 근로계약서를 올려 등록하면 발송 · 날인 없이 체결 완료로 저장된다." : "초안 저장하면 곧바로 직원에게 보내고, 직원이 앱에서 날인한다."}
-          >
+          <Group label="계약 방식" hint={paper ? "당사자가 모두 날인한 근로계약서를 올려 등록하면 발송 · 날인 없이 체결 완료로 저장된다." : undefined}>
             <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
               {(["ELECTRONIC", "PAPER"] as const).map((v) => (
                 <Radio
@@ -636,7 +640,7 @@ export function ContractForm({
               <Item label="근로계약서" required help={`당사자가 모두 날인한 파일. ${paperTypes.join(" · ")}, 10MB까지`}>
                 {(id) => <PaperFile id={id} label="근로계약서" file={files.employment} error={fileErrors.employment ?? errs.employmentFile?.[0]} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("employment", f)} />}
               </Item>
-              <Item label="임금계약서" help="임금 약정을 따로 날인한 경우. 없으면 비워 둔다.">
+              <Item label="임금계약서">
                 {(id) => <PaperFile id={id} label="임금계약서" file={files.wage} error={fileErrors.wage} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("wage", f)} />}
               </Item>
             </FormRow>
@@ -648,7 +652,7 @@ export function ContractForm({
             <Item label="계약 시작일" required help={previousStartDate ? `재계약은 직전 계약 시작일(${previousStartDate}) 다음 날부터` : undefined} errors={errs.startDate}>
               {() => <DateField aria-label="계약 시작일" value={form.startDate} onChange={(v) => set("startDate", v)} />}
             </Item>
-            <Item label="계약 종료일" help="비워 두면 기간의 정함이 없는 계약" errors={errs.endDate}>
+            <Item label="계약 종료일" hint="미설정 시 기간의 정함이 없는 계약" errors={errs.endDate}>
               {() => <DateField aria-label="계약 종료일" value={form.endDate} onChange={(v) => set("endDate", v)} />}
             </Item>
           </FormRow>
@@ -679,32 +683,77 @@ export function ContractForm({
           {/* 급여 표 — 흰 칸은 입력, 회색 칸은 셈한 값이다(현업 엑셀 견본, 2026-10-13). */}
           {/* 시급 · 월급 · 연봉 한 줄이 소정근로시간 표 위에 있다(데모 확인 2026-10-15). 생년월일 · 근무요일 줄처럼 3등분한다(파트타이머는 셋째 칸을 비운다). 시급은 고용 형태와 상관없이 한 칸이다(2026-10-12 재영). */}
           <FormRow>
-            <Item label="시급" required help={hourlyMinimum ? `최저임금 ${hourlyMinimum.toLocaleString("ko-KR")}원 이상` : "최저임금 이상"} errors={errs.wage}>
-              {(id) => <TextField id={id} value={form.wage} inputMode="numeric" onChange={(e) => set("wage", formatWage(e.target.value))} />}
+            <Item label="시급" required errors={errs.wage}>
+              {(id) => (
+                <TextField
+                  id={id}
+                  value={form.wage}
+                  inputMode="numeric"
+                  placeholder={hourlyMinimum ? `최저임금 ${hourlyMinimum.toLocaleString("ko-KR")}원 이상` : "최저임금 이상"}
+                  onChange={(e) => set("wage", formatWage(e.target.value))}
+                />
+              )}
             </Item>
-            <Item label="월급" help={form.employmentType === "FULL_TIME" ? "급여항목 합계 + 비과세 합계" : "주급 × 4.345"}>
+            <Item label="월급" hint={form.employmentType === "FULL_TIME" ? "급여항목 합계 + 비과세 합계" : "주급 × 4.345"}>
               {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(monthly)} />}
             </Item>
             {form.employmentType === "FULL_TIME" ? (
-              <Item label="연봉" help="월급 × 12">
+              <Item label="연봉" hint="월급 × 12">
                 {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(fullPay.annual)} />}
               </Item>
             ) : (
               <div className="min-w-px flex-1" />
             )}
           </FormRow>
+          {/* 수습(노무사 확인 2026-10-14, 질문 19): 정직원만, 시급 · 월급 · 연봉 줄 바로 아래(수습 중 시급이 시급에서 셈해진다). 필수는 아니지만 수습 대상이면 계약서에 적는다.
+              계약 기간이 1년 이상(또는 기간의 정함 없음)일 때만, 기간은 최대 3개월, 감액해도 최저임금의 90% 이상. 급여명세서는 수습 기간이면 그렇다고 표기한다. */}
+          {!partTime && (
+            <>
+              <Group label="수습 여부" hint="계약 기간이 1년 이상이거나 종료일이 없을 때만 적용할 수 있습니다.">
+                <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
+                  <Radio name="probation" label="없음" checked={!form.probation} onChange={() => set("probation", false)} />
+                  <Radio name="probation" label="적용" checked={form.probation} onChange={() => set("probation", true)} />
+                </div>
+              </Group>
+              {form.probation && (
+                <FormRow>
+                  <Item label="수습 기간" required hint="최대 3개월" errors={errs.probationMonths}>
+                    {(id) => (
+                      <Select id={id} value={form.probationMonths} onChange={(e) => set("probationMonths", e.target.value as Form["probationMonths"])}>
+                        {(["1", "2", "3"] as const).map((m) => (
+                          <option key={m} value={m}>
+                            {m}개월
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+                  </Item>
+                  <Item label="임금 감액률" required hint="0~10% (감액 없으면 0)" errors={errs.probationRate}>
+                    {(id) => (
+                      <span className="flex items-center gap-[8px] text-[14px] text-erp-ink">
+                        <TextField id={id} value={form.probationRate} inputMode="numeric" maxLength={2} onChange={(e) => set("probationRate", e.target.value.replace(/\D/g, ""))} />%
+                      </span>
+                    )}
+                  </Item>
+                  <Item label="수습 중 시급" hint="시급 × (1 − 감액률) · 최저임금의 90% 이상" errors={errs.probationWage}>
+                    {(id) => <TextField id={id} readOnly value={won(probationWage(form))} />}
+                  </Item>
+                </FormRow>
+              )}
+            </>
+          )}
           <div className="flex flex-col gap-[8px]">
-            <div className="flex items-center">
-              <span className="flex-1 text-[14px] font-medium text-erp-label">소정근로시간</span>
+            <div className="flex items-baseline gap-[8px]">
+              <span className="text-[14px] font-medium text-erp-label">소정근로시간</span>
               <span className="text-[14px] text-erp-label">
-                주 <b className="font-semibold text-erp-ink">{weeklyHours(form).toFixed(1)}</b> 시간
+                주 <b className="font-semibold text-erp-ink">{Number(weeklyHours(form).toFixed(1))}</b>시간
               </span>
             </div>
             <DataTable
               columns={[
                 { header: "요일", width: partTime ? "w-[90px]" : "w-[70px]", cell: (r: PayRow) => r.label },
-                { header: "시업", cell: cell(0) },
-                { header: "종업", cell: cell(1) },
+                { header: "근무 시작", cell: cell(0) },
+                { header: "근무 종료", cell: cell(1) },
                 { header: "휴게 시작", cell: cell(2) },
                 { header: "휴게 종료", cell: cell(3) },
                 ...(partTime
@@ -723,12 +772,6 @@ export function ContractForm({
                 <FieldErrors id={scheduleErrorId} errors={errs.schedule} />
               </div>
             )}
-            <span className={HELP}>
-              {partTime
-                ? "요일마다 시업 · 종업 · 휴게를 고칠 수 있다. 위 근무시간 · 휴게시간을 바꾸거나 요일을 켜면 그 값으로 다시 채운다. 주휴시간은 주 15시간 이상일 때 주 시간 ÷ 5(8시간까지), 월급여는 주급 × 4.345."
-                : "요일마다 같은 시간이 들어간다. 요일별로 다른 시간은 근무스케줄에서 고친다."}{" "}
-              이 소정근로시간이 근무스케줄 기본값이 된다.
-            </span>
           </div>
           {/* 급여 지급 방식은 소정근로시간 표 바로 밑(데모 확인 2026-10-15) */}
           <Group label="급여 지급 방식" required>
@@ -741,7 +784,7 @@ export function ContractForm({
           {!partTime && (
             <>
               <FormRow>
-                <PayTable title="비과세 항목" help="금액은 원 단위. 0 원도 값으로 저장한다." errors={errs.allowances}>
+                <PayTable title="비과세 항목" errors={errs.allowances}>
                   <DataTable
                     columns={[
                       { header: "항목", align: "left", cell: (r: PayRow) => r.label },
@@ -751,7 +794,7 @@ export function ContractForm({
                     rowKey={(r) => r.key}
                   />
                 </PayTable>
-                <PayTable title="급여항목" help="시간은 월 · 30분(0.5) 단위. 연장 1.5배 · 야간 0.5배(가산분)로 셈한다." errors={errs.hours}>
+                <PayTable title="급여항목" errors={errs.hours}>
                   <DataTable
                     columns={[
                       { header: "항목", align: "left", cell: (r: PayRow) => r.label },
@@ -767,18 +810,9 @@ export function ContractForm({
           )}
           {/* 계산 기준(노무사 확인 2026-10-14, 질문 1 · 2 · 12 · 13): 주휴는 주 15시간 이상이고 그 주 소정근로일을 다 나온 주에만, 주휴시간 = 주 근로시간 ÷ 5.
               초과근무는 단시간근로자여도 1.5배(5인 미만 사업장은 1.0배 가능), 연장과 야간이 겹치면 2.0배, 계약하지 않은 요일 근무는 연장으로 1.5배. */}
-          <span className={HELP}>
-            주휴수당은 주 15시간 이상이고 그 주 소정근로일을 다 나온 주에만 주고, 주휴시간은 주 근로시간 ÷ 5 입니다. 연장과 야간이 겹치면 2.0배, 계약하지 않은 요일에 일한
-            시간은 연장(1.5배)으로 셉니다. 셈한 값은 저장하지 않습니다.
-          </span>
           <FormRow>
             {/* 주휴일은 특정 요일로 정해 계약서 휴일 조항에 적는다(노무사 확인 2026-10-14, 질문 4). 주 15시간 미만이면 없음이라 고를 수 없다. */}
-            <Item
-              label="주휴일"
-              required={holiday !== null}
-              help="특정 요일로 정해 계약서 휴일 조항에 적는다. 근무하는 요일은 선택할 수 없고, 주 15시간 미만이면 주휴가 없다."
-              errors={errs.weeklyHoliday}
-            >
+            <Item label="주휴일" required={holiday !== null} errors={errs.weeklyHoliday}>
               {(id) =>
                 holiday === null ? (
                   <Select id={id} disabled value="">
@@ -796,7 +830,7 @@ export function ContractForm({
                 )
               }
             </Item>
-            <Group label="임금지급일" help="31 을 넣으면 말일로 본다." errors={errs.payDay}>
+            <Group label="임금지급일" hint="31 을 넣으면 말일로 본다." errors={errs.payDay}>
               <span className="flex gap-[6px]">
                 <span className="w-[100px] shrink-0">
                   <Select aria-label="임금지급 월" value={form.payMonth} onChange={(e) => set("payMonth", e.target.value as Form["payMonth"])}>
@@ -810,7 +844,7 @@ export function ContractForm({
                 <TextField aria-label="임금지급일 날짜" value={form.payDay} inputMode="numeric" maxLength={2} onChange={(e) => set("payDay", e.target.value.replace(/\D/g, ""))} />
               </span>
             </Group>
-            <Item label="근무 장소" help="계약서 근무 장소 조항에 들어간다. 근무지 점포와 따로 적는다.">
+            <Item label="근무 장소">
               {(id) => (
                 <TextField id={id} value={form.workLocation} maxLength={200} placeholder="예: 서울 성동구 연무장길 18, 1층" onChange={(e) => set("workLocation", e.target.value)} />
               )}
@@ -820,56 +854,14 @@ export function ContractForm({
 
         <FormGroup title="계약서 조항">
           <FormRow>
-            <Item label="연차휴가" help="계약서 연차휴가 조항에 그대로 들어간다.">
+            <Item label="연차휴가">
               {(id) => <Textarea id={id} rows={2} maxLength={1000} value={form.annualLeaveTerms} onChange={(e) => set("annualLeaveTerms", e.target.value)} />}
             </Item>
-            <Item label="퇴직금" help="계약서 퇴직금 조항에 그대로 들어간다.">
+            <Item label="퇴직금">
               {(id) => <Textarea id={id} rows={2} maxLength={1000} value={form.severancePayTerms} onChange={(e) => set("severancePayTerms", e.target.value)} />}
             </Item>
           </FormRow>
         </FormGroup>
-
-        {/* 수습(노무사 확인 2026-10-14, 질문 19): 정직원만, 4대보험 가입 여부 위. 필수는 아니지만 수습 대상이면 계약서에 적는다.
-            계약 기간이 1년 이상(또는 기간의 정함 없음)일 때만, 기간은 최대 3개월, 감액해도 최저임금의 90% 이상. 급여명세서는 수습 기간이면 그렇다고 표기한다. */}
-        {!partTime && (
-          <FormGroup title="수습">
-            <Group label="수습 여부">
-              <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-                <Radio name="probation" label="없음" checked={!form.probation} onChange={() => set("probation", false)} />
-                <Radio name="probation" label="적용" checked={form.probation} onChange={() => set("probation", true)} />
-              </div>
-            </Group>
-            {form.probation && (
-              <FormRow>
-                <Item label="수습 기간" required help="최대 3개월. 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있다." errors={errs.probationMonths}>
-                  {(id) => (
-                    <Select id={id} value={form.probationMonths} onChange={(e) => set("probationMonths", e.target.value as Form["probationMonths"])}>
-                      {(["1", "2", "3"] as const).map((m) => (
-                        <option key={m} value={m}>
-                          {m}개월
-                        </option>
-                      ))}
-                    </Select>
-                  )}
-                </Item>
-                <Item label="임금 감액률" required help="최대 10%. 감액하지 않으면 0" errors={errs.probationRate}>
-                  {(id) => (
-                    <span className="flex items-center gap-[8px] text-[14px] text-erp-ink">
-                      <TextField id={id} value={form.probationRate} inputMode="numeric" maxLength={2} onChange={(e) => set("probationRate", e.target.value.replace(/\D/g, ""))} />%
-                    </span>
-                  )}
-                </Item>
-                <Item
-                  label="수습 중 시급"
-                  help={`시급 × (1 − 감액률). ${probationFloorLabel(hourlyMinimum)} 이상이어야 한다.`}
-                  errors={errs.probationWage}
-                >
-                  {(id) => <TextField id={id} readOnly value={won(probationWage(form))} />}
-                </Item>
-              </FormRow>
-            )}
-          </FormGroup>
-        )}
 
         <FormGroup title="4대보험 가입 여부">
           <div className="flex gap-[24px]">
@@ -884,11 +876,7 @@ export function ContractForm({
           </span>
         </FormGroup>
 
-        <Band
-          risk={minor}
-          title="만 19세 미만 직원은 등록할 수 없습니다."
-          desc="근로계약·출퇴근·급여는 점포에서 따로 관리해 주세요. 계약 시작일 기준으로 따지며, 만 19세 미만이면 저장이 막히고 초대도 나가지 않습니다."
-        />
+        <Band risk={minor} title="만 19세 미만 직원은 등록할 수 없습니다." />
         {/* 화면이 막은 유효성 오류는 칸 아래에 보이고, 여기는 api 가 막은 것(특정 칸에 붙일 수 없는 것)만이다(WHALEERP-631) */}
         {serverError && (
           <div ref={failureRef}>
@@ -899,9 +887,7 @@ export function ContractForm({
           <span className="flex-1 text-[14px] text-erp-label">
             {correction
               ? "직원이 수정을 요청한 근로계약서다. 다 채워 수정 저장하면 곧바로 서명 대기로 다시 보낸다(새 날인 기한 30일). 근무지는 바꿀 수 없다."
-              : paper
-              ? "임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 되고 날인본은 올리지 않는다. 종이 계약 등록은 다 채우고 근로계약서 날인본을 올려야 하며 체결 완료로 남는다."
-              : "임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 되고 보내지 않는다. 초안 저장은 다 채워야 하고 곧바로 직원에게 보낸다 — 계정이 없는 번호면 가입 초대 알림톡(발송 대기), 있으면 서명 대기."}
+              : paper && "임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 되고 날인본은 올리지 않는다. 종이 계약 등록은 다 채우고 근로계약서 날인본을 올려야 하며 체결 완료로 남는다."}
           </span>
           {saveButtons}
         </div>
@@ -938,7 +924,7 @@ export function ContractForm({
         </ul>
         {replace?.correcting ? (
           <p className="mt-[6px]">
-            같은 계약서를 다시 올렸다면 등록하지 않아도 됩니다. 재계약이면 기존 계약 상세의 [새 계약]으로 작성해 주세요. 잘못 올린 계약이면 바로잡기로 위 계약을 종료하고 이 계약서로 등록합니다(임시저장은 지웁니다).
+            같은 계약서를 다시 올렸다면 등록하지 않아도 됩니다. 재계약이면 기존 계약 상세의 [재계약]으로 작성해 주세요. 잘못 올린 계약이면 바로잡기로 위 계약을 종료하고 이 계약서로 등록합니다(임시저장은 지웁니다).
           </p>
         ) : (
           <p className="mt-[6px]">대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 · 수정 요청 계약은 종료합니다.</p>

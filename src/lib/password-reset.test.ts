@@ -62,9 +62,9 @@ test("버튼 — 재직 상태가 없으면 숨긴다", () => {
   assert.equal(canResetPassword({ ...joined, employmentStatus: null }, "FM", true), false);
 });
 
-test("받는 곳 문구 — 주소가 있으면 주소(데모 문구), 없으면 「직원의 이메일 아이디로」", () => {
-  assert.equal(resetRecipientText("jian.seo@example.com"), "이메일 아이디 jian.seo@example.com 으로");
-  assert.equal(resetRecipientText(null), "직원의 이메일 아이디로");
+test("받는 곳 문구 — 주소가 있으면 「직원 이메일(주소)로」, 없으면 「직원 이메일로」", () => {
+  assert.equal(resetRecipientText("jian.seo@example.com"), "직원 이메일(jian.seo@example.com)로");
+  assert.equal(resetRecipientText(null), "직원 이메일로");
 });
 
 test("실패 문구 — 429 는 api 문구 그대로. 이미 보냈다는 사실을 알려 다시 보내 앞 링크를 무효로 만들지 않게(2026-10-16 노영주)", () => {
