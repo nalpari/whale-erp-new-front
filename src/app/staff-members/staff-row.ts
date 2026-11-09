@@ -15,9 +15,9 @@ export interface Cell {
 export const EMPLOYMENT_TYPE_LABELS: Record<EmploymentType, string> = { FULL_TIME: "정직원", PART_TIME: "파트타이머" };
 export const JOIN_GROUP_LABELS: Record<JoinGroup, string> = {
   JOINED: "가입 완료",
-  INVITED: "초대 발송",
-  LINK_HOLD: "연결 보류",
-  AFFILIATION: "소속 추가 확인",
+  INVITED: "가입 대기",
+  LINK_HOLD: "정보 확인 필요",
+  AFFILIATION: "소속 승인 대기",
   UNDER_AGE: "가입 불가",
 };
 
@@ -54,7 +54,7 @@ export function joinCell(item: StaffMemberListItem, today: string): Cell {
       return { text: "가입 완료", style: item.employmentStatus === "RETIRED" ? "badge-neutral" : "badge-on" };
     case "INVITED":
       return {
-        text: item.invitation ? `초대 발송 · ${mmdd(kstDate(item.invitation.lastSentAt))}` : "초대 발송",
+        text: item.invitation ? `가입 대기 · ${mmdd(kstDate(item.invitation.lastSentAt))}` : "가입 대기",
         style: "badge-off",
       };
     case "EXPIRED":
@@ -63,11 +63,11 @@ export function joinCell(item: StaffMemberListItem, today: string): Cell {
       return { text: "거절", style: "badge-off" };
     case "LINK_HOLD":
       return {
-        text: item.linkHold ? `연결 보류 · ${dayDiff(kstDate(item.linkHold.heldAt), today)}일` : "연결 보류",
+        text: item.linkHold ? `정보 확인 필요 · ${dayDiff(kstDate(item.linkHold.heldAt), today)}일` : "정보 확인 필요",
         style: "badge-off",
       };
     case "AFFILIATION_PENDING":
-      return { text: "소속 추가 확인", style: "badge-on" };
+      return { text: "소속 승인 대기", style: "badge-on" };
     case "RETURN_PENDING":
       return { text: "복귀 확인", style: "badge-on" };
     case "UNDER_AGE":

@@ -28,7 +28,7 @@ test("재직 상태 전체는 파라미터를 뺀다", () => {
   assert.equal(paramsOf({ ...base, employmentStatus: "ALL" }).has("employmentStatus"), false);
 });
 
-test("묶음은 그 상태들을 쉼표 목록으로 — 초대 발송 = INVITED · EXPIRED · REJECTED", () => {
+test("묶음은 그 상태들을 쉼표 목록으로 — 가입 대기 = INVITED · EXPIRED · REJECTED", () => {
   const params = paramsOf({ ...base, joinGroups: ["INVITED", "LINK_HOLD"] });
   assert.equal(params.get("joinState"), "INVITED,EXPIRED,REJECTED,LINK_HOLD");
 });
@@ -85,11 +85,11 @@ test("kstToday 는 한국 날짜 — UTC 로 전날 15시는 한국 0시", () =>
 // GET /enums/StaffJoinState 응답 모양(api STAFF_JOIN_STATE_LABELS).
 const JOIN_STATE_LABELS = [
   { value: "JOINED", label: "가입 완료", order: 1 },
-  { value: "LINK_HOLD", label: "연결 보류", order: 2 },
+  { value: "LINK_HOLD", label: "정보 확인 필요", order: 2 },
   { value: "UNDER_AGE", label: "가입 불가(만 19세 미만)", order: 3 },
-  { value: "AFFILIATION_PENDING", label: "소속 추가 확인", order: 4 },
+  { value: "AFFILIATION_PENDING", label: "소속 승인 대기", order: 4 },
   { value: "RETURN_PENDING", label: "복귀 확인", order: 5 },
-  { value: "INVITED", label: "초대 발송", order: 6 },
+  { value: "INVITED", label: "가입 대기", order: 6 },
   { value: "EXPIRED", label: "초대 만료", order: 7 },
   { value: "REJECTED", label: "거절", order: 8 },
   { value: "DRAFT", label: "초안", order: 9 },
@@ -99,7 +99,7 @@ test("이메일 칸 — 값이 있으면 그대로 보인다(조회 권한이면
   assert.equal(staffEmailText({ email: "jian.seo@example.com", joinState: "JOINED" }, JOIN_STATE_LABELS), "jian.seo@example.com");
 });
 
-test("이메일 칸 — 초안 · 초대 발송은 「가입 전」(화면 문구, enum 한글이 아니다)", () => {
+test("이메일 칸 — 초안 · 가입 대기는 「가입 전」(화면 문구, enum 한글이 아니다)", () => {
   for (const joinState of ["DRAFT", "INVITED"] as const) {
     assert.equal(staffEmailText({ email: null, joinState }, JOIN_STATE_LABELS), "가입 전", joinState);
     assert.equal(staffEmailText({ email: null, joinState }, []), "가입 전", `${joinState} — enum 없이도`);
@@ -110,8 +110,8 @@ test("이메일 칸 — 그 밖의 가입 전 상태는 api enum(StaffJoinState)
   const expected = {
     EXPIRED: "초대 만료",
     REJECTED: "거절",
-    LINK_HOLD: "연결 보류",
-    AFFILIATION_PENDING: "소속 추가 확인",
+    LINK_HOLD: "정보 확인 필요",
+    AFFILIATION_PENDING: "소속 승인 대기",
     RETURN_PENDING: "복귀 확인",
     UNDER_AGE: "가입 불가(만 19세 미만)",
   } as const;
