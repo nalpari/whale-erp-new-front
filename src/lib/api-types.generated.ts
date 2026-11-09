@@ -661,6 +661,207 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/staff-members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffMembersController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 직원 기본 정보. 목록 한 줄에 계정 이메일을 더한 모양이다. 없는 직원 · 관리 범위 밖 · 가려지는
+         *     직원(본사 제공 동의 없는 가맹 점포 직원)은 모두 같은 404 다 — 퇴직 처리와 같은 규칙이다. 그래서 isMasked 는 늘
+         *     false 다.
+         */
+        get: operations["StaffMembersController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/{id}/summary/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 근로계약 영역 — 가장 최근 계약의 유형 · 기간 · 상태 · 최근 발송일 · 갱신 예정일 · 신고 정보의 급여 계좌(전체 번호, 가리지 않음). 근로계약 관리 조회 권한 */
+        get: operations["StaffMemberSummaryController_contract"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/{id}/summary/work-schedules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 근무스케줄 영역 — 한 주(월~일)의 근무스케줄과 주간 근무시간. 근무스케줄 관리 조회 권한 */
+        get: operations["StaffMemberSummaryController_workSchedules"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/{id}/summary/payslips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 급여명세서 영역 — 최근 명세서 3건 · 미발송 건수. 급여명세서 관리 조회 권한 */
+        get: operations["StaffMemberSummaryController_payslips"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/{id}/summary/send-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 발송 이력 영역 — 근로계약이 보낸 가입 초대 · 소속 추가 확인 요청(재발송 포함)의 결과 · 실패 사유 · 재시도 가능 여부, 최근 순
+         *     (WHALEERP-136). 근로계약 관리 조회 권한
+         */
+        get: operations["StaffMemberSummaryController_sendLogs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/{id}/summary/todos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** TO-DO 영역 — 전체 · 완료 · 미완료 건수와 최근 처리 이력. TO-DO 관리 조회 권한 */
+        get: operations["StaffMemberSummaryController_todos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/{id}/work-schedules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 이 직원의 근무스케줄 — 기간 필터 · 페이지. 근무일 내림차순, 같은 날은 시작 시각 순 */
+        get: operations["StaffMemberWorkSchedulesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/{id}/retirement-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 퇴직이 확정될 때 정리될 근무스케줄 · 개인 TO-DO · 대기 계약. 확인창에 보여 준다. */
+        get: operations["RetirementController_preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/{id}/retirement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** 퇴직일 변경. 퇴직 예정이고 퇴직일 전날까지만 된다(그 밖은 409). */
+        put: operations["RetirementController_changeDate"];
+        /**
+         * 퇴직 처리. 퇴직일만 저장하고 재직으로 둔다(퇴직 예정). 계약은 바꾸지 않는다. 퇴직일 다음 날 0시 배치가
+         *     퇴직으로 바꾸며 정리하고, 지난 날짜면 지금 바로 정리한다. 가입 전 · 이미 퇴직 · 이미 퇴직 예정이면 409.
+         */
+        post: operations["RetirementController_retire"];
+        /** 퇴직 취소. 퇴직 예정이고 퇴직일 전날까지만 된다(그 밖은 409). */
+        delete: operations["RetirementController_cancel"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/{id}/birth-date": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * 직원 생년월일 정정
+         * @description 가입 때 잘못 넣은 생년월일을 관리자가 확인해 정정한다(WHALEERP-602). 직원 레코드의 계정 생년월일을 바꾸므로 같은 사람의 다른 BP 소속에도 같이 바뀐다. 계약서에 적힌 생년월일은 바꾸지 않고, 날인 대기 중인 계약이 있어도 막지 않는다. 날인 대기 계약은 날인 때 계약서 생년월일과 계정 생년월일을 다시 대조하므로 정정으로 대조가 풀릴 수도 있고(보통) 새로 어긋날 수도 있다(계정 하나라 다른 BP 의 계약도 같다). 정정은 계정 변경 이력(BIRTH_DATE · ADMIN_CORRECTION)에 남는다. 오류 응답은 `code` 로 가른다.
+         */
+        put: operations["StaffBirthDateController_correct"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/signup": {
         parameters: {
             query?: never;
@@ -1792,207 +1993,6 @@ export interface paths {
         put?: never;
         /** 5분짜리 내려받기 주소. 내려받기 이력을 남긴다 */
         post: operations["BulkExportsController_download"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/staff-members": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["StaffMembersController_findAll"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/staff-members/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * 직원 기본 정보. 목록 한 줄에 계정 이메일을 더한 모양이다. 없는 직원 · 관리 범위 밖 · 가려지는
-         *     직원(본사 제공 동의 없는 가맹 점포 직원)은 모두 같은 404 다 — 퇴직 처리와 같은 규칙이다. 그래서 isMasked 는 늘
-         *     false 다.
-         */
-        get: operations["StaffMembersController_findOne"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/staff-members/{id}/summary/contracts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** 근로계약 영역 — 가장 최근 계약의 유형 · 기간 · 상태 · 최근 발송일 · 갱신 예정일 · 신고 정보의 급여 계좌(전체 번호, 가리지 않음). 근로계약 관리 조회 권한 */
-        get: operations["StaffMemberSummaryController_contract"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/staff-members/{id}/summary/work-schedules": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** 근무스케줄 영역 — 한 주(월~일)의 근무스케줄과 주간 근무시간. 근무스케줄 관리 조회 권한 */
-        get: operations["StaffMemberSummaryController_workSchedules"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/staff-members/{id}/summary/payslips": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** 급여명세서 영역 — 최근 명세서 3건 · 미발송 건수. 급여명세서 관리 조회 권한 */
-        get: operations["StaffMemberSummaryController_payslips"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/staff-members/{id}/summary/send-logs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * 발송 이력 영역 — 근로계약이 보낸 가입 초대 · 소속 추가 확인 요청(재발송 포함)의 결과 · 실패 사유 · 재시도 가능 여부, 최근 순
-         *     (WHALEERP-136). 근로계약 관리 조회 권한
-         */
-        get: operations["StaffMemberSummaryController_sendLogs"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/staff-members/{id}/summary/todos": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** TO-DO 영역 — 전체 · 완료 · 미완료 건수와 최근 처리 이력. TO-DO 관리 조회 권한 */
-        get: operations["StaffMemberSummaryController_todos"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/staff-members/{id}/work-schedules": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** 이 직원의 근무스케줄 — 기간 필터 · 페이지. 근무일 내림차순, 같은 날은 시작 시각 순 */
-        get: operations["StaffMemberWorkSchedulesController_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/staff-members/{id}/retirement-preview": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** 퇴직이 확정될 때 정리될 근무스케줄 · 개인 TO-DO · 대기 계약. 확인창에 보여 준다. */
-        get: operations["RetirementController_preview"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/staff-members/{id}/retirement": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** 퇴직일 변경. 퇴직 예정이고 퇴직일 전날까지만 된다(그 밖은 409). */
-        put: operations["RetirementController_changeDate"];
-        /**
-         * 퇴직 처리. 퇴직일만 저장하고 재직으로 둔다(퇴직 예정). 계약은 바꾸지 않는다. 퇴직일 다음 날 0시 배치가
-         *     퇴직으로 바꾸며 정리하고, 지난 날짜면 지금 바로 정리한다. 가입 전 · 이미 퇴직 · 이미 퇴직 예정이면 409.
-         */
-        post: operations["RetirementController_retire"];
-        /** 퇴직 취소. 퇴직 예정이고 퇴직일 전날까지만 된다(그 밖은 409). */
-        delete: operations["RetirementController_cancel"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/staff-members/{id}/birth-date": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * 직원 생년월일 정정
-         * @description 가입 때 잘못 넣은 생년월일을 관리자가 확인해 정정한다(WHALEERP-602). 직원 레코드의 계정 생년월일을 바꾸므로 같은 사람의 다른 BP 소속에도 같이 바뀐다. 계약서에 적힌 생년월일은 바꾸지 않고, 날인 대기 중인 계약이 있어도 막지 않는다. 날인 대기 계약은 날인 때 계약서 생년월일과 계정 생년월일을 다시 대조하므로 정정으로 대조가 풀릴 수도 있고(보통) 새로 어긋날 수도 있다(계정 하나라 다른 BP 의 계약도 같다). 정정은 계정 변경 이력(BIRTH_DATE · ADMIN_CORRECTION)에 남는다. 오류 응답은 `code` 로 가른다.
-         */
-        put: operations["StaffBirthDateController_correct"];
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4890,6 +4890,61 @@ export interface components {
             /** @description 현재 비밀번호. */
             currentPassword: string;
         };
+        StoreClosingOpenCheckInsDto: {
+            /** @description 본사 역할에게도 이름이 보이는 직원의 열린 출근 수 */
+            count: number;
+            /** @description 본사 역할에게 가려지는 직원(본사 제공 동의를 하지 않은 가맹 직원 등)의 열린 출근 수 */
+            hiddenCount: number;
+        };
+        StoreClosingStoreCheckDto: {
+            storeId: number;
+            /** @description 점포명 */
+            storeName: string;
+            /** @description 점포코드 */
+            storeCode: string;
+            openCheckIns: components["schemas"]["StoreClosingOpenCheckInsDto"];
+            /**
+             * @description 폐점하면 퇴직될 직원 수 — 퇴직일이 없거나 폐점일보다 뒤면 폐점일(한국 날짜 오늘)로 정하고, 이미 그 이전이면 그대로 둔다.
+             *     임시저장 계약만 있는 가입 전 레코드는 세지 않는다(그 임시저장은 draftContracts 로 드러난다)
+             */
+            retiringStaff: number;
+            /** @description 폐점하면 종료될 임시저장 계약 수 */
+            draftContracts: number;
+            /** @description 폐점하면 종료될 발송 대기 계약 수 */
+            pendingSendContracts: number;
+            /** @description 폐점하면 종료될 서명 대기 + 수정 요청 계약 수 */
+            pendingSignatureContracts: number;
+            /** @description 확정하지 않은(작성 중 · 검토 중) 급여명세서 수 — 폐점 뒤에도 처리할 수 있다 */
+            unconfirmedPayslips: number;
+            /** @description 폐점할 수 없다 — 퇴근하지 않은 출근이 있다(openCheckIns.count + hiddenCount > 0). 합계의 값은 응답 최상위 isBlocked 와 같다 */
+            isBlocked: boolean;
+        };
+        StoreClosingCountsDto: {
+            openCheckIns: components["schemas"]["StoreClosingOpenCheckInsDto"];
+            /**
+             * @description 폐점하면 퇴직될 직원 수 — 퇴직일이 없거나 폐점일보다 뒤면 폐점일(한국 날짜 오늘)로 정하고, 이미 그 이전이면 그대로 둔다.
+             *     임시저장 계약만 있는 가입 전 레코드는 세지 않는다(그 임시저장은 draftContracts 로 드러난다)
+             */
+            retiringStaff: number;
+            /** @description 폐점하면 종료될 임시저장 계약 수 */
+            draftContracts: number;
+            /** @description 폐점하면 종료될 발송 대기 계약 수 */
+            pendingSendContracts: number;
+            /** @description 폐점하면 종료될 서명 대기 + 수정 요청 계약 수 */
+            pendingSignatureContracts: number;
+            /** @description 확정하지 않은(작성 중 · 검토 중) 급여명세서 수 — 폐점 뒤에도 처리할 수 있다 */
+            unconfirmedPayslips: number;
+            /** @description 폐점할 수 없다 — 퇴근하지 않은 출근이 있다(openCheckIns.count + hiddenCount > 0). 합계의 값은 응답 최상위 isBlocked 와 같다 */
+            isBlocked: boolean;
+        };
+        StoreClosingCheckResponseDto: {
+            /** @description 점포별 결과 — 점포 id 오름차순 */
+            stores: components["schemas"]["StoreClosingStoreCheckDto"][];
+            /** @description 같은 칸의 합계 */
+            total: components["schemas"]["StoreClosingCountsDto"];
+            /** @description 하나라도 막히면 true — total.isBlocked 와 같은 값(편의용) */
+            isBlocked: boolean;
+        };
         WithdrawEligibilityResponseDto: {
             /** @description BP 상호명. */
             bpName: string;
@@ -4897,8 +4952,11 @@ export interface components {
             adminCount: number;
             /** @description 함께 강제 폐점될 점포 수 — 이미 폐점한 점포는 빼고 센다. */
             storeCount: number;
-            /** @description 진행 중인 근로계약(임시저장 · 발송 대기 · 서명 대기 · 수정 요청 · 체결 완료)이 있으면 true — 있으면 탈퇴를 막는다. */
-            hasInProgressContract: boolean;
+            /**
+             * @description 함께 폐점할 점포(폐점 안 한 점포 전부)의 폐점 확인 — 점포 관리 폐점과 같은 값이다. 점포별 값은 stores[], 합계는 total.
+             *     isBlocked(퇴근 기록 없는 출근이 있음)면 탈퇴를 막는다 — 막는 조건은 이것 하나뿐이다.
+             */
+            closing: components["schemas"]["StoreClosingCheckResponseDto"];
         };
         CreateWithdrawalDto: {
             /** @description 현재 비밀번호. */
@@ -5049,6 +5107,385 @@ export interface components {
             codes: {
                 [key: string]: components["schemas"]["CodeValueDto"][];
             };
+        };
+        /** @enum {string} */
+        EmploymentStatus: "EMPLOYED" | "RETIRED";
+        /** @enum {string} */
+        EmploymentType: "FULL_TIME" | "PART_TIME";
+        /** @enum {string} */
+        StaffJoinState: "JOINED" | "LINK_HOLD" | "UNDER_AGE" | "AFFILIATION_PENDING" | "RETURN_PENDING" | "INVITED" | "EXPIRED" | "REJECTED" | "DRAFT";
+        StaffMemberStoreDto: {
+            storeId: number;
+            name: string;
+            /** @description 공통코드 STORE_TYPE — DIRECT 직영 · FRANCHISE 가맹 */
+            storeType: string;
+        };
+        /** @enum {string} */
+        InvitationType: "SIGNUP" | "REINVITE" | "AFFILIATION_CONFIRM" | "RETURN_CONFIRM";
+        /** @enum {string} */
+        InvitationStatus: "SENT" | "ACCEPTED" | "EXPIRED" | "REJECTED" | "REJECTED_UNDER_AGE";
+        StaffMemberInvitationDto: {
+            invitationType: components["schemas"]["InvitationType"];
+            status: components["schemas"]["InvitationStatus"];
+            /**
+             * Format: date-time
+             * @description 이 초대를 보낸 일시
+             */
+            lastSentAt: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /**
+             * @deprecated
+             * @description contract.canResend 와 같은 값이다 — 초대 행이 없는 줄(이 변경 전 요청 없이 서명 대기가 된 옛 소속 확인 계약)은 invitation 이
+             *     null 이라 이 칸으로는 보일 수 없어 contract.canResend 로 옮겼다(api #164 리뷰). 화면이 옮겨 가면 뺀다.
+             */
+            canResend: boolean;
+        };
+        /** @enum {string} */
+        LinkHoldMismatchReason: "PHONE_MISMATCH" | "NAME_MISMATCH";
+        StaffMemberLinkHoldDto: {
+            mismatchReason: components["schemas"]["LinkHoldMismatchReason"];
+            linkHoldId: number;
+            /** @description 가입자가 본인인증한 번호의 끝 4자리 */
+            verifiedPhoneLast4: string;
+            /** Format: date-time */
+            heldAt: string;
+        };
+        /** @enum {string} */
+        ContractStatus: "DRAFT" | "PENDING_SEND" | "PENDING_SIGNATURE" | "CORRECTION_REQUESTED" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
+        /** @enum {string} */
+        Weekday: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
+        ContractDetailWorkDayDto: {
+            weekday: components["schemas"]["Weekday"];
+            breakStartTime: string | null;
+            breakEndTime: string | null;
+            startTime: string;
+            endTime: string;
+        };
+        StaffMemberContractDto: {
+            status: components["schemas"]["ContractStatus"] | null;
+            /**
+             * @description 근무 요일 — 월→일, 시각 HH:mm. 근로계약은 자정을 넘지 않는다(contract_work_days CHECK). 없으면 빈 배열.
+             *     null 은 「근로계약 조회 권한 없음」 — 근무 시간 · 근무요일은 근로계약 조항에서 나온 값이라 근로계약 관리 메뉴 조회
+             *     권한이 없는 관리자에게는 주지 않는다(재영 결정 2026-10-27)
+             */
+            workDays: components["schemas"]["ContractDetailWorkDayDto"][] | null;
+            contractId: number;
+            /** Format: date-time */
+            signDeadlineAt: string | null;
+            /**
+             * Format: date-time
+             * @description 마지막으로 보낸 때(계약 상세 lastSentAt 과 같은 값). 초대 재발송 본문 expectedSentAt 으로 그대로 보낸다 — 두 화면에서 같은 계약을
+             *     두 번 다시 보내지 않게(api #158 셀프 code-review). 보낸 적 없으면 null
+             */
+            lastSentAt: string | null;
+            /** @description 계약 종료일(YYYY-MM-DD). 비면 무기한 */
+            endDate: string | null;
+            /**
+             * Format: date-time
+             * @description 최종 수정 일시. 거부일을 따로 저장하지 않아 「거부 · MM-DD」는 이 값으로 보인다
+             */
+            updatedAt: string | null;
+            /**
+             * @description 가입 · 인증 칸 재발송용 — 근로계약 상세의 canResend 와 달리 가입한 직원은 거짓이다(가입한 직원의 앱 알림 재발송은 근로계약
+             *     상세에서). 이 칸의 버튼은 이 값 하나만 본다. 참이면 이 계약으로 근로계약 재발송(POST
+             *     /contracts/{contractId}/send)이 가입 초대 알림톡 또는 소속 추가 확인 요청을 보낸다(설정 누락 503 · 그사이 바뀐 상태 409 · 발송
+             *     실패 502 는 남는다). 발송 대기 · 서명 대기(거부 · 만료 재발송은 근로계약 상세에서, WHALEERP-153) 위에 모두 맞을 때만 참이다: 가입 전 ·
+             *     가입 상태가 초대 발송 · 초대 만료 · 소속 추가 확인 · 복귀 확인(연결 보류 · 만 19세 미만 · 거절은 거짓), 또는 초안이고 이
+             *     계약이 소속 추가 확인 · 복귀 확인으로 판별된 것(WHALEERP-130 전 요청 없이 서명 대기가 된 옛 계약) · 보이는 초대가 수락되지
+             *     않음 · 휴대폰 번호 · 가린 줄 아님. 간격 제한은 없다.
+             */
+            canResend: boolean;
+        };
+        StaffMemberListItemDto: {
+            employmentType: components["schemas"]["EmploymentType"] | null;
+            joinState: components["schemas"]["StaffJoinState"] | null;
+            employmentStatus: components["schemas"]["EmploymentStatus"] | null;
+            staffMemberId: number | null;
+            isMasked: boolean;
+            name: string | null;
+            phone: string | null;
+            store: components["schemas"]["StaffMemberStoreDto"];
+            invitation: components["schemas"]["StaffMemberInvitationDto"] | null;
+            linkHold: components["schemas"]["StaffMemberLinkHoldDto"] | null;
+            contract: components["schemas"]["StaffMemberContractDto"] | null;
+            /** @description 퇴직일(YYYY-MM-DD). 재직이면서 값이 있으면 퇴직 예정 */
+            retiredDate: string | null;
+        };
+        StaffMemberListResponseDto: {
+            items: components["schemas"]["StaffMemberListItemDto"][];
+            total: number;
+        };
+        /**
+         * @description 본사 제공 동의 상태 — 가맹 점포 직원만 동의 · 미동의, 직영 점포 직원은 null. 계정의 동의 칸이라 철회하면 바로
+         *     미동의이고, 가입 전(계정 없음)은 미동의다. 본사 역할(BM · BA)은 미동의 직원의 상세를 열지 못한다(404, ATT-30)
+         * @enum {string}
+         */
+        HqSharingConsentState: "AGREED" | "NOT_AGREED";
+        StaffMemberEmploymentPeriodDto: {
+            staffMemberId: number;
+            /** @description 입사일(YYYY-MM-DD). 채우기 전 레코드는 null */
+            hiredDate: string | null;
+            /** @description 퇴직일(YYYY-MM-DD) — 퇴직 예정이면 정한 날. 정하지 않았으면 null */
+            retiredDate: string | null;
+        };
+        StaffMemberDetailResponseDto: {
+            employmentType: components["schemas"]["EmploymentType"] | null;
+            joinState: components["schemas"]["StaffJoinState"] | null;
+            employmentStatus: components["schemas"]["EmploymentStatus"] | null;
+            /**
+             * @description 본사 제공 동의 상태 — 가맹 점포 직원만 동의 · 미동의, 직영 점포 직원은 null. 계정의 동의 칸이라 철회하면 바로
+             *     미동의이고, 가입 전(계정 없음)은 미동의다. 본사 역할(BM · BA)은 미동의 직원의 상세를 열지 못한다(404, ATT-30)
+             */
+            hqSharingConsent: components["schemas"]["HqSharingConsentState"] | null;
+            /**
+             * @description 직원 계정의 현재 이메일(회원 ID · 로그인 아이디). 근무지에 직접 와서 물은 직원에게 관리자가 알려 줄 수 있게, 상세를
+             *     볼 수 있는 관리자(직원 정보 관리 조회 권한)에게 낸다. 본사 역할(BM · BA)이 동의로만 보는 가맹 점포 직원이거나,
+             *     가입 전 · 탈퇴 계정 · 퇴직 레코드면 null. 관리자는 고치지 못한다(관리자 요청에 email 칸이 없다).
+             */
+            email: string | null;
+            /** @description 직무 */
+            jobTitle: string;
+            /** @description 입사일(YYYY-MM-DD) — 그 점포에서 처음 체결 완료된 근로계약의 시작일. 채우기 전 레코드는 null */
+            hiredDate: string | null;
+            /**
+             * @description 생년월일(YYYY-MM-DD). 가입한 계정 값이고, 가입 전 · 탈퇴 계정이면 생년월일이 적힌 가장 최근 계약의 값이다. 둘 다 없으면
+             *     null
+             */
+            birthDate: string | null;
+            /**
+             * @description 관리자가 생년월일을 정정할 수 있는 레코드인가(PUT /staff-members/:id/birth-date, WHALEERP-602). 계정이 있고 가입 완료
+             *     (`JOINED`, 탈퇴 · 연결 보류 아님)이며 퇴직하지 않았을 때 true(퇴직일이 지났는데 배치 전인 레코드는 퇴직으로 보아 false) — 정정 API 가
+             *     409 로 막는 경우(BIRTH_DATE_NOT_JOINED · BIRTH_DATE_RETIRED)와 같은 판정이다. `joinState` 는 직원 레코드의 가입 상태라
+             *     계정이 탈퇴 · 연결 보류여도 JOINED 로 오므로 버튼 표시에는 이 칸을 쓴다. 수정 권한은 보지 않는다 — 화면이 권한으로 가린다.
+             *     같은 값이라는 409(BIRTH_DATE_UNCHANGED)는 값을 넣어 봐야 아는 것이라 담지 않는다
+             */
+            birthDateCorrectable: boolean;
+            /**
+             * @description 이전 재직 기간 — 퇴직 뒤 같은 점포에 다시 입사해 이은 옛 레코드들(WHALEERP-615), 가까운 것부터. 누르면 그 레코드의
+             *     상세로 간다. 체결 완료된 계약이 없는 레코드와 이 관리자에게 가려지는 레코드는 빠진다
+             */
+            previousRecords: components["schemas"]["StaffMemberEmploymentPeriodDto"][];
+            /**
+             * @description 이후 재직 기간 — 이 레코드 뒤에 다시 입사한 레코드들, 가까운 것부터. 체결 완료 전(임시저장 · 발송만 한) 레코드와 가려지는
+             *     레코드는 빠진다
+             */
+            laterRecords: components["schemas"]["StaffMemberEmploymentPeriodDto"][];
+            staffMemberId: number | null;
+            isMasked: boolean;
+            name: string | null;
+            phone: string | null;
+            store: components["schemas"]["StaffMemberStoreDto"];
+            invitation: components["schemas"]["StaffMemberInvitationDto"] | null;
+            linkHold: components["schemas"]["StaffMemberLinkHoldDto"] | null;
+            contract: components["schemas"]["StaffMemberContractDto"] | null;
+            /** @description 퇴직일(YYYY-MM-DD). 재직이면서 값이 있으면 퇴직 예정 */
+            retiredDate: string | null;
+        };
+        StaffMemberPayrollAccountDto: {
+            /** @description 은행 이름(BANK 공통코드 이름, 예 KB국민은행). 공통코드에 없으면 은행 코드 그대로 */
+            bankName: string;
+            /** @description 계좌번호 전체 — 하이픈 없음, 가리지 않음 */
+            accountNumber: string;
+        };
+        /** @enum {string} */
+        ContractMethod: "ELECTRONIC" | "PAPER";
+        StaffMemberContractSummaryDto: {
+            /** @description 계약 유형. 임시저장이면 비어 있을 수 있다 */
+            employmentType: components["schemas"]["EmploymentType"] | null;
+            contractMethod: components["schemas"]["ContractMethod"] | null;
+            status: components["schemas"]["ContractStatus"] | null;
+            contractId: number;
+            /** @description 계약 시작일(YYYY-MM-DD) */
+            startDate: string | null;
+            /** @description 계약 종료일(YYYY-MM-DD). 비면 무기한 */
+            endDate: string | null;
+            /**
+             * Format: date-time
+             * @description 최근 발송 일시 — 발송 · 재발송 때 바뀐다. 보낸 적이 없으면 null
+             */
+            lastSentAt: string | null;
+            /**
+             * @description 갱신 예정일(YYYY-MM-DD) — 체결 완료이고 종료일이 오늘 이후일 때 종료일 30일 전. 종료일이 30일 안이면 이미 지난
+             *     날짜일 수 있다. 아니면 null
+             */
+            renewalDate: string | null;
+        };
+        StaffMemberContractSummaryResponseDto: {
+            /**
+             * @description 신고 정보의 급여 계좌 — 은행 이름 · 계좌번호 전체(하이픈 없음, 가리지 않음). 신고 정보가 없으면 null. 계약이 없어도
+             *     신고 정보가 있으면 오고, 급여 지급 방식(계좌 · 현금)과 상관없다. canViewPayrollAccount 가 false 이면 신고 정보를
+             *     읽지 않고 항상 null
+             */
+            payrollAccount: components["schemas"]["StaffMemberPayrollAccountDto"] | null;
+            /** @description 계약이 없으면 null */
+            contract: components["schemas"]["StaffMemberContractSummaryDto"] | null;
+            /**
+             * @description 이 관리자가 이 직원의 급여 계좌를 볼 수 있는가. 본사 역할(BP 마스터 · BP 관리자)이 가맹 점포 직원을 보면 false —
+             *     본사 제공 동의를 했어도 그렇다(동의 범위에 신고 정보가 없고 계좌는 가맹 점포 사업주가 받는 정보, 운영 정책 TAX-07 ·
+             *     TAX-08, 재영 2026-10-29). 그 밖(직영 점포 직원, 가맹마스터 · 가맹관리자)은 true. false 이면 화면은 「급여 계좌」 줄
+             *     자체를 숨긴다
+             */
+            canViewPayrollAccount: boolean;
+        };
+        StaffMemberWeekScheduleItemDto: {
+            workScheduleId: number;
+            storeId: number;
+            storeName: string;
+            /** @description 근무일(YYYY-MM-DD) — 시작 일시의 한국 날짜 */
+            workDate: string;
+            /** @description 시작 HH:mm(한국 시각) */
+            startTime: string;
+            /** @description 종료 HH:mm(한국 시각). 시작보다 이르면 다음 날이다 */
+            endTime: string;
+            breakMinutes: number;
+            /** @description 근무시간(분) — 종료 − 시작 − 휴게 */
+            workMinutes: number;
+        };
+        StaffMemberWeekScheduleResponseDto: {
+            /** @description 그 주 월요일(YYYY-MM-DD) */
+            weekStart: string;
+            /** @description 그 주 일요일(YYYY-MM-DD) */
+            weekEnd: string;
+            /** @description 시작 일시 순 */
+            items: components["schemas"]["StaffMemberWeekScheduleItemDto"][];
+            /** @description 주간 근무시간 합계(분) */
+            totalWorkMinutes: number;
+        };
+        /** @enum {string} */
+        PayslipStatus: "DRAFTING" | "REVIEWING" | "CONFIRMED" | "SENT";
+        StaffMemberRecentPayslipDto: {
+            status: components["schemas"]["PayslipStatus"];
+            payslipId: number;
+            /** @description 급여 기간 시작일(YYYY-MM-DD) */
+            periodStartDate: string;
+            /** @description 급여 기간 종료일(YYYY-MM-DD) */
+            periodEndDate: string;
+            /**
+             * @description 기본급 — 기본급(BASE_PAY) 항목의 관리자 수정값 ?? 시스템 계산값 ?? 0(명세서 지급 총액과 같은 기준). 항목이 없거나
+             *     넣지 않은 줄(isEntered = false)이면 null
+             */
+            basePayAmount: number | null;
+            /** @description 수당 — 지급 총액 − 기본급. 기본급이 null 이면 지급 총액 그대로다(지금은 늘 숫자) */
+            allowanceAmount: number | null;
+            totalDeductionAmount: number;
+            netPayAmount: number;
+        };
+        StaffMemberPayslipSummaryResponseDto: {
+            /** @description 이 직원의 명세서 최근 3건 — 상태와 관계없이(작성 중 포함) 급여 기간 시작일 최신순, 같으면 명세서 ID 내림차순 */
+            recent: components["schemas"]["StaffMemberRecentPayslipDto"][];
+            /** @description 발송 완료가 아닌 명세서 수 — 작성 중 · 검토 중 · 확정 */
+            unsentCount: number;
+        };
+        /** @enum {string} */
+        StaffSendKind: "SIGNUP_INVITE" | "AFFILIATION_REQUEST";
+        /**
+         * @description 비즈뿌리오 접수 기준. 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다
+         * @enum {string}
+         */
+        StaffSendResult: "SUCCEEDED" | "FAILED" | "UNCONFIRMED";
+        StaffMemberSendLogDto: {
+            kind: components["schemas"]["StaffSendKind"];
+            /** @description 비즈뿌리오 접수 기준. 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다 */
+            result: components["schemas"]["StaffSendResult"];
+            /** @description 알림톡 발송 이력 ID(alimtalk_send_logs) */
+            sendLogId: number;
+            /** @description 보낸 근로계약 */
+            contractId: number;
+            /** @description 같은 계약으로 앞서 직원에게 나갔을 수 있는 발송(성공 · 접수 여부 모름)이 있었다 — 재발송 · 고쳐 다시 보냄. 계약 재발송 횟수와는 다를 수 있다 */
+            isResend: boolean;
+            /** @description 관리자에게 보일 실패 사유. 성공이면 null */
+            failureReason: string | null;
+            /** @description 다시 보내도 되는가 — 확실히 나가지 않은 실패만 true, 접수 여부 모름은 false. 성공이면 null */
+            retryable: boolean | null;
+            /** Format: date-time */
+            sentAt: string;
+        };
+        StaffMemberSendLogResponseDto: {
+            /** @description 이 직원 레코드의 모든 근로계약 발송, 최근 순 */
+            items: components["schemas"]["StaffMemberSendLogDto"][];
+        };
+        /** @enum {string} */
+        TodoStatus: "PENDING" | "IN_PROGRESS" | "DONE";
+        /**
+         * @description 바꾼 쪽 — 관리자 · 직원 · 시스템. 한 명 수행이면 다른 직원일 수 있어 누구인지는 내지 않는다
+         * @enum {string}
+         */
+        StatusChangeActor: "ADMIN" | "STAFF" | "SYSTEM";
+        StaffMemberTodoHistoryDto: {
+            fromStatus: components["schemas"]["TodoStatus"] | null;
+            toStatus: components["schemas"]["TodoStatus"];
+            /** @description 바꾼 쪽 — 관리자 · 직원 · 시스템. 한 명 수행이면 다른 직원일 수 있어 누구인지는 내지 않는다 */
+            actor: components["schemas"]["StatusChangeActor"];
+            todoStatusHistoryId: number;
+            todoId: number;
+            title: string;
+            /** @description 긴급 표시를 바꾼 이력 */
+            isUrgentChanged: boolean;
+            /** Format: date-time */
+            changedAt: string;
+        };
+        StaffMemberTodoSummaryResponseDto: {
+            /** @description 이 직원에게 배정된, 지우지 않은 TO-DO 수 */
+            total: number;
+            /** @description 완료(DONE) 수 — 한 명 수행은 다른 배정자가 끝내도 완료다 */
+            doneCount: number;
+            /** @description 대기 · 진행 중 수. total = doneCount + notDoneCount */
+            notDoneCount: number;
+            /**
+             * @description 최근 변경 이력 5건, 바뀐 일시 내림차순. 등록(fromStatus 가 null) · 상태 변경 · 긴급 표시 변경(isUrgentChanged)을 모두
+             *     담는다(2026-10-21 노영주). 다른 배정자의 퇴직 배정 해제 행은 담지 않는다
+             */
+            recentHistories: components["schemas"]["StaffMemberTodoHistoryDto"][];
+        };
+        /** @enum {string} */
+        StaffWorkSchedulePeriod: "THIS_WEEK" | "LAST_4_WEEKS" | "LAST_3_MONTHS" | "LAST_1_YEAR" | "ALL";
+        StaffMemberWorkScheduleListItemDto: {
+            workScheduleId: number;
+            /** @description 근무일(YYYY-MM-DD) — 시작 일시의 한국 날짜 */
+            workDate: string;
+            /** @description 근무지 점포 이름 */
+            storeName: string;
+            /** @description 시작 HH:mm(한국 시각) */
+            startTime: string;
+            /** @description 종료 HH:mm(한국 시각). 시작보다 이르면 다음 날이다 */
+            endTime: string;
+        };
+        StaffMemberWorkScheduleListResponseDto: {
+            /** @description 근무일 내림차순 → 같은 날은 시작 시각 오름차순 → 근무스케줄 ID */
+            items: components["schemas"]["StaffMemberWorkScheduleListItemDto"][];
+            /** @description 기간 안의 지우지 않은 근무스케줄 수(모든 페이지) */
+            total: number;
+            /** @description 기간 안의 근무시간 합계(분, 페이지와 무관) — 건마다 종료 − 시작 − 휴게(직원 상세 요약의 workMinutes 와 같다). 0건이면 0 */
+            totalWorkMinutes: number;
+        };
+        ContractToEndDto: {
+            /** @description 임시저장 · 발송 대기 · 서명 대기 · 수정 요청 */
+            status: components["schemas"]["ContractStatus"];
+            contractId: number;
+        };
+        RetirementPreviewResponseDto: {
+            /** @description 퇴직일 다음 날부터의 근무스케줄 수 — 지운다 */
+            schedulesToRemove: number;
+            /** @description 개인으로 배정된 미완료 TO-DO 수 — 배정을 푼다 */
+            todosToUnassign: number;
+            /** @description 임시저장 · 발송 대기 · 서명 대기 · 수정 요청 계약 — 종료로 닫는다 */
+            contractsToEnd: components["schemas"]["ContractToEndDto"][];
+        };
+        RetirementDateDto: {
+            /**
+             * @description 퇴직일(YYYY-MM-DD, 한국 날짜). 그날까지 재직이고 다음 날 0시에 퇴직이 확정된다. 오늘 이후이거나 최근
+             *     3개월 안의 지난 날짜만 받고, 입사일보다 앞설 수 없다.
+             * @example 2026-10-31
+             */
+            retiredDate: string;
+        };
+        BirthDateCorrectionDto: {
+            /**
+             * @description 정정할 생년월일(YYYY-MM-DD, 한국 날짜). 오늘(KST) 뒤 날짜(내일부터)이거나 한국 오늘 기준 만 19세 미만이면 받지 않는다.
+             * @example 1990-05-17
+             */
+            birthDate: string;
         };
         SignupDto: {
             /**
@@ -6779,385 +7216,6 @@ export interface components {
             /** @description 파일을 받을 수 있는 기한(ISO) */
             expiresAt: string;
         };
-        /** @enum {string} */
-        EmploymentStatus: "EMPLOYED" | "RETIRED";
-        /** @enum {string} */
-        EmploymentType: "FULL_TIME" | "PART_TIME";
-        /** @enum {string} */
-        StaffJoinState: "JOINED" | "LINK_HOLD" | "UNDER_AGE" | "AFFILIATION_PENDING" | "RETURN_PENDING" | "INVITED" | "EXPIRED" | "REJECTED" | "DRAFT";
-        StaffMemberStoreDto: {
-            storeId: number;
-            name: string;
-            /** @description 공통코드 STORE_TYPE — DIRECT 직영 · FRANCHISE 가맹 */
-            storeType: string;
-        };
-        /** @enum {string} */
-        InvitationType: "SIGNUP" | "REINVITE" | "AFFILIATION_CONFIRM" | "RETURN_CONFIRM";
-        /** @enum {string} */
-        InvitationStatus: "SENT" | "ACCEPTED" | "EXPIRED" | "REJECTED" | "REJECTED_UNDER_AGE";
-        StaffMemberInvitationDto: {
-            invitationType: components["schemas"]["InvitationType"];
-            status: components["schemas"]["InvitationStatus"];
-            /**
-             * Format: date-time
-             * @description 이 초대를 보낸 일시
-             */
-            lastSentAt: string;
-            /** Format: date-time */
-            expiresAt: string;
-            /**
-             * @deprecated
-             * @description contract.canResend 와 같은 값이다 — 초대 행이 없는 줄(이 변경 전 요청 없이 서명 대기가 된 옛 소속 확인 계약)은 invitation 이
-             *     null 이라 이 칸으로는 보일 수 없어 contract.canResend 로 옮겼다(api #164 리뷰). 화면이 옮겨 가면 뺀다.
-             */
-            canResend: boolean;
-        };
-        /** @enum {string} */
-        LinkHoldMismatchReason: "PHONE_MISMATCH" | "NAME_MISMATCH";
-        StaffMemberLinkHoldDto: {
-            mismatchReason: components["schemas"]["LinkHoldMismatchReason"];
-            linkHoldId: number;
-            /** @description 가입자가 본인인증한 번호의 끝 4자리 */
-            verifiedPhoneLast4: string;
-            /** Format: date-time */
-            heldAt: string;
-        };
-        /** @enum {string} */
-        ContractStatus: "DRAFT" | "PENDING_SEND" | "PENDING_SIGNATURE" | "CORRECTION_REQUESTED" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
-        /** @enum {string} */
-        Weekday: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
-        ContractDetailWorkDayDto: {
-            weekday: components["schemas"]["Weekday"];
-            breakStartTime: string | null;
-            breakEndTime: string | null;
-            startTime: string;
-            endTime: string;
-        };
-        StaffMemberContractDto: {
-            status: components["schemas"]["ContractStatus"] | null;
-            /**
-             * @description 근무 요일 — 월→일, 시각 HH:mm. 근로계약은 자정을 넘지 않는다(contract_work_days CHECK). 없으면 빈 배열.
-             *     null 은 「근로계약 조회 권한 없음」 — 근무 시간 · 근무요일은 근로계약 조항에서 나온 값이라 근로계약 관리 메뉴 조회
-             *     권한이 없는 관리자에게는 주지 않는다(재영 결정 2026-10-27)
-             */
-            workDays: components["schemas"]["ContractDetailWorkDayDto"][] | null;
-            contractId: number;
-            /** Format: date-time */
-            signDeadlineAt: string | null;
-            /**
-             * Format: date-time
-             * @description 마지막으로 보낸 때(계약 상세 lastSentAt 과 같은 값). 초대 재발송 본문 expectedSentAt 으로 그대로 보낸다 — 두 화면에서 같은 계약을
-             *     두 번 다시 보내지 않게(api #158 셀프 code-review). 보낸 적 없으면 null
-             */
-            lastSentAt: string | null;
-            /** @description 계약 종료일(YYYY-MM-DD). 비면 무기한 */
-            endDate: string | null;
-            /**
-             * Format: date-time
-             * @description 최종 수정 일시. 거부일을 따로 저장하지 않아 「거부 · MM-DD」는 이 값으로 보인다
-             */
-            updatedAt: string | null;
-            /**
-             * @description 가입 · 인증 칸 재발송용 — 근로계약 상세의 canResend 와 달리 가입한 직원은 거짓이다(가입한 직원의 앱 알림 재발송은 근로계약
-             *     상세에서). 이 칸의 버튼은 이 값 하나만 본다. 참이면 이 계약으로 근로계약 재발송(POST
-             *     /contracts/{contractId}/send)이 가입 초대 알림톡 또는 소속 추가 확인 요청을 보낸다(설정 누락 503 · 그사이 바뀐 상태 409 · 발송
-             *     실패 502 는 남는다). 발송 대기 · 서명 대기(거부 · 만료 재발송은 근로계약 상세에서, WHALEERP-153) 위에 모두 맞을 때만 참이다: 가입 전 ·
-             *     가입 상태가 초대 발송 · 초대 만료 · 소속 추가 확인 · 복귀 확인(연결 보류 · 만 19세 미만 · 거절은 거짓), 또는 초안이고 이
-             *     계약이 소속 추가 확인 · 복귀 확인으로 판별된 것(WHALEERP-130 전 요청 없이 서명 대기가 된 옛 계약) · 보이는 초대가 수락되지
-             *     않음 · 휴대폰 번호 · 가린 줄 아님. 간격 제한은 없다.
-             */
-            canResend: boolean;
-        };
-        StaffMemberListItemDto: {
-            employmentType: components["schemas"]["EmploymentType"] | null;
-            joinState: components["schemas"]["StaffJoinState"] | null;
-            employmentStatus: components["schemas"]["EmploymentStatus"] | null;
-            staffMemberId: number | null;
-            isMasked: boolean;
-            name: string | null;
-            phone: string | null;
-            store: components["schemas"]["StaffMemberStoreDto"];
-            invitation: components["schemas"]["StaffMemberInvitationDto"] | null;
-            linkHold: components["schemas"]["StaffMemberLinkHoldDto"] | null;
-            contract: components["schemas"]["StaffMemberContractDto"] | null;
-            /** @description 퇴직일(YYYY-MM-DD). 재직이면서 값이 있으면 퇴직 예정 */
-            retiredDate: string | null;
-        };
-        StaffMemberListResponseDto: {
-            items: components["schemas"]["StaffMemberListItemDto"][];
-            total: number;
-        };
-        /**
-         * @description 본사 제공 동의 상태 — 가맹 점포 직원만 동의 · 미동의, 직영 점포 직원은 null. 계정의 동의 칸이라 철회하면 바로
-         *     미동의이고, 가입 전(계정 없음)은 미동의다. 본사 역할(BM · BA)은 미동의 직원의 상세를 열지 못한다(404, ATT-30)
-         * @enum {string}
-         */
-        HqSharingConsentState: "AGREED" | "NOT_AGREED";
-        StaffMemberEmploymentPeriodDto: {
-            staffMemberId: number;
-            /** @description 입사일(YYYY-MM-DD). 채우기 전 레코드는 null */
-            hiredDate: string | null;
-            /** @description 퇴직일(YYYY-MM-DD) — 퇴직 예정이면 정한 날. 정하지 않았으면 null */
-            retiredDate: string | null;
-        };
-        StaffMemberDetailResponseDto: {
-            employmentType: components["schemas"]["EmploymentType"] | null;
-            joinState: components["schemas"]["StaffJoinState"] | null;
-            employmentStatus: components["schemas"]["EmploymentStatus"] | null;
-            /**
-             * @description 본사 제공 동의 상태 — 가맹 점포 직원만 동의 · 미동의, 직영 점포 직원은 null. 계정의 동의 칸이라 철회하면 바로
-             *     미동의이고, 가입 전(계정 없음)은 미동의다. 본사 역할(BM · BA)은 미동의 직원의 상세를 열지 못한다(404, ATT-30)
-             */
-            hqSharingConsent: components["schemas"]["HqSharingConsentState"] | null;
-            /**
-             * @description 직원 계정의 현재 이메일(회원 ID · 로그인 아이디). 근무지에 직접 와서 물은 직원에게 관리자가 알려 줄 수 있게, 상세를
-             *     볼 수 있는 관리자(직원 정보 관리 조회 권한)에게 낸다. 본사 역할(BM · BA)이 동의로만 보는 가맹 점포 직원이거나,
-             *     가입 전 · 탈퇴 계정 · 퇴직 레코드면 null. 관리자는 고치지 못한다(관리자 요청에 email 칸이 없다).
-             */
-            email: string | null;
-            /** @description 직무 */
-            jobTitle: string;
-            /** @description 입사일(YYYY-MM-DD) — 그 점포에서 처음 체결 완료된 근로계약의 시작일. 채우기 전 레코드는 null */
-            hiredDate: string | null;
-            /**
-             * @description 생년월일(YYYY-MM-DD). 가입한 계정 값이고, 가입 전 · 탈퇴 계정이면 생년월일이 적힌 가장 최근 계약의 값이다. 둘 다 없으면
-             *     null
-             */
-            birthDate: string | null;
-            /**
-             * @description 관리자가 생년월일을 정정할 수 있는 레코드인가(PUT /staff-members/:id/birth-date, WHALEERP-602). 계정이 있고 가입 완료
-             *     (`JOINED`, 탈퇴 · 연결 보류 아님)이며 퇴직하지 않았을 때 true(퇴직일이 지났는데 배치 전인 레코드는 퇴직으로 보아 false) — 정정 API 가
-             *     409 로 막는 경우(BIRTH_DATE_NOT_JOINED · BIRTH_DATE_RETIRED)와 같은 판정이다. `joinState` 는 직원 레코드의 가입 상태라
-             *     계정이 탈퇴 · 연결 보류여도 JOINED 로 오므로 버튼 표시에는 이 칸을 쓴다. 수정 권한은 보지 않는다 — 화면이 권한으로 가린다.
-             *     같은 값이라는 409(BIRTH_DATE_UNCHANGED)는 값을 넣어 봐야 아는 것이라 담지 않는다
-             */
-            birthDateCorrectable: boolean;
-            /**
-             * @description 이전 재직 기간 — 퇴직 뒤 같은 점포에 다시 입사해 이은 옛 레코드들(WHALEERP-615), 가까운 것부터. 누르면 그 레코드의
-             *     상세로 간다. 체결 완료된 계약이 없는 레코드와 이 관리자에게 가려지는 레코드는 빠진다
-             */
-            previousRecords: components["schemas"]["StaffMemberEmploymentPeriodDto"][];
-            /**
-             * @description 이후 재직 기간 — 이 레코드 뒤에 다시 입사한 레코드들, 가까운 것부터. 체결 완료 전(임시저장 · 발송만 한) 레코드와 가려지는
-             *     레코드는 빠진다
-             */
-            laterRecords: components["schemas"]["StaffMemberEmploymentPeriodDto"][];
-            staffMemberId: number | null;
-            isMasked: boolean;
-            name: string | null;
-            phone: string | null;
-            store: components["schemas"]["StaffMemberStoreDto"];
-            invitation: components["schemas"]["StaffMemberInvitationDto"] | null;
-            linkHold: components["schemas"]["StaffMemberLinkHoldDto"] | null;
-            contract: components["schemas"]["StaffMemberContractDto"] | null;
-            /** @description 퇴직일(YYYY-MM-DD). 재직이면서 값이 있으면 퇴직 예정 */
-            retiredDate: string | null;
-        };
-        StaffMemberPayrollAccountDto: {
-            /** @description 은행 이름(BANK 공통코드 이름, 예 KB국민은행). 공통코드에 없으면 은행 코드 그대로 */
-            bankName: string;
-            /** @description 계좌번호 전체 — 하이픈 없음, 가리지 않음 */
-            accountNumber: string;
-        };
-        /** @enum {string} */
-        ContractMethod: "ELECTRONIC" | "PAPER";
-        StaffMemberContractSummaryDto: {
-            /** @description 계약 유형. 임시저장이면 비어 있을 수 있다 */
-            employmentType: components["schemas"]["EmploymentType"] | null;
-            contractMethod: components["schemas"]["ContractMethod"] | null;
-            status: components["schemas"]["ContractStatus"] | null;
-            contractId: number;
-            /** @description 계약 시작일(YYYY-MM-DD) */
-            startDate: string | null;
-            /** @description 계약 종료일(YYYY-MM-DD). 비면 무기한 */
-            endDate: string | null;
-            /**
-             * Format: date-time
-             * @description 최근 발송 일시 — 발송 · 재발송 때 바뀐다. 보낸 적이 없으면 null
-             */
-            lastSentAt: string | null;
-            /**
-             * @description 갱신 예정일(YYYY-MM-DD) — 체결 완료이고 종료일이 오늘 이후일 때 종료일 30일 전. 종료일이 30일 안이면 이미 지난
-             *     날짜일 수 있다. 아니면 null
-             */
-            renewalDate: string | null;
-        };
-        StaffMemberContractSummaryResponseDto: {
-            /**
-             * @description 신고 정보의 급여 계좌 — 은행 이름 · 계좌번호 전체(하이픈 없음, 가리지 않음). 신고 정보가 없으면 null. 계약이 없어도
-             *     신고 정보가 있으면 오고, 급여 지급 방식(계좌 · 현금)과 상관없다. canViewPayrollAccount 가 false 이면 신고 정보를
-             *     읽지 않고 항상 null
-             */
-            payrollAccount: components["schemas"]["StaffMemberPayrollAccountDto"] | null;
-            /** @description 계약이 없으면 null */
-            contract: components["schemas"]["StaffMemberContractSummaryDto"] | null;
-            /**
-             * @description 이 관리자가 이 직원의 급여 계좌를 볼 수 있는가. 본사 역할(BP 마스터 · BP 관리자)이 가맹 점포 직원을 보면 false —
-             *     본사 제공 동의를 했어도 그렇다(동의 범위에 신고 정보가 없고 계좌는 가맹 점포 사업주가 받는 정보, 운영 정책 TAX-07 ·
-             *     TAX-08, 재영 2026-10-29). 그 밖(직영 점포 직원, 가맹마스터 · 가맹관리자)은 true. false 이면 화면은 「급여 계좌」 줄
-             *     자체를 숨긴다
-             */
-            canViewPayrollAccount: boolean;
-        };
-        StaffMemberWeekScheduleItemDto: {
-            workScheduleId: number;
-            storeId: number;
-            storeName: string;
-            /** @description 근무일(YYYY-MM-DD) — 시작 일시의 한국 날짜 */
-            workDate: string;
-            /** @description 시작 HH:mm(한국 시각) */
-            startTime: string;
-            /** @description 종료 HH:mm(한국 시각). 시작보다 이르면 다음 날이다 */
-            endTime: string;
-            breakMinutes: number;
-            /** @description 근무시간(분) — 종료 − 시작 − 휴게 */
-            workMinutes: number;
-        };
-        StaffMemberWeekScheduleResponseDto: {
-            /** @description 그 주 월요일(YYYY-MM-DD) */
-            weekStart: string;
-            /** @description 그 주 일요일(YYYY-MM-DD) */
-            weekEnd: string;
-            /** @description 시작 일시 순 */
-            items: components["schemas"]["StaffMemberWeekScheduleItemDto"][];
-            /** @description 주간 근무시간 합계(분) */
-            totalWorkMinutes: number;
-        };
-        /** @enum {string} */
-        PayslipStatus: "DRAFTING" | "REVIEWING" | "CONFIRMED" | "SENT";
-        StaffMemberRecentPayslipDto: {
-            status: components["schemas"]["PayslipStatus"];
-            payslipId: number;
-            /** @description 급여 기간 시작일(YYYY-MM-DD) */
-            periodStartDate: string;
-            /** @description 급여 기간 종료일(YYYY-MM-DD) */
-            periodEndDate: string;
-            /**
-             * @description 기본급 — 기본급(BASE_PAY) 항목의 관리자 수정값 ?? 시스템 계산값 ?? 0(명세서 지급 총액과 같은 기준). 항목이 없거나
-             *     넣지 않은 줄(isEntered = false)이면 null
-             */
-            basePayAmount: number | null;
-            /** @description 수당 — 지급 총액 − 기본급. 기본급이 null 이면 지급 총액 그대로다(지금은 늘 숫자) */
-            allowanceAmount: number | null;
-            totalDeductionAmount: number;
-            netPayAmount: number;
-        };
-        StaffMemberPayslipSummaryResponseDto: {
-            /** @description 이 직원의 명세서 최근 3건 — 상태와 관계없이(작성 중 포함) 급여 기간 시작일 최신순, 같으면 명세서 ID 내림차순 */
-            recent: components["schemas"]["StaffMemberRecentPayslipDto"][];
-            /** @description 발송 완료가 아닌 명세서 수 — 작성 중 · 검토 중 · 확정 */
-            unsentCount: number;
-        };
-        /** @enum {string} */
-        StaffSendKind: "SIGNUP_INVITE" | "AFFILIATION_REQUEST";
-        /**
-         * @description 비즈뿌리오 접수 기준. 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다
-         * @enum {string}
-         */
-        StaffSendResult: "SUCCEEDED" | "FAILED" | "UNCONFIRMED";
-        StaffMemberSendLogDto: {
-            kind: components["schemas"]["StaffSendKind"];
-            /** @description 비즈뿌리오 접수 기준. 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다 */
-            result: components["schemas"]["StaffSendResult"];
-            /** @description 알림톡 발송 이력 ID(alimtalk_send_logs) */
-            sendLogId: number;
-            /** @description 보낸 근로계약 */
-            contractId: number;
-            /** @description 같은 계약으로 앞서 직원에게 나갔을 수 있는 발송(성공 · 접수 여부 모름)이 있었다 — 재발송 · 고쳐 다시 보냄. 계약 재발송 횟수와는 다를 수 있다 */
-            isResend: boolean;
-            /** @description 관리자에게 보일 실패 사유. 성공이면 null */
-            failureReason: string | null;
-            /** @description 다시 보내도 되는가 — 확실히 나가지 않은 실패만 true, 접수 여부 모름은 false. 성공이면 null */
-            retryable: boolean | null;
-            /** Format: date-time */
-            sentAt: string;
-        };
-        StaffMemberSendLogResponseDto: {
-            /** @description 이 직원 레코드의 모든 근로계약 발송, 최근 순 */
-            items: components["schemas"]["StaffMemberSendLogDto"][];
-        };
-        /** @enum {string} */
-        TodoStatus: "PENDING" | "IN_PROGRESS" | "DONE";
-        /**
-         * @description 바꾼 쪽 — 관리자 · 직원 · 시스템. 한 명 수행이면 다른 직원일 수 있어 누구인지는 내지 않는다
-         * @enum {string}
-         */
-        StatusChangeActor: "ADMIN" | "STAFF" | "SYSTEM";
-        StaffMemberTodoHistoryDto: {
-            fromStatus: components["schemas"]["TodoStatus"] | null;
-            toStatus: components["schemas"]["TodoStatus"];
-            /** @description 바꾼 쪽 — 관리자 · 직원 · 시스템. 한 명 수행이면 다른 직원일 수 있어 누구인지는 내지 않는다 */
-            actor: components["schemas"]["StatusChangeActor"];
-            todoStatusHistoryId: number;
-            todoId: number;
-            title: string;
-            /** @description 긴급 표시를 바꾼 이력 */
-            isUrgentChanged: boolean;
-            /** Format: date-time */
-            changedAt: string;
-        };
-        StaffMemberTodoSummaryResponseDto: {
-            /** @description 이 직원에게 배정된, 지우지 않은 TO-DO 수 */
-            total: number;
-            /** @description 완료(DONE) 수 — 한 명 수행은 다른 배정자가 끝내도 완료다 */
-            doneCount: number;
-            /** @description 대기 · 진행 중 수. total = doneCount + notDoneCount */
-            notDoneCount: number;
-            /**
-             * @description 최근 변경 이력 5건, 바뀐 일시 내림차순. 등록(fromStatus 가 null) · 상태 변경 · 긴급 표시 변경(isUrgentChanged)을 모두
-             *     담는다(2026-10-21 노영주). 다른 배정자의 퇴직 배정 해제 행은 담지 않는다
-             */
-            recentHistories: components["schemas"]["StaffMemberTodoHistoryDto"][];
-        };
-        /** @enum {string} */
-        StaffWorkSchedulePeriod: "THIS_WEEK" | "LAST_4_WEEKS" | "LAST_3_MONTHS" | "LAST_1_YEAR" | "ALL";
-        StaffMemberWorkScheduleListItemDto: {
-            workScheduleId: number;
-            /** @description 근무일(YYYY-MM-DD) — 시작 일시의 한국 날짜 */
-            workDate: string;
-            /** @description 근무지 점포 이름 */
-            storeName: string;
-            /** @description 시작 HH:mm(한국 시각) */
-            startTime: string;
-            /** @description 종료 HH:mm(한국 시각). 시작보다 이르면 다음 날이다 */
-            endTime: string;
-        };
-        StaffMemberWorkScheduleListResponseDto: {
-            /** @description 근무일 내림차순 → 같은 날은 시작 시각 오름차순 → 근무스케줄 ID */
-            items: components["schemas"]["StaffMemberWorkScheduleListItemDto"][];
-            /** @description 기간 안의 지우지 않은 근무스케줄 수(모든 페이지) */
-            total: number;
-            /** @description 기간 안의 근무시간 합계(분, 페이지와 무관) — 건마다 종료 − 시작 − 휴게(직원 상세 요약의 workMinutes 와 같다). 0건이면 0 */
-            totalWorkMinutes: number;
-        };
-        ContractToEndDto: {
-            /** @description 임시저장 · 발송 대기 · 서명 대기 · 수정 요청 */
-            status: components["schemas"]["ContractStatus"];
-            contractId: number;
-        };
-        RetirementPreviewResponseDto: {
-            /** @description 퇴직일 다음 날부터의 근무스케줄 수 — 지운다 */
-            schedulesToRemove: number;
-            /** @description 개인으로 배정된 미완료 TO-DO 수 — 배정을 푼다 */
-            todosToUnassign: number;
-            /** @description 임시저장 · 발송 대기 · 서명 대기 · 수정 요청 계약 — 종료로 닫는다 */
-            contractsToEnd: components["schemas"]["ContractToEndDto"][];
-        };
-        RetirementDateDto: {
-            /**
-             * @description 퇴직일(YYYY-MM-DD, 한국 날짜). 그날까지 재직이고 다음 날 0시에 퇴직이 확정된다. 오늘 이후이거나 최근
-             *     3개월 안의 지난 날짜만 받고, 입사일보다 앞설 수 없다.
-             * @example 2026-10-31
-             */
-            retiredDate: string;
-        };
-        BirthDateCorrectionDto: {
-            /**
-             * @description 정정할 생년월일(YYYY-MM-DD, 한국 날짜). 오늘(KST) 뒤 날짜(내일부터)이거나 한국 오늘 기준 만 19세 미만이면 받지 않는다.
-             * @example 1990-05-17
-             */
-            birthDate: string;
-        };
         /**
          * @description 급여명세서 검토 사유 — 출퇴근 누락 · 계약 만료 후 기록 · 기간 중 계약 변경 · 공제 미입력 · 확인 필요 기록 포함
          * @enum {string}
@@ -8379,61 +8437,6 @@ export interface components {
          * @enum {string}
          */
         StoreOperationRequirement: "BUSINESS_VERIFICATION" | "COORDINATES" | "BP_INACTIVE";
-        StoreClosingOpenCheckInsDto: {
-            /** @description 본사 역할에게도 이름이 보이는 직원의 열린 출근 수 */
-            count: number;
-            /** @description 본사 역할에게 가려지는 직원(본사 제공 동의를 하지 않은 가맹 직원 등)의 열린 출근 수 */
-            hiddenCount: number;
-        };
-        StoreClosingStoreCheckDto: {
-            storeId: number;
-            /** @description 점포명 */
-            storeName: string;
-            /** @description 점포코드 */
-            storeCode: string;
-            openCheckIns: components["schemas"]["StoreClosingOpenCheckInsDto"];
-            /**
-             * @description 폐점하면 퇴직될 직원 수 — 퇴직일이 없거나 폐점일보다 뒤면 폐점일(한국 날짜 오늘)로 정하고, 이미 그 이전이면 그대로 둔다.
-             *     임시저장 계약만 있는 가입 전 레코드는 세지 않는다(그 임시저장은 draftContracts 로 드러난다)
-             */
-            retiringStaff: number;
-            /** @description 폐점하면 종료될 임시저장 계약 수 */
-            draftContracts: number;
-            /** @description 폐점하면 종료될 발송 대기 계약 수 */
-            pendingSendContracts: number;
-            /** @description 폐점하면 종료될 서명 대기 + 수정 요청 계약 수 */
-            pendingSignatureContracts: number;
-            /** @description 확정하지 않은(작성 중 · 검토 중) 급여명세서 수 — 폐점 뒤에도 처리할 수 있다 */
-            unconfirmedPayslips: number;
-            /** @description 폐점할 수 없다 — 퇴근하지 않은 출근이 있다(openCheckIns.count + hiddenCount > 0). 합계의 값은 응답 최상위 isBlocked 와 같다 */
-            isBlocked: boolean;
-        };
-        StoreClosingCountsDto: {
-            openCheckIns: components["schemas"]["StoreClosingOpenCheckInsDto"];
-            /**
-             * @description 폐점하면 퇴직될 직원 수 — 퇴직일이 없거나 폐점일보다 뒤면 폐점일(한국 날짜 오늘)로 정하고, 이미 그 이전이면 그대로 둔다.
-             *     임시저장 계약만 있는 가입 전 레코드는 세지 않는다(그 임시저장은 draftContracts 로 드러난다)
-             */
-            retiringStaff: number;
-            /** @description 폐점하면 종료될 임시저장 계약 수 */
-            draftContracts: number;
-            /** @description 폐점하면 종료될 발송 대기 계약 수 */
-            pendingSendContracts: number;
-            /** @description 폐점하면 종료될 서명 대기 + 수정 요청 계약 수 */
-            pendingSignatureContracts: number;
-            /** @description 확정하지 않은(작성 중 · 검토 중) 급여명세서 수 — 폐점 뒤에도 처리할 수 있다 */
-            unconfirmedPayslips: number;
-            /** @description 폐점할 수 없다 — 퇴근하지 않은 출근이 있다(openCheckIns.count + hiddenCount > 0). 합계의 값은 응답 최상위 isBlocked 와 같다 */
-            isBlocked: boolean;
-        };
-        StoreClosingCheckResponseDto: {
-            /** @description 점포별 결과 — 점포 id 오름차순 */
-            stores: components["schemas"]["StoreClosingStoreCheckDto"][];
-            /** @description 같은 칸의 합계 */
-            total: components["schemas"]["StoreClosingCountsDto"];
-            /** @description 하나라도 막히면 true — total.isBlocked 와 같은 값(편의용) */
-            isBlocked: boolean;
-        };
         StoreTransitionCheckResponseDto: {
             /** @description 운영으로 바꾸는 데 모자란 것. 비어 있으면 운영할 수 있다. 한글은 GET /enums/StoreOperationRequirement. */
             missingForOperation: components["schemas"]["StoreOperationRequirement"][];
@@ -12005,6 +12008,660 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CodeItemsResponseDto"];
                 };
+            };
+        };
+    };
+    StaffMembersController_findAll: {
+        parameters: {
+            query?: {
+                /**
+                 * @description 고른 점포(관리자웹 목록 점포 필터 · 상단 점포 범위). 쉼표로 1000개까지(`storeIds=1,2`). 같은 키 반복
+                 *     (`storeIds=1&storeIds=2`)도 받지만 쿼리 파서가 키를 1000개까지만 읽어 넘치면 뒤 조건이 400 없이 빠지므로 많을 때는
+                 *     쉼표로 보낸다(api #132 리뷰). 관리 범위 밖의 id 는 조용히 빠진다. 주지 않으면 관리 범위 전체.
+                 *     빈 칸 · 숫자가 아닌 값 · 1..2147483647 밖의 값이 하나라도 있거나 1000개를 넘으면 400 이다.
+                 */
+                storeIds?: number[];
+                /**
+                 * @description 점포 유형(상단 점포 범위의 직영 · 가맹) — DIRECT · FRANCHISE, 반복하거나 쉼표로. 주면 그 유형 점포만이고 폐점 점포는
+                 *     뺀다(TO-DO 목록 api #133 과 같다, 2026-10-22 재영 — 폐점 점포는 전체 · 점포를 골라 본다). storeIds 와 함께 주면 둘 다
+                 *     맞는 점포만이다. 주지 않으면 유형 · 폐점 무관. 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
+                 */
+                storeTypes?: ("DIRECT" | "FRANCHISE")[];
+                /**
+                 * @description 쉼표로 구분한 고용형태. 없으면 전체. 화면은 둘 다 고르면 보내지 않는다.
+                 *     빈 값 · 모르는 값이 하나라도 있으면 400 이다.
+                 */
+                employmentType?: string;
+                /**
+                 * @description 쉼표로 구분한 가입·인증 상태(StaffJoinState). 고른 상태 중 하나라도 맞으면 나온다 — 화면의 묶음(초대 발송 =
+                 *     INVITED,EXPIRED,REJECTED)을 그대로 보낸다. 없으면 전체. 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
+                 *     화면에서 하나도 고르지 않았으면 이 api 를 부르지 않고 0건으로 그린다.
+                 */
+                joinState?: string;
+                /** @description 없으면 재직 · 퇴직 전체 */
+                employmentStatus?: components["schemas"]["EmploymentStatus"];
+                /** @description 페이지, 1부터. 상한은 OFFSET 이 DB 정수 범위를 넘어 500 이 되지 않게 둔다(200건 × 100만 쪽) */
+                page?: number;
+                /** @description 페이지당 건수, 기본 20 · 최대 200 */
+                pageSize?: number;
+                /**
+                 * @description 이름 부분 일치, 또는 하이픈을 뺀 휴대전화번호 부분 일치. 앞뒤 공백을 지우고 비면 없는 것으로 본다 — 빈
+                 *     검색창을 보낸 것만으로 개인 칸 필터가 되어 본사 역할의 가맹 점포 행이 빠지면 안 된다.
+                 */
+                keyword?: string;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMemberListResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMembersController_findOne: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMemberDetailResponseDto"];
+                };
+            };
+            /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMemberSummaryController_contract: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMemberContractSummaryResponseDto"];
+                };
+            };
+            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 서버에 암호화 키가 없음(신고 정보가 있을 때만) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMemberSummaryController_workSchedules: {
+        parameters: {
+            query?: {
+                /** @description 볼 주의 아무 날짜(YYYY-MM-DD). 그 주 월요일로 맞춘다. 빼면 이번 주(한국 날짜) */
+                weekStart?: string;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMemberWeekScheduleResponseDto"];
+                };
+            };
+            /** @description weekStart 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMemberSummaryController_payslips: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMemberPayslipSummaryResponseDto"];
+                };
+            };
+            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMemberSummaryController_sendLogs: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMemberSendLogResponseDto"];
+                };
+            };
+            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMemberSummaryController_todos: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMemberTodoSummaryResponseDto"];
+                };
+            };
+            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMemberWorkSchedulesController_list: {
+        parameters: {
+            query?: {
+                /**
+                 * @description 기간. 빼면 이번 주. 근무일(시작 일시의 한국 날짜)로 자른다.
+                 *     - `THIS_WEEK` — 오늘(한국 날짜)이 든 주의 월~일
+                 *     - `LAST_4_WEEKS` — 오늘에서 28일 전 0시부터, 상한 없음(미래에 잡힌 근무 포함)
+                 *     - `LAST_3_MONTHS` — 오늘에서 3개월 전 같은 날 0시부터, 상한 없음(미래 포함). 그 달에 같은 날이 없으면 그 달 말일(5월 31일 → 2월 28일)
+                 *     - `LAST_1_YEAR` — 오늘에서 12개월 전 같은 날 0시부터, 상한 없음(미래 포함). 말일 보정은 3개월과 같다
+                 *     - `ALL` — 날짜 조건 없음(생성일로부터 3년 지난 것은 파기 배치가 지운다)
+                 */
+                period?: components["schemas"]["StaffWorkSchedulePeriod"];
+                /** @description 페이지, 1부터. 상한은 OFFSET 이 DB 정수 범위를 넘어 500 이 되지 않게 둔다 */
+                page?: number;
+                /** @description 페이지당 건수 — 20 · 50 · 100, 기본 20 */
+                pageSize?: 20 | 50 | 100;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMemberWorkScheduleListResponseDto"];
+                };
+            };
+            /** @description period · page · pageSize 오류 — 가드 403 뒤, ID 형식 404 보다 먼저 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 조회 권한 없음(가드, 쿼리 · ID 검사보다 먼저) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 근무스케줄 관리 조회 권한 없음(「조회 권한이 없습니다.」, ID 형식 404 뒤 · 범위 404 앞 — 형식이 맞는 어떤 ID 든 같은 403) · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ID 형식 오류(쿼리 400 뒤 · 영역 403 앞) · 없는 직원 · 관리 범위 밖 · 가려지는 직원(영역 403 뒤) · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RetirementController_preview: {
+        parameters: {
+            query: {
+                /**
+                 * @description 퇴직일(YYYY-MM-DD, 한국 날짜). 그날까지 재직이고 다음 날 0시에 퇴직이 확정된다. 오늘 이후이거나 최근
+                 *     3개월 안의 지난 날짜만 받고, 입사일보다 앞설 수 없다.
+                 */
+                retiredDate: string;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetirementPreviewResponseDto"];
+                };
+            };
+            /** @description 퇴직일 형식 오류 · 3개월보다 오래됨 · 입사일보다 앞섬 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원이거나 관리 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 가입 전 · 이미 퇴직 · 이미 퇴직 예정(처리) / 퇴직 예정이 아님 · 퇴직일 당일 이후 · 같은 날짜(취소 · 변경) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RetirementController_changeDate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetirementDateDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 퇴직일 형식 오류 · 3개월보다 오래됨 · 입사일보다 앞섬 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원이거나 관리 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 가입 전 · 이미 퇴직 · 이미 퇴직 예정(처리) / 퇴직 예정이 아님 · 퇴직일 당일 이후 · 같은 날짜(취소 · 변경) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RetirementController_retire: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetirementDateDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 퇴직일 형식 오류 · 3개월보다 오래됨 · 입사일보다 앞섬 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원이거나 관리 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 가입 전 · 이미 퇴직 · 이미 퇴직 예정(처리) / 퇴직 예정이 아님 · 퇴직일 당일 이후 · 같은 날짜(취소 · 변경) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RetirementController_cancel: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 퇴직일 형식 오류 · 3개월보다 오래됨 · 입사일보다 앞섬 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원이거나 관리 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 가입 전 · 이미 퇴직 · 이미 퇴직 예정(처리) / 퇴직 예정이 아님 · 퇴직일 당일 이후 · 같은 날짜(취소 · 변경) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffBirthDateController_correct: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BirthDateCorrectionDto"];
+            };
+        };
+        responses: {
+            /** @description 정정함 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description BIRTH_DATE_INVALID(문자열 날짜의 형식 오류 · 없는 날짜 · 오늘(KST) 뒤 날짜(내일부터); birthDate 없음 · 문자열 아님 · 모르는 필드는 code 없는 ValidationPipe 400) / BIRTH_DATE_UNDER_AGE(한국 오늘 기준 만 19세 미만) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원이거나 관리 범위 밖 · 본사 제공 동의로 가려진 직원 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description BIRTH_DATE_NOT_JOINED(계정 없음(가입 전) · 계정이 JOINED 아님(탈퇴 · 연결 보류)) / BIRTH_DATE_RETIRED(퇴직한 레코드 · 퇴직일이 지났는데 배치 전인 레코드. 퇴직 예정은 허용) / BIRTH_DATE_UNCHANGED(지금 값과 같음) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -16027,660 +16684,6 @@ export interface operations {
             };
         };
     };
-    StaffMembersController_findAll: {
-        parameters: {
-            query?: {
-                /**
-                 * @description 고른 점포(관리자웹 목록 점포 필터 · 상단 점포 범위). 쉼표로 1000개까지(`storeIds=1,2`). 같은 키 반복
-                 *     (`storeIds=1&storeIds=2`)도 받지만 쿼리 파서가 키를 1000개까지만 읽어 넘치면 뒤 조건이 400 없이 빠지므로 많을 때는
-                 *     쉼표로 보낸다(api #132 리뷰). 관리 범위 밖의 id 는 조용히 빠진다. 주지 않으면 관리 범위 전체.
-                 *     빈 칸 · 숫자가 아닌 값 · 1..2147483647 밖의 값이 하나라도 있거나 1000개를 넘으면 400 이다.
-                 */
-                storeIds?: number[];
-                /**
-                 * @description 점포 유형(상단 점포 범위의 직영 · 가맹) — DIRECT · FRANCHISE, 반복하거나 쉼표로. 주면 그 유형 점포만이고 폐점 점포는
-                 *     뺀다(TO-DO 목록 api #133 과 같다, 2026-10-22 재영 — 폐점 점포는 전체 · 점포를 골라 본다). storeIds 와 함께 주면 둘 다
-                 *     맞는 점포만이다. 주지 않으면 유형 · 폐점 무관. 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
-                 */
-                storeTypes?: ("DIRECT" | "FRANCHISE")[];
-                /**
-                 * @description 쉼표로 구분한 고용형태. 없으면 전체. 화면은 둘 다 고르면 보내지 않는다.
-                 *     빈 값 · 모르는 값이 하나라도 있으면 400 이다.
-                 */
-                employmentType?: string;
-                /**
-                 * @description 쉼표로 구분한 가입·인증 상태(StaffJoinState). 고른 상태 중 하나라도 맞으면 나온다 — 화면의 묶음(초대 발송 =
-                 *     INVITED,EXPIRED,REJECTED)을 그대로 보낸다. 없으면 전체. 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
-                 *     화면에서 하나도 고르지 않았으면 이 api 를 부르지 않고 0건으로 그린다.
-                 */
-                joinState?: string;
-                /** @description 없으면 재직 · 퇴직 전체 */
-                employmentStatus?: components["schemas"]["EmploymentStatus"];
-                /** @description 페이지, 1부터. 상한은 OFFSET 이 DB 정수 범위를 넘어 500 이 되지 않게 둔다(200건 × 100만 쪽) */
-                page?: number;
-                /** @description 페이지당 건수, 기본 20 · 최대 200 */
-                pageSize?: number;
-                /**
-                 * @description 이름 부분 일치, 또는 하이픈을 뺀 휴대전화번호 부분 일치. 앞뒤 공백을 지우고 비면 없는 것으로 본다 — 빈
-                 *     검색창을 보낸 것만으로 개인 칸 필터가 되어 본사 역할의 가맹 점포 행이 빠지면 안 된다.
-                 */
-                keyword?: string;
-            };
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StaffMemberListResponseDto"];
-                };
-            };
-            /** @description 쿼리 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    StaffMembersController_findOne: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StaffMemberDetailResponseDto"];
-                };
-            };
-            /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    StaffMemberSummaryController_contract: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StaffMemberContractSummaryResponseDto"];
-                };
-            };
-            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 서버에 암호화 키가 없음(신고 정보가 있을 때만) */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    StaffMemberSummaryController_workSchedules: {
-        parameters: {
-            query?: {
-                /** @description 볼 주의 아무 날짜(YYYY-MM-DD). 그 주 월요일로 맞춘다. 빼면 이번 주(한국 날짜) */
-                weekStart?: string;
-            };
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StaffMemberWeekScheduleResponseDto"];
-                };
-            };
-            /** @description weekStart 형식 오류 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    StaffMemberSummaryController_payslips: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StaffMemberPayslipSummaryResponseDto"];
-                };
-            };
-            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    StaffMemberSummaryController_sendLogs: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StaffMemberSendLogResponseDto"];
-                };
-            };
-            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    StaffMemberSummaryController_todos: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StaffMemberTodoSummaryResponseDto"];
-                };
-            };
-            /** @description 직원 정보 관리 · 그 영역 메뉴의 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    StaffMemberWorkSchedulesController_list: {
-        parameters: {
-            query?: {
-                /**
-                 * @description 기간. 빼면 이번 주. 근무일(시작 일시의 한국 날짜)로 자른다.
-                 *     - `THIS_WEEK` — 오늘(한국 날짜)이 든 주의 월~일
-                 *     - `LAST_4_WEEKS` — 오늘에서 28일 전 0시부터, 상한 없음(미래에 잡힌 근무 포함)
-                 *     - `LAST_3_MONTHS` — 오늘에서 3개월 전 같은 날 0시부터, 상한 없음(미래 포함). 그 달에 같은 날이 없으면 그 달 말일(5월 31일 → 2월 28일)
-                 *     - `LAST_1_YEAR` — 오늘에서 12개월 전 같은 날 0시부터, 상한 없음(미래 포함). 말일 보정은 3개월과 같다
-                 *     - `ALL` — 날짜 조건 없음(생성일로부터 3년 지난 것은 파기 배치가 지운다)
-                 */
-                period?: components["schemas"]["StaffWorkSchedulePeriod"];
-                /** @description 페이지, 1부터. 상한은 OFFSET 이 DB 정수 범위를 넘어 500 이 되지 않게 둔다 */
-                page?: number;
-                /** @description 페이지당 건수 — 20 · 50 · 100, 기본 20 */
-                pageSize?: 20 | 50 | 100;
-            };
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StaffMemberWorkScheduleListResponseDto"];
-                };
-            };
-            /** @description period · page · pageSize 오류 — 가드 403 뒤, ID 형식 404 보다 먼저 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 정보 관리 조회 권한 없음(가드, 쿼리 · ID 검사보다 먼저) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 근무스케줄 관리 조회 권한 없음(「조회 권한이 없습니다.」, ID 형식 404 뒤 · 범위 404 앞 — 형식이 맞는 어떤 ID 든 같은 403) · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description ID 형식 오류(쿼리 400 뒤 · 영역 403 앞) · 없는 직원 · 관리 범위 밖 · 가려지는 직원(영역 403 뒤) · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RetirementController_preview: {
-        parameters: {
-            query: {
-                /**
-                 * @description 퇴직일(YYYY-MM-DD, 한국 날짜). 그날까지 재직이고 다음 날 0시에 퇴직이 확정된다. 오늘 이후이거나 최근
-                 *     3개월 안의 지난 날짜만 받고, 입사일보다 앞설 수 없다.
-                 */
-                retiredDate: string;
-            };
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RetirementPreviewResponseDto"];
-                };
-            };
-            /** @description 퇴직일 형식 오류 · 3개월보다 오래됨 · 입사일보다 앞섬 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 없는 직원이거나 관리 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 가입 전 · 이미 퇴직 · 이미 퇴직 예정(처리) / 퇴직 예정이 아님 · 퇴직일 당일 이후 · 같은 날짜(취소 · 변경) */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RetirementController_changeDate: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RetirementDateDto"];
-            };
-        };
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 퇴직일 형식 오류 · 3개월보다 오래됨 · 입사일보다 앞섬 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 없는 직원이거나 관리 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 가입 전 · 이미 퇴직 · 이미 퇴직 예정(처리) / 퇴직 예정이 아님 · 퇴직일 당일 이후 · 같은 날짜(취소 · 변경) */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RetirementController_retire: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RetirementDateDto"];
-            };
-        };
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 퇴직일 형식 오류 · 3개월보다 오래됨 · 입사일보다 앞섬 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 없는 직원이거나 관리 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 가입 전 · 이미 퇴직 · 이미 퇴직 예정(처리) / 퇴직 예정이 아님 · 퇴직일 당일 이후 · 같은 날짜(취소 · 변경) */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    RetirementController_cancel: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 퇴직일 형식 오류 · 3개월보다 오래됨 · 입사일보다 앞섬 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 없는 직원이거나 관리 범위 밖 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 가입 전 · 이미 퇴직 · 이미 퇴직 예정(처리) / 퇴직 예정이 아님 · 퇴직일 당일 이후 · 같은 날짜(취소 · 변경) */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    StaffBirthDateController_correct: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BirthDateCorrectionDto"];
-            };
-        };
-        responses: {
-            /** @description 정정함 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description BIRTH_DATE_INVALID(문자열 날짜의 형식 오류 · 없는 날짜 · 오늘(KST) 뒤 날짜(내일부터); birthDate 없음 · 문자열 아님 · 모르는 필드는 code 없는 ValidationPipe 400) / BIRTH_DATE_UNDER_AGE(한국 오늘 기준 만 19세 미만) */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 없는 직원이거나 관리 범위 밖 · 본사 제공 동의로 가려진 직원 · 플랫폼 계정의 X-Bp-Code-Id 누락(직원 단위라 400 이 아니라 404) · 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description BIRTH_DATE_NOT_JOINED(계정 없음(가입 전) · 계정이 JOINED 아님(탈퇴 · 연결 보류)) / BIRTH_DATE_RETIRED(퇴직한 레코드 · 퇴직일이 지났는데 배치 전인 레코드. 퇴직 예정은 허용) / BIRTH_DATE_UNCHANGED(지금 값과 같음) */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     PayslipsController_findAll: {
         parameters: {
             query: {
@@ -19436,7 +19439,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 동시 수정 · 폐점한 점포 · 소속 BP 미사용 · 사업자등록번호 중복 · 퇴근하지 않은 출근(폐점, code OPEN_CHECK_IN · storeId — 퇴근 등록 또는 출퇴근 현황 보정 뒤 다시) · 다른 처리와 겹침(폐점, 교착이 다시 해도 나면 — 바뀐 것 없음, 다시 시도) */
+            /** @description 동시 수정 · 폐점한 점포 · 소속 BP 미사용 · 사업자등록번호 중복 · 퇴근 기록이 없는 출근(폐점, code OPEN_CHECK_IN · storeId) · 다른 처리와 겹침(폐점, 교착이 다시 해도 나면 — 바뀐 것 없음, 다시 시도) */
             409: {
                 headers: {
                     [name: string]: unknown;
