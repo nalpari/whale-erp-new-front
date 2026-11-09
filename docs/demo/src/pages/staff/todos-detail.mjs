@@ -43,15 +43,17 @@ export default ({ A, R }) => {
     `<section class="min-w-0"><h3 class="flex h-[42px] items-center rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">${title}</h3>${inner}</section>`;
   const plainHead = (html) => html.replace(/<thead>\s*<tr class="h-\[42px\] border-y border-erp-thead-line bg-erp-thead-bg">/, '<thead><tr class="h-[42px] border-y border-erp-thead-line bg-white">');
 
-  // 직원별 상태 — 직원 이름은 글자로만, 줄마다 상태를 바로 바꾼다(앱 page.tsx, 2026-11-09 사용자 지정)
+  // 직원별 상태 — 줄마다 상태를 바로 바꾼다. 직원 이름을 누르면 그 직원의 상세로 가고 오른쪽 이력이 그 직원 것이 된다 — 지금 보는 직원(서지안)은 링크 없이 굵게(앱 page.tsx, 2026-11-09 사용자 지정)
+  const staffLink = (name) => `<a class="text-erp-link hover:underline" href="${link(R, "staff/todos-detail.html")}">${name}</a>`;
   const groupTable = plainHead(
     ui.dataTable(
       [{ header: "직원" }, { header: "상태" }, { header: "완료 일시" }],
       [
-        ["서지안", control("진행 중", "서지안"), "-"],
-        ["오세라", control("완료", "오세라"), "2026-09-02 17:40"],
-        ["문태경", control("완료", "문태경"), "2026-09-02 18:05"],
-        ["권도윤", control("대기", "권도윤"), "-"],
+        ['<span class="font-semibold">서지안</span>', control("진행 중", "서지안"), "-"],
+        [staffLink("오세라"), control("완료", "오세라"), "2026-09-02 17:40"],
+        [staffLink("문태경"), control("완료", "문태경"), "2026-09-02 18:05"],
+        // 가린 직원 · 퇴직으로 배정이 풀린 줄도 상태를 바꾼다(링크 없음)
+        ['<span class="text-erp-muted">본사에 정보제공 미동의</span>', control("대기", "본사에 정보제공 미동의"), "-"],
       ],
     ),
   );

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge, DataTable, DetailTable, GuideIcon, PageBar, Tag, type DetailRow } from "@/components/common";
-import { deniedMessageOf, getEnum } from "@/lib/api";
+import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
 import { getTodo, type TodoDetail } from "@/lib/todos-api";
 import { CellView } from "../../staff-members/staff-table";
-import { backHrefOf } from "../todo-list-query";
+import { backHrefOf, withBack } from "../todo-list-query";
 import { StaffNames } from "../staff-names";
 import { staffNameText, statusCells } from "../todo-row";
 import { TodoDetailActions, TodoStatusControl } from "./todo-detail-actions";
@@ -50,6 +51,8 @@ export default async function TodoDetailPage({
       </>
     );
   const listHref = backHrefOf((await searchParams).back);
+  // 직원별 상태의 이름 링크 — 탭 BP 주소를 씌운다(/bp/{id}/todos/…)
+  const at = await screenPath();
   // 한 명 수행을 끝낸 직원(목록 상태 칸의 둘째 칸과 같은 값)
   const performer = todo.status === "DONE" && todo.performer ? staffNameText(todo.performer) : null;
 
@@ -58,6 +61,12 @@ export default async function TodoDetailPage({
   // 제목은 맨 위 한 번만 — 공지사항 상세 머리 줄과 같은 모양
   // 근무지 전체 · 각자 수행은 직원마다 TO-DO 가 한 건씩이다 — 직원별 상태 표 한곳에서 줄마다 상태를 바꾼다(2026-11-09 사용자 지정, 3팀 확인 필요 — 전엔 이름 링크로 그 직원 TO-DO 로 옮겨 가 바꿨다)
   const isGroup = todo.groupTodos.length > 0;
+  // 묶음 전체의 완료 시각 — 모두 완료면 가장 늦은 완료 시각, 아니면 없음(ISO 문자열이라 글자 비교로 가장 늦은 것을 고른다)
+  const completedAt = !isGroup
+    ? todo.completedAt
+    : todo.groupTodos.every((r) => r.status === "DONE")
+      ? (todo.groupTodos.map((r) => r.completedAt).filter((v): v is string => Boolean(v)).sort().at(-1) ?? null)
+      : null;
   const assignRows: DetailRow[] = [
     { label: "근무지", value: todo.storeName ?? "-" },
     {
@@ -83,13 +92,15 @@ export default async function TodoDetailPage({
           },
         ]),
     // 완료면 완료 일시, 한 명 수행을 끝낸 직원은 그 뒤 회색 이름(목록 상태 칸과 같은 값)
-    ...(todo.completedAt
+    // 완료면 완료 일시. 여러 명에게 나눈 TO-DO 는 모든 직원이 완료해야 완료라(목록 상태와 같다) 그때 마지막 완료 시각을 보인다 — 한 명만 끝냈을 때
+    // 그 한 명의 시각을 두면 전체가 끝난 것처럼 읽혔다. 직원마다의 시각은 아래 「직원별 상태」 표에 있다(2026-11-09 사용자 지정)
+    ...(completedAt
       ? [
           {
             label: "완료 일시",
             value: (
               <span>
-                {formatDateTime(todo.completedAt)}
+                {formatDateTime(completedAt)}
                 {performer && <span className="text-erp-label"> · {performer}</span>}
               </span>
             ),
@@ -155,19 +166,36 @@ export default async function TodoDetailPage({
                   <DataTable<GroupRow>
                     headVariant="plain"
                     columns={[
-                      // 직원 이름은 글자로만 — 그 직원 TO-DO 로 옮겨 가지 않고 이 표에서 바로 바꾼다. 가린 직원은 흐린 글자
-                      { header: "직원", cell: (r) => (r.isMasked ? <span className="text-erp-muted">{staffNameText(r)}</span> : (r.staffMemberName ?? "배정 풀림")) },
+                      // 직원 이름을 누르면 그 직원의 TO-DO 상세로 간다 — 오른쪽 「상태 변경이력」은 그 직원의 이력이다(api 가 행 하나의 이력만 준다,
+                      // 2026-11-09 사용자 지정). 지금 보는 직원은 링크 없이 굵게, 가린 직원은 흐린 글자(링크 없음)
+                      {
+                        header: "직원",
+                        cell: (r) =>
+                          r.isMasked ? (
+                            <span className="text-erp-muted">{staffNameText(r)}</span>
+                          ) : r.todoId === todo.todoId ? (
+                            <span className="font-semibold">{r.staffMemberName ?? "배정 풀림"}</span>
+                          ) : (
+                            <Link href={at(withBack(`/todos/${r.todoId}`, listHref))} className="text-erp-link hover:underline">
+                              {r.staffMemberName ?? "배정 풀림"}
+                            </Link>
+                          ),
+                      },
                       {
                         header: "상태",
                         // 직원 · 상태 · 완료 일시 세 열을 같은 폭으로(2026-11-09 사용자 지정)
                         cell: (r) => {
                           const now = <CellView cell={statusCells(r, statusLabels)[0]} />;
-                          // 가린 직원 · 배정 풀린 줄은 바꾸지 않고 지금 상태만
-                          return r.isMasked || !r.staffMemberName ? (
-                            now
-                          ) : (
+                          // 가린 직원 · 퇴직으로 배정이 풀린 줄도 관리자가 대신 바꾼다 — 막으면 그 줄을 끝낼 길이 없어 목록이 「2 / 3명」에 머문다(2026-11-09 사용자 지정)
+                          return (
                             <span className="inline-flex justify-center">
-                              <TodoStatusControl todoId={r.todoId} status={r.status} labels={statusLabels} name={r.staffMemberName} fallback={now} />
+                              <TodoStatusControl
+                                todoId={r.todoId}
+                                status={r.status}
+                                labels={statusLabels}
+                                name={r.isMasked ? staffNameText(r) : (r.staffMemberName ?? "배정 풀림")}
+                                fallback={now}
+                              />
                             </span>
                           );
                         },
