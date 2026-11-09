@@ -53,7 +53,8 @@ const MODE_DESC = { EACH: "배정된 직원이 모두 수행해야 완료", ANY_
 // 라벨은 왼쪽 제목 · 내용과 같은 15px 600 먹색(TopField) — 14px 회색은 「배정」 상자 안에서 너무 작았다(2026-11-06 사용자 지정)
 function Group({ label, required, children }: { label: string; required?: boolean; children: ReactNode }) {
   return (
-    <div role="group" aria-label={label} className="flex min-w-px flex-1 flex-col gap-[10px]">
+    // 세로로 늘리지 않는다(flex-1 없음) — 배정내역 상자가 왼쪽 단 높이로 늘어날 때 칸 묶음이 남는 높이를 나눠 가져 「배정대상」과 「수행 방식」 사이가 벌어졌다(2026-11-09 사용자 지정)
+    <div role="group" aria-label={label} className="flex min-w-px flex-col gap-[10px]">
       <span className="truncate text-[15px] font-semibold text-erp-ink">
         {label}
         {required && <RequiredMark />}
