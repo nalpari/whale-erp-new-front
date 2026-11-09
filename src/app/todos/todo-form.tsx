@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, DateField, FieldMessage, FormGroup, FormRow, GuideBand, NoticeBand, RequiredMark, SearchField, Select, Textarea, TextField, Toggle, useToast } from "@/components/common";
-import { useCurrentBp, useMenuRole, useStores } from "@/components/site/session-gate";
+import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
+import { Button, DateField, DetailTable, FieldMessage, FormGroup, FormRow, GuideBand, GuideNote, NoticeBand, RequiredMark, SearchField, Select, Textarea, TextField, Toggle, useToast } from "@/components/common";
+import { useAccount, useCurrentBp, useMenuRole, useStores } from "@/components/site/session-gate";
+import { isFranchiseRole } from "@/lib/auth-routes";
 import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { MENU_CODE } from "@/lib/menus";
@@ -16,6 +17,11 @@ import { StaffNames } from "./staff-names";
 import type { TodoDetail } from "./todo-row";
 
 const STAFF_LOAD_FAILED = "직원 목록을 불러오지 못했습니다. 다시 시도해 주세요.";
+// 배정할 직원이 없는 근무지 — api 문장(「근무지에 체결 완료 근로계약이 있고 가입을 마친 재직 직원이 없습니다.」)을 읽기 쉽게 바꾼 것(2026-11-09 사용자 지정, 3팀 확인 필요)
+const NO_ASSIGNABLE_STAFF = "선택한 근무지에 배정 가능한 직원이 없습니다.\nTO-DO는 근로계약을 체결하고 앱 가입을 완료한 재직 직원에게만 배정할 수 있습니다.";
+const NO_ASSIGNABLE_STAFF_API = "근무지에 체결 완료 근로계약이 있고 가입을 마친 재직 직원이 없습니다.";
+/** api 거절 문장 가운데 화면 문구로 바꿔 보일 것 */
+const friendly = (message: string) => (message === NO_ASSIGNABLE_STAFF_API ? NO_ASSIGNABLE_STAFF : message);
 // 등록 결과 모름. 서버 액션 호출 자체가 끊긴 경우의 문구로, 서버 액션의 결과 모름 문구와 같다
 const CREATE_UNKNOWN = "등록 결과를 확인하지 못했습니다. 목록에서 등록됐는지 확인해 주세요.";
 // 배정 대상 카드 앞 아이콘 — BP 관리자 상세 「내 계정입니다.」의 사람 아이콘(헤더 avatar.svg 모양 · 선 굵기)을 그대로 쓰고, 근무지 전체는 그 양옆에 사람을 둘 더 둔다(2026-11-06 사용자 지정)
@@ -48,7 +54,8 @@ const MODE_DESC = { EACH: "배정된 직원이 모두 수행해야 완료", ANY_
 // 라벨은 왼쪽 제목 · 내용과 같은 15px 600 먹색(TopField) — 14px 회색은 「배정」 상자 안에서 너무 작았다(2026-11-06 사용자 지정)
 function Group({ label, required, children }: { label: string; required?: boolean; children: ReactNode }) {
   return (
-    <div role="group" aria-label={label} className="flex min-w-px flex-1 flex-col gap-[10px]">
+    // 세로로 늘리지 않는다(flex-1 없음) — 배정내역 상자가 왼쪽 단 높이로 늘어날 때 칸 묶음이 남는 높이를 나눠 가져 「배정대상」과 「수행 방식」 사이가 벌어졌다(2026-11-09 사용자 지정)
+    <div role="group" aria-label={label} className="flex min-w-px flex-col gap-[10px]">
       <span className="truncate text-[15px] font-semibold text-erp-ink">
         {label}
         {required && <RequiredMark />}
@@ -110,6 +117,10 @@ function ChoiceCards<T extends string>({ name, items, value, onChange }: { name:
 }
 
 // 칩 · 후보 버튼. 1팀 공통 컴포넌트에 칩이 없어 데모 staffChip 모양(34 높이 · 2px 모서리 · 입력칸 선)을 그대로 쓴다.
+// 직원 고르기 두 상자(선택할 수 있는 직원 · 선택한 직원) — store-mapping-picker 상자와 같은 테두리 · 제목 줄
+const STAFF_BOX = "flex min-w-0 flex-col overflow-hidden rounded-[4px] border border-erp-panel-line";
+// 제목 줄은 바탕색 없이(상자 바탕 그대로) + 아래 회색 선 하나(erp-bar-line, 2026-11-09 사용자 지정 — 청회색 진한 선은 옅은 회청 바탕 위에서 어색했다)
+const STAFF_BOX_HEAD = "flex h-[42px] shrink-0 items-center gap-[8px] border-b border-erp-bar-line px-[12px] text-[14px] font-medium text-erp-ink";
 const CHIP = "flex h-[34px] items-center gap-[8px] rounded-[2px] border border-erp-field-line bg-white pr-[4px] pl-[10px] text-[14px] text-erp-ink";
 const CANDIDATE =
   "h-[34px] rounded-[2px] border border-erp-field-line bg-white px-[10px] text-[14px] text-erp-ink transition-colors duration-150 ease-out hover:border-erp-brand";
@@ -123,7 +134,7 @@ const FIELD_ORDER: TodoField[] = ["title", "body", "storeId", "staff", "dueDate"
 type Pool = { storeId: string; state: "loading" } | { storeId: string; state: "ok"; staff: PickedStaff[] } | { storeId: string; state: "error"; message: string };
 
 /**
- * TO-DO 등록(#117) · 수정. 칸과 문구는 목업 TO-DO 탭의 등록 칸이고, 배치는 점포 등록을 본뜬 두 단이다(데모 staff/todos-new.mjs · todos-edit.mjs). 수정은 제목 · 내용 · 수행 예정 일시 · 긴급만 고치고
+ * TO-DO 등록(#117) · 수정. 칸과 문구는 목업 TO-DO 탭의 등록 칸이고, 배치는 점포 등록을 본뜬 두 단이다(데모 staff/todos-new.mjs · todos-edit.mjs). 수정은 제목 · 내용 · 수행예정 일시 · 긴급만 고치고
  * 근무지 · 배정 대상 · 수행 방식 · 직원은 글자로만 보인다(api 가 받지 않는다). 수정은 바꾼 칸만 보낸다(toUpdateBody).
  * 개인 배정 직원은 고른 근무지의 체결 완료 근로계약이 있고 가입을 마친 재직 직원(퇴직 예정 포함)(GET /todos/assignable-staff)을
  * 이름 · 번호 끝자리로 찾아 칩으로 더한다. 근무지를 바꾸면 비운다.
@@ -165,6 +176,8 @@ function TodoFormFields({
   // BP 마스터 · BP 관리자에게 가맹 점포가 빠지는데, TO-DO 는 점포 단위라 본사 제공 동의와 상관없다(운영 정책 ATT-30).
   const stores = useStores().filter((s) => s.storeStatusCode !== "CLOSED");
   const onFailure = useFailure();
+  // 가맹 마스터 · 가맹 관리자 — 자기 점포 직원을 모두 봐서 근무지 전체도 미리 확인한다(prechecks)
+  const franchiseRole = isFranchiseRole(useAccount().roleTypeCode);
   const [form, setForm] = useState<Form>(() => (detail ? fromDetail(detail) : initialForm(today, stores.length === 1 ? String(stores[0].storeId) : "")));
   // 저장을 눌렀을 때의 칸 오류. 그 칸 값을 고치면 그 칸 문구만 내린다(DESIGN 「오류 문구 내리기」)
   const [errors, setErrors] = useState<Partial<Record<TodoField, string>>>({});
@@ -181,7 +194,7 @@ function TodoFormFields({
     if (key in FIELD_OF) clearError(FIELD_OF[key as keyof typeof FIELD_OF]);
   };
   const message = (key: TodoField) => <FieldMessage id={`${ids}-${key}`} message={errors[key]} />;
-  const invalid = (key: TodoField) => Boolean(errors[key]) || undefined;
+  // 칸 테두리는 빨갛게 칠하지 않는다(aria-invalid 를 달지 않음) — 오류는 칸 아래 문구로만(공통 규칙, 2026-11-09 사용자 지정)
   const describe = (key: TodoField) => (errors[key] ? `${ids}-${key}` : undefined);
   /**
    * 저장이 막히면 화면 순서로 첫 오류 칸에 커서를 옮긴다(점포 등록과 같다). 날짜 칸은 공통 DateField 가 aria-describedby 를 받지 않아
@@ -193,7 +206,7 @@ function TodoFormFields({
       const key = FIELD_ORDER.find((k) => found[k]);
       if (!form || !key) return;
       const target =
-        key === "dueDate" ? form.querySelector(`input[aria-label="수행 예정 날짜"]`) : form.querySelector(`[aria-describedby="${ids}-${key}"]`);
+        key === "dueDate" ? form.querySelector(`input[aria-label="수행예정 날짜"]`) : form.querySelector(`[aria-describedby~="${ids}-${key}"]`);
       if (target instanceof HTMLElement) target.focus();
       else document.getElementById(`${ids}-${key}`)?.scrollIntoView({ block: "center" });
     });
@@ -207,10 +220,14 @@ function TodoFormFields({
    * 개인 배정일 때 그 근무지에서 배정할 수 있는 직원을 받는다. 이미 받은(받는 중인) 근무지면 다시 받지 않는다 — 실패했으면 다시 받는다.
    * 실패는 이 칸에 고정 문구로 보인다. 401 · 403 은 useFailure 로 넘긴다 — 로그인 만료 · 비밀번호 변경 요구 · 권한 없음(쫓아냄)을 공통으로 처리한다.
    */
-  const loadStaff = (storeId: string, assigneeType: Form["assigneeType"]) => {
-    if (!storeId || assigneeType !== "INDIVIDUAL" || (pool?.storeId === storeId && pool.state !== "error")) return;
+  const loadStaff = (storeId: string, assigneeType: Form["assigneeType"], refresh = false) => {
+    if (!storeId || !prechecks(storeId, assigneeType)) return;
+    // 이미 받은(받는 중인) 근무지는 다시 받지 않는다 — 실패했으면 다시 받는다. 배정대상을 오갈 때 0명 목록을 다시 받으면
+    // 받는 동안 문구 · 상자가 사라졌다 나타나 화면이 깜빡였다(2026-11-09 사용자 지정) — 0명 다시 확인은 저장을 누를 때만(refresh)
+    if (!refresh && pool?.storeId === storeId && pool.state !== "error") return;
     const n = ++seq.current;
-    setPool({ storeId, state: "loading" });
+    // 다시 확인(refresh)할 때는 받는 동안 지금 결과를 그대로 둔다 — 「불러오는 중」으로 바꾸면 깜빡인다
+    if (!(refresh && pool?.storeId === storeId && pool.state === "ok")) setPool({ storeId, state: "loading" });
     getAssignableStaffAction(Number(storeId))
       .then((result) => {
         if (n !== seq.current) return;
@@ -227,6 +244,18 @@ function TodoFormFields({
         if (n === seq.current) setPool({ storeId, state: "error", message: STAFF_LOAD_FAILED });
       });
   };
+  /**
+   * 직원 목록을 미리 받을까 — 개인 배정은 늘, 근무지 전체는 직영 점포이거나 가맹 마스터 · 가맹 관리자일 때(2026-11-09 사용자 지정, 3팀 확인 필요).
+   * 근무지 전체에 배정할 직원이 0명이면 저장을 누르기 전에 「배정대상」 아래에 알리고 저장을 막는다. 본사 계정(BP 마스터 · BP 관리자 · 플랫폼)이 가맹 점포를 고르면
+   * 본사 제공에 동의하지 않은 직원이 목록에서 빠져(ATT-30) 0명으로 잘못 보일 수 있어 미리 막지 않고 api 가 판단한다. 가맹 역할은 자기 점포 직원을 모두 본다.
+   */
+  const prechecks = (storeId: string, assigneeType: Form["assigneeType"]) =>
+    assigneeType === "INDIVIDUAL" || franchiseRole || stores.find((st) => String(st.storeId) === storeId)?.storeTypeCode === "DIRECT";
+  // 배정할 직원이 0명 — 개인 배정 · 근무지 전체 모두 「근무지」 칸 아래 빨간 문구로 알리고 저장을 막는다(2026-11-09 사용자 지정).
+  // 본사 계정의 가맹 점포는 받은 목록에서 본사 제공 미동의 직원이 빠져 0명이어도 근무지 전체로는 배정된다 — 근무지 칸 문구를 띄우지 않는다.
+  // 개인 배정이면 직원 상자 안 「선택할 수 있는 직원이 없습니다.」만 보이고 저장은 직원 칸 검사가 막는다(리뷰로 찾음, 2026-11-09)
+  const noAssignableStaff =
+    !detail && prechecks(form.storeId, "ALL") && pool?.storeId === form.storeId && pool.state === "ok" && pool.staff.length === 0;
   const handleStoreChange = (storeId: string) => {
     setForm((f) => ({ ...f, storeId, staff: [] }));
     clearError("storeId", "staff");
@@ -239,11 +268,30 @@ function TodoFormFields({
     clearError("staff");
     loadStaff(form.storeId, assigneeType);
   };
+  // 처음 그릴 때 근무지가 이미 정해져 있으면(점포가 하나뿐인 계정) 한 번 미리 확인한다 — 바꿀 때만 부르면 가장 흔한 경로에서 저장 뒤에야 알았다
+  useEffect(() => {
+    // 서버에서 받는 일이라 그리는 중에 할 수 없다 — 받는 중 표시(setPool)가 effect 안에서 바뀐다
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!detail) loadStaff(form.storeId, form.assigneeType);
+    // 처음 한 번만 — 그 뒤는 근무지 · 배정대상을 바꿀 때 부른다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSave = () => {
     setServerError("");
     const found = fieldProblems(form, today, detail);
+    // 배정할 직원이 없으면 「근무지」 칸 아래 문구가 이미 보인다 — 직원 칸 「선택해 주세요」를 겹쳐 띄우지 않고 저장만 막는다
+    if (noAssignableStaff) delete found.staff;
     setErrors(found);
+    if (noAssignableStaff && !Object.keys(found).length) {
+      // 커서를 근무지 칸으로 옮긴다 — 화면만 움직이면 키보드 · 화면 낭독기 사용자는 왜 막혔는지 몰랐다(리뷰로 찾음). 칸이 이 문구를 설명으로 읽는다
+      const storeSelect = document.getElementById(`${ids}-form`)?.querySelector(`select[aria-describedby~="${ids}-target"]`);
+      if (storeSelect instanceof HTMLElement) storeSelect.focus();
+      else document.getElementById(`${ids}-target`)?.scrollIntoView({ block: "center" });
+      // 처음 받은 0명이 그새 바뀌었을 수 있다(계약 체결 · 앱 가입) — 다시 받아 직원이 생겼으면 문구가 내려가고 다시 저장할 수 있다
+      loadStaff(form.storeId, form.assigneeType, true);
+      return;
+    }
     if (Object.keys(found).length) {
       focusFirstError(found);
       return;
@@ -268,7 +316,7 @@ function TodoFormFields({
           return;
         }
         const message = onFailure(result);
-        if (message) setServerError(message);
+        if (message) setServerError(friendly(message));
         // 그사이 지워졌거나 범위 밖이 됐다 — 다시 받아 404 화면으로
         if (result.status === 404) router.refresh();
         return;
@@ -296,11 +344,13 @@ function TodoFormFields({
         return;
       }
       const message = onFailure(result);
-      if (message) setServerError(message);
+      if (message) setServerError(friendly(message));
     });
   };
 
   const storeName = detail ? (detail.storeName ?? "-") : "";
+  // 수정 화면 — 배정내역은 바꿀 수 없어 상세 표로 보인다
+  const locked = Boolean(detail);
   const candidates = pool?.state === "ok" && pool.storeId === form.storeId ? matchStaff(pool.staff, form.staff, word) : [];
 
   return (
@@ -317,9 +367,10 @@ function TodoFormFields({
         </Button>
       </div>
       {/* 서버 실패는 제목 줄 아래 띠 — 칸 오류는 칸 바로 아래에 둔다(점포 등록과 같다) */}
-      {serverError && <NoticeBand title="저장하지 못했습니다." detail={serverError} />}
+      {/* 띠 제목은 「TO-DO를 등록 · 수정할 수 없습니다.」(2026-11-09 사용자 지정 — 전엔 「저장하지 못했습니다.」). 띠는 폭이 넓어 문장들을 한 줄로 잇는다 — 칸 아래 문구(근무지)는 좁아 두 줄 그대로(2026-11-09 사용자 지정) */}
+      {serverError && <NoticeBand title={detail ? "TO-DO를 수정할 수 없습니다." : "TO-DO를 등록할 수 없습니다."} detail={serverError.split("\n").join(" ")} />}
 
-      {/* 두 단 — 왼쪽 제목 · 내용, 오른쪽 「배정」 묶음(2026-11-06 사용자 지정) */}
+      {/* 두 단 — 왼쪽 제목 · 내용 · 수행예정 · 긴급, 오른쪽 「배정내역」 묶음(근무지 · 배정대상 · 직원 / 수행 방식)(2026-11-09 사용자 지정) */}
       <div className="grid grid-cols-2 gap-[24px]">
         {/* 제목 · 내용은 묶음 상자 없이 바로 둔다 — 「내용」 상자 안의 「내용」 칸이 겹쳐 보였다(2026-11-06 사용자 지정) */}
         <div className="flex flex-col gap-[18px]">
@@ -330,103 +381,145 @@ function TodoFormFields({
                 maxLength={100}
                 placeholder="100자 이내로 입력해 주세요."
                 aria-required
-                aria-invalid={invalid("title")}
                 aria-describedby={describe("title")}
                 onChange={(e) => set("title", e.target.value)}
               />
             </TopField>
             {message("title")}
           </Stack>
-          {/* 내용 칸은 옆 「배정」 상자 아래 끝에 맞춘다 — 두 단은 grid 로 같은 높이라 남는 높이를 채운다(2026-11-06 사용자 지정). 줄 수는 가장 작을 때 높이 */}
-          <div className="flex min-h-0 flex-1 flex-col gap-[8px]">
-            <TopField label="내용" fill>
+          {/* 내용은 6줄 고정 — 전엔 옆 「배정」 상자 아래 끝까지 늘어나 필수도 아닌 칸이 너무 길었다(2026-11-09 사용자 지정, 3팀 확인 필요) */}
+          <div className="flex flex-col gap-[8px]">
+            <TopField label="내용">
               <Textarea
-                rows={8}
+                rows={6}
                 value={form.body}
                 maxLength={2000}
                 placeholder="2,000자 이내로 입력해 주세요."
-                aria-invalid={invalid("body")}
                 aria-describedby={describe("body")}
                 onChange={(e) => set("body", e.target.value)}
               />
             </TopField>
             {message("body")}
           </div>
+          {/* 수행예정 날짜 · 시간 · 긴급은 내용 아래(2026-11-09 사용자 지정, 3팀 확인 필요 — 전엔 오른쪽 「배정」 상자 맨 아래) */}
+          <FormRow>
+            <Stack grow>
+              <TopField label="수행예정 날짜" required>
+                <DateField aria-label="수행예정 날짜" value={form.dueDate} onChange={(v) => set("dueDate", v)} />
+              </TopField>
+              {message("dueDate")}
+            </Stack>
+            <Stack grow>
+              <TopField label="시간 (선택)">
+                <TextField type="time" value={form.dueTime} aria-describedby={describe("dueTime")} onChange={(e) => set("dueTime", e.target.value)} />
+              </TopField>
+              {message("dueTime")}
+            </Stack>
+          </FormRow>
+          <Stack>
+            {/* 칸 이름을 앞에, 스위치를 뒤에 — 공지사항 등록 「상단 고정」과 같은 모양. 이름은 다른 칸과 같은 15px 600 먹색(2026-11-09 사용자 지정, 3팀 확인 필요) */}
+            {/* 이름은 스위치 칸에 htmlFor 로 잇는다 — 이름을 눌러도 켜지고, 스위치 안에도 label 이 있어 바깥을 label 로 감싸면 label 안 label 이 됐다(리뷰로 찾음) */}
+            <div className="flex w-fit items-center gap-[10px]">
+              <label htmlFor={`${ids}-urgent`} className="cursor-pointer text-[15px] font-semibold text-erp-ink">
+                긴급요청
+              </label>
+              <Toggle id={`${ids}-urgent`} label="" checked={form.isUrgent} onChange={(e) => set("isUrgent", e.target.checked)} />
+            </div>
+            <Note>
+              직원 근무 앱의 홈 및 근무 탭 최상단에 강조 표시되며, 관리자 웹의 미조치 건수에 포함됩니다.
+              <br />
+              별도의 푸시 알림은 발송하지 않습니다.
+            </Note>
+          </Stack>
         </div>
 
-        <FormGroup title="배정">
-          {detail ? (
-            // 등록 뒤에는 근무지 · 배정 대상 · 수행 방식 · 직원을 바꾸지 않는다(api 가 받지 않는다)
-            <>
-              <Group label="근무지">
-                <span className="text-[14px] text-erp-ink">{storeName}</span>
-              </Group>
-              <Group label="배정 대상">
-                <span className="text-[14px] text-erp-ink">
-                  {labelOf(labels.assigneeType, detail.assigneeType)}
-                  {detail.assigneeType === "ALL" ? ` · ${labelOf(labels.executionMode, detail.executionMode)}` : ""}
-                  {detail.assigneeType === "INDIVIDUAL" && detail.assignees.length > 0 && (
-                    <>
-                      {" · "}
-                      <StaffNames staff={detail.assignees} />
-                    </>
-                  )}
-                </span>
-                <Note>등록한 뒤에는 근무지 · 배정 대상 · 수행 방식을 변경할 수 없습니다.</Note>
-              </Group>
-            </>
-          ) : (
-            <>
-              <Stack>
-                <TopField label="근무지" required>
-                  <Select value={form.storeId} aria-required aria-invalid={invalid("storeId")} aria-describedby={describe("storeId")} onChange={(e) => handleStoreChange(e.target.value)}>
-                    <option value="">선택</option>
-                    {stores.map((s) => (
-                      <option key={s.storeId} value={s.storeId}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </Select>
-                </TopField>
-                {message("storeId")}
-              </Stack>
-              <Group label="배정 대상" required>
-                <ChoiceCards
-                  name="assigneeType"
-                  value={form.assigneeType}
-                  onChange={handleTargetChange}
-                  items={(["INDIVIDUAL", "ALL"] as const).map((v) => ({ value: v, title: `${labelOf(labels.assigneeType, v)} ${TARGET_SUFFIX[v]}`, icon: TARGET_ICON[v] }))}
-                />
-              </Group>
-              {form.assigneeType === "INDIVIDUAL" ? (
-                <Group label="직원" required>
-                  {!form.storeId ? (
-                    <span className="text-[14px] text-erp-muted">근무지를 먼저 선택해 주세요.</span>
-                  ) : (
-                    <>
-                      <SearchField
-                        value={word}
-                        onValueChange={setWord}
-                        placeholder="이름 또는 휴대전화번호 끝자리"
-                        aria-label="직원 찾기"
-                        aria-invalid={invalid("staff")}
-                        aria-describedby={describe("staff")}
-                      />
-                      {pool?.state === "loading" && <span className="text-[14px] text-erp-muted">불러오는 중입니다.</span>}
-                      {pool?.state === "error" && (
-                        <span className="flex items-center gap-[6px]">
-                          <span role="alert" className="text-[14px] text-erp-off">
-                            {pool.message}
-                          </span>
-                          <Button variant="soft" onClick={() => loadStaff(form.storeId, form.assigneeType)}>
-                            다시 시도
-                          </Button>
+        {/* 묶음 이름은 등록 「배정 설정」 · 수정 「배정내역」(바꿀 수 없어 보기만 한다)(2026-11-09 사용자 지정, 3팀 확인 필요 — 전엔 「배정」) */}
+        {locked && detail ? (
+          // 수정 화면 — 바꿀 수 없는 배정내역은 상세 화면 「TO-DO」 표와 같은 상세 표로 보인다. 위에 붙여 늘어나지 않게
+          // (2026-11-09 사용자 지정, 3팀 확인 필요 — 막힌 입력칸 · 카드로 두니 고칠 수 있는 칸처럼 보였다)
+          // 제목 「배정내역」은 왼쪽 「제목」 · 「내용」 칸 이름과 같은 단계(15px 600 먹색, 칸 이름과 같은 10px 아래)로 표 밖에 두고, 항목만 상세 표로(2026-11-09 사용자 지정)
+          <section className="flex min-w-0 flex-col gap-[10px] self-start">
+            <h3 className="text-[15px] font-semibold text-erp-ink">배정내역</h3>
+            <div className="flex min-w-0 flex-col gap-[8px]">
+            <DetailTable
+              rows={[
+                { label: "근무지", value: storeName },
+                {
+                  label: "배정대상",
+                  value: `${labelOf(labels.assigneeType, detail.assigneeType)}${detail.assigneeType === "ALL" ? ` · ${labelOf(labels.executionMode, detail.executionMode)}` : ""}`,
+                },
+                ...(detail.assigneeType === "INDIVIDUAL" ? [{ label: "직원", value: <span><StaffNames staff={detail.assignees} /></span>, multiline: true }] : []),
+              ]}
+            />
+            {/* 바꿀 수 없는 이유를 표 바로 아래 느낌표 안내로(공통 GuideNote — 저장 옆 안내 · 삭제 안내와 같은 모양, 2026-11-09 사용자 지정) */}
+            <GuideNote>배정내역(근무지 · 배정대상 · 직원)은 등록한 뒤에 변경할 수 없습니다.</GuideNote>
+            </div>
+          </section>
+        ) : (
+          <FormGroup title="배정 설정">
+            <Stack>
+              <TopField label="근무지" required>
+                <Select
+                  value={form.storeId}
+                  aria-required
+                  // 배정할 직원 없음 문구도 근무지 칸 설명으로 잇는다 — 화면 낭독기가 칸에 오면 함께 읽는다(리뷰로 찾음)
+                  aria-describedby={[describe("storeId"), noAssignableStaff ? `${ids}-target` : undefined].filter(Boolean).join(" ") || undefined}
+                  onChange={(e) => handleStoreChange(e.target.value)}>
+                  <option value="">선택</option>
+                  {stores.map((s) => (
+                    <option key={s.storeId} value={s.storeId}>
+                      {s.name}
+                    </option>
+                  ))}
+                </Select>
+              </TopField>
+              {message("storeId")}
+              {/* 배정할 직원이 없으면 개인 배정 · 근무지 전체 모두 근무지 칸 바로 아래 빨간 13px 로 알린다 — 「선택한 근무지는 …」이라 근무지 칸 문구다(칸 오류와 같은 모양, 2026-11-09 사용자 지정) */}
+              <FieldMessage id={`${ids}-target`} message={noAssignableStaff ? NO_ASSIGNABLE_STAFF : undefined} />
+            </Stack>
+            <Group label="배정대상" required>
+              <ChoiceCards
+                name="assigneeType"
+                value={form.assigneeType}
+                onChange={handleTargetChange}
+                items={(["INDIVIDUAL", "ALL"] as const).map((v) => ({ value: v, title: `${labelOf(labels.assigneeType, v)} ${TARGET_SUFFIX[v]}`, icon: TARGET_ICON[v] }))}
+              />
+            </Group>
+            {form.assigneeType === "INDIVIDUAL" ? (
+              <Group label="직원" required>
+                {!form.storeId ? (
+                  <span className="text-[14px] text-erp-muted">근무지를 먼저 선택해 주세요.</span>
+                ) : (
+                  <>
+                    <SearchField
+                      value={word}
+                      onValueChange={setWord}
+                      placeholder="이름 또는 휴대전화번호 끝자리"
+                      aria-label="직원 찾기"
+                      aria-describedby={describe("staff")}
+                    />
+                    {pool?.state === "loading" && <span className="text-[14px] text-erp-muted">불러오는 중입니다.</span>}
+                    {pool?.state === "error" && (
+                      <span className="flex items-center gap-[6px]">
+                        <span role="alert" className="text-[14px] text-erp-off">
+                          {pool.message}
                         </span>
-                      )}
-                      {pool?.state === "ok" && (
-                        <ul aria-label="선택할 수 있는 직원" className="flex max-h-[160px] flex-wrap gap-[6px] overflow-y-auto">
+                        <Button variant="soft" onClick={() => loadStaff(form.storeId, form.assigneeType)}>
+                          다시 시도
+                        </Button>
+                      </span>
+                    )}
+                    {/* 「선택할 수 있는 직원」 · 「선택한 직원」을 제목 줄 있는 두 상자로 나눈다 — 목록과 고른 값이 한눈에 갈리게.
+                        BP 관리자 등록의 점포 고르기(store-mapping-picker) 상자와 같은 모양: 4px 테두리 상자 · 42px 회색 제목 줄 + 회색 개수(2026-11-09 사용자 지정, 3팀 확인 필요) */}
+                    {/* 「선택할 수 있는 직원」 상자는 바탕 전체를 옅은 회청(#f8f9fb, 두 바탕 규칙의 둘째 색)으로 — 흰 칩이 떠 보이고 「선택한 직원」(흰 바탕)과 갈린다(2026-11-09 사용자 지정) */}
+                    {pool?.state === "ok" && (
+                      <section className={`${STAFF_BOX} bg-erp-thead-bg`}>
+                        <h4 className={STAFF_BOX_HEAD}>
+                          선택할 수 있는 직원 <span className="font-normal text-erp-label">{candidates.length}명</span>
+                        </h4>
+                        <ul aria-label="선택할 수 있는 직원" className="flex max-h-[160px] flex-wrap gap-[6px] overflow-y-auto p-[12px]">
                           {candidates.length === 0 ? (
-                            <li className="text-[14px] text-erp-muted">{pool.staff.length ? "맞는 직원이 없습니다." : "이 근무지에 배정할 수 있는 직원이 없습니다."}</li>
+                            <li className="text-[14px] leading-[1.6] whitespace-pre-line text-erp-muted">{pool.staff.length ? (form.staff.length === pool.staff.length ? "모든 직원을 선택했습니다." : "맞는 직원이 없습니다.") : "선택할 수 있는 직원이 없습니다."}</li>
                           ) : (
                             candidates.map((s) => (
                               <li key={s.staffMemberId}>
@@ -437,9 +530,16 @@ function TodoFormFields({
                             ))
                           )}
                         </ul>
-                      )}
-                      {form.staff.length > 0 && (
-                        <ul aria-label="선택한 직원" className="flex flex-wrap gap-[6px]">
+                      </section>
+                    )}
+                    <section className={`${STAFF_BOX} bg-white`}>
+                      <h4 className={STAFF_BOX_HEAD}>
+                        선택한 직원 <span className="font-normal text-erp-label">{form.staff.length}명</span>
+                      </h4>
+                      {form.staff.length === 0 ? (
+                        <p className="p-[12px] text-[14px] text-erp-muted">위 목록에서 직원을 눌러 선택하세요.</p>
+                      ) : (
+                        <ul aria-label="선택한 직원" className="flex flex-wrap gap-[6px] p-[12px]">
                           {form.staff.map((s) => (
                             <li key={s.staffMemberId} className={CHIP}>
                               <span className="font-medium">{staffChipText(s)}</span>
@@ -455,45 +555,23 @@ function TodoFormFields({
                           ))}
                         </ul>
                       )}
-                    </>
-                  )}
-                  {message("staff")}
-                </Group>
-              ) : (
-                <Group label="수행 방식" required>
-                  <ChoiceCards
-                    name="executionMode"
-                    value={form.executionMode}
-                    onChange={(v) => set("executionMode", v)}
-                    items={(["EACH", "ANY_ONE"] as const).map((v) => ({ value: v, title: v === "ANY_ONE" ? MODE_ANY_ONE_TITLE : labelOf(labels.executionMode, v), desc: MODE_DESC[v] }))}
-                  />
-                </Group>
-              )}
-            </>
-          )}
-          <FormRow>
-            <Stack grow>
-              <TopField label="수행 예정 날짜" required>
-                <DateField aria-label="수행 예정 날짜" value={form.dueDate} onChange={(v) => set("dueDate", v)} />
-              </TopField>
-              {message("dueDate")}
-            </Stack>
-            <Stack grow>
-              <TopField label="시간 (선택)">
-                <TextField type="time" value={form.dueTime} aria-invalid={invalid("dueTime")} aria-describedby={describe("dueTime")} onChange={(e) => set("dueTime", e.target.value)} />
-              </TopField>
-              {message("dueTime")}
-            </Stack>
-          </FormRow>
-          <Stack>
-            <Toggle label="긴급" checked={form.isUrgent} onChange={(e) => set("isUrgent", e.target.checked)} />
-            <Note>
-              직원 근무 앱의 홈 및 근무 탭 최상단에 강조 표시되며, 관리자 웹의 미조치 건수에 포함됩니다.
-              <br />
-              별도의 푸시 알림은 발송하지 않습니다.
-            </Note>
-          </Stack>
-        </FormGroup>
+                    </section>
+                  </>
+                )}
+                {message("staff")}
+              </Group>
+            ) : (
+              <Group label="수행 방식" required>
+                <ChoiceCards
+                  name="executionMode"
+                  value={form.executionMode}
+                  onChange={(v) => set("executionMode", v)}
+                  items={(["EACH", "ANY_ONE"] as const).map((v) => ({ value: v, title: v === "ANY_ONE" ? MODE_ANY_ONE_TITLE : labelOf(labels.executionMode, v), desc: MODE_DESC[v] }))}
+                />
+              </Group>
+            )}
+          </FormGroup>
+        )}
       </div>
 
       {!detail && (
@@ -503,7 +581,7 @@ function TodoFormFields({
           lines={[
             // 배정할 수 있는 직원 — 맨 앞 줄(2026-11-06 사용자 지정). 개인 배정 줄에 있던 같은 조건은 여기로 옮겼다
             <>
-              TO-DO는 <u>근로계약이 체결 완료되고 가입을 마친 재직 직원(퇴직 예정 포함)</u>에게만 배정할 수 있습니다.
+              TO-DO는 <u>근로계약 체결이 완료되고 직원앱 가입을 완료한 재직 직원(퇴직 예정 포함)</u>에게만 배정할 수 있습니다.
             </>,
             <>
               <b className="font-medium text-erp-ink">개인 배정</b> – 선택한 직원 한 명당 1건씩 등록됩니다. 근무지를 변경하면 선택한 직원이 초기화됩니다.
@@ -516,7 +594,7 @@ function TodoFormFields({
             </>,
             // 놓치면 안 되는 제한이라 빨간 글자(2026-11-06 사용자 지정)
             <>
-              <span className="text-erp-off">근무지 · 배정 대상 · 수행 방식은 등록한 뒤에 변경할 수 없습니다.</span>
+              <span className="text-erp-off">근무지 · 배정대상 · 수행 방식은 등록한 뒤에 변경할 수 없습니다.</span>
             </>,
           ]}
         />

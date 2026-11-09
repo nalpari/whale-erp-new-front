@@ -28,7 +28,7 @@ test("막는 것 — 제목 · 근무지 · 직원 0명 · 날짜 · 지난 날�
   assert.deepEqual(problems(form({ title: "  " }), TODAY), ["제목을 입력해 주세요."]);
   assert.deepEqual(problems(form({ storeId: "" }), TODAY), ["근무지를 선택해 주세요."]);
   assert.deepEqual(problems(form({ assigneeType: "INDIVIDUAL", staff: [] }), TODAY), ["직원을 한 명 이상 선택해 주세요."]);
-  assert.deepEqual(problems(form({ dueDate: "" }), TODAY), ["수행 예정 날짜를 입력해 주세요."]);
+  assert.deepEqual(problems(form({ dueDate: "" }), TODAY), ["수행예정 날짜를 입력해 주세요."]);
   assert.deepEqual(problems(form({ dueDate: "2026-10-18" }), TODAY), ["지난 날짜는 선택할 수 없습니다."]);
   assert.deepEqual(problems(form({ dueTime: "25:00" }), TODAY), ["수행 시간은 HH:mm 입니다."]);
   assert.deepEqual(problems(form({ title: "가".repeat(101) }), TODAY), ["제목은 100자까지입니다."]);
@@ -80,7 +80,7 @@ const detail: Detail = {
   histories: [],
 };
 
-test("수정 — 바꾼 칸만 보낸다. 지난 수행 예정 날짜도 그대로 두면 막지 않는다", () => {
+test("수정 — 바꾼 칸만 보낸다. 지난 수행예정 날짜도 그대로 두면 막지 않는다", () => {
   const f = fromDetail(detail);
   assert.equal(f.storeId, "3");
   // 수정은 배정을 바꾸지 않아 고른 직원을 채우지 않는다 — 배정 글자는 상세 값으로 그린다(가린 직원은 id · 이름이 없다)
