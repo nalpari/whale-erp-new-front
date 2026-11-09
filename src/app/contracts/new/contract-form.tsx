@@ -620,7 +620,7 @@ export function ContractForm({
               ))}
             </div>
           </Group>
-          <Group label="계약 방식" hint={paper ? "당사자가 모두 서명한 근로계약서를 올려 등록하면 발송 · 서명 없이 서명 완료로 저장된다." : undefined}>
+          <Group label="계약 방식" hint={paper ? "당사자가 모두 서명한 근로계약서를 올려 등록하면 발송 · 전자서명 없이 바로 서명 완료로 저장된다." : undefined}>
             <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
               {(["ELECTRONIC", "PAPER"] as const).map((v) => (
                 <Radio

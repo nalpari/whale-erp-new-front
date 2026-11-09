@@ -408,9 +408,9 @@ test("종이 계약 서명본 파일: 형식은 enum 값으로, 10MB 까지", ()
 
 test("확인창 한 줄 — 누구 계약인지 이름 · 기간을 앞에 둔다", () => {
   const c = { contractId: 5, status: "SIGNED", name: "남도연", startDate: "2026-09-01", endDate: "2026-10-01" };
-  assert.equal(inProgressLine(c, "체결 완료"), "남도연 · 2026-09-01 ~ 2026-10-01 · 체결 완료 · 계약 5");
-  assert.equal(inProgressLine({ ...c, endDate: null }, "체결 완료"), "남도연 · 2026-09-01 ~ · 체결 완료 · 계약 5");
-  assert.equal(inProgressLine({ ...c, name: null, startDate: null, endDate: null }, "임시저장"), "임시저장 · 계약 5");
+  assert.equal(inProgressLine(c, "서명 완료"), "남도연 · 2026-09-01 ~ 2026-10-01 · 서명 완료 · 계약 5");
+  assert.equal(inProgressLine({ ...c, endDate: null }, "서명 완료"), "남도연 · 2026-09-01 ~ · 서명 완료 · 계약 5");
+  assert.equal(inProgressLine({ ...c, name: null, startDate: null, endDate: null }, "작성 중"), "작성 중 · 계약 5");
 });
 
 test("성별 · 외국인 여부 — 서명 요청은 성별을 골라야 하고, 본문에 실린다(WHALEERP-125 본인 대조)", () => {
