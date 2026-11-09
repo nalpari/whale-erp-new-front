@@ -206,7 +206,7 @@ function TodoFormFields({
       const key = FIELD_ORDER.find((k) => found[k]);
       if (!form || !key) return;
       const target =
-        key === "dueDate" ? form.querySelector(`input[aria-label="수행예정 날짜"]`) : form.querySelector(`[aria-describedby="${ids}-${key}"]`);
+        key === "dueDate" ? form.querySelector(`input[aria-label="수행예정 날짜"]`) : form.querySelector(`[aria-describedby~="${ids}-${key}"]`);
       if (target instanceof HTMLElement) target.focus();
       else document.getElementById(`${ids}-${key}`)?.scrollIntoView({ block: "center" });
     });
@@ -284,7 +284,10 @@ function TodoFormFields({
     if (noAssignableStaff) delete found.staff;
     setErrors(found);
     if (noAssignableStaff && !Object.keys(found).length) {
-      document.getElementById(`${ids}-target`)?.scrollIntoView({ block: "center" });
+      // 커서를 근무지 칸으로 옮긴다 — 화면만 움직이면 키보드 · 화면 낭독기 사용자는 왜 막혔는지 몰랐다(리뷰로 찾음). 칸이 이 문구를 설명으로 읽는다
+      const storeSelect = document.getElementById(`${ids}-form`)?.querySelector(`select[aria-describedby~="${ids}-target"]`);
+      if (storeSelect instanceof HTMLElement) storeSelect.focus();
+      else document.getElementById(`${ids}-target`)?.scrollIntoView({ block: "center" });
       // 처음 받은 0명이 그새 바뀌었을 수 있다(계약 체결 · 앱 가입) — 다시 받아 직원이 생겼으면 문구가 내려가고 다시 저장할 수 있다
       loadStaff(form.storeId, form.assigneeType, true);
       return;
@@ -456,7 +459,12 @@ function TodoFormFields({
           <FormGroup title="배정 설정">
             <Stack>
               <TopField label="근무지" required>
-                <Select value={form.storeId} aria-required aria-describedby={describe("storeId")} onChange={(e) => handleStoreChange(e.target.value)}>
+                <Select
+                  value={form.storeId}
+                  aria-required
+                  // 배정할 직원 없음 문구도 근무지 칸 설명으로 잇는다 — 화면 낭독기가 칸에 오면 함께 읽는다(리뷰로 찾음)
+                  aria-describedby={[describe("storeId"), noAssignableStaff ? `${ids}-target` : undefined].filter(Boolean).join(" ") || undefined}
+                  onChange={(e) => handleStoreChange(e.target.value)}>
                   <option value="">선택</option>
                   {stores.map((s) => (
                     <option key={s.storeId} value={s.storeId}>
