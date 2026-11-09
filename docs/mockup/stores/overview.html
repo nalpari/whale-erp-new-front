@@ -109,9 +109,9 @@
                 <ul class="pol">
                   <li><span class="pol__t">전환은 미운영→운영, 미운영·운영→폐점뿐이다. 운영을 미운영으로 되돌리지 않고, 폐점을 다시 열려면 새 점포로 등록한다.</span><span class="pol__ref">S-MNRZOM</span></li>
                   <li><span class="pol__t">운영 전환 조건은 사업자정보 인증 · 필수 항목(점포유형·점포명) · 좌표(위도·경도) · 소속 BP 사용 상태 넷이다. 선택 항목은 비어도 되고, 휴업·폐업 사업자인지는 보지 않는다.</span><span class="pol__ref">S-MNRZOM</span></li>
-                  <li><span class="pol__t">폐점 조건은 진행 중인 근로계약 0건 · 이용 중인 구독 0건 · 정산 대기 0원. 구독·정산은 1차 범위 밖이라 「1차 범위 밖」으로만 표시하고 1차에서는 근로계약만 확인한다(건수는 3팀 점포별 정보). 폐점일은 바꾼 날로 자동이고 사유는 받지 않는다.</span><span class="pol__ref">S-MNRZOM</span></li>
+                  <li><span class="pol__t">폐점 조건은 퇴근 기록이 없는 출근 0건 하나다(재직 직원, 보정할 수 있는 3개월 안, 본사에 가려진 직원 것 포함 · 건수만). 근로계약은 막지 않는다 — 폐점하면 근무 중인 직원은 퇴직(퇴직일 오늘), 임시저장 · 발송 대기 · 서명 대기 · 수정 요청 근로계약은 종료, 그 점포 직원에게 보낸 초대는 만료된다. 구독·정산은 1차 범위 밖이다. 폐점일은 바꾼 날로 자동이고 사유는 받지 않는다(2026-11-04).</span><span class="pol__ref">S-MNRZOM</span></li>
                   <li><span class="pol__t">소속 BP 가 미사용이면 목록·상세 조회만 되고 등록·수정·상태 변경·삭제는 막는다. 점포 상태는 그대로 둔다.</span><span class="pol__ref">F-MOQKGY</span></li>
-                  <li><span class="pol__t">BP 가 탈퇴하면 그 BP 의 미운영·운영 점포를 조건 검사 없이 모두 폐점한다.</span><span class="pol__ref">F-MOQKGY · S-JHQQNR</span></li>
+                  <li><span class="pol__t">BP 가 탈퇴하면 그 BP 의 미운영·운영 점포를 단건 폐점과 같은 처리로 모두 폐점한다. 퇴근 기록이 없는 출근이 있는 점포가 하나라도 있으면 탈퇴가 막힌다(2026-11-05).</span><span class="pol__ref">F-MOQKGY · S-JHQQNR</span></li>
                   <li><span class="pol__t">가맹 마스터·가맹 관리자는 등록 권한이 켜져 있어도 점포를 등록할 수 없고, 매핑된 점포만 보고 고친다.</span><span class="pol__ref">S-ALHLHW</span></li>
                   <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 점포 상태 변경은 점포 수정 권한이 있으면 역할을 가리지 않는다. 가맹 마스터·가맹 관리자도 매핑된 점포의 상태를 바꾼다.</span><span class="pol__ref">S-MNRZOM · STORE-1</span></li>
                   <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 운영으로 바꾸거나 이미 운영인 점포는 <b>사업자정보 인증 · 필수 항목 · 좌표</b>가 있어야 한다. 선택 항목은 비어도 된다(2026-09-29 수정).</span><span class="pol__ref">S-MNRZOM · STORE-2</span></li>

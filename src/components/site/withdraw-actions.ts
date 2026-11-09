@@ -2,7 +2,7 @@
 
 import { ApiError } from "@/lib/api";
 import { createWithdrawal, getWithdrawEligibility, verifyCurrentPassword, type CreateWithdrawalInput } from "@/lib/withdrawal";
-import { withdrawVerifyFailureOf, type WithdrawEligibility } from "@/lib/withdrawal-form";
+import { withdrawFailureOf, withdrawVerifyFailureOf, type WithdrawEligibility, type WithdrawFailure } from "@/lib/withdrawal-form";
 
 // 회원 탈퇴(마이페이지, S-JHQQNR). password-change-actions.ts 와 같은 얇은 어댑터라 대응 테스트가 없다.
 
@@ -19,8 +19,7 @@ export async function getWithdrawEligibilityAction(): Promise<EligibilityResult>
   }
 }
 
-type Failure = { ok: false; status?: 400 | 401; message: string };
-export type WithdrawActionResult = { ok: true } | Failure;
+export type WithdrawActionResult = { ok: true } | WithdrawFailure;
 
 /** 1단계 본인 확인 — 맞아야 탈퇴 화면으로 간다(S-JHQQNR, 2026-10-29 재영). 실패 판정은 withdrawal-form.ts 의
  * withdrawVerifyFailureOf(확인하지 못하면 넘기지 않는다, 테스트 있음). */
@@ -40,15 +39,8 @@ export async function createWithdrawalAction(input: CreateWithdrawalInput): Prom
     await createWithdrawal(input);
     return { ok: true };
   } catch (error) {
-    if (error instanceof ApiError) {
-      if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
-      // 400 은 현재 비밀번호 불일치 · 진행 중인 근로계약 · 상세 사유 누락 — api 문구를 그대로 쓴다(화면이 만들지 않는다).
-      if (error.status === 400) return { ok: false, status: 400, message: error.message };
-      // 429 는 @nestjs/throttler 기본 예외라 한글 문구가 없다 — changeMyPasswordAction 과 같은 이유로 바꾼다.
-      if (error.status === 429) return { ok: false, message: "너무 많이 시도했습니다. 10분 뒤 다시 시도해 주세요." };
-      if (error.status < 500) return { ok: false, message: error.message };
-    }
-    console.error("회원 탈퇴 실패", error);
-    return { ok: false, message: "회원 탈퇴 결과를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." };
+    // 판정한 거절 말고는 화면이 모르는 실패라 서버 로그에 남긴다. 판정은 withdrawal-form.ts 의 withdrawFailureOf(테스트 있음)
+    if (!(error instanceof ApiError && error.status < 500)) console.error("회원 탈퇴 실패", error);
+    return withdrawFailureOf(error);
   }
 }

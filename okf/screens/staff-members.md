@@ -477,4 +477,4 @@ api(Plane 336)가 openapi.json 에 싣기 전이라 응답 타입은 `bulk-expor
 danger 와 같은 값이다. 1팀이 동의해(2026-10-27) DESIGN.md Buttons 에 네 번째 모양 **Danger** 로 올렸다.
 
 같은 파일에 `outline`(흰 바탕 · 브랜드 테두리 · 먹색 글자, 호버하면 `erp-subtle`)도 더했다(2026-10-30, 1팀 동의 2026-10-30). 직원 화면은 쓰지
-않고, 회원 탈퇴 경고(`site/withdraw-panel.tsx`)의 [직원 자료 일괄 저장] · [근로계약 확인] 이동 버튼이 쓴다 — DESIGN.md Buttons 「Outline」.
+않고, 회원 탈퇴 경고(`site/withdraw-panel.tsx`)의 [직원 자료 일괄 저장] 이동 버튼이 쓴다([근로계약 확인]은 2026-11-05 탈퇴 조건이 퇴근 기록 없는 출근으로 바뀌며 뺐다) — DESIGN.md Buttons 「Outline」.

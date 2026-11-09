@@ -1,4 +1,4 @@
-// 점포 폐점 확인 · 결과의 표기. 상세의 상태 변경 · 수정 화면의 폐점이 같이 쓴다(나중에 회원 탈퇴도 같은 모양을 받는다).
+// 점포 폐점 확인 · 결과의 표기. 상세의 상태 변경 · 수정 화면의 폐점과 회원 탈퇴가 같이 쓴다.
 // 서버 · 클라이언트가 함께 쓰고 node --test 가 직접 읽는다(상대 경로 + .ts).
 // api: GET /stores/:id/transition-check 의 closing(막힘 + 폐점하면 처리될 것), PUT /stores/:id 폐점 응답의 closing(처리한 수).
 import type { components } from "./api-types.generated.ts";
@@ -43,7 +43,7 @@ const n = (value: number) => value.toLocaleString("ko-KR");
  */
 export function closingCheckLines(counts: StoreClosingCounts): ClosingLine[] {
   const lines: (ClosingLine | false)[] = [
-    counts.retiringStaff > 0 && { key: "staff", text: `근무 중인 직원 : ${n(counts.retiringStaff)}명 퇴직 처리`, note: "퇴직일이 없거나 오늘 이후인 직원의 퇴직일은 오늘로 변경됩니다." },
+    counts.retiringStaff > 0 && { key: "staff", text: `근무 중인 직원 : ${n(counts.retiringStaff)}명 퇴직 처리`, note: "퇴직일이 등록되지 않았거나 오늘 이후인 직원은 퇴직일이 오늘 날짜로 변경됩니다." },
     counts.draftContracts > 0 && { key: "draft", text: `작성 중인 근로계약 : ${n(counts.draftContracts)}건 종료`, note: "해당 근로계약은 더 이상 작성하거나 발송할 수 없습니다." },
     counts.pendingSendContracts > 0 && { key: "send", text: `서명 요청 전인 근로계약 : ${n(counts.pendingSendContracts)}건 종료`, note: "해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다." },
     counts.pendingSignatureContracts > 0 && {
@@ -89,3 +89,6 @@ export const CLOSING_UNKNOWN_RESULT_NOTE = "폐점됐다면 근무 중인 직원
 
 /** 폐점 저장이 확인과 저장 사이에 생긴 출근으로 막혔다(409) — api 오류 본문의 code */
 export const OPEN_CHECK_IN = "OPEN_CHECK_IN";
+
+/** 폐점 트랜잭션이 시간을 넘겨 전체가 되돌아갔다(503) — api 오류 본문의 code. 게이트웨이의 503 과 갈라 준다 */
+export const STORE_CLOSING_TIMEOUT = "STORE_CLOSING_TIMEOUT";
