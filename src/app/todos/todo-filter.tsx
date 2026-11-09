@@ -22,7 +22,7 @@ import {
 
 const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
-// TO-DO 목록 왼쪽 필터 — 근무지 · 상태 · 담당(목업 TO-DO 탭) · 긴급 · 수행 예정 기간(계획 문서). 값은 URL 에만 둔다.
+// TO-DO 목록 왼쪽 필터 — 근무지 · 상태 · 담당(목업 TO-DO 탭) · 긴급 · 수행예정 기간(계획 문서). 값은 URL 에만 둔다.
 // 직원 목록 필터와 같이 낙관적 쿼리로 다음 URL 을 만든다 — 응답 전에 하나 더 눌러도 앞의 변경이 사라지지 않는다.
 // 근무지는 점포 목록과 같은 점포 고르기(StorePicker)로 고르고 주소의 storeIds 에 둔다. 고른 점포가 없으면 헤더가 실어 온 범위(scope)를 칩으로
 // 그리고, 점포 조건이 주소에 없으면(주소 직접 입력 · 즐겨찾기 · 그런 주소로 뒤로 가기) 헤더 범위로 채운다(store-filter.tsx 와 같다).
@@ -84,8 +84,8 @@ export function TodoFilter({ query, statusLabels, assigneeTypeLabels }: { query:
           />
         ))}
       </FilterSection>
-      <FilterSection label="담당" tight>
-        <Select aria-label="담당" value={current.assigneeType} onChange={(e) => go({ assigneeType: e.target.value as TodoAssigneeType | "" })}>
+      <FilterSection label="담당직원" tight>
+        <Select aria-label="담당직원" value={current.assigneeType} onChange={(e) => go({ assigneeType: e.target.value as TodoAssigneeType | "" })}>
           <option value="">전체</option>
           {assigneeTypeLabels.map((t) => (
             <option key={t.value} value={t.value}>
@@ -97,10 +97,10 @@ export function TodoFilter({ query, statusLabels, assigneeTypeLabels }: { query:
       <FilterSection label="긴급">
         <Checkbox label="긴급만" checked={current.urgentOnly} onChange={(e) => go({ urgentOnly: e.target.checked })} />
       </FilterSection>
-      <FilterSection label="수행 예정" tight last>
+      <FilterSection label="수행예정" tight last>
         <div className="flex flex-col gap-[6px]">
-          <DateField aria-label="수행 예정 시작" value={current.dueDateFrom} onChange={(v) => go({ dueDateFrom: v })} />
-          <DateField aria-label="수행 예정 끝" value={current.dueDateTo} onChange={(v) => go({ dueDateTo: v })} />
+          <DateField aria-label="수행예정 시작" value={current.dueDateFrom} onChange={(v) => go({ dueDateFrom: v })} />
+          <DateField aria-label="수행예정 끝" value={current.dueDateTo} onChange={(v) => go({ dueDateTo: v })} />
         </div>
       </FilterSection>
     </FilterPanel>

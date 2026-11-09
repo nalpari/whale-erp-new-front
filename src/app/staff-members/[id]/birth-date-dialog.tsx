@@ -21,7 +21,7 @@ import type { StaffMember } from "@/lib/staff-members";
 import { correctBirthDateAction, type ActionResult } from "./actions";
 import { useFailure } from "./use-action-failure";
 
-// 기본 정보 「생년월일」 줄의 값과 [정정] 버튼(WHALEERP-602). 목업 detail.html 에는 이 버튼이 없다 — 노영주 승인안이다.
+// 기본 정보 「생년월일」 줄의 값과 [수정] 버튼(WHALEERP-602). 목업 detail.html 에는 이 버튼이 없다 — 노영주 승인안이다.
 // 버튼은 수정 권한(usePagePermission)과 상세 응답의 birthDateCorrectable 로 미리 가리고, 막는 것은 api 다(canCorrectBirthDate).
 export function BirthDateCell({ staff, text, today }: { staff: StaffMember; text: string; today: string }) {
   const canUpdate = usePagePermission().update;
@@ -34,7 +34,7 @@ export function BirthDateCell({ staff, text, today }: { staff: StaffMember; text
       <span>{text}</span>
       {show && (
         <Button variant="soft" onClick={() => setOpen(true)}>
-          정정
+          수정
         </Button>
       )}
       {show && open && (
@@ -45,8 +45,8 @@ export function BirthDateCell({ staff, text, today }: { staff: StaffMember; text
 }
 
 /**
- * 생년월일 정정 확인창. 신분증 등으로 확인했다는 체크를 해야 [정정]이 눌린다. 안내 세 줄은 정정이 닿는 곳을 알린다(BIRTH_DATE_NOTES).
- * 날짜 칸은 오늘 뒤를 고르지 못하게 달력으로 막지는 못한다(DateField 에 상한이 없다) — 입력하면 칸 아래에 알리고 [정정]을 막는다.
+ * 생년월일 정정 확인창. 직원 본인의 생년월일을 확인했다는 체크를 해야 [수정]이 눌린다. 안내 세 줄은 정정이 닿는 곳을 알린다(BIRTH_DATE_NOTES).
+ * 날짜 칸은 오늘 뒤를 고르지 못하게 달력으로 막지는 못한다(DateField 에 상한이 없다) — 입력하면 칸 아래에 알리고 [수정]을 막는다.
  */
 function BirthDateDialog({
   staffMemberId,
@@ -77,15 +77,15 @@ function BirthDateDialog({
   // 아직 아무것도 치지 않았을 때는 문구를 보이지 않고 버튼만 막는다
   const dateNote = date === "" ? null : (problem ?? serverDateError);
 
-  // 날짜가 바뀌면 확인을 풀어 다시 받는다 — 공통 DateField 는 [정정]을 누르는 순간의 blur 로 덜 친 값(1990-05-1)을 맞춰(1990-05-01)
+  // 날짜가 바뀌면 확인을 풀어 다시 받는다 — 공통 DateField 는 [수정]을 누르는 순간의 blur 로 덜 친 값(1990-05-1)을 맞춰(1990-05-01)
   // 관리자가 보지 못한 날짜가 저장될 수 있다. blur → onChange → 다시 그림이 click 보다 먼저라 버튼이 잠기지만, 그 사이 낡은 클릭이
   // 들어와도 보내지 않도록 확인 여부를 ref 로도 쥔다(handleConfirm).
   // 덜 친 값: DateField 는 완성값 · 빈 값만 밖으로 내보내 칸에 덜 친 값이 보이는 채 직전 완성값이 보내질 수 있다(blur 없이 click 만 오는 보조기기).
-  // 입력 이벤트 중에 상태를 바꾸면 DateField 칸이 되돌려지므로(입력 중에는 아무 상태도 바꾸지 않는다), 필요한 순간 — [정정]을 누를 때와
+  // 입력 이벤트 중에 상태를 바꾸면 DateField 칸이 되돌려지므로(입력 중에는 아무 상태도 바꾸지 않는다), 필요한 순간 — [수정]을 누를 때와
   // 체크를 누를 때 — 에만 칸의 글자를 DOM 에서 읽어 판정한다(inputPending).
   const confirmedRef = useRef(false);
   const fieldRef = useRef<HTMLDivElement>(null);
-  // 확인한 뒤 입력칸을 한 번이라도 고쳤는가. 1990-05-01 을 확인하고 1990-05-1 로 지운 채 [정정]을 누르면 blur 가 같은 값 1990-05-01 로 맞춰
+  // 확인한 뒤 입력칸을 한 번이라도 고쳤는가. 1990-05-01 을 확인하고 1990-05-1 로 지운 채 [수정]을 누르면 blur 가 같은 값 1990-05-01 로 맞춰
   // 값이 안 바뀐 것으로 보이므로, 값 비교가 아니라 편집 여부로 막는다. 입력 이벤트 중에는 ref 만 바꾼다(상태를 바꾸면 DateField 칸이 되돌려진다).
   const editedSinceConfirm = useRef(false);
   const inputPending = () => isPendingInput(fieldRef.current?.querySelector("input")?.value ?? "", date);
@@ -176,7 +176,7 @@ function BirthDateDialog({
       router.refresh();
       return;
     }
-    // 같은 값 409 는 화면의 「지금 생년월일」이 낡았다는 뜻일 수 있다(다른 관리자 · 다른 BP 가 먼저 정정) — 문구는 두고 값만 다시 받는다.
+    // 같은 값 409 는 화면의 「생년월일(변경 전)」이 낡았다는 뜻일 수 있다(다른 관리자 · 다른 BP 가 먼저 정정) — 문구는 두고 값만 다시 받는다.
     if (result.code === "BIRTH_DATE_UNCHANGED") router.refresh();
     setError(result.message);
   };
@@ -185,8 +185,8 @@ function BirthDateDialog({
     <ConfirmDialog
       open
       wide
-      title="생년월일 정정"
-      confirmLabel="정정"
+      title="생년월일 수정"
+      confirmLabel="수정"
       busy={busy}
       confirmDisabled={problem !== null || serverDateError !== null || !confirmed}
       onConfirm={handleConfirm}
@@ -198,13 +198,13 @@ function BirthDateDialog({
         onKeyDownCapture={() => (pointerDownAt.current = null)}
       >
         <div className="flex items-center gap-[8px]">
-          <span className="text-[14px] font-medium text-erp-label">지금 생년월일</span>
+          <span className="text-[14px] font-medium text-erp-label">생년월일(변경 전)</span>
           <span>{current ?? "-"}</span>
         </div>
         <div className="flex flex-col gap-[8px]">
-          <span className="text-[14px] font-medium text-erp-label">새 생년월일</span>
+          <span className="text-[14px] font-medium text-erp-label">생년월일(변경 후)</span>
           <div ref={fieldRef} onInputCapture={() => (editedSinceConfirm.current = true)}>
-            <DateField aria-label="새 생년월일" autoHyphen value={date} onChange={changeDate} />
+            <DateField aria-label="변경할 생년월일" autoHyphen value={date} onChange={changeDate} />
           </div>
           {dateNote && (
             <p role="alert" className="text-[13px] text-erp-off">

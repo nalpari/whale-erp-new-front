@@ -6,9 +6,9 @@
   "status": "pass",
   "visualReview": "pending",
   "artifact": {
-    "path": "/Users/jaeyounglee/.whale-erp-worktrees/whale-erp-front/tajmahal/docs/flow/schedule-todo/schedule-todo.html",
-    "sha256": "6532f54f0226a87cbbe5194e4f1c9358bdae3c8e3b5a8d3652fff6a555140606",
-    "bytes": 816451
+    "path": "/Users/jaeyounglee/IdeaProjects/whale-erp-v2/whale-erp-front/docs/flow/schedule-todo/schedule-todo.html",
+    "sha256": "93f7466ca58c6fd336303aeb169ac256ea888c7a4460e6dce9fd82c8cad7e291",
+    "bytes": 816441
   },
   "state": {
     "detail": "read",

@@ -29,12 +29,12 @@ import {
 } from "./actions";
 import { addAdditionalLine, applyPrevious, removeLine, saveItems } from "./payslip-edit";
 
-// 급여명세서 검토의 머리(목록 · 임시저장 · 확정 · 발송)와 왼쪽 「지급 내역」. 데모 docs/demo/staff/payrolls-detail.html(원본
+// 급여명세서 검토의 머리(임시저장 · 확정 · 발송 · 목록)와 왼쪽 「지급 내역」. 데모 docs/demo/staff/payrolls-detail.html(원본
 // src/pages/staff/payrolls-detail.mjs)과 목업 docs/mockup/staff/payrolls-detail.html 의 3.3% 원천징수 칸을 옮겼다.
 // 데이터는 GET /payslips/:id 이고, 임시저장 · 지난 명세서 불러오기 · 항목 추가(WHALEERP-228)와 확정 · 확정 취소(WHALEERP-230)는
 // server action(actions.ts)으로 api 를 부른다. 확정이면 「발송」, 발송 완료면 「재발송」(확인창을 거친다, WHALEERP-231 · 237). 금액 칸 · 두 스위치 · 붙인 추가 공제는 임시저장해야 남고, 합계와 빨간 띠가 따라 바뀐다.
 // 성공하면 router.refresh() 로 상세를 다시 받는다 — page 가 updatedAt 을 key 로 줘 화면 상태도 새 값으로 다시 선다.
-// 기본급 · 주휴수당 · 연장수당은 api 가 근로계약 · 출퇴근 기록으로 계산한다(WHALEERP-227). 「출퇴근으로 다시 계산」은 확인창을 거쳐
+// 기본급 · 주휴수당 · 연장수당은 api 가 근로계약 · 출퇴근 기록으로 계산한다(WHALEERP-227). 「출퇴근 다시 불러오기」는 확인창을 거쳐
 // POST /payslips/:id/recalculate 를 부르고(고친 값은 버린다), 가산 스위치는 임시저장 때 api 가 그 값으로 다시 계산한다.
 // 경고 띠의 「출퇴근 보정」은 출·퇴근 현황 조회(보정이 필요한 기록)를 그 점포 · 직원 · 급여 기간으로 연다.
 // 고칠 수 있는 것은 작성 중 · 검토 중이고 수정 권한이 있을 때뿐이다 — 확정 · 발송 완료는 읽기만 하고 「확정 취소」와 「발송」 · 「재발송」만 둔다(okf/staff.md 급여).
@@ -148,7 +148,7 @@ export function PayslipReview({
   /** 위쪽 경고 띠(reviewBand). 없으면 null */
   band: { title: string; desc: string } | null;
   listHref: string;
-  /** 오른쪽 단(검토 사유 · 참조한 것 · 처리 이력) */
+  /** 오른쪽 단(검토 대상 항목 · 급여 산정 기준 · 처리 이력) */
   aside: ReactNode;
 }) {
   const router = useRouter();
@@ -293,9 +293,6 @@ export function PayslipReview({
             </>
           }
         >
-          <Button href={listHref}>
-            목록
-          </Button>
           {editable && (
             <>
               <Button variant="soft" onClick={() => open("save")}>
@@ -316,6 +313,9 @@ export function PayslipReview({
               )}
             </>
           )}
+          <Button href={listHref}>
+            목록
+          </Button>
         </SectionHead>
         {band && (
           <Band
@@ -341,7 +341,7 @@ export function PayslipReview({
               // 공통 Button 에 className 을 넘기지 않는다(DESIGN.md) — 간격은 감싸는 쪽이 준다
               <span className="ml-[6px] inline-flex">
                 <Button variant="soft" onClick={() => open("recalc")}>
-                  출퇴근으로 다시 계산
+                  출퇴근 다시 불러오기
                 </Button>
               </span>
             )}
@@ -441,7 +441,7 @@ export function PayslipReview({
         onConfirm={() => run(() => recalculatePayslip(payslip.payslipId, payslip.updatedAt), "출퇴근 기록으로 다시 계산했습니다.")}
         onCancel={close}
       >
-        {payslip.periodStartDate} ~ {payslip.periodEndDate.slice(5)} 출퇴근 기록으로 기본급·주휴수당·연장수당을 다시 계산합니다. 세 칸에서 고친 값과 임시저장하지 않은 변경은 사라집니다.
+        {payslip.periodStartDate} ~ {payslip.periodEndDate.slice(5)} 출퇴근 기록으로 기본급·주휴수당·연장수당이 재계산되며, 세 칸에서 직접 고친 값과 임시저장하지 않은 내용은 초기화됩니다.
         {failureText}
       </ConfirmDialog>
       <ConfirmDialog
@@ -480,20 +480,20 @@ export function PayslipReview({
         {failureText}
       </ConfirmDialog>
       <ConfirmDialog open={dialog === "load"} title="지난 명세서의 값을 불러오시겠습니까?" confirmLabel="불러오기" busy={busy} onConfirm={load} onCancel={close}>
-        같은 직원의 지난 명세서에서 공제와 직접 넣는 지급 항목 값을 칸에 채웁니다. 임시저장해야 남습니다.
+        해당 직원의 지난 급여명세서에서 공제 내역과 직접 입력한 지급 항목 금액을 불러옵니다. 불러온 내용은 임시저장해야 최종 반영됩니다.
         {failureText}
       </ConfirmDialog>
       <ConfirmDialog
         open={dialog === "add"}
-        title="추가 공제 항목을 붙이시겠습니까?"
-        confirmLabel="붙이기"
+        title="공제 항목 추가"
+        confirmLabel="추가"
         busy={busy}
         confirmDisabled={!adding}
         onConfirm={add}
         onCancel={close}
       >
         <Select aria-label="추가 공제 항목" value={adding} onChange={(e) => setAdding(e.target.value)} disabled={!addable}>
-          <option value="">{addable ? (remaining.length > 0 ? "항목을 선택하세요" : "붙일 항목이 없습니다") : "불러오는 중"}</option>
+          <option value="">{addable ? (remaining.length > 0 ? "추가할 공제 항목을 선택해 주세요" : "붙일 항목이 없습니다") : "불러오는 중"}</option>
           {remaining.map((a) => (
             <option key={a.payslipItemMasterId} value={a.payslipItemMasterId}>
               {a.name}
@@ -503,7 +503,7 @@ export function PayslipReview({
         {failureText}
       </ConfirmDialog>
       {/* 보여 주기만 해서 확인 하나만 둔다 */}
-      <ConfirmDialog open={dialog === "preview"} title="직원에게 보이는 급여명세서" confirmLabel="확인" cancelLabel={null} onConfirm={close} onCancel={close}>
+      <ConfirmDialog open={dialog === "preview"} title="급여명세서 미리보기" confirmLabel="확인" cancelLabel={null} onConfirm={close} onCancel={close}>
         <DetailTable
           title={`${payslip.staffName} · ${month}`}
           rows={[

@@ -8,7 +8,7 @@ import { cancelRetirementAction, changeRetirementDateAction, previewRetirementAc
 import { useFailure } from "./use-action-failure";
 
 // 퇴직 처리 · 퇴직일 변경 확인창과 퇴직 처리 취소 확인창(WHALEERP-585). 문구와 배치는 목업 docs/mockup/staff/detail.html ·
-// 데모 detail.mjs 의 확인창이다. 「닫힐 근로계약」은 목업의 발송 대기 · 서명 대기에 임시저장을 더했다 — api 가 셋을 닫는다(2026-10-12 재영).
+// 데모 detail.mjs 의 확인창이다. 「종료되는 근로계약」은 목업의 발송 대기 · 서명 대기에 임시저장을 더했다 — api 가 셋을 닫는다(2026-10-12 재영).
 
 const mmdd = (date: string) => date.slice(5);
 /** YYYY-MM-DD 다음 날 */
@@ -161,7 +161,7 @@ export function RetirementDialog({
               if (reloadsPreview(value, date, preview.status)) changeDate(value);
             }}
           />
-          <p className="text-[13px] text-erp-label">오늘 이후, 또는 최근 3개월 안({earliestRetiredDate(today)}부터)의 지난 날짜를 받습니다.</p>
+          <p className="text-[13px] text-erp-label">오늘 이후 또는 최근 3개월 이내({earliestRetiredDate(today)}부터)의 날짜를 선택해 주세요.</p>
           {dateNote && (
             <p role="alert" className="text-[13px] text-erp-off">
               {dateNote}
@@ -171,7 +171,7 @@ export function RetirementDialog({
         </div>
 
         <div className="flex flex-col gap-[6px]">
-          <p className="text-[13px] text-erp-label">퇴직일이 지나면 정리될 것</p>
+          <p className="text-[13px] text-erp-label">퇴직일 이후 정리되는 항목</p>
           {preview.status === "loading" && <p className="text-erp-muted">불러오는 중입니다.</p>}
           {preview.status === "error" && (
             <p role="alert" className="text-erp-off">
@@ -181,22 +181,23 @@ export function RetirementDialog({
           {preview.status === "ok" && (
             <ul className="list-disc pl-[18px]">
               <li>
-                지워질 근무스케줄 {preview.value.schedulesToRemove}건{" "}
+                삭제되는 근무스케줄 {preview.value.schedulesToRemove}건{" "}
                 <span className="text-erp-label">· 퇴직일 다음 날({mmdd(nextDay(preview.date))})부터</span>
               </li>
               <li>
-                풀릴 TO-DO 배정 {preview.value.todosToUnassign}건 <span className="text-erp-label">· 개인 배정 미완료</span>
+                배정 해제되는 TO-DO {preview.value.todosToUnassign}건 <span className="text-erp-label">· 완료하지 않은 개인 배정</span>
               </li>
               <li>
-                닫힐 근로계약 {preview.value.contractsToEnd.length}건 <span className="text-erp-label">· 임시저장 · 발송 대기 · 서명 대기 · 수정 요청</span>
+                종료되는 근로계약 {preview.value.contractsToEnd.length}건 <span className="text-erp-label">· 임시저장·발송 대기·서명 대기·수정 요청</span>
               </li>
             </ul>
           )}
         </div>
 
         <p>
-          퇴직일이 지나면 되돌릴 수 없이 정리되고, 그 전까지는 취소할 수 있습니다. 처리하면 퇴직일만 저장되고 재직 상태와 근로계약은
-          그대로입니다(퇴직 예정). 퇴직일 다음 날 퇴직으로 바뀌며 위 항목이 정리됩니다. 계정은 막지 않습니다.
+          퇴직 처리하면 퇴직일만 저장되고, 퇴직일까지는 &apos;퇴직 예정&apos; 상태로 재직 상태와 근로계약이 유지됩니다. 퇴직일 다음 날 퇴직
+          상태로 바뀌며 위 항목이 정리되고, 이후에는 되돌릴 수 없습니다. 퇴직일 전까지는 취소할 수 있습니다. 직원의 앱 계정은 그대로 사용할 수
+          있습니다.
         </p>
         {settledNow && (
           <p className="font-medium text-erp-off">지난 날짜라 처리하는 즉시 퇴직으로 바뀌고 위 항목이 정리됩니다. 되돌릴 수 없습니다.</p>

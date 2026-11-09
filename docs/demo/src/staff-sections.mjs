@@ -7,6 +7,7 @@ import * as p from "./staff-parts.mjs";
 import { link } from "./site.mjs";
 import { req } from "./biz-form.mjs";
 import { withIcon } from "./pages/system/admins.mjs";
+import { storeFilter as pickStores } from "./store-filter.mjs";
 
 // 급여명세서 작성 팝업: 점포 · 이름으로 표 줄을 좁히고, 직원을 고르면 「작성」을 켠다. erp.js 목록 거르기는 dialog 안을 건너뛰어 이 부품에 붙여 둔다.
 const PICK_SCRIPT = `<script>
@@ -466,39 +467,49 @@ export function staffSections({ A, R }) {
   const payrollTab = `<div class="flex flex-1 flex-col gap-[12px]">${p.weekNav(A, "pay-months", "2026-08-01", { month: true })}<div id="pay-months" class="flex flex-1 flex-col">${months}</div></div>${pickDialog}`;
 
   // ── TO-DO ──
-  // TO-DO 리스트 관리: 왼쪽 필터(점포 · 담당 · 상태) + 목록. 근무지 체크는 점포 칸으로 바꿨다(2026-10-02 재영).
+  // TO-DO 리스트 관리 — 앱 src/app/todos(page.tsx · todo-filter.tsx · todo-table.tsx)와 같게 맞췄다(2026-11-09 사용자 지정, 3팀 확인 필요).
+  // 왼쪽 필터: 근무지(점포 고르기 칩) · 상태(모두 체크) · 담당(배정 유형 선택칸) · 긴급(「긴급만」) · 수행예정(기간 두 칸)
   const todosFilter = ui.filterPanel(A, [
-    storeFilter(),
-    ui.filterSection("담당", ui.searchField(A, { placeholder: "이름" }), { tight: true }),
-    ui.filterSection("상태", ["대기", "진행 중", "완료"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
+    ui.filterSection("근무지", pickStores(A), { tight: true }),
+    ui.filterSection("상태", ["대기", "진행 중", "완료"].map((t) => ui.checkbox(A, t, true)).join("")),
+    ui.filterSection("담당직원", ui.select(["전체", "개인", "근무지 전체"], { "aria-label": "담당직원" }), { tight: true }),
+    ui.filterSection("긴급", ui.checkbox(A, "긴급만", false)),
+    ui.filterSection(
+      "수행예정",
+      `<div class="flex flex-col gap-[6px]">${ui.dateField(A, { label: "수행예정 시작" })}${ui.dateField(A, { label: "수행예정 끝" })}</div>`,
+      { tight: true, last: true },
+    ),
   ]);
-  // 대기 중인 TO-DO 는 「수정」으로 고친다(2026-10-02 재영). 수정도 등록처럼 별도 화면이다 — 데모는 한 건(todos-edit.html)으로 보인다(앱 /todos/{id}/edit, 2026-11-06 사용자 지정)
-  // 세 줄 모두 같은 수정 화면(todos-edit.html)으로 간다
-  const editBtn = () => ui.button("수정", { variant: "off", href: link(R, "staff/todos-edit.html") });
+  // 상태 칸 — 앱 todo-row.ts statusCells: 상태 하나만(대기 회색 꼬리표 · 진행 중 파랑 배지 · 완료 흐린 글자). 완료 인원은 옆 「완료 / 배정 직원」 칸(2026-11-09 사용자 지정)
+  const todoStatus = (label) => (label === "대기" ? p.tag("quiet", label) : label === "진행 중" ? p.tag("ok", label) : p.sub(label));
+  // TO-DO 제목은 상세로 가는 파란 링크, 긴급이면 빨간 배지(앱 todo-table.tsx). 수정은 상세에서 한다 — 목록의 [수정] 열은 뺐다
+  const todoTitle = (title, urgent = false) =>
+    `<span class="inline-flex max-w-full items-center gap-[6px]"><a class="truncate text-erp-link hover:underline" href="${link(R, "staff/todos-detail.html")}">${title}</a>${urgent ? ui.badge("off", "긴급") : ""}</span>`;
   const todoTab =
-    // TO-DO 등록은 패널이 아니라 별도 화면이다(앱 src/app/todos/new, 2026-11-06 사용자 지정)
-    ui.listToolbar(12, ui.button("TO-DO 등록", { href: link(R, "staff/todos-new.html") })) +
+    // [TO-DO 등록]은 화면 제목 줄 오른쪽(todos.mjs titleRight) — 목록 위 줄은 「총 N 건」과 페이지당 건수(앱 ListToolbar · TodoPageSize)
+    ui.listToolbar(12, `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`) +
     numberedList(
       [
-        { header: "담당직원", width: "w-[240px]" }, // 앱 todo-table.tsx — 열 이름 2026-11-05 사용자 지정(3팀 확인 필요, 전엔 「담당」), 폭 240px 2026-11-06 사용자 지정
-        { header: "근무지", width: "w-[240px]" }, // 앱 todo-table.tsx — 담당직원과 같은 폭(2026-11-06 사용자 지정)
+        { header: "근무지", width: "w-[300px]", align: "left" }, // 왼쪽 정렬(2026-11-09 사용자 지정)
         { header: "TO-DO", align: "left" },
-        { header: "수행 예정", width: "w-[140px]" },
-        { header: "상태", width: "w-[160px]" },
-        { header: "", width: "w-[100px]" },
+        { header: "수행예정", width: "w-[180px]", align: "left" }, // 늘 YYYY-MM-DD, 시간이 있으면 뒤에(앱 dueFullText)
+        { header: "담당직원", width: "w-[200px]", align: "left" }, // 앱 todo-table.tsx — 「개인 · 이름」 · 「개인 · 이름 외 N명」 · 「전체 · 각자 수행」 · 「전체 · 한 명만 수행」(2026-11-09 사용자 지정)
+        { header: "상태", width: "w-[120px]" }, // 상태 배지 하나 · 옆 칸 완료 / 배정 직원(앱 todo-table.tsx, 2026-11-09 사용자 지정)
+        { header: "완료 / 배정 직원", width: "w-[130px]" },
       ],
       [
-        ["전체 · 각자", "모리커피 서초점", `본사 위생점검 대비 냉장고 정리 ${p.tag("risk", "긴급")}`, "2026-09-03", p.tag("warn", "진행 중"), ""],
-        ["전체 · 한 명", "모리커피 서초점", "가을 신메뉴 POP 교체", "2026-09-04 10:00", p.tag("quiet", "대기"), editBtn()],
-        ["서지안", "모리커피 서초점", "신규 원두 시음 기록 제출", "2026-09-05", p.tag("quiet", "대기"), editBtn()],
-        ["오세라", "모리커피 서초점", "분기 재물조사 입회", "2026-09-08 14:00", p.tag("quiet", "대기"), editBtn()],
-        ["전체 · 한 명", "온기식당 판교점", "여름 프로모션 POP 철거", "2026-08-25", `${p.tag("ok", "완료")} ${p.sub("문태경")}`, ""],
-        ["권도윤", "모리커피 서초점", "신메뉴 시식 교육 참석", "2026-08-28 14:00", p.tag("ok", "완료"), ""],
+        ["모리커피 서초점", todoTitle("본사 위생점검 대비 냉장고 정리", true), "2026-09-03", "전체 · 각자 수행", todoStatus("진행 중"), "2 / 4명"],
+        ["모리커피 서초점", todoTitle("가을 신메뉴 POP 교체"), "2026-09-04 10:00", "전체 · 한 명만 수행", todoStatus("대기"), "0 / 4명"],
+        ["모리커피 서초점", todoTitle("신규 원두 시음 기록 제출"), "2026-09-05", "개인 · 서지안", todoStatus("대기"), "0 / 1명"],
+        ["모리커피 서초점", todoTitle("분기 재물조사 입회"), "2026-09-08 14:00", "개인 · 오세라 외 1명", todoStatus("대기"), "0 / 2명"],
+        ["온기식당 판교점", todoTitle("여름 프로모션 POP 철거"), "2026-08-25", "전체 · 한 명만 수행", todoStatus("완료"), "1 / 3명"],
+        ["모리커피 서초점", todoTitle("신메뉴 시식 교육 참석"), "2026-08-28 14:00", "개인 · 권도윤", todoStatus("완료"), "1 / 1명"],
       ],
+      // 앱은 아예 없으면 「등록된 TO-DO 가 없습니다.」, 거른 결과가 없으면 아래 문구
       "조건에 맞는 TO-DO 가 없습니다.",
       12,
     ) +
-    pageNav(2);
+    pageNav(1);
 
   // ── 슬라이드 패널 ──
   const panelHead = (title, right = "") => `<div class="flex items-center gap-[6px]"><h2 class="flex-1 text-[18px] font-semibold text-erp-ink">${title}</h2>${right}</div>`;

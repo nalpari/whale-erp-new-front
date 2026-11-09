@@ -80,7 +80,7 @@ export async function ScheduleBox({ staffMemberId, weekStart }: { staffMemberId:
         ]}
         rows={items}
         rowKey={(r) => r.workScheduleId}
-        empty="이 주에 잡힌 근무스케줄이 없습니다."
+        empty="등록된 근무스케줄이 없습니다."
       />
       <Foot label="주간 근무시간 합계">{hoursText(totalWorkMinutes)}</Foot>
     </>
@@ -120,7 +120,7 @@ export async function AttendanceBox({ staffMemberId, weekStart }: { staffMemberI
       ]}
       rows={lines}
       rowKey={(r) => `${r.date}-${r.checkIn}-${r.checkOut}-${r.remark}`}
-      empty="이 주에 출퇴근 기록이 없습니다."
+      empty="등록된 출퇴근 기록이 없습니다."
     />
   );
 }

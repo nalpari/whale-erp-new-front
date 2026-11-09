@@ -99,7 +99,7 @@ export function StaffFilter({ query }: { query: StaffListQuery }) {
           />
         ))}
       </FilterSection>
-      <FilterSection label="가입·인증">
+      <FilterSection label="가입 상태">
         {JOIN_GROUPS.map((group) => (
           <Checkbox
             key={group}

@@ -74,7 +74,7 @@ export async function ContractBox({ staffMemberId }: { staffMemberId: number }) 
           );
         })}
       </dl>
-      <p className="mt-[6px] text-[13px] text-erp-label">가장 최근 계약 1건만 보입니다. 이전 이력은 근로계약 관리에서 봅니다.</p>
+      <p className="mt-[6px] text-[13px] text-erp-label">가장 최근 계약 1건만 표시됩니다. 이전 계약은 [근로계약 관리]에서 확인할 수 있습니다.</p>
     </>
   );
 }

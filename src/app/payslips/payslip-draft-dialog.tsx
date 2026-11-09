@@ -167,7 +167,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
             급여명세서 작성
             <span className="inline-flex h-[28px] items-center rounded-full bg-erp-point-bg px-[12px] text-[16px] font-semibold text-erp-point">{monthLabel(month)}</span>
           </h2>
-          <p className="text-[13px] text-erp-label">근로계약을 맺은 직원 중 급여명세서가 작성되지 않은 직원만 선택할 수 있습니다.</p>
+          <p className="text-[13px] text-erp-label">근로계약이 체결된 직원 중 급여명세서를 작성하지 않은 직원을 선택해 주세요.</p>
         </div>
         <div className="mt-[18px] flex flex-col gap-[12px] text-[14px]" aria-busy={loading}>
           <FormRow>
