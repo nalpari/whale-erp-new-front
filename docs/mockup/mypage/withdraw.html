@@ -95,8 +95,8 @@
                 <span data-icon="x" data-icon-size="16" style="color: var(--risk-text)" data-show="unmet" hidden></span>
                 <span class="stack" style="gap: 2px">
                   <b style="font-size: 13.5px">퇴근 기록 없는 출근</b>
-                  <span class="subtle" style="font-size: 12.5px" data-show="met">없음</span>
-                  <span class="subtle" style="font-size: 12.5px" data-show="unmet" hidden>있음 · 점포 3개 7건</span>
+                  <span class="subtle" style="font-size: 12.5px" data-show="met">-</span>
+                  <span class="subtle" style="font-size: 12.5px" data-show="unmet" hidden>점포 3개 7건</span>
                 </span>
                 <span class="row__end">
                   <span class="badge badge--ok" data-show="met">충족</span>
@@ -120,6 +120,8 @@
                 <div class="band__body">
                   <div class="band__title">폐점 조건</div>
                   <p class="band__desc">퇴근 기록이 없는 출근 <b>2건</b></p>
+                  <!-- 고른 점포에 본사에게 가려진 출근이 있을 때만 -->
+                  <p class="band__desc" style="margin-top: 4px">가맹마스터에게만 확인 가능한 출근이 포함되어 있습니다.</p>
                 </div>
               </div>
             </div>

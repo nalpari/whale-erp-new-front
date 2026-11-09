@@ -384,7 +384,8 @@ export function withdrawBody(R, { panel = false, blocked = false } = {}) {
         "폐점할 수 없는 점포 (3)",
         `<div class="w-[360px]">${ui.select(["역삼점 (ST000301)", "선릉점 (ST000302)", "판교점 (ST000307)"])}</div>`,
       ) +
-      `<div class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px] text-[14px]"><p class="font-semibold">폐점 조건</p><ul class="mt-[6px] list-disc pl-[18px]"><li class="text-erp-off">퇴근 기록이 없는 출근 <b class="font-semibold">2건</b></li></ul></div>`
+      `<div class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px] text-[14px]"><p class="font-semibold">폐점 조건</p><ul class="mt-[6px] list-disc pl-[18px]"><li class="text-erp-off">퇴근 기록이 없는 출근 <b class="font-semibold">2건</b></li></ul></div>` +
+      `<p class="flex items-start gap-[6px] text-[13px] leading-[1.6] font-medium text-erp-ink"><span class="mt-[3px] flex"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" class="shrink-0 text-erp-brand"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="3.6" width="1.4" height="5.6" rx="0.7" fill="#fff"/><circle cx="8" cy="11.6" r="0.95" fill="#fff"/></svg></span><span>가맹마스터에게만 확인 가능한 출근이 포함되어 있습니다.</span></p>`
     : "";
 
   // 탈퇴 사유를 "직접입력"으로 고를 때만 상세 사유 칸을 보인다. select 는 data-when(라디오 전용)을 못 쓰므로 onchange 로 직접 토글한다.
