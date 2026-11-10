@@ -64,14 +64,14 @@ function Billboard({ routes }: { routes: GuestRoutes }) {
           <div className="flex items-end justify-between">
             <div className="flex w-[445px] flex-col gap-[48px]">
               {/* 영문 WHALE ERP 자리에 슬로건(윗줄 48px · 아랫줄 86px). 한글은 REM 글꼴에 없어 기본 글꼴(Pretendard) 800 으로 그린다.
-                  칸(445px)보다 넓은 줄은 w-max 로 상자를 글자 폭만큼 넓혀야 그라데이션이 끝 글자까지 칠해진다.
+                  칸(445px)보다 넓은 줄은 w-max 로 상자를 글자 폭만큼 넓혀야 그라데이션이 끝 글자까지 칠해진다. 큰 글자는 글자 앞 여백도 커서 안으로 들어가 보여 음수 여백(-0.05em · -0.03em)으로 아래 줄 시작선에 맞춘다.
                   글자 칠은 배경을 글자 모양으로 오린 것이라 TRIM 으로 줄 상자를 대문자 높이까지 깎으면 한글 위아래가 잘려,
                   이 두 줄만 TRIM 없이 줄 높이로 간격을 둔다(2026-11-09 사용자 지정). */}
               <p className="flex flex-col gap-[4px] font-extrabold text-transparent">
-                <span className="w-max bg-gradient-to-r from-[rgba(58,86,112,0.7)] to-[rgba(58,86,112,0.35)] bg-clip-text text-[48px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">
+                <span className="-ml-[0.03em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.7)] to-[rgba(58,86,112,0.35)] bg-clip-text text-[48px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">
                   식당·카페 사장님의
                 </span>
-                <span className="w-max bg-gradient-to-r from-[rgba(58,86,112,0.8)] to-[rgba(58,86,112,0.36)] bg-clip-text text-[86px] leading-[1.25] tracking-[-0.025em] whitespace-nowrap">
+                <span className="-ml-[0.05em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.8)] to-[rgba(58,86,112,0.36)] bg-clip-text text-[86px] leading-[1.25] tracking-[-0.025em] whitespace-nowrap">
                   든든한 파트너
                 </span>
               </p>
@@ -212,30 +212,30 @@ function Personas({ routes }: { routes: GuestRoutes }) {
 }
 
 // 누가 어디서 쓰는지 — 사장님(웹) · 관리자(맡은 매장만) · 직원(앱). 아래 「시작 세 단계」와 같은 이야기(가입 → 매장 → 직원)를 두 번 하지 않게 바꿨다(2026-11-09 사용자 지정).
-// 번호 옆에 역할 이름, 설명은 두 문장, 할 수 있는 일은 체크 목록 — 친절하고 믿음이 가게(2026-11-09 사용자 지정).
+// 같은 세 사람을 「무엇을 하나」가 아니라 「일이 어떻게 이어지나」로 — 매장 유형 섹션과 겹쳐 보여 바꿨다. 카드 사이에 화살표를 둔다(2026-11-10 사용자 지정).
 const CONNECTIONS = [
   {
     label: "01",
-    role: "사장님",
-    title: "모든 매장을 한눈에 확인해요",
-    desc: ["매장별 직원 · 근무 · 급여 현황을 웹에서 한 번에 볼 수 있어요.", "관리자를 지정해 업무를 나눌 수도 있어요."],
-    features: ["전체 매장 · 직원 현황", "근로계약서 · 급여명세서 발송", "관리자 지정과 권한 설정"],
+    where: "관리자 웹",
+    title: "사장님이 매장과 직원을 등록해요",
+    desc: ["매장과 직원을 등록하고,", "관리자를 지정해 운영을 시작해요."],
+    features: ["매장 정보 관리", "관리자 등록 · 권한 설정", "직원 초대 · 근로계약서 · 급여명세서 발송"],
     icon: "web" as const,
   },
   {
     label: "02",
-    role: "관리자",
-    title: "맡은 매장만 편하게 관리해요",
-    desc: ["사장님이 맡긴 매장과 업무만 보여서 안심하고 쓸 수 있어요.", "근무표와 출퇴근을 바로 챙겨요."],
-    features: ["담당 매장만 조회", "근무표 · 출퇴근 관리", "받은 권한만큼 업무 처리"],
+    where: "관리자 웹",
+    title: "관리자가 근무 일정을 관리해요",
+    desc: ["근무표를 공유하고,", "출퇴근 현황과 할 일을 한눈에 확인해요."],
+    features: ["근무표 공유 및 조율", "출퇴근 확인", "할 일 배정"],
     icon: "manager" as const,
   },
   {
     label: "03",
-    role: "직원",
-    title: "앱 하나로 간편하게 일해요",
-    desc: ["근로계약서 서명부터 출퇴근, 급여명세서 확인까지 휴대폰으로 해결해요.", "초대 알림톡을 받으면 바로 시작해요."],
-    features: ["근로계약서 전자 서명", "매장 위치로 출퇴근", "급여명세서 · 근무표 확인"],
+    where: "직원 앱",
+    title: "직원은 앱으로 출퇴근해요",
+    desc: ["근로계약서에 서명하고,", "근무 일정과 급여명세서를 간편하게 확인해요."],
+    features: ["근로계약서 전자 서명", "출퇴근", "급여명세서 확인"],
     icon: "app" as const,
   },
 ];
@@ -274,18 +274,22 @@ function Connections() {
   return (
     <section className="bg-[#f1f7fc] py-[100px]">
       <div className={`${FRAME} flex flex-col gap-[60px]`}>
-        <SectionTitle oneLine tag="역할별 사용 안내" light="Whale ERP," bold="누가 어떻게 쓰나요?" />
+        <SectionTitle oneLine tag="함께 일하는 방식" light="사장님부터 직원까지," bold="매장 업무가 하나로 연결돼요" />
         <div className="grid grid-cols-3 gap-[34px]">
-          {CONNECTIONS.map((c) => (
-            <div key={c.label} className="flex flex-col gap-[34px]">
+          {CONNECTIONS.map((c, i) => (
+            <div key={c.label} className="relative flex flex-col gap-[34px]">
+              {i < CONNECTIONS.length - 1 && (
+                <span aria-hidden className="absolute top-[110px] -right-[17px] z-10 flex size-[34px] translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-guest-line bg-white text-guest-navy">
+                  <Arrow />
+                </span>
+              )}
               {/* 아이콘만 둔 칸은 220px — 348px 은 비어 보였다. 번호는 칸이 아니라 제목 앞에 둔다(2026-11-09 사용자 지정). */}
-              <div className="flex h-[220px] items-center justify-center rounded-[16px] bg-white text-guest-navy-soft">
+              <div className="relative flex h-[220px] items-center justify-center rounded-[16px] bg-white text-guest-navy-soft">
+                <span className="absolute top-[18px] left-[18px] rounded-[4px] bg-[#f1f7fc] px-[10px] py-[4px] text-[14px] leading-[1.5] font-semibold text-guest-navy">{c.where}</span>
                 <RoleIcon kind={c.icon} />
               </div>
               <div className="flex flex-col gap-[12px] pl-[2px] text-guest-body">
-                <p className={`text-[16px] leading-[1.6] font-bold text-guest-navy ${TRIM}`}>
-                  {c.label} {c.role}
-                </p>
+                <p className={`text-[16px] leading-[1.6] font-bold text-guest-navy ${TRIM}`}>{c.label}</p>
                 <h3 className="text-[22px] leading-[1.4] font-bold text-guest-ink">{c.title}</h3>
                 <p className="text-[17px] leading-[1.6]">
                   {c.desc[0]}

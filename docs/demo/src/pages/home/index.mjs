@@ -28,11 +28,11 @@ const HIGHLIGHTS = [
 // 머리말(110px)이 Billboard 위에 겹치도록 그만큼 끌어올린다. 머리말 아래 빈 하늘 100px 를 잘라 1080 → 980.
 // 고래는 정사각 그림을 677×375 에 늘여 채운 것이 시안이다 — object-cover 로 바꾸면 고래가 잘린다. 가운데에서 오른쪽으로 200px 옮겼다.
 // 글 묶음은 머리말 아래부터 바닥까지 가운데에 둬 위 · 아래 여백을 같게 한다. 슬로건은 영문 WHALE ERP 자리(윗줄 48 · 아랫줄 86px).
-// 슬로건 칠은 배경을 글자 모양으로 오린 것이라 TRIM 없이 줄 높이로 간격을 두고, w-max 로 상자를 글자 폭만큼 넓힌다(2026-11-09 사용자 지정).
+// 슬로건 칠은 배경을 글자 모양으로 오린 것이라 TRIM 없이 줄 높이로 간격을 두고, w-max 로 상자를 글자 폭만큼 넓힌다. 큰 글자는 글자 앞 여백(옆 베어링)도 커서 안으로 들어가 보여 음수 여백으로 아래 줄 시작선에 맞춘다(2026-11-09 사용자 지정).
 const HERO_BUTTON = "flex h-[48px] items-center justify-center rounded-[6px] border border-guest-navy bg-white text-[18px] leading-[1.5] font-semibold text-guest-navy hover:bg-[rgba(58,86,112,0.9)] hover:text-white";
 const billboard = (A, R) => `<section class="relative -mt-[110px] h-[980px] overflow-hidden">${g.cover(A, "billboard-bg.png", "object-cover", true)}
 <div class="guest-whale absolute top-[410px] left-[calc(50%+200px)] h-[375px] w-[677px] -translate-1/2">${g.cover(A, "billboard-whale.png", "", true)}</div>
-<div class="absolute inset-x-0 top-[110px] bottom-0 flex items-center justify-center"><div class="${FRAME} flex flex-col gap-[80px]"><div class="flex items-end justify-between"><div class="flex w-[445px] flex-col gap-[48px]"><p class="flex flex-col gap-[4px] font-extrabold text-transparent"><span class="w-max bg-gradient-to-r from-[rgba(58,86,112,0.7)] to-[rgba(58,86,112,0.35)] bg-clip-text text-[48px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">식당·카페 사장님의</span><span class="w-max bg-gradient-to-r from-[rgba(58,86,112,0.8)] to-[rgba(58,86,112,0.36)] bg-clip-text text-[86px] leading-[1.25] tracking-[-0.025em] whitespace-nowrap">든든한 파트너</span></p><div class="flex flex-col gap-[24px] text-guest-navy"><p class="text-[22px] leading-[1.5] font-bold whitespace-nowrap ${TRIM}">처음 여는 매장도, 오래 운영한 매장도 쉽게 관리하세요</p><p class="text-[17px] leading-[1.5] whitespace-nowrap ${TRIM}">직원 계약부터 근무표·급여, 매출·재무, 가맹점 관리까지<br>여러 서비스를 일일이 알아보고 관리할 필요 없이, 하나로 해결</p></div></div>
+<div class="absolute inset-x-0 top-[110px] bottom-0 flex items-center justify-center"><div class="${FRAME} flex flex-col gap-[80px]"><div class="flex items-end justify-between"><div class="flex w-[445px] flex-col gap-[48px]"><p class="flex flex-col gap-[4px] font-extrabold text-transparent"><span class="-ml-[0.03em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.7)] to-[rgba(58,86,112,0.35)] bg-clip-text text-[48px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">식당·카페 사장님의</span><span class="-ml-[0.05em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.8)] to-[rgba(58,86,112,0.36)] bg-clip-text text-[86px] leading-[1.25] tracking-[-0.025em] whitespace-nowrap">든든한 파트너</span></p><div class="flex flex-col gap-[24px] text-guest-navy"><p class="text-[22px] leading-[1.5] font-bold whitespace-nowrap ${TRIM}">처음 여는 매장도, 오래 운영한 매장도 쉽게 관리하세요</p><p class="text-[17px] leading-[1.5] whitespace-nowrap ${TRIM}">직원 계약부터 근무표·급여, 매출·재무, 가맹점 관리까지<br>여러 서비스를 일일이 알아보고 관리할 필요 없이, 하나로 해결</p></div></div>
 <div class="flex gap-[8px]"><a href="${link(R, "auth/signup.html")}" class="${HERO_BUTTON} w-[176px] gap-[12px] ${BUTTON_MOTION}">무료로 시작하기${g.arrow(A)}</a><a href="${link(R, "home/inquiry.html")}" class="${HERO_BUTTON} w-[100px] ${BUTTON_MOTION}">도입문의</a></div></div>
 <div class="flex flex-col items-start gap-[20px]">${g.tag("이용 안내")}<ul class="flex w-full justify-between border-t border-[rgba(130,151,168,0.15)] pt-[24px] text-guest-navy">${HIGHLIGHTS.map(
   (h) => `<li class="flex gap-[10px]"><span class="text-[16px] leading-[2.3] font-bold">${h.no}</span><span class="leading-[1.6]"><strong class="block text-[22px] font-bold">${h.title}</strong><span class="text-[17px]">${h.desc}</span></span></li>`,
@@ -61,32 +61,32 @@ const ROLE_ICON = {
 const CONNECTIONS = [
   {
     label: "01",
-    role: "사장님",
-    title: "모든 매장을 한눈에 확인해요",
-    desc: ["매장별 직원 · 근무 · 급여 현황을 웹에서 한 번에 볼 수 있어요.", "관리자를 지정해 업무를 나눌 수도 있어요."],
-    features: ["전체 매장 · 직원 현황", "근로계약서 · 급여명세서 발송", "관리자 지정과 권한 설정"],
+    where: "관리자 웹",
+    title: "사장님이 매장과 직원을 등록해요",
+    desc: ["매장과 직원을 등록하고,", "관리자를 지정해 운영을 시작해요."],
+    features: ["매장 정보 관리", "관리자 등록 · 권한 설정", "직원 초대 · 근로계약서 · 급여명세서 발송"],
     icon: "web",
   },
   {
     label: "02",
-    role: "관리자",
-    title: "맡은 매장만 편하게 관리해요",
-    desc: ["사장님이 맡긴 매장과 업무만 보여서 안심하고 쓸 수 있어요.", "근무표와 출퇴근을 바로 챙겨요."],
-    features: ["담당 매장만 조회", "근무표 · 출퇴근 관리", "받은 권한만큼 업무 처리"],
+    where: "관리자 웹",
+    title: "관리자가 근무 일정을 관리해요",
+    desc: ["근무표를 공유하고,", "출퇴근 현황과 할 일을 한눈에 확인해요."],
+    features: ["근무표 공유 및 조율", "출퇴근 확인", "할 일 배정"],
     icon: "manager",
   },
   {
     label: "03",
-    role: "직원",
-    title: "앱 하나로 간편하게 일해요",
-    desc: ["근로계약서 서명부터 출퇴근, 급여명세서 확인까지 휴대폰으로 해결해요.", "초대 알림톡을 받으면 바로 시작해요."],
-    features: ["근로계약서 전자 서명", "매장 위치로 출퇴근", "급여명세서 · 근무표 확인"],
+    where: "직원 앱",
+    title: "직원은 앱으로 출퇴근해요",
+    desc: ["근로계약서에 서명하고,", "근무 일정과 급여명세서를 간편하게 확인해요."],
+    features: ["근로계약서 전자 서명", "출퇴근", "급여명세서 확인"],
     icon: "app",
   },
 ];
 
-const connections = (A) => `<section class="bg-[#f1f7fc] py-[100px]"><div class="${FRAME} flex flex-col gap-[60px]">${g.sectionTitle("Whale ERP,", "누가 어떻게 쓰나요?", false, { tag: "역할별 사용 안내", oneLine: true })}<div class="grid grid-cols-3 gap-[34px]">${CONNECTIONS.map(
-  (c) => `<div class="flex flex-col gap-[34px]"><div class="flex h-[220px] items-center justify-center rounded-[16px] bg-white text-guest-navy-soft"><svg aria-hidden="true" viewBox="0 0 48 48" class="h-[104px] w-[104px]" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ROLE_ICON[c.icon]}</svg></div><div class="flex flex-col gap-[12px] pl-[2px] text-guest-body"><p class="text-[16px] leading-[1.6] font-bold text-guest-navy ${TRIM}">${c.label} ${c.role}</p><h3 class="text-[22px] leading-[1.4] font-bold text-guest-ink">${c.title}</h3><p class="text-[17px] leading-[1.6]">${c.desc[0]}<br>${c.desc[1]}</p><ul class="flex flex-col gap-[10px] pt-[8px] text-[15px] leading-[1.5] text-guest-ink">${c.features.map((l) => `<li class="flex items-center gap-[10px]">${g.gimg(A, "check-circle.svg", 18, 18)}${l}</li>`).join("")}</ul></div></div>`,
+const connections = (A) => `<section class="bg-[#f1f7fc] py-[100px]"><div class="${FRAME} flex flex-col gap-[60px]">${g.sectionTitle("사장님부터 직원까지,", "매장 업무가 하나로 연결돼요", false, { tag: "함께 일하는 방식", oneLine: true })}<div class="grid grid-cols-3 gap-[34px]">${CONNECTIONS.map(
+  (c, i) => `<div class="relative flex flex-col gap-[34px]">${i < CONNECTIONS.length - 1 ? `<span aria-hidden="true" class="absolute top-[110px] -right-[17px] z-10 flex size-[34px] translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-guest-line bg-white text-guest-navy">${g.arrow(A)}</span>` : ""}<div class="relative flex h-[220px] items-center justify-center rounded-[16px] bg-white text-guest-navy-soft"><span class="absolute top-[18px] left-[18px] rounded-[4px] bg-[#f1f7fc] px-[10px] py-[4px] text-[14px] leading-[1.5] font-semibold text-guest-navy">${c.where}</span><svg aria-hidden="true" viewBox="0 0 48 48" class="h-[104px] w-[104px]" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ROLE_ICON[c.icon]}</svg></div><div class="flex flex-col gap-[12px] pl-[2px] text-guest-body"><p class="text-[16px] leading-[1.6] font-bold text-guest-navy ${TRIM}">${c.label}</p><h3 class="text-[22px] leading-[1.4] font-bold text-guest-ink">${c.title}</h3><p class="text-[17px] leading-[1.6]">${c.desc[0]}<br>${c.desc[1]}</p><ul class="flex flex-col gap-[10px] pt-[8px] text-[15px] leading-[1.5] text-guest-ink">${c.features.map((l) => `<li class="flex items-center gap-[10px]">${g.gimg(A, "check-circle.svg", 18, 18)}${l}</li>`).join("")}</ul></div></div>`,
 ).join("")}</div></div></section>`;
 
 // 시안이 줄을 직접 나눈 설명은 줄마다 나눠 둔다. 매장은 사업자 진위확인을 마쳐야 운영으로 바뀌고, 운영 중인 매장에서만 직원을 초대할 수 있다 — 길어도 순서를 적어 혼란을 막는다(2026-11-09 사용자 지정).
