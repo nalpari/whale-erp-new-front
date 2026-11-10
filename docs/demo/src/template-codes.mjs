@@ -16,7 +16,7 @@ const OPS = [
   ["도입문의 접수", "LEAD_RECEIVED"],
   ["문의사항 답변", "INQUIRY_ANSWERED"],
   ["도입문의 처리 상태 변경", "LEAD_ANSWERED"],
-  ["근로계약 날인", "CONTRACT_SIGNED"],
+  ["근로계약 서명", "CONTRACT_SIGNED"],
   ["근로계약 거부", "CONTRACT_REJECTED"],
   ["근로계약 만료", "CONTRACT_EXPIRED"],
   ["가입 연결 보류", "LINK_HOLD"],

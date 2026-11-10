@@ -1,5 +1,5 @@
 import { Button, ListToolbar, PageBar } from "@/components/common";
-import { deniedMessageOf, screenPath } from "@/lib/api";
+import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import { kstToday, staffListApiSearch } from "@/lib/staff-members";
 import { getStaffMembers } from "@/lib/staff-members-api";
 import { BulkExportButton } from "./bulk-export-button";
@@ -22,11 +22,18 @@ export default async function StaffMembersPage({
 }) {
   const query = parseStaffListQuery(await searchParams);
   // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 · 없는 BP 404 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다(근로계약 목록과 같다)
-  const listed = await getStaffMembers(query).catch((e: unknown) => {
-    const notice = deniedMessageOf(e);
-    if (notice === null) throw e;
-    return { notice };
-  });
+  // 계약 상태 칸의 이름은 GET /enums/ContractStatus 에서 받는다(WHALEERP-659). 받지 못해도 목록은 그린다 — 그 칸만 「-」이고 원인은 서버 로그에 남긴다(직원 상세 loadEnumOrEmpty 와 같다)
+  const [listed, contractStatuses] = await Promise.all([
+    getStaffMembers(query).catch((e: unknown) => {
+      const notice = deniedMessageOf(e);
+      if (notice === null) throw e;
+      return { notice };
+    }),
+    getEnum("ContractStatus").catch((error: unknown) => {
+      console.error("직원 목록: GET /enums/ContractStatus 를 받지 못했습니다", error);
+      return [];
+    }),
+  ]);
   if ("notice" in listed)
     return (
       <>
@@ -80,6 +87,7 @@ export default async function StaffMembersPage({
             page={query.page}
             pageSize={query.pageSize}
             today={kstToday()}
+            contractStatuses={contractStatuses}
             listHref={staffListHrefOf(query)}
             at={at}
             empty={noStaffAtAll ? "등록된 직원이 없습니다." : "조건에 맞는 직원이 없습니다."}

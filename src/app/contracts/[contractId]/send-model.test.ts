@@ -59,7 +59,7 @@ test("sendFailedTarget — 저장 뒤 보내기가 실패한 502 만 그 계약 
 });
 
 test("sendNoticeOf — 되돌아간 상태에 따라 다시 저장 · 재발송을 안내하고, 정해진 이름만 받는다", () => {
-  assert.match(sendNoticeOf("failed", "DRAFT") ?? "", /임시저장으로 두었습니다/);
+  assert.match(sendNoticeOf("failed", "DRAFT") ?? "", /작성 중으로 두었습니다/);
   assert.match(sendNoticeOf("failed", "PENDING_SEND") ?? "", /재발송해 주세요/);
   assert.match(sendNoticeOf("unconfirmed", "PENDING_SEND") ?? "", /두 번 갈 수 있습니다/);
   for (const raw of [undefined, "", "toString", ["failed"]]) assert.equal(sendNoticeOf(raw, "DRAFT"), null);
@@ -103,16 +103,16 @@ test("callSave — 성공 · 발송 실패의 redirect 는 다시 던져 원래 
 test("서명 대기 재발송 확인창 — 데모 문구, 이름을 모르면 그 조각만 뺀다(WHALEERP-611)", () => {
   assert.deepEqual(signingResendCopy("권도윤"), {
     title: "계약서를 다시 보내시겠습니까?",
-    body: "같은 조건의 계약서를 권도윤 님에게 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.",
+    body: "같은 조건의 계약서를 권도윤 님에게 다시 보냅니다. 서명 기한은 발송일로부터 30일입니다.",
   });
-  assert.equal(signingResendCopy(null).body, "같은 조건의 계약서를 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.");
-  assert.equal(signingResendCopy("").body, "같은 조건의 계약서를 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.");
+  assert.equal(signingResendCopy(null).body, "같은 조건의 계약서를 다시 보냅니다. 서명 기한은 발송일로부터 30일입니다.");
+  assert.equal(signingResendCopy("").body, "같은 조건의 계약서를 다시 보냅니다. 서명 기한은 발송일로부터 30일입니다.");
 });
 
 test("근로계약 상세 재발송 확인창 — 가입한 직원은 데모 문구, 가입 전 직원은 상태와 상관없이 가입 초대 문구(front #136 code-review)", () => {
   assert.deepEqual(resendDialogCopy("PENDING_SIGNATURE", "권도윤", true), {
     title: "계약서를 다시 보내시겠습니까?",
-    body: ["같은 조건의 계약서를 권도윤 님에게 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다."],
+    body: ["같은 조건의 계약서를 권도윤 님에게 다시 보냅니다. 서명 기한은 발송일로부터 30일입니다."],
   });
   // 가입 전 직원은 발송 대기 · 서명 대기 모두 보낼 때 api 가 다시 판별한다 — 가입 초대 · 소속 추가 확인 요청을 함께 알린다(WHALEERP-130)
   for (const status of ["PENDING_SEND", "PENDING_SIGNATURE"]) {
@@ -127,11 +127,12 @@ test("근로계약 상세 재발송 확인창 — 가입한 직원은 데모 문
     // 직원 목록 재발송도 같은 문구다
     assert.deepEqual(invite, { title: inviteResendCopy("남도현").title, body: inviteResendCopy("남도현").body });
   }
-  // 요청 유효 기간 · 발송 대기로 남는 것 · 날인 기한(용어 통일)
+  // 요청 유효 기간 · 서명 요청 전으로 남는 것 · 서명 기한(용어 통일, 「날인」은 쓰지 않는다 — WHALEERP-659)
   const invite = inviteResendCopy("남도현");
   assert.match(invite.body[1], /30일 동안 유효/);
-  assert.match(invite.body[1], /발송 대기로 남습니다/);
-  assert.doesNotMatch(invite.body.join(" "), /서명 기한/);
+  assert.match(invite.body[1], /서명 요청 전으로 남습니다/);
+  assert.match(invite.body[1], /서명 기한/);
+  assert.doesNotMatch(invite.body.join(" "), /날인/);
   assert.match(inviteResendCopy(null).body[0], /^직원 휴대전화번호로/);
   assert.equal(resendDialogCopy("PENDING_SEND", "남도현", true).title, "계약서를 다시 보내시겠습니까?");
 });
@@ -165,12 +166,12 @@ test("거부 · 만료 재발송 확인창 — 같은 조건으로 다시 보낸
   const rejected = resendDialogCopy("REJECTED", "남도현", true);
   assert.equal(rejected.title, "계약서를 다시 보내시겠습니까?");
   assert.deepEqual(rejected.body, [
-    "거부된 근로계약서를 같은 조건으로 다시 보냅니다.",
-    "같은 조건의 계약서를 남도현 님에게 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.",
+    "서명 거절된 근로계약서를 같은 조건으로 다시 보냅니다.",
+    "같은 조건의 계약서를 남도현 님에게 다시 보냅니다. 서명 기한은 발송일로부터 30일입니다.",
   ]);
   // 가입 전 직원 — 가입 초대 알림톡(발송 대기 문구)
   const expired = resendDialogCopy("EXPIRED", null, false);
-  assert.equal(expired.body[0], "날인 기한이 지나 만료된 근로계약서를 같은 조건으로 다시 보냅니다.");
+  assert.equal(expired.body[0], "서명 기한이 지나 만료된 근로계약서를 같은 조건으로 다시 보냅니다.");
   assert.match(expired.body[1], /가입 초대 알림톡/);
 });
 

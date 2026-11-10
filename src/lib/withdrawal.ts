@@ -6,7 +6,7 @@
 import { authHeaders, request } from "./api";
 import type { WithdrawEligibility } from "./withdrawal-form";
 
-/** GET /auth/admin/me/withdraw-eligibility. 탈퇴 경고 문구를 채울 값과, 진행 중인 근로계약이 있는지를 받는다. */
+/** GET /auth/admin/me/withdraw-eligibility. 탈퇴 경고 문구를 채울 값과, 함께 폐점할 점포의 폐점 확인(closing — 막는 조건은 퇴근 기록이 없는 출근)을 받는다. */
 export async function getWithdrawEligibility(): Promise<WithdrawEligibility> {
   return request("/auth/admin/me/withdraw-eligibility", { headers: await authHeaders() });
 }

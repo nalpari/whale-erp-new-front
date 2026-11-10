@@ -13,7 +13,7 @@ import {
   type StoreClosingResult,
 } from "@/lib/store-closing";
 
-// 점포 폐점의 막힘 · 확인 목록 · 결과 안내. 상세의 상태 변경과 수정 화면의 폐점이 같이 쓴다.
+// 점포 폐점의 막힘 · 확인 목록 · 결과 안내. 상세의 상태 변경 · 수정 화면의 폐점과 회원 탈퇴 패널이 같이 쓴다.
 // 폐점은 퇴근하지 않은 출근만 막는다 — 근로계약은 막지 않고 대기 계약을 폐점이 닫는다(api 2026-11-04). 직원 알림은 없다.
 
 /** 회색 안내 상자 — 상태 변경 팝업의 운영 · 폐점 조건과 같은 모양 */
@@ -58,9 +58,9 @@ export function ClosingCondition({ counts }: { counts: Pick<StoreClosingCounts, 
  * 0건인 줄은 뺀다. 확정하지 않은 급여명세서는 처리하지 않으므로 상자 밖 회색 안내로 둔다. 체결 완료 계약 · 직원 알림 안내는 두지 않는다(2026-11-05 사용자 지정).
  * counts 가 없으면(확인 값을 받지 못함) 목록을 빼지 않고 무엇이 처리되는지만 같은 상자로 알린다.
  */
-export function ClosingCheckList({ counts }: { counts: StoreClosingCounts | null }) {
+export function ClosingCheckList({ counts, payslipText = closingPayslipText }: { counts: StoreClosingCounts | null; payslipText?: (counts: StoreClosingCounts) => string | null }) {
   const lines = counts ? closingCheckLines(counts) : [];
-  const payslip = counts ? closingPayslipText(counts) : null;
+  const payslip = counts ? payslipText(counts) : null;
   return (
     <div className="mt-[12px] flex flex-col gap-[6px]">
       {!counts ? (

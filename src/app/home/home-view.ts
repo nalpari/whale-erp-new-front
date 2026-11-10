@@ -30,8 +30,8 @@ type Kind = "계약" | "직원" | "문의" | "TO-DO";
 
 const PENDING_TEXT: Record<HomePendingItem["type"], { kind: Kind; title: string; since?: string }> = {
   CONTRACT_RENEWAL: { kind: "계약", title: "계약 갱신 예정" },
-  CONTRACT_PENDING_SIGNATURE: { kind: "계약", title: "근로계약 서명 대기", since: "발송" },
-  CONTRACT_CORRECTION_REQUESTED: { kind: "계약", title: "근로계약 수정 요청", since: "요청" },
+  CONTRACT_PENDING_SIGNATURE: { kind: "계약", title: "근로계약 직원 서명 대기", since: "발송" },
+  CONTRACT_CORRECTION_REQUESTED: { kind: "계약", title: "근로계약 직원 수정 요청", since: "요청" },
   AFFILIATION_REJECTED: { kind: "직원", title: "소속 확인 거절", since: "거절" },
   INQUIRY_ANSWERED: { kind: "문의", title: "문의 답변완료", since: "답변" },
   // TO-DO 상태 이름이 아닌 「미완료」를 쓰지 않는다(용어집 TO-DO 상태 3종) — 대기 · 진행 중 긴급 TO-DO 다
@@ -52,7 +52,7 @@ export function pendingHrefOf(item: HomePendingItem, bpCodeId: number): string {
     case "CONTRACT_RENEWAL":
     case "CONTRACT_PENDING_SIGNATURE":
     case "CONTRACT_CORRECTION_REQUESTED":
-      return bpPath(bpCodeId, listHrefOf({ page: 1, pageSize: 20, staffMemberName: "", status, storeIds, storesCleared: false, scope: null }));
+      return bpPath(bpCodeId, listHrefOf({ page: 1, pageSize: 20, staffMemberName: "", status, statusNone: false, storeIds, storesCleared: false, scope: null }));
     case "AFFILIATION_REJECTED":
       // 직원 목록은 가입 상태를 묶음으로만 거른다 — 그 상태가 든 묶음(거절은 「초대」)
       return bpPath(

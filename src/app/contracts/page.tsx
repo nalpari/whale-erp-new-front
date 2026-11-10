@@ -29,6 +29,8 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
       page = await request<ContractListPage>(`/contracts${apiSearch(query)}`, {
         headers,
       });
+      // 상태를 모두 끄면 빈 목록이다. api 는 상태 조건 없이 불러 상태별 개수만 받는다(apiSearch)
+      if (query.statusNone) page = { ...page, items: [], total: 0 };
     } catch (e) {
       // api 의 거절(BP 를 고르지 않음 400 · 권한 · 다른 BP 403 · 없는 BP 404 — deniedMessageOf)은 그 문장을 보인다
       const denied = deniedMessageOf(e);
@@ -40,9 +42,11 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
   // 0건이면 조건 없이(전체 점포 · 직원명 없음 · 상태 전체) 한 번 더 물어 「근로계약이 아예 없는지」와 「조건에 맞는 근로계약이 없는지」를 가른다
   // (직원 · 점포 목록과 같은 방식, 2026-11-04 사용자 지정). 묻지 못하면 「조건에 맞는 근로계약이 없습니다.」
   // 지금 조회가 이미 「전체」(조건 없음)면 다시 묻지 않는다 — 같은 요청을 두 번 보내지 않게(리뷰 반영)
-  const allSearch = apiSearch({ ...query, page: 1, staffMemberName: "", status: [], storeIds: [], storesCleared: true, scope: null });
+  // 상태를 모두 끈 것은 조건이 있는 것이라 늘 「조건에 맞는 …」이다(공통 정책 「목록 필터 체크박스」)
+  const allSearch = apiSearch({ ...query, page: 1, staffMemberName: "", status: [], statusNone: false, storeIds: [], storesCleared: true, scope: null });
   const noContractsAtAll =
     page?.total === 0 &&
+    !query.statusNone &&
     (apiSearch({ ...query, page: 1 }) === allSearch ||
       (await request<ContractListPage>(`/contracts${allSearch}`, { headers })
         .then((all) => all.total === 0)

@@ -307,11 +307,12 @@ export function passwordPanel(A) {
 // panel 이 true 면: "취소"는 페이지 이동 대신 패널을 닫고, 비밀번호 확인은 따로 뜨는 확인창이 아니라 패널 맨 앞 단계로 넣는다
 // (2026-10-06 피드백) — 맞게 입력하고 [확인]을 누르면(데모라 항상 통과) 같은 패널 안에서 회원 탈퇴 내용으로 바뀐다.
 // 전체 화면에서는 기존대로 페이지에 들어오면 비밀번호 확인창이 뜬다.
-// blocked 가 true 면 진행 중인 근로계약이 있어 막힌 상태(조건 미충족)를 그린다 — [근로계약 확인]이 보이고 [회원 탈퇴]는 막힌다.
+// blocked 가 true 면 퇴근 기록이 없는 출근이 있는 점포가 있어 막힌 상태를 그린다 — 「폐점할 수 없는 점포」 선택 상자로 막힌 점포를 골라
+// 사유를 보고 [회원 탈퇴]는 막힌다(앱 withdraw-panel.tsx, 2026-11-05 · 11-09 사용자 지정 — 전엔 진행 중인 근로계약이 막았다).
 export function withdrawBody(R, { panel = false, blocked = false } = {}) {
   const confirmId = x.dialogId();
   const doneId = x.dialogId();
-  // text 는 문단 하나(string), 여러 문단(array), 또는 소제목+문단({head,text,action})을 섞은 array 를 받는다. action 은 문단 아래 버튼이다.
+  // text 는 문단 하나(string), 여러 문단(array), 또는 소제목+문단({head,text,action})을 섞은 array 를 받는다. action 은 문단 아래 버튼 · 상자다.
   const notice = (title, text, danger) => {
     const blocks = Array.isArray(text) ? text : [text];
     const body = blocks
@@ -337,6 +338,14 @@ export function withdrawBody(R, { panel = false, blocked = false } = {}) {
       {
         head: `점포 ${live("11개")}의 상태가 「폐점」으로 바뀝니다.`,
         text: "서비스상의 점포 상태로, 실제 매장 영업과는 관계없습니다.",
+        // 폐점할 점포 전체 합계 — 점포 관리 폐점 확인 창과 같은 목록(앱 ClosingCheckList). 탈퇴가 같은 폐점 서비스로 점포를 한꺼번에 닫는다
+        action:
+          `<div class="flex flex-col gap-[6px]"><div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p class="font-medium">폐점 시 다음 항목이 함께 처리됩니다.</p>` +
+          `<ol class="mt-[6px] list-decimal pl-[18px]"><li>근무 중인 직원 : 39명 퇴직 처리<span class="block text-[13px] text-erp-label">퇴직일이 등록되지 않았거나 오늘 이후인 직원은 퇴직일이 오늘 날짜로 변경됩니다.</span></li>` +
+          `<li class="mt-[6px]">작성 중인 근로계약 : 5건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 더 이상 작성하거나 발송할 수 없습니다.</span></li>` +
+          `<li class="mt-[6px]">서명 요청 전인 근로계약 : 1건 종료<span class="block text-[13px] text-erp-label">해당 근로계약은 발송할 수 없으며, 이미 보낸 계약 초대도 만료됩니다.</span></li>` +
+          `<li class="mt-[6px]">직원 서명 대기·직원 수정 요청 중인 근로계약 : 3건 종료<span class="block text-[13px] text-erp-label">직원은 해당 근로계약에 더 이상 서명할 수 없습니다.</span></li></ol></div>` +
+          `<p class="text-[13px] text-erp-label">확정되지 않은 급여명세서 2건은 탈퇴 후 처리할 수 없습니다. 탈퇴 전에 확정해 주세요.</p></div>`,
       },
       {
         head: "개인정보가 삭제됩니다.",
@@ -363,9 +372,21 @@ export function withdrawBody(R, { panel = false, blocked = false } = {}) {
   const conditions =
     condRow("–", "text-[#e93737]", "부가서비스 구독 해지", ["1차 범위 밖 — 1차에서는 확인하지 않습니다.", "직원추가 구독중"]) +
     condRow("–", "text-erp-muted font-normal", "미정산 금액 없음", "1차 범위 밖 — 1차에서는 확인하지 않습니다.") +
+    // 막는 조건은 폐점과 같은 퇴근 기록이 없는 출근 하나다(가려진 직원 것 포함 건수, 앱 openCheckInConditionText)
     (blocked
-      ? condRow("✕", "text-[#e93737]", "진행 중인 근로계약 있음", "진행 중인 근로계약이 있습니다.")
-      : condRow("✓", "text-erp-link", "진행 중인 근로계약 없음", "진행 중인 근로계약이 없습니다."));
+      ? condRow("✕", "text-[#e93737]", "퇴근 기록 없는 출근 있음", "점포 3개 · 7건 — 아래에서 점포를 골라 확인합니다.")
+      : condRow("✓", "text-erp-link", "퇴근 기록 없는 출근 없음", "퇴근 기록이 없는 출근이 없습니다."));
+
+  // 막힌 점포만 담은 선택 상자 + 고른 점포의 폐점 조건(앱 ClosingCondition). 함께 처리될 것은 위 경고 상자의 합계만 둔다(2026-11-09).
+  // 데모는 선택을 바꿔도 첫 점포 값 그대로다.
+  const blockedStores = blocked
+    ? ui.field(
+        "폐점할 수 없는 점포 (3)",
+        `<div class="w-[360px]">${ui.select(["역삼점 (ST000301)", "선릉점 (ST000302)", "판교점 (ST000307)"])}</div>`,
+      ) +
+      `<div class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px] text-[14px]"><p class="font-semibold">폐점 조건</p><ul class="mt-[6px] list-disc pl-[18px]"><li class="text-erp-off">퇴근 기록이 없는 출근 <b class="font-semibold">2건</b></li></ul></div>` +
+      `<p class="flex items-start gap-[6px] text-[13px] leading-[1.6] font-medium text-erp-ink"><span class="mt-[3px] flex"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" class="shrink-0 text-erp-brand"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="3.6" width="1.4" height="5.6" rx="0.7" fill="#fff"/><circle cx="8" cy="11.6" r="0.95" fill="#fff"/></svg></span><span>가맹점포 출근이 포함되어 있습니다. 해당 점포의 가맹마스터에게 요청해 주세요.</span></p>`
+    : "";
 
   // 탈퇴 사유를 "직접입력"으로 고를 때만 상세 사유 칸을 보인다. select 는 data-when(라디오 전용)을 못 쓰므로 onchange 로 직접 토글한다.
   const detailId = ui.uid("wd-detail");
@@ -392,9 +413,10 @@ export function withdrawBody(R, { panel = false, blocked = false } = {}) {
 
   const withdrawContent =
     warn +
-    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`탈퇴 조건<span class="ml-[10px] inline-flex align-middle">${blocked ? ui.badge("off", "1개 미충족") : ui.badge("on", "모두 충족")}</span>`)}${conditions}${blocked ? `<div class="flex justify-end">${ui.button("근로계약 확인", { variant: "outline", href: to(R, "staff/contracts.html") })}</div>` : ""}</div>` +
+    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`탈퇴 조건<span class="ml-[10px] inline-flex align-middle">${blocked ? ui.badge("off", "1개 미충족") : ui.badge("on", "모두 충족")}</span>`)}${conditions}${blockedStores}</div>` +
     reason +
-    f.formButtons(ui.button("닫기", { variant: "off", ...dismiss }), blocked ? ui.button("회원 탈퇴", { disabled: true }) : x.dialogTrigger("회원 탈퇴", confirmId)) +
+    f.formButtons(ui.button("닫기", { variant: "off", ...dismiss }), blocked
+      ? ui.blocked(ui.button("회원 탈퇴", { disabled: true }), "퇴근 기록이 없는 출근이 있는 점포가 3개 있어 탈퇴할 수 없습니다.", { narrow: panel }) : x.dialogTrigger("회원 탈퇴", confirmId)) +
     confirmDoneDialogs;
 
   if (!panel) {

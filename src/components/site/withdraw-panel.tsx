@@ -3,10 +3,21 @@
 import { unstable_rethrow } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type MouseEvent, type RefObject } from "react";
 import { logout, logoutAfterWithdrawal } from "@/app/actions";
-import { Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
-import { IN_PROGRESS_CONTRACTS_HREF, moveTargetOf, withdrawFormField, withdrawWarningText, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
+import { ClosingCheckList, ClosingCondition } from "@/app/stores/store-closing-parts";
+import { Blocked, Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, GuideNote, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
+import {
+  blockedStoresOf,
+  moveTargetOf,
+  openCheckInConditionText,
+  withdrawBlockedReason,
+  withdrawFormField,
+  withdrawPayslipText,
+  withdrawWarningText,
+  type WithdrawEligibility,
+  type WithdrawWarningBlock,
+} from "@/lib/withdrawal-form";
 import { useCanOpen, useCodes, useCurrentBp, useStores } from "./session-gate";
-import { createWithdrawalAction, getWithdrawEligibilityAction, verifyWithdrawPasswordAction } from "./withdraw-actions";
+import { createWithdrawalAction, getWithdrawEligibilityAction, verifyWithdrawPasswordAction, type EligibilityResult } from "./withdraw-actions";
 
 type Step = "password" | "content" | "done";
 type Form = { currentPassword: string; reasonCode: string; reasonDetail: string };
@@ -24,9 +35,10 @@ function withEmphasis(text: string) {
 // 상자는 승인된 데모의 notice() 상자를 그대로 따른다(docs/demo/src/site.mjs 의 withdrawBody 안 notice()) — 제목("탈퇴 전 꼭
 // 확인해 주세요")과 본문 블록이 한 상자(border-erp-panel-line / bg-erp-thead-bg) 안에 함께 들어간다. 제목만
 // #e93737(DESIGN.md 가 토큰 없이 직접 쓰기로 둔 Figma 전용 색). 블록은 head 를 굵게, text(있을 때)는 \n 을 그대로
-// 줄바꿈으로 보이고(whitespace-pre-line), link 가 있으면 그 아래 이동 버튼(MoveButton)을 둔다. 문자열 블록은 지금
-// withdrawWarningText 가 만들지 않는다(타입에만 남아 있다).
-function WarningBlock({ block, onNavigate }: { block: WithdrawWarningBlock; onNavigate: () => void }) {
+// 줄바꿈으로 보이고(whitespace-pre-line), link 가 있으면 그 아래 이동 버튼(MoveButton)을 둔다. closing 이면 폐점 시 함께
+// 처리될 것(점포 전체 합계)을 점포 관리 폐점 확인 창과 같은 목록으로 붙인다. 문자열 블록은 지금 withdrawWarningText 가
+// 만들지 않는다(타입에만 남아 있다).
+function WarningBlock({ block, closing, onNavigate }: { block: WithdrawWarningBlock; closing: WithdrawEligibility["closing"]; onNavigate: () => void }) {
   if (typeof block === "string") return <p className="whitespace-pre-line">{withEmphasis(block)}</p>;
   return (
     <div>
@@ -36,6 +48,7 @@ function WarningBlock({ block, onNavigate }: { block: WithdrawWarningBlock; onNa
         <span>{withEmphasis(block.head)}</span>
       </p>
       {block.text && <p className="whitespace-pre-line">{withEmphasis(block.text)}</p>}
+      {block.closing && <ClosingCheckList counts={closing.total} payslipText={withdrawPayslipText} />}
       {block.link && (
         <div className="mt-[10px]">
           <MoveButton href={block.link.href} label={block.link.label} onNavigate={onNavigate} />
@@ -89,6 +102,8 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
   const [fieldError, setFieldError] = useState<{ at: FieldAt; message: string } | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // 「폐점할 수 없는 점포」 선택 상자에서 고른 점포. 없거나 목록에 없으면(다시 받은 조건에서 풀림) 첫 막힌 점포를 보인다
+  const [blockedStoreId, setBlockedStoreId] = useState<number | null>(null);
   const [saving, startSaving] = useTransition();
   const [verifying, startVerifying] = useTransition();
   // 탈퇴 사유는 공통코드 WITHDRAW_REASON(플랫폼고정)의 사용 중인 값을 표시 순서대로 쓴다(S-JHQQNR · S-DHBTXZ)
@@ -108,27 +123,39 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
     setFieldError(null);
     setFailure(null);
     setConfirmOpen(false);
+    setBlockedStoreId(null);
     setFieldGeneration((g) => g + 1);
   }
 
   // 열릴 때마다 eligibility 를 미리 받아 둔다 — 2단계는 비밀번호 칸을 지난 뒤에야 보이지만, 그 전환이
   // 기다리지 않도록 1단계에 있는 동안 백그라운드로 불러 둔다. saveNumber 로 지난 세션의 응답을 거른다.
+  // 저장이 폐점에 막혀(409) 다시 받을 때는 keepCurrent — 실패해도 지난 조건과 409 문구를 그대로 둔다(탈퇴가 되돌려진 것을 이미 안다).
+  const loadEligibility = async (mine: number, keepCurrent = false) => {
+    let result: EligibilityResult;
+    try {
+      result = await getWithdrawEligibilityAction();
+    } catch (error: unknown) {
+      unstable_rethrow(error);
+      console.error("탈퇴 조건 조회 요청 실패", error);
+      result = { ok: false, message: "탈퇴 조건을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." };
+    }
+    if (mine !== saveNumber.current) return;
+    if (result.ok) setEligibility(result.data);
+    else if (!keepCurrent) setLoadError(result.message);
+  };
   useEffect(() => {
     if (!open) return;
     saveNumber.current++;
-    const mine = saveNumber.current;
-    (async () => {
-      const result = await getWithdrawEligibilityAction();
-      if (mine !== saveNumber.current) return;
-      if (result.ok) setEligibility(result.data);
-      else setLoadError(result.message);
-    })();
+    void loadEligibility(saveNumber.current);
   }, [open]);
 
   // useCodes 는 그룹이 없으면 개발 중에만 경고한다 — 탈퇴를 막는 일이라 운영에서도 남긴다
   useEffect(() => {
     if (open && reasons.length === 0) console.error("탈퇴 사유 공통코드(WITHDRAW_REASON)가 비어 있습니다");
   }, [open, reasons.length]);
+
+  const blockedStores = eligibility ? blockedStoresOf(eligibility) : [];
+  const blockedStore = blockedStores.find((store) => store.storeId === blockedStoreId) ?? blockedStores[0];
 
   const doneHeadingId = `${ids}-done`;
   useEffect(() => {
@@ -208,7 +235,9 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
             setFieldError({ at: "reasonDetail", message: result.message });
             return;
           }
-          setFailure(result.message); // 진행 중인 근로계약 등 특정 칸을 가리킬 수 없는 거절 — content 단계에 남긴다
+          setFailure(result.message); // 특정 칸을 가리킬 수 없는 거절 — content 단계에 남긴다
+          // 폐점이 막았다(확인 뒤 생긴 퇴근 기록 없는 출근 등) — 조건을 다시 받아 막힌 점포를 보인다
+          if (result.status === 409) await loadEligibility(mine, true);
           return;
         }
         setForm(EMPTY);
@@ -301,7 +330,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
               <div className="flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[14px] text-[14px] leading-[1.6]">
                 <p className="font-semibold text-[#e93737]">탈퇴 전 꼭 확인해 주세요.</p>
                 {withdrawWarningText(eligibility, hasFranchiseStore).map((block, i) => (
-                  <WarningBlock key={i} block={block} onNavigate={handleClose} />
+                  <WarningBlock key={i} block={block} closing={eligibility.closing} onNavigate={handleClose} />
                 ))}
               </div>
 
@@ -314,21 +343,36 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                     { header: "부가서비스 구독", cell: () => <ConditionValue value="-" checked={null} /> },
                     { header: "미정산 금액", cell: () => <ConditionValue value="-" checked={null} /> },
                     {
-                      header: "진행 중인 근로계약",
-                      cell: (e) => <ConditionValue value={e.hasInProgressContract ? "있음" : "없음"} checked={!e.hasInProgressContract} />,
+                      header: "퇴근 기록 없는 출근",
+                      cell: (e) => <ConditionValue value={openCheckInConditionText(e)} checked={blockedStores.length ? false : null} />,
                     },
                   ]}
                   rows={[eligibility]}
                   rowKey={() => "conditions"}
                 />
-                {/* 탈퇴를 막는 조건이라 BP 마스터가 직접 정리해야 한다 — 진행 중 상태만 걸러 근로계약 관리로 보낸다(2026-10-30 사용자 지정).
-                 * 표 칸 안에 두면 좁은 패널(464px)에서 잘리므로, 표 아래 오른쪽(「진행 중인 근로계약」 칸 밑)에 둔다. */}
-                {eligibility.hasInProgressContract && (
-                  <div className="flex justify-end">
-                    <MoveButton href={IN_PROGRESS_CONTRACTS_HREF} label="근로계약 확인" onNavigate={handleClose} />
-                  </div>
-                )}
               </div>
+
+              {/* 막힌 점포를 골라 사유를 본다 — 점포 관리 폐점 조건과 같은 부품(2026-11-05 사용자 지정). 함께 처리될 것은 위 경고 상자의
+               * 합계만 둔다 — 점포별로 또 보이면 빨간 상자가 두 번 나왔다(2026-11-09 사용자 지정). 막는 조건은 퇴근 기록이 없는 출근
+               * 하나라 건수만 보인다(api 가 직원 이름 · 시각을 주지 않는다). */}
+              {blockedStore && (
+                <div className="flex flex-col gap-[10px]">
+                  <Field label={`폐점할 수 없는 점포 (${blockedStores.length.toLocaleString("ko-KR")})`}>
+                    <Select value={String(blockedStore.storeId)} onChange={(e) => setBlockedStoreId(Number(e.target.value))}>
+                      {blockedStores.map((store) => (
+                        <option key={store.storeId} value={store.storeId}>
+                          {store.storeName} ({store.storeCode})
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                  <div className="text-[14px] leading-[1.6] text-erp-ink">
+                    <ClosingCondition counts={blockedStore} />
+                  </div>
+                  {/* 본사에게 가려진 출근은 BP 마스터가 출퇴근 현황에서도 찾을 수 없다 — 그 출근이 있는 점포에만 누가 볼 수 있는지 알린다(2026-11-09 사용자 지정) */}
+                  {blockedStore.openCheckIns.hiddenCount > 0 && <GuideNote>가맹점포 출근이 포함되어 있습니다. 해당 점포의 가맹마스터에게 요청해 주세요.</GuideNote>}
+                </div>
+              )}
 
               <div className="flex flex-col gap-[18px]">
                 <div className="flex flex-col gap-[8px]">
@@ -374,12 +418,14 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                   닫기
                 </Button>
                 {/* 기본색(primary)이다 — 데모 · 목업과 같다(2026-10-30 사용자 지정, 전엔 danger) */}
-                <Button
-                  onClick={() => setConfirmOpen(true)}
-                  disabled={eligibility.hasInProgressContract || !form.reasonCode || (form.reasonCode === "WD_INPUT" && !form.reasonDetail.trim())}
-                >
-                  회원 탈퇴
-                </Button>
+                <Blocked reason={withdrawBlockedReason(eligibility)} floating>
+                  <Button
+                    onClick={() => setConfirmOpen(true)}
+                    disabled={saving || blockedStores.length > 0 || !form.reasonCode || (form.reasonCode === "WD_INPUT" && !form.reasonDetail.trim())}
+                  >
+                    회원 탈퇴
+                  </Button>
+                </Blocked>
               </div>
             </>
           )}

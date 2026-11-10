@@ -58,7 +58,7 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
                 <Button href={await bpHref(withBack(`/contracts/${previous.renewedBy}`, query.back))}>이어지는 계약</Button>
               </Notice>
             ) : !canRenew(previous) ? (
-              <Notice title="체결 완료되었거나 체결 뒤 종료된 근로계약만 재계약할 수 있습니다." back={back} />
+              <Notice title="서명 완료되었거나 서명 완료 뒤 종료된 근로계약만 재계약할 수 있습니다." back={back} />
             ) : !storeOpen ? (
               <Notice title="이 근무지에는 근로계약서를 작성할 수 없습니다(폐점했거나 맡은 점포가 아님)" back={back} />
             ) : (

@@ -87,10 +87,10 @@ const sent = {
   registeredBy: null,
 } as const;
 
-test("전자계약은 발송일 · 날인 기한 · 최종 처리일을 보이고, 재발송했으면 횟수와 마지막 발송을 더한다", () => {
+test("전자계약은 발송일 · 서명 기한 · 최종 처리일을 보이고, 재발송했으면 횟수와 마지막 발송을 더한다", () => {
   assert.deepEqual(processRows(sent), [
     { label: "발송일", value: "2026-10-20 10:00" },
-    { label: "날인 기한", value: "2026-11-19 10:00" },
+    { label: "서명 기한", value: "2026-11-19 10:00" },
     { label: "최종 처리일", value: "2026-10-20 10:00" },
   ]);
   assert.deepEqual(processRows({ ...sent, resendCount: 2, lastSentAt: "2026-10-22T03:30:00.000Z" })[1], {
@@ -99,11 +99,11 @@ test("전자계약은 발송일 · 날인 기한 · 최종 처리일을 보이�
   });
 });
 
-test("날인 기한은 날인을 기다리는 동안과 만료만 — 체결 완료 · 종료는 보이지 않는다", () => {
+test("서명 기한은 서명을 기다리는 동안과 만료만 — 서명 완료 · 종료는 보이지 않는다", () => {
   const labels = processRows({ ...sent, status: "SIGNED" }).map((r) => r.label);
-  assert.ok(!labels.includes("날인 기한"));
-  assert.ok(processRows({ ...sent, status: "PENDING_SEND" }).some((r) => r.label === "날인 기한"));
-  assert.ok(processRows({ ...sent, status: "EXPIRED" }).some((r) => r.label === "날인 기한"));
+  assert.ok(!labels.includes("서명 기한"));
+  assert.ok(processRows({ ...sent, status: "PENDING_SEND" }).some((r) => r.label === "서명 기한"));
+  assert.ok(processRows({ ...sent, status: "EXPIRED" }).some((r) => r.label === "서명 기한"));
 });
 
 test("재발송 횟수가 있어도 마지막 발송 일시가 없으면 재발송 줄을 두지 않는다", () => {

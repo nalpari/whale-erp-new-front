@@ -235,7 +235,7 @@ python3 docs/erd/_build.py
 |  | 직무 | text | `job_title` | 초안 필수 (2026-10-06) |
 |  | 입사일 | date | `hired_date` |  |
 |  | 재직 상태 | enum | `employment_status` | 재직·퇴직 |
-|  | 가입 상태 | enum | `join_status` | 초안·초대 발송·가입 완료 |
+|  | 가입 상태 | enum | `join_status` | 초안·가입 대기·가입 완료 |
 |  | 퇴직일 | date | `retired_date` |  |
 
 ### 신고 정보 `staff_tax_profiles` · 엔티티

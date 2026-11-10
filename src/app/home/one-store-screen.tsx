@@ -110,7 +110,14 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
     "내 문의",
   );
   const pay = useLoad(canOpen("/payslips") ? () => bff<PayslipSummary>(paths.payslipSummary) : null, `${key}|${today.slice(0, 7)}`, "직원 급여");
-  const staff = useLoad(canOpen("/staff-members") ? () => bff<{ items: StaffMemberListItem[]; total: number }>(paths.staff) : null, key, "직원 정보");
+  // 근로계약 칸의 상태 이름은 GET /enums/ContractStatus 에서 받는다(WHALEERP-659)
+  const staff = useLoad(
+    canOpen("/staff-members")
+      ? () => Promise.all([bff<{ items: StaffMemberListItem[]; total: number }>(paths.staff), enumOf("ContractStatus")]).then(([list, contractStatuses]) => ({ ...list, contractStatuses }))
+      : null,
+    key,
+    "직원 정보",
+  );
 
   const cards = [
     canOpen("/stores") && (
@@ -336,7 +343,7 @@ function StaffCard({
   at,
 }: {
   storeId: number;
-  section: Section<{ items: StaffMemberListItem[]; total: number }>;
+  section: Section<{ items: StaffMemberListItem[]; total: number; contractStatuses: EnumValue[] }>;
   canContracts: boolean;
   canCreateContract: boolean;
   today: string;
@@ -363,14 +370,14 @@ function StaffCard({
       }
       actions={
         <>
-          {canContracts && soft("근로계약 관리", at(listHrefOf({ page: 1, pageSize: 20, staffMemberName: "", status: [], storeIds: [storeId], storesCleared: false, scope: null })))}
+          {canContracts && soft("근로계약 관리", at(listHrefOf({ page: 1, pageSize: 20, staffMemberName: "", status: [], statusNone: false, storeIds: [storeId], storesCleared: false, scope: null })))}
           {soft("직원 관리", at(staffListHrefOf({ ...DEFAULT_STAFF_LIST_QUERY, storeIds: [storeId] })))}
           {create}
         </>
       }
     >
       <Body section={section} what="직원 정보를">
-        {({ items, total }) => (
+        {({ items, total, contractStatuses }) => (
           <>
             <DataTable<StaffRow>
               columns={[
@@ -395,7 +402,7 @@ function StaffCard({
                 {
                   header: "근로계약",
                   cell: masked((item) => {
-                    const cell = contractCell(item, today);
+                    const cell = contractCell(item, today, contractStatuses);
                     return cell ? <CellView cell={cell} /> : DASH;
                   }),
                 },

@@ -91,7 +91,7 @@ export const CONTRACT_ROWS: DetailRow[] = [
   { label: "계약준비 및 체결일", value: <DetailValues items={["2026.02.08", "2026.02.28"]} /> },
   { label: "서명 정보", value: <DetailValues items={["홍길동", "010 2222 3333", "010 2222 3333"]} /> },
   {
-    label: "계약서(날인본)",
+    label: "계약서(서명본)",
     value: (
       <Link href="#" className="text-erp-link hover:underline">
         을지로3가점 가맹 계약서.pdf

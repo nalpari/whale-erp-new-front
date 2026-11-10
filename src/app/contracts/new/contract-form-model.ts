@@ -421,7 +421,7 @@ const FROM_SUNDAY: Weekday[] = ["SUN", "SAT", "FRI", "THU", "WED", "TUE", "MON"]
 /**
  * 주휴일(노무사 확인 2026-10-14, 질문 4 — 특정 요일로 정해 계약서 휴일 조항에 적는다). 주 15시간 미만이면 null(주휴 대상 아님).
  * 15시간 이상이면 관리자가 고른 요일, 고르지 않았거나 그 요일에 근무하면 월~일 중 근무하지 않는 가장 뒤 요일.
- * 7일 모두 근무하면 둘 요일이 없다(NO_DAY_OFF, 초안 저장이 막힌다).
+ * 7일 모두 근무하면 둘 요일이 없다(NO_DAY_OFF, 서명 요청이 막힌다).
  */
 export function weeklyHolidayOf(f: Schedule & Partial<Pick<ContractForm, "weeklyHoliday">>): Weekday | null | "NO_DAY_OFF" {
   if (weeklyHours(f) < 15) return null;
@@ -438,7 +438,7 @@ export type MinimumWage = components["schemas"]["MinimumWageResponseDto"];
 /** 수습 중 시급의 하한 — 최저임금의 90%, 원 미만 올림(노무사 확인 2026-10-14, 질문 19). api 와 같다 */
 export const probationWageFloor = (minimumWage: number) => Math.ceil((minimumWage * 90) / 100);
 
-/** 「최저임금의 90%(9,288원)」 — 수습 중 시급 칸 도움말과 오류 문장이 같이 쓴다. 최저임금을 모르면 금액 없이 */
+/** 「최저임금의 90%(9,288원)」 — 수습 중 시급 오류 문장이 쓴다(칸 제목 옆 설명은 금액 없이). 최저임금을 모르면 금액 없이 */
 export const probationFloorLabel = (minimumWage: number | null) =>
   minimumWage ? `최저임금의 90%(${probationWageFloor(minimumWage).toLocaleString("ko-KR")}원)` : "최저임금의 90%";
 
@@ -510,16 +510,16 @@ export function fieldProblems(
   const need = (field: ProblemField, empty: boolean, message: string) => {
     if (empty && !temporary) add(field, message);
   };
-  if (!f.name.trim()) add("name", "이름을 입력하세요.");
-  if (!/^[0-9]{10,11}$/.test(digits(f.phone))) add("phone", "휴대전화번호는 숫자 10~11자리입니다.");
-  need("birthDate", !f.birthDate, "생년월일을 입력하세요.");
+  if (!f.name.trim()) add("name", "이름을 입력해 주세요.");
+  if (!/^[0-9]{10,11}$/.test(digits(f.phone))) add("phone", "휴대전화번호를 숫자 10~11자리로 입력해 주세요.");
+  need("birthDate", !f.birthDate, "생년월일을 입력해 주세요.");
   if (isMinor(f)) add("birthDate", "만 19세 미만 직원은 등록할 수 없습니다.");
-  need("gender", !f.gender, "성별을 선택하세요.");
+  need("gender", !f.gender, "성별을 선택해 주세요.");
   if (!f.storeId) add("storeId", "소속 근무지를 선택하세요.");
-  if (!f.jobTitle.trim()) add("jobTitle", "직무를 입력하세요.");
+  if (!f.jobTitle.trim()) add("jobTitle", "직무를 입력해 주세요.");
   // 종이 계약 등록은 당사자가 모두 날인한 근로계약서가 있어야 한다(CTR-23). 임시저장은 파일 없이 둔다
-  if (f.contractMethod === "PAPER" && !temporary && !hasEmploymentFile) add("employmentFile", "당사자가 모두 날인한 근로계약서 파일을 올려 주세요.");
-  need("startDate", !f.startDate, "계약 시작일을 입력하세요.");
+  if (f.contractMethod === "PAPER" && !temporary && !hasEmploymentFile) add("employmentFile", "당사자가 모두 서명한 근로계약서 파일을 올려 주세요.");
+  need("startDate", !f.startDate, "계약 시작일을 입력해 주세요.");
   // 재계약은 직전 계약 시작일 다음 날부터 — 그 뒤로는 직전 계약과 겹쳐도 된다(WHALEERP-156, 2026-10-26 김민식 · 재영 확인)
   if (previousStartDate && f.startDate && f.startDate <= previousStartDate) add("startDate", renewalStartProblem(previousStartDate));
   if (f.startDate && f.endDate && f.endDate < f.startDate) add("endDate", "계약 종료일은 시작일보다 앞설 수 없습니다.");
@@ -535,7 +535,7 @@ export function fieldProblems(
       const day = timeProblems(t, `${DAY_KO[d]}요일 `);
       [...day.work, ...day.rest].forEach((m) => add("schedule", m));
     }
-  if (digits(f.wage) ? !(Number(digits(f.wage)) > 0) : !temporary) add("wage", "시급을 입력하세요."); // 고용 형태와 상관없이 시급(2026-10-12 재영)
+  if (digits(f.wage) ? !(Number(digits(f.wage)) > 0) : !temporary) add("wage", "시급을 입력해 주세요."); // 고용 형태와 상관없이 시급(2026-10-12 재영)
   if (Number(digits(f.wage)) > MAX_AMOUNT) add("wage", "시급은 2,147,483,647원 이하로 입력하세요.");
   if (f.employmentType === "FULL_TIME") {
     if ([f.mealAllowance, f.carAllowance, f.childcareAllowance].some((t) => Number(digits(t)) > MAX_AMOUNT))

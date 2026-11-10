@@ -30,7 +30,7 @@ export default ({ A, R }) => {
   const nav = p.box(
     "이전 · 다음",
     "",
-    `<dl class="rounded-b-[2px] border border-erp-thead-line bg-white text-[15px]">${navRow("이전", `<span class="flex min-w-0 items-center gap-[10px]">${ui.link("근로계약 전자날인 기능이 열렸습니다", L("support/notice-detail.html"))}${bar}<span class="shrink-0 text-erp-label">2026-09-01</span></span>`)}${navRow("다음", `<span class="text-erp-muted">목록의 맨 위 공지입니다.</span>`)}</dl>`,
+    `<dl class="rounded-b-[2px] border border-erp-thead-line bg-white text-[15px]">${navRow("이전", `<span class="flex min-w-0 items-center gap-[10px]">${ui.link("근로계약 전자서명 기능이 열렸습니다", L("support/notice-detail.html"))}${bar}<span class="shrink-0 text-erp-label">2026-09-01</span></span>`)}${navRow("다음", `<span class="text-erp-muted">목록의 맨 위 공지입니다.</span>`)}</dl>`,
   );
   const body = ui.detailBody(`${head}${text}${files}${nav}`);
   return { title: "공지사항", html: ui.erpFrame({ header: erpHeader(A, R), title: "공지사항", body }) };

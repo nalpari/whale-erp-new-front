@@ -20,7 +20,7 @@ const post = (postId: number, noticeType: Schemas["NoticeType"], title: string, 
 
 export const SAMPLE_NOTICES = [
   post(1, "MAINTENANCE", "9월 정기 점검 안내 (09-14 02:00~05:00)", "2026-09-05", true),
-  post(2, "FEATURE", "근로계약 전자날인 기능이 열렸습니다", "2026-09-01"),
+  post(2, "FEATURE", "근로계약 전자서명 기능이 열렸습니다", "2026-09-01"),
   post(3, "TERMS", "개인정보처리방침 개정 안내", "2026-08-25"),
   post(4, "GENERAL", "WHALE ERP 1차 오픈 일정 안내", "2026-08-19"),
 ];

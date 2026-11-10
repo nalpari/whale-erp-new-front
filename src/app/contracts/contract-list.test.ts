@@ -15,6 +15,7 @@ import {
   sentText,
   statusNotes,
   toSearch,
+  toggledStatus,
   unusableScopeOf,
   wageText,
   withBack,
@@ -24,7 +25,7 @@ import {
   type ListQuery,
 } from "./contract-list.ts";
 
-const EMPTY: ListQuery = { page: 1, pageSize: 20, staffMemberName: "", status: [], storeIds: [], storesCleared: false, scope: null };
+const EMPTY: ListQuery = { page: 1, pageSize: 20, staffMemberName: "", status: [], statusNone: false, storeIds: [], storesCleared: false, scope: null };
 
 test("readListQuery 는 빈 값 · 잘못된 page 를 기본값으로 바꾼다", () => {
   assert.deepEqual(readListQuery({}), EMPTY);
@@ -50,6 +51,30 @@ test("readListQuery 는 상태가 하나여도 배열로 준다", () => {
 test("toSearch 는 기본값을 빼고, 상태는 같은 키를 되풀이한다", () => {
   assert.equal(toSearch(EMPTY), "");
   assert.equal(toSearch({ ...EMPTY, page: 2, status: ["SIGNED", "REJECTED"] }), "?page=2&status=SIGNED&status=REJECTED");
+});
+
+test("상태를 모두 끈 것은 status=NONE — 주소를 다시 읽어도 같고, api 에는 상태 조건 없이 보낸다(개수는 받고 목록은 화면이 비운다)", () => {
+  const none = { ...EMPTY, statusNone: true };
+  assert.equal(toSearch(none), "?status=NONE");
+  assert.deepEqual(readListQuery({ status: "NONE" }), none);
+  // NONE 이 다른 값과 섞여 있어도 모두 끈 것이다 — 주소를 직접 고친 경우
+  assert.deepEqual(readListQuery({ status: ["SIGNED", "NONE"] }), none);
+  // 빈 한 쪽이라 쪽 번호는 1로 맞춘다
+  assert.equal(readListQuery({ status: "NONE", page: "3" }).page, 1);
+  assert.deepEqual(withKnownStatus(none, [{ value: "SIGNED" }]), none);
+  // 개수만 쓰므로 첫 쪽 한 줄만 받는다 — 깊은 쪽 · 큰 쪽 크기여도 같다
+  assert.equal(apiSearch(none), "?pageSize=1");
+  assert.equal(apiSearch({ ...none, page: 3, pageSize: 100, staffMemberName: "도윤" }), "?pageSize=1&staffMemberName=%EB%8F%84%EC%9C%A4");
+});
+
+test("상태 체크 바꾸기 — 마지막 하나를 끄면 모두 끔, 모두 끔에서 켜면 그 값, 다 켜면 전체", () => {
+  const all = ["DRAFT", "SIGNED", "ENDED"];
+  assert.deepEqual(toggledStatus(["ENDED"], all, "ENDED", false), { status: [], statusNone: true });
+  assert.deepEqual(toggledStatus([], all, "SIGNED", true), { status: ["SIGNED"], statusNone: false });
+  assert.deepEqual(toggledStatus(["DRAFT", "ENDED"], all, "SIGNED", true), { status: [], statusNone: false });
+  // 고른 값은 enum 순서로 둔다
+  assert.deepEqual(toggledStatus(["ENDED"], all, "DRAFT", true), { status: ["DRAFT", "ENDED"], statusNone: false });
+  assert.deepEqual(toggledStatus(all, all, "SIGNED", false), { status: ["DRAFT", "ENDED"], statusNone: false });
 });
 
 test("toSearch 점포 조건 — 고른 점포 · 비운 「전체」 · 헤더 범위 순, 주소를 다시 읽으면 같은 조건이다", () => {
@@ -115,6 +140,10 @@ test("저장 · 삭제 뒤 목록 — 새로 만들었거나 지웠으면 점포
   assert.equal(listAfterSave("/contracts?scope=STORE%3A3", 3), "/contracts?scope=STORE%3A3");
   assert.equal(listAfterSave("/contracts?scope=FRANCHISE", 9), "/contracts?scope=FRANCHISE");
   assert.equal(listAfterSave("/stores", 3), "/contracts");
+  // 상태를 모두 끈 목록에서 왔으면 상태 조건을 푼다 — 방금 저장한 계약이 보이게
+  assert.equal(listAfterSave("/contracts?staffMemberName=a&status=NONE", null), "/contracts?staffMemberName=a&storeIds=");
+  assert.equal(listAfterSave("/contracts?status=NONE", 3), "/contracts");
+  assert.equal(listAfterSave("/contracts?status=SIGNED", 3), "/contracts?status=SIGNED");
 });
 
 test("쓸 수 없는 범위는 헤더 · 칩과 같은 판정이다 — 폐점만 남은 점포 유형도 쓸 수 없다", () => {
@@ -185,6 +214,7 @@ test("상태 칸 안내 — 발송 대기는 직원의 지금 가입 · 초대 �
   assert.deepEqual(statusNotes(base, now), ["가입 대기 중"]);
   // 초대가 만료되면 저장 때 판별한 초대 유형(가입 초대)이 아니라 만료다
   assert.deepEqual(statusNotes({ ...base, staffJoinState: "EXPIRED" }, now), ["초대 만료"]);
+  assert.deepEqual(statusNotes({ ...base, staffJoinState: "LINK_HOLD" }, now), ["정보 확인 필요"]);
   assert.deepEqual(statusNotes({ ...base, status: "PENDING_SIGNATURE", staffJoinState: "AFFILIATION_PENDING" }, now), ["소속 확인 중", "D-24"]);
   // 가입한 직원의 서명 대기는 남은 날만
   assert.deepEqual(statusNotes({ ...base, status: "PENDING_SIGNATURE", staffJoinState: "JOINED" }, now), ["D-24"]);

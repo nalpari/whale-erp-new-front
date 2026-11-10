@@ -100,15 +100,15 @@ export const contractForm = (d) => ({ A, R }) => {
         p.fieldH(req("소속 근무지"), ui.select(["모리커피 성수점", "모리커피 서초점", "온기식당 판교점"]), ""),
         p.fieldH(req("직무"), ui.textField({ value: "바리스타" }), ""),
       ),
-      // 기재사항 · 주민등록번호는 받지 않는다(WHALEERP-132, 가입 값은 날인 전 본인 대조에만 — 2026-10-23 WHALEERP-130)
-      p.help("주소 등 직원 기재사항은 받지 않는다 — 직원이 가입하며 넣는 값은 계약서에 채우지 않고 날인 전 본인 대조에만 쓴다. 주민등록번호는 날인을 마친 뒤 직원이 앱에서 넣는다."),
+      // 기재사항 · 주민등록번호는 받지 않는다(WHALEERP-132, 가입 값은 서명 전 본인 대조에만 — 2026-10-23 WHALEERP-130)
+      p.help("주소 등 직원 기재사항은 받지 않는다 — 직원이 가입하며 넣는 값은 계약서에 채우지 않고 서명 전 본인 대조에만 쓴다. 주민등록번호는 서명을 마친 뒤 직원이 앱에서 넣는다."),
     ) +
     ui.formGroup(
       "계약 방식",
       choice("고용 형태", "employment", ["정직원", "파트타이머"]),
       choice("계약 방식", "method", ["전자계약", "종이 계약"]),
-      // 종이 계약이면 날인한 근로계약서·임금계약서를 첨부한다(2026-10-02 재영). 목업은 날인본 파일 한 칸.
-      `<div data-when="method:종이 계약" class="flex w-full gap-[6px]">${p.fieldH(req("근로계약서"), p.fileField("근로계약서"), "당사자가 모두 날인한 파일")}${p.fieldH("임금계약서", p.fileField("임금계약서"), "따로 작성한 경우")}</div>`,
+      // 종이 계약이면 서명한 근로계약서·임금계약서를 첨부한다(2026-10-02 재영). 목업은 서명본 파일 한 칸.
+      `<div data-when="method:종이 계약" class="flex w-full gap-[6px]">${p.fieldH(req("근로계약서"), p.fileField("근로계약서"), "당사자가 모두 서명한 파일")}${p.fieldH("임금계약서", p.fileField("임금계약서"), "따로 작성한 경우")}</div>`,
     ) +
     ui.formGroup(
       "계약 조건",
@@ -192,7 +192,7 @@ export const contractForm = (d) => ({ A, R }) => {
     p.bar(
       "",
       ui.button("초안 저장하고 발송", { href: L("staff/contracts.html"), "data-when": "method:전자계약" }) +
-        ui.button("날인본 등록하고 체결 완료", { href: L("staff/contracts.html"), "data-when": "method:종이 계약" }),
+        ui.button("서명본 등록하고 서명 완료", { href: L("staff/contracts.html"), "data-when": "method:종이 계약" }),
     );
 
 
@@ -200,7 +200,7 @@ export const contractForm = (d) => ({ A, R }) => {
     `근로계약서 <span class="pl-[6px] text-[14px] font-normal text-erp-label">모리커피 성수점</span>`,
     ui.button("취소", { variant: "off", href: L("staff/contracts.html") }) +
       // 이어 쓰기에서만 삭제가 취소와 임시저장 사이에 선다. 확인 뒤 임시저장 행을 지운다(발송 대기부터는 지우지 않는다).
-      (d ? p.ask("삭제", "soft", "임시저장한 근로계약서를 삭제하시겠습니까?", `${d.name} 님의 임시저장을 지웁니다. 삭제하면 되돌릴 수 없습니다.`, "삭제") : "") +
+      (d ? p.ask("삭제", "soft", "작성 중인 근로계약서를 삭제하시겠습니까?", `${d.name} 님의 작성 중인 계약서를 지웁니다. 삭제하면 되돌릴 수 없습니다.`, "삭제") : "") +
       p.ask("임시저장", "soft", "작성 중인 초안을 임시저장하시겠습니까?", "초대와 계약서는 보내지 않습니다. 이름 · 휴대전화번호 · 근무지 · 직무 · 고용 형태가 있어야 임시저장됩니다.") +
       ui.button("초안 저장", { href: L("staff/contracts.html") }),
   );

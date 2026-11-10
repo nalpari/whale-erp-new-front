@@ -112,11 +112,11 @@ test("다 채운 폼은 막을 것이 없다", () => {
 
 test("빈 폼 · 잘못된 값은 이유를 말한다", () => {
   const p = problems(initialForm());
-  assert.ok(p.includes("이름을 입력하세요."));
+  assert.ok(p.includes("이름을 입력해 주세요."));
   assert.ok(p.includes("소속 근무지를 선택하세요."));
   // 정직원도 시급이다
-  assert.ok(p.includes("시급을 입력하세요."));
-  assert.ok(problems(filled({ employmentType: "FULL_TIME", wage: "" })).includes("시급을 입력하세요."));
+  assert.ok(p.includes("시급을 입력해 주세요."));
+  assert.ok(problems(filled({ employmentType: "FULL_TIME", wage: "" })).includes("시급을 입력해 주세요."));
   // 주 15시간 이상인데 7일 모두 근무하면 주휴일을 둘 요일이 없어 막는다(노무사 확인 2026-10-14, 임시저장은 된다)
   const allWeek = filled({ days: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] });
   assert.ok(problems(allWeek).includes("주 15시간 이상이면 근무하지 않는 요일이 있어야 주휴일을 정할 수 있습니다."));
@@ -130,8 +130,8 @@ test("빈 폼 · 잘못된 값은 이유를 말한다", () => {
 test("임시저장은 직원 칸과 근무지만 필수, 넣은 값은 그대로 본다", () => {
   const blank: ContractForm = { ...initialForm("11"), name: "남도현", phone: "01090145563", jobTitle: "바리스타", days: [], payDay: "" };
   assert.deepEqual(problems(blank, true), []);
-  assert.ok(problems(blank).includes("계약 시작일을 입력하세요."));
-  assert.ok(problems({ ...blank, name: "" }, true).includes("이름을 입력하세요."));
+  assert.ok(problems(blank).includes("계약 시작일을 입력해 주세요."));
+  assert.ok(problems({ ...blank, name: "" }, true).includes("이름을 입력해 주세요."));
   assert.ok(problems({ ...blank, payDay: "40" }, true).includes("임금지급일은 1~31입니다."));
   const body = toBody(blank, true);
   assert.equal(body.isTemporarySave, true);
@@ -383,9 +383,9 @@ test("수습: 정직원만, 기간과 감액률을 함께 보내고 조건을 �
   assert.equal("probationMonths" in toBody(filled({ ...on, probation: false })), false);
 });
 
-test("종이 계약: 등록은 근로계약서 날인본이 있어야 하고, 임시저장은 파일 없이 된다", () => {
+test("종이 계약: 등록은 근로계약서 서명본이 있어야 하고, 임시저장은 파일 없이 된다", () => {
   const paper = filled({ contractMethod: "PAPER" });
-  assert.ok(problems(paper).includes("당사자가 모두 날인한 근로계약서 파일을 올려 주세요."));
+  assert.ok(problems(paper).includes("당사자가 모두 서명한 근로계약서 파일을 올려 주세요."));
   assert.deepEqual(problems(paper, false, true), []);
   assert.deepEqual(problems(paper, true), []);
   // 전자계약은 파일을 묻지 않는다
@@ -396,7 +396,7 @@ test("종이 계약: 등록은 근로계약서 날인본이 있어야 하고, �
   assert.equal(fromDetail(detailOf()).contractMethod, "ELECTRONIC");
 });
 
-test("종이 계약 날인본 파일: 형식은 enum 값으로, 10MB 까지", () => {
+test("종이 계약 서명본 파일: 형식은 enum 값으로, 10MB 까지", () => {
   const types = paperFileTypesOf(["PDF", "JPG", "PNG", "GIF"]);
   assert.deepEqual(types, ["PDF", "JPG", "PNG"]);
   assert.equal(paperFileAccept(["PDF"]), "application/pdf,.pdf");
@@ -408,14 +408,14 @@ test("종이 계약 날인본 파일: 형식은 enum 값으로, 10MB 까지", ()
 
 test("확인창 한 줄 — 누구 계약인지 이름 · 기간을 앞에 둔다", () => {
   const c = { contractId: 5, status: "SIGNED", name: "남도연", startDate: "2026-09-01", endDate: "2026-10-01" };
-  assert.equal(inProgressLine(c, "체결 완료"), "남도연 · 2026-09-01 ~ 2026-10-01 · 체결 완료 · 계약 5");
-  assert.equal(inProgressLine({ ...c, endDate: null }, "체결 완료"), "남도연 · 2026-09-01 ~ · 체결 완료 · 계약 5");
-  assert.equal(inProgressLine({ ...c, name: null, startDate: null, endDate: null }, "임시저장"), "임시저장 · 계약 5");
+  assert.equal(inProgressLine(c, "서명 완료"), "남도연 · 2026-09-01 ~ 2026-10-01 · 서명 완료 · 계약 5");
+  assert.equal(inProgressLine({ ...c, endDate: null }, "서명 완료"), "남도연 · 2026-09-01 ~ · 서명 완료 · 계약 5");
+  assert.equal(inProgressLine({ ...c, name: null, startDate: null, endDate: null }, "작성 중"), "작성 중 · 계약 5");
 });
 
-test("성별 · 외국인 여부 — 초안 저장은 성별을 골라야 하고, 본문에 실린다(WHALEERP-125 본인 대조)", () => {
-  assert.ok(problems(filled({ gender: "" })).includes("성별을 선택하세요."));
-  assert.ok(!problems(filled({ gender: "" }), true).includes("성별을 선택하세요.")); // 임시저장은 비워도 된다
+test("성별 · 외국인 여부 — 서명 요청은 성별을 골라야 하고, 본문에 실린다(WHALEERP-125 본인 대조)", () => {
+  assert.ok(problems(filled({ gender: "" })).includes("성별을 선택해 주세요."));
+  assert.ok(!problems(filled({ gender: "" }), true).includes("성별을 선택해 주세요.")); // 임시저장은 비워도 된다
   assert.deepEqual(problems(filled()), []);
   const body = toBody(filled({ gender: "FEMALE", isForeigner: true }));
   assert.equal(body.gender, "FEMALE");
@@ -474,17 +474,17 @@ test("바로잡기 뒤 다시 물을 때 바로잡기 문구는 체결 완료가
 test("유효성 오류는 칸과 함께 — 화면이 그 칸 아래에 보인다", () => {
   assert.deepEqual(fieldProblems(filled()), []);
   const by = problemsByField(fieldProblems(filled({ name: "", birthDate: "2010-01-01", endDate: "2026-09-13", payDay: "40", wage: "" })));
-  assert.deepEqual(by.name, ["이름을 입력하세요."]);
+  assert.deepEqual(by.name, ["이름을 입력해 주세요."]);
   assert.deepEqual(by.birthDate, ["만 19세 미만 직원은 등록할 수 없습니다."]);
   assert.deepEqual(by.endDate, ["계약 종료일은 시작일보다 앞설 수 없습니다."]);
   assert.deepEqual(by.payDay, ["임금지급일은 1~31입니다."]);
-  assert.deepEqual(by.wage, ["시급을 입력하세요."]);
+  assert.deepEqual(by.wage, ["시급을 입력해 주세요."]);
   // 근무 · 휴게 시간은 따로, 파트타이머 요일별 시간은 표 아래
   const rest: Partial<ContractForm> = { rest: { start: { hour: "08", minute: "00" }, end: { hour: "09", minute: "00" } } };
   assert.deepEqual(problemsByField(fieldProblems(filled(rest))).rest, ["휴게시간은 근무시간 안이어야 합니다."]);
   assert.equal(problemsByField(fieldProblems(filled(rest))).work, undefined);
-  // 종이 계약 날인본 · 재계약 시작일
-  assert.deepEqual(problemsByField(fieldProblems(filled({ contractMethod: "PAPER" }))).employmentFile, ["당사자가 모두 날인한 근로계약서 파일을 올려 주세요."]);
+  // 종이 계약 서명본 · 재계약 시작일
+  assert.deepEqual(problemsByField(fieldProblems(filled({ contractMethod: "PAPER" }))).employmentFile, ["당사자가 모두 서명한 근로계약서 파일을 올려 주세요."]);
   assert.ok(problemsByField(fieldProblems(filled({ startDate: "2026-11-01" }), false, false, "2026-11-01")).startDate?.length);
 });
 
@@ -505,7 +505,7 @@ test("한 칸에 오류가 여럿이면 모두 — 파트타이머 요일 시간
 
 test("저장을 누른 때 오류가 난 칸만 보인다 — 고쳐지면 빠지고, 저장 뒤 새로 생긴 칸 오류는 다음 저장 때", () => {
   const shown = new Set<ProblemField>(["name", "phone"]);
-  assert.deepEqual(shownProblems({ name: ["이름을 입력하세요."], jobTitle: ["직무를 입력하세요."] }, shown), { name: ["이름을 입력하세요."] });
+  assert.deepEqual(shownProblems({ name: ["이름을 입력해 주세요."], jobTitle: ["직무를 입력해 주세요."] }, shown), { name: ["이름을 입력해 주세요."] });
   assert.deepEqual(shownProblems({}, shown), {});
 });
 

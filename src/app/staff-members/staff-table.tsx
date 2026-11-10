@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge, DataTable, type Column } from "@/components/common";
+import type { EnumValue } from "@/lib/enums";
 import type { StaffMemberListItem } from "@/lib/staff-members";
 import { WithIcon } from "../platform-admins/admin-table";
 import { ResendInvitationButton } from "./resend-invitation-button";
@@ -38,6 +39,7 @@ export function StaffTable({
   page,
   pageSize,
   today,
+  contractStatuses,
   listHref,
   empty = "조건에 맞는 직원이 없습니다.",
   at = (path) => path,
@@ -47,6 +49,8 @@ export function StaffTable({
   page: number;
   pageSize: number;
   today: string;
+  /** 계약 상태 이름(GET /enums/ContractStatus) */
+  contractStatuses: EnumValue[];
   /** 지금 목록 주소(staffListHrefOf). 상세 링크에 ?back= 으로 실어 상세의 「목록」이 같은 조건으로 돌아오게 한다. */
   listHref: string;
   /** 빈 목록 문구 */
@@ -78,7 +82,7 @@ export function StaffTable({
     { header: "점포", cell: (r) => r.item.store.name },
     { header: "고용형태", width: "w-[110px]", cell: personal((item) => (item.employmentType ? EMPLOYMENT_TYPE_LABELS[item.employmentType] : DASH)) },
     {
-      header: "가입·인증",
+      header: "가입 상태",
       // 데모는 210 — 재발송 버튼(WHALEERP-138)이 배지 옆에 서도록 넓혔다. 데모에는 목록 재발송 자리가 없다
       width: "w-[300px]",
       cell: personal((item) => (
@@ -90,14 +94,15 @@ export function StaffTable({
     },
     {
       header: "계약 상태",
-      width: "w-[160px]",
+      // 상태 이름이 길어져(「직원 서명 대기 · D-24」, WHALEERP-659) 160 이면 칸 끝이 잘린다 — 한 줄에 들게 넓혔다
+      width: "w-[200px]",
       cell: personal((item) => {
-        const cell = contractCell(item, today);
+        const cell = contractCell(item, today, contractStatuses);
         return cell ? <CellView cell={cell} /> : DASH;
       }),
     },
     {
-      header: "재직",
+      header: "재직 상태",
       // 데모는 110 인데 「재직 · 퇴직 예정 MM-DD」가 두 줄로 꺾이며 잘린다 — 한 줄에 들어가게 넓혔다(WHALEERP-585 화면 확인)
       width: "w-[180px]",
       cell: personal((item) => (

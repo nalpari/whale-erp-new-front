@@ -4,7 +4,7 @@
 import type { StaffMember } from "./staff-members.ts";
 
 /**
- * 상세의 「정정」 버튼. 「직원 정보 관리」 수정 권한이 있고(usePagePermission) api 가 정정할 수 있다고 알린 직원(`birthDateCorrectable`)일 때 보인다.
+ * 상세의 「수정」 버튼. 「직원 정보 관리」 수정 권한이 있고(usePagePermission) api 가 정정할 수 있다고 알린 직원(`birthDateCorrectable`)일 때 보인다.
  * api 판정은 409 BIRTH_DATE_NOT_JOINED · BIRTH_DATE_RETIRED 와 같다 — 계정이 탈퇴 · 연결 보류여도 `joinState` 는 직원 레코드 기준이라
  * JOINED 로 오기 때문에 joinState · employmentStatus 로는 가를 수 없다. 퇴직 예정은 api 가 허용한다. 옛 api(칸 없음)는 false 로 채워 숨긴다
  * (withEmploymentHistory). 본사 역할 · 범위는 보지 않는다 — 범위 밖 · 본사에 가린 직원은 api 가 404 다.
@@ -35,7 +35,7 @@ export function checkBirthDate(value: string, today: string, current: string | n
 }
 
 /**
- * 새 생년월일이 바뀌면 「신분증 등으로 확인했습니다」 체크를 푼다(관리자가 본 날짜가 아니면 확인으로 치지 않는다). 값이 같으면 유지한다 —
+ * 새 생년월일이 바뀌면 「직원 본인의 생년월일을 확인했습니다」 체크를 푼다(관리자가 본 날짜가 아니면 확인으로 치지 않는다). 값이 같으면 유지한다 —
  * DateField 는 값이 그대로여도 blur 때 onChange 를 다시 부른다.
  */
 export const confirmAfterDateChange = (confirmed: boolean, prev: string, next: string) => confirmed && prev === next;
@@ -57,14 +57,14 @@ export const ignoresCheck = (pending: boolean, pointerDownAt: number | null, dat
 /** 체크가 풀린 이유를 알리는 문구(날짜 입력 중이거나 날짜가 바뀌어 체크가 풀린 직후) */
 export const BIRTH_DATE_RECONFIRM_MESSAGE = "날짜를 다 입력한 뒤 다시 확인해 주세요.";
 
-/** 확인창 체크 문구. 체크해야 [정정]이 눌린다. */
-export const BIRTH_DATE_CONFIRM_LABEL = "신분증 등으로 본인의 생년월일을 확인했습니다";
+/** 확인창 체크 문구. 체크해야 [수정]이 눌린다. */
+export const BIRTH_DATE_CONFIRM_LABEL = "직원 본인의 생년월일을 확인했습니다";
 
 /** 확인창 안내 세 줄(노영주 승인안) */
 export const BIRTH_DATE_NOTES: readonly string[] = [
-  "이미 체결한 근로계약서의 생년월일은 바뀌지 않습니다.",
-  "날인 대기 중인 계약은 바뀐 생년월일로 본인 대조를 다시 합니다.",
-  "이 직원의 다른 근무지 소속에도 같이 바뀝니다.",
+  "이미 체결된 근로계약서의 생년월일은 변경되지 않습니다.",
+  "직원 서명 대기 중인 계약은 수정한 생년월일로 본인 확인을 다시 진행합니다.",
+  "이 직원이 소속된 다른 근무지에도 함께 적용됩니다.",
 ];
 
 /** 서버 액션 자체를 부르지 못했을 때(브라우저 연결 끊김 · 배포 뒤 옛 화면의 액션 불일치) */

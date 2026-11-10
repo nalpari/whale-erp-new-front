@@ -104,7 +104,7 @@ export function WorkerForm({
         </Button>
       </div>
       <p className="text-[14px] text-erp-label">
-        이름 · 휴대전화번호 · 생년월일 · 성별 · 외국인 여부는 직원이 가입하며 넣는 값과 대조해, 모두 같아야 날인할 수 있습니다. {workerSaveNote(status)}
+        이름 · 휴대전화번호 · 생년월일 · 성별 · 외국인 여부는 직원이 가입하며 넣는 값과 대조해, 모두 같아야 서명할 수 있습니다. {workerSaveNote(status)}
       </p>
 
       <FormGroup title="직원 정보">
@@ -179,7 +179,7 @@ export function WorkerForm({
             <li key={c.contractId}>{inProgressLine(c, labelOf(labels.contractStatus, c.status))}</li>
           ))}
         </ul>
-        <p className="mt-[6px]">대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 · 수정 요청 계약은 종료합니다.</p>
+        <p className="mt-[6px]">대체하면 작성 중인 계약은 지우고, 서명 요청 전 · 직원 서명 대기 · 직원 수정 요청 계약은 종료합니다.</p>
       </ConfirmDialog>
     </div>
   );

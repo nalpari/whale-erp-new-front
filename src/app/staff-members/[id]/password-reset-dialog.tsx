@@ -64,12 +64,10 @@ export function PasswordResetDialog({ staffMemberId, email, onClose }: { staffMe
     <ConfirmDialog open wide title="비밀번호를 초기화하시겠습니까?" confirmLabel="초기화" busy={busy} onConfirm={handleConfirm} onCancel={onClose}>
       <div className="flex flex-col gap-[12px]">
         <p>
-          재설정 링크가 {resetRecipientText(email)} 발송됩니다. 직원이 링크를 열어 새 비밀번호를 정하며, 관리자는 비밀번호를 알 수도 정할
-          수도 없습니다.
+          {resetRecipientText(email)} 비밀번호 재설정 링크를 보냅니다. 새 비밀번호는 직원이 직접 설정합니다.
         </p>
         <p>
-          링크는 24시간 동안 한 번만 쓸 수 있고, 새 링크가 발송되면 앞서 보낸 링크는 무효가 됩니다. 계정 비밀번호는 여러 BP가 함께 쓰므로 다른
-          BP 로그인에도 적용됩니다. 같은 계정에는 1분 안에 다시 보낼 수 없습니다.
+          링크는 24시간 동안 한 번만 사용할 수 있습니다.
         </p>
         {error && (
           <p role="alert" className="text-erp-off">
