@@ -32,6 +32,14 @@ concept의 `sources[].resource`에 들어 있으면 해당 concept 본문을 고
 - 색은 `globals.css`의 `--color-erp-*` 토큰에서, 스타일 조각은 `src/components/common/theme.ts`에서 가져온다.
 - 목업(`docs/mockup/`)은 기획 산출물이라 이 규칙을 적용하지 않는다.
 
+## 로그인 만료
+
+화면 코드는 401 을 다루지 않는다. 만료는 공통 길목(proxy · `request()` · `bff()` · `useAction`)이 로그인 화면 안내나 「로그인 만료」 팝업으로 처리한다(`okf/auth.md`).
+
+- 서버 액션의 실패 처리 함수(`failureOf` 등)는 첫 줄에서 만료를 거른다: `const expired = expiredFailureOf(error); if (expired) return expired;` — 결과 모양이 달라도 `expired: true` 를 싣는다.
+- 서버 액션은 화면에서 `useAction` 으로 부른다(덮개가 필요 없으면 `{ overlay: false }`).
+- 서버 화면에서 모든 오류를 받아 대체값으로 바꾸는 catch 는 첫 줄에 `unstable_rethrow(error)` 를 둔다 — `request()` 의 만료 이동을 삼키지 않게.
+
 ## 워크트리
 
 워크트리는 저장소 안이 아니라 플랫폼별 루트 아래, 프로젝트 이름으로 한 단계
