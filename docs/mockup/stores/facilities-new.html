@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>시설물 및 장비 등록 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="stores" data-sub="stores/facilities.html">
+    <!-- 시설물 · 장비 등록 · /facilities/new · 1팀 · 1.5차
+         기준: 「시설물·장비 관리 정책서」 PL-1 ~ PL-6. 입력 규칙은 개발된 점포 등록 화면과 같다(PL-5).
+         - 등록 BP 는 이 탭의 BP 다. 폼에 BP · 가맹 · 소유 구분 줄은 없고 점포 하나를 고른다. 점포 선택지는 내 관리 점포 범위 안의 것만, 폐점 점포는 빠진다(PL-1).
+         - 운영상태는 공통코드 「시설물 운영상태」(처음 값 운영), 그룹은 「점포 시설물」 · 「점포 장비」, 분류는 고른 그룹의 상세 코드. 그룹을 바꾸면 분류를 지운다(PL-2 · PL-3).
+         - [저장]을 누르면 검사하고, 걸린 칸 바로 아래에 빨간 문구를 보이고 첫 오류 칸으로 옮긴다. 알럿은 띄우지 않는다(PL-5).
+         - 전화번호는 앞 · 가운데 · 끝 세 칸, 숫자만 칸마다 4자리까지, 이은 번호 9~12자리(PL-5).
+         - 구매액은 숫자만 10자리, 쉼표를 붙여 보인다. 설치일은 구매일보다 앞설 수 없다(PL-5).
+         - 관리 담당자는 그 점포의 재직 직원, 고르면 전화번호 세 칸을 휴대폰 번호로 채운다. 점검 주기는 공통코드 「시설물 점검 주기」(처음 값 매일)(PL-6).
+         위쪽 점선 줄은 목업 전용이다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="facn" style="display: contents">
+          <div class="titlebar">
+            <h1 class="t-h1">시설물 및 장비 관리</h1>
+            <span class="badge badge--warn">1팀 작업</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">1.5차 · /facilities/new</span>
+              <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./facilities-new.screen-def.html', 'screenDef', 'width=1620,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="demo" data-demo="facn">
+              <b>목업 상태</b>
+              <div class="seg">
+                <button type="button" data-state="in" aria-pressed="true">입력 중</button>
+                <button type="button" data-state="miss" aria-pressed="false">필수 누락</button>
+                <button type="button" data-state="bad" aria-pressed="false">전화번호 · 날짜 오류</button>
+                <button type="button" data-state="nocode" aria-pressed="false">분류 없음 (BP 적용 전)</button>
+                <button type="button" data-state="fail" aria-pressed="false">저장 실패</button>
+              </div>
+            </div>
+
+            <!-- 칸에 묶이지 않는 오류만 화면 위 띠로(PL-5) -->
+            <div class="band band--risk" data-show="fail" hidden>
+              <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">저장하지 못했습니다. 잠시 후 다시 시도해 주세요.</div>
+              </div>
+            </div>
+
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">시설물 · 장비 등록</h2>
+                <div class="inline" style="margin-left: auto; gap: 6px">
+                  <a class="btn btn--secondary btn--sm" href="facilities.html">취소</a>
+                  <a class="btn btn--primary btn--sm" href="facilities-detail.html" data-show="in nocode">저장</a>
+                  <button class="btn btn--primary btn--sm" type="button" data-show="miss bad fail" hidden>저장</button>
+                </div>
+              </div>
+              <div class="panel__body">
+                <div class="grid grid--2" style="align-items: start">
+                  <!-- 기본 정보 -->
+                  <div class="stack--lg" style="display: flex; flex-direction: column">
+                    <h3 class="t-h3" style="margin: 0">기본 정보</h3>
+
+                    <div class="field">
+                      <label for="fstore">점포 <span class="req">*</span></label>
+                      <!-- 점포 — 점포명 · 점포코드로 찾아 하나를 고르는 자동완성(공통 점포 검색 필터의 한 곳 모드). 칸을 누르면 고를 수 있는 점포 전체가 펴지고,
+                           치면 그 글자로 좁힌다. 내 관리 점포 범위 안의 점포만, 폐점 점포는 뺀다(PL-1) -->
+                      <div class="sfilt" data-sfilt data-sfilt-one data-sfilt-open data-show="in bad nocode fail">
+                        <div class="addr__q sfilt__box">
+                          <span data-icon="search" data-icon-size="15"></span>
+                          <input class="input" id="fstore" data-sfilt-q role="combobox" aria-autocomplete="list" aria-expanded="false" placeholder="점포명 또는 점포코드로 찾기" autocomplete="off" value="모리커피 성수점" />
+                          <div class="addr__list sfilt__list" role="listbox" aria-label="선택할 수 있는 점포" hidden></div>
+                        </div>
+                      </div>
+                      <div class="sfilt" data-sfilt data-sfilt-one data-sfilt-open data-show="miss" hidden>
+                        <div class="addr__q sfilt__box">
+                          <span data-icon="search" data-icon-size="15"></span>
+                          <input class="input" data-sfilt-q role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="점포" aria-invalid="true" placeholder="점포명 또는 점포코드로 찾기" autocomplete="off" />
+                          <div class="addr__list sfilt__list" role="listbox" aria-label="선택할 수 있는 점포" hidden></div>
+                        </div>
+                      </div>
+                      <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>점포를 선택해 주세요.</span>
+                    </div>
+
+                    <div class="field">
+                      <label for="fname">시설물/장비명 <span class="req">*</span></label>
+                      <input class="input" id="fname" value="EK43S 전자동 원두 커피 그라인더" data-show="in bad nocode fail" />
+                      <input class="input" value="" aria-label="시설물/장비명" aria-invalid="true" data-show="miss" hidden />
+                      <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>시설물/장비명을 입력해 주세요.</span>
+                    </div>
+
+                    <!-- 운영상태 — 공통코드 「시설물 운영상태」(플랫폼고정). 처음 값 운영(PL-2) -->
+                    <div class="field">
+                      <label>운영상태 <span class="req">*</span></label>
+                      <div class="inline" style="min-height: 34px; gap: var(--s-4)" role="radiogroup" aria-label="운영상태">
+                        <label class="inline" style="gap: 6px"><input type="radio" name="fst" checked />운영</label>
+                        <label class="inline" style="gap: 6px"><input type="radio" name="fst" />보관</label>
+                        <label class="inline" style="gap: 6px"><input type="radio" name="fst" />폐기</label>
+                      </div>
+                    </div>
+
+                    <div class="grid grid--2">
+                      <!-- 그룹 — 공통코드 그룹 두 개(PL-3). [그룹설정] 버튼은 두지 않는다 -->
+                      <div class="field">
+                        <label for="fgroup">그룹 <span class="req">*</span></label>
+                        <select class="select" id="fgroup" data-show="in bad fail">
+                          <option>선택</option>
+                          <option>점포 시설물</option>
+                          <option selected>점포 장비</option>
+                        </select>
+                        <select class="select" aria-label="그룹" aria-invalid="true" data-show="miss" hidden>
+                          <option selected>선택</option>
+                          <option>점포 시설물</option>
+                          <option>점포 장비</option>
+                        </select>
+                        <select class="select" aria-label="그룹" data-show="nocode" hidden>
+                          <option>선택</option>
+                          <option>점포 시설물</option>
+                          <option selected>점포 장비</option>
+                        </select>
+                        <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>그룹을 선택해 주세요.</span>
+                      </div>
+                      <!-- 분류 — 고른 그룹의 상세 코드만. 그룹을 바꾸면 지운다(PL-3) -->
+                      <div class="field">
+                        <label for="fclass">분류 <span class="req">*</span></label>
+                        <select class="select" id="fclass" data-show="in bad fail">
+                          <option>선택</option>
+                          <option selected>그라인더</option>
+                          <option>커피머신</option>
+                          <option>제빙기</option>
+                        </select>
+                        <select class="select" aria-label="분류" aria-invalid="true" data-show="miss" hidden>
+                          <option selected>그룹을 먼저 선택해 주세요</option>
+                        </select>
+                        <select class="select" aria-label="분류" disabled data-show="nocode" hidden>
+                          <option selected>선택할 분류가 없습니다</option>
+                        </select>
+                        <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>분류를 선택해 주세요.</span>
+                        <span class="help" data-show="nocode" hidden>이 그룹에 등록된 분류가 없습니다. 공통코드 관리에서 분류를 등록해 주세요.</span>
+                      </div>
+                    </div>
+
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="fbrand">브랜드</label>
+                        <input class="input" id="fbrand" value="말코닉" />
+                      </div>
+                      <div class="field">
+                        <label for="fmaker">제조사</label>
+                        <input class="input" id="fmaker" value="말코닉" />
+                      </div>
+                    </div>
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="fsn">Serial number</label>
+                        <input class="input mono" id="fsn" value="SN1234567" />
+                      </div>
+                      <div class="field">
+                        <label for="floc">설치 위치</label>
+                        <input class="input" id="floc" value="주방" />
+                      </div>
+                    </div>
+
+                    <!-- 구매처 · 전화번호 세 칸(PL-5) -->
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="fvendor">구매처</label>
+                        <input class="input" id="fvendor" value="다온컴퍼니" />
+                      </div>
+                      <div class="field">
+                        <label for="fvtel">구매처 전화번호</label>
+                        <div class="tel3">
+                          <input class="input mono" id="fvtel" value="02" inputmode="numeric" maxlength="4" aria-label="구매처 전화번호 앞자리" />
+                          <input class="input mono" value="333" inputmode="numeric" maxlength="4" aria-label="구매처 전화번호 가운데자리" />
+                          <input class="input mono" value="4444" inputmode="numeric" maxlength="4" aria-label="구매처 전화번호 끝자리" />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="fsales">영업사원</label>
+                        <input class="input" id="fsales" value="홍길동" />
+                      </div>
+                      <div class="field">
+                        <label for="fstel">영업사원 전화번호</label>
+                        <div class="tel3" data-show="in miss nocode fail">
+                          <input class="input mono" id="fstel" value="010" inputmode="numeric" maxlength="4" aria-label="영업사원 전화번호 앞자리" />
+                          <input class="input mono" value="2222" inputmode="numeric" maxlength="4" aria-label="영업사원 전화번호 가운데자리" />
+                          <input class="input mono" value="3333" inputmode="numeric" maxlength="4" aria-label="영업사원 전화번호 끝자리" />
+                        </div>
+                        <div class="tel3" data-show="bad" hidden>
+                          <input class="input mono" value="010" inputmode="numeric" maxlength="4" aria-invalid="true" aria-label="영업사원 전화번호 앞자리" />
+                          <input class="input mono" value="22" inputmode="numeric" maxlength="4" aria-invalid="true" aria-label="영업사원 전화번호 가운데자리" />
+                          <input class="input mono" value="" inputmode="numeric" maxlength="4" aria-invalid="true" aria-label="영업사원 전화번호 끝자리" />
+                        </div>
+                        <span class="err" data-show="bad" hidden><span data-icon="alert" data-icon-size="13"></span>영업사원 전화번호는 숫자 9~12자리입니다.</span>
+                      </div>
+                    </div>
+
+                    <!-- 구매액 · 부가세 포함 · 구매일 · 설치일(PL-5) -->
+                    <!-- 구매액 — 근로계약서 시급 · 급여명세서 금액 칸과 같은 모양: 공통 입력칸 그대로(왼쪽 정렬, 칸 옆 「원」 없음), 단위 · 규칙은 칸 아래 회색 도움말.
+                         「부가세 포함」 스위치는 칸 이름 줄 오른쪽(처음 켜짐) -->
+                    <div class="field">
+                      <label class="inline" for="famount" style="gap: 18px">구매액 <span class="inline" style="gap: 6px; font-weight: 400">부가세 포함 <span class="toggle" id="fvat" role="switch" aria-pressed="true" tabindex="0"></span></span></label>
+                      <input class="input" id="famount" value="20,000,000" inputmode="numeric" maxlength="13" placeholder="숫자만 입력" />
+                      <span class="help">원 단위로 숫자만 입력할 수 있습니다.</span>
+                    </div>
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="fbuy">구매일</label>
+                        <input class="input" id="fbuy" type="date" value="2025-01-03" />
+                      </div>
+                      <div class="field">
+                        <label for="finst">설치일</label>
+                        <input class="input" id="finst" type="date" value="2025-01-05" data-show="in miss nocode fail" />
+                        <input class="input" type="date" value="2025-01-01" aria-label="설치일" aria-invalid="true" data-show="bad" hidden />
+                        <span class="err" data-show="bad" hidden><span data-icon="alert" data-icon-size="13"></span>설치일은 구매일보다 앞설 수 없습니다.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 관리 정보 — 모두 선택 입력 -->
+                  <div class="stack--lg" style="display: flex; flex-direction: column">
+                    <h3 class="t-h3" style="margin: 0">관리 정보</h3>
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="fuse">사용 유효기한</label>
+                        <input class="input" id="fuse" type="date" value="2030-01-01" />
+                      </div>
+                      <div class="field">
+                        <label for="fwarr">품질 보증기한</label>
+                        <input class="input" id="fwarr" type="date" value="2027-01-01" />
+                      </div>
+                    </div>
+
+                    <!-- 문서 3종 — 공통 첨부파일 칸(AttachmentField, 공지사항 등록 · 고객지원 문의하기와 같은 모양).
+                         칸마다 [파일 선택] · 안내 한 줄 · 올린 파일 목록(34px 줄 · 이름 · 크기 · 「빼기」), 그림(JPG · PNG)은 이름 앞 64px 둥근 썸네일.
+                         종류마다 1개, JPG · PNG · PDF, 10MB 이하. 다 찼으면 [파일 선택]을 막는다. 맞지 않는 파일은 고를 때 빼고 목록 아래 파일명과 「└ 까닭」(PL-5) -->
+                    <div class="field">
+                      <label>사용 매뉴얼 <span class="subtle">1 / 1</span></label>
+                      <div><button class="btn btn--secondary" type="button" disabled title="사용 매뉴얼은 1개까지 첨부할 수 있습니다.">파일 선택</button></div>
+                      <span class="help">JPG, PNG, PDF 파일을 1개 첨부할 수 있습니다. (10MB 이하)</span>
+                      <ul style="list-style: none; margin: var(--s-2) 0 0; padding: 0" aria-label="사용 매뉴얼 첨부파일">
+                        <li class="spread" style="height: 34px; border-bottom: 1px solid #eeeeee"><span>EK43S_사용매뉴얼.pdf</span><span><span class="mono subtle">1.8MB</span> <button class="tbtn" type="button">빼기</button></span></li>
+                      </ul>
+                    </div>
+                    <div class="field">
+                      <label>주의사항 <span class="subtle">0 / 1</span></label>
+                      <div><button class="btn btn--secondary" type="button">파일 선택</button></div>
+                      <span class="help">JPG, PNG, PDF 파일을 1개 첨부할 수 있습니다. (10MB 이하)</span>
+                      <ul style="list-style: none; margin: var(--s-2) 0 0; padding: 0" role="status" aria-label="올리지 않은 파일">
+                        <li style="padding: 6px 0; border-bottom: 1px solid #eeeeee"><div>사용주의사항_원본.hwp</div><div style="padding-left: 6px; color: #ef6363"><span style="color: #999">└</span> JPG, PNG, PDF 파일만 첨부할 수 있습니다.</div></li>
+                        <li style="padding: 6px 0; border-bottom: 1px solid #eeeeee"><div>주의사항_스캔본.pdf</div><div style="padding-left: 6px; color: #ef6363"><span style="color: #999">└</span> 10MB 이하 파일만 첨부할 수 있습니다.</div></li>
+                      </ul>
+                    </div>
+                    <div class="field">
+                      <label>제품 보증서 <span class="subtle">1 / 1</span></label>
+                      <div><button class="btn btn--secondary" type="button" disabled title="제품 보증서는 1개까지 첨부할 수 있습니다.">파일 선택</button></div>
+                      <span class="help">JPG, PNG, PDF 파일을 1개 첨부할 수 있습니다. (10MB 이하)</span>
+                      <ul style="list-style: none; margin: var(--s-2) 0 0; padding: 0" aria-label="제품 보증서 첨부파일">
+                        <li class="spread" style="gap: 10px; padding: 12px 0; border-bottom: 1px solid #eeeeee"><span style="display: flex; align-items: center; gap: 10px"><span style="display: grid; place-items: center; width: 64px; height: 64px; flex: none; border: 1px solid #edeef1; border-radius: 8px; background: #f8f9fb; font-size: 12px; color: #888">PNG</span>제품보증서.png</span><span><span class="mono subtle">640KB</span> <button class="tbtn" type="button">빼기</button></span></li>
+                      </ul>
+                    </div>
+                    <!-- 관리 담당자 — 이 점포의 재직 직원. 고르면 전화번호 세 칸을 휴대폰 번호로 채운다(PL-6) -->
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="fmgr">관리 담당자</label>
+                        <select class="select" id="fmgr">
+                          <option>선택</option>
+                          <option selected>서지안</option>
+                          <option>오세라</option>
+                          <option>김도윤</option>
+                        </select>
+                      </div>
+                      <div class="field">
+                        <label for="fmtel">관리 담당자 전화번호</label>
+                        <div class="tel3">
+                          <input class="input mono" id="fmtel" value="010" inputmode="numeric" maxlength="4" aria-label="관리 담당자 전화번호 앞자리" />
+                          <input class="input mono" value="2323" inputmode="numeric" maxlength="4" aria-label="관리 담당자 전화번호 가운데자리" />
+                          <input class="input mono" value="2323" inputmode="numeric" maxlength="4" aria-label="관리 담당자 전화번호 끝자리" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 점검 주기 — 공통코드 「시설물 점검 주기」(플랫폼고정), 처음 값 매일(PL-6) -->
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="fcycle">점검 주기</label>
+                        <select class="select" id="fcycle">
+                          <option>매일</option>
+                          <option>매주</option>
+                          <option selected>매월</option>
+                          <option>수시</option>
+                        </select>
+                      </div>
+                      <div class="field">
+                        <label for="fnote">점검 비고</label>
+                        <input class="input" id="fnote" value="매달 정기휴일에 점검" />
+                      </div>
+                    </div>
+
+                    <!-- A/S센터 — 주소 검색 + 상세주소(100자), 전화번호 세 칸(PL-5) -->
+                    <div class="field addr" data-addr>
+                      <label for="fasq">A/S센터 주소</label>
+                      <div class="addr__search">
+                        <div class="addr__q">
+                          <input class="input" id="fasq" type="search" placeholder="지번/도로명을 입력해주세요." autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" data-addr-q />
+                          <span data-icon="search" data-icon-size="14"></span>
+                        </div>
+                        <div class="addr__list" role="listbox" aria-label="주소 검색 결과" hidden></div>
+                      </div>
+                      <div class="addr__picked">
+                        <input class="input mono" value="04522" readonly placeholder="우편번호" aria-label="우편번호" data-addr-zip />
+                        <input class="input" value="서울 중구 삼봉로 98" readonly placeholder="기본주소" aria-label="기본주소" data-addr-base />
+                      </div>
+                      <input class="input" value="1층 2호" maxlength="100" placeholder="상세주소를 입력하세요." aria-label="상세주소" data-addr-detail />
+                    </div>
+                    <div class="field">
+                      <label for="fastel">A/S센터 전화번호</label>
+                      <div class="tel3">
+                        <input class="input mono" id="fastel" value="02" inputmode="numeric" maxlength="4" aria-label="A/S센터 전화번호 앞자리" />
+                        <input class="input mono" value="2222" inputmode="numeric" maxlength="4" aria-label="A/S센터 전화번호 가운데자리" />
+                        <input class="input mono" value="8888" inputmode="numeric" maxlength="4" aria-label="A/S센터 전화번호 끝자리" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

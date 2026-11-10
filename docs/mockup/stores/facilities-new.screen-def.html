@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시설물 및 장비 등록 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="facilities-new.screen-def">
+<header>
+  <div>
+    <h1>시설물 및 장비 관리 — 등록 화면정의서</h1>
+    <p>stores/facilities-new.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만) 위에 번호를 붙이고 우측에 설명을 매칭했다. 근거: 「시설물·장비 관리 정책서」(claude.ai 문서, 2026-11-10) PL-1 ~ PL-6 · 원자료 가맹점및점포관리 화면정의서 v0.74 37~44쪽.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="facilities-new.screen-def.png" alt="시설물 및 장비 등록 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 상태" · "목업 권한" 토글은 실제 화면 요소가 아니라 목업 자체의 전환 컨트롤이라 번호에서 제외했다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드).
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "시설물 및 장비 등록",
+  "screenPath": "점포관리 > 시설물 및 장비 관리 > 등록",
+  "purpose": "# 화면 목적 및 기능 — 점포 하나를 골라 시설물·장비의 기본 정보와 관리 정보를 등록한다. 오류는 칸 아래 빨간 문구로 알린다(알럿 없음)",
+  "items": [
+    {
+      "x": 1063,
+      "y": 187,
+      "title": "취소 · 저장",
+      "desc": "정의: [저장]을 누르면 검사하고, 걸린 칸 바로 아래 빨간 문구 · 첫 오류 칸으로 이동. 값을 고치면 그 칸 문구를 내린다\n서버 실패처럼 칸에 묶이지 않는 오류만 화면 위 띠(PL-5)"
+    },
+    {
+      "x": 57,
+      "y": 320,
+      "title": "점포 *",
+      "desc": "정의: 점포명 · 점포코드 자동완성으로 하나를 고른다. 칸을 누르면 고를 수 있는 점포 전체, 치면 좁혀진다\n내 관리 점포 범위 안의 점포만, 폐점 점포는 뺀다. BP · 가맹 · 소유 구분 칸은 없다(PL-1)"
+    },
+    {
+      "x": 57,
+      "y": 407,
+      "title": "시설물/장비명 *",
+      "desc": "정의: 비우면 「시설물/장비명을 입력해 주세요.」"
+    },
+    {
+      "x": 57,
+      "y": 493,
+      "title": "운영상태 *",
+      "desc": "정의: 공통코드 「시설물 운영상태」 — 처음 값 운영(PL-2)"
+    },
+    {
+      "x": 57,
+      "y": 574,
+      "title": "그룹 * · 분류 *",
+      "desc": "정의: 그룹은 점포 시설물 · 점포 장비, 분류는 고른 그룹의 상세 코드만. 그룹을 바꾸면 분류를 지운다\n비우면 「그룹을 선택해 주세요.」 · 「분류를 선택해 주세요.」. BP 적용 전이라 분류가 없으면 공통코드 관리 안내(PL-3)"
+    },
+    {
+      "x": 325,
+      "y": 834,
+      "title": "전화번호 세 칸",
+      "desc": "정의: 구매처 · 영업사원 · 관리 담당자 · A/S센터 전화번호는 앞 · 가운데 · 끝 세 칸, 칸마다 숫자 4자리까지\n이은 번호가 9~12자리가 아니면 「○○ 전화번호는 숫자 9~12자리입니다.」(PL-5)"
+    },
+    {
+      "x": 57,
+      "y": 1009,
+      "title": "구매액 · 부가세 포함",
+      "desc": "정의: 숫자만 10자리, 천 단위 쉼표. 「부가세 포함」은 처음에 켜짐"
+    },
+    {
+      "x": 325,
+      "y": 1122,
+      "title": "구매일 · 설치일",
+      "desc": "정의: 날짜 칸 + 달력. 설치일이 구매일보다 앞서면 「설치일은 구매일보다 앞설 수 없습니다.」"
+    },
+    {
+      "x": 592,
+      "y": 320,
+      "title": "사용 유효기한 · 품질 보증기한",
+      "desc": "정의: 날짜 칸 + 달력. 기한 표시 · 알림은 이번 범위 밖"
+    },
+    {
+      "x": 592,
+      "y": 375,
+      "title": "문서 3종",
+      "desc": "정의: 공통 첨부파일 칸 — 종류마다 1개, JPG · PNG · PDF, 10MB 이하. 다 차면 [파일 선택]을 막는다\n맞지 않는 파일은 목록 아래 파일명과 「└ 까닭」(빨간 글자), 그림은 64px 썸네일(PL-5)"
+    },
+    {
+      "x": 592,
+      "y": 1013,
+      "title": "관리 담당자",
+      "desc": "정의: 그 점포의 재직 직원 중에서 고르고, 전화번호 세 칸을 휴대폰 번호로 채운다(PL-6)"
+    },
+    {
+      "x": 592,
+      "y": 1100,
+      "title": "점검 주기 · 비고",
+      "desc": "정의: 공통코드 「시설물 점검 주기」(플랫폼고정) — 매일 · 매주 · 매월 · 수시, 처음 값 매일(PL-6)"
+    },
+    {
+      "x": 592,
+      "y": 1187,
+      "title": "A/S센터 주소",
+      "desc": "정의: 공통 주소 칸 — 두 글자 이상 치면 도로명주소 목록, 고르면 우편번호 · 기본주소를 채우고 상세주소로 이동\n상세주소는 주소를 고르기 전엔 막히고 100자까지, [지우기]로 세 값을 비운다(PL-5)"
+    }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>
