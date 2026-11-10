@@ -18,9 +18,9 @@ export default ({ A, R }) => {
       p.ask("임시저장", "soft", "급여명세서를 임시저장하시겠습니까?") +
       x.dialogTrigger("확정", confirmId),
   );
-  const warn = p.band("출퇴근 기록이 2일 누락되어 검토 대기로 분류되었습니다.", {
-    desc: "08-28 퇴근 미등록, 08-22 출근·퇴근 모두 없음. 확인한 뒤에는 경고가 있어도 확정할 수 있습니다.",
-    actions: ui.button("출퇴근 보정", { variant: "soft", href: L("staff/attendance.html") }),
+  const warn = p.band("출퇴근 기록이 등록되지 않은 날이 있어 검토가 필요합니다.", {
+    desc: "출퇴근 기록이 등록되지 않은 날이 2일 있습니다(8월 28일 퇴근 미등록, 8월 22일 출근·퇴근 미등록). 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.",
+    actions: ui.button("출퇴근 기록 확인", { variant: "soft", href: L("staff/attendance.html") }),
   });
 
   const pay = p.section(
@@ -86,7 +86,7 @@ export default ({ A, R }) => {
       [{ header: "사유", width: "w-[120px]" }, { header: "내용", align: "left" }],
       [
         // 공제 미입력은 검토 사유로 저장하지 않는다 — 공제가 비면 확정을 막는다(아래 「기본 공제 여섯 칸이 아직 비어 있습니다」)
-        [p.tag("warn", "출퇴근 누락"), `출퇴근 기록 2일 누락 ${p.sub("08-28 퇴근 · 08-22 종일")}`],
+        [p.tag("warn", "출퇴근 누락"), "출퇴근 기록이 등록되지 않은 날이 2일 있습니다(8월 28일 퇴근 미등록, 8월 22일 출근·퇴근 미등록)."],
       ],
     ),
     ui.detailTable("그 밖의 사유", [

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>수리 이력 등록 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="stores" data-sub="stores/repairs.html">
+    <!-- 수리 이력 등록 · /facility-repairs/new · 1팀 · 1.5차
+         기준: 「시설물·장비 수리 이력 정책서」 PL-1 ~ PL-3. 입력 규칙은 시설물·장비 등록 화면과 같다.
+         - 대상은 점포 → 그룹 → 분류 → 시설물·장비 순서로 고른다. 점포는 자동완성(폐점 제외), 시설물·장비는 「운영」인 것만. 앞 단계를 바꾸면 뒤를 지운다(PL-1).
+         - 고를 시설물·장비가 없으면 선택칸 아래 「시설물 및 장비 관리에서 먼저 시설물·장비를 등록해 주세요.」.
+         - 필수: 점포 · 그룹 · 분류 · 시설물·장비 · 고장 내용(200자) · 고장 원인(200자) · 고장 일자. 오류는 칸 아래 빨간 문구, 알럿 없음(PL-2).
+         - 수리 일자 ≥ 고장 일자. 수리기사 전화번호 세 칸. 수리비는 시설물 구매액 칸과 같다. 결제 수단은 공통코드 「수리비 결제 수단」(플랫폼고정).
+         - 교체 부품 줄: [교체 부품 추가]로 더하고 줄의 [삭제]로 확인창 없이 뺀다. 줄이 있으면 부품명(50자) 필수, 수량은 1 이상 정수(PL-3).
+         위쪽 점선 줄은 목업 전용이다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="repn" style="display: contents">
+          <div class="titlebar">
+            <h1 class="t-h1">시설물 및 장비 수리 이력</h1>
+            <span class="badge badge--warn">1팀 작업</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">1.5차 · /facility-repairs/new</span>
+              <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./repairs-new.screen-def.html', 'screenDef', 'width=1620,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="demo" data-demo="repn">
+              <b>목업 상태</b>
+              <div class="seg">
+                <button type="button" data-state="in" aria-pressed="true">입력 중</button>
+                <button type="button" data-state="miss" aria-pressed="false">필수 누락</button>
+                <button type="button" data-state="bad" aria-pressed="false">날짜 · 전화번호 · 부품명 오류</button>
+                <button type="button" data-state="nofac" aria-pressed="false">고를 시설물·장비 없음</button>
+                <button type="button" data-state="fail" aria-pressed="false">저장 실패</button>
+              </div>
+            </div>
+
+            <div class="band band--risk" data-show="fail" hidden>
+              <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+              <div class="band__body"><div class="band__title">저장하지 못했습니다. 잠시 후 다시 시도해 주세요.</div></div>
+            </div>
+
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">수리 이력 등록</h2>
+                <div class="inline" style="margin-left: auto; gap: 6px">
+                  <a class="btn btn--secondary btn--sm" href="repairs.html">취소</a>
+                  <a class="btn btn--primary btn--sm" href="repairs-detail.html" data-show="in nofac">저장</a>
+                  <button class="btn btn--primary btn--sm" type="button" data-show="miss bad fail" hidden>저장</button>
+                </div>
+              </div>
+              <div class="panel__body">
+                <div class="grid grid--2" style="align-items: start">
+                  <!-- 고장 정보 -->
+                  <div class="stack--lg" style="display: flex; flex-direction: column">
+                    <h3 class="t-h3" style="margin: 0">고장 정보</h3>
+
+                    <div class="field" data-target-pick>
+                      <label for="rstore">점포 <span class="req">*</span></label>
+                      <div class="sfilt" data-sfilt data-sfilt-one data-sfilt-open data-show="in bad nofac fail">
+                        <div class="addr__q sfilt__box">
+                          <span data-icon="search" data-icon-size="15"></span>
+                          <input class="input" id="rstore" data-sfilt-q role="combobox" aria-autocomplete="list" aria-expanded="false" placeholder="점포명 또는 점포코드로 찾기" autocomplete="off" value="모리커피 성수점" />
+                          <div class="addr__list sfilt__list" role="listbox" aria-label="선택할 수 있는 점포" hidden></div>
+                        </div>
+                      </div>
+                      <div class="sfilt" data-sfilt data-sfilt-one data-sfilt-open data-show="miss" hidden>
+                        <div class="addr__q sfilt__box">
+                          <span data-icon="search" data-icon-size="15"></span>
+                          <input class="input" data-sfilt-q role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="점포" aria-invalid="true" placeholder="점포명 또는 점포코드로 찾기" autocomplete="off" />
+                          <div class="addr__list sfilt__list" role="listbox" aria-label="선택할 수 있는 점포" hidden></div>
+                        </div>
+                      </div>
+                      <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>점포를 선택해 주세요.</span>
+                    </div>
+
+                    <!-- 그룹 → 분류 → 시설물·장비. 앞을 바꾸면 뒤를 지운다(아래 목업 스크립트) -->
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="rgroup">그룹 <span class="req">*</span></label>
+                        <select class="select" id="rgroup" data-show="in bad nofac fail">
+                          <option>선택</option>
+                          <option>점포 시설물</option>
+                          <option selected>점포 장비</option>
+                        </select>
+                        <select class="select" aria-label="그룹" aria-invalid="true" data-show="miss" hidden><option selected>선택</option></select>
+                        <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>그룹을 선택해 주세요.</span>
+                      </div>
+                      <div class="field">
+                        <label for="rclass">분류 <span class="req">*</span></label>
+                        <select class="select" id="rclass" data-show="in bad fail">
+                          <option>선택</option>
+                          <option selected>그라인더</option>
+                          <option>커피머신</option>
+                          <option>제빙기</option>
+                        </select>
+                        <select class="select" aria-label="분류" data-show="nofac" hidden>
+                          <option>선택</option>
+                          <option>그라인더</option>
+                          <option>커피머신</option>
+                          <option selected>제빙기</option>
+                        </select>
+                        <select class="select" aria-label="분류" aria-invalid="true" disabled data-show="miss" hidden><option selected>그룹을 먼저 선택해 주세요</option></select>
+                        <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>분류를 선택해 주세요.</span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label for="rfac">시설물·장비 <span class="req">*</span></label>
+                      <select class="select" id="rfac" data-show="in bad fail">
+                        <option>선택</option>
+                        <option selected>EK43S 전자동 원두 커피 그라인더</option>
+                      </select>
+                      <select class="select" aria-label="시설물·장비" disabled data-show="nofac" hidden><option selected>선택할 시설물·장비가 없습니다</option></select>
+                      <select class="select" aria-label="시설물·장비" aria-invalid="true" disabled data-show="miss" hidden><option selected>분류를 먼저 선택해 주세요</option></select>
+                      <span class="help" data-show="in bad fail">운영상태가 「운영」인 시설물·장비만 고를 수 있습니다.</span>
+                      <span class="err" data-show="nofac" hidden><span data-icon="alert" data-icon-size="13"></span>시설물 및 장비 관리에서 먼저 시설물·장비를 등록해 주세요.</span>
+                      <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>시설물·장비를 선택해 주세요.</span>
+                    </div>
+
+                    <div class="field">
+                      <label for="rfault">고장 내용 <span class="req">*</span></label>
+                      <textarea class="textarea" id="rfault" rows="3" maxlength="200" placeholder="200자 이내로 입력해 주세요." data-show="in bad nofac fail">원두가 정상적인 굵기로 분쇄되지 않음</textarea>
+                      <textarea class="textarea" rows="3" maxlength="200" aria-label="고장 내용" aria-invalid="true" placeholder="200자 이내로 입력해 주세요." data-show="miss" hidden></textarea>
+                      <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>고장 내용을 입력해 주세요.</span>
+                    </div>
+                    <div class="field">
+                      <label for="rcause">고장 원인 <span class="req">*</span></label>
+                      <textarea class="textarea" id="rcause" rows="3" maxlength="200" placeholder="200자 이내로 입력해 주세요." data-show="in bad nofac fail">원두 그라인더의 칼날 마모</textarea>
+                      <textarea class="textarea" rows="3" maxlength="200" aria-label="고장 원인" aria-invalid="true" placeholder="200자 이내로 입력해 주세요." data-show="miss" hidden></textarea>
+                      <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>고장 원인을 입력해 주세요.</span>
+                    </div>
+                    <div class="field">
+                      <label for="rdate">고장 일자 <span class="req">*</span></label>
+                      <input class="input" id="rdate" type="date" value="2026-11-03" data-show="in bad nofac fail" />
+                      <input class="input" type="date" aria-label="고장 일자" aria-invalid="true" data-show="miss" hidden />
+                      <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>고장 일자를 입력해 주세요.</span>
+                    </div>
+                  </div>
+
+                  <!-- 수리 정보 — 모두 선택 입력 -->
+                  <div class="stack--lg" style="display: flex; flex-direction: column">
+                    <h3 class="t-h3" style="margin: 0">수리 정보</h3>
+                    <div class="field">
+                      <label for="rrdate">수리 일자</label>
+                      <input class="input" id="rrdate" type="date" value="2026-11-05" data-show="in miss nofac fail" />
+                      <input class="input" type="date" value="2026-11-01" aria-label="수리 일자" aria-invalid="true" data-show="bad" hidden />
+                      <span class="err" data-show="bad" hidden><span data-icon="alert" data-icon-size="13"></span>수리 일자는 고장 일자보다 앞설 수 없습니다.</span>
+                    </div>
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="rtech">수리기사</label>
+                        <input class="input" id="rtech" value="홍길동" maxlength="50" placeholder="50자 이내로 입력해 주세요." />
+                      </div>
+                      <div class="field">
+                        <label for="rtel">수리기사 전화번호</label>
+                        <div class="tel3" data-show="in miss nofac fail">
+                          <input class="input mono" id="rtel" value="010" inputmode="numeric" maxlength="4" aria-label="수리기사 전화번호 앞자리" />
+                          <input class="input mono" value="2222" inputmode="numeric" maxlength="4" aria-label="수리기사 전화번호 가운데자리" />
+                          <input class="input mono" value="3333" inputmode="numeric" maxlength="4" aria-label="수리기사 전화번호 끝자리" />
+                        </div>
+                        <div class="tel3" data-show="bad" hidden>
+                          <input class="input mono" value="010" inputmode="numeric" maxlength="4" aria-invalid="true" aria-label="수리기사 전화번호 앞자리" />
+                          <input class="input mono" value="22" inputmode="numeric" maxlength="4" aria-invalid="true" aria-label="수리기사 전화번호 가운데자리" />
+                          <input class="input mono" value="" inputmode="numeric" maxlength="4" aria-invalid="true" aria-label="수리기사 전화번호 끝자리" />
+                        </div>
+                        <span class="err" data-show="bad" hidden><span data-icon="alert" data-icon-size="13"></span>수리기사 전화번호는 숫자 9~12자리입니다.</span>
+                      </div>
+                    </div>
+                    <!-- 수리비 — 시설물 구매액 칸과 같다: 왼쪽 정렬, 칸 옆 「원」 없음, 다 친 뒤 쉼표, 칸 아래 안내. 「부가세 포함」 처음 켜짐 -->
+                    <div class="field">
+                      <label class="inline" for="rcost" style="gap: 18px">수리비 <span class="inline" style="gap: 6px; font-weight: 400">부가세 포함 <span class="toggle" id="rvat" role="switch" aria-pressed="true" tabindex="0"></span></span></label>
+                      <input class="input" id="rcost" value="200,000" inputmode="numeric" maxlength="13" placeholder="숫자만 입력" />
+                      <span class="help">원 단위로 숫자만 입력할 수 있습니다.</span>
+                    </div>
+                    <div class="field">
+                      <label for="rpay">수리비 결제 수단</label>
+                      <select class="select" id="rpay">
+                        <option>선택</option>
+                        <option>현금</option>
+                        <option>계좌이체</option>
+                        <option selected>신용카드</option>
+                        <option>기타</option>
+                      </select>
+                    </div>
+
+                    <!-- 교체 부품 — 줄마다 부품명(필수, 50자) · 수량(1 이상) · [삭제](확인창 없음). [저장]해야 반영된다(PL-3) -->
+                    <div class="field">
+                      <label>교체 부품</label>
+                      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px" data-parts>
+                        <li class="inline" style="flex-wrap: nowrap; gap: 6px" data-part>
+                          <input class="input" value="그라인더 모터" maxlength="50" placeholder="부품명" aria-label="부품명" style="flex: 1" />
+                          <input class="input mono" value="1" inputmode="numeric" placeholder="수량" aria-label="수량" style="width: 90px" />
+                          <button class="btn btn--secondary btn--sm" type="button" data-part-del>삭제</button>
+                        </li>
+                        <li class="inline" style="flex-wrap: nowrap; gap: 6px" data-part data-show="in miss nofac fail">
+                          <input class="input" value="그라인더 칼날" maxlength="50" placeholder="부품명" aria-label="부품명" style="flex: 1" />
+                          <input class="input mono" value="2" inputmode="numeric" placeholder="수량" aria-label="수량" style="width: 90px" />
+                          <button class="btn btn--secondary btn--sm" type="button" data-part-del>삭제</button>
+                        </li>
+                        <li style="display: flex; flex-direction: column; gap: 6px" data-show="bad" hidden>
+                          <span class="inline" style="flex-wrap: nowrap; gap: 6px">
+                            <input class="input" value="" maxlength="50" placeholder="부품명" aria-label="부품명" aria-invalid="true" style="flex: 1" />
+                            <input class="input mono" value="2" inputmode="numeric" placeholder="수량" aria-label="수량" style="width: 90px" />
+                            <button class="btn btn--secondary btn--sm" type="button">삭제</button>
+                          </span>
+                          <span class="err"><span data-icon="alert" data-icon-size="13"></span>교체 부품명을 입력해 주세요.</span>
+                        </li>
+                      </ul>
+                      <div><button class="btn btn--secondary btn--sm" type="button" data-part-add>교체 부품 추가</button></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script>
+      /* 목업 전용 — 그룹을 고르면 그 그룹의 분류, 분류를 고르면 그 분류의 「운영」 시설물·장비로 선택지를 채운다. 앞을 바꾸면 뒤를 지운다(PL-1).
+         교체 부품 줄은 [교체 부품 추가]로 더하고 [삭제]로 확인창 없이 뺀다(PL-3). */
+      (function () {
+        var CODES = { "점포 시설물": ["식재보관", "급수", "냉난방"], "점포 장비": ["그라인더", "커피머신", "제빙기"] };
+        var FAC = { "그라인더": ["EK43S 전자동 원두 커피 그라인더"], "식재보관": ["업소용 4도어 냉장고"], "커피머신": [], "제빙기": [], "급수": [], "냉난방": [] };
+        var g = document.getElementById("rgroup"), k = document.getElementById("rclass"), f = document.getElementById("rfac");
+        var opts = function (first, list) { return "<option selected>" + first + "</option>" + list.map(function (v) { return "<option>" + v + "</option>"; }).join(""); };
+        g.addEventListener("change", function () { k.innerHTML = opts("선택", CODES[g.value] || []); f.innerHTML = opts("선택", []); });
+        k.addEventListener("change", function () { f.innerHTML = opts("선택", FAC[k.value] || []); });
+        var parts = document.querySelector("[data-parts]");
+        document.addEventListener("click", function (e) {
+          var del = e.target.closest("[data-part-del]");
+          if (del) del.closest("li").remove();
+          if (e.target.closest("[data-part-add]")) {
+            var li = document.createElement("li");
+            li.className = "inline"; li.style.cssText = "flex-wrap: nowrap; gap: 6px"; li.setAttribute("data-part", "");
+            li.innerHTML = '<input class="input" maxlength="50" placeholder="부품명" aria-label="부품명" style="flex: 1" /><input class="input mono" inputmode="numeric" placeholder="수량" aria-label="수량" style="width: 90px" /><button class="btn btn--secondary btn--sm" type="button" data-part-del>삭제</button>';
+            parts.appendChild(li);
+            li.querySelector("input").focus();
+          }
+        });
+      })();
+    </script>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

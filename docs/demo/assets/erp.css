@@ -1648,6 +1648,9 @@
   .grid-cols-\[88px_repeat\(3\,minmax\(0\,1fr\)\)\] {
     grid-template-columns: 88px repeat(3,minmax(0,1fr));
   }
+  .grid-cols-\[90px_1fr\] {
+    grid-template-columns: 90px 1fr;
+  }
   .grid-cols-\[268px_minmax\(0\,1fr\)\] {
     grid-template-columns: 268px minmax(0,1fr);
   }

@@ -4,7 +4,7 @@ title: 출·퇴근 현황 조회 화면 (구현)
 description: /attendance-records — 데모 틀 그대로 왼쪽 필터 7개(STAFF-31), 본문 「일별 출퇴근」(하루씩) · 「근태 요약」(한 주씩) 두 칸, 아래 「보정이 필요한 기록」(기간 · 보정 · 이상 없음 · 이력 · 대신 등록). 점포는 상단 범위 ↔ 필터 점포다.
 tags: [staff, attendance, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-05T06:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-10T02:10:44Z }
 sources:
   - id: page
     resource: ../../src/app/attendance-records/page.tsx
@@ -21,7 +21,7 @@ sources:
   - id: query
     resource: ../../src/app/attendance-records/attendance-query.ts
     title: 주소 ↔ 조건 · api 점포 조건 · 거르기 · 근태 요약 계산 · 보정 퇴근 날 · 미래 시각 판정
-    last_modified: 2026-11-05T04:56:06Z
+    last_modified: 2026-11-10T02:10:44Z
   - id: fix-list
     resource: ../../src/app/attendance-records/attendance-fix-list.tsx
     title: 보정이 필요한 기록 표 · 기록 보정 · 출퇴근 대신 등록 패널 · 이력 창
