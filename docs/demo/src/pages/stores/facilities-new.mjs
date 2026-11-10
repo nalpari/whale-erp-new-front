@@ -47,7 +47,7 @@ export const render = ({ A, R }, { mode = "create", errors = false } = {}) => {
       ui.field("영업사원", ui.textField({ value: "홍길동" })),
       f.group(
         "영업사원 전화번호",
-        errors ? f.tel("010", "22", "").replaceAll('maxlength="4"', 'maxlength="4" aria-invalid="true"') + ERR("영업사원 전화번호는 숫자 9~12자리입니다.") : f.tel("010", "2222", "3333"),
+        errors ? f.tel("010", "22", "") + ERR("영업사원 전화번호는 숫자 9~12자리입니다.") : f.tel("010", "2222", "3333"),
       ),
     ),
     // 구매액 — 숫자만 10자리 · 쉼표, 「부가세 포함」 처음 켜짐(PL-5)
