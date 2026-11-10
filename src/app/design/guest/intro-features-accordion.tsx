@@ -54,7 +54,8 @@ export function IntroFeaturesAccordion({ light, bold, items }: { light: string; 
 
   return (
     <section ref={sectionRef} className="relative bg-[#f1f7fc]" style={{ height: `${items.length * STEP_VH}vh` }}>
-      <div className={`${FRAME} sticky top-[110px] flex h-[calc(100vh-110px)] flex-col justify-center gap-[48px]`}>
+      {/* 창이 낮으면 위 여백 · 간격 · 줄 높이 · 그림 높이가 함께 줄어 목록 전체가 한 화면에 든다. 가운데 정렬은 넘칠 때 제목이 머리말 밑으로 들어가 위에서부터 쌓는다(PR #254 리뷰 B3). */}
+      <div className={`${FRAME} sticky top-[110px] flex h-[calc(100vh-110px)] flex-col gap-[clamp(20px,4vh,48px)] pt-[clamp(24px,8vh,100px)]`}>
         <SectionTitle oneLine light={light} bold={bold} />
         <ul className="border-b border-[#d5e1ec]">
           {items.map((f, i) => {
@@ -66,7 +67,7 @@ export function IntroFeaturesAccordion({ light, bold, items }: { light: string; 
                   type="button"
                   aria-expanded={isOpen}
                   onClick={() => handleRowClick(i)}
-                  className={`flex w-full items-center py-[24px] text-left text-[28px] leading-[1.4] font-bold transition-colors duration-300 ease-out ${isOpen ? "text-guest-navy" : "text-guest-navy/30 hover:text-guest-navy/60"}`}
+                  className={`flex w-full items-center py-[clamp(10px,2.2vh,24px)] text-left text-[28px] leading-[1.4] font-bold transition-colors duration-300 ease-out ${isOpen ? "text-guest-navy" : "text-guest-navy/30 hover:text-guest-navy/60"}`}
                 >
                   <span className="inline-block w-[46px] shrink-0 text-guest-navy-soft">{num}</span>
                   {name.join(" ")}
@@ -74,7 +75,7 @@ export function IntroFeaturesAccordion({ light, bold, items }: { light: string; 
                 <div className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
                   <div className="min-h-0 overflow-hidden">
                     {/* 펼친 내용은 줄 제목 글자(번호 뒤)에 맞춰 46px 들여 쓰고, 그림이 왼쪽 · 글이 오른쪽이다(order-first). 그림 칸은 매장운영 그림 카드와 같은 520px 로 묶는다 — 반 폭이면 가로로 너무 길었다(2026-11-10 사용자 지정). */}
-                    <div className="grid grid-cols-[520px_minmax(0,1fr)] items-center gap-[80px] pb-[28px] pl-[46px]">
+                    <div className="grid grid-cols-[520px_minmax(0,1fr)] items-center gap-[80px] pb-[clamp(14px,2.6vh,28px)] pl-[46px]">
                       <div className="flex flex-col gap-[20px]">
                         <div className="flex flex-col gap-[10px]">
                           <h3 className="text-[26px] leading-[1.4] font-bold text-guest-navy">
@@ -101,10 +102,12 @@ export function IntroFeaturesAccordion({ light, bold, items }: { light: string; 
                           ))}
                         </ul>
                       </div>
-                      <div className="relative order-first h-[260px] overflow-hidden rounded-[24px] border border-[#e3ebf3] bg-white">
+                      <div className="relative order-first h-[clamp(180px,calc(100vh-560px),260px)] overflow-hidden rounded-[24px] border border-[#e3ebf3] bg-white">
                         <Image src="/guest/billboard-bg.png" alt="" fill sizes="720px" className="object-cover" style={{ objectPosition: `${15 + i * 25}% 60%` }} />
                         <span className="absolute inset-0 bg-white/20" />
-                        <div className="relative flex h-full items-center justify-center">{f.screen}</div>
+                        <div className="relative flex h-full items-center justify-center">
+                          <div className="origin-center [@media(max-height:820px)]:scale-[0.78]">{f.screen}</div>
+                        </div>
                       </div>
                     </div>
                   </div>

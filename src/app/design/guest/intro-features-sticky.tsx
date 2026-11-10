@@ -18,7 +18,8 @@ function Lines({ lines }: { lines: string[] }) {
 // 스크롤하는 동안 그림 · 글만 네 기능 차례로 서서히 바뀐다. 지금 기능의 바로가기는 채워져 보인다(네이버페이 커넥트 소개 참고, 2026-11-10 사용자 지정).
 // 구역 높이는 기능 수 × 화면 높이 80% 라 그만큼 스크롤하는 동안 붙어 있다. 그림(520×600)과 글(640) 묶음을 본문 가운데에, 글은 그림 세로 가운데에 둔다.
 // 구역 여백은 메인과 같다 — 바탕을 메인 구역처럼 연하늘(#f1f7fc)로 갈고, 붙어 있는 동안 제목이 구역 위에서 100px 아래에 선다.
-// 그림 · 글 칸은 화면 아래 24px 까지 세로로 길게 쓴다 — 머리 110 + 위 100 + 제목 줄 78 + 간격 60 + 아래 24 를 뺀 높이, 낮아도 480 (2026-11-10 사용자 지정).
+// 그림 · 글 칸은 화면 아래 24px 까지 세로로 길게 쓴다 — 머리 110 + 위 여백 + 제목 줄 78 + 간격 + 아래 24 를 뺀 높이. 위 여백(24~100) · 간격(24~60)은 창 높이에 따라 줄고,
+// 칸이 낮으면 화면 조각을 비율 그대로 줄인다 — 낮은 노트북(1366×768 등)에서 카드 아래 · 글이 잘렸다(PR #254 리뷰 B3, 2026-11-10).
 // 움직임 줄이기 설정이면 바뀔 때 서서히 겹치지 않고 바로 바뀐다(motion-reduce:transition-none).
 const STEP_VH = 80;
 const HEADER = 110;
@@ -33,6 +34,17 @@ export function IntroFeaturesSticky({ light, bold, items }: { light: string; bol
   const sectionRef = useRef<HTMLElement>(null);
   const viewRef = useRef<HTMLDivElement>(null);
   const articleRefs = useRef<(HTMLElement | null)[]>([]);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [screenScale, setScreenScale] = useState(1);
+
+  // 창이 낮아 그림 칸이 작아지면 화면 조각을 비율 그대로 줄인다 — 가장 큰 조각(460px)에 위아래 여백 20px 씩을 더한 높이 기준.
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => setScreenScale(Math.min(1, el.clientHeight / 500)));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   const [shift, setShift] = useState(0);
 
   // 지금 기능 글의 가운데를 글 칸 가운데에 맞추는 만큼 줄을 올린다. 글 길이가 기능마다 달라 실제 높이를 잰다.
@@ -85,7 +97,7 @@ export function IntroFeaturesSticky({ light, bold, items }: { light: string; bol
 
   return (
     <section ref={sectionRef} className="relative bg-[#f1f7fc]" style={{ height: `${items.length * STEP_VH}vh` }}>
-      <div className={`${FRAME} sticky top-[110px] flex h-[calc(100vh-110px)] flex-col gap-[60px] pt-[100px]`}>
+      <div className={`${FRAME} sticky top-[110px] flex h-[calc(100vh-110px)] flex-col gap-[var(--gap)] pt-[var(--pt)] [--gap:clamp(24px,5vh,60px)] [--h:calc(100vh-212px-var(--pt)-var(--gap))] [--pt:clamp(24px,8vh,100px)]`}>
         <div className="flex items-end justify-between">
           <SectionTitle oneLine light={light} bold={bold} />
           <nav className="flex gap-[8px]">
@@ -104,8 +116,8 @@ export function IntroFeaturesSticky({ light, bold, items }: { light: string; bol
         </div>
         <div className="flex items-center justify-center gap-[120px]">
           {/* 그림 — 메인 「시작 방법」 카드처럼 12px 흰 테두리 안에 24px 둥근 구름 칸. 모두 겹쳐 두고 지금 기능의 화면만 보인다. */}
-          <div className="flex h-[var(--h)] w-[520px] shrink-0 flex-col rounded-[32px] border border-[#e3ebf3] bg-white p-[12px] [--h:max(480px,calc(100vh-372px))]">
-            <div className="relative min-h-0 flex-1 overflow-hidden rounded-[24px]">
+          <div className="flex h-[var(--h)] w-[520px] shrink-0 flex-col rounded-[32px] border border-[#e3ebf3] bg-white p-[12px]">
+            <div ref={panelRef} className="relative min-h-0 flex-1 overflow-hidden rounded-[24px]">
             {/* 네이버페이 커넥트처럼 화면 조각이 같은 칸 안에서 좌우로 밀려 바뀐다 — 다음 기능은 오른쪽에서 들어온다. 구름 바탕은 조금만 따라 움직여(시차) 하늘이 이어져 보인다(2026-11-10 사용자 지정). */}
             <div className="absolute inset-0 bg-[#e9eff6]">
               <Image
@@ -125,7 +137,7 @@ export function IntroFeaturesSticky({ light, bold, items }: { light: string; bol
               {items.flatMap((f, i) =>
                 f.screens.map((screen, j) => (
                   <div key={`${f.id}-${j}`} aria-hidden={offsets[i] + j !== slide} className="flex h-full w-full shrink-0 items-center justify-center">
-                    {screen}
+                    <div style={{ scale: screenScale }}>{screen}</div>
                   </div>
                 )),
               )}
@@ -157,7 +169,7 @@ export function IntroFeaturesSticky({ light, bold, items }: { light: string; bol
               「스크롤하면 다음 기능이 나온다」를 알린다(2026-11-10 사용자 지정). 기능 사이 72px, 위아래 끝 8% 만 흐리게 지운다 — 더 지우면 앞 · 뒤 글이 안 보였다. */}
           <div
             ref={viewRef}
-            className="relative h-[var(--h)] w-[640px] shrink-0 overflow-hidden [--h:max(480px,calc(100vh-372px))] [mask-image:linear-gradient(to_bottom,transparent,black_8%,black_92%,transparent)]"
+            className="relative h-[var(--h)] w-[640px] shrink-0 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_8%,black_92%,transparent)]"
           >
             <div
               className="flex flex-col gap-[72px] transition-transform duration-500 ease-out motion-reduce:transition-none"
