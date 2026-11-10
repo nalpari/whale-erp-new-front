@@ -7,35 +7,13 @@ import { Arrow, FaqItem, GuestButton, GuestPage, SectionTitle, TitleRow, TRIM, G
 import { Badges, dotDate } from "./notices/notice-views";
 import { BUTTON_MOTION, HOVER } from "./theme";
 
-// 섹션 위아래 여백은 모두 100px 로 같다(2026-11-09 사용자 지정).
+// 카드 번호(01)는 따로 줄을 두지 않고 제목 앞에 연한 남색으로 붙인다(2026-11-10 사용자 지정).
+// 섹션 위아래 여백은 모두 100px 로 같다. 카드 제목 · 상자 머리 글자는 바탕색과 상관없이 남색, 섹션 제목만 먹색(2026-11-10 사용자 지정).
 // 메인은 본문 폭을 1520px 로 묶는다 — 공통 FRAME(최대 1760px)은 100% 배율에서 양옆이 꽉 차 보였다(2026-11-09 사용자 지정).
 const FRAME = "mx-auto w-full max-w-[1680px] px-[80px]";
 
 // Figma 「로그인전_Main」(RQmNVgT2NL0njIFXVQPVG6 · 44:2, 로그인전_공유 — 2026-11-06 반영). 1920 폭 데스크톱 시안이다.
 // 실제 홈((site)/page.tsx)과 디자인 샘플(design/guest/page.tsx)이 함께 그린다. 링크는 받은 routes 로 건다(guest-routes.ts).
-
-// 「세 단계」 아이콘 — 유리 질감 3D 아이콘 대신 역할 섹션과 같은 선 아이콘(가입 · 매장 · 알림톡 초대). 번호는 STEP 알약 대신 「01」 숫자(2026-11-09 사용자 지정).
-function StepIcon({ step }: { step: 0 | 1 | 2 }) {
-  return (
-    <svg aria-hidden viewBox="0 0 48 48" className="h-[74px] w-[74px] shrink-0 text-guest-navy-soft" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      {step === 0 && (
-        <>
-          <circle cx="19" cy="15" r="7" /><path d="M6 40c0-7.2 5.8-13 13-13 3.4 0 6.5 1.3 8.8 3.4" /><path d="M37 28v12M31 34h12" />
-        </>
-      )}
-      {step === 1 && (
-        <>
-          <path d="M7 18l3-10h28l3 10" /><path d="M7 18c0 3 2.5 5 5.5 5s5.5-2 5.5-5c0 3 2.5 5 6 5s6-2 6-5c0 3 2.5 5 5.5 5S41 21 41 18" /><path d="M10 23v17h28V23" /><path d="M20 40v-9h8v9" />
-        </>
-      )}
-      {step === 2 && (
-        <>
-          <path d="M8 10h32a3 3 0 0 1 3 3v18a3 3 0 0 1-3 3H22l-8 7v-7H8a3 3 0 0 1-3-3V13a3 3 0 0 1 3-3z" /><path d="M17 22l5 5 9-9" />
-        </>
-      )}
-    </svg>
-  );
-}
 
 const HIGHLIGHTS = [
   { no: "01", title: "점포 1개 운영", desc: "무료 제공" },
@@ -105,12 +83,13 @@ function Billboard({ routes }: { routes: GuestRoutes }) {
             <GuestTag>이용 안내</GuestTag>
           <ul className="flex w-full justify-between border-t border-[rgba(130,151,168,0.15)] pt-[24px] text-guest-navy">
             {HIGHLIGHTS.map((h) => (
-              <li key={h.no} className="flex gap-[10px]">
-                <span className="text-[16px] leading-[2.3] font-bold">{h.no}</span>
-                <span className="leading-[1.6]">
-                  <strong className="block text-[22px] font-bold">{h.title}</strong>
-                  <span className="text-[17px]">{h.desc}</span>
-                </span>
+              // 번호는 아래 카드들과 같이 제목 앞에 연한 남색으로 붙인다(2026-11-10 사용자 지정).
+              <li key={h.no} className="leading-[1.6]">
+                <strong className="block text-[22px] font-bold">
+                  <span className="mr-[8px] text-guest-navy-soft">{h.no}</span>
+                  {h.title}
+                </strong>
+                <span className="text-[17px]">{h.desc}</span>
               </li>
             ))}
           </ul>
@@ -174,8 +153,10 @@ function Personas({ routes }: { routes: GuestRoutes }) {
               <span className="h-[6px] bg-guest-navy" />
               <div className="flex flex-1 flex-col gap-[32px] p-[34px]">
                 <div className="flex flex-col gap-[16px] text-guest-navy">
-                  <p className={`text-[16px] leading-[1.6] font-bold ${TRIM}`}>{String(i + 1).padStart(2, "0")}</p>
-                  <h3 className={`text-[22px] leading-[1.4] font-bold ${TRIM}`}>{p.head}</h3>
+                  <h3 className={`text-[22px] leading-[1.4] font-bold ${TRIM}`}>
+                    <span className="mr-[8px] text-guest-navy-soft">{String(i + 1).padStart(2, "0")}</span>
+                    {p.head}
+                  </h3>
                   <p className={`text-[17px] leading-[1.5] text-guest-body ${TRIM}`}>{p.pitch}</p>
                 </div>
                 <ul className="flex flex-col gap-[12px] border-t border-[#e7e7e7] pt-[24px] text-[15px] leading-[1.5] text-guest-ink">
@@ -211,7 +192,40 @@ function Personas({ routes }: { routes: GuestRoutes }) {
   );
 }
 
-// 누가 어디서 쓰는지 — 사장님(웹) · 관리자(맡은 매장만) · 직원(앱). 아래 「시작 세 단계」와 같은 이야기(가입 → 매장 → 직원)를 두 번 하지 않게 바꿨다(2026-11-09 사용자 지정).
+// 매장에서 일하는 장면 사진을 띠로 흘린다(높이 300px, 가로 사진은 넓게 · 세로 사진은 좁게). 「함께 일하는 방식」 제목 아래에 둔다(2026-11-10 사용자 지정).
+// staff-laptop.jpg 는 Pexels(Ketut Subiyanto, https://www.pexels.com/ko-kr/photo/happy-colleagues-in-aprons-browsing-laptop-in-kitchen-4353590/) 무료 사진이다.
+// 나머지 셋은 사용자가 준 캡처라 출처를 확인하고 원본으로 바꿔야 한다.
+const PHOTOS = [
+  { src: "owner-tablet.png", width: 1031, height: 687 },
+  { src: "staff-laptop.jpg", width: 1600, height: 1067 },
+  { src: "contract-sign.png", width: 439, height: 668 },
+  { src: "staff-coffee.png", width: 450, height: 677 },
+];
+
+function PhotoRoll() {
+  // 같은 묶음을 두 번 이어 붙여야 -50% 에서 처음과 같은 그림이 된다. 두 번째 묶음은 화면 읽기에서 뺀다.
+  return (
+    <div className="overflow-hidden">
+      <div className="guest-photo-roll flex w-max gap-[16px]">
+        {[0, 1].map((round) =>
+          PHOTOS.map((photo) => (
+            <Image
+              key={`${round}-${photo.src}`}
+              src={`/guest/home/photos/${photo.src}`}
+              alt=""
+              aria-hidden={round === 1 || undefined}
+              width={photo.width}
+              height={photo.height}
+              sizes={`${Math.round((300 * photo.width) / photo.height)}px`}
+              className="h-[300px] w-auto shrink-0 rounded-[16px] object-cover"
+            />
+          )),
+        )}
+      </div>
+    </div>
+  );
+}
+
 // 같은 세 사람을 「무엇을 하나」가 아니라 「일이 어떻게 이어지나」로 — 매장 유형 섹션과 겹쳐 보여 바꿨다. 카드 사이에 화살표를 둔다(2026-11-10 사용자 지정).
 const CONNECTIONS = [
   {
@@ -240,7 +254,7 @@ const CONNECTIONS = [
   },
 ];
 
-// 역할 카드 아이콘 — 생성형 사진 느낌이 강해 선 아이콘으로 바꿨다. 실제 화면 캡처가 준비되면 그것으로 바꾼다(2026-11-09 사용자 지정).
+// 역할 카드 아이콘 — 생성형 사진 느낌이 강해 선 아이콘으로 바꿨다(2026-11-09 사용자 지정).
 function RoleIcon({ kind }: { kind: "web" | "manager" | "app" }) {
   return (
     <svg aria-hidden viewBox="0 0 48 48" className="h-[104px] w-[104px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -270,11 +284,13 @@ function RoleIcon({ kind }: { kind: "web" | "manager" | "app" }) {
 }
 
 function Connections() {
-  // 검정(#1f1f1f) · 남색 바탕이 페이지에서 혼자 무거워, 옛 서비스 카드의 연한 하늘색(#f1f7fc) 바탕에 흰 칸 · 남색 아이콘으로 바꿨다(2026-11-09 사용자 지정).
   return (
-    <section className="bg-[#f1f7fc] py-[100px]">
-      <div className={`${FRAME} flex flex-col gap-[60px]`}>
+    <section className="flex flex-col gap-[60px] bg-[#f1f7fc] py-[100px]">
+      <div className={FRAME}>
         <SectionTitle oneLine tag="함께 일하는 방식" light="사장님부터 직원까지," bold="매장 업무가 하나로 연결돼요" />
+      </div>
+      <PhotoRoll />
+      <div className={FRAME}>
         <div className="grid grid-cols-3 gap-[34px]">
           {CONNECTIONS.map((c, i) => (
             <div key={c.label} className="relative flex flex-col gap-[34px]">
@@ -283,14 +299,15 @@ function Connections() {
                   <Arrow />
                 </span>
               )}
-              {/* 아이콘만 둔 칸은 220px — 348px 은 비어 보였다. 번호는 칸이 아니라 제목 앞에 둔다(2026-11-09 사용자 지정). */}
               <div className="relative flex h-[220px] items-center justify-center rounded-[16px] bg-white text-guest-navy-soft">
                 <span className="absolute top-[18px] left-[18px] rounded-[4px] bg-[#f1f7fc] px-[10px] py-[4px] text-[14px] leading-[1.5] font-semibold text-guest-navy">{c.where}</span>
                 <RoleIcon kind={c.icon} />
               </div>
               <div className="flex flex-col gap-[12px] pl-[2px] text-guest-body">
-                <p className={`text-[16px] leading-[1.6] font-bold text-guest-navy ${TRIM}`}>{c.label}</p>
-                <h3 className="text-[22px] leading-[1.4] font-bold text-guest-ink">{c.title}</h3>
+                <h3 className="text-[22px] leading-[1.4] font-bold text-guest-navy">
+                  <span className="mr-[8px] text-guest-navy-soft">{c.label}</span>
+                  {c.title}
+                </h3>
                 <p className="text-[17px] leading-[1.6]">
                   {c.desc[0]}
                   <br />
@@ -313,23 +330,222 @@ function Connections() {
   );
 }
 
-// 시안이 줄을 직접 나눈 설명은 줄마다 나눠 둔다. 매장은 사업자 진위확인을 마쳐야 운영으로 바뀌고, 운영 중인 매장에서만 직원을 초대할 수 있다 — 길어도 순서를 적어 혼란을 막는다(2026-11-09 사용자 지정).
+// 「회원가입하면 이런 화면이 있구나」를 보여 주는 시작 방법 카드 — 토스 비즈니스 소개처럼 큰 흰 카드 위쪽에 실제 화면 일부를 작게 다시 그리고(첫 화면과 같은 구름 바탕),
+// 아래에 단계 이름 + 한 줄. 네 장을 본문 폭 안에 나란히 둔다(2026-11-10 사용자 지정).
+// 화면 조각은 캡처가 아니라 HTML 로 그린 것이다 — 선명하고, 실제 화면 문구가 바뀌면 여기서 맞춘다. 상호 · 주소 · 연락처는 인터플러그(푸터와 같다), 직원 이름 · 금액은 예시다.
+// 매장은 사업자 진위확인을 마쳐야 운영으로 바뀌고, 운영 중인 매장에서만 직원을 초대할 수 있다 — 순서를 그대로 따른다.
 const STEPS = [
-  { title: "사업자 가입하기", desc: ["계정 정보만 넣으면 가입 끝.", "사업자정보는 매장 등록 때 넣어도 돼요"] },
-  { title: "첫 매장 등록", desc: ["매장을 등록하고 사업자 진위확인을 마치면", "운영을 시작할 수 있어요"] },
-  { title: "직원 초대", desc: ["운영 중인 매장에서 근로계약서를 보내면", "직원에게 카카오 알림톡으로 초대가 가요"] },
+  { key: "signup", title: "사업자 회원가입", desc: "계정 정보만 입력하면 가입 완료" },
+  { key: "store", title: "매장 등록", desc: "매장 정보를 등록하고 사업자 확인을 마치면 운영 준비 완료" },
+  { key: "contract", title: "직원 초대", desc: "근로계약서를 보내면 직원 초대도 완료" },
+  { key: "attendance", title: "첫 출근", desc: "직원이 앱으로 출근하면 근무 기록이 쌓여요" },
+] as const;
+
+// 조각 네 개는 높이를 320px 로 맞춘다 — 버튼은 맨 아래에 붙는다(2026-11-10 사용자 지정). 버튼 이름은 실제 화면과 같다(회원가입 · 등록 · 서명 요청).
+const MOCK = "flex h-[320px] w-[280px] flex-col rounded-[16px] bg-white p-[20px] text-guest-ink shadow-[0_8px_24px_rgba(58,86,112,0.12)]";
+const MOCK_BUTTON = "mt-auto rounded-[8px] bg-guest-navy py-[9px] text-center text-[13px] font-semibold text-white";
+
+function MockRow({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex justify-between text-[13px] leading-[1.5]">
+      <span className="text-guest-sub">{k}</span>
+      <span className="font-medium">{v}</span>
+    </div>
+  );
+}
+
+function MockField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-[4px]">
+      <span className="text-[12px] text-guest-sub">{label}</span>
+      <span className="rounded-[6px] border border-guest-line px-[10px] py-[7px] text-[13px]">{value}</span>
+    </div>
+  );
+}
+
+function StepMock({ kind }: { kind: (typeof STEPS)[number]["key"] }) {
+  // 사업자 회원가입 — 실제 회원가입 화면(signup)의 제목 · 안내 · 「기본정보」 칸을 그대로 옮겼다(2026-11-10 사용자 지정).
+  if (kind === "signup")
+    return (
+      <div className={MOCK}>
+        <p className="text-[15px] font-bold">회원가입</p>
+        <p className="mt-[2px] text-[12px] text-guest-sub">사업자 계정을 만들고 매장 관리를 시작하세요.</p>
+        <p className="mt-[14px] border-t border-guest-list-line pt-[12px] text-[13px] font-semibold">기본정보</p>
+        <div className="mt-[8px] flex flex-col gap-[8px]">
+          <MockField label="아이디" value="interplug" />
+          <MockField label="이메일" value="master@interplug.co.kr" />
+          <MockField label="상호명" value="인터플러그" />
+        </div>
+        <div className={MOCK_BUTTON}>회원가입</div>
+      </div>
+    );
+  // 매장 등록 — 앞 가운데에 점포 정보 관리 카드 보기(StoreCard) 모양, 뒤 오른쪽에 점포 등록 화면(「점포 기본정보」 · [등록])을 흐리게 겹친다.
+  // 「등록하면 이런 카드가 생긴다」가 보이게(2026-11-10 사용자 지정).
+  if (kind === "store")
+    return (
+      <div className="relative h-[320px] w-[280px]">
+        <div aria-hidden className={`${MOCK} absolute top-0 left-[48px] scale-95 opacity-60 blur-[1.5px]`}>
+          <p className="text-[15px] font-bold">점포 등록</p>
+          <div className="mt-[12px] flex flex-col gap-[8px] border-t border-guest-list-line pt-[12px]">
+            <MockField label="점포명" value="인터플러그 신촌점" />
+            <MockField label="점포 연락처" value="02-6928-0028" />
+            <MockField label="점포 주소" value="서울 서대문구 연세로5다길 22-3" />
+          </div>
+          <div className={`${MOCK_BUTTON} mt-[12px]`}>등록</div>
+        </div>
+        <div className="absolute bottom-[8px] left-1/2 flex w-[310px] -translate-x-1/2 flex-col gap-[14px] rounded-[10px] border border-[#edeef1] bg-white p-[20px] text-guest-ink shadow-[0_12px_32px_rgba(58,86,112,0.2)]">
+          <div className="flex items-start gap-[12px]">
+            <Image src="/guest/home/photos/owner-tablet.png" alt="" width={56} height={56} className="size-[56px] shrink-0 rounded-[8px] object-cover" />
+            <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
+              <b className="truncate text-[15px] font-semibold">인터플러그 신촌점</b>
+              <span className="flex items-center gap-[6px] text-[12px] text-[#888]">
+                <span className="rounded-[2px] border border-[#e9edf5] bg-[#f8f9fb] px-[4px] text-[#858b94]">직영</span>
+                ST000001
+              </span>
+            </div>
+            <span className="rounded-[2px] bg-[#f4f9ff] px-[6px] py-[1px] text-[12px] font-medium text-[#5e8ce9]">운영</span>
+          </div>
+          <dl className="grid grid-cols-2 gap-x-[12px] gap-y-[12px] border-t border-[#eeeeee] pt-[12px]">
+            <div className="flex flex-col gap-[2px]">
+              <dt className="text-[12px] text-[#888]">점포 연락처</dt>
+              <dd className="text-[13px]">02-6928-0028</dd>
+            </div>
+            <div className="flex flex-col gap-[2px]">
+              <dt className="text-[12px] text-[#888]">재직직원</dt>
+              <dd className="text-[13px]">3명</dd>
+            </div>
+            <div className="col-span-2 flex flex-col gap-[2px]">
+              <dt className="text-[12px] text-[#888]">점포주소</dt>
+              <dd className="text-[13px]">서울 서대문구 연세로5다길 22-3</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    );
+  // 직원 초대 — 관리자 웹 근로계약 상세의 「계약 내용」 칸(직원 · 근무지 · 고용 형태 · 직무 · 계약 기간 · 시급)과 상태 이름(직원 서명 대기)을 그대로 옮겼다(2026-11-10 사용자 지정).
+  if (kind === "contract")
+    return (
+      <div className={MOCK}>
+        <div className="flex items-center justify-between">
+          <p className="text-[15px] font-bold">근로계약서</p>
+          <span className="rounded-[4px] bg-[#eef4ff] px-[8px] py-[2px] text-[12px] font-semibold text-[#4a7ae0]">직원 서명 대기</span>
+        </div>
+        <div className="mt-[14px] flex flex-col gap-[8px] border-t border-guest-list-line pt-[14px]">
+          <MockRow k="직원" v="이웨일" />
+          <MockRow k="근무지" v="인터플러그 신촌점" />
+          <MockRow k="고용 형태" v="파트타이머" />
+          <MockRow k="직무" v="홀 서빙" />
+          <MockRow k="계약 기간" v="2026.11.10 ~ 2027.02.09" />
+          <MockRow k="시급" v="10,500원" />
+        </div>
+        <div className={MOCK_BUTTON}>서명 요청</div>
+      </div>
+    );
+  // 첫 출근 — 토스 소개처럼 테두리 없는 휴대폰 잠금화면(연한 하늘 그라데이션, 아래로 갈수록 흐려짐)에 Whale ERP 알림 한 장(2026-11-10 사용자 지정).
+  return (
+    <div className="flex h-[320px] w-[230px] flex-col items-center rounded-t-[32px] bg-gradient-to-b from-[#a9c8e8] via-[#cddff1] to-[#eef3f8] px-[12px] pt-[44px] [mask-image:linear-gradient(to_bottom,black_70%,transparent)]">
+      <p className="text-[13px] text-white">11월 10일 월요일</p>
+      <p className="text-[56px] leading-[1.1] font-light tracking-tight text-white/90">08:57</p>
+      <div className="mt-[24px] flex w-full items-center gap-[8px] rounded-[12px] bg-white/90 p-[8px] text-left text-guest-ink">
+        <span className="flex size-[30px] shrink-0 items-center justify-center rounded-[8px] bg-white">
+          <Image src="/guest/logo-whale.svg" alt="" width={22} height={22} className="h-[18px] w-auto" />
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="flex items-center justify-between gap-[4px]">
+            <b className="truncate text-[12px] font-semibold">출근이 기록됐어요</b>
+            <span className="shrink-0 text-[10px] text-guest-sub">지금</span>
+          </span>
+          <span className="truncate text-[10px] text-guest-sub">인터플러그 신촌점 · 08:57</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function Steps({ routes }: { routes: GuestRoutes }) {
+  return (
+    <section className="flex flex-col gap-[60px] bg-guest-surface py-[100px]">
+      <div className={FRAME}>
+        <TitleRow
+          oneLine
+          tag="시작 방법"
+          light="매장 관리,"
+          bold="어떻게 시작하면 될까요?"
+          action={
+            <GuestButton tone="invert" href={routes.signUp} arrow>
+              사업자 회원가입하기
+            </GuestButton>
+          }
+        />
+      </div>
+      {/* 네 장을 본문 폭(1520 틀) 안에 나란히 둔다 — 가로 스크롤 없이 한눈에(2026-11-10 사용자 지정). */}
+      <div className={FRAME}>
+        <ol className="grid grid-cols-4 gap-[20px]">
+          {STEPS.map((s, i) => (
+            <li key={s.key} className="min-w-0 rounded-[32px] bg-white p-[12px]">
+              {/* 바탕은 첫 화면과 같은 구름 그림 — 카드마다 그림의 다른 쪽을 보여 이어지는 하늘처럼 보이게 한다. */}
+              <div className="relative flex h-[380px] items-center justify-center overflow-hidden rounded-[24px] bg-[#e9eff6]">
+                <Image src="/guest/billboard-bg.png" alt="" fill sizes="360px" className="object-cover" style={{ objectPosition: `${15 + i * 25}% 60%` }} />
+                <span className="absolute inset-0 bg-white/20" />
+                <div className="relative">
+                  <StepMock kind={s.key} />
+                </div>
+              </div>
+              <div className="flex flex-col gap-[8px] px-[20px] pt-[24px] pb-[20px]">
+                <p className="text-[15px] leading-[1.5] text-guest-sub">
+                  {String(i + 1).padStart(2, "0")} {s.title}
+                </p>
+                <h3 className="text-[22px] leading-[1.4] font-bold text-guest-navy">{s.desc}</h3>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+// 「세 단계」 아이콘 — 유리 질감 3D 아이콘 대신 역할 섹션과 같은 선 아이콘(가입 · 매장 · 알림톡 초대). 번호는 STEP 알약 대신 「01」 숫자(2026-11-09 사용자 지정).
+function StepIcon({ step }: { step: 0 | 1 | 2 }) {
+  return (
+    <svg aria-hidden viewBox="0 0 48 48" className="h-[56px] w-[56px] shrink-0 text-guest-navy-soft" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      {step === 0 && (
+        <>
+          <circle cx="19" cy="15" r="7" /><path d="M6 40c0-7.2 5.8-13 13-13 3.4 0 6.5 1.3 8.8 3.4" /><path d="M37 28v12M31 34h12" />
+        </>
+      )}
+      {step === 1 && (
+        <>
+          <path d="M7 18l3-10h28l3 10" /><path d="M7 18c0 3 2.5 5 5.5 5s5.5-2 5.5-5c0 3 2.5 5 6 5s6-2 6-5c0 3 2.5 5 5.5 5S41 21 41 18" /><path d="M10 23v17h28V23" /><path d="M20 40v-9h8v9" />
+        </>
+      )}
+      {step === 2 && (
+        <>
+          <path d="M24 8C13.5 8 5 14.7 5 23c0 5.3 3.5 10 8.8 12.6L12 42l7.6-4.6c1.4.2 2.9.4 4.4.4 10.5 0 19-6.7 19-15S34.5 8 24 8z" /><circle cx="16" cy="23" r="1.6" /><circle cx="24" cy="23" r="1.6" /><circle cx="32" cy="23" r="1.6" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+// 비교용(/design/guest/compare) — 화면 카드 전의 단계 카드(선 아이콘 · 한 줄 설명 · 화살표). 어느 쪽을 쓸지 정하면 지운다(2026-11-10).
+// 시안이 줄을 직접 나눈 설명은 줄마다 나눠 둔다. 매장은 사업자 진위확인을 마쳐야 운영으로 바뀌고, 운영 중인 매장에서만 직원을 초대할 수 있다 — 길어도 순서를 적어 혼란을 막는다(2026-11-09 사용자 지정).
+const SIMPLE_STEPS = [
+  { title: "사업자 회원가입", desc: ["계정 정보만 입력하면 가입 완료!"] },
+  { title: "매장 등록", desc: ["매장 정보를 등록하고 사업자 확인을 마치면 운영 준비 완료!"] },
+  { title: "직원 초대", desc: ["근로계약서를 보내면 직원 초대도 완료!"] },
 ];
 
 
-function Steps({ routes }: { routes: GuestRoutes }) {
+function SimpleSteps({ routes }: { routes: GuestRoutes }) {
   return (
     <section className="bg-guest-surface py-[100px]">
       <div className={`${FRAME} flex flex-col gap-[60px]`}>
         <TitleRow
           oneLine
           tag="시작 방법"
-          light="가입부터 직원 초대까지,"
-          bold="어렵지 않을까요?"
+          light="매장 관리,"
+          bold="어떻게 시작하면 될까요?"
           action={
             <GuestButton tone="invert" href={routes.signUp} arrow>
               사업자 회원가입하기
@@ -337,23 +553,27 @@ function Steps({ routes }: { routes: GuestRoutes }) {
           }
         />
         <ol className="grid grid-cols-3 gap-[24px]">
-          {STEPS.map((s, i) => (
-            <li key={s.title} className="flex items-end gap-[42px] rounded-[16px] border border-guest-line bg-white px-[42px] pt-[48px] pb-[42px]">
+          {SIMPLE_STEPS.map((s, i) => (
+            // 아이콘을 위에 두고 글을 아래로 — 옆에 두면 설명 칸이 좁아 세 줄로 꺾였다. 사방 여백 40px, 설명은 한 줄(2026-11-10 사용자 지정).
+            <li key={s.title} className="relative flex flex-col items-start gap-[28px] rounded-[16px] border border-guest-line bg-white p-[40px]">
+              {/* 가입 → 매장 → 직원 흐름이 보이게 카드 사이에 화살표 — 함께 일하는 방식 카드와 같은 모양(2026-11-10 사용자 지정). */}
+              {i < SIMPLE_STEPS.length - 1 && (
+                <span aria-hidden className="absolute top-1/2 -right-[12px] z-10 flex size-[34px] translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-guest-line bg-white text-guest-navy">
+                  <Arrow />
+                </span>
+              )}
               <StepIcon step={i as 0 | 1 | 2} />
-              <div className="flex flex-1 flex-col items-start gap-[26px]">
-                <span className={`text-[16px] leading-[1.6] font-bold text-guest-navy ${TRIM}`}>{String(i + 1).padStart(2, "0")}</span>
-                <div className="flex flex-col gap-[20px] pl-[4px] leading-[1.5]">
-                  <h3 className={`text-[22px] font-bold text-guest-navy ${TRIM}`}>{s.title}</h3>
+              <div className="flex flex-1 flex-col items-start gap-[20px]">
+                <div className="flex flex-col gap-[16px] leading-[1.5]">
+                  {/* 번호는 따로 줄을 두지 않고 제목 앞에 붙인다 — 카드가 한 줄 길어졌다(2026-11-10 사용자 지정). */}
+                  <h3 className={`text-[22px] font-bold text-guest-navy ${TRIM}`}>
+                    <span className="mr-[8px] text-guest-navy-soft">{String(i + 1).padStart(2, "0")}</span>
+                    {s.title}
+                  </h3>
                   <p className={`text-[17px] text-guest-body ${TRIM}`}>
-                    {/* 시안의 줄바꿈은 1920 폭에서만 둔다. 좁으면 그 줄이 한 번 더 꺾여 「끝.」 같은 낱말이 홀로 남는다. */}
                     {s.desc.map((line, j) => (
                       <Fragment key={line}>
-                        {j > 0 && (
-                          <>
-                            {" "}
-                            <br className="hidden min-[1920px]:inline" />
-                          </>
-                        )}
+                        {j > 0 && <br />}
                         {line}
                       </Fragment>
                     ))}
@@ -405,7 +625,7 @@ export function HomeNewsList({ items, typeLabel, hrefOf }: { items: NoticePost[]
 function BoardHead({ text, action, href }: { text: string; action: string; href: string }) {
   return (
     <div className="flex items-center justify-between gap-[18px]">
-      <p className={`text-[17px] leading-[1.6] font-medium text-guest-ink ${TRIM}`}>{text}</p>
+      <p className={`text-[17px] leading-[1.6] font-medium text-guest-navy ${TRIM}`}>{text}</p>
       <GuestButton tone="invert" href={href} arrow>
         {action}
       </GuestButton>
@@ -444,14 +664,14 @@ function Boards({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | n
 }
 
 /** faq · news 는 「가장 많이 묻는 질문」 · 「새로운 소식」 칸에 넣을 목록(HomeFaqList · HomeNewsList)이다. 실제 홈은 api 에서, 샘플은 예시로 채운다. */
-export function GuestHome({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | null; news: ReactNode | null }) {
+export function GuestHome({ routes, faq, news, simpleSteps = false }: { routes: GuestRoutes; faq: ReactNode | null; news: ReactNode | null; simpleSteps?: boolean }) {
   return (
     // 맨 아래 구역(회색 바탕)이 푸터에 바로 붙는 시안이라 본문 아래 60px 여백(GuestPage 기본)을 두지 않는다.
     <GuestPage flush>
       <Billboard routes={routes} />
       <Personas routes={routes} />
       <Connections />
-      <Steps routes={routes} />
+      {simpleSteps ? <SimpleSteps routes={routes} /> : <Steps routes={routes} />}
       <Boards routes={routes} faq={faq} news={news} />
     </GuestPage>
   );

@@ -9,11 +9,11 @@ const no = (i) => String(i + 1).padStart(2, "0");
 const STEP_ICONS = [
   "<circle cx=\"19\" cy=\"15\" r=\"7\"/><path d=\"M6 40c0-7.2 5.8-13 13-13 3.4 0 6.5 1.3 8.8 3.4\"/><path d=\"M37 28v12M31 34h12\"/>",
   "<path d=\"M7 18l3-10h28l3 10\"/><path d=\"M7 18c0 3 2.5 5 5.5 5s5.5-2 5.5-5c0 3 2.5 5 6 5s6-2 6-5c0 3 2.5 5 5.5 5S41 21 41 18\"/><path d=\"M10 23v17h28V23\"/><path d=\"M20 40v-9h8v9\"/>",
-  "<path d=\"M8 10h32a3 3 0 0 1 3 3v18a3 3 0 0 1-3 3H22l-8 7v-7H8a3 3 0 0 1-3-3V13a3 3 0 0 1 3-3z\"/><path d=\"M17 22l5 5 9-9\"/>"
+  "<path d=\"M24 8C13.5 8 5 14.7 5 23c0 5.3 3.5 10 8.8 12.6L12 42l7.6-4.6c1.4.2 2.9.4 4.4.4 10.5 0 19-6.7 19-15S34.5 8 24 8z\"/><circle cx=\"16\" cy=\"23\" r=\"1.6\"/><circle cx=\"24\" cy=\"23\" r=\"1.6\"/><circle cx=\"32\" cy=\"23\" r=\"1.6\"/>"
 ];
-const stepIcon = (A, i) => `<svg aria-hidden="true" viewBox="0 0 48 48" class="h-[74px] w-[74px] shrink-0 text-guest-navy-soft" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${STEP_ICONS[i]}</svg>`;
+const stepIcon = (A, i) => `<svg aria-hidden="true" viewBox="0 0 48 48" class="h-[56px] w-[56px] shrink-0 text-guest-navy-soft" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${STEP_ICONS[i]}</svg>`;
 
-// 섹션 위아래 여백은 모두 100px 로 같다(2026-11-09 사용자 지정).
+// 섹션 위아래 여백은 모두 100px 로 같다. 카드 제목 · 상자 머리 글자는 바탕색과 상관없이 남색, 섹션 제목만 먹색(2026-11-10 사용자 지정).
 // 메인은 본문 폭을 1520px 로 묶는다 — 공통 FRAME(최대 1760px)은 100% 배율에서 양옆이 꽉 차 보였다(앱 guest-home.tsx, 2026-11-09 사용자 지정).
 const FRAME = "mx-auto w-full max-w-[1680px] px-[80px]";
 
@@ -35,7 +35,7 @@ const billboard = (A, R) => `<section class="relative -mt-[110px] h-[980px] over
 <div class="absolute inset-x-0 top-[110px] bottom-0 flex items-center justify-center"><div class="${FRAME} flex flex-col gap-[80px]"><div class="flex items-end justify-between"><div class="flex w-[445px] flex-col gap-[48px]"><p class="flex flex-col gap-[4px] font-extrabold text-transparent"><span class="-ml-[0.03em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.7)] to-[rgba(58,86,112,0.35)] bg-clip-text text-[48px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">식당·카페 사장님의</span><span class="-ml-[0.05em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.8)] to-[rgba(58,86,112,0.36)] bg-clip-text text-[86px] leading-[1.25] tracking-[-0.025em] whitespace-nowrap">든든한 파트너</span></p><div class="flex flex-col gap-[24px] text-guest-navy"><p class="text-[22px] leading-[1.5] font-bold whitespace-nowrap ${TRIM}">처음 여는 매장도, 오래 운영한 매장도 쉽게 관리하세요</p><p class="text-[17px] leading-[1.5] whitespace-nowrap ${TRIM}">직원 계약부터 근무표·급여, 매출·재무, 가맹점 관리까지<br>여러 서비스를 일일이 알아보고 관리할 필요 없이, 하나로 해결</p></div></div>
 <div class="flex gap-[8px]"><a href="${link(R, "auth/signup.html")}" class="${HERO_BUTTON} w-[176px] gap-[12px] ${BUTTON_MOTION}">무료로 시작하기${g.arrow(A)}</a><a href="${link(R, "home/inquiry.html")}" class="${HERO_BUTTON} w-[100px] ${BUTTON_MOTION}">도입문의</a></div></div>
 <div class="flex flex-col items-start gap-[20px]">${g.tag("이용 안내")}<ul class="flex w-full justify-between border-t border-[rgba(130,151,168,0.15)] pt-[24px] text-guest-navy">${HIGHLIGHTS.map(
-  (h) => `<li class="flex gap-[10px]"><span class="text-[16px] leading-[2.3] font-bold">${h.no}</span><span class="leading-[1.6]"><strong class="block text-[22px] font-bold">${h.title}</strong><span class="text-[17px]">${h.desc}</span></span></li>`,
+  (h) => `<li class="leading-[1.6]"><strong class="block text-[22px] font-bold"><span class="mr-[8px] text-guest-navy-soft">${h.no}</span>${h.title}</strong><span class="text-[17px]">${h.desc}</span></li>`,
 ).join("")}</ul></div></div></div></section>`;
 
 // 사장님 유형 카드 — 「누구 → 한 문장 → 핵심 세 개 → 버튼」만 둔다(2026-11-09 사용자 지정).
@@ -49,7 +49,7 @@ const PERSONAS = [
 // 버튼은 서비스 이름만 굵게, 나머지는 보통 굵기. 안내(note)는 버튼 위에 둬 버튼 줄이 카드끼리 맞는다.
 const ctaLabel = (p) => `<span class="font-normal">${p.service ? `<strong class="font-bold">${p.service} </strong>` : ""}${p.cta}</span>`;
 const personas = (A, R) => `<section class="bg-guest-surface py-[100px]"><div class="${FRAME} flex flex-col gap-[60px]">${g.sectionTitle("사장님은,", "어떤 매장을 운영하세요?", false, { tag: "매장 유형별 안내", oneLine: true })}<div class="grid grid-cols-4 gap-[16px]">${PERSONAS.map(
-  (p, i) => `<article class="flex flex-col rounded-b-[6px] border border-guest-line bg-white"><span class="h-[6px] bg-guest-navy"></span><div class="flex flex-1 flex-col gap-[32px] p-[34px]"><div class="flex flex-col gap-[16px] text-guest-navy"><p class="text-[16px] leading-[1.6] font-bold ${TRIM}">${no(i)}</p><h3 class="text-[22px] leading-[1.4] font-bold ${TRIM}">${p.head}</h3><p class="text-[17px] leading-[1.5] text-guest-body ${TRIM}">${p.pitch}</p></div><ul class="flex flex-col gap-[12px] border-t border-[#e7e7e7] pt-[24px] text-[15px] leading-[1.5] text-guest-ink">${p.features.map((l) => `<li class="flex items-center gap-[10px]">${g.gimg(A, "check-circle.svg", 18, 18)}${l}</li>`).join("")}</ul>${p.note ? `<p class="mt-auto text-[16px] leading-[1.5] text-guest-body">${p.note[0]}<br>${p.note[1]}</p>` : ""}<div class="${p.note ? "" : "mt-auto "}flex">${g.button(A, ctaLabel(p), { tone: "invert", href: link(R, p.href), arrow: true, grow: true })}</div></div></article>`,
+  (p, i) => `<article class="flex flex-col rounded-b-[6px] border border-guest-line bg-white"><span class="h-[6px] bg-guest-navy"></span><div class="flex flex-1 flex-col gap-[32px] p-[34px]"><div class="flex flex-col gap-[16px] text-guest-navy"><h3 class="text-[22px] leading-[1.4] font-bold ${TRIM}"><span class="mr-[8px] text-guest-navy-soft">${no(i)}</span>${p.head}</h3><p class="text-[17px] leading-[1.5] text-guest-body ${TRIM}">${p.pitch}</p></div><ul class="flex flex-col gap-[12px] border-t border-[#e7e7e7] pt-[24px] text-[15px] leading-[1.5] text-guest-ink">${p.features.map((l) => `<li class="flex items-center gap-[10px]">${g.gimg(A, "check-circle.svg", 18, 18)}${l}</li>`).join("")}</ul>${p.note ? `<p class="mt-auto text-[16px] leading-[1.5] text-guest-body">${p.note[0]}<br>${p.note[1]}</p>` : ""}<div class="${p.note ? "" : "mt-auto "}flex">${g.button(A, ctaLabel(p), { tone: "invert", href: link(R, p.href), arrow: true, grow: true })}</div></div></article>`,
 ).join("")}</div></div></section>`;
 
 // 누가 어디서 쓰는지 — 사장님 · 관리자 · 직원. 생성형 사진 대신 선 아이콘(실제 화면 캡처가 준비되면 바꾼다). 연한 하늘색 바탕(2026-11-09 사용자 지정).
@@ -86,19 +86,19 @@ const CONNECTIONS = [
 ];
 
 const connections = (A) => `<section class="bg-[#f1f7fc] py-[100px]"><div class="${FRAME} flex flex-col gap-[60px]">${g.sectionTitle("사장님부터 직원까지,", "매장 업무가 하나로 연결돼요", false, { tag: "함께 일하는 방식", oneLine: true })}<div class="grid grid-cols-3 gap-[34px]">${CONNECTIONS.map(
-  (c, i) => `<div class="relative flex flex-col gap-[34px]">${i < CONNECTIONS.length - 1 ? `<span aria-hidden="true" class="absolute top-[110px] -right-[17px] z-10 flex size-[34px] translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-guest-line bg-white text-guest-navy">${g.arrow(A)}</span>` : ""}<div class="relative flex h-[220px] items-center justify-center rounded-[16px] bg-white text-guest-navy-soft"><span class="absolute top-[18px] left-[18px] rounded-[4px] bg-[#f1f7fc] px-[10px] py-[4px] text-[14px] leading-[1.5] font-semibold text-guest-navy">${c.where}</span><svg aria-hidden="true" viewBox="0 0 48 48" class="h-[104px] w-[104px]" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ROLE_ICON[c.icon]}</svg></div><div class="flex flex-col gap-[12px] pl-[2px] text-guest-body"><p class="text-[16px] leading-[1.6] font-bold text-guest-navy ${TRIM}">${c.label}</p><h3 class="text-[22px] leading-[1.4] font-bold text-guest-ink">${c.title}</h3><p class="text-[17px] leading-[1.6]">${c.desc[0]}<br>${c.desc[1]}</p><ul class="flex flex-col gap-[10px] pt-[8px] text-[15px] leading-[1.5] text-guest-ink">${c.features.map((l) => `<li class="flex items-center gap-[10px]">${g.gimg(A, "check-circle.svg", 18, 18)}${l}</li>`).join("")}</ul></div></div>`,
+  (c, i) => `<div class="relative flex flex-col gap-[34px]">${i < CONNECTIONS.length - 1 ? `<span aria-hidden="true" class="absolute top-[110px] -right-[17px] z-10 flex size-[34px] translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-guest-line bg-white text-guest-navy">${g.arrow(A)}</span>` : ""}<div class="relative flex h-[220px] items-center justify-center rounded-[16px] bg-white text-guest-navy-soft"><span class="absolute top-[18px] left-[18px] rounded-[4px] bg-[#f1f7fc] px-[10px] py-[4px] text-[14px] leading-[1.5] font-semibold text-guest-navy">${c.where}</span><svg aria-hidden="true" viewBox="0 0 48 48" class="h-[104px] w-[104px]" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ROLE_ICON[c.icon]}</svg></div><div class="flex flex-col gap-[12px] pl-[2px] text-guest-body"><h3 class="text-[22px] leading-[1.4] font-bold text-guest-navy"><span class="mr-[8px] text-guest-navy-soft">${c.label}</span>${c.title}</h3><p class="text-[17px] leading-[1.6]">${c.desc[0]}<br>${c.desc[1]}</p><ul class="flex flex-col gap-[10px] pt-[8px] text-[15px] leading-[1.5] text-guest-ink">${c.features.map((l) => `<li class="flex items-center gap-[10px]">${g.gimg(A, "check-circle.svg", 18, 18)}${l}</li>`).join("")}</ul></div></div>`,
 ).join("")}</div></div></section>`;
 
 // 시안이 줄을 직접 나눈 설명은 줄마다 나눠 둔다. 매장은 사업자 진위확인을 마쳐야 운영으로 바뀌고, 운영 중인 매장에서만 직원을 초대할 수 있다 — 길어도 순서를 적어 혼란을 막는다(2026-11-09 사용자 지정).
 const STEPS = [
-  { title: "사업자 가입하기", desc: ["계정 정보만 넣으면 가입 끝.", "사업자정보는 매장 등록 때 넣어도 돼요"] },
-  { title: "첫 매장 등록", desc: ["매장을 등록하고 사업자 진위확인을 마치면", "운영을 시작할 수 있어요"] },
-  { title: "직원 초대", desc: ["운영 중인 매장에서 근로계약서를 보내면", "직원에게 카카오 알림톡으로 초대가 가요"] },
+  { title: "사업자 회원가입", desc: ["계정 정보만 입력하면 가입 완료!"] },
+  { title: "매장 등록", desc: ["매장 정보를 등록하고 사업자 확인을 마치면 운영 준비 완료!"] },
+  { title: "직원 초대", desc: ["근로계약서를 보내면 직원 초대도 완료!"] },
 ];
 
-// 시안의 줄바꿈은 1920 폭에서만 둔다. 좁으면 그 줄이 한 번 더 꺾여 낱말이 홀로 남는다.
-const steps = (A, R) => `<section class="bg-guest-surface py-[100px]"><div class="${FRAME} flex flex-col gap-[60px]">${g.titleRow("가입부터 직원 초대까지,", "어렵지 않을까요?", g.button(A, "사업자 회원가입하기", { tone: "invert", href: link(R, "auth/signup.html"), arrow: true }), { tag: "시작 방법", oneLine: true })}<ol class="grid grid-cols-3 gap-[24px]">${STEPS.map(
-  (s, i) => `<li class="flex items-end gap-[42px] rounded-[16px] border border-guest-line bg-white px-[42px] pt-[48px] pb-[42px]">${stepIcon(A, i)}<div class="flex flex-1 flex-col items-start gap-[26px]"><span class="text-[16px] leading-[1.6] font-bold text-guest-navy ${TRIM}">${no(i)}</span><div class="flex flex-col gap-[20px] pl-[4px] leading-[1.5]"><h3 class="text-[22px] font-bold text-guest-navy ${TRIM}">${s.title}</h3><p class="text-[17px] text-guest-body ${TRIM}">${s.desc.join(' <br class="hidden min-[1920px]:inline">')}</p></div></div></li>`,
+// 아이콘을 위에 두고 글을 아래로 — 옆에 두면 설명 칸이 좁아 세 줄로 꺾였다. 사방 여백 40px, 설명은 한 줄(2026-11-10 사용자 지정).
+const steps = (A, R) => `<section class="bg-guest-surface py-[100px]"><div class="${FRAME} flex flex-col gap-[60px]">${g.titleRow("매장 관리,", "어떻게 시작하면 될까요?", g.button(A, "사업자 회원가입하기", { tone: "invert", href: link(R, "auth/signup.html"), arrow: true }), { tag: "시작 방법", oneLine: true })}<ol class="grid grid-cols-3 gap-[24px]">${STEPS.map(
+  (s, i) => `<li class="relative flex flex-col items-start gap-[28px] rounded-[16px] border border-guest-line bg-white p-[40px]">${i < STEPS.length - 1 ? `<span aria-hidden="true" class="absolute top-1/2 -right-[12px] z-10 flex size-[34px] translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-guest-line bg-white text-guest-navy">${g.arrow(A)}</span>` : ""}${stepIcon(A, i)}<div class="flex flex-1 flex-col items-start gap-[20px]"><div class="flex flex-col gap-[16px] leading-[1.5]"><h3 class="text-[22px] font-bold text-guest-navy ${TRIM}"><span class="mr-[8px] text-guest-navy-soft">${no(i)}</span>${s.title}</h3><p class="text-[17px] text-guest-body ${TRIM}">${s.desc.join("<br>")}</p></div></div></li>`,
 ).join("")}</ol></div></section>`;
 
 // 시안에 답변이 있는 질문은 둘째 하나뿐이다. 나머지 답변은 기획이 정하면 채운다.
@@ -122,7 +122,7 @@ const NEWS = [
 ];
 
 const boardHead = (A, text, action, href = "#") =>
-  `<div class="flex items-center justify-between gap-[18px]"><p class="text-[17px] leading-[1.6] font-medium text-guest-ink ${TRIM}">${text}</p>${g.button(A, action, { tone: "invert", href, arrow: true })}</div>`;
+  `<div class="flex items-center justify-between gap-[18px]"><p class="text-[17px] leading-[1.6] font-medium text-guest-navy ${TRIM}">${text}</p>${g.button(A, action, { tone: "invert", href, arrow: true })}</div>`;
 
 // FAQ 는 name 을 같이 준 <details> 라 하나를 열면 나머지가 닫힌다(앱과 같은 네이티브 동작).
 // 반 폭 두 칸은 큰 제목 없이 띠지만 둔다 — 상자 머리 문장이 제목 역할을 한다. 연한 하늘색 바탕, 위아래 90px(2026-11-09 사용자 지정).
