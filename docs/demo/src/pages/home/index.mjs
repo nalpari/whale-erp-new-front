@@ -39,17 +39,17 @@ const billboard = (A, R) => `<section class="relative -mt-[110px] h-[980px] over
 
 // 사장님 유형 카드 — 「누구 → 한 문장 → 핵심 세 개 → 버튼」만 둔다(2026-11-09 사용자 지정).
 const PERSONAS = [
-  { head: "매장 하나를 운영해요", pitch: "직원 관리부터 급여까지 혼자서도 쉽게", features: ["종이 계약서 없이, 앱으로 근로계약서 작성·서명", "직원 출퇴근 기록을 자동으로 확인", "급여명세서도 클릭 한 번으로 발송"], service: "매장운영", cta: "자세히 보기", note: null, href: "home/store-operations.html" },
-  { head: "여러 매장을 운영해요", pitch: "매장이 늘어도 관리는 한 화면에서", features: ["매장별 매출을 한눈에 비교", "매장마다 통장 입출금을 따로 확인", "점장에게 맡길 일만 선택해 권한 부여"], service: "재무관리", cta: "자세히 보기", note: null, href: "home/finance-management.html" },
-  { head: "프랜차이즈 본사예요", pitch: "가맹점이 많아져도, 본사 관리는 간편하게", features: ["가맹계약을 온라인으로 간편하게 체결", "새 메뉴와 가격을 가맹점에 한 번에 전달", "가맹점 점검 결과를 함께 확인"], service: "프랜차이즈", cta: "자세히 보기", note: null, href: "home/franchise.html" },
-  { head: "가맹점을 운영해요", pitch: "본사가 Whale ERP를 쓴다면, 가입 없이 시작", features: ["본사 메뉴와 가격이 매장에 바로 반영", "직원 계약과 출퇴근도 앱으로 간편하게", "우리 매장 운영은 내 방식대로 관리"], service: null, cta: "본사에서 받은 계정으로 로그인", note: ["본사가 Whale ERP를 쓰지 않나요?", "직영 매장으로 등록해서 관리하세요"], href: "auth/login.html" },
+  { head: "매장 하나를 운영해요", pitch: "혼자 운영해도 직원 관리는 쉽게", features: ["종이 계약서 없이, 앱으로 근로계약서 작성·서명", "직원 출퇴근 기록을 자동으로 확인", "급여명세서도 클릭 한 번으로 발송"], service: "매장운영", cta: " 자세히 보기", href: "home/store-operations.html" },
+  { head: "여러 매장을 운영해요", pitch: "매장이 늘어도 관리는 한곳에서", features: ["매장별 매출을 한눈에 비교", "매장마다 통장 입출금을 따로 확인", "점장에게 맡길 일만 선택해 권한 부여"], service: "재무관리", cta: " 자세히 보기", href: "home/finance-management.html" },
+  { head: "프랜차이즈 본사예요", pitch: "가맹점이 늘어도 본사 업무는 간편하게", features: ["가맹계약을 온라인으로 간편하게 체결", "새 메뉴와 가격을 가맹점에 한 번에 적용", "정보공개서 자료까지 한 번에 다운로드"], service: "프랜차이즈", cta: " 자세히 보기", href: "home/franchise.html" },
+  { head: "가맹점을 운영해요", pitch: "본사에서 받은 계정으로 바로 시작", features: ["본사 메뉴와 가격이 매장에 바로 적용", "휴일 · 권한 등 기본 설정은 본사가 미리 준비", "점포 정보도 본사가 대신 관리"], service: "본사에서 받은 계정", cta: "으로 로그인", href: "auth/login.html" },
 ];
 
 // 버튼은 서비스 이름만 굵게, 나머지는 보통 굵기. 안내(note)는 버튼 위에 둬 버튼 줄이 카드끼리 맞는다.
-const ctaLabel = (p) => `<span class="font-normal">${p.service ? `<strong class="font-bold">${p.service} </strong>` : ""}${p.cta}</span>`;
+const ctaLabel = (p) => `<span class="font-normal"><strong class="font-bold">${p.service}</strong>${p.cta}</span>`;
 const personas = (A, R) => `<section class="bg-guest-surface py-[100px]"><div class="${FRAME} flex flex-col gap-[60px]">${g.sectionTitle("사장님은,", "어떤 매장을 운영하세요?", false, { tag: "매장 유형별 안내", oneLine: true })}<div class="grid grid-cols-4 gap-[16px]">${PERSONAS.map(
-  (p, i) => `<article class="flex flex-col rounded-[24px] bg-white"><div class="flex flex-1 flex-col gap-[32px] p-[34px]"><div class="flex flex-col gap-[16px] text-guest-navy"><h3 class="text-[22px] leading-[1.4] font-bold ${TRIM}"><span class="mr-[8px] text-guest-navy-soft">${no(i)}</span>${p.head}</h3><p class="text-[17px] leading-[1.5] text-guest-body ${TRIM}">${p.pitch}</p></div><ul class="flex flex-col gap-[12px] border-t border-[#e7e7e7] pt-[24px] text-[15px] leading-[1.5] text-guest-ink">${p.features.map((l) => `<li class="flex items-center gap-[10px]">${g.gimg(A, "check-circle.svg", 18, 18)}${l}</li>`).join("")}</ul>${p.note ? `<p class="mt-auto text-[16px] leading-[1.5] text-guest-body">${p.note[0]}<br>${p.note[1]}</p>` : ""}<div class="${p.note ? "" : "mt-auto "}flex">${g.button(A, ctaLabel(p), { tone: "invert", href: link(R, p.href), arrow: true, grow: true })}</div></div></article>`,
-).join("")}</div></div></section>`;
+  (p, i) => `<article class="flex flex-col rounded-[24px] bg-white"><div class="flex flex-1 flex-col gap-[32px] p-[34px]"><div class="flex flex-col gap-[16px] text-guest-navy"><h3 class="text-[22px] leading-[1.4] font-bold ${TRIM}"><span class="mr-[8px] text-guest-navy-soft">${no(i)}</span>${p.head}</h3><p class="text-[17px] leading-[1.5] text-guest-body ${TRIM}">${p.pitch}</p></div><ul class="flex flex-col gap-[12px] border-t border-[#e7e7e7] pt-[24px] text-[15px] leading-[1.5] text-guest-ink">${p.features.map((l) => `<li class="flex items-center gap-[10px]">${g.gimg(A, "check-circle.svg", 18, 18)}${l}</li>`).join("")}</ul><div class="mt-auto flex">${g.button(A, ctaLabel(p), { tone: "invert", href: link(R, p.href), arrow: true, grow: true })}</div></div></article>`,
+).join("")}</div><p class="-mt-[32px] flex items-center gap-[8px] text-[17px] leading-[1.5] text-guest-body"><span aria-hidden="true" class="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-guest-navy-soft text-[12px] leading-none font-bold text-white">!</span><b class="font-semibold text-guest-navy">프랜차이즈 본사가 Whale ERP를 쓰지 않나요?</b>직접 사업자 회원으로 가입하고 내 매장을 관리하세요</p></div></section>`;
 
 // 누가 어디서 쓰는지 — 사장님 · 관리자 · 직원. 생성형 사진 대신 선 아이콘(실제 화면 캡처가 준비되면 바꾼다). 연한 하늘색 바탕(2026-11-09 사용자 지정).
 const ROLE_ICON = {

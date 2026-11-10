@@ -154,39 +154,34 @@ function Billboard({ routes }: { routes: GuestRoutes }) {
 const PERSONAS = [
   {
     head: "매장 하나를 운영해요",
-    pitch: "직원 관리부터 급여까지 혼자서도 쉽게",
+    pitch: "혼자 운영해도 직원 관리는 쉽게",
     features: ["종이 계약서 없이, 앱으로 근로계약서 작성·서명", "직원 출퇴근 기록을 자동으로 확인", "급여명세서도 클릭 한 번으로 발송"],
-    cta: "자세히 보기",
+    cta: " 자세히 보기",
     service: "매장운영",
-    note: null,
     route: "storeOperations" as const,
   },
   {
     head: "여러 매장을 운영해요",
-    pitch: "매장이 늘어도 관리는 한 화면에서",
+    pitch: "매장이 늘어도 관리는 한곳에서",
     features: ["매장별 매출을 한눈에 비교", "매장마다 통장 입출금을 따로 확인", "점장에게 맡길 일만 선택해 권한 부여"],
-    cta: "자세히 보기",
+    cta: " 자세히 보기",
     service: "재무관리",
-    note: null,
     route: "financeManagement" as const,
   },
   {
     head: "프랜차이즈 본사예요",
-    pitch: "가맹점이 많아져도, 본사 관리는 간편하게",
-    features: ["가맹계약을 온라인으로 간편하게 체결", "새 메뉴와 가격을 가맹점에 한 번에 전달", "가맹점 점검 결과를 함께 확인"],
-    cta: "자세히 보기",
+    pitch: "가맹점이 늘어도 본사 업무는 간편하게",
+    features: ["가맹계약을 온라인으로 간편하게 체결", "새 메뉴와 가격을 가맹점에 한 번에 적용", "정보공개서 자료까지 한 번에 다운로드"],
+    cta: " 자세히 보기",
     service: "프랜차이즈",
-    note: null,
     route: "franchise" as const,
   },
   {
     head: "가맹점을 운영해요",
-    pitch: "본사가 Whale ERP를 쓴다면, 가입 없이 시작",
-    features: ["본사 메뉴와 가격이 매장에 바로 반영", "직원 계약과 출퇴근도 앱으로 간편하게", "우리 매장 운영은 내 방식대로 관리"],
-    cta: "본사에서 받은 계정으로 로그인",
-    service: null,
-    // 본사가 Whale ERP를 쓰지 않는 가맹점은 직접 가입해 직영 매장으로 등록하고 매장운영으로 관리하게 이끈다(2026-11-09 사용자 지정).
-    note: ["본사가 Whale ERP를 쓰지 않나요?", "직영 매장으로 등록해서 관리하세요"],
+    pitch: "본사에서 받은 계정으로 바로 시작",
+    features: ["본사 메뉴와 가격이 매장에 바로 적용", "휴일 · 권한 등 기본 설정은 본사가 미리 준비", "점포 정보도 본사가 대신 관리"],
+    cta: "으로 로그인",
+    service: "본사에서 받은 계정",
     route: "login" as const,
   },
 ];
@@ -200,34 +195,29 @@ function Personas({ routes }: { routes: GuestRoutes }) {
           {PERSONAS.map((p, i) => (
             // 남색 띠 · 6px 모서리 대신 시작 방법 카드와 같은 크게 둥근 흰 카드(24px) — 페이지 카드 모양을 하나로(2026-11-10 사용자 지정).
             <article key={p.head} className="flex flex-col rounded-[24px] bg-white">
-              <div className="flex flex-1 flex-col gap-[32px] p-[34px]">
-                <div className="flex flex-col gap-[16px] text-guest-navy">
-                  <h3 className={`text-[22px] leading-[1.4] font-bold ${TRIM}`}>
-                    <span className="mr-[8px] text-guest-navy-soft">{String(i + 1).padStart(2, "0")}</span>
-                    {p.head}
-                  </h3>
-                  <p className={`text-[17px] leading-[1.5] text-guest-body ${TRIM}`}>{p.pitch}</p>
-                </div>
-                <ul className="flex flex-col gap-[12px] border-t border-[#e7e7e7] pt-[24px] text-[15px] leading-[1.5] text-guest-ink">
+              {/* 제목 ↔ 구분선 · 구분선 ↔ 한 문장 · 체크 목록 ↔ 버튼을 모두 24px 로 같게(2026-11-10 사용자 지정). */}
+              <div className="flex flex-1 flex-col gap-[24px] p-[34px]">
+                <h3 className="text-[22px] leading-[1.4] font-bold text-guest-navy">
+                  <span className="mr-[8px] text-guest-navy-soft">{String(i + 1).padStart(2, "0")}</span>
+                  {p.head}
+                </h3>
+                {/* 한 문장은 제목 아래가 아니라 구분선 아래 체크 목록 머리로 — 제목은 유형만, 선 아래가 「무엇이 좋은지」(2026-11-10 사용자 지정). */}
+                <div className="flex flex-col gap-[16px] border-t border-[#e7e7e7] pt-[24px]">
+                  <p className="text-[17px] leading-[1.5] font-semibold text-guest-navy">{p.pitch}</p>
+                  <ul className="flex flex-col gap-[12px] text-[15px] leading-[1.5] text-guest-ink">
                   {p.features.map((line) => (
                     <li key={line} className="flex items-center gap-[10px]">
                       <Image src="/guest/check-circle.svg" alt="" width={18} height={18} />
                       {line}
                     </li>
                   ))}
-                </ul>
-                {p.note && (
-                  <p className="mt-auto text-[16px] leading-[1.5] text-guest-body">
-                    {p.note[0]}
-                    <br />
-                    {p.note[1]}
-                  </p>
-                )}
-                <div className={`${p.note ? "" : "mt-auto "}flex`}>
+                  </ul>
+                </div>
+                <div className="mt-auto flex">
                   <GuestButton tone="invert" href={p.route && routes[p.route]} arrow grow>
                     {/* 서비스 이름만 굵게, 나머지는 보통 굵기(2026-11-09 사용자 지정). */}
                     <span className="font-normal">
-                      {p.service && <strong className="font-bold">{p.service} </strong>}
+                      <strong className="font-bold">{p.service}</strong>
                       {p.cta}
                     </span>
                   </GuestButton>
@@ -236,6 +226,14 @@ function Personas({ routes }: { routes: GuestRoutes }) {
             </article>
           ))}
         </div>
+        {/* 가맹점 안내는 04 카드 안이 아니라 카드 줄 아래 한 줄로 — 카드 높이가 고르고, 본사가 쓰지 않는 가맹점주에게 따로 말한다(2026-11-10 사용자 지정). */}
+        <p className="-mt-[32px] flex items-center gap-[8px] text-[17px] leading-[1.5] text-guest-body">
+          <span aria-hidden className="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-guest-navy-soft text-[12px] leading-none font-bold text-white">
+            !
+          </span>
+          <b className="font-semibold text-guest-navy">프랜차이즈 본사가 Whale ERP를 쓰지 않나요?</b>
+          직접 사업자 회원으로 가입하고 내 매장을 관리하세요
+        </p>
       </div>
     </section>
   );
@@ -499,12 +497,12 @@ function Steps({ routes }: { routes: GuestRoutes }) {
                 </div>
               </div>
               {/* 제목 · 설명은 매장 유형 카드와 같은 형식 — 「01 단계 이름」 22px 굵게(번호는 연한 남색) + 설명 17px(2026-11-10 사용자 지정). */}
-              <div className="flex flex-col gap-[16px] px-[22px] pt-[26px] pb-[22px] text-guest-navy">
-                <h3 className={`text-[22px] leading-[1.4] font-bold ${TRIM}`}>
+              <div className="flex flex-col gap-[10px] px-[22px] pt-[26px] pb-[22px] text-guest-navy">
+                <h3 className="text-[22px] leading-[1.4] font-bold">
                   <span className="mr-[8px] text-guest-navy-soft">{String(i + 1).padStart(2, "0")}</span>
                   {s.title}
                 </h3>
-                <p className={`text-[17px] leading-[1.5] text-guest-body ${TRIM}`}>{s.desc}</p>
+                <p className="text-[17px] leading-[1.6] text-guest-body">{s.desc}</p>
               </div>
             </li>
           ))}
