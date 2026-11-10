@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { Button, ListToolbar, PageBar } from "@/components/common";
 import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import { kstToday, staffListApiSearch } from "@/lib/staff-members";
@@ -61,6 +62,7 @@ export default async function StaffMembersPage({
       (await getStaffMembers(allQuery)
         .then((all) => all.total === 0)
         .catch((error: unknown) => {
+        unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
         // 확인에 실패하면 예전처럼 「조건에 맞는 …」 — 장애를 알아챌 수 있게 로그만 남긴다(리뷰 반영)
         console.warn("직원 전체 건수 확인 실패", error);
         return false;

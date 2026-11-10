@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { ApiError, getEnum } from "@/lib/api";
 import { getRoleGroup, getRoleGroups } from "@/lib/platform-role-groups";
 import { type RoleDetailState } from "./role-parts";
@@ -31,6 +32,7 @@ async function loadDetail(id: number): Promise<NonNullable<RoleDetailState>> {
   try {
     return { role: await getRoleGroup(id) };
   } catch (error) {
+    unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
     if (error instanceof ApiError && error.status === 404) return { failed: "삭제되었거나 없는 권한입니다." };
     console.error("플랫폼 권한 상세 조회 실패", id, error);
     return { failed: "상세를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." };

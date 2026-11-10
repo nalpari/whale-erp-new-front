@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, unstable_rethrow } from "next/navigation";
 import type { ReactNode } from "react";
 import { Button, PageBar } from "@/components/common";
 import { ApiError, deniedMessageOf, screenPath } from "@/lib/api";
@@ -35,8 +35,8 @@ async function loadCopyPreview(storeId: number, weekStart: string): Promise<Copy
   try {
     return await getCopyPreview(storeId, weekStart);
   } catch (error) {
-    // 로그인 만료(401)는 화면 전체의 일이라 그대로 올린다
-    if (error instanceof ApiError && error.status === 401) throw error;
+    // 로그인 만료(request() 의 이동)는 화면 전체의 일이라 그대로 올린다
+    unstable_rethrow(error);
     if (error instanceof ApiError && error.status >= 400 && error.status < 500) return { error: error.message };
     console.error("근무스케줄: GET /work-schedules/copy-last-week 를 받지 못했습니다", error);
     return { error: "지난 주 복사 미리보기를 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요." };
@@ -141,6 +141,7 @@ export default async function WorkSchedulesPage({ searchParams }: { searchParams
     }),
     // 이력을 받지 못해도 화면은 그린다 — 이력 표 안에만 안내하고 원인은 서버 로그에 남긴다(front #93 리뷰)
     getWorkScheduleHistories(historyApiSearch(withStore)).catch((error: unknown) => {
+      unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
       console.error("근무스케줄: GET /work-schedules/histories 를 받지 못했습니다", error);
       return "failed" as const;
     }),

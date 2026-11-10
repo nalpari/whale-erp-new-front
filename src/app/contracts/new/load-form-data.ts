@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { ApiError, authHeaders, deniedMessageOf, getEnum, request } from "@/lib/api";
 import type { ContractFormLabels } from "./contract-form";
 import type { MinimumWage } from "./contract-form-model";
@@ -37,7 +38,7 @@ export async function loadFormData(): Promise<{
     const [{ items }, minimumWage] = await Promise.all([
       request<{ items: StoreOption[] }>("/contracts/store-options?pageSize=200", { headers }),
       request<MinimumWage>("/contracts/minimum-wage", { headers }).catch((e: unknown) => {
-        if (e instanceof ApiError && e.status === 401) throw e;
+        unstable_rethrow(e); // 로그인 만료 이동(request())은 삼키지 않는다
         // api 의 거절(BP 를 고르지 않음 400 · 권한 403 · 없는 BP 404)은 근무지 선택지와 같은 안내가 그려진다. 그 밖의 실패는
         // 검사 · 도움말이 조용히 빠지므로 남긴다
         if (deniedMessageOf(e) === null) console.error("[contracts] 최저임금 조회 실패", e);

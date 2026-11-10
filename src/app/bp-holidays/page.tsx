@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { PageBar } from "@/components/common";
 import { CARD, FailedBand } from "@/components/site/side-parts";
 import { ApiError, deniedMessageOf } from "@/lib/api";
@@ -50,6 +51,7 @@ async function loadDetail(id: number, at: string | null): Promise<{ holiday: BpH
     // 시작일 기준으로 다시 받는다(브라우저 시험으로 찾음, 2026-10-27)
     return { holiday: at && outsideHoliday(holiday, at) ? await getBpHoliday(id, holiday.startDate) : holiday };
   } catch (error) {
+    unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
     if (error instanceof ApiError && error.status === 404) return { failed: "삭제되었거나 볼 수 없는 휴일입니다." };
     if (error instanceof ApiError && [400, 403].includes(error.status)) return { failed: error.message };
     console.error("BP 휴일 상세 조회 실패", id, error);
