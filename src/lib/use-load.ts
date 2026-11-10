@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useState } from "react";
 import { useLoadGroupHold } from "@/components/common/load-group";
 import { bff, BffError } from "@/lib/bff";
@@ -12,10 +11,9 @@ export type Loaded<T> = { key: string; data: T } | { key: string; error: string 
  * 화면 영역 하나를 부른다(홈 · LoadGroup 안의 영역). key(범위 · 점포 · 새로고침 횟수 · 부르는 조건)가 바뀔 때와 retry 때만 다시 부른다(HOM-08) — 그 밖에는 부르지 않는다.
  * 지금 key 의 결과가 아니면 got 은 null(부르는 중)이다. 영역마다 따로 불러 한쪽이 실패해도 다른 쪽은 보인다.
  * 가장 가까운 LoadGroup 이 있으면 처음 받는 동안 그 묶음을 붙잡고(성공 · 실패로 끝나면 놓는다), 묶음이 풀린 뒤의 key 변경 · retry 는 묶지 않는다. 묶음 밖이면 그대로 동작한다.
- * load 가 null 이면 부르지 않는다(빈 범위 · 다른 화면). 401 이면 로그인 화면으로 보낸다(SessionGate 와 같다) — 이때 묶음은 놓지 않는다(이동하므로 시간 제한이 푼다).
+ * load 가 null 이면 부르지 않는다(빈 범위 · 다른 화면). 401 이면 bff() 가 「로그인 만료」 팝업을 띄우므로 실패 문구를 그리지 않는다 — 이때 묶음은 놓지 않는다(팝업 [확인]이 로그인 화면으로 옮긴다).
  */
 export function useLoad<T>(load: (() => Promise<T>) | null, key: string, what: string): { got: Loaded<T> | null; retry: () => void } {
-  const router = useRouter();
   const [retries, setRetries] = useState(0);
   const [got, setGot] = useState<Loaded<T> | null>(null);
   const enabled = load !== null;
@@ -37,7 +35,8 @@ export function useLoad<T>(load: (() => Promise<T>) | null, key: string, what: s
       },
       (e: unknown) => {
         if (cancelled) return;
-        if (e instanceof BffError && e.status === 401) return router.replace("/login");
+        // 로그인 만료 — bff() 가 「로그인 만료」 팝업을 띄웠다. 실패 문구는 그리지 않는다
+        if (e instanceof BffError && e.status === 401) return;
         // 강제 비밀번호 변경 전 403 은 정해진 동작이라 오류로 남기지 않는다 — 팝업 뒤 화면이 먼저 부른다(2026-10-28)
         const passwordPending = e instanceof BffError && e.status === 403 && e.message === PASSWORD_CHANGE_REQUIRED_MESSAGE;
         if (!passwordPending) console.error(`${what} 조회 실패`, e);
@@ -47,7 +46,7 @@ export function useLoad<T>(load: (() => Promise<T>) | null, key: string, what: s
     return () => {
       cancelled = true;
     };
-  }, [enabled, full, what, router]);
+  }, [enabled, full, what]);
   const current = got?.key === full ? got : null;
   // 부르지 않는 로더(enabled 가 false)와 이미 받은 로더는 붙잡지 않는다
   useLoadGroupHold(enabled && current === null);

@@ -1,5 +1,6 @@
 // 브라우저에서 api 를 부를 때 쓴다. /api/* (src/app/api/[...path]/route.ts)가 토큰을 붙여 대신 부른다.
 import { BP_HEADER, bpOfPath } from "./bp-path";
+import { notifySessionExpired } from "./session-expiry";
 
 /** api 403 「서비스 이용을 위해 비밀번호를 변경해 주세요.」를 받으면 window 에 보내는 이벤트. SessionGate 가 강제 변경 팝업을 다시 띄운다. */
 export const PASSWORD_REQUIRED_EVENT = "whale-erp:password-required";
@@ -29,6 +30,8 @@ export async function bff<T>(path: string): Promise<T> {
     throw new BffError(0, "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.");
   }
   if (response.ok) return (await response.json()) as T;
+  // 로그인이 끊겼다(proxy · BFF 가 쿠키를 지웠다) — 「로그인 만료」 팝업 하나를 띄운다. 부른 화면은 아래 BffError 로 지금처럼 실패를 받는다.
+  if (response.status === 401) notifySessionExpired();
   const body: unknown = await response.json().catch(() => null);
   const message = (body as { message?: unknown } | null)?.message;
   if (response.status === 403 && typeof message === "string" && message.startsWith(PASSWORD_REQUIRED_MESSAGE))

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { ErpRoot, PanelBackdrop } from "@/components/common";
 import { AdminHeader } from "./admin-header";
+import { LogoutFailedDialog } from "./logout-failed-dialog";
+import { SessionExpiredDialog } from "./session-expired-dialog";
 import { SessionGate } from "./session-gate";
 
 // 로그인 후 화면의 틀 하나(ERP·플랫폼 구분 없음 — 서비스는 탭마다 SessionGate 가 정한다). 데모 ui.erpFrame 과 같다 — 화면은 100dvh 안에서 끝나고,
@@ -9,6 +11,8 @@ import { SessionGate } from "./session-gate";
 // alarm 은 알림 종(NotificationBellSlot, 서버 컴포넌트)이다. 클라이언트 쪽에서 그려지므로 루트 레이아웃이 만들어 넘긴다.
 // PanelBackdrop 은 가장 위 SlidePanel 이 closeOnBackdrop 을 켰을 때만 화면 전체(헤더 포함)를 덮는 바탕창이다(2026-10-20) —
 // 패널보다 뒤에 둬야 z-index 로만이 아니라 DOM 순서로도 패널 쪽 탭 이동이 바탕창보다 먼저 온다.
+// SessionExpiredDialog 는 화면을 쓰다 로그인이 끊겼을 때의 「로그인 만료」 팝업 하나다(bff() · useAction 이 알린다).
+// LogoutFailedDialog 는 로그아웃이 실패했을 때의 팝업이다(signOut() 이 알린다).
 export function AdminFrame({ alarm, children }: { alarm: ReactNode; children: ReactNode }) {
   return (
     <ErpRoot className="min-h-[100dvh]">
@@ -18,6 +22,8 @@ export function AdminFrame({ alarm, children }: { alarm: ReactNode; children: Re
           <PanelBackdrop />
         </div>
       </div>
+      <SessionExpiredDialog />
+      <LogoutFailedDialog />
     </ErpRoot>
   );
 }
