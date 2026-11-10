@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-10
+* **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — 로그인 만료 2차: 서버 액션 실패 처리마다 `expiredFailureOf`, 로그인한 화면의 서버 액션을 모두 `useAction`(덮개 없음)으로, 화면 · 서버 화면의 401 분기 삭제, 규칙을 지키는 가드 시험(`expiry-guard.test.ts`). 커뮤니티 목록 불러오기의 만료 이동 삼킴(1차 누락)도 고쳤다.
 * **Update**: [로그인](/auth.md) — 로그인 만료 처리를 공통 길목으로 모았다(3안 1차, front wigglytuff): 화면을 열거나 옮기다 끊기면 로그인 화면 빨간 줄(`/login?reason=expired`), 쓰다 끊기면 「로그인 만료」 팝업 하나. 만료가 아닌 401(강제 비밀번호 변경 · 탈퇴 최종 · 로그아웃)은 제외, 로그아웃 실패는 팝업. 「로그인 화면에는 세션 만료 문구가 없다」를 지웠다. [Whale ERP Frontend](/whale-erp-front.md) 의 proxy 절에 렌더 헤더 · `expiredFailureOf` · `useAction` 흐름을 더했다.
 
 ## 2026-11-09

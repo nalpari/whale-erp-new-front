@@ -39,6 +39,7 @@ concept의 `sources[].resource`에 들어 있으면 해당 concept 본문을 고
 - 서버 액션의 실패 처리 함수(`failureOf` 등)는 첫 줄에서 만료를 거른다: `const expired = expiredFailureOf(error); if (expired) return expired;` — 결과 모양이 달라도 `expired: true` 를 싣는다.
 - 서버 액션은 화면에서 `useAction` 으로 부른다(덮개가 필요 없으면 `{ overlay: false }`).
 - 서버 화면에서 모든 오류를 받아 대체값으로 바꾸는 catch 는 첫 줄에 `unstable_rethrow(error)` 를 둔다 — `request()` 의 만료 이동을 삼키지 않게.
+- `pnpm test` 의 `src/lib/expiry-guard.test.ts` 가 이 규칙을 확인한다(G1 401 분기 · G2 서버 액션 catch · G3 서버 화면 catch · G4 useAction). 허용 목록을 늘릴 때는 그 줄에 이유를 적는다.
 
 ## 워크트리
 
