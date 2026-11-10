@@ -36,7 +36,7 @@ import { addAdditionalLine, applyPrevious, removeLine, saveItems } from "./paysl
 // 성공하면 router.refresh() 로 상세를 다시 받는다 — page 가 updatedAt 을 key 로 줘 화면 상태도 새 값으로 다시 선다.
 // 기본급 · 주휴수당 · 연장수당은 api 가 근로계약 · 출퇴근 기록으로 계산한다(WHALEERP-227). 「출퇴근 다시 불러오기」는 확인창을 거쳐
 // POST /payslips/:id/recalculate 를 부르고(고친 값은 버린다), 가산 스위치는 임시저장 때 api 가 그 값으로 다시 계산한다.
-// 경고 띠의 「출퇴근 보정」은 출·퇴근 현황 조회(보정이 필요한 기록)를 그 점포 · 직원 · 급여 기간으로 연다.
+// 경고 띠의 「출퇴근 기록 확인」은 출·퇴근 현황 조회(보정이 필요한 기록)를 그 점포 · 직원 · 급여 기간으로 연다.
 // 고칠 수 있는 것은 작성 중 · 검토 중이고 수정 권한이 있을 때뿐이다 — 확정 · 발송 완료는 읽기만 하고 「확정 취소」와 「발송」 · 「재발송」만 둔다(okf/staff.md 급여).
 
 type Dialog = "save" | "confirm" | "cancel" | "send" | "resend" | "load" | "add" | "preview" | "recalc";
@@ -323,7 +323,7 @@ export function PayslipReview({
             desc={band.desc}
             actions={
               <Button variant="soft" href={bpPath(bp, attendanceHref(payslip))}>
-                출퇴근 보정
+                출퇴근 기록 확인
               </Button>
             }
           />
