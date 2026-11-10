@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>시설물 및 장비 관리 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="stores" data-sub="stores/facilities.html">
+    <!-- 시설물 · 장비 목록 · /facilities · 1팀 · 1.5차
+         기준: 「시설물·장비 관리 정책서」(claude.ai 문서, 2026-11-10) PL-1 ~ PL-6. 원자료는 가맹점및점포관리 화면정의서 v0.74 37~44쪽.
+         BP 는 들어오기 전에 정해진다 — BP · 가맹 계정은 자기 BP, 플랫폼 계정은 웨일ERP 바로가기로 고른 BP(PL-1). 그래서 필터 · 열에 BP · 가맹이 없고 점포만 있다.
+         조회 · 등록 · 수정 · 삭제는 권한 그룹이 이 메뉴에 준 권한을 따른다(PL-1). 등록 권한이 없으면 [등록]을 두지 않는다.
+         운영상태는 공통코드 「시설물 운영상태」(플랫폼고정), 그룹은 공통코드 그룹 「점포 시설물」 · 「점포 장비」, 분류는 고른 그룹의 상세 코드다(PL-2 · PL-3).
+         정렬은 등록일 내림차순, 한 쪽 50건(화면정의서 v0.74). 위쪽 점선 줄은 목업 전용 전환이다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell" id="facl">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">시설물 및 장비 관리</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">1.5차 · /facilities</span>
+            <a class="btn btn--primary btn--sm" href="facilities-new.html" data-show-role="edit">등록</a>
+            <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./facilities.screen-def.html', 'screenDef', 'width=1620,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="stack">
+            <div class="demo" data-demo="facl" data-demo-key="role">
+              <b>목업 권한</b>
+              <div class="seg">
+                <button type="button" data-state="edit" aria-pressed="true">조회 · 등록 · 수정 · 삭제</button>
+                <button type="button" data-state="view" aria-pressed="false">조회만</button>
+              </div>
+            </div>
+            <div class="demo" data-demo="facl">
+              <b>목업 상태</b>
+              <div class="seg">
+                <button type="button" data-state="base" aria-pressed="true">기본</button>
+                <button type="button" data-state="group" aria-pressed="false">그룹 「점포 장비」 고름</button>
+                <button type="button" data-state="none" aria-pressed="false">조건에 맞는 것 없음</button>
+                <button type="button" data-state="zero" aria-pressed="false">등록된 것 없음</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 검색 조건 — 모두 AND. 점포 선택지는 이 BP 의 점포 가운데 내 관리 점포 범위 안의 것만(PL-1) -->
+          <section class="panel">
+            <div class="panel__head">
+              <h2 class="t-h2">검색 조건</h2>
+              <span class="subtle" style="font-size: 12px">BP <b>㈜한강상회 · BP000017</b></span>
+            </div>
+            <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+              <!-- 점포 — 점포 정보 관리 목록 검색의 점포 고르기와 같다(stores/index.html). 점포명 · 점포코드로 찾아 고르면 아래 「선택한 점포」에 쌓이고,
+                   목록은 고른 점포의 시설물·장비만 보인다. 고른 점포가 없으면 모두 본다. 라벨 오른쪽 [일괄검색]은 고를 수 있는 점포 전체를 팝업에 펴 한꺼번에 고른다.
+                   폐점 점포도 고를 수 있다 — 그 점포의 시설물·장비도 조회는 되므로(PL-1). 같은 패널의 [초기화]로 비운다 -->
+              <div class="field" style="position: relative">
+                <label for="q-store">점포</label>
+                <button class="btn btn--secondary btn--sm" type="button" data-spick-bulk style="position: absolute; top: -3px; right: 0; height: 22px; padding: 0 8px; font-size: 11.5px">일괄검색</button>
+                <div class="spick" data-spick data-spick-nocode data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포;ST000012|모리커피 합정점|가맹점포" data-picked="">
+                  <div class="spick__find">
+                    <div class="spick__row">
+                      <div class="addr__q spick__q">
+                        <span data-icon="search" data-icon-size="15"></span>
+                        <input class="input" id="q-store" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                        <div class="addr__list spick__list" role="listbox" aria-label="선택할 수 있는 점포" hidden></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="spick__box">
+                    <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear style="height: 22px; padding: 0 8px; font-size: 11.5px">전체 제거</button></div>
+                    <!-- 검색 조건 안이라 칩 영역을 두 줄 높이로 줄이고 넘치면 그 안에서 스크롤 -->
+                    <ul class="spick__picked" data-spick-list aria-label="선택한 점포" style="height: auto; min-height: 0; max-height: 92px"></ul>
+                  </div>
+                </div>
+              </div>
+              <div class="grid" style="align-items: start; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4)">
+                <!-- 운영상태 — 「전체」 + 공통코드 「시설물 운영상태」 상세 코드(PL-2) -->
+                <div class="field">
+                  <label for="q-status">운영상태</label>
+                  <select class="select" id="q-status">
+                    <option selected>전체</option>
+                    <option>운영</option>
+                    <option>보관</option>
+                    <option>폐기</option>
+                  </select>
+                </div>
+                <!-- 그룹 — 공통코드 그룹 두 개를 화면이 고정으로 부른다(PL-3) -->
+                <div class="field">
+                  <label for="q-group">그룹</label>
+                  <select class="select" id="q-group" data-show="base none zero">
+                    <option selected>전체</option>
+                    <option>점포 시설물</option>
+                    <option>점포 장비</option>
+                  </select>
+                  <select class="select" aria-label="그룹" data-show="group" hidden>
+                    <option>전체</option>
+                    <option>점포 시설물</option>
+                    <option selected>점포 장비</option>
+                  </select>
+                </div>
+                <!-- 분류 — 그룹을 골라야 그 그룹의 상세 코드가 나온다. 그룹이 「전체」면 분류는 「전체」로 막아 둔다(PL-3).
+                     그룹을 바꾸면 고른 분류는 「전체」로 돌아간다. 아래 스크립트가 그룹 선택에 맞춰 선택지를 채운다(목업 전용) -->
+                <div class="field">
+                  <label for="q-class">분류</label>
+                  <select class="select" id="q-class" disabled title="그룹을 먼저 선택해 주세요." data-show="base none zero">
+                    <option selected>전체</option>
+                  </select>
+                  <select class="select" aria-label="분류" data-show="group" hidden>
+                    <option selected>전체</option>
+                    <option>그라인더</option>
+                    <option>커피머신</option>
+                    <option>제빙기</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="q-name">시설물/장비명</label>
+                  <div class="inputwrap">
+                    <span data-icon="search" data-icon-size="15"></span>
+                    <input class="input" id="q-name" placeholder="이름으로 찾기" autocomplete="off" />
+                  </div>
+                </div>
+              </div>
+              <div class="inline" style="justify-content: flex-end">
+                <button class="btn btn--secondary" type="button" data-state-go="base">초기화</button>
+                <button class="btn btn--primary" type="button">조회</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel__head">
+              <h2 class="t-h2">시설물 · 장비</h2>
+              <span class="badge badge--quiet" data-show="base">6건</span>
+              <span class="badge badge--quiet" data-show="group" hidden>3건</span>
+              <span class="badge badge--quiet" data-show="none zero" hidden>0건</span>
+            </div>
+
+            <div class="tblwrap" data-show="base group" data-pager="6" data-pager-sizes="50">
+              <table class="tbl">
+                <thead>
+                  <tr>
+                    <th scope="col" class="n">순번</th>
+                    <th scope="col">운영상태</th>
+                    <th scope="col">점포</th>
+                    <th scope="col">그룹</th>
+                    <th scope="col">분류</th>
+                    <th scope="col">시설물/장비명</th>
+                    <th scope="col">등록일</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr data-show="base group">
+                    <td class="n">6</td><td><span class="badge badge--ok">운영</span></td><td>모리커피 성수점</td><td>점포 장비</td><td>그라인더</td>
+                    <td class="k"><a class="tlink" href="facilities-detail.html">EK43S 전자동 원두 커피 그라인더</a></td><td class="mono">2026-11-02</td>
+                  </tr>
+                  <tr data-show="base">
+                    <td class="n">5</td><td><span class="badge badge--ok">운영</span></td><td>모리커피 성수점</td><td>점포 시설물</td><td>식재보관</td>
+                    <td class="k"><a class="tlink" href="facilities-detail.html">업소용 4도어 냉장고</a></td><td class="mono">2026-10-28</td>
+                  </tr>
+                  <tr data-show="base group">
+                    <td class="n">4</td><td><span class="badge badge--ok">운영</span></td><td>모리커피 을지로점</td><td>점포 장비</td><td>커피머신</td>
+                    <td class="k"><a class="tlink" href="facilities-detail.html">라마르조코 리네아 PB 2그룹</a></td><td class="mono">2026-10-15</td>
+                  </tr>
+                  <tr data-show="base">
+                    <td class="n">3</td><td><span class="badge badge--quiet">보관</span></td><td>온기식당 판교점</td><td>점포 시설물</td><td>급수</td>
+                    <td class="k"><a class="tlink" href="facilities-detail.html?state=keep">직수형 정수기</a></td><td class="mono">2026-09-03</td>
+                  </tr>
+                  <tr data-show="base group">
+                    <td class="n">2</td><td><span class="badge badge--risk">폐기</span></td><td>모리커피 을지로점</td><td>점포 장비</td><td>제빙기</td>
+                    <td class="k"><a class="tlink" href="facilities-detail.html?state=scrap">호시자키 제빙기 IM-45</a></td><td class="mono">2026-06-20</td>
+                  </tr>
+                  <!-- 폐점 점포의 시설물 · 장비도 목록에 남고 조회만 된다(PL-1) -->
+                  <tr data-show="base">
+                    <td class="n">1</td><td><span class="badge badge--ok">운영</span></td><td>모리커피 합정점 <span class="badge badge--risk">폐점</span></td><td>점포 시설물</td><td>냉난방</td>
+                    <td class="k"><a class="tlink" href="facilities-detail.html?state=closed">천장형 냉난방기</a></td><td class="mono">2025-03-02</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 빈 표도 열 이름 줄은 둔다. 아예 없으면 「등록된 …」, 조건에 맞는 것이 없으면 「조건에 맞는 …」(DESIGN.md 빈 상태) -->
+            <div class="tblwrap" data-show="none zero" hidden>
+              <table class="tbl">
+                <thead>
+                  <tr>
+                    <th scope="col" class="n">순번</th><th scope="col">운영상태</th><th scope="col">점포</th><th scope="col">그룹</th><th scope="col">분류</th><th scope="col">시설물/장비명</th><th scope="col">등록일</th>
+                  </tr>
+                </thead>
+              </table>
+              <div class="empty">
+                <span class="empty__ic" data-icon="store" data-icon-size="22"></span>
+                <p data-show="none">조건에 맞는 시설물 · 장비가 없습니다.</p>
+                <p data-show="zero" hidden>등록된 시설물 · 장비가 없습니다.</p>
+              </div>
+            </div>
+          </section>
+
+          <p class="note">
+            <span data-icon="info" data-icon-size="14"></span>
+            <span>
+              운영상태가 「운영」인 것만 수리 이력 · 점검표 템플릿 · 점검 결과의 대상으로 고를 수 있다(PL-2). 보관 · 폐기로 바꿔도 지난 이력은 남는다.
+              분류는 BP 공통코드에서 더하거나 고친다 — 「점포 시설물」 · 「점포 장비」는 플랫폼제공 그룹이라 BP 적용을 켜야 BP 에 복사된다(PL-3).
+            </span>
+          </p>
+        </div>
+      </main>
+    </div>
+    <script>
+      /* 목업 전용 — 그룹을 고르면 그 그룹의 분류(공통코드 상세 코드)로 분류 선택지를 채우고, 「전체」면 분류를 막는다(PL-3) */
+      (function () {
+        var CODES = { "점포 시설물": ["식재보관", "급수", "냉난방"], "점포 장비": ["그라인더", "커피머신", "제빙기"] };
+        var group = document.getElementById("q-group");
+        var klass = document.getElementById("q-class");
+        function fill() {
+          var list = CODES[group.value] || [];
+          klass.innerHTML = '<option selected>전체</option>' + list.map(function (c) { return "<option>" + c + "</option>"; }).join("");
+          klass.disabled = !list.length;
+          klass.title = list.length ? "" : "그룹을 먼저 선택해 주세요.";
+        }
+        group.addEventListener("change", fill);
+        document.addEventListener("click", function (e) {
+          if (e.target.closest && e.target.closest("[data-state-go='base']")) { group.value = "전체"; fill(); }
+        });
+      })();
+    </script>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

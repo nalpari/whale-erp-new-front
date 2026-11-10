@@ -8,6 +8,7 @@ import {
   type PayslipItem,
   type PayslipListItem,
   type PayslipReviewReason,
+  type PayslipReviewReasonValue,
   type PayslipStatus,
 } from "../../lib/payslips.ts";
 import { sentText } from "../contracts/contract-list.ts";
@@ -59,7 +60,7 @@ export function earningHelp(item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "
 }
 
 /**
- * 출·퇴근 현황 조회를 그 명세서의 점포 · 직원 · 급여 기간으로 연다 — 「출퇴근 보정」 · 「출퇴근 기록 보기」. 기간은 보정이 필요한 기록의 기간이다.
+ * 출·퇴근 현황 조회를 그 명세서의 점포 · 직원 · 급여 기간으로 연다 — 「출퇴근 기록 확인」 · 「출퇴근 기록 보기」. 기간은 보정이 필요한 기록의 기간이다.
  * 직원은 레코드 id 로 좁히고(이름이 비슷한 다른 직원이 섞이지 않게), 퇴직자 명세서도 보이게 재직 상태는 전체로 연다.
  */
 export function attendanceHref(p: { storeId: number; staffMemberId: number; staffName: string; periodStartDate: string; periodEndDate: string }): string {
@@ -96,13 +97,24 @@ export function detailReviewReasons(
   ];
 }
 
+/** 경고 띠 제목 — 첫 사유마다 문장으로(「급여명세서 관리 수정 요청.xlsx」). 표에 없는 사유(api 가 새로 준 것)는 사유 이름을 끼운 틀을 쓴다. */
+const REVIEW_BAND_TITLE: Partial<Record<PayslipReviewReasonValue, string>> = {
+  MISSING_ATTENDANCE: "출퇴근 기록이 등록되지 않은 날이 있어 검토가 필요합니다.",
+  AFTER_CONTRACT_END: "근로계약 종료일 이후의 출퇴근 기록이 있어 검토가 필요합니다.",
+  CONTRACT_CHANGED: "급여 기간 중 근로계약이 변경되어 검토가 필요합니다.",
+  ATTENDANCE_NEEDS_REVIEW: "확인 필요로 표시된 출퇴근 기록이 있어 검토가 필요합니다.",
+};
+
 /** 위쪽 경고 띠. 공제 미입력은 금액 칸 아래 빨간 띠가 따로 말하므로 뺀다. 이미 확인한 사유(확정 때 확인됨)도 뺀다. 띠가 없으면 null. */
 export function reviewBand(reasons: readonly PayslipReviewReason[], labelOf: (reason: string) => string): { title: string; desc: string } | null {
   const shown = reasons.filter((r) => r.reviewReason !== "DEDUCTION_MISSING" && r.acknowledgedAt === null);
   if (!shown.length) return null;
   const [head] = shown;
-  const title =
-    head.reviewReason === "MISSING_ATTENDANCE" ? "출퇴근 기록이 누락되어 검토 대기로 분류되었습니다." : `${labelOf(head.reviewReason)} 사유로 검토 대기로 분류되었습니다.`;
-  const details = shown.map((r) => r.detail ?? labelOf(r.reviewReason));
-  return { title, desc: `${details.join(". ")}. 확인한 뒤에는 경고가 있어도 확정할 수 있습니다.` };
+  const title = REVIEW_BAND_TITLE[head.reviewReason] ?? `${labelOf(head.reviewReason)} 사유로 검토 대기로 분류되었습니다.`;
+  // 상세는 마침표로 끝나는 문장이라 빈칸 하나로 잇는다. 상세가 비어 사유 이름을 쓸 때처럼 마침표가 없으면 붙인다
+  const details = shown.map((r) => {
+    const text = r.detail?.trim() || labelOf(r.reviewReason);
+    return /[.?!…]$/.test(text) ? text : `${text}.`;
+  });
+  return { title, desc: `${details.join(" ")} 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.` };
 }

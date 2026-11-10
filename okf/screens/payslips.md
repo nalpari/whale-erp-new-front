@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-09T06:53:29Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-10T01:58:06Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -25,7 +25,7 @@ sources:
   - id: payslip-row
     resource: ../../src/app/payslips/payslip-row.ts
     title: 목록 칸(급여 기간 · 출퇴근 확인 · 발송일 · 검토 대기 꼬리표) · 상태 색 · 지급 도움말 · 경고 띠
-    last_modified: 2026-10-28T01:08:20Z
+    last_modified: 2026-11-10T01:58:06Z
   - id: payslip-draft-dialog
     resource: ../../src/app/payslips/payslip-draft-dialog.tsx
     title: 급여명세서 작성 팝업 — 점포 · 이름 좁히기 · 직원 고르기 · 작성 · 일괄 작성(칸 문구 payslip-draft.ts, server action actions.ts)
@@ -41,7 +41,7 @@ sources:
   - id: payslip-review
     resource: ../../src/app/payslips/[payslipId]/payslip-review.tsx
     title: 검토 화면 — 머리 버튼 · 지급 내역 · 확인창
-    last_modified: 2026-11-09T06:53:29Z
+    last_modified: 2026-11-10T01:58:06Z
 ---
 
 # api 로 그린다
@@ -99,7 +99,7 @@ sources:
 목 시절 화면에 있던 값 가운데 api 응답에 없는 것은 값을 지어내지 않고 화면에서 뺐다.
 
 * 목록 「계약 없음 · 초안 없음」 줄(이 달 명세서가 없는 재직 직원). 출퇴근 누락 일수는 상세의 경고 띠 설명에 api 사유 상세로 나온다
-  (「출퇴근 기록이 2일 누락되었습니다 — 09-05 퇴근 미등록, …」, WHALEERP-229).
+  (「출퇴근 기록이 등록되지 않은 날이 2일 있습니다(9월 5일 퇴근 미등록, …).」, WHALEERP-229).
 * 상세 「급여 산정 기준」의 집계 근로시간 · 덧붙임 · 근무스케줄 기준 시간.
 * 지급 칸 도움말의 계산 근거 글자(데모 「8.0h × 1.5배 · 가산 적용」) — 「계산값」 · 「계산값 A 을 B 으로 고침」만 남는다. 가산을 끈
   명세서의 연장수당은 앞에 「가산 미적용 · 1배로 계산」이 붙는다(PAY-05, 2026-10-26 재영). 가산 스위치를 바꾸면 「임시저장하면 연장수당을 … 다시 계산합니다」를 보이고, 지금 칸 값이 저장된 금액과 다르거나 앞서 고쳐 둔 값이 있으면 「직접 고친 연장수당(N원)은 그대로 둡니다」를 붙인다(api 와 같은 기준 — 지금 칸 값으로 판단).
@@ -146,7 +146,7 @@ page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치
 
 금액은 `adjustedAmount ?? calculatedAmount`(넣지 않았으면 빈 칸), 3.3% 를 켜면 소득세 · 지방소득세 칸이 빠지고 사업소득세(3%) ·
 지방소득세(0.3%)가 선다(`isItemShown`, [직원 운영 관리](/staff.md) 급여). 고칠 수 있는 것은 작성 중 · 검토 중이고 「급여명세서 관리」
-(MN000009) 수정 권한이 있을 때뿐이다. 확정 · 발송 완료는 읽기만 하고 「확정 취소」와 「발송」 · 「재발송」을 둔다(확정 취소는 데모에 없는 버튼). 경고 띠의 「출퇴근 보정」과
+(MN000009) 수정 권한이 있을 때뿐이다. 확정 · 발송 완료는 읽기만 하고 「확정 취소」와 「발송」 · 「재발송」을 둔다(확정 취소는 데모에 없는 버튼). 경고 띠의 「출퇴근 기록 확인」과
 「출퇴근 기록 보기」는 출·퇴근 현황 조회를 그 점포 · 직원 · 급여 기간(보정이 필요한 기록)으로 연다(`attendanceHref`).
 
 # 급여명세서 작성 (WHALEERP-226)
