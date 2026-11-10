@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ConfirmDialog, DateField, useToast } from "@/components/common";
+import { ConfirmDialog, DateField, useAction, useToast } from "@/components/common";
 import { checkRetiredDate, earliestRetiredDate, isSettledNow, reloadsPreview, showsBelowDateField, todayAfterSubmit } from "@/lib/retirement";
 import type { RetirementPreview } from "@/lib/staff-members";
 import { cancelRetirementAction, changeRetirementDateAction, previewRetirementAction, retireAction } from "./actions";
@@ -41,6 +41,9 @@ export function RetirementDialog({
 }) {
   const toast = useToast();
   const onFailure = useFailure();
+  const previewRetirement = useAction(previewRetirementAction, { overlay: false });
+  const retire = useAction(retireAction, { overlay: false });
+  const changeRetirementDate = useAction(changeRetirementDateAction, { overlay: false });
   const [today, setToday] = useState(initialToday);
   const [date, setDate] = useState(currentDate ?? initialToday);
   // 날짜가 틀리면 미리 보기를 받지 않는다(idle) — 틀린 이유는 날짜 칸 아래에 둔다(재영 공지 2026-10-29).
@@ -57,7 +60,7 @@ export function RetirementDialog({
   /** 미리 보기를 받아 그 응답이 마지막 요청일 때만 담는다. 상태는 응답을 받은 뒤에만 바꾼다. */
   const fetchPreview = (value: string) => {
     const n = ++seq.current;
-    previewRetirementAction(staffMemberId, value)
+    previewRetirement(staffMemberId, value)
       .then((result) => {
         if (n !== seq.current) return;
         if (result.ok) return setPreview({ status: "ok", date: value, value: result.preview });
@@ -108,7 +111,7 @@ export function RetirementDialog({
     try {
       // 경고 여부를 정한 오늘을 함께 보낸다 — 서버 액션이 서버 시계로 다시 판정한다(브라우저 시계가 늦어도 막힌다)
       const result =
-        mode === "retire" ? await retireAction(staffMemberId, date, today) : await changeRetirementDateAction(staffMemberId, date, today);
+        mode === "retire" ? await retire(staffMemberId, date, today) : await changeRetirementDate(staffMemberId, date, today);
       if (result.ok) {
         toast(mode === "retire" ? "퇴직 처리되었습니다." : "퇴직일이 변경되었습니다.");
         onClose();
@@ -216,6 +219,7 @@ export function RetirementDialog({
 export function CancelRetirementDialog({ staffMemberId, onClose }: { staffMemberId: number; onClose: () => void }) {
   const toast = useToast();
   const onFailure = useFailure();
+  const cancelRetirement = useAction(cancelRetirementAction, { overlay: false });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -223,7 +227,7 @@ export function CancelRetirementDialog({ staffMemberId, onClose }: { staffMember
     setBusy(true);
     setError(null);
     try {
-      const result = await cancelRetirementAction(staffMemberId);
+      const result = await cancelRetirement(staffMemberId);
       if (result.ok) {
         toast("퇴직 처리가 취소되었습니다.");
         onClose();

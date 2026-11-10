@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { Button, DataTable, NoticeBand, Pagination, type Column } from "@/components/common";
+import { Button, DataTable, NoticeBand, Pagination, useAction, type Column } from "@/components/common";
 import { HistoryScroll, HistoryTotalBar, WideDialog } from "@/components/site/wide-dialog";
 import { formatDateTime } from "@/lib/format";
 import { FIRST_HISTORY_PAGE_SIZE, type HistoryPageSize } from "@/lib/history-paging";
@@ -25,6 +25,7 @@ const COLUMNS: Column<StoreHistory>[] = [
 
 /** variant — 표 안 버튼이 무거우면 outline(흰 바탕 · 브랜드 테두리)으로 둔다(점포 상세 변경이력 줄, 2026-11-03 사용자 지정) */
 export function HistoryButton({ storeId, variant = "soft" }: { storeId: number; variant?: "soft" | "outline" }) {
+  const getStoreHistories = useAction(getStoreHistoriesAction, { overlay: false });
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<HistoryPageSize>(FIRST_HISTORY_PAGE_SIZE);
@@ -44,7 +45,7 @@ export function HistoryButton({ storeId, variant = "soft" }: { storeId: number; 
     setPage(next);
     setPageSize(size);
     startLoading(async () => {
-      const result = await getStoreHistoriesAction(storeId, next, size).catch((error: unknown) => {
+      const result = await getStoreHistories(storeId, next, size).catch((error: unknown) => {
         console.error("점포 이력 조회 호출 실패", error);
         return { ok: false as const, message: "이력을 받지 못했습니다. 잠시 후 다시 시도해 주세요." };
       });

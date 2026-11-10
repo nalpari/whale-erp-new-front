@@ -2,7 +2,7 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, ConfirmDialog, DataTable, useToast } from "@/components/common";
+import { Button, ConfirmDialog, DataTable, useAction, useToast } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
 import type { PayslipListQuery, PayslipSendResult } from "@/lib/payslips";
@@ -30,6 +30,7 @@ export function PayslipListActions({
   const router = useRouter();
   const toast = useToast();
   const can = usePagePermission();
+  const sendAll = useAction(sendPayslips, { overlay: false });
   const canUpdate = can.update;
   const [sending, setSending] = useState(false);
   const [busy, startBusy] = useTransition();
@@ -40,7 +41,7 @@ export function PayslipListActions({
     startBusy(async () => {
       let response: Awaited<ReturnType<typeof sendPayslips>>;
       try {
-        response = await sendPayslips(sendTargetOf(query));
+        response = await sendAll(sendTargetOf(query));
       } catch (error) {
         unstable_rethrow(error); // redirect 같은 Next 제어 흐름은 그대로 넘긴다
         console.error("급여명세서 action 호출이 끊겼습니다", error);

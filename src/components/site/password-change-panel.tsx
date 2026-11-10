@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
-import { Button, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, SlidePanel } from "@/components/common";
+import { Button, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, SlidePanel, useAction } from "@/components/common";
 import { myPasswordErrorField, type MyPasswordFormField } from "@/lib/my-password-form";
 import { changeMyPasswordAction } from "./password-change-actions";
 
@@ -40,6 +40,7 @@ function Done({ headingId, onClose }: { headingId: string; onClose: () => void }
  * 가른다. 바꿔도 이 기기 · 다른 기기의 로그인은 모두 이어진다(S-PTWREE outcome) — 재로그인을 요구하지 않는다. */
 export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string; open: boolean; onClose: () => void; trigger: RefObject<HTMLElement | null> }) {
   const ids = useId();
+  const changeMyPassword = useAction(changeMyPasswordAction, { overlay: false });
   const [form, setForm] = useState<Form>(EMPTY);
   const [fieldError, setFieldError] = useState<{ at: MyPasswordFormField; message: string } | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -100,7 +101,7 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
     const mine = saveNumber.current;
     startSaving(async () => {
       try {
-        const result = await changeMyPasswordAction({
+        const result = await changeMyPassword({
           currentPassword: form.current,
           newPassword: form.next,
           newPasswordConfirm: form.confirm,

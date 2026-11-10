@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, useToast, type DetailRow } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, useAction, useToast, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -76,6 +76,8 @@ function DetailBody({
   onEdit: (from: HTMLButtonElement) => void;
 }) {
   const toast = useToast();
+  const resetBpAdminPassword = useAction(resetBpAdminPasswordAction, { overlay: false });
+  const getBpAdminHistories = useAction(getBpAdminHistoriesAction, { overlay: false });
   const router = useRouter();
   const roleType = useCodeLabel("ROLE_TYPE");
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -104,7 +106,7 @@ function DetailBody({
 
   const handleReset = () =>
     startBusy(async () => {
-      const result = await resetBpAdminPasswordAction(admin.adminAccountId).catch(unknownResult("비밀번호 초기화"));
+      const result = await resetBpAdminPassword(admin.adminAccountId).catch(unknownResult("비밀번호 초기화"));
       setConfirmOpen(false);
       if (!result.ok) {
         setFailure(result.message);
@@ -246,7 +248,7 @@ function DetailBody({
             수정
           </Button>
         )}
-        <HistoryButton adminId={admin.adminAccountId} panelOpen={panelOpen} load={getBpAdminHistoriesAction} />
+        <HistoryButton adminId={admin.adminAccountId} panelOpen={panelOpen} load={getBpAdminHistories} />
       </div>
 
       {showReset && !resetBlocked && (

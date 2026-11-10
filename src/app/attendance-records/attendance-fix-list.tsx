@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, Checkbox, ConfirmDialog, DataTable, DetailTable, Field, FieldMessage, FormGroup, GuideBand, Select, SlidePanel, TextField, Textarea, useToast, type Column } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DataTable, DetailTable, Field, FieldMessage, FormGroup, GuideBand, Select, SlidePanel, TextField, Textarea, useAction, useToast, type Column } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { BackdropInert } from "./backdrop-inert";
@@ -87,6 +87,8 @@ export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; 
   const toast = useToast();
   const permission = usePagePermission();
   const [busy, startTransition] = useTransition();
+  const getAttendanceHistory = useAction(getAttendanceHistoryAction, { overlay: false });
+  const reviewAttendance = useAction(reviewAttendanceAction, { overlay: false });
   const [fix, setFix] = useState<Fix | null>(null);
   const [round, setRound] = useState(0);
   const [reviewing, setReviewing] = useState<FixRow | null>(null);
@@ -113,7 +115,7 @@ export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; 
     startTransition(async () => {
       setHistory({ row, data: null });
       const ids = [...new Set(row.pairs.map(anchorOf))];
-      const parts = await Promise.all(ids.map((id) => getAttendanceHistoryAction(id)));
+      const parts = await Promise.all(ids.map((id) => getAttendanceHistory(id)));
       const failed = parts.find((p) => !p.ok);
       if (failed && !failed.ok) {
         setHistory(null);
@@ -201,7 +203,7 @@ export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; 
             const targets = row.pairs.filter((p) => p.checkIn?.reviewReason || p.checkOut?.reviewReason).map(anchorOf);
             let last: EditResult = { ok: true, isPayslipConfirmed: false };
             for (const id of targets) {
-              last = await reviewAttendanceAction(id);
+              last = await reviewAttendance(id);
               if (!last.ok) break;
             }
             setReviewing(null);
@@ -250,6 +252,7 @@ export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; 
 
 // 기록 보정 패널(데모 fixForm): 출근 · 퇴근(원본 시각을 옆에) · 수정 사유(필수). 짝이 여럿인 날은 고를 짝을 먼저 고른다.
 function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: number) => void; onClose: () => void; onDone: (r: EditResult) => void }) {
+  const correctAttendance = useAction(correctAttendanceAction, { overlay: false });
   const pair = fix.row.pairs[fix.pairIndex];
   const [checkIn, setCheckIn] = useState(pair.checkIn?.time ?? "");
   // 퇴근 미등록 줄만 근무스케줄 종료 시각으로 채워 둔다(데모 「근무스케줄 종료 시각으로 보정」) — 오늘 근무 중인 줄에 미래 퇴근을 넣지 않게
@@ -283,7 +286,7 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
     setError(null);
     if (Object.keys(next).length > 0) return focusFirstError(ids);
     startTransition(async () => {
-      const result = await correctAttendanceAction(anchorOf(pair), {
+      const result = await correctAttendance(anchorOf(pair), {
         ...(checkIn ? { checkInTime: checkIn } : {}),
         ...(checkOut ? { checkOutTime: checkOut } : {}),
         ...(pair.checkIn && checkOut ? { checkOutNextDay: forced || nextDay } : {}),
@@ -456,6 +459,8 @@ export function ProxyButton({ stores, today, editableFrom }: { stores: string; t
 }
 
 function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: string; today: string; editableFrom: string; onClose: () => void; onDone: (r: EditResult & { isProxy: boolean }) => void }) {
+  const getProxyStaff = useAction(getProxyStaffAction, { overlay: false });
+  const proxyAttendance = useAction(proxyAttendanceAction, { overlay: false });
   const [date, setDate] = useState(today);
   const [staff, setStaff] = useState<ProxyStaff[] | null>(null);
   const [staffId, setStaffId] = useState<number | null>(null);
@@ -475,7 +480,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   const loadStaff = useCallback(
     (day: string) => {
       wanted.current = day;
-      getProxyStaffAction(stores, day)
+      getProxyStaff(stores, day)
         .then((result) => {
           if (wanted.current !== day) return;
           if (!result.ok) return setListError(result.message);
@@ -488,7 +493,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
           setListError("직원 목록을 불러오지 못했습니다. 날짜를 다시 선택해 주세요.");
         });
     },
-    [stores],
+    [stores, getProxyStaff],
   );
   useEffect(() => loadStaff(today), [loadStaff, today]);
   const changeDate = (day: string) => {
@@ -527,7 +532,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
     // staffId === null 은 next.staff 와 같다 — 아래 호출에 number 로 좁히려고 둔다
     if (staffId === null || Object.keys(next).length > 0) return focusFirstError(ids);
     startTransition(async () => {
-      const result = await proxyAttendanceAction({ staffMemberId: staffId, date, checkInTime: checkIn, ...(checkOut ? { checkOutTime: checkOut } : {}), reason: reason.trim() });
+      const result = await proxyAttendance({ staffMemberId: staffId, date, checkInTime: checkIn, ...(checkOut ? { checkOutTime: checkOut } : {}), reason: reason.trim() });
       if (!result.ok && result.status !== undefined && result.status < 500) {
         setFutureRejected(future && result.message.includes(FUTURE_REJECTION));
         return setError(result.message);

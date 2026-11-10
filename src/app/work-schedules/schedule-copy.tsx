@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Badge, Button, GuideBand, NoticeBand, useToast } from "@/components/common";
+import { Badge, Button, GuideBand, NoticeBand, useAction, useToast } from "@/components/common";
 import { useAccount, usePagePermission, useStores } from "@/components/site/session-gate";
 import { isPlatformRole } from "@/lib/auth-routes";
 import { isClosedStore } from "@/lib/store-scope";
@@ -50,6 +50,7 @@ export function CopyPreviewPanel({ query, today, preview }: { query: ScheduleQue
   const router = useRouter();
   const toast = useToast();
   const onFailure = useFailure();
+  const copyLastWeek = useAction(copyLastWeekAction, { overlay: false });
   const [error, setError] = useState("");
   const [saving, startSaving] = useTransition();
   const store = useStores().find((s) => s.storeId === query.storeId);
@@ -91,7 +92,7 @@ export function CopyPreviewPanel({ query, today, preview }: { query: ScheduleQue
     setError("");
     startSaving(async () => {
       try {
-        const result = await copyLastWeekAction(query.storeId, query.week);
+        const result = await copyLastWeek(query.storeId, query.week);
         if (result.ok) {
           toast(`${result.copied}명의 근무스케줄을 복사했습니다.`);
           close();

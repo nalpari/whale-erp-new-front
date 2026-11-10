@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { Badge, Blocked, Button, DataTable, Select, TextField, Toggle, useToast, type Column } from "@/components/common";
+import { Badge, Blocked, Button, DataTable, Select, TextField, Toggle, useAction, useToast, type Column } from "@/components/common";
 import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, withKeptPending, type GroupDraft } from "@/lib/code-drafts";
 import { failureView, STALE_DETAIL } from "@/lib/code-save";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
@@ -66,6 +66,8 @@ export function CodeGroupPanel({
   const [saving, startSaving] = useTransition();
   const [applyTarget, setApplyTarget] = useState<Draft | null>(null);
   const [applying, startApplying] = useTransition();
+  const applyCodeGroupToBps = useAction(applyCodeGroupToBpsAction, { overlay: false });
+  const saveCodeGroups = useAction(saveCodeGroupsAction, { overlay: false });
   const [notice, setNotice] = useState<string | null>(null);
   const [applyError, setApplyError] = useState<string | null>(null);
   // 저장을 시작한 목록과 고른 그룹. 저장할 때마다 두고, 다음에 오는 목록이 바로 그 목록을 대신하면 아직 저장하지 못한 새 행을
@@ -156,7 +158,7 @@ export function CodeGroupPanel({
     setApplyError(null);
     startApplying(async () => {
       // 요청 자체가 실패하면(연결 끊김 · 재배포로 action 을 못 찾음) 오류 화면으로 넘기지 않고 띠로 알린다
-      const result = await applyCodeGroupToBpsAction(target.groupCode).catch((error: unknown) => {
+      const result = await applyCodeGroupToBps(target.groupCode).catch((error: unknown) => {
         console.error("BP 적용 요청 실패", target.groupCode, error);
         return { ok: false as const, message: UNREACHABLE };
       });
@@ -184,7 +186,7 @@ export function CodeGroupPanel({
     startSaving(async () => {
       // 요청 자체가 끊기면(연결 끊김 · 재배포로 action 을 못 찾음) 서버에서는 저장됐을 수 있다 — 오류 화면으로 넘기지 않고
       // 목록을 다시 받아 띠로 알린다. 저장 안 됐으면 목록이 같아 입력값이 그대로, 수정만 됐으면 새 행이 이어진다(savingFrom).
-      const result = await saveCodeGroupsAction(input).catch((error: unknown) => {
+      const result = await saveCodeGroups(input).catch((error: unknown) => {
         console.error("공통코드 그룹 저장 요청 실패", error);
         return null;
       });

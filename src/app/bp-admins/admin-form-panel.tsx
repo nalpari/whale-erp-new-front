@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useLayoutEffect, useRef, useState, useTransition, type KeyboardEvent, type ReactNode, type RefObject } from "react";
-import { Button, ConfirmDialog, DataTable, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, Tag, TextField } from "@/components/common";
+import { Button, ConfirmDialog, DataTable, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, Tag, TextField, useAction } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { useAccount, useCurrentBp } from "@/components/site/session-gate";
@@ -128,6 +128,12 @@ export function AdminFormPanel(props: Props) {
     }
   }
   const [saving, startSaving] = useTransition();
+  const getBpAdminStoreOptions = useAction(getBpAdminStoreOptionsAction, { overlay: false });
+  const getBpAdminUpdateImpact = useAction(getBpAdminUpdateImpactAction, { overlay: false });
+  const checkBpAdminLoginId = useAction(checkBpAdminLoginIdAction, { overlay: false });
+  const checkBpAdminEmail = useAction(checkBpAdminEmailAction, { overlay: false });
+  const createBpAdmin = useAction(createBpAdminAction, { overlay: false });
+  const updateBpAdmin = useAction(updateBpAdminAction, { overlay: false });
   const router = useRouter();
   /** 칸별 중복 확인 차례 — 고치거나 다시 묻거나 칸을 되돌리면 올라가, 앞선 답을 버린다 */
   const checkNumber = useRef({ loginId: 0, email: 0 });
@@ -157,7 +163,7 @@ export function AdminFormPanel(props: Props) {
   useEffect(() => {
     if (!optionsRole) return;
     let live = true;
-    getBpAdminStoreOptionsAction(optionsRole as BpAdminRoleType, editingId)
+    getBpAdminStoreOptions(optionsRole as BpAdminRoleType, editingId)
       .then((result) => {
         if (!live) return;
         if (result.ok) setOptions({ key: optionsKey, items: result.items.map(optionOf) });
@@ -170,7 +176,7 @@ export function AdminFormPanel(props: Props) {
     return () => {
       live = false;
     };
-  }, [optionsRole, optionsKey, editingId]);
+  }, [getBpAdminStoreOptions, optionsRole, optionsKey, editingId]);
   const optionsReady = options?.key === optionsKey;
 
   const editing = mode === "edit" ? props.admin : null;
@@ -184,19 +190,17 @@ export function AdminFormPanel(props: Props) {
     let live = true;
     const storeIds = editing.stores.filter((s) => !s.isOutOfScope).map((s) => s.storeId);
     // 띠는 미리 알리는 것뿐이다 — 못 받으면 띠 없이 두고, 저장을 누를 때 다시 센다
-    getBpAdminUpdateImpactAction(editing.adminAccountId, { accountStatus: "INACTIVE", storeIds })
+    getBpAdminUpdateImpact(editing.adminAccountId, { accountStatus: "INACTIVE", storeIds })
       .then((result) => {
         if (!live) return;
         if (result.ok) setDeactivation({ key: impactKey, impact: result });
-        // 로그인이 끝났으면 띠가 없는 것이 「연결된 계정 없음」으로 읽히지 않게 알린다(중복 확인과 같다)
-        else if (result.status === 401) setFailure(result.message);
         else console.warn("함께 미사용이 될 가맹 관리자를 세지 못했습니다 — 저장할 때 다시 센다", result.status, result.message);
       })
       .catch((error: unknown) => console.warn("함께 미사용이 될 가맹 관리자 조회 호출 실패 — 저장할 때 다시 센다", error));
     return () => {
       live = false;
     };
-  }, [watchDeactivation, editing, impactKey]);
+  }, [getBpAdminUpdateImpact, watchDeactivation, editing, impactKey]);
   const deactivationImpact = watchDeactivation && deactivation?.key === impactKey ? deactivation.impact : null;
 
   /** 저장 전 확인창 — 함께 바뀌는 가맹 관리자가 있을 때만 뜬다. 보낼 값을 쥐고 있다가 [저장]에서 그대로 보낸다 */
@@ -256,8 +260,8 @@ export function AdminFormPanel(props: Props) {
    * 2026-10-28 사용자 지정). 이메일도 같은 세 상태를 이메일 문구로 보인다(EmailAvailability, 2026-10-28 사용자 지정).
    */
   const CHECKS = {
-    loginId: { formatError: loginIdError, ask: checkBpAdminLoginIdAction, taken: LOGIN_ID_TAKEN, value: (v: string) => v.trim() },
-    email: { formatError: emailError, ask: checkBpAdminEmailAction, taken: EMAIL_TAKEN, value: (v: string) => v.trim().toLowerCase() },
+    loginId: { formatError: loginIdError, ask: checkBpAdminLoginId, taken: LOGIN_ID_TAKEN, value: (v: string) => v.trim() },
+    email: { formatError: emailError, ask: checkBpAdminEmail, taken: EMAIL_TAKEN, value: (v: string) => v.trim().toLowerCase() },
   };
   const checkAvailable = (field: "loginId" | "email", raw: string) => {
     if (mode !== "create" || !raw.trim()) return;
@@ -282,9 +286,8 @@ export function AdminFormPanel(props: Props) {
           setCheck(result.available ? "available" : "idle");
           return;
         }
-        setCheck(result.status === 400 || result.status === 401 ? "idle" : "failed");
+        setCheck(result.status === 400 ? "idle" : "failed");
         if (result.status === 400) setErrors((e) => ({ ...e, [field]: result.message }));
-        else if (result.status === 401) setFailure(result.message);
         else console.warn(`${field} 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다`, result.status, result.message);
       })
       .catch((error: unknown) => {
@@ -323,7 +326,7 @@ export function AdminFormPanel(props: Props) {
     sentForm.current = form;
     startSaving(async () => {
       if (props.mode === "create") {
-        const result = await createBpAdminAction(toCreateBpAdminInput(form)).catch(unknownResult("등록"));
+        const result = await createBpAdmin(toCreateBpAdminInput(form)).catch(unknownResult("등록"));
         if (!result.ok) {
           // 결과를 모르면 목록을 새로 받아, 이미 만들어졌는지 사용자가 볼 수 있게 한다
           if (result.status === undefined) router.refresh();
@@ -338,14 +341,14 @@ export function AdminFormPanel(props: Props) {
       const { deactivating, removed } = cascadeOf(admin, input);
       // 본인은 상태 · 점포를 바꾸지 못해(api 도 막는다) 번질 것이 없다 — 세지 않는다
       if (admin.roleTypeCode === "FM" && !admin.actions.isSelf) {
-        const impact = await getBpAdminUpdateImpactAction(admin.adminAccountId, input).catch((error: unknown) => {
+        const impact = await getBpAdminUpdateImpact(admin.adminAccountId, input).catch((error: unknown) => {
           console.error("BP 관리자 함께 바뀌는 계정 조회 호출 실패", error);
           return { ok: false as const, status: undefined, message: "" };
         });
-        // 모르고 저장하면 가맹 관리자가 말없이 바뀔 수 있다 — 세지 못하면 저장하지 않는다. 로그인 만료는 할 일이 다르므로 그 문구를 그대로 둔다
+        // 모르고 저장하면 가맹 관리자가 말없이 바뀔 수 있다 — 세지 못하면 저장하지 않는다.
         if (!impact.ok)
           return setFailure(
-            impact.status === 401 ? impact.message : `저장하지 않았습니다. 함께 바뀌는 가맹 관리자를 확인하지 못했습니다. ${impact.status ? impact.message : "잠시 후 다시 시도해 주세요."}`,
+            `저장하지 않았습니다. 함께 바뀌는 가맹 관리자를 확인하지 못했습니다. ${impact.status ? impact.message : "잠시 후 다시 시도해 주세요."}`,
           );
         if (impact.deactivatedCount || impact.unmappedCount) return setCascade({ input, impact, deactivating, removed });
       }
@@ -355,7 +358,7 @@ export function AdminFormPanel(props: Props) {
 
   const submitUpdate = async (input: UpdateBpAdminInput) => {
     if (props.mode !== "edit") return;
-    const result = await updateBpAdminAction(props.admin.adminAccountId, input).catch(unknownResult("수정"));
+    const result = await updateBpAdmin(props.admin.adminAccountId, input).catch(unknownResult("수정"));
     if (result.ok) return props.onSaved();
     if (result.status === undefined) router.refresh();
     // 다른 사람이 먼저 고쳤으면 저장하지 않고 최신 정보를 불러온다 — 칸은 새 값으로 다시 채워진다(알림은 화면이 토스트로 한다)

@@ -18,6 +18,7 @@ import {
   RequiredMark,
   Select,
   TextField,
+  useAction,
   useToast,
   type Column,
 } from "@/components/common";
@@ -115,6 +116,13 @@ type Props =
 export function StoreFormView(props: Props) {
   const { mode, backHref, imageTypes } = props;
   const router = useRouter();
+  const getAddressCoordinate = useAction(getAddressCoordinateAction, { overlay: false });
+  const verifyStoreBusiness = useAction(verifyStoreBusinessAction, { overlay: false });
+  const putStoreImage = useAction(putStoreImageAction, { overlay: false });
+  const deleteStoreImage = useAction(deleteStoreImageAction, { overlay: false });
+  const getStoreTransitions = useAction(getStoreTransitionsAction, { overlay: false });
+  const createStore = useAction(createStoreAction, { overlay: false });
+  const updateStore = useAction(updateStoreAction, { overlay: false });
   // 선택지 글자는 <option> 에 글자로만 넣는다 — 공통코드 한글(로그인 정보)
   const statusLabel = useCodeLabel("STORE_STATUS");
   // 등록할 BP — 이 탭의 BP(플랫폼 계정이 고른 BP, 그 밖은 소속 BP). 주소 /bp/{id} 의 BP 와 같다(SessionGate 가 주소로 정한다) —
@@ -250,7 +258,7 @@ export function StoreFormView(props: Props) {
     // 비는 동안은 선택칸이 막히고(disabled) 저장(bodyOf)도 좌표 없이는 사용을 보내지 않으니 이미 막혀 있다.
     setForm((f) => ({ ...f, latitude: "", longitude: "" }));
     startLocating(async () => {
-      const result = await getAddressCoordinateAction(item.roadAddressBase, item.jibunAddress).catch((error: unknown) => {
+      const result = await getAddressCoordinate(item.roadAddressBase, item.jibunAddress).catch((error: unknown) => {
         console.error("좌표 조회 호출 실패", error);
         return { ok: false as const, message: "좌표를 가져오지 못했습니다. 위도 · 경도를 직접 적어 주세요." };
       });
@@ -284,7 +292,7 @@ export function StoreFormView(props: Props) {
     // (address-search.ts 의 roadAddressBase 설명과 같다) — 끝의 괄호를 떼고 묻는다.
     const query = form.address.replace(/\s*\([^)]*\)\s*$/, "");
     startLocating(async () => {
-      const result = await getAddressCoordinateAction(query, "").catch((error: unknown) => {
+      const result = await getAddressCoordinate(query, "").catch((error: unknown) => {
         console.error("좌표 조회 호출 실패", error);
         return { ok: false as const, message: "좌표를 가져오지 못했습니다. 위도 · 경도를 직접 적어 주세요." };
       });
@@ -324,7 +332,7 @@ export function StoreFormView(props: Props) {
     // 10분은 api 가 요청을 받을 때부터다 — 응답을 받은 시각으로 세면 끝자락 저장이 api 에서 거절된다
     const startedAt = Date.now();
     startVerifying(async () => {
-      const result = await verifyStoreBusinessAction({
+      const result = await verifyStoreBusiness({
         bizRegistrationNumber: values.bizNumber,
         ceoName: values.ceoName,
         openDate: values.openDate,
@@ -334,8 +342,8 @@ export function StoreFormView(props: Props) {
       if (mine !== verifyNumber.current) return;
       // 문구 · 자리는 네 화면 공통(S-VRNTHD) — 중복은 번호 칸 아래, 나머지는 인증하기 버튼 바로 위 한 줄
       if (!result.ok) {
-        // 로그인 만료 · 형식(400) · 권한(403) · 점포 없음(404)은 할 일을 알리는 api 문구라 그대로 보인다(회원가입의 400 과 같다)
-        const keepApiText = result.status === 400 || result.status === 401 || result.status === 403 || result.status === 404;
+        // 형식(400) · 권한(403) · 점포 없음(404)은 할 일을 알리는 api 문구라 그대로 보인다(회원가입의 400 과 같다)
+        const keepApiText = result.status === 400 || result.status === 403 || result.status === 404;
         const failure = keepApiText ? { field: null, message: result.message } : bizVerifyFailure(result.status);
         return setErrors((e) => ({ ...e, [failure.field ?? "bizVerify"]: failure.message }));
       }
@@ -388,9 +396,9 @@ export function StoreFormView(props: Props) {
     if (image.kind === "new") {
       const data = new FormData();
       data.append("file", image.file, image.file.name);
-      return putStoreImageAction(storeId, data).catch(unknownResult("대표 이미지 저장"));
+      return putStoreImage(storeId, data).catch(unknownResult("대표 이미지 저장"));
     }
-    if (image.kind === "remove") return deleteStoreImageAction(storeId).catch(unknownResult("대표 이미지 삭제"));
+    if (image.kind === "remove") return deleteStoreImage(storeId).catch(unknownResult("대표 이미지 삭제"));
     return null;
   };
 
@@ -405,7 +413,7 @@ export function StoreFormView(props: Props) {
     previous: StoreStatus,
     blocked?: { message: string; image: "saved" | "removed" | null },
   ): Promise<{ counts: StoreClosingCounts | null } | null> => {
-    const result = await getStoreTransitionsAction(storeId).catch(unknownResult("폐점 조건 확인"));
+    const result = await getStoreTransitions(storeId).catch(unknownResult("폐점 조건 확인"));
     if (!blocked && result.ok && result.canClose) return { counts: result.closing?.total ?? null };
     const counts = result.ok && result.closing?.isBlocked ? result.closing.total : null;
     // 저장이 막힌 뒤 다시 확인도 실패했으면 두 문구를 잇는다(상세 화면과 같다) — 확인 실패 까닭을 버리지 않는다
@@ -441,7 +449,7 @@ export function StoreFormView(props: Props) {
   const handleSaveConfirm = () =>
     startSaving(async () => {
       if (props.mode === "create") {
-        const result = await createStoreAction(toCreateStoreInput(form, currentBp.bpCodeId)).catch(unknownResult("등록"));
+        const result = await createStore(toCreateStoreInput(form, currentBp.bpCodeId)).catch(unknownResult("등록"));
         if (!result.ok && result.status === undefined) {
           // 저장됐을 수도 있다 — 다시 저장하면 점포가 둘 생길 수 있으므로 목록에서 확인하게 하고 저장을 잠근다
           setCreateUncertain(true);
@@ -496,7 +504,7 @@ export function StoreFormView(props: Props) {
           router.refresh();
         }
       }
-      const result = await updateStoreAction(storeId, toUpdateStoreInput(form, props.store.updatedAt)).catch(unknownResult("수정"));
+      const result = await updateStore(storeId, toUpdateStoreInput(form, props.store.updatedAt)).catch(unknownResult("수정"));
       setDialog(null);
       // 확인과 저장 사이에 퇴근하지 않은 출근이 생겼다 — 같이 고친 칸까지 아무것도 저장되지 않았다(이미지는 위에서 먼저 보냈을 수 있다).
       // api 문구와 지금의 막힘을 보이고 점포상태를 되돌린다. 다른 칸은 입력한 그대로 둔다

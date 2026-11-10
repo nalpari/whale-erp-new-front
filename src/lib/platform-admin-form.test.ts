@@ -173,14 +173,11 @@ test("여러 칸 검증 오류(400 배열)는 칸에 붙이지 않고 띠로 —
   assert.equal(serverErrorField(400, "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다", "create"), "loginId");
 });
 
-test("중복확인 답 → 화면 상태 — 사용 중 · 400 은 칸 오류, 401 · 403 은 띠, 그 밖은 확인 실패(저장은 막지 않는다)", () => {
+// 로그인 만료는 useAction 이 「로그인 만료」 팝업으로 처리해 이 판정까지 오지 않는다
+test("중복확인 답 → 화면 상태 — 사용 중 · 400 은 칸 오류, 403 은 띠, 그 밖은 확인 실패(저장은 막지 않는다)", () => {
   assert.deepEqual(loginIdCheckOutcome({ ok: true, available: true }), { check: "available" });
   assert.deepEqual(loginIdCheckOutcome({ ok: true, available: false }), { check: "idle", fieldError: LOGIN_ID_TAKEN });
   assert.deepEqual(loginIdCheckOutcome({ ok: false, status: 400, message: "아이디는 …" }), { check: "idle", fieldError: LOGIN_ID_FORMAT_ERROR });
-  assert.deepEqual(loginIdCheckOutcome({ ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." }), {
-    check: "idle",
-    failure: "로그인이 만료되었습니다. 다시 로그인해 주세요.",
-  });
   // 403(등록 권한 없음)은 저장해도 막히므로 띠로 바로 알린다
   assert.deepEqual(loginIdCheckOutcome({ ok: false, status: 403, message: "권한이 없습니다" }), { check: "idle", failure: "권한이 없습니다" });
   for (const status of [404, 409, 429, 500, undefined]) {

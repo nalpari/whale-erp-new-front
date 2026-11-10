@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useLayoutEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
-import { Button, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, Tag, TextField } from "@/components/common";
+import { Button, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, Tag, TextField, useAction } from "@/components/common";
 import { useAccount, useCodes } from "@/components/site/session-gate";
 import { labelOf } from "@/lib/enums";
 import {
@@ -105,6 +105,10 @@ export function AdminFormPanel(props: Props) {
     emailCheckNumber.current++;
   }, [resetSignal]);
   const [saving, startSaving] = useTransition();
+  const checkEmailAvailable = useAction(checkEmailAvailableAction, { overlay: false });
+  const checkLoginIdAvailable = useAction(checkLoginIdAvailableAction, { overlay: false });
+  const createPlatformAdmin = useAction(createPlatformAdminAction, { overlay: false });
+  const updatePlatformAdmin = useAction(updatePlatformAdminAction, { overlay: false });
   /**
    * 저장 요청이 떠 있는 동안 보낸 값과 달라진 칸 — 입력칸은 저장 중에도 잠기지 않는다. 늦게 온 거절은 보낸 값(sentForm)의
    * 것이라 바뀐 값에 붙이면 쓸 수 있는 아이디가 「사용 중」으로 막힌다. 그런 칸의 거절은 위 띠로만 알린다. 지웠다가 같은 값으로
@@ -167,7 +171,7 @@ export function AdminFormPanel(props: Props) {
    * 아이디 중복 확인(등록만) — 칸을 벗어나거나 Enter 를 칠 때. 형식이 틀리면 api 에 묻지 않고 형식 문구를 단다.
    * 비어 있으면 저장할 때 알린다. 서버가 거절한 값(저장 때 중복 · 400, 확인 때 「사용 중」 · 400)을 고치지 않았으면 다시 묻지 않는다.
    * 묻는 사이 아이디를 고치거나 · 패널을 되돌리거나 · 저장이 거절되면 늦게 온 답은 버린다.
-   * 400(형식)이면 화면의 형식 문구를 칸 아래에(고칠 때까지 남긴다), 401(로그인 만료) · 403(등록 권한 없음)이면 위 띠로 바로
+   * 400(형식)이면 화면의 형식 문구를 칸 아래에(고칠 때까지 남긴다), 403(등록 권한 없음)이면 위 띠로 바로
    * 알린다 — 저장해도 같은 이유로 막히니 다 채운 뒤에야 알면 늦다. 그 밖(429 · 5xx · 연결 실패)은 칸 아래에 회색으로 "확인하지 못했다"고만 알린다 — 저장은 막지 않고 api 가 다시 본다.
    * 원인은 콘솔에 남긴다.
    */
@@ -187,7 +191,7 @@ export function AdminFormPanel(props: Props) {
     // 서버가 거절한 값은 위에서 이미 돌려보냈으므로, 여기서 지워지는 것은 그 밖의 칸 오류뿐이다.
     clearError("loginId");
     setLoginIdCheck("checking");
-    checkLoginIdAvailableAction(value.trim())
+    checkLoginIdAvailable(value.trim())
       .then((result) => {
         if (mine !== checkNumber.current) return;
         const { check, fieldError, failure } = loginIdCheckOutcome(result);
@@ -213,7 +217,7 @@ export function AdminFormPanel(props: Props) {
    * 이메일 중복 확인(등록 · 수정 모두) — 칸을 벗어나거나 Enter 를 칠 때. 형식이 틀리면 묻지 않는다(2026-10-29 재영 — 전엔 형식만 봤다).
    * 수정 화면에서 원래 이메일 그대로면 묻지 않는다 — 바꾸지 않은 값은 확인 대상이 아니다(마이페이지와 같다).
    * 서버가 거절한 값을 고치지 않고 다시 벗어난 것이면 묻지 않는다(아이디와 같다). 400 은 화면 형식 문구로 칸에(고칠 때까지 남긴다),
-   * 401 은 패널 위 띠로, 403 은 등록 권한 없이 수정만 하는 사람이라 조용히(콘솔만), 그 밖(5xx · 연결 실패)은 「확인하지 못했습니다」 —
+   * 403 은 등록 권한 없이 수정만 하는 사람이라 조용히(콘솔만), 그 밖(5xx · 연결 실패)은 「확인하지 못했습니다」 —
    * 저장할 때 api 가 다시 본다.
    */
   const checkEmail = (value: string) => {
@@ -229,7 +233,7 @@ export function AdminFormPanel(props: Props) {
     const mine = ++emailCheckNumber.current;
     clearError("email");
     setEmailCheck("checking");
-    checkEmailAvailableAction(value.trim().toLowerCase())
+    checkEmailAvailable(value.trim().toLowerCase())
       .then((result) => {
         if (mine !== emailCheckNumber.current) return;
         if (result.ok) {
@@ -240,15 +244,14 @@ export function AdminFormPanel(props: Props) {
           setEmailCheck(result.available ? "available" : "idle");
           return;
         }
-        setEmailCheck(result.status === 400 || result.status === 401 || result.status === 403 ? "idle" : "failed");
+        setEmailCheck(result.status === 400 || result.status === 403 ? "idle" : "failed");
         if (result.status === 400) {
           // 아이디 확인과 같다 — 화면 형식 문구로, 고칠 때까지 같은 값으로 다시 묻지 않는다
           const text = serverFieldMessage("email", 400, result.message);
           console.warn("이메일 중복 확인 400 — 화면 형식 문구로 보인다", result.message);
           setServerErrors((e) => ({ ...e, email: text }));
           setErrors((e) => ({ ...e, email: text }));
-        } else if (result.status === 401) setFailure(result.message);
-        else if (result.status === 403) console.warn("이메일 중복 확인 403 — 등록 권한이 없어 저장할 때 api 가 본다", result.message);
+        } else if (result.status === 403) console.warn("이메일 중복 확인 403 — 등록 권한이 없어 저장할 때 api 가 본다", result.message);
         else console.warn("이메일 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
       })
       .catch((error: unknown) => {
@@ -275,7 +278,7 @@ export function AdminFormPanel(props: Props) {
     sentForm.current = form;
     startSaving(async () => {
       if (props.mode === "create") {
-        const result = await createPlatformAdminAction(toCreateInput(form)).catch(unknownResult("등록"));
+        const result = await createPlatformAdmin(toCreateInput(form)).catch(unknownResult("등록"));
         if (!result.ok) {
           // 결과를 모르면 목록을 새로 받아, 이미 만들어졌는지 사용자가 볼 수 있게 한다
           if (result.status === undefined) router.refresh();
@@ -283,7 +286,7 @@ export function AdminFormPanel(props: Props) {
         }
         return props.onSaved(result);
       }
-      const result = await updatePlatformAdminAction(props.admin.adminAccountId, toUpdateInput(form, props.admin.updatedAt)).catch(unknownResult("수정"));
+      const result = await updatePlatformAdmin(props.admin.adminAccountId, toUpdateInput(form, props.admin.updatedAt)).catch(unknownResult("수정"));
       if (result.ok) return props.onSaved();
       if (result.status === undefined) router.refresh();
       // 다른 사람이 먼저 고쳤으면 저장하지 않고 최신 정보를 불러온다(S-CZGHBS) — 칸은 새 값으로 다시 채워진다

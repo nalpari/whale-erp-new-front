@@ -2,9 +2,9 @@
 
 import { unstable_rethrow } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type MouseEvent, type RefObject } from "react";
-import { logout, logoutAfterWithdrawal } from "@/app/actions";
+import { logoutAfterWithdrawal } from "@/app/actions";
 import { ClosingCheckList, ClosingCondition } from "@/app/stores/store-closing-parts";
-import { Blocked, Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, GuideNote, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
+import { Blocked, Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, GuideNote, PasswordInput, Select, SlidePanel, Textarea, useAction } from "@/components/common";
 import {
   blockedStoresOf,
   moveTargetOf,
@@ -94,6 +94,9 @@ function ConditionValue({ value, checked }: { value: string; checked: boolean | 
  * 사용자가 "확인"을 눌러야 일어난다 — 탈퇴 안내 이메일을 보냈다는 문구를 반드시 보게 한다. */
 export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open: boolean; onClose: () => void; trigger: RefObject<HTMLElement | null> }) {
   const ids = useId();
+  const getWithdrawEligibility = useAction(getWithdrawEligibilityAction, { overlay: false });
+  const verifyWithdrawPassword = useAction(verifyWithdrawPasswordAction, { overlay: false });
+  const createWithdrawal = useAction(createWithdrawalAction, { overlay: false });
   // BP 마스터의 관리 점포는 BP 전체 점포다. 직영이 아닌 점포가 있을 때만 가맹마스터 안내 줄을 둔다(모르는 유형도 가맹으로 본다 — api 와 같다)
   const hasFranchiseStore = useStores().some((s) => s.storeTypeCode !== "DIRECT");
   const [step, setStep] = useState<Step>("password");
@@ -134,7 +137,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
   const loadEligibility = async (mine: number, keepCurrent = false) => {
     let result: EligibilityResult;
     try {
-      result = await getWithdrawEligibilityAction();
+      result = await getWithdrawEligibility();
     } catch (error: unknown) {
       unstable_rethrow(error);
       console.error("탈퇴 조건 조회 요청 실패", error);
@@ -187,11 +190,10 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
     const mine = saveNumber.current;
     startVerifying(async () => {
       try {
-        const result = await verifyWithdrawPasswordAction(form.currentPassword);
+        const result = await verifyWithdrawPassword(form.currentPassword);
         if (mine !== saveNumber.current) return;
         if (result.ok) return setStep("content");
-        // 1단계라 아직 탈퇴 전이다 — 세션만 끝난 것이니 로그인 화면으로 간다(logout). 최종 제출의 401 과 다르다
-        if (result.status === 401) return void signOut(logout);
+        // 1단계라 아직 탈퇴 전이다 — 로그인 만료는 useAction 팝업이 맡는다
         if (result.status === 400) return setFieldError({ at: "currentPassword", message: result.message });
         setFailure(result.message);
       } catch (error: unknown) {
@@ -209,7 +211,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
     const mine = saveNumber.current;
     startSaving(async () => {
       try {
-        const result = await createWithdrawalAction({
+        const result = await createWithdrawal({
           currentPassword: form.currentPassword,
           reasonCode: form.reasonCode,
           reasonDetail: form.reasonCode === "WD_INPUT" ? form.reasonDetail : undefined,

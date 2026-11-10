@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { Button, DataTable, Pagination, type Column } from "@/components/common";
+import { Button, DataTable, Pagination, useAction, type Column } from "@/components/common";
 import { HistoryScroll, HistoryTotalBar, WideDialog } from "@/components/site/wide-dialog";
 import type { BpMasterHistory, BpMasterHistoryList } from "@/lib/bp-masters";
 import { formatDateTime } from "@/lib/format";
@@ -42,6 +42,7 @@ export function HistoryButton({ bpCodeId, panelOpen }: { bpCodeId: number; /** �
   const [data, setData] = useState<BpMasterHistoryList | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [loading, startLoading] = useTransition();
+  const getBpMasterHistories = useAction(getBpMasterHistoriesAction, { overlay: false });
 
   // 쪽을 빨리 넘기면 늦게 온 앞 쪽 응답이 새 쪽을 덮지 않게 마지막 요청 번호만 받는다
   const requestNumber = useRef(0);
@@ -50,7 +51,7 @@ export function HistoryButton({ bpCodeId, panelOpen }: { bpCodeId: number; /** �
   const load = (next: number, size: HistoryPageSize = pageSize) => {
     const mine = ++requestNumber.current;
     startLoading(async () => {
-      const result = await getBpMasterHistoriesAction(bpCodeId, next, size).catch((error: unknown) => {
+      const result = await getBpMasterHistories(bpCodeId, next, size).catch((error: unknown) => {
         console.error("BP 마스터 계정 이력 조회 호출 실패", error);
         return { ok: false as const, message: "이력을 받지 못했습니다. 잠시 후 다시 시도해 주세요." };
       });

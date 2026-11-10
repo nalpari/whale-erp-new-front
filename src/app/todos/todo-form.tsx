@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, DateField, DetailTable, FieldMessage, FormGroup, FormRow, GuideBand, GuideNote, NoticeBand, RequiredMark, SearchField, Select, Textarea, TextField, Toggle, useToast } from "@/components/common";
+import { Button, DateField, DetailTable, FieldMessage, FormGroup, FormRow, GuideBand, GuideNote, NoticeBand, RequiredMark, SearchField, Select, Textarea, TextField, Toggle, useAction, useToast } from "@/components/common";
 import { useAccount, useCurrentBp, useMenuRole, useStores } from "@/components/site/session-gate";
 import { isFranchiseRole } from "@/lib/auth-routes";
 import { bpPath } from "@/lib/bp-path";
@@ -180,6 +180,9 @@ function TodoFormFields({
   // BP 마스터 · BP 관리자에게 가맹 점포가 빠지는데, TO-DO 는 점포 단위라 본사 제공 동의와 상관없다(운영 정책 ATT-30).
   const stores = useStores().filter((s) => s.storeStatusCode !== "CLOSED");
   const onFailure = useFailure();
+  const getAssignableStaff = useAction(getAssignableStaffAction, { overlay: false });
+  const updateTodo = useAction(updateTodoAction, { overlay: false });
+  const createTodo = useAction(createTodoAction, { overlay: false });
   // 가맹 마스터 · 가맹 관리자 — 자기 점포 직원을 모두 봐서 근무지 전체도 미리 확인한다(prechecks)
   const franchiseRole = isFranchiseRole(useAccount().roleTypeCode);
   const [form, setForm] = useState<Form>(() => (detail ? fromDetail(detail) : initialForm(today, stores.length === 1 ? String(stores[0].storeId) : "")));
@@ -222,7 +225,7 @@ function TodoFormFields({
 
   /**
    * 개인 배정일 때 그 근무지에서 배정할 수 있는 직원을 받는다. 이미 받은(받는 중인) 근무지면 다시 받지 않는다 — 실패했으면 다시 받는다.
-   * 실패는 이 칸에 고정 문구로 보인다. 401 · 403 은 useFailure 로 넘긴다 — 로그인 만료 · 비밀번호 변경 요구 · 권한 없음(쫓아냄)을 공통으로 처리한다.
+   * 실패는 이 칸에 고정 문구로 보인다. 403 은 useFailure 로 넘긴다 — 비밀번호 변경 요구 · 권한 없음(쫓아냄)을 공통으로 처리한다. 로그인 만료는 useAction 이 팝업으로 처리한다.
    */
   const loadStaff = (storeId: string, assigneeType: Form["assigneeType"], refresh = false) => {
     if (!storeId || !prechecks(storeId, assigneeType)) return;
@@ -232,12 +235,12 @@ function TodoFormFields({
     const n = ++seq.current;
     // 다시 확인(refresh)할 때는 받는 동안 지금 결과를 그대로 둔다 — 「불러오는 중」으로 바꾸면 깜빡인다
     if (!(refresh && pool?.storeId === storeId && pool.state === "ok")) setPool({ storeId, state: "loading" });
-    getAssignableStaffAction(Number(storeId))
+    getAssignableStaff(Number(storeId))
       .then((result) => {
         if (n !== seq.current) return;
         if (result.ok) return setPool({ storeId, state: "ok", staff: result.staff });
-        // 401(로그인 만료) · 403(비밀번호 변경 요구 · 권한 없음)은 공통 처리로 넘긴다. 문구가 돌아오면 그 문구를 이 칸에 보인다
-        if (result.status === 401 || result.status === 403) {
+        // 403(비밀번호 변경 요구 · 권한 없음)은 공통 처리로 넘긴다. 문구가 돌아오면 그 문구를 이 칸에 보인다
+        if (result.status === 403) {
           const message = onFailure(result);
           return setPool(message === null ? null : { storeId, state: "error", message });
         }
@@ -308,7 +311,7 @@ function TodoFormFields({
         if (!Object.keys(body).length) return router.push(cancelHref);
         let result: Awaited<ReturnType<typeof updateTodoAction>>;
         try {
-          result = await updateTodoAction(detail.todoId, body);
+          result = await updateTodo(detail.todoId, body);
         } catch (error) {
           console.error("TO-DO 수정 실패", error);
           setServerError("저장 결과를 확인하지 못했습니다. 화면을 새로 불러와 확인해 주세요.");
@@ -327,7 +330,7 @@ function TodoFormFields({
       }
       let result: Awaited<ReturnType<typeof createTodoAction>>;
       try {
-        result = await createTodoAction(toCreateBody(form));
+        result = await createTodo(toCreateBody(form));
       } catch (error) {
         console.error("TO-DO 등록 실패", error);
         toast(CREATE_UNKNOWN);

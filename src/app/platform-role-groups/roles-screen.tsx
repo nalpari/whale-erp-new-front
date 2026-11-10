@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Badge, Button, DataTable, PageBar, type Column } from "@/components/common";
+import { useMemo, useState } from "react";
+import { Badge, Button, DataTable, PageBar, useAction, type Column } from "@/components/common";
 import { CodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
@@ -16,7 +16,6 @@ import { RoleSide } from "./role-side";
 // 왼쪽 권한 목록 + 오른쪽 고정 칸(데모 system/roles · role-side). 오른쪽 칸은 슬라이드 패널이 아니라 늘 서 있다.
 // 권한명을 누르면 오른쪽에 그 권한의 수정(고칠 수 없으면 상세)이, [등록]을 누르면 같은 칸에 등록 양식이 선다.
 // [메뉴설정] 팝업(권한별 메뉴설정)은 BP 권한 그룹 관리와 같이 쓴다(components/role-groups) — 이 화면의 action 을 넘긴다.
-const MENU_ACTIONS: MenuDialogActions = { load: getRoleGroupMenusAction, preview: previewRoleGroupMenusAction, save: saveRoleGroupMenusAction };
 
 // 버튼은 지금 주소(/platform-role-groups)의 메뉴 권한(usePagePermission)으로 보인다 — 등록 create, 권한명 · 설명 · 메뉴 저장 update, 삭제 delete. 막는 것은 api 다.
 export function RolesScreen({
@@ -32,6 +31,10 @@ export function RolesScreen({
   lockReasons: EnumValue[];
   menuReasons: EnumValue[];
 }) {
+  const load = useAction(getRoleGroupMenusAction, { overlay: false });
+  const preview = useAction(previewRoleGroupMenusAction, { overlay: false });
+  const save = useAction(saveRoleGroupMenusAction, { overlay: false });
+  const MENU_ACTIONS: MenuDialogActions = useMemo(() => ({ load, preview, save }), [load, preview, save]);
   const router = useRouter();
   const can = usePagePermission();
   const [creating, setCreating] = useState(false);

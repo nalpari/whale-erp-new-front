@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Badge, Button, DataTable, TextField, Toggle, useToast, type Column } from "@/components/common";
+import { Badge, Button, DataTable, TextField, Toggle, useAction, useToast, type Column } from "@/components/common";
 import { CellError, CodePanel, FieldErrors, focusFirstInvalid, recheck, GroupHead, PendingNotice, REORDERED, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
 import { useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
@@ -75,6 +75,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
   // 지금 실패 띠가 그 사이 바뀐 실패인가 — 아랫줄을 「최신 정보로 다시 채웠습니다.」로 고른다(failureView 의 판정 그대로)
   const [failureStale, setFailureStale] = useState(false);
   const [saving, startSaving] = useTransition();
+  const saveBpCodeItems = useAction(saveBpCodeItemsAction, { overlay: false });
   // 저장을 시작한 목록 — 뒤 단계가 실패했거나 결과를 모를 때 다음에 오는 목록 뒤에 새 행을 이어 두고 지울 행 표시도 다시 얹는다(플랫폼 패널과 같다).
   const [savingFrom, setSavingFrom] = useState<BpCodeItem[] | null>(null);
   const nextId = useRef(1);
@@ -169,7 +170,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
     setSavingFrom(items);
     startSaving(async () => {
       // 요청 자체가 끊기면 서버에서는 저장됐을 수 있다 — 목록을 다시 받아 띠로 알린다(플랫폼 패널과 같다).
-      const result = await saveBpCodeItemsAction(group.groupCode, input).catch((error: unknown) => {
+      const result = await saveBpCodeItems(group.groupCode, input).catch((error: unknown) => {
         console.error("BP 상세 코드 저장 요청 실패", group.groupCode, error);
         return null;
       });

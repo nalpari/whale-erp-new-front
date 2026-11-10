@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { createContext, use, useEffect, useRef, useState, useTransition, type CSSProperties, type ReactNode } from "react";
-import { Button, Checkbox, ConfirmDialog, DateField, Field, FormGroup, FormRow, GuideBand, Radio, RequiredMark, Select, SlidePanel, TextField, useBackdropActive, useToast } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DateField, Field, FormGroup, FormRow, GuideBand, Radio, RequiredMark, Select, SlidePanel, TextField, useAction, useBackdropActive, useToast } from "@/components/common";
 import { useAccount, usePagePermission, useStores } from "@/components/site/session-gate";
 import { isPlatformRole } from "@/lib/auth-routes";
 import { isClosedStore } from "@/lib/store-scope";
@@ -208,6 +208,12 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const router = useRouter();
   const toast = useToast();
   const onFailure = useFailure();
+  const getScheduleStaff = useAction(getScheduleStaffAction, { overlay: false });
+  const getScheduleDefaults = useAction(getScheduleDefaultsAction, { overlay: false });
+  const bulkCreateSchedules = useAction(bulkCreateSchedulesAction, { overlay: false });
+  const updateSchedule = useAction(updateScheduleAction, { overlay: false });
+  const createSchedule = useAction(createScheduleAction, { overlay: false });
+  const deleteSchedule = useAction(deleteScheduleAction, { overlay: false });
   const can = usePagePermission();
   const edit = opening.kind === "edit" ? opening : null;
   // 공백에서 열면 그 시각 · 휴게 0분으로 채운다 — 직원을 골라도 계약 값으로 덮지 않는다(「근로계약 시간적용」로 바꾼다)
@@ -242,11 +248,11 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   useEffect(() => {
     if (edit || !workDate) return;
     const n = ++seq.current;
-    getScheduleStaffAction(storeId, workDate)
+    getScheduleStaff(storeId, workDate)
       .then((result) => {
         if (n !== seq.current) return;
         if (result.ok) return setPool({ workDate, state: "ok", staff: result.staff });
-        const message = result.status === 401 || result.status === 403 ? onFailure(result) : STAFF_FAILED;
+        const message = result.status === 403 ? onFailure(result) : STAFF_FAILED;
         setPool(message === null ? null : { workDate, state: "error", message });
       })
       .catch((error: unknown) => {
@@ -255,7 +261,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
       });
     // onFailure 는 렌더마다 새로 만들어진다 — 근무일 · 점포가 바뀔 때만 받는다
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [edit, storeId, workDate]);
+  }, [edit, storeId, workDate, getScheduleStaff]);
 
   /** 계약 값을 받아 둔다. 받은 뒤 fill 로 칸을 채운다. 실패하면 칸은 그대로(빈칸)이고 되돌리기 버튼만 숨는다 */
   const loadDefaults = (id: number, fill?: (d: ScheduleDefaults) => void) => {
@@ -263,10 +269,10 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
     const date = workDate;
     const cached = defaults[key(id)];
     if (cached) return fill?.(cached);
-    getScheduleDefaultsAction(id, workDate)
+    getScheduleDefaults(id, workDate)
       .then((result) => {
         if (!result.ok) {
-          if (result.status === 401 || result.status === 403) onFailure(result);
+          if (result.status === 403) onFailure(result);
           return;
         }
         setDefaults((d) => ({ ...d, [`${id}|${workDate}`]: result.defaults }));
@@ -349,7 +355,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
     startSaving(async () => {
       try {
         if (mode === "bulk") {
-          const result = await bulkCreateSchedulesAction(
+          const result = await bulkCreateSchedules(
             workDate,
             picked.map((id) => ({ staffMemberId: id, ...shiftBody(rows[id]) })),
           );
@@ -367,7 +373,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
           return;
         }
         const body = { workDate, ...shiftBody(shift) };
-        const result = edit ? await updateScheduleAction(edit.item.workScheduleId, body) : await createScheduleAction(staffId, body);
+        const result = edit ? await updateSchedule(edit.item.workScheduleId, body) : await createSchedule(staffId, body);
         if (!result.ok) return fail(result);
         toast(edit ? "updated" : "saved");
         router.refresh();
@@ -386,7 +392,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
     if (!edit) return;
     startSaving(async () => {
       try {
-        const result = await deleteScheduleAction(edit.item.workScheduleId);
+        const result = await deleteSchedule(edit.item.workScheduleId);
         setConfirmDelete(false);
         if (!result.ok) return fail(result);
         toast("deleted");

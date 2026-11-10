@@ -1,6 +1,7 @@
 "use client";
 
-import { DetailTable, FormRow, ReadonlyCard, ReadonlyValue, Tag, type DetailRow } from "@/components/common";
+import { useMemo } from "react";
+import { DetailTable, FormRow, ReadonlyCard, ReadonlyValue, Tag, useAction, type DetailRow } from "@/components/common";
 import { RoleForm, type RoleFormActions } from "@/components/role-groups/role-form";
 import { CodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
@@ -18,8 +19,16 @@ import { actorOf, CARD, FailedBand, InfoBand, reasonLabel, WarnBand, type RoleDe
 // 막는다(2026-10-30 재영). 삭제는 고정 권한도 막는다.
 // 등록은 플랫폼 관리자(PA) 권한만 만든다.
 
-const FORM_ACTIONS: RoleFormActions = { create: createRoleGroupAction, update: updateRoleGroupAction };
-const DELETE_ACTIONS: DeleteDialogActions = { candidates: getDeletionCandidatesAction, remove: deleteRoleGroupAction };
+// 양식 · 삭제 팝업에 넘길 action — 로그인 만료는 useAction 이 팝업으로 알린다
+function useRoleActions() {
+  const create = useAction(createRoleGroupAction, { overlay: false });
+  const update = useAction(updateRoleGroupAction, { overlay: false });
+  const candidates = useAction(getDeletionCandidatesAction, { overlay: false });
+  const remove = useAction(deleteRoleGroupAction, { overlay: false });
+  const form: RoleFormActions = useMemo(() => ({ create, update }), [create, update]);
+  const del: DeleteDialogActions = useMemo(() => ({ candidates, remove }), [candidates, remove]);
+  return { form, del };
+}
 
 export function RoleSide({
   creating,
@@ -40,6 +49,7 @@ export function RoleSide({
   onDeleted: () => void;
 }) {
   const can = usePagePermission();
+  const { form: FORM_ACTIONS } = useRoleActions();
   const role = !creating && detail && "role" in detail ? detail.role : null;
   return (
     <section className={`${CARD} w-[464px] shrink-0`} aria-label={creating ? "권한 등록" : "권한 그룹 상세"}>
@@ -73,6 +83,7 @@ export function RoleSide({
 }
 
 function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; lockReasons: EnumValue[]; onDeleted: () => void }) {
+  const { form: FORM_ACTIONS, del: DELETE_ACTIONS } = useRoleActions();
   const can = usePagePermission();
   const editable = can.update && role.isEditable;
   const muted = (text: string) => <span className="text-erp-muted">{text}</span>;

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
-import { Badge, Blocked, Button, ConfirmDialog, DetailTable, SlidePanel, useToast, type DetailRow } from "@/components/common";
+import { Badge, Blocked, Button, ConfirmDialog, DetailTable, SlidePanel, useAction, useToast, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { SuccessBand, WarnBand } from "@/components/site/side-parts";
@@ -91,6 +91,9 @@ function DetailBody({
   onDeleted: () => void;
 }) {
   const toast = useToast();
+  const resetPlatformAdminPassword = useAction(resetPlatformAdminPasswordAction, { overlay: false });
+  const deletePlatformAdmin = useAction(deletePlatformAdminAction, { overlay: false });
+  const getPlatformAdminHistories = useAction(getPlatformAdminHistoriesAction, { overlay: false });
   const router = useRouter();
   const [confirm, setConfirm] = useState<"reset" | "delete" | null>(null);
   // 확인창 · 이력창은 네이티브 <dialog>(최상위 레이어)라 패널이 밀려 나가도 혼자 남는다. 브라우저 뒤로 가기처럼 클릭 아닌 길로
@@ -114,7 +117,7 @@ function DetailBody({
 
   const handleReset = () =>
     startBusy(async () => {
-      const result = await resetPlatformAdminPasswordAction(admin.adminAccountId).catch(unknownResult("비밀번호 초기화"));
+      const result = await resetPlatformAdminPassword(admin.adminAccountId).catch(unknownResult("비밀번호 초기화"));
       setConfirm(null);
       if (!result.ok) return fail(result.status, result.message);
       setFailure(null);
@@ -125,7 +128,7 @@ function DetailBody({
 
   const handleDelete = () =>
     startBusy(async () => {
-      const result = await deletePlatformAdminAction(admin.adminAccountId).catch(unknownResult("삭제"));
+      const result = await deletePlatformAdmin(admin.adminAccountId).catch(unknownResult("삭제"));
       setConfirm(null);
       if (!result.ok) return fail(result.status, result.message);
       onDeleted();
@@ -255,7 +258,7 @@ function DetailBody({
             수정
           </Button>
         )}
-        <HistoryButton adminId={admin.adminAccountId} panelOpen={panelOpen} load={getPlatformAdminHistoriesAction} />
+        <HistoryButton adminId={admin.adminAccountId} panelOpen={panelOpen} load={getPlatformAdminHistories} />
       </div>
 
       {/* 고칠 수 없는 계정이면 확인창도 두지 않는다 */}

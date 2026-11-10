@@ -4,7 +4,7 @@ import Link from "next/link";
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { useCurrentBp } from "@/components/site/session-gate";
-import { Button, ConfirmDialog, DataTable, Field, FormRow, SearchField, Select, useToast, type Column } from "@/components/common";
+import { Button, ConfirmDialog, DataTable, Field, FormRow, SearchField, Select, useAction, useToast, type Column } from "@/components/common";
 import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { monthLabel, type PayslipCandidate } from "@/lib/payslips";
@@ -22,6 +22,9 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
   // 이미 있는 명세서 링크는 탭 BP 주소로(WHALEERP-637)
   const bp = useCurrentBp().bpCodeId;
   const toast = useToast();
+  const getCandidates = useAction(getPayslipCandidatesAction, { overlay: false });
+  const createOne = useAction(createPayslip, { overlay: false });
+  const createBulk = useAction(bulkCreatePayslips, { overlay: false });
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const [open, setOpen] = useState(false);
@@ -49,7 +52,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
     startLoading(async () => {
       let result: Awaited<ReturnType<typeof getPayslipCandidatesAction>>;
       try {
-        result = await getPayslipCandidatesAction(month);
+        result = await getCandidates(month);
       } catch (error) {
         unstable_rethrow(error); // redirect 같은 Next 제어 흐름은 그대로 넘긴다
         console.error("급여명세서 action 호출이 끊겼습니다", error);
@@ -84,7 +87,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
       // 성공하면 action 이 검토 화면으로 보낸다(redirect). 돌아온 것은 실패뿐이다.
       // 결과를 모르면(호출 자체가 끊긴 경우도) 이미 만들었을 수 있어 목록을 다시 받는다.
       try {
-        const result = await createPayslip(pickedShown, month);
+        const result = await createOne(pickedShown, month);
         setFailure(result);
         if (result.unknown) router.refresh();
       } catch (error) {
@@ -99,7 +102,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
     startBusy(async () => {
       let result: Awaited<ReturnType<typeof bulkCreatePayslips>>;
       try {
-        result = await bulkCreatePayslips(month);
+        result = await createBulk(month);
       } catch (error) {
         unstable_rethrow(error); // redirect 같은 Next 제어 흐름은 그대로 넘긴다
         console.error("급여명세서 action 호출이 끊겼습니다", error);

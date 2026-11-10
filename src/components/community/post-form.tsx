@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type ReactNode, useEffect } from "react";
-import { AttachmentField, Badge, Button, Checkbox, ConfirmDialog, DateField, FieldMessage, NoticeBand, PageBar, RequiredMark, Select, Tag, Textarea, TextField, Toggle, useFilePreviews, useToast } from "@/components/common";
+import { AttachmentField, Badge, Button, Checkbox, ConfirmDialog, DateField, FieldMessage, NoticeBand, PageBar, RequiredMark, Select, Tag, Textarea, TextField, Toggle, useAction, useFilePreviews, useToast } from "@/components/common";
 import { useCodes, usePagePermission } from "@/components/site/session-gate";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import type { PostDetail } from "@/lib/community";
@@ -152,6 +152,8 @@ export function PostForm({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const saveFaq = useAction(saveFaqAction, { overlay: false });
+  const deletePost = useAction(deletePostAction, { overlay: false });
   const faqCategories = useCodes("FAQ_CATEGORY");
   const [form, setForm] = useState<Form>(() => formOf(kind, detail));
   /** 새로 더할 파일. key 는 같은 이름 파일을 둘 올려도 줄을 가르려고 붙인다. */
@@ -248,7 +250,7 @@ export function PostForm({
     setFieldErrors({});
     startTransition(async () => {
       const edit = detail ? { postId: detail.postId, updatedAt: detail.updatedAt } : null;
-      const result: SaveResult = notice ? await sendNotice(sending, status) : await callAction(() => saveFaqAction(edit, faqBody(sending, status)));
+      const result: SaveResult = notice ? await sendNotice(sending, status) : await callAction(() => saveFaq(edit, faqBody(sending, status)));
       if (!result.ok) {
         // 세션이 끊겼으면(401) 화면을 옮기지 않고 띠로만 알린다 — 고치던 내용이 남는다. 쿠키는 핸들러 · 액션이 지웠다.
         // 그사이 다른 관리자가 고쳤거나 지웠다(409) — 덮어쓰지 않고 최신 내용을 다시 불러오게 한다.
@@ -288,7 +290,7 @@ export function PostForm({
     detail &&
     startTransition(async () => {
       setConfirmDelete(false);
-      const result = await callAction(() => deletePostAction(kind, detail.postId));
+      const result = await callAction(() => deletePost(kind, detail.postId));
       if (!result.ok) return showErrors(result.messages);
       toast("삭제했습니다.");
       router.push(listHref);
