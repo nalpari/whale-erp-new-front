@@ -1,11 +1,11 @@
 // 시설물 및 장비 등록. 목업 docs/mockup/stores/facilities-new.html 의 「입력 중」 상태를 BP 마스터로 본 것(1.5차, 앱 화면 없음).
 // 점포 등록(stores/new.mjs)처럼 별도 화면 — 취소 · 저장은 묶음 제목 줄 오른쪽, 아래 두 묶음(기본 정보 · 관리 정보)을 반씩.
-// render 의 mode "edit" 는 수정 화면(facilities-edit.mjs) — 점포는 읽기 전용, 관리 정보 삭제가 있다.
+// render 의 mode "edit" 는 수정 화면(facilities-edit.mjs) — 점포는 읽기 전용이다. 관리 정보는 따로 지우지 않고 칸을 비워 저장한다(PL-4).
 // 근거: 「시설물·장비 관리 정책서」 PL-1 ~ PL-6. 입력 규칙은 점포 등록 화면과 같다 — [저장]을 누르면 걸린 칸 바로 아래 빨간 문구(알럿 없음).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as f from "../../biz-form.mjs";
-import { row, warnBand } from "../../config-parts.mjs";
+import { row } from "../../config-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
 import { address } from "../../store-parts.mjs";
 import { CYCLES, GROUP_SCRIPT, STATUSES, amount, attachment, classSelect, groupSelect, note, storePick } from "../../facility-parts.mjs";
@@ -15,7 +15,6 @@ const ERR = (t) => `<p role="alert" class="text-[13px] leading-[1.5] text-erp-of
 
 export const render = ({ A, R }, { mode = "create", errors = false } = {}) => {
   const edit = mode === "edit";
-  const mdeleteId = ui.uid("dialog");
 
   // 점포 — 등록은 점포명 · 점포코드 자동완성으로 하나(폐점 점포 제외), 수정은 바꿀 수 없어 읽기 전용(PL-1)
   const store = edit
@@ -48,7 +47,7 @@ export const render = ({ A, R }, { mode = "create", errors = false } = {}) => {
       ui.field("영업사원", ui.textField({ value: "홍길동" })),
       f.group(
         "영업사원 전화번호",
-        errors ? f.tel("010", "22", "").replaceAll('maxlength="4"', 'maxlength="4" aria-invalid="true"') + ERR("영업사원 전화번호는 숫자 9~12자리입니다.") : f.tel("010", "2222", "3333"),
+        errors ? f.tel("010", "22", "") + ERR("영업사원 전화번호는 숫자 9~12자리입니다.") : f.tel("010", "2222", "3333"),
       ),
     ),
     // 구매액 — 숫자만 10자리 · 쉼표, 「부가세 포함」 처음 켜짐(PL-5)
@@ -60,7 +59,6 @@ export const render = ({ A, R }, { mode = "create", errors = false } = {}) => {
     ),
   );
 
-  // 관리 정보 삭제는 묶음 맨 아래 오른쪽 — 제목 줄에 두면 제목이 높아져 두 묶음의 위 시작선이 어긋난다
   const manage = ui.formGroup(
     "관리 정보",
     ui.formRow(
@@ -89,26 +87,15 @@ export const render = ({ A, R }, { mode = "create", errors = false } = {}) => {
     // A/S센터 — 공통 주소 칸(점포 주소와 같다): 검색 → 우편번호 · 기본주소, 상세주소 100자, [지우기](PL-5)
     address(A, "A/S센터 주소", { zip: "04522", base: "서울 중구 삼봉로 98", detail: "1층 2호" }),
     f.group("A/S센터 전화번호", f.tel("02", "2222", "8888")),
-    ...(edit ? [`<div class="flex justify-end">${x.dialogTrigger("관리 정보 삭제", mdeleteId, "soft")}</div>`] : []),
   );
 
   const save = ui.button("저장", { href: link(R, "stores/facilities-detail.html") });
   const cancel = ui.button("취소", { variant: "off", href: link(R, edit ? "stores/facilities-detail.html" : "stores/facilities.html") });
-  // 관리 정보 삭제 확인 — 논리 삭제, 삭제 뒤 상세로(PL-4)
-  const mdelete = edit
-    ? x.dialog(
-        mdeleteId,
-        "관리 정보를 삭제하시겠습니까?",
-        warnBand("기한 · 문서 · 관리 담당자 · 점검 주기 · A/S센터 정보가 모두 삭제됩니다.\n기본 정보는 그대로 남습니다."),
-        ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "stores/facilities-detail.html") }),
-      )
-    : "";
 
   const body = ui.detailBody(
     ui.sectionHead(edit ? "시설물 · 장비 수정" : "시설물 · 장비 등록", cancel + save) +
       `<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${manage}</div>` +
-      GROUP_SCRIPT +
-      mdelete,
+      GROUP_SCRIPT,
   );
   return {
     title: edit ? "시설물 및 장비 수정" : "시설물 및 장비 등록",
