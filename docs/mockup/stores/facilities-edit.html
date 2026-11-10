@@ -12,7 +12,7 @@
          기준: 「시설물·장비 관리 정책서」 PL-1 ~ PL-6. 등록 화면과 같은 칸 · 같은 입력 규칙이고 다른 점만 적는다.
          - 점포는 등록한 뒤 바꿀 수 없어 읽기 전용(#f8f9fb 바탕)으로 보인다. 옮기려면 새로 등록하고 기존 건은 폐기로 바꾼다(PL-1).
          - BP 가 미사용으로 바꾼 분류는 지금 값으로 남아 보이고, 다른 값으로 바꾸면 되돌릴 수 없다(PL-3).
-         - 관리 정보에는 [관리 정보 삭제]가 있다 — 논리 삭제, 확인창을 거쳐 상세로 간다(PL-4).
+         - 관리 정보는 따로 지우지 않는다 — 지울 값은 칸을 비우고 저장한다. 원 화면정의서(43쪽)의 관리 정보 [삭제]는 두 화면을 하나로 합치며 뺐다(PL-4, 2026-11-10).
          - 운영상태는 공통코드 「시설물 운영상태」(처음 값 운영), 그룹은 「점포 시설물」 · 「점포 장비」, 분류는 고른 그룹의 상세 코드. 그룹을 바꾸면 분류를 지운다(PL-2 · PL-3).
          - [저장]을 누르면 검사하고, 걸린 칸 바로 아래에 빨간 문구를 보이고 첫 오류 칸으로 옮긴다. 알럿은 띄우지 않는다(PL-5).
          - 전화번호는 앞 · 가운데 · 끝 세 칸, 숫자만 칸마다 4자리까지, 이은 번호 9~12자리(PL-5).
@@ -214,10 +214,7 @@
 
                   <!-- 관리 정보 — 모두 선택 입력 -->
                   <div class="stack--lg" style="display: flex; flex-direction: column">
-                    <div class="spread">
-                      <h3 class="t-h3" style="margin: 0">관리 정보</h3>
-                      <button class="btn btn--secondary btn--sm" type="button" data-open="pop-mdelete">관리 정보 삭제</button>
-                    </div>
+                    <h3 class="t-h3" style="margin: 0">관리 정보</h3>
                     <div class="grid grid--2">
                       <div class="field">
                         <label for="fuse">사용 유효기한</label>
@@ -327,23 +324,6 @@
         </div>
       </main>
     </div>
-    <!-- 관리 정보 삭제 확인 — 논리 삭제, 삭제 뒤 상세로(PL-4) -->
-    <div class="modal" id="pop-mdelete" hidden role="dialog" aria-modal="true" aria-labelledby="pm-t">
-      <div class="modal__box">
-        <div class="modal__head">
-          <h2 class="t-h2" id="pm-t">관리 정보를 삭제하시겠습니까?</h2>
-          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
-        </div>
-        <div class="modal__body">
-          <div class="band band--risk"><div class="band__body"><p class="band__desc" style="margin: 0">기한 · 문서 · 관리 담당자 · 점검 주기 · A/S센터 정보가 모두 삭제됩니다.<br />기본 정보는 그대로 남습니다.</p></div></div>
-        </div>
-        <div class="modal__foot">
-          <button class="btn btn--ghost" type="button" data-close>취소</button>
-          <a class="btn btn--primary" href="facilities-detail.html">삭제</a>
-        </div>
-      </div>
-    </div>
-
     <script src="../assets/app.js"></script>
     <script src="../assets/auth.js"></script>
   </body>

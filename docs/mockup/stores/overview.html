@@ -99,7 +99,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">화면 · 시설물 및 장비 관리</h2>
-              <span class="badge badge--quiet">4개 + 팝업 2</span>
+              <span class="badge badge--quiet">4개 + 팝업 1</span>
               <span class="badge badge--warn">1.5차</span>
               <div class="panel__end">
                 <span class="filters__count mono">정책서 PL-1 ~ PL-6 · stores/facilities*</span>
@@ -127,8 +127,46 @@
               <a class="mk-card" href="facilities-edit.html">
                 <span class="mk-card__route">/facilities/:id/edit</span>
                 <span class="mk-card__name">시설물 · 장비 수정</span>
-                <span class="mk-card__desc">점포는 읽기 전용. 미사용 분류는 지금 값으로 남고, 바꾸면 되돌릴 수 없다. 관리 정보 삭제는 논리 삭제.</span>
+                <span class="mk-card__desc">점포는 읽기 전용. 미사용 분류는 지금 값으로 남고, 바꾸면 되돌릴 수 없다. 관리 정보는 따로 지우지 않고 칸을 비워 저장한다.</span>
                 <span class="mk-card__end"><span class="badge badge--preview">상태 5</span></span>
+              </a>
+            </div>
+          </section>
+
+          <!-- 시설물 및 장비 수리 이력 · 1.5차 — 「시설물·장비 관리 정책서」 아래쪽 「시설물·장비 수리 이력 정책서」 PL-1 ~ PL-4 기준. 원자료는 화면정의서 v0.74 45~48쪽 -->
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">화면 · 시설물 및 장비 수리 이력</h2>
+              <span class="badge badge--quiet">4개 + 팝업 1</span>
+              <span class="badge badge--warn">1.5차</span>
+              <div class="panel__end">
+                <span class="filters__count mono">수리 이력 정책서 PL-1 ~ PL-4 · stores/repairs*</span>
+              </div>
+            </div>
+            <div class="grid grid--2">
+              <a class="mk-card" href="repairs.html">
+                <span class="mk-card__route">/facility-repairs</span>
+                <span class="mk-card__name">수리 이력 목록</span>
+                <span class="mk-card__desc">점포 검색 · 그룹 → 분류 · 이름 · 고장 내용 · 고장 일자 · 수리 일자(기간)로 찾는다. 고장일 · 등록일순 50건. 대상이 폐기되거나 점포가 폐점해도 이력은 남는다.</span>
+                <span class="mk-card__end"><span class="badge badge--preview">권한 2 · 상태 3</span></span>
+              </a>
+              <a class="mk-card" href="repairs-detail.html">
+                <span class="mk-card__route">/facility-repairs/:id</span>
+                <span class="mk-card__name">수리 이력 상세 · 삭제</span>
+                <span class="mk-card__desc">고장 정보 · 수리 정보(교체 부품 포함) 두 묶음. 삭제는 논리 삭제(교체 부품 함께). 폐점 점포는 조회만.</span>
+                <span class="mk-card__end"><span class="badge badge--preview">상태 5</span></span>
+              </a>
+              <a class="mk-card" href="repairs-new.html">
+                <span class="mk-card__route">/facility-repairs/new</span>
+                <span class="mk-card__name">수리 이력 등록</span>
+                <span class="mk-card__desc">점포 → 그룹 → 분류 → 시설물·장비(「운영」만) 순서로 고른다. 수리 일자 ≥ 고장 일자, 수리기사 전화번호 세 칸, 교체 부품 줄 추가 · 삭제.</span>
+                <span class="mk-card__end"><span class="badge badge--preview">상태 5</span></span>
+              </a>
+              <a class="mk-card" href="repairs-edit.html">
+                <span class="mk-card__route">/facility-repairs/:id/edit</span>
+                <span class="mk-card__name">수리 이력 수정</span>
+                <span class="mk-card__desc">대상(점포 · 그룹 · 분류 · 시설물·장비)은 읽기 전용. 대상이 폐기돼도 이 이력은 고칠 수 있다.</span>
+                <span class="mk-card__end"><span class="badge badge--preview">상태 4</span></span>
               </a>
             </div>
           </section>

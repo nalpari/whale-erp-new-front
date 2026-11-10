@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>시설물 및 장비 수리 이력 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="stores" data-sub="stores/repairs.html">
+    <!-- 수리 이력 목록 · /facility-repairs · 1팀 · 1.5차
+         기준: 「시설물·장비 관리 정책서」 아래쪽 「시설물·장비 수리 이력 정책서」 PL-1 ~ PL-4(claude.ai 문서, 2026-11-10). 원자료는 가맹점및점포관리 화면정의서 v0.74 45~48쪽.
+         BP 는 들어오기 전에 정해져 필터 · 열에 BP · 가맹이 없다(PL-1). 조회 · 등록 · 수정 · 삭제는 권한 그룹이 이 메뉴에 준 권한을 따른다.
+         필터: 점포(점포 정보 관리 목록과 같은 점포 검색) · 그룹 · 분류(그룹을 골라야 나온다) · 시설물/장비명 · 고장 내용 · 검색일시(고장일자 · 수리일자 중 고르고 기간 입력).
+         정렬은 고장일 · 등록일 내림차순, 한 쪽 50건. 위쪽 점선 줄은 목업 전용 전환이다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell" id="repl">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">시설물 및 장비 수리 이력</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">1.5차 · /facility-repairs</span>
+            <a class="btn btn--primary btn--sm" href="repairs-new.html" data-show-role="edit">등록</a>
+            <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./repairs.screen-def.html', 'screenDef', 'width=1620,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="stack">
+            <div class="demo" data-demo="repl" data-demo-key="role">
+              <b>목업 권한</b>
+              <div class="seg">
+                <button type="button" data-state="edit" aria-pressed="true">조회 · 등록 · 수정 · 삭제</button>
+                <button type="button" data-state="view" aria-pressed="false">조회만</button>
+              </div>
+            </div>
+            <div class="demo" data-demo="repl">
+              <b>목업 상태</b>
+              <div class="seg">
+                <button type="button" data-state="base" aria-pressed="true">기본</button>
+                <button type="button" data-state="none" aria-pressed="false">조건에 맞는 것 없음</button>
+                <button type="button" data-state="zero" aria-pressed="false">등록된 것 없음</button>
+              </div>
+            </div>
+          </div>
+
+          <section class="panel">
+            <div class="panel__head">
+              <h2 class="t-h2">검색 조건</h2>
+              <span class="subtle" style="font-size: 12px">BP <b>㈜한강상회 · BP000017</b></span>
+            </div>
+            <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+              <!-- 점포 — 점포 정보 관리 목록 검색의 점포 고르기와 같다. 여러 곳 고르기 · [일괄검색] · 폐점 점포도 고를 수 있다(PL-1) -->
+              <div class="field" style="position: relative">
+                <label for="q-store">점포</label>
+                <button class="btn btn--secondary btn--sm" type="button" data-spick-bulk style="position: absolute; top: -3px; right: 0; height: 22px; padding: 0 8px; font-size: 11.5px">일괄검색</button>
+                <div class="spick" data-spick data-spick-nocode data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포;ST000012|모리커피 합정점|가맹점포" data-picked="">
+                  <div class="spick__find">
+                    <div class="spick__row">
+                      <div class="addr__q spick__q">
+                        <span data-icon="search" data-icon-size="15"></span>
+                        <input class="input" id="q-store" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                        <div class="addr__list spick__list" role="listbox" aria-label="선택할 수 있는 점포" hidden></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="spick__box">
+                    <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear style="height: 22px; padding: 0 8px; font-size: 11.5px">전체 제거</button></div>
+                    <ul class="spick__picked" data-spick-list aria-label="선택한 점포" style="height: auto; min-height: 0; max-height: 92px"></ul>
+                  </div>
+                </div>
+              </div>
+              <div class="grid" style="align-items: start; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4)">
+                <!-- 그룹 · 분류 — 그룹을 골라야 그 그룹의 분류가 나온다(시설물·장비 관리 PL-3) -->
+                <div class="field">
+                  <label for="q-group">그룹</label>
+                  <select class="select" id="q-group">
+                    <option selected>전체</option>
+                    <option>점포 시설물</option>
+                    <option>점포 장비</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="q-class">분류</label>
+                  <select class="select" id="q-class" disabled title="그룹을 먼저 선택해 주세요.">
+                    <option selected>전체</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="q-name">시설물/장비명</label>
+                  <div class="inputwrap">
+                    <span data-icon="search" data-icon-size="15"></span>
+                    <input class="input" id="q-name" placeholder="이름으로 찾기" autocomplete="off" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="q-fault">고장 내용</label>
+                  <div class="inputwrap">
+                    <span data-icon="search" data-icon-size="15"></span>
+                    <input class="input" id="q-fault" placeholder="고장 내용으로 찾기" autocomplete="off" />
+                  </div>
+                </div>
+              </div>
+              <!-- 검색일시 — 기준(고장일자 · 수리일자)을 고른 뒤 그 날짜의 기간을 넣는다. 처음은 고장일자 · 기간 비움(전체) -->
+              <div class="field" style="max-width: 640px">
+                <label for="q-date-kind">검색일시</label>
+                <div class="inline" style="flex-wrap: nowrap">
+                  <select class="select" id="q-date-kind" aria-label="검색일시 기준" style="width: 140px; flex: none">
+                    <option selected>고장일자</option>
+                    <option>수리일자</option>
+                  </select>
+                  <input class="input" type="date" aria-label="검색일시 시작" />
+                  <span class="subtle">~</span>
+                  <input class="input" type="date" aria-label="검색일시 끝" />
+                </div>
+              </div>
+              <div class="inline" style="justify-content: flex-end">
+                <button class="btn btn--secondary" type="button" data-state-go="base">초기화</button>
+                <button class="btn btn--primary" type="button">조회</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel__head">
+              <h2 class="t-h2">수리 이력</h2>
+              <span class="badge badge--quiet" data-show="base">5건</span>
+              <span class="badge badge--quiet" data-show="none zero" hidden>0건</span>
+            </div>
+
+            <div class="tblwrap" data-show="base" data-pager="5" data-pager-sizes="50">
+              <table class="tbl">
+                <thead>
+                  <tr>
+                    <th scope="col" class="n">순번</th>
+                    <th scope="col">점포</th>
+                    <th scope="col">그룹</th>
+                    <th scope="col">분류</th>
+                    <th scope="col">시설물/장비명</th>
+                    <th scope="col">고장 내용</th>
+                    <th scope="col" class="n">수리비</th>
+                    <th scope="col">고장일자</th>
+                    <th scope="col">수리일자</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="n">5</td><td>모리커피 성수점</td><td>점포 장비</td><td>그라인더</td><td>EK43S 전자동 원두 커피 그라인더</td>
+                    <td class="k"><a class="tlink" href="repairs-detail.html">원두가 정상적인 굵기로 분쇄되지 않음</a></td><td class="n mono">200,000</td><td class="mono">2026-11-03</td><td class="mono">2026-11-05</td>
+                  </tr>
+                  <!-- 수리 일자가 아직 없는 이력 — 고장만 등록해 둔 것 -->
+                  <tr>
+                    <td class="n">4</td><td>모리커피 성수점</td><td>점포 시설물</td><td>식재보관</td><td>업소용 4도어 냉장고</td>
+                    <td class="k"><a class="tlink" href="repairs-detail.html?state=pending">냉장실 온도가 8도 이상으로 올라감</a></td><td class="n nil">-</td><td class="mono">2026-11-08</td><td class="nil">-</td>
+                  </tr>
+                  <tr>
+                    <td class="n">3</td><td>모리커피 을지로점</td><td>점포 장비</td><td>커피머신</td><td>라마르조코 리네아 PB 2그룹</td>
+                    <td class="k"><a class="tlink" href="repairs-detail.html">스팀 압력이 오르지 않음</a></td><td class="n mono">450,000</td><td class="mono">2026-10-20</td><td class="mono">2026-10-22</td>
+                  </tr>
+                  <!-- 대상이 폐기된 이력도 남는다(PL-4) -->
+                  <tr>
+                    <td class="n">2</td><td>모리커피 을지로점</td><td>점포 장비</td><td>제빙기</td><td>호시자키 제빙기 IM-45 <span class="badge badge--risk">폐기</span></td>
+                    <td class="k"><a class="tlink" href="repairs-detail.html?state=scrap">얼음이 만들어지지 않음</a></td><td class="n mono">120,000</td><td class="mono">2026-06-02</td><td class="mono">2026-06-04</td>
+                  </tr>
+                  <!-- 폐점 점포의 이력은 조회만(PL-1) -->
+                  <tr>
+                    <td class="n">1</td><td>모리커피 합정점 <span class="badge badge--risk">폐점</span></td><td>점포 시설물</td><td>냉난방</td><td>천장형 냉난방기</td>
+                    <td class="k"><a class="tlink" href="repairs-detail.html?state=closed">냉방이 약함</a></td><td class="n mono">80,000</td><td class="mono">2025-07-11</td><td class="mono">2025-07-12</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="tblwrap" data-show="none zero" hidden>
+              <table class="tbl">
+                <thead>
+                  <tr>
+                    <th scope="col" class="n">순번</th><th scope="col">점포</th><th scope="col">그룹</th><th scope="col">분류</th><th scope="col">시설물/장비명</th><th scope="col">고장 내용</th><th scope="col" class="n">수리비</th><th scope="col">고장일자</th><th scope="col">수리일자</th>
+                  </tr>
+                </thead>
+              </table>
+              <div class="empty">
+                <span class="empty__ic" data-icon="store" data-icon-size="22"></span>
+                <p data-show="none">조건에 맞는 수리 이력이 없습니다.</p>
+                <p data-show="zero" hidden>등록된 수리 이력이 없습니다.</p>
+              </div>
+            </div>
+          </section>
+
+          <p class="note">
+            <span data-icon="info" data-icon-size="14"></span>
+            <span>수리 이력은 운영상태가 「운영」인 시설물·장비에만 새로 등록한다. 대상이 보관 · 폐기가 되거나 점포가 폐점해도 지난 이력은 남는다(PL-1 · PL-4).</span>
+          </p>
+        </div>
+      </main>
+    </div>
+    <script>
+      /* 목업 전용 — 그룹을 고르면 그 그룹의 분류로 분류 선택지를 채우고, 「전체」면 분류를 막는다 */
+      (function () {
+        var CODES = { "점포 시설물": ["식재보관", "급수", "냉난방"], "점포 장비": ["그라인더", "커피머신", "제빙기"] };
+        var group = document.getElementById("q-group");
+        var klass = document.getElementById("q-class");
+        function fill() {
+          var list = CODES[group.value] || [];
+          klass.innerHTML = "<option selected>전체</option>" + list.map(function (c) { return "<option>" + c + "</option>"; }).join("");
+          klass.disabled = !list.length;
+          klass.title = list.length ? "" : "그룹을 먼저 선택해 주세요.";
+        }
+        group.addEventListener("change", fill);
+        document.addEventListener("click", function (e) {
+          if (e.target.closest && e.target.closest("[data-state-go='base']")) { group.value = "전체"; fill(); }
+        });
+
+        /* 목업 전용 — 검색일시: [조회]를 누르면 고른 기준(고장일자 · 수리일자) 열의 날짜가 기간 안인 줄만 보인다.
+           기간을 비우면 거르지 않고, 기준 날짜가 없는 줄(수리 전 이력의 수리일자)은 기간을 넣으면 빠진다. [초기화]는 모두 되돌린다 */
+        var kind = document.getElementById("q-date-kind");
+        var from = document.querySelector('[aria-label="검색일시 시작"]');
+        var to = document.querySelector('[aria-label="검색일시 끝"]');
+        var count = document.querySelector('.panel__head .badge[data-show="base"]');
+        function apply() {
+          /* 줄은 누를 때마다 다시 찾는다 — 공통 스크립트(app.js 페이저)가 표를 다시 그려 처음 잡은 줄이 문서에서 빠진다 */
+          var rows = [].slice.call(document.querySelectorAll(".tblwrap[data-pager] tbody tr"));
+          var col = kind.value === "수리일자" ? 8 : 7;
+          var shown = 0;
+          rows.forEach(function (tr) {
+            var d = tr.cells[col].textContent.trim();
+            var ok = (!from.value || (d !== "-" && d >= from.value)) && (!to.value || (d !== "-" && d <= to.value));
+            tr.hidden = !ok;
+            if (ok) shown++;
+          });
+          if (count) count.textContent = shown + "건";
+        }
+        document.addEventListener("click", function (e) {
+          var b = e.target.closest && e.target.closest("button");
+          if (!b) return;
+          if (b.textContent.trim() === "조회") apply();
+          if (b.matches("[data-state-go='base']")) { kind.value = "고장일자"; from.value = ""; to.value = ""; apply(); }
+        });
+      })();
+    </script>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>
