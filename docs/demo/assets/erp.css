@@ -17,7 +17,6 @@
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
     --font-weight-extrabold: 800;
-    --font-weight-black: 900;
     --tracking-tight: -0.025em;
     --tracking-normal: 0em;
     --leading-normal: 1.5;
@@ -65,7 +64,6 @@
     --color-guest-list-line: #eff2f4;
     --color-guest-button-line: #e0e5e9;
     --color-guest-surface: #fafafa;
-    --color-guest-scrim: rgba(31, 31, 31, 0.8);
   }
 }
 @layer base {
