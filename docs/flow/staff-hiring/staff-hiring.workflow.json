@@ -199,7 +199,7 @@
       "col": 5,
       "type": "security",
       "label": "서명 거절",
-      "sublabel": "계약 기간 만료 포함",
+      "sublabel": "또는 계약 기간 만료",
       "width": 140
     },
     {
