@@ -1618,6 +1618,9 @@
   .grid-cols-\[84px_1fr\] {
     grid-template-columns: 84px 1fr;
   }
+  .grid-cols-\[90px_1fr\] {
+    grid-template-columns: 90px 1fr;
+  }
   .grid-cols-\[268px_minmax\(0\,1fr\)\] {
     grid-template-columns: 268px minmax(0,1fr);
   }
