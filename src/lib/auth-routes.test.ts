@@ -4,7 +4,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   ACCOUNT_CHANGED_MESSAGE,
+  EXPIRED_MESSAGE,
+  expiredLoginActionOf,
   homeOf,
+  isExpiredLoginRequest,
+  marksRenderRequest,
+  RENDER_HEADER,
   isFranchiseRole,
   isPlatformRole,
   isPublicPath,
@@ -15,9 +20,12 @@ import {
   signedInTargetOf,
 } from "./auth-routes.ts";
 
-test("로그인 화면 ?reason= — 계정 상태 변경만 문구로 바꾸고, 모르는 값 · 배열 · 없음은 무시한다", () => {
+test("로그인 화면 ?reason= — 계정 상태 변경 · 만료만 문구로 바꾸고, 모르는 값 · 배열 · 없음은 무시한다", () => {
   assert.equal(logoutNoticeOf("account"), ACCOUNT_CHANGED_MESSAGE);
   assert.equal(ACCOUNT_CHANGED_MESSAGE, "계정 상태가 변경되어 로그아웃되었습니다.");
+  assert.equal(logoutNoticeOf("expired"), EXPIRED_MESSAGE);
+  assert.equal(EXPIRED_MESSAGE, "로그인이 만료되었습니다. 다시 로그인해 주세요.");
+  assert.equal(logoutNoticeOf(["expired"]), null);
   assert.equal(logoutNoticeOf("<script>"), null);
   assert.equal(logoutNoticeOf(["account"]), null);
   assert.equal(logoutNoticeOf(undefined), null);
@@ -78,6 +86,34 @@ test("로그인으로 보낼 주소 — 메일 링크 화면의 GET 만 ?next= �
   assert.equal(loginPathOf("/stores"), "/login");
   // 탭 BP 주소의 메일 링크는 만들지 않는다 — 지금 동작을 고정한다
   assert.equal(loginPathOf("/bp/8/excel-downloads/41"), "/login");
+});
+
+test("로그인으로 보낼 주소에 밀려난 이유를 붙인다 — ?next= 와 함께", () => {
+  assert.equal(loginPathOf("/stores", "GET", "expired"), "/login?reason=expired");
+  assert.equal(loginPathOf("/excel-downloads/41", "GET", "expired"), "/login?next=%2Fexcel-downloads%2F41&reason=expired");
+  assert.equal(loginPathOf("/excel-downloads/41", "POST", "expired"), "/login?reason=expired");
+  assert.equal(loginPathOf("/stores", "GET", "account"), "/login?reason=account");
+});
+
+test("화면을 그리는 요청 — GET 이고 서버 액션 · BFF 가 아닐 때만", () => {
+  assert.equal(marksRenderRequest("GET", false, false), true);
+  assert.equal(marksRenderRequest("POST", false, false), false);
+  assert.equal(marksRenderRequest("GET", true, false), false);
+  assert.equal(marksRenderRequest("GET", false, true), false);
+  assert.equal(RENDER_HEADER, "x-whale-render");
+});
+
+test("만료 로그인 화면 — GET 의 /login?reason=expired 만, 갱신 결과로 쿠키를 지울지 가른다", () => {
+  assert.equal(isExpiredLoginRequest("/login", "GET", false, "expired"), true);
+  // 로그인 제출(서버 액션 POST) · 다른 이유 · 다른 경로는 건드리지 않는다
+  assert.equal(isExpiredLoginRequest("/login", "POST", true, "expired"), false);
+  assert.equal(isExpiredLoginRequest("/login", "GET", true, "expired"), false);
+  assert.equal(isExpiredLoginRequest("/login", "GET", false, "account"), false);
+  assert.equal(isExpiredLoginRequest("/login", "GET", false, null), false);
+  assert.equal(isExpiredLoginRequest("/find", "GET", false, "expired"), false);
+  assert.equal(expiredLoginActionOf("unauthorized"), "clear");
+  assert.equal(expiredLoginActionOf("ok"), "home");
+  assert.equal(expiredLoginActionOf("failed"), "show");
 });
 
 test("로그인한 채 로그인 전 화면에 오면 — /login 의 받을 수 있는 next 만 따르고 나머지는 자기 홈", () => {
