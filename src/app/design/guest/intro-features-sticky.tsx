@@ -145,7 +145,7 @@ export function IntroFeaturesSticky({ light, bold, items }: { light: string; bol
             {items[active].screens.length > 1 && (
               <div aria-hidden className="absolute inset-x-0 bottom-[14px] flex justify-center gap-[6px]">
                 {items[active].screens.map((_, j) => (
-                  <span key={j} className={`h-[6px] rounded-full transition-all duration-300 ease-out ${j === sub ? "w-[18px] bg-guest-navy" : "w-[6px] bg-guest-navy/30"}`} />
+                  <span key={j} className={`h-[6px] rounded-full transition-all duration-300 ease-out motion-reduce:transition-none ${j === sub ? "w-[18px] bg-guest-navy" : "w-[6px] bg-guest-navy/30"}`} />
                 ))}
               </div>
             )}

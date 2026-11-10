@@ -44,5 +44,5 @@ export default function NoticesPage() {
     </div>
   );
 
-  return <NoticesScreen inquiryHref={SAMPLE_ROUTES.leads} notices={notices} faq={faq} />;
+  return <NoticesScreen notices={notices} faq={faq} />;
 }

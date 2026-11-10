@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-10
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 본문 틀 `FRAME` 을 내용 폭 1760 → 1520px(`max-w-[1680px] px-[80px]`)로 줄이고 홈 · 소개 화면이 같이 쓴다(front #254, 사용자 지정).
 * **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 검토 화면 경고 띠 문구를 「급여명세서 관리 수정 요청.xlsx」대로 바꿨다(사용자 지정): 제목은 첫 사유마다 문장(「출퇴근 기록이 등록되지 않은 날이 있어 검토가 필요합니다.」 등, 표에 없는 사유는 이전 틀), 설명은 상세 문장을 빈칸 하나로 잇고(「..」 없음, 마침표 없는 상세엔 붙임) 끝 문장 「내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.」, 버튼 [출퇴근 보정] → [출퇴근 기록 확인]([출·퇴근 현황 조회 화면](/screens/attendance-records.md) · [직원 정보 관리 화면](/screens/staff-members.md) 이 출처로 둔 `attendance-query.ts` 주석의 버튼 이름도). 사유별 상세 문장은 api 가 바꾼다.
 
 ## 2026-11-09

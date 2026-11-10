@@ -50,7 +50,7 @@ export function GuestNote({ children, action }: { children: ReactNode; action?: 
 }
 
 /** 화면 틀 — 제목 줄 + 공지사항 · FAQ 탭. */
-export function NoticesScreen({ notices, faq }: { inquiryHref?: string; notices: ReactNode; faq: ReactNode }) {
+export function NoticesScreen({ notices, faq }: { notices: ReactNode; faq: ReactNode }) {
   return (
     <GuestPage>
       <section className="mx-auto flex w-[1200px] flex-col gap-[40px] pt-[80px] text-guest-ink">

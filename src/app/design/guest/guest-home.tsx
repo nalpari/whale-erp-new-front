@@ -68,7 +68,7 @@ function HeroPanel({ tag, items, soon = false }: { tag: string; items: readonly 
       {soon ? (
         // 부가서비스는 띠처럼 오른쪽으로(사진 띠와 반대로) 흐른다 — 사진 띠와 같은 움직임(묶음 네 번, 절반 가면 처음과 같은 그림). 양 끝은 판 안에서 흐리게(2026-11-10 사용자 지정).
         <div className="min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
-          <ul className="guest-photo-roll flex w-max items-center text-[17px] leading-[1.6] font-semibold text-guest-navy-soft [animation-direction:reverse] [animation-duration:30s]">
+          <ul className="guest-photo-roll flex w-max items-center text-[17px] leading-[1.6] font-semibold text-guest-navy-soft" style={{ animationDirection: "reverse", animationDuration: "30s" }}>
             {[0, 1, 2, 3].map((round) => items.map((it) => item(it, `${round}-${it.title}`, round > 0)))}
           </ul>
         </div>

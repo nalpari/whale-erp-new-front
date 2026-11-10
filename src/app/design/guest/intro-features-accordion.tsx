@@ -66,13 +66,14 @@ export function IntroFeaturesAccordion({ light, bold, items }: { light: string; 
                 <button
                   type="button"
                   aria-expanded={isOpen}
+                  aria-controls={`accordion-${f.id}`}
                   onClick={() => handleRowClick(i)}
                   className={`flex w-full items-center py-[clamp(10px,2.2vh,24px)] text-left text-[28px] leading-[1.4] font-bold transition-colors duration-300 ease-out ${isOpen ? "text-guest-navy" : "text-guest-navy/30 hover:text-guest-navy/60"}`}
                 >
                   <span className="inline-block w-[46px] shrink-0 text-guest-navy-soft">{num}</span>
                   {name.join(" ")}
                 </button>
-                <div className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+                <div id={`accordion-${f.id}`} inert={!isOpen} className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
                   <div className="min-h-0 overflow-hidden">
                     {/* 펼친 내용은 줄 제목 글자(번호 뒤)에 맞춰 46px 들여 쓰고, 그림이 왼쪽 · 글이 오른쪽이다(order-first). 그림 칸은 매장운영 그림 카드와 같은 520px 로 묶는다 — 반 폭이면 가로로 너무 길었다(2026-11-10 사용자 지정). */}
                     <div className="grid grid-cols-[520px_minmax(0,1fr)] items-center gap-[80px] pb-[clamp(14px,2.6vh,28px)] pl-[46px]">
