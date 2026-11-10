@@ -14,6 +14,7 @@ import {
   fromDetail,
   canRenew,
   renewalFromDetail,
+  withEmploymentType,
   hoursOf,
   initialForm,
   inProgressLine,
@@ -232,6 +233,8 @@ test("월 기본시간: 처음에는 209, 정직원은 1 이상을 넣어야 한
   assert.ok(problems(filled({ baseHours: "0" })).includes(message));
   assert.ok(problems(filled({ baseHours: "0.5" })).includes(message));
   assert.ok(problems(filled({ baseHours: "0.3" })).includes(message));
+  // 1 이상인데 30분 단위가 아니면 단위 안내만 — 「1 이상」은 틀린 말이다
+  assert.ok(!problems(filled({ baseHours: "209.3" })).includes(message));
   assert.ok(!problems(filled({ baseHours: "1" })).includes(message));
   assert.ok(!problems(filled({ baseHours: "" }), true).includes(message));
   assert.ok(problems(filled({ baseHours: "0" }), true).includes(message));
@@ -444,7 +447,17 @@ test("월 기본시간 — 재계약은 비어 있으면 209 를 채우고, 이�
   assert.equal(renewalFromDetail(detailOf({ status: "SIGNED", employmentType: "PART_TIME", baseHours: null }), now).baseHours, "209");
   assert.equal(renewalFromDetail(detailOf({ status: "SIGNED", employmentType: "FULL_TIME", baseHours: null }), now).baseHours, "209");
   assert.equal(renewalFromDetail(detailOf({ status: "SIGNED", employmentType: "FULL_TIME", baseHours: 174 }), now).baseHours, "174");
+  // 1 이상 검사 전에 0 으로 저장한 계약도 209 로 연다
+  assert.equal(renewalFromDetail(detailOf({ status: "SIGNED", employmentType: "FULL_TIME", baseHours: 0 }), now).baseHours, "209");
   assert.equal(fromDetail(detailOf({ employmentType: "FULL_TIME", baseHours: null })).baseHours, "");
+});
+
+test("고용 형태 — 정직원으로 바꿀 때 월 기본시간이 비어 있으면 209 를 채운다", () => {
+  const draft = fromDetail(detailOf({ employmentType: "PART_TIME", baseHours: null }));
+  assert.equal(withEmploymentType(draft, "FULL_TIME").baseHours, "209");
+  assert.equal(withEmploymentType({ ...draft, baseHours: "174" }, "FULL_TIME").baseHours, "174");
+  assert.equal(withEmploymentType(draft, "PART_TIME").baseHours, "");
+  assert.equal(withEmploymentType(draft, "FULL_TIME").employmentType, "FULL_TIME");
 });
 
 test("성별 · 외국인 여부 — 이어 쓰기는 상세 값으로 다시 채운다", () => {

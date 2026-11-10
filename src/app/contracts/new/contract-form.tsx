@@ -38,6 +38,7 @@ import {
   weeklyHolidayOf,
   weeklyHours,
   WEEKDAYS,
+  withEmploymentType,
   type ContractForm as Form,
   type CreateContractBody,
   type DayTimes,
@@ -616,7 +617,7 @@ export function ContractForm({
           <Group label="고용 형태">
             <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
               {(["FULL_TIME", "PART_TIME"] as const).map((v) => (
-                <Radio key={v} name="employmentType" label={labelOf(labels.employmentType, v)} checked={form.employmentType === v} onChange={() => set("employmentType", v)} />
+                <Radio key={v} name="employmentType" label={labelOf(labels.employmentType, v)} checked={form.employmentType === v} onChange={() => setForm((f) => withEmploymentType(f, v))} />
               ))}
             </div>
           </Group>
