@@ -251,7 +251,7 @@ function PhotoRoll() {
   // 양 끝은 바탕으로 흐리게 녹인다(mask, 12%). 묶음을 네 번 이어 붙인다 — 띠가 화면보다 짧으면 흐르다 오른쪽이 비었다. 절반(-50%)만큼 가면 처음과 같은 그림이라 끊김이 없다. 첫 묶음만 화면 읽기에 둔다.
   return (
     <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
-      <div className="guest-photo-roll flex w-max gap-[16px]">
+      <div className="guest-photo-roll flex w-max">
         {[0, 1, 2, 3].map((round) =>
           PHOTOS.map((photo) => (
             <Image
@@ -262,7 +262,7 @@ function PhotoRoll() {
               width={photo.width}
               height={photo.height}
               sizes={`${Math.round((300 * photo.width) / photo.height)}px`}
-              className="h-[300px] w-auto shrink-0 rounded-[16px] object-cover"
+              className="mr-[16px] h-[300px] w-auto shrink-0 rounded-[16px] object-cover"
             />
           )),
         )}
