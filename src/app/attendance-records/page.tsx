@@ -3,7 +3,7 @@ import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import { getDailyAttendance, getPeriodAttendance } from "@/lib/attendance-records-api";
 import { kstToday } from "@/lib/staff-members";
 import { AttendanceFilter } from "./attendance-filter";
-import { addDays, editableFromOf, matchesFilter, matchesSummary, needsFix, parseAttendanceQuery, storeParams, toAttendanceSearch, weekSummary, type AttendanceQuery } from "./attendance-query";
+import { addDays, editableFromOf, fixRowsOf, matchesFilter, matchesSummary, parseAttendanceQuery, storeParams, toAttendanceSearch, weekSummary, type AttendanceQuery } from "./attendance-query";
 import { BackdropInert } from "./backdrop-inert";
 import { DaySection, FixSection, SummarySection } from "./attendance-sections";
 
@@ -75,7 +75,7 @@ export default async function AttendanceRecordsPage({ searchParams }: { searchPa
             </div>
           </BackdropInert>
           <FixSection
-            rows={fix.items.filter((r) => needsFix(r) && matchesFilter(r, query))}
+            rows={fixRowsOf(fix.items, query)}
             query={query}
             today={today}
             stores={stores.toString()}

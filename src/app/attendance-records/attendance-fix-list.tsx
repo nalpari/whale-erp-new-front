@@ -82,7 +82,18 @@ function tagsOf(r: FixRow, reasonLabels: EnumValue[]): ReactNode[] {
 
 type Fix = { row: FixRow; pairIndex: number };
 
-export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; reasonLabels: EnumValue[]; editableFrom: string }) {
+export function FixList({
+  rows,
+  reasonLabels,
+  editableFrom,
+  empty = "보정이 필요한 출·퇴근 기록이 없습니다.",
+}: {
+  rows: FixRow[];
+  reasonLabels: EnumValue[];
+  editableFrom: string;
+  /** 비었을 때 문구 — 급여명세서에서 와 기간 기록을 모두 보일 때는 다르게 */
+  empty?: string;
+}) {
   const router = useRouter();
   const toast = useToast();
   const permission = usePagePermission();
@@ -172,7 +183,7 @@ export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; 
     <>
       {/* 비었을 때 열 이름 줄은 두고 그 아래 빈 칸이 본문 남는 높이를 채운다 — 기간이 늘 걸려 있어 문구는 하나다(직원 · 점포 목록과 같다, 2026-11-04 사용자 지정) */}
       <BackdropInert>
-        <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} empty="보정이 필요한 출·퇴근 기록이 없습니다." fillEmpty />
+        <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} empty={empty} fillEmpty />
       </BackdropInert>
       {/* BP 마스터 등록처럼 바탕을 어둡게 깔고, 바탕을 누르면 닫는다(2026-11-05 사용자 지정, 3팀 확인 필요) */}
       <SlidePanel id="attendance-fix" open={fix !== null} onClose={() => setFix(null)} label="기록 보정" trigger={trigger} closeOnBackdrop>

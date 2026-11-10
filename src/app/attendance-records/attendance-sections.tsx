@@ -218,7 +218,7 @@ export function FixSection({
   reasonLabels,
 }: {
   rows: FixRow[];
-  query: { fixFrom: string; fixTo: string };
+  query: { fixFrom: string; fixTo: string; fixAll: boolean };
   today: string;
   /** api 점포 조건(대신 등록 직원 선택지) */
   stores: string;
@@ -228,7 +228,8 @@ export function FixSection({
 }) {
   return (
     <Section
-      title="보정이 필요한 기록"
+      // 급여명세서에서 와 그 직원의 기간 기록을 모두 보일 때는 보정 대상만이 아니라서 이름을 바꾼다(WHALEERP-664)
+      title={query.fixAll ? "기간 출·퇴근 기록" : "보정이 필요한 기록"}
       fill
       right={
         <span className="flex items-center gap-[6px]">
@@ -239,7 +240,7 @@ export function FixSection({
         </span>
       }
     >
-      <FixList rows={rows} reasonLabels={reasonLabels} editableFrom={editableFrom} />
+      <FixList rows={rows} reasonLabels={reasonLabels} editableFrom={editableFrom} empty={query.fixAll ? "기간 안 출·퇴근 기록이 없습니다." : undefined} />
     </Section>
   );
 }
