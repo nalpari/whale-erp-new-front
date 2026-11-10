@@ -106,6 +106,10 @@ test("급여명세서에서 온 기간 기록 전체(fixAll) — 직원 레코�
   assert.equal(parseAttendanceQuery({ fixAll: "1" }, TODAY).fixAll, false);
   assert.doesNotMatch(toAttendanceSearch({ ...q, staffMemberId: null }, TODAY), /fixAll/);
   assert.equal(parseAttendanceQuery({ staffMemberId: "1", fixAll: "true" }, TODAY).fixAll, false);
+  // 3개월보다 오래된 명세서 기간은 기본 기간으로 돌아가므로 기간 기록 전체도 끈다
+  assert.equal(parseAttendanceQuery({ staffMemberId: "1", fixAll: "1", fixFrom: "2026-06-29", fixTo: "2026-07-10" }, TODAY).fixAll, false);
+  // 3개월 경계에 걸리기만 하면 앞쪽만 잘리고 그대로 켜져 있다
+  assert.equal(parseAttendanceQuery({ staffMemberId: "1", fixAll: "1", fixFrom: "2026-07-20", fixTo: "2026-07-31" }, TODAY).fixAll, true)
   const normal = row();
   const absent = row({ status: "ABSENT" as DayRow["status"], pairs: [] });
   const missing = row({ status: "MISSING_CHECK_OUT" });

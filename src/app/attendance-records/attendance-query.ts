@@ -135,7 +135,9 @@ export function parseAttendanceQuery(raw: RawSearch, today: string): AttendanceQ
   if (fixFrom < editableFrom) fixFrom = editableFrom;
   if (fixTo > today) fixTo = today;
   const n = span(fixFrom, fixTo);
-  if (n < 1 || n > MAX_PERIOD_DAYS) ({ fixFrom, fixTo } = def);
+  // 주소의 기간을 쓸 수 없어 기본 기간으로 돌아가면 급여명세서의 기간이 아니므로 기간 기록 전체(fixAll)도 끈다 — 다른 기간을 명세서 기간으로 오해하지 않게
+  const periodReset = n < 1 || n > MAX_PERIOD_DAYS;
+  if (periodReset) ({ fixFrom, fixTo } = def);
   const employment = first(raw.employment);
   const staffMemberId = idOf(first(raw.staffMemberId) ?? "");
   return {
@@ -153,7 +155,7 @@ export function parseAttendanceQuery(raw: RawSearch, today: string): AttendanceQ
     week: mondayOf(dateOf(first(raw.week)) || def.week),
     fixFrom,
     fixTo,
-    fixAll: first(raw.fixAll) === "1" && staffMemberId !== null,
+    fixAll: first(raw.fixAll) === "1" && staffMemberId !== null && !periodReset,
   };
 }
 
