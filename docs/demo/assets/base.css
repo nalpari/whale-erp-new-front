@@ -151,3 +151,72 @@ details[name="guest-faq"][open]::details-content {
 @keyframes guest-whale-float { from { transform: translateY(-6px) rotate(-0.6deg); } to { transform: translateY(6px) rotate(0.6deg); } }
 .guest-whale { animation: guest-whale-float 3.5s ease-in-out infinite alternate; }
 @media (prefers-reduced-motion: reduce) { .guest-whale { animation: none; } }
+
+/* ── 비로그인 움직임 — 앱 src/app/globals.css 에서 그대로 옮겼다(2026-11-10) ── */
+/* 비로그인 메인 「함께 일하는 방식」의 사진 띠. 같은 사진 묶음을 두 번 이어 붙여 왼쪽으로 끝없이 흐른다 — 절반(-50%)만큼 가면 처음과 같은 그림이라 끊김이 없다.
+   마우스를 올리면 멈추고, 움직임 줄이기 설정에서는 멈춘다(2026-11-10 사용자 지정). */
+@keyframes guest-photo-roll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.guest-photo-roll {
+  animation: guest-photo-roll 40s linear infinite;
+}
+.guest-photo-roll:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .guest-photo-roll {
+    animation: none;
+  }
+}
+
+/* 비로그인 소개 「끊김 없이」 흐름 — 물결 선 위 점선이 왼쪽에서 오른쪽으로 흐르고, 단계 동그라미는 차례로 살짝 떠올랐다 내려앉는다.
+   움직임 줄이기 설정에서는 둘 다 멈춘다(2026-11-10 사용자 지정). */
+@keyframes guest-wave-flow {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+.guest-wave-flow {
+  stroke-dasharray: 6 8;
+  animation: guest-wave-flow 1.4s linear infinite;
+}
+@keyframes guest-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.guest-float {
+  animation: guest-float 3s ease-in-out infinite;
+}
+/* 카드가 화면에 들어올 때 아래에서 24px 올라오며 나타난다 — 스크롤에 묶인 애니메이션(animation-timeline: view())이라
+   지원하지 않는 브라우저에서는 처음부터 보인다. 칸마다 시작 지점을 조금씩 늦춰 차례로 올라온다(--reveal-delay, 2026-11-10 사용자 지정). */
+@keyframes guest-reveal {
+  from {
+    opacity: 0;
+    translate: 0 24px;
+  }
+}
+@supports (animation-timeline: view()) {
+  .guest-reveal {
+    animation: guest-reveal linear both;
+    animation-timeline: view();
+    animation-range: entry calc(10% + var(--reveal-delay, 0%)) entry calc(70% + var(--reveal-delay, 0%));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .guest-wave-flow,
+  .guest-float,
+  .guest-reveal {
+    animation: none;
+  }
+}

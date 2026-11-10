@@ -53,7 +53,7 @@ export default ({ A, R }) => {
     )
     .join("")}</div>`;
 
-  const main = `<section class="mx-auto flex w-[1200px] flex-col gap-[40px] pt-[80px] text-guest-ink"><div class="flex items-end justify-between gap-[24px]"><div class="flex flex-col gap-[8px]"><h1 class="text-[28px] leading-[1.2] font-bold">공지사항 · FAQ</h1><p class="text-[16px] leading-[1.5]">로그인하지 않아도 볼 수 있는 글만 모았습니다.</p></div>${g.button(A, "도입문의", { tone: "outline", href: link(R, "home/inquiry.html"), arrow: true })}</div><div><div role="tablist" class="flex border-b border-[#ebebeb]">${tab("notices", "공지사항", true)}${tab("faq", "FAQ", false)}</div><div role="tabpanel" id="notices" aria-labelledby="tab-notices" class="animate-[guest-fade_220ms_ease] motion-reduce:animate-none">${notices}</div><div role="tabpanel" id="faq" aria-labelledby="tab-faq" hidden class="animate-[guest-fade_220ms_ease] motion-reduce:animate-none">${faq}</div></div></section>`;
+  const main = `<section class="mx-auto flex w-[1200px] flex-col gap-[40px] pt-[80px] text-guest-ink"><h1 class="text-[28px] leading-[1.2] font-bold">공지사항 · FAQ</h1><div><div role="tablist" class="flex border-b border-[#ebebeb]">${tab("notices", "공지사항", true)}${tab("faq", "FAQ", false)}</div><div role="tabpanel" id="notices" aria-labelledby="tab-notices" class="animate-[guest-fade_220ms_ease] motion-reduce:animate-none">${notices}</div><div role="tabpanel" id="faq" aria-labelledby="tab-faq" hidden class="animate-[guest-fade_220ms_ease] motion-reduce:animate-none">${faq}</div></div></section>`;
 
   return { title: "공지사항 · FAQ", head: g.head(A), html: g.page(A, R, { current: "home/notices.html", main }) };
 };

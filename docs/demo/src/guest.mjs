@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 // 비로그인 화면(home 의 소개·도입문의·공지사항, auth 의 로그인·찾기·가입·약관 전문)이 같이 쓰는 틀과 조각.
 // 앱의 디자인 샘플 src/app/design/guest(Figma 로그인전)를 옮긴 것이다 — 화면을 고치면 그쪽과 같이 고친다.
 // 관리자 화면과 다른 디자인이라 DESIGN.md 대신 globals.css 의 --color-guest-* 토큰과 Figma 규격을 따른다.
@@ -84,7 +85,12 @@ export const eyeButton = (A, label) =>
 
 // 로그인·계정 찾기·가입 완료의 왼쪽 칸 — 구름 위 고래 그림에 영문 머리말, 큰 제목, 안내를 얹는다.
 export const visual = (A, { eyebrow, title, body }) =>
-  `<div class="relative flex flex-col justify-end gap-[32px] overflow-hidden px-[60px] py-[74px]">${cover(A, "login/visual.png", "object-cover", true)}<div class="relative flex flex-col gap-[34px] uppercase"><p class="font-[family-name:var(--font-rem)] text-[24px] leading-none font-medium tracking-[-0.025em] text-[rgba(58,86,112,0.5)] ${TRIM}">${eyebrow}</p>${title}</div><p class="relative pl-[10px] text-[17px] leading-[1.4] text-[rgba(58,86,112,0.6)] ${TRIM}">${body}</p></div>`;
+  `<div class="relative flex flex-col justify-end gap-[32px] overflow-hidden px-[60px] py-[74px]">${cover(A, "login/visual.png", "object-cover", true)}<div class="relative flex flex-col gap-[34px] uppercase">${eyebrow ? `<p class="font-[family-name:var(--font-rem)] text-[24px] leading-none font-medium tracking-[-0.025em] text-[rgba(58,86,112,0.5)] ${TRIM}">${eyebrow}</p>` : ""}${title}</div><p class="relative text-[17px] leading-[1.4] text-[rgba(58,86,112,0.6)] ${TRIM}">${body}</p></div>`;
+
+// 앱이 서버에서 그린 본문 — docs/demo/snapshot-guest.mjs 가 src/snapshots/*.html 로 떠 온다. 그림 주소(__A__) · 화면 사이 링크(__R__)를 이 화면 기준으로 바꾼다.
+// 홈 · 매장운영 · 재무관리 · 프랜차이즈 · 부가서비스가 쓴다 — 앱 문구 · 클래스와 한 글자도 다르지 않다(2026-11-10).
+export const snapshot = (A, R, name) =>
+  readFileSync(new URL(`./snapshots/${name}.html`, import.meta.url), "utf8").replaceAll("__A__", A).replaceAll("__R__", R);
 
 // ── 머리말 · 푸터 ──
 const MENUS = [
