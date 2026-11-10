@@ -850,7 +850,7 @@ export function ContractForm({
             </Group>
             <Item label="근무 장소">
               {(id) => (
-                <TextField id={id} value={form.workLocation} maxLength={200} placeholder="예: 서울 성동구 연무장길 18, 1층" onChange={(e) => set("workLocation", e.target.value)} />
+                <TextField id={id} value={form.workLocation} maxLength={200} placeholder="소속 근무지를 고르면 근무지명이 들어갑니다" onChange={(e) => set("workLocation", e.target.value)} />
               )}
             </Item>
           </FormRow>
