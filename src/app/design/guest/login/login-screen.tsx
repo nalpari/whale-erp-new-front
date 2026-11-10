@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { GuestRoutes } from "../guest-routes";
-import { GuestButton, GuestPage, GuestVisual, TRIM } from "../guest-ui";
+import { GuestButton, GuestPage, GuestVisual } from "../guest-ui";
 
 // Figma 「로그인전_로그인」(8QSOuwFFBfCbFWR6RBUlps · 1:1615). 왼쪽은 고래 그림, 오른쪽은 관리자 로그인이다.
 // 푸터가 본문에 바로 붙는 화면이라 GuestPage 에 flush 를 준다.
@@ -10,17 +10,17 @@ export function GuestLogin({ routes, children }: { routes: GuestRoutes; children
     <GuestPage flush>
       <section className="grid grid-cols-2">
         <GuestVisual
-          eyebrow="Partner office"
           title={
-            <p className={`font-[family-name:var(--font-rem)] leading-[0.86] font-black tracking-[-0.038em] text-[rgba(58,86,112,0.6)] ${TRIM}`}>
-              <span className="block text-[42px]">Welcome back to</span>
-              <span className="block text-[84px]">Whale ERP</span>
+            // 영문 「Welcome back to Whale ERP」 대신 「작은 불편함을 줄이는 것부터, / 더 나은 매장 운영은 시작됩니다.」 두 줄(44px 같은 크기 — 문장이 길어 칸 폭에 맞췄다), 홈과 같은 왼쪽→오른쪽 옅어지는 그라데이션. 위 「Partner office」는 뺐다(2026-11-10 사용자 지정).
+            <p className="flex flex-col gap-[4px] font-extrabold text-transparent normal-case">
+              <span className="-ml-[0.03em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.7)] to-[rgba(58,86,112,0.35)] bg-clip-text text-[44px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">작은 불편함을 줄이는 것부터,</span>
+              <span className="-ml-[0.05em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.8)] to-[rgba(58,86,112,0.36)] bg-clip-text text-[44px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">더 나은 매장 운영은 시작됩니다.</span>
             </p>
           }
         >
-          오늘도 매장을 가볍게. 사업자·가맹점·플랫폼 관리자 모두 여기서 시작합니다.
+          사장님의 매일이 조금 더 편리해지도록,
           <br />
-          권한에 맞는 메뉴가 자동으로 열립니다.
+          WHALE ERP가 함께합니다.
         </GuestVisual>
         <div className="flex flex-col gap-[27px] px-[200px] py-[80px] text-guest-ink">
           <div className="flex flex-col gap-[8px]">
