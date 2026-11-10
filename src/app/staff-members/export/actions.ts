@@ -25,12 +25,12 @@ function failureOf(error: unknown, what: string, log: Record<string, unknown>, u
 /** 일괄 저장 요청. storeIds 가 비면 관리 점포 전체다. 결과 모름(5xx · 끊김)이면 화면이 지난 요청을 다시 읽어 만들어졌는지 보인다 */
 export async function requestBulkExport(storeIds: unknown): Promise<ActionResult<{ item: BulkExport }>> {
   if (!Array.isArray(storeIds) || storeIds.length > 1000 || !storeIds.every(validId))
-    return { ok: false, status: 400, message: "업무 범위를 다시 선택해 주세요.", messages: ["업무 범위를 다시 선택해 주세요."] };
+    return { ok: false, status: 400, message: "화면 위에서 점포를 다시 선택해 주세요.", messages: ["화면 위에서 점포를 다시 선택해 주세요."] };
   try {
     const item = await send<BulkExport>("/staff-members/bulk-exports", "POST", storeIds.length ? { storeIds } : {});
     return { ok: true, item };
   } catch (error) {
-    return failureOf(error, "요청", { storeCount: storeIds.length }, "요청 결과를 확인하지 못했습니다. 지난 요청 표에서 확인해 주세요.");
+    return failureOf(error, "요청", { storeCount: storeIds.length }, "요청 처리 결과를 받지 못했습니다. 요청 내역에서 확인해 주세요.");
   }
 }
 
@@ -40,6 +40,6 @@ export async function getBulkExportLink(bulkExportId: unknown): Promise<ActionRe
   try {
     return { ok: true, link: await send<BulkExportLink>(`/staff-members/bulk-exports/${bulkExportId}/download`, "POST") };
   } catch (error) {
-    return failureOf(error, "내려받기", { bulkExportId }, "파일 주소를 받지 못했습니다. 잠시 뒤 다시 눌러 주세요.");
+    return failureOf(error, "내려받기", { bulkExportId }, "다운로드 링크를 받지 못했습니다. 잠시 후 다시 시도해 주세요.");
   }
 }
