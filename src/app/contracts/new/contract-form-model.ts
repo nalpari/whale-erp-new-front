@@ -190,6 +190,11 @@ export function initialForm(storeId = ""): ContractForm {
   };
 }
 
+/** 소속 근무지를 고른다. 근무 장소는 고를 때마다 그 근무지명으로 덮어쓴다(비우면 함께 비운다) — 관리자는 그 뒤에 고쳐 쓸 수 있다 */
+export function withStore(f: ContractForm, storeId: string, stores: readonly { storeId: number; name: string }[]): ContractForm {
+  return { ...f, storeId, workLocation: stores.find((s) => String(s.storeId) === storeId)?.name ?? "" };
+}
+
 /** GET /contracts/:contractId. api 의 openapi.json 에서 만든 타입을 쓴다(pnpm openapi:types) */
 export type ContractDetail = components["schemas"]["ContractDetailDto"];
 

@@ -38,6 +38,7 @@ import {
   weeklyHolidayOf,
   weeklyHours,
   WEEKDAYS,
+  withStore,
   type ContractForm as Form,
   type CreateContractBody,
   type DayTimes,
@@ -307,7 +308,7 @@ export function ContractForm({
   /** 돌아갈 목록 주소(?back=) — 취소 · 저장 뒤 같은 조건의 목록으로 간다 */
   back?: string;
 }) {
-  const [form, setForm] = useState<Form>(() => initial ?? initialForm(stores.length === 1 ? String(stores[0].storeId) : ""));
+  const [form, setForm] = useState<Form>(() => initial ?? initialForm());
   // 저장을 한 번 누른 뒤부터 막는 이유를 보인다. 처음부터 빨간 줄을 띄우지 않는다.
   const router = useRouter();
   // 화면 주소 · 종이 계약 창구는 탭 BP 를 붙인다 — proxy 가 그 BP 를 api 에 싣는다. back 은 옛 경로(목록 쿼리)다
@@ -595,7 +596,7 @@ export function ContractForm({
             <Item label="소속 근무지" required errors={errs.storeId}>
               {(id) => (
                 // 수정 요청은 이미 보낸 계약이라 근무지를 바꾸지 않는다 — 다른 근무지는 새 근로계약서로(api #58). 재계약도 직전 계약의 근무지다
-                <Select id={id} value={form.storeId} disabled={correction || previousContractId !== undefined} onChange={(e) => set("storeId", e.target.value)}>
+                <Select id={id} value={form.storeId} disabled={correction || previousContractId !== undefined} onChange={(e) => { const storeId = e.target.value; setForm((f) => withStore(f, storeId, stores)); }}>
                   <option value="">선택</option>
                   {stores.map((s) => (
                     <option key={s.storeId} value={s.storeId}>
