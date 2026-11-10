@@ -1,6 +1,6 @@
 "use server";
 
-import { getSession, request } from "./api";
+import { expiredFailureOf, getSession, request, type ExpiredFailure } from "./api";
 import { getAddressCoordinate, searchAddresses, type AddressCoordinateResult, type AddressSearchResult } from "./address-search";
 
 // 주소 검색 · 좌표 조회 server action. 공용 주소 칸(components/address-field.tsx)과 점포 폼이 같이 쓰므로 app 이 아니라 lib 에 둔다.
@@ -15,8 +15,11 @@ const VERIFIED_FOR_MS = 5 * 60_000;
 const VERIFIED_MAX = 500;
 const verifiedTokens = new Map<string, number>();
 
-/** 로그인 세션의 토큰이 api 에서 통하는지. 실패(401 · 403 · 연결 실패)는 모두 아님으로 본다 — 키를 쓰지 않는 쪽이 안전하다. */
-async function hasValidSession(): Promise<boolean> {
+/**
+ * 로그인 세션의 토큰이 api 에서 통하는지. 실패(401 · 403 · 연결 실패)는 모두 아님으로 본다 — 키를 쓰지 않는 쪽이 안전하다.
+ * 로그인 만료면 만료 결과를 돌려준다 — 화면의 useAction 이 「로그인 만료」 팝업을 띄운다.
+ */
+async function hasValidSession(): Promise<true | false | ExpiredFailure> {
   const token = (await getSession())?.accessToken;
   if (!token) return false;
   const now = Date.now();
@@ -27,6 +30,8 @@ async function hasValidSession(): Promise<boolean> {
     await request("/auth/admin/login-info", { headers: { Authorization: `Bearer ${token}` } });
   } catch (error) {
     verifiedTokens.delete(token);
+    const expired = expiredFailureOf(error);
+    if (expired) return expired;
     if (process.env.NODE_ENV === "development") console.warn("주소 액션 — 세션 확인 실패", error);
     return false;
   }
@@ -38,8 +43,12 @@ async function hasValidSession(): Promise<boolean> {
   return true;
 }
 
+/** 세션 확인이 통과하지 않았을 때의 결과 — 만료면 만료 결과, 그 밖은 로그인 필요 문구 */
+const sessionFailure = (checked: false | ExpiredFailure) => checked || { ok: false as const, message: LOGIN_REQUIRED };
+
 export async function searchAddressAction(keyword: string, page: number): Promise<AddressSearchResult> {
-  if (!(await hasValidSession())) return { ok: false, message: LOGIN_REQUIRED };
+  const checked = await hasValidSession();
+  if (checked !== true) return sessionFailure(checked);
   if (typeof keyword !== "string") return { ok: true, items: [], total: 0 };
   return searchAddresses(keyword, Number.isInteger(page) && page >= 1 && page <= 100 ? page : 1);
 }
@@ -49,7 +58,8 @@ export async function searchAddressAction(keyword: string, page: number): Promis
  * 브라우저가 보낸 값이라 글자 · 길이를 보고 넘긴다.
  */
 export async function getAddressCoordinateAction(roadAddressBase: string, jibunAddress: string): Promise<AddressCoordinateResult> {
-  if (!(await hasValidSession())) return { ok: false, message: LOGIN_REQUIRED };
+  const checked = await hasValidSession();
+  if (checked !== true) return sessionFailure(checked);
   const queries = [roadAddressBase, jibunAddress].filter((q): q is string => typeof q === "string" && q.trim().length >= 2 && q.length <= 200);
   if (!queries.length) return { ok: false, message: "이 주소의 위도 · 경도를 찾지 못했습니다. 직접 적어 주세요." };
   return getAddressCoordinate(queries.map((q) => q.trim()));

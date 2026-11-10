@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ApiError } from "@/lib/api";
+import { ApiError, expiredFailureOf } from "@/lib/api";
 import { changeTodoStatus, createTodo, deleteTodo, getAssignableStaff, updateTodo } from "@/lib/todos-api";
 import type { ActionFailure, ActionResult } from "../staff-members/[id]/actions";
 import { type CreateTodoBody, type PickedStaff, type UpdateTodoBody } from "./todo-form-model";
@@ -17,8 +17,9 @@ const NOT_FOUND: ActionFailure = { ok: false, status: 404, message: "TO-DO 를 �
 
 /** api 의 400 · 403 · 404 · 409 문장은 한국어라 그대로 보인다. 401 은 고정 문구, 5xx · 연결 실패는 결과 모름(status 없음 → 화면을 다시 받는다) */
 function failureOf(error: unknown, what: string, todoId?: number): ActionFailure {
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status < 500) return { ok: false, status: error.status, message: error.message };
   }
   console.error(`TO-DO ${what} 결과 모름`, { todoId }, error);

@@ -1,6 +1,6 @@
 "use server";
 
-import { ApiError } from "@/lib/api";
+import { ApiError, expiredFailureOf } from "@/lib/api";
 import { changeMyPassword, type ChangeMyPasswordInput } from "@/lib/my-password";
 
 // 내 비밀번호 변경(마이페이지, S-PTWREE). 로그인 판정은 api 가 한다(세션 토큰이 없거나 끝났으면 401).
@@ -13,8 +13,9 @@ export async function changeMyPasswordAction(input: ChangeMyPasswordInput): Prom
     await changeMyPassword(input);
     return { ok: true };
   } catch (error) {
+    const expired = expiredFailureOf(error);
+    if (expired) return expired;
     if (error instanceof ApiError) {
-      if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
       // 400 은 정책 위반 · 현재 비밀번호 불일치 · 확인 불일치 — api 문구를 그대로 쓴다(화면이 만들지 않는다).
       if (error.status === 400) return { ok: false, status: 400, message: error.message };
       // 429(10분 10번 시도 한도, admin-auth.controller.ts changeMyPassword) 는 @nestjs/throttler 기본

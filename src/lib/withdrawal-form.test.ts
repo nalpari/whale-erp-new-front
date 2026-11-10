@@ -98,10 +98,15 @@ test("BP명·관리자수·점포수가 실제 값으로 들어간다(굵게 표
 });
 
 test("탈퇴 1단계 비밀번호 확인 실패 — 확인하지 못하면 모두 막는다(통과로 보지 않는다)", () => {
-  assert.deepEqual(withdrawVerifyFailureOf(new ApiError(401, "Unauthorized")), {
+  // 로그인 만료(request() 가 표시한 401)는 만료 결과 — useAction 이 「로그인 만료」 팝업을 띄운다
+  const expired = new ApiError(401, "Unauthorized");
+  expired.expired = true;
+  assert.deepEqual(withdrawVerifyFailureOf(expired), {
     ok: false,
     status: 401,
     message: "로그인이 만료되었습니다. 다시 로그인해 주세요.",
+    messages: ["로그인이 만료되었습니다. 다시 로그인해 주세요."],
+    expired: true,
   });
   assert.deepEqual(withdrawVerifyFailureOf(new ApiError(400, "현재 비밀번호가 올바르지 않습니다.")), {
     ok: false,

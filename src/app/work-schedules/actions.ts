@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ApiError } from "@/lib/api";
+import { ApiError, expiredFailureOf } from "@/lib/api";
 import {
   bulkCreateSchedules,
   copyLastWeek,
@@ -30,8 +30,9 @@ const SAVE_UNKNOWN = "저장 결과를 확인하지 못했습니다. 화면을 �
 
 /** api 의 400 · 403 · 404 · 409 문장은 한국어라 그대로 보인다. 401 은 고정 문구, 5xx · 연결 실패는 결과 모름(status 없음) */
 function failureOf(error: unknown, what: string, log: object): ActionFailure {
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status < 500) return { ok: false, status: error.status, message: error.message };
   }
   console.error(`근무스케줄 ${what} 결과 모름`, log, error);

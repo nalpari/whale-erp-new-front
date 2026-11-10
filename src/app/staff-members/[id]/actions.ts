@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ApiError } from "@/lib/api";
+import { ApiError, expiredFailureOf } from "@/lib/api";
 import { codeOf, isApiSendRefusal } from "@/lib/api-error";
 import { checkBirthDate } from "@/lib/birth-date";
 import { checkRetiredDate, staleDayWarning } from "@/lib/retirement";
@@ -27,8 +27,9 @@ export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
  * what 은 화면 문구에 들어가는 동작 이름, feature 는 로그에서 기능을 가르는 이름이다(퇴직 · 비밀번호 초기화 · 생년월일 정정).
  */
 function failureOf(error: unknown, what: string, log: { feature: string; staffMemberId: number }): ActionFailure {
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status < 500) {
       const code = codeOf(error.body);
       return { ok: false, status: error.status, message: error.message, ...(code === undefined ? {} : { code }) };

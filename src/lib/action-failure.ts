@@ -23,7 +23,10 @@ export const SESSION_EXPIRED = "로그인이 만료되었습니다. 다시 로�
  *   const expired = expiredFailureOf(error);
  *   if (expired) return expired;
  */
-export function expiredFailureOf(error: unknown): (ActionFailure & { status: 401; expired: true }) | null {
+/** 로그인 만료 결과 — 결과 모양이 다른 액션도 이것을 그대로 돌려주면 useAction 이 알아본다 */
+export type ExpiredFailure = ActionFailure & { status: 401; expired: true };
+
+export function expiredFailureOf(error: unknown): ExpiredFailure | null {
   if (!(error instanceof ApiError && error.expired)) return null;
   return { ok: false, status: 401, message: SESSION_EXPIRED, messages: [SESSION_EXPIRED], expired: true };
 }

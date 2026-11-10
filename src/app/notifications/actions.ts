@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ApiError } from "@/lib/api";
+import { ApiError, expiredFailureOf, type ExpiredFailure } from "@/lib/api";
 import { deleteNotifications, InvalidNotificationIdError, readAllNotifications, readNotification } from "@/lib/notifications";
 import { safeLink } from "@/lib/notification-view";
 
@@ -20,7 +20,8 @@ async function run(what: string, act: () => Promise<unknown>): Promise<ActionRes
   try {
     await act();
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) return { ok: false, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
+    const expired = expiredFailureOf(error);
+    if (expired) return expired;
     if (error instanceof ApiError && error.status === 403) return { ok: false, message: "운영 알림을 볼 권한이 없습니다." };
     if (error instanceof InvalidNotificationIdError) return { ok: false, message: "선택한 알림을 다시 확인해 주세요." };
     console.error(`${what} 실패`, error);
@@ -43,12 +44,15 @@ export async function deleteAction(ids: number[]): Promise<ActionResult> {
  * 브라우저가 링크를 미리 불러오거나(프리페치 · 프리렌더) 메일 보안 검사기가 링크를 열어 보는 것만으로 읽음이 되면 안 된다.
  * 갈 곳이 없거나 남의 알림이면 알림함으로 돌려보내 안내하고, 읽음 처리에 실패하면 알림은 그대로 미확인이다.
  */
-export async function openAction(id: number): Promise<string> {
+export async function openAction(id: number): Promise<string | ExpiredFailure> {
   try {
     const target = safeLink((await readNotification(id)).link) ?? "/notifications?gone=1";
     refreshBells();
     return target;
   } catch (error) {
+    // 로그인 만료 — 갈 곳 대신 만료 결과를 돌려준다(useAction 이 「로그인 만료」 팝업을 띄운다)
+    const expired = expiredFailureOf(error);
+    if (expired) return expired;
     if (error instanceof InvalidNotificationIdError || (error instanceof ApiError && error.status === 404)) return "/notifications?gone=1";
     console.error("운영 알림 읽음 처리 실패", error);
     return "/notifications?error=read";

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ApiError } from "@/lib/api";
+import { ApiError, expiredFailureOf } from "@/lib/api";
 import { createBpCodeItems, deleteBpCodeItems, updateBpCodeItems, type SaveCodeItemsInput } from "@/lib/bp-codes";
 import { planSave, saveInOrder, savedNote, type SaveFailure, type SaveResult } from "@/lib/code-save";
 
@@ -20,8 +20,9 @@ const FAILED = "상세 코드를 저장하지 못했습니다. 잠시 후 다시
  * 404(없는 그룹 · 코드) · 409(중복 · 그 사이 바뀜)는 그대로 보인다. 401 은 고정 문구로, 그 밖(5xx · 연결 실패)은 일반 문구로.
  */
 function failureOf(error: unknown, what: string): SaveFailure {
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError) {
-    if (error.status === 401) return { status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if ([400, 403, 404, 409].includes(error.status)) return { status: error.status, message: error.message };
   }
   console.error(`${what} 실패`, error);

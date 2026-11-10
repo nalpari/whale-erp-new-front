@@ -15,7 +15,7 @@ export * from "./session";
 // api 오류와 거절 판정은 node --test 가 읽도록 api-error.ts 에 있다.
 export { ApiError, deniedMessageOf } from "./api-error";
 // 쓰기 결과 모양과 실패 판정은 node --test 가 읽도록 action-failure.ts 에 있다.
-export type { ActionFailure, ActionResult } from "./action-failure.ts";
+export type { ActionFailure, ActionResult, ExpiredFailure } from "./action-failure.ts";
 export { expiredFailureOf } from "./action-failure.ts";
 
 /**

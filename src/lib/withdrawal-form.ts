@@ -1,6 +1,7 @@
 // 회원 탈퇴(마이페이지) 순수 로직 — manyfast S-JHQQNR 「회원 탈퇴」. api 를 부르는 쪽(withdrawal.ts)과
 // 갈라 둔다 — api.ts 가 next/headers 를 써서 node --test 가 플레인으로 풀 수 없기 때문이다
 // (my-password-form.ts 가 my-password.ts 와 갈라진 것과 같은 이유).
+import { expiredFailureOf } from "./action-failure.ts";
 import { ApiError } from "./api-error.ts";
 import type { components } from "./api-types.generated.ts";
 import { bpPath, isBpPathScreen } from "./bp-path.ts";
@@ -29,8 +30,9 @@ export type WithdrawVerifyFailure = { ok: false; status?: 400 | 401; message: st
 /** 탈퇴 1단계 비밀번호 확인이 던진 것을 화면 결과로(S-JHQQNR, 2026-10-29 재영). 확인하지 못한 경우(경로가 없는 404 · 5xx ·
  * 연결 실패)는 통과가 아니라 실패다 — 비밀번호를 모르는 사람이 탈퇴 화면을 보지 않게 하는 단계라서다. */
 export function withdrawVerifyFailureOf(error: unknown): WithdrawVerifyFailure {
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     // 400 은 현재 비밀번호 불일치 — api 문구(「현재 비밀번호가 올바르지 않습니다.」)를 그대로 쓴다.
     if (error.status === 400) return { ok: false, status: 400, message: error.message };
     // 429 는 @nestjs/throttler 기본 예외라 한글 문구가 없다(api 한도 10분 10번).
@@ -45,6 +47,7 @@ export type WithdrawFailure = { ok: false; status?: 400 | 401 | 409; message: st
 /** 회원 탈퇴 저장이 던진 것을 화면 결과로. api 가 판정한 거절이 아니면(5xx · 연결 실패) 탈퇴됐는지 모르므로 「확인하지 못했다」고 말한다. */
 export function withdrawFailureOf(error: unknown): WithdrawFailure {
   if (error instanceof ApiError) {
+    // 최종 제출의 401 은 만료가 아니다 — 탈퇴가 커밋되며 세션이 끊겼을 수 있어 화면이 로그아웃으로 보낸다(만료 제외 경로, session-expiry.ts)
     if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     // 400 은 현재 비밀번호 불일치 · 상세 사유 누락 — api 문구를 그대로 쓴다(화면이 만들지 않는다).
     if (error.status === 400) return { ok: false, status: 400, message: error.message };
