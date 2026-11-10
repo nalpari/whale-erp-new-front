@@ -43,7 +43,7 @@ export interface AttendanceQuery {
   scope: Scope | null;
   /** 직원(이름 또는 번호) */
   staff: string;
-  /** 직원 레코드 하나로 좁힌다 — 급여명세서의 「출퇴근 보정」 · 「출퇴근 기록 보기」(이름이 비슷한 다른 직원이 섞이지 않게). 직원 칸을 고치면 풀린다 */
+  /** 직원 레코드 하나로 좁힌다 — 급여명세서의 「출퇴근 기록 확인」 · 「출퇴근 기록 보기」(이름이 비슷한 다른 직원이 섞이지 않게). 직원 칸을 고치면 풀린다 */
   staffMemberId: number | null;
   employmentTypes: EmploymentType[];
   statuses: DayStatus[];
