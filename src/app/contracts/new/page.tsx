@@ -17,7 +17,7 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
   const from = typeof query.from === "string" ? Number(query.from) : undefined;
   if (from !== undefined && !(Number.isInteger(from) && from >= 1 && from <= 2_147_483_647)) notFound();
   // 직전 계약은 작성 화면 재료와 함께 읽는다. 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403) · BP 를 고르지 않은 플랫폼
-  // 계정(400)이면 api 문장을 그대로 보인다(이어 쓰기와 같다). 세션이 없으면 api 가 401 이라 「로그인이 필요합니다」다
+  // 계정(400)이면 api 문장을 그대로 보인다(이어 쓰기와 같다). 로그인 만료는 request() 가 로그인 화면으로 보낸다
   const readPrevious = async (): Promise<{ previous: ContractDetail | null; notice: string }> => {
     const none = { previous: null, notice: "로그인이 필요합니다." };
     if (from === undefined) return none;
@@ -28,7 +28,7 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) notFound();
       const denied = deniedMessageOf(e);
-      if (!(e instanceof ApiError && e.status === 401) && denied === null) throw e;
+      if (denied === null) throw e;
       return denied !== null ? { previous: null, notice: denied } : none;
     }
   };

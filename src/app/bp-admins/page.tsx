@@ -23,7 +23,7 @@ export default async function BpAdminsPage({ searchParams }: PageProps<"/bp-admi
     // 로그인 만료 · 권한 없음은 목록도 같은 이유로 막혀 그쪽이 알리므로 장애 로그를 남기지 않는다
     getBpAdminRoleGroups().catch((error: unknown) => {
       unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
-      if (!(error instanceof ApiError && (error.status === 401 || error.status === 403))) console.error("BP 관리자 권한 그룹 선택지 조회 실패", error);
+      if (!(error instanceof ApiError && error.status === 403)) console.error("BP 관리자 권한 그룹 선택지 조회 실패", error);
       return null;
     }),
     query.admin ? loadDetail(query.admin) : null,

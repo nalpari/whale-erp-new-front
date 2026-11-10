@@ -15,7 +15,7 @@ export default async function TemplateDetailPage({ params }: PageProps<"/platfor
   const loaded = await Promise.all([getTemplate(id), getEnum("NotificationTemplateChannel"), getEnum("PreferenceCategory")]).catch((error: unknown) => {
     if (!(error instanceof ApiError)) throw error;
     if (error.status === 404) notFound();
-    if (error.status !== 401 && error.status !== 403) throw error;
+    if (error.status !== 403) throw error;
     return null;
   });
   if (loaded) {

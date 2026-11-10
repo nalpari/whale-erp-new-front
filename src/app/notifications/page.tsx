@@ -20,7 +20,7 @@ export default async function NotificationsPage({
   } catch (error) {
     unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
     failure =
-      error instanceof ApiError && (error.status === 401 || error.status === 403)
+      error instanceof ApiError && error.status === 403
         ? "운영 알림을 볼 권한이 없습니다."
         : "알림을 불러오지 못했습니다.";
     if (!failure.startsWith("운영")) console.error("운영 알림함 조회 실패", error);

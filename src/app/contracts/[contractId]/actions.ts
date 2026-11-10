@@ -47,7 +47,6 @@ export async function updateWorker(contractId: number, body: WorkerBody, back?: 
     if (expired) return { error: expired.message, expired: true };
     if (e instanceof ApiError) {
       const failure = saveFailureOf(e, { feature: "근로계약 당사자 정보", contractId });
-      if (failure.kind === "login") return { error: "로그인이 필요합니다." };
       // 고친 내용은 저장했는데 다시 보내기(가입 초대 알림톡)가 실패했다 — 상세에서 알린다
       if (failure.kind === "sendFailed") redirect(await bpHref(withBack(failure.target, back)));
       // 결과를 받지 못했다(saveFailureOf 의 unknown — api 의 503 이 아닌 5xx 전부) — 저장 · 다시 보내기가 됐을 수 있어 같은 폼으로 다시 저장하지 않게 상세로(front #50 리뷰)
@@ -84,7 +83,6 @@ export async function sendContract(contractId: number, seen: SeenContract): Prom
     const expired = expiredFailureOf(e);
     if (expired) return { ok: false, error: expired.message, recheck: false, expired: true };
     if (e instanceof ApiError) {
-      if (e.status === 401) return { ok: false, error: "로그인이 필요합니다.", recheck: false };
       const code = (e.body as { code?: unknown } | null)?.code;
       // 502 · 503 은 api 문장이 한글이라 그대로 둔다(발송 실패 · 접수 여부 모름 · 설정 없음)
       return sendFailureOf(e.status, typeof code === "string" ? code : undefined, e.message);
@@ -114,7 +112,6 @@ export async function endContract(contractId: number): Promise<EndContractResult
     const expired = expiredFailureOf(e);
     if (expired) return { ok: false, error: expired.message, recheck: false, expired: true };
     if (e instanceof ApiError) {
-      if (e.status === 401) return { ok: false, error: "로그인이 필요합니다.", recheck: false };
       const code = (e.body as { code?: unknown } | null)?.code;
       return sendFailureOf(e.status, typeof code === "string" ? code : undefined, e.message, END_UNKNOWN);
     }

@@ -1,6 +1,6 @@
 import { Button, PageBar } from "@/components/common";
 
-// 플랫폼 운영자가 아니면(401 · 403) 등록 · 수정 화면 대신 보이는 안내.
+// 플랫폼 운영자가 아니면(403) 등록 · 수정 화면 대신 보이는 안내.
 export function ForbiddenPanel({ title }: { title: string }) {
   return (
     <>

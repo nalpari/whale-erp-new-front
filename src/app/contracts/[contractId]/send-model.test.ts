@@ -214,10 +214,6 @@ function quiet<T>(fn: () => T): T {
 }
 const log = { feature: "근로계약", contractId: 1 };
 
-test("saveFailureOf — 401 은 로그인 필요", () => {
-  assert.deepEqual(saveFailureOf(new ApiError(401, "Unauthorized"), log), { kind: "login" });
-});
-
 test("saveFailureOf — 저장은 됐고 보내기만 실패(502 + 코드 + 계약 ID)는 그 상세로", () => {
   const e = new ApiError(502, "알림톡 실패", ["알림톡 실패"], { code: "SEND_FAILED", contractId: 7 });
   assert.deepEqual(saveFailureOf(e, log), { kind: "sendFailed", target: "/contracts/7?send=failed" });
@@ -261,8 +257,7 @@ test("saveFailureOf — 409 + 진행 중 계약이면 api 문구와 목록, 400 
   assert.deepEqual(saveFailureOf(new ApiError(400, "만 19세 미만입니다"), log), { kind: "error", error: "만 19세 미만입니다" });
 });
 
-test("deleteFailureOf — 401 · 결과 모름 · 확정 실패 · 4xx", () => {
-  assert.equal(deleteFailureOf(new ApiError(401, "x"), log), "로그인이 필요합니다.");
+test("deleteFailureOf — 결과 모름 · 확정 실패 · 4xx", () => {
   assert.match(quiet(() => deleteFailureOf(new ApiError(504, "x"), log)), /^삭제 결과를 확인하지 못했습니다\. 목록이나 상세에서 다시 확인해 주세요\.$/);
   assert.equal(quiet(() => deleteFailureOf(new ApiError(500, "x"), log)), "삭제하지 못했습니다. 잠시 뒤 다시 시도해 주세요.");
   assert.equal(deleteFailureOf(new ApiError(409, "임시저장이 아닙니다"), log), "임시저장이 아닙니다");
