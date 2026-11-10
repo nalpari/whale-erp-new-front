@@ -120,17 +120,18 @@ export function GuestPage({ children, flush = false }: { children: ReactNode; fl
 }
 
 // 로그인·계정 찾기 왼쪽 칸 — 구름 위 고래 그림에 영문 머리말, 큰 제목, 안내 두 줄을 아래쪽에 얹는다.
-export function GuestVisual({ eyebrow, title, children }: { eyebrow: string; title: ReactNode; children: ReactNode }) {
+export function GuestVisual({ eyebrow, title, children }: { eyebrow?: string; title: ReactNode; children: ReactNode }) {
   return (
     <div className="relative flex flex-col justify-end gap-[32px] overflow-hidden px-[60px] py-[74px]">
       {/* 16:9 그림이 높이 730px 칸을 채우느라 폭 1300px 가까이로 그려진다. sizes 를 칸 폭(50vw)으로 주면
           작은 사본을 받아 늘려 그려 흐려지므로, 실제로 그려지는 폭을 알려 준다. */}
       <Image src="/guest/login/visual.png" alt="" fill loading="eager" sizes="max(50vw, 1300px)" className="object-cover" />
       <div className="relative flex flex-col gap-[34px] uppercase">
-        <p className={`font-[family-name:var(--font-rem)] text-[24px] leading-none font-medium tracking-[-0.025em] text-[rgba(58,86,112,0.5)] ${TRIM}`}>{eyebrow}</p>
+        {eyebrow && <p className={`font-[family-name:var(--font-rem)] text-[24px] leading-none font-medium tracking-[-0.025em] text-[rgba(58,86,112,0.5)] ${TRIM}`}>{eyebrow}</p>}
         {title}
       </div>
-      <p className={`relative pl-[10px] text-[17px] leading-[1.4] text-[rgba(58,86,112,0.6)] ${TRIM}`}>{children}</p>
+      {/* 한글 두 줄은 위 영문 제목과 같은 시작선에 둔다 — 전엔 10px 안쪽에서 시작해 시작선이 둘이었다(2026-11-10 사용자 지정). */}
+      <p className={`relative text-[17px] leading-[1.4] text-[rgba(58,86,112,0.6)] ${TRIM}`}>{children}</p>
     </div>
   );
 }

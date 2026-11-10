@@ -63,7 +63,7 @@ const CONNECTIONS = [
     where: "관리자 웹",
     title: "사장님이 매장과 직원을 등록해요",
     desc: ["매장과 직원을 등록하고,", "관리자를 지정해 운영을 시작해요."],
-    features: ["매장 정보 관리", "관리자 등록 · 권한 설정", "직원 초대 · 근로계약서 · 급여명세서 발송"],
+    features: ["매장 정보 및 시설물 · 장비 관리", "관리자 등록 · 권한 설정", "직원 초대 · 근로계약서 · 급여명세서 발송"],
     icon: "web",
   },
   {
@@ -96,7 +96,7 @@ const STEPS = [
 ];
 
 // 아이콘을 위에 두고 글을 아래로 — 옆에 두면 설명 칸이 좁아 세 줄로 꺾였다. 사방 여백 40px, 설명은 한 줄(2026-11-10 사용자 지정).
-const steps = (A, R) => `<section class="bg-guest-surface py-[100px]"><div class="${FRAME} flex flex-col gap-[60px]">${g.titleRow("매장 관리,", "어떻게 시작하면 될까요?", g.button(A, "사업자 회원가입하기", { tone: "invert", href: link(R, "auth/signup.html"), arrow: true }), { tag: "시작 방법", oneLine: true })}<ol class="grid grid-cols-3 gap-[24px]">${STEPS.map(
+const steps = (A, R) => `<section class="bg-guest-surface py-[100px]"><div class="${FRAME} flex flex-col gap-[60px]">${g.titleRow("우리 매장,", "어떻게 시작하면 될까요?", g.button(A, "사업자 회원가입하기", { tone: "invert", href: link(R, "auth/signup.html"), arrow: true }), { tag: "시작 방법", oneLine: true })}<p class="-mt-[44px] flex items-center gap-[6px] text-[15px] leading-[1.5] text-guest-sub"><span aria-hidden="true" class="flex size-[15px] shrink-0 items-center justify-center rounded-full bg-guest-navy-soft text-[10px] leading-none font-bold text-white">!</span>매장 유형에 따라 시작 절차가 달라질 수 있어요. 자세한 내용은 <a href="${link(R, "home/inquiry.html")}" class="font-semibold text-guest-navy underline underline-offset-4 hover:text-guest-ink ${HOVER}">도입 문의</a>를 통해 확인해 주세요.</p><ol class="grid grid-cols-3 gap-[24px]">${STEPS.map(
   (s, i) => `<li class="relative flex flex-col items-start gap-[28px] rounded-[16px] border border-guest-line bg-white p-[40px]">${i < STEPS.length - 1 ? `<span aria-hidden="true" class="absolute top-1/2 -right-[12px] z-10 flex size-[34px] translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-guest-line bg-white text-guest-navy">${g.arrow(A)}</span>` : ""}${stepIcon(A, i)}<div class="flex flex-1 flex-col items-start gap-[20px]"><div class="flex flex-col gap-[16px] leading-[1.5]"><h3 class="text-[22px] font-bold text-guest-navy ${TRIM}"><span class="mr-[8px] text-guest-navy-soft">${no(i)}</span>${s.title}</h3><p class="text-[17px] text-guest-body ${TRIM}">${s.desc.join("<br>")}</p></div></div></li>`,
 ).join("")}</ol></div></section>`;
 
@@ -125,9 +125,9 @@ const boardHead = (A, text, action, href = "#") =>
 
 // FAQ 는 name 을 같이 준 <details> 라 하나를 열면 나머지가 닫힌다(앱과 같은 네이티브 동작).
 // 반 폭 두 칸은 큰 제목 없이 띠지만 둔다 — 상자 머리 문장이 제목 역할을 한다. 연한 하늘색 바탕, 위아래 90px(2026-11-09 사용자 지정).
-const boards = (A, R) => `<section class="bg-[#f1f7fc] py-[100px]"><div class="${FRAME} grid grid-cols-2 gap-[16px]"><div class="flex flex-col items-start gap-[24px]">${g.tag("자주 묻는 질문")}<div class="flex w-full flex-1 flex-col gap-[34px] rounded-[6px] border border-guest-line bg-white p-[34px]">${boardHead(A, "자주 묻는 질문과 답변을 확인해 보세요.", "자주 묻는 질문 보기", link(R, "home/notices.html#faq"))}<div class="flex flex-col gap-[8px]">${FAQS.map(
+const boards = (A, R) => `<section class="bg-[#f1f7fc] py-[100px]"><div class="${FRAME} grid grid-cols-2 gap-[16px]"><div class="flex flex-col items-start gap-[24px]">${g.tag("자주 묻는 질문")}<div class="flex w-full flex-1 flex-col gap-[34px] rounded-[24px] bg-white p-[34px]">${boardHead(A, "자주 묻는 질문과 답변을 확인해 보세요.", "자주 묻는 질문 보기", link(R, "home/notices.html#faq"))}<div class="flex flex-col gap-[8px]">${FAQS.map(
   (faq) => `<details name="guest-faq"${faq.a !== null ? " open" : ""} class="group rounded-[3px] bg-guest-surface pb-[4px] open:bg-[#f5f5f5]"><summary class="flex cursor-pointer px-[20px] pt-[22px] pb-[18px] list-none items-center gap-[11px] text-[17px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy ${HOVER} [&::-webkit-details-marker]:hidden"><span class="flex size-[28px] shrink-0 items-center justify-center rounded-full bg-guest-navy text-[18px] font-bold tracking-normal text-white">Q</span><span class="flex-1">${faq.q}</span>${g.gimg(A, "faq-plus.svg", 28, 28, "group-open:hidden")}${g.gimg(A, "faq-close.svg", 28, 28, "hidden group-open:block")}</summary>${faq.a ? `<p class="pr-[20px] pb-[18px] pl-[60px] text-[16px] leading-[1.5] text-guest-sub">${faq.a}</p>` : ""}</details>`,
-).join("")}</div></div></div><div class="flex flex-col items-start gap-[24px]">${g.tag("공지사항")}<div class="flex w-full flex-1 flex-col gap-[32px] rounded-[6px] border border-guest-line bg-white p-[34px]">${boardHead(A, "서비스 업데이트와 주요 공지사항을 확인해 보세요.", "공지사항 보기", link(R, "home/notices.html"))}<ul class="border-t border-guest-list-line text-[15px] leading-[1.5]">${NEWS.map(
+).join("")}</div></div></div><div class="flex flex-col items-start gap-[24px]">${g.tag("공지사항")}<div class="flex w-full flex-1 flex-col gap-[32px] rounded-[24px] bg-white p-[34px]">${boardHead(A, "서비스 업데이트와 주요 공지사항을 확인해 보세요.", "공지사항 보기", link(R, "home/notices.html"))}<ul class="border-t border-guest-list-line text-[15px] leading-[1.5]">${NEWS.map(
   (n) => `<li class="flex items-center gap-[8px] border-b border-guest-list-line py-[18px] last:border-b-0">${n.badge ? `<span class="flex h-[30px] items-center rounded-[3px] px-[10px] text-[15px] leading-[1.4] font-semibold ${n.badge.cls}">${n.badge.text}</span>` : ""}<a href="${link(R, "home/notice-detail.html")}" class="flex-1 text-guest-ink hover:text-guest-navy ${HOVER}">${n.title}</a><span class="text-guest-sub">2026.10.30</span></li>`,
 ).join("")}</ul></div></div></div></section>`;
 

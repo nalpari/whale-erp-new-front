@@ -1,16 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Fragment, type ReactNode } from "react";
+import { type CSSProperties, Fragment, type ReactNode } from "react";
 import type { components } from "@/lib/api-types.generated";
 import type { GuestRoutes } from "./guest-routes";
 import { Arrow, FaqItem, GuestButton, GuestPage, SectionTitle, TitleRow, TRIM, GuestTag } from "./guest-ui";
 import { Badges, dotDate } from "./notices/notice-views";
-import { BUTTON_MOTION, HOVER } from "./theme";
+import { MOCK, MOCK_BUTTON, MockField, MockRow, StoreCardMock } from "./screen-mocks";
+import { BUTTON_MOTION, FRAME, HOVER } from "./theme";
 
 // 카드 번호(01)는 따로 줄을 두지 않고 제목 앞에 연한 남색으로 붙인다(2026-11-10 사용자 지정).
 // 섹션 위아래 여백은 모두 100px 로 같다. 카드 제목 · 상자 머리 글자는 바탕색과 상관없이 남색, 섹션 제목만 먹색(2026-11-10 사용자 지정).
-// 메인은 본문 폭을 1520px 로 묶는다 — 공통 FRAME(최대 1760px)은 100% 배율에서 양옆이 꽉 차 보였다(2026-11-09 사용자 지정).
-const FRAME = "mx-auto w-full max-w-[1680px] px-[80px]";
 
 // Figma 「로그인전_Main」(RQmNVgT2NL0njIFXVQPVG6 · 44:2, 로그인전_공유 — 2026-11-06 반영). 1920 폭 데스크톱 시안이다.
 // 실제 홈((site)/page.tsx)과 디자인 샘플(design/guest/page.tsx)이 함께 그린다. 링크는 받은 routes 로 건다(guest-routes.ts).
@@ -27,16 +26,15 @@ const PANEL_ICON = {
   storeAdd: '<path d="M7 18l3-10h28l3 10"/><path d="M7 18c0 3 2.5 5 5.5 5s5.5-2 5.5-5c0 3 2.5 5 6 5s6-2 6-5c0 3 2.5 5 5.5 5S41 21 41 18"/><path d="M10 23v17h28V23"/><path d="M24 27v10M19 32h10"/>',
   staff: '<circle cx="19" cy="15" r="7"/><path d="M6 40c0-7.2 5.8-13 13-13 3.4 0 6.5 1.3 8.8 3.4"/><path d="M37 28v12M31 34h12"/>',
   pickup: '<path d="M11 11h26v5H11z"/><path d="M14 16l3 27h14l3-27"/><path d="M15.6 27h16.8"/><path d="M20 11l1-5h6l1 5"/>',
-  qr: '<rect x="6" y="6" width="14" height="14" rx="1.5"/><rect x="28" y="6" width="14" height="14" rx="1.5"/><rect x="6" y="28" width="14" height="14" rx="1.5"/><path d="M28 28h6v6h-6zM38 34v8M28 40h4"/>',
   stock: '<path d="M24 5l17 9v20l-17 9-17-9V14l17-9z"/><path d="M7 14l17 9 17-9M24 23v20"/>',
   recipe: '<path d="M8 8h13a5 5 0 0 1 5 5v28a4 4 0 0 0-4-4H8V8z"/><path d="M40 8H27a5 5 0 0 0-5 5v28a4 4 0 0 1 4-4h14V8z"/>',
 } as const;
 
+// 메뉴 · 가격 관리는 마스터 관리로 무료 제공이라 유료 부가서비스 목록에 넣지 않는다(2026-11-10 사용자 지정).
 const ADD_ONS_SOON = [
   { icon: "storeAdd", title: "점포수 추가" },
   { icon: "staff", title: "직원수 추가" },
   { icon: "pickup", title: "픽업 오더" },
-  { icon: "qr", title: "메뉴 · 가격 관리" },
   { icon: "stock", title: "발주 · 재고 관리" },
   { icon: "recipe", title: "레시피 관리" },
 ] as const;
@@ -85,7 +83,7 @@ function HeroPanel({ tag, items, soon = false }: { tag: string; items: readonly 
 // 머리말 아래 빈 하늘 100px 를 잘라 1080 → 980 으로 줄였다(2026-11-09 사용자 지정).
 function Billboard({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="relative -mt-[110px] h-[980px] overflow-hidden">
+    <section className="relative -mt-[110px] overflow-hidden pt-[210px] pb-[100px]">
       <Image src="/guest/billboard-bg.png" alt="" fill loading="eager" sizes="100vw" className="object-cover" />
       {/* 정사각 그림을 677×375 에 늘여 채운 것이 시안이다 — object-cover 로 바꾸면 고래가 잘린다.
           시안의 2px 흐림은 너무 뿌옇다는 요청(2026-10-13)으로 뺐다.
@@ -93,8 +91,8 @@ function Billboard({ routes }: { routes: GuestRoutes }) {
       <div className="guest-whale absolute top-[410px] left-[calc(50%+200px)] h-[375px] w-[677px] -translate-1/2">
         <Image src="/guest/billboard-whale.png" alt="" fill loading="eager" sizes="677px" />
       </div>
-      {/* 머리말(110px) 아래부터 바닥까지 가운데에 둬 위 · 아래 여백을 같게 한다(2026-11-09 사용자 지정). */}
-      <div className="absolute inset-x-0 top-[110px] bottom-0 flex items-center justify-center">
+      {/* 높이를 980px 로 고정하지 않고 글 묶음 높이에 맞춘다 — 머리말(110px) 아래 위 여백 100px · 아래 여백 100px 로 다른 섹션과 같게(2026-11-10 사용자 지정). */}
+      <div className="relative">
         {/* 가로 틀은 아래 섹션과 같은 FRAME — 글 · 띠지 · 네 칸의 왼쪽 시작선을 아래 섹션 제목과 맞춘다(2026-11-09 사용자 지정). */}
         <div className={`${FRAME} flex flex-col gap-[80px]`}>
           <div className="flex items-end justify-between">
@@ -193,8 +191,8 @@ function Personas({ routes }: { routes: GuestRoutes }) {
         <SectionTitle oneLine tag="매장 유형별 안내" light="사장님은," bold="어떤 매장을 운영하세요?" />
         <div className="grid grid-cols-4 gap-[16px]">
           {PERSONAS.map((p, i) => (
-            // 남색 띠 · 6px 모서리 대신 시작 방법 카드와 같은 크게 둥근 흰 카드(24px) — 페이지 카드 모양을 하나로(2026-11-10 사용자 지정).
-            <article key={p.head} className="flex flex-col rounded-[24px] bg-white">
+            // 남색 띠 · 6px 모서리 대신 시작 방법 카드와 같은 크게 둥근 흰 카드(24px) — 페이지 카드 모양을 하나로. 화면에 들어오면 차례로 올라오고(guest-reveal), 마우스를 올리면 떠오른다(2026-11-10 사용자 지정).
+            <article key={p.head} style={{ "--reveal-delay": `${i * 8}%` } as CSSProperties} className="guest-reveal flex flex-col rounded-[24px] border border-[#e3ebf3] bg-white transition-[translate,box-shadow,border-color] duration-300 ease-out hover:-translate-y-[6px] hover:border-guest-navy-soft hover:shadow-[0_16px_32px_rgba(58,86,112,0.12)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
               {/* 제목 ↔ 구분선 · 구분선 ↔ 한 문장 · 체크 목록 ↔ 버튼을 모두 24px 로 같게(2026-11-10 사용자 지정). */}
               <div className="flex flex-1 flex-col gap-[24px] p-[34px]">
                 <h3 className="text-[22px] leading-[1.4] font-bold text-guest-navy">
@@ -280,7 +278,7 @@ const CONNECTIONS = [
     where: "관리자 웹",
     title: "사장님이 매장과 직원을 등록해요",
     desc: ["매장과 직원을 등록하고,", "관리자를 지정해 운영을 시작해요."],
-    features: ["매장 정보 관리", "관리자 등록 · 권한 설정", "직원 초대 · 근로계약서 · 급여명세서 발송"],
+    features: ["매장 정보 및 시설물 · 장비 관리", "관리자 등록 · 권한 설정", "직원 초대 · 근로계약서 · 급여명세서 발송"],
   },
   {
     label: "02",
@@ -302,13 +300,16 @@ function Connections() {
   // 토스애즈 소개처럼 — 위에는 흐르는 사진 띠(장면), 아래는 왼쪽 큰 제목 + 오른쪽 세로선으로 나눈 세 흐름(사장님 → 관리자 → 직원).
   // 카드 · 그림자 · 아이콘 없이 글과 선만 둬 사진과 한 덩어리로 보이게 한다(2026-11-10 사용자 지정).
   return (
-    <section className="flex flex-col gap-[80px] bg-[#f1f7fc] py-[100px]">
+    // 제목이 먼저, 그 아래 흐르는 사진 띠, 맨 아래 세로선으로 나눈 세 흐름을 본문 폭 가득(2026-11-10 사용자 지정).
+    <section className="flex flex-col gap-[60px] bg-[#f1f7fc] py-[100px]">
+      <div className={FRAME}>
+        <SectionTitle oneLine tag="함께 일하는 방식" light="사장님부터 직원까지," bold="매장 업무가 하나로 연결돼요" />
+      </div>
       <PhotoRoll />
-      <div className={`${FRAME} grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] items-start gap-[60px]`}>
-        <SectionTitle tag="함께 일하는 방식" light="사장님부터 직원까지," bold="매장 업무가 하나로 연결돼요" />
-        <ol className="grid grid-cols-3">
+      <div className={FRAME}>
+        <ol className="grid grid-cols-3 gap-x-[72px]">
           {CONNECTIONS.map((c) => (
-            <li key={c.label} className="flex flex-col gap-[14px] border-l border-guest-line px-[28px] text-guest-body">
+            <li key={c.label} className="relative flex flex-col gap-[14px] text-guest-body before:absolute before:inset-y-0 before:-left-[36px] before:w-px before:bg-guest-line first:before:hidden">
               <span className="text-[14px] leading-[1.5] font-semibold text-guest-navy-soft">{c.where}</span>
               <h3 className="text-[22px] leading-[1.4] font-bold text-guest-navy">
                 <span className="mr-[8px] text-guest-navy-soft">{c.label}</span>
@@ -346,28 +347,6 @@ const STEPS = [
   { key: "attendance", title: "첫 출근", desc: "직원이 앱으로 출근하면 근무 기록이 쌓여요" },
 ] as const;
 
-// 조각 네 개는 폭 290 · 높이 320px 로 맞춰 그림 칸 안 좌우 여백이 같다 — 버튼은 맨 아래에 붙는다(2026-11-10 사용자 지정). 버튼 이름은 실제 화면과 같다(회원가입 · 등록 · 서명 요청).
-const MOCK = "flex h-[320px] w-[290px] flex-col rounded-[16px] bg-white p-[20px] text-guest-ink shadow-[0_8px_24px_rgba(58,86,112,0.12)]";
-const MOCK_BUTTON = "mt-auto rounded-[8px] bg-guest-navy py-[9px] text-center text-[13px] font-semibold text-white";
-
-function MockRow({ k, v }: { k: string; v: string }) {
-  return (
-    <div className="flex justify-between text-[13px] leading-[1.5]">
-      <span className="text-guest-sub">{k}</span>
-      <span className="font-medium">{v}</span>
-    </div>
-  );
-}
-
-function MockField({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col gap-[4px]">
-      <span className="text-[12px] text-guest-sub">{label}</span>
-      <span className="rounded-[6px] border border-guest-line px-[10px] py-[7px] text-[13px]">{value}</span>
-    </div>
-  );
-}
-
 function StepMock({ kind }: { kind: (typeof STEPS)[number]["key"] }) {
   // 사업자 회원가입 — 실제 회원가입 화면(signup)의 제목 · 안내 · 「기본정보」 칸을 그대로 옮겼다(2026-11-10 사용자 지정).
   if (kind === "signup")
@@ -398,32 +377,8 @@ function StepMock({ kind }: { kind: (typeof STEPS)[number]["key"] }) {
           </div>
           <div className={`${MOCK_BUTTON} mt-[12px]`}>등록</div>
         </div>
-        <div className="absolute bottom-[8px] left-1/2 flex w-[290px] -translate-x-1/2 flex-col gap-[14px] rounded-[10px] border border-[#edeef1] bg-white p-[20px] text-guest-ink shadow-[0_12px_32px_rgba(58,86,112,0.2)]">
-          <div className="flex items-start gap-[12px]">
-            <Image src="/guest/home/photos/owner-tablet.png" alt="" width={56} height={56} className="size-[56px] shrink-0 rounded-[8px] object-cover" />
-            <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
-              <b className="truncate text-[15px] font-semibold">인터플러그 신촌점</b>
-              <span className="flex items-center gap-[6px] text-[12px] text-[#888]">
-                <span className="rounded-[2px] border border-[#e9edf5] bg-[#f8f9fb] px-[4px] text-[#858b94]">직영</span>
-                ST000001
-              </span>
-            </div>
-            <span className="rounded-[2px] bg-[#f4f9ff] px-[6px] py-[1px] text-[12px] font-medium text-[#5e8ce9]">운영</span>
-          </div>
-          <dl className="grid grid-cols-2 gap-x-[12px] gap-y-[12px] border-t border-[#eeeeee] pt-[12px]">
-            <div className="flex flex-col gap-[2px]">
-              <dt className="text-[12px] text-[#888]">점포 연락처</dt>
-              <dd className="text-[13px]">02-6928-0028</dd>
-            </div>
-            <div className="flex flex-col gap-[2px]">
-              <dt className="text-[12px] text-[#888]">재직직원</dt>
-              <dd className="text-[13px]">3명</dd>
-            </div>
-            <div className="col-span-2 flex flex-col gap-[2px]">
-              <dt className="text-[12px] text-[#888]">점포주소</dt>
-              <dd className="text-[13px]">서울 서대문구 연세로5다길 22-3</dd>
-            </div>
-          </dl>
+        <div className="absolute bottom-[8px] left-1/2 -translate-x-1/2">
+          <StoreCardMock />
         </div>
       </div>
     );
@@ -467,14 +422,16 @@ function StepMock({ kind }: { kind: (typeof STEPS)[number]["key"] }) {
   );
 }
 
+// 흰 카드(매장 유형 · 시작 방법 · 질문 · 공지)는 연한 하늘 1px 선(#e3ebf3)으로 두른다 — 매장운영 소개 그림 카드와 같다(2026-11-10 사용자 지정).
 function Steps({ routes }: { routes: GuestRoutes }) {
   return (
     <section className="flex flex-col gap-[60px] bg-guest-surface py-[100px]">
-      <div className={FRAME}>
+      {/* 제목 바로 아래 작은 안내 — 시작 절차는 매장 유형(직영 · 가맹 등)에 따라 다를 수 있다(2026-11-10 사용자 지정). */}
+      <div className={`${FRAME} flex flex-col gap-[16px]`}>
         <TitleRow
           oneLine
           tag="시작 방법"
-          light="매장 관리,"
+          light="우리 매장,"
           bold="어떻게 시작하면 될까요?"
           action={
             <GuestButton tone="invert" href={routes.signUp} arrow>
@@ -482,17 +439,28 @@ function Steps({ routes }: { routes: GuestRoutes }) {
             </GuestButton>
           }
         />
+        <p className="flex items-center gap-[6px] text-[15px] leading-[1.5] text-guest-sub">
+          <span aria-hidden className="flex size-[15px] shrink-0 items-center justify-center rounded-full bg-guest-navy-soft text-[10px] leading-none font-bold text-white">
+            !
+          </span>
+          매장 유형에 따라 시작 절차가 달라질 수 있어요. 자세한 내용은
+          <Link href={routes.leads} className={`font-semibold text-guest-navy underline underline-offset-4 hover:text-guest-ink ${HOVER}`}>
+            도입 문의
+          </Link>
+          를 통해 확인해 주세요.
+        </p>
       </div>
       {/* 네 장을 본문 폭(1520 틀) 안에 나란히 둔다 — 가로 스크롤 없이 한눈에(2026-11-10 사용자 지정). */}
       <div className={FRAME}>
         <ol className="grid grid-cols-4 gap-[20px]">
           {STEPS.map((s, i) => (
-            <li key={s.key} className="min-w-0 rounded-[32px] bg-white p-[12px]">
+            <li key={s.key} className="min-w-0 rounded-[32px] border border-[#e3ebf3] bg-white p-[12px] transition-[translate,box-shadow] duration-300 ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_32px_rgba(58,86,112,0.12)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
               {/* 바탕은 첫 화면과 같은 구름 그림 — 카드마다 그림의 다른 쪽을 보여 이어지는 하늘처럼 보이게 한다. */}
               <div className="relative flex h-[380px] items-center justify-center overflow-hidden rounded-[24px] bg-[#e9eff6]">
                 <Image src="/guest/billboard-bg.png" alt="" fill sizes="360px" className="object-cover" style={{ objectPosition: `${15 + i * 25}% 60%` }} />
                 <span className="absolute inset-0 bg-white/20" />
-                <div className="relative">
+                {/* 화면 조각은 카드마다 차례로 살짝 떠올랐다 내려앉고(guest-float), 카드에 마우스를 올리면 카드가 6px 떠오른다 — 매장운영 흐름과 같은 생동감(2026-11-10 사용자 지정). */}
+                <div className="guest-float relative" style={{ animationDelay: `${i * 0.4}s` }}>
                   <StepMock kind={s.key} />
                 </div>
               </div>
@@ -650,7 +618,7 @@ function Boards({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | n
           <div className="flex flex-col items-start gap-[24px]">
             {/* 반 폭 두 칸은 큰 제목 없이 띠지만 둔다 — 상자 머리 문장이 제목 역할을 한다(2026-11-09 사용자 지정). */}
             <GuestTag>자주 묻는 질문</GuestTag>
-            <div className="flex w-full flex-col gap-[34px] rounded-[6px] border border-guest-line bg-white p-[34px]">
+            <div className="flex w-full flex-col gap-[34px] rounded-[24px] border border-[#e3ebf3] bg-white p-[34px]">
               <BoardHead text="자주 묻는 질문과 답변을 확인해 보세요." action="자주 묻는 질문 보기" href={`${routes.notices}#faq`} />
               {faq}
             </div>
@@ -659,7 +627,7 @@ function Boards({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | n
         {news && (
           <div className="flex flex-col items-start gap-[24px]">
             <GuestTag>공지사항</GuestTag>
-            <div className="flex w-full flex-1 flex-col gap-[32px] rounded-[6px] border border-guest-line bg-white p-[34px]">
+            <div className="flex w-full flex-1 flex-col gap-[32px] rounded-[24px] border border-[#e3ebf3] bg-white p-[34px]">
               <BoardHead text="서비스 업데이트와 주요 공지사항을 확인해 보세요." action="공지사항 보기" href={routes.notices} />
               {news}
             </div>

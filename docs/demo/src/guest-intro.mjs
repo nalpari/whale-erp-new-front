@@ -3,21 +3,13 @@
 import * as g from "./guest.mjs";
 import { link } from "./site.mjs";
 
-const momentBox = (kicker, { title, desc }, after) =>
-  `<div class="flex flex-col gap-[10px] pt-[34px] pr-[34px] pb-[42px] pl-[44px] ${after ? "bg-guest-slate text-white" : "bg-guest-card text-guest-slate"}"><div class="flex flex-col gap-[4px]"><p class="text-[16px] leading-[1.5] font-semibold">${kicker}</p><p class="text-[28px] leading-[1.4] font-bold">${title}</p></div><p class="text-[16px] leading-[1.5] ${g.TRIM}">${desc}</p></div>`;
+// 칸마다 「도입 전 · 도입 후」를 되풀이하지 않는다 — 표 왼쪽 줄 이름 칸이 한 번씩만 말한다. 도입 후 칸 위 가운데에 흰 동그라미 화살표(2026-11-10 사용자 지정).
+const momentBox = (A, { title, desc }, after) =>
+  `<div class="relative flex flex-col gap-[10px] px-[28px] pt-[34px] pb-[42px] ${after ? "bg-guest-slate text-white" : "bg-guest-card text-guest-slate"}">${after ? `<span aria-hidden="true" class="absolute top-0 left-1/2 z-10 flex size-[52px] -translate-1/2 items-center justify-center rounded-full border-4 border-white bg-guest-navy text-white shadow-[0_6px_16px_rgba(58,86,112,0.35)]"><span class="flex rotate-90">${g.arrow(A)}</span></span>` : ""}<p class="text-[22px] leading-[1.4] font-bold">${title}</p><p class="text-[16px] leading-[1.5] ${g.TRIM}">${desc}</p></div>`;
+const rowLabel = (label, after) => `<div class="flex items-center justify-center text-[18px] leading-[1.4] font-bold ${after ? "bg-guest-slate text-white" : "bg-guest-card text-guest-slate"}">${label}</div>`;
 
-// BEFORE → 도입 후 화살표. 마지막 칸 화살표는 끝 칸 모양에 맞춘 다른 그림이다(Figma Frame 56 · 57).
 export const moments = (A, R, light, bold, items) =>
-  `<section class="${g.FRAME} flex flex-col gap-[60px] pt-[120px]">${g.titleRow(
-    light,
-    bold,
-    `<div class="flex gap-[8px]">${g.button(A, "사업자 회원가입", { tone: "navy", href: link(R, "auth/signup.html"), arrow: true })}${g.button(A, "도입문의", { tone: "soft", href: link(R, "home/inquiry.html") })}</div>`,
-  )}<div class="grid grid-cols-3 gap-px overflow-hidden rounded-[16px]">${items
-    .map(
-      (m, i) =>
-        `<div class="relative flex flex-col">${momentBox("BEFORE", m.before, false)}${momentBox("WHALE ERP 도입 후", m.after, true)}${g.gimg(A, `store-operations/${i === items.length - 1 ? "arrow-down-circle-last.svg" : "arrow-down-circle.svg"}`, 66, 66, "absolute top-[calc(50%+9px)] left-1/2 -translate-1/2")}</div>`,
-    )
-    .join("")}</div></section>`;
+  `<section class="${g.FRAME} flex flex-col gap-[60px] pt-[120px]">${g.sectionTitle(light, bold, false, { oneLine: true })}<div class="grid grid-cols-[88px_repeat(3,minmax(0,1fr))] gap-px overflow-hidden rounded-[16px]">${rowLabel("도입 전", false)}${items.map((m) => momentBox(A, m.before, false)).join("")}${rowLabel("도입 후", true)}${items.map((m) => momentBox(A, m.after, true)).join("")}</div></section>`;
 
 const lines = (list) => list.map((l) => `<span class="block">${l}</span>`).join("");
 
