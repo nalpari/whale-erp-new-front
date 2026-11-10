@@ -347,6 +347,8 @@ export function ContractForm({
   // 「잘못 올린 계약 바로잡기」를 묻는다 — 확인하면 correctSignedContracts 를 켜 체결 완료도 대체한다(WHALEERP-156).
   const [replace, setReplace] = useState<{ body: CreateContractBody; list: InProgressContract[]; paper: boolean; correcting: boolean } | null>(null);
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
+  // 근무지를 고르면 근무 장소도 그 근무지명으로 바뀐다
+  const pickStore = (storeId: string) => setForm((f) => withStore(f, storeId, stores));
   // 종이 계약 날인본(CTR-23). 근로계약서는 필수, 따로 날인한 임금계약서는 선택. 고르는 순간 형식 · 크기를 먼저 본다(api 가 내용으로 다시 본다).
   const [files, setFiles] = useState<{ employment: File | null; wage: File | null }>({ employment: null, wage: null });
   const [fileErrors, setFileErrors] = useState<{ employment?: string; wage?: string }>({});
@@ -597,7 +599,7 @@ export function ContractForm({
             <Item label="소속 근무지" required errors={errs.storeId}>
               {(id) => (
                 // 수정 요청은 이미 보낸 계약이라 근무지를 바꾸지 않는다 — 다른 근무지는 새 근로계약서로(api #58). 재계약도 직전 계약의 근무지다
-                <Select id={id} value={form.storeId} disabled={correction || previousContractId !== undefined} onChange={(e) => { const storeId = e.target.value; setForm((f) => withStore(f, storeId, stores)); }}>
+                <Select id={id} value={form.storeId} disabled={correction || previousContractId !== undefined} onChange={(e) => pickStore(e.target.value)}>
                   <option value="">선택</option>
                   {stores.map((s) => (
                     <option key={s.storeId} value={s.storeId}>
