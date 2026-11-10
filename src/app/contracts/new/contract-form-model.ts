@@ -96,6 +96,8 @@ export type InProgressContract = { contractId: number; status: string; name: str
 /** 저장 서버 액션의 결과. 성공하면 액션이 목록으로 보내므로 돌아왔다면 실패다 */
 export interface SaveResult {
   error: string;
+  /** 로그인 만료 — useAction 이 「로그인 만료」 팝업을 띄우고 화면에 넘기지 않는다(expiredFailureOf) */
+  expired?: true;
   /** 있으면 같은 점포에 진행 중 계약이 있어 저장하지 않았다 — 대체를 확인받아 다시 보낸다 */
   inProgress?: InProgressContract[];
   /**

@@ -1,8 +1,13 @@
 // 「처리중」 덮개의 겹친 요청 세기. 요청이 겹치면 마지막 것이 끝날 때 내리고, 떠 있는 동안 문구는 가장 나중에 시작한 요청의 것이다.
 
+import { isExpiredResult, notifySessionExpired } from "../../lib/session-expiry.ts";
+
 export type BusyEntry = { id: number; text: string };
 export type ActionKind = "create" | "update" | "delete";
-export type ActionOptions = { kind: ActionKind; text?: never } | { text: string; kind?: never };
+/**
+ * kind · text 는 덮개 문구. overlay: false 면 덮개 없이 로그인 만료 확인만 한다 — 원래 덮개가 없던 화면을 useAction 으로 옮길 때 화면 모양을 바꾸지 않으려고(2026-11-10).
+ */
+export type ActionOptions = ({ kind: ActionKind; text?: never } | { text: string; kind?: never } | { kind?: never; text?: never }) & { overlay?: boolean };
 
 export const BUSY_TEXT = { create: "등록중입니다.", update: "수정중입니다.", delete: "삭제중입니다." } as const;
 export const BUSY_DEFAULT = "처리중입니다.";
@@ -52,18 +57,27 @@ export function createBusyStore() {
   };
 }
 
-/** 요청 하나를 덮개로 감싼다 — begin 이 없으면(덮개 밖) 그대로 부른다. 성공 · 실패 모두 end 를 부르고 오류는 그대로 다시 던진다 */
+/**
+ * 요청 하나를 덮개로 감싼다 — begin 이 없으면(덮개 밖 · overlay: false) 덮개 없이 부른다. 성공 · 실패 모두 end 를 부르고 오류는 그대로 다시 던진다.
+ * 결과가 로그인 만료(expired: true — expiredFailureOf)면 onExpired 로 「로그인 만료」 팝업을 띄우고 결과를 화면에 넘기지 않는다(끝나지 않는 Promise) —
+ * 화면의 실패 처리(띠 · 칸 문구)가 돌지 않는다. 팝업 [확인]이 location.replace 로 화면을 떠난다.
+ */
 export function wrapAction<A extends unknown[], R>(
   begin: ((text: string) => () => void) | null | undefined,
   text: string,
   action: (...args: A) => Promise<R>,
+  onExpired: () => void = notifySessionExpired,
 ): (...args: A) => Promise<R> {
   return async (...args) => {
     const end = begin?.(text);
+    let result: R;
     try {
-      return await action(...args);
+      result = await action(...args);
     } finally {
       end?.();
     }
+    if (!isExpiredResult(result)) return result;
+    onExpired();
+    return new Promise<R>(() => {});
   };
 }

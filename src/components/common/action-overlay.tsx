@@ -77,10 +77,13 @@ function Overlay({ text }: { text: string | null }) {
 /**
  * 쓰기 요청(서버 액션 · fetch)을 감싼다. 부르는 동안 화면 전체에 고래 로딩 + 문구를 띄우고, 끝나면(성공 · 실패 · redirect) 내린다.
  * 결과는 그대로 돌려준다. 문구는 kind(등록중입니다 · 수정중입니다 · 삭제중입니다), text, 없으면 「처리중입니다」다.
- * ErpRoot 밖에서 쓰면 덮개 없이 그대로 부른다.
+ * ErpRoot 밖에서 쓰거나 overlay: false 면 덮개 없이 부른다.
+ * 결과가 로그인 만료(expired — 실패 처리 함수의 expiredFailureOf)면 「로그인 만료」 팝업을 띄우고 결과를 넘기지 않는다(wrapAction).
+ * 그래서 화면은 401 을 다루지 않는다 — 서버 액션은 이 훅으로 부른다.
  */
 export function useAction<A extends unknown[], R>(action: (...args: A) => Promise<R>, options?: ActionOptions): (...args: A) => Promise<R> {
-  const begin = use(ActionContext);
+  const context = use(ActionContext);
+  const begin = options?.overlay === false ? null : context;
   const text = busyTextOf(options);
   // action 이 바뀌면 감싼 함수도 바뀐다(인라인 함수는 렌더마다) — 호출부는 이 함수를 effect 의존성으로 쓰지 않는다
   return useMemo(() => wrapAction(begin, text, action), [begin, text, action]);

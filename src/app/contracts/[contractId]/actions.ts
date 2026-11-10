@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { actionFailure, ApiError, authHeaders, bpHref, send } from "@/lib/api";
+import { actionFailure, ApiError, authHeaders, bpHref, expiredFailureOf, send } from "@/lib/api";
 import type { components } from "@/lib/api-types.generated";
 import { listAfterSave, withBack } from "../contract-list";
 import { type SaveResult } from "../new/contract-form-model";
@@ -17,13 +17,15 @@ const isContractId = (id: unknown): id is number => Number.isInteger(id) && (id 
  * 임시저장 삭제. 성공하면 목록으로 간다 — 점포 조건은 「전체」로 비운다(listAfterSave). back 은 화면이 넘긴 목록 주소다(서버 액션은
  * 누구나 부를 수 있어 backHrefOf 로 다시 거른다). 실패하면 화면에 보일 문장을 돌려준다(임시저장이 아님 409 등)
  */
-export async function deleteContract(contractId: number, back?: string): Promise<{ error: string }> {
+export async function deleteContract(contractId: number, back?: string): Promise<{ error: string; expired?: true }> {
   if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다." };
   const headers = await authHeaders();
   if (!headers.Authorization) return { error: "로그인이 필요합니다." };
   try {
     await send(`/contracts/${contractId}`, "DELETE");
   } catch (e) {
+    const expired = expiredFailureOf(e);
+    if (expired) return { error: expired.message, expired: true };
     if (e instanceof ApiError) return { error: deleteFailureOf(e, { feature: "근로계약", contractId }) };
     return { error: actionFailure(e, "삭제", { feature: "근로계약", contractId }).message };
   }
@@ -41,6 +43,8 @@ export async function updateWorker(contractId: number, body: WorkerBody, back?: 
   try {
     await send(`/contracts/${contractId}/worker`, "PATCH", body);
   } catch (e) {
+    const expired = expiredFailureOf(e);
+    if (expired) return { error: expired.message, expired: true };
     if (e instanceof ApiError) {
       const failure = saveFailureOf(e, { feature: "근로계약 당사자 정보", contractId });
       if (failure.kind === "login") return { error: "로그인이 필요합니다." };
@@ -77,6 +81,8 @@ export async function sendContract(contractId: number, seen: SeenContract): Prom
   try {
     await send(`/contracts/${contractId}/send`, "POST", sendBodyOf(seen));
   } catch (e) {
+    const expired = expiredFailureOf(e);
+    if (expired) return { ok: false, error: expired.message, recheck: false, expired: true };
     if (e instanceof ApiError) {
       if (e.status === 401) return { ok: false, error: "로그인이 필요합니다.", recheck: false };
       const code = (e.body as { code?: unknown } | null)?.code;
@@ -105,6 +111,8 @@ export async function endContract(contractId: number): Promise<EndContractResult
   try {
     await send(`/contracts/${contractId}/end`, "POST");
   } catch (e) {
+    const expired = expiredFailureOf(e);
+    if (expired) return { ok: false, error: expired.message, recheck: false, expired: true };
     if (e instanceof ApiError) {
       if (e.status === 401) return { ok: false, error: "로그인이 필요합니다.", recheck: false };
       const code = (e.body as { code?: unknown } | null)?.code;

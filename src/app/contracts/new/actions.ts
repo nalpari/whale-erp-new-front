@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { ApiError, authHeaders, bpHref, send } from "@/lib/api";
+import { ApiError, authHeaders, bpHref, expiredFailureOf, send } from "@/lib/api";
 import { SAVE_UNKNOWN_NEW, saveFailureOf } from "../[contractId]/send-model";
 import { SAVED_COOKIE, SAVED_COOKIE_MAX_AGE, listAfterSave, savedKindOf, withBack } from "../contract-list";
 import { type CreateContractBody, type SavedContract, type SaveResult } from "./contract-form-model";
@@ -47,6 +47,8 @@ async function save(path: string, method: "POST" | "PUT", body: CreateContractBo
   try {
     saved = await send<SavedContract>(path, method, body);
   } catch (e) {
+    const expired = expiredFailureOf(e);
+    if (expired) return { error: expired.message, expired: true };
     if (e instanceof ApiError) {
       const failure = saveFailureOf(e, { feature: "근로계약", contractId });
       if (failure.kind === "login") return { error: "로그인이 필요합니다." };

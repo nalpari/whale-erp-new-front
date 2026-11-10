@@ -25,7 +25,7 @@ export function sendBodyOf(seen: SeenContract | null | undefined): SendContractB
  * 실패 결과. recheck 면 api 가 이미 쓰고 보냈을 수 있다 — 확인창의 보내기를 막고 상세를 다시 읽는다(두 번 가지 않게). blocked 면
  * 다시 보내도 같은 까닭으로 막힌다 — 보내기만 막고 다시 읽지 않는다(다시 읽으면 버튼 · 확인창과 함께 까닭 문장이 사라진다)
  */
-export type SendFailure = { ok: false; error: string; code?: string; recheck: boolean; blocked?: true };
+export type SendFailure = { ok: false; error: string; code?: string; recheck: boolean; blocked?: true; expired?: true };
 
 /** 접수됐는지 모를 때(응답이 끊김 · 코드 없는 502 · 504)의 문장 */
 export const SEND_UNKNOWN = "발송됐는지 알 수 없습니다. 상세를 다시 읽었으니 직원에게 받았는지 확인한 뒤 다시 보내 주세요.";
