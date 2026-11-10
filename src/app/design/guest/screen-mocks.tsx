@@ -519,7 +519,7 @@ export function FinanceSalesMock() {
       </div>
       <div className="flex h-[80px] items-end gap-[18px] border-b border-guest-list-line px-[20px]">
         {bars.map((b) => (
-          <div key={b.m} className="flex flex-1 flex-col items-center gap-[4px]">
+          <div key={b.m} className="flex h-full flex-1 flex-col items-center justify-end">
             <span className={`w-full rounded-t-[4px] ${b.now ? "bg-guest-navy" : "bg-[#d5e1ec]"}`} style={{ height: `${b.v}%` }} />
           </div>
         ))}
