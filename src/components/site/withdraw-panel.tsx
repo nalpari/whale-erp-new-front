@@ -16,6 +16,7 @@ import {
   type WithdrawEligibility,
   type WithdrawWarningBlock,
 } from "@/lib/withdrawal-form";
+import { signOut } from "@/lib/sign-out";
 import { useCanOpen, useCodes, useCurrentBp, useStores } from "./session-gate";
 import { createWithdrawalAction, getWithdrawEligibilityAction, verifyWithdrawPasswordAction, type EligibilityResult } from "./withdraw-actions";
 
@@ -173,7 +174,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
   const handleClose = () => {
     if (saving || confirmOpen) return;
     if (step === "done") {
-      void logoutAfterWithdrawal();
+      void signOut(logoutAfterWithdrawal);
       return;
     }
     onClose();
@@ -190,7 +191,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
         if (mine !== saveNumber.current) return;
         if (result.ok) return setStep("content");
         // 1단계라 아직 탈퇴 전이다 — 세션만 끝난 것이니 로그인 화면으로 간다(logout). 최종 제출의 401 과 다르다
-        if (result.status === 401) return void logout();
+        if (result.status === 401) return void signOut(logout);
         if (result.status === 400) return setFieldError({ at: "currentPassword", message: result.message });
         setFailure(result.message);
       } catch (error: unknown) {
@@ -222,7 +223,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
           // (ip-code-review-claude 블로커 #2, 2026-10-27). 탈퇴를 마쳤을 수 있어 완료 화면의 [확인]과 같이 로그인 전 홈으로 간다(logoutAfterWithdrawal).
           // 기다려서, 액션 요청이 실패하면(연결 끊김) 아래 catch 의 띠로 알린다
           if (result.status === 401) {
-            await logoutAfterWithdrawal();
+            await signOut(logoutAfterWithdrawal); // 실패하면 「로그아웃 실패」 팝업이 알린다
             return;
           }
           const field = withdrawFormField(result.status, result.message);
@@ -448,10 +449,10 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
               회원 탈퇴 완료 안내 메일이 등록된 이메일로 발송되었습니다.
             </p>
           </div>
-          {/* admin-header.tsx 의 UserPop 로그아웃 항목과 같은 호출 방식(<form action={}>)이지만, 탈퇴 뒤라 logoutAfterWithdrawal(→ /)을 부른다. */}
-          <form action={logoutAfterWithdrawal} className="flex justify-center gap-[6px]">
-            <Button type="submit">확인</Button>
-          </form>
+          {/* admin-header.tsx 의 UserPop 로그아웃 항목과 같이 signOut 으로 부르지만(실패하면 팝업), 탈퇴 뒤라 logoutAfterWithdrawal(→ /)을 부른다. */}
+          <div className="flex justify-center gap-[6px]">
+            <Button onClick={() => void signOut(logoutAfterWithdrawal)}>확인</Button>
+          </div>
         </>
       )}
 
