@@ -550,7 +550,8 @@ export function fieldProblems(
       add("allowances", "비과세 수당은 2,147,483,647원 이하로 입력하세요.");
     if (HOUR_FIELDS.some((k) => Number.isNaN(hoursOf(f[k])))) add("hours", "월 근로시간은 0 이상, 30분(0.5시간) 단위로 입력하세요.");
     const base = hoursOf(f.baseHours), night = hoursOf(f.baseNightHours);
-    if (base === null ? !temporary : base < 1) add("hours", "월 기본시간은 1 이상으로 입력하세요.");
+    // 30분 단위가 아닌 값(NaN)도 하한을 함께 알린다 — 0.3 을 0.5 로 고친 뒤 다시 막히지 않게
+    if (base === null ? !temporary : !(base >= 1)) add("hours", "월 기본시간은 1 이상으로 입력하세요.");
     if (base !== null && night !== null && night > base) add("hours", "기본시간 중 야간근무는 월 기본시간보다 클 수 없습니다.");
   }
   need("weeklyHoliday", weeklyHolidayOf(f) === "NO_DAY_OFF", "주 15시간 이상이면 근무하지 않는 요일이 있어야 주휴일을 정할 수 있습니다.");

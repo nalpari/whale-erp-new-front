@@ -231,6 +231,7 @@ test("월 기본시간: 처음에는 209, 정직원은 1 이상을 넣어야 한
   assert.ok(problems(filled({ baseHours: "" })).includes(message));
   assert.ok(problems(filled({ baseHours: "0" })).includes(message));
   assert.ok(problems(filled({ baseHours: "0.5" })).includes(message));
+  assert.ok(problems(filled({ baseHours: "0.3" })).includes(message));
   assert.ok(!problems(filled({ baseHours: "1" })).includes(message));
   assert.ok(!problems(filled({ baseHours: "" }), true).includes(message));
   assert.ok(problems(filled({ baseHours: "0" }), true).includes(message));
