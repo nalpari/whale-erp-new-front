@@ -70,6 +70,12 @@ test("경고 띠 — 사유마다 제목 문장, 상세가 없으면 사유 한�
   assert.equal(reviewBand([reason("NEW_REASON" as PayslipReviewReason["reviewReason"], "x.")], label)?.title, "NEW_REASON 사유로 검토 대기로 분류되었습니다.");
 });
 
+test("경고 띠 — 빈 상세 · 끝 공백은 사유 이름이나 다듬은 문장으로, 물음표 등으로 끝나면 마침표를 붙이지 않는다", () => {
+  assert.equal(reviewBand([reason("CONTRACT_CHANGED", "")], label)?.desc, "기간 중 계약 변경. 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.");
+  assert.equal(reviewBand([reason("CONTRACT_CHANGED", "A. ")], label)?.desc, "A. 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.");
+  assert.equal(reviewBand([reason("CONTRACT_CHANGED", "A?")], label)?.desc, "A? 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.");
+});
+
 test("경고 띠 — 마침표로 끝나는 상세는 빈칸 하나로 잇는다(「..」 없음)", () => {
   assert.equal(
     reviewBand(
