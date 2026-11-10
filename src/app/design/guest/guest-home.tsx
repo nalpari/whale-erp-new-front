@@ -16,12 +16,70 @@ const FRAME = "mx-auto w-full max-w-[1680px] px-[80px]";
 // 실제 홈((site)/page.tsx)과 디자인 샘플(design/guest/page.tsx)이 함께 그린다. 링크는 받은 routes 로 건다(guest-routes.ts).
 
 const HIGHLIGHTS = [
-  { no: "01", title: "점포 1개 운영", desc: "무료 제공" },
-  { no: "02", title: "직원 5명 초대", desc: "무료 제공" },
-  { no: "03", title: "직원 전용 앱", desc: "무료 제공" },
-  { no: "04", title: "관리자 등록", desc: "무료 제공" },
-  { no: "05", title: "부가서비스", desc: "순차 오픈 예정, 필요한 만큼 구독" },
-];
+  { no: "01", title: "점포 1개 운영" },
+  { no: "02", title: "직원 5명 초대" },
+  { no: "03", title: "직원 전용 앱" },
+  { no: "04", title: "관리자 등록" },
+] as const;
+
+// 유료 부가서비스 — 오픈 전이라 판 안에서 아이콘 + 글자가 흐른다. 아이콘은 연한 남색 선(2026-11-10 사용자 지정).
+const PANEL_ICON = {
+  storeAdd: '<path d="M7 18l3-10h28l3 10"/><path d="M7 18c0 3 2.5 5 5.5 5s5.5-2 5.5-5c0 3 2.5 5 6 5s6-2 6-5c0 3 2.5 5 5.5 5S41 21 41 18"/><path d="M10 23v17h28V23"/><path d="M24 27v10M19 32h10"/>',
+  staff: '<circle cx="19" cy="15" r="7"/><path d="M6 40c0-7.2 5.8-13 13-13 3.4 0 6.5 1.3 8.8 3.4"/><path d="M37 28v12M31 34h12"/>',
+  pickup: '<path d="M11 11h26v5H11z"/><path d="M14 16l3 27h14l3-27"/><path d="M15.6 27h16.8"/><path d="M20 11l1-5h6l1 5"/>',
+  qr: '<rect x="6" y="6" width="14" height="14" rx="1.5"/><rect x="28" y="6" width="14" height="14" rx="1.5"/><rect x="6" y="28" width="14" height="14" rx="1.5"/><path d="M28 28h6v6h-6zM38 34v8M28 40h4"/>',
+  stock: '<path d="M24 5l17 9v20l-17 9-17-9V14l17-9z"/><path d="M7 14l17 9 17-9M24 23v20"/>',
+  recipe: '<path d="M8 8h13a5 5 0 0 1 5 5v28a4 4 0 0 0-4-4H8V8z"/><path d="M40 8H27a5 5 0 0 0-5 5v28a4 4 0 0 1 4-4h14V8z"/>',
+} as const;
+
+const ADD_ONS_SOON = [
+  { icon: "storeAdd", title: "점포수 추가" },
+  { icon: "staff", title: "직원수 추가" },
+  { icon: "pickup", title: "픽업 오더" },
+  { icon: "qr", title: "메뉴 · 가격 관리" },
+  { icon: "stock", title: "발주 · 재고 관리" },
+  { icon: "recipe", title: "레시피 관리" },
+] as const;
+
+// 아이콘은 부가서비스 판에만, 번호(01~04)와 칸 사이 세로선은 무료 판에만 둔다(2026-11-10 사용자 지정).
+function HeroPanel({ tag, items, soon = false }: { tag: string; items: readonly { icon?: keyof typeof PANEL_ICON; no?: string; title: string }[]; soon?: boolean }) {
+  const item = (it: (typeof items)[number], key: string, hidden = false) => (
+    <li key={key} aria-hidden={hidden || undefined} className={`flex items-center gap-[12px] ${soon ? "shrink-0 pr-[48px]" : "flex-1 border-l border-[rgba(130,151,168,0.3)] pl-[28px]"}`}>
+      {it.icon && (
+        <svg
+          aria-hidden
+          viewBox="0 0 48 48"
+          className="size-[24px] shrink-0 text-guest-navy-soft"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          dangerouslySetInnerHTML={{ __html: PANEL_ICON[it.icon] }}
+        />
+      )}
+      {it.no && <span className="-mr-[4px] text-guest-navy-soft">{it.no}</span>}
+      {it.title}
+    </li>
+  );
+  // 두 판은 높이(76px)를 같게 고정한다 — 글자 크기가 달라 높이가 다르면 같은 24px 모서리도 다르게 둥글어 보였다(2026-11-10 사용자 지정).
+  return (
+    <div className="flex h-[76px] items-center rounded-[24px] border border-white/70 bg-white/55 px-[28px] backdrop-blur-md">
+      {/* 판 이름은 알약 띠지 대신 글자만 — 판 안에서 알약이 무거웠다(2026-11-10 사용자 지정). */}
+      <span className="w-[220px] shrink-0 text-[17px] leading-[1.5] font-bold text-guest-step">{tag}</span>
+      {soon ? (
+        // 부가서비스는 띠처럼 오른쪽으로(사진 띠와 반대로) 흐른다 — 사진 띠와 같은 움직임(묶음 네 번, 절반 가면 처음과 같은 그림). 양 끝은 판 안에서 흐리게(2026-11-10 사용자 지정).
+        <div className="min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
+          <ul className="guest-photo-roll flex w-max items-center text-[17px] leading-[1.6] font-semibold text-guest-navy-soft [animation-direction:reverse] [animation-duration:30s]">
+            {[0, 1, 2, 3].map((round) => items.map((it) => item(it, `${round}-${it.title}`, round > 0)))}
+          </ul>
+        </div>
+      ) : (
+        <ul className="flex flex-1 items-center text-[22px] leading-[1.6] font-bold text-guest-navy">{items.map((it) => item(it, it.title))}</ul>
+      )}
+    </div>
+  );
+}
 
 // 머리말(110px)이 Billboard 위에 겹치도록 그만큼 끌어올린다.
 // 머리말 아래 빈 하늘 100px 를 잘라 1080 → 980 으로 줄였다(2026-11-09 사용자 지정).
@@ -54,11 +112,11 @@ function Billboard({ routes }: { routes: GuestRoutes }) {
                 </span>
               </p>
               <div className="flex flex-col gap-[24px] text-guest-navy">
-                <p className={`text-[22px] leading-[1.5] font-bold whitespace-nowrap ${TRIM}`}>처음 여는 매장도, 오래 운영한 매장도 쉽게 관리하세요</p>
+                <p className={`text-[22px] leading-[1.5] font-bold whitespace-nowrap ${TRIM}`}>처음 여는 매장도, 오래 운영해온 매장도 쉽게 관리할 수 있어요</p>
                 <p className={`text-[17px] leading-[1.5] whitespace-nowrap ${TRIM}`}>
-                  직원 계약부터 근무표·급여, 매출·재무, 가맹점 관리까지
+                  직원 계약·근무표·급여, 매출·재무, 가맹점 관리까지
                   <br />
-                  여러 서비스를 일일이 알아보고 관리할 필요 없이, 하나로 해결
+                  여러 서비스를 일일이 알아보고 관리할 필요 없이 플랫폼 하나로 해결
                 </p>
               </div>
             </div>
@@ -79,20 +137,11 @@ function Billboard({ routes }: { routes: GuestRoutes }) {
               </Link>
             </div>
           </div>
-          <div className="flex flex-col items-start gap-[20px]">
-            <GuestTag>이용 안내</GuestTag>
-          <ul className="flex w-full justify-between border-t border-[rgba(130,151,168,0.15)] pt-[24px] text-guest-navy">
-            {HIGHLIGHTS.map((h) => (
-              // 번호는 아래 카드들과 같이 제목 앞에 연한 남색으로 붙인다(2026-11-10 사용자 지정).
-              <li key={h.no} className="leading-[1.6]">
-                <strong className="block text-[22px] font-bold">
-                  <span className="mr-[8px] text-guest-navy-soft">{h.no}</span>
-                  {h.title}
-                </strong>
-                <span className="text-[17px]">{h.desc}</span>
-              </li>
-            ))}
-          </ul>
+          {/* 가입 즉시 무료 이용 · 부가서비스 — 같은 반투명 흰 판 두 장을 같은 틀(띠지 칸 220px + 네 칸)로 쌓아, 아래 칸이 위 칸과 세로로 맞는다.
+              부가서비스는 오픈 전이라 글자를 17px 연한 남색으로 줄여 무료보다 한 단계 작게 둔다. 판 높이 · 모서리 · 띠지는 같게 — 판만 낮추면 둥근 모서리가 달라 보였다(2026-11-10 사용자 지정). */}
+          <div className="flex flex-col gap-[12px]">
+            <HeroPanel tag="가입 즉시 무료 이용" items={HIGHLIGHTS} />
+            <HeroPanel tag="유료 부가서비스 순차 오픈" items={ADD_ONS_SOON} soon />
           </div>
         </div>
       </div>
@@ -149,8 +198,8 @@ function Personas({ routes }: { routes: GuestRoutes }) {
         <SectionTitle oneLine tag="매장 유형별 안내" light="사장님은," bold="어떤 매장을 운영하세요?" />
         <div className="grid grid-cols-4 gap-[16px]">
           {PERSONAS.map((p, i) => (
-            <article key={p.head} className="flex flex-col rounded-b-[6px] border border-guest-line bg-white">
-              <span className="h-[6px] bg-guest-navy" />
+            // 남색 띠 · 6px 모서리 대신 시작 방법 카드와 같은 크게 둥근 흰 카드(24px) — 페이지 카드 모양을 하나로(2026-11-10 사용자 지정).
+            <article key={p.head} className="flex flex-col rounded-[24px] bg-white">
               <div className="flex flex-1 flex-col gap-[32px] p-[34px]">
                 <div className="flex flex-col gap-[16px] text-guest-navy">
                   <h3 className={`text-[22px] leading-[1.4] font-bold ${TRIM}`}>
@@ -199,21 +248,21 @@ const PHOTOS = [
   { src: "owner-tablet.png", width: 1031, height: 687 },
   { src: "staff-laptop.jpg", width: 1600, height: 1067 },
   { src: "contract-sign.png", width: 439, height: 668 },
-  { src: "staff-coffee.png", width: 450, height: 677 },
+  { src: "kitchen-orders.png", width: 438, height: 666 },
 ];
 
 function PhotoRoll() {
-  // 같은 묶음을 두 번 이어 붙여야 -50% 에서 처음과 같은 그림이 된다. 두 번째 묶음은 화면 읽기에서 뺀다.
+  // 양 끝은 바탕으로 흐리게 녹인다(mask, 12%). 묶음을 네 번 이어 붙인다 — 띠가 화면보다 짧으면 흐르다 오른쪽이 비었다. 절반(-50%)만큼 가면 처음과 같은 그림이라 끊김이 없다. 첫 묶음만 화면 읽기에 둔다.
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
       <div className="guest-photo-roll flex w-max gap-[16px]">
-        {[0, 1].map((round) =>
+        {[0, 1, 2, 3].map((round) =>
           PHOTOS.map((photo) => (
             <Image
               key={`${round}-${photo.src}`}
               src={`/guest/home/photos/${photo.src}`}
               alt=""
-              aria-hidden={round === 1 || undefined}
+              aria-hidden={round > 0 || undefined}
               width={photo.width}
               height={photo.height}
               sizes={`${Math.round((300 * photo.width) / photo.height)}px`}
@@ -234,7 +283,6 @@ const CONNECTIONS = [
     title: "사장님이 매장과 직원을 등록해요",
     desc: ["매장과 직원을 등록하고,", "관리자를 지정해 운영을 시작해요."],
     features: ["매장 정보 관리", "관리자 등록 · 권한 설정", "직원 초대 · 근로계약서 · 급여명세서 발송"],
-    icon: "web" as const,
   },
   {
     label: "02",
@@ -242,7 +290,6 @@ const CONNECTIONS = [
     title: "관리자가 근무 일정을 관리해요",
     desc: ["근무표를 공유하고,", "출퇴근 현황과 할 일을 한눈에 확인해요."],
     features: ["근무표 공유 및 조율", "출퇴근 확인", "할 일 배정"],
-    icon: "manager" as const,
   },
   {
     label: "03",
@@ -250,81 +297,41 @@ const CONNECTIONS = [
     title: "직원은 앱으로 출퇴근해요",
     desc: ["근로계약서에 서명하고,", "근무 일정과 급여명세서를 간편하게 확인해요."],
     features: ["근로계약서 전자 서명", "출퇴근", "급여명세서 확인"],
-    icon: "app" as const,
   },
 ];
 
-// 역할 카드 아이콘 — 생성형 사진 느낌이 강해 선 아이콘으로 바꿨다(2026-11-09 사용자 지정).
-function RoleIcon({ kind }: { kind: "web" | "manager" | "app" }) {
-  return (
-    <svg aria-hidden viewBox="0 0 48 48" className="h-[104px] w-[104px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      {kind === "web" && (
-        <>
-          <rect x="5" y="8" width="38" height="25" rx="2.5" />
-          <path d="M18 40h12M24 33v7M5 14h38" />
-        </>
-      )}
-      {kind === "manager" && (
-        <>
-          <circle cx="18" cy="16" r="6" />
-          <path d="M7 38c0-6.1 4.9-11 11-11 2.4 0 4.6.8 6.4 2.1" />
-          <path d="M36 25l7 3v5c0 4.4-3 8.2-7 9.5-4-1.3-7-5.1-7-9.5v-5l7-3z" />
-          <path d="M33 33l2 2 4-4" />
-        </>
-      )}
-      {kind === "app" && (
-        <>
-          <rect x="14" y="4" width="20" height="40" rx="3.5" />
-          <path d="M21 9h6M19 21l3.5 3.5L29 18" />
-          <circle cx="24" cy="38" r="1.2" />
-        </>
-      )}
-    </svg>
-  );
-}
-
 function Connections() {
+  // 토스애즈 소개처럼 — 위에는 흐르는 사진 띠(장면), 아래는 왼쪽 큰 제목 + 오른쪽 세로선으로 나눈 세 흐름(사장님 → 관리자 → 직원).
+  // 카드 · 그림자 · 아이콘 없이 글과 선만 둬 사진과 한 덩어리로 보이게 한다(2026-11-10 사용자 지정).
   return (
-    <section className="flex flex-col gap-[60px] bg-[#f1f7fc] py-[100px]">
-      <div className={FRAME}>
-        <SectionTitle oneLine tag="함께 일하는 방식" light="사장님부터 직원까지," bold="매장 업무가 하나로 연결돼요" />
-      </div>
+    <section className="flex flex-col gap-[80px] bg-[#f1f7fc] py-[100px]">
       <PhotoRoll />
-      <div className={FRAME}>
-        <div className="grid grid-cols-3 gap-[34px]">
-          {CONNECTIONS.map((c, i) => (
-            <div key={c.label} className="relative flex flex-col gap-[34px]">
-              {i < CONNECTIONS.length - 1 && (
-                <span aria-hidden className="absolute top-[110px] -right-[17px] z-10 flex size-[34px] translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-guest-line bg-white text-guest-navy">
-                  <Arrow />
-                </span>
-              )}
-              <div className="relative flex h-[220px] items-center justify-center rounded-[16px] bg-white text-guest-navy-soft">
-                <span className="absolute top-[18px] left-[18px] rounded-[4px] bg-[#f1f7fc] px-[10px] py-[4px] text-[14px] leading-[1.5] font-semibold text-guest-navy">{c.where}</span>
-                <RoleIcon kind={c.icon} />
-              </div>
-              <div className="flex flex-col gap-[12px] pl-[2px] text-guest-body">
-                <h3 className="text-[22px] leading-[1.4] font-bold text-guest-navy">
-                  <span className="mr-[8px] text-guest-navy-soft">{c.label}</span>
-                  {c.title}
-                </h3>
-                <p className="text-[17px] leading-[1.6]">
-                  {c.desc[0]}
-                  <br />
-                  {c.desc[1]}
-                </p>
-                <ul className="flex flex-col gap-[10px] pt-[8px] text-[15px] leading-[1.5] text-guest-ink">
-                  {c.features.map((line) => (
-                    <li key={line} className="flex items-center gap-[10px]">
-                      <Image src="/guest/check-circle.svg" alt="" width={18} height={18} />
-                      {line}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+      <div className={`${FRAME} grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] items-start gap-[60px]`}>
+        <SectionTitle tag="함께 일하는 방식" light="사장님부터 직원까지," bold="매장 업무가 하나로 연결돼요" />
+        <ol className="grid grid-cols-3">
+          {CONNECTIONS.map((c) => (
+            <li key={c.label} className="flex flex-col gap-[14px] border-l border-guest-line px-[28px] text-guest-body">
+              <span className="text-[14px] leading-[1.5] font-semibold text-guest-navy-soft">{c.where}</span>
+              <h3 className="text-[22px] leading-[1.4] font-bold text-guest-navy">
+                <span className="mr-[8px] text-guest-navy-soft">{c.label}</span>
+                {c.title}
+              </h3>
+              <p className="text-[17px] leading-[1.6]">
+                {c.desc[0]}
+                <br />
+                {c.desc[1]}
+              </p>
+              <ul className="flex flex-col gap-[8px] pt-[4px] text-[15px] leading-[1.5] text-guest-ink">
+                {c.features.map((line) => (
+                  <li key={line} className="flex items-center gap-[10px]">
+                    <Image src="/guest/check-circle.svg" alt="" width={18} height={18} />
+                    {line}
+                  </li>
+                ))}
+              </ul>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );
@@ -341,8 +348,8 @@ const STEPS = [
   { key: "attendance", title: "첫 출근", desc: "직원이 앱으로 출근하면 근무 기록이 쌓여요" },
 ] as const;
 
-// 조각 네 개는 높이를 320px 로 맞춘다 — 버튼은 맨 아래에 붙는다(2026-11-10 사용자 지정). 버튼 이름은 실제 화면과 같다(회원가입 · 등록 · 서명 요청).
-const MOCK = "flex h-[320px] w-[280px] flex-col rounded-[16px] bg-white p-[20px] text-guest-ink shadow-[0_8px_24px_rgba(58,86,112,0.12)]";
+// 조각 네 개는 폭 290 · 높이 320px 로 맞춰 그림 칸 안 좌우 여백이 같다 — 버튼은 맨 아래에 붙는다(2026-11-10 사용자 지정). 버튼 이름은 실제 화면과 같다(회원가입 · 등록 · 서명 요청).
+const MOCK = "flex h-[320px] w-[290px] flex-col rounded-[16px] bg-white p-[20px] text-guest-ink shadow-[0_8px_24px_rgba(58,86,112,0.12)]";
 const MOCK_BUTTON = "mt-auto rounded-[8px] bg-guest-navy py-[9px] text-center text-[13px] font-semibold text-white";
 
 function MockRow({ k, v }: { k: string; v: string }) {
@@ -383,8 +390,8 @@ function StepMock({ kind }: { kind: (typeof STEPS)[number]["key"] }) {
   // 「등록하면 이런 카드가 생긴다」가 보이게(2026-11-10 사용자 지정).
   if (kind === "store")
     return (
-      <div className="relative h-[320px] w-[280px]">
-        <div aria-hidden className={`${MOCK} absolute top-0 left-[48px] scale-95 opacity-60 blur-[1.5px]`}>
+      <div className="relative h-[320px] w-[290px]">
+        <div aria-hidden className={`${MOCK} absolute top-0 left-[40px] scale-90 opacity-60 blur-[1.5px]`}>
           <p className="text-[15px] font-bold">점포 등록</p>
           <div className="mt-[12px] flex flex-col gap-[8px] border-t border-guest-list-line pt-[12px]">
             <MockField label="점포명" value="인터플러그 신촌점" />
@@ -393,7 +400,7 @@ function StepMock({ kind }: { kind: (typeof STEPS)[number]["key"] }) {
           </div>
           <div className={`${MOCK_BUTTON} mt-[12px]`}>등록</div>
         </div>
-        <div className="absolute bottom-[8px] left-1/2 flex w-[310px] -translate-x-1/2 flex-col gap-[14px] rounded-[10px] border border-[#edeef1] bg-white p-[20px] text-guest-ink shadow-[0_12px_32px_rgba(58,86,112,0.2)]">
+        <div className="absolute bottom-[8px] left-1/2 flex w-[290px] -translate-x-1/2 flex-col gap-[14px] rounded-[10px] border border-[#edeef1] bg-white p-[20px] text-guest-ink shadow-[0_12px_32px_rgba(58,86,112,0.2)]">
           <div className="flex items-start gap-[12px]">
             <Image src="/guest/home/photos/owner-tablet.png" alt="" width={56} height={56} className="size-[56px] shrink-0 rounded-[8px] object-cover" />
             <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
@@ -443,7 +450,7 @@ function StepMock({ kind }: { kind: (typeof STEPS)[number]["key"] }) {
     );
   // 첫 출근 — 토스 소개처럼 테두리 없는 휴대폰 잠금화면(연한 하늘 그라데이션, 아래로 갈수록 흐려짐)에 Whale ERP 알림 한 장(2026-11-10 사용자 지정).
   return (
-    <div className="flex h-[320px] w-[230px] flex-col items-center rounded-t-[32px] bg-gradient-to-b from-[#a9c8e8] via-[#cddff1] to-[#eef3f8] px-[12px] pt-[44px] [mask-image:linear-gradient(to_bottom,black_70%,transparent)]">
+    <div className="flex h-[320px] w-[290px] flex-col items-center rounded-t-[32px] bg-gradient-to-b from-[#a9c8e8] via-[#cddff1] to-[#eef3f8] px-[12px] pt-[44px] [mask-image:linear-gradient(to_bottom,black_70%,transparent)]">
       <p className="text-[13px] text-white">11월 10일 월요일</p>
       <p className="text-[56px] leading-[1.1] font-light tracking-tight text-white/90">08:57</p>
       <div className="mt-[24px] flex w-full items-center gap-[8px] rounded-[12px] bg-white/90 p-[8px] text-left text-guest-ink">
@@ -491,11 +498,13 @@ function Steps({ routes }: { routes: GuestRoutes }) {
                   <StepMock kind={s.key} />
                 </div>
               </div>
-              <div className="flex flex-col gap-[8px] px-[20px] pt-[24px] pb-[20px]">
-                <p className="text-[15px] leading-[1.5] text-guest-sub">
-                  {String(i + 1).padStart(2, "0")} {s.title}
-                </p>
-                <h3 className="text-[22px] leading-[1.4] font-bold text-guest-navy">{s.desc}</h3>
+              {/* 제목 · 설명은 매장 유형 카드와 같은 형식 — 「01 단계 이름」 22px 굵게(번호는 연한 남색) + 설명 17px(2026-11-10 사용자 지정). */}
+              <div className="flex flex-col gap-[16px] px-[22px] pt-[26px] pb-[22px] text-guest-navy">
+                <h3 className={`text-[22px] leading-[1.4] font-bold ${TRIM}`}>
+                  <span className="mr-[8px] text-guest-navy-soft">{String(i + 1).padStart(2, "0")}</span>
+                  {s.title}
+                </h3>
+                <p className={`text-[17px] leading-[1.5] text-guest-body ${TRIM}`}>{s.desc}</p>
               </div>
             </li>
           ))}

@@ -18,11 +18,10 @@ const stepIcon = (A, i) => `<svg aria-hidden="true" viewBox="0 0 48 48" class="h
 const FRAME = "mx-auto w-full max-w-[1680px] px-[80px]";
 
 const HIGHLIGHTS = [
-  { no: "01", title: "점포 1개 운영", desc: "무료 제공" },
-  { no: "02", title: "직원 5명 초대", desc: "무료 제공" },
-  { no: "03", title: "직원 전용 앱", desc: "무료 제공" },
-  { no: "04", title: "관리자 등록", desc: "무료 제공" },
-  { no: "05", title: "부가서비스", desc: "순차 오픈 예정, 필요한 만큼 구독" },
+  { no: "01", title: "점포 1개 운영" },
+  { no: "02", title: "직원 5명 초대" },
+  { no: "03", title: "직원 전용 앱" },
+  { no: "04", title: "관리자 등록" },
 ];
 
 // 머리말(110px)이 Billboard 위에 겹치도록 그만큼 끌어올린다. 머리말 아래 빈 하늘 100px 를 잘라 1080 → 980.
@@ -32,10 +31,10 @@ const HIGHLIGHTS = [
 const HERO_BUTTON = "flex h-[48px] items-center justify-center rounded-[6px] border border-guest-navy bg-white text-[18px] leading-[1.5] font-semibold text-guest-navy hover:bg-[rgba(58,86,112,0.9)] hover:text-white";
 const billboard = (A, R) => `<section class="relative -mt-[110px] h-[980px] overflow-hidden">${g.cover(A, "billboard-bg.png", "object-cover", true)}
 <div class="guest-whale absolute top-[410px] left-[calc(50%+200px)] h-[375px] w-[677px] -translate-1/2">${g.cover(A, "billboard-whale.png", "", true)}</div>
-<div class="absolute inset-x-0 top-[110px] bottom-0 flex items-center justify-center"><div class="${FRAME} flex flex-col gap-[80px]"><div class="flex items-end justify-between"><div class="flex w-[445px] flex-col gap-[48px]"><p class="flex flex-col gap-[4px] font-extrabold text-transparent"><span class="-ml-[0.03em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.7)] to-[rgba(58,86,112,0.35)] bg-clip-text text-[48px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">식당·카페 사장님의</span><span class="-ml-[0.05em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.8)] to-[rgba(58,86,112,0.36)] bg-clip-text text-[86px] leading-[1.25] tracking-[-0.025em] whitespace-nowrap">든든한 파트너</span></p><div class="flex flex-col gap-[24px] text-guest-navy"><p class="text-[22px] leading-[1.5] font-bold whitespace-nowrap ${TRIM}">처음 여는 매장도, 오래 운영한 매장도 쉽게 관리하세요</p><p class="text-[17px] leading-[1.5] whitespace-nowrap ${TRIM}">직원 계약부터 근무표·급여, 매출·재무, 가맹점 관리까지<br>여러 서비스를 일일이 알아보고 관리할 필요 없이, 하나로 해결</p></div></div>
+<div class="absolute inset-x-0 top-[110px] bottom-0 flex items-center justify-center"><div class="${FRAME} flex flex-col gap-[80px]"><div class="flex items-end justify-between"><div class="flex w-[445px] flex-col gap-[48px]"><p class="flex flex-col gap-[4px] font-extrabold text-transparent"><span class="-ml-[0.03em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.7)] to-[rgba(58,86,112,0.35)] bg-clip-text text-[48px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">식당·카페 사장님의</span><span class="-ml-[0.05em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.8)] to-[rgba(58,86,112,0.36)] bg-clip-text text-[86px] leading-[1.25] tracking-[-0.025em] whitespace-nowrap">든든한 파트너</span></p><div class="flex flex-col gap-[24px] text-guest-navy"><p class="text-[22px] leading-[1.5] font-bold whitespace-nowrap ${TRIM}">처음 여는 매장도, 오래 운영해온 매장도 쉽게 관리할 수 있어요</p><p class="text-[17px] leading-[1.5] whitespace-nowrap ${TRIM}">직원 계약·근무표·급여, 매출·재무, 가맹점 관리까지<br>여러 서비스를 일일이 알아보고 관리할 필요 없이 플랫폼 하나로 해결</p></div></div>
 <div class="flex gap-[8px]"><a href="${link(R, "auth/signup.html")}" class="${HERO_BUTTON} w-[176px] gap-[12px] ${BUTTON_MOTION}">무료로 시작하기${g.arrow(A)}</a><a href="${link(R, "home/inquiry.html")}" class="${HERO_BUTTON} w-[100px] ${BUTTON_MOTION}">도입문의</a></div></div>
-<div class="flex flex-col items-start gap-[20px]">${g.tag("이용 안내")}<ul class="flex w-full justify-between border-t border-[rgba(130,151,168,0.15)] pt-[24px] text-guest-navy">${HIGHLIGHTS.map(
-  (h) => `<li class="leading-[1.6]"><strong class="block text-[22px] font-bold"><span class="mr-[8px] text-guest-navy-soft">${h.no}</span>${h.title}</strong><span class="text-[17px]">${h.desc}</span></li>`,
+<div class="flex items-center gap-[32px] rounded-[24px] border border-white/70 bg-white/55 px-[28px] py-[22px] backdrop-blur-md">${g.tag("가입 즉시 무료 이용")}<ul class="flex flex-1 items-center text-guest-navy">${HIGHLIGHTS.map(
+  (h) => `<li class="flex-1 border-l border-[rgba(130,151,168,0.3)] pl-[28px] text-[22px] leading-[1.6] font-bold"><span class="mr-[8px] text-guest-navy-soft">${h.no}</span>${h.title}</li>`,
 ).join("")}</ul></div></div></div></section>`;
 
 // 사장님 유형 카드 — 「누구 → 한 문장 → 핵심 세 개 → 버튼」만 둔다(2026-11-09 사용자 지정).
@@ -49,7 +48,7 @@ const PERSONAS = [
 // 버튼은 서비스 이름만 굵게, 나머지는 보통 굵기. 안내(note)는 버튼 위에 둬 버튼 줄이 카드끼리 맞는다.
 const ctaLabel = (p) => `<span class="font-normal">${p.service ? `<strong class="font-bold">${p.service} </strong>` : ""}${p.cta}</span>`;
 const personas = (A, R) => `<section class="bg-guest-surface py-[100px]"><div class="${FRAME} flex flex-col gap-[60px]">${g.sectionTitle("사장님은,", "어떤 매장을 운영하세요?", false, { tag: "매장 유형별 안내", oneLine: true })}<div class="grid grid-cols-4 gap-[16px]">${PERSONAS.map(
-  (p, i) => `<article class="flex flex-col rounded-b-[6px] border border-guest-line bg-white"><span class="h-[6px] bg-guest-navy"></span><div class="flex flex-1 flex-col gap-[32px] p-[34px]"><div class="flex flex-col gap-[16px] text-guest-navy"><h3 class="text-[22px] leading-[1.4] font-bold ${TRIM}"><span class="mr-[8px] text-guest-navy-soft">${no(i)}</span>${p.head}</h3><p class="text-[17px] leading-[1.5] text-guest-body ${TRIM}">${p.pitch}</p></div><ul class="flex flex-col gap-[12px] border-t border-[#e7e7e7] pt-[24px] text-[15px] leading-[1.5] text-guest-ink">${p.features.map((l) => `<li class="flex items-center gap-[10px]">${g.gimg(A, "check-circle.svg", 18, 18)}${l}</li>`).join("")}</ul>${p.note ? `<p class="mt-auto text-[16px] leading-[1.5] text-guest-body">${p.note[0]}<br>${p.note[1]}</p>` : ""}<div class="${p.note ? "" : "mt-auto "}flex">${g.button(A, ctaLabel(p), { tone: "invert", href: link(R, p.href), arrow: true, grow: true })}</div></div></article>`,
+  (p, i) => `<article class="flex flex-col rounded-[24px] bg-white"><div class="flex flex-1 flex-col gap-[32px] p-[34px]"><div class="flex flex-col gap-[16px] text-guest-navy"><h3 class="text-[22px] leading-[1.4] font-bold ${TRIM}"><span class="mr-[8px] text-guest-navy-soft">${no(i)}</span>${p.head}</h3><p class="text-[17px] leading-[1.5] text-guest-body ${TRIM}">${p.pitch}</p></div><ul class="flex flex-col gap-[12px] border-t border-[#e7e7e7] pt-[24px] text-[15px] leading-[1.5] text-guest-ink">${p.features.map((l) => `<li class="flex items-center gap-[10px]">${g.gimg(A, "check-circle.svg", 18, 18)}${l}</li>`).join("")}</ul>${p.note ? `<p class="mt-auto text-[16px] leading-[1.5] text-guest-body">${p.note[0]}<br>${p.note[1]}</p>` : ""}<div class="${p.note ? "" : "mt-auto "}flex">${g.button(A, ctaLabel(p), { tone: "invert", href: link(R, p.href), arrow: true, grow: true })}</div></div></article>`,
 ).join("")}</div></div></section>`;
 
 // 누가 어디서 쓰는지 — 사장님 · 관리자 · 직원. 생성형 사진 대신 선 아이콘(실제 화면 캡처가 준비되면 바꾼다). 연한 하늘색 바탕(2026-11-09 사용자 지정).
