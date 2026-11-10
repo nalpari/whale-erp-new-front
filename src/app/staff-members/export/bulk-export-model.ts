@@ -103,7 +103,7 @@ export const isScopeMaking = (items: readonly BulkExport[], storeIds: readonly n
 
 /** [일괄 저장 요청] · [다시 요청]을 막는 까닭. null 이면 누를 수 있다 */
 export function requestBlockOf(preview: BulkExportPreview): string | null {
-  if (preview.staffCount === 0) return "업무 범위에 담을 직원 자료가 없습니다.";
-  if (preview.inProgress) return "이 업무 범위의 파일을 만드는 중입니다. 다 만들면 지난 요청에서 내려받을 수 있습니다.";
+  if (preview.staffCount === 0) return "대상 점포에 저장할 직원 자료가 없습니다.";
+  if (preview.inProgress) return "이 대상 점포의 파일을 생성하는 중입니다. 생성이 끝나면 요청 내역에서 다운로드할 수 있습니다.";
   return null;
 }
