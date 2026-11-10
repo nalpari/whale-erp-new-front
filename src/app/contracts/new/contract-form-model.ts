@@ -190,9 +190,14 @@ export function initialForm(storeId = ""): ContractForm {
   };
 }
 
-/** 소속 근무지를 고른다. 근무 장소는 고를 때마다 그 근무지명으로 덮어쓴다(비우면 함께 비운다) — 관리자는 그 뒤에 고쳐 쓸 수 있다 */
+/**
+ * 소속 근무지를 고른다. 근무 장소가 비었거나 앞 근무지명 그대로면 새 근무지명으로 채운다 — 관리자가 고쳐 쓴 장소는 그대로 둔다.
+ * 근무지를 비우면 채워 둔 근무지명도 비운다.
+ */
 export function withStore(f: ContractForm, storeId: string, stores: readonly { storeId: number; name: string }[]): ContractForm {
-  return { ...f, storeId, workLocation: stores.find((s) => String(s.storeId) === storeId)?.name ?? "" };
+  const nameOf = (id: string) => stores.find((s) => String(s.storeId) === id)?.name ?? "";
+  const edited = f.workLocation.trim() !== "" && f.workLocation !== nameOf(f.storeId);
+  return { ...f, storeId, workLocation: edited ? f.workLocation : nameOf(storeId) };
 }
 
 /** GET /contracts/:contractId. api 의 openapi.json 에서 만든 타입을 쓴다(pnpm openapi:types) */
