@@ -308,6 +308,7 @@ export function ContractForm({
   /** 돌아갈 목록 주소(?back=) — 취소 · 저장 뒤 같은 조건의 목록으로 간다 */
   back?: string;
 }) {
+  // 근무지가 하나뿐이어도 미리 고르지 않는다 — 고른 때 근무 장소를 근무지명으로 채운다(withStore, 2026-11-10 사용자 지정)
   const [form, setForm] = useState<Form>(() => initial ?? initialForm());
   // 저장을 한 번 누른 뒤부터 막는 이유를 보인다. 처음부터 빨간 줄을 띄우지 않는다.
   const router = useRouter();

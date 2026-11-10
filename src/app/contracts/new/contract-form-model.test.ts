@@ -533,4 +533,5 @@ test("소속 근무지를 고르면 근무 장소를 근무지명으로 덮어�
   assert.equal(withStore(picked, "", stores).workLocation, "");
   const typed = { ...picked, workLocation: "서울 성동구 연무장길 18, 1층" };
   assert.equal(withStore(typed, "2", stores).workLocation, "강남점");
+  assert.equal(withStore(typed, "9", stores).workLocation, "", "선택지에 없는 근무지는 근무 장소를 비운다");
 });
