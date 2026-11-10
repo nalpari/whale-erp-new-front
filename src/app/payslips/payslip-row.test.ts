@@ -44,10 +44,10 @@ const reason = (reviewReason: PayslipReviewReason["reviewReason"], detail: strin
 });
 const label = (v: string) => ({ CONTRACT_CHANGED: "기간 중 계약 변경" })[v] ?? v;
 
-test("경고 띠 — 출퇴근 누락은 데모 문구, 공제 미입력만 있으면 띠가 없다", () => {
+test("경고 띠 — 출퇴근 누락은 사유별 제목, 공제 미입력만 있으면 띠가 없다", () => {
   assert.deepEqual(reviewBand([reason("MISSING_ATTENDANCE", "출퇴근 기록 2일 누락"), reason("DEDUCTION_MISSING", "4대보험")], label), {
-    title: "출퇴근 기록이 누락되어 검토 대기로 분류되었습니다.",
-    desc: "출퇴근 기록 2일 누락. 확인한 뒤에는 경고가 있어도 확정할 수 있습니다.",
+    title: "출퇴근 기록이 등록되지 않은 날이 있어 검토가 필요합니다.",
+    desc: "출퇴근 기록 2일 누락. 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.",
   });
   assert.equal(reviewBand([reason("DEDUCTION_MISSING", null)], label), null);
   assert.equal(reviewBand([], label), null);
@@ -56,17 +56,34 @@ test("경고 띠 — 출퇴근 누락은 데모 문구, 공제 미입력만 있�
 test("경고 띠 — 이미 확인한 사유(확정 때 확인됨)는 띠에 세우지 않는다", () => {
   const acknowledged = { ...reason("MISSING_ATTENDANCE", "출퇴근 기록 2일 누락"), acknowledgedAt: "2026-10-19T01:00:00.000Z" };
   assert.equal(reviewBand([acknowledged], label), null);
-  assert.equal(reviewBand([acknowledged, reason("CONTRACT_CHANGED", null)], label)?.title, "기간 중 계약 변경 사유로 검토 대기로 분류되었습니다.");
+  assert.equal(reviewBand([acknowledged, reason("CONTRACT_CHANGED", null)], label)?.title, "급여 기간 중 근로계약이 변경되어 검토가 필요합니다.");
 });
 
-test("경고 띠 — 다른 사유는 사유 한글로, 상세가 없으면 한글을 쓴다", () => {
+test("경고 띠 — 사유마다 제목 문장, 상세가 없으면 사유 한글에 마침표를 붙인다", () => {
   assert.deepEqual(reviewBand([reason("CONTRACT_CHANGED", null)], label), {
-    title: "기간 중 계약 변경 사유로 검토 대기로 분류되었습니다.",
-    desc: "기간 중 계약 변경. 확인한 뒤에는 경고가 있어도 확정할 수 있습니다.",
+    title: "급여 기간 중 근로계약이 변경되어 검토가 필요합니다.",
+    desc: "기간 중 계약 변경. 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.",
   });
+  assert.equal(reviewBand([reason("AFTER_CONTRACT_END", "x.")], label)?.title, "근로계약 종료일 이후의 출퇴근 기록이 있어 검토가 필요합니다.");
+  assert.equal(reviewBand([reason("ATTENDANCE_NEEDS_REVIEW", "x.")], label)?.title, "확인 필요로 표시된 출퇴근 기록이 있어 검토가 필요합니다.");
+  // 표에 없는 사유는 사유 이름을 끼운 틀
+  assert.equal(reviewBand([reason("NEW_REASON" as PayslipReviewReason["reviewReason"], "x.")], label)?.title, "NEW_REASON 사유로 검토 대기로 분류되었습니다.");
 });
 
-test("출퇴근 보정 · 기록 보기 — 출·퇴근 현황 조회를 점포 · 직원 레코드 · 급여 기간으로, 퇴직자도 보이게 재직 상태 전체", () => {
+test("경고 띠 — 마침표로 끝나는 상세는 빈칸 하나로 잇는다(「..」 없음)", () => {
+  assert.equal(
+    reviewBand(
+      [
+        reason("MISSING_ATTENDANCE", "출퇴근 기록이 등록되지 않은 날이 1일 있습니다(10월 9일 출근·퇴근 미등록)."),
+        reason("CONTRACT_CHANGED", "급여 기간 중 적용된 근로계약이 2건이어서, 날짜별로 해당 계약을 기준으로 나누어 계산했습니다."),
+      ],
+      label,
+    )?.desc,
+    "출퇴근 기록이 등록되지 않은 날이 1일 있습니다(10월 9일 출근·퇴근 미등록). 급여 기간 중 적용된 근로계약이 2건이어서, 날짜별로 해당 계약을 기준으로 나누어 계산했습니다. 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.",
+  );
+});
+
+test("출퇴근 기록 확인 · 기록 보기 — 출·퇴근 현황 조회를 점포 · 직원 레코드 · 급여 기간으로, 퇴직자도 보이게 재직 상태 전체", () => {
   assert.equal(
     attendanceHref({ storeId: 5, staffMemberId: 30, staffName: "서 지안", periodStartDate: "2026-09-01", periodEndDate: "2026-09-30" }),
     "/attendance-records?storeIds=5&staff=%EC%84%9C+%EC%A7%80%EC%95%88&staffMemberId=30&employment=ALL&fixFrom=2026-09-01&fixTo=2026-09-30",
