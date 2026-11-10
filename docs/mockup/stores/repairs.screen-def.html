@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시설물 및 장비 수리 이력 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="repairs.screen-def">
+<header>
+  <div>
+    <h1>시설물 및 장비 수리 이력 — 목록 화면정의서</h1>
+    <p>stores/repairs.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만) 위에 번호를 붙이고 우측에 설명을 매칭했다. 근거: 「시설물·장비 관리 정책서」 아래쪽 「시설물·장비 수리 이력 정책서」(claude.ai 문서, 2026-11-10) PL-1 ~ PL-4 · 원자료 가맹점및점포관리 화면정의서 v0.74 45~48쪽.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="repairs.screen-def.png" alt="수리 이력 목록 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 상태" · "목업 권한" 토글은 실제 화면 요소가 아니라 목업 자체의 전환 컨트롤이라 번호에서 제외했다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드).
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "시설물 및 장비 수리 이력",
+  "screenPath": "점포관리 > 시설물 및 장비 수리 이력",
+  "purpose": "# 화면 목적 및 기능 — 이 BP 의 시설물·장비 수리 이력을 점포 · 그룹 · 분류 · 고장 내용 · 고장/수리 일자로 찾아 보고, 상세 · 등록으로 이어지는 진입 화면",
+  "items": [
+    {
+      "x": 936,
+      "y": 29,
+      "title": "등록",
+      "desc": "정의: 수리 이력 등록 화면으로 이동\n권한 그룹이 이 메뉴에 등록 권한을 준 계정에만 보인다(PL-1)"
+    },
+    {
+      "x": 57,
+      "y": 273,
+      "title": "점포",
+      "desc": "정의: 점포 정보 관리 목록과 같은 점포 검색 — 여러 곳 고르기 · [일괄검색] · 폐점 점포 포함. 고르지 않으면 조회 범위 안 전체"
+    },
+    {
+      "x": 57,
+      "y": 433,
+      "title": "그룹 · 분류",
+      "desc": "정의: 그룹은 점포 시설물 · 점포 장비, 분류는 그룹을 골라야 그 그룹의 상세 코드가 나온다. 그룹이 「전체」면 분류는 막힌다"
+    },
+    {
+      "x": 590,
+      "y": 433,
+      "title": "시설물/장비명 · 고장 내용",
+      "desc": "정의: 이름 · 고장 내용 일부로 찾는다"
+    },
+    {
+      "x": 57,
+      "y": 520,
+      "title": "검색일시",
+      "desc": "정의: 기준(고장일자 · 수리일자)을 고른 뒤 시작일 ~ 종료일을 넣으면 그 날짜가 기간 안인 이력만 보인다. 처음은 고장일자 · 기간 비움(전체) · 수리일자로 거르면 수리 전 이력(수리일자 없음)은 빠진다"
+    },
+    {
+      "x": 974,
+      "y": 580,
+      "title": "초기화 · 조회",
+      "desc": "정의: 검색 조건을 처음 값으로 되돌리거나 조건대로 다시 불러옴"
+    },
+    {
+      "x": 37,
+      "y": 717,
+      "title": "목록",
+      "desc": "정의: 열은 순번 · 점포 · 그룹 · 분류 · 시설물/장비명 · 고장 내용 · 수리비 · 고장일자 · 수리일자. 고장일 · 등록일 내림차순, 한 쪽 50건\n수리 전 이력은 수리비 · 수리일자가 「-」. 폐기된 대상 · 폐점 점포의 이력도 남고 배지를 붙인다(PL-4)\n빈 목록: 「등록된 수리 이력이 없습니다.」 / 「조건에 맞는 수리 이력이 없습니다.」"
+    },
+    {
+      "x": 626,
+      "y": 764,
+      "title": "고장 내용 링크",
+      "desc": "정의: 누르면 상세로 이동"
+    },
+    {
+      "x": 37,
+      "y": 1061,
+      "title": "페이지네이션",
+      "desc": "정의: 전체 건수 · 현재 범위 · 이전 · 다음 이동"
+    }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>
