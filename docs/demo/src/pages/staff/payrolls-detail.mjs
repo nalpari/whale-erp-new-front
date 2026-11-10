@@ -20,7 +20,7 @@ export default ({ A, R }) => {
   );
   const warn = p.band("출퇴근 기록이 2일 누락되어 검토 대기로 분류되었습니다.", {
     desc: "08-28 퇴근 미등록, 08-22 출근·퇴근 모두 없음. 확인한 뒤에는 경고가 있어도 확정할 수 있습니다.",
-    actions: ui.button("출퇴근 보정", { variant: "soft", href: L("staff/attendance.html") }),
+    actions: ui.button("출퇴근 기록 확인", { variant: "soft", href: L("staff/attendance.html") }),
   });
 
   const pay = p.section(
