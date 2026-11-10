@@ -50,19 +50,12 @@ export function GuestNote({ children, action }: { children: ReactNode; action?: 
 }
 
 /** 화면 틀 — 제목 줄 + 공지사항 · FAQ 탭. */
-export function NoticesScreen({ inquiryHref, notices, faq }: { inquiryHref: string; notices: ReactNode; faq: ReactNode }) {
+export function NoticesScreen({ notices, faq }: { inquiryHref?: string; notices: ReactNode; faq: ReactNode }) {
   return (
     <GuestPage>
       <section className="mx-auto flex w-[1200px] flex-col gap-[40px] pt-[80px] text-guest-ink">
-        <div className="flex items-end justify-between gap-[24px]">
-          <div className="flex flex-col gap-[8px]">
-            <h1 className="text-[28px] leading-[1.2] font-bold">공지사항 · FAQ</h1>
-            <p className="text-[16px] leading-[1.5]">로그인하지 않아도 볼 수 있는 글만 모았습니다.</p>
-          </div>
-          <GuestButton tone="outline" href={inquiryHref} arrow>
-            도입문의
-          </GuestButton>
-        </div>
+        {/* 제목만 둔다 — 「로그인하지 않아도 볼 수 있는 글만 모았습니다」 안내와 [도입문의] 버튼은 뺐다(머리말에 도입문의가 있다, 2026-11-10 사용자 지정). */}
+        <h1 className="text-[28px] leading-[1.2] font-bold">공지사항 · FAQ</h1>
         <NoticesBoard notices={notices} faq={faq} />
       </section>
     </GuestPage>
