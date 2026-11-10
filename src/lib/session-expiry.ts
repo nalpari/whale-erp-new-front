@@ -1,0 +1,26 @@
+// 로그인 만료를 알리는 길. next/* 를 import 하지 않는다 — node --test 가 그대로 읽고, 서버(api.ts)와 브라우저가 같이 쓴다.
+// 서버: request() 가 api 401 을 받으면 isExpiry 로 만료인지 가른다 — 화면을 그리는 중이면 로그인 화면으로, 아니면 ApiError 에 expired 표시.
+// 브라우저: bff() · useAction 이 만료를 알면 notifySessionExpired() 로 이벤트를 보내고, 로그인한 화면의 틀이 「로그인 만료」 팝업 하나를 띄운다.
+
+/**
+ * 401 이 만료가 아닌 api — 강제 비밀번호 변경(발급 비밀번호 만료) · 탈퇴 최종 제출(탈퇴가 커밋돼 세션이 이미 끝났을 수 있어 화면이 따로 안내)
+ * · 로그아웃 자체. 정확히 그 경로만 뺀다.
+ */
+const NOT_EXPIRY = ["/auth/admin/password-change", "/auth/admin/me/withdraw", "/auth/admin/logout"];
+
+/** 이 api 401 이 로그인 만료인가 — 로그인 토큰을 실은 요청이고 만료 제외 경로가 아닐 때만. 토큰 없는 요청(로그인 · 공개 화면)의 401 은 만료가 아니다. */
+export function isExpiry(path: string, hasAuthorization: boolean): boolean {
+  return hasAuthorization && !NOT_EXPIRY.includes(path.split("?")[0]);
+}
+
+export const SESSION_EXPIRED_EVENT = "whale-erp:session-expired";
+
+/** 만료를 화면에 알린다. 여러 요청이 한꺼번에 실패해도 팝업은 하나다(팝업 쪽이 이미 열려 있으면 무시). */
+export function notifySessionExpired(): void {
+  dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+}
+
+/** 서버 액션 결과가 만료를 알리는가 — expiredFailureOf 가 실은 표시. 모양이 다른 결과(배열 · null)는 아니다. */
+export function isExpiredResult(result: unknown): boolean {
+  return typeof result === "object" && result !== null && (result as { expired?: unknown }).expired === true;
+}

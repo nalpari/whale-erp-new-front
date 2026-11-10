@@ -7,6 +7,8 @@ export class ApiError extends Error {
   readonly messages: string[];
   /** 응답 본문 그대로. 409 의 code · 목록처럼 message 말고도 화면이 쓸 칸이 있다 */
   readonly body: unknown;
+  /** 로그인이 끊긴 401(request() 가 표시) — 비밀번호 틀림처럼 만료가 아닌 401 과 가른다. expiredFailureOf 가 읽는다 */
+  expired?: true;
 
   constructor(status: number, message: string, messages: string[] = [message], body: unknown = null) {
     super(message);

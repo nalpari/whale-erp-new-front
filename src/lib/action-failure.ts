@@ -6,7 +6,7 @@ import { ApiError, codeOf } from "./api-error.ts";
  * 화면이 받는 쓰기 결과. 실패의 status 는 api 가 알린 4xx(또는 401)일 때만 있다 — 없으면 결과를 모르는 실패(5xx · 연결 실패)다.
  * messages 는 검증 실패(400)의 문장 목록(줄마다 나눠 보일 때), code 는 api 오류 본문의 업무 code 다.
  */
-export type ActionFailure = { ok: false; status?: number; message: string; messages: string[]; code?: string };
+export type ActionFailure = { ok: false; status?: number; message: string; messages: string[]; code?: string; expired?: true };
 export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
 
 /** 로그에서 기능을 가르는 이름과 대상(id 등). 결과 모름은 api 로그와 맞춰 봐야 해 함께 남긴다 */
@@ -18,12 +18,25 @@ export type FailureOptions = { definite?: boolean };
 export const SESSION_EXPIRED = "로그인이 만료되었습니다. 다시 로그인해 주세요.";
 
 /**
+ * 로그인이 끊긴 401 이면 만료 결과, 아니면 null. 서버 액션의 실패 처리 함수는 첫 줄에서 이것을 거친다 —
+ * 화면은 결과의 expired 를 보지 않아도 된다(useAction 이 보고 「로그인 만료」 팝업을 띄운다). 화면마다 다른 실패 규칙은 그 아래에 그대로 둔다.
+ *   const expired = expiredFailureOf(error);
+ *   if (expired) return expired;
+ */
+export function expiredFailureOf(error: unknown): (ActionFailure & { status: 401; expired: true }) | null {
+  if (!(error instanceof ApiError && error.expired)) return null;
+  return { ok: false, status: 401, message: SESSION_EXPIRED, messages: [SESSION_EXPIRED], expired: true };
+}
+
+/**
  * 실패 오류를 화면에 보일 결과로. api 는 400 · 403 · 404 · 409 를 한국어로 알리므로 그대로 보인다. 401 은 할 일을 알 수 있게 고정 문구로 바꾼다.
  * 5xx · 연결 실패 · ApiError 가 아닌 오류는 결과를 모르므로 로그를 남기고 「확인하지 못했습니다」 문구(what 은 「저장」 · 「삭제」 같은 동작 이름)로 돌려준다.
  * options.definite 면 ApiError 5xx 만 확정 실패 문구(「○○하지 못했습니다. 잠시 뒤 다시 시도해 주세요.」)로 돌려준다 — 로그는 똑같이 남기고, 연결 실패 ·
  * ApiError 가 아닌 오류는 여전히 결과 모름이다.
  */
 export function failureOf(error: unknown, what: string, log: ActionLog = {}, options: FailureOptions = {}): ActionFailure {
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError) {
     if (error.status === 401) return { ok: false, status: 401, message: SESSION_EXPIRED, messages: [SESSION_EXPIRED] };
     if (error.status < 500) {

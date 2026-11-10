@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ApiError } from "./api-error.ts";
-import { failureOf, SESSION_EXPIRED } from "./action-failure.ts";
+import { expiredFailureOf, failureOf, SESSION_EXPIRED } from "./action-failure.ts";
 
 test("4xx 는 api 문구와 상태 · 문장 목록 · 업무 code 를 그대로 싣는다", () => {
   const e = new ApiError(409, "이미 있습니다", ["이미 있습니다"], { code: "DUP" });
@@ -18,6 +18,19 @@ test("401 은 고정 문구다", () => {
   const r = failureOf(new ApiError(401, "Unauthorized"), "저장");
   assert.equal(r.status, 401);
   assert.equal(r.message, SESSION_EXPIRED);
+  // 만료 표시가 없는 401(만료가 아닌 경로)은 팝업 대상이 아니다
+  assert.equal(r.expired, undefined);
+});
+
+test("만료 표시가 있는 401 — expiredFailureOf 와 failureOf 모두 expired 를 싣는다", () => {
+  const e = new ApiError(401, "Unauthorized");
+  e.expired = true;
+  const expected = { ok: false, status: 401, message: SESSION_EXPIRED, messages: [SESSION_EXPIRED], expired: true };
+  assert.deepEqual(expiredFailureOf(e), expected);
+  assert.deepEqual(failureOf(e, "저장"), expected);
+  // 만료가 아니면 null — 화면별 실패 규칙으로 넘어간다
+  for (const other of [new ApiError(401, "비밀번호가 일치하지 않습니다."), new ApiError(409, "x"), new TypeError("fetch failed"), null])
+    assert.equal(expiredFailureOf(other), null);
 });
 
 test("5xx · 연결 실패 · ApiError 가 아닌 오류는 로그를 남기고 일반 문구이며 status 가 없다", () => {

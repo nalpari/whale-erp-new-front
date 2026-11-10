@@ -1,7 +1,9 @@
 import { cookies, headers } from "next/headers";
-import { unstable_rethrow } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { failureOf, type ActionFailure, type ActionLog, type FailureOptions } from "./action-failure.ts";
 import { ApiError } from "./api-error";
+import { EXPIRED_REASON, loginPathOf, RENDER_HEADER } from "./auth-routes";
+import { isExpiry } from "./session-expiry";
 import { BP_HEADER, bpPath } from "./bp-path";
 import { forwardedForHeader } from "./forwarded-headers";
 import type { EnumValue } from "./enums";
@@ -14,6 +16,7 @@ export * from "./session";
 export { ApiError, deniedMessageOf } from "./api-error";
 // 쓰기 결과 모양과 실패 판정은 node --test 가 읽도록 action-failure.ts 에 있다.
 export type { ActionFailure, ActionResult } from "./action-failure.ts";
+export { expiredFailureOf } from "./action-failure.ts";
 
 /**
  * whale-erp-api 주소. 모듈 로드 시점이 아니라 호출 시점에 읽는다. 빌드할 때는
@@ -35,12 +38,31 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     cache: "no-store",
   });
 
-  if (!response.ok) throw await apiError(response);
+  if (!response.ok) {
+    const error = await apiError(response);
+    // 로그인이 끊긴 401: 화면을 그리는 중이면 로그인 화면으로 보내고(남은 쿠키는 그 주소에서 proxy 가 정리), 서버 액션 · BFF 면 표시만 남긴다 —
+    // 액션에서 이동하면 「로그인 만료」 팝업 없이 넘어가고 대부분의 catch 가 이동 신호를 삼킨다. 표시는 expiredFailureOf · useAction 이 읽는다.
+    if (response.status === 401 && isExpiry(path, new Headers(init.headers).has("authorization"))) {
+      if (await isRenderRequest()) redirect(loginPathOf("/", "GET", EXPIRED_REASON));
+      error.expired = true;
+    }
+    throw error;
+  }
 
   // 204(로그아웃)는 본문이 없다. json() 을 부르면 파싱에서 터진다.
   return response.status === 204
     ? (undefined as T)
     : ((await response.json()) as T);
+}
+
+/** proxy 가 화면을 그리는 요청에 붙인 표시(RENDER_HEADER)가 있는가. 요청 밖(빌드 · 캐시 함수)이라 headers() 를 못 부르면 아니다. */
+async function isRenderRequest(): Promise<boolean> {
+  try {
+    return (await headers()).get(RENDER_HEADER) === "1";
+  } catch (e) {
+    unstable_rethrow(e); // 정적 렌더링을 멈추는 Next 신호는 삼키지 않는다
+    return false;
+  }
 }
 
 /**
