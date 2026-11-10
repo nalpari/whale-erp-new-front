@@ -95,6 +95,44 @@
             </div>
           </section>
 
+          <!-- 시설물 및 장비 관리 · 1.5차 — 「시설물·장비 관리 정책서」(claude.ai 문서, 2026-11-10) PL-1 ~ PL-6 기준. 원자료는 가맹점및점포관리 화면정의서 v0.74 37~44쪽 -->
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">화면 · 시설물 및 장비 관리</h2>
+              <span class="badge badge--quiet">4개 + 팝업 2</span>
+              <span class="badge badge--warn">1.5차</span>
+              <div class="panel__end">
+                <span class="filters__count mono">정책서 PL-1 ~ PL-6 · stores/facilities*</span>
+              </div>
+            </div>
+            <div class="grid grid--2">
+              <a class="mk-card" href="facilities.html">
+                <span class="mk-card__route">/facilities</span>
+                <span class="mk-card__name">시설물 · 장비 목록</span>
+                <span class="mk-card__desc">BP 는 미리 정해져 있어 필터 · 열은 점포만 둔다. 운영상태 · 그룹 · 분류는 공통코드로 그리고, 그룹을 고르면 그 그룹의 분류만 보인다. 등록일순 50건.</span>
+                <span class="mk-card__end"><span class="badge badge--preview">권한 2 · 상태 4</span></span>
+              </a>
+              <a class="mk-card" href="facilities-detail.html">
+                <span class="mk-card__route">/facilities/:id</span>
+                <span class="mk-card__name">시설물 · 장비 상세 · 삭제</span>
+                <span class="mk-card__desc">기본 정보 · 관리 정보 두 묶음, 저장된 값만 보인다. 수리 이력 · 점검 결과가 있으면 삭제를 막고 폐기로 안내한다. 폐점 점포는 조회만.</span>
+                <span class="mk-card__end"><span class="badge badge--preview">상태 6</span></span>
+              </a>
+              <a class="mk-card" href="facilities-new.html">
+                <span class="mk-card__route">/facilities/new</span>
+                <span class="mk-card__name">시설물 · 장비 등록</span>
+                <span class="mk-card__desc">필수는 점포 · 이름 · 운영상태 · 그룹 · 분류. 오류는 칸 아래 빨간 문구(알럿 없음), 전화번호는 세 칸, 구매액은 쉼표, 설치일 ≥ 구매일.</span>
+                <span class="mk-card__end"><span class="badge badge--preview">상태 5</span></span>
+              </a>
+              <a class="mk-card" href="facilities-edit.html">
+                <span class="mk-card__route">/facilities/:id/edit</span>
+                <span class="mk-card__name">시설물 · 장비 수정</span>
+                <span class="mk-card__desc">점포는 읽기 전용. 미사용 분류는 지금 값으로 남고, 바꾸면 되돌릴 수 없다. 관리 정보 삭제는 논리 삭제.</span>
+                <span class="mk-card__end"><span class="badge badge--preview">상태 5</span></span>
+              </a>
+            </div>
+          </section>
+
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">정책</h2>
