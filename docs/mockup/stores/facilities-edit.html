@@ -16,7 +16,7 @@
          - 운영상태는 공통코드 「시설물 운영상태」(처음 값 운영), 그룹은 「점포 시설물」 · 「점포 장비」, 분류는 고른 그룹의 상세 코드. 그룹을 바꾸면 분류를 지운다(PL-2 · PL-3).
          - [저장]을 누르면 검사하고, 걸린 칸 바로 아래에 빨간 문구를 보이고 첫 오류 칸으로 옮긴다. 알럿은 띄우지 않는다(PL-5).
          - 전화번호는 앞 · 가운데 · 끝 세 칸, 숫자만 칸마다 4자리까지, 이은 번호 9~12자리(PL-5).
-         - 구매액은 숫자만 10자리, 쉼표를 붙여 보인다. 설치일은 구매일보다 앞설 수 없다(PL-5).
+         - 단가 · 수량 · 총금액 — 총금액은 단가 × 수량으로 자동 계산되고 입력할 수 없다. 단가는 숫자만 10자리, 쉼표를 붙여 보인다. 메모는 200자까지. 설치일은 구매일보다 앞설 수 없다(PL-5).
          - 관리 담당자는 그 점포의 재직 직원, 고르면 전화번호 세 칸을 휴대폰 번호로 채운다. 점검 주기는 공통코드 「시설물 점검 주기」(처음 값 매일)(PL-6).
          위쪽 점선 줄은 목업 전용이다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
@@ -62,10 +62,11 @@
                 </div>
               </div>
               <div class="panel__body">
+                <!-- 기본 정보 — 필수 다섯 칸만, 늘 펼쳐 둔다(2026-11-11 사용자 지정) -->
+                <h3 class="t-h3" style="margin: 0 0 var(--s-4)">기본 정보 <span class="subtle" style="font-size: 13px; font-weight: 500">필수 칸은 * 표시</span></h3>
+                <!-- 왼쪽에 점포 · 시설물/장비명 · 그룹 · 분류, 오른쪽에 운영상태 · 메모(2026-11-11 사용자 지정) -->
                 <div class="grid grid--2" style="align-items: start">
-                  <!-- 기본 정보 -->
                   <div class="stack--lg" style="display: flex; flex-direction: column">
-                    <h3 class="t-h3" style="margin: 0">기본 정보</h3>
 
                     <div class="field">
                       <label for="fstore">점포</label>
@@ -78,16 +79,6 @@
                       <input class="input" id="fname" value="EK43S 전자동 원두 커피 그라인더" data-show="in bad nocode fail" />
                       <input class="input" value="" aria-label="시설물/장비명" aria-invalid="true" data-show="miss" hidden />
                       <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>시설물/장비명을 입력해 주세요.</span>
-                    </div>
-
-                    <!-- 운영상태 — 공통코드 「시설물 운영상태」(플랫폼고정). 처음 값 운영(PL-2) -->
-                    <div class="field">
-                      <label>운영상태 <span class="req">*</span></label>
-                      <div class="inline" style="min-height: 34px; gap: var(--s-4)" role="radiogroup" aria-label="운영상태">
-                        <label class="inline" style="gap: 6px"><input type="radio" name="fst" checked />운영</label>
-                        <label class="inline" style="gap: 6px"><input type="radio" name="fst" />보관</label>
-                        <label class="inline" style="gap: 6px"><input type="radio" name="fst" />폐기</label>
-                      </div>
                     </div>
 
                     <div class="grid grid--2">
@@ -113,7 +104,7 @@
                       </div>
                       <!-- 분류 — 고른 그룹의 상세 코드만. 그룹을 바꾸면 지운다(PL-3) -->
                       <div class="field">
-                        <label for="fclass">분류 <span class="req">*</span></label>
+                        <label for="fclass">분류 <span class="req">*</span><span class="subtle" style="margin-left:auto;margin-block:-3px;font-weight:500">공통코드 그룹 <span class="tag">STORE_EQUIPMENT</span></span></label>
                         <select class="select" id="fclass" data-show="in bad fail">
                           <option>선택</option>
                           <option selected>그라인더</option>
@@ -133,6 +124,38 @@
                       </div>
                     </div>
 
+                  </div>
+                  <div class="stack--lg" style="display: flex; flex-direction: column">
+                    <!-- 운영상태 — 공통코드 「시설물 운영상태」(플랫폼고정). 처음 값 운영(PL-2) -->
+                    <div class="field">
+                      <label>운영상태 <span class="req">*</span></label>
+                      <div class="inline" style="min-height: 34px; gap: var(--s-4)" role="radiogroup" aria-label="운영상태">
+                        <label class="inline" style="gap: 6px"><input type="radio" name="fst" checked />운영</label>
+                        <label class="inline" style="gap: 6px"><input type="radio" name="fst" />보관</label>
+                        <label class="inline" style="gap: 6px"><input type="radio" name="fst" />폐기</label>
+                      </div>
+                    </div>
+
+                    <!-- 메모 — 선택, 줄바꿈 · 공백 포함 200자. 칸 이름 옆에 글자 수(PL-5). 아무 때나 짧게 남기는 칸이라 접지 않는다 -->
+                    <div class="field">
+                      <label for="fmemo">메모 <span class="subtle">35 / 200</span></label>
+                      <textarea class="textarea" id="fmemo" rows="3" maxlength="200" placeholder="메모를 입력해 주세요.">주방 벽 쪽 전용 콘센트를 쓴다. 원두 투입구 덮개 분실 주의.</textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 상세 정보 — 선택 입력을 쓰임새대로 네 묶음으로 나눠 접어 둔다(2026-11-11 사용자 지정).
+                     접힌 줄에 채운 칸 수(「입력 n / 전체」)와 안의 항목을 보인다. 등록은 모두 접힌 채로 시작하고, 수정은 값이 있는 묶음만 펼친다.
+                     칸 오류가 있으면 그 묶음을 펼친다(아래 스크립트). [모두 펼치기 / 모두 접기]로 한꺼번에 여닫는다 -->
+                <div class="inline" style="margin: var(--s-5) 0 var(--s-3); justify-content: space-between">
+                  <h3 class="t-h3" style="margin: 0">상세 정보 <span class="subtle" style="font-size: 13px; font-weight: 500">선택</span></h3>
+                  <button type="button" class="tlink" data-fold-all>모두 접기</button>
+                </div>
+                <div class="grid grid--2" style="align-items: start">
+                  <div style="display: flex; flex-direction: column; gap: var(--s-3)">
+                    <details class="fold" id="fold-product" open>
+                      <summary>제품 정보 <span class="subtle" style="font-size: 13px; font-weight: 500">입력 4 / 4</span> <span class="fold__hint">브랜드 · 제조사 · Serial number · 설치 위치</span></summary>
+                      <div class="fold__body stack--lg" style="display: flex; flex-direction: column">
                     <div class="grid grid--2">
                       <div class="field">
                         <label for="fbrand">브랜드</label>
@@ -154,6 +177,11 @@
                       </div>
                     </div>
 
+                      </div>
+                    </details>
+                    <details class="fold" id="fold-buy" open>
+                      <summary>구매 정보 <span class="subtle" style="font-size: 13px; font-weight: 500">입력 7 / 7</span> <span class="fold__hint">구매처 · 영업사원 · 단가 · 수량 · 총금액 · 구매일 · 설치일</span></summary>
+                      <div class="fold__body stack--lg" style="display: flex; flex-direction: column">
                     <!-- 구매처 · 전화번호 세 칸(PL-5) -->
                     <div class="grid grid--2">
                       <div class="field">
@@ -190,12 +218,16 @@
                       </div>
                     </div>
 
-                    <!-- 구매액 · 부가세 포함 · 구매일 · 설치일(PL-5) -->
-                    <!-- 구매액 — 근로계약서 시급 · 급여명세서 금액 칸과 같은 모양: 공통 입력칸 그대로(왼쪽 정렬, 칸 옆 「원」 없음), 단위 · 규칙은 칸 아래 회색 도움말.
-                         「부가세 포함」 스위치는 칸 이름 줄 오른쪽(처음 켜짐) -->
+                    <!-- 단가 · 수량 · 총금액 · 부가세 포함 · 구매일 · 설치일 · 메모(PL-5) -->
+                    <!-- 단가 · 수량 · 총금액(PL-5) — 총금액은 입력할 수 없고 단가 × 수량으로 채운다(읽기 전용 #f8f9fb). 단가는 숫자 10자리 · 다 친 뒤 쉼표,
+                         수량은 1 ~ 9,999 · 처음 값 1. 칸 옆에 「원」을 붙이지 않고 단위는 칸 아래 도움말 -->
                     <div class="field">
-                      <label class="inline" for="famount" style="gap: 18px">구매액 <span class="inline" style="gap: 6px; font-weight: 400">부가세 포함 <span class="toggle" id="fvat" role="switch" aria-pressed="true" tabindex="0"></span></span></label>
-                      <input class="input" id="famount" value="20,000,000" inputmode="numeric" maxlength="13" placeholder="숫자만 입력" />
+                      <label class="inline" style="gap: 18px">구매 금액 <span class="inline" style="gap: 6px; font-weight: 400">부가세 포함 <span class="toggle" id="fvat" role="switch" aria-pressed="true" tabindex="0"></span></span></label>
+                      <div class="grid" style="grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1fr); gap: 6px">
+                        <div class="field"><label for="funit">단가</label><input class="input" id="funit" value="10,000,000" inputmode="numeric" maxlength="13" placeholder="숫자만 입력" /></div>
+                        <div class="field"><label for="fqty">수량</label><input class="input" id="fqty" value="2" inputmode="numeric" maxlength="4" /></div>
+                        <div class="field"><label for="ftotal">총금액</label><input class="input" id="ftotal" value="20,000,000" readonly placeholder="단가 × 수량" /></div>
+                      </div>
                       <span class="help">원 단위로 숫자만 입력할 수 있습니다.</span>
                     </div>
                     <div class="grid grid--2">
@@ -210,11 +242,13 @@
                         <span class="err" data-show="bad" hidden><span data-icon="alert" data-icon-size="13"></span>설치일은 구매일보다 앞설 수 없습니다.</span>
                       </div>
                     </div>
+                      </div>
+                    </details>
                   </div>
-
-                  <!-- 관리 정보 — 모두 선택 입력 -->
-                  <div class="stack--lg" style="display: flex; flex-direction: column">
-                    <h3 class="t-h3" style="margin: 0">관리 정보</h3>
+                  <div style="display: flex; flex-direction: column; gap: var(--s-3)">
+                    <details class="fold" id="fold-doc" open>
+                      <summary>기한 · 문서 <span class="subtle" style="font-size: 13px; font-weight: 500">입력 4 / 5</span> <span class="fold__hint">사용 유효기한 · 품질 보증기한 · 사용 매뉴얼 · 주의사항 · 제품 보증서</span></summary>
+                      <div class="fold__body stack--lg" style="display: flex; flex-direction: column">
                     <div class="grid grid--2">
                       <div class="field">
                         <label for="fuse">사용 유효기한</label>
@@ -254,6 +288,11 @@
                         <li class="spread" style="gap: 10px; padding: 12px 0; border-bottom: 1px solid #eeeeee"><span style="display: flex; align-items: center; gap: 10px"><span style="display: grid; place-items: center; width: 64px; height: 64px; flex: none; border: 1px solid #edeef1; border-radius: 8px; background: #f8f9fb; font-size: 12px; color: #888">PNG</span>제품보증서.png</span><span><span class="mono subtle">640KB</span> <button class="tbtn" type="button">빼기</button></span></li>
                       </ul>
                     </div>
+                      </div>
+                    </details>
+                    <details class="fold" id="fold-manage" open>
+                      <summary>관리 · A/S <span class="subtle" style="font-size: 13px; font-weight: 500">입력 6 / 6</span> <span class="fold__hint">관리 담당자 · 점검 주기 · 점검 비고 · A/S센터</span></summary>
+                      <div class="fold__body stack--lg" style="display: flex; flex-direction: column">
                     <!-- 관리 담당자 — 이 점포의 재직 직원. 고르면 전화번호 세 칸을 휴대폰 번호로 채운다(PL-6) -->
                     <div class="grid grid--2">
                       <div class="field">
@@ -275,10 +314,10 @@
                       </div>
                     </div>
 
-                    <!-- 점검 주기 — 공통코드 「시설물 점검 주기」(플랫폼고정), 처음 값 매일(PL-6) -->
+                    <!-- 점검 주기 — 공통코드 「시설물 점검 주기」(플랫폼제공), 처음 값 매일(PL-6) -->
                     <div class="grid grid--2">
                       <div class="field">
-                        <label for="fcycle">점검 주기</label>
+                        <label for="fcycle">점검 주기<span class="subtle" style="margin-left:auto;margin-block:-3px;font-weight:500">공통코드 그룹 <span class="tag">FACILITY_INSPECTION_CYCLE</span></span></label>
                         <select class="select" id="fcycle">
                           <option>매일</option>
                           <option>매주</option>
@@ -316,6 +355,8 @@
                         <input class="input mono" value="8888" inputmode="numeric" maxlength="4" aria-label="A/S센터 전화번호 끝자리" />
                       </div>
                     </div>
+                      </div>
+                    </details>
                   </div>
                 </div>
               </div>
@@ -324,6 +365,26 @@
         </div>
       </main>
     </div>
+    <script>
+      // 칸 오류 견본(입력 오류)을 고르면 오류 칸이 든 묶음(구매 정보 · 기한 · 문서)을 펼친다. [모두 펼치기]는 네 묶음을 한꺼번에 여닫는다
+      document.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-state]");
+        if (b && b.dataset.state === "bad") ["fold-buy", "fold-doc"].forEach((id) => (document.getElementById(id).open = true));
+        const all = e.target.closest("[data-fold-all]");
+        if (all) {
+          const folds = [...document.querySelectorAll("details.fold")];
+          const open = !folds.every((d) => d.open);
+          folds.forEach((d) => (d.open = open));
+        }
+      });
+      // 묶음을 여닫을 때마다 버튼 글자를 맞춘다
+      document.querySelectorAll("details.fold").forEach((d) =>
+        d.addEventListener("toggle", () => {
+          const btn = document.querySelector("[data-fold-all]");
+          btn.textContent = [...document.querySelectorAll("details.fold")].every((x) => x.open) ? "모두 접기" : "모두 펼치기";
+        }),
+      );
+    </script>
     <script src="../assets/app.js"></script>
     <script src="../assets/auth.js"></script>
   </body>

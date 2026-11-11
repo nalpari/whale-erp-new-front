@@ -573,6 +573,9 @@
   .mx-auto {
     margin-inline: auto;
   }
+  .-my-\[2px\] {
+    margin-block: calc(2px * -1);
+  }
   .-mt-\[2px\] {
     margin-top: calc(2px * -1);
   }
@@ -1014,6 +1017,9 @@
   }
   .max-h-\[328px\] {
     max-height: 328px;
+  }
+  .max-h-\[360px\] {
+    max-height: 360px;
   }
   .max-h-\[calc\(100dvh-48px\)\] {
     max-height: calc(100dvh - 48px);
@@ -3382,6 +3388,15 @@
   }
   .group-open\:rotate-90:is(:where(.group):is([open], :popover-open, :open) *) {
     rotate: 90deg;
+  }
+  .group-open\/fold\:hidden:is(:where(.group\/fold):is([open], :popover-open, :open) *) {
+    display: none;
+  }
+  .group-open\/fold\:inline:is(:where(.group\/fold):is([open], :popover-open, :open) *) {
+    display: inline;
+  }
+  .group-open\/fold\:rotate-180:is(:where(.group\/fold):is([open], :popover-open, :open) *) {
+    rotate: 180deg;
   }
   .group-focus-within\/help\:opacity-100:is(:where(.group\/help):focus-within *) {
     opacity: 100%;
