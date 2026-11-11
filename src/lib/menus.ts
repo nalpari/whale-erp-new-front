@@ -127,6 +127,8 @@ export function isAllowed(menus: AdminMenu[], path: string, service: ServiceCode
   if (service === "PLATFORM" && isUnder(pathname, PENDING_PLATFORM_MENU.url)) return true;
   // 운영 알림함 — 메뉴 MN000042 는 웨일ERP 행뿐이라 플랫폼 운영자가 받은 문의 알림을 열 수 없었다(2026-10-29 재영 A안). 웨일ERP 는 메뉴 권한 그대로
   if (service === "PLATFORM" && isUnder(pathname, "/notifications")) return true;
+  // 시작 가이드(/start-guide) — 메뉴 행이 없는 안내 화면이다. 헤더 [시작 가이드]처럼 웨일ERP 탭에서만 연다(2026-11-11 사용자 지정)
+  if (service === "WHALE_ERP" && pathname === "/start-guide") return true;
   return menuOfPath(menus, pathname, service) !== null;
 }
 

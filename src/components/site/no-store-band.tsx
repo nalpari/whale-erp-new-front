@@ -14,8 +14,9 @@ import { useAccount, useCurrentBp, useMenus, useService, useStores } from "./ses
 // 가맹 마스터 · 가맹 관리자는 점포를 등록하지 못해(api 403) 배정을 요청하라고만 한다 — 홈 안내(HOME-4)와 같은 규칙.
 // 토스식 회색 띠 — 바탕 erp-subtle(#f0f1f3) · 먹색 500 글자 · 앞에 정보 아이콘, 할 일(「점포를 등록」)과 [점포 등록하기]만 포인트 파랑(erp-point, #4a7ae0)
 // (2026-11-04 사용자 지정 — 파랑 띠는 화면이 칙칙해 보였다).
+// 띠는 높이 56px · 글자 16px · 아이콘 18px, [점포 등록하기]는 34px · 14px 로 키웠다 — 더 넓게 눈에 띄게(2026-11-11 사용자 지정, 전엔 40px · 14px · 버튼 26px · 13px). 바탕은 회색 그대로다.
 const REGISTER =
-  "ml-[2px] flex h-[26px] items-center rounded-[6px] border border-erp-point bg-erp-point px-[12px] text-[13px] leading-none font-semibold text-white transition-colors duration-150 ease-out hover:bg-white hover:text-erp-point";
+  "ml-[4px] flex h-[34px] items-center rounded-[6px] border border-erp-point bg-erp-point px-[16px] text-[14px] leading-none font-semibold text-white transition-colors duration-150 ease-out hover:bg-white hover:text-erp-point";
 
 export function NoStoreBand() {
   const account = useAccount();
@@ -32,8 +33,8 @@ export function NoStoreBand() {
   const lead = stores.length ? "운영 중이거나 운영 예정인 점포가 없습니다." : account.roleTypeCode === "BM" || isPlatformRole(account.roleTypeCode) ? "등록된 점포가 없습니다." : "담당 점포가 없습니다.";
   const canCreate = !franchise && !!menuOfPath(menus, "/stores", service)?.permission.create;
   return (
-    <div role="status" className="flex h-[40px] shrink-0 items-center justify-center gap-[10px] border-b border-erp-bar-line bg-erp-subtle text-[14px] font-medium text-erp-ink">
-      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" className="shrink-0 text-erp-sub">
+    <div role="status" className="flex h-[56px] shrink-0 items-center justify-center gap-[12px] border-b border-erp-bar-line bg-erp-subtle text-[16px] font-medium text-erp-ink">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" className="shrink-0 text-erp-sub">
         <circle cx="8" cy="8" r="6.5" />
         <path d="M8 7.2v3.6" strokeLinecap="round" />
         <circle cx="8" cy="5" r="0.4" fill="currentColor" />

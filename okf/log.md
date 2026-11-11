@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-11-11
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드에서 넘어간 화면에 순서 · 안내를 띄우는 가이드 미니 카드(`GuideMiniCardSlot`)와 열린 패널을 읽는 `usePanelOpen` 을 더했다(front hoppip, 사용자 지정).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드 화면 `/start-guide` 를 더했다. 헤더 [시작 가이드] 목록의 단계가 그 화면 대신 이 화면의 단계 설명으로 오고, 실제 화면은 설명 안 [OOO로 가기]로 간다(front hoppip, 사용자 지정).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 매장운영 · 재무관리 · 프랜차이즈 소개 구역 설명을 지금 구조(스크롤 고정 구역 · 펼침 목록 · 물결 흐름)로 고치고, 지운 `IntroFeatures` · `IntroFlow` · `IntroAddOns` · `feature-shortcuts.tsx` · `PosIcon` 설명을 뺐다(front #259 리뷰).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 최소폭을 1720 → 1280px 로 낮추고 고정 폭 구역이 화면 폭에 맞춰 줄게 했다(front omanyte, 사용자 지정).
 * **Update**: 데모를 앱에 맞췄다(화면설계서용) — 직원 자료 일괄 저장 데모 `staff/export` 를 #251 문구로, 급여명세서에서 온 기간 기록을 새 데모 `staff/attendance-period` 로 더하고 급여명세서 데모 버튼 둘을 거기로 이었다([출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md), WHALEERP-664). 앱 코드는 그대로다.
