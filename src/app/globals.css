@@ -204,6 +204,10 @@ body {
 body:has(.guest-floating) footer {
   padding-bottom: 136px;
 }
+/* 디자인 샘플(/design/guest)은 아래 가운데에 샘플 이동 메뉴가 있어, 떠 있는 띠를 그 위로 올린다. 실제 홈(/)에는 메뉴가 없다. */
+body:has(nav[data-design-nav]) .guest-floating {
+  bottom: 72px;
+}
 @media (prefers-reduced-motion: reduce) {
   .guest-wave-flow,
   .guest-float,

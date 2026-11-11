@@ -457,7 +457,7 @@ export function HomeNewsList({ items, typeLabel, hrefOf }: { items: NoticePost[]
     <ul className="border-t border-guest-list-line text-[17px] leading-[1.5]">
       {items.map((n) => (
         <li key={n.postId} className="flex h-[78px] items-center gap-[8px] border-b border-guest-list-line last:border-b-0">
-          <Badges post={n} typeLabel={typeLabel} />
+          <Badges post={n} typeLabel={typeLabel} slot />
           <Link href={hrefOf(n.postId)} title={n.title} className={`flex-1 truncate font-semibold text-guest-ink hover:text-guest-navy ${HOVER}`}>
             {n.title}
           </Link>

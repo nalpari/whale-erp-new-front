@@ -97,7 +97,7 @@ export function IntroFeaturesSticky({ light, bold, items }: { light: string; bol
 
   return (
     <section ref={sectionRef} className="relative bg-[#f1f7fc]" style={{ height: `${items.length * STEP_VH}vh` }}>
-      <div className={`${FRAME} sticky top-[110px] flex h-[calc(100vh-110px)] flex-col gap-[var(--gap)] pt-[var(--pt)] [--gap:clamp(24px,5vh,60px)] [--h:calc(100vh-212px-var(--pt)-var(--gap))] [--pt:clamp(24px,8vh,100px)]`}>
+      <div className={`${FRAME} sticky top-[110px] flex h-[calc(100vh-110px)] flex-col gap-[var(--gap)] pt-[var(--pt)] [--gap:clamp(24px,5vh,60px)] [--h:calc(100vh-212px-var(--pt)-var(--gap))] max-[1500px]:[--h:calc(100vh-260px-var(--pt)-var(--gap))] [--pt:clamp(24px,8vh,100px)]`}>
         <div className="flex flex-wrap items-end justify-between gap-x-[24px] gap-y-[16px]">
           <SectionTitle oneLine light={light} bold={bold} />
           <nav className="flex gap-[8px]">

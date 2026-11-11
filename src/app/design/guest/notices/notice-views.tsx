@@ -20,12 +20,12 @@ function Badge({ children }: { children: ReactNode }) {
   return <span className="flex h-[28px] shrink-0 items-center rounded-[4px] border border-[#e3e7ec] bg-[#f6f8fa] px-[9px] text-[14px] leading-[1.4] font-medium text-guest-sub">{children}</span>;
 }
 
-export function Badges({ post, typeLabel }: { post: Pick<Post, "isPinned" | "noticeType">; typeLabel: (type: NoticeType) => string }) {
+export function Badges({ post, typeLabel, slot = false }: { post: Pick<Post, "isPinned" | "noticeType">; typeLabel: (type: NoticeType) => string; slot?: boolean }) {
   return (
     <>
       {/* 고정 글은 로그인 후 공지사항 목록(PinIcon, community-lists.tsx)과 같은 동그라미 압정 아이콘 — 전엔 남색 「고정」 배지(2026-11-11 사용자 지정) */}
-      {/* 고정이 아닌 글도 같은 20px 자리를 비워 두어 구분 꼬리표 · 제목 시작선이 줄마다 맞는다(2026-11-11 사용자 지정) */}
-      {!post.isPinned && <span aria-hidden className="w-[20px] shrink-0" />}
+      {/* 목록(slot)에서는 고정이 아닌 글도 같은 20px 자리를 비워 두어 구분 꼬리표 · 제목 시작선이 줄마다 맞는다(2026-11-11 사용자 지정) */}
+      {slot && !post.isPinned && <span aria-hidden className="w-[20px] shrink-0" />}
       {post.isPinned && (
         <svg role="img" aria-label="고정" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-guest-navy">
           <title>고정</title>
@@ -71,7 +71,7 @@ export function NoticeRows({ items, typeLabel, hrefOf }: { items: Post[]; typeLa
     <ul className="text-[17px] leading-[1.5]">
       {items.map((n) => (
         <li key={n.postId} className="flex items-center gap-[12px] border-b border-guest-list-line px-[10px] py-[22px]">
-          <Badges post={n} typeLabel={typeLabel} />
+          <Badges post={n} typeLabel={typeLabel} slot />
           <Link href={hrefOf(n.postId)} className={`flex-1 truncate text-guest-ink hover:text-guest-navy ${HOVER}`}>
             {n.title}
           </Link>
