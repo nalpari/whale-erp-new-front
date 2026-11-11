@@ -150,7 +150,7 @@ const isServerRender = (file: string) =>
   directive(file) === null &&
   (/^app\/.*\/(page|layout)\.tsx$/.test(file) ||
     /^app\/.*\/load-[\w-]+\.ts$/.test(file) ||
-    /^components\/community\/(post-page|inquiry-page|list-load)\.tsx$/.test(file) ||
+    /^components\/.*\.tsx$/.test(file) ||
     // 새 탭 주소로 여는 GET 창구도 request() 가 만료면 로그인 화면으로 보낸다(계약서 파일 받기)
     (/^app\/.*\/route\.ts$/.test(file) && /\brequest(<[^>]*>)?\(/.test(text.get(file)!)));
 
@@ -166,10 +166,16 @@ function rethrows(body: ts.Node): boolean {
 /** getEnum 만 감싼 catch — enum 은 request() 를 거치지 않아 만료 이동이 없다 */
 const onlyEnum = (node: ts.Node) => /\bgetEnum\(/.test(node.getText()) && !/\b(request|send|get[A-Z]\w*(?<!Enum))\(/.test(node.getText().replace(/getEnum\(/g, ""));
 
+/** 만료 이동을 일부러 삼키는 서버 화면 조각 */
+const G3_ALLOW = new Set([
+  // 헤더 알림 종(루트 layout) — 실패하면 배지 없는 종을 그린다. 만료는 본문(서버 화면이면 로그인 화면 · 브라우저 조회면 팝업)에 맡긴다(2026-11-11 사용자 지정)
+  "components/notifications/notification-bell-slot.tsx",
+]);
+
 test("G3 서버 화면의 catch 는 로그인 만료 이동을 삼키지 않는다(unstable_rethrow)", () => {
   const found: string[] = [];
   for (const file of text.keys()) {
-    if (!isServerRender(file) || isPublic(file)) continue;
+    if (!isServerRender(file) || isPublic(file) || G3_ALLOW.has(file)) continue;
     const sf = sourceOf(file);
     visit(sf, (n) => {
       if (ts.isTryStatement(n) && n.catchClause && !rethrows(n.catchClause.block) && !onlyEnum(n.tryBlock)) found.push(lineOf(sf, n.catchClause));
