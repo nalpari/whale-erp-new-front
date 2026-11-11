@@ -5,30 +5,8 @@ import * as ui from "../../ui.mjs";
 import { tag } from "../../config-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
 import { storeFilterSection } from "../../store-filter.mjs";
-import { ALL_STORES, FACILITIES, GROUP_SCRIPT, STATUSES, classSelect, facilityBadge, groupSelect, storeName } from "../../facility-parts.mjs";
+import { ALL_STORES, FACILITIES, GROUP_SCRIPT, STATUSES, classSelect, facilityBadge, groupSelect, storeFilterScript, storeName } from "../../facility-parts.mjs";
 
-// 고른 점포로 줄 거르기 — 점포 정보 관리 목록과 같은 점포 고르기(store-filter.mjs)라 칩 빼기 · 개수는 그 부품이 맡는다.
-// 공통 거르기(erp.js, 필터 이름 = 열 머리)와 겹치지 않게 data-store-out 으로 숨기고, 「총 N 건」과 빈 줄을 다시 맞춘다.
-const STORE_FILTER_SCRIPT = `<style>[data-store-out]{display:none!important}</style><script>
-(() => {
-  const box = document.querySelector("[data-store-filter]");
-  const list = box.querySelector("[data-spick-list]");
-  const NAME = ${JSON.stringify(Object.fromEntries(ALL_STORES.map(([c, n]) => [c, n])))};
-  const apply = () => {
-    const picked = [...list.children].map((li) => NAME[li.dataset.code]);
-    const rows = [...document.querySelectorAll("main table tbody tr")].filter((tr) => !tr.hasAttribute("data-empty"));
-    rows.forEach((tr) => tr.toggleAttribute("data-store-out", picked.length > 0 && !picked.includes(tr.cells[2].querySelector("[data-store]").textContent.trim())));
-    const visible = rows.filter((tr) => !tr.hidden && !tr.hasAttribute("data-store-out")).length;
-    const total = [...document.querySelectorAll("main p")].find((q) => /^총\\s/.test(q.textContent.trim()) && q.querySelector("b"));
-    if (total) total.querySelector("b").textContent = visible.toLocaleString("ko-KR");
-    const empty = document.querySelector("main table tbody > [data-empty]");
-    if (empty) empty.hidden = visible > 0;
-  };
-  new MutationObserver(apply).observe(list, { childList: true });
-  ["input", "change", "click"].forEach((t) => document.addEventListener(t, () => setTimeout(apply)));
-  document.addEventListener("DOMContentLoaded", () => setTimeout(apply));
-})();
-</script>`;
 
 export default ({ A, R }) => {
   // 점포 — 점포 정보 관리 목록과 같은 점포 검색(여러 곳 · [일괄검색]). 폐점 점포도 고를 수 있다(PL-1)
@@ -79,7 +57,7 @@ export default ({ A, R }) => {
             `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
         ) +
         GROUP_SCRIPT +
-        STORE_FILTER_SCRIPT,
+        storeFilterScript(2),
     }),
   };
 };
