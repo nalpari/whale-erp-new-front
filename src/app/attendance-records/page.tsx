@@ -81,6 +81,7 @@ export default async function AttendanceRecordsPage({ searchParams }: { searchPa
             stores={stores.toString()}
             editableFrom={editableFromOf(today)}
             reasonLabels={reasonLabels}
+            statusLabels={statusLabels}
           />
         </main>
       </div>
