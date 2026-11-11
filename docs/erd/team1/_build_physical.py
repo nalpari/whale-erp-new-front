@@ -43,7 +43,7 @@ class LTable:
 
 
 SECTION_SLUG = {"인증·계정": "auth", "점포관리": "store", "BP 마스터 계정 관리": "bp",
-                "환경설정 & 시스템관리": "system", "3팀 참조 엔티티": "ref"}
+                "환경설정 & 시스템관리": "system", "시설물·장비 관리": "facility", "3팀 참조 엔티티": "ref"}
 
 
 def read_catalog():
@@ -100,6 +100,8 @@ FK_TARGET = {
     "terms_of_use_version_id": ("terms_versions", None),
     "privacy_version_id": ("terms_versions", None),
     "temporary_password_id": ("temporary_passwords", None),
+    "facility_id": ("facilities", None),
+    "facility_repair_id": ("facility_repairs", None),
 }
 FK_IN_TABLE = {("code_items", "group_code"): ("code_groups", "group_code"),
                ("code_items", "bp_code"): ("bp_codes", "bp_code")}
@@ -124,6 +126,9 @@ ENUMS = {
                                                  "바로 받기 · 예약 생성"),
     ("excel_download_logs", "status"): ("excel_download_status", ["PENDING", "PROCESSING", "SUCCEEDED", "FAILED"],
                                         "대기 · 생성 중 · 완료 · 실패"),
+    ("facility_document_files", "document_type"): ("facility_document_type", ["MANUAL", "CAUTION", "WARRANTY"],
+                                                   "사용 매뉴얼 · 주의사항 · 제품 보증서"),
+    ("facility_document_files", "file_type"): ("facility_document_file_type", ["JPG", "PNG", "PDF"], "JPG · PNG · PDF"),
 }
 
 # 타입·기본값 개별 지정
@@ -158,6 +163,14 @@ PHYS = {
     ("excel_download_logs", "search_conditions"): {"type": "jsonb", "default": "'{}'::jsonb"},
     ("excel_download_logs", "attempt_count"): {"default": "0"},
     ("excel_download_logs", "requested_at"): {"default": "CURRENT_TIMESTAMP"},
+    # 금액은 10자리(99억)까지라 integer 를 넘는다. 총금액은 단가 10자리 × 수량 4자리
+    ("facilities", "unit_price_amount"): {"type": "bigint"},
+    ("facilities", "total_amount"): {"type": "bigint"},
+    ("facilities", "quantity"): {"default": "1"},
+    ("facilities", "is_vat_included"): {"default": "true"},
+    ("facility_repairs", "repair_cost_amount"): {"type": "bigint"},
+    ("facility_repairs", "is_vat_included"): {"default": "true"},
+    ("facility_repair_parts", "sort_order"): {"default": "0"},
 }
 
 # NOT NULL (PK·boolean·created_at·updated_at 은 자동). 나머지는 NULL 허용.
@@ -194,6 +207,10 @@ REQUIRED = {
                                  "failed_count", "result"],
     "excel_download_logs": ["requested_by", "menu_id", "search_conditions", "row_count", "delivery_method", "status",
                             "file_name", "attempt_count", "requested_at"],
+    "facilities": ["store_id", "facility_status_code", "facility_group_code", "facility_class_code", "name", "quantity"],
+    "facility_document_files": ["facility_id", "document_type", "file_name", "file_type", "size_bytes", "storage_key"],
+    "facility_repairs": ["facility_id", "failure_description", "failure_cause", "failure_date"],
+    "facility_repair_parts": ["facility_repair_id", "part_name", "sort_order"],
 }
 
 # 고유 제약: (테이블, 컬럼들, 조건 또는 None, 설명)
@@ -220,6 +237,8 @@ UNIQUES = [
      "열린 예외 기간은 휴일 · 점포마다 하나 — api 이름 holiday_excluded_stores_open_period_key"),
     ("excel_download_logs", ["requested_by", "menu_id"], "\"status\" IN ('PENDING', 'PROCESSING')",
      "같은 사람 · 같은 화면은 생성 중(바로 받기 · 예약 생성)인 요청이 하나뿐 — 앱이 409 로 먼저 막고 이 인덱스가 마지막 방어선이다"),
+    ("facility_document_files", ["facility_id", "document_type"], '"is_deleted" = false',
+     "문서는 종류마다 1개 — 교체하면 기존 행을 삭제 처리하고 새 행을 만든다"),
 ]
 # NULLS NOT DISTINCT 가 필요한 고유 제약 (PostgreSQL 15+)
 UNIQUES_NND = [
@@ -272,6 +291,28 @@ CHECKS = [
     ("excel_download_logs", "started_when_processing", "\"status\" <> 'PROCESSING' OR \"started_at\" IS NOT NULL"),
     # 바로 받기는 대기열에 들어가지 않는다 — 대기 행은 배치가 예약 생성으로 만들어 메일을 보낸다
     ("excel_download_logs", "direct_not_pending", "\"delivery_method\" <> 'DIRECT' OR \"status\" <> 'PENDING'"),
+    ("facilities", "name_length", "char_length(\"name\") BETWEEN 1 AND 100"),
+    ("facilities", "memo_length", "char_length(\"memo\") <= 200"),
+    ("facilities", "vendor_phone_format", "\"vendor_phone\" ~ '^[0-9]{9,12}$'"),
+    ("facilities", "salesperson_phone_format", "\"salesperson_phone\" ~ '^[0-9]{9,12}$'"),
+    ("facilities", "manager_phone_format", "\"manager_phone\" ~ '^[0-9]{9,12}$'"),
+    ("facilities", "service_center_phone_format", "\"service_center_phone\" ~ '^[0-9]{9,12}$'"),
+    ("facilities", "service_center_address_detail_length", "char_length(\"service_center_address_detail\") <= 100"),
+    ("facilities", "unit_price_amount_range", "\"unit_price_amount\" BETWEEN 0 AND 9999999999"),
+    ("facilities", "quantity_range", "\"quantity\" BETWEEN 1 AND 9999"),
+    # 총금액은 단가 × 수량 — 단가가 없으면 총금액도 없다
+    ("facilities", "total_amount_matches",
+     "(\"unit_price_amount\" IS NULL AND \"total_amount\" IS NULL) OR \"total_amount\" = \"unit_price_amount\" * \"quantity\""),
+    ("facilities", "install_after_purchase", "\"install_date\" >= \"purchase_date\""),
+    ("facility_document_files", "size_bytes_range", "\"size_bytes\" BETWEEN 1 AND 10485760"),
+    ("facility_repairs", "failure_description_length", "char_length(\"failure_description\") BETWEEN 1 AND 200"),
+    ("facility_repairs", "failure_cause_length", "char_length(\"failure_cause\") BETWEEN 1 AND 200"),
+    ("facility_repairs", "repair_after_failure", "\"repair_date\" >= \"failure_date\""),
+    ("facility_repairs", "technician_name_length", "char_length(\"technician_name\") <= 50"),
+    ("facility_repairs", "technician_phone_format", "\"technician_phone\" ~ '^[0-9]{9,12}$'"),
+    ("facility_repairs", "repair_cost_amount_range", "\"repair_cost_amount\" BETWEEN 0 AND 9999999999"),
+    ("facility_repair_parts", "part_name_length", "char_length(\"part_name\") BETWEEN 1 AND 50"),
+    ("facility_repair_parts", "quantity_positive", "\"quantity\" >= 1"),
 ]
 
 # 조회용 인덱스 (FK 중 목록·이력 조회에 쓰는 것). 고유 제약이 앞머리를 덮으면 두지 않는다.
@@ -295,6 +336,9 @@ INDEXES = [
     ("public_holidays", ["year"]),
     ("excel_download_logs", ["requested_by", "menu_id", "requested_at"]),
     ("excel_download_logs", ["status", "requested_at"]),
+    ("facilities", ["store_id"]),
+    ("facility_repairs", ["facility_id", "failure_date"]),
+    ("facility_repair_parts", ["facility_repair_id"]),
 ]
 
 
@@ -464,6 +508,8 @@ LAYOUT = {
                         "holiday_except": 3, "sync_hist": 3, "excel_hist": 1},
                "full": {"role_group", "code_group", "role_menu", "code_item", "menu", "holiday_hist",
                         "public_holiday", "holiday", "holiday_store", "holiday_except", "sync_hist", "excel_hist"}},
+    "facility": {"cols": {"store_ref": 0, "staff_ref": 0, "facility": 1, "facility_doc": 2, "repair": 2, "repair_part": 3},
+                 "full": {"facility", "facility_doc", "repair", "repair_part"}},
 }
 
 # 관계 연결점·꺾는 위치 지정 (영역, 관계 순번) → dict. 자동 배치로 선이 박스를 지나갈 때만 쓴다.
@@ -628,7 +674,7 @@ VIEW_NOTE = {
 
 # 그림 끌어 옮기기: 마우스로 그림을 잡고 끌면 가로는 그림 영역이, 세로는 페이지가 스크롤된다.
 # 1팀 ERD 모든 장에 붙인다.
-DRAG_PAN_SLUGS = {"index", "auth", "store", "bp", "system"}
+DRAG_PAN_SLUGS = {"index", "auth", "store", "bp", "system", "facility"}
 DRAG_PAN_CSS = """
 .diagram.pan{cursor:grab}
 .diagram.pan.dragging{cursor:grabbing;user-select:none}

@@ -8,7 +8,7 @@ import * as x from "../../extra.mjs";
 import * as f from "../../biz-form.mjs";
 import { row } from "../../config-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
-import { GROUP_SCRIPT, OPERATING_BY_CLASS, PAYMENT_METHODS, amount, classSelect, groupSelect, note, storePick } from "../../facility-parts.mjs";
+import { GROUP_CODES, GROUP_SCRIPT, OPERATING_BY_CLASS, PAYMENT_METHODS, amount, classSelect, codeGroup, groupSelect, note, storePick } from "../../facility-parts.mjs";
 
 const ERR = (t) => `<p role="alert" class="text-[13px] leading-[1.5] text-erp-off">${t}</p>`;
 
@@ -67,7 +67,7 @@ export const render = ({ A, R }, { mode = "create", errors = false } = {}) => {
         f.group(f.req("점포"), storePick(A, "모리커피 성수점")),
         ui.formRow(
           f.group(f.req("그룹"), groupSelect("rep-class", { first: "선택", value: "점포 장비" })),
-          f.group(f.req("분류"), classSelect("rep-class", { first: "선택", group: "점포 장비", value: "그라인더" })),
+          codeGroup(f.req("분류"), [GROUP_CODES["점포 장비"]], classSelect("rep-class", { first: "선택", group: "점포 장비", value: "그라인더" }), "rep-class"),
         ),
         f.group(
           f.req("시설물·장비"),
