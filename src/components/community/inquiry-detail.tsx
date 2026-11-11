@@ -6,7 +6,7 @@ import { useState, useTransition, type ReactNode } from "react";
 import { Badge, Button, ConfirmDialog, DataTable, DetailTable, DetailValues, GuideIcon, GuideNote, PageBar, Tag, Textarea, useAction, useToast, type Column } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
-import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
+import { bff, BffError, isSessionExpired, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import type { InquiryDetail, LeadDetail, Target } from "@/lib/community";
 import {
   deleteLeadAction,
@@ -471,6 +471,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         const { url } = await bff<{ url: string }>(`${INQUIRY_BASE}/${d.inquiryId}/attachments/${attachmentId}/download-url`);
         window.location.assign(url);
       } catch (e) {
+        if (isSessionExpired(e)) return;
         c.setErrors([e instanceof BffError ? e.message : "첨부파일을 받지 못했습니다."]);
       }
     });
