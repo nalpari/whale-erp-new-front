@@ -1,5 +1,5 @@
 // 홈 [시작 가이드] 단계 — 로그인 역할로 갈래를 고른다(2026-11-04 사용자 지정, 쿠팡이츠 사장님 「시작 가이드」 목록처럼).
-// BP 마스터 · BP 관리자는 「매장 사장님 | 프랜차이즈 본사」 탭으로 고르고(가맹 점포가 있으면 본사가 처음 값), 가맹 마스터 · 가맹 관리자는 「가맹점」 하나다.
+// BP 마스터 · BP 관리자는 「매장 사장님 | 프랜차이즈 본사」 탭으로 고르고(처음 값은 늘 매장 사장님), 가맹 마스터 · 가맹 관리자는 「가맹점」 하나다.
 // 단계를 누르면 시작 가이드 화면(/start-guide)의 그 단계 설명으로 간다(2026-11-11 사용자 지정 — 전엔 그 화면으로 바로 갔다).
 // 실제 화면은 설명 안 [OOO로 가기]로 가고, 그 메뉴의 조회 권한이 없으면 그 버튼만 흐리게 둔다.
 
@@ -40,15 +40,15 @@ export const GUIDE_STEPS: Record<GuideTrack, GuideStep[]> = {
     { label: "STEP 6", title: "급여명세서 보내기", path: "/payslips" },
   ],
   HQ: [
-    { label: "STEP 1", title: "점포 등록하기(직영 · 가맹 구분)", path: "/stores/new", doneWhen: "stores" },
+    { label: "STEP 1", title: "점포 등록하기\n(직영 · 가맹 구분)", path: "/stores/new", doneWhen: "stores" },
     { label: "STEP 2", title: "본사 관리자 추가하기", optional: true },
     ...ADMIN_STEPS("BP 관리자 등록하기"),
     { label: "STEP 3", title: "가맹점주 계정 만들기" },
     { label: "3-1", title: "가맹 마스터 메뉴 권한 확인하기", path: "/bp-role-groups", sub: true },
-    { label: "3-2", title: "가맹 마스터 등록하기(맡을 가맹 점포 지정)", path: "/bp-admins", sub: true },
+    { label: "3-2", title: "가맹 마스터 등록하기\n(맡을 가맹 점포 지정)", path: "/bp-admins", sub: true },
     { label: "STEP 4", title: "직영점 직원 초대 · 근로계약 보내기", path: "/staff-members", note: "가맹점 직원은 가맹점주가 초대합니다." },
     { label: "STEP 5", title: "근무스케줄 · 출퇴근 확인하기", path: "/work-schedules" },
-    { label: "STEP 6", title: "급여명세서 보내기 · 가맹점 현황 보기", path: "/payslips", note: "가맹점 직원 정보는 본사 제공에 동의한 직원만 보입니다." },
+    { label: "STEP 6", title: "급여명세서 보내기 ·\n가맹점 현황 보기", path: "/payslips", note: "가맹점 직원 정보는 본사 제공에 동의한 직원만 보입니다." },
   ],
   FRANCHISEE: [
     { label: "STEP 1", title: "맡은 점포 확인하기", path: "/stores" },
@@ -60,10 +60,9 @@ export const GUIDE_STEPS: Record<GuideTrack, GuideStep[]> = {
   ],
 };
 
-/** 로그인 역할과 점포로 처음 보일 갈래. 가맹 역할은 가맹점, 가맹 점포가 하나라도 있으면 본사, 그 밖은 매장 사장님 */
-export function initialTrackOf(roleTypeCode: string, storeTypeCodes: readonly string[]): GuideTrack {
-  if (roleTypeCode === "FM" || roleTypeCode === "FA") return "FRANCHISEE";
-  return storeTypeCodes.includes("FRANCHISE") ? "HQ" : "STORE";
+/** 로그인 역할로 처음 보일 갈래 — 가맹 역할은 가맹점, 그 밖은 늘 매장 사장님(2026-11-11 사용자 지정 — 전엔 가맹 점포가 있으면 본사가 처음 값이었다) */
+export function initialTrackOf(roleTypeCode: string): GuideTrack {
+  return roleTypeCode === "FM" || roleTypeCode === "FA" ? "FRANCHISEE" : "STORE";
 }
 
 /** 이 역할이 고를 수 있는 갈래 — 가맹 역할은 가맹점 하나, BP 역할은 매장 사장님 · 본사 둘 */
@@ -110,6 +109,11 @@ export type GuidePart = {
   tip?: string;
   /** [OOO로 가기] 가 보낼 화면(탭 BP 접두 없이) */
   path?: string;
+  /**
+   * 그 화면에서 이어 넘어가는 화면 — 가이드 미니 카드가 여기서도 남는다(순서의 다음 줄을 이 화면에서 한다). 「/payslips/」처럼 / 로 끝나면
+   * 그 아래 주소 모두다(코드 리뷰로 찾음, 2026-11-11 — 근로계약 작성 · 급여명세서 검토로 넘어가자마자 카드가 꺼졌다)
+   */
+  nextPaths?: string[];
   mock: GuideMockKind;
 };
 
@@ -193,6 +197,7 @@ const adminForm = (title: string): GuidePart => ({
 const CONTRACT: GuidePart = {
   title: "근로계약서 작성하기",
   path: "/staff-members",
+  nextPaths: ["/contracts/new"],
   mock: "contract",
   actions: [
     // 문구는 2026-11-11 사용자 지정
@@ -269,6 +274,7 @@ const ATTENDANCE_FIX: GuidePart = {
 const PAYSLIP_REVIEW: GuidePart = {
   title: "급여명세서 작성 · 확정하기",
   path: "/payslips",
+  nextPaths: ["/payslips/"],
   mock: "payslip-review",
   // 문구는 2026-11-11 사용자 지정
   actions: [
@@ -281,6 +287,7 @@ const PAYSLIP_REVIEW: GuidePart = {
 const PAYSLIP_SEND: GuidePart = {
   title: "급여명세서 보내기",
   path: "/payslips",
+  nextPaths: ["/payslips/"],
   mock: "payslip-send",
   // 문구는 2026-11-11 사용자 지정
   actions: [
@@ -452,3 +459,42 @@ export function guideHref(track: GuideTrack, step?: string, part?: string) {
 }
 
 export const guideDetailOf = (track: GuideTrack, step: string): GuideDetail => GUIDE_DETAILS[track][step];
+
+/* ── 가이드 미니 카드(src/app/start-guide/guide-mini-card.tsx)가 쓰는 판정 — 화면이 아니라 여기에 두어 node --test 로 본다 ── */
+
+/** 미니 카드가 띄울 가이드 — 갈래 · 주 단계 번호(「STORE-1」) */
+export type GuideRef = { track: GuideTrack; step: string };
+
+/** 주소의 guide 값(「STORE-1」)을 갈래 · 단계로 — 모르는 갈래 · 없는 단계면 null(카드를 띄우지 않는다) */
+export function parseGuide(guide: string | null | undefined): GuideRef | null {
+  const m = guide?.match(/^([A-Z]+)-(\d+)$/);
+  if (!m || !isGuideTrack(m[1])) return null;
+  return GUIDE_STEPS[m[1]].some((s) => s.label === `STEP ${m[2]}`) ? { track: m[1], step: m[2] } : null;
+}
+
+/** 칸이 그 화면(탭 BP 접두를 뗀 주소)의 것인지 — [OOO로 가기]의 화면이거나 거기서 이어 넘어가는 화면(nextPaths, / 로 끝나면 그 아래 모두) */
+export function partOnScreen(part: GuidePart, screen: string): boolean {
+  if (part.path === screen) return true;
+  return (part.nextPaths ?? []).some((p) => (p.endsWith("/") ? screen.startsWith(p) : screen === p));
+}
+
+/** 그 단계에서 지금 화면에 띄울 칸들 — 없으면 빈 배열(카드를 띄우지 않는다) */
+export const partsOnScreen = (guide: GuideRef, screen: string) => guideDetailOf(guide.track, guide.step).parts.filter((p) => partOnScreen(p, screen));
+
+/**
+ * 미니 카드가 기억하는 도착 — guide 는 띄울 가이드(닫으면 null), seen 은 이미 받아들인 도착(「STORE-1|/stores/new」).
+ * - 주소에 guide 가 새로 붙어 오면(seen 과 다르면) 띄운다.
+ * - 그 가이드의 칸이 없는 화면으로 가면 둘 다 비운다 — 그래야 다시 메뉴로 들어와도 뜨지 않고, 가이드에서 [가기]를 다시 누르면 다시 뜬다.
+ * - 닫기(×)는 guide 만 비우고 seen 은 둔다 — 주소에 guide 가 남아 있어도 같은 화면에서 다시 열리지 않는다.
+ * (코드 리뷰로 찾음, 2026-11-11 — 전엔 화면을 떠나도 기억이 남아 메뉴로 다시 오면 뜨고, 닫은 뒤 [가기]를 다시 누르면 안 떴다)
+ */
+export type GuideArrival = { guide: string | null; seen: string | null };
+
+export function nextArrival(prev: GuideArrival, asked: string | null, screen: string): GuideArrival {
+  const askedRef = parseGuide(asked);
+  const arrival = askedRef && partsOnScreen(askedRef, screen).length ? `${asked}|${screen}` : null;
+  if (arrival && arrival !== prev.seen) return { guide: asked, seen: arrival };
+  const seenRef = parseGuide(prev.seen?.split("|")[0]);
+  if (prev.seen && (!seenRef || partsOnScreen(seenRef, screen).length === 0)) return { guide: null, seen: null };
+  return prev;
+}

@@ -27,6 +27,7 @@ import {
   type GuideStep,
   type GuideTrack,
 } from "@/lib/start-guide";
+import { underlined } from "./guide-mini-card";
 import { GuideMock } from "./guide-mocks";
 
 // 시작 가이드 본문 — 왼쪽 단계 목록(헤더 [시작 가이드] 목록과 같은 모양, 고른 단계만 연파랑 바탕) + 오른쪽 단계 설명(2026-11-11 사용자 지정).
@@ -34,7 +35,6 @@ import { GuideMock } from "./guide-mocks";
 // 화면 예시는 실제 화면 캡처가 아니라 단순한 그림이다 — 화면을 고칠 때마다 다시 찍지 않게(사용자 지정, guide-mocks.tsx).
 export function StartGuideScreen() {
   const account = useAccount();
-  const stores = useStores();
   const params = useSearchParams();
   const tracks = tracksOf(account.roleTypeCode);
   const asked = params.get("track");
@@ -42,10 +42,7 @@ export function StartGuideScreen() {
   const track: GuideTrack =
     isGuideTrack(asked) && tracks.includes(asked)
       ? asked
-      : initialTrackOf(
-          account.roleTypeCode,
-          stores.map((s) => s.storeTypeCode),
-        );
+      : initialTrackOf(account.roleTypeCode);
   const steps = GUIDE_STEPS[track];
   const numbers = steps.filter((s) => !s.sub).map(stepNumberOf);
   const step = numbers.includes(params.get("step") ?? "")
@@ -154,7 +151,10 @@ function StepLink({
         {step.label}
       </span>
       <span className="flex min-w-0 flex-1 items-center gap-[6px]">
-        <span className={step.sub ? "text-[13px]" : "text-[14px] font-medium"}>
+        {/* 긴 제목은 정해 둔 자리(
+)에서 꺾는다 — 괄호 · 「·」 한가운데서 꺾여 읽기 어려웠다(2026-11-11 사용자 지정). 다른 자리(제목 줄 · 이전/다음 · 미니 카드)에서는 
+ 이 빈칸이다 */}
+        <span className={`whitespace-pre-line ${step.sub ? "text-[13px]" : "text-[14px] font-medium"}`}>
           {step.title}
         </span>
         {step.optional && <OptionalTag />}
@@ -364,10 +364,6 @@ function GoButton({ path, guide }: { path: string; guide: string }) {
   );
 }
 
-/** 문구 안 <u>…</u> 만 밑줄로 그린다 — 놓치면 안 되는 말만 짚는다(GuideBand 와 같은 쓰임, 2026-11-11 사용자 지정). 다른 태그는 글자 그대로다 */
-function underlined(text: string) {
-  return text.split(/<u>(.*?)<\/u>/).map((piece, i) => (i % 2 === 1 ? <u key={i}>{piece}</u> : piece));
-}
 
 /** 「으로 · 로」 — 받침이 없거나 ㄹ 받침이면 「로」(점포 정보 관리로 · 근무스케줄 관리로) */
 function withRo(word: string) {

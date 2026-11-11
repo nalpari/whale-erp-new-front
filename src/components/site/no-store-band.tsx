@@ -5,6 +5,7 @@ import { useToast } from "@/components/common";
 import { isFranchiseRole, isPlatformRole } from "@/lib/auth-routes";
 import { bpPath } from "@/lib/bp-path";
 import { menuOfPath } from "@/lib/menus";
+import { initialTrackOf } from "@/lib/start-guide";
 import { isClosedStore } from "@/lib/store-scope";
 import { useAccount, useCurrentBp, useMenus, useService, useStores } from "./session-gate";
 
@@ -52,7 +53,8 @@ export function NoStoreBand() {
           가맹 마스터 · 가맹 관리자는 점포를 등록하는 역할이 아니라 배정 요청 문구만 둔다 */}
       {!franchise &&
         (canCreate ? (
-          <Link href={bpPath(bp, "/stores/new")} className={REGISTER}>
+          // 시작 가이드 STEP 1 미니 카드를 함께 띄운다(?guide=, 2026-11-11 사용자 지정) — 갈래는 시작 가이드의 처음 값과 같다(가맹 역할이 아니면 매장 사장님)
+          <Link href={`${bpPath(bp, "/stores/new")}?guide=${initialTrackOf(account.roleTypeCode)}-1`} className={REGISTER}>
             점포 등록하기
           </Link>
         ) : (

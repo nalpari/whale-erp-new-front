@@ -4,7 +4,7 @@ import type { GuideMockKind } from "@/lib/start-guide";
 // 시작 가이드 칸 오른쪽의 화면 예시 — 실제 화면을 단순하게 줄인 그림이다(2026-11-11 사용자 지정 — 캡처는 화면을 고칠 때마다 다시 찍어야 한다).
 // 글자 · 칸 이름은 실제 화면과 같게 두고, 꼭 눌러야 할 버튼 · 꼭 확인할 칸만 오른쪽 위 빨간 동그라미 체크(RING)로 짚는다(2026-11-11 사용자 지정 — 파란 테두리 · 빨간 점선을 거쳤다). 대개 그림마다 하나이고, 점포 등록 그림은 점포유형(직영) · 출퇴근 위치적용 · [저장] 세 곳이다(2026-11-11 사용자 지정). 값은 모두 예시다. 읽는 사람에게는 aria-hidden 이다.
 
-// 그림 칸(남색 바탕) 자체를 화면으로 보고 요소를 바로 얹는다 — 흰 상자 안에 또 상자를 두지 않는다(2026-11-11 사용자 지정).
+// 그림 칸 자체를 흰 관리자 화면으로 보고 요소를 바로 얹는다 — 흰 상자 안에 또 상자를 두지 않는다(2026-11-11 사용자 지정).
 // 그림 칸은 흰 바탕이라 색은 실제 화면 그대로다(남색 바탕 · 흰 글자도 해 봤지만 실제 화면 색이 나았다).
 const BOX = "w-full text-[11px] leading-[1.4] text-erp-ink";
 
@@ -80,7 +80,7 @@ function Field({
 }) {
   const box = (
     <span
-      className={`flex h-[20px] items-center rounded-[2px] border border-[#ededee] px-[6px] ${readOnly ? "bg-erp-thead-bg" : "bg-white"}`}
+      className={`flex h-[20px] items-center rounded-[2px] border border-[var(--color-erp-field-line)] px-[6px] ${readOnly ? "bg-erp-thead-bg" : "bg-white"}`}
     >
       {value}
       {ring && <Mark inline />}
@@ -235,7 +235,7 @@ export function GuideMock({ kind }: { kind: GuideMockKind }) {
                   </span>
                   <span className="text-erp-label">직접 운영하는 점포</span>
                 </span>
-                <span className="flex flex-col rounded-[2px] border border-[#ededee] px-[6px] py-[3px] text-erp-ink">
+                <span className="flex flex-col rounded-[2px] border border-[var(--color-erp-field-line)] px-[6px] py-[3px] text-erp-ink">
                   가맹{" "}
                   <span className="text-erp-label">
                     가맹 계약으로 운영하는 점포
@@ -423,7 +423,7 @@ export function GuideMock({ kind }: { kind: GuideMockKind }) {
               </span>
               <span className="grid grid-cols-3 gap-[4px]">
                 {["010", "1234", "5678"].map((v) => (
-                  <span key={v} className="flex h-[20px] items-center rounded-[2px] border border-[#ededee] bg-white px-[6px] text-erp-ink">
+                  <span key={v} className="flex h-[20px] items-center rounded-[2px] border border-[var(--color-erp-field-line)] bg-white px-[6px] text-erp-ink">
                     {v}
                   </span>
                 ))}
@@ -529,7 +529,7 @@ export function GuideMock({ kind }: { kind: GuideMockKind }) {
             <span className="flex items-center gap-[4px]">
               <span className="text-erp-label">근무지</span>
               {/* 근무지는 「신촌점」으로 줄였다 — 「인터플러그 신촌점」은 그림 칸에서 잘렸다. 먼저 근무지를 고르므로 빨간 체크(2026-11-11 사용자 지정) */}
-              <span className="flex h-[20px] items-center whitespace-nowrap rounded-[2px] border border-[#ededee] px-[6px]">
+              <span className="flex h-[20px] items-center whitespace-nowrap rounded-[2px] border border-[var(--color-erp-field-line)] px-[6px]">
                 신촌점 ▾
                 <Mark inline />
               </span>
