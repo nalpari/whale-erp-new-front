@@ -11,13 +11,13 @@ import { GUIDE_STEPS, guideHref, initialTrackOf, stepNumberOf, TRACK_LABEL, trac
 // 처음엔 홈 제목 옆에 두었다가 헤더로 옮겼다 — 단계가 다른 화면으로 보내므로 어느 화면에서든 다시 열 수 있게(사용자 지정).
 // 모양: 홈 현황 카드 제목(「재직 직원 >」)과 같은 글자 버튼 — 포인트 파랑(#4a7ae0) 14px 500 + 작은 꺾쇠 — 늘 파랑이다(2026-11-11 사용자 지정, 전엔 회색이다가 호버 · 열림에만 파랑). 열리면 꺾쇠가 아래를 본다(2026-11-04 사용자 지정).
 // 웨일ERP 탭에서만 그린다 — 플랫폼 계정이 BP 를 골라 넘어온 경우도 보인다(admin-header.tsx, 2026-11-05 사용자 지정).
-// BP 마스터 · BP 관리자는 위 탭에서 「매장 사장님 | 프랜차이즈 본사」를 직접 고른다(사용자 지정) — 처음 값만 점포 유형으로 짐작한다.
+// BP 마스터 · BP 관리자는 위 탭에서 「매장 사장님 | 프랜차이즈 본사」를 직접 고른다(사용자 지정) — 처음 값은 늘 「매장 사장님」이다(2026-11-11 사용자 지정, 전엔 가맹 점포가 있으면 본사).
 // 가맹 마스터 · 가맹 관리자는 「가맹점」 단계만 보인다. 단계 갈래와 화면 주소는 start-guide.ts.
 export function StartGuideButton() {
   const { open, setOpen, close, ref, trigger, id } = useDropdown();
   const account = useAccount();
   const tracks = tracksOf(account.roleTypeCode);
-  // 처음 탭은 점포 유형으로 짐작한다 — 점포 목록이 바뀌면(첫 가맹 점포 등록 등) 짐작도 따라간다. 사용자가 탭을 고르면 그 값을 쓴다(리뷰 반영)
+  // 처음 탭은 역할로 정한다(가맹 역할이 아니면 매장 사장님). 사용자가 탭을 고르면 그 값을 쓴다
   const [picked, setTrack] = useState<GuideTrack | null>(null);
   const track = picked ?? initialTrackOf(account.roleTypeCode);
   return (

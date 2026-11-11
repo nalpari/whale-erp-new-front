@@ -9,7 +9,7 @@ export type GuideStep = {
   /** 「STEP 2」 · 하위 단계는 「2-1」 */
   label: string;
   title: string;
-  /** 갈 화면(탭 BP 접두 없이) — 하위 단계를 가진 묶음 단계는 없다 */
+  /** 그 단계의 대표 화면(탭 BP 접두 없이) — 지금은 읽는 곳이 없다. 실제로 가는 화면은 GUIDE_DETAILS 칸의 path([OOO로 가기]) */
   path?: string;
   /** 「선택」 꼬리표 — 하지 않아도 되는 단계 */
   optional?: boolean;
@@ -54,7 +54,7 @@ export const GUIDE_STEPS: Record<GuideTrack, GuideStep[]> = {
     { label: "STEP 1", title: "맡은 점포 확인하기", path: "/stores" },
     { label: "STEP 2", title: "가맹 관리자 등록하기", path: "/bp-admins", optional: true, note: "가맹 마스터만 등록할 수 있습니다." },
     { label: "STEP 3", title: "직원 초대 · 근로계약 보내기", path: "/staff-members" },
-    { label: "STEP 4", title: "근무스케줄 짜기", path: "/work-schedules" },
+    { label: "STEP 4", title: "근무스케줄 등록하기", path: "/work-schedules" },
     { label: "STEP 5", title: "출퇴근 확인하기", path: "/attendance-records" },
     { label: "STEP 6", title: "급여명세서 보내기", path: "/payslips" },
   ],
@@ -127,6 +127,8 @@ export type GuideDetail = {
 const STORE_FORM: GuidePart = {
   title: "점포 등록하기",
   path: "/stores/new",
+  // 저장하면 점포 상세(/stores/{id})로 넘어가 상태 변경 · 수정을 이어 한다 — 거기서도 카드가 남는다(코드 리뷰)
+  nextPaths: ["/stores/"],
   mock: "store-form",
   // 「점포 목록 위 [등록]을 눌러요」는 뺐다 — [점포 등록으로 가기]가 목록을 거치지 않고 바로 등록 화면으로 간다(2026-11-11 사용자 지정)
   actions: [
@@ -141,6 +143,7 @@ const STORE_FORM: GuidePart = {
 const BIZ_VERIFY: GuidePart = {
   title: "사업자 진위확인하기",
   path: "/stores/new",
+  nextPaths: ["/stores/"],
   mock: "biz-verify",
   actions: [
     "「사업자정보」에 사업자등록번호 · 대표자명 · 개업일자를 입력해요.",
@@ -497,4 +500,14 @@ export function nextArrival(prev: GuideArrival, asked: string | null, screen: st
   const seenRef = parseGuide(prev.seen?.split("|")[0]);
   if (prev.seen && (!seenRef || partsOnScreen(seenRef, screen).length === 0)) return { guide: null, seen: null };
   return prev;
+}
+
+/** [OOO로 가기] · 점포 없음 띠가 주소에 붙이는 guide 값 — parseGuide 와 짝이다(만드는 곳을 하나로 모았다, 코드 리뷰) */
+export const guideParam = (track: GuideTrack, step: string) => `${track}-${step}`;
+
+/** 「으로 · 로」 — 받침이 없거나 ㄹ 받침이면 「로」(점포 정보 관리로 · 근무스케줄로 · 출퇴근 현황으로). 한글로 끝나지 않으면 「로」 */
+export function withRo(word: string) {
+  const code = word.charCodeAt(word.length - 1) - 0xac00;
+  const jong = code >= 0 && code <= 11171 ? code % 28 : 0;
+  return `${word}${jong === 0 || jong === 8 ? "로" : "으로"}`;
 }

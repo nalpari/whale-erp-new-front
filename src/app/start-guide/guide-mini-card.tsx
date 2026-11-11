@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GuideIcon, usePanelOpen } from "@/components/common";
 import { stripBp } from "@/lib/bp-path";
 import { GUIDE_STEPS, type GuideArrival, nextArrival, parseGuide, partsOnScreen } from "@/lib/start-guide";
 
-// 시작 가이드 미니 카드(2026-11-11 사용자 지정) — 시작 가이드의 [OO로 가기]로 넘어온 실제 화면 오른쪽 아래에 그 단계의 순서 · 안내를 작게 띄운다.
+// 시작 가이드 미니 카드(2026-11-11 사용자 지정) — 시작 가이드의 [OOO로 가기]로 넘어온 실제 화면 오른쪽 아래에 그 단계의 순서 · 안내를 작게 띄운다.
 // 넘어와서 「무엇을 입력하랬지, 무엇이 중요했지」를 잊지 않게 하려는 것이다. AdminFrame 에 한 번만 두고, 지금 화면 주소(탭 BP 접두를 뗀 것)와
 // 그 단계 칸의 화면(part.path · 이어 넘어가는 nextPaths)인 칸들을 보인다 — 화면 파일(1팀 · 3팀)은 건드리지 않는다.
 // 주소의 ?guide=<갈래>-<단계>(예: STORE-1)로 넘어올 때만 뜨고, 넘어온 화면을 기억해 그 화면에 있는 동안(검색 · 쪽 넘김으로 주소의 guide 가
@@ -21,6 +21,10 @@ export function underlined(text: string) {
   return text.split(/<u>(.*?)<\/u>/).map((piece, i) => (i % 2 === 1 ? <u key={i}>{piece}</u> : piece));
 }
 
+/** 카드 폭 · 머리 줄 높이 — 창을 줄였을 때 머리 줄이 화면 안에 남게 붙잡는 데 쓴다 */
+const CARD_WIDTH = 420;
+const HEAD_HEIGHT = 46;
+
 export function GuideMiniCardSlot() {
   const pathname = usePathname();
   const params = useSearchParams();
@@ -32,6 +36,8 @@ export function GuideMiniCardSlot() {
   // 사용자가 머리 줄을 끌어 옮긴 자리(왼쪽 위 기준, px) — 없으면 오른쪽 아래 기본 자리(2026-11-11 사용자 지정)
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const boxRef = useRef<HTMLElement>(null);
+  const pillRef = useRef<HTMLButtonElement>(null);
+  const collapseRef = useRef<HTMLButtonElement>(null);
   const screen = stripBp(pathname);
 
   // 주소 · 화면이 바뀔 때마다 렌더 중 이전 값과 견줘 맞춘다(effect 대신, React 권장). 새로 넘어오면 펼치고 옮긴 자리도 처음(오른쪽 아래)으로
@@ -43,6 +49,20 @@ export function GuideMiniCardSlot() {
     }
     setArrival(next);
   }
+
+  // 옮긴 뒤 창을 줄이면 카드가 화면 밖에 갇혀 [접기] · [×]를 누를 수 없었다 — 창 크기가 바뀌면 머리 줄이 보이게 다시 붙잡는다(코드 리뷰)
+  useEffect(() => {
+    const clamp = () =>
+      setPos((p) => p && { left: Math.max(0, Math.min(p.left, window.innerWidth - CARD_WIDTH)), top: Math.max(0, Math.min(p.top, window.innerHeight - HEAD_HEIGHT)) });
+    window.addEventListener("resize", clamp);
+    return () => window.removeEventListener("resize", clamp);
+  }, []);
+
+  /** 접기 · 펼치기 뒤 포커스를 반대쪽 버튼으로 옮긴다 — 언마운트로 포커스가 body 로 빠지지 않게(공통 패널이 연 버튼으로 돌려주는 것과 같은 뜻, 코드 리뷰) */
+  const toggle = (next: boolean) => {
+    setOpen(next);
+    requestAnimationFrame(() => (next ? collapseRef : pillRef).current?.focus());
+  };
 
   /** 머리 줄을 잡고 끌면 카드를 옮긴다 — 화면 가장자리 안에서만 움직인다. 머리 줄의 버튼([접기] · [×])을 누른 것은 끌기가 아니다 */
   const handleDragStart = (e: React.PointerEvent<HTMLElement>) => {
@@ -83,8 +103,10 @@ export function GuideMiniCardSlot() {
   if (!open)
     return (
       <button
+        ref={pillRef}
         type="button"
-        onClick={() => setOpen(true)}
+        aria-expanded={false}
+        onClick={() => toggle(true)}
         style={placeStyle}
         className={`fixed ${place} z-40 flex h-[40px] items-center gap-[8px] rounded-full border border-erp-brand bg-white px-[16px] text-[14px] font-medium text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-colors duration-150 ease-out hover:bg-erp-point-subtle`}
       >
@@ -112,7 +134,7 @@ export function GuideMiniCardSlot() {
           STEP {parsed.step}
         </span>
         <b className="min-w-0 flex-1 truncate text-[15px] font-semibold text-erp-ink">{stepTitle}</b>
-        <button type="button" onClick={() => setOpen(false)} className="text-[13px] text-erp-label hover:text-erp-ink">
+        <button ref={collapseRef} type="button" aria-expanded onClick={() => toggle(false)} className="text-[13px] text-erp-label hover:text-erp-ink">
           접기
         </button>
         <button type="button" aria-label="시작 가이드 닫기" onClick={() => setArrival({ ...next, guide: null })} className="text-[16px] leading-none text-erp-label hover:text-erp-ink">

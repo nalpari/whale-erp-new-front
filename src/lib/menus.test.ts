@@ -221,3 +221,9 @@ test("sameMenus — 권한 · 이름 · 순서 · 하위 메뉴가 하나라도 
   assert.equal(sameMenus(base, [{ ...base[0], name: "점포" }, base[1]]), false);
   assert.equal(sameMenus(base, [{ ...base[0], children: [] }, base[1]]), false);
 });
+
+test("isAllowed: 시작 가이드는 메뉴 행이 없어도 웨일ERP 탭에서만 열린다", () => {
+  assert.equal(isAllowed([], "/start-guide", "WHALE_ERP"), true);
+  assert.equal(isAllowed([], "/bp/8/start-guide", "WHALE_ERP"), true);
+  assert.equal(isAllowed([], "/start-guide", "PLATFORM"), false);
+});

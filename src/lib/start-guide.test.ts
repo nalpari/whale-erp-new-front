@@ -5,10 +5,12 @@ import {
   GUIDE_STEPS,
   type GuideTrack,
   guideDetailOf,
+  guideParam,
   nextArrival,
   parseGuide,
   partOnScreen,
   stepNumberOf,
+  withRo,
 } from "./start-guide.ts";
 
 const TRACKS: GuideTrack[] = ["STORE", "HQ", "FRANCHISEE"];
@@ -81,4 +83,49 @@ test("nextArrival — 이어 넘어가는 화면(근로계약 작성)에서도 �
 
 test("nextArrival — 그 화면에 칸이 없는 guide 는 받지 않는다", () => {
   assert.deepEqual(nextArrival({ guide: null, seen: null }, "STORE-1", "/payslips"), { guide: null, seen: null });
+});
+
+test("nextArrival — 바뀐 것이 없으면 같은 객체를 돌려준다(렌더 중 setState 가 끝없이 돌지 않게)", () => {
+  const empty = { guide: null, seen: null };
+  assert.equal(nextArrival(empty, null, "/home"), empty);
+  assert.equal(nextArrival(empty, "STORE-9", "/stores/new"), empty);
+  assert.equal(nextArrival(empty, "garbage", "/home"), empty);
+  const cleared = nextArrival(nextArrival(empty, "STORE-1", "/stores/new"), null, "/home");
+  assert.equal(nextArrival(cleared, null, "/home"), cleared);
+});
+
+test("nextArrival — 본사 갈래: 같은 화면에 다른 단계로 다시 오면 그 단계로, 같은 단계의 다른 화면에선 남는다", () => {
+  const hq2 = nextArrival({ guide: null, seen: null }, "HQ-2", "/bp-admins");
+  assert.equal(hq2.guide, "HQ-2");
+  const closed = { ...hq2, guide: null };
+  assert.deepEqual(nextArrival(closed, "HQ-3", "/bp-admins"), { guide: "HQ-3", seen: "HQ-3|/bp-admins" });
+  assert.equal(nextArrival(hq2, null, "/bp-role-groups"), hq2);
+});
+
+test("nextArrival — 떠 있는 카드는 잘못된 guide · 이 화면에 칸이 없는 guide 로 지워지지 않는다", () => {
+  const shown = nextArrival({ guide: null, seen: null }, "STORE-3", "/staff-members");
+  assert.equal(nextArrival(shown, "STORE-9", "/staff-members"), shown);
+  assert.equal(nextArrival(shown, "STORE-1", "/staff-members"), shown);
+});
+
+test("guideParam 과 parseGuide 는 짝이다", () => {
+  assert.deepEqual(parseGuide(guideParam("HQ", "3")), { track: "HQ", step: "3" });
+  assert.deepEqual(parseGuide(guideParam("STORE", "1")), { track: "STORE", step: "1" });
+});
+
+test("withRo — 받침 없음 · ㄹ 받침은 「로」, 그 밖의 받침은 「으로」, 한글이 아니면 「로」", () => {
+  assert.equal(withRo("점포 정보 관리"), "점포 정보 관리로");
+  assert.equal(withRo("근무스케줄"), "근무스케줄로");
+  assert.equal(withRo("출퇴근 현황"), "출퇴근 현황으로");
+  assert.equal(withRo("TO-DO"), "TO-DO로");
+  assert.equal(withRo(""), "로");
+});
+
+test("순서 문구의 <u> 는 짝이 맞고, 한 단계 안 칸 제목은 겹치지 않는다(key)", () => {
+  for (const track of TRACKS)
+    for (const step of GUIDE_STEPS[track].filter((s) => !s.sub)) {
+      const parts = guideDetailOf(track, stepNumberOf(step)).parts;
+      assert.equal(new Set(parts.map((p) => p.title)).size, parts.length, `${track} ${step.label} 칸 제목 겹침`);
+      for (const a of parts.flatMap((p) => p.actions)) assert.ok(!/<\/?u>/.test(a.replace(/<u>(.*?)<\/u>/g, "$1")), a);
+    }
 });

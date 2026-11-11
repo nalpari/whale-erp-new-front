@@ -21,7 +21,9 @@ import {
   guideHref,
   initialTrackOf,
   isGuideTrack,
+  guideParam,
   stepNumberOf,
+  withRo,
   tracksOf,
   type GuidePart,
   type GuideStep,
@@ -151,9 +153,7 @@ function StepLink({
         {step.label}
       </span>
       <span className="flex min-w-0 flex-1 items-center gap-[6px]">
-        {/* 긴 제목은 정해 둔 자리(
-)에서 꺾는다 — 괄호 · 「·」 한가운데서 꺾여 읽기 어려웠다(2026-11-11 사용자 지정). 다른 자리(제목 줄 · 이전/다음 · 미니 카드)에서는 
- 이 빈칸이다 */}
+        {/* 긴 제목은 정해 둔 자리(\n)에서 꺾는다 — 괄호 · 「·」 한가운데서 꺾여 읽기 어려웠다(2026-11-11 사용자 지정). 다른 자리(헤더 목록 · 제목 줄 · 이전/다음 · 미니 카드)에서는 \n 이 빈칸이다 */}
         <span className={`whitespace-pre-line ${step.sub ? "text-[13px]" : "text-[14px] font-medium"}`}>
           {step.title}
         </span>
@@ -248,7 +248,7 @@ function StepDetail({
         {/* 칸 사이 32px — 글 칸 바탕 · 테두리를 빼서 16px 로는 앞 칸 글과 다음 칸 그림이 붙어 보였다(2026-11-11 사용자 지정) */}
         <div className="flex flex-col gap-[32px]">
           {detail.parts.map((part) => (
-            <PartCard key={part.title} part={part} guide={`${track}-${stepNumberOf(step)}`} />
+            <PartCard key={part.title} part={part} guide={guideParam(track, stepNumberOf(step))} />
           ))}
         </div>
       </div>
@@ -272,11 +272,11 @@ function PartCard({ part, guide }: { part: GuidePart; guide: string }) {
     // 글 칸과 그림 칸을 반씩 — 그림이 380px 일 때 너무 작았다(2026-11-11 사용자 지정)
     <article
       id={part.label ? `part-${part.label}` : undefined}
-      // 테두리는 칸마다 따로 둔다 — 그림 칸만 사방을 진하게 두르려면 바깥 틀 테두리와 겹쳐 두 줄이 되지 않아야 한다(2026-11-11 사용자 지정)
+      // 바깥 틀(article)에는 테두리를 두지 않는다 — 그림 칸만 2px 진한 테두리를 두르는 상자이고 글 칸은 바탕 · 테두리가 없다(2026-11-11 사용자 지정)
       className="grid scroll-mt-[24px] grid-cols-2 gap-[32px]"
     >
       {/* 그림과 글 사이는 칸 사이와 같은 32px(틀의 gap), 글 칸은 위 24px 만 — 그림 칸 안쪽 위 여백(24px)과 같아 제목이 그림 속 화면 첫 줄 높이에서 시작한다. 테두리 윗선에 맞추니 너무 올라 붙어 보였다(2026-11-11 사용자 지정) */}
-      {/* 글 칸은 바탕 · 테두리 없이 흰 화면에 바로 — 그림 칸(진한 테두리) 하나만 상자로 남겨 그림이 주인공이 되게, 위 회청 안내 상자와도 갈린다.
+      {/* 글 칸은 바탕 · 테두리 없이 흰 화면에 바로 — 그림 칸(진한 테두리) 하나만 상자로 남겨 그림이 주인공이 되게, 위 회색(표 머리 바탕) 안내 상자와도 갈린다.
           (회청 바탕 + 테두리도 써 봤지만 상자가 이어져 무거웠다, 2026-11-11 사용자 지정) */}
       <div className="flex min-w-0 flex-col gap-[10px] pt-[24px]">
         {/* 번호(2-1 등)는 제목 앞 같은 줄에 — 위 따로 한 줄을 차지했다(2026-11-11 사용자 지정) */}
@@ -365,12 +365,6 @@ function GoButton({ path, guide }: { path: string; guide: string }) {
 }
 
 
-/** 「으로 · 로」 — 받침이 없거나 ㄹ 받침이면 「로」(점포 정보 관리로 · 근무스케줄 관리로) */
-function withRo(word: string) {
-  const code = word.charCodeAt(word.length - 1) - 0xac00;
-  const jong = code >= 0 && code <= 11171 ? code % 28 : 0;
-  return `${word}${jong === 0 || jong === 8 ? "로" : "으로"}`;
-}
 
 function Pager({ link, dir }: { link: PagerLink; dir: "prev" | "next" }) {
   return (
