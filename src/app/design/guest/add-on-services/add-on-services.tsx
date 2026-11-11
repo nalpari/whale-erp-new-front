@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
-import { CalendarIcon, GLASS, type IconPart, InventoryIcon, KioskIcon, LayeredIcon, OrderIcon, PosIcon, RecipeIcon } from "../guest-icons";
+import { CalendarIcon, GLASS, InventoryIcon, OrderIcon, RecipeIcon } from "../guest-icons";
 import { GuestPage, ICON_GRADIENT, SectionTitle } from "../guest-ui";
 import { FRAME } from "../theme";
 
@@ -53,16 +53,15 @@ function WaitingIcon() {
 
 type Service = { name: string; desc: string[]; badges: string[]; icon: ReactNode };
 
-// 구독 단위(사업자·점포 구독)는 주황 바탕, 나머지 조건은 회청 바탕 꼬리표이고 글자는 모두 흰색이다(44:1792). 셋째 꼬리표는 남는 폭을 채운다.
+// 꼬리표 — 토스 비즈니스 소개 카드 아래 꼬리표처럼 옅은 회청 바탕 · 회색 글자 · 6px 모서리. 구독 대상(사업자 · 점포 구독)만 글자를 진하게 해 먼저 읽히게 한다
+// (2026-11-10 사용자 지정 — 전엔 주황 · 회청 바탕 흰 글자).
 function Badges({ badges }: { badges: string[] }) {
   return (
-    <div className="flex gap-[4px]">
-      {badges.map((badge, i) => (
+    <div className="flex flex-wrap justify-center gap-[6px]">
+      {badges.map((badge) => (
         <span
           key={badge}
-          className={`flex h-[30px] items-center justify-center rounded-[3px] px-[10px] text-[14px] leading-[1.4] font-semibold whitespace-nowrap text-white ${
-            badge.endsWith("구독") ? "bg-[#ee882d]" : "bg-[#c1cfda]"
-          } ${i === 2 ? "flex-1" : ""}`}
+          className={`flex h-[28px] items-center rounded-[6px] px-[10px] text-[13px] leading-[1.4] whitespace-nowrap ${badge.endsWith("구독") ? "bg-guest-navy font-semibold text-white" : "bg-white/80 font-medium text-guest-sub"}`}
         >
           {badge}
         </span>
@@ -71,165 +70,174 @@ function Badges({ badges }: { badges: string[] }) {
   );
 }
 
-// 부가서비스 카드. 옅은 회청 바탕에 30px 로 둥글고 그림자는 없다(44:1861).
-const CARD = "rounded-[30px] border border-[#ecf1f4] bg-[#f6f9fb] px-[32px] py-[40px]";
 
-// 시안이 제목 옆의 「요금 안내 보기」 · 「도입문의」를 뺐다(44:1792).
-function ServiceSection({ light, desc, services, last = false }: { light: string; desc: [string, string]; services: Service[]; last?: boolean }) {
+// 토스 「Group」 구역을 빌렸다 — 가운데 띠지(「판매용 부가서비스」) · 큰 가운데 제목 · 설명, 아래 세 칸 카드는 가운데 칸을 64px 내려 엇갈리게 쌓는다 — translate 가 아니라 위 여백(mt)으로 내려, 구역 아래 100px 여백이 다른 구역과 같게 남는다(2026-11-10 사용자 지정).
+// 카드는 40px 로 둥근 구름 바탕(메인 첫 화면 그림)에 옅은 남색 막 15% — 흰 막은 너무 밝았다에 1px 연한 하늘 선 — 흰 틀은 두지 않는다. 가운데 아이콘 + 이름(남색 28px 굵게) · 설명(본문색) · 꼬리표.
+// 마우스를 올리면 구름이 살짝 커지고 남색 막이 옅어지며(5%), 이름은 커지고 먹색으로 · 설명은 먹색 500 으로 강조된다(2026-11-10 사용자 지정 — 전엔 남색 막 · 흰 글자).
+// 판매용 · 관리용은 바탕으로 구역을 가른다 — 판매용 연하늘(#f1f7fc), 관리용 흰 바탕, 위아래 100px(2026-11-10 사용자 지정).
+function ServiceSection({ light, title, desc, services, tinted = false }: { light: string; title: [string, string]; desc: [string, string]; services: Service[]; tinted?: boolean }) {
   return (
-    <section className={`${FRAME} flex flex-col gap-[60px] pt-[120px] ${last ? "pb-[120px]" : ""}`}>
+    <section className={`py-[100px] ${tinted ? "bg-[#f1f7fc]" : "bg-white"}`}>
+    <div className={`${FRAME} flex flex-col gap-[60px]`}>
+      {/* 머리는 다른 구역과 같이 왼쪽 정렬 — 띠지(「판매용 부가서비스」) + 한 줄 제목(앞 가는 글씨 · 뒤 굵게) + 설명(2026-11-10 사용자 지정). */}
       <div className="flex flex-col gap-[18px]">
-        <SectionTitle light={light} bold="부가서비스" />
-        <p className="text-[18px] leading-[1.5] font-medium text-guest-ink">
+        <SectionTitle oneLine tag={`${light} 부가서비스`} light={title[0]} bold={title[1]} />
+        <p className="text-[17px] leading-[1.6] text-guest-body">
           {desc[0]}
           <br />
           {desc[1]}
         </p>
       </div>
-      <ul className="grid grid-cols-5 gap-[16px]">
-        {services.map((s) => (
-          // 한 줄의 카드는 그리드가 같은 높이로 늘리고, 설명이 남는 높이를 채워 꼬리표를 카드 아래에 맞춘다(2026-11-06 요청).
-          <li key={s.name} className={`flex flex-col gap-[4px] ${CARD}`}>
-            <span className="flex h-[88px] items-center pb-[14px]">{s.icon}</span>
-            <div className="flex flex-1 flex-col gap-[10px]">
-              <h3 className="text-[22px] leading-[1.5] font-extrabold text-guest-navy">{s.name}</h3>
-              <div className="flex flex-1 flex-col gap-[18px]">
-                <p className="flex-1 text-[16px] leading-[1.5] text-guest-navy">
-                  {s.desc.map((line) => (
-                    <span key={line} className="block">
-                      {line}
-                    </span>
-                  ))}
-                </p>
-                <Badges badges={s.badges} />
-              </div>
+      <ul className="grid grid-cols-3 gap-x-[24px] gap-y-[24px]">
+        {services.map((s, i) => (
+          <li
+            key={s.name}
+            className={`group relative flex h-[360px] flex-col items-center justify-center gap-[20px] overflow-hidden rounded-[40px] border border-[#e3ebf3] p-[36px] text-center ${i % 3 === 1 ? "mt-[64px]" : ""}`}
+          >
+            <Image src="/guest/billboard-bg.png" alt="" fill sizes="360px" className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 motion-reduce:transition-none" style={{ objectPosition: `${10 + (i % 5) * 20}% 50%` }} />
+            <span className="absolute inset-0 bg-guest-navy/15 transition-colors duration-300 ease-out group-hover:bg-guest-navy/5" />
+            {/* 아이콘 · 이름 · 설명 · 꼬리표를 한 묶음으로 카드 세로 가운데에 둔다 — 위아래 여백이 같고 이름과 설명이 붙어 읽힌다(2026-11-10 사용자 지정). */}
+            <div className="relative flex flex-col items-center gap-[12px]">
+              <span className="flex h-[80px] items-center">{s.icon}</span>
+              <h3 className="text-[28px] leading-[1.3] font-bold text-guest-navy transition-[color,scale] duration-300 ease-out group-hover:scale-105 group-hover:text-guest-ink motion-reduce:transition-none motion-reduce:group-hover:scale-100">{s.name}</h3>
             </div>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-const MEMBERSHIP = ["점포 구독", "비회원 이용", "전화번호 포인트"];
-
-const SALES: Service[] = [
-  { name: "Pick up Order", desc: ["손님은 앱으로 미리 주문·결제하고, 도착하자마자 받아갑니다."], badges: ["점포 구독", "일반 회원 전용", "앱 주문 결제"], icon: <PickupIcon /> },
-  { name: "POS", desc: ["카운터 주문과 카드·간편결제를 빠르게.", "판매 기록은 매출 조회로 바로 이어집니다."], badges: MEMBERSHIP, icon: <PosIcon /> },
-  { name: "KIOSK", desc: ["손님이 직접 주문하고 결제하니, 바쁜 시간에도 직원은 음식과 서비스에 집중합니다."], badges: MEMBERSHIP, icon: <KioskIcon /> },
-  { name: "Table Order", desc: ["자리에 앉아 바로 주문하고, 추가 주문도 편하게. 직원을 부를 필요가 없습니다."], badges: MEMBERSHIP, icon: <TableOrderIcon /> },
-  { name: "QR Order", desc: ["테이블 QR만 찍으면 앱 설치 없이 내 폰으로 주문 끝."], badges: MEMBERSHIP, icon: <QrOrderIcon /> },
-];
-
-const MANAGEMENT: Service[] = [
-  {
-    name: "레시피 관리",
-    desc: ["레시피와 재료 사용량을 기록해 두면, 누가 만들어도 어느 매장에서도 같은 맛."],
-    badges: ["사업자 구독", "점포 구독", "상품 정보 연동"],
-    icon: <RecipeIcon bookmark={`${ASSET}/recipe-bookmark.svg`} />,
-  },
-  {
-    name: "발주 관리",
-    desc: ["점포는 필요한 자재를 본사에 바로 주문하고 결제까지 끝냅니다."],
-    badges: ["사업자 구독", "자재 정보 연동"],
-    icon: <OrderIcon back={`${ASSET}/order-mail-back.svg`} front={`${ASSET}/order-mail-front.svg`} />,
-  },
-  {
-    name: "점포 재고 관리",
-    desc: ["다 떨어지고 나서 알게 되는 재고는 이제 그만. 부족한 품목을 미리 확인하세요."],
-    badges: ["점포 구독"],
-    icon: <InventoryIcon src={`${ASSET}/inventory.svg`} />,
-  },
-  { name: "대기 순번 관리", desc: ["줄 선 손님에게 차례를 알려드려, 기다리는 시간도 기분 좋게 만듭니다."], badges: ["점포 구독"], icon: <WaitingIcon /> },
-  { name: "예약 관리", desc: ["방문 예약을 날짜·시간별로 한눈에. 놓치는 예약 없이 손님을 맞이하세요."], badges: ["점포 구독"], icon: <CalendarIcon /> },
-];
-
-const EXPANSIONS: { name: string; desc: string; icon: IconPart[] }[] = [
-  {
-    name: "점포수 추가",
-    desc: "사업자 구독 · 기본 점포 1개",
-    icon: [
-      { src: `${ASSET}/store-1.svg`, width: 57.3333, height: 17.3333, left: 3.33, top: 3.33 },
-      { src: `${ASSET}/store-2.svg`, width: 46.6667, height: 30.6667, left: 8.67, top: 30 },
-      { src: `${ASSET}/plus.svg`, width: 18, height: 17, left: 23, top: 38 },
-      { src: `${ASSET}/store-4.svg`, width: 57.3333, height: 4, left: 3.33, top: 16.67 },
-      { src: `${ASSET}/store-5.svg`, width: 57.3333, height: 17.3333, left: 3.33, top: 16.67 },
-    ],
-  },
-  // 사람 하나에 더하기 — 매장운영 「직원 초대」(두 사람)와 다른 그림이다(44:2195).
-  {
-    name: "직원수 추가",
-    desc: "사업자·점포 구독 · 기본 직원 5명",
-    icon: [
-      { src: `${ASSET}/staff-1.svg`, width: 41.3333, height: 20, left: 3.33, top: 38 },
-      { src: `${ASSET}/staff-2.svg`, width: 25.3333, height: 25.3333, left: 11.33, top: 6 },
-      { src: `${ASSET}/staff-3.svg`, width: 10.0005, height: 16.0005, left: 50, top: 42 },
-      { src: `${ASSET}/staff-4.svg`, width: 7.00053, height: 13.001, left: 45, top: 28 },
-      { src: `${ASSET}/plus.svg`, width: 18, height: 17, left: 43, top: 4 },
-    ],
-  },
-  {
-    name: "재무관리",
-    desc: "사업자·점포 구독",
-    icon: [
-      { src: `${ASSET}/finance-1.svg`, width: 57.3333, height: 57.3333, left: 3.33, top: 3.33 },
-      { src: `${ASSET}/finance-2.svg`, width: 25.3333, height: 25.3333, left: 19.33, top: 19.33 },
-      { src: `${ASSET}/finance-3.svg`, width: 4, height: 36, left: 30, top: 14 },
-    ],
-  },
-];
-
-function Expansions() {
-  return (
-    <section className="relative overflow-hidden bg-guest-ink py-[120px]">
-      <Image src="/guest/store-operations/flow-bg.png" alt="" fill sizes="100vw" className="object-cover object-bottom" />
-      <span className="absolute inset-0 bg-guest-scrim" />
-      {/* 배경 그림은 구역 전체를 채우고, 내용만 1760 틀에 담는다. */}
-      <div className={`${FRAME} relative flex flex-col gap-[60px]`}>
-        {/* 이 섹션만 굵은 줄이 위에 온다. */}
-        <h2 className="text-[52px] leading-[1.2] tracking-[-0.025em] text-white">
-          <span className="block font-bold">확장 옵션</span>
-          <span className="block font-normal">매장이 커지는 만큼 한도를 늘리세요</span>
-        </h2>
-        <ul className="grid grid-cols-3 gap-[28px]">
-          {EXPANSIONS.map((e) => (
-            <li key={e.name} className="flex gap-[24px] rounded-[16px] bg-white/10 px-[48px] py-[42px]">
-              <LayeredIcon parts={e.icon} />
-              <div className="flex flex-1 flex-col gap-[8px] leading-[1.5]">
-                <h3 className="text-[24px] font-semibold text-[#fafafa]">{e.name}</h3>
-                <p className="text-[18px] text-[#ccc]">{e.desc}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-const SUBSCRIPTION = [
-  { title: "기본은 점포 단위", desc: ["부가서비스는 점포마다 필요한 것만 구독합니다.", "발주 관리와 점포수 추가는 사업자(본사) 단위로 구독합니다."] },
-  { title: "권한은 자동으로", desc: ["구독하는 순간 대표자와 해당 매장의 가맹점주에게 관리 권한이 자동으로 열립니다.", "따로 설정할 필요가 없습니다."] },
-  { title: "계약 기간 유지", desc: ["구독 기간은 원하는 만큼 선택할 수 있고, 선택한 기간 동안은 중도 해약", "없이 유지됩니다."] },
-];
-
-// 회색 바탕 구역이 푸터에 바로 붙는다 — 화면은 GuestPage flush 로 감싼다. 카드는 흰 바탕 16px 모서리다(44:2217).
-function Subscription() {
-  return (
-    <section className="bg-guest-surface pt-[120px] pb-[60px]">
-      <div className={`${FRAME} flex flex-col gap-[60px]`}>
-        <SectionTitle light="WHALE ERP" bold="구독 안내" />
-        <ul className="grid grid-cols-3 gap-[16px]">
-          {SUBSCRIPTION.map((s) => (
-            <li key={s.title} className="flex flex-col gap-[10px] rounded-[16px] border border-guest-line bg-white px-[32px] py-[40px]">
-              <h3 className="text-[22px] leading-[1.5] font-extrabold text-guest-ink">{s.title}</h3>
-              <p className="text-[16px] leading-[1.5] text-guest-ink">
+            <div className="relative flex flex-col items-center gap-[16px]">
+              <p className="text-[15px] leading-[1.6] text-guest-body transition-colors duration-300 ease-out group-hover:font-medium group-hover:text-guest-ink">
                 {s.desc.map((line) => (
                   <span key={line} className="block">
                     {line}
                   </span>
                 ))}
               </p>
+              <Badges badges={s.badges} />
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+    </section>
+  );
+}
+
+const MEMBERSHIP = ["점포 구독", "비회원 이용", "전화번호 포인트"];
+
+// POS · KIOSK 는 제공하지 않아 뺐다(2026-11-10 사용자 지정).
+const SALES: Service[] = [
+  { name: "픽업 오더", desc: ["손님은 앱으로 미리 주문·결제하고, 도착하자마자 받아갑니다."], badges: ["점포 구독", "일반 회원 전용", "앱 주문 결제"], icon: <PickupIcon /> },
+  { name: "테이블 오더", desc: ["직원을 부를 필요 없이 자리에 앉아서 바로 주문합니다."], badges: MEMBERSHIP, icon: <TableOrderIcon /> },
+  { name: "QR 오더", desc: ["테이블 QR만 찍으면 앱 설치 없이 손님 휴대폰으로 주문합니다."], badges: MEMBERSHIP, icon: <QrOrderIcon /> },
+];
+
+const MANAGEMENT: Service[] = [
+  {
+    name: "레시피 관리",
+    desc: ["레시피부터 재료 사용량까지, 맛의 기준을 하나로 맞추세요."],
+    badges: ["사업자 구독", "점포 구독", "상품 정보 연동"],
+    icon: <RecipeIcon bookmark={`${ASSET}/recipe-bookmark.svg`} />,
+  },
+  {
+    name: "발주 관리",
+    desc: ["필요한 자재는 본사에 바로 주문하고, 결제까지 한 번에 끝내세요."],
+    badges: ["사업자 구독", "자재 정보 연동"],
+    icon: <OrderIcon back={`${ASSET}/order-mail-back.svg`} front={`${ASSET}/order-mail-front.svg`} />,
+  },
+  {
+    name: "점포 재고 관리",
+    desc: ["재고 부족으로 당황하지 않도록, 필요한 품목을 미리 확인하세요."],
+    badges: ["점포 구독"],
+    icon: <InventoryIcon src={`${ASSET}/inventory.svg`} />,
+  },
+  { name: "대기 순번 관리", desc: ["손님에게 대기 순서를 알려드려, 기다림의 불편함을 줄여주세요."], badges: ["점포 구독"], icon: <WaitingIcon /> },
+  { name: "예약 관리", desc: ["방문 예약을 날짜·시간별로 한눈에. 놓치는 예약 없이 손님을 맞이하세요."], badges: ["점포 구독"], icon: <CalendarIcon /> },
+];
+
+// 「기본 + 추가」 그림 — 기본으로 주는 것은 진한 남색, 더하는 것은 연한 남색 점선으로 그리고 사이에 「+」를 둔다(2026-11-10 사용자 지정).
+// 점포 수: 점포 1개 + 점포 2개, 직원 수: 사람 5명 + 사람 2명, 재무관리: 점포 3개 중 하나에만 동전 표시(필요한 점포에만).
+const STORE = <path d="M3 9 5 4h14l2 5M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0zM5 13v7h14v-7M10 20v-4h4v4" />;
+const PERSON = (
+  <>
+    <circle cx="12" cy="8" r="3.5" />
+    <path d="M5.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5" />
+  </>
+);
+
+function Glyph({ shape, size, added = false }: { shape: ReactNode; size: number; added?: boolean }) {
+  return (
+    <svg aria-hidden width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" strokeDasharray={added ? "2.5 2.5" : undefined} className={added ? "text-guest-navy-soft" : "text-guest-navy"}>
+      {shape}
+    </svg>
+  );
+}
+
+function Plus() {
+  return <span className="text-[20px] leading-none font-bold text-guest-navy-soft">+</span>;
+}
+
+function GrowIcon({ kind }: { kind: "store" | "staff" | "finance" }) {
+  if (kind === "store")
+    return (
+      <>
+        <Glyph shape={STORE} size={34} />
+        <Plus />
+        <Glyph shape={STORE} size={34} added />
+        <Glyph shape={STORE} size={34} added />
+      </>
+    );
+  if (kind === "staff")
+    return (
+      <>
+        {[0, 1, 2, 3, 4].map((n) => (
+          <Glyph key={n} shape={PERSON} size={22} />
+        ))}
+        <Plus />
+        <Glyph shape={PERSON} size={22} added />
+        <Glyph shape={PERSON} size={22} added />
+        <Glyph shape={PERSON} size={22} added />
+      </>
+    );
+  return (
+    <>
+      <Glyph shape={STORE} size={34} added />
+      <span className="relative">
+        <Glyph shape={STORE} size={34} />
+        <span className="absolute -top-[6px] -right-[8px] flex size-[18px] items-center justify-center rounded-full bg-guest-navy text-[11px] font-bold text-white">₩</span>
+      </span>
+      <Glyph shape={STORE} size={34} added />
+    </>
+  );
+}
+
+const EXPANSIONS: { name: string; desc: string; plan: string[]; icon: ReactNode }[] = [
+  { name: "점포 수 추가", plan: ["사업자 구독"], desc: "기본 1개 점포에서 필요한 만큼 추가", icon: <GrowIcon kind="store" /> },
+  { name: "직원 수 추가", plan: ["사업자 구독", "점포 구독"], desc: "기본 5명에서 필요한 만큼 추가", icon: <GrowIcon kind="staff" /> },
+  { name: "재무관리", plan: ["사업자 구독", "점포 구독"], desc: "필요한 점포에만 재무관리 기능 추가", icon: <GrowIcon kind="finance" /> },
+];
+
+// 확장 옵션 — 맨 위 안내 띠(연하늘) · 아래 판매용(연하늘)과 갈리게 흰 바탕, 제목은 먹색. 칸은 카드 없이 세로선으로 나눈다(2026-11-10 사용자 지정 — 전엔 어두운 바탕 · 흰 글자 카드).
+function Expansions() {
+  return (
+    <section className="bg-white py-[100px]">
+      <div className={`${FRAME} flex flex-col gap-[60px]`}>
+        {/* 다른 구역처럼 띠지 + 한 줄 제목(앞 가는 글씨 · 뒤 굵게, 2026-11-10 사용자 지정 — 전엔 굵은 「확장 옵션,」이 앞). */}
+        <SectionTitle oneLine tag="확장 옵션" light="매장 규모에 맞춰," bold="필요한 만큼 확장하세요" />
+        {/* 토스페이 비즈니스 소개처럼 카드 없이 칸마다 왼쪽 1px 세로선, 아이콘 동그라미 → 작은 회색 라벨(구독 단위) → 굵은 두 줄(이름 / 얼마나 늘리는지)(2026-11-10 사용자 지정). */}
+        <ul className="grid grid-cols-3">
+          {EXPANSIONS.map((e) => (
+            <li key={e.name} className="flex flex-col items-center gap-[28px] border-l border-[#d5e1ec] px-[24px] text-center first:border-l-0">
+              <span className="flex h-[72px] w-fit items-center gap-[6px] rounded-full border border-[#e3ebf3] bg-white px-[22px]">{e.icon}</span>
+              {/* 칸 안에서 그림 · 글을 모두 가운데 정렬한다(2026-11-10 사용자 지정). 이름이 제목이라 맨 위(28px 굵게 남색), 설명은 덜 강조(17px 본문색), 구독 대상은 맨 아래 꼬리표(2026-11-10 사용자 지정). */}
+              <div className="flex flex-col items-center gap-[8px]">
+                <h3 className="text-[28px] leading-[1.4] font-bold text-guest-navy">{e.name}</h3>
+                <p className="text-[17px] leading-[1.6] text-guest-body">{e.desc}</p>
+                {/* 구독 대상은 판매용 · 관리용 카드와 같은 꼬리표(「사업자 구독」 · 「점포 구독」) — 흰 바탕이라 옅은 회청 바탕 · 남색 글자(2026-11-10 사용자 지정). */}
+                <div className="mt-[10px] flex justify-center gap-[6px]">
+                  {e.plan.map((plan) => (
+                    <span key={plan} className="flex h-[28px] items-center rounded-[6px] bg-[#e9eef3] px-[10px] text-[13px] font-semibold text-guest-navy">
+                      {plan}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </li>
           ))}
         </ul>
@@ -238,18 +246,35 @@ function Subscription() {
   );
 }
 
+// 화면 맨 위 안내 띠 — 부가서비스는 아직 하나도 열리지 않은 유료 서비스라(순차 오픈 예정) 그것만 알린다. 홈 「함께 일하는 방식」과 같은 짙은 남색 그라데이션 띠에 흰 글자, 강조는 하늘색(2026-11-11 사용자 지정 — 전엔 연하늘 띠).
+// 구독 단위 · 권한 · 해약 같은 정책이 정해지지 않아 「구독 안내」 카드 세 장은 뺐다(2026-11-10 사용자 지정).
+function PaidNotice() {
+  return (
+    <div className="bg-gradient-to-r from-[#1c2630] via-[#243444] to-[#2c3e50]">
+      <p className={`${FRAME} flex items-center gap-[8px] py-[16px] text-[15px] leading-[1.5] text-white/75`}>
+        <span aria-hidden className="flex size-[16px] shrink-0 items-center justify-center rounded-full bg-[#9cc3ff] text-[10px] leading-none font-bold text-[#1c2630]">
+          !
+        </span>
+        <b className="font-semibold text-[#9cc3ff]">부가서비스는 순차 오픈 예정인 유료 서비스입니다.</b>
+        오픈 일정과 요금은 공지사항을 통해 안내합니다.
+      </p>
+    </div>
+  );
+}
+
 export function AddOnServices() {
   return (
     <GuestPage flush>
-      <ServiceSection light="판매용" desc={["카운터, 테이블, 손님의 스마트폰까지.", "손님이 편한 방식으로 주문하고, 매출은 자동으로 한곳에 모입니다."]} services={SALES} />
+      <PaidNotice />
+      {/* 확장 옵션(점포 · 직원 수 · 재무관리)을 맨 위에 두고, 바탕은 흰색 → 판매용 연하늘 → 관리용 흰색으로 번갈아 둔다(2026-11-10 사용자 지정). */}
+      <Expansions />
+      <ServiceSection light="판매용" title={["손님이 편한 방식으로,", "주문받으세요"]} desc={["매장 테이블 · 손님 스마트폰 · 픽업 오더 앱 등 어떤 방식으로 주문받아도", "매출은 매출 조회에서 한 번에 확인할 수 있어요."]} services={SALES} tinted />
       <ServiceSection
         light="관리용"
-        desc={["보이지 않는 곳에서 매장을 받쳐주는 기능들.", "매장이 커지면 점포·직원 한도도 함께 늘리세요."]}
+        title={["레시피부터 재고까지,", "꼼꼼하게 챙기세요"]}
+        desc={["메뉴 레시피 · 본사 발주 · 매장 재고 · 손님 대기와 예약 등", "매장 운영에 필요한 기능만 선택해 구독할 수 있어요."]}
         services={MANAGEMENT}
-        last
       />
-      <Expansions />
-      <Subscription />
     </GuestPage>
   );
 }

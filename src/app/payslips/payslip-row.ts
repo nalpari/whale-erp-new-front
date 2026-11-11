@@ -11,6 +11,7 @@ import {
   type PayslipReviewReasonValue,
   type PayslipStatus,
 } from "../../lib/payslips.ts";
+import { mondayOf } from "../attendance-records/attendance-query.ts";
 import { sentText } from "../contracts/contract-list.ts";
 import type { Cell, CellStyle } from "../staff-members/staff-row.ts";
 
@@ -60,7 +61,8 @@ export function earningHelp(item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "
 }
 
 /**
- * 출·퇴근 현황 조회를 그 명세서의 점포 · 직원 · 급여 기간으로 연다 — 「출퇴근 기록 확인」 · 「출퇴근 기록 보기」. 기간은 보정이 필요한 기록의 기간이다.
+ * 출·퇴근 현황 조회를 그 명세서의 점포 · 직원 · 급여 기간으로 연다 — 「출퇴근 기록 확인」 · 「출퇴근 기록 보기」. 기간은 아래 목록의 기간이고, 목록은
+ * 그 직원의 기간 기록 전체(`fixAll`)다 — 경고 띠의 날짜(계약 종료 뒤 정상 기록 · 결근 · 휴무 · 첫 주의 지난달 날짜)를 찾을 수 있게(WHALEERP-664).
  * 직원은 레코드 id 로 좁히고(이름이 비슷한 다른 직원이 섞이지 않게), 퇴직자 명세서도 보이게 재직 상태는 전체로 연다.
  */
 export function attendanceHref(p: { storeId: number; staffMemberId: number; staffName: string; periodStartDate: string; periodEndDate: string }): string {
@@ -69,8 +71,10 @@ export function attendanceHref(p: { storeId: number; staffMemberId: number; staf
     staff: p.staffName,
     staffMemberId: String(p.staffMemberId),
     employment: "ALL",
-    fixFrom: p.periodStartDate,
+    // 첫 주에 포함된 지난달 날짜도 경고 띠에 나오므로 그 주 월요일부터, 보정 대상이 아닌 기록도 보이게 기간 기록 전체로(WHALEERP-664)
+    fixFrom: mondayOf(p.periodStartDate),
     fixTo: p.periodEndDate,
+    fixAll: "1",
   });
   return `/attendance-records?${q.toString()}`;
 }

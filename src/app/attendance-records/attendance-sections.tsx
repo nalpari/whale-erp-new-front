@@ -216,30 +216,36 @@ export function FixSection({
   stores,
   editableFrom,
   reasonLabels,
+  statusLabels,
 }: {
   rows: FixRow[];
-  query: { fixFrom: string; fixTo: string };
+  query: { fixFrom: string; fixTo: string; fixAll: boolean };
   today: string;
   /** api 점포 조건(대신 등록 직원 선택지) */
   stores: string;
   /** 보정 · 대신 등록할 수 있는 첫 날 — 최근 3개월 */
   editableFrom: string;
   reasonLabels: EnumValue[];
+  /** 결근 꼬리표 이름 */
+  statusLabels: EnumValue[];
 }) {
   return (
     <Section
-      title="보정이 필요한 기록"
+      // 급여명세서에서 와 그 직원의 기간 기록을 모두 보일 때는 보정 대상만이 아니라서 이름을 바꾼다(WHALEERP-664)
+      title={query.fixAll ? "기간 출·퇴근 기록" : "보정이 필요한 기록"}
       fill
       right={
         <span className="flex items-center gap-[6px]">
           <BackdropInert>
-            <FixPeriod from={query.fixFrom} to={query.fixTo} today={today} />
+            <FixPeriod from={query.fixFrom} to={query.fixTo} today={today} fixAll={query.fixAll} />
           </BackdropInert>
           <ProxyButton stores={stores} today={today} editableFrom={editableFrom} />
         </span>
       }
     >
-      <FixList rows={rows} reasonLabels={reasonLabels} editableFrom={editableFrom} />
+      <FixList rows={rows} reasonLabels={reasonLabels} statusLabels={statusLabels} editableFrom={editableFrom} empty={query.fixAll ? "기간 안 출·퇴근 기록이 없습니다." : undefined} />
+      {/* 급여명세서 경고 띠의 「출근·퇴근 미등록」은 근로계약 근무 요일로 세지만, 이 목록의 줄은 근무스케줄이나 출퇴근 기록이 있는 날만 생긴다(WHALEERP-664 리뷰) */}
+      {query.fixAll && <p className="pt-[8px] text-[13px] text-erp-label">근무스케줄과 출퇴근 기록이 모두 없는 근로계약 근무 요일은 이 목록에 나오지 않습니다.</p>}
     </Section>
   );
 }

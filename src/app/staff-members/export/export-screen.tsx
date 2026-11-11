@@ -23,7 +23,7 @@ import {
   type BulkExportPreview,
 } from "./bulk-export-model";
 
-// 직원 자료 일괄 저장 화면 본문(WHALEERP-337). 배치는 목업 7:5 — 왼쪽 담기는 자료 · 지난 요청, 오른쪽 새로 요청 · 보관 책임.
+// 직원 자료 일괄 저장 화면 본문(WHALEERP-337). 배치는 목업 7:5 — 왼쪽 저장되는 자료 · 지난 요청, 오른쪽 새 요청 · 보관 책임.
 // 업무 범위는 헤더 범위(useScope)를 점포 id 로 바꿔 쓰고(storeIdsOfScope), 바뀌면 대상 직원 수를 다시 읽는다.
 // 만드는 중인 요청이 있으면 10초마다 지난 요청과 미리 보기를 다시 읽는다 — 다 만들어도 운영 알림은 보내지 않는다(운영 정책 NTF-01).
 
@@ -38,7 +38,7 @@ export function ExportScreen() {
   if (!canBulkExport(roleTypeCode))
     return (
       <div className="p-[24px]">
-        <NoticeBand tone="info" title="일괄 저장은 BP 마스터와 가맹마스터만 쓸 수 있습니다." />
+        <NoticeBand tone="info" title="직원 자료 일괄 저장은 마스터 계정만 이용할 수 있습니다. 필요한 자료는 마스터 계정 담당자에게 요청해 주세요." />
       </div>
     );
   return <ExportBody />;
@@ -62,9 +62,9 @@ const CONTENTS = [
   { name: "근무스케줄", what: "등록된 근무스케줄 전체", format: "CSV" },
 ];
 const CONTENT_COLUMNS: Column<(typeof CONTENTS)[number]>[] = [
-  { header: "자료", width: "w-[120px]", cell: (r) => r.name },
-  { header: "담기는 것", align: "left", cell: (r) => r.what },
-  { header: "형식", width: "w-[110px]", cell: (r) => r.format },
+  { header: "구분", width: "w-[120px]", cell: (r) => r.name },
+  { header: "포함 내용", align: "left", cell: (r) => r.what },
+  { header: "파일 형식", width: "w-[110px]", cell: (r) => r.format },
 ];
 
 function ExportBody() {
@@ -90,7 +90,7 @@ function ExportBody() {
   const [error, setError] = useState("");
   // 요청이 만들어졌을 수 있으면(성공 · 결과 모름) 이 횟수 이후에 받은 미리 보기 · 지난 요청으로만 요청 버튼을 다시 켠다
   const [freshFrom, setFreshFrom] = useState(0);
-  const request = useAction(requestBulkExport, { text: "요청중입니다." });
+  const request = useAction(requestBulkExport, { text: "요청 중입니다." });
   const fetchLink = useAction(getBulkExportLink, { text: "파일을 준비하는 중입니다." });
 
   const toLogin = () => router.replace(loginPathOf(location.pathname));
@@ -101,7 +101,7 @@ function ExportBody() {
       return null;
     }
     console.error(`직원 자료 일괄 저장 ${what} 조회 실패`, e);
-    return e instanceof BffError ? e.message : "잠시 뒤 다시 불러와 주세요.";
+    return e instanceof BffError ? e.message : "자료를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
   });
 
   useEffect(() => {
@@ -156,7 +156,7 @@ function ExportBody() {
     const result = await request(scopeIds).catch((e: unknown) => {
       // 서버 액션 호출 자체가 끊겼다 — api 는 이미 받았을 수 있어 지난 요청을 다시 읽어 보인다
       console.error("직원 자료 일괄 저장 요청 호출이 끊김", e);
-      return { ok: false as const, status: undefined, message: "요청 결과를 확인하지 못했습니다. 지난 요청 표에서 확인해 주세요." };
+      return { ok: false as const, status: undefined, message: "요청 처리 결과를 받지 못했습니다. 요청 내역에서 확인해 주세요." };
     });
     if (!result.ok && result.status === 401) return toLogin();
     if (result.ok || result.status === undefined) setFreshFrom(versionRef.current + 1);
@@ -170,7 +170,7 @@ function ExportBody() {
     setError("");
     const result = await fetchLink(bulkExportId).catch((e: unknown) => {
       console.error("직원 자료 일괄 저장 내려받기 호출이 끊김", bulkExportId, e);
-      return { ok: false as const, status: undefined, message: "파일 주소를 받지 못했습니다. 잠시 뒤 다시 눌러 주세요." };
+      return { ok: false as const, status: undefined, message: "다운로드 링크를 받지 못했습니다. 잠시 후 다시 시도해 주세요." };
     });
     if (result.ok) return location.assign(result.link.url);
     if (result.status === 401) return toLogin();
@@ -182,17 +182,17 @@ function ExportBody() {
   const columns: Column<BulkExport>[] = [
     { header: "요청 일시", width: "w-[150px]", cell: (r) => formatDateTime(r.requestedAt) },
     { header: "요청자", cell: (r) => r.requesterName },
-    { header: "대상 직원 수", width: "w-[110px]", cell: (r) => `${r.staffCount.toLocaleString("ko-KR")}명` },
+    { header: "대상 직원", width: "w-[110px]", cell: (r) => `${r.staffCount.toLocaleString("ko-KR")}명` },
     { header: "상태", align: "left", cell: (r) => <StatusCell item={r} /> },
     {
-      header: "동작",
+      header: "파일",
       width: "w-[124px]",
       cell: (r) => {
         const view = bulkExportViewOf(r);
         if (view.kind === "ready")
           return (
             <Button variant="soft" onClick={() => handleDownload(r.bulkExportId)}>
-              내려받기
+              다운로드
             </Button>
           );
         if (view.kind === "failed")
@@ -210,15 +210,15 @@ function ExportBody() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto p-[24px]">
-      <PendingNotice message="BP가 탈퇴하면 관리자 계정이 모두 미사용이 되어 자료를 볼 수 없습니다. 탈퇴한 뒤에는 보존 기간이 남아 있어도 이 화면이 열리지 않으니, 필요한 자료는 탈퇴 전에 받아 두세요. 평소에도 언제든 받을 수 있습니다." />
+      <PendingNotice message="회원 탈퇴 시 모든 관리자 계정이 미사용 처리되어 자료에 접근할 수 없습니다. 탈퇴 후에는 보존 기간이 남아 있더라도 이 화면을 열람할 수 없습니다. 필요한 자료는 탈퇴 전에 미리 저장해 주세요. 탈퇴 전까지는 언제든지 이 화면에서 자료를 다운로드할 수 있습니다." />
       {error && <FailedBand message={error} />}
       <div className="grid grid-cols-[7fr_5fr] items-start gap-[18px]">
         <div className="flex min-w-0 flex-col gap-[18px]">
-          <Card title="담기는 자료">
+          <Card title="저장되는 자료">
             <DataTable columns={CONTENT_COLUMNS} rows={CONTENTS} rowKey={(r) => r.name} />
-            <Note>주민등록번호 · 신고 정보 · 확인자료 · 동의 기록은 담지 않습니다.</Note>
+            <Note>주민등록번호 · 신고 정보 · 위치 확인자료 · 동의 기록은 포함되지 않습니다.</Note>
           </Card>
-          <Card title="지난 요청">
+          <Card title="요청 내역">
             {shownList && "error" in shownList ? (
               <div className="flex flex-col items-start gap-[12px]">
                 <FailedBand message={shownList.error} />
@@ -231,7 +231,7 @@ function ExportBody() {
                 columns={columns}
                 rows={items}
                 rowKey={(r) => r.bulkExportId}
-                empty={shownList ? "지난 요청이 없습니다." : "불러오는 중입니다."}
+                empty={shownList ? "요청 내역이 없습니다." : "불러오는 중입니다."}
               />
             )}
             {total > PAGE_SIZE && (
@@ -239,18 +239,18 @@ function ExportBody() {
                 <Pagination page={page} totalPages={Math.ceil(total / PAGE_SIZE)} onPageChange={setPage} />
               </div>
             )}
-            <Note>기한이 지나면 파일을 지우므로 다시 요청해야 합니다.</Note>
+            <Note>다운로드 기간이 지나면 파일이 삭제되므로 다시 요청해 주세요.</Note>
           </Card>
         </div>
         <div className="flex min-w-0 flex-col gap-[18px]">
-          <Card title="새로 요청">
+          <Card title="새 요청">
             <DetailTable
               rows={[
                 {
-                  label: "업무 범위",
+                  label: "대상 점포",
                   value: (
                     <span className="min-w-0 truncate">
-                      {`${bp.tradeName} · ${scopeTextOf(scope, stores)}${previewData ? ` · 점포 ${previewData.storeCount}곳` : ""}`}
+                      {`${bp.tradeName} · ${scopeTextOf(scope, stores)}${previewData ? ` (${previewData.storeCount}곳)` : ""}`}
                     </span>
                   ),
                 },
@@ -259,7 +259,7 @@ function ExportBody() {
                   label: "파일 형식",
                   value: (
                     <>
-                      ZIP 한 개<span className="text-erp-label">직원별 폴더로 나뉩니다</span>
+                      ZIP 파일 1개<span className="text-erp-label">직원별 폴더로 구분됩니다</span>
                     </>
                   ),
                 },
@@ -276,13 +276,13 @@ function ExportBody() {
               </Button>
             </div>
             <Note>
-              사람 수에 따라 몇 분에서 몇십 분 걸리고, 화면을 닫아도 계속 만듭니다. 퇴직한 직원은 보존 기간이 남은 사람만 담깁니다.
+              직원 수에 따라 몇 분에서 수십 분이 걸리며, 화면을 닫아도 파일 생성은 계속됩니다. 퇴직한 직원은 보존 기간이 남은 경우에만 포함됩니다.
             </Note>
           </Card>
           <NoticeBand
             tone="info"
-            title="내려받은 파일의 보관 책임은 BP 에 있습니다."
-            detail="직원의 이름 · 휴대전화번호 · 급여가 담긴 파일입니다. 잠긴 곳에 두고, 쓸 일이 끝나면 지워 주세요."
+            title="다운로드한 파일의 보관 책임은 사업자에게 있습니다."
+            detail="직원의 이름 · 휴대전화번호 · 급여 정보가 포함된 파일입니다. 안전한 곳에 보관하고, 사용이 끝나면 삭제해 주세요."
           />
         </div>
       </div>
@@ -306,7 +306,7 @@ function TargetCount({ preview, onRetry }: { preview: Loaded<BulkExportPreview> 
     <>
       <b className="font-semibold">{staffCount.toLocaleString("ko-KR")}명</b>
       <span className="text-erp-label">
-        재직 {employedCount.toLocaleString("ko-KR")} · 보존 기간 안 퇴직 {retiredCount.toLocaleString("ko-KR")}
+        (재직 {employedCount.toLocaleString("ko-KR")}명 · 보존 기간 내 퇴직 {retiredCount.toLocaleString("ko-KR")}명)
       </span>
     </>
   );
@@ -316,16 +316,16 @@ function StatusCell({ item }: { item: BulkExport }) {
   const view = bulkExportViewOf(item);
   switch (view.kind) {
     case "making":
-      return <Badge tone="closed">만드는 중</Badge>;
+      return <Badge tone="closed">파일 생성 중</Badge>;
     case "ready":
       return (
         <span className="flex items-center gap-[6px]">
-          <Badge tone="on">받을 수 있음</Badge>
-          <span className="text-erp-label">{view.until} 까지</span>
+          <Badge tone="on">다운로드 가능</Badge>
+          <span className="text-erp-label">{view.until}까지</span>
         </span>
       );
     case "expired":
-      return <Badge tone="closed">기한 지남</Badge>;
+      return <Badge tone="closed">기간 만료</Badge>;
     case "failed":
       return (
         <span className="flex min-w-0 items-center gap-[6px]" title={item.failureReason ?? undefined}>

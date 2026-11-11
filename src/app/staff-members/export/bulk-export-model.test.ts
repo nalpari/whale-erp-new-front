@@ -75,8 +75,8 @@ test("만드는 중인 줄이 있으면 다시 읽는다", () => {
 test("요청을 막는 까닭: 대상 0명이 먼저, 그다음 만드는 중", () => {
   const preview = { storeCount: 4, staffCount: 71, employedCount: 63, retiredCount: 8, inProgress: false };
   assert.equal(requestBlockOf(preview), null);
-  assert.equal(requestBlockOf({ ...preview, staffCount: 0, inProgress: true }), "업무 범위에 담을 직원 자료가 없습니다.");
-  assert.match(requestBlockOf({ ...preview, inProgress: true }) ?? "", /만드는 중/);
+  assert.equal(requestBlockOf({ ...preview, staffCount: 0, inProgress: true }), "대상 점포에 저장할 직원 자료가 없습니다.");
+  assert.match(requestBlockOf({ ...preview, inProgress: true }) ?? "", /생성하는 중/);
 });
 
 test("같은 범위를 만드는 중인지는 점포 id 묶음으로 본다(순서 무시)", () => {

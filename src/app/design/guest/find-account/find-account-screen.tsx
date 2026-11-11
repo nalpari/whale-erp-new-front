@@ -25,7 +25,7 @@ export function GuestFindAccount({ lead, children }: { lead: ReactNode; children
         >
           {lead}
         </GuestVisual>
-        <div className="flex flex-col gap-[27px] px-[200px] py-[80px] text-guest-ink">{children}</div>
+        <div className="flex flex-col gap-[27px] px-[clamp(60px,10vw,200px)] py-[80px] text-guest-ink">{children}</div>
       </section>
     </GuestPage>
   );

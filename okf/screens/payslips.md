@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-10T01:58:06Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-10T07:26:16Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -25,7 +25,7 @@ sources:
   - id: payslip-row
     resource: ../../src/app/payslips/payslip-row.ts
     title: 목록 칸(급여 기간 · 출퇴근 확인 · 발송일 · 검토 대기 꼬리표) · 상태 색 · 지급 도움말 · 경고 띠
-    last_modified: 2026-11-10T01:58:06Z
+    last_modified: 2026-11-10T07:26:16Z
   - id: payslip-draft-dialog
     resource: ../../src/app/payslips/payslip-draft-dialog.tsx
     title: 급여명세서 작성 팝업 — 점포 · 이름 좁히기 · 직원 고르기 · 작성 · 일괄 작성(칸 문구 payslip-draft.ts, server action actions.ts)
@@ -147,7 +147,7 @@ page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치
 금액은 `adjustedAmount ?? calculatedAmount`(넣지 않았으면 빈 칸), 3.3% 를 켜면 소득세 · 지방소득세 칸이 빠지고 사업소득세(3%) ·
 지방소득세(0.3%)가 선다(`isItemShown`, [직원 운영 관리](/staff.md) 급여). 고칠 수 있는 것은 작성 중 · 검토 중이고 「급여명세서 관리」
 (MN000009) 수정 권한이 있을 때뿐이다. 확정 · 발송 완료는 읽기만 하고 「확정 취소」와 「발송」 · 「재발송」을 둔다(확정 취소는 데모에 없는 버튼). 경고 띠의 「출퇴근 기록 확인」과
-「출퇴근 기록 보기」는 출·퇴근 현황 조회를 그 점포 · 직원 · 급여 기간(보정이 필요한 기록)으로 연다(`attendanceHref`).
+「출퇴근 기록 보기」는 출·퇴근 현황 조회를 그 점포 · 직원으로, 아래 목록을 급여 기간 첫 주 월요일부터 끝까지의 그 직원 기록 전체(`fixAll`)로 연다(`attendanceHref`, WHALEERP-664 — 보정 대상만 보이면 경고 띠의 날짜를 찾지 못해서).
 
 # 급여명세서 작성 (WHALEERP-226)
 

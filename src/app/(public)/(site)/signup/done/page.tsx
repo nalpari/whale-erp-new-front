@@ -42,7 +42,7 @@ export default async function SignupDonePage() {
 
   return (
     <GuestPage flush>
-      {/* 1720px 최소폭은 로그인 전 틀((site)/layout.tsx)이 건다 — 두 칸 틀 오른쪽 px-[200px] 고정 여백이 좁은 화면에서 찌그러지지 않는다(2026-10-19). */}
+      {/* 1280px 최소폭은 로그인 전 틀((site)/layout.tsx)이 건다 — 두 칸 틀 오른쪽 px-[clamp(60px,10vw,200px)] 고정 여백이 좁은 화면에서 찌그러지지 않는다(2026-10-19). */}
       <section className="grid min-h-[730px] grid-cols-2">
         <GuestVisual
           eyebrow="Business membership"
@@ -50,7 +50,7 @@ export default async function SignupDonePage() {
         >
           가입하고 오늘부터 바로 매장 관리를 시작하세요.
         </GuestVisual>
-        <div className="flex items-center justify-center px-[200px] py-[80px] text-guest-ink">
+        <div className="flex items-center justify-center px-[clamp(60px,10vw,200px)] py-[80px] text-guest-ink">
           <div className="flex w-full flex-col items-center gap-[32px] text-center">
             <div className="flex flex-col items-center gap-[12px]">
               <h1 className="text-[28px] leading-[1.2] font-bold">가입을 환영합니다</h1>

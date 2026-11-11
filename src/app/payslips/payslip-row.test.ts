@@ -89,10 +89,10 @@ test("경고 띠 — 마침표로 끝나는 상세는 빈칸 하나로 잇는다
   );
 });
 
-test("출퇴근 기록 확인 · 기록 보기 — 출·퇴근 현황 조회를 점포 · 직원 레코드 · 급여 기간으로, 퇴직자도 보이게 재직 상태 전체", () => {
+test("출퇴근 기록 확인 · 기록 보기 — 출·퇴근 현황 조회를 점포 · 직원 레코드 · 첫 주 월요일부터 급여 기간 끝까지 · 기간 기록 전체로, 퇴직자도 보이게 재직 상태 전체", () => {
   assert.equal(
     attendanceHref({ storeId: 5, staffMemberId: 30, staffName: "서 지안", periodStartDate: "2026-09-01", periodEndDate: "2026-09-30" }),
-    "/attendance-records?storeIds=5&staff=%EC%84%9C+%EC%A7%80%EC%95%88&staffMemberId=30&employment=ALL&fixFrom=2026-09-01&fixTo=2026-09-30",
+    "/attendance-records?storeIds=5&staff=%EC%84%9C+%EC%A7%80%EC%95%88&staffMemberId=30&employment=ALL&fixFrom=2026-08-31&fixTo=2026-09-30&fixAll=1",
   );
 });
 
