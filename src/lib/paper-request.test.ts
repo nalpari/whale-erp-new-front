@@ -4,8 +4,8 @@ import { test } from "node:test";
 import { stripBp } from "./bp-path.ts";
 import { answersWith401, INQUIRY_SAVE_ROUTE, NOTICE_SAVE_ROUTE, PAPER_ROUTE, sameOrigin, tooLarge } from "./paper-request.ts";
 
-test("answersWith401 — BFF · 종이 계약 등록 · 공지사항 저장 · 문의 등록만 401, 화면 경로는 로그인으로 리다이렉트", () => {
-  for (const p of ["/api/contracts", "/api/auth/admin/login-info", "/contracts/paper", "/platform-notices/save", "/support-inquiries/save"]) assert.equal(answersWith401(p), true, p);
+test("answersWith401 — BFF · 종이 계약 등록 · 공지사항 저장 · 문의 등록 · 엑셀 받기만 401, 화면 경로는 로그인으로 리다이렉트", () => {
+  for (const p of ["/api/contracts", "/api/auth/admin/login-info", "/contracts/paper", "/platform-notices/save", "/support-inquiries/save", "/stores/excel", "/bp-masters/excel"]) assert.equal(answersWith401(p), true, p);
   for (const p of ["/contracts", "/contracts/7", "/contracts/paper/x", "/contracts/7/documents/1", "/home", "/apix", "/platform-notices", "/platform-notices/1"]) assert.equal(answersWith401(p), false, p);
 });
 

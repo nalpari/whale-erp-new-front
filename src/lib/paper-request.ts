@@ -6,13 +6,16 @@ export const PAPER_ROUTE = "/contracts/paper";
 export const NOTICE_SAVE_ROUTE = "/platform-notices/save";
 /** 고객지원 문의 등록 창구(첨부 multipart, #284). */
 export const INQUIRY_SAVE_ROUTE = "/support-inquiries/save";
+/** 목록 엑셀 받기 창구 — 화면이 fetch 로 받아 파일로 저장한다(ExcelDownloadProvider). */
+const EXCEL_ROUTES = ["/stores/excel", "/bp-masters/excel"];
 
 /**
- * 로그인이 끊겼을 때 리다이렉트 대신 401 JSON 을 줄 경로 — fetch 가 부르는 BFF(/api/*)와 종이 계약 등록 · 공지사항 저장 · 문의 등록.
- * 리다이렉트를 주면 fetch 가 따라가 날인본을 실은 채 /login 으로 다시 POST 하고, 화면은 로그인으로 가지 못한다.
+ * 로그인이 끊겼을 때 리다이렉트 대신 401 JSON 을 줄 경로 — fetch 가 부르는 BFF(/api/*)와 종이 계약 등록 · 공지사항 저장 · 문의 등록 · 엑셀 받기.
+ * 리다이렉트를 주면 fetch 가 따라가 날인본을 실은 채 /login 으로 다시 POST 하고(엑셀은 로그인 화면 HTML 을 받아 「파일이 아님」으로 실패하고),
+ * 화면은 로그인으로 가지 못한다. 401 을 받으면 화면의 fetchSameOrigin 이 「로그인 만료」 팝업을 띄운다.
  */
 export function answersWith401(pathname: string): boolean {
-  return pathname.startsWith("/api/") || pathname === PAPER_ROUTE || pathname === NOTICE_SAVE_ROUTE || pathname === INQUIRY_SAVE_ROUTE;
+  return pathname.startsWith("/api/") || pathname === PAPER_ROUTE || pathname === NOTICE_SAVE_ROUTE || pathname === INQUIRY_SAVE_ROUTE || EXCEL_ROUTES.includes(pathname);
 }
 
 const MB = 1024 * 1024;
