@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createContext, use, useEffect, useState, type ComponentProps, type ReactNode } from "react";
 import { ConfirmDialog } from "@/components/common";
+import { SESSION_EXPIRED_EVENT } from "@/lib/session-expiry";
 
 // 공통코드 화면(플랫폼 · BP)의 패널(그룹 목록 · 상세 코드)의 저장하지 않은 변경을 모아 둔다. 변경이 있는데 다른 그룹 · 다른 쪽으로 가려 하면
 // 버릴지 묻는다(2026-10-12 결정). 브라우저를 닫거나 새로 고칠 때는 브라우저 기본 확인창이 뜬다.
@@ -22,13 +23,21 @@ export function UnsavedChangesProvider({ children }: { children: ReactNode }) {
   const [dirtyPanels, setDirtyPanels] = useState<Record<string, boolean>>({});
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const hasChanges = Object.values(dirtyPanels).some(Boolean);
+  // 로그인 만료 뒤에는 저장할 수 없다 — 만료 팝업 [확인]의 로그인 이동에 브라우저 「나가시겠습니까?」를 띄우지 않는다(2026-11-11 사용자 지정)
+  const [expired, setExpired] = useState(false);
 
   useEffect(() => {
-    if (!hasChanges) return;
+    const handleExpired = () => setExpired(true);
+    addEventListener(SESSION_EXPIRED_EVENT, handleExpired);
+    return () => removeEventListener(SESSION_EXPIRED_EVENT, handleExpired);
+  }, []);
+
+  useEffect(() => {
+    if (!hasChanges || expired) return;
     const handleBeforeUnload = (e: BeforeUnloadEvent) => e.preventDefault();
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [hasChanges]);
+  }, [hasChanges, expired]);
 
   const value: UnsavedChanges = {
     setDirty: (panel, dirty) => setDirtyPanels((m) => (Boolean(m[panel]) === dirty ? m : { ...m, [panel]: dirty })),
