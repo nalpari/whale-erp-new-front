@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-11
+* **Update**: 데모를 앱에 맞췄다(화면설계서용) — 직원 자료 일괄 저장 데모 `staff/export` 를 #251 문구로, 급여명세서에서 온 기간 기록을 새 데모 `staff/attendance-period` 로 더하고 급여명세서 데모 버튼 둘을 거기로 이었다([출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md), WHALEERP-664). 앱 코드는 그대로다.
 * **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — WHALEERP-664 재영 리뷰 반영: 기간 기록 전체(`fixAll`)가 꺼진 채 주소에만 남았으면 기간을 바꿀 때 지운다, 켜져 있으면 목록 아래에 근무스케줄 · 기록이 모두 없는 근로계약 근무 요일은 목록에 나오지 않는다는 안내를 적는다, 결근 줄에 「결근」 꼬리표를 붙인다.
 
 ## 2026-11-10
