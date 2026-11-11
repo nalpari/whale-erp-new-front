@@ -14,6 +14,7 @@ import {
   fromDetail,
   canRenew,
   renewalFromDetail,
+  withEmploymentType,
   hoursOf,
   initialForm,
   inProgressLine,
@@ -225,6 +226,21 @@ test("월 근로시간: 0 이상, 30분(0.5) 단위만 받는다", () => {
   assert.deepEqual(problems(filled({ baseHours: "209", baseNightHours: "0" })), []);
 });
 
+test("월 기본시간: 처음에는 209, 정직원은 1 이상을 넣어야 한다(임시저장은 비워도 된다)", () => {
+  assert.equal(initialForm().baseHours, "209");
+  const message = "월 기본시간은 1 이상으로 입력하세요.";
+  assert.ok(problems(filled({ baseHours: "" })).includes(message));
+  assert.ok(problems(filled({ baseHours: "0" })).includes(message));
+  assert.ok(problems(filled({ baseHours: "0.5" })).includes(message));
+  assert.ok(problems(filled({ baseHours: "0.3" })).includes(message));
+  // 1 이상인데 30분 단위가 아니면 단위 안내만 — 「1 이상」은 틀린 말이다
+  assert.ok(!problems(filled({ baseHours: "209.3" })).includes(message));
+  assert.ok(!problems(filled({ baseHours: "1" })).includes(message));
+  assert.ok(!problems(filled({ baseHours: "" }), true).includes(message));
+  assert.ok(problems(filled({ baseHours: "0" }), true).includes(message));
+  assert.ok(!problems(filled({ employmentType: "PART_TIME", baseHours: "" })).includes(message));
+});
+
 test("정직원 급여: 현업 견본(시급 10,000)과 같게 셈한다", () => {
   const f = filled({
     employmentType: "FULL_TIME", wage: "10,000", mealAllowance: "200,000", carAllowance: "200,000", childcareAllowance: "100,000",
@@ -424,6 +440,24 @@ test("성별 · 외국인 여부 — 서명 요청은 성별을 골라야 하고
   const temp = toBody(filled({ gender: "" }), true);
   assert.equal("gender" in temp, false);
   assert.equal(temp.isForeigner, false);
+});
+
+test("월 기본시간 — 재계약은 비어 있으면 209 를 채우고, 이어 쓰기는 비운 칸을 그대로 둔다", () => {
+  const now = new Date("2026-06-01T00:00:00Z");
+  assert.equal(renewalFromDetail(detailOf({ status: "SIGNED", employmentType: "PART_TIME", baseHours: null }), now).baseHours, "209");
+  assert.equal(renewalFromDetail(detailOf({ status: "SIGNED", employmentType: "FULL_TIME", baseHours: null }), now).baseHours, "209");
+  assert.equal(renewalFromDetail(detailOf({ status: "SIGNED", employmentType: "FULL_TIME", baseHours: 174 }), now).baseHours, "174");
+  // 1 이상 검사 전에 0 으로 저장한 계약도 209 로 연다
+  assert.equal(renewalFromDetail(detailOf({ status: "SIGNED", employmentType: "FULL_TIME", baseHours: 0 }), now).baseHours, "209");
+  assert.equal(fromDetail(detailOf({ employmentType: "FULL_TIME", baseHours: null })).baseHours, "");
+});
+
+test("고용 형태 — 정직원으로 바꿀 때 월 기본시간이 비어 있으면 209 를 채운다", () => {
+  const draft = fromDetail(detailOf({ employmentType: "PART_TIME", baseHours: null }));
+  assert.equal(withEmploymentType(draft, "FULL_TIME").baseHours, "209");
+  assert.equal(withEmploymentType({ ...draft, baseHours: "174" }, "FULL_TIME").baseHours, "174");
+  assert.equal(withEmploymentType(draft, "PART_TIME").baseHours, "");
+  assert.equal(withEmploymentType(draft, "FULL_TIME").employmentType, "FULL_TIME");
 });
 
 test("성별 · 외국인 여부 — 이어 쓰기는 상세 값으로 다시 채운다", () => {
