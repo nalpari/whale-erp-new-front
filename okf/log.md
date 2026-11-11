@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-11
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 출처 `src/lib/menus.ts` 에 시작 가이드(`/start-guide`) 허용 2줄이 더해져 출처 시각만 갱신했다. 직원 화면이 보는 메뉴 코드는 그대로라 본문은 바꾸지 않았다(front #263 code-review).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드에서 넘어간 화면에 순서 · 안내를 띄우는 가이드 미니 카드(`GuideMiniCardSlot`)와 열린 패널을 읽는 `usePanelOpen` 을 더했다(front hoppip, 사용자 지정).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드 화면 `/start-guide` 를 더했다. 헤더 [시작 가이드] 목록의 단계가 그 화면 대신 이 화면의 단계 설명으로 오고, 실제 화면은 설명 안 [OOO로 가기]로 간다(front hoppip, 사용자 지정).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 매장운영 · 재무관리 · 프랜차이즈 소개 구역 설명을 지금 구조(스크롤 고정 구역 · 펼침 목록 · 물결 흐름)로 고치고, 지운 `IntroFeatures` · `IntroFlow` · `IntroAddOns` · `feature-shortcuts.tsx` · `PosIcon` 설명을 뺐다(front #259 리뷰).
