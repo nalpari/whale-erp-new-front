@@ -153,28 +153,6 @@ export function ContractMock() {
   );
 }
 
-// 급여명세서 — 출퇴근 기록으로 셈한 근무시간이 급여 줄로 들어간다.
-export function PayslipMock() {
-  return (
-    <div className={MOCK}>
-      <div className="flex items-center justify-between">
-        <p className="text-[15px] font-bold">11월 급여명세서</p>
-        <Badge>검토 중</Badge>
-      </div>
-      <p className="mt-[2px] text-[12px] text-guest-sub">이웨일 · 인터플러그 신촌점</p>
-      <div className="mt-[12px] flex flex-col gap-[8px] border-t border-guest-list-line pt-[12px]">
-        <MockRow k="출퇴근 기록 근무시간" v="132시간" />
-        <MockRow k="기본급" v="1,386,000원" />
-        <MockRow k="주휴수당" v="277,200원" />
-        <MockRow k="공제 합계" v="-54,880원" />
-      </div>
-      <div className="mt-auto flex items-baseline justify-between border-t border-guest-list-line pt-[12px]">
-        <span className="text-[13px] text-guest-sub">실지급액</span>
-        <span className="text-[18px] font-bold text-guest-navy">1,608,320원</span>
-      </div>
-    </div>
-  );
-}
 
 // 시설물 및 장비 상세 — 디자인 데모 stores/facilities-detail(시설물·장비 관리 정책서 PL-1 · PL-4 · PL-5)을 줄여 옮겼다.
 // 맨 위는 장비 이름, 그 아래 「[운영] | 점포」, 그 아래 「기본 정보」 · 「관리 정보」 표(2026-11-10 사용자 지정).

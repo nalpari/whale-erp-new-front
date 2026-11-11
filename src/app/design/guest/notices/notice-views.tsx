@@ -14,24 +14,27 @@ type NoticeType = Schemas["NoticeType"];
 type Post = Schemas["PublishedPostResponseDto"];
 type Attachment = Schemas["PostAttachmentDto"];
 
-// 메인 「새로운 소식」(guest-home.tsx 의 HomeNewsList)도 이 Badges 를 쓴다. 고정 글은 남색 배지를 앞에 단다. 글자는 api enum(NoticeType)의 한글이다.
-const BADGE_TONE: Record<NoticeType | "PINNED", string> = {
-  PINNED: "bg-guest-navy text-white",
-  GENERAL: "bg-[#f2f6ff] text-[#366fe3]",
-  MAINTENANCE: "bg-[#e7f7f1] text-[#11b076]",
-  FEATURE: "bg-guest-card text-guest-navy",
-  TERMS: "bg-[#f5f5f5] text-guest-sub",
-};
-
-function Badge({ tone, children }: { tone: keyof typeof BADGE_TONE; children: ReactNode }) {
-  return <span className={`flex h-[30px] shrink-0 items-center rounded-[3px] px-[10px] text-[15px] leading-[1.4] font-semibold ${BADGE_TONE[tone]}`}>{children}</span>;
+// 메인 「새로운 소식」(guest-home.tsx 의 HomeNewsList)도 이 Badges 를 쓴다. 고정 글은 압정 아이콘을 앞에 단다. 글자는 api enum(NoticeType)의 한글이다.
+// 구분 꼬리표는 모두 같은 회색 — 로그인 후 알림 종의 구분 꼬리표처럼 옅은 회색 바탕 · 회색 글자 · 얇은 테두리. 구분마다 색을 달리하면 목록이 알록달록했다(2026-11-11 사용자 지정).
+function Badge({ children }: { children: ReactNode }) {
+  return <span className="flex h-[28px] shrink-0 items-center rounded-[4px] border border-[#e3e7ec] bg-[#f6f8fa] px-[9px] text-[14px] leading-[1.4] font-medium text-guest-sub">{children}</span>;
 }
 
 export function Badges({ post, typeLabel }: { post: Pick<Post, "isPinned" | "noticeType">; typeLabel: (type: NoticeType) => string }) {
   return (
     <>
-      {post.isPinned && <Badge tone="PINNED">고정</Badge>}
-      {post.noticeType && <Badge tone={post.noticeType}>{typeLabel(post.noticeType)}</Badge>}
+      {/* 고정 글은 로그인 후 공지사항 목록(PinIcon, community-lists.tsx)과 같은 동그라미 압정 아이콘 — 전엔 남색 「고정」 배지(2026-11-11 사용자 지정) */}
+      {/* 고정이 아닌 글도 같은 20px 자리를 비워 두어 구분 꼬리표 · 제목 시작선이 줄마다 맞는다(2026-11-11 사용자 지정) */}
+      {!post.isPinned && <span aria-hidden className="w-[20px] shrink-0" />}
+      {post.isPinned && (
+        <svg role="img" aria-label="고정" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-guest-navy">
+          <title>고정</title>
+          <circle cx="12" cy="12" r="10.5" />
+          <path d="M13.6 6.6 17.4 10.4 15.4 11.4 13.4 14.2 13.9 16.2 7.8 10.1 9.8 10.6 12.6 8.6Z" fill="currentColor" fillOpacity="0.15" />
+          <path d="M10.4 13.6 7 17" />
+        </svg>
+      )}
+      {post.noticeType && <Badge>{typeLabel(post.noticeType)}</Badge>}
     </>
   );
 }

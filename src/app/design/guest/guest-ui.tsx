@@ -9,7 +9,8 @@ export const TRIM = "[text-box:trim-both_cap_alphabetic]";
 // 시안의 제목은 모두 「옅은 첫 줄 + 굵은 둘째 줄」 52px 두 줄이다.
 // 띠지(알약) — 시작 세 단계의 STEP 꼬리표와 같은 모양이다. 홈 「매장 유형별 안내」 · 「기본 제공 혜택」이 쓴다(2026-11-09 사용자 지정).
 export function GuestTag({ children }: { children: ReactNode }) {
-  return <span className={`rounded-full bg-guest-step px-[14px] py-[12px] text-[16px] leading-[1.5] font-bold tracking-normal text-white ${TRIM}`}>{children}</span>;
+  // 알약 띠지 대신 제목 위 작은 회색 글자 — 참고 사이트의 「Point 1」처럼 가볍게(2026-11-11 사용자 지정).
+  return <span className={`text-[16px] leading-[1.5] font-bold tracking-normal text-guest-navy-soft ${TRIM}`}>{children}</span>;
 }
 
 // tag 는 제목 위 띠지(GuestTag). oneLine 은 얇은 앞말 · 굵은 뒷말을 한 줄로 잇는다 — 홈 화면 섹션 제목(2026-11-09 사용자 지정).
@@ -24,7 +25,8 @@ export function SectionTitle({ light, bold, dark = false, tag, oneLine = false }
   );
   if (!tag) return title;
   return (
-    <div className="flex flex-col items-start gap-[24px]">
+    // 제목 위 작은 회색 글자와 제목 사이는 붙인다(12px, 2026-11-11 사용자 지정 — 전엔 알약 띠지 · 24px).
+    <div className="flex flex-col items-start gap-[12px]">
       <GuestTag>{tag}</GuestTag>
       {title}
     </div>

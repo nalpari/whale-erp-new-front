@@ -76,7 +76,7 @@ export function IntroFeaturesAccordion({ light, bold, items }: { light: string; 
                 <div id={`accordion-${f.id}`} inert={!isOpen} className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
                   <div className="min-h-0 overflow-hidden">
                     {/* 펼친 내용은 줄 제목 글자(번호 뒤)에 맞춰 46px 들여 쓰고, 그림이 왼쪽 · 글이 오른쪽이다(order-first). 그림 칸은 매장운영 그림 카드와 같은 520px 로 묶는다 — 반 폭이면 가로로 너무 길었다(2026-11-10 사용자 지정). */}
-                    <div className="grid grid-cols-[520px_minmax(0,1fr)] items-center gap-[80px] pb-[clamp(14px,2.6vh,28px)] pl-[46px]">
+                    <div className="grid grid-cols-[clamp(400px,30vw,520px)_minmax(0,1fr)] items-center gap-[clamp(40px,4.5vw,80px)] pb-[clamp(14px,2.6vh,28px)] pl-[46px]">
                       <div className="flex flex-col gap-[20px]">
                         <div className="flex flex-col gap-[10px]">
                           <h3 className="text-[26px] leading-[1.4] font-bold text-guest-navy">

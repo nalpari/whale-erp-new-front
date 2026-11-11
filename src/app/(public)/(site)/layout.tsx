@@ -15,7 +15,7 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
   const session = await getSession();
   return (
     <ErpRoot>
-      <div className={`flex min-h-[100dvh] min-w-[1720px] flex-col bg-white break-keep ${GUEST_FONTS}`}>
+      <div className={`flex min-h-[100dvh] min-w-[1280px] flex-col bg-white break-keep ${GUEST_FONTS}`}>
         <GuestHeader homeHref={session ? homeOf(session.roleTypeCode) : undefined} />
         <main className="flex flex-1 flex-col">{children}</main>
         <GuestFooter />
