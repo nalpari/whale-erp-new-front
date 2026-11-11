@@ -212,7 +212,8 @@
           { text: "점포 정보 관리", href: "stores/index.html" },
           { text: "계약서 템플릿 관리", phase: "2" },
           { text: "계약서 관리", phase: "2" },
-          { text: "시설물 및 장비 관리", phase: "1.5" },
+          { text: "시설물 및 장비 관리", phase: "1.5", href: "stores/facilities.html" },
+          { text: "시설물 및 장비 수리 이력", phase: "1.5", href: "stores/repairs.html" },
           { text: "점검표 템플릿 관리", phase: "1.5" },
           { text: "점검 결과 관리", phase: "1.5" }
         ]},

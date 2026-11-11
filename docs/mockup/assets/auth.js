@@ -1020,7 +1020,11 @@
     var list = box.querySelector(".sfilt__list");
     var chips = box.querySelector(".sfilt__chips");
     var sum = box.querySelector(".sfilt__sum");
-    if (!q || !list || !chips) return;
+    /* data-sfilt-one — 점포 하나만 고른다(시설물·장비 등록 · 목록 필터). 고르면 검색칸에 점포명을 넣고 목록을 닫는다. Chip 은 없다.
+       data-sfilt-open — 폐점 점포를 목록에서 뺀다(등록 화면의 점포 선택지, 정책서 PL-1). */
+    var one = box.hasAttribute("data-sfilt-one");
+    var openOnly = box.hasAttribute("data-sfilt-open");
+    if (!q || !list || (!chips && !one)) return;
     list.id = list.id || "sfilt-list-" + n;
     q.setAttribute("aria-controls", list.id);
     var picked = [], found = [], at = -1, timer = 0;
@@ -1039,6 +1043,7 @@
       q.setAttribute("aria-expanded", "true");
     }
     function renderChips() {
+      if (!chips) return;
       chips.innerHTML = picked.map(function (s) {
         return '<span class="chip" title="' + s[0] + '">' + esc(s[1]) +
           '<button type="button" class="chip__x" data-code="' + s[0] + '" aria-label="' + esc(s[1]) + ' 빼기">' +
@@ -1049,7 +1054,7 @@
     }
     function isPicked(code) { return picked.some(function (s) { return s[0] === code; }); }
     function renderList() {
-      list.innerHTML = '<div class="addr__count">' + (norm(q.value) ? "검색 결과 " : "선택할 수 있는 점포 ") + found.length + "곳 · 여러 곳을 선택할 수 있습니다</div>" + found.map(function (s, i) {
+      list.innerHTML = '<div class="addr__count">' + (term() ? "검색 결과 " : "선택할 수 있는 점포 ") + found.length + "곳" + (one ? "" : " · 여러 곳을 선택할 수 있습니다") + "</div>" + found.map(function (s, i) {
         return '<div class="addr__opt sfilt__opt" role="option" aria-selected="' + (i === at) + '" id="' + list.id + "-" + i + '" data-i="' + i + '">' +
           '<span class="addr__zip mono">' + s[0] + "</span>" +
           '<span class="addr__txt"><b>' + esc(s[1]) + "</b>" +
@@ -1065,8 +1070,18 @@
         if (k === i) { o.scrollIntoView({ block: "nearest" }); q.setAttribute("aria-activedescendant", o.id); }
       });
     }
+    /* 한 곳 모드에서 검색칸에 고른 점포명이 그대로 있으면 다시 열 때 전체를 보인다 */
+    function term() {
+      return one && picked[0] && q.value === picked[0][1] ? "" : norm(q.value);
+    }
     function toggle(i) {
       var s = found[i];
+      if (one && s) {
+        picked = [s];
+        q.value = s[1];
+        close();
+        return;
+      }
       if (!s || isPicked(s[0])) return;
       picked.push(s);
       renderChips();
@@ -1076,9 +1091,10 @@
     /* 글자 수 제한 없음 — 비어 있으면 고를 수 있는 점포 전체, 치면 그 글자로 좁힌다. 고른 점포는 뺀다 */
     function search(keepAt) {
       clearTimeout(timer);
-      var t = norm(q.value);
+      var t = term();
       found = SP_STORES.filter(function (s) {
-        return !isPicked(s[0]) && (!t || norm(s[0]).indexOf(t) > -1 || norm(s[1]).indexOf(t) > -1);
+        if (openOnly && s[3]) return false;
+        return (one || !isPicked(s[0])) && (!t || norm(s[0]).indexOf(t) > -1 || norm(s[1]).indexOf(t) > -1);
       });
       at = -1;
       if (!found.length) {
@@ -1089,7 +1105,10 @@
       mark(typeof keepAt === "number" && keepAt > -1 ? keepAt : 0);
     }
 
-    q.addEventListener("input", function () { search(); });
+    q.addEventListener("input", function () {
+      if (one) picked = []; /* 글자를 고치면 고른 점포는 풀린다 */
+      search();
+    });
     q.addEventListener("focus", function () { search(); });
     q.addEventListener("click", function () { if (list.hidden) search(); });
     q.addEventListener("keydown", function (e) {
@@ -1104,7 +1123,7 @@
       var o = e.target.closest(".sfilt__opt");
       if (o) toggle(+o.dataset.i);
     });
-    chips.addEventListener("click", function (e) {
+    if (chips) chips.addEventListener("click", function (e) {
       var x = e.target.closest(".chip__x");
       if (!x) return;
       picked = picked.filter(function (p) { return p[0] !== x.dataset.code; });
@@ -1119,6 +1138,8 @@
       var panel = box.closest(".panel");
       if (reset && panel && panel.contains(reset)) { picked = []; q.value = ""; renderChips(); close(); }
     });
+    /* 한 곳 모드에서 검색칸에 미리 적힌 점포명은 이미 고른 점포로 본다(수정 · 입력 중 목업) */
+    if (one && q.value) picked = SP_STORES.filter(function (s) { return s[1] === q.value; }).slice(0, 1);
     renderChips();
   });
 })();

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>시설물 및 장비 상세 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="stores" data-sub="stores/facilities.html">
+    <!-- 시설물 · 장비 상세 · /facilities/:facilityId · 1팀 · 1.5차
+         기준: 「시설물·장비 관리 정책서」 PL-1 ~ PL-6. 상세는 저장된 값이 있는 항목만 보인다(PL-5).
+         묶음은 둘 — 기본 정보 · 관리 정보. A/S센터는 관리 정보 묶음에 둔다(정책서 화면 배치).
+         삭제는 논리 삭제이고, 수리 이력 · 점검 결과가 하나라도 있으면 막고 「운영상태를 폐기로 바꿔 주세요」로 안내한다(PL-4).
+         폐점 점포의 시설물 · 장비는 조회만 된다(PL-1). 버튼은 권한 그룹이 이 메뉴에 준 수정 · 삭제 권한을 따른다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="facd" style="display: contents">
+          <div class="titlebar">
+            <h1 class="t-h1">시설물 및 장비 관리</h1>
+            <span class="badge badge--warn">1팀 작업</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">1.5차 · /facilities/:facilityId</span>
+              <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./facilities-detail.screen-def.html', 'screenDef', 'width=1620,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="demo" data-demo="facd">
+              <b>목업 상태</b>
+              <div class="seg">
+                <button type="button" data-state="run" aria-pressed="true">운영 · 이력 없음</button>
+                <button type="button" data-state="hist" aria-pressed="false">운영 · 수리 이력 있음</button>
+                <button type="button" data-state="keep" aria-pressed="false">보관</button>
+                <button type="button" data-state="scrap" aria-pressed="false">폐기</button>
+                <button type="button" data-state="closed" aria-pressed="false">폐점 점포</button>
+                <button type="button" data-state="view" aria-pressed="false">조회 권한만</button>
+              </div>
+            </div>
+
+            <!-- 이름 줄 — 점포 상세와 같이 테두리 없이 이름(20px) · 상태 · 점포 | 실행 버튼 -->
+            <section>
+              <div style="display: flex; flex-direction: row; align-items: center; gap: 18px; padding: 6px 0">
+                <div class="stack" style="flex: 1; min-width: 0; gap: 6px">
+                  <h2 class="t-h2" style="margin: 0; font-size: 20px">EK43S 전자동 원두 커피 그라인더</h2>
+                  <span class="inline subtle" style="gap: 10px; font-size: 14px">
+                    <span class="badge badge--ok" data-show="run hist closed view">운영</span>
+                    <span class="badge badge--quiet" data-show="keep" hidden>보관</span>
+                    <span class="badge badge--risk" data-show="scrap" hidden>폐기</span>
+                    <span class="subtle">모리커피 성수점</span>
+                    <span class="badge badge--risk" data-show="closed" hidden>폐점</span>
+                  </span>
+                </div>
+                <div class="inline" style="gap: 6px">
+                  <button class="btn btn--secondary btn--sm" type="button" data-open="pop-delete" data-show="run keep scrap">삭제</button>
+                  <button class="btn btn--secondary btn--sm" type="button" disabled data-show="hist" hidden title="수리 이력이나 점검 결과가 있는 시설물·장비는 삭제할 수 없습니다. 운영상태를 폐기로 바꿔 주세요.">삭제</button>
+                  <a class="btn btn--secondary btn--sm" href="facilities-edit.html" data-show="run hist keep scrap">수정</a>
+                  <a class="btn btn--primary btn--sm" href="facilities.html">목록</a>
+                </div>
+              </div>
+            </section>
+
+            <div class="band band--info" data-show="closed" hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">폐점 점포의 시설물·장비는 조회만 할 수 있습니다.</div>
+              </div>
+            </div>
+            <div class="band band--info" data-show="keep scrap" hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">운영상태가 운영이 아니라 새 수리 이력 · 점검표의 대상으로 고를 수 없습니다.</div>
+                <p class="band__desc">지난 수리 이력과 점검 결과는 그대로 남습니다. 다시 운영으로 바꾸면 대상으로 고를 수 있습니다.</p>
+              </div>
+            </div>
+
+            <div class="grid grid--2" style="align-items: start">
+              <section class="panel">
+                <div class="panel__head"><h2 class="t-h2">기본 정보</h2></div>
+                <div class="panel__body">
+                  <dl class="kv">
+                    <dt>점포</dt><dd>모리커피 성수점</dd>
+                    <dt>운영상태</dt>
+                    <dd><span class="badge badge--ok" data-show="run hist closed view">운영</span><span class="badge badge--quiet" data-show="keep" hidden>보관</span><span class="badge badge--risk" data-show="scrap" hidden>폐기</span></dd>
+                    <dt>그룹 · 분류</dt><dd>점포 장비 <span class="subtle">|</span> 그라인더</dd>
+                    <dt>브랜드 · 제조사</dt><dd>말코닉 <span class="subtle">|</span> 말코닉</dd>
+                    <dt>Serial number</dt><dd class="mono">SN1234567</dd>
+                    <dt>설치 위치</dt><dd>주방</dd>
+                    <dt>구매처</dt><dd>다온컴퍼니 <span class="subtle">|</span> <span class="mono">02-333-4444</span></dd>
+                    <dt>영업사원</dt><dd>홍길동 <span class="subtle">|</span> <span class="mono">010-2222-3333</span></dd>
+                    <dt>구매 · 설치</dt><dd><span class="mono">20,000,000</span>원 <span class="subtle">(부가세 포함)</span> <span class="subtle">|</span> <span class="subtle">구매일</span> <span class="mono">2025-01-01</span> <span class="subtle">|</span> <span class="subtle">설치일</span> <span class="mono">2025-01-03</span></dd>
+                    <dt>변경이력</dt><dd><span class="subtle">등록</span> 2026-11-02 10:12 · 정하윤 <span class="subtle">|</span> <span class="subtle">최종수정</span> 2026-11-05 15:40 · 정하윤</dd>
+                  </dl>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel__head"><h2 class="t-h2">관리 정보</h2></div>
+                <div class="panel__body">
+                  <dl class="kv">
+                    <dt>사용 유효기한</dt><dd class="mono">2030-01-01</dd>
+                    <dt>품질 보증기한</dt><dd class="mono">2027-01-01</dd>
+                    <!-- 문서 — 공통 첨부파일 칸의 읽기 전용 모양(이름 링크 · 크기, [빼기] 없음). 이름을 누르면 내려받는다. 없는 종류는 줄째 두지 않는다 -->
+                    <dt>사용 매뉴얼</dt><dd><a class="tlink" href="#">EK43S_사용매뉴얼.pdf</a> <span class="mono subtle">1.8MB</span></dd>
+                    <dt>주의사항</dt><dd><a class="tlink" href="#">사용주의사항.pdf</a> <span class="mono subtle">320KB</span></dd>
+                    <dt>제품 보증서</dt><dd><a class="tlink" href="#">제품보증서.png</a> <span class="mono subtle">640KB</span></dd>
+                    <dt>관리 담당자</dt><dd>서지안 <span class="subtle">|</span> <span class="mono">010-2323-2323</span></dd>
+                    <dt>점검 주기</dt><dd>매월 <span class="subtle">|</span> 매달 정기휴일에 점검</dd>
+                    <dt>A/S센터</dt><dd><span class="subtle">[ 우편번호</span> 04522 <span class="subtle">]</span> 서울 중구 삼봉로 98, 1층 2호 <span class="subtle">|</span> <span class="mono">02-2222-8888</span></dd>
+                  </dl>
+                </div>
+              </section>
+            </div>
+
+            <p class="note">
+              <span data-icon="info" data-icon-size="14"></span>
+              <span>문서 이름을 누르면 내려받는다. 비어 있는 항목은 줄째 두지 않는다(PL-5). 그룹 · 분류 이름은 분류를 미사용으로 바꾼 뒤에도 그대로 보인다(PL-3).</span>
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 삭제 확인 — 논리 삭제(PL-4). 이력이 있으면 이 창 대신 [삭제]가 막힌다 -->
+    <div class="modal" id="pop-delete" hidden role="dialog" aria-modal="true" aria-labelledby="pd-t">
+      <div class="modal__box">
+        <div class="modal__head">
+          <h2 class="t-h2" id="pd-t">시설물·장비를 삭제하시겠습니까?</h2>
+          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+        </div>
+        <div class="modal__body">
+          <dl class="kv" style="margin: 0; font-size: 13.5px"><dt>시설물/장비명</dt><dd>EK43S 전자동 원두 커피 그라인더</dd><dt>점포</dt><dd>모리커피 성수점</dd><dt>그룹 · 분류</dt><dd>점포 장비 · 그라인더</dd></dl>
+          <div class="band band--risk"><div class="band__body"><p class="band__desc" style="margin: 0">삭제하면 시설물·장비 목록에서 제외되고 복구할 수 없습니다.<br />잘못 등록한 것이 아니라면 운영상태를 폐기로 바꿔 주세요.</p></div></div>
+        </div>
+        <div class="modal__foot">
+          <button class="btn btn--ghost" type="button" data-close>취소</button>
+          <a class="btn btn--primary" href="facilities.html">삭제</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

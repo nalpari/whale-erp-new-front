@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시설물 및 장비 상세 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="facilities-detail.screen-def">
+<header>
+  <div>
+    <h1>시설물 및 장비 관리 — 상세 화면정의서</h1>
+    <p>stores/facilities-detail.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만) 위에 번호를 붙이고 우측에 설명을 매칭했다. 근거: 「시설물·장비 관리 정책서」(claude.ai 문서, 2026-11-10) PL-1 ~ PL-6 · 원자료 가맹점및점포관리 화면정의서 v0.74 37~44쪽.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="facilities-detail.screen-def.png" alt="시설물 및 장비 상세 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 상태" · "목업 권한" 토글은 실제 화면 요소가 아니라 목업 자체의 전환 컨트롤이라 번호에서 제외했다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드).
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "시설물 및 장비 상세",
+  "screenPath": "점포관리 > 시설물 및 장비 관리 > 상세",
+  "purpose": "# 화면 목적 및 기능 — 시설물·장비 한 건의 기본 정보와 관리 정보를 저장된 값만 읽기 전용으로 보이고, 수정 · 삭제로 이어진다",
+  "items": [
+    {
+      "x": 36,
+      "y": 176,
+      "title": "이름 · 운영상태 · 점포",
+      "desc": "정의: 시설물/장비명(20px)과 운영상태 배지, 점포명. 폐점 점포면 폐점 배지를 붙이고 위에 「폐점 점포의 시설물·장비는 조회만 할 수 있습니다.」 띠"
+    },
+    {
+      "x": 991,
+      "y": 189,
+      "title": "삭제",
+      "desc": "정의: 확인창을 거쳐 논리 삭제(is_deleted)하고 목록으로 이동(PL-4)\n수리 이력 · 점검 결과가 하나라도 있으면 막고 「운영상태를 폐기로 바꿔 주세요」로 안내. 삭제 권한이 없거나 폐점 점포면 두지 않는다"
+    },
+    {
+      "x": 1042,
+      "y": 189,
+      "title": "수정",
+      "desc": "정의: 수정 화면으로 이동. 수정 권한이 없거나 폐점 점포면 두지 않는다"
+    },
+    {
+      "x": 1093,
+      "y": 189,
+      "title": "목록",
+      "desc": "정의: 목록으로 돌아감(검색 조건 유지)"
+    },
+    {
+      "x": 57,
+      "y": 337,
+      "title": "기본 정보",
+      "desc": "정의: 점포 · 운영상태 · 그룹 · 분류 · 브랜드 · 제조사 · Serial number · 설치 위치 · 구매처 · 영업사원 · 구매액(부가세 포함 여부) · 구매일 · 설치일 · 변경이력(등록 · 최종수정)\n저장된 값이 있는 항목만 보인다(PL-5). 미사용으로 바뀐 분류도 이름은 그대로(PL-3)"
+    },
+    {
+      "x": 618,
+      "y": 337,
+      "title": "관리 정보",
+      "desc": "정의: 사용 유효기한 · 품질 보증기한 · 문서 3종(이름 · 크기, 누르면 내려받기) · 관리 담당자 · 점검 주기 · A/S센터(「[ 우편번호 ] 주소, 상세주소」 한 줄)"
+    }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>

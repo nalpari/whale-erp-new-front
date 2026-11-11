@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시설물 및 장비 수정 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="facilities-edit.screen-def">
+<header>
+  <div>
+    <h1>시설물 및 장비 관리 — 수정 화면정의서</h1>
+    <p>stores/facilities-edit.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만) 위에 번호를 붙이고 우측에 설명을 매칭했다. 근거: 「시설물·장비 관리 정책서」(claude.ai 문서, 2026-11-10) PL-1 ~ PL-6 · 원자료 가맹점및점포관리 화면정의서 v0.74 37~44쪽.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="facilities-edit.screen-def.png" alt="시설물 및 장비 수정 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 상태" · "목업 권한" 토글은 실제 화면 요소가 아니라 목업 자체의 전환 컨트롤이라 번호에서 제외했다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드).
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "시설물 및 장비 수정",
+  "screenPath": "점포관리 > 시설물 및 장비 관리 > 수정",
+  "purpose": "# 화면 목적 및 기능 — 등록한 시설물·장비의 값을 고친다. 칸 · 입력 규칙은 등록 화면과 같고 다른 점만 적는다",
+  "items": [
+    {
+      "x": 1063,
+      "y": 187,
+      "title": "취소 · 저장",
+      "desc": "정의: [취소]는 상세로 돌아감. [저장] 검사 · 오류 표시는 등록 화면과 같다(PL-5)"
+    },
+    {
+      "x": 57,
+      "y": 320,
+      "title": "점포 (읽기 전용)",
+      "desc": "정의: 등록한 뒤에는 점포를 바꿀 수 없다 — 읽기 전용 바탕(#f8f9fb). 옮기려면 새로 등록하고 기존 건은 폐기(PL-1)"
+    },
+    {
+      "x": 325,
+      "y": 600,
+      "title": "분류",
+      "desc": "정의: BP 가 미사용으로 바꾼 분류는 지금 값으로 남아 보이고, 다른 값으로 바꾸면 되돌릴 수 없다(PL-3)"
+    },
+    {
+      "x": 592,
+      "y": 249,
+      "title": "관리 정보",
+      "desc": "정의: 관리 정보(기한 · 문서 · 담당자 · 점검 · A/S센터)는 따로 지우지 않는다 — 지울 값은 칸을 비우고 저장한다\n원 화면정의서(43쪽)의 관리 정보 [삭제]는 두 화면을 하나로 합치며 뺐다(PL-4)"
+    }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>
