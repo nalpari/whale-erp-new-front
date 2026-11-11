@@ -150,7 +150,21 @@ export function replaceConfirmBody(body: CreateContractBody, list: InProgressCon
 
 const span = (sh: string, eh: string): TimeSpan => ({ start: { hour: sh, minute: "00" }, end: { hour: eh, minute: "00" } });
 
-/** 처음 열었을 때의 값. 정직원 · 월~금 09~18 · 휴게 12~13 · 익월 10일 (데모와 같다). 주휴일은 근무로 정해진다 */
+/** 정직원 월 기본시간의 처음 값 — 주 40시간 + 주휴 8시간의 월 환산. 관리자가 고칠 수 있다 */
+export const DEFAULT_BASE_HOURS = "209";
+
+/** 월 기본시간 칸이 비었거나 1 미만이면 처음 값으로 채운다 — 정직원 필수 검사(1 이상)에 그대로 걸리는 값을 들고 열지 않게 */
+const baseHoursOrDefault = (text: string) => (Number(text) >= 1 && text.trim() ? text : DEFAULT_BASE_HOURS);
+
+/**
+ * 고용 형태를 바꾼다. 정직원으로 바꿀 때 월 기본시간이 비어 있으면(파트타이머로 임시저장한 계약 등) 처음 값을 채운다 —
+ * 숨어 있던 칸이 빈 채로 필수 검사에 걸리지 않게. 파트타이머는 이 칸을 보내지 않으므로 그대로 둔다.
+ */
+export function withEmploymentType(f: ContractForm, employmentType: EmploymentType): ContractForm {
+  return { ...f, employmentType, baseHours: employmentType === "FULL_TIME" && !f.baseHours.trim() ? DEFAULT_BASE_HOURS : f.baseHours };
+}
+
+/** 처음 열었을 때의 값. 정직원 · 월~금 09~18 · 휴게 12~13 · 익월 10일(데모와 같다), 월 기본시간 209. 주휴일은 근무로 정해진다 */
 export function initialForm(storeId = ""): ContractForm {
   return {
     name: "",
@@ -175,7 +189,7 @@ export function initialForm(storeId = ""): ContractForm {
     mealAllowance: "",
     carAllowance: "",
     childcareAllowance: "",
-    baseHours: "",
+    baseHours: DEFAULT_BASE_HOURS,
     monthlyOvertimeHours: "",
     baseNightHours: "",
     annualLeaveTerms: DEFAULT_ANNUAL_LEAVE_TERMS,
@@ -188,6 +202,16 @@ export function initialForm(storeId = ""): ContractForm {
     probationMonths: "3",
     probationRate: "10",
   };
+}
+
+/**
+ * 소속 근무지를 고른다. 근무 장소가 비었거나 앞 근무지명 그대로면 새 근무지명으로 채운다 — 관리자가 고쳐 쓴 장소는 그대로 둔다.
+ * 근무지를 비우면 채워 둔 근무지명도 비운다.
+ */
+export function withStore(f: ContractForm, storeId: string, stores: readonly { storeId: number; name: string }[]): ContractForm {
+  const nameOf = (id: string) => stores.find((s) => String(s.storeId) === id)?.name ?? "";
+  const edited = f.workLocation.trim() !== "" && f.workLocation !== nameOf(f.storeId);
+  return { ...f, storeId, workLocation: edited ? f.workLocation : nameOf(storeId) };
 }
 
 /** GET /contracts/:contractId. api 의 openapi.json 에서 만든 타입을 쓴다(pnpm openapi:types) */
@@ -248,13 +272,21 @@ export function fromDetail(d: ContractDetail): ContractForm {
 /**
  * 재계약(WHALEERP-156) 작성 화면의 처음 값 — 직전 계약 값을 채우고 기간을 새로 잡는다. 시작일은 직전 계약 종료일 다음 날인데, 그 날이
  * 오늘(한국 날짜)보다 앞이면(기간이 끝난 지 오래된 계약) 비워 관리자가 고르게 한다 — 지난 날로 시작하는 계약이 그대로 나가지 않게.
- * 종료일은 비운다. 수습은 이어 일하는 직원이라 끈다(관리자가 다시 켤 수 있다).
+ * 종료일은 비운다. 수습은 이어 일하는 직원이라 끈다(관리자가 다시 켤 수 있다). 월 기본시간이 비었거나 1 미만이면(파트타이머였던 계약,
+ * 1 이상 검사 전에 0 으로 저장한 계약) 새 계약처럼 209 를 채운다 — 첫 저장이 바로 필수 검사에 걸리지 않게. 파트타이머는 이 칸을 보내지 않는다.
+ * 임시저장 이어 쓰기(fromDetail)는 비운 칸을 그대로 둔다.
  */
 export function renewalFromDetail(d: ContractDetail, now = new Date()): ContractForm {
   const base = fromDetail(d);
   const today = new Date(now.getTime() + 9 * 3600_000).toISOString().slice(0, 10);
   const start = d.endDate ? nextDay(d.endDate) : "";
-  return { ...base, startDate: start && start >= today ? start : "", endDate: "", probation: false };
+  return {
+    ...base,
+    startDate: start && start >= today ? start : "",
+    endDate: "",
+    probation: false,
+    baseHours: baseHoursOrDefault(base.baseHours),
+  };
 }
 
 /** 재계약 시작일 안내 — api 400 과 같은 문장 */
@@ -542,6 +574,8 @@ export function fieldProblems(
       add("allowances", "비과세 수당은 2,147,483,647원 이하로 입력하세요.");
     if (HOUR_FIELDS.some((k) => Number.isNaN(hoursOf(f[k])))) add("hours", "월 근로시간은 0 이상, 30분(0.5시간) 단위로 입력하세요.");
     const base = hoursOf(f.baseHours), night = hoursOf(f.baseNightHours);
+    // 30분 단위가 아닌 값도 1 미만이면(0.3) 하한을 함께 알린다 — 0.5 로 고친 뒤 다시 막히지 않게. 209.3 처럼 1 이상이면 단위 안내만
+    if (base === null ? !temporary : Number(f.baseHours) < 1) add("hours", "월 기본시간은 1 이상으로 입력하세요.");
     if (base !== null && night !== null && night > base) add("hours", "기본시간 중 야간근무는 월 기본시간보다 클 수 없습니다.");
   }
   need("weeklyHoliday", weeklyHolidayOf(f) === "NO_DAY_OFF", "주 15시간 이상이면 근무하지 않는 요일이 있어야 주휴일을 정할 수 있습니다.");

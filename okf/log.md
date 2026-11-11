@@ -2,16 +2,20 @@
 
 ## 2026-11-11
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 직원 자료 일괄 저장 안내 두 곳을 운영 정책 RET-09 에 맞췄다(WHALEERP-666, 재영 리뷰): 상단 띠 「회원 탈퇴 시」 → 「BP 탈퇴 시」, 저장 제외 안내는 「신고 정보(주민등록번호 포함) · 위치 확인자료 · 동의 기록은 포함되지 않습니다. 관리자가 올린 계약서 파일(종이 계약 날인본 · 임금계약서)은 원본 그대로 포함되어, 파일에 적힌 주민등록번호 등 개인정보가 들어 있을 수 있습니다.」. 데모 staff/export · 상위 정책 요약(okf/staff.md)도 같이 맞췄다.
+* **Update**: [Home](/home.md) — 로그인 후 홈 개편(WHALEERP-665, 운영 정책 v278 HOM-03~10): 점포 하나 화면(`one-store-screen.tsx` · `one-store-view.ts`)을 없애 범위와 역할에 상관없이 한 틀이다. 공지 띠를 맨 위로 옮기고, 경고 밴드를 없애 확인 필요의 계약 갱신 예정 줄에 「종료 D-N」(7일 이내 빨간색)을 적는다. 「처리 대기」 · 「미조치」를 「확인 필요」로, 수치 카드에 오늘 TO-DO 와 운영 점포의 미운영 수를, 점포별 현황 표에 미출근 · 오늘 TO-DO 열을 더하고 운영 점포 모두를 표 안 스크롤로 보인다. 본사 역할의 ATT-30 안내 문구는 뺐다. api 타입은 api graveler 기준으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 매장운영 · 재무관리 · 프랜차이즈 소개 구역 설명을 지금 구조(스크롤 고정 구역 · 펼침 목록 · 물결 흐름)로 고치고, 지운 `IntroFeatures` · `IntroFlow` · `IntroAddOns` · `feature-shortcuts.tsx` · `PosIcon` 설명을 뺐다(front #259 리뷰).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 최소폭을 1720 → 1280px 로 낮추고 고정 폭 구역이 화면 폭에 맞춰 줄게 했다(front omanyte, 사용자 지정).
 * **Update**: 데모를 앱에 맞췄다(화면설계서용) — 직원 자료 일괄 저장 데모 `staff/export` 를 #251 문구로, 급여명세서에서 온 기간 기록을 새 데모 `staff/attendance-period` 로 더하고 급여명세서 데모 버튼 둘을 거기로 이었다([출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md), WHALEERP-664). 앱 코드는 그대로다.
 * **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — WHALEERP-664 재영 리뷰 반영: 기간 기록 전체(`fixAll`)가 꺼진 채 주소에만 남았으면 기간을 바꿀 때 지운다, 켜져 있으면 목록 아래에 근무스케줄 · 기록이 모두 없는 근로계약 근무 요일은 목록에 나오지 않는다는 안내를 적는다, 결근 줄에 「결근」 꼬리표를 붙인다.
 
 ## 2026-11-10
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근무 장소 정의를 「소속 근무지를 고르면 근무지명으로 채우고 고칠 수 있다」로 맞췄다: 칸 placeholder, 목업 · 데모 `contracts-new`, 물리 ERD `contracts.work_location` 설명(api 물리 모델과 같은 문장, PR #250 리뷰).
 * **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) · [급여명세서 관리 화면](/screens/payslips.md) — 급여명세서 [출퇴근 기록 확인] · [출퇴근 기록 보기]로 열면 아래 목록이 그 직원의 기간 기록 전체(`fixAll=1`, 「기간 출·퇴근 기록」)를 보이고 기간은 급여 기간 첫 주 월요일부터다 — 경고 띠의 날짜(계약 종료 뒤 정상 기록 · 결근 · 휴무 · 첫 주의 지난달 날짜)가 보정 대상이 아니라 걸러지던 것(WHALEERP-664, 재영 후속 요청).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 본문 틀 `FRAME` 을 내용 폭 1760 → 1520px(`max-w-[1680px] px-[80px]`)로 줄이고 홈 · 소개 화면이 같이 쓴다(front #254, 사용자 지정).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) · [Whale ERP Frontend](/whale-erp-front.md) — 「직원 자료 일괄저장 및 근로계약 상세 문구 수정 요청.xlsx」 반영(사용자 지정): 직원 자료 일괄 저장 화면 안내 · 카드 · 표 · 상태 · 버튼 · 실패 문구(「마스터 계정만 이용」, 「저장되는 자료」 · 「요청 내역」 · 「새 요청」, 「대상 점포」, [다운로드], 「파일 생성 중」 · 「다운로드 가능」 · 「기간 만료」 등)와 근로계약 상세 계약서 파일 다운로드 거절 안내(「현재 접속한 사업자와 계정 권한을 확인한 후」).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성에서 소속 근무지를 고르면 근무 장소를 그 근무지명으로 채운다. 고쳐 쓴 장소는 두고, 근무지가 하나뿐이면 미리 골라 채운다(`withStore`, front sylveon, PR #250 리뷰 · 사용자 지정).
 * **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 검토 화면 경고 띠 문구를 「급여명세서 관리 수정 요청.xlsx」대로 바꿨다(사용자 지정): 제목은 첫 사유마다 문장(「출퇴근 기록이 등록되지 않은 날이 있어 검토가 필요합니다.」 등, 표에 없는 사유는 이전 틀), 설명은 상세 문장을 빈칸 하나로 잇고(「..」 없음, 마침표 없는 상세엔 붙임) 끝 문장 「내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.」, 버튼 [출퇴근 보정] → [출퇴근 기록 확인]([출·퇴근 현황 조회 화면](/screens/attendance-records.md) · [직원 정보 관리 화면](/screens/staff-members.md) 이 출처로 둔 `attendance-query.ts` 주석의 버튼 이름도). 사유별 상세 문장은 api 가 바꾼다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성의 정직원 월 기본시간을 처음부터 209 로 채우고(고칠 수 있음), 정직원은 1 이상을 필수로 검사한다(임시저장은 비워도 되지만 넣었으면 1 이상). 재계약은 직전 계약에 값이 없으면 209 를 채우고, 임시저장 이어 쓰기는 비운 칸을 그대로 둔다(사용자 지정, front leafeon · api 같은 검증).
 
 ## 2026-11-09
 * **Update**: [마이페이지](/mypage.md) — 탈퇴 조건 칸을 「점포 N개 M건」(없으면 「-」)으로 줄이고, 본사에게 가려진 출근이 있는 점포에 「가맹점포 출근이 포함되어 있습니다. 해당 점포의 가맹마스터에게 요청해 주세요.」를 덧붙이고, 폐점 시간 초과 503(`STORE_CLOSING_TIMEOUT`)을 탈퇴되지 않음으로 알린다(front togekiss, PR #240 리뷰).
