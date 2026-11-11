@@ -42,13 +42,14 @@ export function withdrawVerifyFailureOf(error: unknown): WithdrawVerifyFailure {
   return { ok: false, message: "비밀번호를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." };
 }
 
-export type WithdrawFailure = { ok: false; status?: 400 | 401 | 409; message: string };
+export type WithdrawFailure = { ok: false; status?: 400 | 401 | 409; message: string; expired?: true };
 
 /** 회원 탈퇴 저장이 던진 것을 화면 결과로. api 가 판정한 거절이 아니면(5xx · 연결 실패) 탈퇴됐는지 모르므로 「확인하지 못했다」고 말한다. */
 export function withdrawFailureOf(error: unknown): WithdrawFailure {
+  // 로그인 만료 — useAction 이 「로그인 만료」 팝업을 띄운다. 탈퇴를 마치고 응답만 잃은 드문 경우도 다시 로그인하면 「탈퇴한 계정」으로 알게 된다(2026-11-11 사용자 지정)
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError) {
-    // 최종 제출의 401 은 만료가 아니다 — 탈퇴가 커밋되며 세션이 끊겼을 수 있어 화면이 로그아웃으로 보낸다(만료 제외 경로, session-expiry.ts)
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     // 400 은 현재 비밀번호 불일치 · 상세 사유 누락 — api 문구를 그대로 쓴다(화면이 만들지 않는다).
     if (error.status === 400) return { ok: false, status: 400, message: error.message };
     // 409 는 함께 하는 폐점이 막혔다(확인 뒤 생긴 퇴근 기록 없는 출근 OPEN_CHECK_IN · 이미 폐점 · 교착) — 탈퇴 전체가 되돌아갔다.

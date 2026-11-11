@@ -23,10 +23,12 @@ test("만료 판정 — 토큰을 실은 요청의 401 이고 만료 제외 경�
   assert.equal(isExpiry("/stores?page=2", true), true);
   // 토큰 없는 요청(로그인 · 공개 화면)
   assert.equal(isExpiry("/auth/admin/login", false), false);
-  // 비밀번호 변경 · 탈퇴 최종 · 로그아웃의 401 은 그 업무의 실패다
-  for (const p of ["/auth/admin/password-change", "/auth/admin/me/withdraw", "/auth/admin/logout", "/auth/admin/me/withdraw?x=1"]) assert.equal(isExpiry(p, true), false, p);
+  // 강제 비밀번호 변경 · 로그아웃의 401 은 그 업무의 실패다
+  for (const p of ["/auth/admin/password-change", "/auth/admin/logout", "/auth/admin/logout?x=1"]) assert.equal(isExpiry(p, true), false, p);
+  // 탈퇴 최종 제출의 401 은 만료다(2026-11-11)
+  assert.equal(isExpiry("/auth/admin/me/withdraw", true), true);
   // 정확히 그 경로만 뺀다 — 비슷한 경로는 만료다
-  assert.equal(isExpiry("/auth/admin/me/withdraw-eligibility", true), true);
+  assert.equal(isExpiry("/auth/admin/password-change-x", true), true);
 });
 
 test("서버 액션 결과의 만료 표시 — expired 가 true 일 때만", () => {

@@ -60,8 +60,6 @@ const G1_ALLOW = new Set([
   "app/support-inquiries/save/route.ts",
   "app/contracts/paper/route.ts",
   "lib/address-search.ts", // 카카오 · 행정안전부 키 오류 401(로그인과 무관)
-  "lib/withdrawal-form.ts", // 탈퇴 최종 제출의 401 = 이미 탈퇴돼 세션이 끊김(만료 제외 경로)
-  "components/site/withdraw-panel.tsx", // 위 결과로 로그아웃
   "components/site/force-password-dialog.tsx", // 강제 변경의 401 = 발급 비밀번호 만료
   "app/actions.ts", // 강제 비밀번호 변경 · 로그아웃(만료 제외 경로)
 ]);
@@ -119,7 +117,7 @@ function callsAware(file: string, node: ts.Node, seen = new Set<string>()): bool
   return aware;
 }
 /** 만료 제외 경로를 부르는 액션 — 401 의 뜻이 만료가 아니다(session-expiry.ts NOT_EXPIRY) */
-const G2_ALLOW = new Set(["components/site/withdraw-actions.ts#createWithdrawalAction"]);
+const G2_ALLOW = new Set<string>([]);
 
 test("G2 서버 액션의 catch 는 만료를 먼저 거른다(expiredFailureOf)", () => {
   const found: string[] = [];

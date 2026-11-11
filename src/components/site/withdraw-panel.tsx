@@ -219,15 +219,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
         if (mine !== saveNumber.current) return; // 그사이 패널을 닫았다 다시 열었다 — 지난 응답은 버린다
         setConfirmOpen(false);
         if (!result.ok) {
-          // 401은 칸 오류가 아니라 세션이 이미 끝났다는 뜻이다 — 탈퇴가 서버에서 커밋된 뒤 응답만 잃고
-          // 재시도한 경우도 여기로 온다(탈퇴 쪽 execute()가 커밋과 같은 트랜잭션에서 세션을 revoke 한다).
-          // 되돌릴 수 없는 동작이라 "실패"로 남겨 다시 시도하게 하면 안 된다 — 바로 로그아웃으로 보낸다
-          // (ip-code-review-claude 블로커 #2, 2026-10-27). 탈퇴를 마쳤을 수 있어 완료 화면의 [확인]과 같이 로그인 전 홈으로 간다(logoutAfterWithdrawal).
-          // 기다려서, 액션 요청이 실패하면(연결 끊김) 아래 catch 의 띠로 알린다
-          if (result.status === 401) {
-            await signOut(logoutAfterWithdrawal); // 실패하면 「로그아웃 실패」 팝업이 알린다
-            return;
-          }
+          // 401(로그인 만료 — 탈퇴를 마치고 응답만 잃은 재시도도 여기)은 useAction 이 「로그인 만료」 팝업으로 맡아 여기까지 오지 않는다
           const field = withdrawFormField(result.status, result.message);
           if (field === "currentPassword") {
             setStep("password");
@@ -246,7 +238,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
         setForm(EMPTY);
         setStep("done");
       } catch (error: unknown) {
-        unstable_rethrow(error); // 401 뒤 로그아웃의 redirect 는 성공해도 reject 로 온다 — 실패 띠 없이 그대로 넘긴다
+        unstable_rethrow(error); // Next 의 이동 신호(redirect 등)는 실패 띠 없이 그대로 넘긴다
         if (mine !== saveNumber.current) return;
         console.error("회원 탈퇴 처리 실패", error);
         setConfirmOpen(false);
