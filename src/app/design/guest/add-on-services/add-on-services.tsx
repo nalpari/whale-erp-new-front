@@ -246,16 +246,16 @@ function Expansions() {
   );
 }
 
-// 화면 맨 위 안내 띠 — 부가서비스는 아직 하나도 열리지 않은 유료 서비스라(순차 오픈 예정) 그것만 알린다. 홈 「시작 방법」 아래 느낌표 안내와 같은 모양(연하늘 띠 · 15px).
+// 화면 맨 위 안내 띠 — 부가서비스는 아직 하나도 열리지 않은 유료 서비스라(순차 오픈 예정) 그것만 알린다. 홈 「함께 일하는 방식」과 같은 짙은 남색 그라데이션 띠에 흰 글자, 강조는 하늘색(2026-11-11 사용자 지정 — 전엔 연하늘 띠).
 // 구독 단위 · 권한 · 해약 같은 정책이 정해지지 않아 「구독 안내」 카드 세 장은 뺐다(2026-11-10 사용자 지정).
 function PaidNotice() {
   return (
-    <div className="border-b border-[#e3ebf3] bg-[#f1f7fc]">
-      <p className={`${FRAME} flex items-center gap-[8px] py-[16px] text-[15px] leading-[1.5] text-guest-body`}>
-        <span aria-hidden className="flex size-[16px] shrink-0 items-center justify-center rounded-full bg-guest-navy-soft text-[10px] leading-none font-bold text-white">
+    <div className="bg-gradient-to-r from-[#1c2630] via-[#243444] to-[#2c3e50]">
+      <p className={`${FRAME} flex items-center gap-[8px] py-[16px] text-[15px] leading-[1.5] text-white/75`}>
+        <span aria-hidden className="flex size-[16px] shrink-0 items-center justify-center rounded-full bg-[#9cc3ff] text-[10px] leading-none font-bold text-[#1c2630]">
           !
         </span>
-        <b className="font-semibold text-guest-navy">부가서비스는 순차 오픈 예정인 유료 서비스입니다.</b>
+        <b className="font-semibold text-[#9cc3ff]">부가서비스는 순차 오픈 예정인 유료 서비스입니다.</b>
         오픈 일정과 요금은 공지사항을 통해 안내합니다.
       </p>
     </div>

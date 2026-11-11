@@ -22,7 +22,7 @@ export function GuestLogin({ routes, children }: { routes: GuestRoutes; children
           <br />
           WHALE ERP가 함께합니다.
         </GuestVisual>
-        <div className="flex flex-col gap-[27px] px-[200px] py-[80px] text-guest-ink">
+        <div className="flex flex-col gap-[27px] px-[clamp(60px,10vw,200px)] py-[80px] text-guest-ink">
           <div className="flex flex-col gap-[8px]">
             <h1 className="text-[28px] leading-[1.2] font-bold">로그인</h1>
             <p className="text-[16px] leading-[1.5]">관리자 계정으로 로그인 하세요.</p>

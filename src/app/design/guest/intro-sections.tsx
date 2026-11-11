@@ -1,8 +1,5 @@
-import Image from "next/image";
 import type { ReactNode } from "react";
-import { FeatureShortcuts } from "./feature-shortcuts";
-import { type IconPart, LayeredIcon } from "./guest-icons";
-import { Arrow, SectionTitle, TitleRow, TRIM } from "./guest-ui";
+import { Arrow, SectionTitle, TRIM } from "./guest-ui";
 import { FRAME } from "./theme";
 
 // 메뉴 소개 화면(매장운영 · 재무관리)이 함께 쓰는 네 구역. 시안(로그인전_공유 44:661 · 44:1412)이 같은 틀에 글·그림만 바꿔 넣은 것이라
@@ -59,82 +56,6 @@ export function IntroMoments({ light, bold, items }: { light: string; bold: stri
 }
 
 export type Feature = { id: string; photo: string; tab: string; no: string; title: string[]; lead: string[]; points: string[] };
-
-function Lines({ lines }: { lines: string[] }) {
-  return lines.map((line) => (
-    <span key={line} className="block">
-      {line}
-    </span>
-  ));
-}
-
-export function IntroFeatures({ light, bold, items, backdrop = true }: { light: string; bold: string; items: Feature[]; backdrop?: boolean }) {
-  return (
-    <section className={`${FRAME} flex flex-col gap-[60px] py-[100px]`}>
-      <TitleRow oneLine light={light} bold={bold} action={<FeatureShortcuts items={items.map(({ id, tab }) => ({ id, tab }))} />} />
-      <div className="flex flex-col gap-[120px]">
-        {items.map((f, i) => (
-          // 사진과 글이 번갈아 좌우를 바꾼다. 바로가기로 내려왔을 때 위에 붙는 머리말(110px)에 가리지 않게 띄운다.
-          <article key={f.id} id={f.id} className={`flex scroll-mt-[130px] justify-center gap-[100px] ${i % 2 ? "flex-row-reverse" : ""}`}>
-            {/* 사진 둘레가 비면 옅은 회색이 보이게 깐다(시안 그대로). 배경 없는 그림이면 깔지 않는다. */}
-            <div className={`relative h-[540px] w-[400px] shrink-0 ${backdrop ? "bg-[#f5f5f5]" : ""}`}>
-              <Image src={f.photo} alt="" fill sizes="400px" className="object-cover" />
-            </div>
-            <div className="flex flex-col gap-[64px] pt-[44px] text-guest-ink">
-              <span className="h-[5px] w-[80px] bg-guest-ink" />
-              <div className="flex flex-col gap-[32px]">
-                <div className="flex flex-col gap-[18px]">
-                  <div className="flex flex-col gap-[8px]">
-                    {/* 「01 점포 관리」 — 번호는 홈 카드와 같이 앞에 연한 남색으로 붙인다(2026-11-10 사용자 지정). */}
-                    <p className="text-[22px] leading-[1.5] font-bold text-guest-navy">
-                      <span className="mr-[8px] text-guest-navy-soft">{f.no.split(" ")[0]}</span>
-                      {f.no.split(" ").slice(1).join(" ")}
-                    </p>
-                    <h3 className="text-[34px] leading-[1.4] font-bold">
-                      <Lines lines={f.title} />
-                    </h3>
-                  </div>
-                  <p className={`text-[18px] leading-[1.5] font-semibold ${TRIM}`}>
-                    <Lines lines={f.lead} />
-                  </p>
-                </div>
-                <p className={`text-[18px] leading-[1.5] text-guest-body ${TRIM}`}>
-                  <Lines lines={f.points} />
-                </p>
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-export type FlowStep = { title: string; desc: string; icon: IconPart[] };
-
-export function IntroFlow({ light, bold, steps }: { light: string; bold: string; steps: FlowStep[] }) {
-  return (
-    <section className="relative overflow-hidden bg-guest-ink py-[100px]">
-      <Image src="/guest/store-operations/flow-bg.png" alt="" fill sizes="100vw" className="object-cover object-bottom" />
-      <span className="absolute inset-0 bg-guest-scrim" />
-      {/* 배경 그림은 구역 전체를 채우고, 내용만 1760 틀에 담는다. */}
-      <div className={`${FRAME} relative flex flex-col gap-[60px]`}>
-        <SectionTitle oneLine light={light} bold={bold} dark />
-        <ol className="grid grid-cols-5 gap-[32px]">
-          {steps.map((step) => (
-            <li key={step.title} className="flex flex-col items-center gap-[24px] rounded-[16px] bg-white/10 py-[42px] text-center">
-              <LayeredIcon parts={step.icon} />
-              <div className="flex flex-col gap-[8px] leading-[1.5]">
-                <h3 className="text-[24px] font-semibold text-[#fafafa]">{step.title}</h3>
-                <p className="text-[18px] text-[#ccc]">{step.desc}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </section>
-  );
-}
 
 // 한 줄 흐름 — 번호 동그라미 다섯 개를 선 하나로 잇고 아래에 단계 이름 · 한 줄. 카드 없이 흰 바탕이라 위 「이렇게 달라집니다」 뒤의 가벼운 마무리다.
 // 「끊김 없이」를 선으로 보인다(매장운영, 2026-11-10 사용자 지정 — 전엔 어두운 바탕 아이콘 카드 IntroFlow). 글자는 메인 카드와 같은 22px 남색 · 17px 본문색.

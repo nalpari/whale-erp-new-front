@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-11-11
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 매장운영 · 재무관리 · 프랜차이즈 소개 구역 설명을 지금 구조(스크롤 고정 구역 · 펼침 목록 · 물결 흐름)로 고치고, 지운 `IntroFeatures` · `IntroFlow` · `IntroAddOns` · `feature-shortcuts.tsx` · `PosIcon` 설명을 뺐다(front #259 리뷰).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 최소폭을 1720 → 1280px 로 낮추고 고정 폭 구역이 화면 폭에 맞춰 줄게 했다(front omanyte, 사용자 지정).
 * **Update**: 데모를 앱에 맞췄다(화면설계서용) — 직원 자료 일괄 저장 데모 `staff/export` 를 #251 문구로, 급여명세서에서 온 기간 기록을 새 데모 `staff/attendance-period` 로 더하고 급여명세서 데모 버튼 둘을 거기로 이었다([출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md), WHALEERP-664). 앱 코드는 그대로다.
 * **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — WHALEERP-664 재영 리뷰 반영: 기간 기록 전체(`fixAll`)가 꺼진 채 주소에만 남았으면 기간을 바꿀 때 지운다, 켜져 있으면 목록 아래에 근무스케줄 · 기록이 모두 없는 근로계약 근무 요일은 목록에 나오지 않는다는 안내를 적는다, 결근 줄에 「결근」 꼬리표를 붙인다.
 
