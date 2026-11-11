@@ -20,6 +20,19 @@ export function notifySessionExpired(): void {
   dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
 }
 
+/**
+ * 같은 출처의 받기 · 올리기 창구(Route Handler)를 fetch 로 부르는 함수를 감싼다. 401 이면 만료를 알리고(onExpired) 결과를 넘기지 않는다 —
+ * useAction 과 같은 규칙이라 화면의 실패 처리가 돌지 않고 「로그인 만료」 팝업 하나만 뜬다. 그 밖의 응답은 그대로 돌려준다.
+ */
+export function expiringFetch(base: typeof fetch, onExpired: () => void = notifySessionExpired): typeof fetch {
+  return async (input, init) => {
+    const response = await base(input, init);
+    if (response.status !== 401) return response;
+    onExpired();
+    return new Promise<Response>(() => {});
+  };
+}
+
 /** 서버 액션 결과가 만료를 알리는가 — expiredFailureOf 가 실은 표시. 모양이 다른 결과(배열 · null)는 아니다. */
 export function isExpiredResult(result: unknown): boolean {
   return typeof result === "object" && result !== null && (result as { expired?: unknown }).expired === true;

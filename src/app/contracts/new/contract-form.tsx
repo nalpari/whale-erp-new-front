@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState, useTransition, type ReactNode } fro
 import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FieldMessage, FormGroup, FormRow, Radio, Select, Textarea, TextField, useAction } from "@/components/common";
 import { FieldErrors, useInvalid } from "../field-errors";
 import { useCurrentBp } from "@/components/site/session-gate";
+import { fetchSameOrigin } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
@@ -319,8 +320,9 @@ export function ContractForm({
   const create = useAction(createContract, { kind: "create" });
   const update = useAction(updateContract, { kind: correction ? "update" : "create" });
   const postPaper = useAction(async (data: FormData) => {
-    const res = await fetch(at("/contracts/paper"), { method: "POST", body: data });
-    return { status: res.status, body: res.status === 401 ? null : await res.json().catch(() => null) };
+    // 로그인 만료(401)면 fetchSameOrigin 이 「로그인 만료」 팝업을 띄우고 돌아오지 않는다
+    const res = await fetchSameOrigin(at("/contracts/paper"), { method: "POST", body: data });
+    return { status: res.status, body: await res.json().catch(() => null) };
   }, { kind: "create" });
   const [locked, setLocked] = useState(false);
   // 저장하지 못하면 화면을 옮긴다 — 화면이 막았으면 첫 오류 칸으로, api 가 막았으면 안내(폼 맨 아래)로. 위쪽 버튼을 누르면 안내가
@@ -424,11 +426,6 @@ export function ContractForm({
       let result: SaveResult & { ok?: boolean; status?: string | null; draftAction?: string | null };
       try {
         const res = await postPaper(data);
-        // 세션이 끊겼다 — proxy · 핸들러가 쿠키를 지우고 401 을 준다. 로그인 화면으로 보낸다.
-        if (res.status === 401) {
-          router.push("/login");
-          return;
-        }
         result = (res.body ?? { error: `요청이 실패했습니다 (HTTP ${res.status})` }) as typeof result;
       } catch {
         result = { error: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button, DetailTable, NoticeBand } from "@/components/common";
 import type { components } from "@/lib/api-types.generated";
-import { bff, BffError } from "@/lib/bff";
+import { bff, BffError, isSessionExpired } from "@/lib/bff";
 import { formatDateTime } from "@/lib/format";
 import { type Failure, failureOf, remainingOf } from "../excel-download-model";
 
@@ -50,7 +50,7 @@ export function ExcelDownloadView({ id }: { id: number | null }) {
     } catch (error) {
       const status = error instanceof BffError ? error.status : 0;
       // 세션이 끝났다 — bff() 가 「로그인 만료」 팝업을 띄웠고, [확인]이 ?next= 를 붙여 로그인 뒤 이 화면으로 돌아오게 한다
-      if (status === 401) return;
+      if (isSessionExpired(error)) return;
       if (!(error instanceof BffError)) console.error("엑셀 내려받기 주소 받기 실패", error);
       setView({ kind: "failed", ...failureOf(status, error instanceof Error ? error.message : "") });
     } finally {

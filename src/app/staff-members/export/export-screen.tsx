@@ -1,12 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
 import { Badge, Button, DataTable, DetailTable, FailedBand, NoticeBand, Pagination, useAction, useToast, type Column } from "@/components/common";
 import { PendingNotice } from "@/components/site/code-editor/code-panel";
 import { useAccount, useCurrentBp, useScope, useStores } from "@/components/site/session-gate";
-import { loginPathOf } from "@/lib/auth-routes";
-import { bff, BffError } from "@/lib/bff";
+import { bff, BffError, isSessionExpired } from "@/lib/bff";
 import { formatDateTime } from "@/lib/format";
 import { getBulkExportLink, requestBulkExport } from "./actions";
 import {
@@ -68,7 +66,6 @@ const CONTENT_COLUMNS: Column<(typeof CONTENTS)[number]>[] = [
 ];
 
 function ExportBody() {
-  const router = useRouter();
   const toast = useToast();
   const bp = useCurrentBp();
   const stores = useStores();
@@ -93,13 +90,9 @@ function ExportBody() {
   const request = useAction(requestBulkExport, { text: "요청중입니다." });
   const fetchLink = useAction(getBulkExportLink, { text: "파일을 준비하는 중입니다." });
 
-  const toLogin = () => router.replace(loginPathOf(location.pathname));
-  // 세션이 끝났으면 로그인한 뒤 이 화면으로 돌아오게 한다. 그 밖에는 영역 안에 보일 문장
+  // 영역 안에 보일 문장. 로그인 만료면 bff() 가 「로그인 만료」 팝업을 띄웠으니 그리지 않는다(null)
   const loadFailed = useEffectEvent((e: unknown, what: string): string | null => {
-    if (e instanceof BffError && e.status === 401) {
-      toLogin();
-      return null;
-    }
+    if (isSessionExpired(e)) return null;
     console.error(`직원 자료 일괄 저장 ${what} 조회 실패`, e);
     return e instanceof BffError ? e.message : "잠시 뒤 다시 불러와 주세요.";
   });
@@ -158,7 +151,6 @@ function ExportBody() {
       console.error("직원 자료 일괄 저장 요청 호출이 끊김", e);
       return { ok: false as const, status: undefined, message: "요청 결과를 확인하지 못했습니다. 지난 요청 표에서 확인해 주세요." };
     });
-    if (!result.ok && result.status === 401) return toLogin();
     if (result.ok || result.status === undefined) setFreshFrom(versionRef.current + 1);
     if (result.ok) toast("일괄 저장을 요청했습니다.");
     else setError(result.message);
@@ -173,7 +165,6 @@ function ExportBody() {
       return { ok: false as const, status: undefined, message: "파일 주소를 받지 못했습니다. 잠시 뒤 다시 눌러 주세요." };
     });
     if (result.ok) return location.assign(result.link.url);
-    if (result.status === 401) return toLogin();
     setError(result.message);
     // 기한이 지났거나 지워졌을 수 있다 — 표를 새로 읽어 지금 상태를 보인다
     reload();

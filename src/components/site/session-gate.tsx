@@ -5,7 +5,7 @@ import { createContext, use, useEffect, useEffectEvent, useRef, useState, type R
 import { Button, LoadingNotice, useBackdropActive, useToast } from "@/components/common";
 import { logout, logoutForAccountChange } from "@/app/actions";
 import { EXPIRED_REASON, loginPathOf, returnPathOf } from "@/lib/auth-routes";
-import { bff, BffError, isAccountUnavailable, isPasswordRequired, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
+import { bff, BffError, isAccountUnavailable, isPasswordRequired, isSessionExpired, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
 import { bpOfPath, bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
 import {
   BP_SWITCH_PATH,
@@ -232,7 +232,7 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
           if (!(await signOut(logout))) setState(LOGOUT_FAILED);
           return;
         }
-        if (e instanceof BffError && e.status === 401) {
+        if (isSessionExpired(e)) {
           // 세션이 이미 끊겼으면(proxy·BFF 가 쿠키를 지움) 화면을 열기 전이라 팝업 없이 로그인 화면에서 만료를 알린다. login-key 가 없는 옛 세션만 로그아웃으로 끝낸다.
           // 메일 링크(엑셀 내려받기)로 왔으면 ?next= 를 붙여 로그인 뒤 그 화면으로 돌아온다(loginPathOf).
           // bff() 가 띄운 팝업이 잠깐 보일 수 있어 앱 안 이동보다 빠른 location.replace 로 간다.
@@ -441,7 +441,7 @@ function Ready({
           const status = e instanceof BffError ? e.status : undefined;
           // 비밀번호 강제 변경 403 은 bff() 가 팝업을 다시 띄우고, 바꾸기 전에는 위에서 묻지 않는다
           // 로그인 만료 — bff() 가 「로그인 만료」 팝업을 띄웠다. 더 묻지 않는다
-          if (status === 401) {
+          if (isSessionExpired(e)) {
             s.stopped = true;
           } else if (isPasswordRequired(e)) {
             // 비밀번호 강제 변경 403 은 멈추지 않는다 — 다른 탭에서 바꾸면 이 탭은 새로고침 없이 팝업만 닫힌다(로그인 정보 맞추기와 같다)
@@ -509,7 +509,7 @@ function Ready({
             // 로그아웃이 실패하면(연결 끊김 · 배포 직후 옛 화면이 서버 액션을 못 찾음) 멈춤을 풀어 다음 이동 · 포커스에 다시 시도한다 —
             // 멈춘 채 두면 쓸 수 없는 계정이 쿠키와 옛 메뉴를 가진 채 남는다(적대적 리뷰로 찾음, PR #210)
             if (!(await signOut(logoutForAccountChange))) s.stopped = false;
-          } else if (status === 401) {
+          } else if (isSessionExpired(e)) {
             // 로그인 만료 — bff() 가 「로그인 만료」 팝업을 띄웠다. 더 묻지 않는다
             s.stopped = true;
           } else if (isPasswordRequired(e)) {

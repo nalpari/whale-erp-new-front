@@ -2,7 +2,7 @@
 
 import { useEffect, useEffectEvent, useState } from "react";
 import { useLoadGroupHold } from "@/components/common/load-group";
-import { bff, BffError } from "@/lib/bff";
+import { bff, BffError, isSessionExpired } from "@/lib/bff";
 import { PASSWORD_CHANGE_REQUIRED_MESSAGE } from "@/lib/retirement";
 
 export type Loaded<T> = { key: string; data: T } | { key: string; error: string };
@@ -36,7 +36,7 @@ export function useLoad<T>(load: (() => Promise<T>) | null, key: string, what: s
       (e: unknown) => {
         if (cancelled) return;
         // 로그인 만료 — bff() 가 「로그인 만료」 팝업을 띄웠다. 실패 문구는 그리지 않는다
-        if (e instanceof BffError && e.status === 401) return;
+        if (isSessionExpired(e)) return;
         // 강제 비밀번호 변경 전 403 은 정해진 동작이라 오류로 남기지 않는다 — 팝업 뒤 화면이 먼저 부른다(2026-10-28)
         const passwordPending = e instanceof BffError && e.status === 403 && e.message === PASSWORD_CHANGE_REQUIRED_MESSAGE;
         if (!passwordPending) console.error(`${what} 조회 실패`, e);

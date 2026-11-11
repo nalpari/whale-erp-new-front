@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { authHeaders, requestRaw, SESSION_COOKIE } from "@/lib/api";
-import { POST_BASE, postIdOf, SESSION_EXPIRED } from "@/lib/community-view";
+import { SESSION_EXPIRED } from "@/lib/action-failure";
+import { POST_BASE, postIdOf } from "@/lib/community-view";
 import { sameOrigin } from "@/lib/paper-request";
 
 // 공지사항 등록 · 수정(#276)의 창구. 화면이 multipart(api 의 텍스트 칸 + files, 수정이면 postId)를 보내면 쿠키의 접근 토큰을 붙여

@@ -31,8 +31,6 @@ const FILE_EXT = /\.(jpe?g|png|pdf)$/i;
 export const TITLE_MAX = 200;
 export const BODY_MAX = 20_000;
 
-/** 세션이 끊겼을 때 폼 위 띠 문구. 화면을 옮기지 않아 고치던 내용은 남는다. */
-export const SESSION_EXPIRED = "로그인이 만료되었습니다. 고친 내용을 옮겨 둔 뒤 다시 로그인해 주세요.";
 /** api 403 중 비밀번호 강제 변경(bff.ts 와 같은 문장 앞부분). 권한 없음과 갈라 api 문장을 그대로 보이고 변경 팝업을 띄운다. */
 export const PASSWORD_REQUIRED_PREFIX = "서비스 이용을 위해 비밀번호를 변경해 주세요.";
 

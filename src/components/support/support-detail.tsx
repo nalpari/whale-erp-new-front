@@ -5,10 +5,10 @@ import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { Button, PageBar, Tag } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp } from "@/components/site/session-gate";
-import { bff, BffError } from "@/lib/bff";
+import { bff, BffError, isSessionExpired } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
 import type { SupportInquiry, SupportNotice } from "@/lib/community";
-import { SESSION_EXPIRED, sizeLabel, SUPPORT_INQUIRY_BASE, SUPPORT_NOTICE_BASE, type InquiryStatus } from "@/lib/community-view";
+import { sizeLabel, SUPPORT_INQUIRY_BASE, SUPPORT_NOTICE_BASE, type InquiryStatus } from "@/lib/community-view";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
 import { InquiryStatusBadge } from "./support-lists";
@@ -86,7 +86,9 @@ function useDownload() {
         setError("");
         window.location.assign(url);
       } catch (e) {
-        setError(e instanceof BffError ? (e.status === 401 ? SESSION_EXPIRED : e.message) : "첨부파일을 받지 못했습니다.");
+        // 로그인 만료는 bff() 가 「로그인 만료」 팝업을 띄웠다
+        if (isSessionExpired(e)) return;
+        setError(e instanceof BffError ? e.message : "첨부파일을 받지 못했습니다.");
       }
     });
   return { error, busy, download };

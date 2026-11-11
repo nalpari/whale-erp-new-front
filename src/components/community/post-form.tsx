@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type ReactNode, useEffect } from "react";
 import { AttachmentField, Badge, Button, Checkbox, ConfirmDialog, DateField, FieldMessage, NoticeBand, PageBar, RequiredMark, Select, Tag, Textarea, TextField, Toggle, useAction, useFilePreviews, useToast } from "@/components/common";
 import { useCodes, usePagePermission } from "@/components/site/session-gate";
-import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
+import { bff, BffError, fetchSameOrigin, isSessionExpired, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import type { PostDetail } from "@/lib/community";
 import {
   AUDIENCES,
@@ -16,7 +16,6 @@ import {
   pickInquiryFiles,
   POST_BASE,
   postFields,
-  SESSION_EXPIRED,
   TITLE_MAX,
   postFieldErrors,
   type PostField,
@@ -252,7 +251,6 @@ export function PostForm({
       const edit = detail ? { postId: detail.postId, updatedAt: detail.updatedAt } : null;
       const result: SaveResult = notice ? await sendNotice(sending, status) : await callAction(() => saveFaq(edit, faqBody(sending, status)));
       if (!result.ok) {
-        // 세션이 끊겼으면(401) 화면을 옮기지 않고 띠로만 알린다 — 고치던 내용이 남는다. 쿠키는 핸들러 · 액션이 지웠다.
         // 그사이 다른 관리자가 고쳤거나 지웠다(409) — 덮어쓰지 않고 최신 내용을 다시 불러오게 한다.
         return showErrors(result.messages, result.status === 409);
       }
@@ -275,14 +273,13 @@ export function PostForm({
     for (const { file } of files) data.append("files", file);
     let res: Response;
     try {
-      res = await fetch(NOTICE_SAVE_ROUTE, { method: "POST", body: data });
+      // 로그인 만료(401)면 fetchSameOrigin 이 「로그인 만료」 팝업을 띄우고 돌아오지 않는다(고치던 내용은 남기지 않는다 — 정책)
+      res = await fetchSameOrigin(NOTICE_SAVE_ROUTE, { method: "POST", body: data });
     } catch {
       return { ok: false, messages: ["서버에 연결하지 못했습니다. 연결을 확인한 뒤 다시 저장해 주세요."] };
     }
     const body = (await res.json().catch(() => null)) as (PostDetail & { messages?: string[] }) | null;
     if (res.ok && body) return { ok: true, detail: body };
-    // proxy 가 먼저 막은 401 은 본문이 { message } 라 문구를 여기서 정한다.
-    if (res.status === 401) return { ok: false, status: 401, messages: [SESSION_EXPIRED] };
     return { ok: false, status: res.status, messages: body?.messages ?? [`저장하지 못했습니다 (HTTP ${res.status}). 잠시 뒤 다시 저장해 주세요.`] };
   };
 
@@ -304,7 +301,9 @@ export function PostForm({
         const { url } = await bff<{ url: string }>(`${listHref}/${detail.postId}/attachments/${attachmentId}/download-url`);
         window.location.assign(url);
       } catch (e) {
-        showErrors([e instanceof BffError ? (e.status === 401 ? SESSION_EXPIRED : e.message) : "첨부파일을 받지 못했습니다."]);
+        // 로그인 만료는 bff() 가 「로그인 만료」 팝업을 띄웠다
+        if (isSessionExpired(e)) return;
+        showErrors([e instanceof BffError ? e.message : "첨부파일을 받지 못했습니다."]);
       }
     });
 

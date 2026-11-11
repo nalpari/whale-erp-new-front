@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { authHeaders, requestRaw, SESSION_COOKIE } from "@/lib/api";
-import { SESSION_EXPIRED, SUPPORT_INQUIRY_BASE } from "@/lib/community-view";
+import { SESSION_EXPIRED } from "@/lib/action-failure";
+import { SUPPORT_INQUIRY_BASE } from "@/lib/community-view";
 import { sameOrigin } from "@/lib/paper-request";
 
 // 고객지원 문의 등록(#284)의 창구. 화면이 multipart(문의 유형 · 제목 · 내용 + files)를 보내면 쿠키의 접근 토큰을 붙여

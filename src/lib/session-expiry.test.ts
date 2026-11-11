@@ -1,7 +1,22 @@
 // node --test src/lib/session-expiry.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isExpiredResult, isExpiry } from "./session-expiry.ts";
+import { expiringFetch, isExpiredResult, isExpiry } from "./session-expiry.ts";
+
+test("받기 · 올리기 fetch — 401 이면 만료를 알리고 결과를 넘기지 않는다, 그 밖은 그대로", async () => {
+  let expired = 0;
+  const onExpired = () => void expired++;
+  const ok = new Response("{}", { status: 200 });
+  const conflict = new Response("{}", { status: 409 });
+  assert.equal(await expiringFetch(async () => ok, onExpired)("/x"), ok);
+  assert.equal(await expiringFetch(async () => conflict, onExpired)("/x"), conflict);
+  assert.equal(expired, 0);
+  let settled = false;
+  void expiringFetch(async () => new Response(null, { status: 401 }), onExpired)("/x").then(() => (settled = true));
+  await new Promise((r) => setTimeout(r, 10));
+  assert.equal(expired, 1);
+  assert.equal(settled, false);
+});
 
 test("만료 판정 — 토큰을 실은 요청의 401 이고 만료 제외 경로가 아닐 때만", () => {
   assert.equal(isExpiry("/stores", true), true);
