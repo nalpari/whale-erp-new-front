@@ -5,10 +5,12 @@ import * as ui from "../../ui.mjs";
 import { tag } from "../../config-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
 import { storeFilterSection } from "../../store-filter.mjs";
+import { bulkUpload } from "../../facility-bulk.mjs";
 import { ALL_STORES, FACILITIES, GROUP_SCRIPT, STATUSES, classSelect, facilityBadge, groupSelect, storeFilterScript, storeName } from "../../facility-parts.mjs";
 
 
 export default ({ A, R }) => {
+  const bulk = bulkUpload();
   // 점포 — 점포 정보 관리 목록과 같은 점포 검색(여러 곳 · [일괄검색]). 폐점 점포도 고를 수 있다(PL-1)
   // 운영상태 · 그룹 · 분류 · 시설물/장비명은 필터 이름이 표 머리와 같아 공통 거르기가 그 열로 거른다
   const filter = ui.filterPanel(A, [
@@ -48,7 +50,8 @@ export default ({ A, R }) => {
       header: erpHeader(A, R),
       title: "시설물 및 장비 관리",
       // 등록은 제목 줄 오른쪽 — 권한 그룹이 이 메뉴에 등록 권한을 준 계정에만(PL-1). 데모는 BP 마스터라 늘 보인다
-      titleRight: ui.button("등록", { href: link(R, "stores/facilities-new.html") }),
+      // [일괄 등록]은 레이어 팝업(양식 내려받기 · 파일 올리기 · 미리보기, PL-7), [등록]은 등록 화면
+      titleRight: `<div class="flex gap-[6px]">${bulk.button}${ui.button("등록", { href: link(R, "stores/facilities-new.html") })}</div>`,
       body:
         ui.listBody(
           filter,
@@ -56,6 +59,7 @@ export default ({ A, R }) => {
             `<div class="flex flex-1 flex-col">${table}</div>` +
             `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
         ) +
+        bulk.dialogs +
         GROUP_SCRIPT +
         storeFilterScript(2),
     }),

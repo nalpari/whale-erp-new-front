@@ -7,7 +7,7 @@ import { addDays, editableFromOf, MAX_PERIOD_DAYS } from "./attendance-query";
 
 // 보정이 필요한 기록의 기간(데모 fixList 머리의 기간 시작 ~ 끝). 최근 3개월 안 · 오늘까지(목업 「최근 3개월 안 · 이 안에서만 수정 가능」) —
 // 그 밖을 고르면 끝으로 붙이고, 바꾼 쪽은 그대로 두고 다른 쪽을 순서 · 92일 한도 안으로 맞춘다. 다른 조건은 주소 그대로 두고 fixFrom · fixTo 만 바꾼다.
-export function FixPeriod({ from, to, today }: { from: string; to: string; today: string }) {
+export function FixPeriod({ from, to, today, fixAll }: { from: string; to: string; today: string; fixAll: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const search = useSearchParams();
@@ -27,6 +27,8 @@ export function FixPeriod({ from, to, today }: { from: string; to: string; today
     const params = new URLSearchParams(search.toString());
     params.set("fixFrom", f);
     params.set("fixTo", t);
+    // 기간 기록 전체(fixAll)가 꺼진 채 주소에만 남았으면(3개월 밖 명세서) 지운다 — 기간을 바꿔 명세서와 무관한 기간에 다시 켜지지 않게(WHALEERP-664 리뷰)
+    if (!fixAll) params.delete("fixAll");
     startTransition(() => router.replace(`${pathname}?${params}`, { scroll: false }));
   };
   return (

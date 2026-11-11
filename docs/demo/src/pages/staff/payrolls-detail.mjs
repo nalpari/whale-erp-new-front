@@ -20,7 +20,7 @@ export default ({ A, R }) => {
   );
   const warn = p.band("출퇴근 기록이 등록되지 않은 날이 있어 검토가 필요합니다.", {
     desc: "출퇴근 기록이 등록되지 않은 날이 2일 있습니다(8월 28일 퇴근 미등록, 8월 22일 출근·퇴근 미등록). 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.",
-    actions: ui.button("출퇴근 기록 확인", { variant: "soft", href: L("staff/attendance.html") }),
+    actions: ui.button("출퇴근 기록 확인", { variant: "soft", href: L("staff/attendance-period.html") }),
   });
 
   const pay = p.section(
@@ -96,7 +96,7 @@ export default ({ A, R }) => {
   );
   const refs = p.section(
     "참조한 것",
-    ui.button("출퇴근 기록 보기", { variant: "soft", href: L("staff/attendance.html") }),
+    ui.button("출퇴근 기록 보기", { variant: "soft", href: L("staff/attendance-period.html") }),
     ui.detailTable("근로계약 · 출퇴근", [
       // 「상태 · [근로계약 보기]」 — 내부 번호는 고객이 다른 화면에서 찾을 수 없어 두지 않는다(앱 payslips/[payslipId]/page.tsx, 2026-11-06 사용자 지정, 3팀 확인 필요)
       ["근로계약", `서명 완료 · ${ui.link("근로계약 보기", L("staff/contracts-detail.html"))}`],

@@ -1,7 +1,14 @@
 # Bundle history
 
+## 2026-11-11
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 매장운영 · 재무관리 · 프랜차이즈 소개 구역 설명을 지금 구조(스크롤 고정 구역 · 펼침 목록 · 물결 흐름)로 고치고, 지운 `IntroFeatures` · `IntroFlow` · `IntroAddOns` · `feature-shortcuts.tsx` · `PosIcon` 설명을 뺐다(front #259 리뷰).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 최소폭을 1720 → 1280px 로 낮추고 고정 폭 구역이 화면 폭에 맞춰 줄게 했다(front omanyte, 사용자 지정).
+* **Update**: 데모를 앱에 맞췄다(화면설계서용) — 직원 자료 일괄 저장 데모 `staff/export` 를 #251 문구로, 급여명세서에서 온 기간 기록을 새 데모 `staff/attendance-period` 로 더하고 급여명세서 데모 버튼 둘을 거기로 이었다([출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md), WHALEERP-664). 앱 코드는 그대로다.
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — WHALEERP-664 재영 리뷰 반영: 기간 기록 전체(`fixAll`)가 꺼진 채 주소에만 남았으면 기간을 바꿀 때 지운다, 켜져 있으면 목록 아래에 근무스케줄 · 기록이 모두 없는 근로계약 근무 요일은 목록에 나오지 않는다는 안내를 적는다, 결근 줄에 「결근」 꼬리표를 붙인다.
+
 ## 2026-11-10
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근무 장소 정의를 「소속 근무지를 고르면 근무지명으로 채우고 고칠 수 있다」로 맞췄다: 칸 placeholder, 목업 · 데모 `contracts-new`, 물리 ERD `contracts.work_location` 설명(api 물리 모델과 같은 문장, PR #250 리뷰).
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) · [급여명세서 관리 화면](/screens/payslips.md) — 급여명세서 [출퇴근 기록 확인] · [출퇴근 기록 보기]로 열면 아래 목록이 그 직원의 기간 기록 전체(`fixAll=1`, 「기간 출·퇴근 기록」)를 보이고 기간은 급여 기간 첫 주 월요일부터다 — 경고 띠의 날짜(계약 종료 뒤 정상 기록 · 결근 · 휴무 · 첫 주의 지난달 날짜)가 보정 대상이 아니라 걸러지던 것(WHALEERP-664, 재영 후속 요청).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 본문 틀 `FRAME` 을 내용 폭 1760 → 1520px(`max-w-[1680px] px-[80px]`)로 줄이고 홈 · 소개 화면이 같이 쓴다(front #254, 사용자 지정).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) · [Whale ERP Frontend](/whale-erp-front.md) — 「직원 자료 일괄저장 및 근로계약 상세 문구 수정 요청.xlsx」 반영(사용자 지정): 직원 자료 일괄 저장 화면 안내 · 카드 · 표 · 상태 · 버튼 · 실패 문구(「마스터 계정만 이용」, 「저장되는 자료」 · 「요청 내역」 · 「새 요청」, 「대상 점포」, [다운로드], 「파일 생성 중」 · 「다운로드 가능」 · 「기간 만료」 등)와 근로계약 상세 계약서 파일 다운로드 거절 안내(「현재 접속한 사업자와 계정 권한을 확인한 후」).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성에서 소속 근무지를 고르면 근무 장소를 그 근무지명으로 채운다. 고쳐 쓴 장소는 두고, 근무지가 하나뿐이면 미리 골라 채운다(`withStore`, front sylveon, PR #250 리뷰 · 사용자 지정).

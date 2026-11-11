@@ -27,6 +27,7 @@
 - `docs/mockup/bp/` 5개 HTML (index, detail, new, edit, overview)
 - `docs/mockup/config/` 11개 HTML (admins, admins-detail, admins-new, admins-edit, roles, codes, holidays, holidays-detail, holidays-new, holidays-edit, overview)
 - `docs/mockup/system/` 9개 HTML (admins, admins-detail, admins-new, admins-edit, roles, menus, codes, holidays, overview)
+- `docs/mockup/stores/` 시설물·장비 8개 HTML (facilities, facilities-detail, facilities-new, facilities-edit, repairs, repairs-detail, repairs-new, repairs-edit) · claude.ai 문서 「시설물·장비 관리 정책서」(2026-11-11)
 - Manyfast 기능·명세 참조 코드: R-LYZWGG, R-QTPRUQ, R-DJGLEO, R-NMDCYH, R-KJGJXP
 
 ## 3팀과 맞닿는 곳
@@ -692,6 +693,118 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 - BP 코드 `0..1` -- `N` 엑셀 다운로드 이력 · 대상 BP
 
 ---
+
+## 시설물·장비 관리
+
+가맹점(점포)에 있는 시설물·장비의 데이터를 관리하는 영역이다(1.5차). 시설물·장비는 점포에 오래 두고 한 대씩 구매 · 설치 · 점검 · 수리 이력을 관리하는 자산이고, 소모품은 담지 않는다. 재무(자산 · 비용 · 전표)와는 잇지 않고 소유(본사 · 가맹점)도 구분하지 않는다. 근거는 claude.ai 문서 「시설물·장비 관리 정책서」(시설물·장비 관리 PL-1~7, 시설물·장비 수리 이력 PL-1~4)와 목업 `docs/mockup/stores/facilities*` · `repairs*` 다.
+
+- 시설물·장비는 점포 하나에 속하고 등록 뒤 점포를 바꿀 수 없다. 장비를 옮기면 새로 등록하고 기존 건은 폐기한다.
+- 운영상태(`FACILITY_STATUS`, 플랫폼고정)가 「운영」인 것만 새 수리 이력 · 점검 대상이다. 보관 · 폐기로 바꿔도 지난 이력은 남는다.
+- 그룹은 공통코드 그룹 「점포 시설물」(`STORE_FACILITY`) · 「점포 장비」(`STORE_EQUIPMENT`)(플랫폼제공) 가운데 하나이고, 분류는 고른 그룹의 상세 코드다. 그룹 코드 이름은 1팀 확정 전 제안이다.
+- 수리 이력 · 점검 결과가 하나라도 있는 시설물·장비는 삭제할 수 없다(폐기로 바꾼다). 삭제는 모두 `is_deleted` 논리 삭제다.
+- 일괄 등록(PL-7)은 엑셀을 검증한 뒤 `facilities` 행을 한꺼번에 만든다. 업로드 기록 테이블은 두지 않는다.
+
+### 시설물·장비 `facilities` · 중심
+
+점포에 있는 시설물·장비 한 대(한 곳)다. 필수는 점포 · 시설물/장비명 · 운영상태 · 그룹 · 분류 다섯 칸이고 나머지는 선택이다. 총금액은 단가 × 수량으로 서버가 계산해 넣고 화면에서 입력하지 않는다. 관리 담당자는 그 점포의 재직 직원(3팀 `staff_members`)이고, 외래키는 3팀 스키마를 1팀 스키마 위에 얹으므로 1팀 DDL 에서는 걸지 않는다.
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 시설물·장비 ID | id | `facility_id` |  |
+| FK | 점포 | id | `store_id` | stores FK, 등록 뒤 변경 불가, 폐점 점포에는 등록 불가 |
+|  | 운영상태 코드 | code | `facility_status_code` | 공통코드 `FACILITY_STATUS`(플랫폼고정 · 운영 · 보관 · 폐기), 처음 값 운영 |
+|  | 그룹 | code | `facility_group_code` | 공통코드 그룹 코드 `STORE_FACILITY` · `STORE_EQUIPMENT` 중 하나 |
+|  | 분류 코드 | code | `facility_class_code` | 고른 그룹의 상세 코드. 미사용으로 바뀐 분류도 지금 값으로 남는다 |
+|  | 시설물/장비명 | text | `name` | 1~100자 |
+|  | 브랜드 | text | `brand` |  |
+|  | 제조사 | text | `manufacturer` |  |
+|  | Serial number | text | `serial_number` |  |
+|  | 설치 위치 | text | `install_location` |  |
+|  | 구매처 | text | `vendor_name` |  |
+|  | 구매처 전화번호 | text | `vendor_phone` | 숫자 9~12자리(세 칸을 이어 저장) |
+|  | 영업사원 | text | `salesperson_name` |  |
+|  | 영업사원 전화번호 | text | `salesperson_phone` | 숫자 9~12자리 |
+|  | 단가 | int | `unit_price_amount` | 원 단위 정수, 10자리까지 |
+|  | 수량 | int | `quantity` | 1~9,999, 기본 1 |
+|  | 총금액 | int | `total_amount` | 단가 × 수량, 서버 계산(입력 불가). 단가가 없으면 비운다 |
+|  | 부가세 포함 여부 | bool | `is_vat_included` | 기본 true, 단가 · 총금액에 적용 |
+|  | 구매일 | date | `purchase_date` |  |
+|  | 설치일 | date | `install_date` | 구매일보다 앞설 수 없다 |
+|  | 사용 유효기한 | date | `usage_expiry_date` |  |
+|  | 품질 보증기한 | date | `warranty_expiry_date` |  |
+|  | 메모 | text | `memo` | 줄바꿈 · 공백 포함 200자까지 |
+|  | 관리 담당자 | id | `manager_staff_member_id` | 3팀 staff_members 참조(같은 점포 재직 직원), 외래키는 1팀 DDL 에 걸지 않는다 |
+|  | 관리 담당자 전화번호 | text | `manager_phone` | 숫자 9~12자리. 담당자를 고르면 휴대폰 번호로 채운다 |
+|  | 점검 주기 코드 | code | `facility_inspection_cycle_code` | 공통코드 `FACILITY_INSPECTION_CYCLE`(플랫폼제공), 처음 값 매일 |
+|  | 점검 비고 | text | `inspection_note` |  |
+|  | A/S센터 우편번호 | text | `service_center_zip_code` | 공통 주소 검색 결과 |
+|  | A/S센터 기본주소 | text | `service_center_address` | 공통 주소 검색 결과 |
+|  | A/S센터 상세주소 | text | `service_center_address_detail` | 100자까지 |
+|  | A/S센터 전화번호 | text | `service_center_phone` | 숫자 9~12자리 |
+|  | 삭제 여부 | bool | `is_deleted` | 수리 이력 · 점검 결과가 있으면 삭제 불가 |
+|  | 등록 일시 | datetime | `created_at` |  |
+| FK | 등록자 | id | `created_by` | admin_accounts FK |
+|  | 최근 수정 일시 | datetime | `updated_at` |  |
+| FK | 수정자 | id | `updated_by` | admin_accounts FK |
+
+### 시설물·장비 문서 파일 `facility_document_files` · 엔티티
+
+시설물·장비의 문서 3종(사용 매뉴얼 · 주의사항 · 제품 보증서) 파일 정보다. 파일 자체는 파일 저장소에 두고 저장 위치만 담는다. 종류마다 1개라 삭제되지 않은 행은 (시설물·장비, 문서 구분)마다 하나다(부분 유일). 파일을 바꾸면 기존 행을 삭제 처리하고 새 행을 만든다.
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 문서 파일 ID | id | `facility_document_file_id` |  |
+| FK | 시설물·장비 | id | `facility_id` | facilities FK |
+|  | 문서 구분 | enum | `document_type` | 사용 매뉴얼 · 주의사항 · 제품 보증서 |
+|  | 원본 파일명 | text | `file_name` |  |
+|  | 파일 형식 | enum | `file_type` | JPG · PNG · PDF |
+|  | 파일 크기 | int | `size_bytes` | 10MB 이하 |
+|  | 저장 위치 | text | `storage_key` | 파일 저장소 키 |
+|  | 삭제 여부 | bool | `is_deleted` | 교체 · 빼기 시 true |
+|  | 등록 일시 | datetime | `created_at` |  |
+| FK | 등록자 | id | `created_by` | admin_accounts FK |
+|  | 최근 수정 일시 | datetime | `updated_at` |  |
+| FK | 수정자 | id | `updated_by` | admin_accounts FK |
+
+### 수리 이력 `facility_repairs` · 중심
+
+시설물·장비 한 건의 고장 · 수리 기록이다. 한 시설물·장비에 여러 건을 남긴다. 수리 이력의 점포는 대상 시설물·장비의 점포라 따로 두지 않는다. 등록 뒤 대상을 바꿀 수 없고, 운영상태가 「운영」인 시설물·장비로만 새로 등록한다(앱 검사).
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 수리 이력 ID | id | `facility_repair_id` |  |
+| FK | 시설물·장비 | id | `facility_id` | facilities FK, 등록 뒤 변경 불가 |
+|  | 고장 내용 | text | `failure_description` | 1~200자 |
+|  | 고장 원인 | text | `failure_cause` | 1~200자 |
+|  | 고장 일자 | date | `failure_date` |  |
+|  | 수리 일자 | date | `repair_date` | 고장 일자보다 앞설 수 없다, 선택 |
+|  | 수리기사명 | text | `technician_name` | 50자까지 |
+|  | 수리기사 전화번호 | text | `technician_phone` | 숫자 9~12자리 |
+|  | 수리비 | int | `repair_cost_amount` | 원 단위 정수, 10자리까지 |
+|  | 부가세 포함 여부 | bool | `is_vat_included` | 기본 true |
+|  | 수리비 결제 수단 코드 | code | `repair_payment_method_code` | 공통코드 `REPAIR_PAYMENT_METHOD`(플랫폼고정 · 현금 · 계좌이체 · 신용카드 · 기타) |
+|  | 삭제 여부 | bool | `is_deleted` | 교체 부품 줄도 함께 삭제 표시 |
+|  | 등록 일시 | datetime | `created_at` |  |
+| FK | 등록자 | id | `created_by` | admin_accounts FK |
+|  | 최근 수정 일시 | datetime | `updated_at` |  |
+| FK | 수정자 | id | `updated_by` | admin_accounts FK |
+
+### 교체 부품 `facility_repair_parts` · 엔티티
+
+수리 이력 한 건에서 바꾼 부품 줄이다. 선택 입력이라 줄이 없어도 된다. 화면에서 줄을 더하고 빼며 [저장]할 때 한꺼번에 반영한다.
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 교체 부품 ID | id | `facility_repair_part_id` |  |
+| FK | 수리 이력 | id | `facility_repair_id` | facility_repairs FK |
+|  | 부품명 | text | `part_name` | 1~50자 |
+|  | 수량 | int | `quantity` | 1 이상, 선택 |
+|  | 표시 순서 | int | `sort_order` | 화면 줄 순서 |
+|  | 삭제 여부 | bool | `is_deleted` | 줄을 빼거나 수리 이력을 지우면 true |
+|  | 등록 일시 | datetime | `created_at` |  |
+| FK | 등록자 | id | `created_by` | admin_accounts FK |
+|  | 최근 수정 일시 | datetime | `updated_at` |  |
+| FK | 수정자 | id | `updated_by` | admin_accounts FK |
 
 ## 3팀 참조 엔티티
 

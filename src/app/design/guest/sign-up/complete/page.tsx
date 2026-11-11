@@ -23,7 +23,7 @@ export default async function SignUpCompletePage({ searchParams }: { searchParam
         >
           가입하고 오늘부터 바로 매장 관리를 시작하세요.
         </GuestVisual>
-        <div className="flex items-center justify-center px-[200px] py-[80px] text-guest-ink">
+        <div className="flex items-center justify-center px-[clamp(60px,10vw,200px)] py-[80px] text-guest-ink">
           <div className="flex w-full flex-col items-center gap-[32px] text-center">
             <div className="flex flex-col items-center gap-[12px]">
               <h1 className="text-[28px] leading-[1.2] font-bold">가입을 환영합니다</h1>
