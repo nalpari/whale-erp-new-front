@@ -17,6 +17,7 @@ import {
   withEmploymentType,
   hoursOf,
   initialForm,
+  withStore,
   inProgressLine,
   stillCorrecting,
   replaceConfirmBody,
@@ -555,4 +556,18 @@ test("최저임금 공통코드를 쓸 수 없으면 화면은 막지 않고 api
   // 도움말 · 오류 문장이 같이 쓰는 하한 표기
   assert.equal(probationFloorLabel(10320), "최저임금의 90%(9,288원)");
   assert.equal(probationFloorLabel(null), "최저임금의 90%");
+});
+
+test("소속 근무지를 고르면 근무 장소를 근무지명으로 채운다. 고쳐 쓴 장소는 두고, 앞 근무지명 그대로면 바꾼다", () => {
+  const stores = [{ storeId: 1, name: "성수점" }, { storeId: 2, name: "강남점" }];
+  const picked = withStore(initialForm(), "1", stores);
+  assert.equal(picked.storeId, "1");
+  assert.equal(picked.workLocation, "성수점");
+  assert.equal(withStore(picked, "2", stores).workLocation, "강남점");
+  assert.equal(withStore(picked, "", stores).workLocation, "");
+  assert.equal(withStore(picked, "9", stores).workLocation, "", "선택지에 없는 근무지는 채워 둔 근무지명을 비운다");
+  const typed = { ...picked, workLocation: "서울 성동구 연무장길 18, 1층" };
+  assert.equal(withStore(typed, "2", stores).workLocation, "서울 성동구 연무장길 18, 1층");
+  assert.equal(withStore(typed, "", stores).workLocation, "서울 성동구 연무장길 18, 1층");
+  assert.equal(withStore({ ...picked, workLocation: "  " }, "2", stores).workLocation, "강남점");
 });

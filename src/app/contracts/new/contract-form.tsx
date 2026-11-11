@@ -39,6 +39,7 @@ import {
   weeklyHours,
   WEEKDAYS,
   withEmploymentType,
+  withStore,
   type ContractForm as Form,
   type CreateContractBody,
   type DayTimes,
@@ -308,7 +309,8 @@ export function ContractForm({
   /** 돌아갈 목록 주소(?back=) — 취소 · 저장 뒤 같은 조건의 목록으로 간다 */
   back?: string;
 }) {
-  const [form, setForm] = useState<Form>(() => initial ?? initialForm(stores.length === 1 ? String(stores[0].storeId) : ""));
+  // 근무지가 하나뿐이면 미리 고르고(TO-DO 작성과 같다) 근무 장소도 그 근무지명으로 채운다
+  const [form, setForm] = useState<Form>(() => initial ?? (stores.length === 1 ? withStore(initialForm(), String(stores[0].storeId), stores) : initialForm()));
   // 저장을 한 번 누른 뒤부터 막는 이유를 보인다. 처음부터 빨간 줄을 띄우지 않는다.
   const router = useRouter();
   // 화면 주소 · 종이 계약 창구는 탭 BP 를 붙인다 — proxy 가 그 BP 를 api 에 싣는다. back 은 옛 경로(목록 쿼리)다
@@ -346,6 +348,8 @@ export function ContractForm({
   // 「잘못 올린 계약 바로잡기」를 묻는다 — 확인하면 correctSignedContracts 를 켜 체결 완료도 대체한다(WHALEERP-156).
   const [replace, setReplace] = useState<{ body: CreateContractBody; list: InProgressContract[]; paper: boolean; correcting: boolean } | null>(null);
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
+  // 근무지를 고르면 근무 장소를 그 근무지명으로 채운다(고쳐 쓴 장소는 둔다)
+  const pickStore = (storeId: string) => setForm((f) => withStore(f, storeId, stores));
   // 종이 계약 날인본(CTR-23). 근로계약서는 필수, 따로 날인한 임금계약서는 선택. 고르는 순간 형식 · 크기를 먼저 본다(api 가 내용으로 다시 본다).
   const [files, setFiles] = useState<{ employment: File | null; wage: File | null }>({ employment: null, wage: null });
   const [fileErrors, setFileErrors] = useState<{ employment?: string; wage?: string }>({});
@@ -596,7 +600,7 @@ export function ContractForm({
             <Item label="소속 근무지" required errors={errs.storeId}>
               {(id) => (
                 // 수정 요청은 이미 보낸 계약이라 근무지를 바꾸지 않는다 — 다른 근무지는 새 근로계약서로(api #58). 재계약도 직전 계약의 근무지다
-                <Select id={id} value={form.storeId} disabled={correction || previousContractId !== undefined} onChange={(e) => set("storeId", e.target.value)}>
+                <Select id={id} value={form.storeId} disabled={correction || previousContractId !== undefined} onChange={(e) => pickStore(e.target.value)}>
                   <option value="">선택</option>
                   {stores.map((s) => (
                     <option key={s.storeId} value={s.storeId}>
@@ -847,7 +851,7 @@ export function ContractForm({
             </Group>
             <Item label="근무 장소">
               {(id) => (
-                <TextField id={id} value={form.workLocation} maxLength={200} placeholder="예: 서울 성동구 연무장길 18, 1층" onChange={(e) => set("workLocation", e.target.value)} />
+                <TextField id={id} value={form.workLocation} maxLength={200} placeholder="소속 근무지를 고르면 근무지명이 들어갑니다" onChange={(e) => set("workLocation", e.target.value)} />
               )}
             </Item>
           </FormRow>
