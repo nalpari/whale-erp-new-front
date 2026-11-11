@@ -1,13 +1,12 @@
-import Image from "next/image";
-import { GLASS, OrderIcon, PosIcon } from "../guest-icons";
-import type { GuestRoutes } from "../guest-routes";
-import { GuestPage, ICON_GRADIENT } from "../guest-ui";
-import { type AddOn, type Feature, type FlowStep, IntroAddOns, IntroFeatures, IntroFlow, IntroMoments, type Moment } from "../intro-sections";
+import type { ReactNode } from "react";
+import { GuestPage } from "../guest-ui";
+import { type AccordionFeature, IntroFeaturesAccordion } from "../intro-features-accordion";
+import { FinanceAccountMock, FinanceEntryMock, FinanceRatioMock, FinanceSalesMock } from "../screen-mocks";
+import { IntroMoments, IntroTimeline, type Moment } from "../intro-sections";
 
 // Figma 「재무관리」(RQmNVgT2NL0njIFXVQPVG6 · 44:1412, 로그인전_공유 — 2026-11-06). 비로그인 메인의 재무관리 소개 화면이다.
 // 실제 라우트((site))와 디자인 샘플이 함께 그린다. 링크는 받은 routes 로 건다(guest-routes.ts). 구역 틀은 매장운영과 같이 쓴다(intro-sections.tsx).
 
-const ASSET = "/guest/finance-management";
 
 const MOMENTS: Moment[] = [
   {
@@ -24,10 +23,10 @@ const MOMENTS: Moment[] = [
   },
 ];
 
-const FEATURES: Feature[] = [
+const FEATURES: AccordionFeature[] = [
   {
     id: "account",
-    photo: `${ASSET}/feature-account.png`,
+    screen: <FinanceAccountMock />,
     tab: "입출금",
     no: "01 입출금",
     title: ["통장 내역,", "은행 앱 열지 않고 확인하세요"],
@@ -36,7 +35,7 @@ const FEATURES: Feature[] = [
   },
   {
     id: "transaction",
-    photo: `${ASSET}/feature-transaction.png`,
+    screen: <FinanceEntryMock />,
     tab: "매출 · 매입 등록",
     no: "02 매출 · 매입 등록",
     title: ["현금 거래도", "장부에서 빠지지 않게"],
@@ -45,7 +44,7 @@ const FEATURES: Feature[] = [
   },
   {
     id: "ledger",
-    photo: `${ASSET}/feature-ledger.png`,
+    screen: <FinanceRatioMock />,
     tab: "계정별 현황",
     no: "03 계정별 현황",
     title: ["어디로 돈이 새는지,", "비율로 보입니다"],
@@ -54,7 +53,7 @@ const FEATURES: Feature[] = [
   },
   {
     id: "sales",
-    photo: `${ASSET}/feature-sales.png`,
+    screen: <FinanceSalesMock />,
     tab: "매출 조회 · 통계",
     no: "04 매출 조회 · 통계",
     title: ["지난달보다 잘 팔렸을까?", "숫자로 확인하세요"],
@@ -63,52 +62,76 @@ const FEATURES: Feature[] = [
   },
 ];
 
-// 「거래 추가」는 원 둘과 더하기를 겹친 그림이다. 선 굵기만큼 SVG 가 칸보다 커서 그만큼 당겨 놓는다(Figma 44:1621).
-const FLOW: FlowStep[] = [
-  { title: "01 통장 연동", desc: "사업자 통장 내역 불러오기", icon: [{ src: `${ASSET}/flow-bank.svg`, width: 64, height: 64, left: 0, top: 0 }] },
-  { title: "02 계정 연결", desc: "거래마다 회계 계정 지정", icon: [{ src: `${ASSET}/flow-ledger.svg`, width: 64, height: 64, left: 0, top: 0 }] },
-  {
-    title: "03 거래 추가",
-    desc: "현금·카드 매입 직접 등록",
-    icon: [
-      { src: `${ASSET}/flow-add-1.svg`, width: 55, height: 56, left: 4, top: 3 },
-      { src: `${ASSET}/flow-add-2.svg`, width: 20.0011, height: 20.0011, left: 5, top: 4 },
-      { src: `${ASSET}/flow-add-3.svg`, width: 24, height: 24, left: 19, top: 19 },
-    ],
-  },
-  { title: "04 비율 확인", desc: "매출 대비 항목별 비중", icon: [{ src: `${ASSET}/flow-ratio.svg`, width: 64, height: 64, left: 0, top: 0 }] },
-  { title: "05 기간 비교", desc: "전월·전년과 나란히 비교", icon: [{ src: `${ASSET}/flow-compare.svg`, width: 64, height: 64, left: 0, top: 0 }] },
-];
-
-// 「재무관리 구독」 — 그라데이션 원 위에 유리 원, 그 위에 원화 기호 선 아이콘(Figma 44:1705).
-function FinanceIcon() {
+// 단계 아이콘 — 남색 1.8px 선 그림. 매장운영 흐름과 같은 모양(2026-11-10 사용자 지정).
+function LineIcon({ children }: { children: ReactNode }) {
   return (
-    <span className="relative block size-[74px]">
-      <span
-        className="absolute top-[11.98px] left-0 h-[62.03px] w-[61.53px] rounded-full shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]"
-        style={{ backgroundImage: ICON_GRADIENT }}
-      />
-      <span className={`absolute top-0 left-[15.56px] size-[52.44px] rounded-full ${GLASS}`} />
-      <Image src={`${ASSET}/addon-finance.svg`} alt="" width={38} height={38} className="absolute top-[7px] left-[23px] max-w-none" />
-    </span>
+    <svg aria-hidden width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      {children}
+    </svg>
   );
 }
 
-const ADD_ONS: AddOn[] = [
-  { name: "POS", desc: "팔기만 하면 매출이 자동으로 모입니다", icon: <PosIcon /> },
-  // 봉투 뒤판은 부가서비스 화면과 달리 흰색이 아래로 옅어지는 그림이다(Figma 44:1689). 앞판은 같은 그림이다.
-  { name: "발주 관리", desc: "자재 주문부터 결제까지 한 번에", icon: <OrderIcon back={`${ASSET}/addon-order-back.svg`} front="/guest/add-on-services/order-mail-front.svg" /> },
-  { name: "재무관리 구독", desc: "필요한 매장에만 재무 기능 추가", icon: <FinanceIcon /> },
+// 사장님이 하는 일 순서 — 매장운영 「끊김 없이」와 같은 흰 바탕 물결 흐름(2026-11-10 사용자 지정, 전엔 어두운 바탕 아이콘 카드).
+const FLOW = [
+  {
+    title: "통장 연동",
+    desc: "사업자 통장 내역 자동으로 불러오기",
+    icon: (
+      <LineIcon>
+        <path d="M3 10 12 4l9 6" />
+        <path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18" />
+      </LineIcon>
+    ),
+  },
+  {
+    title: "계정 연결",
+    desc: "거래마다 회계 계정 지정",
+    icon: (
+      <LineIcon>
+        <path d="M3 12V5a2 2 0 0 1 2-2h7l9 9-9 9z" />
+        <circle cx="8" cy="8" r="1.5" />
+      </LineIcon>
+    ),
+  },
+  {
+    title: "거래 추가",
+    desc: "통장 밖 현금 · 카드 거래 직접 등록",
+    icon: (
+      <LineIcon>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 8v8M8 12h8" />
+      </LineIcon>
+    ),
+  },
+  {
+    title: "비율 확인",
+    desc: "매출 대비 계정별 비율 확인",
+    icon: (
+      <LineIcon>
+        <path d="M12 3a9 9 0 1 0 9 9h-9z" />
+        <path d="M15 3.5A9 9 0 0 1 20.5 9H15z" />
+      </LineIcon>
+    ),
+  },
+  {
+    title: "기간 비교",
+    desc: "전월 · 전년 매출과 나란히 비교",
+    icon: (
+      <LineIcon>
+        <path d="M4 20h16" />
+        <path d="M7 16v-4M12 16V7M17 16v-6" />
+      </LineIcon>
+    ),
+  },
 ];
 
-export function FinanceManagement({ routes }: { routes: GuestRoutes }) {
+export function FinanceManagement() {
   return (
     // 맨 아래 부가서비스 구역(회색 바탕)이 푸터에 바로 붙는 시안이라 본문 아래 60px 여백을 두지 않는다.
     <GuestPage flush>
-      <IntroMoments routes={routes} light="장부 정리," bold="아직도 월말에 몰아서 하시나요?" items={MOMENTS} />
-      <IntroFeatures light="재무관리," bold="이렇게 달라집니다" items={FEATURES} />
-      <IntroFlow light="거래가 쌓일수록" bold="매장이 선명해집니다." steps={FLOW} />
-      <IntroAddOns routes={routes} items={ADD_ONS} />
+      <IntroMoments light="장부 정리," bold="아직도 월말에 몰아서 하시나요?" items={MOMENTS} />
+      <IntroFeaturesAccordion light="재무관리," bold="이렇게 달라집니다" items={FEATURES} />
+      <IntroTimeline light="거래가 쌓일수록," bold="매장이 선명해져요" steps={FLOW} />
     </GuestPage>
   );
 }
