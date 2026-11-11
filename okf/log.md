@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-11
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 화면(플랫폼 · BP)은 로그인 만료 팝업 [확인]의 로그인 이동에 브라우저 「나가시겠습니까?」를 띄우지 않는다(사용자 지정).
 * **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — 회원 탈퇴 최종 제출의 401 도 로그인 만료로 본다(「로그인 만료」 팝업 → 로그인 화면). 전엔 안내 없이 로그인 전 홈으로 가 탈퇴된 줄 알 수 있었다(사용자 지정).
 
 ## 2026-11-10
