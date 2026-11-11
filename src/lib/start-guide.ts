@@ -48,7 +48,7 @@ export const GUIDE_STEPS: Record<GuideTrack, GuideStep[]> = {
     { label: "3-2", title: "가맹 마스터 등록하기\n(맡을 가맹 점포 지정)", path: "/bp-admins", sub: true },
     { label: "STEP 4", title: "직영점 직원 초대 · 근로계약 보내기", path: "/staff-members", note: "가맹점 직원은 가맹점주가 초대합니다." },
     { label: "STEP 5", title: "근무스케줄 · 출퇴근 확인하기", path: "/work-schedules" },
-    { label: "STEP 6", title: "급여명세서 보내기 ·\n가맹점 현황 보기", path: "/payslips", note: "가맹점 직원 정보는 본사 제공에 동의한 직원만 보입니다." },
+    { label: "STEP 6", title: "급여명세서 보내기", path: "/payslips", note: "가맹점 직원 정보는 본사 제공에 동의한 직원만 보입니다." },
   ],
   FRANCHISEE: [
     { label: "STEP 1", title: "맡은 점포 확인하기", path: "/stores" },
