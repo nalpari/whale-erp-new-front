@@ -1,7 +1,7 @@
 # Bundle history
 
 ## 2026-11-11
-* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 직원 자료 일괄 저장 안내 두 곳을 운영 정책 RET-09 에 맞췄다(WHALEERP-666, 재영 리뷰): 상단 띠 「회원 탈퇴 시」 → 「BP 탈퇴 시」, 저장 제외 안내는 「신고 정보(주민등록번호 포함) · 위치 확인자료 · 동의 기록은 포함되지 않습니다. 관리자가 올린 계약서 파일(종이 계약 날인본 · 임금계약서)은 원본 그대로 포함됩니다.」.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 직원 자료 일괄 저장 안내 두 곳을 운영 정책 RET-09 에 맞췄다(WHALEERP-666, 재영 리뷰): 상단 띠 「회원 탈퇴 시」 → 「BP 탈퇴 시」, 저장 제외 안내는 「신고 정보(주민등록번호 포함) · 위치 확인자료 · 동의 기록은 포함되지 않습니다. 관리자가 올린 계약서 파일(종이 계약 날인본 · 임금계약서)은 원본 그대로 포함되어, 파일에 적힌 주민등록번호 등 개인정보가 들어 있을 수 있습니다.」. 데모 staff/export · 상위 정책 요약(okf/staff.md)도 같이 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 매장운영 · 재무관리 · 프랜차이즈 소개 구역 설명을 지금 구조(스크롤 고정 구역 · 펼침 목록 · 물결 흐름)로 고치고, 지운 `IntroFeatures` · `IntroFlow` · `IntroAddOns` · `feature-shortcuts.tsx` · `PosIcon` 설명을 뺐다(front #259 리뷰).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 최소폭을 1720 → 1280px 로 낮추고 고정 폭 구역이 화면 폭에 맞춰 줄게 했다(front omanyte, 사용자 지정).
 * **Update**: 데모를 앱에 맞췄다(화면설계서용) — 직원 자료 일괄 저장 데모 `staff/export` 를 #251 문구로, 급여명세서에서 온 기간 기록을 새 데모 `staff/attendance-period` 로 더하고 급여명세서 데모 버튼 둘을 거기로 이었다([출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md), WHALEERP-664). 앱 코드는 그대로다.

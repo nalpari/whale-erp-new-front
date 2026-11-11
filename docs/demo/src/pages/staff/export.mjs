@@ -6,8 +6,8 @@ import { BP, erpHeader, link } from "../../site.mjs";
 export default ({ A, R }) => {
   const L = (path) => link(R, path);
   const head = ui.sectionHead("직원 자료 일괄 저장", ui.button("목록", { href: L("staff/index.html") }));
-  const warn = p.band("회원 탈퇴 시 모든 관리자 계정이 미사용 처리되어 자료에 접근할 수 없습니다.", {
-    desc: "탈퇴 후에는 보존 기간이 남아 있더라도 이 화면을 열람할 수 없습니다. 필요한 자료는 탈퇴 전에 미리 저장해 주세요. 탈퇴 전까지는 언제든지 이 화면에서 자료를 다운로드할 수 있습니다.",
+  const warn = p.band("BP 탈퇴 시 모든 관리자 계정이 미사용 처리되어 자료에 접근할 수 없습니다.", {
+    desc: "BP 탈퇴 후에는 보존 기간이 남아 있더라도 이 화면을 열람할 수 없습니다. 필요한 자료는 BP 탈퇴 전에 미리 저장해 주세요. BP 탈퇴 전까지는 언제든지 이 화면에서 자료를 다운로드할 수 있습니다.",
   });
 
   const contents = p.section(
@@ -21,7 +21,8 @@ export default ({ A, R }) => {
         ["급여명세서", "발송 완료된 급여명세서와 전체 목록", "PDF · CSV"],
         ["근무스케줄", "등록된 근무스케줄 전체", "CSV"],
       ],
-    ),
+    ) +
+      p.note("신고 정보(주민등록번호 포함) · 위치 확인자료 · 동의 기록은 포함되지 않습니다. 관리자가 올린 계약서 파일(종이 계약 날인본 · 임금계약서)은 원본 그대로 포함되어, 파일에 적힌 주민등록번호 등 개인정보가 들어 있을 수 있습니다."),
   );
   const requests = p.section(
     "요청 내역",

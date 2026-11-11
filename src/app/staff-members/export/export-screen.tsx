@@ -216,7 +216,7 @@ function ExportBody() {
         <div className="flex min-w-0 flex-col gap-[18px]">
           <Card title="저장되는 자료">
             <DataTable columns={CONTENT_COLUMNS} rows={CONTENTS} rowKey={(r) => r.name} />
-            <Note>신고 정보(주민등록번호 포함) · 위치 확인자료 · 동의 기록은 포함되지 않습니다. 관리자가 올린 계약서 파일(종이 계약 날인본 · 임금계약서)은 원본 그대로 포함됩니다.</Note>
+            <Note>신고 정보(주민등록번호 포함) · 위치 확인자료 · 동의 기록은 포함되지 않습니다. 관리자가 올린 계약서 파일(종이 계약 날인본 · 임금계약서)은 원본 그대로 포함되어, 파일에 적힌 주민등록번호 등 개인정보가 들어 있을 수 있습니다.</Note>
           </Card>
           <Card title="요청 내역">
             {shownList && "error" in shownList ? (
