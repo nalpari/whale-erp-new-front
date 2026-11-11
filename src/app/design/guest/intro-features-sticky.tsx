@@ -17,7 +17,7 @@ function Lines({ lines }: { lines: string[] }) {
 // 「○○, 이렇게 달라집니다」 — 제목 줄(제목 + 네 바로가기)과 그 아래 그림 · 글 칸이 화면에 붙어 있고,
 // 스크롤하는 동안 그림 · 글만 네 기능 차례로 서서히 바뀐다. 지금 기능의 바로가기는 채워져 보인다(네이버페이 커넥트 소개 참고, 2026-11-10 사용자 지정).
 // 구역 높이는 기능 수 × 화면 높이 80% 라 그만큼 스크롤하는 동안 붙어 있다. 그림(520×600)과 글(640) 묶음을 본문 가운데에, 글은 그림 세로 가운데에 둔다.
-// 구역 여백은 메인과 같다 — 바탕은 홈 「함께 일하는 방식」과 같은 한 톤 밝은 회청 그라데이션, 글은 흰색(매장운영만, 2026-11-11 사용자 지정 — 홈과 같은 짙은 남색은 너무 강했다, 전엔 연하늘), 붙어 있는 동안 제목이 구역 위에서 100px 아래에 선다.
+// 구역 여백은 메인과 같다 — 바탕은 연하늘(#f1f7fc, 짙은 남색 · 회청은 너무 강해 되돌렸다, 2026-11-11), 붙어 있는 동안 제목이 구역 위에서 100px 아래에 선다.
 // 그림 · 글 칸은 화면 아래 24px 까지 세로로 길게 쓴다 — 머리 110 + 위 여백 + 제목 줄 78 + 간격 + 아래 24 를 뺀 높이. 위 여백(24~100) · 간격(24~60)은 창 높이에 따라 줄고,
 // 칸이 낮으면 화면 조각을 비율 그대로 줄인다 — 낮은 노트북(1366×768 등)에서 카드 아래 · 글이 잘렸다(PR #254 리뷰 B3, 2026-11-10).
 // 움직임 줄이기 설정이면 바뀔 때 서서히 겹치지 않고 바로 바뀐다(motion-reduce:transition-none).
@@ -98,7 +98,7 @@ export function IntroFeaturesSticky({ light, bold, items }: { light: string; bol
   return (
     <section ref={sectionRef} className="relative bg-[#f1f7fc]" style={{ height: `${items.length * STEP_VH}vh` }}>
       <div className={`${FRAME} sticky top-[110px] flex h-[calc(100vh-110px)] flex-col gap-[var(--gap)] pt-[var(--pt)] [--gap:clamp(24px,5vh,60px)] [--h:calc(100vh-212px-var(--pt)-var(--gap))] [--pt:clamp(24px,8vh,100px)]`}>
-        <div className="flex items-end justify-between">
+        <div className="flex flex-wrap items-end justify-between gap-x-[24px] gap-y-[16px]">
           <SectionTitle oneLine light={light} bold={bold} />
           <nav className="flex gap-[8px]">
             {items.map((item, i) => (
@@ -107,7 +107,7 @@ export function IntroFeaturesSticky({ light, bold, items }: { light: string; bol
                 type="button"
                 aria-current={i === active || undefined}
                 onClick={() => handleShortcut(i)}
-                className={`flex h-[48px] items-center rounded-[6px] border px-[18px] text-[18px] leading-[1.5] font-semibold ${BUTTON_MOTION} ${i === active ? "border-guest-navy bg-guest-navy text-white" : "border-guest-button-line bg-white text-guest-navy hover:border-guest-navy"}`}
+                className={`flex h-[48px] items-center rounded-[6px] border px-[18px] text-[18px] leading-[1.5] font-semibold whitespace-nowrap ${BUTTON_MOTION} ${i === active ? "border-guest-navy bg-guest-navy text-white" : "border-guest-button-line bg-white text-guest-navy hover:border-guest-navy"}`}
               >
                 {item.tab}
               </button>

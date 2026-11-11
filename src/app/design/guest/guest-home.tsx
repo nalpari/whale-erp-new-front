@@ -89,7 +89,7 @@ function Billboard() {
       {/* 정사각 그림을 677×375 에 늘여 채운 것이 시안이다 — object-cover 로 바꾸면 고래가 잘린다.
           시안의 2px 흐림은 너무 뿌옇다는 요청(2026-10-13)으로 뺐다.
           고래는 가운데에서 오른쪽으로 200px 옮겨 왼쪽 슬로건 · 카피와 겹치지 않게 한다(2026-11-09 사용자 지정). */}
-      <div className="guest-whale absolute top-[410px] left-[calc(50%+200px)] h-[375px] w-[677px] -translate-1/2">
+      <div className="guest-whale absolute top-[410px] left-[max(calc(50%+200px),940px)] h-[375px] w-[677px] -translate-1/2">
         <Image src="/guest/billboard-whale.png" alt="" fill loading="eager" sizes="677px" />
       </div>
       {/* 높이를 980px 로 고정하지 않고 글 묶음 높이에 맞춘다 — 머리말(110px) 아래 위 여백 100px · 아래 여백 100px 로 다른 섹션과 같게(2026-11-10 사용자 지정). */}
@@ -321,7 +321,7 @@ function StepMock({ kind }: { kind: (typeof STEPS)[number]["key"] }) {
   if (kind === "store")
     return (
       <div className="relative h-[320px] w-[290px]">
-        <div aria-hidden className={`${MOCK} absolute top-0 left-[40px] scale-90 opacity-60 blur-[1.5px]`}>
+        <div aria-hidden className={`${MOCK} absolute top-0 left-[20px] scale-90 opacity-60 blur-[1.5px]`}>
           <p className="text-[15px] font-bold">점포 등록</p>
           <div className="mt-[12px] flex flex-col gap-[8px] border-t border-guest-list-line pt-[12px]">
             <MockField label="점포명" value="인터플러그 신촌점" />
@@ -413,7 +413,7 @@ function Steps({ routes }: { routes: GuestRoutes }) {
                 <Image src="/guest/billboard-bg.png" alt="" fill sizes="360px" className="object-cover" style={{ objectPosition: `${15 + i * 25}% 60%` }} />
                 <span className="absolute inset-0 bg-white/20" />
                 {/* 화면 조각은 카드마다 차례로 살짝 떠올랐다 내려앉고(guest-float), 카드에 마우스를 올리면 카드가 6px 떠오른다 — 매장운영 흐름과 같은 생동감(2026-11-10 사용자 지정). */}
-                <div className="guest-float relative max-[1600px]:scale-[0.8]" style={{ animationDelay: `${i * 0.4}s` }}>
+                <div className="guest-float relative max-[1600px]:scale-[0.75]" style={{ animationDelay: `${i * 0.4}s` }}>
                   <StepMock kind={s.key} />
                 </div>
               </div>
@@ -508,7 +508,7 @@ function Boards({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | n
 // 짙은 남색 반투명 판(뒤 화면이 비친다 · 흐림 처리) 왼쪽에 한 줄 안내, 오른쪽에 두 버튼. 떠 있는 것이라 옅은 그림자를 준다.
 function FloatingActions({ routes }: { routes: GuestRoutes }) {
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[24px] z-30 flex justify-center">
+    <div className="guest-floating pointer-events-none fixed inset-x-0 bottom-[24px] z-30 flex justify-center">
       <div className="pointer-events-auto flex items-center gap-[40px] rounded-[20px] bg-[rgba(28,38,48,0.7)] py-[14px] pr-[14px] pl-[32px] shadow-[0_12px_32px_rgba(28,38,48,0.25)] backdrop-blur-[2px]">
         <p className="text-[18px] leading-[1.5] font-semibold text-white">
           <span className="text-[#9cc3ff]">가입 즉시 무료</span> <span className="mx-[6px] text-white/50">·</span> 우리 매장 관리를 시작해 보세요.
