@@ -1,7 +1,7 @@
 // node --test src/app/attendance-records/attendance-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { byLabel, type DayRow, defaultQuery, editTail, fixPairIndex, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, overnightNote, parseAttendanceQuery, proxyPoints, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
+import { byLabel, type DayRow, defaultQuery, editTail, fixRowsOf, fixPairIndex, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, overnightNote, parseAttendanceQuery, proxyPoints, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
 
 const TODAY = "2026-10-23";
 const def = defaultQuery(TODAY);
@@ -96,6 +96,26 @@ test("보정이 필요한 기록 — 미등록 · 확인 필요 · 대신 등록
   assert.equal(needsFix(row({ pairs: [{ checkIn: punch("09:00", { reviewReason: "MOCK_LOCATION" }), checkOut: null }] })), true);
   assert.equal(needsFix(row({ pairs: [{ checkIn: punch("09:00", { entryMethod: "PROXY" }), checkOut: null }] })), true);
   assert.equal(needsFix(row({ pairs: [{ checkIn: punch("09:00", { isCorrected: true }), checkOut: null }] })), true);
+});
+
+test("급여명세서에서 온 기간 기록 전체(fixAll) — 직원 레코드가 있을 때만 켜지고 주소에 남는다, 보정 대상이 아닌 줄도 보인다", () => {
+  const q = parseAttendanceQuery({ staffMemberId: "1", fixAll: "1", fixFrom: "2026-09-28", fixTo: "2026-10-20" }, TODAY);
+  assert.equal(q.fixAll, true);
+  assert.match(toAttendanceSearch(q, TODAY), /fixAll=1/);
+  // 직원 레코드가 없으면 켜지지 않는다 — 직원 칸을 고쳐 레코드 조건이 풀리면 함께 풀린다
+  assert.equal(parseAttendanceQuery({ fixAll: "1" }, TODAY).fixAll, false);
+  assert.doesNotMatch(toAttendanceSearch({ ...q, staffMemberId: null }, TODAY), /fixAll/);
+  assert.equal(parseAttendanceQuery({ staffMemberId: "1", fixAll: "true" }, TODAY).fixAll, false);
+  // 3개월보다 오래된 명세서 기간은 기본 기간으로 돌아가므로 기간 기록 전체도 끈다
+  assert.equal(parseAttendanceQuery({ staffMemberId: "1", fixAll: "1", fixFrom: "2026-06-29", fixTo: "2026-07-10" }, TODAY).fixAll, false);
+  // 3개월 경계에 걸리기만 하면 앞쪽만 잘리고 그대로 켜져 있다
+  assert.equal(parseAttendanceQuery({ staffMemberId: "1", fixAll: "1", fixFrom: "2026-07-20", fixTo: "2026-07-31" }, TODAY).fixAll, true)
+  const normal = row();
+  const absent = row({ status: "ABSENT" as DayRow["status"], pairs: [] });
+  const missing = row({ status: "MISSING_CHECK_OUT" });
+  const other = row({ staffMemberId: 2 });
+  assert.deepEqual(fixRowsOf([normal, absent, missing, other], { ...def, staffMemberId: 1 }), [missing]);
+  assert.deepEqual(fixRowsOf([normal, absent, missing, other], { ...def, staffMemberId: 1, fixAll: true }), [normal, absent, missing]);
 });
 
 test("근태 요약 — 횟수는 줄에서, 근무 · 연장 · 주휴 대상은 api 직원별 값(급여 계산과 같은 규칙)을 거른 줄의 직원만 더한다", () => {
