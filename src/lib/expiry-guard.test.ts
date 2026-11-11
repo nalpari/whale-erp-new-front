@@ -54,25 +54,16 @@ const G1_ALLOW = new Set([
   "lib/bff.ts", // 길목: BFF 401 → 팝업
   "lib/action-failure.ts", // 길목: expiredFailureOf · 공통 failureOf
   "app/api/[...path]/route.ts", // 길목: BFF 401 · 쿠키 삭제
-  "lib/use-load.ts", // bff() 가 팝업을 띄운 BffError(401) — 실패 문구를 그리지 않는다
-  "components/site/session-gate.tsx", // 첫 준비 401 은 로그인 화면으로, 맞추기 401 은 멈춤(팝업은 bff())
-  "app/excel-downloads/[id]/excel-download-view.tsx", // bff() 가 팝업을 띄운 BffError(401) — 실패 화면을 그리지 않는다
+  "lib/session-expiry.ts", // 길목: 받기 · 올리기 fetch 의 401(expiringFetch)
+  // 길목: 업로드 창구 — api 401 을 그대로 넘기고 쿠키를 지운다. 화면은 fetchSameOrigin 이 그 401 을 팝업으로 바꾼다
+  "app/platform-notices/save/route.ts",
+  "app/support-inquiries/save/route.ts",
+  "app/contracts/paper/route.ts",
   "lib/address-search.ts", // 카카오 · 행정안전부 키 오류 401(로그인과 무관)
   "lib/withdrawal-form.ts", // 탈퇴 최종 제출의 401 = 이미 탈퇴돼 세션이 끊김(만료 제외 경로)
   "components/site/withdraw-panel.tsx", // 위 결과로 로그아웃
   "components/site/force-password-dialog.tsx", // 강제 변경의 401 = 발급 비밀번호 만료
   "app/actions.ts", // 강제 비밀번호 변경 · 로그아웃(만료 제외 경로)
-  // 3차: fetch 를 직접 쓰는 업로드 · 받기 창구와 그 화면 — bff 계열 도우미로 옮길 때 뺀다
-  "app/platform-notices/save/route.ts",
-  "app/support-inquiries/save/route.ts",
-  "app/contracts/paper/route.ts",
-  "app/contracts/[contractId]/documents/[contractDocumentId]/route.ts",
-  "components/community/post-form.tsx",
-  "components/support/inquiry-form.tsx",
-  "components/support/support-detail.tsx",
-  "components/common/excel-download.tsx",
-  "app/contracts/new/contract-form.tsx",
-  "app/staff-members/export/export-screen.tsx",
 ]);
 const IS_401 = /\bstatus\s*[!=]==\s*401\b|\b401\s*[,\]][^\n]*\]\.includes\(|\.includes\([^)]*\)\s*&&[^\n]*401|\[[^\]\n]*\b401\b[^\]\n]*\]\.includes\(/;
 
@@ -156,7 +147,12 @@ test("G2 서버 액션의 catch 는 만료를 먼저 거른다(expiredFailureOf)
 
 // ── G3. 서버 화면의 catch 는 만료 이동을 삼키지 않는다 ──────────────────────────
 const isServerRender = (file: string) =>
-  directive(file) === null && (/^app\/.*\/(page|layout)\.tsx$/.test(file) || /^app\/.*\/load-[\w-]+\.ts$/.test(file) || /^components\/community\/(post-page|inquiry-page|list-load)\.tsx$/.test(file));
+  directive(file) === null &&
+  (/^app\/.*\/(page|layout)\.tsx$/.test(file) ||
+    /^app\/.*\/load-[\w-]+\.ts$/.test(file) ||
+    /^components\/community\/(post-page|inquiry-page|list-load)\.tsx$/.test(file) ||
+    // 새 탭 주소로 여는 GET 창구도 request() 가 만료면 로그인 화면으로 보낸다(계약서 파일 받기)
+    (/^app\/.*\/route\.ts$/.test(file) && /\brequest(<[^>]*>)?\(/.test(text.get(file)!)));
 
 /** 다시 던지거나 unstable_rethrow 를 부르면 이동 신호를 삼키지 않는다 */
 function rethrows(body: ts.Node): boolean {
@@ -227,4 +223,20 @@ test("G4 화면은 서버 액션을 useAction 으로 부른다 — 만료 결과
     });
   }
   assert.deepEqual(found, [], "서버 액션을 useAction(액션, { overlay: false }) 로 감싸 부르세요 — 로그인 만료면 팝업을 띄웁니다");
+});
+
+// ── G5. 받기 · 올리기는 fetchSameOrigin 으로 부른다 ─────────────────────────────
+/** fetch 를 직접 써도 되는 화면 쪽 파일 — 길목 자체다 */
+const G5_ALLOW = new Set(["lib/bff.ts"]);
+
+test("G5 로그인한 화면은 같은 출처 창구를 fetchSameOrigin 으로 부른다 — 401 을 「로그인 만료」 팝업으로 바꾸는 길목이다", () => {
+  const found: string[] = [];
+  for (const file of text.keys()) {
+    if (G5_ALLOW.has(file) || isPublic(file) || directive(file) !== "client") continue;
+    const sf = sourceOf(file);
+    visit(sf, (n) => {
+      if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === "fetch") found.push(lineOf(sf, n));
+    });
+  }
+  assert.deepEqual(found, [], "fetch 대신 @/lib/bff 의 fetchSameOrigin 을 쓰세요(로그인 만료면 팝업)");
 });
