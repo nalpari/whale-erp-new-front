@@ -1,6 +1,9 @@
 # Bundle history
 
 ## 2026-11-11
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 최소폭을 1720 → 1280px 로 낮추고 고정 폭 구역이 화면 폭에 맞춰 줄게 했다(front omanyte, 사용자 지정).
+
+## 2026-11-11
 * **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — WHALEERP-664 재영 리뷰 반영: 기간 기록 전체(`fixAll`)가 꺼진 채 주소에만 남았으면 기간을 바꿀 때 지운다, 켜져 있으면 목록 아래에 근무스케줄 · 기록이 모두 없는 근로계약 근무 요일은 목록에 나오지 않는다는 안내를 적는다, 결근 줄에 「결근」 꼬리표를 붙인다.
 
 ## 2026-11-10
