@@ -301,19 +301,29 @@ export function staffSections({ A, R }) {
     ]);
   // 「이상 없음」은 확인 필요 꼬리표가 붙은 줄에만 — 출근·퇴근 미등록은 보정으로 채운다(운영 정책 ATT-19, 2026-10-26 재영).
   const fixBtns = (ok = true) => `<span class="flex justify-center gap-[6px]">${ui.slideTrigger("보정", fixPanel, "off")}${ok ? p.ask("이상 없음", "off", "이상 없음으로 검토를 마치시겠습니까?", "확인 필요 꼬리표와 사유를 지웁니다.") : ""}</span>`;
-  const fixList = p.section(
+  // 보정 목록 묶음. 급여명세서에서 오면(앱 fixAll) 제목 · 기간 · 줄 · 빈 문구가 바뀌고 표 아래 안내가 붙는다(WHALEERP-664).
+  const fixSection = (title, from, to, rows, empty, after = "") =>
+    p.section(
+      title,
+      // 기간 지정 조회는 이 목록에만, 최근 3개월 안에서 고른다(STAFF-31).
+      `<span class="flex items-center gap-[6px]">${ui.dateField(A, { label: "기간 시작", value: from })}<span>~</span>${ui.dateField(A, { label: "기간 끝", value: to })}${ui.slideTrigger("출퇴근 대신 등록", proxyPanel, "soft")}</span>`,
+      ui.fillTable(
+        [
+          { header: "직원", width: "w-[100px]" },
+          { header: "날짜", width: "w-[80px]" },
+          { header: "출근", width: "w-[80px]" },
+          { header: "퇴근", width: "w-[80px]" },
+          { header: "사유", align: "left" },
+          { header: "", width: "w-[230px]" },
+        ],
+        rows,
+        empty,
+      ) + after,
+    ).replace('<section class="flex min-w-0 flex-col', '<section class="flex min-w-0 flex-1 flex-col'); // 묶음이 본문 남는 높이를 채운다(앱 Section fill)
+  const fixList = fixSection(
     "보정이 필요한 기록",
-    // 기간 지정 조회는 이 목록에만, 최근 3개월 안에서 고른다(STAFF-31).
-    `<span class="flex items-center gap-[6px]">${ui.dateField(A, { label: "기간 시작", value: "2026-08-06" })}<span>~</span>${ui.dateField(A, { label: "기간 끝", value: "2026-09-06" })}${ui.slideTrigger("출퇴근 대신 등록", proxyPanel, "soft")}</span>`,
-    ui.fillTable(
-      [
-        { header: "직원", width: "w-[100px]" },
-        { header: "날짜", width: "w-[80px]" },
-        { header: "출근", width: "w-[80px]" },
-        { header: "퇴근", width: "w-[80px]" },
-        { header: "사유", align: "left" },
-        { header: "", width: "w-[230px]" },
-      ],
+    "2026-08-06",
+    "2026-09-06",
       [
         ["서지안", "09-05", "12:58", "-", p.tag("warn", "퇴근 미등록"), fixBtns(false)],
         ["권도윤", "08-21", "-", "21:12", p.tag("warn", "출근 미등록"), fixBtns(false)],
@@ -325,8 +335,24 @@ export function staffSections({ A, R }) {
       ],
       // 기간이 늘 걸려 있어 문구는 하나다(앱 attendance-fix-list.tsx)
       "보정이 필요한 출·퇴근 기록이 없습니다.",
-    ),
-  ).replace('<section class="flex min-w-0 flex-col', '<section class="flex min-w-0 flex-1 flex-col'); // 묶음이 본문 남는 높이를 채운다(앱 Section fill)
+  );
+  // 급여명세서(서지안 · 2026-08) [출퇴근 기록 확인]으로 온 모습 — 그 직원의 기간 기록 전체, 기간은 첫 주 월요일부터(앱 payslip-row.ts · attendance-sections.tsx, WHALEERP-664).
+  // 경고 띠의 8월 22일(근무스케줄 · 기록 모두 없는 근무 요일)은 줄이 없어 아래 안내로 알린다. 데모라 기간 안 줄을 다 그리지 않고 대표만 둔다.
+  const periodList = fixSection(
+    "기간 출·퇴근 기록",
+    "2026-07-27",
+    "2026-08-31",
+    [
+      ["서지안", "08-31", "08:58", "18:04", "", ""],
+      ["서지안", "08-28", "09:01", "-", p.tag("warn", "퇴근 미등록"), fixBtns(false)],
+      ["서지안", "08-27", "09:00", "18:02", "", ""],
+      ["서지안", "08-20", "08:55", "18:10", "", ""],
+      ["서지안", "07-31", "09:03", "18:00", "", ""],
+      ["서지안", "07-27", "08:59", "18:01", "", ""],
+    ],
+    "기간 안 출·퇴근 기록이 없습니다.",
+    `<p class="pt-[8px] text-[13px] text-erp-label">근무스케줄과 출퇴근 기록이 모두 없는 근로계약 근무 요일은 이 목록에 나오지 않습니다.</p>`,
+  );
   // 첫 줄은 보기 전환(아이콘 + 글자)만, 둘째 줄은 근무지 · 기간 이동 · 동작 버튼(앱 page.tsx ScheduleFrame, 2026-11-05 사용자 지정, 3팀 확인 필요).
   // 데모는 탭마다 둘째 줄을 따로 그린다 — 주간은 ‹ 「2026년 8월 17일 ~ 23일」 › [이번 주], 월간은 ‹ 「2026년 8월」 › [이번 달]([이번 주] · [이번 달] outline).
   // 날짜 선택은 직원 상세와 같은 주 이동(2026-10-02 재영). 데모라 근무표 내용은 주를 바꿔도 그대로다.
@@ -355,7 +381,9 @@ export function staffSections({ A, R }) {
     ui.filterSection("재직 상태", ui.select(["재직", "퇴직", "전체"], { "aria-label": "재직 상태" }), { tight: true, last: true }),
   ]);
   // 두 칸 사이 36px — 24px 는 왼쪽 표 끝과 「근태 요약」이 붙어 보였다. 두 칸 높이를 같게(stretch) 해 일별 표 틀이 근태 요약 아래 끝까지 늘어난다(앱 page.tsx, 2026-11-05 사용자 지정, 3팀 확인 필요)
-  const attendTab = `<div class="flex flex-1 flex-col gap-[24px]"><div class="grid grid-cols-2 items-stretch gap-[36px]">${today}${summary}</div>${fixList}</div>${histDialogs}`;
+  const attendTabWith = (list) => `<div class="flex flex-1 flex-col gap-[24px]"><div class="grid grid-cols-2 items-stretch gap-[36px]">${today}${summary}</div>${list}</div>${histDialogs}`;
+  const attendTab = attendTabWith(fixList);
+  const attendPeriodTab = attendTabWith(periodList);
 
   // ── 급여명세서 ──
   const PD = L("staff/payrolls-detail.html");
@@ -640,5 +668,5 @@ export function staffSections({ A, R }) {
       ui.button("취소", { variant: "off", "data-close": true }) + ui.button("재초대", { "data-close": true }),
     );
 
-  return { L, N, holdPanel, holdForm, proxyForm, listFilter, attendFilter, contractsFilter, payslipsFilter, todosFilter, listTab, contractsTab, schedTab, attendTab, payrollTab, todoTab, schedForm, delDialog, fixForm };
+  return { L, N, holdPanel, holdForm, proxyForm, listFilter, attendFilter, contractsFilter, payslipsFilter, todosFilter, listTab, contractsTab, schedTab, attendTab, attendPeriodTab, payrollTab, todoTab, schedForm, delDialog, fixForm };
 }
