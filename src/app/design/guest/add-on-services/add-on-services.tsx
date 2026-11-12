@@ -48,7 +48,7 @@ function QrOrderIcon() {
 // 웨이팅 줄이 왼쪽에서 오른쪽으로 1 · 2 · 3 순서로 읽히게(2026-11-12 사용자 지정 — 전엔 사람 + 체크라 「확인 완료」처럼 읽혔다).
 function WaitingIcon() {
   return (
-    <span className="relative block h-[74px] w-[82px] font-[family-name:var(--font-inter)] leading-[normal] font-bold tracking-normal">
+    <span className="relative block h-[74px] w-[82px]">
       <span className="absolute top-[22px] left-[8px] size-[18px] rounded-full" style={{ backgroundImage: ICON_GRADIENT }} />
       <span className="absolute top-[44px] left-[1px] h-[22px] w-[32px] rounded-t-full" style={{ backgroundImage: ICON_GRADIENT }} />
       <span className="absolute top-[28px] left-[37px] size-[15px] rounded-full opacity-75" style={{ backgroundImage: ICON_GRADIENT }} />
@@ -110,7 +110,10 @@ function ServiceSection({ light, title, desc, services, tinted = false }: { ligh
             <span className="absolute inset-0 bg-guest-navy/15 transition-colors duration-300 ease-out group-hover:bg-guest-navy/5" />
             {/* 아이콘 · 이름 · 설명 · 꼬리표를 한 묶음으로 카드 세로 가운데에 둔다 — 위아래 여백이 같고 이름과 설명이 붙어 읽힌다(2026-11-10 사용자 지정). */}
             <div className="relative flex flex-col items-center gap-[12px]">
-              <span className="flex h-[80px] items-center">{s.icon}</span>
+              {/* 아이콘 안 글자(「120g」 · 「대기 1번」 · 날짜)는 그림이라 화면 읽기에서 뺀다 — 카드 이름 앞에 뜻 없는 글자가 읽혔다(PR 리뷰) */}
+              <span aria-hidden className="flex h-[80px] items-center">
+                {s.icon}
+              </span>
               <h3 className="text-[28px] leading-[1.3] font-bold text-guest-navy transition-[color,scale] duration-300 ease-out group-hover:scale-105 group-hover:text-guest-ink motion-reduce:transition-none motion-reduce:group-hover:scale-100">{s.name}</h3>
             </div>
             <div className="relative flex flex-col items-center gap-[16px]">

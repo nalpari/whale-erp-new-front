@@ -216,6 +216,22 @@ body {
 body:has(.guest-floating) footer {
   padding-bottom: 136px;
 }
+/* 소개 화면의 붙는 구역이 화면을 채우는 동안(body[data-guest-pinned], use-pinned-hides-floating.ts) 떠 있는 띠를 아래로 내려 감춘다 — 구역 아래쪽 목록 · 그림을 가리고 클릭을 가로챘다(PR 리뷰). */
+.guest-floating {
+  transition: translate 250ms ease, opacity 250ms ease, visibility 0s linear 0s;
+}
+body[data-guest-pinned] .guest-floating {
+  translate: 0 24px;
+  opacity: 0;
+  visibility: hidden;
+  transition: translate 250ms ease, opacity 250ms ease, visibility 0s linear 250ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .guest-floating,
+  body[data-guest-pinned] .guest-floating {
+    transition: none;
+  }
+}
 /* 디자인 샘플(/design/guest)은 아래 가운데에 샘플 이동 메뉴가 있어, 떠 있는 띠를 그 위로 올린다. 실제 홈(/)에는 메뉴가 없다. */
 body:has(nav[data-design-nav]) .guest-floating {
   bottom: 72px;

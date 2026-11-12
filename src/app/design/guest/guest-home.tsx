@@ -52,7 +52,7 @@ function AddOnTicker({ tag, items }: { tag: string; items: readonly { icon: keyo
     </li>
   );
   return (
-    <div className="flex h-[76px] items-center rounded-[24px] px-[28px]">
+    <div className="flex h-[76px] items-center px-[28px]">
       {/* 판 이름은 흐르는 부가서비스보다 눈에 덜 띄게 — 작은 테두리 꼬리표(14px 500 연한 회청)로 낮췄다. 전엔 17px 굵은 글자라 흐르는 항목보다 제목이 먼저 보였다(2026-11-12 사용자 지정). */}
       <span className="mr-[24px] flex h-[28px] shrink-0 items-center rounded-full border border-[rgba(130,151,168,0.4)] px-[12px] text-[14px] leading-none font-medium text-guest-navy-soft">{tag}</span>
       {/* 부가서비스는 띠처럼 왼쪽으로 흐른다(2026-11-11 사용자 지정 — 전엔 사진 띠와 반대로 오른쪽) — 사진 띠와 같은 움직임(묶음 네 번, 절반 가면 처음과 같은 그림). 양 끝은 판 안에서 흐리게(2026-11-10 사용자 지정). */}
@@ -74,7 +74,7 @@ function Billboard() {
       {/* 정사각 그림을 시안 비율(677:375)로 늘여 채운 것이 시안이다 — object-cover 로 바꾸면 고래가 잘린다.
           시안의 2px 흐림은 너무 뿌옇다는 요청(2026-10-13)으로 뺐다.
           고래는 가운데에서 오른쪽으로 옮겨 왼쪽 슬로건 · 카피와 겹치지 않게 한다(2026-11-09 +200px → 2026-11-12 +250px, 사용자 지정). */}
-      {/* 메인 카피(왼쪽 글)와 겹치지 않게 고래를 오른쪽으로 더 보내고, 폭을 600px(좁은 창은 창의 44%)로 줄이고 조금 올려, 꼬리가 화면 끝에 · 지느러미가 아래 유리 띠에 잘리지 않게 한다(2026-11-12 사용자 지정 — 전엔 가운데 +200px · 677px 고정이라 1440 아래에서 설명 끝과 겹쳤다). */}
+      {/* 메인 카피(왼쪽 글)와 겹치지 않게 고래를 오른쪽으로 더 보내고, 폭을 600px(좁은 창은 창의 44%)로 줄이고 조금 올려, 꼬리가 화면 끝에 잘리지 않게 한다(아래 부가서비스 줄 밑 120px 녹임이 지느러미 끝에 살짝 겹치지만 거의 투명한 쪽이다)(2026-11-12 사용자 지정 — 전엔 가운데 +200px · 677px 고정이라 1440 아래에서 설명 끝과 겹쳤다). */}
       <div className="guest-whale absolute top-[380px] left-[max(calc(50%+250px),960px)] aspect-[677/375] w-[min(600px,44vw)] -translate-1/2">
         <Image src="/guest/billboard-whale.png" alt="" fill loading="eager" sizes="(max-width: 1363px) 44vw, 600px" />
       </div>
@@ -86,7 +86,7 @@ function Billboard() {
         <div className={`${FRAME} flex flex-col gap-[80px]`}>
           <div className="flex items-end justify-between">
             <div className="flex w-[445px] flex-col gap-[48px]">
-              {/* 영문 WHALE ERP 자리에 슬로건(윗줄 44px · 아랫줄 64px — 「매장 통합관리 서비스」로 길어져 1260 창에서 고래에 겹치지 않게 86px 에서 줄였다, 2026-11-12 사용자 지정). 한글은 REM 글꼴에 없어 기본 글꼴(Pretendard) 800 으로 그린다.
+              {/* 영문 WHALE ERP 자리에 슬로건(윗줄 · 아랫줄은 1260 창 44 · 64px 에서 넓은 창 48 · 76px 까지 창에 맞춰 커진다 — 「매장 통합관리 서비스」로 길어져 고래에 겹치지 않게 86px 에서 줄였다가, 키 메시지라 넓은 창에서는 다시 키웠다, 2026-11-12 사용자 지정). 한글은 REM 글꼴에 없어 기본 글꼴(Pretendard) 800 으로 그린다.
                   칸(445px)보다 넓은 줄은 w-max 로 상자를 글자 폭만큼 넓혀야 그라데이션이 끝 글자까지 칠해진다. 큰 글자는 글자 앞 여백도 커서 안으로 들어가 보여 음수 여백(-0.05em · -0.03em)으로 아래 줄 시작선에 맞춘다.
                   글자 칠은 배경을 글자 모양으로 오린 것이라 TRIM 으로 줄 상자를 대문자 높이까지 깎으면 한글 위아래가 잘려,
                   이 두 줄만 TRIM 없이 줄 높이로 간격을 둔다(2026-11-09 사용자 지정). */}
@@ -107,7 +107,7 @@ function Billboard() {
                 여러 서비스를 따로 쓸 필요 없이 WHALE ERP 하나로 관리하세요.
               </p>
             </div>
-            {/* 첫 화면의 [무료로 시작하기] · [도입문의] 버튼은 뺐다 — 머리말에 도입문의 · 로그인이 있고, 아래 「시작 방법」에 회원가입 버튼이 있다(2026-11-11 사용자 지정). */}
+            {/* 첫 화면의 [무료로 시작하기] · [도입문의] 버튼은 뺐다 — 머리말에 도입문의 · 로그인이 있고, 화면 아래 떠 있는 [무료로 시작] 띠가 회원가입으로 이어진다(2026-11-11 사용자 지정). */}
           </div>
           {/* 「가입 즉시 무료 이용」 줄은 아래 떠 있는 띠(FloatingActions)로 옮겼다 — 스크롤해도 늘 보이고 바로 [무료로 시작]으로 이어진다(2026-11-12 사용자 지정). */}
           <AddOnTicker tag="부가서비스 순차 오픈" items={ADD_ONS_SOON} />

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { ICON_GRADIENT } from "./guest-ui";
 
-// 비로그인 화면들이 함께 쓰는 아이콘. 시안이 도형과 SVG 를 겹쳐 그린 것이라 같은 자리·크기로 겹친다.
+// 재고 아이콘(InventoryIcon)만 Figma 에서 받은 SVG 경로를 받고, 레시피 · 발주 아이콘은 그라데이션 · 유리판 조각으로 그린다(2026-11-12).
 // SVG 는 화면마다 Figma 에서 따로 받은 파일이라 경로를 받는다.
 
 export function InventoryIcon({ src }: { src: string }) {

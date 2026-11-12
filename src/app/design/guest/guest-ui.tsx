@@ -182,7 +182,7 @@ export function FloatingActions({ routes }: { routes: GuestRoutes }) {
         <p className="flex items-center text-[18px] leading-[1.5] font-semibold whitespace-nowrap text-white">
           {/* 띠의 제목이라 꼬리표(알약)로 — 연하늘 바탕 · 짙은 남색 글자(2026-11-12 사용자 지정). 화면 읽기는 꼬리표 뒤 쌍점으로 끊어 읽고 가운뎃점은 읽지 않는다 */}
           <span className="flex h-[34px] items-center rounded-full bg-[#9cc3ff] px-[14px] text-[15px] font-bold text-[#1c2630]">가입 즉시 무료 이용</span>
-          <span className="sr-only">: </span>
+          <span className="sr-only max-[1400px]:hidden">: </span>
           {/* 띠는 화면에 고정되어 창보다 넓으면 양옆이 잘린다 — 1400px 아래 창에서는 혜택 셋을 숨기고 꼬리표 · 버튼만 남긴다(PR 리뷰) */}
           <span className="ml-[18px] flex items-center max-[1400px]:hidden">
             {FREE_BENEFITS.map((benefit, i) => (
