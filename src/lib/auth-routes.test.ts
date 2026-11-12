@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   ACCOUNT_CHANGED_MESSAGE,
+  hasLiveAccessToken,
   homeOf,
   isFranchiseRole,
   isPlatformRole,
@@ -35,6 +36,15 @@ test("로그인한 채 홈 · 로그인 · 찾기를 열면 자기 홈으로 —
   assert.equal(redirectsSignedIn("/", "GET", null, now), false);
   assert.equal(redirectsSignedIn("/", "POST", live, now), false);
   for (const p of ["/notices", "/notices/1", "/terms", "/signup", "/leads", "/login/x", "/findx"]) assert.equal(redirectsSignedIn(p, "GET", live, now), false, p);
+});
+
+test("접근 토큰이 살아 있는 세션만 로그인한 것으로 본다 — 운영 알림 종 · 로그인 전 홈이 같이 쓴다", () => {
+  const now = 1_000_000;
+  assert.equal(hasLiveAccessToken({ accessTokenExpiresAt: now + 1 }, now), true);
+  // 끝난 로그인의 쿠키(만료 시각이 지금이거나 지남) · 쿠키 없음은 로그인 전이다.
+  assert.equal(hasLiveAccessToken({ accessTokenExpiresAt: now }, now), false);
+  assert.equal(hasLiveAccessToken({ accessTokenExpiresAt: now - 1 }, now), false);
+  assert.equal(hasLiveAccessToken(null, now), false);
 });
 
 test("플랫폼 마스터·관리자는 플랫폼 홈, 나머지는 ERP 홈", () => {

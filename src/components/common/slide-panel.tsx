@@ -175,6 +175,13 @@ export function useBackdropActive() {
   return useSyncExternalStore(subscribeBackdrop, topPanelClosable, () => false);
 }
 
+const anyPanelOpen = () => openPanels.size > 0;
+
+/** 열린 패널이 하나라도 있는지 — 오른쪽 아래에 떠 있는 것(시작 가이드 미니 카드)이 패널을 덮지 않게 비켜 서는 데 쓴다(2026-11-11) */
+export function usePanelOpen() {
+  return useSyncExternalStore(subscribeBackdrop, anyPanelOpen, () => false);
+}
+
 /**
  * 가장 위 패널이 closeOnBackdrop 을 켰을 때만 화면 전체(헤더 포함)를 덮는 바탕창. 누르면 기본은 그 패널만 닫는다
  * (Esc 와 같은 한 번에 하나씩) — 데모(docs/demo/assets/erp.js setBackdrop)는 열린 패널이 하나라도 있으면

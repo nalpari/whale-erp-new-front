@@ -18,11 +18,12 @@ export class BffError extends Error {
   }
 }
 
-export async function bff<T>(path: string): Promise<T> {
+export async function bff<T>(path: string, tabBp?: number): Promise<T> {
   let response: Response;
   try {
     // 탭 BP 는 브라우저 주소(/bp/{id})에서 읽는다 — rewrite 와 상관없이 주소창의 값이다. 없으면 api 가 소속 BP 로 동작한다.
-    const bp = bpOfPath(location.pathname);
+    // /bp/{id} 로 옮기지 않은 화면(로그인 후 홈)은 탭 BP 를 tabBp 로 넘긴다 — 주소의 값이 먼저다.
+    const bp = bpOfPath(location.pathname) ?? tabBp ?? null;
     response = await fetch(`/api${path}`, { cache: "no-store", headers: bp === null ? undefined : { [BP_HEADER]: String(bp) } });
   } catch (e) {
     console.warn("BFF 연결 실패", path, e); // 오프라인·중단 등 원인은 화면 문구에 안 보이므로 남긴다

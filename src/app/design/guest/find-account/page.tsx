@@ -10,9 +10,9 @@ export default function FindAccountPage() {
     <GuestFindAccount
       lead={
         <>
-          가입할 때 등록한 이름과 이메일로 아이디를 확인하고,
+          가입 시 등록한 정보를 입력하시면
           <br />
-          임시 비밀번호를 메일로 받을 수 있습니다.
+          아이디를 확인하거나 임시 비밀번호를 발급받을 수 있습니다.
         </>
       }
     >

@@ -1,4 +1,4 @@
-// 로그인 후 홈의 순수 규칙 — 업무 범위 → api 쿼리, 처리 대기 한 줄의 문구 · 이동 주소, 경고 밴드 문구.
+// 로그인 후 홈의 순수 규칙 — 업무 범위 → api 쿼리, 확인 필요 한 줄의 문구 · 이동 주소, 공지 띠.
 // 이동 주소는 각 목록의 주소 만들기로 만들어 그 목록의 query 파서와 어긋나지 않게 한다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { components } from "../../lib/api-types.generated.ts";
@@ -44,7 +44,7 @@ function whoOf(item: HomePendingItem, kind: Kind): string {
   return `${item.firstName} 외 ${item.othersCount}${kind === "문의" || kind === "TO-DO" ? "건" : "명"}`;
 }
 
-/** 처리 대기 한 줄이 갈 목록 주소. filter 의 점포 · 상태를 그 목록의 주소 조건으로 옮긴다 */
+/** 확인 필요 한 줄이 갈 목록 주소. filter 의 점포 · 상태를 그 목록의 주소 조건으로 옮긴다 */
 export function pendingHrefOf(item: HomePendingItem, bpCodeId: number): string {
   const { storeIds, status } = item.filter;
   switch (item.type) {
@@ -72,17 +72,34 @@ export function pendingHrefOf(item: HomePendingItem, bpCodeId: number): string {
   }
 }
 
-/** 처리 대기 한 줄 — 구분 · 항목 · 내용 · 이동 주소. api 가 이 화면이 모르는 유형을 주면 null(그 줄만 건너뛴다) */
+/** 계약 갱신 예정의 D-N 을 빨간색으로 보이는 남은 날(운영 정책 HOM-04) */
+const RENEWAL_URGENT_DAYS = 7;
+
+/**
+ * 확인 필요 한 줄 — 구분 · 항목 · 내용 · 이동 주소. api 가 이 화면이 모르는 유형을 주면 null(그 줄만 건너뛴다).
+ * 계약 갱신 예정은 내용 끝에 가장 이른 종료까지 남은 날 「종료 D-N」(due)을 따로 주고, 7일 이내면 urgent 다(경고 밴드 대신, HOM-04).
+ */
 export function pendingLineOf(item: HomePendingItem, bpCodeId: number) {
   const text = PENDING_TEXT[item.type] as (typeof PENDING_TEXT)[HomePendingItem["type"]] | undefined;
   if (!text) return null;
   const days = item.waitingDays;
   const waited =
     item.type === "CONTRACT_RENEWAL" ? "새 근로계약서 초안 없음" : !text.since || days === null ? null : days === 0 ? `오늘 ${text.since}` : `${text.since} 후 ${days}일 경과`;
+  const left = item.type === "CONTRACT_RENEWAL" ? item.dueInDays : null;
   return {
     kind: text.kind,
     title: `${text.title} ${item.count}건`,
     desc: [whoOf(item, text.kind), waited].filter(Boolean).join(" · "),
+    due: left === null ? null : { text: `종료 D-${left}`, urgent: left <= RENEWAL_URGENT_DAYS },
     href: pendingHrefOf(item, bpCodeId),
   };
+}
+
+/** 공지 띠가 읽는 글 수 — api 는 고정 공지를 먼저 주므로 넉넉히 받아 게시일로 고른다(latestNotices) */
+export const NOTICES_PATH = "/support-notices?page=1&pageSize=20";
+const NOTICE_SHOWN = 3;
+
+/** 공지 띠 — 고정 여부와 상관없이 게시일 최신 3건(같은 날이면 나중 글). api 는 고정 공지를 먼저 주므로 게시일로 다시 고른다 */
+export function latestNotices<P extends { postId: number; postedDate: string }>(items: readonly P[]): P[] {
+  return [...items].sort((a, b) => b.postedDate.localeCompare(a.postedDate) || b.postId - a.postId).slice(0, NOTICE_SHOWN);
 }
