@@ -6,7 +6,7 @@ import { GUEST_FONTS } from "./fonts";
 // 화면 사이 이동은 머리말 메뉴와 본문 버튼으로 한다 — 디자인 샘플 아래 이동 메뉴에는 메인(/design/guest)만 둔다.
 export default function GuestLayout({ children }: LayoutProps<"/design/guest">) {
   return (
-    <div className={`${GUEST_FONTS} min-w-[1280px] bg-white break-keep`}>
+    <div className={`${GUEST_FONTS} min-w-[1260px] bg-white break-keep [&_:is(input,select,textarea)]:scroll-mt-[150px]`}>
       <GuestHeader />
       {children}
       <GuestFooter />

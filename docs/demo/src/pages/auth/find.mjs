@@ -23,9 +23,8 @@ export default ({ A, R }) => {
 
   // 시안은 Pretendard Black(900)이지만 저장소에 담은 가장 굵은 굵기가 800 이다.
   const main = `<section class="grid grid-cols-2">${g.visual(A, {
-    eyebrow: "Account help",
-    title: `<p class="text-[42px] leading-normal font-extrabold tracking-[-0.025em] text-[rgba(58,86,112,0.6)] ${g.TRIM}">계정을 찾아 드릴게요</p>`,
-    body: "가입할 때 등록한 이름과 이메일로 아이디를 확인하고,<br>임시 비밀번호를 메일로 받을 수 있습니다.",
+    title: `<p class="flex flex-col gap-[4px] font-extrabold text-transparent normal-case"><span class="-ml-[0.03em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.7)] to-[rgba(58,86,112,0.35)] bg-clip-text text-[44px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">기억나지 않아도 괜찮아요,</span><span class="-ml-[0.05em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.8)] to-[rgba(58,86,112,0.36)] bg-clip-text text-[44px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">계정을 찾아 드릴게요</span></p>`,
+    body: "가입 시 등록한 정보를 입력하시면<br>아이디를 확인하거나 임시 비밀번호를 발급받을 수 있습니다.",
   })}<div class="flex flex-col gap-[27px] px-[200px] py-[80px] text-guest-ink"><div class="flex flex-col gap-[8px]"><h1 class="text-[28px] leading-[1.2] font-bold">아이디/비밀번호 찾기</h1><p data-find-lead class="text-[16px] leading-[1.5]">회원가입 시 등록한 이름, 이메일 주소를 입력해 주세요.</p></div>${form}</div></section>`;
 
   return { title: "아이디/비밀번호 찾기", head: g.head(A), html: g.page(A, R, { current: "auth/find.html", main, flush: true }) };

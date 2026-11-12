@@ -86,11 +86,12 @@ function Billboard() {
   return (
     <section className="relative -mt-[110px] overflow-hidden pt-[210px] pb-[100px]">
       <Image src="/guest/billboard-bg.png" alt="" fill loading="eager" sizes="100vw" className="object-cover" />
-      {/* 정사각 그림을 677×375 에 늘여 채운 것이 시안이다 — object-cover 로 바꾸면 고래가 잘린다.
+      {/* 정사각 그림을 시안 비율(677:375)로 늘여 채운 것이 시안이다 — object-cover 로 바꾸면 고래가 잘린다.
           시안의 2px 흐림은 너무 뿌옇다는 요청(2026-10-13)으로 뺐다.
-          고래는 가운데에서 오른쪽으로 200px 옮겨 왼쪽 슬로건 · 카피와 겹치지 않게 한다(2026-11-09 사용자 지정). */}
-      <div className="guest-whale absolute top-[410px] left-[max(calc(50%+200px),940px)] h-[375px] w-[677px] -translate-1/2">
-        <Image src="/guest/billboard-whale.png" alt="" fill loading="eager" sizes="677px" />
+          고래는 가운데에서 오른쪽으로 옮겨 왼쪽 슬로건 · 카피와 겹치지 않게 한다(2026-11-09 +200px → 2026-11-12 +250px, 사용자 지정). */}
+      {/* 메인 카피(왼쪽 글)와 겹치지 않게 고래를 오른쪽으로 더 보내고, 폭을 600px(좁은 창은 창의 44%)로 줄이고 조금 올려, 꼬리가 화면 끝에 · 지느러미가 아래 유리 띠에 잘리지 않게 한다(2026-11-12 사용자 지정 — 전엔 가운데 +200px · 677px 고정이라 1440 아래에서 설명 끝과 겹쳤다). */}
+      <div className="guest-whale absolute top-[380px] left-[max(calc(50%+250px),960px)] aspect-[677/375] w-[min(600px,44vw)] -translate-1/2">
+        <Image src="/guest/billboard-whale.png" alt="" fill loading="eager" sizes="(max-width: 1363px) 44vw, 600px" />
       </div>
       {/* 높이를 980px 로 고정하지 않고 글 묶음 높이에 맞춘다 — 머리말(110px) 아래 위 여백 100px · 아래 여백 100px 로 다른 섹션과 같게(2026-11-10 사용자 지정). */}
       <div className="relative">
@@ -98,26 +99,26 @@ function Billboard() {
         <div className={`${FRAME} flex flex-col gap-[80px]`}>
           <div className="flex items-end justify-between">
             <div className="flex w-[445px] flex-col gap-[48px]">
-              {/* 영문 WHALE ERP 자리에 슬로건(윗줄 48px · 아랫줄 86px). 한글은 REM 글꼴에 없어 기본 글꼴(Pretendard) 800 으로 그린다.
+              {/* 영문 WHALE ERP 자리에 슬로건(윗줄 44px · 아랫줄 64px — 「매장 통합관리 서비스」로 길어져 1260 창에서 고래에 겹치지 않게 86px 에서 줄였다, 2026-11-12 사용자 지정). 한글은 REM 글꼴에 없어 기본 글꼴(Pretendard) 800 으로 그린다.
                   칸(445px)보다 넓은 줄은 w-max 로 상자를 글자 폭만큼 넓혀야 그라데이션이 끝 글자까지 칠해진다. 큰 글자는 글자 앞 여백도 커서 안으로 들어가 보여 음수 여백(-0.05em · -0.03em)으로 아래 줄 시작선에 맞춘다.
                   글자 칠은 배경을 글자 모양으로 오린 것이라 TRIM 으로 줄 상자를 대문자 높이까지 깎으면 한글 위아래가 잘려,
                   이 두 줄만 TRIM 없이 줄 높이로 간격을 둔다(2026-11-09 사용자 지정). */}
               <p className="flex flex-col gap-[4px] font-extrabold text-transparent">
-                <span className="-ml-[0.03em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.7)] to-[rgba(58,86,112,0.35)] bg-clip-text text-[48px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">
-                  식당·카페 사장님의
+                <span className="-ml-[0.03em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.9)] to-[rgba(58,86,112,0.55)] bg-clip-text text-[44px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">
+                  식당·카페 사장님을 위한
                 </span>
-                <span className="-ml-[0.05em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.8)] to-[rgba(58,86,112,0.36)] bg-clip-text text-[86px] leading-[1.25] tracking-[-0.025em] whitespace-nowrap">
-                  든든한 파트너
+                <span className="-ml-[0.05em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.9)] to-[rgba(58,86,112,0.55)] bg-clip-text text-[64px] leading-[1.25] tracking-[-0.025em] whitespace-nowrap">
+                  매장 통합관리 서비스
                 </span>
               </p>
-              <div className="flex flex-col gap-[24px] text-guest-navy">
-                <p className={`text-[22px] leading-[1.5] font-bold whitespace-nowrap ${TRIM}`}>복잡한 매장 운영, WHALE ERP 하나로 쉬워집니다</p>
-                <p className={`text-[17px] leading-[1.5] whitespace-nowrap ${TRIM}`}>
-                  직원 계약·근무표·급여, 매출·재무, 가맹점 관리까지
-                  <br />
-                  여러 서비스를 일일이 알아보고 관리할 필요 없이 플랫폼 하나로 해결
-                </p>
-              </div>
+              {/* 글자색은 세 단계만(2026-11-12 사용자 지정 — 남색이 여섯 가지라 정신없었다): ① 진한 남색 = 슬로건 · 무료 네 항목, ② 중간 회청(guest-step) = 설명 · 판 이름,
+                  ③ 연한 회청(guest-navy-soft) = 번호 · 부가서비스. 슬로건 두 줄은 같은 그라데이션(90%→55%)으로 맞췄다. */}
+              {/* 「복잡한 매장 운영, WHALE ERP 하나로 쉬워집니다」 줄은 뺐다 — 큰 제목 「매장 통합관리 서비스」와 말이 겹쳤다. 남은 설명은 한 단계 키워 18px 500 으로 둔다(2026-11-12 사용자 지정). */}
+              <p className={`text-[18px] leading-[1.6] font-medium whitespace-nowrap text-guest-step ${TRIM}`}>
+                직원 계약 · 근무표 · 급여부터 매출 · 재무, 가맹점 관리까지
+                <br />
+                여러 서비스를 따로 쓸 필요 없이 WHALE ERP 하나로 관리하세요.
+              </p>
             </div>
             {/* 첫 화면의 [무료로 시작하기] · [도입문의] 버튼은 뺐다 — 머리말에 도입문의 · 로그인이 있고, 아래 「시작 방법」에 회원가입 버튼이 있다(2026-11-11 사용자 지정). */}
           </div>
@@ -137,33 +138,37 @@ function Billboard() {
 // 전엔 카드 위 유형 줄 · 작은 글 · 두 줄 한마디 · 「이런 기능부터 써보세요」 · 「함께 쓰면 좋은 부가서비스」까지 일곱 덩어리였다.
 const PERSONAS = [
   {
-    head: "매장 하나를 운영해요",
+    head: "개인 매장을 운영해요",
+    photo: "/guest/home/photos/owner-tablet.png",
     pitch: "혼자 운영해도 직원 관리는 쉽게",
-    features: ["종이 계약서 없이, 앱으로 근로계약서 작성·서명", "직원 출퇴근 기록을 자동으로 확인", "급여명세서도 클릭 한 번으로 발송"],
+    features: ["앱으로 근로계약서 작성·서명", "직원 출퇴근 기록을 자동으로 확인", "급여명세서도 클릭 한 번으로 발송"],
     cta: " 자세히 보기",
     service: "매장운영",
     route: "storeOperations" as const,
   },
   {
     head: "여러 매장을 운영해요",
-    pitch: "매장이 늘어도 관리는 한곳에서",
-    features: ["매장별 매출을 한눈에 비교", "매장마다 통장 입출금을 따로 확인", "점장에게 맡길 일만 선택해 권한 부여"],
+    photo: "/guest/home/photos/staff-laptop.jpg",
+    pitch: "여러 매장의 운영 현황을 한눈에",
+    features: ["매장별 매출을 한눈에 비교", "매장별 입출금 내역을 한곳에서 확인", "점장별 업무 권한을 간편하게 설정"],
     cta: " 자세히 보기",
     service: "재무관리",
     route: "financeManagement" as const,
   },
   {
     head: "프랜차이즈 본사예요",
+    photo: "/guest/home/photos/contract-sign.png",
     pitch: "가맹점이 늘어도 본사 업무는 간편하게",
-    features: ["가맹계약을 온라인으로 간편하게 체결", "새 메뉴와 가격을 가맹점에 한 번에 적용", "정보공개서 자료까지 한 번에 다운로드"],
+    features: ["가맹계약을 온라인으로 간편하게 체결", "메뉴와 가격을 가맹점에 한 번에 적용", "정보공개서 관련 자료를 한곳에서 관리"],
     cta: " 자세히 보기",
     service: "프랜차이즈",
     route: "franchise" as const,
   },
   {
     head: "가맹점을 운영해요",
+    photo: "/guest/home/photos/kitchen-orders.png",
     pitch: "본사에서 받은 계정으로 바로 시작",
-    features: ["본사 메뉴와 가격이 매장에 바로 적용", "휴일 · 권한 등 기본 설정은 본사가 미리 준비", "점포 정보도 본사가 대신 관리"],
+    features: ["메뉴·가격을 별도 설정 없이 적용", "본사가 설정한 휴일·권한 바로 적용", "점포 정보는 본사에서 통합 관리"],
     cta: "으로 로그인",
     service: "본사에서 받은 계정",
     route: "login" as const,
@@ -175,36 +180,45 @@ function Personas({ routes }: { routes: GuestRoutes }) {
     <section className="bg-guest-surface py-[100px]">
       <div className={`${FRAME} flex flex-col gap-[60px]`}>
         <SectionTitle oneLine light="사장님은," bold="어떤 매장을 운영하세요?" />
-        <div className="grid grid-cols-4 gap-[16px]">
+        {/* 창이 1680px 보다 좁으면 2×2 로 놓는다 — 네 장을 한 줄에 두면 카드가 좁아 「본사에서 받은 계정으로 로그인」 · 「프랜차이즈 자세히 보기」 버튼이 카드 밖으로 넘쳤다(2026-11-12 사용자 지정). */}
+        <div className="grid grid-cols-2 gap-[16px] min-[1680px]:grid-cols-4">
           {PERSONAS.map((p, i) => (
             // 남색 띠 · 6px 모서리 대신 시작 방법 카드와 같은 크게 둥근 흰 카드(24px) — 페이지 카드 모양을 하나로. 화면에 들어오면 차례로 올라오고(guest-reveal), 마우스를 올리면 떠오른다(2026-11-10 사용자 지정).
-            <article key={p.head} style={{ "--reveal-delay": `${i * 8}%` } as CSSProperties} className="guest-reveal flex flex-col rounded-[24px] border border-[#e3ebf3] bg-white transition-[translate,box-shadow,border-color] duration-300 ease-out hover:-translate-y-[6px] hover:border-guest-navy-soft hover:shadow-[0_16px_32px_rgba(58,86,112,0.12)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-              {/* 제목 ↔ 구분선 · 구분선 ↔ 한 문장 · 체크 목록 ↔ 버튼을 모두 24px 로 같게(2026-11-10 사용자 지정). */}
-              <div className="flex flex-1 flex-col gap-[24px] p-[34px]">
-                <h3 className="text-[22px] leading-[1.4] font-bold text-guest-navy">
-                  <span className="mr-[8px] text-guest-navy-soft">{String(i + 1).padStart(2, "0")}</span>
-                  {p.head}
-                </h3>
-                {/* 한 문장은 제목 아래가 아니라 구분선 아래 체크 목록 머리로 — 제목은 유형만, 선 아래가 「무엇이 좋은지」(2026-11-10 사용자 지정). */}
-                <div className="flex flex-col gap-[16px] border-t border-[#e7e7e7] pt-[24px]">
-                  <p className="text-[17px] leading-[1.5] font-semibold text-guest-navy">{p.pitch}</p>
-                  <ul className="flex flex-col gap-[12px] text-[15px] leading-[1.5] text-guest-ink">
-                  {p.features.map((line) => (
-                    <li key={line} className="flex items-center gap-[10px]">
-                      <Image src="/guest/check-circle.svg" alt="" width={18} height={18} />
-                      {line}
-                    </li>
-                  ))}
-                  </ul>
+            <article key={p.head} style={{ "--reveal-delay": `${i * 8}%` } as CSSProperties} className="guest-reveal flex flex-col overflow-hidden rounded-[24px] border border-[#e3ebf3] bg-white transition-[translate,box-shadow,border-color] duration-300 ease-out hover:-translate-y-[6px] hover:border-guest-step hover:shadow-[0_16px_32px_rgba(58,86,112,0.12)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+              {/* 실사 사진은 카드 여백 안에 둥글게(12px) — 매장 유형이 한눈에 그려지게(2026-11-12 사용자 지정). 개인 매장은 태블릿으로 주문 확인, 여러 매장은 사장님 · 직원이 노트북으로 현황 확인, 본사는 가맹계약, 가맹점은 주방 주문서.
+                  2×2(창 1680px 미만)는 카드가 넓어 글 오른쪽에 세로로 긴 사진(190px, 1440px 미만은 140px — 04 카드 버튼 「본사에서 받은 계정으로 로그인」이 글 칸에 들어가게)을 두고 — 태블릿 · 노트북은 가로 사진이라 세로 칸을 채우려면 칸 폭보다 큰 그림이 필요해 640px 로 받는다(190px 로 받으면 늘어나 흐려졌다). 계약서 · 주문서는 세로 사진이지만 원본이 폭 440px 쯤이라 고화질 화면에선 조금 부드럽다, 한 줄 네 장(1680px 이상)은 카드가 좁아 글 위에 사진(높이 180px)을 둔다. */}
+              <div className="flex flex-1 gap-[28px] p-[34px] min-[1680px]:flex-col min-[1680px]:gap-[24px]">
+                <div className="relative w-[140px] shrink-0 order-last overflow-hidden rounded-[12px] bg-guest-surface min-[1440px]:w-[190px] min-[1680px]:order-first min-[1680px]:h-[180px] min-[1680px]:w-auto">
+                  <Image src={p.photo} alt="" fill sizes="(min-width: 1680px) 300px, 640px" className="object-cover" />
                 </div>
-                <div className="mt-auto flex">
-                  <GuestButton tone="invert" href={p.route && routes[p.route]} arrow grow>
-                    {/* 서비스 이름만 굵게, 나머지는 보통 굵기(2026-11-09 사용자 지정). */}
-                    <span className="font-normal">
-                      <strong className="font-bold">{p.service}</strong>
-                      {p.cta}
-                    </span>
-                  </GuestButton>
+                {/* 제목 ↔ 구분선 · 구분선 ↔ 한 문장 · 체크 목록 ↔ 버튼을 모두 24px 로 같게(2026-11-10 사용자 지정). */}
+                <div className="flex min-w-0 flex-1 flex-col gap-[24px]">
+                  {/* 번호 뒤 제목 · 한 문장 · 체크 목록(아이콘)의 시작선을 하나로 맞춘다(2026-11-12 사용자 지정) — 번호 칸 34px 만큼 한 문장 · 체크 목록을 들여 쓴다. 제목이 두 줄이 되어도 번호 칸 오른쪽에서 줄을 바꾼다. */}
+                  <h3 className="flex text-[22px] leading-[1.4] font-bold text-guest-navy">
+                    <span aria-hidden className="w-[34px] shrink-0 text-guest-navy-soft">{String(i + 1).padStart(2, "0")}</span>
+                    {p.head}
+                  </h3>
+                  {/* 한 문장은 제목 아래가 아니라 구분선 아래 체크 목록 머리로 — 제목은 유형만, 선 아래가 「무엇이 좋은지」(2026-11-10 사용자 지정). */}
+                  <div className="flex flex-col gap-[16px] border-t border-[#e7e7e7] pt-[24px]">
+                    <p className="pl-[34px] text-[17px] leading-[1.5] font-semibold text-guest-navy">{p.pitch}</p>
+                    <ul className="flex flex-col gap-[12px] pl-[34px] text-[15px] leading-[1.5] text-guest-ink">
+                    {p.features.map((line) => (
+                      <li key={line} className="flex items-center gap-[10px]">
+                        <Image src="/guest/check-circle.svg" alt="" width={18} height={18} />
+                        {line}
+                      </li>
+                    ))}
+                    </ul>
+                  </div>
+                  <div className="mt-auto flex">
+                    <GuestButton tone="invert" href={p.route && routes[p.route]} arrow grow>
+                      {/* 서비스 이름만 굵게, 나머지는 보통 굵기(2026-11-09 사용자 지정). */}
+                      <span className="font-normal">
+                        <strong className="font-bold">{p.service}</strong>
+                        {p.cta}
+                      </span>
+                    </GuestButton>
+                  </div>
                 </div>
               </div>
             </article>
@@ -212,11 +226,14 @@ function Personas({ routes }: { routes: GuestRoutes }) {
         </div>
         {/* 가맹점 안내는 04 카드 안이 아니라 카드 줄 아래 한 줄로 — 카드 높이가 고르고, 본사가 쓰지 않는 가맹점주에게 따로 말한다(2026-11-10 사용자 지정). */}
         <p className="-mt-[32px] flex items-center gap-[8px] text-[16px] leading-[1.5] text-guest-body">
-          <span aria-hidden className="flex size-[16px] shrink-0 items-center justify-center rounded-full bg-guest-navy-soft text-[11px] leading-none font-bold text-white">
-            !
-          </span>
-          <b className="font-semibold text-guest-navy">프랜차이즈 본사가 Whale ERP를 쓰지 않나요?</b>
-          직접 사업자 회원으로 가입하고 내 매장을 관리하세요
+          {/* 느낌표는 글자 대신 그림 — 글꼴의 「!」는 원 가운데에 오지 않고 찌그러져 보였다(2026-11-12 사용자 지정). 원은 옆 굵은 글자와 같은 남색 */}
+          <svg aria-hidden viewBox="0 0 18 18" className="size-[18px] shrink-0 text-guest-navy">
+            <circle cx="9" cy="9" r="9" fill="currentColor" />
+            <rect x="8" y="4.2" width="2" height="6.4" rx="1" fill="#fff" />
+            <circle cx="9" cy="13.2" r="1.15" fill="#fff" />
+          </svg>
+          <b className="font-semibold text-guest-navy">프랜차이즈 본사가 WHALE ERP를 이용하지 않나요?</b>
+          사업자 회원으로 직접 가입하고 매장을 독립적으로 관리하세요.
         </p>
       </div>
     </section>
@@ -391,12 +408,17 @@ function Steps({ routes }: { routes: GuestRoutes }) {
       <div className={`${FRAME} flex flex-col gap-[16px]`}>
         {/* 오른쪽 [사업자 회원가입하기] 버튼은 뺐다 — 화면 아래 떠 있는 [무료로 시작하기]가 같은 일을 한다(2026-11-11 사용자 지정). */}
         <SectionTitle oneLine light="우리 매장," bold="어떻게 시작하면 될까요?" />
-        {/* 느낌표 안내 두 곳(매장 유형 아래 · 시작 방법 아래)은 같은 크기 — 16px 본문색 · 아이콘 16px · 간격 8px(2026-11-11 사용자 지정). */}
+        {/* 느낌표 안내 두 곳(매장 유형 아래 · 시작 방법 아래)은 같은 크기 — 16px 본문색 · 아이콘 18px(남색 원 그림) · 간격 8px(2026-11-11 · 아이콘 2026-11-12 사용자 지정). */}
         <p className="flex items-center gap-[8px] text-[16px] leading-[1.5] text-guest-body">
-          <span aria-hidden className="flex size-[16px] shrink-0 items-center justify-center rounded-full bg-guest-navy-soft text-[11px] leading-none font-bold text-white">
-            !
-          </span>
-          매장 유형에 따라 시작 절차가 달라질 수 있어요. 자세한 내용은
+          {/* 느낌표는 글자 대신 그림 — 글꼴의 「!」는 원 가운데에 오지 않고 찌그러져 보였다(2026-11-12 사용자 지정). 원은 옆 굵은 글자와 같은 남색 */}
+          <svg aria-hidden viewBox="0 0 18 18" className="size-[18px] shrink-0 text-guest-navy">
+            <circle cx="9" cy="9" r="9" fill="currentColor" />
+            <rect x="8" y="4.2" width="2" height="6.4" rx="1" fill="#fff" />
+            <circle cx="9" cy="13.2" r="1.15" fill="#fff" />
+          </svg>
+          {/* 앞 문장은 카드 아래 안내(「프랜차이즈 본사가…」)처럼 남색 굵은 글자(2026-11-12 사용자 지정) */}
+          <b className="font-semibold text-guest-navy">매장 유형에 따라 시작 절차가 달라질 수 있어요.</b>
+          자세한 내용은
           <Link href={routes.leads} className={`font-semibold text-guest-navy underline underline-offset-4 hover:text-guest-ink ${HOVER}`}>
             도입 문의
           </Link>
@@ -405,9 +427,10 @@ function Steps({ routes }: { routes: GuestRoutes }) {
       </div>
       {/* 네 장을 본문 폭(1520 틀) 안에 나란히 둔다 — 가로 스크롤 없이 한눈에(2026-11-10 사용자 지정). */}
       <div className={FRAME}>
+        {/* 마우스를 올리면 매장 유형 카드처럼 떠오르면서 테두리가 진해진다(회청 guest-step — 연한 회청은 잘 안 보였다, 2026-11-12 사용자 지정. 매장 유형 카드도 같은 색) */}
         <ol className="grid grid-cols-4 gap-[20px]">
           {STEPS.map((s, i) => (
-            <li key={s.key} className="min-w-0 rounded-[32px] border border-[#e3ebf3] bg-white p-[12px] transition-[translate,box-shadow] duration-300 ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_32px_rgba(58,86,112,0.12)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+            <li key={s.key} className="min-w-0 rounded-[32px] border border-[#e3ebf3] bg-white p-[12px] transition-[translate,box-shadow,border-color] duration-300 ease-out hover:-translate-y-[6px] hover:border-guest-step hover:shadow-[0_16px_32px_rgba(58,86,112,0.12)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
               {/* 바탕은 첫 화면과 같은 구름 그림 — 카드마다 그림의 다른 쪽을 보여 이어지는 하늘처럼 보이게 한다. */}
               <div className="relative flex h-[380px] items-center justify-center overflow-hidden rounded-[24px] bg-[#e9eff6]">
                 <Image src="/guest/billboard-bg.png" alt="" fill sizes="360px" className="object-cover" style={{ objectPosition: `${15 + i * 25}% 60%` }} />
