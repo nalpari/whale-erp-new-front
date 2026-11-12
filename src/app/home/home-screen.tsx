@@ -90,9 +90,9 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
 
   const menus = useMenus();
   const canOpen = (path: string) => menuOfPath(menus, path, service) !== null;
-  // 공지 띠 — 공지사항 조회 권한이 있을 때만. 플랫폼 탭 · 쓸 수 없는 범위에서는 부르지 않는다
+  // 공지 띠 — 공지사항 조회 권한이 있을 때만. 플랫폼 탭 · 쓸 수 없는 범위에서는 부르지 않는다. 탭 BP 를 실어 플랫폼 계정은 그 BP 의 BP 마스터와 같은 공지를 본다(HOM-07 v281)
   const showsNotices = (many || noStores) && canOpen("/support-notices");
-  const notices = useLoad(showsNotices ? () => Promise.all([bff<SupportPostList>(NOTICES_PATH), enumOf("NoticeType")]) : null, key, "공지사항");
+  const notices = useLoad(showsNotices ? () => Promise.all([bff<SupportPostList>(NOTICES_PATH, bp), enumOf("NoticeType")]) : null, key, "공지사항");
 
   const s = summary && "data" in summary ? summary.data : null;
   const p = pending && "data" in pending ? pending.data : null;

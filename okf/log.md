@@ -2,6 +2,7 @@
 
 ## 2026-11-12
 * **Update**: [Home](/home.md) — 플랫폼 계정이 고른 BP 의 로그인 후 홈(WHALEERP-667, 운영 정책 HOM-07 v280): 고객 BP 를 골라 웨일ERP 탭에 온 플랫폼 마스터 · 플랫폼 관리자는 BP 마스터와 같은 홈을 본다. 안내 화면은 플랫폼 탭(BP 를 고르지 않음)만이다. 홈은 `/bp/{id}` 주소가 아니라 `bff` · `useApi` 에 `tabBp` 인자를 더해 `/home/summary` · `/home/pending` 에 탭 BP 헤더를 싣는다(주소의 BP 가 먼저). api 타입은 api grimer 기준으로 다시 만들었다.
+* **Update**: [Home](/home.md) — 공지 띠도 탭 BP 를 실어 부른다(`bff(NOTICES_PATH, bp)`). 플랫폼 계정은 고른 BP 의 BP 마스터와 같은 공지를 보고, 누른 공지는 공지사항 상세 · 목록에서도 보인다(WHALEERP-667, 운영 정책 HOM-07 v281 — api 가 탭 BP 로 노출 대상을 고른다).
 
 ## 2026-11-11
 * **Update**: [Home](/home.md) — 로그인 후 홈 개편(WHALEERP-665, 운영 정책 v278 HOM-03~10): 점포 하나 화면(`one-store-screen.tsx` · `one-store-view.ts`)을 없애 범위와 역할에 상관없이 한 틀이다. 공지 띠를 맨 위로 옮기고, 경고 밴드를 없애 확인 필요의 계약 갱신 예정 줄에 「종료 D-N」(7일 이내 빨간색)을 적는다. 「처리 대기」 · 「미조치」를 「확인 필요」로, 수치 카드에 오늘 TO-DO 와 운영 점포의 미운영 수를, 점포별 현황 표에 미출근 · 오늘 TO-DO 열을 더하고 운영 점포 모두를 표 안 스크롤로 보인다. 본사 역할의 ATT-30 안내 문구는 뺐다. api 타입은 api graveler 기준으로 다시 만들었다.
