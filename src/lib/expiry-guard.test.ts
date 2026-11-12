@@ -59,6 +59,8 @@ const G1_ALLOW = new Set([
   "app/platform-notices/save/route.ts",
   "app/support-inquiries/save/route.ts",
   "app/contracts/paper/route.ts",
+  "app/facilities/documents/route.ts",
+  "app/api/bulk/[resource]/[action]/route.ts", // 일괄 등록 중계 — 업로드 창구와 같다(화면 bulk-upload-dialog 는 fetchSameOrigin)
   "lib/address-search.ts", // 카카오 · 행정안전부 키 오류 401(로그인과 무관)
   "components/site/force-password-dialog.tsx", // 강제 변경의 401 = 발급 비밀번호 만료
   "app/actions.ts", // 강제 비밀번호 변경 · 로그아웃(만료 제외 경로)

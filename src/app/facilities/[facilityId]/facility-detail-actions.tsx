@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, ConfirmDialog, useToast } from "@/components/common";
+import { Button, ConfirmDialog, useAction, useToast } from "@/components/common";
 import { WarnBand } from "@/components/site/side-parts";
 import { useCurrentBp, usePagePermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
@@ -18,6 +18,7 @@ import { withBack } from "../facility-list-query";
  */
 export function FacilityDetailActions({ facility, backHref }: { facility: FacilityDetail; backHref: string }) {
   const router = useRouter();
+  const deleteFacility = useAction(deleteFacilityAction, { overlay: false });
   const toast = useToast();
   const bp = useCurrentBp().bpCodeId;
   const permission = usePagePermission();
@@ -28,7 +29,7 @@ export function FacilityDetailActions({ facility, backHref }: { facility: Facili
 
   const handleDelete = () =>
     startDelete(async () => {
-      const result = await deleteFacilityAction(facility.facilityId).catch((error: unknown) => {
+      const result = await deleteFacility(facility.facilityId).catch((error: unknown) => {
         console.error("시설물 삭제 호출 실패", error);
         return { ok: false as const, message: "삭제 결과를 확인하지 못했습니다. 목록에서 확인해 주세요." };
       });

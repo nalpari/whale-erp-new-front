@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-12
+* **Update**: [로그인](/auth.md) — main 병합으로 들어온 시설물 · 장비 화면과 엑셀 일괄 등록 팝업을 로그인 만료 규칙에 맞췄다: 서버 액션은 `useAction`, 문서 올리기 · 일괄 등록은 `fetchSameOrigin`, 서버 화면 catch 는 `unstable_rethrow`, 두 창구는 G1 허용 목록(업로드 창구).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 다듬기(front kangaskhan, 사용자 지정): 최소폭 1260px, 머리말 세 칸 격자 · 글자 세 단계 · 「로그인」 한글, 첫 화면 제목 · 설명 · 글자색 · 고래 위치, 매장 유형 카드 문구 · 시작선 · 실사 사진 · 2×2, 카드 호버 테두리, 공지 구분 꼬리표, 아이디/비밀번호 찾기 왼쪽 문구와 로그인 ↔ 찾기 전환이 튕기지 않게.
 * **Update**: [Home](/home.md) — 플랫폼 계정이 고른 BP 의 로그인 후 홈(WHALEERP-667, 운영 정책 HOM-07 v280): 고객 BP 를 골라 웨일ERP 탭에 온 플랫폼 마스터 · 플랫폼 관리자는 BP 마스터와 같은 홈을 본다. 안내 화면은 플랫폼 탭(BP 를 고르지 않음)만이다. 홈은 `/bp/{id}` 주소가 아니라 `bff` · `useApi` 에 `tabBp` 인자를 더해 `/home/summary` · `/home/pending` 에 탭 BP 헤더를 싣는다(주소의 BP 가 먼저). api 타입은 api grimer 기준으로 다시 만들었다.
 * **Update**: [Home](/home.md) — 공지 띠도 탭 BP 를 실어 부른다(`bff(NOTICES_PATH, bp)`). 플랫폼 계정은 고른 BP 의 BP 마스터와 같은 공지를 보고, 누른 공지는 공지사항 상세 · 목록에서도 보인다(WHALEERP-667, 운영 정책 HOM-07 v281 — api 가 탭 BP 로 노출 대상을 고른다).
