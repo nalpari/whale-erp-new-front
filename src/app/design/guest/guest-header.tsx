@@ -49,27 +49,28 @@ export function GuestHeader({ homeHref }: { homeHref?: string }) {
     <header
       // 화면을 옮기는 동안 머리말은 기준점으로 제자리에 둔다(globals.css 의 guest-header).
       style={{ viewTransitionName: "guest-header" }}
-      className={`sticky top-0 z-20 flex h-[110px] items-center border-b px-[80px] transition-[background-color,border-color] duration-150 ${EASE_OUT} motion-reduce:transition-none ${
+      className={`sticky top-0 z-20 grid h-[110px] grid-cols-[1fr_auto_1fr] items-center gap-[clamp(24px,2.5vw,48px)] border-b px-[clamp(40px,4.2vw,80px)] transition-[background-color,border-color] duration-150 ${EASE_OUT} motion-reduce:transition-none ${
         scrolled ? "border-guest-line bg-white/95 backdrop-blur-[8px]" : lined ? "border-guest-line" : "border-transparent"
       }`}
     >
-      <Link href={routes.home} className="flex items-center gap-[8px] py-[5px]">
+      <Link href={routes.home} className="flex items-center gap-[8px] justify-self-start py-[5px]">
         <span className="relative size-[50px] opacity-95">
           <Image src="/guest/logo-whale.svg" alt="" width={49.6875} height={37.4997} className="absolute top-[12.5px] left-0" />
           <Image src="/guest/logo-star.svg" alt="" width={24.1664} height={17.5001} className="absolute top-0 left-[7.57px]" />
         </span>
+        {/* 로고 글자는 WHALE ERP 한 줄만 — 아랫줄 「STORE MANAGEMENT SYSTEM」은 뺐다. 한글로 바꾸니 위 영문과 볼륨이 맞지 않았고, 「매장 통합관리 서비스」는 첫 화면 큰 제목이 맡는다(2026-11-12 사용자 지정). */}
         <span className="flex flex-col leading-[1.4] [text-box:trim-both_cap_alphabetic]">
-          <span className="font-[family-name:var(--font-rem)] text-[20px] font-extrabold tracking-normal text-guest-ink uppercase">
+          <span className="font-[family-name:var(--font-rem)] text-[24px] font-extrabold tracking-normal text-guest-ink uppercase">
             whale ERP
-          </span>
-          <span className="font-[family-name:var(--font-inter-tight)] text-[13px] tracking-normal text-[#353535]">
-            STORE MANAGEMENT SYSTEM
           </span>
         </span>
       </Link>
       {/* 메뉴 화면(매장운영 등)에서는 지금 메뉴만 먹색이고 나머지는 #999 로 물러난다. 고른 메뉴가 없는 화면(메인 · 로그인 · 공지사항 …)은
           네 메뉴 모두 먹색이고 호버하면 남색이다(Figma 로그인전_공유 44:1794 · 44:2, 2026-11-06). */}
-      <nav className="flex flex-1 justify-center gap-[80px]">
+      {/* 글자는 세 단계(2026-11-12 사용자 지정, 정리안) — 로고 24px 800 · 주요 메뉴 18px 600 먹색 · 보조 링크 16px 500 회색(세로선 없음). 전엔 메뉴와 보조 링크가 같은 20px 600 이라 위계가 없었다.
+          세 칸 격자(1fr · 메뉴 · 1fr)라 메뉴 묶음은 로고 · 보조 링크 폭과 상관없이 화면 정가운데에 선다.
+          창을 줄이면(1920 → 1260) 양옆 여백 · 메뉴 사이 · 보조 링크 사이를 같은 비율로 함께 줄인다 — 고정 값일 땐 1300px 아래에서 메뉴가 보조 링크에 붙고 공지사항이 잘렸다. */}
+      <nav className="flex justify-center gap-[clamp(36px,3.9vw,64px)]">
         {MENUS.map((menu) => {
           const href = menu.route ? routes[menu.route] : "#";
           const current = href === pathname;
@@ -78,7 +79,7 @@ export function GuestHeader({ homeHref }: { homeHref?: string }) {
               key={menu.label}
               href={href}
               aria-current={current ? "page" : undefined}
-              className={`text-[20px] leading-[1.5] font-semibold ${
+              className={`text-[18px] leading-[1.5] font-semibold ${
                 onMenu ? "text-[#999] hover:text-guest-ink aria-[current=page]:text-guest-ink" : "text-guest-ink hover:text-guest-navy"
               } ${HOVER}`}
             >
@@ -87,11 +88,12 @@ export function GuestHeader({ homeHref }: { homeHref?: string }) {
           );
         })}
       </nav>
-      <div className="flex items-center gap-[34px] text-[20px] font-semibold text-[#999]">
-        <Link href={homeHref ?? routes.login} className={`flex items-center gap-[6px] uppercase hover:text-guest-ink ${HOVER}`}>
+      <div className="flex items-center justify-end gap-[clamp(16px,1.7vw,24px)] text-[16px] font-medium whitespace-nowrap text-[#777]">
+        <Link href={homeHref ?? routes.login} className={`flex items-center gap-[6px] hover:text-guest-ink ${HOVER}`}>
           {/* 아이콘을 마스크로 그려 글자색을 따르게 한다 — 호버하면 글자와 함께 먹색으로 바뀐다(Figma 1:1855). */}
-          <span aria-hidden className={`size-[24px] bg-current mask-[url(/guest/user-circle.svg)] mask-contain mask-center mask-no-repeat ${HOVER}`} />
-          {homeHref ? "홈으로" : "Login"}
+          <span aria-hidden className={`size-[20px] bg-current mask-[url(/guest/user-circle.svg)] mask-contain mask-center mask-no-repeat ${HOVER}`} />
+          {/* 「LOGIN」 영문 대문자 대신 다른 링크와 같은 한글(2026-11-12 사용자 지정) */}
+          {homeHref ? "홈으로" : "로그인"}
         </Link>
         {SIDE_MENUS.map((menu) => (
           <Link

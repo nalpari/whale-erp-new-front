@@ -15,9 +15,10 @@ type Post = Schemas["PublishedPostResponseDto"];
 type Attachment = Schemas["PostAttachmentDto"];
 
 // 메인 「새로운 소식」(guest-home.tsx 의 HomeNewsList)도 이 Badges 를 쓴다. 고정 글은 압정 아이콘을 앞에 단다. 글자는 api enum(NoticeType)의 한글이다.
-// 구분 꼬리표는 모두 같은 회색 — 로그인 후 알림 종의 구분 꼬리표처럼 옅은 회색 바탕 · 회색 글자 · 얇은 테두리. 구분마다 색을 달리하면 목록이 알록달록했다(2026-11-11 사용자 지정).
+// 구분 꼬리표는 모두 같은 남색 한 벌 — 연한 남색 바탕(#e9eff5) · 남색 13px 굵은 글자 · 테두리 없음. 구분마다 색을 달리하면 목록이 알록달록했고(2026-11-11),
+// 회색 테두리 · 회색 글자는 연필로 쓴 듯 흐려 바꿨다(2026-11-12 사용자 지정, 시안 B).
 function Badge({ children }: { children: ReactNode }) {
-  return <span className="flex h-[28px] shrink-0 items-center rounded-[4px] border border-[#e3e7ec] bg-[#f6f8fa] px-[9px] text-[14px] leading-[1.4] font-medium text-guest-sub">{children}</span>;
+  return <span className="flex h-[26px] shrink-0 items-center rounded-[6px] bg-[#e9eff5] px-[10px] text-[13px] leading-[1.4] font-bold text-guest-navy">{children}</span>;
 }
 
 export function Badges({ post, typeLabel, slot = false }: { post: Pick<Post, "isPinned" | "noticeType">; typeLabel: (type: NoticeType) => string; slot?: boolean }) {
