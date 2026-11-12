@@ -71,6 +71,9 @@ export function HomeScreen() {
 function HomeBody({ greeting }: { greeting: ReactNode }) {
   const account = useAccount();
   const bp = useCurrentBp().bpCodeId;
+  // 플랫폼 계정은 BP 를 골라 웨일ERP 탭에 오면 BP 마스터와 같은 홈이고(WHALEERP-667, 운영 정책 HOM-07 v280), 플랫폼 탭이면 안내만 본다
+  const service = useService();
+  const platformTab = isPlatformRole(account.roleTypeCode) && service !== "WHALE_ERP";
   const stores = useStores();
   const [scope] = useScope();
   const [reloads, setReloads] = useState(0);
@@ -79,27 +82,27 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
   // 점포가 없는 BP 계정 — 범위가 「전체」라 search 가 "" 여도 여러 점포 화면이 아니라 값 0 화면(아래 !stores.length 분기)이다.
   // 그래도 현황 · 처리 대기는 점포 없이 부른다 — 내 문의 · 문의 답변 완료처럼 점포와 상관없는 값이 있다. api 는 관리 점포(없음) 안에서만 세서
   // 점포 쪽 값은 0, 문의 쪽은 그대로 온다(api home.service contextOf, 리뷰 반영)
-  const noStores = !isPlatformRole(account.roleTypeCode) && stores.length === 0;
-  const many = search !== null && !noStores && !isPlatformRole(account.roleTypeCode);
-  const summary = useApi<HomeSummary>(many ? `/home/summary${search}` : noStores ? "/home/summary" : null, key, "현황");
-  const pending = useApi<HomePending>(many ? `/home/pending${search}` : noStores ? "/home/pending" : null, key, "확인 필요");
+  const noStores = !platformTab && stores.length === 0;
+  const many = search !== null && !noStores && !platformTab;
+  // 홈은 /bp/{id} 주소가 아니라 탭 BP 를 직접 싣는다 — 플랫폼 계정은 api 가 이 BP 의 점포 전체로 센다(BP · 가맹 계정은 api 가 보지 않는다)
+  const summary = useApi<HomeSummary>(many ? `/home/summary${search}` : noStores ? "/home/summary" : null, key, "현황", bp);
+  const pending = useApi<HomePending>(many ? `/home/pending${search}` : noStores ? "/home/pending" : null, key, "확인 필요", bp);
 
   const menus = useMenus();
-  const service = useService();
   const canOpen = (path: string) => menuOfPath(menus, path, service) !== null;
-  // 공지 띠 — 공지사항 조회 권한이 있을 때만. 플랫폼 계정 · 쓸 수 없는 범위에서는 부르지 않는다
+  // 공지 띠 — 공지사항 조회 권한이 있을 때만. 플랫폼 탭 · 쓸 수 없는 범위에서는 부르지 않는다
   const showsNotices = (many || noStores) && canOpen("/support-notices");
   const notices = useLoad(showsNotices ? () => Promise.all([bff<SupportPostList>(NOTICES_PATH), enumOf("NoticeType")]) : null, key, "공지사항");
 
   const s = summary && "data" in summary ? summary.data : null;
   const p = pending && "data" in pending ? pending.data : null;
   const asOf = s?.asOf ?? p?.asOf;
-  // 플랫폼 계정은 로그인 정보의 역할로 먼저 가른다 — 빈 범위면 api 를 부르지 않아 응답의 platform 을 받지 못한다
-  const platform = isPlatformRole(account.roleTypeCode) || s?.platform || p?.platform;
+  // 플랫폼 탭은 로그인 정보의 역할 · 탭 서비스로 먼저 가른다 — api 를 부르지 않아 응답의 platform 을 받지 못한다
+  const platform = platformTab || s?.platform || p?.platform;
 
   let body: ReactNode;
   if (platform) {
-    // 플랫폼 계정은 현황 없이 안내만(2026-10-27 재영 · HOME-8). Platform 콘솔은 헤더 바로가기처럼 새 탭으로 연다
+    // BP 를 고르지 않은 플랫폼 계정(플랫폼 탭)은 현황 없이 안내만(2026-10-27 재영 · HOME-8). Platform 콘솔은 헤더 바로가기처럼 새 탭으로 연다
     body = (
       <Notice text="플랫폼 계정은 홈 현황을 보지 않습니다. BP 의 업무는 각 메뉴에서, 플랫폼 운영은 Platform 콘솔에서 합니다.">
         <Button href={HOME.PLATFORM} target="_blank" rel="noopener">

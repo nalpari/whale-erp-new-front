@@ -55,6 +55,6 @@ export function useLoad<T>(load: (() => Promise<T>) | null, key: string, what: s
 }
 
 /** BFF GET 하나 — path 가 null 이면 부르지 않는다 */
-export function useApi<T>(path: string | null, key: string, what: string): Loaded<T> | null {
-  return useLoad(path === null ? null : () => bff<T>(path), `${key}|${path}`, what).got;
+export function useApi<T>(path: string | null, key: string, what: string, tabBp?: number): Loaded<T> | null {
+  return useLoad(path === null ? null : () => bff<T>(path, tabBp), `${key}|${path}`, what).got;
 }
