@@ -5,6 +5,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { SectionTitle } from "./guest-ui";
 import type { Feature } from "./intro-sections";
 import { FRAME } from "./theme";
+import { usePinnedHidesFloating } from "./use-pinned-hides-floating";
 
 // 「○○, 이렇게 달라집니다」의 펼침 목록 모양 — 토스페이 비즈니스 소개(보안 구역)처럼 기능마다 1px 선으로 나눈 줄이고,
 // 지금 줄만 펼쳐져 왼쪽에 그림 카드, 오른쪽에 제목 · 설명 · 기능 목록이 나온다. 나머지 줄은 흐린 제목만 보인다(재무관리 · 프랜차이즈, 2026-11-10 사용자 지정).
@@ -22,6 +23,7 @@ const HEADER = 110;
 export function IntroFeaturesAccordion({ light, bold, items }: { light: string; bold: string; items: AccordionFeature[] }) {
   const [open, setOpen] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
+  usePinnedHidesFloating(sectionRef);
 
   useEffect(() => {
     function update() {

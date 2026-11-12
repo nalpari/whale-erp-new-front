@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { GuestPage } from "../guest-ui";
+import type { GuestRoutes } from "../guest-routes";
+import { FloatingActions, GuestPage } from "../guest-ui";
 import { type AccordionFeature, IntroFeaturesAccordion } from "../intro-features-accordion";
 import { FinanceAccountMock, FinanceEntryMock, FinanceRatioMock, FinanceSalesMock } from "../screen-mocks";
 import { IntroMoments, IntroTimeline, type Moment } from "../intro-sections";
@@ -125,13 +126,16 @@ const FLOW = [
   },
 ];
 
-export function FinanceManagement() {
+export function FinanceManagement({ routes }: { routes: GuestRoutes }) {
   return (
     // 맨 아래 부가서비스 구역(회색 바탕)이 푸터에 바로 붙는 시안이라 본문 아래 60px 여백을 두지 않는다.
     <GuestPage flush>
       <IntroMoments light="장부 정리," bold="아직도 월말에 몰아서 하시나요?" items={MOMENTS} />
       <IntroFeaturesAccordion light="재무관리," bold="이렇게 달라집니다" items={FEATURES} />
-      <IntroTimeline light="거래가 쌓일수록," bold="매장이 선명해져요" steps={FLOW} />
+      {/* 흐름 구역 제목 — 「거래가 쌓일수록, 매장이 선명해져요」는 무엇이 선명해지는지 빠져 있어, 매장운영과 같은 「A부터 B까지, WHALE ERP 하나로」 꼴로 바꿨다(2026-11-12 사용자 지정) */}
+      <IntroTimeline light="통장 연동부터 장부 정리까지," bold="WHALE ERP 하나로" steps={FLOW} />
+      {/* 홈 · 매장운영과 같은 무료 가입 띠를 아래에 띄운다(2026-11-12 사용자 지정) */}
+      <FloatingActions routes={routes} />
     </GuestPage>
   );
 }

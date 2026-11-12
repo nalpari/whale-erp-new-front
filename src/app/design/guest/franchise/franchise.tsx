@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { GuestPage } from "../guest-ui";
+import type { GuestRoutes } from "../guest-routes";
+import { FloatingActions, GuestPage } from "../guest-ui";
 import { type AccordionFeature, IntroFeaturesAccordion } from "../intro-features-accordion";
 import { IntroMoments, IntroTimeline, type Moment } from "../intro-sections";
 import { FranchiseContractMock, FranchiseInspectionMock, FranchiseMenuMock, FranchiseStoreMock } from "../screen-mocks";
@@ -129,13 +130,16 @@ const FLOW = [
   },
 ];
 
-export function Franchise() {
+export function Franchise({ routes }: { routes: GuestRoutes }) {
   return (
     // 맨 아래 부가서비스 구역(회색 바탕)이 푸터에 바로 붙는 시안이라 본문 아래 60px 여백을 두지 않는다.
     <GuestPage flush>
       <IntroMoments light="가맹점이 늘수록," bold="본사가 바빠지는 이유" items={MOMENTS} />
       <IntroFeaturesAccordion light="프랜차이즈 본사," bold="이렇게 달라집니다" items={FEATURES} />
-      <IntroTimeline light="계약서 한 장에서," bold="가맹점 오픈까지" steps={FLOW} />
+      {/* 흐름 구역 제목 — 「계약서 한 장에서, 가맹점 오픈까지」는 뜻이 모호하고 끝이 「~까지」로 끊겨, 매장운영 · 재무관리와 같은 「A부터 B까지, WHALE ERP 하나로」 꼴로 바꿨다(2026-11-12 사용자 지정) */}
+      <IntroTimeline light="가맹계약부터 매장 연결까지," bold="WHALE ERP 하나로" steps={FLOW} />
+      {/* 홈 · 매장운영과 같은 무료 가입 띠를 아래에 띄운다(2026-11-12 사용자 지정) */}
+      <FloatingActions routes={routes} />
     </GuestPage>
   );
 }

@@ -220,3 +220,22 @@ details[name="guest-faq"][open]::details-content {
     animation: none;
   }
 }
+/* 떠 있는 무료 가입 띠 — 앱 globals.css 와 같다. 페이지 끝에서 푸터를 가리지 않게 여백을 주고, 소개 화면의 붙는 구역이 화면을 채우는 동안(body[data-guest-pinned], guest.js) 아래로 내려 감춘다. */
+body:has(.guest-floating) footer {
+  padding-bottom: 136px;
+}
+.guest-floating {
+  transition: translate 250ms ease, opacity 250ms ease, visibility 0s linear 0s;
+}
+body[data-guest-pinned] .guest-floating {
+  translate: 0 24px;
+  opacity: 0;
+  visibility: hidden;
+  transition: translate 250ms ease, opacity 250ms ease, visibility 0s linear 250ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .guest-floating,
+  body[data-guest-pinned] .guest-floating {
+    transition: none;
+  }
+}

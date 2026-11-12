@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { type ReactNode, ViewTransition } from "react";
+import type { GuestRoutes } from "./guest-routes";
 import { ARROW_NUDGE, ARROW_NUDGE_BACK, BUTTON_MOTION, HOVER } from "./theme";
 
 // 비로그인 화면들이 함께 쓰는 조각 — 섹션 제목, 버튼, 화살표, 글자 위아래 여백 자르기.
@@ -50,7 +51,7 @@ const BUTTON_TONE = {
   soft: "border-guest-navy-soft bg-guest-navy-soft text-white hover:border-guest-navy hover:bg-white hover:text-guest-navy",
   outline: "border-guest-button-line bg-white text-guest-ink hover:border-guest-navy hover:text-guest-navy",
   line: "border-guest-navy-soft bg-white text-guest-navy hover:border-guest-navy",
-  // 흰 바탕 · 남색 테두리 · 남색 글자, 호버하면 남색으로 채운다 — 메인 첫 화면 [무료로 시작하기] · [도입문의]와 같은 모양. 메인 사장님 유형 카드 버튼(2026-11-09 사용자 지정).
+  // 흰 바탕 · 남색 테두리 · 남색 글자, 호버하면 남색으로 채운다 — 첫 화면에 있던 [무료로 시작하기] · [도입문의](2026-11-11 뺐다)와 같은 모양. 메인 사장님 유형 카드 버튼(2026-11-09 사용자 지정).
   invert: "border-guest-navy bg-white text-guest-navy hover:bg-[rgba(58,86,112,0.9)] hover:text-white",
 };
 export function GuestButton({
@@ -165,5 +166,53 @@ export function FaqItem({ q, category, open = false, children }: { q: string; ca
       </summary>
       {children && <p className="pr-[20px] pb-[18px] pl-[60px] text-[16px] leading-[1.5] whitespace-pre-line text-guest-sub">{children}</p>}
     </details>
+  );
+}
+
+// 화면 아래에 늘 떠 있는 무료 가입 띠 — 페이히어 소개의 아래 상담 띠처럼 스크롤해도 따라온다(2026-11-11 사용자 지정). 홈과 소개 화면(매장운영 · 재무관리 · 프랜차이즈 · 부가서비스)이 함께 쓴다(2026-11-12 사용자 지정).
+// 짙은 남색 반투명 판(뒤 화면이 비친다 · 흐림 처리) 왼쪽에 「가입 즉시 무료 이용」 꼬리표 + 무료 혜택 셋, 오른쪽에 [무료로 시작] · [도입문의]. 떠 있는 것이라 옅은 그림자를 준다.
+// 「우리 매장 관리를 시작해 보세요.」 대신 혜택을 두고, 첫 화면의 「가입 즉시 무료 이용」 줄을 이리로 옮겼다(2026-11-12 사용자 지정).
+// 「직원 5명 초대」 · 「직원 전용 앱」은 한 뜻이라 합쳤고(「앱 초대」만 쓰면 ERP 앱처럼 읽혀 용어집 이름 「직원 근무 앱」을 쓴다), 관리자는 「계정 자유롭게 추가」로 말한다(2026-11-12 사용자 지정).
+const FREE_BENEFITS = ["점포 1개 운영", "직원 5명 근무 앱 초대", "관리자 계정 자유롭게 추가"] as const;
+
+export function FloatingActions({ routes }: { routes: GuestRoutes }) {
+  return (
+    <div className="guest-floating pointer-events-none fixed inset-x-0 bottom-[24px] z-30 flex justify-center">
+      <div className="pointer-events-auto flex max-w-[calc(100vw-32px)] items-center gap-[40px] rounded-[20px] bg-[rgba(28,38,48,0.7)] py-[14px] pr-[14px] pl-[32px] shadow-[0_12px_32px_rgba(28,38,48,0.25)] backdrop-blur-[2px]">
+        <p className="flex items-center text-[18px] leading-[1.5] font-semibold whitespace-nowrap text-white">
+          {/* 띠의 제목이라 꼬리표(알약)로 — 연하늘 바탕 · 짙은 남색 글자(2026-11-12 사용자 지정). 화면 읽기는 꼬리표 뒤 쌍점으로 끊어 읽고 가운뎃점은 읽지 않는다 */}
+          <span className="flex h-[34px] items-center rounded-full bg-[#9cc3ff] px-[14px] text-[15px] font-bold text-[#1c2630]">가입 즉시 무료 이용</span>
+          <span className="sr-only max-[1400px]:hidden">: </span>
+          {/* 띠는 화면에 고정되어 창보다 넓으면 양옆이 잘린다 — 1400px 아래 창에서는 혜택 셋을 숨기고 꼬리표 · 버튼만 남긴다(PR 리뷰) */}
+          <span className="ml-[18px] flex items-center max-[1400px]:hidden">
+            {FREE_BENEFITS.map((benefit, i) => (
+              <span key={benefit} className="flex items-center">
+                {i > 0 && (
+                  <span aria-hidden className="mx-[10px] text-white/50">
+                    ·
+                  </span>
+                )}
+                {benefit}
+              </span>
+            ))}
+          </span>
+        </p>
+        <div className="flex gap-[8px]">
+          <Link
+            href={routes.signUp}
+            className={`flex h-[60px] items-center justify-center gap-[10px] rounded-[12px] bg-white px-[36px] text-[19px] leading-[1.5] font-semibold text-guest-navy hover:bg-[#e9eef3] ${BUTTON_MOTION}`}
+          >
+            무료로 시작
+            <Arrow />
+          </Link>
+          <Link
+            href={routes.leads}
+            className={`flex h-[60px] items-center justify-center rounded-[12px] border border-white/50 px-[36px] text-[19px] leading-[1.5] font-semibold text-white hover:bg-white/15 ${BUTTON_MOTION}`}
+          >
+            도입문의
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -65,6 +65,21 @@
     window.addEventListener("scroll", update, { passive: true });
   }
 
+  // 떠 있는 무료 가입 띠: 소개 화면의 붙는 구역(sticky · 펼침 목록)이 화면을 채우는 동안 감춘다 — 앱 use-pinned-hides-floating.ts 와 같다.
+  // 정적 스냅샷이라 React 훅이 돌지 않아, 붙는 틀(sticky top-[110px])의 바깥 구역을 직접 재 body 에 data-guest-pinned 를 단다.
+  const pinSections = $$("[class*=\"sticky\"][class*=\"top-[110px]\"]").map((el) => el.parentElement);
+  if (pinSections.length && document.querySelector(".guest-floating")) {
+    const updatePin = () => {
+      const pinned = pinSections.some((s) => {
+        const r = s.getBoundingClientRect();
+        return r.top <= 111 && r.bottom >= window.innerHeight - 1;
+      });
+      document.body.toggleAttribute("data-guest-pinned", pinned);
+    };
+    updatePin();
+    window.addEventListener("scroll", updatePin, { passive: true });
+    window.addEventListener("resize", updatePin);
+  }
   // 비밀번호 보기·숨기기. 버튼 안 두 그림 중 지금 상태를 바꾸는 쪽 하나만 보인다.
   for (const btn of $$("[data-password-toggle]")) {
     const input = btn.closest("label, span").querySelector("input");

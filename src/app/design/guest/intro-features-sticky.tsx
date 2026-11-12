@@ -5,6 +5,7 @@ import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "re
 import { SectionTitle, TRIM } from "./guest-ui";
 import type { Feature } from "./intro-sections";
 import { BUTTON_MOTION, FRAME } from "./theme";
+import { usePinnedHidesFloating } from "./use-pinned-hides-floating";
 
 function Lines({ lines }: { lines: string[] }) {
   return lines.map((line) => (
@@ -32,6 +33,7 @@ export function IntroFeaturesSticky({ light, bold, items }: { light: string; bol
   const [active, setActive] = useState(0);
   const [sub, setSub] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
+  usePinnedHidesFloating(sectionRef);
   const viewRef = useRef<HTMLDivElement>(null);
   const articleRefs = useRef<(HTMLElement | null)[]>([]);
   const panelRef = useRef<HTMLDivElement>(null);
