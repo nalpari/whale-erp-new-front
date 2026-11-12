@@ -9,7 +9,7 @@ import { tag } from "./config-parts.mjs";
 
 // 그룹 = 공통코드 그룹 두 개(화면이 고정으로 부른다), 분류 = 그 그룹의 상세 코드(PL-3)
 export const CODES = { "점포 시설물": ["식재보관", "급수", "냉난방"], "점포 장비": ["그라인더", "커피머신", "제빙기"] };
-// 그룹마다 불러오는 공통코드 그룹 코드(제안 이름, 1팀 확정 전)
+// 그룹마다 불러오는 공통코드 그룹 코드(api 마이그레이션 team1_facilities 로 확정, 2026-11-11)
 export const GROUP_CODES = { "점포 시설물": "STORE_FACILITY", "점포 장비": "STORE_EQUIPMENT" };
 // 운영상태 = 공통코드 「시설물 운영상태」(플랫폼고정, PL-2) · 점검 주기 = 「시설물 점검 주기」(플랫폼제공, PL-6)
 export const STATUSES = ["운영", "보관", "폐기"];
@@ -72,7 +72,7 @@ export const GROUP_SCRIPT = `<script>
 
 // 플랫폼제공 공통코드에서 값을 가져오는 등록 · 수정 칸 — 칸 이름 줄 오른쪽 끝에 출처 「공통코드 그룹 [코드]」(FAQ 등록 카테고리와 같은 모양, 2026-11-11 사용자 지정).
 // BP 가 공통코드 관리에서 볼 수 없는 플랫폼고정 그룹(운영상태 · 수리비 결제 수단)에는 붙이지 않는다 — 분류 · 점검 주기만 해당한다.
-export const CYCLE_CODE = "FACILITY_INSPECTION_CYCLE";
+export const CYCLE_CODE = "INSPECTION_CYCLE";
 // codes 는 꼬리표로 보일 그룹 코드 목록. codeOf 를 주면 그 분류칸 id 의 출처라 그룹을 바꿀 때 GROUP_SCRIPT 가 꼬리표 글자를 바꾼다
 const codeSource = (codes, codeOf) =>
   `<span ${codeOf ? `data-code-of="${codeOf}" ` : ""}class="-my-[2px] ml-auto flex shrink-0 items-center gap-[6px] pl-[10px] text-[14px] font-medium text-erp-label">공통코드 그룹 ${codes

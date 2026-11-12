@@ -90,8 +90,8 @@ export const render = ({ A, R }, { mode = "create", errors = false } = {}) => {
       u(f.group("관리 담당자", ui.select(["선택", "서지안", "오세라", "김도윤"], { value: "서지안", "aria-label": "관리 담당자" }))),
       u(f.group("관리 담당자 전화번호", f.tel("010", "2323", "2323"))),
     ),
-    // 점검 주기 — 공통코드 「시설물 점검 주기」, 처음 값 매일(PL-6)
-    ui.formRow(u(codeGroup("점검 주기", [CYCLE_CODE], ui.select(CYCLES, { value: "매월", "aria-label": "점검 주기" }))), u(ui.field("점검 비고", ui.textField({ value: "매달 정기휴일에 점검" })))),
+    // 점검 주기 — 공통코드 「시설물 점검 주기」, 처음 값 없음(「선택」, 2026-11-11 사용자 지정 — 전엔 매일)(PL-6)
+    ui.formRow(u(codeGroup("점검 주기", [CYCLE_CODE], ui.select(["선택", ...CYCLES], { value: "매월", "aria-label": "점검 주기" }))), u(ui.field("점검 비고", ui.textField({ value: "매달 정기휴일에 점검" })))),
     // A/S센터 — 공통 주소 칸(점포 주소와 같다): 검색 → 우편번호 · 기본주소, 상세주소 100자, [지우기](PL-5)
     u(address(A, "A/S센터 주소", { zip: "04522", base: "서울 중구 삼봉로 98", detail: "1층 2호" })),
     u(f.group("A/S센터 전화번호", f.tel("02", "2222", "8888"))),
