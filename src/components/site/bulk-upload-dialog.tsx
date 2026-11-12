@@ -3,7 +3,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { Badge, Blocked, Button, DataTable, NoticeBand, fileSizeLabel, type Column } from "@/components/common";
 import { BP_HEADER, bpOfPath } from "@/lib/bp-path";
-import { BULK_ACCEPT, bulkFileError, errorFileNameOf, isBulkPreview, type BulkAction, type BulkPreview, type BulkResource } from "@/lib/bulk-upload";
+import { BULK_ACCEPT, bulkFileError, errorFileNameOf, isBulkBusy, isBulkPreview, type BulkAction, type BulkPreview, type BulkResource } from "@/lib/bulk-upload";
 import { errorMessageOf, fileNameOfDisposition, XLSX_CONTENT_TYPE } from "@/lib/download";
 import { HistoryScroll, WideDialog } from "./wide-dialog";
 
@@ -152,13 +152,16 @@ export function BulkUploadDialog({
         return;
       }
       // 5xx · 연결 끊김은 api 가 저장을 마쳤을 수도 있다 — 다시 올리면 두 번 등록되므로 목록에서 확인하게 한다(리뷰 반영)
-      if (response.status >= 500) {
+      // 요청 몰림(503 + BULK_BUSY)은 예외 — api 가 파일을 읽기 전에 돌려보낸 것이라 저장되지 않았다. api 문구를 그대로 보인다.
+      // code 없는 503 은 앞단(게이트웨이 · 로드밸런서)이 저장 뒤에 냈을 수 있어 다른 5xx 처럼 결과 모름이다
+      const failed: unknown = await response.json().catch(() => null);
+      if (response.status >= 500 && !isBulkBusy(response.status, failed)) {
         setFailure(UNCERTAIN);
         onUncertain?.();
         return;
       }
       // 미리보기와 등록 사이에 바뀐 것(공통코드 · 점포 상태)이 있으면 api 가 다시 검사해 막는다 — 미리보기를 다시 받아 지금 오류를 보인다
-      const message = await failureOf(response);
+      const message = errorMessageOf(failed, `요청이 실패했습니다 (HTTP ${response.status})`);
       if (response.status === 400) {
         // 다시 받다 끊겨도 확정 실패(400)는 그대로 알린다 — run 의 catch 로 넘기면 「결과 모름」으로 바뀐다(리뷰 반영)
         const again = await call(resource, "validations", file).catch((e: unknown) => {

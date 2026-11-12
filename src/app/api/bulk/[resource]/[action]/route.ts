@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { authHeaders, requestRaw, SESSION_COOKIE } from "@/lib/api";
 import { SESSION_EXPIRED } from "@/lib/action-failure";
-import { BULK_ACTIONS, isBulkAction, isBulkResource } from "@/lib/bulk-upload";
+import { BULK_ACTIONS, BULK_BUSY_CODE, isBulkAction, isBulkBusy, isBulkResource } from "@/lib/bulk-upload";
 import { errorMessageOf } from "@/lib/download";
 import { sameOrigin } from "@/lib/paper-request";
 
@@ -12,7 +12,7 @@ import { sameOrigin } from "@/lib/paper-request";
 //   POST error-file  → POST /{자원}/bulk-error-file    multipart file → 오류 사유를 더한 .xlsx
 //   POST register    → POST /{자원}/bulk               multipart file → { createdCount }
 // BFF(/api/[...path])는 조회 JSON 만 열어 파일을 올리거나 받을 수 없어 따로 둔다. 자원 · 동작은 목록 안의 것만 받는다.
-// 실패는 { message } 를 api 와 같은 상태로 준다 — 5xx 는 Nest 영문 문구라 연결 문구로 바꾼다(503 은 한글이라 그대로).
+// 실패는 { message } 를 api 와 같은 상태로 준다 — 5xx 는 Nest 영문 문구라 연결 문구로 바꾼다(요청 몰림 503 + BULK_BUSY 만 한글 문구 · code 그대로).
 
 const SERVER_DOWN = "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.";
 const fail = (status: number, message: string) => NextResponse.json({ message }, { status });
@@ -51,8 +51,10 @@ async function relay(req: NextRequest, ctx: RouteContext<"/api/bulk/[resource]/[
   if (!response.ok) {
     const resBody: unknown = await response.json().catch(() => null);
     if (response.status >= 500) console.error("일괄 등록 api 오류", { resource, action, status: response.status }, resBody);
-    const message = response.status === 401 ? SESSION_EXPIRED : response.status >= 500 && response.status !== 503 ? SERVER_DOWN : errorMessageOf(resBody, `요청이 실패했습니다 (HTTP ${response.status})`);
-    const res = fail(response.status, message);
+    // 요청 몰림(503 + BULK_BUSY)만 api 문구와 code 를 그대로 넘긴다 — 화면이 code 로 「저장 안 됨」을 확정한다. code 없는 503 은 다른 5xx 와 같다
+    const busy = isBulkBusy(response.status, resBody);
+    const message = response.status === 401 ? SESSION_EXPIRED : response.status >= 500 && !busy ? SERVER_DOWN : errorMessageOf(resBody, `요청이 실패했습니다 (HTTP ${response.status})`);
+    const res = busy ? NextResponse.json({ message, code: BULK_BUSY_CODE }, { status: 503 }) : fail(response.status, message);
     // 토큰이 끊겼다 — 지워야 /login 이 「로그인한 채 오면 홈으로」로 되돌려 보내지 않는다(BFF 와 같다)
     if (response.status === 401) res.cookies.delete(SESSION_COOKIE);
     return res;
