@@ -97,7 +97,8 @@ export function BulkUploadDialog({
     try {
       await work();
     } catch (error) {
-      console.warn("일괄 등록 연결 실패", resource, kind, error);
+      // 등록 중 끊김은 저장 여부를 모른다 — error 로 남긴다
+      (kind === "register" ? console.error : console.warn)("일괄 등록 연결 실패", resource, kind, error);
       // 등록 중 끊겼으면 저장됐을 수도 있다 — 같은 파일을 다시 등록하지 않게 목록에서 확인하게 한다
       setFailure(kind === "register" ? UNCERTAIN : SERVER_DOWN);
       if (kind === "register") onUncertain?.();
@@ -126,6 +127,7 @@ export function BulkUploadDialog({
       if (response.ok) {
         // 건수를 읽지 못했으면 지어내지 않고 null — 부르는 쪽이 건수 없이 알린다(리뷰 반영, 전엔 미리보기 건수로 대신 셌다)
         const body = (await response.json().catch(() => null)) as { createdCount?: unknown } | null;
+        if (typeof body?.createdCount !== "number") console.error("일괄 등록 응답에 건수가 없습니다", resource, body);
         reset();
         onDone(typeof body?.createdCount === "number" ? body.createdCount : null);
         return;
@@ -139,8 +141,12 @@ export function BulkUploadDialog({
       // 미리보기와 등록 사이에 바뀐 것(공통코드 · 점포 상태)이 있으면 api 가 다시 검사해 막는다 — 미리보기를 다시 받아 지금 오류를 보인다
       const message = await failureOf(response);
       if (response.status === 400) {
-        const again = await call(resource, "validations", file);
-        const body: unknown = again.ok ? await again.json().catch(() => null) : null;
+        // 다시 받다 끊겨도 확정 실패(400)는 그대로 알린다 — run 의 catch 로 넘기면 「결과 모름」으로 바뀐다(리뷰 반영)
+        const again = await call(resource, "validations", file).catch((e: unknown) => {
+          console.warn("일괄 등록 미리보기 다시 받기 실패", resource, e);
+          return null;
+        });
+        const body: unknown = again?.ok ? await again.json().catch(() => null) : null;
         if (isBulkPreview(body)) setPreview(body);
       }
       setFailure(message);

@@ -80,7 +80,7 @@ type Props = {
 
 /**
  * 시설물 · 장비 등록 · 수정 폼(목업 docs/mockup/stores/facilities-new.html · edit.html, 데모 stores/facilities-new.mjs). 점포 등록처럼 별도 화면이다.
- * 위에 기본 정보(필수 다섯 칸 + 메모, 늘 펼침), 아래 상세 정보 네 묶음(제품 · 구매 · 기한 · 문서 · 관리 · A/S)을 반씩 접어 둔다.
+ * 위에 기본 정보(필수 다섯 칸 + 메모, 늘 펼침), 아래 상세 정보 네 묶음(제품 정보 / 구매 정보 / 기한 · 문서 / 관리 · A/S)을 두 단에 둘씩 놓는다 — 등록은 모두 접고, 수정은 값이 있는 묶음만 펼친다.
  * [저장]을 누르면 검사하고, 걸린 칸 바로 아래 빨간 문구 · 첫 오류 칸으로 옮긴다(알럿 없음). 값을 고치면 그 칸 문구를 내린다(PL-5).
  * 서버 실패처럼 칸에 묶이지 않는 오류만 화면 위 띠다.
  * 등록: 점포는 고를 수 있는 점포(폐점 제외) 하나, 문서는 등록 응답의 facilityId 로 종류마다 올린다(documents/route.ts).
@@ -140,7 +140,10 @@ export function FacilityFormView(props: Props) {
     if (storeId === null) return;
     const ticket = ++managerRequest.current;
     void getManagerOptionsAction(storeId)
-      .catch(() => ({ ok: false as const, message: "관리 담당자 목록을 불러오지 못했습니다." }))
+      .catch((e: unknown) => {
+        console.error("관리 담당자 조회 호출 실패", { storeId }, e);
+        return { ok: false as const, message: "관리 담당자 목록을 불러오지 못했습니다." };
+      })
       .then((result) => {
         // 늦게 온 응답(그 사이 다른 점포를 고름)은 버린다
         if (ticket !== managerRequest.current) return;
@@ -232,14 +235,19 @@ export function FacilityFormView(props: Props) {
         data.append("facilityId", String(facilityId));
         data.append("kind", kind);
         data.append("file", doc.file, doc.file.name);
-        const res = await fetch(at("/facilities/documents"), { method: "POST", body: data }).catch(() => null);
-        if (!res?.ok) {
-          const body = (await res?.json().catch(() => null)) as { messages?: string[] } | null;
+        const res = await fetch(at("/facilities/documents"), { method: "POST", body: data }).catch((e: unknown) => {
+          console.error("시설물 문서 올리기 호출 실패", { facilityId, kind }, e);
+          return null;
+        });
+        if (!res) failed.push(`${name}(연결이 끊겨 반영 여부를 확인하지 못했습니다)`);
+        else if (!res.ok) {
+          const body = (await res.json().catch(() => null)) as { messages?: string[] } | null;
           failed.push(`${name}${body?.messages?.[0] ? `(${body.messages[0]})` : ""}`);
         }
       } else if (doc.existing && doc.removed) {
+        // 빼기 실패는 사유(권한 · 폐점 · 결과 모름)를 함께 — 다시 뺄지 고를 수 있게(리뷰 반영)
         const result = await deleteFacilityDocumentAction(facilityId, kind).catch(unknownResult("문서 빼기"));
-        if (!result.ok) failed.push(`${name}(빼기)`);
+        if (!result.ok) failed.push(`${name}(빼기: ${result.message})`);
       }
     }
     return failed;
@@ -248,7 +256,7 @@ export function FacilityFormView(props: Props) {
   const finish = (facilityId: number, failedDocs: string[]) => {
     // 문서가 일부 실패하면 저장은 끝났으므로 수정 화면으로 보낸다 — 토스트를 놓쳐도 빈 문서 칸에서 바로 다시 올릴 수 있다(리뷰 반영)
     if (failedDocs.length) {
-      toast(`저장했지만 문서를 반영하지 못했습니다: ${failedDocs.join(", ")}. 다시 올려 주세요.`);
+      toast(`저장했지만 문서를 반영하지 못했습니다: ${failedDocs.join(", ")}. 문서 칸을 확인해 주세요.`);
       router.push(at(withBack(`/facilities/${facilityId}/edit`, backHref)));
     } else {
       toast("saved");

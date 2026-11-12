@@ -279,7 +279,7 @@ export function bodyOf(f: FacilityForm): Omit<CreateFacilityInput, "storeId"> {
 }
 
 /**
- * 상세 정보 네 묶음(제품 · 구매 · 기한 · 문서 · 관리 · A/S)의 「입력 n / 전체」 — 값이 있는 칸을 센다(수량 · 총금액 · 부가세는 세지 않는다).
+ * 상세 정보 네 묶음(제품 정보 / 구매 정보 / 기한 · 문서 / 관리 · A/S)의 「입력 n / 전체」 — 값이 있는 칸을 센다(수량 · 총금액 · 부가세는 세지 않는다).
  * docs 는 종류마다 문서가 있는가(올린 것 · 새로 고른 것).
  */
 export function filledCounts(f: FacilityForm, docs: Record<FacilityDocumentKind, boolean>) {
