@@ -45,7 +45,12 @@ export async function POST(req: NextRequest) {
     return fail(502, SERVER_DOWN);
   }
   if (response.ok) {
-    revalidatePath("/facilities", "layout");
+    // 저장은 끝났다 — 화면 갱신이 실패해도 성공으로 돌려준다(서버 액션 refresh 와 같다). 실패로 알리면 저장된 문서를 「반영 못 함」으로 센다
+    try {
+      revalidatePath("/facilities", "layout");
+    } catch (error) {
+      console.error("시설물 화면 갱신 실패", { facilityId, kind }, error);
+    }
     return new NextResponse(null, { status: 204 });
   }
 

@@ -114,7 +114,15 @@ export function BulkUploadDialog({
     }
   };
 
-  const handleTemplateDownload = () => run("template", async () => setFailure(await save(await call(resource, "template"), templateFileName)));
+  /** 양식 · 오류 파일 받기 — 받는 사이 팝업을 닫았으면 저장하지도 실패를 알리지도 않는다(미리보기와 같다) */
+  const download = (kind: "template" | "error-file", fallbackName: string, target?: File) =>
+    run(kind, async () => {
+      const ticket = session.current;
+      const response = await call(resource, kind, target);
+      if (ticket !== session.current) return;
+      setFailure(await save(response, fallbackName));
+    });
+  const handleTemplateDownload = () => download("template", templateFileName);
   const validate = (target: File) =>
     run("validate", async () => {
       const ticket = session.current;
@@ -130,7 +138,7 @@ export function BulkUploadDialog({
       }
       setPreview(body);
     });
-  const handleErrorFileDownload = () => file && run("error-file", async () => setFailure(await save(await call(resource, "error-file", file), errorFileNameOf(file.name))));
+  const handleErrorFileDownload = () => file && download("error-file", errorFileNameOf(file.name), file);
   const handleRegister = () =>
     file &&
     run("register", async () => {
