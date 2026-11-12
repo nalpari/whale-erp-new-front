@@ -4,6 +4,7 @@ import { useId, useRef, useState } from "react";
 import { FIELD, SMALL_BUTTON } from "@/components/common/theme";
 import { searchStoresByText, toPickedStore } from "@/lib/store-scope";
 import type { StoreSummary } from "@/lib/store-types";
+import type { AdminStore } from "@/lib/session";
 import { useStores } from "./session-gate";
 
 export type PickedStore = Pick<StoreSummary, "storeId" | "name" | "storeCode">;
@@ -20,16 +21,20 @@ export type PickedStore = Pick<StoreSummary, "storeId" | "name" | "storeCode">;
 export function StorePicker({
   picked,
   hidden = [],
+  pool,
   onChange,
 }: {
   picked: PickedStore[];
   /** 후보에서 숨길 점포 — 목록이 찾지 못해 조건에서 뺀 점포(지웠거나 볼 수 없게 됐는데 로그인 정보에는 아직 남은 것) */
   hidden?: readonly number[];
+  /** 찾을 점포 — 주지 않으면 로그인 정보의 관리 점포(useStores). 화면 api 가 선택지를 따로 주면(시설물 GET /facilities/store-options) 그것을 넘긴다 */
+  pool?: readonly AdminStore[];
   onChange: (next: PickedStore[]) => void;
 }) {
   const listId = useId();
   const box = useRef<HTMLDivElement>(null);
-  const stores = useStores();
+  const loginStores = useStores();
+  const stores = pool ?? loginStores;
   const [keyword, setKeyword] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
