@@ -22,6 +22,7 @@
           <span class="badge badge--warn">1팀 작업</span>
           <div class="titlebar__end">
             <span class="filters__count mono">1.5차 · /facilities</span>
+            <button class="btn btn--secondary btn--sm" type="button" data-open="pop-bulk" data-show-role="edit">일괄 등록</button>
             <a class="btn btn--primary btn--sm" href="facilities-new.html" data-show-role="edit">등록</a>
             <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./facilities.screen-def.html', 'screenDef', 'width=1620,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
           </div>
@@ -227,6 +228,113 @@
         });
       })();
     </script>
+    <!-- 일괄 등록 레이어 팝업(정책서 PL-7) — 목록의 [일괄 등록]으로 연다. 폭 1000(변경이력 팝업과 같다).
+         1단계: 팝업 안에서 [양식 내려받기] · [파일 선택] → [올리기]. 2단계: 같은 팝업에서 미리보기 검증 → [등록] 또는 [다시 올리기].
+         양식(.xlsx)은 한 줄 = 한 건, 운영상태 · 그룹 · 분류 · 점검 주기는 공통코드 드롭다운, 둘째 시트에 내 관리 범위 점포코드. 문서 3종 · 관리 담당자 · A/S센터 주소는 빼고 등록 뒤 수정 화면에서 넣는다.
+         파일이 양식과 다르거나 500줄을 넘으면 1단계에 빨간 띠. 오류가 한 줄이라도 있으면 [등록]을 막고, 모두 정상이면 한 번에 저장 → 「N건을 등록했습니다.」 → 목록 -->
+    <div class="modal" id="pop-bulk" hidden role="dialog" aria-modal="true" aria-labelledby="pb-t">
+      <div class="modal__box modal__box--hist">
+        <div class="modal__head">
+          <h2 class="t-h2" id="pb-t">시설물 · 장비 일괄 등록</h2>
+          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+        </div>
+        <div class="modal__body">
+          <!-- 1단계 — 양식 내려받기 · 파일 선택 -->
+          <div data-step="pick" class="stack--lg" style="display: flex; flex-direction: column">
+            <div class="demo" data-demo="bulkpick">
+              <b>목업 파일</b>
+              <div class="seg">
+                <button type="button" data-state="none" aria-pressed="true">고르기 전</button>
+                <button type="button" data-state="picked" aria-pressed="false">고름</button>
+                <button type="button" data-state="bad" aria-pressed="false">양식이 다른 파일</button>
+                <button type="button" data-state="over" aria-pressed="false">500줄 초과</button>
+              </div>
+            </div>
+            <div id="bulkpick" class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="band band--risk" data-show="bad" hidden>
+                <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                <div class="band__body"><div class="band__title">내려받은 양식으로 작성한 파일만 올릴 수 있습니다.</div><p class="band__desc">「시설물장비_일괄등록_양식_변경본.xlsx」의 칸 이름이 양식과 다릅니다.</p></div>
+              </div>
+              <div class="band band--risk" data-show="over" hidden>
+                <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                <div class="band__body"><div class="band__title">한 번에 500건까지 등록할 수 있습니다. 파일을 나눠 올려 주세요.</div><p class="band__desc">올린 파일은 612줄입니다.</p></div>
+              </div>
+              <div class="card" style="padding: var(--s-5); gap: var(--s-3)">
+                <b>1. 양식 내려받기</b>
+                <p class="help" style="margin: 0">운영상태 · 그룹 · 분류 · 점검 주기는 양식 안 드롭다운에서 고르고, 점포는 둘째 시트의 점포코드를 적어 주세요.<br />문서 · 관리 담당자 · A/S센터 주소는 등록한 뒤 수정 화면에서 넣습니다.</p>
+                <div><button class="btn btn--secondary" type="button"><span data-icon="download" data-icon-size="14"></span>양식 내려받기</button></div>
+              </div>
+              <div class="card" style="padding: var(--s-5); gap: var(--s-3)">
+                <b>2. 파일 올리기</b>
+                <p class="help" style="margin: 0">내려받은 양식으로 작성한 .xlsx 파일 1개, 한 번에 500건까지 올릴 수 있습니다. 올리면 바로 등록하지 않고 먼저 확인합니다.</p>
+                <div class="inline" style="gap: 10px">
+                  <button class="btn btn--secondary" type="button">파일 선택</button>
+                  <span class="subtle" data-show="none" style="font-size: 13px">선택한 파일이 없습니다.</span>
+                  <span data-show="picked" hidden style="font-size: 13px">시설물장비_일괄등록_성수점.xlsx <span class="subtle">· 24KB</span></span>
+                  <span data-show="bad" hidden style="font-size: 13px">시설물장비_일괄등록_양식_변경본.xlsx <span class="subtle">· 18KB</span></span>
+                  <span data-show="over" hidden style="font-size: 13px">전 점포_장비목록.xlsx <span class="subtle">· 310KB</span></span>
+                </div>
+              </div>
+              <div class="inline" style="justify-content: flex-end; gap: 6px">
+                <button class="btn btn--ghost" type="button" data-close>취소</button>
+                <button class="btn btn--primary" type="button" disabled data-show="none bad over" title="양식으로 작성한 파일을 선택해 주세요.">올리기</button>
+                <button class="btn btn--primary" type="button" data-step-to="preview" data-show="picked" hidden>올리기</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2단계 — 미리보기 검증. 미리보기에서는 고치지 않고 엑셀을 고쳐 [다시 올리기] -->
+          <div data-step="preview" hidden class="stack--lg" style="display: flex; flex-direction: column">
+            <div class="demo" data-demo="bulkpv">
+              <b>목업 결과</b>
+              <div class="seg">
+                <button type="button" data-state="err" aria-pressed="true">오류 있음</button>
+                <button type="button" data-state="ok" aria-pressed="false">모두 정상</button>
+                <button type="button" data-state="fail" aria-pressed="false">등록 실패</button>
+              </div>
+            </div>
+            <div id="bulkpv" class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="spread">
+                <span style="font-size: 13px">시설물장비_일괄등록_성수점.xlsx</span>
+                <span class="inline" style="gap: 10px; font-size: 13px">
+                  <span>전체 <b>4</b>건</span><span class="subtle">|</span>
+                  <span>정상 <b data-show="err">2</b><b data-show="ok fail" hidden>4</b>건</span><span class="subtle">|</span>
+                  <span style="color: var(--risk-text)">오류 <b data-show="err">2</b><b data-show="ok fail" hidden>0</b>건</span>
+                  <button class="btn btn--secondary btn--sm" type="button" data-show="err"><span data-icon="download" data-icon-size="14"></span>오류 내용 내려받기</button>
+                </span>
+              </div>
+              <div class="band band--risk" data-show="err">
+                <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                <div class="band__body"><div class="band__title">오류를 고친 파일을 다시 올려 주세요.</div><p class="band__desc">오류가 한 줄이라도 있으면 등록할 수 없습니다. 미리보기에서는 값을 고칠 수 없습니다.</p></div>
+              </div>
+              <div class="band band--risk" data-show="fail" hidden>
+                <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                <div class="band__body"><div class="band__title">등록하지 못했습니다. 잠시 후 다시 시도해 주세요.</div><p class="band__desc">한 건도 등록하지 않았습니다.</p></div>
+              </div>
+              <div class="tblwrap" style="max-height: 360px; overflow: auto">
+                <table class="tbl">
+                  <thead>
+                    <tr><th scope="col" class="n">행</th><th scope="col">결과</th><th scope="col">점포</th><th scope="col">그룹</th><th scope="col">분류</th><th scope="col">시설물/장비명</th><th scope="col">구매일</th><th scope="col">설치일</th><th scope="col">오류 사유</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td class="n">2</td><td><span class="badge badge--ok">정상</span></td><td>모리커피 성수점</td><td>점포 장비</td><td>커피머신</td><td>라마르조코 리네아 PB 2그룹</td><td class="mono">2025-07-10</td><td class="mono">2025-07-14</td><td class="nil">-</td></tr>
+                    <tr><td class="n">3</td><td><span class="badge badge--risk" data-show="err">오류</span><span class="badge badge--ok" data-show="ok fail" hidden>정상</span></td><td>모리커피 성수점</td><td>점포 장비</td><td><span data-show="err">스팀기</span><span data-show="ok fail" hidden>제빙기</span></td><td>호시자키 제빙기 IM-45</td><td class="mono">2025-03-02</td><td class="mono"><span data-show="err">2025-03-01</span><span data-show="ok fail" hidden>2025-03-05</span></td><td><span data-show="err" style="color: var(--risk-text)">분류: 「점포 장비」에 없는 분류입니다.<br />설치일: 구매일보다 앞설 수 없습니다.</span><span class="nil" data-show="ok fail" hidden>-</span></td></tr>
+                    <tr><td class="n">4</td><td><span class="badge badge--ok">정상</span></td><td>온기식당 판교점</td><td>점포 시설물</td><td>급수</td><td>직수형 정수기</td><td class="mono">2025-05-20</td><td class="mono">2025-05-21</td><td class="nil">-</td></tr>
+                    <tr><td class="n">5</td><td><span class="badge badge--risk" data-show="err">오류</span><span class="badge badge--ok" data-show="ok fail" hidden>정상</span></td><td><span data-show="err">ST000012 (폐점)</span><span data-show="ok fail" hidden>모리커피 을지로점</span></td><td>점포 시설물</td><td>냉난방</td><td>천장형 냉난방기</td><td class="nil">-</td><td class="nil">-</td><td><span data-show="err" style="color: var(--risk-text)">점포코드: 폐점 점포에는 등록할 수 없습니다.<br />영업사원 전화번호: 숫자 9~12자리입니다.</span><span class="nil" data-show="ok fail" hidden>-</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="inline" style="justify-content: flex-end; gap: 6px">
+                <button class="btn btn--ghost" type="button" data-step-to="pick">다시 올리기</button>
+                <button class="btn btn--primary" type="button" disabled data-show="err" title="오류를 고친 파일을 다시 올려 주세요.">등록</button>
+                <a class="btn btn--primary" href="facilities.html" data-show="ok fail" hidden>등록 (4건)</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="../assets/app.js"></script>
     <script src="../assets/auth.js"></script>
   </body>

@@ -904,7 +904,7 @@ export interface paths {
         get?: never;
         /**
          * 직원 생년월일 정정
-         * @description 가입 때 잘못 넣은 생년월일을 관리자가 확인해 정정한다(WHALEERP-602). 직원 레코드의 계정 생년월일을 바꾸므로 같은 사람의 다른 BP 소속에도 같이 바뀐다. 계약서에 적힌 생년월일은 바꾸지 않고, 날인 대기 중인 계약이 있어도 막지 않는다. 날인 대기 계약은 날인 때 계약서 생년월일과 계정 생년월일을 다시 대조하므로 정정으로 대조가 풀릴 수도 있고(보통) 새로 어긋날 수도 있다(계정 하나라 다른 BP 의 계약도 같다). 정정은 계정 변경 이력(BIRTH_DATE · ADMIN_CORRECTION)에 남는다. 오류 응답은 `code` 로 가른다.
+         * @description 가입 때 잘못 넣은 생년월일을 관리자가 확인해 정정한다(WHALEERP-602). 직원 레코드의 계정 생년월일을 바꾸므로 같은 사람의 다른 BP 소속에도 같이 바뀐다. 계약서에 적힌 생년월일은 바꾸지 않고, 서명 대기 중인 계약이 있어도 막지 않는다. 서명 대기 계약은 서명 때 계약서 생년월일과 계정 생년월일을 다시 대조하므로 정정으로 대조가 풀릴 수도 있고(보통) 새로 어긋날 수도 있다(계정 하나라 다른 BP 의 계약도 같다). 정정은 계정 변경 이력(BIRTH_DATE · ADMIN_CORRECTION)에 남는다. 오류 응답은 `code` 로 가른다.
          */
         put: operations["StaffBirthDateController_correct"];
         post?: never;
@@ -2290,7 +2290,7 @@ export interface paths {
         put?: never;
         /**
          * 근로계약서 초안 저장 — 직원 레코드와 계약을 만들고 곧바로 보낸다(2026-10-19 재영). 계정이 없는 번호면 가입 초대
-         *     알림톡과 발송 대기, 계정이 있는 번호면 소속 추가 확인 요청과 발송 대기(직원이 수락하면 서명 대기, WHALEERP-130). 임시저장은
+         *     알림톡과 서명 요청 전, 계정이 있는 번호면 소속 추가 확인 요청과 서명 요청 전(직원이 수락하면 서명 대기, WHALEERP-130). 임시저장하면
          *     보내지 않는다.
          */
         post: operations["ContractsController_create"];
@@ -2327,8 +2327,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 종이 계약 등록(CTR-23). 당사자가 모두 날인한 근로계약서(필수) · 임금계약서(선택) 파일과 근로계약서 내용(data,
-         *     JSON)을 multipart 한 번으로 받아 발송 · 날인 없이 체결 완료로 저장한다. 검사 · 대체 · 겹침 · 초대 유형 판별은
+         * 종이 계약 등록(CTR-23). 당사자가 모두 서명한 근로계약서(필수) · 임금계약서(선택) 파일과 근로계약서 내용(data,
+         *     JSON)을 multipart 한 번으로 받아 발송 · 앱 서명 없이 서명 완료로 저장한다. 검사 · 대체 · 겹침 · 초대 유형 판별은
          *     초안 저장과 같다. 저장이 실패하면 올린 파일도 지운다.
          */
         post: operations["ContractsController_createPaper"];
@@ -2366,16 +2366,16 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 작성 화면을 다시 채울 값 — 임시저장 이어 쓰기 */
+        /** 작성 화면을 다시 채울 값 — 작성 중 근로계약서 이어 쓰기 */
         get: operations["ContractsController_findOne"];
         /**
-         * 임시저장 이어 쓰기. 폼 전체를 다시 보낸다. isTemporarySave 를 빼면 초안 저장으로 넘어가 곧바로 보낸다(POST 와 같다).
+         * 작성 중 근로계약서 이어 쓰기. 폼 전체를 다시 보낸다. isTemporarySave 를 빼면 초안 저장으로 넘어가 곧바로 보낸다(POST 와 같다).
          *     직원이 수정을 요청한 계약(수정 요청)도 고친다 — 고쳐 저장하면 곧바로 서명 대기 · 새 기한으로 다시 보내고(번호를 계정이
-         *     없는 번호로 고쳤으면 가입 초대 · 발송 대기), 임시저장은 할 수 없다(400).
+         *     없는 번호로 고쳤으면 가입 초대 · 서명 요청 전), 임시저장은 할 수 없다(400).
          */
         put: operations["ContractsController_update"];
         post?: never;
-        /** 임시저장 삭제. 계약 · 근무 요일 · 당사자 · 이력과 그 계약에만 쓰인 초안 직원 레코드를 지운다 */
+        /** 작성 중 근로계약서 삭제. 계약 · 근무 요일 · 당사자 · 이력과 그 계약에만 쓰인 초안 직원 레코드를 지운다 */
         delete: operations["ContractsController_remove"];
         options?: never;
         head?: never;
@@ -2396,9 +2396,9 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * 날인 전 당사자 정보 수정(WHALEERP-125 · 126, CTR-28). 발송 대기 · 서명 대기 · 수정 요청 계약의 이름 · 번호 · 생년월일 ·
+         * 서명 전 당사자 정보 수정(WHALEERP-125 · 126, CTR-28). 서명 요청 전 · 서명 대기 · 수정 요청 계약의 이름 · 번호 · 생년월일 ·
          *     성별 · 외국인 여부를 고친다. 저장하면 곧바로 새 서명 기한으로 다시 보내고 앞서 나간 링크는 무효다 — 가입 초대면
-         *     발송 대기, 앱으로 받는 직원이면 서명 대기.
+         *     서명 요청 전, 앱으로 받는 직원이면 서명 대기.
          */
         patch: operations["ContractsController_updateWorker"];
         trace?: never;
@@ -2411,7 +2411,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** 임시저장을 이어 써서 종이 계약으로 등록한다. 받는 것 · 하는 일은 POST /contracts/paper 와 같다 */
+        /** 작성 중 근로계약서를 이어 써서 종이 계약으로 등록한다. 받는 것 · 하는 일은 POST /contracts/paper 와 같다 */
         put: operations["ContractsController_updatePaper"];
         post?: never;
         delete?: never;
@@ -2427,7 +2427,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 종이 계약 날인본 내려받기 주소(300초). 받으면 원래 파일 이름으로 저장된다 */
+        /** 종이 계약 서명본 내려받기 주소(300초). 받으면 원래 파일 이름으로 저장된다 */
         get: operations["ContractsController_documentDownloadUrl"];
         put?: never;
         post?: never;
@@ -2447,11 +2447,11 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 재발송 — 발송 대기 · 서명 대기 · 거부 · 만료(WHALEERP-153)에서 새 서명 기한(30일)으로 다시 보낸다. 가입 전 · 계정 없는 번호는 가입 초대 알림톡을 새
-         *     초대 코드로(상태 그대로, 앞서 나간 초대 코드는 무효), 가입한 직원은 앱 알림(근로계약서 발송 알림)으로 보낸다 — 발송 대기였으면
+         * 재발송 — 서명 요청 전 · 서명 대기 · 서명 거절 · 계약 기간 만료(WHALEERP-153)에서 새 서명 기한(30일)으로 다시 보낸다. 가입 전 · 계정 없는 번호는 가입 초대 알림톡을 새
+         *     초대 코드로(상태 그대로, 앞서 나간 초대 코드는 무효), 가입한 직원은 앱 알림(근로계약서 발송 알림)으로 보낸다 — 서명 요청 전이었으면
          *     서명 대기로 넘긴다(WHALEERP-611). 가입한 직원의 알림은 알림함 알림이고(앱 푸시는 #261 전까지 나가지 않는다), 알림 템플릿을
          *     쓸 수 없거나 탈퇴 계정이면 알림 없이 기한만 새로 잡는다. 계정은 있고 이 점포에 가입하지 않은 번호(소속 추가 확인 · 복귀
-         *     확인)는 소속 추가 확인 요청 알림톡 · 메일을 새로 보내고 발송 대기로 둔다 — 날인 기한은 직원이 수락한 때부터라 응답의 기한은
+         *     확인)는 소속 추가 확인 요청 알림톡 · 메일을 새로 보내고 서명 요청 전으로 둔다 — 서명 기한은 직원이 수락한 때부터라 응답의 기한은
          *     null 이다(WHALEERP-130).
          */
         post: operations["ContractSendController_send"];
@@ -2471,7 +2471,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 발송 대기 계약 종료(WHALEERP-327). 채용을 접을 때 계약을 종료로 닫고 나간 초대(코드 · 링크)를 무효로 한다. 행은 남고 상태
+         * 서명 요청 전 계약 종료(WHALEERP-327). 채용을 접을 때 계약을 종료로 닫고 나간 초대(코드 · 링크)를 무효로 한다. 행은 남고 상태
          *     이력에 남는다. 기존 계약을 바꾸므로 수정 권한이다.
          */
         post: operations["ContractSendController_end"];
@@ -2491,7 +2491,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 날인 — 서명 PNG(파일 칸 `signature`, 1MB)와 직원이 본 계약의 발송 일시(`sentAt`, 시간대 표기 필수). 날인 전에 계약서의 직원
+         * 서명 — 서명 PNG(파일 칸 `signature`, 1MB)와 직원이 본 계약의 발송 일시(`sentAt`, 시간대 표기 필수). 서명 전에 계약서의 직원
          *     정보(이름 · 휴대전화번호 · 생년월일 · 성별 · 외국인 여부)를 가입 정보와 대조해, 다르면 409 IDENTITY_MISMATCH(mismatches)
          *     — 직원은 수정 요청을 낸다. 성별은 가입 때 필수라 다섯 가지를 늘 본다.
          */
@@ -2511,7 +2511,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 거부 — 사유는 받지 않는다(WHALEERP-635, 본문은 읽지 않는다) */
+        /** 서명 거절 — 사유는 받지 않는다(WHALEERP-635, 본문은 읽지 않는다) */
         post: operations["MyContractsController_reject"];
         delete?: never;
         options?: never;
@@ -2543,7 +2543,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 내 근로계약 목록 — 서명 대기 이후(임시저장 · 발송 대기 제외). 소속 확인 대기 계약은 없다 */
+        /** 내 근로계약 목록 — 서명 대기 이후(작성 중 · 서명 요청 전 제외). 소속 확인 대기 계약은 없다 */
         get: operations["MyContractViewsController_list"];
         put?: never;
         post?: never;
@@ -2560,7 +2560,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 내 근로계약 상세 — 계약서에 그릴 값 · 사용자 칸 · 본인 대조 미리보기(날인할 수 있는지 · 다른 항목) */
+        /** 내 근로계약 상세 — 계약서에 그릴 값 · 사용자 칸 · 본인 대조 미리보기(서명할 수 있는지 · 다른 항목) */
         get: operations["MyContractViewsController_findOne"];
         put?: never;
         post?: never;
@@ -3485,7 +3485,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 등록의 직원 고르기 — 그 근무지에 체결 완료 계약이 있고 가입을 마쳤고 퇴직하지 않은 직원, 이름순 */
+        /** 등록의 직원 고르기 — 그 근무지에 서명 완료 계약이 있고 가입을 마쳤고 퇴직하지 않은 직원, 이름순 */
         get: operations["TodosController_assignableStaff"];
         put?: never;
         post?: never;
@@ -3630,7 +3630,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 등록의 직원 선택지 — 가입을 마쳤고 그 근무일에 체결 완료 계약이 있고 퇴직일 전인 직원, 이름순(STAFF-29 · CTR-24) */
+        /** 등록의 직원 선택지 — 가입을 마쳤고 그 근무일에 서명 완료 계약이 있고 퇴직일 전인 직원, 이름순(STAFF-29 · CTR-24) */
         get: operations["WorkSchedulesController_assignableStaff"];
         put?: never;
         post?: never;
@@ -3891,7 +3891,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 대신 등록 선택지 — 그날 대신 등록할 수 있는 직원(위치정보 동의 없음 · 일시 중지, 체결 완료 계약, ATT-20 · 26) */
+        /** 대신 등록 선택지 — 그날 대신 등록할 수 있는 직원(위치정보 동의 없음 · 일시 중지, 서명 완료 계약, ATT-20 · 26) */
         get: operations["AttendanceRecordsController_proxyStaff"];
         put?: never;
         post?: never;
@@ -4075,7 +4075,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 내 소속 근무지 — TO-DO 와 같은 재직 직원 기준. 체결 완료 근로계약이 있고 가입 완료 · 퇴직 전인 직원 레코드. 퇴직 예정은
+         * 내 소속 근무지 — TO-DO 와 같은 재직 직원 기준. 서명 완료 근로계약이 있고 가입 완료 · 퇴직 전인 직원 레코드. 퇴직 예정은
          *     퇴직일과 함께. `includeRetired=true` 면 퇴직한 레코드도 지금 소속 뒤에 퇴직일 최근 순으로 넣는다 — 퇴직일(retiredDate)이
          *     오늘보다 앞이면 퇴직, 오늘 · 뒤면 퇴직 예정이다(2026-10-28). 묶음은 재직 상태로 가르므로 퇴직 배치가 늦은 날에는 날짜와
          *     어긋날 수 있다.
@@ -4332,8 +4332,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 수락 — 그 점포의 직원 레코드를 이 계정에 잇고(가입 완료) 함께 온 근로계약서를 서명 대기로 넘긴다. 날인 기한은 지금부터 30일,
-         *     날인 요청 직원 알림이 나간다.
+         * 수락 — 그 점포의 직원 레코드를 이 계정에 잇고(가입 완료) 함께 온 근로계약서를 서명 대기로 넘긴다. 서명 기한은 지금부터 30일,
+         *     서명 요청 직원 알림이 나간다.
          */
         post: operations["MyAffiliationRequestsController_accept"];
         delete?: never;
@@ -4352,7 +4352,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 거절 — 요청을 거절로 두고(사유 선택) 함께 온 근로계약서를 거부로 닫는다(같은 사유). 직원 레코드 · 지금 소속 · 계정은 그대로다.
+         * 거절 — 요청을 거절로 두고(사유 선택) 함께 온 근로계약서를 서명 거절로 닫는다(같은 사유). 직원 레코드 · 지금 소속 · 계정은 그대로다.
          *     초안을 쓴 관리자에게 「소속 추가 확인 거절」 운영 알림이 간다.
          */
         post: operations["MyAffiliationRequestsController_reject"];
@@ -4960,12 +4960,12 @@ export interface components {
             openCheckIns: components["schemas"]["StoreClosingOpenCheckInsDto"];
             /**
              * @description 폐점하면 퇴직될 직원 수 — 퇴직일이 없거나 폐점일보다 뒤면 폐점일(한국 날짜 오늘)로 정하고, 이미 그 이전이면 그대로 둔다.
-             *     임시저장 계약만 있는 가입 전 레코드는 세지 않는다(그 임시저장은 draftContracts 로 드러난다)
+             *     작성 중 계약만 있는 가입 전 레코드는 세지 않는다(그 작성 중 계약은 draftContracts 로 드러난다)
              */
             retiringStaff: number;
-            /** @description 폐점하면 종료될 임시저장 계약 수 */
+            /** @description 폐점하면 종료될 작성 중 계약 수 */
             draftContracts: number;
-            /** @description 폐점하면 종료될 발송 대기 계약 수 */
+            /** @description 폐점하면 종료될 서명 요청 전 계약 수 */
             pendingSendContracts: number;
             /** @description 폐점하면 종료될 서명 대기 + 수정 요청 계약 수 */
             pendingSignatureContracts: number;
@@ -4978,12 +4978,12 @@ export interface components {
             openCheckIns: components["schemas"]["StoreClosingOpenCheckInsDto"];
             /**
              * @description 폐점하면 퇴직될 직원 수 — 퇴직일이 없거나 폐점일보다 뒤면 폐점일(한국 날짜 오늘)로 정하고, 이미 그 이전이면 그대로 둔다.
-             *     임시저장 계약만 있는 가입 전 레코드는 세지 않는다(그 임시저장은 draftContracts 로 드러난다)
+             *     작성 중 계약만 있는 가입 전 레코드는 세지 않는다(그 작성 중 계약은 draftContracts 로 드러난다)
              */
             retiringStaff: number;
-            /** @description 폐점하면 종료될 임시저장 계약 수 */
+            /** @description 폐점하면 종료될 작성 중 계약 수 */
             draftContracts: number;
-            /** @description 폐점하면 종료될 발송 대기 계약 수 */
+            /** @description 폐점하면 종료될 서명 요청 전 계약 수 */
             pendingSendContracts: number;
             /** @description 폐점하면 종료될 서명 대기 + 수정 요청 계약 수 */
             pendingSignatureContracts: number;
@@ -5238,14 +5238,14 @@ export interface components {
             endDate: string | null;
             /**
              * Format: date-time
-             * @description 최종 수정 일시. 거부일을 따로 저장하지 않아 「거부 · MM-DD」는 이 값으로 보인다
+             * @description 최종 수정 일시. 서명 거절일을 따로 저장하지 않아 「서명 거절 · MM-DD」는 이 값으로 보인다
              */
             updatedAt: string | null;
             /**
              * @description 가입 · 인증 칸 재발송용 — 근로계약 상세의 canResend 와 달리 가입한 직원은 거짓이다(가입한 직원의 앱 알림 재발송은 근로계약
              *     상세에서). 이 칸의 버튼은 이 값 하나만 본다. 참이면 이 계약으로 근로계약 재발송(POST
              *     /contracts/{contractId}/send)이 가입 초대 알림톡 또는 소속 추가 확인 요청을 보낸다(설정 누락 503 · 그사이 바뀐 상태 409 · 발송
-             *     실패 502 는 남는다). 발송 대기 · 서명 대기(거부 · 만료 재발송은 근로계약 상세에서, WHALEERP-153) 위에 모두 맞을 때만 참이다: 가입 전 ·
+             *     실패 502 는 남는다). 서명 요청 전 · 서명 대기(서명 거절 · 계약 기간 만료 재발송은 근로계약 상세에서, WHALEERP-153) 위에 모두 맞을 때만 참이다: 가입 전 ·
              *     가입 상태가 가입 대기 · 초대 만료 · 소속 승인 대기 · 복귀 확인(정보 확인 필요 · 만 19세 미만 · 거절은 거짓), 또는 초안이고 이
              *     계약이 소속 추가 확인 · 복귀 확인으로 판별된 것(WHALEERP-130 전 요청 없이 서명 대기가 된 옛 계약) · 보이는 초대가 수락되지
              *     않음 · 휴대폰 번호 · 가린 줄 아님. 간격 제한은 없다.
@@ -5301,7 +5301,7 @@ export interface components {
             email: string | null;
             /** @description 직무 */
             jobTitle: string;
-            /** @description 입사일(YYYY-MM-DD) — 그 점포에서 처음 체결 완료된 근로계약의 시작일. 채우기 전 레코드는 null */
+            /** @description 입사일(YYYY-MM-DD) — 그 점포에서 처음 서명 완료된 근로계약의 시작일. 채우기 전 레코드는 null */
             hiredDate: string | null;
             /**
              * @description 생년월일(YYYY-MM-DD). 가입한 계정 값이고, 가입 전 · 탈퇴 계정이면 생년월일이 적힌 가장 최근 계약의 값이다. 둘 다 없으면
@@ -5318,11 +5318,11 @@ export interface components {
             birthDateCorrectable: boolean;
             /**
              * @description 이전 재직 기간 — 퇴직 뒤 같은 점포에 다시 입사해 이은 옛 레코드들(WHALEERP-615), 가까운 것부터. 누르면 그 레코드의
-             *     상세로 간다. 체결 완료된 계약이 없는 레코드와 이 관리자에게 가려지는 레코드는 빠진다
+             *     상세로 간다. 서명 완료된 계약이 없는 레코드와 이 관리자에게 가려지는 레코드는 빠진다
              */
             previousRecords: components["schemas"]["StaffMemberEmploymentPeriodDto"][];
             /**
-             * @description 이후 재직 기간 — 이 레코드 뒤에 다시 입사한 레코드들, 가까운 것부터. 체결 완료 전(임시저장 · 발송만 한) 레코드와 가려지는
+             * @description 이후 재직 기간 — 이 레코드 뒤에 다시 입사한 레코드들, 가까운 것부터. 서명 완료 전(작성 중 · 발송만 한) 레코드와 가려지는
              *     레코드는 빠진다
              */
             laterRecords: components["schemas"]["StaffMemberEmploymentPeriodDto"][];
@@ -5346,7 +5346,7 @@ export interface components {
         /** @enum {string} */
         ContractMethod: "ELECTRONIC" | "PAPER";
         StaffMemberContractSummaryDto: {
-            /** @description 계약 유형. 임시저장이면 비어 있을 수 있다 */
+            /** @description 계약 유형. 작성 중이면 비어 있을 수 있다 */
             employmentType: components["schemas"]["EmploymentType"] | null;
             contractMethod: components["schemas"]["ContractMethod"] | null;
             status: components["schemas"]["ContractStatus"] | null;
@@ -5361,7 +5361,7 @@ export interface components {
              */
             lastSentAt: string | null;
             /**
-             * @description 갱신 예정일(YYYY-MM-DD) — 체결 완료이고 종료일이 오늘 이후일 때 종료일 30일 전. 종료일이 30일 안이면 이미 지난
+             * @description 갱신 예정일(YYYY-MM-DD) — 서명 완료이고 종료일이 오늘 이후일 때 종료일 30일 전. 종료일이 30일 안이면 이미 지난
              *     날짜일 수 있다. 아니면 null
              */
             renewalDate: string | null;
@@ -5515,7 +5515,7 @@ export interface components {
             totalWorkMinutes: number;
         };
         ContractToEndDto: {
-            /** @description 임시저장 · 발송 대기 · 서명 대기 · 수정 요청 */
+            /** @description 작성 중 · 서명 요청 전 · 서명 대기 · 수정 요청 */
             status: components["schemas"]["ContractStatus"];
             contractId: number;
         };
@@ -5524,7 +5524,7 @@ export interface components {
             schedulesToRemove: number;
             /** @description 개인으로 배정된 미완료 TO-DO 수 — 배정을 푼다 */
             todosToUnassign: number;
-            /** @description 임시저장 · 발송 대기 · 서명 대기 · 수정 요청 계약 — 종료로 닫는다 */
+            /** @description 작성 중 · 서명 요청 전 · 서명 대기 · 수정 요청 계약 — 종료로 닫는다 */
             contractsToEnd: components["schemas"]["ContractToEndDto"][];
         };
         RetirementDateDto: {
@@ -5615,7 +5615,7 @@ export interface components {
         EnumValueDto: {
             /** @description 저장·전송 값. 예: PENDING_SEND */
             value: string;
-            /** @description 화면에 보이는 한글. 예: 발송 대기 */
+            /** @description 화면에 보이는 한글. 예: 서명 요청 전 */
             label: string;
             /** @description 선택지 순서. 1부터. */
             order: number;
@@ -5631,17 +5631,17 @@ export interface components {
              *       "ContractStatus": [
              *         {
              *           "value": "PENDING_SEND",
-             *           "label": "발송 대기",
+             *           "label": "서명 요청 전",
              *           "order": 1
              *         },
              *         {
              *           "value": "PENDING_SIGNATURE",
-             *           "label": "서명 대기",
+             *           "label": "직원 서명 대기",
              *           "order": 2
              *         },
              *         {
              *           "value": "SIGNED",
-             *           "label": "체결 완료",
+             *           "label": "서명 완료",
              *           "order": 3
              *         }
              *       ]
@@ -7285,7 +7285,7 @@ export interface components {
             staffName: string;
             storeId: number;
             storeName: string;
-            /** @description 급여 기간에 걸친 체결 완료 근로계약 중 가장 늦게 시작한 것. 없으면 null — 초안을 만들 수 없다 */
+            /** @description 급여 기간에 걸친 서명 완료 근로계약 중 가장 늦게 시작한 것. 없으면 null — 초안을 만들 수 없다 */
             contractId: number | null;
             /** @description 이 달 명세서가 이미 있으면 그 ID — 새로 만들지 않는다 */
             payslipId: number | null;
@@ -7657,7 +7657,7 @@ export interface components {
             draftAction: components["schemas"]["ContractDraftAction"] | null;
             /** @description 발송 일시 (ISO 8601). 발송 전이면 null */
             sentAt: string | null;
-            /** @description 날인 기한 (ISO 8601) */
+            /** @description 서명 기한 (ISO 8601) */
             signDeadlineAt: string | null;
             /**
              * @description 직원의 지금 가입 · 초대 상태(직원 목록 joinState 와 같은 규칙, WHALEERP-133). draftAction 은 저장 때 판별한 값이라 초대가
@@ -7665,7 +7665,7 @@ export interface components {
              */
             staffJoinState: components["schemas"]["StaffJoinState"];
             /**
-             * @description 갱신 예정일 YYYY-MM-DD — 체결 완료이고 종료일이 오늘 이후면 종료일 30일 전(직원 상세 요약과 같은 규칙, WHALEERP-156).
+             * @description 갱신 예정일 YYYY-MM-DD — 서명 완료이고 종료일이 오늘 이후면 종료일 30일 전(직원 상세 요약과 같은 규칙, WHALEERP-156).
              *     종료일이 30일 안이면 이미 지난 날짜다. 이미 재계약했으면(진행 중이거나 체결을 거친 재계약이 있음) null, 그 밖에도 null
              * @example 2026-11-01
              */
@@ -7738,8 +7738,8 @@ export interface components {
             gender?: components["schemas"]["Gender"];
             employmentType: components["schemas"]["EmploymentType"];
             /**
-             * @description 전자계약 · 종이 계약. 임시저장이면 비워도 된다. 종이 계약은 날인본 파일과 함께 `POST /contracts/paper`
-             *     (이어 쓰기는 `PUT /contracts/:contractId/paper`)로 등록하고 체결 완료가 된다(CTR-23). 여기(JSON)로는 임시저장만 된다.
+             * @description 전자계약 · 종이 계약. 임시저장이면 비워도 된다. 종이 계약은 서명본 파일과 함께 `POST /contracts/paper`
+             *     (이어 쓰기는 `PUT /contracts/:contractId/paper`)로 등록하고 서명 완료가 된다(CTR-23). 여기(JSON)로는 임시저장만 된다.
              */
             contractMethod?: components["schemas"]["ContractMethod"];
             /**
@@ -7799,13 +7799,13 @@ export interface components {
             workLocation?: string;
             isHealthPensionInsured?: boolean;
             isEmploymentInjuryInsured?: boolean;
-            /** @description true 면 임시저장(DRAFT) — 초대 · 계약서를 보내지 않는다. 없으면 초안 저장(발송 대기) */
+            /** @description true 면 임시저장(DRAFT) — 초대 · 계약서를 보내지 않는다. 없으면 초안 저장(서명 요청 전) */
             isTemporarySave?: boolean;
             /**
-             * @description 재계약의 직전 계약(WHALEERP-156) — 저장(POST)에서만 본다. 체결 완료이거나 체결 뒤 종료된 같은 근무지 · 같은 번호의
+             * @description 재계약의 직전 계약(WHALEERP-156) — 저장(POST)에서만 본다. 서명 완료이거나 서명 완료 뒤 종료된 같은 근무지 · 같은 번호의
              *     계약이어야 하고, 이미 체결을 거친 재계약이 있으면 409 다(진행 중 재계약은 같은 점포 진행 중 계약처럼 대체를 묻는다). 그 직원이 재직 중이면(퇴직 · 퇴직 예정이
              *     아니면) 연장이라 같은 직원 레코드에 새 계약을 붙인다 — 가입한 재직 직원이어도 막지 않는다. 퇴직한 직원이면 재입사라 지금처럼
-             *     새 레코드를 만든다(가입한 직원이 퇴직 예정이면 아직 재직이라 409 — 퇴직 뒤에). 앞 계약은 새 계약이 체결 완료이고 그 시작일이
+             *     새 레코드를 만든다(가입한 직원이 퇴직 예정이면 아직 재직이라 409 — 퇴직 뒤에). 앞 계약은 새 계약이 서명 완료이고 그 시작일이
              *     되면 하루 배치가 종료로 바꾼다(2026-10-26 김민식). 고르지 않아도 이 점포에 같은 번호로 가입한 재직 직원이 있으면 그 사람의
              *     가장 최근 체결 계약에 잇는 재계약으로 저장한다(WHALEERP-130, 2026-10-26 재영 — 재직 중인 직원에게 새 계약을 보내는 것이 곧
              *     재계약). 재계약의 시작일은 직전 계약 시작일보다 하루 이상 뒤여야 하고(400), 그러면 직전 계약과 기간이 겹쳐도 된다
@@ -7814,23 +7814,23 @@ export interface components {
              */
             previousContractId?: number;
             /**
-             * @description 잘못 올린 계약 바로잡기(WHALEERP-156) — 종이 계약 등록에서만 쓴다(그 밖이면 400). 종이 계약은 체결 완료 계약을 대체하지 않고,
-             *     같은 점포 · 같은 번호에 기간이 겹치는 체결 완료 계약이 있으면 409(code SIGNED_CONTRACT_OVERLAP)다. 잘못 올린 계약을 고치려면
-             *     이 값을 켜고 그 409 의 contracts id 를 모두 replaceContractIds 로 넣어 다시 보낸다 — 체결 완료 계약도 곧바로 종료한다(수정
+             * @description 잘못 올린 계약 바로잡기(WHALEERP-156) — 종이 계약 등록에서만 쓴다(그 밖이면 400). 종이 계약은 서명 완료 계약을 대체하지 않고,
+             *     같은 점포 · 같은 번호에 기간이 겹치는 서명 완료 계약이 있으면 409(code SIGNED_CONTRACT_OVERLAP)다. 잘못 올린 계약을 고치려면
+             *     이 값을 켜고 그 409 의 contracts id 를 모두 replaceContractIds 로 넣어 다시 보낸다 — 서명 완료 계약도 곧바로 종료한다(수정
              *     권한). 재계약이 아니다 — previousContractId 와 함께 보낼 수 없고(400), 직전 계약을 저절로 찾지 않는다. 사유는 받지 않는다.
              */
             correctSignedContracts?: boolean;
             /**
-             * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(임시저장 · 발송 대기 · 서명 대기 · 수정 요청)이
+             * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(작성 중 · 서명 요청 전 · 서명 대기 · 수정 요청)이
              *     있으면 409(code CONTRACT_IN_PROGRESS)가 그 목록(id · 상태 · 직원 이름 · 계약 기간)을 준다. 관리자가 대체를 확인하면
-             *     그 id 를 모두 넣어 다시 보낸다 — 임시저장은 지우고 발송 대기 · 서명 대기 · 수정 요청은 종료한다. 종이 계약 바로잡기
-             *     (correctSignedContracts)면 체결 완료도 묻고 종료한다. 체결 완료는 같은 번호로 퇴직 · 재입사가 되풀이되면 쌓이므로 상한을 넉넉히 둔다 — 409 목록을 모두
+             *     그 id 를 모두 넣어 다시 보낸다 — 작성 중 계약은 지우고 서명 요청 전 · 서명 대기 · 수정 요청은 종료한다. 종이 계약 바로잡기
+             *     (correctSignedContracts)면 서명 완료도 묻고 종료한다. 서명 완료는 같은 번호로 퇴직 · 재입사가 되풀이되면 쌓이므로 상한을 넉넉히 둔다 — 409 목록을 모두
              *     다시 보낼 수 없으면 그 번호로는 종이 계약을 등록할 수 없다(api #49 리뷰, WHALEERP-600).
              */
             replaceContractIds?: number[];
         };
         CreatedContractResponseDto: {
-            /** @description 저장한 뒤의 상태 — 임시저장 · 발송 대기 · 서명 대기 · 체결 완료(종이 계약) 등 */
+            /** @description 저장한 뒤의 상태 — 작성 중 · 서명 요청 전 · 서명 대기 · 서명 완료(종이 계약) 등 */
             status: components["schemas"]["ContractStatus"];
             /**
              * @description 시스템이 실제로 한 처리(WHALEERP-132). 보내지 않은 저장(임시저장 · 종이 계약 등록)은 null, 가입한 직원에게 앱으로 보냈으면
@@ -7936,16 +7936,16 @@ export interface components {
             draftAction: components["schemas"]["ContractDraftAction"] | null;
             /** @description 상태 변경 이력. 최근 것부터 */
             histories: components["schemas"]["ContractStatusHistoryDto"][];
-            /** @description 종이 계약 날인본(근로계약서 · 임금계약서). 전자계약 · 임시저장이면 빈 배열 */
+            /** @description 종이 계약 서명본(근로계약서 · 임금계약서). 전자계약 · 작성 중이면 빈 배열 */
             documents: components["schemas"]["ContractDocumentDto"][];
             /**
-             * @description 처음 보낸 때(ISO 8601) — 상태 이력에서 발송 대기 · 서명 대기로 처음 간 때(WHALEERP-328). 보낸 적 없는 임시저장 · 종이
+             * @description 처음 보낸 때(ISO 8601) — 상태 이력에서 서명 요청 전 · 서명 대기로 처음 간 때(WHALEERP-328). 보낸 적 없는 작성 중 · 종이
              *     계약이면 null
              */
             firstSentAt: string | null;
             /** @description 마지막으로 보낸 때(ISO 8601) — 재발송 · 고쳐 다시 보내면 바뀐다. 보낸 적 없으면 null */
             lastSentAt: string | null;
-            /** @description 날인 기한(ISO 8601) — 마지막으로 보낸 때부터 30일. 보낸 적 없으면 null */
+            /** @description 서명 기한(ISO 8601) — 마지막으로 보낸 때부터 30일. 보낸 적 없으면 null */
             signDeadlineAt: string | null;
             /** @description 최종 처리일(ISO 8601) — 가장 최근 상태 변경 일시. 이력이 없으면 null */
             lastProcessedAt: string | null;
@@ -7956,10 +7956,10 @@ export interface components {
             correctionReason: string | null;
             /** @description 재계약으로 만든 계약이면 직전 계약 ID. 재계약(WHALEERP-156) 전이라 지금은 늘 null */
             previousContractId: number | null;
-            /** @description 종이 계약 등록일(ISO 8601) — 체결 완료가 된 때. 종이 계약만 — 전자계약 · 등록 전 임시저장(등록 전에 종료된 것 포함)은 null */
+            /** @description 종이 계약 등록일(ISO 8601) — 서명 완료가 된 때. 종이 계약만 — 전자계약 · 등록 전 작성 중 계약(등록 전에 종료된 것 포함)은 null */
             registeredAt: string | null;
             /**
-             * @description 종이 계약을 작성한 관리자 — 등록한 종이 계약만(registeredAt 이 있을 때), 그 밖은 null. 이름이 없으면 로그인 아이디. 임시저장을 다른 관리자가 이어 써 등록했어도
+             * @description 종이 계약을 작성한 관리자 — 등록한 종이 계약만(registeredAt 이 있을 때), 그 밖은 null. 이름이 없으면 로그인 아이디. 작성 중 계약을 다른 관리자가 이어 써 등록했어도
              *     처음 작성한 관리자다(상태 이력은 관리자를 남기지 않는다)
              */
             registeredBy: string | null;
@@ -7977,20 +7977,20 @@ export interface components {
             /** @description 외국인 여부 — 체크하지 않았으면 false */
             isForeigner: boolean;
             /**
-             * @description 재발송 횟수 — 처음 발송 뒤 다시 보낸 횟수(재발송 · 고쳐 다시 보냄). 알림 없이 날인 기한만 새로 잡은 것도 센다. 알림톡이 나가지
+             * @description 재발송 횟수 — 처음 발송 뒤 다시 보낸 횟수(재발송 · 고쳐 다시 보냄). 알림 없이 서명 기한만 새로 잡은 것도 센다. 알림톡이 나가지
              *     않으면 되돌려 빼지만, 드물게 다른 요청과 겹친 실패 · 그사이 다른 요청이 초대를 무효로 해 보내지 않은 재발송은 빼지 못해 실제보다
              *     클 수 있다. 이 칸이 생기기 전의 재발송은 세지 않았다.
              *     재발송 여부는 이 값으로 본다(firstSentAt · lastSentAt 은 시각 출처가 달라 첫 발송에도 ms 가 다를 수 있다)
              */
             resendCount: number;
             /**
-             * @description 재발송(POST …/send)을 정책상 할 수 있는가 — 발송 대기 · 서명 대기 · 거부 · 만료(WHALEERP-153). 가입한 직원은 앱 알림, 가입 전
-             *     직원은 가입 초대이거나 그 번호에 계정이 있으면 소속 추가 확인 요청이다(WHALEERP-130). 거부 · 만료는 되살릴 수 없거나
+             * @description 재발송(POST …/send)을 정책상 할 수 있는가 — 서명 요청 전 · 서명 대기 · 서명 거절 · 계약 기간 만료(WHALEERP-153). 가입한 직원은 앱 알림, 가입 전
+             *     직원은 가입 초대이거나 그 번호에 계정이 있으면 소속 추가 확인 요청이다(WHALEERP-130). 서명 거절 · 계약 기간 만료는 되살릴 수 없거나
              *     (REOPEN_BLOCKED) 다른 점포 근무 시간과 겹치면(WORK_TIME_OVERLAP) false. 상세 화면이 재발송 버튼을 이 값으로 보인다. 정책만
              *     본다 — 유선번호(409 SEND_PHONE_NOT_MOBILE) · 발송 설정 없음(503) · 그 계정이 이 점포에 재직 중(409)은 true 여도 보낼 때 막힌다
              */
             canResend: boolean;
-            /** @description 직원이 가입을 마쳤는가 — 거부 · 만료 재발송이 앱(서명 대기)으로 가는지 가입 초대(발송 대기)로 가는지 확인창 문구를 가른다 */
+            /** @description 직원이 가입을 마쳤는가 — 서명 거절 · 계약 기간 만료 재발송이 앱(서명 대기)으로 가는지 가입 초대(서명 요청 전)로 가는지 확인창 문구를 가른다 */
             staffJoined: boolean;
             /** @description 직원의 신고 정보(주민등록번호 · 급여 계좌) — 읽기만. 풀 수 없어도 상세는 열리고 이 칸만 UNAVAILABLE 이다 */
             taxProfile: components["schemas"]["ContractTaxProfileDto"];
@@ -8007,10 +8007,10 @@ export interface components {
             /** @description 외국인 여부 — 체크하지 않으면 내국인(false). 본인 대조에 쓴다(WHALEERP-125) */
             isForeigner?: boolean;
             /**
-             * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(임시저장 · 발송 대기 · 서명 대기 · 수정 요청)이
+             * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(작성 중 · 서명 요청 전 · 서명 대기 · 수정 요청)이
              *     있으면 409(code CONTRACT_IN_PROGRESS)가 그 목록(id · 상태 · 직원 이름 · 계약 기간)을 준다. 관리자가 대체를 확인하면
-             *     그 id 를 모두 넣어 다시 보낸다 — 임시저장은 지우고 발송 대기 · 서명 대기 · 수정 요청은 종료한다. 종이 계약 바로잡기
-             *     (correctSignedContracts)면 체결 완료도 묻고 종료한다. 체결 완료는 같은 번호로 퇴직 · 재입사가 되풀이되면 쌓이므로 상한을 넉넉히 둔다 — 409 목록을 모두
+             *     그 id 를 모두 넣어 다시 보낸다 — 작성 중 계약은 지우고 서명 요청 전 · 서명 대기 · 수정 요청은 종료한다. 종이 계약 바로잡기
+             *     (correctSignedContracts)면 서명 완료도 묻고 종료한다. 서명 완료는 같은 번호로 퇴직 · 재입사가 되풀이되면 쌓이므로 상한을 넉넉히 둔다 — 409 목록을 모두
              *     다시 보낼 수 없으면 그 번호로는 종이 계약을 등록할 수 없다(api #49 리뷰, WHALEERP-600).
              */
             replaceContractIds?: number[];
@@ -8020,26 +8020,26 @@ export interface components {
         };
         SendContractDto: {
             /**
-             * @description 화면이 본 계약 상태. 재발송은 서명 대기 · 발송 대기 · 거부 · 만료를 모두 받아, 이 값이 없으면 열어 둔 서명 대기 화면에서 그사이
-             *     거부 · 만료된 계약을 모르고 되살린다
+             * @description 화면이 본 계약 상태. 재발송은 서명 대기 · 서명 요청 전 · 서명 거절 · 계약 기간 만료를 모두 받아, 이 값이 없으면 열어 둔 서명 대기 화면에서 그사이
+             *     서명 거절 · 계약 기간 만료된 계약을 모르고 되살린다
              */
             expectedStatus?: components["schemas"]["ContractStatus"];
             /**
              * Format: date-time
-             * @description 화면이 본 마지막 발송 시각(상세 lastSentAt, ISO 8601). 재발송하면 바뀐다 — 상태가 그대로인 발송 대기 · 서명 대기를 두 탭에서 각각
+             * @description 화면이 본 마지막 발송 시각(상세 lastSentAt, ISO 8601). 재발송하면 바뀐다 — 상태가 그대로인 서명 요청 전 · 서명 대기를 두 탭에서 각각
              *     다시 보내면 상태만으로는 잡히지 않아 알림이 두 번 가고 앞 초대 코드가 무효가 된다. 아직 보낸 적 없으면(lastSentAt null) 비운다
              */
             expectedSentAt?: string;
         };
         SendContractResponseDto: {
             /**
-             * @description 보낸 뒤의 상태 — 가입 초대는 그대로(발송 대기 · 서명 대기), 가입한 직원은 서명 대기, 소속 추가 확인 요청은 발송 대기(직원이
-             *     수락하면 서명 대기). 거부 · 만료를 되살리면 가입한 직원은 서명 대기, 그 밖에는 발송 대기다(WHALEERP-153). 보내는 사이 직원이
-             *     소속 추가 확인 요청에 먼저 답했으면 그 답의 상태(서명 대기 · 거부)를 그대로 싣는다
+             * @description 보낸 뒤의 상태 — 가입 초대는 그대로(서명 요청 전 · 서명 대기), 가입한 직원은 서명 대기, 소속 추가 확인 요청은 서명 요청 전(직원이
+             *     수락하면 서명 대기). 서명 거절 · 계약 기간 만료를 되살리면 가입한 직원은 서명 대기, 그 밖에는 서명 요청 전이다(WHALEERP-153). 보내는 사이 직원이
+             *     소속 추가 확인 요청에 먼저 답했으면 그 답의 상태(서명 대기 · 서명 거절)를 그대로 싣는다
              * @enum {string}
              */
             status: "DRAFT" | "PENDING_SEND" | "PENDING_SIGNATURE" | "CORRECTION_REQUESTED" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
-            /** @description 새 날인 기한(보낸 때부터 30일). 소속 추가 확인 요청은 직원이 수락한 때부터 세어 아직 없다(null) */
+            /** @description 새 서명 기한(보낸 때부터 30일). 소속 추가 확인 요청은 직원이 수락한 때부터 세어 아직 없다(null) */
             signDeadlineAt: string | null;
             contractId: number;
             /** @description 이번 발송 일시 */
@@ -8050,7 +8050,7 @@ export interface components {
             status: components["schemas"]["ContractStatus"];
             /**
              * Format: date-time
-             * @description 날인 시각
+             * @description 서명 시각
              */
             signedAt: string;
         };
@@ -8080,12 +8080,12 @@ export interface components {
              * @example null
              */
             endDate: string | null;
-            /** @description 발송 일시 (ISO 8601) — 날인할 때 이 값을 그대로 보낸다(sentAt). 종이 계약이면 null */
+            /** @description 발송 일시 (ISO 8601) — 서명할 때 이 값을 그대로 보낸다(sentAt). 종이 계약이면 null */
             sentAt: string | null;
-            /** @description 날인 기한 (ISO 8601) */
+            /** @description 서명 기한 (ISO 8601) */
             signDeadlineAt: string | null;
             /**
-             * @description 지금 상태가 된 시각 (ISO 8601). 체결 완료면 날인 일자(종이 계약이면 관리자 등록일), 거부 · 만료 · 종료 · 수정
+             * @description 지금 상태가 된 시각 (ISO 8601). 서명 완료면 서명 일자(종이 계약이면 관리자 등록일), 서명 거절 · 계약 기간 만료 · 종료 · 수정
              *     요청이면 그 일자(상태 이력의 처리 시각). 서명 대기면 마지막 발송 시각(sentAt) — 서명 대기 그대로 다시 보내면
              *     이력이 쌓이지 않아 발송 일시를 쓴다
              */
@@ -8094,16 +8094,16 @@ export interface components {
             /** @description 근무지(소속) — 점포가 지워졌어도 이름은 보인다 */
             storeId: number;
             storeName: string;
-            /** @description 지금 날인할 수 있는가 — 서명 대기 · 날인 기한 안 · 재직 중. 날인 요청 팝업(WHALEERP-148)이 쓴다. 본인 대조는 상세에서 */
+            /** @description 지금 서명할 수 있는가 — 서명 대기 · 서명 기한 안 · 재직 중. 서명 요청 팝업(WHALEERP-148)이 쓴다. 본인 대조는 상세에서 */
             awaitingSignature: boolean;
         };
         MyContractListResponseDto: {
-            /** @description 날인을 기다리는 계약(기한이 급한 순) 먼저, 그다음 최근 것부터 */
+            /** @description 서명을 기다리는 계약(기한이 급한 순) 먼저, 그다음 최근 것부터 */
             items: components["schemas"]["MyContractListItemDto"][];
             total: number;
         };
         /**
-         * @description 계약서 값과 계정 값이 다른 항목 — 날인 API 의 409 IDENTITY_MISMATCH 와 같다. 다르면 직원은 수정 요청을 낸다
+         * @description 계약서 값과 계정 값이 다른 항목 — 서명 API 의 409 IDENTITY_MISMATCH 와 같다. 다르면 직원은 수정 요청을 낸다
          * @enum {string}
          */
         IdentityField: "name" | "phone" | "birthDate" | "gender" | "isForeigner";
@@ -8113,7 +8113,7 @@ export interface components {
             /** @description YYYY-MM-DD */
             birthDate: string | null;
             gender: components["schemas"]["Gender"] | null;
-            /** @description 주소 — 날인할 때 계정 주소로 고정된다. 날인 전이면 비어 있다(본인인증 정보의 주소를 보인다) */
+            /** @description 주소 — 서명할 때 계정 주소로 고정된다. 서명 전이면 비어 있다(본인인증 정보의 주소를 보인다) */
             zipCode: string | null;
             address: string | null;
             addressDetail: string | null;
@@ -8217,12 +8217,12 @@ export interface components {
             status: components["schemas"]["ContractStatus"];
             employmentType: components["schemas"]["EmploymentType"] | null;
             contractMethod: components["schemas"]["ContractMethod"] | null;
-            /** @description 발송 일시 (ISO 8601) — 날인할 때 그대로 보낸다(sentAt). 다르면 409 CONTRACT_RESENT */
+            /** @description 발송 일시 (ISO 8601) — 서명할 때 그대로 보낸다(sentAt). 다르면 409 CONTRACT_RESENT */
             sentAt: string | null;
             signDeadlineAt: string | null;
             /** @description 목록과 같다 — 지금 상태가 된 시각 */
             processedAt: string | null;
-            /** @description 계약서 값과 계정 값이 다른 항목 — 날인 API 의 409 IDENTITY_MISMATCH 와 같다. 다르면 직원은 수정 요청을 낸다 */
+            /** @description 계약서 값과 계정 값이 다른 항목 — 서명 API 의 409 IDENTITY_MISMATCH 와 같다. 다르면 직원은 수정 요청을 낸다 */
             mismatches: components["schemas"]["IdentityField"][];
             worker: components["schemas"]["MyContractWorkerDto"];
             employer: components["schemas"]["MyContractEmployerDto"];
@@ -8234,7 +8234,7 @@ export interface components {
             storeId: number;
             /** @description 목록과 같다 — 서명 대기 · 기한 안 · 재직 중 */
             awaitingSignature: boolean;
-            /** @description 지금 날인하면 받는가 — awaitingSignature 이고 본인 대조가 맞을 때. 날인 API 와 같은 판정이다 */
+            /** @description 지금 서명하면 받는가 — awaitingSignature 이고 본인 대조가 맞을 때. 서명 API 와 같은 판정이다 */
             signable: boolean;
         };
         /** @enum {string} */
@@ -8353,7 +8353,7 @@ export interface components {
              * @example 서울특별시 서초구
              */
             region: string | null;
-            /** @description 재직 직원 수 — 이 점포가 근무지이고 퇴직하지 않았으며 지금 체결 완료 근로계약이 있는 직원 레코드. 체결 완료 계약이 없는 레코드(초안 · 발송 대기 · 서명 대기 · 수정 요청 · 거부 · 만료 · 종료뿐)는 세지 않는다. 퇴직 예정은 퇴직일까지 센다 */
+            /** @description 재직 직원 수 — 이 점포가 근무지이고 퇴직하지 않았으며 지금 서명 완료 근로계약이 있는 직원 레코드. 서명 완료 계약이 없는 레코드(초안 · 서명 요청 전 · 서명 대기 · 수정 요청 · 서명 거절 · 계약 기간 만료 · 종료뿐)는 세지 않는다. 퇴직 예정은 퇴직일까지 센다 */
             staffCount: number;
             /** @description 대표 이미지 썸네일 주소(5분 동안 유효). 이미지가 없거나 저장소를 쓸 수 없으면 null — 화면은 점포 아이콘. */
             imageUrl: string | null;
@@ -8440,7 +8440,7 @@ export interface components {
         StoreTransitionCheckResponseDto: {
             /** @description 운영으로 바꾸는 데 모자란 것. 비어 있으면 운영할 수 있다. 한글은 GET /enums/StoreOperationRequirement. */
             missingForOperation: components["schemas"]["StoreOperationRequirement"][];
-            /** @description 진행 중인 근로계약 수 — 거부 · 만료 · 종료되지 않은 계약. 0 이어야 삭제된다(폐점은 막지 않는다 — 대기 계약은 폐점이 종료하고 체결 완료는 남는다). */
+            /** @description 진행 중인 근로계약 수 — 서명 거절 · 계약 기간 만료 · 종료되지 않은 계약. 0 이어야 삭제된다(폐점은 막지 않는다 — 대기 계약은 폐점이 종료하고 서명 완료는 남는다). */
             inProgressContractCount: number;
             /** @description 폐점할 수 있는가 — 소속 BP 사용 중 · 폐점 아님 · 퇴근하지 않은 출근 없음(closing.isBlocked false) */
             canClose: boolean;
@@ -8662,14 +8662,14 @@ export interface components {
             storeCode: string;
             /**
              * @description 퇴직될 직원 수 — 확인의 retiringStaff 와 같은 기준(퇴직일이 없거나 폐점일보다 뒤면 폐점일로 정함, 이미 그 이전이면 그대로,
-             *     임시저장 계약만 있는 가입 전 레코드는 세지 않음)
+             *     작성 중 계약만 있는 가입 전 레코드는 세지 않음)
              */
             retiringStaff: number;
             /** @description 퇴직일을 폐점일로 당긴 직원 수. 늘 retiringStaff 안에 드는 것은 아니다 — 세지 않는 가입 전 레코드의 당김도 들어간다 */
             pulledForwardStaff: number;
-            /** @description 종료로 닫은 임시저장 계약 수 */
+            /** @description 종료로 닫은 작성 중 계약 수 */
             draftContracts: number;
-            /** @description 종료로 닫은 발송 대기 계약 수 */
+            /** @description 종료로 닫은 서명 요청 전 계약 수 */
             pendingSendContracts: number;
             /** @description 종료로 닫은 서명 대기 + 수정 요청 계약 수 */
             pendingSignatureContracts: number;
@@ -8679,14 +8679,14 @@ export interface components {
         StoreClosingRetirementDto: {
             /**
              * @description 퇴직될 직원 수 — 확인의 retiringStaff 와 같은 기준(퇴직일이 없거나 폐점일보다 뒤면 폐점일로 정함, 이미 그 이전이면 그대로,
-             *     임시저장 계약만 있는 가입 전 레코드는 세지 않음)
+             *     작성 중 계약만 있는 가입 전 레코드는 세지 않음)
              */
             retiringStaff: number;
             /** @description 퇴직일을 폐점일로 당긴 직원 수. 늘 retiringStaff 안에 드는 것은 아니다 — 세지 않는 가입 전 레코드의 당김도 들어간다 */
             pulledForwardStaff: number;
-            /** @description 종료로 닫은 임시저장 계약 수 */
+            /** @description 종료로 닫은 작성 중 계약 수 */
             draftContracts: number;
-            /** @description 종료로 닫은 발송 대기 계약 수 */
+            /** @description 종료로 닫은 서명 요청 전 계약 수 */
             pendingSendContracts: number;
             /** @description 종료로 닫은 서명 대기 + 수정 요청 계약 수 */
             pendingSignatureContracts: number;
@@ -10197,7 +10197,7 @@ export interface components {
         };
         MyMembershipListResponseDto: {
             /**
-             * @description 체결 완료 근로계약이 있고 가입 완료 · 퇴직 전인 직원 레코드. 입사일(없으면 뒤) · id 순. `includeRetired=true` 면 그 뒤에
+             * @description 서명 완료 근로계약이 있고 가입 완료 · 퇴직 전인 직원 레코드. 입사일(없으면 뒤) · id 순. `includeRetired=true` 면 그 뒤에
              *     퇴직한 레코드가 퇴직일 최근 순으로 붙는다
              */
             items: components["schemas"]["MyMembershipDto"][];
@@ -10273,7 +10273,7 @@ export interface components {
         };
         StaffSignupDto: {
             /**
-             * @description 성별 — 남 · 여. 필수다 — 날인 때 근로계약서 값과 본인 대조하므로 빈 계정을 만들지 않는다(가입 화면도 필수,
+             * @description 성별 — 남 · 여. 필수다 — 서명 때 근로계약서 값과 본인 대조하므로 빈 계정을 만들지 않는다(가입 화면도 필수,
              *     운영 정책 ACC-23 · JOI-10, 2026-10-21 재영)
              * @enum {string}
              */
@@ -10443,7 +10443,7 @@ export interface components {
             staffMemberId: number;
             /** @description 근무지(점포) 이름 */
             storeName: string;
-            /** @description 서명 대기로 넘어간 근로계약 — 날인 기한은 수락한 때부터 30일 */
+            /** @description 서명 대기로 넘어간 근로계약 — 서명 기한은 수락한 때부터 30일 */
             contractIds: number[];
         };
         BpHolidayTargetResponseDto: {
@@ -10869,6 +10869,8 @@ export interface components {
             total: number;
             direct: number;
             franchise: number;
+            /** @description 업무 범위 안 미운영 점포 수 — 카드 · 표에는 세지 않고 아랫줄에만 적는다(폐점은 넣지 않는다) */
+            notOperating: number;
         };
         HomeAttendanceCardDto: {
             /** @description 근무 예정 — 오늘 근무스케줄이 있는 재직 직원 수. 근무스케줄 화면처럼 본사 역할에게도 가림 없이 센다 */
@@ -10887,16 +10889,22 @@ export interface components {
             /** @description 답변완료 */
             answered: number;
         };
+        HomeTodoCountDto: {
+            done: number;
+            total: number;
+        };
         HomeCardsDto: {
             /** @description 직원 정보 관리 조회 권한 */
             staff: components["schemas"]["HomeStaffCardDto"] | null;
-            /** @description 미체결 계약(발송 대기 + 서명 대기 + 수정 요청). 본사 역할에게 가려지는 점포는 동의한 직원의 계약만. 근로계약 관리 조회 권한 */
+            /** @description 서명 전 계약(서명 요청 전 + 서명 대기 + 수정 요청). 본사 역할에게 가려지는 점포는 동의한 직원의 계약만. 근로계약 관리 조회 권한 */
             unsignedContractCount: number | null;
             stores: components["schemas"]["HomeStoreCardDto"];
             /** @description 출퇴근 현황 · 근무스케줄 관리 조회 권한 둘 다 */
             todayAttendance: components["schemas"]["HomeAttendanceCardDto"] | null;
             /** @description 문의사항 조회 권한 */
             myInquiries: components["schemas"]["HomeInquiryCardDto"] | null;
+            /** @description 오늘 TO-DO. TO-DO 리스트 관리 조회 권한. 본사 역할에게도 TO-DO 목록처럼 가리지 않고 센다(HOM-10 v278) */
+            todayTodo: components["schemas"]["HomeTodoCountDto"] | null;
         };
         HomeStoreRowDto: {
             storeId: number;
@@ -10909,13 +10917,20 @@ export interface components {
             checkedInCount: number | null;
             /** @description 오늘 근무 예정 — 가림 없이 */
             scheduledCount: number | null;
-            /** @description 미조치 — 서명 대기 + 근로계약 수정 요청 + 소속 확인 거절 + 긴급 TO-DO 미완료. 볼 수 있는 영역의 건수만 더한다 */
+            /** @description 미출근 — 카드의 notCheckedIn 과 같은 판정 · 가림 */
+            notCheckedInCount: number | null;
+            /** @description 오늘 TO-DO — 카드의 todayTodo 와 같은 기준. 점포별 값을 더하면 카드와 같다 */
+            todayTodo: components["schemas"]["HomeTodoCountDto"] | null;
+            /**
+             * @description 점포별 확인 필요(예전 이름 미조치, 운영 정책 HOM-03) — 계약 갱신 예정 + 직원 서명 대기 + 직원 수정 요청 + 소속 확인 거절 +
+             *     긴급 TO-DO(대기 · 진행 중). 볼 수 있는 영역의 건수만 더한다
+             */
             pendingActionCount: number;
         };
         HomeStoreTableDto: {
             /** @description 운영 점포 전체 수 */
             total: number;
-            /** @description 미조치 많은 순(같으면 점포명) 일곱 곳 */
+            /** @description 운영 점포 모두 — 확인 필요 많은 순, 같으면 점포명(HOM-06) */
             items: components["schemas"]["HomeStoreRowDto"][];
         };
         HomeSummaryResponseDto: {
@@ -10929,20 +10944,8 @@ export interface components {
             cards: components["schemas"]["HomeCardsDto"] | null;
             storeTable: components["schemas"]["HomeStoreTableDto"];
         };
-        HomeRenewalDto: {
-            contractId: number;
-            /** @description 가려지는 직원(본사 제공 동의가 없는 가맹 점포 직원)이면 null */
-            staffMemberId: number | null;
-            /** @description 가려지는 직원이면 null */
-            name: string | null;
-            isMasked: boolean;
-            storeId: number;
-            storeName: string;
-            /** @description 계약 종료일(YYYY-MM-DD) */
-            endDate: string;
-        };
         /**
-         * @description 계약 갱신 예정 · 근로계약 서명 대기 · 근로계약 수정 요청 · 소속 확인 거절 · 문의 답변완료(마지막 답변이 최근 7일 안) · 긴급 TO-DO 미완료
+         * @description 계약 갱신 예정(종료 30일 안) · 직원 서명 대기 · 직원 수정 요청 · 소속 확인 거절 · 문의 답변완료(마지막 답변이 최근 7일 안) · 긴급 TO-DO(대기 · 진행 중)
          * @enum {string}
          */
         HomePendingType: "CONTRACT_RENEWAL" | "CONTRACT_PENDING_SIGNATURE" | "CONTRACT_CORRECTION_REQUESTED" | "AFFILIATION_REJECTED" | "INQUIRY_ANSWERED" | "URGENT_TODO";
@@ -10953,7 +10956,7 @@ export interface components {
             status: string[];
         };
         HomePendingItemDto: {
-            /** @description 계약 갱신 예정 · 근로계약 서명 대기 · 근로계약 수정 요청 · 소속 확인 거절 · 문의 답변완료(마지막 답변이 최근 7일 안) · 긴급 TO-DO 미완료 */
+            /** @description 계약 갱신 예정(종료 30일 안) · 직원 서명 대기 · 직원 수정 요청 · 소속 확인 거절 · 문의 답변완료(마지막 답변이 최근 7일 안) · 긴급 TO-DO(대기 · 진행 중) */
             type: components["schemas"]["HomePendingType"];
             count: number;
             /** @description 대표 이름 — 가장 오래 기다린 것의 직원 이름(문의 · TO-DO 는 제목). 가려지는 직원이면 null */
@@ -10963,15 +10966,15 @@ export interface components {
             othersCount: number;
             /** @description 가장 오래 기다린 일수(한국 날짜) — 서명 대기는 발송 뒤, 수정 요청은 요청 뒤, 소속 확인 거절은 거절 뒤, 문의는 마지막 답변 뒤, TO-DO 는 등록 뒤. 갱신 예정은 null */
             waitingDays: number | null;
+            /** @description 계약 갱신 예정만 — 종료가 가장 이른 계약의 종료까지 남은 날(한국 날짜, D-N). 다른 유형은 null */
+            dueInDays: number | null;
             filter: components["schemas"]["HomePendingFilterDto"];
         };
         HomePendingResponseDto: {
             /** Format: date-time */
             asOf: string;
-            /** @description 플랫폼 계정이면 true — renewals 는 null, items 는 빈 배열 */
+            /** @description 플랫폼 계정이면 true — items 는 빈 배열 */
             platform: boolean;
-            /** @description 경고 밴드. 근로계약 관리 조회 권한이 없으면 null */
-            renewals: components["schemas"]["HomeRenewalDto"][] | null;
             /** @description 건수가 0인 유형과 권한이 없는 유형은 뺀다. 순서는 갱신 예정 → 계약 → 직원 → 문의 → TO-DO */
             items: components["schemas"]["HomePendingItemDto"][];
         };
@@ -17314,7 +17317,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description PERIOD_NOT_ENDED — 확정할 수 있는 날(퇴직일 · 마지막 계약 종료일 · 급여 기간 마지막 날 가운데 가장 빠른 날의 다음 날, 그 계약의 보낸 갱신(임시저장 제외)이 기간 안에 시작하면 계약 종료일은 보지 않는다) 전 · DEDUCTION_MISSING — 비어 있는 공제(본문 items) */
+            /** @description PERIOD_NOT_ENDED — 확정할 수 있는 날(퇴직일 · 마지막 계약 종료일 · 급여 기간 마지막 날 가운데 가장 빠른 날의 다음 날, 그 계약의 보낸 갱신(작성 중 제외)이 기간 안에 시작하면 계약 종료일은 보지 않는다) 전 · DEDUCTION_MISSING — 비어 있는 공제(본문 items) */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -17734,7 +17737,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 근로계약 관리 작성 권한 없음 · 대체하는데 권한 없음(진행 중 계약은 수정, 임시저장은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            /** @description 근로계약 관리 작성 권한 없음 · 대체하는데 권한 없음(진행 중 계약은 수정, 작성 중 계약은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17755,7 +17758,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 저장했지만 가입 초대 알림톡이 실패(본문 contractId): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 임시저장에서 넘긴 것은 임시저장) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것) */
+            /** @description 저장했지만 가입 초대 알림톡이 실패(본문 contractId): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 작성 중에서 넘긴 것은 작성 중) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것) */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -17835,12 +17838,12 @@ export interface operations {
                     data: string;
                     /**
                      * Format: binary
-                     * @description 당사자가 모두 날인한 근로계약서(PDF · JPG · PNG, 10MB)
+                     * @description 당사자가 모두 서명한 근로계약서(PDF · JPG · PNG, 10MB)
                      */
                     employmentContract: string;
                     /**
                      * Format: binary
-                     * @description 따로 날인한 임금계약서(선택)
+                     * @description 따로 서명한 임금계약서(선택)
                      */
                     wageContract?: string;
                 };
@@ -17855,14 +17858,14 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 날인본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 서명본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근로계약 관리 작성 권한 없음 · 대체하는데 권한 없음(진행 중 계약은 수정, 임시저장은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            /** @description 근로계약 관리 작성 권한 없음 · 대체하는데 권한 없음(진행 중 계약은 수정, 작성 중 계약은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17876,7 +17879,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 대체할 계약을 다른 요청이 먼저 고침 · SIGNED_CONTRACT_OVERLAP(종이 계약 — 기간이 겹치는 체결 완료 계약, contracts 목록. 잘못 올린 계약이면 correctSignedContracts 와 그 id 를 모두 replaceContractIds 로) · RENEWAL_SIGNED_OVERLAP(종이 재계약이 직전 계약이 아닌 체결 완료와 겹침 — 바로잡기 없이 막음) */
+            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 대체할 계약을 다른 요청이 먼저 고침 · SIGNED_CONTRACT_OVERLAP(종이 계약 — 기간이 겹치는 서명 완료 계약, contracts 목록. 잘못 올린 계약이면 correctSignedContracts 와 그 id 를 모두 replaceContractIds 로) · RENEWAL_SIGNED_OVERLAP(종이 재계약이 직전 계약이 아닌 서명 완료와 겹침 — 바로잡기 없이 막음) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -18006,7 +18009,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 근로계약 관리 권한 없음(임시저장 이어 쓰기는 작성, 수정 요청은 수정) · 대체하는데 권한 없음(진행 중 계약은 수정, 임시저장은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            /** @description 근로계약 관리 권한 없음(작성 중 이어 쓰기는 작성, 수정 요청은 수정) · 대체하는데 권한 없음(진행 중 계약은 수정, 작성 중 계약은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -18020,14 +18023,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 임시저장 · 수정 요청이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) */
+            /** @description 작성 중 · 직원 수정 요청이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 저장했지만 가입 초대 알림톡이 실패(본문 contractId): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 임시저장에서 넘긴 것은 임시저장) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것) */
+            /** @description 저장했지만 가입 초대 알림톡이 실패(본문 contractId): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 작성 중에서 넘긴 것은 작성 중) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것) */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -18085,7 +18088,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 임시저장이 아님 */
+            /** @description 작성 중이 아님 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -18127,7 +18130,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 근로계약 관리 수정 권한 없음 · 새 번호의 같은 점포 임시저장을 대체하는데 삭제 권한 없음(409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            /** @description 근로계약 관리 수정 권한 없음 · 새 번호의 같은 점포 작성 중 계약을 대체하는데 삭제 권한 없음(409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -18141,14 +18144,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 수정 요청이 아님) · 새 번호로 이 점포에 재직 중 · CONTRACT_IN_PROGRESS(새 번호의 같은 점포 진행 중 계약 — replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) */
+            /** @description CONTRACT_STATUS_CONFLICT(서명 요청 전 · 직원 서명 대기 · 직원 수정 요청이 아님) · 새 번호로 이 점포에 재직 중 · CONTRACT_IN_PROGRESS(새 번호의 같은 점포 진행 중 계약 — replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 저장했지만 가입 초대 알림톡이 실패(본문 contractId): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 임시저장에서 넘긴 것은 임시저장) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것) */
+            /** @description 저장했지만 가입 초대 알림톡이 실패(본문 contractId): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 작성 중에서 넘긴 것은 작성 중) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것) */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -18183,12 +18186,12 @@ export interface operations {
                     data: string;
                     /**
                      * Format: binary
-                     * @description 당사자가 모두 날인한 근로계약서(PDF · JPG · PNG, 10MB)
+                     * @description 당사자가 모두 서명한 근로계약서(PDF · JPG · PNG, 10MB)
                      */
                     employmentContract: string;
                     /**
                      * Format: binary
-                     * @description 따로 날인한 임금계약서(선택)
+                     * @description 따로 서명한 임금계약서(선택)
                      */
                     wageContract?: string;
                 };
@@ -18203,14 +18206,14 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 날인본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 서명본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 근로계약 관리 권한 없음(임시저장 이어 쓰기는 작성 — 수정 요청은 종이 계약으로 바꿀 수 없어 400) · 대체하는데 권한 없음(진행 중 계약은 수정, 임시저장은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            /** @description 근로계약 관리 권한 없음(작성 중 이어 쓰기는 작성 — 수정 요청은 종이 계약으로 바꿀 수 없어 400) · 대체하는데 권한 없음(진행 중 계약은 수정, 작성 중 계약은 삭제 — 409 로 묻기 전에 403) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -18224,7 +18227,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 임시저장이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SIGNED_CONTRACT_OVERLAP(종이 계약 — 기간이 겹치는 체결 완료 계약, contracts 목록. 잘못 올린 계약이면 correctSignedContracts 와 그 id 를 모두 replaceContractIds 로) · RENEWAL_SIGNED_OVERLAP(종이 재계약이 직전 계약이 아닌 체결 완료와 겹침 — 바로잡기 없이 막음) */
+            /** @description 작성 중이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SIGNED_CONTRACT_OVERLAP(종이 계약 — 기간이 겹치는 서명 완료 계약, contracts 목록. 잘못 올린 계약이면 correctSignedContracts 와 그 id 를 모두 replaceContractIds 로) · RENEWAL_SIGNED_OVERLAP(종이 재계약이 직전 계약이 아닌 서명 완료와 겹침 — 바로잡기 없이 막음) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -18311,7 +18314,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description status — 가입 초대는 그대로 PENDING_SEND · PENDING_SIGNATURE, 가입한 직원은 PENDING_SIGNATURE, 소속 추가 확인 요청은 PENDING_SEND(signDeadlineAt null — 수락부터 30일). 거부 · 만료(WHALEERP-153)는 가입한 직원이면 PENDING_SIGNATURE, 그 밖에는 PENDING_SEND 로 되살린다. 가입한 직원은 알림함 알림(앱 푸시는 #261 전까지 나가지 않음) — 알림 템플릿을 쓸 수 없거나 탈퇴 계정이면 알림 없이 기한만 새로 */
+            /** @description status — 가입 초대는 그대로 PENDING_SEND · PENDING_SIGNATURE, 가입한 직원은 PENDING_SIGNATURE, 소속 추가 확인 요청은 PENDING_SEND(signDeadlineAt null — 수락부터 30일). 서명 거절 · 계약 기간 만료(WHALEERP-153)는 가입한 직원이면 PENDING_SIGNATURE, 그 밖에는 PENDING_SEND 로 되살린다. 가입한 직원은 알림함 알림(앱 푸시는 #261 전까지 나가지 않음) — 알림 템플릿을 쓸 수 없거나 탈퇴 계정이면 알림 없이 기한만 새로 */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -18341,7 +18344,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 거부 · 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(거부 · 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 기간이 끝남, 기간이 겹치거나 더 늦게 시작한 다른 체결 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(거부 · 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다.」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
+            /** @description CONTRACT_STATUS_CONFLICT(서명 요청 전 · 직원 서명 대기 · 서명 거절 · 계약 기간 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 서명을 거절했거나 서명 기한이 지나 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(서명 거절 · 계약 기간 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 종료일이 지남, 기간이 겹치거나 더 늦게 시작한 다른 서명 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(서명 거절 · 계약 기간 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다.」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -18406,7 +18409,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(발송 대기가 아님 — 지금 상태를 싣는다) · 다른 요청이 먼저 고침 */
+            /** @description CONTRACT_STATUS_CONFLICT(서명 요청 전이 아님 — 지금 상태를 싣는다) · 다른 요청이 먼저 고침 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -18470,21 +18473,21 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 내 계약이 아님 — 없는 id · 남의 계약 · 임시저장 · 소속 추가 확인을 기다리는 계약(후보 계정만). 모두 같은 본문 */
+            /** @description 내 계약이 아님 — 없는 id · 남의 계약 · 작성 중 · 소속 추가 확인을 기다리는 계약(후보 계정만). 모두 같은 본문 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(서명 대기가 아님 — 본문 status 에 지금 상태, 이미 처리했으면 그 결과) · SIGN_DEADLINE_PASSED(날인 기한이 지남) · STAFF_RETIRED(퇴직했거나 퇴직일이 지남) · IDENTITY_MISMATCH(mismatches: name · phone · birthDate · gender · isForeigner) · CONTRACT_RESENT(그사이 다시 발송됨) */
+            /** @description CONTRACT_STATUS_CONFLICT(직원 서명 대기가 아님 — 본문 status 에 지금 상태, 이미 처리했으면 그 결과) · SIGN_DEADLINE_PASSED(서명 기한이 지남) · STAFF_RETIRED(퇴직했거나 퇴직일이 지남) · IDENTITY_MISMATCH(mismatches: name · phone · birthDate · gender · isForeigner) · CONTRACT_RESENT(그사이 다시 발송됨) */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 경로마다 계정당 10분에 20번(날인 · 거부 · 수정 요청을 따로 센다) */
+            /** @description 경로마다 계정당 10분에 20번(서명 · 서명 거절 · 수정 요청을 따로 센다) */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -18533,21 +18536,21 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 내 계약이 아님 — 없는 id · 남의 계약 · 임시저장 · 소속 추가 확인을 기다리는 계약(후보 계정만). 모두 같은 본문 */
+            /** @description 내 계약이 아님 — 없는 id · 남의 계약 · 작성 중 · 소속 추가 확인을 기다리는 계약(후보 계정만). 모두 같은 본문 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(서명 대기가 아님 — 본문 status 에 지금 상태, 이미 처리했으면 그 결과) · SIGN_DEADLINE_PASSED(날인 기한이 지남) · STAFF_RETIRED(퇴직했거나 퇴직일이 지남) */
+            /** @description CONTRACT_STATUS_CONFLICT(직원 서명 대기가 아님 — 본문 status 에 지금 상태, 이미 처리했으면 그 결과) · SIGN_DEADLINE_PASSED(서명 기한이 지남) · STAFF_RETIRED(퇴직했거나 퇴직일이 지남) */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 경로마다 계정당 10분에 20번(날인 · 거부 · 수정 요청을 따로 센다) */
+            /** @description 경로마다 계정당 10분에 20번(서명 · 서명 거절 · 수정 요청을 따로 센다) */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -18600,21 +18603,21 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 내 계약이 아님 — 없는 id · 남의 계약 · 임시저장 · 소속 추가 확인을 기다리는 계약(후보 계정만). 모두 같은 본문 */
+            /** @description 내 계약이 아님 — 없는 id · 남의 계약 · 작성 중 · 소속 추가 확인을 기다리는 계약(후보 계정만). 모두 같은 본문 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(서명 대기가 아님 — 본문 status 에 지금 상태, 이미 처리했으면 그 결과) · SIGN_DEADLINE_PASSED(날인 기한이 지남) · STAFF_RETIRED(퇴직했거나 퇴직일이 지남) */
+            /** @description CONTRACT_STATUS_CONFLICT(직원 서명 대기가 아님 — 본문 status 에 지금 상태, 이미 처리했으면 그 결과) · SIGN_DEADLINE_PASSED(서명 기한이 지남) · STAFF_RETIRED(퇴직했거나 퇴직일이 지남) */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 경로마다 계정당 10분에 20번(날인 · 거부 · 수정 요청을 따로 센다) */
+            /** @description 경로마다 계정당 10분에 20번(서명 · 서명 거절 · 수정 요청을 따로 센다) */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -18689,7 +18692,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 내 계약이 아님 — 없는 id · 남의 계약 · 임시저장 · 발송 대기 · 소속 확인 대기 계약(후보 계정만). 모두 같은 본문 */
+            /** @description 내 계약이 아님 — 없는 id · 남의 계약 · 작성 중 · 서명 요청 전 · 소속 확인 대기 계약(후보 계정만). 모두 같은 본문 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -18739,7 +18742,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT — 처리 완료본(SIGNED_COPY)인데 체결된 계약이 아님(서명 대기 · 수정 요청 · 거부 · 만료, 체결 완료를 거치지 않은 종료). 본문 status 에 지금 상태 */
+            /** @description CONTRACT_STATUS_CONFLICT — 처리 완료본(SIGNED_COPY)인데 서명 완료된 계약이 아님(직원 서명 대기 · 직원 수정 요청 · 서명 거절 · 계약 기간 만료, 서명 완료를 거치지 않은 종료). 본문 status 에 지금 상태 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -21675,7 +21678,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedTodoResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 지난 날짜 · 배정 대상과 수행 방식이 맞지 않음 · 퇴직했거나 체결 완료 계약이 없거나 가입 전이거나 다른 근무지 직원 · 그런 재직 직원 없음 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 입력 오류 · 지난 날짜 · 배정 대상과 수행 방식이 맞지 않음 · 퇴직했거나 서명 완료 계약이 없거나 가입 전이거나 다른 근무지 직원 · 그런 재직 직원 없음 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -22064,7 +22067,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 내게 배정되지 않았거나 지운 TO-DO · 내 직원 레코드가 대상 조건(체결 완료 계약 · 가입 · 퇴직) 밖 */
+            /** @description 내게 배정되지 않았거나 지운 TO-DO · 내 직원 레코드가 대상 조건(서명 완료 계약 · 가입 · 퇴직) 밖 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22154,7 +22157,7 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleDto"];
                 };
             };
-            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 서명 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -22313,7 +22316,7 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleDefaultsDto"];
                 };
             };
-            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 서명 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -22563,7 +22566,7 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleDto"];
                 };
             };
-            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 서명 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -22629,7 +22632,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 체결 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 서명 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22672,7 +22675,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 체결 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 서명 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22716,7 +22719,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 체결 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 서명 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22760,7 +22763,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 체결 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 서명 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22774,7 +22777,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description STORE_CLOSED — 폐점한 근무지 / CONTRACT_PENDING_SIGNATURE — 서명 대기 계약(contractId) / NO_CONTRACT — 오늘이 체결 완료 근로계약 기간 밖이거나 퇴직일이 지남 (ATT-12) */
+            /** @description STORE_CLOSED — 폐점한 근무지 / CONTRACT_PENDING_SIGNATURE — 직원 서명 대기 계약(contractId) / NO_CONTRACT — 오늘이 서명 완료 근로계약 기간 밖이거나 퇴직일이 지남 (ATT-12) */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -22818,7 +22821,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 체결 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 서명 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22872,7 +22875,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 체결 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 서명 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -23133,7 +23136,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description PROXY_NOT_ALLOWED — 위치정보 동의가 있는 직원 · 위치를 보지 않는 점포 / NO_CONTRACT — 그날 체결 완료 계약 없음 · 퇴직 뒤 */
+            /** @description PROXY_NOT_ALLOWED — 위치정보 동의가 있는 직원 · 위치를 보지 않는 점포 / NO_CONTRACT — 그날 서명 완료 계약 없음 · 퇴직 뒤 */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -23628,7 +23631,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 내 소속이 아님 — 없는 id · 범위 밖 id, 남의 레코드, 퇴직했거나 체결 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            /** @description 내 소속이 아님 — 없는 id · 범위 밖 id, 남의 레코드, 퇴직했거나 서명 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
             404: {
                 headers: {
                     [name: string]: unknown;

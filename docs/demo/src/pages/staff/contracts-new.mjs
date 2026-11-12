@@ -159,7 +159,8 @@ export const contractForm = (d) => ({ A, R }) => {
           `<span class="flex gap-[6px]">${p.w("w-[100px]", ui.select(["익월", "당월"], { "aria-label": "임금지급 월" }))}${ui.textField({ value: "10", "aria-label": "임금지급일 날짜", inputmode: "numeric" })}</span>`,
           "",
         ),
-        p.fieldH("근무 장소", ui.textField({ value: "서울 성동구 연무장길 18, 1층" }), ""),
+        // 소속 근무지를 고르면 근무지명이 들어가고, 관리자가 고칠 수 있다(2026-11-10). 비어 있으면 api 가 발송 · 날인 때 점포명을 넣는다.
+        p.fieldH("근무 장소", ui.textField({ value: "모리커피 성수점" }), ""),
       ),
     ) +
     // 수습(노무사 확인 2026-10-14, 질문 19): 정직원만, 4대보험 가입 여부 위. 필수는 아니지만 수습 대상이면 계약서에 적는다.

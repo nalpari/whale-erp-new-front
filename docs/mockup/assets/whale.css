@@ -3294,6 +3294,49 @@ a.tile:hover {
   }
 }
 
+/* 접는 입력 묶음 — 등록 · 수정 화면에서 선택 입력을 「상세 정보」로 접어 둔다(시설물·장비 등록, 2026-11-11 사용자 지정).
+   필수 칸만 펼쳐 두어 입력을 줄인다. details/summary 를 그대로 쓴다. */
+.fold > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 46px;
+  padding: 0 var(--s-4);
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  background: var(--surface-hover);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.fold > summary::-webkit-details-marker {
+  display: none;
+}
+.fold > summary::after {
+  content: "펼치기";
+  margin-left: auto;
+  flex: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted-tert);
+}
+.fold[open] > summary::after {
+  content: "접기";
+}
+.fold__hint {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-tert);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.fold__body {
+  padding-top: var(--s-5);
+}
+
 /* 업무 분배 배지 — 메뉴구조도(v0.9)의 색을 그대로 옮겼다.
    1팀 노랑 · 3팀 파랑 · 1.5차 연두 · 2차 회색.
    회의에서 "이건 누구 것이고 언제 오나"를 색으로 바로 읽으라고 둔 것이다. */
