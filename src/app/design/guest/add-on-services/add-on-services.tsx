@@ -1,7 +1,8 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { CalendarIcon, GLASS, InventoryIcon, OrderIcon, RecipeIcon } from "../guest-icons";
-import { GuestPage, ICON_GRADIENT, SectionTitle } from "../guest-ui";
+import type { GuestRoutes } from "../guest-routes";
+import { FloatingActions, GuestPage, ICON_GRADIENT, SectionTitle } from "../guest-ui";
 import { FRAME } from "../theme";
 
 // Figma 「로그인전_부가서비스」(RQmNVgT2NL0njIFXVQPVG6 · 44:1792, 로그인전_공유 — 2026-11-06 반영. 처음은 8QSOuwFFBfCbFWR6RBUlps · 1:1083).
@@ -43,10 +44,21 @@ function QrOrderIcon() {
   );
 }
 
+// 대기 순번 관리 — 줄 선 손님 셋. 맨 앞(1번)이 왼쪽에 크고 진하게, 뒤로(오른쪽으로) 갈수록 작고 흐리게 서고, 맨 앞 손님 머리 위에 유리판 꼬리표 「대기 1번」을 둔다.
+// 웨이팅 줄이 왼쪽에서 오른쪽으로 1 · 2 · 3 순서로 읽히게(2026-11-12 사용자 지정 — 전엔 사람 + 체크라 「확인 완료」처럼 읽혔다).
 function WaitingIcon() {
   return (
-    <span className="relative block h-[74px] w-[80.59px]">
-      <Image src={`${ASSET}/waiting.svg`} alt="" width={95.7796} height={90.708} className="absolute top-0 left-0 max-w-none" />
+    <span className="relative block h-[74px] w-[82px] font-[family-name:var(--font-inter)] leading-[normal] font-bold tracking-normal">
+      <span className="absolute top-[22px] left-[8px] size-[18px] rounded-full" style={{ backgroundImage: ICON_GRADIENT }} />
+      <span className="absolute top-[44px] left-[1px] h-[22px] w-[32px] rounded-t-full" style={{ backgroundImage: ICON_GRADIENT }} />
+      <span className="absolute top-[28px] left-[37px] size-[15px] rounded-full opacity-75" style={{ backgroundImage: ICON_GRADIENT }} />
+      <span className="absolute top-[46px] left-[31px] h-[18px] w-[28px] rounded-t-full opacity-75" style={{ backgroundImage: ICON_GRADIENT }} />
+      <span className="absolute top-[34px] left-[64px] size-[12px] rounded-full opacity-50" style={{ backgroundImage: ICON_GRADIENT }} />
+      <span className="absolute top-[50px] left-[59px] h-[14px] w-[22px] rounded-t-full opacity-50" style={{ backgroundImage: ICON_GRADIENT }} />
+      {/* 「대기 1번」은 흐린 유리판 위 그라데이션 글자로는 읽히지 않아 진한 남색 알약 · 흰 굵은 글자로 둔다(2026-11-12 사용자 지정) */}
+      <span className="absolute top-0 left-0 flex h-[22px] items-center rounded-full bg-guest-navy px-[8px] font-[family-name:var(--font-erp)] text-[12px] font-bold whitespace-nowrap text-white shadow-[0_2px_6px_rgba(28,38,48,0.2)]">
+        대기 1번
+      </span>
     </span>
   );
 }
@@ -133,13 +145,13 @@ const MANAGEMENT: Service[] = [
     name: "레시피 관리",
     desc: ["레시피부터 재료 사용량까지, 맛의 기준을 하나로 맞추세요."],
     badges: ["사업자 구독", "점포 구독", "상품 정보 연동"],
-    icon: <RecipeIcon bookmark={`${ASSET}/recipe-bookmark.svg`} />,
+    icon: <RecipeIcon />,
   },
   {
     name: "발주 관리",
     desc: ["필요한 자재는 본사에 바로 주문하고, 결제까지 한 번에 끝내세요."],
     badges: ["사업자 구독", "자재 정보 연동"],
-    icon: <OrderIcon back={`${ASSET}/order-mail-back.svg`} front={`${ASSET}/order-mail-front.svg`} />,
+    icon: <OrderIcon />,
   },
   {
     name: "점포 재고 관리",
@@ -262,19 +274,23 @@ function PaidNotice() {
   );
 }
 
-export function AddOnServices() {
+export function AddOnServices({ routes }: { routes: GuestRoutes }) {
   return (
     <GuestPage flush>
       <PaidNotice />
       {/* 확장 옵션(점포 · 직원 수 · 재무관리)을 맨 위에 두고, 바탕은 흰색 → 판매용 연하늘 → 관리용 흰색으로 번갈아 둔다(2026-11-10 사용자 지정). */}
       <Expansions />
-      <ServiceSection light="판매용" title={["손님이 편한 방식으로,", "주문받으세요"]} desc={["매장 테이블 · 손님 스마트폰 · 픽업 오더 앱 등 어떤 방식으로 주문받아도", "매출은 매출 조회에서 한 번에 확인할 수 있어요."]} services={SALES} tinted />
+      {/* 판매용 제목 — 구독하는 사람은 사장님이라 「손님이 편한 방식으로, 주문받으세요」 대신 사장님이 얻는 것(창구는 여러 개여도 매출은 모인다)을 말한다(2026-11-12 사용자 지정) */}
+      <ServiceSection light="판매용" title={["주문은 여러 창구로 받고,", "매출은 모아서 확인하세요"]} desc={["매장 테이블 · 손님 스마트폰 · 픽업 오더 앱 등 어떤 방식으로 주문받아도", "매출은 매출 조회에서 한 번에 확인할 수 있어요."]} services={SALES} tinted />
       <ServiceSection
         light="관리용"
-        title={["레시피부터 재고까지,", "꼼꼼하게 챙기세요"]}
+        // 관리용 제목 — 다섯 서비스(레시피 · 발주 · 재고 · 대기 · 예약)가 하는 일이 달라 「빈틈없이 관리」 같은 한 동작으로 묶지 않고, 우리 매장에 맞춰 구성한다는 이득을 말한다(2026-11-12 사용자 지정, 전 「레시피부터 재고까지, 꼼꼼하게 챙기세요」)
+        title={["레시피 · 발주 · 재고 · 예약까지,", "우리 매장 맞춤으로 구성하세요"]}
         desc={["메뉴 레시피 · 본사 발주 · 매장 재고 · 손님 대기와 예약 등", "매장 운영에 필요한 기능만 선택해 구독할 수 있어요."]}
         services={MANAGEMENT}
       />
+      {/* 홈 · 매장운영과 같은 무료 가입 띠를 아래에 띄운다(2026-11-12 사용자 지정) */}
+      <FloatingActions routes={routes} />
     </GuestPage>
   );
 }

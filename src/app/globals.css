@@ -212,7 +212,7 @@ body {
     animation-range: entry calc(10% + var(--reveal-delay, 0%)) entry calc(70% + var(--reveal-delay, 0%));
   }
 }
-/* 홈 아래 떠 있는 [무료로 시작하기] 띠(높이 약 88 + 아래 24px)가 페이지 끝에서 푸터 사업자 정보를 가리지 않게, 띠가 있는 화면에서만 푸터 아래 여백을 늘린다(PR #259 리뷰). */
+/* 홈 · 소개 화면 아래 떠 있는 [무료로 시작] 띠(높이 약 88 + 아래 24px)가 페이지 끝에서 푸터 사업자 정보를 가리지 않게, 띠가 있는 화면에서만 푸터 아래 여백을 늘린다(PR #259 리뷰). */
 body:has(.guest-floating) footer {
   padding-bottom: 136px;
 }
