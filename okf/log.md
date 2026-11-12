@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-12
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 루트 layout 이 운영 알림 종을 쿠키가 아니라 접근 토큰이 살아 있을 때만 그린다(`hasLiveAccessToken`, 로그인 전 홈 `redirectsSignedIn` 과 같은 기준). 끝난 로그인의 쿠키로 `/` 에 오면 종이 401 「토큰이 유효하지 않습니다.」를 콘솔에 남기던 것(3팀 채널 재영 제보).
+
 ## 2026-11-11
 * **Update**: [Home](/home.md) — 로그인 후 홈 개편(WHALEERP-665, 운영 정책 v278 HOM-03~10): 점포 하나 화면(`one-store-screen.tsx` · `one-store-view.ts`)을 없애 범위와 역할에 상관없이 한 틀이다. 공지 띠를 맨 위로 옮기고, 경고 밴드를 없애 확인 필요의 계약 갱신 예정 줄에 「종료 D-N」(7일 이내 빨간색)을 적는다. 「처리 대기」 · 「미조치」를 「확인 필요」로, 수치 카드에 오늘 TO-DO 와 운영 점포의 미운영 수를, 점포별 현황 표에 미출근 · 오늘 TO-DO 열을 더하고 운영 점포 모두를 표 안 스크롤로 보인다. 본사 역할의 ATT-30 안내 문구는 뺐다. api 타입은 api graveler 기준으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 매장운영 · 재무관리 · 프랜차이즈 소개 구역 설명을 지금 구조(스크롤 고정 구역 · 펼침 목록 · 물결 흐름)로 고치고, 지운 `IntroFeatures` · `IntroFlow` · `IntroAddOns` · `feature-shortcuts.tsx` · `PosIcon` 설명을 뺐다(front #259 리뷰).
