@@ -2880,6 +2880,101 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/facilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 목록. 등록일 최신순, 한 쪽 50 · 100건. 분류는 그룹을 고른 경우에만 — 그룹 없이 보내면 400. */
+        get: operations["FacilitiesController_list"];
+        put?: never;
+        /** 등록. 문서는 등록한 뒤 `PUT /facilities/:id/documents/:kind` 로 올린다. */
+        post: operations["FacilitiesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/facilities/store-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 점포 선택지 — 범위 안의 점포. 등록 화면은 폐점을 빼고(기본), 목록 필터는 `includeClosed=true`. `:id` 보다 먼저 둔다. */
+        get: operations["FacilitiesController_storeOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/facilities/manager-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 관리 담당자 선택지 — 그 점포의 재직 직원(이름 · 휴대폰). 퇴직자는 빠진다. */
+        get: operations["FacilitiesController_managerOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/facilities/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FacilitiesController_detail"];
+        /**
+         * 수정. 화면 전체를 다시 보낸다 — 빠지거나 빈 선택 칸은 지운다. 점포는 바꿀 수 없다. 상세에서 받은 updatedAt 을 함께
+         *     보낸다(그 사이 다른 사람이 고쳤으면 409). 지금 값인 미사용 분류 · 점검 주기와 퇴직한 담당자는 그대로 둘 수 있다.
+         */
+        put: operations["FacilitiesController_update"];
+        post?: never;
+        /** 삭제(논리 삭제). 문서도 함께 지움 표시한다. 잘못 등록한 것을 지우는 용도다 — 옮기거나 그만 쓰면 폐기로 바꾼다. */
+        delete: operations["FacilitiesController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/facilities/{id}/documents/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * 문서 올리기 · 바꾸기(종류마다 1개). multipart 의 `file` 한 개, JPG · PNG · PDF 10MB 이하 — 종류는 확장자가 아니라
+         *     내용으로 본다. 등록 화면은 등록한 뒤 이 경로로 올리므로 가드는 등록 또는 수정 권한을 받고, 서비스가 좁힌다 — 등록
+         *     권한만 있으면 직접 등록한 시설물에 그 종류 문서가 아직 없을 때만(처음 올리기), 교체 · 남의 시설물은 수정 권한.
+         */
+        put: operations["FacilitiesController_putDocument"];
+        post?: never;
+        /** 문서 빼기. 없어도 204. */
+        delete: operations["FacilitiesController_removeDocument"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/platform-notices": {
         parameters: {
             query?: never;
@@ -4455,7 +4550,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 수치 카드 넷 · 점포별 현황 표(미조치 많은 순 일곱 곳 + 전체 수) */
+        /** 수치 카드 · 점포별 현황 표(확인 필요 많은 순, 운영 점포 모두) */
         get: operations["HomeController_summary"];
         put?: never;
         post?: never;
@@ -4472,7 +4567,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 경고 밴드(갱신 예정 7일 안) · 처리 대기 유형 목록 */
+        /** 확인 필요 유형 목록 */
         get: operations["HomeController_pending"];
         put?: never;
         post?: never;
@@ -7772,7 +7867,7 @@ export interface components {
             carAllowanceAmount?: number;
             /** @description 육아수당 — 원, 비과세 수당 */
             childcareAllowanceAmount?: number;
-            /** @description 월 기본시간 — 시간, 30분 단위 */
+            /** @description 월 기본시간 — 시간, 30분 단위, 1 이상. 정직원은 필수다(임시저장은 비워도 된다). 보낸 값은 고용 형태와 상관없이 1 이상이어야 한다 */
             baseHours?: number;
             /** @description 월간 연장근무 — 시간, 30분 단위 */
             monthlyOvertimeHours?: number;
@@ -7795,7 +7890,7 @@ export interface components {
             probationMonths?: number;
             /** @description 수습 중 임금 감액률 — %, 0~10. 수습 중 시급 = 시급 × (1 − 감액률). 수습 기간과 함께 넣는다 */
             probationWageReductionRate?: number;
-            /** @description 계약서 근무 장소 조항에 적는 주소. 근무지 점포와 따로다 */
+            /** @description 계약서 근무 장소 조항. 관리자 웹은 소속 근무지를 고르면 근무지명으로 채우고 관리자가 고칠 수 있다. 보내지 않으면(null) 발송 · 날인 때 그때 점포명을 쓴다. 빈 문자열은 그대로 저장돼 점포명으로 바뀌지 않으니 비울 때는 보내지 않는다 */
             workLocation?: string;
             isHealthPensionInsured?: boolean;
             isEmploymentInjuryInsured?: boolean;
@@ -8703,6 +8798,308 @@ export interface components {
             closing: components["schemas"]["StoreClosingResultResponseDto"] | null;
         };
         /**
+         * @description 그룹 — STORE_FACILITY(점포 시설물) · STORE_EQUIPMENT(점포 장비)
+         * @enum {string}
+         */
+        FacilityGroup: "STORE_FACILITY" | "STORE_EQUIPMENT";
+        FacilityListItemDto: {
+            /** @description 그룹 — STORE_FACILITY(점포 시설물) · STORE_EQUIPMENT(점포 장비) */
+            facilityGroupCode: components["schemas"]["FacilityGroup"];
+            facilityId: number;
+            storeId: number;
+            storeCode: string;
+            storeName: string;
+            /** @description 점포가 폐점인가 — 목록의 「폐점」 배지. 폐점 점포의 시설물·장비는 조회만 된다 */
+            isStoreClosed: boolean;
+            /** @description 운영상태 코드 — 공통코드 FACILITY_STATUS */
+            facilityStatusCode: string;
+            /** @description 운영상태 한글 — 운영 · 보관 · 폐기 */
+            facilityStatusLabel: string;
+            /** @description 그룹 한글 — 공통코드 그룹명(점포 시설물 · 점포 장비) */
+            facilityGroupLabel: string;
+            facilityCategoryCode: string;
+            /** @description 분류 한글 — 점포 BP 의 이름. 미사용 분류도 이름이 그대로 보인다 */
+            facilityCategoryLabel: string;
+            name: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        FacilityListResponseDto: {
+            items: components["schemas"]["FacilityListItemDto"][];
+            total: number;
+        };
+        FacilityStoreOptionDto: {
+            storeId: number;
+            storeCode: string;
+            name: string;
+            /** @description 점포 상태 — 미운영 NOT_OPERATING · 운영 OPERATING · 폐점 CLOSED */
+            storeStatusCode: string;
+        };
+        FacilityStoreOptionListResponseDto: {
+            items: components["schemas"]["FacilityStoreOptionDto"][];
+        };
+        FacilityManagerOptionDto: {
+            staffMemberId: number;
+            name: string;
+            /** @description 휴대폰 번호 — 숫자만. 화면이 관리 담당자 전화번호 세 칸에 나눠 채운다 */
+            phone: string;
+        };
+        FacilityManagerOptionListResponseDto: {
+            items: components["schemas"]["FacilityManagerOptionDto"][];
+        };
+        FacilityStoreDto: {
+            storeId: number;
+            storeCode: string;
+            name: string;
+            isClosed: boolean;
+        };
+        FacilityManagerDto: {
+            staffMemberId: number;
+            /** @description 이름 — 본사 역할(BM · BA)에게 가맹 점포의 본사 제공 미동의 직원이면 null(ATT-30 가림) */
+            name: string | null;
+        };
+        /** @enum {string} */
+        FacilityDocumentKind: "USER_MANUAL" | "PRECAUTION" | "WARRANTY";
+        /** @enum {string} */
+        AttachmentFileType: "JPG" | "PNG" | "PDF";
+        FacilityDocumentDto: {
+            documentKind: components["schemas"]["FacilityDocumentKind"];
+            fileType: components["schemas"]["AttachmentFileType"];
+            facilityDocumentId: number;
+            fileName: string;
+            sizeBytes: number;
+            /** @description 내려받기 주소 — 5분 동안 쓸 수 있다. 저장소가 없거나 서명에 실패하면 null */
+            downloadUrl: string | null;
+            /** @description 썸네일 주소(긴 변 320px JPEG, 5분 동안 유효) — 그림(JPG · PNG)만, PDF 면 null. 저장소가 없거나 서명에 실패해도 null */
+            thumbnailUrl: string | null;
+        };
+        FacilityDetailResponseDto: {
+            /** @description 그룹 — STORE_FACILITY(점포 시설물) · STORE_EQUIPMENT(점포 장비) */
+            facilityGroupCode: components["schemas"]["FacilityGroup"];
+            facilityId: number;
+            store: components["schemas"]["FacilityStoreDto"];
+            name: string;
+            facilityStatusCode: string;
+            facilityStatusLabel: string;
+            /** @description 운영상태가 지금 사용 중인가 — false 면 수정 화면이 지금 값을 「(미사용)」으로 둔다(다른 값으로 바꾸면 되돌릴 수 없다) */
+            isFacilityStatusActive: boolean;
+            facilityGroupLabel: string;
+            facilityCategoryCode: string;
+            facilityCategoryLabel: string;
+            /** @description 분류가 지금 사용 중인가 — false 면 수정 화면이 「(미사용)」으로 지금 값을 둔다(다른 값으로 바꾸면 되돌릴 수 없다) */
+            isFacilityCategoryActive: boolean;
+            memo: string | null;
+            brand: string | null;
+            manufacturer: string | null;
+            serialNumber: string | null;
+            installationLocation: string | null;
+            vendorName: string | null;
+            vendorPhone: string | null;
+            salesRepresentativeName: string | null;
+            salesRepresentativePhone: string | null;
+            unitPriceAmount: number | null;
+            quantity: number;
+            /** @description 단가 × 수량 — 단가가 없으면 null */
+            totalAmount: number | null;
+            isVatIncluded: boolean;
+            /** @description YYYY-MM-DD */
+            purchaseDate: string | null;
+            installationDate: string | null;
+            usageExpiryDate: string | null;
+            warrantyExpiryDate: string | null;
+            /** @description 관리 담당자 — 고른 직원. 그 뒤 퇴직했어도 그대로 보인다 */
+            manager: components["schemas"]["FacilityManagerDto"] | null;
+            /** @description 관리 담당자 전화번호 — 담당자가 가려졌으면(isManagerHidden) null. 그대로 두고 수정하면 서버가 저장된 번호를 지킨다 */
+            managerPhone: string | null;
+            /** @description 관리 담당자가 본사 가림(ATT-30)으로 가려졌는가 — 화면은 이름 · 번호 대신 가림 표시를 한다 */
+            isManagerHidden: boolean;
+            inspectionCycleCode: string | null;
+            inspectionCycleLabel: string | null;
+            /** @description 점검 주기가 지금 사용 중인가 — 분류와 같이 다룬다. 점검 주기가 없으면 null */
+            isInspectionCycleActive: boolean | null;
+            inspectionNote: string | null;
+            serviceCenterZipCode: string | null;
+            serviceCenterAddress: string | null;
+            serviceCenterAddressDetail: string | null;
+            serviceCenterPhone: string | null;
+            /** @description 문서 — 종류 순(사용 매뉴얼 · 주의사항 · 제품 보증서), 올린 것만 */
+            documents: components["schemas"]["FacilityDocumentDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            createdByName: string | null;
+            /**
+             * Format: date-time
+             * @description 수정 때 그대로 돌려보낸다
+             */
+            updatedAt: string;
+            /** @description 최종수정자 — 등록 뒤 고친 적이 없으면 null */
+            updatedByName: string | null;
+        };
+        CreateFacilityDto: {
+            /** @description 점포 — 내 관리 점포 범위 안, 폐점 아님. 등록 뒤 바꿀 수 없다(PL-1). 선택지는 `GET /facilities/store-options` */
+            storeId: number;
+            /** @description 시설물/장비명 — 1~100자 */
+            name: string;
+            /** @description 운영상태 — 공통코드 FACILITY_STATUS(운영 OPERATING · 보관 STORED · 폐기 DISPOSED). 화면 처음 값은 운영 */
+            facilityStatusCode: string;
+            /**
+             * @description 그룹 — STORE_FACILITY(점포 시설물) · STORE_EQUIPMENT(점포 장비)
+             * @enum {string}
+             */
+            facilityGroupCode: "STORE_FACILITY" | "STORE_EQUIPMENT";
+            /** @description 분류 — 고른 그룹의 상세 코드(점포 BP 의 사용 중인 코드. 수정은 지금 값이면 미사용도 그대로 둘 수 있다) */
+            facilityCategoryCode: string;
+            /** @description 메모 — 공백 · 줄바꿈을 포함해 200자 */
+            memo?: string | null;
+            /** @description 브랜드 — 100자 */
+            brand?: string | null;
+            /** @description 제조사 — 100자 */
+            manufacturer?: string | null;
+            /** @description Serial number — 100자 */
+            serialNumber?: string | null;
+            /** @description 설치 위치 — 100자 */
+            installationLocation?: string | null;
+            /** @description 구매처 — 100자 */
+            vendorName?: string | null;
+            /**
+             * @description 구매처 전화번호 — 숫자 9~12자리. 하이픈은 떼고 받는다
+             * @example 0212345678
+             */
+            vendorPhone?: string | null;
+            /** @description 영업사원 — 50자 */
+            salesRepresentativeName?: string | null;
+            /** @description 영업사원 전화번호 — 숫자 9~12자리 */
+            salesRepresentativePhone?: string | null;
+            /** @description 단가 — 원, 0 이상 정수 10자리까지. 총금액(단가 × 수량)은 서버가 계산한다 */
+            unitPriceAmount?: number | null;
+            /**
+             * @description 수량 — 1~9,999, 기본 1
+             * @default 1
+             */
+            quantity: number;
+            /**
+             * @description 부가세 포함 — 단가 · 총금액을 부가세 포함 금액으로 보는가. 기본 포함
+             * @default true
+             */
+            isVatIncluded: boolean;
+            /**
+             * @description 구매일
+             * @example 2025-01-01
+             */
+            purchaseDate?: string | null;
+            /**
+             * @description 설치일 — 구매일보다 앞설 수 없다
+             * @example 2025-01-03
+             */
+            installationDate?: string | null;
+            /** @description 사용 유효기한 */
+            usageExpiryDate?: string | null;
+            /** @description 품질 보증기한 */
+            warrantyExpiryDate?: string | null;
+            /** @description 관리 담당자 — 점포의 재직 직원(staffMemberId). 선택지는 `GET /facilities/manager-options` */
+            managerStaffMemberId?: number | null;
+            /** @description 관리 담당자 전화번호 — 숫자 9~12자리. 화면이 담당자 휴대폰으로 채우고 고칠 수 있다. 담당자를 고르지 않아도 따로 저장할 수 있다(2026-11-11 사용자 결정) */
+            managerPhone?: string | null;
+            /** @description 점검 주기 — 공통코드 INSPECTION_CYCLE(매일 DAILY · 매주 WEEKLY · 매월 MONTHLY · 수시 AS_NEEDED + BP 가 더한 값) */
+            inspectionCycleCode?: string | null;
+            /** @description 점검 비고 — 200자 */
+            inspectionNote?: string | null;
+            /** @description A/S센터 우편번호 — 숫자 5자리, 주소 검색 결과 */
+            serviceCenterZipCode?: string | null;
+            /** @description A/S센터 기본주소(도로명) — 주소 검색 결과, 200자 */
+            serviceCenterAddress?: string | null;
+            /** @description A/S센터 상세주소 — 100자 */
+            serviceCenterAddressDetail?: string | null;
+            /** @description A/S센터 전화번호 — 숫자 9~12자리 */
+            serviceCenterPhone?: string | null;
+        };
+        CreateFacilityResponseDto: {
+            facilityId: number;
+        };
+        UpdateFacilityDto: {
+            /** @description 상세에서 받은 updatedAt 그대로 — 그 사이 누가 고쳤으면 409 */
+            updatedAt: string;
+            /** @description 시설물/장비명 — 1~100자 */
+            name: string;
+            /** @description 운영상태 — 공통코드 FACILITY_STATUS(운영 OPERATING · 보관 STORED · 폐기 DISPOSED). 화면 처음 값은 운영 */
+            facilityStatusCode: string;
+            /**
+             * @description 그룹 — STORE_FACILITY(점포 시설물) · STORE_EQUIPMENT(점포 장비)
+             * @enum {string}
+             */
+            facilityGroupCode: "STORE_FACILITY" | "STORE_EQUIPMENT";
+            /** @description 분류 — 고른 그룹의 상세 코드(점포 BP 의 사용 중인 코드. 수정은 지금 값이면 미사용도 그대로 둘 수 있다) */
+            facilityCategoryCode: string;
+            /** @description 메모 — 공백 · 줄바꿈을 포함해 200자 */
+            memo?: string | null;
+            /** @description 브랜드 — 100자 */
+            brand?: string | null;
+            /** @description 제조사 — 100자 */
+            manufacturer?: string | null;
+            /** @description Serial number — 100자 */
+            serialNumber?: string | null;
+            /** @description 설치 위치 — 100자 */
+            installationLocation?: string | null;
+            /** @description 구매처 — 100자 */
+            vendorName?: string | null;
+            /**
+             * @description 구매처 전화번호 — 숫자 9~12자리. 하이픈은 떼고 받는다
+             * @example 0212345678
+             */
+            vendorPhone?: string | null;
+            /** @description 영업사원 — 50자 */
+            salesRepresentativeName?: string | null;
+            /** @description 영업사원 전화번호 — 숫자 9~12자리 */
+            salesRepresentativePhone?: string | null;
+            /** @description 단가 — 원, 0 이상 정수 10자리까지. 총금액(단가 × 수량)은 서버가 계산한다 */
+            unitPriceAmount?: number | null;
+            /**
+             * @description 수량 — 1~9,999, 기본 1
+             * @default 1
+             */
+            quantity: number;
+            /**
+             * @description 부가세 포함 — 단가 · 총금액을 부가세 포함 금액으로 보는가. 기본 포함
+             * @default true
+             */
+            isVatIncluded: boolean;
+            /**
+             * @description 구매일
+             * @example 2025-01-01
+             */
+            purchaseDate?: string | null;
+            /**
+             * @description 설치일 — 구매일보다 앞설 수 없다
+             * @example 2025-01-03
+             */
+            installationDate?: string | null;
+            /** @description 사용 유효기한 */
+            usageExpiryDate?: string | null;
+            /** @description 품질 보증기한 */
+            warrantyExpiryDate?: string | null;
+            /** @description 관리 담당자 — 점포의 재직 직원(staffMemberId). 선택지는 `GET /facilities/manager-options` */
+            managerStaffMemberId?: number | null;
+            /** @description 관리 담당자 전화번호 — 숫자 9~12자리. 화면이 담당자 휴대폰으로 채우고 고칠 수 있다. 담당자를 고르지 않아도 따로 저장할 수 있다(2026-11-11 사용자 결정) */
+            managerPhone?: string | null;
+            /** @description 점검 주기 — 공통코드 INSPECTION_CYCLE(매일 DAILY · 매주 WEEKLY · 매월 MONTHLY · 수시 AS_NEEDED + BP 가 더한 값) */
+            inspectionCycleCode?: string | null;
+            /** @description 점검 비고 — 200자 */
+            inspectionNote?: string | null;
+            /** @description A/S센터 우편번호 — 숫자 5자리, 주소 검색 결과 */
+            serviceCenterZipCode?: string | null;
+            /** @description A/S센터 기본주소(도로명) — 주소 검색 결과, 200자 */
+            serviceCenterAddress?: string | null;
+            /** @description A/S센터 상세주소 — 100자 */
+            serviceCenterAddressDetail?: string | null;
+            /** @description A/S센터 전화번호 — 숫자 9~12자리 */
+            serviceCenterPhone?: string | null;
+        };
+        UpdateFacilityResponseDto: {
+            facilityId: number;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        /**
          * @description 게시 상태. 게시하려면 노출 대상이 하나 이상 있어야 한다.
          * @enum {string}
          */
@@ -8807,8 +9204,6 @@ export interface components {
         };
         /** @enum {string} */
         PostAudienceType: "GUEST" | "MEMBER" | "BP" | "STORE" | "ADDON";
-        /** @enum {string} */
-        AttachmentFileType: "JPG" | "PNG" | "PDF";
         PostAttachmentDto: {
             fileType: components["schemas"]["AttachmentFileType"];
             postAttachmentId: number;
@@ -19738,6 +20133,473 @@ export interface operations {
             };
         };
     };
+    FacilitiesController_list: {
+        parameters: {
+            query: {
+                /** @description 고른 점포 — `storeIds=1&storeIds=2` 또는 쉼표, 1000개까지. 폐점 점포도 고를 수 있다. 주지 않으면 볼 수 있는 점포 전체 */
+                storeIds?: number[];
+                /** @description 운영상태 — 주지 않으면 전체 */
+                facilityStatusCode?: string;
+                /** @description 그룹 — 주지 않으면 전체 */
+                facilityGroupCode?: "STORE_FACILITY" | "STORE_EQUIPMENT";
+                /** @description 분류 — 그룹을 고른 경우에만(PL-3). 그룹 없이 보내면 400 */
+                facilityCategoryCode?: string;
+                /** @description 시설물/장비명에 들어 있으면 나온다 */
+                keyword?: string;
+                /** @description 쪽 번호 — 1부터 */
+                page: number;
+                /** @description 한 쪽 건수 — 50 · 100, 기본 50 */
+                pageSize: 50 | 100;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilityListResponseDto"];
+                };
+            };
+            /** @description 검색 조건 형식 · 그룹 없이 분류 · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FacilitiesController_create: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFacilityDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateFacilityResponseDto"];
+                };
+            };
+            /** @description 입력 형식 · 고를 수 없는 점포(범위 밖) · 폐점 점포 · 쓸 수 없는 운영상태 · 분류 · 점검 주기 · 설치일이 구매일보다 앞섬 · A/S센터 주소 짝이 맞지 않음 · 그 점포 재직 직원이 아닌 관리 담당자 · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FacilitiesController_storeOptions: {
+        parameters: {
+            query: {
+                /** @description 폐점 점포도 넣는가 — 목록 필터는 true, 등록 화면은 false(기본) */
+                includeClosed: boolean;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilityStoreOptionListResponseDto"];
+                };
+            };
+            /** @description 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FacilitiesController_managerOptions: {
+        parameters: {
+            query: {
+                storeId: number;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilityManagerOptionListResponseDto"];
+                };
+            };
+            /** @description 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 볼 수 없는 점포 · 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FacilitiesController_detail: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilityDetailResponseDto"];
+                };
+            };
+            /** @description 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 시설물·장비 · 볼 수 없는 점포의 것 · 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FacilitiesController_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFacilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpdateFacilityResponseDto"];
+                };
+            };
+            /** @description 입력 형식(점포를 보내도 400) · 쓸 수 없는 운영상태 · 분류 · 점검 주기 · 설치일이 구매일보다 앞섬 · A/S센터 주소 짝 · 재직 직원이 아닌 관리 담당자 · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 시설물·장비 · 볼 수 없는 점포의 것 · 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 동시 수정 · 폐점 점포의 시설물·장비(조회만 된다) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FacilitiesController_remove: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 시설물·장비 · 볼 수 없는 점포의 것 · 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 폐점 점포의 시설물·장비(조회만 된다) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FacilitiesController_putDocument: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+                /** @description 문서 종류 — 사용 매뉴얼 · 주의사항 · 제품 보증서. 모르는 값이면 404 */
+                kind: components["schemas"]["FacilityDocumentKind"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilityDocumentDto"];
+                };
+            };
+            /** @description 파일 없음 · JPG · PNG · PDF 가 아님 · 10MB 초과 · 파일 2개 이상 · 썸네일을 만들 수 없는 그림(깨짐 · 화소 초과) · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음(가드) · 등록 권한만 있는데 이미 있는 문서를 바꾸거나 남이 등록한 시설물에 올림(수정 권한 필요) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 시설물·장비 · 볼 수 없는 점포의 것 · 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) · 문서 종류 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 폐점 점포의 시설물·장비(조회만 된다) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소가 설정되지 않았거나 올리기에 실패함 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FacilitiesController_removeDocument: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+                /** @description 문서 종류 — 사용 매뉴얼 · 주의사항 · 제품 보증서. 모르는 값이면 404 */
+                kind: components["schemas"]["FacilityDocumentKind"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 시설물·장비 · 볼 수 없는 점포의 것 · 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) · 문서 종류 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 폐점 점포의 시설물·장비(조회만 된다) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     PlatformNoticesController_list: {
         parameters: {
             query?: {
@@ -24744,7 +25606,10 @@ export interface operations {
                 /** @description 업무 범위의 점포. 여러 개는 `storeIds=1&storeIds=2` 와 쉼표 `storeIds=1,2` 중 하나로(섞으면 400), 1000개까지. 관리 범위 밖 ID 는 조용히 빠진다. 주지 않으면 관리 범위 전체 */
                 storeIds?: number[];
             };
-            header?: never;
+            header?: {
+                /** @description 탭 BP — 플랫폼 계정이 고른 고객 BP. 없으면 플랫폼 계정은 platform: true 인 빈 결과다. BP · 가맹 계정은 보지 않는다 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -24772,6 +25637,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description 플랫폼 계정이 보낸 탭 BP 가 없거나 지웠거나 플랫폼 BP 임 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     HomeController_pending: {
@@ -24780,7 +25652,10 @@ export interface operations {
                 /** @description 업무 범위의 점포. 여러 개는 `storeIds=1&storeIds=2` 와 쉼표 `storeIds=1,2` 중 하나로(섞으면 400), 1000개까지. 관리 범위 밖 ID 는 조용히 빠진다. 주지 않으면 관리 범위 전체 */
                 storeIds?: number[];
             };
-            header?: never;
+            header?: {
+                /** @description 탭 BP — 플랫폼 계정이 고른 고객 BP. 없으면 플랫폼 계정은 platform: true 인 빈 결과다. BP · 가맹 계정은 보지 않는다 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -24803,6 +25678,13 @@ export interface operations {
             };
             /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정이 보낸 탭 BP 가 없거나 지웠거나 플랫폼 BP 임 */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
