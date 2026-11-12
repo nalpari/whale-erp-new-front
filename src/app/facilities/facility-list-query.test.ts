@@ -11,6 +11,7 @@ import {
   toFacilityListSearch,
   withFilter,
   withPickedStores,
+  withBack,
 } from "./facility-list-query.ts";
 
 test("기본 조건은 주소에서 빠지고, 읽으면 기본값이다", () => {
@@ -69,4 +70,25 @@ test("빈 쪽이면 남은 마지막 쪽으로, 조건 없음 판정", () => {
   assert.equal(emptyPageHref(q, 1, 120), null);
   assert.equal(isUnfiltered(DEFAULT_FACILITY_LIST_QUERY), true);
   assert.equal(isUnfiltered({ ...DEFAULT_FACILITY_LIST_QUERY, keyword: "a" }), false);
+});
+
+test("점포 id 정리 — 중복 · 0 · 음수 · int 범위 밖은 버리고, 고른 점포가 있으면 범위는 무시", () => {
+  assert.deepEqual(parseFacilityListQuery({ storeIds: "3,3,0,-1,abc,2147483648,5" }).storeIds, [3, 5]);
+  const q = parseFacilityListQuery({ storeIds: "1", scope: "DIRECT" });
+  assert.equal(q.scope, null);
+  assert.equal(facilityListApiSearch(q), "storeIds=1&page=1&pageSize=50");
+  assert.equal(facilityListApiSearch(parseFacilityListQuery({ storeIds: "" })), "page=1&pageSize=50");
+});
+
+test("돌아갈 주소 — 접두만 같은 주소는 막고, withBack 과 왕복한다", () => {
+  for (const v of ["/facilitiesX", "/facilities/1", "/facilities#x"]) assert.equal(backHrefOf(v), "/facilities", v);
+  const list = "/facilities?group=STORE_FACILITY&page=2";
+  const href = withBack("/facilities/new", list);
+  assert.equal(backHrefOf(decodeURIComponent(href.split("?back=")[1])), list);
+  assert.equal(withBack("/facilities/new", "/facilities"), "/facilities/new");
+});
+
+test("빈 쪽 — 0건이면 1쪽, 필터는 그대로", () => {
+  assert.equal(emptyPageHref({ ...DEFAULT_FACILITY_LIST_QUERY, page: 4 }, 0, 0), "/facilities");
+  assert.equal(emptyPageHref({ ...DEFAULT_FACILITY_LIST_QUERY, keyword: "냉장고", page: 4 }, 0, 60), "/facilities?keyword=%EB%83%89%EC%9E%A5%EA%B3%A0&page=2");
 });

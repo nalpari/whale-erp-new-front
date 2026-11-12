@@ -7,6 +7,7 @@ import {
   DOCUMENT_SIZE_ERROR,
   DOCUMENT_TYPE_ERROR,
   filledCounts,
+  formOf,
   initialForm,
   phoneText,
   problems,
@@ -110,4 +111,74 @@ test("입력 n / 전체 — 묶음마다 값이 있는 칸을 센다", () => {
   assert.deepEqual(c.documents, { filled: 1, total: 5 });
   // 점검 주기는 처음에 비어 있어 세지 않는다
   assert.deepEqual(c.manage, { filled: 0, total: 6 });
+});
+
+test("수정 화면 왕복 — 상세 → 폼 → 본문이 값을 잃지 않는다(0 원 · 가린 담당자 번호 · 점검 주기 없음)", () => {
+  const detail = {
+    facilityId: 1,
+    store: { storeId: 3, storeCode: "ST000003", name: "성수점", isClosed: false },
+    name: "제빙기",
+    facilityStatusCode: "OPERATING",
+    facilityStatusLabel: "운영",
+    isFacilityStatusActive: true,
+    facilityGroupCode: "STORE_EQUIPMENT",
+    facilityGroupLabel: "점포 장비",
+    facilityCategoryCode: "ICE_MAKER",
+    facilityCategoryLabel: "제빙기",
+    isFacilityCategoryActive: true,
+    memo: " 첫줄\n둘째 ",
+    brand: "호시자키",
+    manufacturer: null,
+    serialNumber: null,
+    installationLocation: null,
+    vendorName: null,
+    vendorPhone: "023334444",
+    salesRepresentativeName: null,
+    salesRepresentativePhone: null,
+    unitPriceAmount: 0,
+    quantity: 2,
+    totalAmount: 0,
+    isVatIncluded: false,
+    purchaseDate: "2025-01-03",
+    installationDate: null,
+    usageExpiryDate: null,
+    warrantyExpiryDate: null,
+    manager: { staffMemberId: 9, name: null },
+    managerPhone: null,
+    isManagerHidden: true,
+    inspectionCycleCode: null,
+    inspectionCycleLabel: null,
+    isInspectionCycleActive: null,
+    inspectionNote: null,
+    serviceCenterZipCode: "04522",
+    serviceCenterAddress: "서울 중구 삼봉로 98",
+    serviceCenterAddressDetail: "1층",
+    serviceCenterPhone: null,
+    documents: [],
+    createdAt: "2026-11-11T00:00:00Z",
+    createdByName: null,
+    updatedAt: "2026-11-11T00:00:00Z",
+    updatedByName: null,
+  } as unknown as Parameters<typeof formOf>[0];
+  const body = bodyOf(formOf(detail));
+  assert.equal(body.unitPriceAmount, 0);
+  assert.equal(body.vendorPhone, "023334444");
+  // 가린 담당자 — 번호는 null 로 보내 서버가 저장된 번호를 지킨다
+  assert.equal(body.managerStaffMemberId, 9);
+  assert.equal(body.managerPhone, null);
+  assert.equal(body.inspectionCycleCode, null);
+  assert.equal(body.memo, " 첫줄\n둘째 ");
+  assert.equal(body.isVatIncluded, false);
+  assert.deepEqual([body.serviceCenterZipCode, body.serviceCenterAddress, body.serviceCenterAddressDetail], ["04522", "서울 중구 삼봉로 98", "1층"]);
+  // 모르는 그룹이면 비우고 검사에 걸린다
+  const unknown = formOf({ ...detail, facilityGroupCode: "OTHER" } as unknown as typeof detail);
+  assert.equal(unknown.groupCode, "");
+  assert.ok(problems(unknown, "edit").group);
+});
+
+test("메모 200자 경계 · 빈 문서 파일 · 수량 0 총금액", () => {
+  assert.equal(problems(valid({ memo: "가".repeat(200) }), "create").memo, undefined);
+  assert.ok(problems(valid({ memo: "가".repeat(201) }), "create").memo);
+  assert.ok(documentFileError({ name: "a.pdf", size: 0 }));
+  assert.equal(totalText({ unitPrice: "1000", quantity: "0" }), "");
 });
