@@ -1,7 +1,7 @@
 // 시설물 및 장비 상세. 목업 docs/mockup/stores/facilities-detail.html 을 BP 마스터로 본 것(1.5차, 앱 화면 없음).
 // 생김새는 점포 상세(stores/detail.mjs): 테두리 없는 이름 줄 + 실행 버튼, 그 아래 상세 표 두 개(기본 정보 · 관리 정보).
 // render 의 sample: "base"(운영 · 이력 없음) · "history"(수리 이력이 있어 삭제가 막힘, facilities-detail-history.mjs) · "closed"(폐점 점포, facilities-detail-closed.mjs).
-// 근거: 「시설물·장비 관리 정책서」 PL-1 · PL-4 · PL-5. 저장된 값이 있는 항목만 보인다.
+// 근거: 「시설물·장비 관리 정책서」 PL-1 · PL-4 · PL-5. 모든 항목을 보이고 입력하지 않은 값은 「-」다(2026-11-11 사용자 지정 — 전엔 저장된 값이 있는 항목만).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import { tag, warnBand } from "../../config-parts.mjs";
@@ -55,8 +55,8 @@ export const render = ({ A, R }, { sample = "base" } = {}) => {
   const buy = ui.detailTable("구매 정보", [
     ["구매처", ui.detailValues(d.vendor)],
     ["영업사원", ui.detailValues(d.sales)],
-    // 단가 × 수량 = 총금액 한 줄(PL-5)
-    ["구매 금액", `${d.buy[0]}원 × ${d.buy[1]} = ${d.buy[2]}원 ${sub("(부가세 포함)")}`],
+    // 단가 | 수량 | 총금액(2026-11-11 사용자 지정 — 전엔 「단가원 × 수량 = 총금액원」 한 줄)
+    ["구매 금액", ui.detailValues([`${sub("단가")} ${d.buy[0]}원`, `${sub("수량")} ${d.buy[1]}`, `${sub("총금액")} ${d.buy[2]}원 ${sub("(부가세 포함)")}`])],
     ["구매 · 설치일", ui.detailValues([`${sub("구매일")} ${d.buy[3]}`, `${sub("설치일")} ${d.buy[4]}`])],
   ]);
   // 문서는 공통 첨부 칸의 읽기 전용 모양 — 이름(누르면 내려받기) · 크기

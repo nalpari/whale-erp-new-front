@@ -6,17 +6,21 @@ export const PAPER_ROUTE = "/contracts/paper";
 export const NOTICE_SAVE_ROUTE = "/platform-notices/save";
 /** 고객지원 문의 등록 창구(첨부 multipart, #284). */
 export const INQUIRY_SAVE_ROUTE = "/support-inquiries/save";
+/** 시설물 · 장비 문서 올리기 창구(multipart 파일 하나, 10MB). 화면은 탭 BP 주소(/bp/{id}/facilities/documents)로 부른다. */
+export const FACILITY_DOCUMENT_ROUTE = "/facilities/documents";
 
 /**
  * 로그인이 끊겼을 때 리다이렉트 대신 401 JSON 을 줄 경로 — fetch 가 부르는 BFF(/api/*)와 종이 계약 등록 · 공지사항 저장 · 문의 등록.
  * 리다이렉트를 주면 fetch 가 따라가 날인본을 실은 채 /login 으로 다시 POST 하고, 화면은 로그인으로 가지 못한다.
  */
 export function answersWith401(pathname: string): boolean {
-  return pathname.startsWith("/api/") || pathname === PAPER_ROUTE || pathname === NOTICE_SAVE_ROUTE || pathname === INQUIRY_SAVE_ROUTE;
+  return (
+    pathname.startsWith("/api/") || pathname === PAPER_ROUTE || pathname === NOTICE_SAVE_ROUTE || pathname === INQUIRY_SAVE_ROUTE || pathname === FACILITY_DOCUMENT_ROUTE
+  );
 }
 
 const MB = 1024 * 1024;
-const UPLOAD_ROUTES = [NOTICE_SAVE_ROUTE, INQUIRY_SAVE_ROUTE, PAPER_ROUTE];
+const UPLOAD_ROUTES = [NOTICE_SAVE_ROUTE, INQUIRY_SAVE_ROUTE, PAPER_ROUTE, FACILITY_DOCUMENT_ROUTE];
 export const TOO_LARGE = "보낸 내용이 너무 큽니다. 첨부를 줄여서 다시 보내 주세요.";
 
 /**
@@ -26,6 +30,8 @@ export const TOO_LARGE = "보낸 내용이 너무 큽니다. 첨부를 줄여서
 export function bodyLimitOf(pathname: string): number {
   if (pathname === NOTICE_SAVE_ROUTE || pathname === INQUIRY_SAVE_ROUTE) return 51 * MB;
   if (pathname === PAPER_ROUTE) return 21 * MB;
+  // 시설물 문서는 파일 하나 10MB 에 multipart 여유 1MB — Next 기본 한도(10MB)로는 10MB 파일이 잘린다
+  if (pathname === FACILITY_DOCUMENT_ROUTE) return 11 * MB;
   return 10 * MB;
 }
 

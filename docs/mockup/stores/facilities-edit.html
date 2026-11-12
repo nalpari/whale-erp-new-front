@@ -17,7 +17,7 @@
          - [저장]을 누르면 검사하고, 걸린 칸 바로 아래에 빨간 문구를 보이고 첫 오류 칸으로 옮긴다. 알럿은 띄우지 않는다(PL-5).
          - 전화번호는 앞 · 가운데 · 끝 세 칸, 숫자만 칸마다 4자리까지, 이은 번호 9~12자리(PL-5).
          - 단가 · 수량 · 총금액 — 총금액은 단가 × 수량으로 자동 계산되고 입력할 수 없다. 단가는 숫자만 10자리, 쉼표를 붙여 보인다. 메모는 200자까지. 설치일은 구매일보다 앞설 수 없다(PL-5).
-         - 관리 담당자는 그 점포의 재직 직원, 고르면 전화번호 세 칸을 휴대폰 번호로 채운다. 점검 주기는 공통코드 「시설물 점검 주기」(처음 값 매일)(PL-6).
+         - 관리 담당자는 그 점포의 재직 직원, 고르면 전화번호 세 칸을 휴대폰 번호로 채운다. 점검 주기는 공통코드 「시설물 점검 주기」(처음 값 없음 — 「선택」, 2026-11-11 사용자 지정)(PL-6).
          위쪽 점선 줄은 목업 전용이다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
@@ -314,11 +314,12 @@
                       </div>
                     </div>
 
-                    <!-- 점검 주기 — 공통코드 「시설물 점검 주기」(플랫폼제공), 처음 값 매일(PL-6) -->
+                    <!-- 점검 주기 — 공통코드 「시설물 점검 주기」(플랫폼제공), 처음 값 없음(「선택」, 2026-11-11 사용자 지정 — 전엔 매일)(PL-6) -->
                     <div class="grid grid--2">
                       <div class="field">
-                        <label for="fcycle">점검 주기<span class="subtle" style="margin-left:auto;margin-block:-3px;font-weight:500">공통코드 그룹 <span class="tag">FACILITY_INSPECTION_CYCLE</span></span></label>
+                        <label for="fcycle">점검 주기<span class="subtle" style="margin-left:auto;margin-block:-3px;font-weight:500">공통코드 그룹 <span class="tag">INSPECTION_CYCLE</span></span></label>
                         <select class="select" id="fcycle">
+                          <option>선택</option>
                           <option>매일</option>
                           <option>매주</option>
                           <option selected>매월</option>

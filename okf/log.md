@@ -7,6 +7,8 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 루트 layout 이 운영 알림 종을 쿠키가 아니라 접근 토큰이 살아 있을 때만 그린다(`hasLiveAccessToken`, 로그인 전 홈 `redirectsSignedIn` 과 같은 기준). 끝난 로그인의 쿠키로 `/` 에 오면 종이 401 「토큰이 유효하지 않습니다.」를 콘솔에 남기던 것(3팀 채널 재영 제보).
 
 ## 2026-11-11
+* **Update**: `2026-09-30-네이밍-규칙.md` front 사본을 api 원본과 같게 맞추고(2026-10-13 · 10-15 · 10-23 · 11-11 고침) [네이밍 규칙](/conventions/naming.md) 에 반영했다 — BP 기본키 비고(`bpCodeId` · `bpCode`), 기본 템플릿 42건(`NTF_SIGNUP_UNDER_AGE` · `EMAIL_LEAD_REPLY`), 「BP · 점포」의 시설물·장비 식별자(`facility` · `facility_document` · `sales_representative` · 공통코드 4그룹).
+* **Update**: 시설물 및 장비 관리 화면(`/facilities`, MN000022)을 만들었다 — 목록 · 등록 · 상세 · 수정, 문서 올리기 창구 `/facilities/documents`. `MENU_CODE.facilities` · 탭 BP 주소 화면 · 생성 타입(api 시설물 경로)이 바뀌어 [직원 정보 관리 화면](/screens/staff-members.md) 의 `generated.at` 만 갱신했다(본문 변화 없음). 목업 · 데모의 점검 주기 공통코드 그룹 이름을 `INSPECTION_CYCLE` 로 고쳤다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 출처 `src/lib/menus.ts` 에 시작 가이드(`/start-guide`) 허용 2줄이 더해져 출처 시각만 갱신했다. 직원 화면이 보는 메뉴 코드는 그대로라 본문은 바꾸지 않았다(front #263 code-review).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드에서 넘어간 화면에 순서 · 안내를 띄우는 가이드 미니 카드(`GuideMiniCardSlot`)와 열린 패널을 읽는 `usePanelOpen` 을 더했다(front hoppip, 사용자 지정).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드 화면 `/start-guide` 를 더했다. 헤더 [시작 가이드] 목록의 단계가 그 화면 대신 이 화면의 단계 설명으로 오고, 실제 화면은 설명 안 [OOO로 가기]로 간다(front hoppip, 사용자 지정).

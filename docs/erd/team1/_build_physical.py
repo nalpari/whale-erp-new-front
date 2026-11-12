@@ -101,6 +101,8 @@ FK_TARGET = {
     "privacy_version_id": ("terms_versions", None),
     "temporary_password_id": ("temporary_passwords", None),
     "facility_id": ("facilities", None),
+    # 3팀 직원 레코드 — 1팀 모델에 없어 참조 컬럼을 적는다(api 20261111153316_team1_facilities, SQL 에만 있는 FK)
+    "manager_staff_member_id": ("staff_members", "staff_member_id"),
     "facility_repair_id": ("facility_repairs", None),
 }
 FK_IN_TABLE = {("code_items", "group_code"): ("code_groups", "group_code"),
@@ -126,10 +128,16 @@ ENUMS = {
                                                  "바로 받기 · 예약 생성"),
     ("excel_download_logs", "status"): ("excel_download_status", ["PENDING", "PROCESSING", "SUCCEEDED", "FAILED"],
                                         "대기 · 생성 중 · 완료 · 실패"),
-    ("facility_document_files", "document_type"): ("facility_document_type", ["MANUAL", "CAUTION", "WARRANTY"],
-                                                   "사용 매뉴얼 · 주의사항 · 제품 보증서"),
-    ("facility_document_files", "file_type"): ("facility_document_file_type", ["JPG", "PNG", "PDF"], "JPG · PNG · PDF"),
+    ("facility_documents", "document_kind"): ("facility_document_kind", ["USER_MANUAL", "PRECAUTION", "WARRANTY"],
+                                              "사용 매뉴얼 · 주의사항 · 제품 보증서"),
+    ("facility_documents", "file_type"): ("attachment_file_type", ["JPG", "PNG", "PDF"], "JPG · PNG · PDF"),
 }
+# 다른 팀 마이그레이션이 이미 만든 enum — 컬럼 타입으로만 쓰고 CREATE TYPE 하지 않는다
+# (attachment_file_type 은 3팀 20261008000100_team3_inquiry_attachments)
+EXTERNAL_ENUMS = {"attachment_file_type"}
+
+# 아직 api DDL 이 없어 논리 ERD 에만 두는 테이블 — 물리 모델 · 스키마에 넣지 않는다(물리 보기에선 논리 칸으로 그린다)
+LOGICAL_ONLY = {"facility_repairs", "facility_repair_parts"}
 
 # 타입·기본값 개별 지정
 PHYS = {
@@ -163,14 +171,11 @@ PHYS = {
     ("excel_download_logs", "search_conditions"): {"type": "jsonb", "default": "'{}'::jsonb"},
     ("excel_download_logs", "attempt_count"): {"default": "0"},
     ("excel_download_logs", "requested_at"): {"default": "CURRENT_TIMESTAMP"},
-    # 금액은 10자리(99억)까지라 integer 를 넘는다. 총금액은 단가 10자리 × 수량 4자리
-    ("facilities", "unit_price_amount"): {"type": "bigint"},
-    ("facilities", "total_amount"): {"type": "bigint"},
+    # 금액은 10자리(99억)까지라 integer 를 넘는다. 총금액은 단가 10자리 × 수량 4자리 — api DDL 은 numeric(Prisma Decimal)
+    ("facilities", "unit_price_amount"): {"type": "numeric(10,0)"},
+    ("facilities", "total_amount"): {"type": "numeric(14,0)"},
     ("facilities", "quantity"): {"default": "1"},
     ("facilities", "is_vat_included"): {"default": "true"},
-    ("facility_repairs", "repair_cost_amount"): {"type": "bigint"},
-    ("facility_repairs", "is_vat_included"): {"default": "true"},
-    ("facility_repair_parts", "sort_order"): {"default": "0"},
 }
 
 # NOT NULL (PK·boolean·created_at·updated_at 은 자동). 나머지는 NULL 허용.
@@ -207,10 +212,10 @@ REQUIRED = {
                                  "failed_count", "result"],
     "excel_download_logs": ["requested_by", "menu_id", "search_conditions", "row_count", "delivery_method", "status",
                             "file_name", "attempt_count", "requested_at"],
-    "facilities": ["store_id", "facility_status_code", "facility_group_code", "facility_class_code", "name", "quantity"],
-    "facility_document_files": ["facility_id", "document_type", "file_name", "file_type", "size_bytes", "storage_key"],
-    "facility_repairs": ["facility_id", "failure_description", "failure_cause", "failure_date"],
-    "facility_repair_parts": ["facility_repair_id", "part_name", "sort_order"],
+    "facilities": ["store_id", "name", "facility_status_code", "facility_group_code", "facility_category_code", "quantity",
+                   "created_by"],
+    "facility_documents": ["facility_id", "document_kind", "file_name", "file_type", "size_bytes", "storage_key",
+                           "created_by"],
 }
 
 # 고유 제약: (테이블, 컬럼들, 조건 또는 None, 설명)
@@ -237,8 +242,10 @@ UNIQUES = [
      "열린 예외 기간은 휴일 · 점포마다 하나 — api 이름 holiday_excluded_stores_open_period_key"),
     ("excel_download_logs", ["requested_by", "menu_id"], "\"status\" IN ('PENDING', 'PROCESSING')",
      "같은 사람 · 같은 화면은 생성 중(바로 받기 · 예약 생성)인 요청이 하나뿐 — 앱이 409 로 먼저 막고 이 인덱스가 마지막 방어선이다"),
-    ("facility_document_files", ["facility_id", "document_type"], '"is_deleted" = false',
+    ("facility_documents", ["facility_id", "document_kind"], 'NOT "is_deleted"',
      "문서는 종류마다 1개 — 교체하면 기존 행을 삭제 처리하고 새 행을 만든다"),
+    ("facility_documents", ["storage_key"], None,
+     "저장소 키는 행마다 다르다 — 올리기 실패 뒤 그 파일을 가리키는 행이 있는지 이 키로 센다"),
 ]
 # NULLS NOT DISTINCT 가 필요한 고유 제약 (PostgreSQL 15+)
 UNIQUES_NND = [
@@ -291,28 +298,33 @@ CHECKS = [
     ("excel_download_logs", "started_when_processing", "\"status\" <> 'PROCESSING' OR \"started_at\" IS NOT NULL"),
     # 바로 받기는 대기열에 들어가지 않는다 — 대기 행은 배치가 예약 생성으로 만들어 메일을 보낸다
     ("excel_download_logs", "direct_not_pending", "\"delivery_method\" <> 'DIRECT' OR \"status\" <> 'PENDING'"),
+    # 시설물·장비 — api 20261111153316_team1_facilities 와 같은 이름 · 식
     ("facilities", "name_length", "char_length(\"name\") BETWEEN 1 AND 100"),
+    ("facilities", "facility_group_code_allowed", "\"facility_group_code\" IN ('STORE_FACILITY', 'STORE_EQUIPMENT')"),
     ("facilities", "memo_length", "char_length(\"memo\") <= 200"),
-    ("facilities", "vendor_phone_format", "\"vendor_phone\" ~ '^[0-9]{9,12}$'"),
-    ("facilities", "salesperson_phone_format", "\"salesperson_phone\" ~ '^[0-9]{9,12}$'"),
-    ("facilities", "manager_phone_format", "\"manager_phone\" ~ '^[0-9]{9,12}$'"),
-    ("facilities", "service_center_phone_format", "\"service_center_phone\" ~ '^[0-9]{9,12}$'"),
-    ("facilities", "service_center_address_detail_length", "char_length(\"service_center_address_detail\") <= 100"),
-    ("facilities", "unit_price_amount_range", "\"unit_price_amount\" BETWEEN 0 AND 9999999999"),
+    ("facilities", "product_text_length",
+     "char_length(\"brand\") <= 100 AND char_length(\"manufacturer\") <= 100 "
+     "AND char_length(\"serial_number\") <= 100 AND char_length(\"installation_location\") <= 100"),
+    ("facilities", "purchase_text_length", "char_length(\"vendor_name\") <= 100 AND char_length(\"sales_representative_name\") <= 50"),
+    ("facilities", "phone_format",
+     "\"vendor_phone\" ~ '^[0-9]{9,12}$' AND \"sales_representative_phone\" ~ '^[0-9]{9,12}$' "
+     "AND \"manager_phone\" ~ '^[0-9]{9,12}$' AND \"service_center_phone\" ~ '^[0-9]{9,12}$'"),
+    ("facilities", "unit_price_amount_range", "\"unit_price_amount\" >= 0"),
     ("facilities", "quantity_range", "\"quantity\" BETWEEN 1 AND 9999"),
-    # 총금액은 단가 × 수량 — 단가가 없으면 총금액도 없다
-    ("facilities", "total_amount_matches",
-     "(\"unit_price_amount\" IS NULL AND \"total_amount\" IS NULL) OR \"total_amount\" = \"unit_price_amount\" * \"quantity\""),
-    ("facilities", "install_after_purchase", "\"install_date\" >= \"purchase_date\""),
-    ("facility_document_files", "size_bytes_range", "\"size_bytes\" BETWEEN 1 AND 10485760"),
-    ("facility_repairs", "failure_description_length", "char_length(\"failure_description\") BETWEEN 1 AND 200"),
-    ("facility_repairs", "failure_cause_length", "char_length(\"failure_cause\") BETWEEN 1 AND 200"),
-    ("facility_repairs", "repair_after_failure", "\"repair_date\" >= \"failure_date\""),
-    ("facility_repairs", "technician_name_length", "char_length(\"technician_name\") <= 50"),
-    ("facility_repairs", "technician_phone_format", "\"technician_phone\" ~ '^[0-9]{9,12}$'"),
-    ("facility_repairs", "repair_cost_amount_range", "\"repair_cost_amount\" BETWEEN 0 AND 9999999999"),
-    ("facility_repair_parts", "part_name_length", "char_length(\"part_name\") BETWEEN 1 AND 50"),
-    ("facility_repair_parts", "quantity_positive", "\"quantity\" >= 1"),
+    # 총금액은 단가 × 수량 — 단가가 없으면 총금액도 없다. `=` 는 한쪽만 NULL 이면 통과하므로 IS NOT DISTINCT FROM
+    ("facilities", "total_amount_product", "\"total_amount\" IS NOT DISTINCT FROM \"unit_price_amount\" * \"quantity\""),
+    ("facilities", "installation_date_after_purchase", "\"installation_date\" >= \"purchase_date\""),
+    ("facilities", "inspection_note_length", "char_length(\"inspection_note\") <= 200"),
+    ("facilities", "service_center_zip_code_format", "\"service_center_zip_code\" ~ '^[0-9]{5}$'"),
+    ("facilities", "service_center_address_length",
+     "char_length(\"service_center_address\") <= 200 AND char_length(\"service_center_address_detail\") <= 100"),
+    # 우편번호와 기본주소는 함께, 상세주소는 기본주소가 있을 때만
+    ("facilities", "service_center_address_complete",
+     "(\"service_center_zip_code\" IS NULL) = (\"service_center_address\" IS NULL) "
+     "AND (\"service_center_address_detail\" IS NULL OR \"service_center_address\" IS NOT NULL)"),
+    ("facility_documents", "size_bytes_range", "\"size_bytes\" BETWEEN 1 AND 10485760"),
+    ("facility_documents", "file_name_length", "char_length(\"file_name\") BETWEEN 1 AND 255"),
+    # 수리 이력(facility_repairs) · 교체 부품(facility_repair_parts)의 CHECK 는 api DDL 이 나올 때 그와 맞춰 더한다
 ]
 
 # 조회용 인덱스 (FK 중 목록·이력 조회에 쓰는 것). 고유 제약이 앞머리를 덮으면 두지 않는다.
@@ -337,8 +349,6 @@ INDEXES = [
     ("excel_download_logs", ["requested_by", "menu_id", "requested_at"]),
     ("excel_download_logs", ["status", "requested_at"]),
     ("facilities", ["store_id"]),
-    ("facility_repairs", ["facility_id", "failure_date"]),
-    ("facility_repair_parts", ["facility_repair_id"]),
 ]
 
 
@@ -386,7 +396,7 @@ class PTable:
 
 
 def build_model(cat):
-    model = {t: PTable(lt) for t, lt in cat.items() if lt.section != "ref"}
+    model = {t: PTable(lt) for t, lt in cat.items() if lt.section != "ref" and t not in LOGICAL_ONLY}
     for t in model.values():  # FK 가 가리키는 컬럼은 참조 테이블의 기본키다
         for c in t.cols:
             if c.ref and c.ref[1] is None:
@@ -416,6 +426,9 @@ def build_sql(model):
         seen.setdefault(name, (vals, ko))
     o.append("-- ── enum ──")
     for name, (vals, ko) in seen.items():
+        if name in EXTERNAL_ENUMS:
+            o.append(f"-- {name} ({', '.join(vals)}) 는 다른 팀 마이그레이션에 있다 — 만들지 않는다")
+            continue
         o.append(f"CREATE TYPE {q(name)} AS ENUM ({', '.join(sql_text(v) for v in vals)});  -- {ko}")
     o.append("")
     # tables
