@@ -1,12 +1,17 @@
 // 시설물 및 장비 관리(stores/facilities*) 화면만 쓰는 조각. 목업 docs/mockup/stores/facilities*.html 을 옮겼다.
 // 근거: 「시설물·장비 관리 정책서」(claude.ai 문서, 2026-11-10) PL-1 ~ PL-6. 아직 앱 화면이 없어 1팀 공통 부품과 점포 화면 부품으로 그린다.
 import * as ui from "./ui.mjs";
+import * as x from "./extra.mjs";
 import { STORES } from "./site.mjs";
 import { CLOSED_STORE, note } from "./store-parts.mjs";
+import { REQ } from "./biz-form.mjs";
+import { tag } from "./config-parts.mjs";
 
 // 그룹 = 공통코드 그룹 두 개(화면이 고정으로 부른다), 분류 = 그 그룹의 상세 코드(PL-3)
 export const CODES = { "점포 시설물": ["식재보관", "급수", "냉난방"], "점포 장비": ["그라인더", "커피머신", "제빙기"] };
-// 운영상태 = 공통코드 「시설물 운영상태」(플랫폼고정, PL-2) · 점검 주기 = 「시설물 점검 주기」(플랫폼고정, PL-6)
+// 그룹마다 불러오는 공통코드 그룹 코드(api 마이그레이션 team1_facilities 로 확정, 2026-11-11)
+export const GROUP_CODES = { "점포 시설물": "STORE_FACILITY", "점포 장비": "STORE_EQUIPMENT" };
+// 운영상태 = 공통코드 「시설물 운영상태」(플랫폼고정, PL-2) · 점검 주기 = 「시설물 점검 주기」(플랫폼제공, PL-6)
 export const STATUSES = ["운영", "보관", "폐기"];
 export const CYCLES = ["매일", "매주", "매월", "수시"];
 
@@ -47,9 +52,13 @@ export const GROUP_SCRIPT = `<script>
   if (window.__facilityGroup) return;
   window.__facilityGroup = true;
   const CODES = ${JSON.stringify(CODES)};
+  const GROUP_CODES = ${JSON.stringify(GROUP_CODES)};
   const fill = (g) => {
     const k = document.getElementById(g.dataset.groupOf);
     const list = CODES[g.value] || [];
+    // 분류 칸 이름 줄의 출처 꼬리표도 고른 그룹의 공통코드 그룹으로 바꾼다 — 그룹을 안 골랐으면 숨긴다
+    const src = document.querySelector('[data-code-of="' + g.dataset.groupOf + '"]');
+    if (src) { src.hidden = !GROUP_CODES[g.value]; src.querySelector("[data-code]").textContent = GROUP_CODES[g.value] || ""; }
     k.innerHTML = [k.dataset.first, ...list].map((c) => "<option>" + c + "</option>").join("");
     k.disabled = !list.length;
     k.title = list.length ? "" : "그룹을 먼저 선택해 주세요.";
@@ -60,6 +69,17 @@ export const GROUP_SCRIPT = `<script>
   document.addEventListener("click", (e) => { if (e.target.closest('button[aria-label$="초기화"]')) setTimeout(() => document.querySelectorAll("[data-group-of]").forEach(fill)); });
 })();
 </script>`;
+
+// 플랫폼제공 공통코드에서 값을 가져오는 등록 · 수정 칸 — 칸 이름 줄 오른쪽 끝에 출처 「공통코드 그룹 [코드]」(FAQ 등록 카테고리와 같은 모양, 2026-11-11 사용자 지정).
+// BP 가 공통코드 관리에서 볼 수 없는 플랫폼고정 그룹(운영상태 · 수리비 결제 수단)에는 붙이지 않는다 — 분류 · 점검 주기만 해당한다.
+export const CYCLE_CODE = "INSPECTION_CYCLE";
+// codes 는 꼬리표로 보일 그룹 코드 목록. codeOf 를 주면 그 분류칸 id 의 출처라 그룹을 바꿀 때 GROUP_SCRIPT 가 꼬리표 글자를 바꾼다
+const codeSource = (codes, codeOf) =>
+  `<span ${codeOf ? `data-code-of="${codeOf}" ` : ""}class="-my-[2px] ml-auto flex shrink-0 items-center gap-[6px] pl-[10px] text-[14px] font-medium text-erp-label">공통코드 그룹 ${codes
+    .map((c) => (codeOf ? tag(c).replace("<span ", "<span data-code ") : tag(c)))
+    .join("")}</span>`;
+export const codeGroup = (label, codes, control, codeOf) =>
+  `<div role="group" aria-label="${label.replace(REQ, "")}" class="flex min-w-px flex-1 flex-col justify-center gap-[8px]"><span class="flex items-center text-[14px] font-medium text-erp-label"><span class="truncate">${label}</span>${codeSource(codes, codeOf)}</span>${control}</div>`;
 
 // 그룹 · 분류 선택칸 한 쌍. first: 「전체」(필터) · 「선택」(등록)
 export const groupSelect = (id, { first, value = first, label = "그룹" } = {}) =>
@@ -135,10 +155,55 @@ export const attachment = (label, files = [], rejected = []) => {
   );
 };
 
-// 구매액 — 숫자만 10자리, 천 단위 쉼표(PL-5). 근로계약서 작성의 시급 · 급여명세서 검토의 금액 칸과 같은 모양:
-// 공통 입력칸 그대로(왼쪽 정렬, 단위 글자를 칸 옆에 붙이지 않는다), 단위 · 규칙은 칸 아래 회색 도움말 한 줄
-export const amount = (value = "", label = "구매액") =>
+// 금액 칸 하나(수리 이력 수리비) — 숫자만 10자리, 칸 아래 안내
+export const amount = (value = "", label = "금액") =>
   `<div class="flex flex-col gap-[8px]">${ui.textField({ value, inputmode: "numeric", maxlength: 13, "aria-label": label, placeholder: "숫자만 입력" })}<span class="text-[13px] text-erp-label">원 단위로 숫자만 입력할 수 있습니다.</span></div>`;
+
+// 단가 · 수량 · 총금액(PL-5) — 총금액은 입력할 수 없고 단가 × 수량으로 채운다. 단가는 숫자 10자리, 다 친 뒤 쉼표.
+// 수량은 1 ~ 9,999, 처음 값 1. 「부가세 포함」을 켜면 단가 · 총금액을 부가세 포함으로 본다. 칸 옆에 「원」을 붙이지 않는다
+const won = (unit, qty) => {
+  const u = Number(String(unit).replace(/[^0-9]/g, ""));
+  return u && qty ? (u * qty).toLocaleString("ko-KR") : "";
+};
+export const priceFields = (unit = "", qty = 1) =>
+  `<div class="flex flex-col gap-[8px]"><span class="flex items-center gap-[18px] text-[14px] font-medium text-erp-label">구매 금액${x.toggle("부가세 포함", true)}</span>` +
+  `<div data-price class="flex w-full gap-[6px]">${ui.field("단가", ui.textField({ value: unit, inputmode: "numeric", maxlength: 13, placeholder: "숫자만 입력", "data-unit": true }))}` +
+  `${ui.field("수량", ui.textField({ value: String(qty), inputmode: "numeric", maxlength: 4, "data-qty": true }), "w-[120px] shrink-0")}` +
+  `${ui.field("총금액", ui.textField({ value: won(unit, qty), readonly: true, placeholder: "단가 × 수량", "data-total": true }))}</div>` +
+  `<span class="text-[13px] text-erp-label">원 단위로 숫자만 입력할 수 있습니다.</span></div>`;
+
+// 메모 — 선택, 줄바꿈 · 공백 포함 200자. 칸 이름 옆에 글자 수(PL-5)
+export const memoField = (value = "") =>
+  `<label data-memo-box class="flex flex-col gap-[8px]"><span class="flex items-center gap-[6px] text-[14px] font-medium text-erp-label">메모<span data-memo-count class="text-[12px] font-normal text-erp-muted">${value.length} / 200</span></span>${ui.textarea({ rows: 3, value, maxlength: 200, placeholder: "메모를 입력해 주세요.", "data-memo": true })}</label>`;
+
+// 단가 · 수량을 고칠 때마다 총금액을 다시 셈하고, 단가는 칸을 벗어날 때 쉼표를 붙인다. 메모는 글자 수를 센다
+export const PRICE_SCRIPT = `<script>
+(() => {
+  if (window.__facilityPrice) return;
+  window.__facilityPrice = true;
+  const num = (v) => v.replace(/[^0-9]/g, "");
+  const fmt = (v) => (v ? Number(v).toLocaleString("ko-KR") : "");
+  const calc = (box) => {
+    const u = num(box.querySelector("[data-unit]").value), q = num(box.querySelector("[data-qty]").value);
+    box.querySelector("[data-total]").value = u && q ? fmt(String(Number(u) * Number(q))) : "";
+  };
+  document.addEventListener("input", (e) => {
+    const t = e.target, box = t.closest("[data-price]");
+    if (t.matches("[data-memo]")) t.closest("[data-memo-box]").querySelector("[data-memo-count]").textContent = t.value.length + " / 200";
+    if (!box) return;
+    if (t.matches("[data-unit]")) t.value = num(t.value).slice(0, 10);
+    if (t.matches("[data-qty]")) t.value = num(t.value).slice(0, 4);
+    calc(box);
+  });
+  document.addEventListener("focusout", (e) => {
+    const t = e.target, box = t.closest("[data-price]");
+    if (!box) return;
+    if (t.matches("[data-unit]")) t.value = fmt(num(t.value));
+    if (t.matches("[data-qty]") && !(Number(t.value) >= 1)) t.value = "1";
+    calc(box);
+  });
+})();
+</script>`;
 
 // 고른 점포로 줄 거르기(목록 공통, col = 점포 열 번호, 그 칸의 [data-store] 글자로 견준다) — 점포 정보 관리 목록과 같은 점포 고르기(store-filter.mjs)라 칩 빼기 · 개수는 그 부품이 맡는다.
 // 공통 거르기(erp.js, 필터 이름 = 열 머리)와 겹치지 않게 data-store-out 으로 숨기고, 「총 N 건」과 빈 줄을 다시 맞춘다.

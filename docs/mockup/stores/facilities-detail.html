@@ -9,7 +9,7 @@
   </head>
   <body data-root="../" data-page="stores" data-sub="stores/facilities.html">
     <!-- 시설물 · 장비 상세 · /facilities/:facilityId · 1팀 · 1.5차
-         기준: 「시설물·장비 관리 정책서」 PL-1 ~ PL-6. 상세는 저장된 값이 있는 항목만 보인다(PL-5).
+         기준: 「시설물·장비 관리 정책서」 PL-1 ~ PL-6. 상세는 모든 항목을 보이고 입력하지 않은 값은 「-」다(2026-11-11 사용자 지정 — 전엔 저장된 값이 있는 항목만, PL-5).
          묶음은 둘 — 기본 정보 · 관리 정보. A/S센터는 관리 정보 묶음에 둔다(정책서 화면 배치).
          삭제는 논리 삭제이고, 수리 이력 · 점검 결과가 하나라도 있으면 막고 「운영상태를 폐기로 바꿔 주세요」로 안내한다(PL-4).
          폐점 점포의 시설물 · 장비는 조회만 된다(PL-1). 버튼은 권한 그룹이 이 메뉴에 준 수정 · 삭제 권한을 따른다. -->
@@ -75,7 +75,9 @@
               </div>
             </div>
 
+            <!-- 표는 등록 · 수정 화면과 같은 묶음 — 기본 정보 · 제품 정보 · 구매 정보 · 기한 · 문서 · 관리 · A/S(2026-11-11 사용자 지정). 상세는 접지 않는다 -->
             <div class="grid grid--2" style="align-items: start">
+              <div style="display: flex; flex-direction: column; gap: var(--s-5)">
               <section class="panel">
                 <div class="panel__head"><h2 class="t-h2">기본 정보</h2></div>
                 <div class="panel__body">
@@ -84,19 +86,38 @@
                     <dt>운영상태</dt>
                     <dd><span class="badge badge--ok" data-show="run hist closed view">운영</span><span class="badge badge--quiet" data-show="keep" hidden>보관</span><span class="badge badge--risk" data-show="scrap" hidden>폐기</span></dd>
                     <dt>그룹 · 분류</dt><dd>점포 장비 <span class="subtle">|</span> 그라인더</dd>
-                    <dt>브랜드 · 제조사</dt><dd>말코닉 <span class="subtle">|</span> 말코닉</dd>
-                    <dt>Serial number</dt><dd class="mono">SN1234567</dd>
-                    <dt>설치 위치</dt><dd>주방</dd>
-                    <dt>구매처</dt><dd>다온컴퍼니 <span class="subtle">|</span> <span class="mono">02-333-4444</span></dd>
-                    <dt>영업사원</dt><dd>홍길동 <span class="subtle">|</span> <span class="mono">010-2222-3333</span></dd>
-                    <dt>구매 · 설치</dt><dd><span class="mono">20,000,000</span>원 <span class="subtle">(부가세 포함)</span> <span class="subtle">|</span> <span class="subtle">구매일</span> <span class="mono">2025-01-01</span> <span class="subtle">|</span> <span class="subtle">설치일</span> <span class="mono">2025-01-03</span></dd>
+                    <!-- 메모 — 값이 있을 때만, 줄바꿈 그대로(PL-5) -->
+                    <dt>메모</dt><dd style="white-space: pre-line">주방 벽 쪽 전용 콘센트를 쓴다.
+원두 투입구 덮개 분실 주의.</dd>
                     <dt>변경이력</dt><dd><span class="subtle">등록</span> 2026-11-02 10:12 · 정하윤 <span class="subtle">|</span> <span class="subtle">최종수정</span> 2026-11-05 15:40 · 정하윤</dd>
                   </dl>
                 </div>
               </section>
-
               <section class="panel">
-                <div class="panel__head"><h2 class="t-h2">관리 정보</h2></div>
+                <div class="panel__head"><h2 class="t-h2">제품 정보</h2></div>
+                <div class="panel__body">
+                  <dl class="kv">
+                    <dt>브랜드 · 제조사</dt><dd>말코닉 <span class="subtle">|</span> 말코닉</dd>
+                    <dt>Serial number</dt><dd class="mono">SN1234567</dd>
+                    <dt>설치 위치</dt><dd>주방</dd>
+                  </dl>
+                </div>
+              </section>
+              <section class="panel">
+                <div class="panel__head"><h2 class="t-h2">구매 정보</h2></div>
+                <div class="panel__body">
+                  <dl class="kv">
+                    <dt>구매처</dt><dd>다온컴퍼니 <span class="subtle">|</span> <span class="mono">02-333-4444</span></dd>
+                    <dt>영업사원</dt><dd>홍길동 <span class="subtle">|</span> <span class="mono">010-2222-3333</span></dd>
+                    <dt>구매 금액</dt><dd><span class="subtle">단가</span> <span class="mono">10,000,000</span>원 <span class="subtle">|</span> <span class="subtle">수량</span> <span class="mono">2</span> <span class="subtle">|</span> <span class="subtle">총금액</span> <span class="mono">20,000,000</span>원 <span class="subtle">(부가세 포함)</span></dd>
+                    <dt>구매 · 설치일</dt><dd><span class="subtle">구매일</span> <span class="mono">2025-01-01</span> <span class="subtle">|</span> <span class="subtle">설치일</span> <span class="mono">2025-01-03</span></dd>
+                  </dl>
+                </div>
+              </section>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: var(--s-5)">
+              <section class="panel">
+                <div class="panel__head"><h2 class="t-h2">기한 · 문서</h2></div>
                 <div class="panel__body">
                   <dl class="kv">
                     <dt>사용 유효기한</dt><dd class="mono">2030-01-01</dd>
@@ -105,12 +126,20 @@
                     <dt>사용 매뉴얼</dt><dd><a class="tlink" href="#">EK43S_사용매뉴얼.pdf</a> <span class="mono subtle">1.8MB</span></dd>
                     <dt>주의사항</dt><dd><a class="tlink" href="#">사용주의사항.pdf</a> <span class="mono subtle">320KB</span></dd>
                     <dt>제품 보증서</dt><dd><a class="tlink" href="#">제품보증서.png</a> <span class="mono subtle">640KB</span></dd>
+                  </dl>
+                </div>
+              </section>
+              <section class="panel">
+                <div class="panel__head"><h2 class="t-h2">관리 · A/S</h2></div>
+                <div class="panel__body">
+                  <dl class="kv">
                     <dt>관리 담당자</dt><dd>서지안 <span class="subtle">|</span> <span class="mono">010-2323-2323</span></dd>
                     <dt>점검 주기</dt><dd>매월 <span class="subtle">|</span> 매달 정기휴일에 점검</dd>
                     <dt>A/S센터</dt><dd><span class="subtle">[ 우편번호</span> 04522 <span class="subtle">]</span> 서울 중구 삼봉로 98, 1층 2호 <span class="subtle">|</span> <span class="mono">02-2222-8888</span></dd>
                   </dl>
                 </div>
               </section>
+              </div>
             </div>
 
             <p class="note">

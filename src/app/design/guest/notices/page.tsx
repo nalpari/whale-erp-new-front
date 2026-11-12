@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { FaqItem } from "../guest-ui";
 import { SAMPLE_ROUTES } from "../guest-routes";
-import { HOVER } from "../theme";
 import { SAMPLE_NOTICES, sampleTypeLabel } from "./notice-sample";
 import { NoticeRows, NoticesScreen, Pager } from "./notice-views";
 
@@ -35,11 +33,8 @@ export default function NoticesPage() {
         근로계약과 출퇴근 기록을 참조해 <b className={STRONG}>초안</b>을 만들어 드립니다. 4대보험 같은 공제는 관리자가 직접 넣고, 급여 지급 자체는 제공하지 않습니다.
       </FaqItem>
       <FaqItem q="요금은 어떻게 되나요?" category="요금·구독">
-        점포 수와 직원 수에 따른 요금 PLAN이 있고, POS·KIOSK 같은 부가서비스는 따로 구독합니다. 자세한 내용은{" "}
-        <Link href={SAMPLE_ROUTES.leads} className={`font-semibold text-guest-navy underline underline-offset-[3px] hover:text-guest-ink ${HOVER}`}>
-          도입문의
-        </Link>
-        로 물어보실 수 있습니다.
+        {/* 부가서비스 화면 맨 위 안내와 같은 말 — POS · KIOSK 는 제공하지 않는다(2026-11-10 사용자 지정). */}
+        부가서비스는 순차 오픈 예정인 유료 서비스입니다. 오픈 일정과 요금은 공지사항을 통해 안내합니다.
       </FaqItem>
     </div>
   );

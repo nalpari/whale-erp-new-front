@@ -201,13 +201,13 @@ function ExportBody() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto p-[24px]">
-      <PendingNotice message="회원 탈퇴 시 모든 관리자 계정이 미사용 처리되어 자료에 접근할 수 없습니다. 탈퇴 후에는 보존 기간이 남아 있더라도 이 화면을 열람할 수 없습니다. 필요한 자료는 탈퇴 전에 미리 저장해 주세요. 탈퇴 전까지는 언제든지 이 화면에서 자료를 다운로드할 수 있습니다." />
+      <PendingNotice message="BP 탈퇴 시 모든 관리자 계정이 미사용 처리되어 자료에 접근할 수 없습니다. BP 탈퇴 후에는 보존 기간이 남아 있더라도 이 화면을 열람할 수 없습니다. 필요한 자료는 BP 탈퇴 전에 미리 저장해 주세요. BP 탈퇴 전까지는 언제든지 이 화면에서 자료를 다운로드할 수 있습니다." />
       {error && <FailedBand message={error} />}
       <div className="grid grid-cols-[7fr_5fr] items-start gap-[18px]">
         <div className="flex min-w-0 flex-col gap-[18px]">
           <Card title="저장되는 자료">
             <DataTable columns={CONTENT_COLUMNS} rows={CONTENTS} rowKey={(r) => r.name} />
-            <Note>주민등록번호 · 신고 정보 · 위치 확인자료 · 동의 기록은 포함되지 않습니다.</Note>
+            <Note>신고 정보(주민등록번호 포함) · 위치 확인자료 · 동의 기록은 포함되지 않습니다. 관리자가 올린 계약서 파일(종이 계약 날인본 · 임금계약서)은 원본 그대로 포함되어, 파일에 적힌 주민등록번호 등 개인정보가 들어 있을 수 있습니다.</Note>
           </Card>
           <Card title="요청 내역">
             {shownList && "error" in shownList ? (

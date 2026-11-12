@@ -19,6 +19,14 @@ export function isFranchiseRole(roleTypeCode: string): boolean {
 }
 
 /**
+ * 접근 토큰이 아직 살아 있는 세션인지. 로그인 전 화면은 proxy 가 토큰을 갱신하지 않으므로, 쿠키가 있어도 토큰이 끝났으면 로그인 전으로 본다.
+ * 로그인 전 홈의 「자기 홈으로」(redirectsSignedIn)와 루트 layout 의 운영 알림 종이 같이 쓴다 — 끝난 토큰으로 종이 알림을 불러 401 을 남기지 않게(2026-11-12).
+ */
+export function hasLiveAccessToken(session: { accessTokenExpiresAt: number } | null, now = Date.now()): boolean {
+  return session !== null && session.accessTokenExpiresAt > now;
+}
+
+/**
  * 로그인한 채 이 로그인 전 화면에 오면 자기 홈(homeOf)으로 보낼지(proxy). 화면을 여는 GET 만 본다 — 서버 액션 POST 는 보내지 않는다.
  * /login · /find 는 쿠키만 있으면 보낸다 — 로그인이 끝났으면 홈에서 갱신에 실패해 결국 로그인 화면으로 오니 손해가 없다.
  * 로그인 전 홈(/, #289)은 접근 토큰이 살아 있을 때만 보낸다 — 1시간 넘게 쉬어 끝난 로그인의 쿠키로 홈을 보러 온 사람이 로그인 화면에 떨어지지 않게.
@@ -27,7 +35,7 @@ export function isFranchiseRole(roleTypeCode: string): boolean {
 export function redirectsSignedIn(pathname: string, method: string, session: { accessTokenExpiresAt: number } | null, now = Date.now()): boolean {
   if (method !== "GET" || !session) return false;
   if (pathname === "/login" || pathname === "/find") return true;
-  return pathname === "/" && session.accessTokenExpiresAt > now;
+  return pathname === "/" && hasLiveAccessToken(session, now);
 }
 
 /** 로그인 화면이 밀려난 이유를 알리는 쿼리 — /login?reason=account. 값은 아래 이유뿐이고, 모르는 값은 무시한다. */

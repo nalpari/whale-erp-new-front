@@ -10,7 +10,7 @@ import { stripBp } from "./bp-path.ts";
  * 직원 정보 관리의 「직원 초대」 → contracts 등록, 직원 목록 · 상세의 가입 초대 재발송 → contracts 수정).
  * staffMembers 는 화면에서 쓰지 않는다 — 메뉴 판정 테스트가 MenuCode 로 쓰는 시드 값이다.
  */
-export const MENU_CODE = { staffMembers: "MN000005", contracts: "MN000006", payslips: "MN000009", workSchedules: "MN000010", attendanceRecords: "MN000025", todos: "MN000026" } as const;
+export const MENU_CODE = { staffMembers: "MN000005", contracts: "MN000006", payslips: "MN000009", workSchedules: "MN000010", attendanceRecords: "MN000025", todos: "MN000026", facilities: "MN000022" } as const;
 export type MenuCode = (typeof MENU_CODE)[keyof typeof MENU_CODE];
 export type MenuAction = keyof AdminMenu["permission"];
 
@@ -107,6 +107,8 @@ const isUnder = (pathname: string, url: string) => pathname === url || pathname.
 export function serviceOfPath(menus: AdminMenu[], path: string): ServiceCode | null {
   const pathname = stripBp(path);
   for (const service of Object.keys(HOME) as ServiceCode[]) if (pathname === HOME[service]) return service;
+  // 시작 가이드는 메뉴 행이 없는 웨일ERP 화면이다(isAllowed 의 예외와 짝) — 플랫폼 계정이 새 탭으로 열어도 고른 BP 의 웨일ERP 탭으로 열린다(#263 리뷰)
+  if (pathname === "/start-guide") return "WHALE_ERP";
   if (isUnder(pathname, PENDING_PLATFORM_MENU.url)) return "PLATFORM";
   const menu = findMenu(menus, (m) => m.permission.read && !!m.url && isUnder(pathname, m.url));
   // 공통코드 SERVICE 에는 POS·KIOSK 도 있다. 관리자 웹이 여는 서비스(HOME 에 있는 것)만 받는다.
@@ -127,6 +129,8 @@ export function isAllowed(menus: AdminMenu[], path: string, service: ServiceCode
   if (service === "PLATFORM" && isUnder(pathname, PENDING_PLATFORM_MENU.url)) return true;
   // 운영 알림함 — 메뉴 MN000042 는 웨일ERP 행뿐이라 플랫폼 운영자가 받은 문의 알림을 열 수 없었다(2026-10-29 재영 A안). 웨일ERP 는 메뉴 권한 그대로
   if (service === "PLATFORM" && isUnder(pathname, "/notifications")) return true;
+  // 시작 가이드(/start-guide) — 메뉴 행이 없는 안내 화면이다. 헤더 [시작 가이드]처럼 웨일ERP 탭에서만 연다(2026-11-11 사용자 지정)
+  if (service === "WHALE_ERP" && pathname === "/start-guide") return true;
   return menuOfPath(menus, pathname, service) !== null;
 }
 

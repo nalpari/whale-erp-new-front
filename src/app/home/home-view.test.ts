@@ -5,7 +5,7 @@ import type { AdminStore } from "../../lib/session.ts";
 import { readListQuery } from "../contracts/contract-list.ts";
 import { parseStaffListQuery } from "../staff-members/staff-list-query.ts";
 import { parseTodoListQuery } from "../todos/todo-list-query.ts";
-import { homeSearchOf, pendingLineOf, renewalNamesOf, type HomePendingItem, type HomeRenewal } from "./home-view.ts";
+import { homeSearchOf, latestNotices, pendingLineOf, type HomePendingItem } from "./home-view.ts";
 
 const store = (storeId: number, storeTypeCode: string, storeStatusCode = "OPEN") => ({ storeId, storeTypeCode, storeStatusCode }) as AdminStore;
 const STORES = [store(1, "DIRECT"), store(2, "FRANCHISE"), store(3, "DIRECT", "CLOSED"), store(4, "FRANCHISE")];
@@ -17,6 +17,7 @@ const item = (over: Partial<HomePendingItem>): HomePendingItem => ({
   isFirstNameMasked: false,
   othersCount: 2,
   waitingDays: 6,
+  dueInDays: null,
   filter: { storeIds: [3, 7], status: ["PENDING_SIGNATURE"] },
   ...over,
 });
@@ -41,7 +42,7 @@ test("범위에 드는 점포가 이 탭에 없으면 null — 쿼리를 빼 BP 
   assert.equal(homeSearchOf({ type: "ALL" }, []), "");
 });
 
-test("api 가 이 화면이 모르는 처리 대기 유형을 주면 null(그 줄만 건너뛴다)", () => {
+test("api 가 이 화면이 모르는 확인 필요 유형을 주면 null(그 줄만 건너뛴다)", () => {
   assert.equal(pendingLineOf(item({ type: "SOMETHING_NEW" as HomePendingItem["type"] }), 8), null);
 });
 
@@ -58,10 +59,16 @@ test("가려진 첫 이름은 이름 없이 「N건」, 0일은 「오늘 …」
   assert.equal(pendingLineOf(item({ count: 1, othersCount: 0, type: "CONTRACT_CORRECTION_REQUESTED", waitingDays: 2 }), 8)?.desc, "남도현 · 요청 후 2일 경과");
 });
 
-test("갱신 예정 — 경과 없이 「새 근로계약서 초안 없음」, 체결 완료 목록", () => {
-  const line = pendingLineOf(item({ type: "CONTRACT_RENEWAL", count: 2, othersCount: 1, waitingDays: null, filter: { storeIds: [3], status: ["SIGNED"] } }), 8)!;
-  assert.deepEqual([line.title, line.desc], ["계약 갱신 예정 2건", "남도현 외 1명 · 새 근로계약서 초안 없음"]);
+test("갱신 예정 — 경과 없이 「새 근로계약서 초안 없음」과 종료 D-N(7일 이내 강조), 서명 완료 목록(운영 정책 HOM-04)", () => {
+  const renewal = (dueInDays: number) =>
+    pendingLineOf(item({ type: "CONTRACT_RENEWAL", count: 2, othersCount: 1, waitingDays: null, dueInDays, filter: { storeIds: [3], status: ["SIGNED"] } }), 8)!;
+  const line = renewal(7);
+  assert.deepEqual([line.title, line.desc, line.due], ["계약 갱신 예정 2건", "남도현 외 1명 · 새 근로계약서 초안 없음", { text: "종료 D-7", urgent: true }]);
+  assert.deepEqual(renewal(8).due, { text: "종료 D-8", urgent: false });
+  assert.deepEqual(renewal(0).due, { text: "종료 D-0", urgent: true });
   assert.deepEqual(readListQuery(searchOf(line.href)).status, ["SIGNED"]);
+  // 다른 유형에는 D-N 이 없다
+  assert.equal(pendingLineOf(item({}), 8)!.due, null);
 });
 
 test("소속 확인 거절 — 탭 BP 의 직원 목록 「초대」 묶음(거절이 든 묶음)과 점포로 간다", () => {
@@ -85,16 +92,9 @@ test("긴급 TO-DO — 탭 BP 의 TO-DO 목록 점포 · 대기 · 진행 중 ·
   assert.deepEqual([q.storeIds, q.statuses, q.urgentOnly], [[3], ["PENDING", "IN_PROGRESS"], true]);
 });
 
-test("경고 밴드 대상 — 셋까지 이름(점포) MM-DD, 가려진 직원은 점포만, 나머지는 외 N명", () => {
-  const r = (name: string | null, storeName: string, endDate: string): HomeRenewal => ({
-    contractId: 1,
-    staffMemberId: name ? 1 : null,
-    name,
-    isMasked: name === null,
-    storeId: 1,
-    storeName,
-    endDate,
-  });
-  assert.equal(renewalNamesOf([r("서지안", "서초점", "2026-09-08"), r(null, "판교점", "2026-09-10")]), "서지안(서초점) 09-08, 판교점 09-10");
-  assert.equal(renewalNamesOf([r("가", "a", "2026-09-01"), r("나", "b", "2026-09-02"), r("다", "c", "2026-09-03"), r("라", "d", "2026-09-04")]), "가(a) 09-01, 나(b) 09-02, 다(c) 09-03 외 1명");
+test("공지 띠 — 고정 공지가 먼저 와도 게시일 최신 3건, 같은 날이면 나중 글", () => {
+  const n = (postId: number, postedDate: string) => ({ postId, postedDate });
+  // api 순서: 고정(오래된 것) → 나머지 게시일 최신순
+  const got = latestNotices([n(1, "2026-09-01"), n(2, "2026-08-01"), n(5, "2026-10-20"), n(4, "2026-10-20"), n(3, "2026-10-10")]);
+  assert.deepEqual(got.map((p) => p.postId), [5, 4, 3]);
 });

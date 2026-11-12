@@ -57,6 +57,12 @@ export interface AttendanceQuery {
   /** 보정이 필요한 기록의 기간 — 끝 포함, 92일 이하 */
   fixFrom: string;
   fixTo: string;
+  /**
+   * 보정 목록에 그 직원 레코드의 기간 기록을 모두 보인다 — 급여명세서 [출퇴근 기록 확인] · [출퇴근 기록 보기]로 왔을 때(`fixAll=1`). 경고 띠의
+   * 날짜(계약 종료 뒤 정상 기록 · 결근 · 휴무)는 보정 대상이 아니라 걸러지면 찾을 수 없어서다(WHALEERP-664). 직원 레코드(`staffMemberId`)가
+   * 있을 때만 켜지고, 직원 칸을 고쳐 레코드 조건이 풀리면 함께 풀린다.
+   */
+  fixAll: boolean;
 }
 
 type RawSearch = Record<string, string | string[] | undefined>;
@@ -106,6 +112,7 @@ export const defaultQuery = (today: string): AttendanceQuery => ({
   date: today,
   week: mondayOf(today),
   ...defaultFixPeriod(today),
+  fixAll: false,
 });
 
 /** 쉼표 체크 묶음 — 없으면 전부, 있으면 아는 값만(남는 게 없으면 빈 배열 = 0건) */
@@ -128,14 +135,17 @@ export function parseAttendanceQuery(raw: RawSearch, today: string): AttendanceQ
   if (fixFrom < editableFrom) fixFrom = editableFrom;
   if (fixTo > today) fixTo = today;
   const n = span(fixFrom, fixTo);
-  if (n < 1 || n > MAX_PERIOD_DAYS) ({ fixFrom, fixTo } = def);
+  // 주소의 기간을 쓸 수 없어 기본 기간으로 돌아가면 급여명세서의 기간이 아니므로 기간 기록 전체(fixAll)도 끈다 — 다른 기간을 명세서 기간으로 오해하지 않게
+  const periodReset = n < 1 || n > MAX_PERIOD_DAYS;
+  if (periodReset) ({ fixFrom, fixTo } = def);
   const employment = first(raw.employment);
+  const staffMemberId = idOf(first(raw.staffMemberId) ?? "");
   return {
     storeIds,
     storesCleared: rawStoreIds !== undefined && !storeIds.length,
     scope: rawStoreIds !== undefined ? null : scopeOfParam(first(raw[SCOPE_PARAM])),
     staff: (first(raw.staff) ?? "").trim().slice(0, 50),
-    staffMemberId: idOf(first(raw.staffMemberId) ?? ""),
+    staffMemberId,
     employmentTypes: checks(first(raw.employmentType), EMPLOYMENT_TYPES),
     statuses: checks(first(raw.status), DAY_STATUSES),
     reasons: checks(first(raw.reason), REVIEW_REASONS),
@@ -145,6 +155,7 @@ export function parseAttendanceQuery(raw: RawSearch, today: string): AttendanceQ
     week: mondayOf(dateOf(first(raw.week)) || def.week),
     fixFrom,
     fixTo,
+    fixAll: first(raw.fixAll) === "1" && staffMemberId !== null && !periodReset,
   };
 }
 
@@ -170,6 +181,7 @@ export function toAttendanceSearch(q: AttendanceQuery, today: string): string {
     params.set("fixFrom", q.fixFrom);
     params.set("fixTo", q.fixTo);
   }
+  if (q.fixAll && q.staffMemberId !== null) params.set("fixAll", "1");
   const s = params.toString();
   return s ? `?${s}` : "";
 }
@@ -213,6 +225,10 @@ export function matchesFilter(r: DayRow, q: AttendanceQuery): boolean {
   if (entries.length && !entries.some((x) => q.entries.includes(x))) return false;
   return true;
 }
+
+/** 보정 목록에 보일 줄 — 보통은 보정이 필요한 기록만, `fixAll` 이면 그 직원의 기간 기록 모두(필터는 그대로 건다) */
+export const fixRowsOf = <T extends DayRow>(rows: readonly T[], q: AttendanceQuery): T[] =>
+  rows.filter((r) => (q.fixAll || needsFix(r)) && matchesFilter(r, q));
 
 /** 보정이 필요한 기록 — 퇴근 · 출근 미등록과 확인 필요 사유가 남은 기록, 그리고 보정 · 대신 등록한 기록(데모 「보정이 필요한 기록」) */
 export function needsFix(r: DayRow): boolean {

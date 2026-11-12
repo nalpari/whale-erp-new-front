@@ -22,7 +22,7 @@ export function GuestLogin({ routes, children }: { routes: GuestRoutes; children
           <br />
           WHALE ERP가 함께합니다.
         </GuestVisual>
-        <div className="flex flex-col gap-[27px] px-[200px] py-[80px] text-guest-ink">
+        <div style={{ viewTransitionName: "guest-form" }} className="flex flex-col gap-[27px] px-[clamp(60px,10vw,200px)] py-[80px] text-guest-ink">
           <div className="flex flex-col gap-[8px]">
             <h1 className="text-[28px] leading-[1.2] font-bold">로그인</h1>
             <p className="text-[16px] leading-[1.5]">관리자 계정으로 로그인 하세요.</p>
@@ -34,7 +34,12 @@ export function GuestLogin({ routes, children }: { routes: GuestRoutes; children
               <div className="flex items-center justify-between border-t border-[#ebebeb] py-[24.5px] text-[#111]">
                 <div className="flex flex-col gap-[4px] leading-[1.4]">
                   <p className="text-[20px] font-semibold">처음 오셨나요?</p>
-                  <p className="text-[16px]">아직 계정이 없으신가요?</p>
+                  {/* 「아직 계정이 없으신가요?」 대신 할 일을 말한다 — 버튼 옆이라 두 줄로 끊는다(2026-11-12 사용자 지정). */}
+                  <p className="text-[16px]">
+                    사업자 회원가입 후
+                    <br />
+                    매장 관리를 시작해 보세요.
+                  </p>
                 </div>
                 <GuestButton tone="line" href={routes.signUp} arrow>
                   사업자 회원가입

@@ -48,8 +48,10 @@ const wasEdited = (r: FixRow) => punchesOf(r).some((p) => p && (p.isCorrected ||
 /** 짝 하나를 가리키는 기록 ID — 출근, 없으면 퇴근 */
 const anchorOf = (pair: FixRow["pairs"][number]) => (pair.checkIn ?? pair.checkOut)!.attendanceRecordId;
 
-function tagsOf(r: FixRow, reasonLabels: EnumValue[]): ReactNode[] {
+function tagsOf(r: FixRow, reasonLabels: EnumValue[], statusLabels: EnumValue[]): ReactNode[] {
   const tags: ReactNode[] = [];
+  // 근무스케줄이 있는데 출근하지 않은 날 — 출근 · 퇴근 · 사유가 모두 비어 왜 경고 대상인지 알 수 없어 상태를 붙인다(급여명세서에서 연 기간 기록 전체, WHALEERP-664 리뷰)
+  if (r.status === "ABSENT") tags.push(<Mark key="absent" tone="risk">{labelOf(statusLabels, "ABSENT")}</Mark>);
   if (r.status === "MISSING_CHECK_OUT") tags.push(<Mark key="out" tone="warn">퇴근 미등록</Mark>);
   if (r.status === "MISSING_CHECK_IN") tags.push(<Mark key="in" tone="warn">출근 미등록</Mark>);
   for (const reason of new Set(punchesOf(r).flatMap((p) => (p?.reviewReason ? [p.reviewReason] : []))))
@@ -82,7 +84,21 @@ function tagsOf(r: FixRow, reasonLabels: EnumValue[]): ReactNode[] {
 
 type Fix = { row: FixRow; pairIndex: number };
 
-export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; reasonLabels: EnumValue[]; editableFrom: string }) {
+export function FixList({
+  rows,
+  reasonLabels,
+  statusLabels,
+  editableFrom,
+  empty = "보정이 필요한 출·퇴근 기록이 없습니다.",
+}: {
+  rows: FixRow[];
+  reasonLabels: EnumValue[];
+  /** 결근 꼬리표 이름(GET /enums AttendanceDayStatus) */
+  statusLabels: EnumValue[];
+  editableFrom: string;
+  /** 비었을 때 문구 — 급여명세서에서 와 기간 기록을 모두 보일 때는 다르게 */
+  empty?: string;
+}) {
   const router = useRouter();
   const toast = useToast();
   const permission = usePagePermission();
@@ -141,7 +157,7 @@ export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; 
     { header: "날짜", width: "w-[80px]", cell: (r) => shortDay(r.date) },
     { header: "출근", width: "w-[80px]", cell: (r) => <Times times={r.pairs.map((p) => p.checkIn?.time ?? "-")} /> },
     { header: "퇴근", width: "w-[80px]", cell: (r) => <Times times={r.pairs.map((p) => p.checkOut?.time ?? "-")} /> },
-    { header: "사유", align: "left", cell: (r) => <span className="flex flex-wrap items-center gap-[4px]">{tagsOf(r, reasonLabels)}</span> },
+    { header: "사유", align: "left", cell: (r) => <span className="flex flex-wrap items-center gap-[4px]">{tagsOf(r, reasonLabels, statusLabels)}</span> },
     {
       header: "",
       width: "w-[230px]",
@@ -174,7 +190,7 @@ export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; 
     <>
       {/* 비었을 때 열 이름 줄은 두고 그 아래 빈 칸이 본문 남는 높이를 채운다 — 기간이 늘 걸려 있어 문구는 하나다(직원 · 점포 목록과 같다, 2026-11-04 사용자 지정) */}
       <BackdropInert>
-        <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} empty="보정이 필요한 출·퇴근 기록이 없습니다." fillEmpty />
+        <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} empty={empty} fillEmpty />
       </BackdropInert>
       {/* BP 마스터 등록처럼 바탕을 어둡게 깔고, 바탕을 누르면 닫는다(2026-11-05 사용자 지정, 3팀 확인 필요) */}
       <SlidePanel id="attendance-fix" open={fix !== null} onClose={() => setFix(null)} label="기록 보정" trigger={trigger} closeOnBackdrop>
