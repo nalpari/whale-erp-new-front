@@ -81,7 +81,11 @@ export function BulkUploadDialog({
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, setBusy] = useState<null | "template" | "validate" | "error-file" | "register">(null);
 
+  // 팝업을 비울 때마다(닫기 · 다시 올리기) 바뀌는 번호 — 그 전에 보낸 요청의 늦은 응답은 버린다.
+  // 미리보기를 받는 중에 닫았다 다시 열면 파일 없는 미리보기 · 지난 실패 띠가 남았다(PR #267 적대적 리뷰)
+  const session = useRef(0);
   const handleReset = () => {
+    session.current++;
     setFile(null);
     setPreview(null);
     setFailure(null);
@@ -92,11 +96,14 @@ export function BulkUploadDialog({
     onClose();
   };
   const run = async (kind: NonNullable<typeof busy>, work: () => Promise<void>) => {
+    const ticket = session.current;
     setBusy(kind);
     setFailure(null);
     try {
       await work();
     } catch (error) {
+      // 닫은 뒤 끊긴 요청은 알리지 않는다 — 등록은 저장 중에 닫을 수 없어 여기에 오지 않는다
+      if (ticket !== session.current) return;
       // 등록 중 끊김은 저장 여부를 모른다 — error 로 남긴다
       (kind === "register" ? console.error : console.warn)("일괄 등록 연결 실패", resource, kind, error);
       // 등록 중 끊겼으면 저장됐을 수도 있다 — 같은 파일을 다시 등록하지 않게 목록에서 확인하게 한다
@@ -110,9 +117,13 @@ export function BulkUploadDialog({
   const handleTemplateDownload = () => run("template", async () => setFailure(await save(await call(resource, "template"), templateFileName)));
   const validate = (target: File) =>
     run("validate", async () => {
+      const ticket = session.current;
       const response = await call(resource, "validations", target);
-      if (!response.ok) return setFailure(await failureOf(response));
-      const body: unknown = await response.json().catch(() => null);
+      const message = response.ok ? null : await failureOf(response);
+      const body: unknown = response.ok ? await response.json().catch(() => null) : null;
+      // 그 사이 닫았거나 다시 올리기로 돌아갔으면 늦은 응답은 버린다
+      if (ticket !== session.current) return;
+      if (message !== null) return setFailure(message);
       if (!isBulkPreview(body)) {
         console.error("일괄 등록 미리보기 모양이 다릅니다", resource, body);
         return setFailure("미리보기를 읽지 못했습니다. 잠시 뒤 다시 시도해 주세요.");
