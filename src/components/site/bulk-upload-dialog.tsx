@@ -152,7 +152,8 @@ export function BulkUploadDialog({
         return;
       }
       // 5xx · 연결 끊김은 api 가 저장을 마쳤을 수도 있다 — 다시 올리면 두 번 등록되므로 목록에서 확인하게 한다(리뷰 반영)
-      if (response.status >= 500) {
+      // 503 은 예외 — api 가 파일을 읽기 전에 「요청이 몰려 있습니다」로 돌려보낸 것이라 저장되지 않았다. api 문구를 그대로 보인다
+      if (response.status >= 500 && response.status !== 503) {
         setFailure(UNCERTAIN);
         onUncertain?.();
         return;
