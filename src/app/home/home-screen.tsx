@@ -3,18 +3,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { Badge, Button, DataTable, LoadGroup, LoadingNotice, PageBar, Tag, type Column } from "@/components/common";
+import { Button, DataTable, LoadGroup, LoadingNotice, PageBar, Tag, type Column } from "@/components/common";
 import { CodeLabel } from "@/components/site/code-label";
-import { useAccount, useCurrentBp, useMenuRole, useMenus, useScope, useService, useStores } from "@/components/site/session-gate";
+import { useAccount, useCurrentBp, useMenus, useScope, useService, useStores } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
-import { HOME, MENU_CODE, menuOfPath } from "@/lib/menus";
+import { HOME, menuOfPath } from "@/lib/menus";
 import { formatAt } from "@/lib/notification-view";
 import { withScope } from "@/lib/store-scope";
 import { isPlatformRole } from "@/lib/auth-routes";
 import { OneStoreScreen } from "./one-store-screen";
 import { oneStoreIdOf } from "./one-store-view";
 import { useApi } from "@/lib/use-load";
-import { homeSearchOf, pendingLineOf, renewalNamesOf, type HomePending, type HomeSummary } from "./home-view";
+import { homeSearchOf, pendingLineOf, type HomePending, type HomeSummary } from "./home-view";
 
 const CARD = "rounded-[4px] border border-erp-panel-line bg-white";
 
@@ -124,11 +124,9 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
   } else if (oneStore !== null) {
     body = <OneStoreScreen storeId={oneStore} reloadKey={String(reloads)} />;
   } else {
-    const renewalItem = p?.items.find((i) => i.type === "CONTRACT_RENEWAL");
     const failed = (what: string, error: string) => <Notice text={`${what} 불러오지 못했습니다. ${error}`} />;
     body = (
       <>
-        {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={renewalItem ? (pendingLineOf(renewalItem, bp)?.href ?? bpPath(bp, "/contracts")) : bpPath(bp, "/contracts")} newHref={bpPath(bp, "/contracts/new")} /> : null}
         {s?.cards && <Cards cards={s.cards} hq={hq && s.cards.stores.franchise > 0} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
         <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
           {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} hq={hq && !!s?.cards?.stores.franchise} staffHref={canOpen("/staff-members") ? bpPath(bp, withScope("/staff-members", scope)) : null} />}
@@ -164,28 +162,6 @@ function Notice({ text, children }: { text: string; children?: ReactNode }) {
     <div className={`${CARD} flex items-center gap-[12px] px-[24px] py-[18px]`}>
       <p className="flex-1 text-[14px] text-erp-muted">{text}</p>
       {children}
-    </div>
-  );
-}
-
-// 경고 밴드 — 갱신 예정 계약 중 종료일이 7일 안인 것이 있을 때만(HOM-04). 가려진 직원은 이름 없이 점포만 적는다
-function RenewalBand({ renewals, href, newHref }: { renewals: NonNullable<HomePending["renewals"]>; href: string; newHref: string }) {
-  const canCreate = useMenuRole(MENU_CODE.contracts, "create");
-  return (
-    <div className={`${CARD} flex items-center gap-[12px] px-[24px] py-[12px]`}>
-      <Badge tone="off">갱신 예정</Badge>
-      <div className="flex min-w-0 flex-1 flex-col gap-[6px]">
-        <p className="text-[15px] font-semibold">계약 갱신 예정 {renewals.length}건이 7일 안에 끝납니다.</p>
-        <p className="truncate text-[14px] text-erp-label">
-          {renewalNamesOf(renewals)} 에 계약이 종료됩니다. 새 근로계약서 초안을 저장하면 재직 중이라 즉시 발송됩니다.
-        </p>
-      </div>
-      <div className="flex gap-[6px]">
-        <Button variant="soft" href={href}>
-          계약 보기
-        </Button>
-        {canCreate && <Button href={newHref}>새 계약 작성</Button>}
-      </div>
     </div>
   );
 }
@@ -230,9 +206,11 @@ function emptyCardsOf(canOpen: (path: string) => boolean): CardsData {
   return {
     staff: canOpen("/staff-members") ? { total: 0, fullTime: 0, partTime: 0 } : null,
     unsignedContractCount: null,
-    stores: { total: 0, direct: 0, franchise: 0 },
+    stores: { total: 0, direct: 0, franchise: 0, notOperating: 0 },
     todayAttendance: canOpen("/attendance-records") && canOpen("/work-schedules") ? { scheduled: 0, checkedIn: 0, notCheckedIn: 0 } : null,
     myInquiries: null,
+    // 오늘 TO-DO(api #WHALEERP-665) — 카드 자리는 아직 없다. 점포가 없으면 0 으로 둔다
+    todayTodo: canOpen("/todos") ? { done: 0, total: 0 } : null,
   };
 }
 

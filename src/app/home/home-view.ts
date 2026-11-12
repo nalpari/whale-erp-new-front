@@ -14,7 +14,6 @@ import { DEFAULT_TODO_LIST_QUERY, TODO_STATUSES, toTodoListSearch } from "../tod
 export type HomeSummary = components["schemas"]["HomeSummaryResponseDto"];
 export type HomePending = components["schemas"]["HomePendingResponseDto"];
 export type HomePendingItem = components["schemas"]["HomePendingItemDto"];
-export type HomeRenewal = components["schemas"]["HomeRenewalDto"];
 
 /**
  * /home/summary · /home/pending 쿼리 — 전체면 빈 값(관리 범위 전체), 아니면 범위의 점포 ID 쉼표 목록. 범위에 드는 점포가 이 탭에 없으면
@@ -86,17 +85,4 @@ export function pendingLineOf(item: HomePendingItem, bpCodeId: number) {
     desc: [whoOf(item, text.kind), waited].filter(Boolean).join(" · "),
     href: pendingHrefOf(item, bpCodeId),
   };
-}
-
-/** 경고 밴드에 이름을 적는 대상 수 — 나머지는 「외 N명」 */
-const BAND_NAMES = 3;
-
-/** 경고 밴드 대상 줄 — 「서지안(서초점) 09-08, 서초점 09-10 외 2명」. 가려진 직원은 이름 없이 점포만 */
-export function renewalNamesOf(renewals: readonly HomeRenewal[]): string {
-  const shown = renewals
-    .slice(0, BAND_NAMES)
-    .map((r) => `${r.isMasked || r.name === null ? r.storeName : `${r.name}(${r.storeName})`} ${r.endDate.slice(5)}`)
-    .join(", ");
-  const rest = renewals.length - BAND_NAMES;
-  return rest > 0 ? `${shown} 외 ${rest}명` : shown;
 }

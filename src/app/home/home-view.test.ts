@@ -5,7 +5,7 @@ import type { AdminStore } from "../../lib/session.ts";
 import { readListQuery } from "../contracts/contract-list.ts";
 import { parseStaffListQuery } from "../staff-members/staff-list-query.ts";
 import { parseTodoListQuery } from "../todos/todo-list-query.ts";
-import { homeSearchOf, pendingLineOf, renewalNamesOf, type HomePendingItem, type HomeRenewal } from "./home-view.ts";
+import { homeSearchOf, pendingLineOf, type HomePendingItem } from "./home-view.ts";
 
 const store = (storeId: number, storeTypeCode: string, storeStatusCode = "OPEN") => ({ storeId, storeTypeCode, storeStatusCode }) as AdminStore;
 const STORES = [store(1, "DIRECT"), store(2, "FRANCHISE"), store(3, "DIRECT", "CLOSED"), store(4, "FRANCHISE")];
@@ -17,6 +17,7 @@ const item = (over: Partial<HomePendingItem>): HomePendingItem => ({
   isFirstNameMasked: false,
   othersCount: 2,
   waitingDays: 6,
+  dueInDays: null,
   filter: { storeIds: [3, 7], status: ["PENDING_SIGNATURE"] },
   ...over,
 });
@@ -83,18 +84,4 @@ test("긴급 TO-DO — 탭 BP 의 TO-DO 목록 점포 · 대기 · 진행 중 ·
   assert.ok(line.href.startsWith("/bp/8/todos?"));
   const q = parseTodoListQuery(searchOf(line.href));
   assert.deepEqual([q.storeIds, q.statuses, q.urgentOnly], [[3], ["PENDING", "IN_PROGRESS"], true]);
-});
-
-test("경고 밴드 대상 — 셋까지 이름(점포) MM-DD, 가려진 직원은 점포만, 나머지는 외 N명", () => {
-  const r = (name: string | null, storeName: string, endDate: string): HomeRenewal => ({
-    contractId: 1,
-    staffMemberId: name ? 1 : null,
-    name,
-    isMasked: name === null,
-    storeId: 1,
-    storeName,
-    endDate,
-  });
-  assert.equal(renewalNamesOf([r("서지안", "서초점", "2026-09-08"), r(null, "판교점", "2026-09-10")]), "서지안(서초점) 09-08, 판교점 09-10");
-  assert.equal(renewalNamesOf([r("가", "a", "2026-09-01"), r("나", "b", "2026-09-02"), r("다", "c", "2026-09-03"), r("라", "d", "2026-09-04")]), "가(a) 09-01, 나(b) 09-02, 다(c) 09-03 외 1명");
 });
