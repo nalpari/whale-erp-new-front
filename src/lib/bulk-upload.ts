@@ -52,3 +52,11 @@ export function isBulkPreview(v: unknown): v is BulkPreview {
 
 /** 오류 파일 이름 — 「올린파일이름_오류.xlsx」(api 가 Content-Disposition 을 주지 않을 때) */
 export const errorFileNameOf = (fileName: string) => `${fileName.replace(/\.xlsx$/i, "")}_오류.xlsx`;
+
+/** api 가 파일을 읽기 전에 「요청이 몰려 있습니다」로 돌려보낸 503 의 표식 — 저장하지 않았다(api facility-bulk-reader.ts BULK_BUSY_CODE) */
+export const BULK_BUSY_CODE = "BULK_BUSY";
+/**
+ * 503 + BULK_BUSY 인가 — 이것만 「저장 안 됨」으로 확정한다. code 없는 503 은 앞단(게이트웨이 · 로드밸런서)이 저장 뒤에 냈을 수 있어
+ * 다른 5xx 처럼 「결과 모름」으로 둔다(임시 비밀번호의 503 + code 와 같은 기준, find-failure.ts).
+ */
+export const isBulkBusy = (status: number, body: unknown) => status === 503 && (body as { code?: unknown } | null)?.code === BULK_BUSY_CODE;
