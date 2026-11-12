@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
+import { GuideMiniCardSlot } from "@/app/start-guide/guide-mini-card";
 import { ErpRoot, PanelBackdrop } from "@/components/common";
 import { AdminHeader } from "./admin-header";
 import { SessionGate } from "./session-gate";
@@ -16,6 +17,10 @@ export function AdminFrame({ alarm, children }: { alarm: ReactNode; children: Re
         <div className="relative flex h-full min-w-[1720px] flex-col overflow-x-clip">
           <SessionGate header={<AdminHeader alarm={alarm} />}>{children}</SessionGate>
           <PanelBackdrop />
+          {/* 시작 가이드에서 넘어온 화면(?guide=)에만 뜨는 미니 카드 — 주소를 읽으므로 Suspense 로 감싼다 */}
+          <Suspense fallback={null}>
+            <GuideMiniCardSlot />
+          </Suspense>
         </div>
       </div>
     </ErpRoot>

@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입 상태 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [수정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-11T06:59:15Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-11T18:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -113,7 +113,7 @@ sources:
   - id: menus
     resource: ../../src/lib/menus.ts
     title: 메뉴 코드 — 직원 상세가 보는 다른 메뉴(근로계약 · 급여명세서 MN000009 · 근무스케줄 · 출·퇴근 현황 MN000025 · TO-DO)
-    last_modified: 2026-10-29T02:36:35Z
+    last_modified: 2026-11-11T18:00:00Z
   - id: password-reset-dialog
     resource: ../../src/app/staff-members/[id]/password-reset-dialog.tsx
     title: 비밀번호 초기화 확인창(WHALEERP-177)
