@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-11-11
+* **Update**: `2026-09-30-네이밍-규칙.md` front 사본을 api 원본과 같게 맞추고(2026-10-13 · 10-15 · 10-23 · 11-11 고침) [네이밍 규칙](/conventions/naming.md) 에 반영했다 — BP 기본키 비고(`bpCodeId` · `bpCode`), 기본 템플릿 42건(`NTF_SIGNUP_UNDER_AGE` · `EMAIL_LEAD_REPLY`), 「BP · 점포」의 시설물·장비 식별자(`facility` · `facility_document` · `sales_representative` · 공통코드 4그룹).
+* **Update**: 시설물 및 장비 관리 화면(`/facilities`, MN000022)을 만들었다 — 목록 · 등록 · 상세 · 수정, 문서 올리기 창구 `/facilities/documents`. `MENU_CODE.facilities` · 탭 BP 주소 화면 · 생성 타입(api 시설물 경로)이 바뀌어 [직원 정보 관리 화면](/screens/staff-members.md) 의 `generated.at` 만 갱신했다(본문 변화 없음). 목업 · 데모의 점검 주기 공통코드 그룹 이름을 `INSPECTION_CYCLE` 로 고쳤다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 매장운영 · 재무관리 · 프랜차이즈 소개 구역 설명을 지금 구조(스크롤 고정 구역 · 펼침 목록 · 물결 흐름)로 고치고, 지운 `IntroFeatures` · `IntroFlow` · `IntroAddOns` · `feature-shortcuts.tsx` · `PosIcon` 설명을 뺐다(front #259 리뷰).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 최소폭을 1720 → 1280px 로 낮추고 고정 폭 구역이 화면 폭에 맞춰 줄게 했다(front omanyte, 사용자 지정).
 * **Update**: 데모를 앱에 맞췄다(화면설계서용) — 직원 자료 일괄 저장 데모 `staff/export` 를 #251 문구로, 급여명세서에서 온 기간 기록을 새 데모 `staff/attendance-period` 로 더하고 급여명세서 데모 버튼 둘을 거기로 이었다([출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md), WHALEERP-664). 앱 코드는 그대로다.
