@@ -227,3 +227,8 @@ test("isAllowed: 시작 가이드는 메뉴 행이 없어도 웨일ERP 탭에서
   assert.equal(isAllowed([], "/bp/8/start-guide", "WHALE_ERP"), true);
   assert.equal(isAllowed([], "/start-guide", "PLATFORM"), false);
 });
+
+test("serviceOfPath: 시작 가이드는 웨일ERP 화면이다 — 플랫폼 계정이 새 탭으로 열어도 고른 BP 의 웨일ERP 탭으로 열린다", () => {
+  assert.equal(serviceOfPath([], "/start-guide"), "WHALE_ERP");
+  assert.equal(serviceOfPath([], "/bp/8/start-guide"), "WHALE_ERP");
+});

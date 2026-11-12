@@ -107,6 +107,8 @@ const isUnder = (pathname: string, url: string) => pathname === url || pathname.
 export function serviceOfPath(menus: AdminMenu[], path: string): ServiceCode | null {
   const pathname = stripBp(path);
   for (const service of Object.keys(HOME) as ServiceCode[]) if (pathname === HOME[service]) return service;
+  // 시작 가이드는 메뉴 행이 없는 웨일ERP 화면이다(isAllowed 의 예외와 짝) — 플랫폼 계정이 새 탭으로 열어도 고른 BP 의 웨일ERP 탭으로 열린다(#263 리뷰)
+  if (pathname === "/start-guide") return "WHALE_ERP";
   if (isUnder(pathname, PENDING_PLATFORM_MENU.url)) return "PLATFORM";
   const menu = findMenu(menus, (m) => m.permission.read && !!m.url && isUnder(pathname, m.url));
   // 공통코드 SERVICE 에는 POS·KIOSK 도 있다. 관리자 웹이 여는 서비스(HOME 에 있는 것)만 받는다.
