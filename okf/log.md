@@ -3,8 +3,10 @@
 ## 2026-11-12
 * **Update**: [Home](/home.md) — 플랫폼 계정이 고른 BP 의 로그인 후 홈(WHALEERP-667, 운영 정책 HOM-07 v280): 고객 BP 를 골라 웨일ERP 탭에 온 플랫폼 마스터 · 플랫폼 관리자는 BP 마스터와 같은 홈을 본다. 안내 화면은 플랫폼 탭(BP 를 고르지 않음)만이다. 홈은 `/bp/{id}` 주소가 아니라 `bff` · `useApi` 에 `tabBp` 인자를 더해 `/home/summary` · `/home/pending` 에 탭 BP 헤더를 싣는다(주소의 BP 가 먼저). api 타입은 api grimer 기준으로 다시 만들었다.
 * **Update**: [Home](/home.md) — 공지 띠도 탭 BP 를 실어 부른다(`bff(NOTICES_PATH, bp)`). 플랫폼 계정은 고른 BP 의 BP 마스터와 같은 공지를 보고, 누른 공지는 공지사항 상세 · 목록에서도 보인다(WHALEERP-667, 운영 정책 HOM-07 v281 — api 가 탭 BP 로 노출 대상을 고른다).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 루트 layout 이 운영 알림 종을 쿠키가 아니라 접근 토큰이 살아 있을 때만 그린다(`hasLiveAccessToken`, 로그인 전 홈 `redirectsSignedIn` 과 같은 기준). 끝난 로그인의 쿠키로 `/` 에 오면 종이 401 「토큰이 유효하지 않습니다.」를 콘솔에 남기던 것(3팀 채널 재영 제보).
 
 ## 2026-11-11
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 직원 자료 일괄 저장 안내 두 곳을 운영 정책 RET-09 에 맞췄다(WHALEERP-666, 재영 리뷰): 상단 띠 「회원 탈퇴 시」 → 「BP 탈퇴 시」, 저장 제외 안내는 「신고 정보(주민등록번호 포함) · 위치 확인자료 · 동의 기록은 포함되지 않습니다. 관리자가 올린 계약서 파일(종이 계약 날인본 · 임금계약서)은 원본 그대로 포함되어, 파일에 적힌 주민등록번호 등 개인정보가 들어 있을 수 있습니다.」. 데모 staff/export · 상위 정책 요약(okf/staff.md)도 같이 맞췄다.
 * **Update**: [Home](/home.md) — 로그인 후 홈 개편(WHALEERP-665, 운영 정책 v278 HOM-03~10): 점포 하나 화면(`one-store-screen.tsx` · `one-store-view.ts`)을 없애 범위와 역할에 상관없이 한 틀이다. 공지 띠를 맨 위로 옮기고, 경고 밴드를 없애 확인 필요의 계약 갱신 예정 줄에 「종료 D-N」(7일 이내 빨간색)을 적는다. 「처리 대기」 · 「미조치」를 「확인 필요」로, 수치 카드에 오늘 TO-DO 와 운영 점포의 미운영 수를, 점포별 현황 표에 미출근 · 오늘 TO-DO 열을 더하고 운영 점포 모두를 표 안 스크롤로 보인다. 본사 역할의 ATT-30 안내 문구는 뺐다. api 타입은 api graveler 기준으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 매장운영 · 재무관리 · 프랜차이즈 소개 구역 설명을 지금 구조(스크롤 고정 구역 · 펼침 목록 · 물결 흐름)로 고치고, 지운 `IntroFeatures` · `IntroFlow` · `IntroAddOns` · `feature-shortcuts.tsx` · `PosIcon` 설명을 뺐다(front #259 리뷰).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 최소폭을 1720 → 1280px 로 낮추고 고정 폭 구역이 화면 폭에 맞춰 줄게 했다(front omanyte, 사용자 지정).
