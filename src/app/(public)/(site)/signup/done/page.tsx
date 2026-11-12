@@ -42,7 +42,7 @@ export default async function SignupDonePage() {
 
   return (
     <GuestPage flush>
-      {/* 1280px 최소폭은 로그인 전 틀((site)/layout.tsx)이 건다 — 두 칸 틀 오른쪽 px-[clamp(60px,10vw,200px)] 고정 여백이 좁은 화면에서 찌그러지지 않는다(2026-10-19). */}
+      {/* 1260px 최소폭(2026-11-12, 전엔 1280 · 1720)은 로그인 전 틀((site)/layout.tsx)이 건다 — 두 칸 틀 오른쪽 px-[clamp(60px,10vw,200px)] 고정 여백이 좁은 화면에서 찌그러지지 않는다(2026-10-19). */}
       <section className="grid min-h-[730px] grid-cols-2">
         <GuestVisual
           eyebrow="Business membership"

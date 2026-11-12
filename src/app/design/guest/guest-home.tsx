@@ -86,12 +86,12 @@ function Billboard() {
   return (
     <section className="relative -mt-[110px] overflow-hidden pt-[210px] pb-[100px]">
       <Image src="/guest/billboard-bg.png" alt="" fill loading="eager" sizes="100vw" className="object-cover" />
-      {/* 정사각 그림을 677×375 에 늘여 채운 것이 시안이다 — object-cover 로 바꾸면 고래가 잘린다.
+      {/* 정사각 그림을 시안 비율(677:375)로 늘여 채운 것이 시안이다 — object-cover 로 바꾸면 고래가 잘린다.
           시안의 2px 흐림은 너무 뿌옇다는 요청(2026-10-13)으로 뺐다.
-          고래는 가운데에서 오른쪽으로 200px 옮겨 왼쪽 슬로건 · 카피와 겹치지 않게 한다(2026-11-09 사용자 지정). */}
+          고래는 가운데에서 오른쪽으로 옮겨 왼쪽 슬로건 · 카피와 겹치지 않게 한다(2026-11-09 +200px → 2026-11-12 +250px, 사용자 지정). */}
       {/* 메인 카피(왼쪽 글)와 겹치지 않게 고래를 오른쪽으로 더 보내고, 폭을 600px(좁은 창은 창의 44%)로 줄이고 조금 올려, 꼬리가 화면 끝에 · 지느러미가 아래 유리 띠에 잘리지 않게 한다(2026-11-12 사용자 지정 — 전엔 가운데 +200px · 677px 고정이라 1440 아래에서 설명 끝과 겹쳤다). */}
       <div className="guest-whale absolute top-[380px] left-[max(calc(50%+250px),960px)] aspect-[677/375] w-[min(600px,44vw)] -translate-1/2">
-        <Image src="/guest/billboard-whale.png" alt="" fill loading="eager" sizes="677px" />
+        <Image src="/guest/billboard-whale.png" alt="" fill loading="eager" sizes="(max-width: 1363px) 44vw, 600px" />
       </div>
       {/* 높이를 980px 로 고정하지 않고 글 묶음 높이에 맞춘다 — 머리말(110px) 아래 위 여백 100px · 아래 여백 100px 로 다른 섹션과 같게(2026-11-10 사용자 지정). */}
       <div className="relative">
@@ -99,7 +99,7 @@ function Billboard() {
         <div className={`${FRAME} flex flex-col gap-[80px]`}>
           <div className="flex items-end justify-between">
             <div className="flex w-[445px] flex-col gap-[48px]">
-              {/* 영문 WHALE ERP 자리에 슬로건(윗줄 44px · 아랫줄 64px — 「매장 통합관리 서비스」로 길어져 1280 창에서 고래에 겹치지 않게 86px 에서 줄였다, 2026-11-12 사용자 지정). 한글은 REM 글꼴에 없어 기본 글꼴(Pretendard) 800 으로 그린다.
+              {/* 영문 WHALE ERP 자리에 슬로건(윗줄 44px · 아랫줄 64px — 「매장 통합관리 서비스」로 길어져 1260 창에서 고래에 겹치지 않게 86px 에서 줄였다, 2026-11-12 사용자 지정). 한글은 REM 글꼴에 없어 기본 글꼴(Pretendard) 800 으로 그린다.
                   칸(445px)보다 넓은 줄은 w-max 로 상자를 글자 폭만큼 넓혀야 그라데이션이 끝 글자까지 칠해진다. 큰 글자는 글자 앞 여백도 커서 안으로 들어가 보여 음수 여백(-0.05em · -0.03em)으로 아래 줄 시작선에 맞춘다.
                   글자 칠은 배경을 글자 모양으로 오린 것이라 TRIM 으로 줄 상자를 대문자 높이까지 깎으면 한글 위아래가 잘려,
                   이 두 줄만 TRIM 없이 줄 높이로 간격을 둔다(2026-11-09 사용자 지정). */}
@@ -186,16 +186,16 @@ function Personas({ routes }: { routes: GuestRoutes }) {
             // 남색 띠 · 6px 모서리 대신 시작 방법 카드와 같은 크게 둥근 흰 카드(24px) — 페이지 카드 모양을 하나로. 화면에 들어오면 차례로 올라오고(guest-reveal), 마우스를 올리면 떠오른다(2026-11-10 사용자 지정).
             <article key={p.head} style={{ "--reveal-delay": `${i * 8}%` } as CSSProperties} className="guest-reveal flex flex-col overflow-hidden rounded-[24px] border border-[#e3ebf3] bg-white transition-[translate,box-shadow,border-color] duration-300 ease-out hover:-translate-y-[6px] hover:border-guest-step hover:shadow-[0_16px_32px_rgba(58,86,112,0.12)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
               {/* 실사 사진은 카드 여백 안에 둥글게(12px) — 매장 유형이 한눈에 그려지게(2026-11-12 사용자 지정). 개인 매장은 태블릿으로 주문 확인, 여러 매장은 사장님 · 직원이 노트북으로 현황 확인, 본사는 가맹계약, 가맹점은 주방 주문서.
-                  2×2(창 1680px 미만)는 카드가 넓어 글 오른쪽에 세로로 긴 사진(190px)을 두고 — 가로 사진을 세로 칸에 채우므로 받는 그림은 칸 폭이 아니라 640px 로 넉넉히(190px 로 받으면 늘어나 흐려졌다), 한 줄 네 장(1680px 이상)은 카드가 좁아 글 위에 사진(높이 180px)을 둔다. */}
+                  2×2(창 1680px 미만)는 카드가 넓어 글 오른쪽에 세로로 긴 사진(190px, 1440px 미만은 140px — 04 카드 버튼 「본사에서 받은 계정으로 로그인」이 글 칸에 들어가게)을 두고 — 태블릿 · 노트북은 가로 사진이라 세로 칸을 채우려면 칸 폭보다 큰 그림이 필요해 640px 로 받는다(190px 로 받으면 늘어나 흐려졌다). 계약서 · 주문서는 세로 사진이지만 원본이 폭 440px 쯤이라 고화질 화면에선 조금 부드럽다, 한 줄 네 장(1680px 이상)은 카드가 좁아 글 위에 사진(높이 180px)을 둔다. */}
               <div className="flex flex-1 gap-[28px] p-[34px] min-[1680px]:flex-col min-[1680px]:gap-[24px]">
-                <div className="relative w-[190px] shrink-0 order-last overflow-hidden rounded-[12px] bg-guest-surface min-[1680px]:order-first min-[1680px]:h-[180px] min-[1680px]:w-auto">
-                  <Image src={p.photo} alt="" fill sizes="(min-width: 1680px) 25vw, 640px" className="object-cover" />
+                <div className="relative w-[140px] shrink-0 order-last overflow-hidden rounded-[12px] bg-guest-surface min-[1440px]:w-[190px] min-[1680px]:order-first min-[1680px]:h-[180px] min-[1680px]:w-auto">
+                  <Image src={p.photo} alt="" fill sizes="(min-width: 1680px) 300px, 640px" className="object-cover" />
                 </div>
                 {/* 제목 ↔ 구분선 · 구분선 ↔ 한 문장 · 체크 목록 ↔ 버튼을 모두 24px 로 같게(2026-11-10 사용자 지정). */}
                 <div className="flex min-w-0 flex-1 flex-col gap-[24px]">
                   {/* 번호 뒤 제목 · 한 문장 · 체크 목록(아이콘)의 시작선을 하나로 맞춘다(2026-11-12 사용자 지정) — 번호 칸 34px 만큼 한 문장 · 체크 목록을 들여 쓴다. 제목이 두 줄이 되어도 번호 칸 오른쪽에서 줄을 바꾼다. */}
                   <h3 className="flex text-[22px] leading-[1.4] font-bold text-guest-navy">
-                    <span className="w-[34px] shrink-0 text-guest-navy-soft">{String(i + 1).padStart(2, "0")}</span>
+                    <span aria-hidden className="w-[34px] shrink-0 text-guest-navy-soft">{String(i + 1).padStart(2, "0")}</span>
                     {p.head}
                   </h3>
                   {/* 한 문장은 제목 아래가 아니라 구분선 아래 체크 목록 머리로 — 제목은 유형만, 선 아래가 「무엇이 좋은지」(2026-11-10 사용자 지정). */}
@@ -408,7 +408,7 @@ function Steps({ routes }: { routes: GuestRoutes }) {
       <div className={`${FRAME} flex flex-col gap-[16px]`}>
         {/* 오른쪽 [사업자 회원가입하기] 버튼은 뺐다 — 화면 아래 떠 있는 [무료로 시작하기]가 같은 일을 한다(2026-11-11 사용자 지정). */}
         <SectionTitle oneLine light="우리 매장," bold="어떻게 시작하면 될까요?" />
-        {/* 느낌표 안내 두 곳(매장 유형 아래 · 시작 방법 아래)은 같은 크기 — 16px 본문색 · 아이콘 16px · 간격 8px(2026-11-11 사용자 지정). */}
+        {/* 느낌표 안내 두 곳(매장 유형 아래 · 시작 방법 아래)은 같은 크기 — 16px 본문색 · 아이콘 18px(남색 원 그림) · 간격 8px(2026-11-11 · 아이콘 2026-11-12 사용자 지정). */}
         <p className="flex items-center gap-[8px] text-[16px] leading-[1.5] text-guest-body">
           {/* 느낌표는 글자 대신 그림 — 글꼴의 「!」는 원 가운데에 오지 않고 찌그러져 보였다(2026-11-12 사용자 지정). 원은 옆 굵은 글자와 같은 남색 */}
           <svg aria-hidden viewBox="0 0 18 18" className="size-[18px] shrink-0 text-guest-navy">

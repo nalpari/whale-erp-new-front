@@ -121,18 +121,22 @@ export function GuestPage({ children, flush = false }: { children: ReactNode; fl
   );
 }
 
+// 고래 그림 아랫단의 구름색 — 판이 늘어난 곳의 바탕과 그림 아랫단 흐림이 같은 색이어야 경계가 보이지 않는다(2026-11-12)
+const CLOUD_BG = "bg-[#eceef2]";
+const CLOUD_TO = "to-[#eceef2]";
+
 // 로그인·계정 찾기 왼쪽 칸 — 구름 위 고래 그림에 영문 머리말, 큰 제목, 안내 두 줄을 아래쪽에 얹는다.
 export function GuestVisual({ eyebrow, title, children }: { eyebrow?: string; title: ReactNode; children: ReactNode }) {
   return (
     // 로그인 · 계정 찾기 · 가입 완료를 오갈 때 튕기지 않게(2026-11-12 사용자 지정) — 그림과 글은 늘 높이 755px(로그인 화면 높이) 판에 그려 같은 자리 · 같은 크기로 둔다.
     // 오른쪽 폼이 더 길어지면(비밀번호 찾기 탭 · 결과 안내) 칸만 아래로 늘고, 늘어난 곳은 그림 아랫단과 같은 구름색(#eceef2)이 이어진다 — 전엔 칸 높이를 따라 고래가 커졌다 작아졌다.
     // 같은 그림이 다시 떠오르지 않게 이름(guest-visual)을 따로 줘 본문 전환(guest-page)에서 뺀다(globals.css).
-    <div style={{ viewTransitionName: "guest-visual" }} className="relative overflow-hidden bg-[#eceef2]">
+    <div style={{ viewTransitionName: "guest-visual" }} className={`relative overflow-hidden ${CLOUD_BG}`}>
       <div className="relative flex h-[755px] flex-col justify-end gap-[32px] px-[60px] py-[74px]">
         {/* 16:9 그림이 높이 755px 판을 채우느라 폭 1300px 가까이로 그려진다. sizes 를 칸 폭(50vw)으로 주면
             작은 사본을 받아 늘려 그려 흐려지므로, 실제로 그려지는 폭을 알려 준다. 아랫단은 구름색으로 옅게 이어 칸이 늘어도 경계가 보이지 않게 한다. */}
         <Image src="/guest/login/visual.png" alt="" fill loading="eager" sizes="max(50vw, 1300px)" className="object-cover" />
-        <span aria-hidden className="absolute inset-x-0 bottom-0 h-[120px] bg-gradient-to-b from-transparent to-[#eceef2]" />
+        <span aria-hidden className={`absolute inset-x-0 bottom-0 h-[120px] bg-gradient-to-b from-transparent ${CLOUD_TO}`} />
         <div className="relative flex flex-col gap-[34px] uppercase">
           {eyebrow && <p className={`font-[family-name:var(--font-rem)] text-[24px] leading-none font-medium tracking-[-0.025em] text-[rgba(58,86,112,0.5)] ${TRIM}`}>{eyebrow}</p>}
           {title}

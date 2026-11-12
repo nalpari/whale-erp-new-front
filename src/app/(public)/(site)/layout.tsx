@@ -12,7 +12,7 @@ import { homeOf } from "@/lib/auth-routes";
 // 입력칸은 화면 위 150px 아래에서 멈춘다(scroll-mt) — 빈 필수 칸을 브라우저가 찾아 올릴 때 칸과 「이 입력란을 작성하세요.」 말풍선이 고정 머리말(110px) 밑에 가려졌다(회원가입, 2026-11-12 사용자 지정).
 // GUEST_FONTS(REM·Inter Tight·Inter 변수)를 여기서 달아야 guest 영문 표기가 Pretendard 로 떨어지지 않는다(2026-10-15 pr-review-toolkit).
 export default async function SiteLayout({ children }: { children: ReactNode }) {
-  // 로그인한 채 열면 머리말의 Login 자리에 「홈으로」(자기 홈)를 보인다 — 이유는 guest-header.tsx(PR #44).
+  // 로그인한 채 열면 머리말의 「로그인」 자리에 「홈으로」(자기 홈)를 보인다 — 이유는 guest-header.tsx(PR #44).
   const session = await getSession();
   return (
     <ErpRoot>
