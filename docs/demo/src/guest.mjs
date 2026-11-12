@@ -136,7 +136,7 @@ function footer(A, R) {
 // 비로그인 화면 한 장. current 는 이 화면의 데모 경로(머리말 메뉴 표시용).
 // 본문과 푸터 사이는 시안대로 60px 띄운다. 로그인처럼 푸터가 본문에 바로 붙는 화면은 flush.
 export const page = (A, R, { current, main, flush = false }) =>
-  `<div class="${ERP_THEME} min-w-[1720px] bg-white break-keep">${header(A, R, current)}<div style="view-transition-name:guest-page;view-transition-class:guest-page" class="${flush ? "" : "pb-[60px]"}">${main}</div>${footer(A, R)}</div>`;
+  `<div class="${ERP_THEME} min-w-[1260px] bg-white break-keep">${header(A, R, current)}<div style="view-transition-name:guest-page;view-transition-class:guest-page" class="${flush ? "" : "pb-[60px]"}">${main}</div>${footer(A, R)}</div>`;
 
 // ── 아이콘(앱 guest/guest-icons.tsx) ──
 // 선 아이콘 조각 { src, width, height, left, top } 을 64px 칸에 겹친다. src 는 assets/guest 아래 경로.
