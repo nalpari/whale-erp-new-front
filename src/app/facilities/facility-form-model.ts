@@ -77,8 +77,8 @@ export interface FacilityForm {
   installationLocation: string;
   vendorName: string;
   vendorPhone: PhoneParts;
-  salesRepName: string;
-  salesRepPhone: PhoneParts;
+  salesRepresentativeName: string;
+  salesRepresentativePhone: PhoneParts;
   /** 단가 — 숫자만(쉼표는 화면이 보일 때만 붙인다), 10자리까지 */
   unitPrice: string;
   /** 수량 — 숫자만, 1 ~ 9,999 */
@@ -104,7 +104,7 @@ export type FacilityFormField =
   | "category"
   | "memo"
   | "vendorPhone"
-  | "salesRepPhone"
+  | "salesRepresentativePhone"
   | "unitPrice"
   | "quantity"
   | "installationDate"
@@ -114,7 +114,7 @@ export type FacilityFormField =
 /** 칸 이름(전화번호 문구에 쓴다) */
 export const PHONE_LABELS = {
   vendorPhone: "구매처",
-  salesRepPhone: "영업사원",
+  salesRepresentativePhone: "영업사원",
   managerPhone: "관리 담당자",
   serviceCenterPhone: "A/S센터",
 } as const satisfies Partial<Record<FacilityFormField, string>>;
@@ -139,8 +139,8 @@ export function initialForm(): FacilityForm {
     installationLocation: "",
     vendorName: "",
     vendorPhone: [...EMPTY_PHONE],
-    salesRepName: "",
-    salesRepPhone: [...EMPTY_PHONE],
+    salesRepresentativeName: "",
+    salesRepresentativePhone: [...EMPTY_PHONE],
     unitPrice: "",
     quantity: "1",
     isVatIncluded: true,
@@ -172,8 +172,8 @@ export function formOf(d: FacilityDetail): FacilityForm {
     installationLocation: d.installationLocation ?? "",
     vendorName: d.vendorName ?? "",
     vendorPhone: splitPhone(d.vendorPhone),
-    salesRepName: d.salesRepresentativeName ?? "",
-    salesRepPhone: splitPhone(d.salesRepresentativePhone),
+    salesRepresentativeName: d.salesRepresentativeName ?? "",
+    salesRepresentativePhone: splitPhone(d.salesRepresentativePhone),
     unitPrice: d.unitPriceAmount === null ? "" : String(d.unitPriceAmount),
     quantity: String(d.quantity),
     isVatIncluded: d.isVatIncluded,
@@ -215,7 +215,7 @@ export function problems(f: FacilityForm, mode: "create" | "edit"): Partial<Reco
   if (!f.groupCode) out.group = "그룹을 선택해 주세요.";
   if (!f.categoryCode) out.category = "분류를 선택해 주세요.";
   if (f.memo.length > MEMO_MAX) out.memo = `메모는 ${MEMO_MAX}자까지 입력할 수 있습니다.`;
-  for (const field of ["vendorPhone", "salesRepPhone"] as const) {
+  for (const field of ["vendorPhone", "salesRepresentativePhone"] as const) {
     const msg = phoneProblem(f[field], PHONE_LABELS[field]);
     if (msg) out[field] = msg;
   }
@@ -258,8 +258,8 @@ export function bodyOf(f: FacilityForm): Omit<CreateFacilityInput, "storeId"> {
     installationLocation: textOrNull(f.installationLocation),
     vendorName: textOrNull(f.vendorName),
     vendorPhone: phoneOrNull(f.vendorPhone),
-    salesRepresentativeName: textOrNull(f.salesRepName),
-    salesRepresentativePhone: phoneOrNull(f.salesRepPhone),
+    salesRepresentativeName: textOrNull(f.salesRepresentativeName),
+    salesRepresentativePhone: phoneOrNull(f.salesRepresentativePhone),
     unitPriceAmount: f.unitPrice ? Number(f.unitPrice) : null,
     quantity: Number(f.quantity),
     isVatIncluded: f.isVatIncluded,
@@ -288,7 +288,7 @@ export function filledCounts(f: FacilityForm, docs: Record<FacilityDocumentKind,
   const count = (list: boolean[]) => ({ filled: list.filter(Boolean).length, total: list.length });
   return {
     product: count([has(f.brand), has(f.manufacturer), has(f.serialNumber), has(f.installationLocation)]),
-    purchase: count([has(f.vendorName), phone(f.vendorPhone), has(f.salesRepName), phone(f.salesRepPhone), has(f.unitPrice), has(f.purchaseDate), has(f.installationDate)]),
+    purchase: count([has(f.vendorName), phone(f.vendorPhone), has(f.salesRepresentativeName), phone(f.salesRepresentativePhone), has(f.unitPrice), has(f.purchaseDate), has(f.installationDate)]),
     documents: count([has(f.usageExpiryDate), has(f.warrantyExpiryDate), ...DOCUMENT_KINDS.map((k) => docs[k])]),
     manage: count([f.managerStaffMemberId !== null, phone(f.managerPhone), has(f.inspectionCycleCode), has(f.inspectionNote), has(f.serviceCenter.address), phone(f.serviceCenterPhone)]),
   };

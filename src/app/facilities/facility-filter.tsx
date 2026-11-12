@@ -49,7 +49,7 @@ export function FacilityFilter({ query, storeOptions }: { query: FacilityListQue
       setCurrent(next);
       router.replace(bpPath(bp, facilityListHref(next)), { scroll: false });
     });
-  const go = (next: Partial<FacilityListQuery>) => navigate(withFilter(current, next));
+  const handleFilterChange = (next: Partial<FacilityListQuery>) => navigate(withFilter(current, next));
 
   // 후보 점포 — 일괄검색 창이 점포유형으로 묶어 고르므로 유형은 로그인 정보에서 찾아 붙인다(store-options 에는 유형이 없다)
   const typeOf = new Map(loginStores.map((s) => [s.storeId, s.storeTypeCode]));
@@ -92,7 +92,7 @@ export function FacilityFilter({ query, storeOptions }: { query: FacilityListQue
   useEffect(() => dropUnknown(), [missingCount, unusable]);
 
   const categories = current.group === "STORE_FACILITY" ? facilityCategories : current.group === "STORE_EQUIPMENT" ? equipmentCategories : [];
-  const pickStores = (ids: number[]) => navigate(withPickedStores(current, ids));
+  const handleStoresPick = (ids: number[]) => navigate(withPickedStores(current, ids));
 
   return (
     <FilterPanel
@@ -111,7 +111,7 @@ export function FacilityFilter({ query, storeOptions }: { query: FacilityListQue
           </button>
         }
       >
-        <StorePicker pool={pool} picked={chips} onChange={(next) => pickStores(next.map((s) => s.storeId))} />
+        <StorePicker pool={pool} picked={chips} onChange={(next) => handleStoresPick(next.map((s) => s.storeId))} />
         <StoreBulkDialog
           open={bulkOpen}
           options={pool}
@@ -122,12 +122,12 @@ export function FacilityFilter({ query, storeOptions }: { query: FacilityListQue
             // 창은 새로 넣은 점포를 앞에 둔다 — 필터는 찾아 고르기처럼 남긴 칩 뒤에 붙인다(점포 목록 필터와 같다)
             const nextIds = new Set(next.map((s) => s.storeId));
             const chipIds = new Set(chips.map((s) => s.storeId));
-            pickStores([...chips.filter((s) => nextIds.has(s.storeId)), ...next.filter((s) => !chipIds.has(s.storeId))].map((s) => s.storeId));
+            handleStoresPick([...chips.filter((s) => nextIds.has(s.storeId)), ...next.filter((s) => !chipIds.has(s.storeId))].map((s) => s.storeId));
           }}
         />
       </FilterSection>
       <FilterSection label="운영상태" tight>
-        <Select aria-label="운영상태" value={current.status} onChange={(e) => go({ status: e.target.value })}>
+        <Select aria-label="운영상태" value={current.status} onChange={(e) => handleFilterChange({ status: e.target.value })}>
           <option value="">전체</option>
           {statuses.map((s) => (
             <option key={s.value} value={s.value}>
@@ -137,7 +137,7 @@ export function FacilityFilter({ query, storeOptions }: { query: FacilityListQue
         </Select>
       </FilterSection>
       <FilterSection label="그룹" tight>
-        <Select aria-label="그룹" value={current.group} onChange={(e) => go({ group: isFacilityGroup(e.target.value) ? e.target.value : "" })}>
+        <Select aria-label="그룹" value={current.group} onChange={(e) => handleFilterChange({ group: isFacilityGroup(e.target.value) ? e.target.value : "" })}>
           <option value="">전체</option>
           {FACILITY_GROUPS.map((g) => (
             <option key={g.code} value={g.code}>
@@ -153,7 +153,7 @@ export function FacilityFilter({ query, storeOptions }: { query: FacilityListQue
           value={current.category}
           disabled={!current.group}
           title={current.group ? undefined : "그룹을 먼저 선택해 주세요."}
-          onChange={(e) => go({ category: e.target.value })}
+          onChange={(e) => handleFilterChange({ category: e.target.value })}
         >
           <option value="">전체</option>
           {categories.map((c) => (
@@ -170,8 +170,8 @@ export function FacilityFilter({ query, storeOptions }: { query: FacilityListQue
           placeholder="이름으로 찾기"
           aria-label="시설물/장비명"
           maxLength={100}
-          onSearch={(value) => go({ keyword: value.trim() })}
-          onClear={() => go({ keyword: "" })}
+          onSearch={(value) => handleFilterChange({ keyword: value.trim() })}
+          onClear={() => handleFilterChange({ keyword: "" })}
         />
       </FilterSection>
     </FilterPanel>

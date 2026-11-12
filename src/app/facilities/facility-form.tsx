@@ -65,7 +65,7 @@ type FoldKey = "product" | "purchase" | "documents" | "manage";
 /** 어느 칸의 오류가 어느 접힌 묶음 안에 있는가 — 검사에 걸리면 그 묶음을 펼친다 */
 const FOLD_OF: Partial<Record<FacilityFormField, FoldKey>> = {
   vendorPhone: "purchase",
-  salesRepPhone: "purchase",
+  salesRepresentativePhone: "purchase",
   unitPrice: "purchase",
   quantity: "purchase",
   installationDate: "purchase",
@@ -377,13 +377,13 @@ export function FacilityFormView(props: Props) {
     </div>
   );
 
-  const phone = (field: "vendorPhone" | "salesRepPhone" | "managerPhone" | "serviceCenterPhone", label: string) => (
+  const phone = (field: "vendorPhone" | "salesRepresentativePhone" | "managerPhone" | "serviceCenterPhone", label: string) => (
     <Stack id={`${ids}-${field}`} grow>
       <PhoneGroup label={label} value={form[field]} onChange={(v) => set(field, v, field)} describedBy={describe(field)} />
       {message(field)}
     </Stack>
   );
-  const text = (key: "brand" | "manufacturer" | "serialNumber" | "installationLocation" | "vendorName" | "salesRepName" | "inspectionNote", label: string, max: number) => (
+  const text = (key: "brand" | "manufacturer" | "serialNumber" | "installationLocation" | "vendorName" | "salesRepresentativeName" | "inspectionNote", label: string, max: number) => (
     <Field label={label}>
       <TextField value={form[key]} maxLength={max} onChange={(e) => set(key, e.target.value)} />
     </Field>
@@ -409,8 +409,8 @@ export function FacilityFormView(props: Props) {
         {phone("vendorPhone", "구매처 전화번호")}
       </FormRow>
       <FormRow>
-        <Stack grow>{text("salesRepName", "영업사원", 50)}</Stack>
-        {phone("salesRepPhone", "영업사원 전화번호")}
+        <Stack grow>{text("salesRepresentativeName", "영업사원", 50)}</Stack>
+        {phone("salesRepresentativePhone", "영업사원 전화번호")}
       </FormRow>
       {/* 단가 · 수량 · 총금액 — 총금액은 단가 × 수량으로 채워지고 고칠 수 없다(서버도 계산한다). 「부가세 포함」 처음 켜짐(PL-5) */}
       <Stack id={`${ids}-quantity`}>

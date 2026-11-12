@@ -44,7 +44,7 @@ test("필수 칸 — 점포(등록만) · 이름 · 그룹 · 분류", () => {
 
 test("전화번호 — 비었으면 괜찮고, 이은 번호가 9~12자리가 아니면 칸 이름을 넣은 문구", () => {
   assert.deepEqual(problems(valid({ vendorPhone: ["02", "333", "4444"] }), "create"), {});
-  assert.equal(problems(valid({ salesRepPhone: ["010", "22", ""] }), "create").salesRepPhone, "영업사원 전화번호는 숫자 9~12자리입니다.");
+  assert.equal(problems(valid({ salesRepresentativePhone: ["010", "22", ""] }), "create").salesRepresentativePhone, "영업사원 전화번호는 숫자 9~12자리입니다.");
   assert.equal(problems(valid({ serviceCenterPhone: ["0507", "1234", "5678"] }), "create").serviceCenterPhone, undefined);
   assert.equal(problems(valid({ managerPhone: ["1", "", ""] }), "create").managerPhone, "관리 담당자 전화번호는 숫자 9~12자리입니다.");
 });

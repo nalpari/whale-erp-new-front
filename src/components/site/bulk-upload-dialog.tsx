@@ -81,14 +81,14 @@ export function BulkUploadDialog({
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, setBusy] = useState<null | "template" | "validate" | "error-file" | "register">(null);
 
-  const reset = () => {
+  const handleReset = () => {
     setFile(null);
     setPreview(null);
     setFailure(null);
   };
-  const close = () => {
+  const handleClose = () => {
     if (busy === "register") return; // 저장 중엔 닫지 않는다
-    reset();
+    handleReset();
     onClose();
   };
   const run = async (kind: NonNullable<typeof busy>, work: () => Promise<void>) => {
@@ -107,7 +107,7 @@ export function BulkUploadDialog({
     }
   };
 
-  const downloadTemplate = () => run("template", async () => setFailure(await save(await call(resource, "template"), templateFileName)));
+  const handleTemplateDownload = () => run("template", async () => setFailure(await save(await call(resource, "template"), templateFileName)));
   const validate = (target: File) =>
     run("validate", async () => {
       const response = await call(resource, "validations", target);
@@ -119,8 +119,8 @@ export function BulkUploadDialog({
       }
       setPreview(body);
     });
-  const downloadErrors = () => file && run("error-file", async () => setFailure(await save(await call(resource, "error-file", file), errorFileNameOf(file.name))));
-  const register = () =>
+  const handleErrorFileDownload = () => file && run("error-file", async () => setFailure(await save(await call(resource, "error-file", file), errorFileNameOf(file.name))));
+  const handleRegister = () =>
     file &&
     run("register", async () => {
       const response = await call(resource, "register", file);
@@ -128,7 +128,7 @@ export function BulkUploadDialog({
         // 건수를 읽지 못했으면 지어내지 않고 null — 부르는 쪽이 건수 없이 알린다(리뷰 반영, 전엔 미리보기 건수로 대신 셌다)
         const body = (await response.json().catch(() => null)) as { createdCount?: unknown } | null;
         if (typeof body?.createdCount !== "number") console.error("일괄 등록 응답에 건수가 없습니다", resource, body);
-        reset();
+        handleReset();
         onDone(typeof body?.createdCount === "number" ? body.createdCount : null);
         return;
       }
@@ -152,7 +152,7 @@ export function BulkUploadDialog({
       setFailure(message);
     });
 
-  const pick = (picked: File | undefined) => {
+  const handlePick = (picked: File | undefined) => {
     if (!picked) return;
     const reason = bulkFileError(picked);
     setFailure(reason);
@@ -192,11 +192,11 @@ export function BulkUploadDialog({
     <WideDialog
       open={open}
       title={step === "preview" ? `${title} · 미리보기` : title}
-      onClose={close}
+      onClose={handleClose}
       footer={
         step === "pick" ? (
           <>
-            <Button variant="off" onClick={close}>
+            <Button variant="off" onClick={handleClose}>
               취소
             </Button>
             <Button disabled={!file || busy !== null} onClick={() => file && validate(file)}>
@@ -205,7 +205,7 @@ export function BulkUploadDialog({
           </>
         ) : (
           <>
-            <Button variant="off" disabled={busy !== null} onClick={reset}>
+            <Button variant="off" disabled={busy !== null} onClick={handleReset}>
               다시 올리기
             </Button>
             {preview && preview.errorCount > 0 ? (
@@ -213,7 +213,7 @@ export function BulkUploadDialog({
                 <Button disabled>등록</Button>
               </Blocked>
             ) : (
-              <Button disabled={busy !== null} onClick={register}>
+              <Button disabled={busy !== null} onClick={handleRegister}>
                 {busy === "register" ? "등록 중…" : `${preview?.totalCount.toLocaleString("ko-KR") ?? 0}건 등록`}
               </Button>
             )}
@@ -227,7 +227,7 @@ export function BulkUploadDialog({
           <Box title="1. 양식 내려받기">
             <Help>{templateGuide}</Help>
             <div>
-              <Button variant="soft" disabled={busy !== null} onClick={downloadTemplate}>
+              <Button variant="soft" disabled={busy !== null} onClick={handleTemplateDownload}>
                 {busy === "template" ? "내려받는 중…" : "양식 내려받기"}
               </Button>
             </div>
@@ -241,7 +241,7 @@ export function BulkUploadDialog({
                 accept={BULK_ACCEPT}
                 hidden
                 onChange={(e) => {
-                  pick(e.target.files?.[0]);
+                  handlePick(e.target.files?.[0]);
                   // 같은 파일을 고쳐 다시 고를 수 있게 비운다
                   e.target.value = "";
                 }}
@@ -274,7 +274,7 @@ export function BulkUploadDialog({
                 오류 <b className="font-semibold">{preview.errorCount.toLocaleString("ko-KR")}</b>건
               </span>
               {preview.errorCount > 0 && (
-                <Button variant="soft" disabled={busy !== null} onClick={downloadErrors}>
+                <Button variant="soft" disabled={busy !== null} onClick={handleErrorFileDownload}>
                   {busy === "error-file" ? "내려받는 중…" : "오류 내용 내려받기"}
                 </Button>
               )}
