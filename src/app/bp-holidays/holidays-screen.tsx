@@ -236,7 +236,7 @@ export function HolidaysScreen({
     <>
       {/* [등록]은 제목 줄 오른쪽 — 1팀 목록과 같은 자리(2026-10-23). 바탕창이 떠 있는 동안은 목록처럼 inert 로 뺀다 */}
       <div className="contents" inert={backdropActive}>
-        <PageBar title="BP 휴일 관리">
+        <PageBar title="휴일관리">
           {can.create && (
             <Button ref={newTrigger} aria-controls={NEW_PANEL_ID} aria-expanded={newOpen} onClick={() => setNewOpen(true)}>
               등록

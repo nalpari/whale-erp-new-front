@@ -122,7 +122,7 @@ export function AdminsScreen({
     <>
       {/* [등록]은 제목 줄 오른쪽 — 플랫폼 관리자 관리와 같은 자리(2026-10-27 사용자 지정 — 전엔 목록 건수 줄). 바탕창이 떠 있는 동안은 목록처럼 inert 로 뺀다 */}
       <div className="contents" inert={backdropActive}>
-        <PageBar title="BP 관리자 관리">
+        <PageBar title="관리자 관리">
           {canCreate && (
             <Button ref={newTrigger} aria-controls="bp-admin-new-panel" aria-expanded={newOpen} onClick={() => setNewOpen(true)}>
               등록

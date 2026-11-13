@@ -23,7 +23,7 @@ export default async function BpRolesPage({ searchParams }: PageProps<"/bp-role-
   if ("denied" in list)
     return (
       <>
-        <PageBar title="BP 권한 그룹 관리" />
+        <PageBar title="권한그룹 관리" />
         <div className="flex min-h-0 flex-1 p-[24px]">
           <section className={`${CARD} flex-1`}>
             <FailedBand message={list.denied} />

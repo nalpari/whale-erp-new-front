@@ -24,7 +24,7 @@ export default async function BpCodesPage({ searchParams }: PageProps<"/bp-code-
   if ("denied" in list)
     return (
       <>
-        <PageBar title="BP 공통코드 관리" />
+        <PageBar title="공통코드 관리" />
         <div className="flex min-h-0 flex-1 p-[24px]">
           <section className="flex-1 rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
             <SaveFailedBand message={list.denied} detail={null} />
@@ -56,7 +56,7 @@ export default async function BpCodesPage({ searchParams }: PageProps<"/bp-code-
 
   return (
     <>
-      <PageBar title="BP 공통코드 관리" />
+      <PageBar title="공통코드 관리" />
       <UnsavedChangesProvider>
         <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
           <BpCodeFilter key={`${groupCode}|${groupName}`} groupCode={groupCode} groupName={groupName} />
