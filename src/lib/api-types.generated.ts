@@ -7638,6 +7638,11 @@ export interface components {
             isAttendanceConfirmed: boolean;
             /** Format: date-time */
             confirmedAt: string | null;
+            /**
+             * @description 확정할 수 있는 첫날(YYYY-MM-DD, 한국) — 확정의 422 PERIOD_NOT_ENDED 와 같은 판정이다(규칙은 그 422 설명). 작성 중 · 검토 중이
+             *     아니면 null. 화면은 그 전에 [확정]을 막는다
+             */
+            confirmableFrom: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
