@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-import { HeaderTip } from "@/components/common";
+import { BellGlyph, HeaderTip } from "@/components/common";
 import { useAccount } from "@/components/site/session-gate";
 import type { NotificationItem } from "@/lib/notifications";
 import { formatDateTime } from "@/lib/format";
@@ -31,14 +30,14 @@ export function NotificationBell({ data }: { data: { unreadCount: number; recent
     };
   }, [open]);
 
-  const icon = <Image src="/icons/alarm-bell.svg" alt="" width={42} height={42} />;
   // 툴팁 · 팝업 머리는 「내 알림」 — 플랫폼 계정이 BP 화면에 있어도 그 BP 가 아니라 로그인한 계정의 알림이라는 것을 글로 말한다(2026-11-13 사용자 지정)
+  // 동그라미는 CSS 테두리로 그린다 — 전엔 종 SVG 안의 원(preserveAspectRatio="none" · 0.5px 선)이라 브라우저 확대 · 화면 배율이 100% 가 아니면
+  // 한쪽이 얇게 찌그러져 보였다(2026-11-13 사용자 지적). 마우스를 올리거나 열리면 마이페이지 알약처럼 테두리만 회청으로 바뀐다.
+  const ring = `group relative grid size-[42px] shrink-0 place-items-center rounded-full border bg-white transition-colors duration-150 ${open ? "border-erp-brand" : "border-erp-field-line hover:border-erp-brand"}`;
   if (!data)
     return (
-      <Link href="/notifications" aria-label="내 알림" className="group relative shrink-0 rounded-full">
-        {icon}
-        {/* 마우스를 올리면 마이페이지 알약처럼 둥근 테두리가 회청으로 — 전엔 종 그림만 흐려졌다(2026-11-13 사용자 지정) */}
-        <span aria-hidden className="pointer-events-none absolute inset-0 rounded-full border border-erp-brand opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+      <Link href="/notifications" aria-label="내 알림" className={ring}>
+        <BellGlyph />
         <HeaderTip label="내 알림" />
       </Link>
     );
@@ -53,11 +52,10 @@ export function NotificationBell({ data }: { data: { unreadCount: number; recent
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((v) => !v)}
-        className="group relative block rounded-full"
+        className={ring}
       >
-        {icon}
-        <span aria-hidden className={`pointer-events-none absolute inset-0 rounded-full border border-erp-brand transition-opacity duration-150 ${open ? "opacity-100" : "opacity-0"} group-hover:opacity-100`} />
-        {/* 서비스 바로가기와 같은 툴팁(2026-10-29 사용자 지정). 팝오버가 열리면 그 아래에 깔린다. */}
+        <BellGlyph />
+        {/* 서비스 바로가기와 같은 툴팁(2026-10-29 사용자 지정). 팝오버가 열려 있으면 그리지 않는다 — 옆 마이페이지 툴팁도 AccountControls 가 감춘다. */}
         {!open && <HeaderTip label="내 알림" />}
         {badge && (
           // 숫자를 동그라미 한가운데에 — 전엔 테두리(2px × 2) · 좌우 여백(4px × 2)이 18px 안에서 숫자 칸을 6px 로 줄여 숫자가 오른쪽으로 비어져 나갔고,
@@ -75,8 +73,9 @@ export function NotificationBell({ data }: { data: { unreadCount: number; recent
         >
           {/* 머리 — 「내 알림 · 미확인 N건」 + 로그인한 사람 이름 꼬리표(알림 줄의 구분 꼬리표와 같은 모양) */}
           <p className="flex items-center gap-[8px] border-b border-erp-thead-line px-[16px] py-[12px] text-[14px] font-semibold">
-            내 알림 · 미확인 {data.unreadCount}건
-            <span className="rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] text-[12px] leading-[18px] font-normal text-erp-label">{account.name ?? account.loginId}</span>
+            <span className="shrink-0">내 알림 · 미확인 {data.unreadCount}건</span>
+            {/* 이름이 길면 꼬리표 안에서 말줄임 — 팝업 폭(400px)을 넘지 않게 */}
+            <span className="min-w-0 truncate rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] text-[12px] leading-[18px] font-normal text-erp-label">{account.name ?? account.loginId}</span>
           </p>
           {data.recent.length === 0 ? (
             <p className="px-[16px] py-[24px] text-center text-[14px] text-erp-muted">받은 알림이 없습니다.</p>
