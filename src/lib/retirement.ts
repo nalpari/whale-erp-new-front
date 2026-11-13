@@ -84,15 +84,15 @@ export function staleDayWarning(retiredDate: string, shownToday: string, serverT
 
 /**
  * 상세 머리의 퇴직 버튼. retire = 「퇴직 처리」, scheduled = 「퇴직일 변경」 · 「퇴직 처리 취소」, null = 없음.
- * 가입 완료 레코드에만, 「직원 정보 관리」 수정 권한이 있을 때만 보인다. 업무 범위 밖 직원은 상세 api 가 404 라 여기 오지 않는다.
+ * 재직이면 가입 전(초대 대기 · 초안 등) 레코드도 보인다 — api 가 가입 전 레코드의 퇴직 처리를 받는다(작성 중 근로계약만 있는 직원은 409 라 확인창 안에 문구로 보인다). 「직원 정보 관리」 수정 권한이 있을 때만 보인다. 업무 범위 밖 직원은 상세 api 가 404 라 여기 오지 않는다.
  * 변경 · 취소는 퇴직일 전날까지만 된다 — 당일부터는 배치가 돌 수 있어 api 가 409 다.
  */
 export function retirementActions(
-  staff: Pick<StaffMemberListItem, "joinState" | "employmentStatus" | "retiredDate">,
+  staff: Pick<StaffMemberListItem, "employmentStatus" | "retiredDate">,
   today: string,
   canUpdate: boolean,
 ): "retire" | "scheduled" | null {
-  if (!canUpdate || staff.joinState !== "JOINED" || staff.employmentStatus !== "EMPLOYED") return null;
+  if (!canUpdate || staff.employmentStatus !== "EMPLOYED") return null;
   if (!staff.retiredDate) return "retire";
   return staff.retiredDate > today ? "scheduled" : null;
 }
