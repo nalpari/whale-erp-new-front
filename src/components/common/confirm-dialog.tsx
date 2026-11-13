@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, type ReactNode } from "react";
 import { Button, type ButtonVariant } from "./button";
 
 const WIDTH = { base: "w-[420px]", wide: "w-[480px]", large: "w-[600px]" };
@@ -42,6 +42,11 @@ export function ConfirmDialog({
   // 한 화면에 확인창이 여럿 있어도(그룹 BP 적용 · 이동 확인 등) 제목 id 가 겹치지 않게 한다.
   const titleId = useId();
 
+  const openRef = useRef(open);
+  // 닫힘(close) 처리가 부모의 최신 open 을 보게 그린 직후 바로 맞춘다
+  useLayoutEffect(() => {
+    openRef.current = open;
+  }, [open]);
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
@@ -58,6 +63,13 @@ export function ConfirmDialog({
         e.preventDefault();
         if (!busy) onCancel();
       }}
+      // 사용자 동작 없이 뜬 창은 크롬이 Esc 막기를 무시하고 바로 닫는다(close watcher, Chrome 120~). 부모가 아직 열어 두면 다시 연다 —
+      // 닫힌 줄 모르면 다시 열지 못한다(「로그인 만료」 팝업이 그러면 화면이 멈춘 채 남는다). 부모가 닫는 중이면 다음 그리기에서 open 이 false 다
+      onClose={() =>
+        setTimeout(() => {
+          if (openRef.current && ref.current && !ref.current.open) ref.current.showModal();
+        })
+      }
       // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups).
       className={`m-auto max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40 ${
         wide === "large" ? WIDTH.large : wide ? WIDTH.wide : WIDTH.base
