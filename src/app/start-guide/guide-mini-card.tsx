@@ -12,7 +12,7 @@ import { GUIDE_STEPS, type GuideArrival, nextArrival, parseGuide, partsOnScreen 
 // 그 단계 칸의 화면(part.path · 이어 넘어가는 nextPaths)인 칸들을 보인다 — 화면 파일(1팀 · 3팀)은 건드리지 않는다.
 // 주소의 ?guide=<갈래>-<단계>(예: STORE-1)로 넘어올 때만 뜨고, 넘어온 화면을 기억해 그 화면에 있는 동안(검색 · 쪽 넘김으로 주소의 guide 가
 // 빠져도, 이어 넘어가는 화면에서도) 남는다. 그 단계와 상관없는 화면으로 가면 사라진다. 메뉴로 들어오면 뜨지 않는다. 판정은 lib(nextArrival)에 있다.
-// 바탕을 덮지 않아 펴 둔 채로 입력할 수 있다. 오른쪽에서 패널(464px)이 열리면 그 왼쪽으로 비켜 선다. 머리 줄을 끌어 옮길 수 있다.
+// 바탕을 덮지 않아 펴 둔 채로 입력할 수 있다. 오른쪽에서 패널(464px)이 열리면 그 왼쪽으로 비켜 선다. 머리 줄을 끌어 옮길 수 있고, 접은 알약도 끌어 옮긴다(2026-11-12).
 // 패널 바탕창(z-[5]) · 패널(z-10)보다 위(z-40)라 바탕창이 떠도 카드는 읽고 접을 수 있다 — 패널을 연 채 가이드를 보게 일부러 그렇다.
 // 모양은 떠 있는 것이라 팝업 그림자 하나(DESIGN.md Elevation), 꼬리표는 시작 가이드와 같은 포인트 파랑이다.
 
@@ -33,7 +33,7 @@ export function GuideMiniCardSlot() {
   // 넘어온 가이드 — 주소에서 guide 가 빠져도 그 단계의 화면에 있는 동안 남긴다(nextArrival)
   const [arrival, setArrival] = useState<GuideArrival>({ guide: null, seen: null });
   const [open, setOpen] = useState(true);
-  // 사용자가 머리 줄을 끌어 옮긴 자리(왼쪽 위 기준, px) — 없으면 오른쪽 아래 기본 자리(2026-11-11 사용자 지정)
+  // 사용자가 머리 줄 · 접은 알약을 끌어 옮긴 자리(왼쪽 위 기준, px) — 없으면 오른쪽 아래 기본 자리(2026-11-11 사용자 지정, 알약은 2026-11-12)
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const boxRef = useRef<HTMLElement>(null);
   const pillRef = useRef<HTMLButtonElement>(null);
@@ -50,10 +50,15 @@ export function GuideMiniCardSlot() {
     setArrival(next);
   }
 
-  // 옮긴 뒤 창을 줄이면 카드가 화면 밖에 갇혀 [접기] · [×]를 누를 수 없었다 — 창 크기가 바뀌면 머리 줄이 보이게 다시 붙잡는다(코드 리뷰)
+  // 옮긴 뒤 창을 줄이면 카드가 화면 밖에 갇혀 [접기] · [×]를 누를 수 없었다 — 창 크기가 바뀌면 머리 줄이 보이게 다시 붙잡는다(코드 리뷰).
+  // 접은 알약은 카드보다 좁아 카드 폭(420)으로 붙잡으면 오른쪽 끝 알약이 왼쪽으로 끌려 나와, 지금 보이는 쪽(카드 · 알약)의 실제 크기로 붙잡는다(PR 리뷰)
   useEffect(() => {
-    const clamp = () =>
-      setPos((p) => p && { left: Math.max(0, Math.min(p.left, window.innerWidth - CARD_WIDTH)), top: Math.max(0, Math.min(p.top, window.innerHeight - HEAD_HEIGHT)) });
+    const clamp = () => {
+      const pill = pillRef.current?.getBoundingClientRect();
+      const width = pill ? pill.width : CARD_WIDTH;
+      const height = pill ? pill.height : HEAD_HEIGHT;
+      setPos((p) => p && { left: Math.max(0, Math.min(p.left, window.innerWidth - width)), top: Math.max(0, Math.min(p.top, window.innerHeight - height)) });
+    };
     window.addEventListener("resize", clamp);
     return () => window.removeEventListener("resize", clamp);
   }, []);
@@ -61,20 +66,35 @@ export function GuideMiniCardSlot() {
   /** 접기 · 펼치기 뒤 포커스를 반대쪽 버튼으로 옮긴다 — 언마운트로 포커스가 body 로 빠지지 않게(공통 패널이 연 버튼으로 돌려주는 것과 같은 뜻, 코드 리뷰) */
   const toggle = (next: boolean) => {
     setOpen(next);
-    requestAnimationFrame(() => (next ? collapseRef : pillRef).current?.focus());
+    requestAnimationFrame(() => {
+      (next ? collapseRef : pillRef).current?.focus();
+      // 알약을 아래쪽으로 옮겨 둔 채 펼치면 카드가 화면 아래로 넘쳤다 — 펼친 카드 전체가 보이게 다시 붙잡는다
+      const box = next ? boxRef.current : null;
+      if (!box) return;
+      const rect = box.getBoundingClientRect();
+      setPos((p) => p && { left: Math.max(0, Math.min(p.left, window.innerWidth - rect.width)), top: Math.max(0, Math.min(p.top, window.innerHeight - rect.height)) });
+    });
   };
 
-  /** 머리 줄을 잡고 끌면 카드를 옮긴다 — 화면 가장자리 안에서만 움직인다. 머리 줄의 버튼([접기] · [×])을 누른 것은 끌기가 아니다 */
-  const handleDragStart = (e: React.PointerEvent<HTMLElement>) => {
-    if (e.button !== 0 || (e.target as HTMLElement).closest("button")) return;
-    const box = boxRef.current;
-    if (!box) return;
+  /** 알약 버튼을 끌어 옮겼으면 그 뒤에 오는 click 은 펼치기가 아니다 */
+  const draggedRef = useRef(false);
+
+  /**
+   * 잡고 끌면 카드(머리 줄) · 접은 알약 버튼을 옮긴다 — 화면 가장자리 안에서만 움직인다. 머리 줄의 버튼([접기] · [×])을 누른 것은 끌기가 아니다.
+   * 알약은 눌러 펼치기도 하므로 4px 넘게 움직였을 때만 끌기로 본다(접은 알약도 옮기게, 2026-11-12 사용자 지정)
+   */
+  const handleDragStart = (e: React.PointerEvent<HTMLElement>, box: HTMLElement | null) => {
+    if (e.button !== 0 || !box) return;
+    if (box !== e.currentTarget && (e.target as HTMLElement).closest("button")) return;
     const rect = box.getBoundingClientRect();
     const dx = e.clientX - rect.left;
     const dy = e.clientY - rect.top;
     const handle = e.currentTarget;
     handle.setPointerCapture(e.pointerId);
+    draggedRef.current = false;
     const move = (ev: PointerEvent) => {
+      if (!draggedRef.current && Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) < 4) return;
+      draggedRef.current = true;
       const left = Math.min(Math.max(ev.clientX - dx, 0), window.innerWidth - rect.width);
       const top = Math.min(Math.max(ev.clientY - dy, 0), window.innerHeight - rect.height);
       setPos({ left, top });
@@ -106,9 +126,16 @@ export function GuideMiniCardSlot() {
         ref={pillRef}
         type="button"
         aria-expanded={false}
-        onClick={() => toggle(true)}
+        title="누르면 펼치고, 끌면 옮길 수 있습니다"
+        onPointerDown={(e) => handleDragStart(e, e.currentTarget)}
+        onClick={(e) => {
+          // 키보드로 누른 click(detail 0)은 끌기와 상관없이 펼친다 — 머리 줄을 끈 뒤 접고 Enter 를 누르면 남은 끌기 표시 때문에 첫 번은 펼쳐지지 않았다(PR 리뷰)
+          const dragged = draggedRef.current && e.detail !== 0;
+          draggedRef.current = false;
+          if (!dragged) toggle(true);
+        }}
         style={placeStyle}
-        className={`fixed ${place} z-40 flex h-[40px] items-center gap-[8px] rounded-full border border-erp-brand bg-white px-[16px] text-[14px] font-medium text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-colors duration-150 ease-out hover:bg-erp-point-subtle`}
+        className={`fixed ${place} z-40 flex h-[40px] cursor-pointer touch-none items-center select-none gap-[8px] rounded-full border border-erp-brand bg-white px-[16px] text-[14px] font-medium text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-colors duration-150 ease-out hover:bg-erp-point-subtle`}
       >
         <span className="flex h-[20px] items-center rounded-full bg-erp-point-bg px-[8px] text-[11px] font-semibold text-erp-point">
           STEP {parsed.step}
@@ -126,7 +153,7 @@ export function GuideMiniCardSlot() {
     >
       {/* 머리 줄을 잡고 끌어 옮긴다(이동 커서) — touch-none 이라 터치로 끌어도 화면이 스크롤되지 않는다 */}
       <header
-        onPointerDown={handleDragStart}
+        onPointerDown={(e) => handleDragStart(e, boxRef.current)}
         title="끌어서 옮길 수 있습니다"
         className="flex h-[46px] shrink-0 cursor-move touch-none items-center gap-[8px] border-b border-erp-panel-line px-[16px] select-none"
       >

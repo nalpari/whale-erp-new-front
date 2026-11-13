@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { ICON_GRADIENT } from "./guest-ui";
 
-// 비로그인 화면들이 함께 쓰는 아이콘. 시안이 도형과 SVG 를 겹쳐 그린 것이라 같은 자리·크기로 겹친다.
+// 재고 아이콘(InventoryIcon)만 Figma 에서 받은 SVG 경로를 받고, 레시피 · 발주 아이콘은 그라데이션 · 유리판 조각으로 그린다(2026-11-12).
 // SVG 는 화면마다 Figma 에서 따로 받은 파일이라 경로를 받는다.
 
 export function InventoryIcon({ src }: { src: string }) {
@@ -12,32 +12,35 @@ export function InventoryIcon({ src }: { src: string }) {
   );
 }
 
-export function OrderIcon({ back, front }: { back: string; front: string }) {
+// 발주 관리 — 본사에서 자재를 싣고 오는 배송 트럭. 짐칸 옆에 유리판 주문서를 붙인다(2026-11-12 사용자 지정 — 전엔 편지 봉투라 메일처럼 읽혔다).
+export function OrderIcon() {
   return (
-    <span className="relative block h-[74px] w-[72px]">
-      <Image src={back} alt="" width={72.15} height={61.1035} className="absolute top-[12.89px] left-0 max-w-none" />
-      <span
-        className="absolute top-0 left-[10.31px] h-[64.75px] w-[51.27px] rounded-[9px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]"
-        style={{ backgroundImage: ICON_GRADIENT }}
-      />
-      <span className="absolute top-[14px] left-[21.2px] h-[2px] w-[29px] rounded-full bg-white/90" />
-      <span className="absolute top-[21px] left-[21.2px] h-[2px] w-[24px] rounded-full bg-white/60" />
-      <span className="absolute top-[28px] left-[21.2px] h-[2px] w-[17px] rounded-full bg-white/40" />
-      <Image src={front} alt="" width={72.15} height={40.7839} className="absolute top-[33.22px] left-0 max-w-none" />
+    <span className="relative block h-[74px] w-[76px]">
+      <span className="absolute top-[18px] left-0 h-[38px] w-[48px] rounded-[6px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]" style={{ backgroundImage: ICON_GRADIENT }} />
+      <span className="absolute top-[30px] left-[50px] h-[26px] w-[26px] rounded-[4px] rounded-tr-[12px] opacity-85" style={{ backgroundImage: ICON_GRADIENT }} />
+      <span className={`absolute top-[8px] left-[6px] h-[24px] w-[34px] rounded-[5px] ${GLASS}`} />
+      <span className="absolute top-[15px] left-[12px] h-[2px] w-[20px] rounded-full bg-[#3a6a96]" />
+      <span className="absolute top-[21px] left-[12px] h-[2px] w-[13px] rounded-full bg-[#3a6a96]/60" />
+      <span className="absolute top-[52px] left-[10px] size-[16px] rounded-full border-[3px] border-[#3a6a96] bg-white" />
+      <span className="absolute top-[52px] left-[54px] size-[16px] rounded-full border-[3px] border-[#3a6a96] bg-white" />
     </span>
   );
 }
 
-export function RecipeIcon({ bookmark }: { bookmark: string }) {
+// 레시피 관리 — 그릇 위 저울 눈금(유리판에 「120g」). 재료 사용량 · 맛의 기준을 숫자로 맞춘다는 뜻이다(2026-11-12 사용자 지정 — 전엔 + 상자와 책갈피라 무엇인지 읽히지 않았다).
+// 그릇 · 받침은 다른 아이콘과 같은 그라데이션, 눈금판은 유리판(GLASS) 위에 그라데이션 글자다(CalendarIcon 의 날짜와 같은 방식).
+export function RecipeIcon() {
   return (
-    <span className="relative block h-[74px] w-[68px]">
+    <span className="relative block h-[74px] w-[72px] font-[family-name:var(--font-inter)] leading-[normal] font-bold tracking-normal">
       <span
-        className="absolute top-0 left-[13.87px] h-[52.42px] w-[53.96px] rounded-[8.9px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]"
+        className="absolute top-[30px] left-[4px] h-[30px] w-[64px] rounded-t-[6px] rounded-b-[32px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]"
         style={{ backgroundImage: ICON_GRADIENT }}
       />
-      <Image src={bookmark} alt="" width={79.9233} height={83.7806} className="absolute top-[-1.21px] left-[-12.98px] max-w-none" />
-      <span className="absolute top-[30px] left-[19px] h-[2px] w-[17px] rounded-full bg-white/90" />
-      <span className="absolute top-[23px] left-[26.5px] h-[17px] w-[2px] rounded-full bg-white/90" />
+      <span className="absolute top-[64px] left-[12px] h-[8px] w-[48px] rounded-full opacity-70" style={{ backgroundImage: ICON_GRADIENT }} />
+      <span className={`absolute top-0 left-[14px] h-[34px] w-[44px] rounded-[8px] ${GLASS}`} />
+      <span className="absolute top-[9px] left-[14px] w-[44px] bg-clip-text text-center text-[13px] text-transparent" style={{ backgroundImage: ICON_GRADIENT }}>
+        120g
+      </span>
     </span>
   );
 }

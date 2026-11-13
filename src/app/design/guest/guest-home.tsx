@@ -3,23 +3,16 @@ import Link from "next/link";
 import { type CSSProperties, type ReactNode } from "react";
 import type { components } from "@/lib/api-types.generated";
 import type { GuestRoutes } from "./guest-routes";
-import { Arrow, FaqItem, GuestButton, GuestPage, SectionTitle, TRIM } from "./guest-ui";
+import { FaqItem, FloatingActions, GuestButton, GuestPage, SectionTitle, TRIM } from "./guest-ui";
 import { Badges, dotDate } from "./notices/notice-views";
 import { AttendanceMock, MOCK, MOCK_BUTTON, MockField, MockRow, StaffAppHomeMock, StoreCardMock } from "./screen-mocks";
-import { BUTTON_MOTION, FRAME, HOVER } from "./theme";
+import { FRAME, HOVER } from "./theme";
 
 // 카드 번호(01)는 따로 줄을 두지 않고 제목 앞에 연한 남색으로 붙인다(2026-11-10 사용자 지정).
 // 섹션 위아래 여백은 모두 100px 로 같다. 카드 제목 · 상자 머리 글자는 바탕색과 상관없이 남색, 섹션 제목만 먹색(2026-11-10 사용자 지정).
 
 // Figma 「로그인전_Main」(RQmNVgT2NL0njIFXVQPVG6 · 44:2, 로그인전_공유 — 2026-11-06 반영). 1920 폭 데스크톱 시안이다.
 // 실제 홈((site)/page.tsx)과 디자인 샘플(design/guest/page.tsx)이 함께 그린다. 링크는 받은 routes 로 건다(guest-routes.ts).
-
-const HIGHLIGHTS = [
-  { no: "01", title: "점포 1개 운영" },
-  { no: "02", title: "직원 5명 초대" },
-  { no: "03", title: "직원 전용 앱" },
-  { no: "04", title: "관리자 등록" },
-] as const;
 
 // 유료 부가서비스 — 오픈 전이라 판 안에서 아이콘 + 글자가 흐른다. 아이콘은 연한 남색 선(2026-11-10 사용자 지정).
 const PANEL_ICON = {
@@ -39,43 +32,35 @@ const ADD_ONS_SOON = [
   { icon: "recipe", title: "레시피 관리" },
 ] as const;
 
-// 아이콘은 부가서비스 판에만, 번호(01~04)와 칸 사이 세로선은 무료 판에만 둔다(2026-11-10 사용자 지정).
-function HeroPanel({ tag, items, soon = false }: { tag: string; items: readonly { icon?: keyof typeof PANEL_ICON; no?: string; title: string }[]; soon?: boolean }) {
-  const item = (it: (typeof items)[number], key: string, hidden = false) => (
-    <li key={key} aria-hidden={hidden || undefined} className={`flex items-center gap-[12px] ${soon ? "shrink-0 pr-[48px]" : "flex-1 border-l border-[rgba(130,151,168,0.3)] pl-[28px]"}`}>
-      {it.icon && (
-        <svg
-          aria-hidden
-          viewBox="0 0 48 48"
-          className="size-[24px] shrink-0 text-guest-navy-soft"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          dangerouslySetInnerHTML={{ __html: PANEL_ICON[it.icon] }}
-        />
-      )}
-      {it.no && <span className="-mr-[4px] text-guest-navy-soft">{it.no}</span>}
+// 첫 화면 아래 「부가서비스 순차 오픈」 줄 — 오픈 전 부가서비스가 아이콘 + 글자로 흐른다. 무료 판(번호 01~04)은 2026-11-12 떠 있는 띠로 옮겨 이 줄만 남았다.
+// 바탕 · 테두리 없이 글만 고래 배경 위에 둔다(2026-11-11 사용자 지정). 높이 76px · 좌우 28px 는 무료 판과 나란하던 때의 틀 그대로다.
+function AddOnTicker({ tag, items }: { tag: string; items: readonly { icon: keyof typeof PANEL_ICON; title: string }[] }) {
+  const item = (it: (typeof items)[number], key: string, hidden: boolean) => (
+    <li key={key} aria-hidden={hidden || undefined} className="flex shrink-0 items-center gap-[12px] pr-[48px]">
+      <svg
+        aria-hidden
+        viewBox="0 0 48 48"
+        className="size-[24px] shrink-0 text-guest-navy-soft"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        dangerouslySetInnerHTML={{ __html: PANEL_ICON[it.icon] }}
+      />
       {it.title}
     </li>
   );
-  // 두 판은 높이(76px)를 같게 고정한다 — 글자 크기가 달라 높이가 다르면 같은 24px 모서리도 다르게 둥글어 보였다(2026-11-10 사용자 지정).
-  // 무료 · 유료 두 판 모두 바탕 · 테두리 없이 글만 고래 배경 위에 둔다(2026-11-11 사용자 지정).
   return (
-    <div className={`flex h-[76px] items-center rounded-[24px] px-[28px]`}>
-      {/* 판 이름은 알약 띠지 대신 글자만 — 판 안에서 알약이 무거웠다(2026-11-10 사용자 지정). */}
-      <span className="w-[220px] shrink-0 text-[17px] leading-[1.5] font-bold text-guest-step">{tag}</span>
-      {soon ? (
-        // 부가서비스는 띠처럼 왼쪽으로 흐른다(2026-11-11 사용자 지정 — 전엔 사진 띠와 반대로 오른쪽) — 사진 띠와 같은 움직임(묶음 네 번, 절반 가면 처음과 같은 그림). 양 끝은 판 안에서 흐리게(2026-11-10 사용자 지정).
-        <div className="min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
-          <ul className="guest-photo-roll flex w-max items-center text-[17px] leading-[1.6] font-semibold text-guest-navy-soft" style={{ animationDuration: "30s" }}>
-            {[0, 1, 2, 3].map((round) => items.map((it) => item(it, `${round}-${it.title}`, round > 0)))}
-          </ul>
-        </div>
-      ) : (
-        <ul className="flex flex-1 items-center text-[22px] leading-[1.6] font-bold text-guest-navy">{items.map((it) => item(it, it.title))}</ul>
-      )}
+    <div className="flex h-[76px] items-center px-[28px]">
+      {/* 판 이름은 흐르는 부가서비스보다 눈에 덜 띄게 — 작은 테두리 꼬리표(14px 500 연한 회청)로 낮췄다. 전엔 17px 굵은 글자라 흐르는 항목보다 제목이 먼저 보였다(2026-11-12 사용자 지정). */}
+      <span className="mr-[24px] flex h-[28px] shrink-0 items-center rounded-full border border-[rgba(130,151,168,0.4)] px-[12px] text-[14px] leading-none font-medium text-guest-navy-soft">{tag}</span>
+      {/* 부가서비스는 띠처럼 왼쪽으로 흐른다(2026-11-11 사용자 지정 — 전엔 사진 띠와 반대로 오른쪽) — 사진 띠와 같은 움직임(묶음 네 번, 절반 가면 처음과 같은 그림). 양 끝은 판 안에서 흐리게(2026-11-10 사용자 지정). */}
+      <div className="min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
+        <ul className="guest-photo-roll flex w-max items-center text-[17px] leading-[1.6] font-semibold text-guest-navy-soft" style={{ animationDuration: "30s" }}>
+          {[0, 1, 2, 3].map((round) => items.map((it) => item(it, `${round}-${it.title}`, round > 0)))}
+        </ul>
+      </div>
     </div>
   );
 }
@@ -84,50 +69,48 @@ function HeroPanel({ tag, items, soon = false }: { tag: string; items: readonly 
 // 머리말 아래 빈 하늘 100px 를 잘라 1080 → 980 으로 줄였다(2026-11-09 사용자 지정).
 function Billboard() {
   return (
-    <section className="relative -mt-[110px] overflow-hidden pt-[210px] pb-[100px]">
+    <section className="relative -mt-[110px] overflow-hidden pt-[210px] pb-[24px]">
       <Image src="/guest/billboard-bg.png" alt="" fill loading="eager" sizes="100vw" className="object-cover" />
       {/* 정사각 그림을 시안 비율(677:375)로 늘여 채운 것이 시안이다 — object-cover 로 바꾸면 고래가 잘린다.
           시안의 2px 흐림은 너무 뿌옇다는 요청(2026-10-13)으로 뺐다.
           고래는 가운데에서 오른쪽으로 옮겨 왼쪽 슬로건 · 카피와 겹치지 않게 한다(2026-11-09 +200px → 2026-11-12 +250px, 사용자 지정). */}
-      {/* 메인 카피(왼쪽 글)와 겹치지 않게 고래를 오른쪽으로 더 보내고, 폭을 600px(좁은 창은 창의 44%)로 줄이고 조금 올려, 꼬리가 화면 끝에 · 지느러미가 아래 유리 띠에 잘리지 않게 한다(2026-11-12 사용자 지정 — 전엔 가운데 +200px · 677px 고정이라 1440 아래에서 설명 끝과 겹쳤다). */}
+      {/* 메인 카피(왼쪽 글)와 겹치지 않게 고래를 오른쪽으로 더 보내고, 폭을 600px(좁은 창은 창의 44%)로 줄이고 조금 올려, 꼬리가 화면 끝에 잘리지 않게 한다(아래 부가서비스 줄 밑 120px 녹임이 지느러미 끝에 살짝 겹치지만 거의 투명한 쪽이다)(2026-11-12 사용자 지정 — 전엔 가운데 +200px · 677px 고정이라 1440 아래에서 설명 끝과 겹쳤다). */}
       <div className="guest-whale absolute top-[380px] left-[max(calc(50%+250px),960px)] aspect-[677/375] w-[min(600px,44vw)] -translate-1/2">
         <Image src="/guest/billboard-whale.png" alt="" fill loading="eager" sizes="(max-width: 1363px) 44vw, 600px" />
       </div>
-      {/* 높이를 980px 로 고정하지 않고 글 묶음 높이에 맞춘다 — 머리말(110px) 아래 위 여백 100px · 아래 여백 100px 로 다른 섹션과 같게(2026-11-10 사용자 지정). */}
+      {/* 구름 사진 아래쪽을 아래 「사장님은」 구역 바탕(guest-surface)으로 녹여 경계선이 생기지 않게 한다(2026-11-12 사용자 지정) */}
+      <span aria-hidden className="absolute inset-x-0 bottom-0 h-[120px] bg-gradient-to-b from-transparent to-guest-surface" />
+      {/* 높이를 980px 로 고정하지 않고 글 묶음 높이에 맞춘다 — 머리말(110px) 아래 위 여백 100px · 아래 여백 24px(2026-11-12 100px 에서 줄임 — 아래 「사장님은」 구역 위 여백과 더해져 너무 비었다). */}
       <div className="relative">
-        {/* 가로 틀은 아래 섹션과 같은 FRAME — 글 · 띠지 · 네 칸의 왼쪽 시작선을 아래 섹션 제목과 맞춘다(2026-11-09 사용자 지정). */}
+        {/* 가로 틀은 아래 섹션과 같은 FRAME — 글 · 부가서비스 줄의 왼쪽 시작선을 아래 섹션 제목과 맞춘다(2026-11-09 사용자 지정). */}
         <div className={`${FRAME} flex flex-col gap-[80px]`}>
           <div className="flex items-end justify-between">
             <div className="flex w-[445px] flex-col gap-[48px]">
-              {/* 영문 WHALE ERP 자리에 슬로건(윗줄 44px · 아랫줄 64px — 「매장 통합관리 서비스」로 길어져 1260 창에서 고래에 겹치지 않게 86px 에서 줄였다, 2026-11-12 사용자 지정). 한글은 REM 글꼴에 없어 기본 글꼴(Pretendard) 800 으로 그린다.
+              {/* 영문 WHALE ERP 자리에 슬로건(윗줄 · 아랫줄은 1260 창 44 · 64px 에서 넓은 창 48 · 76px 까지 창에 맞춰 커진다 — 「매장 통합관리 서비스」로 길어져 고래에 겹치지 않게 86px 에서 줄였다가, 키 메시지라 넓은 창에서는 다시 키웠다, 2026-11-12 사용자 지정). 한글은 REM 글꼴에 없어 기본 글꼴(Pretendard) 800 으로 그린다.
                   칸(445px)보다 넓은 줄은 w-max 로 상자를 글자 폭만큼 넓혀야 그라데이션이 끝 글자까지 칠해진다. 큰 글자는 글자 앞 여백도 커서 안으로 들어가 보여 음수 여백(-0.05em · -0.03em)으로 아래 줄 시작선에 맞춘다.
                   글자 칠은 배경을 글자 모양으로 오린 것이라 TRIM 으로 줄 상자를 대문자 높이까지 깎으면 한글 위아래가 잘려,
                   이 두 줄만 TRIM 없이 줄 높이로 간격을 둔다(2026-11-09 사용자 지정). */}
               <p className="flex flex-col gap-[4px] font-extrabold text-transparent">
-                <span className="-ml-[0.03em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.9)] to-[rgba(58,86,112,0.55)] bg-clip-text text-[44px] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">
+                <span className="-ml-[0.03em] w-max bg-gradient-to-r from-[#2c4459] via-guest-navy to-[#6a92b6] bg-clip-text text-[clamp(44px,2.8vw,48px)] leading-[1.3] tracking-[-0.025em] whitespace-nowrap">
                   식당·카페 사장님을 위한
                 </span>
-                <span className="-ml-[0.05em] w-max bg-gradient-to-r from-[rgba(58,86,112,0.9)] to-[rgba(58,86,112,0.55)] bg-clip-text text-[64px] leading-[1.25] tracking-[-0.025em] whitespace-nowrap">
+                <span className="-ml-[0.05em] w-max bg-gradient-to-r from-[#2c4459] via-guest-navy to-[#6a92b6] bg-clip-text text-[clamp(64px,4.4vw,76px)] leading-[1.25] tracking-[-0.025em] whitespace-nowrap">
                   매장 통합관리 서비스
                 </span>
               </p>
-              {/* 글자색은 세 단계만(2026-11-12 사용자 지정 — 남색이 여섯 가지라 정신없었다): ① 진한 남색 = 슬로건 · 무료 네 항목, ② 중간 회청(guest-step) = 설명 · 판 이름,
-                  ③ 연한 회청(guest-navy-soft) = 번호 · 부가서비스. 슬로건 두 줄은 같은 그라데이션(90%→55%)으로 맞췄다. */}
+              {/* 글자색은 세 단계만(2026-11-12 사용자 지정 — 남색이 여섯 가지라 정신없었다): ① 진한 남색 = 슬로건, ② 중간 회청(guest-step) = 설명,
+                  ③ 연한 회청(guest-navy-soft) = 부가서비스 줄(꼬리표 · 항목). 슬로건 두 줄은 같은 그라데이션 — 진한 남색(#2c4459) → 남색 → 맑은 강철 파랑(#6a92b6)(2026-11-12 키 메시지라 흐리던 90%→55% 투명도 대신 같은 계열 색으로 넘어가 또렷하면서 그라데이션이 보이게)으로 맞추고, 크기는 창에 맞춰 1260 창 44 · 64px 에서 넓은 창 48 · 76px 까지 커진다(고래와 겹치지 않는 선). 설명은 600. */}
               {/* 「복잡한 매장 운영, WHALE ERP 하나로 쉬워집니다」 줄은 뺐다 — 큰 제목 「매장 통합관리 서비스」와 말이 겹쳤다. 남은 설명은 한 단계 키워 18px 500 으로 둔다(2026-11-12 사용자 지정). */}
-              <p className={`text-[18px] leading-[1.6] font-medium whitespace-nowrap text-guest-step ${TRIM}`}>
+              <p className={`text-[18px] leading-[1.6] font-semibold whitespace-nowrap text-guest-step ${TRIM}`}>
                 직원 계약 · 근무표 · 급여부터 매출 · 재무, 가맹점 관리까지
                 <br />
                 여러 서비스를 따로 쓸 필요 없이 WHALE ERP 하나로 관리하세요.
               </p>
             </div>
-            {/* 첫 화면의 [무료로 시작하기] · [도입문의] 버튼은 뺐다 — 머리말에 도입문의 · 로그인이 있고, 아래 「시작 방법」에 회원가입 버튼이 있다(2026-11-11 사용자 지정). */}
+            {/* 첫 화면의 [무료로 시작하기] · [도입문의] 버튼은 뺐다 — 머리말에 도입문의 · 로그인이 있고, 화면 아래 떠 있는 [무료로 시작] 띠가 회원가입으로 이어진다(2026-11-11 사용자 지정). */}
           </div>
-          {/* 가입 즉시 무료 이용 · 부가서비스 — 같은 반투명 흰 판 두 장을 같은 틀(띠지 칸 220px + 네 칸)로 쌓아, 아래 칸이 위 칸과 세로로 맞는다.
-              부가서비스는 오픈 전이라 글자를 17px 연한 남색으로 줄여 무료보다 한 단계 작게 둔다. 판 높이 · 모서리 · 띠지는 같게 — 판만 낮추면 둥근 모서리가 달라 보였다(2026-11-10 사용자 지정). */}
-          <div className="flex flex-col gap-[12px]">
-            <HeroPanel tag="가입 즉시 무료 이용" items={HIGHLIGHTS} />
-            <HeroPanel tag="유료 부가서비스 순차 오픈" items={ADD_ONS_SOON} soon />
-          </div>
+          {/* 「가입 즉시 무료 이용」 줄은 아래 떠 있는 띠(FloatingActions)로 옮겼다 — 스크롤해도 늘 보이고 바로 [무료로 시작]으로 이어진다(2026-11-12 사용자 지정). */}
+          <AddOnTicker tag="부가서비스 순차 오픈" items={ADD_ONS_SOON} />
         </div>
       </div>
     </section>
@@ -149,7 +132,7 @@ const PERSONAS = [
   {
     head: "여러 매장을 운영해요",
     photo: "/guest/home/photos/staff-laptop.jpg",
-    pitch: "여러 매장의 운영 현황을 한눈에",
+    pitch: "여러 매장을 하나로 통합 운영",
     features: ["매장별 매출을 한눈에 비교", "매장별 입출금 내역을 한곳에서 확인", "점장별 업무 권한을 간편하게 설정"],
     cta: " 자세히 보기",
     service: "재무관리",
@@ -406,7 +389,7 @@ function Steps({ routes }: { routes: GuestRoutes }) {
     <section className="flex flex-col gap-[60px] bg-guest-surface py-[100px]">
       {/* 제목 바로 아래 작은 안내 — 시작 절차는 매장 유형(직영 · 가맹 등)에 따라 다를 수 있다(2026-11-10 사용자 지정). */}
       <div className={`${FRAME} flex flex-col gap-[16px]`}>
-        {/* 오른쪽 [사업자 회원가입하기] 버튼은 뺐다 — 화면 아래 떠 있는 [무료로 시작하기]가 같은 일을 한다(2026-11-11 사용자 지정). */}
+        {/* 오른쪽 [사업자 회원가입하기] 버튼은 뺐다 — 화면 아래 떠 있는 [무료로 시작]이 같은 일을 한다(2026-11-11 사용자 지정). */}
         <SectionTitle oneLine light="우리 매장," bold="어떻게 시작하면 될까요?" />
         {/* 느낌표 안내 두 곳(매장 유형 아래 · 시작 방법 아래)은 같은 크기 — 16px 본문색 · 아이콘 18px(남색 원 그림) · 간격 8px(2026-11-11 · 아이콘 2026-11-12 사용자 지정). */}
         <p className="flex items-center gap-[8px] text-[16px] leading-[1.5] text-guest-body">
@@ -527,35 +510,6 @@ function Boards({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | n
 }
 
 /** faq · news 는 「가장 많이 묻는 질문」 · 「새로운 소식」 칸에 넣을 목록(HomeFaqList · HomeNewsList)이다. 실제 홈은 api 에서, 샘플은 예시로 채운다. */
-// 화면 아래에 늘 떠 있는 [무료로 시작하기] · [도입문의] — 페이히어 소개의 아래 상담 띠처럼 스크롤해도 따라온다(2026-11-11 사용자 지정).
-// 짙은 남색 반투명 판(뒤 화면이 비친다 · 흐림 처리) 왼쪽에 한 줄 안내, 오른쪽에 두 버튼. 떠 있는 것이라 옅은 그림자를 준다.
-function FloatingActions({ routes }: { routes: GuestRoutes }) {
-  return (
-    <div className="guest-floating pointer-events-none fixed inset-x-0 bottom-[24px] z-30 flex justify-center">
-      <div className="pointer-events-auto flex items-center gap-[40px] rounded-[20px] bg-[rgba(28,38,48,0.7)] py-[14px] pr-[14px] pl-[32px] shadow-[0_12px_32px_rgba(28,38,48,0.25)] backdrop-blur-[2px]">
-        <p className="text-[18px] leading-[1.5] font-semibold text-white">
-          <span className="text-[#9cc3ff]">가입 즉시 무료</span> <span className="mx-[6px] text-white/50">·</span> 우리 매장 관리를 시작해 보세요.
-        </p>
-        <div className="flex gap-[8px]">
-          <Link
-            href={routes.signUp}
-            className={`flex h-[60px] items-center justify-center gap-[10px] rounded-[12px] bg-white px-[36px] text-[19px] leading-[1.5] font-semibold text-guest-navy hover:bg-[#e9eef3] ${BUTTON_MOTION}`}
-          >
-            무료로 시작하기
-            <Arrow />
-          </Link>
-          <Link
-            href={routes.leads}
-            className={`flex h-[60px] items-center justify-center rounded-[12px] border border-white/50 px-[36px] text-[19px] leading-[1.5] font-semibold text-white hover:bg-white/15 ${BUTTON_MOTION}`}
-          >
-            도입문의
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function GuestHome({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | null; news: ReactNode | null }) {
   return (
     // 맨 아래 구역(회색 바탕)이 푸터에 바로 붙는 시안이라 본문 아래 60px 여백(GuestPage 기본)을 두지 않는다.

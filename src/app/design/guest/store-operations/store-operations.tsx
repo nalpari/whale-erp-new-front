@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { AttendanceMock, ContractMock, FacilityDetailMock, StaffAppHomeMock, StaffAppSignMock, StoreDetailMock } from "../screen-mocks";
-import { GuestPage } from "../guest-ui";
+import type { GuestRoutes } from "../guest-routes";
+import { FloatingActions, GuestPage } from "../guest-ui";
 import { IntroFeaturesSticky, type StickyFeature } from "../intro-features-sticky";
 import { IntroMoments, IntroTimeline, type Moment } from "../intro-sections";
 
@@ -155,13 +156,16 @@ const FLOW = [
   },
 ];
 
-export function StoreOperations() {
+export function StoreOperations({ routes }: { routes: GuestRoutes }) {
   return (
     // 맨 아래 흐름 구역(흰 바탕)이 푸터에 바로 붙어 본문 아래 60px 여백을 두지 않는다.
     <GuestPage flush>
       <IntroMoments light="사장님," bold="이런 순간 있으셨죠?" items={MOMENTS} />
       <IntroFeaturesSticky light="매장운영," bold="이렇게 달라집니다" items={FEATURES} />
-      <IntroTimeline light="직원 초대부터 월급날까지," bold="끊김 없이" steps={FLOW} />
+      {/* 흐름 구역 제목 — 「직원 초대부터 월급날까지, 끊김 없이」에서 직원의 「첫」으로 시작해 서비스 이름으로 끝맺게 바꿨다(2026-11-12 사용자 지정) */}
+      <IntroTimeline light="첫 출근부터 첫 월급까지," bold="WHALE ERP 하나로" steps={FLOW} />
+      {/* 홈과 같은 무료 가입 띠를 아래에 띄운다(2026-11-12 사용자 지정) */}
+      <FloatingActions routes={routes} />
     </GuestPage>
   );
 }

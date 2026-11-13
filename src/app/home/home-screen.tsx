@@ -11,13 +11,21 @@ import { bpPath } from "@/lib/bp-path";
 import type { SupportPostList } from "@/lib/community";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { HOME, menuOfPath } from "@/lib/menus";
-import { formatAt } from "@/lib/notification-view";
 import { kstToday } from "@/lib/staff-members";
 import { withScope } from "@/lib/store-scope";
 import { isPlatformRole } from "@/lib/auth-routes";
 import { useApi, useLoad } from "@/lib/use-load";
 import { DEFAULT_TODO_LIST_QUERY, toTodoListSearch } from "../todos/todo-list-query";
 import { homeSearchOf, latestNotices, NOTICES_PATH, pendingLineOf, type HomePending, type HomeSummary } from "./home-view";
+
+const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"] as const;
+
+/** 홈 「기준」 시각 — 한국 시간 2026-11-12(목) 13:07. 연도 · 요일까지 보인다(2026-11-12 사용자 지정, 전엔 알림과 같은 11-12 13:07) */
+function formatAsOf(iso: string): string {
+  const kst = new Date(new Date(iso).getTime() + 9 * 60 * 60 * 1000);
+  const at = kst.toISOString();
+  return `${at.slice(0, 10)}(${WEEKDAYS[kst.getUTCDay()]}) ${at.slice(11, 16)}`;
+}
 
 const CARD = "rounded-[4px] border border-erp-panel-line bg-white";
 
@@ -145,7 +153,7 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
     <>
       <PageBar title={greeting} titleSize="sentence">
         <div className="flex items-center gap-[10px]">
-          {asOf && <span className="text-[13px] text-erp-label">{formatAt(asOf)} 기준</span>}
+          {asOf && <span className="text-[13px] text-erp-label">{formatAsOf(asOf)} 기준</span>}
           <button
             type="button"
             aria-label="다시 불러오기"
