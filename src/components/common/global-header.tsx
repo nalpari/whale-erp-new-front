@@ -180,7 +180,7 @@ export function AlarmLink({ href }: { href: string }) {
   return (
     <Link href={href} aria-label="내 알림" className="group relative grid size-[42px] shrink-0 place-items-center rounded-full border border-erp-field-line bg-white transition-colors duration-150 hover:border-erp-brand">
       <BellGlyph />
-      <span aria-hidden className="absolute top-[9px] right-[12px] size-[7px] rounded-full border-[1.5px] border-white bg-[#ff0000]" />
+      <span aria-hidden className="absolute top-[9px] right-[12px] size-[7px] rounded-full border border-white bg-erp-off" />
       <HeaderTip label="내 알림" />
     </Link>
   );

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { BellGlyph, HeaderTip } from "@/components/common";
 import { useAccount } from "@/components/site/session-gate";
+import { usePlatformOpen } from "./use-platform-open";
 import type { NotificationItem } from "@/lib/notifications";
 import { formatDateTime } from "@/lib/format";
 import { badgeText } from "@/lib/notification-view";
@@ -16,6 +17,7 @@ export function NotificationBell({ data }: { data: { unreadCount: number; recent
   const root = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const account = useAccount();
+  const platformOpen = usePlatformOpen(() => setOpen(false));
 
   useEffect(() => {
     if (!open) return;
@@ -85,7 +87,7 @@ export function NotificationBell({ data }: { data: { unreadCount: number; recent
                 <li key={n.id} className="border-b border-erp-thead-line last:border-b-0">
                   {/* prefetch 가 읽음을 일으키지 않게 <a> 로 건다. */}
                   {/* 왼쪽 · 오른쪽 여백을 같은 16px 로 — 전엔 점 자리(6 + 10px)를 늘 비워 둬 왼쪽만 넓었다. 빨간 점은 안 읽은 알림 제목 앞에만 붙는다(2026-11-06 사용자 지정) */}
-                  <a href={`/notifications/${n.id}/open`} className="block px-[16px] py-[12px] hover:bg-erp-thead-bg">
+                  <a href={`/notifications/${n.id}/open`} onClick={(e) => platformOpen(e, n)} className="block px-[16px] py-[12px] hover:bg-erp-thead-bg">
                     <span className="block min-w-0">
                       {/* 제목은 읽어도 먹색 — 흐리면 막힌 글처럼 보였다. 안 읽은 것만 굵게 + 빨간 점. 내용은 14px 회색 한 줄(행마다 제목 · 내용 · 아래 줄 세 줄),
                           아래 줄은 「연-월-일 시:분 · 구분(템플릿 이름)」 13px — 관련 업무 번호(#30)는 내부 번호라 뺐다(2026-11-06 사용자 지정, A안) */}
