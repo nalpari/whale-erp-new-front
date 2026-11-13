@@ -60,7 +60,8 @@ export function ScopeSelect({
         />
       </button>
       {/* 선택칸이 둥글어 목록도 모서리를 키우고(StoreSelect 와 같다), 그림자는 fold 전환의 clip-path 여유 안에 들어가게 작게 둔다. */}
-      <Popup id={id} open={open} motion="fold" className="left-0 w-[304px] rounded-[12px]! border-erp-field-line! p-[6px]! shadow-[0_2px_6px_rgba(40,47,55,0.08)]">
+      {/* 펼침 목록은 위 선택칸과 같은 폭(420px) — 304px 라 오른쪽 끝이 칸과 어긋났고 긴 점포명이 잘렸다(2026-11-13 사용자 지정) */}
+      <Popup id={id} open={open} motion="fold" className="left-0 w-[420px] rounded-[12px]! border-erp-field-line! p-[6px]! shadow-[0_2px_6px_rgba(40,47,55,0.08)]">
         {/* 검색 줄 높이는 목업(pop__search · 36.5px)에 맞춘다 — 위 6 · 아래 8 여백, 입력칸 줄 높이 1.5 + 위아래 1px */}
         <div className="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[10px] pt-[6px] pb-[8px]">
           <Image src="/icons/search.svg" alt="" width={14} height={14} />

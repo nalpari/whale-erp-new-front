@@ -89,7 +89,7 @@ function scopeDropdown(A) {
   return `<div class="relative flex-1">${trigger}${ui.popup(
     id,
     "fold",
-    "left-0 w-[304px] rounded-[12px]! border-erp-field-line! p-[6px]! shadow-[0_2px_6px_rgba(40,47,55,0.08)]",
+    "left-0 w-[420px] rounded-[12px]! border-erp-field-line! p-[6px]! shadow-[0_2px_6px_rgba(40,47,55,0.08)]",
     `${search}<div class="max-h-[328px] overflow-y-auto" data-scope-list>${list}<p class="hidden px-[12px] py-[14px] text-center text-[13px] text-erp-label" data-scope-none>맞는 점포가 없습니다.</p></div>`,
   )}</div>`;
 }
