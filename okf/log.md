@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-13
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 저장 뒤 안내 쿠키를 path `/` · 이름 `contract-saved-{bpCodeId}` 로 바꿨다. 직원 정보 관리 [직원 초대]로 들어와 임시저장 · 서명 요청하면 목록에 안내 띠가 뜨지 않던 것(WHALEERP-697 — 처음 연 문서 주소 밖 path 의 쿠키가 소프트 이동 뒤 `document.cookie` 에 보이지 않음, front shuckle).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 세션 없는 요청 통과를 화면 주소로 온 POST 서버 액션으로 좁혔다. `next-action` 헤더 · login-key 쿠키를 꾸민 GET 이 로그인 없이 화면을 그리던 것, fetch 창구까지 통과시키던 것(PR #256 적대적 리뷰).
 * **Update**: [출퇴근 현황 화면](/screens/attendance-records.md) · [Whale ERP Frontend](/whale-erp-front.md) — 통합테스트 반영: 출퇴근 대신 등록은 날짜를 바꿔도 고른 직원을 유지(IT-ATT-003), 근로계약 상세 재발송 완료 토스트(IT-CONT-006)(front wobbuffet).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 값이 틀린 입력칸의 빨간 테두리를 없앴다(공통 `FIELD_BOX` 의 `aria-invalid:border-erp-off` 제거, 점포유형 카드 빨간 테두리 제거). 칸 아래 빨간 문구만 — DESIGN.md 「오류 문구 자리」대로(통합테스트 IT-STORE-002, front togedemaru).
