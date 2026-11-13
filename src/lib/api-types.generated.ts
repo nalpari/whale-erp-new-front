@@ -2932,6 +2932,81 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/facilities/bulk-template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 엑셀 일괄 등록 양식(PL-7). 첫 시트에 24칸 · 드롭다운, 둘째 시트에 범위 안 열린 점포. 일괄 등록 네 경로는 모두 등록
+         *     권한이고 `:id` 보다 먼저 둔다. 파일은 서버에 남기지 않는다 — 미리보기 · 오류 파일 · 등록마다 같은 파일을 다시 보낸다.
+         */
+        get: operations["FacilitiesController_bulkTemplate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/facilities/bulk-validations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 일괄 등록 미리보기 — 올린 파일을 검사해 줄마다 결과 · 보일 글자 · 오류 사유. 저장하지 않는다. */
+        post: operations["FacilitiesController_bulkValidations"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/facilities/bulk-error-file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 일괄 등록 오류 파일 — 올린 파일 끝에 「오류 사유」 열을 더해 돌려준다(이름 「올린파일이름_오류.xlsx」). 오류 줄이 없으면 400. */
+        post: operations["FacilitiesController_bulkErrorFile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/facilities/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 일괄 등록 — 같은 검사를 다시 하고, 오류가 한 줄이라도 있으면 하나도 저장하지 않고 400. 모두 정상이면 한 트랜잭션.
+         *     미리보기 뒤 등록 요청 전에 점포가 폐점 · 삭제되거나 공통코드가 미사용이 됐으면 줄 오류로 400, 검사 뒤 넣기 직전에
+         *     점포가 폐점 · 삭제됐으면 점포 변경 문구로 400 이다 — 화면은 미리보기를 다시 받는다.
+         */
+        post: operations["FacilitiesController_bulkRegister"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/facilities/{id}": {
         parameters: {
             query?: never;
@@ -4571,81 +4646,6 @@ export interface paths {
         get: operations["HomeController_pending"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/facilities/bulk-template": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * 엑셀 일괄 등록 양식(PL-7). 첫 시트에 24칸 · 드롭다운, 둘째 시트에 범위 안 열린 점포. 일괄 등록 네 경로는 모두 등록
-         *     권한이고 `:id` 보다 먼저 둔다. 파일은 서버에 남기지 않는다 — 미리보기 · 오류 파일 · 등록마다 같은 파일을 다시 보낸다.
-         */
-        get: operations["FacilitiesController_bulkTemplate"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/facilities/bulk-validations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** 일괄 등록 미리보기 — 올린 파일을 검사해 줄마다 결과 · 보일 글자 · 오류 사유. 저장하지 않는다. */
-        post: operations["FacilitiesController_bulkValidations"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/facilities/bulk-error-file": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** 일괄 등록 오류 파일 — 올린 파일 끝에 「오류 사유」 열을 더해 돌려준다(이름 「올린파일이름_오류.xlsx」). 오류 줄이 없으면 400. */
-        post: operations["FacilitiesController_bulkErrorFile"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/facilities/bulk": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * 일괄 등록 — 같은 검사를 다시 하고, 오류가 한 줄이라도 있으면 하나도 저장하지 않고 400. 모두 정상이면 한 트랜잭션.
-         *     미리보기 뒤 등록 요청 전에 점포가 폐점 · 삭제되거나 공통코드가 미사용이 됐으면 줄 오류로 400, 검사 뒤 넣기 직전에
-         *     점포가 폐점 · 삭제됐으면 점포 변경 문구로 400 이다 — 화면은 미리보기를 다시 받는다.
-         */
-        post: operations["FacilitiesController_bulkRegister"];
         delete?: never;
         options?: never;
         head?: never;
@@ -8922,6 +8922,64 @@ export interface components {
         FacilityManagerOptionListResponseDto: {
             items: components["schemas"]["FacilityManagerOptionDto"][];
         };
+        BulkPreviewColumnDto: {
+            /**
+             * @description rows[].values 의 키
+             * @example storeName
+             */
+            key: string;
+            /**
+             * @description 열 이름
+             * @example 점포
+             */
+            label: string;
+        };
+        BulkPreviewRowDto: {
+            /**
+             * @description 열 키 → 화면에 보일 글자(코드가 아니라 한글 · 점포명). 키는 columns[].key 와 같은 집합이고, 빈 칸은 빈 글자
+             * @example {
+             *       "storeName": "성수점",
+             *       "name": "제빙기"
+             *     }
+             */
+            values: {
+                [key: string]: string;
+            };
+            /**
+             * @description 엑셀 행 번호(머리글이 1행이라 2부터, 줄마다 다르다)
+             * @example 3
+             */
+            rowNumber: number;
+            /** @description errors 가 비었으면 true */
+            isValid: boolean;
+            /**
+             * @description 「칸 이름: 사유」 목록(칸 순서) — 정상 줄은 빈 배열
+             * @example [
+             *       "분류: 「점포 장비」에 없는 분류입니다."
+             *     ]
+             */
+            errors: string[];
+        };
+        BulkPreviewResponseDto: {
+            /** @description 올린 파일 이름 */
+            fileName: string;
+            /** @description 내용이 있는 줄 수 */
+            totalCount: number;
+            /** @description 오류 없는 줄 수 */
+            validCount: number;
+            /** @description 오류 있는 줄 수 */
+            errorCount: number;
+            /** @description 표에 보일 열 — 자원마다 다르다 */
+            columns: components["schemas"]["BulkPreviewColumnDto"][];
+            rows: components["schemas"]["BulkPreviewRowDto"][];
+        };
+        BulkCreateResponseDto: {
+            /**
+             * @description 등록한 건수
+             * @example 12
+             */
+            createdCount: number;
+        };
         FacilityStoreDto: {
             storeId: number;
             storeCode: string;
@@ -9037,7 +9095,7 @@ export interface components {
             /** @description 구매처 — 100자 */
             vendorName?: string | null;
             /**
-             * @description 구매처 전화번호 — 숫자 9~12자리. 하이픈은 떼고 받는다
+             * @description 구매처 전화번호 — 숫자 9~12자리 또는 15xx·16xx·18xx 대표번호 8자리. 하이픈은 떼고 받는다
              * @example 0212345678
              */
             vendorPhone?: string | null;
@@ -9085,7 +9143,7 @@ export interface components {
             serviceCenterAddress?: string | null;
             /** @description A/S센터 상세주소 — 100자 */
             serviceCenterAddressDetail?: string | null;
-            /** @description A/S센터 전화번호 — 숫자 9~12자리 */
+            /** @description A/S센터 전화번호 — 숫자 9~12자리 또는 15xx·16xx·18xx 대표번호 8자리. 하이픈은 떼고 받는다 */
             serviceCenterPhone?: string | null;
         };
         CreateFacilityResponseDto: {
@@ -9118,7 +9176,7 @@ export interface components {
             /** @description 구매처 — 100자 */
             vendorName?: string | null;
             /**
-             * @description 구매처 전화번호 — 숫자 9~12자리. 하이픈은 떼고 받는다
+             * @description 구매처 전화번호 — 숫자 9~12자리 또는 15xx·16xx·18xx 대표번호 8자리. 하이픈은 떼고 받는다
              * @example 0212345678
              */
             vendorPhone?: string | null;
@@ -9166,7 +9224,7 @@ export interface components {
             serviceCenterAddress?: string | null;
             /** @description A/S센터 상세주소 — 100자 */
             serviceCenterAddressDetail?: string | null;
-            /** @description A/S센터 전화번호 — 숫자 9~12자리 */
+            /** @description A/S센터 전화번호 — 숫자 9~12자리 또는 15xx·16xx·18xx 대표번호 8자리. 하이픈은 떼고 받는다 */
             serviceCenterPhone?: string | null;
         };
         UpdateFacilityResponseDto: {
@@ -11447,64 +11505,6 @@ export interface components {
             platform: boolean;
             /** @description 건수가 0인 유형과 권한이 없는 유형은 뺀다. 순서는 갱신 예정 → 계약 → 직원 → 문의 → TO-DO */
             items: components["schemas"]["HomePendingItemDto"][];
-        };
-        BulkPreviewColumnDto: {
-            /**
-             * @description rows[].values 의 키
-             * @example storeName
-             */
-            key: string;
-            /**
-             * @description 열 이름
-             * @example 점포
-             */
-            label: string;
-        };
-        BulkPreviewRowDto: {
-            /**
-             * @description 열 키 → 화면에 보일 글자(코드가 아니라 한글 · 점포명). 키는 columns[].key 와 같은 집합이고, 빈 칸은 빈 글자
-             * @example {
-             *       "storeName": "성수점",
-             *       "name": "제빙기"
-             *     }
-             */
-            values: {
-                [key: string]: string;
-            };
-            /**
-             * @description 엑셀 행 번호(머리글이 1행이라 2부터, 줄마다 다르다)
-             * @example 3
-             */
-            rowNumber: number;
-            /** @description errors 가 비었으면 true */
-            isValid: boolean;
-            /**
-             * @description 「칸 이름: 사유」 목록(칸 순서) — 정상 줄은 빈 배열
-             * @example [
-             *       "분류: 「점포 장비」에 없는 분류입니다."
-             *     ]
-             */
-            errors: string[];
-        };
-        BulkPreviewResponseDto: {
-            /** @description 올린 파일 이름 */
-            fileName: string;
-            /** @description 내용이 있는 줄 수 */
-            totalCount: number;
-            /** @description 오류 없는 줄 수 */
-            validCount: number;
-            /** @description 오류 있는 줄 수 */
-            errorCount: number;
-            /** @description 표에 보일 열 — 자원마다 다르다 */
-            columns: components["schemas"]["BulkPreviewColumnDto"][];
-            rows: components["schemas"]["BulkPreviewRowDto"][];
-        };
-        BulkCreateResponseDto: {
-            /**
-             * @description 등록한 건수
-             * @example 12
-             */
-            createdCount: number;
         };
     };
     responses: never;
@@ -20462,6 +20462,222 @@ export interface operations {
             };
         };
     };
+    FacilitiesController_bulkTemplate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description .xlsx 파일(Content-Disposition 에 파일 이름) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+            /** @description 그 BP 의 시설물 공통코드가 없음(「시설물 공통코드(운영상태 · 분류)가 설정되지 않아 일괄 등록을 할 수 없습니다. 플랫폼 관리자에게 문의해 주세요.」) · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FacilitiesController_bulkValidations: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkPreviewResponseDto"];
+                };
+            };
+            /** @description 파일 없음 · 5MB 초과 · 파일 2개 이상(업로드 문구) · zip · xlsx 가 아니거나 첫 시트 머리글이 양식과 다름(「내려받은 양식으로 작성한 파일만 올릴 수 있습니다.」) · 압축을 푼 크기가 16MB 를 넘음(「파일 내용이 너무 큽니다. 그림 · 다른 시트 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · exceljs 가 읽지 못함 — 표 · 차트 등(「파일을 읽지 못했습니다. 표 · 차트 · 그림 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · 파일을 읽는 worker 가 메모리(192MB) · 시간(15초) 상한을 넘음(「파일을 읽는 데 자원이 너무 많이 듭니다. 셀 병합 · 열 전체 유효성 검사 · 서식 · 이름 정의 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · 보낼 셀 글자가 모두 400만 자를 넘음(「파일 내용이 너무 큽니다. 그림 · 다른 시트 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」 — 칸 하나가 1,000자를 넘으면 그 칸의 사유 「글자가 너무 깁니다(1,000자 초과). 값을 줄여 다시 적어 주세요.」) · 500줄 초과 또는 공백뿐인 줄까지 1,000행 초과(「한 번에 500건까지 등록할 수 있습니다. 파일을 나눠 올려 주세요.」) · 내용 없음(「등록할 시설물·장비가 없습니다.」) · 그 BP 의 시설물 공통코드가 없음(「시설물 공통코드(운영상태 · 분류)가 설정되지 않아 일괄 등록을 할 수 없습니다. 플랫폼 관리자에게 문의해 주세요.」) · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 파일을 읽는 요청이 몰림(「일괄 등록 파일을 읽는 요청이 몰려 있습니다. 잠시 뒤 다시 시도해 주세요.」). `code: BULK_BUSY` — 저장하지 않았으니 다시 등록해도 된다. code 없는 503 은 앞단(게이트웨이 · 로드밸런서)이 낸 것일 수 있다 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FacilitiesController_bulkErrorFile: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description .xlsx 파일(Content-Disposition 에 파일 이름) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+            /** @description 파일 없음 · 5MB 초과 · 파일 2개 이상(업로드 문구) · zip · xlsx 가 아니거나 첫 시트 머리글이 양식과 다름(「내려받은 양식으로 작성한 파일만 올릴 수 있습니다.」) · 압축을 푼 크기가 16MB 를 넘음(「파일 내용이 너무 큽니다. 그림 · 다른 시트 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · exceljs 가 읽지 못함 — 표 · 차트 등(「파일을 읽지 못했습니다. 표 · 차트 · 그림 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · 파일을 읽는 worker 가 메모리(192MB) · 시간(15초) 상한을 넘음(「파일을 읽는 데 자원이 너무 많이 듭니다. 셀 병합 · 열 전체 유효성 검사 · 서식 · 이름 정의 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · 보낼 셀 글자가 모두 400만 자를 넘음(「파일 내용이 너무 큽니다. 그림 · 다른 시트 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」 — 칸 하나가 1,000자를 넘으면 그 칸의 사유 「글자가 너무 깁니다(1,000자 초과). 값을 줄여 다시 적어 주세요.」) · 500줄 초과 또는 공백뿐인 줄까지 1,000행 초과(「한 번에 500건까지 등록할 수 있습니다. 파일을 나눠 올려 주세요.」) · 내용 없음(「등록할 시설물·장비가 없습니다.」) · 그 BP 의 시설물 공통코드가 없음(「시설물 공통코드(운영상태 · 분류)가 설정되지 않아 일괄 등록을 할 수 없습니다. 플랫폼 관리자에게 문의해 주세요.」) · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) · 오류가 있는 줄이 없음(「오류가 있는 줄이 없습니다.」) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 파일을 읽는 요청이 몰림(「일괄 등록 파일을 읽는 요청이 몰려 있습니다. 잠시 뒤 다시 시도해 주세요.」). `code: BULK_BUSY` — 저장하지 않았으니 다시 등록해도 된다. code 없는 503 은 앞단(게이트웨이 · 로드밸런서)이 낸 것일 수 있다 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FacilitiesController_bulkRegister: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkCreateResponseDto"];
+                };
+            };
+            /** @description 파일 없음 · 5MB 초과 · 파일 2개 이상(업로드 문구) · zip · xlsx 가 아니거나 첫 시트 머리글이 양식과 다름(「내려받은 양식으로 작성한 파일만 올릴 수 있습니다.」) · 압축을 푼 크기가 16MB 를 넘음(「파일 내용이 너무 큽니다. 그림 · 다른 시트 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · exceljs 가 읽지 못함 — 표 · 차트 등(「파일을 읽지 못했습니다. 표 · 차트 · 그림 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · 파일을 읽는 worker 가 메모리(192MB) · 시간(15초) 상한을 넘음(「파일을 읽는 데 자원이 너무 많이 듭니다. 셀 병합 · 열 전체 유효성 검사 · 서식 · 이름 정의 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · 보낼 셀 글자가 모두 400만 자를 넘음(「파일 내용이 너무 큽니다. 그림 · 다른 시트 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」 — 칸 하나가 1,000자를 넘으면 그 칸의 사유 「글자가 너무 깁니다(1,000자 초과). 값을 줄여 다시 적어 주세요.」) · 500줄 초과 또는 공백뿐인 줄까지 1,000행 초과(「한 번에 500건까지 등록할 수 있습니다. 파일을 나눠 올려 주세요.」) · 내용 없음(「등록할 시설물·장비가 없습니다.」) · 그 BP 의 시설물 공통코드가 없음(「시설물 공통코드(운영상태 · 분류)가 설정되지 않아 일괄 등록을 할 수 없습니다. 플랫폼 관리자에게 문의해 주세요.」) · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) · 오류가 있는 줄이 있음(「오류를 고친 파일을 다시 올려 주세요.」) · 검사 뒤 점포가 폐점 · 삭제됨(「미리보기 뒤 폐점되거나 삭제된 점포가 있습니다. 파일을 다시 올려 미리보기를 확인해 주세요.」) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 파일을 읽는 요청이 몰림(「일괄 등록 파일을 읽는 요청이 몰려 있습니다. 잠시 뒤 다시 시도해 주세요.」). `code: BULK_BUSY` — 저장하지 않았으니 다시 등록해도 된다. code 없는 503 은 앞단(게이트웨이 · 로드밸런서)이 낸 것일 수 있다 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     FacilitiesController_detail: {
         parameters: {
             query?: never;
@@ -22600,6 +22816,11 @@ export interface operations {
                 storeIds?: number[];
                 /** @description 이 직원 레코드에 배정된 것 */
                 staffMemberId?: number;
+                /**
+                 * @description 담당직원 이름 부분 일치(WHALEERP-713). 개인 배정은 그 직원, 근무지 전체는 대상 직원 가운데 한 명이라도 맞으면 나온다.
+                 *     앞뒤 공백을 지우고 비면 없는 것으로 본다 — 직원 목록 keyword 와 같다.
+                 */
+                assigneeName?: string;
                 /** @description true · false. 없으면 전체 */
                 isUrgent?: boolean;
                 /** @description 근무지 점포 */
@@ -25817,201 +26038,6 @@ export interface operations {
                 content?: never;
             };
             /** @description 플랫폼 계정이 보낸 탭 BP 가 없거나 지웠거나 플랫폼 BP 임 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FacilitiesController_bulkTemplate: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description .xlsx 파일(Content-Disposition 에 파일 이름) */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
-                };
-            };
-            /** @description 그 BP 의 시설물 공통코드가 없음(「시설물 공통코드(운영상태 · 분류)가 설정되지 않아 일괄 등록을 할 수 없습니다. 플랫폼 관리자에게 문의해 주세요.」) · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FacilitiesController_bulkValidations: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": {
-                    /** Format: binary */
-                    file: string;
-                };
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BulkPreviewResponseDto"];
-                };
-            };
-            /** @description 파일 없음 · 5MB 초과 · 파일 2개 이상(업로드 문구) · zip · xlsx 가 아니거나 첫 시트 머리글이 양식과 다름(「내려받은 양식으로 작성한 파일만 올릴 수 있습니다.」) · 압축을 푼 크기가 4MB 를 넘음(「파일 내용이 너무 큽니다. 그림 · 다른 시트 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · exceljs 가 읽지 못함 — 표 · 차트 등(「파일을 읽지 못했습니다. 표 · 차트 · 그림 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · 500줄 초과(「한 번에 500건까지 등록할 수 있습니다. 파일을 나눠 올려 주세요.」) · 내용 없음(「등록할 시설물·장비가 없습니다.」) · 그 BP 의 시설물 공통코드가 없음(「시설물 공통코드(운영상태 · 분류)가 설정되지 않아 일괄 등록을 할 수 없습니다. 플랫폼 관리자에게 문의해 주세요.」) · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FacilitiesController_bulkErrorFile: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": {
-                    /** Format: binary */
-                    file: string;
-                };
-            };
-        };
-        responses: {
-            /** @description .xlsx 파일(Content-Disposition 에 파일 이름) */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
-                };
-            };
-            /** @description 파일 없음 · 5MB 초과 · 파일 2개 이상(업로드 문구) · zip · xlsx 가 아니거나 첫 시트 머리글이 양식과 다름(「내려받은 양식으로 작성한 파일만 올릴 수 있습니다.」) · 압축을 푼 크기가 4MB 를 넘음(「파일 내용이 너무 큽니다. 그림 · 다른 시트 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · exceljs 가 읽지 못함 — 표 · 차트 등(「파일을 읽지 못했습니다. 표 · 차트 · 그림 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · 500줄 초과(「한 번에 500건까지 등록할 수 있습니다. 파일을 나눠 올려 주세요.」) · 내용 없음(「등록할 시설물·장비가 없습니다.」) · 그 BP 의 시설물 공통코드가 없음(「시설물 공통코드(운영상태 · 분류)가 설정되지 않아 일괄 등록을 할 수 없습니다. 플랫폼 관리자에게 문의해 주세요.」) · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) · 오류가 있는 줄이 없음(「오류가 있는 줄이 없습니다.」) */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    FacilitiesController_bulkRegister: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
-                "X-Bp-Code-Id"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": {
-                    /** Format: binary */
-                    file: string;
-                };
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BulkCreateResponseDto"];
-                };
-            };
-            /** @description 파일 없음 · 5MB 초과 · 파일 2개 이상(업로드 문구) · zip · xlsx 가 아니거나 첫 시트 머리글이 양식과 다름(「내려받은 양식으로 작성한 파일만 올릴 수 있습니다.」) · 압축을 푼 크기가 4MB 를 넘음(「파일 내용이 너무 큽니다. 그림 · 다른 시트 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · exceljs 가 읽지 못함 — 표 · 차트 등(「파일을 읽지 못했습니다. 표 · 차트 · 그림 없이 내려받은 양식에 값만 적어 다시 올려 주세요.」) · 500줄 초과(「한 번에 500건까지 등록할 수 있습니다. 파일을 나눠 올려 주세요.」) · 내용 없음(「등록할 시설물·장비가 없습니다.」) · 그 BP 의 시설물 공통코드가 없음(「시설물 공통코드(운영상태 · 분류)가 설정되지 않아 일괄 등록을 할 수 없습니다. 플랫폼 관리자에게 문의해 주세요.」) · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) · 오류가 있는 줄이 있음(「오류를 고친 파일을 다시 올려 주세요.」) · 검사 뒤 점포가 폐점 · 삭제됨(「미리보기 뒤 폐점되거나 삭제된 점포가 있습니다. 파일을 다시 올려 미리보기를 확인해 주세요.」) */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · BP · 가맹 계정이 다른 BP 나 형식이 틀린 X-Bp-Code-Id 를 보냄 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
             404: {
                 headers: {
                     [name: string]: unknown;
