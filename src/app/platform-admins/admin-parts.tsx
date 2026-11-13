@@ -29,7 +29,7 @@ export function FailedBand({ message, detail }: { message: string; detail?: stri
 }
 
 /**
- * 칸 오류 문구 — 그 입력칸 바로 아래 한 줄. 입력칸은 aria-invalid 로 빨간 테두리가 되고 aria-describedby 로 이 문구를 가리킨다.
+ * 칸 오류 문구 — 그 입력칸 바로 아래 한 줄. 입력칸에는 aria-invalid 를 달고(테두리는 칠하지 않는다, 2026-11-13) aria-describedby 로 이 문구를 가리킨다.
  * 문구가 없으면 아무것도 그리지 않는다(자리도 차지하지 않는다).
  */
 export function FieldMessage({ id, message }: { id: string; message?: string }) {

@@ -114,7 +114,7 @@ export function CodeGroupPanel({
   const update = (key: string, patch: Partial<Draft>) => {
     const rows = drafts.map((d) => ((d.added ? key === "" : d.groupCode === key) ? { ...d, ...patch } : d));
     setDrafts(rows);
-    // 오류가 난 칸을 고치면 그 칸을 다시 본다 — 맞으면 빨간 테두리 · 문구를 지운다(2026-10-27 사용자 지정). 다른 칸의 오류는 그대로 두고,
+    // 오류가 난 칸을 고치면 그 칸을 다시 본다 — 맞으면 오류 표시 · 문구를 지운다(2026-10-27 사용자 지정). 다른 칸의 오류는 그대로 두고,
     // 고친 칸의 서버 오류(409)는 화면 검사로 다시 알 수 없어 지운다 — 다시 저장해야 확인된다
     const fields = [
       ...("groupName" in patch ? [`name:${key}`] : []),
