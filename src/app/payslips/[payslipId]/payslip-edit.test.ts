@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PayslipItem, PayslipPrevious } from "../../../lib/payslips.ts";
-import { addAdditionalLine, applyPrevious, removeLine, saveItems } from "./payslip-edit.ts";
+import { addAdditionalLine, applyPrevious, confirmBlockedUntil, removeLine, saveItems } from "./payslip-edit.ts";
 
 const item = (over: Partial<PayslipItem>): PayslipItem => ({
   payslipItemId: 1,
@@ -77,4 +77,11 @@ test("지난 명세서 불러오기 — 같은 급여 항목 칸을 채우고, �
     [112, "0"],
     [-27, "7,000"],
   ]);
+});
+
+test("확정할 수 있는 첫날 전이면 그날을, 그날부터는 null — 확정할 수 없는 상태(null)도 null(WHALEERP-690)", () => {
+  assert.equal(confirmBlockedUntil("2026-12-01", "2026-11-30"), "2026-12-01");
+  assert.equal(confirmBlockedUntil("2026-12-01", "2026-12-01"), null);
+  assert.equal(confirmBlockedUntil("2026-12-01", "2026-12-02"), null);
+  assert.equal(confirmBlockedUntil(null, "2026-11-30"), null);
 });

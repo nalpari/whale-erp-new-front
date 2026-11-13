@@ -5,6 +5,7 @@ import { useState, useTransition, type ReactNode } from "react";
 import { Button, ConfirmDialog, DetailTable, Field, FormGroup, FormRow, Select, TextField, Toggle, useAction, useToast } from "@/components/common";
 import { useCurrentBp, usePagePermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
+import { kstToday } from "@/lib/staff-members";
 import {
   formatAmount,
   isItemShown,
@@ -27,7 +28,7 @@ import {
   sendPayslip,
   type EditFailure,
 } from "./actions";
-import { addAdditionalLine, applyPrevious, removeLine, saveItems } from "./payslip-edit";
+import { addAdditionalLine, applyPrevious, confirmBlockedUntil, removeLine, saveItems } from "./payslip-edit";
 
 // 급여명세서 검토의 머리(임시저장 · 확정 · 발송 · 목록)와 왼쪽 「지급 내역」. 데모 docs/demo/staff/payrolls-detail.html(원본
 // src/pages/staff/payrolls-detail.mjs)과 목업 docs/mockup/staff/payrolls-detail.html 의 3.3% 원천징수 칸을 옮겼다.
@@ -167,6 +168,8 @@ export function PayslipReview({
   const editable = canUpdate && (payslip.status === "DRAFTING" || payslip.status === "REVIEWING");
   const isPartTime = payslip.employmentType === "PART_TIME";
   const month = payslip.periodStartDate.slice(0, 7);
+  // 급여 기간이 끝나기 전(퇴직 · 계약 종료면 그다음 날 전)에는 [확정]을 막고 그날을 알린다(WHALEERP-690)
+  const blockedUntil = confirmBlockedUntil(payslip.confirmableFrom, kstToday());
 
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [failure, setFailure] = useState<EditFailure | null>(null);
@@ -254,7 +257,11 @@ export function PayslipReview({
     startBusy(async () => {
       const result = await callAction(() => loadPrevious(payslip.payslipId));
       if (!result.ok) return setFailure(result);
-      if (!result.previous) return setFailure({ ok: false, message: "불러올 지난 명세서가 없습니다." });
+      // 없으면 확인창을 닫고 토스트로 알린다(WHALEERP-689) — 창 안에 남기면 할 수 있는 일이 없다
+      if (!result.previous) {
+        setDialog(null);
+        return toast("불러올 지난 명세서가 없습니다.");
+      }
       const next = applyPrevious(items, texts, result.previous);
       setItems(next.lines);
       setTexts(next.texts);
@@ -306,7 +313,10 @@ export function PayslipReview({
               <Button variant="soft" onClick={() => open("save")}>
                 임시저장
               </Button>
-              <Button onClick={() => open("confirm")}>확정</Button>
+              {blockedUntil && <span className="self-center text-[13px] text-erp-label">{blockedUntil}부터 확정할 수 있습니다.</span>}
+              <Button disabled={blockedUntil !== null} onClick={() => open("confirm")}>
+                확정
+              </Button>
             </>
           )}
           {canUpdate && (payslip.status === "CONFIRMED" || payslip.status === "SENT") && (

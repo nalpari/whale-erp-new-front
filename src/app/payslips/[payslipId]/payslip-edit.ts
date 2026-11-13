@@ -62,3 +62,11 @@ export function applyPrevious(
   }
   return { lines: next, texts: nextTexts, filled };
 }
+
+/**
+ * 아직 확정할 수 없으면 확정할 수 있는 첫날(YYYY-MM-DD), 아니면 null(WHALEERP-690). 그날은 api 상세의 `confirmableFrom` — 확정의
+ * 422 PERIOD_NOT_ENDED 와 같은 판정이다. 오늘은 한국 날짜로 받는다. 막는 것은 화면 안내일 뿐이고 최종 판정은 api 가 한다.
+ */
+export function confirmBlockedUntil(confirmableFrom: string | null, today: string): string | null {
+  return confirmableFrom !== null && today < confirmableFrom ? confirmableFrom : null;
+}

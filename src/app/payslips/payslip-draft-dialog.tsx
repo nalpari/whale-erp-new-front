@@ -84,10 +84,14 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
     if (pickedShown === null) return;
     setFailure(null);
     startBusy(async () => {
-      // 성공하면 action 이 검토 화면으로 보낸다(redirect). 돌아온 것은 실패뿐이다.
+      // 성공하면 토스트를 띄우고 검토 화면으로 간다(WHALEERP-688 — 일괄 작성처럼 결과를 알린다).
       // 결과를 모르면(호출 자체가 끊긴 경우도) 이미 만들었을 수 있어 목록을 다시 받는다.
       try {
         const result = await createOne(pickedShown, month);
+        if (result.ok) {
+          toast("급여명세서를 작성했습니다.");
+          return router.push(result.href);
+        }
         setFailure(result);
         if (result.unknown) router.refresh();
       } catch (error) {

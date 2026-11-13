@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { ApiError, authHeaders, bpHref, expiredFailureOf, request } from "@/lib/api";
 import type { PayslipBulkResult, PayslipCandidates, PayslipSendResult } from "@/lib/payslips";
 import { getPayslipCandidates } from "@/lib/payslips-api";
@@ -54,7 +53,7 @@ export async function getPayslipCandidatesAction(month: string): Promise<{ ok: t
 }
 
 /** 직원 한 명의 초안. 만들면 그 명세서 검토 화면으로 간다. */
-export async function createPayslip(staffMemberId: number, month: string): Promise<DraftFailure> {
+export async function createPayslip(staffMemberId: number, month: string): Promise<{ ok: true; href: string } | DraftFailure> {
   if (!validId(staffMemberId) || !validMonth(month)) return BAD_INPUT;
   let payslipId: number;
   try {
@@ -62,8 +61,9 @@ export async function createPayslip(staffMemberId: number, month: string): Promi
   } catch (error) {
     return failureOf(error, "초안 작성");
   }
-  // 목록 · 상세는 요청마다 새로 받는다(no-store). 따로 비울 캐시가 없다. 상세 주소에는 이 요청의 탭 BP 를 붙인다(bpHref)
-  redirect(await bpHref(`/payslips/${payslipId}`));
+  // 목록 · 상세는 요청마다 새로 받는다(no-store). 따로 비울 캐시가 없다. 상세 주소에는 이 요청의 탭 BP 를 붙인다(bpHref).
+  // redirect 대신 주소를 돌려준다 — 화면이 「작성했습니다」 토스트를 띄운 뒤 옮긴다(WHALEERP-688, 일괄 작성처럼)
+  return { ok: true, href: await bpHref(`/payslips/${payslipId}`) };
 }
 
 /** 그 달 관리 범위 작성 대상 모두의 초안. 결과(만든 것 · 건너뛴 것)는 화면이 한 줄로 알리고 목록으로 간다. */
