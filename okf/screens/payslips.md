@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-10T07:26:16Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-13T08:00:00Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -49,7 +49,7 @@ sources:
 목록은 `GET /payslips?month&status&storeIds&storeTypes&staffName&reviewPending&page&pageSize`, 상세는 `GET /payslips/:id` 다(`src/lib/payslips-api.ts`, 직원 목록
 `staff-members-api.ts` 와 같은 `request()` · `authHeaders()` · `ApiError` 모양). 응답 타입은 `api-types.generated.ts` 의
 `PayslipListResponseDto` · `PayslipDetailResponseDto` 를 그대로 쓴다. 메뉴 권한(MN000009 조회) · 관리 범위 · 가림은 api 가 본다.
-상세의 없음 · 범위 밖 · 가림 · 이상한 id 는 404 → `notFound()`, 그 밖의 api 오류(꺼짐 · 401 · 403)는 `error.tsx` 가 받는다.
+상세의 없음 · 범위 밖 · 가림 · 이상한 id 는 404 → `notFound()`, 로그인 만료(401)는 `request()` 가 만료 안내 로그인 화면으로 보내고(2026-11-10), 그 밖의 api 오류(꺼짐 · 403)는 `error.tsx` 가 받는다.
 화면 주소는 탭 BP 주소 `/bp/{bpCodeId}/payslips…` 다(`BP_PATH_SCREENS`, WHALEERP-637) — proxy 가 그 BP 를 `X-Bp-Code-Id` 로 실어 플랫폼 계정은
 고른 BP 의 명세서만 본다. 쿼리 · 상세의 「목록」 주소(`payslipListHref`)는 옛 경로로 만들고 링크 · 이동에서만 탭 BP 를 붙인다 — 목록 표 · 상세(서버)는
 `screenPath()`, 목록 조작 · 초안 팝업 · 검토 화면(클라이언트)은 `bpPath`, 초안 작성 뒤 이동(서버 액션)은 `bpHref`. 상세의 출퇴근 기록 · 근로계약 링크도
