@@ -277,10 +277,12 @@ export function statusNotes(
 
 /**
  * 저장 뒤 목록 위 안내(WHALEERP-132) — 시스템이 한 처리. 저장 응답(status · draftAction)에서 savedKindOf 로 고른 값을 짧게 사는 쿠키
- * (SAVED_COOKIE)로 목록에 넘긴다. 주소에 싣지 않는다 — 주소에 남으면 새로고침 · 뒤로 가기 · 즐겨찾기마다 다시 뜨고, 지우려고 주소를 바꾸면
+ * (savedCookieOf)로 목록에 넘긴다. 주소에 싣지 않는다 — 주소에 남으면 새로고침 · 뒤로 가기 · 즐겨찾기마다 다시 뜨고, 지우려고 주소를 바꾸면
  * 필터의 헤더 범위 채우기와 겹친다(front #127 ip-code-review). 모르는 값이면 안내가 없다.
+ * 쿠키 경로는 「/」 이고 탭 BP 는 이름에 싣는다 — 경로를 목록(/bp/{id}/contracts)으로 좁히면 다른 화면(직원 정보 관리 [직원 초대])에서
+ * 처음 연 문서가 목록으로 옮겨 와도 Chrome 의 document.cookie 에 그 쿠키가 보이지 않아 안내가 뜨지 않았다(WHALEERP-697).
  */
-export const SAVED_COOKIE = "contract-saved";
+export const savedCookieOf = (bpCodeId: number | string) => `contract-saved-${bpCodeId}`;
 /** 쿠키가 사는 시간(초) — 저장 뒤 목록을 그릴 동안만. 목록이 그리면 SavedNotice 가 지운다 */
 export const SAVED_COOKIE_MAX_AGE = 60;
 

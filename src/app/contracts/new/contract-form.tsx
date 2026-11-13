@@ -9,7 +9,7 @@ import { fetchSameOrigin } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
-import { SAVED_COOKIE, SAVED_COOKIE_MAX_AGE, backHrefOf, listAfterSave, savedKindOf, withBack } from "../contract-list";
+import { SAVED_COOKIE_MAX_AGE, backHrefOf, listAfterSave, savedCookieOf, savedKindOf, withBack } from "../contract-list";
 import { createContract, updateContract } from "./actions";
 import {
   formatHours,
@@ -436,9 +436,9 @@ export function ContractForm({
         result = { error: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
       }
       if (result.ok) {
-        // 저장 뒤 안내는 서버 액션과 같이 저장 응답으로 고른다(종이 계약 등록이면 체결 완료 — 쿠키 SAVED_COOKIE, WHALEERP-132)
+        // 저장 뒤 안내는 서버 액션과 같이 저장 응답으로 고른다(종이 계약 등록이면 체결 완료 — 쿠키 savedCookieOf, WHALEERP-132)
         const kind = savedKindOf(result);
-        if (kind) document.cookie = `${SAVED_COOKIE}=${kind}; path=${at("/contracts")}; max-age=${SAVED_COOKIE_MAX_AGE}; samesite=lax`;
+        if (kind) document.cookie = `${savedCookieOf(bp)}=${kind}; path=/; max-age=${SAVED_COOKIE_MAX_AGE}; samesite=lax`;
         router.push(at(listAfterSave(back, contractId ? body.storeId : null)));
         return;
       }
