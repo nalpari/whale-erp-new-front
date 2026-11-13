@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useOptimistic, useState, useTransition } from "react";
-import { Checkbox, DateField, FilterPanel, FilterSection, SearchField, Select, useToast } from "@/components/common";
+import { Checkbox, DateField, FilterPanel, FilterSection, SearchField, Select, Tag, useToast } from "@/components/common";
 import { useCurrentBp, useScope, useStores } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import { StorePicker } from "@/components/site/store-picker";
@@ -92,6 +92,16 @@ export function TodoFilter({ query, statusLabels, assigneeTypeLabels }: { query:
           />
         ))}
       </FilterSection>
+      {current.staffMemberId !== null && (
+        <FilterSection label="직원" tight>
+          <div className="flex items-center justify-between gap-[8px]">
+            <Tag>직원 지정</Tag>
+            <button type="button" className="cursor-pointer text-[14px] text-erp-link hover:underline" onClick={() => go({ staffMemberId: null })}>
+              조건 지우기
+            </button>
+          </div>
+        </FilterSection>
+      )}
       <FilterSection label="담당직원" tight>
         <Select aria-label="담당직원" value={current.assigneeType} onChange={(e) => go({ assigneeType: e.target.value as TodoAssigneeType | "" })}>
           <option value="">전체</option>
