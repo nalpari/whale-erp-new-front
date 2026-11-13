@@ -64,6 +64,9 @@ export function signingResendCopy(name: string | null | undefined): { title: str
   };
 }
 
+/** 재발송이 끝났을 때의 토스트 — 직원 목록 · 상세의 재발송과 근로계약 상세의 재발송이 같이 쓴다(통합테스트 IT-CONT-006, 2026-11-13 — 근로계약 상세만 알림이 없었다) */
+export const RESEND_DONE = "계약서를 다시 보냈습니다.";
+
 /**
  * 가입 전 직원의 재발송 확인창 문구(WHALEERP-611 · 130) — 근로계약 상세의 발송 대기와 직원 목록 · 상세의 재발송이 같이 쓴다.
  * api 가 보낼 때 다시 판별해 그 번호로 가입한 계정이 없으면 가입 초대 알림톡(초대 코드, 날인 기한은 보낸 날부터 30일), 있으면
@@ -71,9 +74,6 @@ export function signingResendCopy(name: string | null | undefined): { title: str
  * (가입 상태 · draftAction)은 보낼 때의 판별과 다를 수 있어(그사이 계정이 생기거나 없어짐) 둘을 함께 알린다. 제목은 가입한 직원의
  * 문구(signingResendCopy)와 같다 — 같은 화면에서 무엇을 다시 보내는지가 같게 보이도록(front #146 code-review).
  */
-/** 재발송이 끝났을 때의 토스트 — 직원 목록 · 상세의 재발송과 근로계약 상세의 재발송이 같이 쓴다(통합테스트 IT-CONT-006, 2026-11-13 — 근로계약 상세만 알림이 없었다) */
-export const RESEND_DONE = "계약서를 다시 보냈습니다.";
-
 export function inviteResendCopy(name: string | null | undefined): { title: string; body: string[]; done: string } {
   return {
     title: "계약서를 다시 보내시겠습니까?",

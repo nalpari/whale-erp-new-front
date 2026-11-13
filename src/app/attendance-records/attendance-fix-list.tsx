@@ -527,6 +527,8 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   // 위치정보에 동의한 직원은 대신 등록이 아니라 기록 없는 날을 보정으로 채운다 — 출근 · 퇴근을 함께 받는다(2026-10-26 재영)
   const picked = staff?.find((s) => s.staffMemberId === staffId);
   const isProxy = picked?.isProxy ?? true;
+  // 받는 동안 저장해 뜬 「직원을 선택해 주세요.」는 목록이 와서 고른 직원이 그대로 남으면 보이지 않는다(DESIGN.md 「오류 문구 내리기」, PR #275 리뷰)
+  const shownErrors = picked ? clearError(errors, "staff") : errors;
 
   const future = hasFutureTime(proxyPoints(date, checkIn, checkOut));
   // 칸을 고치면 지난 거절 문장을 내린다 — 미래 시각 거절이면 고친 값이 더는 미래가 아닐 때만(그 밖의 거절은 바로)
@@ -564,11 +566,11 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
       <h2 className="text-[18px] font-semibold text-erp-ink">출퇴근 대신 등록</h2>
       <FormGroup title="출퇴근 기록">
         <MessageRow>
-          <MessageField label="직원" required message={<FieldMessage id={`${ids}-staff`} message={errors.staff} />}>
+          <MessageField label="직원" required message={<FieldMessage id={`${ids}-staff`} message={shownErrors.staff} />}>
             <Select
               aria-label="직원"
               value={staffId ?? ""}
-              {...invalidProps(ids, errors, "staff")}
+              {...invalidProps(ids, shownErrors, "staff")}
               onChange={(e) => {
                 setStaffId(e.target.value ? Number(e.target.value) : null);
                 // 직원이 바뀌면 퇴근 필수 여부(보정 대상)도 바뀐다 — 퇴근 문구도 함께 내린다
