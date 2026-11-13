@@ -5,7 +5,6 @@ import { useState, useTransition, type ReactNode } from "react";
 import { Button, ConfirmDialog, DetailTable, Field, FormGroup, FormRow, Select, TextField, Toggle, useAction, useToast } from "@/components/common";
 import { useCurrentBp, usePagePermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
-import { kstToday } from "@/lib/staff-members";
 import {
   formatAmount,
   isItemShown,
@@ -143,12 +142,15 @@ export function PayslipReview({
   payslip,
   band,
   listHref,
+  today,
   aside,
 }: {
   payslip: PayslipDetail;
   /** 위쪽 경고 띠(reviewBand). 없으면 null */
   band: { title: string; desc: string } | null;
   listHref: string;
+  /** 오늘(한국 날짜) — 서버가 정해 넘긴다. 화면에서 다시 재면 서버 렌더와 날짜가 어긋날 수 있다 */
+  today: string;
   /** 오른쪽 단(검토 대상 항목 · 급여 산정 기준 · 처리 이력) */
   aside: ReactNode;
 }) {
@@ -169,7 +171,7 @@ export function PayslipReview({
   const isPartTime = payslip.employmentType === "PART_TIME";
   const month = payslip.periodStartDate.slice(0, 7);
   // 급여 기간이 끝나기 전(퇴직 · 계약 종료면 그다음 날 전)에는 [확정]을 막고 그날을 알린다(WHALEERP-690)
-  const blockedUntil = confirmBlockedUntil(payslip.confirmableFrom, kstToday());
+  const blockedUntil = confirmBlockedUntil(payslip.confirmableFrom, today);
 
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [failure, setFailure] = useState<EditFailure | null>(null);

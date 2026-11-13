@@ -52,7 +52,7 @@ export async function getPayslipCandidatesAction(month: string): Promise<{ ok: t
   }
 }
 
-/** 직원 한 명의 초안. 만들면 그 명세서 검토 화면으로 간다. */
+/** 직원 한 명의 초안. 만들면 그 명세서 검토 화면 주소를 돌려준다(화면이 토스트 뒤 옮긴다). */
 export async function createPayslip(staffMemberId: number, month: string): Promise<{ ok: true; href: string } | DraftFailure> {
   if (!validId(staffMemberId) || !validMonth(month)) return BAD_INPUT;
   let payslipId: number;
