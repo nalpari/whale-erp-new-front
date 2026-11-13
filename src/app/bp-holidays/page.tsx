@@ -19,7 +19,7 @@ export default async function BpHolidaysPage({ searchParams }: PageProps<"/bp-ho
   if ("denied" in list)
     return (
       <>
-        <PageBar title="BP 휴일 관리" />
+        <PageBar title="휴일관리" />
         <div className="flex min-h-0 flex-1 p-[24px]">
           <section className={`${CARD} flex-1`}>
             <FailedBand message={list.denied} />

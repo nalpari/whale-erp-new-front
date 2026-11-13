@@ -32,7 +32,7 @@ export default async function BpAdminsPage({ searchParams }: PageProps<"/bp-admi
   if ("denied" in list)
     return (
       <>
-        <PageBar title="BP 관리자 관리" />
+        <PageBar title="관리자 관리" />
         <div className="flex min-h-0 flex-1 p-[24px]">
           <section className={`${CARD} flex-1`}>
             <FailedBand message={list.denied} />

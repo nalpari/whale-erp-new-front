@@ -104,7 +104,7 @@ function Logo({ href = "/", onClick, suffix }: { href?: string; onClick?: (e: Mo
 // 떠오를 때 4px 아래에서 올라오고, 동작 줄이기 설정이면 올라오지 않고 나타나기만 한다.
 export function HeaderTip({ label }: { label: string }) {
   return (
-    <span aria-hidden className="pointer-events-none absolute top-[calc(50%+26px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">
+    <span data-header-tip aria-hidden className="pointer-events-none absolute top-[calc(50%+26px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[10px] text-[14px] leading-[2] font-medium whitespace-nowrap text-erp-ink opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">
       {label}
     </span>
   );
@@ -164,20 +164,46 @@ export function ServiceLinks({ targets = {}, hideAddon = false }: { targets?: { 
   );
 }
 
-// 알림 버튼. 빨간 점이 아이콘에 들어 있어 늘 보인다.
-// ponytail: 읽지 않은 알림 여부를 받지 않는다. 알림 API 가 붙으면 unread prop 으로 점을 따로 그린다.
+/** 알림 종 선 그림 — 종만 그리고 둘레 원은 감싸는 버튼의 CSS 테두리가 맡는다(SVG 안의 원은 확대 비율에 따라 찌그러져 보였다, 2026-11-13). */
+export function BellGlyph() {
+  return (
+    <svg aria-hidden viewBox="0 0 42 42" className="size-[40px] stroke-erp-brand" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13.03 23.33c-.18 1.18.62 1.99 1.6 2.4 3.76 1.55 8.99 1.55 12.75 0 .98-.41 1.78-1.22 1.6-2.4-.11-.72-.66-1.32-1.06-1.9-.53-.78-.58-1.63-.58-2.53a6.34 6.34 0 0 0-12.67 0c0 .9-.05 1.75-.58 2.53-.4.58-.95 1.18-1.06 1.9Z" />
+      <path d="M17.63 26.9c.39 1.45 1.75 2.52 3.37 2.52s2.98-1.07 3.37-2.52" />
+    </svg>
+  );
+}
+
+// 알림 버튼(데모 화면용). AccountControls 에 넣는다. 실제 화면의 알림 종(NotificationBell)과 같은 동그라미 · 호버 · 툴팁 「내 알림」.
+// ponytail: 읽지 않은 알림 여부를 받지 않아 빨간 점을 늘 그린다. 알림 API 가 붙으면 unread prop 으로 점을 따로 그린다.
 export function AlarmLink({ href }: { href: string }) {
   return (
-    // 실제 화면의 알림 종(NotificationBell)과 같은 호버 — 둥근 회청 테두리(2026-11-13)
-    <Link href={href} aria-label="알림" className="group relative shrink-0 rounded-full">
-      <Image src="/icons/alarm.svg" alt="" width={42} height={42} />
-      <span aria-hidden className="pointer-events-none absolute inset-0 rounded-full border border-erp-brand opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+    <Link href={href} aria-label="내 알림" className="group relative grid size-[42px] shrink-0 place-items-center rounded-full border border-erp-field-line bg-white transition-colors duration-150 hover:border-erp-brand">
+      <BellGlyph />
+      <span aria-hidden className="absolute top-[9px] right-[12px] size-[7px] rounded-full border border-white bg-erp-off" />
+      <HeaderTip label="내 알림" />
     </Link>
   );
 }
 
+// 「내 계정」 묶음 — 세로 구분선(1px · 24px, erp-bar-line) 뒤에 알림 종 동그라미와 마이페이지(이름) 알약을 둔다. 둘 다 BP 가 아니라 로그인한
+// 계정의 것이라, 플랫폼 계정이 BP 화면으로 넘어가도 종이 앞쪽 BP 컨트롤(범위 선택기 · 시작 가이드 · 서비스 바로가기)과 한 무리로 보이지 않게
+// 선으로 가른다(2026-11-13 사용자 지정 — 한 알약에 담아 보니 종 · 이름이 붙어 보여, 모양은 원래대로 두고 구분선만 넣었다). 사이 간격은 헤더의 12px.
+// 알림 팝업 · 마이페이지 메뉴는 이 묶음의 오른쪽 끝에 맞춰 뜬다 — 알림 종은 바깥에 relative 를 두지 않아 팝업이 이 묶음의 relative 를 기준으로 선다.
+// 어느 하나가 열려 있으면 두 툴팁 모두 감춘다 — 종 팝업이 열린 채 이름 위를 지나면 「마이페이지」 툴팁이 팝업 뒤에 깔려 비어져 보였다(2026-11-13 사용자 지적).
+// alarm 이 없으면(로그인 토큰을 읽지 못함) 이름만 둔다.
+export function AccountControls({ alarm, user }: { alarm?: ReactNode; user: ReactNode }) {
+  return (
+    <div className="relative flex shrink-0 items-center gap-[12px] [&:has([aria-expanded=true])_[data-header-tip]]:hidden">
+      <span aria-hidden className="h-[24px] w-px bg-erp-bar-line" />
+      {alarm}
+      {user}
+    </div>
+  );
+}
+
 // Figma Top2. 흰 윗줄(로고 + 오른쪽 컨트롤), 짙은 1depth 메뉴 줄, 그 아래 펼쳐지는 2depth 줄.
-// right 에는 StoreSelect, ServiceLinks, AlarmLink(또는 알림 종 슬롯), UserPop 을 차례로 넣는다. 선택기가 없으면 빈 flex-1 로 자리를 채운다.
+// right 에는 StoreSelect, ServiceLinks, AccountControls(알림 종 · UserPop)를 차례로 넣는다. 선택기가 없으면 빈 flex-1 로 자리를 채운다.
 // StoreSelect 가 남는 폭을 차지해 나머지를 오른쪽으로 민다.
 export function GlobalHeader({
   menus,

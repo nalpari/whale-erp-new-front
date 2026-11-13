@@ -129,7 +129,7 @@ function RolesBody({
   return (
     <>
       {/* [등록]은 제목 줄 오른쪽 — 3팀 목록과 같은 자리(2026-10-23). [가맹마스터 메뉴설정 보기]는 목록 카드 머리에 그대로 둔다 */}
-      <PageBar title="BP 권한 그룹 관리">
+      <PageBar title="권한그룹 관리">
         {can.create && list.creatableRoleTypeCode !== null && (
           <Button onClick={() => setCreating(true)} disabled={creating}>
             등록

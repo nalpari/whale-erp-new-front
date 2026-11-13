@@ -24,6 +24,8 @@ export interface TodoListQuery {
   /** 헤더 범위(주소의 scope). 고른 점포 · 빈 storeIds 가 있으면 null */
   scope: Scope | null;
   statuses: TodoStatus[];
+  /** 이 직원 레코드에 배정된 것만(직원 상세 [관리]에서 옴). 없으면 null — 이름은 api 가 주지 않아 필터는 「직원 지정」으로만 보인다 */
+  staffMemberId: number | null;
   /** 담당 — 빈 값이면 전체 */
   assigneeType: TodoAssigneeType | "";
   /** 담당직원 이름 일부(WHALEERP-713). 빈 값이면 조건 없음 */
@@ -43,6 +45,7 @@ export const DEFAULT_TODO_LIST_QUERY: TodoListQuery = {
   storesCleared: false,
   scope: null,
   statuses: [...TODO_STATUSES],
+  staffMemberId: null,
   assigneeType: "",
   assigneeName: "",
   urgentOnly: false,
@@ -81,6 +84,7 @@ export function parseTodoListQuery(raw: RawSearch): TodoListQuery {
     storesCleared: rawStoreIds !== undefined && !storeIds.length,
     scope: rawStoreIds !== undefined ? null : scopeOfParam(first(raw[SCOPE_PARAM])),
     statuses: picked ? TODO_STATUSES.filter((s) => picked.has(s)) : [...TODO_STATUSES],
+    staffMemberId: idOf(first(raw.staffMemberId) ?? ""),
     assigneeType: ASSIGNEE_TYPES.find((t) => t === assigneeType) ?? "",
     assigneeName: first(raw.assigneeName)?.trim().slice(0, MAX_ASSIGNEE_NAME_LENGTH).trim() ?? "",
     urgentOnly: first(raw.urgent) === "1",
@@ -98,6 +102,7 @@ export function toTodoListSearch(query: TodoListQuery): string {
   else if (query.storesCleared) params.set("storeIds", "");
   else if (query.scope) params.set(SCOPE_PARAM, scopeKeyOf(query.scope));
   if (query.statuses.length !== TODO_STATUSES.length) params.set("status", TODO_STATUSES.filter((s) => query.statuses.includes(s)).join(","));
+  if (query.staffMemberId !== null) params.set("staffMemberId", String(query.staffMemberId));
   if (query.assigneeType) params.set("assigneeType", query.assigneeType);
   if (query.assigneeName) params.set("assigneeName", query.assigneeName);
   if (query.urgentOnly) params.set("urgent", "1");
@@ -122,6 +127,7 @@ export function todoListApiSearch(query: TodoListQuery): string | null {
   if (storeIds.length) params.set("storeIds", storeIds.join(","));
   else if (query.scope?.type === "DIRECT" || query.scope?.type === "FRANCHISE") params.set("storeTypes", query.scope.type);
   if (query.statuses.length !== TODO_STATUSES.length) for (const s of query.statuses) params.append("status", s);
+  if (query.staffMemberId !== null) params.set("staffMemberId", String(query.staffMemberId));
   if (query.assigneeType) params.set("assigneeType", query.assigneeType);
   if (query.assigneeName) params.set("assigneeName", query.assigneeName);
   if (query.urgentOnly) params.set("isUrgent", "true");

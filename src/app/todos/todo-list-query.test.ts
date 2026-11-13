@@ -163,3 +163,20 @@ test("빈 쪽 — 1쪽이 아니면 남은 마지막 쪽(없으면 1쪽)으로, 
   assert.equal(emptyPageHref(q, 1, 41), null);
   assert.equal(emptyPageHref({ ...q, page: 1 }, 0, 0), null);
 });
+
+test("직원 조건(staffMemberId) — 주소 왕복 · api 로 전달 · 다른 필터와 함께 · 이상한 값은 버림 · 필터 변경에도 유지, 초기화(기본값)에서는 사라짐", () => {
+  const q = { ...DEFAULT_TODO_LIST_QUERY, storeIds: [7], staffMemberId: 42, statuses: ["PENDING" as const], urgentOnly: true, page: 3 };
+  const search = toTodoListSearch(q);
+  assert.equal(new URLSearchParams(search).get("staffMemberId"), "42");
+  assert.deepEqual(parseTodoListQuery(Object.fromEntries(new URLSearchParams(search))), q);
+  const api = new URLSearchParams(todoListApiSearch(q) ?? "");
+  assert.equal(api.get("staffMemberId"), "42");
+  assert.equal(api.get("storeIds"), "7");
+  assert.deepEqual(api.getAll("status"), ["PENDING"]);
+  assert.equal(api.get("isUrgent"), "true");
+  for (const bad of ["0", "-1", "abc", "1.5", "", "99999999999"]) assert.equal(parseTodoListQuery({ staffMemberId: bad }).staffMemberId, null);
+  assert.equal(withFilter(q, { urgentOnly: false }).staffMemberId, 42);
+  assert.equal(withFilter(q, { staffMemberId: null }).staffMemberId, null);
+  assert.equal(new URLSearchParams(toTodoListSearch(DEFAULT_TODO_LIST_QUERY)).has("staffMemberId"), false);
+  assert.equal(new URLSearchParams(todoListApiSearch(DEFAULT_TODO_LIST_QUERY) ?? "").has("staffMemberId"), false);
+});

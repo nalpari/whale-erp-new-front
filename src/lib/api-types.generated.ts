@@ -5412,6 +5412,11 @@ export interface components {
              */
             updatedAt: string | null;
             /**
+             * @description 연장 재계약이면 true — 직전 계약(previous_contract_id)이 있고 그 직전 계약이 같은 직원 레코드의 것일 때만. 재입사 재계약(직전 계약이
+             *     퇴직한 옛 레코드의 것)과 첫 계약은 false(노영주 결정 2026-11-13). 화면이 계약 칸 「재계약」 꼬리표와 재직 칸 판정에 쓴다(WHALEERP-672)
+             */
+            isRenewal: boolean;
+            /**
              * @description 가입 · 인증 칸 재발송용 — 근로계약 상세의 canResend 와 달리 가입한 직원은 거짓이다(가입한 직원의 앱 알림 재발송은 근로계약
              *     상세에서). 이 칸의 버튼은 이 값 하나만 본다. 참이면 이 계약으로 근로계약 재발송(POST
              *     /contracts/{contractId}/send)이 가입 초대 알림톡 또는 소속 추가 확인 요청을 보낸다(설정 누락 503 · 그사이 바뀐 상태 409 · 발송
@@ -5603,31 +5608,31 @@ export interface components {
             unsentCount: number;
         };
         /** @enum {string} */
-        StaffSendKind: "SIGNUP_INVITE" | "AFFILIATION_REQUEST";
+        StaffSendKind: "SIGNUP_INVITE" | "AFFILIATION_REQUEST" | "PASSWORD_RESET";
         /**
-         * @description 비즈뿌리오 접수 기준. 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다
+         * @description 알림톡 줄은 비즈뿌리오 접수 기준 — 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다. 비밀번호 초기화 메일 줄은 SMTP 결과이고 SUCCEEDED · FAILED 만 있다
          * @enum {string}
          */
         StaffSendResult: "SUCCEEDED" | "FAILED" | "UNCONFIRMED";
         StaffMemberSendLogDto: {
             kind: components["schemas"]["StaffSendKind"];
-            /** @description 비즈뿌리오 접수 기준. 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다 */
+            /** @description 알림톡 줄은 비즈뿌리오 접수 기준 — 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다. 비밀번호 초기화 메일 줄은 SMTP 결과이고 SUCCEEDED · FAILED 만 있다 */
             result: components["schemas"]["StaffSendResult"];
-            /** @description 알림톡 발송 이력 ID(alimtalk_send_logs) */
+            /** @description 발송 이력 ID — 알림톡 줄은 alimtalk_send_logs, 비밀번호 초기화 메일 줄은 mail_send_logs(mail_id). 두 테이블의 번호는 겹칠 수 있어 목록 key 는 kind 와 함께 쓴다 */
             sendLogId: number;
-            /** @description 보낸 근로계약 */
-            contractId: number;
-            /** @description 같은 계약으로 앞서 직원에게 나갔을 수 있는 발송(성공 · 접수 여부 모름)이 있었다 — 재발송 · 고쳐 다시 보냄. 계약 재발송 횟수와는 다를 수 있다 */
+            /** @description 보낸 근로계약. 비밀번호 초기화 메일(PASSWORD_RESET)은 계약과 무관해 null */
+            contractId: number | null;
+            /** @description 같은 계약으로 앞서 직원에게 나갔을 수 있는 발송(성공 · 접수 여부 모름)이 있었다 — 재발송 · 고쳐 다시 보냄. 계약 재발송 횟수와는 다를 수 있다. 비밀번호 초기화 메일(PASSWORD_RESET)은 늘 false */
             isResend: boolean;
             /** @description 관리자에게 보일 실패 사유. 성공이면 null */
             failureReason: string | null;
-            /** @description 다시 보내도 되는가 — 확실히 나가지 않은 실패만 true, 접수 여부 모름은 false. 성공이면 null */
+            /** @description 다시 보내도 되는가 — 확실히 나가지 않은 실패만 true, 접수 여부 모름은 false. 성공이면 null. 비밀번호 초기화 메일(PASSWORD_RESET)은 늘 null */
             retryable: boolean | null;
             /** Format: date-time */
             sentAt: string;
         };
         StaffMemberSendLogResponseDto: {
-            /** @description 이 직원 레코드의 모든 근로계약 발송, 최근 순 */
+            /** @description 이 직원 레코드의 모든 근로계약 발송과 비밀번호 초기화 메일, 보낸 시각 최근 순 */
             items: components["schemas"]["StaffMemberSendLogDto"][];
         };
         /** @enum {string} */
@@ -7638,6 +7643,11 @@ export interface components {
             isAttendanceConfirmed: boolean;
             /** Format: date-time */
             confirmedAt: string | null;
+            /**
+             * @description 확정할 수 있는 첫날(YYYY-MM-DD, 한국) — 확정의 422 PERIOD_NOT_ENDED 와 같은 판정이다(규칙은 그 422 설명). 작성 중 · 검토 중이
+             *     아니면 null. 화면은 그 전에 [확정]을 막는다
+             */
+            confirmableFrom: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */

@@ -7,7 +7,7 @@ import { Button, PageBar } from "@/components/common";
 export default function BpHolidaysError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   return (
     <>
-      <PageBar title="BP 휴일 관리" />
+      <PageBar title="휴일관리" />
       <div className="flex min-h-0 flex-1 p-[24px]">
         <section role="alert" className="flex flex-1 flex-col items-center justify-center gap-[12px] rounded-[4px] border border-erp-panel-line bg-white p-[25px] text-[14px]">
           <p className="font-medium text-erp-ink">휴일 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
