@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { actionFailure, ApiError, authHeaders, bpHref, expiredFailureOf, send } from "@/lib/api";
+import { actionFailure, ApiError, bpHref, expiredFailureOf, send } from "@/lib/api";
 import type { components } from "@/lib/api-types.generated";
 import { listAfterSave, withBack } from "../contract-list";
 import { type SaveResult } from "../new/contract-form-model";
@@ -19,8 +19,6 @@ const isContractId = (id: unknown): id is number => Number.isInteger(id) && (id 
  */
 export async function deleteContract(contractId: number, back?: string): Promise<{ error: string; expired?: true }> {
   if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다." };
-  const headers = await authHeaders();
-  if (!headers.Authorization) return { error: "로그인이 필요합니다." };
   try {
     await send(`/contracts/${contractId}`, "DELETE");
   } catch (e) {
@@ -38,8 +36,6 @@ export async function deleteContract(contractId: number, back?: string): Promise
  */
 export async function updateWorker(contractId: number, body: WorkerBody, back?: string): Promise<SaveResult> {
   if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다." };
-  const headers = await authHeaders();
-  if (!headers.Authorization) return { error: "로그인이 필요합니다." };
   try {
     await send(`/contracts/${contractId}/worker`, "PATCH", body);
   } catch (e) {
@@ -75,8 +71,6 @@ export type SendContractResult = { ok: true } | SendFailure;
  */
 export async function sendContract(contractId: number, seen: SeenContract): Promise<SendContractResult> {
   if (!isContractId(contractId)) return { ok: false, error: "근로계약을 찾을 수 없습니다.", recheck: false };
-  const headers = await authHeaders();
-  if (!headers.Authorization) return { ok: false, error: "로그인이 필요합니다.", recheck: false };
   try {
     await send(`/contracts/${contractId}/send`, "POST", sendBodyOf(seen));
   } catch (e) {
@@ -104,8 +98,6 @@ export type EndContractResult = { ok: true } | SendFailure;
  */
 export async function endContract(contractId: number): Promise<EndContractResult> {
   if (!isContractId(contractId)) return { ok: false, error: "근로계약을 찾을 수 없습니다.", recheck: false };
-  const headers = await authHeaders();
-  if (!headers.Authorization) return { ok: false, error: "로그인이 필요합니다.", recheck: false };
   try {
     await send(`/contracts/${contractId}/end`, "POST");
   } catch (e) {

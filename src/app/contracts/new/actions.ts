@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { ApiError, authHeaders, bpHref, expiredFailureOf, send } from "@/lib/api";
+import { ApiError, bpHref, expiredFailureOf, send } from "@/lib/api";
 import { SAVE_UNKNOWN_NEW, saveFailureOf } from "../[contractId]/send-model";
 import { SAVED_COOKIE, SAVED_COOKIE_MAX_AGE, listAfterSave, savedKindOf, withBack } from "../contract-list";
 import { type CreateContractBody, type SavedContract, type SaveResult } from "./contract-form-model";
@@ -41,8 +41,6 @@ async function unknownOutcome(contractId: number | null, back: string | undefine
  * 옮겨 갈 주소 · 쿠키 경로는 옛 경로에 이 요청의 탭 BP 를 붙인다(bpHref — 화면 주소 /bp/{id}/contracts…).
  */
 async function save(path: string, method: "POST" | "PUT", body: CreateContractBody, contractId: number | null, back: string | undefined): Promise<SaveResult> {
-  const headers = await authHeaders();
-  if (!headers.Authorization) return { error: "로그인이 필요합니다." };
   let saved: SavedContract | null = null;
   try {
     saved = await send<SavedContract>(path, method, body);

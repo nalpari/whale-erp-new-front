@@ -21,20 +21,22 @@ const verifiedTokens = new Map<string, number>();
  */
 async function hasValidSession(): Promise<true | false | ExpiredFailure> {
   const token = (await getSession())?.accessToken;
-  if (!token) return false;
   const now = Date.now();
-  const at = verifiedTokens.get(token);
+  const at = token ? verifiedTokens.get(token) : undefined;
   if (at !== undefined && now - at < VERIFIED_FOR_MS) return true;
   try {
     // 관리자 토큰을 받는 가장 가벼운 조회다. 강제 비밀번호 변경 전 계정도 통과한다(@AllowPasswordChangePending).
-    await request("/auth/admin/login-info", { headers: { Authorization: `Bearer ${token}` } });
+    // 토큰이 없어도 묻는다 — 다른 탭에서 만료돼 쿠키가 지워졌으면 api 401 을 request() 가 만료로 표시한다(proxy SESSION_LOST_HEADER)
+    await request("/auth/admin/login-info", { headers: token ? { Authorization: `Bearer ${token}` } : {} });
   } catch (error) {
-    verifiedTokens.delete(token);
+    if (token) verifiedTokens.delete(token);
     const expired = expiredFailureOf(error);
     if (expired) return expired;
     if (process.env.NODE_ENV === "development") console.warn("주소 액션 — 세션 확인 실패", error);
     return false;
   }
+  // 토큰 없이 통과할 리 없지만 그때도 서버 키는 쓰지 않는다
+  if (token === undefined) return false;
   if (verifiedTokens.size >= VERIFIED_MAX) {
     for (const [key, time] of verifiedTokens) if (now - time >= VERIFIED_FOR_MS) verifiedTokens.delete(key);
     if (verifiedTokens.size >= VERIFIED_MAX) verifiedTokens.clear();
