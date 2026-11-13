@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { AdminStore } from "../../../lib/session.ts";
-import { bulkExportViewOf, canBulkExport, hasMaking, isScopeMaking, previewPathOf, requestBlockOf, scopeTextOf, storeIdsOfScope, type BulkExport } from "./bulk-export-model.ts";
+import { bulkExportViewOf, canBulkExport, hasMaking, isHqRole, isScopeMaking, previewPathOf, requestBlockOf, scopeTextOf, storeIdsOfScope, type BulkExport } from "./bulk-export-model.ts";
 
 const store = (storeId: number, storeTypeCode: string, storeStatusCode = "OPEN", name = `점포${storeId}`): AdminStore => ({
   storeId,
@@ -15,6 +15,7 @@ const stores = [store(1, "DIRECT"), store(2, "FRANCHISE"), store(3, "DIRECT", "C
 
 test("BP 마스터 · 가맹마스터만 쓴다", () => {
   assert.deepEqual(["BM", "FM", "BA", "FA", "PM", ""].map(canBulkExport), [true, true, false, false, false, false]);
+  assert.deepEqual(["BM", "BA", "FM", "FA", "PM", ""].map(isHqRole), [true, true, false, false, false, false], "api HQ_ROLES 와 같다");
 });
 
 test("업무 범위 → storeIds: 전체는 빈 목록, 직영 · 가맹은 폐점을 뺀 그 유형, 점포 하나는 그 점포", () => {

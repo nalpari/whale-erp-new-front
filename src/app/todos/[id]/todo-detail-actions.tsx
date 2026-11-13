@@ -136,7 +136,7 @@ export function TodoStatusControl({
       try {
         const result = await changeTodoStatus(todoId, next);
         if (result.ok) {
-          toast("updated");
+          toast("변경되었습니다."); // 상태 변경은 BP · 점포 상태처럼 「변경」(WHALEERP-693). [수정] 저장은 「수정되었습니다.」 그대로
           router.refresh();
           return;
         }
