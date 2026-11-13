@@ -50,6 +50,12 @@ export interface BulkExportLink {
 export const canBulkExport = (roleTypeCode: string) => roleTypeCode === "BM" || roleTypeCode === "FM";
 
 /**
+ * 본사 역할 — api 가 BP 마스터 파일에서 동의하지 않은 가맹 점포 직원 · 폐점한 가맹 점포 직원을 빼는 기준(admin-scope.service.ts
+ * HQ_ROLES = BM · BA, bulk-export-policy.ts)과 같다. 화면은 이 역할에게만 그 기준을 안내한다(WHALEERP-678)
+ */
+export const isHqRole = (roleTypeCode: string) => roleTypeCode === "BM" || roleTypeCode === "BA";
+
+/**
  * 헤더 업무 범위 → api 의 storeIds. 전체는 [](api 가 관리 점포 전체로 본다). 이 탭에서 쓸 수 없는 범위(점포가 로그인 정보에 없음)도
  * [] 로 본다 — 헤더도 그 범위를 「전체」로 되돌리므로(restoredScope) 표시(scopeTextOf)와 같다.
  */
