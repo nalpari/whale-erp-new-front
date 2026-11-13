@@ -17,22 +17,23 @@ export type FailureOptions = { definite?: boolean };
 
 export const SESSION_EXPIRED = "로그인이 만료되었습니다. 다시 로그인해 주세요.";
 
+/** 로그인 만료 결과 — 결과 모양이 다른 액션도 이것을 그대로 돌려주면 useAction 이 알아본다 */
+export type ExpiredFailure = ActionFailure & { status: 401; expired: true };
+
 /**
  * 로그인이 끊긴 401 이면 만료 결과, 아니면 null. 서버 액션의 실패 처리 함수는 첫 줄에서 이것을 거친다 —
  * 화면은 결과의 expired 를 보지 않아도 된다(useAction 이 보고 「로그인 만료」 팝업을 띄운다). 화면마다 다른 실패 규칙은 그 아래에 그대로 둔다.
  *   const expired = expiredFailureOf(error);
  *   if (expired) return expired;
  */
-/** 로그인 만료 결과 — 결과 모양이 다른 액션도 이것을 그대로 돌려주면 useAction 이 알아본다 */
-export type ExpiredFailure = ActionFailure & { status: 401; expired: true };
-
 export function expiredFailureOf(error: unknown): ExpiredFailure | null {
   if (!(error instanceof ApiError && error.expired)) return null;
   return { ok: false, status: 401, message: SESSION_EXPIRED, messages: [SESSION_EXPIRED], expired: true };
 }
 
 /**
- * 실패 오류를 화면에 보일 결과로. api 는 400 · 403 · 404 · 409 를 한국어로 알리므로 그대로 보인다. 401 은 할 일을 알 수 있게 고정 문구로 바꾼다.
+ * 실패 오류를 화면에 보일 결과로. api 는 400 · 403 · 404 · 409 를 한국어로 알리므로 그대로 보인다. 로그인 만료 401(request() 가 표시)은 expiredFailureOf 가 먼저 만료 결과로 돌려주고(useAction 팝업),
+ * 표시 없는 401 은 만료 표시 없이 같은 고정 문구로 바꾼다.
  * 5xx · 연결 실패 · ApiError 가 아닌 오류는 결과를 모르므로 로그를 남기고 「확인하지 못했습니다」 문구(what 은 「저장」 · 「삭제」 같은 동작 이름)로 돌려준다.
  * options.definite 면 ApiError 5xx 만 확정 실패 문구(「○○하지 못했습니다. 잠시 뒤 다시 시도해 주세요.」)로 돌려준다 — 로그는 똑같이 남기고, 연결 실패 ·
  * ApiError 가 아닌 오류는 여전히 결과 모름이다.

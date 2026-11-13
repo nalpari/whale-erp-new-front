@@ -158,8 +158,9 @@ async function refresh(session: Session): Promise<Session | "unauthorized" | nul
 }
 
 // 쿠키를 지워야 /login 의 「로그인한 채 오면 홈으로」가 다시 돌려보내지 않는다.
-// BFF(/api/*)와 종이 계약 등록(/contracts/paper)은 fetch 가 부르므로 로그인 화면 HTML 대신 401 을 준다 — 화면이 받아 /login 으로 보낸다.
-// 리다이렉트를 주면 fetch 가 따라가 날인본을 실은 채 /login 으로 다시 POST 하고, 화면은 로그인으로 가지 못한다(answersWith401).
+// fetch 가 부르는 창구(answersWith401 — BFF · 종이 계약 · 공지 저장 · 문의 등록 · 시설물 문서 · 엑셀 받기)는 로그인 화면 HTML 대신 401 을 준다 —
+// 화면의 bff() · fetchSameOrigin 이 「로그인 만료」 팝업을 띄운다. 리다이렉트를 주면 fetch 가 따라가 올린 파일을 실은 채 /login 으로 다시 POST 하고,
+// 화면은 로그인으로 가지 못한다.
 // 메일 링크(엑셀 내려받기)처럼 돌아올 수 있는 화면이면 /login?next= 로 보내 로그인 뒤 그 화면으로 돌아오게 한다(loginPathOf).
 // 이 브라우저로 로그인한 적이 있으면(login-key — 브라우저를 닫거나 직접 로그아웃해야 사라진다) 끊긴 것이므로 ?reason=expired 로 만료를 알린다.
 function toLogin(req: NextRequest) {

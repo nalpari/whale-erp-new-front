@@ -1,4 +1,5 @@
-// 종이 계약 등록(/contracts/paper) · 공지사항 저장(/platform-notices/save) · 문의 등록(/support-inquiries/save) 창구의 요청 검사. proxy 와 라우트 핸들러가 같이 쓴다.
+// fetch 가 부르는 받기 · 올리기 창구(종이 계약 등록 · 공지사항 저장 · 문의 등록 · 시설물 문서 · 엑셀 받기)의 요청 검사 — 로그인 만료 401 · 본문 상한 · 같은 출처.
+// proxy 와 라우트 핸들러가 같이 쓴다.
 // next/* 를 import 하지 않는다 — node --test 로 바로 돌리기 위해서다.
 
 export const PAPER_ROUTE = "/contracts/paper";

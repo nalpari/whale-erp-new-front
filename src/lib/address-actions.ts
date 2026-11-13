@@ -16,8 +16,8 @@ const VERIFIED_MAX = 500;
 const verifiedTokens = new Map<string, number>();
 
 /**
- * 로그인 세션의 토큰이 api 에서 통하는지. 실패(401 · 403 · 연결 실패)는 모두 아님으로 본다 — 키를 쓰지 않는 쪽이 안전하다.
- * 로그인 만료면 만료 결과를 돌려준다 — 화면의 useAction 이 「로그인 만료」 팝업을 띄운다.
+ * 로그인 세션의 토큰이 api 에서 통하는지. 로그인 만료(request() 가 표시한 401)면 만료 결과를 돌려주고(화면의 useAction 이 「로그인 만료」 팝업),
+ * 그 밖의 실패(표시 없는 401 · 403 · 연결 실패)는 모두 아님으로 본다 — 키를 쓰지 않는 쪽이 안전하다.
  */
 async function hasValidSession(): Promise<true | false | ExpiredFailure> {
   const token = (await getSession())?.accessToken;
