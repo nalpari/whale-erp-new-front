@@ -21,15 +21,17 @@ export function StartGuideButton() {
   const [picked, setTrack] = useState<GuideTrack | null>(null);
   const track = picked ?? initialTrackOf(account.roleTypeCode);
   return (
-    <div ref={ref} className="relative">
+    // 높이 42px 칸 가운데에 34px 알약 버튼 — 목록 상자는 이 칸 아래 8px 에 뜬다(전과 같은 자리)
+    <div ref={ref} className="relative flex h-[42px] items-center">
       <button
         ref={trigger}
         type="button"
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen((v) => !v)}
-        // 글자는 늘 포인트 파랑 — 전엔 회색이다가 호버 · 열림에만 파랑이라 눈에 잘 안 띄었다(2026-11-11 사용자 지정)
-        className="flex h-[42px] shrink-0 items-center gap-[6px] px-[6px] text-[14px] font-medium whitespace-nowrap text-erp-point"
+        // 글자는 늘 포인트 파랑 — 전엔 회색이다가 호버 · 열림에만 파랑이라 눈에 잘 안 띄었다(2026-11-11 사용자 지정).
+        // 마우스를 올리거나 열려 있으면 연한 포인트 바탕(erp-point-bg) 알약이 깔린다 — 누를 수 있는 것으로 보이게(2026-11-13 사용자 지정, A안)
+        className={`flex h-[34px] shrink-0 items-center gap-[6px] rounded-full px-[14px] text-[14px] font-medium whitespace-nowrap text-erp-point transition-colors duration-150 ease-out hover:bg-erp-point-bg ${open ? "bg-erp-point-bg" : ""}`}
       >
         시작 가이드
         {/* 꺾쇠는 글자색(파랑)을 따른다(currentColor). 모양은 /icons/chevron-small.svg 와 같다 */}

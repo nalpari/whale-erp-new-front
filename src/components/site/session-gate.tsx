@@ -139,6 +139,8 @@ export function useMenus() {
   const { menus, serviceCode } = useLogin();
   return menusOf(menus, serviceCode);
 }
+/** 서비스를 가리지 않은 전체 메뉴 — 주소가 어느 서비스 화면인지(serviceOfPath) 가릴 때만 쓴다. 헤더 · 권한 확인은 useMenus. */
+export const useAllMenus = () => useLogin().menus;
 export const useCurrentBp = () => useLogin().currentBp;
 export const useStores = () => useLogin().stores;
 /** 점포를 바꿨거나 결과를 모를 때 헤더 범위 선택기 · 점포 고르기를 바로 맞춘다. 화면에 보이는 점포가 바뀌었으면 「점포 목록이 변경되었습니다.」를 띄운다. */
