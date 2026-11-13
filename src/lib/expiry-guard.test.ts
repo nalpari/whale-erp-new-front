@@ -159,6 +159,25 @@ test("G2 서버 액션의 catch 는 만료를 먼저 거른다(expiredFailureOf)
   assert.deepEqual(found, [], "catch 첫 줄에서 `const expired = expiredFailureOf(error); if (expired) return expired;` 로 만료를 거르세요");
 });
 
+/** 세션 · 토큰이 없으면 api 를 부르기 전에 돌아가는 줄 */
+const NO_SESSION_RETURN = /if\s*\(\s*!\s*(\w+\.Authorization|token|session)\s*\)\s*return\b/;
+
+test("G2 서버 액션은 세션이 없다고 api 를 부르기 전에 돌아가지 않는다 — 다른 탭에서 만료된 경우도 팝업이 뜨게", () => {
+  const found: string[] = [];
+  for (const [file, src] of text) {
+    // app/actions.ts — 강제 비밀번호 변경의 401 은 만료가 아니다(G1 허용과 같다)
+    if (directive(file) !== "server" || isPublic(file) || file === "app/actions.ts") continue;
+    src.split("\n").forEach((line, i) => {
+      if (NO_SESSION_RETURN.test(line)) found.push(`${file}:${i + 1}  ${line.trim().slice(0, 100)}`);
+    });
+  }
+  assert.deepEqual(
+    found,
+    [],
+    "그 줄을 지우고 api 를 그대로 부르세요 — 세션 없이 온 액션(proxy SESSION_LOST_HEADER)의 api 401 을 request() 가 만료로 표시해 useAction 이 팝업을 띄웁니다",
+  );
+});
+
 // ── G3. 서버 화면의 catch 는 만료 이동을 삼키지 않는다 ──────────────────────────
 const isServerRender = (file: string) =>
   directive(file) === null &&
