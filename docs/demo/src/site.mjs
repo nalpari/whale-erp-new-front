@@ -67,9 +67,10 @@ function scopeDropdown(A) {
   // 운영 → 미운영 순, 미운영은 보조 줄에 「· 미운영」(앱 admin-header.tsx 와 같다, 2026-11-13)
   const storeOpt = (s) => opt(s[1], s[3] === "미운영" ? `${s[0]} · 미운영` : s[0], `${s[1]} ${s[0]}`, false);
   const byStatus = (list) => [...list.filter((s) => s[3] !== "미운영"), ...list.filter((s) => s[3] === "미운영")];
-  const sect = (title, items) =>
+  // point — 직영점포 · 가맹점포 묶음 머리는 포인트 파랑(앱 scope-select.tsx 와 같다, 2026-11-13)
+  const sect = (title, items, point = false) =>
     items.length
-      ? `<div class="flex flex-col gap-[1px] not-first:mt-[6px] not-first:border-t not-first:border-[#d9d9d9] not-first:pt-[4px]" data-scope-sect>${title ? `<p class="px-[12px] pt-[10px] pb-[4px] text-[13px] font-semibold text-erp-sub">${title}</p>` : ""}${items.join("")}</div>`
+      ? `<div class="flex flex-col gap-[1px] not-first:mt-[6px] not-first:border-t not-first:border-[#d9d9d9] not-first:pt-[4px]" data-scope-sect>${title ? `<p class="px-[12px] pt-[10px] pb-[4px] text-[13px] font-semibold ${point ? "text-erp-point" : "text-erp-sub"}">${title}</p>` : ""}${items.join("")}</div>`
       : "";
 
   const list =
@@ -82,8 +83,8 @@ function scopeDropdown(A) {
         fr.length ? opt("가맹점포 전체", "", `가맹점포 전체 ${fr.length}개`, false, `${fr.length}개`) : "",
       ].filter(Boolean),
     ) +
-    sect(`직영점포 · ${dir.length}`, byStatus(dir).map(storeOpt)) +
-    sect(`가맹점포 · ${fr.length}`, byStatus(fr).map(storeOpt));
+    sect(`직영점포 · ${dir.length}`, byStatus(dir).map(storeOpt), true) +
+    sect(`가맹점포 · ${fr.length}`, byStatus(fr).map(storeOpt), true);
 
   // 검색 줄 높이는 목업(pop__search · 36.5px)에 맞춘다 — 위 6 · 아래 8 여백, 입력칸 줄 높이 1.5 + 위아래 1px
   const search = `<div class="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[10px] pt-[6px] pb-[8px]">${ui.img(A, "search.svg", 14, 14)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent px-[2px] py-[1px] text-[14px] leading-[1.5] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>`;

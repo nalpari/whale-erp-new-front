@@ -10,7 +10,8 @@ export type ScopeSelectOption = { key: string; label: string; count?: string; me
 
 /** 칸 · 찾기에 쓰는 한 줄 글자 — 「직영점포 전체 · 14개」 */
 const textOf = (o: ScopeSelectOption) => (o.count ? `${o.label} · ${o.count}` : o.label);
-export type ScopeSelectSection = { title: string; options: ScopeSelectOption[] };
+/** point — 머리를 포인트 파랑(erp-point)으로(직영점포 · 가맹점포 묶음) */
+export type ScopeSelectSection = { title: string; options: ScopeSelectOption[]; point?: boolean };
 
 // 헤더 점포 범위 드롭다운(데모 site.mjs scopeDropdown · 목업 F-TLJOCK). 칸은 「BP 이름 · 고른 값」이고, 목록은 묶음(제목 + 항목)으로 펼친다.
 // 항목은 굵은 이름과 작은 보조 줄(개수 · 점포코드)이다. 고른 항목은 목록에 남고 ✓ 가 붙는다. 맨 위 검색칸이 이름 · 보조 줄로 거르고,
@@ -82,7 +83,7 @@ export function ScopeSelect({
           {/* 묶음(BP 범위 · 직영 · 가맹)마다 위에 1px 구분선(#d9d9d9 — 선 토큰은 모두 옅어 묶음이 갈려 보이지 않았다, 상세 표 값 구분선과 같은 색)과 6px 여백, 머리는 13px 600 erp-sub. 글자는 화면 본문과 같은 14px(이름 · 찾기 칸) · 보조 줄 12px — 13 · 11.5px 라 작았다(2026-11-13 사용자 지정) */}
           {shown.map((s) => (
             <div key={s.title} role="group" aria-label={s.title} className="flex flex-col gap-[1px] not-first:mt-[6px] not-first:border-t not-first:border-[#d9d9d9] not-first:pt-[4px]">
-              <p className="px-[12px] pt-[10px] pb-[4px] text-[13px] font-semibold text-erp-sub">{s.title}</p>
+              <p className={`px-[12px] pt-[10px] pb-[4px] text-[13px] font-semibold ${s.point ? "text-erp-point" : "text-erp-sub"}`}>{s.title}</p>
               {s.options.map((o) => (
                 <button
                   key={o.key}

@@ -894,8 +894,9 @@
       var ids = v.all ? [] : v.ids;
       var same = function (list) { return ids.length === list.length && list.every(function (x) { return ids.indexOf(x.id) > -1; }); };
       var cur = !ids.length || same(open) ? "all" : dir.length && same(dir) ? "dir" : fr.length && same(fr) ? "fr" : ids.length === 1 ? ids[0] : "";
-      function sect(title, items) {
-        return items.length ? '<div class="pop__sect"><div class="pop__label">' + title + "</div>" + items.join("") + "</div>" : "";
+      /* point — 직영점포 · 가맹점포 묶음 머리는 포인트 파랑(2026-11-13 사용자 지정) */
+      function sect(title, items, point) {
+        return items.length ? '<div class="pop__sect"><div class="pop__label"' + (point ? ' style="color:#4a7ae0"' : "") + '>' + title + "</div>" + items.join("") + "</div>" : "";
       }
       return (open.length >= 10
           ? '<div class="pop__search">' + ic("search", 14) + '<input class="pop__q" type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" /></div>'
@@ -905,8 +906,8 @@
         sect(bp.name, [ddOpt("all", "전체 점포 · " + open.length + "개", "", cur === "all")]
           .concat(dir.length ? [ddOpt("dir", "직영점포 전체 · " + dir.length + "개", "", cur === "dir")] : [])
           .concat(fr.length ? [ddOpt("fr", "가맹점포 전체 · " + fr.length + "개", "", cur === "fr")] : [])) +
-        sect("직영점포 · " + dir.length, dir.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); })) +
-        sect("가맹점포 · " + fr.length, fr.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); })) +
+        sect("직영점포 · " + dir.length, dir.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); }), true) +
+        sect("가맹점포 · " + fr.length, fr.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); }), true) +
         '<p class="pop__none" hidden>맞는 점포가 없습니다.</p>' +
         "</div>" +
         "";

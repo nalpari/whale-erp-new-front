@@ -226,8 +226,8 @@ function scopeSections(bpName: string, stores: AdminStore[]): ScopeSelectSection
         ...(frOpen ? [{ key: "FRANCHISE", label: "가맹점포 전체", count: `${frOpen}개` }] : []),
       ],
     },
-    ...(direct.length ? [{ title: `직영점포 · ${dirOpen}`, options: storeOptions(direct) }] : []),
-    ...(franchise.length ? [{ title: `가맹점포 · ${frOpen}`, options: storeOptions(franchise) }] : []),
+    ...(direct.length ? [{ title: `직영점포 · ${dirOpen}`, options: storeOptions(direct), point: true }] : []),
+    ...(franchise.length ? [{ title: `가맹점포 · ${frOpen}`, options: storeOptions(franchise), point: true }] : []),
   ];
 }
 
