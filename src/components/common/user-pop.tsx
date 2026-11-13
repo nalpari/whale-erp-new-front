@@ -49,7 +49,7 @@ export function UserPop({ name, items, triggerRef }: { name: string; items: User
         {/* 서비스 바로가기 · 알림 종과 같은 툴팁(2026-10-29 사용자 지정). 메뉴가 열리면 감춘다. */}
         {!open && <HeaderTip label="마이페이지" />}
       </button>
-      <Popup id={id} open={open} motion="fade" tail className="right-0 w-[154px]">
+      <Popup id={id} open={open} motion="fade" header className="right-0 w-[154px]">
         <p className="text-[15px] leading-[2] font-medium text-[#111] [text-box:trim-both_cap_alphabetic]">마이페이지</p>
         <hr className="mt-[12px] mb-[18px] border-erp-button-line" />
         <ul className="text-[14px] leading-[2] [text-box:trim-both_cap_alphabetic]">
