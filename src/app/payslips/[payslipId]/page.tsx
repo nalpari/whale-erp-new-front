@@ -31,7 +31,8 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
   if (!payslip) notFound();
   // 링크는 옛 경로에 탭 BP 를 붙여 그린다(WHALEERP-637). 근로계약도 탭 BP 주소 화면이다
   const at = await screenPath();
-  const listHref = at(payslipListHref(await searchParams, kstToday()));
+  const today = kstToday();
+  const listHref = at(payslipListHref(await searchParams, today));
   const reasonOf = (value: string) => labelOf(reasonLabels, value);
   // 공제 미입력은 사유 줄로 저장되지 않아 저장된 공제 칸으로 판정해 더한다 — 목록의 검토 대기 사유와 같다(v221 PAY-06).
   const reviewReasons = detailReviewReasons(payslip);
@@ -125,6 +126,7 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
             payslip={payslip}
             band={reviewBand(payslip.reviewReasons, reasonOf)}
             listHref={listHref}
+            today={today}
             aside={aside}
           />
         </div>
