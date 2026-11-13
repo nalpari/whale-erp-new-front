@@ -157,7 +157,8 @@ export function RetirementDialog({
       <div className="flex flex-col gap-[12px]">
         <div className="flex flex-col gap-[8px]">
           <span className="text-[14px] font-medium text-erp-label">퇴직일</span>
-          <DateField aria-label="퇴직일" value={date} onChange={(value) => {
+          {/* 생년월일 칸처럼 숫자 8자리만 쳐도 날짜가 된다(autoHyphen) — 퇴직일만 YYYY-MM-DD 로 쳐야 해서 칸마다 달랐다(통합테스트 IT-STAFF-007, 2026-11-13) */}
+          <DateField aria-label="퇴직일" autoHyphen value={date} onChange={(value) => {
               if (reloadsPreview(value, date, preview.status)) changeDate(value);
             }}
           />

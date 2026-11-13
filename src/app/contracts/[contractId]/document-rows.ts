@@ -5,15 +5,28 @@
 // 빠지지 않게(front #196 code-review). 관리자는 상태와 상관없이 저장된 파일을 모두 본다.
 
 export type ContractFile = { contractDocumentId: number; kind: string; fileName: string };
-/** withKind — 링크에 파일 종류 이름을 붙인다(날인본 · 기타 줄은 종류가 섞인다). 처리 완료본 · 보낸 원본 줄은 줄 이름이 곧 종류다 */
-export type DocumentRow = { label: string; documents: ContractFile[]; withKind: boolean; empty?: string };
+/** withKind — 링크에 파일 종류 이름을 붙인다(날인본 · 기타 줄은 종류가 섞인다). 처리 완료본 · 보낸 원본 줄은 줄 이름이 곧 종류다. note — 파일 목록 뒤 회색 안내 */
+export type DocumentRow = { label: string; documents: ContractFile[]; withKind: boolean; empty?: string; note?: string };
 
 type Source = {
   contractMethod: string | null;
   status: string | null;
   histories: readonly { fromStatus: string | null; toStatus: string }[];
   documents: readonly ContractFile[];
+  /** 마지막으로 보낸 시각(ISO) · 지금(ms, 비우면 지금 시각 — 테스트가 고정한다) — 만드는 중 안내는 마지막 발송이 하루 안일 때만 */
+  lastSentAt?: string | null;
+  now?: number;
 };
+
+/** api 가 놓친 보낸 원본을 다시 만드는 기간(contract-files.service SENT_ORIGINAL_RETRY_MS) — 그 뒤로도 모자라면 옛 계약 · 실패라 안내하지 않는다 */
+const SENT_ORIGINAL_RETRY_MS = 24 * 60 * 60_000;
+
+/**
+ * 마지막 발송의 원본인지 — api 는 원본 이름 끝에 발송 시각(한국, 분까지)을 붙인다(contract-pdf.ts contractPdfFileName
+ * 「근로계약서-보낸원본-{id}-{YYYYMMDDHHmm}.pdf」). 개수로 견주면 원본이 없던 옛 발송 · 원본 전에 다시 보낸 발송이 영영 모자라
+ * 안내가 남는다(PR 리뷰) — api 는 지난 발송의 원본을 채우지 않는다. 같은 분에 두 번 보내면 가르지 못한다(그때는 안내 없음).
+ */
+const kstStamp = (iso: string) => new Date(Date.parse(iso) + 9 * 60 * 60_000).toISOString().slice(0, 16).replace(/\D/g, "");
 
 const PAPER_ORDER = ["PAPER_EMPLOYMENT_CONTRACT", "WAGE_CONTRACT"];
 const KNOWN = new Set([...PAPER_ORDER, "SIGNED_COPY", "SENT_ORIGINAL", "SIGNATURE"]);
@@ -23,6 +36,12 @@ const KNOWN = new Set([...PAPER_ORDER, "SIGNED_COPY", "SENT_ORIGINAL", "SIGNATUR
  * 「잠시 뒤 생긴다」고 약속하지 않는다.
  */
 export const NO_SIGNED_COPY = "처리 완료본이 아직 없습니다. 서명 직후라면 잠시 뒤 새로 고쳐 주세요.";
+
+/**
+ * 마지막 발송의 보낸 원본이 아직 없을 때. api 는 발송 · 재발송 응답 뒤에 원본 PDF 를 만들어(늦으면 배치가) 직후에는 아직 없다 —
+ * 재발송 직후 상세를 열면 원본이 안 보여 반영이 안 된 것처럼 보였다(통합테스트 IT-STAFF-005, 2026-11-13).
+ */
+export const SENT_ORIGINAL_PENDING = "보낸 원본을 만드는 중입니다. 잠시 뒤 새로 고쳐 주세요.";
 
 /**
  * 체결된 계약 — api 의 직원 앱 처리 완료본 내려받기(MyContractDocumentsService.executed)와 같은 기준: 체결 완료, 체결 완료에서 닫힌
@@ -46,7 +65,11 @@ export function documentRowsOf(c: Source): DocumentRow[] {
   // 종이 계약이면(계약 방식이 빈 옛 계약은 날인본이 있으면) 처리 완료본이 없다 — 「아직 없음」이 영영 남지 않게(front #196 리뷰)
   else if (c.contractMethod !== "PAPER" && paper.length === 0 && executed(c)) rows.push({ label: "처리 완료본", documents: [], withKind: false, empty: NO_SIGNED_COPY });
   const sent = ofKind("SENT_ORIGINAL");
-  if (sent.length) rows.push({ label: "보낸 원본", documents: sent, withKind: false });
+  const recent = !!c.lastSentAt && (c.now ?? Date.now()) - Date.parse(c.lastSentAt) < SENT_ORIGINAL_RETRY_MS;
+  // 종이 계약만 뺀다 — 계약 방식이 빈 옛 전자계약도 api 가 원본을 만든다(contract-files.service 「contract_method IS DISTINCT FROM PAPER」, PR #272 리뷰)
+  const sentPending = c.contractMethod !== "PAPER" && recent && !!c.lastSentAt && !sent.some((d) => d.fileName.endsWith(`-${kstStamp(c.lastSentAt!)}.pdf`));
+  if (sent.length) rows.push({ label: "보낸 원본", documents: sent, withKind: false, ...(sentPending ? { note: SENT_ORIGINAL_PENDING } : {}) });
+  else if (sentPending) rows.push({ label: "보낸 원본", documents: [], withKind: false, empty: SENT_ORIGINAL_PENDING });
   // api 가 새 종류를 더하면 이름표(getEnum)와 함께 보인다 — 말없이 사라지지 않게
   const other = c.documents.filter((d) => !KNOWN.has(d.kind)).sort(newestFirst);
   if (other.length) rows.push({ label: "기타 파일", documents: other, withKind: true });

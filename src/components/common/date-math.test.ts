@@ -54,6 +54,13 @@ test("hyphenateDate 는 숫자를 칠 때 YYYY-MM-DD 로 하이픈을 넣고, �
   assert.equal(hyphenateDate(""), "");
 });
 
+test("hyphenateDate 는 하이픈을 두 번 친 값(한 자리 달 · 날)을 그대로 둔다 (2026-8-5 를 parse 가 받는다)", () => {
+  assert.equal(hyphenateDate("2026-8-"), "2026-8-");
+  assert.equal(hyphenateDate("2026-8-5"), "2026-8-5");
+  assert.equal(hyphenateDate("1998-07-12"), "1998-07-12");
+  assert.equal(hyphenateDate("1998-07-123"), "1998-07-12");
+});
+
 test("hyphenateDate 는 / · . 로 친 값은 그대로 둔다 (2020/8/5 를 parse 가 받는다)", () => {
   assert.equal(hyphenateDate("2020/8/5"), "2020/8/5");
   assert.equal(hyphenateDate("2020.08.05"), "2020.08.05");
