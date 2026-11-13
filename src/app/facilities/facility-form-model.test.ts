@@ -49,6 +49,26 @@ test("전화번호 — 비었으면 괜찮고, 이은 번호가 9~12자리가 �
   assert.equal(problems(valid({ managerPhone: ["1", "", ""] }), "create").managerPhone, "관리 담당자 전화번호는 숫자 9~12자리입니다.");
 });
 
+test("대표번호(15xx · 16xx · 18xx 8자리) — 구매처 · A/S센터만 받는다", () => {
+  for (const p of [["1588", "1234", ""], ["1644", "0000", ""], ["1800", "1234", ""]] as const) {
+    assert.equal(problems(valid({ vendorPhone: [...p] }), "create").vendorPhone, undefined);
+    assert.equal(problems(valid({ serviceCenterPhone: [...p] }), "create").serviceCenterPhone, undefined);
+  }
+  // 사람 번호 칸은 8자리를 받지 않는다
+  assert.equal(problems(valid({ salesRepresentativePhone: ["1588", "1234", ""] }), "create").salesRepresentativePhone, "영업사원 전화번호는 숫자 9~12자리입니다.");
+  assert.equal(problems(valid({ managerPhone: ["1588", "1234", ""] }), "create").managerPhone, "관리 담당자 전화번호는 숫자 9~12자리입니다.");
+  // 대표번호 모양이 아닌 8자리 — 끝자리를 빠뜨린 번호 · 1로 시작하지만 대표번호가 아님
+  const msg = "A/S센터 전화번호는 숫자 9~12자리 또는 15xx·16xx·18xx 대표번호 8자리입니다.";
+  assert.equal(problems(valid({ serviceCenterPhone: ["010", "1234", "5"] }), "create").serviceCenterPhone, msg);
+  assert.equal(problems(valid({ serviceCenterPhone: ["1234", "5678", ""] }), "create").serviceCenterPhone, msg);
+  assert.equal(problems(valid({ serviceCenterPhone: ["1588", "123", ""] }), "create").serviceCenterPhone, msg);
+  // 나누기 · 보이기
+  assert.deepEqual(splitPhone("15881234"), ["1588", "1234", ""]);
+  assert.equal(phoneText("15881234"), "1588-1234");
+  // 대표번호가 아닌 8자리는 저장될 수 없는 값(api 도 막는다) — 대표번호 나누기를 타지 않는지만 본다
+  assert.deepEqual(splitPhone("12345678"), ["123", "4", "5678"]);
+});
+
 test("설치일은 구매일보다 앞설 수 없다 · 같은 날은 된다", () => {
   assert.equal(problems(valid({ purchaseDate: "2025-01-03", installationDate: "2025-01-01" }), "create").installationDate, "설치일은 구매일보다 앞설 수 없습니다.");
   assert.equal(problems(valid({ purchaseDate: "2025-01-03", installationDate: "2025-01-03" }), "create").installationDate, undefined);
