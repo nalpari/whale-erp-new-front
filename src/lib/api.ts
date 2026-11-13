@@ -42,10 +42,16 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     const error = await apiError(response);
     // 로그인이 끊긴 401: 화면을 그리는 중이면 로그인 화면으로 보내고(남은 쿠키는 그 주소에서 proxy 가 정리), 서버 액션 · BFF 면 표시만 남긴다 —
     // 액션에서 이동하면 「로그인 만료」 팝업 없이 넘어가고 대부분의 catch 가 이동 신호를 삼킨다. 표시는 expiredFailureOf · useAction 이 읽는다.
-    const expiry = await expiryHandlingOf(response.status, path, new Headers(init.headers).has("authorization"), () => hasRequestHeader(RENDER_HEADER), () =>
-      hasRequestHeader(SESSION_LOST_HEADER),
+    // 그리는 화면 주소는 로그인 뒤 돌아올 곳이다(메일 링크의 엑셀 받기 화면 등) — proxy 의 toLogin 과 같게
+    let rendered: string | null = null;
+    const expiry = await expiryHandlingOf(
+      response.status,
+      path,
+      new Headers(init.headers).has("authorization"),
+      async () => (rendered = await requestHeader(RENDER_HEADER)) !== null,
+      async () => (await requestHeader(SESSION_LOST_HEADER)) === "1",
     );
-    if (expiry === "login") redirect(loginPathOf("/", "GET", EXPIRED_REASON));
+    if (expiry === "login") redirect(loginPathOf(rendered ?? "/", "GET", EXPIRED_REASON));
     if (expiry === "mark") error.expired = true;
     throw error;
   }
@@ -57,15 +63,15 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
 }
 
 /**
- * proxy 가 붙인 표시가 있는가 — 화면을 그리는 요청(RENDER_HEADER) · 세션 없이 온 서버 액션(SESSION_LOST_HEADER).
- * 요청 밖(빌드 · 캐시 함수)이라 headers() 를 못 부르면 아니다.
+ * proxy 가 붙인 표시 — 화면을 그리는 요청(RENDER_HEADER, 값은 화면 주소) · 세션 없이 온 서버 액션(SESSION_LOST_HEADER).
+ * 요청 밖(빌드 · 캐시 함수)이라 headers() 를 못 부르면 없다(null).
  */
-async function hasRequestHeader(name: string): Promise<boolean> {
+async function requestHeader(name: string): Promise<string | null> {
   try {
-    return (await headers()).get(name) === "1";
+    return (await headers()).get(name);
   } catch (e) {
     unstable_rethrow(e); // 정적 렌더링을 멈추는 Next 신호는 삼키지 않는다
-    return false;
+    return null;
   }
 }
 

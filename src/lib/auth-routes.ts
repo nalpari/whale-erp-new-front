@@ -78,6 +78,7 @@ export function loginPathOf(pathname: string, method = "GET", reason?: LogoutRea
 /**
  * proxy 가 서버 화면 요청에만 붙이는 내부 헤더. request() 가 api 401 을 받았을 때 화면을 그리는 중이면(이 헤더) 로그인 화면으로 보내고,
  * 서버 액션 · BFF · 업로드 창구면 오류에 만료 표시만 남긴다 — 서버 액션에서 이동하면 팝업 없이 넘어가고, 대부분의 catch 가 이동 신호를 삼킨다.
+ * 값은 그 화면 주소(pathname)다 — 로그인 화면이 돌아올 곳(?next=)을 proxy 의 toLogin 과 같게 만든다(loginPathOf 가 돌아올 수 있는 화면만 남긴다).
  * 브라우저가 보낸 같은 헤더는 proxy 가 늘 지운다.
  */
 export const RENDER_HEADER = "x-whale-render";

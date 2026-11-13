@@ -96,7 +96,7 @@ export async function proxy(req: NextRequest) {
   const route = bpRoute(req, session);
   if (route instanceof URL) return NextResponse.redirect(route);
   // 화면을 그리는 요청에만 표시한다 — request() 가 api 401 을 받으면 이 표시가 있을 때만 로그인 화면으로 보낸다(서버 액션 · BFF 는 오류에 만료 표시만).
-  if (marksRenderRequest(req.method, isAction, answersWith401(stripBp(pathname)))) req.headers.set(RENDER_HEADER, "1");
+  if (marksRenderRequest(req.method, isAction, answersWith401(stripBp(pathname)))) req.headers.set(RENDER_HEADER, pathname);
   // 요청 헤더(탭 BP · 갱신한 쿠키)를 바꿔 넘긴다. /bp/{id} 주소면 옛 경로(폴더)로 rewrite 한다 — 브라우저 주소는 그대로다.
   const pass = () => (route ? NextResponse.rewrite(route.rewrite, { request: { headers: req.headers } }) : NextResponse.next({ request: { headers: req.headers } }));
 
