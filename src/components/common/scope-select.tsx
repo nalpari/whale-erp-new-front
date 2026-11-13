@@ -46,7 +46,7 @@ export function ScopeSelect({
         aria-label={`${label}: ${current || "없음"}`}
         disabled={all.length === 0}
         onClick={() => setOpen(!open)}
-        className="flex h-[42px] w-[420px] items-center gap-[8px] rounded-full border border-erp-field-line bg-erp-thead-bg px-[18px] text-left text-[14px] text-erp-ink"
+        className={`flex h-[42px] w-[420px] items-center gap-[8px] rounded-full border bg-erp-thead-bg px-[18px] text-left text-[14px] text-erp-ink transition-colors duration-150 ${open ? "border-erp-brand" : "border-erp-field-line enabled:hover:border-erp-brand"}`}
       >
         <b className="shrink-0 font-semibold">{title}</b>
         <span className="text-erp-label">·</span>

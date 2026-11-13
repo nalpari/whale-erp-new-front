@@ -32,8 +32,10 @@ export function NotificationBell({ data }: { data: { unreadCount: number; recent
   const icon = <Image src="/icons/alarm-bell.svg" alt="" width={42} height={42} />;
   if (!data)
     return (
-      <Link href="/notifications" aria-label="알림" className="group relative shrink-0 rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70">
+      <Link href="/notifications" aria-label="알림" className="group relative shrink-0 rounded-full">
         {icon}
+        {/* 마우스를 올리면 마이페이지 알약처럼 둥근 테두리가 회청으로 — 전엔 종 그림만 흐려졌다(2026-11-13 사용자 지정) */}
+        <span aria-hidden className="pointer-events-none absolute inset-0 rounded-full border border-erp-brand opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
         <HeaderTip label="알림" />
       </Link>
     );
@@ -47,9 +49,10 @@ export function NotificationBell({ data }: { data: { unreadCount: number; recent
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((v) => !v)}
-        className="group relative block rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70"
+        className="group relative block rounded-full"
       >
         {icon}
+        <span aria-hidden className={`pointer-events-none absolute inset-0 rounded-full border border-erp-brand transition-opacity duration-150 ${open ? "opacity-100" : "opacity-0"} group-hover:opacity-100`} />
         {/* 서비스 바로가기와 같은 툴팁(2026-10-29 사용자 지정). 팝오버가 열리면 그 아래에 깔린다. */}
         {!open && <HeaderTip label="알림" />}
         {badge && (

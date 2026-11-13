@@ -80,6 +80,10 @@
     window.addEventListener("scroll", updatePin, { passive: true });
     window.addEventListener("resize", updatePin);
   }
+  // 핵심기능 판이 화면을 벗어나면 data-passed 를 달아 떠 있는 띠를 올린다 — 앱 hide-floating-while-visible.tsx 와 같다.
+  for (const zone of $$("[data-guest-hero]")) {
+    new IntersectionObserver((entries) => zone.toggleAttribute("data-passed", !entries[entries.length - 1].isIntersecting)).observe(zone);
+  }
   // 비밀번호 보기·숨기기. 버튼 안 두 그림 중 지금 상태를 바꾸는 쪽 하나만 보인다.
   for (const btn of $$("[data-password-toggle]")) {
     const input = btn.closest("label, span").querySelector("input");

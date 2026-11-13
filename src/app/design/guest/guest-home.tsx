@@ -5,6 +5,7 @@ import type { components } from "@/lib/api-types.generated";
 import type { GuestRoutes } from "./guest-routes";
 import { FaqItem, FloatingActions, GuestButton, GuestPage, SectionTitle, TRIM } from "./guest-ui";
 import { Badges, dotDate } from "./notices/notice-views";
+import { HideFloatingWhileVisible } from "./hide-floating-while-visible";
 import { AttendanceMock, MOCK, MOCK_BUTTON, MockField, MockRow, StaffAppHomeMock, StoreCardMock } from "./screen-mocks";
 import { FRAME, HOVER } from "./theme";
 
@@ -65,11 +66,85 @@ function AddOnTicker({ tag, items }: { tag: string; items: readonly { icon: keyo
   );
 }
 
+// 핵심기능 — 첫 화면 부가서비스 줄 아래 반투명 유리판(사용자가 보낸 시안 참고, 2026-11-13 사용자 지정). 왼쪽 「핵심기능 7가지」(위 「KEY FEATURES」 줄은 2026-11-13 뺐다), 오른쪽 카드 일곱 장. 띠가 너무 높아 판 위아래 14px · 카드 위아래 12px · 아이콘 44px 로 낮췄다(2026-11-13 사용자 지정).
+// 카드는 흰 반투명 판에 3D 클레이 아이콘(44px) · 이름이다 — 한 줄 설명은 이름과 말이 겹쳐 뺐다(2026-11-13 사용자 지정). 항목은 2026-11-12 정한 일곱 개(직원 관리 넷 · 매장 · 재무 · 본사).
+// 3D 클레이 결(2026-11-13 사용자 지정 — 납작한 면 + 그라데이션은 예전 클립아트처럼 보였다): 통통한 면(core-body) · 위쪽 빛 · 아래 그림자(core-shadow), 안쪽 밝은 판(core-soft). 강조 파랑(#4a7ae0) 한 계열이다.
+const CORE_ICON = {
+  contract:
+    '<g filter="url(#core-shadow)"><rect x="13" y="4" width="26" height="44" rx="8" fill="url(#core-body)"/><rect x="17" y="10" width="18" height="28" rx="4" fill="url(#core-soft)"/><path d="M21 24l3.5 3.5L31 21" stroke="#4a7ae0" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="20" cy="7.5" rx="4" ry="1.6" fill="#fff" opacity=".55"/></g>',
+  attendance:
+    '<g filter="url(#core-shadow)"><path d="M26 48s-15-13-15-26a15 15 0 0 1 30 0c0 13-15 26-15 26z" fill="url(#core-body)"/><circle cx="26" cy="22" r="6.5" fill="url(#core-soft)"/><ellipse cx="19" cy="12" rx="4.5" ry="2.4" fill="#fff" opacity=".5" transform="rotate(-30 19 12)"/></g>',
+  schedule:
+    '<g filter="url(#core-shadow)"><rect x="5" y="10" width="42" height="38" rx="10" fill="url(#core-body)"/><rect x="9" y="20" width="34" height="24" rx="6" fill="url(#core-soft)"/><rect x="15" y="5" width="5" height="11" rx="2.5" fill="#3a66c4"/><rect x="32" y="5" width="5" height="11" rx="2.5" fill="#3a66c4"/><g fill="#7fa8ef"><circle cx="17" cy="28" r="2.6"/><circle cx="26" cy="28" r="2.6"/><circle cx="35" cy="28" r="2.6"/><circle cx="17" cy="36.5" r="2.6"/></g><circle cx="26" cy="36.5" r="3.2" fill="#4a7ae0"/></g>',
+  payslip:
+    '<g filter="url(#core-shadow)"><path d="M11 4h30a3 3 0 0 1 3 3v41l-5.5-3.5-6.5 3.5-6-3.5-6 3.5-6.5-3.5L8 48V7a3 3 0 0 1 3-3z" fill="url(#core-body)"/><rect x="14" y="12" width="24" height="22" rx="4" fill="url(#core-soft)"/><text x="26" y="28.5" text-anchor="middle" font-size="13" font-weight="800" fill="#4a7ae0" font-family="Arial,sans-serif">₩</text><ellipse cx="17" cy="7.5" rx="4" ry="1.5" fill="#fff" opacity=".55"/></g>',
+  store:
+    '<g filter="url(#core-shadow)"><path d="M9 21l4-13h26l4 13z" fill="url(#core-body)"/><path d="M9 21a5.67 5 0 0 0 11.33 0 5.67 5 0 0 0 11.34 0 5.67 5 0 0 0 11.33 0z" fill="url(#core-soft)"/><rect x="11" y="25" width="30" height="23" rx="5" fill="url(#core-body)"/><rect x="21.5" y="34" width="9" height="14" rx="2.5" fill="url(#core-soft)"/><ellipse cx="17" cy="11" rx="3.5" ry="1.4" fill="#fff" opacity=".55"/></g>',
+  ledger:
+    '<g filter="url(#core-shadow)"><rect x="6" y="28" width="11" height="20" rx="4" fill="#a9c4f5"/><rect x="20.5" y="18" width="11" height="30" rx="4" fill="#7fa8ef"/><rect x="35" y="6" width="11" height="42" rx="4" fill="url(#core-body)"/><ellipse cx="40.5" cy="10" rx="3" ry="1.4" fill="#fff" opacity=".6"/></g>',
+  franchise:
+    '<g filter="url(#core-shadow)"><path d="M26 17v8M12 33v-8h28v8" stroke="#9dbdf3" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="18" y="3" width="16" height="14" rx="4" fill="url(#core-body)"/><rect x="5" y="33" width="14" height="14" rx="4" fill="#a9c4f5"/><rect x="19" y="33" width="14" height="14" rx="4" fill="url(#core-body)"/><rect x="33" y="33" width="14" height="14" rx="4" fill="#a9c4f5"/></g>',
+} as const;
+
+const CORE_FEATURES = [
+  // 점포 · 시설 점검을 맨 앞에 둔다 — 매장을 등록해야 나머지를 쓰는 순서다(2026-11-13 사용자 지정)
+  { icon: "store", title: "점포 · 시설 점검" },
+  { icon: "contract", title: "모바일 전자계약" },
+  { icon: "attendance", title: "출퇴근 관리" },
+  { icon: "schedule", title: "근무스케줄 · 업무배정" },
+  { icon: "payslip", title: "급여명세서 자동화" },
+  { icon: "ledger", title: "매출 · 장부 관리" },
+  { icon: "franchise", title: "가맹점 통합운영" },
+] as const;
+
+function CoreFeatures() {
+  return (
+    <section aria-labelledby="core-features" className="flex items-center gap-[24px] rounded-[28px] border border-white/80 bg-white/45 px-[28px] py-[14px] shadow-[0_12px_40px_rgba(58,86,112,0.12)] backdrop-blur-[6px]">
+      {/* 아이콘 면 · 안쪽 판 · 그림자 — 한 번만 정의하고 일곱 아이콘이 url(#core-…) 로 함께 쓴다 */}
+      <svg aria-hidden width="0" height="0" className="absolute">
+        <defs>
+          <radialGradient id="core-body" cx="35%" cy="28%" r="80%">
+            <stop offset="0" stopColor="#cfe1ff" />
+            <stop offset="0.55" stopColor="#7fa8ef" />
+            <stop offset="1" stopColor="#4a7ae0" />
+          </radialGradient>
+          <radialGradient id="core-soft" cx="35%" cy="25%" r="85%">
+            {/* 안쪽 밝은 판 — 흰 카드 위에 따로 놓인 조각(막대 · 가맹점 상자)이 묻히지 않게 끝을 옅은 파랑까지 내린다 */}
+            <stop offset="0" stopColor="#f4f8ff" />
+            <stop offset="1" stopColor="#bcd2f6" />
+          </radialGradient>
+          <filter id="core-shadow" x="-40%" y="-40%" width="180%" height="180%">
+            <feDropShadow dx="0" dy="5" stdDeviation="4" floodColor="#3a66c4" floodOpacity="0.28" />
+          </filter>
+        </defs>
+      </svg>
+      <div className="flex w-[clamp(150px,11vw,190px)] shrink-0 flex-col gap-[8px]">
+        <h2 id="core-features" className="text-[clamp(22px,1.6vw,28px)] leading-[1.3] font-bold whitespace-nowrap text-guest-navy">
+          핵심기능 7가지
+        </h2>
+        <span aria-hidden className="h-[3px] w-[96px] rounded-full bg-gradient-to-r from-[#9cc3ff] to-transparent" />
+      </div>
+      <span aria-hidden className="h-[72px] w-px shrink-0 bg-[#d5e1ec]" />
+      <ul className="grid min-w-0 flex-1 grid-cols-7 gap-[clamp(8px,0.7vw,12px)]">
+        {CORE_FEATURES.map((f) => (
+          <li key={f.title} className="group flex min-w-0 flex-col items-center gap-[6px] rounded-[18px] border border-white bg-white/80 px-[8px] py-[12px] text-center shadow-[0_6px_18px_rgba(58,86,112,0.10)] transition-[translate,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-[4px] hover:shadow-[0_12px_26px_rgba(58,86,112,0.16)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+            {/* 마우스를 올리면 카드가 4px 떠오르고 그림자가 짙어지며, 아이콘이 조금 커지고 기운다(200ms 감속, 움직임 줄이기 설정에서는 끈다 — 2026-11-13 사용자 지정) */}
+            <svg aria-hidden viewBox="0 0 52 52" className="size-[44px] overflow-visible transition-[scale,rotate] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.06] group-hover:-rotate-3 motion-reduce:transition-none motion-reduce:group-hover:scale-100 motion-reduce:group-hover:rotate-0" dangerouslySetInnerHTML={{ __html: CORE_ICON[f.icon] }} />
+            {/* 이름은 남색 굵게가 촌스러워 거의 먹색(#2b3440) 600 으로 — 아이콘 파랑과 겹치지 않게(2026-11-13 사용자 지정) */}
+            <b className="text-[clamp(13px,0.95vw,16px)] leading-[1.35] font-semibold break-keep text-[#2b3440]">{f.title}</b>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 // 머리말(110px)이 Billboard 위에 겹치도록 그만큼 끌어올린다.
 // 머리말 아래 빈 하늘 100px 를 잘라 1080 → 980 으로 줄였다(2026-11-09 사용자 지정).
 function Billboard() {
   return (
-    <section className="relative -mt-[110px] overflow-hidden pt-[210px] pb-[24px]">
+    <section className="relative -mt-[110px] overflow-hidden pt-[210px] pb-[56px]">
+      {/* 여백(2026-11-13 사용자 지정): 머리말 아래 제목까지는 100px 그대로(64px 로 줄였다가 위가 넉넉한 쪽이 낫다고 되돌림), 핵심기능 판 아래 24 → 56px(판이 첫 화면 끝에 붙어 보였다). 아래 「사장님,」 구역 위 여백도 100 → 72px 로 줄여 판과 제목 사이를 맞춘다 */}
       <Image src="/guest/billboard-bg.png" alt="" fill loading="eager" sizes="100vw" className="object-cover" />
       {/* 정사각 그림을 시안 비율(677:375)로 늘여 채운 것이 시안이다 — object-cover 로 바꾸면 고래가 잘린다.
           시안의 2px 흐림은 너무 뿌옇다는 요청(2026-10-13)으로 뺐다.
@@ -110,7 +185,14 @@ function Billboard() {
             {/* 첫 화면의 [무료로 시작하기] · [도입문의] 버튼은 뺐다 — 머리말에 도입문의 · 로그인이 있고, 화면 아래 떠 있는 [무료로 시작] 띠가 회원가입으로 이어진다(2026-11-11 사용자 지정). */}
           </div>
           {/* 「가입 즉시 무료 이용」 줄은 아래 떠 있는 띠(FloatingActions)로 옮겼다 — 스크롤해도 늘 보이고 바로 [무료로 시작]으로 이어진다(2026-11-12 사용자 지정). */}
-          <AddOnTicker tag="부가서비스 순차 오픈" items={ADD_ONS_SOON} />
+          {/* 부가서비스 줄 바로 아래에 핵심기능 유리판을 붙인다 — 둘을 한 묶음(간격 16px)으로 두어 위 글 묶음과의 80px 간격은 그대로다(2026-11-13 사용자 지정) */}
+          <div className="flex flex-col gap-[16px]">
+            <AddOnTicker tag="부가서비스 순차 오픈" items={ADD_ONS_SOON} />
+            {/* 핵심기능 판이 화면에 보이는 동안은 아래 무료 가입 띠를 감춘다 — 노트북 화면에서 띠가 카드를 가렸다(2026-11-13 사용자 지정) */}
+            <HideFloatingWhileVisible>
+              <CoreFeatures />
+            </HideFloatingWhileVisible>
+          </div>
         </div>
       </div>
     </section>
@@ -160,9 +242,9 @@ const PERSONAS = [
 
 function Personas({ routes }: { routes: GuestRoutes }) {
   return (
-    <section className="bg-guest-surface py-[100px]">
+    <section className="bg-guest-surface pt-[72px] pb-[100px]">
       <div className={`${FRAME} flex flex-col gap-[60px]`}>
-        <SectionTitle oneLine light="사장님은," bold="어떤 매장을 운영하세요?" />
+        <SectionTitle oneLine light="사장님," bold="어떤 매장을 운영하세요?" />
         {/* 창이 1680px 보다 좁으면 2×2 로 놓는다 — 네 장을 한 줄에 두면 카드가 좁아 「본사에서 받은 계정으로 로그인」 · 「프랜차이즈 자세히 보기」 버튼이 카드 밖으로 넘쳤다(2026-11-12 사용자 지정). */}
         <div className="grid grid-cols-2 gap-[16px] min-[1680px]:grid-cols-4">
           {PERSONAS.map((p, i) => (
