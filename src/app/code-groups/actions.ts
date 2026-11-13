@@ -75,7 +75,7 @@ export async function saveCodeItemsAction(groupCode: string, input: SaveCodeItem
   );
 }
 
-export type ApplyResult = { ok: true; bpCount: number; itemCount: number; createdCount: number } | { ok: false; message: string };
+export type ApplyResult = { ok: true; bpCount: number; itemCount: number; createdCount: number } | ({ ok: false } & SaveFailure);
 
 /** BP에 적용(플랫폼제공 그룹만). BP 에 이미 있는 상세 코드는 건너뛰고 없는 것만 넣는다 — 다시 적용해도 된다. */
 export async function applyCodeGroupToBpsAction(groupCode: string): Promise<ApplyResult> {
@@ -84,6 +84,7 @@ export async function applyCodeGroupToBpsAction(groupCode: string): Promise<Appl
     refresh();
     return { ok: true, ...result };
   } catch (error) {
-    return { ok: false, message: failureOf(error, "BP 적용", "BP에 적용하지 못했습니다. 잠시 후 다시 시도해 주세요.").message };
+    // 통째로 펼친다 — 만료 표시(expired)를 남겨야 useAction 이 「로그인 만료」 팝업을 띄운다
+    return { ok: false, ...failureOf(error, "BP 적용", "BP에 적용하지 못했습니다. 잠시 후 다시 시도해 주세요.") };
   }
 }
