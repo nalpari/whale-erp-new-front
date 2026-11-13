@@ -4585,9 +4585,6 @@
   .aria-expanded\:text-erp-point[aria-expanded="true"] {
     color: var(--color-erp-point);
   }
-  .aria-invalid\:border-erp-off[aria-invalid="true"] {
-    border-color: var(--color-erp-off);
-  }
   .aria-pressed\:border-erp-brand[aria-pressed="true"] {
     border-color: var(--color-erp-brand);
   }
