@@ -5,8 +5,11 @@ import { useState } from "react";
 import { Popup, useDropdown } from "./popup";
 import { EASE_OUT } from "./theme";
 
-/** muted — 이름을 보조 줄과 같은 회색으로(폐점 점포 등). 고를 수는 있다 */
-export type ScopeSelectOption = { key: string; label: string; meta?: string; muted?: boolean };
+/** muted — 이름을 보조 줄과 같은 회색으로(폐점 점포 등). 고를 수는 있다. count — 이름 뒤 「 · N개」(보통 굵기 회색, 범위 줄) */
+export type ScopeSelectOption = { key: string; label: string; count?: string; meta?: string; muted?: boolean };
+
+/** 칸 · 찾기에 쓰는 한 줄 글자 — 「직영점포 전체 · 14개」 */
+const textOf = (o: ScopeSelectOption) => (o.count ? `${o.label} · ${o.count}` : o.label);
 export type ScopeSelectSection = { title: string; options: ScopeSelectOption[] };
 
 // 헤더 점포 범위 드롭다운(데모 site.mjs scopeDropdown · 목업 F-TLJOCK). 칸은 「BP 이름 · 고른 값」이고, 목록은 묶음(제목 + 항목)으로 펼친다.
@@ -30,10 +33,11 @@ export function ScopeSelect({
   const { open, setOpen, close, ref, trigger, id } = useDropdown();
   const [query, setQuery] = useState("");
   const all = sections.flatMap((s) => s.options);
-  const current = all.find((o) => o.key === value)?.label ?? all[0]?.label ?? "";
+  const picked = all.find((o) => o.key === value) ?? all[0];
+  const current = picked ? textOf(picked) : "";
   const term = query.trim().toLowerCase();
   const shown = sections
-    .map((s) => ({ ...s, options: s.options.filter((o) => !term || `${o.label} ${o.meta ?? ""}`.toLowerCase().includes(term)) }))
+    .map((s) => ({ ...s, options: s.options.filter((o) => !term || `${textOf(o)} ${o.meta ?? ""}`.toLowerCase().includes(term)) }))
     .filter((s) => s.options.length);
 
   return (
@@ -92,7 +96,10 @@ export function ScopeSelect({
                   className="group flex w-full items-start gap-[10px] rounded-[8px] px-[12px] py-[8px] text-left transition-colors duration-150 ease-out hover:bg-erp-thead-bg focus-visible:bg-erp-thead-bg"
                 >
                   <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
-                    <b className={`truncate text-[14px] font-semibold ${o.muted ? "text-erp-muted" : "text-erp-ink"}`}>{o.label}</b>
+                    <b className={`truncate text-[14px] font-semibold ${o.muted ? "text-erp-muted" : "text-erp-ink"}`}>
+                      {o.label}
+                      {o.count && <span className="font-normal text-erp-label"> · {o.count}</span>}
+                    </b>
                     {o.meta && <span className="truncate text-[12px] text-erp-muted">{o.meta}</span>}
                   </span>
                   {o.key === value && <span className="shrink-0 text-[14px] font-semibold text-erp-brand">✓</span>}

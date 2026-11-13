@@ -201,11 +201,17 @@ function scopeSections(bpName: string, stores: AdminStore[]): ScopeSelectSection
   const direct = ofType("DIRECT");
   const franchise = ofType("FRANCHISE");
   const openCount = (list: AdminStore[]) => list.filter((s) => !isClosedStore(s)).length;
+  // 묶음 안 순서는 운영 → 미운영 → 폐점. 미운영은 보조 줄에 「· 미운영」만 붙이고 이름은 먹색이다 — 개수에 들고 고를 수 있는 점포라 흐리지 않는다(2026-11-13 사용자 지정)
+  const notOperating = (s: AdminStore) => s.storeStatusCode === "NOT_OPERATING";
   const storeOptions = (list: AdminStore[]) =>
-    [...list.filter((s) => !isClosedStore(s)), ...list.filter(isClosedStore)].map((s) => ({
+    [
+      ...list.filter((s) => !isClosedStore(s) && !notOperating(s)),
+      ...list.filter(notOperating),
+      ...list.filter(isClosedStore),
+    ].map((s) => ({
       key: `STORE:${s.storeId}`,
       label: s.name,
-      meta: isClosedStore(s) ? `${s.storeCode} · 폐점` : s.storeCode,
+      meta: isClosedStore(s) ? `${s.storeCode} · 폐점` : notOperating(s) ? `${s.storeCode} · 미운영` : s.storeCode,
       muted: isClosedStore(s),
     }));
   const dirOpen = openCount(direct);
@@ -214,10 +220,10 @@ function scopeSections(bpName: string, stores: AdminStore[]): ScopeSelectSection
     {
       title: bpName,
       options: [
-        // 범위 세 줄은 이름만 한 줄 — 「전체 · 직영전체 · 가맹전체 N개점」, 보조 줄을 두지 않는다(2026-11-13 사용자 지정, 전엔 「직영 N개점 / 직영점포 전체」 두 줄)
-        { key: "ALL", label: `전체 ${open.length}개점` },
-        ...(dirOpen ? [{ key: "DIRECT", label: `직영전체 ${dirOpen}개점` }] : []),
-        ...(frOpen ? [{ key: "FRANCHISE", label: `가맹전체 ${frOpen}개점` }] : []),
+        // 범위 세 줄은 보조 줄 없이 한 줄 — 「전체 점포 · N개」 「직영점포 전체 · N개」 「가맹점포 전체 · N개」 — 이름에 「점포」가 있어 「개점」 대신 「개」, 아래 묶음 머리(직영점포 · N)와 같은 말로 이어 읽힌다(2026-11-13 사용자 지정, 전엔 「직영 N개점 / 직영점포 전체」 두 줄)
+        { key: "ALL", label: "전체 점포", count: `${open.length}개` },
+        ...(dirOpen ? [{ key: "DIRECT", label: "직영점포 전체", count: `${dirOpen}개` }] : []),
+        ...(frOpen ? [{ key: "FRANCHISE", label: "가맹점포 전체", count: `${frOpen}개` }] : []),
       ],
     },
     ...(direct.length ? [{ title: `직영점포 · ${dirOpen}`, options: storeOptions(direct) }] : []),

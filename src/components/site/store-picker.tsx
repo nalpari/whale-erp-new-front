@@ -134,7 +134,7 @@ export function StorePicker({
         {/* 칩이 생기면 나타나는 24px [전체 제거] 만큼 줄 높이를 미리 둔다 — 첫 점포를 고를 때 아래 필터가 밀리지 않게 */}
         <p className="flex min-h-[24px] items-center gap-[6px] text-[13px] font-medium text-erp-ink">
           선택한 점포
-          <span className="font-normal text-erp-label">{picked.length}개점</span>
+          <span className="font-normal text-erp-label">{picked.length}개</span>
           {picked.length > 0 && (
             // 「점포」 라벨 줄의 [일괄검색]과 같은 작은 버튼(theme SMALL_BUTTON)
             <button type="button" onClick={() => onChange([])} className={`ml-auto ${SMALL_BUTTON}`}>

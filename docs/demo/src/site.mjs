@@ -59,11 +59,14 @@ function scopeDropdown(A) {
   const id = ui.uid("scope");
   const dir = STORES.filter((s) => s[2] === "직영점포");
   const fr = STORES.filter((s) => s[2] === "가맹점포");
-  const initial = `전체 ${STORES.length}개점`;
+  const initial = `전체 점포 · ${STORES.length}개`;
 
-  const opt = (label, meta, q, selected) =>
-    `<button type="button" role="option" aria-selected="${selected}" data-scope-label="${label}" data-scope-q="${q}" class="group flex w-full items-start gap-[10px] rounded-[8px] px-[12px] py-[8px] text-left transition-colors duration-150 ease-out hover:bg-erp-thead-bg"><span class="flex min-w-0 flex-1 flex-col gap-[2px]"><b class="truncate text-[14px] font-semibold text-erp-ink">${label}</b>${meta ? `<span class="truncate text-[12px] text-erp-muted">${meta}</span>` : ""}</span><span class="hidden shrink-0 text-[14px] font-semibold text-erp-brand group-aria-selected:inline">✓</span></button>`;
-  const storeOpt = (s) => opt(s[1], s[0], `${s[1]} ${s[0]}`, false);
+  // count — 범위 줄 이름 뒤 「 · N개」(보통 굵기 회색). 칸에는 「이름 · N개」 한 줄로 들어간다(앱 scope-select.tsx 와 같다)
+  const opt = (label, meta, q, selected, count = "") =>
+    `<button type="button" role="option" aria-selected="${selected}" data-scope-label="${count ? `${label} · ${count}` : label}" data-scope-q="${q}" class="group flex w-full items-start gap-[10px] rounded-[8px] px-[12px] py-[8px] text-left transition-colors duration-150 ease-out hover:bg-erp-thead-bg"><span class="flex min-w-0 flex-1 flex-col gap-[2px]"><b class="truncate text-[14px] font-semibold text-erp-ink">${label}${count ? `<span class="font-normal text-erp-label"> · ${count}</span>` : ""}</b>${meta ? `<span class="truncate text-[12px] text-erp-muted">${meta}</span>` : ""}</span><span class="hidden shrink-0 text-[14px] font-semibold text-erp-brand group-aria-selected:inline">✓</span></button>`;
+  // 운영 → 미운영 순, 미운영은 보조 줄에 「· 미운영」(앱 admin-header.tsx 와 같다, 2026-11-13)
+  const storeOpt = (s) => opt(s[1], s[3] === "미운영" ? `${s[0]} · 미운영` : s[0], `${s[1]} ${s[0]}`, false);
+  const byStatus = (list) => [...list.filter((s) => s[3] !== "미운영"), ...list.filter((s) => s[3] === "미운영")];
   const sect = (title, items) =>
     items.length
       ? `<div class="flex flex-col gap-[1px] not-first:mt-[6px] not-first:border-t not-first:border-[#d9d9d9] not-first:pt-[4px]" data-scope-sect>${title ? `<p class="px-[12px] pt-[10px] pb-[4px] text-[13px] font-semibold text-erp-sub">${title}</p>` : ""}${items.join("")}</div>`
@@ -74,13 +77,13 @@ function scopeDropdown(A) {
       BP.name,
       [
         // 범위 세 줄은 이름만 한 줄(앱 admin-header.tsx 와 같다, 2026-11-13)
-        opt(initial, "", initial, true),
-        dir.length ? opt(`직영전체 ${dir.length}개점`, "", `직영전체 ${dir.length}개점`, false) : "",
-        fr.length ? opt(`가맹전체 ${fr.length}개점`, "", `가맹전체 ${fr.length}개점`, false) : "",
+        opt("전체 점포", "", initial, true, `${STORES.length}개`),
+        dir.length ? opt("직영점포 전체", "", `직영점포 전체 ${dir.length}개`, false, `${dir.length}개`) : "",
+        fr.length ? opt("가맹점포 전체", "", `가맹점포 전체 ${fr.length}개`, false, `${fr.length}개`) : "",
       ].filter(Boolean),
     ) +
-    sect(`직영점포 · ${dir.length}`, dir.map(storeOpt)) +
-    sect(`가맹점포 · ${fr.length}`, fr.map(storeOpt));
+    sect(`직영점포 · ${dir.length}`, byStatus(dir).map(storeOpt)) +
+    sect(`가맹점포 · ${fr.length}`, byStatus(fr).map(storeOpt));
 
   // 검색 줄 높이는 목업(pop__search · 36.5px)에 맞춘다 — 위 6 · 아래 8 여백, 입력칸 줄 높이 1.5 + 위아래 1px
   const search = `<div class="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[10px] pt-[6px] pb-[8px]">${ui.img(A, "search.svg", 14, 14)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent px-[2px] py-[1px] text-[14px] leading-[1.5] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>`;

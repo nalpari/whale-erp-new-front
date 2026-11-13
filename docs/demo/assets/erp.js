@@ -465,7 +465,7 @@
   const spickPicked = (box) => $$("[data-spick-list] > [data-code]", box).map((li) => li.dataset.code);
   const spickCount = (box) => {
     const n = spickPicked(box).length;
-    $("[data-spick-count]", box).textContent = `${n}개점`;
+    $("[data-spick-count]", box).textContent = `${n}개`;
     const none = $("[data-spick-none]", box);
     if (none) none.hidden = n > 0;
     // 고른 점포가 없으면 [전체 제거]를 막는다 — data-spick-clear-empty 를 단 칸만(BP 관리자 등록 · 수정, 앱 store-mapping-picker.tsx)
@@ -1081,7 +1081,7 @@
 
   // ── 필터의 점포 칸(data-scope-store). 헤더 점포 선택이 점포 1개면 그 점포로 고정하고,
   // 전체·일반점포 전체·가맹점포 전체처럼 묶음이면 고정을 풀어 검색할 수 있게 한다 ──
-  // 범위 값이 실제 점포 이름일 때만 점포 하나다. 「전체 11개점」「직영 3개점」「선택 2곳」은 묶음이다.
+  // 범위 값이 실제 점포 이름일 때만 점포 하나다. 「전체 점포 · 11개」「직영점포 전체 · 3개」「선택 2곳」은 묶음이다.
   // ponytail: 「선택 N곳」은 고른 점포로 거르지 않고 전체를 보인다(데모).
   const isOneStore = (scope) => !/전체|개점$|^선택 \d+곳$/.test(scope);
 
