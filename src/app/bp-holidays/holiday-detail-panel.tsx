@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, type Column, type DetailRow } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, useAction, type Column, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -98,6 +98,8 @@ function DetailBody({
   const can = usePagePermission();
   const canDelete = actions.canDelete && can.delete;
   const canTerminate = actions.canTerminate && can.delete;
+  const terminateBpHoliday = useAction(terminateBpHolidayAction, { overlay: false });
+  const deleteBpHoliday = useAction(deleteBpHolidayAction, { overlay: false });
 
   /** 실패 띠를 세운다. 지금 상태가 화면과 다를 수 있는 실패(404 · 409 · 결과 모름)면 상세 · 목록을 다시 받는다. */
   const fail = (status: number | undefined, message: string) => {
@@ -107,7 +109,7 @@ function DetailBody({
 
   const handleTerminate = () =>
     startBusy(async () => {
-      const result = await terminateBpHolidayAction(h.bpHolidayId, h.updatedAt).catch(unknownResult("강제 종료"));
+      const result = await terminateBpHoliday(h.bpHolidayId, h.updatedAt).catch(unknownResult("강제 종료"));
       setConfirm(null);
       if (!result.ok) return fail(result.status, result.message);
       setFailure(null);
@@ -117,7 +119,7 @@ function DetailBody({
   const handleDelete = () =>
     startBusy(async () => {
       // 수정 · 강제 종료처럼 읽은 updatedAt 을 함께 보낸다 — 그사이 다른 사용자가 고쳤으면 409 이고 fail 이 상세를 새로 받는다
-      const result = await deleteBpHolidayAction(h.bpHolidayId, h.updatedAt).catch(unknownResult("삭제"));
+      const result = await deleteBpHoliday(h.bpHolidayId, h.updatedAt).catch(unknownResult("삭제"));
       setConfirm(null);
       if (!result.ok) return fail(result.status, result.message);
       onRemoved("deleted");

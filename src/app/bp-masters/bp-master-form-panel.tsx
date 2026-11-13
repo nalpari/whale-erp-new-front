@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useLayoutEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
-import { Button, Checkbox, Field, FormGroup, FormRow, RequiredMark, SlidePanel, Tag, TextField } from "@/components/common";
+import { Button, Checkbox, Field, FormGroup, FormRow, RequiredMark, SlidePanel, Tag, TextField, useAction } from "@/components/common";
 import { AddressField } from "@/components/address-field";
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
 import { InfoBand } from "@/components/site/side-parts";
@@ -107,6 +107,11 @@ export function BpMasterFormPanel(props: Props) {
 
   const [saving, startSaving] = useTransition();
   const [verifying, startVerifying] = useTransition();
+  const checkBpMasterLoginId = useAction(checkBpMasterLoginIdAction, { overlay: false });
+  const checkBpMasterEmail = useAction(checkBpMasterEmailAction, { overlay: false });
+  const verifyBpBusiness = useAction(verifyBpBusinessAction, { overlay: false });
+  const createBpMaster = useAction(createBpMasterAction, { overlay: false });
+  const updateBpMaster = useAction(updateBpMasterAction, { overlay: false });
   const router = useRouter();
 
   const ids = useId();
@@ -163,7 +168,7 @@ export function BpMasterFormPanel(props: Props) {
     // 같은 값을 다시 물을 때(Enter 재확인 등)도 앞서 달렸던 오류를 지운다 — 안 그러면 묻는 동안 확인 중 문구 대신 옛 오류가 보인다
     clearError(key);
     setCheck("checking");
-    (isLoginId ? checkBpMasterLoginIdAction : checkBpMasterEmailAction)(value)
+    (isLoginId ? checkBpMasterLoginId : checkBpMasterEmail)(value)
       .then((result) => {
         if (mine !== checkNumber.current[key]) return;
         if (result.ok) {
@@ -171,9 +176,8 @@ export function BpMasterFormPanel(props: Props) {
           setCheck(result.available ? "available" : "idle");
           return;
         }
-        setCheck(result.status === 400 || result.status === 401 ? "idle" : "failed");
+        setCheck(result.status === 400 ? "idle" : "failed");
         if (result.status === 400) setErrors((e) => ({ ...e, [key]: result.message }));
-        else if (result.status === 401) setFailure(result.message);
         else console.warn(`${what} 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다`, result.status, result.message);
       })
       .catch((error: unknown) => {
@@ -212,7 +216,7 @@ export function BpMasterFormPanel(props: Props) {
     // 10분은 요청을 보내기 직전부터 잰다 — api 는 그 뒤에 서명하니 화면이 먼저 만료로 본다(biz-verification-rules.ts)
     const verifiedAt = Date.now();
     startVerifying(async () => {
-      const result = await verifyBpBusinessAction({
+      const result = await verifyBpBusiness({
         bizRegistrationNumber: values.bizNumber,
         bizCeoName: values.ceoName,
         bizOpenDate: values.openDate,
@@ -224,9 +228,9 @@ export function BpMasterFormPanel(props: Props) {
       });
       if (mine !== verifyNumber.current) return;
       if (!result.ok) {
-        // 로그인 만료(401) · 권한 없음(403) · 입력 형식(400)은 api 문구 그대로 — 401 · 403 은 저장도 막혀 「인증 없이 저장」을 붙이지 않는다.
+        // 권한 없음(403) · 입력 형식(400)은 api 문구 그대로 — 403 은 저장도 막혀 「인증 없이 저장」을 붙이지 않는다.
         // 그 밖은 점포 · 회원가입과 같은 글자가 보이도록 상태 코드로 공통 문구를 고른다(bizVerifyFailure, S-VRNTHD)
-        if (result.status === 401 || result.status === 403) return setVerifyFailure(result.message);
+        if (result.status === 403) return setVerifyFailure(result.message);
         const text = result.status === 400 ? result.message : bizVerifyFailure(result.status).message;
         // 실패 이유와 다음 길을 두 줄로 가른다(2026-11-04 사용자 지정)
         return setVerifyFailure(`${text}\n인증하지 않고 저장할 수 있습니다.`);
@@ -267,7 +271,7 @@ export function BpMasterFormPanel(props: Props) {
 
     startSaving(async () => {
       if (props.mode === "create") {
-        const result = await createBpMasterAction(toCreateBpMasterInput(form)).catch(unknownResult("등록"));
+        const result = await createBpMaster(toCreateBpMasterInput(form)).catch(unknownResult("등록"));
         if (!result.ok) {
           // 결과를 모르면 목록을 새로 받아, 이미 만들어졌는지 사용자가 볼 수 있게 한다
           if (result.status === undefined) router.refresh();
@@ -276,7 +280,7 @@ export function BpMasterFormPanel(props: Props) {
         }
         return props.onSaved(result);
       }
-      const result = await updateBpMasterAction(props.bp.bpCodeId, toUpdateBpMasterInput(form)).catch(unknownResult("수정"));
+      const result = await updateBpMaster(props.bp.bpCodeId, toUpdateBpMasterInput(form)).catch(unknownResult("수정"));
       if (result.ok) return props.onSaved();
       // 결과를 모름 · 그 사이 탈퇴(409) · 지움(404)이면 상세를 다시 받는다
       const rejected = verificationRejection(form, result.status, result.message);

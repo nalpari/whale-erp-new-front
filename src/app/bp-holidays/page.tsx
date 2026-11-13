@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { PageBar } from "@/components/common";
 import { CARD, FailedBand } from "@/components/site/side-parts";
 import { ApiError, deniedMessageOf } from "@/lib/api";
@@ -31,11 +32,10 @@ export default async function BpHolidaysPage({ searchParams }: PageProps<"/bp-ho
 }
 
 /**
- * 목록을 api 가 거절했으면(400 플랫폼 계정의 BP 미선택 · 403 권한 · 404) 오류 화면 대신 그 문장을 보인다. 401 은 고정 문구로.
+ * 목록을 api 가 거절했으면(400 플랫폼 계정의 BP 미선택 · 403 권한 · 404) 오류 화면 대신 그 문장을 보인다. 로그인 만료는 request() 가 로그인 화면으로 보낸다.
  * 거절이 아닌 것은 그대로 던져 error.tsx 가 받는다.
  */
 const listDenied = (error: unknown): { denied: string } => {
-  if (error instanceof ApiError && error.status === 401) return { denied: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
   const denied = deniedMessageOf(error);
   if (denied === null) throw error;
   console.warn("BP 휴일 목록 거절", error instanceof ApiError ? error.status : undefined, denied);
@@ -50,6 +50,7 @@ async function loadDetail(id: number, at: string | null): Promise<{ holiday: BpH
     // 시작일 기준으로 다시 받는다(브라우저 시험으로 찾음, 2026-10-27)
     return { holiday: at && outsideHoliday(holiday, at) ? await getBpHoliday(id, holiday.startDate) : holiday };
   } catch (error) {
+    unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
     if (error instanceof ApiError && error.status === 404) return { failed: "삭제되었거나 볼 수 없는 휴일입니다." };
     if (error instanceof ApiError && [400, 403].includes(error.status)) return { failed: error.message };
     console.error("BP 휴일 상세 조회 실패", id, error);

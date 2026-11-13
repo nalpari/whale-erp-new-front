@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ApiError } from "@/lib/api";
+import { ApiError, expiredFailureOf } from "@/lib/api";
 import { createMenu, moveMenu, updateMenu, type CreatedMenu, type CreateMenuInput, type MoveMenuInput, type UpdateMenuInput } from "@/lib/platform-menus";
 
 // 메뉴 등록 · 수정 · 옮기기. 실패하면 화면이 입력값(옮기기는 트리)을 그대로 두고 문구만 보인다.
@@ -24,8 +24,9 @@ export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
  * 응답을 못 받았거나 502 · 503 · 504 면 상태 없이 「결과를 확인하지 못했다」로 알린다.
  */
 function failureOf(error: unknown, what: string): ActionFailure {
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError && ![502, 503, 504].includes(error.status)) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: error.message };
     console.error(`플랫폼 메뉴 ${what} 실패`, error);
     return { ok: false, status: error.status, message: `${what}에 실패했습니다. 잠시 후 다시 시도해 주세요.` };

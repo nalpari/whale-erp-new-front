@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Blocked, Button, ConfirmDialog, Radio, useToast } from "@/components/common";
+import { Blocked, Button, ConfirmDialog, Radio, useAction, useToast } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formOfStore, toUpdateStoreInput } from "@/lib/store-form";
 import type { StoreDetail, StoreStatus, StoreTransitions } from "@/lib/store-types";
@@ -63,6 +63,9 @@ export function StoreDetailActions({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const deleteStore = useAction(deleteStoreAction, { overlay: false });
+  const getStoreTransitions = useAction(getStoreTransitionsAction, { overlay: false });
+  const updateStore = useAction(updateStoreAction, { overlay: false });
   // 상태 변경 · 삭제 뒤 헤더 범위 선택기 · 점포 고르기를 바로 맞춘다(폐점은 회색, 지운 점포는 빠진다)
   const refreshStores = useRefreshStores();
   const [scope] = useScope();
@@ -113,7 +116,7 @@ export function StoreDetailActions({
   // 다시 받기가 실패하면 페이지를 불러올 때의 옛 값으로 되돌릴 수 없는 폐점을 하지 않게 폐점을 막고 옛 확인 값을 지운다(수정 화면 checkClose 와 같다)
   const reloadTransitions = (keep?: string) =>
     startBusy(async () => {
-      const result = await getStoreTransitionsAction(store.storeId).catch(UNKNOWN("상태 확인"));
+      const result = await getStoreTransitions(store.storeId).catch(UNKNOWN("상태 확인"));
       if (result.ok) return setTransitions(result);
       setTransitions((t) => ({ ...t, canClose: false, closing: null }));
       setFailure(`${keep ? `${keep} ` : ""}${result.message} 조건을 확인하지 못해 폐점은 할 수 없습니다. 창을 닫고 다시 열어 주세요.`);
@@ -139,7 +142,7 @@ export function StoreDetailActions({
     startBusy(async () => {
       if (!target) return;
       const input = toUpdateStoreInput({ ...formOfStore(store), storeStatus: target }, store.updatedAt);
-      const result = await updateStoreAction(store.storeId, input).catch(UNKNOWN("상태 변경"));
+      const result = await updateStore(store.storeId, input).catch(UNKNOWN("상태 변경"));
       // 확인과 저장 사이에 퇴근하지 않은 출근이 생겼다 — 아무것도 저장되지 않았다. api 문구를 보이고 조건 팝업으로 돌아가 막힘을 다시 받는다.
       // 다시 받기가 실패해도 옛 「0건」 · 열린 버튼이 남지 않게, 받기 전에 막힘으로 두고 옛 확인 값을 지운다
       if (!result.ok && result.code === OPEN_CHECK_IN) {
@@ -172,7 +175,7 @@ export function StoreDetailActions({
   const listAfterDelete = () => at(withoutDeletedStore(backHref, store.storeId, scope));
   const handleDelete = () =>
     startBusy(async () => {
-      const result = await deleteStoreAction(store.storeId).catch(UNKNOWN("삭제"));
+      const result = await deleteStore(store.storeId).catch(UNKNOWN("삭제"));
       // 이미 없는 점포(404)면 다시 받아도 404 화면만 남는다. 결과를 모르면 지워졌을 수도 있어 상세에 두지 않는다 — 둘 다 목록으로 보내고 알린다
       if (!result.ok && (result.status === undefined || result.status === 404)) {
         setDialog(null);

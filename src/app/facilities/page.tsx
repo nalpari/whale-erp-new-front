@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { ListToolbar, NoticeBand } from "@/components/common";
 import { bpHref, deniedMessageOf, screenPath } from "@/lib/api";
 import { getFacilities, getFacilityStoreOptions } from "@/lib/facilities";
@@ -47,6 +47,7 @@ export default async function FacilitiesPage({ searchParams }: { searchParams: P
       (await getFacilities(facilityListApiSearch({ ...DEFAULT_FACILITY_LIST_QUERY, storesCleared: true }) ?? "")
         .then((all) => all.total === 0)
         .catch((error: unknown) => {
+          unstable_rethrow(error);
           console.warn("시설물 전체 건수 확인 실패", error);
           return false;
         })));

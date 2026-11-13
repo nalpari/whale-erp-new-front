@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, RedirectType } from "next/navigation";
 import {
   ACCESS_TOKEN_TTL_MS,
   ApiError,
@@ -73,5 +73,6 @@ export async function login(_prev: LoginFormState, formData: FormData): Promise<
   jar.set(loginKeyCookie(crypto.randomUUID()));
   // redirect 는 try 밖에서 — 안에서 부르면 catch 가 이동 신호를 오류로 삼킨다.
   // 메일 링크(엑셀 내려받기)로 왔으면 그 화면으로 돌아간다. 폼 값은 믿지 않고 받을 수 있는 주소인지 다시 본다.
-  redirect(returnPathOf(formData.get(RETURN_PARAM)) ?? homeOf(res.account.roleTypeCode));
+  // 기록의 로그인 화면 칸을 바꿔치기한다 — [뒤로] 로 만료 안내가 뜬 로그인 화면에 돌아오지 않게.
+  redirect(returnPathOf(formData.get(RETURN_PARAM)) ?? homeOf(res.account.roleTypeCode), RedirectType.replace);
 }

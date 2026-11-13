@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ApiError } from "@/lib/api";
+import { ApiError, expiredFailureOf } from "@/lib/api";
 import { withPeriod } from "@/lib/format";
 import { historyPageSizeOf } from "@/lib/history-paging";
 import {
@@ -35,8 +35,9 @@ export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; status?
  * 비밀번호 초기화의 503 은 국세청이 아니라 메일 설정 없음이라 일반 문구(「비밀번호를 초기화하지 못했습니다. 잠시 후 다시 시도해 주세요.」)로 — 세 관리 화면 같다(2026-10-28 사용자 지정).
  */
 function failureOf(error: unknown, what: string, notNts = false): { ok: false; status?: number; message: string } {
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     // 429 는 사업자 진위확인 시간당 한도(10건)
     if ([400, 403, 404, 409, 422, 429].includes(error.status)) return { ok: false, status: error.status, message: withPeriod(error.message) };
     if (error.status === 503 && !notNts) return { ok: false, status: 503, message: "지금은 국세청 확인을 할 수 없습니다. 인증 없이 저장하고 나중에 인증할 수 있습니다." };

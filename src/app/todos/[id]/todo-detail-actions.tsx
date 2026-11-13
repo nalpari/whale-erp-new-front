@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode } from "react";
-import { Button, ConfirmDialog, Select, useToast } from "@/components/common";
+import { Button, ConfirmDialog, Select, useAction, useToast } from "@/components/common";
 import { useCurrentBp, useMenuPermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import type { EnumValue } from "@/lib/enums";
@@ -44,6 +44,7 @@ function DeleteTodoDialog({ detail, listHref, onClose }: { detail: TodoDetail; l
   const router = useRouter();
   const toast = useToast();
   const onFailure = useFailure();
+  const deleteTodo = useAction(deleteTodoAction, { overlay: false });
   const bp = useCurrentBp().bpCodeId;
   const [busy, startDeleting] = useTransition();
   const [error, setError] = useState("");
@@ -54,7 +55,7 @@ function DeleteTodoDialog({ detail, listHref, onClose }: { detail: TodoDetail; l
     startDeleting(async () => {
       setError("");
       try {
-        const result = await deleteTodoAction(detail.todoId);
+        const result = await deleteTodo(detail.todoId);
         if (result.ok) {
           // 삭제 뒤 토스트는 다른 화면과 같은 「삭제되었습니다.」 — 일부만 지운 경우도 같다(남는 건수는 삭제창에서 미리 알린다, 2026-11-09 사용자 지정)
           toast("deleted");
@@ -115,6 +116,7 @@ export function TodoStatusControl({
   const router = useRouter();
   const toast = useToast();
   const onFailure = useFailure();
+  const changeTodoStatus = useAction(changeTodoStatusAction, { overlay: false });
   const can = useMenuPermission(MENU_CODE.todos);
   const [next, setNext] = useState<TodoStatus>(status);
   const [error, setError] = useState("");
@@ -132,7 +134,7 @@ export function TodoStatusControl({
     startChanging(async () => {
       setError("");
       try {
-        const result = await changeTodoStatusAction(todoId, next);
+        const result = await changeTodoStatus(todoId, next);
         if (result.ok) {
           toast("updated");
           router.refresh();

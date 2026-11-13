@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { ApiError, authHeaders, bpHref, request } from "@/lib/api";
+import { ApiError, authHeaders, bpHref, expiredFailureOf, request } from "@/lib/api";
 import type { PayslipBulkResult, PayslipCandidates, PayslipSendResult } from "@/lib/payslips";
 import { getPayslipCandidates } from "@/lib/payslips-api";
 
@@ -23,8 +23,9 @@ const BAD_INPUT: DraftFailure = { ok: false, message: "직원 또는 급여 월�
 
 /** api 의 4xx 문장과 api 가 code 를 붙인 5xx(메일 · 직원 앱 주소 설정 없음 503 · 메일 실패 502 — 원인이 정해진 실패) 문장은 그대로 보인다. 401 은 할 일을 알 수 있게, 그 밖의 5xx · 연결 실패는 결과 모름으로 바꾼다. */
 function failureOf(error: unknown, what: string): DraftFailure {
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status < 500 || typeof (error.body as { code?: unknown } | null)?.code === "string") {
       const payslipId = (error.body as { payslipId?: unknown } | null)?.payslipId;
       return { ok: false, message: error.message, ...(validId(payslipId) && { payslipId }) };

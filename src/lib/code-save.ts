@@ -5,8 +5,11 @@
 /** 저장 한 단계. 이 순서로 보낸다. */
 export type SaveStep = "수정" | "삭제" | "등록";
 
-/** 실패 한 건. status 가 없으면 예상하지 못한 실패(5xx · 연결 실패)이고 message 는 일반 문구다. */
-export type SaveFailure = { status?: number; message: string };
+/**
+ * 실패 한 건. status 가 없으면 예상하지 못한 실패(5xx · 연결 실패)이고 message 는 일반 문구다.
+ * expired 는 로그인 만료(expiredFailureOf) — 결과를 다시 만들 때 빠뜨리면 useAction 이 팝업을 띄우지 못한다. 통째로 펼쳐 넘긴다(expiry-guard G2 가 확인).
+ */
+export type SaveFailure = { status?: number; message: string; expired?: true };
 
 /**
  * anySaved: 실패한 단계 앞에서 무언가(수정이든 삭제든) 저장됐다 — saved 에 그 단계들, failed 는 실패한 단계, skipped 는 실패 때문에

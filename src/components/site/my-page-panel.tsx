@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
-import { Button, Field, FormGroup, FormRow, ReadonlyCard, ReadonlyValue, RequiredMark, SlidePanel, TextField, useToast } from "@/components/common";
+import { Button, Field, FormGroup, FormRow, ReadonlyCard, ReadonlyValue, RequiredMark, SlidePanel, TextField, useAction, useToast } from "@/components/common";
 import { EMAIL_FORMAT_ERROR } from "@/lib/email-format";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { formOf, serverErrorField, toUpdateInput, validateMyProfileForm, type MyProfileForm, type MyProfileFormField } from "@/lib/my-profile-form";
@@ -65,6 +65,9 @@ function TabBar({ tab, onChange }: { tab: "basic" | "biz"; onChange: (next: "bas
  * 저장은 패널을 닫지 않고 토스트로만 알린다 — 닫기는 따로 있다(데모 site.mjs saveRow 와 같다, 2026-10-06 피드백). */
 export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: boolean; onClose: () => void; trigger: RefObject<HTMLElement | null> }) {
   const toast = useToast();
+  const getMyProfile = useAction(getMyProfileAction, { overlay: false });
+  const updateMyProfile = useAction(updateMyProfileAction, { overlay: false });
+  const checkMyEmailAvailable = useAction(checkMyEmailAvailableAction, { overlay: false });
   const roleTypeLabel = useCodeLabel("ROLE_TYPE");
   const patchAccount = usePatchAccount();
   const [profile, setProfile] = useState<MyProfile | null>(null);
@@ -116,7 +119,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
     if (!open) return;
     checkNumber.current++; // 지난 세션의 확인 응답이 뒤늦게 와도 새 세션 상태를 건드리지 않는다 — ref 는 렌더링 중이 아니라 effect · 이벤트 핸들러 안에서만 건드린다
     let cancelled = false;
-    getMyProfileAction()
+    getMyProfile()
       .then((result) => {
         if (cancelled) return;
         if (!result.ok) return setLoadFailure(result.message);
@@ -133,7 +136,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, getMyProfile]);
 
   const ids = useId();
   const clearError = (key: MyProfileFormField) => setErrors((e) => (key in e ? Object.fromEntries(Object.entries(e).filter(([k]) => k !== key)) : e));
@@ -177,7 +180,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   /** 이메일 형식 · 중복 확인 — 칸을 벗어날 때. 원래 값 그대로면 묻지 않는다(S-JXKHCM).
    * 형식이 틀리거나 비어 있으면 여기서 바로 칸 아래 안내로 보여준다 — handleSave 의 validateMyProfileForm 까지
    * 기다리게 두면 Save 버튼만 안 눌리고 이유를 알 수 없다(코드 리뷰로 찾음, 2026-10-21).
-   * 중복 확인 자체가 실패(세션 만료 제외)하면 막지 않고 통과시킨다 — 저장 시점에 api 가 중복을 다시 본다. */
+   * 중복 확인 자체가 실패(로그인 만료는 useAction 팝업이 맡는다)하면 막지 않고 통과시킨다 — 저장 시점에 api 가 중복을 다시 본다. */
   const checkEmail = (value: string) => {
     if (!form) return;
     const email = value.trim();
@@ -187,15 +190,13 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
     const mine = ++checkNumber.current;
     setEmailChecking(true);
     setEmailCheckSkipped(false);
-    checkMyEmailAvailableAction(email)
+    checkMyEmailAvailable(email)
       .then((result: ActionResult<{ available: boolean }>) => {
         if (mine !== checkNumber.current) return;
         setEmailChecking(false);
         if (result.ok) {
           if (result.available) setEmailChecked(email);
           else setErrors((e) => ({ ...e, email: EMAIL_TAKEN }));
-        } else if (result.status === 401) {
-          setFailure(result.message);
         } else {
           console.warn("이메일 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
           setEmailChecked(email);
@@ -235,14 +236,14 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
     startSaving(async () => {
       try {
         const updated = toUpdateInput(form, profile.updatedAt);
-        const result = await updateMyProfileAction(updated);
+        const result = await updateMyProfile(updated);
         if (!result.ok) return applyServerError(result.status, result.message);
         toast("saved");
         // GNB 이름 등 로그인 정보를 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
         patchAccount({ name: updated.name, email: updated.email });
         // PATCH 는 204 라 새 updatedAt 을 안 준다 — 다시 받아 두지 않으면 바로 이어 저장할 때
         // 방금 쓴 값으로 동시 수정 검사가 409 를 낸다(코드 리뷰로 api 에 그 검사가 더해지며 같이 찾음).
-        const refreshed = await getMyProfileAction();
+        const refreshed = await getMyProfile();
         if (refreshed.ok) {
           setProfile(refreshed.profile);
           setForm(formOf(refreshed.profile));

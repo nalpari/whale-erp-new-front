@@ -43,8 +43,13 @@ export const LOGOUT_REASON_PARAM = "reason";
 /** 계정 상태(사용중지 · 탈퇴 · 소속 BP)가 바뀌어 로그아웃됨 — 경우를 나누지 않고 한 문장으로 알린다(2026-11-02 사용자 지정). */
 export const ACCOUNT_CHANGED_REASON = "account";
 export const ACCOUNT_CHANGED_MESSAGE = "계정 상태가 변경되어 로그아웃되었습니다.";
+/** 로그인이 끊겨 밀려남(갱신 실패 · api 401). 이 브라우저로 로그인한 적이 있을 때만 붙인다(proxy 의 login-key 확인). */
+export const EXPIRED_REASON = "expired";
+export const EXPIRED_MESSAGE = "로그인이 만료되었습니다. 다시 로그인해 주세요.";
+type LogoutReason = typeof ACCOUNT_CHANGED_REASON | typeof EXPIRED_REASON;
 /** 로그인 화면 쿼리의 이유 → 안내 문구. 모르는 값이면 null. */
-export const logoutNoticeOf = (value: unknown): string | null => (value === ACCOUNT_CHANGED_REASON ? ACCOUNT_CHANGED_MESSAGE : null);
+export const logoutNoticeOf = (value: unknown): string | null =>
+  value === ACCOUNT_CHANGED_REASON ? ACCOUNT_CHANGED_MESSAGE : value === EXPIRED_REASON ? EXPIRED_MESSAGE : null;
 
 /** 로그인 화면 주소의 돌아올 곳 쿼리 이름 — /login?next=/excel-downloads/41 */
 export const RETURN_PARAM = "next";
@@ -60,10 +65,57 @@ export function returnPathOf(value: unknown): string | null {
 /**
  * 로그인 없이 이 주소에 온 사람을 보낼 로그인 화면 주소(proxy · 화면의 401). 화면을 여는 GET 이고 돌아올 수 있는 주소(returnPathOf)면
  * /login?next= 로, 아니면 /login. 서버 액션 POST 에는 붙이지 않는다 — 로그인 뒤 POST 주소로 돌아갈 수 없다.
+ * reason 을 주면 ?reason= 도 붙여 로그인 화면이 밀려난 이유를 알린다(logoutNoticeOf).
  */
-export function loginPathOf(pathname: string, method = "GET"): string {
+export function loginPathOf(pathname: string, method = "GET", reason?: LogoutReason): string {
   const back = method === "GET" ? returnPathOf(pathname) : null;
-  return back ? `/login?${new URLSearchParams({ [RETURN_PARAM]: back })}` : "/login";
+  const query = new URLSearchParams();
+  if (back) query.set(RETURN_PARAM, back);
+  if (reason) query.set(LOGOUT_REASON_PARAM, reason);
+  return query.size ? `/login?${query}` : "/login";
+}
+
+/**
+ * proxy 가 서버 화면 요청에만 붙이는 내부 헤더. request() 가 api 401 을 받았을 때 화면을 그리는 중이면(이 헤더) 로그인 화면으로 보내고,
+ * 서버 액션 · BFF · 업로드 창구면 오류에 만료 표시만 남긴다 — 서버 액션에서 이동하면 팝업 없이 넘어가고, 대부분의 catch 가 이동 신호를 삼킨다.
+ * 값은 그 화면 주소(pathname)다 — 로그인 화면이 돌아올 곳(?next=)을 proxy 의 toLogin 과 같게 만든다(loginPathOf 가 돌아올 수 있는 화면만 남긴다).
+ * 브라우저가 보낸 같은 헤더는 proxy 가 늘 지운다.
+ */
+export const RENDER_HEADER = "x-whale-render";
+
+/** 이 요청이 화면(문서 · RSC)을 그리는 GET 인가 — 서버 액션 · BFF(/api/*) · 업로드 창구(answersWith401)는 아니다. */
+export function marksRenderRequest(method: string, isAction: boolean, isApiPath: boolean): boolean {
+  return method === "GET" && !isAction && !isApiPath;
+}
+
+/**
+ * proxy 가 「세션 쿠키 없이 온 서버 액션」에 붙이는 내부 헤더. 다른 탭에서 만료돼 쿠키가 지워진 뒤 이 탭에서 저장하면 세션이 없다 —
+ * 로그인 화면으로 보내면 액션 fetch 가 따라가 「결과를 확인하지 못했습니다」가 되므로, 통과시키고 request() 가 api 401 을 만료로 표시한다(useAction 팝업).
+ * 브라우저가 보낸 같은 헤더는 proxy 가 늘 지운다.
+ */
+export const SESSION_LOST_HEADER = "x-whale-session-lost";
+
+/**
+ * 세션 없이 온 요청을 로그인 화면 대신 통과시킬까 — 이 브라우저로 로그인한 적이 있는(login-key) 화면 주소의 서버 액션만.
+ * POST 만 — Next 는 POST 만 서버 액션으로 처리한다. next-action 헤더를 꾸민 GET 은 화면을 그리므로 로그인 없이 보이게 된다(PR #256 리뷰).
+ * fetch 창구(answersWith401 — BFF · 업로드 · 엑셀)는 빼고 지금처럼 401 을 준다 — 라우트 핸들러는 액션이 아니고, 토큰 확인을 빠뜨린 창구가 생겨도 proxy 가 막는다.
+ */
+export function passesSessionLostAction(method: string, isAction: boolean, isApiPath: boolean, hasLoginKey: boolean): boolean {
+  return method === "POST" && isAction && !isApiPath && hasLoginKey;
+}
+
+/**
+ * 만료 로그인 화면(/login?reason=expired)에 세션 쿠키를 들고 왔을 때 proxy 가 갱신으로 확인한 결과의 처리.
+ * 갱신 401 이면 세션이 정말 끝났으니 쿠키를 지우고 로그인 화면, 살아 있으면 홈으로, 그 밖(api 꺼짐 · 시간 초과)은 쿠키를 두고 로그인 화면.
+ * 살아 있는 세션은 지우지 않으므로 이 주소를 링크로 걸어도 로그아웃되지 않는다.
+ */
+export function expiredLoginActionOf(refreshed: "unauthorized" | "ok" | "failed"): "clear" | "home" | "show" {
+  return refreshed === "unauthorized" ? "clear" : refreshed === "ok" ? "home" : "show";
+}
+
+/** 만료 로그인 화면 GET 인가 — 로그인 제출(서버 액션 POST)도 같은 주소로 가므로 GET 만 본다. */
+export function isExpiredLoginRequest(pathname: string, method: string, isAction: boolean, reason: string | null): boolean {
+  return pathname === "/login" && method === "GET" && !isAction && reason === EXPIRED_REASON;
 }
 
 /**

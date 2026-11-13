@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { PageBar } from "@/components/common";
 import { CARD, FailedBand } from "@/components/site/side-parts";
 import { ApiError, deniedMessageOf } from "@/lib/api";
@@ -21,7 +22,8 @@ export default async function BpAdminsPage({ searchParams }: PageProps<"/bp-admi
     // 권한 그룹 선택지를 못 받아도 목록은 연다 — null 로 넘겨 필터 · 폼이 받지 못한 것을 알린다(빈 선택지로 조용히 두지 않는다).
     // 로그인 만료 · 권한 없음은 목록도 같은 이유로 막혀 그쪽이 알리므로 장애 로그를 남기지 않는다
     getBpAdminRoleGroups().catch((error: unknown) => {
-      if (!(error instanceof ApiError && (error.status === 401 || error.status === 403))) console.error("BP 관리자 권한 그룹 선택지 조회 실패", error);
+      unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
+      if (!(error instanceof ApiError && error.status === 403)) console.error("BP 관리자 권한 그룹 선택지 조회 실패", error);
       return null;
     }),
     query.admin ? loadDetail(query.admin) : null,
@@ -50,6 +52,7 @@ export default async function BpAdminsPage({ searchParams }: PageProps<"/bp-admi
       (await getBpAdmins(allQuery)
         .then((all) => all.total === 0)
         .catch((error: unknown) => {
+          unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
           // 확인에 실패하면 「조건에 맞는 …」 — 장애를 알아챌 수 있게 로그만 남긴다
           console.warn("BP 관리자 전체 건수 확인 실패", error);
           return false;
@@ -75,6 +78,7 @@ async function loadDetail(id: number): Promise<{ admin: BpAdminDetail } | { fail
   try {
     return { admin: await getBpAdmin(id) };
   } catch (error) {
+    unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
     if (error instanceof ApiError && error.status === 404) return { failed: "볼 수 없거나 없는 계정입니다." };
     // 볼 수 없는 BP · 권한이면 목록도 같은 이유로 거절돼 그쪽이 알린다 — 장애 로그를 남기지 않는다
     if (error instanceof ApiError && error.status === 403) return { failed: error.message };

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Badge, Button, DataTable, TextField, Toggle, useToast, type Column } from "@/components/common";
+import { Badge, Button, DataTable, TextField, Toggle, useAction, useToast, type Column } from "@/components/common";
 import {
   buildSaveItemsInput,
   codePanelAccess,
@@ -76,6 +76,7 @@ export function CodeItemPanel({
   // 지금 실패 띠가 그 사이 바뀐 실패인가 — 아랫줄을 「최신 정보로 다시 채웠습니다.」로 고른다(failureView 의 판정 그대로)
   const [failureStale, setFailureStale] = useState(false);
   const [saving, startSaving] = useTransition();
+  const saveCodeItems = useAction(saveCodeItemsAction, { overlay: false });
   // 저장을 시작한 목록. 저장할 때마다 두고, 다음에 오는 목록이 바로 그 목록을 대신하면 아직 저장하지 못한 새 행을 그 뒤에
   // 이어 두고 지울 행 표시도 다시 얹는다(한 번 쓰고 지운다 — 뒤 단계가 실패했거나 결과를 모를 때 입력을 잃지 않게). 완전히 성공했으면 저장 처리가 등록한 새 행을
   // 걷어 낸다. 그룹을 바꾸면 패널이 새로 그려져 함께 사라진다(key=그룹 코드).
@@ -184,7 +185,7 @@ export function CodeItemPanel({
     startSaving(async () => {
       // 요청 자체가 끊기면(연결 끊김 · 재배포로 action 을 못 찾음) 서버에서는 저장됐을 수 있다 — 오류 화면으로 넘기지 않고
       // 목록을 다시 받아 띠로 알린다. 저장 안 됐으면 목록이 같아 입력값이 그대로, 수정만 됐으면 새 행이 이어진다(savingFrom).
-      const result = await saveCodeItemsAction(group.groupCode, input).catch((error: unknown) => {
+      const result = await saveCodeItems(group.groupCode, input).catch((error: unknown) => {
         console.error("상세 코드 저장 요청 실패", group.groupCode, error);
         return null;
       });

@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { NextResponse, type NextRequest } from "next/server";
 import { ApiError, bpHeader, getSession, request, SESSION_COOKIE } from "@/lib/api";
 
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/[...path]">)
     });
     return NextResponse.json(body);
   } catch (e) {
+    unstable_rethrow(e); // Next 신호는 삼키지 않는다(BFF 는 렌더 헤더가 없어 만료 이동은 없다 — 다른 창구와 규칙을 맞춘다)
     if (!(e instanceof ApiError)) {
       console.error(e);
       return NextResponse.json({ message: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요." }, { status: 502 });

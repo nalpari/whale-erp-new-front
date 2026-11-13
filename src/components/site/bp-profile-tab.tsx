@@ -2,7 +2,7 @@
 
 import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState, useTransition } from "react";
 import { AddressField } from "@/components/address-field";
-import { Checkbox, Field, FormRow, RequiredMark, TextField, useToast } from "@/components/common";
+import { Checkbox, Field, FormRow, RequiredMark, TextField, useAction, useToast } from "@/components/common";
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
 import { formatDateTime } from "@/lib/format";
 import { splitPhone } from "@/lib/my-profile-form";
@@ -105,6 +105,9 @@ export const BpProfileTab = forwardRef<
   }
 >(function BpProfileTab({ onSavingChange, basicPhone, basicEmail }, ref) {
   const toast = useToast();
+  const getBpProfile = useAction(getBpProfileAction, { overlay: false });
+  const updateBpProfile = useAction(updateBpProfileAction, { overlay: false });
+  const verifyBpBusiness = useAction(verifyBpBusinessAction, { overlay: false });
   const [loadFailure, setLoadFailure] = useState<string | null>(null);
   const [form, setForm] = useState<BpProfileForm | null>(null);
   const [errors, setErrors] = useState<Partial<Record<BpProfileFormField, string>>>({});
@@ -135,7 +138,7 @@ export const BpProfileTab = forwardRef<
 
   useEffect(() => {
     const mine = ++requestNumber.current;
-    getBpProfileAction()
+    getBpProfile()
       .then((result) => {
         if (mine !== requestNumber.current) return;
         if (!result.ok) return setLoadFailure(result.message);
@@ -231,17 +234,17 @@ export const BpProfileTab = forwardRef<
     const startedAt = Date.now();
     const mine = ++verifyNumber.current;
     startVerifying(async () => {
-      const result = await verifyBpBusinessAction(requested).catch((error: unknown) => {
+      const result = await verifyBpBusiness(requested).catch((error: unknown) => {
         console.error("사업자 번호 인증 호출 실패", error);
         return { ok: false as const, status: undefined, message: "" };
       });
       // 기다리는 사이 칸을 고쳤으면 이 응답은 옛 값의 것이다 — 버린다.
       if (mine !== verifyNumber.current) return;
       if (!result.ok) {
-        // 로그인 만료(401) · 형식(400) · 권한(403) · 계정 없음(404)은 할 일을 알리는 api 문구라 그대로 보인다
-        // (점포 store-form-view.tsx keepApiText 와 같다, 코드 리뷰로 찾음 — 전엔 이 네 상태도 bizVerifyFailure
+        // 형식(400) · 권한(403) · 계정 없음(404)은 할 일을 알리는 api 문구라 그대로 보인다
+        // (점포 store-form-view.tsx keepApiText 와 같다. 로그인 만료는 useAction 팝업이 맡는다. 코드 리뷰로 찾음 — 전엔 이 상태도 bizVerifyFailure
         // 를 타서 "확인하지 못했습니다" 기본 문구로 뭉개졌다)
-        const keepApiText = result.status === 400 || result.status === 401 || result.status === 403 || result.status === 404;
+        const keepApiText = result.status === 400 || result.status === 403 || result.status === 404;
         const failure = keepApiText ? { field: null, message: result.message } : bizVerifyFailure(result.status);
         if (failure.field) return setVerifyErrors((e) => ({ ...e, bizRegistrationNumber: failure.message }));
         return setVerifyFailure(failure.message);
@@ -277,7 +280,7 @@ export const BpProfileTab = forwardRef<
     if (Object.keys(found).length || unverified) return focusFirstError(document.getElementById(ids));
     startSaving(async () => {
       try {
-        const result = await updateBpProfileAction(toUpdateBpProfileInput(form, updatedAt, basicPhone, basicEmail, effective));
+        const result = await updateBpProfile(toUpdateBpProfileInput(form, updatedAt, basicPhone, basicEmail, effective));
         if (!result.ok) {
           const field = serverErrorField(result.status, result.message);
           if (!field) return setFailure(result.message);
@@ -295,7 +298,7 @@ export const BpProfileTab = forwardRef<
       // 최신값을 받으므로 그렇게 안내한다.
       toast("saved");
       try {
-        const refreshed = await getBpProfileAction();
+        const refreshed = await getBpProfile();
         if (refreshed.ok) {
           setUpdatedAt(refreshed.profile.updatedAt);
           setForm(formOf(refreshed.profile, basicPhone, basicEmail));

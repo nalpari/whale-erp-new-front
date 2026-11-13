@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, unstable_rethrow } from "next/navigation";
 import { NoticeBand } from "@/components/common";
 import { getEnum } from "@/lib/api";
 import { getFacility, getFacilityManagerOptions } from "@/lib/facilities";
@@ -25,6 +25,7 @@ export default async function EditFacilityPage({ params, searchParams }: PagePro
     if (loaded.store.isClosed) return <NoticeBand tone="info" title="폐점 점포의 시설물·장비는 조회만 할 수 있습니다." />;
     // 관리 담당자 선택지 — 못 받아도 폼은 연다(지금 담당자는 그대로 남는다)
     const managerOptions = await getFacilityManagerOptions(loaded.store.storeId).catch((error: unknown) => {
+      unstable_rethrow(error);
       console.error("관리 담당자 조회 실패", facilityId, error);
       return [];
     });

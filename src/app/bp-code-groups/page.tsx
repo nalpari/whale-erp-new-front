@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { PageBar } from "@/components/common";
 import { UnsavedChangesProvider } from "@/components/site/code-editor/unsaved-changes";
 import { SaveFailedBand } from "@/components/site/code-editor/code-panel";
@@ -40,12 +41,14 @@ export default async function BpCodesPage({ searchParams }: PageProps<"/bp-code-
       (await countBpCodeGroups()
         .then((total) => total === 0)
         .catch((error: unknown) => {
+          unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
           console.warn("BP 공통코드 그룹 전체 건수 확인 실패", error);
           return false;
         })));
   const selected = list.items.find((g) => g.groupCode === params.group) ?? list.items[0];
   const items = selected
     ? await getBpCodeItems(selected.groupCode).catch((error: unknown) => {
+        unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
         console.error("BP 상세 코드 조회 실패", selected.groupCode, error);
         return null;
       })

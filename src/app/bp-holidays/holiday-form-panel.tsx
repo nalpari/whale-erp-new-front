@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useState, useTransition, type RefObject } from "react";
-import { Button, ConfirmDialog, DataTable, DateField, Field, FormGroup, Radio, RequiredMark, Select, SlidePanel, Textarea, TextField, type Column } from "@/components/common";
+import { Button, ConfirmDialog, DataTable, DateField, Field, FormGroup, Radio, RequiredMark, Select, SlidePanel, Textarea, TextField, useAction, type Column } from "@/components/common";
 import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { useAccount, useCodes, useStores } from "@/components/site/session-gate";
 import { FailedBand, FieldMessage, WarnBand } from "@/components/site/side-parts";
@@ -74,6 +74,9 @@ export function HolidayFormPanel(props: Props) {
   const router = useRouter();
   const me = useAccount();
   const stores = useStores();
+  const checkBpHolidayOverlaps = useAction(checkBpHolidayOverlapsAction, { overlay: false });
+  const updateBpHoliday = useAction(updateBpHolidayAction, { overlay: false });
+  const createBpHoliday = useAction(createBpHolidayAction, { overlay: false });
   const types = useCodes("HOLIDAY_TYPE");
   const repeats = useCodes("HOLIDAY_REPEAT_TYPE");
   const ids = useId();
@@ -168,20 +171,20 @@ export function HolidayFormPanel(props: Props) {
     const body = holidayBody(f);
     startSaving(async () => {
       if (!force) {
-        const check = await checkBpHolidayOverlapsAction({ ...body, ...(h ? { bpHolidayId: h.bpHolidayId } : {}) }).catch(unknownResult("겹침 확인", false));
+        const check = await checkBpHolidayOverlaps({ ...body, ...(h ? { bpHolidayId: h.bpHolidayId } : {}) }).catch(unknownResult("겹침 확인", false));
         // 칸 · 권한 문제면 저장도 같은 이유로 막히니 여기서 알린다. 그 밖의 실패(5xx · 연결)는 저장을 막지 않는다 — 겹침 확인은 안내일 뿐이다.
-        if (!check.ok && check.status !== undefined && [400, 401, 403, 404, 409].includes(check.status)) return setFailure(check.message);
+        if (!check.ok && check.status !== undefined && [400, 403, 404, 409].includes(check.status)) return setFailure(check.message);
         if (!check.ok) console.warn("겹침 확인을 하지 못해 그대로 저장한다", check.message);
         if (check.ok && check.storeCount > 0) return setOverlaps(check);
       }
       setOverlaps(null);
       if (props.mode === "edit") {
-        const result = await updateBpHolidayAction(props.holiday.bpHolidayId, { ...body, updatedAt: props.holiday.updatedAt }).catch(unknownResult("수정"));
+        const result = await updateBpHoliday(props.holiday.bpHolidayId, { ...body, updatedAt: props.holiday.updatedAt }).catch(unknownResult("수정"));
         if (!result.ok) return fail(result.status, result.message);
         setFailure(null);
         props.onSaved();
       } else {
-        const result = await createBpHolidayAction(body).catch(unknownResult("등록"));
+        const result = await createBpHoliday(body).catch(unknownResult("등록"));
         if (!result.ok) return fail(result.status, result.message);
         setFailure(null);
         props.onSaved(result.bpHolidayId, body.startDate);

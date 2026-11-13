@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { Blocked, Button, Checkbox, ConfirmDialog, DataTable, Pagination, Select, useToast, type Column } from "@/components/common";
+import { Blocked, Button, Checkbox, ConfirmDialog, DataTable, Pagination, Select, useAction, useToast, type Column } from "@/components/common";
 import type { NotificationItem } from "@/lib/notifications";
 import { formatDateTime } from "@/lib/format";
 import { type NotificationQuery } from "@/lib/notification-view";
@@ -36,6 +36,8 @@ export function NotificationList({
   const pathname = usePathname();
   const search = useSearchParams();
   const toast = useToast();
+  const readAll = useAction(readAllAction, { overlay: false });
+  const deleteItems = useAction(deleteAction, { overlay: false });
   const [picked, setPicked] = useState<Set<number>>(new Set());
   const [dialog, setDialog] = useState<"readAll" | "delete" | null>(null);
   const [busy, startTransition] = useTransition();
@@ -66,7 +68,7 @@ export function NotificationList({
 
   const confirm = () =>
     startTransition(async () => {
-      const result = dialog === "readAll" ? await readAllAction() : await deleteAction([...picked]);
+      const result = dialog === "readAll" ? await readAll() : await deleteItems([...picked]);
       if (!result.ok) {
         toast(result.message);
         return;

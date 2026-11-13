@@ -1,9 +1,26 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { homeOf, isPlatformRole, isPublicPath, loginPathOf, redirectsSignedIn, RETURN_PARAM, signedInTargetOf } from "@/lib/auth-routes";
+import {
+  EXPIRED_REASON,
+  expiredLoginActionOf,
+  homeOf,
+  isExpiredLoginRequest,
+  isPlatformRole,
+  isPublicPath,
+  loginPathOf,
+  LOGOUT_REASON_PARAM,
+  marksRenderRequest,
+  passesSessionLostAction,
+  redirectsSignedIn,
+  RENDER_HEADER,
+  RETURN_PARAM,
+  SESSION_LOST_HEADER,
+  signedInTargetOf,
+} from "@/lib/auth-routes";
 import { BP_HEADER, bpRouteOf, stripBp } from "@/lib/bp-path";
 import { answersWith401, TOO_LARGE, tooLarge } from "@/lib/paper-request";
 import {
   ACCESS_TOKEN_TTL_MS,
+  LOGIN_KEY_COOKIE,
   parseSession,
   SESSION_COOKIE,
   sessionCookie,
@@ -12,7 +29,9 @@ import {
 } from "@/lib/session";
 
 // 쿠키만 보는 가벼운 확인(Next 16 authentication 가이드의 optimistic check). 데이터 권한은 api 가 토큰으로 다시 본다.
-// - 공개 경로가 아닌데 세션이 없으면 /login
+// - 공개 경로가 아닌데 세션이 없으면 /login(이 브라우저로 로그인한 적이 있으면 ?reason=expired)
+// - 화면을 그리는 GET 에 RENDER_HEADER 를 붙인다 — request() 가 api 401 이면 로그인 화면으로 보낼지 가른다
+// - /login?reason=expired 에 남은 세션 쿠키는 갱신으로 확인해 끝났으면 지운다
 // - 접근 토큰을 받은 지 10분이 지났으면(만료 50분 전부터) 갱신해 쿠키를 다시 쓴다. 갱신이 401 이면 /login, 그 밖의 실패는 토큰이 남아 있는 동안 현재 쿠키로 계속
 // - BP·가맹 계정이 플랫폼 화면에 오는 것은 주소가 아니라 SessionGate 가 탭 서비스의 메뉴로 막는다. 플랫폼 계정은 ERP 에도 들어간다(F-TLJOCK)
 // - 로그인한 채 /login · /find 에 오면 자기 홈
@@ -29,8 +48,27 @@ export async function proxy(req: NextRequest) {
   // 받는 화면이 공지사항 저장은 messages, 종이 계약은 error 를 읽어 둘 다 싣는다.
   // 탭 BP 주소(/bp/{id}/contracts/paper)로 부른 창구도 그 경로의 상한을 받게 접두를 떼고 본다(toLogin 의 answersWith401 과 같다).
   if (tooLarge(stripBp(pathname), req.headers.get("content-length"), req.headers.get("transfer-encoding"))) return NextResponse.json({ error: TOO_LARGE, messages: [TOO_LARGE] }, { status: 413 });
+  // 화면 요청 표시(RENDER_HEADER)는 늘 proxy 가 정한다 — 브라우저가 보낸 값은 공개 경로에서도 버린다.
+  req.headers.delete(RENDER_HEADER);
+  req.headers.delete(SESSION_LOST_HEADER);
+  const isAction = req.headers.has("next-action");
 
   if (isPublicPath(pathname)) {
+    // 만료 안내 로그인 화면(/login?reason=expired)에 세션 쿠키가 남아 있으면 갱신으로 한 번 확인한다. 서버가 화면을 그리다 401 로 보낸 경우
+    // 그리는 중에는 쿠키를 지울 수 없어 여기서 정리한다 — 안 그러면 아래 「로그인한 채 오면 홈으로」가 홈으로 되돌리고 홈에서 또 401 이 난다.
+    if (session && isExpiredLoginRequest(pathname, req.method, isAction, req.nextUrl.searchParams.get(LOGOUT_REASON_PARAM))) {
+      const refreshed = await refresh(session);
+      const action = expiredLoginActionOf(refreshed === "unauthorized" ? "unauthorized" : refreshed ? "ok" : "failed");
+      if (action === "home" && refreshed && refreshed !== "unauthorized") {
+        const res = NextResponse.redirect(new URL(signedInTargetOf(pathname, req.nextUrl.searchParams.get(RETURN_PARAM), homeOf(refreshed.roleTypeCode)), req.url));
+        res.cookies.set(sessionCookie(refreshed));
+        return res;
+      }
+      req.headers.delete(BP_HEADER);
+      const res = NextResponse.next({ request: { headers: req.headers } });
+      if (action === "clear") res.cookies.delete(SESSION_COOKIE);
+      return res;
+    }
     // 로그인한 채 로그인 전 홈 · 로그인 · 찾기에 오면 자기 홈으로 보낸다 — 조건은 redirectsSignedIn(auth-routes.ts).
     // 로그인 화면에 돌아올 곳(?next=, 메일 링크)이 있으면 홈 대신 그리로(signedInTargetOf).
     if (session && redirectsSignedIn(pathname, req.method, session)) {
@@ -41,17 +79,31 @@ export async function proxy(req: NextRequest) {
     req.headers.delete(BP_HEADER);
     return NextResponse.next({ request: { headers: req.headers } });
   }
-  if (!session) return toLogin(req);
+  if (!session) {
+    // 다른 탭에서 만료돼 쿠키가 지워진 뒤의 서버 액션 — 로그인 화면으로 보내면 액션 fetch 가 따라가 「결과 모름」이 된다.
+    // 표시를 붙여 통과시키면 request() 가 api 401 을 만료로 표시하고 useAction 이 「로그인 만료」 팝업을 띄운다(SESSION_LOST_HEADER).
+    if (!passesSessionLostAction(req.method, isAction, answersWith401(stripBp(pathname)), req.cookies.has(LOGIN_KEY_COOKIE))) return toLogin(req);
+    req.headers.delete(BP_HEADER);
+    req.headers.set(SESSION_LOST_HEADER, "1");
+    // 탭 BP 주소(/bp/{id}/...)는 폴더가 없으니 옛 경로로 rewrite 한다 — 세션이 없어 BP 판정(bpRoute)은 건너뛴다
+    const plain = stripBp(pathname);
+    if (plain === pathname) return NextResponse.next({ request: { headers: req.headers } });
+    const url = req.nextUrl.clone();
+    url.pathname = plain;
+    return NextResponse.rewrite(url, { request: { headers: req.headers } });
+  }
 
   const route = bpRoute(req, session);
   if (route instanceof URL) return NextResponse.redirect(route);
+  // 화면을 그리는 요청에만 표시한다 — request() 가 api 401 을 받으면 이 표시가 있을 때만 로그인 화면으로 보낸다(서버 액션 · BFF 는 오류에 만료 표시만).
+  if (marksRenderRequest(req.method, isAction, answersWith401(stripBp(pathname)))) req.headers.set(RENDER_HEADER, pathname);
   // 요청 헤더(탭 BP · 갱신한 쿠키)를 바꿔 넘긴다. /bp/{id} 주소면 옛 경로(폴더)로 rewrite 한다 — 브라우저 주소는 그대로다.
   const pass = () => (route ? NextResponse.rewrite(route.rewrite, { request: { headers: req.headers } }) : NextResponse.next({ request: { headers: req.headers } }));
 
   if (session.accessTokenExpiresAt - REFRESH_EARLY_MS > Date.now()) return pass();
   // 서버 액션 요청은 갱신하지 않는다. 50분 일찍 갱신하므로 토큰은 아직 유효하고, 여기서 쿠키를 쓰면
   // 액션이 쓰는 쿠키(로그아웃의 삭제)와 같은 응답에 겹쳐 로그아웃이 무시될 수 있다.
-  if (req.headers.has("next-action")) return pass();
+  if (isAction) return pass();
 
   const refreshed = await refresh(session);
   if (refreshed === "unauthorized") return toLogin(req);
@@ -121,14 +173,17 @@ async function refresh(session: Session): Promise<Session | "unauthorized" | nul
 }
 
 // 쿠키를 지워야 /login 의 「로그인한 채 오면 홈으로」가 다시 돌려보내지 않는다.
-// BFF(/api/*)와 종이 계약 등록(/contracts/paper)은 fetch 가 부르므로 로그인 화면 HTML 대신 401 을 준다 — 화면이 받아 /login 으로 보낸다.
-// 리다이렉트를 주면 fetch 가 따라가 날인본을 실은 채 /login 으로 다시 POST 하고, 화면은 로그인으로 가지 못한다(answersWith401).
+// fetch 가 부르는 창구(answersWith401 — BFF · 종이 계약 · 공지 저장 · 문의 등록 · 시설물 문서 · 엑셀 받기)는 로그인 화면 HTML 대신 401 을 준다 —
+// 화면의 bff() · fetchSameOrigin 이 「로그인 만료」 팝업을 띄운다. 리다이렉트를 주면 fetch 가 따라가 올린 파일을 실은 채 /login 으로 다시 POST 하고,
+// 화면은 로그인으로 가지 못한다.
 // 메일 링크(엑셀 내려받기)처럼 돌아올 수 있는 화면이면 /login?next= 로 보내 로그인 뒤 그 화면으로 돌아오게 한다(loginPathOf).
+// 이 브라우저로 로그인한 적이 있으면(login-key — 브라우저를 닫거나 직접 로그아웃해야 사라진다) 끊긴 것이므로 ?reason=expired 로 만료를 알린다.
 function toLogin(req: NextRequest) {
+  const reason = req.cookies.has(LOGIN_KEY_COOKIE) ? EXPIRED_REASON : undefined;
   // 탭 BP 주소(/bp/{id}/contracts/paper)로 부른 창구도 같은 판정을 받게 접두를 떼고 본다.
   const res = answersWith401(stripBp(req.nextUrl.pathname))
     ? NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 })
-    : NextResponse.redirect(new URL(loginPathOf(req.nextUrl.pathname, req.method), req.url));
+    : NextResponse.redirect(new URL(loginPathOf(req.nextUrl.pathname, req.method, reason), req.url));
   res.cookies.delete(SESSION_COOKIE);
   return res;
 }

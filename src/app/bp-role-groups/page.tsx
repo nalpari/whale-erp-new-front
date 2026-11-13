@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { PageBar } from "@/components/common";
 import { CARD, FailedBand } from "@/components/role-groups/role-parts";
 import { ApiError, deniedMessageOf, getEnum } from "@/lib/api";
@@ -63,6 +64,7 @@ async function loadDetail(id: number): Promise<NonNullable<BpRoleDetailState>> {
   try {
     return { role: await getBpRoleGroup(id) };
   } catch (error) {
+    unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
     if (error instanceof ApiError && error.status === 404) return { failed: "삭제되었거나 없는 권한 그룹입니다." };
     // 볼 수 없는 BP · 권한이면 목록도 같은 이유로 거절돼 그쪽이 알린다 — 장애 로그를 남기지 않는다
     if (error instanceof ApiError && error.status === 403) return { failed: error.message };

@@ -19,6 +19,7 @@ import {
   TextField,
   Textarea,
   Toggle,
+  useAction,
   useFilePreviews,
   useToast,
   type AttachmentRow,
@@ -26,6 +27,7 @@ import {
 } from "@/components/common";
 import { FIELD } from "@/components/common/theme";
 import { useCodes, useCurrentBp } from "@/components/site/session-gate";
+import { fetchSameOrigin } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import type { FacilityDetail, FacilityDocument, FacilityManagerOption, FacilityStoreOption } from "@/lib/facilities";
@@ -92,6 +94,10 @@ export function FacilityFormView(props: Props) {
   const { mode, backHref, kindLabels } = props;
   const facility = mode === "edit" ? props.facility : null;
   const router = useRouter();
+  const getManagerOptions = useAction(getManagerOptionsAction, { overlay: false });
+  const createFacility = useAction(createFacilityAction, { overlay: false });
+  const updateFacility = useAction(updateFacilityAction, { overlay: false });
+  const deleteFacilityDocument = useAction(deleteFacilityDocumentAction, { overlay: false });
   const toast = useToast();
   const bp = useCurrentBp().bpCodeId;
   const ids = useId();
@@ -140,7 +146,7 @@ export function FacilityFormView(props: Props) {
     setManagerNote(null);
     if (storeId === null) return;
     const ticket = ++managerRequest.current;
-    void getManagerOptionsAction(storeId)
+    void getManagerOptions(storeId)
       .catch((e: unknown) => {
         console.error("관리 담당자 조회 호출 실패", { storeId }, e);
         return { ok: false as const, message: "관리 담당자 목록을 불러오지 못했습니다." };
@@ -200,14 +206,14 @@ export function FacilityFormView(props: Props) {
     startSave(async () => {
       const body = bodyOf(form);
       if (mode === "create") {
-        const result = await createFacilityAction({ storeId: form.storeId as number, ...body }).catch(unknownResult("등록"));
+        const result = await createFacility({ storeId: form.storeId as number, ...body }).catch(unknownResult("등록"));
         if (!result.ok) return setFailure({ title: result.message, detail: detailOf(result.messages) });
         const failed = await saveDocuments(result.facilityId);
         finish(result.facilityId, failed);
         return;
       }
       if (!facility) return;
-      const result = await updateFacilityAction(facility.facilityId, { updatedAt: facility.updatedAt, ...body }).catch(unknownResult("저장"));
+      const result = await updateFacility(facility.facilityId, { updatedAt: facility.updatedAt, ...body }).catch(unknownResult("저장"));
       if (!result.ok) {
         // 그 사이 다른 사람이 고쳤다 — 입력한 값은 그대로 두고 새로 받아 다시 저장하게 한다
         // 그 사이 지워졌다 — 목록으로 보낸다
@@ -236,7 +242,7 @@ export function FacilityFormView(props: Props) {
         data.append("facilityId", String(facilityId));
         data.append("kind", kind);
         data.append("file", doc.file, doc.file.name);
-        const res = await fetch(at("/facilities/documents"), { method: "POST", body: data }).catch((e: unknown) => {
+        const res = await fetchSameOrigin(at("/facilities/documents"), { method: "POST", body: data }).catch((e: unknown) => {
           console.error("시설물 문서 올리기 호출 실패", { facilityId, kind }, e);
           return null;
         });
@@ -247,7 +253,7 @@ export function FacilityFormView(props: Props) {
         }
       } else if (doc.existing && doc.removed) {
         // 빼기 실패는 사유(권한 · 폐점 · 결과 모름)를 함께 — 다시 뺄지 고를 수 있게(리뷰 반영)
-        const result = await deleteFacilityDocumentAction(facilityId, kind).catch(unknownResult("문서 빼기"));
+        const result = await deleteFacilityDocument(facilityId, kind).catch(unknownResult("문서 빼기"));
         if (!result.ok) failed.push(`${name}(빼기: ${result.message})`);
       }
     }

@@ -1,21 +1,30 @@
 # Bundle history
 
 ## 2026-11-13
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 세션 없는 요청 통과를 화면 주소로 온 POST 서버 액션으로 좁혔다. `next-action` 헤더 · login-key 쿠키를 꾸민 GET 이 로그인 없이 화면을 그리던 것, fetch 창구까지 통과시키던 것(PR #256 적대적 리뷰).
 * **Update**: [출퇴근 현황 화면](/screens/attendance-records.md) · [Whale ERP Frontend](/whale-erp-front.md) — 통합테스트 반영: 출퇴근 대신 등록은 날짜를 바꿔도 고른 직원을 유지(IT-ATT-003), 근로계약 상세 재발송 완료 토스트(IT-CONT-006)(front wobbuffet).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 값이 틀린 입력칸의 빨간 테두리를 없앴다(공통 `FIELD_BOX` 의 `aria-invalid:border-erp-off` 제거, 점포유형 카드 빨간 테두리 제거). 칸 아래 빨간 문구만 — DESIGN.md 「오류 문구 자리」대로(통합테스트 IT-STORE-002, front togedemaru).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) · [Whale ERP Frontend](/whale-erp-front.md) — 통합테스트(직원정보 관리) 반영: 생년월일 수정 토스트 「수정했습니다」(전엔 정정), 퇴직일 칸 숫자 8자리 자동 변환, 근로계약 상세 보낸 원본 「만드는 중」 안내(마지막 발송 하루 안 · 그 발송의 원본이 아직 없을 때, 종이 계약만 뺌), 날짜 칸 자동 변환은 하이픈을 두 번 친 값(2026-8-5)을 그대로 둔다(front ledian).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 전 홈 첫 화면 「핵심기능 7가지」 판(입체 아이콘, 점포 · 시설 점검 맨 앞, 「출퇴근 관리」 · 「가맹점 통합운영」), 판이 보이는 동안 무료 가입 띠 감춤, 「사장님,」 · 구역 여백, 관리자 머리말 로고(고래 · 별 + REM, 플랫폼 탭은 「· 플랫폼관리」) · 사용자 알약 · 호버 테두리 · 점포 선택 목록 폭 420px · 묶음 구분선 · 범위 줄 「직영점포 전체 · N개」 · 묶음 머리 「직영점포 · N」(포인트 파랑) · 범위 묶음 상호 머리 뺌 · 미운영 꼬리표 · 「선택한 점포 N개」, 로그인 후 홈 인사 글자색(front bulbasaur, 사용자 지정).
 * **Update**: [운영 알림](/notify.md) — 헤더 종 호버 · 열림에 둥근 회청 테두리(front bulbasaur, 사용자 지정).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [로그인](/auth.md) — 화면을 그리다 만료돼 로그인 화면으로 갈 때도 돌아올 곳(`?next=`, 메일 링크의 엑셀 받기 화면)을 붙인다 — 화면 요청 표시 헤더 값을 그 화면 주소로 바꿨다. 다른 탭에서 직접 로그아웃한 뒤 이 탭의 저장은 「결과 모름」이 뜨는 알려진 한계를 적었다(PR #256 리뷰 Minor).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포](/stores.md) · [급여명세서](/screens/payslips.md) · [직원](/screens/staff-members.md) — 여러 탭 만료 마무리(PR #256 리뷰): 근로계약 · 주소 검색 서버 액션이 세션 없을 때 api 전에 「로그인이 필요합니다」로 돌아가 팝업이 뜨지 않던 것을 지웠다(가드 G2 가 다시 막는다). 화면을 그리다 401 이면 `error.tsx` 가 아니라 만료 안내 로그인 화면, 점포 엑셀 받기 401 은 「로그인 만료」 팝업으로 본문을 맞췄다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 여러 탭: 다른 탭에서 만료돼 세션 쿠키가 지워진 뒤 이 탭에서 저장하면 「저장 결과를 확인하지 못했습니다」 대신 「로그인 만료」 팝업이 뜬다. proxy 가 세션 없는 서버 액션(login-key 있음)을 로그인 화면으로 보내지 않고 `SESSION_LOST_HEADER` 를 붙여 통과시키고, `request()` 가 그 401 을 만료로 표시한다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #256 종합 리뷰 반영: 「로그인 만료」 팝업이 브라우저 Esc 로 닫혀도 다시 열린다(`ConfirmDialog`), 만료 가드 G2 가 결과 일부만 꺼내 만료 표시를 버리는 catch 를 잡고 본 양의 하한을 둔다, `request()` 만료 판정을 `expiryHandlingOf` 로 빼 시험, `bff()` 401 시험 추가, 길목 목록 · 401 설명 주석과 본문(창구 목록 · 고정 문구 · 근로계약 판정 순서 · 플랫폼 휴일)을 코드에 맞췄다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 [BP에 적용] 중 로그인 만료도 「로그인 만료」 팝업으로 간다. 액션이 실패 문구만 넘겨 만료 표시가 빠지던 것(PR #256 리뷰).
 
 ## 2026-11-12
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드 미니 카드(front togepi, 사용자 지정): 접은 알약도 끌어 옮긴다(4px 넘게 움직여야 끌기, 그냥 누르면 펼침, 펼친 카드가 화면 밖으로 넘치면 화면 안으로 붙잡음). 로그인 후 홈 제목 줄의 기준 시각은 연도 · 요일까지 「2026-11-12(목) 13:07 기준」으로 보인다(`home-screen.tsx` `formatAsOf`, 전엔 알림과 같은 「11-12 13:07」).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 홈 · 매장운영(front eevee, 사용자 지정): 첫 화면 「가입 즉시 무료 이용」 줄을 떠 있는 띠로 옮기고 혜택을 셋(점포 1개 운영 · 직원 5명 근무 앱 초대 · 관리자 계정 자유롭게 추가)으로, 띠 꼬리표 · [무료로 시작], 매장운영 · 재무관리 · 프랜차이즈 · 부가서비스에도 띠(붙는 구역이 화면을 채우는 동안은 감춤), 「부가서비스 순차 오픈」 작은 꼬리표, 첫 화면 키 메시지 그라데이션 · 크기 · 설명 굵기, 첫 화면 아래 여백 · 구름 녹임, 매장 카드 · 매장운영 · 재무관리 · 프랜차이즈 흐름 구역 · 부가서비스 판매용 · 관리용 제목 문구, 레시피 · 발주 · 대기 순번 아이콘.
+* **Update**: [로그인](/auth.md) — main 병합으로 들어온 시설물 · 장비 화면과 엑셀 일괄 등록 팝업을 로그인 만료 규칙에 맞췄다: 서버 액션은 `useAction`, 문서 올리기 · 일괄 등록은 `fetchSameOrigin`, 서버 화면 catch 는 `unstable_rethrow`, 두 창구는 G1 허용 목록(업로드 창구).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 다듬기(front kangaskhan, 사용자 지정): 최소폭 1260px, 머리말 세 칸 격자 · 글자 세 단계 · 「로그인」 한글, 첫 화면 제목 · 설명 · 글자색 · 고래 위치, 매장 유형 카드 문구 · 시작선 · 실사 사진 · 2×2, 카드 호버 테두리, 공지 구분 꼬리표, 아이디/비밀번호 찾기 왼쪽 문구와 로그인 ↔ 찾기 전환이 튕기지 않게.
 * **Update**: [Home](/home.md) — 플랫폼 계정이 고른 BP 의 로그인 후 홈(WHALEERP-667, 운영 정책 HOM-07 v280): 고객 BP 를 골라 웨일ERP 탭에 온 플랫폼 마스터 · 플랫폼 관리자는 BP 마스터와 같은 홈을 본다. 안내 화면은 플랫폼 탭(BP 를 고르지 않음)만이다. 홈은 `/bp/{id}` 주소가 아니라 `bff` · `useApi` 에 `tabBp` 인자를 더해 `/home/summary` · `/home/pending` 에 탭 BP 헤더를 싣는다(주소의 BP 가 먼저). api 타입은 api grimer 기준으로 다시 만들었다.
 * **Update**: [Home](/home.md) — 공지 띠도 탭 BP 를 실어 부른다(`bff(NOTICES_PATH, bp)`). 플랫폼 계정은 고른 BP 의 BP 마스터와 같은 공지를 보고, 누른 공지는 공지사항 상세 · 목록에서도 보인다(WHALEERP-667, 운영 정책 HOM-07 v281 — api 가 탭 BP 로 노출 대상을 고른다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 루트 layout 이 운영 알림 종을 쿠키가 아니라 접근 토큰이 살아 있을 때만 그린다(`hasLiveAccessToken`, 로그인 전 홈 `redirectsSignedIn` 과 같은 기준). 끝난 로그인의 쿠키로 `/` 에 오면 종이 401 「토큰이 유효하지 않습니다.」를 콘솔에 남기던 것(3팀 채널 재영 제보).
 
 ## 2026-11-11
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 화면(플랫폼 · BP)은 로그인 만료 팝업 [확인]의 로그인 이동에 브라우저 「나가시겠습니까?」를 띄우지 않는다(사용자 지정).
+* **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — 회원 탈퇴 최종 제출의 401 도 로그인 만료로 본다(「로그인 만료」 팝업 → 로그인 화면). 전엔 안내 없이 로그인 전 홈으로 가 탈퇴된 줄 알 수 있었다(사용자 지정).
 * **Update**: `2026-09-30-네이밍-규칙.md` front 사본을 api 원본과 같게 맞추고(2026-10-13 · 10-15 · 10-23 · 11-11 고침) [네이밍 규칙](/conventions/naming.md) 에 반영했다 — BP 기본키 비고(`bpCodeId` · `bpCode`), 기본 템플릿 42건(`NTF_SIGNUP_UNDER_AGE` · `EMAIL_LEAD_REPLY`), 「BP · 점포」의 시설물·장비 식별자(`facility` · `facility_document` · `sales_representative` · 공통코드 4그룹).
 * **Update**: 시설물 및 장비 관리 화면(`/facilities`, MN000022)을 만들었다 — 목록 · 등록 · 상세 · 수정, 문서 올리기 창구 `/facilities/documents`. `MENU_CODE.facilities` · 탭 BP 주소 화면 · 생성 타입(api 시설물 경로)이 바뀌어 [직원 정보 관리 화면](/screens/staff-members.md) 의 `generated.at` 만 갱신했다(본문 변화 없음). 목업 · 데모의 점검 주기 공통코드 그룹 이름을 `INSPECTION_CYCLE` 로 고쳤다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 출처 `src/lib/menus.ts` 에 시작 가이드(`/start-guide`) 허용 2줄이 더해져 출처 시각만 갱신했다. 직원 화면이 보는 메뉴 코드는 그대로라 본문은 바꾸지 않았다(front #263 code-review).
@@ -29,6 +38,9 @@
 * **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — WHALEERP-664 재영 리뷰 반영: 기간 기록 전체(`fixAll`)가 꺼진 채 주소에만 남았으면 기간을 바꿀 때 지운다, 켜져 있으면 목록 아래에 근무스케줄 · 기록이 모두 없는 근로계약 근무 요일은 목록에 나오지 않는다는 안내를 적는다, 결근 줄에 「결근」 꼬리표를 붙인다.
 
 ## 2026-11-10
+* **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — 로그인 만료 3차: 받기 · 올리기(엑셀 · 첨부 · 종이 계약 · 공지 · 문의 업로드)도 「로그인 만료」 팝업으로(`fetchSameOrigin` · `isSessionExpired`), 엑셀 받기 창구는 세션이 없으면 401, 계약서 파일 받기는 만료 안내 로그인 화면으로. 공지 · 문의 폼의 별도 만료 문구를 지웠다. 가드에 G5(fetch)를 더했다. 탭 사이 알림은 하지 않기로 했다(사용자 결정).
+* **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — 로그인 만료 2차: 서버 액션 실패 처리마다 `expiredFailureOf`, 로그인한 화면의 서버 액션을 모두 `useAction`(덮개 없음)으로, 화면 · 서버 화면의 401 분기 삭제, 규칙을 지키는 가드 시험(`expiry-guard.test.ts`). 커뮤니티 목록 불러오기의 만료 이동 삼킴(1차 누락)도 고쳤다.
+* **Update**: [로그인](/auth.md) — 로그인 만료 처리를 공통 길목으로 모았다(3안 1차, front wigglytuff): 화면을 열거나 옮기다 끊기면 로그인 화면 빨간 줄(`/login?reason=expired`), 쓰다 끊기면 「로그인 만료」 팝업 하나. 만료가 아닌 401(강제 비밀번호 변경 · 탈퇴 최종 · 로그아웃)은 제외, 로그아웃 실패는 팝업. 「로그인 화면에는 세션 만료 문구가 없다」를 지웠다. [Whale ERP Frontend](/whale-erp-front.md) 의 proxy 절에 렌더 헤더 · `expiredFailureOf` · `useAction` 흐름을 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근무 장소 정의를 「소속 근무지를 고르면 근무지명으로 채우고 고칠 수 있다」로 맞췄다: 칸 placeholder, 목업 · 데모 `contracts-new`, 물리 ERD `contracts.work_location` 설명(api 물리 모델과 같은 문장, PR #250 리뷰).
 * **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) · [급여명세서 관리 화면](/screens/payslips.md) — 급여명세서 [출퇴근 기록 확인] · [출퇴근 기록 보기]로 열면 아래 목록이 그 직원의 기간 기록 전체(`fixAll=1`, 「기간 출·퇴근 기록」)를 보이고 기간은 급여 기간 첫 주 월요일부터다 — 경고 띠의 날짜(계약 종료 뒤 정상 기록 · 결근 · 휴무 · 첫 주의 지난달 날짜)가 보정 대상이 아니라 걸러지던 것(WHALEERP-664, 재영 후속 요청).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 본문 틀 `FRAME` 을 내용 폭 1760 → 1520px(`max-w-[1680px] px-[80px]`)로 줄이고 홈 · 소개 화면이 같이 쓴다(front #254, 사용자 지정).

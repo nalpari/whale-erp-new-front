@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, type RefObject } from "react";
 import { AttachmentField, FieldMessage, Button, Field, FormGroup, Select, SlidePanel, Textarea, TextField, useFilePreviews, useToast } from "@/components/common";
 import { useCodes, useCurrentBp } from "@/components/site/session-gate";
-import { PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
+import { fetchSameOrigin, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
-import { BODY_MAX, FILE_ACCEPT, MAX_ATTACHMENTS, PASSWORD_REQUIRED_PREFIX, pickInquiryFiles, SESSION_EXPIRED, TITLE_MAX } from "@/lib/community-view";
+import { BODY_MAX, FILE_ACCEPT, MAX_ATTACHMENTS, PASSWORD_REQUIRED_PREFIX, pickInquiryFiles, TITLE_MAX } from "@/lib/community-view";
 import { INQUIRY_SAVE_ROUTE } from "@/lib/paper-request";
 
 // 문의 등록 패널(#284, 데모 support/inquiries 의 inquiry-form). 문의 유형 · 제목 · 내용 · 첨부(CNT-18)를 multipart 로
@@ -67,12 +67,12 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
     setSaving(true);
     try {
       // 창구 주소에도 탭 BP 를 붙인다 — proxy 가 떼어 이 핸들러로 보내며 X-Bp-Code-Id 를 싣는다(front #82).
-      const res = await fetch(bpPath(bp, INQUIRY_SAVE_ROUTE), { method: "POST", body: data });
+      // 로그인 만료(401)면 fetchSameOrigin 이 「로그인 만료」 팝업을 띄우고 돌아오지 않는다(쓰던 내용은 남기지 않는다 — 정책)
+      const res = await fetchSameOrigin(bpPath(bp, INQUIRY_SAVE_ROUTE), { method: "POST", body: data });
       const body = (await res.json().catch(() => null)) as { messages?: string[]; registered?: boolean } | null;
       // 등록은 됐는데 결과만 못 읽었으면(registered) 성공처럼 칸을 비우고 닫는다 — 남겨 두면 다시 눌러 같은 문의가 또 생긴다.
       if (!res.ok && !body?.registered) {
-        // proxy 가 먼저 막은 401 은 본문이 { message } 라 문구를 여기서 정한다.
-        const messages = res.status === 401 ? [SESSION_EXPIRED] : (body?.messages ?? [`등록하지 못했습니다 (HTTP ${res.status}).`]);
+        const messages = body?.messages ?? [`등록하지 못했습니다 (HTTP ${res.status}).`];
         // 비밀번호 강제 변경 403 이면 SessionGate 가 변경 팝업을 다시 띄운다(BFF 와 같은 이벤트).
         if (messages[0]?.startsWith(PASSWORD_REQUIRED_PREFIX)) dispatchEvent(new Event(PASSWORD_REQUIRED_EVENT));
         setSentFailed(true);

@@ -88,3 +88,24 @@ test("wrapAction — reject 여도 end 를 부르고 오류를 그대로 다시 
 test("wrapAction — begin 이 없으면 덮개 없이 그냥 부른다", async () => {
   assert.equal(await wrapAction(null, "x", async () => "ok")(), "ok");
 });
+
+test("wrapAction — 로그인 만료 결과면 덮개를 내리고 팝업을 알린 뒤 결과를 넘기지 않는다", async () => {
+  const store = createBusyStore();
+  let expired = 0;
+  const run = wrapAction(store.begin, "등록중입니다.", async () => ({ ok: false, status: 401, expired: true }), () => void expired++);
+  let settled = false;
+  void run().then(() => (settled = true));
+  await new Promise((r) => setTimeout(r, 10));
+  assert.equal(expired, 1);
+  assert.equal(settled, false);
+  assert.equal(store.text(), null);
+});
+
+test("wrapAction — 만료가 아닌 401 · 그 밖의 결과는 그대로 넘긴다", async () => {
+  let expired = 0;
+  const onExpired = () => void expired++;
+  const plain = { ok: false, status: 401, message: "비밀번호가 일치하지 않습니다." };
+  assert.deepEqual(await wrapAction(null, "x", async () => plain, onExpired)(), plain);
+  assert.equal(await wrapAction(null, "x", async () => undefined, onExpired)(), undefined);
+  assert.equal(expired, 0);
+});

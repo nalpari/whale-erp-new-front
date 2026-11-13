@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { Button, Checkbox, ConfirmDialog, DateField, useToast } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DateField, useAction, useToast } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import {
   BIRTH_DATE_CONFIRM_LABEL,
@@ -62,6 +62,7 @@ function BirthDateDialog({
   const router = useRouter();
   const toast = useToast();
   const onFailure = useFailure();
+  const correctBirthDate = useAction(correctBirthDateAction, { overlay: false });
   const [date, setDate] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -142,7 +143,7 @@ function BirthDateDialog({
     // try 는 서버 액션 호출만 감싼다 — 결과를 받은 뒤의 처리가 던진 것을 「결과 모름」으로 잘못 알리지 않게.
     let result: ActionResult;
     try {
-      result = await correctBirthDateAction(staffMemberId, date, current);
+      result = await correctBirthDate(staffMemberId, date, current);
     } catch (e) {
       console.error("생년월일 정정 요청 실패", { staffMemberId }, e);
       setError(BIRTH_DATE_REQUEST_FAILED_MESSAGE);

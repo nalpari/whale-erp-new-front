@@ -2,7 +2,7 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode } from "react";
-import { Button, ConfirmDialog, DetailTable, Field, FormGroup, FormRow, Select, TextField, Toggle, useToast } from "@/components/common";
+import { Button, ConfirmDialog, DetailTable, Field, FormGroup, FormRow, Select, TextField, Toggle, useAction, useToast } from "@/components/common";
 import { useCurrentBp, usePagePermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import {
@@ -153,6 +153,14 @@ export function PayslipReview({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const saveDraft = useAction(savePayslip, { overlay: false });
+  const loadPrevious = useAction(getPreviousValues, { overlay: false });
+  const loadAdditionalItems = useAction(getAdditionalItems, { overlay: false });
+  const confirmOne = useAction(confirmPayslip, { overlay: false });
+  const recalculate = useAction(recalculatePayslip, { overlay: false });
+  const cancelConfirmation = useAction(cancelPayslipConfirmation, { overlay: false });
+  const sendOne = useAction(sendPayslip, { overlay: false });
+  const resendOne = useAction(resendPayslip, { overlay: false });
   const canUpdate = usePagePermission().update;
   // 출퇴근 현황도 탭 BP 주소 화면이다(WHALEERP-637)
   const bp = useCurrentBp().bpCodeId;
@@ -232,7 +240,7 @@ export function PayslipReview({
     if (invalid.length > 0) return setFailure({ ok: false, message: `숫자만 넣어 주세요: ${invalid.join(", ")}` });
     run(
       () =>
-        savePayslip(payslip.payslipId, {
+        saveDraft(payslip.payslipId, {
           updatedAt: payslip.updatedAt,
           isPremiumApplied: premium,
           isWithholdingApplied: isPartTime && withholding,
@@ -244,7 +252,7 @@ export function PayslipReview({
 
   const load = () =>
     startBusy(async () => {
-      const result = await callAction(() => getPreviousValues(payslip.payslipId));
+      const result = await callAction(() => loadPrevious(payslip.payslipId));
       if (!result.ok) return setFailure(result);
       if (!result.previous) return setFailure({ ok: false, message: "불러올 지난 명세서가 없습니다." });
       const next = applyPrevious(items, texts, result.previous);
@@ -262,7 +270,7 @@ export function PayslipReview({
     setAdding("");
     if (addable) return;
     startBusy(async () => {
-      const result = await callAction(getAdditionalItems);
+      const result = await callAction(loadAdditionalItems);
       if (!result.ok) return setFailure(result);
       setAddable(result.items);
     });
@@ -421,7 +429,7 @@ export function PayslipReview({
         confirmLabel="확정"
         busy={busy}
         confirmDisabled={dirty || totals.blankDeductions > 0}
-        onConfirm={() => run(() => confirmPayslip(payslip.payslipId, payslip.updatedAt), "확정되었습니다.")}
+        onConfirm={() => run(() => confirmOne(payslip.payslipId, payslip.updatedAt), "확정되었습니다.")}
         onCancel={close}
       >
         {dirty
@@ -438,7 +446,7 @@ export function PayslipReview({
         title="출퇴근 기록으로 다시 계산하시겠습니까?"
         confirmLabel="다시 계산"
         busy={busy}
-        onConfirm={() => run(() => recalculatePayslip(payslip.payslipId, payslip.updatedAt), "출퇴근 기록으로 다시 계산했습니다.")}
+        onConfirm={() => run(() => recalculate(payslip.payslipId, payslip.updatedAt), "출퇴근 기록으로 다시 계산했습니다.")}
         onCancel={close}
       >
         {payslip.periodStartDate} ~ {payslip.periodEndDate.slice(5)} 출퇴근 기록으로 기본급·주휴수당·연장수당이 재계산되며, 세 칸에서 직접 고친 값과 임시저장하지 않은 내용은 초기화됩니다.
@@ -449,7 +457,7 @@ export function PayslipReview({
         title="급여명세서 확정을 취소하시겠습니까?"
         confirmLabel="확정 취소"
         busy={busy}
-        onConfirm={() => run(() => cancelPayslipConfirmation(payslip.payslipId, payslip.updatedAt), "확정을 취소했습니다.")}
+        onConfirm={() => run(() => cancelConfirmation(payslip.payslipId, payslip.updatedAt), "확정을 취소했습니다.")}
         onCancel={close}
       >
         {payslip.status === "SENT"
@@ -462,7 +470,7 @@ export function PayslipReview({
         title="급여명세서를 발송하시겠습니까?"
         confirmLabel="발송"
         busy={busy}
-        onConfirm={() => run(() => sendPayslip(payslip.payslipId, payslip.updatedAt), "발송했습니다.")}
+        onConfirm={() => run(() => sendOne(payslip.payslipId, payslip.updatedAt), "발송했습니다.")}
         onCancel={close}
       >
         {payslip.staffName} 님의 직원 근무 앱 계정 이메일로 보내고 발송 완료로 바꿉니다. 앱 푸시 알림은 아직 보내지 않습니다.
@@ -473,7 +481,7 @@ export function PayslipReview({
         title="급여명세서를 다시 발송하시겠습니까?"
         confirmLabel="재발송"
         busy={busy}
-        onConfirm={() => run(() => resendPayslip(payslip.payslipId, payslip.updatedAt), "다시 발송했습니다.")}
+        onConfirm={() => run(() => resendOne(payslip.payslipId, payslip.updatedAt), "다시 발송했습니다.")}
         onCancel={close}
       >
         {payslip.staffName} 님에게 지금 값으로 명세서를 다시 보냅니다. 문구는 처음 발송과 같습니다.

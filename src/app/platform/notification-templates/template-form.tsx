@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, Checkbox, ConfirmDialog, DataTable, PageBar, Select, Textarea, TextField, Toggle, useToast, type Column } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DataTable, PageBar, Select, Textarea, TextField, Toggle, useAction, useToast, type Column } from "@/components/common";
 import type { EnumValue } from "@/lib/enums";
 import { formatAt } from "@/lib/notification-view";
 import {
@@ -155,6 +155,10 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
   const isNew = !detail;
   const router = useRouter();
   const toast = useToast();
+  const createTemplate = useAction(createTemplateAction, { overlay: false });
+  const updateTemplate = useAction(updateTemplateAction, { overlay: false });
+  const restoreTemplate = useAction(restoreTemplateAction, { overlay: false });
+  const setTemplateActive = useAction(setTemplateActiveAction, { overlay: false });
   const [draft, setDraft] = useState<Draft>(() => draftOf(detail));
   /** 마지막으로 api 에서 받은 값 — 잠금용 updatedAt, 원래 템플릿 코드, 기본 문구 유무, 변경 이력. */
   const [saved, setSaved] = useState(detail);
@@ -217,13 +221,13 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
     startTransition(async () => {
       setDialog(null);
       if (!saved) {
-        finish(await createTemplateAction(input, isActive), (d) => {
+        finish(await createTemplate(input, isActive), (d) => {
           toast("saved");
           router.push(`${BASE}/${d.id}`);
         });
         return;
       }
-      finish(await updateTemplateAction(saved.id, input, saved.updatedAt), (d) => {
+      finish(await updateTemplate(saved.id, input, saved.updatedAt), (d) => {
         reload(d);
         toast("updated");
       });
@@ -243,7 +247,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
     saved &&
     startTransition(async () => {
       setDialog(null);
-      finish(await restoreTemplateAction(saved.id, saved.updatedAt), (d) => {
+      finish(await restoreTemplate(saved.id, saved.updatedAt), (d) => {
         // 되돌리기는 제목 · 본문 · 변수 목록만 바꾼다(NOTIFY-18) — 저장하지 않은 이름 · 코드 등 다른 입력은 그대로 둔다.
         const restored = draftOf(d);
         setSaved(d);
@@ -259,7 +263,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
       return;
     }
     startTransition(async () => {
-      finish(await setTemplateActiveAction(saved.id, next, saved.updatedAt), (d) => {
+      finish(await setTemplateActive(saved.id, next, saved.updatedAt), (d) => {
         setSaved(d);
         setIsActive(d.isActive);
         toast("updated");

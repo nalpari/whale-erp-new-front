@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { ApiError } from "@/lib/api";
 import { getBpMaster, getBpMasters, type BpMasterDetail } from "@/lib/bp-masters";
 import { bpMastersHref, parseBpMastersQuery } from "./bp-masters-href";
@@ -21,6 +22,7 @@ export default async function BpMastersPage({ searchParams }: PageProps<"/bp-mas
       (await getBpMasters(allQuery)
         .then((all) => all.total === 0)
         .catch((error: unknown) => {
+          unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
           console.warn("BP 마스터 전체 건수 확인 실패", error);
           return false;
         })));
@@ -34,6 +36,7 @@ async function loadDetail(bpCodeId: number): Promise<{ bp: BpMasterDetail } | { 
   try {
     return { bp: await getBpMaster(bpCodeId) };
   } catch (error) {
+    unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
     if (error instanceof ApiError && error.status === 404) return { failed: "삭제되었거나 없는 BP 입니다." };
     console.error("BP 마스터 계정 상세 조회 실패", bpCodeId, error);
     return { failed: "상세를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." };

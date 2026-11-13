@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, use, useState, type ReactNode } from "react";
+import { fetchSameOrigin } from "@/lib/bff";
 import { downloadPercent, errorMessageOf, EXCEL_FAILED as FAILED, EXCEL_SCHEDULED, fileNameOfDisposition, XLSX_CONTENT_TYPE } from "@/lib/download";
 import { Blocked } from "./blocked";
 import { Button } from "./button";
@@ -47,10 +48,11 @@ export function ExcelDownloadProvider({ children, fileName }: { children: ReactN
     setNoticeFor(href);
     setPhase({ kind: "preparing" });
     try {
-      const response = await fetch(href, { cache: "no-store" });
+      // 로그인 만료(401)면 fetchSameOrigin 이 「로그인 만료」 팝업을 띄우고 여기로 돌아오지 않는다
+      const response = await fetchSameOrigin(href, { cache: "no-store" });
       if (!response.ok) {
         const body: unknown = await response.json().catch(() => null);
-        // 429 1분 제한 · 409 생성 중 · 400 이메일 없음 · 조건 없음은 할 일을 알려 주는 안내. 그 밖의 4xx(401 로그인 만료 · 403 권한 · 404)는
+        // 429 1분 제한 · 409 생성 중 · 400 이메일 없음 · 조건 없음은 할 일을 알려 주는 안내. 그 밖의 4xx(403 권한 · 404)는
         // 다시 해도 소용없으니 api 문구를 그대로 실패 띠로. 503(예약 생성 불가 — 메일 · 관리자 웹 주소 · 저장소 설정 없음)은 api 가 이유를 말하므로 그 문구로,
         // 그 밖의 5xx 만 「잠시 후 다시」로 바꾼다
         const { status } = response;

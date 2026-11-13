@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ApiError } from "@/lib/api";
+import { ApiError, expiredFailureOf } from "@/lib/api";
 import { codeOf } from "@/lib/api-error";
 import { historyPageSizeOf } from "@/lib/history-paging";
 import type { StoreClosingResult } from "@/lib/store-closing";
@@ -41,8 +41,9 @@ export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
  * 503(진위확인 연동 · 저장소 없음)을 한국어로 알리므로 그대로 보인다. 401 은 할 일을 알 수 있게 고정 문구로 바꾼다.
  */
 function failureOf(error: unknown, what: string): ActionFailure {
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status < 500 || error.status === 503) {
       const code = codeOf(error.body);
       return { ok: false, status: error.status, message: error.message, messages: error.messages, ...(code === undefined ? {} : { code }) };
@@ -160,8 +161,8 @@ export async function verifyStoreBusinessAction(
   try {
     return { ok: true, ...(await verifyStoreBusiness(input)) };
   } catch (error) {
-    // 예상한 거절(400 형식 · 409 중복 · 422 불일치)과 화면이 할 일을 알리는 401 · 403 · 404 는 남기지 않는다
-    if (error instanceof ApiError && ![400, 401, 403, 404, 409, 422].includes(error.status)) console.error("점포 사업자정보 인증 api 오류", error.status, error.message);
+    // 예상한 거절(400 형식 · 409 중복 · 422 불일치) · 화면이 할 일을 알리는 403 · 404 · 로그인 만료는 남기지 않는다
+    if (error instanceof ApiError && !error.expired && ![400, 403, 404, 409, 422].includes(error.status)) console.error("점포 사업자정보 인증 api 오류", error.status, error.message);
     return failureOf(error, "사업자정보 인증");
   }
 }

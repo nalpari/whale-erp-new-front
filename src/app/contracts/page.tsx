@@ -1,5 +1,6 @@
+import { unstable_rethrow } from "next/navigation";
 import { Button, DataTable, ListToolbar, PageBar } from "@/components/common";
-import { ApiError, authHeaders, deniedMessageOf, getEnum, request, screenPath } from "@/lib/api";
+import { authHeaders, deniedMessageOf, getEnum, request, screenPath } from "@/lib/api";
 import { contractColumns } from "./columns";
 import { ContractPermission } from "./contract-permission";
 import { SavedNotice } from "./saved-notice";
@@ -20,7 +21,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
 
   const query = withKnownStatus(asked, statuses);
 
-  // 관리자 로그인이 아직 없어 세션이 없으면 목록 대신 안내를 보인다. 만료된 토큰(401)도 같다.
+  // 관리자 로그인이 아직 없어 세션이 없으면 목록 대신 안내를 보인다. 로그인 만료는 request() 가 로그인 화면으로 보낸다.
   // api 가 거절하면(사용 중이 아닌 관리자 계정 403 · 플랫폼 계정이 BP 를 고르지 않음 400 등) 그 문장을 그대로 보인다. 그 밖의 오류는 error.tsx 가 받는다.
   let page: ContractListPage | null = null;
   let notice = "로그인이 필요합니다.";
@@ -34,7 +35,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
     } catch (e) {
       // api 의 거절(BP 를 고르지 않음 400 · 권한 · 다른 BP 403 · 없는 BP 404 — deniedMessageOf)은 그 문장을 보인다
       const denied = deniedMessageOf(e);
-      if (!(e instanceof ApiError && e.status === 401) && denied === null) throw e;
+      if (denied === null) throw e;
       if (denied !== null) notice = denied;
     }
   }
@@ -51,6 +52,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
       (await request<ContractListPage>(`/contracts${allSearch}`, { headers })
         .then((all) => all.total === 0)
         .catch((error: unknown) => {
+        unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
         // 확인에 실패하면 예전처럼 「조건에 맞는 …」 — 장애를 알아챌 수 있게 로그만 남긴다(리뷰 반영)
         console.warn("근로계약 전체 건수 확인 실패", error);
         return false;

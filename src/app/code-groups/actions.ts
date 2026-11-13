@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ApiError } from "@/lib/api";
+import { ApiError, expiredFailureOf } from "@/lib/api";
 import {
   applyCodeGroupToBps,
   createCodeGroups,
@@ -28,8 +28,9 @@ const FAILED = "공통코드를 저장하지 못했습니다. 잠시 후 다시 
  * 그대로 보인다 — 403 은 메뉴 권한 말고도 할 일이 다른 이유가 있어 고정 문구로 덮지 않는다. 401 은 고정 문구로, 그 밖(5xx · 연결 실패)은 일반 문구로.
  */
 function failureOf(error: unknown, what: string, fallback: string): SaveFailure {
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError) {
-    if (error.status === 401) return { status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status === 400 || error.status === 403 || error.status === 404 || error.status === 409) return { status: error.status, message: error.message };
   }
   console.error(`${what} 실패`, error);
@@ -74,7 +75,7 @@ export async function saveCodeItemsAction(groupCode: string, input: SaveCodeItem
   );
 }
 
-export type ApplyResult = { ok: true; bpCount: number; itemCount: number; createdCount: number } | { ok: false; message: string };
+export type ApplyResult = { ok: true; bpCount: number; itemCount: number; createdCount: number } | ({ ok: false } & SaveFailure);
 
 /** BP에 적용(플랫폼제공 그룹만). BP 에 이미 있는 상세 코드는 건너뛰고 없는 것만 넣는다 — 다시 적용해도 된다. */
 export async function applyCodeGroupToBpsAction(groupCode: string): Promise<ApplyResult> {
@@ -83,6 +84,7 @@ export async function applyCodeGroupToBpsAction(groupCode: string): Promise<Appl
     refresh();
     return { ok: true, ...result };
   } catch (error) {
-    return { ok: false, message: failureOf(error, "BP 적용", "BP에 적용하지 못했습니다. 잠시 후 다시 시도해 주세요.").message };
+    // 통째로 펼친다 — 만료 표시(expired)를 남겨야 useAction 이 「로그인 만료」 팝업을 띄운다
+    return { ok: false, ...failureOf(error, "BP 적용", "BP에 적용하지 못했습니다. 잠시 후 다시 시도해 주세요.") };
   }
 }

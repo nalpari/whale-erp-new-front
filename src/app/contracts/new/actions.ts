@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { ApiError, authHeaders, bpHref, send } from "@/lib/api";
+import { ApiError, bpHref, expiredFailureOf, send } from "@/lib/api";
 import { SAVE_UNKNOWN_NEW, saveFailureOf } from "../[contractId]/send-model";
 import { SAVED_COOKIE, SAVED_COOKIE_MAX_AGE, listAfterSave, savedKindOf, withBack } from "../contract-list";
 import { type CreateContractBody, type SavedContract, type SaveResult } from "./contract-form-model";
@@ -41,15 +41,14 @@ async function unknownOutcome(contractId: number | null, back: string | undefine
  * 옮겨 갈 주소 · 쿠키 경로는 옛 경로에 이 요청의 탭 BP 를 붙인다(bpHref — 화면 주소 /bp/{id}/contracts…).
  */
 async function save(path: string, method: "POST" | "PUT", body: CreateContractBody, contractId: number | null, back: string | undefined): Promise<SaveResult> {
-  const headers = await authHeaders();
-  if (!headers.Authorization) return { error: "로그인이 필요합니다." };
   let saved: SavedContract | null = null;
   try {
     saved = await send<SavedContract>(path, method, body);
   } catch (e) {
+    const expired = expiredFailureOf(e);
+    if (expired) return { error: expired.message, expired: true };
     if (e instanceof ApiError) {
       const failure = saveFailureOf(e, { feature: "근로계약", contractId });
-      if (failure.kind === "login") return { error: "로그인이 필요합니다." };
       // 저장은 됐다 — 성공과 같이 새 계약이면 점포 조건을 「전체」로 비운 목록을 넘긴다(#109 리뷰)
       if (failure.kind === "sendFailed") redirect(await bpHref(withBack(failure.target, listAfterSave(back, contractId === null ? null : body.storeId))));
       if (failure.kind === "unknown") return await unknownOutcome(contractId, back);

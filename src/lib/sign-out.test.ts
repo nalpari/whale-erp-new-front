@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { notFound, redirect } from "next/navigation.js";
-import { isActionRedirect, signOut } from "./sign-out.ts";
+import { isActionRedirect, LOGOUT_FAILED_EVENT, LOGOUT_FAILED_MESSAGE, signOut } from "./sign-out.ts";
 
 const thrown = (fn: () => never): unknown => {
   try {
@@ -12,17 +12,17 @@ const thrown = (fn: () => never): unknown => {
   }
 };
 
-// alert · console.error 를 막고 불린 횟수를 센다
+// 실패 팝업 이벤트 · console.error 를 막고 보낸 이벤트를 센다
 function silence(): { alerts: string[]; restore: () => void } {
   const alerts: string[] = [];
-  const g = globalThis as { alert?: (m: string) => void };
-  const before = { alert: g.alert, error: console.error };
-  g.alert = (m: string) => void alerts.push(m);
+  const g = globalThis as { dispatchEvent?: (e: Event) => boolean };
+  const before = { dispatchEvent: g.dispatchEvent, error: console.error };
+  g.dispatchEvent = (e: Event) => (alerts.push(e.type), true);
   console.error = () => {};
   return {
     alerts,
     restore: () => {
-      g.alert = before.alert;
+      g.dispatchEvent = before.dispatchEvent;
       console.error = before.error;
     },
   };
@@ -55,7 +55,8 @@ test("signOut — 연결 끊김 · notFound 는 실패로 알리고 false", asyn
   try {
     assert.equal(await signOut(() => Promise.reject(new TypeError("fetch failed"))), false);
     assert.equal(await signOut(() => Promise.reject(thrown(() => notFound()))), false);
-    assert.deepEqual(s.alerts, ["로그아웃하지 못했습니다. 다시 시도해 주세요.", "로그아웃하지 못했습니다. 다시 시도해 주세요."]);
+    assert.deepEqual(s.alerts, [LOGOUT_FAILED_EVENT, LOGOUT_FAILED_EVENT]);
+    assert.equal(LOGOUT_FAILED_MESSAGE, "로그아웃하지 못했습니다. 새로고침 후 다시 시도해 주세요.");
   } finally {
     s.restore();
   }

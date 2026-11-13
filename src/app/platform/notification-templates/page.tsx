@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { Button, PageBar } from "@/components/common";
 import { ApiError, getEnum } from "@/lib/api";
 import type { EnumValue } from "@/lib/enums";
@@ -17,7 +18,8 @@ export default async function NotificationTemplatesPage({ searchParams }: PagePr
   try {
     [channels, data] = await Promise.all([getEnum("NotificationTemplateChannel"), getTemplates(query)]);
   } catch (error) {
-    const denied = error instanceof ApiError && (error.status === 401 || error.status === 403);
+    unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
+    const denied = error instanceof ApiError && error.status === 403;
     failure = denied ? "알림 템플릿을 볼 권한이 없습니다." : "알림 템플릿을 불러오지 못했습니다.";
     if (!denied) console.error("알림 템플릿 목록 조회 실패", error);
   }

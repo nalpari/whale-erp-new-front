@@ -5,6 +5,7 @@ import { logout } from "@/app/actions";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useAccount, useMenus, useMyPageOpen } from "@/components/site/session-gate";
 import { firstMenuUrl } from "@/lib/menus";
+import { signOut } from "@/lib/sign-out";
 
 // 접근할 플랫폼 메뉴가 하나도 없는 플랫폼 계정의 권한 요청 안내(S-XJDKSI — 메뉴 없는 계정도 로그인되고 안내와 마이페이지만 보인다).
 // 메뉴가 있는데 여기 있으면 비밀번호 강제 변경 팝업이 떠 있는 동안이다 — 안내를 그리지 않는다(SessionGate 가 바꾼 뒤 첫 메뉴로 보낸다).
@@ -45,11 +46,10 @@ export function NoMenuNotice() {
         <Button variant="soft" onClick={() => setMyPageOpen(true)}>
           내정보 관리
         </Button>
-        <form action={logout}>
-          <Button type="submit" variant="off">
-            로그아웃
-          </Button>
-        </form>
+        {/* 실패하면 「로그아웃 실패」 팝업으로 알린다(signOut) */}
+        <Button variant="off" onClick={() => void signOut(logout)}>
+          로그아웃
+        </Button>
       </div>
     </section>
   );

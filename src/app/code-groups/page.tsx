@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { PageBar } from "@/components/common";
 import { hasGroupSearch, ownerQuery, ownerTerm, searchTerm } from "@/lib/code-drafts";
 import { countCodeGroups, getCodeGroups, getCodeItems } from "@/lib/codes";
@@ -30,6 +31,7 @@ export default async function PlatformCodesPage({ searchParams }: PageProps<"/co
       (await countCodeGroups()
         .then((total) => total === 0)
         .catch((error: unknown) => {
+          unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
           console.warn("공통코드 그룹 전체 건수 확인 실패", error);
           return false;
         })));
@@ -38,6 +40,7 @@ export default async function PlatformCodesPage({ searchParams }: PageProps<"/co
   // 다른 그룹으로 갈 수 없게 된다. 그룹 목록은 그대로 그리고 오른쪽 패널만 실패를 보인다.
   const items = selected
     ? await getCodeItems(selected.groupCode).catch((error: unknown) => {
+        unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
         console.error("상세 코드 조회 실패", selected.groupCode, error);
         return null;
       })

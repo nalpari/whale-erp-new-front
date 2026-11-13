@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, ConfirmDialog, useToast } from "@/components/common";
+import { Button, ConfirmDialog, useAction, useToast } from "@/components/common";
 import { useMenuRole } from "@/components/site/session-gate";
 import { MENU_CODE } from "@/lib/menus";
 import { sendContract, type ContractStatus, type SendContractResult } from "../contracts/[contractId]/actions";
@@ -25,6 +25,7 @@ const RESEND_UNKNOWN = "발송됐는지 알 수 없습니다. 화면을 다시 �
 export function ResendInvitationButton({ contractId, name, status, lastSentAt }: { contractId: number; name: string | null; status: ContractStatus | null; lastSentAt: string | null }) {
   const router = useRouter();
   const toast = useToast();
+  const sendInvitation = useAction(sendContract, { overlay: false });
   const allowed = useMenuRole(MENU_CODE.contracts, "update");
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
@@ -56,7 +57,7 @@ export function ResendInvitationButton({ contractId, name, status, lastSentAt }:
           start(async () => {
             let result: SendContractResult;
             try {
-              result = await sendContract(contractId, { status, sentAt: lastSentAt });
+              result = await sendInvitation(contractId, { status, sentAt: lastSentAt });
             } catch {
               // 서버 액션 호출 자체가 끊겼다 — api 는 이미 보냈을 수 있어 「모름」으로 다룬다(send-button.tsx 와 같다)
               result = sendFailureOf(null, undefined, "");

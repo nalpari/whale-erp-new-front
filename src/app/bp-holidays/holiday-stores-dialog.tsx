@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, DataTable, Tag, type Column } from "@/components/common";
+import { Button, DataTable, Tag, useAction, type Column } from "@/components/common";
 import { FailedBand } from "@/components/site/side-parts";
 import { getBpHolidayStoresAction, type HolidayStoresOnDate } from "./actions";
 import { HistoryScroll, WideDialog } from "@/components/site/wide-dialog";
@@ -28,6 +28,7 @@ const COLUMNS: Column<Store>[] = [
 
 /** 칸 정렬은 열을 따른다 — 글자 길이만큼의 인라인 버튼이라 가운데 열(예외점포)에서는 가운데, 왼쪽 열(대상점포)에서는 왼쪽에 선다 */
 export function HolidayStoresButton({ bpHolidayId, date, children }: { bpHolidayId: number; date: string; children: ReactNode }) {
+  const getBpHolidayStores = useAction(getBpHolidayStoresAction, { overlay: false });
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<HolidayStoresOnDate | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -41,7 +42,7 @@ export function HolidayStoresButton({ bpHolidayId, date, children }: { bpHoliday
     setOpen(true);
     const mine = ++requestNumber.current;
     startLoading(async () => {
-      const result = await getBpHolidayStoresAction(bpHolidayId, date).catch(unknownResult("점포 조회", false));
+      const result = await getBpHolidayStores(bpHolidayId, date).catch(unknownResult("점포 조회", false));
       if (mine !== requestNumber.current) return;
       if (!result.ok) return setFailure(result.message);
       setData(result);

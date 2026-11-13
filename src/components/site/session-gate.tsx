@@ -4,8 +4,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { createContext, use, useEffect, useEffectEvent, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Button, LoadingNotice, useBackdropActive, useToast } from "@/components/common";
 import { logout, logoutForAccountChange } from "@/app/actions";
-import { loginPathOf, returnPathOf } from "@/lib/auth-routes";
-import { bff, BffError, isAccountUnavailable, isPasswordRequired, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
+import { EXPIRED_REASON, loginPathOf, returnPathOf } from "@/lib/auth-routes";
+import { bff, BffError, isAccountUnavailable, isPasswordRequired, isSessionExpired, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
 import { bpOfPath, bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
 import {
   BP_SWITCH_PATH,
@@ -197,7 +197,6 @@ const LOGOUT_FAILED = { status: "error", message: "로그아웃하지 못했습�
  */
 
 export function SessionGate({ header, children }: { header: ReactNode; children: ReactNode }) {
-  const router = useRouter();
   const pathname = usePathname();
   const [state, setState] = useState<{ status: "loading" } | { status: "error"; message: string } | { status: "ready"; value: LoginState }>({
     status: "loading",
@@ -233,10 +232,11 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
           if (!(await signOut(logout))) setState(LOGOUT_FAILED);
           return;
         }
-        if (e instanceof BffError && e.status === 401) {
-          // 세션이 이미 끊겼으면(proxy·BFF 가 쿠키를 지움) 로그인 화면으로 바로 간다. login-key 가 없는 옛 세션만 로그아웃으로 끝낸다.
+        if (isSessionExpired(e)) {
+          // 세션이 이미 끊겼으면(proxy·BFF 가 쿠키를 지움) 화면을 열기 전이라 팝업 없이 로그인 화면에서 만료를 알린다. login-key 가 없는 옛 세션만 로그아웃으로 끝낸다.
           // 메일 링크(엑셀 내려받기)로 왔으면 ?next= 를 붙여 로그인 뒤 그 화면으로 돌아온다(loginPathOf).
-          if (readLoginKey()) router.replace(loginPathOf(location.pathname));
+          // bff() 가 띄운 팝업이 잠깐 보일 수 있어 앱 안 이동보다 빠른 location.replace 로 간다.
+          if (readLoginKey()) location.replace(loginPathOf(location.pathname, "GET", EXPIRED_REASON));
           else if (!(await signOut(logout))) setState(LOGOUT_FAILED);
           return;
         }
@@ -272,7 +272,7 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
       cancelled = true;
     };
     // tabKey: 주소의 탭 BP 가 바뀌면 다시 준비한다. 같은 BP 안의 이동이나 안 옮긴 화면끼리의 이동은 그대로다.
-  }, [attempt, router, tabKey]);
+  }, [attempt, tabKey]);
 
   if (state.status === "loading" || stale) return <LoadingNotice text={switchNotice ?? (pathname === BP_SWITCH_PATH ? "BP 로 이동하는 중입니다." : "불러오는 중입니다.")} />;
   if (state.status === "error")
@@ -386,7 +386,7 @@ function Ready({
   // 점포 목록 맞추기(2026-10-29). 같은 계정으로 여러 PC 에서 일하므로 다른 PC 에서 점포를 등록 · 수정 · 폐점 · 삭제하거나 담당 점포가 바뀌면
   // 이 탭의 헤더 범위 선택기 · 점포 고르기도 따라와야 한다. 서버가 알려 줄 통로는 없어 이 탭이 묻는다 — 버전(값 하나)만 묻고, 이 탭이 받을 때의
   // 버전과 다르면 점포를 다시 받는다(준비 직후에는 버전이 없어 한 번 다시 받는다). 연결 끊김 · 5xx 면 지금 목록을 두고 알리지 않는다(다음에
-  // 다시 묻는다). 다시 물어도 같은 실패(401 세션 끊김은 로그인 화면으로, 403 계정 미사용 · 404 볼 수 없게 된 BP 는 이 화면에서 더 묻지 않음)는 멈춘다.
+  // 다시 묻는다). 다시 물어도 같은 실패(401 세션 끊김은 bff() 의 「로그인 만료」 팝업으로, 403 계정 미사용 · 404 볼 수 없게 된 BP 는 이 화면에서 더 묻지 않음)는 멈춘다.
   // 묻는 때: 새로고침 · 경로가 바뀔 때(메뉴 · 화면 이동, 쿼리만 바뀌면 묻지 않는다) · 창 포커스 · 탭이 다시 보일 때, 점포를 바꿨거나 결과를 모를 때
   // (refreshStores), 다른 탭의 알림(stores-changed).
   // 비동기 뒤에 지금 값을 읽으려고 마지막으로 그린 값을 둔다. 이미 묻는 중이면 끝난 뒤 한 번 더 묻는다.
@@ -440,8 +440,8 @@ function Ready({
         const changed = await fetchChangedStores(bpCodeId, own, readStoresVersion(bpCodeId)).catch((e: unknown) => {
           const status = e instanceof BffError ? e.status : undefined;
           // 비밀번호 강제 변경 403 은 bff() 가 팝업을 다시 띄우고, 바꾸기 전에는 위에서 묻지 않는다
-          if (status === 401) {
-            router.replace(loginPathOf(location.pathname));
+          // 로그인 만료 — bff() 가 「로그인 만료」 팝업을 띄웠다. 더 묻지 않는다
+          if (isSessionExpired(e)) {
             s.stopped = true;
           } else if (isPasswordRequired(e)) {
             // 비밀번호 강제 변경 403 은 멈추지 않는다 — 다른 탭에서 바꾸면 이 탭은 새로고침 없이 팝업만 닫힌다(로그인 정보 맞추기와 같다)
@@ -509,9 +509,9 @@ function Ready({
             // 로그아웃이 실패하면(연결 끊김 · 배포 직후 옛 화면이 서버 액션을 못 찾음) 멈춤을 풀어 다음 이동 · 포커스에 다시 시도한다 —
             // 멈춘 채 두면 쓸 수 없는 계정이 쿠키와 옛 메뉴를 가진 채 남는다(적대적 리뷰로 찾음, PR #210)
             if (!(await signOut(logoutForAccountChange))) s.stopped = false;
-          } else if (status === 401) {
+          } else if (isSessionExpired(e)) {
+            // 로그인 만료 — bff() 가 「로그인 만료」 팝업을 띄웠다. 더 묻지 않는다
             s.stopped = true;
-            router.replace(loginPathOf(location.pathname));
           } else if (isPasswordRequired(e)) {
             // 비밀번호 강제 변경 403 — bff() 가 팝업을 다시 띄우고, 바꾸기 전에는 위의 isPasswordChangeRequired 가 묻지 않게 막는다.
             // 멈추지 않는다: 다른 탭에서 바꾸면 이 탭은 새로고침 없이 팝업만 닫히므로(storage) 멈춰 두면 맞추기가 영영 꺼진다(코드 리뷰로 찾음)

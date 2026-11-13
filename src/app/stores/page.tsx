@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { Button, ExcelDownloadButton, ExcelDownloadNotice, ExcelDownloadProvider, ListToolbar, NoticeBand } from "@/components/common";
 import { STORE_STATUSES, STORE_TYPES } from "@/lib/store-types";
 import { ApiError, deniedMessageOf, screenPath } from "@/lib/api";
@@ -44,6 +45,7 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
       (await getStores(allQuery)
       .then((all) => all.total === 0)
       .catch((error: unknown) => {
+        unstable_rethrow(error); // 로그인 만료 이동(request())은 삼키지 않는다
         // 확인에 실패하면 예전처럼 「조건에 맞는 …」 — 장애를 알아챌 수 있게 로그만 남긴다(리뷰 반영)
         console.warn("점포 전체 건수 확인 실패", error);
         return false;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, RequiredMark, SearchField, TextField } from "@/components/common";
+import { Button, RequiredMark, SearchField, TextField, useAction } from "@/components/common";
 import type { AddressItem } from "@/lib/address-search";
 import { searchAddressAction } from "@/lib/address-actions";
 
@@ -45,6 +45,7 @@ export function AddressField({
   hideClear?: boolean;
 }) {
   const listId = useId();
+  const searchAddress = useAction(searchAddressAction, { overlay: false });
   // 기본 묶음(주소)은 안쪽 칸 이름을 그대로 두고, 다른 묶음은 앞에 묶음 이름을 붙인다(사업자주소 우편번호 …)
   const prefix = label === "주소" ? "" : `${label} `;
   const box = useRef<HTMLDivElement>(null);
@@ -65,7 +66,7 @@ export function AddressField({
   const search = (text: string, nextPage: number) => {
     const mine = ++requestNumber.current;
     startSearching(async () => {
-      const result = await searchAddressAction(text, nextPage).catch((error: unknown) => {
+      const result = await searchAddress(text, nextPage).catch((error: unknown) => {
         // 연결 끊김 · 배포가 어긋나 액션을 못 찾음 등 — 사용자 문구는 하나지만 원인은 남긴다
         console.error("주소 검색 호출 실패", error);
         return { ok: false as const, message: "주소 검색 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요." };

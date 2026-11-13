@@ -1,3 +1,4 @@
+import { expiredFailureOf } from "./action-failure.ts";
 import { ApiError } from "./api";
 
 // 권한 그룹 화면(플랫폼 권한 관리 · BP 권한 그룹 관리)의 server action 이 같이 쓰는 결과 모양과 오류 문구.
@@ -15,8 +16,9 @@ export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
  * 응답을 못 받은 것은 상태 없이 — 쓰기(wrote)면 「결과를 확인하지 못했다」, 읽기면 「실패했다」로 알린다. subject 는 로그에만 쓴다.
  */
 export function failureOf(error: unknown, subject: string, what: string, wrote = true): ActionFailure {
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError) {
-    if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: error.message };
     console.error(`${subject} ${what} 실패`, error);
     return { ok: false, status: error.status, message: `${what}에 실패했습니다. 잠시 후 다시 시도해 주세요.` };

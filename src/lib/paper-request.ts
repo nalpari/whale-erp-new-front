@@ -1,4 +1,5 @@
-// 종이 계약 등록(/contracts/paper) · 공지사항 저장(/platform-notices/save) · 문의 등록(/support-inquiries/save) 창구의 요청 검사. proxy 와 라우트 핸들러가 같이 쓴다.
+// fetch 가 부르는 받기 · 올리기 창구(종이 계약 등록 · 공지사항 저장 · 문의 등록 · 시설물 문서 · 엑셀 받기)의 요청 검사 — 로그인 만료 401 · 본문 상한 · 같은 출처.
+// proxy 와 라우트 핸들러가 같이 쓴다.
 // next/* 를 import 하지 않는다 — node --test 로 바로 돌리기 위해서다.
 
 export const PAPER_ROUTE = "/contracts/paper";
@@ -6,16 +7,24 @@ export const PAPER_ROUTE = "/contracts/paper";
 export const NOTICE_SAVE_ROUTE = "/platform-notices/save";
 /** 고객지원 문의 등록 창구(첨부 multipart, #284). */
 export const INQUIRY_SAVE_ROUTE = "/support-inquiries/save";
+/** 목록 엑셀 받기 창구 — 화면이 fetch 로 받아 파일로 저장한다(ExcelDownloadProvider). */
+const EXCEL_ROUTES = ["/stores/excel", "/bp-masters/excel"];
 /** 시설물 · 장비 문서 올리기 창구(multipart 파일 하나, 10MB). 화면은 탭 BP 주소(/bp/{id}/facilities/documents)로 부른다. */
 export const FACILITY_DOCUMENT_ROUTE = "/facilities/documents";
 
 /**
- * 로그인이 끊겼을 때 리다이렉트 대신 401 JSON 을 줄 경로 — fetch 가 부르는 BFF(/api/*)와 종이 계약 등록 · 공지사항 저장 · 문의 등록.
- * 리다이렉트를 주면 fetch 가 따라가 날인본을 실은 채 /login 으로 다시 POST 하고, 화면은 로그인으로 가지 못한다.
+ * 로그인이 끊겼을 때 리다이렉트 대신 401 JSON 을 줄 경로 — fetch 가 부르는 BFF(/api/*)와 종이 계약 등록 · 공지사항 저장 · 문의 등록 · 시설물 문서 올리기 · 엑셀 받기.
+ * 리다이렉트를 주면 fetch 가 따라가 날인본을 실은 채 /login 으로 다시 POST 하고(엑셀은 로그인 화면 HTML 을 받아 「파일이 아님」으로 실패하고),
+ * 화면은 로그인으로 가지 못한다. 401 을 받으면 화면의 fetchSameOrigin 이 「로그인 만료」 팝업을 띄운다.
  */
 export function answersWith401(pathname: string): boolean {
   return (
-    pathname.startsWith("/api/") || pathname === PAPER_ROUTE || pathname === NOTICE_SAVE_ROUTE || pathname === INQUIRY_SAVE_ROUTE || pathname === FACILITY_DOCUMENT_ROUTE
+    pathname.startsWith("/api/") ||
+    pathname === PAPER_ROUTE ||
+    pathname === NOTICE_SAVE_ROUTE ||
+    pathname === INQUIRY_SAVE_ROUTE ||
+    pathname === FACILITY_DOCUMENT_ROUTE ||
+    EXCEL_ROUTES.includes(pathname)
   );
 }
 

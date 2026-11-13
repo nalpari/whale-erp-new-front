@@ -2,9 +2,9 @@
 
 import { unstable_rethrow } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type MouseEvent, type RefObject } from "react";
-import { logout, logoutAfterWithdrawal } from "@/app/actions";
+import { logoutAfterWithdrawal } from "@/app/actions";
 import { ClosingCheckList, ClosingCondition } from "@/app/stores/store-closing-parts";
-import { Blocked, Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, GuideNote, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
+import { Blocked, Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, GuideNote, PasswordInput, Select, SlidePanel, Textarea, useAction } from "@/components/common";
 import {
   blockedStoresOf,
   moveTargetOf,
@@ -16,6 +16,7 @@ import {
   type WithdrawEligibility,
   type WithdrawWarningBlock,
 } from "@/lib/withdrawal-form";
+import { signOut } from "@/lib/sign-out";
 import { useCanOpen, useCodes, useCurrentBp, useStores } from "./session-gate";
 import { createWithdrawalAction, getWithdrawEligibilityAction, verifyWithdrawPasswordAction, type EligibilityResult } from "./withdraw-actions";
 
@@ -93,6 +94,9 @@ function ConditionValue({ value, checked }: { value: string; checked: boolean | 
  * 사용자가 "확인"을 눌러야 일어난다 — 탈퇴 안내 이메일을 보냈다는 문구를 반드시 보게 한다. */
 export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open: boolean; onClose: () => void; trigger: RefObject<HTMLElement | null> }) {
   const ids = useId();
+  const getWithdrawEligibility = useAction(getWithdrawEligibilityAction, { overlay: false });
+  const verifyWithdrawPassword = useAction(verifyWithdrawPasswordAction, { overlay: false });
+  const createWithdrawal = useAction(createWithdrawalAction, { overlay: false });
   // BP 마스터의 관리 점포는 BP 전체 점포다. 직영이 아닌 점포가 있을 때만 가맹마스터 안내 줄을 둔다(모르는 유형도 가맹으로 본다 — api 와 같다)
   const hasFranchiseStore = useStores().some((s) => s.storeTypeCode !== "DIRECT");
   const [step, setStep] = useState<Step>("password");
@@ -133,7 +137,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
   const loadEligibility = async (mine: number, keepCurrent = false) => {
     let result: EligibilityResult;
     try {
-      result = await getWithdrawEligibilityAction();
+      result = await getWithdrawEligibility();
     } catch (error: unknown) {
       unstable_rethrow(error);
       console.error("탈퇴 조건 조회 요청 실패", error);
@@ -173,7 +177,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
   const handleClose = () => {
     if (saving || confirmOpen) return;
     if (step === "done") {
-      void logoutAfterWithdrawal();
+      void signOut(logoutAfterWithdrawal);
       return;
     }
     onClose();
@@ -186,11 +190,10 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
     const mine = saveNumber.current;
     startVerifying(async () => {
       try {
-        const result = await verifyWithdrawPasswordAction(form.currentPassword);
+        const result = await verifyWithdrawPassword(form.currentPassword);
         if (mine !== saveNumber.current) return;
         if (result.ok) return setStep("content");
-        // 1단계라 아직 탈퇴 전이다 — 세션만 끝난 것이니 로그인 화면으로 간다(logout). 최종 제출의 401 과 다르다
-        if (result.status === 401) return void logout();
+        // 1단계라 아직 탈퇴 전이다 — 로그인 만료는 useAction 팝업이 맡는다
         if (result.status === 400) return setFieldError({ at: "currentPassword", message: result.message });
         setFailure(result.message);
       } catch (error: unknown) {
@@ -208,7 +211,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
     const mine = saveNumber.current;
     startSaving(async () => {
       try {
-        const result = await createWithdrawalAction({
+        const result = await createWithdrawal({
           currentPassword: form.currentPassword,
           reasonCode: form.reasonCode,
           reasonDetail: form.reasonCode === "WD_INPUT" ? form.reasonDetail : undefined,
@@ -216,15 +219,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
         if (mine !== saveNumber.current) return; // 그사이 패널을 닫았다 다시 열었다 — 지난 응답은 버린다
         setConfirmOpen(false);
         if (!result.ok) {
-          // 401은 칸 오류가 아니라 세션이 이미 끝났다는 뜻이다 — 탈퇴가 서버에서 커밋된 뒤 응답만 잃고
-          // 재시도한 경우도 여기로 온다(탈퇴 쪽 execute()가 커밋과 같은 트랜잭션에서 세션을 revoke 한다).
-          // 되돌릴 수 없는 동작이라 "실패"로 남겨 다시 시도하게 하면 안 된다 — 바로 로그아웃으로 보낸다
-          // (ip-code-review-claude 블로커 #2, 2026-10-27). 탈퇴를 마쳤을 수 있어 완료 화면의 [확인]과 같이 로그인 전 홈으로 간다(logoutAfterWithdrawal).
-          // 기다려서, 액션 요청이 실패하면(연결 끊김) 아래 catch 의 띠로 알린다
-          if (result.status === 401) {
-            await logoutAfterWithdrawal();
-            return;
-          }
+          // 401(로그인 만료 — 탈퇴를 마치고 응답만 잃은 재시도도 여기)은 useAction 이 「로그인 만료」 팝업으로 맡아 여기까지 오지 않는다
           const field = withdrawFormField(result.status, result.message);
           if (field === "currentPassword") {
             setStep("password");
@@ -243,7 +238,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
         setForm(EMPTY);
         setStep("done");
       } catch (error: unknown) {
-        unstable_rethrow(error); // 401 뒤 로그아웃의 redirect 는 성공해도 reject 로 온다 — 실패 띠 없이 그대로 넘긴다
+        unstable_rethrow(error); // Next 의 이동 신호(redirect 등)는 실패 띠 없이 그대로 넘긴다
         if (mine !== saveNumber.current) return;
         console.error("회원 탈퇴 처리 실패", error);
         setConfirmOpen(false);
@@ -448,10 +443,10 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
               회원 탈퇴 완료 안내 메일이 등록된 이메일로 발송되었습니다.
             </p>
           </div>
-          {/* admin-header.tsx 의 UserPop 로그아웃 항목과 같은 호출 방식(<form action={}>)이지만, 탈퇴 뒤라 logoutAfterWithdrawal(→ /)을 부른다. */}
-          <form action={logoutAfterWithdrawal} className="flex justify-center gap-[6px]">
-            <Button type="submit">확인</Button>
-          </form>
+          {/* admin-header.tsx 의 UserPop 로그아웃 항목과 같이 signOut 으로 부르지만(실패하면 팝업), 탈퇴 뒤라 logoutAfterWithdrawal(→ /)을 부른다. */}
+          <div className="flex justify-center gap-[6px]">
+            <Button onClick={() => void signOut(logoutAfterWithdrawal)}>확인</Button>
+          </div>
         </>
       )}
 

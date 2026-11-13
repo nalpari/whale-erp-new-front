@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Badge, Button, ConfirmDialog, DetailTable, Field, FormRow, Radio, TextField, useToast, type DetailRow } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DetailTable, Field, FormRow, Radio, TextField, useAction, useToast, type DetailRow } from "@/components/common";
 import { usePageMenu, usePagePermission } from "@/components/site/session-gate";
 import { CARD, FailedBand, FieldMessage } from "@/components/site/side-parts";
 import {
@@ -142,6 +142,8 @@ function MenuForm(
 ) {
   const router = useRouter();
   const toast = useToast();
+  const createMenu = useAction(createMenuAction, { overlay: false });
+  const updateMenu = useAction(updateMenuAction, { overlay: false });
   // 기준값 — 마지막으로 맞춘 서버 값과 그때의 updatedAt. 저장은 이 updatedAt 으로 보내, 그 사이 다른 사람이 고쳤으면 api 가 409 로 알린다.
   // 같은 메뉴의 최신 정보가 와도 칸은 다시 그리지 않고(menus-screen 의 key) syncMenuForm 규칙으로 맞춘다 — 옮기기처럼 updatedAt 만 바뀌면
   // 기준만 올리고, 손대지 않았으면 새 값으로 채우고, 고치던 중이면 기준을 그대로 둔다. 동시 수정 409 를 받으면 받아 둔 최신 값으로 다시 채운다.
@@ -204,7 +206,7 @@ function MenuForm(
     const body = bodyOf(form);
     startSaving(async () => {
       if (props.mode === "create") {
-        const created = await createMenuAction({ ...body, serviceCode: props.serviceCode, parentMenuId: props.placement.parent?.menuId ?? null }).catch(unknownResult("등록"));
+        const created = await createMenu({ ...body, serviceCode: props.serviceCode, parentMenuId: props.placement.parent?.menuId ?? null }).catch(unknownResult("등록"));
         // 응답을 못 받았으면 등록됐을 수도 있다 — 양식을 닫는다(같은 입력으로 다시 저장하면 메뉴가 둘 생기고, 메뉴 삭제는 없다)
         if (!created.ok && created.status === undefined) return props.onUnknown(created.message);
         if (!created.ok) return fail(created);
@@ -212,7 +214,7 @@ function MenuForm(
         toast(`등록했습니다. 메뉴 코드 ${created.menuCode} — 권한은 플랫폼 권한 관리 목록의 메뉴설정 [설정]에서 줍니다.`);
         return props.onDone(created.menuId);
       }
-      const result = await updateMenuAction(props.menu.menuId, { ...body, updatedAt: base.updatedAt }).catch(unknownResult("저장"));
+      const result = await updateMenu(props.menu.menuId, { ...body, updatedAt: base.updatedAt }).catch(unknownResult("저장"));
       if (!result.ok) return fail(result);
       // 저장한 값이 새 기준이다 — 곧 올 최신 정보는 값이 같아 updatedAt 만 올린다(syncMenuForm)
       const saved = { name: body.name, url: body.url ?? "", status: body.status };

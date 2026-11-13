@@ -3,10 +3,10 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode } from "react";
-import { Badge, Button, ConfirmDialog, DataTable, DetailTable, DetailValues, GuideIcon, GuideNote, PageBar, Tag, Textarea, useToast, type Column } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DataTable, DetailTable, DetailValues, GuideIcon, GuideNote, PageBar, Tag, Textarea, useAction, useToast, type Column } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
-import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
+import { bff, BffError, isSessionExpired, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import type { InquiryDetail, LeadDetail, Target } from "@/lib/community";
 import {
   deleteLeadAction,
@@ -25,7 +25,7 @@ import { formatDateTime, formatPhone } from "@/lib/format";
 // 쓰던 답변 · 메모는 입력칸이 아니라 useCommon 의 drafts 가 쓰기 시작할 때 저장돼 있던 값(base)과 함께 쥔다 — 다른 동작 · 최신
 // 불러오기(409 포함)로 화면이 다시 그려져도 남고, 그 칸을 저장하는 데 성공하거나 [취소]하면 비운다(front #75 리뷰). 그사이 다른 운영자가
 // 그 칸을 저장했으면 손대지 않은 글은 버리고, 고쳐 쓰던 글은 남기되 새로 저장된 값을 함께 보인다(draftView, front #87 리뷰).
-// 그사이 다른 운영자가 저장했으면(409) 까닭을 띠에 보이고 최신 내용을 다시 불러온다(#274). 그사이 지워졌으면(404) 목록으로 간다. 세션이 끊겨도(401) 화면을 옮기지 않고 띠로만 알린다(공지 폼과 같다).
+// 그사이 다른 운영자가 저장했으면(409) 까닭을 띠에 보이고 최신 내용을 다시 불러온다(#274). 그사이 지워졌으면(404) 목록으로 간다. 로그인 만료는 useAction 의 팝업이 맡는다.
 // 문의사항 답변은 이력이 남고(고치면 새 답변을 더함, 「수정됨 · 이전 답변」), 도입문의 답변은 하나를 덮어쓴다(CNT-17 v144).
 // 처리 시작 · 답변 · 메모 · 답변 메일 다시 보내기는 수정, 도입문의 삭제는 삭제 권한으로 가린다(usePagePermission, api 와 같다). 수정 권한이
 // 없으면 답변 · 메모는 읽기로 보이고 처리 이력은 대기 상태만 적는다.
@@ -417,6 +417,9 @@ function useCommon(target: Target, id: number, updatedAt: string, answered: bool
   const edited = (["answer", "memo"] as const).some((f) => drafts[f] && drafts[f].text !== drafts[f].base);
   const act = useAct(target === "inquiry" ? INQUIRY_BASE : LEAD_BASE, edited);
   const { run, setErrors } = act;
+  const startProcessing = useAction(startProcessingAction, { overlay: false });
+  const saveReply = useAction(saveReplyAction, { overlay: false });
+  const saveMemo = useAction(saveMemoAction, { overlay: false });
   // 처리 시작 · 답변 · 메모 · 답변 메일 다시 보내기는 수정, 도입문의 삭제는 삭제 권한이다(api 와 같다). 권한이 빠지면 버튼 · 입력칸 · 열려 있던 확인창을 거둔다.
   // 쓰던 글(drafts)은 지우지 않고 숨기기만 한다 — 권한이 돌아오면 다시 보인다.
   const can = usePagePermission();
@@ -436,16 +439,16 @@ function useCommon(target: Target, id: number, updatedAt: string, answered: bool
     can,
     drafts,
     setDraft,
-    startProcessing: () => run(() => startProcessingAction(target, id), "처리중으로 변경됩니다."),
+    startProcessing: () => run(() => startProcessing(target, id), "처리중으로 변경됩니다."),
     saveReply: (body: string) => {
       if (!body.trim()) return setErrors(["답변을 입력해 주세요."]);
       const toast = answered ? EDITED_TOAST : ANSWERED_TOAST;
-      run(() => saveReplyAction(target, id, body, updatedAt), toast, () => {
+      run(() => saveReply(target, id, body, updatedAt), toast, () => {
         saved("answer")();
         if (answered) onEdited?.();
       });
     },
-    saveMemo: (memo: string) => run(() => saveMemoAction(target, id, memo, updatedAt), "saved", saved("memo")),
+    saveMemo: (memo: string) => run(() => saveMemo(target, id, memo, updatedAt), "saved", saved("memo")),
   };
 }
 
@@ -468,6 +471,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         const { url } = await bff<{ url: string }>(`${INQUIRY_BASE}/${d.inquiryId}/attachments/${attachmentId}/download-url`);
         window.location.assign(url);
       } catch (e) {
+        if (isSessionExpired(e)) return;
         c.setErrors([e instanceof BffError ? e.message : "첨부파일을 받지 못했습니다."]);
       }
     });
@@ -657,6 +661,8 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
 export function LeadDetailView({ detail: d, statuses, interests, mailResults }: { detail: LeadDetail; statuses: EnumValue[]; interests: EnumValue[]; mailResults: EnumValue[] }) {
   const industryLabel = useCodeLabel("INDUSTRY");
   const planLabel = useCodeLabel("PLAN_PERIOD");
+  const resendLeadReplyMail = useAction(resendLeadReplyMailAction, { overlay: false });
+  const deleteLead = useAction(deleteLeadAction, { overlay: false });
   const answered = d.reply !== null;
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmResend, setConfirmResend] = useState(false);
@@ -693,7 +699,7 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
   const resend = () =>
     c.startTransition(async () => {
       closeResend();
-      const result = await call(() => resendLeadReplyMailAction(d.leadId));
+      const result = await call(() => resendLeadReplyMail(d.leadId));
       if (!result.ok) return c.fail(result);
       if (result.mail.replyMailResult === "SUCCEEDED") {
         c.setErrors([]);
@@ -704,7 +710,7 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
 
   const remove = () => {
     setConfirmDelete(false);
-    c.run(deleteLeadAction.bind(null, d.leadId), "deleted", () => c.router.push(LEAD_BASE));
+    c.run(() => deleteLead(d.leadId), "deleted", () => c.router.push(LEAD_BASE));
   };
 
   // 마지막 답변 메일 결과(#597). 결과 없이 시각만 있으면 보내는 중이거나 결과를 남기지 못한 것이다.

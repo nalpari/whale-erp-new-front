@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { ConfirmDialog, useToast } from "@/components/common";
+import { ConfirmDialog, useAction, useToast } from "@/components/common";
 import { RESET_REQUEST_FAILED_MESSAGE, refreshesAfterReset, resetFailureMessage, resetRecipientText } from "@/lib/password-reset";
 import { issuePasswordResetLinkAction, type ActionResult } from "./actions";
 import { useFailure } from "./use-action-failure";
@@ -17,6 +17,7 @@ export function PasswordResetDialog({ staffMemberId, email, onClose }: { staffMe
   const router = useRouter();
   const toast = useToast();
   const onFailure = useFailure();
+  const issuePasswordResetLink = useAction(issuePasswordResetLinkAction, { overlay: false });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // busy 가 그려지기 전에 들어온 두 번째 클릭을 막는다 — 그대로 두면 두 번째 요청이 429 문구를 남긴다.
@@ -30,7 +31,7 @@ export function PasswordResetDialog({ staffMemberId, email, onClose }: { staffMe
     // try 는 서버 액션 호출만 감싼다 — 결과를 받은 뒤의 처리가 던진 것을 「결과 모름」으로 잘못 알리지 않게.
     let result: ActionResult;
     try {
-      result = await issuePasswordResetLinkAction(staffMemberId);
+      result = await issuePasswordResetLink(staffMemberId);
     } catch (e) {
       console.error("재설정 링크 발송 요청 실패", { staffMemberId }, e);
       setError(RESET_REQUEST_FAILED_MESSAGE);

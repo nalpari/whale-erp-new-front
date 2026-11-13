@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Badge, Button, ConfirmDialog, DataTable, PageBar, Tag, useToast, type Column } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DataTable, PageBar, Tag, useAction, useToast, type Column } from "@/components/common";
 import { ServiceTabs } from "@/components/site/service-tabs";
 import { usePageMenu, usePagePermission } from "@/components/site/session-gate";
 import { CARD, FailedBand } from "@/components/site/side-parts";
@@ -40,6 +40,7 @@ function locksSelfByMove(nodes: MenuNode[], moved: MenuNode, parentMenuId: numbe
 export function MenusScreen({ services, tree, selected, detail }: { services: MenuService[]; tree: MenuTree | null; selected?: number; detail: MenuDetailState }) {
   const router = useRouter();
   const toast = useToast();
+  const moveMenu = useAction(moveMenuAction, { overlay: false });
   const can = usePagePermission();
   const selfCode = usePageMenu()?.menuCode;
   const nodes = tree?.items ?? [];
@@ -91,7 +92,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     const moved = findRow(nodes, menuId)?.node;
     if (!moved) return;
     startMoving(async () => {
-      const result = await moveMenuAction(menuId, { parentMenuId: spot.parentMenuId, index: verdict.index }).catch(unknownResult("메뉴 이동 저장"));
+      const result = await moveMenu(menuId, { parentMenuId: spot.parentMenuId, index: verdict.index }).catch(unknownResult("메뉴 이동 저장"));
       if (!result.ok) {
         // 화면이 cycle · depth 를 미리 막으므로 api 의 400 · 409 는 이 트리가 낡았다는 뜻이다(남이 옮기거나 하위를 더함).
         // 그 사이 지워졌거나(404) 결과를 모를 때와 함께 최신 트리를 받는다 — 안 받으면 같은 이동이 새로고침 전까지 계속 거절된다

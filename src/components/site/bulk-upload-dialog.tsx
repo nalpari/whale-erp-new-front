@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ReactNode } from "react";
 import { Badge, Blocked, Button, DataTable, NoticeBand, fileSizeLabel, type Column } from "@/components/common";
+import { fetchSameOrigin } from "@/lib/bff";
 import { BP_HEADER, bpOfPath } from "@/lib/bp-path";
 import { BULK_ACCEPT, bulkFileError, errorFileNameOf, isBulkBusy, isBulkPreview, type BulkAction, type BulkPreview, type BulkResource } from "@/lib/bulk-upload";
 import { errorMessageOf, fileNameOfDisposition, XLSX_CONTENT_TYPE } from "@/lib/download";
@@ -20,7 +21,7 @@ async function call(resource: BulkResource, action: BulkAction, file?: File): Pr
     body.append("file", file, file.name);
     Object.assign(init, { method: "POST", body });
   }
-  return fetch(`/api/bulk/${resource}/${action}`, init);
+  return fetchSameOrigin(`/api/bulk/${resource}/${action}`, init);
 }
 
 /** 실패 응답의 문구 */

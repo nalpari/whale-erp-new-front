@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ApiError } from "@/lib/api";
+import { ApiError, expiredFailureOf } from "@/lib/api";
 import type { TemplateInput } from "@/lib/notification-template-view";
 import { isNotificationId } from "@/lib/notification-view";
 import {
@@ -28,9 +28,10 @@ const STALE = "다른 사람이 먼저 고쳤습니다. 새로 불러온 뒤 다
  * 템플릿 코드 겹침 · 기본 문구 없음이면 api 문장을 보인다. 401 · 403 은 고정 문구, 그 밖은 일반 문구다.
  */
 function failureOf(error: unknown, what: string): { status?: number; messages: string[] } {
+  const expired = expiredFailureOf(error);
+  if (expired) return expired;
   if (error instanceof ApiError) {
     const { status } = error;
-    if (status === 401) return { status, messages: ["로그인이 만료되었습니다. 다시 로그인해 주세요."] };
     if (status === 403) return { status, messages: ["알림 템플릿을 고칠 권한이 없습니다."] };
     if (status === 400) return { status, messages: error.messages };
     if (status === 404) return { status, messages: ["알림 템플릿을 찾을 수 없습니다."] };

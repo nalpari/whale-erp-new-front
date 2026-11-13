@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { Button, DataTable, DateField, Pagination, type Column } from "@/components/common";
+import { Button, DataTable, DateField, Pagination, useAction, type Column } from "@/components/common";
 import { FailedBand } from "@/components/site/side-parts";
 import { HistoryScroll, HistoryTotalBar, WideDialog } from "@/components/site/wide-dialog";
 import { defaultHistoryRange } from "@/lib/bp-holiday-view";
@@ -29,6 +29,7 @@ const WITH_HOLIDAY: Column<BpHolidayHistory>[] = [...COLUMNS.slice(0, 2), { head
 
 /** 화면 위 [변경이력] — 기간으로 찾는다. 열 때마다 기본 기간 첫 쪽을 새로 받는다(방금 고친 내용이 바로 보여야 한다). */
 export function HolidayHistoryButton({ today }: { today: string }) {
+  const getBpHolidayHistories = useAction(getBpHolidayHistoriesAction, { overlay: false });
   const [open, setOpen] = useState(false);
   const [range, setRange] = useState(() => defaultHistoryRange(today));
   const [page, setPage] = useState(1);
@@ -46,7 +47,7 @@ export function HolidayHistoryButton({ today }: { today: string }) {
   const load = (next: { from: string; to: string }, nextPage: number, size: HistoryPageSize = pageSize) => {
     const mine = ++requestNumber.current;
     startLoading(async () => {
-      const result = await getBpHolidayHistoriesAction({ ...next, page: nextPage, pageSize: size }).catch(unknownResult("변경이력 조회", false));
+      const result = await getBpHolidayHistories({ ...next, page: nextPage, pageSize: size }).catch(unknownResult("변경이력 조회", false));
       if (mine !== requestNumber.current) return;
       if (!result.ok) return setFailure(result.message);
       setFailure(null);

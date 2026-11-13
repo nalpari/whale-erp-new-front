@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode, type RefObject } from "react";
-import { Blocked, Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, useToast, type DetailRow } from "@/components/common";
+import { Blocked, Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, useAction, useToast, type DetailRow } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { HeadValues } from "@/components/site/head-values";
 import { BizVerifiedStatus } from "@/components/site/biz-verification-box";
@@ -91,6 +91,9 @@ function DetailBody({
   onDeleted: () => void;
 }) {
   const toast = useToast();
+  const changeBpMasterStatus = useAction(changeBpMasterStatusAction, { overlay: false });
+  const resetBpMasterPassword = useAction(resetBpMasterPasswordAction, { overlay: false });
+  const deleteBpMaster = useAction(deleteBpMasterAction, { overlay: false });
   const router = useRouter();
   const [confirm, setConfirm] = useState<Confirm | null>(null);
   // 확인창 · 이력창은 네이티브 <dialog>(최상위 레이어)라 패널이 밀려 나가도 혼자 남는다. 브라우저 뒤로 가기처럼 클릭 아닌 길로
@@ -128,7 +131,7 @@ function DetailBody({
 
   const handleStatus = (status: "ACTIVE" | "INACTIVE") =>
     run(
-      () => changeBpMasterStatusAction(bp.bpCodeId, status).catch(unknownResult("상태 변경")),
+      () => changeBpMasterStatus(bp.bpCodeId, status).catch(unknownResult("상태 변경")),
       () => {
         toast("변경되었습니다."); // 토스트는 동작만 짧게 — 저장 · 수정 · 삭제 · 초기화와 같은 말투(2026-10-28 사용자 지정)
         setResetSent(false); // 상태를 바꾸면 방금 초기화 안내도 내린다 — 되돌린 BP 에는 띄우지 않는 규칙(리뷰로 찾음)
@@ -137,7 +140,7 @@ function DetailBody({
 
   const handleReset = () =>
     startBusy(async () => {
-      const result = await resetBpMasterPasswordAction(bp.bpCodeId).catch(unknownResult("비밀번호 초기화"));
+      const result = await resetBpMasterPassword(bp.bpCodeId).catch(unknownResult("비밀번호 초기화"));
       setConfirm(null);
       if (!result.ok) return fail(result.status, result.message);
       // 결과는 등록 때와 같은 안내로 — 성공은 하늘색, 메일 실패는 빨간 상자(액션이 refresh 해 isInitialPasswordUnsent 가 켜진다). 따로 띠를 세우지 않는다(2026-10-28 사용자 지정)
@@ -146,7 +149,7 @@ function DetailBody({
       if (result.isMailSent) toast("초기화되었습니다.");
     });
 
-  const handleDelete = () => run(() => deleteBpMasterAction(bp.bpCodeId).catch(unknownResult("삭제")), onDeleted);
+  const handleDelete = () => run(() => deleteBpMaster(bp.bpCodeId).catch(unknownResult("삭제")), onDeleted);
 
   const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
   const gone = muted(WITHDRAWN_TEXT);
