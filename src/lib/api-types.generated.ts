@@ -8134,6 +8134,15 @@ export interface components {
              */
             registeredBy: string | null;
             /**
+             * @description 최종수정 일시(ISO 8601) — 관리자가 마지막으로 고치거나 보낸 때(WHALEERP-699). 등록 · 임시저장 이어 쓰기 · 종이 계약 등록 ·
+             *     근로자 정보 수정 · 발송 · 재발송 · 발송 대기 종료만 바꾼다 — 직원의 날인 · 거부 · 수정 요청 · 소속 확인 응답과 배치(만료 · 종료 ·
+             *     갱신 알림 · 퇴직 처리), 다른 계약 저장에 따른 대체 · 종료는 바꾸지 않는다(그 상태 변경은 lastProcessedAt). 재발송이
+             *     나가지 않아 되돌리면 보내기 전 값이다. 전자계약 · 종이 계약 모두. 관리자 수정 기록이 없으면 null
+             */
+            modifiedAt: string | null;
+            /** @description 최종수정 관리자 — modifiedAt 의 관리자 이름, 이름이 없으면 로그인 아이디(registeredBy 와 같은 규칙). 없으면 null */
+            modifiedBy: string | null;
+            /**
              * @description 이 계약을 직전 계약으로 둔 체결을 거친 재계약 ID(WHALEERP-156) — 있으면 상세가 「새 계약」을 띄우지 않는다. 진행 중 재계약은 치지
              *     않는다(새 재계약을 저장할 때 대체를 묻는다). 없으면 null
              */
