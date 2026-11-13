@@ -52,9 +52,11 @@ export const render = ({ A, R }, { mode = "create", errors = false } = {}) => {
     ui.formRow(u(ui.field("브랜드", ui.textField({ value: "말코닉" }))), u(ui.field("제조사", ui.textField({ value: "말코닉" })))),
     ui.formRow(u(ui.field("Serial number", ui.textField({ value: "SN1234567" }))), u(ui.field("설치 위치", ui.textField({ value: "주방" })))),
   ];
+  // 구매처 · A/S센터는 대표번호 8자리(1588-1234)도 받는다 — 앞 두 칸만(PL-5, 2026-11-13 사용자 결정)
+  const REP_NOTE = `<span class="text-[13px] text-erp-label">대표번호(15xx · 16xx · 18xx)는 앞 두 칸만 입력합니다.</span>`;
   const buy = [
     // 전화번호는 세 칸, 칸마다 숫자 4자리까지 — 이은 번호가 9~12자리가 아니면 칸 아래 빨간 문구(PL-5)
-    ui.formRow(u(ui.field("구매처", ui.textField({ value: "다온컴퍼니" }))), u(f.group("구매처 전화번호", f.tel("02", "333", "4444")))),
+    ui.formRow(u(ui.field("구매처", ui.textField({ value: "다온컴퍼니" }))), u(f.group("구매처 전화번호", f.tel("02", "333", "4444") + REP_NOTE))),
     // 오류 문구가 붙은 줄은 칸을 위로 맞춘다(config-parts row) — 가운데 맞춤이면 옆 칸 라벨이 내려간다
     row(
       u(ui.field("영업사원", ui.textField({ value: "홍길동" }))),
@@ -94,7 +96,7 @@ export const render = ({ A, R }, { mode = "create", errors = false } = {}) => {
     ui.formRow(u(codeGroup("점검 주기", [CYCLE_CODE], ui.select(["선택", ...CYCLES], { value: "매월", "aria-label": "점검 주기" }))), u(ui.field("점검 비고", ui.textField({ value: "매달 정기휴일에 점검" })))),
     // A/S센터 — 공통 주소 칸(점포 주소와 같다): 검색 → 우편번호 · 기본주소, 상세주소 100자, [지우기](PL-5)
     u(address(A, "A/S센터 주소", { zip: "04522", base: "서울 중구 삼봉로 98", detail: "1층 2호" })),
-    u(f.group("A/S센터 전화번호", f.tel("02", "2222", "8888"))),
+    u(f.group("A/S센터 전화번호", f.tel("1588", "1234", "") + REP_NOTE)),
   ];
 
   const requiredBox = ui.formGroup(
