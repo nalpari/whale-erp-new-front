@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-13
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 가입 전(`joinState` 가 `JOINED` 아님) 재직 직원 상세에도 [퇴직 처리] 버튼이 보인다(WHALEERP-682, 계약 종료 확인창의 「퇴직 처리로 정리합니다」 안내와 맞춤, 목록 이름 링크도 가입 전 재직 직원에게 건다). 작성 중 근로계약만 있는 직원의 api 409 는 기존 확인창 안 문구로 보인다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 연장 재계약(`contract.isRenewal` true, 재입사 재계약은 첫 계약처럼 false)의 서명 대기 · 직원 수정 요청은 목록 재직 칸 「재직」, 계약 칸 [재계약] 회색 꼬리표 + 상태 배지(WHALEERP-672, 홍기 확정). 첫 계약 · 재입사 · 퇴직 예정 표기는 그대로(연장 재계약의 거절 · 만료 · 임시저장은 api 가 대표 계약으로 세우지 않아 직전 체결 계약이 보인다), 계약 칸 200 → 240px.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) · [Whale ERP Frontend](/whale-erp-front.md) — 직원 상세 TO-DO · 급여명세서 [관리]가 그 직원으로 걸러 열린다(WHALEERP-677: TO-DO 는 `staffMemberId`, 급여명세서는 `staffName` + 근무지, TO-DO 목록 필터에 「직원 지정」). 발송 이력은 `contractId` null(비밀번호 초기화 메일, WHALEERP-676)이면 계약 링크 없이 글자만, 목록 key 는 `종류-sendLogId`, 빈 문구 「보낸 이력이 없습니다.」, 타입은 api seongsan openapi 로 재생성.
 * **Update**: [Payslips](/screens/payslips.md) — 리뷰 반영(WHALEERP-690): 검토 화면의 오늘은 page 가 서버에서 정해 넘기고(서버 렌더와 날짜가 어긋나지 않게), [확정]이 막혀 있으면 브라우저의 한국 날짜가 확정 가능일에 닿았을 때(그날 자정 · 볼 때가 지난 뒤 화면 · 창 복귀)만 화면을 새로 받아 열어 둔 채 그날이 와도 풀린다. 받았는데도 막혀 있으면 1분에서 두 배씩 늘려 30분 간격까지 다시 보고(돌아왔을 때는 볼 때가 지났을 때만, 처음 열 때는 받지 않음), 저장하지 않은 입력이 있으면 미룬다.
