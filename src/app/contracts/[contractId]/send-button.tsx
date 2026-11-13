@@ -2,12 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, ConfirmDialog, useAction } from "@/components/common";
+import { Button, ConfirmDialog, useAction, useToast } from "@/components/common";
 import { withBack } from "../contract-list";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import { sendContract, type ContractStatus, type SendContractResult } from "./actions";
-import { resendDialogCopy, sendFailureOf } from "./send-model";
+import { RESEND_DONE, resendDialogCopy, sendFailureOf } from "./send-model";
 
 // 근로계약 재발송(WHALEERP-136). 보내기는 저장할 때 곧바로 하고(2026-10-19 재영), 이 버튼은 다시 보내기만 한다 — 발송 대기
 // (가입 초대를 받지 못함) · 서명 대기, 그리고 거부 · 만료(같은 조건으로 되살림, WHALEERP-153). 누르면 확인창으로 묻고, 보내면 상세를
@@ -36,6 +36,7 @@ export function SendContractButton({
   staffJoined: boolean;
 }) {
   const router = useRouter();
+  const toast = useToast();
   // 상세 주소는 탭 BP 를 붙인다. back 은 옛 경로(목록 쿼리)다
   const bp = useCurrentBp().bpCodeId;
   const [open, setOpen] = useState(false);
@@ -80,6 +81,8 @@ export function SendContractButton({
             if (result.ok) {
               setOpen(false);
               setError("");
+              // 직원 목록 재발송과 같은 토스트로 끝났음을 알린다 — 전엔 상세만 다시 읽어 보냈는지 알 수 없었다(통합테스트 IT-CONT-006)
+              toast(RESEND_DONE);
               // 보내기 실패 안내(?send=)로 왔다면 쿼리를 지운다 — 남아 있으면 「보내지 못했습니다」를 보고 또 누른다(front #50 리뷰).
               // 돌아갈 목록 주소(?back=)는 남긴다
               router.replace(bpPath(bp, withBack(`/contracts/${contractId}`, back)));
