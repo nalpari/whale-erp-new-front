@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-13
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [로그인](/auth.md) — 화면을 그리다 만료돼 로그인 화면으로 갈 때도 돌아올 곳(`?next=`, 메일 링크의 엑셀 받기 화면)을 붙인다 — 화면 요청 표시 헤더 값을 그 화면 주소로 바꿨다. 다른 탭에서 직접 로그아웃한 뒤 이 탭의 저장은 「결과 모름」이 뜨는 알려진 한계를 적었다(PR #256 리뷰 Minor).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포](/stores.md) · [급여명세서](/screens/payslips.md) · [직원](/screens/staff-members.md) — 여러 탭 만료 마무리(PR #256 리뷰): 근로계약 · 주소 검색 서버 액션이 세션 없을 때 api 전에 「로그인이 필요합니다」로 돌아가 팝업이 뜨지 않던 것을 지웠다(가드 G2 가 다시 막는다). 화면을 그리다 401 이면 `error.tsx` 가 아니라 만료 안내 로그인 화면, 점포 엑셀 받기 401 은 「로그인 만료」 팝업으로 본문을 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 여러 탭: 다른 탭에서 만료돼 세션 쿠키가 지워진 뒤 이 탭에서 저장하면 「저장 결과를 확인하지 못했습니다」 대신 「로그인 만료」 팝업이 뜬다. proxy 가 세션 없는 서버 액션(login-key 있음)을 로그인 화면으로 보내지 않고 `SESSION_LOST_HEADER` 를 붙여 통과시키고, `request()` 가 그 401 을 만료로 표시한다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #256 종합 리뷰 반영: 「로그인 만료」 팝업이 브라우저 Esc 로 닫혀도 다시 열린다(`ConfirmDialog`), 만료 가드 G2 가 결과 일부만 꺼내 만료 표시를 버리는 catch 를 잡고 본 양의 하한을 둔다, `request()` 만료 판정을 `expiryHandlingOf` 로 빼 시험, `bff()` 401 시험 추가, 길목 목록 · 401 설명 주석과 본문(창구 목록 · 고정 문구 · 근로계약 판정 순서 · 플랫폼 휴일)을 코드에 맞췄다.
