@@ -90,6 +90,7 @@ export function Popup({
   open,
   motion,
   tail,
+  header,
   className = "",
   children,
 }: {
@@ -98,6 +99,8 @@ export function Popup({
   motion: keyof typeof MOTION;
   /** 트리거를 가리키는 꼬리 */
   tail?: boolean;
+  /** 헤더에서 여는 상자 — 알림 종 팝업 · 시작 가이드와 같은 회청 1px · 6px 모서리(2026-11-13 사용자 지정, 마이페이지 메뉴). 꼬리는 두지 않는다. */
+  header?: boolean;
   /** 위치(right-0 등)와 폭 */
   className?: string;
   children: ReactNode;
@@ -107,11 +110,11 @@ export function Popup({
     <div
       id={id}
       inert={!open}
-      className={`absolute top-[calc(100%+8px)] z-20 rounded-[2px] border border-[#ebebeb] bg-white p-[23px] ${EASE_OUT} ${m.base} ${
+      className={`absolute top-[calc(100%+8px)] z-20 border bg-white p-[23px] ${header ? "rounded-[6px] border-erp-brand" : "rounded-[2px] border-[#ebebeb]"} ${EASE_OUT} ${m.base} ${
         open ? m.open : m.closed
       } ${className}`}
     >
-      {tail && (
+      {tail && !header && (
         <span className="absolute -top-[5px] left-1/2 size-[8px] -translate-x-1/2 -rotate-45 rounded-tr-[1px] border-t border-r border-[#ebebeb] bg-white" />
       )}
       <div className={`transition-transform ${EASE_OUT} motion-reduce:transform-none ${open ? m.innerOpen : m.innerClosed}`}>

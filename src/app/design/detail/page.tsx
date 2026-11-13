@@ -1,4 +1,4 @@
-import { AlarmLink, Button, DetailTable, GlobalHeader, PageBar, ServiceLinks, StoreSelect, UserPop } from "@/components/common";
+import { AccountControls, AlarmLink, Button, DetailTable, GlobalHeader, PageBar, ServiceLinks, StoreSelect, UserPop } from "@/components/common";
 import { CONTRACT_ROWS, MENUS, STORES, USER_ITEMS } from "../sample";
 
 // Figma 03.프레임_상세(점포정보 관리 상세). 목록에서 계약서보기를 누르면 들어오는 화면이다.
@@ -13,8 +13,7 @@ export default function DesignDetailPage() {
             <>
               <StoreSelect options={STORES} />
               <ServiceLinks />
-              <AlarmLink href="#" />
-              <UserPop name="김지영 (admin)" items={USER_ITEMS} />
+              <AccountControls alarm={<AlarmLink href="#" />} user={<UserPop name="김지영 (admin)" items={USER_ITEMS} />} />
             </>
           }
         />

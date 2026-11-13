@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useEffectEvent, useState, type ReactNode } from "react";
-import { ConfirmDialog, GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
+import { AccountControls, ConfirmDialog, GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
 import { signOut } from "@/lib/sign-out";
@@ -77,8 +77,8 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
           {/* 시작 가이드는 서비스 바로가기 바로 앞 — 글자 버튼이라 붐비지 않는다. 웨일ERP 탭이면 플랫폼 계정이 BP 를 골라 넘어온 경우도 보인다(2026-11-05 사용자 지정 — 전엔 플랫폼 계정에 숨겼다) */}
           {service === "WHALE_ERP" && <StartGuideButton />}
           <ServiceLinks targets={{ ...serviceTargets(account.bp, service, home, () => setBpSelectOpen(true)), addon: () => setAddonNoticeOpen(true) }} hideAddon={service === "PLATFORM"} />
-          {alarm}
-          <UserPop name={account.name ?? account.loginId} items={userItems} triggerRef={myPageTrigger} />
+          {/* 알림 종 · 마이페이지는 BP 가 아니라 로그인한 계정의 것 — 세로 구분선 뒤에 함께 둔다(2026-11-13 사용자 지정) */}
+          <AccountControls alarm={alarm} user={<UserPop name={account.name ?? account.loginId} items={userItems} triggerRef={myPageTrigger} />} />
           {bpSelectOpen && <BpSelectDialog onClose={() => setBpSelectOpen(false)} />}
           {/* 부가서비스 아이콘 — 고객지원 > 부가서비스구독관리 화면이 아직 없어 안내만 띄운다(2026-10-29 사용자 지정). 화면이 생기면 그 주소로 현재 창 이동한다. */}
           <ConfirmDialog open={addonNoticeOpen} title="부가서비스구독관리" cancelLabel={null} onConfirm={() => setAddonNoticeOpen(false)} onCancel={() => setAddonNoticeOpen(false)}>
