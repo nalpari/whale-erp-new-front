@@ -49,6 +49,34 @@ test("전화번호 — 비었으면 괜찮고, 이은 번호가 9~12자리가 �
   assert.equal(problems(valid({ managerPhone: ["1", "", ""] }), "create").managerPhone, "관리 담당자 전화번호는 숫자 9~12자리입니다.");
 });
 
+test("대표번호(15xx · 16xx · 18xx 8자리) — 구매처 · A/S센터만 받는다", () => {
+  for (const p of [["1588", "1234", ""], ["1644", "0000", ""], ["1800", "1234", ""]] as const) {
+    assert.equal(problems(valid({ vendorPhone: [...p] }), "create").vendorPhone, undefined);
+    assert.equal(problems(valid({ serviceCenterPhone: [...p] }), "create").serviceCenterPhone, undefined);
+  }
+  // 사람 번호 칸은 8자리를 받지 않는다
+  assert.equal(problems(valid({ salesRepresentativePhone: ["1588", "1234", ""] }), "create").salesRepresentativePhone, "영업사원 전화번호는 숫자 9~12자리입니다.");
+  assert.equal(problems(valid({ managerPhone: ["1588", "1234", ""] }), "create").managerPhone, "관리 담당자 전화번호는 숫자 9~12자리입니다.");
+  // 대표번호 모양이 아닌 8자리 — 끝자리를 빠뜨린 번호 · 1로 시작하지만 대표번호가 아님
+  const msg = "A/S센터 전화번호는 숫자 9~12자리 또는 15xx·16xx·18xx 대표번호 8자리입니다.";
+  assert.equal(problems(valid({ serviceCenterPhone: ["010", "1234", "5"] }), "create").serviceCenterPhone, msg);
+  assert.equal(problems(valid({ serviceCenterPhone: ["1234", "5678", ""] }), "create").serviceCenterPhone, msg);
+  assert.equal(problems(valid({ serviceCenterPhone: ["1588", "123", ""] }), "create").serviceCenterPhone, msg);
+  // 15 · 16 · 18 바로 옆 접두는 대표번호가 아니다. 9자리 이상은 원래 규칙대로 받는다
+  assert.equal(problems(valid({ serviceCenterPhone: ["1700", "1234", ""] }), "create").serviceCenterPhone, msg);
+  assert.equal(problems(valid({ serviceCenterPhone: ["1900", "1234", ""] }), "create").serviceCenterPhone, msg);
+  assert.equal(problems(valid({ serviceCenterPhone: ["1588", "1234", "5"] }), "create").serviceCenterPhone, undefined);
+  // 구매처 칸도 제 이름으로 알린다
+  assert.equal(problems(valid({ vendorPhone: ["1234", "5678", ""] }), "create").vendorPhone, "구매처 전화번호는 숫자 9~12자리 또는 15xx·16xx·18xx 대표번호 8자리입니다.");
+  // 나누기 · 보이기 — 하이픈이 붙어 와도 같다
+  assert.deepEqual(splitPhone("15881234"), ["1588", "1234", ""]);
+  assert.deepEqual(splitPhone("1588-1234"), ["1588", "1234", ""]);
+  assert.equal(phoneText("15881234"), "1588-1234");
+  assert.equal(phoneText("1588-1234"), "1588-1234");
+  // 대표번호가 아닌 8자리는 저장될 수 없는 값(api 도 막는다) — 대표번호 나누기(4 · 4 · 빈칸)를 타지 않는지만 본다
+  assert.notDeepEqual(splitPhone("12345678"), ["1234", "5678", ""]);
+});
+
 test("설치일은 구매일보다 앞설 수 없다 · 같은 날은 된다", () => {
   assert.equal(problems(valid({ purchaseDate: "2025-01-03", installationDate: "2025-01-01" }), "create").installationDate, "설치일은 구매일보다 앞설 수 없습니다.");
   assert.equal(problems(valid({ purchaseDate: "2025-01-03", installationDate: "2025-01-03" }), "create").installationDate, undefined);
@@ -170,6 +198,13 @@ test("수정 화면 왕복 — 상세 → 폼 → 본문이 값을 잃지 않는
   assert.equal(body.memo, " 첫줄\n둘째 ");
   assert.equal(body.isVatIncluded, false);
   assert.deepEqual([body.serviceCenterZipCode, body.serviceCenterAddress, body.serviceCenterAddressDetail], ["04522", "서울 중구 삼봉로 98", "1층"]);
+  // 대표번호 — 수정 화면에 4 · 4 · 빈칸으로 채우고, 그대로 저장해도 막히지 않고 같은 숫자로 돌아간다
+  const rep = formOf({ ...detail, vendorPhone: "15881234", serviceCenterPhone: "16440000" } as unknown as typeof detail);
+  assert.deepEqual(rep.vendorPhone, ["1588", "1234", ""]);
+  assert.deepEqual(rep.serviceCenterPhone, ["1644", "0000", ""]);
+  assert.equal(problems(rep, "edit").vendorPhone, undefined);
+  assert.equal(problems(rep, "edit").serviceCenterPhone, undefined);
+  assert.deepEqual([bodyOf(rep).vendorPhone, bodyOf(rep).serviceCenterPhone], ["15881234", "16440000"]);
   // 모르는 그룹이면 비우고 검사에 걸린다
   const unknown = formOf({ ...detail, facilityGroupCode: "OTHER" } as unknown as typeof detail);
   assert.equal(unknown.groupCode, "");
