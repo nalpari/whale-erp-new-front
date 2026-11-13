@@ -6,7 +6,7 @@ import { Popup, useDropdown } from "./popup";
 import { EASE_OUT } from "./theme";
 
 /** muted — 이름을 보조 줄과 같은 회색으로(폐점 점포 등). 고를 수는 있다 */
-export type ScopeSelectOption = { key: string; label: string; meta: string; muted?: boolean };
+export type ScopeSelectOption = { key: string; label: string; meta?: string; muted?: boolean };
 export type ScopeSelectSection = { title: string; options: ScopeSelectOption[] };
 
 // 헤더 점포 범위 드롭다운(데모 site.mjs scopeDropdown · 목업 F-TLJOCK). 칸은 「BP 이름 · 고른 값」이고, 목록은 묶음(제목 + 항목)으로 펼친다.
@@ -33,7 +33,7 @@ export function ScopeSelect({
   const current = all.find((o) => o.key === value)?.label ?? all[0]?.label ?? "";
   const term = query.trim().toLowerCase();
   const shown = sections
-    .map((s) => ({ ...s, options: s.options.filter((o) => !term || `${o.label} ${o.meta}`.toLowerCase().includes(term)) }))
+    .map((s) => ({ ...s, options: s.options.filter((o) => !term || `${o.label} ${o.meta ?? ""}`.toLowerCase().includes(term)) }))
     .filter((s) => s.options.length);
 
   return (
@@ -93,7 +93,7 @@ export function ScopeSelect({
                 >
                   <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
                     <b className={`truncate text-[14px] font-semibold ${o.muted ? "text-erp-muted" : "text-erp-ink"}`}>{o.label}</b>
-                    <span className="truncate text-[12px] text-erp-muted">{o.meta}</span>
+                    {o.meta && <span className="truncate text-[12px] text-erp-muted">{o.meta}</span>}
                   </span>
                   {o.key === value && <span className="shrink-0 text-[14px] font-semibold text-erp-brand">✓</span>}
                 </button>

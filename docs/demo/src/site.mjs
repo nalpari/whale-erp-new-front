@@ -62,7 +62,7 @@ function scopeDropdown(A) {
   const initial = `전체 ${STORES.length}개점`;
 
   const opt = (label, meta, q, selected) =>
-    `<button type="button" role="option" aria-selected="${selected}" data-scope-label="${label}" data-scope-q="${q}" class="group flex w-full items-start gap-[10px] rounded-[8px] px-[12px] py-[8px] text-left transition-colors duration-150 ease-out hover:bg-erp-thead-bg"><span class="flex min-w-0 flex-1 flex-col gap-[2px]"><b class="truncate text-[14px] font-semibold text-erp-ink">${label}</b><span class="truncate text-[12px] text-erp-muted">${meta}</span></span><span class="hidden shrink-0 text-[14px] font-semibold text-erp-brand group-aria-selected:inline">✓</span></button>`;
+    `<button type="button" role="option" aria-selected="${selected}" data-scope-label="${label}" data-scope-q="${q}" class="group flex w-full items-start gap-[10px] rounded-[8px] px-[12px] py-[8px] text-left transition-colors duration-150 ease-out hover:bg-erp-thead-bg"><span class="flex min-w-0 flex-1 flex-col gap-[2px]"><b class="truncate text-[14px] font-semibold text-erp-ink">${label}</b>${meta ? `<span class="truncate text-[12px] text-erp-muted">${meta}</span>` : ""}</span><span class="hidden shrink-0 text-[14px] font-semibold text-erp-brand group-aria-selected:inline">✓</span></button>`;
   const storeOpt = (s) => opt(s[1], s[0], `${s[1]} ${s[0]}`, false);
   const sect = (title, items) =>
     items.length
@@ -73,13 +73,14 @@ function scopeDropdown(A) {
     sect(
       BP.name,
       [
-        opt(initial, `직영 ${dir.length} · 가맹 ${fr.length}`, initial, true),
-        dir.length ? opt(`직영 ${dir.length}개점`, "직영점포 전체", `직영 ${dir.length}개점`, false) : "",
-        fr.length ? opt(`가맹 ${fr.length}개점`, "가맹점포 전체", `가맹 ${fr.length}개점`, false) : "",
+        // 범위 세 줄은 이름만 한 줄(앱 admin-header.tsx 와 같다, 2026-11-13)
+        opt(initial, "", initial, true),
+        dir.length ? opt(`직영전체 ${dir.length}개점`, "", `직영전체 ${dir.length}개점`, false) : "",
+        fr.length ? opt(`가맹전체 ${fr.length}개점`, "", `가맹전체 ${fr.length}개점`, false) : "",
       ].filter(Boolean),
     ) +
-    sect(`직영 ${dir.length}`, dir.map(storeOpt)) +
-    sect(`가맹 ${fr.length}`, fr.map(storeOpt));
+    sect(`직영점포 · ${dir.length}`, dir.map(storeOpt)) +
+    sect(`가맹점포 · ${fr.length}`, fr.map(storeOpt));
 
   // 검색 줄 높이는 목업(pop__search · 36.5px)에 맞춘다 — 위 6 · 아래 8 여백, 입력칸 줄 높이 1.5 + 위아래 1px
   const search = `<div class="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[10px] pt-[6px] pb-[8px]">${ui.img(A, "search.svg", 14, 14)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent px-[2px] py-[1px] text-[14px] leading-[1.5] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>`;

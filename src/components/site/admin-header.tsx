@@ -214,13 +214,14 @@ function scopeSections(bpName: string, stores: AdminStore[]): ScopeSelectSection
     {
       title: bpName,
       options: [
-        { key: "ALL", label: `전체 ${open.length}개점`, meta: `직영 ${dirOpen} · 가맹 ${frOpen}` },
-        ...(dirOpen ? [{ key: "DIRECT", label: `직영 ${dirOpen}개점`, meta: "직영점포 전체" }] : []),
-        ...(frOpen ? [{ key: "FRANCHISE", label: `가맹 ${frOpen}개점`, meta: "가맹점포 전체" }] : []),
+        // 범위 세 줄은 이름만 한 줄 — 「전체 · 직영전체 · 가맹전체 N개점」, 보조 줄을 두지 않는다(2026-11-13 사용자 지정, 전엔 「직영 N개점 / 직영점포 전체」 두 줄)
+        { key: "ALL", label: `전체 ${open.length}개점` },
+        ...(dirOpen ? [{ key: "DIRECT", label: `직영전체 ${dirOpen}개점` }] : []),
+        ...(frOpen ? [{ key: "FRANCHISE", label: `가맹전체 ${frOpen}개점` }] : []),
       ],
     },
-    ...(direct.length ? [{ title: `직영 ${dirOpen}`, options: storeOptions(direct) }] : []),
-    ...(franchise.length ? [{ title: `가맹 ${frOpen}`, options: storeOptions(franchise) }] : []),
+    ...(direct.length ? [{ title: `직영점포 · ${dirOpen}`, options: storeOptions(direct) }] : []),
+    ...(franchise.length ? [{ title: `가맹점포 · ${frOpen}`, options: storeOptions(franchise) }] : []),
   ];
 }
 

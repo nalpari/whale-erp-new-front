@@ -883,7 +883,7 @@
        고르면 곧바로 그 범위로 바뀐다. 폐점 점포는 이 목록에 싣지 않는다(팝업에서만 폐점 표시와 함께 보인다). */
     function ddOpt(key, label, meta, on) {
       return '<button type="button" role="option" data-scope="' + key + '" data-q="' + label + " " + meta + '" aria-selected="' + !!on + '">' +
-        "<span><b>" + label + "</b><br><span class=\"subtle\" style=\"font-size:11.5px\">" + meta + "</span></span>" +
+        "<span><b>" + label + "</b>" + (meta ? "<br><span class=\"subtle\" style=\"font-size:11.5px\">" + meta + "</span>" : "") + "</span>" +
         (on ? ic("check", 14) : "") + "</button>";
     }
     function ddHTML() {
@@ -901,11 +901,12 @@
           ? '<div class="pop__search">' + ic("search", 14) + '<input class="pop__q" type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" /></div>'
           : "") +
         '<div class="pop__list">' +
-        sect(bp.name, [ddOpt("all", "전체 " + open.length + "개점", "직영 " + dir.length + " · 가맹 " + fr.length, cur === "all")]
-          .concat(dir.length ? [ddOpt("dir", "직영 " + dir.length + "개점", "직영점포 전체", cur === "dir")] : [])
-          .concat(fr.length ? [ddOpt("fr", "가맹 " + fr.length + "개점", "가맹점포 전체", cur === "fr")] : [])) +
-        sect("직영 " + dir.length, dir.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); })) +
-        sect("가맹 " + fr.length, fr.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); })) +
+        /* 범위 세 줄은 이름만 한 줄 — 전체 · 직영전체 · 가맹전체 N개점(2026-11-13 사용자 지정) */
+        sect(bp.name, [ddOpt("all", "전체 " + open.length + "개점", "", cur === "all")]
+          .concat(dir.length ? [ddOpt("dir", "직영전체 " + dir.length + "개점", "", cur === "dir")] : [])
+          .concat(fr.length ? [ddOpt("fr", "가맹전체 " + fr.length + "개점", "", cur === "fr")] : [])) +
+        sect("직영점포 · " + dir.length, dir.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); })) +
+        sect("가맹점포 · " + fr.length, fr.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); })) +
         '<p class="pop__none" hidden>맞는 점포가 없습니다.</p>' +
         "</div>" +
         "";
