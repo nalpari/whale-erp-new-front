@@ -10,6 +10,7 @@ import { getBulkExportLink, requestBulkExport } from "./actions";
 import {
   bulkExportViewOf,
   canBulkExport,
+  isHqRole,
   hasMaking,
   isScopeMaking,
   previewPathOf,
@@ -66,6 +67,7 @@ const CONTENT_COLUMNS: Column<(typeof CONTENTS)[number]>[] = [
 ];
 
 function ExportBody() {
+  const { roleTypeCode } = useAccount();
   const toast = useToast();
   const bp = useCurrentBp();
   const stores = useStores();
@@ -241,7 +243,7 @@ function ExportBody() {
                   label: "대상 점포",
                   value: (
                     <span className="min-w-0 truncate">
-                      {`${bp.tradeName} · ${scopeTextOf(scope, stores)}${previewData ? ` (${previewData.storeCount}곳)` : ""}`}
+                      {`${bp.tradeName} · ${scopeTextOf(scope, stores)}${previewData ? ` (${previewData.storeCount}곳${storeIds.length === 0 ? " · 폐점 점포 포함" : ""})` : ""}`}
                     </span>
                   ),
                 },
@@ -256,6 +258,11 @@ function ExportBody() {
                 },
               ]}
             />
+            {/* 세는 기준은 api(bulk-exports)와 같다 — 상단 범위의 점포 수 · 직원 목록 건수와 다를 수 있어 적는다(WHALEERP-678) */}
+            <Note>
+              대상 직원은 재직 직원과 퇴직 3년 이내 직원입니다. 근로계약서가 작성 중인 것만 있는 직원은 빠지므로 직원 목록 건수와 다를 수 있습니다.
+              {isHqRole(roleTypeCode) && " 본사 제공 동의를 하지 않았거나 폐점한 가맹 점포의 직원도 빠집니다."}
+            </Note>
             <div className="flex items-center justify-end gap-[12px]">
               {block && (
                 <p role="status" className="min-w-0 flex-1 text-[13px] leading-[1.5] text-erp-label">
