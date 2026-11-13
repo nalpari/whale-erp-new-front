@@ -94,7 +94,7 @@ test("전자계약은 발송일 · 서명 기한 · 최종 처리일을 보이�
     { label: "발송일", value: "2026-10-20 10:00" },
     { label: "서명 기한", value: "2026-11-19 10:00" },
     { label: "최종 처리일", value: "2026-10-20 10:00" },
-    { label: "최종수정", value: "2026-10-20 10:00 · 김관리" },
+    { label: "최종수정", value: "2026-10-20 10:00", by: "김관리" },
   ]);
   assert.deepEqual(processRows({ ...sent, resendCount: 2, lastSentAt: "2026-10-22T03:30:00.000Z" })[1], {
     label: "재발송",
@@ -106,10 +106,10 @@ test("최종수정은 관리자가 고치거나 보낸 일시 · 사람이다 �
   const paper = { ...sent, contractMethod: "PAPER", status: "SIGNED", registeredAt: "2026-10-20T01:00:00.000Z", registeredBy: "김관리" } as const;
   assert.deepEqual(
     processRows({ ...paper, modifiedAt: "2026-10-21T05:10:00.000Z", modifiedBy: "이수정" }).find((r) => r.label === "최종수정"),
-    { label: "최종수정", value: "2026-10-21 14:10 · 이수정" },
+    { label: "최종수정", value: "2026-10-21 14:10", by: "이수정" },
   );
-  assert.deepEqual(processRows({ ...sent, modifiedAt: null, modifiedBy: null }).find((r) => r.label === "최종수정"), { label: "최종수정", value: "-" });
-  // 관리자 이름을 읽지 못했으면(지운 계정 등) 일시만
+  assert.deepEqual(processRows({ ...sent, modifiedAt: null, modifiedBy: null }).find((r) => r.label === "최종수정"), { label: "최종수정", value: "-", muted: true });
+  // 관리자 이름을 모르면(지운 계정 · 배포 전 기록) 일시만
   assert.deepEqual(processRows({ ...sent, modifiedBy: null }).find((r) => r.label === "최종수정"), { label: "최종수정", value: "2026-10-20 10:00" });
 });
 
@@ -166,7 +166,7 @@ test("종이 계약은 발송 칸 대신 등록일 · 등록 관리자를 보인
       { label: "등록일", value: "2026-10-15 12:00" },
       { label: "등록 관리자", value: "김관리" },
       { label: "최종 처리일", value: "2026-10-15 12:00" },
-    { label: "최종수정", value: "2026-10-15 12:00 · 김관리" },
+      { label: "최종수정", value: "2026-10-15 12:00", by: "김관리" },
     ],
   );
 });
@@ -175,9 +175,9 @@ test("보낸 적 없는 임시저장은 최종 처리일 · 최종수정만 — 
   const draft = { ...sent, status: "DRAFT", firstSentAt: null, lastSentAt: null, signDeadlineAt: null } as const;
   assert.deepEqual(processRows(draft), [
     { label: "최종 처리일", value: "2026-10-20 10:00" },
-    { label: "최종수정", value: "2026-10-20 10:00 · 김관리" },
+    { label: "최종수정", value: "2026-10-20 10:00", by: "김관리" },
   ]);
-  assert.deepEqual(processRows({ ...draft, lastProcessedAt: null }), [{ label: "최종수정", value: "2026-10-20 10:00 · 김관리" }]);
+  assert.deepEqual(processRows({ ...draft, lastProcessedAt: null }), [{ label: "최종수정", value: "2026-10-20 10:00", by: "김관리" }]);
 });
 
 test("신고 정보 — 가린 주민등록번호와 「은행이름 계좌번호」(WHALEERP-155)", () => {

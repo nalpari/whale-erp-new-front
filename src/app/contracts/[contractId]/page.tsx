@@ -132,8 +132,20 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             />
           ),
         },
-        // 발송일 · 재발송 · 날인 기한 · 최종 처리일 · 수정 요청 사유(수정 요청일 때, WHALEERP-635), 종이 계약은 등록일 · 등록 관리자(WHALEERP-155 · 328)
-        ...processRows(c),
+        // 발송일 · 재발송 · 날인 기한 · 최종 처리일 · 최종수정(WHALEERP-699) · 수정 요청 사유(수정 요청일 때, WHALEERP-635), 종이 계약은 등록일 · 등록 관리자(WHALEERP-155 · 328).
+        // 최종수정은 다른 상세 화면과 같이 「일시 · 사람」의 사람을 회색, 없으면 흐린 「-」
+        ...processRows(c).map(({ by, muted, ...row }) => ({
+          ...row,
+          value: muted ? (
+            <span className="text-erp-muted">{row.value}</span>
+          ) : by ? (
+            <span>
+              {row.value} <span className="text-erp-label">· {by}</span>
+            </span>
+          ) : (
+            row.value
+          ),
+        })),
         { label: "계약 기간", value: c.startDate ? `${c.startDate} ~ ${c.endDate ?? "무기한"}` : "-" },
         { label: "시급", value: c.wageAmount === null ? "-" : c.wageAmount.toLocaleString("ko-KR") },
         {
