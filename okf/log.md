@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-13
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 여러 탭: 다른 탭에서 만료돼 세션 쿠키가 지워진 뒤 이 탭에서 저장하면 「저장 결과를 확인하지 못했습니다」 대신 「로그인 만료」 팝업이 뜬다. proxy 가 세션 없는 서버 액션(login-key 있음)을 로그인 화면으로 보내지 않고 `SESSION_LOST_HEADER` 를 붙여 통과시키고, `request()` 가 그 401 을 만료로 표시한다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #256 종합 리뷰 반영: 「로그인 만료」 팝업이 브라우저 Esc 로 닫혀도 다시 열린다(`ConfirmDialog`), 만료 가드 G2 가 결과 일부만 꺼내 만료 표시를 버리는 catch 를 잡고 본 양의 하한을 둔다, `request()` 만료 판정을 `expiryHandlingOf` 로 빼 시험, `bff()` 401 시험 추가, 길목 목록 · 401 설명 주석과 본문(창구 목록 · 고정 문구 · 근로계약 판정 순서 · 플랫폼 휴일)을 코드에 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 [BP에 적용] 중 로그인 만료도 「로그인 만료」 팝업으로 간다. 액션이 실패 문구만 넘겨 만료 표시가 빠지던 것(PR #256 리뷰).
 
