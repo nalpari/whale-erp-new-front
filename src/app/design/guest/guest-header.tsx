@@ -53,13 +53,14 @@ export function GuestHeader({ homeHref }: { homeHref?: string }) {
         scrolled ? "border-guest-line bg-white/95 backdrop-blur-[8px]" : lined ? "border-guest-line" : "border-transparent"
       }`}
     >
+      {/* 로고 글자는 REM 800 그대로 두고(Outfit 은 되돌림), 아이콘과 사이는 8px · 글자는 5px 내려 위쪽 별이 아니라 고래 몸통 가운데에 맞춘다(2026-11-13 사용자 지정) */}
       <Link href={routes.home} className="flex items-center gap-[8px] justify-self-start py-[5px]">
         <span className="relative size-[50px] opacity-95">
           <Image src="/guest/logo-whale.svg" alt="" width={49.6875} height={37.4997} className="absolute top-[12.5px] left-0" />
           <Image src="/guest/logo-star.svg" alt="" width={24.1664} height={17.5001} className="absolute top-0 left-[7.57px]" />
         </span>
         {/* 로고 글자는 WHALE ERP 한 줄만 — 아랫줄 「STORE MANAGEMENT SYSTEM」은 뺐다. 한글로 바꾸니 위 영문과 볼륨이 맞지 않았고, 「매장 통합관리 서비스」는 첫 화면 큰 제목이 맡는다(2026-11-12 사용자 지정). */}
-        <span className="flex flex-col leading-[1.4] [text-box:trim-both_cap_alphabetic]">
+        <span className="flex translate-y-[5px] flex-col leading-[1.4] [text-box:trim-both_cap_alphabetic]">
           <span className="font-[family-name:var(--font-rem)] text-[24px] font-extrabold tracking-normal text-guest-ink uppercase">
             whale ERP
           </span>

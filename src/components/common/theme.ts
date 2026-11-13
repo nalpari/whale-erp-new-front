@@ -5,10 +5,10 @@ export const EASE_OUT = "ease-[cubic-bezier(0.23,1,0.32,1)]";
 
 // 입력칸. 모두 폭을 채우므로(w-full) 폭은 감싸는 요소로 정한다. 포커스 링 대신 테두리 색만 브랜드색으로 바꾼다.
 // 앱 전역 스타일이 포커스 링·캐럿을 덮어도 입력칸 모양이 유지되도록 ! 로 고정한다.
-// 값이 틀린 칸(aria-invalid)은 테두리를 빨강으로 둔다 — 오류 문구는 화면이 따로 보인다.
+// 값이 틀린 칸(aria-invalid)도 테두리는 칠하지 않는다 — 칸 아래 빨간 문구(FieldMessage)만 보인다(DESIGN.md 「오류 문구 자리」, 2026-11-13 사용자 지정 — 전엔 빨간 테두리). aria-invalid 는 화면 읽기 · 첫 오류 칸 찾기용으로 그대로 단다.
 // 높이와 안쪽 여백을 뺀 껍데기. 높이가 다른 입력칸(Textarea)이 같은 테두리·글자·포커스를 쓴다.
 export const FIELD_BOX =
-  "w-full rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-ink outline-none! caret-erp-ink! transition-[border-color] duration-150 ease-out placeholder:text-erp-label [&[readonly]]:bg-erp-thead-bg focus:border-erp-brand aria-invalid:border-erp-off";
+  "w-full rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-ink outline-none! caret-erp-ink! transition-[border-color] duration-150 ease-out placeholder:text-erp-label [&[readonly]]:bg-erp-thead-bg focus:border-erp-brand";
 
 export const FIELD = `${FIELD_BOX} h-[34px] pl-[10px]`;
 

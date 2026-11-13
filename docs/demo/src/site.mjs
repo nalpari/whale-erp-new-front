@@ -59,37 +59,43 @@ function scopeDropdown(A) {
   const id = ui.uid("scope");
   const dir = STORES.filter((s) => s[2] === "직영점포");
   const fr = STORES.filter((s) => s[2] === "가맹점포");
-  const initial = `전체 ${STORES.length}개점`;
+  const initial = `전체 점포 · ${STORES.length}개`;
 
-  const opt = (label, meta, q, selected) =>
-    `<button type="button" role="option" aria-selected="${selected}" data-scope-label="${label}" data-scope-q="${q}" class="group flex w-full items-start gap-[10px] rounded-[8px] px-[12px] py-[8px] text-left transition-colors duration-150 ease-out hover:bg-erp-thead-bg"><span class="flex min-w-0 flex-1 flex-col gap-[2px]"><b class="truncate text-[13px] font-semibold text-erp-ink">${label}</b><span class="truncate text-[11.5px] text-erp-muted">${meta}</span></span><span class="hidden shrink-0 text-[14px] font-semibold text-erp-brand group-aria-selected:inline">✓</span></button>`;
-  const storeOpt = (s) => opt(s[1], s[0], `${s[1]} ${s[0]}`, false);
-  const sect = (title, items) =>
+  // count — 범위 줄 이름 뒤 「 · N개」(보통 굵기 회색). 칸에는 「이름 · N개」 한 줄로 들어간다(앱 scope-select.tsx 와 같다)
+  const opt = (label, meta, q, selected, count = "") =>
+    `<button type="button" role="option" aria-selected="${selected}" data-scope-label="${count ? `${label} · ${count}` : label}" data-scope-q="${q}" class="group flex w-full items-start gap-[10px] rounded-[8px] px-[12px] py-[8px] text-left transition-colors duration-150 ease-out hover:bg-erp-thead-bg"><span class="flex min-w-0 flex-1 flex-col gap-[2px]"><b class="truncate text-[14px] font-semibold text-erp-ink">${label}${count ? `<span class="font-normal text-erp-label"> · ${count}</span>` : ""}</b>${meta ? `<span class="truncate text-[12px] text-erp-muted">${meta}</span>` : ""}</span><span class="hidden shrink-0 text-[14px] font-semibold text-erp-brand group-aria-selected:inline">✓</span></button>`;
+  // 운영 → 미운영 순, 미운영은 보조 줄에 「· 미운영」(앱 admin-header.tsx 와 같다, 2026-11-13)
+  const storeOpt = (s) => opt(s[1], s[3] === "미운영" ? `${s[0]} · 미운영` : s[0], `${s[1]} ${s[0]}`, false);
+  const byStatus = (list) => [...list.filter((s) => s[3] !== "미운영"), ...list.filter((s) => s[3] === "미운영")];
+  // point — 직영점포 · 가맹점포 묶음 머리는 포인트 파랑(앱 scope-select.tsx 와 같다, 2026-11-13)
+  const sect = (title, items, point = false) =>
     items.length
-      ? `<div class="flex flex-col gap-[1px]" data-scope-sect>${title ? `<p class="px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold tracking-[0.04em] text-erp-muted uppercase">${title}</p>` : ""}${items.join("")}</div>`
+      ? `<div class="flex flex-col gap-[1px] not-first:mt-[6px] not-first:border-t not-first:border-[#d9d9d9] not-first:pt-[4px]" data-scope-sect>${title ? `<p class="px-[12px] pt-[10px] pb-[4px] text-[13px] font-semibold ${point ? "text-erp-point" : "text-erp-sub"}">${title}</p>` : ""}${items.join("")}</div>`
       : "";
 
   const list =
+    // 맨 위 범위 묶음은 머리 줄 없이(BP 상호는 위 선택칸에 있다, 앱과 같다 2026-11-13)
     sect(
-      BP.name,
+      "",
       [
-        opt(initial, `직영 ${dir.length} · 가맹 ${fr.length}`, initial, true),
-        dir.length ? opt(`직영 ${dir.length}개점`, "직영점포 전체", `직영 ${dir.length}개점`, false) : "",
-        fr.length ? opt(`가맹 ${fr.length}개점`, "가맹점포 전체", `가맹 ${fr.length}개점`, false) : "",
+        // 범위 세 줄은 이름만 한 줄(앱 admin-header.tsx 와 같다, 2026-11-13)
+        opt("전체 점포", "", initial, true, `${STORES.length}개`),
+        dir.length ? opt("직영점포 전체", "", `직영점포 전체 ${dir.length}개`, false, `${dir.length}개`) : "",
+        fr.length ? opt("가맹점포 전체", "", `가맹점포 전체 ${fr.length}개`, false, `${fr.length}개`) : "",
       ].filter(Boolean),
     ) +
-    sect(`직영 ${dir.length}`, dir.map(storeOpt)) +
-    sect(`가맹 ${fr.length}`, fr.map(storeOpt));
+    sect(`직영점포 · ${dir.length}`, byStatus(dir).map(storeOpt), true) +
+    sect(`가맹점포 · ${fr.length}`, byStatus(fr).map(storeOpt), true);
 
   // 검색 줄 높이는 목업(pop__search · 36.5px)에 맞춘다 — 위 6 · 아래 8 여백, 입력칸 줄 높이 1.5 + 위아래 1px
-  const search = `<div class="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[10px] pt-[6px] pb-[8px]">${ui.img(A, "search.svg", 14, 14)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent px-[2px] py-[1px] text-[13px] leading-[1.5] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>`;
+  const search = `<div class="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[10px] pt-[6px] pb-[8px]">${ui.img(A, "search.svg", 14, 14)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent px-[2px] py-[1px] text-[14px] leading-[1.5] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>`;
 
-  const trigger = `<button type="button" aria-expanded="false" aria-controls="${id}" aria-label="점포: ${initial}" class="flex h-[42px] w-[420px] items-center gap-[8px] rounded-full border border-erp-field-line bg-erp-thead-bg px-[18px] text-left text-[14px] text-erp-ink"><b class="shrink-0 font-semibold">${BP.name}</b><span class="text-erp-label">·</span><span class="flex-1 truncate" data-scope-value>${initial}</span>${ui.img(A, "chevron-small-brand.svg", 5, 8, `transition-transform duration-200 ${ui.EASE_OUT} -rotate-90`)}</button>`;
+  const trigger = `<button type="button" aria-expanded="false" aria-controls="${id}" aria-label="점포: ${initial}" class="flex h-[42px] w-[420px] items-center gap-[8px] rounded-full border border-erp-field-line transition-colors duration-150 hover:border-erp-brand aria-expanded:border-erp-brand bg-erp-thead-bg px-[18px] text-left text-[14px] text-erp-ink"><b class="shrink-0 font-semibold">${BP.name}</b><span class="text-erp-label">·</span><span class="flex-1 truncate" data-scope-value>${initial}</span>${ui.img(A, "chevron-small-brand.svg", 5, 8, `transition-transform duration-200 ${ui.EASE_OUT} -rotate-90`)}</button>`;
 
   return `<div class="relative flex-1">${trigger}${ui.popup(
     id,
     "fold",
-    "left-0 w-[304px] rounded-[12px]! border-erp-field-line! p-[6px]! shadow-[0_2px_6px_rgba(40,47,55,0.08)]",
+    "left-0 w-[420px] rounded-[12px]! border-erp-field-line! p-[6px]! shadow-[0_2px_6px_rgba(40,47,55,0.08)]",
     `${search}<div class="max-h-[328px] overflow-y-auto" data-scope-list>${list}<p class="hidden px-[12px] py-[14px] text-center text-[13px] text-erp-label" data-scope-none>맞는 점포가 없습니다.</p></div>`,
   )}</div>`;
 }
@@ -631,7 +637,7 @@ function platformScopeDialog(A, R, id) {
     `<div class="flex items-center gap-[6px]"><p class="mr-[6px] shrink-0 text-[14px] text-erp-ink">총 <b class="font-semibold">${PLATFORM_BPS.length}</b> 건</p><div class="min-w-0 flex-1">${ui.searchField(A, { placeholder: "상호명 또는 BP코드", label: "BP 찾기" })}</div><div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div></div>` +
     `<div class="flex h-[506px] flex-col [&_tbody_tr]:cursor-pointer [&_tbody_tr:has(:checked)]:bg-erp-thead-bg" data-bp-table>${ui.scrollTable(table)}</div>${ui.pagination(A, 1, Math.ceil(PLATFORM_BPS.length / 20), 5)}</div>`;
 
-  return `<dialog id="${id}" data-scope-popup data-scope-all="전체 ${STORES.length}개점" aria-labelledby="${id}-t" class="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">BP 선택</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button(
+  return `<dialog id="${id}" data-scope-popup data-scope-all="전체 점포 · ${STORES.length}개" aria-labelledby="${id}-t" class="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">BP 선택</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button(
     "취소",
     { variant: "off", "data-close": true },
   )}${ui.button("이동", { "data-scope-apply": to(R, "home/signed-in.html"), disabled: true }).replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ')}</div></dialog>`;
@@ -660,6 +666,7 @@ export function platformHeader(A, R, { master = false, noMenu = false } = {}) {
         ui.alarmLink(A, "#") +
         ui.userPop(A, master ? PLATFORM_MASTER : PLATFORM_USER, user),
       home,
+      "플랫폼관리",
     ) + platformScopeDialog(A, R, scopeId) + platformMyPanel(A, { master }) + passwordPanel(A)
   );
 }

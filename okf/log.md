@@ -1,6 +1,11 @@
 # Bundle history
 
 ## 2026-11-13
+* **Update**: [출퇴근 현황 화면](/screens/attendance-records.md) · [Whale ERP Frontend](/whale-erp-front.md) — 통합테스트 반영: 출퇴근 대신 등록은 날짜를 바꿔도 고른 직원을 유지(IT-ATT-003), 근로계약 상세 재발송 완료 토스트(IT-CONT-006)(front wobbuffet).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 값이 틀린 입력칸의 빨간 테두리를 없앴다(공통 `FIELD_BOX` 의 `aria-invalid:border-erp-off` 제거, 점포유형 카드 빨간 테두리 제거). 칸 아래 빨간 문구만 — DESIGN.md 「오류 문구 자리」대로(통합테스트 IT-STORE-002, front togedemaru).
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) · [Whale ERP Frontend](/whale-erp-front.md) — 통합테스트(직원정보 관리) 반영: 생년월일 수정 토스트 「수정했습니다」(전엔 정정), 퇴직일 칸 숫자 8자리 자동 변환, 근로계약 상세 보낸 원본 「만드는 중」 안내(마지막 발송 하루 안 · 그 발송의 원본이 아직 없을 때, 종이 계약만 뺌), 날짜 칸 자동 변환은 하이픈을 두 번 친 값(2026-8-5)을 그대로 둔다(front ledian).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 전 홈 첫 화면 「핵심기능 7가지」 판(입체 아이콘, 점포 · 시설 점검 맨 앞, 「출퇴근 관리」 · 「가맹점 통합운영」), 판이 보이는 동안 무료 가입 띠 감춤, 「사장님,」 · 구역 여백, 관리자 머리말 로고(고래 · 별 + REM, 플랫폼 탭은 「· 플랫폼관리」) · 사용자 알약 · 호버 테두리 · 점포 선택 목록 폭 420px · 묶음 구분선 · 범위 줄 「직영점포 전체 · N개」 · 묶음 머리 「직영점포 · N」(포인트 파랑) · 범위 묶음 상호 머리 뺌 · 미운영 꼬리표 · 「선택한 점포 N개」, 로그인 후 홈 인사 글자색(front bulbasaur, 사용자 지정).
+* **Update**: [운영 알림](/notify.md) — 헤더 종 호버 · 열림에 둥근 회청 테두리(front bulbasaur, 사용자 지정).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [로그인](/auth.md) — 화면을 그리다 만료돼 로그인 화면으로 갈 때도 돌아올 곳(`?next=`, 메일 링크의 엑셀 받기 화면)을 붙인다 — 화면 요청 표시 헤더 값을 그 화면 주소로 바꿨다. 다른 탭에서 직접 로그아웃한 뒤 이 탭의 저장은 「결과 모름」이 뜨는 알려진 한계를 적었다(PR #256 리뷰 Minor).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포](/stores.md) · [급여명세서](/screens/payslips.md) · [직원](/screens/staff-members.md) — 여러 탭 만료 마무리(PR #256 리뷰): 근로계약 · 주소 검색 서버 액션이 세션 없을 때 api 전에 「로그인이 필요합니다」로 돌아가 팝업이 뜨지 않던 것을 지웠다(가드 G2 가 다시 막는다). 화면을 그리다 401 이면 `error.tsx` 가 아니라 만료 안내 로그인 화면, 점포 엑셀 받기 401 은 「로그인 만료」 팝업으로 본문을 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 여러 탭: 다른 탭에서 만료돼 세션 쿠키가 지워진 뒤 이 탭에서 저장하면 「저장 결과를 확인하지 못했습니다」 대신 「로그인 만료」 팝업이 뜬다. proxy 가 세션 없는 서버 액션(login-key 있음)을 로그인 화면으로 보내지 않고 `SESSION_LOST_HEADER` 를 붙여 통과시키고, `request()` 가 그 401 을 만료로 표시한다.

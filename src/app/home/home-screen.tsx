@@ -41,10 +41,10 @@ export function HomeScreen() {
   const service = useService();
   const [scope] = useScope();
   // 「안녕하세요, OOO님」 — 모든 계정 「님」(2026-11-04 사용자 지정, 「OOO 대표님, 오늘의 현황입니다」를 거쳐 되돌렸다). 문장 제목이라 18px(PageBar sentence)
-  // 「안녕하세요,」는 회색(erp-label) 400, 「OOO님」은 제목 그대로 먹색 600 — 인사보다 이름에 무게(2026-11-04 사용자 지정, 이름만 파랑은 어색했다)
+  // 「안녕하세요,」는 먹색 400, 「OOO님」은 먹색 600 — 글자색은 같게 두고 굵기로만 이름에 무게를 준다(2026-11-13 사용자 지정, 전엔 「안녕하세요,」가 회색 erp-label 이라 흐려 보였다)
   const greeting: ReactNode = account.name ? (
     <>
-      <span className="font-normal text-erp-label">안녕하세요,</span> {account.name}님
+      <span className="font-normal">안녕하세요,</span> {account.name}님
       {/* 플랫폼 계정이 BP 를 골라 웨일ERP 탭에 들어왔으면 어느 BP 의 화면인지 인사 옆 회색 한 줄로 알린다(2026-11-05 사용자 지정) */}
       {isPlatformRole(account.roleTypeCode) && service === "WHALE_ERP" && (
         // BP 는 회색 꼬리표(Tag) — BP 마스터 수정 패널 제목의 「BP 코드 · …」 꼬리표와 같은 모양(2026-11-05 사용자 지정)

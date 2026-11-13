@@ -47,6 +47,7 @@ import {
   isFacilityGroup,
   MEMO_MAX,
   problems,
+  REPRESENTATIVE_PHONE_FIELDS,
   splitPhone,
   STATUS_GROUP,
   totalText,
@@ -385,8 +386,15 @@ export function FacilityFormView(props: Props) {
 
   const phone = (field: "vendorPhone" | "salesRepresentativePhone" | "managerPhone" | "serviceCenterPhone", label: string) => (
     <Stack id={`${ids}-${field}`} grow>
-      <PhoneGroup label={label} value={form[field]} onChange={(v) => set(field, v, field)} describedBy={describe(field)} />
+      <PhoneGroup
+        label={label}
+        value={form[field]}
+        onChange={(v) => set(field, v, field)}
+        describedBy={describe(field) ?? (REPRESENTATIVE_PHONE_FIELDS.has(field) ? `${ids}-${field}-note` : undefined)}
+      />
       {message(field)}
+      {/* 업체 번호는 대표번호(1588-1234)일 수 있다 — 앞 두 칸만 채운다. 오류가 뜨면 안내를 숨긴다 — 오류 문구가 대표번호 8자리도 된다고 알린다(어느 칸인지는 말하지 않는다) */}
+      {REPRESENTATIVE_PHONE_FIELDS.has(field) && !errors[field] && <Note id={`${ids}-${field}-note`}>대표번호(15xx · 16xx · 18xx)는 앞 두 칸만 입력합니다.</Note>}
     </Stack>
   );
   const text = (key: "brand" | "manufacturer" | "serialNumber" | "installationLocation" | "vendorName" | "salesRepresentativeName" | "inspectionNote", label: string, max: number) => (
@@ -643,8 +651,8 @@ function Labeled({ label, required, source, children }: { label: string; require
   );
 }
 
-function Note({ children }: { children: ReactNode }) {
-  return <p className="break-keep text-[13px] leading-[1.6] text-erp-label">{children}</p>;
+function Note({ id, children }: { id?: string; children: ReactNode }) {
+  return <p id={id} className="break-keep text-[13px] leading-[1.6] text-erp-label">{children}</p>;
 }
 
 /** 전화번호 세 칸 — 숫자만, 칸마다 4자리(PL-5) */

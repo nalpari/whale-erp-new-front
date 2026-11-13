@@ -180,18 +180,22 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
           status: c.status,
           histories: c.histories ?? [],
           documents: c.documents ?? [],
+          lastSentAt: c.lastSentAt,
         }).map((row) => ({
           label: row.label,
           value: row.empty ? (
             <span className="text-erp-sub">{row.empty}</span>
           ) : (
-            <DetailValues
-              items={row.documents.map((d) => (
-                <a key={d.contractDocumentId} href={at(`/contracts/${c.contractId}/documents/${d.contractDocumentId}`)} className="text-erp-link hover:underline">
-                  {row.withKind ? `${labelOf(documentKinds, d.kind)} · ${d.fileName}` : d.fileName}
-                </a>
-              ))}
-            />
+            <>
+              <DetailValues
+                items={row.documents.map((d) => (
+                  <a key={d.contractDocumentId} href={at(`/contracts/${c.contractId}/documents/${d.contractDocumentId}`)} className="text-erp-link hover:underline">
+                    {row.withKind ? `${labelOf(documentKinds, d.kind)} · ${d.fileName}` : d.fileName}
+                  </a>
+                ))}
+              />
+              {row.note && <span className="ml-[10px] text-erp-sub">{row.note}</span>}
+            </>
           ),
         })),
       ]

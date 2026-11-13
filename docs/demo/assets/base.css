@@ -227,6 +227,8 @@ body:has(.guest-floating) footer {
 .guest-floating {
   transition: translate 250ms ease, opacity 250ms ease, visibility 0s linear 0s;
 }
+/* 홈 첫 화면의 핵심기능 판이 보이는 동안(판을 감싼 [data-guest-hero] 에 data-passed 가 없는 동안, guest.js)도 감춘다 — 앱 hide-floating-while-visible.tsx 와 같다(2026-11-13). */
+body:has([data-guest-hero]:not([data-passed])) .guest-floating,
 body[data-guest-pinned] .guest-floating {
   translate: 0 24px;
   opacity: 0;
@@ -235,6 +237,7 @@ body[data-guest-pinned] .guest-floating {
 }
 @media (prefers-reduced-motion: reduce) {
   .guest-floating,
+  body:has([data-guest-hero]:not([data-passed])) .guest-floating,
   body[data-guest-pinned] .guest-floating {
     transition: none;
   }

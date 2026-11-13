@@ -499,13 +499,19 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
       getProxyStaff(stores, day)
         .then((result) => {
           if (wanted.current !== day) return;
-          if (!result.ok) return setListError(result.message);
+          if (!result.ok) {
+            setStaffId(null);
+            return setListError(result.message);
+          }
           setStaff(result.staff);
+          // 고른 직원이 새 날짜의 선택지에도 있으면 그대로 둔다 — 칸 순서가 직원 → 날짜라 날짜를 고칠 때마다 다시 골라야 했다(통합테스트 IT-ATT-003, 2026-11-13). 없으면 비운다
+          setStaffId((id) => (id !== null && result.staff.some((s) => s.staffMemberId === id) ? id : null));
         })
         .catch(() => {
           // 서버 액션 호출 자체가 실패(연결 끊김 등) — 선택지를 비우고 알린다. 날짜를 다시 고르면 다시 받는다
           if (wanted.current !== day) return;
           setStaff([]);
+          setStaffId(null);
           setListError("직원 목록을 불러오지 못했습니다. 날짜를 다시 선택해 주세요.");
         });
     },
@@ -515,7 +521,6 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   const changeDate = (day: string) => {
     setDate(day);
     setStaff(null);
-    setStaffId(null);
     setError(null);
     setFutureRejected(false);
     setListError(null);
@@ -527,6 +532,8 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   // 위치정보에 동의한 직원은 대신 등록이 아니라 기록 없는 날을 보정으로 채운다 — 출근 · 퇴근을 함께 받는다(2026-10-26 재영)
   const picked = staff?.find((s) => s.staffMemberId === staffId);
   const isProxy = picked?.isProxy ?? true;
+  // 받는 동안 저장해 뜬 「직원을 선택해 주세요.」는 목록이 와서 고른 직원이 그대로 남으면 보이지 않는다(DESIGN.md 「오류 문구 내리기」, PR #275 리뷰)
+  const shownErrors = picked ? clearError(errors, "staff") : errors;
 
   const future = hasFutureTime(proxyPoints(date, checkIn, checkOut));
   // 칸을 고치면 지난 거절 문장을 내린다 — 미래 시각 거절이면 고친 값이 더는 미래가 아닐 때만(그 밖의 거절은 바로)
@@ -538,7 +545,8 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   const save = () => {
     // 저장할 때 칸마다 검사해 그 칸 아래에 알린다(화면 설계 공통 기준 1번, WHALEERP-633)
     const next = pickErrors({
-      staff: staffId === null ? "직원을 선택해 주세요." : undefined,
+      // 날짜를 바꿔 선택지를 다시 받는 동안은(picked 없음) 고른 직원이 남아 있어도 저장하지 않는다 — 보정 대상 여부(퇴근 필수)를 아직 모른다
+      staff: staffId === null || !picked ? "직원을 선택해 주세요." : undefined,
       checkIn: TIME.test(checkIn) ? undefined : "출근 시각을 입력해 주세요.",
       checkOut: !isProxy && !checkOut ? "퇴근 시각을 입력해 주세요." : checkOut && !TIME.test(checkOut) ? "퇴근 시각을 시 · 분까지 입력해 주세요." : undefined,
       reason: reason.trim() ? undefined : "사유를 입력해 주세요.",
@@ -546,7 +554,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
     setErrors(next);
     setError(null);
     // staffId === null 은 next.staff 와 같다 — 아래 호출에 number 로 좁히려고 둔다
-    if (staffId === null || Object.keys(next).length > 0) return focusFirstError(ids);
+    if (staffId === null || !picked || Object.keys(next).length > 0) return focusFirstError(ids);
     startTransition(async () => {
       const result = await proxyAttendance({ staffMemberId: staffId, date, checkInTime: checkIn, ...(checkOut ? { checkOutTime: checkOut } : {}), reason: reason.trim() });
       if (!result.ok && result.status !== undefined && result.status < 500) {
@@ -563,11 +571,11 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
       <h2 className="text-[18px] font-semibold text-erp-ink">출퇴근 대신 등록</h2>
       <FormGroup title="출퇴근 기록">
         <MessageRow>
-          <MessageField label="직원" required message={<FieldMessage id={`${ids}-staff`} message={errors.staff} />}>
+          <MessageField label="직원" required message={<FieldMessage id={`${ids}-staff`} message={shownErrors.staff} />}>
             <Select
               aria-label="직원"
               value={staffId ?? ""}
-              {...invalidProps(ids, errors, "staff")}
+              {...invalidProps(ids, shownErrors, "staff")}
               onChange={(e) => {
                 setStaffId(e.target.value ? Number(e.target.value) : null);
                 // 직원이 바뀌면 퇴근 필수 여부(보정 대상)도 바뀐다 — 퇴근 문구도 함께 내린다

@@ -5,9 +5,13 @@ import { useState } from "react";
 import { Popup, useDropdown } from "./popup";
 import { EASE_OUT } from "./theme";
 
-/** muted — 이름을 보조 줄과 같은 회색으로(폐점 점포 등). 고를 수는 있다 */
-export type ScopeSelectOption = { key: string; label: string; meta: string; muted?: boolean };
-export type ScopeSelectSection = { title: string; options: ScopeSelectOption[] };
+/** muted — 이름을 보조 줄과 같은 회색으로(폐점 점포 등). 고를 수는 있다. count — 이름 뒤 「 · N개」(보통 굵기 회색, 범위 줄) */
+export type ScopeSelectOption = { key: string; label: string; count?: string; meta?: string; muted?: boolean };
+
+/** 칸 · 찾기에 쓰는 한 줄 글자 — 「직영점포 전체 · 14개」 */
+const textOf = (o: ScopeSelectOption) => (o.count ? `${o.label} · ${o.count}` : o.label);
+/** title — 비우면 머리 줄 없이 항목만(맨 위 범위 묶음). label 은 그때 화면 읽기용 이름. point — 머리를 포인트 파랑(erp-point)으로(직영점포 · 가맹점포 묶음) */
+export type ScopeSelectSection = { title: string; label?: string; options: ScopeSelectOption[]; point?: boolean };
 
 // 헤더 점포 범위 드롭다운(데모 site.mjs scopeDropdown · 목업 F-TLJOCK). 칸은 「BP 이름 · 고른 값」이고, 목록은 묶음(제목 + 항목)으로 펼친다.
 // 항목은 굵은 이름과 작은 보조 줄(개수 · 점포코드)이다. 고른 항목은 목록에 남고 ✓ 가 붙는다. 맨 위 검색칸이 이름 · 보조 줄로 거르고,
@@ -30,14 +34,16 @@ export function ScopeSelect({
   const { open, setOpen, close, ref, trigger, id } = useDropdown();
   const [query, setQuery] = useState("");
   const all = sections.flatMap((s) => s.options);
-  const current = all.find((o) => o.key === value)?.label ?? all[0]?.label ?? "";
+  const picked = all.find((o) => o.key === value) ?? all[0];
+  const current = picked ? textOf(picked) : "";
   const term = query.trim().toLowerCase();
   const shown = sections
-    .map((s) => ({ ...s, options: s.options.filter((o) => !term || `${o.label} ${o.meta}`.toLowerCase().includes(term)) }))
+    .map((s) => ({ ...s, options: s.options.filter((o) => !term || `${textOf(o)} ${o.meta ?? ""}`.toLowerCase().includes(term)) }))
     .filter((s) => s.options.length);
 
   return (
     <div ref={ref} className="relative flex-1">
+      {/* 점포가 없어 막힌 칸도 마우스를 올리면 테두리가 회청으로 바뀐다 — 머리말의 다른 알약과 같은 반응(2026-11-13 사용자 지정) */}
       <button
         ref={trigger}
         type="button"
@@ -46,7 +52,7 @@ export function ScopeSelect({
         aria-label={`${label}: ${current || "없음"}`}
         disabled={all.length === 0}
         onClick={() => setOpen(!open)}
-        className="flex h-[42px] w-[420px] items-center gap-[8px] rounded-full border border-erp-field-line bg-erp-thead-bg px-[18px] text-left text-[14px] text-erp-ink"
+        className={`flex h-[42px] w-[420px] items-center gap-[8px] rounded-full border bg-erp-thead-bg px-[18px] text-left text-[14px] text-erp-ink transition-colors duration-150 ${open ? "border-erp-brand" : "border-erp-field-line hover:border-erp-brand"}`}
       >
         <b className="shrink-0 font-semibold">{title}</b>
         <span className="text-erp-label">·</span>
@@ -60,7 +66,8 @@ export function ScopeSelect({
         />
       </button>
       {/* 선택칸이 둥글어 목록도 모서리를 키우고(StoreSelect 와 같다), 그림자는 fold 전환의 clip-path 여유 안에 들어가게 작게 둔다. */}
-      <Popup id={id} open={open} motion="fold" className="left-0 w-[304px] rounded-[12px]! border-erp-field-line! p-[6px]! shadow-[0_2px_6px_rgba(40,47,55,0.08)]">
+      {/* 펼침 목록은 위 선택칸과 같은 폭(420px) — 304px 라 오른쪽 끝이 칸과 어긋났고 긴 점포명이 잘렸다(2026-11-13 사용자 지정) */}
+      <Popup id={id} open={open} motion="fold" className="left-0 w-[420px] rounded-[12px]! border-erp-field-line! p-[6px]! shadow-[0_2px_6px_rgba(40,47,55,0.08)]">
         {/* 검색 줄 높이는 목업(pop__search · 36.5px)에 맞춘다 — 위 6 · 아래 8 여백, 입력칸 줄 높이 1.5 + 위아래 1px */}
         <div className="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[10px] pt-[6px] pb-[8px]">
           <Image src="/icons/search.svg" alt="" width={14} height={14} />
@@ -70,13 +77,14 @@ export function ScopeSelect({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="점포 이름으로 찾기"
             aria-label={`${label} 찾기`}
-            className="min-w-0 flex-1 border-0 bg-transparent px-[2px] py-[1px] text-[13px] leading-[1.5] text-erp-ink outline-none placeholder:text-erp-label"
+            className="min-w-0 flex-1 border-0 bg-transparent px-[2px] py-[1px] text-[14px] leading-[1.5] text-erp-ink outline-none placeholder:text-erp-label"
           />
         </div>
         <div className="max-h-[328px] overflow-y-auto">
+          {/* 묶음(BP 범위 · 직영 · 가맹)마다 위에 1px 구분선(#d9d9d9 — 선 토큰은 모두 옅어 묶음이 갈려 보이지 않았다, 상세 표 값 구분선과 같은 색)과 6px 여백, 머리는 13px 600 erp-sub. 글자는 화면 본문과 같은 14px(이름 · 찾기 칸) · 보조 줄 12px — 13 · 11.5px 라 작았다(2026-11-13 사용자 지정) */}
           {shown.map((s) => (
-            <div key={s.title} role="group" aria-label={s.title} className="flex flex-col gap-[1px]">
-              <p className="px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold tracking-[0.04em] text-erp-muted uppercase">{s.title}</p>
+            <div key={s.title || s.label} role="group" aria-label={s.title || s.label} className="flex flex-col gap-[1px] not-first:mt-[6px] not-first:border-t not-first:border-[#d9d9d9] not-first:pt-[4px]">
+              {s.title && <p className={`px-[12px] pt-[10px] pb-[4px] text-[13px] font-semibold ${s.point ? "text-erp-point" : "text-erp-sub"}`}>{s.title}</p>}
               {s.options.map((o) => (
                 <button
                   key={o.key}
@@ -90,15 +98,18 @@ export function ScopeSelect({
                   className="group flex w-full items-start gap-[10px] rounded-[8px] px-[12px] py-[8px] text-left transition-colors duration-150 ease-out hover:bg-erp-thead-bg focus-visible:bg-erp-thead-bg"
                 >
                   <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
-                    <b className={`truncate text-[13px] font-semibold ${o.muted ? "text-erp-muted" : "text-erp-ink"}`}>{o.label}</b>
-                    <span className="truncate text-[11.5px] text-erp-muted">{o.meta}</span>
+                    <b className={`truncate text-[14px] font-semibold ${o.muted ? "text-erp-muted" : "text-erp-ink"}`}>
+                      {o.label}
+                      {o.count && <span className="font-normal text-erp-label"> · {o.count}</span>}
+                    </b>
+                    {o.meta && <span className="truncate text-[12px] text-erp-muted">{o.meta}</span>}
                   </span>
                   {o.key === value && <span className="shrink-0 text-[14px] font-semibold text-erp-brand">✓</span>}
                 </button>
               ))}
             </div>
           ))}
-          {shown.length === 0 && <p className="px-[12px] py-[14px] text-center text-[13px] text-erp-label">맞는 점포가 없습니다.</p>}
+          {shown.length === 0 && <p className="px-[12px] py-[14px] text-center text-[14px] text-erp-label">맞는 점포가 없습니다.</p>}
         </div>
       </Popup>
     </div>

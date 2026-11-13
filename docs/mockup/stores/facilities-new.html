@@ -13,7 +13,7 @@
          - 등록 BP 는 이 탭의 BP 다. 폼에 BP · 가맹 줄은 없고 점포 하나를 고른다. 점포 선택지는 내 관리 점포 범위 안의 것만, 폐점 점포는 빠진다(PL-1).
          - 운영상태는 공통코드 「시설물 운영상태」(처음 값 운영), 그룹은 「점포 시설물」 · 「점포 장비」, 분류는 고른 그룹의 상세 코드. 그룹을 바꾸면 분류를 지운다(PL-2 · PL-3).
          - [저장]을 누르면 검사하고, 걸린 칸 바로 아래에 빨간 문구를 보이고 첫 오류 칸으로 옮긴다. 알럿은 띄우지 않는다(PL-5).
-         - 전화번호는 앞 · 가운데 · 끝 세 칸, 숫자만 칸마다 4자리까지, 이은 번호 9~12자리(PL-5).
+         - 전화번호는 앞 · 가운데 · 끝 세 칸, 숫자만 칸마다 4자리까지, 이은 번호 9~12자리. 구매처 · A/S센터는 15xx · 16xx · 18xx 대표번호 8자리(1588-1234)도 받는다 — 앞 두 칸만 채운다(PL-5, 2026-11-13 사용자 결정).
          - 단가 · 수량 · 총금액 — 총금액은 단가 × 수량으로 자동 계산되고 입력할 수 없다. 단가는 숫자만 10자리, 쉼표를 붙여 보인다. 메모는 200자까지. 설치일은 구매일보다 앞설 수 없다(PL-5).
          - 관리 담당자는 그 점포의 재직 직원, 고르면 전화번호 세 칸을 휴대폰 번호로 채운다. 점검 주기는 공통코드 「시설물 점검 주기」(처음 값 없음 — 「선택」, 2026-11-11 사용자 지정)(PL-6).
          위쪽 점선 줄은 목업 전용이다. -->
@@ -206,6 +206,7 @@
                           <input class="input mono" value="333" inputmode="numeric" maxlength="4" aria-label="구매처 전화번호 가운데자리" />
                           <input class="input mono" value="4444" inputmode="numeric" maxlength="4" aria-label="구매처 전화번호 끝자리" />
                         </div>
+                          <span class="help">대표번호(15xx · 16xx · 18xx)는 앞 두 칸만 입력합니다.</span>
                       </div>
                     </div>
                     <div class="grid grid--2">
@@ -362,10 +363,11 @@
                     <div class="field">
                       <label for="fastel">A/S센터 전화번호</label>
                       <div class="tel3">
-                        <input class="input mono" id="fastel" value="02" inputmode="numeric" maxlength="4" aria-label="A/S센터 전화번호 앞자리" />
-                        <input class="input mono" value="2222" inputmode="numeric" maxlength="4" aria-label="A/S센터 전화번호 가운데자리" />
-                        <input class="input mono" value="8888" inputmode="numeric" maxlength="4" aria-label="A/S센터 전화번호 끝자리" />
+                        <input class="input mono" id="fastel" value="1588" inputmode="numeric" maxlength="4" aria-label="A/S센터 전화번호 앞자리" />
+                        <input class="input mono" value="1234" inputmode="numeric" maxlength="4" aria-label="A/S센터 전화번호 가운데자리" />
+                        <input class="input mono" value="" inputmode="numeric" maxlength="4" aria-label="A/S센터 전화번호 끝자리" />
                       </div>
+                        <span class="help">대표번호(15xx · 16xx · 18xx)는 앞 두 칸만 입력합니다.</span>
                     </div>
                       </div>
                     </details>

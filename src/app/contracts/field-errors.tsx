@@ -22,7 +22,7 @@ export function FieldErrors({ id, errors }: { id: string; errors?: readonly stri
 const CONTROLS = "input:not([type=file]):not([type=hidden]), select, textarea";
 
 /**
- * 오류가 있는 칸의 입력에 aria-invalid(빨간 테두리) · aria-describedby 를 단다. 칸 안 입력은 공통 컴포넌트라(DateField 처럼 aria 속성을
+ * 오류가 있는 칸의 입력에 aria-invalid(화면 읽기 · 첫 오류 칸 찾기용, 테두리는 칠하지 않는다) · aria-describedby 를 단다. 칸 안 입력은 공통 컴포넌트라(DateField 처럼 aria 속성을
  * 받지 않는 것도 있다) 상자 안에서 찾아 단다 — all 이면 묶음(라디오 · 시각 고르기) 안 입력 모두, 아니면 첫 입력. 칸 안 입력이 다시
  * 만들어져도 다시 달도록 렌더마다 본다. 지울 때는 이 훅이 단 것(describedby 가 errorId)만 지운다 — 다른 컴포넌트가 단 값은 둔다.
  */

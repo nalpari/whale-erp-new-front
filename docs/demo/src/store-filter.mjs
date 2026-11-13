@@ -19,7 +19,7 @@ const SMALL_BUTTON =
 const pickerBody = (A, clearLabel, clearClass = "text-erp-link hover:underline") =>
   `<div class="relative" data-spick-find>${ui.searchField(A, { placeholder: "점포명 또는 점포코드", label: "점포 찾기" }).replace('type="search"', 'type="text"')}${DROPDOWN}</div>` +
   `<div class="flex flex-col gap-[6px]">` +
-  `<p class="flex items-center gap-[6px] text-[13px] font-medium text-erp-ink">선택한 점포<span class="font-normal text-erp-label" data-spick-count>0개점</span><button type="button" data-spick-clear class="ml-auto ${clearClass}">${clearLabel}</button></p>` +
+  `<p class="flex items-center gap-[6px] text-[13px] font-medium text-erp-ink">선택한 점포<span class="font-normal text-erp-label" data-spick-count>0개</span><button type="button" data-spick-clear class="ml-auto ${clearClass}">${clearLabel}</button></p>` +
   // 칩은 erp.js 가 붙인다. 필터 폭이라 한 줄에 하나, 긴 점포명은 말줄임. 5개(칩 34px × 5 + 간격 6px × 4 = 194px)까지 보이고 그 뒤로는 이 안에서 스크롤. 칩이 눌려 작아지지 않게 shrink-0.
   `<ul aria-label="선택한 점포" data-spick-list class="flex max-h-[194px] flex-col gap-[6px] overflow-y-auto overscroll-contain [&>li]:min-w-0 [&>li]:shrink-0 [&>li>span]:min-w-0 [&>li>span]:flex-1 [&>li>span]:truncate"></ul>` +
   `</div>`;
@@ -55,7 +55,7 @@ const STORE_PICK_SCRIPT = `<script>
   window.__storePick = true;
   document.querySelectorAll("[data-store-filter]").forEach((box) => {
     const list = box.querySelector("[data-spick-list]");
-    const count = () => (box.querySelector("[data-spick-count]").textContent = list.children.length + "개점");
+    const count = () => (box.querySelector("[data-spick-count]").textContent = list.children.length + "개");
     list.addEventListener("click", (e) => {
       const x = e.target.closest("li[data-code] button");
       if (x) x.closest("li").remove();

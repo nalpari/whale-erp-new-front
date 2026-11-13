@@ -153,7 +153,8 @@ function BirthDateDialog({
       setBusy(false);
     }
     if (result.ok) {
-      toast("생년월일을 정정했습니다.");
+      // 버튼 이름(「수정」)과 같은 말로 알린다 — 「정정했습니다」라 버튼과 어긋났다(통합테스트 IT-STAFF-006, 2026-11-13)
+      toast("생년월일을 수정했습니다.");
       onClose();
       router.refresh();
       return;
