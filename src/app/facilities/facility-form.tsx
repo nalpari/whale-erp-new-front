@@ -387,7 +387,7 @@ export function FacilityFormView(props: Props) {
         describedBy={describe(field) ?? (REPRESENTATIVE_PHONE_FIELDS.has(field) ? `${ids}-${field}-note` : undefined)}
       />
       {message(field)}
-      {/* 업체 번호는 대표번호(1588-1234)일 수 있다 — 앞 두 칸만 채운다. 오류가 뜨면 오류 문구가 같은 말을 한다 */}
+      {/* 업체 번호는 대표번호(1588-1234)일 수 있다 — 앞 두 칸만 채운다. 오류가 뜨면 안내를 숨긴다 — 오류 문구가 대표번호 8자리도 된다고 알린다(어느 칸인지는 말하지 않는다) */}
       {REPRESENTATIVE_PHONE_FIELDS.has(field) && !errors[field] && <Note id={`${ids}-${field}-note`}>대표번호(15xx · 16xx · 18xx)는 앞 두 칸만 입력합니다.</Note>}
     </Stack>
   );

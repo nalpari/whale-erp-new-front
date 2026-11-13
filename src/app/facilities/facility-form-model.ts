@@ -47,10 +47,10 @@ export function documentFileError(file: { name: string; size: number }): string 
 export type PhoneParts = [string, string, string];
 export const EMPTY_PHONE: PhoneParts = ["", "", ""];
 
-/** 전국 대표번호 — 15xx · 16xx · 18xx 로 시작하는 8자리(1588-1234). 아무 8자리나 받으면 끝자리를 빠뜨린 번호(010-1234)도 통과한다 */
+/** 전국 대표번호 — 15xx · 16xx · 18xx 로 시작하는 8자리(1588-1234). 아무 8자리나 받으면 끝자리를 하나 빠뜨린 휴대폰(010-1234-567)도 통과한다 */
 export const isRepresentativeNumber = (digits: string) => /^(15|16|18)[0-9]{6}$/.test(digits);
 
-/** 숫자만인 전화번호를 세 칸으로 — 대표번호는 4 · 4 · 빈칸, 02 는 두 자리, 12자리(050X 평생번호)는 4 · 4 · 4, 그 밖은 앞 3자리. 끝 칸은 4자리 */
+/** 숫자만인 전화번호를 세 칸으로 — 대표번호는 4 · 4 · 빈칸. 그 밖은 끝 칸이 4자리이고, 앞 칸은 02 면 두 자리, 12자리(050X 평생번호)면 네 자리, 나머지는 세 자리 */
 export function splitPhone(raw: string | null | undefined): PhoneParts {
   const d = (raw ?? "").replace(/[^0-9]/g, "").slice(0, 12);
   if (!d) return [...EMPTY_PHONE];
