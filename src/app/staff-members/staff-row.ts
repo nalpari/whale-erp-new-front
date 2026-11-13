@@ -10,6 +10,8 @@ export type CellStyle = "badge-on" | "badge-off" | "badge-neutral" | "mark-on" |
 export interface Cell {
   text: string;
   style: CellStyle;
+  /** 상태 앞에 붙는 회색 꼬리표(Tag). 계약 칸의 「재계약」(WHALEERP-672) */
+  tag?: string;
 }
 
 export const EMPLOYMENT_TYPE_LABELS: Record<EmploymentType, string> = { FULL_TIME: "정직원", PART_TIME: "파트타이머" };
@@ -30,6 +32,15 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 function kstDate(value: string): string {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
   return new Date(Date.parse(value) + KST_OFFSET_MS).toISOString().slice(0, 10);
+}
+/**
+ * 연장 재계약이면 contract.isRenewal(같은 직원 레코드에 새 계약을 붙인 재직 직원의 재계약, WHALEERP-672). 퇴직 뒤 다시 들어온 재입사 재계약은
+ * 첫 계약처럼 false 다(2026-11-13 노영주). 연장 재계약의 서명 대기 · 직원 수정 요청 중에는 직원이 이미 재직이라 재직 칸은 「재직」을 지키고
+ * 계약 칸이 상태를 말한다(홍기 확정). 거절 · 만료와 처음 맺는 계약 · 재입사는 지금 그대로다.
+ */
+function isRenewalInProgress(item: Pick<StaffMemberListItem, "contract">): boolean {
+  const c = item.contract;
+  return c?.isRenewal === true && (c.status === "PENDING_SIGNATURE" || c.status === "CORRECTION_REQUESTED");
 }
 /** from 에서 to 까지의 날수(같은 날이면 0). */
 function dayDiff(from: string, to: string): number {
@@ -106,6 +117,12 @@ export function invitationText(
  * 이름을 받지 못했으면(enum 실패 · 빈 목록 · 모르는 값) 영문 값을 보이지 않고 null(「-」) — 상세 근로계약 칸과 같다.
  * 「갱신 예정 D-n」은 상태 이름을 쓰지 않으니 이름이 없어도 보인다. */
 export function contractCell(item: StaffMemberListItem, today: string, statusLabels: readonly EnumValue[]): Cell | null {
+  const cell = contractStatusCell(item, today, statusLabels);
+  // 재계약 서명 대기 · 수정 요청: 회색 「재계약」 꼬리표를 배지 앞에(WHALEERP-672)
+  return cell && isRenewalInProgress(item) ? { ...cell, tag: "재계약" } : cell;
+}
+
+function contractStatusCell(item: StaffMemberListItem, today: string, statusLabels: readonly EnumValue[]): Cell | null {
   const c = item.contract;
   if (!c || !c.status) return null;
   if (c.status === "SIGNED" && c.endDate) {
@@ -148,9 +165,12 @@ export function statusCells(item: StaffMemberListItem): Cell[] {
     return [{ text: "응답 대기", style: "muted" }];
   if (item.joinState !== "JOINED") return [{ text: "가입 대기", style: "muted" }];
   const status = item.contract?.status;
-  if (status === "PENDING_SIGNATURE") return [{ text: "서명 대기", style: "mark-off" }];
-  if (status === "CORRECTION_REQUESTED") return [{ text: "수정 필요", style: "mark-off" }];
-  if (status === "REJECTED" || status === "EXPIRED") return [{ text: "재발송 필요", style: "mark-off" }];
+  // 연장 재계약의 서명 대기 · 수정 요청은 이미 재직이라 계약 상태 분기를 건너뛰고 아래 「재직」(+ 퇴직 예정)으로 간다
+  if (!isRenewalInProgress(item)) {
+    if (status === "PENDING_SIGNATURE") return [{ text: "서명 대기", style: "mark-off" }];
+    if (status === "CORRECTION_REQUESTED") return [{ text: "수정 필요", style: "mark-off" }];
+    if (status === "REJECTED" || status === "EXPIRED") return [{ text: "재발송 필요", style: "mark-off" }];
+  }
   const cells: Cell[] = [{ text: "재직", style: "mark-on" }];
   if (item.retiredDate) cells.push({ text: `퇴직 예정 ${mmdd(item.retiredDate)}`, style: "badge-off" });
   return cells;
