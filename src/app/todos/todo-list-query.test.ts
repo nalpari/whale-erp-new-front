@@ -76,6 +76,7 @@ test("담당직원 이름(WHALEERP-713) — 주소에 남고 api 에 실린다, 
   assert.equal(parseTodoListQuery({ assigneeName: "  하늘 " }).assigneeName, "하늘");
   assert.equal(parseTodoListQuery({ assigneeName: "   " }).assigneeName, "");
   assert.equal(parseTodoListQuery({ assigneeName: "가".repeat(60) }).assigneeName, "가".repeat(50));
+  assert.equal(parseTodoListQuery({ assigneeName: `${"가".repeat(49)} 나` }).assigneeName, "가".repeat(49), "자른 끝의 공백도 지운다");
   assert.equal(toTodoListSearch({ ...DEFAULT_TODO_LIST_QUERY, assigneeName: "김%_" }), "?assigneeName=%EA%B9%80%25_");
   assert.equal(new URLSearchParams(todoListApiSearch({ ...DEFAULT_TODO_LIST_QUERY, assigneeName: "하늘" }) ?? "").get("assigneeName"), "하늘");
   assert.equal(new URLSearchParams(todoListApiSearch(DEFAULT_TODO_LIST_QUERY) ?? "").has("assigneeName"), false);

@@ -82,7 +82,7 @@ export function parseTodoListQuery(raw: RawSearch): TodoListQuery {
     scope: rawStoreIds !== undefined ? null : scopeOfParam(first(raw[SCOPE_PARAM])),
     statuses: picked ? TODO_STATUSES.filter((s) => picked.has(s)) : [...TODO_STATUSES],
     assigneeType: ASSIGNEE_TYPES.find((t) => t === assigneeType) ?? "",
-    assigneeName: first(raw.assigneeName)?.trim().slice(0, MAX_ASSIGNEE_NAME_LENGTH) ?? "",
+    assigneeName: first(raw.assigneeName)?.trim().slice(0, MAX_ASSIGNEE_NAME_LENGTH).trim() ?? "",
     urgentOnly: first(raw.urgent) === "1",
     dueDateFrom: dateOf(first(raw.dueDateFrom)),
     dueDateTo: dateOf(first(raw.dueDateTo)),
