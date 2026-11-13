@@ -79,7 +79,7 @@ test("documentRowsOf — 계약 방식이 빈 옛 종이 계약(서명본만)에
   );
 });
 
-test("documentRowsOf — 마지막 발송의 보낸 원본이 아직 없으면 만드는 중 안내(하루 안, 전자계약만)", () => {
+test("documentRowsOf — 마지막 발송의 보낸 원본이 아직 없으면 만드는 중 안내(하루 안, 종이 계약 빼고)", () => {
   // 마지막 발송 2026-11-13 11:59 KST
   const now = Date.parse("2026-11-13T03:00:00Z");
   const base = { contractMethod: "ELECTRONIC", status: "PENDING_SIGNATURE", histories: [], lastSentAt: "2026-11-13T02:59:00Z", now };
@@ -95,4 +95,6 @@ test("documentRowsOf — 마지막 발송의 보낸 원본이 아직 없으면 �
   assert.deepEqual(documentRowsOf({ ...base, lastSentAt: null, documents: [] }), []);
   assert.deepEqual(documentRowsOf({ ...base, lastSentAt: "2026-11-12T02:59:00Z", documents: [] }), []);
   assert.deepEqual(documentRowsOf({ ...base, contractMethod: "PAPER", documents: [] }), []);
+  // 계약 방식이 빈 옛 전자계약도 안내한다
+  assert.deepEqual(documentRowsOf({ ...base, contractMethod: null, documents: [] }), [{ label: "보낸 원본", documents: [], withKind: false, empty: SENT_ORIGINAL_PENDING }]);
 });

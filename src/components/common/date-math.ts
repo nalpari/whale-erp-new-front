@@ -6,8 +6,10 @@ export const iso = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${p
 
 // 숫자만 칠 때 YYYY-MM-DD 로 하이픈을 넣는다(19980712 → 1998-07-12). 다음 숫자가 와야 하이픈을 붙여서 지우기가 걸리지 않는다.
 // / · . 로 치는 사람은 그 모양 그대로 둔다 — parse 가 받는다. DateField 의 autoHyphen 을 켠 칸만 쓴다.
+// 하이픈을 두 번 친 값(2026-8-5 처럼 한 자리 달 · 날)도 그 모양 그대로 둔다 — 숫자만 다시 나누면 2026-85 가 되어 칸을 벗어날 때 지워졌다(PR #272 리뷰).
 export function hyphenateDate(input: string): string {
   if (/[/.]/.test(input)) return input;
+  if ((input.match(/-/g) ?? []).length >= 2) return input.slice(0, 10);
   const d = input.replace(/\D/g, "").slice(0, 8);
   if (d.length <= 4) return d;
   if (d.length <= 6) return `${d.slice(0, 4)}-${d.slice(4)}`;

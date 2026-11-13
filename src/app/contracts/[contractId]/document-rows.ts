@@ -66,7 +66,8 @@ export function documentRowsOf(c: Source): DocumentRow[] {
   else if (c.contractMethod !== "PAPER" && paper.length === 0 && executed(c)) rows.push({ label: "처리 완료본", documents: [], withKind: false, empty: NO_SIGNED_COPY });
   const sent = ofKind("SENT_ORIGINAL");
   const recent = !!c.lastSentAt && (c.now ?? Date.now()) - Date.parse(c.lastSentAt) < SENT_ORIGINAL_RETRY_MS;
-  const sentPending = c.contractMethod === "ELECTRONIC" && recent && !!c.lastSentAt && !sent.some((d) => d.fileName.endsWith(`-${kstStamp(c.lastSentAt!)}.pdf`));
+  // 종이 계약만 뺀다 — 계약 방식이 빈 옛 전자계약도 api 가 원본을 만든다(contract-files.service 「contract_method IS DISTINCT FROM PAPER」, PR #272 리뷰)
+  const sentPending = c.contractMethod !== "PAPER" && recent && !!c.lastSentAt && !sent.some((d) => d.fileName.endsWith(`-${kstStamp(c.lastSentAt!)}.pdf`));
   if (sent.length) rows.push({ label: "보낸 원본", documents: sent, withKind: false, ...(sentPending ? { note: SENT_ORIGINAL_PENDING } : {}) });
   else if (sentPending) rows.push({ label: "보낸 원본", documents: [], withKind: false, empty: SENT_ORIGINAL_PENDING });
   // api 가 새 종류를 더하면 이름표(getEnum)와 함께 보인다 — 말없이 사라지지 않게
