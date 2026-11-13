@@ -286,3 +286,26 @@ export function attendanceManageHref(staffMemberId: number, storeId: number, mon
   });
   return `/attendance-records?${params}`;
 }
+
+/**
+ * TO-DO 칸 「관리」 주소 — TO-DO 리스트 관리를 그 직원 레코드(staffMemberId)에 배정된 것만, 그 근무지로 연다(WHALEERP-677).
+ * 점포를 싣지 않으면 목록 필터가 상단 범위로 채워 범위 밖 근무지 직원의 TO-DO 가 비어 보인다 — 출퇴근 칸처럼 그 직원 근무지를 싣는다.
+ */
+export function todoManageHref(staffMemberId: number, storeId: number): string {
+  return `/todos?${new URLSearchParams({ storeIds: String(storeId), staffMemberId: String(staffMemberId) })}`;
+}
+
+/** 급여명세서 직원명 조건 상한(api PayslipListQueryDto · payslip-list-query.ts MAX_KEYWORD_LENGTH 와 같다) */
+const PAYSLIP_NAME_MAX = 50;
+
+/**
+ * 급여명세서 칸 「관리」 주소 — 급여명세서 관리를 그 직원 이름(staffName) · 근무지(storeIds)로 연다(WHALEERP-677).
+ * 급여명세서 api 는 직원 레코드 id 가 아니라 이름만 받아, 이름 검색이 부분 일치(contains)라 같은 근무지에서 이름이 들어간 직원(동명이인 포함)도 함께 나온다(알려진 한계 — 노영주 승인). 달은 싣지 않아 목록 기본 달(지난달)로 열린다.
+ * 이름이 비었거나 마스킹(`*` 포함) 이거나 상한을 넘어 조건으로 쓸 수 없으면 이름은 붙이지 않고 근무지만 붙인다.
+ */
+export function payslipManageHref(name: string | null, storeId: number): string {
+  const params = new URLSearchParams({ storeIds: String(storeId) });
+  const trimmed = name?.trim() ?? "";
+  if (trimmed && !trimmed.includes("*") && trimmed.length <= PAYSLIP_NAME_MAX) params.set("staffName", trimmed);
+  return `/payslips?${params}`;
+}

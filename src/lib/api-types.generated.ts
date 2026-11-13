@@ -5603,31 +5603,31 @@ export interface components {
             unsentCount: number;
         };
         /** @enum {string} */
-        StaffSendKind: "SIGNUP_INVITE" | "AFFILIATION_REQUEST";
+        StaffSendKind: "SIGNUP_INVITE" | "AFFILIATION_REQUEST" | "PASSWORD_RESET";
         /**
-         * @description 비즈뿌리오 접수 기준. 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다
+         * @description 알림톡 줄은 비즈뿌리오 접수 기준 — 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다. 비밀번호 초기화 메일 줄은 SMTP 결과이고 SUCCEEDED · FAILED 만 있다
          * @enum {string}
          */
         StaffSendResult: "SUCCEEDED" | "FAILED" | "UNCONFIRMED";
         StaffMemberSendLogDto: {
             kind: components["schemas"]["StaffSendKind"];
-            /** @description 비즈뿌리오 접수 기준. 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다 */
+            /** @description 알림톡 줄은 비즈뿌리오 접수 기준 — 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다. 비밀번호 초기화 메일 줄은 SMTP 결과이고 SUCCEEDED · FAILED 만 있다 */
             result: components["schemas"]["StaffSendResult"];
-            /** @description 알림톡 발송 이력 ID(alimtalk_send_logs) */
+            /** @description 발송 이력 ID — 알림톡 줄은 alimtalk_send_logs, 비밀번호 초기화 메일 줄은 mail_send_logs(mail_id). 두 테이블의 번호는 겹칠 수 있어 목록 key 는 kind 와 함께 쓴다 */
             sendLogId: number;
-            /** @description 보낸 근로계약 */
-            contractId: number;
-            /** @description 같은 계약으로 앞서 직원에게 나갔을 수 있는 발송(성공 · 접수 여부 모름)이 있었다 — 재발송 · 고쳐 다시 보냄. 계약 재발송 횟수와는 다를 수 있다 */
+            /** @description 보낸 근로계약. 비밀번호 초기화 메일(PASSWORD_RESET)은 계약과 무관해 null */
+            contractId: number | null;
+            /** @description 같은 계약으로 앞서 직원에게 나갔을 수 있는 발송(성공 · 접수 여부 모름)이 있었다 — 재발송 · 고쳐 다시 보냄. 계약 재발송 횟수와는 다를 수 있다. 비밀번호 초기화 메일(PASSWORD_RESET)은 늘 false */
             isResend: boolean;
             /** @description 관리자에게 보일 실패 사유. 성공이면 null */
             failureReason: string | null;
-            /** @description 다시 보내도 되는가 — 확실히 나가지 않은 실패만 true, 접수 여부 모름은 false. 성공이면 null */
+            /** @description 다시 보내도 되는가 — 확실히 나가지 않은 실패만 true, 접수 여부 모름은 false. 성공이면 null. 비밀번호 초기화 메일(PASSWORD_RESET)은 늘 null */
             retryable: boolean | null;
             /** Format: date-time */
             sentAt: string;
         };
         StaffMemberSendLogResponseDto: {
-            /** @description 이 직원 레코드의 모든 근로계약 발송, 최근 순 */
+            /** @description 이 직원 레코드의 모든 근로계약 발송과 비밀번호 초기화 메일, 보낸 시각 최근 순 */
             items: components["schemas"]["StaffMemberSendLogDto"][];
         };
         /** @enum {string} */

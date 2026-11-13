@@ -19,7 +19,7 @@ import { MenuManageLink } from "./manage-link";
 import { SendLogBox } from "./send-log-box";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
 import { AttendanceBox, PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
-import { attendanceManageHref, scheduleWeekOf } from "./summary-view";
+import { attendanceManageHref, payslipManageHref, scheduleWeekOf, todoManageHref } from "./summary-view";
 import { WeekNav } from "./week-nav";
 
 export const metadata: Metadata = {
@@ -234,12 +234,12 @@ export default async function StaffMemberDetailPage({
                       <AttendanceBox staffMemberId={staffMemberId} weekStart={monday} />
                     </LoadGroupArea>
                   </Box>
-                  <Box title="급여명세서" manage={<MenuManageLink menuCode={MENU_CODE.payslips} menuName="급여명세서 관리" href="/payslips" />}>
+                  <Box title="급여명세서" manage={<MenuManageLink menuCode={MENU_CODE.payslips} menuName="급여명세서 관리" href={payslipManageHref(staff.name, staff.store.storeId)} />}>
                     <LoadGroupArea fallback={AREA_PENDING}>
                       <PayslipBox staffMemberId={staffMemberId} />
                     </LoadGroupArea>
                   </Box>
-                  <Box title="TO-DO" manage={<MenuManageLink menuCode={MENU_CODE.todos} menuName="TO-DO 리스트 관리" href="/todos" />}>
+                  <Box title="TO-DO" manage={<MenuManageLink menuCode={MENU_CODE.todos} menuName="TO-DO 리스트 관리" href={todoManageHref(staffMemberId, staff.store.storeId)} />}>
                     {/* TO-DO 관리 조회 권한이 없으면 목록까지 영역 전체를 막는다(summary-boxes.tsx TodoBox) */}
                     <LoadGroupArea fallback={AREA_PENDING}>
                       <TodoBox staffMemberId={staffMemberId} />

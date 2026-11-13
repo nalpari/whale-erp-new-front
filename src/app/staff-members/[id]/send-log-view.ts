@@ -8,8 +8,10 @@ import type { Cell, CellStyle } from "../staff-row.ts";
 export type SendLogItem = components["schemas"]["StaffMemberSendLogDto"];
 
 export type SendLogLine = {
-  key: number;
-  contractId: number;
+  /** 목록 key — 알림톡 줄과 메일 줄의 sendLogId 는 겹칠 수 있어 종류와 묶는다 */
+  key: string;
+  /** 근로계약 id. 계약과 무관한 발송(비밀번호 초기화 메일, WHALEERP-676)은 null — 화면은 계약 링크를 걸지 않는다 */
+  contractId: number | null;
   sentAt: string;
   /** 종류 한글. 한글을 모르면(enum 을 못 받음 · 목록에 없는 새 값) null — 화면은 「-」이고 계약 링크를 걸지 않는다 */
   kind: string | null;
@@ -30,7 +32,7 @@ const RESULT_STYLE: Record<SendLogItem["result"], CellStyle> = {
 
 /**
  * 발송 이력 한 줄. 재시도는 그 발송 한 번의 판정이다 — 다시 보낼 수 있는 실패는 「가능」, 접수 여부 모름은 다시 보내면 두 번 갈 수 있어
- * 「확인 필요」, 다시 보낼 수 없는 실패는 「불가」, 성공은 「-」. 지금 재발송을 누를 수 있는지는 가입 상태 줄의 재발송 버튼이 정한다.
+ * 「확인 필요」, 다시 보낼 수 없는 실패는 「불가」, 성공과 비밀번호 초기화 메일(판정 없음)은 「-」. 지금 재발송을 누를 수 있는지는 가입 상태 줄의 재발송 버튼이 정한다.
  * kindLabel · resultLabel 은 enum 한글을 찾는 함수다 — 받지 못했으면(null) · 목록에 없는 값이면(undefined) 그 칸은 「-」다. 영문 값을 보이지 않는다.
  */
 export function sendLogLine(
@@ -40,7 +42,7 @@ export function sendLogLine(
 ): SendLogLine {
   const resultText = resultLabel?.(item.result);
   return {
-    key: item.sendLogId,
+    key: `${item.kind}-${item.sendLogId}`,
     contractId: item.contractId,
     sentAt: formatDateTime(item.sentAt) || "-",
     kind: kindLabel?.(item.kind) ?? null,

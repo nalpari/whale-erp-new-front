@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입 상태 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [수정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-13T12:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-13T19:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -179,7 +179,7 @@ sources:
 바깥 틀과 `ErpRoot` 를 씌운다. 목록 · 상세 page 는 `PageBar`(제목 줄)부터 그리고, `layout.tsx` 는 탭 제목만 둔다
 (WHALEERP-593, 2026-10-14). 주소는 메뉴 url 과 같아야 열린다 — 「직원 정보 관리」(MN000005) 메뉴 url 을 `/staff` 에서
 `/staff-members` 로 바꾸는 것은 1팀 일이고(#592 결정), 반영 전에는 메뉴 권한 확인에서 막힌다. 상세의 「관리」 링크는 같은
-결정의 메뉴 url 로 건다. 지금은 근로계약(그 계약 상세 `/contracts/{id}`, 계약이 없으면 `/contracts`, MN000006) · TO-DO(`/todos`, MN000026) · 근무스케줄(`/work-schedules?store=<근무지>&week=<칸이 보던 주 월요일>`, MN000010) · 급여명세서(`/payslips`, MN000009)가 링크이고,
+결정의 메뉴 url 로 건다. 지금은 근로계약(그 계약 상세 `/contracts/{id}`, 계약이 없으면 `/contracts`, MN000006) · TO-DO(`/todos?storeIds=<근무지>&staffMemberId=<직원 레코드>` — `todoManageHref`, 그 직원에게 배정된 것만 연다, WHALEERP-677, MN000026) · 근무스케줄(`/work-schedules?store=<근무지>&week=<칸이 보던 주 월요일>`, MN000010) · 급여명세서(`/payslips?storeIds=<근무지>&staffName=<직원 이름>` — `payslipManageHref`, api 가 이름만 받고 부분 일치(contains)라 같은 근무지에서 이름이 들어간 직원(동명이인 포함)도 함께 나오는 한계는 알려진 것이다(노영주 승인). 달은 싣지 않아 목록 기본 달(지난달)로 열린다. 이름이 비었거나 마스킹(`*`) · 50자 초과면 이름은 붙이지 않고 근무지만, WHALEERP-677, MN000009)가 링크이고,
 그 메뉴 조회 권한이 없으면 흐린 「관리」로 둔다(`MenuManageLink`, `manage-link.tsx` — front #90 리뷰). 권한을 보지 않는 링크를 걸 길은 `Box` 에 두지 않았다.
 출퇴근 현황(`/attendance-records`, MN000025 — `MENU_CODE.attendanceRecords`)도 화면이 생겨 링크로 걸었다(WHALEERP-186). 주소는
 `/attendance-records?storeIds=<근무지>&staffMemberId=<직원>&employment=ALL&date=<일별 날>&week=<보는 주 월요일>&fixFrom=<월요일>&fixTo=<일요일>`
@@ -281,7 +281,7 @@ sources:
 * **급여명세서**는 데모 detail.html 처럼 최근 명세서 3건(응답 `recent`, api 순서 = 급여 기간 시작일 최신순)을 지급월 · 기본급 · 수당 · 공제 · 실지급액(굵게) · 상태
   배지(`PayslipStatus` enum, 급여 목록과 같은 `STATUS_STYLE`)로 보이고 아래에 미발송 N건(`unsentCount`, 발송 완료가 아닌 모두)이다(WHALEERP-186, 2026-10-22). 지급월은 급여 기간
   시작일의 `YYYY-MM`(`payMonthText`)이고 모든 줄이 명세서 상세(`/payslips/{payslipId}`)로 가며, 「급여명세서 관리」(MN000009) 조회 권한이 없으면 글자만이다(`MenuTextLink`).
-  금액이 없거나(null) 0 이면 「-」(데모의 검토 중 줄 공제), 아니면 쉼표 글자다(`payAmountText`). 열 너비는 데모처럼 똑같이 나눈다. 칸 머리 「관리」는 `/payslips`.
+  금액이 없거나(null) 0 이면 「-」(데모의 검토 중 줄 공제), 아니면 쉼표 글자다(`payAmountText`). 열 너비는 데모처럼 똑같이 나눈다. 칸 머리 「관리」는 `/payslips?storeIds=…&staffName=…`(그 직원 · 근무지로 거른 목록).
   최근 명세서도 미발송도 없으면 「급여명세서가 없습니다.」(`isPayslipSummaryEmpty`) — api 는 둘을 같은 직원의 명세서 전체에서 세어 `recent` 가 비면 미발송도 0 이고, `unsentCount` 는 api 가 바뀔 때를 대비해 함께 본다. 옛 「구분」 열(이번 달 · 최근 확정)과 급여 기간 글자는 걷었다.
 * **공통 표 머리**: `DataTable` 열 이름 칸은 가운데 정렬을 직접 둔다 — 팝업 안에서 왼쪽으로 붙던 것을 막는다(2026-11-09 사용자 지정).
 * **TO-DO** 는 목록(`GET /staff-members/:id/todos`, #118 — 앞쪽 5건)을 데모처럼 열 이름 줄 없는 표(공통 `DataTable` `headVariant="none"`)로 그린다 — 제목(+ 긴급 배지) ·
@@ -320,6 +320,7 @@ sources:
   두지 않는다(2026-10-26 김민식). 데모에 없는 칸이라 열이 많아 두 단 아래에 두었다. 따로 된 발송 이력 화면을 두지 않기로 해 「관리」 자리는 비운다(`manage={false}` — 흐린 「관리」는 생길 화면이 있다는 뜻이다).
 * 열은 발송 일시(한국 시각) · 종류(`StaffSendKind` 한글, 재발송이면 뒤에 「(재발송)」 — 그 계약 상세 링크라 계약이 여럿이어도 가를 수 있다) · 결과(`StaffSendResult` 배지 — 성공 초록, 실패 빨강, 접수 여부 모름
   회색) · 재시도(다시 보낼 수 있는 실패 「가능」, 접수 여부 모름 「확인 필요」, 다시 보낼 수 없는 실패 「불가」, 성공 「-」) · 실패 사유(api 문구 그대로, 비면 「-」, 한 줄로 자르고 전체는 title).
+  비밀번호 초기화 메일 줄(WHALEERP-676, `StaffSendKind` 의 `PASSWORD_RESET`)은 `contractId` 가 null 이라 종류를 계약 링크 없이 글자만 보이고, 재발송 아님 · 재시도 「-」다(타입은 api seongsan 워크트리 openapi 로 다시 뽑았다 — api 머지 뒤 main 기준으로 다시 뽑는다. 알림톡 줄과 메일 줄의 `sendLogId` 는 겹칠 수 있어 목록 key 는 `종류-sendLogId`다). 줄이 없으면 「보낸 이력이 없습니다.」.
   재시도는 그 발송 한 번의 판정이고, 지금 재발송을 누를 수 있는지는 가입 상태 줄의 재발송 버튼이 정한다.
 * 근로계약 관리 조회 권한을 보는 경로라 그 권한이 없으면 「발송 이력을 볼 권한이 없습니다.」, 나머지 실패는 「다시 하기」다(근로계약 칸과 같다).
   enum 을 받지 못했거나 목록에 없는 새 값이면 종류 · 결과만 「-」다(`labelIn` — 공통 `labelOf` 와 달리 영문 값을 돌려주지 않는다). 종류를 모르면 계약 링크도 걸지 않고, 「(재발송)」은 그대로 붙인다. 건수 상한은 두지 않는다 — 직원 레코드 하나의 초대 발송은 몇 건이다. 칸은 상세 LoadGroup 안이라 본문과 함께 열린다(묶음은 15초면 풀린다). 보낸 초대가 없으면 「보낸 초대가 없습니다.」.

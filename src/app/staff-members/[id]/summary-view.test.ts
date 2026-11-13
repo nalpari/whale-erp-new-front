@@ -1,6 +1,8 @@
 // pnpm test 로 함께 돈다. 이 파일만: node --test "src/**/summary-view.test.ts" — 경로의 [id] 를 node 가 glob 으로 읽어 그대로 적으면 찾지 못한다
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parsePayslipListQuery } from "../../payslips/payslip-list-query.ts";
+import { parseTodoListQuery } from "../../todos/todo-list-query.ts";
 import { endLabel } from "../../work-schedules/work-schedule-view.ts";
 import {
   AREA_READ_DENIED_MESSAGE,
@@ -10,6 +12,8 @@ import {
   attendanceManageHref,
   isAreaForbidden,
   isPayslipSummaryEmpty,
+  payslipManageHref,
+  todoManageHref,
   payAmountText,
   payMonthText,
   scheduleWeekOf,
@@ -358,4 +362,22 @@ test("출퇴근 현황 — 자정을 넘긴 퇴근은 「(다음날)」, 같은 
 test("출퇴근 현황 「관리」 주소의 날 — 오늘이 그 주 밖이면 월요일", () => {
   const url = new URL(attendanceManageHref(42, 7, "2026-10-19", "2026-10-29"), "http://x");
   assert.equal(url.searchParams.get("date"), "2026-10-19");
+});
+
+test("TO-DO · 급여명세서 「관리」 주소 — 그 직원 · 근무지로 열고, 쓸 수 없는 이름(마스킹 · 빈 값 · 50자 초과)은 붙이지 않는다", () => {
+  const todo = new URL(todoManageHref(42, 7), "http://x");
+  assert.equal(todo.pathname, "/todos");
+  assert.deepEqual(Object.fromEntries(todo.searchParams), { storeIds: "7", staffMemberId: "42" });
+  const pay = new URL(payslipManageHref(" 서지안 ", 7), "http://x");
+  assert.equal(pay.pathname, "/payslips");
+  assert.deepEqual(Object.fromEntries(pay.searchParams), { storeIds: "7", staffName: "서지안" });
+  for (const bad of [null, "", "  ", "서*안", "가".repeat(51)]) assert.deepEqual(Object.fromEntries(new URL(payslipManageHref(bad, 7), "http://x").searchParams), { storeIds: "7" });
+});
+
+test("TO-DO · 급여명세서 「관리」 주소를 목록 파서로 다시 읽으면 그 직원 · 근무지 조건이 된다", () => {
+  const rawOf = (href: string) => Object.fromEntries(new URL(href, "http://x").searchParams);
+  const todo = parseTodoListQuery(rawOf(todoManageHref(42, 7)));
+  assert.deepEqual([todo.staffMemberId, todo.storeIds], [42, [7]]);
+  const pay = parsePayslipListQuery(rawOf(payslipManageHref("서지안", 7)), "2026-11-13");
+  assert.deepEqual([pay.staffName, pay.storeIds], ["서지안", [7]]);
 });

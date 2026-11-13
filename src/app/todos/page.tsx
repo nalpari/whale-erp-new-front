@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { ListToolbar, PageBar } from "@/components/common";
 import { bpHref, deniedMessageOf, getEnum, screenPath } from "@/lib/api";
@@ -33,9 +34,18 @@ export default async function TodosPage({
     return (
       <>
         <PageBar title="TO-DO 리스트 관리" />
-        <p role="alert" className="p-[24px] text-[14px] text-erp-label">
-          {listed.notice}
-        </p>
+        <div className="p-[24px] text-[14px] text-erp-label">
+          <p role="alert">{listed.notice}</p>
+          {/* 직원 조건(상세 [관리]에서 옴)이 걸린 채 거절되면 조건을 풀 길이 없다 — 직원 조건만 지운 목록으로 */}
+          {query.staffMemberId !== null && (
+            <Link
+              href={(await screenPath())(`/todos${toTodoListSearch({ ...query, staffMemberId: null })}`)}
+              className="mt-[8px] inline-block cursor-pointer text-erp-link hover:underline"
+            >
+              조건 지우기
+            </Link>
+          )}
+        </div>
       </>
     );
   const { items, total } = listed;
