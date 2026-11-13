@@ -82,7 +82,7 @@ export async function proxy(req: NextRequest) {
   if (!session) {
     // 다른 탭에서 만료돼 쿠키가 지워진 뒤의 서버 액션 — 로그인 화면으로 보내면 액션 fetch 가 따라가 「결과 모름」이 된다.
     // 표시를 붙여 통과시키면 request() 가 api 401 을 만료로 표시하고 useAction 이 「로그인 만료」 팝업을 띄운다(SESSION_LOST_HEADER).
-    if (!passesSessionLostAction(isAction, req.cookies.has(LOGIN_KEY_COOKIE))) return toLogin(req);
+    if (!passesSessionLostAction(req.method, isAction, answersWith401(stripBp(pathname)), req.cookies.has(LOGIN_KEY_COOKIE))) return toLogin(req);
     req.headers.delete(BP_HEADER);
     req.headers.set(SESSION_LOST_HEADER, "1");
     // 탭 BP 주소(/bp/{id}/...)는 폴더가 없으니 옛 경로로 rewrite 한다 — 세션이 없어 BP 판정(bpRoute)은 건너뛴다

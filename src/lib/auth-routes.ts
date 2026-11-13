@@ -95,9 +95,13 @@ export function marksRenderRequest(method: string, isAction: boolean, isApiPath:
  */
 export const SESSION_LOST_HEADER = "x-whale-session-lost";
 
-/** 세션 없이 온 요청을 로그인 화면 대신 통과시킬까 — 이 브라우저로 로그인한 적이 있는(login-key) 서버 액션만. */
-export function passesSessionLostAction(isAction: boolean, hasLoginKey: boolean): boolean {
-  return isAction && hasLoginKey;
+/**
+ * 세션 없이 온 요청을 로그인 화면 대신 통과시킬까 — 이 브라우저로 로그인한 적이 있는(login-key) 화면 주소의 서버 액션만.
+ * POST 만 — Next 는 POST 만 서버 액션으로 처리한다. next-action 헤더를 꾸민 GET 은 화면을 그리므로 로그인 없이 보이게 된다(PR #256 리뷰).
+ * fetch 창구(answersWith401 — BFF · 업로드 · 엑셀)는 빼고 지금처럼 401 을 준다 — 라우트 핸들러는 액션이 아니고, 토큰 확인을 빠뜨린 창구가 생겨도 proxy 가 막는다.
+ */
+export function passesSessionLostAction(method: string, isAction: boolean, isApiPath: boolean, hasLoginKey: boolean): boolean {
+  return method === "POST" && isAction && !isApiPath && hasLoginKey;
 }
 
 /**

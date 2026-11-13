@@ -114,11 +114,16 @@ test("화면을 그리는 요청 — GET 이고 서버 액션 · BFF 가 아닐 
   assert.equal(RENDER_HEADER, "x-whale-render");
 });
 
-test("세션 없이 온 요청 — 로그인한 적 있는 브라우저의 서버 액션만 통과(다른 탭에서 만료), 그 밖은 로그인 화면", () => {
-  assert.equal(passesSessionLostAction(true, true), true);
-  assert.equal(passesSessionLostAction(true, false), false);
-  assert.equal(passesSessionLostAction(false, true), false);
-  assert.equal(passesSessionLostAction(false, false), false);
+test("세션 없이 온 요청 — 로그인한 적 있는 브라우저가 화면 주소로 보낸 POST 서버 액션만 통과(다른 탭에서 만료), 그 밖은 로그인 화면", () => {
+  assert.equal(passesSessionLostAction("POST", true, false, true), true);
+  // 로그인한 적 없는 브라우저 · 서버 액션이 아닌 요청
+  assert.equal(passesSessionLostAction("POST", true, false, false), false);
+  assert.equal(passesSessionLostAction("POST", false, false, true), false);
+  // next-action 헤더를 꾸민 GET — Next 는 화면을 그리므로 로그인 없이 보이게 된다
+  assert.equal(passesSessionLostAction("GET", true, false, true), false);
+  assert.equal(passesSessionLostAction("HEAD", true, false, true), false);
+  // fetch 창구(BFF · 업로드 · 엑셀)는 지금처럼 401
+  assert.equal(passesSessionLostAction("POST", true, true, true), false);
 });
 
 test("만료 로그인 화면 — GET 의 /login?reason=expired 만, 갱신 결과로 쿠키를 지울지 가른다", () => {
