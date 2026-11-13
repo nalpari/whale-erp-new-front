@@ -660,6 +660,7 @@ export function platformHeader(A, R, { master = false, noMenu = false } = {}) {
         ui.alarmLink(A, "#") +
         ui.userPop(A, master ? PLATFORM_MASTER : PLATFORM_USER, user),
       home,
+      "플랫폼관리",
     ) + platformScopeDialog(A, R, scopeId) + platformMyPanel(A, { master }) + passwordPanel(A)
   );
 }

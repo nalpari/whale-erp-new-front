@@ -77,16 +77,23 @@ function SubMenu({
   );
 }
 
-// 로고는 로그인 전 화면 머리말과 같은 모양 — 별 + 고래 그림, 글자는 REM 800 「WHALE ERP」 한 줄(2026-11-13 사용자 지정, 전엔 고래 그림 + 「WHALE ERP / Management System」 두 줄).
+// 로고는 로그인 전 화면 머리말과 같은 모양 — 별 + 고래 그림, 글자는 REM 800 「WHALE ERP」 한 줄(2026-11-13 사용자 지정, 전엔 고래 그림 + 「WHALE ERP / Management System」 두 줄). 같은 로고라 글자색도 로그인 전 로고의 `guest-ink`(#0c0c0c)를 쓴다 — erp 토큰 규칙의 예외로 DESIGN.md 「헤더」에 적었다.
 // 헤더 줄이 70px 라 로그인 전(50px 그림 · 24px 글자)보다 한 단계 작게 — 그림 42px · 글자 20px. 글자는 머리말 줄의 다른 글자(점포 선택칸 · 시작 가이드 · 서비스 바로가기 · 이름)와 같은 세로 가운데에 두고, 대신 그림을 4px 올려 고래 몸통 가운데를 글자 가운데에 맞춘다 — 그림 상자 위쪽이 별이라 고래가 아래로 처져 보였다(2026-11-13 사용자 지정).
-function Logo({ href = "/", onClick }: { href?: string; onClick?: (e: MouseEvent<HTMLAnchorElement>) => void }) {
+// 플랫폼 탭은 로고 뒤에 「· 플랫폼관리」를 붙여 어느 콘솔인지 알린다(`suffix`) — 플랫폼은 점포 선택칸이 없어 로고 옆이 비어 있었다(2026-11-13 사용자 지정). 로고 폭(177px)은 웨일ERP 탭 점포 선택칸의 시작선을 맞추려는 것이라 이름이 붙으면 늘어나게 둔다.
+function Logo({ href = "/", onClick, suffix }: { href?: string; onClick?: (e: MouseEvent<HTMLAnchorElement>) => void; suffix?: string }) {
   return (
-    <Link href={href} onClick={onClick} className={`${rem.variable} flex w-[177px] shrink-0 items-center gap-[10px]`}>
+    <Link href={href} onClick={onClick} className={`${rem.variable} flex min-w-[177px] shrink-0 items-center gap-[10px]`}>
       <span className="relative size-[42px] shrink-0 -translate-y-[4px] opacity-95">
         <Image src="/guest/logo-whale.svg" alt="" width={41.73} height={31.5} className="absolute top-[10.5px] left-0" />
         <Image src="/guest/logo-star.svg" alt="" width={20.3} height={14.7} className="absolute top-0 left-[6.36px]" />
       </span>
       <span className="font-[family-name:var(--font-rem)] text-[20px] leading-none font-extrabold whitespace-nowrap text-guest-ink uppercase">whale ERP</span>
+      {suffix && (
+        <span className="flex items-center gap-[10px] text-[18px] leading-none font-semibold whitespace-nowrap text-erp-ink">
+          <span aria-hidden className="font-normal text-erp-label">·</span>
+          {suffix}
+        </span>
+      )}
     </Link>
   );
 }
@@ -175,6 +182,7 @@ export function GlobalHeader({
   right,
   inert,
   logoHref,
+  logoSuffix,
 }: {
   menus: HeaderMenu[];
   right?: ReactNode;
@@ -184,6 +192,8 @@ export function GlobalHeader({
    * 준다(AdminHeader) — 이미 그 홈이면 새로고침한다(router.refresh), 로고가 로그인 전 공개 홈으로 가버리던
    * 문제를 고친다(사용자 지적, 2026-10-21). */
   logoHref?: string;
+  /** 로고 뒤에 붙는 콘솔 이름 — 플랫폼 탭의 「플랫폼관리」 */
+  logoSuffix?: string;
 }) {
   const { ref, ...state } = useHeaderMenu();
   const pathname = usePathname();
@@ -199,7 +209,7 @@ export function GlobalHeader({
   return (
     <header ref={ref} inert={inert} className="bg-white">
       <div className="flex h-[70px] items-center gap-[34px] px-[24px]">
-        <Logo href={logoHref} onClick={handleLogoClick} />
+        <Logo href={logoHref} onClick={handleLogoClick} suffix={logoSuffix} />
         {right && <div className="flex flex-1 items-center gap-[12px]">{right}</div>}
       </div>
       <nav className="flex h-[52px] items-center gap-[54px] bg-erp-nav px-[24px]">

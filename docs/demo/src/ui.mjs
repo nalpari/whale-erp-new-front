@@ -288,7 +288,7 @@ export const alarmLink = (A, href) =>
   `<a aria-label="알림" class="group relative shrink-0 rounded-full" href="${href}">${img(A, "alarm.svg", 42, 42)}<span aria-hidden="true" class="pointer-events-none absolute inset-0 rounded-full border border-erp-brand opacity-0 transition-opacity duration-150 group-hover:opacity-100"></span>${tip("알림")}</a>`;
 
 // menus: { label, items: [{ label, href }] }. 2depth 줄은 처음엔 첫 메뉴 항목을 그려 두고 erp.js 가 바꾼다.
-export function globalHeader(A, menus, right, home = "#") {
+export function globalHeader(A, menus, right, home = "#", suffix = "") {
   const navBtn = (m, i) =>
     `<button type="button" aria-expanded="false" class="flex h-[52px] shrink-0 items-center text-[16px] font-semibold whitespace-nowrap transition-colors duration-150 ease-out hover:text-erp-brand-soft ${
       i === 0 ? "pr-[20px]" : "px-[20px]"
@@ -297,7 +297,7 @@ export function globalHeader(A, menus, right, home = "#") {
   const sub = (menus[0]?.items ?? [])
     .map((it) => `<li><a class="whitespace-nowrap transition-colors duration-150 ease-out hover:text-erp-brand" href="${it.href}">${it.label}</a></li>`)
     .join("");
-  return `<header class="bg-white" data-menus='${JSON.stringify(menus)}'><div class="flex h-[70px] items-center gap-[34px] px-[24px]"><a class="flex w-[177px] shrink-0 items-center gap-[10px]" href="${home}"><span class="relative size-[42px] shrink-0 -translate-y-[4px] opacity-95"><img alt="" width="41.73" height="31.5" class="absolute top-[10.5px] left-0" src="${A}guest/logo-whale.svg"><img alt="" width="20.3" height="14.7" class="absolute top-0 left-[6.36px]" src="${A}guest/logo-star.svg"></span><span class="font-[REM,sans-serif] text-[20px] leading-none font-extrabold whitespace-nowrap text-guest-ink uppercase">whale ERP</span></a><div class="flex flex-1 items-center gap-[12px]">${right}</div></div><nav class="flex h-[52px] items-center gap-[54px] bg-erp-nav px-[24px]">${menus
+  return `<header class="bg-white" data-menus='${JSON.stringify(menus)}'><div class="flex h-[70px] items-center gap-[34px] px-[24px]"><a class="flex min-w-[177px] shrink-0 items-center gap-[10px]" href="${home}"><span class="relative size-[42px] shrink-0 -translate-y-[4px] opacity-95"><img alt="" width="41.73" height="31.5" class="absolute top-[10.5px] left-0" src="${A}guest/logo-whale.svg"><img alt="" width="20.3" height="14.7" class="absolute top-0 left-[6.36px]" src="${A}guest/logo-star.svg"></span><span class="font-[REM,sans-serif] text-[20px] leading-none font-extrabold whitespace-nowrap text-guest-ink uppercase">whale ERP</span>${suffix ? `<span class="flex items-center gap-[10px] text-[18px] leading-none font-semibold whitespace-nowrap text-erp-ink"><span aria-hidden="true" class="font-normal text-erp-label">·</span>${suffix}</span>` : ""}</a><div class="flex flex-1 items-center gap-[12px]">${right}</div></div><nav class="flex h-[52px] items-center gap-[54px] bg-erp-nav px-[24px]">${menus
     .map(navBtn)
     .join("")}</nav><div inert class="grid transition-[grid-template-rows] duration-200 ${EASE_OUT} motion-reduce:transition-none grid-rows-[0fr]"><div class="overflow-hidden"><ul class="flex gap-[24px] border-b border-erp-bar-line py-[12px] pl-[24px] text-[13.5px] leading-[16px] text-erp-sub transition-opacity ease-out opacity-100 duration-[180ms]">${sub}</ul></div></div></header>`;
 }

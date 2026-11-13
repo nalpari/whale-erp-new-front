@@ -68,6 +68,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
       menus={menus}
       inert={backdropActive}
       logoHref={home}
+      logoSuffix={service === "PLATFORM" ? "플랫폼관리" : undefined}
       right={
         <>
           {service === "WHALE_ERP" ? <HeaderScopeSelect /> : <div className="flex-1" />}
