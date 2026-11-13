@@ -1,7 +1,7 @@
 // node --test src/lib/expiry-guard.test.ts
 // 로그인 만료 규칙 지키기(AGENTS.md 「로그인 만료」). 화면 코드는 401 을 다루지 않고, 만료는 공통 길목이 처리한다.
 // 이 시험은 src 코드를 구문 분석해 길목을 거치지 않는 코드를 찾는다. 새 화면이 규칙을 어기면 여기서 실패한다.
-// 허용 목록은 401 의 뜻이 만료가 아니거나(비밀번호 · 탈퇴 최종 · 카카오 키) 길목 자체인 파일뿐이다 — 늘리기 전에 이유를 적는다.
+// 허용 목록은 401 의 뜻이 만료가 아니거나(강제 비밀번호 변경 · 로그아웃 · 카카오 키) 길목 자체인 파일뿐이다 — 늘리기 전에 이유를 적는다.
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -114,6 +114,10 @@ function callsAware(file: string, node: ts.Node, seen = new Set<string>()): bool
   let aware = false;
   visit(node, (n) => {
     if (aware || !ts.isCallExpression(n) || !ts.isIdentifier(n.expression)) return;
+    // 결과의 일부만 쓰면(`failureOf(e).message` · `const { message } = failureOf(e)`) 만료 표시(expired)를 버린다 — 거른 것으로 치지 않는다.
+    // 통째로 돌려주거나(`return failureOf(e)`) 펼쳐 넣으면(`{ ok: false, ...failureOf(e) }`) 표시가 남는다
+    const p = n.parent;
+    if ((ts.isPropertyAccessExpression(p) && p.expression === n) || (ts.isVariableDeclaration(p) && ts.isObjectBindingPattern(p.name))) return;
     if (functionAware(file, n.expression.text, seen)) aware = true;
   });
   return aware;
@@ -121,8 +125,16 @@ function callsAware(file: string, node: ts.Node, seen = new Set<string>()): bool
 /** 만료 제외 경로를 부르는 액션 — 401 의 뜻이 만료가 아니다(session-expiry.ts NOT_EXPIRY) */
 const G2_ALLOW = new Set<string>([]);
 
+// 경로 변환 · 지시문 판정이 깨져 아무것도 못 보고 통과하지 않게 본 양의 하한을 둔다(지금 파일 수백 개 · 서버 액션 catch 100여 개 · 화면 파일 수십 개)
+test("가드가 src 를 실제로 읽는다", () => {
+  assert.ok(FILES.length > 200, `읽은 파일 ${FILES.length}개 — src 경로를 확인하세요`);
+  assert.ok([...text.keys()].filter((f) => directive(f) === "server").length > 20, "서버 액션 파일을 찾지 못했습니다");
+  assert.ok([...text.keys()].filter((f) => directive(f) === "client").length > 50, "화면(client) 파일을 찾지 못했습니다");
+});
+
 test("G2 서버 액션의 catch 는 만료를 먼저 거른다(expiredFailureOf)", () => {
   const found: string[] = [];
+  let checked = 0;
   for (const file of text.keys()) {
     if (directive(file) !== "server" || isPublic(file) || file === "app/actions.ts") continue;
     const sf = sourceOf(file);
@@ -139,9 +151,11 @@ test("G2 서버 액션의 catch 는 만료를 먼저 거른다(expiredFailureOf)
       while (owner && !ts.isFunctionDeclaration(owner)) owner = owner.parent;
       const ownerName = owner && ts.isFunctionDeclaration(owner) ? owner.name?.text : undefined;
       if (ownerName && G2_ALLOW.has(`${file}#${ownerName}`)) return;
+      checked++;
       if (!callsAware(file, n.block)) found.push(lineOf(sf, n));
     });
   }
+  assert.ok(checked > 50, `본 catch ${checked}개 — 서버 액션 catch 를 찾지 못했습니다`);
   assert.deepEqual(found, [], "catch 첫 줄에서 `const expired = expiredFailureOf(error); if (expired) return expired;` 로 만료를 거르세요");
 });
 
