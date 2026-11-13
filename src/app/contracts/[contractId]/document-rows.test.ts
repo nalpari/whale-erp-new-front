@@ -1,7 +1,7 @@
 // node --test "src/app/contracts/[contractId]/document-rows.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { NO_SIGNED_COPY, documentRowsOf } from "./document-rows.ts";
+import { NO_SIGNED_COPY, SENT_ORIGINAL_PENDING, documentRowsOf } from "./document-rows.ts";
 
 const doc = (contractDocumentId: number, kind: string, fileName = `${kind}.pdf`) => ({ contractDocumentId, kind, fileName });
 const signedHistory = [{ fromStatus: "PENDING_SIGNATURE", toStatus: "SIGNED" }];
@@ -77,4 +77,22 @@ test("documentRowsOf — 계약 방식이 빈 옛 종이 계약(서명본만)에
     documentRowsOf({ contractMethod: null, status: "SIGNED", histories: [], documents: [doc(1, "PAPER_EMPLOYMENT_CONTRACT")] }),
     [{ label: "서명본", documents: [doc(1, "PAPER_EMPLOYMENT_CONTRACT")], withKind: true }],
   );
+});
+
+test("documentRowsOf — 마지막 발송의 보낸 원본이 아직 없으면 만드는 중 안내(하루 안, 전자계약만)", () => {
+  // 마지막 발송 2026-11-13 11:59 KST
+  const now = Date.parse("2026-11-13T03:00:00Z");
+  const base = { contractMethod: "ELECTRONIC", status: "PENDING_SIGNATURE", histories: [], lastSentAt: "2026-11-13T02:59:00Z", now };
+  const old = doc(3, "SENT_ORIGINAL", "근로계약서-보낸원본-7-202611120900.pdf");
+  const last = doc(4, "SENT_ORIGINAL", "근로계약서-보낸원본-7-202611131159.pdf");
+  // 재발송 직후 — 앞 발송 원본만 있다
+  assert.deepEqual(documentRowsOf({ ...base, documents: [old] }), [{ label: "보낸 원본", documents: [old], withKind: false, note: SENT_ORIGINAL_PENDING }]);
+  // 첫 발송 직후 — 원본이 아직 없다
+  assert.deepEqual(documentRowsOf({ ...base, documents: [] }), [{ label: "보낸 원본", documents: [], withKind: false, empty: SENT_ORIGINAL_PENDING }]);
+  // 마지막 발송 원본이 있으면 앞 발송 원본이 빠졌어도(옛 계약 · 원본 전에 다시 보냄) 안내하지 않는다
+  assert.deepEqual(documentRowsOf({ ...base, documents: [last] }), [{ label: "보낸 원본", documents: [last], withKind: false }]);
+  // 보낸 적 없거나, 마지막 발송이 하루를 넘었거나(api 가 다시 만들지 않는다), 종이 계약이면 안내하지 않는다
+  assert.deepEqual(documentRowsOf({ ...base, lastSentAt: null, documents: [] }), []);
+  assert.deepEqual(documentRowsOf({ ...base, lastSentAt: "2026-11-12T02:59:00Z", documents: [] }), []);
+  assert.deepEqual(documentRowsOf({ ...base, contractMethod: "PAPER", documents: [] }), []);
 });
