@@ -258,7 +258,7 @@ export function userPop(A, name, items) {
         : `<li><a class="${cls}" href="${it.href}">${it.label}</a></li>`;
     })
     .join("");
-  return `<div class="relative"><button type="button" aria-label="${name} 마이페이지" aria-expanded="false" aria-controls="${id}" class="group relative flex items-center"><span class="flex items-center gap-[10px] text-[15px] font-medium text-erp-ink">${img(A, "avatar.svg", 42, 42)}${name}</span>${img(A, "user-more.svg", 34, 34, `transition-transform duration-200 ${EASE_OUT} `)}${tip("마이페이지")}</button>${popup(
+  return `<div class="relative"><button type="button" aria-label="${name} 마이페이지" aria-expanded="false" aria-controls="${id}" class="group relative flex h-[42px] items-center rounded-full border border-erp-field-line bg-white pr-[6px] pl-[16px] transition-colors duration-150 ${EASE_OUT} hover:border-erp-brand aria-expanded:border-erp-brand"><span class="flex items-center gap-[8px] text-[15px] font-medium text-erp-ink"><svg aria-hidden="true" viewBox="0 0 24 24" class="-mx-[3px] size-[28px] shrink-0 stroke-erp-brand" fill="none" stroke-width="1.3" stroke-linecap="round"><path d="M5 20c3.6-4 10.4-4 14 0M15.9 9.6c0 2.2-1.76 3.97-3.93 3.97S8.04 11.8 8.04 9.6s1.76-3.97 3.93-3.97 3.93 1.78 3.93 3.97z"/></svg>${name}</span>${img(A, "user-more.svg", 30, 30, `transition-transform duration-200 ${EASE_OUT} `)}${tip("마이페이지")}</button>${popup(
     id,
     "fade",
     "right-0 w-[154px]",
@@ -282,13 +282,13 @@ export const serviceLinks = (A, hrefs = {}) => {
   const platformLink = hrefs.platform
     ? `<a aria-label="플랫폼관리" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.platform}">${img(A, "service-platform.svg", 22, 22)}${tip("플랫폼관리")}</a>`
     : "";
-  return `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]">${erpLink}${hrefs.hideAddon ? "" : `<a aria-label="부가서비스구독관리" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-subscription.svg", 24, 24)}${tip("부가서비스구독관리")}</a>`}${platformLink}</div></div>`;
+  return `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px] transition-colors duration-150 has-[a:hover,button:hover]:border-erp-brand"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]">${erpLink}${hrefs.hideAddon ? "" : `<a aria-label="부가서비스구독관리" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-subscription.svg", 24, 24)}${tip("부가서비스구독관리")}</a>`}${platformLink}</div></div>`;
 };
 export const alarmLink = (A, href) =>
-  `<a aria-label="알림" class="group relative shrink-0 rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70" href="${href}">${img(A, "alarm.svg", 42, 42)}${tip("알림")}</a>`;
+  `<a aria-label="알림" class="group relative shrink-0 rounded-full" href="${href}">${img(A, "alarm.svg", 42, 42)}<span aria-hidden="true" class="pointer-events-none absolute inset-0 rounded-full border border-erp-brand opacity-0 transition-opacity duration-150 group-hover:opacity-100"></span>${tip("알림")}</a>`;
 
 // menus: { label, items: [{ label, href }] }. 2depth 줄은 처음엔 첫 메뉴 항목을 그려 두고 erp.js 가 바꾼다.
-export function globalHeader(A, menus, right, home = "#") {
+export function globalHeader(A, menus, right, home = "#", suffix = "") {
   const navBtn = (m, i) =>
     `<button type="button" aria-expanded="false" class="flex h-[52px] shrink-0 items-center text-[16px] font-semibold whitespace-nowrap transition-colors duration-150 ease-out hover:text-erp-brand-soft ${
       i === 0 ? "pr-[20px]" : "px-[20px]"
@@ -297,7 +297,7 @@ export function globalHeader(A, menus, right, home = "#") {
   const sub = (menus[0]?.items ?? [])
     .map((it) => `<li><a class="whitespace-nowrap transition-colors duration-150 ease-out hover:text-erp-brand" href="${it.href}">${it.label}</a></li>`)
     .join("");
-  return `<header class="bg-white" data-menus='${JSON.stringify(menus)}'><div class="flex h-[70px] items-center gap-[34px] px-[24px]"><a class="flex w-[177px] shrink-0 items-center gap-[10px]" href="${home}">${img(A, "logo-whale.svg", 53, 40)}<p class="leading-[1.3] text-[#252525]"><span class="block text-[16px] font-extrabold uppercase">Whale ERP</span><span class="block text-[12px]">Management System</span></p></a><div class="flex flex-1 items-center gap-[12px]">${right}</div></div><nav class="flex h-[52px] items-center gap-[54px] bg-erp-nav px-[24px]">${menus
+  return `<header class="bg-white" data-menus='${JSON.stringify(menus)}'><div class="flex h-[70px] items-center gap-[34px] px-[24px]"><a class="flex min-w-[177px] shrink-0 items-center gap-[10px]" href="${home}"><span class="relative size-[42px] shrink-0 -translate-y-[4px] opacity-95"><img alt="" width="41.73" height="31.5" class="absolute top-[10.5px] left-0" src="${A}guest/logo-whale.svg"><img alt="" width="20.3" height="14.7" class="absolute top-0 left-[6.36px]" src="${A}guest/logo-star.svg"></span><span class="font-[REM,sans-serif] text-[20px] leading-none font-extrabold whitespace-nowrap text-guest-ink uppercase">whale ERP</span>${suffix ? `<span class="flex items-center gap-[10px] text-[18px] leading-none font-semibold whitespace-nowrap text-erp-ink"><span aria-hidden="true" class="font-normal text-erp-label">·</span>${suffix}</span>` : ""}</a><div class="flex flex-1 items-center gap-[12px]">${right}</div></div><nav class="flex h-[52px] items-center gap-[54px] bg-erp-nav px-[24px]">${menus
     .map(navBtn)
     .join("")}</nav><div inert class="grid transition-[grid-template-rows] duration-200 ${EASE_OUT} motion-reduce:transition-none grid-rows-[0fr]"><div class="overflow-hidden"><ul class="flex gap-[24px] border-b border-erp-bar-line py-[12px] pl-[24px] text-[13.5px] leading-[16px] text-erp-sub transition-opacity ease-out opacity-100 duration-[180ms]">${sub}</ul></div></div></header>`;
 }

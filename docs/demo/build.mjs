@@ -46,7 +46,8 @@ for (const file of files) {
 <title>${title} · Whale ERP 데모</title>
 <link rel="stylesheet" href="${A}erp.css?v=__V__">
 <script src="${A}erp.js?v=__V__" defer></script>
-${head}</head>
+${html.includes("font-[REM") && !head.includes("family=REM") ? `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=REM:wght@800&display=swap">
+` : ""}${head}</head>
 <body>
 ${html}
 </body>

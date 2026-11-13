@@ -31,16 +31,19 @@ export function UserPop({ name, items, triggerRef }: { name: string; items: User
 
   return (
     <div ref={ref} className="relative">
-      <button ref={trigger} type="button" aria-label={`${name} 마이페이지`} aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)} className="group relative flex items-center">
-        <span className="flex items-center gap-[10px] text-[15px] font-medium text-erp-ink">
-          <Image src="/icons/avatar.svg" alt="" width={42} height={42} />
+      {/* 사람 아이콘 · 이름 · 꺾쇠를 한 묶음으로 — 서비스 바로가기와 같은 알약(42px · 테두리)에 담는다. 동그라미 그림(avatar.svg)은 알약 안에서 원이 겹쳐 빼고 선 아이콘만 둔다 — 그림 크기 · 선 굵기(약 16 × 17px · 1.5px)는 옆 알림 종 그림에 맞춘다(2026-11-13 사용자 지정) */}
+      <button ref={trigger} type="button" aria-label={`${name} 마이페이지`} aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)} className={`group relative flex h-[42px] items-center rounded-full border bg-white pr-[6px] pl-[16px] transition-colors duration-150 ${EASE_OUT} ${open ? "border-erp-brand" : "border-erp-field-line hover:border-erp-brand"}`}>
+        <span className="flex items-center gap-[8px] text-[15px] font-medium text-erp-ink">
+          <svg aria-hidden viewBox="0 0 24 24" className="-mx-[3px] size-[28px] shrink-0 stroke-erp-brand" fill="none" strokeWidth="1.3" strokeLinecap="round">
+            <path d="M5 20c3.6-4 10.4-4 14 0M15.9 9.6c0 2.2-1.76 3.97-3.93 3.97S8.04 11.8 8.04 9.6s1.76-3.97 3.93-3.97 3.93 1.78 3.93 3.97z" />
+          </svg>
           {name}
         </span>
         <Image
           src="/icons/user-more.svg"
           alt=""
-          width={34}
-          height={34}
+          width={30}
+          height={30}
           className={`transition-transform duration-200 ${EASE_OUT} ${open ? "rotate-180" : ""}`}
         />
         {/* 서비스 바로가기 · 알림 종과 같은 툴팁(2026-10-29 사용자 지정). 메뉴가 열리면 감춘다. */}

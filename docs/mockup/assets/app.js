@@ -432,10 +432,10 @@
   /* 버튼 한 줄 — 유형 하나를 통째로 고르면 그 유형 이름으로, 한 곳이면 점포명, 여럿이면 “첫 점포 외 N곳”으로 줄인다 */
   function scopeLabel(v) {
     var bp = bpOf(v.bp), open = bp.stores.filter(function (x) { return !x.closed; });
-    if (v.all || !v.ids.length) return "전체 " + open.length + "개점";
+    if (v.all || !v.ids.length) return "전체 점포 · " + open.length + "개";
     var picked = open.filter(function (x) { return v.ids.indexOf(x.id) > -1; });
-    if (!picked.length) return "전체 " + open.length + "개점";
-    if (picked.length === open.length) return "전체 " + open.length + "개점";
+    if (!picked.length) return "전체 점포 · " + open.length + "개";
+    if (picked.length === open.length) return "전체 점포 · " + open.length + "개";
     /* 통째로 고른 유형은 “직영점포 전체”로 묶고, 나머지 개별 점포는 “첫 점포 외 N곳”으로 붙인다 */
     var parts = [], rest = picked.slice();
     ["직영점포", "가맹점포"].forEach(function (t) {
@@ -446,7 +446,7 @@
       }
     });
     if (rest.length) parts.push(rest[0].name + (rest.length > 1 ? " 외 " + (rest.length - 1) + "곳" : ""));
-    return parts.length === 1 && !rest.length ? parts[0] + " " + picked.length + "개점" : parts.join(" · ");
+    return parts.length === 1 && !rest.length ? parts[0] + " · " + picked.length + "개" : parts.join(" · ");
   }
 
   function topnavHTML() {
@@ -883,7 +883,7 @@
        고르면 곧바로 그 범위로 바뀐다. 폐점 점포는 이 목록에 싣지 않는다(팝업에서만 폐점 표시와 함께 보인다). */
     function ddOpt(key, label, meta, on) {
       return '<button type="button" role="option" data-scope="' + key + '" data-q="' + label + " " + meta + '" aria-selected="' + !!on + '">' +
-        "<span><b>" + label + "</b><br><span class=\"subtle\" style=\"font-size:11.5px\">" + meta + "</span></span>" +
+        "<span><b>" + label + "</b>" + (meta ? "<br><span class=\"subtle\" style=\"font-size:11.5px\">" + meta + "</span>" : "") + "</span>" +
         (on ? ic("check", 14) : "") + "</button>";
     }
     function ddHTML() {
@@ -894,18 +894,21 @@
       var ids = v.all ? [] : v.ids;
       var same = function (list) { return ids.length === list.length && list.every(function (x) { return ids.indexOf(x.id) > -1; }); };
       var cur = !ids.length || same(open) ? "all" : dir.length && same(dir) ? "dir" : fr.length && same(fr) ? "fr" : ids.length === 1 ? ids[0] : "";
-      function sect(title, items) {
-        return items.length ? '<div class="pop__sect"><div class="pop__label">' + title + "</div>" + items.join("") + "</div>" : "";
+      /* point — 직영점포 · 가맹점포 묶음 머리는 포인트 파랑(2026-11-13 사용자 지정) */
+      function sect(title, items, point) {
+        return items.length ? '<div class="pop__sect">' + (title ? '<div class="pop__label"' + (point ? ' style="color:#4a7ae0"' : "") + '>' + title + "</div>" : "") + items.join("") + "</div>" : "";
       }
       return (open.length >= 10
           ? '<div class="pop__search">' + ic("search", 14) + '<input class="pop__q" type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" /></div>'
           : "") +
         '<div class="pop__list">' +
-        sect(bp.name, [ddOpt("all", "전체 " + open.length + "개점", "직영 " + dir.length + " · 가맹 " + fr.length, cur === "all")]
-          .concat(dir.length ? [ddOpt("dir", "직영 " + dir.length + "개점", "직영점포 전체", cur === "dir")] : [])
-          .concat(fr.length ? [ddOpt("fr", "가맹 " + fr.length + "개점", "가맹점포 전체", cur === "fr")] : [])) +
-        sect("직영 " + dir.length, dir.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); })) +
-        sect("가맹 " + fr.length, fr.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); })) +
+        /* 범위 세 줄은 이름만 한 줄 — 전체 점포 · 직영점포 전체 · 가맹점포 전체 · N개(2026-11-13 사용자 지정) */
+        /* 맨 위 범위 묶음은 머리 줄 없이(2026-11-13 사용자 지정) */
+        sect("", [ddOpt("all", "전체 점포 · " + open.length + "개", "", cur === "all")]
+          .concat(dir.length ? [ddOpt("dir", "직영점포 전체 · " + dir.length + "개", "", cur === "dir")] : [])
+          .concat(fr.length ? [ddOpt("fr", "가맹점포 전체 · " + fr.length + "개", "", cur === "fr")] : [])) +
+        sect("직영점포 · " + dir.length, dir.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); }), true) +
+        sect("가맹점포 · " + fr.length, fr.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); }), true) +
         '<p class="pop__none" hidden>맞는 점포가 없습니다.</p>' +
         "</div>" +
         "";
