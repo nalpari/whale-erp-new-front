@@ -8,11 +8,11 @@ import { kindText, labelIn, sendLogLine, type SendLogLine } from "./send-log-vie
 import { loadArea, loadLabels } from "./summary-load";
 
 /**
- * 직원 상세의 「발송 이력」 칸(WHALEERP-136). 이 직원 레코드의 근로계약이 보낸 가입 초대 · 소속 추가 확인 요청(재발송 포함)을 최근 순으로
+ * 직원 상세의 「발송 이력」 칸(WHALEERP-136). 이 직원 레코드의 근로계약이 보낸 가입 초대 · 소속 추가 확인 요청(재발송 포함)과 비밀번호 초기화 메일을 최근 순으로
  * 모두 보인다(GET /staff-members/:id/summary/send-logs). 발송 이력은 이 화면에만 둔다 — 계약 상세 · 따로 된 화면에는 없다(2026-10-26 김민식).
  * 이 경로는 근로계약 관리 조회 권한을 보므로, 그 권한이 없으면 이 칸만 권한 안내다(근로계약 칸과 같다). 계약이 여럿(재계약 등)이면 어느 계약의
- * 발송인지 가를 수 있게 종류를 그 계약 상세 링크로 둔다(종류를 모르면 「-」 글자만). 건수 상한은 두지 않는다 — 직원 레코드 하나의 초대
- * 발송은 몇 건이고, api 도 재발송 판정에 전체 이력을 읽는다.
+ * 발송인지 가를 수 있게 종류를 그 계약 상세 링크로 둔다(종류를 모르거나 계약과 무관한 발송 — 비밀번호 초기화 메일 contractId null — 이면 링크 없이 글자만). 건수 상한은 두지 않는다 — 직원 레코드 하나의 초대
+ * 발송은 몇 건이고 메일 줄(비밀번호 초기화)도 상한 없이 나오며, api 도 재발송 판정에 전체 이력을 읽는다.
  */
 export async function SendLogBox({ staffMemberId }: { staffMemberId: number }) {
   const [result, kinds, results] = await Promise.all([
@@ -33,7 +33,7 @@ export async function SendLogBox({ staffMemberId }: { staffMemberId: number }) {
           header: "종류",
           width: "w-[220px]",
           cell: (r) =>
-            r.kind === null ? (
+            r.kind === null || r.contractId === null ? (
               kindText(r)
             ) : (
               <MenuTextLink menuCode={MENU_CODE.contracts} href={`/contracts/${r.contractId}`}>
@@ -56,7 +56,7 @@ export async function SendLogBox({ staffMemberId }: { staffMemberId: number }) {
       ]}
       rows={lines}
       rowKey={(r) => r.key}
-      empty="보낸 초대가 없습니다."
+      empty="보낸 이력이 없습니다."
     />
   );
 }
