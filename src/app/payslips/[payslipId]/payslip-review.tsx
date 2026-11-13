@@ -221,14 +221,14 @@ export function PayslipReview({
         timer = setTimeout(check, msUntilNextKstDay(new Date()) + 1000);
       }
     };
-    const onVisible = () => {
+    const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") check();
     };
     check();
-    document.addEventListener("visibilitychange", onVisible);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
       clearTimeout(timer);
-      document.removeEventListener("visibilitychange", onVisible);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [blockedUntil, dirty, today, router]);
 
