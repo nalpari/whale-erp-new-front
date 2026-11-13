@@ -446,7 +446,7 @@
       }
     });
     if (rest.length) parts.push(rest[0].name + (rest.length > 1 ? " 외 " + (rest.length - 1) + "곳" : ""));
-    return parts.length === 1 && !rest.length ? parts[0] + " " + picked.length + "개점" : parts.join(" · ");
+    return parts.length === 1 && !rest.length ? parts[0] + " · " + picked.length + "개" : parts.join(" · ");
   }
 
   function topnavHTML() {

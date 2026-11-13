@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BP 관리자 관리 · 수정 · 범위 밖 매핑 · Whale ERP 데모</title>
-<link rel="stylesheet" href="../assets/erp.css?v=385b3076">
-<script src="../assets/erp.js?v=385b3076" defer></script>
+<link rel="stylesheet" href="../assets/erp.css?v=30a5aaa3">
+<script src="../assets/erp.js?v=30a5aaa3" defer></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=REM:wght@800&display=swap">
 </head>
 <body>
@@ -29,7 +29,7 @@
   window.__storePick = true;
   document.querySelectorAll("[data-store-filter]").forEach((box) => {
     const list = box.querySelector("[data-spick-list]");
-    const count = () => (box.querySelector("[data-spick-count]").textContent = list.children.length + "개점");
+    const count = () => (box.querySelector("[data-spick-count]").textContent = list.children.length + "개");
     list.addEventListener("click", (e) => {
       const x = e.target.closest("li[data-code] button");
       if (x) x.closest("li").remove();

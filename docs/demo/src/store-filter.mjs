@@ -55,7 +55,7 @@ const STORE_PICK_SCRIPT = `<script>
   window.__storePick = true;
   document.querySelectorAll("[data-store-filter]").forEach((box) => {
     const list = box.querySelector("[data-spick-list]");
-    const count = () => (box.querySelector("[data-spick-count]").textContent = list.children.length + "개점");
+    const count = () => (box.querySelector("[data-spick-count]").textContent = list.children.length + "개");
     list.addEventListener("click", (e) => {
       const x = e.target.closest("li[data-code] button");
       if (x) x.closest("li").remove();

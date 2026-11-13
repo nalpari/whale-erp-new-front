@@ -465,7 +465,9 @@
   const spickPicked = (box) => $$("[data-spick-list] > [data-code]", box).map((li) => li.dataset.code);
   const spickCount = (box) => {
     const n = spickPicked(box).length;
-    $("[data-spick-count]", box).textContent = `${n}개`;
+    // 단위는 상자마다 처음 글자를 따른다 — 점포 필터는 「N개」, BP 관리자 점포 상자는 「N개점」(앱 store-picker · store-mapping-picker 와 같다)
+    const countEl = $("[data-spick-count]", box);
+    countEl.textContent = `${n}${countEl.textContent.replace(/^\d+/, "") || "개"}`;
     const none = $("[data-spick-none]", box);
     if (none) none.hidden = n > 0;
     // 고른 점포가 없으면 [전체 제거]를 막는다 — data-spick-clear-empty 를 단 칸만(BP 관리자 등록 · 수정, 앱 store-mapping-picker.tsx)
