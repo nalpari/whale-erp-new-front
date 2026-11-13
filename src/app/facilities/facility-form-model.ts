@@ -47,10 +47,14 @@ export function documentFileError(file: { name: string; size: number }): string 
 export type PhoneParts = [string, string, string];
 export const EMPTY_PHONE: PhoneParts = ["", "", ""];
 
-/** 숫자만인 전화번호를 세 칸으로 — 02 는 두 자리, 12자리(050X 평생번호)는 4 · 4 · 4, 그 밖은 앞 3자리. 끝 칸은 4자리 */
+/** 전국 대표번호 — 15xx · 16xx · 18xx 로 시작하는 8자리(1588-1234). 아무 8자리나 받으면 끝자리를 하나 빠뜨린 휴대폰(010-1234-567)도 통과한다 */
+export const isRepresentativeNumber = (digits: string) => /^(15|16|18)[0-9]{6}$/.test(digits);
+
+/** 숫자만인 전화번호를 세 칸으로 — 대표번호는 4 · 4 · 빈칸. 그 밖은 끝 칸이 4자리이고, 앞 칸은 02 면 두 자리, 12자리(050X 평생번호)면 네 자리, 나머지는 세 자리 */
 export function splitPhone(raw: string | null | undefined): PhoneParts {
   const d = (raw ?? "").replace(/[^0-9]/g, "").slice(0, 12);
   if (!d) return [...EMPTY_PHONE];
+  if (isRepresentativeNumber(d)) return [d.slice(0, 4), d.slice(4), ""];
   const head = d.startsWith("02") ? 2 : d.length >= 12 ? 4 : 3;
   const rest = d.slice(head);
   const mid = Math.max(0, Math.min(4, rest.length - 4));
@@ -120,6 +124,8 @@ export const PHONE_LABELS = {
 } as const satisfies Partial<Record<FacilityFormField, string>>;
 export type PhoneField = keyof typeof PHONE_LABELS;
 export const PHONE_FIELDS = Object.keys(PHONE_LABELS) as PhoneField[];
+/** 대표번호(8자리)도 받는 칸 — 업체 번호인 구매처 · A/S센터. 영업사원 · 관리 담당자는 사람 번호라 9~12자리만(2026-11-13 사용자 결정, api 도 같다) */
+export const REPRESENTATIVE_PHONE_FIELDS: ReadonlySet<PhoneField> = new Set<PhoneField>(["vendorPhone", "serviceCenterPhone"]);
 
 export const MEMO_MAX = 200;
 export const QUANTITY_MAX = 9999;
@@ -216,23 +222,27 @@ export function problems(f: FacilityForm, mode: "create" | "edit"): Partial<Reco
   if (!f.categoryCode) out.category = "분류를 선택해 주세요.";
   if (f.memo.length > MEMO_MAX) out.memo = `메모는 ${MEMO_MAX}자까지 입력할 수 있습니다.`;
   for (const field of ["vendorPhone", "salesRepresentativePhone"] as const) {
-    const msg = phoneProblem(f[field], PHONE_LABELS[field]);
+    const msg = phoneProblem(f[field], field);
     if (msg) out[field] = msg;
   }
   const qty = Number(f.quantity);
   if (!(Number.isInteger(qty) && qty >= 1 && qty <= QUANTITY_MAX)) out.quantity = "수량은 1 ~ 9,999 사이로 입력해 주세요.";
   if (f.purchaseDate && f.installationDate && f.installationDate < f.purchaseDate) out.installationDate = "설치일은 구매일보다 앞설 수 없습니다.";
   for (const field of ["managerPhone", "serviceCenterPhone"] as const) {
-    const msg = phoneProblem(f[field], PHONE_LABELS[field]);
+    const msg = phoneProblem(f[field], field);
     if (msg) out[field] = msg;
   }
   return out;
 }
 
-/** 전화번호 — 비었으면 괜찮고, 이은 번호가 9~12자리가 아니면 문구 */
-function phoneProblem(p: PhoneParts, label: string): string | null {
-  const n = joinPhone(p).length;
-  return n === 0 || (n >= 9 && n <= 12) ? null : `${label} 전화번호는 숫자 9~12자리입니다.`;
+/** 전화번호 — 비었으면 괜찮고, 이은 번호가 9~12자리(구매처 · A/S센터는 대표번호 8자리도)가 아니면 문구 */
+function phoneProblem(p: PhoneParts, field: PhoneField): string | null {
+  const digits = joinPhone(p);
+  const n = digits.length;
+  if (n === 0 || (n >= 9 && n <= 12)) return null;
+  const label = PHONE_LABELS[field];
+  if (!REPRESENTATIVE_PHONE_FIELDS.has(field)) return `${label} 전화번호는 숫자 9~12자리입니다.`;
+  return isRepresentativeNumber(digits) ? null : `${label} 전화번호는 숫자 9~12자리 또는 15xx·16xx·18xx 대표번호 8자리입니다.`;
 }
 
 const textOrNull = (v: string) => (v.trim() ? v.trim() : null);
