@@ -75,9 +75,10 @@ export function ScopeSelect({
           />
         </div>
         <div className="max-h-[328px] overflow-y-auto">
+          {/* 묶음(BP 범위 · 직영 · 가맹)마다 위에 1px 구분선과 6px 여백, 머리는 12px 600 erp-sub — 11px 연회색 머리만으로는 묶음이 갈려 보이지 않았다(2026-11-13 사용자 지정) */}
           {shown.map((s) => (
-            <div key={s.title} role="group" aria-label={s.title} className="flex flex-col gap-[1px]">
-              <p className="px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold tracking-[0.04em] text-erp-muted uppercase">{s.title}</p>
+            <div key={s.title} role="group" aria-label={s.title} className="flex flex-col gap-[1px] not-first:mt-[6px] not-first:border-t not-first:border-erp-divider not-first:pt-[4px]">
+              <p className="px-[12px] pt-[10px] pb-[4px] text-[12px] font-semibold text-erp-sub">{s.title}</p>
               {s.options.map((o) => (
                 <button
                   key={o.key}

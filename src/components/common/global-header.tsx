@@ -168,8 +168,10 @@ export function ServiceLinks({ targets = {}, hideAddon = false }: { targets?: { 
 // ponytail: 읽지 않은 알림 여부를 받지 않는다. 알림 API 가 붙으면 unread prop 으로 점을 따로 그린다.
 export function AlarmLink({ href }: { href: string }) {
   return (
-    <Link href={href} aria-label="알림" className="shrink-0 rounded-full transition-opacity duration-150 ease-out hover:opacity-70">
+    // 실제 화면의 알림 종(NotificationBell)과 같은 호버 — 둥근 회청 테두리(2026-11-13)
+    <Link href={href} aria-label="알림" className="group relative shrink-0 rounded-full">
       <Image src="/icons/alarm.svg" alt="" width={42} height={42} />
+      <span aria-hidden className="pointer-events-none absolute inset-0 rounded-full border border-erp-brand opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
     </Link>
   );
 }

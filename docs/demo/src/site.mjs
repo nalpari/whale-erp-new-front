@@ -66,7 +66,7 @@ function scopeDropdown(A) {
   const storeOpt = (s) => opt(s[1], s[0], `${s[1]} ${s[0]}`, false);
   const sect = (title, items) =>
     items.length
-      ? `<div class="flex flex-col gap-[1px]" data-scope-sect>${title ? `<p class="px-[12px] pt-[10px] pb-[4px] text-[11px] font-semibold tracking-[0.04em] text-erp-muted uppercase">${title}</p>` : ""}${items.join("")}</div>`
+      ? `<div class="flex flex-col gap-[1px] not-first:mt-[6px] not-first:border-t not-first:border-erp-divider not-first:pt-[4px]" data-scope-sect>${title ? `<p class="px-[12px] pt-[10px] pb-[4px] text-[12px] font-semibold text-erp-sub">${title}</p>` : ""}${items.join("")}</div>`
       : "";
 
   const list =
