@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-13T06:54:24Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-13T07:01:17Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -37,11 +37,11 @@ sources:
   - id: payslip-edit
     resource: ../../src/app/payslips/[payslipId]/payslip-edit.ts
     title: 검토 화면 고칠 거리 — 임시저장 본문 · 추가 공제 붙이기 · 떼기 · 지난 명세서 불러오기 · 막힌 확정 판정 · 다시 보기 간격(server action actions.ts)
-    last_modified: 2026-11-13T06:54:24Z
+    last_modified: 2026-11-13T07:01:17Z
   - id: payslip-review
     resource: ../../src/app/payslips/[payslipId]/payslip-review.tsx
     title: 검토 화면 — 머리 버튼 · 지급 내역 · 확인창
-    last_modified: 2026-11-13T06:54:24Z
+    last_modified: 2026-11-13T07:01:17Z
 ---
 
 # api 로 그린다
