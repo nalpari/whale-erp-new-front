@@ -13,6 +13,15 @@ export function isExpiry(path: string, hasAuthorization: boolean): boolean {
   return hasAuthorization && !NOT_EXPIRY.includes(path.split("?")[0]);
 }
 
+/**
+ * request() 가 받은 실패를 어떻게 다룰지 — 만료가 아니면 null, 화면을 그리는 중이면 "login"(로그인 화면으로), 아니면 "mark"(ApiError 에 expired 표시).
+ * rendering 은 만료일 때만 묻는다(요청 머리를 읽는 일이라).
+ */
+export async function expiryHandlingOf(status: number, path: string, hasAuthorization: boolean, rendering: () => Promise<boolean>): Promise<"login" | "mark" | null> {
+  if (status !== 401 || !isExpiry(path, hasAuthorization)) return null;
+  return (await rendering()) ? "login" : "mark";
+}
+
 export const SESSION_EXPIRED_EVENT = "whale-erp:session-expired";
 
 /** 만료를 화면에 알린다. 여러 요청이 한꺼번에 실패해도 팝업은 하나다(팝업 쪽이 이미 열려 있으면 무시). */

@@ -3,7 +3,7 @@ import { redirect, unstable_rethrow } from "next/navigation";
 import { failureOf, type ActionFailure, type ActionLog, type FailureOptions } from "./action-failure.ts";
 import { ApiError } from "./api-error";
 import { EXPIRED_REASON, loginPathOf, RENDER_HEADER } from "./auth-routes";
-import { isExpiry } from "./session-expiry";
+import { expiryHandlingOf } from "./session-expiry";
 import { BP_HEADER, bpPath } from "./bp-path";
 import { forwardedForHeader } from "./forwarded-headers";
 import type { EnumValue } from "./enums";
@@ -42,10 +42,9 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     const error = await apiError(response);
     // 로그인이 끊긴 401: 화면을 그리는 중이면 로그인 화면으로 보내고(남은 쿠키는 그 주소에서 proxy 가 정리), 서버 액션 · BFF 면 표시만 남긴다 —
     // 액션에서 이동하면 「로그인 만료」 팝업 없이 넘어가고 대부분의 catch 가 이동 신호를 삼킨다. 표시는 expiredFailureOf · useAction 이 읽는다.
-    if (response.status === 401 && isExpiry(path, new Headers(init.headers).has("authorization"))) {
-      if (await isRenderRequest()) redirect(loginPathOf("/", "GET", EXPIRED_REASON));
-      error.expired = true;
-    }
+    const expiry = await expiryHandlingOf(response.status, path, new Headers(init.headers).has("authorization"), isRenderRequest);
+    if (expiry === "login") redirect(loginPathOf("/", "GET", EXPIRED_REASON));
+    if (expiry === "mark") error.expired = true;
     throw error;
   }
 

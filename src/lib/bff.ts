@@ -1,6 +1,6 @@
 // 브라우저에서 api 를 부를 때 쓴다. /api/* (src/app/api/[...path]/route.ts)가 토큰을 붙여 대신 부른다.
-import { BP_HEADER, bpOfPath } from "./bp-path";
-import { expiringFetch, notifySessionExpired } from "./session-expiry";
+import { BP_HEADER, bpOfPath } from "./bp-path.ts";
+import { expiringFetch, notifySessionExpired } from "./session-expiry.ts";
 
 /** api 403 「서비스 이용을 위해 비밀번호를 변경해 주세요.」를 받으면 window 에 보내는 이벤트. SessionGate 가 강제 변경 팝업을 다시 띄운다. */
 export const PASSWORD_REQUIRED_EVENT = "whale-erp:password-required";
@@ -10,12 +10,12 @@ const PASSWORD_REQUIRED_MESSAGE = "서비스 이용을 위해 비밀번호를 �
 const ACCOUNT_UNAVAILABLE_MESSAGE = "사용할 수 없는 계정입니다. 관리자에게 문의해 주세요.";
 
 export class BffError extends Error {
-  constructor(
-    /** 0 은 연결 실패 */
-    readonly status: number,
-    message: string,
-  ) {
+  /** 0 은 연결 실패 */
+  readonly status: number;
+  // 매개변수 속성(readonly status)은 node --test 의 타입 지우기가 읽지 못해 필드로 둔다(bff.test.ts)
+  constructor(status: number, message: string) {
     super(message);
+    this.status = status;
   }
 }
 
@@ -47,7 +47,7 @@ export async function bff<T>(path: string, tabBp?: number): Promise<T> {
 export const isSessionExpired = (e: unknown): boolean => e instanceof BffError && e.status === 401;
 
 /**
- * 같은 출처의 받기 · 올리기 창구(엑셀 · 공지 · 문의 · 종이 계약)를 부르는 fetch. 401 이면 「로그인 만료」 팝업을 띄우고 결과를 넘기지 않는다
+ * 같은 출처의 받기 · 올리기 창구(엑셀 · 공지 · 문의 · 종이 계약 · 시설물 문서 · 일괄 등록)를 부르는 fetch. 401 이면 「로그인 만료」 팝업을 띄우고 결과를 넘기지 않는다
  * (session-expiry.ts expiringFetch). 로그인한 화면은 fetch 를 직접 쓰지 않고 이것을 쓴다(expiry-guard.test.ts G5).
  */
 export const fetchSameOrigin: typeof fetch = (input, init) => expiringFetch(fetch)(input, init);
