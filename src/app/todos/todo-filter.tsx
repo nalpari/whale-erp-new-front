@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useEffectEvent, useOptimistic, useTransition } from "react";
-import { Checkbox, DateField, FilterPanel, FilterSection, Select, useToast } from "@/components/common";
+import { useEffect, useEffectEvent, useOptimistic, useState, useTransition } from "react";
+import { Checkbox, DateField, FilterPanel, FilterSection, SearchField, Select, Tag, useToast } from "@/components/common";
 import { useCurrentBp, useScope, useStores } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import { StorePicker } from "@/components/site/store-picker";
@@ -11,6 +11,7 @@ import { isUnusableScope, scopeStores, toPickedStore } from "@/lib/store-scope";
 import { fillScopeOf } from "../stores/stores-query";
 import {
   DEFAULT_TODO_LIST_QUERY,
+  MAX_ASSIGNEE_NAME_LENGTH,
   toTodoListSearch,
   withFilter,
   withPickedStores,
@@ -37,6 +38,8 @@ export function TodoFilter({ query, statusLabels, assigneeTypeLabels }: { query:
   const toast = useToast();
   const [, startTransition] = useTransition();
   const [current, setCurrent] = useOptimistic(query);
+  // 초기화하면 이름 칸(입력 중인 글 포함)도 비운다 — 직원 목록 검색칸과 같다
+  const [resets, setResets] = useState(0);
   const navigate = (next: TodoListQuery) =>
     startTransition(() => {
       setCurrent(next);
@@ -70,7 +73,12 @@ export function TodoFilter({ query, statusLabels, assigneeTypeLabels }: { query:
   useEffect(() => dropUnknown(), [missingCount, unusable]);
 
   return (
-    <FilterPanel onReset={() => navigate({ ...DEFAULT_TODO_LIST_QUERY, scope: headerScope })}>
+    <FilterPanel
+      onReset={() => {
+        setResets((n) => n + 1);
+        navigate({ ...DEFAULT_TODO_LIST_QUERY, scope: headerScope });
+      }}
+    >
       <FilterSection label="근무지" tight>
         <StorePicker picked={chips} onChange={(next) => navigate(withPickedStores(current, next.map((s) => s.storeId)))} />
       </FilterSection>
@@ -84,6 +92,16 @@ export function TodoFilter({ query, statusLabels, assigneeTypeLabels }: { query:
           />
         ))}
       </FilterSection>
+      {current.staffMemberId !== null && (
+        <FilterSection label="직원" tight>
+          <div className="flex items-center justify-between gap-[8px]">
+            <Tag>직원 지정</Tag>
+            <button type="button" className="cursor-pointer text-[14px] text-erp-link hover:underline" onClick={() => go({ staffMemberId: null })}>
+              조건 지우기
+            </button>
+          </div>
+        </FilterSection>
+      )}
       <FilterSection label="담당직원" tight>
         <Select aria-label="담당직원" value={current.assigneeType} onChange={(e) => go({ assigneeType: e.target.value as TodoAssigneeType | "" })}>
           <option value="">전체</option>
@@ -93,6 +111,15 @@ export function TodoFilter({ query, statusLabels, assigneeTypeLabels }: { query:
             </option>
           ))}
         </Select>
+        {/* 이름 일부로 찾는다 — 개인 배정은 그 직원, 근무지 전체는 대상 직원 가운데 한 명(WHALEERP-713) */}
+        <SearchField
+          key={`assignee-${current.assigneeName}-${resets}`}
+          defaultValue={current.assigneeName}
+          placeholder="직원 이름"
+          aria-label="담당직원 이름"
+          maxLength={MAX_ASSIGNEE_NAME_LENGTH}
+          onSearch={(value) => go({ assigneeName: value.trim() })}
+        />
       </FilterSection>
       <FilterSection label="긴급">
         <Checkbox label="긴급만" checked={current.urgentOnly} onChange={(e) => go({ urgentOnly: e.target.checked })} />

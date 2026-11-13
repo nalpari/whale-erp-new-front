@@ -27,7 +27,7 @@ const item = (more: Partial<SendLogItem> = {}): SendLogItem => ({
 
 test("성공 — 한국 시각, 종류, 초록 배지, 재시도 · 사유는 -", () => {
   assert.deepEqual(sendLogLine(item(), kindLabel, resultLabel), {
-    key: 1,
+    key: "SIGNUP_INVITE-1",
     contractId: 7,
     sentAt: "2026-10-29 09:05",
     kind: "가입 초대",
@@ -68,4 +68,18 @@ test("목록에 없는 값 · enum 을 못 받으면 종류 · 결과는 비운�
 test("한글이 있는 새 결과 값은 회색 배지 — 빈칸이 되지 않는다", () => {
   const line = sendLogLine(item({ result: "QUEUED" as SendLogItem["result"] }), kindLabel, labelIn([{ value: "QUEUED", label: "대기" }]));
   assert.deepEqual(line.result, { text: "대기", style: "badge-neutral" });
+});
+
+test("비밀번호 초기화 메일 줄(WHALEERP-676) — contractId 가 null 이어도 줄이 만들어지고 재발송 · 재시도는 -", () => {
+  const mail: Partial<SendLogItem> = { contractId: null, kind: "PASSWORD_RESET", isResend: false, result: "SUCCEEDED", retryable: null };
+  const labels = labelIn([{ value: "PASSWORD_RESET", label: "비밀번호 초기화" }]);
+  const line = sendLogLine(item(mail), labels, resultLabel);
+  assert.deepEqual([line.contractId, line.kind, kindText(line), line.retry, line.result?.style], [null, "비밀번호 초기화", "비밀번호 초기화", "-", "badge-on"]);
+});
+
+test("sendLogId 가 같은 알림톡 줄과 메일 줄은 key 가 겹치지 않는다", () => {
+  const labels = labelIn([{ value: "PASSWORD_RESET", label: "비밀번호 초기화" }]);
+  const a = sendLogLine(item({ sendLogId: 5 }), kindLabel, resultLabel);
+  const b = sendLogLine(item({ sendLogId: 5, kind: "PASSWORD_RESET", contractId: null }), labels, resultLabel);
+  assert.notEqual(a.key, b.key);
 });

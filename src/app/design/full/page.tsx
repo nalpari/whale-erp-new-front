@@ -1,4 +1,5 @@
 import {
+  AccountControls,
   AlarmLink,
   DataTable,
   GlobalHeader,
@@ -28,8 +29,7 @@ export default function DesignFullPage() {
             <>
               <StoreSelect options={STORES} />
               <ServiceLinks />
-              <AlarmLink href="#" />
-              <UserPop name="김지영 (admin)" items={USER_ITEMS} />
+              <AccountControls alarm={<AlarmLink href="#" />} user={<UserPop name="김지영 (admin)" items={USER_ITEMS} />} />
             </>
           }
         />

@@ -7,6 +7,7 @@ import type { NotificationItem } from "@/lib/notifications";
 import { formatDateTime } from "@/lib/format";
 import { type NotificationQuery } from "@/lib/notification-view";
 import { PAGE_SIZES } from "@/lib/staff-members";
+import { usePlatformOpen } from "@/components/notifications/use-platform-open";
 import { deleteAction, readAllAction } from "./actions";
 
 // 데모 staff-parts.mjs 의 회색 배지(quiet). 공통 Badge 에는 on · off 두 가지뿐이다.
@@ -37,6 +38,7 @@ export function NotificationList({
   const search = useSearchParams();
   const toast = useToast();
   const readAll = useAction(readAllAction, { overlay: false });
+  const platformOpen = usePlatformOpen();
   const deleteItems = useAction(deleteAction, { overlay: false });
   const [picked, setPicked] = useState<Set<number>>(new Set());
   const [dialog, setDialog] = useState<"readAll" | "delete" | null>(null);
@@ -98,7 +100,7 @@ export function NotificationList({
       cell: (n) => (
         // 제목 · 내용 두 줄 사이를 띄운다 — 46px 줄 안에 줄간 없이 붙어 답답했다(2026-11-04 사용자 지적). 줄 높이 20 · 18px + 사이 3px, 위아래 7px 라
         // 이 표의 줄은 55px 로 조금 높다(한 줄짜리 표는 46px 그대로)
-        <a href={`/notifications/${n.id}/open`} className="flex min-w-0 flex-col gap-[3px] py-[7px] hover:underline">
+        <a href={`/notifications/${n.id}/open`} onClick={(e) => platformOpen(e, n)} className="flex min-w-0 flex-col gap-[3px] py-[7px] hover:underline">
           {/* 종 팝업과 같은 규칙(2026-11-06 사용자 지정): 제목은 읽어도 먹색, 안 읽은 것만 굵게 + 제목 앞 빨간 점(전엔 따로 둔 점 칸이라 왼쪽만 비었다).
               내용은 14px 회색 */}
           <span className={`flex min-w-0 items-center gap-[6px] leading-[20px] text-erp-ink ${n.isRead ? "font-medium" : "font-semibold"}`}>

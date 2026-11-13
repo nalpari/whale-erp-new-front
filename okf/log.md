@@ -2,6 +2,11 @@
 
 ## 2026-11-13
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 저장 뒤 안내 쿠키를 path `/` · 이름 `contract-saved-{bpCodeId}` 로 바꿨다. 직원 정보 관리 [직원 초대]로 들어와 임시저장 · 서명 요청하면 목록에 안내 띠가 뜨지 않던 것(WHALEERP-697 — 처음 연 문서 주소 밖 path 의 쿠키가 소프트 이동 뒤 `document.cookie` 에 보이지 않음, front shuckle).
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) · [Whale ERP Frontend](/whale-erp-front.md) — 직원 상세 TO-DO · 급여명세서 [관리]가 그 직원으로 걸러 열린다(WHALEERP-677: TO-DO 는 `staffMemberId`, 급여명세서는 `staffName` + 근무지, TO-DO 목록 필터에 「직원 지정」). 발송 이력은 `contractId` null(비밀번호 초기화 메일, WHALEERP-676)이면 계약 링크 없이 글자만, 목록 key 는 `종류-sendLogId`, 빈 문구 「보낸 이력이 없습니다.」, 타입은 api seongsan openapi 로 재생성.
+* **Update**: [Payslips](/screens/payslips.md) — 리뷰 반영(WHALEERP-690): 검토 화면의 오늘은 page 가 서버에서 정해 넘기고(서버 렌더와 날짜가 어긋나지 않게), [확정]이 막혀 있으면 브라우저의 한국 날짜가 확정 가능일에 닿았을 때(그날 자정 · 볼 때가 지난 뒤 화면 · 창 복귀)만 화면을 새로 받아 열어 둔 채 그날이 와도 풀린다. 받았는데도 막혀 있으면 1분에서 두 배씩 늘려 30분 간격까지 다시 보고(돌아왔을 때는 볼 때가 지났을 때만, 처음 열 때는 받지 않음), 저장하지 않은 입력이 있으면 미룬다.
+* **Update**: [Payslips](/screens/payslips.md) — 통합테스트 반영(WHALEERP-688 · 689 · 690): 단건 작성은 토스트 「급여명세서를 작성했습니다.」 뒤 검토 화면으로 가고(action 이 redirect 대신 주소를 돌려준다), 지난 명세서가 없으면 확인창을 닫고 토스트로 알리며, 상세의 `confirmableFrom` 전에는 [확정]을 막고 「YYYY-MM-DD부터 확정할 수 있습니다.」를 둔다(api 상세에 같은 판정의 확정 가능일을 더함). `api-types.generated.ts` 는 이 필드만 반영했다 — 다시 만들면 아직 안 받은 시설 api 가 함께 들어온다.
+* **Update**: [운영 알림](/notify.md) — 웨일ERP 탭에서 플랫폼 화면 알림(문의사항 · 도입문의 접수 등)을 누르면 플랫폼을 새 탭으로 바로 연다(`usePlatformOpen`). 전엔 「접근 권한이 없는 메뉴입니다.」로 막혔다.
+* **Update**: [운영 알림](/notify.md) — 종 툴팁 · 팝업 머리를 「내 알림」(+ 이름 꼬리표)으로, 헤더에서 종 · 사용자 알약 앞에 세로 구분선(`AccountControls`). 플랫폼 계정이 BP 화면에서 종을 그 BP 의 알림으로 읽지 않게.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 세션 없는 요청 통과를 화면 주소로 온 POST 서버 액션으로 좁혔다. `next-action` 헤더 · login-key 쿠키를 꾸민 GET 이 로그인 없이 화면을 그리던 것, fetch 창구까지 통과시키던 것(PR #256 적대적 리뷰).
 * **Update**: [출퇴근 현황 화면](/screens/attendance-records.md) · [Whale ERP Frontend](/whale-erp-front.md) — 통합테스트 반영: 출퇴근 대신 등록은 날짜를 바꿔도 고른 직원을 유지(IT-ATT-003), 근로계약 상세 재발송 완료 토스트(IT-CONT-006)(front wobbuffet).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 값이 틀린 입력칸의 빨간 테두리를 없앴다(공통 `FIELD_BOX` 의 `aria-invalid:border-erp-off` 제거, 점포유형 카드 빨간 테두리 제거). 칸 아래 빨간 문구만 — DESIGN.md 「오류 문구 자리」대로(통합테스트 IT-STORE-002, front togedemaru).

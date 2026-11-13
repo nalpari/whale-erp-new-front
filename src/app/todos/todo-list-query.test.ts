@@ -27,6 +27,7 @@ test("parse(toSearch(q)) 는 q", () => {
     storeIds: [3, 7],
     statuses: ["PENDING" as const, "IN_PROGRESS" as const],
     assigneeType: "ALL" as const,
+    assigneeName: "김 하늘",
     urgentOnly: true,
     dueDateFrom: "2026-10-01",
     dueDateTo: "2026-10-31",
@@ -69,6 +70,16 @@ test("api 쿼리 — 상태는 같은 이름을 되풀이하고, 셋 다면 뺀�
   assert.equal(params.get("dueDateFrom"), "2026-10-01");
   assert.equal(params.has("dueDateTo"), false);
   assert.equal(params.get("page"), "3");
+});
+
+test("담당직원 이름(WHALEERP-713) — 주소에 남고 api 에 실린다, 앞뒤 공백은 지우고 50자에서 자른다", () => {
+  assert.equal(parseTodoListQuery({ assigneeName: "  하늘 " }).assigneeName, "하늘");
+  assert.equal(parseTodoListQuery({ assigneeName: "   " }).assigneeName, "");
+  assert.equal(parseTodoListQuery({ assigneeName: "가".repeat(60) }).assigneeName, "가".repeat(50));
+  assert.equal(parseTodoListQuery({ assigneeName: `${"가".repeat(49)} 나` }).assigneeName, "가".repeat(49), "자른 끝의 공백도 지운다");
+  assert.equal(toTodoListSearch({ ...DEFAULT_TODO_LIST_QUERY, assigneeName: "김%_" }), "?assigneeName=%EA%B9%80%25_");
+  assert.equal(new URLSearchParams(todoListApiSearch({ ...DEFAULT_TODO_LIST_QUERY, assigneeName: "하늘" }) ?? "").get("assigneeName"), "하늘");
+  assert.equal(new URLSearchParams(todoListApiSearch(DEFAULT_TODO_LIST_QUERY) ?? "").has("assigneeName"), false);
 });
 
 test("0건이 확실한 조건은 api 를 부르지 않는다 — 상태를 하나도 안 골랐거나 기간이 거꾸로", () => {
@@ -151,4 +162,21 @@ test("빈 쪽 — 1쪽이 아니면 남은 마지막 쪽(없으면 1쪽)으로, 
   // 줄이 있거나 1쪽이면 그대로
   assert.equal(emptyPageHref(q, 1, 41), null);
   assert.equal(emptyPageHref({ ...q, page: 1 }, 0, 0), null);
+});
+
+test("직원 조건(staffMemberId) — 주소 왕복 · api 로 전달 · 다른 필터와 함께 · 이상한 값은 버림 · 필터 변경에도 유지, 초기화(기본값)에서는 사라짐", () => {
+  const q = { ...DEFAULT_TODO_LIST_QUERY, storeIds: [7], staffMemberId: 42, statuses: ["PENDING" as const], urgentOnly: true, page: 3 };
+  const search = toTodoListSearch(q);
+  assert.equal(new URLSearchParams(search).get("staffMemberId"), "42");
+  assert.deepEqual(parseTodoListQuery(Object.fromEntries(new URLSearchParams(search))), q);
+  const api = new URLSearchParams(todoListApiSearch(q) ?? "");
+  assert.equal(api.get("staffMemberId"), "42");
+  assert.equal(api.get("storeIds"), "7");
+  assert.deepEqual(api.getAll("status"), ["PENDING"]);
+  assert.equal(api.get("isUrgent"), "true");
+  for (const bad of ["0", "-1", "abc", "1.5", "", "99999999999"]) assert.equal(parseTodoListQuery({ staffMemberId: bad }).staffMemberId, null);
+  assert.equal(withFilter(q, { urgentOnly: false }).staffMemberId, 42);
+  assert.equal(withFilter(q, { staffMemberId: null }).staffMemberId, null);
+  assert.equal(new URLSearchParams(toTodoListSearch(DEFAULT_TODO_LIST_QUERY)).has("staffMemberId"), false);
+  assert.equal(new URLSearchParams(todoListApiSearch(DEFAULT_TODO_LIST_QUERY) ?? "").has("staffMemberId"), false);
 });

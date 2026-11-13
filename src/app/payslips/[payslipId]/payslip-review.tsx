@@ -1,7 +1,7 @@
 "use client";
 
 import { unstable_rethrow, useRouter } from "next/navigation";
-import { useState, useTransition, type ReactNode } from "react";
+import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { Button, ConfirmDialog, DetailTable, Field, FormGroup, FormRow, Select, TextField, Toggle, useAction, useToast } from "@/components/common";
 import { useCurrentBp, usePagePermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
@@ -27,7 +27,16 @@ import {
   sendPayslip,
   type EditFailure,
 } from "./actions";
-import { addAdditionalLine, applyPrevious, removeLine, saveItems } from "./payslip-edit";
+import {
+  addAdditionalLine,
+  applyPrevious,
+  blockedRecheck,
+  confirmBlockedUntil,
+  nextRecheckMs,
+  RECHECK_FIRST_MS,
+  removeLine,
+  saveItems,
+} from "./payslip-edit";
 
 // 급여명세서 검토의 머리(임시저장 · 확정 · 발송 · 목록)와 왼쪽 「지급 내역」. 데모 docs/demo/staff/payrolls-detail.html(원본
 // src/pages/staff/payrolls-detail.mjs)과 목업 docs/mockup/staff/payrolls-detail.html 의 3.3% 원천징수 칸을 옮겼다.
@@ -142,12 +151,15 @@ export function PayslipReview({
   payslip,
   band,
   listHref,
+  today,
   aside,
 }: {
   payslip: PayslipDetail;
   /** 위쪽 경고 띠(reviewBand). 없으면 null */
   band: { title: string; desc: string } | null;
   listHref: string;
+  /** 오늘(한국 날짜) — 서버가 정해 넘긴다. 화면에서 다시 재면 서버 렌더와 날짜가 어긋날 수 있다 */
+  today: string;
   /** 오른쪽 단(검토 대상 항목 · 급여 산정 기준 · 처리 이력) */
   aside: ReactNode;
 }) {
@@ -167,6 +179,8 @@ export function PayslipReview({
   const editable = canUpdate && (payslip.status === "DRAFTING" || payslip.status === "REVIEWING");
   const isPartTime = payslip.employmentType === "PART_TIME";
   const month = payslip.periodStartDate.slice(0, 7);
+  // 급여 기간이 끝나기 전(퇴직 · 계약 종료면 그다음 날 전)에는 [확정]을 막고 그날을 알린다(WHALEERP-690)
+  const blockedUntil = confirmBlockedUntil(payslip.confirmableFrom, today);
 
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [failure, setFailure] = useState<EditFailure | null>(null);
@@ -189,6 +203,43 @@ export function PayslipReview({
     JSON.stringify([p, w, saveItems(lines, values).items]);
   const [saved] = useState(() => snapshot(items, texts, premium, withholding));
   const dirty = snapshot(items, texts, premium, withholding) !== saved;
+  // [확정]이 막혀 있으면 확정 가능일이 된 뒤 화면을 새로 받아 서버가 새 날짜(today)로 다시 판정하게 한다 — 열어 둔 채 그날이 와도 풀리게(WHALEERP-690).
+  // 브라우저의 한국 날짜가 확정 가능일에 닿았을 때만 새로 받는다(그 전 자정에는 받지 않는다, blockedRecheck). 받았는데도 막혀 있으면(PC 시계가 빠름)
+  // 1분에서 두 배씩 늘려 30분 간격까지 다시 본다 — 시계가 며칠 빨라도 자주 받지 않게. 풀리면 blockedUntil 이 null 이 되어 멈춘다.
+  // 화면 · 창으로 돌아왔을 때는 볼 때가 지났으면(잠자기로 타이머가 밀림) 바로 본다 — 이벤트가 둘 와도 한 번, 간격은 그대로. 처음 열 때는 바로 받지 않는다.
+  // 저장하지 않은 입력이 있으면 미룬다 — 그사이 다른 사람이 저장했으면 새로 받을 때 입력이 사라질 수 있다(확정도 어차피 저장 뒤에만 된다).
+  useEffect(() => {
+    if (blockedUntil === null || dirty) return;
+    let timer: ReturnType<typeof setTimeout>;
+    let retryMs = RECHECK_FIRST_MS;
+    let dueAt = 0;
+    const schedule = (delayMs: number) => {
+      clearTimeout(timer);
+      dueAt = Date.now() + delayMs;
+      timer = setTimeout(check, delayMs);
+    };
+    const check = () => {
+      const plan = blockedRecheck(blockedUntil, new Date(), retryMs);
+      if (plan.refresh) {
+        router.refresh();
+        retryMs = nextRecheckMs(retryMs);
+      } else retryMs = RECHECK_FIRST_MS;
+      schedule(plan.delayMs);
+    };
+    const handleReturn = () => {
+      if (document.visibilityState === "visible" && Date.now() >= dueAt) check();
+    };
+    // 방금 서버가 그린 화면이라 처음에는 받지 않고 다음 볼 때를 잡는다
+    const first = blockedRecheck(blockedUntil, new Date(), retryMs);
+    schedule(first.refresh ? retryMs : first.delayMs);
+    document.addEventListener("visibilitychange", handleReturn);
+    window.addEventListener("focus", handleReturn);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", handleReturn);
+      window.removeEventListener("focus", handleReturn);
+    };
+  }, [blockedUntil, dirty, router]);
 
   const totals = payslipTotals(items, new Map(items.map((i) => [i.payslipItemId, parseAmount(texts.get(i.payslipItemId) ?? "")])), withholding);
   const shown = items.filter((i) => isItemShown(i, withholding));
@@ -254,7 +305,11 @@ export function PayslipReview({
     startBusy(async () => {
       const result = await callAction(() => loadPrevious(payslip.payslipId));
       if (!result.ok) return setFailure(result);
-      if (!result.previous) return setFailure({ ok: false, message: "불러올 지난 명세서가 없습니다." });
+      // 없으면 확인창을 닫고 토스트로 알린다(WHALEERP-689) — 창 안에 남기면 할 수 있는 일이 없다
+      if (!result.previous) {
+        setDialog(null);
+        return toast("불러올 지난 명세서가 없습니다.");
+      }
       const next = applyPrevious(items, texts, result.previous);
       setItems(next.lines);
       setTexts(next.texts);
@@ -306,7 +361,10 @@ export function PayslipReview({
               <Button variant="soft" onClick={() => open("save")}>
                 임시저장
               </Button>
-              <Button onClick={() => open("confirm")}>확정</Button>
+              {blockedUntil && <span className="self-center text-[13px] text-erp-label">{blockedUntil}부터 확정할 수 있습니다.</span>}
+              <Button disabled={blockedUntil !== null} onClick={() => open("confirm")}>
+                확정
+              </Button>
             </>
           )}
           {canUpdate && (payslip.status === "CONFIRMED" || payslip.status === "SENT") && (
