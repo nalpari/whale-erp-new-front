@@ -4514,9 +4514,6 @@
     cursor: grabbing;
   }
   @media (hover: hover) {
-    .enabled\:hover\:border-erp-brand:enabled:hover {
-      border-color: var(--color-erp-brand);
-    }
     .enabled\:hover\:text-erp-brand:enabled:hover {
       color: var(--color-erp-brand);
     }
