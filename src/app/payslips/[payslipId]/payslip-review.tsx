@@ -1,10 +1,11 @@
 "use client";
 
 import { unstable_rethrow, useRouter } from "next/navigation";
-import { useState, useTransition, type ReactNode } from "react";
+import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { Button, ConfirmDialog, DetailTable, Field, FormGroup, FormRow, Select, TextField, Toggle, useAction, useToast } from "@/components/common";
 import { useCurrentBp, usePagePermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
+import { kstToday } from "@/lib/staff-members";
 import {
   formatAmount,
   isItemShown,
@@ -27,7 +28,7 @@ import {
   sendPayslip,
   type EditFailure,
 } from "./actions";
-import { addAdditionalLine, applyPrevious, confirmBlockedUntil, removeLine, saveItems } from "./payslip-edit";
+import { addAdditionalLine, applyPrevious, confirmBlockedUntil, msUntilNextKstDay, removeLine, saveItems } from "./payslip-edit";
 
 // 급여명세서 검토의 머리(임시저장 · 확정 · 발송 · 목록)와 왼쪽 「지급 내역」. 데모 docs/demo/staff/payrolls-detail.html(원본
 // src/pages/staff/payrolls-detail.mjs)과 목업 docs/mockup/staff/payrolls-detail.html 의 3.3% 원천징수 칸을 옮겼다.
@@ -38,6 +39,11 @@ import { addAdditionalLine, applyPrevious, confirmBlockedUntil, removeLine, save
 // POST /payslips/:id/recalculate 를 부르고(고친 값은 버린다), 가산 스위치는 임시저장 때 api 가 그 값으로 다시 계산한다.
 // 경고 띠의 「출퇴근 기록 확인」은 출·퇴근 현황 조회(보정이 필요한 기록)를 그 점포 · 직원 · 급여 기간으로 연다.
 // 고칠 수 있는 것은 작성 중 · 검토 중이고 수정 권한이 있을 때뿐이다 — 확정 · 발송 완료는 읽기만 하고 「확정 취소」와 「발송」 · 「재발송」만 둔다(okf/staff.md 급여).
+
+/** 날이 바뀐 것을 보고 새로 받았는데 서버 날짜가 아직 그대로일 때 다시 볼 간격 */
+const DAY_CHECK_RETRY_MS = 60_000;
+/** 그렇게 연달아 다시 볼 횟수 */
+const DAY_CHECK_RETRIES = 5;
 
 type Dialog = "save" | "confirm" | "cancel" | "send" | "resend" | "load" | "add" | "preview" | "recalc";
 
@@ -194,6 +200,37 @@ export function PayslipReview({
     JSON.stringify([p, w, saveItems(lines, values).items]);
   const [saved] = useState(() => snapshot(items, texts, premium, withholding));
   const dirty = snapshot(items, texts, premium, withholding) !== saved;
+  // [확정]이 막혀 있으면 날이 바뀐 뒤 화면을 새로 받아 서버가 새 날짜(today)로 다시 판정하게 한다 — 열어 둔 채 날이 바뀌어도 풀리게(WHALEERP-690).
+  // 브라우저의 한국 날짜가 서버의 today 를 지났을 때만 새로 받고, 받았는데도 today 가 그대로면(PC 시계가 빠름) 1분 뒤 다시 본다(5번까지).
+  // today 가 바뀌면 effect 가 다시 돌아 다음 자정을 잡는다. 화면으로 돌아오면(잠자기 · 다른 탭) 바로 본다.
+  // 저장하지 않은 입력이 있으면 미룬다 — 그사이 다른 사람이 저장했으면 새로 받을 때 입력이 사라질 수 있다(확정도 어차피 저장 뒤에만 된다).
+  useEffect(() => {
+    if (blockedUntil === null || dirty) return;
+    let timer: ReturnType<typeof setTimeout>;
+    let retries = 0;
+    const check = () => {
+      clearTimeout(timer);
+      // 연달아 다시 받는 것은 몇 번까지만 — PC 시계가 하루 넘게 빠르면 1분마다 끝없이 받지 않고 다음 자정을 기다린다
+      if (kstToday() > today && retries < DAY_CHECK_RETRIES) {
+        retries += 1;
+        router.refresh();
+        timer = setTimeout(check, DAY_CHECK_RETRY_MS);
+      } else {
+        // 다음 자정에는 다시 몇 번 볼 수 있게 센 것을 비운다 — 그날 서버 날짜가 바뀌었으면 그때 받아 온다
+        retries = 0;
+        timer = setTimeout(check, msUntilNextKstDay(new Date()) + 1000);
+      }
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") check();
+    };
+    check();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [blockedUntil, dirty, today, router]);
 
   const totals = payslipTotals(items, new Map(items.map((i) => [i.payslipItemId, parseAmount(texts.get(i.payslipItemId) ?? "")])), withholding);
   const shown = items.filter((i) => isItemShown(i, withholding));

@@ -70,3 +70,11 @@ export function applyPrevious(
 export function confirmBlockedUntil(confirmableFrom: string | null, today: string): string | null {
   return confirmableFrom !== null && today < confirmableFrom ? confirmableFrom : null;
 }
+
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** 지금부터 다음 한국 자정까지 남은 밀리초 — 막힌 [확정]을 날이 바뀌면 다시 판정하려고 쓴다(한국은 서머타임이 없다) */
+export function msUntilNextKstDay(now: Date): number {
+  return DAY_MS - ((now.getTime() + KST_OFFSET_MS) % DAY_MS);
+}

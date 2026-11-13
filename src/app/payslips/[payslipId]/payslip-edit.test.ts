@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PayslipItem, PayslipPrevious } from "../../../lib/payslips.ts";
-import { addAdditionalLine, applyPrevious, confirmBlockedUntil, removeLine, saveItems } from "./payslip-edit.ts";
+import { addAdditionalLine, applyPrevious, confirmBlockedUntil, msUntilNextKstDay, removeLine, saveItems } from "./payslip-edit.ts";
 
 const item = (over: Partial<PayslipItem>): PayslipItem => ({
   payslipItemId: 1,
@@ -84,4 +84,11 @@ test("확정할 수 있는 첫날 전이면 그날을, 그날부터는 null — 
   assert.equal(confirmBlockedUntil("2026-12-01", "2026-12-01"), null);
   assert.equal(confirmBlockedUntil("2026-12-01", "2026-12-02"), null);
   assert.equal(confirmBlockedUntil(null, "2026-11-30"), null);
+});
+
+test("다음 한국 자정까지 남은 시간 — UTC 15시가 한국 자정이고, 자정 바로 그때는 0 이 아니라 하루(연달아 새로 받지 않게)", () => {
+  assert.equal(msUntilNextKstDay(new Date("2026-11-30T14:59:00.000Z")), 60_000);
+  assert.equal(msUntilNextKstDay(new Date("2026-11-30T15:00:00.000Z")), 24 * 60 * 60 * 1000);
+  assert.equal(msUntilNextKstDay(new Date("2026-11-30T15:00:00.001Z")), 24 * 60 * 60 * 1000 - 1);
+  assert.equal(msUntilNextKstDay(new Date("2026-11-30T03:00:00.000Z")), 12 * 60 * 60 * 1000);
 });
