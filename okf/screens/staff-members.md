@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입 상태 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [수정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-13T19:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-13T20:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -48,8 +48,8 @@ sources:
     last_modified: 2026-10-23T05:20:57Z
   - id: staff-table
     resource: ../../src/app/staff-members/staff-table.tsx
-    title: 목록 표 — 가입 상태 칸의 재발송 버튼, 가린 행의 이름 자리, 휴대전화번호 아이콘, 상세 링크에 목록 주소 ?back=, 빈 상태 fillEmpty
-    last_modified: 2026-11-09T05:36:58Z
+    title: 목록 표 — 가입 상태 칸의 재발송 버튼, 가린 행의 이름 자리, 휴대전화번호 아이콘, 상세 링크에 목록 주소 ?back=, 빈 상태 fillEmpty, 계약 상태 칸 240px(꼬리표)
+    last_modified: 2026-11-13T20:00:00Z
   - id: staff-list-page
     resource: ../../src/app/staff-members/page.tsx
     title: 직원 목록 화면 — 도구 줄 [일괄 저장]는 BP 마스터 · 가맹마스터에게만(bulk-export-button.tsx), 빈 목록 문구 가르기
@@ -140,8 +140,8 @@ sources:
     last_modified: 2026-10-26T03:31:34Z
   - id: staff-row
     resource: ../../src/app/staff-members/staff-row.ts
-    title: 한 줄 표시 규칙(배지 · D-day · 재직 칸 · 재발송 판정 · 상세 초대 줄). 계약 상태 이름은 GET /enums/ContractStatus 에서 받는다(WHALEERP-659). 갱신 예정 날수(RENEWAL_NOTICE_DAYS)를 상세 근로계약 칸과 함께 쓴다
-    last_modified: 2026-11-09T09:00:00Z
+    title: 한 줄 표시 규칙(배지 · D-day · 재직 칸 · 재발송 판정 · 상세 초대 줄 · 연장 재계약 꼬리표(WHALEERP-672)). 계약 상태 이름은 GET /enums/ContractStatus 에서 받는다(WHALEERP-659). 갱신 예정 날수(RENEWAL_NOTICE_DAYS)를 상세 근로계약 칸과 함께 쓴다
+    last_modified: 2026-11-13T20:00:00Z
   - id: retirement
     resource: ../../src/lib/retirement.ts
     title: 퇴직 처리 판정 — 상세 머리 버튼 · 퇴직일 범위 검사(WHALEERP-585)
@@ -172,6 +172,10 @@ sources:
 * 목록 「계약 상태」 칸(`contractCell`)의 상태 이름은 `GET /enums/ContractStatus` 이름을 그대로 쓰고 「· D-n」(직원 서명 대기) · 「· MM-DD」(서명 거절)
   꼬리만 화면이 붙인다. 이름을 받지 못하면(enum 조회 실패도 목록은 그린다) 영문 값 대신 「-」(상세 근로계약 칸과 같다), 「갱신 예정 D-n」은 이름을 쓰지 않아 그대로 보인다. 「직원 서명 대기 · D-24」가 한 줄에 들게 칸을 160 → 200px 로
   넓혔다(WHALEERP-659, 2026-11-09).
+* 연장 재계약(목록 `contract.isRenewal` 이 true — 같은 직원 레코드에 새 계약을 붙인 재직 직원의 재계약)의 서명 대기 · 직원 수정 요청은 재직 칸이 「재직」(퇴직 예정이 있으면 「재직 + 퇴직 예정 MM-DD」)이고
+  계약 칸이 회색 꼬리표(Tag) 「재계약」 + 지금과 같은 상태 배지다(WHALEERP-672, 2026-11-13 홍기 확정). 처음 맺는 계약과 퇴직 뒤 다시 들어온 재입사 재계약(isRenewal false)의 서명 대기는 재직 칸 「서명 대기」 그대로,
+  연장 재계약의 거절 · 만료(· 임시저장)는 api 가 대표 계약으로 세우지 않아(NOT_IDLE_RENEWAL) 직전 체결 계약이 그대로 보인다(재직 + 서명 완료 등). 「재발송 필요」는 첫 계약 · 재입사 재계약뿐이다. 꼬리표가 들어가게 계약 칸을 200 → 240px 로 넓혔다(줄어드는 건 점포 칸뿐). 예전 홈 「점포 하나」 화면은
+  없어졌고(HOM-05) `contractCell` 은 직원 목록만 쓴다. `isRenewal` 은 api 목록 응답 값을 그대로 따른다.
 
 # 공통 틀 안에서 그린다
 

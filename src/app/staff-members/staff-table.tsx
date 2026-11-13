@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Badge, DataTable, type Column } from "@/components/common";
+import { Badge, DataTable, Tag, type Column } from "@/components/common";
 import type { EnumValue } from "@/lib/enums";
 import type { StaffMemberListItem } from "@/lib/staff-members";
 import { WithIcon } from "../platform-admins/admin-table";
@@ -94,11 +94,17 @@ export function StaffTable({
     },
     {
       header: "계약 상태",
-      // 상태 이름이 길어져(「직원 서명 대기 · D-24」, WHALEERP-659) 160 이면 칸 끝이 잘린다 — 한 줄에 들게 넓혔다
-      width: "w-[200px]",
+      // 상태 이름이 길어져(「직원 서명 대기 · D-24」, WHALEERP-659) 160 이면 칸 끝이 잘린다 — 한 줄에 들게 넓혔다.
+      // 재계약 꼬리표(「재계약」)가 배지 앞에 붙어 200 → 240(WHALEERP-672, 줄어드는 건 점포 칸뿐)
+      width: "w-[240px]",
       cell: personal((item) => {
         const cell = contractCell(item, today, contractStatuses);
-        return cell ? <CellView cell={cell} /> : DASH;
+        return cell ? (
+          <span className="inline-flex items-center justify-center gap-[4px]">
+            {cell.tag && <Tag>{cell.tag}</Tag>}
+            <CellView cell={cell} />
+          </span>
+        ) : DASH;
       }),
     },
     {

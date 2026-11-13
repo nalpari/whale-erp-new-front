@@ -29,14 +29,14 @@ const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => (
   joinState: "JOINED",
   invitation: null,
   linkHold: null,
-  contract: { contractId: 1, status: "SIGNED", signDeadlineAt: null, lastSentAt: null, endDate: null, updatedAt: null, canResend: false, workDays: null },
+  contract: { contractId: 1, status: "SIGNED", signDeadlineAt: null, lastSentAt: null, endDate: null, updatedAt: null, canResend: false, workDays: null, isRenewal: false },
   employmentStatus: "EMPLOYED",
   retiredDate: null,
   ...over,
 });
 const contract = (status: NonNullable<StaffMemberListItem["contract"]>["status"], over = {}) => ({
   // workDays 는 api #171 이 더한 대표 계약의 근무 요일(조회 권한이 없으면 null) — 이 테스트는 쓰지 않는다
-  contract: { contractId: 1, status, signDeadlineAt: null, lastSentAt: null, endDate: null, updatedAt: null, canResend: false, workDays: null, ...over },
+  contract: { contractId: 1, status, signDeadlineAt: null, lastSentAt: null, endDate: null, updatedAt: null, canResend: false, workDays: null, isRenewal: false, ...over },
 });
 
 test("번호는 3-4-4, 10자리는 3-3-4", () => {
@@ -214,4 +214,45 @@ test("가입 상태 필터 라벨 — 목록 필터 체크박스 문구(WHALEERP
     JOIN_GROUPS.map((g) => JOIN_GROUP_LABELS[g]),
     ["가입 완료", "가입 대기", "정보 확인 필요", "소속 승인 대기", "가입 불가"],
   );
+});
+
+// WHALEERP-672 — 연장 재계약(isRenewal) 서명 대기 · 수정 요청: 재직 칸 「재직」 + 계약 칸 [재계약] 꼬리표 + 상태 배지
+const renewal = (status: NonNullable<StaffMemberListItem["contract"]>["status"], over = {}) =>
+  item({ contract: { ...contract(status).contract, isRenewal: true, ...over } });
+const renewalWait = () =>
+  item({ contract: { ...contract("PENDING_SIGNATURE").contract, isRenewal: true, signDeadlineAt: "2026-10-30T00:00:00+09:00" } });
+
+test("재계약 서명 대기 — 재직 칸은 재직, 계약 칸은 [재계약] [직원 서명 대기 · D-n]", () => {
+  assert.deepEqual(statusCells(renewalWait()), [{ text: "재직", style: "mark-on" }]);
+  assert.deepEqual(contractCell(renewalWait(), TODAY, STATUSES), { text: "직원 서명 대기 · D-18", style: "badge-off", tag: "재계약" });
+});
+
+test("재계약 직원 수정 요청 — 같은 규칙", () => {
+  const it = renewal("CORRECTION_REQUESTED");
+  assert.deepEqual(statusCells(it), [{ text: "재직", style: "mark-on" }]);
+  assert.deepEqual(contractCell(it, TODAY, STATUSES), { text: "직원 수정 요청", style: "badge-off", tag: "재계약" });
+});
+
+test("연장 재계약 거절 · 만료 — api 는 보내지 않는 조합 — 방어(꼬리표 없음, 재발송 필요)", () => {
+  for (const status of ["REJECTED", "EXPIRED"] as const) {
+    const it = renewal(status);
+    assert.deepEqual(statusCells(it), [{ text: "재발송 필요", style: "mark-off" }]);
+    assert.equal(contractCell(it, TODAY, STATUSES)?.tag, undefined);
+  }
+});
+
+test("첫 계약 · 재입사 재계약의 서명 대기 — 재직 칸 서명 대기, 꼬리표 없음(재입사 구분은 api isRenewal)", () => {
+  // 재입사 재계약도 api 는 isRenewal false 로 준다 — 첫 계약과 입력이 같다
+  const first = item({ contract: { ...contract("PENDING_SIGNATURE").contract, isRenewal: false } });
+  assert.deepEqual(statusCells(first), [{ text: "서명 대기", style: "mark-off" }]);
+  assert.equal(contractCell(first, TODAY, STATUSES)?.tag, undefined);
+});
+
+test("재계약 서명 대기 + 퇴직 예정 — 재직 + 퇴직 예정 MM.DD", () => {
+  const it = { ...renewalWait(), retiredDate: "2026-12-31" };
+  assert.deepEqual(statusCells(it), [
+    { text: "재직", style: "mark-on" },
+    { text: "퇴직 예정 12-31", style: "badge-off" },
+  ]);
+  assert.equal(contractCell(it, TODAY, STATUSES)?.tag, "재계약");
 });
