@@ -88,6 +88,18 @@ export function marksRenderRequest(method: string, isAction: boolean, isApiPath:
 }
 
 /**
+ * proxy 가 「세션 쿠키 없이 온 서버 액션」에 붙이는 내부 헤더. 다른 탭에서 만료돼 쿠키가 지워진 뒤 이 탭에서 저장하면 세션이 없다 —
+ * 로그인 화면으로 보내면 액션 fetch 가 따라가 「결과를 확인하지 못했습니다」가 되므로, 통과시키고 request() 가 api 401 을 만료로 표시한다(useAction 팝업).
+ * 브라우저가 보낸 같은 헤더는 proxy 가 늘 지운다.
+ */
+export const SESSION_LOST_HEADER = "x-whale-session-lost";
+
+/** 세션 없이 온 요청을 로그인 화면 대신 통과시킬까 — 이 브라우저로 로그인한 적이 있는(login-key) 서버 액션만. */
+export function passesSessionLostAction(isAction: boolean, hasLoginKey: boolean): boolean {
+  return isAction && hasLoginKey;
+}
+
+/**
  * 만료 로그인 화면(/login?reason=expired)에 세션 쿠키를 들고 왔을 때 proxy 가 갱신으로 확인한 결과의 처리.
  * 갱신 401 이면 세션이 정말 끝났으니 쿠키를 지우고 로그인 화면, 살아 있으면 홈으로, 그 밖(api 꺼짐 · 시간 초과)은 쿠키를 두고 로그인 화면.
  * 살아 있는 세션은 지우지 않으므로 이 주소를 링크로 걸어도 로그아웃되지 않는다.

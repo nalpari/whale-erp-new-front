@@ -15,10 +15,17 @@ export function isExpiry(path: string, hasAuthorization: boolean): boolean {
 
 /**
  * request() 가 받은 실패를 어떻게 다룰지 — 만료가 아니면 null, 화면을 그리는 중이면 "login"(로그인 화면으로), 아니면 "mark"(ApiError 에 expired 표시).
- * rendering 은 만료일 때만 묻는다(요청 머리를 읽는 일이라).
+ * sessionLost — 세션 쿠키 없이 온 서버 액션(다른 탭에서 만료, proxy 의 SESSION_LOST_HEADER). 토큰을 싣지 못했어도 만료다.
+ * rendering · sessionLost 는 401 일 때만 묻는다(요청 머리를 읽는 일이라).
  */
-export async function expiryHandlingOf(status: number, path: string, hasAuthorization: boolean, rendering: () => Promise<boolean>): Promise<"login" | "mark" | null> {
-  if (status !== 401 || !isExpiry(path, hasAuthorization)) return null;
+export async function expiryHandlingOf(
+  status: number,
+  path: string,
+  hasAuthorization: boolean,
+  rendering: () => Promise<boolean>,
+  sessionLost: () => Promise<boolean> = async () => false,
+): Promise<"login" | "mark" | null> {
+  if (status !== 401 || !isExpiry(path, hasAuthorization || (await sessionLost()))) return null;
   return (await rendering()) ? "login" : "mark";
 }
 

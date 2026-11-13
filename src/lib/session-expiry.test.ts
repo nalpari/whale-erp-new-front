@@ -17,6 +17,17 @@ test("request() 의 실패 처리 — 만료면 화면을 그리는 중엔 로�
   assert.equal(asked, 0);
 });
 
+test("세션 쿠키 없이 온 서버 액션(다른 탭에서 만료) — 토큰을 못 실었어도 401 은 만료 표시", async () => {
+  const no = async () => false;
+  const lost = async () => true;
+  assert.equal(await expiryHandlingOf(401, "/facilities/13", false, no, lost), "mark");
+  // 표시가 없으면 토큰 없는 401 은 만료가 아니다(로그인 화면의 로그인 실패 등)
+  assert.equal(await expiryHandlingOf(401, "/facilities/13", false, no, no), null);
+  assert.equal(await expiryHandlingOf(401, "/facilities/13", false, no), null);
+  // 만료 제외 경로는 그대로 제외
+  assert.equal(await expiryHandlingOf(401, "/auth/admin/logout", false, no, lost), null);
+});
+
 test("받기 · 올리기 fetch — 401 이면 만료를 알리고 결과를 넘기지 않는다, 그 밖은 그대로", async () => {
   let expired = 0;
   const onExpired = () => void expired++;

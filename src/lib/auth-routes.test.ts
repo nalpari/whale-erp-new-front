@@ -10,6 +10,7 @@ import {
   homeOf,
   isExpiredLoginRequest,
   marksRenderRequest,
+  passesSessionLostAction,
   RENDER_HEADER,
   isFranchiseRole,
   isPlatformRole,
@@ -111,6 +112,13 @@ test("화면을 그리는 요청 — GET 이고 서버 액션 · BFF 가 아닐 
   assert.equal(marksRenderRequest("GET", true, false), false);
   assert.equal(marksRenderRequest("GET", false, true), false);
   assert.equal(RENDER_HEADER, "x-whale-render");
+});
+
+test("세션 없이 온 요청 — 로그인한 적 있는 브라우저의 서버 액션만 통과(다른 탭에서 만료), 그 밖은 로그인 화면", () => {
+  assert.equal(passesSessionLostAction(true, true), true);
+  assert.equal(passesSessionLostAction(true, false), false);
+  assert.equal(passesSessionLostAction(false, true), false);
+  assert.equal(passesSessionLostAction(false, false), false);
 });
 
 test("만료 로그인 화면 — GET 의 /login?reason=expired 만, 갱신 결과로 쿠키를 지울지 가른다", () => {
