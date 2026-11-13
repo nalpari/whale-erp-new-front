@@ -74,8 +74,9 @@ function scopeDropdown(A) {
       : "";
 
   const list =
+    // 맨 위 범위 묶음은 머리 줄 없이(BP 상호는 위 선택칸에 있다, 앱과 같다 2026-11-13)
     sect(
-      BP.name,
+      "",
       [
         // 범위 세 줄은 이름만 한 줄(앱 admin-header.tsx 와 같다, 2026-11-13)
         opt("전체 점포", "", initial, true, `${STORES.length}개`),

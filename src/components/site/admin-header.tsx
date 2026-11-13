@@ -218,7 +218,9 @@ function scopeSections(bpName: string, stores: AdminStore[]): ScopeSelectSection
   const frOpen = openCount(franchise);
   return [
     {
-      title: bpName,
+      // 맨 위 범위 묶음은 머리 줄을 두지 않는다 — BP 상호는 위 선택칸에 이미 있다(2026-11-13 사용자 지정)
+      title: "",
+      label: `${bpName} 점포 범위`,
       options: [
         // 범위 세 줄은 보조 줄 없이 한 줄 — 「전체 점포 · N개」 「직영점포 전체 · N개」 「가맹점포 전체 · N개」 — 이름에 「점포」가 있어 「개점」 대신 「개」, 아래 묶음 머리(직영점포 · N)와 같은 말로 이어 읽힌다(2026-11-13 사용자 지정, 전엔 「직영 N개점 / 직영점포 전체」 두 줄)
         { key: "ALL", label: "전체 점포", count: `${open.length}개` },

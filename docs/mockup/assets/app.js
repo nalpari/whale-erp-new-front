@@ -896,14 +896,15 @@
       var cur = !ids.length || same(open) ? "all" : dir.length && same(dir) ? "dir" : fr.length && same(fr) ? "fr" : ids.length === 1 ? ids[0] : "";
       /* point — 직영점포 · 가맹점포 묶음 머리는 포인트 파랑(2026-11-13 사용자 지정) */
       function sect(title, items, point) {
-        return items.length ? '<div class="pop__sect"><div class="pop__label"' + (point ? ' style="color:#4a7ae0"' : "") + '>' + title + "</div>" + items.join("") + "</div>" : "";
+        return items.length ? '<div class="pop__sect">' + (title ? '<div class="pop__label"' + (point ? ' style="color:#4a7ae0"' : "") + '>' + title + "</div>" : "") + items.join("") + "</div>" : "";
       }
       return (open.length >= 10
           ? '<div class="pop__search">' + ic("search", 14) + '<input class="pop__q" type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" /></div>'
           : "") +
         '<div class="pop__list">' +
         /* 범위 세 줄은 이름만 한 줄 — 전체 점포 · 직영점포 전체 · 가맹점포 전체 · N개(2026-11-13 사용자 지정) */
-        sect(bp.name, [ddOpt("all", "전체 점포 · " + open.length + "개", "", cur === "all")]
+        /* 맨 위 범위 묶음은 머리 줄 없이(2026-11-13 사용자 지정) */
+        sect("", [ddOpt("all", "전체 점포 · " + open.length + "개", "", cur === "all")]
           .concat(dir.length ? [ddOpt("dir", "직영점포 전체 · " + dir.length + "개", "", cur === "dir")] : [])
           .concat(fr.length ? [ddOpt("fr", "가맹점포 전체 · " + fr.length + "개", "", cur === "fr")] : [])) +
         sect("직영점포 · " + dir.length, dir.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); }), true) +
