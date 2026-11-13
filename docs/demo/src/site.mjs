@@ -62,11 +62,11 @@ function scopeDropdown(A) {
   const initial = `전체 ${STORES.length}개점`;
 
   const opt = (label, meta, q, selected) =>
-    `<button type="button" role="option" aria-selected="${selected}" data-scope-label="${label}" data-scope-q="${q}" class="group flex w-full items-start gap-[10px] rounded-[8px] px-[12px] py-[8px] text-left transition-colors duration-150 ease-out hover:bg-erp-thead-bg"><span class="flex min-w-0 flex-1 flex-col gap-[2px]"><b class="truncate text-[13px] font-semibold text-erp-ink">${label}</b><span class="truncate text-[11.5px] text-erp-muted">${meta}</span></span><span class="hidden shrink-0 text-[14px] font-semibold text-erp-brand group-aria-selected:inline">✓</span></button>`;
+    `<button type="button" role="option" aria-selected="${selected}" data-scope-label="${label}" data-scope-q="${q}" class="group flex w-full items-start gap-[10px] rounded-[8px] px-[12px] py-[8px] text-left transition-colors duration-150 ease-out hover:bg-erp-thead-bg"><span class="flex min-w-0 flex-1 flex-col gap-[2px]"><b class="truncate text-[14px] font-semibold text-erp-ink">${label}</b><span class="truncate text-[12px] text-erp-muted">${meta}</span></span><span class="hidden shrink-0 text-[14px] font-semibold text-erp-brand group-aria-selected:inline">✓</span></button>`;
   const storeOpt = (s) => opt(s[1], s[0], `${s[1]} ${s[0]}`, false);
   const sect = (title, items) =>
     items.length
-      ? `<div class="flex flex-col gap-[1px] not-first:mt-[6px] not-first:border-t not-first:border-erp-divider not-first:pt-[4px]" data-scope-sect>${title ? `<p class="px-[12px] pt-[10px] pb-[4px] text-[12px] font-semibold text-erp-sub">${title}</p>` : ""}${items.join("")}</div>`
+      ? `<div class="flex flex-col gap-[1px] not-first:mt-[6px] not-first:border-t not-first:border-[#d9d9d9] not-first:pt-[4px]" data-scope-sect>${title ? `<p class="px-[12px] pt-[10px] pb-[4px] text-[13px] font-semibold text-erp-sub">${title}</p>` : ""}${items.join("")}</div>`
       : "";
 
   const list =
@@ -82,7 +82,7 @@ function scopeDropdown(A) {
     sect(`가맹 ${fr.length}`, fr.map(storeOpt));
 
   // 검색 줄 높이는 목업(pop__search · 36.5px)에 맞춘다 — 위 6 · 아래 8 여백, 입력칸 줄 높이 1.5 + 위아래 1px
-  const search = `<div class="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[10px] pt-[6px] pb-[8px]">${ui.img(A, "search.svg", 14, 14)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent px-[2px] py-[1px] text-[13px] leading-[1.5] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>`;
+  const search = `<div class="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[10px] pt-[6px] pb-[8px]">${ui.img(A, "search.svg", 14, 14)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent px-[2px] py-[1px] text-[14px] leading-[1.5] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>`;
 
   const trigger = `<button type="button" aria-expanded="false" aria-controls="${id}" aria-label="점포: ${initial}" class="flex h-[42px] w-[420px] items-center gap-[8px] rounded-full border border-erp-field-line transition-colors duration-150 enabled:hover:border-erp-brand aria-expanded:border-erp-brand bg-erp-thead-bg px-[18px] text-left text-[14px] text-erp-ink"><b class="shrink-0 font-semibold">${BP.name}</b><span class="text-erp-label">·</span><span class="flex-1 truncate" data-scope-value>${initial}</span>${ui.img(A, "chevron-small-brand.svg", 5, 8, `transition-transform duration-200 ${ui.EASE_OUT} -rotate-90`)}</button>`;
 

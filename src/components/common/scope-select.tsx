@@ -71,14 +71,14 @@ export function ScopeSelect({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="점포 이름으로 찾기"
             aria-label={`${label} 찾기`}
-            className="min-w-0 flex-1 border-0 bg-transparent px-[2px] py-[1px] text-[13px] leading-[1.5] text-erp-ink outline-none placeholder:text-erp-label"
+            className="min-w-0 flex-1 border-0 bg-transparent px-[2px] py-[1px] text-[14px] leading-[1.5] text-erp-ink outline-none placeholder:text-erp-label"
           />
         </div>
         <div className="max-h-[328px] overflow-y-auto">
-          {/* 묶음(BP 범위 · 직영 · 가맹)마다 위에 1px 구분선과 6px 여백, 머리는 12px 600 erp-sub — 11px 연회색 머리만으로는 묶음이 갈려 보이지 않았다(2026-11-13 사용자 지정) */}
+          {/* 묶음(BP 범위 · 직영 · 가맹)마다 위에 1px 구분선(#d9d9d9 — 선 토큰은 모두 옅어 묶음이 갈려 보이지 않았다, 상세 표 값 구분선과 같은 색)과 6px 여백, 머리는 13px 600 erp-sub. 글자는 화면 본문과 같은 14px(이름 · 찾기 칸) · 보조 줄 12px — 13 · 11.5px 라 작았다(2026-11-13 사용자 지정) */}
           {shown.map((s) => (
-            <div key={s.title} role="group" aria-label={s.title} className="flex flex-col gap-[1px] not-first:mt-[6px] not-first:border-t not-first:border-erp-divider not-first:pt-[4px]">
-              <p className="px-[12px] pt-[10px] pb-[4px] text-[12px] font-semibold text-erp-sub">{s.title}</p>
+            <div key={s.title} role="group" aria-label={s.title} className="flex flex-col gap-[1px] not-first:mt-[6px] not-first:border-t not-first:border-[#d9d9d9] not-first:pt-[4px]">
+              <p className="px-[12px] pt-[10px] pb-[4px] text-[13px] font-semibold text-erp-sub">{s.title}</p>
               {s.options.map((o) => (
                 <button
                   key={o.key}
@@ -92,15 +92,15 @@ export function ScopeSelect({
                   className="group flex w-full items-start gap-[10px] rounded-[8px] px-[12px] py-[8px] text-left transition-colors duration-150 ease-out hover:bg-erp-thead-bg focus-visible:bg-erp-thead-bg"
                 >
                   <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
-                    <b className={`truncate text-[13px] font-semibold ${o.muted ? "text-erp-muted" : "text-erp-ink"}`}>{o.label}</b>
-                    <span className="truncate text-[11.5px] text-erp-muted">{o.meta}</span>
+                    <b className={`truncate text-[14px] font-semibold ${o.muted ? "text-erp-muted" : "text-erp-ink"}`}>{o.label}</b>
+                    <span className="truncate text-[12px] text-erp-muted">{o.meta}</span>
                   </span>
                   {o.key === value && <span className="shrink-0 text-[14px] font-semibold text-erp-brand">✓</span>}
                 </button>
               ))}
             </div>
           ))}
-          {shown.length === 0 && <p className="px-[12px] py-[14px] text-center text-[13px] text-erp-label">맞는 점포가 없습니다.</p>}
+          {shown.length === 0 && <p className="px-[12px] py-[14px] text-center text-[14px] text-erp-label">맞는 점포가 없습니다.</p>}
         </div>
       </Popup>
     </div>
