@@ -2,7 +2,18 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PayslipItem, PayslipPrevious } from "../../../lib/payslips.ts";
-import { addAdditionalLine, applyPrevious, confirmBlockedUntil, msUntilNextKstDay, removeLine, saveItems } from "./payslip-edit.ts";
+import {
+  addAdditionalLine,
+  applyPrevious,
+  blockedRecheck,
+  confirmBlockedUntil,
+  msUntilNextKstDay,
+  nextRecheckMs,
+  RECHECK_FIRST_MS,
+  RECHECK_MAX_MS,
+  removeLine,
+  saveItems,
+} from "./payslip-edit.ts";
 
 const item = (over: Partial<PayslipItem>): PayslipItem => ({
   payslipItemId: 1,
@@ -91,4 +102,25 @@ test("다음 한국 자정까지 남은 시간 — UTC 15시가 한국 자정이
   assert.equal(msUntilNextKstDay(new Date("2026-11-30T15:00:00.000Z")), 24 * 60 * 60 * 1000);
   assert.equal(msUntilNextKstDay(new Date("2026-11-30T15:00:00.001Z")), 24 * 60 * 60 * 1000 - 1);
   assert.equal(msUntilNextKstDay(new Date("2026-11-30T03:00:00.000Z")), 12 * 60 * 60 * 1000);
+});
+
+test("막힌 [확정] 다시 보기 — 확정 가능일 전에는 받지 않고 다음 한국 자정에, 그날이 되면 받고 재시도 간격 뒤에", () => {
+  // 2026-11-29 12:00 KST — 확정 가능일 12-01 은 이틀 뒤라 받지 않고 그날 자정(12시간 뒤 +1초)에 본다
+  assert.deepEqual(blockedRecheck("2026-12-01", new Date("2026-11-29T03:00:00.000Z"), RECHECK_FIRST_MS), {
+    refresh: false,
+    delayMs: 12 * 60 * 60 * 1000 + 1000,
+  });
+  // 2026-12-01 00:00 KST — 그날이 되었으니 받는다
+  assert.deepEqual(blockedRecheck("2026-12-01", new Date("2026-11-30T15:00:00.000Z"), RECHECK_FIRST_MS), {
+    refresh: true,
+    delayMs: RECHECK_FIRST_MS,
+  });
+  // 확정 가능일을 지난 날도 받는다(브라우저 시계가 빠른 경우)
+  assert.equal(blockedRecheck("2026-12-01", new Date("2026-12-03T03:00:00.000Z"), RECHECK_FIRST_MS).refresh, true);
+});
+
+test("재시도 간격은 두 배씩 늘고 30분에서 멈춘다", () => {
+  assert.equal(nextRecheckMs(RECHECK_FIRST_MS), 2 * 60_000);
+  assert.equal(nextRecheckMs(16 * 60_000), RECHECK_MAX_MS);
+  assert.equal(nextRecheckMs(RECHECK_MAX_MS), RECHECK_MAX_MS);
 });

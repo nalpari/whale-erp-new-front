@@ -78,3 +78,19 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export function msUntilNextKstDay(now: Date): number {
   return DAY_MS - ((now.getTime() + KST_OFFSET_MS) % DAY_MS);
 }
+
+/** 막힌 [확정]을 다시 볼 간격 — 확정 가능일이 되어 새로 받았는데 서버 날짜가 아직 그 전이면(PC 시계가 빠름) 1분에서 두 배씩 늘려 30분까지 */
+export const RECHECK_FIRST_MS = 60_000;
+export const RECHECK_MAX_MS = 30 * 60_000;
+
+/**
+ * 막힌 [확정]을 지금 다시 받을지와 다음에 볼 때까지의 시간. 브라우저의 한국 날짜가 확정 가능일에 닿았으면 새로 받고 `retryMs` 뒤 다시
+ * 본다. 아직 그 전이면 받지 않고 다음 한국 자정(+1초)에 본다 — 확정 가능일이 먼 명세서는 그날 전에는 받지 않는다(WHALEERP-690).
+ */
+export function blockedRecheck(blockedUntil: string, now: Date, retryMs: number): { refresh: boolean; delayMs: number } {
+  const today = new Date(now.getTime() + KST_OFFSET_MS).toISOString().slice(0, 10);
+  return today >= blockedUntil ? { refresh: true, delayMs: retryMs } : { refresh: false, delayMs: msUntilNextKstDay(now) + 1000 };
+}
+
+/** 다음 재시도 간격 — 두 배, 30분까지 */
+export const nextRecheckMs = (retryMs: number) => Math.min(retryMs * 2, RECHECK_MAX_MS);

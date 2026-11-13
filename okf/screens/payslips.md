@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-13T06:34:36Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-13T06:54:24Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -41,7 +41,7 @@ sources:
   - id: payslip-review
     resource: ../../src/app/payslips/[payslipId]/payslip-review.tsx
     title: 검토 화면 — 머리 버튼 · 지급 내역 · 확인창
-    last_modified: 2026-11-13T06:34:36Z
+    last_modified: 2026-11-13T06:54:24Z
 ---
 
 # api 로 그린다
@@ -132,8 +132,9 @@ page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치
 * **확정**(`POST /payslips/:id/confirm`) — 저장하지 않은 바뀜이 있거나 보이는 공제가 비어 있으면 확인창의 확인이 막힌다(api 도
   422 `DEDUCTION_MISSING` 로 막는다). 상세의 `confirmableFrom`(확정할 수 있는 첫날) 전이면 머리의 [확정]을 막고 그 옆에 「YYYY-MM-DD부터
   확정할 수 있습니다.」를 둔다(`confirmBlockedUntil`, 오늘은 page 가 서버에서 정한 한국 날짜 — api 도 422 `PERIOD_NOT_ENDED` 로 막는다, WHALEERP-690).
-  막혀 있으면 브라우저의 한국 날짜가 서버 today 를 지났을 때(다음 자정 · 화면으로 돌아왔을 때) `router.refresh()` 로 다시 받아, 열어 둔 채
-  날이 바뀌어도 풀린다(`msUntilNextKstDay`). 받았는데 today 가 그대로면(PC 시계가 빠름) 1분 뒤 다시 보고(연달아 5번까지, 그 뒤는 다음 자정), 저장하지 않은 입력이 있으면 미룬다. 검토 사유가 있으면 「확인한 것으로 남고, 확정 취소하면 다시 검토 대기가 됩니다」를 덧붙인다.
+  막혀 있으면 브라우저의 한국 날짜가 확정 가능일에 닿았을 때(그날 자정 · 화면 · 창으로 돌아왔을 때)만 `router.refresh()` 로 다시 받아, 열어 둔 채
+  그날이 와도 풀린다(`blockedRecheck`). 받았는데도 막혀 있으면(PC 시계가 빠름) 1분에서 두 배씩 늘려 30분 간격까지 다시 보고(`nextRecheckMs`),
+  돌아오면 1분부터 다시 센다. 저장하지 않은 입력이 있으면 미룬다. 검토 사유가 있으면 「확인한 것으로 남고, 확정 취소하면 다시 검토 대기가 됩니다」를 덧붙인다.
 * **확정 취소**(`POST /payslips/:id/cancel-confirmation`) — 확정 · 발송 완료에서 검토 중으로. 확정이 확인한 검토 사유가 다시 확인 전이
   되어 검토 대기로 돌아간다(api, 운영 정책 v221 PAY-06). 발송 완료에서 취소하면 확인창이
   「직원 근무 앱에는 다시 보낼 때까지 「검토 중」으로 금액 없이 보인다」고 알린다(api 의 `correcting`, 2026-10-21 사용자 결정).
