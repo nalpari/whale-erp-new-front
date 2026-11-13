@@ -71,6 +71,9 @@ export function signingResendCopy(name: string | null | undefined): { title: str
  * (가입 상태 · draftAction)은 보낼 때의 판별과 다를 수 있어(그사이 계정이 생기거나 없어짐) 둘을 함께 알린다. 제목은 가입한 직원의
  * 문구(signingResendCopy)와 같다 — 같은 화면에서 무엇을 다시 보내는지가 같게 보이도록(front #146 code-review).
  */
+/** 재발송이 끝났을 때의 토스트 — 직원 목록 · 상세의 재발송과 근로계약 상세의 재발송이 같이 쓴다(통합테스트 IT-CONT-006, 2026-11-13 — 근로계약 상세만 알림이 없었다) */
+export const RESEND_DONE = "계약서를 다시 보냈습니다.";
+
 export function inviteResendCopy(name: string | null | undefined): { title: string; body: string[]; done: string } {
   return {
     title: "계약서를 다시 보내시겠습니까?",
@@ -78,7 +81,7 @@ export function inviteResendCopy(name: string | null | undefined): { title: stri
       `${name ? `${name} 님의 ` : "직원 "}휴대전화번호로 다시 보냅니다. 그 번호로 가입한 계정이 없으면 가입 초대 알림톡(초대 코드)을, 있으면 소속 추가 확인 요청(알림톡 · 메일)을 보냅니다.`,
       "초대 코드와 요청은 보낸 날부터 30일 동안 유효하고, 앞서 보낸 것은 쓸 수 없습니다. 서명 기한은 가입 초대면 보낸 날부터, 소속 추가 확인이면 직원이 수락한 날부터 30일입니다 — 소속 추가 확인은 직원이 수락할 때까지 계약이 서명 요청 전으로 남습니다.",
     ],
-    done: "계약서를 다시 보냈습니다.",
+    done: RESEND_DONE,
   };
 }
 

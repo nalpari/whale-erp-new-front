@@ -494,13 +494,19 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
       getProxyStaffAction(stores, day)
         .then((result) => {
           if (wanted.current !== day) return;
-          if (!result.ok) return setListError(result.message);
+          if (!result.ok) {
+            setStaffId(null);
+            return setListError(result.message);
+          }
           setStaff(result.staff);
+          // 고른 직원이 새 날짜의 선택지에도 있으면 그대로 둔다 — 칸 순서가 직원 → 날짜라 날짜를 고칠 때마다 다시 골라야 했다(통합테스트 IT-ATT-003, 2026-11-13). 없으면 비운다
+          setStaffId((id) => (id !== null && result.staff.some((s) => s.staffMemberId === id) ? id : null));
         })
         .catch(() => {
           // 서버 액션 호출 자체가 실패(연결 끊김 등) — 선택지를 비우고 알린다. 날짜를 다시 고르면 다시 받는다
           if (wanted.current !== day) return;
           setStaff([]);
+          setStaffId(null);
           setListError("직원 목록을 불러오지 못했습니다. 날짜를 다시 선택해 주세요.");
         });
     },
@@ -510,7 +516,6 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   const changeDate = (day: string) => {
     setDate(day);
     setStaff(null);
-    setStaffId(null);
     setError(null);
     setFutureRejected(false);
     setListError(null);
@@ -533,7 +538,8 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   const save = () => {
     // 저장할 때 칸마다 검사해 그 칸 아래에 알린다(화면 설계 공통 기준 1번, WHALEERP-633)
     const next = pickErrors({
-      staff: staffId === null ? "직원을 선택해 주세요." : undefined,
+      // 날짜를 바꿔 선택지를 다시 받는 동안은(picked 없음) 고른 직원이 남아 있어도 저장하지 않는다 — 보정 대상 여부(퇴근 필수)를 아직 모른다
+      staff: staffId === null || !picked ? "직원을 선택해 주세요." : undefined,
       checkIn: TIME.test(checkIn) ? undefined : "출근 시각을 입력해 주세요.",
       checkOut: !isProxy && !checkOut ? "퇴근 시각을 입력해 주세요." : checkOut && !TIME.test(checkOut) ? "퇴근 시각을 시 · 분까지 입력해 주세요." : undefined,
       reason: reason.trim() ? undefined : "사유를 입력해 주세요.",
@@ -541,7 +547,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
     setErrors(next);
     setError(null);
     // staffId === null 은 next.staff 와 같다 — 아래 호출에 number 로 좁히려고 둔다
-    if (staffId === null || Object.keys(next).length > 0) return focusFirstError(ids);
+    if (staffId === null || !picked || Object.keys(next).length > 0) return focusFirstError(ids);
     startTransition(async () => {
       const result = await proxyAttendanceAction({ staffMemberId: staffId, date, checkInTime: checkIn, ...(checkOut ? { checkOutTime: checkOut } : {}), reason: reason.trim() });
       if (!result.ok && result.status !== undefined && result.status < 500) {
