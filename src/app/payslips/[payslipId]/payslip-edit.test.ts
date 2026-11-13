@@ -105,11 +105,13 @@ test("다음 한국 자정까지 남은 시간 — UTC 15시가 한국 자정이
 });
 
 test("막힌 [확정] 다시 보기 — 확정 가능일 전에는 받지 않고 다음 한국 자정에, 그날이 되면 받고 재시도 간격 뒤에", () => {
-  // 2026-11-29 12:00 KST — 확정 가능일 12-01 은 이틀 뒤라 받지 않고 그날 자정(12시간 뒤 +1초)에 본다
+  // 2026-11-29 12:00 KST — 확정 가능일 12-01 전이라 받지 않고 다음 한국 자정(11-30 00:00, 12시간 뒤 +1초)에 다시 본다
   assert.deepEqual(blockedRecheck("2026-12-01", new Date("2026-11-29T03:00:00.000Z"), RECHECK_FIRST_MS), {
     refresh: false,
     delayMs: 12 * 60 * 60 * 1000 + 1000,
   });
+  // 2026-11-30 23:59:59.999 KST — 아직 전날이라 받지 않는다(경계 바로 앞)
+  assert.equal(blockedRecheck("2026-12-01", new Date("2026-11-30T14:59:59.999Z"), RECHECK_FIRST_MS).refresh, false);
   // 2026-12-01 00:00 KST — 그날이 되었으니 받는다
   assert.deepEqual(blockedRecheck("2026-12-01", new Date("2026-11-30T15:00:00.000Z"), RECHECK_FIRST_MS), {
     refresh: true,

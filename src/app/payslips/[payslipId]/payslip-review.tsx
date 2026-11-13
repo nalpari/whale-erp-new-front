@@ -206,27 +206,32 @@ export function PayslipReview({
   // [확정]이 막혀 있으면 확정 가능일이 된 뒤 화면을 새로 받아 서버가 새 날짜(today)로 다시 판정하게 한다 — 열어 둔 채 그날이 와도 풀리게(WHALEERP-690).
   // 브라우저의 한국 날짜가 확정 가능일에 닿았을 때만 새로 받는다(그 전 자정에는 받지 않는다, blockedRecheck). 받았는데도 막혀 있으면(PC 시계가 빠름)
   // 1분에서 두 배씩 늘려 30분 간격까지 다시 본다 — 시계가 며칠 빨라도 자주 받지 않게. 풀리면 blockedUntil 이 null 이 되어 멈춘다.
-  // 화면 · 창으로 돌아오면(잠자기 · 다른 탭) 간격을 1분으로 되돌려 바로 본다.
+  // 화면 · 창으로 돌아왔을 때는 볼 때가 지났으면(잠자기로 타이머가 밀림) 바로 본다 — 이벤트가 둘 와도 한 번, 간격은 그대로. 처음 열 때는 바로 받지 않는다.
   // 저장하지 않은 입력이 있으면 미룬다 — 그사이 다른 사람이 저장했으면 새로 받을 때 입력이 사라질 수 있다(확정도 어차피 저장 뒤에만 된다).
   useEffect(() => {
     if (blockedUntil === null || dirty) return;
     let timer: ReturnType<typeof setTimeout>;
     let retryMs = RECHECK_FIRST_MS;
-    const check = () => {
+    let dueAt = 0;
+    const schedule = (delayMs: number) => {
       clearTimeout(timer);
+      dueAt = Date.now() + delayMs;
+      timer = setTimeout(check, delayMs);
+    };
+    const check = () => {
       const plan = blockedRecheck(blockedUntil, new Date(), retryMs);
       if (plan.refresh) {
         router.refresh();
         retryMs = nextRecheckMs(retryMs);
       } else retryMs = RECHECK_FIRST_MS;
-      timer = setTimeout(check, plan.delayMs);
+      schedule(plan.delayMs);
     };
     const handleReturn = () => {
-      if (document.visibilityState !== "visible") return;
-      retryMs = RECHECK_FIRST_MS;
-      check();
+      if (document.visibilityState === "visible" && Date.now() >= dueAt) check();
     };
-    check();
+    // 방금 서버가 그린 화면이라 처음에는 받지 않고 다음 볼 때를 잡는다
+    const first = blockedRecheck(blockedUntil, new Date(), retryMs);
+    schedule(first.refresh ? retryMs : first.delayMs);
     document.addEventListener("visibilitychange", handleReturn);
     window.addEventListener("focus", handleReturn);
     return () => {

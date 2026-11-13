@@ -33,11 +33,11 @@ sources:
   - id: payslip-detail-page
     resource: ../../src/app/payslips/[payslipId]/page.tsx
     title: 검토 화면 — 오른쪽 단(검토 대상 항목 · 급여 산정 기준 · 처리 이력 · 발송 이력)
-    last_modified: 2026-11-13T06:12:05Z
+    last_modified: 2026-11-13T06:54:24Z
   - id: payslip-edit
     resource: ../../src/app/payslips/[payslipId]/payslip-edit.ts
-    title: 검토 화면 고칠 거리 — 임시저장 본문 · 추가 공제 붙이기 · 떼기 · 지난 명세서 불러오기(server action actions.ts)
-    last_modified: 2026-11-13T06:34:36Z
+    title: 검토 화면 고칠 거리 — 임시저장 본문 · 추가 공제 붙이기 · 떼기 · 지난 명세서 불러오기 · 막힌 확정 판정 · 다시 보기 간격(server action actions.ts)
+    last_modified: 2026-11-13T06:54:24Z
   - id: payslip-review
     resource: ../../src/app/payslips/[payslipId]/payslip-review.tsx
     title: 검토 화면 — 머리 버튼 · 지급 내역 · 확인창
@@ -132,9 +132,9 @@ page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치
 * **확정**(`POST /payslips/:id/confirm`) — 저장하지 않은 바뀜이 있거나 보이는 공제가 비어 있으면 확인창의 확인이 막힌다(api 도
   422 `DEDUCTION_MISSING` 로 막는다). 상세의 `confirmableFrom`(확정할 수 있는 첫날) 전이면 머리의 [확정]을 막고 그 옆에 「YYYY-MM-DD부터
   확정할 수 있습니다.」를 둔다(`confirmBlockedUntil`, 오늘은 page 가 서버에서 정한 한국 날짜 — api 도 422 `PERIOD_NOT_ENDED` 로 막는다, WHALEERP-690).
-  막혀 있으면 브라우저의 한국 날짜가 확정 가능일에 닿았을 때(그날 자정 · 화면 · 창으로 돌아왔을 때)만 `router.refresh()` 로 다시 받아, 열어 둔 채
+  막혀 있으면 브라우저의 한국 날짜가 확정 가능일에 닿았을 때(그날 자정 · 볼 때가 지난 뒤 화면 · 창으로 돌아왔을 때)만 `router.refresh()` 로 다시 받아, 열어 둔 채
   그날이 와도 풀린다(`blockedRecheck`). 받았는데도 막혀 있으면(PC 시계가 빠름) 1분에서 두 배씩 늘려 30분 간격까지 다시 보고(`nextRecheckMs`),
-  돌아오면 1분부터 다시 센다. 저장하지 않은 입력이 있으면 미룬다. 검토 사유가 있으면 「확인한 것으로 남고, 확정 취소하면 다시 검토 대기가 됩니다」를 덧붙인다.
+  돌아왔을 때는 볼 때가 지났으면(잠자기로 타이머가 밀림) 바로 본다(간격은 그대로, 처음 열 때는 받지 않는다). 저장하지 않은 입력이 있으면 미룬다. 검토 사유가 있으면 「확인한 것으로 남고, 확정 취소하면 다시 검토 대기가 됩니다」를 덧붙인다.
 * **확정 취소**(`POST /payslips/:id/cancel-confirmation`) — 확정 · 발송 완료에서 검토 중으로. 확정이 확인한 검토 사유가 다시 확인 전이
   되어 검토 대기로 돌아간다(api, 운영 정책 v221 PAY-06). 발송 완료에서 취소하면 확인창이
   「직원 근무 앱에는 다시 보낼 때까지 「검토 중」으로 금액 없이 보인다」고 알린다(api 의 `correcting`, 2026-10-21 사용자 결정).

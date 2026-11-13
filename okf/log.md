@@ -1,7 +1,7 @@
 # Bundle history
 
 ## 2026-11-13
-* **Update**: [Payslips](/screens/payslips.md) — 리뷰 반영(WHALEERP-690): 검토 화면의 오늘은 page 가 서버에서 정해 넘기고(서버 렌더와 날짜가 어긋나지 않게), [확정]이 막혀 있으면 브라우저의 한국 날짜가 확정 가능일에 닿았을 때(그날 자정 · 화면 · 창 복귀)만 화면을 새로 받아 열어 둔 채 그날이 와도 풀린다. 받았는데도 막혀 있으면 1분에서 두 배씩 늘려 30분 간격까지 다시 보고, 저장하지 않은 입력이 있으면 미룬다.
+* **Update**: [Payslips](/screens/payslips.md) — 리뷰 반영(WHALEERP-690): 검토 화면의 오늘은 page 가 서버에서 정해 넘기고(서버 렌더와 날짜가 어긋나지 않게), [확정]이 막혀 있으면 브라우저의 한국 날짜가 확정 가능일에 닿았을 때(그날 자정 · 볼 때가 지난 뒤 화면 · 창 복귀)만 화면을 새로 받아 열어 둔 채 그날이 와도 풀린다. 받았는데도 막혀 있으면 1분에서 두 배씩 늘려 30분 간격까지 다시 보고(돌아왔을 때는 볼 때가 지났을 때만, 처음 열 때는 받지 않음), 저장하지 않은 입력이 있으면 미룬다.
 * **Update**: [Payslips](/screens/payslips.md) — 통합테스트 반영(WHALEERP-688 · 689 · 690): 단건 작성은 토스트 「급여명세서를 작성했습니다.」 뒤 검토 화면으로 가고(action 이 redirect 대신 주소를 돌려준다), 지난 명세서가 없으면 확인창을 닫고 토스트로 알리며, 상세의 `confirmableFrom` 전에는 [확정]을 막고 「YYYY-MM-DD부터 확정할 수 있습니다.」를 둔다(api 상세에 같은 판정의 확정 가능일을 더함). `api-types.generated.ts` 는 이 필드만 반영했다 — 다시 만들면 아직 안 받은 시설 api 가 함께 들어온다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 세션 없는 요청 통과를 화면 주소로 온 POST 서버 액션으로 좁혔다. `next-action` 헤더 · login-key 쿠키를 꾸민 GET 이 로그인 없이 화면을 그리던 것, fetch 창구까지 통과시키던 것(PR #256 적대적 리뷰).
 * **Update**: [출퇴근 현황 화면](/screens/attendance-records.md) · [Whale ERP Frontend](/whale-erp-front.md) — 통합테스트 반영: 출퇴근 대신 등록은 날짜를 바꿔도 고른 직원을 유지(IT-ATT-003), 근로계약 상세 재발송 완료 토스트(IT-CONT-006)(front wobbuffet).
