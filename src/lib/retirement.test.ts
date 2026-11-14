@@ -56,9 +56,15 @@ test("퇴직한 직원은 버튼 없음", () => {
   assert.equal(retirementActions({ ...joined, employmentStatus: "RETIRED", retiredDate: "2026-10-01" }, today, true), null);
 });
 
-test("가입 전 레코드(초안 · 가입 대기 등)는 버튼 없음", () => {
-  for (const joinState of ["DRAFT", "INVITED", "EXPIRED", "REJECTED", "LINK_HOLD", "UNDER_AGE", null] as const)
-    assert.equal(retirementActions({ ...joined, joinState }, today, true), null, String(joinState));
+test("가입 전 레코드(초안 · 가입 대기 등)도 재직이면 퇴직 처리", () => {
+  for (const joinState of ["DRAFT", "INVITED", "EXPIRED", "REJECTED", "LINK_HOLD", "UNDER_AGE", "AFFILIATION_PENDING", "RETURN_PENDING", "JOINED", null] as const) {
+    const staff = { ...joined, joinState };
+    assert.equal(retirementActions(staff, today, true), "retire", String(joinState));
+  }
+  const invited = { ...joined, joinState: "INVITED" as const };
+  assert.equal(retirementActions({ ...invited, retiredDate: "2026-10-16" }, today, true), "scheduled");
+  assert.equal(retirementActions({ ...invited, employmentStatus: "RETIRED" }, today, true), null);
+  assert.equal(retirementActions(invited, today, false), null);
 });
 
 test("직원 정보 관리 수정 권한이 없으면 버튼 없음", () => {
