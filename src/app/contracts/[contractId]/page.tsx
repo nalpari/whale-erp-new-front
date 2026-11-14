@@ -139,7 +139,8 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
           value: muted ? (
             <span className="text-erp-muted">{row.value}</span>
           ) : by ? (
-            <span>
+            // 긴 이름(로그인 아이디)은 값 칸 폭에서 말줄임하고 마우스를 올리면 전체를 보인다(관리자 상세 when() 과 같다)
+            <span className="truncate" title={`${row.value} · ${by}`}>
               {row.value} <span className="text-erp-label">· {by}</span>
             </span>
           ) : (
