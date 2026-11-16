@@ -6,7 +6,8 @@ type Schemas = components["schemas"];
 type FacilityDetail = Schemas["FacilityDetailResponseDto"];
 type CreateFacilityInput = Schemas["CreateFacilityDto"];
 export type FacilityGroupCode = Schemas["FacilityGroup"];
-export type FacilityDocumentKind = Schemas["FacilityDocumentKind"];
+/** 문서 종류 — 플랫폼고정 공통코드 FACILITY_DOCUMENT 의 상세 코드(WHALEERP-718, 전엔 enum 세 값) */
+export type FacilityDocumentKind = string;
 
 /**
  * 그룹 = 공통코드 그룹 두 개(정책서 PL-3, 화면이 고정으로 부른다). 그룹의 이름은 공통코드 그룹명인데 로그인 정보의 공통코드에는
@@ -19,14 +20,18 @@ export const FACILITY_GROUPS: readonly { code: FacilityGroupCode; label: string 
 ];
 export const isFacilityGroup = (v: string): v is FacilityGroupCode => FACILITY_GROUPS.some((g) => g.code === v);
 
-/** 공통코드 그룹 — 운영상태(플랫폼고정) · 점검 주기(플랫폼제공) */
+/** 공통코드 그룹 — 운영상태 · 문서 종류(플랫폼고정) · 점검 주기(플랫폼제공) */
 export const STATUS_GROUP = "FACILITY_STATUS";
+export const DOCUMENT_GROUP = "FACILITY_DOCUMENT";
 export const CYCLE_GROUP = "INSPECTION_CYCLE";
 /** 운영상태의 처음 값(PL-2). 점검 주기는 비워 둔다 — 선택 칸이라 처음 값이 있으면 점검하지 않는 장비도 그 주기로 저장된다(2026-11-11 사용자 지정, 전엔 매일) */
 export const DEFAULT_STATUS = "OPERATING";
 
-/** 문서 종류 — 상세 · 폼의 순서(사용 매뉴얼 · 주의사항 · 제품 보증서). 한글은 getEnum("FacilityDocumentKind") 로 받는다 */
-export const DOCUMENT_KINDS: readonly FacilityDocumentKind[] = ["USER_MANUAL", "PRECAUTION", "WARRANTY"];
+/**
+ * 문서 종류 값 모양 — 공통코드 상세 코드 규칙(영문 대문자 · 숫자 · 밑줄 20자). 종류 목록은 공통코드 FACILITY_DOCUMENT 로 받고,
+ * 서버 액션 · 문서 경로는 모양만 본다 — 공통코드에 없는 값은 api 가 404 로 막는다(WHALEERP-718)
+ */
+export const isDocumentKind = (v: unknown): v is FacilityDocumentKind => typeof v === "string" && /^[A-Z0-9_]{1,20}$/.test(v);
 
 /** 문서 형식 · 크기(PL-5) — 종류마다 1개, JPG · PNG · PDF, 10MB 이하. 종류는 api 가 파일 내용으로 다시 본다 */
 export const DOCUMENT_ACCEPT = ".jpg,.jpeg,.png,.pdf";
@@ -290,16 +295,16 @@ export function bodyOf(f: FacilityForm): Omit<CreateFacilityInput, "storeId"> {
 
 /**
  * 상세 정보 네 묶음(제품 정보 / 구매 정보 / 기한 · 문서 / 관리 · A/S)의 「입력 n / 전체」 — 값이 있는 칸을 센다(수량 · 총금액 · 부가세는 세지 않는다).
- * docs 는 종류마다 문서가 있는가(올린 것 · 새로 고른 것).
+ * docs 는 칸에 그린 문서 종류마다 문서가 있는가(올린 것 · 새로 고른 것) — 종류 수가 공통코드에 따라 달라 전체도 그만큼 바뀐다.
  */
-export function filledCounts(f: FacilityForm, docs: Record<FacilityDocumentKind, boolean>) {
+export function filledCounts(f: FacilityForm, docs: readonly boolean[]) {
   const has = (v: string | number | null) => v !== null && String(v).trim() !== "";
   const phone = (p: PhoneParts) => joinPhone(p) !== "";
   const count = (list: boolean[]) => ({ filled: list.filter(Boolean).length, total: list.length });
   return {
     product: count([has(f.brand), has(f.manufacturer), has(f.serialNumber), has(f.installationLocation)]),
     purchase: count([has(f.vendorName), phone(f.vendorPhone), has(f.salesRepresentativeName), phone(f.salesRepresentativePhone), has(f.unitPrice), has(f.purchaseDate), has(f.installationDate)]),
-    documents: count([has(f.usageExpiryDate), has(f.warrantyExpiryDate), ...DOCUMENT_KINDS.map((k) => docs[k])]),
+    documents: count([has(f.usageExpiryDate), has(f.warrantyExpiryDate), ...docs]),
     manage: count([f.managerStaffMemberId !== null, phone(f.managerPhone), has(f.inspectionCycleCode), has(f.inspectionNote), has(f.serviceCenter.address), phone(f.serviceCenterPhone)]),
   };
 }

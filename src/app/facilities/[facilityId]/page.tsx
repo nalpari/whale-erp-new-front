@@ -1,11 +1,9 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Badge, DetailTable, DetailValues, NoticeBand, Tag, type DetailRow } from "@/components/common";
-import { getEnum } from "@/lib/api";
-import { labelOf } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
 import { getFacility, type FacilityDetail } from "@/lib/facilities";
-import { DOCUMENT_KINDS, phoneText } from "../facility-form-model";
+import { phoneText } from "../facility-form-model";
 import { backHrefOf } from "../facility-list-query";
 import { facilityDenied } from "../facility-denied";
 import { MASKED_STAFF } from "../../todos/todo-row";
@@ -36,14 +34,7 @@ export default async function FacilityDetailPage({ params, searchParams }: PageP
   const [{ facilityId: raw }, search] = await Promise.all([params, searchParams]);
   const facilityId = /^\d{1,9}$/.test(raw) ? Number(raw) : 0;
   if (facilityId < 1) notFound();
-  const [loaded, kindLabels] = await Promise.all([
-    getFacility(facilityId).catch(facilityDenied(facilityId)),
-    // 문서 종류 한글(GET /enums/FacilityDocumentKind) — 못 받아도 화면은 연다, 값이 그대로 보일 뿐이다
-    getEnum("FacilityDocumentKind").catch((error: unknown) => {
-      console.error("문서 종류 한글 조회 실패", error);
-      return [];
-    }),
-  ]);
+  const loaded = await getFacility(facilityId).catch(facilityDenied(facilityId));
   if ("denied" in loaded)
     return (
       <FacilityFrame>
@@ -113,10 +104,11 @@ export default async function FacilityDetailPage({ params, searchParams }: PageP
   const documents: DetailRow[] = [
     { label: "사용 유효기한", value: orDash(d.usageExpiryDate) },
     { label: "품질 보증기한", value: orDash(d.warrantyExpiryDate) },
-    ...DOCUMENT_KINDS.map((kind) => {
-      const doc = d.documents.find((x) => x.documentKind === kind);
+    // 올려 둔 문서만 응답 순서(공통코드 순서) 그대로, 이름은 api 가 주는 공통코드 이름이다 — 종류가 공통코드라 화면이 목록을 갖지 않는다(WHALEERP-718).
+    // 하나도 없으면 「문서 -」 한 줄
+    ...(d.documents.length ? d.documents : [null]).map((doc) => {
       return {
-        label: labelOf(kindLabels, kind),
+        label: doc ? doc.documentKindLabel : "문서",
         value: doc ? (
           <span className="flex min-w-0 items-center gap-[10px]">
             {doc.downloadUrl ? (

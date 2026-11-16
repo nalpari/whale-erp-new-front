@@ -29,7 +29,6 @@ import { FIELD } from "@/components/common/theme";
 import { useCodes, useCurrentBp } from "@/components/site/session-gate";
 import { fetchSameOrigin } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
-import { labelOf, type EnumValue } from "@/lib/enums";
 import type { FacilityDetail, FacilityDocument, FacilityManagerOption, FacilityStoreOption } from "@/lib/facilities";
 import { createFacilityAction, deleteFacilityDocumentAction, getManagerOptionsAction, updateFacilityAction } from "./actions";
 import {
@@ -38,7 +37,7 @@ import {
   digitsOf,
   DOCUMENT_ACCEPT,
   DOCUMENT_COUNT_ERROR,
-  DOCUMENT_KINDS,
+  DOCUMENT_GROUP,
   documentFileError,
   FACILITY_GROUPS,
   filledCounts,
@@ -62,7 +61,9 @@ import { MASKED_STAFF } from "../todos/todo-row";
 
 /** 문서 한 종류의 상태 — 올려 둔 것(수정) · 뺀다는 표시 · 새로 고른 파일 · 고르지 못한 파일과 까닭 */
 type DocState = { existing: FacilityDocument | null; removed: boolean; file: File | null; rejected: RejectedFile[] };
-type Docs = Record<FacilityDocumentKind, DocState>;
+type Docs = Partial<Record<FacilityDocumentKind, DocState>>;
+/** 칸에 그릴 문서 종류 — 사용 중인 공통코드 종류(순서대로) 뒤에, 올려 둔 문서 중 사용 중지한 종류를 이름과 함께 붙인다(빼기만, WHALEERP-718) */
+type DocKind = { kind: FacilityDocumentKind; label: string; canUpload: boolean };
 type FoldKey = "product" | "purchase" | "documents" | "manage";
 
 /** 어느 칸의 오류가 어느 접힌 묶음 안에 있는가 — 검사에 걸리면 그 묶음을 펼친다 */
@@ -78,7 +79,6 @@ const FOLD_OF: Partial<Record<FacilityFormField, FoldKey>> = {
 
 type Props = {
   backHref: string;
-  kindLabels: EnumValue[];
 } & ({ mode: "create"; storeOptions: FacilityStoreOption[] } | { mode: "edit"; facility: FacilityDetail; managerOptions: FacilityManagerOption[] });
 
 /**
@@ -91,7 +91,7 @@ type Props = {
  * 관리 정보는 따로 지우지 않고 칸을 비워 저장한다(PL-4). 문서 「빼기」는 저장할 때 DELETE 로 보낸다.
  */
 export function FacilityFormView(props: Props) {
-  const { mode, backHref, kindLabels } = props;
+  const { mode, backHref } = props;
   const facility = mode === "edit" ? props.facility : null;
   const router = useRouter();
   const getManagerOptions = useAction(getManagerOptionsAction, { overlay: false });
@@ -107,21 +107,32 @@ export function FacilityFormView(props: Props) {
   const cycles = useCodes(CYCLE_GROUP);
   const facilityCategories = useCodes("STORE_FACILITY");
   const equipmentCategories = useCodes("STORE_EQUIPMENT");
+  // 문서 종류(WHALEERP-718) — 사용 중인 종류만 올리기 칸으로 그린다. 사용 중지한 종류의 기존 문서는 빼기만 된다(바꾸면 api 400).
+  // 공통코드에 없는데 사용 중이라는 문서(로그인 정보의 공통코드가 오래됐을 때)도 칸을 둔다 — 올려 둔 문서가 사라져 보이지 않게
+  const documentCodes = useCodes(DOCUMENT_GROUP);
+  // 올려 둔 문서가 있는 종류는 api 의 isDocumentKindActive 를 먼저 본다 — 로그인 뒤 사용 중지됐으면 세션 공통코드엔 아직 사용 중으로 남아 있어,
+  // 올리기 칸을 열면 저장 때 400 이 났다(코드 리뷰)
+  const docKindOf = (d: FacilityDocument): DocKind => ({ kind: d.documentKind, label: d.isDocumentKindActive ? d.documentKindLabel : `${d.documentKindLabel} (미사용)`, canUpload: d.isDocumentKindActive });
+  const docKinds: DocKind[] = [
+    ...documentCodes.map((c) => {
+      const uploaded = facility?.documents.find((d) => d.documentKind === c.value);
+      return uploaded && !uploaded.isDocumentKindActive ? docKindOf(uploaded) : { kind: c.value, label: c.label, canUpload: true };
+    }),
+    ...(facility?.documents ?? []).filter((d) => !documentCodes.some((c) => c.value === d.documentKind)).map(docKindOf),
+  ];
 
   const [form, setForm] = useState<Form>(() => (facility ? formOf(facility) : initialForm()));
   const [errors, setErrors] = useState<Partial<Record<FacilityFormField, string>>>({});
   const [failure, setFailure] = useState<{ title: string; detail?: string } | null>(null);
   const [saving, startSave] = useTransition();
-  const [docs, setDocs] = useState<Docs>(() =>
-    Object.fromEntries(
-      DOCUMENT_KINDS.map((k): [FacilityDocumentKind, DocState] => [k, { existing: facility?.documents.find((d) => d.documentKind === k) ?? null, removed: false, file: null, rejected: [] }]),
-    ) as Docs,
-  );
+  // 손대지 않은 종류는 비어 있고 docOf 가 올려 둔 문서로 채워 읽는다 — 종류 목록이 공통코드라 처음에 다 만들어 두지 않는다
+  const [docs, setDocs] = useState<Docs>({});
+  const docOf = (kind: FacilityDocumentKind): DocState =>
+    docs[kind] ?? { existing: facility?.documents.find((d) => d.documentKind === kind) ?? null, removed: false, file: null, rejected: [] };
   // 등록은 모두 접힌 채로, 수정은 입력한 값이 있는 묶음만 펼친 채로 시작한다(2026-11-11 사용자 지정 — 전엔 수정은 모두 펼침)
   const [open, setOpen] = useState<Record<FoldKey, boolean>>(() => {
     if (!facility) return { product: false, purchase: false, documents: false, manage: false };
-    const has = Object.fromEntries(DOCUMENT_KINDS.map((k) => [k, facility.documents.some((d) => d.documentKind === k)])) as Record<FacilityDocumentKind, boolean>;
-    const c = filledCounts(formOf(facility), has);
+    const c = filledCounts(formOf(facility), docKinds.map(({ kind }) => facility.documents.some((d) => d.documentKind === kind)));
     return { product: c.product.filled > 0, purchase: c.purchase.filled > 0, documents: c.documents.filled > 0, manage: c.manage.filled > 0 };
   });
 
@@ -184,8 +195,13 @@ export function FacilityFormView(props: Props) {
       ? [{ value: facility.facilityStatusCode, label: `${facility.facilityStatusLabel} (미사용)` }, ...statuses]
       : statuses;
 
-  const docFilled = Object.fromEntries(DOCUMENT_KINDS.map((k) => [k, !!docs[k].file || (!!docs[k].existing && !docs[k].removed)])) as Record<FacilityDocumentKind, boolean>;
-  const counts = filledCounts(form, docFilled);
+  const counts = filledCounts(
+    form,
+    docKinds.map(({ kind }) => {
+      const doc = docOf(kind);
+      return !!doc.file || (!!doc.existing && !doc.removed);
+    }),
+  );
 
   const handleSave = () => {
     setFailure(null);
@@ -234,9 +250,8 @@ export function FacilityFormView(props: Props) {
   /** 문서 — 뺀 것은 DELETE, 새로 고른 것은 종류마다 올린다. 실패한 종류 이름을 돌려준다(저장은 끝났으므로 상세로 가며 알린다) */
   const saveDocuments = async (facilityId: number): Promise<string[]> => {
     const failed: string[] = [];
-    for (const kind of DOCUMENT_KINDS) {
-      const doc = docs[kind];
-      const name = labelOf(kindLabels, kind);
+    for (const { kind, label: name } of docKinds) {
+      const doc = docOf(kind);
       if (doc.file) {
         const data = new FormData();
         data.append("facilityId", String(facilityId));
@@ -490,8 +505,8 @@ export function FacilityFormView(props: Props) {
           </Labeled>
         </Stack>
       </FormRow>
-      {DOCUMENT_KINDS.map((kind) => (
-        <DocumentField key={kind} label={labelOf(kindLabels, kind)} state={docs[kind]} busy={saving} onChange={(next) => setDocs((d) => ({ ...d, [kind]: next }))} />
+      {docKinds.map(({ kind, label, canUpload }) => (
+        <DocumentField key={kind} label={label} canUpload={canUpload} state={docOf(kind)} busy={saving} onChange={(next) => setDocs((d) => ({ ...d, [kind]: next }))} />
       ))}
     </>
   );
@@ -712,7 +727,7 @@ function Fold({ title, hint, count, open, onToggle, children }: { title: string;
 }
 
 /** 문서 한 종류(공통 첨부 칸) — 1개, JPG · PNG · PDF, 10MB 이하. 다 차면 [파일 선택]을 막는다(PL-5) */
-function DocumentField({ label, state, busy, onChange }: { label: string; state: DocState; busy: boolean; onChange: (next: DocState) => void }) {
+function DocumentField({ label, canUpload, state, busy, onChange }: { label: string; canUpload: boolean; state: DocState; busy: boolean; onChange: (next: DocState) => void }) {
   const picked = state.file ? [{ key: 0, file: state.file }] : [];
   const previews = useFilePreviews(picked);
   const shown = !!state.file || (!!state.existing && !state.removed);
@@ -738,13 +753,17 @@ function DocumentField({ label, state, busy, onChange }: { label: string; state:
       <AttachmentField
         rows={rows}
         rejected={state.rejected}
-        canPick={!shown}
+        canPick={!shown && canUpload}
         busy={busy}
         accept={DOCUMENT_ACCEPT}
         note={
-          <>
-            JPG, PNG, PDF 파일을 1개 첨부할 수 있습니다. <span className="whitespace-nowrap">(10MB 이하)</span>
-          </>
+          canUpload ? (
+            <>
+              JPG, PNG, PDF 파일을 1개 첨부할 수 있습니다. <span className="whitespace-nowrap">(10MB 이하)</span>
+            </>
+          ) : (
+            "사용하지 않는 문서 종류라 새로 올릴 수 없고, 올려 둔 문서를 빼기만 할 수 있습니다."
+          )
         }
         onPick={(files) => {
           // 맞는 첫 파일 하나만 넣고, 나머지는 까닭과 함께 목록 아래에 보인다

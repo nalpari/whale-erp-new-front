@@ -7,6 +7,7 @@ import {
   DOCUMENT_SIZE_ERROR,
   DOCUMENT_TYPE_ERROR,
   filledCounts,
+  isDocumentKind,
   formOf,
   initialForm,
   phoneText,
@@ -133,12 +134,28 @@ test("문서 파일 — JPG · PNG · PDF, 10MB 이하", () => {
 });
 
 test("입력 n / 전체 — 묶음마다 값이 있는 칸을 센다", () => {
-  const c = filledCounts(valid({ brand: "말코닉", vendorPhone: ["02", "333", "4444"] }), { USER_MANUAL: true, PRECAUTION: false, WARRANTY: false });
+  const c = filledCounts(valid({ brand: "말코닉", vendorPhone: ["02", "333", "4444"] }), [true, false, false]);
   assert.deepEqual(c.product, { filled: 1, total: 4 });
   assert.deepEqual(c.purchase, { filled: 1, total: 7 });
   assert.deepEqual(c.documents, { filled: 1, total: 5 });
   // 점검 주기는 처음에 비어 있어 세지 않는다
   assert.deepEqual(c.manage, { filled: 0, total: 6 });
+});
+
+test("입력 n / 전체 — 문서 칸 수는 공통코드 종류 수를 따른다(WHALEERP-718)", () => {
+  const f = valid({});
+  assert.deepEqual(filledCounts(f, [true, true, false, true]).documents, { filled: 3, total: 6 });
+  assert.deepEqual(filledCounts(f, []).documents, { filled: 0, total: 2 });
+});
+
+test("문서 종류 값 모양 — 공통코드 상세 코드 규칙만 받는다", () => {
+  assert.equal(isDocumentKind("USER_MANUAL"), true);
+  assert.equal(isDocumentKind("INSPECTION_REPORT2"), true);
+  assert.equal(isDocumentKind("user_manual"), false);
+  assert.equal(isDocumentKind("../x"), false);
+  assert.equal(isDocumentKind("A".repeat(21)), false);
+  assert.equal(isDocumentKind(""), false);
+  assert.equal(isDocumentKind(3), false);
 });
 
 test("수정 화면 왕복 — 상세 → 폼 → 본문이 값을 잃지 않는다(0 원 · 가린 담당자 번호 · 점검 주기 없음)", () => {
