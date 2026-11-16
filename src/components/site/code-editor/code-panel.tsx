@@ -29,7 +29,7 @@ export function CodePanel({
       id={id}
       // 표(DataTable scroll)는 남는 높이를 먹고 그 안에서만 스크롤한다 — 나머지(제목 · 띠 · 오류 줄)는 줄지 않는다(2026-10-26 사용자 지정)
       className={`flex flex-col gap-[12px] overflow-y-auto [scrollbar-gutter:stable] rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0 ${
-        wide ? "min-w-0 flex-1" : narrow ? "w-[560px] shrink-0" : "w-[750px] shrink-0"
+        wide ? "min-w-0 flex-[44]" : narrow ? "w-[560px] shrink-0" : "min-w-0 flex-[56]"
       }`}
     >
       {/* 제목 줄은 34px(버튼 높이) — 버튼이 없는 왼쪽 그룹 목록도 오른쪽 상세 코드와 같은 높이에 선다(2026-10-26 사용자 지정) */}

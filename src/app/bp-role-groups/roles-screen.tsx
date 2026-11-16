@@ -3,8 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Badge, Button, DataTable, PageBar, Pagination, Tag, type Column } from "@/components/common";
+import { formatDateTime } from "@/lib/format";
 import { RoleMenuDialog, type MenuDialogRole } from "@/components/role-groups/role-menu-dialog";
-import { CARD, WhenWho } from "@/components/role-groups/role-parts";
+import { CARD } from "@/components/role-groups/role-parts";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
 import { useAccount, useCurrentBp, usePagePermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
@@ -105,9 +106,10 @@ function RolesBody({
     },
     { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
     // 「일시 · 수정자」가 220px 에선 수정자 이름이 말줄임됐다 — 260px(권한유형 · 코드 · 권한명과 같은 폭, 2026-10-27 사용자 지정)
-    { header: "최종수정", width: "w-[260px]", align: "left", cell: (r) =>
+    { header: "최종수정", width: "w-[150px]", cell: (r) =>
+        // 일시만 — 고친 사람은 상세에서 본다. 칸이 좁아져 좁은 창(최소 1260)에서도 [설정]까지 보인다(2026-11-16 사용자 지정, 전엔 「일시 · 사람」 260)
         // 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청)
-        wasUpdated(r.createdAt, r.updatedAt) ? <WhenWho at={r.updatedAt} actor={r.updatedBy} /> : <span className="text-erp-muted">-</span>,
+        wasUpdated(r.createdAt, r.updatedAt) ? formatDateTime(r.updatedAt) : <span className="text-erp-muted">-</span>,
     },
     // [설정] 버튼 열(「메뉴설정」)을 「메뉴설정 여부」 앞에 둔다(2026-10-26 사용자 지정 — 전엔 「메뉴 등록 여부」 · 「메뉴등록」[메뉴등록] 순)
     {
@@ -120,7 +122,7 @@ function RolesBody({
       ),
     },
     {
-      header: "메뉴설정 여부",
+      header: "설정여부", // 「메뉴설정 여부」에서 줄임 — 플랫폼 권한 관리와 같은 이름(2026-11-16 사용자 지정)
       width: "w-[120px]",
       cell: (r) => (r.menuCount > 0 ? <Badge tone="on">등록 {r.menuCount.toLocaleString("ko-KR")}개</Badge> : <Badge tone="off">미등록</Badge>),
     },

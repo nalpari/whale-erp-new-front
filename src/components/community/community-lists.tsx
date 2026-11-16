@@ -240,13 +240,13 @@ export function InquiryList({ items, total, query, answers, emptyAll = false }: 
   const columns: Column<InquiryListItem>[] = [
     // 열 순서는 상태 · 분류 · 제목 · 문의자 · BP상호명 · 접수(2026-11-06 사용자 지정 — 도입문의 목록처럼 상태를 맨 앞으로. 전엔 분류 · 제목 · 문의자 · 상태 · 접수)
     { ...STATE, cell: (i) => <AnswerCell status={i.status} answers={answers} /> },
-    { header: "분류", width: "w-[160px]", cell: (i) => categoryLabel(i.inquiryCategoryCode) },
-    // 제목은 넓지 않게 정한 폭(400), 문의자는 이름 · BP상호명 두 열로 나눈다(2026-11-06 사용자 지정 — 전엔 제목이 남는 폭, 문의자 한 열 「점포 또는 BP · 이름」 300).
+    { header: "분류", width: "w-[120px]", cell: (i) => categoryLabel(i.inquiryCategoryCode) },
+    // 제목은 넓지 않게 정한 폭(260 — 최소폭 1260 에서 모든 열 합이 표 폭 920 에 맞게, 1720 에선 비율로 늘어 약 400. 2026-11-16 사용자 지정, 전엔 400), 문의자는 이름 · BP상호명 두 열로 나눈다(2026-11-06 사용자 지정 — 전엔 제목이 남는 폭, 문의자 한 열 「점포 또는 BP · 이름」 300).
     // 모든 열이 정한 폭이라 남는 폭은 같은 비율로 나눠 늘어난다
-    { header: "제목", width: "w-[400px]", align: "left", cell: (i) => titleLink(`${INQUIRY_BASE}/${i.inquiryId}`, i.title) },
+    { header: "제목", width: "w-[260px]", align: "left", cell: (i) => titleLink(`${INQUIRY_BASE}/${i.inquiryId}`, i.title) },
     // 이름이 비었으면 탈퇴한 회원(탈퇴가 이름 · 연락처를 비운다) — 「-」 대신 회색으로 알린다(2026-11-06 사용자 지정)
-    { header: "문의자", width: "w-[160px]", cell: (i) => i.senderName || <span className="text-erp-muted">탈퇴한 회원</span> },
-    { header: "BP상호명", width: "w-[240px]", cell: (i) => i.bpName ?? "-" },
+    { header: "문의자", width: "w-[140px]", cell: (i) => i.senderName || <span className="text-erp-muted">탈퇴한 회원</span> },
+    { header: "BP상호명", width: "w-[180px]", cell: (i) => i.bpName ?? "-" },
     { header: "접수", width: "w-[110px]", cell: (i) => formatDateTime(i.createdAt).slice(0, 10) },
   ];
 
@@ -277,13 +277,14 @@ export function LeadList({ items, total, query, answers, interests, emptyAll = f
   const industryLabel = useCodeLabel("INDUSTRY");
   // 상태를 맨 앞에, 문의자(이름, 상세 링크) · 연락처(전화기 동그라미 아이콘, 직원 목록 휴대전화번호와 같은 모양) 두 열로 나눈다(2026-11-06 사용자 지정 — 전엔 「이름 · 번호」 한 열, 상태는 끝에서 둘째)
   const columns: Column<LeadListItem>[] = [
+    // 열 합은 920 — 최소폭 1260 에서 표 폭에 맞고, 넓은 창에서는 같은 비율로 늘어난다(2026-11-16 사용자 지정, 전엔 문의자 200 · 연락처 · 업종 · 관심 서비스 220)
     { ...STATE, cell: (l) => <AnswerCell status={l.status} answers={answers} /> },
-    { header: "문의자", width: "w-[200px]", cell: (l) => titleLink(`${LEAD_BASE}/${l.leadId}`, l.contactName) },
-    { header: "연락처", width: "w-[220px]", cell: (l) => <WithIcon icon="phone">{formatPhone(l.phone)}</WithIcon> },
+    { header: "문의자", width: "w-[140px]", cell: (l) => titleLink(`${LEAD_BASE}/${l.leadId}`, l.contactName) },
+    { header: "연락처", width: "w-[160px]", cell: (l) => <WithIcon icon="phone">{formatPhone(l.phone)}</WithIcon> },
     // 업종이 기타면 직접 넣은 글자를 괄호로 붙인다.
-    { header: "업종", width: "w-[220px]", cell: (l) => (l.industryDetail ? `${industryLabel(l.industryCode)} (${l.industryDetail})` : industryLabel(l.industryCode)) },
+    { header: "업종", width: "w-[200px]", cell: (l) => (l.industryDetail ? `${industryLabel(l.industryCode)} (${l.industryDetail})` : industryLabel(l.industryCode)) },
     // 문의자 · 연락처 · 업종 · 관심 서비스는 비슷한 폭(200 · 220 · 220 · 220) — 모두 정한 폭이라 남는 폭은 열마다 같은 비율로 나눠 늘어난다(2026-11-06 사용자 지정)
-    { header: "관심 서비스", width: "w-[220px]", cell: (l) => l.interests.map((i) => labelOf(interests, i)).join(" · ") || "-" },
+    { header: "관심 서비스", width: "w-[200px]", cell: (l) => l.interests.map((i) => labelOf(interests, i)).join(" · ") || "-" },
     { header: "접수", width: "w-[110px]", cell: (l) => formatDateTime(l.createdAt).slice(0, 10) },
   ];
 

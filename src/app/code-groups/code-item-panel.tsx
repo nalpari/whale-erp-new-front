@@ -240,7 +240,7 @@ export function CodeItemPanel({
       ? [
           {
             header: "이동",
-            width: "w-[60px]",
+            width: "w-[48px]",
             // 기존 행은 끌기 손잡이(아이콘이 없어 글자 기호, 데모와 같다 · 수정 권한). 새 행은 저장한 뒤에 옮기고, 대신 빼기 버튼을 둔다.
             cell: (d: Draft) =>
               d.added ? (
@@ -260,7 +260,8 @@ export function CodeItemPanel({
         ]
       : []),
     {
-      header: "상세 코드", // 폭을 정하지 않는다 — 남는 폭을 받아 긴 코드가 잘리지 않게(삭제 칸이 붙는 그룹에서도, 2026-10-27 사용자 지정)
+      header: "상세 코드", // 폭을 둔다(전엔 남는 폭) — 정하지 않으면 좁은 창(최소 1260)에서 0 까지 눌렸다. 넓은 창에서는 다른 열과 같은 비율로 늘고, 모자라면 표 상자 안에서 옆으로 민다(2026-11-16 사용자 지정)
+      width: "w-[120px]",
       align: "left",
       cell: (d) =>
         d.deleted ? (
@@ -283,7 +284,7 @@ export function CodeItemPanel({
     },
     {
       header: "코드명",
-      width: "w-[160px]", // 그룹 목록의 그룹명 칸과 같은 폭 — 두 입력칸이 같은 크기로 칸을 채운다(2026-10-27 사용자 지정)
+      width: "w-[120px]", // 그룹 목록의 그룹명 칸과 같은 폭 — 두 입력칸이 같은 크기로 칸을 채운다(2026-10-27 사용자 지정)
       align: "left",
       // 기존 행은 수정 권한, 새 행은 등록 권한으로 고친다(새 행은 등록 권한이 있어야 생긴다)
       cell: (d) =>
@@ -305,10 +306,10 @@ export function CodeItemPanel({
         ),
     },
     // 새 행은 맨 끝에 붙는다 — 저장한 뒤 끌어서 옮긴다
-    { header: "표시 순서", width: "w-[90px]", cell: (d) => d.sortOrder },
+    { header: "순서", width: "w-[50px]", cell: (d) => d.sortOrder },
     {
       header: "사용여부",
-      width: "w-[100px]", // 표시 순서를 오른쪽으로 조금 옮겨 코드명 칸을 넓힌다(2026-10-27 사용자 지정, 전엔 120)
+      width: "w-[90px]", // 표시 순서를 오른쪽으로 조금 옮겨 코드명 칸을 넓힌다(2026-10-27 사용자 지정, 전엔 120)
       cell: (d) =>
         d.deleted ? (
           <DeletePending />

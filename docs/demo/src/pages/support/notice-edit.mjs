@@ -38,7 +38,7 @@ export default ({ A, R }) => {
   const period =
     q.name("게시 기간") +
     `<div class="flex items-start gap-[6px]"><div class="flex flex-1 flex-col gap-[8px]">${ui.dateField(A, { label: "게시 시작일" })}${postedTag}</div><span class="flex h-[34px] items-center text-erp-label">~</span><div class="flex-1">${ui.dateField(A, { label: "게시 종료일", value: "2026-09-14" })}</div></div>` +
-    q.note("기간 미설정 시 <u>게시 후 계속 표시</u>됩니다. 종료일만 설정하면 시작일은 게시일로 자동 적용됩니다.");
+    q.note("게시기간을 설정하지 않으면 <u>게시 후 계속 노출</u>됩니다.<br>종료일만 설정한 경우 시작일은 게시일로 자동 적용됩니다.");
   const settings = q.bare(
     q.group(`<span class="flex items-center gap-[10px]">${q.name("상단 고정")}${x.toggle("", true)}</span>` + q.note("상단 고정 시 공지 목록 맨 위에 표시되며, 여러 개일 경우 최신 게시일순으로 정렬됩니다.")) + q.group(period),
   );
