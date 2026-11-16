@@ -11,7 +11,7 @@ import { useCurrentBp } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import { updateWorker } from "../actions";
 import { callSave, SAVE_CALL_LOST } from "../send-model";
-import { blocksUnchanged, WORKER_SAVED, workerBody, workerProblemsByField, workerSaveNote, workerUnchanged, workerUnchangedNote, type WorkerField, type WorkerForm as Form } from "./worker-model";
+import { WORKER_SAVED, WORKER_UNCHANGED, workerBody, workerProblemsByField, workerSaveNote, workerUnchanged, type WorkerField, type WorkerForm as Form } from "./worker-model";
 
 
 // 날인 전 근로자 정보 수정(WHALEERP-125 「본인 대조」 · 126). 초대 코드를 못 받았다는 직원과 유선으로 번호를 확인했거나,
@@ -27,7 +27,7 @@ export function WorkerForm({
   contractId: number;
   status: string;
   initial: Form;
-  /** 상세에 [재발송]이 보이는가(canShowResend) — 바뀐 내용 없음 안내에 쓴다 */
+  /** 상세에 [재발송]이 보이는가(canShowResend) — 보이면 같은 값 저장을 막고 그리로 안내한다 */
   canResend: boolean;
   labels: { gender: EnumValue[]; contractStatus: EnumValue[] };
   /** 돌아갈 목록 주소(?back=) — 상세로 갈 때 이어 싣는다 */
@@ -106,7 +106,7 @@ export function WorkerForm({
       return;
     }
     // 저장하면 다시 보낸다 — 바뀐 것이 없으면 보내지 않고 알린다(WHALEERP-681)
-    if (blocksUnchanged(status) && workerUnchanged(form, initial)) {
+    if (canResend && workerUnchanged(form, initial)) {
       setUnchangedAsked(true);
       return;
     }
@@ -179,7 +179,7 @@ export function WorkerForm({
 
       {unchangedAsked && (
         <p role="status" className="text-[14px] leading-[1.6] text-erp-off">
-          {workerUnchangedNote(canResend)}
+          {WORKER_UNCHANGED}
         </p>
       )}
 

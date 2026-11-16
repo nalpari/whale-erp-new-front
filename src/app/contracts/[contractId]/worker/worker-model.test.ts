@@ -1,7 +1,7 @@
 // node --test "src/app/contracts/[contractId]/worker/worker-model.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isWorkerEditable, workerBody, workerOf, workerProblemsByField, blocksUnchanged, workerSaveNote, workerUnchanged, workerUnchangedNote, type WorkerForm } from "./worker-model.ts";
+import { isWorkerEditable, WORKER_UNCHANGED, workerBody, workerOf, workerProblemsByField, workerSaveNote, workerUnchanged, type WorkerForm } from "./worker-model.ts";
 
 /** 문장만, 화면 위에서 아래 순서로 */
 const workerProblems = (f: WorkerForm) => Object.values(workerProblemsByField(f));
@@ -69,10 +69,6 @@ test("바뀐 것이 없으면 저장하지 않는다 — 비교는 보낼 값(�
   ]) assert.equal(workerUnchanged({ ...initial, ...changed }, initial), false, JSON.stringify(changed));
 });
 
-test("바뀐 것 없이 저장하면 — 발송 대기 · 서명 대기만 막고, [재발송]은 상세에 그 버튼이 있을 때만 안내한다(WHALEERP-681)", () => {
-  for (const s of ["PENDING_SEND", "PENDING_SIGNATURE"]) assert.equal(blocksUnchanged(s), true, s);
-  // 수정 요청은 직원이 잘못 넣어 값이 이미 맞을 수 있다 — 같은 값으로 다시 보낼 수 있게 둔다
-  for (const s of ["CORRECTION_REQUESTED", null, undefined]) assert.equal(blocksUnchanged(s), false, String(s));
-  assert.match(workerUnchangedNote(true), /바뀐 내용이 없습니다\. .*\[재발송\]/);
-  assert.equal(workerUnchangedNote(false), "바뀐 내용이 없습니다.");
+test("바뀐 것 없이 저장하면 상세의 [재발송]으로 안내한다(WHALEERP-681)", () => {
+  assert.match(WORKER_UNCHANGED, /바뀐 내용이 없습니다\. .*\[재발송\]/);
 });

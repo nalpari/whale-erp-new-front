@@ -61,19 +61,14 @@ export function workerBody(f: WorkerForm, replaceContractIds?: number[]): Worker
 export function workerUnchanged(f: WorkerForm, initial: WorkerForm): boolean {
   const a = workerBody(f);
   const b = workerBody(initial);
-  // 보낼 칸 모두를 본다 — 칸이 늘어도 빠뜨리지 않게
-  return (Object.keys({ ...a, ...b }) as (keyof WorkerBody)[]).every((k) => a[k] === b[k]);
+  return a.name === b.name && a.phone === b.phone && a.birthDate === b.birthDate && a.gender === b.gender && a.isForeigner === b.isForeigner;
 }
 
 /**
- * 바뀐 것이 없으면 저장을 막는 상태 — 발송 대기 · 서명 대기만이다. 같은 내용으로 다시 보내는 길이 상세의 [재발송]에 있다. 수정 요청은
- * 직원이 잘못 넣어 값이 이미 맞을 수 있고 [재발송]이 없어(상세는 계약서 수정으로 보낸다), 같은 값 저장으로 다시 보낼 수 있게 둔다.
+ * 바뀐 것 없이 [저장]을 눌렀을 때 — 같은 값 저장은 상세에 [재발송]이 보일 때만 막고(canShowResend) 그리로 안내한다. [재발송]이 없으면
+ * (수정 요청 · api canResend 거짓) 같은 값 저장이 다시 보내는 유일한 길이라 막지 않는다
  */
-export const blocksUnchanged = (status: string | null | undefined) => status === "PENDING_SEND" || status === "PENDING_SIGNATURE";
-
-/** 바뀐 것 없이 [저장]을 눌렀을 때. [재발송]은 상세에 그 버튼이 보일 때만 안내한다(canShowResend — api canResend 가 거짓이면 없다) */
-export const workerUnchangedNote = (canResend: boolean) =>
-  canResend ? "바뀐 내용이 없습니다. 같은 내용으로 다시 보내려면 상세의 [재발송]을 눌러 주세요." : "바뀐 내용이 없습니다.";
+export const WORKER_UNCHANGED = "바뀐 내용이 없습니다. 같은 내용으로 다시 보내려면 상세의 [재발송]을 눌러 주세요.";
 
 /**
  * 저장이 끝났을 때의 토스트(WHALEERP-681 — 전에는 말없이 상세로 갔다). 다시 보냈는지는 번호(가입 초대 · 소속 추가 확인 · 가입한 직원)에
