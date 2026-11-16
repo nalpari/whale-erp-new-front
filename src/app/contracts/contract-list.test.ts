@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   apiSearch,
   backHrefOf,
+  cancelHrefOf,
   deadlineNote,
   fillScopeOf,
   listAfterSave,
@@ -259,4 +260,20 @@ test("발송 대기에 가입 · 초대 안내가 없을 때 — 초안 직원 �
   // @ts-expect-error — 가입 상태가 null 로 온 응답
   assert.deepEqual(statusNotes({ ...row, staffJoinState: null }, now, () => "가입 초대"), ["가입 초대"]);
   assert.deepEqual(statusNotes({ ...row, status: "PENDING_SIGNATURE", staffJoinState: "LINK_HOLD" }, now), []);
+});
+
+test("cancelHrefOf: 작성 화면 [취소]는 들어온 화면으로 간다(WHALEERP-683)", () => {
+  // 재계약은 원래 계약 상세 — 돌아갈 목록은 이어 싣는다
+  assert.equal(cancelHrefOf(7, undefined, undefined), "/contracts/7");
+  assert.equal(cancelHrefOf(7, undefined, "/contracts?page=2"), "/contracts/7?back=%2Fcontracts%3Fpage%3D2");
+  // 직원 정보 관리 목록 · 직원 상세에서 들어왔으면 그 화면
+  assert.equal(cancelHrefOf(undefined, "/staff-members", undefined), "/staff-members");
+  assert.equal(cancelHrefOf(undefined, "/staff-members?storeIds=3&page=2", undefined), "/staff-members?storeIds=3&page=2");
+  assert.equal(cancelHrefOf(undefined, "/staff-members/12", undefined), "/staff-members/12");
+  // 근로계약 목록에서 들어왔으면 그 목록, 아무것도 없으면 기본 목록
+  assert.equal(cancelHrefOf(undefined, undefined, "/contracts?page=2"), "/contracts?page=2");
+  assert.equal(cancelHrefOf(undefined, undefined, undefined), "/contracts");
+  // 직원 정보 관리 주소가 아니면 버린다
+  for (const bad of ["https://evil.example", "//evil.example", "/stores/1", "/staff-members/1/../../stores", "/staff-members-x", "/staff-members/abc"])
+    assert.equal(cancelHrefOf(undefined, bad, undefined), "/contracts", bad);
 });

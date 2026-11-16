@@ -201,6 +201,17 @@ export function backHrefOf(raw: string | string[] | undefined): string {
   return /^\/contracts(\?[^#]*)?$/.test(value) ? value : "/contracts";
 }
 
+/**
+ * 근로계약서 작성 화면 [취소]가 돌아갈 곳 — 들어온 화면이다(WHALEERP-683). 재계약(?from=)은 그 계약 상세(돌아갈 목록 ?back= 은 이어
+ * 싣는다), 직원 정보 관리 목록 · 직원 상세의 직원 초대 · 작성(?entry=)은 그 화면, 그 밖에는 돌아갈 목록(?back=)이다. entry 는 직원 정보
+ * 관리 주소만 받는다 — 다른 곳으로 보내려는 값은 버리고 목록으로 간다. 저장 · 임시저장 뒤 이동은 이것과 따로다(listAfterSave).
+ */
+export function cancelHrefOf(from: number | undefined, entry: string | string[] | undefined, back: string | string[] | undefined): string {
+  if (from !== undefined) return withBack(`/contracts/${from}`, back);
+  if (typeof entry === "string" && /^\/staff-members(\/\d{1,9})?(\?[^#]*)?$/.test(entry)) return entry;
+  return backHrefOf(back);
+}
+
 export function periodText(row: Pick<ContractListItem, "startDate" | "endDate">): string {
   if (!row.startDate) return "-";
   return `${row.startDate} ~ ${row.endDate ?? "무기한"}`;

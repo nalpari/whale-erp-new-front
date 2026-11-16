@@ -73,7 +73,8 @@ export default async function StaffMembersPage({
       <PageBar title="직원 정보 관리">
         {/* 초안을 저장하면 초대가 나간다 — 데모의 「계약서 작성」을 이름만 바꿨다(2026-10-12 yjnoh). 근로계약 등록 권한일 때만(WHALEERP-592) */}
         <ContractMenuPermission action="create">
-          <Button href={at("/contracts/new")}>직원 초대</Button>
+          {/* [취소]가 이 목록(같은 조건)으로 돌아오게 들어온 주소를 싣는다(?entry=, WHALEERP-683) */}
+          <Button href={at(`/contracts/new?entry=${encodeURIComponent(staffListHrefOf(query))}`)}>직원 초대</Button>
         </ContractMenuPermission>
       </PageBar>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">

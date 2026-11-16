@@ -29,7 +29,8 @@ export async function ContractBox({ staffMemberId }: { staffMemberId: number }) 
       <BoxMessage>
         등록된 근로계약이 없습니다.
         <ContractMenuPermission action="create">
-          <Button href={await bpHref("/contracts/new")}>
+          {/* [취소]가 이 직원 상세로 돌아오게 들어온 주소를 싣는다(?entry=, WHALEERP-683) */}
+          <Button href={await bpHref(`/contracts/new?entry=${encodeURIComponent(`/staff-members/${staffMemberId}`)}`)}>
             근로계약서 작성
           </Button>
         </ContractMenuPermission>

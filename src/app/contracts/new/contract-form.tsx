@@ -284,6 +284,7 @@ export function ContractForm({
   previousStartDate,
   minimumWage,
   back = "/contracts",
+  cancelHref,
 }: {
   stores: { storeId: number; name: string }[];
   labels: ContractFormLabels;
@@ -309,6 +310,8 @@ export function ContractForm({
   minimumWage: MinimumWage | null;
   /** 돌아갈 목록 주소(?back=) — 취소 · 저장 뒤 같은 조건의 목록으로 간다 */
   back?: string;
+  /** [취소]가 돌아갈 옛 경로(들어온 화면, cancelHrefOf — WHALEERP-683). 없으면 돌아갈 목록(back)이다 */
+  cancelHref?: string;
 }) {
   // 근무지가 하나뿐이면 미리 고르고(TO-DO 작성과 같다) 근무 장소도 그 근무지명으로 채운다
   const [form, setForm] = useState<Form>(() => initial ?? (stores.length === 1 ? withStore(initialForm(), String(stores[0].storeId), stores) : initialForm()));
@@ -552,7 +555,7 @@ export function ContractForm({
     <div ref={formRef} className="flex flex-col gap-[12px] [&_:is(select,input:not([type=radio],[type=checkbox])):disabled]:bg-erp-thead-bg">
       <div className="flex items-end gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약서</h2>
-        <Button variant="off" href={at(backHrefOf(back))}>
+        <Button variant="off" href={at(cancelHref ?? backHrefOf(back))}>
           취소
         </Button>
         {deleteButton}
