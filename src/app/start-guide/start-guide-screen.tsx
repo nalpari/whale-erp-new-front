@@ -268,6 +268,17 @@ function StepDetail({
 
 /** 따라 할 칸 하나 — 왼쪽 화면 예시 그림, 오른쪽 순서 · 안내 · [화면으로 가기](2026-11-11 사용자 지정 — 전엔 글이 왼쪽). 읽는 순서는 글이 먼저라 DOM 은 그대로 두고 그림 칸만 order-first 로 앞에 그린다 */
 function PartCard({ part, guide }: { part: GuidePart; guide: string }) {
+  // 안내가 여럿이면(빈 줄 \n\n) 안내마다 느낌표 하나씩, 안내 안의 \n 은 그 자리에서 꺾는다(2026-11-11 사용자 지정).
+  // 보통은 순서 아래, tipFirst 면 제목 바로 아래(2026-11-16 사용자 지정)
+  const tips = part.tip?.split("\n\n").map((t) => (
+    <p key={t} className="flex items-start gap-[6px] whitespace-pre-line text-[15px] leading-[1.6] font-medium text-erp-ink">
+      {/* 15px · 줄 높이 24px 의 첫 줄 가운데에 아이콘(14px)을 맞춘다 — offset 3px + 2px */}
+      <span className="mt-[2px] flex shrink-0">
+        <GuideIcon offset />
+      </span>
+      {t}
+    </p>
+  ));
   return (
     // 글 칸과 그림 칸을 반씩 — 그림이 380px 일 때 너무 작았다(2026-11-11 사용자 지정)
     <article
@@ -284,6 +295,7 @@ function PartCard({ part, guide }: { part: GuidePart; guide: string }) {
           {part.label && <span className="text-erp-point">{part.label}</span>}
           {part.title}
         </h4>
+        {part.tipFirst && tips}
         <ol className="flex list-decimal flex-col gap-[4px] pl-[20px] text-[15px] leading-[1.6] text-erp-ink">
           {/* 순서 안의 줄바꿈(\n)은 그대로 꺾는다(2026-11-11 사용자 지정) */}
           {part.actions.map((a) => (
@@ -292,16 +304,7 @@ function PartCard({ part, guide }: { part: GuidePart; guide: string }) {
             </li>
           ))}
         </ol>
-        {/* 안내가 여럿이면(빈 줄 \n\n) 안내마다 느낌표 하나씩, 안내 안의 \n 은 그 자리에서 꺾는다(2026-11-11 사용자 지정) */}
-        {part.tip?.split("\n\n").map((t) => (
-          <p key={t} className="flex items-start gap-[6px] whitespace-pre-line text-[15px] leading-[1.6] font-medium text-erp-ink">
-            {/* 15px · 줄 높이 24px 의 첫 줄 가운데에 아이콘(14px)을 맞춘다 — offset 3px + 2px */}
-            <span className="mt-[2px] flex shrink-0">
-              <GuideIcon offset />
-            </span>
-            {t}
-          </p>
-        ))}
+        {!part.tipFirst && tips}
         {part.path && <GoButton path={part.path} guide={guide} />}
       </div>
       {/* 그림은 11px 기준으로 그려 1.36배(글자 15px — 왼쪽 본문과 같은 크기)로 키운다. zoom 이라 칸 높이도 함께 늘어난다. 폭은 520px 까지 넓혀 그림 자체는 크게 둔다(2026-11-11 사용자 지정 — 글자 크기가 칸마다 제각각이었다) */}

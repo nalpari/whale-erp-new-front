@@ -107,6 +107,8 @@ export type GuidePart = {
   actions: string[];
   /** 느낌표 안내 — 안내끼리는 빈 줄(\n\n)로 나누고, \n 하나는 같은 안내 안 줄바꿈이다(2026-11-11 사용자 지정) */
   tip?: string;
+  /** 안내를 순서 아래가 아니라 제목 바로 아래에 — 순서를 읽기 전에 알아야 하는 말(2026-11-16 사용자 지정, 사업자 진위확인) */
+  tipFirst?: boolean;
   /** [OOO로 가기] 가 보낼 화면(탭 BP 접두 없이) */
   path?: string;
   /**
@@ -132,8 +134,9 @@ const STORE_FORM: GuidePart = {
   mock: "store-form",
   // 「점포 목록 위 [등록]을 눌러요」는 뺐다 — [점포 등록으로 가기]가 목록을 거치지 않고 바로 등록 화면으로 간다(2026-11-11 사용자 지정)
   actions: [
-    "「점포 기본정보」에서 점포유형(직영 · 가맹)을 선택하고 점포명 · 점포 연락처 · 점포 주소를 입력해요.",
-    "주소를 입력하면 위도·경도가 자동으로 채워져요.\n직원 앱에서 출퇴근 위치를 확인하려면 [출퇴근 위치적용]을 '사용'으로 설정해 주세요.",
+    // 칸 이름은 굵게 — 무엇을 입력할지 한눈에 보이게(2026-11-16 사용자 지정)
+    "「점포 기본정보」에서 <b>점포유형</b>(직영 · 가맹)을 선택하고 <b>점포명</b> · <b>점포 연락처</b> · <b>점포 주소</b>를 입력해요.",
+    "점포 주소를 입력하면 위도·경도가 자동으로 채워져요.\n직원 앱에서 출퇴근 위치를 확인하려면 [출퇴근 위치적용]을 '사용'으로 설정해 주세요.",
     "[저장]을 누르면 점포가 등록되고 상세 화면으로 이동해요.",
   ],
   tip: "점포 유형은 등록 후 변경할 수 없어요.",
@@ -152,6 +155,7 @@ const BIZ_VERIFY: GuidePart = {
     "사업자 인증을 완료하고 점포 상태를 '운영'으로 변경해 주세요.",
   ],
   tip: "점포를 등록할 때 사업자 인증은 선택이지만, 점포 상태를 '운영'으로 변경하려면 반드시 인증을 완료해야 해요.",
+  tipFirst: true,
 };
 
 const ROLE_GROUP: GuidePart = {
@@ -521,21 +525,13 @@ export type GuideCountKind = "stores" | "roleGroups" | "admins" | "staff";
 
 export type AutoGuide = { guide: GuideRef; count: GuideCountKind };
 
-/** 자동으로 띄우는 화면과 그 화면에서 셀 것 — 표에 없는 화면은 띄우지 않는다(근무스케줄 · 출퇴근 · 급여명세서는 하지 않는다) */
+/** 자동으로 띄우는 화면과 그 화면에서 셀 것 — 표에 없는 화면은 띄우지 않는다(점포 목록 · 근무스케줄 · 출퇴근 · 급여명세서는 하지 않는다 — 점포는 등록 화면에서만, 2026-11-16 사용자 지정) */
 const AUTO_SCREENS: Record<string, GuideCountKind> = {
-  "/stores": "stores",
   "/stores/new": "stores",
   "/bp-role-groups": "roleGroups",
   "/bp-admins": "admins",
   "/staff-members": "staff",
 };
-
-/** 미니 카드에 보일 칸 — 그 화면의 칸이고, 점포 목록(/stores)이면 STEP 1 칸 전부(점포 등록 화면 칸을 목록에서도 미리 보인다) */
-export function cardPartsOf(guide: GuideRef, screen: string): GuidePart[] {
-  const parts = partsOnScreen(guide, screen);
-  if (parts.length || screen !== "/stores" || guide.step !== "1") return parts;
-  return guideDetailOf(guide.track, guide.step).parts;
-}
 
 /** 이 화면에 자동으로 띄울 가이드 — 갈래의 주 단계를 순서대로 보며 그 화면 칸이 있는 첫 단계. 없으면 null */
 export function autoGuideOf(track: GuideTrack, screen: string): AutoGuide | null {
@@ -546,7 +542,7 @@ export function autoGuideOf(track: GuideTrack, screen: string): AutoGuide | null
   for (const s of GUIDE_STEPS[track]) {
     if (s.sub) continue;
     const guide = { track, step: stepNumberOf(s) };
-    if (cardPartsOf(guide, screen).length) return { guide, count };
+    if (partsOnScreen(guide, screen).length) return { guide, count };
   }
   return null;
 }
@@ -559,7 +555,7 @@ export const autoDismissKey = (adminAccountId: number, bpCodeId: number, guide: 
   `guide-auto-dismissed:${adminAccountId}:${bpCodeId}:${guideParam(guide.track, guide.step)}`;
 
 /** 띄운 자동 카드가 이 화면에도 남는지 — 그 단계 칸이 있는 화면(이어 넘어가는 nextPaths 포함, 예: 직원 관리 → 근로계약 작성)이면 따라간다(2026-11-16 사용자 지정) */
-export const autoFollows = (guide: GuideRef, screen: string) => cardPartsOf(guide, screen).length > 0;
+export const autoFollows = (guide: GuideRef, screen: string) => partsOnScreen(guide, screen).length > 0;
 
 /**
  * 자동으로 띄워도 되는지 — ?guide= 로 넘어온 기억이 남아 있는 동안은(닫았어도, 같은 단계의 다른 화면으로 따라왔어도) 띄우지 않는다.

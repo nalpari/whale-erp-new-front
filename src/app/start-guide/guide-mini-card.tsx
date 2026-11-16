@@ -14,10 +14,10 @@ import {
   autoDismissKey,
   autoFollows,
   autoGuideOf,
-  cardPartsOf,
   initialTrackOf,
   nextArrival,
   parseGuide,
+  partsOnScreen,
 } from "@/lib/start-guide";
 import { isClosedStore } from "@/lib/store-scope";
 import { getGuideCountAction } from "./guide-count-actions";
@@ -36,9 +36,35 @@ import { getGuideCountAction } from "./guide-count-actions";
 // [×]로 닫으면 그 브라우저에서 계정 · BP · 단계마다 다시 띄우지 않는다(localStorage, autoDismissKey). 가맹 역할은 점포 화면에 띄우지 않는다.
 // ?guide= 도착 카드가 먼저다 — 도착 기억이 남아 있는 동안은(닫았어도, 같은 단계 다른 화면이어도) 자동 카드는 띄우지 않는다(autoAllowed).
 
-/** 문구 안 <u>…</u> 만 밑줄 — 놓치면 안 되는 말만 짚는다(시작 가이드 화면과 같이 쓴다, 2026-11-11 사용자 지정). 다른 태그는 글자 그대로다 */
+/**
+ * 문구 안 <u>…</u> 는 밑줄, <b>…</b> 는 굵게 — 놓치면 안 되는 말 · 입력할 칸 이름만 짚는다(시작 가이드 화면과 같이 쓴다, 2026-11-11 · <b> 2026-11-16 사용자 지정).
+ * 다른 태그는 글자 그대로다. split 의 잡은 묶음이 [글자, 태그, 속, 글자, …] 로 와서 셋씩 본다
+ */
 export function underlined(text: string) {
-  return text.split(/<u>(.*?)<\/u>/).map((piece, i) => (i % 2 === 1 ? <u key={i}>{piece}</u> : piece));
+  const pieces = text.split(/<(u|b)>(.*?)<\/\1>/);
+  return pieces.map((piece, i) => {
+    if (i % 3 === 0) return piece;
+    if (i % 3 === 1) return null;
+    return pieces[i - 1] === "u" ? (
+      <u key={i}>{piece}</u>
+    ) : (
+      <b key={i} className="font-semibold">
+        {piece}
+      </b>
+    );
+  });
+}
+
+/** 칸의 느낌표 안내 — 보통은 순서 아래, tipFirst 면 제목 바로 아래(2026-11-16 사용자 지정) */
+function tipsOf(tip: string | undefined) {
+  return tip?.split("\n\n").map((t) => (
+    <p key={t} className="flex items-start gap-[6px] whitespace-pre-line text-[14px] leading-[1.6] font-medium text-erp-ink">
+      <span className="mt-[2px] flex shrink-0">
+        <GuideIcon offset />
+      </span>
+      {t}
+    </p>
+  ));
 }
 
 /** 카드 폭 · 머리 줄 높이 — 창을 줄였을 때 머리 줄이 화면 안에 남게 붙잡는 데 쓴다 */
@@ -199,7 +225,7 @@ export function GuideMiniCardSlot() {
   const autoShown = !arrived && auto && autoFollows(auto.guide, screen) && !(auto.guide.step === "1" && !noStores) ? auto.guide : null;
   const parsed = arrived ?? autoShown;
   if (!parsed) return null;
-  const parts = cardPartsOf(parsed, screen);
+  const parts = partsOnScreen(parsed, screen);
   if (parts.length === 0) return null;
   const stepTitle = GUIDE_STEPS[parsed.track].find((s) => s.label === `STEP ${parsed.step}`)?.title ?? "";
   const back = `/start-guide?track=${parsed.track}&step=${parsed.step}`;
@@ -266,6 +292,7 @@ export function GuideMiniCardSlot() {
               {part.label && <span className="text-erp-point">{part.label}</span>}
               {part.title}
             </h3>
+            {part.tipFirst && tipsOf(part.tip)}
             <ol className="flex list-decimal flex-col gap-[4px] pl-[18px] text-[14px] leading-[1.6] text-erp-ink">
               {part.actions.map((a) => (
                 <li key={a} className="whitespace-pre-line">
@@ -273,14 +300,7 @@ export function GuideMiniCardSlot() {
                 </li>
               ))}
             </ol>
-            {part.tip?.split("\n\n").map((t) => (
-              <p key={t} className="flex items-start gap-[6px] whitespace-pre-line text-[14px] leading-[1.6] font-medium text-erp-ink">
-                <span className="mt-[2px] flex shrink-0">
-                  <GuideIcon offset />
-                </span>
-                {t}
-              </p>
-            ))}
+            {!part.tipFirst && tipsOf(part.tip)}
           </section>
         ))}
       </div>

@@ -8,13 +8,11 @@ import {
   autoDismissKey,
   autoFollows,
   autoGuideOf,
-  cardPartsOf,
   guideDetailOf,
   guideParam,
   nextArrival,
   parseGuide,
   partOnScreen,
-  partsOnScreen,
   stepNumberOf,
   withRo,
 } from "./start-guide.ts";
@@ -127,12 +125,12 @@ test("withRo — 받침 없음 · ㄹ 받침은 「로」, 그 밖의 받침은 
   assert.equal(withRo(""), "로");
 });
 
-test("순서 문구의 <u> 는 짝이 맞고, 한 단계 안 칸 제목은 겹치지 않는다(key)", () => {
+test("순서 문구의 <u> · <b> 는 짝이 맞고, 한 단계 안 칸 제목은 겹치지 않는다(key)", () => {
   for (const track of TRACKS)
     for (const step of GUIDE_STEPS[track].filter((s) => !s.sub)) {
       const parts = guideDetailOf(track, stepNumberOf(step)).parts;
       assert.equal(new Set(parts.map((p) => p.title)).size, parts.length, `${track} ${step.label} 칸 제목 겹침`);
-      for (const a of parts.flatMap((p) => p.actions)) assert.ok(!/<\/?u>/.test(a.replace(/<u>(.*?)<\/u>/g, "$1")), a);
+      for (const a of parts.flatMap((p) => p.actions)) assert.ok(!/<\/?[ub]>/.test(a.replace(/<(u|b)>(.*?)<\/\1>/g, "$2")), a);
     }
 });
 
@@ -140,7 +138,8 @@ test("순서 문구의 <u> 는 짝이 맞고, 한 단계 안 칸 제목은 겹�
 
 test("자동 띄우기 — 화면별 단계 · 건수", () => {
   assert.deepEqual(autoGuideOf("STORE", "/stores/new"), { guide: { track: "STORE", step: "1" }, count: "stores" });
-  assert.deepEqual(autoGuideOf("STORE", "/stores"), { guide: { track: "STORE", step: "1" }, count: "stores" });
+  // 점포 목록에는 띄우지 않는다 — 점포 등록 화면에서만(2026-11-16 사용자 지정)
+  assert.equal(autoGuideOf("STORE", "/stores"), null);
   assert.deepEqual(autoGuideOf("STORE", "/bp-role-groups"), { guide: { track: "STORE", step: "2" }, count: "roleGroups" });
   assert.deepEqual(autoGuideOf("STORE", "/bp-admins"), { guide: { track: "STORE", step: "2" }, count: "admins" });
   assert.deepEqual(autoGuideOf("STORE", "/staff-members"), { guide: { track: "STORE", step: "3" }, count: "staff" });
@@ -148,14 +147,8 @@ test("자동 띄우기 — 화면별 단계 · 건수", () => {
   assert.equal(autoGuideOf("STORE", "/stores/12"), null);
   // 가맹 역할은 점포를 등록하지 못해 점포 화면에는 띄우지 않는다 — 점포 없음 띠가 배정 요청을 안내한다(2026-11-16 사용자 지정)
   assert.equal(autoGuideOf("FRANCHISEE", "/stores"), null);
+  assert.equal(autoGuideOf("FRANCHISEE", "/stores/new"), null);
   assert.deepEqual(autoGuideOf("FRANCHISEE", "/staff-members"), { guide: { track: "FRANCHISEE", step: "3" }, count: "staff" });
-});
-
-test("자동 띄우기 — 점포 목록에서도 STEP 1 칸을 보인다", () => {
-  const g = { track: "STORE" as const, step: "1" };
-  assert.ok(cardPartsOf(g, "/stores").length > 0);
-  assert.deepEqual(cardPartsOf(g, "/stores/new"), partsOnScreen(g, "/stores/new"));
-  assert.equal(cardPartsOf({ track: "STORE", step: "3" }, "/stores").length, 0);
 });
 
 // 자동 카드도 그 단계의 다음 화면으로 따라가므로 닫은 기록은 단계마다다 — 점포 목록에서 닫으면 점포 등록 화면에서도 다시 뜨지 않는다(2026-11-16 사용자 지정)
