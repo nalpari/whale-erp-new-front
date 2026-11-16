@@ -37,20 +37,28 @@ import { getGuideCountAction } from "./guide-count-actions";
 // ?guide= 도착 카드가 먼저다 — 도착 기억이 남아 있는 동안은(닫았어도, 같은 단계 다른 화면이어도) 자동 카드는 띄우지 않는다(autoAllowed).
 
 /**
- * 문구 안 <u>…</u> 는 밑줄, <b>…</b> 는 굵게 — 놓치면 안 되는 말 · 입력할 칸 이름만 짚는다(시작 가이드 화면과 같이 쓴다, 2026-11-11 · <b> 2026-11-16 사용자 지정).
- * 다른 태그는 글자 그대로다. split 의 잡은 묶음이 [글자, 태그, 속, 글자, …] 로 와서 셋씩 본다
+ * 문구 안 <u>…</u> 는 밑줄, <b>…</b> 는 굵게, <mark>…</mark> 는 형광펜 — 놓치면 안 되는 말 · 입력할 칸 이름만 짚는다
+ * (시작 가이드 화면과 같이 쓴다, 2026-11-11 · <b> · <mark> 2026-11-16 사용자 지정). 다른 태그는 글자 그대로다.
+ * split 의 잡은 묶음이 [글자, 태그, 속, 글자, …] 로 와서 셋씩 본다. 형광펜 안의 줄바꿈(\n)도 잡도록 [\s\S]
  */
 export function underlined(text: string) {
-  const pieces = text.split(/<(u|b)>(.*?)<\/\1>/);
+  const pieces = text.split(/<(u|b|mark)>([\s\S]*?)<\/\1>/);
   return pieces.map((piece, i) => {
     if (i % 3 === 0) return piece;
     if (i % 3 === 1) return null;
-    return pieces[i - 1] === "u" ? (
-      <u key={i}>{piece}</u>
-    ) : (
-      <b key={i} className="font-semibold">
+    const tag = pieces[i - 1];
+    if (tag === "u") return <u key={i}>{piece}</u>;
+    if (tag === "b")
+      return (
+        <b key={i} className="font-semibold">
+          {piece}
+        </b>
+      );
+    // 형광펜 — 공지 「게시일」 꼬리표와 같은 연한 노랑(#fff6e5 바탕 · #956013 글자, 토큰이 없어 쓰는 자리에 적는다). 줄이 꺾여도 줄마다 바탕이 이어지게 clone
+    return (
+      <mark key={i} className="rounded-[2px] bg-[#fff6e5] px-[2px] text-[#956013] [box-decoration-break:clone]">
         {piece}
-      </b>
+      </mark>
     );
   });
 }
@@ -62,7 +70,7 @@ function tipsOf(tip: string | undefined) {
       <span className="mt-[2px] flex shrink-0">
         <GuideIcon offset />
       </span>
-      {t}
+      <span>{underlined(t)}</span>
     </p>
   ));
 }

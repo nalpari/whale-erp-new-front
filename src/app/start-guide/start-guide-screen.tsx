@@ -276,7 +276,7 @@ function PartCard({ part, guide }: { part: GuidePart; guide: string }) {
       <span className="mt-[2px] flex shrink-0">
         <GuideIcon offset />
       </span>
-      {t}
+      <span>{underlined(t)}</span>
     </p>
   ));
   return (

@@ -125,13 +125,19 @@ test("withRo — 받침 없음 · ㄹ 받침은 「로」, 그 밖의 받침은 
   assert.equal(withRo(""), "로");
 });
 
-test("순서 문구의 <u> · <b> 는 짝이 맞고, 한 단계 안 칸 제목은 겹치지 않는다(key)", () => {
+test("순서 · 안내 문구의 <u> · <b> · <mark> 는 짝이 맞고, 한 단계 안 칸 제목은 겹치지 않는다(key)", () => {
   for (const track of TRACKS)
     for (const step of GUIDE_STEPS[track].filter((s) => !s.sub)) {
       const parts = guideDetailOf(track, stepNumberOf(step)).parts;
       assert.equal(new Set(parts.map((p) => p.title)).size, parts.length, `${track} ${step.label} 칸 제목 겹침`);
-      for (const a of parts.flatMap((p) => p.actions)) assert.ok(!/<\/?[ub]>/.test(a.replace(/<(u|b)>(.*?)<\/\1>/g, "$2")), a);
+      for (const a of parts.flatMap((p) => [...p.actions, ...(p.tip ? [p.tip] : [])]))
+        assert.ok(!/<\/?(u|b|mark)>/.test(a.replace(/<(u|b|mark)>([\s\S]*?)<\/\1>/g, "$2")), a);
     }
+});
+
+test("사업자 진위확인 안내는 형광펜으로 강조한다(2026-11-16 사용자 지정)", () => {
+  const biz = guideDetailOf("STORE", "1").parts.find((p) => p.title === "사업자 진위확인하기");
+  assert.match(biz?.tip ?? "", /^<mark>점포를 등록할 때 사업자 인증은 선택이지만.*<\/mark>$/);
 });
 
 // ── 미니 카드 자동 띄우기(2026-11-16 사용자 지정) ──
