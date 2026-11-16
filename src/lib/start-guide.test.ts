@@ -173,6 +173,13 @@ test("자동 카드가 따라가는 화면 — 그 단계 칸이 있는 화면(�
   assert.equal(autoFollows({ track: "STORE", step: "3" }, "/payslips"), false);
 });
 
+test("근로계약서 작성하기 칸은 이어 쓰기 화면(/contracts/{id}/edit)까지 따라간다 — 상세 화면은 아니다(2026-11-16 사용자 지정)", () => {
+  const part = guideDetailOf("STORE", "3").parts.find((p) => p.title === "근로계약서 작성하기")!;
+  assert.equal(partOnScreen(part, "/contracts/31/edit"), true);
+  assert.equal(partOnScreen(part, "/contracts/31"), false);
+  assert.equal(partOnScreen(part, "/contracts/31/edit/more"), false);
+});
+
 test("자동 띄우기는 ?guide= 도착이 없는 화면에서만", () => {
   assert.equal(autoAllowed({ guide: null, seen: null }), true);
   assert.equal(autoAllowed({ guide: "STORE-3", seen: "STORE-3|/staff-members" }), false);

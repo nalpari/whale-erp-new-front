@@ -114,6 +114,7 @@ export type GuidePart = {
   /**
    * 그 화면에서 이어 넘어가는 화면 — 가이드 미니 카드가 여기서도 남는다(순서의 다음 줄을 이 화면에서 한다). 「/payslips/」처럼 / 로 끝나면
    * 그 아래 주소 모두다(코드 리뷰로 찾음, 2026-11-11 — 근로계약 작성 · 급여명세서 검토로 넘어가자마자 카드가 꺼졌다)
+   * 별표(*)는 주소 한 칸을 받는다 — 근로계약 이어 쓰기 화면(2026-11-16)
    */
   nextPaths?: string[];
   mock: GuideMockKind;
@@ -205,7 +206,8 @@ const adminForm = (title: string): GuidePart => ({
 const CONTRACT: GuidePart = {
   title: "근로계약서 작성하기",
   path: "/staff-members",
-  nextPaths: ["/contracts/new"],
+  // 이어 쓰기(작성 중인 계약)도 같은 작성 화면이다 — 직원 정보 관리에서 작성 중인 직원을 누르면 간다(2026-11-16 사용자 지정)
+  nextPaths: ["/contracts/new", "/contracts/*/edit"],
   mock: "contract",
   actions: [
     // 문구는 2026-11-11 사용자 지정
@@ -495,7 +497,14 @@ export function parseGuide(guide: string | null | undefined): GuideRef | null {
 /** 칸이 그 화면(탭 BP 접두를 뗀 주소)의 것인지 — [OOO로 가기]의 화면이거나 거기서 이어 넘어가는 화면(nextPaths, / 로 끝나면 그 아래 모두) */
 export function partOnScreen(part: GuidePart, screen: string): boolean {
   if (part.path === screen) return true;
-  return (part.nextPaths ?? []).some((p) => (p.endsWith("/") ? screen.startsWith(p) : screen === p));
+  return (part.nextPaths ?? []).some((p) => (p.endsWith("/") ? screen.startsWith(p) : p.includes("*") ? segmentsMatch(p, screen) : screen === p));
+}
+
+// 「/contracts/(별표)/edit」처럼 별표(*)가 주소 한 칸(계약 번호 등)을 받는 모양 — 칸 수가 같아야 한다(2026-11-16, 이어 쓰기 화면)
+function segmentsMatch(pattern: string, screen: string) {
+  const want = pattern.split("/");
+  const got = screen.split("/");
+  return want.length === got.length && want.every((w, i) => w === "*" ? got[i] !== "" : w === got[i]);
 }
 
 /** 그 단계에서 지금 화면에 띄울 칸들 — 없으면 빈 배열(카드를 띄우지 않는다) */

@@ -75,8 +75,8 @@ const HOURS_FIELDS: [HourField, string][] = [
 const HELP = "text-[12px] leading-[1.5] text-erp-muted";
 
 /** 고용 형태 · 계약 방식 카드 아래 한 줄 설명 — 시작 가이드 근로계약서 작성 안내와 같은 말(2026-11-16 사용자 지정) */
-const EMPLOYMENT_DESC = { FULL_TIME: "월급/연봉으로 급여 계산", PART_TIME: "근무시간에 따라 시급으로 급여 계산" } as const;
-const METHOD_DESC = { ELECTRONIC: "직원 앱 발송 · 직원이 직접 서명", PAPER: "서명본 파일 등록 · 발송 없이 바로 완료" } as const;
+const EMPLOYMENT_DESC = { FULL_TIME: "월급/연봉 기준으로 급여 계산", PART_TIME: "근무시간에 따라 시급으로 급여 계산" } as const;
+const METHOD_DESC = { ELECTRONIC: "직원에게 발송 · 직원이 직접 서명", PAPER: "서명된 계약서 첨부 · 별도 발송 없음" } as const;
 
 /**
  * 큰 선택 카드(라디오) — TO-DO 등록(todo-form ChoiceCards) · 점포 등록 점포유형 카드와 같은 모양. 고르면 선이 브랜드색, 바탕이 두 번째 바탕색으로 바뀐다.
@@ -689,7 +689,8 @@ export function ContractForm({
                 items={(["FULL_TIME", "PART_TIME"] as const).map((v) => ({ value: v, title: labelOf(labels.employmentType, v), desc: EMPLOYMENT_DESC[v] }))}
               />
             </Group>
-            <Group label="계약 방식" hint={paper ? "당사자가 모두 서명한 근로계약서를 올려 등록하면 발송 · 전자서명 없이 바로 서명 완료로 저장된다." : undefined}>
+            {/* 종이 계약 안내 문구(라벨 옆)는 뺐다 — 카드 설명 「서명된 계약서 첨부 · 별도 발송 없음」이 같은 말이다(2026-11-16 사용자 지정) */}
+            <Group label="계약 방식">
               <ChoiceCards
                 name="contractMethod"
                 value={form.contractMethod}
