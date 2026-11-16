@@ -11,7 +11,7 @@ import { useCurrentBp } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import { updateWorker } from "../actions";
 import { callSave, SAVE_CALL_LOST } from "../send-model";
-import { WORKER_SAVED, workerBody, workerProblemsByField, workerSaveNote, workerUnchanged, workerUnchangedNote, type WorkerField, type WorkerForm as Form } from "./worker-model";
+import { blocksUnchanged, WORKER_SAVED, workerBody, workerProblemsByField, workerSaveNote, workerUnchanged, workerUnchangedNote, type WorkerField, type WorkerForm as Form } from "./worker-model";
 
 
 // 날인 전 근로자 정보 수정(WHALEERP-125 「본인 대조」 · 126). 초대 코드를 못 받았다는 직원과 유선으로 번호를 확인했거나,
@@ -20,12 +20,15 @@ export function WorkerForm({
   contractId,
   status,
   initial,
+  canResend,
   labels,
   back,
 }: {
   contractId: number;
   status: string;
   initial: Form;
+  /** 상세에 [재발송]이 보이는가(canShowResend) — 바뀐 내용 없음 안내에 쓴다 */
+  canResend: boolean;
   labels: { gender: EnumValue[]; contractStatus: EnumValue[] };
   /** 돌아갈 목록 주소(?back=) — 상세로 갈 때 이어 싣는다 */
   back: string;
@@ -37,7 +40,7 @@ export function WorkerForm({
   const at = (path: string) => bpPath(bp, path);
   const [form, setForm] = useState<Form>(initial);
   const [serverError, setServerError] = useState("");
-  // 바뀐 것 없이 [저장]을 눌렀다 — 칸을 하나라도 고치면 안내를 내린다(아래에서 지금 값으로 다시 본다, WHALEERP-681)
+  // 바뀐 것 없이 [저장]을 눌렀다 — 칸을 하나라도 고치면 내린다(set, WHALEERP-681)
   const [unchangedAsked, setUnchangedAsked] = useState(false);
   const [saving, startSaving] = useTransition();
   const update = useAction(updateWorker, { kind: "update" });
@@ -58,7 +61,10 @@ export function WorkerForm({
   const birthRef = useRef<HTMLDivElement>(null);
   const genderRef = useRef<HTMLDivElement>(null);
 
-  const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
+  const set = <K extends keyof Form>(key: K, value: Form[K]) => {
+    setUnchangedAsked(false);
+    setForm((f) => ({ ...f, [key]: value }));
+  };
   const issues = workerProblemsByField(form);
   // 칸 아래 오류는 저장을 누른 때 오류가 난 칸에만, 고치는 동안 다시 본다(작성 화면과 같다)
   const [errorFields, setErrorFields] = useState<ReadonlySet<WorkerField> | null>(null);
@@ -90,7 +96,6 @@ export function WorkerForm({
       setServerError(result.error);
       setFailures((n) => n + 1);
     });
-  const unchanged = workerUnchanged(form, initial);
   const save = () => {
     setServerError("");
     setUnchangedAsked(false);
@@ -101,7 +106,7 @@ export function WorkerForm({
       return;
     }
     // 저장하면 다시 보낸다 — 바뀐 것이 없으면 보내지 않고 알린다(WHALEERP-681)
-    if (unchanged) {
+    if (blocksUnchanged(status) && workerUnchanged(form, initial)) {
       setUnchangedAsked(true);
       return;
     }
@@ -172,9 +177,9 @@ export function WorkerForm({
         </FormRow>
       </FormGroup>
 
-      {unchangedAsked && unchanged && (
+      {unchangedAsked && (
         <p role="status" className="text-[14px] leading-[1.6] text-erp-off">
-          {workerUnchangedNote(status)}
+          {workerUnchangedNote(canResend)}
         </p>
       )}
 

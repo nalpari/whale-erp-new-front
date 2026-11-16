@@ -31,14 +31,14 @@ export async function deleteContract(contractId: number, back?: string): Promise
   redirect(await bpHref(listAfterSave(back, null)));
 }
 
+/** 근로자 정보 수정 성공 — 화면이 토스트를 띄우고 갈 상세 주소(탭 BP 를 붙인 주소) */
+export type WorkerSaved = { ok: true; href: string };
+
 /**
  * 날인 전 당사자 정보 수정(WHALEERP-125 · 126). 저장하면 api 가 곧바로 다시 보낸다(2026-10-19 재영). 성공하면 상세 주소를 돌려준다 —
  * 화면이 완료 토스트를 띄우고 그리로 간다(WHALEERP-681, 급여명세서 작성과 같다). 실패하면 화면에 보일 문장을 돌려주고, 새 번호로
  * 같은 점포에 진행 중 계약이 있으면(409 CONTRACT_IN_PROGRESS) 그 목록도 돌려줘 화면이 대체할지 묻는다.
  */
-/** 근로자 정보 수정 성공 — 화면이 토스트를 띄우고 갈 상세 주소(탭 BP 를 붙인 주소) */
-export type WorkerSaved = { ok: true; href: string };
-
 export async function updateWorker(contractId: number, body: WorkerBody, back?: string): Promise<SaveResult | WorkerSaved> {
   if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다." };
   try {
