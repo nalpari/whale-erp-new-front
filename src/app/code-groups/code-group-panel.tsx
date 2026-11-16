@@ -279,8 +279,8 @@ export function CodeGroupPanel({
     },
     {
       header: "관리주체",
-      // 새 행의 선택칸(글자 + 오른쪽 화살표 30)에 ‘플랫폼고정’이 잘리지 않는 폭
-      width: "w-[100px]",
+      // 새 행의 선택칸(왼쪽 여백 10 + 글자 + 오른쪽 화살표 30)에 ‘플랫폼고정’이 잘리지 않는 폭 — 1260 에서 모자라면 표 상자 안에서 민다
+      width: "w-[130px]",
       cell: (d) =>
         d.added ? (
           <CellError message={errors.owner} reserve={addedInvalid}>
@@ -304,7 +304,8 @@ export function CodeGroupPanel({
     },
     {
       header: "BP 적용",
-      width: "w-[70px]",
+      // [BP 적용] 버튼(약 93) + 칸 여백 20 — 70 이면 버튼이 칸 밖으로 넘쳤다(리뷰 반영, 2026-11-16)
+      width: "w-[116px]",
       // 플랫폼제공 그룹만 [BP 적용]. 이미 적용한 그룹도 다시 누를 수 있다(BP 에 없는 코드만 들어간다). 새 그룹은 저장 뒤에 적용한다.
       cell: (d) =>
         !d.added && d.manageOwnerCode === "PLATFORM_PROVIDED" && manage ? (

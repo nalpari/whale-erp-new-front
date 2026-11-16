@@ -283,7 +283,7 @@ export function LeadList({ items, total, query, answers, interests, emptyAll = f
     { header: "연락처", width: "w-[160px]", cell: (l) => <WithIcon icon="phone">{formatPhone(l.phone)}</WithIcon> },
     // 업종이 기타면 직접 넣은 글자를 괄호로 붙인다.
     { header: "업종", width: "w-[200px]", cell: (l) => (l.industryDetail ? `${industryLabel(l.industryCode)} (${l.industryDetail})` : industryLabel(l.industryCode)) },
-    // 문의자 · 연락처 · 업종 · 관심 서비스는 비슷한 폭(200 · 220 · 220 · 220) — 모두 정한 폭이라 남는 폭은 열마다 같은 비율로 나눠 늘어난다(2026-11-06 사용자 지정)
+    // 문의자 · 연락처 · 업종 · 관심 서비스는 정한 폭(140 · 160 · 200 · 200, 열 합 920 — 1260 표 폭에 맞춤, 2026-11-16) — 모두 정한 폭이라 남는 폭은 열마다 같은 비율로 나눠 늘어난다(2026-11-06 사용자 지정)
     { header: "관심 서비스", width: "w-[200px]", cell: (l) => l.interests.map((i) => labelOf(interests, i)).join(" · ") || "-" },
     { header: "접수", width: "w-[110px]", cell: (l) => formatDateTime(l.createdAt).slice(0, 10) },
   ];

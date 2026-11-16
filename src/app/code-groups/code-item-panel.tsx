@@ -284,7 +284,7 @@ export function CodeItemPanel({
     },
     {
       header: "코드명",
-      width: "w-[120px]", // 그룹 목록의 그룹명 칸과 같은 폭 — 두 입력칸이 같은 크기로 칸을 채운다(2026-10-27 사용자 지정)
+      width: "w-[120px]", // 입력칸이 들어가는 최소 폭 — 좁은 창(최소 1260)에서 모자라면 표 상자 안에서 민다(2026-11-16 사용자 지정)
       align: "left",
       // 기존 행은 수정 권한, 새 행은 등록 권한으로 고친다(새 행은 등록 권한이 있어야 생긴다)
       cell: (d) =>
@@ -309,7 +309,7 @@ export function CodeItemPanel({
     { header: "순서", width: "w-[50px]", cell: (d) => d.sortOrder },
     {
       header: "사용여부",
-      width: "w-[90px]", // 표시 순서를 오른쪽으로 조금 옮겨 코드명 칸을 넓힌다(2026-10-27 사용자 지정, 전엔 120)
+      width: "w-[90px]", // 스위치가 들어가는 폭(2026-11-16, 전엔 100)
       cell: (d) =>
         d.deleted ? (
           <DeletePending />

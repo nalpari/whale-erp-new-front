@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Badge, Button, DataTable, PageBar, Pagination, Tag, type Column } from "@/components/common";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, wasUpdated } from "@/lib/format";
 import { RoleMenuDialog, type MenuDialogRole } from "@/components/role-groups/role-menu-dialog";
 import { CARD } from "@/components/role-groups/role-parts";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
@@ -11,7 +11,6 @@ import { useAccount, useCurrentBp, usePagePermission } from "@/components/site/s
 import { bpPath } from "@/lib/bp-path";
 import type { BpRoleGroup, BpRoleGroupList } from "@/lib/bp-role-groups";
 import type { EnumValue } from "@/lib/enums";
-import { wasUpdated } from "@/lib/format";
 import { PATH, useBpActions, type BpRoleDetailState } from "./bp-actions";
 import { BpRoleSide } from "./role-side";
 
@@ -75,7 +74,7 @@ function RolesBody({
   const columns: Column<BpRoleGroup>[] = [
     {
       header: "권한유형 · 코드",
-      // 권한유형 · 코드 · 권한명 · 최종수정은 같은 260px(2026-10-27 사용자 지정 — 최종수정의 「일시 · 수정자」가 들어가는 폭에 맞췄다). 설명이 남는 폭
+      // 권한유형 · 코드 · 권한명은 같은 260px(2026-10-27 사용자 지정), 최종수정은 일시만이라 150px(2026-11-16). 설명이 남는 폭
       width: "w-[260px]",
       // 가운데 정렬 — 열 이름과 맞춘다(2026-10-27 사용자 지정, 전엔 왼쪽)
       cell: (r) => (
@@ -87,7 +86,7 @@ function RolesBody({
     {
       header: "권한명",
       // 폭을 정하지 않으면 설명과 남는 폭을 반씩 나눠 설명 글자가 칸 한가운데서 시작했다 — 권한명을 고정하고 설명이 나머지를 쓴다(2026-10-26 사용자 지정)
-      width: "w-[260px]", // 권한유형 · 코드 · 최종수정과 같은 폭(2026-10-27 사용자 지정, 전엔 180)
+      width: "w-[260px]", // 권한유형 · 코드와 같은 폭(2026-10-27 사용자 지정, 전엔 180)
       align: "left",
       cell: (r) => (
         <span className="flex min-w-0 items-center gap-[6px]">
@@ -105,9 +104,8 @@ function RolesBody({
       ),
     },
     { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
-    // 「일시 · 수정자」가 220px 에선 수정자 이름이 말줄임됐다 — 260px(권한유형 · 코드 · 권한명과 같은 폭, 2026-10-27 사용자 지정)
     { header: "최종수정", width: "w-[150px]", cell: (r) =>
-        // 일시만 — 고친 사람은 상세에서 본다. 칸이 좁아져 좁은 창(최소 1260)에서도 [설정]까지 보인다(2026-11-16 사용자 지정, 전엔 「일시 · 사람」 260)
+        // 일시만 — 고친 사람은 상세에서 본다. 플랫폼 권한 관리와 맞췄다(2026-11-16 사용자 지정, 전엔 「일시 · 사람」 260)
         // 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청)
         wasUpdated(r.createdAt, r.updatedAt) ? formatDateTime(r.updatedAt) : <span className="text-erp-muted">-</span>,
     },

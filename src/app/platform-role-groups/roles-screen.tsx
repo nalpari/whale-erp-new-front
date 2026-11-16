@@ -3,11 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Badge, Button, DataTable, PageBar, useAction, type Column } from "@/components/common";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, wasUpdated } from "@/lib/format";
 import { CodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
-import { wasUpdated } from "@/lib/format";
 import type { RoleGroup } from "@/lib/platform-role-groups";
 import { RoleMenuDialog, type MenuDialogActions } from "@/components/role-groups/role-menu-dialog";
 import { getRoleGroupMenusAction, previewRoleGroupMenusAction, saveRoleGroupMenusAction } from "./actions";
@@ -51,7 +50,7 @@ export function RolesScreen({
     {
       header: "권한유형 · 코드",
       // 「플랫폼 관리자 · PA000002」가 권한명과 너무 붙어 보였다(2026-10-26 사용자 지정). BP 권한 그룹 관리와 같은 폭(2026-10-27)
-      width: "w-[170px]", // 「플랫폼마스터 · PM000001」이 다 보이는 폭. 고정 칸 합 638 — 최소폭 1260 에서 설명은 거의 말줄임만 남는다(상세 칸에서 본다)(2026-11-16 사용자 지정, 전엔 260 · 권한명 260 · 최종수정 260)
+      width: "w-[170px]", // 「플랫폼마스터 · PM000001」이 다 보이는 폭. 고정 칸 합 622 — 최소폭 1260 에서 설명은 거의 말줄임만 남는다(상세 칸에서 본다)(2026-11-16 사용자 지정, 전엔 260 · 권한명 260 · 최종수정 260)
       // 가운데 정렬 — 열 이름과 맞춘다(2026-10-27 사용자 지정, 전엔 왼쪽)
       cell: (r) => (
         <span className="truncate">
@@ -62,7 +61,7 @@ export function RolesScreen({
     {
       header: "권한명",
       // 폭을 정하지 않으면 설명과 남는 폭을 반씩 나눠 설명 글자가 칸 한가운데서 시작했다. 설명이 권한명에 더 붙게 폭을 정한다(2026-10-26 사용자 지정)
-      width: "w-[140px]", // 권한명이 잘 보이게 넓힌다(2026-11-16 사용자 지정)
+      width: "w-[140px]", // 최소폭 1260 에 맞춰 줄였다 — 긴 권한명은 말줄임, 상세 칸에서 본다(2026-11-16 사용자 지정, 전엔 260)
       align: "left",
       cell: (r) => (
         <button
@@ -78,7 +77,7 @@ export function RolesScreen({
     // 설명은 남는 폭을 다 쓴다 — 최종수정(늘 16자) · 메뉴설정 버튼 · 메뉴설정 여부(등록 · 미등록)는 내용이 정해져 있어 딱 맞는 폭으로 고정하고,
     // 넓은 창에서 늘어나는 폭은 설명이 가져간다. 최소폭 1260 에서는 설명이 거의 말줄임만 남는다(2026-11-16 사용자 지정)
     { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
-    // 한 칸에 「일시 · 사람」. 등록일시 열은 뺐다 — BP 권한 그룹 관리와 같이 최종수정만 보인다(2026-10-26 사용자 지정). 등록은 상세에 있다
+    // 최종수정 일시. 등록일시 열은 뺐다 — BP 권한 그룹 관리와 같이 최종수정만 보인다(2026-10-26 사용자 지정). 등록은 상세에 있다
     // 일시 16자(약 115px) + 칸 여백 20 이 136 — 줄이면 「2026-10-30 11:…」로 잘린다(2026-11-16 사용자 지정)
     { header: "최종수정", width: "w-[136px]", cell: (r) =>
         // 일시만 — 고친 사람은 상세에서 본다. 칸이 좁아져 좁은 창(최소 1260)에서도 [설정]까지 보인다(2026-11-16 사용자 지정, 전엔 「일시 · 사람」 260)

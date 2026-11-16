@@ -151,7 +151,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     {
       header: "메뉴명", // 「노출 메뉴명」에서 줄임(2026-10-26 사용자 지정)
       align: "left",
-      width: "w-[150px]", // 폭을 안 주면 표 전체 남는 칸을 다 먹어 메뉴코드 칸과 간격이 벌어진다(사용자 지적, 2026-10-26 — 220px는 너무 붙어 250px로 조정)
+      width: "w-[150px]", // 폭을 안 주면 표 전체 남는 칸을 다 먹어 메뉴코드 칸과 간격이 벌어진다(사용자 지적, 2026-10-26). 최소폭 1260 에 맞춰 150(2026-11-16)
       cell: (r) => {
         const depth = r.kind === "menu" ? r.row.node.depth : placement!.depth;
         const name = r.kind === "menu" ? r.row.node.name : draftName.trim() || "새 메뉴";
@@ -188,7 +188,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     { header: "순서", width: "w-[50px]", cell: (r) => (r.kind === "menu" ? muted(r.row.node, r.row.node.sortOrder) : placement!.order) },
     {
       header: "사용여부",
-      // 「사용 + 상위 미사용」 꼬리표가 한 줄에 들게 넓힌다(2026-10-27)
+      // 「사용 + 상위 미사용」 꼬리표가 한 줄에 드는 폭(2026-10-27, 1260 에 맞춰 150 — 2026-11-16)
       width: "w-[150px]",
       cell: (r) =>
         r.kind === "menu" ? (
