@@ -702,10 +702,11 @@ export function ContractForm({
           {/* 종이 계약 날인본(CTR-23, 데모 contracts-new 의 파일 칸). 근로계약서는 필수, 임금계약서는 따로 작성한 경우만 */}
           {paper && (
             <FormRow>
-              <Item label="근로계약서" required help={`당사자가 모두 서명한 파일. ${paperTypes.join(" · ")}, 10MB까지`}>
+              {/* 파일 안내는 공지 · 문의 · 시설물 문서 첨부와 같은 말투(「… 파일을 1개 첨부할 수 있습니다. (10MB 이하)」, 2026-11-16 사용자 지정) */}
+              <Item label="근로계약서" required help={`당사자가 모두 서명한 근로계약서를 첨부해 주세요. ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하)`}>
                 {(id) => <PaperFile id={id} label="근로계약서" file={files.employment} error={fileErrors.employment ?? errs.employmentFile?.[0]} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("employment", f)} />}
               </Item>
-              <Item label="임금계약서">
+              <Item label="임금계약서" help={`따로 작성한 임금계약서가 있으면 첨부해 주세요. ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하)`}>
                 {(id) => <PaperFile id={id} label="임금계약서" file={files.wage} error={fileErrors.wage} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("wage", f)} />}
               </Item>
             </FormRow>
