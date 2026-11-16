@@ -6,6 +6,7 @@ import {
   type GuideTrack,
   autoAllowed,
   autoDismissKey,
+  autoFollows,
   autoGuideOf,
   cardPartsOf,
   guideDetailOf,
@@ -145,7 +146,9 @@ test("자동 띄우기 — 화면별 단계 · 건수", () => {
   assert.deepEqual(autoGuideOf("STORE", "/staff-members"), { guide: { track: "STORE", step: "3" }, count: "staff" });
   assert.equal(autoGuideOf("STORE", "/work-schedules"), null);
   assert.equal(autoGuideOf("STORE", "/stores/12"), null);
-  assert.deepEqual(autoGuideOf("FRANCHISEE", "/stores"), { guide: { track: "FRANCHISEE", step: "1" }, count: "stores" });
+  // 가맹 역할은 점포를 등록하지 못해 점포 화면에는 띄우지 않는다 — 점포 없음 띠가 배정 요청을 안내한다(2026-11-16 사용자 지정)
+  assert.equal(autoGuideOf("FRANCHISEE", "/stores"), null);
+  assert.deepEqual(autoGuideOf("FRANCHISEE", "/staff-members"), { guide: { track: "FRANCHISEE", step: "3" }, count: "staff" });
 });
 
 test("자동 띄우기 — 점포 목록에서도 STEP 1 칸을 보인다", () => {
@@ -155,12 +158,20 @@ test("자동 띄우기 — 점포 목록에서도 STEP 1 칸을 보인다", () =
   assert.equal(cardPartsOf({ track: "STORE", step: "3" }, "/stores").length, 0);
 });
 
-test("자동 띄우기 닫은 기록 — 계정 · BP · 단계 · 화면마다 다르다", () => {
+// 자동 카드도 그 단계의 다음 화면으로 따라가므로 닫은 기록은 단계마다다 — 점포 목록에서 닫으면 점포 등록 화면에서도 다시 뜨지 않는다(2026-11-16 사용자 지정)
+test("자동 띄우기 닫은 기록 — 계정 · BP · 단계마다 다르다", () => {
   const g = { track: "STORE" as const, step: "3" };
-  const k = autoDismissKey(1, 8, g, "/staff-members");
-  assert.equal(k, "guide-auto-dismissed:1:8:STORE-3:/staff-members");
-  assert.notEqual(k, autoDismissKey(2, 8, g, "/staff-members"));
-  assert.notEqual(k, autoDismissKey(1, 9, g, "/staff-members"));
+  const k = autoDismissKey(1, 8, g);
+  assert.equal(k, "guide-auto-dismissed:1:8:STORE-3");
+  assert.notEqual(k, autoDismissKey(2, 8, g));
+  assert.notEqual(k, autoDismissKey(1, 9, g));
+  assert.notEqual(k, autoDismissKey(1, 8, { track: "STORE", step: "1" }));
+});
+
+test("자동 카드가 따라가는 화면 — 그 단계 칸이 있는 화면(다음 화면 포함)", () => {
+  assert.equal(autoFollows({ track: "STORE", step: "3" }, "/contracts/new"), true);
+  assert.equal(autoFollows({ track: "STORE", step: "1" }, "/stores/new"), true);
+  assert.equal(autoFollows({ track: "STORE", step: "3" }, "/payslips"), false);
 });
 
 test("자동 띄우기는 ?guide= 도착이 없는 화면에서만", () => {

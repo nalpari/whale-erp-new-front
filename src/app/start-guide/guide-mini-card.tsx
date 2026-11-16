@@ -12,6 +12,7 @@ import {
   type GuideRef,
   autoAllowed,
   autoDismissKey,
+  autoFollows,
   autoGuideOf,
   cardPartsOf,
   initialTrackOf,
@@ -31,7 +32,8 @@ import { getGuideCountAction } from "./guide-count-actions";
 // 모양은 떠 있는 것이라 팝업 그림자 하나(DESIGN.md Elevation), 꼬리표는 시작 가이드와 같은 포인트 파랑이다.
 // 자동 띄우기(2026-11-16 사용자 지정): ?guide= 로 넘어오지 않았어도 점포 · 권한 그룹 · 관리자 · 직원이 0건인 그 단계 화면에 들어오면 띄운다
 // (화면 → 단계 · 셀 것은 lib autoGuideOf). 웨일ERP 탭만, 갈래는 점포 없음 띠와 같은 initialTrackOf. 점포는 세션 값(폐점만 있어도 0건 — 띠와 같다),
-// 나머지는 건수 액션으로 묻는다. [×]로 닫으면 그 브라우저에서 계정 · BP · 단계 · 화면마다 다시 띄우지 않는다(localStorage, autoDismissKey).
+// 나머지는 건수 액션으로 묻는다. 띄운 자동 카드는 도착 카드처럼 그 단계의 다음 화면(nextPaths)으로 따라가고, 상관없는 화면으로 가면 내린다(autoFollows).
+// [×]로 닫으면 그 브라우저에서 계정 · BP · 단계마다 다시 띄우지 않는다(localStorage, autoDismissKey). 가맹 역할은 점포 화면에 띄우지 않는다.
 // ?guide= 도착 카드가 먼저다 — 도착 기억이 남아 있는 동안은(닫았어도, 같은 단계 다른 화면이어도) 자동 카드는 띄우지 않는다(autoAllowed).
 
 /** 문구 안 <u>…</u> 만 밑줄 — 놓치면 안 되는 말만 짚는다(시작 가이드 화면과 같이 쓴다, 2026-11-11 사용자 지정). 다른 태그는 글자 그대로다 */
@@ -78,8 +80,10 @@ export function GuideMiniCardSlot() {
   const service = useService();
   const noStores = useStores().every(isClosedStore);
   const countOf = useAction(getGuideCountAction, { overlay: false });
-  // 자동으로 띄운 카드 — key(autoDismissKey)가 지금 화면의 후보와 같을 때만 보인다(화면을 옮기면 저절로 안 보인다)
+  // 자동으로 띄운 카드 — 그 단계 칸이 있는 화면에 있는 동안 남는다(autoFollows)
   const [auto, setAuto] = useState<{ key: string; guide: GuideRef } | null>(null);
+  // 그 단계와 상관없는 화면으로 가면 내린다 — 다시 메뉴로 들어오면 건수를 새로 본다(렌더 중 맞춤, 도착 카드와 같은 방식)
+  if (auto && !autoFollows(auto.guide, screen)) setAuto(null);
 
   // 주소 · 화면이 바뀔 때마다 렌더 중 이전 값과 견줘 맞춘다(effect 대신, React 권장). 새로 넘어오면 펼치고 옮긴 자리도 처음(오른쪽 아래)으로
   const next = nextArrival(arrival, asked, screen);
@@ -93,7 +97,9 @@ export function GuideMiniCardSlot() {
 
   // 자동 띄우기 후보 — 웨일ERP 탭 · 이 화면에 ?guide= 도착 기억 없음 · 표에 있는 화면
   const candidate = service === "WHALE_ERP" && autoAllowed(next) ? autoGuideOf(initialTrackOf(account.roleTypeCode), screen) : null;
-  const candidateKey = candidate ? autoDismissKey(account.adminAccountId, bp, candidate.guide, screen) : null;
+  const candidateKey = candidate ? autoDismissKey(account.adminAccountId, bp, candidate.guide) : null;
+  // 이미 띄운 같은 카드면 다시 묻더라도 펼침 · 옮긴 자리를 그대로 둔다
+  const shownKey = auto?.key;
   const candidateKind = candidate?.count;
   const candidateGuide = candidate?.guide;
   useEffect(() => {
@@ -103,6 +109,7 @@ export function GuideMiniCardSlot() {
     const settle = (zero: boolean) => {
       if (!alive) return;
       if (!zero) return setAuto((a) => (a?.key === candidateKey ? null : a));
+      if (shownKey === candidateKey) return;
       setAuto({ key: candidateKey, guide: candidateGuide });
       setOpen(true);
       setPos(null);
@@ -123,7 +130,7 @@ export function GuideMiniCardSlot() {
     return () => {
       alive = false;
     };
-    // countOf 는 렌더마다 새 함수라 넣지 않는다(useAction 주석) — 후보 · 점포 0건이 바뀔 때만 다시 묻는다
+    // countOf 는 렌더마다 새 함수라 넣지 않는다(useAction 주석), shownKey 는 펼침을 되돌리지 않으려고 보는 값일 뿐이다 — 후보 · 점포 0건이 바뀔 때만 다시 묻는다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [candidateKey, noStores]);
 
@@ -189,7 +196,7 @@ export function GuideMiniCardSlot() {
 
   const arrived = parseGuide(next.guide);
   // 점포를 등록하면(점포 0건이 풀리면) 자동 STEP 1 카드는 내린다
-  const autoShown = !arrived && auto && auto.key === candidateKey && !(candidateKind === "stores" && !noStores) ? auto.guide : null;
+  const autoShown = !arrived && auto && autoFollows(auto.guide, screen) && !(auto.guide.step === "1" && !noStores) ? auto.guide : null;
   const parsed = arrived ?? autoShown;
   if (!parsed) return null;
   const parts = cardPartsOf(parsed, screen);

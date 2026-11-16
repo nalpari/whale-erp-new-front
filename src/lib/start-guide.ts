@@ -541,6 +541,8 @@ export function cardPartsOf(guide: GuideRef, screen: string): GuidePart[] {
 export function autoGuideOf(track: GuideTrack, screen: string): AutoGuide | null {
   const count = AUTO_SCREENS[screen];
   if (!count) return null;
+  // 가맹 역할은 점포를 등록하지 못한다 — 점포 화면에는 띄우지 않고 점포 없음 띠의 배정 요청 안내에 맡긴다(2026-11-16 사용자 지정)
+  if (track === "FRANCHISEE" && count === "stores") return null;
   for (const s of GUIDE_STEPS[track]) {
     if (s.sub) continue;
     const guide = { track, step: stepNumberOf(s) };
@@ -549,9 +551,15 @@ export function autoGuideOf(track: GuideTrack, screen: string): AutoGuide | null
   return null;
 }
 
-/** 자동 카드를 닫은 기록(localStorage 키) — 같은 브라우저를 다른 계정 · 다른 BP 가 써도 섞이지 않게 계정 · BP · 단계 · 화면마다 */
-export const autoDismissKey = (adminAccountId: number, bpCodeId: number, guide: GuideRef, screen: string) =>
-  `guide-auto-dismissed:${adminAccountId}:${bpCodeId}:${guideParam(guide.track, guide.step)}:${screen}`;
+/**
+ * 자동 카드를 닫은 기록(localStorage 키) — 같은 브라우저를 다른 계정 · 다른 BP 가 써도 섞이지 않게 계정 · BP · 단계마다.
+ * 자동 카드도 그 단계의 다음 화면으로 따라가므로 화면이 아니라 단계로 센다 — 점포 목록에서 닫으면 점포 등록 화면에서도 다시 뜨지 않는다(2026-11-16 사용자 지정)
+ */
+export const autoDismissKey = (adminAccountId: number, bpCodeId: number, guide: GuideRef) =>
+  `guide-auto-dismissed:${adminAccountId}:${bpCodeId}:${guideParam(guide.track, guide.step)}`;
+
+/** 띄운 자동 카드가 이 화면에도 남는지 — 그 단계 칸이 있는 화면(이어 넘어가는 nextPaths 포함, 예: 직원 관리 → 근로계약 작성)이면 따라간다(2026-11-16 사용자 지정) */
+export const autoFollows = (guide: GuideRef, screen: string) => cardPartsOf(guide, screen).length > 0;
 
 /**
  * 자동으로 띄워도 되는지 — ?guide= 로 넘어온 기억이 남아 있는 동안은(닫았어도, 같은 단계의 다른 화면으로 따라왔어도) 띄우지 않는다.
