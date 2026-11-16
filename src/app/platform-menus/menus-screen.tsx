@@ -151,7 +151,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     {
       header: "메뉴명", // 「노출 메뉴명」에서 줄임(2026-10-26 사용자 지정)
       align: "left",
-      width: "w-[150px]", // 폭을 안 주면 표 전체 남는 칸을 다 먹어 메뉴코드 칸과 간격이 벌어진다(사용자 지적, 2026-10-26). 최소폭 1260 에 맞춰 150(2026-11-16)
+      width: "w-[120px]", // 폭을 안 주면 표 전체 남는 칸을 다 먹어 메뉴코드 칸과 간격이 벌어진다(사용자 지적, 2026-10-26). 최소폭 1260 에 맞춰 120 — 사용여부 칸 몫을 여기서 덜었다(2026-11-16)
       cell: (r) => {
         const depth = r.kind === "menu" ? r.row.node.depth : placement!.depth;
         const name = r.kind === "menu" ? r.row.node.name : draftName.trim() || "새 메뉴";
@@ -188,8 +188,8 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     { header: "순서", width: "w-[50px]", cell: (r) => (r.kind === "menu" ? muted(r.row.node, r.row.node.sortOrder) : placement!.order) },
     {
       header: "사용여부",
-      // 「사용 + 상위 미사용」 꼬리표가 한 줄에 드는 폭(2026-10-27, 1260 에 맞춰 150 — 2026-11-16)
-      width: "w-[150px]",
+      // 「사용 + 상위 미사용」 꼬리표가 한 줄에 드는 폭(2026-10-27, 칸 안쪽 160 에 꼬리표 끝(약 156)이 들어가는 180 — 150 이면 「상위 미사용」이 잘렸다, 2026-11-16 리뷰 반영)
+      width: "w-[180px]",
       cell: (r) =>
         r.kind === "menu" ? (
           // 상위가 미사용이면 자기 값(사용 · 미사용)은 그대로 보이고, 숨는 이유를 회색 꼬리표로 덧붙인다(2026-10-27 사용자 지정 — 안 A)
