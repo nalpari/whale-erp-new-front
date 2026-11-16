@@ -86,6 +86,7 @@ export function AdminFormPanel(props: Props) {
   const me = useAccount();
   const currentBp = useCurrentBp();
   const roleType = useCodeLabel("ROLE_TYPE");
+  const accountStatus = useCodeLabel("ACCOUNT_STATUS");
   const locks =
     mode === "edit" ? editLocksOf(props.admin) : { roleGroup: false, status: false, scope: false, stores: false };
   const outOfScope: BpAdminStore[] = mode === "edit" && !props.admin.isAllStores ? props.admin.stores.filter((s) => s.isOutOfScope) : [];
@@ -501,8 +502,8 @@ export function AdminFormPanel(props: Props) {
                   title={locks.status ? "내 계정의 상태는 바꿀 수 없습니다." : undefined}
                   aria-required
                 >
-                  <option value="ACTIVE">사용</option>
-                  <option value="INACTIVE">미사용</option>
+                  <option value="ACTIVE">{accountStatus("ACTIVE")}</option>
+                  <option value="INACTIVE">{accountStatus("INACTIVE")}</option>
                 </Select>
               </Field>
               {deactivationImpact && deactivationImpact.deactivatedCount > 0 && (

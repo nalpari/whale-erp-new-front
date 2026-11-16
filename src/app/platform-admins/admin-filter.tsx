@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Checkbox, FilterPanel, FilterSection, SearchField, Select } from "@/components/common";
+import { useCodeLabel } from "@/components/site/code-label";
 import type { AdminStatus, PlatformRoleGroup } from "@/lib/platform-admins";
 import type { AdminsQuery } from "./admins-href";
 
@@ -18,6 +19,7 @@ export function AdminFilter({
   roleGroups: PlatformRoleGroup[];
   onApply: (filters: Filters) => void;
 }) {
+  const accountStatus = useCodeLabel("ACCOUNT_STATUS");
   const current: Filters = { keyword: query.keyword, roleGroupId: query.roleGroupId, status: query.status };
   const [keyword, setKeyword] = useState(query.keyword ?? "");
   // 초기화 · 뒤로 가기로 주소의 검색어가 바뀌면 칸도 따라간다
@@ -64,8 +66,8 @@ export function AdminFilter({
         </Select>
       </FilterSection>
       <FilterSection label="계정상태" last>
-        <Checkbox label="사용" checked={shows("ACTIVE")} onChange={(e) => toggle("ACTIVE", e.target.checked)} />
-        <Checkbox label="미사용" checked={shows("INACTIVE")} onChange={(e) => toggle("INACTIVE", e.target.checked)} />
+        <Checkbox label={accountStatus("ACTIVE")} checked={shows("ACTIVE")} onChange={(e) => toggle("ACTIVE", e.target.checked)} />
+        <Checkbox label={accountStatus("INACTIVE")} checked={shows("INACTIVE")} onChange={(e) => toggle("INACTIVE", e.target.checked)} />
       </FilterSection>
     </FilterPanel>
   );

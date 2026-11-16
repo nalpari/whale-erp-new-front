@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-16
+* **Update**: [BP 마스터 계정 관리](/bp.md) · [Whale ERP Frontend](/whale-erp-front.md) — BP 마스터 · BP 관리자 · 플랫폼 관리자의 계정상태 글자를 화면 상수 대신 공통코드 ACCOUNT_STATUS 에서 읽는다(필터 · 목록 · 상세 배지 · 수정 선택칸, WHALEERP-719).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성을 큰 선택 · 체크 카드, 계산식 형광펜, 칸 아래 느낌표 안내, 파트타이머 주급 · 연봉, 종이 계약 파일 [빼기] 링크로. 시작 가이드 미니 카드가 이어 쓰기 화면까지 따라간다(`nextPaths` 의 `*`) · 안내 문구 `<mark>` 형광펜.
 * **Update**: [점포](/stores.md) — 점포 등록 · 수정 저장 뒤 「점포 목록이 변경되었습니다.」를 띄우지 않는다(늘 quiet).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 홈 점포별 현황 표의 빈 칸(0 · 권한 없음)을 긴 줄표 대신 짧은 「-」로.

@@ -43,6 +43,7 @@ export function AdminFilter({
   const stores = useStores();
   const toast = useToast();
   const roleType = useCodeLabel("ROLE_TYPE");
+  const accountStatus = useCodeLabel("ACCOUNT_STATUS");
   // 고른 점포는 고른 순서대로, 범위는 그 범위의 점포(전체면 칩 없음)
   const chipsOf = (q: Pick<BpAdminsQuery, "storeIds" | "scope">): PickedStore[] =>
     q.storeIds.length
@@ -174,8 +175,8 @@ export function AdminFilter({
       </FilterSection>
       {/* 체크박스 둘, 처음엔 모두 켠다(플랫폼 관리자와 같다, 2026-10-27 사용자 지정 — 전엔 선택 상자) */}
       <FilterSection label="계정상태" last>
-        <Checkbox label="사용" checked={shows("ACTIVE")} onChange={(e) => toggleStatus("ACTIVE", e.target.checked)} />
-        <Checkbox label="미사용" checked={shows("INACTIVE")} onChange={(e) => toggleStatus("INACTIVE", e.target.checked)} />
+        <Checkbox label={accountStatus("ACTIVE")} checked={shows("ACTIVE")} onChange={(e) => toggleStatus("ACTIVE", e.target.checked)} />
+        <Checkbox label={accountStatus("INACTIVE")} checked={shows("INACTIVE")} onChange={(e) => toggleStatus("INACTIVE", e.target.checked)} />
       </FilterSection>
     </FilterPanel>
   );

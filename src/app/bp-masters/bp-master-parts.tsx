@@ -1,13 +1,15 @@
 import { Badge } from "@/components/common";
+import { CodeLabel } from "@/components/site/code-label";
 import type { BpMasterStatus } from "@/lib/bp-masters";
 
 // BP 마스터 계정 화면들이 같이 쓰는 작은 조각. 실패 띠 · 칸 오류 · 대상 목록 · 막힘 안내는 플랫폼 관리자 화면의 것을 그대로 쓴다(admin-parts.tsx).
 
-/** BP 상태 배지 — 사용(파랑) · 미사용(빨강) · 탈퇴(회색, 더는 다루지 않는 상태). 글자를 함께 둬 색만으로 말하지 않는다. */
+/** BP 상태 배지 — 사용(파랑) · 미사용(빨강) · 탈퇴(회색, 더는 다루지 않는 상태). 글자는 공통코드 ACCOUNT_STATUS 이름이고, 함께 둬 색만으로 말하지 않는다. */
 export function BpStatusBadge({ status }: { status: BpMasterStatus }) {
-  if (status === "ACTIVE") return <Badge tone="on">사용</Badge>;
-  if (status === "INACTIVE") return <Badge tone="off">미사용</Badge>;
-  return <Badge tone="closed">탈퇴</Badge>;
+  const label = <CodeLabel group="ACCOUNT_STATUS" value={status} />;
+  if (status === "ACTIVE") return <Badge tone="on">{label}</Badge>;
+  if (status === "INACTIVE") return <Badge tone="off">{label}</Badge>;
+  return <Badge tone="closed">{label}</Badge>;
 }
 
 /**

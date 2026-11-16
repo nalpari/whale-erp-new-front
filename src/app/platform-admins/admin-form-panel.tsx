@@ -52,6 +52,7 @@ export function AdminFormPanel(props: Props) {
   const me = useAccount();
   // 권한 유형 이름은 로그인 정보의 공통코드 ROLE_TYPE 에서 읽는다(네이밍 규칙 화면 문구)
   const roleTypes = useCodes("ROLE_TYPE");
+  const accountStatuses = useCodes("ACCOUNT_STATUS");
   const isSelf = mode === "edit" && me.adminAccountId === props.admin.adminAccountId;
   const initialForm = () => (mode === "edit" ? formOf(props.admin) : EMPTY_FORM);
   const [form, setForm] = useState<AdminForm>(initialForm);
@@ -455,8 +456,8 @@ export function AdminFormPanel(props: Props) {
                 disabled={isSelf}
                 title={isSelf ? "내 계정의 상태는 바꿀 수 없습니다." : undefined}
               >
-                <option value="ACTIVE">사용</option>
-                <option value="INACTIVE">미사용</option>
+                <option value="ACTIVE">{labelOf(accountStatuses, "ACTIVE")}</option>
+                <option value="INACTIVE">{labelOf(accountStatuses, "INACTIVE")}</option>
               </Select>
             </Field>
           )}

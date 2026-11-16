@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Checkbox, FilterPanel, FilterSection, Radio, SearchField, Select } from "@/components/common";
+import { useCodeLabel } from "@/components/site/code-label";
 import { BP_MASTER_SEARCH_TYPES, BP_MASTER_STATUSES, type BpMasterSearchType, type BpMasterStatusValue, type BpMasterVerification } from "@/lib/bp-master-paging";
 import type { BpMastersQuery } from "./bp-masters-href";
 
@@ -9,7 +10,6 @@ import type { BpMastersQuery } from "./bp-masters-href";
 // 조건은 모두 AND 다. 처음엔 조건 없이 전체(미사용 · 탈퇴 포함)를 본다.
 type Filters = Pick<BpMastersQuery, "searchType" | "keyword" | "statuses" | "verification" | "statusNone">;
 
-const STATUS_LABEL: Record<BpMasterStatusValue, string> = { ACTIVE: "사용", INACTIVE: "미사용", WITHDRAWN: "탈퇴" };
 const VERIFICATIONS: { value: BpMasterVerification | undefined; label: string }[] = [
   { value: undefined, label: "전체" },
   { value: "VERIFIED", label: "인증완료" },
@@ -17,6 +17,7 @@ const VERIFICATIONS: { value: BpMasterVerification | undefined; label: string }[
 ];
 
 export function BpMasterFilter({ query, onApply }: { query: BpMastersQuery; onApply: (filters: Filters) => void }) {
+  const accountStatus = useCodeLabel("ACCOUNT_STATUS");
   const current: Filters = { searchType: query.searchType, keyword: query.keyword, statuses: query.statuses, statusNone: query.statusNone, verification: query.verification };
   const [searchType, setSearchType] = useState<BpMasterSearchType>(query.searchType);
   const [keyword, setKeyword] = useState(query.keyword ?? "");
@@ -76,7 +77,7 @@ export function BpMasterFilter({ query, onApply }: { query: BpMastersQuery; onAp
       </FilterSection>
       <FilterSection label="계정상태">
         {BP_MASTER_STATUSES.map((s) => (
-          <Checkbox key={s} label={STATUS_LABEL[s]} checked={shows(s)} onChange={(e) => toggle(s, e.target.checked)} />
+          <Checkbox key={s} label={accountStatus(s)} checked={shows(s)} onChange={(e) => toggle(s, e.target.checked)} />
         ))}
       </FilterSection>
       <FilterSection label="사업자정보 인증" last>

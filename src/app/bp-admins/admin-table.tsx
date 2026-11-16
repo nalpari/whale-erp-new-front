@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Badge, DataTable, type Column } from "@/components/common";
-import { useCodeLabel } from "@/components/site/code-label";
+import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
 import { formatDateTime } from "@/lib/format";
 import type { BpAdmin } from "@/lib/bp-admins";
 import { useCurrentBpStatus } from "@/components/site/current-bp-status";
@@ -69,7 +69,7 @@ export function AdminTable({
     {
       header: "계정상태",
       width: "w-[100px]",
-      cell: (a) => (inactive(a) ? <Badge tone="closed">미사용</Badge> : <Badge tone="on">사용</Badge>),
+      cell: (a) => <Badge tone={inactive(a) ? "closed" : "on"}><CodeLabel group="ACCOUNT_STATUS" value={a.accountStatus} /></Badge>,
     },
     {
       header: "최근 로그인",
