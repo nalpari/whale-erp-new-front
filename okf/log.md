@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일: 수정 패널 동시 수정 409 는 실패 띠 없이 토스트 · 다시 채우기만(`saveFailureAction`, WHALEERP-714), 수정의 겹침 확인 문구를 「저장하면 이 휴일이 겹치는 날짜에도 적용됩니다.」로(WHALEERP-715, front bidoof).
 * **Update**: [출퇴근 현황 화면](/screens/attendance-records.md) — 출퇴근 기록 다시 보정(WHALEERP-687, 운영 정책 ATT-20 v283 · 2026-11-16 재영): 보정이 필요한 기록은 기록이 있는 줄이면 「보정」을 두어 보정 · 대신 등록한 줄도 「이력」과 함께 다시 고치고, 정상 · 지각 기록은 그 목록에 나오지 않아 일별 출퇴근 표 줄마다 같은 「보정」을 더했다(`DayFixButton` · `DayFixProvider` — 패널은 바탕이 막히는 본문 밖). 대신 등록의 409 안내도 api 에서 「일별 출퇴근에서 그날 기록의 [보정]으로 고쳐 주세요」로 바뀌었다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — WHALEERP-683 리뷰 반영: 상세 「근로계약서 작성」의 `?entry=` 가 [목록] 주소 · 보던 주를 함께 싣는다. 받는 쪽 `staffEntryHrefOf` 가 직원 화면 규칙으로 다시 만들고, 예전 형식 상세 주소(목록 조건을 상세 주소에 붙인 것)도 [목록] 주소로 바꿔 남긴다. 판정은 서버 전용 `contracts/new/cancel-href.ts` 로 옮겨 근로계약 클라이언트 번들에 직원 상세 모듈이 딸려 가지 않게 했다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 「직원 초대」 · 상세 「근로계약서 작성」이 들어온 주소를 `?entry=` 로 실어, 근로계약서 작성 [취소]가 그 화면으로 돌아간다(WHALEERP-683). 재계약 [취소]는 원래 계약 상세로 간다. 저장 · 임시저장 뒤 이동은 그대로다.
