@@ -164,7 +164,9 @@ test("자동 띄우기 닫은 기록 — 계정 · BP · 단계 · 화면마다 
 });
 
 test("자동 띄우기는 ?guide= 도착이 없는 화면에서만", () => {
-  assert.equal(autoAllowed({ guide: null, seen: null }, "/staff-members"), true);
-  assert.equal(autoAllowed({ guide: "STORE-3", seen: "STORE-3|/staff-members" }, "/staff-members"), false);
-  assert.equal(autoAllowed({ guide: null, seen: "STORE-3|/staff-members" }, "/staff-members"), false); // 도착 카드를 닫은 뒤
+  assert.equal(autoAllowed({ guide: null, seen: null }), true);
+  assert.equal(autoAllowed({ guide: "STORE-3", seen: "STORE-3|/staff-members" }), false);
+  assert.equal(autoAllowed({ guide: null, seen: "STORE-3|/staff-members" }), false); // 도착 카드를 닫은 뒤
+  // 같은 단계의 다른 화면으로 따라온 도착 카드가 있는 동안도 — 닫으면 그 자리에 자동 카드가 대신 뜨던 것(최종 리뷰)
+  assert.equal(autoAllowed({ guide: "STORE-2", seen: "STORE-2|/bp-role-groups" }), false);
 });

@@ -553,7 +553,10 @@ export function autoGuideOf(track: GuideTrack, screen: string): AutoGuide | null
 export const autoDismissKey = (adminAccountId: number, bpCodeId: number, guide: GuideRef, screen: string) =>
   `guide-auto-dismissed:${adminAccountId}:${bpCodeId}:${guideParam(guide.track, guide.step)}:${screen}`;
 
-/** 자동으로 띄워도 되는지 — ?guide= 로 이 화면에 넘어온 기억이 있으면(닫았어도) 자동 카드를 띄우지 않는다 */
-export function autoAllowed(arrival: GuideArrival, screen: string): boolean {
-  return arrival.seen?.split("|")[1] !== screen;
+/**
+ * 자동으로 띄워도 되는지 — ?guide= 로 넘어온 기억이 남아 있는 동안은(닫았어도, 같은 단계의 다른 화면으로 따라왔어도) 띄우지 않는다.
+ * 그 단계와 상관없는 화면으로 가면 nextArrival 이 기억을 비운다(최종 리뷰 — 전엔 도착한 화면만 견줘 다른 화면에서 닫으면 자동 카드가 대신 떴다)
+ */
+export function autoAllowed(arrival: GuideArrival): boolean {
+  return arrival.seen === null;
 }

@@ -32,7 +32,7 @@ import { getGuideCountAction } from "./guide-count-actions";
 // 자동 띄우기(2026-11-16 사용자 지정): ?guide= 로 넘어오지 않았어도 점포 · 권한 그룹 · 관리자 · 직원이 0건인 그 단계 화면에 들어오면 띄운다
 // (화면 → 단계 · 셀 것은 lib autoGuideOf). 웨일ERP 탭만, 갈래는 점포 없음 띠와 같은 initialTrackOf. 점포는 세션 값(폐점만 있어도 0건 — 띠와 같다),
 // 나머지는 건수 액션으로 묻는다. [×]로 닫으면 그 브라우저에서 계정 · BP · 단계 · 화면마다 다시 띄우지 않는다(localStorage, autoDismissKey).
-// ?guide= 도착 카드가 먼저다 — 이 화면에 도착한 기억이 있으면(닫았어도) 자동 카드는 띄우지 않는다(autoAllowed).
+// ?guide= 도착 카드가 먼저다 — 도착 기억이 남아 있는 동안은(닫았어도, 같은 단계 다른 화면이어도) 자동 카드는 띄우지 않는다(autoAllowed).
 
 /** 문구 안 <u>…</u> 만 밑줄 — 놓치면 안 되는 말만 짚는다(시작 가이드 화면과 같이 쓴다, 2026-11-11 사용자 지정). 다른 태그는 글자 그대로다 */
 export function underlined(text: string) {
@@ -92,27 +92,32 @@ export function GuideMiniCardSlot() {
   }
 
   // 자동 띄우기 후보 — 웨일ERP 탭 · 이 화면에 ?guide= 도착 기억 없음 · 표에 있는 화면
-  const candidate = service === "WHALE_ERP" && autoAllowed(next, screen) ? autoGuideOf(initialTrackOf(account.roleTypeCode), screen) : null;
+  const candidate = service === "WHALE_ERP" && autoAllowed(next) ? autoGuideOf(initialTrackOf(account.roleTypeCode), screen) : null;
   const candidateKey = candidate ? autoDismissKey(account.adminAccountId, bp, candidate.guide, screen) : null;
   const candidateKind = candidate?.count;
   const candidateGuide = candidate?.guide;
   useEffect(() => {
     if (!candidateKey || !candidateKind || !candidateGuide || isDismissed(candidateKey)) return;
     let alive = true;
-    const show = () => {
+    // 0건이 아니게 됐으면(직원 · 관리자를 등록하고 돌아옴) 전에 띄운 이 화면 카드를 내린다(최종 리뷰 — 전엔 다시 들어오면 남아 있었다)
+    const settle = (zero: boolean) => {
       if (!alive) return;
+      if (!zero) return setAuto((a) => (a?.key === candidateKey ? null : a));
       setAuto({ key: candidateKey, guide: candidateGuide });
       setOpen(true);
       setPos(null);
     };
-    // 건수 응답이 오기 전에 화면을 옮기면(alive=false) 띄우지 않는다. 실패 · 만료는 띄우지 않는다(만료 팝업은 useAction 이 띄운다)
+    // 건수 응답이 오기 전에 화면을 옮기면(alive=false) 띄우지 않는다. 실패 · 만료는 띄우지 않는다(만료 팝업은 useAction 이 띄운다).
+    // 액션이 던진 오류(네트워크 끊김 · 배포 뒤 없는 액션)도 받아 조용히 넘긴다 — 안 받으면 처리되지 않은 오류가 났다(최종 리뷰)
     const check = async () => {
-      if (candidateKind === "stores") {
-        if (noStores) show();
-        return;
+      if (candidateKind === "stores") return settle(noStores);
+      try {
+        const result = await countOf(candidateKind);
+        settle(result.ok && result.total === 0);
+      } catch (error) {
+        console.warn("미니 카드 건수 조회 실패", error);
+        settle(false);
       }
-      const result = await countOf(candidateKind);
-      if (result.ok && result.total === 0) show();
     };
     void check();
     return () => {
