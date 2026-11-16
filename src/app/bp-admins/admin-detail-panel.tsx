@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
 import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, useAction, useToast, type DetailRow } from "@/components/common";
-import { useCodeLabel } from "@/components/site/code-label";
+import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
 import { useCurrentBpStatus } from "@/components/site/current-bp-status";
@@ -187,7 +187,7 @@ function DetailBody({
             items={[
               { label: "역할", value: roleType(admin.roleTypeCode) },
               { label: "권한명", value: admin.roleGroup.name }, // 라벨 「권한명」(2026-10-27 사용자 지정 — 전엔 「권한그룹」)
-              { value: admin.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="closed">미사용</Badge> },
+              { value: admin.accountStatus === "ACTIVE" ? <Badge tone="on"><CodeLabel group="ACCOUNT_STATUS" value="ACTIVE" /></Badge> : <Badge tone="closed"><CodeLabel group="ACCOUNT_STATUS" value="INACTIVE" /></Badge> },
             ]}
           />
         </span>

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Badge, DataTable, type Column } from "@/components/common";
+import { CodeLabel } from "@/components/site/code-label";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import type { PlatformAdmin } from "@/lib/platform-admins";
 
@@ -81,7 +82,7 @@ export function AdminTable({
     {
       header: "계정상태",
       width: "w-[100px]",
-      cell: (a) => (a.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="closed">미사용</Badge>),
+      cell: (a) => (a.accountStatus === "ACTIVE" ? <Badge tone="on"><CodeLabel group="ACCOUNT_STATUS" value="ACTIVE" /></Badge> : <Badge tone="closed"><CodeLabel group="ACCOUNT_STATUS" value="INACTIVE" /></Badge>),
     },
     { header: "권한명", width: "w-[150px]", cell: (a) => dim(a, a.roleGroup.name) },
     { header: "연락처", width: "w-[150px]", align: "left", cell: (a) => (a.phone ? dim(a, <WithIcon icon="phone">{formatPhone(a.phone)}</WithIcon>) : "") },
