@@ -77,7 +77,7 @@ const HELP = "text-[12px] leading-[1.5] text-erp-brand";
 
 /** 고용 형태 · 계약 방식 카드 아래 한 줄 설명 — 시작 가이드 근로계약서 작성 안내와 같은 말(2026-11-16 사용자 지정) */
 const EMPLOYMENT_DESC = { FULL_TIME: "월급/연봉 기준으로 급여 계산", PART_TIME: "근무시간에 따라 시급으로 급여 계산" } as const;
-const PROBATION_DESC = { NONE: "수습 기간 없이 계약 시급 그대로", APPLY: "최대 3개월 · 최저임금의 90% 이상" } as const;
+const PROBATION_DESC = { NONE: "수습기간 없이 계약한 시급 적용", APPLY: "최대 3개월 · 최저시급의 90% 이상 적용" } as const;
 const METHOD_DESC = { ELECTRONIC: "직원전용 앱으로 발송 · 직원이 직접 서명", PAPER: "서명된 계약서 첨부 · 별도 발송 없음" } as const;
 
 /**
@@ -177,7 +177,8 @@ function Item({
   useInvalid(box, `${id}-errors`, invalid);
   return (
     <div ref={box} data-invalid={invalid || undefined} className={`flex flex-col gap-[8px] ${width ?? "min-w-px flex-1"}`}>
-      <span className="flex items-baseline gap-[8px]">
+      {/* 칸 이름과 옆 안내(형광펜 계산식 · 느낌표 안내)를 가운데로 맞춘다 — 기준선 맞춤은 바탕 · 아이콘이 있으면 위아래로 어긋나 보였다(2026-11-16 사용자 지정) */}
+      <span className="flex items-center gap-[8px]">
         <label htmlFor={id} className="shrink-0 text-[14px] font-medium text-erp-label">
           {label}
           {required && (
@@ -264,7 +265,22 @@ function PaperFile({ id, label, file, error, accept, onPick }: { id: string; lab
 }
 
 // 입력이 여럿인 칸(라디오 · 요일 · 시각). <label> 하나로 묶을 수 없어 group 으로 둔다.
-function Group({ label, required, hint, children, errors }: { label: string; required?: boolean; hint?: string; children: ReactNode; errors?: string[] }) {
+function Group({
+  label,
+  required,
+  hint,
+  hintIcon,
+  children,
+  errors,
+}: {
+  label: string;
+  required?: boolean;
+  hint?: string;
+  /** 칸 이름 옆 안내 앞에 느낌표 — 칸 아래 안내(helpIcon)와 같은 회청 글자(2026-11-16 사용자 지정, 수습 여부) */
+  hintIcon?: boolean;
+  children: ReactNode;
+  errors?: string[];
+}) {
   const errorId = useId();
   const box = useRef<HTMLDivElement>(null);
   const invalid = !!errors?.length;
@@ -278,7 +294,8 @@ function Group({ label, required, hint, children, errors }: { label: string; req
       data-invalid={invalid || undefined}
       className="flex min-w-px flex-1 flex-col gap-[8px]"
     >
-      <span className="flex items-baseline gap-[8px]">
+      {/* 칸 이름과 옆 안내(형광펜 계산식 · 느낌표 안내)를 가운데로 맞춘다 — 기준선 맞춤은 바탕 · 아이콘이 있으면 위아래로 어긋나 보였다(2026-11-16 사용자 지정) */}
+      <span className="flex items-center gap-[8px]">
         <span className="shrink-0 text-[14px] font-medium text-erp-label">
           {label}
           {required && (
@@ -291,7 +308,15 @@ function Group({ label, required, hint, children, errors }: { label: string; req
             </>
           )}
         </span>
-        {hint && <Hint>{hint}</Hint>}
+        {hint &&
+          (hintIcon ? (
+            <span className="flex min-w-px items-center gap-[6px] text-[12px] leading-[18px] text-erp-brand">
+              <GuideIcon />
+              {hint}
+            </span>
+          ) : (
+            <Hint>{hint}</Hint>
+          ))}
       </span>
       {children}
       <FieldErrors id={errorId} errors={errors} />
@@ -770,7 +795,7 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
             </Group>
           </FormRow>
           {/* 급여 표 — 흰 칸은 입력, 회색 칸은 셈한 값이다(현업 엑셀 견본, 2026-10-13). */}
-          {/* 시급 · 월급 · 연봉 한 줄이 소정근로시간 표 위에 있다(데모 확인 2026-10-15). 생년월일 · 근무요일 줄처럼 3등분한다(파트타이머는 셋째 칸을 비운다). 시급은 고용 형태와 상관없이 한 칸이다(2026-10-12 재영). */}
+          {/* 시급 · 월급 · 연봉 한 줄이 소정근로시간 표 위에 있다(데모 확인 2026-10-15). 생년월일 · 근무요일 줄처럼 3등분한다(파트타이머는 시급 · 주급 · 월급 · 연봉 4등분, 2026-11-16 사용자 지정 — 전엔 셋째 칸을 비웠다). 시급은 고용 형태와 상관없이 한 칸이다(2026-10-12 재영). */}
           <FormRow>
             <Item label="시급" required errors={errs.wage}>
               {(id) => (
@@ -783,16 +808,18 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
                 />
               )}
             </Item>
-            <Item label="월급" hintMark hint={form.employmentType === "FULL_TIME" ? "급여항목 합계 + 비과세 합계" : "주급 × 4.345"}>
+            {/* 계산식은 형광펜(hintMark). 파트타이머는 주급 · 월급 · 연봉 세 칸 — 정직원과 같이 연봉까지 보인다(보이기만, 저장하지 않는다, 2026-11-16 사용자 지정) */}
+            {partTime && (
+              <Item label="주급" hintMark hint="시급 × 주간 유급시간">
+                {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(partPay.weekly)} />}
+              </Item>
+            )}
+            <Item label="월급" hintMark hint={partTime ? "주급 × 4.345주" : "급여항목 합계 + 비과세항목 합계"}>
               {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(monthly)} />}
             </Item>
-            {form.employmentType === "FULL_TIME" ? (
-              <Item label="연봉" hintMark hint="월급 × 12">
-                {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(fullPay.annual)} />}
-              </Item>
-            ) : (
-              <div className="min-w-px flex-1" />
-            )}
+            <Item label="연봉" hintMark hint="월급 × 12개월">
+              {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(partTime ? partPay.monthly * 12 : fullPay.annual)} />}
+            </Item>
           </FormRow>
           {/* 수습(노무사 확인 2026-10-14, 질문 19): 정직원만, 시급 · 월급 · 연봉 줄 바로 아래(수습 중 시급이 시급에서 셈해진다). 필수는 아니지만 수습 대상이면 계약서에 적는다.
               계약 기간이 1년 이상(또는 기간의 정함 없음)일 때만, 기간은 최대 3개월, 감액해도 최저임금의 90% 이상. 급여명세서는 수습 기간이면 그렇다고 표기한다. */}
@@ -800,7 +827,7 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
             <>
               {/* 고용 형태 · 계약 방식과 같은 큰 선택 카드, 폭은 왼쪽 반 칸(2026-11-16 사용자 지정) */}
               <div className="grid grid-cols-2 gap-[18px]">
-                <Group label="수습 여부" hint="계약 기간이 1년 이상이거나 종료일이 없을 때만 적용할 수 있습니다.">
+                <Group label="수습 여부" hintIcon hint="계약기간이 1년 이상이거나 종료일이 없는 경우에만 적용할 수 있습니다.">
                   <ChoiceCards
                     name="probation"
                     value={form.probation ? "APPLY" : "NONE"}
