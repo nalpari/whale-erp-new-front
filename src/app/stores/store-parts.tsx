@@ -193,8 +193,9 @@ export function StoreTypeCards({
         return (
           <label
             key={type}
-            className={`group flex cursor-pointer flex-col items-center gap-[10px] rounded-[4px] border bg-white px-[18px] py-[24px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand border-erp-panel-line`}
+            className={`group relative flex cursor-pointer flex-col items-center gap-[10px] rounded-[4px] border bg-white px-[18px] py-[24px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand border-erp-panel-line`}
           >
+            {/* 카드(label)는 relative — 숨긴 라디오가 카드 밖 멀리 놓이면 누를 때 바깥 틀이 밀려 화면이 비었다(contract-form ChoiceCards 주석) */}
             <input type="radio" name="storeTypeCode" className="sr-only" checked={checked} onChange={() => onChange?.(type)} />
             <b className="text-[16px] font-semibold text-erp-ink"><CodeLabel group="STORE_TYPE" value={type} /></b>
             <span className="text-[13px] text-erp-label">{desc}</span>

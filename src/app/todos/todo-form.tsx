@@ -106,8 +106,9 @@ function ChoiceCards<T extends string>({ name, items, value, onChange }: { name:
       {items.map((item) => (
         <label
           key={item.value}
-          className="flex cursor-pointer flex-col items-center gap-[2px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[10px] text-center transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand"
+          className="relative flex cursor-pointer flex-col items-center gap-[2px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[10px] text-center transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand"
         >
+          {/* 카드(label)는 relative — 숨긴 라디오가 카드 밖 멀리 놓이면 누를 때 바깥 틀이 밀려 화면이 비었다(contract-form ChoiceCards 주석) */}
           <input type="radio" name={name} className="sr-only" checked={value === item.value} onChange={() => onChange(item.value)} />
           <b className="flex items-center gap-[6px] text-[15px] font-semibold text-erp-ink">
             {item.icon}
