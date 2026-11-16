@@ -308,7 +308,7 @@ export function ContractForm({
   previousStartDate?: string;
   /** 지금 최저임금(공통코드, WHALEERP-595) — 시급 도움말 · 수습 중 시급을 본다. 받지 못했으면 null */
   minimumWage: MinimumWage | null;
-  /** 돌아갈 목록 주소(?back=) — 취소 · 저장 뒤 같은 조건의 목록으로 간다 */
+  /** 돌아갈 목록 주소(?back=) — 저장 뒤(그리고 cancelHref 가 없을 때 취소) 같은 조건의 목록으로 간다 */
   back?: string;
   /** [취소]가 돌아갈 옛 경로(들어온 화면, cancelHrefOf — WHALEERP-683). 없으면 돌아갈 목록(back)이다 */
   cancelHref?: string;
