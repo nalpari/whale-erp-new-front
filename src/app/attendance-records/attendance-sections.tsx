@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { DataTable, DetailTable, type Column } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
-import { FixList, ProxyButton } from "./attendance-fix-list";
+import { DayFixButton, FixList, ProxyButton } from "./attendance-fix-list";
 import { FixPeriod } from "./attendance-fix-period";
 import { BackdropInert } from "./backdrop-inert";
 import { addDays, dayLabel, hoursLabel, lateMinutes, monthDayLabel, type DayRow, type FixRow, type WeekSummary } from "./attendance-query";
@@ -83,7 +83,10 @@ const staffCell = (r: DayRow, manyStores: boolean) =>
     r.name
   );
 
-/** 일별 출퇴근(데모 today) — 직원 · 예정 · 출근 · 퇴근 · 비고. 하루씩 넘긴다(2026-10-02 재영) */
+/**
+ * 일별 출퇴근(데모 today) — 직원 · 예정 · 출근 · 퇴근 · 비고 · 보정. 하루씩 넘긴다(2026-10-02 재영). 기록이 있는 줄의 「보정」은 정상 · 지각 기록도
+ * 고치는 곳이다(운영 정책 ATT-20 v283, WHALEERP-687 — 보정이 필요한 기록에는 나오지 않는다). 패널은 page 의 DayFixProvider 가 연다.
+ */
 export function DaySection({
   rows,
   date,
@@ -91,6 +94,7 @@ export function DaySection({
   hrefOfDate,
   statusLabels,
   reasonLabels,
+  editableFrom,
 }: {
   rows: DayRow[];
   date: string;
@@ -98,6 +102,8 @@ export function DaySection({
   hrefOfDate: (date: string) => string;
   statusLabels: EnumValue[];
   reasonLabels: EnumValue[];
+  /** 보정할 수 있는 첫 날 — 최근 3개월 */
+  editableFrom: string;
 }) {
   const manyStores = new Set(rows.map((r) => r.storeId)).size > 1;
   const columns: Column<DayRow>[] = [
@@ -134,6 +140,7 @@ export function DaySection({
         );
       },
     },
+    { header: "", width: "w-[80px]", cell: (r) => <DayFixButton row={r} editableFrom={editableFrom} /> },
   ];
   return (
     // 표 틀을 옆 근태 요약 아래 끝까지 늘려 두 칸의 아래 선을 맞춘다(2026-11-04 사용자 지정 — 직원이 적으면 표가 짧게 끝나 아래가 비어 보였다).
