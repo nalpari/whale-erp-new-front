@@ -2,7 +2,7 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
-import { Button, Checkbox, ConfirmDialog, DateField, Field, FieldMessage, FormGroup, FormRow, Radio, TextField, useAction } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DateField, Field, FieldMessage, FormGroup, FormRow, Radio, TextField, useAction, useToast } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatPhone, GENDERS, inProgressLine, shownProblems, type InProgressContract } from "../../new/contract-form-model";
 import { useInvalid } from "../../field-errors";
@@ -11,7 +11,7 @@ import { useCurrentBp } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import { updateWorker } from "../actions";
 import { callSave, SAVE_CALL_LOST } from "../send-model";
-import { workerBody, workerProblemsByField, workerSaveNote, type WorkerField, type WorkerForm as Form } from "./worker-model";
+import { WORKER_SAVED, WORKER_UNCHANGED, workerBody, workerProblemsByField, workerSaveNote, workerUnchanged, type WorkerField, type WorkerForm as Form } from "./worker-model";
 
 
 // 날인 전 근로자 정보 수정(WHALEERP-125 「본인 대조」 · 126). 초대 코드를 못 받았다는 직원과 유선으로 번호를 확인했거나,
@@ -20,22 +20,28 @@ export function WorkerForm({
   contractId,
   status,
   initial,
+  canResend,
   labels,
   back,
 }: {
   contractId: number;
   status: string;
   initial: Form;
+  /** 상세에 [재발송]이 보이는가(canShowResend) — 보이면 같은 값 저장을 막고 그리로 안내한다 */
+  canResend: boolean;
   labels: { gender: EnumValue[]; contractStatus: EnumValue[] };
   /** 돌아갈 목록 주소(?back=) — 상세로 갈 때 이어 싣는다 */
   back: string;
 }) {
   const router = useRouter();
+  const toast = useToast();
   // 상세 주소는 탭 BP 를 붙인다. back 은 옛 경로(목록 쿼리)다
   const bp = useCurrentBp().bpCodeId;
   const at = (path: string) => bpPath(bp, path);
   const [form, setForm] = useState<Form>(initial);
   const [serverError, setServerError] = useState("");
+  // 바뀐 것 없이 [저장]을 눌렀다 — 칸을 하나라도 고치면 내린다(set, WHALEERP-681)
+  const [unchangedAsked, setUnchangedAsked] = useState(false);
   const [saving, startSaving] = useTransition();
   const update = useAction(updateWorker, { kind: "update" });
   // 새 번호로 같은 점포에 진행 중 계약이 있으면(409) 대체할지 묻는다 — 작성 화면과 같다
@@ -55,7 +61,10 @@ export function WorkerForm({
   const birthRef = useRef<HTMLDivElement>(null);
   const genderRef = useRef<HTMLDivElement>(null);
 
-  const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
+  const set = <K extends keyof Form>(key: K, value: Form[K]) => {
+    setUnchangedAsked(false);
+    setForm((f) => ({ ...f, [key]: value }));
+  };
   const issues = workerProblemsByField(form);
   // 칸 아래 오류는 저장을 누른 때 오류가 난 칸에만, 고치는 동안 다시 본다(작성 화면과 같다)
   const [errorFields, setErrorFields] = useState<ReadonlySet<WorkerField> | null>(null);
@@ -65,12 +74,18 @@ export function WorkerForm({
   useInvalid(genderRef, ids.gender, !!errs.gender, true);
   const send = (replaceContractIds?: number[]) =>
     startSaving(async () => {
-      // 성공하면 액션이 상세로 보낸다. 돌아왔다면 실패다.
-      // 액션의 redirect(성공 · 보내기 실패)는 callSave 가 다시 던져 그 목적지로 간다
+      // 성공하면 액션이 상세 주소를 돌려준다 — 토스트를 띄우고 그리로 간다(WHALEERP-681).
+      // 액션의 redirect(보내기 실패 · 결과 모름)는 callSave 가 다시 던져 그 목적지로 간다
       const result = await callSave(() => update(contractId, workerBody(form, replaceContractIds), back), unstable_rethrow);
       if (result === SAVE_CALL_LOST) {
         // 서버 액션 호출 자체가 끊겼다 — 저장하면 다시 보내므로 이미 보냈을 수 있다. 같은 폼으로 다시 저장하지 않게 상세로(front #50 재리뷰)
         router.replace(at(withBack(`/contracts/${contractId}?send=unknown`, back)));
+        return;
+      }
+      if ("ok" in result) {
+        toast(WORKER_SAVED);
+        // 저장 전 폼으로 뒤로 가지 않게 바꾼다(결과 모름과 같다) — 돌아온 폼은 저장 전 값이라 다시 저장하면 되돌린다
+        router.replace(result.href);
         return;
       }
       if (result.inProgress) {
@@ -83,10 +98,16 @@ export function WorkerForm({
     });
   const save = () => {
     setServerError("");
+    setUnchangedAsked(false);
     const found = Object.keys(issues) as WorkerField[];
     setErrorFields(found.length ? new Set(found) : null);
     if (found.length) {
       setFailures((n) => n + 1);
+      return;
+    }
+    // 저장하면 다시 보낸다 — 바뀐 것이 없으면 보내지 않고 알린다(WHALEERP-681)
+    if (canResend && workerUnchanged(form, initial)) {
+      setUnchangedAsked(true);
       return;
     }
     send();
@@ -155,6 +176,12 @@ export function WorkerForm({
           </div>
         </FormRow>
       </FormGroup>
+
+      {unchangedAsked && (
+        <p role="status" className="text-[14px] leading-[1.6] text-erp-off">
+          {WORKER_UNCHANGED}
+        </p>
+      )}
 
       {/* 화면이 막은 유효성 오류는 칸 아래에 보이고, 여기는 api 가 막은 것만이다(WHALEERP-631) */}
       {serverError && (
