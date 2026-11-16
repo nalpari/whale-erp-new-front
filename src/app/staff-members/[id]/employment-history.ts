@@ -1,4 +1,5 @@
 import type { StaffMember } from "../../../lib/staff-members.ts";
+import { backHrefOf, detailListHrefOf, type RawSearch } from "../staff-list-query.ts";
 import { weekParam } from "./summary-view.ts";
 
 type Period = StaffMember["previousRecords"][number];
@@ -39,4 +40,21 @@ export function historySearch(listHref: string, week: string | string[] | undefi
   if (monday) params.set("week", monday);
   const search = params.toString();
   return search ? `?${search}` : "";
+}
+
+/**
+ * 근로계약서 작성 [취소]가 돌아갈 직원 화면(?entry=, WHALEERP-683). 직원 목록이면 목록 규칙으로(backHrefOf), 직원 상세면 그 상세의 [목록]
+ * 주소(?back= · 예전 형식의 목록 조건 모두, detailListHrefOf)와 보던 주(historySearch)만 남겨 다시 만든다. 직원 화면 주소가 아니거나
+ * 직원 id 가 int4 양의 정수가 아니면 null.
+ */
+export function staffEntryHrefOf(raw: string | string[] | undefined): string | null {
+  if (typeof raw !== "string") return null;
+  const matched = /^\/staff-members(?:\/(\d{1,10}))?(?:\?([^#]*))?$/.exec(raw);
+  if (!matched) return null;
+  if (matched[1] === undefined) return backHrefOf(raw);
+  const id = Number(matched[1]);
+  if (id < 1 || id > 2_147_483_647) return null;
+  const search: RawSearch = {};
+  for (const [key, v] of new URLSearchParams(matched[2] ?? "")) if (!(key in search)) search[key] = v;
+  return `/staff-members/${id}${historySearch(detailListHrefOf(search), search.week)}`;
 }

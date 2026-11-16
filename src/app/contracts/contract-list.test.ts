@@ -10,6 +10,7 @@ import {
   periodText,
   pickedIdsOf,
   readListQuery,
+  savedCookieOf,
   savedKindOf,
   savedNoticeOf,
   sentText,
@@ -248,6 +249,9 @@ test("저장 뒤 안내 — 임시저장 · 종이 계약은 상태로, 보낸 �
   assert.match(savedNoticeOf("SIGNUP_INVITE") ?? "", /가입 초대 알림톡을 보냈습니다/);
   assert.equal(savedNoticeOf("toString"), null);
   assert.equal(savedNoticeOf(["DRAFT"]), null);
+  // 쿠키 이름은 서버 액션(헤더의 BP 문자열) · 화면(탭 BP 숫자)이 같아야 목록이 읽는다(WHALEERP-697)
+  assert.equal(savedCookieOf(350), "contract-saved-350");
+  assert.equal(savedCookieOf("350"), savedCookieOf(350));
 });
 
 test("발송 대기에 가입 · 초대 안내가 없을 때 — 초안 직원 · 가입 상태가 null 이면 판별한 초대 유형, 가입한 직원은 없음", () => {
