@@ -166,10 +166,10 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
                 {depth === 1 ? <b className="font-semibold">{name}</b> : name}
               </button>
             ) : (
-              <b className="font-semibold">{name}</b>
+              <b className="min-w-0 truncate font-semibold">{name}</b>
             )}
             {/* 하위가 있는 메뉴의 「묶음」 글자는 두지 않는다 — 들여쓰기 · 굵은 글씨로 이미 보인다(2026-10-28 사용자 지정) */}
-            {r.kind === "draft" && <span className="text-[13px] text-erp-label"> 작성 중</span>}
+            {r.kind === "draft" && <span className="shrink-0 whitespace-pre text-[13px] text-erp-label"> 작성 중</span>}
           </span>
         );
       },
