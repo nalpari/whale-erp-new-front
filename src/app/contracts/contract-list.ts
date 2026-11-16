@@ -6,8 +6,6 @@ import type { Scope } from "../../lib/browser-storage.ts";
 import type { AdminStore } from "../../lib/session.ts";
 import { PAGE_SIZES, type PageSize } from "../../lib/staff-members.ts";
 import { SCOPE_PARAM, isUnusableScope, scopeKeyOf, scopeOfParam, withoutStoreSearch } from "../../lib/store-scope.ts";
-import { historySearch } from "../staff-members/[id]/employment-history.ts";
-import { backHrefOf as staffBackHrefOf } from "../staff-members/staff-list-query.ts";
 
 /** 페이지당 건수 — 다른 목록(직원 · 급여명세서)과 같은 선택지다(WHALEERP-133). 고른 값은 주소 pageSize 에 둔다 */
 export { PAGE_SIZES, type PageSize };
@@ -201,25 +199,6 @@ export function toggledStatus(checked: string[], all: string[], value: string, o
 export function backHrefOf(raw: string | string[] | undefined): string {
   const value = typeof raw === "string" ? raw : "";
   return /^\/contracts(\?[^#]*)?$/.test(value) ? value : "/contracts";
-}
-
-/**
- * 근로계약서 작성 화면 [취소]가 돌아갈 곳 — 들어온 화면이다(WHALEERP-683). 재계약(?from=)은 그 계약 상세(돌아갈 목록 ?back= 은 이어
- * 싣는다), 직원 정보 관리 목록 · 직원 상세의 직원 초대 · 작성(?entry=)은 그 화면, 그 밖에는 돌아갈 목록(?back=)이다. entry 는 직원 정보
- * 관리 주소만 받고 쿼리는 직원 화면 규칙으로 다시 만든다 — 목록은 목록 조건(staff-list-query backHrefOf), 상세는 그 상세의 [목록]
- * 주소(?back=) · 보던 주(?week=, historySearch)만 남긴다. 다른 곳으로 보내려는 값은 버리고 목록으로 간다. 저장 · 임시저장 뒤 이동은
- * 이것과 따로다(listAfterSave).
- */
-export function cancelHrefOf(from: number | undefined, entry: string | string[] | undefined, back: string | string[] | undefined): string {
-  if (from !== undefined) return withBack(`/contracts/${from}`, back);
-  const matched = typeof entry === "string" ? /^\/staff-members(?:\/(\d{1,10}))?(?:\?([^#]*))?$/.exec(entry) : null;
-  if (!matched) return backHrefOf(back);
-  if (matched[1] === undefined) return staffBackHrefOf(entry);
-  // 직원 id 는 int4 양의 정수만(작성 화면의 ?from= 과 같은 범위)
-  const id = Number(matched[1]);
-  if (id < 1 || id > 2_147_483_647) return backHrefOf(back);
-  const params = new URLSearchParams(matched[2] ?? "");
-  return `/staff-members/${id}${historySearch(staffBackHrefOf(params.get("back") ?? undefined), params.get("week") ?? undefined)}`;
 }
 
 export function periodText(row: Pick<ContractListItem, "startDate" | "endDate">): string {

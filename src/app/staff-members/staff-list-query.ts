@@ -17,7 +17,7 @@ import {
 } from "../../lib/staff-members.ts";
 import { SCOPE_PARAM, scopeKeyOf, scopeOfParam } from "../../lib/store-scope.ts";
 
-type RawSearch = Record<string, string | string[] | undefined>;
+export type RawSearch = Record<string, string | string[] | undefined>;
 
 export const DEFAULT_STAFF_LIST_QUERY: StaffListQuery = {
   storeIds: [],

@@ -103,6 +103,8 @@ export default async function StaffMemberDetailPage({
   // 만든다). ?back= 이 없는 예전 형식 주소는 상세 주소에 붙은 목록 조건으로 돌아간다(detailListHrefOf). 주 넘김(weekHref)은 둘 다 그대로 둔다.
   // 재직 이력 링크도 이 주소를 ?back= 으로 싣고 근무스케줄이 보던 주(week)를 이어 단다(historySearch)
   const listHref = detailListHrefOf(search);
+  // 재직 이력 링크 · 근로계약 칸 작성 버튼(?entry=)이 함께 싣는 조건 — [목록] 주소와 보던 주
+  const detailSearch = historySearch(listHref, search.week);
   const today = kstToday();
   // 근무스케줄 영역이 볼 주(월요일). 주소 week 가 없거나 날짜가 아니면 이번 주(데모 weekNav, 2026-10-22 노영주 — WHALEERP-185 기간 선택을 걷었다)
   const monday = scheduleWeekOf(search, today);
@@ -132,7 +134,7 @@ export default async function StaffMemberDetailPage({
     ...(staff.retiredDate ? [{ label: "퇴직일", value: staff.retiredDate }] : []),
     // 재입사로 이은 다른 재직 기간(WHALEERP-615, 목업 detail.html) — 누르면 그 기간의 상세. 이은 레코드가 없으면 줄이 없다.
     // 좁은 단에서 기간이 꺾여도 잘리지 않게 높이가 내용만큼 늘어나는 줄로 둔다
-    ...employmentHistoryLines(staff, historySearch(listHref, search.week)).map((line) => ({
+    ...employmentHistoryLines(staff, detailSearch).map((line) => ({
       label: line.label,
       multiline: true,
       value: (
@@ -197,7 +199,7 @@ export default async function StaffMemberDetailPage({
                     }
                   >
                     <LoadGroupArea fallback={AREA_PENDING}>
-                      <ContractBox staffMemberId={staffMemberId} detailSearch={historySearch(listHref, search.week)} />
+                      <ContractBox staffMemberId={staffMemberId} detailSearch={detailSearch} />
                     </LoadGroupArea>
                   </Box>
                 </div>
