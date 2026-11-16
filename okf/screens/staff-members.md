@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입 상태 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [수정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-16T09:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-16T03:27:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -100,7 +100,7 @@ sources:
     last_modified: 2026-10-22T06:09:19Z
   - id: data-table
     resource: ../../src/components/common/data-table.tsx
-    title: 공통 표 — 열 이름 줄 모양 headVariant(default · plain · none). 직원 상세만 plain · none 을 켠다. 목록 빈 상태 fillEmpty(고정 머리 scroll 표와 함께 써도 된다, 2026-11-05)
+    title: 공통 표 — 열 이름 줄 모양 headVariant(default · plain · none). 직원 상세만 plain · none 을 켠다. 목록 빈 상태 fillEmpty(고정 머리 scroll 표와 함께 써도 된다, 2026-11-05 — 이때 열 합이 넓으면 빈 표도 상자 안에서 가로로 민다, 2026-11-16)
     last_modified: 2026-11-05T00:20:33Z
   - id: attendance-query
     resource: ../../src/app/attendance-records/attendance-query.ts
@@ -219,6 +219,10 @@ sources:
   (같은 이름 여럿은 첫 값, 모르는 이름 · 예전 `?store=` 는 버리고, 상세 전용 `week` 는 목록에 넣지 않는다). 둘 다 없으면 기본 목록이다. 브라우저 뒤로 가기는 목록 조작이 `replace` 라 상세로 가기 직전의 목록 주소로 간다. 근무스케줄 주
   넘김(`weekHref`)은 `week` 만 바꾸고 `back` 과 예전 형식 목록 조건을 그대로 둔다 — 주를 옮긴 뒤에도 [목록]이 같은 조건으로 돌아간다.
   직원 등록 화면은 따로 없다 — 「직원 초대」는 근로계약 작성(`/contracts/new`)이라 `back` 을 싣지 않는다(근로계약 `backHrefOf` 가 근로계약 목록 주소만 받는다).
+  대신 「직원 초대」와 상세 근로계약 칸의 「근로계약서 작성」은 들어온 주소(지금 조건의 목록 · 그 직원 상세 — 상세는 `historySearch` 로 [목록] 주소 ·
+  보던 주를 함께)를 `?entry=` 로 싣는다 — 작성 화면 [취소]가 근로계약 `cancelHrefOf`(`contracts/new/cancel-href.ts`)로 그 화면에 돌아간다(WHALEERP-683). 받는 쪽은
+  `staffEntryHrefOf`(`[id]/employment-history.ts`)로 직원 정보 관리 주소만 받고 쿼리를 직원 화면 규칙으로 다시 만든다(목록은 `backHrefOf`, 상세는
+  `detailListHrefOf` 의 [목록] 주소 — 예전 형식 포함 — 와 보던 주). 저장 · 임시저장 뒤에는 그대로 근로계약 목록으로 간다(WHALEERP-673).
   상세 안에서 다른 화면(근로계약 등)으로 가는 링크는 `back` 을 싣지 않는다. 직원 목록에서 저장 · 삭제 뒤 목록으로 돌아가는 동작이 없어(퇴직 처리 · 변경 · 취소는
   상세에 머물고 다시 받는다) 근로계약의 `withoutStoreSearch` 처리는 두지 않았다.
 * 목록 라벨(`joinCell` 의 `StaffJoinState` · `EmploymentType`)은 아직 화면 상수다. `getEnum` 으로 바꾸는 것은 남았다 — 상세

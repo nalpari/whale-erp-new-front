@@ -9,7 +9,7 @@ import { fetchSameOrigin } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
-import { SAVED_COOKIE, SAVED_COOKIE_MAX_AGE, backHrefOf, listAfterSave, savedKindOf, withBack } from "../contract-list";
+import { SAVED_COOKIE_MAX_AGE, backHrefOf, listAfterSave, savedCookieOf, savedKindOf, withBack } from "../contract-list";
 import { createContract, updateContract } from "./actions";
 import {
   formatHours,
@@ -284,6 +284,7 @@ export function ContractForm({
   previousStartDate,
   minimumWage,
   back = "/contracts",
+  cancelHref,
 }: {
   stores: { storeId: number; name: string }[];
   labels: ContractFormLabels;
@@ -307,8 +308,10 @@ export function ContractForm({
   previousStartDate?: string;
   /** 지금 최저임금(공통코드, WHALEERP-595) — 시급 도움말 · 수습 중 시급을 본다. 받지 못했으면 null */
   minimumWage: MinimumWage | null;
-  /** 돌아갈 목록 주소(?back=) — 취소 · 저장 뒤 같은 조건의 목록으로 간다 */
+  /** 돌아갈 목록 주소(?back=) — 저장 뒤(그리고 cancelHref 가 없을 때 취소) 같은 조건의 목록으로 간다 */
   back?: string;
+  /** [취소]가 돌아갈 옛 경로(들어온 화면, cancelHrefOf — WHALEERP-683). 없으면 돌아갈 목록(back)이다 */
+  cancelHref?: string;
 }) {
   // 근무지가 하나뿐이면 미리 고르고(TO-DO 작성과 같다) 근무 장소도 그 근무지명으로 채운다
   const [form, setForm] = useState<Form>(() => initial ?? (stores.length === 1 ? withStore(initialForm(), String(stores[0].storeId), stores) : initialForm()));
@@ -436,9 +439,9 @@ export function ContractForm({
         result = { error: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
       }
       if (result.ok) {
-        // 저장 뒤 안내는 서버 액션과 같이 저장 응답으로 고른다(종이 계약 등록이면 체결 완료 — 쿠키 SAVED_COOKIE, WHALEERP-132)
+        // 저장 뒤 안내는 서버 액션과 같이 저장 응답으로 고른다(종이 계약 등록이면 체결 완료 — 쿠키 savedCookieOf, WHALEERP-132)
         const kind = savedKindOf(result);
-        if (kind) document.cookie = `${SAVED_COOKIE}=${kind}; path=${at("/contracts")}; max-age=${SAVED_COOKIE_MAX_AGE}; samesite=lax`;
+        if (kind) document.cookie = `${savedCookieOf(bp)}=${kind}; path=/; max-age=${SAVED_COOKIE_MAX_AGE}; samesite=lax`;
         router.push(at(listAfterSave(back, contractId ? body.storeId : null)));
         return;
       }
@@ -552,7 +555,7 @@ export function ContractForm({
     <div ref={formRef} className="flex flex-col gap-[12px] [&_:is(select,input:not([type=radio],[type=checkbox])):disabled]:bg-erp-thead-bg">
       <div className="flex items-end gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약서</h2>
-        <Button variant="off" href={at(backHrefOf(back))}>
+        <Button variant="off" href={at(cancelHref ?? backHrefOf(back))}>
           취소
         </Button>
         {deleteButton}

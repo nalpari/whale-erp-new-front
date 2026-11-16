@@ -3,14 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Badge, Button, DataTable, PageBar, useAction, type Column } from "@/components/common";
+import { formatDateTime, wasUpdated } from "@/lib/format";
 import { CodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
-import { wasUpdated } from "@/lib/format";
 import type { RoleGroup } from "@/lib/platform-role-groups";
 import { RoleMenuDialog, type MenuDialogActions } from "@/components/role-groups/role-menu-dialog";
 import { getRoleGroupMenusAction, previewRoleGroupMenusAction, saveRoleGroupMenusAction } from "./actions";
-import { CARD, PATH, WhenWho, type RoleDetailState } from "./role-parts";
+import { CARD, PATH, type RoleDetailState } from "./role-parts";
 import { RoleSide } from "./role-side";
 
 // 왼쪽 권한 목록 + 오른쪽 고정 칸(데모 system/roles · role-side). 오른쪽 칸은 슬라이드 패널이 아니라 늘 서 있다.
@@ -50,7 +50,7 @@ export function RolesScreen({
     {
       header: "권한유형 · 코드",
       // 「플랫폼 관리자 · PA000002」가 권한명과 너무 붙어 보였다(2026-10-26 사용자 지정). BP 권한 그룹 관리와 같은 폭(2026-10-27)
-      width: "w-[260px]", // 권한유형 · 코드 · 권한명 · 최종수정은 같은 260px(BP 권한 그룹 관리와 같다, 2026-10-27 사용자 지정)
+      width: "w-[170px]", // 「플랫폼마스터 · PM000001」이 다 보이는 폭. 고정 칸 합 622 — 최소폭 1260 에서 설명은 거의 말줄임만 남는다(상세 칸에서 본다)(2026-11-16 사용자 지정, 전엔 260 · 권한명 260 · 최종수정 260)
       // 가운데 정렬 — 열 이름과 맞춘다(2026-10-27 사용자 지정, 전엔 왼쪽)
       cell: (r) => (
         <span className="truncate">
@@ -61,7 +61,7 @@ export function RolesScreen({
     {
       header: "권한명",
       // 폭을 정하지 않으면 설명과 남는 폭을 반씩 나눠 설명 글자가 칸 한가운데서 시작했다. 설명이 권한명에 더 붙게 폭을 정한다(2026-10-26 사용자 지정)
-      width: "w-[260px]",
+      width: "w-[140px]", // 최소폭 1260 에 맞춰 줄였다 — 긴 권한명은 말줄임, 상세 칸에서 본다(2026-11-16 사용자 지정, 전엔 260)
       align: "left",
       cell: (r) => (
         <button
@@ -74,16 +74,20 @@ export function RolesScreen({
         </button>
       ),
     },
+    // 설명은 남는 폭을 다 쓴다 — 최종수정(늘 16자) · 메뉴설정 버튼 · 메뉴설정 여부(등록 · 미등록)는 내용이 정해져 있어 딱 맞는 폭으로 고정하고,
+    // 넓은 창에서 늘어나는 폭은 설명이 가져간다. 최소폭 1260 에서는 설명이 거의 말줄임만 남는다(2026-11-16 사용자 지정)
     { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
-    // 한 칸에 「일시 · 사람」. 등록일시 열은 뺐다 — BP 권한 그룹 관리와 같이 최종수정만 보인다(2026-10-26 사용자 지정). 등록은 상세에 있다
-    { header: "최종수정", width: "w-[260px]", align: "left", cell: (r) =>
+    // 최종수정 일시. 등록일시 열은 뺐다 — BP 권한 그룹 관리와 같이 최종수정만 보인다(2026-10-26 사용자 지정). 등록은 상세에 있다
+    // 일시 16자(약 115px) + 칸 여백 20 이 136 — 줄이면 「2026-10-30 11:…」로 잘린다(2026-11-16 사용자 지정)
+    { header: "최종수정", width: "w-[136px]", cell: (r) =>
+        // 일시만 — 고친 사람은 상세에서 본다. 칸이 좁아져 좁은 창(최소 1260)에서도 [설정]까지 보인다(2026-11-16 사용자 지정, 전엔 「일시 · 사람」 260)
         // 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청)
-        wasUpdated(r.createdAt, r.updatedAt) ? <WhenWho at={r.updatedAt} actor={r.updatedBy} /> : <span className="text-erp-muted">-</span>,
+        wasUpdated(r.createdAt, r.updatedAt) ? formatDateTime(r.updatedAt) : <span className="text-erp-muted">-</span>,
     },
     // [설정] 버튼 열(「메뉴설정」)을 「메뉴설정 여부」 앞에 둔다(2026-10-26 사용자 지정 — 전엔 「메뉴 등록 여부」 · 「메뉴등록」[메뉴등록] 순)
     {
       header: "메뉴설정",
-      width: "w-[124px]",
+      width: "w-[96px]", // [설정] 버튼(약 76px)이 칸 안에 다 들어가게 — 70 이면 넘쳐 버튼 옆에 말줄임 점이 찍혔다(2026-11-16 사용자 지적)
       cell: (r) => (
         <Button variant="soft" onClick={() => setMenuFor(r)}>
           설정
@@ -91,7 +95,8 @@ export function RolesScreen({
       ),
     },
     // 등록 / 미등록만 보인다. 미등록은 상태 빨강 배지
-    { header: "메뉴설정 여부", width: "w-[120px]", cell: (r) => (r.isMenuRegistered ? <Badge tone="on">등록</Badge> : <Badge tone="off">미등록</Badge>) },
+    // 「메뉴설정 여부」에서 줄였다 — 칸을 80 으로 줄여 최소폭 1260 에서 「설명」 열 이름이 꺾이지 않게(2026-11-16 사용자 지정)
+    { header: "설정여부", width: "w-[80px]", cell: (r) => (r.isMenuRegistered ? <Badge tone="on">등록</Badge> : <Badge tone="off">미등록</Badge>) },
   ];
 
   return (
@@ -121,6 +126,8 @@ export function RolesScreen({
             // 비었으면 열 이름 줄 아래 빈 칸이 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정). 검색 조건이 없어 「등록된 …」만 쓴다
             fillEmpty
             empty="등록된 권한 그룹이 없습니다."
+            // 오른쪽 상세 칸(464)이 고정이라 좁은 창(최소 1260)에서는 열이 넘친다 — 표 상자 안에서만 민다(2026-11-16 사용자 지정)
+            scroll
           />
         </section>
 

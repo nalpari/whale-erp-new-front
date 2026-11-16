@@ -291,14 +291,14 @@ export function GuideMock({ kind }: { kind: GuideMockKind }) {
       return (
         <div className={BOX}>
           <Head title="BP 권한 그룹 관리" action="등록" ring />
-          {/* 실제 화면(bp-role-groups)처럼 — 왼쪽 「권한 그룹 목록」 표(권한유형 · 코드 / 권한명 링크 / 메뉴설정 여부), 오른쪽 「권한 등록」 칸(2026-11-11 사용자 지정 — 전엔 이름만 늘어선 목록이라 목록 · 상세가 드러나지 않았다) */}
+          {/* 실제 화면(bp-role-groups)처럼 — 왼쪽 「권한 그룹 목록」 표(권한유형 · 코드 / 권한명 링크 / 설정여부), 오른쪽 「권한 등록」 칸(2026-11-11 사용자 지정 — 전엔 이름만 늘어선 목록이라 목록 · 상세가 드러나지 않았다) */}
           <div className="grid grid-cols-[1.45fr_1fr]">
             <div className="flex min-w-0 flex-col gap-[6px] p-[8px]">
               <span className="font-semibold">
                 권한 그룹 목록 <span className="font-normal text-erp-label">2건</span>
               </span>
               <Table
-                head={["권한유형 · 코드", "권한명", "메뉴설정 여부"]}
+                head={["권한유형 · 코드", "권한명", "설정여부"]}
                 rows={[
                   [
                     <span key="t">

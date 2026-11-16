@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Button, PageBar } from "@/components/common";
 import { ApiError, authHeaders, bpHref, deniedMessageOf, request } from "@/lib/api";
 import { backHrefOf, withBack } from "../contract-list";
+import { cancelHrefOf } from "./cancel-href";
 import { ContractPermission } from "../contract-permission";
 import { ContractForm } from "./contract-form";
 import { canRenew, renewalFromDetail, type ContractDetail } from "./contract-form-model";
@@ -11,11 +12,13 @@ import { loadFormData } from "./load-form-data";
 // 근로계약서 초안 작성. docs/demo/staff/contracts-new.html 을 공통 컴포넌트로 옮겼다.
 // ?from=계약 ID 면 재계약(WHALEERP-156) — 그 계약 값을 채워 열고 저장할 때 직전 계약으로 싣는다. 재직 중이면 api 가 같은 직원 레코드에
 // 붙이고(연장), 퇴직했으면 새 레코드를 만든다(재입사).
+// [취소]는 들어온 화면으로 간다(cancelHrefOf, WHALEERP-683) — 재계약은 원래 계약 상세, 직원 정보 관리에서 들어왔으면(?entry=) 그 화면.
 export default async function NewContractPage({ searchParams }: PageProps<"/contracts/new">) {
   const query = await searchParams;
   const back = backHrefOf(query.back);
   const from = typeof query.from === "string" ? Number(query.from) : undefined;
   if (from !== undefined && !(Number.isInteger(from) && from >= 1 && from <= 2_147_483_647)) notFound();
+  const cancelHref = cancelHrefOf(from, query.entry, query.back);
   // 직전 계약은 작성 화면 재료와 함께 읽는다. 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403) · BP 를 고르지 않은 플랫폼
   // 계정(400)이면 api 문장을 그대로 보인다(이어 쓰기와 같다). 로그인 만료는 request() 가 로그인 화면으로 보낸다
   const readPrevious = async (): Promise<{ previous: ContractDetail | null; notice: string }> => {
@@ -48,7 +51,7 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
             {denied !== null && (from === undefined || previous) ? (
               <Notice title={denied} back={back} />
             ) : from === undefined ? (
-              <ContractForm stores={stores} labels={labels} minimumWage={minimumWage} signedIn={signedIn} back={back} />
+              <ContractForm stores={stores} labels={labels} minimumWage={minimumWage} signedIn={signedIn} back={back} cancelHref={cancelHref} />
             ) : !previous ? (
               <Notice title={notice} back={back} />
             ) : previous.renewedBy != null ? (
@@ -62,7 +65,7 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
             ) : !storeOpen ? (
               <Notice title="이 근무지에는 근로계약서를 작성할 수 없습니다(폐점했거나 맡은 점포가 아님)" back={back} />
             ) : (
-              <ContractForm stores={stores} labels={labels} minimumWage={minimumWage} signedIn={signedIn} initial={renewalFromDetail(previous)} previousContractId={from} previousStartDate={previous.startDate ?? undefined} back={back} />
+              <ContractForm stores={stores} labels={labels} minimumWage={minimumWage} signedIn={signedIn} initial={renewalFromDetail(previous)} previousContractId={from} previousStartDate={previous.startDate ?? undefined} back={back} cancelHref={cancelHref} />
             )}
           </ContractPermission>
         </div>
