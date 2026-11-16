@@ -7,7 +7,7 @@ import { SessionExpiredDialog } from "./session-expired-dialog";
 import { SessionGate } from "./session-gate";
 
 // 로그인 후 화면의 틀 하나(ERP·플랫폼 구분 없음 — 서비스는 탭마다 SessionGate 가 정한다). 데모 ui.erpFrame 과 같다 — 화면은 100dvh 안에서 끝나고,
-// 최소폭(플랫폼 1260 · 웨일ERP 1720)보다 좁으면 body 가 아니라 이 바깥 영역이 가로로 스크롤한다. 등록 패널(SlidePanel)이 오른쪽에 겹쳐 서도록 relative + overflow-x-clip.
+// 최소폭(1260)보다 좁으면 body 가 아니라 이 바깥 영역이 가로로 스크롤한다. 등록 패널(SlidePanel)이 오른쪽에 겹쳐 서도록 relative + overflow-x-clip.
 // 헤더와 그 아래(PageBar + 본문)는 로그인 정보가 준비된 뒤에 그린다(SessionGate). 본문은 각 page 가 그린다.
 // alarm 은 알림 종(NotificationBellSlot, 서버 컴포넌트)이다. 클라이언트 쪽에서 그려지므로 루트 레이아웃이 만들어 넘긴다.
 // PanelBackdrop 은 가장 위 SlidePanel 이 closeOnBackdrop 을 켰을 때만 화면 전체(헤더 포함)를 덮는 바탕창이다(2026-10-20) —
@@ -18,9 +18,9 @@ export function AdminFrame({ alarm, children }: { alarm: ReactNode; children: Re
   return (
     <ErpRoot className="min-h-[100dvh]">
       <div className="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg">
-        {/* 최소폭 — 플랫폼 탭은 1260, 웨일ERP 탭은 화면을 1260 에 맞추기 전까지 1720(2026-11-16 사용자 지정, 단계 작업). SessionGate 가 웨일ERP 탭에서만 남기는
-              data-erp-wide 표시로 가른다. 웨일ERP 화면까지 맞추면 has-[…] 한 조각을 지운다 */}
-        <div className="relative flex h-full min-w-[1260px] flex-col overflow-x-clip has-[[data-erp-wide]]:min-w-[1720px]">
+        {/* 최소폭 1260 — 플랫폼 · 웨일ERP 탭 같다(로그인 전 화면과 같은 값, 1280 창에서 세로 스크롤바를 빼도 가로 스크롤이 없다, 2026-11-16 사용자 지정).
+              전엔 1720 이었고 플랫폼(front #289) · 웨일ERP 차례로 낮췄다 */}
+        <div className="relative flex h-full min-w-[1260px] flex-col overflow-x-clip">
           <SessionGate header={<AdminHeader alarm={alarm} />}>
             {children}
             {/* 시작 가이드 미니 카드 — 주소를 읽으므로 Suspense 로 감싼다. 자동 띄우기가 계정 · BP · 점포를 읽어 SessionGate 안에 둔다
