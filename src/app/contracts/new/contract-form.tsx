@@ -589,14 +589,18 @@ export function ContractForm({
               {() => <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />}
             </Item>
             {/* 성별 · 외국인 여부 — 직원이 가입하며 넣는 값과 이름 · 번호 · 생년월일과 함께 대조해 본인만 날인한다(WHALEERP-125) */}
-            <Group label="성별" required errors={errs.gender}>
-              <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-                {GENDERS.map((v) => (
-                  <Radio key={v} name="gender" label={labelOf(labels.gender, v)} checked={form.gender === v} onChange={() => set("gender", v)} />
-                ))}
-                <Checkbox label="외국인" checked={form.isForeigner} onChange={(e) => set("isForeigner", e.target.checked)} />
-              </div>
-            </Group>
+            {/* 테두리 없는 라디오가 생년월일 입력칸에 6px 로 붙어 보여 칸 안쪽을 18px 띄운다(묶음 사이 간격). 라디오 줄은 옆 34px 입력칸과
+                가운데를 맞춘다 — 위로 붙어 보였다(2026-11-16 사용자 지정) */}
+            <div className="flex min-w-px flex-1 pl-[18px]">
+              <Group label="성별" required errors={errs.gender}>
+                <div role="radiogroup" className="flex min-h-[34px] flex-wrap items-center gap-x-[18px] gap-y-[8px]">
+                  {GENDERS.map((v) => (
+                    <Radio key={v} name="gender" label={labelOf(labels.gender, v)} checked={form.gender === v} onChange={() => set("gender", v)} />
+                  ))}
+                  <Checkbox label="외국인" checked={form.isForeigner} onChange={(e) => set("isForeigner", e.target.checked)} />
+                </div>
+              </Group>
+            </div>
             <Item label="소속 근무지" required errors={errs.storeId}>
               {(id) => (
                 // 수정 요청은 이미 보낸 계약이라 근무지를 바꾸지 않는다 — 다른 근무지는 새 근로계약서로(api #58). 재계약도 직전 계약의 근무지다
