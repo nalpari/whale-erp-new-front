@@ -37,6 +37,8 @@ export function WorkerForm({
   const at = (path: string) => bpPath(bp, path);
   const [form, setForm] = useState<Form>(initial);
   const [serverError, setServerError] = useState("");
+  // 바뀐 것 없이 [저장]을 눌렀다 — 칸을 하나라도 고치면 안내를 내린다(아래에서 지금 값으로 다시 본다, WHALEERP-681)
+  const [unchangedAsked, setUnchangedAsked] = useState(false);
   const [saving, startSaving] = useTransition();
   const update = useAction(updateWorker, { kind: "update" });
   // 새 번호로 같은 점포에 진행 중 계약이 있으면(409) 대체할지 묻는다 — 작성 화면과 같다
@@ -76,7 +78,8 @@ export function WorkerForm({
       }
       if ("ok" in result) {
         toast(WORKER_SAVED);
-        router.push(result.href);
+        // 저장 전 폼으로 뒤로 가지 않게 바꾼다(결과 모름과 같다) — 돌아온 폼은 저장 전 값이라 다시 저장하면 되돌린다
+        router.replace(result.href);
         return;
       }
       if (result.inProgress) {
@@ -87,8 +90,10 @@ export function WorkerForm({
       setServerError(result.error);
       setFailures((n) => n + 1);
     });
+  const unchanged = workerUnchanged(form, initial);
   const save = () => {
     setServerError("");
+    setUnchangedAsked(false);
     const found = Object.keys(issues) as WorkerField[];
     setErrorFields(found.length ? new Set(found) : null);
     if (found.length) {
@@ -96,9 +101,8 @@ export function WorkerForm({
       return;
     }
     // 저장하면 다시 보낸다 — 바뀐 것이 없으면 보내지 않고 알린다(WHALEERP-681)
-    if (workerUnchanged(form, initial)) {
-      setServerError(workerUnchangedNote(status));
-      setFailures((n) => n + 1);
+    if (unchanged) {
+      setUnchangedAsked(true);
       return;
     }
     send();
@@ -168,7 +172,13 @@ export function WorkerForm({
         </FormRow>
       </FormGroup>
 
-      {/* 화면이 막은 유효성 오류는 칸 아래에 보이고, 여기는 api 가 막은 것과 바뀐 내용이 없을 때다(WHALEERP-631 · 681) */}
+      {unchangedAsked && unchanged && (
+        <p role="status" className="text-[14px] leading-[1.6] text-erp-off">
+          {workerUnchangedNote(status)}
+        </p>
+      )}
+
+      {/* 화면이 막은 유효성 오류는 칸 아래에 보이고, 여기는 api 가 막은 것만이다(WHALEERP-631) */}
       {serverError && (
         <div ref={failureRef} role="alert" className="flex flex-col gap-[4px] rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px]">
           <p className="text-[14px] font-semibold text-erp-off">저장하지 못했습니다.</p>
