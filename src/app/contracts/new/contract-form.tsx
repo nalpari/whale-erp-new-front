@@ -585,21 +585,27 @@ export function ContractForm({
             </Item>
           </FormRow>
           <FormRow>
-            <Item label="생년월일" required help="계약 시작일 기준 만 19세 미만이면 저장할 수 없습니다." errors={errs.birthDate}>
+            <Item label="생년월일" required help="계약 시작일 기준 만 19세 미만인 경우 직원으로 등록할 수 없습니다." errors={errs.birthDate}>
               {() => <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />}
             </Item>
             {/* 성별 · 외국인 여부 — 직원이 가입하며 넣는 값과 이름 · 번호 · 생년월일과 함께 대조해 본인만 날인한다(WHALEERP-125) */}
             {/* 테두리 없는 라디오가 생년월일 입력칸에 6px 로 붙어 보여 칸 안쪽을 18px 띄운다(묶음 사이 간격). 라디오 줄은 옆 34px 입력칸과
-                가운데를 맞춘다 — 위로 붙어 보였다(2026-11-16 사용자 지정) */}
-            <div className="flex min-w-px flex-1 pl-[18px]">
-              <Group label="성별" required errors={errs.gender}>
-                <div role="radiogroup" className="flex min-h-[34px] flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-                  {GENDERS.map((v) => (
-                    <Radio key={v} name="gender" label={labelOf(labels.gender, v)} checked={form.gender === v} onChange={() => set("gender", v)} />
-                  ))}
-                  <Checkbox label="외국인" checked={form.isForeigner} onChange={(e) => set("isForeigner", e.target.checked)} />
-                </div>
-              </Group>
+                가운데를 맞춘다 — 위로 붙어 보였다(2026-11-16 사용자 지정). 여백은 안쪽 상자에 둔다 — 바깥(flex-1)에 두면 이 칸만 18px 넓어져
+                소속 근무지가 휴대전화번호 시작선에서 밀렸다 */}
+            <div className="flex min-w-px flex-1">
+              <div className="flex w-full min-w-px pl-[18px]">
+                <Group label="성별" required errors={errs.gender}>
+                  <div role="radiogroup" className="flex min-h-[34px] flex-wrap items-center gap-x-[18px] gap-y-[8px]">
+                    {GENDERS.map((v) => (
+                      <Radio key={v} name="gender" label={labelOf(labels.gender, v)} checked={form.gender === v} onChange={() => set("gender", v)} />
+                    ))}
+                    {/* 외국인은 성별과 다른 항목이라 남 · 여에서 조금 더 뗀다(18 + 18, 2026-11-16 사용자 지정) */}
+                    <span className="ml-[18px] flex">
+                      <Checkbox label="외국인" checked={form.isForeigner} onChange={(e) => set("isForeigner", e.target.checked)} />
+                    </span>
+                  </div>
+                </Group>
+              </div>
             </div>
             <Item label="소속 근무지" required errors={errs.storeId}>
               {(id) => (
