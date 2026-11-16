@@ -146,11 +146,12 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
 
   const muted = (node: MenuNode, text: React.ReactNode) => (node.status === "ACTIVE" ? text : <span className="text-erp-muted">{text}</span>);
   const columns: Column<Row>[] = [
-    ...(editable ? [{ header: "이동", width: "w-[56px]", cell: (r: Row) => (r.kind === "menu" ? drag.handle(r.row.node) : null) } satisfies Column<Row>] : []),
+    // 열 합 670 — 오른쪽 메뉴 칸(464)이 고정이라 최소폭 1260 에서 표 폭(세로 막대 자리를 뺀 약 670)에 맞춘다. 넓은 창에서는 같은 비율로 늘어난다(2026-11-16 사용자 지정, 전엔 986)
+    ...(editable ? [{ header: "이동", width: "w-[44px]", cell: (r: Row) => (r.kind === "menu" ? drag.handle(r.row.node) : null) } satisfies Column<Row>] : []),
     {
       header: "메뉴명", // 「노출 메뉴명」에서 줄임(2026-10-26 사용자 지정)
       align: "left",
-      width: "w-[250px]", // 폭을 안 주면 표 전체 남는 칸을 다 먹어 메뉴코드 칸과 간격이 벌어진다(사용자 지적, 2026-10-26 — 220px는 너무 붙어 250px로 조정)
+      width: "w-[150px]", // 폭을 안 주면 표 전체 남는 칸을 다 먹어 메뉴코드 칸과 간격이 벌어진다(사용자 지적, 2026-10-26). 최소폭 1260 에 맞춰 150(2026-11-16)
       cell: (r) => {
         const depth = r.kind === "menu" ? r.row.node.depth : placement!.depth;
         const name = r.kind === "menu" ? r.row.node.name : draftName.trim() || "새 메뉴";
@@ -172,23 +173,23 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
         );
       },
     },
-    { header: "메뉴 코드", width: "w-[110px]", cell: (r) => (r.kind === "menu" ? muted(r.row.node, r.row.node.menuCode) : <span className="text-erp-label">자동 채번</span>) },
+    { header: "메뉴 코드", width: "w-[96px]", cell: (r) => (r.kind === "menu" ? muted(r.row.node, r.row.node.menuCode) : <span className="text-erp-label">자동 채번</span>) },
     {
       header: "메뉴단계", // 권한별 메뉴설정 팝업과 같은 이름(2026-10-26 사용자 지정)
-      width: "w-[90px]",
+      width: "w-[70px]",
       cell: (r) => <span className="text-erp-label">{r.kind === "menu" ? r.row.node.depth : placement!.depth}단계</span>,
     },
     {
       header: "메뉴 URL",
       align: "left",
-      width: "w-[240px]",
+      width: "w-[110px]",
       cell: (r) => (r.kind === "menu" && r.row.node.url ? muted(r.row.node, r.row.node.url) : <span className="text-erp-muted">—</span>),
     },
-    { header: "순서", width: "w-[60px]", cell: (r) => (r.kind === "menu" ? muted(r.row.node, r.row.node.sortOrder) : placement!.order) },
+    { header: "순서", width: "w-[50px]", cell: (r) => (r.kind === "menu" ? muted(r.row.node, r.row.node.sortOrder) : placement!.order) },
     {
       header: "사용여부",
-      // 「사용 + 상위 미사용」 꼬리표가 한 줄에 들게 넓힌다(2026-10-27)
-      width: "w-[180px]",
+      // 「사용 + 상위 미사용」 꼬리표가 한 줄에 드는 폭(2026-10-27, 1260 에 맞춰 150 — 2026-11-16)
+      width: "w-[150px]",
       cell: (r) =>
         r.kind === "menu" ? (
           // 상위가 미사용이면 자기 값(사용 · 미사용)은 그대로 보이고, 숨는 이유를 회색 꼬리표로 덧붙인다(2026-10-27 사용자 지정 — 안 A)

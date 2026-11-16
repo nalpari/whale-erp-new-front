@@ -1,5 +1,4 @@
 import { labelOf, type EnumValue } from "@/lib/enums";
-import { formatDateTime } from "@/lib/format";
 import type { ActionFailure } from "@/lib/role-group-actions";
 
 // 권한 그룹 화면(플랫폼 권한 관리 · BP 권한 그룹 관리)이 같이 쓰는 작은 조각. 공통 컴포넌트에 없는 것만 둔다.
@@ -34,11 +33,3 @@ type Actor = { name: string | null; loginId: string } | null;
 /** 등록자 · 수정자. 마이그레이션이 넣은 행이면 「시스템」 */
 export const actorOf = (actor: Actor) => (actor ? (actor.name ?? actor.loginId) : "시스템");
 
-/** 목록의 「일시 · 사람」 한 줄 — 상세의 등록 · 최종수정(ReadonlyCard)과 같은 구분자. 사람은 이름(없으면 아이디), 시스템이 넣은 행은 「시스템」 */
-export function WhenWho({ at, actor }: { at: string; actor: Actor }) {
-  return (
-    <span className="truncate">
-      {formatDateTime(at)} <span className="text-erp-label">· {actorOf(actor)}</span>
-    </span>
-  );
-}
