@@ -7,6 +7,7 @@ import {
   DOCUMENT_SIZE_ERROR,
   DOCUMENT_TYPE_ERROR,
   filledCounts,
+  documentKindSlots,
   isDocumentKind,
   formOf,
   initialForm,
@@ -153,7 +154,10 @@ test("문서 종류 값 모양 — 공통코드 상세 코드 규칙만 받는�
   assert.equal(isDocumentKind("INSPECTION_REPORT2"), true);
   assert.equal(isDocumentKind("user_manual"), false);
   assert.equal(isDocumentKind("../x"), false);
+  assert.equal(isDocumentKind("A".repeat(20)), true);
   assert.equal(isDocumentKind("A".repeat(21)), false);
+  assert.equal(isDocumentKind("A B"), false);
+  assert.equal(isDocumentKind("A/B"), false);
   assert.equal(isDocumentKind(""), false);
   assert.equal(isDocumentKind(3), false);
 });
@@ -233,4 +237,34 @@ test("메모 200자 경계 · 빈 문서 파일 · 수량 0 총금액", () => {
   assert.ok(problems(valid({ memo: "가".repeat(201) }), "create").memo);
   assert.ok(documentFileError({ name: "a.pdf", size: 0 }));
   assert.equal(totalText({ unitPrice: "1000", quantity: "0" }), "");
+});
+
+test("문서 종류 칸 — 공통코드 순서 · 사용 중지 · 공통코드에 없는 종류(WHALEERP-718)", () => {
+  const codes = [
+    { value: "USER_MANUAL", label: "사용 매뉴얼" },
+    { value: "PRECAUTION", label: "주의사항" },
+    { value: "WARRANTY", label: "제품 보증서" },
+  ];
+  const doc = (documentKind: string, documentKindLabel: string, isDocumentKindActive: boolean) => ({ documentKind, documentKindLabel, isDocumentKindActive });
+  // 문서가 없으면 공통코드 그대로, 모두 올릴 수 있다
+  assert.deepEqual(
+    documentKindSlots(codes, []).map((s) => [s.kind, s.label, s.canUpload]),
+    [["USER_MANUAL", "사용 매뉴얼", true], ["PRECAUTION", "주의사항", true], ["WARRANTY", "제품 보증서", true]],
+  );
+  // 세션 공통코드엔 남아 있어도 api 가 사용 중지라 하면 그 자리에서 빼기만 되는 칸
+  const slots = documentKindSlots(codes, [doc("PRECAUTION", "주의사항", false), doc("OLD_KIND", "옛 문서", false), doc("NEW_KIND", "새 문서", true)]);
+  assert.deepEqual(
+    slots.map((s) => [s.kind, s.label, s.canUpload]),
+    [
+      ["USER_MANUAL", "사용 매뉴얼", true],
+      ["PRECAUTION", "주의사항 (미사용)", false],
+      ["WARRANTY", "제품 보증서", true],
+      // 공통코드에 없는 종류는 맨 뒤 — 사용 중지면 빼기만, 사용 중이면 올릴 수 있다(세션 공통코드가 오래됨)
+      ["OLD_KIND", "옛 문서 (미사용)", false],
+      ["NEW_KIND", "새 문서", true],
+    ],
+  );
+  // 같은 종류는 한 번만
+  assert.equal(documentKindSlots([], [doc("X", "x", true), doc("X", "x", true)]).length, 1);
+  assert.deepEqual(documentKindSlots([], []), []);
 });

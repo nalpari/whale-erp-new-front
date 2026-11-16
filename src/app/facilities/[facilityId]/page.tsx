@@ -104,7 +104,7 @@ export default async function FacilityDetailPage({ params, searchParams }: PageP
   const documents: DetailRow[] = [
     { label: "사용 유효기한", value: orDash(d.usageExpiryDate) },
     { label: "품질 보증기한", value: orDash(d.warrantyExpiryDate) },
-    // 올려 둔 문서만 응답 순서(공통코드 순서) 그대로, 이름은 api 가 주는 공통코드 이름이다 — 종류가 공통코드라 화면이 목록을 갖지 않는다(WHALEERP-718).
+    // 올려 둔 문서만 응답 순서 그대로(api 가 공통코드 순서로 준다, api #288), 이름은 api 가 주는 공통코드 이름이다 — 종류가 공통코드라 화면이 목록을 갖지 않는다(WHALEERP-718).
     // 하나도 없으면 「문서 -」 한 줄
     ...(d.documents.length ? d.documents : [null]).map((doc) => {
       return {

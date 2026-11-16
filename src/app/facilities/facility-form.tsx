@@ -38,6 +38,7 @@ import {
   DOCUMENT_ACCEPT,
   DOCUMENT_COUNT_ERROR,
   DOCUMENT_GROUP,
+  documentKindSlots,
   documentFileError,
   FACILITY_GROUPS,
   filledCounts,
@@ -62,8 +63,8 @@ import { MASKED_STAFF } from "../todos/todo-row";
 /** 문서 한 종류의 상태 — 올려 둔 것(수정) · 뺀다는 표시 · 새로 고른 파일 · 고르지 못한 파일과 까닭 */
 type DocState = { existing: FacilityDocument | null; removed: boolean; file: File | null; rejected: RejectedFile[] };
 type Docs = Partial<Record<FacilityDocumentKind, DocState>>;
-/** 칸에 그릴 문서 종류 — 사용 중인 공통코드 종류(순서대로) 뒤에, 올려 둔 문서 중 사용 중지한 종류를 이름과 함께 붙인다(빼기만, WHALEERP-718) */
-type DocKind = { kind: FacilityDocumentKind; label: string; canUpload: boolean };
+/** 반영하지 못한 문서 — 종류와 토스트에 넣을 문구 */
+type FailedDocument = { kind: FacilityDocumentKind; text: string };
 type FoldKey = "product" | "purchase" | "documents" | "manage";
 
 /** 어느 칸의 오류가 어느 접힌 묶음 안에 있는가 — 검사에 걸리면 그 묶음을 펼친다 */
@@ -107,19 +108,9 @@ export function FacilityFormView(props: Props) {
   const cycles = useCodes(CYCLE_GROUP);
   const facilityCategories = useCodes("STORE_FACILITY");
   const equipmentCategories = useCodes("STORE_EQUIPMENT");
-  // 문서 종류(WHALEERP-718) — 사용 중인 종류만 올리기 칸으로 그린다. 사용 중지한 종류의 기존 문서는 빼기만 된다(바꾸면 api 400).
-  // 공통코드에 없는데 사용 중이라는 문서(로그인 정보의 공통코드가 오래됐을 때)도 칸을 둔다 — 올려 둔 문서가 사라져 보이지 않게
+  // 문서 종류(WHALEERP-718) — 합치는 규칙은 documentKindSlots
   const documentCodes = useCodes(DOCUMENT_GROUP);
-  // 올려 둔 문서가 있는 종류는 api 의 isDocumentKindActive 를 먼저 본다 — 로그인 뒤 사용 중지됐으면 세션 공통코드엔 아직 사용 중으로 남아 있어,
-  // 올리기 칸을 열면 저장 때 400 이 났다(코드 리뷰)
-  const docKindOf = (d: FacilityDocument): DocKind => ({ kind: d.documentKind, label: d.isDocumentKindActive ? d.documentKindLabel : `${d.documentKindLabel} (미사용)`, canUpload: d.isDocumentKindActive });
-  const docKinds: DocKind[] = [
-    ...documentCodes.map((c) => {
-      const uploaded = facility?.documents.find((d) => d.documentKind === c.value);
-      return uploaded && !uploaded.isDocumentKindActive ? docKindOf(uploaded) : { kind: c.value, label: c.label, canUpload: true };
-    }),
-    ...(facility?.documents ?? []).filter((d) => !documentCodes.some((c) => c.value === d.documentKind)).map(docKindOf),
-  ];
+  const docKinds = documentKindSlots(documentCodes, facility?.documents ?? []);
 
   const [form, setForm] = useState<Form>(() => (facility ? formOf(facility) : initialForm()));
   const [errors, setErrors] = useState<Partial<Record<FacilityFormField, string>>>({});
@@ -251,9 +242,9 @@ export function FacilityFormView(props: Props) {
     });
   };
 
-  /** 문서 — 뺀 것은 DELETE, 새로 고른 것은 종류마다 올린다. 실패한 종류 이름을 돌려준다(저장은 끝났으므로 상세로 가며 알린다) */
-  const saveDocuments = async (facilityId: number): Promise<string[]> => {
-    const failed: string[] = [];
+  /** 문서 — 뺀 것은 DELETE, 새로 고른 것은 종류마다 올린다. 실패한 종류와 알릴 문구를 돌려준다(저장은 끝났으므로 화면을 옮기며 알린다) */
+  const saveDocuments = async (facilityId: number): Promise<FailedDocument[]> => {
+    const failed: FailedDocument[] = [];
     for (const { kind, label: name } of docKinds) {
       const doc = docOf(kind);
       if (doc.file) {
@@ -265,27 +256,36 @@ export function FacilityFormView(props: Props) {
           console.error("시설물 문서 올리기 호출 실패", { facilityId, kind }, e);
           return null;
         });
-        if (!res) failed.push(`${name}(연결이 끊겨 반영 여부를 확인하지 못했습니다)`);
+        if (!res) failed.push({ kind, text: `${name}(연결이 끊겨 반영 여부를 확인하지 못했습니다)` });
         else if (!res.ok) {
           const body = (await res.json().catch(() => null)) as { messages?: string[] } | null;
-          failed.push(`${name}${body?.messages?.[0] ? `(${body.messages[0]})` : ""}`);
+          failed.push({ kind, text: `${name}${body?.messages?.[0] ? `(${body.messages[0]})` : ""}` });
         }
       } else if (doc.existing && doc.removed) {
         // 빼기 실패는 사유(권한 · 폐점 · 결과 모름)를 함께 — 다시 뺄지 고를 수 있게(리뷰 반영)
         const result = await deleteFacilityDocument(facilityId, kind).catch(unknownResult("문서 빼기"));
-        if (!result.ok) failed.push(`${name}(빼기: ${result.message})`);
+        if (!result.ok) failed.push({ kind, text: `${name}(빼기: ${result.message})` });
       }
     }
     return failed;
   };
 
-  const finish = (facilityId: number, failedDocs: string[]) => {
-    setLeaving(true);
+  const finish = (facilityId: number, failedDocs: FailedDocument[]) => {
     // 문서가 일부 실패하면 저장은 끝났으므로 수정 화면으로 보낸다 — 토스트를 놓쳐도 빈 문서 칸에서 바로 다시 올릴 수 있다(리뷰 반영)
     if (failedDocs.length) {
-      toast(`저장했지만 문서를 반영하지 못했습니다: ${failedDocs.join(", ")}. 문서 칸을 확인해 주세요.`);
+      toast(`저장했지만 문서를 반영하지 못했습니다: ${failedDocs.map((f) => f.text).join(", ")}. 문서 칸을 확인해 주세요.`);
+      if (mode === "edit") {
+        // 수정 화면은 같은 주소라 폼이 새로 그려지지 않는다 — 잠그지 않고, 실패한 종류만 고른 상태로 남긴다.
+        // 성공한 종류는 상태를 지워 새로 받은 문서로 보이게 한다(남기면 다음 저장에 또 올라간다, 코드 리뷰)
+        const failedKinds = new Set(failedDocs.map((f) => f.kind));
+        setDocs((d) => Object.fromEntries(Object.entries(d).filter(([kind]) => failedKinds.has(kind))));
+        router.refresh();
+        return;
+      }
+      setLeaving(true);
       router.push(at(withBack(`/facilities/${facilityId}/edit`, backHref)));
     } else {
+      setLeaving(true);
       toast("saved");
       router.push(at(withBack(`/facilities/${facilityId}`, backHref)));
     }
@@ -510,6 +510,8 @@ export function FacilityFormView(props: Props) {
           </Labeled>
         </Stack>
       </FormRow>
+      {/* 로그인 정보에 문서 종류 공통코드가 없으면 올리기 칸이 하나도 없다 — 조용히 사라지지 않게 알린다(코드 리뷰) */}
+      {documentCodes.length === 0 && <NoticeBand tone="info" title="문서 종류를 불러오지 못해 문서를 올릴 수 없습니다." detail="다시 로그인한 뒤 시도해 주세요." />}
       {docKinds.map(({ kind, label, canUpload }) => (
         <DocumentField key={kind} label={label} canUpload={canUpload} state={docOf(kind)} busy={saving} onChange={(next) => setDocs((d) => ({ ...d, [kind]: next }))} />
       ))}
