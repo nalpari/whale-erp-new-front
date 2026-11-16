@@ -29,10 +29,9 @@ export const EMPLOYMENT_TYPES: readonly EmploymentType[] = ["FULL_TIME", "PART_T
 export const ENTRY_KINDS = ["SELF", "PROXY", "CORRECTED"] as const;
 export type EntryKind = (typeof ENTRY_KINDS)[number];
 export const ENTRY_KIND_LABELS: Record<EntryKind, string> = { SELF: "직원 등록", PROXY: "대신 등록", CORRECTED: "보정됨" };
-/** 필터 「재직 상태」 — 기본 재직 */
+/** 필터 「재직 상태」 — 기본 재직. 재직 · 퇴직 이름은 api 값 이름(EmploymentStatus)으로 그리고 「전체」만 화면 문구다(WHALEERP-721) */
 export const EMPLOYMENTS = ["EMPLOYED", "RETIRED", "ALL"] as const;
 export type Employment = (typeof EMPLOYMENTS)[number];
-export const EMPLOYMENT_LABELS: Record<Employment, string> = { EMPLOYED: "재직", RETIRED: "퇴직", ALL: "전체" };
 
 /** api 의 기간 한도(GET /attendance-records) — 보정 목록은 최근 3개월 안에서 고른다(STAFF-31) */
 export const MAX_PERIOD_DAYS = 92;
