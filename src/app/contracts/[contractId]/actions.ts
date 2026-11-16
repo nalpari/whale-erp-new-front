@@ -1,6 +1,6 @@
 "use server";
 
-import { refresh } from "next/cache";
+import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { actionFailure, ApiError, bpHref, expiredFailureOf, send } from "@/lib/api";
 import type { components } from "@/lib/api-types.generated";
@@ -58,6 +58,9 @@ export async function updateWorker(contractId: number, body: WorkerBody, back?: 
     console.error("당사자 정보 저장 응답을 받지 못함", contractId, e);
     redirect(await bpHref(withBack(`/contracts/${contractId}?send=unknown`, back)));
   }
+  // 상세로 가기 전에 그 화면을 무효화한다 — redirect 와 달리 화면이 따로 이동하므로, 라우터가 기억한 저장 전 상세(옛 기한 · 번호)를
+  // 다시 쓰지 않게(WHALEERP-671 과 같은 종류, PR #295 PR-Agent)
+  revalidatePath("/contracts/[contractId]", "page");
   return { ok: true, href: await bpHref(withBack(`/contracts/${contractId}`, back)) };
 }
 
