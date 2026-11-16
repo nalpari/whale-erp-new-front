@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 관리자 화면 최소폭을 플랫폼 탭만 1260 으로(웨일ERP 탭은 1720 유지, `data-erp-wide`), 넘치는 플랫폼 목록은 DataTable `scroll` 로 표 상자 안에서 밀고 빈 scroll 표도 상자 안 가로 스크롤(front #289).
+
 ## 2026-11-13
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 가입 전(`joinState` 가 `JOINED` 아님) 재직 직원 상세에도 [퇴직 처리] 버튼이 보인다(WHALEERP-682, 계약 종료 확인창의 「퇴직 처리로 정리합니다」 안내와 맞춤, 목록 이름 링크도 가입 전 재직 직원에게 건다). 작성 중 근로계약만 있는 직원의 api 409 는 기존 확인창 안 문구로 보인다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 연장 재계약(`contract.isRenewal` true, 재입사 재계약은 첫 계약처럼 false)의 서명 대기 · 직원 수정 요청은 목록 재직 칸 「재직」, 계약 칸 [재계약] 회색 꼬리표 + 상태 배지(WHALEERP-672, 홍기 확정). 첫 계약 · 재입사 · 퇴직 예정 표기는 그대로(연장 재계약의 거절 · 만료 · 임시저장은 api 가 대표 계약으로 세우지 않아 직전 체결 계약이 보인다), 계약 칸 200 → 240px.
