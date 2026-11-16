@@ -72,7 +72,8 @@ const HOURS_FIELDS: [HourField, string][] = [
   ["monthlyOvertimeHours", "월간 연장근무"],
   ["baseNightHours", "기본시간 중 야간근무"],
 ];
-const HELP = "text-[12px] leading-[1.5] text-erp-muted";
+// 칸 아래 안내 — 빈 값 회색(erp-muted #999)은 흐려 느낌표 아이콘과 같은 회청(erp-brand #6b7988)으로 진하게(2026-11-16 사용자 지정)
+const HELP = "text-[12px] leading-[1.5] text-erp-brand";
 
 /** 고용 형태 · 계약 방식 카드 아래 한 줄 설명 — 시작 가이드 근로계약서 작성 안내와 같은 말(2026-11-16 사용자 지정) */
 const EMPLOYMENT_DESC = { FULL_TIME: "월급/연봉 기준으로 급여 계산", PART_TIME: "근무시간에 따라 시급으로 급여 계산" } as const;
@@ -103,7 +104,8 @@ function ChoiceCards<T extends string>({
         >
           <input type="radio" name={name} className="sr-only" checked={value === item.value} disabled={item.disabled} onChange={() => onChange(item.value)} />
           <b className="text-[15px] font-semibold text-erp-ink">{item.title}</b>
-          {item.desc && <span className="text-[13px] text-erp-label">{item.desc}</span>}
+          {/* 설명은 칸 아래 안내와 같은 회청(erp-brand, 느낌표 아이콘 색) — 라벨 회색은 흐렸다(2026-11-16 사용자 지정) */}
+          {item.desc && <span className="text-[13px] text-erp-brand">{item.desc}</span>}
         </label>
       ))}
     </div>
@@ -189,42 +191,55 @@ function Item({
       {help &&
         (helpIcon ? (
           // 12px · 줄 높이 18px 첫 줄 가운데에 아이콘(14px)을 맞춘다
-          <span className={`flex items-start gap-[6px] ${HELP}`}>
+          <span className={`flex items-start gap-[6px] whitespace-pre-line ${HELP}`}>
             <span className="mt-[2px] flex">
               <GuideIcon />
             </span>
             {help}
           </span>
         ) : (
-          <span className={HELP}>{help}</span>
+          <span className={`whitespace-pre-line ${HELP}`}>{help}</span>
         ))}
     </div>
   );
 }
 
-// 종이 계약 날인본 한 칸 — 고른 파일 이름(읽기 전용) + 「파일 선택」(숨은 file 입력) + 고른 뒤 「빼기」. 데모 staff-parts fileField 와 같다.
+// 종이 계약 날인본 한 칸 — 고른 파일 이름(읽기 전용) + 「파일 선택」(숨은 file 입력). 고른 뒤에는 파일명 칸 맨 오른쪽에 밑줄 친 링크 파랑 글자 [빼기] —
+// 첨부 목록(AttachmentField) · 급여명세서 검토의 [빼기]와 같은 모양(2026-11-16 사용자 지정, 전엔 칸 오른쪽 회색 Off 버튼).
 // 1팀 공통 컴포넌트에 파일 칸이 없어 여기 둔다. 형식 · 크기가 맞지 않으면 칸 아래 이유를 보이고 파일을 받지 않는다.
 function PaperFile({ id, label, file, error, accept, onPick }: { id: string; label: string; file: File | null; error?: string; accept: string; onPick: (file: File | undefined) => void }) {
   const input = useRef<HTMLInputElement>(null);
   return (
     <span data-invalid={error ? true : undefined} className="flex flex-col gap-[6px]">
       <span className="flex gap-[6px]">
-        <TextField
-          id={id}
-          readOnly
-          value={file?.name ?? ""}
-          placeholder={`${label} 파일을 첨부해 주세요.`}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? `${id}-error` : undefined}
-        />
+        {file ? (
+          // 읽기 전용 칸과 같은 껍데기(#f8f9fb 바탕) 안에 파일명 · [빼기]를 나란히 — 입력칸 안에는 버튼을 둘 수 없어 상자로 그린다
+          <span
+            id={id}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${id}-error` : undefined}
+            className="flex h-[34px] min-w-0 flex-1 items-center gap-[8px] rounded-[2px] border border-erp-field-line bg-erp-thead-bg px-[10px] text-[14px] text-erp-ink"
+          >
+            <span className="min-w-0 flex-1 truncate" title={file.name}>
+              {file.name}
+            </span>
+            <button type="button" aria-label={`${label} 파일 빼기`} className="shrink-0 cursor-pointer text-erp-link underline" onClick={() => onPick(undefined)}>
+              빼기
+            </button>
+          </span>
+        ) : (
+          <TextField
+            id={id}
+            readOnly
+            value=""
+            placeholder={`${label} 파일을 첨부해 주세요.`}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${id}-error` : undefined}
+          />
+        )}
         <Button variant="soft" onClick={() => input.current?.click()}>
           파일 선택
         </Button>
-        {file && (
-          <Button variant="off" onClick={() => onPick(undefined)}>
-            빼기
-          </Button>
-        )}
       </span>
       <FieldMessage id={`${id}-error`} message={error} />
       <input
@@ -703,10 +718,12 @@ export function ContractForm({
           {paper && (
             <FormRow>
               {/* 파일 안내는 공지 · 문의 · 시설물 문서 첨부와 같은 말투(「… 파일을 1개 첨부할 수 있습니다. (10MB 이하)」, 2026-11-16 사용자 지정) */}
-              <Item label="근로계약서" required help={`근로계약 당사자 모두가 서명한 근로계약서를 첨부해 주세요. ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하)`}>
+              <Item label="근로계약서" required help={`근로계약 당사자 모두가 서명한 근로계약서를 첨부해 주세요.
+${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하)`}>
                 {(id) => <PaperFile id={id} label="근로계약서" file={files.employment} error={fileErrors.employment ?? errs.employmentFile?.[0]} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("employment", f)} />}
               </Item>
-              <Item label="임금계약서" help={`별도로 작성한 임금계약서가 있는 경우 첨부해 주세요. ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하)`}>
+              <Item label="임금계약서" help={`별도로 작성한 임금계약서가 있는 경우 첨부해 주세요.
+${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하)`}>
                 {(id) => <PaperFile id={id} label="임금계약서" file={files.wage} error={fileErrors.wage} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("wage", f)} />}
               </Item>
             </FormRow>
