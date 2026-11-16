@@ -2,7 +2,7 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FieldMessage, FormGroup, FormRow, Radio, Select, Textarea, TextField, useAction } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FieldMessage, FormGroup, FormRow, GuideIcon, Radio, Select, Textarea, TextField, useAction } from "@/components/common";
 import { FieldErrors, useInvalid } from "../field-errors";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { fetchSameOrigin } from "@/lib/bff";
@@ -111,6 +111,7 @@ function Item({
   required,
   hint,
   help,
+  helpIcon,
   width,
   errors,
   children,
@@ -119,6 +120,8 @@ function Item({
   required?: boolean;
   hint?: string;
   help?: string;
+  /** 칸 아래 안내 앞에 느낌표(GuideIcon) — 놓치면 저장이 막히거나 계약 내용이 바뀌는 안내(2026-11-16 사용자 지정) */
+  helpIcon?: boolean;
   width?: string;
   errors?: string[];
   children: (id: string) => ReactNode;
@@ -147,7 +150,18 @@ function Item({
       </span>
       {children(id)}
       <FieldErrors id={`${id}-errors`} errors={errors} />
-      {help && <span className={HELP}>{help}</span>}
+      {help &&
+        (helpIcon ? (
+          // 12px · 줄 높이 18px 첫 줄 가운데에 아이콘(14px)을 맞춘다
+          <span className={`flex items-start gap-[6px] ${HELP}`}>
+            <span className="mt-[2px] flex">
+              <GuideIcon />
+            </span>
+            {help}
+          </span>
+        ) : (
+          <span className={HELP}>{help}</span>
+        ))}
     </div>
   );
 }
@@ -585,7 +599,7 @@ export function ContractForm({
             </Item>
           </FormRow>
           <FormRow>
-            <Item label="생년월일" required help="계약 시작일 기준 만 19세 미만인 경우 직원으로 등록할 수 없습니다." errors={errs.birthDate}>
+            <Item label="생년월일" required helpIcon help="계약 시작일 기준 만 19세 미만인 경우 직원으로 등록할 수 없습니다." errors={errs.birthDate}>
               {() => <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />}
             </Item>
             {/* 성별 · 외국인 여부 — 직원이 가입하며 넣는 값과 이름 · 번호 · 생년월일과 함께 대조해 본인만 날인한다(WHALEERP-125) */}
@@ -667,7 +681,7 @@ export function ContractForm({
             <Item label="계약 시작일" required help={previousStartDate ? `재계약은 직전 계약 시작일(${previousStartDate}) 다음 날부터` : undefined} errors={errs.startDate}>
               {() => <DateField aria-label="계약 시작일" value={form.startDate} onChange={(v) => set("startDate", v)} />}
             </Item>
-            <Item label="계약 종료일" help="계약 종료일을 설정하지 않은 경우, &apos;기간의 정함이 없는 계약&apos;으로 처리됩니다." errors={errs.endDate}>
+            <Item label="계약 종료일" helpIcon help="계약 종료일을 설정하지 않은 경우, &apos;기간의 정함이 없는 계약&apos;으로 처리됩니다." errors={errs.endDate}>
               {() => <DateField aria-label="계약 종료일" value={form.endDate} onChange={(v) => set("endDate", v)} />}
             </Item>
           </FormRow>
