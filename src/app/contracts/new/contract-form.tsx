@@ -960,7 +960,7 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
                 )
               }
             </Item>
-            <Group label="임금지급일" hint="31 을 넣으면 말일로 본다." errors={errs.payDay}>
+            <Group label="임금지급일" hint="31을 입력하면 매월 말일에 지급합니다." errors={errs.payDay}>
               <span className="flex gap-[6px]">
                 <span className="w-[100px] shrink-0">
                   <Select aria-label="임금지급 월" value={form.payMonth} onChange={(e) => set("payMonth", e.target.value as Form["payMonth"])}>
@@ -999,11 +999,17 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
             <Checkbox label="고용보험 · 산재보험" checked={form.isEmploymentInjuryInsured} onChange={(e) => set("isEmploymentInjuryInsured", e.target.checked)} />
           </div>
           {/* 월 60시간 이상이면 가입이 원칙(노무사 확인 2026-10-14, 질문 6). 3.3% 원천징수는 부과 기관이 달라 4대보험과 따로 공제한다. */}
-          <span className={HELP} aria-live="polite">
-            이 계약은 월 약 <b className="font-semibold text-erp-ink">{Math.round(monthlyHours(form))}</b>시간이라{" "}
-            <b className="font-semibold text-erp-ink">{monthlyHours(form) >= 60 ? "4대보험 가입 대상입니다" : "4대보험 가입 대상이 아닙니다"}</b>. 월 60시간 이상 일하면 가입이 원칙이고,
-            3.3% 원천징수와는 따로 공제합니다.
-          </span>
+          {/* 노란 형광펜(시작 가이드 · 계산식과 같은 #fff6e5 바탕 · #956013 글자)으로 강조하고 두 문장을 줄을 나눠 둔다(2026-11-16 사용자 지정) */}
+          <p className="text-[12px] leading-[1.7]" aria-live="polite">
+            <mark className="rounded-[2px] bg-[#fff6e5] px-[4px] text-[#956013] [box-decoration-break:clone]">
+              본 계약의 월 근로시간은 약 <b className="font-semibold">{Math.round(monthlyHours(form))}</b>시간으로,{" "}
+              <b className="font-semibold">{monthlyHours(form) >= 60 ? "4대보험 가입 대상에 해당합니다" : "4대보험 가입 대상에 해당하지 않습니다"}</b>.
+            </mark>
+            <br />
+            <mark className="rounded-[2px] bg-[#fff6e5] px-[4px] text-[#956013] [box-decoration-break:clone]">
+              일반적으로 월 60시간 이상 근무하는 근로자는 4대보험 가입 대상이며, 4대보험료는 3.3% 원천징수와 별도로 적용되는 항목입니다.
+            </mark>
+          </p>
         </FormGroup>
 
         <Band risk={minor} title="만 19세 미만 직원은 등록할 수 없습니다." />
