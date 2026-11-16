@@ -93,7 +93,7 @@ export type SavedContract = components["schemas"]["CreatedContractResponseDto"];
 // 이름 · 기간은 확인창에서 누구 계약인지 보이려고 api 가 싣는다(api #49) — 번호를 넘겨받은 다른 사람의 계약일 수 있다.
 export type InProgressContract = { contractId: number; status: string; name: string | null; startDate: string | null; endDate: string | null };
 
-/** 저장 서버 액션의 결과. 성공하면 액션이 목록으로 보내므로 돌아왔다면 실패다 */
+/** 저장 서버 액션의 실패 결과. 작성 · 이어 쓰기는 성공하면 액션이 목록으로 보내 돌아왔다면 실패다 — 근로자 정보 수정은 성공도 돌려준다(WorkerSaved, WHALEERP-681) */
 export interface SaveResult {
   error: string;
   /** 로그인 만료 — useAction 이 「로그인 만료」 팝업을 띄우고 화면에 넘기지 않는다(expiredFailureOf) */
