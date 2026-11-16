@@ -77,6 +77,7 @@ const HELP = "text-[12px] leading-[1.5] text-erp-brand";
 
 /** 고용 형태 · 계약 방식 카드 아래 한 줄 설명 — 시작 가이드 근로계약서 작성 안내와 같은 말(2026-11-16 사용자 지정) */
 const EMPLOYMENT_DESC = { FULL_TIME: "월급/연봉 기준으로 급여 계산", PART_TIME: "근무시간에 따라 시급으로 급여 계산" } as const;
+const PROBATION_DESC = { NONE: "수습 기간 없이 계약 시급 그대로", APPLY: "최대 3개월 · 최저임금의 90% 이상" } as const;
 const METHOD_DESC = { ELECTRONIC: "직원전용 앱으로 발송 · 직원이 직접 서명", PAPER: "서명된 계약서 첨부 · 별도 발송 없음" } as const;
 
 /**
@@ -137,8 +138,10 @@ function PayTable({ title, errors, children }: { title: string; errors?: string[
 type PayRow = { key: string; label: string; cells?: ReactNode[]; hours?: ReactNode; wage?: ReactNode; amount: ReactNode };
 
 // 제목(라벨) 옆 짧은 설명 — 계산식 · 범위처럼 칸을 읽는 데 필요한 것만 둔다. 입력칸 아래는 오류 자리로 비운다
-function Hint({ children }: { children: ReactNode }) {
+function Hint({ children, mark = false }: { children: ReactNode; mark?: boolean }) {
   // 좁은 칸(3등분)에서 잘리지 않게 줄바꿈한다 — 말줄임이면 계산식 뒤쪽을 볼 방법이 없다(PR #239 리뷰)
+  // mark — 계산식(월급 · 연봉)은 형광펜으로 칠한다. 시작 가이드 형광펜과 같은 연한 노랑(#fff6e5 바탕 · #956013 글자, 2026-11-16 사용자 지정)
+  if (mark) return <span className="min-w-px break-keep rounded-[2px] bg-[#fff6e5] px-[4px] text-[12px] leading-[18px] text-[#956013]">{children}</span>;
   return <span className="min-w-px break-keep text-[12px] leading-[18px] text-erp-muted">{children}</span>;
 }
 
@@ -148,6 +151,7 @@ function Item({
   label,
   required,
   hint,
+  hintMark,
   help,
   helpIcon,
   width,
@@ -157,6 +161,8 @@ function Item({
   label: string;
   required?: boolean;
   hint?: string;
+  /** 칸 이름 옆 hint 를 형광펜으로 — 계산식(월급 · 연봉, 2026-11-16 사용자 지정) */
+  hintMark?: boolean;
   help?: string;
   /** 칸 아래 안내 앞에 느낌표(GuideIcon) — 놓치면 저장이 막히거나 계약 내용이 바뀌는 안내(2026-11-16 사용자 지정) */
   helpIcon?: boolean;
@@ -184,7 +190,7 @@ function Item({
             </>
           )}
         </label>
-        {hint && <Hint>{hint}</Hint>}
+        {hint && <Hint mark={hintMark}>{hint}</Hint>}
       </span>
       {children(id)}
       <FieldErrors id={`${id}-errors`} errors={errors} />
@@ -718,11 +724,11 @@ export function ContractForm({
           {paper && (
             <FormRow>
               {/* 파일 안내는 공지 · 문의 · 시설물 문서 첨부와 같은 말투(「… 파일을 1개 첨부할 수 있습니다. (10MB 이하)」, 2026-11-16 사용자 지정) */}
-              <Item label="근로계약서" required help={`근로계약 당사자 모두가 서명한 근로계약서를 첨부해 주세요.
+              <Item label="근로계약서" required helpIcon help={`근로계약 당사자 모두가 서명한 근로계약서를 첨부해 주세요.
 ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하)`}>
                 {(id) => <PaperFile id={id} label="근로계약서" file={files.employment} error={fileErrors.employment ?? errs.employmentFile?.[0]} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("employment", f)} />}
               </Item>
-              <Item label="임금계약서" help={`별도로 작성한 임금계약서가 있는 경우 첨부해 주세요.
+              <Item label="임금계약서" helpIcon help={`별도로 작성한 임금계약서가 있는 경우 첨부해 주세요.
 ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하)`}>
                 {(id) => <PaperFile id={id} label="임금계약서" file={files.wage} error={fileErrors.wage} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("wage", f)} />}
               </Item>
@@ -777,11 +783,11 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
                 />
               )}
             </Item>
-            <Item label="월급" hint={form.employmentType === "FULL_TIME" ? "급여항목 합계 + 비과세 합계" : "주급 × 4.345"}>
+            <Item label="월급" hintMark hint={form.employmentType === "FULL_TIME" ? "급여항목 합계 + 비과세 합계" : "주급 × 4.345"}>
               {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(monthly)} />}
             </Item>
             {form.employmentType === "FULL_TIME" ? (
-              <Item label="연봉" hint="월급 × 12">
+              <Item label="연봉" hintMark hint="월급 × 12">
                 {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(fullPay.annual)} />}
               </Item>
             ) : (
@@ -792,12 +798,20 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
               계약 기간이 1년 이상(또는 기간의 정함 없음)일 때만, 기간은 최대 3개월, 감액해도 최저임금의 90% 이상. 급여명세서는 수습 기간이면 그렇다고 표기한다. */}
           {!partTime && (
             <>
-              <Group label="수습 여부" hint="계약 기간이 1년 이상이거나 종료일이 없을 때만 적용할 수 있습니다.">
-                <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-                  <Radio name="probation" label="없음" checked={!form.probation} onChange={() => set("probation", false)} />
-                  <Radio name="probation" label="적용" checked={form.probation} onChange={() => set("probation", true)} />
-                </div>
-              </Group>
+              {/* 고용 형태 · 계약 방식과 같은 큰 선택 카드, 폭은 왼쪽 반 칸(2026-11-16 사용자 지정) */}
+              <div className="grid grid-cols-2 gap-[18px]">
+                <Group label="수습 여부" hint="계약 기간이 1년 이상이거나 종료일이 없을 때만 적용할 수 있습니다.">
+                  <ChoiceCards
+                    name="probation"
+                    value={form.probation ? "APPLY" : "NONE"}
+                    onChange={(v) => set("probation", v === "APPLY")}
+                    items={[
+                      { value: "NONE", title: "없음", desc: PROBATION_DESC.NONE },
+                      { value: "APPLY", title: "적용", desc: PROBATION_DESC.APPLY },
+                    ]}
+                  />
+                </Group>
+              </div>
               {form.probation && (
                 <FormRow>
                   <Item label="수습 기간" required hint="최대 3개월" errors={errs.probationMonths}>
