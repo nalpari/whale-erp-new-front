@@ -17,7 +17,7 @@ const VERIFICATIONS: { value: BpMasterVerification | undefined; label: string }[
 ];
 
 export function BpMasterFilter({ query, onApply }: { query: BpMastersQuery; onApply: (filters: Filters) => void }) {
-  const statusLabel = useCodeLabel("ACCOUNT_STATUS");
+  const accountStatus = useCodeLabel("ACCOUNT_STATUS");
   const current: Filters = { searchType: query.searchType, keyword: query.keyword, statuses: query.statuses, statusNone: query.statusNone, verification: query.verification };
   const [searchType, setSearchType] = useState<BpMasterSearchType>(query.searchType);
   const [keyword, setKeyword] = useState(query.keyword ?? "");
@@ -77,7 +77,7 @@ export function BpMasterFilter({ query, onApply }: { query: BpMastersQuery; onAp
       </FilterSection>
       <FilterSection label="계정상태">
         {BP_MASTER_STATUSES.map((s) => (
-          <Checkbox key={s} label={statusLabel(s)} checked={shows(s)} onChange={(e) => toggle(s, e.target.checked)} />
+          <Checkbox key={s} label={accountStatus(s)} checked={shows(s)} onChange={(e) => toggle(s, e.target.checked)} />
         ))}
       </FilterSection>
       <FilterSection label="사업자정보 인증" last>
