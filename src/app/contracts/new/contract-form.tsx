@@ -82,6 +82,21 @@ const PAY_METHOD_DESC = { ACCOUNT: "직원이 앱에서 계좌 입력", CASH: "�
 const PROBATION_DESC = { NONE: "수습기간 없이 계약한 시급 적용", APPLY: "최대 3개월 · 최저시급의 90% 이상 적용" } as const;
 const METHOD_DESC = { ELECTRONIC: "직원전용 앱으로 발송 · 직원이 직접 서명", PAPER: "서명된 계약서 첨부 · 별도 발송 없음" } as const;
 
+/** 큰 체크 카드 — ChoiceCards 와 같은 모양에 제목 앞 16px 체크 표시(테두리는 처음부터 회청 — 입력칸 선 색은 흐려 고를 수 있는지 안 보였다, 고르면 회청 바탕 · 흰 체크). 여러 개를 함께 고를 때(4대보험) */
+function CheckCard({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <label className="group flex cursor-pointer items-center justify-center gap-[8px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[12px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand">
+      <input type="checkbox" className="sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <span aria-hidden className="flex size-[16px] items-center justify-center rounded-[2px] border border-erp-brand bg-white text-white group-has-[:checked]:border-erp-brand group-has-[:checked]:bg-erp-brand">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 5.2l2 2 4-4.4" />
+        </svg>
+      </span>
+      <b className="text-[15px] font-semibold text-erp-ink">{label}</b>
+    </label>
+  );
+}
+
 /**
  * 큰 선택 카드(라디오) — TO-DO 등록(todo-form ChoiceCards) · 점포 등록 점포유형 카드와 같은 모양. 고르면 선이 브랜드색, 바탕이 두 번째 바탕색으로 바뀐다.
  * 선 두께는 바뀌지 않는다. 고를 수 없는 카드(수정 요청의 종이 계약)는 흐리게 둔다
@@ -960,7 +975,7 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
                 )
               }
             </Item>
-            <Group label="임금지급일" hint="31을 입력하면 매월 말일에 지급합니다." errors={errs.payDay}>
+            <Group label="임금지급일" hintIcon hint="31일 입력 시 매월 말일에 지급합니다." errors={errs.payDay}>
               <span className="flex gap-[6px]">
                 <span className="w-[100px] shrink-0">
                   <Select aria-label="임금지급 월" value={form.payMonth} onChange={(e) => set("payMonth", e.target.value as Form["payMonth"])}>
@@ -994,21 +1009,25 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
         </FormGroup>
 
         <FormGroup title="4대보험 가입 여부">
-          <div className="flex gap-[24px]">
-            <Checkbox label="건강보험 · 국민연금" checked={form.isHealthPensionInsured} onChange={(e) => set("isHealthPensionInsured", e.target.checked)} />
-            <Checkbox label="고용보험 · 산재보험" checked={form.isEmploymentInjuryInsured} onChange={(e) => set("isEmploymentInjuryInsured", e.target.checked)} />
+          {/* 위 선택 카드(ChoiceCards)와 같은 큰 카드 — 둘 다 고를 수 있어 제목 앞에 체크 표시를 둔다(2026-11-16 사용자 지정) */}
+          <div className="grid grid-cols-2 gap-[18px]">
+            <div className="grid grid-cols-2 gap-[12px]">
+              <CheckCard label="건강보험 · 국민연금" checked={form.isHealthPensionInsured} onChange={(v) => set("isHealthPensionInsured", v)} />
+              <CheckCard label="고용보험 · 산재보험" checked={form.isEmploymentInjuryInsured} onChange={(v) => set("isEmploymentInjuryInsured", v)} />
+            </div>
           </div>
           {/* 월 60시간 이상이면 가입이 원칙(노무사 확인 2026-10-14, 질문 6). 3.3% 원천징수는 부과 기관이 달라 4대보험과 따로 공제한다. */}
-          {/* 노란 형광펜(시작 가이드 · 계산식과 같은 #fff6e5 바탕 · #956013 글자)으로 강조하고 두 문장을 줄을 나눠 둔다(2026-11-16 사용자 지정) */}
-          <p className="text-[12px] leading-[1.7]" aria-live="polite">
+          {/* 첫 문장(이 계약이 대상인지)만 노란 형광펜(시작 가이드 · 계산식과 같은 #fff6e5 바탕 · #956013 글자)으로 강조하고 두 문장을 줄을 나눠 둔다. 글자는 본문과 같은 14px — 12px 는 작았다(2026-11-16 사용자 지정) */}
+          <p className="text-[14px] leading-[1.8]" aria-live="polite">
             <mark className="rounded-[2px] bg-[#fff6e5] px-[4px] text-[#956013] [box-decoration-break:clone]">
               본 계약의 월 근로시간은 약 <b className="font-semibold">{Math.round(monthlyHours(form))}</b>시간으로,{" "}
               <b className="font-semibold">{monthlyHours(form) >= 60 ? "4대보험 가입 대상에 해당합니다" : "4대보험 가입 대상에 해당하지 않습니다"}</b>.
             </mark>
             <br />
-            <mark className="rounded-[2px] bg-[#fff6e5] px-[4px] text-[#956013] [box-decoration-break:clone]">
+            {/* 둘째 문장은 형광펜 없이 글자만 — 칸 아래 안내와 같은 회청(2026-11-16 사용자 지정) */}
+            <span className="px-[4px] text-erp-brand">
               일반적으로 월 60시간 이상 근무하는 근로자는 4대보험 가입 대상이며, 4대보험료는 3.3% 원천징수와 별도로 적용되는 항목입니다.
-            </mark>
+            </span>
           </p>
         </FormGroup>
 
