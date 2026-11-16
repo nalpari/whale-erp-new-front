@@ -151,17 +151,18 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     {
       header: "메뉴명", // 「노출 메뉴명」에서 줄임(2026-10-26 사용자 지정)
       align: "left",
-      width: "w-[120px]", // 폭을 안 주면 표 전체 남는 칸을 다 먹어 메뉴코드 칸과 간격이 벌어진다(사용자 지적, 2026-10-26). 최소폭 1260 에 맞춰 120 — 사용여부 칸 몫을 여기서 덜었다(2026-11-16)
+      width: "w-[140px]", // 폭을 안 주면 표 전체 남는 칸을 다 먹어 메뉴코드 칸과 간격이 벌어진다(사용자 지적, 2026-10-26). 최소폭 1260 에 맞춰 140 — 메뉴 URL · 순서에서 조금씩 덜었다(2026-11-16)
       cell: (r) => {
         const depth = r.kind === "menu" ? r.row.node.depth : placement!.depth;
         const name = r.kind === "menu" ? r.row.node.name : draftName.trim() || "새 메뉴";
         return (
-          <span style={{ paddingLeft: (depth - 1) * 18 }} className={r.kind === "menu" && r.row.node.status !== "ACTIVE" ? "text-erp-muted" : undefined}>
+          // flex · min-w-0 — 들여쓰기 · 「└ 」를 뺀 남는 폭에서 이름이 말줄임된다. 전엔 버튼이 통째로 칸 밖으로 넘쳐 2단계가 「└ …」만 남았다(PR #290 리뷰, 2026-11-16)
+          <span style={{ paddingLeft: (depth - 1) * 18 }} className={`flex min-w-0 items-center ${r.kind === "menu" && r.row.node.status !== "ACTIVE" ? "text-erp-muted" : ""}`}>
             {/* 2단계부터 회색 「└ 」 — 권한별 메뉴설정 팝업과 같은 모양(2026-10-28 사용자 지정) */}
-            {depth > 1 && <span className="text-erp-label">└ </span>}
+            {depth > 1 && <span className="shrink-0 whitespace-pre text-erp-label">└ </span>}
             {r.kind === "menu" ? (
               // 줄 누르기와 같은 고르기를 키보드로도 — 눌림은 줄(tr)의 onClick 으로 올라간다
-              <button type="button" aria-pressed={r.row.node.menuId === picked && !creating} className="max-w-full truncate text-left">
+              <button type="button" title={name} aria-pressed={r.row.node.menuId === picked && !creating} className="min-w-0 truncate text-left">
                 {depth === 1 ? <b className="font-semibold">{name}</b> : name}
               </button>
             ) : (
@@ -182,19 +183,19 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     {
       header: "메뉴 URL",
       align: "left",
-      width: "w-[110px]",
+      width: "w-[96px]",
       cell: (r) => (r.kind === "menu" && r.row.node.url ? muted(r.row.node, r.row.node.url) : <span className="text-erp-muted">—</span>),
     },
-    { header: "순서", width: "w-[50px]", cell: (r) => (r.kind === "menu" ? muted(r.row.node, r.row.node.sortOrder) : placement!.order) },
+    { header: "순서", width: "w-[44px]", cell: (r) => (r.kind === "menu" ? muted(r.row.node, r.row.node.sortOrder) : placement!.order) },
     {
       header: "사용여부",
-      // 「사용 + 상위 미사용」 꼬리표가 한 줄에 드는 폭(2026-10-27, 칸 안쪽 160 에 꼬리표 끝(약 156)이 들어가는 180 — 150 이면 「상위 미사용」이 잘렸다, 2026-11-16 리뷰 반영)
+      // 「사용 + 상위 미사용」 꼬리표가 한 줄에 드는 폭(2026-10-27, 안쪽 160 묶음에 꼬리표 끝(약 156)이 들어가는 180 — 150 이면 「상위 미사용」이 잘렸다, 2026-11-16 리뷰 반영)
       width: "w-[180px]",
       cell: (r) =>
         r.kind === "menu" ? (
           // 상위가 미사용이면 자기 값(사용 · 미사용)은 그대로 보이고, 숨는 이유를 회색 꼬리표로 덧붙인다(2026-10-27 사용자 지정 — 안 A)
-          // 배지는 늘 같은 자리(166px 묶음을 칸 가운데에 두고 트리 들여쓰기 한 칸(18px) 더 민 뒤, 그 왼쪽 56px 칸 가운데)에 두고 꼬리표는 그 오른쪽 — 꼬리표 유무로 배지가 좌우로 흔들려 읽기 어려웠다(2026-10-28 사용자 지정)
-          <span className="mx-auto grid w-[166px] grid-cols-[56px_1fr] pl-[18px] items-center gap-[6px]">
+          // 배지는 늘 같은 자리(160px 묶음(칸 안쪽 폭, 2026-11-16 — 전엔 166 이라 칸보다 넓어 왼쪽에 붙었다)을 칸 가운데에 두고 트리 들여쓰기 한 칸(18px) 더 민 뒤, 그 왼쪽 56px 칸 가운데)에 두고 꼬리표는 그 오른쪽 — 꼬리표 유무로 배지가 좌우로 흔들려 읽기 어려웠다(2026-10-28 사용자 지정)
+          <span className="mx-auto grid w-[160px] grid-cols-[56px_1fr] pl-[18px] items-center gap-[6px]">
             <span className="justify-self-center">
               <Badge tone={r.row.node.status === "ACTIVE" ? "on" : "off"}>{statusText(r.row.node.status)}</Badge>
             </span>
