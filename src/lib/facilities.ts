@@ -12,7 +12,8 @@ export type FacilityStoreOption = Schemas["FacilityStoreOptionDto"];
 export type FacilityManagerOption = Schemas["FacilityManagerOptionDto"];
 export type FacilityDetail = Schemas["FacilityDetailResponseDto"];
 export type FacilityDocument = Schemas["FacilityDocumentDto"];
-export type FacilityDocumentKind = Schemas["FacilityDocumentKind"];
+/** 문서 종류 — 플랫폼고정 공통코드 FACILITY_DOCUMENT 의 상세 코드(WHALEERP-718) */
+export type FacilityDocumentKind = FacilityDocument["documentKind"];
 export type CreateFacilityInput = Schemas["CreateFacilityDto"];
 export type UpdateFacilityInput = Schemas["UpdateFacilityDto"];
 export type UpdateFacilityResult = Schemas["UpdateFacilityResponseDto"];

@@ -1,6 +1,5 @@
 import { notFound, unstable_rethrow } from "next/navigation";
 import { NoticeBand } from "@/components/common";
-import { getEnum } from "@/lib/api";
 import { getFacility, getFacilityManagerOptions } from "@/lib/facilities";
 import { facilityDenied } from "../../facility-denied";
 import { FacilityFormView } from "../../facility-form";
@@ -13,13 +12,7 @@ export default async function EditFacilityPage({ params, searchParams }: PagePro
   const [{ facilityId: raw }, search] = await Promise.all([params, searchParams]);
   const facilityId = /^\d{1,9}$/.test(raw) ? Number(raw) : 0;
   if (facilityId < 1) notFound();
-  const [loaded, kindLabels] = await Promise.all([
-    getFacility(facilityId).catch(facilityDenied(facilityId)),
-    getEnum("FacilityDocumentKind").catch((error: unknown) => {
-      console.error("문서 종류 한글 조회 실패", error);
-      return [];
-    }),
-  ]);
+  const loaded = await getFacility(facilityId).catch(facilityDenied(facilityId));
   const body = async () => {
     if ("denied" in loaded) return <NoticeBand title={loaded.denied} />;
     if (loaded.store.isClosed) return <NoticeBand tone="info" title="폐점 점포의 시설물·장비는 조회만 할 수 있습니다." />;
@@ -31,7 +24,7 @@ export default async function EditFacilityPage({ params, searchParams }: PagePro
     });
     return (
       <FacilityPermission action="update" fallback={<NoticeBand title="시설물·장비를 수정할 권한이 없습니다." />}>
-        <FacilityFormView mode="edit" facility={loaded} managerOptions={managerOptions} backHref={backHrefOf(search.back)} kindLabels={kindLabels} />
+        <FacilityFormView mode="edit" facility={loaded} managerOptions={managerOptions} backHref={backHrefOf(search.back)} />
       </FacilityPermission>
     );
   };

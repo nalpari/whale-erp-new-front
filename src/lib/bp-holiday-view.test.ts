@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   bpHolidaysApiPath,
+  saveFailureAction,
+  STALE_HOLIDAY_MESSAGE,
   bpHolidaysHref,
   canChooseAllStores,
   defaultHistoryRange,
@@ -279,4 +281,17 @@ test("그날 걸린 점포 — 시작일 · 종료일 포함, 열린 기간, 같
     storesOnDate(stores, "2026-11-03").map((s) => s.storeId),
     [2, 1],
   );
+});
+
+test("저장 실패 처리 — 수정 화면의 동시 수정 409 만 띠 없이 다시 받는다(WHALEERP-714)", () => {
+  const stale = `다른 사용자가 ${STALE_HOLIDAY_MESSAGE}. 다시 불러온 뒤 시도해 주세요.`;
+  assert.equal(saveFailureAction("edit", 409, stale), "stale");
+  // 등록에는 동시 수정이 없다 — 띠로 알린다
+  assert.equal(saveFailureAction("create", 409, stale), "band");
+  // 다른 409(겹침 · 상태)는 띠
+  assert.equal(saveFailureAction("edit", 409, "진행 중인 휴일은 날짜를 바꿀 수 없습니다."), "band");
+  // 결과를 모르면 띠 + 새로 받기
+  assert.equal(saveFailureAction("edit", undefined, "결과를 확인하지 못했습니다."), "refresh");
+  assert.equal(saveFailureAction("create", undefined, "결과를 확인하지 못했습니다."), "refresh");
+  assert.equal(saveFailureAction("edit", 400, "휴일명을 입력해 주세요."), "band");
 });

@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { authHeaders, requestRaw, SESSION_COOKIE } from "@/lib/api";
 import { SESSION_EXPIRED } from "@/lib/action-failure";
 import { sameOrigin } from "@/lib/paper-request";
-import { DOCUMENT_KINDS, type FacilityDocumentKind } from "../facility-form-model";
+import { isDocumentKind } from "../facility-form-model";
 
 // 시설물 · 장비 문서 올리기 · 바꾸기 창구. 화면이 multipart(facilityId · kind · file)를 보내면 쿠키의 접근 토큰과 탭 BP(proxy 가 실은
 // X-Bp-Code-Id)를 붙여 api 의 PUT /facilities/:id/documents/:kind 로 넘긴다. 등록 화면은 등록 응답의 facilityId 로 종류마다 한 번씩 부른다.
@@ -32,7 +32,8 @@ export async function POST(req: NextRequest) {
   const kind = form.get("kind");
   const file = form.get("file");
   if (facilityId === null) return fail(404, "시설물·장비를 찾을 수 없습니다.");
-  if (typeof kind !== "string" || !DOCUMENT_KINDS.includes(kind as FacilityDocumentKind)) return fail(404, "문서 종류를 찾을 수 없습니다.");
+  // 종류는 공통코드라 값 모양(경로를 벗어나지 않는가)만 본다 — 공통코드에 없으면 api 가 404, 사용 중지한 종류면 400(WHALEERP-718)
+  if (!isDocumentKind(kind)) return fail(404, "문서 종류를 찾을 수 없습니다.");
   if (!(file instanceof File) || file.size === 0) return fail(400, "올릴 파일을 선택해 주세요.");
 
   const body = new FormData();

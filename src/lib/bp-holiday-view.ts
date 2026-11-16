@@ -339,3 +339,15 @@ export const defaultHistoryRange = (today: string) => ({ from: `${today.slice(0,
  * BP 관리자 중 일부 점포만 맡은 사람도 여기선 참이다 — 로그인 정보에 관리 범위가 없어서다. 저장하면 api 가 403 으로 막는다.
  */
 export const canChooseAllStores = (roleTypeCode: string) => ["PM", "PA", "BM", "BA"].includes(roleTypeCode);
+
+/** 동시 수정 409 문구(api bp-holiday-changes CONFLICT_MESSAGE). 이 문구일 때만 최신 정보를 다시 받는다 */
+export const STALE_HOLIDAY_MESSAGE = "먼저 수정했습니다";
+
+/**
+ * 저장 실패를 어떻게 다룰까 — stale: 띠 없이 최신 정보만 다시 받는다(수정 화면의 동시 수정 409, 토스트가 알린다 · WHALEERP-714),
+ * refresh: 띠를 두고 목록 · 상세를 새로 받는다(결과를 모름 — 이미 처리됐을 수 있다), band: 띠만.
+ */
+export function saveFailureAction(mode: "create" | "edit", status: number | undefined, message: string): "stale" | "refresh" | "band" {
+  if (mode === "edit" && status === 409 && message.includes(STALE_HOLIDAY_MESSAGE)) return "stale";
+  return status === undefined ? "refresh" : "band";
+}
