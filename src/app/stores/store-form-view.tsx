@@ -470,8 +470,8 @@ export function StoreFormView(props: Props) {
         // 점포는 생겼다 — 이미지가 실패해도 등록을 되돌리지 않고 상세에서 알린다(상태 코드만 주소에 싣는다)
         const imageResult = await applyImage(result.storeId);
         toast("saved");
-        // 헤더 범위 선택기 · 점포 고르기에 새 점포를 바로 넣는다 — 화면에 보이는 점포가 바뀌었으면 저장 토스트 뒤에 「점포 목록이 변경되었습니다.」가 이어서 뜬다
-        refreshStores();
+        // 헤더 범위 선택기 · 점포 고르기에 새 점포를 바로 넣는다 — 「점포 목록이 변경되었습니다.」는 띄우지 않는다(quiet). 저장 토스트 하나로 끝낸다(2026-11-16 사용자 지정)
+        refreshStores({ quiet: true });
         // 등록 뒤 목록에 돌아가면 점포 검색은 헤더 범위를 따른다 — 고른 점포는 지운다(상세의 [목록]이 이 주소로 간다, 2026-10-30 사용자 결정 —
         // 전엔 「전체」라 헤더와 필터가 갈렸다). 새 점포가 헤더 범위 밖이면 목록에는 없다(withHeaderStoreSearch 주석)
         const params = new URLSearchParams({ back: withHeaderStoreSearch(backHref) });
@@ -518,15 +518,15 @@ export function StoreFormView(props: Props) {
         if (imageResult && !imageResult.ok) {
           // 점포 정보는 저장됐다. 새 수정 시각으로 다시 받고, 고른 이미지는 남겨 다시 저장할 수 있게 한다
           router.refresh();
-          refreshStores();
+          refreshStores({ quiet: true });
           return setFailure({
             title: `점포 정보는 저장했지만 대표 이미지는 저장하지 못했습니다 — ${imageResult.message}`,
             detail: "선택한 이미지는 그대로 두었습니다. 다시 저장해 주세요.",
           });
         }
-        // 점포명 · 상태가 바뀌었으면 헤더 범위 선택기 · 점포 고르기에 바로 넣는다(바뀐 게 없으면 알리지 않는다).
-        // 상태를 바꿨으면(폐점 · 운영) 알림은 하나만 — 「수정되었습니다.」 토스트, 폐점으로 처리한 것이 있으면 토스트 대신 결과 창(2026-11-03 사용자 지정)
-        refreshStores({ quiet: form.storeStatus !== props.store.storeStatusCode });
+        // 점포명 · 상태가 바뀌었으면 헤더 범위 선택기 · 점포 고르기에 바로 넣는다. 알림은 하나만 — 「수정되었습니다.」 토스트,
+        // 폐점으로 처리한 것이 있으면 토스트 대신 결과 창(2026-11-03 사용자 지정). 「점포 목록이 변경되었습니다.」는 저장에서 띄우지 않는다(2026-11-16 사용자 지정)
+        refreshStores({ quiet: true });
         // 폐점으로 직원 퇴직 · 계약 종료를 했으면 토스트 대신 결과 창으로 알리고, 창을 닫으면 상세로 간다
         if (hasClosingResult(result.closing)) return setClosingResult(result.closing);
         toast("updated");
