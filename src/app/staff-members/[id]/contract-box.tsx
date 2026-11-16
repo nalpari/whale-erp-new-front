@@ -13,7 +13,7 @@ import { loadArea, loadLabels } from "./summary-load";
  * 계약 하나를 받는다. 이 경로는 근로계약 관리 조회 권한도 보므로, 그 권한이 없으면 403 「조회 권한이 없습니다.」라 이 칸만 안내한다
  * (front #79 와 같은 자리). 못 받으면 이 칸만 안내를 그리고 throw 하지 않는다 — 기본 정보 · 다른 칸은 그대로 둔다.
  */
-export async function ContractBox({ staffMemberId }: { staffMemberId: number }) {
+export async function ContractBox({ staffMemberId, detailSearch }: { staffMemberId: number; detailSearch: string }) {
   const [result, statuses, employmentTypes] = await Promise.all([
     loadArea("근로계약 칸", () => getStaffMemberContractSummary(staffMemberId)),
     loadLabels("ContractStatus"),
@@ -29,7 +29,8 @@ export async function ContractBox({ staffMemberId }: { staffMemberId: number }) 
       <BoxMessage>
         등록된 근로계약이 없습니다.
         <ContractMenuPermission action="create">
-          <Button href={await bpHref("/contracts/new")}>
+          {/* [취소]가 이 직원 상세(같은 [목록] 주소 · 주)로 돌아오게 들어온 주소를 싣는다(?entry=, WHALEERP-683) */}
+          <Button href={await bpHref(`/contracts/new?entry=${encodeURIComponent(`/staff-members/${staffMemberId}${detailSearch}`)}`)}>
             근로계약서 작성
           </Button>
         </ContractMenuPermission>
