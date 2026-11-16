@@ -348,11 +348,11 @@ export function ContractForm({
     setServerError(message);
     setFailures((n) => n + 1);
   };
+  /** [취소] 확인창 — 누르면 저장하지 않고 나간다고 한 번 알린다(WHALEERP-674) */
+  const [leaving, setLeaving] = useState(false);
   // 같은 점포에 진행 중 계약이 있어 저장하지 못했을 때 — 대체를 확인받아 같은 본문에 그 목록을 실어 다시 보낸다.
   // paper 면 종이 계약 등록(날인본과 함께)이었다. correcting 이면 종이 계약이 기간이 겹치는 체결 완료와 부딪혀(SIGNED_CONTRACT_OVERLAP)
   // 「잘못 올린 계약 바로잡기」를 묻는다 — 확인하면 correctSignedContracts 를 켜 체결 완료도 대체한다(WHALEERP-156).
-  /** [취소] 확인창 — 누르면 저장하지 않고 나간다고 한 번 알린다(WHALEERP-674) */
-  const [leaving, setLeaving] = useState(false);
   const [replace, setReplace] = useState<{ body: CreateContractBody; list: InProgressContract[]; paper: boolean; correcting: boolean } | null>(null);
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
   // 근무지를 고르면 근무 장소를 그 근무지명으로 채운다(고쳐 쓴 장소는 둔다)
@@ -902,7 +902,7 @@ export function ContractForm({
 
       <ConfirmDialog
         open={leaving}
-        title="작성을 취소하시겠습니까?"
+        title={correction ? "수정을 취소하시겠습니까?" : "작성을 취소하시겠습니까?"}
         onCancel={() => setLeaving(false)}
         onConfirm={() => router.push(at(cancelHref ?? backHrefOf(back)))}
       >
