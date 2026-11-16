@@ -2,7 +2,7 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
-import { Button, Checkbox, ConfirmDialog, DateField, Field, FieldMessage, FormGroup, FormRow, Radio, TextField, useAction } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DateField, Field, FieldMessage, FormGroup, FormRow, Radio, TextField, useAction, useToast } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatPhone, GENDERS, inProgressLine, shownProblems, type InProgressContract } from "../../new/contract-form-model";
 import { useInvalid } from "../../field-errors";
@@ -11,7 +11,7 @@ import { useCurrentBp } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import { updateWorker } from "../actions";
 import { callSave, SAVE_CALL_LOST } from "../send-model";
-import { workerBody, workerProblemsByField, workerSaveNote, type WorkerField, type WorkerForm as Form } from "./worker-model";
+import { WORKER_SAVED, workerBody, workerProblemsByField, workerSaveNote, workerUnchanged, workerUnchangedNote, type WorkerField, type WorkerForm as Form } from "./worker-model";
 
 
 // 날인 전 근로자 정보 수정(WHALEERP-125 「본인 대조」 · 126). 초대 코드를 못 받았다는 직원과 유선으로 번호를 확인했거나,
@@ -31,6 +31,7 @@ export function WorkerForm({
   back: string;
 }) {
   const router = useRouter();
+  const toast = useToast();
   // 상세 주소는 탭 BP 를 붙인다. back 은 옛 경로(목록 쿼리)다
   const bp = useCurrentBp().bpCodeId;
   const at = (path: string) => bpPath(bp, path);
@@ -65,12 +66,17 @@ export function WorkerForm({
   useInvalid(genderRef, ids.gender, !!errs.gender, true);
   const send = (replaceContractIds?: number[]) =>
     startSaving(async () => {
-      // 성공하면 액션이 상세로 보낸다. 돌아왔다면 실패다.
-      // 액션의 redirect(성공 · 보내기 실패)는 callSave 가 다시 던져 그 목적지로 간다
+      // 성공하면 액션이 상세 주소를 돌려준다 — 토스트를 띄우고 그리로 간다(WHALEERP-681).
+      // 액션의 redirect(보내기 실패 · 결과 모름)는 callSave 가 다시 던져 그 목적지로 간다
       const result = await callSave(() => update(contractId, workerBody(form, replaceContractIds), back), unstable_rethrow);
       if (result === SAVE_CALL_LOST) {
         // 서버 액션 호출 자체가 끊겼다 — 저장하면 다시 보내므로 이미 보냈을 수 있다. 같은 폼으로 다시 저장하지 않게 상세로(front #50 재리뷰)
         router.replace(at(withBack(`/contracts/${contractId}?send=unknown`, back)));
+        return;
+      }
+      if ("ok" in result) {
+        toast(WORKER_SAVED);
+        router.push(result.href);
         return;
       }
       if (result.inProgress) {
@@ -86,6 +92,12 @@ export function WorkerForm({
     const found = Object.keys(issues) as WorkerField[];
     setErrorFields(found.length ? new Set(found) : null);
     if (found.length) {
+      setFailures((n) => n + 1);
+      return;
+    }
+    // 저장하면 다시 보낸다 — 바뀐 것이 없으면 보내지 않고 알린다(WHALEERP-681)
+    if (workerUnchanged(form, initial)) {
+      setServerError(workerUnchangedNote(status));
       setFailures((n) => n + 1);
       return;
     }
@@ -156,7 +168,7 @@ export function WorkerForm({
         </FormRow>
       </FormGroup>
 
-      {/* 화면이 막은 유효성 오류는 칸 아래에 보이고, 여기는 api 가 막은 것만이다(WHALEERP-631) */}
+      {/* 화면이 막은 유효성 오류는 칸 아래에 보이고, 여기는 api 가 막은 것과 바뀐 내용이 없을 때다(WHALEERP-631 · 681) */}
       {serverError && (
         <div ref={failureRef} role="alert" className="flex flex-col gap-[4px] rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px]">
           <p className="text-[14px] font-semibold text-erp-off">저장하지 못했습니다.</p>

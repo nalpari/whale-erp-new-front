@@ -55,6 +55,25 @@ export function workerBody(f: WorkerForm, replaceContractIds?: number[]): Worker
 }
 
 /**
+ * 처음 값(상세에서 읽은 값)에서 바뀐 것이 없는가 — 저장하면 다시 보내므로(서명 기한 새로 30일 · 앞서 나간 링크 무효) 바뀐 것이 없으면
+ * 저장하지 않는다(WHALEERP-681, 2026-11-16 김민식). 비교는 api 에 보낼 값(이름 앞뒤 공백 · 번호 하이픈을 뺀 값)으로 한다.
+ */
+export function workerUnchanged(f: WorkerForm, initial: WorkerForm): boolean {
+  const a = workerBody(f);
+  const b = workerBody(initial);
+  return a.name === b.name && a.phone === b.phone && a.birthDate === b.birthDate && a.gender === b.gender && a.isForeigner === b.isForeigner;
+}
+
+/** 바뀐 것 없이 [저장]을 눌렀을 때 — 같은 내용으로 다시 보내는 길은 상세의 [재발송](발송 대기 · 서명 대기)이다 */
+export const workerUnchangedNote = (status: string | null | undefined) =>
+  status === "PENDING_SEND" || status === "PENDING_SIGNATURE"
+    ? "바뀐 내용이 없습니다. 같은 내용으로 다시 보내려면 상세의 [재발송]을 눌러 주세요."
+    : "바뀐 내용이 없습니다.";
+
+/** 저장(= 다시 보냄)이 끝났을 때의 토스트(WHALEERP-681 — 전에는 말없이 상세로 갔다) */
+export const WORKER_SAVED = "근로자 정보를 저장하고 근로계약서를 다시 보냈습니다.";
+
+/**
  * 저장하면 어떻게 되는지(2026-10-19 재영). 서명 기한은 새로 30일이다. 가입 초대 대상(가입하지 않았고 계정이 없는 번호)이면
  * 알림톡을 곧바로 다시 보내고 앞서 보낸 초대 코드가 무효가 된다. 이 점포에 가입한 직원은 앱 알림이 나간다(api #259). 계정만 있는
  * 번호(소속 추가 확인)는 보내지 않는다(front #58 리뷰). 화면은 그 번호에 계정이 있는지 모르므로 조건을 문구에 둔다.

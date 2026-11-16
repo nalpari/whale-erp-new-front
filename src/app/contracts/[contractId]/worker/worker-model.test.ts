@@ -1,7 +1,7 @@
 // node --test "src/app/contracts/[contractId]/worker/worker-model.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isWorkerEditable, workerBody, workerOf, workerProblemsByField, workerSaveNote, type WorkerForm } from "./worker-model.ts";
+import { isWorkerEditable, workerBody, workerOf, workerProblemsByField, workerSaveNote, workerUnchanged, workerUnchangedNote, type WorkerForm } from "./worker-model.ts";
 
 /** 문장만, 화면 위에서 아래 순서로 */
 const workerProblems = (f: WorkerForm) => Object.values(workerProblemsByField(f));
@@ -54,4 +54,22 @@ test("오류는 칸마다 — 화면이 그 칸 아래에 보인다(WHALEERP-631
     phone: "휴대전화번호는 숫자 10~11자리입니다.",
     gender: "성별을 선택하세요.",
   });
+});
+
+test("바뀐 것이 없으면 저장하지 않는다 — 비교는 보낼 값(이름 앞뒤 공백 · 번호 하이픈 뺀 값)으로(WHALEERP-681)", () => {
+  const initial: WorkerForm = { name: "남도현", phone: "010-9014-5563", birthDate: "1998-07-12", gender: "MALE", isForeigner: false };
+  assert.equal(workerUnchanged({ ...initial }, initial), true);
+  assert.equal(workerUnchanged({ ...initial, name: " 남도현 ", phone: "01090145563" }, initial), true);
+  for (const changed of [
+    { name: "남도형" },
+    { phone: "010-9014-5564" },
+    { birthDate: "1998-07-13" },
+    { gender: "FEMALE" as const },
+    { isForeigner: true },
+  ]) assert.equal(workerUnchanged({ ...initial, ...changed }, initial), false, JSON.stringify(changed));
+});
+
+test("바뀐 것 없이 저장하면 — 발송 대기 · 서명 대기는 [재발송]으로 안내한다(WHALEERP-681)", () => {
+  for (const s of ["PENDING_SEND", "PENDING_SIGNATURE"]) assert.match(workerUnchangedNote(s), /바뀐 내용이 없습니다\. .*\[재발송\]/, s);
+  assert.equal(workerUnchangedNote("CORRECTION_REQUESTED"), "바뀐 내용이 없습니다.");
 });
