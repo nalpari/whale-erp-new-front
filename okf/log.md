@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 「최종수정」은 등록(종이) · 첫 발송(전자) 뒤 고친 적이 없으면 「-」(1팀 상세의 `wasUpdated` 와 같이 1초 넘게 다를 때만 보임, front #286 code-review). 관리자를 모르면 일시만 보이는 것은 그대로 — api 가 배포 전 행을 일시만 근사해 채운다.
+
 ## 2026-11-13
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 처리 정보에 「최종수정 | 일시 · 관리자」 줄(최종 처리일 다음, 전자 · 종이 계약 모두, 없으면 「-」). api `modifiedAt` · `modifiedBy`(api exeggutor)로 타입을 다시 만들었다(WHALEERP-699, front weezing).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 가입 전(`joinState` 가 `JOINED` 아님) 재직 직원 상세에도 [퇴직 처리] 버튼이 보인다(WHALEERP-682, 계약 종료 확인창의 「퇴직 처리로 정리합니다」 안내와 맞춤, 목록 이름 링크도 가입 전 재직 직원에게 건다). 작성 중 근로계약만 있는 직원의 api 409 는 기존 확인창 안 문구로 보인다.

@@ -94,7 +94,7 @@ test("전자계약은 발송일 · 서명 기한 · 최종 처리일을 보이�
     { label: "발송일", value: "2026-10-20 10:00" },
     { label: "서명 기한", value: "2026-11-19 10:00" },
     { label: "최종 처리일", value: "2026-10-20 10:00" },
-    { label: "최종수정", value: "2026-10-20 10:00", by: "김관리" },
+    { label: "최종수정", value: "-", muted: true },
   ]);
   assert.deepEqual(processRows({ ...sent, resendCount: 2, lastSentAt: "2026-10-22T03:30:00.000Z" })[1], {
     label: "재발송",
@@ -110,7 +110,25 @@ test("최종수정은 관리자가 고치거나 보낸 일시 · 사람이다 �
   );
   assert.deepEqual(processRows({ ...sent, modifiedAt: null, modifiedBy: null }).find((r) => r.label === "최종수정"), { label: "최종수정", value: "-", muted: true });
   // 관리자 이름을 모르면(지운 계정 · 배포 전 기록) 일시만
-  assert.deepEqual(processRows({ ...sent, modifiedBy: null }).find((r) => r.label === "최종수정"), { label: "최종수정", value: "2026-10-20 10:00" });
+  assert.deepEqual(processRows({ ...sent, modifiedAt: "2026-10-21T05:10:00.000Z", modifiedBy: null }).find((r) => r.label === "최종수정"), {
+    label: "최종수정",
+    value: "2026-10-21 14:10",
+  });
+});
+
+test("등록(종이) · 첫 발송(전자) 뒤 고친 적이 없으면 최종수정은 「-」 — 1초 넘게 다를 때만 보인다(1팀 wasUpdated, front #286 리뷰)", () => {
+  const row = (c: Parameters<typeof processRows>[0]) => processRows(c).find((r) => r.label === "최종수정");
+  const dash = { label: "최종수정", value: "-", muted: true };
+  // 전자계약: 등록하며 보냈거나 보낸 뒤 그대로 — 첫 발송과 같은 때(1초 안 포함)
+  assert.deepEqual(row(sent), dash);
+  assert.deepEqual(row({ ...sent, modifiedAt: "2026-10-20T01:00:00.900Z" }), dash);
+  // 재발송 · 근로자 정보 수정 등으로 뒤에 고쳤으면 보인다
+  assert.deepEqual(row({ ...sent, modifiedAt: "2026-10-22T03:30:00.000Z" }), { label: "최종수정", value: "2026-10-22 12:30", by: "김관리" });
+  // 종이 계약: 등록일과 같으면 「-」
+  const paper = { ...sent, contractMethod: "PAPER", status: "SIGNED", firstSentAt: null, registeredAt: "2026-10-20T01:00:00.000Z", registeredBy: "김관리" } as const;
+  assert.deepEqual(row(paper), dash);
+  // 아직 보내지 않은 전자계약은 견줄 때가 없어 그대로 보인다
+  assert.deepEqual(row({ ...sent, status: "DRAFT", firstSentAt: null }), { label: "최종수정", value: "2026-10-20 10:00", by: "김관리" });
 });
 
 test("서명 기한은 서명을 기다리는 동안과 만료만 — 서명 완료 · 종료는 보이지 않는다", () => {
@@ -166,7 +184,7 @@ test("종이 계약은 발송 칸 대신 등록일 · 등록 관리자를 보인
       { label: "등록일", value: "2026-10-15 12:00" },
       { label: "등록 관리자", value: "김관리" },
       { label: "최종 처리일", value: "2026-10-15 12:00" },
-      { label: "최종수정", value: "2026-10-15 12:00", by: "김관리" },
+      { label: "최종수정", value: "-", muted: true },
     ],
   );
 });

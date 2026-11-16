@@ -1,6 +1,7 @@
 // 근로계약 상세의 칸 표기. 테스트: node --test "src/app/contracts/[contractId]/detail-format.test.ts"
 import { WEEKDAYS, WEEKS_PER_MONTH, type ContractDetail } from "../new/contract-form-model.ts";
 import { payrollAccountText } from "../../staff-members/[id]/contract-summary.ts";
+import { wasUpdated } from "../../../lib/format.ts";
 
 const minutes = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
 
@@ -94,7 +95,7 @@ const DEADLINE_SHOWN = new Set(["PENDING_SEND", "PENDING_SIGNATURE", "EXPIRED"])
 /**
  * 근로계약 상세의 발송 · 처리 정보 줄(WHALEERP-155 · 328). 전자계약은 발송일 · (재발송했으면) 재발송 횟수와 마지막 발송 · (날인을
  * 기다리는 동안 · 만료) 날인 기한, 종이 계약은 발송 칸 대신 등록일 · 등록 관리자다. 그 뒤 최종 처리일(가장 최근 상태 변경), 최종수정(관리자가
- * 고치거나 보낸 일시 · 사람 — 직원 서명 · 배치는 바꾸지 않는다, WHALEERP-699. 없으면 「-」), 수정
+ * 고치거나 보낸 일시 · 사람 — 직원 서명 · 배치는 바꾸지 않는다, WHALEERP-699. 없거나 등록 · 첫 발송 뒤 고친 적 없으면 「-」), 수정
  * 요청된 계약은 직원이 남긴 수정 요청 사유(직원이 쓴 글이라 길면 줄이 늘어난다, 없으면 「-」). 거부 사유는 받지 않아 줄이 없다
  * (WHALEERP-635). 값이 없는 칸은 줄을 두지 않는다(최종수정 · 수정 요청 사유는 「-」). 시각은 한국 시간.
  * 최종수정은 다른 상세 화면과 같이 사람(`by`)을 회색, 「-」를 흐린 글자(`muted`)로 그리게 따로 싣는다 — 그리는 것은 page.tsx 다.
@@ -112,8 +113,11 @@ export function processRows(c: ProcessFields): ProcessRow[] {
     if (c.signDeadlineAt && c.status && DEADLINE_SHOWN.has(c.status)) rows.push({ label: "서명 기한", value: kstDateTime(c.signDeadlineAt) });
   }
   if (c.lastProcessedAt) rows.push({ label: "최종 처리일", value: kstDateTime(c.lastProcessedAt) });
+  // 등록(종이 계약) · 첫 발송(전자계약) 뒤 고친 적이 없으면 「-」 — 바로 위 등록일 · 발송일과 같은 값을 거듭 보이지 않는다(1팀 상세의
+  // wasUpdated 규칙, front #286 리뷰). 아직 보내지 않은 전자계약은 견줄 때가 없어 그대로 보인다
+  const since = c.contractMethod === "PAPER" ? c.registeredAt : c.firstSentAt;
   rows.push(
-    c.modifiedAt
+    c.modifiedAt && (!since || wasUpdated(since, c.modifiedAt))
       ? { label: "최종수정", value: kstDateTime(c.modifiedAt), ...(c.modifiedBy ? { by: c.modifiedBy } : {}) }
       : { label: "최종수정", value: "-", muted: true },
   );
