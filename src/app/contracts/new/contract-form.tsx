@@ -98,7 +98,7 @@ function CheckCard({ label, checked, onChange }: { label: string; checked: boole
 }
 
 /**
- * 카드는 relative — 숨긴 라디오 · 체크 상자(sr-only, absolute)가 카드 안에 머물러야 한다(아래 CheckCard 도 같다). 아니면 카드를 눌러 포커스가 갈 때 브라우저가 멀리 놓인 라디오를 보이려고
+ * 카드는 relative — 숨긴 라디오 · 체크 상자(sr-only, absolute)가 카드 안에 머물러야 한다(위 CheckCard 도 같다). 아니면 카드를 눌러 포커스가 갈 때 브라우저가 멀리 놓인 라디오를 보이려고
  * 스크롤이 막힌 바깥 틀(h-[100dvh] overflow-y-hidden)까지 밀어 올려 화면 아래가 하얗게 비었다(2026-11-16 사용자 발견).
  * 큰 선택 카드(라디오) — TO-DO 등록(todo-form ChoiceCards) · 점포 등록 점포유형 카드와 같은 모양. TO-DO 쪽과 다른 점: 설명 글자는 이 화면 안내와 같은 회청(erp-brand),
  * 고를 수 없는 카드(disabled), 아이콘 없음 — 두 벌을 공통 컴포넌트로 올리는 것은 1팀 · 3팀과 맞춘 뒤에 한다. 고르면 선이 브랜드색, 바탕이 두 번째 바탕색으로 바뀐다.
