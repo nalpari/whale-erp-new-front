@@ -23,7 +23,7 @@ export default async function AttendanceRecordsPage({ searchParams }: { searchPa
   const href = (next: Partial<AttendanceQuery>) => at(`/attendance-records${toAttendanceSearch({ ...query, ...next }, today)}`);
 
   // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 · 없는 BP 404 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다(근로계약 목록과 같다)
-  const [records, statusLabels, reasonLabels, employmentTypeLabels] = await Promise.all([
+  const [records, statusLabels, reasonLabels, employmentTypeLabels, employmentStatusLabels] = await Promise.all([
     Promise.all([
       getDailyAttendance(stores, query.date),
       getPeriodAttendance(stores, query.week, addDays(query.week, 6)),
@@ -39,6 +39,7 @@ export default async function AttendanceRecordsPage({ searchParams }: { searchPa
     getEnum("AttendanceDayStatus"),
     getEnum("AttendanceReviewReason"),
     getEnum("EmploymentType"),
+    getEnum("EmploymentStatus"),
   ]);
   if ("notice" in records)
     return (
@@ -59,7 +60,7 @@ export default async function AttendanceRecordsPage({ searchParams }: { searchPa
       </BackdropInert>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         <BackdropInert>
-          <AttendanceFilter query={query} today={today} statusLabels={statusLabels} reasonLabels={reasonLabels} employmentTypeLabels={employmentTypeLabels} />
+          <AttendanceFilter query={query} today={today} statusLabels={statusLabels} reasonLabels={reasonLabels} employmentTypeLabels={employmentTypeLabels} employmentStatusLabels={employmentStatusLabels} />
         </BackdropInert>
         <main className="flex min-h-0 flex-1 flex-col gap-[24px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
           {/* 두 칸 사이 36px — 24px 는 왼쪽 표 끝과 「근태 요약」이 붙어 보였다. 두 칸 높이를 같게(stretch) 해 일별 표 틀이 근태 요약 아래 끝까지 늘어난다(2026-11-04 사용자 지정) */}

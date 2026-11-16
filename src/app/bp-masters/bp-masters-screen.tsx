@@ -148,7 +148,7 @@ export function BpMastersScreen({
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         <div className="contents" inert={backdropActive}>
           <BpMasterFilter query={query} onApply={(next) => go({ ...next, page: 1, bp: undefined })} />
-          <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
+          <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0">
             <ExcelDownloadProvider fileName="BP목록.xlsx">
               <ExcelDownloadNotice href={excelHref} />
               <ListToolbar total={list.total}>

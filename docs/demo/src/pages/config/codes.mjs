@@ -80,7 +80,7 @@ export const render = ({ A, R }, { title = "BP 공통코드 관리", platform = 
     ...(manage ? [{ header: "이동", width: "w-[60px]" }] : []),
     { header: "상세 코드", align: "left" }, // 남는 폭(앱과 같다, 2026-10-27)
     { header: "코드명", width: "w-[160px]", align: "left" },
-    { header: "표시 순서", width: "w-[90px]" },
+    { header: "순서", width: "w-[90px]" },
     { header: "사용여부", width: "w-[110px]" },
     { header: `<span class="inline-flex items-center gap-[4px]">관리주체${floatingHelpTip(OWNER_HELP, "관리주체")}</span>`, width: "w-[110px]" },
     // 플랫폼제공 · BP전용 코드 모두 지울 수 있다(앱 bpDeletable, 2026-10-22)

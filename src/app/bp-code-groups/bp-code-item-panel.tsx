@@ -287,7 +287,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
           d.label
         ),
     },
-    { header: "표시 순서", width: "w-[90px]", cell: (d) => d.sortOrder },
+    { header: "순서", width: "w-[90px]", cell: (d) => d.sortOrder },
     {
       header: "사용여부",
       width: "w-[110px]",

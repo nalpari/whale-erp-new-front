@@ -126,16 +126,16 @@ export const render = ({ A, R }, { title = "BP 권한 그룹 관리", platform =
     { header: "권한유형 · 코드", width: "w-[260px]" },
     { header: "권한명", width: "w-[260px]", align: "left" },
     { header: "설명", align: "left" },
-    { header: "최종수정", width: "w-[260px]", align: "left" }, // 한 줄 「일시 · 사람」, 고친 적 없으면 「-」(2026-10-27)
+    { header: "최종수정", width: "w-[150px]" }, // 일시만, 고친 적 없으면 「-」(앱 bp-role-groups, 2026-11-16 사용자 지정 — 전엔 「일시 · 사람」 260)
     { header: "메뉴설정", width: "w-[124px]" },
-    { header: "메뉴설정 여부", width: "w-[120px]" },
+    { header: "설정여부", width: "w-[120px]" },
   ];
   const rows = groups.map(([type, code, name, desc, at, by, n, regAt, , , , fresh]) => [
     `${TYPE[type]} <span class="text-[12px] text-erp-label">· ${code}</span>`,
     // 권한명 링크로만 상세를 연다(앱 roles-screen.tsx). 「새로 등록」은 이 화면에서 방금 등록한 그룹(「본인」은 내 계정에 연결된 그룹 — 이 견본엔 없다)
     `<span class="flex min-w-0 items-center gap-[6px]"><button type="button" id="role-pick-${code}" data-role-pick="${code}" class="min-w-0 truncate text-erp-link hover:underline">${name}</button>${fresh ? c.tag("새로 등록") : ""}</span>`,
     desc || c.muted("-"),
-    at === regAt ? c.muted("-") : who([at, by]),
+    at === regAt ? c.muted("-") : at,
     code === MENU_CODE ? x.dialogTrigger("설정", menuId, "soft") : ui.button("설정", { variant: "soft" }),
     // 메뉴 권한이 하나도 없으면 미등록, 등록이면 메뉴 수를 함께(앱 roles-screen.tsx)
     n ? ui.badge("on", `등록 ${n.toLocaleString("ko-KR")}개`) : ui.badge("off", "미등록"),

@@ -12,7 +12,6 @@ import { fillScopeOf } from "../stores/stores-query";
 import {
   DAY_STATUSES,
   defaultQuery,
-  EMPLOYMENT_LABELS,
   EMPLOYMENT_TYPES,
   EMPLOYMENTS,
   ENTRY_KIND_LABELS,
@@ -35,12 +34,15 @@ export function AttendanceFilter({
   statusLabels,
   reasonLabels,
   employmentTypeLabels,
+  employmentStatusLabels,
 }: {
   query: AttendanceQuery;
   today: string;
   statusLabels: EnumValue[];
   reasonLabels: EnumValue[];
   employmentTypeLabels: EnumValue[];
+  /** 재직 상태 이름(GET /enums EmploymentStatus) */
+  employmentStatusLabels: EnumValue[];
 }) {
   const router = useRouter();
   // 화면 주소는 탭 BP 주소다(/bp/{id}/attendance-records, WHALEERP-637)
@@ -132,7 +134,7 @@ export function AttendanceFilter({
         <Select aria-label="재직 상태" value={current.employment} onChange={(e) => go({ employment: e.target.value as Employment })}>
           {EMPLOYMENTS.map((e) => (
             <option key={e} value={e}>
-              {EMPLOYMENT_LABELS[e]}
+              {e === "ALL" ? "전체" : labelOf(employmentStatusLabels, e)}
             </option>
           ))}
         </Select>

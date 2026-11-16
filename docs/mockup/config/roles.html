@@ -111,7 +111,7 @@
                         <th scope="col">설명</th>
                         <th scope="col">최종수정</th>
                         <th scope="col">메뉴설정</th>
-                        <th scope="col">메뉴설정 여부</th>
+                        <th scope="col">설정여부</th>
                       </tr>
                     </thead>
                     <tbody id="rg-rows"></tbody>
@@ -363,7 +363,8 @@
             (g.fresh ? ' <span class="tag">새로 등록</span>' : "") + "</td>" +
             '<td style="min-width: 96px">' + (g.desc || MUTED) + "</td>" +
             /* 등록만 하고 고친 적 없으면 「-」 */
-            '<td style="white-space: nowrap">' + (m[0] !== g.reg[0] ? when(m[0], m[1]) : MUTED) + "</td>" +
+            /* 목록 최종수정은 일시만 — 고친 사람은 상세에서 본다(앱 roles-screen, 2026-11-16 사용자 지정) */
+            '<td style="white-space: nowrap">' + (m[0] !== g.reg[0] ? '<span class="mono">' + m[0] + "</span>" : MUTED) + "</td>" +
             '<td><button class="btn btn--secondary btn--sm" type="button" data-rg-menu="' + g.code + '">설정</button></td>' +
             '<td style="white-space: nowrap">' + regHTML(g.code) + "</td></tr>";
         }
