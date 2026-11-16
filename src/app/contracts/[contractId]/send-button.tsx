@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, ConfirmDialog, useAction, useToast } from "@/components/common";
 import { withBack } from "../contract-list";
@@ -36,6 +36,7 @@ export function SendContractButton({
   staffJoined: boolean;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const toast = useToast();
   // 상세 주소는 탭 BP 를 붙인다. back 은 옛 경로(목록 쿼리)다
   const bp = useCurrentBp().bpCodeId;
@@ -83,10 +84,12 @@ export function SendContractButton({
               setError("");
               // 직원 목록 재발송과 같은 토스트로 끝났음을 알린다 — 전엔 상세만 다시 읽어 보냈는지 알 수 없었다(통합테스트 IT-CONT-006)
               toast(RESEND_DONE);
-              // 보내기 실패 안내(?send=)로 왔다면 쿼리를 지운다 — 남아 있으면 「보내지 못했습니다」를 보고 또 누른다(front #50 리뷰).
-              // 돌아갈 목록 주소(?back=)는 남긴다
-              router.replace(bpPath(bp, withBack(`/contracts/${contractId}`, back)));
-              router.refresh();
+              // 보내기 실패 안내(?send=) · 파일 받기 실패 안내(?document=)로 왔다면 쿼리를 지운다 — 남아 있으면 「보내지 못했습니다」를
+              // 보고 또 누른다(front #50 리뷰). 돌아갈 목록 주소(?back=)는 남긴다. 그 밖에는 이동하지 않는다 — 상세는 서버 액션이 응답
+              // 안에서 다시 받는다(refresh, WHALEERP-671). 이동이 끼면 그 응답을 버리고 이동 뒤 다시 받는다(Next 라우터)
+              if (searchParams.has("send") || searchParams.has("document")) {
+                router.replace(bpPath(bp, withBack(`/contracts/${contractId}`, back)));
+              }
               return;
             }
             setError(result.error);
