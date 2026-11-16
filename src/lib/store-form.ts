@@ -132,11 +132,19 @@ export const EMPTY_STORE_FORM: StoreForm = {
 };
 
 /**
- * 등록 화면에서 무언가 입력했는가 — [취소] 이탈 확인창을 띄울지 가른다(WHALEERP-696). 빈 폼과 한 칸이라도 다르면 입력한 것이다.
- * 사진은 폼 밖 상태라 부르는 쪽이 따로 본다
+ * 등록 화면에서 무언가 입력했는가(WHALEERP-696). 빈 폼과 하나라도 다르면(칸 입력 · 체크 · 층 추가 포함) 입력한 것이고, 쳤다가 지워 되돌리면 아니다.
+ * JSON 비교라 폼 객체는 늘 EMPTY_STORE_FORM 을 펼쳐 만든다는 전제다 — 키 순서가 바뀌면 빈 폼도 입력으로 본다. 사진은 폼 밖 상태라 shouldConfirmStoreLeave 가 본다
  */
 export function hasStoreFormInput(form: StoreForm): boolean {
   return JSON.stringify(form) !== JSON.stringify(EMPTY_STORE_FORM);
+}
+
+/**
+ * 등록 화면 [취소] 때 이탈 확인창을 띄울까(WHALEERP-696) — 입력했거나 사진을 골랐으면 묻는다.
+ * 등록 결과를 확인하지 못했으면(점포가 이미 생겼을 수 있다) 「저장되지 않습니다」가 틀릴 수 있어 묻지 않는다
+ */
+export function shouldConfirmStoreLeave(state: { form: StoreForm; imageChosen: boolean; createUncertain: boolean }): boolean {
+  return !state.createUncertain && (hasStoreFormInput(state.form) || state.imageChosen);
 }
 
 /** 하이픈 없는 전화번호를 세 칸으로. 02 국번은 2자리, 050X 평생번호(12자리)는 4자리, 그 밖은 3자리 + 가운데 3~4자리 + 끝 4자리 */

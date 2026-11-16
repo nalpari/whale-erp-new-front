@@ -7,6 +7,7 @@ import {
   formOfStore,
   hasCoordinateInput,
   hasStoreFormInput,
+  shouldConfirmStoreLeave,
   isBpBlockedMessage,
   newFloorRow,
   splitPhone,
@@ -402,4 +403,21 @@ test("등록 이탈 확인 — 빈 폼이면 묻지 않고, 한 칸이라도 입
   assert.equal(hasStoreFormInput({ ...EMPTY_STORE_FORM, name: "강남점" }), true);
   assert.equal(hasStoreFormInput({ ...EMPTY_STORE_FORM, phone: ["02", "", ""] }), true);
   assert.equal(hasStoreFormInput({ ...EMPTY_STORE_FORM, isLocationApplied: true }), true);
+});
+
+test("등록 이탈 확인 — 되돌리면 묻지 않고, 층 추가 · 체크 · 인증도 입력으로 본다(WHALEERP-696)", () => {
+  assert.equal(hasStoreFormInput({ ...EMPTY_STORE_FORM, phone: ["", "", ""], name: "" }), false);
+  assert.equal(hasStoreFormInput({ ...EMPTY_STORE_FORM, floors: [newFloorRow()] }), true);
+  assert.equal(hasStoreFormInput({ ...EMPTY_STORE_FORM, ceoPhone: ["010", "", ""] }), true);
+  assert.equal(hasStoreFormInput({ ...EMPTY_STORE_FORM, bizSameAsStore: true }), true);
+  assert.equal(hasStoreFormInput({ ...EMPTY_STORE_FORM, verified: { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-01", verifiedAt: 1 } }), true);
+});
+
+test("등록 [취소] 확인창 — 사진만 골라도 묻고, 등록 결과를 모르면 묻지 않는다(WHALEERP-696)", () => {
+  const base = { form: EMPTY_STORE_FORM, imageChosen: false, createUncertain: false };
+  assert.equal(shouldConfirmStoreLeave(base), false);
+  assert.equal(shouldConfirmStoreLeave({ ...base, imageChosen: true }), true);
+  assert.equal(shouldConfirmStoreLeave({ ...base, form: { ...EMPTY_STORE_FORM, name: "강남점" } }), true);
+  assert.equal(shouldConfirmStoreLeave({ ...base, form: { ...EMPTY_STORE_FORM, name: "강남점" }, createUncertain: true }), false);
+  assert.equal(shouldConfirmStoreLeave({ ...base, imageChosen: true, createUncertain: true }), false);
 });

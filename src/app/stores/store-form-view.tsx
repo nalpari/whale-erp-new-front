@@ -27,8 +27,8 @@ import {
   currentVerification,
   formOfStore,
   hasCoordinateInput,
-  hasStoreFormInput,
   newFloorRow,
+  shouldConfirmStoreLeave,
   storeServerErrors,
   isBpBlockedMessage,
   BP_BLOCKED_TEXT,
@@ -636,11 +636,11 @@ export function StoreFormView(props: Props) {
           )}
         </h2>
         {mode === "create" ? (
-          // 저장 중엔 막는다 — 그 사이 나가면 등록이 끝나 상세로 다시 보내 「저장되지 않습니다」와 어긋났다. 결과를 모르면(이미 생겼을 수 있다) 묻지 않고 목록으로(코드 리뷰)
+          // 저장 중엔 막는다 — 등록이 끝나면 상세로 이동하므로 「저장되지 않습니다」와 어긋난다
           <Button
             variant="off"
             disabled={saving}
-            onClick={() => (!createUncertain && (hasStoreFormInput(form) || image.kind !== "keep") ? setLeaving(true) : router.push(at(backHref)))}
+            onClick={() => (shouldConfirmStoreLeave({ form, imageChosen: image.kind !== "keep", createUncertain }) ? setLeaving(true) : router.push(at(backHref)))}
           >
             취소
           </Button>
