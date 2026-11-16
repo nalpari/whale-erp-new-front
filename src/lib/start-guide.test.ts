@@ -4,11 +4,16 @@ import { BP_PATH_SCREENS } from "./bp-path.ts";
 import {
   GUIDE_STEPS,
   type GuideTrack,
+  autoAllowed,
+  autoDismissKey,
+  autoGuideOf,
+  cardPartsOf,
   guideDetailOf,
   guideParam,
   nextArrival,
   parseGuide,
   partOnScreen,
+  partsOnScreen,
   stepNumberOf,
   withRo,
 } from "./start-guide.ts";
@@ -128,4 +133,38 @@ test("순서 문구의 <u> 는 짝이 맞고, 한 단계 안 칸 제목은 겹�
       assert.equal(new Set(parts.map((p) => p.title)).size, parts.length, `${track} ${step.label} 칸 제목 겹침`);
       for (const a of parts.flatMap((p) => p.actions)) assert.ok(!/<\/?u>/.test(a.replace(/<u>(.*?)<\/u>/g, "$1")), a);
     }
+});
+
+// ── 미니 카드 자동 띄우기(2026-11-16 사용자 지정) ──
+
+test("자동 띄우기 — 화면별 단계 · 건수", () => {
+  assert.deepEqual(autoGuideOf("STORE", "/stores/new"), { guide: { track: "STORE", step: "1" }, count: "stores" });
+  assert.deepEqual(autoGuideOf("STORE", "/stores"), { guide: { track: "STORE", step: "1" }, count: "stores" });
+  assert.deepEqual(autoGuideOf("STORE", "/bp-role-groups"), { guide: { track: "STORE", step: "2" }, count: "roleGroups" });
+  assert.deepEqual(autoGuideOf("STORE", "/bp-admins"), { guide: { track: "STORE", step: "2" }, count: "admins" });
+  assert.deepEqual(autoGuideOf("STORE", "/staff-members"), { guide: { track: "STORE", step: "3" }, count: "staff" });
+  assert.equal(autoGuideOf("STORE", "/work-schedules"), null);
+  assert.equal(autoGuideOf("STORE", "/stores/12"), null);
+  assert.deepEqual(autoGuideOf("FRANCHISEE", "/stores"), { guide: { track: "FRANCHISEE", step: "1" }, count: "stores" });
+});
+
+test("자동 띄우기 — 점포 목록에서도 STEP 1 칸을 보인다", () => {
+  const g = { track: "STORE" as const, step: "1" };
+  assert.ok(cardPartsOf(g, "/stores").length > 0);
+  assert.deepEqual(cardPartsOf(g, "/stores/new"), partsOnScreen(g, "/stores/new"));
+  assert.equal(cardPartsOf({ track: "STORE", step: "3" }, "/stores").length, 0);
+});
+
+test("자동 띄우기 닫은 기록 — 계정 · BP · 단계 · 화면마다 다르다", () => {
+  const g = { track: "STORE" as const, step: "3" };
+  const k = autoDismissKey(1, 8, g, "/staff-members");
+  assert.equal(k, "guide-auto-dismissed:1:8:STORE-3:/staff-members");
+  assert.notEqual(k, autoDismissKey(2, 8, g, "/staff-members"));
+  assert.notEqual(k, autoDismissKey(1, 9, g, "/staff-members"));
+});
+
+test("자동 띄우기는 ?guide= 도착이 없는 화면에서만", () => {
+  assert.equal(autoAllowed({ guide: null, seen: null }, "/staff-members"), true);
+  assert.equal(autoAllowed({ guide: "STORE-3", seen: "STORE-3|/staff-members" }, "/staff-members"), false);
+  assert.equal(autoAllowed({ guide: null, seen: "STORE-3|/staff-members" }, "/staff-members"), false); // 도착 카드를 닫은 뒤
 });

@@ -512,3 +512,48 @@ export function withRo(word: string) {
   const jong = code >= 0 && code <= 11171 ? code % 28 : 0;
   return `${word}${jong === 0 || jong === 8 ? "로" : "으로"}`;
 }
+
+/* ── 미니 카드 자동 띄우기(2026-11-16 사용자 지정) — 시작 가이드에서 넘어오지 않아도, 점포 · 권한 그룹 · 관리자 · 직원이 0건인 화면에
+   메뉴로 들어오면 그 단계 카드를 띄운다. 건수는 카드 슬롯이 묻고(guide-count-actions), 여기는 화면 → 단계 · 건수와 닫은 기록 키만 정한다 ── */
+
+/** 자동으로 띄울 때 셀 것 — 점포는 세션 값, 나머지는 목록 API 의 total */
+export type GuideCountKind = "stores" | "roleGroups" | "admins" | "staff";
+
+export type AutoGuide = { guide: GuideRef; count: GuideCountKind };
+
+/** 자동으로 띄우는 화면과 그 화면에서 셀 것 — 표에 없는 화면은 띄우지 않는다(근무스케줄 · 출퇴근 · 급여명세서는 하지 않는다) */
+const AUTO_SCREENS: Record<string, GuideCountKind> = {
+  "/stores": "stores",
+  "/stores/new": "stores",
+  "/bp-role-groups": "roleGroups",
+  "/bp-admins": "admins",
+  "/staff-members": "staff",
+};
+
+/** 미니 카드에 보일 칸 — 그 화면의 칸이고, 점포 목록(/stores)이면 STEP 1 칸 전부(점포 등록 화면 칸을 목록에서도 미리 보인다) */
+export function cardPartsOf(guide: GuideRef, screen: string): GuidePart[] {
+  const parts = partsOnScreen(guide, screen);
+  if (parts.length || screen !== "/stores" || guide.step !== "1") return parts;
+  return guideDetailOf(guide.track, guide.step).parts;
+}
+
+/** 이 화면에 자동으로 띄울 가이드 — 갈래의 주 단계를 순서대로 보며 그 화면 칸이 있는 첫 단계. 없으면 null */
+export function autoGuideOf(track: GuideTrack, screen: string): AutoGuide | null {
+  const count = AUTO_SCREENS[screen];
+  if (!count) return null;
+  for (const s of GUIDE_STEPS[track]) {
+    if (s.sub) continue;
+    const guide = { track, step: stepNumberOf(s) };
+    if (cardPartsOf(guide, screen).length) return { guide, count };
+  }
+  return null;
+}
+
+/** 자동 카드를 닫은 기록(localStorage 키) — 같은 브라우저를 다른 계정 · 다른 BP 가 써도 섞이지 않게 계정 · BP · 단계 · 화면마다 */
+export const autoDismissKey = (adminAccountId: number, bpCodeId: number, guide: GuideRef, screen: string) =>
+  `guide-auto-dismissed:${adminAccountId}:${bpCodeId}:${guideParam(guide.track, guide.step)}:${screen}`;
+
+/** 자동으로 띄워도 되는지 — ?guide= 로 이 화면에 넘어온 기억이 있으면(닫았어도) 자동 카드를 띄우지 않는다 */
+export function autoAllowed(arrival: GuideArrival, screen: string): boolean {
+  return arrival.seen?.split("|")[1] !== screen;
+}
