@@ -348,6 +348,8 @@ export function ContractForm({
     setServerError(message);
     setFailures((n) => n + 1);
   };
+  /** [취소] 확인창 — 누르면 저장하지 않고 나간다고 한 번 알린다(WHALEERP-674) */
+  const [leaving, setLeaving] = useState(false);
   // 같은 점포에 진행 중 계약이 있어 저장하지 못했을 때 — 대체를 확인받아 같은 본문에 그 목록을 실어 다시 보낸다.
   // paper 면 종이 계약 등록(날인본과 함께)이었다. correcting 이면 종이 계약이 기간이 겹치는 체결 완료와 부딪혀(SIGNED_CONTRACT_OVERLAP)
   // 「잘못 올린 계약 바로잡기」를 묻는다 — 확인하면 correctSignedContracts 를 켜 체결 완료도 대체한다(WHALEERP-156).
@@ -555,7 +557,7 @@ export function ContractForm({
     <div ref={formRef} className="flex flex-col gap-[12px] [&_:is(select,input:not([type=radio],[type=checkbox])):disabled]:bg-erp-thead-bg">
       <div className="flex items-end gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약서</h2>
-        <Button variant="off" href={at(cancelHref ?? backHrefOf(back))}>
+        <Button variant="off" onClick={() => setLeaving(true)}>
           취소
         </Button>
         {deleteButton}
@@ -898,6 +900,14 @@ export function ContractForm({
         </div>
       </div>
 
+      <ConfirmDialog
+        open={leaving}
+        title={correction ? "수정을 취소하시겠습니까?" : "작성을 취소하시겠습니까?"}
+        onCancel={() => setLeaving(false)}
+        onConfirm={() => router.push(at(cancelHref ?? backHrefOf(back)))}
+      >
+        <p>취소하면 입력한 내용은 저장되지 않습니다.</p>
+      </ConfirmDialog>
       {/* 같은 점포 · 같은 번호의 진행 중 계약(WHALEERP-129). 대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 · 수정 요청은 종료한다.
           종이 계약이 기간이 겹치는 체결 완료와 부딪히면 대체하지 않고 「잘못 올린 계약 바로잡기」를 묻는다 — 바로잡기만 체결 완료도
           곧바로 종료한다. 재계약이면 앞 계약은 새 계약 시작일에 하루 배치가 닫는다(WHALEERP-156). */}
