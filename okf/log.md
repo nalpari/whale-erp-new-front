@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드 미니 카드를 점포 · 권한 그룹 · 관리자 · 직원이 0건인 그 단계 화면에 들어오면 자동으로 띄운다(웨일ERP 탭, 닫으면 그 브라우저 · 계정 · BP 에서 다시 안 뜸).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 재발송 서버 액션(`sendContract`)이 성공하면 `next/cache` 의 `refresh()` 로 응답 안에서 화면을 다시 받는다. 근로계약 상세 · 직원 목록 재발송 버튼은 성공 뒤 `router.refresh` 를 따로 부르지 않고, 상세는 `?send=` · `?document=` 가 있을 때만 쿼리를 지우는 `router.replace` 를 한다(WHALEERP-671 — 재발송 횟수 · 마지막 일시가 바로 바뀌지 않던 것).
 * **Update**: [출퇴근 현황 화면](/screens/attendance-records.md) — 필터 「재직 상태」의 재직 · 퇴직 이름을 화면 상수(`EMPLOYMENT_LABELS`) 대신 api 값 이름 `getEnum("EmploymentStatus")` 으로 그린다 — 「전체」만 화면 문구(WHALEERP-721, naming.md 「front 에 상수 대응표를 두지 않는다」).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 관리자 화면 최소폭을 플랫폼 탭만 1260 으로(웨일ERP 탭은 1720 유지, `data-erp-wide`), 넘치는 플랫폼 목록은 DataTable `scroll` 로 표 상자 안에서 밀고 빈 scroll 표도 상자 안 가로 스크롤(front #289).
