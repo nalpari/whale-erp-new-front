@@ -243,8 +243,8 @@ function Figure({ href, label, value, unit, sub }: { href: string | null; label:
 }
 
 const warn = (text: string) => <span className="text-erp-off">{text}</span>;
-/** 표의 숫자 — 0 과 권한 없는 칸(null)은 「—」 */
-const num = (n: number | null) => (n ? n : <span className="text-erp-muted">—</span>);
+/** 표의 숫자 — 0 과 권한 없는 칸(null)은 짧은 「-」(다른 표의 빈 칸과 같다 — 긴 줄표는 길어 보였다, 2026-11-16 사용자 지정) */
+const num = (n: number | null) => (n ? n : <span className="text-erp-muted">-</span>);
 
 type CardsData = NonNullable<HomeSummary["cards"]>;
 

@@ -1,6 +1,11 @@
 # Bundle history
 
 ## 2026-11-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성을 큰 선택 · 체크 카드, 계산식 형광펜, 칸 아래 느낌표 안내, 파트타이머 주급 · 연봉, 종이 계약 파일 [빼기] 링크로. 시작 가이드 미니 카드가 이어 쓰기 화면까지 따라간다(`nextPaths` 의 `*`) · 안내 문구 `<mark>` 형광펜.
+* **Update**: [점포](/stores.md) — 점포 등록 · 수정 저장 뒤 「점포 목록이 변경되었습니다.」를 띄우지 않는다(늘 quiet).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 홈 점포별 현황 표의 빈 칸(0 · 권한 없음)을 긴 줄표 대신 짧은 「-」로.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 등록 · 수정 저장 뒤 「점포 목록이 변경되었습니다.」 토스트를 띄우지 않는다(`refreshStores({ quiet: true })`).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드 미니 카드를 점포 · 권한 그룹 · 관리자 · 직원이 0건인 그 단계 화면에 들어오면 자동으로 띄운다(웨일ERP 탭, 닫으면 그 브라우저 · 계정 · BP 에서 다시 안 뜸).
 * **Update**: [점포 관리](/stores.md) — 점포 등록 [취소]: 입력한 것이 있으면 이탈 확인창(「작성을 취소하시겠습니까?」 · 「취소하면 입력한 내용은 저장되지 않습니다.」)을 띄운다. 저장 중엔 [취소]를 막고, 등록 결과를 모르면 묻지 않는다. 수정 화면은 그대로(WHALEERP-696, front wurmple).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일: 수정 패널 동시 수정 409 는 실패 띠 없이 토스트 · 다시 채우기만(`saveFailureAction`, WHALEERP-714), 수정의 겹침 확인 문구를 「저장하면 이 휴일이 겹치는 날짜에도 적용됩니다.」로(WHALEERP-715, front bidoof).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로자 정보 수정(`/contracts/{id}/worker`)은 상세에 [재발송]이 보이는 계약에서 바뀐 것이 없으면 저장(= 다시 보냄)하지 않고 [재발송]으로 안내하며, 저장이 끝나면 「근로자 정보를 저장했습니다.」 토스트를 띄운 뒤 상세로 간다(WHALEERP-681 — 전에는 같은 값으로도 다시 보내 서명 기한이 새로 잡히고 말없이 상세로 갔다).

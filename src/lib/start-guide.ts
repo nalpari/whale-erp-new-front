@@ -107,11 +107,14 @@ export type GuidePart = {
   actions: string[];
   /** 느낌표 안내 — 안내끼리는 빈 줄(\n\n)로 나누고, \n 하나는 같은 안내 안 줄바꿈이다(2026-11-11 사용자 지정) */
   tip?: string;
+  /** 안내를 순서 아래가 아니라 제목 바로 아래에 — 순서를 읽기 전에 알아야 하는 말(2026-11-16 사용자 지정, 사업자 진위확인) */
+  tipFirst?: boolean;
   /** [OOO로 가기] 가 보낼 화면(탭 BP 접두 없이) */
   path?: string;
   /**
    * 그 화면에서 이어 넘어가는 화면 — 가이드 미니 카드가 여기서도 남는다(순서의 다음 줄을 이 화면에서 한다). 「/payslips/」처럼 / 로 끝나면
    * 그 아래 주소 모두다(코드 리뷰로 찾음, 2026-11-11 — 근로계약 작성 · 급여명세서 검토로 넘어가자마자 카드가 꺼졌다)
+   * 별표(*)는 주소 한 칸을 받는다 — 근로계약 이어 쓰기 화면(2026-11-16)
    */
   nextPaths?: string[];
   mock: GuideMockKind;
@@ -132,8 +135,9 @@ const STORE_FORM: GuidePart = {
   mock: "store-form",
   // 「점포 목록 위 [등록]을 눌러요」는 뺐다 — [점포 등록으로 가기]가 목록을 거치지 않고 바로 등록 화면으로 간다(2026-11-11 사용자 지정)
   actions: [
-    "「점포 기본정보」에서 점포유형(직영 · 가맹)을 선택하고 점포명 · 점포 연락처 · 점포 주소를 입력해요.",
-    "주소를 입력하면 위도·경도가 자동으로 채워져요.\n직원 앱에서 출퇴근 위치를 확인하려면 [출퇴근 위치적용]을 '사용'으로 설정해 주세요.",
+    // 칸 이름은 굵게 — 무엇을 입력할지 한눈에 보이게(2026-11-16 사용자 지정)
+    "「점포 기본정보」에서 <b>점포유형</b>(직영 · 가맹)을 선택하고 <b>점포명</b> · <b>점포 연락처</b> · <b>점포 주소</b>를 입력해요.",
+    "점포 주소를 입력하면 위도·경도가 자동으로 채워져요.\n직원 앱에서 출퇴근 위치를 확인하려면 [출퇴근 위치적용]을 '사용'으로 설정해 주세요.",
     "[저장]을 누르면 점포가 등록되고 상세 화면으로 이동해요.",
   ],
   tip: "점포 유형은 등록 후 변경할 수 없어요.",
@@ -151,7 +155,9 @@ const BIZ_VERIFY: GuidePart = {
     "[저장]을 눌러 인증 정보를 함께 저장해요.",
     "사업자 인증을 완료하고 점포 상태를 '운영'으로 변경해 주세요.",
   ],
-  tip: "점포를 등록할 때 사업자 인증은 선택이지만, 점포 상태를 '운영'으로 변경하려면 반드시 인증을 완료해야 해요.",
+  // 놓치면 운영으로 못 바꾸는 말이라 형광펜(<mark>)으로 강조한다(2026-11-16 사용자 지정)
+  tip: "<mark>점포를 등록할 때 사업자 인증은 선택이지만, 점포 상태를 '운영'으로 변경하려면 반드시 인증을 완료해야 해요.</mark>",
+  tipFirst: true,
 };
 
 const ROLE_GROUP: GuidePart = {
@@ -200,16 +206,28 @@ const adminForm = (title: string): GuidePart => ({
 const CONTRACT: GuidePart = {
   title: "근로계약서 작성하기",
   path: "/staff-members",
-  nextPaths: ["/contracts/new"],
+  // 이어 쓰기(작성 중인 계약)도 같은 작성 화면이다 — 직원 정보 관리에서 작성 중인 직원을 누르면 간다(2026-11-16 사용자 지정)
+  nextPaths: ["/contracts/new", "/contracts/*/edit"],
   mock: "contract",
   actions: [
     // 문구는 2026-11-11 사용자 지정
-    "직원 목록 상단의 [직원 초대]를 누르면 근로계약서 작성 화면이 열려요.",
+    // 화면 이름으로 자리를 말한다 — 전엔 「직원 목록 상단의」(2026-11-16 사용자 지정)
+    "직원 정보 관리 상단에 있는 [직원 초대]를 누르면 근로계약서 작성 화면이 열려요.",
     "직원 정보(이름·휴대전화번호·생년월일·소속 근무지·직무)를 입력해 주세요.",
     "고용 형태와 계약 방식(전자·종이)을 선택하고 근로계약 조건을 입력해 주세요.",
     "전자계약은 [서명 요청], 종이계약은 [종이 계약 등록]을 눌러요.",
   ],
-  tip: "근로계약서를 작성하면 직원 초대도 함께 진행돼요.\n단, 계약 시작일 기준 만 19세 미만인 직원은 계약서를 저장할 수 없어요.",
+  // 근무지 · 고용 형태 · 계약 방식 안내는 작성 화면 동작 그대로(2026-11-16 사용자 지정) — 근무지 선택지는 api GET /contracts/store-options
+  // (폐점 제외, 본사 역할은 직영만), 고용 형태 · 계약 방식은 contract-form(정직원만 수습 · 월급 · 연봉, 종이는 서명본을 올리면 바로 서명 완료)
+  // 안내는 작성 화면 칸 순서대로 — 휴대전화번호(초대 · 이메일) → 생년월일(만 19세) → 소속 근무지 → 고용 형태 → 계약 방식.
+  // 긴 줄표 없이 짧은 문장으로 쉽게(2026-11-16 사용자 지정). 이메일 칸은 없다 — 직원 앱 회원 ID 라 직원이 가입할 때 정한다(ACC-17)
+  tip: [
+    "근로계약서를 작성하면 입력한 휴대전화번호로 직원에게 가입 초대가 함께 가요.\n직원 이메일은 직원이 앱에 가입할 때 직접 등록해요.",
+    "계약 시작일에 만 19세가 안 된 직원은 계약서를 저장할 수 없어요.",
+    "소속 근무지에는 운영 중이거나 운영 예정인 점포만 나와요.\n본사 계정은 직영 점포만 선택할 수 있어요. 가맹점 직원은 가맹점주가 초대해요.",
+    "정직원: 매일 같은 시간 근무하고, 월급·연봉으로 계산해요. 수습 기간을 정할 수 있어요.\n파트타이머: 요일마다 근무시간을 다르게 정할 수 있고, 시급으로 주급·월급을 계산해요.",
+    "전자계약: [서명 요청]을 누르면 직원 앱으로 계약서가 가요. 직원이 서명하면 완료돼요.\n종이계약: 직원과 종이로 서명한 계약서 파일을 올리면 바로 '서명 완료'로 등록돼요.",
+  ].join("\n\n"),
 };
 
 const SIGN: GuidePart = {
@@ -479,7 +497,14 @@ export function parseGuide(guide: string | null | undefined): GuideRef | null {
 /** 칸이 그 화면(탭 BP 접두를 뗀 주소)의 것인지 — [OOO로 가기]의 화면이거나 거기서 이어 넘어가는 화면(nextPaths, / 로 끝나면 그 아래 모두) */
 export function partOnScreen(part: GuidePart, screen: string): boolean {
   if (part.path === screen) return true;
-  return (part.nextPaths ?? []).some((p) => (p.endsWith("/") ? screen.startsWith(p) : screen === p));
+  return (part.nextPaths ?? []).some((p) => (p.endsWith("/") ? screen.startsWith(p) : p.includes("*") ? segmentsMatch(p, screen) : screen === p));
+}
+
+// 「/contracts/(별표)/edit」처럼 별표(*)가 주소 한 칸(계약 번호 등)을 받는 모양 — 칸 수가 같아야 한다(2026-11-16, 이어 쓰기 화면)
+function segmentsMatch(pattern: string, screen: string) {
+  const want = pattern.split("/");
+  const got = screen.split("/");
+  return want.length === got.length && want.every((w, i) => w === "*" ? got[i] !== "" : w === got[i]);
 }
 
 /** 그 단계에서 지금 화면에 띄울 칸들 — 없으면 빈 배열(카드를 띄우지 않는다) */
@@ -511,4 +536,52 @@ export function withRo(word: string) {
   const code = word.charCodeAt(word.length - 1) - 0xac00;
   const jong = code >= 0 && code <= 11171 ? code % 28 : 0;
   return `${word}${jong === 0 || jong === 8 ? "로" : "으로"}`;
+}
+
+/* ── 미니 카드 자동 띄우기(2026-11-16 사용자 지정) — 시작 가이드에서 넘어오지 않아도, 점포 · 권한 그룹 · 관리자 · 직원이 0건인 화면에
+   메뉴로 들어오면 그 단계 카드를 띄운다. 건수는 카드 슬롯이 묻고(guide-count-actions), 여기는 화면 → 단계 · 건수와 닫은 기록 키만 정한다 ── */
+
+/** 자동으로 띄울 때 셀 것 — 점포는 세션 값, 나머지는 목록 API 의 total */
+export type GuideCountKind = "stores" | "roleGroups" | "admins" | "staff";
+
+export type AutoGuide = { guide: GuideRef; count: GuideCountKind };
+
+/** 자동으로 띄우는 화면과 그 화면에서 셀 것 — 표에 없는 화면은 띄우지 않는다(점포 목록 · 근무스케줄 · 출퇴근 · 급여명세서는 하지 않는다 — 점포는 등록 화면에서만, 2026-11-16 사용자 지정) */
+const AUTO_SCREENS: Record<string, GuideCountKind> = {
+  "/stores/new": "stores",
+  "/bp-role-groups": "roleGroups",
+  "/bp-admins": "admins",
+  "/staff-members": "staff",
+};
+
+/** 이 화면에 자동으로 띄울 가이드 — 갈래의 주 단계를 순서대로 보며 그 화면 칸이 있는 첫 단계. 없으면 null */
+export function autoGuideOf(track: GuideTrack, screen: string): AutoGuide | null {
+  const count = AUTO_SCREENS[screen];
+  if (!count) return null;
+  // 가맹 역할은 점포를 등록하지 못한다 — 점포 화면에는 띄우지 않고 점포 없음 띠의 배정 요청 안내에 맡긴다(2026-11-16 사용자 지정)
+  if (track === "FRANCHISEE" && count === "stores") return null;
+  for (const s of GUIDE_STEPS[track]) {
+    if (s.sub) continue;
+    const guide = { track, step: stepNumberOf(s) };
+    if (partsOnScreen(guide, screen).length) return { guide, count };
+  }
+  return null;
+}
+
+/**
+ * 자동 카드를 닫은 기록(localStorage 키) — 같은 브라우저를 다른 계정 · 다른 BP 가 써도 섞이지 않게 계정 · BP · 단계마다.
+ * 자동 카드도 그 단계의 다음 화면으로 따라가므로 화면이 아니라 단계로 센다 — 권한 관리에서 닫으면 같은 단계인 관리자 관리에서도 다시 뜨지 않는다(2026-11-16 사용자 지정)
+ */
+export const autoDismissKey = (adminAccountId: number, bpCodeId: number, guide: GuideRef) =>
+  `guide-auto-dismissed:${adminAccountId}:${bpCodeId}:${guideParam(guide.track, guide.step)}`;
+
+/** 띄운 자동 카드가 이 화면에도 남는지 — 그 단계 칸이 있는 화면(이어 넘어가는 nextPaths 포함, 예: 직원 관리 → 근로계약 작성)이면 따라간다(2026-11-16 사용자 지정) */
+export const autoFollows = (guide: GuideRef, screen: string) => partsOnScreen(guide, screen).length > 0;
+
+/**
+ * 자동으로 띄워도 되는지 — ?guide= 로 넘어온 기억이 남아 있는 동안은(닫았어도, 같은 단계의 다른 화면으로 따라왔어도) 띄우지 않는다.
+ * 그 단계와 상관없는 화면으로 가면 nextArrival 이 기억을 비운다(최종 리뷰 — 전엔 도착한 화면만 견줘 다른 화면에서 닫으면 자동 카드가 대신 떴다)
+ */
+export function autoAllowed(arrival: GuideArrival): boolean {
+  return arrival.seen === null;
 }

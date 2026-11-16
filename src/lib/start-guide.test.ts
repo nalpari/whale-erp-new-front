@@ -4,6 +4,10 @@ import { BP_PATH_SCREENS } from "./bp-path.ts";
 import {
   GUIDE_STEPS,
   type GuideTrack,
+  autoAllowed,
+  autoDismissKey,
+  autoFollows,
+  autoGuideOf,
   guideDetailOf,
   guideParam,
   nextArrival,
@@ -121,11 +125,65 @@ test("withRo — 받침 없음 · ㄹ 받침은 「로」, 그 밖의 받침은 
   assert.equal(withRo(""), "로");
 });
 
-test("순서 문구의 <u> 는 짝이 맞고, 한 단계 안 칸 제목은 겹치지 않는다(key)", () => {
+test("순서 · 안내 문구의 <u> · <b> · <mark> 는 짝이 맞고, 한 단계 안 칸 제목은 겹치지 않는다(key)", () => {
   for (const track of TRACKS)
     for (const step of GUIDE_STEPS[track].filter((s) => !s.sub)) {
       const parts = guideDetailOf(track, stepNumberOf(step)).parts;
       assert.equal(new Set(parts.map((p) => p.title)).size, parts.length, `${track} ${step.label} 칸 제목 겹침`);
-      for (const a of parts.flatMap((p) => p.actions)) assert.ok(!/<\/?u>/.test(a.replace(/<u>(.*?)<\/u>/g, "$1")), a);
+      for (const a of parts.flatMap((p) => [...p.actions, ...(p.tip ? [p.tip] : [])]))
+        assert.ok(!/<\/?(u|b|mark)>/.test(a.replace(/<(u|b|mark)>([\s\S]*?)<\/\1>/g, "$2")), a);
     }
+});
+
+test("사업자 진위확인 안내는 형광펜으로 강조한다(2026-11-16 사용자 지정)", () => {
+  const biz = guideDetailOf("STORE", "1").parts.find((p) => p.title === "사업자 진위확인하기");
+  assert.match(biz?.tip ?? "", /^<mark>점포를 등록할 때 사업자 인증은 선택이지만.*<\/mark>$/);
+});
+
+// ── 미니 카드 자동 띄우기(2026-11-16 사용자 지정) ──
+
+test("자동 띄우기 — 화면별 단계 · 건수", () => {
+  assert.deepEqual(autoGuideOf("STORE", "/stores/new"), { guide: { track: "STORE", step: "1" }, count: "stores" });
+  // 점포 목록에는 띄우지 않는다 — 점포 등록 화면에서만(2026-11-16 사용자 지정)
+  assert.equal(autoGuideOf("STORE", "/stores"), null);
+  assert.deepEqual(autoGuideOf("STORE", "/bp-role-groups"), { guide: { track: "STORE", step: "2" }, count: "roleGroups" });
+  assert.deepEqual(autoGuideOf("STORE", "/bp-admins"), { guide: { track: "STORE", step: "2" }, count: "admins" });
+  assert.deepEqual(autoGuideOf("STORE", "/staff-members"), { guide: { track: "STORE", step: "3" }, count: "staff" });
+  assert.equal(autoGuideOf("STORE", "/work-schedules"), null);
+  assert.equal(autoGuideOf("STORE", "/stores/12"), null);
+  // 가맹 역할은 점포를 등록하지 못해 점포 화면에는 띄우지 않는다 — 점포 없음 띠가 배정 요청을 안내한다(2026-11-16 사용자 지정)
+  assert.equal(autoGuideOf("FRANCHISEE", "/stores"), null);
+  assert.equal(autoGuideOf("FRANCHISEE", "/stores/new"), null);
+  assert.deepEqual(autoGuideOf("FRANCHISEE", "/staff-members"), { guide: { track: "FRANCHISEE", step: "3" }, count: "staff" });
+});
+
+// 자동 카드도 그 단계의 다음 화면으로 따라가므로 닫은 기록은 단계마다다 — 권한 관리에서 닫으면 같은 단계인 관리자 관리에서도 다시 뜨지 않는다(2026-11-16 사용자 지정)
+test("자동 띄우기 닫은 기록 — 계정 · BP · 단계마다 다르다", () => {
+  const g = { track: "STORE" as const, step: "3" };
+  const k = autoDismissKey(1, 8, g);
+  assert.equal(k, "guide-auto-dismissed:1:8:STORE-3");
+  assert.notEqual(k, autoDismissKey(2, 8, g));
+  assert.notEqual(k, autoDismissKey(1, 9, g));
+  assert.notEqual(k, autoDismissKey(1, 8, { track: "STORE", step: "1" }));
+});
+
+test("자동 카드가 따라가는 화면 — 그 단계 칸이 있는 화면(다음 화면 포함)", () => {
+  assert.equal(autoFollows({ track: "STORE", step: "3" }, "/contracts/new"), true);
+  assert.equal(autoFollows({ track: "STORE", step: "1" }, "/stores/new"), true);
+  assert.equal(autoFollows({ track: "STORE", step: "3" }, "/payslips"), false);
+});
+
+test("근로계약서 작성하기 칸은 이어 쓰기 화면(/contracts/{id}/edit)까지 따라간다 — 상세 화면은 아니다(2026-11-16 사용자 지정)", () => {
+  const part = guideDetailOf("STORE", "3").parts.find((p) => p.title === "근로계약서 작성하기")!;
+  assert.equal(partOnScreen(part, "/contracts/31/edit"), true);
+  assert.equal(partOnScreen(part, "/contracts/31"), false);
+  assert.equal(partOnScreen(part, "/contracts/31/edit/more"), false);
+});
+
+test("자동 띄우기는 ?guide= 도착이 없는 화면에서만", () => {
+  assert.equal(autoAllowed({ guide: null, seen: null }), true);
+  assert.equal(autoAllowed({ guide: "STORE-3", seen: "STORE-3|/staff-members" }), false);
+  assert.equal(autoAllowed({ guide: null, seen: "STORE-3|/staff-members" }), false); // 도착 카드를 닫은 뒤
+  // 같은 단계의 다른 화면으로 따라온 도착 카드가 있는 동안도 — 닫으면 그 자리에 자동 카드가 대신 뜨던 것(최종 리뷰)
+  assert.equal(autoAllowed({ guide: "STORE-2", seen: "STORE-2|/bp-role-groups" }), false);
 });

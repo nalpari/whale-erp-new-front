@@ -21,12 +21,15 @@ export function AdminFrame({ alarm, children }: { alarm: ReactNode; children: Re
         {/* 최소폭 — 플랫폼 탭은 1260, 웨일ERP 탭은 화면을 1260 에 맞추기 전까지 1720(2026-11-16 사용자 지정, 단계 작업). SessionGate 가 웨일ERP 탭에서만 남기는
               data-erp-wide 표시로 가른다. 웨일ERP 화면까지 맞추면 has-[…] 한 조각을 지운다 */}
         <div className="relative flex h-full min-w-[1260px] flex-col overflow-x-clip has-[[data-erp-wide]]:min-w-[1720px]">
-          <SessionGate header={<AdminHeader alarm={alarm} />}>{children}</SessionGate>
+          <SessionGate header={<AdminHeader alarm={alarm} />}>
+            {children}
+            {/* 시작 가이드 미니 카드 — 주소를 읽으므로 Suspense 로 감싼다. 자동 띄우기가 계정 · BP · 점포를 읽어 SessionGate 안에 둔다
+                (2026-11-16 — 밖에 두었더니 로그인 정보가 준비되기 전에 그려져 「SessionGate 안에서만 쓸 수 있습니다」로 화면이 멈췄다) */}
+            <Suspense fallback={null}>
+              <GuideMiniCardSlot />
+            </Suspense>
+          </SessionGate>
           <PanelBackdrop />
-          {/* 시작 가이드에서 넘어온 화면(?guide=)에만 뜨는 미니 카드 — 주소를 읽으므로 Suspense 로 감싼다 */}
-          <Suspense fallback={null}>
-            <GuideMiniCardSlot />
-          </Suspense>
         </div>
       </div>
       <SessionExpiredDialog />
