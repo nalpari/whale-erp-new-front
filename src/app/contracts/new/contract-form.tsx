@@ -77,8 +77,8 @@ const HELP = "text-[12px] leading-[1.5] text-erp-brand";
 
 /** 고용 형태 · 계약 방식 카드 아래 한 줄 설명 — 시작 가이드 근로계약서 작성 안내와 같은 말(2026-11-16 사용자 지정) */
 const EMPLOYMENT_DESC = { FULL_TIME: "월급/연봉 기준으로 급여 계산", PART_TIME: "근무시간에 따라 시급으로 급여 계산" } as const;
-// 계좌는 관리자가 입력하지 않는다 — 직원이 앱에서 서명할 때 신고 정보(은행 · 급여 계좌)로 넣는다(api StaffTaxProfile, 2026-11-16 사용자 지정). 현금은 설명 없음
-const PAY_METHOD_DESC: Partial<Record<"ACCOUNT" | "CASH", string>> = { ACCOUNT: "직원이 앱에서 계좌 입력" };
+// 계좌는 관리자가 입력하지 않는다 — 직원이 앱에서 서명할 때 신고 정보(은행 · 급여 계좌)로 넣는다(api StaffTaxProfile, 2026-11-16 사용자 지정)
+const PAY_METHOD_DESC = { ACCOUNT: "직원이 앱에서 계좌 입력", CASH: "매장에서 직접 현금 지급" } as const;
 const PROBATION_DESC = { NONE: "수습기간 없이 계약한 시급 적용", APPLY: "최대 3개월 · 최저시급의 90% 이상 적용" } as const;
 const METHOD_DESC = { ELECTRONIC: "직원전용 앱으로 발송 · 직원이 직접 서명", PAPER: "서명된 계약서 첨부 · 별도 발송 없음" } as const;
 
