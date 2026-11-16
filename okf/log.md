@@ -1,7 +1,7 @@
 # Bundle history
 
 ## 2026-11-16
-* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 상세 「근로계약서 작성」의 `?entry=` 가 [목록] 주소 · 보던 주를 함께 싣고, 받는 쪽은 `staffEntryHrefOf` 가 직원 화면 규칙으로 다시 만든다(WHALEERP-683 리뷰). 판정은 서버 전용 `contracts/new/cancel-href.ts` 로 옮겨 근로계약 클라이언트 번들에 직원 상세 모듈이 딸려 가지 않게 했다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — WHALEERP-683 리뷰 반영: 상세 「근로계약서 작성」의 `?entry=` 가 [목록] 주소 · 보던 주를 함께 싣는다. 받는 쪽 `staffEntryHrefOf` 가 직원 화면 규칙으로 다시 만들고, 예전 형식 상세 주소(목록 조건을 상세 주소에 붙인 것)도 [목록] 주소로 바꿔 남긴다. 판정은 서버 전용 `contracts/new/cancel-href.ts` 로 옮겨 근로계약 클라이언트 번들에 직원 상세 모듈이 딸려 가지 않게 했다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 「직원 초대」 · 상세 「근로계약서 작성」이 들어온 주소를 `?entry=` 로 실어, 근로계약서 작성 [취소]가 그 화면으로 돌아간다(WHALEERP-683). 재계약 [취소]는 원래 계약 상세로 간다. 저장 · 임시저장 뒤 이동은 그대로다.
 
 ## 2026-11-13
