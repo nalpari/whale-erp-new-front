@@ -13,10 +13,10 @@ import {
   type FacilityManagerOption,
   type UpdateFacilityInput,
 } from "@/lib/facilities";
-import { DOCUMENT_KINDS } from "./facility-form-model";
+import { isDocumentKind } from "./facility-form-model";
 
 // 시설물 · 장비 등록 · 수정 · 삭제 · 문서 빼기 · 관리 담당자 선택지. 문서 올리기는 파일이 서버 액션 한도(6MB)를 넘어 라우트 핸들러(documents/route.ts)다.
-// 메뉴 권한 · 관리 점포 범위 · 폐점 점포 조회만은 api 가 동작마다 본다. server action 은 공개 엔드포인트라 id 범위 · 문서 종류만 다시 본다.
+// 메뉴 권한 · 관리 점포 범위 · 폐점 점포 조회만은 api 가 동작마다 본다. server action 은 공개 엔드포인트라 id 범위 · 문서 종류 값 모양만 다시 본다(모르는 종류는 api 가 404).
 // 탭 BP(X-Bp-Code-Id)는 화면이 탭 BP 주소(/bp/{id}/facilities)에서 부르므로 proxy 가 싣는다 — 플랫폼 계정은 없으면 api 가 400.
 
 const FEATURE = { feature: "시설물·장비" };
@@ -67,7 +67,7 @@ export async function deleteFacilityAction(id: number): Promise<ActionResult> {
 
 /** 문서 빼기(수정 화면의 「빼기」) — 없어도 성공이다 */
 export async function deleteFacilityDocumentAction(id: number, kind: FacilityDocumentKind): Promise<ActionResult> {
-  if (!validId(id) || !DOCUMENT_KINDS.includes(kind)) return NOT_FOUND;
+  if (!validId(id) || !isDocumentKind(kind)) return NOT_FOUND;
   try {
     await deleteFacilityDocument(id, kind);
     refresh();

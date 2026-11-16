@@ -9011,13 +9011,19 @@ export interface components {
             name: string | null;
         };
         /** @enum {string} */
-        FacilityDocumentKind: "USER_MANUAL" | "PRECAUTION" | "WARRANTY";
-        /** @enum {string} */
         AttachmentFileType: "JPG" | "PNG" | "PDF";
         FacilityDocumentDto: {
-            documentKind: components["schemas"]["FacilityDocumentKind"];
             fileType: components["schemas"]["AttachmentFileType"];
             facilityDocumentId: number;
+            /**
+             * @description 문서 종류 — 플랫폼고정 공통코드 FACILITY_DOCUMENT 의 상세 코드(경로 `/documents/:kind` 의 kind).
+             * @example USER_MANUAL
+             */
+            documentKind: string;
+            /** @description 문서 종류 한글 — 공통코드 이름. 미사용 · 지운 종류도 이름이 남고, 공통코드에 없으면 코드 그대로 */
+            documentKindLabel: string;
+            /** @description 문서 종류가 지금 사용 중인가 — false 면 이 문서는 보이고 뺄 수 있지만 그 종류로 새로 올리거나 바꾸지 못한다(400) */
+            isDocumentKindActive: boolean;
             fileName: string;
             sizeBytes: number;
             /** @description 내려받기 주소 — 5분 동안 쓸 수 있다. 저장소가 없거나 서명에 실패하면 null */
@@ -20857,8 +20863,8 @@ export interface operations {
             };
             path: {
                 id: string;
-                /** @description 문서 종류 — 사용 매뉴얼 · 주의사항 · 제품 보증서. 모르는 값이면 404 */
-                kind: components["schemas"]["FacilityDocumentKind"];
+                /** @description 문서 종류 — 플랫폼고정 공통코드 FACILITY_DOCUMENT 의 상세 코드(사용 매뉴얼 USER_MANUAL · 주의사항 PRECAUTION · 제품 보증서 WARRANTY 등). 올리기는 공통코드에 없으면 404 · 사용 중지한 종류면 400, 빼기는 공통코드에 없고 그 시설물에 그 종류의 문서도 없을 때만 404 */
+                kind: string;
             };
             cookie?: never;
         };
@@ -20879,7 +20885,7 @@ export interface operations {
                     "application/json": components["schemas"]["FacilityDocumentDto"];
                 };
             };
-            /** @description 파일 없음 · JPG · PNG · PDF 가 아님 · 10MB 초과 · 파일 2개 이상 · 썸네일을 만들 수 없는 그림(깨짐 · 화소 초과) · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
+            /** @description 파일 없음 · JPG · PNG · PDF 가 아님 · 10MB 초과 · 파일 2개 이상 · 썸네일을 만들 수 없는 그림(깨짐 · 화소 초과) · 사용 중지 · 지운 문서 종류(또는 그룹)(「사용 중지된 문서 종류(…)라 새로 올리거나 바꿀 수 없습니다. 이미 올린 문서는 뺄 수 있습니다.」) · 플랫폼 계정이 BP 를 고르지 않음(X-Bp-Code-Id 누락) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -20893,7 +20899,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 없거나 지운 시설물·장비 · 볼 수 없는 점포의 것 · 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) · 문서 종류 */
+            /** @description 없거나 지운 시설물·장비 · 볼 수 없는 점포의 것 · 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) · 공통코드에 없는 문서 종류 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -20925,8 +20931,8 @@ export interface operations {
             };
             path: {
                 id: string;
-                /** @description 문서 종류 — 사용 매뉴얼 · 주의사항 · 제품 보증서. 모르는 값이면 404 */
-                kind: components["schemas"]["FacilityDocumentKind"];
+                /** @description 문서 종류 — 플랫폼고정 공통코드 FACILITY_DOCUMENT 의 상세 코드(사용 매뉴얼 USER_MANUAL · 주의사항 PRECAUTION · 제품 보증서 WARRANTY 등). 올리기는 공통코드에 없으면 404 · 사용 중지한 종류면 400, 빼기는 공통코드에 없고 그 시설물에 그 종류의 문서도 없을 때만 404 */
+                kind: string;
             };
             cookie?: never;
         };
@@ -20952,7 +20958,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 없거나 지운 시설물·장비 · 볼 수 없는 점포의 것 · 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) · 문서 종류 */
+            /** @description 없거나 지운 시설물·장비 · 볼 수 없는 점포의 것 · 플랫폼 계정이 보낸 X-Bp-Code-Id 가 존재하지 않는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) · 공통코드에 없고 그 시설물에 그 종류의 문서도 없는 문서 종류(사용 중지한 종류는 뺄 수 있다) */
             404: {
                 headers: {
                     [name: string]: unknown;

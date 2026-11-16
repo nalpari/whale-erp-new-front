@@ -6,6 +6,10 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 홈 점포별 현황 표의 빈 칸(0 · 권한 없음)을 긴 줄표 대신 짧은 「-」로.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 등록 · 수정 저장 뒤 「점포 목록이 변경되었습니다.」 토스트를 띄우지 않는다(`refreshStores({ quiet: true })`).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드 미니 카드를 점포 · 권한 그룹 · 관리자 · 직원이 0건인 그 단계 화면에 들어오면 자동으로 띄운다(웨일ERP 탭, 닫으면 그 브라우저 · 계정 · BP 에서 다시 안 뜸).
+* **Update**: [점포 관리](/stores.md) — 점포 등록 [취소]: 입력한 것이 있으면 이탈 확인창(「작성을 취소하시겠습니까?」 · 「취소하면 입력한 내용은 저장되지 않습니다.」)을 띄운다. 저장 중엔 [취소]를 막고, 등록 결과를 모르면 묻지 않는다. 수정 화면은 그대로(WHALEERP-696, front wurmple).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일: 수정 패널 동시 수정 409 는 실패 띠 없이 토스트 · 다시 채우기만(`saveFailureAction`, WHALEERP-714), 수정의 겹침 확인 문구를 「저장하면 이 휴일이 겹치는 날짜에도 적용됩니다.」로(WHALEERP-715, front bidoof).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로자 정보 수정(`/contracts/{id}/worker`)은 상세에 [재발송]이 보이는 계약에서 바뀐 것이 없으면 저장(= 다시 보냄)하지 않고 [재발송]으로 안내하며, 저장이 끝나면 「근로자 정보를 저장했습니다.」 토스트를 띄운 뒤 상세로 간다(WHALEERP-681 — 전에는 같은 값으로도 다시 보내 서명 기한이 새로 잡히고 말없이 상세로 갔다).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성 · 이어 쓰기 · 수정(직원 수정 요청) [취소]가 확인창(「취소하면 입력한 내용은 저장되지 않습니다.」)을 띄운 뒤 전과 같은 곳(들어온 화면 `cancelHref`, 없으면 돌아갈 목록)으로 간다(WHALEERP-674).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 재발송 서버 액션(`sendContract`)이 성공하면 `next/cache` 의 `refresh()` 로 응답 안에서 화면을 다시 받는다. 근로계약 상세 · 직원 목록 재발송 버튼은 성공 뒤 `router.refresh` 를 따로 부르지 않고, 상세는 `?send=` · `?document=` 가 있을 때만 쿼리를 지우는 `router.replace` 를 한다(WHALEERP-671 — 재발송 횟수 · 마지막 일시가 바로 바뀌지 않던 것).
 * **Update**: [출퇴근 현황 화면](/screens/attendance-records.md) — 필터 「재직 상태」의 재직 · 퇴직 이름을 화면 상수(`EMPLOYMENT_LABELS`) 대신 api 값 이름 `getEnum("EmploymentStatus")` 으로 그린다 — 「전체」만 화면 문구(WHALEERP-721, naming.md 「front 에 상수 대응표를 두지 않는다」).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 관리자 화면 최소폭을 플랫폼 탭만 1260 으로(웨일ERP 탭은 1720 유지, `data-erp-wide`), 넘치는 플랫폼 목록은 DataTable `scroll` 로 표 상자 안에서 밀고 빈 scroll 표도 상자 안 가로 스크롤(front #289).

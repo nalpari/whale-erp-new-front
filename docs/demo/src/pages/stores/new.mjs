@@ -69,6 +69,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
     address(A, "사업자주소", {}, { labelExtra: ui.checkbox(A, "점포 주소와 같음", false) }),
   );
 
+  // [취소]는 입력한 것이 있으면 확인창 「작성을 취소하시겠습니까?」 · 「취소하면 입력한 내용은 저장되지 않습니다.」를 띄운다(2026-11-16 WHALEERP-696, 근로계약서 작성과 같다).
   // 취소 · 저장은 제목 줄 오른쪽에 둔다 — 근로계약서 작성 화면(staff/contracts-new.mjs)과 같은 자리(2026-10-19 점검 — 실사용자 확인).
   // 등록할 BP 가 탈퇴 · 미사용이면 들어오자마자 제목 줄 위에 알리고 저장을 막는다 — 미사용 · 탈퇴를 가르지 않는 한 문장(앱 store-form-view.tsx BP_BLOCKED_TEXT.create 와 같다, 2026-10-28)
   const blocked = bpStatus ? "BP가 탈퇴 또는 미사용 상태로, 점포를 등록할 수 없습니다." : "";
