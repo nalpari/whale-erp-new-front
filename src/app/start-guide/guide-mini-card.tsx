@@ -237,7 +237,9 @@ export function GuideMiniCardSlot() {
 
   const arrived = parseGuide(next.guide);
   // 점포를 등록하면(점포 0건이 풀리면) 자동 STEP 1 카드는 내린다
-  const autoShown = !arrived && auto && autoFollows(auto.guide, screen) && !(auto.guide.step === "1" && !noStores) ? auto.guide : null;
+  // 도착 기억이 남아 있는 동안은 이미 띄운 자동 카드도 숨긴다(autoAllowed) — 자동 카드 위에 같은 단계 도착 카드가 덮인 뒤 그 카드를 닫으면
+  // 자동 카드가 다시 나타나 [×]를 두 번 눌러야 했다(ip-code-review-claude, PR #297)
+  const autoShown = !arrived && autoAllowed(next) && auto && autoFollows(auto.guide, screen) && !(auto.guide.step === "1" && !noStores) ? auto.guide : null;
   const parsed = arrived ?? autoShown;
   if (!parsed || accountPanelOpen) return null;
   const parts = partsOnScreen(parsed, screen);
