@@ -3,9 +3,23 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { GuideIcon, usePanelOpen } from "@/components/common";
+import { GuideIcon, useAction, usePanelOpen } from "@/components/common";
+import { useAccount, useCurrentBp, useService, useStores } from "@/components/site/session-gate";
 import { stripBp } from "@/lib/bp-path";
-import { GUIDE_STEPS, type GuideArrival, nextArrival, parseGuide, partsOnScreen } from "@/lib/start-guide";
+import {
+  GUIDE_STEPS,
+  type GuideArrival,
+  type GuideRef,
+  autoAllowed,
+  autoDismissKey,
+  autoGuideOf,
+  cardPartsOf,
+  initialTrackOf,
+  nextArrival,
+  parseGuide,
+} from "@/lib/start-guide";
+import { isClosedStore } from "@/lib/store-scope";
+import { getGuideCountAction } from "./guide-count-actions";
 
 // 시작 가이드 미니 카드(2026-11-11 사용자 지정) — 시작 가이드의 [OOO로 가기]로 넘어온 실제 화면 오른쪽 아래에 그 단계의 순서 · 안내를 작게 띄운다.
 // 넘어와서 「무엇을 입력하랬지, 무엇이 중요했지」를 잊지 않게 하려는 것이다. AdminFrame 에 한 번만 두고, 지금 화면 주소(탭 BP 접두를 뗀 것)와
@@ -15,6 +29,10 @@ import { GUIDE_STEPS, type GuideArrival, nextArrival, parseGuide, partsOnScreen 
 // 바탕을 덮지 않아 펴 둔 채로 입력할 수 있다. 오른쪽에서 패널(464px)이 열리면 그 왼쪽으로 비켜 선다. 머리 줄을 끌어 옮길 수 있고, 접은 알약도 끌어 옮긴다(2026-11-12).
 // 패널 바탕창(z-[5]) · 패널(z-10)보다 위(z-40)라 바탕창이 떠도 카드는 읽고 접을 수 있다 — 패널을 연 채 가이드를 보게 일부러 그렇다.
 // 모양은 떠 있는 것이라 팝업 그림자 하나(DESIGN.md Elevation), 꼬리표는 시작 가이드와 같은 포인트 파랑이다.
+// 자동 띄우기(2026-11-16 사용자 지정): ?guide= 로 넘어오지 않았어도 점포 · 권한 그룹 · 관리자 · 직원이 0건인 그 단계 화면에 들어오면 띄운다
+// (화면 → 단계 · 셀 것은 lib autoGuideOf). 웨일ERP 탭만, 갈래는 점포 없음 띠와 같은 initialTrackOf. 점포는 세션 값(폐점만 있어도 0건 — 띠와 같다),
+// 나머지는 건수 액션으로 묻는다. [×]로 닫으면 그 브라우저에서 계정 · BP · 단계 · 화면마다 다시 띄우지 않는다(localStorage, autoDismissKey).
+// ?guide= 도착 카드가 먼저다 — 이 화면에 도착한 기억이 있으면(닫았어도) 자동 카드는 띄우지 않는다(autoAllowed).
 
 /** 문구 안 <u>…</u> 만 밑줄 — 놓치면 안 되는 말만 짚는다(시작 가이드 화면과 같이 쓴다, 2026-11-11 사용자 지정). 다른 태그는 글자 그대로다 */
 export function underlined(text: string) {
@@ -24,6 +42,22 @@ export function underlined(text: string) {
 /** 카드 폭 · 머리 줄 높이 — 창을 줄였을 때 머리 줄이 화면 안에 남게 붙잡는 데 쓴다 */
 const CARD_WIDTH = 420;
 const HEAD_HEIGHT = 46;
+
+/** 자동 카드를 닫은 기록 — 막힌 브라우저(사생활 보호 창 등)에서는 읽고 쓰지 못해도 화면이 깨지지 않게 기록 없음으로 본다 */
+function isDismissed(key: string) {
+  try {
+    return window.localStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+function markDismissed(key: string) {
+  try {
+    window.localStorage.setItem(key, "1");
+  } catch {
+    // 남기지 못하면 다음에 들어올 때 다시 뜬다 — 그 밖의 해는 없다
+  }
+}
 
 export function GuideMiniCardSlot() {
   const pathname = usePathname();
@@ -39,6 +73,13 @@ export function GuideMiniCardSlot() {
   const pillRef = useRef<HTMLButtonElement>(null);
   const collapseRef = useRef<HTMLButtonElement>(null);
   const screen = stripBp(pathname);
+  const account = useAccount();
+  const bp = useCurrentBp().bpCodeId;
+  const service = useService();
+  const noStores = useStores().every(isClosedStore);
+  const countOf = useAction(getGuideCountAction, { overlay: false });
+  // 자동으로 띄운 카드 — key(autoDismissKey)가 지금 화면의 후보와 같을 때만 보인다(화면을 옮기면 저절로 안 보인다)
+  const [auto, setAuto] = useState<{ key: string; guide: GuideRef } | null>(null);
 
   // 주소 · 화면이 바뀔 때마다 렌더 중 이전 값과 견줘 맞춘다(effect 대신, React 권장). 새로 넘어오면 펼치고 옮긴 자리도 처음(오른쪽 아래)으로
   const next = nextArrival(arrival, asked, screen);
@@ -49,6 +90,37 @@ export function GuideMiniCardSlot() {
     }
     setArrival(next);
   }
+
+  // 자동 띄우기 후보 — 웨일ERP 탭 · 이 화면에 ?guide= 도착 기억 없음 · 표에 있는 화면
+  const candidate = service === "WHALE_ERP" && autoAllowed(next, screen) ? autoGuideOf(initialTrackOf(account.roleTypeCode), screen) : null;
+  const candidateKey = candidate ? autoDismissKey(account.adminAccountId, bp, candidate.guide, screen) : null;
+  const candidateKind = candidate?.count;
+  const candidateGuide = candidate?.guide;
+  useEffect(() => {
+    if (!candidateKey || !candidateKind || !candidateGuide || isDismissed(candidateKey)) return;
+    let alive = true;
+    const show = () => {
+      if (!alive) return;
+      setAuto({ key: candidateKey, guide: candidateGuide });
+      setOpen(true);
+      setPos(null);
+    };
+    // 건수 응답이 오기 전에 화면을 옮기면(alive=false) 띄우지 않는다. 실패 · 만료는 띄우지 않는다(만료 팝업은 useAction 이 띄운다)
+    const check = async () => {
+      if (candidateKind === "stores") {
+        if (noStores) show();
+        return;
+      }
+      const result = await countOf(candidateKind);
+      if (result.ok && result.total === 0) show();
+    };
+    void check();
+    return () => {
+      alive = false;
+    };
+    // countOf 는 렌더마다 새 함수라 넣지 않는다(useAction 주석) — 후보 · 점포 0건이 바뀔 때만 다시 묻는다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candidateKey, noStores]);
 
   // 옮긴 뒤 창을 줄이면 카드가 화면 밖에 갇혀 [접기] · [×]를 누를 수 없었다 — 창 크기가 바뀌면 머리 줄이 보이게 다시 붙잡는다(코드 리뷰).
   // 접은 알약은 카드보다 좁아 카드 폭(420)으로 붙잡으면 오른쪽 끝 알약이 왼쪽으로 끌려 나와, 지금 보이는 쪽(카드 · 알약)의 실제 크기로 붙잡는다(PR 리뷰)
@@ -110,9 +182,12 @@ export function GuideMiniCardSlot() {
     e.preventDefault();
   };
 
-  const parsed = parseGuide(next.guide);
+  const arrived = parseGuide(next.guide);
+  // 점포를 등록하면(점포 0건이 풀리면) 자동 STEP 1 카드는 내린다
+  const autoShown = !arrived && auto && auto.key === candidateKey && !(candidateKind === "stores" && !noStores) ? auto.guide : null;
+  const parsed = arrived ?? autoShown;
   if (!parsed) return null;
-  const parts = partsOnScreen(parsed, screen);
+  const parts = cardPartsOf(parsed, screen);
   if (parts.length === 0) return null;
   const stepTitle = GUIDE_STEPS[parsed.track].find((s) => s.label === `STEP ${parsed.step}`)?.title ?? "";
   const back = `/start-guide?track=${parsed.track}&step=${parsed.step}`;
@@ -164,7 +239,11 @@ export function GuideMiniCardSlot() {
         <button ref={collapseRef} type="button" aria-expanded onClick={() => toggle(false)} className="text-[13px] text-erp-label hover:text-erp-ink">
           접기
         </button>
-        <button type="button" aria-label="시작 가이드 닫기" onClick={() => setArrival({ ...next, guide: null })} className="text-[16px] leading-none text-erp-label hover:text-erp-ink">
+        <button type="button" aria-label="시작 가이드 닫기" onClick={() => {
+            if (arrived) return setArrival({ ...next, guide: null });
+            if (auto) markDismissed(auto.key);
+            setAuto(null);
+          }} className="text-[16px] leading-none text-erp-label hover:text-erp-ink">
           ×
         </button>
       </header>
