@@ -73,6 +73,42 @@ const HOURS_FIELDS: [HourField, string][] = [
   ["baseNightHours", "기본시간 중 야간근무"],
 ];
 const HELP = "text-[12px] leading-[1.5] text-erp-muted";
+
+/** 고용 형태 · 계약 방식 카드 아래 한 줄 설명 — 시작 가이드 근로계약서 작성 안내와 같은 말(2026-11-16 사용자 지정) */
+const EMPLOYMENT_DESC = { FULL_TIME: "매일 같은 시간 근무 · 월급·연봉으로 계산", PART_TIME: "요일마다 근무시간 · 시급으로 계산" } as const;
+const METHOD_DESC = { ELECTRONIC: "직원 앱으로 보내 직원이 서명", PAPER: "서명한 계약서 파일을 올려 바로 등록" } as const;
+
+/**
+ * 큰 선택 카드(라디오) — TO-DO 등록(todo-form ChoiceCards) · 점포 등록 점포유형 카드와 같은 모양. 고르면 선이 브랜드색, 바탕이 두 번째 바탕색으로 바뀐다.
+ * 선 두께는 바뀌지 않는다. 고를 수 없는 카드(수정 요청의 종이 계약)는 흐리게 둔다
+ */
+function ChoiceCards<T extends string>({
+  name,
+  items,
+  value,
+  onChange,
+}: {
+  name: string;
+  items: { value: T; title: string; desc?: string; disabled?: boolean }[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    // 이름은 감싸는 Group(role=group)이 단다 — 여기에도 달면 같은 이름이 두 번 읽힌다
+    <div role="radiogroup" className="grid grid-cols-2 gap-[12px]">
+      {items.map((item) => (
+        <label
+          key={item.value}
+          className="flex cursor-pointer flex-col items-center gap-[2px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[10px] text-center transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-40 has-[:disabled]:hover:border-erp-panel-line has-[:focus-visible]:border-erp-brand"
+        >
+          <input type="radio" name={name} className="sr-only" checked={value === item.value} disabled={item.disabled} onChange={() => onChange(item.value)} />
+          <b className="text-[15px] font-semibold text-erp-ink">{item.title}</b>
+          {item.desc && <span className="text-[13px] text-erp-label">{item.desc}</span>}
+        </label>
+      ))}
+    </div>
+  );
+}
 const LABEL = "truncate text-[14px] font-medium text-erp-label";
 
 const won = (n: number | null) => (n === null ? "-" : n.toLocaleString("ko-KR"));
@@ -642,27 +678,26 @@ export function ContractForm({
         </FormGroup>
 
         <FormGroup title="계약 방식">
-          <Group label="고용 형태">
-            <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-              {(["FULL_TIME", "PART_TIME"] as const).map((v) => (
-                <Radio key={v} name="employmentType" label={labelOf(labels.employmentType, v)} checked={form.employmentType === v} onChange={() => setForm((f) => withEmploymentType(f, v))} />
-              ))}
-            </div>
-          </Group>
-          <Group label="계약 방식" hint={paper ? "당사자가 모두 서명한 근로계약서를 올려 등록하면 발송 · 전자서명 없이 바로 서명 완료로 저장된다." : undefined}>
-            <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-              {(["ELECTRONIC", "PAPER"] as const).map((v) => (
-                <Radio
-                  key={v}
-                  name="contractMethod"
-                  label={labelOf(labels.contractMethod, v)}
-                  checked={form.contractMethod === v}
-                  disabled={correction && v === "PAPER"}
-                  onChange={() => set("contractMethod", v)}
-                />
-              ))}
-            </div>
-          </Group>
+          {/* 고용 형태 · 계약 방식은 TO-DO 등록의 큰 선택 카드(ChoiceCards)와 같은 모양 — 작은 라디오는 계약 전체를 가르는 선택치고 눈에 덜 띄었다.
+              위아래로 두고(계약 방식이 아래) 폭은 왼쪽 반 칸 — 한 줄을 다 쓰면 카드가 너무 넓었다(2026-11-16 사용자 지정) */}
+          <div className="grid grid-cols-2 gap-[18px] [&>*]:col-start-1">
+            <Group label="고용 형태">
+              <ChoiceCards
+                name="employmentType"
+                value={form.employmentType}
+                onChange={(v) => setForm((f) => withEmploymentType(f, v))}
+                items={(["FULL_TIME", "PART_TIME"] as const).map((v) => ({ value: v, title: labelOf(labels.employmentType, v), desc: EMPLOYMENT_DESC[v] }))}
+              />
+            </Group>
+            <Group label="계약 방식" hint={paper ? "당사자가 모두 서명한 근로계약서를 올려 등록하면 발송 · 전자서명 없이 바로 서명 완료로 저장된다." : undefined}>
+              <ChoiceCards
+                name="contractMethod"
+                value={form.contractMethod}
+                onChange={(v) => set("contractMethod", v)}
+                items={(["ELECTRONIC", "PAPER"] as const).map((v) => ({ value: v, title: labelOf(labels.contractMethod, v), desc: METHOD_DESC[v], disabled: correction && v === "PAPER" }))}
+              />
+            </Group>
+          </div>
           {/* 종이 계약 날인본(CTR-23, 데모 contracts-new 의 파일 칸). 근로계약서는 필수, 임금계약서는 따로 작성한 경우만 */}
           {paper && (
             <FormRow>
