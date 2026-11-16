@@ -76,7 +76,7 @@ const HELP = "text-[12px] leading-[1.5] text-erp-muted";
 
 /** 고용 형태 · 계약 방식 카드 아래 한 줄 설명 — 시작 가이드 근로계약서 작성 안내와 같은 말(2026-11-16 사용자 지정) */
 const EMPLOYMENT_DESC = { FULL_TIME: "월급/연봉 기준으로 급여 계산", PART_TIME: "근무시간에 따라 시급으로 급여 계산" } as const;
-const METHOD_DESC = { ELECTRONIC: "직원에게 발송 · 직원이 직접 서명", PAPER: "서명된 계약서 첨부 · 별도 발송 없음" } as const;
+const METHOD_DESC = { ELECTRONIC: "직원전용 앱으로 발송 · 직원이 직접 서명", PAPER: "서명된 계약서 첨부 · 별도 발송 없음" } as const;
 
 /**
  * 큰 선택 카드(라디오) — TO-DO 등록(todo-form ChoiceCards) · 점포 등록 점포유형 카드와 같은 모양. 고르면 선이 브랜드색, 바탕이 두 번째 바탕색으로 바뀐다.
