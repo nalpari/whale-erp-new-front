@@ -85,7 +85,7 @@ const METHOD_DESC = { ELECTRONIC: "직원전용 앱으로 발송 · 직원이 �
 /** 큰 체크 카드 — ChoiceCards 와 같은 모양(키보드 포커스는 바깥 2px 선 — 고른 카드는 테두리가 이미 회청이라 테두리로는 보이지 않았다, 리뷰 반영)에 제목 앞 16px 체크 표시(테두리는 처음부터 회청 — 입력칸 선 색은 흐려 고를 수 있는지 안 보였다, 고르면 회청 바탕 · 흰 체크). 여러 개를 함께 고를 때(4대보험) */
 function CheckCard({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
   return (
-    <label className="group flex cursor-pointer items-center justify-center gap-[8px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[12px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-erp-brand">
+    <label className="group relative flex cursor-pointer items-center justify-center gap-[8px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[12px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-erp-brand">
       <input type="checkbox" className="sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
       <span aria-hidden className="flex size-[16px] items-center justify-center rounded-[2px] border border-erp-brand bg-white text-white group-has-[:checked]:border-erp-brand group-has-[:checked]:bg-erp-brand">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -98,6 +98,8 @@ function CheckCard({ label, checked, onChange }: { label: string; checked: boole
 }
 
 /**
+ * 카드는 relative — 숨긴 라디오(sr-only, absolute)가 카드 안에 머물러야 한다. 아니면 카드를 눌러 포커스가 갈 때 브라우저가 멀리 놓인 라디오를 보이려고
+ * 스크롤이 막힌 바깥 틀(h-[100dvh] overflow-y-hidden)까지 밀어 올려 화면 아래가 하얗게 비었다(2026-11-16 사용자 발견).
  * 큰 선택 카드(라디오) — TO-DO 등록(todo-form ChoiceCards) · 점포 등록 점포유형 카드와 같은 모양. TO-DO 쪽과 다른 점: 설명 글자는 이 화면 안내와 같은 회청(erp-brand),
  * 고를 수 없는 카드(disabled), 아이콘 없음 — 두 벌을 공통 컴포넌트로 올리는 것은 1팀 · 3팀과 맞춘 뒤에 한다. 고르면 선이 브랜드색, 바탕이 두 번째 바탕색으로 바뀐다.
  * 선 두께는 바뀌지 않는다. 고를 수 없는 카드(수정 요청의 종이 계약)는 흐리게 둔다
@@ -119,7 +121,7 @@ function ChoiceCards<T extends string>({
       {items.map((item) => (
         <label
           key={item.value}
-          className="flex cursor-pointer flex-col items-center gap-[2px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[10px] text-center transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-40 has-[:disabled]:hover:border-erp-panel-line has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-erp-brand"
+          className="relative flex cursor-pointer flex-col items-center gap-[2px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[10px] text-center transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-40 has-[:disabled]:hover:border-erp-panel-line has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-erp-brand"
         >
           <input type="radio" name={name} className="sr-only" checked={value === item.value} disabled={item.disabled} onChange={() => onChange(item.value)} />
           <b className="text-[15px] font-semibold text-erp-ink">{item.title}</b>
