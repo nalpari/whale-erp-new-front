@@ -125,6 +125,9 @@ export function FacilityFormView(props: Props) {
   const [errors, setErrors] = useState<Partial<Record<FacilityFormField, string>>>({});
   const [failure, setFailure] = useState<{ title: string; detail?: string } | null>(null);
   const [saving, startSave] = useTransition();
+  // 저장이 성공해 화면을 옮기는 동안 잠근다 — await 뒤의 router.push 는 transition 에 묶이지 않아 saving 이 먼저 풀리고,
+  // 그 사이 [저장]을 다시 누르면 등록이 한 번 더 나가 같은 시설물이 두 건 생길 수 있었다(코드 리뷰)
+  const [leaving, setLeaving] = useState(false);
   // 손대지 않은 종류는 비어 있고 docOf 가 올려 둔 문서로 채워 읽는다 — 종류 목록이 공통코드라 처음에 다 만들어 두지 않는다
   const [docs, setDocs] = useState<Docs>({});
   const docOf = (kind: FacilityDocumentKind): DocState =>
@@ -204,6 +207,7 @@ export function FacilityFormView(props: Props) {
   );
 
   const handleSave = () => {
+    if (leaving) return;
     setFailure(null);
     const found = problems(form, mode);
     if (Object.keys(found).length) {
@@ -276,6 +280,7 @@ export function FacilityFormView(props: Props) {
   };
 
   const finish = (facilityId: number, failedDocs: string[]) => {
+    setLeaving(true);
     // 문서가 일부 실패하면 저장은 끝났으므로 수정 화면으로 보낸다 — 토스트를 놓쳐도 빈 문서 칸에서 바로 다시 올릴 수 있다(리뷰 반영)
     if (failedDocs.length) {
       toast(`저장했지만 문서를 반영하지 못했습니다: ${failedDocs.join(", ")}. 문서 칸을 확인해 주세요.`);
@@ -579,7 +584,7 @@ export function FacilityFormView(props: Props) {
         <Button variant="off" href={at(facility ? withBack(`/facilities/${facility.facilityId}`, backHref) : backHref)}>
           취소
         </Button>
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={handleSave} disabled={saving || leaving}>
           저장
         </Button>
       </div>
