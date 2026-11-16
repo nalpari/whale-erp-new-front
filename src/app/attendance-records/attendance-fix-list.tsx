@@ -1,17 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
+import { createContext, use, useCallback, useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { Button, Checkbox, ConfirmDialog, DataTable, DetailTable, Field, FieldMessage, FormGroup, GuideBand, Select, SlidePanel, TextField, Textarea, useAction, useToast, type Column } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { BackdropInert } from "./backdrop-inert";
 import type { AttendanceHistory, ProxyStaff } from "@/lib/attendance-records-api";
 import { correctAttendanceAction, getAttendanceHistoryAction, getProxyStaffAction, proxyAttendanceAction, reviewAttendanceAction, type EditResult } from "./actions";
-import { byLabel, editTail, fixPairIndex, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, overnightNote, proxyPoints, shortDay, type FixRow } from "./attendance-query";
+import { byLabel, editTail, fixPairIndex, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, overnightNote, proxyPoints, shortDay, type DayRow, type FixRow } from "./attendance-query";
 
-// 보정이 필요한 기록의 표와 동작(데모 staff-sections.mjs fixList · fixForm · proxyForm · histDialog, WHALEERP-220). 확인 필요 · 미등록 줄에는
-// 「보정」 · 「이상 없음」, 보정 · 대신 등록한 줄에는 「이력」. 보정 · 대신 등록은 오른쪽 패널, 「이상 없음」은 확인창, 이력은 창이다.
+// 보정이 필요한 기록의 표와 동작(데모 staff-sections.mjs fixList · fixForm · proxyForm · histDialog, WHALEERP-220). 기록이 있는 줄에는
+// 「보정」(정상 · 지각 · 보정됨 · 대신 등록한 기록도 다시 고친다 — 운영 정책 ATT-20 v283, WHALEERP-687), 확인 필요 사유가 남은 줄에는
+// 「이상 없음」, 보정 · 대신 등록한 줄에는 「이력」. 일별 출퇴근 표의 줄에도 같은 「보정」을 둔다(DayFixButton).
+// 보정 · 대신 등록은 오른쪽 패널, 「이상 없음」은 확인창, 이력은 창이다.
 // 3개월이 지난 기록에는 보정 진입점을 두지 않는다(220). 수정 권한이 없으면 보정 · 이상 없음을, 등록 권한이 없으면 대신 등록을 두지 않는다.
 // 급여명세서가 확정된 기간이면 보정 패널 · 이상 없음 확인창 · 대신 등록 패널(고른 직원 · 날짜)에 경고를 보이고, 저장 결과도 같은 경고를
 // 토스트로 알린다(218 「급여에 영향이 갈 수 있다」).
@@ -43,7 +45,6 @@ const Times = ({ times }: { times: string[] }) =>
   );
 const punchesOf = (r: FixRow) => r.pairs.flatMap((p) => [p.checkIn, p.checkOut]);
 const hasReason = (r: FixRow) => punchesOf(r).some((p) => p?.reviewReason);
-const needsAction = (r: FixRow) => hasReason(r) || r.status === "MISSING_CHECK_OUT" || r.status === "MISSING_CHECK_IN";
 const wasEdited = (r: FixRow) => punchesOf(r).some((p) => p && (p.isCorrected || p.entryMethod === "PROXY"));
 /** 짝 하나를 가리키는 기록 ID — 출근, 없으면 퇴근 */
 const anchorOf = (pair: FixRow["pairs"][number]) => (pair.checkIn ?? pair.checkOut)!.attendanceRecordId;
@@ -82,7 +83,24 @@ function tagsOf(r: FixRow, reasonLabels: EnumValue[], statusLabels: EnumValue[])
   return tags;
 }
 
-type Fix = { row: FixRow; pairIndex: number };
+/** 보정 패널이 고칠 줄 — 일별 출퇴근 줄(DayRow)도 같은 패널을 쓴다(보정 이력 edits 는 보지 않는다) */
+type Fix = { row: DayRow; pairIndex: number };
+
+/** 보정 · 이상 없음 · 대신 등록 결과 알림 — 성공이면 토스트(확정된 급여 기간이면 경고를 덧붙여)와 새로 받기, 실패면 문장 토스트와 새로 받기 */
+function useEditDone() {
+  const router = useRouter();
+  const toast = useToast();
+  return (result: EditResult, ok: string) => {
+    if (result.ok) {
+      toast(result.isPayslipConfirmed ? `${ok} ${PAYSLIP_WARNING}` : ok);
+      router.refresh();
+      return true;
+    }
+    toast(result.message);
+    router.refresh();
+    return false;
+  };
+}
 
 export function FixList({
   rows,
@@ -99,7 +117,6 @@ export function FixList({
   /** 비었을 때 문구 — 급여명세서에서 와 기간 기록을 모두 보일 때는 다르게 */
   empty?: string;
 }) {
-  const router = useRouter();
   const toast = useToast();
   const permission = usePagePermission();
   const [busy, startTransition] = useTransition();
@@ -112,16 +129,7 @@ export function FixList({
   const trigger = useRef<HTMLElement | null>(null);
   const manyStores = new Set(rows.map((r) => r.storeId)).size > 1;
 
-  const done = (result: EditResult, ok: string) => {
-    if (result.ok) {
-      toast(result.isPayslipConfirmed ? `${ok} ${PAYSLIP_WARNING}` : ok);
-      router.refresh();
-      return true;
-    }
-    toast(result.message);
-    router.refresh();
-    return false;
-  };
+  const done = useEditDone();
   const openFix = (row: FixRow) => {
     trigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setFix({ row, pairIndex: fixPairIndex(row) });
@@ -165,7 +173,7 @@ export function FixList({
         const editable = r.date >= editableFrom && permission.update && r.pairs.length > 0;
         return (
           <span className="flex justify-center gap-[6px]">
-            {needsAction(r) && editable && (
+            {editable && (
               <Button variant="off" onClick={() => openFix(r)}>
                 보정
               </Button>
@@ -263,6 +271,54 @@ export function FixList({
         )}
       </ConfirmDialog>
     </>
+  );
+}
+
+const DayFixContext = createContext<((row: DayRow) => void) | null>(null);
+
+/**
+ * 일별 출퇴근 표의 「보정」이 여는 패널(WHALEERP-687 — 정상 · 지각 기록은 「보정이 필요한 기록」에 나오지 않아 그 줄에서 고친다). 패널은 바탕이
+ * 막히는(BackdropInert) 표 밖에 하나만 둔다 — 감싼 본문(children)만 막히고 패널은 쓸 수 있게.
+ */
+export function DayFixProvider({ children }: { children: ReactNode }) {
+  const done = useEditDone();
+  const [fix, setFix] = useState<Fix | null>(null);
+  const [round, setRound] = useState(0);
+  const trigger = useRef<HTMLElement | null>(null);
+  const open = useCallback((row: DayRow) => {
+    trigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setFix({ row, pairIndex: fixPairIndex(row) });
+    setRound((n) => n + 1);
+  }, []);
+  return (
+    <DayFixContext value={open}>
+      {children}
+      <SlidePanel id="attendance-day-fix" open={fix !== null} onClose={() => setFix(null)} label="기록 보정" trigger={trigger} closeOnBackdrop>
+        {fix && (
+          <FixForm
+            key={`${round}-${fix.pairIndex}`}
+            fix={fix}
+            onPick={(pairIndex) => setFix({ ...fix, pairIndex })}
+            onClose={() => setFix(null)}
+            onDone={(result) => {
+              if (done(result, "보정했습니다.")) setFix(null);
+            }}
+          />
+        )}
+      </SlidePanel>
+    </DayFixContext>
+  );
+}
+
+/** 일별 출퇴근 줄의 「보정」 — 기록이 있고 최근 3개월이며 수정 권한이 있을 때(보정이 필요한 기록과 같은 조건) */
+export function DayFixButton({ row, editableFrom }: { row: DayRow; editableFrom: string }) {
+  const open = use(DayFixContext);
+  const permission = usePagePermission();
+  if (!open || !permission.update || row.date < editableFrom || row.pairs.length === 0) return null;
+  return (
+    <Button variant="off" onClick={() => open(row)}>
+      보정
+    </Button>
   );
 }
 
