@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-16
+* **Update**: [점포 관리](/stores.md) — 점포 등록 [취소]: 입력한 것이 있으면 이탈 확인창(「작성을 취소하시겠습니까?」 · 「취소하면 입력한 내용은 저장되지 않습니다.」)을 띄운다. 저장 중엔 [취소]를 막고, 등록 결과를 모르면 묻지 않는다. 수정 화면은 그대로(WHALEERP-696, front wurmple).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일: 수정 패널 동시 수정 409 는 실패 띠 없이 토스트 · 다시 채우기만(`saveFailureAction`, WHALEERP-714), 수정의 겹침 확인 문구를 「저장하면 이 휴일이 겹치는 날짜에도 적용됩니다.」로(WHALEERP-715, front bidoof).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로자 정보 수정(`/contracts/{id}/worker`)은 상세에 [재발송]이 보이는 계약에서 바뀐 것이 없으면 저장(= 다시 보냄)하지 않고 [재발송]으로 안내하며, 저장이 끝나면 「근로자 정보를 저장했습니다.」 토스트를 띄운 뒤 상세로 간다(WHALEERP-681 — 전에는 같은 값으로도 다시 보내 서명 기한이 새로 잡히고 말없이 상세로 갔다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성 · 이어 쓰기 · 수정(직원 수정 요청) [취소]가 확인창(「취소하면 입력한 내용은 저장되지 않습니다.」)을 띄운 뒤 전과 같은 곳(들어온 화면 `cancelHref`, 없으면 돌아갈 목록)으로 간다(WHALEERP-674).

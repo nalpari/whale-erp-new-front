@@ -28,6 +28,7 @@ import {
   formOfStore,
   hasCoordinateInput,
   newFloorRow,
+  shouldConfirmStoreLeave,
   storeServerErrors,
   isBpBlockedMessage,
   BP_BLOCKED_TEXT,
@@ -171,6 +172,11 @@ export function StoreFormView(props: Props) {
   const [reopenSaved, setReopenSaved] = useState(false);
   const [image, setImage] = useState<ImageChoice>({ kind: "keep" });
   const [imageError, setImageError] = useState<string | null>(null);
+  // [취소] 이탈 확인창 — 등록 화면에서 무언가 입력했으면 저장하지 않고 나간다고 한 번 묻는다(WHALEERP-696, 근로계약서 작성과 같은 문구)
+  const [leaving, setLeaving] = useState(false);
+  // 저장에 성공해 상세로 옮기는 동안 [저장] · [취소]를 잠근다 — await 뒤의 router.push 는 transition 에 묶이지 않아 saving 이 먼저 풀린다.
+  // 그 틈에 [취소]를 누르면 이미 생긴 점포에 「저장되지 않습니다」가 뜨고, [저장]을 누르면 같은 점포가 한 번 더 등록될 수 있었다(PR #296 리뷰)
+  const [saved, setSaved] = useState(false);
   const imageInput = useRef<HTMLInputElement>(null);
   // 미리보기 주소는 브라우저 메모리를 잡으므로 바꾸거나 화면을 떠날 때 놓는다
   useEffect(() => {
@@ -476,6 +482,7 @@ export function StoreFormView(props: Props) {
         // 전엔 「전체」라 헤더와 필터가 갈렸다). 새 점포가 헤더 범위 밖이면 목록에는 없다(withHeaderStoreSearch 주석)
         const params = new URLSearchParams({ back: withHeaderStoreSearch(backHref) });
         if (imageResult && !imageResult.ok) params.set("imageFailed", String(imageResult.status ?? "error"));
+        setSaved(true);
         return router.push(at(`/stores/${result.storeId}?${params}`));
       }
       const storeId = props.store.storeId;
@@ -530,6 +537,7 @@ export function StoreFormView(props: Props) {
         // 폐점으로 직원 퇴직 · 계약 종료를 했으면 토스트 대신 결과 창으로 알리고, 창을 닫으면 상세로 간다
         if (hasClosingResult(result.closing)) return setClosingResult(result.closing);
         toast("updated");
+        setSaved(true);
         return router.push(at(detailHref));
       }
       // 다른 사람이 먼저 고쳤거나 결과를 모르면 최신 정보를 불러온다 — 저장됐으면 updatedAt 이 바뀌어 칸이 새 값으로 다시 채워진다
@@ -553,6 +561,7 @@ export function StoreFormView(props: Props) {
     });
 
   const handleSave = () => {
+    if (saved) return;
     const found = validateStoreForm(form, mode, requirementLabels);
     setErrors(found);
     // 인증 10분이 지났으면 인증을 풀어 둔다 — 값은 그대로 두고 상자가 「미인증」 · [인증하기]로 돌아가 바로 다시 인증할 수 있다
@@ -632,10 +641,21 @@ export function StoreFormView(props: Props) {
             </span>
           )}
         </h2>
-        <Button variant="off" href={at(store ? withBack(`/stores/${store.storeId}`, backHref) : backHref)}>
-          취소
-        </Button>
-        <Button onClick={handleSave} disabled={saving || closedOrBlocked || bpBlocked || locating || checkingClose || createUncertain}>
+        {mode === "create" ? (
+          // 저장 중 · 저장 뒤 이동 중엔 막는다 — 등록이 끝나면 상세로 이동하므로 「저장되지 않습니다」와 어긋난다
+          <Button
+            variant="off"
+            disabled={saving || saved}
+            onClick={() => (shouldConfirmStoreLeave({ form, imageChosen: image.kind !== "keep", createUncertain }) ? setLeaving(true) : router.push(at(backHref)))}
+          >
+            취소
+          </Button>
+        ) : (
+          <Button variant="off" href={at(store ? withBack(`/stores/${store.storeId}`, backHref) : backHref)}>
+            취소
+          </Button>
+        )}
+        <Button onClick={handleSave} disabled={saving || saved || closedOrBlocked || bpBlocked || locating || checkingClose || createUncertain}>
           저장
         </Button>
       </div>
@@ -970,6 +990,9 @@ export function StoreFormView(props: Props) {
         </Stack>
       </FormGroup>
 
+      <ConfirmDialog open={leaving} title="작성을 취소하시겠습니까?" onCancel={() => setLeaving(false)} onConfirm={() => router.push(at(backHref))}>
+        <p>취소하면 입력한 내용은 저장되지 않습니다.</p>
+      </ConfirmDialog>
       <ConfirmDialog
         open={dialog === "close-blocked"}
         title="폐점할 수 없습니다."
