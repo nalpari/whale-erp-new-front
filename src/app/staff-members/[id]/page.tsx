@@ -197,7 +197,7 @@ export default async function StaffMemberDetailPage({
                     }
                   >
                     <LoadGroupArea fallback={AREA_PENDING}>
-                      <ContractBox staffMemberId={staffMemberId} />
+                      <ContractBox staffMemberId={staffMemberId} detailSearch={historySearch(listHref, search.week)} />
                     </LoadGroupArea>
                   </Box>
                 </div>
