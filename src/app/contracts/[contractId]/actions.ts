@@ -1,5 +1,6 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { actionFailure, ApiError, bpHref, expiredFailureOf, send } from "@/lib/api";
 import type { components } from "@/lib/api-types.generated";
@@ -68,6 +69,8 @@ export type SendContractResult = { ok: true } | SendFailure;
  * (api #164, WHALEERP-130).
  * 화면이 본 계약 상태 · 발송 시각(expectedStatus · expectedSentAt)을 함께 보낸다 — 그사이 바뀌었으면(거부 · 만료 · 다른 탭에서 먼저 보냄) api 가 409
  * CONTRACT_STATUS_CONFLICT 로 막아 화면이 다시 읽는다(front #136 재리뷰).
+ * 보내면 이 응답 안에서 화면을 다시 받는다(refresh) — 화면이 보낸 뒤 따로 다시 읽을 때는 재발송 횟수 · 마지막 일시가 바로
+ * 바뀌지 않았다(WHALEERP-671, 통합테스트 IT-CONT-006 · IT-STAFF-005).
  */
 export async function sendContract(contractId: number, seen: SeenContract): Promise<SendContractResult> {
   if (!isContractId(contractId)) return { ok: false, error: "근로계약을 찾을 수 없습니다.", recheck: false };
@@ -85,6 +88,7 @@ export async function sendContract(contractId: number, seen: SeenContract): Prom
     console.error("근로계약 발송 응답을 받지 못함", contractId, e);
     return sendFailureOf(null, undefined, "");
   }
+  refresh();
   return { ok: true };
 }
 

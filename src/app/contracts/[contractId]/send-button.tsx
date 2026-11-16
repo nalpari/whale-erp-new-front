@@ -84,9 +84,9 @@ export function SendContractButton({
               // 직원 목록 재발송과 같은 토스트로 끝났음을 알린다 — 전엔 상세만 다시 읽어 보냈는지 알 수 없었다(통합테스트 IT-CONT-006)
               toast(RESEND_DONE);
               // 보내기 실패 안내(?send=)로 왔다면 쿼리를 지운다 — 남아 있으면 「보내지 못했습니다」를 보고 또 누른다(front #50 리뷰).
-              // 돌아갈 목록 주소(?back=)는 남긴다
+              // 돌아갈 목록 주소(?back=)는 남긴다. 상세는 서버 액션이 응답 안에서 다시 받았다(refresh, WHALEERP-671) — 여기서
+              // router.refresh 를 또 부르지 않는다(이동과 겹쳐 재발송 횟수가 바로 바뀌지 않던 것으로 보인다)
               router.replace(bpPath(bp, withBack(`/contracts/${contractId}`, back)));
-              router.refresh();
               return;
             }
             setError(result.error);
