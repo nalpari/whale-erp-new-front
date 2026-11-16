@@ -667,7 +667,7 @@ export function ContractForm({
             <Item label="계약 시작일" required help={previousStartDate ? `재계약은 직전 계약 시작일(${previousStartDate}) 다음 날부터` : undefined} errors={errs.startDate}>
               {() => <DateField aria-label="계약 시작일" value={form.startDate} onChange={(v) => set("startDate", v)} />}
             </Item>
-            <Item label="계약 종료일" hint="미설정 시 기간의 정함이 없는 계약" errors={errs.endDate}>
+            <Item label="계약 종료일" help="계약 종료일을 설정하지 않은 경우, &apos;기간의 정함이 없는 계약&apos;으로 처리됩니다." errors={errs.endDate}>
               {() => <DateField aria-label="계약 종료일" value={form.endDate} onChange={(v) => set("endDate", v)} />}
             </Item>
           </FormRow>
