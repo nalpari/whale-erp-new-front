@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-11-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성을 큰 선택 · 체크 카드, 계산식 형광펜, 칸 아래 느낌표 안내, 파트타이머 주급 · 연봉, 종이 계약 파일 [빼기] 링크로. 시작 가이드 미니 카드가 이어 쓰기 화면까지 따라간다(`nextPaths` 의 `*`) · 안내 문구 `<mark>` 형광펜.
+* **Update**: [점포](/stores.md) — 점포 등록 · 수정 저장 뒤 「점포 목록이 변경되었습니다.」를 띄우지 않는다(늘 quiet).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 홈 점포별 현황 표의 빈 칸(0 · 권한 없음)을 긴 줄표 대신 짧은 「-」로.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 등록 · 수정 저장 뒤 「점포 목록이 변경되었습니다.」 토스트를 띄우지 않는다(`refreshStores({ quiet: true })`).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드 미니 카드를 점포 · 권한 그룹 · 관리자 · 직원이 0건인 그 단계 화면에 들어오면 자동으로 띄운다(웨일ERP 탭, 닫으면 그 브라우저 · 계정 · BP 에서 다시 안 뜸).

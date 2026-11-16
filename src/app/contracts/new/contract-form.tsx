@@ -75,17 +75,17 @@ const HOURS_FIELDS: [HourField, string][] = [
 // 칸 아래 안내 — 빈 값 회색(erp-muted #999)은 흐려 느낌표 아이콘과 같은 회청(erp-brand #6b7988)으로 진하게(2026-11-16 사용자 지정)
 const HELP = "text-[12px] leading-[1.5] text-erp-brand";
 
-/** 고용 형태 · 계약 방식 카드 아래 한 줄 설명 — 시작 가이드 근로계약서 작성 안내와 같은 말(2026-11-16 사용자 지정) */
+/** 선택 카드 아래 한 줄 설명 — 시작 가이드 근로계약서 작성 안내와 같은 뜻을 카드에 맞게 짧게(2026-11-16 사용자 지정) */
 const EMPLOYMENT_DESC = { FULL_TIME: "월급/연봉 기준으로 급여 계산", PART_TIME: "근무시간에 따라 시급으로 급여 계산" } as const;
 // 계좌는 관리자가 입력하지 않는다 — 직원이 앱에서 서명할 때 신고 정보(은행 · 급여 계좌)로 넣는다(api StaffTaxProfile, 2026-11-16 사용자 지정)
 const PAY_METHOD_DESC = { ACCOUNT: "직원이 앱에서 계좌 입력", CASH: "매장에서 직접 현금 지급" } as const;
 const PROBATION_DESC = { NONE: "수습기간 없이 계약한 시급 적용", APPLY: "최대 3개월 · 최저시급의 90% 이상 적용" } as const;
 const METHOD_DESC = { ELECTRONIC: "직원전용 앱으로 발송 · 직원이 직접 서명", PAPER: "서명된 계약서 첨부 · 별도 발송 없음" } as const;
 
-/** 큰 체크 카드 — ChoiceCards 와 같은 모양에 제목 앞 16px 체크 표시(테두리는 처음부터 회청 — 입력칸 선 색은 흐려 고를 수 있는지 안 보였다, 고르면 회청 바탕 · 흰 체크). 여러 개를 함께 고를 때(4대보험) */
+/** 큰 체크 카드 — ChoiceCards 와 같은 모양(키보드 포커스는 바깥 2px 선 — 고른 카드는 테두리가 이미 회청이라 테두리로는 보이지 않았다, 리뷰 반영)에 제목 앞 16px 체크 표시(테두리는 처음부터 회청 — 입력칸 선 색은 흐려 고를 수 있는지 안 보였다, 고르면 회청 바탕 · 흰 체크). 여러 개를 함께 고를 때(4대보험) */
 function CheckCard({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
   return (
-    <label className="group flex cursor-pointer items-center justify-center gap-[8px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[12px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand">
+    <label className="group flex cursor-pointer items-center justify-center gap-[8px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[12px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-erp-brand">
       <input type="checkbox" className="sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
       <span aria-hidden className="flex size-[16px] items-center justify-center rounded-[2px] border border-erp-brand bg-white text-white group-has-[:checked]:border-erp-brand group-has-[:checked]:bg-erp-brand">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -98,7 +98,8 @@ function CheckCard({ label, checked, onChange }: { label: string; checked: boole
 }
 
 /**
- * 큰 선택 카드(라디오) — TO-DO 등록(todo-form ChoiceCards) · 점포 등록 점포유형 카드와 같은 모양. 고르면 선이 브랜드색, 바탕이 두 번째 바탕색으로 바뀐다.
+ * 큰 선택 카드(라디오) — TO-DO 등록(todo-form ChoiceCards) · 점포 등록 점포유형 카드와 같은 모양. TO-DO 쪽과 다른 점: 설명 글자는 이 화면 안내와 같은 회청(erp-brand),
+ * 고를 수 없는 카드(disabled), 아이콘 없음 — 두 벌을 공통 컴포넌트로 올리는 것은 1팀 · 3팀과 맞춘 뒤에 한다. 고르면 선이 브랜드색, 바탕이 두 번째 바탕색으로 바뀐다.
  * 선 두께는 바뀌지 않는다. 고를 수 없는 카드(수정 요청의 종이 계약)는 흐리게 둔다
  */
 function ChoiceCards<T extends string>({
@@ -118,7 +119,7 @@ function ChoiceCards<T extends string>({
       {items.map((item) => (
         <label
           key={item.value}
-          className="flex cursor-pointer flex-col items-center gap-[2px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[10px] text-center transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-40 has-[:disabled]:hover:border-erp-panel-line has-[:focus-visible]:border-erp-brand"
+          className="flex cursor-pointer flex-col items-center gap-[2px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[10px] text-center transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-40 has-[:disabled]:hover:border-erp-panel-line has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-erp-brand"
         >
           <input type="radio" name={name} className="sr-only" checked={value === item.value} disabled={item.disabled} onChange={() => onChange(item.value)} />
           <b className="text-[15px] font-semibold text-erp-ink">{item.title}</b>
@@ -154,7 +155,7 @@ function PayTable({ title, errors, children }: { title: string; errors?: string[
 
 type PayRow = { key: string; label: string; cells?: ReactNode[]; hours?: ReactNode; wage?: ReactNode; amount: ReactNode };
 
-// 제목(라벨) 옆 짧은 설명 — 계산식 · 범위처럼 칸을 읽는 데 필요한 것만 둔다. 입력칸 아래는 오류 자리로 비운다
+// 제목(라벨) 옆 짧은 설명 — 계산식 · 범위처럼 칸을 읽는 데 필요한 것만 둔다. 입력칸 아래에는 오류와 느낌표 안내(help · helpIcon)가 온다
 function Hint({ children, mark = false }: { children: ReactNode; mark?: boolean }) {
   // 좁은 칸(3등분)에서 잘리지 않게 줄바꿈한다 — 말줄임이면 계산식 뒤쪽을 볼 방법이 없다(PR #239 리뷰)
   // mark — 계산식(월급 · 연봉)은 형광펜으로 칠한다. 시작 가이드 형광펜과 같은 연한 노랑(#fff6e5 바탕 · #956013 글자, 2026-11-16 사용자 지정)
@@ -233,21 +234,30 @@ function Item({
 // 1팀 공통 컴포넌트에 파일 칸이 없어 여기 둔다. 형식 · 크기가 맞지 않으면 칸 아래 이유를 보이고 파일을 받지 않는다.
 function PaperFile({ id, label, file, error, accept, onPick }: { id: string; label: string; file: File | null; error?: string; accept: string; onPick: (file: File | undefined) => void }) {
   const input = useRef<HTMLInputElement>(null);
+  const pickRef = useRef<HTMLSpanElement>(null);
   return (
     <span data-invalid={error ? true : undefined} className="flex flex-col gap-[6px]">
       <span className="flex gap-[6px]">
         {file ? (
           // 읽기 전용 칸과 같은 껍데기(#f8f9fb 바탕) 안에 파일명 · [빼기]를 나란히 — 입력칸 안에는 버튼을 둘 수 없어 상자로 그린다
+          // 입력칸이 아니라 label 이 이름을 붙이지 못한다 — 묶음(role=group)에 칸 이름 · 파일명을 직접 단다(리뷰 반영)
           <span
             id={id}
-            aria-invalid={error ? true : undefined}
+            role="group"
+            aria-label={`${label} 파일 ${file.name}`}
             aria-describedby={error ? `${id}-error` : undefined}
             className="flex h-[34px] min-w-0 flex-1 items-center gap-[8px] rounded-[2px] border border-erp-field-line bg-erp-thead-bg px-[10px] text-[14px] text-erp-ink"
           >
             <span className="min-w-0 flex-1 truncate" title={file.name}>
               {file.name}
             </span>
-            <button type="button" aria-label={`${label} 파일 빼기`} className="shrink-0 cursor-pointer text-erp-link underline" onClick={() => onPick(undefined)}>
+            <button type="button" aria-label={`${label} 파일 빼기`} className="shrink-0 cursor-pointer text-erp-link underline"
+              onClick={() => {
+                onPick(undefined);
+                // [빼기]가 사라지며 포커스가 body 로 빠지지 않게 [파일 선택]으로 옮긴다(리뷰 반영)
+                requestAnimationFrame(() => pickRef.current?.querySelector("button")?.focus());
+              }}
+            >
               빼기
             </button>
           </span>
@@ -261,9 +271,11 @@ function PaperFile({ id, label, file, error, accept, onPick }: { id: string; lab
             aria-describedby={error ? `${id}-error` : undefined}
           />
         )}
-        <Button variant="soft" onClick={() => input.current?.click()}>
-          파일 선택
-        </Button>
+        <span ref={pickRef} className="flex shrink-0">
+          <Button variant="soft" onClick={() => input.current?.click()}>
+            파일 선택
+          </Button>
+        </span>
       </span>
       <FieldMessage id={`${id}-error`} message={error} />
       <input
