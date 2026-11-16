@@ -277,6 +277,6 @@ test("cancelHrefOf: 작성 화면 [취소]는 들어온 화면으로 간다(WHAL
   assert.equal(cancelHrefOf(7, "/staff-members/12", undefined), "/contracts/7");
   // 직원 정보 관리 주소가 아니거나 여러 값이면 버린다
   assert.equal(cancelHrefOf(undefined, ["/staff-members", "/staff-members/1"], undefined), "/contracts");
-  for (const bad of ["https://evil.example", "//evil.example", "/stores/1", "/staff-members/1/../../stores", "/staff-members-x", "/staff-members/abc", "/staff-members\evil", "/bp/8/staff-members"])
+  for (const bad of ["https://evil.example", "//evil.example", "/stores/1", "/staff-members/1/../../stores", "/staff-members-x", "/staff-members/abc", "/staff-members\\evil", "/staff-members/1\\..\\..\\stores", "/bp/8/staff-members"])
     assert.equal(cancelHrefOf(undefined, bad, undefined), "/contracts", bad);
 });
