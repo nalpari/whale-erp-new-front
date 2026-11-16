@@ -16,6 +16,7 @@ import {
   REPEAT_ENDS,
   repeatBasis,
   repeatSkipNote,
+  saveFailureAction,
   validateHolidayForm,
   weekdayName,
   type FormErrors,
@@ -35,9 +36,6 @@ import { unknownResult } from "./holiday-parts";
 //  · 진행 중: 휴일명 · 설명 · 점포만. 날짜 · 유형 · 반복 · 적용 범위는 막고 읽은 값 그대로 보낸다(바꾸면 409). 점포는 더하면 오늘부터, 빼면 어제까지.
 //  · 일부 점포만 맡은 사람(맡지 않은 점포가 함께 묶인 휴일): 맡은 점포만 더하거나 뺀다. 나머지 점포는 그대로 다시 보낸다 — 빠지면 api 가 403.
 // 시작일은 오늘(한국 날짜) 이후만 받는다. 저장 전에 겹치는 휴일을 확인해 알리고, 겹쳐도 저장은 막지 않는다(공식 휴일은 보지 않는다).
-
-/** 동시 수정 409 문구(api bp-holiday-changes CONFLICT_MESSAGE). 이때만 최신 정보를 다시 받는다. */
-const STALE = "먼저 수정했습니다";
 
 type Props = {
   id: string;
@@ -198,13 +196,14 @@ export function HolidayFormPanel(props: Props) {
    * 띠 「다시 불러온 뒤 시도해 주세요.」 · 「입력한 내용은 그대로 두었습니다.」가 남아 이미 불러온 뒤인지 · 입력이 남았는지 헷갈렸다(WHALEERP-714).
    */
   const fail = (status: number | undefined, message: string) => {
-    if (props.mode === "edit" && status === 409 && message.includes(STALE)) {
+    const action = saveFailureAction(props.mode, status, message);
+    if (action === "stale" && props.mode === "edit") {
       setFailure(null);
       props.onStale();
       return;
     }
     setFailure(message);
-    if (status === undefined) router.refresh();
+    if (action === "refresh") router.refresh();
   };
 
   // 탈퇴 · 미사용 BP 에는 등록하지 않는다 — 점포 등록과 같다(플랫폼 계정만 본다, 2026-10-29 사용자 지정). 확인하지 못하면(null) 막지 않는다
