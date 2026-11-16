@@ -77,6 +77,8 @@ const HELP = "text-[12px] leading-[1.5] text-erp-brand";
 
 /** 고용 형태 · 계약 방식 카드 아래 한 줄 설명 — 시작 가이드 근로계약서 작성 안내와 같은 말(2026-11-16 사용자 지정) */
 const EMPLOYMENT_DESC = { FULL_TIME: "월급/연봉 기준으로 급여 계산", PART_TIME: "근무시간에 따라 시급으로 급여 계산" } as const;
+// 계좌는 관리자가 입력하지 않는다 — 직원이 앱에서 서명할 때 신고 정보(은행 · 급여 계좌)로 넣는다(api StaffTaxProfile, 2026-11-16 사용자 지정). 현금은 설명 없음
+const PAY_METHOD_DESC: Partial<Record<"ACCOUNT" | "CASH", string>> = { ACCOUNT: "직원이 앱에서 계좌 입력" };
 const PROBATION_DESC = { NONE: "수습기간 없이 계약한 시급 적용", APPLY: "최대 3개월 · 최저시급의 90% 이상 적용" } as const;
 const METHOD_DESC = { ELECTRONIC: "직원전용 앱으로 발송 · 직원이 직접 서명", PAPER: "서명된 계약서 첨부 · 별도 발송 없음" } as const;
 
@@ -177,8 +179,8 @@ function Item({
   useInvalid(box, `${id}-errors`, invalid);
   return (
     <div ref={box} data-invalid={invalid || undefined} className={`flex flex-col gap-[8px] ${width ?? "min-w-px flex-1"}`}>
-      {/* 칸 이름과 옆 안내(형광펜 계산식 · 느낌표 안내)를 가운데로 맞춘다 — 기준선 맞춤은 바탕 · 아이콘이 있으면 위아래로 어긋나 보였다(2026-11-16 사용자 지정) */}
-      <span className="flex items-center gap-[8px]">
+      {/* 칸 이름과 옆 안내(형광펜 계산식 · 느낌표 안내)를 가운데로 맞춘다 — 기준선 맞춤은 바탕 · 아이콘이 있으면 위아래로 어긋나 보였다. 줄 높이는 안내가 있든 없든 18px — 안내 있는 칸만 입력칸이 2px 내려가 옆 칸과 어긋났다(2026-11-16 사용자 지정) */}
+      <span className="flex min-h-[18px] items-center gap-[8px]">
         <label htmlFor={id} className="shrink-0 text-[14px] font-medium text-erp-label">
           {label}
           {required && (
@@ -295,7 +297,7 @@ function Group({
       className="flex min-w-px flex-1 flex-col gap-[8px]"
     >
       {/* 칸 이름과 옆 안내(형광펜 계산식 · 느낌표 안내)를 가운데로 맞춘다 — 기준선 맞춤은 바탕 · 아이콘이 있으면 위아래로 어긋나 보였다(2026-11-16 사용자 지정) */}
-      <span className="flex items-center gap-[8px]">
+      <span className="flex min-h-[18px] items-center gap-[8px]">
         <span className="shrink-0 text-[14px] font-medium text-erp-label">
           {label}
           {required && (
@@ -905,7 +907,7 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
                 name="payMethod"
                 value={form.payMethod}
                 onChange={(v) => set("payMethod", v)}
-                items={(["ACCOUNT", "CASH"] as const).map((v) => ({ value: v, title: labelOf(labels.payMethod, v) }))}
+                items={(["ACCOUNT", "CASH"] as const).map((v) => ({ value: v, title: labelOf(labels.payMethod, v), desc: PAY_METHOD_DESC[v] }))}
               />
             </Group>
           </div>
