@@ -511,7 +511,7 @@ export function FacilityFormView(props: Props) {
         </Stack>
       </FormRow>
       {/* 로그인 정보에 문서 종류 공통코드가 없으면 올리기 칸이 하나도 없다 — 조용히 사라지지 않게 알린다(코드 리뷰) */}
-      {documentCodes.length === 0 && <NoticeBand tone="info" title="문서 종류를 불러오지 못해 문서를 올릴 수 없습니다." detail="다시 로그인한 뒤 시도해 주세요." />}
+      {documentCodes.length === 0 && <NoticeBand tone="risk" title="문서 종류를 불러오지 못해 문서를 올릴 수 없습니다." detail="다시 로그인한 뒤 시도해 주세요." />}
       {docKinds.map(({ kind, label, canUpload }) => (
         <DocumentField key={kind} label={label} canUpload={canUpload} state={docOf(kind)} busy={saving} onChange={(next) => setDocs((d) => ({ ...d, [kind]: next }))} />
       ))}
