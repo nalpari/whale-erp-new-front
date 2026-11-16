@@ -192,11 +192,19 @@ export function HolidayFormPanel(props: Props) {
     });
   };
 
-  /** 저장 실패 — 위 띠로 알린다. 동시 수정(409)이면 최신 정보를 받고, 결과를 모르면(이미 처리됐을 수 있다) 목록 · 상세를 새로 받는다. */
+  /**
+   * 저장 실패 — 위 띠로 알린다. 결과를 모르면(이미 처리됐을 수 있다) 목록 · 상세를 새로 받는다.
+   * 동시 수정(409)이면 띠를 두지 않고 최신 정보만 받는다 — 토스트가 알리고 칸을 새 값으로 다시 채우는데,
+   * 띠 「다시 불러온 뒤 시도해 주세요.」 · 「입력한 내용은 그대로 두었습니다.」가 남아 이미 불러온 뒤인지 · 입력이 남았는지 헷갈렸다(WHALEERP-714).
+   */
   const fail = (status: number | undefined, message: string) => {
+    if (props.mode === "edit" && status === 409 && message.includes(STALE)) {
+      setFailure(null);
+      props.onStale();
+      return;
+    }
     setFailure(message);
-    if (props.mode === "edit" && status === 409 && message.includes(STALE)) props.onStale();
-    else if (status === undefined) router.refresh();
+    if (status === undefined) router.refresh();
   };
 
   // 탈퇴 · 미사용 BP 에는 등록하지 않는다 — 점포 등록과 같다(플랫폼 계정만 본다, 2026-10-29 사용자 지정). 확인하지 못하면(null) 막지 않는다
@@ -400,14 +408,14 @@ export function HolidayFormPanel(props: Props) {
         onConfirm={() => handleSave(true)}
         onCancel={() => setOverlaps(null)}
       >
-        {overlaps && <OverlapSummary overlaps={overlaps} />}
+        {overlaps && <OverlapSummary overlaps={overlaps} editing={mode === "edit"} />}
       </ConfirmDialog>
     </SlidePanel>
   );
 }
 
 /** 겹침 요약 — 점포마다 겹치는 날짜 앞 10건과 나머지 수(오늘 또는 시작일부터 1년). 겹쳐도 저장할 수 있다. */
-function OverlapSummary({ overlaps }: { overlaps: BpHolidayOverlaps }) {
+function OverlapSummary({ overlaps, editing }: { overlaps: BpHolidayOverlaps; editing: boolean }) {
   // 점포 · 날짜 · 이미 있는 휴일 세 칸 표 — 점포마다 겹치는 날짜를 한 줄씩, 점포 이름은 그 점포의 첫 줄에만(2026-10-30 사용자 지정 — 전엔 점포 이름 아래 「날짜 휴일명 · 휴일명, …」 글줄이라
   // 무엇이 어디서 겹치는지 알기 어려웠다). 앞 10일만 보이고 나머지는 「외 N일」 줄로 센다(api)
   const rows: OverlapRow[] = overlaps.stores.flatMap((s) => [
@@ -417,7 +425,8 @@ function OverlapSummary({ overlaps }: { overlaps: BpHolidayOverlaps }) {
   return (
     <div className="flex flex-col gap-[12px] break-keep">
       {/* 제목 「같은 날짜에 이미 등록된 휴일이 있습니다.」 · 본문은 결과만 — 전엔 「저장하면 겹치는 휴일이 모두 적용됩니다.」(2026-11-03 사용자 지정) */}
-      <p>저장하면, 휴일이 추가됩니다. 저장하시겠습니까?</p>
+      {/* 수정은 새 휴일이 생기지 않는다 — 「추가됩니다」가 휴일이 하나 더 생기는 것으로 읽혔다(WHALEERP-715) */}
+      <p>{editing ? "저장하면 이 휴일이 겹치는 날짜에도 적용됩니다. 저장하시겠습니까?" : "저장하면, 휴일이 추가됩니다. 저장하시겠습니까?"}</p>
       <HistoryScroll height="280">
         <DataTable columns={OVERLAP_COLUMNS} rows={rows} rowKey={(r) => r.key} />
       </HistoryScroll>
