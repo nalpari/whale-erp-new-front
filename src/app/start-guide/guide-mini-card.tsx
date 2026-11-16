@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { GuideIcon, useAction, usePanelOpen } from "@/components/common";
-import { useAccount, useCurrentBp, useService, useStores } from "@/components/site/session-gate";
+import { useAccount, useCurrentBp, useMyPageOpen, usePasswordChangeOpen, useService, useStores, useWithdrawOpen } from "@/components/site/session-gate";
 import { stripBp } from "@/lib/bp-path";
 import {
   GUIDE_STEPS,
@@ -26,7 +26,7 @@ import { getGuideCountAction } from "./guide-count-actions";
 // 넘어와서 「무엇을 입력하랬지, 무엇이 중요했지」를 잊지 않게 하려는 것이다. AdminFrame 에 한 번만 두고, 지금 화면 주소(탭 BP 접두를 뗀 것)와
 // 그 단계 칸의 화면(part.path · 이어 넘어가는 nextPaths)인 칸들을 보인다 — 화면 파일(1팀 · 3팀)은 건드리지 않는다.
 // 주소의 ?guide=<갈래>-<단계>(예: STORE-1)로 넘어올 때만 뜨고, 넘어온 화면을 기억해 그 화면에 있는 동안(검색 · 쪽 넘김으로 주소의 guide 가
-// 빠져도, 이어 넘어가는 화면에서도) 남는다. 그 단계와 상관없는 화면으로 가면 사라진다. 메뉴로 들어오면 뜨지 않는다. 판정은 lib(nextArrival)에 있다.
+// 빠져도, 이어 넘어가는 화면에서도) 남는다. 그 단계와 상관없는 화면으로 가면 사라진다. 메뉴로 들어오면 이 도착 카드는 뜨지 않는다(0건이면 아래 자동 띄우기가 띄운다). 판정은 lib(nextArrival)에 있다.
 // 바탕을 덮지 않아 펴 둔 채로 입력할 수 있다. 오른쪽에서 패널(464px)이 열리면 그 왼쪽으로 비켜 선다. 머리 줄을 끌어 옮길 수 있고, 접은 알약도 끌어 옮긴다(2026-11-12).
 // 패널 바탕창(z-[5]) · 패널(z-10)보다 위(z-40)라 바탕창이 떠도 카드는 읽고 접을 수 있다 — 패널을 연 채 가이드를 보게 일부러 그렇다.
 // 모양은 떠 있는 것이라 팝업 그림자 하나(DESIGN.md Elevation), 꼬리표는 시작 가이드와 같은 포인트 파랑이다.
@@ -105,6 +105,12 @@ export function GuideMiniCardSlot() {
   const bp = useCurrentBp().bpCodeId;
   const service = useService();
   const noStores = useStores().every(isClosedStore);
+  // 마이페이지 · 비밀번호 변경 · 회원 탈퇴 패널이 열리면 본문(이 카드 포함)이 inert 라 카드를 누를 수 없고 누르면 아래 바탕창이 눌려 패널이 닫혔다 — 그동안 숨긴다(리뷰 반영)
+  // 훅은 늘 셋 다 부른다(|| 안에서 부르면 앞이 참일 때 뒤가 건너뛰어져 훅 순서가 바뀐다)
+  const [myPageOpen] = useMyPageOpen();
+  const [passwordChangeOpen] = usePasswordChangeOpen();
+  const [withdrawOpen] = useWithdrawOpen();
+  const accountPanelOpen = myPageOpen || passwordChangeOpen || withdrawOpen;
   const countOf = useAction(getGuideCountAction, { overlay: false });
   // 자동으로 띄운 카드 — 그 단계 칸이 있는 화면에 있는 동안 남는다(autoFollows)
   const [auto, setAuto] = useState<{ key: string; guide: GuideRef } | null>(null);
@@ -156,9 +162,10 @@ export function GuideMiniCardSlot() {
     return () => {
       alive = false;
     };
-    // countOf 는 렌더마다 새 함수라 넣지 않는다(useAction 주석), shownKey 는 펼침을 되돌리지 않으려고 보는 값일 뿐이다 — 후보 · 점포 0건이 바뀔 때만 다시 묻는다
+    // countOf 는 렌더마다 새 함수라 넣지 않는다(useAction 주석), shownKey 는 펼침을 되돌리지 않으려고 보는 값일 뿐이다 — 후보 · 셀 것 · 점포 0건이 바뀔 때만 다시 묻는다.
+    // 셀 것(candidateKind)도 본다 — 권한 관리 · 관리자 관리는 같은 단계라 키가 같아, 옮겨도 관리자 건수를 묻지 않았다(리뷰 반영)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [candidateKey, noStores]);
+  }, [candidateKey, candidateKind, noStores]);
 
   // 옮긴 뒤 창을 줄이면 카드가 화면 밖에 갇혀 [접기] · [×]를 누를 수 없었다 — 창 크기가 바뀌면 머리 줄이 보이게 다시 붙잡는다(코드 리뷰).
   // 접은 알약은 카드보다 좁아 카드 폭(420)으로 붙잡으면 오른쪽 끝 알약이 왼쪽으로 끌려 나와, 지금 보이는 쪽(카드 · 알약)의 실제 크기로 붙잡는다(PR 리뷰)
@@ -224,7 +231,7 @@ export function GuideMiniCardSlot() {
   // 점포를 등록하면(점포 0건이 풀리면) 자동 STEP 1 카드는 내린다
   const autoShown = !arrived && auto && autoFollows(auto.guide, screen) && !(auto.guide.step === "1" && !noStores) ? auto.guide : null;
   const parsed = arrived ?? autoShown;
-  if (!parsed) return null;
+  if (!parsed || accountPanelOpen) return null;
   const parts = partsOnScreen(parsed, screen);
   if (parts.length === 0) return null;
   const stepTitle = GUIDE_STEPS[parsed.track].find((s) => s.label === `STEP ${parsed.step}`)?.title ?? "";

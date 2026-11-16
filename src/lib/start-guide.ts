@@ -208,8 +208,8 @@ const CONTRACT: GuidePart = {
   mock: "contract",
   actions: [
     // 문구는 2026-11-11 사용자 지정
-    // 「직원 목록 상단의」는 뺐다 — 카드가 그 화면 위에 떠 있어 자리를 말할 필요가 없다(2026-11-16 사용자 지정)
-    "[직원 초대]를 누르면 근로계약서 작성 화면이 열려요.",
+    // 화면 이름으로 자리를 말한다 — 전엔 「직원 목록 상단의」(2026-11-16 사용자 지정)
+    "직원 정보 관리 상단에 있는 [직원 초대]를 누르면 근로계약서 작성 화면이 열려요.",
     "직원 정보(이름·휴대전화번호·생년월일·소속 근무지·직무)를 입력해 주세요.",
     "고용 형태와 계약 방식(전자·종이)을 선택하고 근로계약 조건을 입력해 주세요.",
     "전자계약은 [서명 요청], 종이계약은 [종이 계약 등록]을 눌러요.",
@@ -550,7 +550,7 @@ export function autoGuideOf(track: GuideTrack, screen: string): AutoGuide | null
 
 /**
  * 자동 카드를 닫은 기록(localStorage 키) — 같은 브라우저를 다른 계정 · 다른 BP 가 써도 섞이지 않게 계정 · BP · 단계마다.
- * 자동 카드도 그 단계의 다음 화면으로 따라가므로 화면이 아니라 단계로 센다 — 점포 목록에서 닫으면 점포 등록 화면에서도 다시 뜨지 않는다(2026-11-16 사용자 지정)
+ * 자동 카드도 그 단계의 다음 화면으로 따라가므로 화면이 아니라 단계로 센다 — 권한 관리에서 닫으면 같은 단계인 관리자 관리에서도 다시 뜨지 않는다(2026-11-16 사용자 지정)
  */
 export const autoDismissKey = (adminAccountId: number, bpCodeId: number, guide: GuideRef) =>
   `guide-auto-dismissed:${adminAccountId}:${bpCodeId}:${guideParam(guide.track, guide.step)}`;

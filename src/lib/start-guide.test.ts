@@ -151,7 +151,7 @@ test("자동 띄우기 — 화면별 단계 · 건수", () => {
   assert.deepEqual(autoGuideOf("FRANCHISEE", "/staff-members"), { guide: { track: "FRANCHISEE", step: "3" }, count: "staff" });
 });
 
-// 자동 카드도 그 단계의 다음 화면으로 따라가므로 닫은 기록은 단계마다다 — 점포 목록에서 닫으면 점포 등록 화면에서도 다시 뜨지 않는다(2026-11-16 사용자 지정)
+// 자동 카드도 그 단계의 다음 화면으로 따라가므로 닫은 기록은 단계마다다 — 권한 관리에서 닫으면 같은 단계인 관리자 관리에서도 다시 뜨지 않는다(2026-11-16 사용자 지정)
 test("자동 띄우기 닫은 기록 — 계정 · BP · 단계마다 다르다", () => {
   const g = { track: "STORE" as const, step: "3" };
   const k = autoDismissKey(1, 8, g);
