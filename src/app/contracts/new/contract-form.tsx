@@ -898,13 +898,17 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
             )}
           </div>
           {/* 급여 지급 방식은 소정근로시간 표 바로 밑(데모 확인 2026-10-15) */}
-          <Group label="급여 지급 방식" required>
-            <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-              {(["ACCOUNT", "CASH"] as const).map((v) => (
-                <Radio key={v} name="payMethod" label={labelOf(labels.payMethod, v)} checked={form.payMethod === v} onChange={() => set("payMethod", v)} />
-              ))}
-            </div>
-          </Group>
+          {/* 고용 형태 · 계약 방식 · 수습 여부와 같은 큰 선택 카드, 폭은 왼쪽 반 칸(2026-11-16 사용자 지정) */}
+          <div className="grid grid-cols-2 gap-[18px]">
+            <Group label="급여 지급 방식" required>
+              <ChoiceCards
+                name="payMethod"
+                value={form.payMethod}
+                onChange={(v) => set("payMethod", v)}
+                items={(["ACCOUNT", "CASH"] as const).map((v) => ({ value: v, title: labelOf(labels.payMethod, v) }))}
+              />
+            </Group>
+          </div>
           {!partTime && (
             <>
               <FormRow>
