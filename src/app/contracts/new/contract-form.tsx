@@ -706,7 +706,7 @@ export function ContractForm({
               <Item label="근로계약서" required help={`근로계약 당사자 모두가 서명한 근로계약서를 첨부해 주세요. ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하)`}>
                 {(id) => <PaperFile id={id} label="근로계약서" file={files.employment} error={fileErrors.employment ?? errs.employmentFile?.[0]} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("employment", f)} />}
               </Item>
-              <Item label="임금계약서" help={`따로 작성한 임금계약서가 있으면 첨부해 주세요. ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하)`}>
+              <Item label="임금계약서" help={`별도로 작성한 임금계약서가 있는 경우 첨부해 주세요. ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하)`}>
                 {(id) => <PaperFile id={id} label="임금계약서" file={files.wage} error={fileErrors.wage} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("wage", f)} />}
               </Item>
             </FormRow>
