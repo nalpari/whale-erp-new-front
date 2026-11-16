@@ -27,6 +27,7 @@ import {
   currentVerification,
   formOfStore,
   hasCoordinateInput,
+  hasStoreFormInput,
   newFloorRow,
   storeServerErrors,
   isBpBlockedMessage,
@@ -171,6 +172,8 @@ export function StoreFormView(props: Props) {
   const [reopenSaved, setReopenSaved] = useState(false);
   const [image, setImage] = useState<ImageChoice>({ kind: "keep" });
   const [imageError, setImageError] = useState<string | null>(null);
+  // [취소] 이탈 확인창 — 등록 화면에서 무언가 입력했으면 저장하지 않고 나간다고 한 번 묻는다(WHALEERP-696, 근로계약서 작성과 같은 문구)
+  const [leaving, setLeaving] = useState(false);
   const imageInput = useRef<HTMLInputElement>(null);
   // 미리보기 주소는 브라우저 메모리를 잡으므로 바꾸거나 화면을 떠날 때 놓는다
   useEffect(() => {
@@ -632,9 +635,20 @@ export function StoreFormView(props: Props) {
             </span>
           )}
         </h2>
-        <Button variant="off" href={at(store ? withBack(`/stores/${store.storeId}`, backHref) : backHref)}>
-          취소
-        </Button>
+        {mode === "create" ? (
+          // 저장 중엔 막는다 — 그 사이 나가면 등록이 끝나 상세로 다시 보내 「저장되지 않습니다」와 어긋났다. 결과를 모르면(이미 생겼을 수 있다) 묻지 않고 목록으로(코드 리뷰)
+          <Button
+            variant="off"
+            disabled={saving}
+            onClick={() => (!createUncertain && (hasStoreFormInput(form) || image.kind !== "keep") ? setLeaving(true) : router.push(at(backHref)))}
+          >
+            취소
+          </Button>
+        ) : (
+          <Button variant="off" href={at(store ? withBack(`/stores/${store.storeId}`, backHref) : backHref)}>
+            취소
+          </Button>
+        )}
         <Button onClick={handleSave} disabled={saving || closedOrBlocked || bpBlocked || locating || checkingClose || createUncertain}>
           저장
         </Button>
@@ -970,6 +984,9 @@ export function StoreFormView(props: Props) {
         </Stack>
       </FormGroup>
 
+      <ConfirmDialog open={leaving} title="작성을 취소하시겠습니까?" onCancel={() => setLeaving(false)} onConfirm={() => router.push(at(backHref))}>
+        <p>취소하면 입력한 내용은 저장되지 않습니다.</p>
+      </ConfirmDialog>
       <ConfirmDialog
         open={dialog === "close-blocked"}
         title="폐점할 수 없습니다."

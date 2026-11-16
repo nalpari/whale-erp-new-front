@@ -6,6 +6,7 @@ import {
   EMPTY_STORE_FORM,
   formOfStore,
   hasCoordinateInput,
+  hasStoreFormInput,
   isBpBlockedMessage,
   newFloorRow,
   splitPhone,
@@ -392,4 +393,13 @@ test("BP 미사용 · 탈퇴 거절 문장 — 409 의 api 문장만 알아본�
   assert.equal(isBpBlockedMessage(400, "소속 BP가 미사용 상태여서 이 업무를 할 수 없습니다."), false);
   assert.equal(isBpBlockedMessage(409, "이미 등록된 사업자등록번호입니다."), false);
   assert.equal(BP_BLOCKED_TEXT.create, "BP가 탈퇴 또는 미사용 상태로, 점포를 등록할 수 없습니다.");
+});
+
+test("등록 이탈 확인 — 빈 폼이면 묻지 않고, 한 칸이라도 입력하면 묻는다(WHALEERP-696)", () => {
+  assert.equal(hasStoreFormInput(EMPTY_STORE_FORM), false);
+  assert.equal(hasStoreFormInput({ ...EMPTY_STORE_FORM }), false);
+  assert.equal(hasStoreFormInput({ ...EMPTY_STORE_FORM, storeTypeCode: "DIRECT" }), true);
+  assert.equal(hasStoreFormInput({ ...EMPTY_STORE_FORM, name: "강남점" }), true);
+  assert.equal(hasStoreFormInput({ ...EMPTY_STORE_FORM, phone: ["02", "", ""] }), true);
+  assert.equal(hasStoreFormInput({ ...EMPTY_STORE_FORM, isLocationApplied: true }), true);
 });

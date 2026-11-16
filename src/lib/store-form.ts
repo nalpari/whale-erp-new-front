@@ -131,6 +131,14 @@ export const EMPTY_STORE_FORM: StoreForm = {
   floors: [],
 };
 
+/**
+ * 등록 화면에서 무언가 입력했는가 — [취소] 이탈 확인창을 띄울지 가른다(WHALEERP-696). 빈 폼과 한 칸이라도 다르면 입력한 것이다.
+ * 사진은 폼 밖 상태라 부르는 쪽이 따로 본다
+ */
+export function hasStoreFormInput(form: StoreForm): boolean {
+  return JSON.stringify(form) !== JSON.stringify(EMPTY_STORE_FORM);
+}
+
 /** 하이픈 없는 전화번호를 세 칸으로. 02 국번은 2자리, 050X 평생번호(12자리)는 4자리, 그 밖은 3자리 + 가운데 3~4자리 + 끝 4자리 */
 export function splitPhone(value: string | null | undefined): PhoneParts {
   const d = (value ?? "").replace(/[^0-9]/g, "");
