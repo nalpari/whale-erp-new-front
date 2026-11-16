@@ -4,7 +4,8 @@ import type { ReactNode } from "react";
 // 공통(components/common)으로 올리려면 1팀과 먼저 맞춘다.
 
 /** 2단 카드 껍데기 — 카드 안에서만 세로로 스크롤한다(DESIGN.md 한 화면 규칙) */
-export const CARD = "flex min-h-0 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0";
+// 스크롤 표 상자(DataTable scroll · data-table-scroll)만 줄어들 수 있게 둔다 — 표가 남는 높이 안에서 스스로 스크롤한다(2026-11-16, 최소폭 1260)
+export const CARD = "flex min-h-0 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0";
 
 /** 실패 띠 — 칸 맨 위에 하나만 선다 */
 export function FailedBand({ message, detail }: { message: string; detail?: string }) {

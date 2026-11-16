@@ -18,7 +18,7 @@ export function CodePanel({
   /** 제목 옆 회색 글자(건수 · 고른 그룹). */
   sub?: ReactNode;
   actions?: ReactNode;
-  /** 왼쪽 그룹 목록은 750 고정(관리 주체 선택칸이 잘리지 않도록 2026-10-12 900 으로 넓혔다가, 상세 코드 칸의 코드명이 안 보여 그룹명 칸을 반으로 줄임 — 2026-10-26 사용자 지정), 오른쪽 상세 코드는 남는 폭. */
+  /** 왼쪽 그룹 목록 · 오른쪽 상세 코드는 56 : 44 비율로 함께 줄어든다 — 좁은 창(최소 1260)에서 모자라는 열은 표 상자 안에서 민다(2026-11-16 사용자 지정, 전엔 그룹 750 고정). */
   wide?: boolean;
   /** 읽기만 하는 그룹 목록(BP 공통코드 — 입력칸이 없다)은 560 고정(데모 config/codes). */
   narrow?: boolean;
@@ -29,7 +29,7 @@ export function CodePanel({
       id={id}
       // 표(DataTable scroll)는 남는 높이를 먹고 그 안에서만 스크롤한다 — 나머지(제목 · 띠 · 오류 줄)는 줄지 않는다(2026-10-26 사용자 지정)
       className={`flex flex-col gap-[12px] overflow-y-auto [scrollbar-gutter:stable] rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0 ${
-        wide ? "min-w-0 flex-1" : narrow ? "w-[560px] shrink-0" : "w-[750px] shrink-0"
+        wide ? "min-w-0 flex-[44]" : narrow ? "w-[560px] shrink-0" : "min-w-0 flex-[56]"
       }`}
     >
       {/* 제목 줄은 34px(버튼 높이) — 버튼이 없는 왼쪽 그룹 목록도 오른쪽 상세 코드와 같은 높이에 선다(2026-10-26 사용자 지정) */}

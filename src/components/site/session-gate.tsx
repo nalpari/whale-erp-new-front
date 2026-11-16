@@ -604,6 +604,8 @@ function Ready({
       {firstMenu && <LoadingNotice text="불러오는 중입니다." />}
       {allowed && !switching && !firstMenu && (
         <>
+          {/* 웨일ERP 탭 표시 — 화면 틀(AdminFrame)이 최소폭을 가른다(플랫폼 1260 · 웨일ERP 1720, 2026-11-16) */}
+          <i hidden data-erp-wide={value.serviceCode === "WHALE_ERP" ? "" : undefined} />
           {header}
           {/* 점포 없음 띠도 헤더처럼 바탕창이 뜨면 inert — 안 그러면 Tab 이 바탕창 뒤 [점포 등록하기]로 빠진다(리뷰 반영) */}
           <div className="contents" inert={backdropActive}>

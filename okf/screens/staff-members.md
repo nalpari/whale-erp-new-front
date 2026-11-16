@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입 상태 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [수정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-16T01:10:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-16T03:27:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -100,7 +100,7 @@ sources:
     last_modified: 2026-10-22T06:09:19Z
   - id: data-table
     resource: ../../src/components/common/data-table.tsx
-    title: 공통 표 — 열 이름 줄 모양 headVariant(default · plain · none). 직원 상세만 plain · none 을 켠다. 목록 빈 상태 fillEmpty(고정 머리 scroll 표와 함께 써도 된다, 2026-11-05)
+    title: 공통 표 — 열 이름 줄 모양 headVariant(default · plain · none). 직원 상세만 plain · none 을 켠다. 목록 빈 상태 fillEmpty(고정 머리 scroll 표와 함께 써도 된다, 2026-11-05 — 이때 열 합이 넓으면 빈 표도 상자 안에서 가로로 민다, 2026-11-16)
     last_modified: 2026-11-05T00:20:33Z
   - id: attendance-query
     resource: ../../src/app/attendance-records/attendance-query.ts
@@ -449,7 +449,8 @@ sources:
   메뉴 코드로 찾는다(front #57). api #97(WHALEERP-592)이 send 경로에 같은 수정 권한을 건다. `MENU_CODE.contracts` 는 front #79 와 같은
   이름 · 값이다.
 * 보내기 — 확인창(계약서를 다시 보내시겠습니까?) 뒤 근로계약 상세와 같은 서버 액션(`sendContract`)과 실패 판정(`sendFailureOf`)을
-  쓴다. 성공하면 토스트 「계약서를 다시 보냈습니다.」와 함께 화면을 다시 받아 새 발송일(「가입 대기 · MM-DD」)을 보인다. 409 ·
+  쓴다. 성공하면 토스트 「계약서를 다시 보냈습니다.」와 함께 서버 액션이 응답 안에서 화면을 다시 받아(`refresh()`, WHALEERP-671 —
+  화면이 따로 `router.refresh` 를 부르지 않는다) 새 발송일(「가입 대기 · MM-DD」)을 보인다. 409 ·
   502 · 503 은 api 문구 그대로다 — `SEND_FAILED`(되돌렸고 다시 보낼 수 있음) · `SEND_CHANNEL_NOT_READY` · `SEND_PHONE_NOT_MOBILE` 는
   확인창 안에 보인다. 접수 여부를 모르면(`SEND_UNCONFIRMED`, 코드 없는 502 · 504, 연결 끊김) 가입 초대 재발송은 계약 상태를 바꾸지 않아 다시 받은
   화면에도 버튼이 그대로라, 확인창을 연 채 보내기를 잠그고(닫았다 열어도) 문구를 남긴 뒤 다시 받는다 — 바로 다시 눌러 알림톡이 두 번

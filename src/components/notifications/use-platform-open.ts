@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { openAction } from "@/app/notifications/actions";
+import { useAction } from "@/components/common";
 import { useAllMenus, useService } from "@/components/site/session-gate";
 import { serviceOfPath } from "@/lib/menus";
 import { safeLink } from "@/lib/notification-view";
@@ -18,6 +19,8 @@ export function usePlatformOpen(onOpened?: () => void) {
   const service = useService();
   const menus = useAllMenus();
   const router = useRouter();
+  // 덮개 없이 — 새 탭은 이미 열렸고 읽음 처리는 뒤에서 한다. 만료면 useAction 이 「로그인 만료」 팝업을 띄운다(AGENTS.md 「로그인 만료」, 테스트 G4)
+  const markOpened = useAction(openAction, { overlay: false });
   return (e: MouseEvent, n: { id: number; link: string | null }) => {
     if (service !== "WHALE_ERP") return;
     const link = safeLink(n.link);
@@ -25,7 +28,7 @@ export function usePlatformOpen(onOpened?: () => void) {
     e.preventDefault();
     window.open(link, "_blank", "noopener");
     onOpened?.();
-    // 읽음 처리 실패(만료 등)는 여기서 알리지 않는다 — 다음에 알림함 · 종이 다시 그려질 때 미확인으로 남아 보인다
-    void openAction(n.id).then(() => router.refresh(), () => undefined);
+    // 읽음 처리 실패는 여기서 알리지 않는다 — 다음에 알림함 · 종이 다시 그려질 때 미확인으로 남아 보인다(만료만 useAction 이 팝업으로)
+    void markOpened(n.id).then(() => router.refresh(), () => undefined);
   };
 }

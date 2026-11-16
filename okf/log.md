@@ -2,11 +2,25 @@
 
 ## 2026-11-16
 * **Update**: [BP 마스터 계정 관리](/bp.md) · [Whale ERP Frontend](/whale-erp-front.md) — BP 마스터 · BP 관리자 · 플랫폼 관리자의 계정상태 글자를 화면 상수 대신 공통코드 ACCOUNT_STATUS 에서 읽는다(필터 · 목록 · 상세 배지 · 수정 선택칸, WHALEERP-719).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성을 큰 선택 · 체크 카드, 계산식 형광펜, 칸 아래 느낌표 안내, 파트타이머 주급 · 연봉, 종이 계약 파일 [빼기] 링크로. 시작 가이드 미니 카드가 이어 쓰기 화면까지 따라간다(`nextPaths` 의 `*`) · 안내 문구 `<mark>` 형광펜.
+* **Update**: [점포](/stores.md) — 점포 등록 · 수정 저장 뒤 「점포 목록이 변경되었습니다.」를 띄우지 않는다(늘 quiet).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 홈 점포별 현황 표의 빈 칸(0 · 권한 없음)을 긴 줄표 대신 짧은 「-」로.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 등록 · 수정 저장 뒤 「점포 목록이 변경되었습니다.」 토스트를 띄우지 않는다(`refreshStores({ quiet: true })`).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드 미니 카드를 점포 · 권한 그룹 · 관리자 · 직원이 0건인 그 단계 화면에 들어오면 자동으로 띄운다(웨일ERP 탭, 닫으면 그 브라우저 · 계정 · BP 에서 다시 안 뜸).
+* **Update**: [점포 관리](/stores.md) — 점포 등록 [취소]: 입력한 것이 있으면 이탈 확인창(「작성을 취소하시겠습니까?」 · 「취소하면 입력한 내용은 저장되지 않습니다.」)을 띄운다. 저장 중엔 [취소]를 막고, 등록 결과를 모르면 묻지 않는다. 수정 화면은 그대로(WHALEERP-696, front wurmple).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일: 수정 패널 동시 수정 409 는 실패 띠 없이 토스트 · 다시 채우기만(`saveFailureAction`, WHALEERP-714), 수정의 겹침 확인 문구를 「저장하면 이 휴일이 겹치는 날짜에도 적용됩니다.」로(WHALEERP-715, front bidoof).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로자 정보 수정(`/contracts/{id}/worker`)은 상세에 [재발송]이 보이는 계약에서 바뀐 것이 없으면 저장(= 다시 보냄)하지 않고 [재발송]으로 안내하며, 저장이 끝나면 「근로자 정보를 저장했습니다.」 토스트를 띄운 뒤 상세로 간다(WHALEERP-681 — 전에는 같은 값으로도 다시 보내 서명 기한이 새로 잡히고 말없이 상세로 갔다).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성 · 이어 쓰기 · 수정(직원 수정 요청) [취소]가 확인창(「취소하면 입력한 내용은 저장되지 않습니다.」)을 띄운 뒤 전과 같은 곳(들어온 화면 `cancelHref`, 없으면 돌아갈 목록)으로 간다(WHALEERP-674).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 재발송 서버 액션(`sendContract`)이 성공하면 `next/cache` 의 `refresh()` 로 응답 안에서 화면을 다시 받는다. 근로계약 상세 · 직원 목록 재발송 버튼은 성공 뒤 `router.refresh` 를 따로 부르지 않고, 상세는 `?send=` · `?document=` 가 있을 때만 쿼리를 지우는 `router.replace` 를 한다(WHALEERP-671 — 재발송 횟수 · 마지막 일시가 바로 바뀌지 않던 것).
+* **Update**: [출퇴근 현황 화면](/screens/attendance-records.md) — 필터 「재직 상태」의 재직 · 퇴직 이름을 화면 상수(`EMPLOYMENT_LABELS`) 대신 api 값 이름 `getEnum("EmploymentStatus")` 으로 그린다 — 「전체」만 화면 문구(WHALEERP-721, naming.md 「front 에 상수 대응표를 두지 않는다」).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 관리자 화면 최소폭을 플랫폼 탭만 1260 으로(웨일ERP 탭은 1720 유지, `data-erp-wide`), 넘치는 플랫폼 목록은 DataTable `scroll` 로 표 상자 안에서 밀고 빈 scroll 표도 상자 안 가로 스크롤(front #289).
 * **Update**: [출퇴근 현황 화면](/screens/attendance-records.md) — 출퇴근 기록 다시 보정(WHALEERP-687, 운영 정책 ATT-20 v283 · 2026-11-16 재영): 보정이 필요한 기록은 기록이 있는 줄이면 「보정」을 두어 보정 · 대신 등록한 줄도 「이력」과 함께 다시 고치고, 정상 · 지각 기록은 그 목록에 나오지 않아 일별 출퇴근 표 줄마다 같은 「보정」을 더했다(`DayFixButton` · `DayFixProvider` — 패널은 바탕이 막히는 본문 밖). 대신 등록의 409 안내도 api 에서 「일별 출퇴근에서 그날 기록의 [보정]으로 고쳐 주세요」로 바뀌었다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — WHALEERP-683 리뷰 반영: 상세 「근로계약서 작성」의 `?entry=` 가 [목록] 주소 · 보던 주를 함께 싣는다. 받는 쪽 `staffEntryHrefOf` 가 직원 화면 규칙으로 다시 만들고, 예전 형식 상세 주소(목록 조건을 상세 주소에 붙인 것)도 [목록] 주소로 바꿔 남긴다. 판정은 서버 전용 `contracts/new/cancel-href.ts` 로 옮겨 근로계약 클라이언트 번들에 직원 상세 모듈이 딸려 가지 않게 했다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 「직원 초대」 · 상세 「근로계약서 작성」이 들어온 주소를 `?entry=` 로 실어, 근로계약서 작성 [취소]가 그 화면으로 돌아간다(WHALEERP-683). 재계약 [취소]는 원래 계약 상세로 간다. 저장 · 임시저장 뒤 이동은 그대로다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 「최종수정」은 등록(종이) · 첫 발송(전자) 뒤 고친 적이 없으면 「-」(1팀 상세의 `wasUpdated` 와 같이 1초 넘게 다를 때만 보임, front #286 code-review). 관리자를 모르면 일시만 보이는 것은 그대로 — api 가 배포 전 행을 일시만 근사해 채운다.
 
 ## 2026-11-13
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 처리 정보에 「최종수정 | 일시 · 관리자」 줄(최종 처리일 다음, 전자 · 종이 계약 모두, 없으면 「-」). api `modifiedAt` · `modifiedBy`(api exeggutor)로 타입을 다시 만들었다(WHALEERP-699, front weezing).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 가입 전(`joinState` 가 `JOINED` 아님) 재직 직원 상세에도 [퇴직 처리] 버튼이 보인다(WHALEERP-682, 계약 종료 확인창의 「퇴직 처리로 정리합니다」 안내와 맞춤, 목록 이름 링크도 가입 전 재직 직원에게 건다). 작성 중 근로계약만 있는 직원의 api 409 는 기존 확인창 안 문구로 보인다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 연장 재계약(`contract.isRenewal` true, 재입사 재계약은 첫 계약처럼 false)의 서명 대기 · 직원 수정 요청은 목록 재직 칸 「재직」, 계약 칸 [재계약] 회색 꼬리표 + 상태 배지(WHALEERP-672, 홍기 확정). 첫 계약 · 재입사 · 퇴직 예정 표기는 그대로(연장 재계약의 거절 · 만료 · 임시저장은 api 가 대표 계약으로 세우지 않아 직전 체결 계약이 보인다), 계약 칸 200 → 240px.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 저장 뒤 안내 쿠키를 path `/` · 이름 `contract-saved-{bpCodeId}` 로 바꿨다. 직원 정보 관리 [직원 초대]로 들어와 임시저장 · 서명 요청하면 목록에 안내 띠가 뜨지 않던 것(WHALEERP-697 — 처음 연 문서 주소 밖 path 의 쿠키가 소프트 이동 뒤 `document.cookie` 에 보이지 않음, front shuckle).

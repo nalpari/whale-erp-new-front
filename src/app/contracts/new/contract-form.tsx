@@ -2,7 +2,7 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FieldMessage, FormGroup, FormRow, Radio, Select, Textarea, TextField, useAction } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FieldMessage, FormGroup, FormRow, GuideIcon, Radio, Select, Textarea, TextField, useAction } from "@/components/common";
 import { FieldErrors, useInvalid } from "../field-errors";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { fetchSameOrigin } from "@/lib/bff";
@@ -72,7 +72,64 @@ const HOURS_FIELDS: [HourField, string][] = [
   ["monthlyOvertimeHours", "월간 연장근무"],
   ["baseNightHours", "기본시간 중 야간근무"],
 ];
-const HELP = "text-[12px] leading-[1.5] text-erp-muted";
+// 칸 아래 안내 — 빈 값 회색(erp-muted #999)은 흐려 느낌표 아이콘과 같은 회청(erp-brand #6b7988)으로 진하게(2026-11-16 사용자 지정)
+const HELP = "text-[12px] leading-[1.5] text-erp-brand";
+
+/** 선택 카드 아래 한 줄 설명 — 시작 가이드 근로계약서 작성 안내와 같은 뜻을 카드에 맞게 짧게(2026-11-16 사용자 지정) */
+const EMPLOYMENT_DESC = { FULL_TIME: "월급/연봉 기준으로 급여 계산", PART_TIME: "근무시간에 따라 시급으로 급여 계산" } as const;
+// 계좌는 관리자가 입력하지 않는다 — 직원이 앱에서 서명할 때 신고 정보(은행 · 급여 계좌)로 넣는다(api StaffTaxProfile, 2026-11-16 사용자 지정)
+const PAY_METHOD_DESC = { ACCOUNT: "직원이 앱에서 계좌 입력", CASH: "매장에서 직접 현금 지급" } as const;
+const PROBATION_DESC = { NONE: "수습기간 없이 계약한 시급 적용", APPLY: "최대 3개월 · 최저시급의 90% 이상 적용" } as const;
+const METHOD_DESC = { ELECTRONIC: "직원전용 앱으로 발송 · 직원이 직접 서명", PAPER: "서명된 계약서 첨부 · 별도 발송 없음" } as const;
+
+/** 큰 체크 카드 — ChoiceCards 와 같은 모양(키보드 포커스는 바깥 2px 선 — 고른 카드는 테두리가 이미 회청이라 테두리로는 보이지 않았다, 리뷰 반영)에 제목 앞 16px 체크 표시(테두리는 처음부터 회청 — 입력칸 선 색은 흐려 고를 수 있는지 안 보였다, 고르면 회청 바탕 · 흰 체크). 여러 개를 함께 고를 때(4대보험) */
+function CheckCard({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <label className="group flex cursor-pointer items-center justify-center gap-[8px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[12px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-erp-brand">
+      <input type="checkbox" className="sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <span aria-hidden className="flex size-[16px] items-center justify-center rounded-[2px] border border-erp-brand bg-white text-white group-has-[:checked]:border-erp-brand group-has-[:checked]:bg-erp-brand">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 5.2l2 2 4-4.4" />
+        </svg>
+      </span>
+      <b className="text-[15px] font-semibold text-erp-ink">{label}</b>
+    </label>
+  );
+}
+
+/**
+ * 큰 선택 카드(라디오) — TO-DO 등록(todo-form ChoiceCards) · 점포 등록 점포유형 카드와 같은 모양. TO-DO 쪽과 다른 점: 설명 글자는 이 화면 안내와 같은 회청(erp-brand),
+ * 고를 수 없는 카드(disabled), 아이콘 없음 — 두 벌을 공통 컴포넌트로 올리는 것은 1팀 · 3팀과 맞춘 뒤에 한다. 고르면 선이 브랜드색, 바탕이 두 번째 바탕색으로 바뀐다.
+ * 선 두께는 바뀌지 않는다. 고를 수 없는 카드(수정 요청의 종이 계약)는 흐리게 둔다
+ */
+function ChoiceCards<T extends string>({
+  name,
+  items,
+  value,
+  onChange,
+}: {
+  name: string;
+  items: { value: T; title: string; desc?: string; disabled?: boolean }[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    // 이름은 감싸는 Group(role=group)이 단다 — 여기에도 달면 같은 이름이 두 번 읽힌다
+    <div role="radiogroup" className="grid grid-cols-2 gap-[12px]">
+      {items.map((item) => (
+        <label
+          key={item.value}
+          className="flex cursor-pointer flex-col items-center gap-[2px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[10px] text-center transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-40 has-[:disabled]:hover:border-erp-panel-line has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-erp-brand"
+        >
+          <input type="radio" name={name} className="sr-only" checked={value === item.value} disabled={item.disabled} onChange={() => onChange(item.value)} />
+          <b className="text-[15px] font-semibold text-erp-ink">{item.title}</b>
+          {/* 설명은 칸 아래 안내와 같은 회청(erp-brand, 느낌표 아이콘 색) — 라벨 회색은 흐렸다(2026-11-16 사용자 지정) */}
+          {item.desc && <span className="text-[13px] text-erp-brand">{item.desc}</span>}
+        </label>
+      ))}
+    </div>
+  );
+}
 const LABEL = "truncate text-[14px] font-medium text-erp-label";
 
 const won = (n: number | null) => (n === null ? "-" : n.toLocaleString("ko-KR"));
@@ -98,9 +155,11 @@ function PayTable({ title, errors, children }: { title: string; errors?: string[
 
 type PayRow = { key: string; label: string; cells?: ReactNode[]; hours?: ReactNode; wage?: ReactNode; amount: ReactNode };
 
-// 제목(라벨) 옆 짧은 설명 — 계산식 · 범위처럼 칸을 읽는 데 필요한 것만 둔다. 입력칸 아래는 오류 자리로 비운다
-function Hint({ children }: { children: ReactNode }) {
+// 제목(라벨) 옆 짧은 설명 — 계산식 · 범위처럼 칸을 읽는 데 필요한 것만 둔다. 입력칸 아래에는 오류와 느낌표 안내(help · helpIcon)가 온다
+function Hint({ children, mark = false }: { children: ReactNode; mark?: boolean }) {
   // 좁은 칸(3등분)에서 잘리지 않게 줄바꿈한다 — 말줄임이면 계산식 뒤쪽을 볼 방법이 없다(PR #239 리뷰)
+  // mark — 계산식(월급 · 연봉)은 형광펜으로 칠한다. 시작 가이드 형광펜과 같은 연한 노랑(#fff6e5 바탕 · #956013 글자, 2026-11-16 사용자 지정)
+  if (mark) return <span className="min-w-px break-keep rounded-[2px] bg-[#fff6e5] px-[4px] text-[12px] leading-[18px] text-[#956013]">{children}</span>;
   return <span className="min-w-px break-keep text-[12px] leading-[18px] text-erp-muted">{children}</span>;
 }
 
@@ -110,7 +169,9 @@ function Item({
   label,
   required,
   hint,
+  hintMark,
   help,
+  helpIcon,
   width,
   errors,
   children,
@@ -118,7 +179,11 @@ function Item({
   label: string;
   required?: boolean;
   hint?: string;
+  /** 칸 이름 옆 hint 를 형광펜으로 — 계산식(월급 · 연봉, 2026-11-16 사용자 지정) */
+  hintMark?: boolean;
   help?: string;
+  /** 칸 아래 안내 앞에 느낌표(GuideIcon) — 놓치면 저장이 막히거나 계약 내용이 바뀌는 안내(2026-11-16 사용자 지정) */
+  helpIcon?: boolean;
   width?: string;
   errors?: string[];
   children: (id: string) => ReactNode;
@@ -130,7 +195,8 @@ function Item({
   useInvalid(box, `${id}-errors`, invalid);
   return (
     <div ref={box} data-invalid={invalid || undefined} className={`flex flex-col gap-[8px] ${width ?? "min-w-px flex-1"}`}>
-      <span className="flex items-baseline gap-[8px]">
+      {/* 칸 이름과 옆 안내(형광펜 계산식 · 느낌표 안내)를 가운데로 맞춘다 — 기준선 맞춤은 바탕 · 아이콘이 있으면 위아래로 어긋나 보였다. 줄 높이는 안내가 있든 없든 18px — 안내 있는 칸만 입력칸이 2px 내려가 옆 칸과 어긋났다(2026-11-16 사용자 지정) */}
+      <span className="flex min-h-[18px] items-center gap-[8px]">
         <label htmlFor={id} className="shrink-0 text-[14px] font-medium text-erp-label">
           {label}
           {required && (
@@ -143,38 +209,73 @@ function Item({
             </>
           )}
         </label>
-        {hint && <Hint>{hint}</Hint>}
+        {hint && <Hint mark={hintMark}>{hint}</Hint>}
       </span>
       {children(id)}
       <FieldErrors id={`${id}-errors`} errors={errors} />
-      {help && <span className={HELP}>{help}</span>}
+      {help &&
+        (helpIcon ? (
+          // 12px · 줄 높이 18px 첫 줄 가운데에 아이콘(14px)을 맞춘다
+          <span className={`flex items-start gap-[6px] whitespace-pre-line ${HELP}`}>
+            <span className="mt-[2px] flex">
+              <GuideIcon />
+            </span>
+            {help}
+          </span>
+        ) : (
+          <span className={`whitespace-pre-line ${HELP}`}>{help}</span>
+        ))}
     </div>
   );
 }
 
-// 종이 계약 날인본 한 칸 — 고른 파일 이름(읽기 전용) + 「파일 선택」(숨은 file 입력) + 고른 뒤 「빼기」. 데모 staff-parts fileField 와 같다.
+// 종이 계약 날인본 한 칸 — 고른 파일 이름(읽기 전용) + 「파일 선택」(숨은 file 입력). 고른 뒤에는 파일명 칸 맨 오른쪽에 밑줄 친 링크 파랑 글자 [빼기] —
+// 첨부 목록(AttachmentField) · 급여명세서 검토의 [빼기]와 같은 모양(2026-11-16 사용자 지정, 전엔 칸 오른쪽 회색 Off 버튼).
 // 1팀 공통 컴포넌트에 파일 칸이 없어 여기 둔다. 형식 · 크기가 맞지 않으면 칸 아래 이유를 보이고 파일을 받지 않는다.
 function PaperFile({ id, label, file, error, accept, onPick }: { id: string; label: string; file: File | null; error?: string; accept: string; onPick: (file: File | undefined) => void }) {
   const input = useRef<HTMLInputElement>(null);
+  const pickRef = useRef<HTMLSpanElement>(null);
   return (
     <span data-invalid={error ? true : undefined} className="flex flex-col gap-[6px]">
       <span className="flex gap-[6px]">
-        <TextField
-          id={id}
-          readOnly
-          value={file?.name ?? ""}
-          placeholder={`${label} 파일을 첨부해 주세요.`}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? `${id}-error` : undefined}
-        />
-        <Button variant="soft" onClick={() => input.current?.click()}>
-          파일 선택
-        </Button>
-        {file && (
-          <Button variant="off" onClick={() => onPick(undefined)}>
-            빼기
-          </Button>
+        {file ? (
+          // 읽기 전용 칸과 같은 껍데기(#f8f9fb 바탕) 안에 파일명 · [빼기]를 나란히 — 입력칸 안에는 버튼을 둘 수 없어 상자로 그린다
+          // 입력칸이 아니라 label 이 이름을 붙이지 못한다 — 묶음(role=group)에 칸 이름 · 파일명을 직접 단다(리뷰 반영)
+          <span
+            id={id}
+            role="group"
+            aria-label={`${label} 파일 ${file.name}`}
+            aria-describedby={error ? `${id}-error` : undefined}
+            className="flex h-[34px] min-w-0 flex-1 items-center gap-[8px] rounded-[2px] border border-erp-field-line bg-erp-thead-bg px-[10px] text-[14px] text-erp-ink"
+          >
+            <span className="min-w-0 flex-1 truncate" title={file.name}>
+              {file.name}
+            </span>
+            <button type="button" aria-label={`${label} 파일 빼기`} className="shrink-0 cursor-pointer text-erp-link underline"
+              onClick={() => {
+                onPick(undefined);
+                // [빼기]가 사라지며 포커스가 body 로 빠지지 않게 [파일 선택]으로 옮긴다(리뷰 반영)
+                requestAnimationFrame(() => pickRef.current?.querySelector("button")?.focus());
+              }}
+            >
+              빼기
+            </button>
+          </span>
+        ) : (
+          <TextField
+            id={id}
+            readOnly
+            value=""
+            placeholder={`${label} 파일을 첨부해 주세요.`}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${id}-error` : undefined}
+          />
         )}
+        <span ref={pickRef} className="flex shrink-0">
+          <Button variant="soft" onClick={() => input.current?.click()}>
+            파일 선택
+          </Button>
+        </span>
       </span>
       <FieldMessage id={`${id}-error`} message={error} />
       <input
@@ -193,7 +294,22 @@ function PaperFile({ id, label, file, error, accept, onPick }: { id: string; lab
 }
 
 // 입력이 여럿인 칸(라디오 · 요일 · 시각). <label> 하나로 묶을 수 없어 group 으로 둔다.
-function Group({ label, required, hint, children, errors }: { label: string; required?: boolean; hint?: string; children: ReactNode; errors?: string[] }) {
+function Group({
+  label,
+  required,
+  hint,
+  hintIcon,
+  children,
+  errors,
+}: {
+  label: string;
+  required?: boolean;
+  hint?: string;
+  /** 칸 이름 옆 안내 앞에 느낌표 — 칸 아래 안내(helpIcon)와 같은 회청 글자(2026-11-16 사용자 지정, 수습 여부) */
+  hintIcon?: boolean;
+  children: ReactNode;
+  errors?: string[];
+}) {
   const errorId = useId();
   const box = useRef<HTMLDivElement>(null);
   const invalid = !!errors?.length;
@@ -207,7 +323,8 @@ function Group({ label, required, hint, children, errors }: { label: string; req
       data-invalid={invalid || undefined}
       className="flex min-w-px flex-1 flex-col gap-[8px]"
     >
-      <span className="flex items-baseline gap-[8px]">
+      {/* 칸 이름과 옆 안내(형광펜 계산식 · 느낌표 안내)를 가운데로 맞춘다 — 기준선 맞춤은 바탕 · 아이콘이 있으면 위아래로 어긋나 보였다(2026-11-16 사용자 지정) */}
+      <span className="flex min-h-[18px] items-center gap-[8px]">
         <span className="shrink-0 text-[14px] font-medium text-erp-label">
           {label}
           {required && (
@@ -220,7 +337,15 @@ function Group({ label, required, hint, children, errors }: { label: string; req
             </>
           )}
         </span>
-        {hint && <Hint>{hint}</Hint>}
+        {hint &&
+          (hintIcon ? (
+            <span className="flex min-w-px items-center gap-[6px] text-[12px] leading-[18px] text-erp-brand">
+              <GuideIcon />
+              {hint}
+            </span>
+          ) : (
+            <Hint>{hint}</Hint>
+          ))}
       </span>
       {children}
       <FieldErrors id={errorId} errors={errors} />
@@ -348,6 +473,8 @@ export function ContractForm({
     setServerError(message);
     setFailures((n) => n + 1);
   };
+  /** [취소] 확인창 — 누르면 저장하지 않고 나간다고 한 번 알린다(WHALEERP-674) */
+  const [leaving, setLeaving] = useState(false);
   // 같은 점포에 진행 중 계약이 있어 저장하지 못했을 때 — 대체를 확인받아 같은 본문에 그 목록을 실어 다시 보낸다.
   // paper 면 종이 계약 등록(날인본과 함께)이었다. correcting 이면 종이 계약이 기간이 겹치는 체결 완료와 부딪혀(SIGNED_CONTRACT_OVERLAP)
   // 「잘못 올린 계약 바로잡기」를 묻는다 — 확인하면 correctSignedContracts 를 켜 체결 완료도 대체한다(WHALEERP-156).
@@ -555,7 +682,7 @@ export function ContractForm({
     <div ref={formRef} className="flex flex-col gap-[12px] [&_:is(select,input:not([type=radio],[type=checkbox])):disabled]:bg-erp-thead-bg">
       <div className="flex items-end gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약서</h2>
-        <Button variant="off" href={at(cancelHref ?? backHrefOf(back))}>
+        <Button variant="off" onClick={() => setLeaving(true)}>
           취소
         </Button>
         {deleteButton}
@@ -585,18 +712,28 @@ export function ContractForm({
             </Item>
           </FormRow>
           <FormRow>
-            <Item label="생년월일" required help="계약 시작일 기준 만 19세 미만이면 저장할 수 없습니다." errors={errs.birthDate}>
+            <Item label="생년월일" required helpIcon help="계약 시작일 기준 만 19세 미만인 경우 직원으로 등록할 수 없습니다." errors={errs.birthDate}>
               {() => <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />}
             </Item>
             {/* 성별 · 외국인 여부 — 직원이 가입하며 넣는 값과 이름 · 번호 · 생년월일과 함께 대조해 본인만 날인한다(WHALEERP-125) */}
-            <Group label="성별" required errors={errs.gender}>
-              <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-                {GENDERS.map((v) => (
-                  <Radio key={v} name="gender" label={labelOf(labels.gender, v)} checked={form.gender === v} onChange={() => set("gender", v)} />
-                ))}
-                <Checkbox label="외국인" checked={form.isForeigner} onChange={(e) => set("isForeigner", e.target.checked)} />
+            {/* 테두리 없는 라디오가 생년월일 입력칸에 6px 로 붙어 보여 칸 안쪽을 18px 띄운다(묶음 사이 간격). 라디오 줄은 옆 34px 입력칸과
+                가운데를 맞춘다 — 위로 붙어 보였다(2026-11-16 사용자 지정). 여백은 안쪽 상자에 둔다 — 바깥(flex-1)에 두면 이 칸만 18px 넓어져
+                소속 근무지가 휴대전화번호 시작선에서 밀렸다 */}
+            <div className="flex min-w-px flex-1">
+              <div className="flex w-full min-w-px pl-[18px]">
+                <Group label="성별" required errors={errs.gender}>
+                  <div role="radiogroup" className="flex min-h-[34px] flex-wrap items-center gap-x-[18px] gap-y-[8px]">
+                    {GENDERS.map((v) => (
+                      <Radio key={v} name="gender" label={labelOf(labels.gender, v)} checked={form.gender === v} onChange={() => set("gender", v)} />
+                    ))}
+                    {/* 외국인은 성별과 다른 항목이라 남 · 여에서 조금 더 뗀다(18 + 18, 2026-11-16 사용자 지정) */}
+                    <span className="ml-[18px] flex">
+                      <Checkbox label="외국인" checked={form.isForeigner} onChange={(e) => set("isForeigner", e.target.checked)} />
+                    </span>
+                  </div>
+                </Group>
               </div>
-            </Group>
+            </div>
             <Item label="소속 근무지" required errors={errs.storeId}>
               {(id) => (
                 // 수정 요청은 이미 보낸 계약이라 근무지를 바꾸지 않는다 — 다른 근무지는 새 근로계약서로(api #58). 재계약도 직전 계약의 근무지다
@@ -618,34 +755,37 @@ export function ContractForm({
         </FormGroup>
 
         <FormGroup title="계약 방식">
-          <Group label="고용 형태">
-            <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-              {(["FULL_TIME", "PART_TIME"] as const).map((v) => (
-                <Radio key={v} name="employmentType" label={labelOf(labels.employmentType, v)} checked={form.employmentType === v} onChange={() => setForm((f) => withEmploymentType(f, v))} />
-              ))}
-            </div>
-          </Group>
-          <Group label="계약 방식" hint={paper ? "당사자가 모두 서명한 근로계약서를 올려 등록하면 발송 · 전자서명 없이 바로 서명 완료로 저장된다." : undefined}>
-            <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-              {(["ELECTRONIC", "PAPER"] as const).map((v) => (
-                <Radio
-                  key={v}
-                  name="contractMethod"
-                  label={labelOf(labels.contractMethod, v)}
-                  checked={form.contractMethod === v}
-                  disabled={correction && v === "PAPER"}
-                  onChange={() => set("contractMethod", v)}
-                />
-              ))}
-            </div>
-          </Group>
+          {/* 고용 형태 · 계약 방식은 TO-DO 등록의 큰 선택 카드(ChoiceCards)와 같은 모양 — 작은 라디오는 계약 전체를 가르는 선택치고 눈에 덜 띄었다.
+              위아래로 두고(계약 방식이 아래) 폭은 왼쪽 반 칸 — 한 줄을 다 쓰면 카드가 너무 넓었다(2026-11-16 사용자 지정) */}
+          <div className="grid grid-cols-2 gap-[18px] [&>*]:col-start-1">
+            <Group label="고용 형태">
+              <ChoiceCards
+                name="employmentType"
+                value={form.employmentType}
+                onChange={(v) => setForm((f) => withEmploymentType(f, v))}
+                items={(["FULL_TIME", "PART_TIME"] as const).map((v) => ({ value: v, title: labelOf(labels.employmentType, v), desc: EMPLOYMENT_DESC[v] }))}
+              />
+            </Group>
+            {/* 종이 계약 안내 문구(라벨 옆)는 뺐다 — 카드 설명 「서명된 계약서 첨부 · 별도 발송 없음」이 같은 말이다(2026-11-16 사용자 지정) */}
+            <Group label="계약 방식">
+              <ChoiceCards
+                name="contractMethod"
+                value={form.contractMethod}
+                onChange={(v) => set("contractMethod", v)}
+                items={(["ELECTRONIC", "PAPER"] as const).map((v) => ({ value: v, title: labelOf(labels.contractMethod, v), desc: METHOD_DESC[v], disabled: correction && v === "PAPER" }))}
+              />
+            </Group>
+          </div>
           {/* 종이 계약 날인본(CTR-23, 데모 contracts-new 의 파일 칸). 근로계약서는 필수, 임금계약서는 따로 작성한 경우만 */}
           {paper && (
             <FormRow>
-              <Item label="근로계약서" required help={`당사자가 모두 서명한 파일. ${paperTypes.join(" · ")}, 10MB까지`}>
+              {/* 파일 안내는 공지 · 문의 · 시설물 문서 첨부와 같은 말투(「… 파일을 1개 첨부할 수 있습니다. (10MB 이하)」, 2026-11-16 사용자 지정) */}
+              <Item label="근로계약서" required helpIcon help={`근로계약 당사자 모두가 서명한 근로계약서를 첨부해 주세요.
+${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하)`}>
                 {(id) => <PaperFile id={id} label="근로계약서" file={files.employment} error={fileErrors.employment ?? errs.employmentFile?.[0]} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("employment", f)} />}
               </Item>
-              <Item label="임금계약서">
+              <Item label="임금계약서" helpIcon help={`별도로 작성한 임금계약서가 있는 경우 첨부해 주세요.
+${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하)`}>
                 {(id) => <PaperFile id={id} label="임금계약서" file={files.wage} error={fileErrors.wage} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("wage", f)} />}
               </Item>
             </FormRow>
@@ -657,7 +797,7 @@ export function ContractForm({
             <Item label="계약 시작일" required help={previousStartDate ? `재계약은 직전 계약 시작일(${previousStartDate}) 다음 날부터` : undefined} errors={errs.startDate}>
               {() => <DateField aria-label="계약 시작일" value={form.startDate} onChange={(v) => set("startDate", v)} />}
             </Item>
-            <Item label="계약 종료일" hint="미설정 시 기간의 정함이 없는 계약" errors={errs.endDate}>
+            <Item label="계약 종료일" helpIcon help="계약 종료일을 설정하지 않은 경우, &apos;기간의 정함이 없는 계약&apos;으로 처리됩니다." errors={errs.endDate}>
               {() => <DateField aria-label="계약 종료일" value={form.endDate} onChange={(v) => set("endDate", v)} />}
             </Item>
           </FormRow>
@@ -686,7 +826,7 @@ export function ContractForm({
             </Group>
           </FormRow>
           {/* 급여 표 — 흰 칸은 입력, 회색 칸은 셈한 값이다(현업 엑셀 견본, 2026-10-13). */}
-          {/* 시급 · 월급 · 연봉 한 줄이 소정근로시간 표 위에 있다(데모 확인 2026-10-15). 생년월일 · 근무요일 줄처럼 3등분한다(파트타이머는 셋째 칸을 비운다). 시급은 고용 형태와 상관없이 한 칸이다(2026-10-12 재영). */}
+          {/* 시급 · 월급 · 연봉 한 줄이 소정근로시간 표 위에 있다(데모 확인 2026-10-15). 생년월일 · 근무요일 줄처럼 3등분한다(파트타이머는 시급 · 주급 · 월급 · 연봉 4등분, 2026-11-16 사용자 지정 — 전엔 셋째 칸을 비웠다). 시급은 고용 형태와 상관없이 한 칸이다(2026-10-12 재영). */}
           <FormRow>
             <Item label="시급" required errors={errs.wage}>
               {(id) => (
@@ -699,27 +839,37 @@ export function ContractForm({
                 />
               )}
             </Item>
-            <Item label="월급" hint={form.employmentType === "FULL_TIME" ? "급여항목 합계 + 비과세 합계" : "주급 × 4.345"}>
+            {/* 계산식은 형광펜(hintMark). 파트타이머는 주급 · 월급 · 연봉 세 칸 — 정직원과 같이 연봉까지 보인다(보이기만, 저장하지 않는다, 2026-11-16 사용자 지정) */}
+            {partTime && (
+              <Item label="주급" hintMark hint="시급 × 주간 유급시간">
+                {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(partPay.weekly)} />}
+              </Item>
+            )}
+            <Item label="월급" hintMark hint={partTime ? "주급 × 4.345주" : "급여항목 합계 + 비과세항목 합계"}>
               {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(monthly)} />}
             </Item>
-            {form.employmentType === "FULL_TIME" ? (
-              <Item label="연봉" hint="월급 × 12">
-                {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(fullPay.annual)} />}
-              </Item>
-            ) : (
-              <div className="min-w-px flex-1" />
-            )}
+            <Item label="연봉" hintMark hint="월급 × 12개월">
+              {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(partTime ? partPay.monthly * 12 : fullPay.annual)} />}
+            </Item>
           </FormRow>
           {/* 수습(노무사 확인 2026-10-14, 질문 19): 정직원만, 시급 · 월급 · 연봉 줄 바로 아래(수습 중 시급이 시급에서 셈해진다). 필수는 아니지만 수습 대상이면 계약서에 적는다.
               계약 기간이 1년 이상(또는 기간의 정함 없음)일 때만, 기간은 최대 3개월, 감액해도 최저임금의 90% 이상. 급여명세서는 수습 기간이면 그렇다고 표기한다. */}
           {!partTime && (
             <>
-              <Group label="수습 여부" hint="계약 기간이 1년 이상이거나 종료일이 없을 때만 적용할 수 있습니다.">
-                <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-                  <Radio name="probation" label="없음" checked={!form.probation} onChange={() => set("probation", false)} />
-                  <Radio name="probation" label="적용" checked={form.probation} onChange={() => set("probation", true)} />
-                </div>
-              </Group>
+              {/* 고용 형태 · 계약 방식과 같은 큰 선택 카드, 폭은 왼쪽 반 칸(2026-11-16 사용자 지정) */}
+              <div className="grid grid-cols-2 gap-[18px]">
+                <Group label="수습 여부" hintIcon hint="계약기간이 1년 이상이거나 종료일이 없는 경우에만 적용할 수 있습니다.">
+                  <ChoiceCards
+                    name="probation"
+                    value={form.probation ? "APPLY" : "NONE"}
+                    onChange={(v) => set("probation", v === "APPLY")}
+                    items={[
+                      { value: "NONE", title: "없음", desc: PROBATION_DESC.NONE },
+                      { value: "APPLY", title: "적용", desc: PROBATION_DESC.APPLY },
+                    ]}
+                  />
+                </Group>
+              </div>
               {form.probation && (
                 <FormRow>
                   <Item label="수습 기간" required hint="최대 3개월" errors={errs.probationMonths}>
@@ -779,13 +929,17 @@ export function ContractForm({
             )}
           </div>
           {/* 급여 지급 방식은 소정근로시간 표 바로 밑(데모 확인 2026-10-15) */}
-          <Group label="급여 지급 방식" required>
-            <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-              {(["ACCOUNT", "CASH"] as const).map((v) => (
-                <Radio key={v} name="payMethod" label={labelOf(labels.payMethod, v)} checked={form.payMethod === v} onChange={() => set("payMethod", v)} />
-              ))}
-            </div>
-          </Group>
+          {/* 고용 형태 · 계약 방식 · 수습 여부와 같은 큰 선택 카드, 폭은 왼쪽 반 칸(2026-11-16 사용자 지정) */}
+          <div className="grid grid-cols-2 gap-[18px]">
+            <Group label="급여 지급 방식" required>
+              <ChoiceCards
+                name="payMethod"
+                value={form.payMethod}
+                onChange={(v) => set("payMethod", v)}
+                items={(["ACCOUNT", "CASH"] as const).map((v) => ({ value: v, title: labelOf(labels.payMethod, v), desc: PAY_METHOD_DESC[v] }))}
+              />
+            </Group>
+          </div>
           {!partTime && (
             <>
               <FormRow>
@@ -835,7 +989,7 @@ export function ContractForm({
                 )
               }
             </Item>
-            <Group label="임금지급일" hint="31 을 넣으면 말일로 본다." errors={errs.payDay}>
+            <Group label="임금지급일" hintIcon hint="31일 입력 시 매월 말일에 지급합니다." errors={errs.payDay}>
               <span className="flex gap-[6px]">
                 <span className="w-[100px] shrink-0">
                   <Select aria-label="임금지급 월" value={form.payMonth} onChange={(e) => set("payMonth", e.target.value as Form["payMonth"])}>
@@ -869,16 +1023,26 @@ export function ContractForm({
         </FormGroup>
 
         <FormGroup title="4대보험 가입 여부">
-          <div className="flex gap-[24px]">
-            <Checkbox label="건강보험 · 국민연금" checked={form.isHealthPensionInsured} onChange={(e) => set("isHealthPensionInsured", e.target.checked)} />
-            <Checkbox label="고용보험 · 산재보험" checked={form.isEmploymentInjuryInsured} onChange={(e) => set("isEmploymentInjuryInsured", e.target.checked)} />
+          {/* 위 선택 카드(ChoiceCards)와 같은 큰 카드 — 둘 다 고를 수 있어 제목 앞에 체크 표시를 둔다(2026-11-16 사용자 지정) */}
+          <div className="grid grid-cols-2 gap-[18px]">
+            <div className="grid grid-cols-2 gap-[12px]">
+              <CheckCard label="건강보험 · 국민연금" checked={form.isHealthPensionInsured} onChange={(v) => set("isHealthPensionInsured", v)} />
+              <CheckCard label="고용보험 · 산재보험" checked={form.isEmploymentInjuryInsured} onChange={(v) => set("isEmploymentInjuryInsured", v)} />
+            </div>
           </div>
           {/* 월 60시간 이상이면 가입이 원칙(노무사 확인 2026-10-14, 질문 6). 3.3% 원천징수는 부과 기관이 달라 4대보험과 따로 공제한다. */}
-          <span className={HELP} aria-live="polite">
-            이 계약은 월 약 <b className="font-semibold text-erp-ink">{Math.round(monthlyHours(form))}</b>시간이라{" "}
-            <b className="font-semibold text-erp-ink">{monthlyHours(form) >= 60 ? "4대보험 가입 대상입니다" : "4대보험 가입 대상이 아닙니다"}</b>. 월 60시간 이상 일하면 가입이 원칙이고,
-            3.3% 원천징수와는 따로 공제합니다.
-          </span>
+          {/* 첫 문장(이 계약이 대상인지)만 노란 형광펜(시작 가이드 · 계산식과 같은 #fff6e5 바탕 · #956013 글자)으로 강조하고 두 문장을 줄을 나눠 둔다. 글자는 본문과 같은 14px — 12px 는 작았다(2026-11-16 사용자 지정) */}
+          <p className="text-[14px] leading-[1.8]" aria-live="polite">
+            <mark className="rounded-[2px] bg-[#fff6e5] px-[4px] text-[#956013] [box-decoration-break:clone]">
+              본 계약의 월 근로시간은 약 <b className="font-semibold">{Math.round(monthlyHours(form))}</b>시간으로,{" "}
+              <b className="font-semibold">{monthlyHours(form) >= 60 ? "4대보험 가입 대상에 해당합니다" : "4대보험 가입 대상에 해당하지 않습니다"}</b>.
+            </mark>
+            <br />
+            {/* 둘째 문장은 형광펜 없이 글자만 — 칸 아래 안내와 같은 회청(2026-11-16 사용자 지정) */}
+            <span className="px-[4px] text-erp-brand">
+              일반적으로 월 60시간 이상 근무하는 근로자는 4대보험 가입 대상이며, 4대보험료는 3.3% 원천징수와 별도로 적용되는 항목입니다.
+            </span>
+          </p>
         </FormGroup>
 
         <Band risk={minor} title="만 19세 미만 직원은 등록할 수 없습니다." />
@@ -898,6 +1062,14 @@ export function ContractForm({
         </div>
       </div>
 
+      <ConfirmDialog
+        open={leaving}
+        title={correction ? "수정을 취소하시겠습니까?" : "작성을 취소하시겠습니까?"}
+        onCancel={() => setLeaving(false)}
+        onConfirm={() => router.push(at(cancelHref ?? backHrefOf(back)))}
+      >
+        <p>취소하면 입력한 내용은 저장되지 않습니다.</p>
+      </ConfirmDialog>
       {/* 같은 점포 · 같은 번호의 진행 중 계약(WHALEERP-129). 대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 · 수정 요청은 종료한다.
           종이 계약이 기간이 겹치는 체결 완료와 부딪히면 대체하지 않고 「잘못 올린 계약 바로잡기」를 묻는다 — 바로잡기만 체결 완료도
           곧바로 종료한다. 재계약이면 앞 계약은 새 계약 시작일에 하루 배치가 닫는다(WHALEERP-156). */}

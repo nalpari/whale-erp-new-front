@@ -11,7 +11,8 @@ import { inviteResendCopy, SEND_UNKNOWN, sendFailureOf } from "../contracts/[con
 // 직원 목록 · 상세의 가입 초대 재발송(WHALEERP-138). 보일지는 canResendInvitation(staff-row.ts)이 정하고, api 는 근로계약 재발송
 // (POST /contracts/:id/send, WHALEERP-136)이다 — 근로계약 상세의 재발송 버튼(send-button.tsx)과 같은 서버 액션 · 실패 판정을 쓴다.
 // 다른 메뉴(근로계약 관리 MN000006)의 수정 권한이라 메뉴 코드로 가린다(api #97 이 send 에 수정 권한을 건다). 막는 것은 api 다.
-// 보내면 화면을 다시 받아 갱신된 발송일을 보이고 토스트로 알린다.
+// 보내면 서버 액션이 응답 안에서 화면을 다시 받아(refresh, WHALEERP-671) 갱신된 발송일을 보이고 토스트로 알린다. 실패 쪽(접수 모름 · 다시 읽기)은
+// 서버 액션이 다시 받지 않아 아래에서 router.refresh 로 다시 읽는다.
 // 접수 여부를 모르면(SEND_UNCONFIRMED · 응답 끊김) 재발송은 계약 상태를 바꾸지 않아 다시 받은 화면에도 버튼이 그대로다 — 창을 연 채
 // 보내기를 잠그고(창을 닫았다 열어도) 문구를 남긴다. 다시 눌러 알림톡이 두 번 가지 않게(근로계약 상세 send-button.tsx 와 같다, PR #85 리뷰).
 // api 가 보낼 때 다시 판별해 계정 없는 번호는 가입 초대 알림톡, 계정 있는 번호는 소속 추가 확인 요청(알림톡 · 메일, 계약은 발송 대기 ·
@@ -65,7 +66,6 @@ export function ResendInvitationButton({ contractId, name, status, lastSentAt }:
             if (result.ok) {
               close();
               toast(copy.done);
-              router.refresh();
               return;
             }
             if (result.code === "SEND_UNCONFIRMED" || result.error === SEND_UNKNOWN) {

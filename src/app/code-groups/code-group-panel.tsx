@@ -229,7 +229,7 @@ export function CodeGroupPanel({
   const columns: Column<Draft>[] = [
     {
       header: "그룹 코드",
-      width: "w-[170px]",
+      width: "w-[140px]",
       align: "left",
       cell: (d) =>
         d.added ? (
@@ -256,6 +256,8 @@ export function CodeGroupPanel({
     },
     {
       header: "그룹명",
+      // 폭을 둔다 — 정하지 않으면 좁은 창(최소 1260)에서 입력칸이 0 까지 눌렸다. 모자라면 표 상자 안에서 옆으로 민다(2026-11-16 사용자 지정)
+      width: "w-[140px]",
       align: "left",
       cell: (d) => {
         // 기존 행은 수정 권한, 새 행은 등록 권한으로 고친다(새 행은 등록 권한이 있어야 생긴다)
@@ -277,8 +279,8 @@ export function CodeGroupPanel({
     },
     {
       header: "관리주체",
-      // 새 행의 선택칸(글자 + 오른쪽 화살표 30)에 ‘플랫폼고정’이 잘리지 않는 폭
-      width: "w-[140px]",
+      // 새 행의 선택칸(왼쪽 여백 10 + 글자 + 오른쪽 화살표 30)에 ‘플랫폼고정’이 잘리지 않는 폭 — 1260 에서 모자라면 표 상자 안에서 민다
+      width: "w-[130px]",
       cell: (d) =>
         d.added ? (
           <CellError message={errors.owner} reserve={addedInvalid}>
@@ -302,7 +304,8 @@ export function CodeGroupPanel({
     },
     {
       header: "BP 적용",
-      width: "w-[130px]",
+      // [BP 적용] 버튼(약 93) + 칸 여백 20 — 70 이면 버튼이 칸 밖으로 넘쳤다(리뷰 반영, 2026-11-16)
+      width: "w-[116px]",
       // 플랫폼제공 그룹만 [BP 적용]. 이미 적용한 그룹도 다시 누를 수 있다(BP 에 없는 코드만 들어간다). 새 그룹은 저장 뒤에 적용한다.
       cell: (d) =>
         !d.added && d.manageOwnerCode === "PLATFORM_PROVIDED" && manage ? (
@@ -317,7 +320,7 @@ export function CodeGroupPanel({
     },
     {
       header: "사용여부",
-      width: "w-[100px]",
+      width: "w-[90px]",
       cell: (d) =>
         manage || d.added ? (
           <Toggle

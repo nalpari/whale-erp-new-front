@@ -176,7 +176,7 @@ export default ({ A, R }) => {
       `<span class="text-erp-link hover:underline">${name}</span>`, // 권한명은 링크색 — 앱(platform-role-groups · bp-role-groups)과 같다(2026-10-26 사용자 지정)
       desc,
       // 등록일시 열은 뺐다 — 앱 platform-role-groups 와 같이 최종수정만(2026-10-26 사용자 지정)
-      `${mod} <span class="text-erp-label">· ${modBy}</span>`,
+      `${mod}`, // 일시만 — 고친 사람은 상세에서 본다(앱 platform-role-groups, 2026-11-16 사용자 지정)
       x.dialogTrigger("설정", id, "soft"),
       // 등록 / 미등록만 보인다. 미등록은 상태 빨강 배지
       n ? ui.badge("on", "등록") : ui.badge("off", "미등록"),
@@ -184,12 +184,13 @@ export default ({ A, R }) => {
   });
   const cols = [
     // 권한유형 · 코드를 한 칸에 — BP 권한 그룹 관리(앱 bp-role-groups)와 같은 모양(2026-10-26 사용자 지정)
-    { header: "권한유형 · 코드", width: "w-[200px]", align: "left" },
-    { header: "권한명", width: "w-[180px]", align: "left" }, // 설명이 칸 한가운데서 시작하지 않게 고정한다(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
+    // 설명만 남는 폭 — 나머지는 내용에 맞는 고정 폭(최종수정 16자 · 버튼 · 등록/미등록). 최소폭 1260 에서도 설명 자리가 남는다(앱 platform-role-groups, 2026-11-16 사용자 지정)
+    { header: "권한유형 · 코드", width: "w-[170px]" },
+    { header: "권한명", width: "w-[140px]", align: "left" }, // 설명이 칸 한가운데서 시작하지 않게 고정한다(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "설명", align: "left" },
-    { header: "최종수정", width: "w-[220px]", align: "left" },
-    { header: "메뉴설정", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
-    { header: "메뉴설정 여부", width: "w-[120px]" },
+    { header: "최종수정", width: "w-[136px]" },
+    { header: "메뉴설정", width: "w-[96px]" }, // 버튼 열을 상태 앞에(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
+    { header: "설정여부", width: "w-[80px]" },
   ];
   const table = tagRows(ui.dataTable(cols, rows, "등록된 권한 그룹이 없습니다."), ROLES, SELECTED).replaceAll('<td class="truncate px-[10px]', '<td class="truncate px-[10px] leading-[1.3]');
 

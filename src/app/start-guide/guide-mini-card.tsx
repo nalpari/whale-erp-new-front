@@ -3,27 +3,97 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { GuideIcon, usePanelOpen } from "@/components/common";
+import { GuideIcon, useAction, usePanelOpen } from "@/components/common";
+import { useAccount, useCurrentBp, useMyPageOpen, usePasswordChangeOpen, useService, useStores, useWithdrawOpen } from "@/components/site/session-gate";
 import { stripBp } from "@/lib/bp-path";
-import { GUIDE_STEPS, type GuideArrival, nextArrival, parseGuide, partsOnScreen } from "@/lib/start-guide";
+import {
+  GUIDE_STEPS,
+  type GuideArrival,
+  type GuideRef,
+  autoAllowed,
+  autoDismissKey,
+  autoFollows,
+  autoGuideOf,
+  initialTrackOf,
+  nextArrival,
+  parseGuide,
+  partsOnScreen,
+} from "@/lib/start-guide";
+import { isClosedStore } from "@/lib/store-scope";
+import { getGuideCountAction } from "./guide-count-actions";
 
 // 시작 가이드 미니 카드(2026-11-11 사용자 지정) — 시작 가이드의 [OOO로 가기]로 넘어온 실제 화면 오른쪽 아래에 그 단계의 순서 · 안내를 작게 띄운다.
 // 넘어와서 「무엇을 입력하랬지, 무엇이 중요했지」를 잊지 않게 하려는 것이다. AdminFrame 에 한 번만 두고, 지금 화면 주소(탭 BP 접두를 뗀 것)와
 // 그 단계 칸의 화면(part.path · 이어 넘어가는 nextPaths)인 칸들을 보인다 — 화면 파일(1팀 · 3팀)은 건드리지 않는다.
 // 주소의 ?guide=<갈래>-<단계>(예: STORE-1)로 넘어올 때만 뜨고, 넘어온 화면을 기억해 그 화면에 있는 동안(검색 · 쪽 넘김으로 주소의 guide 가
-// 빠져도, 이어 넘어가는 화면에서도) 남는다. 그 단계와 상관없는 화면으로 가면 사라진다. 메뉴로 들어오면 뜨지 않는다. 판정은 lib(nextArrival)에 있다.
+// 빠져도, 이어 넘어가는 화면에서도) 남는다. 그 단계와 상관없는 화면으로 가면 사라진다. 메뉴로 들어오면 이 도착 카드는 뜨지 않는다(0건이면 아래 자동 띄우기가 띄운다). 판정은 lib(nextArrival)에 있다.
 // 바탕을 덮지 않아 펴 둔 채로 입력할 수 있다. 오른쪽에서 패널(464px)이 열리면 그 왼쪽으로 비켜 선다. 머리 줄을 끌어 옮길 수 있고, 접은 알약도 끌어 옮긴다(2026-11-12).
 // 패널 바탕창(z-[5]) · 패널(z-10)보다 위(z-40)라 바탕창이 떠도 카드는 읽고 접을 수 있다 — 패널을 연 채 가이드를 보게 일부러 그렇다.
 // 모양은 떠 있는 것이라 팝업 그림자 하나(DESIGN.md Elevation), 꼬리표는 시작 가이드와 같은 포인트 파랑이다.
+// 자동 띄우기(2026-11-16 사용자 지정): ?guide= 로 넘어오지 않았어도 점포 · 권한 그룹 · 관리자 · 직원이 0건인 그 단계 화면에 들어오면 띄운다
+// (화면 → 단계 · 셀 것은 lib autoGuideOf). 웨일ERP 탭만, 갈래는 점포 없음 띠와 같은 initialTrackOf. 점포는 세션 값(폐점만 있어도 0건 — 띠와 같다),
+// 나머지는 건수 액션으로 묻는다. 띄운 자동 카드는 도착 카드처럼 그 단계의 다음 화면(nextPaths)으로 따라가고, 상관없는 화면으로 가면 내린다(autoFollows).
+// [×]로 닫으면 그 브라우저에서 계정 · BP · 단계마다 다시 띄우지 않는다(localStorage, autoDismissKey). 가맹 역할은 점포 화면에 띄우지 않는다.
+// ?guide= 도착 카드가 먼저다 — 도착 기억이 남아 있는 동안은(닫았어도, 같은 단계 다른 화면이어도) 자동 카드는 띄우지 않는다(autoAllowed).
 
-/** 문구 안 <u>…</u> 만 밑줄 — 놓치면 안 되는 말만 짚는다(시작 가이드 화면과 같이 쓴다, 2026-11-11 사용자 지정). 다른 태그는 글자 그대로다 */
+/**
+ * 문구 안 <u>…</u> 는 밑줄, <b>…</b> 는 굵게, <mark>…</mark> 는 형광펜 — 놓치면 안 되는 말 · 입력할 칸 이름만 짚는다
+ * (시작 가이드 화면과 같이 쓴다, 2026-11-11 · <b> · <mark> 2026-11-16 사용자 지정). 다른 태그는 글자 그대로다.
+ * split 의 잡은 묶음이 [글자, 태그, 속, 글자, …] 로 와서 셋씩 본다. 형광펜 안의 줄바꿈(\n)도 잡도록 [\s\S]
+ */
 export function underlined(text: string) {
-  return text.split(/<u>(.*?)<\/u>/).map((piece, i) => (i % 2 === 1 ? <u key={i}>{piece}</u> : piece));
+  const pieces = text.split(/<(u|b|mark)>([\s\S]*?)<\/\1>/);
+  return pieces.map((piece, i) => {
+    if (i % 3 === 0) return piece;
+    if (i % 3 === 1) return null;
+    const tag = pieces[i - 1];
+    if (tag === "u") return <u key={i}>{piece}</u>;
+    if (tag === "b")
+      return (
+        <b key={i} className="font-semibold">
+          {piece}
+        </b>
+      );
+    // 형광펜 — 공지 「게시일」 꼬리표와 같은 연한 노랑(#fff6e5 바탕 · #956013 글자, 토큰이 없어 쓰는 자리에 적는다). 줄이 꺾여도 줄마다 바탕이 이어지게 clone
+    return (
+      <mark key={i} className="rounded-[2px] bg-[#fff6e5] px-[2px] text-[#956013] [box-decoration-break:clone]">
+        {piece}
+      </mark>
+    );
+  });
+}
+
+/** 칸의 느낌표 안내 — 보통은 순서 아래, tipFirst 면 제목 바로 아래(2026-11-16 사용자 지정) */
+function tipsOf(tip: string | undefined) {
+  return tip?.split("\n\n").map((t) => (
+    <p key={t} className="flex items-start gap-[6px] whitespace-pre-line text-[14px] leading-[1.6] font-medium text-erp-ink">
+      <span className="mt-[2px] flex shrink-0">
+        <GuideIcon offset />
+      </span>
+      <span>{underlined(t)}</span>
+    </p>
+  ));
 }
 
 /** 카드 폭 · 머리 줄 높이 — 창을 줄였을 때 머리 줄이 화면 안에 남게 붙잡는 데 쓴다 */
 const CARD_WIDTH = 420;
 const HEAD_HEIGHT = 46;
+
+/** 자동 카드를 닫은 기록 — 막힌 브라우저(사생활 보호 창 등)에서는 읽고 쓰지 못해도 화면이 깨지지 않게 기록 없음으로 본다 */
+function isDismissed(key: string) {
+  try {
+    return window.localStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+function markDismissed(key: string) {
+  try {
+    window.localStorage.setItem(key, "1");
+  } catch {
+    // 남기지 못하면 다음에 들어올 때 다시 뜬다 — 그 밖의 해는 없다
+  }
+}
 
 export function GuideMiniCardSlot() {
   const pathname = usePathname();
@@ -39,6 +109,21 @@ export function GuideMiniCardSlot() {
   const pillRef = useRef<HTMLButtonElement>(null);
   const collapseRef = useRef<HTMLButtonElement>(null);
   const screen = stripBp(pathname);
+  const account = useAccount();
+  const bp = useCurrentBp().bpCodeId;
+  const service = useService();
+  const noStores = useStores().every(isClosedStore);
+  // 마이페이지 · 비밀번호 변경 · 회원 탈퇴 패널이 열리면 본문(이 카드 포함)이 inert 라 카드를 누를 수 없고 누르면 아래 바탕창이 눌려 패널이 닫혔다 — 그동안 숨긴다(리뷰 반영)
+  // 훅은 늘 셋 다 부른다(|| 안에서 부르면 앞이 참일 때 뒤가 건너뛰어져 훅 순서가 바뀐다)
+  const [myPageOpen] = useMyPageOpen();
+  const [passwordChangeOpen] = usePasswordChangeOpen();
+  const [withdrawOpen] = useWithdrawOpen();
+  const accountPanelOpen = myPageOpen || passwordChangeOpen || withdrawOpen;
+  const countOf = useAction(getGuideCountAction, { overlay: false });
+  // 자동으로 띄운 카드 — 그 단계 칸이 있는 화면에 있는 동안 남는다(autoFollows)
+  const [auto, setAuto] = useState<{ key: string; guide: GuideRef } | null>(null);
+  // 그 단계와 상관없는 화면으로 가면 내린다 — 다시 메뉴로 들어오면 건수를 새로 본다(렌더 중 맞춤, 도착 카드와 같은 방식)
+  if (auto && !autoFollows(auto.guide, screen)) setAuto(null);
 
   // 주소 · 화면이 바뀔 때마다 렌더 중 이전 값과 견줘 맞춘다(effect 대신, React 권장). 새로 넘어오면 펼치고 옮긴 자리도 처음(오른쪽 아래)으로
   const next = nextArrival(arrival, asked, screen);
@@ -49,6 +134,46 @@ export function GuideMiniCardSlot() {
     }
     setArrival(next);
   }
+
+  // 자동 띄우기 후보 — 웨일ERP 탭 · 이 화면에 ?guide= 도착 기억 없음 · 표에 있는 화면
+  const candidate = service === "WHALE_ERP" && autoAllowed(next) ? autoGuideOf(initialTrackOf(account.roleTypeCode), screen) : null;
+  const candidateKey = candidate ? autoDismissKey(account.adminAccountId, bp, candidate.guide) : null;
+  // 이미 띄운 같은 카드면 다시 묻더라도 펼침 · 옮긴 자리를 그대로 둔다
+  const shownKey = auto?.key;
+  const candidateKind = candidate?.count;
+  const candidateGuide = candidate?.guide;
+  useEffect(() => {
+    if (!candidateKey || !candidateKind || !candidateGuide || isDismissed(candidateKey)) return;
+    let alive = true;
+    // 0건이 아니게 됐으면(직원 · 관리자를 등록하고 돌아옴) 전에 띄운 이 화면 카드를 내린다(최종 리뷰 — 전엔 다시 들어오면 남아 있었다)
+    const settle = (zero: boolean) => {
+      if (!alive) return;
+      if (!zero) return setAuto((a) => (a?.key === candidateKey ? null : a));
+      if (shownKey === candidateKey) return;
+      setAuto({ key: candidateKey, guide: candidateGuide });
+      setOpen(true);
+      setPos(null);
+    };
+    // 건수 응답이 오기 전에 화면을 옮기면(alive=false) 띄우지 않는다. 실패 · 만료는 띄우지 않는다(만료 팝업은 useAction 이 띄운다).
+    // 액션이 던진 오류(네트워크 끊김 · 배포 뒤 없는 액션)도 받아 조용히 넘긴다 — 안 받으면 처리되지 않은 오류가 났다(최종 리뷰)
+    const check = async () => {
+      if (candidateKind === "stores") return settle(noStores);
+      try {
+        const result = await countOf(candidateKind);
+        settle(result.ok && result.total === 0);
+      } catch (error) {
+        console.warn("미니 카드 건수 조회 실패", error);
+        settle(false);
+      }
+    };
+    void check();
+    return () => {
+      alive = false;
+    };
+    // countOf 는 렌더마다 새 함수라 넣지 않는다(useAction 주석), shownKey 는 펼침을 되돌리지 않으려고 보는 값일 뿐이다 — 후보 · 셀 것 · 점포 0건이 바뀔 때만 다시 묻는다.
+    // 셀 것(candidateKind)도 본다 — 권한 관리 · 관리자 관리는 같은 단계라 키가 같아, 옮겨도 관리자 건수를 묻지 않았다(리뷰 반영)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candidateKey, candidateKind, noStores]);
 
   // 옮긴 뒤 창을 줄이면 카드가 화면 밖에 갇혀 [접기] · [×]를 누를 수 없었다 — 창 크기가 바뀌면 머리 줄이 보이게 다시 붙잡는다(코드 리뷰).
   // 접은 알약은 카드보다 좁아 카드 폭(420)으로 붙잡으면 오른쪽 끝 알약이 왼쪽으로 끌려 나와, 지금 보이는 쪽(카드 · 알약)의 실제 크기로 붙잡는다(PR 리뷰)
@@ -110,8 +235,13 @@ export function GuideMiniCardSlot() {
     e.preventDefault();
   };
 
-  const parsed = parseGuide(next.guide);
-  if (!parsed) return null;
+  const arrived = parseGuide(next.guide);
+  // 점포를 등록하면(점포 0건이 풀리면) 자동 STEP 1 카드는 내린다
+  // 도착 기억이 남아 있는 동안은 이미 띄운 자동 카드도 숨긴다(autoAllowed) — 자동 카드 위에 같은 단계 도착 카드가 덮인 뒤 그 카드를 닫으면
+  // 자동 카드가 다시 나타나 [×]를 두 번 눌러야 했다(ip-code-review-claude, PR #297)
+  const autoShown = !arrived && autoAllowed(next) && auto && autoFollows(auto.guide, screen) && !(auto.guide.step === "1" && !noStores) ? auto.guide : null;
+  const parsed = arrived ?? autoShown;
+  if (!parsed || accountPanelOpen) return null;
   const parts = partsOnScreen(parsed, screen);
   if (parts.length === 0) return null;
   const stepTitle = GUIDE_STEPS[parsed.track].find((s) => s.label === `STEP ${parsed.step}`)?.title ?? "";
@@ -164,7 +294,11 @@ export function GuideMiniCardSlot() {
         <button ref={collapseRef} type="button" aria-expanded onClick={() => toggle(false)} className="text-[13px] text-erp-label hover:text-erp-ink">
           접기
         </button>
-        <button type="button" aria-label="시작 가이드 닫기" onClick={() => setArrival({ ...next, guide: null })} className="text-[16px] leading-none text-erp-label hover:text-erp-ink">
+        <button type="button" aria-label="시작 가이드 닫기" onClick={() => {
+            if (arrived) return setArrival({ ...next, guide: null });
+            if (auto) markDismissed(auto.key);
+            setAuto(null);
+          }} className="text-[16px] leading-none text-erp-label hover:text-erp-ink">
           ×
         </button>
       </header>
@@ -175,6 +309,7 @@ export function GuideMiniCardSlot() {
               {part.label && <span className="text-erp-point">{part.label}</span>}
               {part.title}
             </h3>
+            {part.tipFirst && tipsOf(part.tip)}
             <ol className="flex list-decimal flex-col gap-[4px] pl-[18px] text-[14px] leading-[1.6] text-erp-ink">
               {part.actions.map((a) => (
                 <li key={a} className="whitespace-pre-line">
@@ -182,14 +317,7 @@ export function GuideMiniCardSlot() {
                 </li>
               ))}
             </ol>
-            {part.tip?.split("\n\n").map((t) => (
-              <p key={t} className="flex items-start gap-[6px] whitespace-pre-line text-[14px] leading-[1.6] font-medium text-erp-ink">
-                <span className="mt-[2px] flex shrink-0">
-                  <GuideIcon offset />
-                </span>
-                {t}
-              </p>
-            ))}
+            {!part.tipFirst && tipsOf(part.tip)}
           </section>
         ))}
       </div>

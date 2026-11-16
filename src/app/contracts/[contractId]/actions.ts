@@ -1,5 +1,6 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { actionFailure, ApiError, bpHref, expiredFailureOf, send } from "@/lib/api";
 import type { components } from "@/lib/api-types.generated";
@@ -30,11 +31,15 @@ export async function deleteContract(contractId: number, back?: string): Promise
   redirect(await bpHref(listAfterSave(back, null)));
 }
 
+/** 근로자 정보 수정 성공 — 화면이 토스트를 띄우고 갈 상세 주소(탭 BP 를 붙인 주소) */
+export type WorkerSaved = { ok: true; href: string };
+
 /**
- * 날인 전 당사자 정보 수정(WHALEERP-125 · 126). 저장하면 api 가 곧바로 다시 보낸다(2026-10-19 재영). 성공하면 상세로 간다. 실패하면 화면에 보일 문장을 돌려주고, 새 번호로
+ * 날인 전 당사자 정보 수정(WHALEERP-125 · 126). 저장하면 api 가 곧바로 다시 보낸다(2026-10-19 재영). 성공하면 상세 주소를 돌려준다 —
+ * 화면이 완료 토스트를 띄우고 그리로 간다(WHALEERP-681, 급여명세서 작성과 같다). 실패하면 화면에 보일 문장을 돌려주고, 새 번호로
  * 같은 점포에 진행 중 계약이 있으면(409 CONTRACT_IN_PROGRESS) 그 목록도 돌려줘 화면이 대체할지 묻는다.
  */
-export async function updateWorker(contractId: number, body: WorkerBody, back?: string): Promise<SaveResult> {
+export async function updateWorker(contractId: number, body: WorkerBody, back?: string): Promise<SaveResult | WorkerSaved> {
   if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다." };
   try {
     await send(`/contracts/${contractId}/worker`, "PATCH", body);
@@ -53,7 +58,8 @@ export async function updateWorker(contractId: number, body: WorkerBody, back?: 
     console.error("당사자 정보 저장 응답을 받지 못함", contractId, e);
     redirect(await bpHref(withBack(`/contracts/${contractId}?send=unknown`, back)));
   }
-  redirect(await bpHref(withBack(`/contracts/${contractId}`, back)));
+  // 따로 무효화하지 않는다 — staleTimes 설정이 없어(동적 화면 0초) 화면이 상세로 이동할 때 새로 받는다
+  return { ok: true, href: await bpHref(withBack(`/contracts/${contractId}`, back)) };
 }
 
 export type ContractStatus = components["schemas"]["ContractStatus"];
@@ -68,6 +74,8 @@ export type SendContractResult = { ok: true } | SendFailure;
  * (api #164, WHALEERP-130).
  * 화면이 본 계약 상태 · 발송 시각(expectedStatus · expectedSentAt)을 함께 보낸다 — 그사이 바뀌었으면(거부 · 만료 · 다른 탭에서 먼저 보냄) api 가 409
  * CONTRACT_STATUS_CONFLICT 로 막아 화면이 다시 읽는다(front #136 재리뷰).
+ * 보내면 이 응답 안에서 부른 화면을 다시 받는다(refresh). 통합테스트에서 재발송 횟수 · 마지막 일시가 바로 바뀌지 않았다 —
+ * 원인은 확인하지 못했고, 화면이 보낸 뒤 따로 다시 읽던 것을 응답 안으로 옮겼다(WHALEERP-671, IT-CONT-006 · IT-STAFF-005).
  */
 export async function sendContract(contractId: number, seen: SeenContract): Promise<SendContractResult> {
   if (!isContractId(contractId)) return { ok: false, error: "근로계약을 찾을 수 없습니다.", recheck: false };
@@ -85,6 +93,7 @@ export async function sendContract(contractId: number, seen: SeenContract): Prom
     console.error("근로계약 발송 응답을 받지 못함", contractId, e);
     return sendFailureOf(null, undefined, "");
   }
+  refresh();
   return { ok: true };
 }
 

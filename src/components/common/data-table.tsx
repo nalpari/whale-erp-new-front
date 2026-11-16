@@ -173,12 +173,15 @@ export function DataTable<T>({
     return (
       // 남는 높이가 모자라도 머리(42) + 빈 칸(92)은 지킨다 — min-h-0 이면 상자가 0 까지 줄어 아래 쪽 이동과 겹쳤다(리뷰 반영).
       // scroll 표면 data-table-scroll 을 그대로 달아 감싸는 패널(CodePanel)이 이 상자를 줄이지 않는 대상(shrink-0)에서 뺀다
-      <div data-table-scroll={scroll || undefined} className="flex min-h-[134px] flex-1 flex-col">
-        <table className={table}>
-          {cols}
-          {head}
-        </table>
-        <p className="flex min-h-[92px] flex-1 items-center justify-center border-x border-b border-erp-thead-line text-[14px] text-erp-muted">{empty}</p>
+      // scroll 표는 열 합이 상자보다 넓으면 이 상자 안에서 가로로 민다 — 안 그러면 감싸는 패널이 통째로 밀려 위 「총 N 건」 줄까지 움직였다(리뷰 반영, 2026-11-16)
+      <div data-table-scroll={scroll || undefined} className={`flex min-h-[134px] flex-1 flex-col ${scroll ? "min-w-0 overflow-x-auto" : ""}`}>
+        <div className="flex min-w-fit flex-1 flex-col">
+          <table className={table}>
+            {cols}
+            {head}
+          </table>
+          <p className="flex min-h-[92px] flex-1 items-center justify-center border-x border-b border-erp-thead-line text-[14px] text-erp-muted">{empty}</p>
+        </div>
       </div>
     );
   return (

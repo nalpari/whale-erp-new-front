@@ -10,7 +10,7 @@ import { FacilityTable } from "./facility-table";
 // 시설물 및 장비 관리 목록(MN000022). 목업 docs/mockup/stores/facilities.html · 데모 docs/demo/stores/facilities.html 을 공통 컴포넌트로 옮겼다.
 // api 는 GET /facilities(등록일 최신순, 한 쪽 50 · 100건). 화면 상태는 URL 에만 둔다(facility-list-query.ts).
 // 화면 주소는 탭 BP 주소 /bp/{id}/facilities 다 — proxy 가 그 BP 를 X-Bp-Code-Id 로 싣는다(플랫폼 계정은 없으면 api 400).
-// 데모의 [일괄 등록](PL-7)은 api 가 아직 없어 두지 않았다.
+// [일괄 등록](PL-7)은 목록 머리 버튼(facility-parts.tsx)이 연다.
 export default async function FacilitiesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const query = parseFacilityListQuery(await searchParams);
   const search = facilityListApiSearch(query);
