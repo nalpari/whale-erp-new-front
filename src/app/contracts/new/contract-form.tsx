@@ -75,7 +75,7 @@ const HOURS_FIELDS: [HourField, string][] = [
 const HELP = "text-[12px] leading-[1.5] text-erp-muted";
 
 /** 고용 형태 · 계약 방식 카드 아래 한 줄 설명 — 시작 가이드 근로계약서 작성 안내와 같은 말(2026-11-16 사용자 지정) */
-const EMPLOYMENT_DESC = { FULL_TIME: "월급/연봉 기준 · 매일 동일한 시간 근무", PART_TIME: "시급 기준 · 요일별 근무시간 설정" } as const;
+const EMPLOYMENT_DESC = { FULL_TIME: "월급/연봉으로 급여 계산", PART_TIME: "근무시간에 따라 시급으로 급여 계산" } as const;
 const METHOD_DESC = { ELECTRONIC: "직원 앱으로 보내 직원이 서명", PAPER: "서명한 계약서 파일을 올려 바로 등록" } as const;
 
 /**
