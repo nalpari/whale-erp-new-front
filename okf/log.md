@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 재발송 서버 액션(`sendContract`)이 성공하면 `next/cache` 의 `refresh()` 로 응답 안에서 화면을 다시 받는다. 근로계약 상세 · 직원 목록 재발송 버튼은 성공 뒤 `router.refresh` 를 따로 부르지 않고, 상세는 `?send=` · `?document=` 가 있을 때만 쿼리를 지우는 `router.replace` 를 한다(WHALEERP-671 — 재발송 횟수 · 마지막 일시가 바로 바뀌지 않던 것).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 관리자 화면 최소폭을 플랫폼 탭만 1260 으로(웨일ERP 탭은 1720 유지, `data-erp-wide`), 넘치는 플랫폼 목록은 DataTable `scroll` 로 표 상자 안에서 밀고 빈 scroll 표도 상자 안 가로 스크롤(front #289).
 * **Update**: [출퇴근 현황 화면](/screens/attendance-records.md) — 출퇴근 기록 다시 보정(WHALEERP-687, 운영 정책 ATT-20 v283 · 2026-11-16 재영): 보정이 필요한 기록은 기록이 있는 줄이면 「보정」을 두어 보정 · 대신 등록한 줄도 「이력」과 함께 다시 고치고, 정상 · 지각 기록은 그 목록에 나오지 않아 일별 출퇴근 표 줄마다 같은 「보정」을 더했다(`DayFixButton` · `DayFixProvider` — 패널은 바탕이 막히는 본문 밖). 대신 등록의 409 안내도 api 에서 「일별 출퇴근에서 그날 기록의 [보정]으로 고쳐 주세요」로 바뀌었다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — WHALEERP-683 리뷰 반영: 상세 「근로계약서 작성」의 `?entry=` 가 [목록] 주소 · 보던 주를 함께 싣는다. 받는 쪽 `staffEntryHrefOf` 가 직원 화면 규칙으로 다시 만들고, 예전 형식 상세 주소(목록 조건을 상세 주소에 붙인 것)도 [목록] 주소로 바꿔 남긴다. 판정은 서버 전용 `contracts/new/cancel-href.ts` 로 옮겨 근로계약 클라이언트 번들에 직원 상세 모듈이 딸려 가지 않게 했다.
