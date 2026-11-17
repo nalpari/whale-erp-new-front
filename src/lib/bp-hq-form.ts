@@ -53,10 +53,18 @@ export function hqFormOf(profile: HqProfile): HqForm {
 }
 
 /**
- * 저장 전 검사. verifiedAfter — 이 저장 뒤 사업자정보가 인증된 상태인가(저장된 인증이 있거나 이번에 인증했고, 「사용안함」을
- * 누르지 않았다). api(hqStateOf)도 같은 규칙으로 막는다 — 화면은 칸 아래에 먼저 알린다.
+ * 이 저장 뒤에도 사업자정보가 인증된 상태인가 — 저장된 인증(번호 · 인증일시)이 있거나 이번 화면에서 인증했고, 「사용안함」을 누르지
+ * 않았다. 스위치 막힘 · 안내 · 저장 검사가 모두 이 하나를 쓴다(리뷰로 찾음 — 쓰는 곳마다 조건이 달라 [사용안함] 뒤에도 켤 수 있었다).
  */
-export function validateHqForm(f: HqForm, verifiedAfter: boolean): Partial<Record<HqFormField, string>> {
+export function isVerifiedAfterSave(v: { pendingClear: boolean; savedBizNumber: string; savedVerifiedAt: string | null; hasCurrentVerification: boolean }): boolean {
+  return !v.pendingClear && ((Boolean(v.savedBizNumber) && Boolean(v.savedVerifiedAt)) || v.hasCurrentVerification);
+}
+
+/**
+ * 저장 전 검사. verifiedAfter — isVerifiedAfterSave. wasEnabled — 저장된 값이 이미 켜짐인가: 켠 채로 [사용안함]을 누른 경우는
+ * 「먼저 꺼 주세요」로 가른다(api hqStateOf 와 같은 문구). api 도 같은 규칙으로 막는다 — 화면은 칸 아래에 먼저 알린다.
+ */
+export function validateHqForm(f: HqForm, verifiedAfter: boolean, wasEnabled = false): Partial<Record<HqFormField, string>> {
   const errors: Partial<Record<HqFormField, string>> = {};
   if (!f.supported) return errors;
   const lat = f.latitude.trim();
@@ -65,7 +73,10 @@ export function validateHqForm(f: HqForm, verifiedAfter: boolean): Partial<Recor
   if (lng && (!decimal(6).test(lng) || Math.abs(Number(lng)) > 180)) errors.longitude = "경도는 -180~180, 소수 6자리까지입니다.";
   if (Boolean(lat) !== Boolean(lng)) errors[lat ? "longitude" : "latitude"] = "위도와 경도는 함께 입력해 주세요.";
   if (f.isHqStaffEnabled) {
-    if (!verifiedAfter) errors.isHqStaffEnabled = "사업자정보를 인증해야 본사 직원 관리를 사용할 수 있습니다.";
+    if (!verifiedAfter)
+      errors.isHqStaffEnabled = wasEnabled
+        ? "본사 직원 관리를 사용하는 동안에는 사업자정보를 지울 수 없습니다. 본사 직원 관리를 먼저 꺼 주세요."
+        : "사업자정보를 인증해야 본사 직원 관리를 사용할 수 있습니다.";
     else if (!hasHqCoordinates(f)) errors.isHqStaffEnabled = "위도 · 경도를 입력해야 본사 직원 관리를 사용할 수 있습니다.";
   }
   return errors;

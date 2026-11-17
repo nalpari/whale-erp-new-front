@@ -6,7 +6,7 @@ import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as f from "../../biz-form.mjs";
 import { STORES, erpHeader, link } from "../../site.mjs";
-import { IMAGE_NOTE, LOCATION_NOTE, address, note, storeImage } from "../../store-parts.mjs";
+import { IMAGE_NOTE, LOCATION_NOTE, address, note, storeImage, locationApplyField } from "../../store-parts.mjs";
 
 export const render = ({ A, R }, { bpStatus } = {}) => {
   const [code, name, type, , , , , , , photo] = STORES.find((s) => s[0] === "ST000006");
@@ -63,7 +63,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
       ui.formRow(
         ui.field("위도", ui.textField({ value: "37.562104", inputmode: "decimal", placeholder: "예: 37.556312" }), "w-[160px]"),
         ui.field("경도", ui.textField({ value: "126.925631", inputmode: "decimal", placeholder: "예: 126.901845" }), "w-[160px]"),
-        ui.field("출퇴근 위치적용", ui.select(["사용", "미사용"], { value: "사용" }), "w-[150px]"),
+        locationApplyField(ui.select(["사용", "미사용"], { "aria-label": "출퇴근 위치적용", value: "사용" })),
         `<div class="self-end">${ui.button("주소로 다시 계산", { variant: "soft", disabled: off })}</div>`,
       ) +
       LOCATION_NOTE +

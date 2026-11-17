@@ -7,6 +7,7 @@ import * as ui from "./ui.mjs";
 import * as x from "./extra.mjs";
 import { platformMyPanel } from "./platform-admin/edit.mjs";
 import * as f from "./biz-form.mjs";
+import { locationApplyField } from "./store-parts.mjs";
 
 const pages = join(dirname(fileURLToPath(import.meta.url)), "pages");
 // 아직 만들지 않은 화면은 # 로 둔다. 링크가 죽은 페이지로 가지 않게.
@@ -189,7 +190,10 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
   // 둔다(사용자 지정, 2026-10-26). 본문 위아래 여백은 계정 정보(20px)보다 줄인 16px — 좌우와 같다(비교 화면으로 고름).
   const bizAuthBox = (state, num, ceo, open, date) =>
     `<section aria-label="사업자 번호 인증" class="w-full">` +
-    `<h3 class="flex h-[42px] items-center justify-between rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink"><span>사업자정보</span>${
+    `<h3 class="flex h-[42px] items-center justify-between rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink"><span class="flex items-center gap-[8px]">사업자정보${
+      // 인증을 마친 사업자정보는 곧 본사다 — 「본사」 꼬리표(앱 bp-profile-tab.tsx titleTag, 2026-11-17 사용자 지정)
+      state === "locked" ? `<span class="inline-block rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub">본사</span>` : ""
+    }</span>${
       state === "new" || state === "struck" ? ui.badge("off", "미인증") : ui.badge("on", `인증 완료 · ${date}`)
     }</h3>` +
     `<div class="flex flex-col gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[16px]">` +
@@ -202,22 +206,40 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     `<div role="group" aria-label="대표자 연락처" class="flex min-w-px flex-1 flex-col gap-[8px]"><span class="flex items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>대표자 연락처</span>${ui.checkbox(A, "기본정보와 동일", checked, { id: `${idp}-phone-same` })}</span>${f.tel(checked ? "010" : "010", "5530", "1182")}</div>` +
     `<div role="group" aria-label="대표자 이메일" class="flex min-w-px flex-1 flex-col gap-[8px]"><span class="flex items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>대표자 이메일</span>${ui.checkbox(A, "기본정보와 동일", checked, { id: `${idp}-email-same` })}</span>${ui.textField({ type: "email", value: "ceo@hangang.co.kr", maxlength: 100, disabled: checked })}</div>`;
 
-  const bizRest = (idp) =>
+  // 본사 좌표 줄 · 본사 직원 관리(앱 bp-profile-tab.tsx · bp-hq-form.ts, WHALEERP-724 — 2026-11-17 사용자 지정).
+  // 위도 · 경도 · 출퇴근 위치적용(i) 한 줄, 아랫줄은 [주소로 다시 계산] + 안내. 스위치는 기본 꺼짐이고 인증 전에는 막힌다.
+  const hqRows = (verified) =>
+    `<div class="flex flex-col gap-[8px]">` +
+    ui.formRow(
+      ui.field("위도", ui.textField({ inputmode: "decimal", value: verified ? "37.556312" : "", placeholder: "예: 37.556312" })),
+      ui.field("경도", ui.textField({ inputmode: "decimal", value: verified ? "126.901845" : "", placeholder: "예: 126.901845" })),
+      locationApplyField(ui.select(["사용", "미사용"], { "aria-label": "출퇴근 위치적용", value: "미사용", disabled: !verified })),
+    ) +
+    `<div class="flex items-center gap-[10px]">${ui.button("주소로 다시 계산", { variant: "soft" })}<p class="text-[13px] leading-[1.6] break-keep text-erp-label">사업자주소를 입력하면 <b class="font-semibold">위도</b> · <b class="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.</p></div>` +
+    `</div>` +
+    `<div class="flex flex-col gap-[8px]">` +
+    `<label class="inline-flex items-center gap-[8px] text-[14px] whitespace-nowrap text-erp-ink"><span class="relative inline-flex h-[20px] w-[36px] shrink-0"><input type="checkbox" role="switch"${verified ? "" : " disabled"} class="peer absolute inset-0 appearance-none rounded-full bg-erp-field-line transition-colors duration-150 ease-out checked:bg-erp-brand disabled:opacity-40"><span class="pointer-events-none absolute top-[2px] left-[2px] size-[16px] rounded-full bg-white transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] peer-checked:translate-x-[16px] motion-reduce:transition-none"></span></span>본사 직원 관리</label>` +
+    `<p class="flex items-start gap-[6px] text-[13px] leading-[1.6] font-medium text-erp-ink"><span class="mt-[3px] flex"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" class="shrink-0 text-erp-brand"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="3.6" width="1.4" height="5.6" rx="0.7" fill="#fff"/><circle cx="8" cy="11.6" r="0.95" fill="#fff"/></svg></span><span>${
+      verified ? "본사 직원 관리를 사용하면 근로계약서의 소속 근무지에서 [본사근무]를 선택할 수 있습니다." : "사업자정보를 인증해야 사용할 수 있습니다."
+    }</span></p></div>`;
+
+  const bizRest = (idp, verified = true) =>
     `<section aria-label="상호명 등" class="flex flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">` +
     ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })) +
     ceoContact(idp, false) +
     ui.formRow(ui.field("업태", ui.textField({ value: "도소매업", maxlength: 50 })), ui.field("종목", ui.textField({ value: "식자재 유통", maxlength: 50 }))) +
     // 주소는 업태 · 종목 다음, 라벨 「사업자주소」(앱 bp-profile-tab.tsx 와 같다, 2026-10-26)
     f.address(A, "사업자주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }) +
+    hqRows(verified) +
     `</section>`;
 
   const biz = `<div class="flex flex-col gap-[18px]">${bizAuthBox("locked", "211-87-01234", "남도현", "2021-03-15", "2026-10-20 14:32")}${bizRest(`${idPrefix}-done`)}</div>${save}`;
 
   // 가입 직후처럼 아직 사업자 인증을 받지 않은 초기 상태 — 인증완료 탭과 생김새를 견주어 보려고 따로 둔다(2026-10-07 피드백).
-  const bizNew = `<div class="flex flex-col gap-[18px]">${bizAuthBox("new", "", "", "")}${bizRest(`${idPrefix}-new`)}</div>${save}`;
+  const bizNew = `<div class="flex flex-col gap-[18px]">${bizAuthBox("new", "", "", "")}${bizRest(`${idPrefix}-new`, false)}</div>${save}`;
 
   // 「사용안함」을 누른 뒤 — 저장을 눌러야 실제로 지워진다. 인증완료 탭과 생김새를 견주어 보려고 따로 둔다(2026-10-23).
-  const bizDisabled = `<div class="flex flex-col gap-[18px]">${bizAuthBox("struck", "211-87-01234", "남도현", "2021-03-15")}${bizRest(`${idPrefix}-disabled`)}</div>${save}`;
+  const bizDisabled = `<div class="flex flex-col gap-[18px]">${bizAuthBox("struck", "211-87-01234", "남도현", "2021-03-15")}${bizRest(`${idPrefix}-disabled`, false)}</div>${save}`;
 
   return (
     mypageTabs(

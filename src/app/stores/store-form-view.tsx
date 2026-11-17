@@ -814,7 +814,6 @@ export function StoreFormView(props: Props) {
                 도움말이 깜빡이지 않고 그대로 있는다(2026-10-19). 받는 동안 버튼·저장이 막히는 것으로 충분하다. */}
             <Note>
               점포주소가 입력되면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.
-
               <br />
               위도 · 경도가 없으면 <b className="font-semibold">출퇴근 위치적용</b>을 사용으로 바꿀 수 없습니다.
             </Note>

@@ -6,7 +6,7 @@ import { Button, Checkbox, Field, FormRow, GuideNote, RequiredMark, Select, Tag,
 import { getAddressCoordinateAction } from "@/lib/address-actions";
 import { LocationApplyField } from "@/components/site/location-apply-field";
 import type { AddressItem } from "@/lib/address-search";
-import { hasHqCoordinates, hqFormOf, toHqInput, validateHqForm, type HqForm, type HqFormField } from "@/lib/bp-hq-form";
+import { hasHqCoordinates, hqFormOf, isVerifiedAfterSave, toHqInput, validateHqForm, type HqForm, type HqFormField } from "@/lib/bp-hq-form";
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
 import { formatDateTime } from "@/lib/format";
 import { splitPhone } from "@/lib/my-profile-form";
@@ -45,6 +45,10 @@ const BIZ_TO_VERIFY: Record<BizVerifyField, VerifyFormField> = {
   ceoName: "bizCeoName",
   openDate: "bizOpenDate",
 };
+
+/** 이 저장 뒤에도 인증이 남는가(bp-hq-form.ts isVerifiedAfterSave) — 스위치 막힘 · 안내 · 저장 검사가 함께 쓴다 */
+const verifiedAfter = (v: VerifyForm) =>
+  isVerifiedAfterSave({ pendingClear: v.pendingClear, savedBizNumber: v.savedBizNumber, savedVerifiedAt: v.savedVerifiedAt, hasCurrentVerification: Boolean(currentVerification(v)) });
 
 function FieldMessage({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
@@ -144,6 +148,8 @@ export const BpProfileTab = forwardRef<
   // 본사 좌표 · 출퇴근 위치적용 · 본사 직원 관리(WHALEERP-724, 2026-11-17 사용자 지정 — bp-hq-form.ts)
   const getAddressCoordinate = useAction(getAddressCoordinateAction, { overlay: false });
   const [hq, setHq] = useState<HqForm | null>(null);
+  // 저장된(불러온) 본사 직원 관리 값 — 켠 채 [사용안함]을 누른 경우 문구를 가른다
+  const [savedHqEnabled, setSavedHqEnabled] = useState(false);
   const [hqErrors, setHqErrors] = useState<Partial<Record<HqFormField, string>>>({});
   const [coordinateNote, setCoordinateNote] = useState<string | null>(null);
   const [locating, startLocating] = useTransition();
@@ -159,6 +165,7 @@ export const BpProfileTab = forwardRef<
         setForm(formOf(result.profile, basicPhone, basicEmail));
         setVerifyForm(verifyFormOf(result.profile));
         setHq(hqFormOf(result.profile));
+        setSavedHqEnabled(Boolean(result.profile.isHqStaffEnabled));
       })
       .catch((error: unknown) => {
         if (mine !== requestNumber.current) return;
@@ -306,11 +313,14 @@ export const BpProfileTab = forwardRef<
 
   const handleSave = () => {
     if (!form || !verifyForm || !hq || updatedAt === null) return;
+    // 좌표를 받는 중이면 저장하지 않는다 — 주소를 새로 골라 좌표를 비운 사이에 저장하면 서버의 좌표 · 위치적용이 지워진다(점포는
+    // 받는 동안 저장 버튼을 막는다, 리뷰로 찾음). 패널 맨 아래 [저장]은 부모가 그려 여기서 막고 알린다
+    if (locating) return setFailure("좌표를 가져오는 중입니다. 잠시 후 다시 저장해 주세요.");
     const found = validateBpProfileForm(form);
     setErrors(found);
     setFailure(null);
     // 저장 뒤에도 인증이 남는가 — 저장된 인증이 있거나 이번에 인증했고, 「사용안함」을 누르지 않았다
-    const hqFound = validateHqForm(hq, !verifyForm.pendingClear && (Boolean(verifyForm.savedBizNumber) || Boolean(currentVerification(verifyForm))));
+    const hqFound = validateHqForm(hq, verifiedAfter(verifyForm), savedHqEnabled);
     setHqErrors(hqFound);
     // 인증 10분이 지났으면 저장 직전에 풀어 둔다(점포 store-form-view.tsx handleSave 와 같다, 코드 리뷰로
     // 찾음, 2026-10-23) — 그대로 두고 보내면 api BusinessVerificationService 가 토큰을 트랜잭션보다 먼저
@@ -350,6 +360,8 @@ export const BpProfileTab = forwardRef<
       // 못했습니다"가 떠, 다시 저장을 누르면 이미 반영된 updatedAt·토큰으로 409 가 났다). 화면은 다시 열어야
       // 최신값을 받으므로 그렇게 안내한다.
       toast("saved");
+      // 저장 전에 보낸 좌표 요청이 늦게 와 다시 불러온 값을 덮지 않게 버린다
+      locateNumber.current++;
       try {
         const refreshed = await getBpProfile();
         if (refreshed.ok) {
@@ -357,6 +369,7 @@ export const BpProfileTab = forwardRef<
           setForm(formOf(refreshed.profile, basicPhone, basicEmail));
           setVerifyForm(verifyFormOf(refreshed.profile));
           setHq(hqFormOf(refreshed.profile));
+          setSavedHqEnabled(Boolean(refreshed.profile.isHqStaffEnabled));
           setVerifyEditing(false);
         } else {
           console.error("사업자정보 저장 후 다시 불러오기 실패", refreshed.status, refreshed.message);
@@ -566,6 +579,12 @@ export const BpProfileTab = forwardRef<
             // set("address", …)의 clearError(key as …) 캐스트는 아무것도 못 지운다(점포 store-form-view.tsx
             // 의 사업자주소 onChange 와 같은 이유로 여기서 직접 지운다, 코드 리뷰로 찾음, 2026-10-23).
             setForm((f) => (f ? { ...f, address: next } : f));
+            // [지우기]로 주소를 비우면 그 주소에서 나온 좌표 · 위치적용도 함께 비운다 — 점포 주소와 같은 규칙(store-form-view.tsx)
+            if (!next.address && form.address.address && hq.supported) {
+              locateNumber.current++;
+              setCoordinateNote(null);
+              setHq((h) => (h ? { ...h, latitude: "", longitude: "", isLocationApplied: false } : h));
+            }
             clearError("bizAddressDetail");
           }}
           detailError={errors.bizAddressDetail}
@@ -638,14 +657,14 @@ export const BpProfileTab = forwardRef<
               <Toggle
                 label="본사 직원 관리"
                 checked={hq.isHqStaffEnabled}
-                disabled={!hq.isHqStaffEnabled && !(verifyForm.savedBizNumber && verifyForm.savedVerifiedAt) && !currentVerification(verifyForm)}
+                disabled={!hq.isHqStaffEnabled && !verifiedAfter(verifyForm)}
                 onChange={(e) => setHqField("isHqStaffEnabled", e.target.checked)}
                 aria-invalid={hqErrors.isHqStaffEnabled ? true : undefined}
                 aria-describedby={hqErrors.isHqStaffEnabled ? `${ids}-isHqStaffEnabled` : undefined}
               />
               <FieldMessage id={`${ids}-isHqStaffEnabled`} message={hqErrors.isHqStaffEnabled} />
               <GuideNote>
-                {verifyForm.savedBizNumber || currentVerification(verifyForm)
+                {verifiedAfter(verifyForm)
                   ? "본사 직원 관리를 사용하면 근로계약서의 소속 근무지에서 [본사근무]를 선택할 수 있습니다."
                   : "사업자정보를 인증해야 사용할 수 있습니다."}
               </GuideNote>
