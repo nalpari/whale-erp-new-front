@@ -216,6 +216,19 @@ export function withStore(f: ContractForm, storeId: string, stores: readonly { s
   return { ...f, storeId, workLocation: edited ? f.workLocation : nameOf(storeId) };
 }
 
+/**
+ * 이어 쓰기 · 수정 화면의 근무지 선택지. 선택지(운영 중 · 맡은 점포, WHALEERP-722)에 지금 근무지가 없으면(이미 미운영 점포로
+ * 만든 계약 등) 「선택」으로 보인다 — 지금 근무지를 뒤에 더한다. api 는 같은 근무지면 그대로 받는다(옮길 때만 운영 중 · 범위를 본다).
+ * 점포 행이 없어 이름이 null 이면 더하지 않는다. 지운 · 폐점 점포는 이름이 있어 더해지고, 저장하면 api 가 404 로 알린다.
+ */
+export function storesWithCurrent(
+  stores: readonly { storeId: number; name: string }[],
+  current: { storeId: number; storeName: string | null },
+): { storeId: number; name: string }[] {
+  if (current.storeName === null || stores.some((s) => s.storeId === current.storeId)) return [...stores];
+  return [...stores, { storeId: current.storeId, name: current.storeName }];
+}
+
 /** GET /contracts/:contractId. api 의 openapi.json 에서 만든 타입을 쓴다(pnpm openapi:types) */
 export type ContractDetail = components["schemas"]["ContractDetailDto"];
 
