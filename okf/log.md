@@ -1,7 +1,7 @@
 # Bundle history
 
 ## 2026-11-17
-* **Update**: `2026-11-17-근무지-본사근무-정책.md` 의 근무지 · 본사근무 정책(대표님 확정, 구현 전 — Plane WHALEERP-722 ~ 729)을 [직원 운영 관리](/staff.md) 「초대와 계약」 · [마이페이지](/mypage.md) 「내 정보」 · [점포 관리](/stores.md) 「데이터 · 이력」에 반영했다.
+* **Update**: `2026-11-17-근무지-본사근무-정책.md` 의 근무지 · 본사근무 정책(대표님 확정, 구현 전 — Plane WHALEERP-722 ~ 729)을 [직원 운영 관리](/staff.md) 「초대와 계약」 · [마이페이지](/mypage.md) 「내 정보」에, 점포 등록 「사업자정보와 같음」(front 구현 중)을 [점포 관리](/stores.md) 「데이터 · 이력」에 반영했다.
 
 ## 2026-11-16
 * **Update**: [BP 마스터 계정 관리](/bp.md) · [Whale ERP Frontend](/whale-erp-front.md) — BP 마스터 · BP 관리자 · 플랫폼 관리자의 계정상태 글자를 화면 상수 대신 공통코드 ACCOUNT_STATUS 에서 읽는다(필터 · 목록 · 상세 배지 · 수정 선택칸, WHALEERP-719).
