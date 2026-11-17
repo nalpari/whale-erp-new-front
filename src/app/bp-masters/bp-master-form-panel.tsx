@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useLayoutEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
+import { useEffectEvent, useId, useLayoutEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
 import { Button, Checkbox, Field, FormGroup, FormRow, RequiredMark, SlidePanel, Tag, TextField, useAction } from "@/components/common";
 import { AddressField } from "@/components/address-field";
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
@@ -127,6 +127,11 @@ export function BpMasterFormPanel(props: Props) {
     clearError("latitude");
     clearError("longitude");
   });
+  // 다시 열면 좌표 받기 차례도 올린다 — 닫기 전에 보낸 지난 주소의 좌표 · 실패 문구가 새로 채운 칸에 붙지 않게(위 진위확인 · 중복 확인과 같다)
+  const resetLocator = useEffectEvent(() => locator.reset());
+  useLayoutEffect(() => {
+    if (openCount > 0) resetLocator();
+  }, [openCount]);
   const invalid = (key: BpMasterFormField) => (errors[key] ? true : undefined);
   const messageId = (key: BpMasterFormField) => `${ids}-${key}`;
   const describe = (key: BpMasterFormField) => (errors[key] ? messageId(key) : undefined);
@@ -262,6 +267,8 @@ export function BpMasterFormPanel(props: Props) {
   };
 
   const handleSave = () => {
+    // 좌표를 받는 동안은 저장하지 않는다 — 주소를 고르면 좌표를 먼저 비우므로, 그 사이 저장하면 본사 좌표 · 위치적용이 지워진다(점포 등록과 같다)
+    if (locator.locating) return;
     const found = validateBpMasterForm(form, mode);
     setErrors(found);
     if (found.loginId) setLoginIdCheck("idle");
@@ -544,7 +551,7 @@ export function BpMasterFormPanel(props: Props) {
         <Button variant="off" onClick={onClose} disabled={saving}>
           취소
         </Button>
-        <Button onClick={handleSave} disabled={saving || verifying}>
+        <Button onClick={handleSave} disabled={saving || verifying || locator.locating}>
           저장
         </Button>
       </div>

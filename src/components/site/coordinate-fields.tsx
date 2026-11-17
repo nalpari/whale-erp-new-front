@@ -7,7 +7,7 @@ import { getAddressCoordinateAction } from "@/lib/address-actions";
 import type { AddressItem } from "@/lib/address-search";
 import { coordinateText, hasCoordinate, type CoordinateField, type CoordinateForm } from "@/lib/coordinate-form";
 
-// 위도 · 경도 · 출퇴근 위치적용 · [주소로 다시 계산] 한 줄 — 점포 등록 화면(store-form-view.tsx)과 같은 모양 · 같은 규칙을
+// 위도 · 경도 · 출퇴근 위치적용 · [주소로 다시 계산] 줄 — 점포 등록 화면(store-form-view.tsx)과 같은 규칙(패널 폭 때문에 두 줄)을
 // 마이페이지 BP 사업자정보와 플랫폼 BP 마스터 폼이 쓴다. 이 좌표가 본사 점포의 좌표다 — 본사근무 직원의 출퇴근 위치 확인 기준이고,
 // 좌표가 있어야 본사 점포가 운영으로 바뀐다(본사 점포 설계 · 근무지 · 본사근무 정책 2, 2026-11-17).
 // 사업자주소를 고르면 그 주소의 좌표를 받아 채우고(onAddressChoose), 주소를 지우면 좌표 · 위치적용을 함께 비운다(onAddressCleared).
@@ -60,6 +60,11 @@ export function useCoordinateLocator(setCoordinate: Setter) {
     },
     /** [주소로 다시 계산] — 주소 끝의 참고항목 괄호를 떼고 묻는다(카카오가 못 찾는다). 실패해도 지금 좌표는 둔다 */
     recalculate: (address: string) => locate(address.replace(/\s*\([^)]*\)\s*$/, ""), "", () => {}),
+    /** 패널을 다시 열 때 — 닫기 전에 보낸 좌표 요청의 늦은 응답을 버리고 안내 문구를 내린다 */
+    reset: () => {
+      number.current++;
+      setNote(null);
+    },
     /** 손으로 고친다 — 받는 중이던 좌표는 버린다 */
     type: (key: CoordinateField, value: string) => {
       number.current++;
@@ -71,7 +76,7 @@ export function useCoordinateLocator(setCoordinate: Setter) {
 
 export type CoordinateLocator = ReturnType<typeof useCoordinateLocator>;
 
-/** 좌표 한 줄 + 안내. address — 지금 사업자주소(비면 [주소로 다시 계산]이 막힌다). errors — 저장을 눌러 검사한 칸 오류 */
+/** 좌표 두 줄 + 안내. address — 지금 사업자주소(비면 [주소로 다시 계산]이 막힌다). errors — 저장을 눌러 검사한 칸 오류 */
 export function CoordinateFields({
   value,
   onApplyChange,

@@ -267,6 +267,8 @@ export const BpProfileTab = forwardRef<
 
   const handleSave = () => {
     if (!form || !verifyForm || updatedAt === null) return;
+    // 좌표를 받는 동안은 저장하지 않는다 — 주소를 고르면 좌표를 먼저 비우므로, 그 사이 저장하면 본사 좌표 · 위치적용이 지워진다(점포 등록과 같다)
+    if (locator.locating) return toast("좌표를 가져오는 중입니다. 잠시 뒤 저장해 주세요.");
     const found = validateBpProfileForm(form);
     setErrors(found);
     setFailure(null);
