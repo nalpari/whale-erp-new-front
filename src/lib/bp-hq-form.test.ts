@@ -33,10 +33,10 @@ test("validateHqForm — 좌표 형식 · 함께 입력", () => {
 });
 
 test("validateHqForm — 본사 직원 관리는 사업자정보 인증과 좌표가 있어야 켠다", () => {
-  assert.equal(validateHqForm(filled, false).isHqStaffEnabled, "사업자정보를 인증해야 본사 직원 관리를 켤 수 있습니다.");
+  assert.equal(validateHqForm(filled, false).isHqStaffEnabled, "사업자정보를 인증해야 본사 직원 관리를 사용할 수 있습니다.");
   assert.equal(
     validateHqForm({ ...filled, latitude: "", longitude: "", isLocationApplied: false }, true).isHqStaffEnabled,
-    "본사 직원 관리를 사용하려면 본사 위도 · 경도가 필요합니다.",
+    "위도 · 경도를 입력해야 본사 직원 관리를 사용할 수 있습니다.",
   );
   assert.deepEqual(validateHqForm({ ...filled, isHqStaffEnabled: false }, false), {});
 });

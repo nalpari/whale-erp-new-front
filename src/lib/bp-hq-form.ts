@@ -65,8 +65,8 @@ export function validateHqForm(f: HqForm, verifiedAfter: boolean): Partial<Recor
   if (lng && (!decimal(6).test(lng) || Math.abs(Number(lng)) > 180)) errors.longitude = "경도는 -180~180, 소수 6자리까지입니다.";
   if (Boolean(lat) !== Boolean(lng)) errors[lat ? "longitude" : "latitude"] = "위도와 경도는 함께 입력해 주세요.";
   if (f.isHqStaffEnabled) {
-    if (!verifiedAfter) errors.isHqStaffEnabled = "사업자정보를 인증해야 본사 직원 관리를 켤 수 있습니다.";
-    else if (!hasHqCoordinates(f)) errors.isHqStaffEnabled = "본사 직원 관리를 사용하려면 본사 위도 · 경도가 필요합니다.";
+    if (!verifiedAfter) errors.isHqStaffEnabled = "사업자정보를 인증해야 본사 직원 관리를 사용할 수 있습니다.";
+    else if (!hasHqCoordinates(f)) errors.isHqStaffEnabled = "위도 · 경도를 입력해야 본사 직원 관리를 사용할 수 있습니다.";
   }
   return errors;
 }

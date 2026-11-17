@@ -4,6 +4,7 @@ import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState, us
 import { AddressField } from "@/components/address-field";
 import { Button, Checkbox, Field, FormRow, GuideNote, RequiredMark, Select, Tag, TextField, Toggle, useAction, useToast } from "@/components/common";
 import { getAddressCoordinateAction } from "@/lib/address-actions";
+import { LocationApplyField } from "@/components/site/location-apply-field";
 import type { AddressItem } from "@/lib/address-search";
 import { hasHqCoordinates, hqFormOf, toHqInput, validateHqForm, type HqForm, type HqFormField } from "@/lib/bp-hq-form";
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
@@ -573,7 +574,7 @@ export const BpProfileTab = forwardRef<
 
         {hq.supported && (
           <>
-            {/* 본사 좌표 줄 — 점포 등록 화면과 같은 칸 · 규칙(WHALEERP-724). 좁은 패널이라 위도 · 경도 한 줄, 위치적용 · 버튼 한 줄로 나눈다 */}
+            {/* 본사 좌표 줄 — 점포 등록 화면과 같은 칸 · 규칙(WHALEERP-724). 점포와 같은 순서로 위도 · 경도 · 출퇴근 위치적용을 한 줄에, 좁은 패널이라 [주소로 다시 계산]은 아랫줄 왼쪽, 그 오른쪽에 안내(2026-11-17 사용자 지정) */}
             <div className="flex flex-col gap-[8px]">
               <FormRow>
                 <div className="flex min-w-px flex-1 flex-col">
@@ -602,11 +603,10 @@ export const BpProfileTab = forwardRef<
                   </Field>
                   <FieldMessage id={`${ids}-longitude`} message={hqErrors.longitude} />
                 </div>
-              </FormRow>
-              <FormRow>
-                <Field label="출퇴근 위치적용" width="w-[150px]">
+                <LocationApplyField>
                   {/* 좌표가 없으면 사용으로 고를 수 없고, 보이는 값도 저장(toHqInput)과 같은 조건으로 그린다 — 점포와 같다 */}
                   <Select
+                    aria-label="출퇴근 위치적용"
                     value={hasHqCoordinates(hq) && hq.isLocationApplied ? "Y" : "N"}
                     onChange={(e) => setHqField("isLocationApplied", e.target.value === "Y")}
                     disabled={!hasHqCoordinates(hq)}
@@ -615,24 +615,21 @@ export const BpProfileTab = forwardRef<
                     <option value="Y">사용</option>
                     <option value="N">미사용</option>
                   </Select>
-                </Field>
-                <div className="self-end">
-                  <Button
-                    variant="soft"
-                    onClick={() => locate(form.address.address.replace(/\s*\([^)]*\)\s*$/, ""), "", false)}
-                    disabled={!form.address.address.trim() || locating}
-                  >
-                    주소로 다시 계산
-                  </Button>
-                </div>
+                </LocationApplyField>
               </FormRow>
               {coordinateNote && <FieldMessage id={`${ids}-coordinate`} message={coordinateNote} />}
-              <p className="text-[13px] leading-[1.6] text-erp-label">
-                사업자주소를 입력하면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.
-                <br />
-                <b className="font-semibold">출퇴근 위치적용</b>을 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 본사 직원의 출퇴근 위치를
-                확인할 수 있습니다.
-              </p>
+              <div className="flex items-center gap-[10px]">
+                <Button
+                  variant="soft"
+                  onClick={() => locate(form.address.address.replace(/\s*\([^)]*\)\s*$/, ""), "", false)}
+                  disabled={!form.address.address.trim() || locating}
+                >
+                  주소로 다시 계산
+                </Button>
+                <p className="text-[13px] leading-[1.6] break-keep text-erp-label">
+                  사업자주소를 입력하면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.
+                </p>
+              </div>
             </div>
 
             {/* 본사 직원 관리 — 켠 BP 에만 [본사근무] · 헤더 「본사」 범위 · 본사 근무지가 보인다(기본 꺼짐, 1인 매장이 헷갈리지 않게).
@@ -649,8 +646,8 @@ export const BpProfileTab = forwardRef<
               <FieldMessage id={`${ids}-isHqStaffEnabled`} message={hqErrors.isHqStaffEnabled} />
               <GuideNote>
                 {verifyForm.savedBizNumber || currentVerification(verifyForm)
-                  ? "켜면 근로계약서에서 [본사근무]로 본사 직원을 계약할 수 있습니다. 본사 위도 · 경도가 필요합니다."
-                  : "사업자정보를 인증하면 켤 수 있습니다."}
+                  ? "본사 직원 관리를 사용하면 근로계약서의 소속 근무지에서 [본사근무]를 선택할 수 있습니다."
+                  : "사업자정보를 인증해야 사용할 수 있습니다."}
               </GuideNote>
             </div>
           </>
