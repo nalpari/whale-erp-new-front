@@ -14,18 +14,24 @@ import {
   deleteScheduleAction,
   getScheduleDefaultsAction,
   getScheduleStaffAction,
+  rangeCreateSchedulesAction,
   updateScheduleAction,
 } from "./actions";
 import {
   EMPTY_SHIFT,
   END_TIMES,
   endOptionLabel,
+  dayText,
   hasDefaults,
+  nextToDate,
+  rangeDates,
+  rangeProblem,
   shiftBody,
   shiftOf,
   shiftOfDefaults,
   shiftProblem,
   START_TIMES,
+  WEEKDAYS,
   type ShiftInput,
 } from "./schedule-form-model";
 
@@ -211,6 +217,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const getScheduleStaff = useAction(getScheduleStaffAction, { overlay: false });
   const getScheduleDefaults = useAction(getScheduleDefaultsAction, { overlay: false });
   const bulkCreateSchedules = useAction(bulkCreateSchedulesAction, { overlay: false });
+  const rangeCreateSchedules = useAction(rangeCreateSchedulesAction, { overlay: false });
   const updateSchedule = useAction(updateScheduleAction, { overlay: false });
   const createSchedule = useAction(createScheduleAction, { overlay: false });
   const deleteSchedule = useAction(deleteScheduleAction, { overlay: false });
@@ -223,6 +230,15 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
       : null;
   const [mode, setMode] = useState<"one" | "bulk">("one");
   const [workDate, setWorkDate] = useState(opening.kind === "edit" ? opening.item.workDate : opening.workDate);
+  // 기간 등록(WHALEERP-730) — 종료일이 시작일(workDate)과 다르면 기간이고 고른 요일마다 넣는다. 같으면 지금처럼 하루 등록이다.
+  // 직원 목록 · 계약 값은 시작일 기준이다(받을 수 없는 날은 api 가 건너뛰고 사유를 돌려준다)
+  const [toDate, setToDate] = useState(opening.kind === "edit" ? opening.item.workDate : opening.workDate);
+  const [weekdays, setWeekdays] = useState<number[]>(WEEKDAYS.map((w) => w.value));
+  // 기간 등록에서 건너뛴 날 — 근무일 · 직원 이름(저장하던 때) · 사유. 저장한 뒤 패널에 남기고 [저장]은 막는다 — 같은 기간을 다시
+  // 보내면 이미 저장한 건이 모두 겹침으로 건너뛴 날에 섞여 처음 저장한 것까지 실패로 보인다(리뷰 반영)
+  const [rangeResult, setRangeResult] = useState<{ created: number; skipped: { workDate: string; name: string; message: string }[] } | null>(null);
+  // 저장한 건이 있을 때만 [저장]을 막는다 — 하나도 저장하지 못했으면 다시 보내도 겹칠 일이 없다(리뷰 반영)
+  const rangeLocked = !!rangeResult && rangeResult.created > 0;
   const [staffId, setStaffId] = useState<number | null>(edit ? edit.item.staffMemberId : null);
   const [shift, setShift] = useState<ShiftInput>(edit ? shiftOf(edit.item) : (gap ?? EMPTY_SHIFT));
   const [picked, setPicked] = useState<number[]>([]);
@@ -293,12 +309,15 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
     setMode(next);
     setTried(false);
     setServerError("");
+    setRangeResult(null);
   };
   const handleDateChange = (value: string) => {
     setServerError("");
     setWorkDate(value);
     workDateNow.current = value;
     if (edit) return;
+    setToDate(nextToDate(workDate, toDate, value));
+    setRangeResult(null);
     // 받을 수 있는 직원이 근무일마다 달라 고른 직원을 비운다
     setStaffId(null);
     setPicked([]);
@@ -306,14 +325,25 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
     setRowErrors({});
     if (!gap) setShift(EMPTY_SHIFT);
   };
+  const handleToDateChange = (value: string) => {
+    setServerError("");
+    setToDate(value);
+    setRangeResult(null);
+  };
+  const handleWeekdayToggle = (weekday: number, on: boolean) => {
+    setWeekdays((d) => (on ? [...d, weekday] : d.filter((x) => x !== weekday)));
+    setRangeResult(null);
+  };
   const handlePickOne = (value: string) => {
     setServerError("");
+    setRangeResult(null);
     const id = value ? Number(value) : null;
     setStaffId(id);
     if (id !== null) loadDefaults(id, gap ? undefined : (d) => setShift(shiftOfDefaults(d)));
   };
   const handleToggle = (id: number, on: boolean) => {
     setServerError("");
+    setRangeResult(null);
     setPicked((p) => (on ? [...p, id] : p.filter((x) => x !== id)));
     setRowErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => Number(k) !== id)));
     if (!on) return;
@@ -325,9 +355,14 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const loading = !edit && !!workDate && pool?.workDate !== workDate;
   const staff = pool?.state === "ok" && pool.workDate === workDate ? pool.staff : [];
   const nameOf = (id: number) => staff.find((s) => s.staffMemberId === id)?.name ?? "";
-  const oneProblem = !workDate ? "근무일을 선택해 주세요." : staffId === null ? "직원을 선택해 주세요." : shiftProblem(shift);
+  const range = !edit && !!workDate && toDate !== workDate;
+  // 기간을 막는 이유 — 근무일 칸 아래에 보인다
+  const rangeError = range ? rangeProblem(workDate, toDate, weekdays, mode === "bulk" ? Math.max(1, picked.length) : 1) : null;
+  const noDate = edit ? "근무일을 선택해 주세요." : "근무 시작일을 선택해 주세요.";
+  // 기간 오류는 근무일 칸 아래에만 보인다 — 직원 칸 · 직원 상자에 같은 문장을 다시 띄우지 않는다(리뷰 반영)
+  const oneProblem = !workDate ? noDate : staffId === null ? "직원을 선택해 주세요." : shiftProblem(shift);
   const bulkProblems = Object.fromEntries(picked.map((id) => [id, shiftProblem(rows[id] ?? EMPTY_SHIFT)]));
-  const bulkProblem = !workDate ? "근무일을 선택해 주세요." : picked.length === 0 ? "직원을 한 명 이상 선택해 주세요." : null;
+  const bulkProblem = !workDate ? noDate : picked.length === 0 ? "직원을 한 명 이상 선택해 주세요." : null;
   // 일괄 저장을 막는 이유 — 직원 칸 아래, 직원 목록을 불러오는 중 · 실패 문구 아래 같은 자리에 쓴다
   const bulkError = tried && bulkProblem ? (
     <p role="alert" className={ERROR}>
@@ -351,9 +386,27 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
     setTried(true);
     setServerError("");
     setPartialNotice("");
-    if (mode === "one" ? oneProblem : bulkProblem || picked.some((id) => bulkProblems[id])) return;
+    setRangeResult(null);
+    if (rangeError || (mode === "one" ? oneProblem : bulkProblem || picked.some((id) => bulkProblems[id]))) return;
     startSaving(async () => {
       try {
+        if (range) {
+          const lines = mode === "bulk" ? picked.map((id) => ({ staffMemberId: id, ...shiftBody(rows[id]) })) : [{ staffMemberId: staffId!, ...shiftBody(shift) }];
+          const result = await rangeCreateSchedules(workDate, toDate, weekdays, lines);
+          if (!result.ok) return fail(result);
+          router.refresh();
+          const { created, failed } = result.result;
+          if (failed.length === 0) {
+            toast(`근무스케줄 ${created.length}건을 등록했습니다.`);
+            return onClose();
+          }
+          // 건너뛴 날은 패널에 남겨 근무일 · 직원 · 사유를 보인다 — 저장한 건은 이미 들어갔다
+          setRangeResult({
+            created: created.length,
+            skipped: failed.map((f) => ({ workDate: f.workDate, name: nameOf(f.staffMemberId) || "직원", message: f.message })),
+          });
+          return;
+        }
         if (mode === "bulk") {
           const result = await bulkCreateSchedules(
             workDate,
@@ -447,11 +500,45 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
             </div>
           </div>
         )}
-        <div className="pb-[6px]">
-          <Field label="근무일" required>
-            <DateField aria-label="근무일" value={workDate} onChange={handleDateChange} />
-          </Field>
-        </div>
+        {edit ? (
+          <div className="pb-[6px]">
+            <Field label="근무일" required>
+              <DateField aria-label="근무일" value={workDate} onChange={handleDateChange} />
+            </Field>
+          </div>
+        ) : (
+          // 등록은 기간으로도 넣는다 — 종료일이 시작일과 같으면 하루, 다르면 아래 요일마다(WHALEERP-730, 2026-11-17 재영)
+          <div className="flex flex-col gap-[8px] pb-[6px]">
+            <FormRow>
+              <Field label="근무 시작일" required>
+                <DateField aria-label="근무 시작일" value={workDate} onChange={handleDateChange} />
+              </Field>
+              <Field label="근무 종료일" required>
+                <DateField aria-label="근무 종료일" value={toDate} onChange={handleToDateChange} />
+              </Field>
+            </FormRow>
+            {range && (
+              <div className="flex flex-col gap-[8px]">
+                <span className="text-[14px] font-medium text-erp-label">
+                  요일
+                  <RequiredMark />
+                </span>
+                <div role="group" aria-label="요일" className="flex flex-wrap gap-x-[18px] gap-y-[8px]">
+                  {WEEKDAYS.map((w) => (
+                    <Checkbox key={w.value} label={w.label} checked={weekdays.includes(w.value)} onChange={(e) => handleWeekdayToggle(w.value, e.target.checked)} />
+                  ))}
+                </div>
+                {/* 고른 날 수와 건수를 바로 보인다 — 막히는 이유도 저장 전에 바로(1000건 한도를 미리 알게, 리뷰 반영) */}
+                <p aria-live="polite" className={rangeError ? ERROR : STATUS}>
+                  {rangeError ??
+                    (mode === "bulk" && picked.length > 1
+                      ? `${rangeDates(workDate, toDate, weekdays).length}일 × ${picked.length}명, ${rangeDates(workDate, toDate, weekdays).length * picked.length}건을 등록합니다.`
+                      : `${rangeDates(workDate, toDate, weekdays).length}일에 등록합니다.`)}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
         <div className="flex flex-col gap-[8px] pb-[6px]">
           <span className="text-[14px] font-medium text-erp-label">
             직원
@@ -562,11 +649,13 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
                   직원 목록에는 선택한 근무일에 <u>근로계약이 서명 완료</u>된 직원 중 <u>직원 근무 앱에 가입</u>한 직원만 표시됩니다.
                 </>,
                 "퇴직일이 정해진 직원은 퇴직일까지만 근무스케줄을 등록할 수 있습니다.",
+                // 기간 등록(WHALEERP-730, 2026-11-17 재영)
+                "근무 종료일을 정하면 기간(최대 92일) 중 선택한 요일마다 등록합니다. 휴일도 포함되니 쉬는 날은 요일에서 빼 주세요. 등록할 수 없는 날은 건너뛰고 사유를 알려 드립니다.",
               ]),
-          ...(mode === "bulk" && !edit ? ["여러 명을 등록할 때 일부가 실패하면, 성공한 직원은 등록되고 실패한 직원만 사유와 함께 남습니다."] : []),
+          ...(mode === "bulk" && !edit && !range ? ["여러 명을 등록할 때 일부가 실패하면, 성공한 직원은 등록되고 실패한 직원만 사유와 함께 남습니다."] : []),
           // 알림이 가는 곳에 밑줄(2026-11-05 사용자 지정, 3팀 확인 필요)
           <>
-            관리자가 근무스케줄을 저장하면 해당 <u>직원의 근무 앱</u>과 <u>이메일</u>로 알림이 발송됩니다.
+            관리자가 근무스케줄을 저장하면 해당 <u>직원의 근무 앱</u>과 <u>이메일</u>로 알림이 발송됩니다. 기간으로 등록하면 직원마다 한 번만 발송됩니다.
           </>,
           "직원이 근무 앱에서 근무스케줄 알림을 끄면 알림은 근무 앱 알림함에만 표시됩니다.",
         ]}
@@ -575,6 +664,23 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
         <p role="alert" className={ERROR}>
           {partialNotice}
         </p>
+      )}
+      {rangeResult && (
+        // 기간 등록 결과 — 요약과 건너뛴 날(근무일 · 직원 · 사유). 저장한 건이 있으면 [저장]을 막는다(rangeLocked)
+        <p role="alert" className={ERROR}>
+          {rangeResult.created > 0
+            ? `${rangeResult.created}건은 등록했고 ${rangeResult.skipped.length}건은 건너뛰었습니다. 등록한 건은 반영됐으니 패널을 닫고 사유를 확인해 주세요.`
+            : `${rangeResult.skipped.length}건을 모두 등록하지 못했습니다. 사유를 확인해 주세요.`}
+        </p>
+      )}
+      {rangeResult && (
+        <ul aria-label="건너뛴 날" className="flex max-h-[200px] flex-col gap-[4px] overflow-y-auto text-[13px] text-erp-label">
+          {rangeResult.skipped.map((f, i) => (
+            <li key={`${f.workDate}-${f.name}-${i}`}>
+              {dayText(f.workDate)} · {f.name} — {f.message}
+            </li>
+          ))}
+        </ul>
       )}
       {serverError && (
         <p role="alert" className={ERROR}>
@@ -591,7 +697,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
             삭제
           </Button>
         )}
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={handleSave} disabled={saving || rangeLocked}>
           {/* 1명 · 여러 명 · 수정 모두 [저장](2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 여러 명이면 「N명 등록」) */}
           {saving ? "저장 중" : "저장"}
         </Button>

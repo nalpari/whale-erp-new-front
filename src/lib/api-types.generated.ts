@@ -809,7 +809,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 발송 이력 영역 — 근로계약이 보낸 가입 초대 · 소속 추가 확인 요청(재발송 포함)의 결과 · 실패 사유 · 재시도 가능 여부, 최근 순
+         * 발송 이력 영역 — 근로계약이 보낸 가입 초대 · 소속 추가 확인 요청 · 서명 요청(재발송 포함)의 결과 · 실패 사유 · 재시도 가능 여부, 최근 순
          *     (WHALEERP-136). 근로계약 관리 조회 권한
          */
         get: operations["StaffMemberSummaryController_sendLogs"];
@@ -3847,6 +3847,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/work-schedules/range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 기간 등록(WHALEERP-730) — 시작일 ~ 종료일(최대 92일) 가운데 고른 요일마다 직원별 줄로 한 건씩. 넣을 수 없는 날은 건너뛰어
+         *     `failed` 로 돌려주고 나머지는 저장한다. 알림은 직원마다 한 번(기간 · 건수)
+         */
+        post: operations["WorkSchedulesController_rangeCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/work-schedules/copy-last-week": {
         parameters: {
             query?: never;
@@ -5608,7 +5628,7 @@ export interface components {
             unsentCount: number;
         };
         /** @enum {string} */
-        StaffSendKind: "SIGNUP_INVITE" | "AFFILIATION_REQUEST" | "PASSWORD_RESET";
+        StaffSendKind: "SIGNUP_INVITE" | "AFFILIATION_REQUEST" | "CONTRACT_SENT" | "PASSWORD_RESET";
         /**
          * @description 알림톡 줄은 비즈뿌리오 접수 기준 — 접수 여부 모름(UNCONFIRMED)은 다시 보내면 두 번 갈 수 있다. 비밀번호 초기화 메일 줄은 SMTP 결과이고 SUCCEEDED · FAILED 만 있다
          * @enum {string}
@@ -5622,11 +5642,11 @@ export interface components {
             sendLogId: number;
             /** @description 보낸 근로계약. 비밀번호 초기화 메일(PASSWORD_RESET)은 계약과 무관해 null */
             contractId: number | null;
-            /** @description 같은 계약으로 앞서 직원에게 나갔을 수 있는 발송(성공 · 접수 여부 모름)이 있었다 — 재발송 · 고쳐 다시 보냄. 계약 재발송 횟수와는 다를 수 있다. 비밀번호 초기화 메일(PASSWORD_RESET)은 늘 false */
+            /** @description 같은 계약으로 앞서 직원에게 나갔을 수 있는 발송(성공 · 접수 여부 모름)이 있었다 — 재발송 · 고쳐 다시 보냄. 종류는 가리지 않는다(가입 초대 뒤의 서명 요청도 재발송). 계약 재발송 횟수와는 다를 수 있다. 비밀번호 초기화 메일(PASSWORD_RESET)은 늘 false */
             isResend: boolean;
             /** @description 관리자에게 보일 실패 사유. 성공이면 null */
             failureReason: string | null;
-            /** @description 다시 보내도 되는가 — 확실히 나가지 않은 실패만 true, 접수 여부 모름은 false. 성공이면 null. 비밀번호 초기화 메일(PASSWORD_RESET)은 늘 null */
+            /** @description 다시 보내도 되는가 — 확실히 나가지 않은 실패만 true, 접수 여부 모름은 false. 성공이면 null. 비밀번호 초기화 메일(PASSWORD_RESET) · 서명 요청(CONTRACT_SENT — 알림톡이 실패해도 앱 알림함으로 받았다)은 늘 null */
             retryable: boolean | null;
             /** Format: date-time */
             sentAt: string;
@@ -8147,10 +8167,14 @@ export interface components {
              * @description 최종수정 일시(ISO 8601) — 관리자가 마지막으로 고치거나 보낸 때(WHALEERP-699). 등록 · 임시저장 이어 쓰기 · 종이 계약 등록 ·
              *     근로자 정보 수정 · 발송 · 재발송 · 발송 대기 종료만 바꾼다 — 직원의 날인 · 거부 · 수정 요청 · 소속 확인 응답과 배치(만료 · 종료 ·
              *     갱신 알림 · 퇴직 처리), 다른 계약 저장에 따른 대체 · 종료는 바꾸지 않는다(그 상태 변경은 lastProcessedAt). 재발송이
-             *     나가지 않아 되돌리면 보내기 전 값이다. 전자계약 · 종이 계약 모두. 관리자 수정 기록이 없으면 null
+             *     나가지 않아 되돌리면 보내기 전 값이다. 전자계약 · 종이 계약 모두. 이 칸 전에 만든 계약은 등록 · 발송 일시 · 관리자 상태 이력으로
+             *     근사한 값이다(상태를 바꾸지 않은 저장은 빠져 실제보다 이를 수 있다)
              */
             modifiedAt: string | null;
-            /** @description 최종수정 관리자 — modifiedAt 의 관리자 이름, 이름이 없으면 로그인 아이디(registeredBy 와 같은 규칙). 없으면 null */
+            /**
+             * @description 최종수정 관리자 — modifiedAt 의 관리자 이름, 이름이 없으면 로그인 아이디(registeredBy 와 같은 규칙). 이 칸 전에 만든 계약이 등록
+             *     뒤에 고쳐졌으면 어느 관리자인지 몰라 null
+             */
             modifiedBy: string | null;
             /**
              * @description 이 계약을 직전 계약으로 둔 체결을 거친 재계약 ID(WHALEERP-156) — 있으면 상세가 「새 계약」을 띄우지 않는다. 진행 중 재계약은 치지
@@ -10219,6 +10243,43 @@ export interface components {
             /** @description 저장한 근무스케줄(요청 순서) */
             created: components["schemas"]["WorkScheduleDto"][];
             failed: components["schemas"]["BulkWorkScheduleFailureDto"][];
+        };
+        RangeCreateWorkSchedulesDto: {
+            /**
+             * @description 넣을 요일 — 0(일) ~ 6(토), 1~7개
+             * @example [
+             *       1,
+             *       2,
+             *       3,
+             *       4,
+             *       5
+             *     ]
+             */
+            weekdays: number[];
+            /** @description 시작일 YYYY-MM-DD */
+            fromDate: string;
+            /** @description 종료일 YYYY-MM-DD — 시작일과 같거나 뒤, 시작일부터 92일 안 */
+            toDate: string;
+            /** @description 직원별 줄. 1~100줄. 같은 직원이 여러 줄이면 쪼갠 근무다 */
+            rows: components["schemas"]["BulkWorkScheduleRowDto"][];
+        };
+        RangeWorkScheduleFailureDto: {
+            /** @description 요청 rows 의 순번(0부터) */
+            index: number;
+            staffMemberId: number;
+            /** @description 한 건 등록이면 받았을 HTTP 상태 — 400 · 404 · 409, 예상 못 한 저장 오류는 500(code WORK_SCHEDULE_SAVE_FAILED) */
+            statusCode: number;
+            /** @description WORK_SCHEDULE_NO_CONTRACT · WORK_SCHEDULE_NOT_JOINED · WORK_SCHEDULE_AFTER_RETIREMENT · WORK_SCHEDULE_OVERLAP 등. 없으면 null */
+            code: string | null;
+            message: string;
+            /** @description 넣지 못한 근무일 YYYY-MM-DD */
+            workDate: string;
+        };
+        RangeCreateWorkSchedulesResponseDto: {
+            /** @description 저장한 근무스케줄(근무일 · 줄 순서) */
+            created: components["schemas"]["WorkScheduleDto"][];
+            /** @description 건너뛴 근무일 · 줄(근무일 · 줄 순서) */
+            failed: components["schemas"]["RangeWorkScheduleFailureDto"][];
         };
         WorkScheduleTotalsDto: {
             days: number;
@@ -23605,6 +23666,53 @@ export interface operations {
                 };
             };
             /** @description 요청 형식 오류(근무일 · 줄 수 1~100 · 줄의 시각 형식) — 이때는 아무 줄도 저장하지 않는다 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근무스케줄 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · BP · 가맹 계정의 다른 BP · 형식이 틀린 헤더 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 계정의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WorkSchedulesController_rangeCreate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RangeCreateWorkSchedulesDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RangeCreateWorkSchedulesResponseDto"];
+                };
+            };
+            /** @description 요청 형식 오류(날짜 · 요일 · 줄 수 1~100 · 줄의 시각 형식) · 종료일이 시작일보다 앞섬 · 기간 92일 초과 · 고른 요일의 날이 없음 · 날 수 × 줄 수 1000건 초과 — 이때는 아무것도 저장하지 않는다 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
