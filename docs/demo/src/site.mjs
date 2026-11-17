@@ -7,6 +7,7 @@ import * as ui from "./ui.mjs";
 import * as x from "./extra.mjs";
 import { platformMyPanel } from "./platform-admin/edit.mjs";
 import * as f from "./biz-form.mjs";
+import { hqCoordinateFields } from "./store-parts.mjs";
 
 const pages = join(dirname(fileURLToPath(import.meta.url)), "pages");
 // 아직 만들지 않은 화면은 # 로 둔다. 링크가 죽은 페이지로 가지 않게.
@@ -209,6 +210,8 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     ui.formRow(ui.field("업태", ui.textField({ value: "도소매업", maxlength: 50 })), ui.field("종목", ui.textField({ value: "식자재 유통", maxlength: 50 }))) +
     // 주소는 업태 · 종목 다음, 라벨 「사업자주소」(앱 bp-profile-tab.tsx 와 같다, 2026-10-26)
     f.address(A, "사업자주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }) +
+    // 사업자주소 바로 아래 본사 점포 좌표 줄(앱 bp-profile-tab.tsx · coordinate-fields.tsx, 2026-11-17 본사 점포 설계)
+    hqCoordinateFields({ latitude: "37.556312", longitude: "126.901845", applied: true }) +
     `</section>`;
 
   const biz = `<div class="flex flex-col gap-[18px]">${bizAuthBox("locked", "211-87-01234", "남도현", "2021-03-15", "2026-10-20 14:32")}${bizRest(`${idPrefix}-done`)}</div>${save}`;
