@@ -9,7 +9,7 @@ import { useScope, useStores } from "@/components/site/session-gate";
 import { StoreBulkDialog } from "@/components/site/store-mapping-picker";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { Scope } from "@/lib/browser-storage";
-import { chipsKeyOf, isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
+import { chipsKeyOf, isHqStore, isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
 import { useStoreListNavigation } from "./store-list-navigation";
 import { DEFAULT_STORES_QUERY, droppedStoreIds, fillScopeOf, withPickedStores, withScopeCondition, withStatuses, withStoreFilter } from "./stores-query";
 
@@ -55,7 +55,8 @@ export function StoreFilter({ picked, scope, requested }: { picked: PickedStore[
   }
   const [resets, setResets] = useState(0);
   const [bulkOpen, setBulkOpen] = useState(false);
-  const hidden = droppedStoreIds(requested, picked);
+  // 본사 점포도 후보에서 숨긴다 — 점포 관리 api 가 본사를 늘 빼서 골라도 찾지 못한다(본사 점포 설계, 2026-11-17)
+  const hidden = [...droppedStoreIds(requested, picked), ...stores.filter(isHqStore).map((s) => s.storeId)];
   /** 고른 점포로 목록을 다시 건다 — 찾아 고르기 · 일괄 검색이 같이 쓴다 */
   const pickStores = (next: PickedStore[]) => {
     setChips(next);

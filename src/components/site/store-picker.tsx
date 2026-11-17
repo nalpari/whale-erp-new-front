@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import { FIELD, SMALL_BUTTON } from "@/components/common/theme";
-import { searchStoresByText, toPickedStore } from "@/lib/store-scope";
+import { isHqStore, searchStoresByText, storeOptionLabel, toPickedStore } from "@/lib/store-scope";
 import type { StoreSummary } from "@/lib/store-types";
 import type { AdminStore } from "@/lib/session";
 import { useStores } from "./session-gate";
@@ -40,6 +40,9 @@ export function StorePicker({
   const [active, setActive] = useState(0);
 
   const pickedIds = new Set([...picked.map((p) => p.storeId), ...hidden]);
+  // 본사 점포는 후보 · 칩에 「[본사] 상호」로 보인다 — 칩(PickedStore)에는 본사 표시가 없어 후보 목록에서 찾는다(본사 점포 설계, 2026-11-17)
+  const hqIds = new Set(stores.filter(isHqStore).map((s) => s.storeId));
+  const labelOf = (store: PickedStore) => storeOptionLabel({ name: store.name, isHq: hqIds.has(store.storeId) });
   const options: PickedStore[] = searchStoresByText(stores, keyword)
     .filter((s) => !pickedIds.has(s.storeId))
     .map(toPickedStore);
@@ -122,7 +125,7 @@ export function StorePicker({
                     onClick={() => choose(store)}
                     className={`cursor-pointer truncate rounded-[2px] px-[6px] py-[6px] text-erp-ink ${i === active ? "bg-erp-thead-bg" : ""}`}
                   >
-                    {store.name}
+                    {labelOf(store)}
                   </li>
                 ))}
               </ul>
@@ -149,8 +152,8 @@ export function StorePicker({
               key={store.storeId}
               className="flex h-[34px] shrink-0 items-center gap-[6px] rounded-[2px] border border-erp-field-line bg-white pr-[4px] pl-[10px] text-[14px] text-erp-ink"
             >
-              <span className="min-w-0 flex-1 truncate" title={`${store.name} · ${store.storeCode}`}>
-                {store.name}
+              <span className="min-w-0 flex-1 truncate" title={`${labelOf(store)} · ${store.storeCode}`}>
+                {labelOf(store)}
               </span>
               <button
                 type="button"

@@ -9,7 +9,7 @@ import { signOut } from "@/lib/sign-out";
 import type { ServiceCode } from "@/lib/browser-storage";
 import { entryUrlOf, findMenu, firstMenuUrl, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
-import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, scopeOfKey, withScope } from "@/lib/store-scope";
+import { branchStores, isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, scopeOfKey, withScope } from "@/lib/store-scope";
 import { BpSelectDialog } from "./bp-select-dialog";
 import { useCodeLabel } from "./code-label";
 import { useCurrentBpStatus } from "./current-bp-status";
@@ -197,9 +197,12 @@ function ScopeFromAddress() {
  * 개수는 폐점이 아닌 점포만 센다. 폐점 점포는 묶음 끝에 회색 이름 · 보조 줄 「폐점」으로 둔다(색만으로 상태를 말하지 않는다 — DESIGN.md).
  */
 function scopeSections(bpName: string, stores: AdminStore[]): ScopeSelectSection[] {
-  if (stores.length === 0) return [];
-  const open = openStores(stores);
-  const ofType = (type: string) => stores.filter((s) => s.storeTypeCode === type);
+  // 본사 점포(api 가 BP 가입 때 만드는 가상의 점포, 직영으로 저장)는 상단 범위 선택에 보이지 않는다 — 묶음 · 개수 모두에서 빼고,
+  // 본사 직원은 「전체」 범위에서 함께 본다(본사 점포 설계, 2026-11-17 사용자 지정). 본사만 있는 BP 는 점포가 없는 BP 와 같다
+  const branches = branchStores(stores);
+  if (branches.length === 0) return [];
+  const open = openStores(branches);
+  const ofType = (type: string) => branches.filter((s) => s.storeTypeCode === type);
   const direct = ofType("DIRECT");
   const franchise = ofType("FRANCHISE");
   const openCount = (list: AdminStore[]) => list.filter((s) => !isClosedStore(s)).length;

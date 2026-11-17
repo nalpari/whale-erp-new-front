@@ -29,6 +29,7 @@ import { FIELD } from "@/components/common/theme";
 import { useCodes, useCurrentBp } from "@/components/site/session-gate";
 import { fetchSameOrigin } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
+import { storeOptionLabel } from "@/lib/store-scope";
 import type { FacilityDetail, FacilityDocument, FacilityManagerOption, FacilityStoreOption } from "@/lib/facilities";
 import { createFacilityAction, deleteFacilityDocumentAction, getManagerOptionsAction, updateFacilityAction } from "./actions";
 import {
@@ -889,7 +890,8 @@ function StorePick({
                   className={`flex w-full items-center gap-[10px] rounded-[2px] px-[10px] py-[8px] text-left text-[14px] hover:bg-erp-thead-bg ${i === active ? "bg-erp-thead-bg" : ""}`}
                 >
                   <span className="text-erp-label">{s.storeCode}</span>
-                  <span className="truncate">{s.name}</span>
+                  {/* 본사도 시설물을 둘 수 있다 — 「[본사] 상호」로 매장과 가른다(본사 점포 설계, 2026-11-17) */}
+                  <span className="truncate">{storeOptionLabel(s)}</span>
                 </button>
               ))}
             </>

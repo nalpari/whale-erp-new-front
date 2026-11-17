@@ -8,7 +8,7 @@ import { bpPath } from "@/lib/bp-path";
 import { isPlatformRole } from "@/lib/auth-routes";
 import { formatDateTime } from "@/lib/format";
 import { PAGE_SIZES, type PageSize } from "@/lib/staff-members";
-import { isClosedStore, openStores } from "@/lib/store-scope";
+import { branchStores, isClosedStore, openStores, storeOptionLabel } from "@/lib/store-scope";
 import type { WorkScheduleHistoryList } from "@/lib/work-schedules-api";
 import { mondayOf, moved, toScheduleSearch, type ScheduleQuery } from "./work-schedule-query";
 import { CHANGE_LABEL, historyLine } from "./work-schedule-view";
@@ -27,7 +27,8 @@ export function SchedulePicker({ query, today }: { query: ScheduleQuery; today: 
   const stores = useStores();
   const [scope] = useScope();
   const navigate = useScheduleNavigation(today);
-  const fallback = scope.type === "STORE" ? scope.storeId : (openStores(stores)[0] ?? stores[0])?.storeId;
+  // 처음 보일 근무지는 등록한 점포를 먼저 — 본사 점포(가입 때 api 가 만듦)는 등록한 점포가 없을 때만(본사 점포 설계, 2026-11-17)
+  const fallback = scope.type === "STORE" ? scope.storeId : (openStores(branchStores(stores))[0] ?? openStores(stores)[0] ?? stores[0])?.storeId;
   useEffect(() => {
     if (query.storeId === null && fallback !== undefined) navigate({ ...query, storeId: fallback });
     // 처음 한 번 — 주소에 점포가 없을 때만
@@ -56,7 +57,7 @@ export function SchedulePicker({ query, today }: { query: ScheduleQuery; today: 
         <Select aria-label="근무지" value={query.storeId} onChange={(e) => navigate({ ...query, storeId: Number(e.target.value), copy: false, historyStaffId: null, historyPage: 1 })}>
           {stores.map((s) => (
             <option key={s.storeId} value={s.storeId}>
-              {s.name}
+              {storeOptionLabel(s)}
             </option>
           ))}
         </Select>
