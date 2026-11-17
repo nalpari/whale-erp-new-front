@@ -177,15 +177,16 @@ export async function verifyStoreBusinessAction(
  */
 export async function getBpBusinessSourceAction(): Promise<ActionResult<{ source: BpBusinessSource | null; availability: BpBusinessAvailability }>> {
   try {
-    const bp = await getBpProfile();
-    if (!bp.bizRegistrationNumber || !bp.bizVerifiedAt) return { ok: true, source: null, availability: bpBusinessAvailability(null, []) };
+    // BP 마스터가 아닌 계정(403)은 사업자정보가 없는 것과 같다 — 칸을 쓰지 않는다. 점포 검색의 403 까지 「없음」으로 바꾸지 않게 여기서만 거른다
+    const bp = await getBpProfile().catch((error: unknown) => {
+      if (error instanceof ApiError && error.status === 403) return null;
+      throw error;
+    });
+    if (!bp || !bp.bizRegistrationNumber || !bp.bizVerifiedAt) return { ok: true, source: null, availability: bpBusinessAvailability(null, []) };
+    // 여기서 「쓸 수 있음」이어도 화면을 연 뒤 다른 점포가 그 번호를 쓸 수 있다 — 마지막 판단은 [인증하기]의 DUPLICATE 다
     const found = await getStores({ page: 1, pageSize: 20, storeIds: [], bizRegistrationNumber: bp.bizRegistrationNumber, statuses: ["NOT_OPERATING", "OPERATING"], storeTypes: ["DIRECT", "FRANCHISE"] });
     return { ok: true, source: bp, availability: bpBusinessAvailability(bp, found.items) };
   } catch (error) {
-    const expired = expiredFailureOf(error);
-    if (expired) return expired;
-    // BP 마스터가 아닌 계정(403)은 사업자정보가 없는 것과 같다 — 칸을 쓰지 않는다
-    if (error instanceof ApiError && error.status === 403) return { ok: true, source: null, availability: bpBusinessAvailability(null, []) };
     return failureOf(error, "사업자정보 조회");
   }
 }

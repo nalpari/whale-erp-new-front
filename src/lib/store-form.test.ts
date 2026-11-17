@@ -457,9 +457,15 @@ test("사업자정보와 같음 — BP 사업자정보로 사업자 칸을 채�
   assert.equal(f.verified, null);
 });
 
-test("사업자정보와 같음 해제 — 불러온 사업자 칸을 비운다(다른 칸은 그대로)", () => {
+test("사업자정보와 같음 해제 — 사업자 칸을 켜기 전 값으로 되돌린다(점포 칸은 그대로)", () => {
+  const typed = { ...EMPTY_STORE_FORM, tradeName: "손으로 입력", bizSameAsStore: true };
+  const back = withoutBpBusiness({ ...withBpBusiness(typed, BP_BIZ), name: "본점" }, typed);
+  assert.equal(back.name, "본점");
+  assert.equal(back.tradeName, "손으로 입력");
+  assert.equal(back.bizSameAsStore, true);
+  assert.equal(back.bizNumber, "");
   const filled = withBpBusiness({ ...EMPTY_STORE_FORM, name: "본점" }, BP_BIZ);
-  const f = withoutBpBusiness(filled);
+  const f = withoutBpBusiness(filled, EMPTY_STORE_FORM);
   assert.equal(f.name, "본점");
   for (const k of ["bizNumber", "ceoName", "openDate", "tradeName", "bizZipCode", "bizAddress", "bizAddressDetail", "bizCategory", "bizItem"] as const) assert.equal(f[k], "", k);
   assert.deepEqual(f.ceoPhone, ["", "", ""]);

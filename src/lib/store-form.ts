@@ -196,21 +196,28 @@ export function withBpBusiness(form: StoreForm, bp: BpBusinessSource): StoreForm
   };
 }
 
-/** 「사업자정보와 같음」을 풀면 불러온 사업자 칸을 비운다 — 점포 칸은 그대로 */
-export function withoutBpBusiness(form: StoreForm): StoreForm {
+/** 「사업자정보와 같음」이 채우는 칸의 오류 키 — 채우거나 되돌리면 그 칸의 지난 오류 문구를 내린다(DESIGN.md 「오류 문구 내리기」) */
+export const BP_BUSINESS_FIELDS: readonly StoreFormField[] = ["bizNumber", "ceoName", "openDate", "bizVerify", "tradeName", "ceoPhone", "bizAddressDetail", "bizCategory", "bizItem"];
+
+/**
+ * 「사업자정보와 같음」을 풀면 사업자 칸을 켜기 전 값(before)으로 되돌린다 — 점포 칸은 그대로. 켜기 전에 비어 있었으면 비운다.
+ * 켠 뒤 손으로 고친 값도 함께 되돌아간다(불러온 묶음을 통째로 거두는 동작이다). 인증 결과는 비운다
+ */
+export function withoutBpBusiness(form: StoreForm, before: StoreForm): StoreForm {
   return {
     ...form,
-    bizNumber: "",
-    ceoName: "",
-    openDate: "",
+    bizNumber: before.bizNumber,
+    ceoName: before.ceoName,
+    openDate: before.openDate,
     verified: null,
-    tradeName: "",
-    ceoPhone: ["", "", ""],
-    bizZipCode: "",
-    bizAddress: "",
-    bizAddressDetail: "",
-    bizCategory: "",
-    bizItem: "",
+    tradeName: before.tradeName,
+    ceoPhone: before.ceoPhone,
+    bizSameAsStore: before.bizSameAsStore,
+    bizZipCode: before.bizZipCode,
+    bizAddress: before.bizAddress,
+    bizAddressDetail: before.bizAddressDetail,
+    bizCategory: before.bizCategory,
+    bizItem: before.bizItem,
   };
 }
 

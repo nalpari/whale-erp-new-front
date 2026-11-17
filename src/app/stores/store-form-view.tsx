@@ -40,6 +40,7 @@ import {
   verificationValuesOf,
   withBpBusiness,
   withoutBpBusiness,
+  BP_BUSINESS_FIELDS,
   type BpBusinessAvailability,
   type BpBusinessSource,
   type FloorRow,
@@ -131,6 +132,8 @@ export function StoreFormView(props: Props) {
   const offersBpBusiness = mode === "create" && account.roleTypeCode === "BM";
   const [bpBusiness, setBpBusiness] = useState<{ source: BpBusinessSource | null; availability: BpBusinessAvailability } | null>(null);
   const [sameAsBp, setSameAsBp] = useState(false);
+  /** 「사업자정보와 같음」을 켜기 전 폼 — 끄면 사업자 칸을 이 값으로 되돌린다 */
+  const beforeSameAsBp = useRef<StoreForm>(EMPTY_STORE_FORM);
   const putStoreImage = useAction(putStoreImageAction, { overlay: false });
   const deleteStoreImage = useAction(deleteStoreImageAction, { overlay: false });
   const getStoreTransitions = useAction(getStoreTransitionsAction, { overlay: false });
@@ -404,10 +407,11 @@ export function StoreFormView(props: Props) {
     const source = bpBusiness?.source;
     if (!source) return;
     verifyNumber.current++;
-    const next = on ? withBpBusiness(form, source) : withoutBpBusiness(form);
+    if (on) beforeSameAsBp.current = form;
+    const next = on ? withBpBusiness(form, source) : withoutBpBusiness(form, beforeSameAsBp.current);
     setForm(next);
     setSameAsBp(on);
-    setErrors(withoutVerifyErrors);
+    setErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => !BP_BUSINESS_FIELDS.includes(k as StoreFormField))) as StoreFormErrors);
     if (on) handleVerify(next);
   };
 
@@ -430,6 +434,7 @@ export function StoreFormView(props: Props) {
   /** 저장 전 칸을 비운다 — 인증 전이든 인증 완료 뒤든 같은 "지우기"다(세 값과 인증 결과를 비운다) */
   const handleClearPending = () => {
     verifyNumber.current++;
+    setSameAsBp(false);
     setForm((f) => ({ ...f, bizNumber: "", ceoName: "", openDate: "", verified: null }));
     setErrors(withoutVerifyErrors);
   };
@@ -914,7 +919,7 @@ export function StoreFormView(props: Props) {
               <BizVerifiedStatus verified={verified} date={verifiedDate} />
               {/* 「사업자정보와 같음」 — 새 점포 · BP 마스터만. 쓸 수 없으면 숨기지 않고 막아 두고 이유를 옆에 적는다(2026-11-17 사용자 지정) */}
               {offersBpBusiness && bpBusiness && (
-                <span className="ml-[8px] flex items-center gap-[10px] text-[14px] font-normal">
+                <span className="ml-[10px] flex items-center gap-[10px] text-[14px] font-normal">
                   <Checkbox
                     label="사업자정보와 같음"
                     checked={sameAsBp}
@@ -924,7 +929,7 @@ export function StoreFormView(props: Props) {
                   {!bpBusiness.availability.usable && (
                     <GuideNote inline>
                       {bpBusiness.availability.reason === "IN_USE"
-                        ? `${bpBusiness.availability.storeName}에서 이미 사업자정보를 쓰고 있습니다.`
+                        ? `${bpBusiness.availability.storeName}에서 이 사업자정보를 사용 중입니다.`
                         : "마이페이지에서 사업자정보를 인증하면 불러올 수 있습니다."}
                     </GuideNote>
                   )}
