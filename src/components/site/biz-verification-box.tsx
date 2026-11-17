@@ -62,6 +62,7 @@ export function BizVerificationBox({
   compactRow = false,
   showHeader = true,
   titleBar = false,
+  titleTag,
 }: {
   values: BizVerifyValues;
   onChange: (key: BizVerifyField, value: string) => void;
@@ -112,6 +113,8 @@ export function BizVerificationBox({
   /** 머리를 상자 밖 42px 회색 제목 바로 떼고 본문을 흰 바탕에 둔다 — 마이페이지 사업자정보 탭 전용(2026-10-26 사용자 지정).
    * 켜면 showHeader 는 보지 않는다 */
   titleBar?: boolean;
+  /** titleBar 제목 「사업자정보」 바로 뒤에 붙일 것 — 마이페이지의 「본사」 꼬리표(2026-11-17 사용자 지정) */
+  titleTag?: ReactNode;
 }) {
   const ids = useId();
   const lineMessage = missingMessage(missing) ?? boxError ?? undefined;
@@ -197,7 +200,10 @@ export function BizVerificationBox({
     >
       {titleBar && (
         <h3 className="flex h-[42px] items-center justify-between rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">
-          <span>사업자정보</span>
+          <span className="flex items-center gap-[8px]">
+            사업자정보
+            {titleTag}
+          </span>
           <BizVerifiedStatus verified={verified} date={verifiedDate} />
         </h3>
       )}

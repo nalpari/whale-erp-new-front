@@ -2,13 +2,17 @@
 
 import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState, useTransition } from "react";
 import { AddressField } from "@/components/address-field";
-import { Checkbox, Field, FormRow, RequiredMark, TextField, useAction, useToast } from "@/components/common";
+import { Button, Checkbox, Field, FormRow, GuideNote, RequiredMark, Select, Tag, TextField, Toggle, useAction, useToast } from "@/components/common";
+import { getAddressCoordinateAction } from "@/lib/address-actions";
+import type { AddressItem } from "@/lib/address-search";
+import { hasHqCoordinates, hqFormOf, toHqInput, validateHqForm, type HqForm, type HqFormField } from "@/lib/bp-hq-form";
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
 import { formatDateTime } from "@/lib/format";
 import { splitPhone } from "@/lib/my-profile-form";
 import { formatBizNumber } from "@/lib/store-view";
 import { BIZ_MESSAGE, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
 import {
+  currentVerification,
   emptyVerifyFields,
   expireVerification,
   formOf,
@@ -136,6 +140,14 @@ export const BpProfileTab = forwardRef<
   const requestNumber = useRef(0);
   const verifyNumber = useRef(0);
 
+  // 본사 좌표 · 출퇴근 위치적용 · 본사 직원 관리(WHALEERP-724, 2026-11-17 사용자 지정 — bp-hq-form.ts)
+  const getAddressCoordinate = useAction(getAddressCoordinateAction, { overlay: false });
+  const [hq, setHq] = useState<HqForm | null>(null);
+  const [hqErrors, setHqErrors] = useState<Partial<Record<HqFormField, string>>>({});
+  const [coordinateNote, setCoordinateNote] = useState<string | null>(null);
+  const [locating, startLocating] = useTransition();
+  const locateNumber = useRef(0);
+
   useEffect(() => {
     const mine = ++requestNumber.current;
     getBpProfile()
@@ -145,6 +157,7 @@ export const BpProfileTab = forwardRef<
         setUpdatedAt(result.profile.updatedAt);
         setForm(formOf(result.profile, basicPhone, basicEmail));
         setVerifyForm(verifyFormOf(result.profile));
+        setHq(hqFormOf(result.profile));
       })
       .catch((error: unknown) => {
         if (mine !== requestNumber.current) return;
@@ -254,11 +267,50 @@ export const BpProfileTab = forwardRef<
     });
   };
 
+  /** 본사 칸 하나를 바꾼다 — 그 칸의 오류 문구를 내린다 */
+  const setHqField = <K extends keyof HqForm>(key: K, value: HqForm[K]) => {
+    setHq((h) => (h ? { ...h, [key]: value } : h));
+    setHqErrors((e) => (key in e ? Object.fromEntries(Object.entries(e).filter(([k]) => k !== key)) : e));
+  };
+
+  /** 좌표를 받아 채운다(점포 store-form-view.tsx handleAddressChoose · handleRecalculateCoordinate 와 같은 흐름). 받는 동안
+   * 위도 · 경도를 직접 고치면 결과를 버린다. clearFirst — 주소를 새로 골랐으면 앞 주소의 좌표를 먼저 비운다 */
+  const locate = (road: string, jibun: string, clearFirst: boolean) => {
+    if (!hq?.supported) return;
+    const mine = ++locateNumber.current;
+    setCoordinateNote(null);
+    if (clearFirst) setHq((h) => (h ? { ...h, latitude: "", longitude: "" } : h));
+    startLocating(async () => {
+      const result = await getAddressCoordinate(road, jibun).catch((error: unknown) => {
+        console.error("좌표 조회 호출 실패", error);
+        return { ok: false as const, message: "좌표를 가져오지 못했습니다. 위도 · 경도를 직접 입력해 주세요." };
+      });
+      if (mine !== locateNumber.current) return;
+      if (!result.ok) {
+        if (clearFirst) setHq((h) => (h ? { ...h, isLocationApplied: false } : h));
+        return setCoordinateNote(result.message);
+      }
+      setHq((h) => (h ? { ...h, latitude: String(result.latitude), longitude: String(result.longitude) } : h));
+      setHqErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => k !== "latitude" && k !== "longitude")));
+    });
+  };
+  const handleAddressChoose = (item: AddressItem) => locate(item.roadAddressBase, item.jibunAddress, true);
+
+  /** 위도 · 경도를 직접 고친다 — 받는 중이던 좌표는 버린다. 숫자 · 마침표 · 마이너스만 받는다(점포와 같다) */
+  const setCoordinate = (key: "latitude" | "longitude", value: string) => {
+    locateNumber.current++;
+    setCoordinateNote(null);
+    setHqField(key, value.replace(/[^0-9.-]/g, ""));
+  };
+
   const handleSave = () => {
-    if (!form || !verifyForm || updatedAt === null) return;
+    if (!form || !verifyForm || !hq || updatedAt === null) return;
     const found = validateBpProfileForm(form);
     setErrors(found);
     setFailure(null);
+    // 저장 뒤에도 인증이 남는가 — 저장된 인증이 있거나 이번에 인증했고, 「사용안함」을 누르지 않았다
+    const hqFound = validateHqForm(hq, !verifyForm.pendingClear && (Boolean(verifyForm.savedBizNumber) || Boolean(currentVerification(verifyForm))));
+    setHqErrors(hqFound);
     // 인증 10분이 지났으면 저장 직전에 풀어 둔다(점포 store-form-view.tsx handleSave 와 같다, 코드 리뷰로
     // 찾음, 2026-10-23) — 그대로 두고 보내면 api BusinessVerificationService 가 토큰을 트랜잭션보다 먼저
     // 검사해 저장 전체를 막는다(상호명 등 무관한 칸까지). effective 를 쓰면 이번 호출에서만 비운 값으로
@@ -277,10 +329,10 @@ export const BpProfileTab = forwardRef<
       // BIZ_MESSAGE.UNVERIFIED/EXPIRED 로 — 전엔 같은 뜻의 로컬 상수를 따로 뒀다.
       setVerifyFailure(expired ? BIZ_MESSAGE.EXPIRED : BIZ_MESSAGE.UNVERIFIED);
     }
-    if (Object.keys(found).length || unverified) return focusFirstError(document.getElementById(ids));
+    if (Object.keys(found).length || Object.keys(hqFound).length || unverified) return focusFirstError(document.getElementById(ids));
     startSaving(async () => {
       try {
-        const result = await updateBpProfile(toUpdateBpProfileInput(form, updatedAt, basicPhone, basicEmail, effective));
+        const result = await updateBpProfile({ ...toUpdateBpProfileInput(form, updatedAt, basicPhone, basicEmail, effective), ...toHqInput(hq) });
         if (!result.ok) {
           const field = serverErrorField(result.status, result.message);
           if (!field) return setFailure(result.message);
@@ -303,6 +355,7 @@ export const BpProfileTab = forwardRef<
           setUpdatedAt(refreshed.profile.updatedAt);
           setForm(formOf(refreshed.profile, basicPhone, basicEmail));
           setVerifyForm(verifyFormOf(refreshed.profile));
+          setHq(hqFormOf(refreshed.profile));
           setVerifyEditing(false);
         } else {
           console.error("사업자정보 저장 후 다시 불러오기 실패", refreshed.status, refreshed.message);
@@ -318,7 +371,7 @@ export const BpProfileTab = forwardRef<
   useImperativeHandle(ref, () => ({ save: handleSave }));
 
   if (loadFailure) return <FailedBand title={loadFailure} />;
-  if (!form || !verifyForm) return <p className="text-erp-muted">불러오는 중입니다.</p>;
+  if (!form || !verifyForm || !hq) return <p className="text-erp-muted">불러오는 중입니다.</p>;
 
   const verified = isVerified(verifyForm);
   const pending = hasPendingVerification(verifyForm);
@@ -362,6 +415,8 @@ export const BpProfileTab = forwardRef<
         compactRow
         // 머리를 기본정보 탭 「계정 정보」와 같은 회색 제목 바로 뗀다(2026-10-26 사용자 지정)
         titleBar
+        // 인증을 마친 사업자정보는 곧 본사다 — 「본사」 꼬리표(2026-11-17 사용자 지정). 저장된 인증 기준이다
+        titleTag={verifyForm.savedBizNumber && verifyForm.savedVerifiedAt ? <Tag>본사</Tag> : undefined}
         values={bizValues}
         onChange={(key, value) => setVerify(BIZ_TO_VERIFY[key], value)}
         locked={{ bizNumber: locked, ceoName: locked, openDate: locked }}
@@ -513,7 +568,93 @@ export const BpProfileTab = forwardRef<
             clearError("bizAddressDetail");
           }}
           detailError={errors.bizAddressDetail}
+          onChoose={hq.supported ? handleAddressChoose : undefined}
         />
+
+        {hq.supported && (
+          <>
+            {/* 본사 좌표 줄 — 점포 등록 화면과 같은 칸 · 규칙(WHALEERP-724). 좁은 패널이라 위도 · 경도 한 줄, 위치적용 · 버튼 한 줄로 나눈다 */}
+            <div className="flex flex-col gap-[8px]">
+              <FormRow>
+                <div className="flex min-w-px flex-1 flex-col">
+                  <Field label="위도">
+                    <TextField
+                      value={hq.latitude}
+                      onChange={(e) => setCoordinate("latitude", e.target.value)}
+                      inputMode="decimal"
+                      placeholder="예: 37.556312"
+                      aria-invalid={hqErrors.latitude ? true : undefined}
+                      aria-describedby={hqErrors.latitude ? `${ids}-latitude` : undefined}
+                    />
+                  </Field>
+                  <FieldMessage id={`${ids}-latitude`} message={hqErrors.latitude} />
+                </div>
+                <div className="flex min-w-px flex-1 flex-col">
+                  <Field label="경도">
+                    <TextField
+                      value={hq.longitude}
+                      onChange={(e) => setCoordinate("longitude", e.target.value)}
+                      inputMode="decimal"
+                      placeholder="예: 126.901845"
+                      aria-invalid={hqErrors.longitude ? true : undefined}
+                      aria-describedby={hqErrors.longitude ? `${ids}-longitude` : undefined}
+                    />
+                  </Field>
+                  <FieldMessage id={`${ids}-longitude`} message={hqErrors.longitude} />
+                </div>
+              </FormRow>
+              <FormRow>
+                <Field label="출퇴근 위치적용" width="w-[150px]">
+                  {/* 좌표가 없으면 사용으로 고를 수 없고, 보이는 값도 저장(toHqInput)과 같은 조건으로 그린다 — 점포와 같다 */}
+                  <Select
+                    value={hasHqCoordinates(hq) && hq.isLocationApplied ? "Y" : "N"}
+                    onChange={(e) => setHqField("isLocationApplied", e.target.value === "Y")}
+                    disabled={!hasHqCoordinates(hq)}
+                    title={hasHqCoordinates(hq) ? undefined : "위도 · 경도가 있어야 사용으로 바꿀 수 있습니다."}
+                  >
+                    <option value="Y">사용</option>
+                    <option value="N">미사용</option>
+                  </Select>
+                </Field>
+                <div className="self-end">
+                  <Button
+                    variant="soft"
+                    onClick={() => locate(form.address.address.replace(/\s*\([^)]*\)\s*$/, ""), "", false)}
+                    disabled={!form.address.address.trim() || locating}
+                  >
+                    주소로 다시 계산
+                  </Button>
+                </div>
+              </FormRow>
+              {coordinateNote && <FieldMessage id={`${ids}-coordinate`} message={coordinateNote} />}
+              <p className="text-[13px] leading-[1.6] text-erp-label">
+                사업자주소를 입력하면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.
+                <br />
+                <b className="font-semibold">출퇴근 위치적용</b>을 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 본사 직원의 출퇴근 위치를
+                확인할 수 있습니다.
+              </p>
+            </div>
+
+            {/* 본사 직원 관리 — 켠 BP 에만 [본사근무] · 헤더 「본사」 범위 · 본사 근무지가 보인다(기본 꺼짐, 1인 매장이 헷갈리지 않게).
+                인증 전이면 켤 수 없다. 이미 켰으면 끄는 것은 늘 된다(본사근무 직원이 있으면 끌 수 없다는 규칙은 WHALEERP-725 때 api 가 더한다) */}
+            <div className="flex flex-col gap-[8px]">
+              <Toggle
+                label="본사 직원 관리"
+                checked={hq.isHqStaffEnabled}
+                disabled={!hq.isHqStaffEnabled && !(verifyForm.savedBizNumber && verifyForm.savedVerifiedAt) && !currentVerification(verifyForm)}
+                onChange={(e) => setHqField("isHqStaffEnabled", e.target.checked)}
+                aria-invalid={hqErrors.isHqStaffEnabled ? true : undefined}
+                aria-describedby={hqErrors.isHqStaffEnabled ? `${ids}-isHqStaffEnabled` : undefined}
+              />
+              <FieldMessage id={`${ids}-isHqStaffEnabled`} message={hqErrors.isHqStaffEnabled} />
+              <GuideNote>
+                {verifyForm.savedBizNumber || currentVerification(verifyForm)
+                  ? "켜면 근로계약서에서 [본사근무]로 본사 직원을 계약할 수 있습니다. 본사 위도 · 경도가 필요합니다."
+                  : "사업자정보를 인증하면 켤 수 있습니다."}
+              </GuideNote>
+            </div>
+          </>
+        )}
 
         {failure && <FailedBand title={failure} />}
       </section>

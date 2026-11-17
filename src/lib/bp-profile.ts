@@ -2,6 +2,7 @@
 // api(whale-erp-api auth/admin-auth.controller.ts)에 경로가 있지만 아직 openapi.json 에 실리지 않아
 // 타입을 손으로 적었다(my-profile.ts 와 같다 — api가 openapi:export 에 포함하면 api-types.generated.ts 로 바꾼다).
 import { authHeaders, request } from "./api";
+import type { HqInput, HqProfile } from "./bp-hq-form";
 
 export type BpProfile = {
   tradeName: string;
@@ -23,7 +24,7 @@ export type BpProfile = {
   bizVerifiedAt: string | null;
   /** 저장 · 재인증할 때 그대로 돌려준다 — 그사이 다른 저장이 있었으면 api 409. */
   updatedAt: string;
-};
+} & HqProfile;
 
 export type UpdateBpProfileInput = {
   tradeName: string;
@@ -42,7 +43,7 @@ export type UpdateBpProfileInput = {
   /** true 면 사업자등록번호 · 대표자명 · 개업일자 · 인증일시를 전부 지운다 — 점포와 달리 BP 자신은
    * 지울 수 있다(2026-10-23 사용자 결정). businessVerificationToken 과 함께 보낼 수 없다(api 400). */
   clearBusinessVerification?: boolean;
-};
+} & HqInput;
 
 export type VerifyBpBusinessInput = {
   bizRegistrationNumber: string;
