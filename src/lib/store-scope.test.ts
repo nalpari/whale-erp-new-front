@@ -59,7 +59,7 @@ test("본사 점포: 직영 범위 · 본사를 뺀 점포에서 빠지고, 상�
   assert.equal(isUnusableScope({ type: "DIRECT" }, [hq]), true);
 });
 
-test("storeOptionLabel: 근무지 선택칸에서 본사는 앞에 [본사]를 붙인다", () => {
+test("storeOptionLabel: 점포를 고르거나 보이는 칸에서 본사는 앞에 [본사]를 붙인다", () => {
   assert.equal(storeOptionLabel(hq), "[본사] 한강상회");
   assert.equal(storeOptionLabel(store(1, "DIRECT")), "점포1");
 });

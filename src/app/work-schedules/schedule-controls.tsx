@@ -27,7 +27,7 @@ export function SchedulePicker({ query, today }: { query: ScheduleQuery; today: 
   const stores = useStores();
   const [scope] = useScope();
   const navigate = useScheduleNavigation(today);
-  // 처음 보일 근무지는 등록한 점포를 먼저 — 본사 점포(가입 때 api 가 만듦)는 등록한 점포가 없을 때만(본사 점포 설계, 2026-11-17)
+  // 처음 보일 근무지는 등록한 점포를 먼저 — 본사 점포(가입 때 api 가 만듦)는 폐점이 아닌 등록 점포가 없을 때만 — 폐점 점포보다는 앞선다(본사 점포 설계, 2026-11-17)
   const fallback = scope.type === "STORE" ? scope.storeId : (openStores(branchStores(stores))[0] ?? openStores(stores)[0] ?? stores[0])?.storeId;
   useEffect(() => {
     if (query.storeId === null && fallback !== undefined) navigate({ ...query, storeId: fallback });

@@ -112,7 +112,7 @@ export function GuideMiniCardSlot() {
   const account = useAccount();
   const bp = useCurrentBp().bpCodeId;
   const service = useService();
-  // 본사 점포는 세지 않는다 — 가입 때 api 가 만들어 늘 있으므로(본사 점포 설계 D6)
+  // 본사 점포는 세지 않는다 — api 가 가입 때 만든 점포라 등록한 점포가 아니다(본사 점포 설계 D6)
   const noStores = branchStores(useStores()).every(isClosedStore);
   // 마이페이지 · 비밀번호 변경 · 회원 탈퇴 패널이 열리면 본문(이 카드 포함)이 inert 라 카드를 누를 수 없고 누르면 아래 바탕창이 눌려 패널이 닫혔다 — 그동안 숨긴다(리뷰 반영)
   // 훅은 늘 셋 다 부른다(|| 안에서 부르면 앞이 참일 때 뒤가 건너뛰어져 훅 순서가 바뀐다)

@@ -441,7 +441,7 @@ export function ContractForm({
   /** [취소]가 돌아갈 옛 경로(들어온 화면, cancelHrefOf — WHALEERP-683). 없으면 돌아갈 목록(back)이다 */
   cancelHref?: string;
 }) {
-  // 근무지가 하나뿐이면 미리 고르고(TO-DO 작성과 같다) 근무 장소도 그 근무지명으로 채운다. 본사 점포(늘 함께 오는 가상의 점포)는 세지 않는다 —
+  // 근무지가 하나뿐이면 미리 고르고(TO-DO 작성과 같다) 근무 장소도 그 근무지명으로 채운다. 본사 점포(권한 · 매칭이 있으면 선택지에 함께 오는 점포)는 세지 않는다 —
   // 매장이 하나뿐인 BP 도 본사 때문에 둘이 되어 미리 고르지 않게 되었다(본사 점포 설계, 2026-11-17)
   const branches = branchStores(stores);
   const [form, setForm] = useState<Form>(() => initial ?? (branches.length === 1 ? withStore(initialForm(), String(branches[0].storeId), stores) : initialForm()));
