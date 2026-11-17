@@ -5,6 +5,7 @@ import { useId, useLayoutEffect, useRef, useState, useTransition, type ReactNode
 import { Button, Checkbox, Field, FormGroup, FormRow, RequiredMark, SlidePanel, Tag, TextField, useAction } from "@/components/common";
 import { AddressField } from "@/components/address-field";
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
+import { CoordinateFields, useCoordinateLocator } from "@/components/site/coordinate-fields";
 import { InfoBand } from "@/components/site/side-parts";
 import {
   bpMasterServerErrorField,
@@ -120,6 +121,12 @@ export function BpMasterFormPanel(props: Props) {
     setForm((f) => ({ ...f, [key]: value }));
     if (field) clearError(field);
   };
+  // 본사 점포 좌표 — 사업자주소를 고르면 받아 채운다. 고친 좌표 칸의 오류는 바로 내린다
+  const locator = useCoordinateLocator((update) => {
+    setForm((f) => ({ ...f, coordinate: update(f.coordinate) }));
+    clearError("latitude");
+    clearError("longitude");
+  });
   const invalid = (key: BpMasterFormField) => (errors[key] ? true : undefined);
   const messageId = (key: BpMasterFormField) => `${ids}-${key}`;
   const describe = (key: BpMasterFormField) => (errors[key] ? messageId(key) : undefined);
@@ -509,10 +516,22 @@ export function BpMasterFormPanel(props: Props) {
           label="사업자주소"
           value={{ zipCode: form.zipCode, address: form.address, addressDetail: form.addressDetail }}
           onChange={(a) => {
+            // [지우기]로 주소를 비우면 그 주소에서 나온 좌표 · 출퇴근 위치적용도 함께 비운다(점포 등록 · 마이페이지와 같다)
+            if (!a.address && form.address) locator.onAddressCleared();
             setForm((f) => ({ ...f, ...a }));
             clearError("addressDetail");
           }}
+          onChoose={locator.onAddressChoose}
           detailError={errors.addressDetail}
+        />
+        {/* 사업자주소 아래 좌표 줄 — 이 BP 본사 점포의 좌표 · 출퇴근 위치적용(본사 점포 설계, 2026-11-17). 마이페이지 사업자정보와 같다 */}
+        <CoordinateFields
+          value={form.coordinate}
+          onApplyChange={(applied) => setForm((f) => ({ ...f, coordinate: { ...f.coordinate, isLocationApplied: applied } }))}
+          locator={locator}
+          address={form.address}
+          errors={{ latitude: errors.latitude, longitude: errors.longitude }}
+          idPrefix={`${ids}-coordinate`}
         />
       </section>
 

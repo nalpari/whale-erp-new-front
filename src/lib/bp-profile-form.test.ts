@@ -57,6 +57,9 @@ const filledForm: BpProfileForm = {
     address: "서울 마포구 망원로 42",
     addressDetail: " 3층 ",
   },
+  coordinate: { latitude: "37.556312", longitude: "126.901845", isLocationApplied: true },
+  // 불러온 좌표는 비어 있었다 — 새로 채운 좌표라 저장에 싣는다
+  savedCoordinate: { latitude: "", longitude: "", isLocationApplied: false },
   bizCategory: " 도소매업 ",
   bizItem: " 식자재 유통 ",
 };
@@ -68,6 +71,8 @@ const emptyForm: BpProfileForm = {
   bizCeoEmail: "",
   sameAsBasicEmail: false,
   address: { zipCode: "", address: "", addressDetail: "" },
+  coordinate: { latitude: "", longitude: "", isLocationApplied: false },
+  savedCoordinate: { latitude: "", longitude: "", isLocationApplied: false },
   bizCategory: "",
   bizItem: "",
 };
@@ -84,9 +89,35 @@ test("formOf — BpProfile 값을 칸으로, 전화는 세 칸으로 나눈다. 
       address: "서울 마포구 망원로 42",
       addressDetail: "3층",
     },
+    // 좌표가 없는 응답(api 가 싣기 전)은 빈 좌표 · 미사용
+    coordinate: { latitude: "", longitude: "", isLocationApplied: false },
+    savedCoordinate: { latitude: "", longitude: "", isLocationApplied: false },
     bizCategory: "도소매업",
     bizItem: "식자재 유통",
   });
+});
+
+test("formOf — 본사 점포 좌표를 글자로, 좌표가 없으면 위치적용은 미사용으로 본다", () => {
+  assert.deepEqual(formOf({ ...profile, latitude: 37.556312, longitude: 126.901845, isLocationApplied: true }, "", "").coordinate, {
+    latitude: "37.556312",
+    longitude: "126.901845",
+    isLocationApplied: true,
+  });
+  assert.equal(formOf({ ...profile, latitude: null, longitude: null, isLocationApplied: true }, "", "").coordinate.isLocationApplied, false);
+});
+
+test("validateBpProfileForm — 좌표는 점포 등록과 같은 규칙(범위 · 소수 6자리 · 둘 다 함께)", () => {
+  const coord = (latitude: string, longitude: string) => validateBpProfileForm({ ...emptyForm, coordinate: { latitude, longitude, isLocationApplied: false } });
+  assert.equal(coord("91", "126.9").latitude, "위도는 -90~90, 소수 6자리까지입니다.");
+  assert.equal(coord("37.5", "181").longitude, "경도는 -180~180, 소수 6자리까지입니다.");
+  assert.equal(coord("37.1234567", "126.9").latitude, "위도는 -90~90, 소수 6자리까지입니다.");
+  assert.equal(coord("37.5", "").longitude, "위도와 경도는 함께 적습니다.");
+  assert.deepEqual(coord("37.556312", "126.901845"), {});
+});
+
+test("serverErrorField — 좌표 거절은 위도 · 경도 칸에 붙인다", () => {
+  assert.equal(serverErrorField(400, "경도는 -180~180 사이여야 합니다."), "longitude");
+  assert.equal(serverErrorField(400, "위도는 -90~90 사이여야 합니다."), "latitude");
 });
 
 test("formOf — 050X 평생번호(12자리) 대표자 연락처는 4-4-4 로 나눈다", () => {
@@ -180,12 +211,23 @@ test("toUpdateBpProfileInput — 공백을 지우고, 빈 칸은 보내지 않�
     bizAddressDetail: "3층",
     bizCategory: "도소매업",
     bizItem: "식자재 유통",
+    latitude: 37.556312,
+    longitude: 126.901845,
+    isLocationApplied: true,
   });
+  // 좌표를 건드리지 않았으면 싣지 않는다 — api 가 그대로 둔다(옛 api 의 모르는 칸 400 · 다른 화면에서 바꾼 좌표 덮어쓰기 방지)
   const input = toUpdateBpProfileInput(emptyForm, "2026-01-01T00:00:00.000Z", "", "", verifyFormOf(unverified));
   assert.deepEqual(input, {
     tradeName: "한강상회",
     updatedAt: "2026-01-01T00:00:00.000Z",
   });
+  // 좌표 없이 위치적용 사용은 보내지 않는다 — 보낼 값이 불러온 값과 같아져 싣지 않는다
+  const noCoordinate = toUpdateBpProfileInput({ ...emptyForm, coordinate: { latitude: "", longitude: "", isLocationApplied: true } }, "t", "", "", verifyFormOf(unverified));
+  assert.equal("isLocationApplied" in noCoordinate, false);
+  // 있던 좌표를 지우면 null 로 싣는다
+  const saved = { latitude: "37.5", longitude: "127", isLocationApplied: true };
+  const cleared = toUpdateBpProfileInput({ ...emptyForm, savedCoordinate: saved }, "t", "", "", verifyFormOf(unverified));
+  assert.deepEqual([cleared.latitude, cleared.longitude, cleared.isLocationApplied], [null, null, false]);
 });
 
 test("toUpdateBpProfileInput — 기본정보와 동일 체크박스가 켜 있으면 기본정보 값을 보낸다", () => {

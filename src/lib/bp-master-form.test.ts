@@ -61,8 +61,12 @@ test("요청 — 다듬고 빈 선택 칸은 null, 이번 화면의 인증 토�
     bizAddressDetail: null,
     bizCategory: null,
     bizItem: null,
+    // 좌표를 건드리지 않았으면 싣지 않는다 — api 가 그대로 둔다(본사 점포 설계, 2026-11-17)
     verificationToken: "t1",
   });
+  // 좌표를 고치면 셋을 함께 싣는다
+  const located = toCreateBpMasterInput({ ...filled, coordinate: { latitude: "37.5", longitude: "127", isLocationApplied: true } });
+  assert.deepEqual([located.latitude, located.longitude, located.isLocationApplied], [37.5, 127, true]);
   // 저장돼 있던 인증(토큰 없음)은 보내지 않는다 — api 가 그대로 둔다
   const kept = toUpdateBpMasterInput({ ...filled, verified: { bizNumber: "1058633412", ceoName: "정하윤", openDate: "2016-05-20" } });
   assert.equal("verificationToken" in kept, false);
