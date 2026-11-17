@@ -159,6 +159,76 @@ const joinPhone = (p: PhoneParts) => p.map((x) => x.trim()).join("");
 const text = (v: string | null | undefined) => v ?? "";
 const numText = (v: number | null | undefined) => (v === null || v === undefined ? "" : String(v));
 
+// ── 점포 등록 「사업자정보와 같음」(2026-11-17 사용자 지정, docs/raw/2026-11-17-근무지-본사근무-정책.md 3절) ──
+// BP 마스터의 사업자정보(마이페이지, 본사)를 새 점포에 한 번 복사한다 — 묶어 두지 않는다. 점포 하나에 사업자번호 하나라
+// (PL-OCJOFP) 지금 BP 번호를 쓰는 미운영 · 운영 점포가 있으면 쓸 수 없다. 국세청 인증은 점포 화면의 [인증하기]를 그대로 거친다.
+
+/** 불러올 BP 사업자정보 — 마이페이지 사업자정보(BpProfile)의 필요한 칸 */
+export type BpBusinessSource = {
+  tradeName: string;
+  bizRegistrationNumber: string;
+  bizCeoName: string;
+  bizOpenDate: string | null;
+  bizCeoPhone: string;
+  bizZipCode: string;
+  bizAddress: string;
+  bizAddressDetail: string;
+  bizCategory: string;
+  bizItem: string;
+};
+
+/** 사업자 칸을 BP 사업자정보로 채운다. 사업자주소는 BP 주소를 그대로 쓰므로 「점포 주소와 같음」은 푼다. 인증 결과는 비운다(다시 인증한다) */
+export function withBpBusiness(form: StoreForm, bp: BpBusinessSource): StoreForm {
+  return {
+    ...form,
+    bizNumber: bp.bizRegistrationNumber,
+    ceoName: bp.bizCeoName,
+    openDate: text(bp.bizOpenDate),
+    verified: null,
+    tradeName: bp.tradeName,
+    ceoPhone: splitPhone(bp.bizCeoPhone),
+    bizSameAsStore: false,
+    bizZipCode: bp.bizZipCode,
+    bizAddress: bp.bizAddress,
+    bizAddressDetail: bp.bizAddressDetail,
+    bizCategory: bp.bizCategory,
+    bizItem: bp.bizItem,
+  };
+}
+
+/** 「사업자정보와 같음」을 풀면 불러온 사업자 칸을 비운다 — 점포 칸은 그대로 */
+export function withoutBpBusiness(form: StoreForm): StoreForm {
+  return {
+    ...form,
+    bizNumber: "",
+    ceoName: "",
+    openDate: "",
+    verified: null,
+    tradeName: "",
+    ceoPhone: ["", "", ""],
+    bizZipCode: "",
+    bizAddress: "",
+    bizAddressDetail: "",
+    bizCategory: "",
+    bizItem: "",
+  };
+}
+
+export type BpBusinessAvailability = { usable: true } | { usable: false; reason: "NO_BUSINESS" } | { usable: false; reason: "IN_USE"; storeName: string };
+
+/**
+ * 「사업자정보와 같음」을 쓸 수 있는지 — BP 사업자정보가 인증돼 있고, 그 번호를 쓰는 미운영 · 운영 점포가 없을 때만.
+ * stores 는 사업자번호로 찾은 점포들이다(목록 api 는 부분 일치라 번호가 정확히 같은 것만 본다). 폐점 점포의 번호는 다시 쓸 수 있다.
+ */
+export function bpBusinessAvailability(
+  bp: { bizRegistrationNumber: string; bizVerifiedAt: string | null } | null,
+  stores: { name: string; bizRegistrationNumber: string | null; storeStatusCode: StoreStatus }[],
+): BpBusinessAvailability {
+  if (!bp || !bp.bizRegistrationNumber || !bp.bizVerifiedAt) return { usable: false, reason: "NO_BUSINESS" };
+  const using = stores.find((s) => s.bizRegistrationNumber === bp.bizRegistrationNumber && s.storeStatusCode !== "CLOSED");
+  return using ? { usable: false, reason: "IN_USE", storeName: using.name } : { usable: true };
+}
+
 /** 상세 값으로 수정 칸을 채운다 */
 export function formOfStore(d: StoreDetail): StoreForm {
   const b = d.business;

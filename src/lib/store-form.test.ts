@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   BP_BLOCKED_TEXT,
+  bpBusinessAvailability,
+  withBpBusiness,
+  withoutBpBusiness,
   EMPTY_STORE_FORM,
   formOfStore,
   hasCoordinateInput,
@@ -420,4 +423,57 @@ test("등록 [취소] 확인창 — 사진만 골라도 묻고, 등록 결과를
   assert.equal(shouldConfirmStoreLeave({ ...base, form: { ...EMPTY_STORE_FORM, name: "강남점" } }), true);
   assert.equal(shouldConfirmStoreLeave({ ...base, form: { ...EMPTY_STORE_FORM, name: "강남점" }, createUncertain: true }), false);
   assert.equal(shouldConfirmStoreLeave({ ...base, imageChosen: true, createUncertain: true }), false);
+});
+
+// ── 점포 등록 「사업자정보와 같음」(2026-11-17 사용자 지정) ──
+
+const BP_BIZ = {
+  tradeName: "고래커피",
+  bizRegistrationNumber: "1234567890",
+  bizCeoName: "김사장",
+  bizOpenDate: "2020-01-02",
+  bizCeoPhone: "01012345678",
+  bizZipCode: "06236",
+  bizAddress: "서울 강남구 테헤란로 1",
+  bizAddressDetail: "2층",
+  bizCategory: "음식점업",
+  bizItem: "커피",
+};
+
+test("사업자정보와 같음 — BP 사업자정보로 사업자 칸을 채우고 인증 결과 · 주소 같음은 비운다", () => {
+  const f = withBpBusiness({ ...EMPTY_STORE_FORM, name: "본점", bizSameAsStore: true }, BP_BIZ);
+  assert.equal(f.name, "본점");
+  assert.equal(f.bizNumber, "1234567890");
+  assert.equal(f.ceoName, "김사장");
+  assert.equal(f.openDate, "2020-01-02");
+  assert.equal(f.tradeName, "고래커피");
+  assert.deepEqual(f.ceoPhone, ["010", "1234", "5678"]);
+  assert.equal(f.bizSameAsStore, false);
+  assert.equal(f.bizZipCode, "06236");
+  assert.equal(f.bizAddress, "서울 강남구 테헤란로 1");
+  assert.equal(f.bizAddressDetail, "2층");
+  assert.equal(f.bizCategory, "음식점업");
+  assert.equal(f.bizItem, "커피");
+  assert.equal(f.verified, null);
+});
+
+test("사업자정보와 같음 해제 — 불러온 사업자 칸을 비운다(다른 칸은 그대로)", () => {
+  const filled = withBpBusiness({ ...EMPTY_STORE_FORM, name: "본점" }, BP_BIZ);
+  const f = withoutBpBusiness(filled);
+  assert.equal(f.name, "본점");
+  for (const k of ["bizNumber", "ceoName", "openDate", "tradeName", "bizZipCode", "bizAddress", "bizAddressDetail", "bizCategory", "bizItem"] as const) assert.equal(f[k], "", k);
+  assert.deepEqual(f.ceoPhone, ["", "", ""]);
+  assert.equal(f.verified, null);
+});
+
+test("사업자정보와 같음을 쓸 수 있는지 — 인증된 사업자정보가 있고 그 번호를 쓰는 미운영 · 운영 점포가 없을 때만", () => {
+  assert.deepEqual(bpBusinessAvailability(null, []), { usable: false, reason: "NO_BUSINESS" });
+  assert.deepEqual(bpBusinessAvailability({ bizRegistrationNumber: "", bizVerifiedAt: null }, []), { usable: false, reason: "NO_BUSINESS" });
+  const bp = { bizRegistrationNumber: "1234567890", bizVerifiedAt: "2026-11-01T00:00:00Z" };
+  assert.deepEqual(bpBusinessAvailability(bp, []), { usable: true });
+  const using = { name: "강남점", storeCode: "ST000001", bizRegistrationNumber: "1234567890", storeStatusCode: "OPERATING" as const };
+  assert.deepEqual(bpBusinessAvailability(bp, [using]), { usable: false, reason: "IN_USE", storeName: "강남점" });
+  // 폐점 점포 · 다른 번호(부분 일치 검색으로 섞여 온 것)는 막지 않는다
+  assert.deepEqual(bpBusinessAvailability(bp, [{ ...using, storeStatusCode: "CLOSED" }]), { usable: true });
+  assert.deepEqual(bpBusinessAvailability(bp, [{ ...using, bizRegistrationNumber: "1234567899" }]), { usable: true });
 });

@@ -14,6 +14,7 @@ import {
   Field,
   FormGroup,
   FormRow,
+  GuideNote,
   NoticeBand,
   RequiredMark,
   Select,
@@ -37,6 +38,10 @@ import {
   validateStoreForm,
   verificationErrors,
   verificationValuesOf,
+  withBpBusiness,
+  withoutBpBusiness,
+  type BpBusinessAvailability,
+  type BpBusinessSource,
   type FloorRow,
   type PhoneParts,
   type StoreForm,
@@ -51,7 +56,7 @@ import { BizVerificationBox, BizVerifiedStatus } from "@/components/site/biz-ver
 import { BIZ_MESSAGE, bizDigits, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
 import { formatDateTime } from "@/lib/format";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
-import { useCurrentBp, useRefreshStores } from "@/components/site/session-gate";
+import { useAccount, useCurrentBp, useRefreshStores } from "@/components/site/session-gate";
 import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { bpPath } from "@/lib/bp-path";
 import { withHeaderStoreSearch } from "@/lib/store-scope";
@@ -63,6 +68,7 @@ import {
   putStoreImageAction,
   updateStoreAction,
   verifyStoreBusinessAction,
+  getBpBusinessSourceAction,
   type ActionFailure,
 } from "./actions";
 import { FieldMessage, StoreImage, StoreStatusBadge, StoreTypeCards } from "./store-parts";
@@ -119,6 +125,12 @@ export function StoreFormView(props: Props) {
   const router = useRouter();
   const getAddressCoordinate = useAction(getAddressCoordinateAction, { overlay: false });
   const verifyStoreBusiness = useAction(verifyStoreBusinessAction, { overlay: false });
+  const getBpBusinessSource = useAction(getBpBusinessSourceAction, { overlay: false });
+  // 「사업자정보와 같음」 — 새 점포 · BP 마스터만(사업자정보는 BP 마스터의 마이페이지에만 있다, 2026-11-17 사용자 지정)
+  const account = useAccount();
+  const offersBpBusiness = mode === "create" && account.roleTypeCode === "BM";
+  const [bpBusiness, setBpBusiness] = useState<{ source: BpBusinessSource | null; availability: BpBusinessAvailability } | null>(null);
+  const [sameAsBp, setSameAsBp] = useState(false);
   const putStoreImage = useAction(putStoreImageAction, { overlay: false });
   const deleteStoreImage = useAction(deleteStoreImageAction, { overlay: false });
   const getStoreTransitions = useAction(getStoreTransitionsAction, { overlay: false });
@@ -168,6 +180,23 @@ export function StoreFormView(props: Props) {
   const locateNumber = useRef(0);
   /** 진위확인 차례 — 진위확인 칸을 고치면 올라가, 기다리던 인증 응답을 버린다(옛 값이 「인증 완료」로 되살아나지 않게) */
   const verifyNumber = useRef(0);
+
+  // BP 사업자정보와 그것을 지금 쓸 수 있는지(그 번호를 쓰는 미운영 · 운영 점포가 없는지)를 한 번 받는다 — 받지 못하면 칸을 그리지 않는다
+  useEffect(() => {
+    if (!offersBpBusiness) return;
+    let alive = true;
+    getBpBusinessSource().then(
+      (result) => {
+        if (alive && result.ok) setBpBusiness({ source: result.source, availability: result.availability });
+      },
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+    // getBpBusinessSource 는 렌더마다 새 함수라 넣지 않는다(useAction 주석) — 화면을 열 때 한 번이다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offersBpBusiness]);
   /** 저장된 사업자정보를 재인증하려고 연 상태 — 대표자명 칸만 열린다(번호 · 개업일자는 저장 뒤 바꿀 수 없다). 인증을 마치면 다시 잠긴다 */
   const [reopenSaved, setReopenSaved] = useState(false);
   const [image, setImage] = useState<ImageChoice>({ kind: "keep" });
@@ -324,16 +353,19 @@ export function StoreFormView(props: Props) {
   /** 진위확인 칸을 고치면 이번 화면의 인증 결과는 무효다 */
   const setVerification = (key: BizVerifyField, value: string) => {
     verifyNumber.current++;
+    // 진위확인 칸을 손으로 고치면 더는 사업자정보와 같지 않다
+    setSameAsBp(false);
     setForm((f) => ({ ...f, [key]: value, verified: null }));
     clearError(key);
     clearError("bizVerify");
   };
 
-  const handleVerify = () => {
-    const found = verificationErrors(form);
+  /** source — 방금 채운 폼(「사업자정보와 같음」)으로 바로 인증할 때. 아니면 지금 폼 */
+  const handleVerify = (source: StoreForm = form) => {
+    const found = verificationErrors(source);
     setErrors((e) => ({ ...withoutVerifyErrors(e), ...found }));
     if (Object.keys(found).length) return focusFirstError();
-    const values = verificationValuesOf(form);
+    const values = verificationValuesOf(source);
     const mine = ++verifyNumber.current;
     // 10분은 api 가 요청을 받을 때부터다 — 응답을 받은 시각으로 세면 끝자락 저장이 api 에서 거절된다
     const startedAt = Date.now();
@@ -362,6 +394,21 @@ export function StoreFormView(props: Props) {
       }
       setForm((f) => ({ ...f, verified: { ...values, verifiedAt: startedAt } }));
     });
+  };
+
+  /**
+   * 「사업자정보와 같음」 — 켜면 BP 사업자정보로 사업자 칸을 채우고 바로 [인증하기]를 거친다(인증은 점포 화면 그대로, 2026-11-17 사용자 지정).
+   * 끄면 불러온 사업자 칸을 비운다. 등록할 때 한 번 복사할 뿐 BP 와 묶지 않는다
+   */
+  const toggleSameAsBp = (on: boolean) => {
+    const source = bpBusiness?.source;
+    if (!source) return;
+    verifyNumber.current++;
+    const next = on ? withBpBusiness(form, source) : withoutBpBusiness(form);
+    setForm(next);
+    setSameAsBp(on);
+    setErrors(withoutVerifyErrors);
+    if (on) handleVerify(next);
   };
 
   /** 인증 완료 상태의 "재인증" — 값은 그대로 두고 칸을 다시 연다(저장한 점포는 대표자명만). 인증하기로 다시 확인하면 다시 잠긴다 */
@@ -865,6 +912,24 @@ export function StoreFormView(props: Props) {
             <span className="flex items-center gap-[10px]">
               사업자정보
               <BizVerifiedStatus verified={verified} date={verifiedDate} />
+              {/* 「사업자정보와 같음」 — 새 점포 · BP 마스터만. 쓸 수 없으면 숨기지 않고 막아 두고 이유를 옆에 적는다(2026-11-17 사용자 지정) */}
+              {offersBpBusiness && bpBusiness && (
+                <span className="ml-[8px] flex items-center gap-[10px] text-[14px] font-normal">
+                  <Checkbox
+                    label="사업자정보와 같음"
+                    checked={sameAsBp}
+                    disabled={!bpBusiness.availability.usable || verifying}
+                    onChange={(e) => toggleSameAsBp(e.target.checked)}
+                  />
+                  {!bpBusiness.availability.usable && (
+                    <GuideNote inline>
+                      {bpBusiness.availability.reason === "IN_USE"
+                        ? `${bpBusiness.availability.storeName}에서 이미 사업자정보를 쓰고 있습니다.`
+                        : "마이페이지에서 사업자정보를 인증하면 불러올 수 있습니다."}
+                    </GuideNote>
+                  )}
+                </span>
+              )}
             </span>
           }
         >
@@ -884,7 +949,7 @@ export function StoreFormView(props: Props) {
             fieldErrors={verifyFieldErrors}
             missing={missingVerify}
             boxError={errors.bizVerify}
-            onVerify={verified ? handleReverify : handleVerify}
+            onVerify={verified ? handleReverify : () => handleVerify()}
             onClear={handleClearPending}
             showClear={showBizClear}
             // 재인증하려고 열었거나 새 대표자명으로 인증만 해 둔 상태에서 저장된 값으로 돌아가는 버튼(2026-10-22 사용자 지정)

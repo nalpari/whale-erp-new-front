@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { ApiError, expiredFailureOf } from "@/lib/api";
 import { codeOf } from "@/lib/api-error";
+import { getBpProfile } from "@/lib/bp-profile";
 import { historyPageSizeOf } from "@/lib/history-paging";
+import { bpBusinessAvailability, type BpBusinessAvailability, type BpBusinessSource } from "@/lib/store-form";
 import type { StoreClosingResult } from "@/lib/store-closing";
 import type {
   BusinessVerificationInput,
@@ -18,6 +20,7 @@ import {
   deleteStore,
   deleteStoreImage,
   getStoreHistories,
+  getStores,
   getStoreTransitions,
   putStoreImage,
   updateStore,
@@ -164,5 +167,25 @@ export async function verifyStoreBusinessAction(
     // 예상한 거절(400 형식 · 409 중복 · 422 불일치) · 화면이 할 일을 알리는 403 · 404 · 로그인 만료는 남기지 않는다
     if (error instanceof ApiError && !error.expired && ![400, 403, 404, 409, 422].includes(error.status)) console.error("점포 사업자정보 인증 api 오류", error.status, error.message);
     return failureOf(error, "사업자정보 인증");
+  }
+}
+
+/**
+ * 점포 등록 「사업자정보와 같음」의 재료 — BP 마스터의 사업자정보(마이페이지, 본사)와 그것을 지금 쓸 수 있는지(2026-11-17 사용자 지정).
+ * 사업자정보는 BP 마스터만 볼 수 있어(api 403) 그 밖의 계정은 source 없이 NO_BUSINESS 다 — 화면은 BP 마스터에게만 칸을 그린다.
+ * 그 번호를 쓰는 점포는 사업자번호 검색으로 찾는다(BP 마스터의 범위는 BP 전체 점포라 빠짐이 없다). 폐점은 막지 않으니 미운영 · 운영만 본다.
+ */
+export async function getBpBusinessSourceAction(): Promise<ActionResult<{ source: BpBusinessSource | null; availability: BpBusinessAvailability }>> {
+  try {
+    const bp = await getBpProfile();
+    if (!bp.bizRegistrationNumber || !bp.bizVerifiedAt) return { ok: true, source: null, availability: bpBusinessAvailability(null, []) };
+    const found = await getStores({ page: 1, pageSize: 20, storeIds: [], bizRegistrationNumber: bp.bizRegistrationNumber, statuses: ["NOT_OPERATING", "OPERATING"], storeTypes: ["DIRECT", "FRANCHISE"] });
+    return { ok: true, source: bp, availability: bpBusinessAvailability(bp, found.items) };
+  } catch (error) {
+    const expired = expiredFailureOf(error);
+    if (expired) return expired;
+    // BP 마스터가 아닌 계정(403)은 사업자정보가 없는 것과 같다 — 칸을 쓰지 않는다
+    if (error instanceof ApiError && error.status === 403) return { ok: true, source: null, availability: bpBusinessAvailability(null, []) };
+    return failureOf(error, "사업자정보 조회");
   }
 }
