@@ -106,6 +106,12 @@ test("formOf — 본사 점포 좌표를 글자로, 좌표가 없으면 위치�
   assert.equal(formOf({ ...profile, latitude: null, longitude: null, isLocationApplied: true }, "", "").coordinate.isLocationApplied, false);
 });
 
+test("toUpdateBpProfileInput — 불러온 좌표를 그대로 저장하면 좌표 칸을 싣지 않는다", () => {
+  const located = { ...profile, latitude: 37.556312, longitude: 126.901845, isLocationApplied: true };
+  const input = toUpdateBpProfileInput(formOf(located, "", ""), "t", "", "", verifyFormOf(located));
+  assert.equal("latitude" in input || "longitude" in input || "isLocationApplied" in input, false);
+});
+
 test("validateBpProfileForm — 좌표는 점포 등록과 같은 규칙(범위 · 소수 6자리 · 둘 다 함께)", () => {
   const coord = (latitude: string, longitude: string) => validateBpProfileForm({ ...emptyForm, coordinate: { latitude, longitude, isLocationApplied: false } });
   assert.equal(coord("91", "126.9").latitude, "위도는 -90~90, 소수 6자리까지입니다.");
