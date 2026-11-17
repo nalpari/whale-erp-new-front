@@ -2307,7 +2307,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 작성 · 이어 쓰기의 근무지 선택지. 업무 범위(플랫폼 계정은 탭 BP) 안에서 지우지 않았고 폐점이 아닌 점포, 이름순. 작성 또는 수정 권한. */
+        /** 작성 · 이어 쓰기의 근무지 선택지. 업무 범위(플랫폼 계정은 탭 BP) 안에서 지우지 않은 운영 중 점포(미운영 · 폐점 빼고, WHALEERP-722), 이름순. 작성 또는 수정 권한. */
         get: operations["ContractsController_storeOptions"];
         put?: never;
         post?: never;
@@ -18344,7 +18344,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 종이 계약 등록이 아닌데 잘못 올린 계약 바로잡기 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 입력 오류 · 만 19세 미만 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 종이 계약 등록이 아닌데 잘못 올린 계약 바로잡기 · 미운영 근무지 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -18472,7 +18472,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 서명본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 서명본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 · 미운영 근무지 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -18616,7 +18616,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 수정 요청인데 임시저장 · 근무지 변경 · 가입한 직원의 번호 변경 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 종이 계약 등록이 아닌데 잘못 올린 계약 바로잡기 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 입력 오류 · 만 19세 미만 · 수정 요청인데 임시저장 · 근무지 변경 · 가입한 직원의 번호 변경 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 종이 계약 등록이 아닌데 잘못 올린 계약 바로잡기 · 미운영 근무지로 옮김 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -18820,7 +18820,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 서명본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 서명본 없음 · 파일 종류 · 크기 · 개수 · 재계약 시작일이 직전 계약 시작일 다음 날보다 이름 · 잘못 올린 계약 바로잡기를 재계약과 함께 보냄 · 미운영 근무지로 옮김 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;

@@ -234,11 +234,12 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   // 직원 목록 · 계약 값은 시작일 기준이다(받을 수 없는 날은 api 가 건너뛰고 사유를 돌려준다)
   const [toDate, setToDate] = useState(opening.kind === "edit" ? opening.item.workDate : opening.workDate);
   const [weekdays, setWeekdays] = useState<number[]>(WEEKDAYS.map((w) => w.value));
-  // 기간 등록에서 건너뛴 날 — 근무일 · 직원 이름(저장하던 때) · 사유. 저장한 뒤 패널에 남기고 [저장]은 막는다 — 같은 기간을 다시
-  // 보내면 이미 저장한 건이 모두 겹침으로 건너뛴 날에 섞여 처음 저장한 것까지 실패로 보인다(리뷰 반영)
-  const [rangeResult, setRangeResult] = useState<{ created: number; skipped: { workDate: string; name: string; message: string }[] } | null>(null);
-  // 저장한 건이 있을 때만 [저장]을 막는다 — 하나도 저장하지 못했으면 다시 보내도 겹칠 일이 없다(리뷰 반영)
-  const rangeLocked = !!rangeResult && rangeResult.created > 0;
+  // 기간 등록 결과 — 저장 건수 · 건너뛴 날(근무일 · 직원 이름 · 사유) · 보낸 요청(sent). 다음 저장 때까지 패널에 남긴다
+  const [rangeResult, setRangeResult] = useState<{
+    created: number;
+    skipped: { workDate: string; name: string; message: string }[];
+    sent: string;
+  } | null>(null);
   const [staffId, setStaffId] = useState<number | null>(edit ? edit.item.staffMemberId : null);
   const [shift, setShift] = useState<ShiftInput>(edit ? shiftOf(edit.item) : (gap ?? EMPTY_SHIFT));
   const [picked, setPicked] = useState<number[]>([]);
@@ -309,15 +310,16 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
     setMode(next);
     setTried(false);
     setServerError("");
-    setRangeResult(null);
   };
   const handleDateChange = (value: string) => {
     setServerError("");
     setWorkDate(value);
     workDateNow.current = value;
     if (edit) return;
-    setToDate(nextToDate(workDate, toDate, value));
-    setRangeResult(null);
+    const next = nextToDate(workDate, toDate, value);
+    setToDate(next);
+    // 하루 등록의 일부 실패 문구는 기간 등록으로 바뀌면 내린다(재영 리뷰)
+    if (next !== value) setPartialNotice("");
     // 받을 수 있는 직원이 근무일마다 달라 고른 직원을 비운다
     setStaffId(null);
     setPicked([]);
@@ -328,22 +330,23 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const handleToDateChange = (value: string) => {
     setServerError("");
     setToDate(value);
-    setRangeResult(null);
+    // 하루 등록의 일부 실패 문구 · 직원별 사유는 기간 등록으로 바뀌면 내린다(재영 리뷰)
+    if (value !== workDate) {
+      setPartialNotice("");
+      setRowErrors({});
+    }
   };
   const handleWeekdayToggle = (weekday: number, on: boolean) => {
     setWeekdays((d) => (on ? [...d, weekday] : d.filter((x) => x !== weekday)));
-    setRangeResult(null);
   };
   const handlePickOne = (value: string) => {
     setServerError("");
-    setRangeResult(null);
     const id = value ? Number(value) : null;
     setStaffId(id);
     if (id !== null) loadDefaults(id, gap ? undefined : (d) => setShift(shiftOfDefaults(d)));
   };
   const handleToggle = (id: number, on: boolean) => {
     setServerError("");
-    setRangeResult(null);
     setPicked((p) => (on ? [...p, id] : p.filter((x) => x !== id)));
     setRowErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => Number(k) !== id)));
     if (!on) return;
@@ -358,6 +361,13 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const range = !edit && !!workDate && toDate !== workDate;
   // 기간을 막는 이유 — 근무일 칸 아래에 보인다
   const rangeError = range ? rangeProblem(workDate, toDate, weekdays, mode === "bulk" ? Math.max(1, picked.length) : 1) : null;
+  // 기간 등록으로 보낼 줄과 요청 — 일부 저장 뒤 같은 요청을 다시 보내지 않게 견준다
+  const rangeLines = mode === "bulk" ? picked.map((id) => ({ staffMemberId: id, ...shiftBody(rows[id] ?? EMPTY_SHIFT) })) : [{ staffMemberId: staffId ?? 0, ...shiftBody(shift) }];
+  // 견줄 때는 직원 순으로 — 체크를 껐다 켜면 그 직원이 뒤로 가 순서만 바뀐다(재영 리뷰 · 리뷰 반영)
+  const rangeRequest = JSON.stringify([workDate, toDate, [...weekdays].sort(), [...rangeLines].sort((a, b) => a.staffMemberId - b.staffMemberId)]);
+  // 저장한 건이 있고 지금 입력이 그때 보낸 요청과 같으면 [저장]을 막는다 — 같은 요청을 다시 보내면 저장한 건이 모두 겹침으로 건너뛴 날에
+  // 섞여 처음 저장한 것까지 실패로 보인다. 체크를 껐다 켜 값이 그대로면 계속 막고, 하나도 저장하지 못했으면 막지 않는다(재영 리뷰)
+  const rangeLocked = !!rangeResult && rangeResult.created > 0 && rangeResult.sent === rangeRequest;
   const noDate = edit ? "근무일을 선택해 주세요." : "근무 시작일을 선택해 주세요.";
   // 기간 오류는 근무일 칸 아래에만 보인다 — 직원 칸 · 직원 상자에 같은 문장을 다시 띄우지 않는다(리뷰 반영)
   const oneProblem = !workDate ? noDate : staffId === null ? "직원을 선택해 주세요." : shiftProblem(shift);
@@ -391,8 +401,8 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
     startSaving(async () => {
       try {
         if (range) {
-          const lines = mode === "bulk" ? picked.map((id) => ({ staffMemberId: id, ...shiftBody(rows[id]) })) : [{ staffMemberId: staffId!, ...shiftBody(shift) }];
-          const result = await rangeCreateSchedules(workDate, toDate, weekdays, lines);
+          const sent = rangeRequest;
+          const result = await rangeCreateSchedules(workDate, toDate, weekdays, rangeLines);
           if (!result.ok) return fail(result);
           router.refresh();
           const { created, failed } = result.result;
@@ -404,6 +414,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
           setRangeResult({
             created: created.length,
             skipped: failed.map((f) => ({ workDate: f.workDate, name: nameOf(f.staffMemberId) || "직원", message: f.message })),
+            sent,
           });
           return;
         }
