@@ -40,9 +40,31 @@ export const IMAGE_NOTE = "점포 사진 1장을 등록할 수 있습니다. (JP
 // 위치 도움말 세 줄(등록 · 수정 같다)
 export const LOCATION_NOTE = note(
   `점포주소가 입력되면 <b class="font-semibold">위도</b> · <b class="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.<br>` +
-    `<b class="font-semibold">출퇴근 위치적용</b>을 <b class="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.<br>` +
     `위도 · 경도가 없으면 <b class="font-semibold">출퇴근 위치적용</b>을 사용으로 바꿀 수 없습니다.`,
 );
+
+// 「출퇴근 위치적용」 칸 — 이름은 두고 라벨 옆 도움말 i 로 뜻을 알린다(앱 site/location-apply-field.tsx, 2026-11-17 사용자 지정).
+// 상자는 제목 + 사용 · 미사용 두 줄 표이고, 왼쪽 끝을 이 칸 묶음 왼쪽에 맞춘다(앱 HelpTip alignGroup).
+const LOCATION_TIP_SHOW =
+  "const t=this.nextElementSibling,r=this.getBoundingClientRect(),g=this.closest('[role=group]');if(!t.showPopover||t.matches(':popover-open'))return;t.style.top=(r.bottom+6)+'px';const s=g?g.getBoundingClientRect().left:r.left-8;t.style.left=s+'px';t.showPopover();const o=t.getBoundingClientRect().right-(document.documentElement.clientWidth-8);if(o>0)t.style.left=Math.max(8,s-o)+'px'";
+const LOCATION_TIP_HIDE = "const t=this.nextElementSibling;if(t.matches(':popover-open'))t.hidePopover()";
+const LOCATION_TIP =
+  `<span class="flex flex-col gap-[8px]"><span class="font-semibold text-erp-ink">출퇴근 위치적용</span><table class="border-collapse text-[14px]"><tbody>` +
+  [
+    ["사용", "출퇴근 위치가 근무지 반경 밖이면 「확인 필요」로 표시됩니다."],
+    ["미사용", "위치 확인 없이 어디서나 출퇴근할 수 있습니다."],
+  ]
+    .map(
+      ([n, t]) =>
+        `<tr class="border border-erp-thead-line"><th scope="row" class="border-r border-erp-thead-line bg-erp-thead-bg px-[10px] py-[6px] text-left font-semibold whitespace-nowrap text-erp-ink">${n}</th><td class="px-[10px] py-[6px] font-normal break-keep text-erp-ink">${t}</td></tr>`,
+    )
+    .join("") +
+  `</tbody></table></span>`;
+// 도움말 i 하나 — 칸(locationApplyField)과 점포 상세 위치정보 줄이 같이 쓴다(앱 LocationApplyHelp)
+export const locationApplyHelp = `<span class="relative inline-flex shrink-0"><button type="button" aria-label="출퇴근 위치적용 도움말" onmouseenter="${LOCATION_TIP_SHOW}" onmouseleave="${LOCATION_TIP_HIDE}" class="grid size-[16px] place-items-center rounded-full text-erp-muted transition-colors duration-150 hover:text-erp-brand"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="7" width="1.4" height="5" rx="0.7" fill="#fff"/><circle cx="8" cy="4.8" r="0.9" fill="#fff"/></svg></button>` +
+  `<span popover="manual" role="tooltip" class="pointer-events-none fixed inset-auto m-0 w-max max-w-[360px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[8px] text-left text-[14px] leading-[1.6] font-medium text-erp-ink">${LOCATION_TIP}</span></span>`;
+export const locationApplyField = (control) =>
+  `<div role="group" aria-label="출퇴근 위치적용" class="flex w-[150px] flex-col justify-center gap-[8px]"><span class="flex items-center gap-[4px] text-[14px] font-medium text-erp-label">출퇴근 위치적용${locationApplyHelp}</span>${control}</div>`;
 
 // 주소(앱 AddressField). [주소 검색] 버튼 없이 돋보기 검색칸에 치면 바로 아래 목록이 뜬다. 우편번호 80px, 값이 있으면 [지우기].
 // disabled: 다른 값(점포 주소)과 같아 보여 주기만 한다 — 검색칸 · 지우기를 숨기고 상세주소는 읽기 전용.

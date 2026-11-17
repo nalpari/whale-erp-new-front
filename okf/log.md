@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-17
+* **Update**: [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) — 「출퇴근 위치적용」 라벨 옆 도움말 i(사용 · 미사용 표, 등록 · 수정 · 상세), 좌표 안내에서 「…사용으로 설정하면…」 문장 삭제, 공통 `HelpTip` 에 `alignGroup`. 디자인 데모 같이 반영(2026-11-17 사용자 지정).
 * **Update**: [근무스케줄 화면](/screens/work-schedules.md) — 기간 등록 리뷰 반영(WHALEERP-730, 재영): 일부 저장 뒤 [저장] 잠금을 마지막으로 보낸 요청과 지금 입력을 견주어 정한다(체크를 껐다 켜 값이 그대로면 계속 막는다). 하루 일괄 등록의 일부 실패 문구는 기간 등록으로 바꾸면 내린다.
 * **Update**: [근무스케줄 화면](/screens/work-schedules.md) — 기간 등록(WHALEERP-730, 2026-11-17 재영): 등록 패널 근무일을 「근무 시작일 · 근무 종료일」로, 다르면 요일 체크와 「N일에 등록합니다.」. 1명 · 여러 명 모두 `POST /work-schedules/range`(최대 92일 · 직원 100명 · 500건, 휴일 포함 · 요일로 뺌), 건너뛴 날은 근무일 · 직원 · 사유로 패널에 남긴다. 수정은 하루 그대로. api 타입은 다시 만들었다(api main 의 발송 이력 `CONTRACT_SENT` 등도 함께 들어왔다).
 * **Update**: [직원 운영 관리](/staff.md) · [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 근무지는 운영 중 점포만(WHALEERP-722, api 와 함께): 선택지는 api 가 거른다. 이어 쓰기 · 수정 화면은 선택지에 없는 지금 근무지(이미 미운영 점포로 만든 계약)를 뒤에 더해 「선택」으로 보이지 않게 한다(`storesWithCurrent`, 2026-11-17 김민식 — 같은 근무지면 그대로 이어 쓴다).

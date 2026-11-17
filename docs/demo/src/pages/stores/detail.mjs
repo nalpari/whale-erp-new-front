@@ -7,7 +7,7 @@ import * as x from "../../extra.mjs";
 import * as f from "../../biz-form.mjs";
 import { tag, warnBand } from "../../config-parts.mjs";
 import { STORES, erpHeader, link } from "../../site.mjs";
-import { CLOSED_STORE, blocked, noticeBand, statusBadge } from "../../store-parts.mjs";
+import { CLOSED_STORE, blocked, locationApplyHelp, noticeBand, statusBadge } from "../../store-parts.mjs";
 
 // DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸 너비 — 사업자등록번호 · 대표자정보처럼 짝을 이루는 줄들이
 // 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다(2026-10-19 점검 — 실사용자 확인).
@@ -160,7 +160,7 @@ export const render = ({ A, R }, { bpStatus, code = "ST000006" } = {}) => {
       ui.detailValues([
         `<span class="${LAT_COL}"><span class="mr-[10px] text-erp-label">위도</span>${d.lat}</span>`,
         `<span class="whitespace-nowrap"><span class="mr-[10px] text-erp-label">경도</span>${d.lng}</span>`,
-        `<span class="mr-[10px] text-erp-label">출퇴근 위치적용</span>${d.location}`,
+        `<span class="mr-[10px] inline-flex items-center gap-[4px] align-middle text-erp-label">출퇴근 위치적용${locationApplyHelp}</span>${d.location}`,
       ]),
     ],
     ["재직직원", `${staff}명`],
