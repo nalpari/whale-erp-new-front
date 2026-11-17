@@ -51,7 +51,7 @@ const LOCATION_TIP_HIDE = "const t=this.nextElementSibling;if(t.matches(':popove
 const LOCATION_TIP =
   `<span class="flex flex-col gap-[8px]"><span class="font-semibold text-erp-ink">출퇴근 위치적용</span><table class="border-collapse text-[14px]"><tbody>` +
   [
-    ["사용", "근무지 반경 안에서만 출퇴근할 수 있습니다."],
+    ["사용", "출퇴근 위치가 근무지 반경 밖이면 「확인 필요」로 표시됩니다."],
     ["미사용", "위치 확인 없이 어디서나 출퇴근할 수 있습니다."],
   ]
     .map(
