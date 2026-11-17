@@ -217,14 +217,14 @@ export function withStore(f: ContractForm, storeId: string, stores: readonly { s
 }
 
 /**
- * 이어 쓰기 · 수정 화면의 근무지 선택지. 선택지는 운영 중 점포만이라(WHALEERP-722) 이미 미운영 점포로 만든 계약은 지금 근무지가
- * 빠져 「선택」으로 보인다 — 지금 근무지를 뒤에 더한다. api 는 같은 근무지면 미운영이어도 받는다(옮길 때만 운영 중을 본다).
+ * 이어 쓰기 · 수정 화면의 근무지 선택지. 선택지(운영 중 · 맡은 점포, WHALEERP-722)에 지금 근무지가 없으면(이미 미운영 점포로
+ * 만든 계약 등) 「선택」으로 보인다 — 지금 근무지를 뒤에 더한다. api 는 같은 근무지면 그대로 받는다(옮길 때만 운영 중 · 범위를 본다).
  * 점포를 읽지 못해 이름이 없으면(지운 점포) 더하지 않는다 — 저장하면 api 가 404 로 알린다.
  */
-export function storesWithCurrent<S extends { storeId: number; name: string }>(
-  stores: readonly S[],
+export function storesWithCurrent(
+  stores: readonly { storeId: number; name: string }[],
   current: { storeId: number; storeName: string | null },
-): (S | { storeId: number; name: string })[] {
+): { storeId: number; name: string }[] {
   if (current.storeName === null || stores.some((s) => s.storeId === current.storeId)) return [...stores];
   return [...stores, { storeId: current.storeId, name: current.storeName }];
 }
