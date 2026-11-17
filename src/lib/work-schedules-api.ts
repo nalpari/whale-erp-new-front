@@ -11,6 +11,7 @@ export type ScheduleStaff = Schemas["WorkScheduleStaffItemDto"];
 export type ScheduleDefaults = Schemas["WorkScheduleDefaultsDto"];
 export type ScheduleFields = Schemas["UpdateWorkScheduleDto"];
 export type BulkResult = Schemas["BulkCreateWorkSchedulesResponseDto"];
+export type RangeResult = Schemas["RangeCreateWorkSchedulesResponseDto"];
 export type CopyPreview = Schemas["CopyLastWeekResponseDto"];
 
 const get = async (): Promise<RequestInit> => ({ method: "GET", headers: await authHeaders() });
@@ -59,6 +60,11 @@ export async function createSchedule(body: Schemas["CreateWorkScheduleDto"]): Pr
 /** POST /work-schedules/bulk — 여러 명 일괄. 규칙에 걸린 줄만 failed 로 오고 나머지는 저장된다 */
 export async function bulkCreateSchedules(body: Schemas["BulkCreateWorkSchedulesDto"]): Promise<BulkResult> {
   return request("/work-schedules/bulk", await send("POST", body));
+}
+
+/** POST /work-schedules/range — 기간 등록(WHALEERP-730). 넣을 수 없는 날은 failed 로(근무일과 함께), 나머지는 저장된다 */
+export async function rangeCreateSchedules(body: Schemas["RangeCreateWorkSchedulesDto"]): Promise<RangeResult> {
+  return request("/work-schedules/range", await send("POST", body));
 }
 
 /** PATCH /work-schedules/:id — 근무일 · 시각 · 휴게. 직원은 못 바꾼다 */
