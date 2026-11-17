@@ -528,7 +528,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
                     <Checkbox key={w.value} label={w.label} checked={weekdays.includes(w.value)} onChange={(e) => handleWeekdayToggle(w.value, e.target.checked)} />
                   ))}
                 </div>
-                {/* 고른 날 수와 건수를 바로 보인다 — 막히는 이유도 저장 전에 바로(1000건 한도를 미리 알게, 리뷰 반영) */}
+                {/* 고른 날 수와 건수를 바로 보인다 — 막히는 이유도 저장 전에 바로(500건 · 100명 한도를 미리 알게, 리뷰 반영) */}
                 <p aria-live="polite" className={rangeError ? ERROR : STATUS}>
                   {rangeError ??
                     (mode === "bulk" && picked.length > 1
