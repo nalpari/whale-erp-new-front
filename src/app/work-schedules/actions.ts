@@ -112,7 +112,8 @@ export async function rangeCreateSchedulesAction(
     !weekdays.every((w) => Number.isInteger(w) && w >= 0 && w <= 6) ||
     !Array.isArray(rows) ||
     rows.length === 0 ||
-    !rows.every((r) => validId(r.staffMemberId))
+    // 인자는 브라우저가 마음대로 보낼 수 있다 — 줄이 객체가 아니면 try 밖에서 터지지 않게 먼저 거른다(PR Agent 지적)
+    !rows.every((r: unknown) => !!r && typeof r === "object" && validId((r as { staffMemberId?: unknown }).staffMemberId))
   )
     return BAD_INPUT;
   try {

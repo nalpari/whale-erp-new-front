@@ -63,7 +63,9 @@ export const shiftBody = (s: ShiftInput) => ({ startTime: s.startTime, endTime: 
 /** 기간 등록(WHALEERP-730) — 시작일 ~ 종료일 최대 92일(api RANGE_MAX_DAYS 와 같다) */
 export const RANGE_MAX_DAYS = 92;
 /** 한 번에 만드는 건수(날 수 × 직원 줄 수) 한도(api RANGE_MAX_ITEMS 와 같다) */
-export const RANGE_MAX_ITEMS = 1000;
+export const RANGE_MAX_ITEMS = 500;
+/** 한 번에 보내는 직원 줄 수 한도(api rows 1~100) */
+export const RANGE_MAX_ROWS = 100;
 /** 요일 선택지 — 월요일부터, 값은 0(일) ~ 6(토) */
 export const WEEKDAYS: readonly { value: number; label: string }[] = [
   { value: 1, label: "월" },
@@ -92,7 +94,7 @@ export function rangeDates(from: string, to: string, weekdays: readonly number[]
   return dates;
 }
 
-/** 기간을 막는 이유 — 종료일이 앞섬 · 92일 초과 · 요일 없음 · 고른 요일의 날 없음 · 건수 초과(직원 줄 수 rows). 없으면 null */
+/** 기간을 막는 이유 — 종료일이 앞섬 · 92일 초과 · 요일 없음 · 고른 요일의 날 없음 · 직원 100명 초과 · 건수 500 초과(직원 줄 수 rows). 없으면 null */
 export function rangeProblem(from: string, to: string, weekdays: readonly number[], rows = 1): string | null {
   if (!to) return "종료일을 선택해 주세요.";
   const days = rangeDays(from, to);
@@ -101,6 +103,7 @@ export function rangeProblem(from: string, to: string, weekdays: readonly number
   if (weekdays.length === 0) return "요일을 하나 이상 선택해 주세요.";
   const count = rangeDates(from, to, weekdays).length;
   if (count === 0) return "기간 안에 고른 요일에 해당하는 날이 없습니다.";
+  if (rows > RANGE_MAX_ROWS) return `기간으로는 직원을 한 번에 ${RANGE_MAX_ROWS}명까지 등록할 수 있습니다. 직원을 나눠 주세요.`;
   if (count * rows > RANGE_MAX_ITEMS) return `한 번에 근무스케줄 ${RANGE_MAX_ITEMS}건까지 등록할 수 있습니다. 기간이나 직원을 나눠 주세요.`;
   return null;
 }
