@@ -56,13 +56,13 @@ const LOCATION_TIP =
   ]
     .map(
       ([n, t]) =>
-        `<tr class="border border-erp-thead-line"><th scope="row" class="border-r border-erp-thead-line bg-erp-thead-bg px-[10px] py-[6px] text-left font-semibold whitespace-nowrap text-erp-ink">${n}</th><td class="px-[10px] py-[6px] font-normal whitespace-nowrap text-erp-ink">${t}</td></tr>`,
+        `<tr class="border border-erp-thead-line"><th scope="row" class="border-r border-erp-thead-line bg-erp-thead-bg px-[10px] py-[6px] text-left font-semibold whitespace-nowrap text-erp-ink">${n}</th><td class="px-[10px] py-[6px] font-normal break-keep text-erp-ink">${t}</td></tr>`,
     )
     .join("") +
   `</tbody></table></span>`;
 // 도움말 i 하나 — 칸(locationApplyField)과 점포 상세 위치정보 줄이 같이 쓴다(앱 LocationApplyHelp)
 export const locationApplyHelp = `<span class="relative inline-flex shrink-0"><button type="button" aria-label="출퇴근 위치적용 도움말" onmouseenter="${LOCATION_TIP_SHOW}" onmouseleave="${LOCATION_TIP_HIDE}" class="grid size-[16px] place-items-center rounded-full text-erp-muted transition-colors duration-150 hover:text-erp-brand"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="7" width="1.4" height="5" rx="0.7" fill="#fff"/><circle cx="8" cy="4.8" r="0.9" fill="#fff"/></svg></button>` +
-  `<span popover="manual" role="tooltip" class="pointer-events-none fixed inset-auto m-0 w-max rounded-[6px] border border-erp-brand bg-white px-[12px] py-[8px] text-left text-[14px] leading-[1.6] font-medium text-erp-ink">${LOCATION_TIP}</span></span>`;
+  `<span popover="manual" role="tooltip" class="pointer-events-none fixed inset-auto m-0 w-max max-w-[360px] rounded-[6px] border border-erp-brand bg-white px-[12px] py-[8px] text-left text-[14px] leading-[1.6] font-medium text-erp-ink">${LOCATION_TIP}</span></span>`;
 export const locationApplyField = (control) =>
   `<div role="group" aria-label="출퇴근 위치적용" class="flex w-[150px] flex-col justify-center gap-[8px]"><span class="flex items-center gap-[4px] text-[14px] font-medium text-erp-label">출퇴근 위치적용${locationApplyHelp}</span>${control}</div>`;
 

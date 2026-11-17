@@ -25,31 +25,31 @@ export function LocationApplyField({ children }: { children: ReactNode }) {
 /** 「출퇴근 위치적용」 도움말 i — 칸(LocationApplyField)과 점포 상세의 위치정보 줄이 같이 쓴다. alignGroup — 상자를 감싼 묶음 왼쪽 끝에 맞춘다(칸) */
 export function LocationApplyHelp({ alignGroup = false }: { alignGroup?: boolean }) {
   return (
-          <HelpTip
-            label="출퇴근 위치적용 도움말"
-            floating
-            alignGroup={alignGroup}
-            text={
-              // 제목 「출퇴근 위치적용」 + 사용 · 미사용 두 줄 표 — 노출 대상 표(post-form.tsx)와 같은 선 · 머리 바탕, 말은 짧게(2026-11-17 사용자 지정)
-              <span className="flex flex-col gap-[8px]">
-                <span className="font-semibold text-erp-ink">출퇴근 위치적용</span>
-                <table className="border-collapse text-[14px]">
-                <tbody>
-                  {[
-                    ["사용", "근무지 반경 안에서만 출퇴근할 수 있습니다."],
-                    ["미사용", "위치 확인 없이 어디서나 출퇴근할 수 있습니다."],
-                  ].map(([name, text]) => (
-                    <tr key={name} className="border border-erp-thead-line">
-                      <th scope="row" className="border-r border-erp-thead-line bg-erp-thead-bg px-[10px] py-[6px] text-left font-semibold whitespace-nowrap text-erp-ink">
-                        {name}
-                      </th>
-                      <td className="px-[10px] py-[6px] font-normal whitespace-nowrap text-erp-ink">{text}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                </table>
-              </span>
-            }
-          />
+    <HelpTip
+      label="출퇴근 위치적용 도움말"
+      floating
+      alignGroup={alignGroup}
+      text={
+        // 제목 「출퇴근 위치적용」 + 사용 · 미사용 두 줄 표 — 노출 대상 표(post-form.tsx)와 같은 선 · 머리 바탕, 말은 짧게(2026-11-17 사용자 지정)
+        <span className="flex flex-col gap-[8px]">
+          <span className="font-semibold text-erp-ink">출퇴근 위치적용</span>
+          <table className="border-collapse text-[14px]">
+            <tbody>
+              {[
+                ["사용", "근무지 반경 안에서만 출퇴근할 수 있습니다."],
+                ["미사용", "위치 확인 없이 어디서나 출퇴근할 수 있습니다."],
+              ].map(([name, text]) => (
+                <tr key={name} className="border border-erp-thead-line">
+                  <th scope="row" className="border-r border-erp-thead-line bg-erp-thead-bg px-[10px] py-[6px] text-left font-semibold whitespace-nowrap text-erp-ink">
+                    {name}
+                  </th>
+                  <td className="px-[10px] py-[6px] font-normal break-keep text-erp-ink">{text}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </span>
+      }
+    />
   );
 }
