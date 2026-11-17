@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Button, PageBar } from "@/components/common";
 import { ApiError, authHeaders, bpHref, deniedMessageOf, request } from "@/lib/api";
 import { ContractForm } from "../../new/contract-form";
-import { fromDetail, type ContractDetail } from "../../new/contract-form-model";
+import { fromDetail, storesWithCurrent, type ContractDetail } from "../../new/contract-form-model";
 import { loadFormData } from "../../new/load-form-data";
 import { backHrefOf, withBack } from "../../contract-list";
 import { ContractPermission } from "../../contract-permission";
@@ -65,7 +65,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
                 <Notice title={optionsDenied} contractId={contractId} back={back} />
               ) : (
                 <ContractForm
-                  stores={stores}
+                  stores={storesWithCurrent(stores, detail)}
                   labels={labels}
                   minimumWage={minimumWage}
                   signedIn
@@ -98,7 +98,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
                 </Notice>
               ) : (
                 <ContractForm
-                  stores={stores}
+                  stores={storesWithCurrent(stores, detail)}
                   labels={labels}
                   minimumWage={minimumWage}
                   signedIn
