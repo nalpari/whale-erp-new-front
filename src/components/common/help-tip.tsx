@@ -8,7 +8,21 @@ import { useId, useRef, type ReactNode } from "react";
 // text 안의 줄바꿈(\n)은 그대로 줄을 바꾼다. 부모가 overflow 를 숨기면(truncate 등) 상자가 잘린다 — 말줄임 글자 안이 아니라 그 옆에 둔다.
 // 잘리는 상자 안에 둘 수밖에 없으면(고정 머리 표의 열 이름, DataTable Column.help) floating 을 켠다 — 상자를 popover 로 최상위 레이어에 띄운다(2026-10-27).
 // focusable=false 는 화면 낭독기에서 숨긴 곳(aria-hidden 머리 표)에 둘 때 — 탭 순서에서 빼고, 문구는 부르는 쪽이 읽히는 곳에 따로 둔다.
-export function HelpTip({ text, label = "도움말", floating, focusable = true }: { text: ReactNode; label?: string; floating?: boolean; focusable?: boolean }) {
+// alignGroup — floating 상자의 왼쪽을 아이콘이 아니라 감싼 묶음(role="group")의 왼쪽 끝에 맞춘다. 라벨 뒤 아이콘에서 시작하면 상자가 오른쪽으로
+// 치우쳐 보인 칸(출퇴근 위치적용, 2026-11-17 사용자 지정)에 쓴다.
+export function HelpTip({
+  text,
+  label = "도움말",
+  floating,
+  focusable = true,
+  alignGroup = false,
+}: {
+  text: ReactNode;
+  label?: string;
+  floating?: boolean;
+  focusable?: boolean;
+  alignGroup?: boolean;
+}) {
   const id = useId();
   const button = useRef<HTMLButtonElement>(null);
   const tip = useRef<HTMLSpanElement>(null);
@@ -19,13 +33,14 @@ export function HelpTip({ text, label = "도움말", floating, focusable = true 
     const at = button.current?.getBoundingClientRect();
     if (!box || !at || !("showPopover" in box) || box.matches(":popover-open")) return;
     box.style.top = `${at.bottom + 6}px`;
-    box.style.left = `${at.left - 8}px`;
+    const start = (alignGroup && button.current?.closest("[role=group]")?.getBoundingClientRect().left) || at.left - 8;
+    box.style.left = `${start}px`;
     box.showPopover();
     // 오른쪽 끝 쪽 열(BP 공통코드 관리주체)이면 상자가 표 · 창 밖으로 넘쳤다 — 띄운 뒤 폭을 재서 감싼 표의 오른쪽 끝(표가 없으면 창 끝, 8px 안쪽)을
     // 넘지 않게 왼쪽으로 당긴다(사용자가 찾음). 상세 표(DetailTable 의 dl)도 같은 표로 본다(권한 그룹 상세 가맹마스터, 2026-10-28)
     const bound = Math.min(document.documentElement.clientWidth - 8, button.current?.closest("table, dl")?.getBoundingClientRect().right ?? Infinity);
     const overflow = box.getBoundingClientRect().right - bound;
-    if (overflow > 0) box.style.left = `${Math.max(8, at.left - 8 - overflow)}px`;
+    if (overflow > 0) box.style.left = `${Math.max(8, start - overflow)}px`;
     // 자리는 열 때 한 번 잡는다 — 표를 밀거나 창 크기가 바뀌면 아이콘에서 떨어지지 않게 닫는다(리뷰로 찾음)
     window.addEventListener("scroll", hide, { capture: true, once: true });
     window.addEventListener("resize", hide, { once: true });

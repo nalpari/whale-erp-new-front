@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { getAddressCoordinateAction } from "@/lib/address-actions";
 import { AddressField } from "@/components/address-field";
+import { LocationApplyField } from "@/components/site/location-apply-field";
 import type { AddressItem } from "@/lib/address-search";
 import {
   Button,
@@ -779,7 +780,7 @@ export function StoreFormView(props: Props) {
                   aria-describedby={describe("longitude")}
                 />
               </Field>
-              <Field label="출퇴근 위치적용" width="w-[150px]">
+              <LocationApplyField>
                 {/* 좌표(위도 · 경도)가 없으면 사용으로 고를 수 없다 — 주소를 지우거나 좌표를 손으로 비우면
                     미사용으로 되돌리는 것과 같은 규칙이다. 주소가 아니라 좌표로 가린다 — 주소는 골랐는데
                     지오코딩이 늦거나 실패한 사이, 또는 주소 없이 좌표만 손으로 적은 점포를 놓치지 않는다
@@ -790,6 +791,7 @@ export function StoreFormView(props: Props) {
                     보내는 어긋남이 있었다. 상태를 고치는 대신 보이는 값을 저장 규칙과 맞춰 상태 변경 로직을
                     다시 건드리지 않는다(2026-10-19 코드 리뷰 반복 지적으로 고침). */}
                 <Select
+                  aria-label="출퇴근 위치적용"
                   value={hasCoordinateInput(form.latitude, form.longitude) && form.isLocationApplied ? "Y" : "N"}
                   onChange={(e) => set("isLocationApplied", e.target.value === "Y")}
                   disabled={!hasCoordinateInput(form.latitude, form.longitude)}
@@ -798,7 +800,7 @@ export function StoreFormView(props: Props) {
                   <option value="Y">사용</option>
                   <option value="N">미사용</option>
                 </Select>
-              </Field>
+              </LocationApplyField>
               <div className="self-end">
                 <Button variant="soft" onClick={handleRecalculateCoordinate} disabled={!form.address.trim() || locating || closedOrBlocked}>
                   주소로 다시 계산
@@ -812,8 +814,6 @@ export function StoreFormView(props: Props) {
                 도움말이 깜빡이지 않고 그대로 있는다(2026-10-19). 받는 동안 버튼·저장이 막히는 것으로 충분하다. */}
             <Note>
               점포주소가 입력되면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.
-              <br />
-              <b className="font-semibold">출퇴근 위치적용</b>을 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.
               <br />
               위도 · 경도가 없으면 <b className="font-semibold">출퇴근 위치적용</b>을 사용으로 바꿀 수 없습니다.
             </Note>

@@ -5,6 +5,7 @@ import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { storeImageFailureText } from "@/lib/store-image";
 import { getStore } from "@/lib/stores";
 import { CodeLabel } from "@/components/site/code-label";
+import { LocationApplyHelp } from "@/components/site/location-apply-field";
 import { formatBizNumber, hasStoreCoordinates } from "@/lib/store-view";
 import { StoreCardBody, StoreDenied, StoreFrame, storeDenied } from "../store-frame";
 import { StoreFloorLabel } from "../store-floor-label";
@@ -91,7 +92,11 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
               {store.longitude !== null ? store.longitude.toFixed(6) : muted("-")}
             </span>,
             <span key="loc">
-              <span className="mr-[10px] text-erp-label">출퇴근 위치적용</span>
+              {/* 라벨 옆 도움말 i — 등록 · 수정 화면과 같은 사용 · 미사용 표(2026-11-17 사용자 지정) */}
+              <span className="mr-[10px] inline-flex items-center gap-[4px] align-middle text-erp-label">
+                출퇴근 위치적용
+                <LocationApplyHelp />
+              </span>
               {/* 좌표가 없으면 저장된 값과 상관없이 미사용으로 보인다 — 주소가 아니라 좌표로 가린다(수정 화면 ·
                   bodyOf 와 같은 규칙, 2026-10-19 점검 — 실사용자 확인, 코드 리뷰로 주소에서 좌표로 바꿈). */}
               {hasStoreCoordinates(store.latitude, store.longitude) && store.isLocationApplied ? "사용" : "미사용"}
