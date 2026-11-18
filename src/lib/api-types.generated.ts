@@ -1887,7 +1887,7 @@ export interface paths {
         };
         /** 상세. 탈퇴한 BP 도 보인다(개인정보는 null). */
         get: operations["BpMastersController_detail"];
-        /** 수정. 마지막 저장이 남는다(동시 수정 확인 없음). */
+        /** 수정. 마지막 저장이 남는다(동시 수정 확인 없음). clearBusinessVerification 이면 본사 사업자정보 네 칸을 지운다. */
         put: operations["BpMastersController_update"];
         post?: never;
         /** 삭제(논리 삭제) — 오등록만. 상세의 deletion 조건을 서버에서 다시 본다. */
@@ -7359,6 +7359,17 @@ export interface components {
             isMailSent: boolean;
         };
         UpdateBpMasterDto: {
+            /**
+             * @description 본사의 사업자등록번호 · 대표자명 · 개업일자 · 인증일시를 전부 비운다 — 마이페이지 사업자정보의
+             *     clearBusinessVerification 과 같다(2026-11-18 사용자 요청). true 면 그 네 칸을 null 로 쓰고, 사업자번호가
+             *     없어진 본사는 미운영으로 내려간다. 이력은 바뀐 세 값(번호 · 대표자명 · 개업일자)만 본사 점포 이력에 남는다 —
+             *     인증일시는 이력 항목이 아니다. 이미 비어 있으면 오류 없이 지우기로 바뀌는 칸 · 이력이 없을 뿐, 나머지 칸의
+             *     저장은 평소와 같다. verificationToken 과 함께
+             *     보내면 400(서비스에서 본다). 등록에는 두지 않는다. 구독 기록이 있으면 막아야 하지만(마이페이지와 같은
+             *     사용자 결정) 구독 자체가 아직 없어 지금은 검사하지 않는다 — 구독이 생기면 마이페이지
+             *     (BpProfileUpdateDto)와 함께 여기에도 그 검사를 더한다.
+             */
+            clearBusinessVerification?: boolean;
             /**
              * @description BP 마스터 이름. 한글 · 영문 2~20자.
              * @example 김하늘
@@ -17065,7 +17076,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 입력 형식 · 인증 토큰 만료 */
+            /** @description 입력 형식 · 인증 토큰 만료 · verificationToken 과 clearBusinessVerification 을 함께 보냄 */
             400: {
                 headers: {
                     [name: string]: unknown;

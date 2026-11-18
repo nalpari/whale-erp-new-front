@@ -9,7 +9,7 @@ import { hqCoordinateFields } from "../../store-parts.mjs";
 const TITLE = `BP 마스터 계정 수정<span class="ml-[6px] inline-flex items-center gap-[6px] align-middle"><span class="inline-flex rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] py-[2px] text-[14px] font-medium text-erp-label">BP 코드 · <b class="ml-[3px] font-semibold text-erp-ink">${BP.code}</b></span>${ui.badge("on", "사용")}</span>`;
 
 // 사업자정보 — 마이페이지 사업자정보 탭과 같은 모양(앱 bp-master-form-panel.tsx · 공통 BizVerificationBox, 2026-10-28 사용자 지정).
-// 인증 상자: 회색 제목 줄(오른쪽에 「인증 완료 · 일시」 · 「미인증」) + 세 칸 한 줄 + [인증하기] · [재인증]. 국세청 안내는 인증 전에만.
+// 인증 상자: 회색 제목 줄(오른쪽에 「인증 완료 · 일시」 · 「미인증」) + 세 칸 한 줄 + [인증하기](인증 전) · [재인증] [사용안함](인증 후). 국세청 안내는 인증 전에만.
 export function bizAuthBox(A, { locked, values = ["", "", ""], date = "" }) {
   const [num, ceo, open] = values;
   const fields =
@@ -23,7 +23,8 @@ export function bizAuthBox(A, { locked, values = ["", "", ""], date = "" }) {
     `<h3 class="flex h-[42px] items-center justify-between rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink"><span>사업자정보</span>${locked ? ui.badge("on", `인증 완료 · ${date}`) : ui.badge("off", "미인증")}</h3>` +
     `<div class="flex flex-col gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[16px]">` +
     fields +
-    `<div class="flex gap-[6px]">${ui.button(locked ? "재인증" : "인증하기", { variant: "soft" })}</div>` +
+    // 인증된 수정 화면은 [재인증] 옆에 [사용안함]. 누른 뒤 모양(취소선 · [사용안함 취소]만)은 앱과 마이페이지 데모(site.mjs struck)를 따르고, 이 데모는 그리지 않는다(2026-11-18 사용자 요청)
+    `<div class="flex gap-[6px]">${locked ? ui.button("재인증", { variant: "soft" }) + ui.button("사용안함", { variant: "soft" }) : ui.button("인증하기", { variant: "soft" })}</div>` +
     (locked ? "" : `<p class="text-[13px] leading-[1.5] text-erp-label">사업자정보가 국세청에 등록된 정보와 일치하는지 확인합니다.</p>`) +
     `</div></section>`
   );
