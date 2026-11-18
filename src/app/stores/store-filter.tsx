@@ -11,7 +11,7 @@ import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { Scope } from "@/lib/browser-storage";
 import { chipsKeyOf, isHqStore, isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
 import { useStoreListNavigation } from "./store-list-navigation";
-import { DEFAULT_STORES_QUERY, droppedStoreIds, fillScopeOf, withPickedStores, withScopeCondition, withStatuses, withStoreFilter } from "./stores-query";
+import { DEFAULT_STORES_QUERY, droppedStoreIds, fillScopeOf, storesHref, withPickedStores, withScopeCondition, withStatuses, withStoreFilter } from "./stores-query";
 
 const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
@@ -80,17 +80,18 @@ export function StoreFilter({ picked, scope, requested }: { picked: PickedStore[
   });
   useEffect(() => dropUnusable(), [unusable]);
 
+  // 초기화하면 가는 조건(헤더 범위 · 보기 방식 · 건수는 그대로)과 다르면 「필터 적용 중」(FilterPanel 빨간 점) — 쪽은 조건이 아니다.
+  // 점포 조건이 없으면(범위 「전체」는 주소에 채우지 않는다) 헤더 범위로 본다
+  const resetQuery = () => ({ ...DEFAULT_STORES_QUERY, scope: headerScope, view: current.view, pageSize: current.pageSize });
+  const applied = storesHref({ ...current, scope: current.scope ?? (noCondition ? headerScope : null), page: 1 }) !== storesHref(resetQuery());
+
   return (
     <FilterPanel
+      applied={applied}
       onReset={() => {
         setResets((n) => n + 1);
         setChips(scopeChips(headerScope));
-        navigate({
-          ...DEFAULT_STORES_QUERY,
-          scope: headerScope,
-          view: current.view,
-          pageSize: current.pageSize,
-        });
+        navigate(resetQuery());
       }}
     >
       <FilterSection

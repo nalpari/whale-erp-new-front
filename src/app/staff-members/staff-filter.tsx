@@ -73,8 +73,14 @@ export function StaffFilter({ query }: { query: StaffListQuery }) {
     navigate(withScopeCondition(DEFAULT_STAFF_LIST_QUERY, headerScope));
   };
 
+  // 처음 상태(초기화하면 가는 조건)와 다르면 「필터 적용 중」 — 쪽 · 건수는 조건이 아니다
+  // 점포 조건이 없으면(범위 「전체」는 주소에 채우지 않는다 — fillScopeOf) 헤더 범위로 본다
+  const base = withScopeCondition(DEFAULT_STAFF_LIST_QUERY, headerScope);
+  const asShown = { ...current, scope: current.scope ?? (noCondition ? headerScope : null), page: 1, pageSize: base.pageSize };
+  const applied = toStaffListSearch(asShown) !== toStaffListSearch(base);
+
   return (
-    <FilterPanel onReset={reset}>
+    <FilterPanel onReset={reset} applied={applied}>
       <FilterSection label="점포" tight>
         <StorePicker picked={chips} onChange={(next) => navigate(withPickedStores(current, next.map((s) => s.storeId)))} />
       </FilterSection>

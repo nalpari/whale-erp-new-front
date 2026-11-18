@@ -88,7 +88,7 @@ export function SupportNoticeList({ items, total, query, noticeTypes }: { items:
       query={query}
       total={total}
       filter={
-        <FilterPanel onReset={() => go({ keyword: "", noticeType: [] })}>
+        <FilterPanel onReset={() => go({ keyword: "", noticeType: [] })} applied={!!query.keyword || query.noticeType.length > 0}>
           <Search label="제목" placeholder="제목으로 검색" value={query.keyword} maxLength={100} onSearch={(keyword) => go({ keyword })} />
           <SupportChecks label="구분" values={noticeTypes} value={query.noticeType} onPick={(noticeType) => go({ noticeType })} />
         </FilterPanel>
@@ -109,7 +109,7 @@ export function SupportFaqList({ items, total, query }: { items: SupportPost[]; 
       query={query}
       total={total}
       filter={
-        <FilterPanel onReset={() => go({ keyword: "", faqCategoryCode: [] })}>
+        <FilterPanel onReset={() => go({ keyword: "", faqCategoryCode: [] })} applied={!!query.keyword || query.faqCategoryCode.length > 0}>
           <Search label="질문" placeholder="질문으로 검색" value={query.keyword} maxLength={100} onSearch={(keyword) => go({ keyword })} />
           <SupportChecks label="카테고리" values={categories} value={query.faqCategoryCode} onPick={(faqCategoryCode) => go({ faqCategoryCode })} />
         </FilterPanel>
@@ -195,7 +195,7 @@ export function MyInquiryList({ items, total, query, statuses }: { items: Suppor
           query={query}
           total={total}
           filter={
-            <FilterPanel onReset={() => go({ title: "", status: [] })}>
+            <FilterPanel onReset={() => go({ title: "", status: [] })} applied={!!query.title || query.status.length > 0}>
               <Search label="제목" placeholder="제목으로 검색" value={query.title} maxLength={200} onSearch={(title) => go({ title })} />
               <SupportChecks label="상태" values={statuses} value={query.status} onPick={(status) => go({ status })} />
             </FilterPanel>

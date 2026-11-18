@@ -10,7 +10,7 @@ import { pickedStoreIdsOf } from "@/lib/staff-members";
 import { isUnusableScope, scopeStores, toPickedStore } from "@/lib/store-scope";
 import { fillScopeOf } from "../stores/stores-query";
 import { usePayslipListNavigation } from "./payslip-list-controls";
-import { MAX_KEYWORD_LENGTH, defaultPayslipListQuery, withFilter, withPickedStores, withScopeCondition } from "./payslip-list-query";
+import { MAX_KEYWORD_LENGTH, defaultPayslipListQuery, toPayslipListSearch, withFilter, withPickedStores, withScopeCondition } from "./payslip-list-query";
 
 const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
@@ -54,13 +54,19 @@ export function PayslipFilter({ query, today, statusLabels }: { query: PayslipLi
   });
   useEffect(() => dropUnusable(), [unusable]);
   // 초기화는 헤더 범위로 돌아간다(달은 그대로)
+  const resetQuery = () => withScopeCondition({ ...defaultPayslipListQuery(today), month: current.month }, headerScope);
   const reset = () => {
     setResets((n) => n + 1);
-    navigate(withScopeCondition({ ...defaultPayslipListQuery(today), month: current.month }, headerScope));
+    navigate(resetQuery());
   };
+  // 그 조건과 다르면 「필터 적용 중」(FilterPanel 빨간 점) — 쪽 · 건수는 조건이 아니다. 점포 조건이 없으면(범위 「전체」는 주소에 채우지 않는다) 헤더 범위로 본다
+  const base = resetQuery();
+  const applied =
+    toPayslipListSearch({ ...current, scope: current.scope ?? (noCondition ? headerScope : null), page: 1, pageSize: base.pageSize }) !==
+    toPayslipListSearch(base);
 
   return (
-    <FilterPanel onReset={reset}>
+    <FilterPanel onReset={reset} applied={applied}>
       <FilterSection label="점포" tight>
         <StorePicker picked={chips} onChange={(next) => navigate(withPickedStores(current, next.map((s) => s.storeId)))} />
       </FilterSection>

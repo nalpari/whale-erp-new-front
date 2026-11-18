@@ -55,7 +55,7 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
       </PageBar>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         <PayslipFilter query={query} today={today} statusLabels={statusLabels} />
-        <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0">
           <PayslipMonthNav key={query.month} query={query} />
           {/* 총 건수 · 상태별 건수 · 검토 대기를 한 줄로, 버튼 · 건수 고르기는 오른쪽 — 모든 칸을 줄 가운데에 맞춘다(2026-11-04 사용자 지정 — 전엔 상태 건수 줄과
               총 건수 줄이 따로 있었고, 공통 ListToolbar 가 아래 끝에 맞춰 「총 N 건」이 처졌다) */}

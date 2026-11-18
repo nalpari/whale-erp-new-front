@@ -76,7 +76,7 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
       <StoreListNavigationProvider query={query}>
         <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
           <StoreFilter picked={picked} scope={query.scope} requested={pickedIdsOf(parsed)} />
-          <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
+          <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0">
             <ExcelDownloadProvider fileName="점포목록.xlsx">
               {missingCount > 0 &&
                 (fromScope ? (
@@ -97,7 +97,8 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
               ) : query.view === "table" ? (
                 <StoreTable items={items} total={total} page={query.page} pageSize={query.pageSize} detailHref={detailHref} empty={emptyText} />
               ) : (
-                <ul aria-label="점포 목록" className="grid grid-cols-4 gap-[12px]">
+                // 창 1600 미만이면 3열 — 4열이면 1260 창에서 점포코드가 잘리고 「사업자정보 미인증」이 두 줄로 꺾였다(2026-11-18 사용자 지정 · 1260 작업)
+                <ul aria-label="점포 목록" className="grid grid-cols-3 gap-[12px] min-[1600px]:grid-cols-4">
                   {items.map((store) => (
                     <li key={store.storeId} className="contents">
                       <StoreCard store={store} href={detailHref(store.storeId)} />

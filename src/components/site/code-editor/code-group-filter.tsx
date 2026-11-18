@@ -48,6 +48,8 @@ export function CodeGroupFilter({
 
   return (
     <FilterPanel
+      // 검색한 조건(주소 값)이 하나라도 걸려 있으면 「필터 적용 중」(FilterPanel 빨간 점) — 치기만 하고 찾지 않은 글자는 조건이 아니다
+      applied={!!groupCode || !!groupName || !!manageOwnerCode}
       onReset={() => {
         setCode("");
         setName("");

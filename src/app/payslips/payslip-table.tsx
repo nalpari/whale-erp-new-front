@@ -43,11 +43,15 @@ export function PayslipTable({
   at?: (path: string) => string;
 }) {
   const rows: Row[] = items.map((payslip, i) => ({ no: rowNumber(total, page, pageSize, i), payslip }));
+  // 1260 창 기준 열 폭 — 내용이 정해진 열은 가장 긴 값에 맞춘 고정 폭이고 근무지가 남는 폭을 갖는다(2026-11-18 사용자 지정 · 1260 작업)
   const columns: Column<Row>[] = [
     { header: "순번", width: "w-[60px]", cell: (r) => r.no },
-    { header: "급여 기간", width: "w-[220px]", cell: (r) => periodText(r.payslip) },
+    // 「2026-10-01 ~ 2026-10-31」(160px)
+    { header: "급여 기간", width: "w-[180px]", cell: (r) => periodText(r.payslip) },
     {
+      // 「본사에 정보제공 미동의」(157px)가 한 줄에 든다
       header: "직원명",
+      width: "w-[170px]",
       cell: ({ payslip }) =>
         payslip.isMasked || payslip.payslipId === null ? (
           <span className="text-erp-muted">{MASKED_TEXT}</span>
@@ -57,19 +61,23 @@ export function PayslipTable({
           </Link>
         ),
     },
-    { header: "근무지", cell: (r) => r.payslip.storeName },
-    { header: "계약 유형", width: "w-[120px]", cell: shown((p) => (p.employmentType ? labelOf(employmentTypeLabels, p.employmentType) : DASH)) },
+    // 남는 폭(표 최소 폭이 100px 을 지킨다) — 길이가 제각각인 이름이라 왼쪽 정렬(직원 · 근로계약 목록과 같다)
+    // 근무지도 기준 폭(100)을 둔다 — 넓은 창에서는 모든 열이 같은 비율로 늘어난다 — 이 열만 남는 폭을 가지면 넓은 창에서 혼자 넓어져 표가 휑했다(2026-11-18 사용자 지정)
+    { header: "근무지", width: "w-[100px]", align: "left", cell: (r) => r.payslip.storeName },
+    { header: "계약 유형", width: "w-[90px]", cell: shown((p) => (p.employmentType ? labelOf(employmentTypeLabels, p.employmentType) : DASH)) },
     {
+      // 열 이름 9자가 꺾이지 않는 폭
       header: "출퇴근 확인 여부",
-      width: "w-[140px]",
+      width: "w-[130px]",
       cell: shown((p) => {
         const cell = attendanceCell(p);
         return cell ? <CellView cell={cell} /> : DASH;
       }),
     },
     {
+      // 「작성 중」 + 「검토 대기」 꼬리표(약 125px)
       header: "상태",
-      width: "w-[180px]",
+      width: "w-[150px]",
       // 검토 대기는 상태가 아니라 분류라 상태 배지 옆에 꼬리표(Tag)로 붙인다 — 「검토 중」 상태 배지(빨강)와 다른 모양으로(운영 정책
       // v221 PAY-06). 사유는 꼬리표에 마우스를 올리면 보이고(화면 낭독기는 숨긴 글자로 읽는다), 내용은 상세에서 본다
       cell: shown((p) => {
@@ -89,7 +97,7 @@ export function PayslipTable({
         );
       }),
     },
-    { header: "발송일", width: "w-[100px]", cell: shown(sentDateText) },
+    { header: "발송일", width: "w-[70px]", cell: shown(sentDateText) },
   ];
 
   return (
@@ -101,6 +109,10 @@ export function PayslipTable({
       empty={filtered ? "조건에 맞는 급여명세서가 없습니다." : "이 달의 급여명세서가 없습니다."}
       // 비었을 때 열 이름 줄은 두고 빈 칸이 목록 영역 남는 높이를 채운다(직원 · 점포 목록과 같다, 2026-11-04 사용자 지정)
       fillEmpty
+      // 1260 창에서 필터를 펼치면 표 자리(약 920px)보다 넓다 — 근무지 100px 을 지키고 표 상자 안에서만 가로로 민다(직원 · 점포 · 근로계약 목록과
+      // 같다). 고정 열 합 850 + 근무지 100
+      scroll
+      minWidth="min-w-[950px]"
     />
   );
 }

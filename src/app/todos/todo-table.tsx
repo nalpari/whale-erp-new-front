@@ -36,9 +36,13 @@ export function TodoTable({
   const columns: Column<Row>[] = [
     { header: "순번", width: "w-[60px]", cell: (r) => r.no },
     // 열 순서: 순번 · 근무지 · TO-DO · 수행예정 · 담당직원 · 상태 · 완료 / 배정 직원(2026-11-09 사용자 지정, 3팀 확인 필요 — 전엔 담당직원 · 근무지 · TO-DO · 수행예정 · 상태)
-    { header: "근무지", width: "w-[300px]", align: "left", cell: (r) => r.item.storeName ?? "-" },
+    // 1260 창 기준 열 폭 — 남는 폭은 TO-DO 제목이 갖는다(표 최소 폭이 200px 을 지킨다). 근무지 300 → 160 · 수행예정 180 → 130 · 상태 120 → 80 ·
+    // 완료 / 배정 직원 130 → 120(2026-11-18 사용자 지정 · 1260 작업)
+    { header: "근무지", width: "w-[160px]", align: "left", cell: (r) => r.item.storeName ?? "-" },
     {
       header: "TO-DO",
+      // TO-DO 도 기준 폭(200)을 둔다 — 넓은 창에서는 모든 열이 같은 비율로 늘어난다 — 이 열만 남는 폭을 가지면 넓은 창에서 혼자 넓어져 표가 휑했다(2026-11-18 사용자 지정)
+      width: "w-[200px]",
       align: "left",
       cell: ({ item }) => (
         <span className="inline-flex max-w-full items-center gap-[6px]">
@@ -50,7 +54,7 @@ export function TodoTable({
         </span>
       ),
     },
-    { header: "수행예정", width: "w-[180px]", align: "left", cell: (r) => dueFullText(r.item.dueDate, r.item.dueTime) },
+    { header: "수행예정", width: "w-[130px]", align: "left", cell: (r) => dueFullText(r.item.dueDate, r.item.dueTime) },
     // 「담당직원」 — 「개인 · 서지안」 · 「개인 · 오세라 외 1명」 · 「전체 · 각자 수행」 · 「전체 · 한 명만 수행」(2026-11-09 사용자 지정, 3팀 확인 필요 — 전엔 「OOO 외 N명」).
     // 개인 배정의 첫 직원(이름을 보이는 직원)을 가렸으면 직원 목록처럼 흐린 글자
     {
@@ -60,8 +64,8 @@ export function TodoTable({
       cell: (r) => <span className={r.item.assigneeType === "INDIVIDUAL" && r.item.assignees[0]?.isMasked ? "text-erp-muted" : undefined}>{targetText(r.item)}</span>,
     },
     // 상태는 배지 하나, 옆 칸에 완료 인원 숫자(2026-11-09 사용자 지정, 3팀 확인 필요)
-    { header: "상태", width: "w-[120px]", cell: (r) => <CellView cell={statusCells(r.item, statusLabels)[0]} /> },
-    { header: "완료 / 배정 직원", width: "w-[130px]", cell: (r) => <span className="tabular-nums">{doneCountText(r.item)}</span> },
+    { header: "상태", width: "w-[80px]", cell: (r) => <CellView cell={statusCells(r.item, statusLabels)[0]} /> },
+    { header: "완료 / 배정 직원", width: "w-[120px]", cell: (r) => <span className="tabular-nums">{doneCountText(r.item)}</span> },
   ];
 
   return (
@@ -73,6 +77,10 @@ export function TodoTable({
       empty={empty}
       // 비었을 때 열 이름 줄은 두고 그 아래 빈 칸이 목록 영역 남는 높이를 채운다(직원 · 점포 목록과 같다, 2026-11-04 사용자 지정)
       fillEmpty
+      // 1260 창에서 필터를 펼치면 표 자리(약 920px)보다 넓다 — TO-DO 제목 200px 을 지키고 표 상자 안에서만 가로로 민다(직원 · 근로계약 목록과
+      // 같다). 고정 열 합 750 + TO-DO 200
+      scroll
+      minWidth="min-w-[950px]"
     />
   );
 }

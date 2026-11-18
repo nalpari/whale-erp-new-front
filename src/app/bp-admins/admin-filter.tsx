@@ -11,6 +11,7 @@ import { chipsKeyOf, isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } f
 import { fillScopeOf } from "@/app/stores/stores-query";
 import {
   BP_ADMIN_ROLE_TYPES,
+  bpAdminsHref,
   keepingPanel,
   parseBpAdminsQuery,
   roleGroupOptionsOf,
@@ -114,13 +115,20 @@ export function AdminFilter({
   // 고른 역할의 권한명만 선택지로(2026-10-30)
   const visibleGroups = roleGroups && roleGroupOptionsOf(roleGroups, query.roleTypeCodes);
 
+  // 초기화하면 가는 조건(헤더 범위 · 건수는 그대로)과 다르면 「필터 적용 중」(FilterPanel 빨간 점). 쪽 · 연 상세는 조건이 아니다.
+  // 점포 조건이 없으면(범위 「전체」는 주소에 채우지 않는다) 헤더 범위로 본다
+  const resetQuery = (): BpAdminsQuery => ({ ...withScopeCondition(parseBpAdminsQuery({}), headerScope), pageSize: query.pageSize });
+  const conditionOf = (q: BpAdminsQuery) => bpAdminsHref({ ...q, page: 1, admin: undefined, edit: undefined });
+  const applied = conditionOf({ ...query, scope: query.scope ?? (noCondition ? headerScope : null) }) !== conditionOf(resetQuery());
+
   return (
     <FilterPanel
+      applied={applied}
       onReset={() => {
         const scope: Scope = headerScope;
         setChips(chipsOf({ storeIds: [], scope }));
         // 초기화는 헤더 범위로 돌아간다. 건수는 그대로 둔다
-        navigate({ ...withScopeCondition(parseBpAdminsQuery({}), scope), pageSize: query.pageSize });
+        navigate(resetQuery());
       }}
     >
       <FilterSection label="점포" tight>
@@ -167,8 +175,10 @@ export function AdminFilter({
             <option value={query.roleGroupId}>선택한 권한명(#{query.roleGroupId})</option>
           )}
           {visibleGroups?.map((r) => (
-            <option key={r.roleGroupId} value={r.roleGroupId}>
-              {r.name} · {r.roleCode}
+            // 이름만 — 코드를 붙이면 펼친 목록이 필터 선택칸(188px)보다 넓어져 오른쪽으로 삐져나왔다. 코드는 표 「권한명 · 코드」 열과 상세에서 본다
+            // (플랫폼 관리자 필터와 같다, 2026-11-18 사용자 지정 · 1260 작업). 이름이 같은 그룹을 가를 수 있게 마우스를 올리면 코드가 보인다(title)
+            <option key={r.roleGroupId} value={r.roleGroupId} title={r.roleCode}>
+              {r.name}
             </option>
           ))}
         </Select>

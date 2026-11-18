@@ -9,8 +9,8 @@ export type Column<T> = {
    * 본문 표의 sr-only 열 이름에 붙여, 그 밖에는 i 버튼의 설명(aria-describedby)으로 읽는다.
    */
   help?: ReactNode;
-  /** Tailwind 너비 클래스(w-[60px] 등). 없으면 남는 폭을 나눠 갖는다. */
-  width?: `w-[${number}px]`;
+  /** Tailwind 너비 클래스(w-[60px] 등). 없으면 남는 폭을 나눠 갖는다. 창 폭에 따라 바꿀 때는 `min-[N]:` 한 단계를 덧붙인다(홈 확인 필요 「항목」, 1260 작업) */
+  width?: `w-[${number}px]` | `w-[${number}px] min-[${number}px]:w-[${number}px]`;
   /** 본문 정렬. 헤더는 항상 가운데다. */
   align?: "left" | "center";
   cell: (row: T) => ReactNode;
@@ -61,6 +61,7 @@ export function DataTable<T>({
   headVariant = "default",
   scroll = false,
   fillEmpty = false,
+  minWidth,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -75,8 +76,16 @@ export function DataTable<T>({
    * 감싸는 쪽이 flex 세로여야 한다. 고정 머리 표(scroll)와 함께 써도 된다(공통코드 관리, 2026-11-05)
    */
   fillEmpty?: boolean;
+  /**
+   * 표 최소 폭(Tailwind 클래스, 예 `min-w-[1135px]`). 폭을 정하지 않은 열(남는 폭을 갖는 열)이 0 으로 줄지 않게 한다 — 창이 좁으면
+   * scroll 과 함께 표 상자 안에서 가로로 민다(직원 목록, 2026-11-18 사용자 지정 · 1260 작업)
+   */
+  minWidth?: string;
 }) {
-  const table = `w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px] ${headVariant === "none" ? "border-t" : ""}`;
+  // 고정 머리 표(scroll)는 좌우 선 · 머리 위아래 선을 표가 아니라 머리 · 본문 상자(ScrollHeadSync)가 긋는다 — 세로 스크롤바 자리(scrollbar-gutter)가
+  // 선 안쪽에 들어가 표 오른쪽 선이 카드 안쪽 여백에 닿는다. 표가 그으면 스크롤바 자리만큼 오른쪽 선이 안으로 들어와 좌우 여백이 달랐다(2026-11-18 사용자 지정)
+  const framed = scroll && headVariant !== "none" && !(fillEmpty && rows.length === 0);
+  const table = `w-full table-fixed border-collapse ${framed ? "" : "border-x border-erp-thead-line"} text-[14px] ${headVariant === "none" ? "border-t" : ""} ${minWidth ?? ""}`;
   const cols = (
     <colgroup>
       {columns.map((c, i) => (
@@ -97,7 +106,7 @@ export function DataTable<T>({
       </thead>
     ) : (
       <thead>
-        <tr className={`h-[42px] border-y border-erp-thead-line ${HEAD_ROW[headVariant]}`}>
+        <tr className={`h-[42px] ${framed ? "" : "border-y border-erp-thead-line"} ${HEAD_ROW[headVariant]}`}>
           {/* 열 이름은 늘 가운데 — 팝업(dialog)처럼 글자 정렬을 물려주는 곳에서는 브라우저 기본 가운데가 풀려 왼쪽으로 붙었다(변경이력 팝업, 2026-11-09 사용자 지정) */}
           {columns.map((c, i) => (
             <th key={i} scope="col" className={`px-[10px] text-center ${HEAD_CELL[headVariant]}`}>
@@ -145,6 +154,7 @@ export function DataTable<T>({
       <div data-table-scroll className="flex min-h-[134px] flex-1 flex-col">
         {/* 본문을 가로로 밀면 머리도 따라간다(ScrollHeadSync) */}
         <ScrollHeadSync
+          headClass={HEAD_ROW[headVariant]}
           head={
             <table className={table}>
               {cols}
