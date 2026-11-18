@@ -800,10 +800,10 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
         <FormGroup title="계약 조건">
           <FormRow>
             <Item label="계약 시작일" required help={previousStartDate ? `재계약은 직전 계약 시작일(${previousStartDate}) 다음 날부터` : undefined} errors={errs.startDate}>
-              {() => <DateField aria-label="계약 시작일" value={form.startDate} onChange={(v) => set("startDate", v)} />}
+              {() => <DateField aria-label="계약 시작일" autoHyphen value={form.startDate} onChange={(v) => set("startDate", v)} />}
             </Item>
             <Item label="계약 종료일" helpIcon help="계약 종료일을 설정하지 않은 경우, &apos;기간의 정함이 없는 계약&apos;으로 처리됩니다." errors={errs.endDate}>
-              {() => <DateField aria-label="계약 종료일" value={form.endDate} onChange={(v) => set("endDate", v)} />}
+              {() => <DateField aria-label="계약 종료일" autoHyphen value={form.endDate} onChange={(v) => set("endDate", v)} />}
             </Item>
           </FormRow>
           <FormRow>
