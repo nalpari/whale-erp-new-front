@@ -89,6 +89,8 @@ test("sendNoticeOf — 못 보낸 알림톡 이름을 말하고, 거절일 때�
   assert.match(sendNoticeOf("failed", "CORRECTION_REQUESTED", "AFFILIATION", "NOT_SENT") ?? "", /소속 추가 확인 요청 알림톡을 .* 잠시 뒤 「수정」에서 다시 저장/);
   assert.match(sendNoticeOf("failed", "PENDING_SEND", "INVITE", "NOT_SENT") ?? "", /가입 초대 알림톡을 보내지 못했습니다\. 잠시 뒤 재발송해 주세요/);
   assert.match(sendNoticeOf("unconfirmed", "PENDING_SEND", "AFFILIATION") ?? "", /^저장했지만 소속 추가 확인 요청 알림톡이 접수됐는지/);
+  assert.equal(sendNoticeOf("failed", "PENDING_SEND", "AFFILIATION", "REJECTED"), "고친 내용은 저장했지만 소속 추가 확인 요청 알림톡을 보내지 못했습니다. 휴대전화번호를 확인하고 재발송해 주세요.");
+  assert.equal(sendNoticeOf("failed", "DRAFT", undefined, "NOT_SENT"), "알림톡을 보내지 못해 작성 중으로 두었습니다. 잠시 뒤 이어 쓰기에서 다시 저장해 주세요.");
   // 모르면(옛 api · 저장 뒤 상태를 읽지 못한 SEND_UNCONFIRMED) 「알림톡」 · 번호 확인
   assert.equal(sendNoticeOf("failed", "DRAFT"), "알림톡을 보내지 못해 작성 중으로 두었습니다. 휴대전화번호를 확인하고 이어 쓰기에서 다시 저장해 주세요.");
   assert.match(sendNoticeOf("unconfirmed", "PENDING_SEND", ["INVITE"]) ?? "", /^저장했지만 알림톡이 접수됐는지/);
