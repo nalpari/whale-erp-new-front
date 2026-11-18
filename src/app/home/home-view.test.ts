@@ -5,7 +5,7 @@ import type { AdminStore } from "../../lib/session.ts";
 import { readListQuery } from "../contracts/contract-list.ts";
 import { parseStaffListQuery } from "../staff-members/staff-list-query.ts";
 import { parseTodoListQuery } from "../todos/todo-list-query.ts";
-import { homeSearchOf, latestNotices, pendingLineOf, type HomePendingItem } from "./home-view.ts";
+import { homeSearchOf, latestNotices, pendingLineOf, storeCountsOf, type HomePendingItem } from "./home-view.ts";
 
 const store = (storeId: number, storeTypeCode: string, storeStatusCode = "OPEN") => ({ storeId, storeTypeCode, storeStatusCode }) as AdminStore;
 const STORES = [store(1, "DIRECT"), store(2, "FRANCHISE"), store(3, "DIRECT", "CLOSED"), store(4, "FRANCHISE")];
@@ -48,7 +48,7 @@ test("api 가 이 화면이 모르는 확인 필요 유형을 주면 null(그 �
 
 test("서명 대기 — 이름 외 N명 · 발송 후 경과, 탭 BP 의 근로계약 목록 점포 · 상태로 간다", () => {
   const line = pendingLineOf(item({}), 8)!;
-  assert.deepEqual([line.kind, line.title, line.desc], ["계약", "근로계약 직원 서명 대기 3건", "남도현 외 2명 · 발송 후 6일 경과"]);
+  assert.deepEqual([line.kind, line.title, line.desc], ["근로계약", "직원 서명 대기 3건", "남도현 외 2명 · 발송 후 6일 경과"]);
   assert.equal(line.href, "/bp/8/contracts?storeIds=3%2C7&status=PENDING_SIGNATURE");
   const q = readListQuery(searchOf(line.href));
   assert.deepEqual([q.storeIds, q.status], [[3, 7], ["PENDING_SIGNATURE"]]);
@@ -63,7 +63,7 @@ test("갱신 예정 — 경과 없이 「새 근로계약서 초안 없음」과
   const renewal = (dueInDays: number) =>
     pendingLineOf(item({ type: "CONTRACT_RENEWAL", count: 2, othersCount: 1, waitingDays: null, dueInDays, filter: { storeIds: [3], status: ["SIGNED"] } }), 8)!;
   const line = renewal(7);
-  assert.deepEqual([line.title, line.desc, line.due], ["계약 갱신 예정 2건", "남도현 외 1명 · 새 근로계약서 초안 없음", { text: "종료 D-7", urgent: true }]);
+  assert.deepEqual([line.title, line.desc, line.due], ["갱신 예정 2건", "남도현 외 1명 · 새 근로계약서 초안 없음", { text: "종료 D-7", urgent: true }]);
   assert.deepEqual(renewal(8).due, { text: "종료 D-8", urgent: false });
   assert.deepEqual(renewal(0).due, { text: "종료 D-0", urgent: true });
   assert.deepEqual(readListQuery(searchOf(line.href)).status, ["SIGNED"]);
@@ -81,12 +81,12 @@ test("소속 확인 거절 — 탭 BP 의 직원 목록 「초대」 묶음(거�
 
 test("문의 답변완료 — 탭 BP 의 문의하기, 제목 외 N건", () => {
   const line = pendingLineOf(item({ type: "INQUIRY_ANSWERED", firstName: "KIOSK 연동 문의", count: 2, othersCount: 1, waitingDays: 1, filter: { storeIds: [], status: ["ANSWERED"] } }), 8)!;
-  assert.deepEqual([line.title, line.desc, line.href], ["문의 답변완료 2건", "KIOSK 연동 문의 외 1건 · 답변 후 1일 경과", "/bp/8/support-inquiries?status=ANSWERED"]);
+  assert.deepEqual([line.title, line.desc, line.href], ["답변완료 2건", "KIOSK 연동 문의 외 1건 · 답변 후 1일 경과", "/bp/8/support-inquiries?status=ANSWERED"]);
 });
 
 test("긴급 TO-DO — 탭 BP 의 TO-DO 목록 점포 · 대기 · 진행 중 · 긴급만", () => {
   const line = pendingLineOf(item({ type: "URGENT_TODO", firstName: "냉장고 재료 폐기", count: 1, othersCount: 0, filter: { storeIds: [3], status: ["PENDING", "IN_PROGRESS"] } }), 8)!;
-  assert.equal(line.title, "긴급 TO-DO 1건");
+  assert.equal(line.title, "긴급 1건");
   assert.ok(line.href.startsWith("/bp/8/todos?"));
   const q = parseTodoListQuery(searchOf(line.href));
   assert.deepEqual([q.storeIds, q.statuses, q.urgentOnly], [[3], ["PENDING", "IN_PROGRESS"], true]);
@@ -97,4 +97,26 @@ test("공지 띠 — 고정 공지가 먼저 와도 게시일 최신 3건, 같�
   // api 순서: 고정(오래된 것) → 나머지 게시일 최신순
   const got = latestNotices([n(1, "2026-09-01"), n(2, "2026-08-01"), n(5, "2026-10-20"), n(4, "2026-10-20"), n(3, "2026-10-10")]);
   assert.deepEqual(got.map((p) => p.postId), [5, 4, 3]);
+});
+
+test("점포 칸 — 운영 · 미운영 × 직영 · 가맹, 본사 · 폐점은 세지 않고 상단 범위를 따른다", () => {
+  const s = (storeId: number, storeTypeCode: string, storeStatusCode: string, isHq = false) => ({ storeId, storeTypeCode, storeStatusCode, isHq }) as AdminStore;
+  const all = [s(1, "DIRECT", "OPERATING", true), s(2, "DIRECT", "OPERATING"), s(3, "FRANCHISE", "OPERATING"), s(4, "FRANCHISE", "NOT_OPERATING"), s(5, "DIRECT", "CLOSED")];
+  assert.deepEqual(storeCountsOf({ type: "ALL" }, all), { operating: { direct: 1, franchise: 1 }, notOperating: { direct: 0, franchise: 1 } });
+  assert.deepEqual(storeCountsOf({ type: "FRANCHISE" }, all), { operating: { direct: 0, franchise: 1 }, notOperating: { direct: 0, franchise: 1 } });
+  assert.deepEqual(storeCountsOf({ type: "STORE", storeId: 4 }, all), { operating: { direct: 0, franchise: 0 }, notOperating: { direct: 0, franchise: 1 } });
+});
+
+test("확인 필요 짧은 경과 · 대표 — 「N일 경과」 · 「오늘」, 갱신 예정은 경과 없음, 가려진 대표는 null", () => {
+  assert.equal(pendingLineOf(item({ waitingDays: 2 }), 8)!.elapsed, "2일 경과");
+  assert.equal(pendingLineOf(item({ waitingDays: 0 }), 8)!.elapsed, "오늘");
+  assert.equal(pendingLineOf(item({ type: "CONTRACT_RENEWAL", waitingDays: null, dueInDays: 5 }), 8)!.elapsed, null);
+  assert.equal(pendingLineOf(item({}), 8)!.who, "남도현 외 2명");
+  assert.equal(pendingLineOf(item({ isFirstNameMasked: true, firstName: null }), 8)!.who, null);
+});
+
+test("계약 갱신 예정 — 가려진 이름이면 대표 없이 「새 근로계약서 초안 없음」만, 다른 유형은 note 없음", () => {
+  const line = pendingLineOf(item({ type: "CONTRACT_RENEWAL", isFirstNameMasked: true, firstName: null, waitingDays: null, dueInDays: 5 }), 8)!;
+  assert.deepEqual([line.who, line.note], [null, "새 근로계약서 초안 없음"]);
+  assert.equal(pendingLineOf(item({}), 8)!.note, null);
 });
