@@ -18462,7 +18462,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 저장했지만 가입 초대 알림톡이 실패(본문 contractId): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 작성 중에서 넘긴 것은 작성 중) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것) */
+            /** @description 저장했지만 가입 초대 · 소속 추가 확인 요청 알림톡이 실패(본문 contractId · delivery INVITE | AFFILIATION): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 작성 중에서 넘긴 것은 작성 중. failure REJECTED 비즈뿌리오 거절 | NOT_SENT 보내기 전 실패) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것. 저장 뒤 상태를 읽지 못한 경우는 delivery 없음) */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -18734,7 +18734,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 저장했지만 가입 초대 알림톡이 실패(본문 contractId): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 작성 중에서 넘긴 것은 작성 중) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것) */
+            /** @description 저장했지만 가입 초대 · 소속 추가 확인 요청 알림톡이 실패(본문 contractId · delivery INVITE | AFFILIATION): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 작성 중에서 넘긴 것은 작성 중. failure REJECTED 비즈뿌리오 거절 | NOT_SENT 보내기 전 실패) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것. 저장 뒤 상태를 읽지 못한 경우는 delivery 없음) */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -18855,7 +18855,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 저장했지만 가입 초대 알림톡이 실패(본문 contractId): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 작성 중에서 넘긴 것은 작성 중) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것) */
+            /** @description 저장했지만 가입 초대 · 소속 추가 확인 요청 알림톡이 실패(본문 contractId · delivery INVITE | AFFILIATION): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 작성 중에서 넘긴 것은 작성 중. failure REJECTED 비즈뿌리오 거절 | NOT_SENT 보내기 전 실패) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것. 저장 뒤 상태를 읽지 못한 경우는 delivery 없음) */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -19055,7 +19055,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 가입 초대 · 소속 추가 확인 요청 알림톡일 때만 — SEND_FAILED(나가지 않음 — 거절 · 토큰 단계 · 요청 전 오류, 되돌렸고 다시 보낼 수 있음, 본문 contractId · status) · SEND_UNCONFIRMED(접수 여부 모름 또는 되돌리기 실패 — 상세를 다시 읽을 것). 소속 추가 확인 요청 메일 실패는 오류가 아니다 */
+            /** @description 가입 초대 · 소속 추가 확인 요청 알림톡일 때만(본문 contractId · delivery INVITE | AFFILIATION) — SEND_FAILED(나가지 않음 — 거절 · 토큰 단계 · 요청 전 오류, 되돌렸고 다시 보낼 수 있음, 본문 status · failure REJECTED 비즈뿌리오 거절 | NOT_SENT 보내기 전 실패) · SEND_UNCONFIRMED(접수 여부 모름 또는 되돌리기 실패 — 상세를 다시 읽을 것). 소속 추가 확인 요청 메일 실패는 오류가 아니다 */
             502: {
                 headers: {
                     [name: string]: unknown;

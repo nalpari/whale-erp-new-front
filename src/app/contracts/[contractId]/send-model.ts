@@ -115,17 +115,27 @@ export const canShowResend = (status: string | null | undefined, canResend: bool
   !!status && (RESENDABLE.has(status) || REOPENABLE.has(status)) && canResend === true;
 
 /**
- * 저장하면 곧바로 보낸다(2026-10-19 재영). 저장 · 고침은 끝났는데 가입 초대 알림톡이 실패하면 api 가 502 와 계약 ID 를
- * 준다 — 그 계약 상세로 옮겨 알린다(새 계약은 임시저장으로 되돌아가 있어, 작성 화면에서 다시 저장하면 한 벌 더 생긴다).
- * 쿼리에는 정해진 이름(failed · unconfirmed)만 싣는다.
+ * 저장하면 곧바로 보낸다(2026-10-19 재영). 저장 · 고침은 끝났는데 가입 초대 · 소속 추가 확인 요청 알림톡이 실패하면 api 가 502 와
+ * 계약 ID 를 준다 — 그 계약 상세로 옮겨 알린다(새 계약은 임시저장으로 되돌아가 있어, 작성 화면에서 다시 저장하면 한 벌 더 생긴다).
+ * 무엇을(delivery) 왜(failure) 못 보냈는지도 실어 안내 문장을 고른다(WHALEERP-735). 쿼리에는 정해진 이름만 싣는다 — 모르는 값은 뺀다.
  */
 export function sendFailedTarget(status: number, body: unknown): string | null {
   if (status !== 502) return null;
-  const { code, contractId } = (body ?? {}) as { code?: unknown; contractId?: unknown };
+  const { code, contractId, delivery, failure } = (body ?? {}) as { code?: unknown; contractId?: unknown; delivery?: unknown; failure?: unknown };
   const kind = code === "SEND_FAILED" ? "failed" : code === "SEND_UNCONFIRMED" ? "unconfirmed" : null;
   if (!kind || typeof contractId !== "number" || !Number.isInteger(contractId) || contractId < 1 || contractId > 2_147_483_647) return null;
-  return `/contracts/${contractId}?send=${kind}`;
+  const to = deliveryOf(delivery);
+  const why = kind === "failed" ? failureKindOf(failure) : null;
+  return `/contracts/${contractId}?send=${kind}${to ? `&delivery=${to}` : ""}${why ? `&failure=${why}` : ""}`;
 }
+
+/** 못 보낸 알림톡 — 가입 초대 · 소속 추가 확인 요청(api 본문 delivery). 모르면 null */
+type Delivery = "INVITE" | "AFFILIATION";
+const deliveryOf = (raw: unknown): Delivery | null => (raw === "INVITE" || raw === "AFFILIATION" ? raw : null);
+
+/** 못 보낸 까닭 — 비즈뿌리오가 거절(번호 탓일 수 있다) · 보내기 전 실패(업체 인증 · 일시 장애, api 본문 failure). 모르면 null */
+type FailureKind = "REJECTED" | "NOT_SENT";
+const failureKindOf = (raw: unknown): FailureKind | null => (raw === "REJECTED" || raw === "NOT_SENT" ? raw : null);
 
 /**
  * 저장(= 보내기)의 결과를 받지 못했는가 — api 와의 연결이 응답 전에 끊겼거나(status null) 앞단이 코드 없이 502 · 504 를 줬다.
@@ -141,18 +151,22 @@ export const SAVE_UNKNOWN_NEW =
 /**
  * 상세 위쪽 안내(?send=). 되돌아간 상태에 맞춰 할 일을 알린다 — 임시저장이면 이어 쓰기에서 다시 저장, 수정 요청이면 「수정」에서
  * 다시 저장(재발송은 수정 요청에서 할 수 없다, front #50 리뷰), 그 밖에는 재발송. unknown 은 저장 요청의 결과를 받지 못했을 때다.
+ * 못 보낸 알림톡(?delivery=)이 무엇인지 말하고, 비즈뿌리오가 거절했을 때만 휴대전화번호를 확인하라고 한다 — 보내기 전 실패(?failure=NOT_SENT)는
+ * 번호 탓이 아니라 잠시 뒤 다시 하라고 한다(WHALEERP-735). 모르면(옛 api · 저장 뒤 상태를 읽지 못함) 「알림톡」 · 번호 확인으로 둔다.
  */
-export function sendNoticeOf(raw: unknown, status: string | null): string | null {
+export function sendNoticeOf(raw: unknown, status: string | null, delivery?: unknown, failure?: unknown): string | null {
+  const to = deliveryOf(delivery);
+  const talk = to === "INVITE" ? "가입 초대 알림톡" : to === "AFFILIATION" ? "소속 추가 확인 요청 알림톡" : "알림톡";
   if (raw === "unconfirmed")
-    return "저장했지만 가입 초대 알림톡이 접수됐는지 알 수 없습니다. 직원에게 받았는지 확인한 뒤 재발송해 주세요 — 다시 보내면 두 번 갈 수 있습니다.";
+    return `저장했지만 ${talk}이 접수됐는지 알 수 없습니다. 직원에게 받았는지 확인한 뒤 재발송해 주세요 — 다시 보내면 두 번 갈 수 있습니다.`;
   if (raw === "unknown")
     return "저장 요청의 결과를 받지 못했습니다. 아래 상태로 저장됐는지 확인하고, 보냈다면 직원에게 받았는지 확인한 뒤 필요할 때만 다시 보내 주세요.";
   if (raw !== "failed") return null;
-  if (status === "DRAFT")
-    return "가입 초대 알림톡을 보내지 못해 작성 중으로 두었습니다. 휴대전화번호를 확인하고 이어 쓰기에서 다시 저장해 주세요.";
+  const check = failureKindOf(failure) === "NOT_SENT" ? "잠시 뒤" : "휴대전화번호를 확인하고";
+  if (status === "DRAFT") return `${talk}을 보내지 못해 작성 중으로 두었습니다. ${check} 이어 쓰기에서 다시 저장해 주세요.`;
   if (status === "CORRECTION_REQUESTED")
-    return "고친 내용은 저장했지만 가입 초대 알림톡을 보내지 못해 직원 수정 요청으로 두었습니다. 휴대전화번호를 확인하고 「수정」에서 다시 저장해 주세요.";
-  return "고친 내용은 저장했지만 가입 초대 알림톡을 보내지 못했습니다. 휴대전화번호를 확인하고 재발송해 주세요.";
+    return `고친 내용은 저장했지만 ${talk}을 보내지 못해 직원 수정 요청으로 두었습니다. ${check} 「수정」에서 다시 저장해 주세요.`;
+  return `고친 내용은 저장했지만 ${talk}을 보내지 못했습니다. ${check} 재발송해 주세요.`;
 }
 
 /** 저장 서버 액션을 부른 결과를 받지 못했다(호출 자체가 끊김) */
