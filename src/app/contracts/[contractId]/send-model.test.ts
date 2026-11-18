@@ -65,6 +65,35 @@ test("sendNoticeOf — 되돌아간 상태에 따라 다시 저장 · 재발송�
   for (const raw of [undefined, "", "toString", ["failed"]]) assert.equal(sendNoticeOf(raw, "DRAFT"), null);
 });
 
+test("sendFailedTarget — 못 보낸 알림톡(delivery) · 까닭(failure)은 정해진 값만 쿼리에 싣는다(WHALEERP-735)", () => {
+  assert.equal(
+    sendFailedTarget(502, { code: "SEND_FAILED", contractId: 7, delivery: "AFFILIATION", failure: "NOT_SENT" }),
+    "/contracts/7?send=failed&delivery=AFFILIATION&failure=NOT_SENT",
+  );
+  assert.equal(sendFailedTarget(502, { code: "SEND_FAILED", contractId: 7, delivery: "INVITE", failure: "REJECTED" }), "/contracts/7?send=failed&delivery=INVITE&failure=REJECTED");
+  // 접수 여부 모름은 까닭이 없다 — 받아도 싣지 않는다
+  assert.equal(sendFailedTarget(502, { code: "SEND_UNCONFIRMED", contractId: 7, delivery: "INVITE", failure: "REJECTED" }), "/contracts/7?send=unconfirmed&delivery=INVITE");
+  // 모르는 값은 뺀다(옛 api · 다른 값)
+  assert.equal(sendFailedTarget(502, { code: "SEND_FAILED", contractId: 7, delivery: "x&back=evil", failure: 1 }), "/contracts/7?send=failed");
+});
+
+test("sendNoticeOf — 못 보낸 알림톡 이름을 말하고, 거절일 때만 휴대전화번호를 확인하라고 한다(WHALEERP-735)", () => {
+  // 통합테스트 IT-E2E-025 — 소속 추가 확인 요청이 업체 인증(토큰 단계)에서 실패
+  const affiliation = sendNoticeOf("failed", "DRAFT", "AFFILIATION", "NOT_SENT") ?? "";
+  assert.equal(affiliation, "소속 추가 확인 요청 알림톡을 보내지 못해 작성 중으로 두었습니다. 잠시 뒤 이어 쓰기에서 다시 저장해 주세요.");
+  assert.doesNotMatch(affiliation, /가입 초대|휴대전화번호/);
+  assert.equal(
+    sendNoticeOf("failed", "DRAFT", "INVITE", "REJECTED"),
+    "가입 초대 알림톡을 보내지 못해 작성 중으로 두었습니다. 휴대전화번호를 확인하고 이어 쓰기에서 다시 저장해 주세요.",
+  );
+  assert.match(sendNoticeOf("failed", "CORRECTION_REQUESTED", "AFFILIATION", "NOT_SENT") ?? "", /소속 추가 확인 요청 알림톡을 .* 잠시 뒤 「수정」에서 다시 저장/);
+  assert.match(sendNoticeOf("failed", "PENDING_SEND", "INVITE", "NOT_SENT") ?? "", /가입 초대 알림톡을 보내지 못했습니다\. 잠시 뒤 재발송해 주세요/);
+  assert.match(sendNoticeOf("unconfirmed", "PENDING_SEND", "AFFILIATION") ?? "", /^저장했지만 소속 추가 확인 요청 알림톡이 접수됐는지/);
+  // 모르면(옛 api · 저장 뒤 상태를 읽지 못한 SEND_UNCONFIRMED) 「알림톡」 · 번호 확인
+  assert.equal(sendNoticeOf("failed", "DRAFT"), "알림톡을 보내지 못해 작성 중으로 두었습니다. 휴대전화번호를 확인하고 이어 쓰기에서 다시 저장해 주세요.");
+  assert.match(sendNoticeOf("unconfirmed", "PENDING_SEND", ["INVITE"]) ?? "", /^저장했지만 알림톡이 접수됐는지/);
+});
+
 test("sendNoticeOf — 수정 요청으로 되돌아갔으면 재발송이 아니라 「수정」에서 다시 저장하라고 한다", () => {
   const notice = sendNoticeOf("failed", "CORRECTION_REQUESTED") ?? "";
   assert.match(notice, /「수정」에서 다시 저장/);

@@ -63,8 +63,8 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
   const status = (c?.status ?? null) as Status | null;
   // 링크는 옛 경로에 탭 BP 를 붙여 그린다. ?back= 은 옛 경로 그대로다
   const at = await screenPath();
-  // 저장 · 고침 뒤 가입 초대 알림톡이 실패해 이 화면으로 왔다(?send=)
-  const sendNotice = sendNoticeOf(query.send, status);
+  // 저장 · 고침 뒤 가입 초대 · 소속 추가 확인 요청 알림톡이 실패해 이 화면으로 왔다(?send= · 무엇을 ?delivery= · 왜 ?failure=)
+  const sendNotice = sendNoticeOf(query.send, status, query.delivery, query.failure);
   const statusCell = (s: string | null): ReactNode => (s ? <StatusBadge status={s as Status} label={labelOf(statuses, s)} /> : "-");
   const buttons: ReactNode =
     // 임시저장 삭제는 이어 쓰기 화면에만 둔다 — 삭제는 임시저장일 때만 할 수 있다.
