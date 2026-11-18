@@ -1010,7 +1010,7 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
             </Group>
             <Item label="근무 장소">
               {(id) => (
-                <TextField id={id} value={form.workLocation} maxLength={200} placeholder="소속 근무지를 고르면 근무지명이 들어갑니다" onChange={(e) => set("workLocation", e.target.value)} />
+                <TextField id={id} value={form.workLocation} maxLength={200} placeholder="소속 근무지를 선택하면 근무지명이 들어갑니다" onChange={(e) => set("workLocation", e.target.value)} />
               )}
             </Item>
           </FormRow>
