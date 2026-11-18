@@ -114,3 +114,9 @@ test("확인 필요 짧은 경과 · 대표 — 「N일 경과」 · 「오늘�
   assert.equal(pendingLineOf(item({}), 8)!.who, "남도현 외 2명");
   assert.equal(pendingLineOf(item({ isFirstNameMasked: true, firstName: null }), 8)!.who, null);
 });
+
+test("계약 갱신 예정 — 가려진 이름이면 대표 없이 「새 근로계약서 초안 없음」만, 다른 유형은 note 없음", () => {
+  const line = pendingLineOf(item({ type: "CONTRACT_RENEWAL", isFirstNameMasked: true, firstName: null, waitingDays: null, dueInDays: 5 }), 8)!;
+  assert.deepEqual([line.who, line.note], [null, "새 근로계약서 초안 없음"]);
+  assert.equal(pendingLineOf(item({}), 8)!.note, null);
+});

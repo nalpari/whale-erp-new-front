@@ -482,6 +482,7 @@ function Cards({
                       [counts.NORMAL ?? 0, "bg-erp-on"],
                       [counts.LATE ?? 0, LATE_BAR],
                       [counts.ABSENT ?? 0, "bg-erp-off"],
+                      [(counts.MISSING_CHECK_IN ?? 0) + (counts.MISSING_CHECK_OUT ?? 0), "bg-erp-off/50"],
                     ] as const
                   ).map(([n, tone]) =>
                     n > 0 && today.scheduled > 0 ? <span key={tone} className={tone} style={{ width: `${Math.min(100, (n / today.scheduled) * 100)}%` }} /> : null,
@@ -495,6 +496,8 @@ function Cards({
                     {labelOf(dayLabels, "LATE")} {counts.LATE ?? 0}
                   </span>{" "}
                   · {warn(`${labelOf(dayLabels, "ABSENT")} ${counts.ABSENT ?? 0}`)} · 출근 전 {before}
+                  {/* 출 · 퇴근 미등록(보정이 필요한 직원)은 있을 때만 — 합에는 들어가는데 빠지면 그 직원이 어디에도 안 보였다(리뷰 반영) */}
+                  {(["MISSING_CHECK_IN", "MISSING_CHECK_OUT"] as const).map((k) => (counts[k] ? <span key={k}> · {warn(`${labelOf(dayLabels, k)} ${counts[k]}`)}</span> : null))}
                 </Sub>
               </>
             ) : (
@@ -681,7 +684,7 @@ function Pending({ data, bp }: { data: HomePending; bp: number }) {
                 <span className="text-[14px] font-medium text-erp-thead-text">{l.kind}</span>
                 <span className="truncate">
                   <b className="text-[14px] font-semibold">{l.title}</b>
-                  {(l.due ? l.desc : l.who) && <span className="text-[14px] text-erp-label"> · {l.due ? l.desc : l.who}</span>}
+                  {[l.who, l.note].some(Boolean) && <span className="text-[14px] text-erp-label"> · {[l.who, l.note].filter(Boolean).join(" · ")}</span>}
                 </span>
                 {l.due ? (
                   <span className={l.due.urgent ? "font-semibold text-erp-off" : "text-erp-label"}>{l.due.text}</span>

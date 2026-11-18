@@ -105,6 +105,8 @@ export function pendingLineOf(item: HomePendingItem, bpCodeId: number) {
      * 짧은 경과 — 홈 확인 필요의 오른쪽 칸(「2일 경과」 · 「오늘」). 칸이 좁아(창 1260) 「발송 후」 같은 앞말은 뺀다(2026-11-18 사용자 지정).
      * 계약 갱신 예정은 경과가 없어 null — 「새 근로계약서 초안 없음」은 항목 칸에 붙이고 오른쪽 칸은 종료 D-N(due)이다
      */
+    /** 계약 갱신 예정의 「새 근로계약서 초안 없음」 — 대표 이름 옆에 붙인다(가려진 이름이면 이것만) */
+    note: item.type === "CONTRACT_RENEWAL" ? waited : null,
     elapsed: !text.since || days === null ? null : days === 0 ? "오늘" : `${days}일 경과`,
     due: left === null ? null : { text: `종료 D-${left}`, urgent: left <= RENEWAL_URGENT_DAYS },
     href: pendingHrefOf(item, bpCodeId),
