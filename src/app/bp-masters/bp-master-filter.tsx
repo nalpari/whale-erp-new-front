@@ -38,8 +38,12 @@ export function BpMasterFilter({ query, onApply }: { query: BpMastersQuery; onAp
     apply({ statuses: next, statusNone: next.length === 0 ? true : undefined });
   };
 
+  // 초기화하면 가는 조건(검색 없음 · 상태 전체 · 인증 전체)과 다르면 「필터 적용 중」(FilterPanel 빨간 점). 검색어 없이 바꾼 기준은 조건이 아니다
+  const applied = !!query.keyword || query.statuses.length > 0 || !!query.statusNone || query.verification !== undefined;
+
   return (
     <FilterPanel
+      applied={applied}
       onReset={() => {
         // 검색하지 않은 채 바꾼 기준 · 검색어는 주소에 없어 위 따라가기로 지워지지 않는다 — 칸도 직접 비운다
         setSearchType("BP_CODE");

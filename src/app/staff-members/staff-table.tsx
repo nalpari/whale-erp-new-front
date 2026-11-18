@@ -62,8 +62,8 @@ export function StaffTable({
     { header: "순번", width: "w-[60px]", cell: (r) => r.no },
     {
       header: "직원",
-      // 「본사에 정보제공 미동의」가 한 줄에 들게 110 → 160(2026-11-05 사용자 지정, 3팀 확인 필요)
-      width: "w-[160px]",
+      // 「본사에 정보제공 미동의」(123px)가 한 줄에 들게 — 160 → 150(1260 작업, 2026-11-18 사용자 지정)
+      width: "w-[150px]",
       cell: ({ item }) =>
         item.isMasked ? (
           // 본사 역할에게 가린 가맹 점포 직원(STAFF-23 · ATT-30) — 「본사에 정보제공 미동의」 한 줄. 가맹점포인 것은 옆 점포 열이 말해 「가맹 점포 직원」은 뺐다
@@ -78,13 +78,17 @@ export function StaffTable({
         ),
     },
     // 플랫폼 관리자 · BP 마스터 목록의 연락처처럼 휴대폰 아이콘을 붙인다. 열 이름은 직원이라 「휴대전화번호」 그대로, 가운데 정렬(2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 글자만)
-    { header: "휴대전화번호", width: "w-[160px]", cell: personal((item) => (item.phone ? <WithIcon icon="phone">{formatPhone(item.phone)}</WithIcon> : DASH)) },
-    { header: "점포", cell: (r) => r.item.store.name },
-    { header: "고용형태", width: "w-[110px]", cell: personal((item) => (item.employmentType ? EMPLOYMENT_TYPE_LABELS[item.employmentType] : DASH)) },
+    { header: "휴대전화번호", width: "w-[145px]", cell: personal((item) => (item.phone ? <WithIcon icon="phone">{formatPhone(item.phone)}</WithIcon> : DASH)) },
+    // 점포는 남는 폭 — 표 최소 폭(아래 minWidth)이 140px 을 지킨다. 길이가 제각각인 이름이라 왼쪽 정렬(점포 목록 점포명과 같다, 2026-11-18 사용자 지정)
+    // 점포도 기준 폭(140)을 둔다 — 넓은 창에서는 모든 열이 같은 비율로 늘어난다 — 이 열만 남는 폭을 가지면 넓은 창에서 혼자 넓어져 표가 휑했다(2026-11-18 사용자 지정)
+    { header: "점포", width: "w-[140px]", align: "left", cell: (r) => r.item.store.name },
+    // 가장 긴 값 「파트타이머」 5자(59px)
+    { header: "고용형태", width: "w-[80px]", cell: personal((item) => (item.employmentType ? EMPLOYMENT_TYPE_LABELS[item.employmentType] : DASH)) },
     {
       header: "가입 상태",
-      // 데모는 210 — 재발송 버튼(WHALEERP-138)이 배지 옆에 서도록 넓혔다. 데모에는 목록 재발송 자리가 없다
-      width: "w-[300px]",
+      // 데모는 210 — 재발송 버튼(WHALEERP-138)이 배지 옆에 서도록 넓혔다. 데모에는 목록 재발송 자리가 없다.
+      // 가장 긴 「소속 승인 대기」 + [재발송] 175px 에 맞춰 300 → 200(1260 작업, 2026-11-18 사용자 지정)
+      width: "w-[200px]",
       cell: personal((item) => (
         <span className="inline-flex items-center justify-center gap-[6px]">
           <CellView cell={joinCell(item, today)} />
@@ -95,8 +99,8 @@ export function StaffTable({
     {
       header: "계약 상태",
       // 상태 이름이 길어져(「직원 서명 대기 · D-24」, WHALEERP-659) 160 이면 칸 끝이 잘린다 — 한 줄에 들게 넓혔다.
-      // 재계약 꼬리표(「재계약」)가 배지 앞에 붙어 200 → 240(WHALEERP-672, 줄어드는 건 점포 칸뿐)
-      width: "w-[240px]",
+      // 재계약 꼬리표(「재계약」)가 배지 앞에 붙어 200 → 240(WHALEERP-672) → 200(1260 작업 — 꼬리표 + 「직원 서명 대기 · D-28」, 2026-11-18 사용자 지정)
+      width: "w-[200px]",
       cell: personal((item) => {
         const cell = contractCell(item, today, contractStatuses);
         return cell ? (
@@ -110,7 +114,8 @@ export function StaffTable({
     {
       header: "재직 상태",
       // 데모는 110 인데 「재직 · 퇴직 예정 MM-DD」가 두 줄로 꺾이며 잘린다 — 한 줄에 들어가게 넓혔다(WHALEERP-585 화면 확인)
-      width: "w-[180px]",
+      // 「재직 · 퇴직 예정 MM-DD」 한 줄 — 180 → 160(1260 작업, 2026-11-18 사용자 지정)
+      width: "w-[160px]",
       cell: personal((item) => (
         <span className="inline-flex flex-wrap items-center justify-center gap-[4px]">
           {statusCells(item).map((cell) => (
@@ -130,6 +135,10 @@ export function StaffTable({
       empty={empty}
       // 비었을 때 열 이름 줄은 두고 그 아래 빈 칸이 목록 영역 남는 높이를 채운다(점포 목록과 같다, 2026-11-04 사용자 지정)
       fillEmpty
+      // 1260 창에서는 열 합이 표 자리(약 920px)보다 넓다 — 점포 칸 140px 을 지키고 표 상자 안에서만 가로로 민다(열 이름 줄 고정, 위 「총 N 건」 줄은
+      // 그대로). BP 마스터 목록과 같은 방식(2026-11-18 사용자 지정 · 1260 작업). 고정 열 합 995 + 점포 140
+      scroll
+      minWidth="min-w-[1135px]"
     />
   );
 }

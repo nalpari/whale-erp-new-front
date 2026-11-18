@@ -12,7 +12,6 @@ import {
   FormGroup,
   FormRow,
   NoticeBand,
-  Radio,
   RequiredMark,
   Select,
   Tag,
@@ -381,9 +380,18 @@ export function FacilityFormView(props: Props) {
       <div className="flex flex-col gap-[18px]">
         <Stack id={`${ids}-status`}>
           <Labeled label="운영상태" required>
-            <div role="radiogroup" aria-label="운영상태" className="flex h-[34px] items-center gap-[18px]">
+            {/* TO-DO 등록의 큰 선택 카드(todo-form ChoiceCards)와 같은 모양 — 고르면 선이 브랜드색, 바탕이 두 번째 바탕색. 선 두께는 바뀌지 않는다
+                (2026-11-18 사용자 지정, 전엔 작은 라디오) */}
+            <div role="radiogroup" aria-label="운영상태" className="grid grid-cols-3 gap-[12px]">
               {statusOptions.map((s) => (
-                <Radio key={s.value} label={s.label} name={`${ids}-status`} checked={form.statusCode === s.value} onChange={() => set("statusCode", s.value, "status")} />
+                <label
+                  key={s.value}
+                  className="relative flex cursor-pointer items-center justify-center rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[10px] text-center transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-erp-brand"
+                >
+                  {/* 카드(label)는 relative — 숨긴 라디오가 카드 밖 멀리 놓이면 누를 때 바깥 틀이 밀려 화면이 비었다(contract-form ChoiceCards 주석) */}
+                  <input type="radio" name={`${ids}-status`} className="sr-only" checked={form.statusCode === s.value} onChange={() => set("statusCode", s.value, "status")} />
+                  <b className="text-[15px] font-semibold text-erp-ink">{s.label}</b>
+                </label>
               ))}
             </div>
           </Labeled>

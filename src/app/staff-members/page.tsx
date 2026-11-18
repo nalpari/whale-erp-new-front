@@ -80,7 +80,7 @@ export default async function StaffMembersPage({
       </PageBar>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         <StaffFilter query={query} />
-        <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0">
           <ListToolbar total={total}>
             <BulkExportButton />
             <StaffPageSize query={query} />

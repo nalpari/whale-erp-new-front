@@ -212,7 +212,7 @@ export function PostList({
       total={total}
       // api 는 게시 상태로만 거른다(WHALEERP-332).
       filter={
-        <FilterPanel onReset={() => go({ status: [], none: false })}>
+        <FilterPanel onReset={() => go({ status: [], none: false })} applied={query.none || (query.status.length > 0 && query.status.length < statuses.length)}>
           <Checks label="상태" values={statuses} value={query.status} none={query.none} onPick={(status, none = false) => go({ status, none })} last allWhenEmpty />
         </FilterPanel>
       }
@@ -255,7 +255,10 @@ export function InquiryList({ items, total, query, answers, emptyAll = false }: 
       query={query}
       total={total}
       filter={
-        <FilterPanel onReset={() => go({ title: "", sender: "", answerStatus: [], none: false })}>
+        <FilterPanel
+          onReset={() => go({ title: "", sender: "", answerStatus: [], none: false })}
+          applied={!!query.title || !!query.sender || query.none || (query.answerStatus.length > 0 && query.answerStatus.length < answers.length)}
+        >
           <FilterSection label="제목" tight>
             <SearchField value={title} onValueChange={setTitle} onSearch={(v) => go({ title: v.trim() })} placeholder="제목으로 검색" aria-label="제목" maxLength={200} />
           </FilterSection>
@@ -293,7 +296,7 @@ export function LeadList({ items, total, query, answers, interests, emptyAll = f
       query={query}
       total={total}
       filter={
-        <FilterPanel onReset={() => go({ answerStatus: [], none: false })}>
+        <FilterPanel onReset={() => go({ answerStatus: [], none: false })} applied={query.none || (query.answerStatus.length > 0 && query.answerStatus.length < answers.length)}>
           <Checks label="상태" values={answers} value={query.answerStatus} none={query.none} onPick={(answerStatus, none = false) => go({ answerStatus, none })} last allWhenEmpty />
         </FilterPanel>
       }

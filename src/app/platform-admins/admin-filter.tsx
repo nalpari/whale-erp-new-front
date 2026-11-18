@@ -40,7 +40,8 @@ export function AdminFilter({
 
   return (
     // 세 키를 명시해 비운다 — 받는 쪽은 지금 조건 위에 덮어쓰므로 빈 객체로는 아무것도 풀리지 않는다
-    <FilterPanel onReset={() => onApply({ keyword: undefined, roleGroupId: undefined, status: undefined })}>
+    // 조건이 하나라도 걸려 있으면 「필터 적용 중」(FilterPanel 빨간 점)
+    <FilterPanel onReset={() => onApply({ keyword: undefined, roleGroupId: undefined, status: undefined })} applied={!!query.keyword || !!query.roleGroupId || !!query.status}>
       <FilterSection label="아이디 · 이름" tight>
         <SearchField
           value={keyword}

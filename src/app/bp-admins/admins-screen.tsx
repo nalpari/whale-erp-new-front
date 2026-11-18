@@ -134,7 +134,7 @@ export function AdminsScreen({
         {/* display:contents 로 레이아웃(gap-[12px])에 끼어들지 않으면서 둘을 함께 inert 로 뺀다 */}
         <div className="contents" inert={backdropActive}>
           <AdminFilter query={query} roleGroups={roleGroups} navigate={navigate} />
-          <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
+          <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0">
             <ListToolbar total={list.total}>
               <div className="w-[80px] shrink-0">
                 <Select

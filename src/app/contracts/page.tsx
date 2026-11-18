@@ -72,7 +72,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         {/* 주소가 바뀌면(뒤로 가기 포함) 입력칸을 주소 값으로 다시 맞춘다 */}
         <ContractFilters key={toSearch(query)} query={query} statuses={statuses} statusCounts={page?.statusCounts} />
-        <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0">
           {/* 저장 뒤 시스템이 한 처리(쿠키, WHALEERP-132) — 화면이 쿠키를 읽고 지운다 */}
           <SavedNotice />
           <ListToolbar total={page?.total ?? 0}>
@@ -85,6 +85,10 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
             empty={page ? (noContractsAtAll ? "등록된 근로계약이 없습니다." : "조건에 맞는 근로계약이 없습니다.") : notice}
             // 비었을 때 열 이름 줄은 두고 그 아래 빈 칸이 목록 영역 남는 높이를 채운다(직원 · 점포 목록과 같다, 2026-11-04 사용자 지정)
             fillEmpty
+            // 1260 창에서 필터를 펼치면 표 자리(약 920px)보다 넓다 — 점포 120px 을 지키고 표 상자 안에서만 가로로 민다(직원 · 점포 목록과 같다).
+            // 고정 열 합 840 + 점포 120
+            scroll
+            minWidth="min-w-[960px]"
           />
           <div className="pt-[14px]">
             <ContractPagination query={query} totalPages={totalPages} />

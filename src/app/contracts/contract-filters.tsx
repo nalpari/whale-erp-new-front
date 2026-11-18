@@ -91,16 +91,21 @@ export function ContractFilters({
   // 모두 끌 수 있다 — 목록은 비운다(공통 정책 「목록 필터 체크박스」, WHALEERP-654)
   const toggle = (value: string, on: boolean) => apply(toggledStatus(checked, statuses.map((s) => s.value), value, on));
 
+  // 초기화는 헤더 범위로 돌아간다. 페이지당 건수는 보는 방식이라 그대로 둔다
+  const resetQuery = (): ListQuery =>
+    withScopeCondition(
+      { page: 1, pageSize: query.pageSize, staffMemberName: "", status: [], statusNone: false, storeIds: [], storesCleared: false, scope: null },
+      headerScope,
+    );
+  // 그 조건과 다르면 「필터 적용 중」(FilterPanel 빨간 점) — 쪽은 조건이 아니다. 점포 조건이 없으면(범위 「전체」는 주소에 채우지 않는다) 헤더 범위로 본다
+  const applied = toSearch({ ...query, page: 1, scope: query.scope ?? (noCondition ? headerScope : null) }) !== toSearch(resetQuery());
+
   return (
     <FilterPanel
+      applied={applied}
       onReset={() => {
         setStaffMemberName("");
-        // 초기화는 헤더 범위로 돌아간다
-        // 페이지당 건수는 보는 방식이라 그대로 둔다
-        const reset = withScopeCondition(
-          { page: 1, pageSize: query.pageSize, staffMemberName: "", status: [], statusNone: false, storeIds: [], storesCleared: false, scope: null },
-          headerScope,
-        );
+        const reset = resetQuery();
         setChips(chipsOf(reset));
         go.push(reset);
       }}

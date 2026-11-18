@@ -72,11 +72,19 @@ export function TodoFilter({ query, statusLabels, assigneeTypeLabels }: { query:
   });
   useEffect(() => dropUnknown(), [missingCount, unusable]);
 
+  // 초기화하면 가는 조건과 다르면 「필터 적용 중」(FilterPanel 빨간 점) — 쪽 · 건수는 조건이 아니다. 점포 조건이 없으면(범위 「전체」는 주소에
+  // 채우지 않는다) 헤더 범위로 본다
+  const resetQuery = (): TodoListQuery => ({ ...DEFAULT_TODO_LIST_QUERY, scope: headerScope });
+  const applied =
+    toTodoListSearch({ ...current, scope: current.scope ?? (noCondition ? headerScope : null), page: 1, pageSize: DEFAULT_TODO_LIST_QUERY.pageSize }) !==
+    toTodoListSearch(resetQuery());
+
   return (
     <FilterPanel
+      applied={applied}
       onReset={() => {
         setResets((n) => n + 1);
-        navigate({ ...DEFAULT_TODO_LIST_QUERY, scope: headerScope });
+        navigate(resetQuery());
       }}
     >
       <FilterSection label="근무지" tight>

@@ -6,7 +6,7 @@ tags: [mockup, bp]
 sources:
   - { id: bp-masters-app, resource: ../src/app/bp-masters, title: BP 마스터 계정 관리 화면 }
   - { id: bp-masters-lib, resource: ../src/lib/bp-masters.ts, title: BP 마스터 계정 api 호출 }
-generated: { by: claude-code/opus-5.5, at: 2026-11-18T05:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-18T05:27:42Z }
 ---
 
 근거: `docs/mockup/bp/` (목업 · 1차 · R-NMDCYH)
@@ -17,6 +17,7 @@ BP 마스터 계정 하나라 목록은 BP 를 기준으로 선다. 상태는 �
 상세 · 수정 화면 배지의 상태 이름은 공통코드 ACCOUNT_STATUS 에서 읽는다 — 확인창 · 안내 문장 안의
 상태 이름은 그대로 적는다(2026-11-16, WHALEERP-719). 메뉴구조도의 "BP 정보관리"
 (BP Master · 휴면 BP)를 이 이름으로 바꾸고, 휴면 BP 는 목록의 상태 조건으로 합쳤다.
+왼쪽 필터는 검색어 · 상태 · 인증 조건이 하나라도 걸려 있으면 접기 버튼에 빨간 점과 「필터 적용 중」 툴팁이다 — 검색하지 않은 채 바꾼 검색 기준은 조건이 아니다(공통 `FilterPanel` `applied`, 2026-11-18 사용자 지정).
 
 구현: `src/app/bp-masters/`(메뉴 `/bp-masters`, front PR #144). 화면 · 정책은 아래 목업 확정분대로다. 다른 점은 둘이다 — 소속 점포 수를 눌러 점포 목록으로 가는 동작은 두지 않았다(필요해지면 정책을 세워 만든다, Plane #416 코멘트 2026-10-27). 상세의 수정 일시는 등록 뒤 실제로 고친 BP 에만 보이고, 수정 · 로그인 기록이 없으면 「-」다. 구현 세부는 [Whale ERP Frontend](/whale-erp-front.md).
 

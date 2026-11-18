@@ -126,8 +126,10 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
       <>
         {showsNotices && <NoticeBand section={notices} bp={bp} />}
         <Cards cards={{ ...emptyCardsOf(canOpen), myInquiries: s?.cards?.myInquiries ?? null }} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />
-        <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
-          <StoreTable table={{ total: 0, items: [] }} staffHref={canOpen("/staff-members") ? bpPath(bp, withScope("/staff-members", scope)) : null} />
+        {/* 점포별 현황 : 확인 필요 — 창 1600 이상은 7:5, 좁으면 2:1(점포명이 잘리지 않게, 2026-11-16 사용자 지정 · 1260 작업).
+            두 상자 높이는 늘 같다(items-stretch — 더 긴 쪽에 맞춘다, 2026-11-18 사용자 지정) */}
+        <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-stretch min-[1600px]:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] gap-[12px]">
+          <StoreTable table={{ total: 0, items: [] }} />
           {!pending ? <Notice text="확인 필요를 불러오는 중입니다." /> : "error" in pending ? <Notice text={`확인 필요를 불러오지 못했습니다. ${pending.error}`} /> : <Pending data={pending.data} bp={bp} />}
         </div>
       </>
@@ -141,8 +143,8 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
       <>
         {showsNotices && <NoticeBand section={notices} bp={bp} />}
         {s?.cards && <Cards cards={s.cards} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
-        <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
-          {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} staffHref={canOpen("/staff-members") ? bpPath(bp, withScope("/staff-members", scope)) : null} />}
+        <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-stretch min-[1600px]:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] gap-[12px]">
+          {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} />}
           {!pending ? <Notice text="확인 필요를 불러오는 중입니다." /> : "error" in pending ? failed("확인 필요를", pending.error) : <Pending data={pending.data} bp={bp} />}
         </div>
       </>
@@ -218,6 +220,10 @@ function NoticeBand({ section, bp }: { section: ReturnType<typeof useLoad<[Suppo
 }
 
 // 수치 카드 — 라벨 · 숫자 · 아랫줄(데모 figure). 갈 화면에 조회 권한이 있으면 카드 전체가 링크다
+// 카드 아랫줄의 보충 설명(미운영 제외 · 정보 미동의)은 늘 둘째 줄에 둔다 — 같은 줄 끝에 괄호로 붙이면 창 폭에 따라 어떤 카드는 같은 줄, 어떤 카드는
+// 단어 중간에서 꺾여 둘째 줄로 내려가 어수선했다(2026-11-18 사용자 지정)
+const Line = ({ children }: { children: ReactNode }) => <span className="block">{children}</span>;
+
 function Figure({ href, label, value, unit, sub }: { href: string | null; label: string; value: ReactNode; unit: string; sub: ReactNode }) {
   const inner = (
     <>
@@ -229,7 +235,7 @@ function Figure({ href, label, value, unit, sub }: { href: string | null; label:
         {value}
         <span className="ml-[2px] text-[14px] font-medium">{unit}</span>
       </span>
-      <span className="text-[14px] text-erp-label">{sub}</span>
+      <span className="text-[14px] break-keep text-erp-label">{sub}</span>
     </>
   );
   const box = `${CARD} flex flex-col gap-[10px] p-[24px]`;
@@ -276,7 +282,8 @@ function Cards({ cards, scopeHref, canOpen, bp }: { cards: CardsData; scopeHref:
         label="운영 점포"
         value={stores.total}
         unit="개점"
-        sub={`직영 ${stores.direct} · 가맹 ${stores.franchise}${stores.notOperating ? ` · 미운영 ${stores.notOperating}` : ""}`}
+        // 미운영은 위 개점 수에 들지 않는다 — 「· 미운영 12」로 나란히 두면 10개점을 나눈 숫자처럼 읽혀 둘째 줄로 나눈다. 다른 카드 아랫줄처럼 단위 없이 「미운영 12」(2026-11-18 사용자 지정)
+        sub={<>직영 {stores.direct} · 가맹 {stores.franchise}{stores.notOperating > 0 && <Line>미운영 {stores.notOperating}</Line>}</>}
       />
       {staff && (
         <Figure
@@ -284,7 +291,9 @@ function Cards({ cards, scopeHref, canOpen, bp }: { cards: CardsData; scopeHref:
           label="재직 직원"
           value={staff.total}
           unit="명"
-          sub={`정직원 ${staff.fullTime} · 파트 ${staff.partTime}`}
+          // 고용형태는 개인 정보라 본사에 정보제공을 동의하지 않은 가맹점포 직원은 정직원 · 파트타이머에 들지 않는다(api HomeStaffCardDto, ATT-30) — 빠진 수를
+          // 둘째 줄에 밝힌다. 「파트」는 다른 화면과 같은 「파트타이머」로(2026-11-18 사용자 지정 — 전엔 5 + 2 가 총수 11 과 맞지 않아 헷갈렸다)
+          sub={<>정직원 {staff.fullTime} · 파트타이머 {staff.partTime}{staff.total - staff.fullTime - staff.partTime > 0 && <Line>정보 미동의 {staff.total - staff.fullTime - staff.partTime}</Line>}</>}
         />
       )}
       {today && (
@@ -301,15 +310,7 @@ function Cards({ cards, scopeHref, canOpen, bp }: { cards: CardsData; scopeHref:
           }
         />
       )}
-      {inquiries && (
-        <Figure
-          href={canOpen("/support-inquiries") ? bpPath(bp, "/support-inquiries") : null}
-          label="내 문의"
-          value={inquiries.waiting + inquiries.answered}
-          unit="건"
-          sub={`답변 대기 ${inquiries.waiting} · 답변완료 ${inquiries.answered}`}
-        />
-      )}
+      {/* 순서: 점포 · 직원 · 출근 · TO-DO · 문의 — 업무 순서대로, 내 문의는 맨 뒤(2026-11-18 사용자 지정, 전엔 문의가 TO-DO 앞) */}
       {todo && (
         // 「완료 / 전체건 완료」 — 여러 직원에게 나눈 TO-DO 는 묶음 1건, 모두 끝내야 완료다. 누르면 TO-DO 목록의 오늘
         <Figure
@@ -325,6 +326,15 @@ function Cards({ cards, scopeHref, canOpen, bp }: { cards: CardsData; scopeHref:
           sub={`대기·진행 중 ${todo.total - todo.done}건`}
         />
       )}
+      {inquiries && (
+        <Figure
+          href={canOpen("/support-inquiries") ? bpPath(bp, "/support-inquiries") : null}
+          label="내 문의"
+          value={inquiries.waiting + inquiries.answered}
+          unit="건"
+          sub={`답변 대기 ${inquiries.waiting} · 답변완료 ${inquiries.answered}`}
+        />
+      )}
     </div>
   );
 }
@@ -337,13 +347,15 @@ const TABLE_BOX = "flex h-[352px] flex-col";
 
 // 점포별 현황 표 — 운영 점포 모두, 확인 필요 많은 순(api 순서, HOM-06). 목업의 전체 · 직영 · 가맹 탭과 상태 열 · 필터는 두지 않는다 — 업무 범위는
 // 헤더 한 곳에서 고른다(운영 정책 SCP-01). 그 메뉴의 조회 권한이 없어 api 가 모든 줄에 null 을 준 열은 숨긴다(HOM-09)
-function StoreTable({ table, staffHref }: { table: HomeSummary["storeTable"]; staffHref: string | null }) {
+function StoreTable({ table }: { table: HomeSummary["storeTable"] }) {
   const shown = (key: NullableCount) => table.items.some((r) => r[key] !== null);
   return (
     <section className={`${CARD} flex flex-col gap-[12px] p-[24px]`}>
       <div className="flex items-end gap-[6px]">
-        <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">점포별 현황</h2>
-        <span className="text-[14px] text-erp-label">{table.total > 0 ? `${table.total}개점 · 확인 필요 많은 순` : "0개점"}</span>
+        {/* 운영 점포만 줄로 보여 제목에 「운영」을 넣는다 — 점포마다 한 줄이라 「별」은 살린다(2026-11-18 사용자 지정, 전엔 「점포별 현황」) */}
+        <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">운영 점포별 현황</h2>
+        {/* 제목에 「운영」이 있어 수만, 줄 순서는 「확인 필요 건수 순」(2026-11-18 사용자 지정 — 전엔 「N개점 · 확인 필요 많은 순」). 같으면 점포명 순 */}
+        <span className="text-[14px] text-erp-label">{table.total > 0 ? `${table.total}개점 · 확인 필요 건수 순` : "0개점"}</span>
       </div>
       <div className={TABLE_BOX}>
         <DataTable<StoreRow>
@@ -371,15 +383,9 @@ function StoreTable({ table, staffHref }: { table: HomeSummary["storeTable"]; st
           rowKey={(r) => r.storeId}
         />
       </div>
-      <div className="flex items-center text-[14px]">
-        {/* 미운영 점포의 확인 필요 건은 오른쪽 확인 필요에는 세므로 표와 합이 다를 수 있다 — 그 사실을 적는다(HOM-06) */}
-        <p className="flex-1 text-erp-label">운영 중인 점포만 보입니다. 미운영 점포의 건은 확인 필요에만 셉니다.</p>
-        {staffHref && (
-          <Link href={staffHref} className="text-erp-link hover:underline">
-            직원 목록
-          </Link>
-        )}
-      </div>
+      {/* 표 아래 줄(안내 「운영 중인 점포만 보입니다. 미운영 점포의 건은 확인 필요에만 셉니다.」 + [직원 목록], HOM-06)은 뺐다 — 운영 점포만 보인다는 건
+          제목 「운영 점포별 현황」이 말하고, 미운영 점포의 건(점포는 운영 → 미운영으로 되돌릴 수 없어 시스템이 내리는 본사 점포 정도로 드물다)은 오른쪽
+          「확인 필요」에 그대로 나온다. 직원 목록 이동은 위 「재직 직원 ›」 카드가 맡는다(2026-11-18 사용자 지정) */}
     </section>
   );
 }
@@ -409,7 +415,7 @@ function Pending({ data, bp }: { data: HomePending; bp: number }) {
             {
               header: "항목",
               align: "left",
-              width: "w-[200px]",
+              width: "w-[140px] min-[1600px]:w-[200px]",
               cell: (l) => (
                 <Link href={l.href} className="truncate text-erp-link hover:underline">
                   {l.title}

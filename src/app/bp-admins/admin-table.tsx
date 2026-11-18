@@ -44,18 +44,21 @@ export function AdminTable({
   );
 
   const columns: Column<BpAdmin>[] = [
-    // 권한명 · 코드 · 최근 로그인은 폭을 정하지 않아 남는 폭을 똑같이 나눈다(2026-10-30 사용자 지정).
-    // 아이디 180 · 이름 220 · 역할 · 대상점포 · 계정 상태는 고정 폭이다 — 아이디 · 이름 · 역할이 너무 넓었다(2026-10-30 사용자 지정).
+    // 1260 창 기준 열 폭 — 권한명 · 코드만 남는 폭을 갖고(표 최소 폭이 200px 을 지킨다) 나머지는 가장 긴 값에 맞춘 고정 폭이다. 아이디 180 → 130 ·
+    // 이름 220 → 160 · 역할 120 → 100 · 대상점포 110 → 80 · 계정상태 100 → 80, 최근 로그인은 「초기화 비밀번호 미발송」(157px)이 드는 180
+    // (2026-11-18 사용자 지정 · 1260 작업 — 전엔 권한명 · 코드와 최근 로그인이 남는 폭을 똑같이 나눠 둘 다 말줄임됐다).
     // 등록일시 열은 뺐다 — 상세에서 본다(2026-10-30 사용자 지정)
     // 아이디도 가운데 정렬 — 플랫폼 관리자 목록과 같다(2026-10-27 사용자 지정)
-    { header: "아이디", width: "w-[180px]", cell: (a) => dim(a, <span className="block truncate">{a.loginId}</span>) },
-    { header: "이름", width: "w-[220px]", cell: (a) => open(a, a.name ?? (bpWithdrawn ? WITHDRAWN_TEXT : a.loginId)) },
-    // 역할은 이름 바로 다음, 폭 120
-    { header: "역할", width: "w-[120px]", cell: (a) => dim(a, roleType(a.roleTypeCode)) },
+    { header: "아이디", width: "w-[130px]", cell: (a) => dim(a, <span className="block truncate">{a.loginId}</span>) },
+    { header: "이름", width: "w-[160px]", cell: (a) => open(a, a.name ?? (bpWithdrawn ? WITHDRAWN_TEXT : a.loginId)) },
+    // 역할은 이름 바로 다음
+    { header: "역할", width: "w-[100px]", cell: (a) => dim(a, roleType(a.roleTypeCode)) },
     // 역할 다음에 대상점포 — 열 이름은 상세와 같게(2026-10-30 사용자 지정 — 전엔 계정상태 다음 「매핑 점포」)
-    { header: "대상점포", width: "w-[110px]", cell: (a) => dim(a, a.isAllStores ? "전체" : a.storeCount.toLocaleString("ko-KR")) },
+    { header: "대상점포", width: "w-[80px]", cell: (a) => dim(a, a.isAllStores ? "전체" : a.storeCount.toLocaleString("ko-KR")) },
     {
       header: "권한명 · 코드", // 열 이름도 값과 같은 「권한명 · 코드」(2026-10-27 사용자 지정 — 전엔 「권한 그룹」)
+      // 기준 폭(200)을 둔다 — 넓은 창에서는 모든 열이 같은 비율로 늘어난다 — 이 열만 남는 폭을 가지면 넓은 창에서 혼자 넓어져 표가 휑했다(2026-11-18 사용자 지정)
+      width: "w-[200px]",
       align: "left", // 값은 왼쪽 정렬, 머리글은 가운데 그대로(2026-10-30 사용자 지정 — 전엔 가운데)
       cell: (a) =>
         dim(
@@ -68,11 +71,12 @@ export function AdminTable({
     },
     {
       header: "계정상태",
-      width: "w-[100px]",
+      width: "w-[80px]",
       cell: (a) => <Badge tone={inactive(a) ? "closed" : "on"}><CodeLabel group="ACCOUNT_STATUS" value={a.accountStatus} /></Badge>,
     },
     {
       header: "최근 로그인",
+      width: "w-[180px]",
       // 초기 비밀번호 메일이 실패한 계정은 그 사실을 먼저 알린다 — 초기화할 수 있는 사람이 상세의 비밀번호 초기화로 다시 보낸다.
       // 미사용 계정은 알리지 않는다 — 상세도 숨기고 초기화 버튼이 없다(2026-10-29 사용자 결정)
       cell: (a) =>
@@ -96,6 +100,10 @@ export function AdminTable({
       empty={noneRegistered ? "등록된 관리자 계정이 없습니다." : "조건에 맞는 관리자 계정이 없습니다."}
       // 비어도 열 이름 줄을 두고 빈 칸이 목록 영역 남는 높이를 채운다 — 점포 · 직원 목록과 같다(2026-11-05 사용자 지정)
       fillEmpty
+      // 1260 창에서 필터를 펼치면 표 자리(약 920px)보다 넓다 — 권한명 · 코드 200px 을 지키고 표 상자 안에서만 가로로 민다(직원 · TO-DO 목록과
+      // 같다). 고정 열 합 730 + 권한명 · 코드 200
+      scroll
+      minWidth="min-w-[930px]"
     />
   );
 }

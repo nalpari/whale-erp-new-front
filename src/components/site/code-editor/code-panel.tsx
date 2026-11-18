@@ -20,23 +20,26 @@ export function CodePanel({
   actions?: ReactNode;
   /** 왼쪽 그룹 목록 · 오른쪽 상세 코드는 56 : 44 비율로 함께 줄어든다 — 좁은 창(최소 1260)에서 모자라는 열은 표 상자 안에서 민다(2026-11-16 사용자 지정, 전엔 그룹 750 고정). */
   wide?: boolean;
-  /** 읽기만 하는 그룹 목록(BP 공통코드 — 입력칸이 없다)은 560 고정(데모 config/codes). */
+  /** 읽기만 하는 그룹 목록(BP 공통코드 — 입력칸이 없다)은 오른쪽 상세 코드(44)와 28 : 44 비율로 함께 늘고 줄며, 420 아래로는 줄지 않는다 — 560 고정이면 1260 창에서 상세 코드 칸이 너무 좁았고, 고정 폭이면 넓은 창에서 공간이 남는데도 그룹명이 잘렸다(2026-11-18 사용자 지정 · 1260 작업, 데모 config/codes 는 560). */
   narrow?: boolean;
   children: ReactNode;
 }) {
   return (
     <section
       id={id}
-      // 표(DataTable scroll)는 남는 높이를 먹고 그 안에서만 스크롤한다 — 나머지(제목 · 띠 · 오류 줄)는 줄지 않는다(2026-10-26 사용자 지정)
-      className={`flex flex-col gap-[12px] overflow-y-auto [scrollbar-gutter:stable] rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0 ${
-        wide ? "min-w-0 flex-[44]" : narrow ? "w-[560px] shrink-0" : "min-w-0 flex-[56]"
+      // 표(DataTable scroll)는 남는 높이를 먹고 그 안에서만 스크롤한다 — 나머지(제목 · 띠 · 오류 줄)는 줄지 않는다(2026-10-26 사용자 지정).
+      // 세로 스크롤바 자리는 양쪽에 똑같이 비운다(both-edges) — 오른쪽에만 비우면 좌우 여백이 달라 보였다(2026-11-18 사용자 지정)
+      className={`flex flex-col gap-[12px] overflow-y-auto [scrollbar-gutter:stable_both-edges] rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0 ${
+        wide ? "min-w-0 flex-[44]" : narrow ? "min-w-[420px] flex-[28]" : "min-w-0 flex-[56]"
       }`}
     >
       {/* 제목 줄은 34px(버튼 높이) — 버튼이 없는 왼쪽 그룹 목록도 오른쪽 상세 코드와 같은 높이에 선다(2026-10-26 사용자 지정) */}
       <div className="flex min-h-[34px] items-end gap-[6px]">
-        <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">
+        {/* 제목 옆 글자(sub)는 사이 간격(gap)으로 띄운다 — 왼쪽 여백(ml)으로 띄우면 칸이 좁아 아랫줄로 내려갈 때 그 여백만큼 안쪽에서 시작해
+            제목과 시작선이 어긋났다(2026-11-18 사용자 지정 · 1260 작업) */}
+        <h2 className="flex flex-1 flex-wrap items-baseline gap-x-[10px] text-[18px] font-semibold text-erp-ink">
           {title}
-          {sub && <span className="ml-[10px] text-[14px] font-normal text-erp-label">{sub}</span>}
+          {sub && <span className="text-[14px] font-normal text-erp-label">{sub}</span>}
         </h2>
         {actions}
       </div>

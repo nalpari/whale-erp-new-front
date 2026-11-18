@@ -9,7 +9,7 @@ import { StoreBulkDialog } from "@/components/site/store-mapping-picker";
 import { StorePicker } from "@/components/site/store-picker";
 import { bpPath } from "@/lib/bp-path";
 import type { AdminStore } from "@/lib/session";
-import { isUnusableScope, scopeStores, toPickedStore } from "@/lib/store-scope";
+import { isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
 import type { FacilityStoreOption } from "@/lib/facilities";
 import { fillScopeOf } from "../stores/stores-query";
 import { FACILITY_GROUPS, STATUS_GROUP, isFacilityGroup } from "./facility-form-model";
@@ -102,8 +102,25 @@ export function FacilityFilter({ query, storeOptions }: { query: FacilityListQue
   const categories = current.group === "STORE_FACILITY" ? facilityCategories : current.group === "STORE_EQUIPMENT" ? equipmentCategories : [];
   const handleStoresPick = (ids: number[]) => navigate(withPickedStores(current, ids));
 
+  // 초기화하면 가는 조건(헤더 범위 · 나머지 비움)과 다르면 「필터 적용 중」(FilterPanel 빨간 점). 직영 · 가맹 범위는 점포들로 풀어 storeIds 로
+  // 들어가므로(applyScope) 그 점포들과 같으면 헤더 범위 그대로로 본다. 범위 「전체」는 주소에 채우지 않는다
+  const headerIds = (headerScope.type === "DIRECT" || headerScope.type === "FRANCHISE") && new Set(pool.map((p) => p.storeId));
+  const sameAsHeader = current.storeIds.length
+    ? !!headerIds &&
+      JSON.stringify([...current.storeIds].sort((a, b) => a - b)) ===
+        JSON.stringify(
+          scopeStores(headerScope, loginStores)
+            .map((st) => st.storeId)
+            .filter((id) => headerIds.has(id))
+            .sort((a, b) => a - b),
+        )
+    : // 점포를 모두 뺀 「전체」는 다른 목록처럼 조건을 건 것으로 본다(헤더 범위가 전체여도 — 리뷰 반영, 화면마다 같게)
+      !current.storesCleared && (!current.scope || scopeKeyOf(current.scope) === scopeKeyOf(headerScope));
+  const applied = !sameAsHeader || !!current.status || !!current.group || !!current.category || !!current.keyword;
+
   return (
     <FilterPanel
+      applied={applied}
       onReset={() => {
         // 초기화 — 고른 점포 · 그룹 · 분류도 비우고 헤더 범위로 돌아간다. 이름 칸은 key 로 다시 그려 비운다
         setResets((n) => n + 1);

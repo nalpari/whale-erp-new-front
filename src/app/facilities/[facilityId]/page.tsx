@@ -160,15 +160,24 @@ export default async function FacilityDetailPage({ params, searchParams }: PageP
             <FacilityDetailActions facility={d} backHref={backHref} />
           </div>
           {closed && <NoticeBand tone="info" title="폐점 점포의 시설물·장비는 조회만 할 수 있습니다." />}
-          <div className="grid grid-cols-2 items-start gap-[24px]">
-            <div className="flex flex-col gap-[24px]">
+          {/* 줄 단위 두 칸 — 윗줄 기본 정보 | 기한 · 문서, 둘째 줄 제품 정보 | 관리 · A/S, 셋째 줄 구매 정보. 줄마다 높이를 맞춰 제품 정보 · 관리 · A/S
+              제목 줄이 같은 높이에 선다(2026-11-18 사용자 지정 · 1260 작업, 점포 상세와 같은 방식 — 전엔 왼쪽 · 오른쪽 칸을 따로 쌓아 어긋났다).
+              창이 1260 미만이면(틀은 1260 으로 가로 스크롤) 왼쪽 칸 → 오른쪽 칸 순서로 위아래로 쌓는다(order) */}
+          <div className="grid grid-cols-1 items-start gap-[24px] min-[1260px]:grid-cols-2">
+            <div className="order-1 min-[1260px]:order-none">
               <DetailTable title="기본 정보" rows={basic} />
-              <DetailTable title="제품 정보" rows={product} />
-              <DetailTable title="구매 정보" rows={purchase} />
             </div>
-            <div className="flex flex-col gap-[24px]">
+            <div className="order-4 min-[1260px]:order-none">
               <DetailTable title="기한 · 문서" rows={documents} />
+            </div>
+            <div className="order-2 min-[1260px]:order-none">
+              <DetailTable title="제품 정보" rows={product} />
+            </div>
+            <div className="order-5 min-[1260px]:order-none">
               <DetailTable title="관리 · A/S" rows={manage} />
+            </div>
+            <div className="order-3 min-[1260px]:order-none">
+              <DetailTable title="구매 정보" rows={purchase} />
             </div>
           </div>
         </div>

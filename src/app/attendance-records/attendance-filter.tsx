@@ -85,13 +85,21 @@ export function AttendanceFilter({
 
   const labelOf = (labels: EnumValue[], value: string) => labels.find((l) => l.value === value)?.label ?? value;
 
+  // 초기화하면 가는 조건 — 날짜 · 주 · 보정 기간은 필터가 아니라 그대로 둔다
+  const resetQuery = (): AttendanceQuery => ({
+    ...defaultQuery(today),
+    scope: headerScope,
+    date: current.date,
+    week: current.week,
+    fixFrom: current.fixFrom,
+    fixTo: current.fixTo,
+  });
+  // 그 조건과 다르면 「필터 적용 중」(FilterPanel 빨간 점). 점포 조건이 없으면(범위 「전체」는 주소에 채우지 않는다) 헤더 범위로 본다
+  const applied =
+    toAttendanceSearch({ ...current, scope: current.scope ?? (noCondition ? headerScope : null) }, today) !== toAttendanceSearch(resetQuery(), today);
+
   return (
-    <FilterPanel
-      onReset={() => {
-        const d = defaultQuery(today);
-        navigate({ ...d, scope: headerScope, date: current.date, week: current.week, fixFrom: current.fixFrom, fixTo: current.fixTo });
-      }}
-    >
+    <FilterPanel onReset={() => navigate(resetQuery())} applied={applied}>
       <FilterSection label="점포" tight>
         <StorePicker picked={chips} onChange={(next) => withPicked(next.map((s) => s.storeId))} />
       </FilterSection>

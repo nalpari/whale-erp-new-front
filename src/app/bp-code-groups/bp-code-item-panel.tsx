@@ -217,12 +217,14 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
   const rowInvalid = (key: string) => `code:${key}` in errors || `label:${key}` in errors;
   const reorder = useRowReorder({ rows: drafts, setRows: setDrafts, keyOf: (d) => d.key, labelOf: (d) => d.itemCode });
 
+  // 1260 창 기준 열 폭 — 필터를 접으면 상세 코드 칸(약 580px — 양쪽 스크롤바 자리를 뺀 폭) 안에 다 들도록 이동 50 · 상세 코드 100 · 코드명 110 · 순서 60 · 사용여부 90 ·
+  // 관리주체 110 · 삭제 60(2026-11-18 사용자 지정 · 1260 작업 — 전엔 60 · 남는 폭 · 160 · 90 · 110 · 110 · 70 이라 열 이름이 꺾이고 오른쪽 열이 잘렸다)
   const columns: Column<Draft>[] = [
     ...(manage || canAdd
       ? [
           {
             header: "이동",
-            width: "w-[60px]",
+            width: "w-[50px]",
             // 기존 행은 끌기 손잡이(수정 권한). 새 행은 저장한 뒤에 옮기고, 대신 빼기 버튼을 둔다.
             cell: (d: Draft) =>
               d.added ? (
@@ -243,8 +245,9 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       : []),
     {
       header: "상세 코드",
-      // 폭을 정하지 않는다 — 남는 폭을 받는다. 300px 로 고정했더니 좁은 화면에서 코드명 칸이 60px 로 찌그러졌다(사용자가 찾음).
-      // 코드명을 160px 로 고정하는 플랫폼 공통코드와 같은 배치다
+      // 폭을 정한다 — 정하지 않으면 1260 창에서 0 까지 눌려 열 이름이 세로로 꺾였다. 넓은 창에서는 다른 열과 같은 비율로 늘고, 모자라면 표 상자
+      // 안에서 옆으로 민다
+      width: "w-[100px]",
       align: "left",
       cell: (d) =>
         d.deleted ? (
@@ -267,7 +270,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
     },
     {
       header: "코드명",
-      width: "w-[160px]", // 플랫폼 공통코드 · 그룹명 칸과 같은 폭(2026-10-27 사용자 지정)
+      width: "w-[110px]",
       align: "left",
       cell: (d) =>
         d.deleted ? (
@@ -287,10 +290,10 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
           d.label
         ),
     },
-    { header: "순서", width: "w-[90px]", cell: (d) => d.sortOrder },
+    { header: "순서", width: "w-[60px]", cell: (d) => d.sortOrder },
     {
       header: "사용여부",
-      width: "w-[110px]",
+      width: "w-[90px]",
       cell: (d) =>
         d.deleted ? (
           <DeletePending />
@@ -318,7 +321,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       ? [
           {
             header: "삭제",
-            width: "w-[70px]",
+            width: "w-[60px]",
             cell: (d: Draft) =>
               bpDeletable(d) ? (
                 <DeleteToggle deleted={Boolean(d.deleted)} name={d.itemCode} onToggle={() => update(d.key, { deleted: !d.deleted })} />

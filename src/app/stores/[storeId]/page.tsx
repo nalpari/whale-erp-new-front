@@ -5,7 +5,7 @@ import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { storeImageFailureText } from "@/lib/store-image";
 import { getStore } from "@/lib/stores";
 import { CodeLabel } from "@/components/site/code-label";
-import { LocationApplyHelp } from "@/components/site/location-apply-field";
+import { LocationApplyTip } from "@/components/site/location-apply-field";
 import { formatBizNumber, hasStoreCoordinates } from "@/lib/store-view";
 import { StoreCardBody, StoreDenied, StoreFrame, storeDenied } from "../store-frame";
 import { StoreFloorLabel } from "../store-floor-label";
@@ -18,18 +18,15 @@ import { StorePhotoViewer } from "./store-photo-viewer";
 
 const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
 const orDash = (v: string | null | undefined) => (v ? v : muted("-"));
+/** 기본정보 표의 라벨 칸 — 「출퇴근 위치적용」 + 도움말 i 가 한 줄에 들도록 110 → 140(2026-11-18 사용자 지정 · 1260 작업) */
+const BASIC_LABEL_WIDTH = "w-[140px]";
 /** DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸 너비 — 사업자등록번호 · 대표자정보처럼 같은 표 안에서 짝을 이루는 줄들이
- * 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다(2026-10-19 점검 — 실사용자 확인). 위치정보 줄은 LAT_WIDTH 를 쓴다. */
+ * 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다(2026-10-19 점검 — 실사용자 확인). */
 const FIRST_COLUMN_WIDTH = "inline-block min-w-[140px]";
-/** 위치정보 줄의 위도 칸 — 값에 맞게 좁힌 고정폭(「위도 37.000000」 약 98px, 화면에서 잼 — 110 · 104 는 위도 · 경도 사이가 경도 · 출퇴근 위치적용 사이보다 넓어 보였다). 경도는 고정폭 없이 값만큼만 써 출퇴근 위치적용이 가장 넓다(2026-11-03 사용자 지정 —
- * 위도 · 경도 사이를 줄이고 출퇴근 위치를 넓힘). 위도 칸만 고정이라 아래 변경이력 줄의 최종수정을 경도 앞 구분선에 맞출 수 있다. */
-const LAT_WIDTH = "inline-block w-[100px] whitespace-nowrap";
-/** 대표 이미지 칸 — 사진 194px + 둘레 여백 18px 씩 = 230px. 사진 옆 다섯 줄(46px × 5 = 230)과 높이가 같다(2026-11-03 사용자 지정 — 206 에서 조금 줄임) */
+/** 위치정보 줄의 위도 — 고정폭 없이 값만큼(약 98px). 전엔 변경이력 줄의 구분선과 맞추려 100px 고정이었는데, 그 줄을 따로 상자로 빼(2026-11-18) 맞출 줄이 없어졌고 2px 이 1366 창 한 줄을 막았다 */
+const LAT_WIDTH = "whitespace-nowrap";
+/** 대표 이미지 — 194px(2026-11-03 사용자 지정 — 206 에서 조금 줄임). 사진 옆은 여섯 줄(46px × 6 = 276)이라 칸 세로 가운데에 둔다(2026-11-18 — 출퇴근 위치적용을 따로 한 줄로) */
 const PHOTO_BOX = "size-[194px]";
-/** 변경이력 줄의 등록 칸 너비 — 이 줄은 사진 아래 카드 왼쪽 끝에서 시작한다. 사진 칸(230) + 위도 칸(100) = 330 으로 두어 최종수정 앞
- * 구분선이 위치정보 줄의 경도 앞 구분선과 같은 세로줄에 선다(2026-11-03 사용자 지정 — 줄맞춤, 전엔 출퇴근 위치적용에 맞춘 301).
- * 처리자 이름이 길면 이 너비 안에서 말줄임된다. 사진 크기나 위도 칸 너비를 바꾸면 이 값도 같이 바꾼다. */
-const REGISTERED_COLUMN_WIDTH = "w-[330px]";
 /** 주소 한 줄 — 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」. 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)이다.
  * 없으면 「-」(2026-10-19 점검 — 두 줄이던 걸 한 줄로, 번호 색·괄호 안쪽 띄어쓰기는 뒤이은 요청으로 다시 손봄) */
 const addressLines = (zip: string | null, address: string | null, detail: string | null) => {
@@ -78,62 +75,52 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
     { label: "점포주소", value: addressLines(store.zipCode, store.address, store.addressDetail), multiline: true },
     {
       label: "위치정보",
-      // 변경이력과 같은 모양 — 위도 · 경도 · 출퇴근 위치적용 각각 라벨과 같은 회색 글자를 앞에 둔다.
-      // 위도 칸은 고정폭(LAT_WIDTH)이라 비어 있을 때도 경도 앞 구분선이 흔들리지 않는다. 변경이력 줄의 최종수정은 경도 앞 구분선에 맞춘다.
+      // 위도 · 경도 각각 라벨과 같은 회색 글자를 앞에 둔다. 출퇴근 위치적용은 아래 따로 한 줄 — 한 줄에 셋을 두면 1536 창 좌우 배치에서
+      // 칸 밖으로 밀려 안 보였다(2026-11-18 사용자 지정 · 1260 작업). 등록 · 수정 화면에서도 따로 있는 칸이다.
+      // 값 칸에 「위도 … | 경도 …」가 다 안 들어갈 때만(1260 창 좌우 배치) 경도가 아랫줄로 내려간다(flex-wrap). 구분선은 항목마다 앞에 붙이고
+      // 줄 왼쪽 끝으로 밀어 잘라 내므로(-ml-[11px] + overflow-hidden), 줄 첫 항목 앞에는 구분선이 보이지 않는다
+      multiline: true,
       value: (
-        <DetailValues
-          items={[
-            <span key="lat" className={LAT_WIDTH}>
-              <span className="mr-[10px] text-erp-label">위도</span>
-              {store.latitude !== null ? store.latitude.toFixed(6) : muted("-")}
-            </span>,
-            <span key="lng" className="whitespace-nowrap">
-              <span className="mr-[10px] text-erp-label">경도</span>
-              {store.longitude !== null ? store.longitude.toFixed(6) : muted("-")}
-            </span>,
-            <span key="loc">
-              {/* 라벨 옆 도움말 i — 등록 · 수정 화면과 같은 사용 · 미사용 표(2026-11-17 사용자 지정) */}
-              <span className="mr-[10px] inline-flex items-center gap-[4px] align-middle text-erp-label">
-                출퇴근 위치적용
-                <LocationApplyHelp />
+        <span className="block w-full min-w-0 overflow-hidden">
+          <span className="-ml-[11px] flex flex-wrap items-center gap-x-[10px]">
+            {[
+              <span key="lat" className={LAT_WIDTH}>
+                <span className="mr-[10px] text-erp-label">위도</span>
+                {store.latitude !== null ? store.latitude.toFixed(6) : muted("-")}
+              </span>,
+              <span key="lng" className="whitespace-nowrap">
+                <span className="mr-[10px] text-erp-label">경도</span>
+                {store.longitude !== null ? store.longitude.toFixed(6) : muted("-")}
+              </span>,
+            ].map((item) => (
+              <span key={item.key} className="flex items-center gap-[10px]">
+                {/* #d9d9d9 — DESIGN.md 의 값 구분선, Figma 전용 색이라 토큰이 없다 */}
+                <span className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
+                {item}
               </span>
-              {/* 좌표가 없으면 저장된 값과 상관없이 미사용으로 보인다 — 주소가 아니라 좌표로 가린다(수정 화면 ·
-                  bodyOf 와 같은 규칙, 2026-10-19 점검 — 실사용자 확인, 코드 리뷰로 주소에서 좌표로 바꿈). */}
-              {hasStoreCoordinates(store.latitude, store.longitude) && store.isLocationApplied ? "사용" : "미사용"}
-            </span>,
-          ]}
-        />
-      ),
-    },
-    { label: "재직직원", value: <span>{store.staffCount.toLocaleString("ko-KR")}명</span> },
-    {
-      label: "변경이력",
-      // 고친 적 없으면(최종수정일시가 등록일시와 같으면, wasUpdated) 최종수정 값은 「-」(화면 정의서 · 2026-10-27 사용자 요청). 등록 · 최종수정 글자는 라벨과 같은 회색이다. [변경이력
-      // 보기] 버튼은 DetailValues 밖에 따로 두어 앞에 구분선(|)이 안 붙게 하고, justify-between 으로 칸 맨
-      // 오른쪽에 고정한다 — 칸 자체의 12px 오른쪽 여백(DetailTable dd)이 있어 따로 더 주지 않는다(2026-10-16 점검).
-      // 등록 · 최종수정은 DetailValues(inline-block) 대신 직접 그린다 — 등록은 위치정보 줄과 구분선을 맞춘
-      // 고정폭(REGISTERED_COLUMN_WIDTH) + truncate, 최종수정은 flex-1 + truncate. DetailValues 로 그리던 때는 처리자
-      // 이름이 길면(예: 테스트 계정명) [변경이력] 버튼을 dd 밖으로 밀어내 잘렸는데, 둘 다 말줄임되므로 버튼은 항상
-      // 자리를 지킨다(2026-10-19 점검 — 실사용자 확인, 구분선 맞춤은 2026-10-23).
-      value: (
-        <span className="flex w-full items-center gap-[12px]">
-          {/* overflow-hidden — 칸이 고정폭보다 좁아져도 등록 글자가 [변경이력] 버튼 위로 넘치지 않게 */}
-          <span className="flex min-w-0 flex-1 items-center gap-[10px] overflow-hidden">
-            <span className={`${REGISTERED_COLUMN_WIDTH} min-w-0 shrink-0 truncate`}>
-              <span className="mr-[10px] text-erp-label">등록</span>
-              {formatDateTime(store.createdAt)} · {store.createdByName ?? "-"}
-            </span>
-            {/* #d9d9d9 — DESIGN.md 의 값 구분선, Figma 전용 색이라 토큰이 없다 */}
-            <span className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
-            <span className="min-w-0 flex-1 truncate">
-              <span className="mr-[10px] text-erp-label">최종수정</span>
-              {wasUpdated(store.createdAt, store.updatedAt) ? `${formatDateTime(store.updatedAt)} · ${store.updatedByName ?? "-"}` : muted("-")}
-            </span>
+            ))}
           </span>
-          {/* 표 안 버튼이 무거워 흰 바탕 · 브랜드 테두리(outline)로 둔다(2026-11-03 사용자 지정) */}
-          <HistoryButton storeId={store.storeId} variant="outline" />
         </span>
       ),
+    },
+    {
+      label: "출퇴근 위치적용",
+      // 라벨 옆 도움말 i — 등록 · 수정 화면과 같은 사용 · 미사용 표(2026-11-17 사용자 지정)
+      help: <LocationApplyTip />,
+      // 좌표가 없으면 저장된 값과 상관없이 미사용으로 보인다 — 주소가 아니라 좌표로 가린다(수정 화면 · bodyOf 와 같은 규칙, 2026-10-19 점검 —
+      // 실사용자 확인, 코드 리뷰로 주소에서 좌표로 바꿈)
+      value: hasStoreCoordinates(store.latitude, store.longitude) && store.isLocationApplied ? "사용" : "미사용",
+    },
+    { label: "재직직원", value: <span>{store.staffCount.toLocaleString("ko-KR")}명</span> },
+  ];
+  // 등록 · 최종수정 — 기본정보 카드에서 빼 사업자정보 아래 따로 둔 상자(2026-11-18 사용자 지정 · 1260 작업, 전엔 기본정보 사진 아래 「변경이력」 줄).
+  // [변경이력] 버튼은 이 상자 제목 줄 오른쪽에 있다(DetailTable action). 고친 적 없으면(최종수정일시가 등록일시와 같으면, wasUpdated)
+  // 최종수정 값은 「-」(화면 정의서 · 2026-10-27 사용자 요청)
+  const historyRows: DetailRow[] = [
+    { label: "등록", value: `${formatDateTime(store.createdAt)} · ${store.createdByName ?? "-"}` },
+    {
+      label: "최종수정",
+      value: wasUpdated(store.createdAt, store.updatedAt) ? `${formatDateTime(store.updatedAt)} · ${store.updatedByName ?? "-"}` : muted("-"),
     },
   ];
   // 미인증이면 진위확인 세 값은 「-」다. 상호명 · 연락처 · 주소 · 업태 · 종목은 인증과 상관없이 적어 둘 수 있다
@@ -194,9 +181,6 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
 
   const bpInactive = store.bpAccountStatusCode !== "ACTIVE";
   const imageFailure = storeImageFailureText(search.imageFailed);
-  // 사진 옆은 재직직원까지 다섯 줄, 변경이력은 사진 아래에서 카드 폭을 다 쓴다(2026-11-03 사용자 지정)
-  const photoRows = basicRows.filter((r) => r.label !== "변경이력");
-  const historyRows = basicRows.filter((r) => r.label === "변경이력");
   // 사진이 없으면 원래 쓰던 회색 바탕 · 점포 아이콘(2026-11-03 사용자 지정)
   const noPhoto = (
     <span role="img" aria-label="대표 이미지 없음" className={`grid shrink-0 place-items-center rounded-[8px] bg-erp-thead-bg text-erp-label ${PHOTO_BOX}`}>
@@ -236,55 +220,67 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
           {store.storeStatusCode === "CLOSED" && <NoticeBand tone="info" title="폐점 점포는 조회만 할 수 있습니다. 영업을 다시 시작하려면 신규 점포로 등록해 주세요." />}
           {/* 미운영 점포에 "운영으로 바꾸려면 ~ 필요합니다" 띠를 여기 두지 않는다(2026-10-16 디자인 점검으로 뺐다) — 같은
               안내는 상태 변경 팝업(StoreDetailActions)이 이미 운영 조건 체크리스트로 보여준다(2026-10-19 점검 — 실사용자 확인). */}
-          <div className="grid grid-cols-2 items-start gap-[24px]">
-            {/* 유형 태그는 위 점포명 줄로 옮겨 여기서는 다시 적지 않는다. 상태는 배지 대신 표 맨 위 점포상태
-                줄로 보인다(2026-10-19 점검). */}
-            <div className="w-full">
+          {/* 두 줄 두 칸 — 윗줄 기본정보 | 사업자정보, 아랫줄 공간정보 | 변경이력. 줄마다 높이를 맞춰 공간정보 · 변경이력 제목 줄이 같은 높이에
+              선다(2026-11-18 사용자 지정 · 1260 작업, 전엔 공간정보가 아래에서 카드 폭을 다 썼다). 1260 창까지 나란히 둔다 — 등록 · 최종수정을
+              따로 상자로 빼고 출퇴근 위치적용을 따로 한 줄로 빼니 좁은 창에서도 들어갔다(1366 은 그대로, 1260 은 위치정보의 경도만 아랫줄로).
+              창이 1260 미만이면(틀은 1260 으로 가로 스크롤) 기본정보 → 공간정보 → 사업자정보 → 변경이력 순서로 위아래로 쌓는다(order, 사용자 지정).
+              유형 태그는 위 점포명 줄로 옮겨 여기서는 다시 적지 않는다. 상태는 배지 대신 표 맨 위 점포상태 줄로 보인다(2026-10-19 점검). */}
+          <div className="grid grid-cols-1 items-start gap-[24px] min-[1260px]:grid-cols-2">
+            <div className="order-1 min-[1260px]:order-none">
               {/* 사진 칸 — 위쪽에 붙이고, 표와 사이 세로선은 두지 않는다(2026-11-03 사용자 지정). 칸에 맞게 가운데를 잘라 채우고 누르면 원본을 크게 본다 */}
               <DetailTable
                 title="점포 기본정보"
-                rows={photoRows}
-                aside={<div className="p-[18px]">{store.image?.url ? <StorePhotoViewer url={store.image.url} name={store.name} boxClass={PHOTO_BOX} fallback={noPhoto} /> : noPhoto}</div>}
+                rows={basicRows}
+                labelWidth={BASIC_LABEL_WIDTH}
+                aside={<div className="flex h-full items-center p-[18px]">{store.image?.url ? <StorePhotoViewer url={store.image.url} name={store.name} boxClass={PHOTO_BOX} fallback={noPhoto} /> : noPhoto}</div>}
               />
-              <DetailTable rows={historyRows} attached />
             </div>
-            <DetailTable
-              title={
-                <>
-                  사업자정보
-                  <span className="ml-[10px] inline-flex align-middle">
-                    <Badge tone={b.isVerified ? "on" : "off"}>{b.isVerified ? "인증 완료" : "미인증"}</Badge>
-                  </span>
-                </>
-              }
-              rows={bizRows}
-            />
+            <div className="order-3 min-[1260px]:order-none">
+              <DetailTable
+                title={
+                  <>
+                    사업자정보
+                    <span className="ml-[10px] inline-flex align-middle">
+                      <Badge tone={b.isVerified ? "on" : "off"}>{b.isVerified ? "인증 완료" : "미인증"}</Badge>
+                    </span>
+                  </>
+                }
+                rows={bizRows}
+              />
+            </div>
+            <div className="order-2 min-[1260px]:order-none">
+              {/* 점포 기본정보 · 사업자정보와 같은 DetailTable — 라벨은 "층구분"이고, 지상 1층 같은 값도 매장평수(평) ·
+                  전용면적(㎡) · 좌석 수와 함께 오른쪽 데이터 줄에 구분선(|)으로 나열한다. 매장평수와 전용면적은 같은
+                  면적의 단위 차이가 아니라 서로 다른 두 항목이라(okf/stores.md S-ALHLHW) 값마다 단위를 그대로 적어
+                  둔다(2026-10-16 점검). */}
+              <DetailTable
+                title="점포 공간정보"
+                rows={
+                  store.floors.length
+                    ? store.floors.map((f) => ({
+                        label: "층구분",
+                        value: (
+                          <DetailValues
+                            items={[
+                              <StoreFloorLabel key="type" floor={f} />,
+                              f.floorAreaPyeong === null ? muted("-") : `${f.floorAreaPyeong}평`,
+                              f.floorAreaSqm === null ? muted("-") : `${f.floorAreaSqm}㎡`,
+                              f.seatCount === null ? muted("-") : `${f.seatCount.toLocaleString("ko-KR")}석`,
+                            ]}
+                          />
+                        ),
+                      }))
+                    : [{ label: "층구분", value: muted("등록한 층별 정보가 없습니다.") }]
+                }
+              />
+            </div>
+            <div className="order-4 min-[1260px]:order-none">
+              {/* 변경이력 상자 — 제목 줄 오른쪽에 [변경이력] 버튼(보기만 하는 버튼이라 흰 바탕 · 브랜드 테두리 outline), 아래 등록 · 최종수정 두 줄
+                  (2026-11-18 사용자 지정 — 전엔 기본정보 사진 아래 한 줄 · 버튼은 그 줄 오른쪽 끝) */}
+              <DetailTable title="변경이력" action={<HistoryButton storeId={store.storeId} variant="outline" />} rows={historyRows} />
+            </div>
           </div>
         </div>
-        {/* 점포 기본정보 · 사업자정보와 같은 DetailTable — 라벨은 "층구분"이고, 지상 1층 같은 값도 매장평수(평) ·
-            전용면적(㎡) · 좌석 수와 함께 오른쪽 데이터 줄에 구분선(|)으로 나열한다. 매장평수와 전용면적은 같은
-            면적의 단위 차이가 아니라 서로 다른 두 항목이라(okf/stores.md S-ALHLHW) 값마다 단위를 그대로 적어
-            둔다(2026-10-16 점검). */}
-        <DetailTable
-          title="점포 공간정보"
-          rows={
-            store.floors.length
-              ? store.floors.map((f) => ({
-                  label: "층구분",
-                  value: (
-                    <DetailValues
-                      items={[
-                        <StoreFloorLabel key="type" floor={f} />,
-                        f.floorAreaPyeong === null ? muted("-") : `${f.floorAreaPyeong}평`,
-                        f.floorAreaSqm === null ? muted("-") : `${f.floorAreaSqm}㎡`,
-                        f.seatCount === null ? muted("-") : `${f.seatCount.toLocaleString("ko-KR")}석`,
-                      ]}
-                    />
-                  ),
-                }))
-              : [{ label: "층구분", value: muted("등록한 층별 정보가 없습니다.") }]
-          }
-        />
       </StoreCardBody>
     </StoreFrame>
   );
