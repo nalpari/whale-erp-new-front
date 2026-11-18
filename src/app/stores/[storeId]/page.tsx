@@ -114,7 +114,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
     { label: "재직직원", value: <span>{store.staffCount.toLocaleString("ko-KR")}명</span> },
   ];
   // 등록 · 최종수정 — 기본정보 카드에서 빼 사업자정보 아래 따로 둔 상자(2026-11-18 사용자 지정 · 1260 작업, 전엔 기본정보 사진 아래 「변경이력」 줄).
-  // [변경이력] 버튼은 위 제목 줄의 [상태 변경] [삭제] [수정] [목록] 앞에 있다. 고친 적 없으면(최종수정일시가 등록일시와 같으면, wasUpdated)
+  // [변경이력] 버튼은 이 상자 제목 줄 오른쪽에 있다(DetailTable action). 고친 적 없으면(최종수정일시가 등록일시와 같으면, wasUpdated)
   // 최종수정 값은 「-」(화면 정의서 · 2026-10-27 사용자 요청)
   const historyRows: DetailRow[] = [
     { label: "등록", value: `${formatDateTime(store.createdAt)} · ${store.createdByName ?? "-"}` },

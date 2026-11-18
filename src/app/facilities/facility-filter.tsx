@@ -9,7 +9,7 @@ import { StoreBulkDialog } from "@/components/site/store-mapping-picker";
 import { StorePicker } from "@/components/site/store-picker";
 import { bpPath } from "@/lib/bp-path";
 import type { AdminStore } from "@/lib/session";
-import { isUnusableScope, scopeStores, toPickedStore } from "@/lib/store-scope";
+import { isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
 import type { FacilityStoreOption } from "@/lib/facilities";
 import { fillScopeOf } from "../stores/stores-query";
 import { FACILITY_GROUPS, STATUS_GROUP, isFacilityGroup } from "./facility-form-model";
@@ -114,9 +114,8 @@ export function FacilityFilter({ query, storeOptions }: { query: FacilityListQue
             .filter((id) => headerIds.has(id))
             .sort((a, b) => a - b),
         )
-    : current.storesCleared
-      ? headerScope.type === "ALL"
-      : !current.scope || JSON.stringify(current.scope) === JSON.stringify(headerScope);
+    : // 점포를 모두 뺀 「전체」는 다른 목록처럼 조건을 건 것으로 본다(헤더 범위가 전체여도 — 리뷰 반영, 화면마다 같게)
+      !current.storesCleared && (!current.scope || scopeKeyOf(current.scope) === scopeKeyOf(headerScope));
   const applied = !sameAsHeader || !!current.status || !!current.group || !!current.category || !!current.keyword;
 
   return (

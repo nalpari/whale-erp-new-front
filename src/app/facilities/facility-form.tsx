@@ -386,7 +386,7 @@ export function FacilityFormView(props: Props) {
               {statusOptions.map((s) => (
                 <label
                   key={s.value}
-                  className="relative flex cursor-pointer items-center justify-center rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[10px] text-center transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand"
+                  className="relative flex cursor-pointer items-center justify-center rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[10px] text-center transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-erp-brand"
                 >
                   {/* 카드(label)는 relative — 숨긴 라디오가 카드 밖 멀리 놓이면 누를 때 바깥 틀이 밀려 화면이 비었다(contract-form ChoiceCards 주석) */}
                   <input type="radio" name={`${ids}-status`} className="sr-only" checked={form.statusCode === s.value} onChange={() => set("statusCode", s.value, "status")} />

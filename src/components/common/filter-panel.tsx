@@ -21,7 +21,8 @@ const PANEL_BUTTON = "grid h-[32px] place-items-center rounded-[2px] border bord
 // applied — 처음 상태와 다른 조건이 걸려 있다. 펼쳤든 접었든 접기 · 펼침 버튼 오른쪽 위에 빨간 점(8px, 알림 종 팝업의 안 읽은 점과 같은 색)을
 // 붙이고, 마우스를 올리면 「필터 적용 중」 툴팁(헤더 툴팁과 같은 모양)을 띄운다 — 접힌 막대만 보고는 조건이 걸린 줄 몰랐다. 버튼을 회청으로
 // 뒤집는 안은 기본 버튼과 같아 보여 접었다(2026-11-18 사용자 지정).
-const NARROW = "(max-width: 1399px)";
+// CSS 의 max-[1400px](width < 1400px)와 같은 식이어야 한다 — max-width: 1399px 이면 1399~1400 사이(소수 폭)에서 둘이 어긋나 펼쳐 보이는데 눌리지 않았다(리뷰 반영)
+const NARROW = "(width < 1400px)";
 // 누른 접기 · 펼침을 화면(주소 경로)마다 기억한다 — 조건을 바꾸면 필터를 새로 그리는 화면(근로계약 · 공통코드 key)에서 펼쳐 둔 필터가 다시
 // 접혔다. 탭 안에서만 산다(새로 고치면 창 폭을 따른다)
 const chosenByPath = new Map<string, boolean>();
@@ -66,15 +67,15 @@ export function FilterPanel({
   const narrow = useNarrow();
   const open = chosen ?? !narrow;
   const auto = chosen === null;
-  const width = auto ? "w-[226px] max-[1399px]:w-[76px]" : open ? "w-[226px]" : "w-[76px]";
+  const width = auto ? "w-[226px] max-[1400px]:w-[76px]" : open ? "w-[226px]" : "w-[76px]";
   const fade = auto
-    ? "opacity-100 duration-200 max-[1399px]:opacity-0 max-[1399px]:duration-100"
+    ? "opacity-100 duration-200 max-[1400px]:opacity-0 max-[1400px]:duration-100"
     : open
       ? "opacity-100 duration-200"
       : "opacity-0 duration-100";
   // 접힌 아이콘 · 펼친 아이콘 중 보이는 것 — 처음 모양은 CSS 가 정한다
-  const showCollapse = auto ? "max-[1399px]:invisible" : open ? "" : "invisible";
-  const showExpand = auto ? "invisible max-[1399px]:visible" : open ? "invisible" : "";
+  const showCollapse = auto ? "max-[1400px]:invisible" : open ? "" : "invisible";
+  const showExpand = auto ? "invisible max-[1400px]:visible" : open ? "invisible" : "";
 
   return (
     // 툴팁이 막대 밖(목록 위)으로 나가야 해서 잘라 내기는 안쪽 상자가 맡는다
