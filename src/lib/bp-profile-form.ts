@@ -3,6 +3,7 @@
 // bp-business-verification.dto.ts)와 같다 — 대표자 연락처 9~12자리는 api 2026-10-27 변경분과 같다(그전 api 는 9~11). 규칙은 manyfast F-AMTDCK > S-UOJVUR.
 import type { AddressValue } from "@/components/address-field";
 import { isBizVerificationExpired } from "./biz-verification-rules.ts";
+import { coordinateChange, coordinateErrors, coordinateFormOf, type CoordinateForm } from "./coordinate-form.ts";
 import { splitPhone } from "./my-profile-form.ts";
 import type { BpProfile, UpdateBpProfileInput, VerifyBpBusinessInput } from "./bp-profile.ts";
 
@@ -22,11 +23,15 @@ export type BpProfileForm = {
   /** 체크하면 대표자 이메일은 내 정보(기본정보)의 이메일을 그대로 쓴다. */
   sameAsBasicEmail: boolean;
   address: AddressValue;
+  /** 본사 점포 좌표 · 출퇴근 위치적용(coordinate-form.ts) — 사업자주소를 고르면 채운다 */
+  coordinate: CoordinateForm;
+  /** 불러온 좌표 — 바뀌었을 때만 저장에 싣는다(coordinateChange) */
+  savedCoordinate: CoordinateForm;
   bizCategory: string;
   bizItem: string;
 };
 
-export type BpProfileFormField = "tradeName" | "bizCeoPhone" | "bizCeoEmail" | "bizAddressDetail" | "bizCategory" | "bizItem";
+export type BpProfileFormField = "tradeName" | "bizCeoPhone" | "bizCeoEmail" | "bizAddressDetail" | "latitude" | "longitude" | "bizCategory" | "bizItem";
 
 /**
  * 사업자 번호 인증 칸 — 점포 사업자정보처럼 인증은 검사만 하고, 저장(PATCH)에 토큰을 실어야 반영된다
@@ -75,6 +80,8 @@ export function formOf(profile: BpProfile, basicPhone: string, basicEmail: strin
       address: profile.bizAddress,
       addressDetail: profile.bizAddressDetail,
     },
+    coordinate: coordinateFormOf(profile),
+    savedCoordinate: coordinateFormOf(profile),
     bizCategory: profile.bizCategory,
     bizItem: profile.bizItem,
   };
@@ -114,6 +121,7 @@ export function validateBpProfileForm(form: BpProfileForm): Partial<Record<BpPro
     if (email && (email.length > 100 || !EMAIL_PATTERN.test(email))) errors.bizCeoEmail = "대표자 이메일 형식이 올바르지 않습니다.";
   }
   if (form.address.addressDetail.length > 100) errors.bizAddressDetail = "상세주소는 100자까지입니다.";
+  Object.assign(errors, coordinateErrors(form.coordinate));
   if (form.bizCategory.length > 50) errors.bizCategory = "업태는 50자까지입니다.";
   if (form.bizItem.length > 50) errors.bizItem = "종목은 50자까지입니다.";
   return errors;
@@ -146,6 +154,8 @@ export function toUpdateBpProfileInput(
     ...(detail ? { bizAddressDetail: detail } : {}),
     ...(category ? { bizCategory: category } : {}),
     ...(item ? { bizItem: item } : {}),
+    // 좌표는 바뀌었을 때만 셋을 함께 싣는다 — 생략하면 api 가 그대로 둔다(덮어쓰기 · 옛 api 400 방지)
+    ...coordinateChange(form.coordinate, form.savedCoordinate),
     // pendingClear 와 businessVerificationToken 은 함께 못 싣는다(api 400) — pendingClear 가 늘 앞선다.
     // handleClearSaved 가 "사용안함"을 누르는 순간 verification 을 비우고, 그동안(struck) 상자가 인증하기
     // 버튼을 숨겨 새 토큰도 못 생기게 하지만, 이 가드는 그 보장과 무관하게 여기서 한 번 더 지킨다.
@@ -257,5 +267,8 @@ export function serverErrorField(status: number | undefined, message: string): B
   if (message.includes("이메일")) return "bizCeoEmail";
   if (message.includes("업태")) return "bizCategory";
   if (message.includes("종목")) return "bizItem";
+  // 본사 점포 좌표(점포 등록 store-form.ts serverFieldOf 와 같은 말로 가른다)
+  if (message.includes("경도")) return "longitude";
+  if (message.includes("위도") || message.includes("좌표")) return "latitude";
   return null;
 }

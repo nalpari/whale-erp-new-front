@@ -13,7 +13,7 @@ import {
 } from "@/components/site/session-gate";
 import { bpPath, isBpPathScreen } from "@/lib/bp-path";
 import { menuOfPath } from "@/lib/menus";
-import { withScope } from "@/lib/store-scope";
+import { branchStores, withScope } from "@/lib/store-scope";
 import {
   GUIDE_STEPS,
   TRACK_LABEL,
@@ -137,7 +137,8 @@ function StepLink({
   step: GuideStep;
   current: boolean;
 }) {
-  const stores = useStores();
+  // 본사 점포(가입 때 api 가 만듦)는 등록한 점포가 아니라 빼고 센다 — 헤더 목록의 StepRow 와 같다
+  const stores = branchStores(useStores());
   const done = step.doneWhen === "stores" && stores.length > 0;
   const n = stepNumberOf(step);
   return (

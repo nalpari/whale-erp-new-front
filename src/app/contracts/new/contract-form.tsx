@@ -8,6 +8,7 @@ import { useCurrentBp } from "@/components/site/session-gate";
 import { fetchSameOrigin } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
+import { branchStores, storeOptionLabel } from "@/lib/store-scope";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
 import { SAVED_COOKIE_MAX_AGE, backHrefOf, listAfterSave, savedCookieOf, savedKindOf, withBack } from "../contract-list";
 import { createContract, updateContract } from "./actions";
@@ -413,7 +414,7 @@ export function ContractForm({
   back = "/contracts",
   cancelHref,
 }: {
-  stores: { storeId: number; name: string }[];
+  stores: { storeId: number; name: string; isHq?: boolean }[];
   labels: ContractFormLabels;
   signedIn: boolean;
   /** 있으면 임시저장 이어 쓰기 — PUT 으로 저장한다 */
@@ -440,8 +441,10 @@ export function ContractForm({
   /** [취소]가 돌아갈 옛 경로(들어온 화면, cancelHrefOf — WHALEERP-683). 없으면 돌아갈 목록(back)이다 */
   cancelHref?: string;
 }) {
-  // 근무지가 하나뿐이면 미리 고르고(TO-DO 작성과 같다) 근무 장소도 그 근무지명으로 채운다
-  const [form, setForm] = useState<Form>(() => initial ?? (stores.length === 1 ? withStore(initialForm(), String(stores[0].storeId), stores) : initialForm()));
+  // 근무지가 하나뿐이면 미리 고르고(TO-DO 작성과 같다) 근무 장소도 그 근무지명으로 채운다. 본사 점포(권한 · 매칭이 있으면 선택지에 함께 오는 점포)는 세지 않는다 —
+  // 매장이 하나뿐인 BP 도 본사 때문에 둘이 되어 미리 고르지 않게 되었다(본사 점포 설계, 2026-11-17)
+  const branches = branchStores(stores);
+  const [form, setForm] = useState<Form>(() => initial ?? (branches.length === 1 ? withStore(initialForm(), String(branches[0].storeId), stores) : initialForm()));
   // 저장을 한 번 누른 뒤부터 막는 이유를 보인다. 처음부터 빨간 줄을 띄우지 않는다.
   const router = useRouter();
   // 화면 주소 · 종이 계약 창구는 탭 BP 를 붙인다 — proxy 가 그 BP 를 api 에 싣는다. back 은 옛 경로(목록 쿼리)다
@@ -743,7 +746,7 @@ export function ContractForm({
                   <option value="">선택</option>
                   {stores.map((s) => (
                     <option key={s.storeId} value={s.storeId}>
-                      {s.name}
+                      {storeOptionLabel(s)}
                     </option>
                   ))}
                 </Select>

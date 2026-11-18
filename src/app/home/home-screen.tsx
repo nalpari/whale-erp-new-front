@@ -12,7 +12,7 @@ import type { SupportPostList } from "@/lib/community";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { HOME, menuOfPath } from "@/lib/menus";
 import { kstToday } from "@/lib/staff-members";
-import { withScope } from "@/lib/store-scope";
+import { storeOptionLabel, withScope } from "@/lib/store-scope";
 import { isPlatformRole } from "@/lib/auth-routes";
 import { useApi, useLoad } from "@/lib/use-load";
 import { DEFAULT_TODO_LIST_QUERY, toTodoListSearch } from "../todos/todo-list-query";
@@ -350,7 +350,8 @@ function StoreTable({ table, staffHref }: { table: HomeSummary["storeTable"]; st
           scroll
           columns={(
             [
-              { header: "점포명", align: "left", cell: (r) => <span className="truncate">{r.storeName}</span> },
+              // 본사 점포(직영으로 저장)는 「[본사] 상호」로 매장과 가른다(본사 점포 설계, 2026-11-17)
+              { header: "점포명", align: "left", cell: (r) => <span className="truncate">{storeOptionLabel({ name: r.storeName, isHq: r.isHq })}</span> },
               { header: "유형", width: "w-[72px]", cell: (r) => <CodeLabel group="STORE_TYPE" value={r.storeTypeCode} /> },
               shown("staffCount") && { header: "재직 직원", width: "w-[78px]", cell: (r) => num(r.staffCount) },
               shown("unsignedContractCount") && { header: "미체결 계약", width: "w-[88px]", cell: (r) => num(r.unsignedContractCount) },

@@ -16,7 +16,8 @@
          인증은 회원가입·점포와 같은 네 화면 공통 상자로 한다(S-VRNTHD, 2026-10-22) — 제자리 잠금 · [재인증]은 값을 둔 채 다시 열기,
          [인증하기]로 검사한 뒤 [저장]을 눌러야 반영된다. 번호 중복 확인이 국세청 확인보다 먼저다(PL-OCJOFP).
          실제 화면은 주소 없이 상단 이름 메뉴에서 여는 슬라이드 패널(내 정보)이다.
-         상호명·대표자 연락처·대표자 이메일·사업장 주소·업태·종목은 인증과 관계없이 직접 고친다. -->
+         상호명·대표자 연락처·대표자 이메일·사업장 주소·업태·종목은 인증과 관계없이 직접 고친다.
+         2026-11-17 본사 점포 설계: 사업장 주소 아래에 본사 점포 좌표 줄(위도 · 경도 · 출퇴근 위치적용 · [주소로 다시 계산])을 더했다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
@@ -225,7 +226,7 @@
                           <input class="input" id="pbmail" type="email" value="ceo@hangang.co.kr" maxlength="100" />
                         </div>
                       </div>
-                      <div class="field addr" data-addr>
+                      <div class="field addr" data-addr data-addr-lat="pblat" data-addr-lng="pblng">
                         <label for="pbq">사업장 주소</label>
                         <div class="addr__search">
                           <div class="addr__q">
@@ -241,6 +242,29 @@
                         </div>
                         <input class="input" value="3층" maxlength="100" placeholder="상세주소" aria-label="상세주소" data-addr-detail />
                       </div>
+                      <!-- 본사 점포 좌표(2026-11-17 본사 점포 설계, 실제 화면 coordinate-fields.tsx) — 점포 등록 좌표 줄과 같은 칸을 패널 폭에 맞춰 두 줄로:
+                           위도 · 경도 / 출퇴근 위치적용(150px) · [주소로 다시 계산]. 이 좌표가 본사근무 직원의 출퇴근 위치 확인 기준이고, 좌표가 없으면 위치적용은 미사용으로 막힌다 -->
+                      <div class="inline" style="align-items: flex-end; gap: 6px; flex-wrap: nowrap">
+                        <div class="field" style="flex: 1">
+                          <label for="pblat">위도</label>
+                          <input class="input mono" id="pblat" value="37.556312" inputmode="decimal" placeholder="예: 37.556312" />
+                        </div>
+                        <div class="field" style="flex: 1">
+                          <label for="pblng">경도</label>
+                          <input class="input mono" id="pblng" value="126.901845" inputmode="decimal" placeholder="예: 126.901845" />
+                        </div>
+                      </div>
+                      <div class="inline" style="align-items: flex-end; gap: 6px; flex-wrap: nowrap">
+                        <div class="field" style="width: 150px">
+                          <label for="pbloc">출퇴근 위치적용</label>
+                          <select class="select" id="pbloc">
+                            <option selected>사용</option>
+                            <option>미사용</option>
+                          </select>
+                        </div>
+                        <button class="btn btn--secondary" type="button">주소로 다시 계산</button>
+                      </div>
+                      <p class="help" style="margin: 0">사업자주소가 입력되면 <b>위도</b> · <b>경도</b> 좌표값이 자동으로 표시됩니다. 본사근무 직원의 출퇴근 위치 확인 기준입니다.<br />위도 · 경도가 없으면 <b>출퇴근 위치적용</b>을 사용으로 바꿀 수 없습니다.</p>
                       <div class="grid grid--2">
                         <div class="field">
                           <label for="pbtype">업태</label>

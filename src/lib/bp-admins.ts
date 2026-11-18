@@ -60,6 +60,8 @@ export type BpAdminStoreOption = {
   name: string;
   storeTypeCode: "DIRECT" | "FRANCHISE";
   storeStatusCode: string;
+  /** 본사 점포(2026-11-17) — BP 관리자 대상으로 고를 수 있다. 가맹 마스터 · 가맹 관리자 대상이면 api 가 본사를 빼고 보낸다 */
+  isHq?: boolean;
 };
 
 export type BpAdminHistory = {

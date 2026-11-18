@@ -21,6 +21,11 @@ export type BpProfile = {
   bizItem: string;
   /** 최종 인증일시 — 인증한 적 없으면 null. */
   bizVerifiedAt: string | null;
+  /** 본사 점포 좌표 — 본사근무 직원의 출퇴근 위치 확인 기준(본사 점포 설계, 2026-11-17). 없으면 null */
+  latitude?: number | null;
+  longitude?: number | null;
+  /** 본사 점포의 출퇴근 위치적용 — 점포 등록과 같은 뜻 */
+  isLocationApplied?: boolean;
   /** 저장 · 재인증할 때 그대로 돌려준다 — 그사이 다른 저장이 있었으면 api 409. */
   updatedAt: string;
 };
@@ -34,6 +39,10 @@ export type UpdateBpProfileInput = {
   bizAddressDetail?: string;
   bizCategory?: string;
   bizItem?: string;
+  /** 본사 점포 좌표 · 출퇴근 위치적용 — 바뀌었을 때만 셋을 함께 싣는다(생략하면 api 가 그대로 둔다, 비운 좌표는 null 로 지운다). 좌표 없이 위치적용 true 는 보내지 않는다 */
+  latitude?: number | null;
+  longitude?: number | null;
+  isLocationApplied?: boolean;
   updatedAt: string;
   /** POST .../business-verification 이 돌려준 10분짜리 토큰. 실으면 그 안의 사업자등록번호 · 대표자명 ·
    * 개업일자와 인증일시를 이 저장과 같은 트랜잭션에서 반영한다 — 점포 사업자정보와 같은 패턴(2026-10-22

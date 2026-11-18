@@ -51,9 +51,17 @@ export function FacilityFilter({ query, storeOptions }: { query: FacilityListQue
     });
   const handleFilterChange = (next: Partial<FacilityListQuery>) => navigate(withFilter(current, next));
 
-  // 후보 점포 — 일괄검색 창이 점포유형으로 묶어 고르므로 유형은 로그인 정보에서 찾아 붙인다(store-options 에는 유형이 없다)
+  // 후보 점포 — 일괄검색 창이 점포유형으로 묶어 고른다. 유형은 store-options 가 싣고(2026-11-17), 옛 응답이면 로그인 정보에서 찾는다.
+  // 본사도 시설물을 둘 수 있어 후보에 오고 「[본사] 상호」로 보인다(본사 점포 설계)
   const typeOf = new Map(loginStores.map((s) => [s.storeId, s.storeTypeCode]));
-  const pool: AdminStore[] = storeOptions.map((s) => ({ storeId: s.storeId, storeCode: s.storeCode, name: s.name, storeStatusCode: s.storeStatusCode, storeTypeCode: typeOf.get(s.storeId) ?? "" }));
+  const pool: AdminStore[] = storeOptions.map((s) => ({
+    storeId: s.storeId,
+    storeCode: s.storeCode,
+    name: s.name,
+    storeStatusCode: s.storeStatusCode,
+    storeTypeCode: s.storeTypeCode || (typeOf.get(s.storeId) ?? ""),
+    isHq: s.isHq,
+  }));
 
   // 칩 — 고른 점포는 그 순서대로, 없으면 범위(정해지지 않았으면 채울 헤더 범위)의 점포
   const found = current.storeIds.map((id) => pool.find((s) => s.storeId === id)).filter((s) => s !== undefined);

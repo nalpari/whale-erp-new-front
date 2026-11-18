@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button, Checkbox } from "@/components/common";
 import { FIELD } from "@/components/common/theme";
+import { storeOptionLabel } from "@/lib/store-scope";
 import { useCodeLabel } from "./code-label";
 
 // 등록 · 수정 폼의 「대상 점포」 고르기(데모 config-parts storePicker · bulk). 목록 필터의 StorePicker(188px)와 달리 폼 폭에 맞춰
@@ -17,6 +18,8 @@ export type MappingStoreOption = {
   name: string;
   storeCode: string;
   storeTypeCode: string;
+  /** 본사 점포 — 후보 줄에 「[본사] 상호」로 보인다(본사 점포 설계, 2026-11-17). 칸이 없는 후보는 본사가 아니다 */
+  isHq?: boolean;
 };
 export type MappingStore = { storeId: number; name: string; storeCode: string };
 
@@ -245,7 +248,7 @@ export function StoreMappingPicker({
                     onClick={() => choose(s)}
                     className={`flex cursor-pointer items-center gap-[8px] rounded-[2px] px-[6px] py-[6px] text-erp-ink ${i === active ? "bg-erp-thead-bg" : ""}`}
                   >
-                    <span className="min-w-0 flex-1 truncate">{s.name}</span>
+                    <span className="min-w-0 flex-1 truncate">{storeOptionLabel(s)}</span>
                     <span className="shrink-0 text-[12px] text-erp-muted">{s.storeCode}</span>
                   </li>
                 ))}
@@ -461,7 +464,7 @@ function BulkDialog({
               className={`flex cursor-grab items-center gap-[8px] rounded-[2px] px-[8px] py-[6px] text-[13px] text-erp-ink hover:bg-erp-thead-bg ${dragging?.ids.includes(r.storeId) ? "opacity-40" : ""}`}
             >
               <span className="min-w-0 flex-1 truncate">
-                <Checkbox label={r.name} checked={checked.has(r.storeId)} onChange={(e) => toggle(r.storeId, e.target.checked)} />
+                <Checkbox label={storeOptionLabel(r)} checked={checked.has(r.storeId)} onChange={(e) => toggle(r.storeId, e.target.checked)} />
               </span>
               <span className="shrink-0 text-[11.5px] text-erp-muted">{r.storeCode}</span>
               <span className="w-[52px] shrink-0 text-right text-[11.5px] text-erp-muted">{r.storeTypeCode && typeLabel(r.storeTypeCode)}</span>

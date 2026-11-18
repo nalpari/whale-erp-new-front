@@ -105,6 +105,11 @@ export interface AdminStore {
   name: string;
   storeTypeCode: string;
   storeStatusCode: string;
+  /**
+   * 본사 점포 — BP 가입 때 api 가 만드는 가상의 점포(직영, BP 마다 하나). 다른 점포처럼 권한 · 매칭으로 온다 — BP 마스터 · 플랫폼 계정과 본사에 매칭된(또는 전체 점포) BP 관리자(2026-11-17 사용자 결정).
+   * 점포 수 · 점포 없음 판정 · 직영 범위와 상단 점포 범위 선택(헤더)에서 빼고, 점포를 고르는 칸에는 「[본사] 상호」로 보인다(store-scope.ts). 칸이 없는 응답은 본사가 아니다.
+   */
+  isHq?: boolean;
 }
 
 /** GET /public-code-items?groups= · GET /bp-codes/{bpCodeId}/code-items 의 codes 값 */

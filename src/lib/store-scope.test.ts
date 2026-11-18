@@ -3,9 +3,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { AdminStore } from "./session.ts";
 import {
+  branchStores,
   chipsKeyOf,
+  isHqStore,
   isUnusableScope,
   openStores,
+  storeOptionLabel,
   restoredScope,
   sameStores,
   scopeFromAddress,
@@ -37,6 +40,33 @@ test("scopeStores: 전체는 조건 없음, 직영 · 가맹은 그 유형 점�
   assert.deepEqual(scopeStores({ type: "STORE", storeId: 2 }, stores).map((s) => s.storeId), [2]);
   // 로그인 정보에 없는 점포(지워졌거나 범위 밖)는 고를 것이 없다
   assert.deepEqual(scopeStores({ type: "STORE", storeId: 9 }, stores), []);
+});
+
+// 본사 점포 — BP 가입 때 api 가 만드는 가상의 점포. 직영으로 저장되지만 직영 점포로 세지 않는다(본사 점포 설계, 2026-11-17)
+const hq: AdminStore = { ...store(10, "DIRECT"), name: "한강상회", isHq: true };
+const withHq = [hq, ...stores];
+
+test("본사 점포: 직영 범위 · 본사를 뺀 점포에서 빠지고, 상단 범위(점포 하나)로도 고를 수 없다", () => {
+  assert.equal(isHqStore(hq), true);
+  // 칸이 없는 옛 응답은 본사가 아니다
+  assert.equal(isHqStore(store(1, "DIRECT")), false);
+  assert.deepEqual(branchStores(withHq).map((s) => s.storeId), [1, 2, 3, 4]);
+  assert.deepEqual(scopeStores({ type: "DIRECT" }, withHq).map((s) => s.storeId), [1, 3]);
+  // 상단 범위 선택에 본사가 없다 — 주소로 와도 쓸 수 없는 범위라 「전체」로 돌아간다
+  assert.deepEqual(scopeStores({ type: "STORE", storeId: 10 }, withHq), []);
+  assert.deepEqual(restoredScope({ type: "STORE", storeId: 10 }, withHq), { type: "ALL" });
+  // 본사만 있는 BP 는 직영 범위를 쓸 수 없다(「전체」로 돌아간다)
+  assert.equal(isUnusableScope({ type: "DIRECT" }, [hq]), true);
+});
+
+test("storeOptionLabel: 점포를 고르거나 보이는 칸에서 본사는 앞에 [본사]를 붙인다", () => {
+  assert.equal(storeOptionLabel(hq), "[본사] 한강상회");
+  assert.equal(storeOptionLabel(store(1, "DIRECT")), "점포1");
+});
+
+test("sameStores: 본사 표시가 바뀌면 다른 목록이다", () => {
+  assert.equal(sameStores([hq], [{ ...hq, isHq: false }]), false);
+  assert.equal(sameStores([hq], [{ ...hq }]), true);
 });
 
 test("폐점 점포는 직영 · 가맹 전체에 들지 않지만 점포 하나로는 고를 수 있다", () => {

@@ -6,7 +6,7 @@ import { isFranchiseRole, isPlatformRole } from "@/lib/auth-routes";
 import { bpPath } from "@/lib/bp-path";
 import { menuOfPath } from "@/lib/menus";
 import { guideParam, initialTrackOf } from "@/lib/start-guide";
-import { isClosedStore } from "@/lib/store-scope";
+import { branchStores, isClosedStore } from "@/lib/store-scope";
 import { useAccount, useCurrentBp, useMenus, useService, useStores } from "./session-gate";
 
 // 미운영 · 운영 점포가 하나도 없을 때 메뉴 줄 바로 아래 한 줄 띠(2026-11-04 사용자 지정 — 배민 외식업광장 상단 띠처럼).
@@ -22,7 +22,8 @@ const REGISTER =
 export function NoStoreBand() {
   const account = useAccount();
   const bp = useCurrentBp().bpCodeId;
-  const stores = useStores();
+  // 본사 점포는 BP 가입 때 api 가 만드는 가상의 점포라 「점포가 있다」로 세지 않는다(본사 점포 설계 D6, 2026-11-17)
+  const stores = branchStores(useStores());
   const menus = useMenus();
   const service = useService();
   const toast = useToast();

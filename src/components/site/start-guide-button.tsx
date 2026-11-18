@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useDropdown } from "@/components/common/popup";
+import { branchStores } from "@/lib/store-scope";
 import { useAccount, useStores } from "./session-gate";
 import { GUIDE_STEPS, guideHref, initialTrackOf, stepNumberOf, TRACK_LABEL, tracksOf, type GuideStep, type GuideTrack } from "@/lib/start-guide";
 
@@ -79,8 +80,8 @@ export function StartGuideButton() {
 }
 
 function StepRow({ track, step, onGo }: { track: GuideTrack; step: GuideStep; onGo: () => void }) {
-  const stores = useStores();
-  // 점포를 하나라도 등록했으면(폐점 포함 — 등록은 한 것이다) 끝낸 단계로 체크한다
+  // 점포를 하나라도 등록했으면(폐점 포함 — 등록은 한 것이다) 끝낸 단계로 체크한다. 가입 때 api 가 만든 본사 점포는 등록한 점포가 아니다(본사 점포 설계 D6)
+  const stores = branchStores(useStores());
   const done = step.doneWhen === "stores" && stores.length > 0;
   const body = (
     <>

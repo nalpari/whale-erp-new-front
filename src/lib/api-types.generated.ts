@@ -5020,6 +5020,8 @@ export interface components {
             name: string;
             /** @description 공통코드 `STORE_TYPE` */
             storeTypeCode: string;
+            /** @description 본사 점포인가(2026-11-17) — 본사는 storeTypeCode 가 늘 DIRECT 다. 가맹 마스터 · 가맹 관리자에게는 나오지 않고, 그 밖의 계정에게는 다른 점포처럼 업무 범위(전체 점포 · 매핑)대로 나온다 */
+            isHq: boolean;
             /** @description 공통코드 `STORE_STATUS` */
             storeStatusCode: string;
         };
@@ -5246,10 +5248,15 @@ export interface components {
              * @description 최종 인증일시 — 인증한 적 없으면 null.
              */
             bizVerifiedAt: string | null;
+            /** @description 본사 점포 위도 · 경도 — 본사 직원 출퇴근 반경 기준. 없으면 null(본사는 미운영). */
+            latitude: number | null;
+            longitude: number | null;
+            /** @description 본사 출퇴근 위치 적용 여부 */
+            isLocationApplied: boolean;
             /**
              * Format: date-time
              * @description 저장(PATCH)할 때 동시 수정 검사에 그대로 돌려줘야 하는 값 — 검사만 하는 인증(POST
-             *     business-verification)은 저장이 아니라 받지 않는다.
+             *     business-verification)은 저장이 아니라 받지 않는다. 본사 사업자정보 행의 최종 수정 일시다.
              */
             updatedAt: string;
         };
@@ -5312,6 +5319,21 @@ export interface components {
              *     않는다 — 구독이 생기면 여기에 그 검사를 더한다.
              */
             clearBusinessVerification?: boolean;
+            /**
+             * @description 위도 — −90~90, 소수 6자리. null 이면 좌표를 지우고, 위도 · 경도를 함께 생략하면 그대로 둔다.
+             * @example 37.498095
+             */
+            latitude?: number | null;
+            /**
+             * @description 경도 — −180~180, 소수 6자리.
+             * @example 127.02761
+             */
+            longitude?: number | null;
+            /**
+             * @description 출퇴근 위치 적용 여부 — 좌표 없이 이 칸만 보내도 반영한다. 생략하면 그대로 두고, 본사를 처음 만들 때는 사용(true)이다.
+             *     3팀 출퇴근이 본사 직원의 위치를 이 값으로 본다.
+             */
+            isLocationApplied?: boolean;
         };
         BpBusinessVerificationDto: {
             /**
@@ -5353,6 +5375,8 @@ export interface components {
                 [key: string]: components["schemas"]["CodeValueDto"][];
             };
         };
+        /** @enum {string} */
+        StoreScopeType: "DIRECT" | "FRANCHISE" | "HQ";
         /** @enum {string} */
         EmploymentStatus: "EMPLOYED" | "RETIRED";
         /** @enum {string} */
@@ -6065,6 +6089,8 @@ export interface components {
             storeId: number;
             storeCode: string;
             name: string;
+            /** @description 본사 점포인가(2026-11-17) — BP 관리자 선택지에만 나온다(가맹 마스터 · 가맹 관리자 선택지에는 없다) */
+            isHq: boolean;
             /** @description NOT_OPERATING · OPERATING — 폐점은 선택지에 없다 */
             storeStatusCode: string;
         };
@@ -7178,7 +7204,12 @@ export interface components {
              * @description 최종 인증 일시. null 이면 미인증.
              */
             bizVerifiedAt: string | null;
-            /** @description 소속 점포 수 — 폐점 · 삭제한 점포는 세지 않는다. */
+            /** @description 본사 점포 위도 · 경도 — 본사 직원 출퇴근 반경 기준. 없으면 null(본사는 미운영). */
+            latitude: number | null;
+            longitude: number | null;
+            /** @description 본사 출퇴근 위치 적용 여부 */
+            isLocationApplied: boolean;
+            /** @description 소속 점포 수 — 본사 · 폐점 · 삭제한 점포는 세지 않는다. */
             storeCount: number;
             /** @description 하위 관리자 수 — 이 BP 의 BP 관리자 · 가맹 마스터 · 가맹 관리자 중 지우지 않은 계정. */
             subAdminCount: number;
@@ -7299,6 +7330,21 @@ export interface components {
              *     개업일자와 인증일시를 함께 저장한다. 비우면 그 세 값은 그대로 둔다(등록이면 미인증).
              */
             verificationToken?: string;
+            /**
+             * @description 위도 — −90~90, 소수 6자리. null 이면 좌표를 지우고, 위도 · 경도를 함께 생략하면 그대로 둔다.
+             * @example 37.498095
+             */
+            latitude?: number | null;
+            /**
+             * @description 경도 — −180~180, 소수 6자리.
+             * @example 127.02761
+             */
+            longitude?: number | null;
+            /**
+             * @description 출퇴근 위치 적용 여부 — 좌표 없이 이 칸만 보내도 반영한다. 생략하면 그대로 두고, 본사를 처음 만들 때는 사용(true)이다.
+             *     3팀 출퇴근이 본사 직원의 위치를 이 값으로 본다.
+             */
+            isLocationApplied?: boolean;
         };
         CreateBpMasterResponseDto: {
             bpCodeId: number;
@@ -7356,6 +7402,21 @@ export interface components {
              *     개업일자와 인증일시를 함께 저장한다. 비우면 그 세 값은 그대로 둔다(등록이면 미인증).
              */
             verificationToken?: string;
+            /**
+             * @description 위도 — −90~90, 소수 6자리. null 이면 좌표를 지우고, 위도 · 경도를 함께 생략하면 그대로 둔다.
+             * @example 37.498095
+             */
+            latitude?: number | null;
+            /**
+             * @description 경도 — −180~180, 소수 6자리.
+             * @example 127.02761
+             */
+            longitude?: number | null;
+            /**
+             * @description 출퇴근 위치 적용 여부 — 좌표 없이 이 칸만 보내도 반영한다. 생략하면 그대로 두고, 본사를 처음 만들 때는 사용(true)이다.
+             *     3팀 출퇴근이 본사 직원의 위치를 이 값으로 본다.
+             */
+            isLocationApplied?: boolean;
         };
         ChangeBpMasterStatusDto: {
             /**
@@ -7539,8 +7600,11 @@ export interface components {
             month: string;
             /** @description 점포 ID 목록. 관리 범위 밖은 조용히 빠진다. 없으면 관리 범위 전체 */
             storeIds?: number[];
-            /** @description 점포 유형(상단 점포 범위의 직영 · 가맹, 목록과 같다). 주면 그 유형 점포만이고 폐점 점포는 뺀다 */
-            storeTypes?: ("DIRECT" | "FRANCHISE")[];
+            /**
+             * @description 점포 유형(상단 점포 범위, API enum StoreScopeType, 목록과 같다) — DIRECT(본사가 아닌 직영) · FRANCHISE(가맹) · HQ(본사).
+             *     주면 그 유형 점포만이고 폐점 점포는 뺀다
+             */
+            storeTypes?: components["schemas"]["StoreScopeType"][];
             /** @description 직원명 부분 일치(목록과 같다). 앞뒤 공백을 지우고 비면 없는 것으로 본다 */
             staffName?: string;
         };
@@ -7907,6 +7971,10 @@ export interface components {
             storeId: number;
             /** @description 점포명 */
             name: string;
+            /** @description 점포 유형 코드 — DIRECT · FRANCHISE */
+            storeTypeCode: string;
+            /** @description 본사 점포인가(2026-11-17) — 가맹 마스터 · 가맹 관리자에게는 나오지 않고, 그 밖의 계정에게는 다른 점포처럼 업무 범위(전체 점포 · 매핑)대로 나온다 */
+            isHq: boolean;
         };
         StoreOptionListResponseDto: {
             items: components["schemas"]["StoreOptionDto"][];
@@ -8950,6 +9018,10 @@ export interface components {
             storeId: number;
             storeCode: string;
             name: string;
+            /** @description 점포 유형 코드 — DIRECT · FRANCHISE */
+            storeTypeCode: string;
+            /** @description 본사 점포인가(2026-11-17) — 가맹 마스터 · 가맹 관리자에게는 나오지 않고, 그 밖의 계정에게는 다른 점포처럼 업무 범위(전체 점포 · 매핑)대로 나온다 */
+            isHq: boolean;
             /** @description 점포 상태 — 미운영 NOT_OPERATING · 운영 OPERATING · 폐점 CLOSED */
             storeStatusCode: string;
         };
@@ -11525,6 +11597,8 @@ export interface components {
             storeName: string;
             /** @description 점포 유형 코드 — DIRECT · FRANCHISE */
             storeTypeCode: string;
+            /** @description 본사 점포인가 — 본사는 storeTypeCode 가 늘 DIRECT 다(2026-11-17) */
+            isHq: boolean;
             staffCount: number | null;
             unsignedContractCount: number | null;
             /** @description 오늘 출근 — 카드의 checkedIn 과 같은 기준(본사 역할에게 가려지는 점포는 동의한 직원만) */
@@ -12835,11 +12909,12 @@ export interface operations {
                  */
                 storeIds?: number[];
                 /**
-                 * @description 점포 유형(상단 점포 범위의 직영 · 가맹) — DIRECT · FRANCHISE, 반복하거나 쉼표로. 주면 그 유형 점포만이고 폐점 점포는
-                 *     뺀다(TO-DO 목록 api #133 과 같다, 2026-10-22 재영 — 폐점 점포는 전체 · 점포를 골라 본다). storeIds 와 함께 주면 둘 다
-                 *     맞는 점포만이다. 주지 않으면 유형 · 폐점 무관. 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
+                 * @description 점포 유형(상단 점포 범위, API enum StoreScopeType) — DIRECT(본사가 아닌 직영) · FRANCHISE(가맹) · HQ(본사), 반복하거나
+                 *     쉼표로. 주면 그 유형 점포만이고 폐점 점포는 뺀다(TO-DO 목록 api #133 과 같다, 2026-10-22 재영 — 폐점 점포는 전체 · 점포를
+                 *     골라 본다). storeIds 와 함께 주면 둘 다 맞는 점포만이다. 주지 않으면 유형 · 폐점 무관(본사 포함 — FM · FA 범위에는 본사가
+                 *     없다). 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
                  */
-                storeTypes?: ("DIRECT" | "FRANCHISE")[];
+                storeTypes?: components["schemas"]["StoreScopeType"][];
                 /**
                  * @description 쉼표로 구분한 고용형태. 없으면 전체. 화면은 둘 다 고르면 보내지 않는다.
                  *     빈 값 · 모르는 값이 하나라도 있으면 400 이다.
@@ -17331,10 +17406,11 @@ export interface operations {
                  */
                 storeIds?: string;
                 /**
-                 * @description 쉼표로 구분한 점포 유형(상단 점포 범위의 직영 · 가맹) — DIRECT · FRANCHISE. 주면 그 유형 점포만이고 폐점 점포는 뺀다(직원
-                 *     목록과 같다). storeIds 와 함께 주면 둘 다 맞는 점포만이다. 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
+                 * @description 쉼표로 구분한 점포 유형(상단 점포 범위, API enum StoreScopeType) — DIRECT(본사가 아닌 직영) · FRANCHISE(가맹) · HQ(본사).
+                 *     주면 그 유형 점포만이고 폐점 점포는 뺀다(직원 목록과 같다). storeIds 와 함께 주면 둘 다 맞는 점포만이다. 주지 않으면
+                 *     전체(본사 포함 — FM · FA 범위에는 본사가 없다). 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
                  */
-                storeTypes?: string;
+                storeTypes?: components["schemas"]["StoreScopeType"][];
                 /**
                  * @description true 면 검토 대기(확인하지 않은 검토 사유 — 출퇴근 누락 · 계약 만료 후 기록 · 기간 중 계약 변경 · 확인 필요 기록 포함 —
                  *     가 남았거나 공제 미입력인 작성 중 · 검토 중 명세서 — 공제 미입력은 공제 칸으로 판정, 운영 정책 v221 PAY-06)만(WHALEERP-234). 검토 대기는 상태가 아니라 분류다(2026-10-26). 주면 본사 역할에게 가린 줄은 빠진다 —
@@ -18270,8 +18346,11 @@ export interface operations {
                  *     쉼표로 보낸다(api #132 리뷰). 업무 범위 밖의 id 는 조용히 빠진다. 주지 않으면 업무 범위 전체.
                  */
                 storeIds?: number[];
-                /** @description 점포 유형(직영 · 가맹) — 상단 점포 범위의 직영 · 가맹. 주지 않으면 둘 다. */
-                storeTypes?: ("DIRECT" | "FRANCHISE")[];
+                /**
+                 * @description 점포 유형(상단 점포 범위, API enum StoreScopeType) — DIRECT(본사가 아닌 직영) · FRANCHISE(가맹) · HQ(본사). 주지 않으면
+                 *     전체(본사 포함 — FM · FA 범위에는 본사가 없다).
+                 */
+                storeTypes?: components["schemas"]["StoreScopeType"][];
                 /** @description 1부터 */
                 page: number;
                 pageSize: number;
@@ -22894,8 +22973,11 @@ export interface operations {
                 pageSize?: number;
                 /** @description 여러 개면 `?status=PENDING&status=IN_PROGRESS`. 없으면 전체 */
                 status?: components["schemas"]["TodoStatus"][];
-                /** @description 점포 유형(상단 범위 직영 · 가맹) — DIRECT · FRANCHISE. 폐점 점포는 뺀다. 여러 개는 반복하거나 쉼표로. 주지 않으면 둘 다(폐점 포함) */
-                storeTypes?: ("DIRECT" | "FRANCHISE")[];
+                /**
+                 * @description 점포 유형(상단 점포 범위, API enum StoreScopeType) — DIRECT(본사가 아닌 직영) · FRANCHISE(가맹) · HQ(본사). 폐점 점포는
+                 *     뺀다. 여러 개는 반복하거나 쉼표로. 주지 않으면 전체(폐점 포함, 본사 포함 — FM · FA 범위에는 본사가 없다)
+                 */
+                storeTypes?: components["schemas"]["StoreScopeType"][];
                 /** @description 담당 — 개인 · 근무지 전체 */
                 assigneeType?: components["schemas"]["TodoAssigneeType"];
                 /** @description 고른 점포. 여러 개는 `storeIds=1&storeIds=2` 와 쉼표 `storeIds=1,2` 중 하나로(섞으면 400), 1000개까지. 주지 않으면 업무 범위 전체 */
@@ -24236,8 +24318,11 @@ export interface operations {
     AttendanceRecordsController_daily: {
         parameters: {
             query: {
-                /** @description 점포 유형(상단 범위 직영 · 가맹) — DIRECT · FRANCHISE. 폐점 점포는 뺀다 */
-                storeTypes?: ("DIRECT" | "FRANCHISE")[];
+                /**
+                 * @description 점포 유형(상단 점포 범위, API enum StoreScopeType) — DIRECT(본사가 아닌 직영) · FRANCHISE(가맹) · HQ(본사). 폐점 점포는
+                 *     뺀다. 주지 않으면 전체(본사 포함 — FM · FA 범위에는 본사가 없다)
+                 */
+                storeTypes?: components["schemas"]["StoreScopeType"][];
                 /** @description 날짜 YYYY-MM-DD(한국). 출근 기록 시각 · 근무스케줄 시작이 이 날인 것 */
                 date: string;
                 /** @description 고른 점포. 여러 개는 `storeIds=1&storeIds=2` 와 쉼표 `storeIds=1,2` 중 하나로, 1000개까지 */
@@ -24286,8 +24371,11 @@ export interface operations {
     AttendanceRecordsController_period: {
         parameters: {
             query: {
-                /** @description 점포 유형(상단 범위 직영 · 가맹) — DIRECT · FRANCHISE. 폐점 점포는 뺀다 */
-                storeTypes?: ("DIRECT" | "FRANCHISE")[];
+                /**
+                 * @description 점포 유형(상단 점포 범위, API enum StoreScopeType) — DIRECT(본사가 아닌 직영) · FRANCHISE(가맹) · HQ(본사). 폐점 점포는
+                 *     뺀다. 주지 않으면 전체(본사 포함 — FM · FA 범위에는 본사가 없다)
+                 */
+                storeTypes?: components["schemas"]["StoreScopeType"][];
                 /** @description 시작일 YYYY-MM-DD(한국) */
                 from: string;
                 /** @description 끝날 YYYY-MM-DD(포함). 시작부터 92일 이하 */
@@ -24386,8 +24474,11 @@ export interface operations {
     AttendanceRecordsController_proxyStaff: {
         parameters: {
             query: {
-                /** @description 점포 유형(상단 범위 직영 · 가맹) — DIRECT · FRANCHISE. 폐점 점포는 뺀다 */
-                storeTypes?: ("DIRECT" | "FRANCHISE")[];
+                /**
+                 * @description 점포 유형(상단 점포 범위, API enum StoreScopeType) — DIRECT(본사가 아닌 직영) · FRANCHISE(가맹) · HQ(본사). 폐점 점포는
+                 *     뺀다. 주지 않으면 전체(본사 포함 — FM · FA 범위에는 본사가 없다)
+                 */
+                storeTypes?: components["schemas"]["StoreScopeType"][];
                 /** @description 날 YYYY-MM-DD(한국) */
                 date: string;
                 /** @description 고른 점포. 여러 개는 `storeIds=1&storeIds=2` 와 쉼표 `storeIds=1,2` 중 하나로, 1000개까지 */

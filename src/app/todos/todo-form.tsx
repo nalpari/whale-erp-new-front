@@ -8,7 +8,7 @@ import { isFranchiseRole } from "@/lib/auth-routes";
 import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { MENU_CODE } from "@/lib/menus";
-import { withoutStoreSearch } from "@/lib/store-scope";
+import { branchStores, storeOptionLabel, withoutStoreSearch } from "@/lib/store-scope";
 import { useFailure } from "../staff-members/[id]/use-action-failure";
 import { createTodoAction, getAssignableStaffAction, updateTodoAction } from "./actions";
 import { withBack } from "./todo-list-query";
@@ -186,7 +186,9 @@ function TodoFormFields({
   const createTodo = useAction(createTodoAction, { overlay: false });
   // 가맹 마스터 · 가맹 관리자 — 자기 점포 직원을 모두 봐서 근무지 전체도 미리 확인한다(prechecks)
   const franchiseRole = isFranchiseRole(useAccount().roleTypeCode);
-  const [form, setForm] = useState<Form>(() => (detail ? fromDetail(detail) : initialForm(today, stores.length === 1 ? String(stores[0].storeId) : "")));
+  // 근무지가 하나뿐이면 미리 고른다 — 본사 점포는 세지 않는다(매장 하나인 BP 도 본사 때문에 둘이 되었다, 본사 점포 설계 2026-11-17)
+  const branches = branchStores(stores);
+  const [form, setForm] = useState<Form>(() => (detail ? fromDetail(detail) : initialForm(today, branches.length === 1 ? String(branches[0].storeId) : "")));
   // 저장을 눌렀을 때의 칸 오류. 그 칸 값을 고치면 그 칸 문구만 내린다(DESIGN 「오류 문구 내리기」)
   const [errors, setErrors] = useState<Partial<Record<TodoField, string>>>({});
   const [serverError, setServerError] = useState("");
@@ -476,7 +478,7 @@ function TodoFormFields({
                   <option value="">선택</option>
                   {stores.map((s) => (
                     <option key={s.storeId} value={s.storeId}>
-                      {s.name}
+                      {storeOptionLabel(s)}
                     </option>
                   ))}
                 </Select>

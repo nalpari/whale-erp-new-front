@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useLayoutEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
+import { useEffectEvent, useId, useLayoutEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
 import { Button, Checkbox, Field, FormGroup, FormRow, RequiredMark, SlidePanel, Tag, TextField, useAction } from "@/components/common";
 import { AddressField } from "@/components/address-field";
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
+import { CoordinateFields, useCoordinateLocator } from "@/components/site/coordinate-fields";
 import { InfoBand } from "@/components/site/side-parts";
 import {
   bpMasterServerErrorField,
@@ -120,6 +121,17 @@ export function BpMasterFormPanel(props: Props) {
     setForm((f) => ({ ...f, [key]: value }));
     if (field) clearError(field);
   };
+  // 본사 점포 좌표 — 사업자주소를 고르면 받아 채운다. 고친 좌표 칸의 오류는 바로 내린다
+  const locator = useCoordinateLocator((update) => {
+    setForm((f) => ({ ...f, coordinate: update(f.coordinate) }));
+    clearError("latitude");
+    clearError("longitude");
+  });
+  // 다시 열면 좌표 받기 차례도 올린다 — 닫기 전에 보낸 지난 주소의 좌표 · 실패 문구가 새로 채운 칸에 붙지 않게(위 진위확인 · 중복 확인과 같다)
+  const resetLocator = useEffectEvent(() => locator.reset());
+  useLayoutEffect(() => {
+    if (openCount > 0) resetLocator();
+  }, [openCount]);
   const invalid = (key: BpMasterFormField) => (errors[key] ? true : undefined);
   const messageId = (key: BpMasterFormField) => `${ids}-${key}`;
   const describe = (key: BpMasterFormField) => (errors[key] ? messageId(key) : undefined);
@@ -255,6 +267,8 @@ export function BpMasterFormPanel(props: Props) {
   };
 
   const handleSave = () => {
+    // 좌표를 받는 동안은 저장하지 않는다 — 주소를 고르면 좌표를 먼저 비우므로, 그 사이 저장하면 본사 좌표 · 위치적용이 지워진다(점포 등록과 같다)
+    if (locator.locating) return;
     const found = validateBpMasterForm(form, mode);
     setErrors(found);
     if (found.loginId) setLoginIdCheck("idle");
@@ -509,10 +523,22 @@ export function BpMasterFormPanel(props: Props) {
           label="사업자주소"
           value={{ zipCode: form.zipCode, address: form.address, addressDetail: form.addressDetail }}
           onChange={(a) => {
+            // [지우기]로 주소를 비우면 그 주소에서 나온 좌표 · 출퇴근 위치적용도 함께 비운다(점포 등록 · 마이페이지와 같다)
+            if (!a.address && form.address) locator.onAddressCleared();
             setForm((f) => ({ ...f, ...a }));
             clearError("addressDetail");
           }}
+          onChoose={locator.onAddressChoose}
           detailError={errors.addressDetail}
+        />
+        {/* 사업자주소 아래 좌표 줄 — 이 BP 본사 점포의 좌표 · 출퇴근 위치적용(본사 점포 설계, 2026-11-17). 마이페이지 사업자정보와 같다 */}
+        <CoordinateFields
+          value={form.coordinate}
+          onApplyChange={(applied) => setForm((f) => ({ ...f, coordinate: { ...f.coordinate, isLocationApplied: applied } }))}
+          locator={locator}
+          address={form.address}
+          errors={{ latitude: errors.latitude, longitude: errors.longitude }}
+          idPrefix={`${ids}-coordinate`}
         />
       </section>
 
@@ -525,7 +551,7 @@ export function BpMasterFormPanel(props: Props) {
         <Button variant="off" onClick={onClose} disabled={saving}>
           취소
         </Button>
-        <Button onClick={handleSave} disabled={saving || verifying}>
+        <Button onClick={handleSave} disabled={saving || verifying || locator.locating}>
           저장
         </Button>
       </div>

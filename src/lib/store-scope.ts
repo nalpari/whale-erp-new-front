@@ -15,16 +15,32 @@ export const isClosedStore = (s: AdminStore) => s.storeStatusCode === "CLOSED";
  */
 export const openStores = (stores: readonly AdminStore[]) => stores.filter((s) => !isClosedStore(s));
 
-/** 범위에 드는 점포 — 전체면 [](조건 없음), 직영 · 가맹이면 폐점이 아닌 그 유형의 점포 모두, 점포 하나면 그 점포(폐점도, 로그인 정보에 없으면 []) */
+/**
+ * 본사 점포인가 — api 가 BP 가입 때 만드는 가상의 점포(직영으로 저장된다). 칸이 없는 응답은 본사가 아니다.
+ * storeTypeCode === "DIRECT" 로 직영 점포를 셀 때는 branchStores 를 먼저 거친다 — 그렇지 않으면 본사가 직영으로 섞인다.
+ */
+export const isHqStore = (s: { isHq?: boolean }) => s.isHq === true;
+
+/**
+ * 본사를 뺀 점포 — 사용자가 등록한 매장. 점포 없음 띠 · 시작 가이드 「점포 등록」 완료 · 상단 점포 범위 개수 · 직영 범위 · 근무지 미리 고르기가 쓴다.
+ * 본사는 직영으로 저장되지만 직영 점포로 세지 않는다(본사 점포 설계 D6, 2026-11-17). 홈은 본사 직원 현황도 보므로 본사를 그대로 센다.
+ */
+export const branchStores = <T extends { isHq?: boolean }>(stores: readonly T[]): T[] => stores.filter((s) => !isHqStore(s));
+
+/** 점포를 고르거나 보이는 칸(근무지 선택칸 · 점포 고르기 · 홈 점포별 현황)의 점포 이름 — 본사 점포는 앞에 「[본사]」를 붙여 매장과 가른다(본사 점포 설계, 2026-11-17 사용자 지정) */
+export const storeOptionLabel = (s: { name: string; isHq?: boolean }) => (isHqStore(s) ? `[본사] ${s.name}` : s.name);
+
+/** 범위에 드는 점포 — 전체면 [](조건 없음), 직영 · 가맹이면 폐점이 아닌 그 유형의 점포 모두(본사 빼고), 점포 하나면 그 점포(폐점도, 본사이거나 로그인 정보에 없으면 []) */
 export function scopeStores(scope: Scope, stores: readonly AdminStore[]): AdminStore[] {
   switch (scope.type) {
     case "ALL":
       return [];
     case "DIRECT":
     case "FRANCHISE":
-      return openStores(stores).filter((s) => s.storeTypeCode === scope.type);
+      return openStores(branchStores(stores)).filter((s) => s.storeTypeCode === scope.type);
     case "STORE":
-      return stores.filter((s) => s.storeId === scope.storeId);
+      // 본사 점포는 상단 범위로 고를 수 없다(선택기에 없다) — 주소로 와도 쓸 수 없는 범위로 본다: 헤더는 따르지 않고, 저장된 범위 · 목록은 「전체」로 돌린다(2026-11-17 사용자 지정)
+      return stores.filter((s) => s.storeId === scope.storeId && !isHqStore(s));
   }
 }
 
@@ -58,7 +74,7 @@ export function sameStores(a: readonly AdminStore[], b: readonly AdminStore[]): 
     a.length === b.length &&
     a.every((s, i) => {
       const t = b[i];
-      return s.storeId === t.storeId && s.storeCode === t.storeCode && s.name === t.name && s.storeTypeCode === t.storeTypeCode && s.storeStatusCode === t.storeStatusCode;
+      return s.storeId === t.storeId && s.storeCode === t.storeCode && s.name === t.name && s.storeTypeCode === t.storeTypeCode && s.storeStatusCode === t.storeStatusCode && isHqStore(s) === isHqStore(t);
     })
   );
 }

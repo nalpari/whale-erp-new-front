@@ -66,6 +66,36 @@ export const locationApplyHelp = `<span class="relative inline-flex shrink-0"><b
 export const locationApplyField = (control) =>
   `<div role="group" aria-label="출퇴근 위치적용" class="flex w-[150px] flex-col justify-center gap-[8px]"><span class="flex items-center gap-[4px] text-[14px] font-medium text-erp-label">출퇴근 위치적용${locationApplyHelp}</span>${control}</div>`;
 
+// 본사 점포 좌표 줄 — 마이페이지 사업자정보 · 플랫폼 BP 마스터 등록 · 수정의 사업자주소 바로 아래(앱 site/coordinate-fields.tsx, 2026-11-17 본사 점포 설계).
+// 점포 등록 좌표 줄과 같은 칸이지만 패널 폭(464)에도 들어가게 두 줄이다: 위도 · 경도 / 출퇴근 위치적용 · [주소로 다시 계산].
+// 이 좌표가 본사 점포의 좌표다 — 좌표가 없으면 위치적용은 미사용으로 막히고, 사업자주소가 없으면 [주소로 다시 계산]도 막힌다.
+export const hqCoordinateFields = ({ latitude = "", longitude = "", applied = false, hasAddress = !!(latitude && longitude) } = {}) => {
+  const has = !!(latitude && longitude);
+  return (
+    `<div class="flex flex-col gap-[8px]">` +
+    ui.formRow(
+      ui.field("위도", ui.textField({ value: latitude, inputmode: "decimal", placeholder: "예: 37.556312" })),
+      ui.field("경도", ui.textField({ value: longitude, inputmode: "decimal", placeholder: "예: 126.901845" })),
+    ) +
+    ui.formRow(
+      locationApplyField(
+        ui.select(["사용", "미사용"], {
+          "aria-label": "출퇴근 위치적용",
+          value: has && applied ? "사용" : "미사용",
+          disabled: !has,
+          title: has ? undefined : "위도 · 경도가 있어야 사용으로 바꿀 수 있습니다.",
+        }),
+      ),
+      `<div class="self-end">${ui.button("주소로 다시 계산", { variant: "soft", disabled: !hasAddress })}</div>`,
+    ) +
+    note(
+      `사업자주소가 입력되면 <b class="font-semibold">위도</b> · <b class="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다. 본사근무 직원의 출퇴근 위치 확인 기준입니다.<br>` +
+        `위도 · 경도가 없으면 <b class="font-semibold">출퇴근 위치적용</b>을 사용으로 바꿀 수 없습니다.`,
+    ) +
+    `</div>`
+  );
+};
+
 // 주소(앱 AddressField). [주소 검색] 버튼 없이 돋보기 검색칸에 치면 바로 아래 목록이 뜬다. 우편번호 80px, 값이 있으면 [지우기].
 // disabled: 다른 값(점포 주소)과 같아 보여 주기만 한다 — 검색칸 · 지우기를 숨기고 상세주소는 읽기 전용.
 // hideClear: 비운 채로 둘 수 없는 값(운영 점포의 점포 주소)이라 [지우기]만 숨긴다. 상세주소는 주소를 고르기 전에는 막힌다.

@@ -79,6 +79,8 @@ const optionOf = (s: BpAdminStoreOption): MappingStoreOption => ({
   name: s.name,
   storeCode: s.storeCode,
   storeTypeCode: s.storeTypeCode,
+  // 본사도 매칭할 수 있다 — 후보에 「[본사] 상호」로 보인다(가맹 역할 대상이면 api 가 본사를 빼고 보낸다, 2026-11-17)
+  isHq: s.isHq,
 });
 
 export function AdminFormPanel(props: Props) {

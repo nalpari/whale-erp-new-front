@@ -3,6 +3,7 @@
 import * as ui from "../../ui.mjs";
 import * as f from "../../biz-form.mjs";
 import { BP, platformHeader, link } from "../../site.mjs";
+import { hqCoordinateFields } from "../../store-parts.mjs";
 
 // 제목 옆에 「BP 코드 · 값」 꼬리표와 계정상태 배지 — 계정상태 칸은 없앴다(앱 bp-master-form-panel.tsx, 2026-10-28 사용자 지정)
 const TITLE = `BP 마스터 계정 수정<span class="ml-[6px] inline-flex items-center gap-[6px] align-middle"><span class="inline-flex rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] py-[2px] text-[14px] font-medium text-erp-label">BP 코드 · <b class="ml-[3px] font-semibold text-erp-ink">${BP.code}</b></span>${ui.badge("on", "사용")}</span>`;
@@ -30,7 +31,7 @@ export function bizAuthBox(A, { locked, values = ["", "", ""], date = "" }) {
 
 // 상호명부터는 따로 상자. 대표자 연락처 · 이메일 옆 「기본정보와 동일」 — 켜면 기본정보 값이 읽기 전용으로 들어간다.
 // 등록은 꺼진 채, 수정은 저장된 값이 기본정보와 같을 때만 켜진 채로 연다(마이페이지와 같은 규칙)
-export function bizRest(A, idp, { tradeName, same, phone = ["", "", ""], email = "", category = "", item = "", addr = {} }) {
+export function bizRest(A, idp, { tradeName, same, phone = ["", "", ""], email = "", category = "", item = "", addr = {}, coordinate = {} }) {
   const label = (text, id) => `<span class="flex items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>${text}</span>${ui.checkbox(A, "기본정보와 동일", same, { id })}</span>`;
   const tel = same
     ? `<div class="flex gap-[6px]">${phone.map((v, i) => ui.textField({ value: v, readonly: true, "aria-label": ["앞자리", "가운데자리", "끝자리"][i] })).join("")}</div>`
@@ -42,6 +43,9 @@ export function bizRest(A, idp, { tradeName, same, phone = ["", "", ""], email =
     `<div role="group" aria-label="대표자 이메일" class="flex min-w-px flex-1 flex-col gap-[8px]">${label("대표자 이메일", `${idp}-email-same`)}${ui.textField({ type: "email", value: email, maxlength: 100, readonly: same })}</div>` +
     ui.formRow(ui.field("업태", ui.textField({ value: category, maxlength: 50 })), ui.field("종목", ui.textField({ value: item, maxlength: 50 }))) +
     f.address(A, "사업자주소", addr) +
+    // 사업자주소 바로 아래 본사 점포 좌표 줄 — 마이페이지 사업자정보와 같다. 주소가 없으면(등록) 빈 좌표 · 위치적용 막힘
+    // (앱 bp-master-form-panel.tsx · coordinate-fields.tsx, 2026-11-17 본사 점포 설계)
+    hqCoordinateFields(coordinate) +
     `</section>`
   );
 }
@@ -62,7 +66,7 @@ export function bpEditBody(A, R, { panel = false } = {}) {
   const biz =
     `<div class="flex flex-col gap-[18px]">` +
     bizAuthBox(A, { locked: true, values: ["211-87-01234", "남도현", "2021-03-15"], date: "2026-03-04 10:20" }) +
-    bizRest(A, "ebiz", { tradeName: BP.name, same: false, phone: ["010", "5530", "1182"], email: "ceo@hangang.co.kr", category: "도소매업", item: "식자재 유통", addr: { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" } }) +
+    bizRest(A, "ebiz", { tradeName: BP.name, same: false, phone: ["010", "5530", "1182"], email: "ceo@hangang.co.kr", category: "도소매업", item: "식자재 유통", addr: { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }, coordinate: { latitude: "37.556312", longitude: "126.901845", applied: true } }) +
     `</div>`;
 
   const cancel = panel ? ui.button("취소", { variant: "off", "data-close": true }) : ui.button("취소", { variant: "off", href: detail });

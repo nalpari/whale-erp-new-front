@@ -4,6 +4,8 @@ import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState, us
 import { AddressField } from "@/components/address-field";
 import { Checkbox, Field, FormRow, RequiredMark, TextField, useAction, useToast } from "@/components/common";
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
+import { CoordinateFields, useCoordinateLocator } from "@/components/site/coordinate-fields";
+import { useRefreshStores } from "@/components/site/session-gate";
 import { formatDateTime } from "@/lib/format";
 import { splitPhone } from "@/lib/my-profile-form";
 import { formatBizNumber } from "@/lib/store-view";
@@ -105,6 +107,7 @@ export const BpProfileTab = forwardRef<
   }
 >(function BpProfileTab({ onSavingChange, basicPhone, basicEmail }, ref) {
   const toast = useToast();
+  const refreshStores = useRefreshStores();
   const getBpProfile = useAction(getBpProfileAction, { overlay: false });
   const updateBpProfile = useAction(updateBpProfileAction, { overlay: false });
   const verifyBpBusiness = useAction(verifyBpBusinessAction, { overlay: false });
@@ -164,6 +167,14 @@ export const BpProfileTab = forwardRef<
     setForm((f) => (f ? { ...f, [key]: value } : f));
     clearError(key as BpProfileFormField);
   };
+  // 본사 점포 좌표 — 사업자주소를 고르면 받아 채운다(본사 점포 설계, 2026-11-17). 고친 좌표 칸의 오류는 바로 내린다
+  const locator = useCoordinateLocator(
+    (update) => {
+      setForm((f) => (f ? { ...f, coordinate: update(f.coordinate) } : f));
+      clearError("latitude");
+      clearError("longitude");
+    },
+  );
   const invalid = (key: BpProfileFormField) => (errors[key] ? true : undefined);
   const messageId = (key: BpProfileFormField) => `${ids}-${key}`;
   const describe = (key: BpProfileFormField) => (errors[key] ? messageId(key) : undefined);
@@ -256,6 +267,8 @@ export const BpProfileTab = forwardRef<
 
   const handleSave = () => {
     if (!form || !verifyForm || updatedAt === null) return;
+    // 좌표를 받는 동안은 저장하지 않는다 — 주소를 고르면 좌표를 먼저 비우므로, 그 사이 저장하면 본사 좌표 · 위치적용이 지워진다(점포 등록과 같다)
+    if (locator.locating) return toast("좌표를 가져오는 중입니다. 잠시 뒤 저장해 주세요.");
     const found = validateBpProfileForm(form);
     setErrors(found);
     setFailure(null);
@@ -297,6 +310,8 @@ export const BpProfileTab = forwardRef<
       // 못했습니다"가 떠, 다시 저장을 누르면 이미 반영된 updatedAt·토큰으로 409 가 났다). 화면은 다시 열어야
       // 최신값을 받으므로 그렇게 안내한다.
       toast("saved");
+      // 상호명 · 좌표는 본사 점포에도 저장된다 — 점포를 고르는 칸의 「[본사] 상호」 이름 · 상태가 바로 바뀌게 점포 목록을 다시 받는다(본사 점포 설계, 2026-11-17)
+      refreshStores({ quiet: true });
       try {
         const refreshed = await getBpProfile();
         if (refreshed.ok) {
@@ -509,10 +524,22 @@ export const BpProfileTab = forwardRef<
             // "address" 는 BpProfileFormField 가 아니다 — 100자 제한 오류는 bizAddressDetail 에 붙으므로
             // set("address", …)의 clearError(key as …) 캐스트는 아무것도 못 지운다(점포 store-form-view.tsx
             // 의 사업자주소 onChange 와 같은 이유로 여기서 직접 지운다, 코드 리뷰로 찾음, 2026-10-23).
+            // [지우기]로 주소를 비우면 그 주소에서 나온 좌표 · 출퇴근 위치적용도 함께 비운다(점포 등록과 같다)
+            if (!next.address && form.address.address) locator.onAddressCleared();
             setForm((f) => (f ? { ...f, address: next } : f));
             clearError("bizAddressDetail");
           }}
+          onChoose={locator.onAddressChoose}
           detailError={errors.bizAddressDetail}
+        />
+        {/* 사업자주소 아래 위도 · 경도 · 출퇴근 위치적용 줄 — 본사근무 직원의 출퇴근 위치 확인 기준(근무지 · 본사근무 정책 2, 2026-11-17) */}
+        <CoordinateFields
+          value={form.coordinate}
+          onApplyChange={(applied) => setForm((f) => (f ? { ...f, coordinate: { ...f.coordinate, isLocationApplied: applied } } : f))}
+          locator={locator}
+          address={form.address.address}
+          errors={{ latitude: errors.latitude, longitude: errors.longitude }}
+          idPrefix={`${ids}-coordinate`}
         />
 
         {failure && <FailedBand title={failure} />}

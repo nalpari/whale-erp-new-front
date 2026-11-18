@@ -6,6 +6,7 @@ import { loginIdError, NAME_PATTERN, PHONE_PATTERN, splitPhone } from "./platfor
 // 대표자 연락처는 1팀 연락처 칸과 같은 숫자 9~12자리 — BP 자기 사업자정보(마이페이지)와 같은 규칙
 import { CEO_PHONE_PATTERN } from "./bp-profile-form.ts";
 import { BIZ_MESSAGE, isBizVerificationExpired } from "./biz-verification-rules.ts";
+import { coordinateChange, coordinateErrors, coordinateFormOf, EMPTY_COORDINATE, type CoordinateForm } from "./coordinate-form.ts";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const BIZ_NUMBER_PATTERN = /^[0-9]{10}$/;
@@ -33,6 +34,10 @@ export type BpMasterForm = {
   zipCode: string;
   address: string;
   addressDetail: string;
+  /** 본사 점포 좌표 · 출퇴근 위치적용(coordinate-form.ts) — 사업자주소를 고르면 채운다(본사 점포 설계, 2026-11-17) */
+  coordinate: CoordinateForm;
+  /** 불러온 좌표(등록은 빈 좌표) — 바뀌었을 때만 저장에 싣는다(coordinateChange) */
+  savedCoordinate: CoordinateForm;
   category: string;
   item: string;
   /** 진위확인 입력 — 인증 상자가 열려 있을 때(verifying) 쓴다 */
@@ -57,6 +62,8 @@ export type BpMasterFormField =
   | "ceoPhone"
   | "ceoEmail"
   | "addressDetail"
+  | "latitude"
+  | "longitude"
   | "category"
   | "item"
   | "bizNumber"
@@ -78,6 +85,8 @@ export const EMPTY_BP_MASTER_FORM: BpMasterForm = {
   zipCode: "",
   address: "",
   addressDetail: "",
+  coordinate: EMPTY_COORDINATE,
+  savedCoordinate: EMPTY_COORDINATE,
   category: "",
   item: "",
   bizNumber: "",
@@ -112,6 +121,8 @@ export function formOfBpMaster(d: BpMasterDetail): BpMasterForm {
     zipCode: d.bizZipCode ?? "",
     address: d.bizAddress ?? "",
     addressDetail: d.bizAddressDetail ?? "",
+    coordinate: coordinateFormOf(d),
+    savedCoordinate: coordinateFormOf(d),
     category: d.bizCategory ?? "",
     item: d.bizItem ?? "",
     verifying: !verified,
@@ -174,6 +185,7 @@ export function validateBpMasterForm(form: BpMasterForm, mode: "create" | "edit"
   if (form.addressDetail.trim().length > 100) errors.addressDetail = "상세주소는 100자까지입니다.";
   // 상세주소는 기본주소에 딸린 값이다 — 「302호」만 남은 주소가 저장되지 않게 막는다
   else if (form.addressDetail.trim() && !form.address.trim()) errors.addressDetail = "주소를 먼저 검색해 주세요.";
+  Object.assign(errors, coordinateErrors(form.coordinate));
   return errors;
 }
 
@@ -200,6 +212,8 @@ function profileOf(form: BpMasterForm) {
     bizAddressDetail: optional(form.addressDetail),
     bizCategory: optional(form.category),
     bizItem: optional(form.item),
+    // 본사 점포 좌표 · 출퇴근 위치적용 — 바뀌었을 때만 셋을 함께 싣는다(생략하면 api 가 그대로 둔다 — 덮어쓰기 · 옛 api 400 방지, 비운 좌표는 null)
+    ...coordinateChange(form.coordinate, form.savedCoordinate),
     // 이번 화면에서 받은 토큰만 보낸다 — 저장돼 있던 인증은 토큰이 없어 그대로 남는다
     ...(form.verified?.token ? { verificationToken: form.verified.token } : {}),
   };
@@ -224,6 +238,8 @@ export function bpMasterServerErrorField(status: number | undefined, message: st
   if (message.includes("대표자 이메일")) return "ceoEmail";
   if (message.includes("이메일")) return "email";
   if (message.includes("상호")) return "tradeName";
+  if (message.includes("경도")) return "longitude";
+  if (message.includes("위도") || message.includes("좌표")) return "latitude";
   return null;
 }
 

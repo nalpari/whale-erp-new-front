@@ -14,7 +14,8 @@
          인증 UI 는 네 화면(회원가입 · 점포 · MY PAGE · BP 관리) 공통 인증 상자(S-VRNTHD, 2026-10-22)다 — 처음부터 세 칸 한 줄 상자가 열려 있고, 인증하면 세 칸이 제자리에서 잠기며 상자 제목 오른쪽에 「인증 완료 · 일시」가 보인다. [재인증]은 확인창 없이 값을 둔 채 세 칸을 다시 열고 [재인증 취소]로 되돌린다(2026-10-29 재영).
          BP 상태는 사용으로 고정, 권한 그룹은 BP 마스터 기본 권한, 가입경로는 플랫폼등록, 약관은 미동의로 생긴다.
          BP 코드·BP 상태·가입경로는 등록 화면에 보이지 않는다. BP 코드는 저장이 끝난 뒤 매겨 상세 화면에서 알린다. 초기 비밀번호는 BP 신규 등록 메일로만 간다.
-         위쪽 점선 줄은 목업 전용이다 — 입력 상태를 바꿔 본다. -->
+         위쪽 점선 줄은 목업 전용이다 — 입력 상태를 바꿔 본다.
+         2026-11-17 본사 점포 설계: 사업자주소 아래에 본사 점포 좌표 줄(위도 · 경도 · 출퇴근 위치적용 · [주소로 다시 계산])을 더했다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
@@ -191,7 +192,7 @@
                 </div>
                 <!-- 사업자주소 — 점포 등록과 같은 주소 검색 프로세스(data-addr).
                      검색어를 넣고 검색(또는 Enter)하면 결과가 입력칸 아래 목록으로 펼쳐지고, 고른 우편번호·기본주소만 들어간다. 상세주소는 직접 적는다. -->
-                <div class="field addr" data-addr>
+                <div class="field addr" data-addr data-addr-lat="nbzlat" data-addr-lng="nbzlng">
                   <label for="nbzq">사업자주소</label>
                   <div class="addr__search">
                     <div class="addr__q">
@@ -208,6 +209,29 @@
                   <input class="input" value="" maxlength="100" placeholder="상세주소" aria-label="상세주소" data-addr-detail />
                   <span class="help">검색 결과에서 고른 우편번호·기본주소만 들어갑니다. 상세주소는 직접 적습니다.</span>
                 </div>
+                <!-- 본사 점포 좌표(2026-11-17 본사 점포 설계, 실제 화면 coordinate-fields.tsx) — 점포 등록 좌표 줄과 같은 칸을 패널 폭에 맞춰 두 줄로.
+                     주소를 고르기 전이라 좌표가 비어 있고, 출퇴근 위치적용은 미사용으로 막히며 [주소로 다시 계산]도 막힌다 -->
+                <div class="inline" style="align-items: flex-end; gap: 6px; flex-wrap: nowrap">
+                  <div class="field" style="flex: 1">
+                    <label for="nbzlat">위도</label>
+                    <input class="input mono" id="nbzlat" value="" inputmode="decimal" placeholder="예: 37.556312" />
+                  </div>
+                  <div class="field" style="flex: 1">
+                    <label for="nbzlng">경도</label>
+                    <input class="input mono" id="nbzlng" value="" inputmode="decimal" placeholder="예: 126.901845" />
+                  </div>
+                </div>
+                <div class="inline" style="align-items: flex-end; gap: 6px; flex-wrap: nowrap">
+                  <div class="field" style="width: 150px">
+                    <label for="nbzloc">출퇴근 위치적용</label>
+                    <select class="select" id="nbzloc" disabled title="위도 · 경도가 있어야 사용으로 바꿀 수 있습니다.">
+                      <option>사용</option>
+                      <option selected>미사용</option>
+                    </select>
+                  </div>
+                  <button class="btn btn--secondary" type="button" disabled>주소로 다시 계산</button>
+                </div>
+                <p class="help" style="margin: 0">사업자주소가 입력되면 <b>위도</b> · <b>경도</b> 좌표값이 자동으로 표시됩니다. 본사근무 직원의 출퇴근 위치 확인 기준입니다.<br />위도 · 경도가 없으면 <b>출퇴근 위치적용</b>을 사용으로 바꿀 수 없습니다.</p>
                 <div class="grid grid--2">
                   <div class="field">
                     <label for="nbiz1">업태</label>

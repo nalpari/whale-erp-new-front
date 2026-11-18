@@ -3,7 +3,8 @@ import { authHeaders, deniedMessageOf, getEnum, request } from "@/lib/api";
 import type { ContractFormLabels } from "./contract-form";
 import type { MinimumWage } from "./contract-form-model";
 
-export type StoreOption = { storeId: number; name: string };
+/** 근무지 선택지 — isHq 는 본사 점포(2026-11-17 본사 점포 설계, 권한이 있는 계정에만 온다). 선택칸에 「[본사] 상호」로 보인다 */
+export type StoreOption = { storeId: number; name: string; isHq?: boolean };
 
 /**
  * 작성 · 이어 쓰기 화면이 같이 쓰는 선택지. 근무지 · 최저임금은 관리자 토큰으로만 받는다 — 근무지는 탭 BP 의 점포다

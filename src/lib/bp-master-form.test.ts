@@ -61,8 +61,12 @@ test("요청 — 다듬고 빈 선택 칸은 null, 이번 화면의 인증 토�
     bizAddressDetail: null,
     bizCategory: null,
     bizItem: null,
+    // 좌표를 건드리지 않았으면 싣지 않는다 — api 가 그대로 둔다(본사 점포 설계, 2026-11-17)
     verificationToken: "t1",
   });
+  // 좌표를 고치면 셋을 함께 싣는다
+  const located = toCreateBpMasterInput({ ...filled, coordinate: { latitude: "37.5", longitude: "127", isLocationApplied: true } });
+  assert.deepEqual([located.latitude, located.longitude, located.isLocationApplied], [37.5, 127, true]);
   // 저장돼 있던 인증(토큰 없음)은 보내지 않는다 — api 가 그대로 둔다
   const kept = toUpdateBpMasterInput({ ...filled, verified: { bizNumber: "1058633412", ceoName: "정하윤", openDate: "2016-05-20" } });
   assert.equal("verificationToken" in kept, false);
@@ -98,6 +102,21 @@ test("상세로 채우면 인증된 BP 는 완료 카드 값을, 미인증 BP �
   assert.equal(formOfBpMaster({ ...detail, bizVerifiedAt: null, bizRegistrationNumber: null }).verifying, true);
   // 번호만 남고 인증 시각이 없는 BP 는 인증 완료 카드로 열지 않는다
   assert.equal(formOfBpMaster({ ...detail, bizVerifiedAt: null }).verified, null);
+});
+
+test("본사 좌표 — 불러온 그대로 저장하면 싣지 않고, 고치면 셋을 함께 싣는다(덮어쓰기 · 옛 api 400 방지)", () => {
+  const detail = { loginId: "hangang01", name: "정하윤", phone: "01033801127", email: "h@h.kr", tradeName: "㈜한강상회", latitude: 37.556312, longitude: 126.9018450, isLocationApplied: true } as BpMasterDetail;
+  const kept = toUpdateBpMasterInput(formOfBpMaster(detail));
+  assert.equal("latitude" in kept || "longitude" in kept || "isLocationApplied" in kept, false);
+  const form = formOfBpMaster(detail);
+  const moved = toUpdateBpMasterInput({ ...form, coordinate: { ...form.coordinate, latitude: "37.5" } });
+  assert.deepEqual([moved.latitude, moved.longitude, moved.isLocationApplied], [37.5, 126.901845, true]);
+});
+
+test("본사 좌표 검사 · api 거절 칸 — 점포 등록과 같은 규칙", () => {
+  assert.equal(validateBpMasterForm({ ...filled, coordinate: { latitude: "91", longitude: "127", isLocationApplied: false } }, "create").latitude, "위도는 -90~90, 소수 6자리까지입니다.");
+  assert.equal(bpMasterServerErrorField(400, "경도는 -180~180 사이여야 합니다.", "edit"), "longitude");
+  assert.equal(bpMasterServerErrorField(400, "위도는 -90~90 사이여야 합니다.", "edit"), "latitude");
 });
 
 test("api 오류를 붙일 칸 — 중복 · 형식만, 수정의 아이디 오류는 띠로", () => {
