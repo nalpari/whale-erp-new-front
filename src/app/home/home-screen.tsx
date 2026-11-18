@@ -17,6 +17,8 @@ import { useApi, useLoad } from "@/lib/use-load";
 import { DEFAULT_TODO_LIST_QUERY, toTodoListSearch } from "../todos/todo-list-query";
 import type { DailyAttendance } from "@/lib/attendance-records-api";
 import type { TodoListResponse } from "@/lib/todos-api";
+import type { PayslipListResponse } from "@/lib/payslips";
+import { defaultPayslipListQuery, toPayslipListSearch } from "../payslips/payslip-list-query";
 import { homeSearchOf, latestNotices, NOTICES_PATH, pendingLineOf, storeCountsOf, type HomePending, type HomeSummary } from "./home-view";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"] as const;
@@ -29,24 +31,25 @@ function formatAsOf(iso: string): string {
 }
 
 const CARD = "rounded-[4px] border border-erp-panel-line bg-white";
+// 홈의 상자 제목(공지사항 · 카드 넷 · 운영 점포별 현황 · 확인 필요 · 급여명세서 · 내 문의)은 모두 16px 600 먹색 — 18 · 16 · 15 가 섞여 있었다(2026-11-18 사용자 지정)
 /**
  * 홈의 이동 버튼(공지 목록 · 점포 목록 · 직원 목록 · 출퇴근 현황 · TO-DO 목록 · 문의하기) — 모두 이 한 모양이다. 글자 없이 꺾쇠 아이콘만 두고, 26px 칸은 처음부터 회색 바탕
- * (전엔 호버 때만 — 그 모양이 더 나아 처음부터 쓴다, 2026-11-18 사용자 지정). 호버하면 흰 바탕 · 회청 테두리(Outline 버튼과 같은 방식). 
+ * (전엔 호버 때만 — 그 모양이 더 나아 처음부터 쓴다, 2026-11-18 사용자 지정). 호버해도 테두리를 두르지 않는다(사용자 지정). 
  * 숫자가 많은 화면이라 글자 버튼 여섯 개가 정신없었다(2026-11-18 사용자 지정). 툴팁도 두지 않는다 — 어디로 가는지는 카드 제목이 말하고, 화면 읽기 도구는 aria-label 로 읽는다
  */
 function MoveLink({ href, label }: { href: string; label: string }) {
   return (
-    <Link href={href} aria-label={label} className="grid size-[26px] shrink-0 place-items-center rounded-[2px] border border-erp-subtle bg-erp-subtle transition-colors duration-150 ease-out hover:border-erp-brand hover:bg-white">
+    <Link href={href} aria-label={label} className="grid size-[26px] shrink-0 place-items-center">
       <Image src="/icons/chevron-small.svg" alt="" width={5} height={8} className="rotate-180" />
     </Link>
   );
 }
 
-/** 카드 전체가 링크일 때의 꺾쇠 표시 — 이동 버튼과 같은 모양이고, 카드에 마우스를 올리면 함께 흰 바탕 · 회청 테두리로 바뀐다 */
+/** 카드 전체가 링크일 때의 꺾쇠 표시 — 이동 버튼과 같은 모양이고, 호버해도 바뀌지 않는다 — 카드 테두리가 진해지는 것으로 충분하다(2026-11-18 사용자 지정) */
 const Chevron = () => (
   <span
     aria-hidden
-    className="grid size-[26px] shrink-0 place-items-center rounded-[2px] border border-erp-subtle bg-erp-subtle transition-colors duration-150 ease-out group-hover:border-erp-brand group-hover:bg-white"
+    className="grid size-[26px] shrink-0 place-items-center"
   >
     <Image src="/icons/chevron-small.svg" alt="" width={5} height={8} className="rotate-180" />
   </span>
@@ -143,6 +146,20 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
     bp,
   );
 
+  // 급여명세서 — 급여명세서 목록 api 가 그 달 상태별 건수 · 검토 대기 수를 함께 준다(api 수정 없음). 달은 목록 화면 기본값과 같은 지난달(2026-11-18 사용자 지정)
+  const payslipMonth = defaultPayslipListQuery(kstToday()).month;
+  const payslips = useLoad(
+    many && canOpen("/payslips")
+      ? () =>
+          Promise.all([
+            bff<PayslipListResponse>(`/payslips?month=${payslipMonth}&page=1&pageSize=20${search ? `&${search.slice(1)}` : ""}`, bp),
+            enumOf("PayslipStatus"),
+          ])
+      : null,
+    key,
+    "급여명세서",
+  ).got;
+
   const s = summary && "data" in summary ? summary.data : null;
   const p = pending && "data" in pending ? pending.data : null;
   const asOf = s?.asOf ?? p?.asOf;
@@ -169,11 +186,27 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
     const cards = noStores ? { ...emptyCardsOf(canOpen), myInquiries: s?.cards?.myInquiries ?? null } : s?.cards;
     body = (
       <>
-        {showsNotices && <NoticeBand section={notices} bp={bp} />}
+        {/* 맨 위 줄 — 공지사항 | 내 문의. 둘 다 웨일ERP 와 주고받는 것이라 한 줄에 두고, 내 문의는 아래 카드 한 칸 폭이라 세로선이 맞는다.
+            아래 오른쪽은 확인 필요가 세로로 길게 쓴다(2026-11-18 사용자 지정) */}
+        {(showsNotices || cards?.myInquiries) && (
+          <div className="flex gap-[12px]">
+            {showsNotices && (
+              <div className="min-w-0 flex-1">
+                <NoticeBand section={notices} bp={bp} />
+              </div>
+            )}
+            {cards?.myInquiries && (
+              <div className="w-[calc((100%-36px)/4)] shrink-0">
+                <MyInquiries inquiries={cards.myInquiries} href={canOpen("/support-inquiries") ? bpPath(bp, "/support-inquiries") : null} />
+              </div>
+            )}
+          </div>
+        )}
         {cards && <Cards cards={cards} storeCounts={storeCountsOf(scope, stores)} daily={daily} todos={todayTodos && "data" in todayTodos ? todayTodos.data : null} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
         {/* 아래 두 칸 — 왼쪽 운영 점포별 현황, 오른쪽 확인 필요 · 내 문의(2026-11-18 사용자 지정 — 오늘 근무자 표를 두었다가 점포별 현황으로 되돌렸다).
-            창 1600 이상은 7:5, 좁으면 2:1. 두 칸 높이는 늘 같다(items-stretch) */}
-        <div className="grid min-h-[440px] flex-1 grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-stretch gap-[12px] min-[1600px]:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+            두 칸은 1:1 — 위 카드 넷의 가운데 세로선과 맞는다. 점포별 현황은 막대를 빼 줄어든 만큼 확인 필요 · 급여명세서를 넓게 쓴다(2026-11-18 사용자 지정, 전엔 2:1 · 7:5).
+            두 칸 높이는 늘 같다(items-stretch) */}
+        <div className="grid min-h-[440px] flex-1 grid-cols-2 items-stretch gap-[12px]">
           {noStores ? (
             <StoreTable table={{ total: 0, items: [] }} />
           ) : !summary ? (
@@ -185,7 +218,14 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
           )}
           <div className="flex min-h-0 flex-col gap-[12px]">
             {!pending ? <Notice text="확인 필요를 불러오는 중입니다." /> : "error" in pending ? failed("확인 필요를", pending.error) : <Pending data={pending.data} bp={bp} />}
-            {cards?.myInquiries && <MyInquiries inquiries={cards.myInquiries} href={canOpen("/support-inquiries") ? bpPath(bp, "/support-inquiries") : null} />}
+            {payslips && "data" in payslips && (
+              <Payslips
+                month={payslipMonth}
+                list={payslips.data[0]}
+                labels={payslips.data[1]}
+                href={bpPath(bp, withScope(`/payslips${toPayslipListSearch(defaultPayslipListQuery(kstToday()))}`, scope))}
+              />
+            )}
           </div>
         </div>
       </>
@@ -231,7 +271,7 @@ function NoticeBand({ section, bp }: { section: ReturnType<typeof useLoad<[Suppo
   const { got, retry } = section;
   return (
     <section className={`${CARD} flex items-center gap-[18px] px-[24px] py-[16px]`}>
-      <h2 className="shrink-0 text-[18px] font-semibold text-erp-ink">공지사항</h2>
+      <h2 className="shrink-0 text-[16px] font-semibold text-erp-ink">공지사항</h2>
       <div className="flex min-w-0 flex-1 items-center gap-[24px] overflow-hidden text-[14px]">
         {!got ? (
           <span className="text-erp-muted">불러오는 중입니다.</span>
@@ -268,7 +308,7 @@ function Figure({ label, link, value, foot }: { label: string; link: { href: str
   const inner = (
     <>
       <div className="flex h-[26px] items-center gap-[6px]">
-        <h2 className="flex-1 text-[15px] font-semibold text-erp-ink">{label}</h2>
+        <h2 className="flex-1 text-[16px] font-semibold text-erp-ink">{label}</h2>
         {link && <Chevron />}
       </div>
       <div>{value}</div>
@@ -355,7 +395,8 @@ function Cards({
   const { operating: on, notOperating: off } = storeCounts;
   return (
     <div className="grid auto-cols-fr grid-flow-col gap-[12px]">
-      {/* 점포 — 운영 · 미운영 두 칸. 칸마다 이름 · 큰 숫자(중) · 직영 · 가맹(하)이라 내역이 그 숫자 바로 아래 선다(2026-11-18 사용자 지정 B안 —
+      {/* 점포 — 운영 · 미운영 두 칸. 칸마다 「이름 큰 숫자」 한 줄(중) · 직영 · 가맹(하) — 이름을 숫자 옆에 두어 큰 숫자가 다른 카드와 같은 높이에 선다(2026-11-18 사용자 지정).
+          칸마다 내역이 내역이 그 숫자 바로 아래 선다(2026-11-18 사용자 지정 B안 —
           직영 · 가맹 표는 운영 · 미운영보다 눈에 걸렸고, 큰 숫자 둘과 내역 두 줄을 떼어 두면 어느 숫자의 내역인지 안 읽혔다). 미운영 이름은 회색 —
           빨강은 할 일처럼 도드라졌는데 미운영은 급한 일이 아니다(2026-11-18 사용자 지정).
           로그인 정보의 점포를 상단 범위로 센다(본사 · 폐점 제외) */}
@@ -370,7 +411,7 @@ function Cards({
                 ["미운영", "text-erp-label", off],
               ] as const
             ).map(([name, tone, row]) => (
-              <span key={name} className="flex flex-col gap-[4px]">
+              <span key={name} className="flex items-baseline gap-[6px]">
                 <span className={`text-[13px] font-medium ${tone}`}>{name}</span>
                 <Big value={row.direct + row.franchise} unit="개" />
               </span>
@@ -468,20 +509,20 @@ type NullableCount = "staffCount" | "unsignedContractCount" | "checkedInCount" |
 /** 목록 영역 — 남는 높이를 채우고 넘치면 안에서 스크롤한다(HOM-06). 바깥 상자 높이는 줄 수와 상관없이 옆 칸에 맞춘다 */
 const LIST_FILL = "relative min-h-[200px] flex-1";
 /** 떠 있는 줄 하나 — 1px 패널 선 · 4px 모서리. 확인할 것이 있는 줄은 왼쪽에 빨간 3px 안쪽 선(그림자가 아니다, 2026-11-18 사용자 지정 홈 표 T2) */
-const ROW_BOX = "rounded-[4px] border border-erp-panel-line bg-white";
+/** 열 이름 줄 — 운영 점포별 현황 · 확인 필요가 같이 쓴다(12px 회색, 아래 구분선) */
+const LIST_HEAD = "border-b border-erp-thead-line pb-[8px] text-[12px] font-medium text-erp-thead-text";
+/** 확인 필요 칸 — 구분 · 항목 · 경과. 칸 안쪽 여백은 운영 점포별 현황 첫 칸과 같은 12px */
+const PENDING_COLS = "grid-cols-[64px_minmax(0,1fr)_72px] gap-[12px] px-[12px]";
+/** 줄 — 떠 있는 상자 대신 아래 1px 구분선(2026-11-18 사용자 지정 — 상자 안 상자 · 칩이 겹겹이라 계층이 많아 보였다) */
+const ROW_LINE = "border-b border-erp-thead-line";
 const URGENT_EDGE = "shadow-[inset_3px_0_0_var(--color-erp-off)]";
 
-/** 진행 막대 + 「3/5」 — 오늘 출근 · 오늘 TO-DO. 할 일이 없으면 옅은 「-」 */
-function Progress({ done, total, tone, extra }: { done: number; total: number; tone: string; extra?: ReactNode }) {
+/** 「3 / 5」 — 오늘 출근 · 오늘 TO-DO. 막대는 두지 않는다(2026-11-18 사용자 지정 — 점포 줄마다 그래프가 있으면 어수선했다). 할 일이 없으면 옅은 「-」 */
+function Progress({ done, total, extra }: { done: number; total: number; extra?: ReactNode }) {
   if (!total) return <span className="text-erp-muted">-</span>;
   return (
-    <span className="flex items-center gap-[8px]">
-      <span role="img" aria-label={`${total} 중 ${done}`} className="h-[6px] flex-1 overflow-hidden rounded-[3px] bg-erp-subtle">
-        <span className={`block h-full ${tone}`} style={{ width: `${Math.min(100, (done / total) * 100)}%` }} />
-      </span>
-      <span className="w-[40px] shrink-0 text-right text-[13px] tabular-nums">
-        {done}/{total}
-      </span>
+    <span className="tabular-nums">
+      {done} / {total}
       {extra}
     </span>
   );
@@ -500,12 +541,12 @@ const CountPill = ({ n }: { n: number }) =>
 // (2026-11-18 사용자 지정 홈 표 T2). 유형 · 미체결 계약은 점포명 아래 한 줄. 그 메뉴의 조회 권한이 없어 api 가 모든 줄에 null 을 준 칸은 숨긴다(HOM-09)
 function StoreTable({ table }: { table: HomeSummary["storeTable"] }) {
   const shown = (key: NullableCount) => table.items.some((r) => r[key] !== null);
-  const head = "px-[10px] pb-[2px] text-[12px] font-medium text-erp-thead-text";
-  const mid = "border-y border-erp-panel-line px-[10px]";
+  const head = `${LIST_HEAD} px-[10px]`;
+  const mid = `${ROW_LINE} px-[10px]`;
   return (
-    <section className={`${CARD} flex min-h-0 flex-col gap-[12px] p-[24px]`}>
+    <section className={`${CARD} flex min-h-0 flex-col gap-[24px] p-[24px]`}>
       <div className="flex items-end gap-[6px]">
-        <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">운영 점포별 현황</h2>
+        <h2 className="flex-1 text-[16px] font-semibold text-erp-ink">운영 점포별 현황</h2>
         <span className="text-[14px] text-erp-label">{table.total > 0 ? `${table.total}개점 · 확인 필요 건수 순` : "0개점"}</span>
       </div>
       <div className={LIST_FILL}>
@@ -513,20 +554,20 @@ function StoreTable({ table }: { table: HomeSummary["storeTable"] }) {
           {table.items.length === 0 ? (
             <p className="grid h-full place-items-center text-[14px] text-erp-muted">운영 중인 점포가 없습니다.</p>
           ) : (
-            <table className="w-full table-fixed border-separate border-spacing-y-[6px] text-[14px] text-erp-ink">
+            <table className="w-full table-fixed border-collapse text-[14px] text-erp-ink">
               <thead className="sticky top-0 z-[1] bg-white">
                 <tr>
-                  <th className={`${head} text-left`}>점포</th>
+                  <th className={`${head} pl-[12px] text-left`}>점포</th>
                   {shown("staffCount") && <th className={`${head} w-[64px] text-center`}>재직 직원</th>}
-                  {shown("checkedInCount") && <th className={`${head} w-[24%] text-left`}>오늘 출근</th>}
-                  {shown("todayTodo") && <th className={`${head} w-[24%] text-left`}>오늘 TO-DO</th>}
+                  {shown("checkedInCount") && <th className={`${head} w-[130px] text-center`}>오늘 출근</th>}
+                  {shown("todayTodo") && <th className={`${head} w-[96px] text-center`}>오늘 TO-DO</th>}
                   <th className={`${head} w-[76px] text-center`}>확인 필요</th>
                 </tr>
               </thead>
               <tbody>
                 {table.items.map((r) => (
                   <tr key={r.storeId}>
-                    <td className={`${ROW_BOX} rounded-r-none border-r-0 px-[12px] py-[9px] ${r.pendingActionCount ? URGENT_EDGE : ""}`}>
+                    <td className={`${ROW_LINE} px-[12px] py-[10px] ${r.pendingActionCount ? URGENT_EDGE : ""}`}>
                       {/* 본사 점포(직영으로 저장)는 「[본사] 상호」로 매장과 가른다(본사 점포 설계, 2026-11-17) */}
                       {/* 유형은 점포명 앞 꼬리표(점포명 길이와 상관없이 줄마다 같은 자리, 2026-11-18 사용자 지정) — 직영은 연한 파랑 바탕, 가맹은 회색. 글자 · 테두리는 같고 바탕만 가른다(공통코드 관리주체 꼬리표와 같은 방식,
                           2026-11-18 사용자 지정 — 아래 회색 줄의 「직영점포」는 훑어볼 때 구별되지 않았다). 본사 점포는 이름의 「[본사]」로 충분해 꼬리표를 두지 않는다 */}
@@ -548,22 +589,22 @@ function StoreTable({ table }: { table: HomeSummary["storeTable"] }) {
                     </td>
                     {shown("staffCount") && <td className={`${mid} text-center tabular-nums`}>{num(r.staffCount)}</td>}
                     {shown("checkedInCount") && (
-                      <td className={mid}>
+                      <td className={`${mid} text-center`}>
                         <Progress
                           done={r.checkedInCount ?? 0}
                           total={r.scheduledCount ?? 0}
-                          tone="bg-erp-on"
+                         
                           // 미출근은 있을 때만 빨간 글자로 — 막대의 빈 칸에는 미출근과 출근 시간 전 직원이 섞여 있어 따로 밝힌다(2026-11-18 사용자 지정, 전엔 「미출근」 열)
-                          extra={r.notCheckedInCount ? <span className="shrink-0 text-[13px] text-erp-off">미출근 {r.notCheckedInCount}</span> : null}
+                          extra={r.notCheckedInCount ? <span className="ml-[6px] text-[13px] text-erp-off">미출근 {r.notCheckedInCount}</span> : null}
                         />
                       </td>
                     )}
                     {shown("todayTodo") && (
-                      <td className={mid}>
-                        <Progress done={r.todayTodo?.done ?? 0} total={r.todayTodo?.total ?? 0} tone="bg-erp-brand-soft" />
+                      <td className={`${mid} text-center`}>
+                        <Progress done={r.todayTodo?.done ?? 0} total={r.todayTodo?.total ?? 0} />
                       </td>
                     )}
-                    <td className={`${ROW_BOX} rounded-l-none border-l-0 px-[10px] text-center`}>
+                    <td className={`${ROW_LINE} px-[10px] text-center`}>
                       <CountPill n={r.pendingActionCount} />
                     </td>
                   </tr>
@@ -579,7 +620,8 @@ function StoreTable({ table }: { table: HomeSummary["storeTable"] }) {
 
 // 확인 필요 — api 순서 그대로(갱신 예정 → 계약 → 직원 → 문의 → TO-DO), 0건 유형은 api 가 뺀다. 운영 알림은 나열하지 않는다(HOM-08).
 // 출퇴근 기록 꼬리표 「확인 필요」(ATT-19)와 다른 뜻이다(HOM-07). 줄마다 떠 있는 상자 하나가 그 목록으로 가는 링크다 — 구분 칩 · 항목(굵게) · 대표 · 경과.
-// 계약 갱신 예정은 오른쪽에 「종료 D-N」, 7일 이내면 빨간 글자 + 왼쪽 빨간 선(HOM-04, 2026-11-18 사용자 지정 홈 표 T2)
+// 계약 갱신 예정은 오른쪽에 「종료 D-N」, 7일 이내면 빨간 글자 + 왼쪽 빨간 선(HOM-04, 2026-11-18 사용자 지정 홈 표 T2).
+// 줄 글자는 구분 · 항목 · 대표 · 경과 모두 12px(운영 점포별 현황 열 이름과 같은 크기) — 굵기 · 색만 다르다(2026-11-18 사용자 지정)
 function Pending({ data, bp }: { data: HomePending; bp: number }) {
   // 이 화면이 모르는 유형(api 가 새로 더한 것)은 건너뛴다 — 홈 전체가 오류 화면이 되지 않게
   const lines = data.items.flatMap((item) => {
@@ -588,35 +630,43 @@ function Pending({ data, bp }: { data: HomePending; bp: number }) {
   });
   const total = lines.reduce((sum, l) => sum + l.count, 0);
   return (
-    <section className={`${CARD} flex min-h-0 flex-1 flex-col gap-[12px] p-[24px]`}>
+    <section className={`${CARD} flex min-h-0 flex-1 flex-col gap-[24px] p-[24px]`}>
       <div className="flex items-end gap-[6px]">
-        <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">확인 필요</h2>
+        <h2 className="flex-1 text-[16px] font-semibold text-erp-ink">확인 필요</h2>
         <span className="text-[14px] text-erp-label">총 {total}건</span>
       </div>
       <div className={LIST_FILL}>
-        <div className="absolute inset-0 flex flex-col gap-[6px] overflow-y-auto">
+        <div className="absolute inset-0 flex flex-col overflow-y-auto">
           {lines.length === 0 ? (
             <p className="grid h-full place-items-center text-[14px] text-erp-muted">확인할 일이 없습니다.</p>
           ) : (
-            lines.map((l) => (
+            <>
+            {/* 열 이름 줄 — 운영 점포별 현황의 열 이름 줄과 같은 모양 · 높이라 두 목록의 첫 줄이 같은 높이에서 시작한다(2026-11-18 사용자 지정) */}
+            <div className={`sticky top-0 z-[1] grid shrink-0 ${PENDING_COLS} bg-white ${LIST_HEAD}`}>
+              <span>구분</span>
+              <span>항목</span>
+              <span>경과</span>
+            </div>
+            {lines.map((l) => (
               <Link
                 key={l.type}
                 href={l.href}
-                className={`${ROW_BOX} grid shrink-0 grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-[12px] px-[12px] py-[11px] text-[14px] text-erp-ink transition-[border-color] duration-150 ease-out hover:border-erp-brand ${l.due?.urgent ? URGENT_EDGE : ""}`}
+                className={`${ROW_LINE} grid shrink-0 ${PENDING_COLS} items-center py-[12px] text-[12px] text-erp-ink transition-colors duration-150 ease-out hover:bg-erp-thead-bg ${l.due?.urgent ? URGENT_EDGE : ""}`}
               >
-                {/* 구분 칩 — 분류일 뿐 상태가 아니라 회색(색은 상태다 규칙) */}
-                <span className="rounded-full bg-erp-subtle py-[2px] text-center text-[12px] font-medium text-erp-thead-text">{l.kind}</span>
+                {/* 구분은 회색 글자 — 칩까지 두면 겹이 많았다(2026-11-18 사용자 지정) */}
+                <span className="font-medium text-erp-thead-text">{l.kind}</span>
                 <span className="truncate">
                   <b className="font-semibold">{l.title}</b>
                   <span className="text-erp-label"> · {l.due ? l.desc : l.who}</span>
                 </span>
                 {l.due ? (
-                  <span className={`text-[13px] ${l.due.urgent ? "font-semibold text-erp-off" : "text-erp-label"}`}>{l.due.text}</span>
+                  <span className={l.due.urgent ? "font-semibold text-erp-off" : "text-erp-label"}>{l.due.text}</span>
                 ) : (
-                  <span className="text-[13px] text-erp-label">{l.elapsed ?? ""}</span>
+                  <span className="text-erp-label">{l.elapsed ?? ""}</span>
                 )}
               </Link>
-            ))
+            ))}
+            </>
           )}
         </div>
       </div>
@@ -624,9 +674,40 @@ function Pending({ data, bp }: { data: HomePending; bp: number }) {
   );
 }
 
+/** 급여명세서 단계 — 이 순서로 진행한다(용어집 상태 4종) */
+const PAYSLIP_STEPS = ["DRAFTING", "REVIEWING", "CONFIRMED", "SENT"] as const;
+
+// 급여명세서 — 지난달 명세서가 작성 중 → 검토 중 → 확정 → 발송 완료 중 어디까지 왔는지 단계 막대로(2026-11-18 사용자 지정 홈 D안).
+// 건수가 있는 단계만 막대를 칠한다. 검토 대기는 오른쪽 위에 빨간 글자로. 상자 전체가 그 달 급여명세서 목록으로 가는 링크다
+function Payslips({ month, list, labels, href }: { month: string; list: PayslipListResponse; labels: EnumValue[]; href: string }) {
+  const counts = list.statusCounts;
+  const total = PAYSLIP_STEPS.reduce((sum, k) => sum + counts[k], 0);
+  return (
+    <Link href={href} aria-label={`${Number(month.slice(5))}월 급여명세서 — 급여명세서 목록`} className={`${CARD} ${LINK_CARD} flex shrink-0 flex-col gap-[14px] px-[24px] py-[20px]`}>
+      <div className="flex items-center gap-[8px]">
+        <h2 className="flex-1 text-[16px] font-semibold text-erp-ink">{Number(month.slice(5))}월 급여명세서</h2>
+        <span className="text-[14px] text-erp-label">
+          {list.reviewPendingCount > 0 && <span className="text-erp-off">검토 대기 {list.reviewPendingCount} · </span>}총 {total}건
+        </span>
+        <Chevron />
+      </div>
+      <ol className="grid grid-cols-4 gap-[6px] text-center text-[13px]">
+        {PAYSLIP_STEPS.map((k) => (
+          <li key={k} className="flex flex-col gap-[6px]">
+            <span className={`h-[6px] rounded-[3px] ${counts[k] ? "bg-erp-brand" : "bg-erp-subtle"}`} />
+            <span className={counts[k] ? "text-erp-ink" : "text-erp-label"}>
+              {labelOf(labels, k)} {counts[k]}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </Link>
+  );
+}
+
 // 내 문의 — 로그인한 관리자가 쓴 문의(api /home/summary myInquiries). 답변 대기는 접수 · 처리중, 기간 제한 없음(2026-11-18 사용자 지정 홈 D안 — 위 카드에서 옮겼다)
 function MyInquiries({ inquiries, href }: { inquiries: NonNullable<CardsData["myInquiries"]>; href: string | null }) {
-  const box = `${CARD} flex items-center gap-[12px] px-[24px] py-[16px]`;
+  const box = `${CARD} flex h-full items-center gap-[12px] px-[24px] py-[16px]`;
   const inner = (
     <>
       <h2 className="shrink-0 text-[16px] font-semibold text-erp-ink">내 문의</h2>
