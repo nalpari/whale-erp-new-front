@@ -131,6 +131,34 @@ test("사용안함(pendingClear) — 수정에 clearBusinessVerification 을 싣
   assert.equal(withToken.clearBusinessVerification, true);
   const kept = toUpdateBpMasterInput({ ...filled, verified, verifying: false, pendingClear: false });
   assert.equal("clearBusinessVerification" in kept, false);
+  // 지우면서 함께 고친 값(상호명 · 주소 · 좌표 등)도 그대로 싣는다 — 지우기만 보내면 같이 고친 값이 사라진다
+  const edited = toUpdateBpMasterInput({
+    ...filled,
+    verified,
+    verifying: false,
+    pendingClear: true,
+    tradeName: "새상회",
+    zipCode: "04524",
+    address: "서울 중구 세종대로 110",
+    coordinate: { latitude: "37.566371", longitude: "126.977918", isLocationApplied: true },
+  });
+  assert.deepEqual(edited, {
+    name: "정하윤",
+    phone: "01033801127",
+    email: "hayoon@hangang.co.kr",
+    tradeName: "새상회",
+    bizCeoPhone: null,
+    bizCeoEmail: null,
+    bizZipCode: "04524",
+    bizAddress: "서울 중구 세종대로 110",
+    bizAddressDetail: null,
+    bizCategory: null,
+    bizItem: null,
+    latitude: 37.566371,
+    longitude: 126.977918,
+    isLocationApplied: true,
+    clearBusinessVerification: true,
+  });
 });
 
 test("api 오류를 붙일 칸 — 중복 · 형식만, 수정의 아이디 오류는 띠로", () => {
