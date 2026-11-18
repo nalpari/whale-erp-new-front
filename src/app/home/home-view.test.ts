@@ -5,7 +5,7 @@ import type { AdminStore } from "../../lib/session.ts";
 import { readListQuery } from "../contracts/contract-list.ts";
 import { parseStaffListQuery } from "../staff-members/staff-list-query.ts";
 import { parseTodoListQuery } from "../todos/todo-list-query.ts";
-import { homeSearchOf, latestNotices, pendingLineOf, type HomePendingItem } from "./home-view.ts";
+import { homeSearchOf, latestNotices, pendingLineOf, storeCountsOf, type HomePendingItem } from "./home-view.ts";
 
 const store = (storeId: number, storeTypeCode: string, storeStatusCode = "OPEN") => ({ storeId, storeTypeCode, storeStatusCode }) as AdminStore;
 const STORES = [store(1, "DIRECT"), store(2, "FRANCHISE"), store(3, "DIRECT", "CLOSED"), store(4, "FRANCHISE")];
@@ -97,4 +97,20 @@ test("공지 띠 — 고정 공지가 먼저 와도 게시일 최신 3건, 같�
   // api 순서: 고정(오래된 것) → 나머지 게시일 최신순
   const got = latestNotices([n(1, "2026-09-01"), n(2, "2026-08-01"), n(5, "2026-10-20"), n(4, "2026-10-20"), n(3, "2026-10-10")]);
   assert.deepEqual(got.map((p) => p.postId), [5, 4, 3]);
+});
+
+test("점포 칸 — 운영 · 미운영 × 직영 · 가맹, 본사 · 폐점은 세지 않고 상단 범위를 따른다", () => {
+  const s = (storeId: number, storeTypeCode: string, storeStatusCode: string, isHq = false) => ({ storeId, storeTypeCode, storeStatusCode, isHq }) as AdminStore;
+  const all = [s(1, "DIRECT", "OPERATING", true), s(2, "DIRECT", "OPERATING"), s(3, "FRANCHISE", "OPERATING"), s(4, "FRANCHISE", "NOT_OPERATING"), s(5, "DIRECT", "CLOSED")];
+  assert.deepEqual(storeCountsOf({ type: "ALL" }, all), { operating: { direct: 1, franchise: 1 }, notOperating: { direct: 0, franchise: 1 } });
+  assert.deepEqual(storeCountsOf({ type: "FRANCHISE" }, all), { operating: { direct: 0, franchise: 1 }, notOperating: { direct: 0, franchise: 1 } });
+  assert.deepEqual(storeCountsOf({ type: "STORE", storeId: 4 }, all), { operating: { direct: 0, franchise: 0 }, notOperating: { direct: 0, franchise: 1 } });
+});
+
+test("확인 필요 짧은 경과 · 대표 — 「N일 경과」 · 「오늘」, 갱신 예정은 경과 없음, 가려진 대표는 null", () => {
+  assert.equal(pendingLineOf(item({ waitingDays: 2 }), 8)!.elapsed, "2일 경과");
+  assert.equal(pendingLineOf(item({ waitingDays: 0 }), 8)!.elapsed, "오늘");
+  assert.equal(pendingLineOf(item({ type: "CONTRACT_RENEWAL", waitingDays: null, dueInDays: 5 }), 8)!.elapsed, null);
+  assert.equal(pendingLineOf(item({}), 8)!.who, "남도현 외 2명");
+  assert.equal(pendingLineOf(item({ isFirstNameMasked: true, firstName: null }), 8)!.who, null);
 });

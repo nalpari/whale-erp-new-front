@@ -99,8 +99,8 @@ export function pendingLineOf(item: HomePendingItem, bpCodeId: number) {
     kind: text.kind,
     title: `${text.title} ${item.count}건`,
     desc: [whoOf(item, text.kind), waited].filter(Boolean).join(" · "),
-    /** 대표 이름 · 건수 — 홈 확인 필요의 항목 칸에 제목과 함께 */
-    who: whoOf(item, text.kind),
+    /** 대표 이름 — 홈 확인 필요의 항목 옆. 가려졌거나 없으면 null(제목에 이미 건수가 있어 「3건 · 3건」이 되지 않게, 리뷰 반영) */
+    who: item.isFirstNameMasked || item.firstName === null ? null : whoOf(item, text.kind),
     /**
      * 짧은 경과 — 홈 확인 필요의 오른쪽 칸(「2일 경과」 · 「오늘」). 칸이 좁아(창 1260) 「발송 후」 같은 앞말은 뺀다(2026-11-18 사용자 지정).
      * 계약 갱신 예정은 경과가 없어 null — 「새 근로계약서 초안 없음」은 항목 칸에 붙이고 오른쪽 칸은 종료 D-N(due)이다

@@ -33,9 +33,8 @@ function formatAsOf(iso: string): string {
 const CARD = "rounded-[4px] border border-erp-panel-line bg-white";
 // 홈의 상자 제목(공지사항 · 카드 넷 · 운영 점포별 현황 · 확인 필요 · 급여명세서 · 내 문의)은 모두 16px 600 먹색 — 18 · 16 · 15 가 섞여 있었다(2026-11-18 사용자 지정)
 /**
- * 홈의 이동 버튼(공지 목록 · 점포 목록 · 직원 목록 · 출퇴근 현황 · TO-DO 목록 · 문의하기) — 모두 이 한 모양이다. 글자 없이 꺾쇠 아이콘만 두고, 26px 칸은 처음부터 회색 바탕
- * (전엔 호버 때만 — 그 모양이 더 나아 처음부터 쓴다, 2026-11-18 사용자 지정). 호버해도 테두리를 두르지 않는다(사용자 지정). 
- * 숫자가 많은 화면이라 글자 버튼 여섯 개가 정신없었다(2026-11-18 사용자 지정). 툴팁도 두지 않는다 — 어디로 가는지는 카드 제목이 말하고, 화면 읽기 도구는 aria-label 로 읽는다
+ * 공지 띠의 이동 버튼 — 글자 · 바탕 · 툴팁 없이 꺾쇠만(2026-11-18 사용자 지정). 띠 안에 공지 링크가 있어 띠 전체를 링크로 할 수 없어 꺾쇠만 링크다.
+ * 다른 상자(카드 · 내 문의 · 급여명세서)는 상자 전체가 링크이고 같은 모양의 꺾쇠 표시(Chevron)를 둔다
  */
 function MoveLink({ href, label }: { href: string; label: string }) {
   return (
@@ -115,7 +114,7 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
   const [reloads, setReloads] = useState(0);
   const search = homeSearchOf(scope, stores);
   const key = `${search}#${reloads}`;
-  // 점포가 없는 BP 계정 — 범위가 「전체」라 search 가 "" 여도 여러 점포 화면이 아니라 값 0 화면(아래 !stores.length 분기)이다.
+  // 점포가 없는 BP 계정 — 범위가 「전체」라 search 가 "" 여도 여러 점포 화면이 아니라 값 0 화면(카드는 emptyCardsOf)이다.
   // 그래도 현황 · 처리 대기는 점포 없이 부른다 — 내 문의 · 문의 답변 완료처럼 점포와 상관없는 값이 있다. api 는 관리 점포(없음) 안에서만 세서
   // 점포 쪽 값은 0, 문의 쪽은 그대로 온다(api home.service contextOf, 리뷰 반영)
   const noStores = !platformTab && stores.length === 0;
@@ -126,25 +125,36 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
 
   const menus = useMenus();
   const canOpen = (path: string) => menuOfPath(menus, path, service) !== null;
+  // 운영 점포 — 현황 api 는 운영 점포만 센다(카드의 큰 숫자). 오늘 출근 · 오늘 TO-DO 내역을 다른 목록 api 로 셀 때 이 점포만 넘겨 큰 숫자와 같은 점포를 센다 —
+  // 범위 그대로 넘기면 미운영 · 폐점 점포까지 세어 내역 합이 큰 숫자와 어긋났다(리뷰 반영). 현황을 받기 전에는 부르지 않는다
+  const operatingIds = summary && "data" in summary ? summary.data.storeTable.items.map((r) => r.storeId) : null;
+  // 점포 카드는 로그인 정보의 점포라 [다시 불러오기]로 바뀌지 않는다 — 점포 목록은 헤더가 맞춘다
+  const operatingSearch = operatingIds?.length ? `storeIds=${operatingIds.join(",")}` : null;
   // 공지 띠 — 공지사항 조회 권한이 있을 때만. 플랫폼 탭 · 쓸 수 없는 범위에서는 부르지 않는다. 탭 BP 를 실어 플랫폼 계정은 그 BP 의 BP 마스터와 같은 공지를 본다(HOM-07 v281)
   const showsNotices = (many || noStores) && canOpen("/support-notices");
   const notices = useLoad(showsNotices ? () => Promise.all([bff<SupportPostList>(NOTICES_PATH, bp), enumOf("NoticeType")]) : null, key, "공지사항");
 
   // 오늘 출근 칸의 정상 · 지각 · 미출근 · 출근 전 — 출퇴근 현황 일별 api 를 그대로 부른다(api 수정 없음). 출퇴근 현황 조회 권한이 있을 때만
-  const showsDaily = (many || noStores) && canOpen("/attendance-records");
+  // 오늘 출근 카드는 출퇴근 · 근무스케줄 둘 다 볼 때만 있어(api showsAttendance) 같은 조건일 때만 부른다
+  const showsDaily = many && canOpen("/attendance-records") && canOpen("/work-schedules") && operatingSearch !== null;
   const daily = useLoad(
-    showsDaily && many ? () => bff<DailyAttendance>(`/attendance-records/daily${search}${search ? "&" : "?"}date=${kstToday()}`, bp) : null,
-    key,
-    "오늘 근무자",
+    showsDaily ? () => Promise.all([bff<DailyAttendance>(`/attendance-records/daily?${operatingSearch}&date=${kstToday()}`, bp), enumOf("AttendanceDayStatus")]) : null,
+    `${key}|${operatingSearch}`,
+    "오늘 출근",
   );
 
   // 오늘 TO-DO 의 대기 · 진행 중 · 완료 — 현황 api 는 완료 / 전체만 주므로 TO-DO 목록 api(오늘 수행예정, 묶음은 한 줄 · 묶음 상태)로 센다(api 수정 없음, 2026-11-18 사용자 지정)
-  const todayTodos = useApi<TodoListResponse>(
-    many && canOpen("/todos") ? `/todos?page=1&pageSize=${TODO_COUNT_MAX}&dueDateFrom=${kstToday()}&dueDateTo=${kstToday()}${search ? `&${search.slice(1)}` : ""}` : null,
-    key,
+  const todayTodos = useLoad(
+    many && canOpen("/todos") && operatingSearch !== null
+      ? () =>
+          Promise.all([
+            bff<TodoListResponse>(`/todos?page=1&pageSize=${TODO_COUNT_MAX}&dueDateFrom=${kstToday()}&dueDateTo=${kstToday()}&${operatingSearch}`, bp),
+            enumOf("TodoStatus"),
+          ])
+      : null,
+    `${key}|${operatingSearch}`,
     "오늘 TO-DO",
-    bp,
-  );
+  ).got;
 
   // 급여명세서 — 급여명세서 목록 api 가 그 달 상태별 건수 · 검토 대기 수를 함께 준다(api 수정 없음). 달은 목록 화면 기본값과 같은 지난달(2026-11-18 사용자 지정)
   const payslipMonth = defaultPayslipListQuery(kstToday()).month;
@@ -203,7 +213,7 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
           </div>
         )}
         {cards && <Cards cards={cards} storeCounts={storeCountsOf(scope, stores)} daily={daily} todos={todayTodos && "data" in todayTodos ? todayTodos.data : null} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
-        {/* 아래 두 칸 — 왼쪽 운영 점포별 현황, 오른쪽 확인 필요 · 내 문의(2026-11-18 사용자 지정 — 오늘 근무자 표를 두었다가 점포별 현황으로 되돌렸다).
+        {/* 아래 두 칸 — 왼쪽 운영 점포별 현황, 오른쪽 확인 필요 · 지난달 급여명세서(2026-11-18 사용자 지정 — 오늘 근무자 표를 두었다가 점포별 현황으로 되돌렸고, 내 문의는 맨 위 줄로 올렸다).
             두 칸은 1:1 — 위 카드 넷의 가운데 세로선과 맞는다. 점포별 현황은 막대를 빼 줄어든 만큼 확인 필요 · 급여명세서를 넓게 쓴다(2026-11-18 사용자 지정, 전엔 2:1 · 7:5).
             두 칸 높이는 늘 같다(items-stretch) */}
         <div className="grid min-h-[440px] flex-1 grid-cols-2 items-stretch gap-[12px]">
@@ -218,6 +228,7 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
           )}
           <div className="flex min-h-0 flex-col gap-[12px]">
             {!pending ? <Notice text="확인 필요를 불러오는 중입니다." /> : "error" in pending ? failed("확인 필요를", pending.error) : <Pending data={pending.data} bp={bp} />}
+            {payslips && "error" in payslips && failed("급여명세서를", payslips.error)}
             {payslips && "data" in payslips && (
               <Payslips
                 month={payslipMonth}
@@ -301,7 +312,7 @@ function NoticeBand({ section, bp }: { section: ReturnType<typeof useLoad<[Suppo
 
 /**
  * 수치 카드 한 칸 — 상 · 중 · 하 세 자리가 카드마다 같다(2026-11-18 사용자 지정 — 값이 카드마다 다른 높이에 떠 있어 칸을 잘 쓰지 못했다).
- * 상: 제목(15px 600 먹색, 버튼 줄 26px) · 꺾쇠. 중: 큰 숫자 — 제목 아래 18px 에 고정. 하: 보조 줄 — 카드 맨 아래에 붙여 카드마다 같은 높이에 선다.
+ * 상: 제목(16px 600 먹색, 꺾쇠 줄 26px) · 꺾쇠. 중: 큰 숫자 — 제목 아래 18px 에 고정. 하: 보조 줄 — 카드 맨 아래에 붙여 카드마다 같은 높이에 선다.
  */
 function Figure({ label, link, value, foot }: { label: string; link: { href: string; text: string } | null; value: ReactNode; foot: ReactNode }) {
   const box = `${CARD} flex min-w-0 flex-col gap-[18px] p-[24px]`;
@@ -317,8 +328,9 @@ function Figure({ label, link, value, foot }: { label: string; link: { href: str
   );
   // 갈 화면에 조회 권한이 있으면 카드 전체가 링크다(그 화면 이름은 화면 읽기 도구용 이름으로 붙인다)
   return link ? (
-    <Link href={link.href} aria-label={`${label} — ${link.text}`} className={`${box} ${LINK_CARD}`}>
+    <Link href={link.href} className={`${box} ${LINK_CARD}`}>
       {inner}
+      <span className="sr-only">{link.text}으로 이동</span>
     </Link>
   ) : (
     <section aria-label={label} className={box}>
@@ -359,7 +371,7 @@ function emptyCardsOf(canOpen: (path: string) => boolean): CardsData {
   };
 }
 
-type Daily = ReturnType<typeof useLoad<DailyAttendance>>;
+type Daily = ReturnType<typeof useLoad<[DailyAttendance, EnumValue[]]>>;
 /** 오늘 TO-DO 를 상태별로 셀 때 한 번에 받는 줄 수 — api 상한(200). 그보다 많으면 상태별로 나누지 않고 완료만 보인다 */
 const TODO_COUNT_MAX = 200;
 /** 지각 막대 · 글자 — 토큰이 없어 쓰는 자리에 적는다(DESIGN.md 범례 색 칸 · 근태 요약과 같은 #e8a33d, 글자는 흰 바탕에서 읽히게 한 단계 진한 #b2741a) */
@@ -380,7 +392,7 @@ function Cards({
   cards: CardsData;
   storeCounts: ReturnType<typeof storeCountsOf>;
   daily: Daily;
-  todos: TodoListResponse | null;
+  todos: [TodoListResponse, EnumValue[]] | null;
   scopeHref: (href: string) => string;
   canOpen: (path: string) => boolean;
   bp: number;
@@ -388,15 +400,24 @@ function Cards({
   const { staff, todayAttendance: today, todayTodo: todo } = cards;
   const day = kstToday();
   const linkTo = (path: string, href: string, text: string) => (canOpen(path) ? { href: bpPath(bp, scopeHref(href)), text } : null);
-  const d = daily.got && "data" in daily.got ? daily.got.data : null;
+  const [d, dayLabels] = daily.got && "data" in daily.got ? daily.got.data : [null, [] as EnumValue[]];
   // 출근 전 — 근무스케줄이 있고 아직 시작 전(상태 null)인 직원
   const before = d ? d.items.filter((r) => r.status === null && r.schedules.length > 0).length : 0;
   const counts = d?.counts ?? {};
+  // 내역(정상 · 지각 · 미출근 · 출 · 퇴근 미등록 · 출근 전)의 합이 근무 예정과 같을 때만 막대로 보인다 — 본사 역할에게 가려지는 직원은 일별 api 가 세지 않아
+  // 합이 모자랄 수 있다. 다르면 지금까지처럼 「근무 예정 N · 미출근 N」(리뷰 반영)
+  const dayTotal = d ? ["NORMAL", "LATE", "ABSENT", "MISSING_CHECK_IN", "MISSING_CHECK_OUT"].reduce((sum, k) => sum + (counts[k] ?? 0), before) : -1;
+  const dayShown = d !== null && today !== null && dayTotal === today.scheduled;
+  const [todoList, todoLabels] = todos ?? [null, [] as EnumValue[]];
+  const todoCount = (k: string) => todoList?.items.filter((t) => t.status === k).length ?? 0;
+  // 상태별 합 · 완료가 현황 api 의 전체 · 완료와 같을 때만 나눠 보인다. 다르면(200건 넘음 · 그새 바뀜) 「완료 N」(리뷰 반영)
+  const todoShown =
+    todoList !== null && todo !== null && todoList.items.length === todoList.total && todoList.total === todo.total && todoCount("DONE") === todo.done;
   const { operating: on, notOperating: off } = storeCounts;
   return (
     <div className="grid auto-cols-fr grid-flow-col gap-[12px]">
       {/* 점포 — 운영 · 미운영 두 칸. 칸마다 「이름 큰 숫자」 한 줄(중) · 직영 · 가맹(하) — 이름을 숫자 옆에 두어 큰 숫자가 다른 카드와 같은 높이에 선다(2026-11-18 사용자 지정).
-          칸마다 내역이 내역이 그 숫자 바로 아래 선다(2026-11-18 사용자 지정 B안 —
+          칸마다 내역이 그 숫자 바로 아래 선다(2026-11-18 사용자 지정 B안 —
           직영 · 가맹 표는 운영 · 미운영보다 눈에 걸렸고, 큰 숫자 둘과 내역 두 줄을 떼어 두면 어느 숫자의 내역인지 안 읽혔다). 미운영 이름은 회색 —
           빨강은 할 일처럼 도드라졌는데 미운영은 급한 일이 아니다(2026-11-18 사용자 지정).
           로그인 정보의 점포를 상단 범위로 센다(본사 · 폐점 제외) */}
@@ -448,12 +469,12 @@ function Cards({
           link={linkTo("/attendance-records", "/attendance-records", "출퇴근 현황")}
           value={<Big value={<>{today.checkedIn}<span className="ml-[4px] text-[14px] font-medium">/ {today.scheduled}</span></>} unit="명" />}
           foot={
-            d ? (
+            dayShown ? (
               <>
                 {/* 근무 예정 중 정상 · 지각 · 미출근 막대 — 출근 전은 빈 칸. 색만으로 말하지 않게 아래 글자를 함께 둔다 */}
                 <div
                   role="img"
-                  aria-label={`근무 예정 ${today.scheduled}명 중 정상 ${counts.NORMAL ?? 0}, 지각 ${counts.LATE ?? 0}, 미출근 ${counts.ABSENT ?? 0}, 출근 전 ${before}`}
+                  aria-label={`근무 예정 ${today.scheduled}명 중 ${labelOf(dayLabels, "NORMAL")} ${counts.NORMAL ?? 0}, ${labelOf(dayLabels, "LATE")} ${counts.LATE ?? 0}, ${labelOf(dayLabels, "ABSENT")} ${counts.ABSENT ?? 0}, 출근 전 ${before}`}
                   className="flex h-[8px] overflow-hidden rounded-[2px] bg-erp-subtle"
                 >
                   {(
@@ -467,7 +488,13 @@ function Cards({
                   )}
                 </div>
                 <Sub>
-                  <span className="text-erp-ink">정상 {counts.NORMAL ?? 0}</span> · <span className={LATE_TEXT}>지각 {counts.LATE ?? 0}</span> · {warn(`미출근 ${counts.ABSENT ?? 0}`)} · 출근 전 {before}
+                  <span className="text-erp-ink">
+                    {labelOf(dayLabels, "NORMAL")} {counts.NORMAL ?? 0}
+                  </span>{" "}
+                  · <span className={LATE_TEXT}>
+                    {labelOf(dayLabels, "LATE")} {counts.LATE ?? 0}
+                  </span>{" "}
+                  · {warn(`${labelOf(dayLabels, "ABSENT")} ${counts.ABSENT ?? 0}`)} · 출근 전 {before}
                 </Sub>
               </>
             ) : (
@@ -488,11 +515,9 @@ function Cards({
           // TO-DO 상태 세 가지(대기 · 진행 중 · 완료)를 따로 — 「대기 · 진행 중 N」으로 묶으면 상태 이름처럼 읽히지 않았다(2026-11-18 사용자 지정)
           foot={
             <Sub>
-              {todos && todos.items.length === todos.total ? (
-                <>
-                  대기 {todos.items.filter((t) => t.status === "PENDING").length} · 진행 중 {todos.items.filter((t) => t.status === "IN_PROGRESS").length} · 완료{" "}
-                  {todos.items.filter((t) => t.status === "DONE").length}
-                </>
+              {todoShown ? (
+                // 상태 이름은 api enum(TodoStatus) 그대로
+                (["PENDING", "IN_PROGRESS", "DONE"] as const).map((k) => `${labelOf(todoLabels, k)} ${todoCount(k)}`).join(" · ")
               ) : (
                 <>완료 {todo.done}</>
               )}
@@ -508,7 +533,6 @@ function Cards({
 type NullableCount = "staffCount" | "unsignedContractCount" | "checkedInCount" | "notCheckedInCount" | "todayTodo";
 /** 목록 영역 — 남는 높이를 채우고 넘치면 안에서 스크롤한다(HOM-06). 바깥 상자 높이는 줄 수와 상관없이 옆 칸에 맞춘다 */
 const LIST_FILL = "relative min-h-[200px] flex-1";
-/** 떠 있는 줄 하나 — 1px 패널 선 · 4px 모서리. 확인할 것이 있는 줄은 왼쪽에 빨간 3px 안쪽 선(그림자가 아니다, 2026-11-18 사용자 지정 홈 표 T2) */
 /** 열 이름 줄 — 운영 점포별 현황 · 확인 필요가 같이 쓴다(12px 회색, 아래 구분선) */
 const LIST_HEAD = "border-b border-erp-thead-line pb-[8px] text-[12px] font-medium text-erp-thead-text";
 /** 확인 필요 칸 — 구분 · 항목 · 경과. 칸 안쪽 여백은 운영 점포별 현황 첫 칸과 같은 12px */
@@ -537,8 +561,8 @@ const CountPill = ({ n }: { n: number }) =>
   );
 
 // 운영 점포별 현황 — 운영 점포 모두, 확인 필요 많은 순(api 순서, HOM-06). 업무 범위는 헤더 한 곳에서 고른다(SCP-01).
-// 업무 표가 아니라 현황판처럼 읽히게 줄마다 떠 있는 상자 · 진행 막대 · 빨간 알약으로 그린다 — 회색 머리 띠 · 46px 줄의 표는 너무 정적이었다
-// (2026-11-18 사용자 지정 홈 표 T2). 유형 · 미체결 계약은 점포명 아래 한 줄. 그 메뉴의 조회 권한이 없어 api 가 모든 줄에 null 을 준 칸은 숨긴다(HOM-09)
+// 회색 머리 띠 · 46px 줄의 표는 너무 정적이라 열 이름은 12px 회색 + 선, 줄은 구분선, 확인 필요는 빨간 알약으로 그린다(2026-11-18 사용자 지정 홈 표 T2 — 줄 상자 · 진행 막대는
+// 겹이 많고 어수선해 뺐다). 유형 꼬리표는 점포명 앞, 미체결 계약은 점포명 아래 한 줄. 그 메뉴의 조회 권한이 없어 api 가 모든 줄에 null 을 준 칸은 숨긴다(HOM-09)
 function StoreTable({ table }: { table: HomeSummary["storeTable"] }) {
   const shown = (key: NullableCount) => table.items.some((r) => r[key] !== null);
   const head = `${LIST_HEAD} px-[10px]`;
@@ -593,7 +617,7 @@ function StoreTable({ table }: { table: HomeSummary["storeTable"] }) {
                         <Progress
                           done={r.checkedInCount ?? 0}
                           total={r.scheduledCount ?? 0}
-                         
+
                           // 미출근은 있을 때만 빨간 글자로 — 막대의 빈 칸에는 미출근과 출근 시간 전 직원이 섞여 있어 따로 밝힌다(2026-11-18 사용자 지정, 전엔 「미출근」 열)
                           extra={r.notCheckedInCount ? <span className="ml-[6px] text-[13px] text-erp-off">미출근 {r.notCheckedInCount}</span> : null}
                         />
@@ -619,9 +643,9 @@ function StoreTable({ table }: { table: HomeSummary["storeTable"] }) {
 }
 
 // 확인 필요 — api 순서 그대로(갱신 예정 → 계약 → 직원 → 문의 → TO-DO), 0건 유형은 api 가 뺀다. 운영 알림은 나열하지 않는다(HOM-08).
-// 출퇴근 기록 꼬리표 「확인 필요」(ATT-19)와 다른 뜻이다(HOM-07). 줄마다 떠 있는 상자 하나가 그 목록으로 가는 링크다 — 구분 칩 · 항목(굵게) · 대표 · 경과.
+// 출퇴근 기록 꼬리표 「확인 필요」(ATT-19)와 다른 뜻이다(HOM-07). 줄 하나가 그 목록으로 가는 링크다 — 구분 · 항목(굵게) · 대표 · 경과.
 // 계약 갱신 예정은 오른쪽에 「종료 D-N」, 7일 이내면 빨간 글자 + 왼쪽 빨간 선(HOM-04, 2026-11-18 사용자 지정 홈 표 T2).
-// 줄 글자는 구분 · 항목 · 대표 · 경과 모두 12px(운영 점포별 현황 열 이름과 같은 크기) — 굵기 · 색만 다르다(2026-11-18 사용자 지정)
+// 구분(회색) · 항목(먹색 600) · 대표(회색)는 14px, 경과는 12px(2026-11-18 사용자 지정)
 function Pending({ data, bp }: { data: HomePending; bp: number }) {
   // 이 화면이 모르는 유형(api 가 새로 더한 것)은 건너뛴다 — 홈 전체가 오류 화면이 되지 않게
   const lines = data.items.flatMap((item) => {
@@ -653,11 +677,11 @@ function Pending({ data, bp }: { data: HomePending; bp: number }) {
                 href={l.href}
                 className={`${ROW_LINE} grid shrink-0 ${PENDING_COLS} items-center py-[12px] text-[12px] text-erp-ink transition-colors duration-150 ease-out hover:bg-erp-thead-bg ${l.due?.urgent ? URGENT_EDGE : ""}`}
               >
-                {/* 구분은 회색 글자 — 칩까지 두면 겹이 많았다(2026-11-18 사용자 지정) */}
-                <span className="font-medium text-erp-thead-text">{l.kind}</span>
+                {/* 구분은 칩 없이 회색 글자 — 칩까지 두면 겹이 많았다(2026-11-18 사용자 지정) */}
+                <span className="text-[14px] font-medium text-erp-thead-text">{l.kind}</span>
                 <span className="truncate">
-                  <b className="font-semibold">{l.title}</b>
-                  <span className="text-erp-label"> · {l.due ? l.desc : l.who}</span>
+                  <b className="text-[14px] font-semibold">{l.title}</b>
+                  {(l.due ? l.desc : l.who) && <span className="text-[14px] text-erp-label"> · {l.due ? l.desc : l.who}</span>}
                 </span>
                 {l.due ? (
                   <span className={l.due.urgent ? "font-semibold text-erp-off" : "text-erp-label"}>{l.due.text}</span>
@@ -683,7 +707,8 @@ function Payslips({ month, list, labels, href }: { month: string; list: PayslipL
   const counts = list.statusCounts;
   const total = PAYSLIP_STEPS.reduce((sum, k) => sum + counts[k], 0);
   return (
-    <Link href={href} aria-label={`${Number(month.slice(5))}월 급여명세서 — 급여명세서 목록`} className={`${CARD} ${LINK_CARD} flex shrink-0 flex-col gap-[14px] px-[24px] py-[20px]`}>
+    <Link href={href} className={`${CARD} ${LINK_CARD} flex shrink-0 flex-col gap-[12px] px-[24px] py-[18px]`}>
+      <span className="sr-only">급여명세서 목록으로 이동</span>
       <div className="flex items-center gap-[8px]">
         <h2 className="flex-1 text-[16px] font-semibold text-erp-ink">{Number(month.slice(5))}월 급여명세서</h2>
         <span className="text-[14px] text-erp-label">
@@ -694,7 +719,7 @@ function Payslips({ month, list, labels, href }: { month: string; list: PayslipL
       <ol className="grid grid-cols-4 gap-[6px] text-center text-[13px]">
         {PAYSLIP_STEPS.map((k) => (
           <li key={k} className="flex flex-col gap-[6px]">
-            <span className={`h-[6px] rounded-[3px] ${counts[k] ? "bg-erp-brand" : "bg-erp-subtle"}`} />
+            <span className={`h-[6px] rounded-[2px] ${counts[k] ? "bg-erp-brand" : "bg-erp-subtle"}`} />
             <span className={counts[k] ? "text-erp-ink" : "text-erp-label"}>
               {labelOf(labels, k)} {counts[k]}
             </span>
@@ -719,8 +744,9 @@ function MyInquiries({ inquiries, href }: { inquiries: NonNullable<CardsData["my
     </>
   );
   return href ? (
-    <Link href={href} aria-label="내 문의 — 문의하기" className={`${box} ${LINK_CARD}`}>
+    <Link href={href} className={`${box} ${LINK_CARD}`}>
       {inner}
+      <span className="sr-only">문의하기로 이동</span>
     </Link>
   ) : (
     <section aria-label="내 문의" className={box}>

@@ -127,6 +127,10 @@ export function BizVerificationBox({
   // 보통 짧아 좁게 — 수치는 실제 화면으로 여러 번 맞춰 본 값이다(사용자 확인, 2026-10-23). 다른 화면엔
   // 영향 없다.
   const cell = layout === "row" ? "flex min-w-px flex-1 flex-col" : "flex flex-col";
+  // 좁은 패널(compactRow)에서는 칸 오류 문구를 칸 아래가 아니라 세 칸 줄 아래 한 줄로 둔다 — 사업자등록번호 칸이 좁아
+  // 「이미 등록된 사업자등록번호입니다.」가 글자 중간에서 꺾였다(2026-11-18 사용자 지정, 마이페이지 사업자정보)
+  const messagesBelow = layout === "row" && compactRow;
+  const cellMessage = (key: BizVerifyField) => (messagesBelow ? null : <FieldMessage id={messageId(key)} message={fieldErrors[key]} />);
   const compactCell = (grow: string) => (layout === "row" && compactRow ? `flex min-w-px ${grow} flex-col` : cell);
 
   const bizNumberCell = (
@@ -148,7 +152,7 @@ export function BizVerificationBox({
           />
         )}
       </Field>
-      <FieldMessage id={messageId("bizNumber")} message={fieldErrors.bizNumber} />
+      {cellMessage("bizNumber")}
     </div>
   );
   const ceoNameCell = (
@@ -169,7 +173,7 @@ export function BizVerificationBox({
           />
         )}
       </Field>
-      <FieldMessage id={messageId("ceoName")} message={fieldErrors.ceoName} />
+      {cellMessage("ceoName")}
     </div>
   );
   const openDateCell = (
@@ -184,7 +188,7 @@ export function BizVerificationBox({
           <DateField value={values.openDate} onChange={(v) => onChange("openDate", v)} disabled={disabled} aria-label="개업일자" />
         )}
       </div>
-      <FieldMessage id={messageId("openDate")} message={fieldErrors.openDate} />
+      {cellMessage("openDate")}
     </div>
   );
 
@@ -218,6 +222,8 @@ export function BizVerificationBox({
           {ceoNameCell}
           {openDateCell}
         </div>
+        {messagesBelow &&
+          (["bizNumber", "ceoName", "openDate"] as const).map((key) => <FieldMessage key={key} id={messageId(key)} message={fieldErrors[key]} />)}
         <FieldMessage id={lineId} message={lineMessage} />
         <div className="flex gap-[6px]">
           {/* struck 일 땐 숨긴다 — 지워질 값을 두고 "재인증/인증하기"를 누르는 건 말이 안 된다. 바꿔 타려면
