@@ -48,8 +48,9 @@ const HEAD_CELL: Record<Exclude<TableHeadVariant, "none">, string> = {
 // Figma TABLE. 열 정의(columns)와 행(rows)을 받아 목록을 그린다.
 // rowState 로 줄 바탕을, rowProps 로 줄 속성(끌기 이벤트 · aria 등)을 준다. 줄 모양(className · style)은 받지 않는다.
 // headVariant 로 열 이름 줄 모양을 고른다(기본 default).
-// scroll 을 켜면 열 이름 줄을 고정하고 그 아래 줄만 스크롤한다 — 부모가 정한 높이를 채우며(flex-1), 스크롤바도 열 이름 줄 아래에서
-// 시작한다(공통코드 관리, 2026-10-26 사용자 지정). 머리 · 본문을 두 표로 나누고 둘 다 스크롤바 자리를 비워(scrollbar-gutter) 열이 어긋나지 않는다.
+// scroll 을 켜면 열 이름 줄을 고정하고 그 아래 줄만 스크롤한다 — 상자(data-table-scroll)는 부모가 정한 높이 안에 서고, 본문은 줄 높이만큼만
+// 차지하다 넘치면 줄어 그 안에서 스크롤하며 스크롤바도 열 이름 줄 아래에서 시작한다(공통코드 관리, 2026-10-26 사용자 지정). 머리 · 본문을 두 표로
+// 나누고, 본문에 세로 스크롤바가 생기면 그 폭만큼 머리 오른쪽을 비워 열을 맞춘다(ScrollHeadSync, 2026-11-18).
 // 부모는 flex 세로 묶음이어야 한다. headVariant none 에는 쓰지 않는다(고정할 머리가 없다).
 export function DataTable<T>({
   columns,
@@ -77,13 +78,13 @@ export function DataTable<T>({
    */
   fillEmpty?: boolean;
   /**
-   * 표 최소 폭(Tailwind 클래스, 예 `min-w-[1135px]`). 폭을 정하지 않은 열(남는 폭을 갖는 열)이 0 으로 줄지 않게 한다 — 창이 좁으면
-   * scroll 과 함께 표 상자 안에서 가로로 민다(직원 목록, 2026-11-18 사용자 지정 · 1260 작업)
+   * 표 최소 폭(예 `min-w-[1135px]` — 열 폭 합). 창이 좁으면 scroll 과 함께 표 상자 안에서 가로로 민다(직원 목록, 2026-11-18 사용자 지정 · 1260 작업).
+   * 다른 클래스가 들어오지 않게 모양을 막는다(공통 컴포넌트에 className 을 넘기지 않는다 — 리뷰 반영)
    */
-  minWidth?: string;
+  minWidth?: `min-w-[${number}px]`;
 }) {
-  // 고정 머리 표(scroll)는 좌우 선 · 머리 위아래 선을 표가 아니라 머리 · 본문 상자(ScrollHeadSync)가 긋는다 — 세로 스크롤바 자리(scrollbar-gutter)가
-  // 선 안쪽에 들어가 표 오른쪽 선이 카드 안쪽 여백에 닿는다. 표가 그으면 스크롤바 자리만큼 오른쪽 선이 안으로 들어와 좌우 여백이 달랐다(2026-11-18 사용자 지정)
+  // 고정 머리 표(scroll)는 좌우 선 · 머리 위아래 선을 표가 아니라 머리 · 본문 상자(ScrollHeadSync)가 긋는다 — 세로 스크롤바가 선 안쪽에
+  // 들어가 표 오른쪽 선이 카드 안쪽 여백에 닿는다. 표가 그으면 스크롤바 자리만큼 오른쪽 선이 안으로 들어와 좌우 여백이 달랐다(2026-11-18 사용자 지정)
   const framed = scroll && headVariant !== "none" && !(fillEmpty && rows.length === 0);
   const table = `w-full table-fixed border-collapse ${framed ? "" : "border-x border-erp-thead-line"} text-[14px] ${headVariant === "none" ? "border-t" : ""} ${minWidth ?? ""}`;
   const cols = (
