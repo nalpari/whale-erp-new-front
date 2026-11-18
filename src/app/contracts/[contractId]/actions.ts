@@ -48,7 +48,7 @@ export async function updateWorker(contractId: number, body: WorkerBody, back?: 
     if (expired) return { error: expired.message, expired: true };
     if (e instanceof ApiError) {
       const failure = saveFailureOf(e, { feature: "근로계약 당사자 정보", contractId });
-      // 고친 내용은 저장했는데 다시 보내기(가입 초대 알림톡)가 실패했다 — 상세에서 알린다
+      // 고친 내용은 저장했는데 다시 보내기(가입 초대 · 소속 추가 확인 요청 알림톡)가 실패했다 — 상세에서 알린다
       if (failure.kind === "sendFailed") redirect(await bpHref(withBack(failure.target, back)));
       // 결과를 받지 못했다(saveFailureOf 의 unknown — api 의 503 이 아닌 5xx 전부) — 저장 · 다시 보내기가 됐을 수 있어 같은 폼으로 다시 저장하지 않게 상세로(front #50 리뷰)
       if (failure.kind === "unknown") redirect(await bpHref(withBack(`/contracts/${contractId}?send=unknown`, back)));

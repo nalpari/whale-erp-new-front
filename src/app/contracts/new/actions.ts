@@ -15,7 +15,7 @@ const isContractId = (id: unknown): id is number => Number.isInteger(id) && (id 
  * 근로계약서 초안 저장. 성공하면 목록으로 가서 시스템이 한 처리(가입 초대 · 소속 추가 확인 · 복귀 확인 · 즉시 발송)를 알린다(쿠키 savedCookieOf, WHALEERP-132). 실패하면 화면에 보일 문장을 돌려준다 —
  * api 의 400 · 404 · 409 문장(만 19세 미만, 같은 번호로 재직 중 등)을 그대로 쓴다. 같은 점포에 진행 중 계약이
  * 있으면(409 CONTRACT_IN_PROGRESS) 그 목록도 돌려줘 화면이 대체할지 묻는다(WHALEERP-129).
- * 초안 저장은 곧바로 보낸다(2026-10-19 재영) — 저장은 됐는데 가입 초대 알림톡이 실패하면(502) 그 계약 상세로 옮겨 알린다.
+ * 초안 저장은 곧바로 보낸다(2026-10-19 재영) — 저장은 됐는데 가입 초대 · 소속 추가 확인 요청 알림톡이 실패하면(502) 그 계약 상세로 옮겨 알린다.
  */
 export async function createContract(body: CreateContractBody, back?: string): Promise<SaveResult> {
   return save("/contracts", "POST", body, null, back);
