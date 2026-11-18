@@ -53,7 +53,7 @@ export type BpMasterForm = {
   verified: BpVerified | null;
   /**
    * [사용안함]을 눌러 저장할 때 저장된 사업자정보(번호 · 대표자명 · 개업일자 · 인증일시)를 지우기로 한 상태 — 수정만.
-   * 마이페이지 사업자정보의 pendingClear 와 같다(2026-11-18 사용자 요청). 지우면 api 가 본사 점포를 미운영으로 내린다.
+   * 마이페이지 사업자정보의 pendingClear 와 같다(2026-11-18 사용자 요청). 지우면 api 가 본사 점포가 운영 중일 때 미운영으로 내린다(이미 미운영이면 그대로).
    */
   pendingClear: boolean;
 };

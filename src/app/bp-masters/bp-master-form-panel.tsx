@@ -38,6 +38,7 @@ import { BpStatusBadge, unknownResult } from "./bp-master-parts";
 // 사업자정보는 마이페이지 사업자정보 탭과 같은 모양이다(2026-10-28 사용자 지정 — 전엔 [사업자 번호 인증하기]로 상자를 펼쳤다):
 // 공통 인증 상자(BizVerificationBox, 세 칸 한 줄)가 처음부터 열려 있고, 인증하면 칸이 잠긴다. [재인증]은 확인 없이 값을 둔 채
 // 칸을 다시 연다 — 회원가입 · 점포 · 마이페이지와 같다(2026-10-29 재영, 전엔 확인창을 한 번 거쳤다).
+// 수정에서 저장된 인증은 [사용안함]으로 지울 수 있다 — 취소선만 긋고 [저장]해야 clearBusinessVerification 으로 지워진다(마이페이지와 같다, 2026-11-18).
 // 상호명부터는 따로 카드이고, 대표자 연락처 · 이메일에 「기본정보와 동일」이 있다. 번호 중복 · 확인 불가 · 처리 오류여도 인증 없이 저장할 수 있다.
 // 수정은 제목 옆에 BP 코드 · 계정상태 배지를 보여 주기만 하고(아이디 · 가입경로 칸은 2026-10-28 사용자 지정으로 뺐다), BP 상태는 상세의 [BP상태변경]에서만 바꾼다. 마지막 저장이 남는다(409 없음).
 
@@ -221,7 +222,8 @@ export function BpMasterFormPanel(props: Props) {
 
   /**
    * [사용안함] — 저장된 인증을 지우기로 한다(수정만). 확인창 없이 바로 취소선(읽기 전용)으로 바꾸고, 저장해야 지워진다.
-   * 마이페이지 사업자정보 handleClearSaved 와 같다(2026-11-18 사용자 요청). [사용안함 취소]로 되돌린다.
+   * 마이페이지 사업자정보의 [사용안함]과 같은 동작이다(2026-11-18 사용자 요청). 이번 화면의 토큰이 없을 때만 버튼이 보여
+   * verified 는 손대지 않는다. [사용안함 취소]로 되돌린다.
    */
   const handleClearSaved = () => {
     verifyNumber.current++;
@@ -464,7 +466,7 @@ export function BpMasterFormPanel(props: Props) {
         showClear={!form.verified && Boolean(form.bizNumber || form.ceoName || form.openDate)}
         // 저장된 인증을 지울 수 있다 — 수정에서 저장돼 있던 인증이 잠겨 있을 때만, 재인증 버튼 오른쪽에(마이페이지와 같다, 2026-11-18 사용자 요청)
         onClearSaved={mode === "edit" && bizLocked && !form.verified?.token && !form.pendingClear ? handleClearSaved : undefined}
-        // 재인증 중이면 잠긴 인증으로, 사용안함이면 지우기 전으로 되돌린다(점포 수정 · 마이페이지와 같다)
+        // 재인증 중이면 잠긴 인증으로 되돌린다(점포 수정 · 마이페이지와 같다). 사용안함이면 지우기 전으로 되돌린다(마이페이지와 같다)
         onRevert={form.pendingClear ? revertClearSaved : form.verified && form.verifying ? closeVerification : undefined}
         revertLabel={form.pendingClear ? "사용안함 취소" : "재인증 취소"}
         {...(form.pendingClear
