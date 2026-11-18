@@ -51,6 +51,11 @@ export type BpMasterForm = {
   verifying: boolean;
   /** 인증 완료 카드에 보이는 값 — 수정은 저장돼 있던 인증, 등록은 이번 화면의 인증 */
   verified: BpVerified | null;
+  /**
+   * [사용안함]을 눌러 저장할 때 저장된 사업자정보(번호 · 대표자명 · 개업일자 · 인증일시)를 지우기로 한 상태 — 수정만.
+   * 마이페이지 사업자정보의 pendingClear 와 같다(2026-11-18 사용자 요청). 지우면 api 가 본사 점포를 미운영으로 내린다.
+   */
+  pendingClear: boolean;
 };
 
 export type BpMasterFormField =
@@ -94,6 +99,7 @@ export const EMPTY_BP_MASTER_FORM: BpMasterForm = {
   openDate: "",
   verifying: true,
   verified: null,
+  pendingClear: false,
 };
 
 /**
@@ -223,8 +229,10 @@ export function toCreateBpMasterInput(form: BpMasterForm): CreateBpMasterInput {
   return { loginId: form.loginId.trim(), ...profileOf(form) };
 }
 
+/** 수정 — [사용안함]이면 clearBusinessVerification 을 싣는다. 이때는 새 인증 토큰을 싣지 않는다(함께 보내면 api 가 400) */
 export function toUpdateBpMasterInput(form: BpMasterForm): UpdateBpMasterInput {
-  return profileOf(form);
+  if (!form.pendingClear) return profileOf(form);
+  return { ...profileOf({ ...form, verified: null }), clearBusinessVerification: true };
 }
 
 /**

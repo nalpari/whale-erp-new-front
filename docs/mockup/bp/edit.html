@@ -94,7 +94,9 @@
                  처음부터 세 칸 한 줄 상자가 열려 있고, 인증하면 세 칸이 제자리에서 잠기며 상자 제목 오른쪽에 「인증 완료 · 일시」가 보인다.
                  [재인증]은 확인창 없이 값을 둔 채 세 칸을 다시 열고(2026-10-29 재영 — 전엔 BP 관리만 확인창이 있었다), [재인증 취소]로 저장된 값으로 되돌린다.
                  인증 결과는 [저장]을 눌러야 반영된다. 재인증에 실패하면 저장된 세 값과 인증 상태는 그대로다. 저장한 적 없는 값은 [지우기].
-                 바꾼 사업자등록번호도 다른 BP 와 겹치는지 검사한다(자기 BP 는 뺀다). -->
+                 바꾼 사업자등록번호도 다른 BP 와 겹치는지 검사한다(자기 BP 는 뺀다).
+                 [사용안함]은 마이페이지 사업자정보와 같다(2026-11-18 사용자 요청) — 저장된 세 값에 취소선을 긋고 잠그며 [인증하기]를 숨긴다.
+                 [사용안함 취소]로 되돌리고, [저장]을 눌러야 번호 · 대표자명 · 개업일자 · 인증일시가 지워진다. 지우면 이 BP 의 본사 점포는 미운영이 된다. -->
             <section class="panel">
               <div class="panel__head">
                 <h2 class="t-h2">BP 사업자정보</h2>
@@ -106,7 +108,7 @@
                   <div class="spread">
                     <h3 class="t-h3">사업자 번호 인증</h3>
                     <span style="font-weight: 500" data-show-biz="saved"><span data-show="base dup">인증 완료 · 2025-02-03 11:10</span><span data-show="off" hidden>인증 완료 · 2024-11-05 14:05</span></span>
-                    <span style="color: var(--risk-text); font-weight: 500" data-show-biz="reverify none dup mismatch unavailable" hidden>미인증</span>
+                    <span style="color: var(--risk-text); font-weight: 500" data-show-biz="reverify none dup mismatch unavailable unused" hidden>미인증</span>
                   </div>
                   <div class="demo" data-demo="ef" data-demo-key="biz">
                     <b>목업 사업자 인증</b>
@@ -117,9 +119,11 @@
                       <button type="button" data-state="dup" aria-pressed="false">번호 중복</button>
                       <button type="button" data-state="mismatch" aria-pressed="false">불일치</button>
                       <button type="button" data-state="unavailable" aria-pressed="false">국세청 오류</button>
+                      <button type="button" data-state="unused" aria-pressed="false">사용안함 표시</button>
                     </div>
                   </div>
                   <div class="grid grid--3" data-show-biz="saved">
+                    <!-- 같은 값을 [사용안함] 뒤에는 아래 취소선 줄로 보인다 -->
                     <div class="field">
                       <label for="ebizs">사업자등록번호</label>
                       <input class="input mono" id="ebizs" value="105-86-33412" readonly data-show="base dup" />
@@ -135,6 +139,11 @@
                       <input class="input mono" id="eopens" type="date" value="2016-05-20" readonly data-show="base dup" />
                       <input class="input mono" type="date" value="2020-10-12" readonly data-show="off" hidden aria-label="개업일자" />
                     </div>
+                  </div>
+                  <div class="grid grid--3" data-show-biz="unused" hidden style="text-decoration: line-through; color: var(--muted-tert)">
+                    <div class="field"><label>사업자등록번호</label><div class="input mono" style="display: flex; align-items: center"><span data-show="base dup">105-86-33412</span><span data-show="off" hidden>220-19-55813</span></div></div>
+                    <div class="field"><label>대표자명</label><div class="input" style="display: flex; align-items: center"><span data-show="base dup">정하윤</span><span data-show="off" hidden>이준호</span></div></div>
+                    <div class="field"><label>개업일자</label><div class="input mono" style="display: flex; align-items: center"><span data-show="base dup">2016-05-20</span><span data-show="off" hidden>2020-10-12</span></div></div>
                   </div>
                   <div class="grid grid--3" data-show-biz="reverify none dup mismatch unavailable" hidden>
                     <div class="field">
@@ -156,13 +165,17 @@
                   <span class="err" data-show-biz="unavailable" hidden style="align-items: flex-start"><span data-icon="alert" data-icon-size="13" style="margin-top: 2px"></span><span>국세청 확인이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.<br />인증하지 않고 저장할 수 있습니다.</span></span>
                   <div class="inline" style="gap: 8px">
                     <button class="btn btn--secondary btn--sm" type="button" data-show-biz="saved" data-state-go="reverify">재인증</button>
+                    <button class="btn btn--secondary btn--sm" type="button" data-show-biz="saved" data-state-go="unused">사용안함</button>
                     <button class="btn btn--secondary btn--sm" type="button" data-show-biz="reverify none" data-state-go="saved" hidden>인증하기</button>
                     <button class="btn btn--secondary btn--sm" type="button" data-show-biz="dup mismatch unavailable" hidden>인증하기</button>
                     <button class="btn btn--secondary btn--sm" type="button" data-show-biz="reverify dup mismatch unavailable" data-state-go="saved" hidden>재인증 취소</button>
                     <button class="btn btn--secondary btn--sm" type="button" data-show-biz="none" hidden>지우기</button>
+                    <button class="btn btn--secondary btn--sm" type="button" data-show-biz="unused" data-state-go="saved" hidden>사용안함 취소</button>
                   </div>
+                  <p class="subtle" style="margin: 0; font-size: 13px" data-show-biz="unused" hidden>하단의 [저장] 버튼을 클릭하면 인증 정보가 삭제됩니다.</p>
                   <p class="subtle" style="margin: 0; font-size: 13px" data-show-biz="reverify" hidden>인증 실패 시 기존 정보가 유지됩니다.</p>
-                  <p class="subtle" style="margin: 0; font-size: 13px">사업자정보가 국세청에 등록된 정보와 일치하는지 확인합니다.</p>
+                  <!-- [사용안함] 뒤에는 이 안내 대신 위의 삭제 안내만 보인다(앱 BizVerificationBox guide) -->
+                  <p class="subtle" style="margin: 0; font-size: 13px" data-show-biz="saved reverify none dup mismatch unavailable">사업자정보가 국세청에 등록된 정보와 일치하는지 확인합니다.</p>
                 </div>
 
                 <div class="grid grid--2">

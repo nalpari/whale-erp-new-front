@@ -119,6 +119,20 @@ test("본사 좌표 검사 · api 거절 칸 — 점포 등록과 같은 규칙"
   assert.equal(bpMasterServerErrorField(400, "위도는 -90~90 사이여야 합니다.", "edit"), "latitude");
 });
 
+test("사용안함(pendingClear) — 수정에 clearBusinessVerification 을 싣고 인증 토큰은 싣지 않는다. 끄면 싣지 않는다", () => {
+  const verified = { bizNumber: "1058633412", ceoName: "정하윤", openDate: "2016-05-20" };
+  assert.equal(formOfBpMaster({ loginId: "a", tradeName: "t" } as BpMasterDetail).pendingClear, false);
+  const cleared = toUpdateBpMasterInput({ ...filled, verified, verifying: false, pendingClear: true });
+  assert.equal(cleared.clearBusinessVerification, true);
+  assert.equal("verificationToken" in cleared, false);
+  // 이번 화면의 토큰이 남아 있어도 함께 보내지 않는다(함께 보내면 api 가 400)
+  const withToken = toUpdateBpMasterInput({ ...filled, verified: { ...verified, token: "t1" }, verifying: false, pendingClear: true });
+  assert.equal("verificationToken" in withToken, false);
+  assert.equal(withToken.clearBusinessVerification, true);
+  const kept = toUpdateBpMasterInput({ ...filled, verified, verifying: false, pendingClear: false });
+  assert.equal("clearBusinessVerification" in kept, false);
+});
+
 test("api 오류를 붙일 칸 — 중복 · 형식만, 수정의 아이디 오류는 띠로", () => {
   assert.equal(bpMasterServerErrorField(409, "이미 사용 중인 아이디입니다", "create"), "loginId");
   assert.equal(bpMasterServerErrorField(409, "이미 사용 중인 아이디입니다", "edit"), null);

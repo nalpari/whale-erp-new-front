@@ -219,6 +219,17 @@ export function BpMasterFormPanel(props: Props) {
     setVerifyFailure(null);
   };
 
+  /**
+   * [사용안함] — 저장된 인증을 지우기로 한다(수정만). 확인창 없이 바로 취소선(읽기 전용)으로 바꾸고, 저장해야 지워진다.
+   * 마이페이지 사업자정보 handleClearSaved 와 같다(2026-11-18 사용자 요청). [사용안함 취소]로 되돌린다.
+   */
+  const handleClearSaved = () => {
+    verifyNumber.current++;
+    setForm((f) => ({ ...f, pendingClear: true }));
+    setVerifyFailure(null);
+  };
+  const revertClearSaved = () => setForm((f) => ({ ...f, pendingClear: false }));
+
   const handleVerify = () => {
     const found = verificationErrors(form);
     setErrors((e) => ({ ...e, ...found }));
@@ -438,9 +449,11 @@ export function BpMasterFormPanel(props: Props) {
         onChange={(key, value) => setVerification(key, value)}
         locked={{ bizNumber: bizLocked, ceoName: bizLocked, openDate: bizLocked }}
         lockedDisplay={bizValues.bizNumber ? { bizNumber: formatBizNumber(bizValues.bizNumber) } : {}}
-        verified={bizLocked}
+        // [사용안함]을 누르면 지워질 저장된 값에 취소선을 긋고 인증하기 버튼을 숨긴다 — 상태도 미인증으로 보인다(마이페이지와 같다)
+        struck={form.pendingClear}
+        verified={bizLocked && !form.pendingClear}
         // 저장돼 있던 인증만 날짜를 보인다 — 이번 화면에서 받은 인증은 아직 저장 전이다
-        verifiedDate={bizLocked && !form.verified?.token && props.mode === "edit" && props.bp.bizVerifiedAt ? formatDateTime(props.bp.bizVerifiedAt) : ""}
+        verifiedDate={bizLocked && !form.pendingClear && !form.verified?.token && props.mode === "edit" && props.bp.bizVerifiedAt ? formatDateTime(props.bp.bizVerifiedAt) : ""}
         verifying={verifying}
         fieldErrors={bizFieldErrors}
         missing={bizMissing}
@@ -449,11 +462,16 @@ export function BpMasterFormPanel(props: Props) {
         onVerify={bizLocked ? openVerification : handleVerify}
         onClear={closeVerification}
         showClear={!form.verified && Boolean(form.bizNumber || form.ceoName || form.openDate)}
-        // 재인증 중이면 잠긴 인증으로 되돌린다(점포 수정 · 마이페이지와 같다)
-        onRevert={form.verified && form.verifying ? closeVerification : undefined}
-        {...(form.verified?.token && !form.verifying
-          ? { note: mode === "edit" ? "인증 결과는 저장해야 반영됩니다." : undefined }
-          : { note: mode === "edit" && form.verified && form.verifying ? "인증 실패 시 기존 정보가 유지됩니다." : undefined })}
+        // 저장된 인증을 지울 수 있다 — 수정에서 저장돼 있던 인증이 잠겨 있을 때만, 재인증 버튼 오른쪽에(마이페이지와 같다, 2026-11-18 사용자 요청)
+        onClearSaved={mode === "edit" && bizLocked && !form.verified?.token && !form.pendingClear ? handleClearSaved : undefined}
+        // 재인증 중이면 잠긴 인증으로, 사용안함이면 지우기 전으로 되돌린다(점포 수정 · 마이페이지와 같다)
+        onRevert={form.pendingClear ? revertClearSaved : form.verified && form.verifying ? closeVerification : undefined}
+        revertLabel={form.pendingClear ? "사용안함 취소" : "재인증 취소"}
+        {...(form.pendingClear
+          ? { guide: "하단의 [저장] 버튼을 클릭하면 인증 정보가 삭제됩니다." }
+          : form.verified?.token && !form.verifying
+            ? { note: mode === "edit" ? "인증 결과는 저장해야 반영됩니다." : undefined }
+            : { note: mode === "edit" && form.verified && form.verifying ? "인증 실패 시 기존 정보가 유지됩니다." : undefined })}
       />
 
       {/* 상호명부터는 따로 카드 — 마이페이지와 같은 테두리 · 여백(2026-10-28 사용자 지정) */}
