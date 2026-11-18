@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-18
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) · [BP 마스터 계정 관리](/bp.md) · [홈·계정 진입](/home.md) · [직원 정보 관리 화면](/screens/staff-members.md) · [급여명세서 관리 화면](/screens/payslips.md) · [출·퇴근 현황 조회 화면](/screens/attendance-records.md) — 웨일ERP 탭 최소폭 1720 → 1260(플랫폼과 같다). 목록 열 폭을 1260 기준으로 다시 정하고 모든 열에 기준 폭(넓은 창은 같은 비율, 넘치면 표 상자 안 가로 스크롤 · `DataTable` `minWidth`), 고정 머리 표는 상자가 선을 긋고 스크롤바 자리는 넘칠 때만, `FilterPanel` 은 창 1400 미만 접힘 · 경로별 기억 · `applied` 빨간 점. 점포 상세 2×2(변경이력 상자 · 출퇴근 위치적용 따로 한 줄), 시설물 상세 줄 단위 두 칸 · 운영상태 큰 카드, 홈 카드 순서 · 둘째 줄 보충 · 「운영 점포별 현황」(표 아래 안내 · [직원 목록] 삭제), BP 공통코드 그룹 목록 28 : 44 비율, BP 관리자 권한명 선택지는 이름만(2026-11-18 사용자 지정 · 1260 작업).
 * **Update**: [BP 마스터 계정 관리](/bp.md) — 수정 패널 사업자정보에 마이페이지와 같은 [사용안함] · [사용안함 취소]를 붙였다. 저장하면 `clearBusinessVerification` 으로 사업자정보 네 칸을 지우고 본사 점포가 운영 중이면 미운영으로 내려간다(api 새 필드, 타입 재생성). 목업 · 데모 BP 수정 화면 같이 반영.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 저장 뒤 발송 실패 안내가 못 보낸 알림톡(가입 초대 · 소속 추가 확인 요청)과 까닭(거절이면 번호 확인 · 보내기 전 실패면 잠시 뒤)을 api `delivery` · `failure` 로 가른다(WHALEERP-735).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 초안 작성 「근무 장소」 안내를 「소속 근무지를 선택하면 근무지명이 들어갑니다」로 고쳤다(WHALEERP-733, 개념 본문 변경 없음).
