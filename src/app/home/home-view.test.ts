@@ -48,7 +48,7 @@ test("api 가 이 화면이 모르는 확인 필요 유형을 주면 null(그 �
 
 test("서명 대기 — 이름 외 N명 · 발송 후 경과, 탭 BP 의 근로계약 목록 점포 · 상태로 간다", () => {
   const line = pendingLineOf(item({}), 8)!;
-  assert.deepEqual([line.kind, line.title, line.desc], ["계약", "근로계약 직원 서명 대기 3건", "남도현 외 2명 · 발송 후 6일 경과"]);
+  assert.deepEqual([line.kind, line.title, line.desc], ["근로계약", "직원 서명 대기 3건", "남도현 외 2명 · 발송 후 6일 경과"]);
   assert.equal(line.href, "/bp/8/contracts?storeIds=3%2C7&status=PENDING_SIGNATURE");
   const q = readListQuery(searchOf(line.href));
   assert.deepEqual([q.storeIds, q.status], [[3, 7], ["PENDING_SIGNATURE"]]);
@@ -63,7 +63,7 @@ test("갱신 예정 — 경과 없이 「새 근로계약서 초안 없음」과
   const renewal = (dueInDays: number) =>
     pendingLineOf(item({ type: "CONTRACT_RENEWAL", count: 2, othersCount: 1, waitingDays: null, dueInDays, filter: { storeIds: [3], status: ["SIGNED"] } }), 8)!;
   const line = renewal(7);
-  assert.deepEqual([line.title, line.desc, line.due], ["계약 갱신 예정 2건", "남도현 외 1명 · 새 근로계약서 초안 없음", { text: "종료 D-7", urgent: true }]);
+  assert.deepEqual([line.title, line.desc, line.due], ["갱신 예정 2건", "남도현 외 1명 · 새 근로계약서 초안 없음", { text: "종료 D-7", urgent: true }]);
   assert.deepEqual(renewal(8).due, { text: "종료 D-8", urgent: false });
   assert.deepEqual(renewal(0).due, { text: "종료 D-0", urgent: true });
   assert.deepEqual(readListQuery(searchOf(line.href)).status, ["SIGNED"]);
@@ -81,12 +81,12 @@ test("소속 확인 거절 — 탭 BP 의 직원 목록 「초대」 묶음(거�
 
 test("문의 답변완료 — 탭 BP 의 문의하기, 제목 외 N건", () => {
   const line = pendingLineOf(item({ type: "INQUIRY_ANSWERED", firstName: "KIOSK 연동 문의", count: 2, othersCount: 1, waitingDays: 1, filter: { storeIds: [], status: ["ANSWERED"] } }), 8)!;
-  assert.deepEqual([line.title, line.desc, line.href], ["문의 답변완료 2건", "KIOSK 연동 문의 외 1건 · 답변 후 1일 경과", "/bp/8/support-inquiries?status=ANSWERED"]);
+  assert.deepEqual([line.title, line.desc, line.href], ["답변완료 2건", "KIOSK 연동 문의 외 1건 · 답변 후 1일 경과", "/bp/8/support-inquiries?status=ANSWERED"]);
 });
 
 test("긴급 TO-DO — 탭 BP 의 TO-DO 목록 점포 · 대기 · 진행 중 · 긴급만", () => {
   const line = pendingLineOf(item({ type: "URGENT_TODO", firstName: "냉장고 재료 폐기", count: 1, othersCount: 0, filter: { storeIds: [3], status: ["PENDING", "IN_PROGRESS"] } }), 8)!;
-  assert.equal(line.title, "긴급 TO-DO 1건");
+  assert.equal(line.title, "긴급 1건");
   assert.ok(line.href.startsWith("/bp/8/todos?"));
   const q = parseTodoListQuery(searchOf(line.href));
   assert.deepEqual([q.storeIds, q.statuses, q.urgentOnly], [[3], ["PENDING", "IN_PROGRESS"], true]);
