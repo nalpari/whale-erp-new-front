@@ -29,18 +29,26 @@ const PATH = "/bp-masters";
 
 export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; status?: number; message: string };
 
+/** 실패 본문에 api 가 쓴 문구가 있는가 — 없으면 api.ts 가 「요청이 실패했습니다 (HTTP 503)」 같은 문구를 지어 넣어(앞단 프록시의 503 등) 그대로 보이면 안 된다 */
+const hasApiMessage = (body: unknown) => {
+  const message = (body as { message?: unknown } | null)?.message;
+  return typeof message === "string" && message.trim() !== "";
+};
+
 /**
  * api 오류를 화면 문구로 바꾼다. 400 · 403 · 404 · 409 · 422(국세청 불일치) · 429(진위확인 시간당 한도)는 api 가 한국어로 알리므로 그대로,
  * 503(국세청 장애)은 인증 없이 저장할 수 있다는 것을 함께, 401 은 고정 문구로, 그 밖(5xx · 연결 실패)은 일반 문구로 바꾼다.
  * 비밀번호 초기화의 503 은 국세청이 아니라 메일 설정 없음이라 일반 문구(「비밀번호를 초기화하지 못했습니다. 잠시 후 다시 시도해 주세요.」)로 — 세 관리 화면 같다(2026-10-28 사용자 지정).
+ * 등록 · 수정의 503 은 국세청이 아니라 본사 점포를 만들며 점포코드 잠금 줄이 밀린 것이다(저장은 롤백) — api 문구(「등록이 몰렸습니다. 잠시 뒤 …」)를 그대로 보인다(on503 "api", 본사 점포 설계 2026-11-18).
  */
-function failureOf(error: unknown, what: string, notNts = false): { ok: false; status?: number; message: string } {
+function failureOf(error: unknown, what: string, on503: "nts" | "api" | "generic" = "nts"): { ok: false; status?: number; message: string } {
   const expired = expiredFailureOf(error);
   if (expired) return expired;
   if (error instanceof ApiError) {
     // 429 는 사업자 진위확인 시간당 한도(10건)
     if ([400, 403, 404, 409, 422, 429].includes(error.status)) return { ok: false, status: error.status, message: withPeriod(error.message) };
-    if (error.status === 503 && !notNts) return { ok: false, status: 503, message: "지금은 국세청 확인을 할 수 없습니다. 인증 없이 저장하고 나중에 인증할 수 있습니다." };
+    if (error.status === 503 && on503 === "nts") return { ok: false, status: 503, message: "지금은 국세청 확인을 할 수 없습니다. 인증 없이 저장하고 나중에 인증할 수 있습니다." };
+    if (error.status === 503 && on503 === "api" && hasApiMessage(error.body)) return { ok: false, status: 503, message: withPeriod(error.message) };
   }
   console.error(`BP 마스터 계정 ${what} 실패`, error);
   return { ok: false, message: `${what}하지 못했습니다. 잠시 후 다시 시도해 주세요.` };
@@ -64,7 +72,7 @@ export async function createBpMasterAction(input: CreateBpMasterInput): Promise<
     refresh();
     return { ok: true, ...result };
   } catch (error) {
-    return failureOf(error, "등록");
+    return failureOf(error, "등록", "api");
   }
 }
 
@@ -75,7 +83,7 @@ export async function updateBpMasterAction(bpCodeId: number, input: UpdateBpMast
     refresh();
     return { ok: true };
   } catch (error) {
-    return failureOf(error, "수정");
+    return failureOf(error, "수정", "api");
   }
 }
 
@@ -102,7 +110,7 @@ export async function resetBpMasterPasswordAction(bpCodeId: number): Promise<Act
     // api 문구 「이메일이 없는 계정이라 보낼 곳이 없습니다」(409)는 화면 말투로 바꾼다 — 세 관리 화면 같다(2026-10-28 사용자 지정)
     if (error instanceof ApiError && error.status === 409 && error.message.includes("이메일이 없는 계정"))
       return { ok: false, status: 409, message: "해당 계정에는 등록된 이메일 주소가 없어 메일을 발송할 수 없습니다." };
-    return failureOf(error, "비밀번호를 초기화", true);
+    return failureOf(error, "비밀번호를 초기화", "generic");
   }
 }
 

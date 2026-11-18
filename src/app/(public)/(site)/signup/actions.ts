@@ -111,6 +111,13 @@ export async function createSignup(payload: SignupPayload): Promise<SignupResult
       // AdminSignupService.signup 은 DB 커밋 뒤에 jwt.signAsync 를 부르므로, 거기서 던지면 계정은 이미
       // 생겼는데 응답만 500(앞단 프록시의 502 · 504 도 같다)이다 — 「보내지 못했다」로 안내하면 안 된다
       // (2026-10-15 코드리뷰 2차).
+      // 예외: api 가 직접 돌려준 503 은 가입이 몰려 트랜잭션이 시간을 넘긴 것이다 — 전부 롤백돼 가입되지 않았으니 api 문구
+      // (「가입이 몰렸습니다. 잠시 뒤 다시 시도해 주세요.」)대로 다시 시도하게 한다(본사 점포 생성이 점포코드 잠금 줄에 서면서 생겼다, 2026-11-18).
+      // 문구가 없는 503(앞단 프록시)은 처리 여부를 모르니 아래 5xx 와 같다.
+      if (error.status === 503 && hasApiMessage(error.body)) {
+        console.error("[signup] createSignup api 503(가입 몰림)", error.message);
+        return { ok: false, message: error.message };
+      }
       if (error.status >= 500) {
         console.error("[signup] createSignup api 5xx", error.status, error.message, error.body);
         return { ok: false, message: UNKNOWN_RESULT_MESSAGE };
