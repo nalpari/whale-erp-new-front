@@ -371,15 +371,13 @@ function Ready({
     // shortcut: 안내는 브라우저 alert 다. 공통 확인 팝업이 생기면 바꾼다.
     const needsBp = value.serviceCode === "PLATFORM" && serviceOfPath(value.menus, pathname) === "WHALE_ERP";
     if (!retreating) alert(needsBp ? "웨일ERP 바로가기에서 BP 를 먼저 선택해 주세요." : "접근 권한이 없는 메뉴입니다.");
-    if (history.length > 1) {
+    // history.length 는 앞으로 가기 기록까지 세어, 탭의 첫 기록이면 back() 이 아무 일도 하지 않고 본문 없는 빈 화면에 멈춘다(PR #314 리뷰로 찾음).
+    // 뒤로 갈 기록이 있는지는 Navigation API 의 canGoBack 으로 가른다 — 앞 기록이 다른 사이트여도 false 라 홈으로 간다.
+    // shortcut: Navigation API 가 없는 브라우저는 history.length 로 가른다(첫 기록에서 멈출 수 있다). 지원이 넓어지면 이 갈래를 지운다.
+    const navigation = (window as { navigation?: { canGoBack: boolean } }).navigation;
+    if (navigation ? navigation.canGoBack : history.length > 1) {
       markDeniedBack();
-      // history.length 는 앞으로 가기 기록까지 세어, 탭의 첫 기록이면 back() 이 아무 일도 하지 않는다 — 1초 뒤에도 그대로면 홈으로 보낸다.
-      // 이 화면은 본문을 그리지 않아, 남겨 두면 안내 없이 빈 화면에 멈춘다(PR #314 리뷰로 찾음)
-      const before = location.href;
       history.back();
-      setTimeout(() => {
-        if (location.href === before) router.replace(home);
-      }, 1000);
     } else router.replace(home);
   }, [allowed, home, pathname, router, value.menus, value.serviceCode]);
 
