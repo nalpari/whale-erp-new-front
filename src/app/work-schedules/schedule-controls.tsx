@@ -22,13 +22,18 @@ export function useScheduleNavigation(today: string) {
 }
 
 // 근무지. 로그인 정보의 관리 점포(useStores)에서 고른다 — 점포 목록 api 는 「점포 정보 관리」 권한이 있어야 열린다.
-// 근무스케줄은 점포 하나씩 본다. 주소에 점포가 없으면 헤더 범위의 점포(점포 하나일 때) · 폐점이 아닌 첫 점포로 옮긴다.
+// 근무스케줄은 점포 하나씩 본다. 주소에 점포가 없으면 헤더 범위의 점포(점포 하나일 때) · 등록할 수 있는(운영) 첫 점포 · 폐점이 아닌 첫 점포로 옮긴다.
 export function SchedulePicker({ query, today }: { query: ScheduleQuery; today: string }) {
   const stores = useStores();
   const [scope] = useScope();
   const navigate = useScheduleNavigation(today);
-  // 처음 보일 근무지는 등록한 점포를 먼저 — 본사 점포(가입 때 api 가 만듦)는 폐점이 아닌 등록 점포가 없을 때만 — 폐점 점포보다는 앞선다(본사 점포 설계, 2026-11-17)
-  const fallback = scope.type === "STORE" ? scope.storeId : (openStores(branchStores(stores))[0] ?? openStores(stores)[0] ?? stores[0])?.storeId;
+  // 처음 보일 근무지는 등록한 점포를 먼저 — 본사 점포(가입 때 api 가 만듦)는 폐점이 아닌 등록 점포가 없을 때만 — 폐점 점포보다는 앞선다(본사 점포 설계, 2026-11-17).
+  // 등록할 수 있는(운영) 점포가 있으면 그쪽을 먼저 — 미운영 점포로 열려 버튼이 꺼진 채 시작하지 않게(WHALEERP-723)
+  const usable = (list: typeof stores) => list.filter((s) => scheduleBlockOf(s) === null);
+  const fallback =
+    scope.type === "STORE"
+      ? scope.storeId
+      : (usable(branchStores(stores))[0] ?? usable(stores)[0] ?? openStores(branchStores(stores))[0] ?? openStores(stores)[0] ?? stores[0])?.storeId;
   useEffect(() => {
     if (query.storeId === null && fallback !== undefined) navigate({ ...query, storeId: fallback });
     // 처음 한 번 — 주소에 점포가 없을 때만
