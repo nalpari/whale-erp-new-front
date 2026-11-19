@@ -5,8 +5,8 @@ import { Badge, DataTable, DetailTable, GuideIcon, GuideNote, PageBar, Tag, type
 import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
-import { getTodo, type TodoDetail } from "@/lib/todos-api";
 import { storeOptionLabel } from "@/lib/store-scope";
+import { getTodo, type TodoDetail } from "@/lib/todos-api";
 import { CellView } from "../../staff-members/staff-table";
 import { backHrefOf, withBack } from "../todo-list-query";
 import { StaffNames } from "../staff-names";
