@@ -7,6 +7,7 @@ import { usePagePermission } from "@/components/site/session-gate";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { BackdropInert } from "./backdrop-inert";
 import type { AttendanceHistory, ProxyStaff } from "@/lib/attendance-records-api";
+import { storeOptionLabel } from "@/lib/store-scope";
 import { correctAttendanceAction, getAttendanceHistoryAction, getProxyStaffAction, proxyAttendanceAction, reviewAttendanceAction, type EditResult } from "./actions";
 import { byLabel, editTail, fixPairIndex, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, overnightNote, proxyPoints, shortDay, type DayRow, type FixRow } from "./attendance-query";
 
@@ -156,7 +157,7 @@ export function FixList({
       cell: (r) =>
         manyStores ? (
           <>
-            {r.name} <Sub>{r.storeName}</Sub>
+            {r.name} <Sub>{storeOptionLabel({ name: r.storeName, isHq: r.storeIsHq })}</Sub>
           </>
         ) : (
           r.name
@@ -645,7 +646,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
               <option value="">{staff === null ? "불러오는 중…" : "선택"}</option>
               {(staff ?? []).map((s) => (
                 <option key={s.staffMemberId} value={s.staffMemberId}>
-                  {manyStores ? `${s.name} · ${s.storeName}` : s.name}
+                  {manyStores ? `${s.name} · ${storeOptionLabel({ name: s.storeName, isHq: s.storeIsHq })}` : s.name}
                   {s.isProxy ? "" : " (보정)"}
                 </option>
               ))}

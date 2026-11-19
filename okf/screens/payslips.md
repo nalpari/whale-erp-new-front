@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-19T02:46:55Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-19T07:06:01Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -29,7 +29,7 @@ sources:
   - id: payslip-draft-dialog
     resource: ../../src/app/payslips/payslip-draft-dialog.tsx
     title: 급여명세서 작성 팝업 — 점포 · 이름 좁히기 · 직원 고르기 · 작성 · 일괄 작성(칸 문구 payslip-draft.ts, server action actions.ts)
-    last_modified: 2026-11-13T06:12:05Z
+    last_modified: 2026-11-19T07:06:01Z
   - id: payslip-detail-page
     resource: ../../src/app/payslips/[payslipId]/page.tsx
     title: 검토 화면 — 오른쪽 단(검토 대상 항목 · 급여 산정 기준 · 처리 이력 · 발송 이력)
@@ -41,7 +41,7 @@ sources:
   - id: payslip-review
     resource: ../../src/app/payslips/[payslipId]/payslip-review.tsx
     title: 검토 화면 — 머리 버튼 · 지급 내역 · 확인창
-    last_modified: 2026-11-13T07:01:17Z
+    last_modified: 2026-11-19T07:06:01Z
 ---
 
 # api 로 그린다
@@ -79,6 +79,7 @@ sources:
 * 칸은 순번 · 급여 기간 · 직원명 · 근무지 · 계약 유형 · 출퇴근 확인 여부 · 상태 · 발송일이다. 폭은 1260 창 기준 60 · 180 · 170 · 100(기준 폭, 왼쪽 정렬) · 90 · 130 · 150 · 70 이고, 넓은 창에서는 모든 열이 같은 비율로 늘며 표 최소 폭 950 을 넘치면 표 상자 안에서 민다(2026-11-18 사용자 지정). 필터는 초기화 조건(헤더 범위 · 지금 달)과 다르면 접기 버튼에 빨간 점(`FilterPanel` `applied`). 출퇴근 확인 여부는
   `isAttendanceConfirmed` — true 「확인」, false 「누락」, null(가린 줄) 「-」. api 에 누락 일수 칸이 없어 일수는 보이지 않는다.
   발송일은 `lastSentAt` 을 근로계약 목록처럼 MM-DD 로, 발송 전이면 「-」.
+* 본사 근무지는 목록 「근무지」 · 검토 화면 머리 · 작성 팝업의 「점포」 칸과 점포 선택지에서 「[본사] 상호」로 보인다(api `storeIsHq` + `storeOptionLabel`, 2026-11-19).
 * **검토 대기**(WHALEERP-234)는 상태가 아니라 분류다(운영 정책 PAY-01 · 06, 2026-10-26 재영 — STAFF-32 「목록 없음」을 바꿨다). 따로
   목록을 두지 않고, 검토 대기 사유(`pendingReviewReasons` — 출퇴근 누락 · 계약 만료 후 기록 · 기간 중 계약 변경 · 공제 미입력 · 확인 필요 기록
   포함, 공제 미입력은 api 가 공제 칸으로 판정한다)가 남은 줄의 상태 칸에 상태 배지 옆 「검토 대기」 꼬리표(공통 `Tag` — 표 머리 바탕 · 선 ·

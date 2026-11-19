@@ -13,10 +13,10 @@ export const contractCell = (c: PayslipCandidate): Cell =>
 export const payslipCell = (c: PayslipCandidate): Cell =>
   c.payslipId !== null ? { text: "작성됨", style: "badge-neutral" } : { text: "미작성", style: "muted" };
 
-/** 점포 선택지 — 작성 대상(관리 범위 직원)의 점포를 이름순으로 한 번씩. */
-export function candidateStores(items: readonly PayslipCandidate[]): { storeId: number; name: string }[] {
-  const byId = new Map(items.map((c) => [c.storeId, c.storeName]));
-  return [...byId].map(([storeId, name]) => ({ storeId, name })).sort((a, b) => a.name.localeCompare(b.name, "ko") || a.storeId - b.storeId);
+/** 점포 선택지 — 작성 대상(관리 범위 직원)의 점포를 이름순으로 한 번씩. 본사 여부는 「[본사] 상호」 표시(storeOptionLabel)에 쓴다. */
+export function candidateStores(items: readonly PayslipCandidate[]): { storeId: number; name: string; isHq: boolean }[] {
+  const byId = new Map(items.map((c) => [c.storeId, { name: c.storeName, isHq: c.storeIsHq }]));
+  return [...byId].map(([storeId, s]) => ({ storeId, ...s })).sort((a, b) => a.name.localeCompare(b.name, "ko") || a.storeId - b.storeId);
 }
 
 /** 점포(null 은 전체)와 이름 부분 일치로 좁힌다. */

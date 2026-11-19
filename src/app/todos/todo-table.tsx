@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge, DataTable, type Column } from "@/components/common";
 import type { EnumValue } from "@/lib/enums";
+import { storeOptionLabel } from "@/lib/store-scope";
 import { CellView } from "../staff-members/staff-table";
 import { withBack } from "./todo-list-query";
 import { rowNumber } from "../staff-members/staff-row";
@@ -38,7 +39,7 @@ export function TodoTable({
     // 열 순서: 순번 · 근무지 · TO-DO · 수행예정 · 담당직원 · 상태 · 완료 / 배정 직원(2026-11-09 사용자 지정, 3팀 확인 필요 — 전엔 담당직원 · 근무지 · TO-DO · 수행예정 · 상태)
     // 1260 창 기준 열 폭 — 남는 폭은 TO-DO 제목이 갖는다(표 최소 폭이 200px 을 지킨다). 근무지 300 → 160 · 수행예정 180 → 130 · 상태 120 → 80 ·
     // 완료 / 배정 직원 130 → 120(2026-11-18 사용자 지정 · 1260 작업)
-    { header: "근무지", width: "w-[160px]", align: "left", cell: (r) => r.item.storeName ?? "-" },
+    { header: "근무지", width: "w-[160px]", align: "left", cell: (r) => (r.item.storeName ? storeOptionLabel({ name: r.item.storeName, isHq: r.item.storeIsHq }) : "-") },
     {
       header: "TO-DO",
       // TO-DO 도 기준 폭(200)을 둔다 — 넓은 창에서는 모든 열이 같은 비율로 늘어난다 — 이 열만 남는 폭을 가지면 넓은 창에서 혼자 넓어져 표가 휑했다(2026-11-18 사용자 지정)

@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { DataTable, DetailTable, type Column } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
+import { storeOptionLabel } from "@/lib/store-scope";
 import { DayFixButton, FixList, ProxyButton } from "./attendance-fix-list";
 import { FixPeriod } from "./attendance-fix-period";
 import { BackdropInert } from "./backdrop-inert";
@@ -77,7 +78,7 @@ function StepNav({ label, unit, prev, next }: { label: string; unit: string; pre
 const staffCell = (r: DayRow, manyStores: boolean) =>
   manyStores ? (
     <>
-      {r.name} <Sub>{r.storeName}</Sub>
+      {r.name} <Sub>{storeOptionLabel({ name: r.storeName, isHq: r.storeIsHq })}</Sub>
     </>
   ) : (
     r.name
