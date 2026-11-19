@@ -106,6 +106,7 @@ test("지난 주 복사 처리 — 복사 · 일부 제외 · 제외 사유(STAF
     label: "제외 · 근로계약 미체결",
     detail: null,
   });
+  assert.equal(copyStatus(row(0, [{ workDate: "2026-10-26", code: "WORK_SCHEDULE_STORE_NOT_OPERATING" }])).label, "제외 · 미운영 점포");
   assert.equal(copyStatus(row(0, [{ workDate: "2026-10-26", code: "WORK_SCHEDULE_AFTER_RETIREMENT" }], "2026-10-20")).label, "제외 · 10-20 퇴직");
   assert.deepEqual(copyStatus(row(3, [{ workDate: "2026-10-30", code: "WORK_SCHEDULE_AFTER_RETIREMENT" }, { workDate: "2026-10-28", code: "WORK_SCHEDULE_OVERLAP" }], "2026-10-29")), {
     kind: "partial",

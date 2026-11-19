@@ -150,6 +150,9 @@ const EXCLUDE_REASON: Record<string, string> = {
   WORK_SCHEDULE_NOT_JOINED: "가입 전",
   WORK_SCHEDULE_OVERLAP: "시간 겹침",
   WORK_SCHEDULE_HIDDEN: "본사에 정보제공 미동의",
+  // 미리보기 뒤 복사 사이에 점포가 폐점 · 미운영으로 바뀐 경우(WHALEERP-614 · 723)
+  WORK_SCHEDULE_STORE_CLOSED: "폐점 점포",
+  WORK_SCHEDULE_STORE_NOT_OPERATING: "미운영 점포",
 };
 const excludeReason = (code: string | null, retiredDate: string | null) =>
   code === "WORK_SCHEDULE_AFTER_RETIREMENT" ? (retiredDate ? `${mmdd(retiredDate)} 퇴직` : "퇴직") : ((code && EXCLUDE_REASON[code]) ?? "규칙에 맞지 않음");
