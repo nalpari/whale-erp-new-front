@@ -12,7 +12,10 @@ export type Column<T> = {
   /** Tailwind 너비 클래스(w-[60px] 등). 없으면 남는 폭을 나눠 갖는다. 창 폭에 따라 바꿀 때는 `min-[N]:` 한 단계를 덧붙인다(홈 확인 필요 「항목」, 1260 작업) */
   width?: `w-[${number}px]` | `w-[${number}px] min-[${number}px]:w-[${number}px]`;
   /** 본문 정렬. 헤더는 항상 가운데다. */
-  align?: "left" | "center";
+  /** 셀 정렬 — 기본 가운데. 금액 열은 right(자릿수가 맞게, 2026-11-19 사용자 지정 — 근로계약 소정근로시간 표 시급 · 소계). 열 이름은 늘 가운데다. 오른쪽 정렬은 오른쪽 여백을 18px 로 넓힌다 — 10px 은 표 선에 붙어 보였다 */
+  align?: "left" | "center" | "right";
+  /** 이 열 앞(왼쪽)에 세로줄 — 열이 많은 표에서 성격이 다른 묶음 사이에만 긋는다. 열마다 긋지 않는다(근로계약 소정근로시간 표, 2026-11-19 사용자 지정) */
+  divider?: boolean;
   cell: (row: T) => ReactNode;
 };
 
@@ -21,6 +24,9 @@ export type Column<T> = {
  * current = 고른 줄을 더 또렷이 — group 줄이 있는 표(메뉴 트리)와 공통코드 그룹 목록이 쓴다(2026-10-27). group 줄이 있는 표에서는 바탕(#f8f9fb)만으로는 1단계 줄과 갈리지 않아 한 단계 어두운 erp-subtle 에 왼쪽 브랜드색 3px 선을
  * 더한다(그림자가 아니라 안쪽 선, 2026-10-26 사용자 지정 · 1팀 동의 2026-10-27). */
 export type RowState = "selected" | "added" | "group" | "current";
+
+/** 묶음 사이 세로줄 — 표 줄과 같은 선 색 */
+const DIVIDER = "border-l border-erp-thead-line";
 
 const ROW_STATE: Record<RowState, string> = {
   selected: "bg-erp-thead-bg",
@@ -110,7 +116,7 @@ export function DataTable<T>({
         <tr className={`h-[42px] ${framed ? "" : "border-y border-erp-thead-line"} ${HEAD_ROW[headVariant]}`}>
           {/* 열 이름은 늘 가운데 — 팝업(dialog)처럼 글자 정렬을 물려주는 곳에서는 브라우저 기본 가운데가 풀려 왼쪽으로 붙었다(변경이력 팝업, 2026-11-09 사용자 지정) */}
           {columns.map((c, i) => (
-            <th key={i} scope="col" className={`px-[10px] text-center ${HEAD_CELL[headVariant]}`}>
+            <th key={i} scope="col" className={`px-[10px] text-center ${HEAD_CELL[headVariant]}${c.divider ? " " + DIVIDER : ""}`}>
               {headLabel(c, !scroll)}
             </th>
           ))}
@@ -135,7 +141,7 @@ export function DataTable<T>({
               className={`h-[46px] border-b border-erp-thead-line ${state ? ROW_STATE[state] : ""}`}
             >
               {columns.map((c, i) => (
-                <td key={i} className={`truncate px-[10px] ${c.align === "left" ? "text-left" : "text-center"}`}>
+                <td key={i} className={`truncate ${c.align === "right" ? "pr-[18px] pl-[10px] text-right" : `px-[10px] ${c.align === "left" ? "text-left" : "text-center"}`}${c.divider ? " " + DIVIDER : ""}`}>
                   {c.cell(row)}
                 </td>
               ))}
@@ -156,6 +162,8 @@ export function DataTable<T>({
         {/* 본문을 가로로 밀면 머리도 따라간다(ScrollHeadSync) */}
         <ScrollHeadSync
           headClass={HEAD_ROW[headVariant]}
+          // fillEmpty 목록은 줄이 있어도 표 틀이 남는 높이를 채운다 — 비었을 때와 같은 자리까지(2026-11-19 사용자 지정)
+          fill={fillEmpty}
           head={
             <table className={table}>
               {cols}
@@ -193,6 +201,17 @@ export function DataTable<T>({
           </table>
           <p className="flex min-h-[92px] flex-1 items-center justify-center border-x border-b border-erp-thead-line text-[14px] text-erp-muted">{empty}</p>
         </div>
+      </div>
+    );
+  // fillEmpty 목록은 줄이 있어도 표 틀(좌우 · 아래 선)이 남는 높이를 채운다 — 비었을 때와 같은 자리까지 서고 줄은 위에서부터 채운다(2026-11-19 사용자 지정)
+  if (fillEmpty)
+    return (
+      <div className="flex min-h-[134px] flex-1 flex-col rounded-b-[2px] border-x border-b border-erp-thead-line">
+        <table className={table.replace("border-x border-erp-thead-line", "")}>
+          {cols}
+          {head}
+          {body}
+        </table>
       </div>
     );
   return (

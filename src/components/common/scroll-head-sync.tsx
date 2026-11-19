@@ -10,7 +10,9 @@ import { useLayoutEffect, useRef, type ReactNode } from "react";
 // 본문 상자는 줄 높이만큼만 차지하고(늘리지 않는다) 넘치면 줄어 그 안에서 스크롤한다 — 줄이 적으면 아래 빈 곳에 선이 그어지지 않는다.
 // 세로 스크롤바 자리는 본문에 스크롤바가 실제로 생겼을 때만 머리 오른쪽에 그만큼 비워 열을 맞춘다 — 늘 비워 두면(scrollbar-gutter: stable)
 // 스크롤이 없는 표도 줄 밑선이 오른쪽 끝 10px 앞에서 끊겼다(2026-11-18 사용자 지정, 전엔 표가 선을 그어 오른쪽만 스크롤바 자리만큼 안으로 들어왔다)
-export function ScrollHeadSync({ head, body, headClass = "" }: { head: ReactNode; body: ReactNode; headClass?: string }) {
+// fill 이면 본문 상자가 남는 높이를 채우고 아래 선으로 닫는다 — 줄이 적어도 표 틀이 목록 영역 끝(쪽 이동 위)까지 서고 줄은 위에서부터 채운다.
+// 가로 스크롤 막대도 그 아래 끝에 붙는다. 데이터가 없을 때의 빈 표(fillEmpty)와 같은 높이다(2026-11-19 사용자 지정)
+export function ScrollHeadSync({ head, body, headClass = "", fill = false }: { head: ReactNode; body: ReactNode; headClass?: string; fill?: boolean }) {
   const headRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
@@ -36,7 +38,7 @@ export function ScrollHeadSync({ head, body, headClass = "" }: { head: ReactNode
       </div>
       <div
         ref={bodyRef}
-        className="min-h-0 overflow-y-auto border-x border-erp-thead-line"
+        className={`min-h-0 overflow-y-auto border-x border-erp-thead-line ${fill ? "flex-1 rounded-b-[2px] border-b" : ""}`}
         onScroll={(e) => {
           if (headRef.current) headRef.current.scrollLeft = e.currentTarget.scrollLeft;
         }}
