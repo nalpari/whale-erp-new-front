@@ -23587,7 +23587,7 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleDto"];
                 };
             };
-            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 서명 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 서명 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포) · WORK_SCHEDULE_STORE_NOT_OPERATING(미운영 점포) — 등록만, 수정은 받는다 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -23746,7 +23746,7 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleDefaultsDto"];
                 };
             };
-            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 서명 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 서명 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포) · WORK_SCHEDULE_STORE_NOT_OPERATING(미운영 점포) — 등록만, 수정은 받는다 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -23888,7 +23888,7 @@ export interface operations {
                     "application/json": components["schemas"]["CopyLastWeekResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류 · weekStart 가 월요일이 아님 · WORK_SCHEDULE_STORE_CLOSED(폐점 점포) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 쿼리 형식 오류 · weekStart 가 월요일이 아님 · WORK_SCHEDULE_STORE_CLOSED(폐점 점포) · WORK_SCHEDULE_STORE_NOT_OPERATING(미운영 점포) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -23942,7 +23942,7 @@ export interface operations {
                     "application/json": components["schemas"]["CopyLastWeekResponseDto"];
                 };
             };
-            /** @description 요청 형식 오류 · weekStart 가 월요일이 아님 · WORK_SCHEDULE_STORE_CLOSED(폐점 점포) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 요청 형식 오류 · weekStart 가 월요일이 아님 · WORK_SCHEDULE_STORE_CLOSED(폐점 점포) · WORK_SCHEDULE_STORE_NOT_OPERATING(미운영 점포) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -24043,7 +24043,7 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleDto"];
                 };
             };
-            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 서명 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) · 플랫폼 계정의 X-Bp-Code-Id 누락 */
+            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 서명 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포) · WORK_SCHEDULE_STORE_NOT_OPERATING(미운영 점포) — 등록만, 수정은 받는다 · 플랫폼 계정의 X-Bp-Code-Id 누락 */
             400: {
                 headers: {
                     [name: string]: unknown;
