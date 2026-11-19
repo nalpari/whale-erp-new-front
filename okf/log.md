@@ -2,6 +2,7 @@
 
 ## 2026-11-19
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한이 빠진 메뉴의 화면이 뒤로 가기 기록에 쌓여 있으면 「접근 권한이 없는 메뉴입니다」를 처음 한 번만 띄우고 열 수 있는 화면까지 말없이 뒤로 간다(탭 sessionStorage `denied-back`, WHALEERP-736).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 막힌 주소에서 뒤로 가도 주소가 그대로면(탭의 첫 기록) 1초 뒤 홈으로 보낸다(WHALEERP-736 PR #314 리뷰 반영).
 
 ## 2026-11-18
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성 · 수정의 계약 시작일 · 종료일도 생년월일처럼 숫자만 치면 하이픈이 들어간다(`DateField autoHyphen`, 2026-11-18 사용자 지정).

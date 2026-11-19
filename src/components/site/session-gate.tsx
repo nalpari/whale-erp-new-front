@@ -320,8 +320,8 @@ function Ready({
   const switching = pathname === BP_SWITCH_PATH;
   // 이 탭 서비스의 화면만 연다. BP·가맹 계정이 플랫폼 주소에 오거나 플랫폼 탭에서 ERP 주소를 치면 여기서 막힌다(데이터는 api 가 다시 막는다).
   const allowed = switching || isAllowed(value.menus, pathname, value.serviceCode);
-  // 마지막으로 막힌 주소 — 열린 화면에 오면 비운다. 비어 있지 않으면 막혀서 뒤로 가는 중이다(페이지를 새로 읽으면 denied-back 표시로).
-  // 개발 모드(StrictMode)는 effect 를 두 번 돌린다. 같은 주소에 두 번 안내하고 두 번 뒤로 가지 않게 한다.
+  // 마지막으로 막힌 주소. 열린 화면에 오면 비우므로, 비어 있지 않으면 막혀서 뒤로 가는 중이다(페이지를 새로 읽으면 denied-back 표시로 잇는다).
+  // 같은 주소면 건너뛰어, 개발 모드(StrictMode)가 effect 를 두 번 돌려도 두 번 안내하거나 두 번 뒤로 가지 않는다.
   const denied = useRef<string | null>(null);
   // GNB 「내정보 관리」(마이페이지). 패널은 children(화면 본문) 뒤에 그려야 한다 — SlidePanel 은 전부 같은 z-10 이라
   // DOM 순서가 쌓임을 가른다(PanelBackdrop 의 같은 설명 참고). header 는 먼저, children 은 그다음, 패널은 가장
@@ -373,7 +373,13 @@ function Ready({
     if (!retreating) alert(needsBp ? "웨일ERP 바로가기에서 BP 를 먼저 선택해 주세요." : "접근 권한이 없는 메뉴입니다.");
     if (history.length > 1) {
       markDeniedBack();
+      // history.length 는 앞으로 가기 기록까지 세어, 탭의 첫 기록이면 back() 이 아무 일도 하지 않는다 — 1초 뒤에도 그대로면 홈으로 보낸다.
+      // 이 화면은 본문을 그리지 않아, 남겨 두면 안내 없이 빈 화면에 멈춘다(PR #314 리뷰로 찾음)
+      const before = location.href;
       history.back();
+      setTimeout(() => {
+        if (location.href === before) router.replace(home);
+      }, 1000);
     } else router.replace(home);
   }, [allowed, home, pathname, router, value.menus, value.serviceCode]);
 
