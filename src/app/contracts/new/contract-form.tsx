@@ -768,7 +768,8 @@ export function ContractForm({
               required
               helpIcon
               help="만 19세 미만은 등록할 수 없습니다."
-              errors={minor ? ["계약 시작일 기준 만 19세 미만이라 등록할 수 없습니다.", ...(errs.birthDate ?? [])] : errs.birthDate}
+              // 저장 검사(fieldProblems)도 만 19세 문구를 넣으므로 그 문구는 빼고 붙인다 — 같은 뜻이 두 줄 뜨지 않게(PR #315 code-review)
+              errors={minor ? ["계약 시작일 기준 만 19세 미만이라 등록할 수 없습니다.", ...(errs.birthDate ?? []).filter((m) => !m.includes("19세"))] : errs.birthDate}
             >
               {() => <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />}
             </Item>
