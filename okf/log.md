@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-11-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한이 빠진 메뉴의 화면이 뒤로 가기 기록에 쌓여 있으면 「접근 권한이 없는 메뉴입니다」를 처음 한 번만 띄우고 열 수 있는 화면까지 말없이 뒤로 간다(탭 sessionStorage `denied-back`, WHALEERP-736).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 막힌 주소에서 뒤로 갈 기록이 없으면(탭의 첫 기록 · 앞 기록이 다른 사이트, `navigation.canGoBack`) 홈으로 보낸다(WHALEERP-736 PR #314 리뷰 반영 — 1초 타이머는 느린 뒤로 가기와 겹쳐 뺐다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) · [급여명세서 관리 화면](/screens/payslips.md) — 근로계약서 작성 다듬기(4등분 세로선 · 계산식 꺾은선 · 근무요일 체크 카드 · 시간 길이 상자 · 주 소정근로시간 · 법정 휴게 안내 · 위아래 같은 버튼 · 만 19세 빨간 문구), 소정근로시간 표(근로시간 「h」 · 금액 「원」 · 오른쪽 정렬 · 묶음 세로줄, 작성 · 상세), 공통 DataTable `align` · `divider` · 줄이 있어도 표 틀 채우기, 급여명세서 작성 팝업 열 폭(2026-11-19 사용자 지정).
 
 ## 2026-11-18
