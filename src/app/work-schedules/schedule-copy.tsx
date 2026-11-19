@@ -5,34 +5,33 @@ import { useState, useTransition } from "react";
 import { Badge, Button, GuideBand, NoticeBand, useAction, useToast } from "@/components/common";
 import { useAccount, usePagePermission, useStores } from "@/components/site/session-gate";
 import { isPlatformRole } from "@/lib/auth-routes";
-import { isClosedStore } from "@/lib/store-scope";
 import type { CopyPreview } from "@/lib/work-schedules-api";
 import { useFailure } from "../staff-members/[id]/use-action-failure";
 import { copyLastWeekAction } from "./actions";
 import { useScheduleNavigation } from "./schedule-controls";
 import { addDays, type ScheduleQuery, weekRangeLabel } from "./work-schedule-query";
-import { copyStatus, totalsLabel } from "./work-schedule-view";
+import { copyStatus, scheduleBlockOf, totalsLabel } from "./work-schedule-view";
 
 // 지난 주 복사(#204, STAFF-13). 빈 주에서만 켜지고, 누르면 도구 줄 아래에 미리보기를 연다(주소 copy=1 — 서버가 GET /copy-last-week 를 읽는다).
 // 원본은 직전 주 고정이고 받을 수 없는 날은 빠진다. 복사하면 바로 반영되고 생긴 직원마다 알림이 한 번 간다(2026-10-08 재영).
-// 폐점 점포는 등록과 같이 막는다(운영 정책 ATT-33). 등록 권한이 없으면 열기 버튼을 두지 않고 미리보기도 막는다(api 는 미리보기 GET · 복사 POST 모두 create).
+// 폐점 · 미운영 점포는 등록과 같이 막는다(운영 정책 ATT-33 · WHALEERP-723). 등록 권한이 없으면 열기 버튼을 두지 않고 미리보기도 막는다(api 는 미리보기 GET · 복사 POST 모두 create).
 
 const NOTE = "text-[13px] text-erp-off";
 
-/** 도구 줄 「지난 주 복사」(데모 soft 버튼) — 등록 권한이 없으면 두지 않는다. 근무스케줄이 있는 주 · 폐점 점포면 끈다(안내 글자는 두지 않는다, 2026-10-22 재영) */
+/** 도구 줄 「지난 주 복사」(데모 soft 버튼) — 등록 권한이 없으면 두지 않는다. 근무스케줄이 있는 주 · 폐점 · 미운영 점포면 끈다(안내 글자는 두지 않는다, 2026-10-22 재영 · 미운영 WHALEERP-723) */
 export function CopyButton({ query, today, weekEmpty }: { query: ScheduleQuery & { storeId: number }; today: string; weekEmpty: boolean }) {
   const navigate = useScheduleNavigation(today);
   const store = useStores().find((s) => s.storeId === query.storeId);
-  const closed = !!store && isClosedStore(store);
+  const blocked = scheduleBlockOf(store);
   const toast = useToast();
   const platform = isPlatformRole(useAccount().roleTypeCode);
   const canCreate = usePagePermission().create;
   // 플랫폼 계정은 등록 권한이 없어도 BP 마스터와 같은 버튼을 두고, 누르면 권한 안내만 띄운다 — 버튼이 없으면 BP 화면이 다르게 보였다
   // (2026-11-05 사용자 지정, 3팀 확인 필요 — 점포 없음 띠 [점포 등록하기]와 같은 문구). 그 밖의 계정은 지금처럼 두지 않는다
   if (!canCreate && !platform) return null;
-  // 폐점은 근무지 칸 아래 안내가 함께 말한다
+  // 폐점 · 미운영은 근무지 칸 아래 안내가 함께 말한다
   return (
-    <Button variant="soft" aria-expanded={query.copy} aria-controls="schedule-copy" disabled={!weekEmpty || closed} onClick={() => (canCreate ? navigate({ ...query, copy: !query.copy }) : toast("접근 권한이 없습니다."))}>
+    <Button variant="soft" aria-expanded={query.copy} aria-controls="schedule-copy" disabled={!weekEmpty || blocked !== null} onClick={() => (canCreate ? navigate({ ...query, copy: !query.copy }) : toast("접근 권한이 없습니다."))}>
       지난 주 복사
     </Button>
   );
@@ -54,7 +53,7 @@ export function CopyPreviewPanel({ query, today, preview }: { query: ScheduleQue
   const [error, setError] = useState("");
   const [saving, startSaving] = useTransition();
   const store = useStores().find((s) => s.storeId === query.storeId);
-  const closed = !!store && isClosedStore(store);
+  const blocked = scheduleBlockOf(store);
   const close = () => navigate({ ...query, copy: false });
   // 복사는 등록이다 — api 는 미리보기 GET 도 create 라, 권한 없이 주소(copy=1)로 열면 api 403 문장이 온다. 미리보기를 받은 뒤
   // 권한이 빠지면(SessionGate 가 창 포커스 · 메뉴 이동 때 로그인 정보를 다시 받으면) [N명 복사]가 남으므로 여기서도 막는다
@@ -62,13 +61,13 @@ export function CopyPreviewPanel({ query, today, preview }: { query: ScheduleQue
   const data = "error" in preview ? null : preview;
   const count = data ? data.staff.filter((s) => s.copied.days > 0).length : 0;
 
-  // 폐점 점포는 주소에 copy=1 을 붙여 열어도(북마크 · 공유 링크) 표와 복사 버튼을 그리지 않는다 — api 가 아직 막지 않는다(WHALEERP-614, front #96 리뷰).
+  // 폐점 · 미운영 점포는 주소에 copy=1 을 붙여 열어도(북마크 · 공유 링크) 표와 복사 버튼을 그리지 않는다 — 화면에서도 막는다(api 도 400, WHALEERP-614 · 723, front #96 리뷰).
   // 점포 상태는 로그인 정보(useStores)에만 있어 서버의 미리보기 읽기(GET, 쓰지 않음)는 막지 못한다
-  if (closed)
+  if (blocked)
     return (
       <section id="schedule-copy" aria-label="지난 주 복사 미리보기" className="flex items-center gap-[8px] rounded-[2px] border border-erp-thead-line p-[16px]">
         <p role="alert" className={`flex-1 ${NOTE}`}>
-          폐점 점포는 근무스케줄을 등록할 수 없어 지난 주 복사도 할 수 없습니다.
+          {blocked} 점포는 근무스케줄을 등록할 수 없어 지난 주 복사도 할 수 없습니다.
         </p>
         <Button variant="off" onClick={close}>
           닫기

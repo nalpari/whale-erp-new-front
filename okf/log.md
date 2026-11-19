@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-19
+* **Update**: [근무스케줄 관리 화면](/screens/work-schedules.md) — 미운영 점포도 폐점처럼 「근무스케줄 등록」 · 「지난 주 복사」를 막고 근무지 칸 아래에 「미운영 점포는 근무스케줄을 등록할 수 없습니다.」(WHALEERP-723, 사용자 결정, `scheduleBlockOf`). api 도 400 `WORK_SCHEDULE_STORE_NOT_OPERATING` 으로 막는다 — 옛 「api 는 아직 막지 않는다」 메모를 지웠다. api 타입을 다시 만들었다.
 * **Update**: [급여명세서 관리 화면](/screens/payslips.md) · [출·퇴근 현황 조회 화면](/screens/attendance-records.md) — 본사 근무지를 급여명세서(목록 · 검토 · 작성 팝업 점포 칸 · 점포 선택지), TO-DO(목록 · 상세 · 수정의 근무지), 근태(일별 · 보정 목록 · 대신 등록 선택지)에서도 「[본사] 상호」로(api `storeIsHq` + `storeOptionLabel`, 사용자 결정). api 타입을 다시 만들었다. TO-DO 화면은 concept 이 없어 log 에만 적는다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 본사 근무지를 직원 목록 「점포」 · 상세 「소속 근무지」 · 요약 근무스케줄 「근무지」, 근로계약 목록 「점포」 · 상세 「근무지」에서도 「[본사] 상호」로(api #302 `isHq` · `storeIsHq` + `storeOptionLabel`, WHALEERP-726 · 750). api 타입을 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한이 빠진 메뉴의 화면이 뒤로 가기 기록에 쌓여 있으면 「접근 권한이 없는 메뉴입니다」를 처음 한 번만 띄우고 열 수 있는 화면까지 말없이 뒤로 간다(탭 sessionStorage `denied-back`, WHALEERP-736).

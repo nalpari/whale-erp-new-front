@@ -4,12 +4,12 @@ title: 근무스케줄 관리 화면 (구현)
 description: /work-schedules 주간 · 월간 보기, 근무표 아래 변경이력, 등록 · 수정 · 삭제 패널(한 명 · 여러 명 일괄), 지난 주 복사 미리보기. 데이터는 근무스케줄 api 다.
 tags: [staff, work-schedule, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-17T06:02:23Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-19T07:33:25Z }
 sources:
   - id: page
     resource: ../../src/app/work-schedules/page.tsx
     title: 화면 틀 · 도구 줄(근무지 · 주 이동 · 보기 전환) · 데이터 읽기
-    last_modified: 2026-10-22T08:57:19Z
+    last_modified: 2026-11-19T07:33:25Z
   - id: query
     resource: ../../src/app/work-schedules/work-schedule-query.ts
     title: 주소 ↔ 조회 조건 ↔ api 쿼리, 주 · 달 · 42일 범위
@@ -17,7 +17,7 @@ sources:
   - id: view
     resource: ../../src/app/work-schedules/work-schedule-view.ts
     title: 막대 · 근무 인원 줄(30분 → 1시간) · 공백 · 이력 한 줄
-    last_modified: 2026-10-21T09:21:20Z
+    last_modified: 2026-11-19T07:33:25Z
   - id: week
     resource: ../../src/app/work-schedules/schedule-week.tsx
     title: 주간 보기
@@ -29,11 +29,11 @@ sources:
   - id: controls
     resource: ../../src/app/work-schedules/schedule-controls.tsx
     title: 근무지 고르기 · 날짜로 주 고르기 · 변경이력 표
-    last_modified: 2026-10-22T08:57:19Z
+    last_modified: 2026-11-19T07:33:25Z
   - id: form
     resource: ../../src/app/work-schedules/schedule-form.tsx
     title: 등록 · 수정 패널(SchedulePanel) · 도구 줄 「근무스케줄 등록」 · 막대 · 「이 시간대에 배정」
-    last_modified: 2026-11-17T03:05:37Z
+    last_modified: 2026-11-19T07:33:25Z
   - id: form-model
     resource: ../../src/app/work-schedules/schedule-form-model.ts
     title: 시각 선택지 · 근무 길이 · 화면에서 막는 것 · 계약 값 → 입력칸
@@ -41,7 +41,7 @@ sources:
   - id: copy
     resource: ../../src/app/work-schedules/schedule-copy.tsx
     title: 「지난 주 복사」 버튼 · 미리보기(#204)
-    last_modified: 2026-10-22T08:57:19Z
+    last_modified: 2026-11-19T07:33:25Z
   - id: actions
     resource: ../../src/app/work-schedules/actions.ts
     title: 등록 · 일괄 · 수정 · 삭제 · 받을 수 있는 직원 · 계약 값 server action · 기간 등록
@@ -91,7 +91,7 @@ sources:
 * 버튼 줄은 가운데 [취소] [삭제](soft, 수정 · 삭제 권한) [저장] — 1명 · 여러 명 · 수정 모두 「저장」(전엔 삭제가 왼쪽 끝 · 나머지 오른쪽 끝, 여러 명은 「n명 등록」).
 * 칸 오류 문구는 그 칸 바로 아래에 붙인다 — 한 명 등록의 시간 오류는 시간 칸과 6px 한 묶음, 일괄의 「직원을 한 명 이상 선택해 주세요」는 고른 직원 줄 뒤가 아니라 직원 체크 칸 바로 아래다(직원 목록을 불러오는 중 · 실패면 이 문구는 안 보이고 저장은 그대로 막힌다, 2026-11-04 사용자 지정).
 * 수정은 직원 고정, 근무일 · 시각 · 휴게. 「삭제」는 확인창 뒤(삭제 권한) — 확인창은 기본 버튼 · 「근무스케줄을 삭제하시겠습니까?」다(2026-11-06 사용자 지정, 전엔 빨간 버튼 · 「이 근무스케줄을」). 결과를 모르면(5xx · 끊김) 토스트로 알리고 화면을 새로 받아 닫는다 — 다시 저장하면 겹칠 수 있다.
-* 폐점 점포(운영 정책 ATT-33, 2026-10-22 재영)는 점포 고르기에 그대로 있되 「근무스케줄 등록」 · 「지난 주 복사」를 흐리게 막고 근무지 칸 바로 아래에 빨간 13px 「폐점 점포는 근무스케줄을 등록할 수 없습니다.」(칸 아래로 띄워 도구 줄 높이를 늘리지 않는다, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 두 버튼 사이), 「이 시간대에 배정」은 숨긴다. 수정 · 삭제는 막지 않는다. api 쪽 거절은 WHALEERP-614.
+* 폐점 · 미운영 점포(폐점: 운영 정책 ATT-33, 2026-10-22 재영 / 미운영: WHALEERP-723, 2026-11-19 사용자 결정 — `scheduleBlockOf`)는 점포 고르기에 그대로 있되(지난 이력 조회) 「근무스케줄 등록」 · 「지난 주 복사」를 흐리게 막고 근무지 칸 바로 아래에 빨간 13px 「폐점(미운영) 점포는 근무스케줄을 등록할 수 없습니다.」(칸 아래로 띄워 도구 줄 높이를 늘리지 않는다, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 두 버튼 사이), 「이 시간대에 배정」은 숨긴다. 수정 · 삭제는 막지 않는다. api 도 400 `WORK_SCHEDULE_STORE_CLOSED` · `WORK_SCHEDULE_STORE_NOT_OPERATING` 으로 막는다(WHALEERP-614 · 723).
 * 본사 점포(2026-11-17 본사 점포 설계 — 다른 점포처럼 권한 · 매칭으로 온다)도 근무지로 고를 수 있고 근무지 칸에 「[본사] 상호」로 보인다. 주소에 근무지가 없을 때 처음 여는 근무지는 등록한 점포가 먼저이고, 본사는 폐점이 아닌 등록 점포가 없을 때만이다(폐점 점포보다는 앞선다).
 
 # 지난 주 복사(#204, STAFF-13)
@@ -119,4 +119,4 @@ sources:
 
 # 아직 없는 것
 
-* api 쪽 폐점 점포 등록 거절(WHALEERP-614) — 지금은 화면만 막는다. 직원 상세 근무스케줄 칸은 데모대로 한 주 보기로 되돌렸다(`GET /staff-members/:id/summary/work-schedules?weekStart=`, 2026-10-22 노영주) — 「관리」는 `/work-schedules?store=<근무지>&week=<칸이 보던 주 월요일>` 로 연다. 기간 목록 경로(`…/work-schedules`, WHALEERP-185)는 화면에서 부르지 않는다.
+* 직원 상세 근무스케줄 칸은 데모대로 한 주 보기로 되돌렸다(`GET /staff-members/:id/summary/work-schedules?weekStart=`, 2026-10-22 노영주) — 「관리」는 `/work-schedules?store=<근무지>&week=<칸이 보던 주 월요일>` 로 연다. 기간 목록 경로(`…/work-schedules`, WHALEERP-185)는 화면에서 부르지 않는다.

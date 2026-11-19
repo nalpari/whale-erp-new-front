@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { barOf, carryOver, copyStatus, durationLabel, gapsOf, historyLine, hourCells, readOnlyRows, shiftLabel, totalsLabel } from "./work-schedule-view.ts";
+import { barOf, carryOver, copyStatus, durationLabel, gapsOf, historyLine, hourCells, readOnlyRows, scheduleBlockOf, shiftLabel, totalsLabel } from "./work-schedule-view.ts";
 
 /** 30분 칸 48개 — [시작 칸, 끝 칸) 구간마다 인원을 더한다 */
 const cov = (...spans: [number, number][]) => {
@@ -127,4 +127,11 @@ test("읽기 전용 직원 줄 — 그날 근무자 + 근무 인원만큼 가린
   assert.deepEqual(readOnlyRows(staff, items, "2026-10-27", 2), [staff[0], staff[2]]);
   assert.deepEqual(readOnlyRows(staff, items, "2026-10-27", 1), [staff[0]]);
   assert.deepEqual(readOnlyRows(staff, items, "2026-10-29", 0), []);
+});
+
+test("등록 막기 — 폐점 · 미운영 점포는 그 상태 이름, 운영 · 점포 모름은 null(WHALEERP-614 · 723)", () => {
+  assert.equal(scheduleBlockOf({ storeStatusCode: "CLOSED" }), "폐점");
+  assert.equal(scheduleBlockOf({ storeStatusCode: "NOT_OPERATING" }), "미운영");
+  assert.equal(scheduleBlockOf({ storeStatusCode: "OPERATING" }), null);
+  assert.equal(scheduleBlockOf(undefined), null);
 });

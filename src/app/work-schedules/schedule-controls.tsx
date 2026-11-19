@@ -8,10 +8,10 @@ import { bpPath } from "@/lib/bp-path";
 import { isPlatformRole } from "@/lib/auth-routes";
 import { formatDateTime } from "@/lib/format";
 import { PAGE_SIZES, type PageSize } from "@/lib/staff-members";
-import { branchStores, isClosedStore, openStores, storeOptionLabel } from "@/lib/store-scope";
+import { branchStores, openStores, storeOptionLabel } from "@/lib/store-scope";
 import type { WorkScheduleHistoryList } from "@/lib/work-schedules-api";
 import { mondayOf, moved, toScheduleSearch, type ScheduleQuery } from "./work-schedule-query";
-import { CHANGE_LABEL, historyLine } from "./work-schedule-view";
+import { CHANGE_LABEL, historyLine, scheduleBlockOf } from "./work-schedule-view";
 
 export function useScheduleNavigation(today: string) {
   const router = useRouter();
@@ -47,12 +47,12 @@ export function SchedulePicker({ query, today }: { query: ScheduleQuery; today: 
       </Labeled>
     );
   const picked = stores.find((s) => s.storeId === query.storeId);
-  const closed = !!picked && isClosedStore(picked);
+  const blocked = scheduleBlockOf(picked);
   // 점포를 바꾸면 복사 미리보기를 닫고, 앞 점포 직원으로 건 변경 이력 조건 · 쪽을 푼다
   return (
     <Labeled>
-      {/* 폐점 점포를 고르면 근무지 칸 바로 아래에 빨간 안내 — 도구 줄 높이를 늘리지 않게 칸 아래로 띄운다(아래 요일 줄과는 24px 사이).
-          등록 · 복사 버튼은 흐리게 막힌다(2026-11-05 사용자 지정, 3팀 확인 필요) */}
+      {/* 폐점 · 미운영 점포를 고르면 근무지 칸 바로 아래에 빨간 안내 — 도구 줄 높이를 늘리지 않게 칸 아래로 띄운다(아래 요일 줄과는 24px 사이).
+          등록 · 복사 버튼은 흐리게 막힌다(2026-11-05 사용자 지정, 3팀 확인 필요 · 미운영은 WHALEERP-723, 2026-11-19 사용자 결정) */}
       <div className="relative w-[300px]">
         <Select aria-label="근무지" value={query.storeId} onChange={(e) => navigate({ ...query, storeId: Number(e.target.value), copy: false, historyStaffId: null, historyPage: 1 })}>
           {stores.map((s) => (
@@ -61,7 +61,7 @@ export function SchedulePicker({ query, today }: { query: ScheduleQuery; today: 
             </option>
           ))}
         </Select>
-        {closed && <p className="absolute top-full left-0 mt-[4px] text-[13px] whitespace-nowrap text-erp-off">폐점 점포는 근무스케줄을 등록할 수 없습니다.</p>}
+        {blocked && <p className="absolute top-full left-0 mt-[4px] text-[13px] whitespace-nowrap text-erp-off">{blocked} 점포는 근무스케줄을 등록할 수 없습니다.</p>}
       </div>
     </Labeled>
   );
