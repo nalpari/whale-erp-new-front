@@ -64,7 +64,7 @@ const filled = (over: Partial<ContractForm> = {}): ContractForm => ({
 /** 상세 응답 견본 — 비어 있는 임시저장. 테스트마다 필요한 칸만 덮는다 */
 const detailOf = (over: Partial<ContractDetail> = {}): ContractDetail => ({
   contractId: 7, staffMemberId: 3, status: "DRAFT", name: "남도현", phone: "01090145563", jobTitle: "바리스타",
-  employmentType: "PART_TIME", storeId: 11, storeName: "모리커피 성수점", birthDate: null, gender: null, isForeigner: false, contractMethod: null,
+  employmentType: "PART_TIME", storeId: 11, storeName: "모리커피 성수점", storeIsHq: false, birthDate: null, gender: null, isForeigner: false, contractMethod: null,
   startDate: null, endDate: null, workLocation: null, weeklyHoliday: null, wageAmount: null,
   mealAllowanceAmount: null, carAllowanceAmount: null, childcareAllowanceAmount: null, baseHours: null,
   monthlyOvertimeHours: null, baseNightHours: null, baseHolidayHours: null, monthlyExtraHolidayHours: null,
