@@ -3,10 +3,13 @@ import { test } from "node:test";
 import {
   announceStoresChanged,
   clearBpFix,
+  clearDeniedBack,
   clearLoginStorage,
   clearTabBp,
+  isDeniedBackRecent,
   isStoresChangedFor,
   markBpFix,
+  markDeniedBack,
   readCodes,
   readCurrentBp,
   readLoginBpInfo,
@@ -170,6 +173,23 @@ test("bp-fix: 고쳐 보낸 주소로 다시 오면 한 번만 true 이고 표�
   assert.equal(takeBpFix("/bp/124/x"), false); // 한 번 쓰면 지워져 정상 재방문을 막지 않는다
   markBpFix("/bp/124/x");
   clearBpFix();
+  assert.deepEqual(tab.keys(), []);
+});
+
+test("denied-back: 10초 안의 표시만 뒤로 가는 중으로 보고, clearDeniedBack · clearTabBp 가 지운다", () => {
+  const { tab } = fresh();
+  assert.equal(isDeniedBackRecent(), false);
+  markDeniedBack();
+  assert.equal(isDeniedBackRecent(), true);
+  tab.setItem("whale-erp:v2:denied-back", JSON.stringify(Date.now() - 10_001));
+  assert.equal(isDeniedBackRecent(), false); // 오래된 표시가 나중에 직접 들어온 막힌 주소의 안내를 삼키지 않는다
+  tab.setItem("whale-erp:v2:denied-back", '"x"');
+  assert.equal(isDeniedBackRecent(), false); // 깨진 값은 뒤로 가는 중이 아니다
+  markDeniedBack();
+  clearDeniedBack();
+  assert.deepEqual(tab.keys(), []);
+  markDeniedBack();
+  clearTabBp();
   assert.deepEqual(tab.keys(), []);
 });
 
