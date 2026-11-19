@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) · [급여명세서 관리 화면](/screens/payslips.md) — 근로계약서 작성 다듬기(4등분 세로선 · 계산식 꺾은선 · 근무요일 체크 카드 · 시간 길이 상자 · 주 소정근로시간 · 법정 휴게 안내 · 위아래 같은 버튼 · 만 19세 빨간 문구), 소정근로시간 표(근로시간 「h」 · 금액 「원」 · 오른쪽 정렬 · 묶음 세로줄, 작성 · 상세), 공통 DataTable `align` · `divider` · 줄이 있어도 표 틀 채우기, 급여명세서 작성 팝업 열 폭(2026-11-19 사용자 지정).
+
 ## 2026-11-18
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성 · 수정의 계약 시작일 · 종료일도 생년월일처럼 숫자만 치면 하이픈이 들어간다(`DateField autoHyphen`, 2026-11-18 사용자 지정).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 사업자 인증 상자 `compactRow`(마이페이지 · BP 마스터 패널)는 칸 오류 문구를 세 칸 줄 아래 한 줄로 둔다(2026-11-18 사용자 지정).
