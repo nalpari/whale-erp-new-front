@@ -147,8 +147,10 @@ export function CoordinateFields({
       </FormRow>
       {locator.note && <FieldMessage id={`${idPrefix}-coordinate`} message={locator.note} />}
       <p className="text-[13px] leading-[1.6] text-erp-label">
-        사업자주소가 입력되면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다. 본사근무 직원의 출퇴근 위치 확인
-        기준입니다.
+        {/* 문장마다 줄을 바꾼다(2026-11-19 사용자 지정) */}
+        사업자주소가 입력되면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.
+        <br />
+        본사근무 직원의 출퇴근 위치 확인 기준입니다.
         <br />
         위도 · 경도가 없으면 <b className="font-semibold">출퇴근 위치적용</b>을 사용으로 바꿀 수 없습니다.
       </p>

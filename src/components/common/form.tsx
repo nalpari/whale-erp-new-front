@@ -118,12 +118,13 @@ export function FormRow({ children }: { children: ReactNode }) {
 
 // Figma Row group. 제목과 그 아래 입력칸 카드. title 은 보통 글자 하나지만, 필수 표시 같은 꾸민 안내문구가
 // 섞일 수 있어 ReactNode 로 받는다(2026-10-12 코드리뷰 — 화면 변화 없는 타입 변경).
-export function FormGroup({ title, children }: { title: ReactNode; children: ReactNode }) {
+// roomy — 칸 줄 사이를 18 대신 24px 로(근로계약서 작성 — 줄마다 칸 이름 · 안내가 있어 18px 은 위아래가 붙어 보였다, 2026-11-19 사용자 지정. 공지 · FAQ 등록과 같은 24px)
+export function FormGroup({ title, children, roomy = false }: { title: ReactNode; children: ReactNode; roomy?: boolean }) {
   return (
     <section className="flex w-full flex-col gap-[10px]">
       <h3 className="text-[15px] font-semibold text-erp-ink">{title}</h3>
       {/* flex-1 로 둬 나란한 두 묶음이 그리드에서 같은 선에 맞춰 늘어나게 둔다(부모가 stretch 일 때만 뜻이 있다) */}
-      <div className="flex flex-1 flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">{children}</div>
+      <div className={`flex flex-1 flex-col ${roomy ? "gap-[24px]" : "gap-[18px]"} rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]`}>{children}</div>
     </section>
   );
 }

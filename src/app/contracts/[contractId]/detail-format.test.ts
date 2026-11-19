@@ -52,25 +52,25 @@ test("partTimeRows — 요일마다 저장한 시각 · 시간 · 소계를 보�
   } as unknown as ContractDetail;
   const rows = partTimeRows(detail, label);
   assert.deepEqual(rows.slice(0, 3), [
-    { key: "MON", label: "월", start: "09:00", end: "18:00", restStart: "12:00", restEnd: "13:00", hours: "8", wage: "10,000", amount: "80,000" },
-    { key: "TUE", label: "화", start: "09:00", end: "13:00", restStart: "-", restEnd: "-", hours: "4", wage: "10,000", amount: "40,000" },
-    { key: "WED", label: "수", start: "10:00", end: "16:00", restStart: "12:00", restEnd: "13:00", hours: "5", wage: "10,000", amount: "50,000" },
+    { key: "MON", label: "월", start: "09:00", end: "18:00", restStart: "12:00", restEnd: "13:00", hours: "8 h", wage: "10,000 원", amount: "80,000 원" },
+    { key: "TUE", label: "화", start: "09:00", end: "13:00", restStart: "-", restEnd: "-", hours: "4 h", wage: "10,000 원", amount: "40,000 원" },
+    { key: "WED", label: "수", start: "10:00", end: "16:00", restStart: "12:00", restEnd: "13:00", hours: "5 h", wage: "10,000 원", amount: "50,000 원" },
   ]);
   // 근무하지 않는 요일
   assert.deepEqual(rows[3], { key: "THU", label: "목", start: "-", end: "-", restStart: "-", restEnd: "-", amount: "-" });
   // 주 17시간 → 주휴 3.4시간(÷5) · 34,000, 주급 204,000, 월급여 × 4.345
   assert.deepEqual(rows.slice(7), [
-    { key: "work", label: "소계", hours: "17", amount: "170,000" },
-    { key: "holiday", label: "주휴수당", hours: "3.4", amount: "34,000" },
-    { key: "weekly", label: "주급", amount: "204,000" },
-    { key: "monthly", label: "월급여", amount: "886,380" },
+    { key: "work", label: "소계", hours: "17 h", amount: "170,000 원" },
+    { key: "holiday", label: "주휴수당", hours: "3.4 h", amount: "34,000 원" },
+    { key: "weekly", label: "주급", amount: "204,000 원" },
+    { key: "monthly", label: "월급여", amount: "886,380 원" },
   ]);
 });
 
 test("partTimeRows — 주 15시간 미만이면 주휴수당이 없고, 시급이 비면 금액은 0 · 시급 칸은 「-」", () => {
   const rows = partTimeRows({ wageAmount: null, workDays: [day("MON", "09:00", "13:00", false)] } as unknown as ContractDetail, label);
   assert.equal(rows[0].wage, "-");
-  assert.deepEqual(rows.find((r) => r.key === "holiday"), { key: "holiday", label: "주휴수당", hours: "0", amount: "0" });
+  assert.deepEqual(rows.find((r) => r.key === "holiday"), { key: "holiday", label: "주휴수당", hours: "0 h", amount: "0 원" });
 });
 
 // 발송 · 처리 정보(WHALEERP-155 · 328). 시각은 한국 시간
