@@ -112,8 +112,8 @@ export interface SaveResult {
 
 /**
  * api 409 본문에서 대체할 진행 중 계약 목록을 꺼낸다(code CONTRACT_IN_PROGRESS). 다른 409(근무 시간 겹침 ·
- * 재직 중)는 undefined — 그 문장을 그대로 보이면 된다(겹침 문장에 겹친 요일 · 시간이 들어 있다 — 「월 14:00~16:00 근무가
- * 다른 점포 근로계약과 겹칩니다.」, 점포는 없다, WHALEERP-744).
+ * 재직 중)는 undefined — 그 문장을 그대로 보이면 된다(겹침 문장에 겹친 요일 · 시간이 들어 있다 — 형식은 api, 점포는 없다,
+ * WHALEERP-744).
  */
 export const inProgressOf = (body: unknown) => contractsOf(body, "CONTRACT_IN_PROGRESS");
 

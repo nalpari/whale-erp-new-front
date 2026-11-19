@@ -263,6 +263,13 @@ test("saveFailureOf — 코드 없는 502 · 504 · 500 과 코드 있는 5xx �
     assert.deepEqual(quiet(() => saveFailureOf(e, log)), { kind: "unknown" });
 });
 
+test("근무 시간 겹침(409 WORK_TIME_OVERLAP)은 겹친 요일 · 시간이 든 api 문장을 저장 · 재발송 모두 그대로 보인다(WHALEERP-744)", () => {
+  const message = "월 14:00~16:00 · 토 10:00~14:00 근무가 다른 점포 근로계약과 겹칩니다.";
+  const body = { statusCode: 409, error: "Conflict", code: "WORK_TIME_OVERLAP", message, overlaps: [{ weekday: "MON", startTime: "14:00", endTime: "16:00" }] };
+  assert.deepEqual(quiet(() => saveFailureOf(new ApiError(409, message, [message], body), log)), { kind: "error", error: message });
+  assert.equal(sendFailureOf(409, "WORK_TIME_OVERLAP", message).error, message);
+});
+
 test("saveFailureOf — api 의 503(Nest 본문, 설정 · 템플릿 문제 — 저장 전 실패)은 api 문장 그대로 보이고 잠그지 않는다", () => {
   const message = "가입 초대 알림톡 템플릿이 없거나 꺼져 있어 보낼 수 없습니다";
   const body = { statusCode: 503, message, error: "Service Unavailable" };
