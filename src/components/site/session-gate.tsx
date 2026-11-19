@@ -34,6 +34,9 @@ import {
   isStoresChangedFor,
   LOGIN_INFO_KEY,
   markBpFix,
+  markDeniedBack,
+  isDeniedBackRecent,
+  clearDeniedBack,
   takeBpFix,
   readCodes,
   readCurrentBp,
@@ -317,6 +320,7 @@ function Ready({
   const switching = pathname === BP_SWITCH_PATH;
   // 이 탭 서비스의 화면만 연다. BP·가맹 계정이 플랫폼 주소에 오거나 플랫폼 탭에서 ERP 주소를 치면 여기서 막힌다(데이터는 api 가 다시 막는다).
   const allowed = switching || isAllowed(value.menus, pathname, value.serviceCode);
+  // 마지막으로 막힌 주소 — 열린 화면에 오면 비운다. 비어 있지 않으면 막혀서 뒤로 가는 중이다(페이지를 새로 읽으면 denied-back 표시로).
   // 개발 모드(StrictMode)는 effect 를 두 번 돌린다. 같은 주소에 두 번 안내하고 두 번 뒤로 가지 않게 한다.
   const denied = useRef<string | null>(null);
   // GNB 「내정보 관리」(마이페이지). 패널은 children(화면 본문) 뒤에 그려야 한다 — SlidePanel 은 전부 같은 z-10 이라
@@ -352,18 +356,25 @@ function Ready({
     // 틀은 화면을 옮겨도 그대로 있다. 열린 화면에 오면 기록을 비워야 같은 막힌 주소에 다시 와도 안내한다.
     if (allowed) {
       denied.current = null;
+      clearDeniedBack();
       return;
     }
     if (denied.current === pathname) return;
+    // 막혀서 뒤로 간 화면도 막혔다(같은 메뉴의 목록 · 상세 · 등록이 기록에 쌓인 채 권한이 빠졌을 때) — 안내는 처음 한 번만 하고
+    // 열 수 있는 화면이 나올 때까지 말없이 더 뒤로 간다(WHALEERP-736, 전엔 기록마다 안내가 떴다). 새로고침 뒤의 뒤로 가기는
+    // 페이지를 새로 읽어 ref 가 비므로 탭 저장소의 표시로 잇는다.
+    const retreating = denied.current !== null || isDeniedBackRecent();
     denied.current = pathname;
     // 메뉴에 없는 주소로 바로 들어왔다. 안내하고 들어오기 전 화면으로 돌아간다(2026-10-13 정책, 403 과 같다).
     // 플랫폼 탭에서 ERP 주소로 왔으면 권한이 없는 게 아니라 BP 를 고르지 않은 것이다 — 즐겨찾기 · 주소 입력으로 왔는데 마지막으로 고른 BP 가
     // 없을 때다. 강제 팝업 대신 바로가기에서 고르라고 알린다(2026-10-19 재영).
     // shortcut: 안내는 브라우저 alert 다. 공통 확인 팝업이 생기면 바꾼다.
     const needsBp = value.serviceCode === "PLATFORM" && serviceOfPath(value.menus, pathname) === "WHALE_ERP";
-    alert(needsBp ? "웨일ERP 바로가기에서 BP 를 먼저 선택해 주세요." : "접근 권한이 없는 메뉴입니다.");
-    if (history.length > 1) history.back();
-    else router.replace(home);
+    if (!retreating) alert(needsBp ? "웨일ERP 바로가기에서 BP 를 먼저 선택해 주세요." : "접근 권한이 없는 메뉴입니다.");
+    if (history.length > 1) {
+      markDeniedBack();
+      history.back();
+    } else router.replace(home);
   }, [allowed, home, pathname, router, value.menus, value.serviceCode]);
 
   const setScope = (scope: Scope) => {
