@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { Button, Checkbox, ConfirmDialog, DateField, useAction, useToast } from "@/components/common";
+import { Checkbox, RoundButton, ConfirmDialog, DateField, useAction, useToast } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import {
   BIRTH_DATE_CONFIRM_LABEL,
@@ -23,24 +23,19 @@ import { useFailure } from "./use-action-failure";
 
 // 기본 정보 「생년월일」 줄의 값과 [수정] 버튼(WHALEERP-602). 목업 detail.html 에는 이 버튼이 없다 — 노영주 승인안이다.
 // 버튼은 수정 권한(usePagePermission)과 상세 응답의 birthDateCorrectable 로 미리 가리고, 막는 것은 api 다(canCorrectBirthDate).
-export function BirthDateCell({ staff, text, today }: { staff: StaffMember; text: string; today: string }) {
+export function BirthDateEditButton({ staff, today }: { staff: StaffMember; today: string }) {
   const canUpdate = usePagePermission().update;
   const [open, setOpen] = useState(false);
   const id = staff.staffMemberId;
-  const show = id !== null && canCorrectBirthDate(staff, canUpdate);
+  if (id === null || !canCorrectBirthDate(staff, canUpdate)) return null;
 
+  // 「직원 정보」 표 제목 줄 오른쪽에 [비밀번호 초기화]와 나란히 「생년월일 수정」 — 값 칸 안에 「수정」만 있으면 무엇을 고치는지 덜 드러났다
+  // (2026-11-19 사용자 지정)
   return (
-    <span className="inline-flex items-center gap-[8px]">
-      <span>{text}</span>
-      {show && (
-        <Button variant="soft" onClick={() => setOpen(true)}>
-          수정
-        </Button>
-      )}
-      {show && open && (
-        <BirthDateDialog staffMemberId={id} current={staff.birthDate ?? null} today={today} onClose={() => setOpen(false)} />
-      )}
-    </span>
+    <>
+      <RoundButton onClick={() => setOpen(true)}>생년월일 수정</RoundButton>
+      {open && <BirthDateDialog staffMemberId={id} current={staff.birthDate ?? null} today={today} onClose={() => setOpen(false)} />}
+    </>
   );
 }
 

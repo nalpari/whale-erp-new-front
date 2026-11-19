@@ -8,7 +8,6 @@ import {
   type PayslipItem,
   type PayslipListItem,
   type PayslipReviewReason,
-  type PayslipReviewReasonValue,
   type PayslipStatus,
 } from "../../lib/payslips.ts";
 import { mondayOf } from "../attendance-records/attendance-query.ts";
@@ -57,7 +56,7 @@ export function earningHelp(item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "
     item.adjustedAmount !== null && item.adjustedAmount !== item.calculatedAmount
       ? `계산값 ${formatAmount(item.calculatedAmount)} 을 ${formatAmount(item.adjustedAmount)} 으로 고침`
       : "계산값";
-  return !isPremiumApplied && item.itemCode === "OVERTIME_PAY" ? `가산 미적용 · 1배로 계산 · ${calculated}` : calculated;
+  return !isPremiumApplied && item.itemCode === "OVERTIME_PAY" ? `가산수당 미적용 · 1배로 계산 · ${calculated}` : calculated;
 }
 
 /**
@@ -79,6 +78,31 @@ export function attendanceHref(p: { storeId: number; staffMemberId: number; staf
   return `/attendance-records?${q.toString()}`;
 }
 
+// 공제(4대보험 · 세금) 보이는 순서 — 일반 급여명세서처럼 4대보험(국민연금 · 건강보험 · 장기요양보험 · 고용보험)을 먼저 모으고 세금(소득세 · 지방소득세), 3.3% 는 끝
+// (2026-11-19 사용자 지정, api 는 고용보험을 장기요양보험 앞에 준다). 공제 칸과 「공제 미입력」 사유 글자가 같이 쓴다
+const DEDUCTION_ORDER = [
+  "NATIONAL_PENSION",
+  "HEALTH_INSURANCE",
+  "LONG_TERM_CARE_INSURANCE",
+  "EMPLOYMENT_INSURANCE",
+  "INCOME_TAX",
+  "LOCAL_INCOME_TAX",
+  "BUSINESS_INCOME_TAX",
+  "BUSINESS_LOCAL_INCOME_TAX",
+];
+
+/** 공제 줄을 위 순서로 — 모르는 코드는 받은 순서대로 뒤에 */
+export function sortDeductions<T extends Pick<PayslipItem, "itemCode">>(items: readonly T[]): T[] {
+  const rank = (code: string) => {
+    const i = DEDUCTION_ORDER.indexOf(code);
+    return i < 0 ? DEDUCTION_ORDER.length : i;
+  };
+  return items
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => rank(a.item.itemCode) - rank(b.item.itemCode) || a.index - b.index)
+    .map((x) => x.item);
+}
+
 /**
  * 상세 「검토 사유」 줄 — api 가 준 사유 줄에, 저장된 공제 칸이 비었으면 「공제 미입력」 줄을 더한다(운영 정책 v221 PAY-06,
  * 재영 2026-10-28). 공제 미입력은 사유 줄로 저장되지 않고 공제 칸으로 판정한다 — 목록의 검토 대기 사유와 같은 기준(작성 중 ·
@@ -97,28 +121,29 @@ export function detailReviewReasons(
   if (!blank.length) return stored;
   return [
     ...stored,
-    { payslipReviewReasonId: 0, reviewReason: "DEDUCTION_MISSING", detail: blank.map((i) => i.itemName).join(", "), acknowledgedAt: null },
+    { payslipReviewReasonId: 0, reviewReason: "DEDUCTION_MISSING", detail: sortDeductions(blank).map((i) => i.itemName).join(", "), acknowledgedAt: null },
   ];
 }
 
-/** 경고 띠 제목 — 첫 사유마다 문장으로(「급여명세서 관리 수정 요청.xlsx」). 표에 없는 사유(api 가 새로 준 것)는 사유 이름을 끼운 틀을 쓴다. */
-const REVIEW_BAND_TITLE: Partial<Record<PayslipReviewReasonValue, string>> = {
-  MISSING_ATTENDANCE: "출퇴근 기록이 등록되지 않은 날이 있어 검토가 필요합니다.",
-  AFTER_CONTRACT_END: "근로계약 종료일 이후의 출퇴근 기록이 있어 검토가 필요합니다.",
-  CONTRACT_CHANGED: "급여 기간 중 근로계약이 변경되어 검토가 필요합니다.",
-  ATTENDANCE_NEEDS_REVIEW: "확인 필요로 표시된 출퇴근 기록이 있어 검토가 필요합니다.",
-};
+/**
+ * 검토 사유 상세 글자(api 가 준 문장)를 화면 말투로 다듬는다 — 경고 띠와 「검토 대상 항목」 표가 같이 쓴다(2026-11-19 사용자 지정).
+ * 「확인 필요로 표시된 출퇴근 기록이 N건 있습니다(근무지 반경 밖 퇴근, 위치 조작 감지 등).」 →
+ * 「근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 N건 있습니다.」. api 문장(payslip-attendance-reasons.ts)이 바뀌면
+ * 그대로 보인다 — 근본적으로는 api 문장을 고치는 게 맞다(3팀 확인).
+ */
+export function reviewDetailText(text: string): string {
+  return text
+    .replace(/^확인 필요로 표시된 출퇴근 기록이 (\d+)건 있습니다\(근무지 반경 밖 퇴근, 위치 조작 감지 등\)\.$/, "근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 $1건 있습니다.")
+    .replace("확인 필요로 표시된 출퇴근 기록이", "확인이 필요한 출퇴근 기록이");
+}
 
-/** 위쪽 경고 띠. 공제 미입력은 금액 칸 아래 빨간 띠가 따로 말하므로 뺀다. 이미 확인한 사유(확정 때 확인됨)도 뺀다. 띠가 없으면 null. */
-export function reviewBand(reasons: readonly PayslipReviewReason[], labelOf: (reason: string) => string): { title: string; desc: string } | null {
-  const shown = reasons.filter((r) => r.reviewReason !== "DEDUCTION_MISSING" && r.acknowledgedAt === null);
-  if (!shown.length) return null;
-  const [head] = shown;
-  const title = REVIEW_BAND_TITLE[head.reviewReason] ?? `${labelOf(head.reviewReason)} 사유로 검토 대기로 분류되었습니다.`;
-  // 상세는 마침표로 끝나는 문장이라 빈칸 하나로 잇는다. 상세가 비어 사유 이름을 쓸 때처럼 마침표가 없으면 붙인다
-  const details = shown.map((r) => {
-    const text = r.detail?.trim() || labelOf(r.reviewReason);
-    return /[.?!…]$/.test(text) ? text : `${text}.`;
-  });
-  return { title, desc: `${details.join(" ")} 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.` };
+/**
+ * 위쪽 경고 띠 — 한 줄로 「⚠ 검토가 필요한 사유가 N건 있습니다. 오른쪽 검토 사유를 확인하고, 문제가 없으면 [확정]해 주세요.」. 사유 내용은 오른쪽
+ * 「검토 사유」 표에만 둔다 — 띠와 표에 같은 문장이 두 번 나왔다(2026-11-19 사용자 지정). 건수는 표와 같게 공제 미입력까지 센다. 이미 확인한
+ * 사유(확정 때 확인됨)는 빼고, 남은 것이 공제 미입력뿐이면 띠를 두지 않는다 — 공제 칸 아래 빨간 띠가 따로 말한다. 띠가 없으면 null.
+ */
+export function reviewBand(reasons: readonly PayslipReviewReason[]): { title: string; desc: string; inline: boolean } | null {
+  const open = reasons.filter((r) => r.acknowledgedAt === null);
+  if (!open.some((r) => r.reviewReason !== "DEDUCTION_MISSING")) return null;
+  return { title: `검토가 필요한 사유가 ${open.length}건 있습니다.`, desc: "오른쪽 검토 사유를 확인하고, 문제가 없으면 [확정]해 주세요.", inline: true };
 }

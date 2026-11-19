@@ -11,7 +11,7 @@ import type { SupportPostList } from "@/lib/community";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { HOME, menuOfPath } from "@/lib/menus";
 import { kstToday } from "@/lib/staff-members";
-import { storeOptionLabel, withScope } from "@/lib/store-scope";
+import { withScope } from "@/lib/store-scope";
 import { isPlatformRole } from "@/lib/auth-routes";
 import { useApi, useLoad } from "@/lib/use-load";
 import { DEFAULT_TODO_LIST_QUERY, toTodoListSearch } from "../todos/todo-list-query";
@@ -20,6 +20,7 @@ import type { TodoListResponse } from "@/lib/todos-api";
 import type { PayslipListResponse } from "@/lib/payslips";
 import { defaultPayslipListQuery, toPayslipListSearch } from "../payslips/payslip-list-query";
 import { homeSearchOf, latestNotices, NOTICES_PATH, pendingLineOf, storeCountsOf, type HomePending, type HomeSummary } from "./home-view";
+import { StoreTypeTag } from "@/components/site/store-type-tag";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"] as const;
 
@@ -595,21 +596,16 @@ function StoreTable({ table }: { table: HomeSummary["storeTable"] }) {
                 {table.items.map((r) => (
                   <tr key={r.storeId}>
                     <td className={`${ROW_LINE} px-[12px] py-[10px] ${r.pendingActionCount ? URGENT_EDGE : ""}`}>
-                      {/* 본사 점포(직영으로 저장)는 「[본사] 상호」로 매장과 가른다(본사 점포 설계, 2026-11-17) */}
                       {/* 유형은 점포명 앞 꼬리표(점포명 길이와 상관없이 줄마다 같은 자리, 2026-11-18 사용자 지정) — 직영은 연한 파랑 바탕, 가맹은 회색. 글자 · 테두리는 같고 바탕만 가른다(공통코드 관리주체 꼬리표와 같은 방식,
-                          2026-11-18 사용자 지정 — 아래 회색 줄의 「직영점포」는 훑어볼 때 구별되지 않았다). 본사 점포는 이름의 「[본사]」로 충분해 꼬리표를 두지 않는다 */}
+                          2026-11-18 사용자 지정 — 아래 회색 줄의 「직영점포」는 훑어볼 때 구별되지 않았다). 본사 점포(직영으로 저장)도 「본사」 꼬리표(흰 바탕)를 같은 자리에 두고 이름에는 「[본사]」를 붙이지 않는다 — 점포명 시작선이 줄마다 같게(2026-11-19 사용자 지정) */}
                       {/* 꼬리표 | 점포명 · 미체결 계약 — 미체결 계약 줄이 점포명과 같은 자리에서 시작하게 꼬리표를 왼쪽 칸으로 뺀다(2026-11-18 사용자 지정) */}
                       <span className="flex min-w-0 items-start gap-[6px]">
-                        {!r.isHq && (
-                          // 두 글자로 짧게(2026-11-18 사용자 지정). 파랑 글자 · 테두리는 너무 세서 바탕만 가르는 모양을 그대로 쓴다
-                          <span
-                            className={`mt-[1px] shrink-0 rounded-[2px] border px-[4px] text-[12px] font-medium border-erp-thead-line text-erp-thead-text ${r.storeTypeCode === "DIRECT" ? "bg-erp-on-bg" : "bg-erp-thead-bg"}`}
-                          >
-                            {r.storeTypeCode === "DIRECT" ? "직영" : "가맹"}
-                          </span>
-                        )}
+                        {/* 두 글자로 짧게(2026-11-18 사용자 지정). 파랑 글자 · 테두리는 너무 세서 바탕만 가르는 모양을 그대로 쓴다 */}
+                        <span className="mt-[1px] flex shrink-0">
+                          <StoreTypeTag isHq={r.isHq} storeTypeCode={r.storeTypeCode} />
+                        </span>
                         <span className="flex min-w-0 flex-col">
-                          <span className="truncate font-medium">{storeOptionLabel({ name: r.storeName, isHq: r.isHq })}</span>
+                          <span className="truncate font-medium">{r.storeName}</span>
                           {r.unsignedContractCount !== null && <span className="mt-[2px] truncate text-[12px] text-erp-thead-text">미체결 계약 {r.unsignedContractCount}</span>}
                         </span>
                       </span>

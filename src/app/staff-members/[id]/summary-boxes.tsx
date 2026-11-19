@@ -269,9 +269,11 @@ function TodoSummaryFoot({
     <>
       {foot && <Foot label={foot.label}>{foot.value}</Foot>}
       {histories.length > 0 && (
-        <section aria-label="최근 처리 이력" className="mt-[12px]">
-          <h4 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[12px] text-[14px] font-medium text-erp-thead-text">
-            최근 처리 이력
+        // TO-DO 상자에 이어 붙인다(사이 간격 · 위 테두리 없음) — 따로 떨어진 상자였을 때 TO-DO 이력인지 직원 전체 이력인지 헷갈렸다(2026-11-19 사용자 지정).
+        // 소제목 줄은 흰 바탕 · 13px 회색이라 위 요약 줄(회색 바탕)과 갈린다
+        <section aria-label="TO-DO 처리 이력">
+          <h4 className="flex h-[38px] items-center border-x border-b border-erp-thead-line bg-white px-[12px] text-[13px] font-medium text-erp-label">
+            TO-DO 처리 이력
           </h4>
           <ul className="rounded-b-[2px] border-x border-b border-erp-thead-line bg-white text-[14px]">
             {histories.map((h) => (

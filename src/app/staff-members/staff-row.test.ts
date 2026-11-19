@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { EnumValue } from "../../lib/enums.ts";
 import { JOIN_GROUPS, type StaffMemberListItem } from "../../lib/staff-members.ts";
-import { canResendInvitation, contractCell, employmentStatusCells, formatPhone, invitationText, joinCell, JOIN_GROUP_LABELS, rowNumber, statusCells } from "./staff-row.ts";
+import { canResendInvitation, contractCell, employmentStatusCells, formatPhone, invitationParts, joinCell, JOIN_GROUP_LABELS, rowNumber, statusCells } from "./staff-row.ts";
 
 const TODAY = "2026-10-12";
 // GET /enums/ContractStatus 가 주는 이름(WHALEERP-659) — 칸은 이 이름에 날수 · 날짜 꼬리만 붙인다
@@ -204,9 +204,9 @@ test("재발송 — api 의 contract.canResend 하나로 정한다(WHALEERP-611 
 test("상세 초대 줄 — 유형 · 상태 · 보낸 한국 날짜, 모르는 한글은 뺀다", () => {
   const types = [{ value: "SIGNUP", label: "가입 초대", order: 1 }];
   const statuses = [{ value: "SENT", label: "발송", order: 1 }];
-  assert.equal(invitationText(invitation(), types, statuses), "가입 초대 · 발송 · 보낸 날 2026-08-31");
-  assert.equal(invitationText(invitation(), [], []), "보낸 날 2026-08-31");
-  assert.equal(invitationText(null, types, statuses), "-");
+  assert.deepEqual(invitationParts(invitation(), types, statuses), ["가입 초대", "발송", "2026-08-31 발송"]);
+  assert.deepEqual(invitationParts(invitation(), [], []), ["2026-08-31 발송"]);
+  assert.deepEqual(invitationParts(null, types, statuses), []);
 });
 
 test("가입 상태 필터 라벨 — 목록 필터 체크박스 문구(WHALEERP-660)", () => {

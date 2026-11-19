@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { Button, DataTable, DetailTable, DetailValues, PageBar } from "@/components/common";
+import { Button, DataTable, DetailTable, DetailValues, PageBar, RoundBox, RoundEmpty, RoundRows } from "@/components/common";
 import { ApiError, authHeaders, deniedMessageOf, getEnum, request, screenPath } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { StatusBadge } from "../columns";
@@ -12,7 +12,9 @@ import { documentRowsOf } from "./document-rows";
 import { EndContractButton } from "./end-button";
 import { SendContractButton } from "./send-button";
 import { canShowResend, sendNoticeOf } from "./send-model";
-import { insuranceText, kstDateTime, PAY_SUMMARY_KEYS, partTimeRows, payDayText, probationText, processRows, taxProfileTexts, weeklyHoursOf, workDayLines, type PartTimeRow } from "./detail-format";
+import { insuranceText, kstDateTime, PAY_SUMMARY_KEYS, partTimeRows, payDayText, probationText, processRows, TAX_PROFILE_UNAVAILABLE, taxProfileTexts, weeklyHoursOf, type PartTimeRow } from "./detail-format";
+import { StoreNameWithType } from "@/components/site/store-type-tag";
+import { WithIcon } from "../../platform-admins/admin-table";
 
 type Status = Parameters<typeof StatusBadge>[0]["status"];
 
@@ -114,27 +116,15 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
       </>
     );
 
-  const rows = c
+  // 화면을 두 칸으로 — 오른쪽 「진행 현황」은 계약서의 상태 정보(상태 · 계약 방식 · 발송 · 처리 · 계약서 파일)와 상태 변경이력, 왼쪽 「직원 · 근로 정보」는
+  // 직원 정보와 근로 조건이다(2026-11-19 사용자 지정, 전엔 한 표에 섞여 있었다)
+  const statusRows = c
     ? [
-        { label: "직원", value: <DetailValues items={[c.name, formatPhone(c.phone)]} /> },
-        // 가입 값과 본인 대조하는 성별 · 외국인 여부(WHALEERP-125)
-        { label: "성별", value: [c.gender ? labelOf(genders, c.gender) : "-", ...(c.isForeigner ? ["외국인"] : [])].join(" · ") },
-        // 직원 신고 정보(WHALEERP-155) — 읽기만, 고치는 것은 직원 본인(TAX-07)
-        { label: "주민등록번호", value: taxProfileTexts(c.taxProfile).rrn },
-        { label: "직무", value: c.jobTitle },
-        { label: "근무지", value: c.storeName ?? "-" },
-        { label: "고용 형태", value: labelOf(employmentTypes, c.employmentType) },
-        {
-          label: "상태",
-          value: (
-            <DetailValues
-              items={[statusCell(c.status), ...(c.status === "PENDING_SEND" && c.draftAction ? [labelOf(draftActions, c.draftAction)] : [])]}
-            />
-          ),
-        },
-        // 발송일 · 재발송 · 날인 기한 · 최종 처리일 · 최종수정(WHALEERP-699) · 수정 요청 사유(수정 요청일 때, WHALEERP-635), 종이 계약은 등록일 · 등록 관리자(WHALEERP-155 · 328).
+        // 상태 · 계약 방식은 제목 아래 줄로 옮겨 여기서는 다시 적지 않는다(2026-11-19 사용자 지정)
+        // 발송일 · 재발송 · 서명 기한 · 최종수정(WHALEERP-699) · 수정 요청 사유(수정 요청일 때, WHALEERP-635), 종이 계약은 등록일 · 등록 관리자(WHALEERP-155 · 328).
         // 최종수정은 다른 상세 화면과 같이 「일시 · 사람」의 사람을 회색, 없으면 흐린 「-」
-        ...processRows(c).map(({ by, muted, ...row }) => ({
+        // 수정 요청 사유는 맨 위 — 사장님이 지금 고쳐야 할 것이라(2026-11-19 사용자 지정, 전엔 맨 아래)
+        ...[...processRows(c)].sort((a, b) => Number(b.label === "수정 요청 사유") - Number(a.label === "수정 요청 사유")).map(({ by, muted, ...row }) => ({
           ...row,
           value: muted ? (
             <span className="text-erp-muted">{row.value}</span>
@@ -147,56 +137,12 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             row.value
           ),
         })),
-        { label: "계약 기간", value: c.startDate ? `${c.startDate} ~ ${c.endDate ?? "무기한"}` : "-" },
-        { label: "시급", value: c.wageAmount === null ? "-" : `${c.wageAmount.toLocaleString("ko-KR")} 원` },
-        {
-          label: "소정근로시간",
-          // 파트타이머 표는 여러 줄이라 고정 높이(46)에서 잘리지 않게 내용만큼 늘린다
-          multiline: c.employmentType === "PART_TIME" && c.workDays.length > 0,
-          value: !c.workDays.length ? (
-            "-"
-          ) : c.employmentType === "PART_TIME" ? (
-            // 파트타이머는 요일마다 시간이 다를 수 있어 작성 화면과 같은 표로 보인다 — 요일별 시각 · 근무시간 · 소계와 주휴수당 · 주급 · 월급여
-            <div className="flex w-full min-w-px flex-col gap-[8px] py-[4px]">
-              <span>주 {weeklyHoursOf(c.workDays).toFixed(1)} 시간</span>
-              <DataTable
-                columns={[
-                  // 소계 · 주휴수당 · 주급 · 월급여 줄 이름은 굵게(가운데 그대로) — 요일 줄과 갈린다(2026-11-19 사용자 지정)
-                  {
-                    header: "요일",
-                    width: "w-[80px]", // 「주휴수당」(굵게)이 들어가는 만큼만
-
-                    cell: (r: PartTimeRow) => (PAY_SUMMARY_KEYS.has(r.key) ? <span className="font-semibold">{r.label}</span> : r.label),
-                  },
-                  { header: "시업", width: "w-[130px]", divider: true, cell: (r: PartTimeRow) => r.start },
-                  { header: "종업", width: "w-[130px]", cell: (r: PartTimeRow) => r.end },
-                  // 묶음(요일 / 근무 / 휴게 / 근로시간 · 금액) 사이에만 세로줄 — 작성 화면과 같다(2026-11-19 사용자 지정)
-                  { header: "휴게 시작", width: "w-[130px]", divider: true, cell: (r: PartTimeRow) => r.restStart },
-                  { header: "휴게 종료", width: "w-[130px]", cell: (r: PartTimeRow) => r.restEnd },
-                  // 근로시간 · 시급 · 소계는 오른쪽 정렬, 폭은 근로시간 < 시급 < 소계(남는 폭) — 시각 네 열은 드롭다운(96px)이 들어가는 130px 로 고정(2026-11-19 사용자 지정)
-                  { header: "근로시간", width: "w-[140px]", align: "right", divider: true, cell: (r: PartTimeRow) => r.hours },
-                  // 금액 열(시급 · 소계)은 오른쪽 정렬 — 작성 화면과 같다(2026-11-19 사용자 지정)
-                  { header: "시급", width: "w-[180px]", align: "right", cell: (r: PartTimeRow) => r.wage },
-                  { header: "소계", align: "right", cell: (r: PartTimeRow) => r.amount },
-                ]}
-                rows={partTimeRows(c, (d) => labelOf(weekdays, d))}
-                rowKey={(r) => r.key}
-                // 요일 줄 아래 합계 줄(소계 · 주휴수당 · 주급 · 월급여)은 표 머리 바탕으로 가른다 — 작성 화면과 같다(2026-11-19 사용자 지정)
-                rowState={(r) => (PAY_SUMMARY_KEYS.has(r.key) ? "group" : undefined)}
-              />
-            </div>
-          ) : (
-            <DetailValues items={[`주 ${weeklyHoursOf(c.workDays).toFixed(1)} 시간`, ...workDayLines(c.workDays, (d) => labelOf(weekdays, d))]} />
-          ),
-        },
-        { label: "주휴일", value: c.weeklyHoliday ? `${labelOf(weekdays, c.weeklyHoliday)}요일` : "-" },
-        { label: "임금지급일", value: payDayText(c.payMonth ? labelOf(payMonths, c.payMonth) : null, c.payDay) },
-        { label: "급여 지급 방식", value: c.payMethod ? labelOf(payMethods, c.payMethod) : "-" },
-        { label: "급여 계좌", value: taxProfileTexts(c.taxProfile).account },
-        ...(c.employmentType === "FULL_TIME" ? [{ label: "수습", value: probationText(c.probationMonths, c.probationWageReductionRate, c.wageAmount) }] : []),
-        { label: "4대보험", value: insuranceText(c.isHealthPensionInsured, c.isEmploymentInjuryInsured) },
-        { label: "근무 장소", value: c.workLocation ?? "-" },
-        { label: "계약 방식", value: c.contractMethod ? labelOf(contractMethods, c.contractMethod) : "-" },
+        // 계약 방식은 제목 아래 줄(계약 방식 ┃ 상태)로 옮겨 여기서는 다시 적지 않는다(2026-11-19 사용자 지정)
+      ]
+    : [];
+  // 계약서 파일은 내려받는 것이라 정보 줄과 따로 「계약서 파일」 상자로(2026-11-19 사용자 지정). 파일 줄이 없으면 상자를 두지 않는다
+  const fileRows = c
+    ? [
         // 계약서 파일 — 종이 계약은 날인본(CTR-23), 전자계약은 처리 완료본(서명 확인)과 보낸 원본(WHALEERP-155 · 131). 누르면 라우트
         // 핸들러가 300초짜리 주소를 받아 원래 파일 이름으로 내려받게 한다. documents 는 api #49 부터 온다 — 없으면 빈 것으로 본다.
         ...documentRowsOf({
@@ -207,21 +153,166 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
           lastSentAt: c.lastSentAt,
         }).map((row) => ({
           label: row.label,
+          // 파일마다 한 줄 — 보낸 원본은 재발송할 때마다 한 장씩 쌓인다(최근 것 먼저). 줄이 늘면 칸도 늘고 이름은 위에 맞춘다(2026-11-19 사용자 지정, 전엔 세로선으로 한 줄)
+          multiline: row.documents.length > 1 || !!row.note,
+          labelTop: true,
           value: row.empty ? (
             <span className="text-erp-sub">{row.empty}</span>
           ) : (
-            <>
-              <DetailValues
-                items={row.documents.map((d) => (
-                  <a key={d.contractDocumentId} href={at(`/contracts/${c.contractId}/documents/${d.contractDocumentId}`)} className="text-erp-link hover:underline">
+            <span className="flex min-w-0 flex-col gap-[4px]">
+              {(() => {
+                const link = (d: (typeof row.documents)[number]) => (
+                  <a href={at(`/contracts/${c.contractId}/documents/${d.contractDocumentId}`)} className="truncate text-erp-link hover:underline">
                     {row.withKind ? `${labelOf(documentKinds, d.kind)} · ${d.fileName}` : d.fileName}
                   </a>
-                ))}
-              />
-              {row.note && <span className="ml-[10px] text-erp-sub">{row.note}</span>}
-            </>
+                );
+                // 보낸 원본은 맨 위(가장 최근)가 지금 직원이 서명할 원본이라 옆에 회색 「(최근 발송)」, 앞서 보낸 것은 「이전 원본 N장」으로 접는다 —
+                // 재발송할 때마다 쌓여 길어졌다(2026-11-19 사용자 지정). 그 밖의 파일(처리 완료본 · 서명본)은 모두 보인다
+                if (row.label !== "보낸 원본") return row.documents.map((d) => <span key={d.contractDocumentId} className="flex min-w-0">{link(d)}</span>);
+                const [latest, ...older] = row.documents;
+                return (
+                  <>
+                    {latest && (
+                      <span className="flex min-w-0 items-center gap-[6px]">
+                        {link(latest)}
+                        <span className="shrink-0 text-erp-label">(최근 발송)</span>
+                      </span>
+                    )}
+                    {older.length > 0 && (
+                      <details className="group flex flex-col">
+                        <summary className="flex w-fit cursor-pointer list-none items-center gap-[4px] text-erp-label hover:text-erp-ink [&::-webkit-details-marker]:hidden">
+                          이전 원본 {older.length}장
+                          <svg aria-hidden viewBox="0 0 12 12" className="size-[12px] transition-transform duration-150 group-open:rotate-180">
+                            <path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </summary>
+                        <span className="mt-[4px] flex flex-col gap-[4px]">
+                          {older.map((d) => (
+                            <span key={d.contractDocumentId} className="flex min-w-0">{link(d)}</span>
+                          ))}
+                        </span>
+                      </details>
+                    )}
+                  </>
+                );
+              })()}
+              {row.note && <span className="text-erp-sub">{row.note}</span>}
+            </span>
           ),
         })),
+      ]
+    : [];
+  // 세 묶음 — 왼쪽 「직원 정보」(누구) · 「근로 정보」(근로 조건), 오른쪽 「발송 · 서명 정보」(2026-11-19 사용자 지정)
+  const taxValue = (v: string) => (v === TAX_PROFILE_UNAVAILABLE ? <span className="text-erp-label">{v}</span> : v);
+  const staffRows = c
+    ? [
+        // 휴대전화번호 앞에 휴대폰 아이콘 — 직원 목록 · 관리자 목록의 연락처와 같은 모양(WithIcon, 2026-11-19 사용자 지정)
+        // 이름 ┃ 휴대전화번호 ┃ 성별(· 외국인)을 한 줄에 — 성별 · 외국인 여부는 가입 값과 본인 대조하는 값이다(WHALEERP-125, 2026-11-19 사용자 지정 — 전엔 「성별」 줄 따로)
+        {
+          label: "직원",
+          value: (
+            <DetailValues
+              items={[
+                c.name,
+                <WithIcon key="phone" icon="phone">{formatPhone(c.phone)}</WithIcon>,
+                [c.gender ? labelOf(genders, c.gender) : "성별 -", ...(c.isForeigner ? ["외국인"] : [])].join(" · "),
+              ]}
+            />
+          ),
+        },
+        // 직원 신고 정보(WHALEERP-155) — 읽기만, 고치는 것은 직원 본인(TAX-07)
+        // 신고 정보를 풀지 못하면(UNAVAILABLE) 안내 문구는 「(근무 장소 동일)」과 같은 회색 — 값이 아니라 안내라서(2026-11-19 사용자 지정)
+        { label: "주민등록번호", value: taxValue(taxProfileTexts(c.taxProfile).rrn) },
+        // 급여 계좌는 직원이 신고한 정보라 직원 정보에(2026-11-19 사용자 지정)
+        { label: "급여 계좌", value: taxValue(taxProfileTexts(c.taxProfile).account) },
+      ]
+    : [];
+  const sameWorkLocation = !!c && (!c.workLocation || c.workLocation.trim() === (c.storeName ?? "").trim());
+  const rows = c
+    ? [
+        // 표준근로계약서 순서 — 근로계약기간 → 근무장소 → 업무의 내용(직무) → 고용 형태 → 근로시간 → 휴일 → 임금 → 사회보험. 직원이 받는 계약서와
+        // 대조하기 쉽게(2026-11-19 사용자 지정 — 직원 상세의 「직무 · 고용 형태 · 소속 근무지」 순서보다 계약서 순서를 앞세웠다)
+        // 종료일이 없으면 표준근로계약서 용어 「기간의 정함 없음」 — 작성 화면 안내(「기간의 정함이 없는 계약」)와 같은 말(2026-11-19 사용자 지정, 전엔 「무기한」)
+        { label: "계약 기간", value: c.startDate ? `${c.startDate} ~ ${c.endDate ?? "기간의 정함 없음"}` : "-" },
+        // 근무지 이름 앞에 본사 · 직영 · 가맹 꼬리표 — 홈 운영 점포별 현황과 같은 모양(2026-11-19 사용자 지정)
+        // 근무 장소는 따로 줄을 두지 않고 이 줄 끝에 회색으로 — 같으면 「(근무 장소 동일)」(비어 있으면 api 가 보낼 때 근무지명을 넣으니 같다), 다르면
+        // 「(근무 장소: …)」(2026-11-19 사용자 지정)
+        {
+          label: "소속 근무지",
+          value: c.storeName ? (
+            <span className="flex min-w-0 items-center gap-[6px]">
+              <StoreNameWithType storeId={c.storeId} name={c.storeName} />
+              <span className="min-w-0 truncate text-erp-label">{sameWorkLocation ? "(근무 장소 동일)" : `(근무 장소: ${c.workLocation})`}</span>
+            </span>
+          ) : (
+            "-"
+          ),
+        },
+        // 「직무」만 — 고용 형태는 위 요약 띠에 있다(2026-11-19 사용자 지정, 전엔 「근무 형태 | 정직원 ┃ 홀서빙」)
+        { label: "직무", value: c.jobTitle || "-" },
+        {
+          label: "소정근로시간",
+          // 요일별 표는 여러 줄이라 고정 높이(46)에서 잘리지 않게 내용만큼 늘린다 — 정직원도 작성 화면처럼 표다(2026-11-19 사용자 지정)
+          multiline: c.workDays.length > 0,
+          labelTop: c.workDays.length > 0, // 표가 붙는 줄 — 줄 이름은 「주 N 시간」 줄 높이에 맞춰 위로 — 값 칸 위 여백(py-4)을 빼야 같은 줄에 선다(2026-11-19 사용자 지정)
+          value: !c.workDays.length ? (
+            "-"
+          ) : c.employmentType === "PART_TIME" ? (
+            // 파트타이머는 요일마다 시간이 다를 수 있어 작성 화면과 같은 표로 보인다 — 요일별 시각 · 근무시간 · 소계와 주휴수당 · 주급 · 월급여
+            <div className="flex w-full min-w-px flex-col gap-[8px] pb-[4px]">
+              {/* 소수점은 필요할 때만 — 「주 3 시간」 · 「주 3.5 시간」, 작성 화면과 같다(2026-11-19 사용자 지정, 전엔 늘 「주 3.0 시간」) */}
+              <span>주 {Number(weeklyHoursOf(c.workDays).toFixed(2))} 시간</span>
+              <DataTable
+                columns={[
+                  // 소계 · 주휴수당 · 주급 · 월급여 줄 이름은 굵게(가운데 그대로) — 요일 줄과 갈린다(2026-11-19 사용자 지정)
+                  {
+                    header: "요일",
+                    width: "w-[80px]", // 「주휴수당」(굵게)이 들어가는 만큼만 — 상세는 두 칸 배치라 시각 네 열은 폭을 고정하지 않고 남는 폭을 나눈다
+
+                    cell: (r: PartTimeRow) => (PAY_SUMMARY_KEYS.has(r.key) ? <span className="font-semibold">{r.label}</span> : r.label),
+                  },
+                  { header: "근무 시작", divider: true, cell: (r: PartTimeRow) => r.start },
+                  { header: "근무 종료", cell: (r: PartTimeRow) => r.end },
+                  // 묶음(요일 / 근무 / 휴게 / 근로시간 · 금액) 사이에만 세로줄 — 작성 화면과 같다(2026-11-19 사용자 지정)
+                  { header: "휴게 시작", divider: true, cell: (r: PartTimeRow) => r.restStart },
+                  { header: "휴게 종료", cell: (r: PartTimeRow) => r.restEnd },
+                  // 근로시간 · 시급 · 소계는 오른쪽 정렬, 폭은 근로시간 < 시급 < 소계(남는 폭) — 시각 네 열은 드롭다운(96px)이 들어가는 130px 로 고정(2026-11-19 사용자 지정)
+                  { header: "근로시간", width: "w-[80px]", align: "right", divider: true, cell: (r: PartTimeRow) => r.hours },
+                  // 금액 열(시급 · 소계)은 오른쪽 정렬 — 작성 화면과 같다(2026-11-19 사용자 지정)
+                  { header: "시급", width: "w-[110px]", align: "right", cell: (r: PartTimeRow) => r.wage },
+                  { header: "소계", width: "w-[120px]", align: "right", cell: (r: PartTimeRow) => r.amount },
+                ]}
+                rows={partTimeRows(c, (d) => labelOf(weekdays, d))}
+                rowKey={(r) => r.key}
+                // 요일 줄 아래 합계 줄(소계 · 주휴수당 · 주급 · 월급여)은 표 머리 바탕으로 가른다 — 작성 화면과 같다(2026-11-19 사용자 지정)
+                rowState={(r) => (PAY_SUMMARY_KEYS.has(r.key) ? "group" : undefined)}
+              />
+            </div>
+          ) : (
+            // 정직원은 작성 화면의 정직원 표와 같은 요일 · 근무 시작 · 근무 종료 · 휴게 시작 · 휴게 종료(묶음 사이 세로줄), 쉬는 요일은 「-」(2026-11-19 사용자 지정 — 전엔 「월~금 09:00-18:00」 한 줄 글자)
+            <div className="flex w-full min-w-px flex-col gap-[8px] pb-[4px]">
+              <span>주 {Number(weeklyHoursOf(c.workDays).toFixed(2))} 시간</span>
+              <DataTable
+                columns={[
+                  { header: "요일", width: "w-[80px]", cell: (r: PartTimeRow) => r.label },
+                  { header: "근무 시작", divider: true, cell: (r: PartTimeRow) => r.start },
+                  { header: "근무 종료", cell: (r: PartTimeRow) => r.end },
+                  { header: "휴게 시작", divider: true, cell: (r: PartTimeRow) => r.restStart },
+                  { header: "휴게 종료", cell: (r: PartTimeRow) => r.restEnd },
+                ]}
+                rows={partTimeRows(c, (d) => labelOf(weekdays, d)).filter((r) => !PAY_SUMMARY_KEYS.has(r.key))}
+                rowKey={(r) => r.key}
+              />
+            </div>
+          ),
+        },
+        { label: "주휴일", value: c.weeklyHoliday ? `${labelOf(weekdays, c.weeklyHoliday)}요일` : "-" },
+        // 임금 묶음 — 시급 · 수습 · 임금지급일 · 급여 지급 방식 · 급여 계좌. 줄 순서는 「누가 → 어디서 · 무슨 일 → 언제 · 얼마나 → 얼마를 → 그 밖」(표준근로계약서 순서, 2026-11-19 사용자 지정)
+        { label: "시급", value: c.wageAmount === null ? "-" : `${c.wageAmount.toLocaleString("ko-KR")} 원` },
+        ...(c.employmentType === "FULL_TIME" ? [{ label: "수습", value: probationText(c.probationMonths, c.probationWageReductionRate, c.wageAmount) }] : []),
+        { label: "임금지급일", value: payDayText(c.payMonth ? labelOf(payMonths, c.payMonth) : null, c.payDay) },
+        { label: "급여 지급 방식", value: c.payMethod ? labelOf(payMethods, c.payMethod) : "-" },
+        { label: "4대보험", value: insuranceText(c.isHealthPensionInsured, c.isEmploymentInjuryInsured) },
       ]
     : [];
   const histories = c?.histories ?? [];
@@ -232,11 +323,43 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
           <div className="flex flex-col gap-[12px]">
+            {/* 제목 줄은 「근로계약 상세」와 버튼만. 성명 · 고용형태 · 계약 방식 · 근무지 · 계약 기간 · 상태는 아래 둥근 요약 띠에 — 급여명세서 상세와 같은
+                모양(8px · #c9d1de, 칸마다 이름 13px 회색 위 · 값 15px 600 아래, 2026-11-19 사용자 지정 — 전엔 제목 아래 「계약 방식 ┃ 상태」 한 줄) */}
             <div className="flex items-center gap-[6px]">
-              <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약 상세</h2>
+              <h2 className="min-w-0 flex-1 text-[18px] font-semibold text-erp-ink">근로계약 상세</h2>
               {buttons}
               <Button href={at(backHrefOf(query.back))}>목록</Button>
             </div>
+            {c && (
+              <div className="flex flex-wrap items-stretch rounded-[8px] border border-[#c9d1de] bg-white px-[8px] py-[12px]">
+                {[
+                  { label: "성명", value: <span className="text-[15px] font-semibold text-erp-ink">{c.name}</span> },
+                  { label: "고용형태", value: <span className="text-[15px] font-semibold text-erp-ink">{labelOf(employmentTypes, c.employmentType)}</span> },
+                  { label: "계약 방식", value: <span className="text-[15px] font-semibold text-erp-ink">{c.contractMethod ? labelOf(contractMethods, c.contractMethod) : "-"}</span> },
+                  {
+                    label: "근무지",
+                    value: (
+                      <span className="text-[15px] font-semibold text-erp-ink">
+                        {c.storeName ? <StoreNameWithType storeId={c.storeId} name={c.storeName} /> : "-"}
+                      </span>
+                    ),
+                  },
+                  {
+                    label: "계약 기간",
+                    value: <span className="text-[15px] font-semibold text-erp-ink">{c.startDate ? `${c.startDate} ~ ${c.endDate ?? "기간의 정함 없음"}` : "-"}</span>,
+                  },
+                  {
+                    label: "상태",
+                    value: <DetailValues items={[statusCell(c.status), ...(c.status === "PENDING_SEND" && c.draftAction ? [labelOf(draftActions, c.draftAction)] : [])]} />,
+                  },
+                ].map((cell, i) => (
+                  <div key={cell.label} className={`flex min-w-0 flex-col gap-[4px] px-[16px] ${i ? "border-l border-erp-divider" : ""}`}>
+                    <span className="text-[13px] font-medium text-erp-label">{cell.label}</span>
+                    <span className="flex min-h-[24px] items-center">{cell.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             {sendNotice && (
               <p role="alert" className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
                 {sendNotice}
@@ -247,27 +370,55 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
                 {documentNotice}
               </p>
             )}
-            {c ? (
-              <DetailTable title="계약 내용" rows={rows} />
-            ) : (
-              <p className="text-[14px] font-semibold text-erp-ink">{notice}</p>
-            )}
+            {!c && <p className="text-[14px] font-semibold text-erp-ink">{notice}</p>}
           </div>
           {c && (
-            <div className="flex flex-col gap-[12px]">
-              <h3 className="text-[15px] font-semibold text-erp-ink">상태 변경이력</h3>
-              <DataTable
-                // 네 열은 같은 폭 — 같은 기준 폭을 주면 표 폭에 맞춰 같은 비율로 늘어난다(처리 주체 열 하나만 넓었다). 열 이름 · 순서는 다른 변경이력
-                // (BP 마스터 · 점포 · TO-DO 등)과 같은 「변경일시 · 변경자 · 변경 전 · 변경 후」 — 변경자 값은 관리자 · 직원 · 시스템(StatusChangeActor)이다(2026-11-19 사용자 지정)
-                columns={[
-                  { header: "변경일시", width: "w-[160px]", cell: (h) => kstDateTime(h.changedAt) },
-                  { header: "변경자", width: "w-[160px]", cell: (h) => labelOf(actors, h.actor) },
-                  { header: "변경 전", width: "w-[160px]", cell: (h) => statusCell(h.fromStatus) },
-                  { header: "변경 후", width: "w-[160px]", cell: (h) => statusCell(h.toStatus) },
-                ]}
-                rows={histories}
-                rowKey={(h) => `${h.changedAt}-${h.toStatus}`}
-              />
+            // 왼쪽 3 : 오른쪽 2 — 소정근로시간 표가 있는 왼쪽을 넓게. 창 1440 미만이면 위아래로 쌓는다 — 1260 에서 두 칸이면 소정근로시간 표 · 상태
+            // 변경이력 표가 칸 밖으로 넘쳤다(2026-11-19)
+            <div className="grid grid-cols-1 items-start gap-[24px] min-[1440px]:grid-cols-5">
+              <div className="min-w-0 min-[1440px]:col-span-3">
+                <div className="flex flex-col gap-[24px]">
+                  <DetailTable title="직원 정보" rows={staffRows} />
+                  <DetailTable title="근로 정보" rows={rows} />
+                </div>
+              </div>
+              <div className="flex min-w-0 flex-col gap-[24px] min-[1440px]:col-span-2">
+                {/* 상태는 제목 아래 줄로 옮겨 이 상자는 발송 · 서명 정보다 — 종이 계약은 발송 대신 등록일 · 등록 관리자라 「등록 정보」(2026-11-19 사용자 지정, 전엔 「계약 상태」) */}
+                {/* 오른쪽은 사장님이 확인할 것이라 급여명세서 상세와 같은 둥근 테두리 상자(RoundBox) — 왼쪽 직원 · 근로 정보(회색 제목 줄 표)와 모양으로 가른다(2026-11-19 사용자 지정).
+                    제목 옆에 계약 방식 꼬리표 — 안의 줄이 전자계약(발송 · 서명) · 종이 계약(등록)에 따라 달라서 어느 쪽인지 같이 보인다 */}
+                <RoundBox
+                  title={c.contractMethod === "PAPER" ? "등록 정보" : "발송 · 서명 정보"}
+                >
+                  <RoundRows rows={statusRows.map((r) => ({ label: r.label, value: r.value, top: !!r.multiline }))} />
+                </RoundBox>
+                {fileRows.length > 0 && (
+                  <RoundBox title="계약서 파일">
+                    <RoundRows rows={fileRows.map((r) => ({ label: r.label, value: r.value, top: true }))} />
+                  </RoundBox>
+                )}
+                {/* 상태 변경이력 — 급여명세서 처리내역과 같은 한 줄: 왼쪽 「A → B」(먹색), 오른쪽 「변경자(관리자 · 직원 · 시스템) | 일시」(회색), 굵은 글자 없음
+                    (2026-11-19 사용자 지정). 처음 줄은 「등록 · …」(TO-DO 상세 상태 칸과 같은 글자) */}
+                <RoundBox title="상태 변경이력">
+                  {histories.length === 0 ? (
+                    <RoundEmpty>상태 변경이력이 없습니다.</RoundEmpty>
+                  ) : (
+                    <ul className="flex flex-col">
+                      {histories.map((h) => (
+                        <li key={`${h.changedAt}-${h.toStatus}`} className="flex items-start gap-[12px] border-t border-erp-divider py-[12px] text-[14px] leading-[1.6] last:pb-0">
+                          <span className="min-w-0 flex-1 text-erp-ink">
+                            {h.fromStatus ? `${labelOf(statuses, h.fromStatus)} → ${labelOf(statuses, h.toStatus)}` : `등록 · ${labelOf(statuses, h.toStatus)}`}
+                          </span>
+                          <span className="flex shrink-0 items-center gap-[8px] text-erp-label">
+                            <span>{labelOf(actors, h.actor)}</span>
+                            <span aria-hidden className="h-[11px] w-px bg-[#d9d9d9]" />
+                            <span className="tabular-nums">{kstDateTime(h.changedAt)}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </RoundBox>
+              </div>
             </div>
           )}
         </div>

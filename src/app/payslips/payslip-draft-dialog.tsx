@@ -11,6 +11,7 @@ import { monthLabel, type PayslipCandidate } from "@/lib/payslips";
 import { CellView } from "../staff-members/staff-table";
 import { bulkCreatePayslips, createPayslip, getPayslipCandidatesAction, type DraftFailure } from "./actions";
 import { bulkSummary, canDraft, candidateStores, contractCell, filterCandidates, payslipCell } from "./payslip-draft";
+import { StoreNameWithType } from "@/components/site/store-type-tag";
 
 // 「급여명세서 작성」 버튼과 그 팝업(데모 staff-sections.mjs pickId, 720px). 미리 고른 직원은 없다 — 점포 · 이름으로 좁혀 한 명을
 // 고르고 「작성」하면 초안을 만들어 그 검토 화면으로 간다(WHALEERP-226). 근로계약이 없거나 이 달 명세서가 있는 직원은 고를 수 없다.
@@ -151,7 +152,8 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
         </>
       ),
     },
-    { header: "점포", width: "w-[160px]", cell: (c) => <span className="truncate">{c.storeName}</span> },
+    // 점포 이름 앞에 본사 · 직영 · 가맹 꼬리표, 왼쪽 정렬 — 직원 · 근로계약 목록과 같다(2026-11-19 사용자 지정)
+    { header: "점포", width: "w-[180px]", align: "left", cell: (c) => <StoreNameWithType storeId={c.storeId} name={c.storeName} /> },
     { header: "계약 유형", width: "w-[100px]", cell: (c) => labelOf(employmentTypeLabels, c.employmentType) },
     { header: "근로계약", width: "w-[100px]", cell: (c) => <CellView cell={contractCell(c)} /> },
     { header: "명세서", width: "w-[90px]", cell: (c) => <CellView cell={payslipCell(c)} /> },

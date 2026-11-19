@@ -8,6 +8,7 @@ import { useCurrentBp } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import { sendContract, type ContractStatus, type SendContractResult } from "./actions";
 import { RESEND_DONE, resendDialogCopy, sendFailureOf } from "./send-model";
+import { NameMarked } from "./name-marked";
 
 // 근로계약 재발송(WHALEERP-136). 보내기는 저장할 때 곧바로 하고(2026-10-19 재영), 이 버튼은 다시 보내기만 한다 — 발송 대기
 // (가입 초대를 받지 못함) · 서명 대기, 그리고 거부 · 만료(같은 조건으로 되살림, WHALEERP-153). 누르면 확인창으로 묻고, 보내면 상세를
@@ -101,7 +102,7 @@ export function SendContractButton({
       >
         {copy.body.map((line, i) => (
           <p key={i} className={i ? "mt-[6px]" : undefined}>
-            {line}
+            <NameMarked line={line} name={name} />
           </p>
         ))}
         {error && (

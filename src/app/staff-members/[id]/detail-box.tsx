@@ -20,7 +20,7 @@ export function Box({
 }) {
   return (
     <section className="min-w-0">
-      <h3 className="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">
+      <h3 className="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">
         <span className="flex-1">{title}</span>
         <span className="flex items-center gap-[6px] text-[14px] font-normal">
           {tools}

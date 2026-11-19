@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/common";
+import { Button, RoundButton } from "@/components/common";
 import { useAccount, useCurrentBp, usePagePermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import { canResetPassword } from "@/lib/password-reset";
@@ -50,7 +50,7 @@ export function StaffDetailActions({ staff, today, listHref }: { staff: StaffMem
   );
 }
 
-// 기본 정보 표 바로 아래 줄 오른쪽(데모와 같은 자리). 숨길 때는 줄째 빼 간격이 남지 않게 한다. 가입 전 · 퇴직 · 탈퇴 직원, 수정 권한 없음, 본사 역할의 직영 아닌 점포 직원에게는 숨긴다(canResetPassword).
+// 「직원 정보」 표 제목 줄 오른쪽 — 직원 앱 계정(이메일 · 초대)과 같은 표라 어떤 비밀번호인지 드러난다(2026-11-19 사용자 지정, 전엔 기본 정보 표 아래 따로 떠 있었다). 가입 전 · 퇴직 · 탈퇴 직원, 수정 권한 없음, 본사 역할의 직영 아닌 점포 직원에게는 숨긴다(canResetPassword).
 export function PasswordResetButton({ staff }: { staff: StaffMember }) {
   const canUpdate = usePagePermission().update;
   const { roleTypeCode } = useAccount();
@@ -59,11 +59,9 @@ export function PasswordResetButton({ staff }: { staff: StaffMember }) {
   if (id === null || !canResetPassword(staff, roleTypeCode, canUpdate)) return null;
 
   return (
-    <div className="flex items-center justify-end gap-[6px]">
-      <Button variant="soft" onClick={() => setOpen(true)}>
-        비밀번호 초기화
-      </Button>
+    <>
+      <RoundButton onClick={() => setOpen(true)}>비밀번호 초기화</RoundButton>
       {open && <PasswordResetDialog staffMemberId={id} email={staff.email} onClose={() => setOpen(false)} />}
-    </div>
+    </>
   );
 }
