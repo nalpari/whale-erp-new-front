@@ -21,6 +21,7 @@ import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions"
 import { AttendanceBox, PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
 import { attendanceManageHref, payslipManageHref, scheduleWeekOf, todoManageHref } from "./summary-view";
 import { WeekNav } from "./week-nav";
+import { storeOptionLabel } from "@/lib/store-scope";
 
 export const metadata: Metadata = {
   title: "직원 상세 · Whale ERP",
@@ -127,7 +128,7 @@ export default async function StaffMemberDetailPage({
     },
     { label: "직무", value: staff.jobTitle || PENDING },
     { label: "고용 형태", value: staff.employmentType ? EMPLOYMENT_TYPE_LABELS[staff.employmentType] : PENDING },
-    { label: "소속 근무지", value: staff.store.name },
+    { label: "소속 근무지", value: storeOptionLabel(staff.store) },
     // 입사일은 나중에 시스템이 첫 체결 계약 시작일로 채운다. 지금은 늘 null 이라 「-」다(2026-10-21 재영)
     { label: "입사일", value: staff.hiredDate ?? PENDING },
     // 퇴직 예정 · 퇴직이면 퇴직일을 보인다(목업 detail.html)

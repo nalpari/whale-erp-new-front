@@ -2307,7 +2307,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 작성 · 이어 쓰기의 근무지 선택지. 업무 범위(플랫폼 계정은 탭 BP) 안에서 지우지 않은 운영 중 점포(미운영 · 폐점 빼고, WHALEERP-722), 이름순. 작성 또는 수정 권한. */
+        /** 작성 · 이어 쓰기의 근무지 선택지. 업무 범위(플랫폼 계정은 탭 BP) 안에서 운영 중인 점포(운영 · 지움 아님 · 사업주 정보 있음 — 발송 · 날인과 같은 기준, WHALEERP-722), 이름순. 작성 또는 수정 권한. */
         get: operations["ContractsController_storeOptions"];
         put?: never;
         post?: never;
@@ -5388,6 +5388,8 @@ export interface components {
             name: string;
             /** @description 공통코드 STORE_TYPE — DIRECT 직영 · FRANCHISE 가맹 */
             storeType: string;
+            /** @description 본사 점포(stores.is_hq) — 화면은 「[본사] 상호」로 보인다(WHALEERP-726 · 750) */
+            isHq: boolean;
         };
         /** @enum {string} */
         InvitationType: "SIGNUP" | "REINVITE" | "AFFILIATION_CONFIRM" | "RETURN_CONFIRM";
@@ -5606,6 +5608,8 @@ export interface components {
             workScheduleId: number;
             storeId: number;
             storeName: string;
+            /** @description 본사 점포(stores.is_hq) — 화면은 「[본사] 상호」로 보인다(WHALEERP-750) */
+            storeIsHq: boolean;
             /** @description 근무일(YYYY-MM-DD) — 시작 일시의 한국 날짜 */
             workDate: string;
             /** @description 시작 HH:mm(한국 시각) */
@@ -5720,6 +5724,8 @@ export interface components {
             workDate: string;
             /** @description 근무지 점포 이름 */
             storeName: string;
+            /** @description 본사 점포(stores.is_hq) — 화면은 「[본사] 상호」로 보인다(WHALEERP-750) */
+            storeIsHq: boolean;
             /** @description 시작 HH:mm(한국 시각) */
             startTime: string;
             /** @description 종료 HH:mm(한국 시각). 시작보다 이르면 다음 날이다 */
@@ -7954,6 +7960,8 @@ export interface components {
             storeId: number;
             /** @description 점포가 지워졌어도 이름은 보인다 */
             storeName: string | null;
+            /** @description 본사 점포(stores.is_hq) — 화면은 「[본사] 상호」로 보인다(WHALEERP-726 · 750). 점포 행이 없으면 false */
+            storeIsHq: boolean;
             /** @description 직원이 퇴직했는가(재직 상태 퇴직) — 상태 칸에 「퇴직」을 붙인다. 퇴직 예정(퇴직일 전)은 false */
             staffRetired: boolean;
         };
@@ -8266,6 +8274,8 @@ export interface components {
             phone: string;
             jobTitle: string;
             storeId: number;
+            /** @description 본사 점포(stores.is_hq) — 화면은 「[본사] 상호」로 보인다(WHALEERP-726 · 750). 점포 행이 없으면 false */
+            storeIsHq: boolean;
             /** @description 외국인 여부 — 체크하지 않았으면 false */
             isForeigner: boolean;
             /**
@@ -8526,8 +8536,13 @@ export interface components {
             storeId: number;
             /** @description 목록과 같다 — 서명 대기 · 기한 안 · 재직 중 */
             awaitingSignature: boolean;
-            /** @description 지금 서명하면 받는가 — awaitingSignature 이고 본인 대조가 맞을 때. 서명 API 와 같은 판정이다 */
+            /** @description 지금 서명하면 받는가 — awaitingSignature 이고 본인 대조가 맞고 근무지가 운영 중일 때. 서명 API 와 같은 판정이다 */
             signable: boolean;
+            /**
+             * @description 근무지 점포가 운영 중이 아닌가(미운영 · 폐점 · 사업주 정보(대표자 · 사업자등록번호) 없음) — 그러면 서명 API 는 409 STORE_NOT_OPERATING 이고 signable 은 false 다.
+             *     직원은 고칠 수 없어 근무지 관리자에게 문의한다(본사 사업자 인증 해제 등, 2026-11-18). 날인을 기다리는 계약만 보고 그 밖은 늘 false
+             */
+            storeNotOperating: boolean;
         };
         /** @enum {string} */
         NotificationRelatedType: "CONTRACT" | "INQUIRY" | "LEAD" | "STAFF_MEMBER";
@@ -18455,7 +18470,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(같은 점포 진행 중 계약 — contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP(다른 점포 근무 시간 겹침, 초안 저장만) · 대체할 계약을 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) */
+            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(같은 점포 진행 중 계약 — contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP(다른 점포 근무 시간 겹침, 초안 저장만) · 대체할 계약을 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) · STORE_NOT_OPERATING(근무지 점포가 운영 중이 아니라 — 미운영 · 폐점 · 사업주 정보 없음 — 보내지 않음 — 저장하지 않음) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -18727,7 +18742,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 작성 중 · 직원 수정 요청이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) */
+            /** @description 작성 중 · 직원 수정 요청이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) · STORE_NOT_OPERATING(근무지 점포가 운영 중이 아니라 — 미운영 · 폐점 · 사업주 정보 없음 — 보내지 않음 — 저장하지 않음) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -18848,7 +18863,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(서명 요청 전 · 직원 서명 대기 · 직원 수정 요청이 아님) · 새 번호로 이 점포에 재직 중 · CONTRACT_IN_PROGRESS(새 번호의 같은 점포 진행 중 계약 — replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) */
+            /** @description CONTRACT_STATUS_CONFLICT(서명 요청 전 · 직원 서명 대기 · 직원 수정 요청이 아님) · 새 번호로 이 점포에 재직 중 · CONTRACT_IN_PROGRESS(새 번호의 같은 점포 진행 중 계약 — replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) · STORE_NOT_OPERATING(근무지 점포가 운영 중이 아니라 — 미운영 · 폐점 · 사업주 정보 없음 — 보내지 않음 — 저장하지 않음) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -19048,7 +19063,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(서명 요청 전 · 직원 서명 대기 · 서명 거절 · 계약 기간 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 서명을 거절했거나 서명 기한이 지나 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(서명 거절 · 계약 기간 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 종료일이 지남, 기간이 겹치거나 더 늦게 시작한 다른 서명 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(서명 거절 · 계약 기간 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다.」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
+            /** @description CONTRACT_STATUS_CONFLICT(서명 요청 전 · 직원 서명 대기 · 서명 거절 · 계약 기간 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 서명을 거절했거나 서명 기한이 지나 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(서명 거절 · 계약 기간 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 종료일이 지남, 기간이 겹치거나 더 늦게 시작한 다른 서명 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(서명 거절 · 계약 기간 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다.」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 · STORE_NOT_OPERATING(근무지 점포가 운영 중이 아니라 — 미운영 · 폐점 · 사업주 정보 없음 — 보내지 않음) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -19184,7 +19199,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(직원 서명 대기가 아님 — 본문 status 에 지금 상태, 이미 처리했으면 그 결과) · SIGN_DEADLINE_PASSED(서명 기한이 지남) · STAFF_RETIRED(퇴직했거나 퇴직일이 지남) · IDENTITY_MISMATCH(mismatches: name · phone · birthDate · gender · isForeigner) · CONTRACT_RESENT(그사이 다시 발송됨) */
+            /** @description CONTRACT_STATUS_CONFLICT(직원 서명 대기가 아님 — 본문 status 에 지금 상태, 이미 처리했으면 그 결과) · SIGN_DEADLINE_PASSED(서명 기한이 지남) · STAFF_RETIRED(퇴직했거나 퇴직일이 지남) · IDENTITY_MISMATCH(mismatches: name · phone · birthDate · gender · isForeigner) · CONTRACT_RESENT(그사이 다시 발송됨) · STORE_NOT_OPERATING(보낸 뒤 근무지가 운영 중이 아니게 됨 — 미운영 · 폐점 · 사업주 정보 없음. 빈 사용자 칸을 고정하지 않는다) */
             409: {
                 headers: {
                     [name: string]: unknown;

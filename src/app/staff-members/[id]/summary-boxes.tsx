@@ -16,6 +16,7 @@ import { RetryButton } from "./retry-button";
 import { MenuTextLink } from "./manage-link";
 import { loadArea, loadLabels } from "./summary-load";
 import { TodoTitleLink } from "./todo-links";
+import { storeOptionLabel } from "@/lib/store-scope";
 import {
   attendanceLines,
   hoursText,
@@ -73,7 +74,7 @@ export async function ScheduleBox({ staffMemberId, weekStart }: { staffMemberId:
         headVariant="plain"
         columns={[
           { header: "날짜", cell: (r) => workDateText(r.workDate) },
-          { header: "근무지", cell: (r) => <span className="block truncate">{r.storeName}</span> },
+          { header: "근무지", cell: (r) => <span className="block truncate">{storeOptionLabel({ name: r.storeName, isHq: r.storeIsHq })}</span> },
           { header: "시작", cell: (r) => r.startTime },
           // 근무스케줄 화면과 같은 글자 — 다음 날이면 「익일 02:00」, 다음 날 0시면 「24:00」
           { header: "종료", cell: (r) => endLabel(r.startTime, r.endTime) },

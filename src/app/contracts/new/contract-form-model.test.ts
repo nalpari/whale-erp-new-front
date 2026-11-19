@@ -64,7 +64,7 @@ const filled = (over: Partial<ContractForm> = {}): ContractForm => ({
 /** 상세 응답 견본 — 비어 있는 임시저장. 테스트마다 필요한 칸만 덮는다 */
 const detailOf = (over: Partial<ContractDetail> = {}): ContractDetail => ({
   contractId: 7, staffMemberId: 3, status: "DRAFT", name: "남도현", phone: "01090145563", jobTitle: "바리스타",
-  employmentType: "PART_TIME", storeId: 11, storeName: "모리커피 성수점", birthDate: null, gender: null, isForeigner: false, contractMethod: null,
+  employmentType: "PART_TIME", storeId: 11, storeName: "모리커피 성수점", storeIsHq: false, birthDate: null, gender: null, isForeigner: false, contractMethod: null,
   startDate: null, endDate: null, workLocation: null, weeklyHoliday: null, wageAmount: null,
   mealAllowanceAmount: null, carAllowanceAmount: null, childcareAllowanceAmount: null, baseHours: null,
   monthlyOvertimeHours: null, baseNightHours: null, baseHolidayHours: null, monthlyExtraHolidayHours: null,
@@ -575,10 +575,16 @@ test("소속 근무지를 고르면 근무 장소를 근무지명으로 채운�
 
 test("storesWithCurrent — 선택지에 없는 지금 근무지(미운영)를 뒤에 더한다, 있으면 · 이름이 없으면 그대로", () => {
   const stores = [{ storeId: 1, name: "성수점" }];
-  assert.deepEqual(storesWithCurrent(stores, { storeId: 2, storeName: "강남점" }), [
+  assert.deepEqual(storesWithCurrent(stores, { storeId: 2, storeName: "강남점", storeIsHq: false }), [
     { storeId: 1, name: "성수점" },
-    { storeId: 2, name: "강남점" },
+    { storeId: 2, name: "강남점", isHq: false },
   ]);
-  assert.deepEqual(storesWithCurrent(stores, { storeId: 1, storeName: "성수점" }), stores);
-  assert.deepEqual(storesWithCurrent(stores, { storeId: 3, storeName: null }), stores);
+  // 본사 근무지면 본사 여부도 — 선택칸이 「[본사] 상호」로 보인다(WHALEERP-750)
+  assert.deepEqual(storesWithCurrent(stores, { storeId: 4, storeName: "도레미커피", storeIsHq: true }).at(-1), {
+    storeId: 4,
+    name: "도레미커피",
+    isHq: true,
+  });
+  assert.deepEqual(storesWithCurrent(stores, { storeId: 1, storeName: "성수점", storeIsHq: false }), stores);
+  assert.deepEqual(storesWithCurrent(stores, { storeId: 3, storeName: null, storeIsHq: false }), stores);
 });
