@@ -169,6 +169,7 @@ export function takeBpFix(pathname: string): boolean {
 export const clearBpFix = () => remove(tab, [KEY.bpFix]);
 // denied-back: 막힌 주소에서 뒤로 간 시각(SessionGate). 뒤로 가면 페이지를 새로 읽기도 해서 ref 로는 이어지지 않는다(WHALEERP-736).
 // 10초 안에 다시 막힌 주소에 오면 그 뒤로 가기의 도착으로 본다 — 오래된 표시가 나중에 직접 들어온 막힌 주소의 안내를 삼키지 않게.
+// shortcut: 뒤로 가기가 앱 밖에 닿아 표시가 남은 채 10초 안에 막힌 주소를 직접 열면 안내 없이 뒤로 간다. 문제가 되면 표시에 주소를 함께 담는다.
 export const markDeniedBack = () => write(tab, KEY.deniedBack, Date.now());
 export function isDeniedBackRecent(): boolean {
   const at = read<number>(tab, KEY.deniedBack);
