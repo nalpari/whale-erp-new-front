@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { DataTable, Tag, type Column } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import type { PayslipListItem } from "@/lib/payslips";
+import { storeOptionLabel } from "@/lib/store-scope";
 import { rowNumber } from "../staff-members/staff-row";
 import { CellView } from "../staff-members/staff-table";
 import { MASKED_TEXT, REVIEW_PENDING_TEXT, STATUS_STYLE, attendanceCell, periodText, sentDateText } from "./payslip-row";
@@ -63,7 +64,7 @@ export function PayslipTable({
     },
     // 남는 폭(표 최소 폭이 100px 을 지킨다) — 길이가 제각각인 이름이라 왼쪽 정렬(직원 · 근로계약 목록과 같다)
     // 근무지도 기준 폭(100)을 둔다 — 넓은 창에서는 모든 열이 같은 비율로 늘어난다 — 이 열만 남는 폭을 가지면 넓은 창에서 혼자 넓어져 표가 휑했다(2026-11-18 사용자 지정)
-    { header: "근무지", width: "w-[100px]", align: "left", cell: (r) => r.payslip.storeName },
+    { header: "근무지", width: "w-[100px]", align: "left", cell: (r) => storeOptionLabel({ name: r.payslip.storeName, isHq: r.payslip.storeIsHq }) },
     { header: "계약 유형", width: "w-[90px]", cell: shown((p) => (p.employmentType ? labelOf(employmentTypeLabels, p.employmentType) : DASH)) },
     {
       // 열 이름 9자가 꺾이지 않는 폭

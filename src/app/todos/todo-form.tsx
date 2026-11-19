@@ -358,7 +358,7 @@ function TodoFormFields({
     });
   };
 
-  const storeName = detail ? (detail.storeName ?? "-") : "";
+  const storeName = detail ? (detail.storeName ? storeOptionLabel({ name: detail.storeName, isHq: detail.storeIsHq }) : "-") : "";
   // 수정 화면 — 배정내역은 바꿀 수 없어 상세 표로 보인다
   const locked = Boolean(detail);
   const candidates = pool?.state === "ok" && pool.storeId === form.storeId ? matchStaff(pool.staff, form.staff, word) : [];

@@ -6,6 +6,7 @@ import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
 import { getTodo, type TodoDetail } from "@/lib/todos-api";
+import { storeOptionLabel } from "@/lib/store-scope";
 import { CellView } from "../../staff-members/staff-table";
 import { backHrefOf, withBack } from "../todo-list-query";
 import { StaffNames } from "../staff-names";
@@ -71,7 +72,7 @@ export default async function TodoDetailPage({
       ? (todo.groupTodos.map((r) => r.completedAt).filter((v): v is string => Boolean(v)).sort().at(-1) ?? null)
       : null;
   const assignRows: DetailRow[] = [
-    { label: "근무지", value: todo.storeName ?? "-" },
+    { label: "근무지", value: todo.storeName ? storeOptionLabel({ name: todo.storeName, isHq: todo.storeIsHq }) : "-" },
     {
       label: "배정대상",
       value:

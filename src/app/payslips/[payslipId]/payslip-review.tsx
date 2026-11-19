@@ -5,6 +5,7 @@ import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { Button, ConfirmDialog, DetailTable, Field, FormGroup, FormRow, Select, TextField, Toggle, useAction, useToast } from "@/components/common";
 import { useCurrentBp, usePagePermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
+import { storeOptionLabel } from "@/lib/store-scope";
 import {
   formatAmount,
   isItemShown,
@@ -351,7 +352,7 @@ export function PayslipReview({
             <>
               {payslip.staffName}
               <span className="pl-[6px] text-[14px] font-normal text-erp-label">
-                {month} · {payslip.storeName}
+                {month} · {storeOptionLabel({ name: payslip.storeName, isHq: payslip.storeIsHq })}
               </span>
             </>
           }

@@ -4,7 +4,7 @@ title: 출·퇴근 현황 조회 화면 (구현)
 description: /attendance-records — 데모 틀 그대로 왼쪽 필터 7개(STAFF-31), 본문 「일별 출퇴근」(하루씩) · 「근태 요약」(한 주씩) 두 칸, 아래 「보정이 필요한 기록」(기간 · 보정 · 이상 없음 · 이력 · 대신 등록). 점포는 상단 범위 ↔ 필터 점포다.
 tags: [staff, attendance, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-18T05:01:14Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-19T07:06:01Z }
 sources:
   - id: page
     resource: ../../src/app/attendance-records/page.tsx
@@ -17,7 +17,7 @@ sources:
   - id: sections
     resource: ../../src/app/attendance-records/attendance-sections.tsx
     title: 일별 출퇴근 · 근태 요약 · 보정이 필요한 기록
-    last_modified: 2026-11-16T01:07:42Z
+    last_modified: 2026-11-19T07:06:01Z
   - id: query
     resource: ../../src/app/attendance-records/attendance-query.ts
     title: 주소 ↔ 조건 · api 점포 조건 · 거르기 · 근태 요약 계산 · 보정 퇴근 날 · 미래 시각 판정
@@ -25,7 +25,7 @@ sources:
   - id: fix-list
     resource: ../../src/app/attendance-records/attendance-fix-list.tsx
     title: 보정이 필요한 기록 표 · 기록 보정 · 출퇴근 대신 등록 패널 · 이력 창
-    last_modified: 2026-11-16T01:07:42Z
+    last_modified: 2026-11-19T07:06:01Z
   - id: backdrop-inert
     resource: ../../src/app/attendance-records/backdrop-inert.tsx
     title: 패널 바탕창이 뜬 동안 본문을 inert 로 막는 조각
@@ -82,3 +82,6 @@ sources:
 - 데모 그대로 둔 것: 「수정됨」 · 「대신 등록」만 있는 줄은 「이력」만 있다(보정 없음). 「이상 없음」은 확인 필요 사유가 있는 줄에만 — 데모는
   출근 · 퇴근 미등록 줄에도 두지만 미등록은 기록에서 나오는 상태라 지울 사유가 없다(정책 확인 대기). 목업의 「퇴근 시각 이상」 사유는
   만들지 않는다(2026-10-26 재영).
+
+본사 근무지는 일별 표 · 보정이 필요한 기록의 이름 옆 점포와 대신 등록 직원 선택지(점포가 여럿일 때)에서 「[본사] 상호」로 보인다(api `storeIsHq` +
+`storeOptionLabel`, 2026-11-19).

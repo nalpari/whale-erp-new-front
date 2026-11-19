@@ -2560,7 +2560,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 내 근로계약 상세 — 계약서에 그릴 값 · 사용자 칸 · 본인 대조 미리보기(서명할 수 있는지 · 다른 항목) */
+        /** 내 근로계약 상세 — 계약서에 그릴 값 · 사업주 칸 · 본인 대조 미리보기(서명할 수 있는지 · 다른 항목) */
         get: operations["MyContractViewsController_findOne"];
         put?: never;
         post?: never;
@@ -7508,6 +7508,8 @@ export interface components {
             staffName: string | null;
             storeId: number;
             storeName: string;
+            /** @description 본사 점포(stores.is_hq) — 화면은 「[본사] 상호」로 보인다 */
+            storeIsHq: boolean;
             /** @description 급여 기간 시작일(YYYY-MM-DD) */
             periodStartDate: string;
             /** @description 급여 기간 종료일(YYYY-MM-DD) */
@@ -7558,6 +7560,8 @@ export interface components {
             staffName: string;
             storeId: number;
             storeName: string;
+            /** @description 본사 점포(stores.is_hq) — 화면은 「[본사] 상호」로 보인다 */
+            storeIsHq: boolean;
             /** @description 급여 기간에 걸친 서명 완료 근로계약 중 가장 늦게 시작한 것. 없으면 null — 초안을 만들 수 없다 */
             contractId: number | null;
             /** @description 이 달 명세서가 이미 있으면 그 ID — 새로 만들지 않는다 */
@@ -7725,6 +7729,8 @@ export interface components {
             staffName: string;
             storeId: number;
             storeName: string;
+            /** @description 본사 점포(stores.is_hq) — 화면은 「[본사] 상호」로 보인다 */
+            storeIsHq: boolean;
             contractId: number;
             /** @description YYYY-MM-DD */
             periodStartDate: string;
@@ -10047,6 +10053,8 @@ export interface components {
             storeId: number;
             /** @description 점포가 지워졌어도 이름은 보인다 */
             storeName: string | null;
+            /** @description 본사 점포(stores.is_hq) — 화면은 「[본사] 상호」로 보인다. 점포 행이 없으면 false */
+            storeIsHq: boolean;
             title: string;
             isUrgent: boolean;
             /** @description 이 줄에 묶인 행 수 */
@@ -10130,6 +10138,8 @@ export interface components {
             createdByName: string | null;
             todoId: number;
             storeId: number;
+            /** @description 본사 점포(stores.is_hq) — 화면은 「[본사] 상호」로 보인다. 점포 행이 없으면 false */
+            storeIsHq: boolean;
             title: string;
             isUrgent: boolean;
             createdBy: number;
@@ -10201,6 +10211,8 @@ export interface components {
             performer: components["schemas"]["TodoStaffDto"] | null;
             todoId: number;
             storeId: number;
+            /** @description 본사 점포(stores.is_hq) — 화면은 「[본사] 상호」로 보인다. 점포 행이 없으면 false */
+            storeIsHq: boolean;
             title: string;
             isUrgent: boolean;
         };
@@ -10619,6 +10631,8 @@ export interface components {
             phone: string;
             storeId: number;
             storeName: string;
+            /** @description 본사 점포(stores.is_hq) — 관리자 화면은 「[본사] 상호」로 보인다. 점포 행이 없으면 false */
+            storeIsHq: boolean;
             schedules: components["schemas"]["AttendanceScheduleDto"][];
             /** @description 출근순 */
             pairs: components["schemas"]["AttendancePairDto"][];
@@ -10659,6 +10673,8 @@ export interface components {
             phone: string;
             storeId: number;
             storeName: string;
+            /** @description 본사 점포(stores.is_hq) — 관리자 화면은 「[본사] 상호」로 보인다. 점포 행이 없으면 false */
+            storeIsHq: boolean;
             schedules: components["schemas"]["AttendanceScheduleDto"][];
             /** @description 출근순 */
             pairs: components["schemas"]["AttendancePairDto"][];
@@ -10687,6 +10703,8 @@ export interface components {
             phone: string;
             storeId: number;
             storeName: string;
+            /** @description 본사 점포(stores.is_hq) — 관리자 화면은 「[본사] 상호」로 보인다. 점포 행이 없으면 false */
+            storeIsHq: boolean;
             schedules: components["schemas"]["AttendanceScheduleDto"][];
             /** @description 출근순 */
             pairs: components["schemas"]["AttendancePairDto"][];
@@ -10751,6 +10769,8 @@ export interface components {
             name: string;
             storeId: number;
             storeName: string;
+            /** @description 본사 점포(stores.is_hq) — 관리자 화면은 「[본사] 상호」로 보인다. 점포 행이 없으면 false */
+            storeIsHq: boolean;
             /** @description 대신 등록(위치정보 동의 없음 · 일시 중지). false 면 위치정보에 동의한 직원 — 기록 없는 날만 출근 · 퇴근을 함께 넣어 보정한다 */
             isProxy: boolean;
             /** @description 그 날짜가 확정 · 발송된 급여명세서 기간 안이다 — 등록하기 전에 경고한다(218) */
@@ -19199,7 +19219,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(직원 서명 대기가 아님 — 본문 status 에 지금 상태, 이미 처리했으면 그 결과) · SIGN_DEADLINE_PASSED(서명 기한이 지남) · STAFF_RETIRED(퇴직했거나 퇴직일이 지남) · IDENTITY_MISMATCH(mismatches: name · phone · birthDate · gender · isForeigner) · CONTRACT_RESENT(그사이 다시 발송됨) · STORE_NOT_OPERATING(보낸 뒤 근무지가 운영 중이 아니게 됨 — 미운영 · 폐점 · 사업주 정보 없음. 빈 사용자 칸을 고정하지 않는다) */
+            /** @description CONTRACT_STATUS_CONFLICT(직원 서명 대기가 아님 — 본문 status 에 지금 상태, 이미 처리했으면 그 결과) · SIGN_DEADLINE_PASSED(서명 기한이 지남) · STAFF_RETIRED(퇴직했거나 퇴직일이 지남) · IDENTITY_MISMATCH(mismatches: name · phone · birthDate · gender · isForeigner) · CONTRACT_RESENT(그사이 다시 발송됨) · STORE_NOT_OPERATING(보낸 뒤 근무지가 운영 중이 아니게 됨 — 미운영 · 폐점 · 사업주 정보 없음. 빈 사업주 칸을 고정하지 않는다) */
             409: {
                 headers: {
                     [name: string]: unknown;

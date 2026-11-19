@@ -9,6 +9,7 @@ const candidate = (over: Partial<PayslipCandidate> = {}): PayslipCandidate => ({
   staffName: "서지안",
   storeId: 5,
   storeName: "모리커피 서초점",
+  storeIsHq: false,
   employmentType: "PART_TIME",
   contractId: 7,
   payslipId: null,
@@ -31,14 +32,14 @@ test("칸 — 근로계약 유효 · 계약 없음(빨간 꼬리표), 명세서 
 
 const items = [
   candidate(),
-  candidate({ staffMemberId: 31, staffName: "하준서", storeId: 6, storeName: "온기식당 판교점" }),
-  candidate({ staffMemberId: 32, staffName: "서하은", storeId: 6, storeName: "온기식당 판교점" }),
+  candidate({ staffMemberId: 31, staffName: "하준서", storeId: 6, storeName: "온기식당 판교점", storeIsHq: true }),
+  candidate({ staffMemberId: 32, staffName: "서하은", storeId: 6, storeName: "온기식당 판교점", storeIsHq: true }),
 ];
 
 test("점포 선택지 — 작성 대상의 점포를 이름순으로 한 번씩", () => {
   assert.deepEqual(candidateStores([...items].reverse()), [
-    { storeId: 5, name: "모리커피 서초점" },
-    { storeId: 6, name: "온기식당 판교점" },
+    { storeId: 5, name: "모리커피 서초점", isHq: false },
+    { storeId: 6, name: "온기식당 판교점", isHq: true },
   ]);
 });
 
