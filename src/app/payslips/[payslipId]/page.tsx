@@ -40,8 +40,8 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
   const reviewReasons = detailReviewReasons(payslip);
   const { contract } = payslip;
 
-  // 오른쪽 상자는 모두 회색 제목 줄(42px · 15px 600) — 근로계약 상세와 같은 모양. 건수 · 버튼은 제목 줄 오른쪽 끝, 표의 열 이름 줄은 흰 바탕(plain)이라
-  // 회색 머리가 두 겹으로 겹치지 않는다(2026-11-19 사용자 지정 — 전엔 상자 밖 18px 글자 제목이라 시작선이 어긋났다)
+  // 오른쪽 상자는 모두 둥근 확인 상자(RoundBox — 8px · #c9d1de, 제목 15px 600) — 근로계약 상세와 같은 모양. 건수는 제목 줄 오른쪽 끝, 이동은 줄 오른쪽 끝
+  // 점선 알약 링크(RoundLink). 왼쪽 입력 칸(회색 제목 줄 상자)과 모양으로 가른다(2026-11-19 사용자 지정, DESIGN.md 「상세 화면 틀」)
   const sameAttendance = payslip.attendanceStartDate === payslip.periodStartDate && payslip.attendanceEndDate === payslip.periodEndDate;
   const aside = (
     <>

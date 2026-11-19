@@ -38,15 +38,13 @@ export function RoundEmpty({ children }: { children: ReactNode }) {
 }
 
 /**
- * RoundBox 안의 이동 링크 — 파란 링크 대신 회청(erp-brand) 500 글자 + 작은 꺾쇠 + 밑줄, 누르는 동안 색 반전. 파란 글자는 버튼처럼 보이지 않고 눈에만 튀었다
- * (2026-11-19 사용자 지정, 홈 카드의 꺾쇠와 같은 계열). 파일 내려받기 링크(계약서 파일 이름)는 그대로 파랑이다.
+ * RoundBox 안의 이동 링크 — 회청 점선 알약(26px · 13px 500, DASHED_PILL) + 작은 꺾쇠. 마우스를 올리면 옅은 바탕, 누르는 동안 색 반전. 파란 글자 링크는
+ * 버튼처럼 보이지 않고 눈에만 튀었다(2026-11-19 사용자 지정). 파일 내려받기 링크(계약서 파일 이름)는 그대로 파랑이다.
  */
 export function RoundLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    // 늘 밑줄(누를 수 있게 보이게), 누르는 동안은 색 반전 — 회청 바탕 · 흰 글자(2026-11-19 사용자 지정)
     <Link
       href={href}
-      // 시안: 회청 점선 테두리 알약(26px · 13px 500) — 마우스를 올리면 옅은 바탕, 누르면 색 반전(2026-11-19 사용자 요청으로 보는 안)
       className={DASHED_PILL}
     >
       {children}
