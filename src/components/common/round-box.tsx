@@ -72,3 +72,20 @@ export function RoundButton({ children, ...props }: Omit<ComponentProps<"button"
     </button>
   );
 }
+
+/**
+ * 상세 화면 제목 아래 요약 띠 — 둥근 상자(8px · #c9d1de)를 칸으로 나눠 이름(13px 회색) 위 · 값(15px 600 먹색) 아래. 근로계약 · 급여명세서 · 직원 상세가
+ * 같이 쓴다(2026-11-19 사용자 지정). 칸 사이는 옅은 세로선(erp-divider), 넘치면 다음 줄로 접힌다
+ */
+export function SummaryStrip({ cells }: { cells: { label: string; value: ReactNode }[] }) {
+  return (
+    <div className="flex flex-wrap items-stretch rounded-[8px] border border-[#c9d1de] bg-white px-[8px] py-[12px]">
+      {cells.map((cell, i) => (
+        <div key={cell.label} className={`flex min-w-0 flex-col gap-[4px] px-[16px] ${i ? "border-l border-erp-divider" : ""}`}>
+          <span className="text-[13px] font-medium text-erp-label">{cell.label}</span>
+          <span className="flex min-h-[24px] items-center text-[15px] font-semibold text-erp-ink">{cell.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}

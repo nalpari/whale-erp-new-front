@@ -17,7 +17,7 @@ export { MonthPicker } from "./month-picker";
 export { SearchField } from "./search-field";
 export { DataTable, type Column, type RowState, type TableHeadVariant } from "./data-table";
 export { DetailTable, DetailValues, type DetailRow } from "./detail-table";
-export { RoundBox, RoundButton, RoundEmpty, RoundLink, RoundRows } from "./round-box";
+export { RoundBox, RoundButton, RoundEmpty, RoundLink, RoundRows, SummaryStrip } from "./round-box";
 export { ReadonlyCard, ReadonlyValue } from "./readonly-card";
 export { HelpTip } from "./help-tip";
 export { Blocked } from "./blocked";

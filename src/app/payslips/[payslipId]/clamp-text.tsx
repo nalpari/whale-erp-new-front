@@ -10,9 +10,15 @@ export function ClampText({ text }: { text: string }) {
   const box = useRef<HTMLSpanElement>(null);
   const [open, setOpen] = useState(false);
   const [overflow, setOverflow] = useState(false);
+  // 그린 뒤 한 번 재고, 폭이 바뀌면(창 크기 · 글꼴 늦게 적용) 다시 잰다 — 한 번만 재면 나중에 두 줄을 넘어도 [더보기]가 없었다(코드 리뷰)
   useLayoutEffect(() => {
     const el = box.current;
-    if (el && !open) setOverflow(el.scrollHeight > el.clientHeight + 1);
+    if (!el || open) return;
+    const measure = () => setOverflow(el.scrollHeight > el.clientHeight + 1);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [text, open]);
   return (
     <span className="flex min-w-0 flex-1 flex-col items-start">

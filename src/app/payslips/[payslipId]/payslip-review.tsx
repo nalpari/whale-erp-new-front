@@ -2,7 +2,7 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useState, useTransition, type ReactNode } from "react";
-import { Button, HelpTip, Checkbox, ConfirmDialog, DetailTable, Field, TextField, Toggle, useAction, useToast } from "@/components/common";
+import { Button, HelpTip, SummaryStrip, Checkbox, ConfirmDialog, DetailTable, Field, TextField, Toggle, useAction, useToast } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import {
   formatAmount,
@@ -15,7 +15,7 @@ import {
   type PayslipDetail,
   type PayslipItem,
 } from "@/lib/payslips";
-import { earningHelp, sortDeductions } from "../payslip-row";
+import { earningHelp, sortDeductions, STATUS_STYLE } from "../payslip-row";
 import {
   cancelPayslipConfirmation,
   recalculatePayslip,
@@ -39,7 +39,6 @@ import {
 } from "./payslip-edit";
 import { StoreNameWithType } from "@/components/site/store-type-tag";
 import { CellView } from "../../staff-members/staff-table";
-import { STATUS_STYLE } from "../payslip-row";
 
 // 급여명세서 검토의 머리(임시저장 · 확정 · 발송 · 목록)와 왼쪽 「지급 내역」. 데모 docs/demo/staff/payrolls-detail.html(원본
 // src/pages/staff/payrolls-detail.mjs)과 목업 docs/mockup/staff/payrolls-detail.html 의 3.3% 원천징수 칸을 옮겼다.
@@ -80,7 +79,8 @@ function AmountField({
   const formula = shownHelp.includes("계산값");
   return (
     // 칸 아래 글자가 있는 칸과 없는 칸이 한 줄에 서도 칸 위쪽이 맞게 위로 붙인다(self-start)
-    <div className="relative flex min-w-px flex-1 flex-col gap-[8px] self-start">
+    // [빼기]가 있으면 이름 줄 오른쪽에 그만큼 비운다 — 긴 항목 이름(연말(중도)정산 소득세)이 버튼 밑으로 들어갔다(코드 리뷰)
+    <div className={`relative flex min-w-px flex-1 flex-col gap-[8px] self-start ${onRemove ? "[&>label>span:first-child]:pr-[40px]" : ""}`}>
       {/* 붙인 추가 공제의 [빼기]는 항목 이름 줄 오른쪽 끝 — 칸 아래 오른쪽에 있으니 아래 칸 이름처럼 보여 어느 칸 것인지 애매했다(2026-11-19 사용자 지정).
           label 밖에 둬서 누르면 입력칸으로 포커스가 가지 않는다 */}
       {onRemove && (
@@ -511,8 +511,7 @@ export function PayslipReview({
               </Button>
           </span>
         </SectionHead>
-        <div className="flex flex-wrap items-stretch rounded-[8px] border border-[#c9d1de] bg-white px-[8px] py-[12px]">
-          {[
+        <SummaryStrip cells={[
             // 세무사 사무실 급여명세서의 인적사항 줄처럼 「성명」(2026-11-19 사용자 지정, 통상시급은 오른쪽 「급여 산정 기준」에 둔다). 근로일수 · 근로시간(법정 기재 사항, 근로기준법 시행령
             // 제27조의2)은 api 가 아직 주지 않아 칸을 두지 않는다 — 3팀 요청
             { label: "성명", value: <span className="text-[15px] font-semibold text-erp-ink">{payslip.staffName}</span> },
@@ -541,13 +540,7 @@ export function PayslipReview({
                   },
                 ]
               : []),
-          ].map((cell, i) => (
-            <div key={cell.label} className={`flex min-w-0 flex-col gap-[4px] px-[16px] ${i ? "border-l border-erp-divider" : ""}`}>
-              <span className="text-[13px] font-medium text-erp-label">{cell.label}</span>
-              <span className="flex min-h-[24px] items-center">{cell.value}</span>
-            </div>
-          ))}
-        </div>
+          ]} />
         {band && (
           <Band
             warn

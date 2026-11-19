@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DetailTable, DetailValues, LoadGroup, LoadGroupArea, PageBar } from "@/components/common";
+import { DetailTable, DetailValues, LoadGroup, LoadGroupArea, PageBar, SummaryStrip } from "@/components/common";
 import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import type { EnumValue } from "@/lib/enums";
 import { hqSharingConsentText, kstToday, staffEmailText } from "@/lib/staff-members";
@@ -199,16 +199,9 @@ export default async function StaffMemberDetailPage({
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>
               <StaffDetailActions staff={staff} today={today} listHref={listHref} />
             </div>
-            {/* 처음 들어올 때는 제목 줄 아래 본문 전체(기본 정보 · 영역들)를 LoadGroup 이 빈 자리로 덮고(상세 진입에는 고래를 쓰지 않는다), 영역이 모두(발송 이력 포함) 온 뒤 한 번에 보인다.
+            {/* 요약 띠는 상세 응답만으로 그리므로 먼저 보인다. 그 아래 본문 전체(직원 정보 · 영역들)는 처음 들어올 때 LoadGroup 이 빈 자리로 덮고(상세 진입에는 고래를 쓰지 않는다), 영역이 모두(발송 이력 포함) 온 뒤 한 번에 보인다.
                   영역은 LoadGroupArea 가 각자 세기만 한다 */}
-            <div className="flex flex-wrap items-stretch rounded-[8px] border border-[#c9d1de] bg-white px-[8px] py-[12px]">
-              {summaryCells.map((cell, i) => (
-                <div key={cell.label} className={`flex min-w-0 flex-col gap-[4px] px-[16px] ${i ? "border-l border-erp-divider" : ""}`}>
-                  <span className="text-[13px] font-medium text-erp-label">{cell.label}</span>
-                  <span className="flex min-h-[24px] items-center">{cell.value}</span>
-                </div>
-              ))}
-            </div>
+            <SummaryStrip cells={summaryCells} />
             <LoadGroup fallback={BODY_PENDING}>
               <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
                 <div className="flex min-w-0 flex-col gap-[24px]">

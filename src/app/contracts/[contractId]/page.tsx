@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { Button, DataTable, DetailTable, DetailValues, PageBar, RoundBox, RoundEmpty, RoundRows } from "@/components/common";
+import { Button, DataTable, DetailTable, DetailValues, PageBar, RoundBox, RoundEmpty, RoundRows, SummaryStrip } from "@/components/common";
 import { ApiError, authHeaders, deniedMessageOf, getEnum, request, screenPath } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { StatusBadge } from "../columns";
@@ -331,8 +331,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
               <Button href={at(backHrefOf(query.back))}>목록</Button>
             </div>
             {c && (
-              <div className="flex flex-wrap items-stretch rounded-[8px] border border-[#c9d1de] bg-white px-[8px] py-[12px]">
-                {[
+              <SummaryStrip cells={[
                   { label: "성명", value: <span className="text-[15px] font-semibold text-erp-ink">{c.name}</span> },
                   { label: "고용형태", value: <span className="text-[15px] font-semibold text-erp-ink">{labelOf(employmentTypes, c.employmentType)}</span> },
                   { label: "계약 방식", value: <span className="text-[15px] font-semibold text-erp-ink">{c.contractMethod ? labelOf(contractMethods, c.contractMethod) : "-"}</span> },
@@ -352,13 +351,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
                     label: "상태",
                     value: <DetailValues items={[statusCell(c.status), ...(c.status === "PENDING_SEND" && c.draftAction ? [labelOf(draftActions, c.draftAction)] : [])]} />,
                   },
-                ].map((cell, i) => (
-                  <div key={cell.label} className={`flex min-w-0 flex-col gap-[4px] px-[16px] ${i ? "border-l border-erp-divider" : ""}`}>
-                    <span className="text-[13px] font-medium text-erp-label">{cell.label}</span>
-                    <span className="flex min-h-[24px] items-center">{cell.value}</span>
-                  </div>
-                ))}
-              </div>
+                ]} />
             )}
             {sendNotice && (
               <p role="alert" className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
