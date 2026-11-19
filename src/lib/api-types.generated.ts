@@ -18618,7 +18618,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 대체할 계약을 다른 요청이 먼저 고침 · SIGNED_CONTRACT_OVERLAP(종이 계약 — 기간이 겹치는 서명 완료 계약, contracts 목록. 잘못 올린 계약이면 correctSignedContracts 와 그 id 를 모두 replaceContractIds 로) · RENEWAL_SIGNED_OVERLAP(종이 재계약이 직전 계약이 아닌 서명 완료와 겹침 — 바로잡기 없이 막음) */
+            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP(overlaps — 겹친 요일 · 시간) · 대체할 계약을 다른 요청이 먼저 고침 · SIGNED_CONTRACT_OVERLAP(종이 계약 — 기간이 겹치는 서명 완료 계약, contracts 목록. 잘못 올린 계약이면 correctSignedContracts 와 그 id 를 모두 replaceContractIds 로) · RENEWAL_SIGNED_OVERLAP(종이 재계약이 직전 계약이 아닌 서명 완료와 겹침 — 바로잡기 없이 막음) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -18762,7 +18762,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 작성 중 · 직원 수정 요청이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) · STORE_NOT_OPERATING(근무지 점포가 운영 중이 아니라 — 미운영 · 폐점 · 사업주 정보 없음 — 보내지 않음 — 저장하지 않음) */
+            /** @description 작성 중 · 직원 수정 요청이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP(overlaps — 겹친 요일 · 시간) · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) · STORE_NOT_OPERATING(근무지 점포가 운영 중이 아니라 — 미운영 · 폐점 · 사업주 정보 없음 — 보내지 않음 — 저장하지 않음) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -18883,7 +18883,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(서명 요청 전 · 직원 서명 대기 · 직원 수정 요청이 아님) · 새 번호로 이 점포에 재직 중 · CONTRACT_IN_PROGRESS(새 번호의 같은 점포 진행 중 계약 — replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) · STORE_NOT_OPERATING(근무지 점포가 운영 중이 아니라 — 미운영 · 폐점 · 사업주 정보 없음 — 보내지 않음 — 저장하지 않음) */
+            /** @description CONTRACT_STATUS_CONFLICT(서명 요청 전 · 직원 서명 대기 · 직원 수정 요청이 아님) · 새 번호로 이 점포에 재직 중 · CONTRACT_IN_PROGRESS(새 번호의 같은 점포 진행 중 계약 — replaceContractIds 로 대체) · WORK_TIME_OVERLAP(overlaps — 겹친 요일 · 시간) · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) · STORE_NOT_OPERATING(근무지 점포가 운영 중이 아니라 — 미운영 · 폐점 · 사업주 정보 없음 — 보내지 않음 — 저장하지 않음) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -18966,7 +18966,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 작성 중이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SIGNED_CONTRACT_OVERLAP(종이 계약 — 기간이 겹치는 서명 완료 계약, contracts 목록. 잘못 올린 계약이면 correctSignedContracts 와 그 id 를 모두 replaceContractIds 로) · RENEWAL_SIGNED_OVERLAP(종이 재계약이 직전 계약이 아닌 서명 완료와 겹침 — 바로잡기 없이 막음) */
+            /** @description 작성 중이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP(overlaps — 겹친 요일 · 시간) · 다른 요청이 먼저 고침 · SIGNED_CONTRACT_OVERLAP(종이 계약 — 기간이 겹치는 서명 완료 계약, contracts 목록. 잘못 올린 계약이면 correctSignedContracts 와 그 id 를 모두 replaceContractIds 로) · RENEWAL_SIGNED_OVERLAP(종이 재계약이 직전 계약이 아닌 서명 완료와 겹침 — 바로잡기 없이 막음) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -19083,7 +19083,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(서명 요청 전 · 직원 서명 대기 · 서명 거절 · 계약 기간 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 서명을 거절했거나 서명 기한이 지나 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(서명 거절 · 계약 기간 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 종료일이 지남, 기간이 겹치거나 더 늦게 시작한 다른 서명 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(서명 거절 · 계약 기간 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다.」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 · STORE_NOT_OPERATING(근무지 점포가 운영 중이 아니라 — 미운영 · 폐점 · 사업주 정보 없음 — 보내지 않음) */
+            /** @description CONTRACT_STATUS_CONFLICT(서명 요청 전 · 직원 서명 대기 · 서명 거절 · 계약 기간 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 서명을 거절했거나 서명 기한이 지나 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(서명 거절 · 계약 기간 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 종료일이 지남, 기간이 겹치거나 더 늦게 시작한 다른 서명 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(서명 거절 · 계약 기간 만료를 되살리면 다른 점포 근무 시간과 겹침 — overlaps: 겹친 요일 · 시간) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다.」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 · STORE_NOT_OPERATING(근무지 점포가 운영 중이 아니라 — 미운영 · 폐점 · 사업주 정보 없음 — 보내지 않음) */
             409: {
                 headers: {
                     [name: string]: unknown;
