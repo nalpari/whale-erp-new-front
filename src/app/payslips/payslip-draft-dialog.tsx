@@ -141,6 +141,9 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
     },
     {
       header: "직원",
+      // 직원 · 점포에도 기준 폭을 두고 표에 최소폭을 걸어, 좁은 창(휴대폰 브라우저 등)에서 이 두 열이 0 으로 줄어 「직원」이 세로로 꺾이고
+      // 이름이 사라지지 않게 한다 — 모자라면 표 상자 안에서 가로로 민다(2026-11-19 사용자 지정)
+      width: "w-[130px]",
       cell: (c) => (
         <>
           {c.staffName}
@@ -148,7 +151,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
         </>
       ),
     },
-    { header: "점포", cell: (c) => c.storeName },
+    { header: "점포", width: "w-[160px]", cell: (c) => <span className="truncate">{c.storeName}</span> },
     { header: "계약 유형", width: "w-[100px]", cell: (c) => labelOf(employmentTypeLabels, c.employmentType) },
     { header: "근로계약", width: "w-[100px]", cell: (c) => <CellView cell={contractCell(c)} /> },
     { header: "명세서", width: "w-[90px]", cell: (c) => <CellView cell={payslipCell(c)} /> },
@@ -209,6 +212,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
           <div className="max-h-[322px] overflow-y-auto">
             <DataTable
               columns={columns}
+              minWidth="min-w-[640px]"
               rows={shown}
               rowKey={(c) => c.staffMemberId}
               rowState={(c) => (c.staffMemberId === pickedShown ? "selected" : undefined)}

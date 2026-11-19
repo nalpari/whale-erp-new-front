@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-18T05:01:14Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-19T02:46:55Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -165,6 +165,7 @@ page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치
   근로계약이 없거나 이미 작성된 직원은 라디오가 막힌다. 고를 수 있는 직원에게 출퇴근 기록이 없으면 이름 옆에 「출퇴근 누락」을
   작게 붙인다. 작성 대상이 아예 없으면(근로계약이 없거나 모두 작성함) 「급여명세서를 작성할 직원이 없습니다.」, 점포 · 이름으로 좁혀서 0줄이면 「조건에 맞는 직원이 없습니다.」(2026-11-05 사용자 지정, 3팀 확인 필요).
 * 머리: 제목 「급여명세서 작성」 옆에 달 꼬리표(「2026년 11월」 — 연한 포인트 바탕 · 포인트 파랑 16px 600 · 28px · 알약형, DESIGN.md 포인트 파랑 예외), 그 아래 13px 회색 안내 「근로계약이 체결된 직원 중 급여명세서를 작성하지 않은 직원을 선택해 주세요.」. 제목 · 달 · 안내를 한 묶음(6px)으로 두고 입력칸과는 18px 뗀다 — 어느 달 명세서인지가 이 팝업의 핵심이라 달을 꼬리표로 보이고, 문구에서는 「이 달」을 뺐다(「이번 달」로 읽혔다, 2026-11-05 사용자 지정, 3팀 확인 필요).
+* 직원 표는 직원 130 · 점포 160(긴 점포명은 말줄임) · 표 최소 640px — 좁은 팝업에서 열이 뭉개지지 않게(2026-11-19 사용자 지정).
 * 아래 오른쪽 취소 · 작성(고르기 전에는 막힘). 작성은 `createPayslip`(`POST /payslips`) → 토스트 「급여명세서를 작성했습니다.」 뒤 그 검토 화면으로 간다(action 이 주소를 돌려준다,
   WHALEERP-688 — 일괄 작성처럼 결과를 알린다). 409 는 문장과
   「작성된 명세서 보기」 링크, 422 · 404 등은 문장을 팝업 안에 보인다.

@@ -12,7 +12,7 @@ import { documentRowsOf } from "./document-rows";
 import { EndContractButton } from "./end-button";
 import { SendContractButton } from "./send-button";
 import { canShowResend, sendNoticeOf } from "./send-model";
-import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, processRows, taxProfileTexts, weeklyHoursOf, workDayLines, type PartTimeRow } from "./detail-format";
+import { insuranceText, kstDateTime, PAY_SUMMARY_KEYS, partTimeRows, payDayText, probationText, processRows, taxProfileTexts, weeklyHoursOf, workDayLines, type PartTimeRow } from "./detail-format";
 
 type Status = Parameters<typeof StatusBadge>[0]["status"];
 
@@ -148,7 +148,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
           ),
         })),
         { label: "계약 기간", value: c.startDate ? `${c.startDate} ~ ${c.endDate ?? "무기한"}` : "-" },
-        { label: "시급", value: c.wageAmount === null ? "-" : c.wageAmount.toLocaleString("ko-KR") },
+        { label: "시급", value: c.wageAmount === null ? "-" : `${c.wageAmount.toLocaleString("ko-KR")} 원` },
         {
           label: "소정근로시간",
           // 파트타이머 표는 여러 줄이라 고정 높이(46)에서 잘리지 않게 내용만큼 늘린다
@@ -158,24 +158,35 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
           ) : c.employmentType === "PART_TIME" ? (
             // 파트타이머는 요일마다 시간이 다를 수 있어 작성 화면과 같은 표로 보인다 — 요일별 시각 · 근무시간 · 소계와 주휴수당 · 주급 · 월급여
             <div className="flex w-full min-w-px flex-col gap-[8px] py-[4px]">
-              <span>주 {weeklyHoursOf(c.workDays).toFixed(1)}시간</span>
+              <span>주 {weeklyHoursOf(c.workDays).toFixed(1)} 시간</span>
               <DataTable
                 columns={[
-                  { header: "요일", width: "w-[90px]", cell: (r: PartTimeRow) => r.label },
-                  { header: "시업", cell: (r: PartTimeRow) => r.start },
-                  { header: "종업", cell: (r: PartTimeRow) => r.end },
-                  { header: "휴게 시작", cell: (r: PartTimeRow) => r.restStart },
-                  { header: "휴게 종료", cell: (r: PartTimeRow) => r.restEnd },
-                  { header: "근무시간", cell: (r: PartTimeRow) => r.hours },
-                  { header: "시급", cell: (r: PartTimeRow) => r.wage },
-                  { header: "소계", cell: (r: PartTimeRow) => r.amount },
+                  // 소계 · 주휴수당 · 주급 · 월급여 줄 이름은 굵게(가운데 그대로) — 요일 줄과 갈린다(2026-11-19 사용자 지정)
+                  {
+                    header: "요일",
+                    width: "w-[80px]", // 「주휴수당」(굵게)이 들어가는 만큼만
+
+                    cell: (r: PartTimeRow) => (PAY_SUMMARY_KEYS.has(r.key) ? <span className="font-semibold">{r.label}</span> : r.label),
+                  },
+                  { header: "시업", width: "w-[130px]", divider: true, cell: (r: PartTimeRow) => r.start },
+                  { header: "종업", width: "w-[130px]", cell: (r: PartTimeRow) => r.end },
+                  // 묶음(요일 / 근무 / 휴게 / 근로시간 · 금액) 사이에만 세로줄 — 작성 화면과 같다(2026-11-19 사용자 지정)
+                  { header: "휴게 시작", width: "w-[130px]", divider: true, cell: (r: PartTimeRow) => r.restStart },
+                  { header: "휴게 종료", width: "w-[130px]", cell: (r: PartTimeRow) => r.restEnd },
+                  // 근로시간 · 시급 · 소계는 오른쪽 정렬, 폭은 근로시간 < 시급 < 소계(남는 폭) — 시각 네 열은 드롭다운(96px)이 들어가는 130px 로 고정(2026-11-19 사용자 지정)
+                  { header: "근로시간", width: "w-[140px]", align: "right", divider: true, cell: (r: PartTimeRow) => r.hours },
+                  // 금액 열(시급 · 소계)은 오른쪽 정렬 — 작성 화면과 같다(2026-11-19 사용자 지정)
+                  { header: "시급", width: "w-[180px]", align: "right", cell: (r: PartTimeRow) => r.wage },
+                  { header: "소계", align: "right", cell: (r: PartTimeRow) => r.amount },
                 ]}
                 rows={partTimeRows(c, (d) => labelOf(weekdays, d))}
                 rowKey={(r) => r.key}
+                // 요일 줄 아래 합계 줄(소계 · 주휴수당 · 주급 · 월급여)은 표 머리 바탕으로 가른다 — 작성 화면과 같다(2026-11-19 사용자 지정)
+                rowState={(r) => (PAY_SUMMARY_KEYS.has(r.key) ? "group" : undefined)}
               />
             </div>
           ) : (
-            <DetailValues items={[`주 ${weeklyHoursOf(c.workDays).toFixed(1)}시간`, ...workDayLines(c.workDays, (d) => labelOf(weekdays, d))]} />
+            <DetailValues items={[`주 ${weeklyHoursOf(c.workDays).toFixed(1)} 시간`, ...workDayLines(c.workDays, (d) => labelOf(weekdays, d))]} />
           ),
         },
         { label: "주휴일", value: c.weeklyHoliday ? `${labelOf(weekdays, c.weeklyHoliday)}요일` : "-" },
@@ -246,11 +257,13 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             <div className="flex flex-col gap-[12px]">
               <h3 className="text-[15px] font-semibold text-erp-ink">상태 변경이력</h3>
               <DataTable
+                // 네 열은 같은 폭 — 같은 기준 폭을 주면 표 폭에 맞춰 같은 비율로 늘어난다(처리 주체 열 하나만 넓었다). 열 이름 · 순서는 다른 변경이력
+                // (BP 마스터 · 점포 · TO-DO 등)과 같은 「변경일시 · 변경자 · 변경 전 · 변경 후」 — 변경자 값은 관리자 · 직원 · 시스템(StatusChangeActor)이다(2026-11-19 사용자 지정)
                 columns={[
-                  { header: "일시", width: "w-[160px]", cell: (h) => kstDateTime(h.changedAt) },
-                  { header: "변경 전", width: "w-[140px]", cell: (h) => statusCell(h.fromStatus) },
-                  { header: "변경 후", width: "w-[140px]", cell: (h) => statusCell(h.toStatus) },
-                  { header: "처리 주체", cell: (h) => labelOf(actors, h.actor) },
+                  { header: "변경일시", width: "w-[160px]", cell: (h) => kstDateTime(h.changedAt) },
+                  { header: "변경자", width: "w-[160px]", cell: (h) => labelOf(actors, h.actor) },
+                  { header: "변경 전", width: "w-[160px]", cell: (h) => statusCell(h.fromStatus) },
+                  { header: "변경 후", width: "w-[160px]", cell: (h) => statusCell(h.toStatus) },
                 ]}
                 rows={histories}
                 rowKey={(h) => `${h.changedAt}-${h.toStatus}`}

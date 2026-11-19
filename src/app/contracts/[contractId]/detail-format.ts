@@ -139,8 +139,10 @@ export type PartTimeRow = {
   amount: string;
 };
 
-const won = (n: number | null) => (n === null ? "-" : n.toLocaleString("ko-KR"));
-const hoursText = (n: number | null) => (n === null ? "" : String(Number(n.toFixed(2))));
+// 소정근로시간 표의 시급 · 소계 칸은 「15,000 원」처럼 단위를 붙인다(2026-11-19 사용자 지정)
+const won = (n: number | null) => (n === null ? "-" : `${n.toLocaleString("ko-KR")} 원`);
+// 근로시간 칸은 「8 h」처럼 단위를 붙인다 — 작성 화면과 같다(2026-11-19 사용자 지정)
+const hoursText = (n: number | null) => (n === null ? "" : `${Number(n.toFixed(2))} h`);
 
 /**
  * 파트타이머 상세의 소정근로시간 표 — 작성 화면의 표와 같은 줄 · 같은 셈(partTimePay: 요일 소계 = 시급 × 그날 시간, 주휴시간 =
@@ -185,3 +187,7 @@ export function partTimeRows(d: ContractDetail, dayLabel: (d: string) => string)
     { key: "monthly", label: "월급여", amount: won(pay.monthly) },
   ];
 }
+
+/** 소정근로시간 표에서 요일 줄 아래 합계 줄의 키 — 작성 · 상세 화면이 이 줄에 바탕을 깐다(2026-11-19 사용자 지정) */
+export const PAY_SUMMARY_KEYS: ReadonlySet<string> = new Set(["work", "holiday", "weekly", "monthly"]);
+
