@@ -2,6 +2,7 @@
 // 테스트: node --test src/app/contracts/new/contract-form-model.test.ts
 
 import type { components } from "../../../lib/api-types.generated";
+import type { StoreOption } from "./load-form-data";
 
 export const WEEKDAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
 export type Weekday = (typeof WEEKDAYS)[number];
@@ -221,13 +222,13 @@ export function withStore(f: ContractForm, storeId: string, stores: readonly { s
  * 만든 계약 등) 「선택」으로 보인다 — 지금 근무지를 뒤에 더한다. api 는 같은 근무지면 그대로 받는다(옮길 때만 운영 중 · 범위를 본다).
  * 점포 행이 없어 이름이 null 이면 더하지 않는다. 지운 · 폐점 점포는 이름이 있어 더해지고, 저장하면 api 가 404 로 알린다.
  */
-export function storesWithCurrent<S extends { storeId: number; name: string; isHq?: boolean }>(
-  stores: readonly S[],
-  current: { storeId: number; storeName: string | null; storeIsHq?: boolean },
-): (S | { storeId: number; name: string; isHq: boolean })[] {
+export function storesWithCurrent(
+  stores: readonly StoreOption[],
+  current: { storeId: number; storeName: string | null; storeIsHq: boolean },
+): StoreOption[] {
   if (current.storeName === null || stores.some((s) => s.storeId === current.storeId)) return [...stores];
   // 본사면 선택칸에도 「[본사] 상호」로 보이게 본사 여부를 함께 싣는다(WHALEERP-750)
-  return [...stores, { storeId: current.storeId, name: current.storeName, isHq: current.storeIsHq === true }];
+  return [...stores, { storeId: current.storeId, name: current.storeName, isHq: current.storeIsHq }];
 }
 
 /** GET /contracts/:contractId. api 의 openapi.json 에서 만든 타입을 쓴다(pnpm openapi:types) */

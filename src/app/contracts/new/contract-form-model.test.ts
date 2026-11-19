@@ -575,7 +575,7 @@ test("소속 근무지를 고르면 근무 장소를 근무지명으로 채운�
 
 test("storesWithCurrent — 선택지에 없는 지금 근무지(미운영)를 뒤에 더한다, 있으면 · 이름이 없으면 그대로", () => {
   const stores = [{ storeId: 1, name: "성수점" }];
-  assert.deepEqual(storesWithCurrent(stores, { storeId: 2, storeName: "강남점" }), [
+  assert.deepEqual(storesWithCurrent(stores, { storeId: 2, storeName: "강남점", storeIsHq: false }), [
     { storeId: 1, name: "성수점" },
     { storeId: 2, name: "강남점", isHq: false },
   ]);
@@ -585,6 +585,6 @@ test("storesWithCurrent — 선택지에 없는 지금 근무지(미운영)를 �
     name: "도레미커피",
     isHq: true,
   });
-  assert.deepEqual(storesWithCurrent(stores, { storeId: 1, storeName: "성수점" }), stores);
-  assert.deepEqual(storesWithCurrent(stores, { storeId: 3, storeName: null }), stores);
+  assert.deepEqual(storesWithCurrent(stores, { storeId: 1, storeName: "성수점", storeIsHq: false }), stores);
+  assert.deepEqual(storesWithCurrent(stores, { storeId: 3, storeName: null, storeIsHq: false }), stores);
 });

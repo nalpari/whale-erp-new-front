@@ -123,7 +123,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         // 직원 신고 정보(WHALEERP-155) — 읽기만, 고치는 것은 직원 본인(TAX-07)
         { label: "주민등록번호", value: taxProfileTexts(c.taxProfile).rrn },
         { label: "직무", value: c.jobTitle },
-        { label: "근무지", value: c.storeName === null ? "-" : storeOptionLabel({ name: c.storeName, isHq: c.storeIsHq }) },
+        { label: "근무지", value: c.storeName ? storeOptionLabel({ name: c.storeName, isHq: c.storeIsHq }) : "-" },
         { label: "고용 형태", value: labelOf(employmentTypes, c.employmentType) },
         {
           label: "상태",

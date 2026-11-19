@@ -46,7 +46,7 @@ export function contractColumns(
     },
     // 남는 폭(표 최소 폭이 120px 을 지킨다) — 길이가 제각각인 이름이라 왼쪽 정렬(직원 목록과 같다)
     // 점포도 기준 폭(120)을 둔다 — 넓은 창에서는 모든 열이 같은 비율로 늘어난다 — 이 열만 남는 폭을 가지면 넓은 창에서 혼자 넓어져 표가 휑했다(2026-11-18 사용자 지정)
-    { header: "점포", width: "w-[120px]", align: "left", cell: (r) => (r.storeName === null ? "-" : storeOptionLabel({ name: r.storeName, isHq: r.storeIsHq })) },
+    { header: "점포", width: "w-[120px]", align: "left", cell: (r) => (r.storeName ? storeOptionLabel({ name: r.storeName, isHq: r.storeIsHq }) : "-") },
     { header: "고용 형태", width: "w-[90px]", cell: (r) => (r.employmentType ? labelOf(employmentTypes, r.employmentType) : "-") },
     { header: "계약 기간", width: "w-[180px]", cell: periodText },
     { header: "급여", width: "w-[100px]", cell: wageText },
