@@ -396,11 +396,10 @@ function TimePick({ value, onChange, label, compact = false }: { value: HourMinu
   );
 }
 
-/** 시작 ~ 끝의 시간 길이(시간) — 끝이 시작보다 이르면 자정을 넘긴 것으로 본다 */
+/** 시작 ~ 끝의 시간 길이(시간). 자정을 넘기지 않는다 — 끝이 시작보다 이르면 0, 모델의 하루 시간(dailyHours)과 같게(리뷰 반영) */
 function spanHours(v: TimeSpan): number {
   const m = (t: HourMinute) => Number(t.hour) * 60 + Number(t.minute);
-  const diff = m(v.end) - m(v.start);
-  return (diff < 0 ? diff + 24 * 60 : diff) / 60;
+  return Math.max(0, m(v.end) - m(v.start)) / 60;
 }
 
 // 고른 값의 길이를 끝에 「9 h」로 보인다 — 근무 · 휴게가 몇 시간인지 바로 보이게. 셈한 값이라 주급 · 월급처럼 읽기 전용 바탕 상자에 두고,
@@ -411,11 +410,10 @@ function SpanPick({ value, onChange, label }: { value: TimeSpan; onChange: (v: T
     <span className="flex w-full items-center gap-[8px] text-[14px] text-erp-ink">
       <TimePick label={`${label} 시작`} value={value.start} onChange={(start) => onChange({ ...value, start })} />~
       <TimePick label={`${label} 끝`} value={value.end} onChange={(end) => onChange({ ...value, end })} />
-      <span
-        className="flex h-[34px] min-w-px flex-[0.7] items-center rounded-[2px] pl-[10px] border border-erp-field-line bg-erp-thead-bg text-erp-ink tabular-nums"
-        aria-label={`${label} ${hoursLabel(spanHours(value))}시간`}
-      >
-        {hoursLabel(spanHours(value))} h
+      <span className="relative flex h-[34px] min-w-px flex-[0.7] items-center rounded-[2px] border border-erp-field-line bg-erp-thead-bg pl-[10px] text-erp-ink tabular-nums">
+        {/* 화면은 「9 h」, 화면 읽기는 「근무시간 9시간」 — 역할 없는 span 의 aria-label 은 읽히지 않는다(리뷰 반영) */}
+        <span aria-hidden>{hoursLabel(spanHours(value))} h</span>
+        <span className="sr-only">{`${label} ${hoursLabel(spanHours(value))}시간`}</span>
       </span>
     </span>
   );
@@ -764,7 +762,14 @@ export function ContractForm({
                 />
               )}
             </Item>
-            <Item label="생년월일" required helpIcon help="만 19세 미만은 등록할 수 없습니다." errors={errs.birthDate}>
+            {/* 만 19세 미만이면 저장 버튼이 막히므로 그 이유를 칸 바로 아래 빨간 문구로 보인다 — 맨 아래 띠를 뺀 뒤 이유가 사라졌다(리뷰 반영, 2026-11-19) */}
+            <Item
+              label="생년월일"
+              required
+              helpIcon
+              help="만 19세 미만은 등록할 수 없습니다."
+              errors={minor ? ["계약 시작일 기준 만 19세 미만이라 등록할 수 없습니다.", ...(errs.birthDate ?? [])] : errs.birthDate}
+            >
               {() => <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />}
             </Item>
             {/* 성별 · 외국인 여부 — 직원이 가입하며 넣는 값과 이름 · 번호 · 생년월일과 함께 대조해 본인만 날인한다(WHALEERP-125) */}
@@ -773,7 +778,8 @@ export function ContractForm({
                 <Group label="성별" required errors={errs.gender}>
                   {/* 남 · 여는 고용 형태와 같은 카드 모양 선택(작게 — 입력칸과 같은 34px · 64px 폭 · 설명 없음, 칸을 채우면 너무 길었다. 사이는 다른 선택 카드와 같은 18px). 고르면 회청 테두리 · 두 번째 바탕(2026-11-19 사용자 지정) */}
                   <div className="flex min-h-[34px] items-center gap-[18px]">
-                    <div role="radiogroup" aria-label="성별" className="flex gap-[18px]">
+                    {/* 이름은 바깥 Group(role=group, 「성별」)이 단다 — 안쪽에도 달면 두 번 읽힌다(리뷰 반영) */}
+                    <div role="radiogroup" className="flex gap-[18px]">
                       {GENDERS.map((v) => (
                         <label
                           key={v}

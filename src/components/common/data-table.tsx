@@ -11,7 +11,6 @@ export type Column<T> = {
   help?: ReactNode;
   /** Tailwind 너비 클래스(w-[60px] 등). 없으면 남는 폭을 나눠 갖는다. 창 폭에 따라 바꿀 때는 `min-[N]:` 한 단계를 덧붙인다(홈 확인 필요 「항목」, 1260 작업) */
   width?: `w-[${number}px]` | `w-[${number}px] min-[${number}px]:w-[${number}px]`;
-  /** 본문 정렬. 헤더는 항상 가운데다. */
   /** 셀 정렬 — 기본 가운데. 금액 열은 right(자릿수가 맞게, 2026-11-19 사용자 지정 — 근로계약 소정근로시간 표 시급 · 소계). 열 이름은 늘 가운데다. 오른쪽 정렬은 오른쪽 여백을 18px 로 넓힌다 — 10px 은 표 선에 붙어 보였다 */
   align?: "left" | "center" | "right";
   /** 이 열 앞(왼쪽)에 세로줄 — 열이 많은 표에서 성격이 다른 묶음 사이에만 긋는다. 열마다 긋지 않는다(근로계약 소정근로시간 표, 2026-11-19 사용자 지정) */
@@ -92,7 +91,10 @@ export function DataTable<T>({
   // 고정 머리 표(scroll)는 좌우 선 · 머리 위아래 선을 표가 아니라 머리 · 본문 상자(ScrollHeadSync)가 긋는다 — 세로 스크롤바가 선 안쪽에
   // 들어가 표 오른쪽 선이 카드 안쪽 여백에 닿는다. 표가 그으면 스크롤바 자리만큼 오른쪽 선이 안으로 들어와 좌우 여백이 달랐다(2026-11-18 사용자 지정)
   const framed = scroll && headVariant !== "none" && !(fillEmpty && rows.length === 0);
-  const table = `w-full table-fixed border-collapse ${framed ? "" : "border-x border-erp-thead-line"} text-[14px] ${headVariant === "none" ? "border-t" : ""} ${minWidth ?? ""}`;
+  // sides=false — 좌우 선을 바깥 상자가 긋는 경우(framed · fillEmpty 틀)
+  const tableClass = (sides: boolean) =>
+    `w-full table-fixed border-collapse ${sides ? "border-x border-erp-thead-line" : ""} text-[14px] ${headVariant === "none" ? "border-t" : ""} ${minWidth ?? ""}`;
+  const table = tableClass(!framed);
   const cols = (
     <colgroup>
       {columns.map((c, i) => (
@@ -206,8 +208,11 @@ export function DataTable<T>({
   // fillEmpty 목록은 줄이 있어도 표 틀(좌우 · 아래 선)이 남는 높이를 채운다 — 비었을 때와 같은 자리까지 서고 줄은 위에서부터 채운다(2026-11-19 사용자 지정)
   if (fillEmpty)
     return (
-      <div className="flex min-h-[134px] flex-1 flex-col rounded-b-[2px] border-x border-b border-erp-thead-line">
-        <table className={table.replace("border-x border-erp-thead-line", "")}>
+      // 최소 높이는 두지 않는다 — min-h 를 주면 flex 항목이 내용보다 작게 줄어 줄이 많을 때 표가 틀 밖으로 넘쳐 쪽 이동과 겹쳤다(리뷰 반영).
+      // 줄이 있으면 이미 머리 42 + 줄 46 이상이다
+      <div className="flex flex-1 flex-col rounded-b-[2px] border-x border-b border-erp-thead-line">
+        {/* -mb-px — 줄이 상자를 다 채우면 마지막 줄 밑선과 상자 밑선이 겹쳐 2px 가 되지 않게(리뷰 반영) */}
+        <table className={`-mb-px ${tableClass(false)}`}>
           {cols}
           {head}
           {body}

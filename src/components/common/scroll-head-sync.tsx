@@ -38,7 +38,7 @@ export function ScrollHeadSync({ head, body, headClass = "", fill = false }: { h
       </div>
       <div
         ref={bodyRef}
-        className={`min-h-0 overflow-y-auto border-x border-erp-thead-line ${fill ? "flex-1 rounded-b-[2px] border-b" : ""}`}
+        className={`min-h-0 overflow-y-auto border-x border-erp-thead-line ${fill ? "flex-1 rounded-b-[2px] border-b [&>table]:-mb-px" : ""}`}
         onScroll={(e) => {
           if (headRef.current) headRef.current.scrollLeft = e.currentTarget.scrollLeft;
         }}
