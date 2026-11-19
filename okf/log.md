@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한이 빠진 메뉴의 화면이 뒤로 가기 기록에 쌓여 있으면 「접근 권한이 없는 메뉴입니다」를 처음 한 번만 띄우고 열 수 있는 화면까지 말없이 뒤로 간다(탭 sessionStorage `denied-back`, WHALEERP-736).
+
 ## 2026-11-18
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성 · 수정의 계약 시작일 · 종료일도 생년월일처럼 숫자만 치면 하이픈이 들어간다(`DateField autoHyphen`, 2026-11-18 사용자 지정).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 사업자 인증 상자 `compactRow`(마이페이지 · BP 마스터 패널)는 칸 오류 문구를 세 칸 줄 아래 한 줄로 둔다(2026-11-18 사용자 지정).
