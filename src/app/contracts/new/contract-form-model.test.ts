@@ -577,8 +577,14 @@ test("storesWithCurrent — 선택지에 없는 지금 근무지(미운영)를 �
   const stores = [{ storeId: 1, name: "성수점" }];
   assert.deepEqual(storesWithCurrent(stores, { storeId: 2, storeName: "강남점" }), [
     { storeId: 1, name: "성수점" },
-    { storeId: 2, name: "강남점" },
+    { storeId: 2, name: "강남점", isHq: false },
   ]);
+  // 본사 근무지면 본사 여부도 — 선택칸이 「[본사] 상호」로 보인다(WHALEERP-750)
+  assert.deepEqual(storesWithCurrent(stores, { storeId: 4, storeName: "도레미커피", storeIsHq: true }).at(-1), {
+    storeId: 4,
+    name: "도레미커피",
+    isHq: true,
+  });
   assert.deepEqual(storesWithCurrent(stores, { storeId: 1, storeName: "성수점" }), stores);
   assert.deepEqual(storesWithCurrent(stores, { storeId: 3, storeName: null }), stores);
 });
