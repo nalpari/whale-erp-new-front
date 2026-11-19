@@ -56,11 +56,12 @@ export function sendFailureOf(status: number | null, code: string | undefined, m
 /**
  * 근로계약 상세에서 가입한 직원에게 앱으로 다시 보낼 때의 확인창 문구(WHALEERP-611). 데모
  * docs/demo/src/pages/staff/contracts-signing.mjs 의 문구 그대로다. 이름을 모르면 그 조각만 뺀다.
+ * 두 문장은 줄을 나눠 보인다 — 한 줄로 이어 붙이면 서명 기한이 묻혔다(통합테스트 2026-11-19 사용자 지정).
  */
-export function signingResendCopy(name: string | null | undefined): { title: string; body: string } {
+export function signingResendCopy(name: string | null | undefined): { title: string; body: string[] } {
   return {
     title: "계약서를 다시 보내시겠습니까?",
-    body: `같은 조건의 계약서를 ${name ? `${name} 님에게 ` : ""}다시 보냅니다. 서명 기한은 발송일로부터 30일입니다.`,
+    body: [`같은 조건의 계약서를 ${name ? `${name} 님에게 ` : ""}다시 보냅니다.`, "서명 기한은 발송일로부터 30일입니다."],
   };
 }
 
@@ -94,7 +95,7 @@ export function inviteResendCopy(name: string | null | undefined): { title: stri
 export function resendDialogCopy(status: string | null | undefined, name: string | null | undefined, staffJoined: boolean): { title: string; body: string[] } {
   const signing = signingResendCopy(name);
   const invite = inviteResendCopy(name);
-  const base = staffJoined ? { title: signing.title, body: [signing.body] } : { title: invite.title, body: invite.body };
+  const base = staffJoined ? { title: signing.title, body: signing.body } : { title: invite.title, body: invite.body };
   const again =
     status === "REJECTED"
       ? "서명 거절된 근로계약서를 같은 조건으로 다시 보냅니다."
