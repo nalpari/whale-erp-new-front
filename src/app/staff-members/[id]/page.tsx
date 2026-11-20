@@ -133,7 +133,7 @@ export default async function StaffMemberDetailPage({
       label: "근무지",
       value: (
         <span className="text-[15px] font-semibold text-erp-ink">
-          <StoreNameWithType storeId={staff.store.storeId} name={staff.store.name} />
+          <StoreNameWithType storeId={staff.store.storeId} name={staff.store.name} isHq={staff.store.isHq} />
         </span>
       ),
     },

@@ -11,13 +11,16 @@ export function StoreTypeTag({ isHq, storeTypeCode }: { isHq?: boolean; storeTyp
 
 /**
  * 점포 이름 앞에 유형 꼬리표 — 응답에 유형이 없는 화면(근로계약 상세)이 화면이 받아 둔 점포 목록(로그인 정보의 stores)에서 찾아 붙인다.
- * 목록에 없는 점포(업무 범위 밖 · 그새 바뀜)는 꼬리표 없이 이름만 보인다.
+ * 목록에 없는 점포(업무 범위 밖 · 그새 바뀜)는 api 가 본사라고 알려 줄 때만 [본사], 아니면 이름만 보인다.
+ * 「[본사] 상호」 글자(storeOptionLabel)는 쓰지 않는다 — 꼬리표에 본사가 있어 두 번 보인다(2026-11-19 사용자 지정, WHALEERP-726 · 750 의 목적은 꼬리표가 지킨다).
  */
-export function StoreNameWithType({ storeId, name }: { storeId: number; name: string }) {
+export function StoreNameWithType({ storeId, name, isHq }: { storeId: number; name: string; isHq?: boolean | null }) {
   const store = useStores().find((s) => s.storeId === storeId);
+  // 목록에 없는 점포라도 api 가 본사라고 알려 주면(storeIsHq · store.isHq) [본사] 꼬리표는 붙인다 — 본사 근무지가 본사로 보여야 한다(WHALEERP-726 · 750)
+  const hq = store?.isHq ?? isHq ?? false;
   return (
     <span className="flex min-w-0 items-center gap-[6px]">
-      {store && <StoreTypeTag isHq={store.isHq} storeTypeCode={store.storeTypeCode} />}
+      {store ? <StoreTypeTag isHq={hq} storeTypeCode={store.storeTypeCode} /> : hq && <StoreTypeTag isHq storeTypeCode="" />}
       <span className="truncate">{name}</span>
     </span>
   );

@@ -2,6 +2,12 @@
 
 ## 2026-11-19
 * **Update**: [급여명세서 관리 화면](/screens/payslips.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 상세 화면 틀 통일(DESIGN.md 「상세 화면 틀」): 제목 아래 요약 띠(`SummaryStrip`) · 오른쪽 둥근 확인 상자(`RoundBox`) · 점선 알약 링크 · 버튼 · 점포 유형 꼬리표(`StoreTypeTag`). 급여명세서는 지급 · 공제 묶음 이름 · 합계 · 도구 줄, 합계 띠, 공제 보이는 순서(4대보험 → 세금), 공제 항목 추가 체크 목록(닫기 전까지 이어 붙임), 처리내역 한 줄(두 줄 · 더보기 · 처리자 | 일시), 가산수당 스위치 도움말 · 토스트, 3.3% 스위치를 공제 상자로. 직원 상세는 직원 정보 · 재직 정보 표, [생년월일 수정] · [비밀번호 초기화] 제목 줄, 주 이동을 근무스케줄 · 출퇴근 위로, TO-DO 처리 이력 붙임, 초대 줄 세로선 값. 근로계약 상세도 같은 틀(요약 띠 · 발송 · 서명 정보 · 계약서 파일 · 상태 변경이력)(2026-11-19 사용자 지정). api 요청은 WHALEERP-755~758.
+* **Update**: [직원 운영 관리](/staff.md) · [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 근무 시간 겹침 안내에 겹친 요일 · 시간이 나온다(api 문장 그대로, WHALEERP-744 사용자 결정 — CTR-26 대체). 화면 코드는 주석만 고쳤고 api 타입을 다시 만들었다.
+* **Update**: [근무스케줄 관리 화면](/screens/work-schedules.md) — 미운영 점포도 폐점처럼 「근무스케줄 등록」 · 「지난 주 복사」를 막고 근무지 칸 아래에 「미운영 점포는 근무스케줄을 등록할 수 없습니다.」(WHALEERP-723, 사용자 결정, `scheduleBlockOf`). api 도 400 `WORK_SCHEDULE_STORE_NOT_OPERATING` 으로 막는다 — 옛 「api 는 아직 막지 않는다」 메모를 지웠다. 주소에 점포가 없으면 운영 점포를 먼저 연다. [Staff](/staff.md) 의 근무지 규칙 문장도 맞췄다. api 타입을 다시 만들었다.
+* **Update**: [급여명세서 관리 화면](/screens/payslips.md) · [출·퇴근 현황 조회 화면](/screens/attendance-records.md) — 본사 근무지를 급여명세서(목록 · 검토 · 작성 팝업 점포 칸 · 점포 선택지), TO-DO(목록 · 상세 · 수정의 근무지), 근태(일별 · 보정 목록 · 대신 등록 선택지)에서도 「[본사] 상호」로(api `storeIsHq` + `storeOptionLabel`, 사용자 결정). api 타입을 다시 만들었다. TO-DO 화면은 concept 이 없어 log 에만 적는다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 본사 근무지를 직원 목록 「점포」 · 상세 「소속 근무지」 · 요약 근무스케줄 「근무지」, 근로계약 목록 「점포」 · 상세 「근무지」에서도 「[본사] 상호」로(api #302 `isHq` · `storeIsHq` + `storeOptionLabel`, WHALEERP-726 · 750). api 타입을 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한이 빠진 메뉴의 화면이 뒤로 가기 기록에 쌓여 있으면 「접근 권한이 없는 메뉴입니다」를 처음 한 번만 띄우고 열 수 있는 화면까지 말없이 뒤로 간다(탭 sessionStorage `denied-back`, WHALEERP-736).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 막힌 주소에서 뒤로 갈 기록이 없으면(탭의 첫 기록 · 앞 기록이 다른 사이트, `navigation.canGoBack`) 홈으로 보낸다(WHALEERP-736 PR #314 리뷰 반영 — 1초 타이머는 느린 뒤로 가기와 겹쳐 뺐다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) · [급여명세서 관리 화면](/screens/payslips.md) — 근로계약서 작성 다듬기(4등분 세로선 · 계산식 꺾은선 · 근무요일 체크 카드 · 시간 길이 상자 · 주 소정근로시간 · 법정 휴게 안내 · 위아래 같은 버튼 · 만 19세 빨간 문구), 소정근로시간 표(근로시간 「h」 · 금액 「원」 · 오른쪽 정렬 · 묶음 세로줄, 작성 · 상세), 공통 DataTable `align` · `divider` · 줄이 있어도 표 틀 채우기, 급여명세서 작성 팝업 열 폭(2026-11-19 사용자 지정).
 
 ## 2026-11-18

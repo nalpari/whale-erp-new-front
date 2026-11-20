@@ -17,7 +17,7 @@ sources:
   - id: api-types-generated
     resource: ../../src/lib/api-types.generated.ts
     title: 생성한 api 타입 — 근무스케줄 칸은 한 주 응답 StaffMemberWeekScheduleResponseDto, TO-DO 칸은 TodoItemDto, 목록 쿼리 storeIds · storeTypes, 재직 이력은 StaffMemberEmploymentPeriodDto · 생년월일 정정(BirthDateCorrectionDto · 상세의 birthDateCorrectable)
-    last_modified: 2026-10-26T03:31:34Z
+    last_modified: 2026-11-19T07:25:46Z
   - id: send-log-box
     resource: ../../src/app/staff-members/[id]/send-log-box.tsx
     title: 상세 발송 이력 칸 — 가입 초대 · 소속 추가 확인 요청 발송 결과 · 실패 사유 · 재시도(WHALEERP-136), 줄 글자는 send-log-view.ts
@@ -176,6 +176,8 @@ sources:
   계약 칸이 회색 꼬리표(Tag) 「재계약」 + 지금과 같은 상태 배지다(WHALEERP-672, 2026-11-13 홍기 확정). 처음 맺는 계약과 퇴직 뒤 다시 들어온 재입사 재계약(isRenewal false)의 서명 대기는 재직 칸 「서명 대기」 그대로,
   연장 재계약의 거절 · 만료(· 임시저장)는 api 가 대표 계약으로 세우지 않아(NOT_IDLE_RENEWAL) 직전 체결 계약이 그대로 보인다(재직 + 서명 완료 등). 「재발송 필요」는 첫 계약 · 재입사 재계약뿐이다. 꼬리표가 들어가게 계약 칸을 200 → 240px 로 넓혔다가 1260 작업에서 꼬리표 + 「직원 서명 대기 · D-28」이 드는 200px 로 줄였다(2026-11-18). 목록 열은 순번 60 · 직원 150 · 휴대전화번호 145 · 점포 140(기준 폭, 왼쪽 정렬) · 고용형태 80 · 가입 상태 200 · 계약 상태 200 · 재직 상태 160 이고, 넓은 창에서는 모든 열이 같은 비율로 늘며 표 최소 폭 1135 를 넘치면 표 상자 안에서만 가로로 민다(열 이름 줄 고정, `DataTable` `scroll` · `minWidth`, 2026-11-18 사용자 지정). 필터는 초기화 조건과 다르면 접기 버튼에 빨간 점(`FilterPanel` `applied`). 예전 홈 「점포 하나」 화면은
   없어졌고(HOM-05) `contractCell` 은 직원 목록만 쓴다. `isRenewal` 은 api 목록 응답 값을 그대로 따른다.
+
+* 본사 점포 표기(WHALEERP-726 · 750, 2026-11-19): 본사 근무지는 직원 목록 「점포」 · 상세 「소속 근무지」 · 요약 근무스케줄 「근무지」와 근로계약 목록 「점포」 · 상세 「근무지」 · 수정 화면 근무지 선택칸에서 본사로 보인다 — 수정 화면 근무지 선택칸은 「[본사] 상호」(`storeOptionLabel`), 목록 · 상세 칸은 이름 앞 [본사] · [직영] · [가맹] 꼬리표(`StoreNameWithType`, 로그인 점포 목록에 없으면 api `store.isHq` · `storeIsHq` 로 [본사])다(2026-11-19 사용자 지정 — 꼬리표에 본사가 있어 「[본사]」 글자를 겹쳐 쓰지 않는다).
 
 # 공통 틀 안에서 그린다
 

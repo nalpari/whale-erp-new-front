@@ -27,6 +27,7 @@ const item = (over: Partial<Item> = {}): Item => ({
   assignmentGroupId: null,
   storeId: 1,
   storeName: "모리커피 서초점",
+  storeIsHq: false,
   title: "신규 원두 시음 기록 제출",
   isUrgent: false,
   todoCount: 1,
@@ -104,6 +105,7 @@ test("상태 — 한 명 수행을 완료해도 상태 하나만(수행자 이�
 const detail = (over: Partial<Detail> = {}): Detail => ({
   assignmentGroupId: null,
   storeName: "모리커피 서초점",
+  storeIsHq: false,
   body: null,
   assigneeType: "INDIVIDUAL",
   executionMode: "EACH",

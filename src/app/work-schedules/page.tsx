@@ -52,7 +52,7 @@ function ScheduleFrame({ base, query, today, actions, children }: { base: string
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
       <main className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
-        {/* 첫 줄은 보기 전환, 둘째 줄은 근무지 · 그 보기의 기간 이동 · 동작 버튼. 폐점 안내는 근무지 칸 바로 아래(2026-11-05 사용자 지정, 3팀 확인 필요 —
+        {/* 첫 줄은 보기 전환, 둘째 줄은 근무지 · 그 보기의 기간 이동 · 동작 버튼. 폐점 · 미운영 안내는 근무지 칸 바로 아래(2026-11-05 사용자 지정, 3팀 확인 필요 —
             전엔 폐점 안내가 [지난 주 복사] · [근무스케줄 등록] 사이) */}
         <nav aria-label="보기" className="flex shrink-0 self-start overflow-hidden rounded-[2px] border border-erp-button-line">
           <Link href={href(moved(query, { view: "week", week: mondayOf(query.day), day: query.day }))} aria-current={query.view === "week" ? "page" : undefined} className={segment(query.view === "week")} scroll={false}>

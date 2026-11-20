@@ -24,7 +24,7 @@ const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => (
   isMasked: false,
   name: "서지안",
   phone: "01028417702",
-  store: { storeId: 1, name: "모리커피 서초점", storeType: "DIRECT" },
+  store: { storeId: 1, name: "모리커피 서초점", storeType: "DIRECT", isHq: false },
   employmentType: "FULL_TIME",
   joinState: "JOINED",
   invitation: null,

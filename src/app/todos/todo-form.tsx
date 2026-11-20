@@ -358,7 +358,7 @@ function TodoFormFields({
     });
   };
 
-  const storeName = detail ? (detail.storeName ?? "-") : "";
+  const storeLabel = detail ? (detail.storeName ? storeOptionLabel({ name: detail.storeName, isHq: detail.storeIsHq }) : "-") : "";
   // 수정 화면 — 배정내역은 바꿀 수 없어 상세 표로 보인다
   const locked = Boolean(detail);
   const candidates = pool?.state === "ok" && pool.storeId === form.storeId ? matchStaff(pool.staff, form.staff, word) : [];
@@ -453,7 +453,7 @@ function TodoFormFields({
             <div className="flex min-w-0 flex-col gap-[8px]">
             <DetailTable
               rows={[
-                { label: "근무지", value: storeName },
+                { label: "근무지", value: storeLabel },
                 {
                   label: "배정대상",
                   value: `${labelOf(labels.assigneeType, detail.assigneeType)}${detail.assigneeType === "ALL" ? ` · ${labelOf(labels.executionMode, detail.executionMode)}` : ""}`,

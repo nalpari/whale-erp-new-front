@@ -59,6 +59,7 @@ type Detail = components["schemas"]["TodoDetailDto"];
 const detail: Detail = {
   assignmentGroupId: null,
   storeName: "모리커피 서초점",
+  storeIsHq: false,
   body: "선반별로 비운다",
   assigneeType: "INDIVIDUAL",
   executionMode: "EACH",

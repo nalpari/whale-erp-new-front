@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { canResetPassword, refreshesAfterReset, resetFailureMessage, resetRecipientText } from "./password-reset.ts";
 
-const direct = { storeId: 1, name: "직영점", storeType: "DIRECT" };
-const franchise = { storeId: 2, name: "가맹점", storeType: "FRANCHISE" };
+const direct = { storeId: 1, name: "직영점", storeType: "DIRECT", isHq: false };
+const franchise = { storeId: 2, name: "가맹점", storeType: "FRANCHISE", isHq: false };
 const joined = { joinState: "JOINED", employmentStatus: "EMPLOYED", retiredDate: null, store: direct, email: "jian.seo@example.com" } as const;
 
 test("버튼 — 가입 완료 · 재직 · 수정 권한이면 보인다", () => {

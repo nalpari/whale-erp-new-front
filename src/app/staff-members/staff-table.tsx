@@ -83,7 +83,7 @@ export function StaffTable({
     // 점포는 남는 폭 — 표 최소 폭(아래 minWidth)이 140px 을 지킨다. 길이가 제각각인 이름이라 왼쪽 정렬(점포 목록 점포명과 같다, 2026-11-18 사용자 지정)
     // 점포도 기준 폭(140)을 둔다 — 넓은 창에서는 모든 열이 같은 비율로 늘어난다 — 이 열만 남는 폭을 가지면 넓은 창에서 혼자 넓어져 표가 휑했다(2026-11-18 사용자 지정)
     // 점포 이름 앞에 본사 · 직영 · 가맹 꼬리표 — 근로계약 목록 · 상세와 같다(2026-11-19 사용자 지정). 꼬리표만큼 기준 폭을 170 으로 늘렸다
-    { header: "점포", width: "w-[170px]", align: "left", cell: (r) => <StoreNameWithType storeId={r.item.store.storeId} name={r.item.store.name} /> },
+    { header: "점포", width: "w-[170px]", align: "left", cell: (r) => <StoreNameWithType storeId={r.item.store.storeId} name={r.item.store.name} isHq={r.item.store.isHq} /> },
     // 가장 긴 값 「파트타이머」 5자(59px)
     { header: "고용형태", width: "w-[80px]", cell: personal((item) => (item.employmentType ? EMPLOYMENT_TYPE_LABELS[item.employmentType] : DASH)) },
     {

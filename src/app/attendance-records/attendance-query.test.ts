@@ -22,6 +22,7 @@ const row = (patch: Partial<DayRow> = {}): DayRow => ({
   phone: "01012345678",
   storeId: 7,
   storeName: "성수점",
+  storeIsHq: false,
   employmentType: "PART_TIME",
   employmentStatus: "EMPLOYED",
   schedules: [],

@@ -172,3 +172,14 @@ export function copyStatus(row: CopyRow): { kind: "copy" | "partial" | "excluded
     return { kind: "partial", label: "일부 제외", detail: row.excluded.map((e) => `${mmdd(e.workDate)} ${excludeReason(e.code, row.retiredDate)}`).join(", ") };
   return { kind: "copy", label: "복사", detail: null };
 }
+
+/**
+ * 근무스케줄을 새로 만들 수 없는 점포 — 폐점(WHALEERP-614) · 미운영(WHALEERP-723, 2026-11-19 사용자 결정, api 400
+ * WORK_SCHEDULE_STORE_CLOSED · _NOT_OPERATING)이면 그 상태 이름, 만들 수 있으면(운영 · 점포 모름) null.
+ * 등록 · 지난 주 복사 버튼을 끄고 근무지 칸 아래에 「{상태} 점포는 근무스케줄을 등록할 수 없습니다.」를 보인다
+ */
+export function scheduleBlockOf(store: { storeStatusCode: string } | undefined): "폐점" | "미운영" | null {
+  if (store?.storeStatusCode === "CLOSED") return "폐점";
+  if (store?.storeStatusCode === "NOT_OPERATING") return "미운영";
+  return null;
+}

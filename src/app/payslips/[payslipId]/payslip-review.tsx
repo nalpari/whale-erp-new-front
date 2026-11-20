@@ -522,7 +522,7 @@ export function PayslipReview({
               label: "근무지",
               value: (
                 <span className="text-[15px] font-semibold text-erp-ink">
-                  <StoreNameWithType storeId={payslip.storeId} name={payslip.storeName} />
+                  <StoreNameWithType storeId={payslip.storeId} name={payslip.storeName} isHq={payslip.storeIsHq} />
                 </span>
               ),
             },

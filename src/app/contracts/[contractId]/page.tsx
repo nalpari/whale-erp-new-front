@@ -241,7 +241,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
           label: "소속 근무지",
           value: c.storeName ? (
             <span className="flex min-w-0 items-center gap-[6px]">
-              <StoreNameWithType storeId={c.storeId} name={c.storeName} />
+              <StoreNameWithType storeId={c.storeId} name={c.storeName} isHq={c.storeIsHq} />
               <span className="min-w-0 truncate text-erp-label">{sameWorkLocation ? "(근무 장소 동일)" : `(근무 장소: ${c.workLocation})`}</span>
             </span>
           ) : (
@@ -339,7 +339,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
                     label: "근무지",
                     value: (
                       <span className="text-[15px] font-semibold text-erp-ink">
-                        {c.storeName ? <StoreNameWithType storeId={c.storeId} name={c.storeName} /> : "-"}
+                        {c.storeName ? <StoreNameWithType storeId={c.storeId} name={c.storeName} isHq={c.storeIsHq} /> : "-"}
                       </span>
                     ),
                   },

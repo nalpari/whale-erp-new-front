@@ -8,6 +8,7 @@ import { Button, ConfirmDialog, DataTable, Field, FormRow, SearchField, Select, 
 import { bpPath } from "@/lib/bp-path";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { monthLabel, type PayslipCandidate } from "@/lib/payslips";
+import { storeOptionLabel } from "@/lib/store-scope";
 import { CellView } from "../staff-members/staff-table";
 import { bulkCreatePayslips, createPayslip, getPayslipCandidatesAction, type DraftFailure } from "./actions";
 import { bulkSummary, canDraft, candidateStores, contractCell, filterCandidates, payslipCell } from "./payslip-draft";
@@ -153,7 +154,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
       ),
     },
     // 점포 이름 앞에 본사 · 직영 · 가맹 꼬리표, 왼쪽 정렬 — 직원 · 근로계약 목록과 같다(2026-11-19 사용자 지정)
-    { header: "점포", width: "w-[180px]", align: "left", cell: (c) => <StoreNameWithType storeId={c.storeId} name={c.storeName} /> },
+    { header: "점포", width: "w-[180px]", align: "left", cell: (c) => <StoreNameWithType storeId={c.storeId} name={c.storeName} isHq={c.storeIsHq} /> },
     { header: "계약 유형", width: "w-[100px]", cell: (c) => labelOf(employmentTypeLabels, c.employmentType) },
     { header: "근로계약", width: "w-[100px]", cell: (c) => <CellView cell={contractCell(c)} /> },
     { header: "명세서", width: "w-[90px]", cell: (c) => <CellView cell={payslipCell(c)} /> },
@@ -192,7 +193,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
                 <option value="">전체 점포</option>
                 {candidateStores(items ?? []).map((s) => (
                   <option key={s.storeId} value={s.storeId}>
-                    {s.name}
+                    {storeOptionLabel(s)}
                   </option>
                 ))}
               </Select>

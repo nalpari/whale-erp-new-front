@@ -62,8 +62,9 @@ const KEY = {
   /** 지금은 쓰지 않는다 — 목록에서 고른 점포는 주소(storeIds)에 둔다(2026-10-21). 로그아웃하거나 앞 로그인의 탭 값을 버릴 때 함께 지우려고 키만 둔다 */
   storePicks: `${PREFIX}store-picks`,
   bpFix: `${PREFIX}bp-fix`,
+  deniedBack: `${PREFIX}denied-back`,
 } as const;
-const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.storesVersion, KEY.codes, KEY.scope, KEY.storePicks, KEY.bpFix];
+const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.storesVersion, KEY.codes, KEY.scope, KEY.storePicks, KEY.bpFix, KEY.deniedBack];
 // 앞 버전의 키 — 읽지는 않지만 로그인 정보(아이디 · 이름 · 이메일 · 메뉴 권한 · 점포)가 들어 있어 로그아웃할 때 함께 지운다(공용 PC).
 const LEGACY_PREFIXES = ["whale-erp:v1:"];
 const LEGACY_KEYS = LEGACY_PREFIXES.flatMap((p) => Object.values(KEY).map((k) => p + k.slice(PREFIX.length)));
@@ -166,7 +167,16 @@ export function takeBpFix(pathname: string): boolean {
   return seen;
 }
 export const clearBpFix = () => remove(tab, [KEY.bpFix]);
-/** 이 탭의 값(TAB_KEYS — BP · 점포 · 공통코드 · 범위 · 옛 store-picks · bp-fix)을 모두 지운다. 다음 준비가 주소로 다시 정한다(열 수 없는 BP 에서 플랫폼으로 돌아갈 때). */
+// denied-back: 막힌 주소에서 뒤로 간 시각(SessionGate). 뒤로 가면 페이지를 새로 읽기도 해서 ref 로는 이어지지 않는다(WHALEERP-736).
+// 10초 안에 다시 막힌 주소에 오면 그 뒤로 가기의 도착으로 본다 — 오래된 표시가 나중에 직접 들어온 막힌 주소의 안내를 삼키지 않게.
+// shortcut: 뒤로 가기가 앱 밖에 닿아 표시가 남은 채 10초 안에 막힌 주소를 직접 열면 안내 없이 뒤로 간다. 문제가 되면 표시에 주소를 함께 담는다.
+export const markDeniedBack = () => write(tab, KEY.deniedBack, Date.now());
+export function isDeniedBackRecent(): boolean {
+  const at = read<number>(tab, KEY.deniedBack);
+  return at !== null && Date.now() - at < 10_000;
+}
+export const clearDeniedBack = () => remove(tab, [KEY.deniedBack]);
+/** 이 탭의 값(TAB_KEYS — BP · 점포 · 공통코드 · 범위 · 옛 store-picks · bp-fix · denied-back)을 모두 지운다. 다음 준비가 주소로 다시 정한다(열 수 없는 BP 에서 플랫폼으로 돌아갈 때). */
 export const clearTabBp = () => remove(tab, TAB_KEYS);
 
 /** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). 앞 버전 키도 지운다. */
