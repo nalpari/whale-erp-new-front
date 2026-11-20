@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-20
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 직원 상세 근로계약 칸: 신고 정보를 풀지 못하면(api `payrollAccountUnavailable`) 칸 전체 「근로계약을 불러오지 못했습니다」 대신 「급여 계좌」 줄만 회색 「신고 정보를 지금 볼 수 없습니다.」(WHALEERP-758, 근로계약 상세와 같은 글자). api 타입을 다시 만들었다.
+
 ## 2026-11-19
 * **Update**: [급여명세서 관리 화면](/screens/payslips.md) · [직원 정보 관리 화면](/screens/staff-members.md) · [Whale ERP Frontend](/whale-erp-front.md) — 상세 화면 틀 통일(DESIGN.md 「상세 화면 틀」): 제목 아래 요약 띠(`SummaryStrip`) · 오른쪽 둥근 확인 상자(`RoundBox`) · 점선 알약 링크 · 버튼 · 점포 유형 꼬리표(`StoreTypeTag`). 급여명세서는 지급 · 공제 묶음 이름 · 합계 · 도구 줄, 합계 띠, 공제 보이는 순서(4대보험 → 세금), 공제 항목 추가 체크 목록(닫기 전까지 이어 붙임), 처리내역 한 줄(두 줄 · 더보기 · 처리자 | 일시), 가산수당 스위치 도움말 · 토스트, 3.3% 스위치를 공제 상자로. 직원 상세는 직원 정보 · 재직 정보 표, [생년월일 수정] · [비밀번호 초기화] 제목 줄, 주 이동을 근무스케줄 · 출퇴근 위로, TO-DO 처리 이력 붙임, 초대 줄 세로선 값. 근로계약 상세도 같은 틀(요약 띠 · 발송 · 서명 정보 · 계약서 파일 · 상태 변경이력)(2026-11-19 사용자 지정). api 요청은 WHALEERP-755~758.
 * **Update**: [직원 운영 관리](/staff.md) · [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 근무 시간 겹침 안내에 겹친 요일 · 시간이 나온다(api 문장 그대로, WHALEERP-744 사용자 결정 — CTR-26 대체). 화면 코드는 주석만 고쳤고 api 타입을 다시 만들었다.
