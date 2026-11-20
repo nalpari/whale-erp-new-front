@@ -38,14 +38,20 @@ test("본문 — 이름은 앞뒤 공백을 지우고 번호는 숫자만, 대�
   assert.deepEqual(workerBody(filled, [5]).replaceContractIds, [5]);
 });
 
-test("저장 뒤 상태 안내 — 서명 기한 30일 · 가입 초대 대상이면 곧바로 다시 보냄", () => {
-  // 가입 초대 대상이면 알림톡, 가입한 직원은 앱 알림(api #259), 계정만 있는 번호는 보내지 않는다(front #58 리뷰)
-  for (const s of ["PENDING_SEND", "PENDING_SIGNATURE", "CORRECTION_REQUESTED"]) {
-    assert.match(workerSaveNote(s).join(" "), /서명 기한이 오늘부터 30일로/, s);
-    assert.match(workerSaveNote(s).join(" "), /가입 초대를 다시 보내며/, s);
-  }
-  assert.match(workerSaveNote("CORRECTION_REQUESTED").join(" "), /다시 서명을 요청합니다/);
-  assert.match(workerSaveNote("PENDING_SEND").join(" "), /이미 가입한 직원이 있으면 가입 초대 없이/);
+test("저장 뒤 안내 — 가입 여부로 고르고, 실제로 보내는 것 · 서명 기한만 말한다(WHALEERP-746)", () => {
+  // 가입 전(서명 요청 전, 옛 서명 대기 포함): 계정이 없는 번호는 가입 초대, 있는 번호는 소속 추가 확인 요청(api 가 번호로 다시 판별)
+  const invite = workerSaveNote(false).join(" ");
+  assert.match(invite, /이전에 보낸 초대는 더 이상 사용할 수 없습니다/);
+  assert.match(invite, /가입 초대를, 이미 앱 계정이 있는 번호면 소속 추가 확인 요청을 다시 보냅니다/);
+  // 소속 추가 확인 요청은 서명 기한을 수락한 날부터 센다(api prepare 가 기한을 비운다) — 「오늘부터 30일」로 묶지 않는다
+  assert.match(invite, /가입 초대면 오늘부터, 소속 추가 확인 요청이면 직원이 수락한 날부터 30일/);
+  assert.doesNotMatch(invite, /바로 서명|오늘부터 30일로 다시 설정/);
+  // 가입한 직원: 앱으로 다시 서명 요청 — 가입 초대 이야기는 없다
+  const joined = workerSaveNote(true).join(" ");
+  assert.match(joined, /앱으로 다시 서명을 요청하고, 서명 기한은 오늘부터 30일로/);
+  assert.doesNotMatch(joined, /가입 초대|소속 추가/);
+  // 문장마다 「~니다.」로 끝난다(~다 체가 섞이지 않게)
+  for (const j of [false, true]) for (const line of workerSaveNote(j)) assert.match(line, /니다\.$/, line);
 });
 
 test("오류는 칸마다 — 화면이 그 칸 아래에 보인다(WHALEERP-631)", () => {
