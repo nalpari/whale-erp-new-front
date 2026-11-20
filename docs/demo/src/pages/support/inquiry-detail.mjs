@@ -147,7 +147,7 @@ export const render = ({ A, R }, state = "wait") => {
     title: "문의사항 상세",
     html: ui.erpFrame({
       header: platformHeader(A, R),
-      title: "문의사항",
+      title: "문의사항 관리(회원용)",
       body: ui.detailBody(head + p.cols(left, right)),
     }),
   };

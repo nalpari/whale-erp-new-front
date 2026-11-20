@@ -6,7 +6,7 @@ import { Badge, DetailValues, type Column, type DetailRow, type HeaderMenu, type
 // 화면이 생긴 메뉴만 실제 주소로 잇는다. 나머지는 아직 시안이라 "#".
 const ROUTES: Record<string, string> = {
   "점포 정보 관리": "/stores",
-  "직원 정보 관리": "/staff-members",
+  "직원정보 관리": "/staff-members",
   "근로계약 관리": "/contracts",
 };
 
@@ -18,7 +18,7 @@ const menu = (label: string, items: string[]): HeaderMenu => ({
 export const MENUS: HeaderMenu[] = [
   menu("기초정보관리", ["상품 정보 관리", "가격 정보 관리", "카테고리 정보 관리", "자재 정보 관리"]),
   menu("점포관리", ["점포 정보 관리", "계약서 템플릿 관리", "계약서 관리", "시설물 및 장비 관리", "점검표 템플릿 관리", "점검 결과 관리"]),
-  menu("직원관리", ["직원 정보 관리", "근로계약 관리", "급여명세서 관리", "근무 스케줄 관리", "출·퇴근 현황 조회", "TO-DO List 관리"]),
+  menu("직원관리", ["직원정보 관리", "근로계약 관리", "급여명세서 관리", "근무 스케줄 관리", "출·퇴근 현황 조회", "TO-DO List 관리"]),
   menu("매출조회", ["매출 조회", "매출 통계", "매출 분석"]),
   menu("재무관리", ["입·출금 관리", "매출/매입 거래 등록", "계정별 현황 조회"]),
   menu("환경설정", ["관리자 관리", "권한 관리", "공통코드 관리", "휴일 관리"]),

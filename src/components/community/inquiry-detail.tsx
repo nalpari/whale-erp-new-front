@@ -230,8 +230,9 @@ function Errors({ errors }: { errors: string[] }) {
 }
 
 /** 본문 첫 줄 「○○ 상세」 + 상태 + 오른쪽 끝 버튼, 아래 7:5 두 단(데모 detailHead · cols). */
+/** 위 제목 줄(PageBar)은 메뉴명 title, 본문 첫 줄은 「{name ?? title} 상세」 — 메뉴명이 「도입문의 관리(비회원용)」라도 본문은 「도입문의 상세」(WHALEERP-706). */
 /** head 를 넘기면 「○○ 상세 [상태]」 대신 그 머리 줄(점포 정보 관리 상세의 점포명 줄 모양)을 보인다 — 문의사항. */
-function Frame({ title, head, status, buttons, errors, left, right, children }: { title: string; head?: ReactNode; status: ReactNode; buttons: ReactNode; errors: string[]; left: ReactNode; right: ReactNode; children?: ReactNode }) {
+function Frame({ title, name, head, status, buttons, errors, left, right, children }: { title: string; name?: string; head?: ReactNode; status: ReactNode; buttons: ReactNode; errors: string[]; left: ReactNode; right: ReactNode; children?: ReactNode }) {
   return (
     <>
       <PageBar title={title} />
@@ -242,7 +243,7 @@ function Frame({ title, head, status, buttons, errors, left, right, children }: 
               <div className="min-w-0 flex-1">{head}</div>
             ) : (
               <h2 className="flex flex-1 items-center gap-[8px] text-[18px] font-semibold text-erp-ink">
-                {title} 상세 {status}
+                {name ?? title} 상세 {status}
               </h2>
             )}
             {buttons}
@@ -619,7 +620,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
 
   return (
     <Frame
-      title="문의사항"
+      title="문의사항 관리(회원용)"
       head={
         // 점포 정보 관리 상세의 점포명 줄과 같은 모양 — 제목 20px(자르지 않음), 아래 줄 「접수일시 … | 분류 [꼬리표] | [상태]」(2026-11-05 사용자 지정)
         <div className="flex flex-col gap-[6px] py-[6px]">
@@ -818,7 +819,8 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
 
   return (
     <Frame
-      title="도입문의"
+      title="도입문의 관리(비회원용)"
+      name="도입문의"
       status={<StatusBadge status={d.status} statuses={statuses} />}
       errors={c.errors}
       left={left}

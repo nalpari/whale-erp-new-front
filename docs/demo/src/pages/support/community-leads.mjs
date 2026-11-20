@@ -5,5 +5,5 @@ import { platformHeader } from "../../site.mjs";
 
 export default ({ A, R }) => {
   const { filter, content } = communitySections({ A, R }).leads;
-  return { title: "도입문의", html: ui.erpFrame({ header: platformHeader(A, R), title: "도입문의", body: ui.listBody(filter, content) }) };
+  return { title: "도입문의 관리(비회원용)", html: ui.erpFrame({ header: platformHeader(A, R), title: "도입문의 관리(비회원용)", body: ui.listBody(filter, content) }) };
 };

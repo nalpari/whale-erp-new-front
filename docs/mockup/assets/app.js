@@ -220,7 +220,7 @@
 
         { key: "staff", text: "직원관리", team: "3팀", items: [
           { text: "영역 개요", href: "staff/overview.html", mock: 1 },
-          { key: "staff-info", text: "직원 정보 관리", href: "staff/index.html", sub: [
+          { key: "staff-info", text: "직원정보 관리", href: "staff/index.html", sub: [
             { text: "직원 목록", href: "staff/index.html", route: "/staff" },
             { text: "직원 상세", href: "staff/detail.html", route: "/staff/[staffId]" },
             { text: "가입 연결 확인", href: "staff/invites-holds.html", route: "/staff/invites/holds" }
@@ -327,11 +327,11 @@
             { text: "공지·FAQ 편집", href: "support/notice-edit.html", route: "…/notices/[id]" }
           ]},
           { text: "FAQ", href: "support/community.html#faq" },
-          { key: "cm-asks", text: "문의사항", href: "support/community.html#asks", sub: [
+          { key: "cm-asks", text: "문의사항 관리(회원용)", href: "support/community.html#asks", sub: [
             { text: "문의 목록", href: "support/community.html#asks", route: "…/inquiries" },
             { text: "문의 상세·답변", href: "support/inquiry-detail.html", route: "…/inquiries/[id]" }
           ]},
-          { key: "cm-leads", text: "도입문의", href: "support/community.html#leads", sub: [
+          { key: "cm-leads", text: "도입문의 관리(비회원용)", href: "support/community.html#leads", sub: [
             { text: "도입문의 목록", href: "support/community.html#leads", route: "…/leads" },
             { text: "도입문의 상세", href: "support/lead-detail.html", route: "…/leads/[id]" }
           ]}

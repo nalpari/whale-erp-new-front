@@ -58,7 +58,7 @@ export default ({ A, R }) => {
       `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div></div>`,
   );
   return {
-    title: "운영 알림함",
-    html: ui.erpFrame({ header: erpHeader(A, R), title: "운영 알림함", body }),
+    title: "알림함",
+    html: ui.erpFrame({ header: erpHeader(A, R), title: "알림함", body }),
   };
 };

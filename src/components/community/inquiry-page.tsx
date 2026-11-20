@@ -34,12 +34,12 @@ export function Forbidden({ title, what, href }: { title: string; what: string; 
 
 export async function InquiryPage({ rawId }: { rawId: string }) {
   const loaded = await Promise.all([getInquiry(idOf(rawId)), getEnum("InquiryStatus")]).catch(denied);
-  if (typeof loaded === "number") return <Forbidden title="문의사항" what="문의사항을" href={INQUIRY_BASE} status={loaded} />;
+  if (typeof loaded === "number") return <Forbidden title="문의사항 관리(회원용)" what="문의사항을" href={INQUIRY_BASE} status={loaded} />;
   return <InquiryDetailView detail={loaded[0]} statuses={loaded[1]} />;
 }
 
 export async function LeadPage({ rawId }: { rawId: string }) {
   const loaded = await Promise.all([getLead(idOf(rawId)), getEnum("InquiryStatus"), getEnum("LeadInterest"), getEnum("ReplyMailResult")]).catch(denied);
-  if (typeof loaded === "number") return <Forbidden title="도입문의" what="도입문의를" href={LEAD_BASE} status={loaded} />;
+  if (typeof loaded === "number") return <Forbidden title="도입문의 관리(비회원용)" what="도입문의를" href={LEAD_BASE} status={loaded} />;
   return <LeadDetailView detail={loaded[0]} statuses={loaded[1]} interests={loaded[2]} mailResults={loaded[3]} />;
 }
