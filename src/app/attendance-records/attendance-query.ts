@@ -362,7 +362,7 @@ export function fixSaveNote(date: string, hasCheckIn: boolean, checkIn: string, 
   if (!hhmm.test(checkIn) || !hhmm.test(checkOut)) return null;
   const md = (day: string) => `${Number(day.slice(5, 7))}/${Number(day.slice(8, 10))}`;
   // 출근 없는 퇴근: 퇴근은 그날 그대로, 출근이 퇴근보다 늦거나 같으면 전날 밤 출근이다(api correct)
-  if (!hasCheckIn) return checkOut <= checkIn ? `전날(${md(addDays(date, -1))}) ${checkIn} 출근으로 저장합니다.` : null;
+  if (!hasCheckIn) return checkOut <= checkIn ? `전날(${md(addDays(date, -1))}) ${checkIn} 출근으로 저장됩니다.` : null;
   return nextDay || forcedNextDay(checkIn, checkOut) ? `다음 날(${md(addDays(date, 1))}) ${checkOut} 퇴근으로 저장됩니다.` : null;
 }
 

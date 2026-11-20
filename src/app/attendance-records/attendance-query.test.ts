@@ -183,7 +183,7 @@ test("보정 퇴근 날 — 처음 값은 원래 퇴근이 다음 날인가, 퇴
   assert.equal(fixSaveNote("2026-10-23", true, "09:00", "18:00", false), null);
   assert.equal(fixSaveNote("2026-10-23", true, "22:00", "06:00", false), "다음 날(10/24) 06:00 퇴근으로 저장됩니다.");
   // 출근 없는 퇴근에 밤 출근을 채우면 출근이 전날이다
-  assert.equal(fixSaveNote("2026-10-24", false, "22:00", "06:00", false), "전날(10/23) 22:00 출근으로 저장합니다.");
+  assert.equal(fixSaveNote("2026-10-24", false, "22:00", "06:00", false), "전날(10/23) 22:00 출근으로 저장됩니다.");
   assert.equal(fixSaveNote("2026-10-24", false, "05:00", "06:00", false), null);
 });
 

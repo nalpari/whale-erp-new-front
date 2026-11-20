@@ -51,7 +51,6 @@ const wasEdited = (r: FixRow) => punchesOf(r).some((p) => p && (p.isCorrected ||
 /** 짝 하나를 가리키는 기록 ID — 출근, 없으면 퇴근 */
 const anchorOf = (pair: FixRow["pairs"][number]) => (pair.checkIn ?? pair.checkOut)!.attendanceRecordId;
 
-/** 「이상 없음」 확인창 앞머리 — 그 줄의 확인 필요 사유 이름을 「'근무 12시간 초과' 」처럼(여럿이면 쉼표). 없으면 빈 글자 */
 /**
  * 기록 보정 패널 · 보정 이력 창 제목 아래 대상 — 둥근 머리 정보 상자(8px · #c9d1de, 상세 화면 요약 띠와 같은 테두리) 안에 근무지 · 직원 · 날짜를 한 줄씩,
  * 줄 사이 선 없이 이름(13px 회색 · 56px) · 값(14px 먹색 500). 근무지는 점포 유형 꼬리표를 붙인다(2026-11-20 사용자 지정 — 전엔 제목 옆 회색 띠지
@@ -80,6 +79,7 @@ function fullDay(day: string): string {
   return `${day}(${"일월화수목금토"[new Date(`${day}T00:00:00Z`).getUTCDay()]})`;
 }
 
+/** 「이상 없음」 확인창 앞머리 — 그 줄의 확인 필요 사유 이름을 「'근무 12시간 초과' 」처럼(여럿이면 쉼표). 없으면 빈 글자 */
 function reasonText(r: FixRow, reasonLabels: EnumValue[]): string {
   const names = [...new Set(punchesOf(r).flatMap((p) => (p?.reviewReason ? [labelOf(reasonLabels, p.reviewReason)] : [])))];
   return names.length ? `${names.map((n) => `'${n}'`).join(", ")} ` : "";
@@ -204,12 +204,12 @@ export function FixList({
     { header: "사유", align: "left", cell: (r) => <span className="flex flex-wrap items-center gap-[4px]">{tagsOf(r, reasonLabels, statusLabels)}</span> },
     {
       header: "",
-      width: "w-[230px]",
+      width: "w-[260px]",
       cell: (r) => {
         const editable = r.date >= editableFrom && permission.update && r.pairs.length > 0;
         return (
-          // 줄 안 동작은 26px 작은 버튼(RowButton) · 칸 오른쪽 끝 — 34px 회색 버튼 셋은 칸(230px)을 넘쳐 [이력]이 잘렸고 줄 안에서 무거웠다. 주 동작
-          // [보정]만 회청 바탕, [이상 없음] · [이력]은 테두리. 오른쪽 끝에 맞춰 줄마다 버튼 수가 달라도 끝선이 같다(2026-11-20 사용자 지정)
+          // 줄 안 동작은 26px 작은 버튼(RowButton) · 칸 오른쪽 끝 — 34px 회색 버튼 셋은 칸을 넘쳐 [이력]이 잘렸고 줄 안에서 무거웠다. 주 동작
+          // [보정]만 회청 바탕, [이상 없음 처리] · [보정 이력]은 테두리. 셋이 다 서는 줄(약 236px)이 칸 안(260 − 여백 20)에 들어간다. 오른쪽 끝에 맞춰 줄마다 버튼 수가 달라도 끝선이 같다(2026-11-20 사용자 지정)
           <span className="flex justify-end gap-[6px] pr-[8px]">
             {editable && (
               <RowButton variant="primary" onClick={() => openFix(r)}>
