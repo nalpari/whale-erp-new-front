@@ -7,7 +7,6 @@ import { erpHeader, link } from "../../site.mjs";
 export default ({ A, R }) => {
   const L = (path) => link(R, path);
   const manage = (page) => ui.link("관리", L(`staff/${page}.html`));
-  const resetId = x.dialogId();
   const retireId = x.dialogId();
   const { headIn, box } = p;
   // 머리 칸 아래 열 이름 줄은 흰 바탕에 굵고 진한 글자(2026-10-02 재영)
@@ -17,19 +16,34 @@ export default ({ A, R }) => {
   const foot = (label, value) =>
     `<div class="flex h-[46px] items-center justify-end gap-[12px] border-x border-b border-erp-thead-line bg-erp-thead-bg px-[12px] text-[14px]"><span class="text-erp-thead-text">${label}</span><b class="font-semibold text-erp-ink">${value}</b></div>`;
 
-  const basic = ui.detailTable("기본 정보", [
-    ["이름", "서지안"],
+  // 요약 띠 — 성명(+ 재직) · 고용형태 · 직무 · 근무지(유형 꼬리표) · 입사일 · 가입 상태(앱 staff-members/[id]/page.tsx, 2026-11-19 사용자 지정)
+  const summary = p.summaryStrip([
+    ["성명", `<span class="truncate">서지안</span>${p.mark("ok", "재직")}`],
+    ["고용형태", "정직원"],
     ["직무", "바리스타"],
-    ["고용 형태", "정직원"],
-    ["소속 근무지", "모리커피 서초점"],
+    ["근무지", p.storeName("직영", "모리커피 서초점")],
     ["입사일", "2026-03-01"],
-    ["재직 상태", "재직"],
-    ["생년월일", "1998-07-12"],
-    ["휴대전화번호", "010-2841-7702"],
-    ["본인인증", "완료"],
-    ["이메일", "jian.seo@example.com"],
+    ["가입 상태", p.tag("ok", "가입 완료")],
   ]);
-  const reset = p.bar("", x.dialogTrigger("비밀번호 초기화", resetId, "soft"));
+  // 인적 사항 · 직원 앱 계정을 한 표 「직원 정보」로 — 제목 줄 오른쪽에 점선 알약 [생년월일 수정] · [비밀번호 초기화](앱 RoundButton).
+  // 초대는 「종류 ┃ 결과 ┃ YYYY-MM-DD 발송」(앱 invitationParts, 2026-11-19 사용자 지정)
+  const birthBody = `<div class="flex flex-col gap-[12px]">${ui.dateField(A, { label: "생년월일", value: "1998-07-12" })}</div>`;
+  const basic = ui.detailTable(
+    "직원 정보",
+    [
+      ["생년월일", "1998-07-12"],
+      ["휴대전화번호", "010-2841-7702"],
+      ["이메일", "jian.seo@example.com"],
+      ["초대", ui.detailValues(["가입 초대", "수락", "2026-02-24 발송"])],
+    ],
+    `<span class="flex items-center gap-[6px]">${p.roundAsk("생년월일 수정", "생년월일 수정", birthBody, "저장")}${p.roundAsk(
+      "비밀번호 초기화",
+      "비밀번호를 초기화하시겠습니까?",
+      // 계정 비밀번호는 여러 BP 가 함께 쓴다. 가입 전·퇴직·탈퇴 직원에게는 초기화 버튼을 숨긴다(2026-10-08 재영).
+      "재설정 링크가 이메일 아이디 jian.seo@example.com 으로 발송됩니다. 링크는 24시간 동안 한 번만 쓸 수 있습니다. 계정 비밀번호는 여러 BP가 함께 쓰므로 다른 BP 로그인에도 적용됩니다. 같은 계정에 1분 안에 다시 요청하면 「잠시 뒤 다시 시도해 주세요」로 막습니다.",
+      "초기화",
+    )}</span>`,
+  );
   const contract =
     ui.detailTable(headIn("근로계약", manage("contracts")), [
       ["계약 유형", "정직원 근로계약"],
@@ -52,35 +66,26 @@ export default ({ A, R }) => {
     const m = mins(e) - mins(s);
     return m - (m >= 480 ? 60 : m >= 240 ? 30 : 0);
   };
-  const weekTable = (week, rows) =>
-    `<div data-week="${week}" hidden>${whiteHead(ui.dataTable(
+  const schedTable = (rows) =>
+    whiteHead(ui.dataTable(
       [{ header: "날짜" }, { header: "근무지" }, { header: "시작" }, { header: "종료" }],
       rows.map(([d, s, e]) => [d, "서초점", s, e]),
-      "이 주에 잡힌 근무스케줄이 없습니다.",
-    ))}${foot("주간 근무시간 합계", `${(rows.reduce((n, [, s, e]) => n + worked(s, e), 0) / 60).toFixed(1)}h`)}</div>`;
-  const schedule = box(
-    "근무스케줄",
-    p.weekNav(A, "sched-weeks") + manage("work-schedules"),
-    `<div id="sched-weeks">${weeks.map(([w, rows]) => weekTable(w, rows)).join("")}${weekTable("", [])}</div>`,
-  );
-  // 출퇴근 현황도 주 단위로 넘겨 본다(2026-10-02 재영). 데이터 없는 주는 빈 표.
-  const attendWeeks = [
-    ["2026-08-24", [["08-25", "08:55", "17:03", p.mark("ok", "정상"), "-"], ["08-26", "08:58", "17:01", p.mark("ok", "정상"), "-"], ["08-28", "12:52", "21:34", p.mark("ok", "정상"), "-"], ["08-29", "13:05", "21:31", p.mark("warn", "지각"), "5분"]], "출근 4 · 지각 1 · 결근 0"],
-    ["2026-08-31", [["09-01", "08:52", "17:04", p.mark("ok", "정상"), "-"], ["09-02", "09:14", "17:02", p.mark("warn", "지각"), "14분"], ["09-04", "12:55", "21:36", p.mark("ok", "정상"), "-"], ["09-05", "12:58", "-", p.mark("warn", "퇴근 미등록"), "관리자 보정 필요"]], "출근 4 · 지각 1 · 결근 0"],
-    ["", [], "출근 0 · 지각 0 · 결근 0"],
-  ];
-  const attendance = box(
-    "출퇴근 현황",
-    p.weekNav(A, "attend-weeks") + manage("attendance"),
-    `<div id="attend-weeks">${attendWeeks
-      .map(
-        ([week, rows, sum]) =>
-          `<div data-week="${week}" hidden>${whiteHead(
-            ui.dataTable([{ header: "날짜" }, { header: "출근" }, { header: "퇴근" }, { header: "상태" }, { header: "비고" }], rows, "이 주의 출퇴근 기록이 없습니다."),
-          )}${foot("주간 출퇴근", sum)}</div>`,
-      )
-      .join("")}</div>`,
-  );
+      "등록된 근무스케줄이 없습니다.",
+    )) + foot("주간 근무시간 합계", `${(rows.reduce((n, [, s, e]) => n + worked(s, e), 0) / 60).toFixed(1)}h`);
+  // 출퇴근 현황도 같은 주를 본다(2026-10-02 재영). 데이터 없는 주는 빈 표.
+  const attendWeeks = {
+    "2026-08-24": [["08-25", "08:55", "17:03", p.mark("ok", "정상"), "-"], ["08-26", "08:58", "17:01", p.mark("ok", "정상"), "-"], ["08-28", "12:52", "21:34", p.mark("ok", "정상"), "-"], ["08-29", "13:05", "21:31", p.mark("warn", "지각"), "5분"]],
+    "2026-08-31": [["09-01", "08:52", "17:04", p.mark("ok", "정상"), "-"], ["09-02", "09:14", "17:02", p.mark("warn", "지각"), "14분"], ["09-04", "12:55", "21:36", p.mark("ok", "정상"), "-"], ["09-05", "12:58", "-", p.mark("warn", "퇴근 미등록"), "관리자 보정 필요"]],
+  };
+  const attendTable = (rows) =>
+    whiteHead(ui.dataTable([{ header: "날짜" }, { header: "출근" }, { header: "퇴근" }, { header: "상태" }, { header: "비고" }], rows, "등록된 출퇴근 기록이 없습니다."));
+  // 근무스케줄 · 출퇴근 현황은 같은 주를 본다 — 주 이동을 두 상자 위 한 줄로 올리고 두 상자를 12px 로 붙인다(앱 page.tsx, 2026-11-19 사용자 지정).
+  // 주마다 두 상자를 한 묶음([data-week])으로 바꿔 보인다
+  const weekPair = (week, sched, attend) =>
+    `<div data-week="${week}" hidden class="flex flex-col gap-[12px]">${box("근무스케줄", manage("work-schedules"), schedTable(sched))}${box("출퇴근 현황", manage("attendance"), attendTable(attend))}</div>`;
+  const scheduleAndAttendance = `<div class="flex flex-col gap-[12px]"><div class="flex items-center gap-[8px]"><span class="flex-1 text-[14px] font-medium text-erp-label">근무스케줄 · 출퇴근 현황 기간</span>${p.weekNav(A, "staff-weeks")}</div><div id="staff-weeks">${weeks
+    .map(([w, rows]) => weekPair(w, rows, attendWeeks[w] ?? []))
+    .join("")}${weekPair("", [], [])}</div></div>`;
   const payslips = box(
     "급여명세서",
     manage("payslips"),
@@ -93,6 +98,17 @@ export default ({ A, R }) => {
       ],
     )) + foot("미발송", "1건"),
   );
+  // TO-DO 처리 이력 — TO-DO 상자 요약 줄 아래에 붙인다(앱 summary-boxes.tsx TodoSummaryFoot). 바꾼 사람 이름은 오지 않아 바꾼 쪽만 보인다
+  const todoHistory = `<section aria-label="TO-DO 처리 이력"><h4 class="flex h-[38px] items-center border-x border-b border-erp-thead-line bg-white px-[12px] text-[13px] font-medium text-erp-label">TO-DO 처리 이력</h4><ul class="rounded-b-[2px] border-x border-b border-erp-thead-line bg-white text-[14px]">${[
+    ["08-28 15:02", "신메뉴 시식 교육 참석", "진행 중 → 완료", "직원"],
+    ["08-27 18:40", "본사 위생점검 대비 냉장고 정리", "긴급 표시 변경", "관리자"],
+    ["08-25 11:20", "여름 프로모션 POP 교체", "대기 → 완료", "직원"],
+  ]
+    .map(
+      ([when, title, what, who]) =>
+        `<li class="flex h-[46px] items-center gap-[10px] border-b border-erp-thead-line px-[12px] last:border-b-0"><span class="w-[100px] shrink-0 text-erp-label">${when}</span><span class="min-w-0 flex-1 truncate text-erp-ink">${title}</span><span class="w-[140px] shrink-0 text-center text-erp-ink">${what}</span><span class="w-[60px] shrink-0 text-center text-erp-label">${who}</span></li>`,
+    )
+    .join("")}</ul></section>`;
   // TO-DO 는 열 이름 줄(TO-DO · 배정 · 상태)을 빼고 머리 칸 바로 아래에 줄을 둔다(2026-10-02 재영).
   const noHead = (table) => table.replace(/<thead>.*?<\/thead>/, "").replace('<table class="', '<table class="border-t ');
   const todo = box(
@@ -106,15 +122,7 @@ export default ({ A, R }) => {
         [`본사 위생점검 대비 냉장고 정리 ${p.tag("risk", "긴급")}`, "근무지 전체 · 각자 수행 · 09-03", p.mark("subtle", "대기")],
         ["신규 원두 시음 기록 제출", "개인 배정 · 09-05", p.mark("subtle", "대기")],
       ],
-    )) + foot("전체 6", "완료 4 · 미완료 2"),
-  );
-
-  const resetDialog = x.dialog(
-    resetId,
-    "비밀번호를 초기화하시겠습니까?",
-    // 계정 비밀번호는 여러 BP 가 함께 쓴다. 가입 전·퇴직·탈퇴 직원에게는 초기화 버튼을 숨긴다(2026-10-08 재영).
-    "재설정 링크가 이메일 아이디 jian.seo@example.com 으로 발송됩니다. 링크는 24시간 동안 한 번만 쓸 수 있습니다. 계정 비밀번호는 여러 BP가 함께 쓰므로 다른 BP 로그인에도 적용됩니다. 같은 계정에 1분 안에 다시 요청하면 「잠시 뒤 다시 시도해 주세요」로 막습니다.",
-    ui.button("취소", { variant: "off", "data-close": true }) + ui.button("초기화", { "data-close": true }),
+    )) + foot("전체 6", "완료 4 · 미완료 2") + todoHistory,
   );
 
   // 퇴직 처리(운영 정책 CTR-24·CTR-25). 퇴직일은 오늘 이후이거나 최근 3개월 안의 지난 날짜(STAFF-24).
@@ -129,7 +137,7 @@ export default ({ A, R }) => {
   );
 
   const body = ui.detailBody(
-    `<div class="flex flex-col gap-[12px]">${p.detailHead("직원 상세", x.dialogTrigger("퇴직 처리", retireId, "danger") + ui.button("목록", { href: L("staff/index.html") }))}${p.cols(basic + reset + contract, schedule + attendance + payslips + todo, "grid-cols-[5fr_7fr]")}</div>` + resetDialog + retireDialog,
+    `<div class="flex flex-col gap-[12px]">${p.detailHead("직원 상세", x.dialogTrigger("퇴직 처리", retireId, "danger") + ui.button("목록", { href: L("staff/index.html") }))}${summary}${p.cols(basic + contract, scheduleAndAttendance + payslips + todo, "grid-cols-[5fr_7fr]")}</div>` + retireDialog,
   );
   return { title: "직원 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "직원 정보 관리", body }) };
 };

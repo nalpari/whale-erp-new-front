@@ -226,3 +226,58 @@ export const total = (label, value) =>
 // 시간 입력칸(네이티브 time)
 export const timeField = (value, label) => ui.textField({ type: "time", value, "aria-label": label });
 
+
+// ── 상세 화면 틀(2026-11-19 사용자 지정) — 근로계약 · 급여명세서 · 직원 상세가 같이 쓴다. 앱 src/components/common/round-box.tsx · site/store-type-tag.tsx 와 같은 모양.
+// 제목 줄(제목 + 버튼) → 요약 띠 → 두 단(왼쪽 회색 제목 줄 상자 · 오른쪽 둥근 확인 상자).
+
+// 요약 띠(SummaryStrip): 둥근 8px · #c9d1de 상자를 칸으로 나눠 이름(13px 회색) 위 · 값(15px 600) 아래. cells: [label, valueHtml][]
+export const summaryStrip = (cells) =>
+  `<div class="flex flex-wrap items-stretch rounded-[8px] border border-[#c9d1de] bg-white px-[8px] py-[12px]">${cells
+    .map(
+      ([label, value], i) =>
+        `<div class="flex min-w-0 flex-col gap-[4px] px-[16px] ${i ? "border-l border-erp-divider" : ""}"><span class="text-[13px] font-medium text-erp-label">${label}</span><span class="flex min-h-[24px] items-center gap-[8px] text-[15px] font-semibold text-erp-ink">${value}</span></div>`,
+    )
+    .join("")}</div>`;
+
+// 확인 상자(RoundBox): 오른쪽 단의 「사장님이 확인할 것」. 제목 15px 600, 제목 줄 아래 선은 상자 테두리와 같은 #c9d1de, 줄 사이는 옅은 erp-divider.
+export const roundBox = (title, body, action = "") =>
+  `<section class="flex min-w-0 flex-col rounded-[8px] border border-[#c9d1de] bg-white px-[20px] py-[16px]"><div class="flex min-h-[34px] items-center gap-[8px] border-b border-[#c9d1de] pb-[12px]"><h3 class="flex min-w-0 flex-1 items-center gap-[8px] text-[15px] font-semibold text-erp-ink">${title}</h3>${action}</div><div class="[&>dl>div:first-child]:border-t-0 [&>p:first-child]:border-t-0 [&>ul>li:first-child]:border-t-0">${body}</div></section>`;
+// 확인 상자 안 「이름 | 값」 줄들(RoundRows) — 이름 90px 회색 500. rows: [label, value, top?][]
+export const roundRows = (rows) =>
+  `<dl class="flex flex-col">${rows
+    .map(
+      ([label, value, top]) =>
+        `<div class="flex gap-[12px] border-t border-erp-divider py-[12px] text-[14px] last:pb-0 ${top ? "items-start" : "items-center"}"><dt class="w-[90px] shrink-0 font-medium text-erp-label">${label}</dt><dd class="min-w-0 flex-1 text-erp-ink">${value}</dd></div>`,
+    )
+    .join("")}</dl>`;
+export const roundEmpty = (text) => `<p class="border-t border-erp-divider pt-[12px] text-[14px] text-erp-muted">${text}</p>`;
+// 이력 한 줄 — 왼쪽 무엇을 했는지(먹색), 오른쪽 「누가 | 언제」(회색, 11px #d9d9d9 세로선). items: [text, who, when][]
+export const historyLines = (items) =>
+  `<ul class="flex flex-col">${items
+    .map(
+      ([text, who, when]) =>
+        `<li class="flex items-start gap-[12px] border-t border-erp-divider py-[12px] text-[14px] leading-[1.6] last:pb-0"><span class="min-w-0 flex-1 text-erp-ink">${text}</span><span class="flex shrink-0 items-center gap-[8px] text-erp-label"><span class="max-w-[100px] truncate">${who}</span><span aria-hidden="true" class="h-[11px] w-px bg-[#d9d9d9]"></span><span class="tabular-nums">${when}</span></span></li>`,
+    )
+    .join("")}</ul>`;
+
+// 점선 알약(RoundLink · RoundButton): 26px · 13px 500 · 회청 점선, 마우스를 올리면 옅은 바탕, 누르는 동안 색 반전. 이동은 뒤에 꺾쇠.
+const DASHED_PILL =
+  "inline-flex h-[26px] shrink-0 cursor-pointer items-center gap-[2px] rounded-full border border-dashed border-erp-brand px-[10px] text-[13px] font-medium whitespace-nowrap text-erp-brand transition-colors duration-150 hover:bg-erp-thead-bg active:border-solid active:bg-erp-brand active:text-white";
+const PILL_CHEVRON = '<svg aria-hidden="true" viewBox="0 0 12 12" class="size-[12px]"><path d="M4.5 3 7.5 6 4.5 9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+export const roundLink = (text, href) => `<a href="${href}" class="${DASHED_PILL}">${text}${PILL_CHEVRON}</a>`;
+// 누르면 확인창이 뜨는 점선 알약(ask 와 같다 — body 는 설명, ok 는 확인 버튼 글자)
+export const roundAsk = (label, title, body = "", ok = label) => {
+  const id = x.dialogId();
+  return `<button type="button" data-dialog="${id}" class="${DASHED_PILL}">${label}</button>${x.dialog(
+    id,
+    title,
+    body,
+    ui.button("취소", { variant: "off", "data-close": true }) + ui.button(ok, { "data-close": true }),
+  )}`;
+};
+
+// 점포 유형 꼬리표(StoreTypeTag) — 글자 · 선은 같고 바탕만 가른다: 본사 흰색 · 직영 연한 파랑 · 가맹 회색. 점포 이름 앞에 둔다.
+const STORE_TYPE_BG = { 본사: "bg-white", 직영: "bg-erp-on-bg", 가맹: "bg-erp-thead-bg" };
+export const storeTypeTag = (type) =>
+  `<span class="shrink-0 rounded-[2px] border border-erp-thead-line px-[4px] text-[12px] font-medium text-erp-thead-text ${STORE_TYPE_BG[type]}">${type}</span>`;
+export const storeName = (type, name) => `<span class="flex min-w-0 items-center gap-[6px]">${storeTypeTag(type)}<span class="truncate">${name}</span></span>`;
