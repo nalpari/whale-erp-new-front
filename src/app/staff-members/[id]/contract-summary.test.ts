@@ -25,9 +25,9 @@ test("enum 목록이 비면 받지 못한 것과 같다 — 응답에 그 enum �
   assert.equal(labelsOrNull(values), values);
 });
 
-test("계약 기간은 시작일 ~ 종료일, 종료일이 없으면 무기한, 시작일이 없으면 -", () => {
+test("계약 기간은 시작일 ~ 종료일, 종료일이 없으면 기간의 정함 없음, 시작일이 없으면 -", () => {
   assert.equal(contractSummaryTexts(contract("2026-03-01", "2027-02-28"), "정직원").period, "2026-03-01 ~ 2027-02-28");
-  assert.equal(contractSummaryTexts(contract("2026-03-01", null), "정직원").period, "2026-03-01 ~ 무기한");
+  assert.equal(contractSummaryTexts(contract("2026-03-01", null), "정직원").period, "2026-03-01 ~ 기간의 정함 없음");
   // 임시저장은 시작일을 비워 둘 수 있다 — 종료일만 있어도 기간을 반쪽으로 보이지 않는다
   assert.equal(contractSummaryTexts(contract(null, null), "정직원").period, "-");
   assert.equal(contractSummaryTexts(contract(null, "2026-12-31"), "정직원").period, "-");

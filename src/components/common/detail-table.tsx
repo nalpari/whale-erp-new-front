@@ -8,6 +8,8 @@ export type DetailRow = {
   value: ReactNode;
   /** 값이 여러 줄인 줄(주소처럼). 높이를 46 최소로 두고 내용만큼 늘린다 — 이 줄만 고정 높이에서 잘리지 않는다. */
   multiline?: boolean;
+  /** 라벨을 값 칸 첫 줄에 맞춰 위에 둔다(기본은 세로 가운데, 여러 줄 칸이면 값과 같은 줄 높이 1.6) — 값 아래에 표가 붙어 줄이 높은 경우(근로계약 상세 「소정근로시간」, 2026-11-19 사용자 지정) */
+  labelTop?: boolean;
 };
 
 // Figma 03.프레임_상세의 TABLE. 목록(DataTable)과 달리 한 건을 세로로 펼쳐 보여 준다.
@@ -50,13 +52,13 @@ export function DetailTable({
       <div className={aside ? "flex" : "contents"}>
         {aside && <div className="shrink-0 rounded-bl-[2px] border-b border-l border-erp-thead-line bg-white">{aside}</div>}
       <dl className={`flex min-w-0 w-full flex-col ${title === undefined && !attached ? "rounded-t-[2px] border-t border-erp-thead-line" : ""}`}>
-        {rows.map(({ label, help, value, multiline }, i) => {
+        {rows.map(({ label, help, value, multiline, labelTop }, i) => {
           const last = i === rows.length - 1;
           const height = multiline ? "min-h-[46px]" : "h-[46px]";
           return (
             <div key={i} className="flex w-full">
               <dt
-                className={`flex ${height} ${labelWidth} shrink-0 items-center truncate border-b border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
+                className={`flex ${height} ${labelWidth} shrink-0 ${labelTop ? `items-start ${multiline ? "leading-[1.6]" : ""}` : "items-center"} truncate border-b border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
                   aside ? "" : "border-l"
                 } ${last && !aside ? "rounded-bl-[2px]" : ""}`}
               >

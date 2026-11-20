@@ -6,6 +6,39 @@
     <title>근로계약 상세 · WHALE ERP</title>
     <link rel="icon" href="../assets/img/favicon.svg" />
     <link rel="stylesheet" href="../assets/whale.css" />
+    <style>
+      /* 상세 화면 틀(2026-11-19 사용자 지정) — 요약 띠 · 둥근 확인 상자 · 점선 알약 · 점포 유형 꼬리표.
+         개발 화면 src/components/common/round-box.tsx · site/store-type-tag.tsx 와 같은 모양을 이 목업 안에서만 그린다(DESIGN.md 「상세 화면 틀」). */
+      .dstrip { display: flex; flex-wrap: wrap; border: 1px solid #c9d1de; border-radius: 8px; background: #fff; padding: 12px 8px; }
+      .dstrip > div { display: flex; flex-direction: column; gap: 4px; padding: 0 16px; min-width: 0; }
+      .dstrip > div + div { border-left: 1px solid #eeeeee; }
+      .dstrip__k { font-size: 13px; font-weight: 500; color: #888888; }
+      .dstrip__v { display: flex; align-items: center; gap: 8px; min-height: 24px; font-size: 15px; font-weight: 600; color: #3c4046; }
+      .dstrip__warn { font-size: 13px; font-weight: 500; color: #ef6363; }
+      .rbox { display: flex; flex-direction: column; min-width: 0; border: 1px solid #c9d1de; border-radius: 8px; background: #fff; padding: 16px 20px; }
+      .rbox__head { display: flex; align-items: center; gap: 8px; min-height: 34px; padding-bottom: 12px; border-bottom: 1px solid #c9d1de; }
+      .rbox__head h2 { flex: 1; margin: 0; font-size: 15px; font-weight: 600; color: #3c4046; }
+      .rbox__row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #eeeeee; font-size: 14px; }
+      .rbox__head + .rbox__row, .rbox__head + * > .rbox__row:first-child { border-top: 0; }
+      .rbox__row:last-child { padding-bottom: 0; }
+      .rbox__row--top { align-items: flex-start; }
+      .rbox__row--col { flex-direction: column; align-items: stretch; gap: 4px; }
+      .rbox__k { width: 90px; flex-shrink: 0; font-weight: 500; color: #888888; }
+      .rbox__v { flex: 1; min-width: 0; color: #3c4046; }
+      .rbox__line { display: flex; align-items: center; gap: 8px; }
+      .rbox__line > b { flex: 1; font-weight: 600; }
+      .rbox__desc { color: #888888; line-height: 1.6; }
+      .rbox__empty { padding-top: 12px; font-size: 14px; color: #999999; }
+      .rbox__who { display: flex; flex-shrink: 0; align-items: center; gap: 8px; color: #888888; }
+      .vbar { display: inline-block; width: 1px; height: 11px; background: #d9d9d9; }
+      .dpill { display: inline-flex; flex-shrink: 0; align-items: center; gap: 2px; height: 26px; padding: 0 10px; border: 1px dashed #6b7988; border-radius: 9999px; background: #fff; font-size: 13px; font-weight: 500; color: #6b7988; white-space: nowrap; text-decoration: none; cursor: pointer; }
+      .dpill:hover { background: #f8f9fb; }
+      .dpill:active { border-style: solid; background: #6b7988; color: #fff; }
+      .stag { flex-shrink: 0; padding: 0 4px; border: 1px solid #e9edf5; border-radius: 2px; font-size: 12px; font-weight: 500; color: #858b94; }
+      .stag--direct { background: #f4f9ff; }
+      .stag--franchise { background: #f8f9fb; }
+      .stag--hq { background: #fff; }
+    </style>
   </head>
   <body data-root="../" data-page="staff" data-sub="staff/contracts-detail.html">
     <!-- /staff/contracts/[contractId] · S-XDBBDP "날인 확인과 계약 상태 관리"
@@ -17,13 +50,23 @@
         <div class="titlebar">
           <a class="iconbtn" href="index.html#contracts" aria-label="근로계약으로" data-icon="arrowleft" data-icon-size="18"></a>
           <h1 class="t-h1">근로계약 상세</h1>
-          <span class="badge badge--risk">거부</span>
+          <!-- 제목 줄은 제목과 버튼만 — 상태는 아래 요약 띠로 옮겼다. 내부 번호(CTR-…)는 고객이 다른 화면에서 찾을 수 없어 두지 않는다(2026-11-06 · 2026-11-19 사용자 지정) -->
           <div class="titlebar__end">
-            <span class="filters__count mono">CTR-2026-0288</span>
+            <a class="btn btn--primary btn--sm" href="index.html#contracts">목록</a>
           </div>
         </div>
 
         <div class="content">
+          <!-- 요약 띠(2026-11-19 사용자 지정) — 성명 · 고용형태 · 계약 방식 · 근무지(유형 꼬리표) · 계약 기간 · 상태. 개발 화면 contracts/[contractId]/page.tsx 와 같다 -->
+          <div class="dstrip">
+            <div><span class="dstrip__k">성명</span><span class="dstrip__v">유하람</span></div>
+            <div><span class="dstrip__k">고용형태</span><span class="dstrip__v">파트타이머</span></div>
+            <div><span class="dstrip__k">계약 방식</span><span class="dstrip__v">전자계약</span></div>
+            <div><span class="dstrip__k">근무지</span><span class="dstrip__v"><span class="stag stag--franchise">가맹</span>모리커피 연남점</span></div>
+            <div><span class="dstrip__k">계약 기간</span><span class="dstrip__v">2026-08-28 ~ 2027-02-27</span></div>
+            <div><span class="dstrip__k">상태</span><span class="dstrip__v"><span class="badge badge--risk">서명 거절</span></span></div>
+          </div>
+
           <div class="band band--risk">
             <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
             <div class="band__body">
@@ -92,99 +135,32 @@
                   </div>
                 </div>
               </div>
-
-              <div class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">상태 변경 이력</h2>
-                  <span class="badge badge--quiet">5건</span>
-                </div>
-                <div class="tblwrap">
-                  <table class="tbl tbl--dense">
-                    <thead>
-                      <tr>
-                        <th scope="col">변경일시</th>
-                        <th scope="col">변경자</th>
-                        <th scope="col">변경 전</th>
-                        <th scope="col">변경 후</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td class="mono">09-02 19:44</td>
-                        <td>유하람 · 직원 근무 앱</td>
-                        <td><span class="badge badge--warn">서명 대기</span></td>
-                        <td><span class="badge badge--risk">거부</span></td>
-                      </tr>
-                      <tr>
-                        <td class="mono">08-28 09:31</td>
-                        <td class="subtle">시스템 · 가입 완료로 자동 발송</td>
-                        <td><span class="badge badge--quiet">발송 대기</span></td>
-                        <td><span class="badge badge--warn">서명 대기</span></td>
-                      </tr>
-                      <tr>
-                        <td class="mono">08-28 09:31</td>
-                        <td>정하윤 · 초안 저장</td>
-                        <td class="nil">—</td>
-                        <td><span class="badge badge--quiet">발송 대기</span></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div class="panel__note">
-                  상태가 바뀔 때마다 변경 전후·일시·처리 주체를 남긴다. 이력은 지우지 않는다.
-                </div>
-              </div>
             </section>
 
             <section class="stack--lg" style="display: flex; flex-direction: column">
-              <div class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">진행</h2>
-                  <span class="badge badge--risk">거부 · 재발송 필요</span>
-                </div>
-                <div class="panel__body">
-                  <div class="steps">
-                    <div class="step is-done">
-                      <span class="step__ic" data-icon="file" data-icon-size="15"></span>
-                      <div class="step__body">
-                        <span class="step__title">초안 저장</span>
-                        <span class="step__meta">08-28 09:31 · 정하윤</span>
-                      </div>
-                    </div>
-                    <div class="step is-done">
-                      <span class="step__ic" data-icon="message" data-icon-size="15"></span>
-                      <div class="step__body">
-                        <span class="step__title">계약서 자동 발송</span>
-                        <span class="step__meta">08-28 09:31 · 날인 기한 09-27</span>
-                      </div>
-                    </div>
-                    <div class="step is-now">
-                      <span class="step__ic" data-icon="x" data-icon-size="15"></span>
-                      <div class="step__body">
-                        <span class="step__title">직원 날인 거부</span>
-                        <span class="step__meta">09-02 19:44 · 담당 관리자에게 이메일·알림 발송됨</span>
-                      </div>
-                    </div>
-                  </div>
-                  <hr class="hr" />
-                  <dl class="kv">
-                    <dt>계약 방식</dt>
-                    <dd><span class="badge badge--quiet">전자계약</span></dd>
-                    <dt>발송일</dt>
-                    <dd class="mono">2026-08-28</dd>
-                    <dt>날인 기한</dt>
-                    <dd class="mono">2026-09-27</dd>
-                    <dt>최종 처리일</dt>
-                    <dd class="mono">2026-09-02</dd>
-                    <dt>재발송 횟수</dt>
-                    <dd class="num">0</dd>
-                  </dl>
-                  <div class="panel__note" style="margin-top: var(--s-3)">
-                    <b>종이 계약</b>이면 이 자리가 달라진다 — 발송일·날인 기한 대신 <b>등록일과 등록한 관리자</b>가 서고, 진행 단계 없이 체결 완료로 시작하며
-                    아래에 <b>날인본 파일 내려받기</b>가 붙는다. 재발송도 없다.
-                  </div>
-                </div>
-              </div>
+              <!-- 오른쪽은 사장님이 확인할 것 — 둥근 확인 상자(8px · #c9d1de). 왼쪽 계약 내용(회색 제목 줄)과 모양으로 가른다(2026-11-19 사용자 지정).
+                   진행 단계 목록은 두지 않는다 — 상태는 요약 띠, 지나온 길은 상태 변경이력이 말한다. 계약 방식은 요약 띠로 옮겼다.
+                   종이 계약이면 이 상자가 「등록 정보」(등록일 · 등록 관리자 · 최종수정)가 된다. -->
+              <section class="rbox">
+                <div class="rbox__head"><h2>발송 · 서명 정보</h2></div>
+                <div class="rbox__row"><span class="rbox__k">최초 발송일</span><span class="rbox__v mono">2026-08-28 09:31</span></div>
+                <div class="rbox__row"><span class="rbox__k">서명 기한</span><span class="rbox__v mono">2026-09-27 23:59</span></div>
+                <div class="rbox__row"><span class="rbox__k">최종수정</span><span class="rbox__v subtle">-</span></div>
+              </section>
+
+              <section class="rbox">
+                <div class="rbox__head"><h2>계약서 파일</h2></div>
+                <!-- 보낸 원본은 재발송할 때마다 한 장씩 쌓인다 — 맨 위가 지금 서명할 원본이라 「(최근 발송)」, 앞서 보낸 것은 「이전 원본 N장」으로 접는다 -->
+                <div class="rbox__row rbox__row--top"><span class="rbox__k">보낸 원본</span><span class="rbox__v"><a class="tlink" href="#">유하람_근로계약서.pdf</a> <span class="subtle">(최근 발송)</span></span></div>
+              </section>
+
+              <section class="rbox">
+                <div class="rbox__head"><h2>상태 변경이력</h2></div>
+                <!-- 줄마다 왼쪽 「A → B」(먹색), 오른쪽 「변경자 | 일시」(회색). 처음 줄은 「등록 · …」. 이력은 지우지 않는다 -->
+                <div class="rbox__row rbox__row--top"><span class="rbox__v">직원 서명 대기 → 서명 거절</span><span class="rbox__who">직원<span class="vbar"></span><span class="mono">2026-09-02 19:44</span></span></div>
+                <div class="rbox__row rbox__row--top"><span class="rbox__v">서명 요청 전 → 직원 서명 대기</span><span class="rbox__who">시스템<span class="vbar"></span><span class="mono">2026-08-28 09:31</span></span></div>
+                <div class="rbox__row rbox__row--top"><span class="rbox__v">등록 · 서명 요청 전</span><span class="rbox__who">관리자<span class="vbar"></span><span class="mono">2026-08-28 09:31</span></span></div>
+              </section>
 
               <div class="panel" style="flex: 1">
                 <div class="panel__head">

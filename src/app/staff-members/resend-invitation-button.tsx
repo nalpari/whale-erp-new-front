@@ -7,6 +7,7 @@ import { useMenuRole } from "@/components/site/session-gate";
 import { MENU_CODE } from "@/lib/menus";
 import { sendContract, type ContractStatus, type SendContractResult } from "../contracts/[contractId]/actions";
 import { inviteResendCopy, SEND_UNKNOWN, sendFailureOf } from "../contracts/[contractId]/send-model";
+import { NameMarked } from "@/app/contracts/[contractId]/name-marked";
 
 // 직원 목록 · 상세의 가입 초대 재발송(WHALEERP-138). 보일지는 canResendInvitation(staff-row.ts)이 정하고, api 는 근로계약 재발송
 // (POST /contracts/:id/send, WHALEERP-136)이다 — 근로계약 상세의 재발송 버튼(send-button.tsx)과 같은 서버 액션 · 실패 판정을 쓴다.
@@ -86,7 +87,7 @@ export function ResendInvitationButton({ contractId, name, status, lastSentAt }:
       >
         {copy.body.map((line, i) => (
           <p key={i} className={i ? "mt-[6px]" : undefined}>
-            {line}
+            <NameMarked line={line} name={name} />
           </p>
         ))}
         {error && (

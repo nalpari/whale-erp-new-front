@@ -12,7 +12,7 @@ export const contractForm = (d) => ({ A, R }) => {
   const choice = (label, name, options) =>
     `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">${label}</span>${p.radios(name, options)}</div>`;
 
-  // 소정근로시간 표는 고용 형태별로 다르다(front #15). 정직원은 요일 · 시업 · 종업 · 휴게 다섯 칸, 파트타이머는 같은 표에
+  // 소정근로시간 표는 고용 형태별로 다르다(front #15). 정직원은 요일 · 근무 시작 · 근무 종료 · 휴게 다섯 칸, 파트타이머는 같은 표에
   // 근무시간 · 시급 · 소계 열과 소계 · 주휴수당 · 주급 · 월급여 줄을 붙인다. 값은 erp.js initWorkPlan 이 근무시간 · 시급으로 다시 셈한다.
   const DAYS = ["월", "화", "수", "목", "금", "토", "일"];
   const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
@@ -20,13 +20,13 @@ export const contractForm = (d) => ({ A, R }) => {
   const won = (n) => n.toLocaleString("ko-KR");
   const day = (d, i) => (i < 5 ? [d, "09:00", "18:00", "12:00", "13:00"] : [d, "-", "-", "-", "-"]);
   const hoursFull = ui.dataTable(
-    [{ header: "요일", width: "w-[70px]" }, { header: "시업" }, { header: "종업" }, { header: "휴게 시작" }, { header: "휴게 종료" }],
+    [{ header: "요일", width: "w-[70px]" }, { header: "근무 시작" }, { header: "근무 종료" }, { header: "휴게 시작" }, { header: "휴게 종료" }],
     DAYS.map(day),
   );
   // 파트타이머 견본: 월~금 하루 8시간 · 시급 11,200 → 주 40시간 448,000 · 주휴 8시간(주 시간 ÷ 5) 89,600 · 주급 537,600 · 월급여 주급 × 4.345
   const b = (v) => `<b>${v}</b>`;
   const weekPay = 40 * WAGE, holidayPay = 8 * WAGE, weekly = weekPay + holidayPay, monthlyPart = Math.round(weekly * 4.345);
-  // 파트타이머는 요일마다 시업 · 종업 · 휴게를 고친다(2026-10-14). 칸은 위 근무시간과 같은 시 · 분 선택 상자이고, 근무하지 않는 요일은 「-」.
+  // 파트타이머는 요일마다 근무 시작 · 근무 종료 · 휴게를 고친다(2026-10-14). 칸은 위 근무시간과 같은 시 · 분 선택 상자이고, 근무하지 않는 요일은 「-」.
   const timePick = (d, what, v) =>
     `<span class="w-[72px]">${ui.select(HOURS, { value: v.slice(0, 2), "aria-label": `${d} ${what} 시`, "data-h": "" })}</span>시` +
     `<span class="w-[72px]">${ui.select(["00", "30"], { value: v.slice(3), "aria-label": `${d} ${what} 분`, "data-m": "" })}</span>분`;
@@ -34,12 +34,12 @@ export const contractForm = (d) => ({ A, R }) => {
     `<span data-t class="flex items-center justify-center gap-[6px] text-[14px] text-erp-ink">${v === "-" ? "-" : timePick(d, what, v)}</span>`;
   const dayTimes = (d, i) => {
     const [, ...t] = day(d, i);
-    return [d, ...t.map((v, k) => timeIn(d, ["시업", "종업", "휴게 시작", "휴게 종료"][k], v))];
+    return [d, ...t.map((v, k) => timeIn(d, ["근무 시작", "근무 종료", "휴게 시작", "휴게 종료"][k], v))];
   };
   const hoursPart = ui.dataTable(
     [
       { header: "요일", width: "w-[90px]" },
-      { header: "시업" }, { header: "종업" }, { header: "휴게 시작" }, { header: "휴게 종료" },
+      { header: "근무 시작" }, { header: "근무 종료" }, { header: "휴게 시작" }, { header: "휴게 종료" },
       { header: "근무시간" }, { header: "시급" }, { header: "소계" },
     ],
     [
@@ -111,7 +111,7 @@ export const contractForm = (d) => ({ A, R }) => {
       `<div data-when="method:종이 계약" class="flex w-full gap-[6px]">${p.fieldH(req("근로계약서"), p.fileField("근로계약서"), "당사자가 모두 서명한 파일")}${p.fieldH("임금계약서", p.fileField("임금계약서"), "따로 작성한 경우")}</div>`,
     ) +
     ui.formGroup(
-      "계약 조건",
+      "근로 조건",
       ui.formRow(
         p.fieldH(req("계약 시작일"), ui.dateField(A, { label: "계약 시작일", value: "2026-09-14" }), ""),
         p.fieldH("계약 종료일", ui.dateField(A, { label: "계약 종료일" }), "비워 두면 기간의 정함이 없는 계약"),
@@ -140,7 +140,7 @@ export const contractForm = (d) => ({ A, R }) => {
           p.fieldH("월급", ui.textField({ value: won(monthlyPart), readonly: true, "data-month": "" }), "주급 × 4.345"),
           `<div class="min-w-px flex-1"></div>`,
         ) +
-        `<div class="flex flex-col gap-[8px]">${hoursHead}${hoursPart.replace("<table ", "<table data-hours data-hours-part ")}${p.help("요일마다 시업 · 종업 · 휴게를 고칠 수 있다. 위 근무시간 · 휴게시간을 바꾸거나 요일을 켜면 그 값으로 다시 채운다. 월급여는 주급 × 4.345. 이 소정근로시간이 근무스케줄 기본값이 된다.")}</div>` +
+        `<div class="flex flex-col gap-[8px]">${hoursHead}${hoursPart.replace("<table ", "<table data-hours data-hours-part ")}${p.help("요일마다 근무 시작 · 근무 종료 · 휴게를 고칠 수 있다. 위 근무시간 · 휴게시간을 바꾸거나 요일을 켜면 그 값으로 다시 채운다. 월급여는 주급 × 4.345. 이 소정근로시간이 근무스케줄 기본값이 된다.")}</div>` +
         choice(req("급여 지급 방식"), "pay-method-part", ["계좌", "현금"]) +
         `</div>` +
         `</div>` +

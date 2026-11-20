@@ -102,15 +102,19 @@ export function canResendInvitation(item: Pick<StaffMemberListItem, "contract">)
  * 상세 「초대」 줄 — 초대 유형 · 초대 상태 · 보낸 날(한국 날짜). 한글은 api enum(InvitationType · InvitationStatus)이고, 받지 못했거나
  * 목록에 없는 값은 영문 값 대신 그 조각을 뺀다. 초대가 없으면 「-」.
  */
-export function invitationText(
+export function invitationParts(
   invitation: StaffMemberListItem["invitation"],
   typeLabels: readonly EnumValue[],
   statusLabels: readonly EnumValue[],
-): string {
-  if (!invitation) return "-";
+): string[] {
+  if (!invitation) return [];
   const label = (values: readonly EnumValue[], value: string) => values.find((v) => v.value === value)?.label;
-  const parts = [label(typeLabels, invitation.invitationType), label(statusLabels, invitation.status), `보낸 날 ${kstDate(invitation.lastSentAt)}`];
-  return parts.filter(Boolean).join(" · ");
+  // 「소속 추가 확인 ┃ 수락 ┃ 2026-11-18 발송」 — 값 여럿을 세로선으로 나누는 상세 표 모양(근로계약 상세 「직원」 줄과 같다). 문장으로 풀면
+  // 「소속 추가 확인 초대 — 수락 (… 보냄)」처럼 어색했고, 가운뎃점만 잇던 예전 글자는 무슨 정보인지 읽히지 않았다(2026-11-19 사용자 지정).
+  // 한글을 받지 못한 조각은 뺀다(영문 값을 보이지 않는다)
+  return [label(typeLabels, invitation.invitationType), label(statusLabels, invitation.status), `${kstDate(invitation.lastSentAt)} 발송`].filter(
+    (part): part is string => !!part,
+  );
 }
 
 /** 계약 상태 칸. 상태 이름은 GET /enums/ContractStatus(statusLabels)에서 받고, 날수 · 날짜 꼬리만 여기서 붙인다(WHALEERP-659).

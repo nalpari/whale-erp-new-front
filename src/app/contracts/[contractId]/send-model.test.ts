@@ -134,16 +134,16 @@ test("callSave — 성공 · 발송 실패의 redirect 는 다시 던져 원래 
 test("서명 대기 재발송 확인창 — 데모 문구, 이름을 모르면 그 조각만 뺀다(WHALEERP-611)", () => {
   assert.deepEqual(signingResendCopy("권도윤"), {
     title: "계약서를 다시 보내시겠습니까?",
-    body: "같은 조건의 계약서를 권도윤 님에게 다시 보냅니다. 서명 기한은 발송일로부터 30일입니다.",
+    body: ["기존 계약 조건 그대로 권도윤 님에게 계약서를 다시 보냅니다.", "서명 기한은 재발송일로부터 30일로 다시 설정됩니다."],
   });
-  assert.equal(signingResendCopy(null).body, "같은 조건의 계약서를 다시 보냅니다. 서명 기한은 발송일로부터 30일입니다.");
-  assert.equal(signingResendCopy("").body, "같은 조건의 계약서를 다시 보냅니다. 서명 기한은 발송일로부터 30일입니다.");
+  assert.deepEqual(signingResendCopy(null).body, ["기존 계약 조건 그대로 계약서를 다시 보냅니다.", "서명 기한은 재발송일로부터 30일로 다시 설정됩니다."]);
+  assert.deepEqual(signingResendCopy("").body, ["기존 계약 조건 그대로 계약서를 다시 보냅니다.", "서명 기한은 재발송일로부터 30일로 다시 설정됩니다."]);
 });
 
 test("근로계약 상세 재발송 확인창 — 가입한 직원은 데모 문구, 가입 전 직원은 상태와 상관없이 가입 초대 문구(front #136 code-review)", () => {
   assert.deepEqual(resendDialogCopy("PENDING_SIGNATURE", "권도윤", true), {
     title: "계약서를 다시 보내시겠습니까?",
-    body: ["같은 조건의 계약서를 권도윤 님에게 다시 보냅니다. 서명 기한은 발송일로부터 30일입니다."],
+    body: ["기존 계약 조건 그대로 권도윤 님에게 계약서를 다시 보냅니다.", "서명 기한은 재발송일로부터 30일로 다시 설정됩니다."],
   });
   // 가입 전 직원은 발송 대기 · 서명 대기 모두 보낼 때 api 가 다시 판별한다 — 가입 초대 · 소속 추가 확인 요청을 함께 알린다(WHALEERP-130)
   for (const status of ["PENDING_SEND", "PENDING_SIGNATURE"]) {
@@ -198,7 +198,8 @@ test("거부 · 만료 재발송 확인창 — 같은 조건으로 다시 보낸
   assert.equal(rejected.title, "계약서를 다시 보내시겠습니까?");
   assert.deepEqual(rejected.body, [
     "서명 거절된 근로계약서를 같은 조건으로 다시 보냅니다.",
-    "같은 조건의 계약서를 남도현 님에게 다시 보냅니다. 서명 기한은 발송일로부터 30일입니다.",
+    "기존 계약 조건 그대로 남도현 님에게 계약서를 다시 보냅니다.",
+    "서명 기한은 재발송일로부터 30일로 다시 설정됩니다.",
   ]);
   // 가입 전 직원 — 가입 초대 알림톡(발송 대기 문구)
   const expired = resendDialogCopy("EXPIRED", null, false);

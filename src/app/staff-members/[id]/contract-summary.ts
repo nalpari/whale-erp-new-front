@@ -21,7 +21,8 @@ export function contractSummaryTexts(
 ): { type: string; period: string; lastSent: string; renewal: string } {
   return {
     type: employmentTypeLabel ? `${employmentTypeLabel} 근로계약` : "-",
-    period: c.startDate ? `${c.startDate} ~ ${c.endDate ?? "무기한"}` : "-",
+    // 종료일이 없으면 「기간의 정함 없음」 — 근로계약 상세와 같은 말(2026-11-19 사용자 지정). 폭이 좁은 근로계약 목록 열만 「무기한」으로 둔다
+    period: c.startDate ? `${c.startDate} ~ ${c.endDate ?? "기간의 정함 없음"}` : "-",
     lastSent: formatDate(c.lastSentAt) || "-",
     renewal: c.renewalDate ?? "-",
   };

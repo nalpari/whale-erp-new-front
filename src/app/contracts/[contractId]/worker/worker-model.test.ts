@@ -41,11 +41,11 @@ test("본문 — 이름은 앞뒤 공백을 지우고 번호는 숫자만, 대�
 test("저장 뒤 상태 안내 — 서명 기한 30일 · 가입 초대 대상이면 곧바로 다시 보냄", () => {
   // 가입 초대 대상이면 알림톡, 가입한 직원은 앱 알림(api #259), 계정만 있는 번호는 보내지 않는다(front #58 리뷰)
   for (const s of ["PENDING_SEND", "PENDING_SIGNATURE", "CORRECTION_REQUESTED"]) {
-    assert.match(workerSaveNote(s), /서명 기한은 새로 30일/, s);
-    assert.match(workerSaveNote(s), /가입 초대 대상이면 곧바로 다시 보내고/, s);
+    assert.match(workerSaveNote(s).join(" "), /서명 기한이 오늘부터 30일로/, s);
+    assert.match(workerSaveNote(s).join(" "), /가입 초대를 다시 보내며/, s);
   }
-  assert.match(workerSaveNote("CORRECTION_REQUESTED"), /직원 서명 대기로/);
-  assert.match(workerSaveNote("PENDING_SEND"), /계정이 있는 번호로 고치면 보내지 않고/);
+  assert.match(workerSaveNote("CORRECTION_REQUESTED").join(" "), /다시 서명을 요청합니다/);
+  assert.match(workerSaveNote("PENDING_SEND").join(" "), /이미 가입한 직원이 있으면 가입 초대 없이/);
 });
 
 test("오류는 칸마다 — 화면이 그 칸 아래에 보인다(WHALEERP-631)", () => {
@@ -70,5 +70,5 @@ test("바뀐 것이 없으면 저장하지 않는다 — 비교는 보낼 값(�
 });
 
 test("바뀐 것 없이 저장하면 상세의 [재발송]으로 안내한다(WHALEERP-681)", () => {
-  assert.match(WORKER_UNCHANGED, /바뀐 내용이 없습니다\. .*\[재발송\]/);
+  assert.match(WORKER_UNCHANGED, /변경된 내용이 없습니다\. .*\[재발송\]/);
 });

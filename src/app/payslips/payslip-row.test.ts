@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PayslipReviewReason } from "../../lib/payslips.ts";
-import { attendanceCell, attendanceHref, detailReviewReasons, earningHelp, periodText, reviewBand, sentDateText } from "./payslip-row.ts";
+import { attendanceCell, attendanceHref, deductionAnchor, detailReviewReasons, earningHelp, periodText, reviewBand, reviewDetailText, sentDateText, sortDeductions } from "./payslip-row.ts";
 
 test("목록 칸 — 급여 기간, 출퇴근 확인 전은 「누락」 · 확인은 「확인」 · 가린 줄은 null", () => {
   assert.equal(periodText({ periodStartDate: "2026-09-01", periodEndDate: "2026-09-30" }), "2026-09-01 ~ 2026-09-30");
@@ -30,8 +30,8 @@ test("지급 도움말 — 계산값, 고친 값, 직접 입력, 비과세", () 
 });
 
 test("가산을 끄면 연장수당은 1배로 계산하고 야간 · 휴일근무수당은 가산 대상 아님", () => {
-  assert.equal(earningHelp(item, false), "가산 미적용 · 1배로 계산 · 계산값");
-  assert.equal(earningHelp({ ...item, adjustedAmount: 128_000 }, false), "가산 미적용 · 1배로 계산 · 계산값 96,000 을 128,000 으로 고침");
+  assert.equal(earningHelp(item, false), "가산수당 미적용 · 1배로 계산 · 계산값");
+  assert.equal(earningHelp({ ...item, adjustedAmount: 128_000 }, false), "가산수당 미적용 · 1배로 계산 · 계산값 96,000 을 128,000 으로 고침");
   assert.equal(earningHelp({ ...item, itemCode: "NIGHT_WORK_PAY", calculatedAmount: null }, false), "가산 대상 아님 · 넣어도 가산하지 않는다.");
   assert.equal(earningHelp({ ...item, itemCode: "HOLIDAY_WORK_PAY", calculatedAmount: null }, false), "가산 대상 아님 · 넣어도 가산하지 않는다.");
 });
@@ -42,51 +42,22 @@ const reason = (reviewReason: PayslipReviewReason["reviewReason"], detail: strin
   detail,
   acknowledgedAt: null,
 });
-const label = (v: string) => ({ CONTRACT_CHANGED: "기간 중 계약 변경" })[v] ?? v;
 
-test("경고 띠 — 출퇴근 누락은 사유별 제목, 공제 미입력만 있으면 띠가 없다", () => {
-  assert.deepEqual(reviewBand([reason("MISSING_ATTENDANCE", "출퇴근 기록 2일 누락"), reason("DEDUCTION_MISSING", "4대보험")], label), {
-    title: "출퇴근 기록이 등록되지 않은 날이 있어 검토가 필요합니다.",
-    desc: "출퇴근 기록 2일 누락. 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.",
+test("경고 띠 — 한 줄로 건수와 할 일만, 사유 내용은 오른쪽 표에(2026-11-19 사용자 지정)", () => {
+  assert.deepEqual(reviewBand([reason("MISSING_ATTENDANCE", "출퇴근 기록 2일 누락"), reason("DEDUCTION_MISSING", "4대보험")]), {
+    title: "검토가 필요한 사유가 2건 있습니다.",
+    desc: "오른쪽 검토 사유를 확인하고, 문제가 없으면 [확정]해 주세요.",
+    inline: true,
   });
-  assert.equal(reviewBand([reason("DEDUCTION_MISSING", null)], label), null);
-  assert.equal(reviewBand([], label), null);
+  // 공제 미입력뿐이면 공제 칸 아래 띠가 말하므로 위 띠는 없다
+  assert.equal(reviewBand([reason("DEDUCTION_MISSING", null)]), null);
+  assert.equal(reviewBand([]), null);
 });
 
-test("경고 띠 — 이미 확인한 사유(확정 때 확인됨)는 띠에 세우지 않는다", () => {
+test("경고 띠 — 이미 확인한 사유(확정 때 확인됨)는 세지 않는다", () => {
   const acknowledged = { ...reason("MISSING_ATTENDANCE", "출퇴근 기록 2일 누락"), acknowledgedAt: "2026-10-19T01:00:00.000Z" };
-  assert.equal(reviewBand([acknowledged], label), null);
-  assert.equal(reviewBand([acknowledged, reason("CONTRACT_CHANGED", null)], label)?.title, "급여 기간 중 근로계약이 변경되어 검토가 필요합니다.");
-});
-
-test("경고 띠 — 사유마다 제목 문장, 상세가 없으면 사유 한글에 마침표를 붙인다", () => {
-  assert.deepEqual(reviewBand([reason("CONTRACT_CHANGED", null)], label), {
-    title: "급여 기간 중 근로계약이 변경되어 검토가 필요합니다.",
-    desc: "기간 중 계약 변경. 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.",
-  });
-  assert.equal(reviewBand([reason("AFTER_CONTRACT_END", "x.")], label)?.title, "근로계약 종료일 이후의 출퇴근 기록이 있어 검토가 필요합니다.");
-  assert.equal(reviewBand([reason("ATTENDANCE_NEEDS_REVIEW", "x.")], label)?.title, "확인 필요로 표시된 출퇴근 기록이 있어 검토가 필요합니다.");
-  // 표에 없는 사유는 사유 이름을 끼운 틀
-  assert.equal(reviewBand([reason("NEW_REASON" as PayslipReviewReason["reviewReason"], "x.")], label)?.title, "NEW_REASON 사유로 검토 대기로 분류되었습니다.");
-});
-
-test("경고 띠 — 빈 상세 · 끝 공백은 사유 이름이나 다듬은 문장으로, 물음표 등으로 끝나면 마침표를 붙이지 않는다", () => {
-  assert.equal(reviewBand([reason("CONTRACT_CHANGED", "")], label)?.desc, "기간 중 계약 변경. 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.");
-  assert.equal(reviewBand([reason("CONTRACT_CHANGED", "A. ")], label)?.desc, "A. 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.");
-  assert.equal(reviewBand([reason("CONTRACT_CHANGED", "A?")], label)?.desc, "A? 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.");
-});
-
-test("경고 띠 — 마침표로 끝나는 상세는 빈칸 하나로 잇는다(「..」 없음)", () => {
-  assert.equal(
-    reviewBand(
-      [
-        reason("MISSING_ATTENDANCE", "출퇴근 기록이 등록되지 않은 날이 1일 있습니다(10월 9일 출근·퇴근 미등록)."),
-        reason("CONTRACT_CHANGED", "급여 기간 중 적용된 근로계약이 2건이어서, 날짜별로 해당 계약을 기준으로 나누어 계산했습니다."),
-      ],
-      label,
-    )?.desc,
-    "출퇴근 기록이 등록되지 않은 날이 1일 있습니다(10월 9일 출근·퇴근 미등록). 급여 기간 중 적용된 근로계약이 2건이어서, 날짜별로 해당 계약을 기준으로 나누어 계산했습니다. 내용을 확인하고 문제가 없으면 그대로 확정할 수 있습니다.",
-  );
+  assert.equal(reviewBand([acknowledged]), null);
+  assert.equal(reviewBand([acknowledged, reason("CONTRACT_CHANGED", null)])?.title, "검토가 필요한 사유가 1건 있습니다.");
 });
 
 test("출퇴근 기록 확인 · 기록 보기 — 출·퇴근 현황 조회를 점포 · 직원 레코드 · 첫 주 월요일부터 급여 기간 끝까지 · 기간 기록 전체로, 퇴직자도 보이게 재직 상태 전체", () => {
@@ -158,6 +129,35 @@ test("상세 검토 사유 — 작성 중 · 검토 중이고 보이는 공제 �
         line("EARNING", "BONUS", "상여", false),
       ],
     }),
-    [attendance, { payslipReviewReasonId: 0, reviewReason: "DEDUCTION_MISSING", detail: "국민연금, 기타공제, 사업소득세", acknowledgedAt: null }],
+    [attendance, { payslipReviewReasonId: 0, reviewReason: "DEDUCTION_MISSING", detail: "국민연금, 사업소득세, 기타공제", acknowledgedAt: null }],
   );
+});
+
+test("검토 사유 상세 — api 의 「확인 필요로 표시된 …(예시)」 문장을 「… 등의 사유로 확인이 필요한 …」으로 다듬는다(2026-11-19 사용자 지정)", () => {
+  assert.equal(
+    reviewDetailText("확인 필요로 표시된 출퇴근 기록이 1건 있습니다(근무지 반경 밖 퇴근, 위치 조작 감지 등)."),
+    "근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 1건 있습니다.",
+  );
+  assert.equal(
+    reviewDetailText("이번 급여 기간과 첫 주에 포함된 지난달 날짜(9월 29일)에 확인 필요로 표시된 출퇴근 기록이 2건 있습니다."),
+    "이번 급여 기간과 첫 주에 포함된 지난달 날짜(9월 29일)에 확인이 필요한 출퇴근 기록이 2건 있습니다.",
+  );
+  assert.equal(reviewDetailText("출퇴근 기록 2일 누락."), "출퇴근 기록 2일 누락.");
+});
+
+
+test("sortDeductions — 국민연금 · 건강보험 · 장기요양보험 · 고용보험 · 소득세 · 지방소득세, 모르는 코드는 뒤에", () => {
+  const codes = ["EMPLOYMENT_INSURANCE", "UNKNOWN_A", "LOCAL_INCOME_TAX", "LONG_TERM_CARE_INSURANCE", "INCOME_TAX", "HEALTH_INSURANCE", "NATIONAL_PENSION", "UNKNOWN_B"];
+  assert.deepEqual(
+    sortDeductions(codes.map((itemCode) => ({ itemCode }))).map((i) => i.itemCode),
+    ["NATIONAL_PENSION", "HEALTH_INSURANCE", "LONG_TERM_CARE_INSURANCE", "EMPLOYMENT_INSURANCE", "INCOME_TAX", "LOCAL_INCOME_TAX", "UNKNOWN_A", "UNKNOWN_B"],
+  );
+});
+
+test("deductionAnchor — 추가 공제만 비었으면 추가 공제 상자, 기본 공제가 비었으면 기본 공제 상자", () => {
+  const line = (itemCategory: "EARNING" | "BASIC" | "ADDITIONAL" | "WITHHOLDING", itemCode: string, isEntered: boolean) => ({ itemCategory, itemCode, isEntered }) as never;
+  assert.equal(deductionAnchor({ isWithholdingApplied: false, items: [line("BASIC", "NATIONAL_PENSION", true), line("ADDITIONAL", "ETC", false)] }), "#deduction-additional");
+  assert.equal(deductionAnchor({ isWithholdingApplied: false, items: [line("BASIC", "NATIONAL_PENSION", false), line("ADDITIONAL", "ETC", false)] }), "#deduction-basic");
+  // 3.3% 를 켜면 숨는 소득세가 비어도 세지 않는다
+  assert.equal(deductionAnchor({ isWithholdingApplied: true, items: [line("BASIC", "INCOME_TAX", false), line("ADDITIONAL", "ETC", false)] }), "#deduction-additional");
 });

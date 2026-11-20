@@ -1,13 +1,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge, DataTable, Tag, type Column } from "@/components/common";
+import { StoreNameWithType } from "@/components/site/store-type-tag";
 import type { EnumValue } from "@/lib/enums";
 import type { StaffMemberListItem } from "@/lib/staff-members";
 import { WithIcon } from "../platform-admins/admin-table";
 import { ResendInvitationButton } from "./resend-invitation-button";
 import { withBack } from "./staff-list-query";
 import { canResendInvitation, contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, rowNumber, statusCells, type Cell } from "./staff-row";
-import { storeOptionLabel } from "@/lib/store-scope";
 
 // 데모 staff-parts.mjs 의 회색 배지(quiet). 공통 Badge 에는 on · off 두 가지뿐이다.
 const NEUTRAL = "inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium bg-erp-subtle text-erp-ink whitespace-nowrap";
@@ -82,7 +82,8 @@ export function StaffTable({
     { header: "휴대전화번호", width: "w-[145px]", cell: personal((item) => (item.phone ? <WithIcon icon="phone">{formatPhone(item.phone)}</WithIcon> : DASH)) },
     // 점포는 남는 폭 — 표 최소 폭(아래 minWidth)이 140px 을 지킨다. 길이가 제각각인 이름이라 왼쪽 정렬(점포 목록 점포명과 같다, 2026-11-18 사용자 지정)
     // 점포도 기준 폭(140)을 둔다 — 넓은 창에서는 모든 열이 같은 비율로 늘어난다 — 이 열만 남는 폭을 가지면 넓은 창에서 혼자 넓어져 표가 휑했다(2026-11-18 사용자 지정)
-    { header: "점포", width: "w-[140px]", align: "left", cell: (r) => storeOptionLabel(r.item.store) },
+    // 점포 이름 앞에 본사 · 직영 · 가맹 꼬리표 — 근로계약 목록 · 상세와 같다(2026-11-19 사용자 지정). 꼬리표만큼 기준 폭을 170 으로 늘렸다
+    { header: "점포", width: "w-[170px]", align: "left", cell: (r) => <StoreNameWithType storeId={r.item.store.storeId} name={r.item.store.name} isHq={r.item.store.isHq} /> },
     // 가장 긴 값 「파트타이머」 5자(59px)
     { header: "고용형태", width: "w-[80px]", cell: personal((item) => (item.employmentType ? EMPLOYMENT_TYPE_LABELS[item.employmentType] : DASH)) },
     {

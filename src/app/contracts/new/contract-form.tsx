@@ -863,7 +863,8 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
           </div>
         </FormGroup>
 
-        <FormGroup roomy title="계약 조건">
+        {/* 묶음 이름은 표준근로계약서 용어 「근로 조건」 — 「계약 조건」은 위 「계약 방식」과 헷갈렸다(2026-11-19 사용자 지정) */}
+        <FormGroup roomy title="근로 조건">
           <div className="grid grid-cols-4 gap-[18px]">
             <Item label="계약 시작일" required help={previousStartDate ? `재계약은 직전 계약 시작일(${previousStartDate}) 다음 날부터` : undefined} errors={errs.startDate}>
               {() => <DateField aria-label="계약 시작일" autoHyphen value={form.startDate} onChange={(v) => set("startDate", v)} />}
@@ -1016,18 +1017,20 @@ ${paperTypes.join(", ")} 파일을 1개 첨부할 수 있습니다. (10MB 이하
                   width: "w-[80px]", // 요일 칸은 「주휴수당」(굵게)이 들어가는 만큼만(2026-11-19 사용자 지정)
                   cell: (r: PayRow) => (PAY_SUMMARY_KEYS.has(r.key) ? <span className="font-semibold">{r.label}</span> : r.label),
                 },
-                { header: "근무 시작", width: partTime ? ("w-[130px]" as const) : undefined, divider: partTime, cell: cell(0) },
+                { header: "근무 시작", width: partTime ? ("w-[130px]" as const) : undefined, divider: true, cell: cell(0) },
                 { header: "근무 종료", width: partTime ? ("w-[130px]" as const) : undefined, cell: cell(1) },
-                // 파트타이머 표는 열이 8개라 묶음(요일 / 근무 / 휴게 / 근로시간 · 금액) 사이에만 세로줄을 긋는다(2026-11-19 사용자 지정)
-                { header: "휴게 시작", width: partTime ? ("w-[130px]" as const) : undefined, divider: partTime, cell: cell(2) },
+                // 묶음(요일 / 근무 / 휴게 / 근로시간 · 금액) 사이에만 세로줄을 긋는다 — 정직원 표(요일 / 근무 / 휴게)도 같다(2026-11-19 사용자 지정)
+                { header: "휴게 시작", width: partTime ? ("w-[130px]" as const) : undefined, divider: true, cell: cell(2) },
                 { header: "휴게 종료", width: partTime ? ("w-[130px]" as const) : undefined, cell: cell(3) },
                 ...(partTime
                   ? [
-                      // 근로시간 · 시급 · 소계는 오른쪽 정렬, 폭은 근로시간 < 시급 < 소계(남는 폭) — 시각 네 열은 드롭다운(96px)이 들어가는 130px 로 고정(2026-11-19 사용자 지정)
+                      // 근로시간 · 시급 · 소계는 오른쪽 정렬, 폭은 근로시간 < 시급 < 소계 — 시각 네 열은 드롭다운(96px)이 들어가는 130px 로 고정(2026-11-19 사용자 지정)
                       { header: "근로시간", width: "w-[140px]" as const, align: "right" as const, divider: true, cell: (r: PayRow) => r.hours },
                       // 금액 열(시급 · 소계)은 오른쪽 정렬 — 자릿수가 맞아 비교하기 쉽다(2026-11-19 사용자 지정)
                       { header: "시급", width: "w-[180px]" as const, align: "right" as const, cell: (r: PayRow) => r.wage },
-                      { header: "소계", align: "right" as const, cell: (r: PayRow) => r.amount },
+                      // 소계도 폭을 둔다 — 남는 폭을 혼자 가져가면 넓은 창(1920)에서 소계 열만 길어져 금액이 표 오른쪽 끝으로 멀어졌다. 모든 열에 폭이 있으면
+                      // 넓은 창에서 같은 비율로 늘어난다(DESIGN.md Tables 「열 폭」, 2026-11-19 사용자 지정)
+                      { header: "소계", width: "w-[200px]" as const, align: "right" as const, cell: (r: PayRow) => r.amount },
                     ]
                   : []),
               ]}
