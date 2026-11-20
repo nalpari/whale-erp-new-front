@@ -2,14 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { createContext, use, useCallback, useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, Checkbox, ConfirmDialog, DataTable, DetailTable, Field, FieldMessage, FormGroup, GuideBand, Select, SlidePanel, TextField, Textarea, useAction, useToast, type Column } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, RowButton, DataTable, DetailTable, Field, FieldMessage, FormGroup, GuideBand, Select, SlidePanel, TextField, Textarea, useAction, useToast, type Column } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { BackdropInert } from "./backdrop-inert";
 import type { AttendanceHistory, ProxyStaff } from "@/lib/attendance-records-api";
 import { storeOptionLabel } from "@/lib/store-scope";
 import { correctAttendanceAction, getAttendanceHistoryAction, getProxyStaffAction, proxyAttendanceAction, reviewAttendanceAction, type EditResult } from "./actions";
-import { byLabel, editTail, fixPairIndex, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, overnightNote, proxyPoints, shortDay, type DayRow, type FixRow } from "./attendance-query";
+import { StoreNameWithType } from "@/components/site/store-type-tag";
+import { byLabel, editTail, fixPairIndex, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, leavesFixList, overnightNote, proxyPoints, shortDay, type DayRow, type FixRow } from "./attendance-query";
 
 // 보정이 필요한 기록의 표와 동작(데모 staff-sections.mjs fixList · fixForm · proxyForm · histDialog, WHALEERP-220). 기록이 있는 줄에는
 // 「보정」(정상 · 지각 · 보정됨 · 대신 등록한 기록도 다시 고친다 — 운영 정책 ATT-20 v283, WHALEERP-687), 확인 필요 사유가 남은 줄에는
@@ -49,6 +50,40 @@ const hasReason = (r: FixRow) => punchesOf(r).some((p) => p?.reviewReason);
 const wasEdited = (r: FixRow) => punchesOf(r).some((p) => p && (p.isCorrected || p.entryMethod === "PROXY"));
 /** 짝 하나를 가리키는 기록 ID — 출근, 없으면 퇴근 */
 const anchorOf = (pair: FixRow["pairs"][number]) => (pair.checkIn ?? pair.checkOut)!.attendanceRecordId;
+
+/**
+ * 기록 보정 패널 · 보정 이력 창 제목 아래 대상 — 둥근 머리 정보 상자(8px · #c9d1de, 상세 화면 요약 띠와 같은 테두리) 안에 근무지 · 직원 · 날짜를 한 줄씩,
+ * 줄 사이 선 없이 이름(13px 회색 · 56px) · 값(14px 먹색 500). 근무지는 점포 유형 꼬리표를 붙인다(2026-11-20 사용자 지정 — 전엔 제목 옆 회색 띠지
+ * 「김알바 · 11-18」라 무엇의 이름 · 날짜인지 이름표가 없었다)
+ */
+function RecordTarget({ row }: { row: Pick<FixRow, "name" | "date" | "storeId" | "storeName" | "storeIsHq"> }) {
+  const rows: [string, ReactNode][] = [
+    ["근무지", <StoreNameWithType key="store" storeId={row.storeId} name={row.storeName} isHq={row.storeIsHq} />],
+    ["직원", row.name],
+    ["날짜", fullDay(row.date)],
+  ];
+  return (
+    <dl className="flex flex-col gap-[6px] rounded-[8px] border border-[#c9d1de] bg-white px-[16px] py-[12px] text-[14px]">
+      {rows.map(([label, value]) => (
+        <div key={label} className="flex min-w-0 items-center gap-[12px]">
+          <dt className="w-[56px] shrink-0 text-[13px] font-medium text-erp-label">{label}</dt>
+          <dd className="min-w-0 font-medium text-erp-ink">{value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/** 「2026-11-18(수)」 — 보정 패널 · 보정 이력 날짜 */
+function fullDay(day: string): string {
+  return `${day}(${"일월화수목금토"[new Date(`${day}T00:00:00Z`).getUTCDay()]})`;
+}
+
+/** 「이상 없음」 확인창 앞머리 — 그 줄의 확인 필요 사유 이름을 「'근무 12시간 초과' 」처럼(여럿이면 쉼표). 없으면 빈 글자 */
+function reasonText(r: FixRow, reasonLabels: EnumValue[]): string {
+  const names = [...new Set(punchesOf(r).flatMap((p) => (p?.reviewReason ? [labelOf(reasonLabels, p.reviewReason)] : [])))];
+  return names.length ? `${names.map((n) => `'${n}'`).join(", ")} ` : "";
+}
 
 function tagsOf(r: FixRow, reasonLabels: EnumValue[], statusLabels: EnumValue[]): ReactNode[] {
   const tags: ReactNode[] = [];
@@ -109,8 +144,11 @@ export function FixList({
   statusLabels,
   editableFrom,
   empty = "보정이 필요한 출·퇴근 기록이 없습니다.",
+  fixAll = false,
 }: {
   rows: FixRow[];
+  /** 급여명세서에서 와 그 직원의 기간 기록을 모두 보일 때 — 이상 없음 처리해도 줄이 목록에 남는다 */
+  fixAll?: boolean;
   reasonLabels: EnumValue[];
   /** 결근 꼬리표 이름(GET /enums AttendanceDayStatus) */
   statusLabels: EnumValue[];
@@ -169,25 +207,24 @@ export function FixList({
     { header: "사유", align: "left", cell: (r) => <span className="flex flex-wrap items-center gap-[4px]">{tagsOf(r, reasonLabels, statusLabels)}</span> },
     {
       header: "",
-      width: "w-[230px]",
+      width: "w-[260px]",
       cell: (r) => {
         const editable = r.date >= editableFrom && permission.update && r.pairs.length > 0;
         return (
-          <span className="flex justify-center gap-[6px]">
+          // 줄 안 동작은 26px 작은 버튼(RowButton) · 칸 오른쪽 끝 — 34px 회색 버튼 셋은 칸을 넘쳐 [이력]이 잘렸고 줄 안에서 무거웠다. 주 동작
+          // [보정]만 회청 바탕, [이상 없음 처리] · [보정 이력]은 테두리. 셋이 다 서는 줄(약 236px)이 칸 안(260 − 여백 20)에 들어간다. 오른쪽 끝에 맞춰 줄마다 버튼 수가 달라도 끝선이 같다(2026-11-20 사용자 지정)
+          <span className="flex justify-end gap-[6px] pr-[8px]">
             {editable && (
-              <Button variant="off" onClick={() => openFix(r)}>
+              <RowButton variant="primary" onClick={() => openFix(r)}>
                 보정
-              </Button>
+              </RowButton>
             )}
-            {hasReason(r) && editable && (
-              <Button variant="off" onClick={() => setReviewing(r)}>
-                이상 없음
-              </Button>
-            )}
+            {hasReason(r) && editable && <RowButton onClick={() => setReviewing(r)}>이상 없음 처리</RowButton>}
             {wasEdited(r) && (
-              <Button variant="off" onClick={() => openHistory(r)} disabled={busy}>
-                이력
-              </Button>
+              // 버튼 이름 · 팝업 제목을 「보정 이력」으로 맞춘다 — 관리자가 한 보정 · 대신 등록이 쌓인다(2026-11-20 사용자 지정, 전엔 [이력] · 「… 출퇴근 기록 이력」)
+              <RowButton onClick={() => openHistory(r)} disabled={busy}>
+                보정 이력
+              </RowButton>
             )}
           </span>
         );
@@ -202,7 +239,7 @@ export function FixList({
         <DataTable columns={columns} rows={rows} rowKey={(r) => `${r.staffMemberId}-${r.date}`} empty={empty} fillEmpty />
       </BackdropInert>
       {/* BP 마스터 등록처럼 바탕을 어둡게 깔고, 바탕을 누르면 닫는다(2026-11-05 사용자 지정, 3팀 확인 필요) */}
-      <SlidePanel id="attendance-fix" open={fix !== null} onClose={() => setFix(null)} label="기록 보정" trigger={trigger} closeOnBackdrop>
+      <SlidePanel id="attendance-fix" open={fix !== null} onClose={() => setFix(null)} label="출퇴근 기록 보정" trigger={trigger} closeOnBackdrop>
         {fix && (
           <FixForm
             // 고칠 기록(짝)을 바꾸면 입력칸을 그 짝 값으로 새로 채운다
@@ -218,8 +255,9 @@ export function FixList({
       </SlidePanel>
       <ConfirmDialog
         open={reviewing !== null}
-        title="이상 없음으로 검토를 마치시겠습니까?"
-        confirmLabel="이상 없음"
+        // 문구는 사용자 지정(2026-11-20) — 전엔 「확인 필요 꼬리표와 사유를 지웁니다. 기록 값은 바뀌지 않습니다.」로 개발 용어였다
+        title="출퇴근 기록을 '이상 없음'으로 처리하시겠습니까?"
+        confirmLabel="이상 없음 처리"
         busy={busy}
         onCancel={() => setReviewing(null)}
         onConfirm={() =>
@@ -236,31 +274,38 @@ export function FixList({
           })
         }
       >
-        확인 필요 꼬리표와 사유를 지웁니다. 기록 값은 바뀌지 않습니다.
+        {reviewing && reasonText(reviewing, reasonLabels)}확인 필요 사유가{" "}
+        {/* 정말 목록에서 빠지는 줄일 때만 「제외됩니다」— 미등록 · 보정 · 대신 등록 줄과 기간 기록 전체(fixAll)는 남는다(2026-11-20 사용자 지정) */}
+        {reviewing && !fixAll && leavesFixList(reviewing) ? "해제되며, 보정이 필요한 기록 목록에서 제외됩니다." : "해제됩니다."} 출퇴근 시각은 변경되지 않습니다.
         {reviewing?.isPayslipConfirmed && <PayslipWarning />}
       </ConfirmDialog>
       <ConfirmDialog
         open={history !== null}
-        title={history ? `${history.row.name} 출퇴근 기록 이력` : ""}
+        title="보정 이력"
         confirmLabel="닫기"
         cancelLabel={null}
         wide
         onCancel={() => setHistory(null)}
         onConfirm={() => setHistory(null)}
       >
+        {/* 어느 직원 · 날짜 · 근무지의 이력인지 제목 아래 한 줄로 — 기록 보정 패널과 같다(2026-11-20 사용자 지정, 전엔 제목에 「김알바 · 11-18」) */}
+        {history && (
+          <div className="mb-[12px]">
+            <RecordTarget row={history.row} />
+          </div>
+        )}
         {!history?.data ? (
           <Sub>불러오는 중입니다…</Sub>
         ) : history.data.items.length === 0 ? (
-          <Sub>이력이 없습니다.</Sub>
+          <Sub>보정 이력이 없습니다.</Sub>
         ) : (
           <div className="flex flex-col gap-[12px]">
             {history.data.items.map((h, i) => (
               <DetailTable
                 key={i}
-                title="이력"
+                // 표 제목은 「구분 · 일시」 — 표마다 「이력」으로 같아 어느 것이 어느 것인지 갈리지 않았다(2026-11-20 사용자 지정)
+                title={`${h.kind === "CORRECTION" ? "보정" : "대신 등록"} · ${new Date(h.at).toLocaleString("sv-SE", { timeZone: "Asia/Seoul" }).slice(0, 16)}`}
                 rows={[
-                  { label: "일시", value: new Date(h.at).toLocaleString("sv-SE", { timeZone: "Asia/Seoul" }).slice(0, 16) },
-                  { label: "구분", value: h.kind === "CORRECTION" ? "보정" : "대신 등록" },
                   { label: "처리한 사람", value: byLabel(h) },
                   ...(h.before ? [{ label: "변경 전", value: h.before }] : []),
                   { label: h.kind === "CORRECTION" ? "변경 후" : "등록한 값", value: h.after },
@@ -294,7 +339,7 @@ export function DayFixProvider({ children }: { children: ReactNode }) {
   return (
     <DayFixContext value={open}>
       {children}
-      <SlidePanel id="attendance-day-fix" open={fix !== null} onClose={() => setFix(null)} label="기록 보정" trigger={trigger} closeOnBackdrop>
+      <SlidePanel id="attendance-day-fix" open={fix !== null} onClose={() => setFix(null)} label="출퇴근 기록 보정" trigger={trigger} closeOnBackdrop>
         {fix && (
           <FixForm
             key={`${round}-${fix.pairIndex}`}
@@ -316,10 +361,11 @@ export function DayFixButton({ row, editableFrom }: { row: DayRow; editableFrom:
   const open = use(DayFixContext);
   const permission = usePagePermission();
   if (!open || !permission.update || row.date < editableFrom || row.pairs.length === 0) return null;
+  // 보정이 필요한 기록 줄과 같은 작은 버튼(2026-11-20 사용자 지정)
   return (
-    <Button variant="off" onClick={() => open(row)}>
+    <RowButton variant="primary" onClick={() => open(row)}>
       보정
-    </Button>
+    </RowButton>
   );
 }
 
@@ -353,7 +399,7 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
     const next = pickErrors({
       checkIn: checkIn && !TIME.test(checkIn) ? "출근 시각을 시 · 분까지 입력해 주세요." : pair.checkIn && !checkIn ? "출근 시각을 입력해 주세요." : undefined,
       checkOut: checkOut && !TIME.test(checkOut) ? "퇴근 시각을 시 · 분까지 입력해 주세요." : pair.checkOut && !checkOut ? "퇴근 시각을 입력해 주세요." : undefined,
-      reason: reason.trim() ? undefined : "수정 사유를 입력해 주세요.",
+      reason: reason.trim() ? undefined : "보정 사유를 입력해 주세요.",
     });
     setErrors(next);
     setError(null);
@@ -378,27 +424,28 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
   return (
     <div id={ids} className="contents">
       {/* 패널(SlidePanel)이 이미 안쪽 24px · 칸 사이 16px 를 준다 — 여기서 또 주면 BP 마스터 등록보다 칸이 좁고 사이가 벌어졌다(2026-11-05 사용자 지정, 3팀 확인 필요) */}
-      <div className="flex items-center gap-[8px]">
-        <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">기록 보정</h2>
-        <span className="rounded-[2px] bg-erp-thead-bg px-[4px] py-px text-[14px] text-erp-sub">
-          {fix.row.name} · {shortDay(fix.row.date)}
-        </span>
+      {/* 제목 아래 근무지 · 직원 · 날짜 한 줄씩(RecordTarget) — 제목 옆 회색 띠지(「김알바 · 11-18」)는 무엇의 이름 · 날짜인지 이름표가 없었다(2026-11-20 사용자 지정) */}
+      <div className="flex flex-col gap-[8px]">
+        <h2 className="text-[18px] font-semibold text-erp-ink">출퇴근 기록 보정</h2>
+        <RecordTarget row={fix.row} />
       </div>
       {fix.row.isPayslipConfirmed && <PayslipWarning />}
+      {/* 「보정할 기록」도 「출퇴근 기록」과 같은 묶음 제목(FormGroup, 15px 600) — 칸 이름(14px 회색)이면 두 제목의 크기 · 굵기가 섞여 보였다(2026-11-20 사용자 지정).
+          예전엔 Field 를 패널에 바로 둬 세로로 늘어나 위아래가 크게 벌어졌다 */}
       {fix.row.pairs.length > 1 && (
-        <Field label="고칠 기록">
-          <Select aria-label="고칠 기록" value={fix.pairIndex} onChange={(e) => onPick(Number(e.target.value))}>
+        <FormGroup title="보정할 기록">
+          <Select aria-label="보정할 기록" value={fix.pairIndex} onChange={(e) => onPick(Number(e.target.value))}>
             {fix.row.pairs.map((p, i) => (
               <option key={i} value={i}>
                 출근 {p.checkIn?.time ?? "없음"} · 퇴근 {p.checkOut ? p.checkOut.time + laterDayMark(fix.row.date, p.checkOut.recordedAt) : "없음"}
               </option>
             ))}
           </Select>
-        </Field>
+        </FormGroup>
       )}
       <FormGroup title="출퇴근 기록">
         <MessageRow>
-          <HelpField label="출근" help={`원본 ${pair.checkIn?.time ?? "없음"}`} message={<FieldMessage id={`${ids}-checkIn`} message={errors.checkIn} />}>
+          <HelpField label="출근" help={`보정 전 ${pair.checkIn?.time ?? "없음"}`} message={<FieldMessage id={`${ids}-checkIn`} message={errors.checkIn} />}>
             <TextField
               type="time"
               aria-label="출근"
@@ -413,7 +460,7 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
           </HelpField>
           <HelpField
             label="퇴근"
-            help={`원본 ${pair.checkOut ? pair.checkOut.time + laterDayMark(fix.row.date, pair.checkOut.recordedAt) : "없음"}`}
+            help={`보정 전 ${pair.checkOut ? pair.checkOut.time + laterDayMark(fix.row.date, pair.checkOut.recordedAt) : "없음"}`}
             message={<FieldMessage id={`${ids}-checkOut`} message={errors.checkOut} />}
           >
             <TextField
@@ -436,9 +483,9 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
             }} />
         )}
         <SaveNote note={fixSaveNote(fix.row.date, !!pair.checkIn, checkIn, checkOut, nextDay)} />
-        <MessageField label="수정 사유" required message={<FieldMessage id={`${ids}-reason`} message={errors.reason} />}>
+        <MessageField label="보정 사유" required message={<FieldMessage id={`${ids}-reason`} message={errors.reason} />}>
           <Textarea
-            aria-label="수정 사유"
+            aria-label="보정 사유"
             rows={2}
             maxLength={500}
             value={reason}
@@ -459,7 +506,7 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
           // 대신 등록 안내와 같은 순서 · 말투 — 기간 · 직원 앱 표시 · 보정 결과, 끝에 시각 처리(2026-11-05 사용자 지정, 3팀 확인 필요)
           "최근 3개월 이내의 기록만 보정할 수 있으며, 미래 시각은 등록할 수 없습니다.",
           "관리자가 보정한 기록은 직원 근무 앱에 연필 아이콘으로 표시됩니다.",
-          "보정한 기록의 확인 필요 표시와 사유는 삭제됩니다.",
+          "보정한 기록의 확인 필요 사유가 해제됩니다.",
           ...(pair.checkIn
             ? ["퇴근 시각이 출근 시각과 같거나 이전인 경우, 다음 날 퇴근한 것으로 처리됩니다.", "그 외에 다음 날 퇴근한 경우, 관리자가 「다음 날 퇴근」을 체크합니다."]
             : ["출근 시각이 퇴근 시각과 같거나 이후인 경우, 전날 출근한 것으로 처리됩니다."]),
@@ -752,7 +799,7 @@ function SaveNote({ note }: { note: string | null }) {
   return note && <p className="text-[13px] font-medium text-erp-ink">{note}</p>;
 }
 
-/** 도움말이 칸 아래에 붙는 칸(데모 fieldH) — 기록 보정의 「원본 12:58」 */
+/** 도움말이 칸 아래에 붙는 칸(데모 fieldH) — 기록 보정의 「보정 전 12:58」 */
 function HelpField({ label, help, message, children }: { label: string; help: string; message: ReactNode; children: ReactNode }) {
   return (
     <div className="flex min-w-px flex-1 flex-col gap-[8px]">

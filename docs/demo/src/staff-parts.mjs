@@ -280,4 +280,9 @@ export const roundAsk = (label, title, body = "", ok = label) => {
 const STORE_TYPE_BG = { 본사: "bg-white", 직영: "bg-erp-on-bg", 가맹: "bg-erp-thead-bg" };
 export const storeTypeTag = (type) =>
   `<span class="shrink-0 rounded-[2px] border border-erp-thead-line px-[4px] text-[12px] font-medium text-erp-thead-text ${STORE_TYPE_BG[type]}">${type}</span>`;
+// 패널 정보 상자(attendance-fix-list.tsx RecordTarget) — 둥근 8px · #c9d1de 상자에 「이름 값」 줄, 줄 사이 선 없음(2026-11-20 사용자 지정)
+export const recordTarget = (rows) =>
+  `<dl class="flex flex-col gap-[6px] rounded-[8px] border border-[#c9d1de] bg-white px-[16px] py-[12px] text-[14px]">${rows
+    .map(([l, v]) => `<div class="flex min-w-0 items-center gap-[12px]"><dt class="w-[56px] shrink-0 text-[13px] font-medium text-erp-label">${l}</dt><dd class="min-w-0 font-medium text-erp-ink">${v}</dd></div>`)
+    .join("")}</dl>`;
 export const storeName = (type, name) => `<span class="flex min-w-0 items-center gap-[6px]">${storeTypeTag(type)}<span class="truncate">${name}</span></span>`;

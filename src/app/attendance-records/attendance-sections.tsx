@@ -251,7 +251,7 @@ export function FixSection({
         </span>
       }
     >
-      <FixList rows={rows} reasonLabels={reasonLabels} statusLabels={statusLabels} editableFrom={editableFrom} empty={query.fixAll ? "기간 안 출·퇴근 기록이 없습니다." : undefined} />
+      <FixList rows={rows} reasonLabels={reasonLabels} statusLabels={statusLabels} editableFrom={editableFrom} fixAll={query.fixAll} empty={query.fixAll ? "기간 안 출·퇴근 기록이 없습니다." : undefined} />
       {/* 급여명세서 경고 띠의 「출근·퇴근 미등록」은 근로계약 근무 요일로 세지만, 이 목록의 줄은 근무스케줄이나 출퇴근 기록이 있는 날만 생긴다(WHALEERP-664 리뷰) */}
       {query.fixAll && <p className="pt-[8px] text-[13px] text-erp-label">근무스케줄과 출퇴근 기록이 모두 없는 근로계약 근무 요일은 이 목록에 나오지 않습니다.</p>}
     </Section>

@@ -279,28 +279,44 @@ export function staffSections({ A, R }) {
     p.weekNav(A, "attend-sums", "2026-08-31", { md: true }),
     `<div id="attend-sums">${weekSum("2026-08-31", [54, 5, 2], ["1,284h", "42h", "18h", "38명"])}${weekSum("2026-08-24", [58, 3, 1], ["1,312h", "36h", "16h", "38명"])}${weekSum("", [0, 0, 0], ["0h", "0h", "0h", "-"])}</div>`,
   );
-  // 「이력」은 그 기록의 변경 이력을 확인창으로 보인다(변경 전후 값·일시·처리한 사람·사유, 2026-10-02 재영).
+  // 「보정 이력」은 그 기록의 변경 이력을 창으로 보인다(변경 전후 값·일시·처리한 사람·사유, 2026-10-02 재영). 맨 위 근무지 · 직원 · 날짜 정보 상자,
+  // 건마다 「구분 · 일시」 제목 표(앱 attendance-fix-list.tsx, 2026-11-20 사용자 지정 — 전엔 「이름 출퇴근 기록 이력」, 일시 · 구분 줄)
   const histId = { 문태경: x.dialogId(), 오세라: x.dialogId() };
-  const histDialog = (name, rows) =>
-    x.dialog(histId[name], `${name} 출퇴근 기록 이력`, ui.detailTable("이력", rows), ui.button("닫기", { variant: "off", "data-close": true }));
+  const histDialog = (name, day, title, rows) =>
+    x.dialog(
+      histId[name],
+      "보정 이력",
+      `<div class="mb-[12px]">${p.recordTarget([["근무지", p.storeName("직영", "모리커피 성수점")], ["직원", name], ["날짜", day]])}</div>` + ui.detailTable(title, rows),
+      ui.button("닫기", { variant: "off", "data-close": true }),
+    );
   const histDialogs =
-    histDialog("문태경", [
-      ["일시", "2026-08-30 10:12"],
-      ["구분", "보정"],
+    histDialog("문태경", "2026-08-29(토)", "보정 · 2026-08-30 10:12", [
       ["처리한 사람", "정하윤 (BP 마스터)"],
       ["변경 전", "출근 09:02 · 퇴근 없음"],
       ["변경 후", "출근 09:02 · 퇴근 18:30"],
       ["사유", "퇴근 등록 누락 · 점장 확인"],
     ]) +
-    histDialog("오세라", [
-      ["일시", "2026-08-27 18:05"],
-      ["구분", "대신 등록"],
+    histDialog("오세라", "2026-08-27(목)", "대신 등록 · 2026-08-27 18:05", [
       ["처리한 사람", "정하윤 (BP 마스터)"],
       ["등록한 값", "출근 10:00 · 퇴근 16:00"],
       ["사유", "위치 수집 일시 중지 · 점장 확인"],
     ]);
   // 「이상 없음」은 확인 필요 꼬리표가 붙은 줄에만 — 출근·퇴근 미등록은 보정으로 채운다(운영 정책 ATT-19, 2026-10-26 재영).
-  const fixBtns = (ok = true) => `<span class="flex justify-center gap-[6px]">${ui.slideTrigger("보정", fixPanel, "off")}${ok ? p.ask("이상 없음", "off", "이상 없음으로 검토를 마치시겠습니까?", "확인 필요 꼬리표와 사유를 지웁니다.") : ""}</span>`;
+  // 줄 버튼은 26px RowButton — [보정]만 회청 바탕, 나머지 테두리, 칸 오른쪽 끝(앱 attendance-fix-list.tsx, 2026-11-20 사용자 지정)
+  const okBtn = (reason) => {
+    const id = x.dialogId();
+    return (
+      ui.rowButton("이상 없음 처리", { "data-dialog": id }) +
+      x.dialog(
+        id,
+        "출퇴근 기록을 '이상 없음'으로 처리하시겠습니까?",
+        `'${reason}' 확인 필요 사유가 해제되며, 보정이 필요한 기록 목록에서 제외됩니다. 출퇴근 시각은 변경되지 않습니다.`,
+        ui.button("취소", { variant: "off", "data-close": true }) + ui.button("이상 없음 처리", { "data-close": true }),
+      )
+    );
+  };
+  const rowBtns = (html) => `<span class="flex justify-end gap-[6px] pr-[8px]">${html}</span>`;
+  const fixBtns = (reason) => rowBtns(ui.rowButton("보정", { variant: "primary", "aria-expanded": "false", "aria-controls": fixPanel }) + (reason ? okBtn(reason) : ""));
   // 보정 목록 묶음. 급여명세서에서 오면(앱 fixAll) 제목 · 기간 · 줄 · 빈 문구가 바뀌고 표 아래 안내가 붙는다(WHALEERP-664).
   const fixSection = (title, from, to, rows, empty, after = "") =>
     p.section(
@@ -314,7 +330,7 @@ export function staffSections({ A, R }) {
           { header: "출근", width: "w-[80px]" },
           { header: "퇴근", width: "w-[80px]" },
           { header: "사유", align: "left" },
-          { header: "", width: "w-[230px]" },
+          { header: "", width: "w-[260px]" },
         ],
         rows,
         empty,
@@ -325,13 +341,13 @@ export function staffSections({ A, R }) {
     "2026-08-06",
     "2026-09-06",
       [
-        ["서지안", "09-05", "12:58", "-", p.tag("warn", "퇴근 미등록"), fixBtns(false)],
-        ["권도윤", "08-21", "-", "21:12", p.tag("warn", "출근 미등록"), fixBtns(false)],
-        ["배정숙", "09-02", "08:47", "23:58", p.tag("risk", "반경 밖 퇴근"), fixBtns()],
-        ["남주호", "09-01", "09:04", "18:02", p.tag("risk", "위치 조작 감지"), fixBtns()],
-        ["한도윤", "08-31", "09:00", "22:30", p.tag("risk", "근무 12시간 초과"), fixBtns()],
-        ["문태경", "08-29", "09:02", "18:30", `${p.tag("info", "수정됨")} ${p.sub("08-30 정하윤")}`, x.dialogTrigger("이력", histId.문태경, "off")],
-        ["오세라", "08-27", "10:00", "16:00", `${p.tag("info", "대신 등록")} ${p.sub("위치 수집 일시 중지 · 정하윤")}`, x.dialogTrigger("이력", histId.오세라, "off")],
+        ["서지안", "09-05", "12:58", "-", p.tag("warn", "퇴근 미등록"), fixBtns()],
+        ["권도윤", "08-21", "-", "21:12", p.tag("warn", "출근 미등록"), fixBtns()],
+        ["배정숙", "09-02", "08:47", "23:58", p.tag("risk", "반경 밖 퇴근"), fixBtns("반경 밖 퇴근")],
+        ["남주호", "09-01", "09:04", "18:02", p.tag("risk", "위치 조작 감지"), fixBtns("위치 조작 감지")],
+        ["한도윤", "08-31", "09:00", "22:30", p.tag("risk", "근무 12시간 초과"), fixBtns("근무 12시간 초과")],
+        ["문태경", "08-29", "09:02", "18:30", `${p.tag("info", "수정됨")} ${p.sub("08-30 정하윤")}`, rowBtns(ui.rowButton("보정 이력", { "data-dialog": histId.문태경 }))],
+        ["오세라", "08-27", "10:00", "16:00", `${p.tag("info", "대신 등록")} ${p.sub("위치 수집 일시 중지 · 정하윤")}`, rowBtns(ui.rowButton("보정 이력", { "data-dialog": histId.오세라 }))],
       ],
       // 기간이 늘 걸려 있어 문구는 하나다(앱 attendance-fix-list.tsx)
       "보정이 필요한 출·퇴근 기록이 없습니다.",
@@ -596,18 +612,19 @@ export function staffSections({ A, R }) {
   );
   const fixForm = ui.slidePanel(
     fixPanel,
-    "기록 보정",
-    panelHead("기록 보정", p.tag("quiet", "서지안 · 09-05")) +
+    "출퇴근 기록 보정",
+    // 제목 아래 근무지 · 직원 · 날짜 정보 상자(앱 RecordTarget, 2026-11-20 사용자 지정 — 전엔 제목 옆 회색 꼬리표 「서지안 · 09-05」)
+    `<div class="flex flex-col gap-[8px]"><h2 class="text-[18px] font-semibold text-erp-ink">출퇴근 기록 보정</h2>${p.recordTarget([["근무지", p.storeName("직영", "모리커피 성수점")], ["직원", "서지안"], ["날짜", "2026-09-05(토)"]])}</div>` +
       ui.formGroup(
         "출퇴근 기록",
-        ui.formRow(p.fieldH("출근", p.timeField("12:58", "출근"), "원본 12:58"), p.fieldH("퇴근", p.timeField("21:30", "퇴근"), "원본 없음")),
-        p.fieldH("수정 사유", ui.textarea({ rows: 2, value: "퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인." }), ""),
+        ui.formRow(p.fieldH("출근", p.timeField("12:58", "출근"), "보정 전 12:58"), p.fieldH("퇴근", p.timeField("21:30", "퇴근"), "보정 전 없음")),
+        p.fieldH("보정 사유", ui.textarea({ rows: 2, value: "퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인." }), ""),
       ) +
       // 안내는 묶음 상자 밖 안내 박스, 버튼은 가운데 [취소] [저장](앱 attendance-fix-list.tsx FixForm, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「보정 저장」, 사유 4줄)
       p.guideBand("보정 안내", [
         "최근 3개월 이내의 기록만 보정할 수 있으며, 미래 시각은 등록할 수 없습니다.",
         "관리자가 보정한 기록은 직원 근무 앱에 연필 아이콘으로 표시됩니다.",
-        "보정한 기록의 확인 필요 표시와 사유는 삭제됩니다.",
+        "보정한 기록의 확인 필요 사유가 해제됩니다.",
         "퇴근 시각이 출근 시각과 같거나 이전인 경우, 다음 날 퇴근한 것으로 처리됩니다.",
         "그 외에 다음 날 퇴근한 경우, 관리자가 「다음 날 퇴근」을 체크합니다.",
       ]) +

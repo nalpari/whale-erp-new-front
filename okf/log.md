@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-20
+* **Update**: [출·퇴근 현황 조회 화면](/screens/attendance-records.md) · [Whale ERP Frontend](/whale-erp-front.md)(공통 `RowButton`) — 보정이 필요한 기록 줄 버튼을 공통 `RowButton`(26px, [보정] 회청 · [이상 없음 처리] · [보정 이력] 테두리), 이상 없음 확인창 문구 · 버튼, 보정 이력 창 제목 · 정보 상자(`RecordTarget`), 보정 패널 제목 「출퇴근 기록 보정」 · 정보 상자 · 「보정할 기록」 묶음 제목, 「…저장됩니다」(2026-11-20 사용자 지정).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로자 정보 수정 저장 안내를 실제 보내는 것에 맞췄다(WHALEERP-746, 사용자 결정): 가입 여부(`staffJoined`)로 고르고, 가입 전이면 「앱에 가입하지 않은 번호면 가입 초대를, 이미 앱 계정이 있는 번호면 소속 추가 확인 요청을 다시 보냅니다」 · 「서명 기한은 가입 초대면 오늘부터, 소속 추가 확인 요청이면 직원이 수락한 날부터 30일입니다」, 가입한 직원이면 「앱으로 다시 서명을 요청」. 옛 「이미 가입한 직원이면 바로 서명 요청」을 걷었다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 직원 상세 근로계약 칸: 신고 정보를 풀지 못하면(api `payrollAccountUnavailable`) 칸 전체 「근로계약을 불러오지 못했습니다」 대신 「급여 계좌」 줄만 회색 「신고 정보를 지금 볼 수 없습니다.」(WHALEERP-758, 근로계약 상세와 같은 글자). api 타입을 다시 만들었다.
 

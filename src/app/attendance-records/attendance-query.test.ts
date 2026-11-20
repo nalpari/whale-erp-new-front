@@ -1,7 +1,7 @@
 // node --test src/app/attendance-records/attendance-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { byLabel, type DayRow, defaultQuery, editTail, fixRowsOf, fixPairIndex, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, overnightNote, parseAttendanceQuery, proxyPoints, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
+import { byLabel, type DayRow, defaultQuery, editTail, fixRowsOf, fixPairIndex, leavesFixList, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, overnightNote, parseAttendanceQuery, proxyPoints, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
 
 const TODAY = "2026-10-23";
 const def = defaultQuery(TODAY);
@@ -99,6 +99,14 @@ test("보정이 필요한 기록 — 미등록 · 확인 필요 · 대신 등록
   assert.equal(needsFix(row({ pairs: [{ checkIn: punch("09:00", { isCorrected: true }), checkOut: null }] })), true);
 });
 
+test("이상 없음 처리 뒤 목록에서 빠지는 줄 — 직원이 찍은 기록만, 미등록 · 보정 · 대신 등록 줄은 남는다", () => {
+  const reason = { reviewReason: "MOCK_LOCATION" } as const;
+  assert.equal(leavesFixList(row({ pairs: [{ checkIn: punch("09:00", reason), checkOut: punch("18:00") }] })), true);
+  assert.equal(leavesFixList(row({ status: "MISSING_CHECK_OUT", pairs: [{ checkIn: punch("09:00", reason), checkOut: null }] })), false);
+  assert.equal(leavesFixList(row({ pairs: [{ checkIn: punch("09:00", { ...reason, entryMethod: "PROXY" }), checkOut: punch("18:00") }] })), false);
+  assert.equal(leavesFixList(row({ pairs: [{ checkIn: punch("09:00", reason), checkOut: punch("18:00", { isCorrected: true }) }] })), false);
+});
+
 test("급여명세서에서 온 기간 기록 전체(fixAll) — 직원 레코드가 있을 때만 켜지고 주소에 남는다, 보정 대상이 아닌 줄도 보인다", () => {
   const q = parseAttendanceQuery({ staffMemberId: "1", fixAll: "1", fixFrom: "2026-09-28", fixTo: "2026-10-20" }, TODAY);
   assert.equal(q.fixAll, true);
@@ -147,8 +155,8 @@ test("근태 요약 — 야간(22~06시)은 줄에서 센다", () => {
 });
 
 test("다음 날 퇴근 안내 — 퇴근이 출근보다 이르거나 같을 때만", () => {
-  assert.equal(overnightNote("2026-10-23", "15:00", "02:00"), "다음 날(10/24) 02:00 퇴근으로 저장합니다.");
-  assert.equal(overnightNote("2026-10-31", "22:00", "22:00"), "다음 날(11/1) 22:00 퇴근으로 저장합니다.");
+  assert.equal(overnightNote("2026-10-23", "15:00", "02:00"), "다음 날(10/24) 02:00 퇴근으로 저장됩니다.");
+  assert.equal(overnightNote("2026-10-31", "22:00", "22:00"), "다음 날(11/1) 22:00 퇴근으로 저장됩니다.");
   assert.equal(overnightNote("2026-10-23", "09:00", "18:00"), null);
   assert.equal(overnightNote("2026-10-23", "15:00", "2:0"), null);
 });
@@ -179,11 +187,11 @@ test("보정 퇴근 날 — 처음 값은 원래 퇴근이 다음 날인가, 퇴
   assert.equal(forcedNextDay("22:00", "06:00"), true);
   assert.equal(forcedNextDay("09:00", "10:00"), false);
   // 24시간 넘는 짝(09:00 → 다음 날 10:00)을 다음 날 09:30 으로
-  assert.equal(fixSaveNote("2026-10-23", true, "09:00", "09:30", true), "다음 날(10/24) 09:30 퇴근으로 저장합니다.");
+  assert.equal(fixSaveNote("2026-10-23", true, "09:00", "09:30", true), "다음 날(10/24) 09:30 퇴근으로 저장됩니다.");
   assert.equal(fixSaveNote("2026-10-23", true, "09:00", "18:00", false), null);
-  assert.equal(fixSaveNote("2026-10-23", true, "22:00", "06:00", false), "다음 날(10/24) 06:00 퇴근으로 저장합니다.");
+  assert.equal(fixSaveNote("2026-10-23", true, "22:00", "06:00", false), "다음 날(10/24) 06:00 퇴근으로 저장됩니다.");
   // 출근 없는 퇴근에 밤 출근을 채우면 출근이 전날이다
-  assert.equal(fixSaveNote("2026-10-24", false, "22:00", "06:00", false), "전날(10/23) 22:00 출근으로 저장합니다.");
+  assert.equal(fixSaveNote("2026-10-24", false, "22:00", "06:00", false), "전날(10/23) 22:00 출근으로 저장됩니다.");
   assert.equal(fixSaveNote("2026-10-24", false, "05:00", "06:00", false), null);
 });
 
