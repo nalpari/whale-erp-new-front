@@ -10,7 +10,7 @@ import type { AttendanceHistory, ProxyStaff } from "@/lib/attendance-records-api
 import { storeOptionLabel } from "@/lib/store-scope";
 import { correctAttendanceAction, getAttendanceHistoryAction, getProxyStaffAction, proxyAttendanceAction, reviewAttendanceAction, type EditResult } from "./actions";
 import { StoreNameWithType } from "@/components/site/store-type-tag";
-import { byLabel, editTail, fixPairIndex, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, overnightNote, proxyPoints, shortDay, type DayRow, type FixRow } from "./attendance-query";
+import { byLabel, editTail, fixPairIndex, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, leavesFixList, overnightNote, proxyPoints, shortDay, type DayRow, type FixRow } from "./attendance-query";
 
 // 보정이 필요한 기록의 표와 동작(데모 staff-sections.mjs fixList · fixForm · proxyForm · histDialog, WHALEERP-220). 기록이 있는 줄에는
 // 「보정」(정상 · 지각 · 보정됨 · 대신 등록한 기록도 다시 고친다 — 운영 정책 ATT-20 v283, WHALEERP-687), 확인 필요 사유가 남은 줄에는
@@ -144,8 +144,11 @@ export function FixList({
   statusLabels,
   editableFrom,
   empty = "보정이 필요한 출·퇴근 기록이 없습니다.",
+  fixAll = false,
 }: {
   rows: FixRow[];
+  /** 급여명세서에서 와 그 직원의 기간 기록을 모두 보일 때 — 이상 없음 처리해도 줄이 목록에 남는다 */
+  fixAll?: boolean;
   reasonLabels: EnumValue[];
   /** 결근 꼬리표 이름(GET /enums AttendanceDayStatus) */
   statusLabels: EnumValue[];
@@ -271,7 +274,9 @@ export function FixList({
           })
         }
       >
-        {reviewing && reasonText(reviewing, reasonLabels)}확인 필요 사유가 해제되며, 보정이 필요한 기록 목록에서 제외됩니다. 출퇴근 시각은 변경되지 않습니다.
+        {reviewing && reasonText(reviewing, reasonLabels)}확인 필요 사유가{" "}
+        {/* 정말 목록에서 빠지는 줄일 때만 「제외됩니다」— 미등록 · 보정 · 대신 등록 줄과 기간 기록 전체(fixAll)는 남는다(2026-11-20 사용자 지정) */}
+        {reviewing && !fixAll && leavesFixList(reviewing) ? "해제되며, 보정이 필요한 기록 목록에서 제외됩니다." : "해제됩니다."} 출퇴근 시각은 변경되지 않습니다.
         {reviewing?.isPayslipConfirmed && <PayslipWarning />}
       </ConfirmDialog>
       <ConfirmDialog

@@ -230,6 +230,14 @@ export const fixRowsOf = <T extends DayRow>(rows: readonly T[], q: AttendanceQue
   rows.filter((r) => (q.fixAll || needsFix(r)) && matchesFilter(r, q));
 
 /** 보정이 필요한 기록 — 퇴근 · 출근 미등록과 확인 필요 사유가 남은 기록, 그리고 보정 · 대신 등록한 기록(데모 「보정이 필요한 기록」) */
+/**
+ * 「이상 없음 처리」(확인 필요 사유만 해제) 뒤 보정이 필요한 기록에서 빠지는 줄인가 — 출근 · 퇴근 미등록과 보정 · 대신 등록한 줄은 사유가 없어도
+ * 남는다(needsFix). 빠질 때만 확인창에 「목록에서 제외됩니다」를 붙인다(2026-11-20 사용자 지정)
+ */
+export function leavesFixList(r: DayRow): boolean {
+  return r.status !== "MISSING_CHECK_OUT" && r.status !== "MISSING_CHECK_IN" && entriesOf(r).every((e) => e === "SELF");
+}
+
 export function needsFix(r: DayRow): boolean {
   return r.status === "MISSING_CHECK_OUT" || r.status === "MISSING_CHECK_IN" || reasonsOf(r).length > 0 || entriesOf(r).some((e) => e !== "SELF");
 }

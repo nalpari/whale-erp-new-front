@@ -1,7 +1,7 @@
 // node --test src/app/attendance-records/attendance-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { byLabel, type DayRow, defaultQuery, editTail, fixRowsOf, fixPairIndex, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, overnightNote, parseAttendanceQuery, proxyPoints, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
+import { byLabel, type DayRow, defaultQuery, editTail, fixRowsOf, fixPairIndex, leavesFixList, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, fixSaveNote, fixPoints, forcedNextDay, hasFutureTime, initialNextDay, laterDayMark, overnightNote, parseAttendanceQuery, proxyPoints, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
 
 const TODAY = "2026-10-23";
 const def = defaultQuery(TODAY);
@@ -97,6 +97,14 @@ test("보정이 필요한 기록 — 미등록 · 확인 필요 · 대신 등록
   assert.equal(needsFix(row({ pairs: [{ checkIn: punch("09:00", { reviewReason: "MOCK_LOCATION" }), checkOut: null }] })), true);
   assert.equal(needsFix(row({ pairs: [{ checkIn: punch("09:00", { entryMethod: "PROXY" }), checkOut: null }] })), true);
   assert.equal(needsFix(row({ pairs: [{ checkIn: punch("09:00", { isCorrected: true }), checkOut: null }] })), true);
+});
+
+test("이상 없음 처리 뒤 목록에서 빠지는 줄 — 직원이 찍은 기록만, 미등록 · 보정 · 대신 등록 줄은 남는다", () => {
+  const reason = { reviewReason: "MOCK_LOCATION" } as const;
+  assert.equal(leavesFixList(row({ pairs: [{ checkIn: punch("09:00", reason), checkOut: punch("18:00") }] })), true);
+  assert.equal(leavesFixList(row({ status: "MISSING_CHECK_OUT", pairs: [{ checkIn: punch("09:00", reason), checkOut: null }] })), false);
+  assert.equal(leavesFixList(row({ pairs: [{ checkIn: punch("09:00", { ...reason, entryMethod: "PROXY" }), checkOut: punch("18:00") }] })), false);
+  assert.equal(leavesFixList(row({ pairs: [{ checkIn: punch("09:00", reason), checkOut: punch("18:00", { isCorrected: true }) }] })), false);
 });
 
 test("급여명세서에서 온 기간 기록 전체(fixAll) — 직원 레코드가 있을 때만 켜지고 주소에 남는다, 보정 대상이 아닌 줄도 보인다", () => {
