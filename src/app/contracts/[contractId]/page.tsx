@@ -403,6 +403,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
                           </span>
                           <span className="flex shrink-0 items-center gap-[8px] text-erp-label">
                             <span>{labelOf(actors, h.actor)}</span>
+                            {/* #d9d9d9 — DESIGN.md 값 구분선, Figma 전용 색이라 토큰이 없다 */}
                             <span aria-hidden className="h-[11px] w-px bg-[#d9d9d9]" />
                             <span className="tabular-nums">{kstDateTime(h.changedAt)}</span>
                           </span>

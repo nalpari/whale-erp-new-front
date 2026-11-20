@@ -127,6 +127,7 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
                   <ClampText text={l.summary?.trim() || labelOf(logTypes, l.logType)} />
                   <span className="flex shrink-0 items-center gap-[8px] leading-[1.6] text-erp-label">
                     <span className="max-w-[100px] truncate">{l.changedByName ?? "-"}</span>
+                    {/* #d9d9d9 — DESIGN.md 값 구분선, Figma 전용 색이라 토큰이 없다 */}
                     <span aria-hidden className="h-[11px] w-px bg-[#d9d9d9]" />
                     <span className="tabular-nums">{formatDateTime(l.changedAt)}</span>
                   </span>
