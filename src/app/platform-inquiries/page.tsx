@@ -13,7 +13,7 @@ export default async function InquiriesPage({ searchParams }: PageProps<"/platfo
   const empty = "data" in loaded ? await emptyKindOf(loaded.data[0].total, hasCondition(query), () => getInquiries(parseInquiryQuery({}))) : "filtered";
   return (
     <>
-      <PageBar title="문의사항" />
+      <PageBar title="문의사항 관리(회원용)" />
       {"data" in loaded ? (
         <InquiryList items={loaded.data[0].items} total={loaded.data[0].total} query={query} answers={loaded.data[1]} emptyAll={empty === "all"} />
       ) : (

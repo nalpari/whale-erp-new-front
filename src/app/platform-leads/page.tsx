@@ -13,7 +13,7 @@ export default async function LeadsPage({ searchParams }: PageProps<"/platform-l
   const empty = "data" in loaded ? await emptyKindOf(loaded.data[0].total, hasCondition(query), () => getLeads(parseLeadQuery({}))) : "filtered";
   return (
     <>
-      <PageBar title="도입문의" />
+      <PageBar title="도입문의 관리(비회원용)" />
       {"data" in loaded ? (
         <LeadList items={loaded.data[0].items} total={loaded.data[0].total} query={query} answers={loaded.data[1]} interests={loaded.data[2]} emptyAll={empty === "all"} />
       ) : (

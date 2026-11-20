@@ -131,7 +131,7 @@ function Preview({ channel, title, body, button }: { channel: Channel | ""; titl
   if (channel === "NOTIFICATION")
     return (
       <>
-        <Caption>관리자 웹 운영 알림함 한 줄</Caption>
+        <Caption>관리자 웹 알림함 한 줄</Caption>
         <InboxLine title={title} sub={body} />
       </>
     );

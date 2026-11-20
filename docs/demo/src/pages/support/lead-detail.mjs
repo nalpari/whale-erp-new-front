@@ -114,7 +114,7 @@ export const render = ({ A, R }, state = "wait") => {
     title: "도입문의 상세",
     html: ui.erpFrame({
       header: platformHeader(A, R),
-      title: "도입문의",
+      title: "도입문의 관리(비회원용)",
       // 직원 상세와 같은 틀: 첫 줄 「도입문의 상세」 + 목록, 묶음은 머리 칸 상자(2026-10-02 재영)
       body: ui.detailBody(
         p.detailHead(

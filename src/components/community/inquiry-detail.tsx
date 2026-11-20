@@ -619,7 +619,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
 
   return (
     <Frame
-      title="문의사항"
+      title="문의사항 관리(회원용)"
       head={
         // 점포 정보 관리 상세의 점포명 줄과 같은 모양 — 제목 20px(자르지 않음), 아래 줄 「접수일시 … | 분류 [꼬리표] | [상태]」(2026-11-05 사용자 지정)
         <div className="flex flex-col gap-[6px] py-[6px]">
@@ -818,7 +818,7 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
 
   return (
     <Frame
-      title="도입문의"
+      title="도입문의 관리(비회원용)"
       status={<StatusBadge status={d.status} statuses={statuses} />}
       errors={c.errors}
       left={left}

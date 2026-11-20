@@ -38,7 +38,7 @@ export default async function StaffMembersPage({
   if ("notice" in listed)
     return (
       <>
-        <PageBar title="직원 정보 관리" />
+        <PageBar title="직원정보 관리" />
         <p role="alert" className="p-[24px] text-[14px] text-erp-label">
           {listed.notice}
         </p>
@@ -71,7 +71,7 @@ export default async function StaffMembersPage({
 
   return (
     <>
-      <PageBar title="직원 정보 관리">
+      <PageBar title="직원정보 관리">
         {/* 초안을 저장하면 초대가 나간다 — 데모의 「계약서 작성」을 이름만 바꿨다(2026-10-12 yjnoh). 근로계약 등록 권한일 때만(WHALEERP-592) */}
         <ContractMenuPermission action="create">
           {/* [취소]가 이 목록(같은 조건)으로 돌아오게 들어온 주소를 싣는다(?entry=, WHALEERP-683) */}

@@ -22,7 +22,7 @@ const inboxLine = (title, sub) =>
 const caption = (t) => `<span class="text-[13px] font-medium text-erp-label">${t}</span>`;
 const BTN_CHANNELS = ["메일", "알림톡"];
 const PREVIEW = {
-  ops: (v) => caption("관리자 웹 운영 알림함 한 줄") + inboxLine(v.title, v.sub),
+  ops: (v) => caption("관리자 웹 알림함 한 줄") + inboxLine(v.title, v.sub),
   mail: (v) =>
     caption("메일 · 공통 메일 틀") +
     `<div class="overflow-hidden rounded-[2px] border border-erp-panel-line bg-white"><div class="border-b border-erp-panel-line px-[16px] py-[12px] text-[14px] font-semibold text-erp-ink">${v.title}</div><div class="flex flex-col gap-[16px] px-[16px] py-[16px] text-[14px] leading-[1.7] text-erp-ink"><p class="whitespace-pre-line">${v.body}</p><span>${ui.button(v.button)}</span></div><div class="border-t border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[12px] text-erp-muted">WHALE ERP 운영 알림 · 이 메일은 발신 전용입니다.</div></div>`,

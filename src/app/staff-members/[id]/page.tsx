@@ -90,7 +90,7 @@ export default async function StaffMemberDetailPage({
   if (staff && "notice" in staff)
     return (
       <>
-        <PageBar title="직원 정보 관리" />
+        <PageBar title="직원정보 관리" />
         <p role="alert" className="p-[24px] text-[14px] text-erp-label">
           {staff.notice}
         </p>
@@ -191,7 +191,7 @@ export default async function StaffMemberDetailPage({
 
   return (
     <>
-      <PageBar title="직원 정보 관리" />
+      <PageBar title="직원정보 관리" />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
           <div className="flex flex-1 flex-col gap-[12px]">

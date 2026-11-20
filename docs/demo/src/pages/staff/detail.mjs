@@ -139,5 +139,5 @@ export default ({ A, R }) => {
   const body = ui.detailBody(
     `<div class="flex flex-col gap-[12px]">${p.detailHead("직원 상세", x.dialogTrigger("퇴직 처리", retireId, "danger") + ui.button("목록", { href: L("staff/index.html") }))}${summary}${p.cols(basic + contract, scheduleAndAttendance + payslips + todo, "grid-cols-[5fr_7fr]")}</div>` + retireDialog,
   );
-  return { title: "직원 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "직원 정보 관리", body }) };
+  return { title: "직원 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "직원정보 관리", body }) };
 };
