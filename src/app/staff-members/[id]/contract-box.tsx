@@ -4,7 +4,7 @@ import { labelOf } from "@/lib/enums";
 import { getStaffMemberContractSummary } from "@/lib/staff-members-api";
 import { StatusBadge } from "../../contracts/columns";
 import { ContractMenuPermission } from "../../contracts/contract-permission";
-import { contractSummaryTexts, payrollAccountRows } from "./contract-summary";
+import { contractSummaryTexts, payrollAccountRows, TAX_PROFILE_UNAVAILABLE } from "./contract-summary";
 import { AreaFailure, BoxMessage } from "./detail-box";
 import { loadArea, loadLabels } from "./summary-load";
 
@@ -43,7 +43,11 @@ export async function ContractBox({ staffMemberId, detailSearch }: { staffMember
     { label: "계약 유형", value: texts.type },
     { label: "계약 기간", value: texts.period },
     { label: "계약 상태", value: statusCell },
-    ...payrollAccountRows(result.data),
+    // 신고 정보를 풀지 못하면 그 줄만 회색 안내 — 근로계약 상세와 같은 모양(WHALEERP-758)
+    ...payrollAccountRows(result.data).map((r) => ({
+      ...r,
+      value: r.value === TAX_PROFILE_UNAVAILABLE ? <span className="text-erp-label">{r.value}</span> : r.value,
+    })),
     { label: "최근 발송일", value: texts.lastSent },
     { label: "갱신 예정일", value: texts.renewal },
   ];

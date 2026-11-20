@@ -1,6 +1,6 @@
 // 근로계약 상세의 칸 표기. 테스트: node --test "src/app/contracts/[contractId]/detail-format.test.ts"
 import { WEEKDAYS, WEEKS_PER_MONTH, type ContractDetail } from "../new/contract-form-model.ts";
-import { payrollAccountText } from "../../staff-members/[id]/contract-summary.ts";
+import { payrollAccountText, TAX_PROFILE_UNAVAILABLE } from "../../staff-members/[id]/contract-summary.ts";
 import { wasUpdated } from "../../../lib/format.ts";
 
 const minutes = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
@@ -49,8 +49,8 @@ export function insuranceText(healthPension: boolean | null, employmentInjury: b
   return on.length ? on.join(", ") : "가입 안 함";
 }
 
-/** 신고 정보를 풀 수 없을 때(api UNAVAILABLE — 키 없음 · 복호화 실패) 주민등록번호 · 급여 계좌 칸에 보이는 글자 */
-export const TAX_PROFILE_UNAVAILABLE = "신고 정보를 지금 볼 수 없습니다.";
+/** 신고 정보를 풀 수 없을 때(api UNAVAILABLE — 키 없음 · 복호화 실패) 주민등록번호 · 급여 계좌 칸에 보이는 글자. 직원 상세 근로계약 칸과 같이 써 contract-summary 에 둔다 */
+export { TAX_PROFILE_UNAVAILABLE };
 
 /**
  * 「주민등록번호」 · 「급여 계좌」 칸 글자(WHALEERP-155). 주민등록번호는 api 가 가린 값(900101-1******) 그대로, 급여 계좌는 직원 상세 근로계약
