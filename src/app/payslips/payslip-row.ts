@@ -147,3 +147,12 @@ export function reviewBand(reasons: readonly PayslipReviewReason[]): { title: st
   if (!open.some((r) => r.reviewReason !== "DEDUCTION_MISSING")) return null;
   return { title: `검토가 필요한 사유가 ${open.length}건 있습니다.`, desc: "오른쪽 검토 사유를 확인하고, 문제가 없으면 [확정]해 주세요.", inline: true };
 }
+
+/**
+ * 「공제 미입력」의 [공제 칸으로 이동]이 갈 상자 — 비어 있는 기본 공제(3.3% 포함)가 있으면 「공제 항목(4대보험 · 세금)」, 추가 공제만 비었으면
+ * 「공제 항목(추가)」. 늘 기본 공제 상자로 가면 빈 칸이 추가 공제에만 있을 때 다 채운 상자로 갔다(ip-code-review)
+ */
+export function deductionAnchor(payslip: Pick<PayslipDetail, "isWithholdingApplied" | "items">): "#deduction-basic" | "#deduction-additional" {
+  const blank = payslip.items.filter((i) => i.itemCategory !== "EARNING" && !i.isEntered && isItemShown(i, payslip.isWithholdingApplied));
+  return blank.length > 0 && blank.every((i) => i.itemCategory === "ADDITIONAL") ? "#deduction-additional" : "#deduction-basic";
+}

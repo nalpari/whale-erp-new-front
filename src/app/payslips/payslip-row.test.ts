@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PayslipReviewReason } from "../../lib/payslips.ts";
-import { attendanceCell, attendanceHref, detailReviewReasons, earningHelp, periodText, reviewBand, reviewDetailText, sentDateText, sortDeductions } from "./payslip-row.ts";
+import { attendanceCell, attendanceHref, deductionAnchor, detailReviewReasons, earningHelp, periodText, reviewBand, reviewDetailText, sentDateText, sortDeductions } from "./payslip-row.ts";
 
 test("목록 칸 — 급여 기간, 출퇴근 확인 전은 「누락」 · 확인은 「확인」 · 가린 줄은 null", () => {
   assert.equal(periodText({ periodStartDate: "2026-09-01", periodEndDate: "2026-09-30" }), "2026-09-01 ~ 2026-09-30");
@@ -152,4 +152,12 @@ test("sortDeductions — 국민연금 · 건강보험 · 장기요양보험 · �
     sortDeductions(codes.map((itemCode) => ({ itemCode }))).map((i) => i.itemCode),
     ["NATIONAL_PENSION", "HEALTH_INSURANCE", "LONG_TERM_CARE_INSURANCE", "EMPLOYMENT_INSURANCE", "INCOME_TAX", "LOCAL_INCOME_TAX", "UNKNOWN_A", "UNKNOWN_B"],
   );
+});
+
+test("deductionAnchor — 추가 공제만 비었으면 추가 공제 상자, 기본 공제가 비었으면 기본 공제 상자", () => {
+  const line = (itemCategory: "EARNING" | "BASIC" | "ADDITIONAL" | "WITHHOLDING", itemCode: string, isEntered: boolean) => ({ itemCategory, itemCode, isEntered }) as never;
+  assert.equal(deductionAnchor({ isWithholdingApplied: false, items: [line("BASIC", "NATIONAL_PENSION", true), line("ADDITIONAL", "ETC", false)] }), "#deduction-additional");
+  assert.equal(deductionAnchor({ isWithholdingApplied: false, items: [line("BASIC", "NATIONAL_PENSION", false), line("ADDITIONAL", "ETC", false)] }), "#deduction-basic");
+  // 3.3% 를 켜면 숨는 소득세가 비어도 세지 않는다
+  assert.equal(deductionAnchor({ isWithholdingApplied: true, items: [line("BASIC", "INCOME_TAX", false), line("ADDITIONAL", "ETC", false)] }), "#deduction-additional");
 });

@@ -9,7 +9,7 @@ import { formatDateTime } from "@/lib/format";
 import { getPayslip } from "@/lib/payslips-api";
 import { kstToday } from "@/lib/staff-members";
 import { payslipListHref } from "../payslip-list-query";
-import { attendanceHref, detailReviewReasons, reviewBand, reviewDetailText } from "../payslip-row";
+import { attendanceHref, deductionAnchor, detailReviewReasons, reviewBand, reviewDetailText } from "../payslip-row";
 import { PayslipReview } from "./payslip-review";
 
 export const metadata: Metadata = {
@@ -58,7 +58,7 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
                   <span className="flex items-center gap-[8px]">
                     <span className="flex-1 text-[14px] font-semibold text-erp-ink">{reasonOf(r.reviewReason)}</span>
                     {r.reviewReason === "DEDUCTION_MISSING" ? (
-                      <RoundLink href="#deduction-basic">공제 칸으로 이동</RoundLink>
+                      <RoundLink href={deductionAnchor(payslip)}>공제 칸으로 이동</RoundLink>
                     ) : r.reviewReason === "CONTRACT_CHANGED" ? (
                       <RoundLink href={at(`/contracts/${contract.contractId}`)}>근로계약 보기</RoundLink>
                     ) : (

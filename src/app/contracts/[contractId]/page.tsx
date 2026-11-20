@@ -175,7 +175,8 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
                     {latest && (
                       <span className="flex min-w-0 items-center gap-[6px]">
                         {link(latest)}
-                        <span className="shrink-0 text-erp-label">(최근 발송)</span>
+                        {/* 새 원본을 만드는 중(row.note)이면 맨 위 파일은 지난 원본이라 「(최근 발송)」을 붙이지 않는다(ip-code-review) */}
+                        {!row.note && <span className="shrink-0 text-erp-label">(최근 발송)</span>}
                       </span>
                     )}
                     {older.length > 0 && (
@@ -244,6 +245,9 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
               <StoreNameWithType storeId={c.storeId} name={c.storeName} isHq={c.storeIsHq} />
               <span className="min-w-0 truncate text-erp-label">{sameWorkLocation ? "(근무 장소 동일)" : `(근무 장소: ${c.workLocation})`}</span>
             </span>
+          ) : c.workLocation ? (
+            // 근무지 이름이 비어도 계약서의 근무 장소는 보인다 — 전엔 「근무 장소」 줄이 따로 있었다(ip-code-review)
+            <span className="text-erp-label">(근무 장소: {c.workLocation})</span>
           ) : (
             "-"
           ),

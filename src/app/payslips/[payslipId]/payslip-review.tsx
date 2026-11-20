@@ -628,6 +628,7 @@ export function PayslipReview({
             <Rows>{basicDeductions.map((i) => field(i, deductionHelp(i)))}</Rows>
           </GroupBox>
           <GroupBox
+            id="deduction-additional"
             title="공제 항목(추가)"
             total={sumOf(shown.filter((i) => i.itemCategory === "ADDITIONAL"))}
             action={
