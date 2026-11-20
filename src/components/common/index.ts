@@ -34,3 +34,4 @@ export { LoadGroup, LoadGroupArea, LoadingNotice } from "./load-group";
 export { PanelBackdrop, SlidePanel, useBackdropActive, usePanelOpen } from "./slide-panel";
 export { GuideIcon, GuideNote } from "./guide-note";
 export { AttachmentField, fileSizeLabel, useFilePreviews, type AttachmentRow, type RejectedFile } from "./attachment-field";
+export { RowButton } from "./row-button";
