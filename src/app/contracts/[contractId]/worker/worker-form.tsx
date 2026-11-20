@@ -18,14 +18,15 @@ import { WORKER_SAVED, WORKER_UNCHANGED, workerBody, workerProblemsByField, work
 // 직원이 가입 값과 달라 수정을 요청했을 때 쓴다. 다섯 칸은 직원이 가입하며 넣는 값과 대조된다.
 export function WorkerForm({
   contractId,
-  status,
+  staffJoined,
   initial,
   canResend,
   labels,
   back,
 }: {
   contractId: number;
-  status: string;
+  /** 가입한 직원인가(api staffJoined) — 저장 안내를 고른다(WHALEERP-746, 재발송 확인창과 같은 기준) */
+  staffJoined: boolean;
   initial: Form;
   /** 상세에 [재발송]이 보이는가(canShowResend) — 보이면 같은 값 저장을 막고 그리로 안내한다 */
   canResend: boolean;
@@ -131,7 +132,7 @@ export function WorkerForm({
         <p className="font-medium text-erp-ink">
           <u>이름 · 휴대전화번호 · 생년월일 · 성별 · 외국인 여부</u>는 직원이 앱에 가입할 때 입력한 정보와 모두 일치해야 직원이 서명할 수 있습니다.
         </p>
-        {workerSaveNote(status).map((line) => (
+        {workerSaveNote(staffJoined).map((line) => (
           <p key={line}>{line}</p>
         ))}
       </div>
