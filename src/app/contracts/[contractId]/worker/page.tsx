@@ -43,7 +43,7 @@ export default async function ContractWorkerPage({ params, searchParams }: PageP
             <Notice title="서명 요청 전 · 직원 서명 대기 · 직원 수정 요청 근로계약만 근로자 정보를 고칠 수 있습니다." contractId={contractId} back={back} />
           ) : (
             <ContractPermission action="update" fallback={<Notice title="근로자 정보를 고칠 권한이 없습니다." contractId={contractId} back={back} />}>
-              <WorkerForm contractId={contractId} status={c.status ?? ""} initial={workerOf(c)} canResend={canShowResend(c.status, c.canResend)} labels={{ gender, contractStatus }} back={back} />
+              <WorkerForm contractId={contractId} staffJoined={c.staffJoined} initial={workerOf(c)} canResend={canShowResend(c.status, c.canResend)} labels={{ gender, contractStatus }} back={back} />
             </ContractPermission>
           )}
         </div>
