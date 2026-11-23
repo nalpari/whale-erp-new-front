@@ -622,7 +622,7 @@ export function PayslipReview({
           >
             {isPartTime && (
               <span className={HELP}>
-                3.3% 원천징수를 켜면 공제가 4대보험 네 줄과 3.3% 가 되고 소득세·지방소득세는 빠집니다. 노무·세무 확인 중입니다(STAFF-18).
+                3.3% 원천징수를 켜면 공제가 4대보험 네 줄과 3.3% 가 되고 소득세·지방소득세는 빠집니다.
               </span>
             )}
             <Rows>{basicDeductions.map((i) => field(i, deductionHelp(i)))}</Rows>
