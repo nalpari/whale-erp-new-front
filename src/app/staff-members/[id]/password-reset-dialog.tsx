@@ -64,11 +64,13 @@ export function PasswordResetDialog({ staffMemberId, email, onClose }: { staffMe
   return (
     <ConfirmDialog open wide title="비밀번호를 초기화하시겠습니까?" confirmLabel="초기화" busy={busy} onConfirm={handleConfirm} onCancel={onClose}>
       <div className="flex flex-col gap-[12px]">
+        {/* 문장마다 줄을 바꾸고, 링크 기한은 주어 · 목적어를 갖춘 문장으로(2026-11-23 사용자 지정) */}
         <p>
-          {resetRecipientText(email)} 비밀번호 재설정 링크를 보냅니다. 새 비밀번호는 직원이 직접 설정합니다.
-        </p>
-        <p>
-          링크는 24시간 동안 한 번만 사용할 수 있습니다.
+          {resetRecipientText(email)} 비밀번호 재설정 링크를 보냅니다.
+          <br />
+          새 비밀번호는 직원이 직접 설정합니다.
+          <br />
+          직원은 메일을 받은 뒤 24시간 안에 새 비밀번호를 설정해야 합니다.
         </p>
         {error && (
           <p role="alert" className="text-erp-off">
