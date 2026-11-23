@@ -171,13 +171,9 @@ export function RetirementDialog({
           {/* 고를 수 있는 기간 — 칸 아래 둥근 꺾은선 + 회색 둥근 꼬리표(2026-11-23 사용자 지정, 꺾은선은 급여명세서 3.3% 안내와 같다) */}
           <p className="flex items-start gap-[6px] text-[13px]">
             <span aria-hidden className="mt-[5px] ml-[4px] size-[7px] shrink-0 rounded-bl-[4px] border-b border-l border-erp-brand-soft" />
-            <span>
-              <span className="mr-[6px] inline-block rounded-full border border-erp-thead-line bg-erp-thead-bg px-[10px] leading-[20px] font-medium text-erp-ink">
-                {hint.badge}
+            <span className="inline-block rounded-full border border-erp-thead-line bg-erp-thead-bg px-[10px] leading-[20px] font-medium text-erp-ink">
+                {hint}
               </span>
-              {/* 뒤 문장은 줄을 바꿔 꼬리표 아래에(2026-11-23 사용자 지정) */}
-              {hint.rest && <span className="mt-[4px] block text-erp-label">{hint.rest}</span>}
-            </span>
           </p>
           {dateNote && (
             <p role="alert" className="text-[13px] text-erp-off">
