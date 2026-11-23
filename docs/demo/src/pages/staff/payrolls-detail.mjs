@@ -46,7 +46,7 @@ export default ({ A, R }) => {
     ["상태", p.tag("quiet", "작성 중")],
   ]);
   // 위쪽 경고 띠 — 건수 한 줄(앱 reviewBand). 사유 내용은 오른쪽 「검토 사유」에만 둔다
-  const warn = `<div class="flex min-h-[46px] items-center gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px]"><p class="flex items-center gap-[6px] text-[14px] font-semibold text-erp-ink"><svg aria-hidden="true" viewBox="0 0 20 20" class="size-[18px] shrink-0"><path d="M10 2.5 18.5 17h-17L10 2.5Z" fill="#e8a33d" stroke="#e8a33d" stroke-width="1.2" stroke-linejoin="round"/><path d="M10 8v4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="14.4" r="1" fill="#fff"/></svg>검토가 필요한 사유가 2건 있습니다.<span class="font-normal">오른쪽 검토 사유를 확인하고, 문제가 없으면 [확정]해 주세요.</span></p></div>`;
+  const warn = `<div class="flex min-h-[46px] items-center gap-[12px] rounded-[2px] border border-[#e8a33d]/50 bg-[#fff6e5] px-[16px] py-[12px]"><p class="flex items-center gap-[6px] text-[14px] font-semibold text-[#956013]"><svg aria-hidden="true" viewBox="0 0 20 20" class="size-[18px] shrink-0"><path d="M10 2.5 18.5 17h-17L10 2.5Z" fill="#e8a33d" stroke="#e8a33d" stroke-width="1.2" stroke-linejoin="round"/><path d="M10 8v4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="14.4" r="1" fill="#fff"/></svg>검토가 필요한 사유가 2건 있습니다.<span class="font-normal">오른쪽 검토 사유를 확인하고, 문제가 없으면 [확정]해 주세요.</span></p></div>`;
 
   const premiumHelp = p.infoTip(
     "5인 이상 사업장",

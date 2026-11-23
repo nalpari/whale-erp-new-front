@@ -137,7 +137,7 @@ function Rows({ children }: { children: ReactNode[] }) {
   return <div className="grid grid-cols-3 gap-x-[24px] gap-y-[16px]">{children}</div>;
 }
 
-/** 경고 띠(데모 band). risk 면 빨강 바탕. */
+/** 경고 띠(데모 band). risk 면 빨강 바탕, warn(검토가 필요한 띠)이면 연한 노랑 바탕 · 황토 글자 — 게시일 꼬리표 · 근태 지각과 같은 노랑(2026-11-23 사용자 지정, 전엔 회색 바탕). */
 export function Band({
   title,
   desc,
@@ -158,10 +158,10 @@ export function Band({
   return (
     <div
       role={risk ? "alert" : undefined}
-      className={`flex min-h-[46px] items-center gap-[12px] rounded-[2px] border px-[16px] py-[12px] ${risk ? "border-erp-off bg-erp-off-bg" : "border-erp-panel-line bg-erp-thead-bg"}`}
+      className={`flex min-h-[46px] items-center gap-[12px] rounded-[2px] border px-[16px] py-[12px] ${risk ? "border-erp-off bg-erp-off-bg" : warn ? "border-[#e8a33d]/50 bg-[#fff6e5]" : "border-erp-panel-line bg-erp-thead-bg"}`}
     >
       <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
-        <p className={`flex items-center gap-[6px] text-[14px] font-semibold ${risk ? "text-erp-off" : "text-erp-ink"}`}>
+        <p className={`flex items-center gap-[6px] text-[14px] font-semibold ${risk ? "text-erp-off" : warn ? "text-[#956013]" : "text-erp-ink"}`}>
           {warn && (
             // 삼각형 느낌표 — 지각과 같은 노랑(#e8a33d, 토큰 없음 · 근태 요약 막대와 같은 값). 막는 것이 아니라 살펴보라는 뜻이라 빨강 대신 노랑
             <svg aria-hidden viewBox="0 0 20 20" className="size-[18px] shrink-0">
@@ -173,7 +173,7 @@ export function Band({
           {title}
           {inline && desc && <span className="font-normal">{desc}</span>}
         </p>
-        {!inline && desc && <p className={`text-[14px] leading-[1.6] ${risk ? "text-erp-off" : "text-erp-ink"}`}>{desc}</p>}
+        {!inline && desc && <p className={`text-[14px] leading-[1.6] ${risk ? "text-erp-off" : warn ? "text-[#956013]" : "text-erp-ink"}`}>{desc}</p>}
       </div>
       {actions && <div className="flex shrink-0 gap-[6px]">{actions}</div>}
     </div>
@@ -622,7 +622,7 @@ export function PayslipReview({
           >
             {isPartTime && (
               <span className={HELP}>
-                3.3% 원천징수를 켜면 소득세 · 지방소득세 대신 사업소득세(3%)와 지방소득세(0.3%)를 공제합니다. 4대보험 공제는 그대로입니다.
+                켜면 소득세 · 지방소득세 대신 사업소득세(3%)와 지방소득세(0.3%)를 공제합니다. 4대보험 공제는 그대로입니다.
               </span>
             )}
             <Rows>{basicDeductions.map((i) => field(i, deductionHelp(i)))}</Rows>
