@@ -33,7 +33,7 @@ import {
   WEEKDAYS,
   type ShiftInput,
 } from "./schedule-form-model";
-import { scheduleBlockOf } from "./work-schedule-view";
+import { OVERLAP_MESSAGE, OVERLAP_SHORT, scheduleBlockOf, withStaffName } from "./work-schedule-view";
 
 // 근무스케줄 등록 · 수정 패널(#203). 칸과 문구는 데모 schedForm · bulkPane 이다. 근무지는 화면에서 고른 점포이고, 근무일은 하루 하나다.
 // 여는 곳은 도구 줄 「근무스케줄 등록」 · 막대(수정) · 공백 줄 「이 시간대에 배정」이다. 여닫음은 화면 안 상태로 둔다 — 주소에 두면
@@ -167,7 +167,7 @@ export function ScheduleBar({
   );
 }
 
-const ERROR = "text-[13px] text-erp-off";
+const ERROR = "text-[13px] whitespace-pre-line text-erp-off";
 // 직원 칸의 상태 문구(없음 · 불러오는 중) — 입력칸과 같은 14px 회색. 12px 는 너무 작았다(2026-11-05 사용자 지적, 3팀 확인 필요)
 const STATUS = "text-[14px] text-erp-label";
 const STAFF_FAILED = "직원 목록을 불러오지 못했습니다. 근무일을 다시 선택해 주세요.";
@@ -390,7 +390,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
       return;
     }
     const message = onFailure(result);
-    if (message) setServerError(message);
+    if (message) setServerError(withStaffName(message, edit ? edit.staffName : staffId === null ? null : nameOf(staffId)));
   };
 
   const handleSave = () => {
@@ -433,7 +433,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
           // 성공한 줄은 닫고 실패한 줄만 남겨 사유를 보인다
           const failedIds = result.result.failed.map((f) => f.staffMemberId);
           setPicked(failedIds);
-          setRowErrors(Object.fromEntries(result.result.failed.map((f) => [f.staffMemberId, f.message])));
+          setRowErrors(Object.fromEntries(result.result.failed.map((f) => [f.staffMemberId, withStaffName(f.message, nameOf(f.staffMemberId))])));
           setPartialNotice(`${result.result.created.length}명은 등록했고 ${failedIds.length}명은 등록하지 못했습니다.`);
           return;
         }
@@ -689,7 +689,8 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
         <ul aria-label="건너뛴 날" className="flex max-h-[200px] flex-col gap-[4px] overflow-y-auto text-[13px] text-erp-label">
           {rangeResult.skipped.map((f, i) => (
             <li key={`${f.workDate}-${f.name}-${i}`}>
-              {dayText(f.workDate)} · {f.name} — {f.message}
+              {/* 기간 등록 목록은 줄이 여럿이라 겹침 사유를 짧게(2026-11-23 사용자 지정) */}
+              {dayText(f.workDate)} · {f.name} — {f.message === OVERLAP_MESSAGE ? OVERLAP_SHORT : f.message}
             </li>
           ))}
         </ul>
