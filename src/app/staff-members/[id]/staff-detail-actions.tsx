@@ -10,7 +10,7 @@ import type { StaffMember } from "@/lib/staff-members";
 import { PasswordResetDialog } from "./password-reset-dialog";
 import { CancelRetirementDialog, RetirementDialog } from "./retirement-dialog";
 
-// 카드 머리 오른쪽(WHALEERP-585). 퇴직 버튼은 retirementActions 가 정한다 — 재직이면(가입 전 레코드도, WHALEERP-682 · 초안 + 작성 중 계약만이면 없음, WHALEERP-762) 붉은 「퇴직 처리」,
+// 카드 머리 오른쪽(WHALEERP-585). 퇴직 버튼은 retirementActions 가 정한다 — 재직이면(가입 전 레코드도, WHALEERP-682 · 초안이고 최근 계약이 작성 중이면 없음, WHALEERP-762) 붉은 「퇴직 처리」,
 // 퇴직일 전의 퇴직 예정이면 「퇴직일 변경」 · 「퇴직 처리 취소」(목업 detail.html).
 // 수정 권한은 지금 주소의 메뉴 권한(usePagePermission)으로 미리 가리고, 막는 것은 api 다.
 // 「목록」은 목록이 ?back= 으로 실어 보낸 목록 주소로 돌아간다(backHrefOf).

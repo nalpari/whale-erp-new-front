@@ -79,6 +79,11 @@ test("초안이어도 작성 중이 아닌 계약이 최근이면 퇴직 처리 
   assert.equal(retirementActions({ ...joined, contract: { status: "DRAFT" } }, today, true), "retire");
 });
 
+test("퇴직 예정인 초안 직원은 작성 중 재계약이 최근 계약이 돼도 퇴직일 변경 · 취소가 남는다(WHALEERP-762 리뷰)", () => {
+  const draft = { ...joined, joinState: "DRAFT" as const, contract: { status: "DRAFT" as const } };
+  assert.equal(retirementActions({ ...draft, retiredDate: "2026-10-16" }, today, true), "scheduled");
+});
+
 test("직원 정보 관리 수정 권한이 없으면 버튼 없음", () => {
   assert.equal(retirementActions(joined, today, false), null);
   assert.equal(retirementActions({ ...joined, retiredDate: "2026-10-16" }, today, false), null);
