@@ -544,8 +544,8 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
                 <p aria-live="polite" className={rangeError ? ERROR : STATUS}>
                   {rangeError ??
                     (mode === "bulk" && picked.length > 1
-                      ? `${rangeDates(workDate, toDate, weekdays).length}일 × ${picked.length}명, ${rangeDates(workDate, toDate, weekdays).length * picked.length}건을 등록합니다.`
-                      : `${rangeDates(workDate, toDate, weekdays).length}일에 등록합니다.`)}
+                      ? `${rangeDates(workDate, toDate, weekdays).length}일 × ${picked.length}명, 총 ${rangeDates(workDate, toDate, weekdays).length * picked.length}건의 근무스케줄을 등록합니다.`
+                      : `총 ${rangeDates(workDate, toDate, weekdays).length}일의 근무스케줄을 등록합니다.`)}
                 </p>
               </div>
             )}
