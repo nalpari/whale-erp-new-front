@@ -31,11 +31,21 @@ const BAD_INPUT: ActionFailure = { ok: false, status: 400, message: "직원과 �
 const SAVE_UNKNOWN = "저장 결과를 확인하지 못했습니다. 화면을 새로 불러왔으니 확인해 주세요.";
 
 /** api 의 400 · 403 · 404 · 409 문장은 한국어라 그대로 보인다. 401 은 고정 문구, 5xx · 연결 실패는 결과 모름(status 없음) */
+// 시간 겹침(409 WORK_SCHEDULE_OVERLAP)은 api 문구 「같은 직원의 근무스케줄과 시간이 겹칩니다.」가 누구와 겹치는지 흐려 화면 문구로 바꾼다 —
+// 1명 오류 · 여러 명 줄 · 기간 등록 건너뛴 날 모두(이름 · 날짜는 화면이 앞에 붙인다, 2026-11-23 사용자 지정)
+const OVERLAP_MESSAGE = "선택한 시간에 이미 등록된 근무스케줄이 있습니다. 시간을 변경하거나 기존 근무스케줄을 수정해 주세요.";
+const messageOf = (code: string | null | undefined, message: string) => (code === "WORK_SCHEDULE_OVERLAP" ? OVERLAP_MESSAGE : message);
+const codeOf = (body: unknown) => (body && typeof body === "object" && "code" in body && typeof body.code === "string" ? body.code : null);
+const withMessages = <T extends { failed: { code: string | null; message: string }[] }>(result: T): T => ({
+  ...result,
+  failed: result.failed.map((f) => ({ ...f, message: messageOf(f.code, f.message) })),
+});
+
 function failureOf(error: unknown, what: string, log: object): ActionFailure {
   const expired = expiredFailureOf(error);
   if (expired) return expired;
   if (error instanceof ApiError) {
-    if (error.status < 500) return { ok: false, status: error.status, message: error.message };
+    if (error.status < 500) return { ok: false, status: error.status, message: messageOf(codeOf(error.body), error.message) };
   }
   console.error(`근무스케줄 ${what} 결과 모름`, log, error);
   return { ok: false, message: SAVE_UNKNOWN };
@@ -88,7 +98,7 @@ export async function bulkCreateSchedulesAction(
 ): Promise<ActionResult<{ result: BulkResult }>> {
   if (!validDate(workDate) || !Array.isArray(rows) || rows.length === 0 || !rows.every((r) => validId(r.staffMemberId))) return BAD_INPUT;
   try {
-    const result = await bulkCreateSchedules({ workDate, rows });
+    const result = withMessages(await bulkCreateSchedules({ workDate, rows }));
     refresh();
     return { ok: true, result };
   } catch (error) {
@@ -117,7 +127,7 @@ export async function rangeCreateSchedulesAction(
   )
     return BAD_INPUT;
   try {
-    const result = await rangeCreateSchedules({ fromDate, toDate, weekdays: weekdays as number[], rows });
+    const result = withMessages(await rangeCreateSchedules({ fromDate, toDate, weekdays: weekdays as number[], rows }));
     refresh();
     return { ok: true, result };
   } catch (error) {
