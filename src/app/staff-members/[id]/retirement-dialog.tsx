@@ -49,7 +49,7 @@ export function RetirementDialog({
   const [today, setToday] = useState(initialToday);
   const [date, setDate] = useState(currentDate ?? initialToday);
   // 날짜가 틀리면 미리 보기를 받지 않는다(idle) — 틀린 이유는 날짜 칸 아래에 둔다(재영 공지 2026-10-29).
-  const [preview, setPreview] = useState<Preview>(() => (checkRetiredDate(date, today, hiredDate) ? { status: "idle" } : { status: "loading" }));
+  const [preview, setPreview] = useState<Preview>(() => (checkRetiredDate(date, today) ? { status: "idle" } : { status: "loading" }));
   // api 가 퇴직일 입력으로 거절한 400(3개월 범위 · 입사일보다 앞섬 등). 날짜를 고치면 지운다.
   const [serverDateError, setServerDateError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -81,7 +81,7 @@ export function RetirementDialog({
 
   // 처음 열릴 때 기본 날짜의 미리 보기. 그 뒤로는 날짜를 바꿀 때 부른다.
   useEffect(() => {
-    if (!checkRetiredDate(date, today, hiredDate)) fetchPreview(date);
+    if (!checkRetiredDate(date, today)) fetchPreview(date);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 열릴 때 한 번만
   }, []);
 
@@ -90,7 +90,7 @@ export function RetirementDialog({
     setDate(value);
     setSubmitError(null);
     setServerDateError(null);
-    const invalid = checkRetiredDate(value, on, hiredDate);
+    const invalid = checkRetiredDate(value, on);
     if (invalid) {
       seq.current++; // 늦게 오는 앞 응답이 미리 보기를 덮지 않게
       setPreview({ status: "idle" });
@@ -100,7 +100,7 @@ export function RetirementDialog({
     fetchPreview(value);
   };
 
-  const dateNote = checkRetiredDate(date, today, hiredDate) ?? serverDateError;
+  const dateNote = checkRetiredDate(date, today) ?? serverDateError;
   const hint = retiredDateHint(today, hiredDate);
   const sameDate = mode === "change" && date === currentDate;
   const ready = preview.status === "ok" && preview.date === date && !sameDate;
