@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-23
+* **Update**: [Staff members screen](/screens/staff-members.md) — 퇴직 처리 확인창: 작성 중 근로계약만 있어 막히면(api #309 문구) 그 계약으로 가는 [근로계약서로 이동] 버튼.
+
 ## 2026-11-20
 * **Update**: [운영 알림](/notify.md) · [Whale ERP Frontend](/whale-erp-front.md) — 화면 제목을 메뉴명에 맞췄다(통합테스트 WHALEERP-705 · 706 · 707 · 708, 704 · 709~712 과 같은 방식): 「운영 알림함」 → 「알림함」, 「직원 정보 관리」 → 「직원정보 관리」, 「문의사항」 → 「문의사항 관리(회원용)」, 「도입문의」 → 「도입문의 관리(비회원용)」. 목록 · 상세 · 오류 · 권한 없음 · 탭 제목과 데모 · 목업 메뉴 이름도 같이.
 * **Update**: [출·퇴근 현황 조회 화면](/screens/attendance-records.md) · [Whale ERP Frontend](/whale-erp-front.md)(공통 `RowButton`) — 보정이 필요한 기록 줄 버튼을 공통 `RowButton`(26px, [보정] 회청 · [이상 없음 처리] · [보정 이력] 테두리), 이상 없음 확인창 문구 · 버튼, 보정 이력 창 제목 · 정보 상자(`RecordTarget`), 보정 패널 제목 「출퇴근 기록 보정」 · 정보 상자 · 「보정할 기록」 묶음 제목, 「…저장됩니다」(2026-11-20 사용자 지정).
