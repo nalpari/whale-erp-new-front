@@ -762,7 +762,9 @@ export function PayslipReview({
         onConfirm={() => run(() => resendOne(payslip.payslipId, payslip.updatedAt), "다시 발송했습니다.")}
         onCancel={close}
       >
-        {payslip.staffName} 님에게 지금 값으로 명세서를 다시 보냅니다. 문구는 처음 발송과 같습니다.
+        {/* 재발송은 재발송 템플릿(EMAIL · PUSH_PAYSLIP_RESENT)으로 간다 — 「문구는 처음 발송과 같습니다」는 사실과 달라 고쳤다(2026-11-23 사용자 지정) */}
+        <p>{payslip.staffName} 님에게 급여명세서를 다시 발송합니다.</p>
+        <p>직원에게 재발송 알림이 전송됩니다.</p>
         {failureText}
       </ConfirmDialog>
       <ConfirmDialog open={dialog === "load"} title="지난 명세서의 값을 불러오시겠습니까?" confirmLabel="불러오기" busy={busy} onConfirm={load} onCancel={close}>
