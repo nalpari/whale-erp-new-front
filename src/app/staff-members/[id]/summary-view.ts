@@ -295,6 +295,17 @@ export function todoManageHref(staffMemberId: number, storeId: number): string {
   return `/todos?${new URLSearchParams({ storeIds: String(storeId), staffMemberId: String(staffMemberId) })}`;
 }
 
+/**
+ * 근로계약 칸 안내의 [근로계약 관리] 주소 — 근로계약 관리를 그 직원 이름(staffMemberName) · 근무지(storeIds)로 연다(2026-11-23 사용자 지정).
+ * 근로계약 목록은 이름 검색이라 같은 근무지의 동명이인도 함께 나온다(급여명세서 「관리」와 같은 한계). 이름을 쓸 수 없으면 근무지만 붙인다.
+ */
+export function contractManageHref(name: string | null, storeId: number): string {
+  const params = new URLSearchParams({ storeIds: String(storeId) });
+  const trimmed = name?.trim() ?? "";
+  if (trimmed && !trimmed.includes("*") && trimmed.length <= PAYSLIP_NAME_MAX) params.set("staffMemberName", trimmed);
+  return `/contracts?${params}`;
+}
+
 /** 급여명세서 직원명 조건 상한(api PayslipListQueryDto · payslip-list-query.ts MAX_KEYWORD_LENGTH 와 같다) */
 const PAYSLIP_NAME_MAX = 50;
 

@@ -19,7 +19,7 @@ import { MenuManageLink } from "./manage-link";
 import { SendLogBox } from "./send-log-box";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
 import { AttendanceBox, PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
-import { attendanceManageHref, payslipManageHref, scheduleWeekOf, todoManageHref } from "./summary-view";
+import { attendanceManageHref, contractManageHref, payslipManageHref, scheduleWeekOf, todoManageHref } from "./summary-view";
 import { WeekNav } from "./week-nav";
 import { StoreNameWithType } from "@/components/site/store-type-tag";
 
@@ -225,7 +225,7 @@ export default async function StaffMemberDetailPage({
                     }
                   >
                     <LoadGroupArea fallback={AREA_PENDING}>
-                      <ContractBox staffMemberId={staffMemberId} detailSearch={detailSearch} />
+                      <ContractBox staffMemberId={staffMemberId} detailSearch={detailSearch} manageHref={contractManageHref(staff.name, staff.store.storeId)} />
                     </LoadGroupArea>
                   </Box>
                 </div>
