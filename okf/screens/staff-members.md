@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입 상태 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [수정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-20T01:58:47Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-23T06:27:02Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -37,7 +37,7 @@ sources:
   - id: staff-detail-actions
     resource: ../../src/app/staff-members/[id]/staff-detail-actions.tsx
     title: 상세 머리 버튼(퇴직 · 목록 — ?back= 의 목록 주소로) · 비밀번호 초기화 버튼
-    last_modified: 2026-10-23T03:37:40Z
+    last_modified: 2026-11-23T06:27:02Z
   - id: confirm-dialog
     resource: ../../src/components/common/confirm-dialog.tsx
     title: 공통 확인창 — confirmVariant 추가
@@ -48,8 +48,8 @@ sources:
     last_modified: 2026-10-23T05:20:57Z
   - id: staff-table
     resource: ../../src/app/staff-members/staff-table.tsx
-    title: 목록 표 — 가입 상태 칸의 재발송 버튼, 가린 행의 이름 자리, 휴대전화번호 아이콘, 상세 링크에 목록 주소 ?back=, 빈 상태 fillEmpty, 계약 상태 칸 200px(꼬리표), 1260 창 기준 열 폭 · 표 상자 안 가로 스크롤(2026-11-18)
-    last_modified: 2026-11-13T20:00:00Z
+    title: 목록 표 — 가입 상태 칸의 재발송 버튼, 가린 행의 이름 자리, 휴대전화번호 아이콘, 상세 링크에 목록 주소 ?back=, 빈 상태 fillEmpty, 계약 상태 칸 200px(꼬리표), 1260 창 기준 열 폭 · 표 상자 안 가로 스크롤(2026-11-18), 이름 링크는 재직 · 퇴직 직원(WHALEERP-763)
+    last_modified: 2026-11-23T06:27:02Z
   - id: staff-list-page
     resource: ../../src/app/staff-members/page.tsx
     title: 직원 목록 화면 — 도구 줄 [일괄 저장]는 BP 마스터 · 가맹마스터에게만(bulk-export-button.tsx), 빈 목록 문구 가르기
@@ -144,8 +144,8 @@ sources:
     last_modified: 2026-11-13T20:00:00Z
   - id: retirement
     resource: ../../src/lib/retirement.ts
-    title: 퇴직 처리 판정 — 상세 머리 버튼 · 퇴직일 범위 검사(WHALEERP-585)
-    last_modified: 2026-10-15T10:00:00Z
+    title: 퇴직 처리 판정 — 상세 머리 버튼(초안 + 작성 중 계약이면 없음, WHALEERP-762) · 퇴직일 범위 검사(WHALEERP-585)
+    last_modified: 2026-11-23T06:27:02Z
   - id: button
     resource: ../../src/components/common/button.tsx
     title: 공통 Button — danger · outline 추가
@@ -367,7 +367,7 @@ sources:
 * **처리하면 퇴직이 아니라 퇴직 예정이다.** 퇴직일만 저장하고 재직 상태 · 근로계약은 그대로다. 재직 상태 칸은 「재직 ·
   퇴직 예정 MM-DD」, 기본 정보에 퇴직일 줄이 생긴다. 퇴직일 다음 날 0시 배치가 퇴직으로 바꾸며 정리하고, 그 뒤 목록은
   「퇴직 MM-DD」이고 기본 재직 필터에서 빠진다. Plane 완료 조건 3(처리하면 퇴직)은 이 차이로 문구 수정을 요청했다.
-* 버튼(`retirementActions`) — 재직이면 가입 전 레코드도(WHALEERP-682, api 가 받는다 — 작성 중 근로계약만 있는 직원은 409 「작성 중 근로계약만 있는 직원은 퇴직 처리 대신 작성 중 근로계약을 지워 주세요.」 를 확인창 안에 보인다) 보이고, 지금 주소의 메뉴(`/staff-members` — 지금은 「직원 정보 관리」 MN000005) 수정 권한이 있을 때만. 메뉴 코드가 아니라 주소로 찾는다(`usePagePermission`).
+* 버튼(`retirementActions`) — 재직이면 가입 전 레코드도(WHALEERP-682, api 가 받는다) 보이되, 초안(`joinState` `DRAFT` — 초대를 보낸 적 없음)이고 최근 계약이 작성 중(또는 없음)이면 「퇴직 처리」를 두지 않는다(퇴직일이 이미 있으면 변경 · 취소는 그대로, WHALEERP-762, 명세 S-VZVHSW · CTR-29 — api 가 409 「작성 중 근로계약만 있는 직원은 퇴직 처리 대신 작성 중 근로계약을 지워 주세요.」로 막고, 그 계약을 지우면 직원 정보도 함께 지워진다. 화면이 모르는 다른 경우의 409 는 그대로 확인창 안에 보인다). 버튼은 지금 주소의 메뉴(`/staff-members` — 지금은 「직원 정보 관리」 MN000005) 수정 권한이 있을 때만. 메뉴 코드가 아니라 주소로 찾는다(`usePagePermission`).
   퇴직일이 없으면 붉은 「퇴직 처리」, 퇴직일이 오늘보다 뒤면 「퇴직일 변경」 · 「퇴직 처리 취소」(목업). 퇴직일 당일부터는 배치가
   돌 수 있어 api 가 변경 · 취소를 409 로 막으므로 버튼을 두지 않는다. 퇴직한 직원은 버튼이 없다. 업무 범위 밖 직원은
   상세 api 가 404 라 판정에 오지 않는다.
@@ -442,7 +442,7 @@ sources:
 
 목록 「가입 상태」 칸의 배지 옆과 상세 기본 정보 「가입 상태」 줄에 soft 「재발송」을 둔다. 데모는 재발송을 근로계약 상세 제목 줄에만
 두고 목록 자리가 없어, 칸을 210px 에서 300px 로 넓혀 배지 옆에 세웠다(데모와 다름 — 2026-11-18 가장 긴 「소속 승인 대기」 + [재발송]이 드는 200px 로 줄였다). 상세는 목록의 이름 링크가 재직 직원이면 가입 전 레코드에도
-걸리므로(WHALEERP-682) 가입 전 직원도 상세로 들어온다(그래서 재발송 줄이 상세에서도 실제로 쓰인다).
+걸리므로(WHALEERP-682) 가입 전 직원도 상세로 들어온다(그래서 재발송 줄이 상세에서도 실제로 쓰인다). 퇴직 직원 이름에도 링크를 건다(WHALEERP-763 — 상세에서 퇴직일 · 재직 이력을 본다).
 
 * 보일지(`canResendInvitation`) — 응답의 `contract.canResend` 하나로 정한다(WHALEERP-611 · 130. 초대 행이 없는 옛 소속 확인 계약도
   보이도록 api #164 가 `invitation` 에서 `contract` 로 옮겼다. #164 전 응답을 위한 `invitation.canResend` 대체 값은 api #164 가
