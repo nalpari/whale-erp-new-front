@@ -36,7 +36,7 @@ test("지난 날짜만 그 자리에서 정리된다 — 오늘은 아직 일하
   assert.equal(isSettledNow("2026-10-16", "2026-10-15"), false);
 });
 
-const joined = { joinState: "JOINED" as const, employmentStatus: "EMPLOYED" as const, retiredDate: null };
+const joined = { joinState: "JOINED" as const, employmentStatus: "EMPLOYED" as const, retiredDate: null, contract: { status: "SIGNED" as const } };
 const today = "2026-10-15";
 
 test("재직이면 퇴직 처리", () => {
@@ -56,8 +56,8 @@ test("퇴직한 직원은 버튼 없음", () => {
   assert.equal(retirementActions({ ...joined, employmentStatus: "RETIRED", retiredDate: "2026-10-01" }, today, true), null);
 });
 
-test("가입 전 레코드(초안 · 가입 대기 등)도 재직이면 퇴직 처리", () => {
-  for (const joinState of ["DRAFT", "INVITED", "EXPIRED", "REJECTED", "LINK_HOLD", "UNDER_AGE", "AFFILIATION_PENDING", "RETURN_PENDING", "JOINED", null] as const) {
+test("가입 전 레코드(가입 대기 등)도 재직이면 퇴직 처리", () => {
+  for (const joinState of ["INVITED", "EXPIRED", "REJECTED", "LINK_HOLD", "UNDER_AGE", "AFFILIATION_PENDING", "RETURN_PENDING", "JOINED", null] as const) {
     const staff = { ...joined, joinState };
     assert.equal(retirementActions(staff, today, true), "retire", String(joinState));
   }
@@ -65,6 +65,18 @@ test("가입 전 레코드(초안 · 가입 대기 등)도 재직이면 퇴직 �
   assert.equal(retirementActions({ ...invited, retiredDate: "2026-10-16" }, today, true), "scheduled");
   assert.equal(retirementActions({ ...invited, employmentStatus: "RETIRED" }, today, true), null);
   assert.equal(retirementActions(invited, today, false), null);
+});
+
+test("초안이고 최근 계약이 작성 중(또는 없음)이면 버튼 없음 — api 409, 계약을 지우면 직원도 지워진다(WHALEERP-762)", () => {
+  const draft = { ...joined, joinState: "DRAFT" as const };
+  assert.equal(retirementActions({ ...draft, contract: { status: "DRAFT" } }, today, true), null);
+  assert.equal(retirementActions({ ...draft, contract: null }, today, true), null);
+});
+
+test("초안이어도 작성 중이 아닌 계약이 최근이면 퇴직 처리 · 가입 전이어도 초안이 아니면 작성 중 계약에도 퇴직 처리", () => {
+  assert.equal(retirementActions({ ...joined, joinState: "DRAFT", contract: { status: "SIGNED" } }, today, true), "retire");
+  assert.equal(retirementActions({ ...joined, joinState: "INVITED", contract: { status: "DRAFT" } }, today, true), "retire");
+  assert.equal(retirementActions({ ...joined, contract: { status: "DRAFT" } }, today, true), "retire");
 });
 
 test("직원 정보 관리 수정 권한이 없으면 버튼 없음", () => {
