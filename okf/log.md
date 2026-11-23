@@ -1,7 +1,7 @@
 # Bundle history
 
 ## 2026-11-23
-* **Update**: [Staff members screen](/screens/staff-members.md) — 퇴직 처리 확인창: 작성 중 근로계약만 있어 막히면(api #309 문구) 그 계약으로 가는 [근로계약서로 이동] 버튼.
+* **Update**: [Staff members screen](/screens/staff-members.md) — 작성 중 근로계약만 있는 직원(초안)에게는 퇴직 처리 버튼을 두지 않는다(명세 S-VZVHSW). 퇴직 처리 팝업 안내 · 정리 항목 · 퇴직 표시 연도.
 
 ## 2026-11-20
 * **Update**: [운영 알림](/notify.md) · [Whale ERP Frontend](/whale-erp-front.md) — 화면 제목을 메뉴명에 맞췄다(통합테스트 WHALEERP-705 · 706 · 707 · 708, 704 · 709~712 과 같은 방식): 「운영 알림함」 → 「알림함」, 「직원 정보 관리」 → 「직원정보 관리」, 「문의사항」 → 「문의사항 관리(회원용)」, 「도입문의」 → 「도입문의 관리(비회원용)」. 목록 · 상세 · 오류 · 권한 없음 · 탭 제목과 데모 · 목업 메뉴 이름도 같이.

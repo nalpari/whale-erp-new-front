@@ -45,7 +45,6 @@ export function StaffDetailActions({ staff, today, listHref }: { staff: StaffMem
       {id !== null && (dialog === "retire" || dialog === "change") && (
         <RetirementDialog staffMemberId={id} mode={dialog} currentDate={staff.retiredDate}
           hiredDate={staff.hiredDate}
-          draftContractHref={staff.contract?.status === "DRAFT" ? bpPath(bp, `/contracts/${staff.contract.contractId}/edit`) : null}
           today={today} onClose={close} />
       )}
       {id !== null && dialog === "cancel" && <CancelRetirementDialog staffMemberId={id} onClose={close} />}
