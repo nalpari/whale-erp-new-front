@@ -614,7 +614,11 @@ export function PayslipReview({
                   <Toggle label="3.3% 원천징수 적용" checked={withholding} disabled={!editable} onChange={(e) => setWithholding(e.target.checked)} />
                   <span className={`flex items-start gap-[4px] ${HELP}`}>
                     <span aria-hidden className="mt-[2px] ml-[4px] size-[7px] shrink-0 rounded-bl-[4px] border-b border-l border-current" />
-                    3.3% 원천징수를 적용하면 [소득세]와 [지방소득세] 대신 [사업소득세 3%]와 [지방소득세 0.3%]가 공제됩니다. 4대보험 공제는 기존과 동일하게 유지됩니다.
+                    <span>
+                      3.3% 원천징수를 적용하면 [소득세]와 [지방소득세] 대신 [사업소득세 3%]와 [지방소득세 0.3%]가 공제됩니다.
+                      <br />
+                      4대보험 공제는 기존과 동일하게 유지됩니다.
+                    </span>
                   </span>
                 </div>
               )

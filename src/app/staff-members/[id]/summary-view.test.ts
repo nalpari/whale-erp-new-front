@@ -90,9 +90,9 @@ test("주 넘김 주소는 다른 조회 조건을 두고 week 만 바꾼다 —
 });
 
 test("주 넘김 가운데 글자는 「YYYY년 MM-DD ~ MM-DD」, 연도는 월요일의 해", () => {
-  assert.equal(weekLabel("2026-10-19"), "2026년 10-19 ~ 10-25");
-  assert.equal(weekLabel("2026-10-26"), "2026년 10-26 ~ 11-01");
-  assert.equal(weekLabel("2026-12-28"), "2026년 12-28 ~ 01-03");
+  assert.equal(weekLabel("2026-10-19"), "2026년 10-19(월) ~ 10-25(일)");
+  assert.equal(weekLabel("2026-10-26"), "2026년 10-26(월) ~ 11-01(일)");
+  assert.equal(weekLabel("2026-12-28"), "2026년 12-28(월) ~ 01-03(일)");
 });
 
 test("몇째 주는 목요일이 든 달로 센다", () => {

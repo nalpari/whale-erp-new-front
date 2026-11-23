@@ -151,56 +151,61 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
           histories: c.histories ?? [],
           documents: c.documents ?? [],
           lastSentAt: c.lastSentAt,
-        }).map((row) => ({
-          label: row.label,
-          // 파일마다 한 줄 — 보낸 원본은 재발송할 때마다 한 장씩 쌓인다(최근 것 먼저). 줄이 늘면 칸도 늘고 이름은 위에 맞춘다(2026-11-19 사용자 지정, 전엔 세로선으로 한 줄)
-          multiline: row.documents.length > 1 || !!row.note,
-          labelTop: true,
-          value: row.empty ? (
-            <span className="text-erp-sub">{row.empty}</span>
-          ) : (
-            <span className="flex min-w-0 flex-col gap-[4px]">
-              {(() => {
-                const link = (d: (typeof row.documents)[number]) => (
-                  <a href={at(`/contracts/${c.contractId}/documents/${d.contractDocumentId}`)} className="truncate text-erp-link hover:underline">
-                    {row.withKind ? `${labelOf(documentKinds, d.kind)} · ${d.fileName}` : d.fileName}
-                  </a>
-                );
-                // 보낸 원본은 맨 위(가장 최근)가 지금 직원이 서명할 원본이라 옆에 회색 「(최근 발송)」, 앞서 보낸 것은 「이전 원본 N장」으로 접는다 —
-                // 재발송할 때마다 쌓여 길어졌다(2026-11-19 사용자 지정). 그 밖의 파일(처리 완료본 · 서명본)은 모두 보인다
-                if (row.label !== "보낸 원본") return row.documents.map((d) => <span key={d.contractDocumentId} className="flex min-w-0">{link(d)}</span>);
-                const [latest, ...older] = row.documents;
-                return (
-                  <>
-                    {latest && (
-                      <span className="flex min-w-0 items-center gap-[6px]">
-                        {link(latest)}
-                        {/* 새 원본을 만드는 중(row.note)이면 맨 위 파일은 지난 원본이라 「(최근 발송)」을 붙이지 않는다(ip-code-review) */}
-                        {!row.note && <span className="shrink-0 text-erp-label">(최근 발송)</span>}
-                      </span>
-                    )}
-                    {older.length > 0 && (
-                      <details className="group flex flex-col">
-                        <summary className="flex w-fit cursor-pointer list-none items-center gap-[4px] text-erp-label hover:text-erp-ink [&::-webkit-details-marker]:hidden">
-                          이전 원본 {older.length}장
-                          <svg aria-hidden viewBox="0 0 12 12" className="size-[12px] transition-transform duration-150 group-open:rotate-180">
-                            <path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </summary>
-                        <span className="mt-[4px] flex flex-col gap-[4px]">
-                          {older.map((d) => (
-                            <span key={d.contractDocumentId} className="flex min-w-0">{link(d)}</span>
-                          ))}
-                        </span>
-                      </details>
-                    )}
-                  </>
-                );
-              })()}
-              {row.note && <span className="text-erp-sub">{row.note}</span>}
-            </span>
-          ),
-        })),
+        }).flatMap((row) => {
+          const link = (d: (typeof row.documents)[number]) => (
+            <a href={at(`/contracts/${c.contractId}/documents/${d.contractDocumentId}`)} className="truncate text-erp-link hover:underline">
+              {row.withKind ? `${labelOf(documentKinds, d.kind)} · ${d.fileName}` : d.fileName}
+            </a>
+          );
+          // 파일 줄 사이는 8px — 4px 는 링크끼리 붙어 보였다. 파일 이름은 내려받는 링크라 파랑 그대로(2026-11-23 사용자 확인)
+          const list = (docs: typeof row.documents) => docs.map((d) => <span key={d.contractDocumentId} className="flex min-w-0">{link(d)}</span>);
+          // 보낸 원본은 맨 위(가장 최근)만 「보낸 원본」 줄에 두고 옆에 회색 「(최근 발송)」, 앞서 보낸 것은 따로 「이전 원본」 줄에서 「N장」을
+          // 눌러 펼친다 — 「보낸 원본」 줄 안의 「이전 원본 N장」은 무엇인지 헷갈렸다(2026-11-23 사용자 지정, 전엔 2026-11-19 같은 줄 접기)
+          const [latest, ...older] = row.label === "보낸 원본" ? row.documents : [];
+          const main = {
+            label: row.label,
+            multiline: (row.label === "보낸 원본" ? 1 : row.documents.length) > 1 || !!row.note,
+            labelTop: true,
+            value: row.empty ? (
+              <span className="text-erp-sub">{row.empty}</span>
+            ) : (
+              <span className="flex min-w-0 flex-col gap-[8px]">
+                {row.label !== "보낸 원본" ? (
+                  list(row.documents)
+                ) : (
+                  latest && (
+                    <span className="flex min-w-0 items-center gap-[6px]">
+                      {link(latest)}
+                      {/* 새 원본을 만드는 중(row.note)이면 맨 위 파일은 지난 원본이라 「(최근 발송)」을 붙이지 않는다(ip-code-review) */}
+                      {!row.note && <span className="shrink-0 text-erp-label">(최근 발송)</span>}
+                    </span>
+                  )
+                )}
+                {row.note && <span className="text-erp-sub">{row.note}</span>}
+              </span>
+            ),
+          };
+          if (!older.length) return [main];
+          return [
+            main,
+            {
+              label: "이전 원본",
+              multiline: true,
+              labelTop: true,
+              value: (
+                <details className="group flex min-w-0 flex-col">
+                  <summary className="flex w-fit cursor-pointer list-none items-center gap-[4px] text-erp-label hover:text-erp-ink [&::-webkit-details-marker]:hidden">
+                    {older.length}장
+                    <svg aria-hidden viewBox="0 0 12 12" className="size-[12px] transition-transform duration-150 group-open:rotate-180">
+                      <path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </summary>
+                  <span className="mt-[8px] flex flex-col gap-[8px]">{list(older)}</span>
+                </details>
+              ),
+            },
+          ];
+        }),
       ]
     : [];
   // 세 묶음 — 왼쪽 「직원 정보」(누구) · 「근로 정보」(근로 조건), 오른쪽 「발송 · 서명 정보」(2026-11-19 사용자 지정)
