@@ -35,7 +35,7 @@ export function checkBirthDate(value: string, today: string, current: string | n
 }
 
 /**
- * 새 생년월일이 바뀌면 「직원 본인에게 바뀐 생년월일을 확인했습니다」 체크를 푼다(관리자가 본 날짜가 아니면 확인으로 치지 않는다). 값이 같으면 유지한다 —
+ * 새 생년월일이 바뀌면 「입력한 생년월일이 맞는지 직원 본인에게 확인했습니다」 체크를 푼다(관리자가 본 날짜가 아니면 확인으로 치지 않는다). 값이 같으면 유지한다 —
  * DateField 는 값이 그대로여도 blur 때 onChange 를 다시 부른다.
  */
 export const confirmAfterDateChange = (confirmed: boolean, prev: string, next: string) => confirmed && prev === next;
@@ -58,7 +58,7 @@ export const ignoresCheck = (pending: boolean, pointerDownAt: number | null, dat
 export const BIRTH_DATE_RECONFIRM_MESSAGE = "날짜를 다 입력한 뒤 다시 확인해 주세요.";
 
 /** 확인창 체크 문구. 체크해야 [수정]이 눌린다. */
-export const BIRTH_DATE_CONFIRM_LABEL = "직원 본인에게 바뀐 생년월일을 확인했습니다";
+export const BIRTH_DATE_CONFIRM_LABEL = "입력한 생년월일이 맞는지 직원 본인에게 확인했습니다";
 
 /** 확인창 안내 세 줄(노영주 승인안) */
 export const BIRTH_DATE_NOTES: readonly string[] = [

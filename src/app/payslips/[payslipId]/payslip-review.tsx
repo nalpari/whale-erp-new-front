@@ -622,7 +622,7 @@ export function PayslipReview({
           >
             {isPartTime && (
               <span className={HELP}>
-                켜면 소득세 · 지방소득세 대신 사업소득세(3%)와 지방소득세(0.3%)를 공제합니다. 4대보험 공제는 그대로입니다.
+                3.3% 원천징수를 적용하면 [소득세]와 [지방소득세] 대신 [사업소득세 3%]와 [지방소득세 0.3%]가 공제됩니다. 4대보험 공제는 기존과 동일하게 유지됩니다.
               </span>
             )}
             <Rows>{basicDeductions.map((i) => field(i, deductionHelp(i)))}</Rows>
