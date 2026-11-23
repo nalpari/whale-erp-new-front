@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PayslipCandidate } from "../../lib/payslips.ts";
-import { bulkSummary, canDraft, candidateStores, contractCell, filterCandidates, payslipCell } from "./payslip-draft.ts";
+import { attendanceCell, bulkSummary, canDraft, candidateStores, contractCell, filterCandidates, payslipCell } from "./payslip-draft.ts";
 
 const candidate = (over: Partial<PayslipCandidate> = {}): PayslipCandidate => ({
   staffMemberId: 30,
@@ -71,4 +71,11 @@ test("일괄 작성 결과 한 줄 — 만든 수 · 건너뛴 수와 사유, �
     "1건 작성",
   );
   assert.equal(bulkSummary({ created: [], skipped: [{ staffMemberId: 3, staffName: "c", reason: "EXISTS" }] }), "0건 작성 · 1건 건너뜀 (이미 있음 1)");
+});
+
+test("출퇴근 열 — 기록 있음 · 출퇴근 누락(빨간 꼬리표), 작성할 수 없는 줄은 「-」", () => {
+  assert.deepEqual(attendanceCell(candidate()), { text: "기록 있음", style: "muted" });
+  assert.deepEqual(attendanceCell(candidate({ hasAttendance: false })), { text: "출퇴근 누락", style: "badge-off" });
+  assert.deepEqual(attendanceCell(candidate({ contractId: null, hasAttendance: false })), { text: "-", style: "muted" });
+  assert.deepEqual(attendanceCell(candidate({ payslipId: 9, hasAttendance: false })), { text: "-", style: "muted" });
 });

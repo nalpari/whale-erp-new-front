@@ -1572,6 +1572,8 @@
         const end = b.getFullYear() !== a.getFullYear() ? `${b.getFullYear()}년 ${kd(b)}` : b.getMonth() !== a.getMonth() ? kd(b) : `${b.getDate()}일`;
         return `${a.getFullYear()}년 ${kd(a)} ~ ${end}`;
       };
+      // 같은 줄의 [data-month-name](급여명세서 「N월 급여명세서 작성」)도 고른 달로 바꾼다(2026-11-23)
+      if (month) nav.parentElement?.querySelectorAll("[data-month-name]").forEach((el) => (el.textContent = `${mon.getMonth() + 1}월`));
       trigger.textContent = month
         ? `${mon.getFullYear()}년 ${mon.getMonth() + 1}월`
         : nav.dataset.label === "range" && !day

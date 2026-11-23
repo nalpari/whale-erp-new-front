@@ -11,7 +11,7 @@ import { monthLabel, type PayslipCandidate } from "@/lib/payslips";
 import { storeOptionLabel } from "@/lib/store-scope";
 import { CellView } from "../staff-members/staff-table";
 import { bulkCreatePayslips, createPayslip, getPayslipCandidatesAction, type DraftFailure } from "./actions";
-import { bulkSummary, canDraft, candidateStores, contractCell, filterCandidates, payslipCell } from "./payslip-draft";
+import { bulkSummary, canDraft, candidateStores, attendanceCell, contractCell, filterCandidates, payslipCell } from "./payslip-draft";
 import { StoreNameWithType } from "@/components/site/store-type-tag";
 
 // 「급여명세서 작성」 버튼과 그 팝업(데모 staff-sections.mjs pickId, 720px). 미리 고른 직원은 없다 — 점포 · 이름으로 좁혀 한 명을
@@ -128,7 +128,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
   const columns: Column<PayslipCandidate>[] = [
     {
       header: "선택",
-      width: "w-[60px]",
+      width: "w-[52px]",
       cell: (c) => (
         <input
           type="radio"
@@ -145,24 +145,22 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
       header: "직원",
       // 직원 · 점포에도 기준 폭을 두고 표에 최소폭을 걸어, 좁은 창(휴대폰 브라우저 등)에서 이 두 열이 0 으로 줄어 「직원」이 세로로 꺾이고
       // 이름이 사라지지 않게 한다 — 모자라면 표 상자 안에서 가로로 민다(2026-11-19 사용자 지정)
-      width: "w-[130px]",
-      cell: (c) => (
-        <>
-          {c.staffName}
-          {canDraft(c) && !c.hasAttendance && <span className="ml-[4px] text-[13px] text-erp-off">출퇴근 누락</span>}
-        </>
-      ),
+      width: "w-[94px]",
+      cell: (c) => c.staffName,
     },
     // 점포 이름 앞에 본사 · 직영 · 가맹 꼬리표, 왼쪽 정렬 — 직원 · 근로계약 목록과 같다(2026-11-19 사용자 지정)
-    { header: "점포", width: "w-[180px]", align: "left", cell: (c) => <StoreNameWithType storeId={c.storeId} name={c.storeName} isHq={c.storeIsHq} /> },
-    { header: "계약 유형", width: "w-[100px]", cell: (c) => labelOf(employmentTypeLabels, c.employmentType) },
-    { header: "근로계약", width: "w-[100px]", cell: (c) => <CellView cell={contractCell(c)} /> },
-    { header: "명세서", width: "w-[90px]", cell: (c) => <CellView cell={payslipCell(c)} /> },
+    { header: "점포", width: "w-[170px]", align: "left", cell: (c) => <StoreNameWithType storeId={c.storeId} name={c.storeName} isHq={c.storeIsHq} /> },
+    { header: "계약 유형", width: "w-[86px]", cell: (c) => labelOf(employmentTypeLabels, c.employmentType) },
+    { header: "근로계약", width: "w-[86px]", cell: (c) => <CellView cell={contractCell(c)} /> },
+    // 출퇴근 기록 여부는 근로계약 · 명세서처럼 따로 열로 — 이름 옆에 붙으면 그 줄만 이름이 밀렸다(2026-11-23 사용자 지정)
+    { header: "출퇴근", width: "w-[96px]", cell: (c) => <CellView cell={attendanceCell(c)} /> },
+    { header: "명세서", width: "w-[86px]", cell: (c) => <CellView cell={payslipCell(c)} /> },
   ];
 
   return (
     <>
-      <Button onClick={show}>급여명세서 작성</Button>
+      {/* 고른 달을 이름에 — 달을 바꾸면 버튼 이름도 바뀐다(2026-11-23 사용자 지정) */}
+      <Button onClick={show}>{Number(month.slice(5))}월 급여명세서 작성</Button>
       <dialog
         ref={ref}
         aria-labelledby={titleId}
@@ -215,7 +213,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
           <div className="max-h-[322px] overflow-y-auto">
             <DataTable
               columns={columns}
-              minWidth="min-w-[640px]"
+              minWidth="min-w-[670px]"
               rows={shown}
               rowKey={(c) => c.staffMemberId}
               rowState={(c) => (c.staffMemberId === pickedShown ? "selected" : undefined)}
