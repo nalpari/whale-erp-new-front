@@ -37,7 +37,7 @@ sources:
   - id: staff-detail-actions
     resource: ../../src/app/staff-members/[id]/staff-detail-actions.tsx
     title: 상세 머리 버튼(퇴직 · 목록 — ?back= 의 목록 주소로) · 비밀번호 초기화 버튼
-    last_modified: 2026-10-23T03:37:40Z
+    last_modified: 2026-11-23T06:19:28Z
   - id: confirm-dialog
     resource: ../../src/components/common/confirm-dialog.tsx
     title: 공통 확인창 — confirmVariant 추가
@@ -442,7 +442,7 @@ sources:
 
 목록 「가입 상태」 칸의 배지 옆과 상세 기본 정보 「가입 상태」 줄에 soft 「재발송」을 둔다. 데모는 재발송을 근로계약 상세 제목 줄에만
 두고 목록 자리가 없어, 칸을 210px 에서 300px 로 넓혀 배지 옆에 세웠다(데모와 다름 — 2026-11-18 가장 긴 「소속 승인 대기」 + [재발송]이 드는 200px 로 줄였다). 상세는 목록의 이름 링크가 재직 직원이면 가입 전 레코드에도
-걸리므로(WHALEERP-682) 가입 전 직원도 상세로 들어온다. 퇴직 직원 이름에도 링크를 건다(WHALEERP-763 — 상세에서 퇴직일 · 재직 이력을 본다)(그래서 재발송 줄이 상세에서도 실제로 쓰인다).
+걸리므로(WHALEERP-682) 가입 전 직원도 상세로 들어온다(그래서 재발송 줄이 상세에서도 실제로 쓰인다). 퇴직 직원 이름에도 링크를 건다(WHALEERP-763 — 상세에서 퇴직일 · 재직 이력을 본다).
 
 * 보일지(`canResendInvitation`) — 응답의 `contract.canResend` 하나로 정한다(WHALEERP-611 · 130. 초대 행이 없는 옛 소속 확인 계약도
   보이도록 api #164 가 `invitation` 에서 `contract` 로 옮겼다. #164 전 응답을 위한 `invitation.canResend` 대체 값은 api #164 가
