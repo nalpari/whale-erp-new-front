@@ -70,7 +70,8 @@ export function StaffTable({
           // 본사 역할에게 가린 가맹 점포 직원(STAFF-23 · ATT-30) — 「본사에 정보제공 미동의」 한 줄. 가맹점포인 것은 옆 점포 열이 말해 「가맹 점포 직원」은 뺐다
           // (2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「본사 제공 동의 없음 · 가맹 점포 직원」 두 줄)
           <span className="whitespace-nowrap text-erp-muted">본사에 정보제공 미동의</span>
-        ) : item.staffMemberId !== null && item.employmentStatus === "EMPLOYED" ? (
+        ) : item.staffMemberId !== null && (item.employmentStatus === "EMPLOYED" || item.employmentStatus === "RETIRED") ? (
+          // 재직(가입 전 레코드 포함, WHALEERP-682)과 퇴직 직원은 상세로 간다 — 퇴직 직원도 상세에서 퇴직일 · 재직 이력을 본다(WHALEERP-763, 명세 S-VZVHSW · CTR-30)
           <Link href={at(withBack(`/staff-members/${item.staffMemberId}`, listHref))} className="text-erp-link hover:underline">
             {item.name}
           </Link>
