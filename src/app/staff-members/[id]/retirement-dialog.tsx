@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ConfirmDialog, DateField, useAction, useToast } from "@/components/common";
-import { checkRetiredDate, earliestRetiredDate, isSettledNow, reloadsPreview, showsBelowDateField, todayAfterSubmit } from "@/lib/retirement";
+import { ConfirmDialog, DateField, useAction, useToast, GuideBand } from "@/components/common";
+import { checkRetiredDate, isSettledNow, retiredDateHint, reloadsPreview, showsBelowDateField, todayAfterSubmit } from "@/lib/retirement";
 import type { RetirementPreview } from "@/lib/staff-members";
 import { cancelRetirementAction, changeRetirementDateAction, previewRetirementAction, retireAction } from "./actions";
 import { useFailure } from "./use-action-failure";
@@ -28,6 +28,7 @@ export function RetirementDialog({
   staffMemberId,
   mode,
   currentDate,
+  hiredDate,
   today: initialToday,
   onClose,
 }: {
@@ -35,6 +36,8 @@ export function RetirementDialog({
   mode: "retire" | "change";
   /** 퇴직일 변경일 때 지금 퇴직일 */
   currentDate: string | null;
+  /** 입사일 — 3개월 전보다 늦으면 안내 · 검사가 입사일부터다 */
+  hiredDate: string | null;
   /** 화면을 그릴 때 서버의 오늘(KST). 그 뒤로는 서버 액션이 날짜 바뀜으로 막으며 돌려준 오늘로만 바뀐다(todayAfterSubmit). */
   today: string;
   onClose: () => void;
@@ -47,7 +50,7 @@ export function RetirementDialog({
   const [today, setToday] = useState(initialToday);
   const [date, setDate] = useState(currentDate ?? initialToday);
   // 날짜가 틀리면 미리 보기를 받지 않는다(idle) — 틀린 이유는 날짜 칸 아래에 둔다(재영 공지 2026-10-29).
-  const [preview, setPreview] = useState<Preview>(() => (checkRetiredDate(date, today) ? { status: "idle" } : { status: "loading" }));
+  const [preview, setPreview] = useState<Preview>(() => (checkRetiredDate(date, today, hiredDate) ? { status: "idle" } : { status: "loading" }));
   // api 가 퇴직일 입력으로 거절한 400(3개월 범위 · 입사일보다 앞섬 등). 날짜를 고치면 지운다.
   const [serverDateError, setServerDateError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -79,7 +82,7 @@ export function RetirementDialog({
 
   // 처음 열릴 때 기본 날짜의 미리 보기. 그 뒤로는 날짜를 바꿀 때 부른다.
   useEffect(() => {
-    if (!checkRetiredDate(date, today)) fetchPreview(date);
+    if (!checkRetiredDate(date, today, hiredDate)) fetchPreview(date);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 열릴 때 한 번만
   }, []);
 
@@ -88,7 +91,7 @@ export function RetirementDialog({
     setDate(value);
     setSubmitError(null);
     setServerDateError(null);
-    const invalid = checkRetiredDate(value, on);
+    const invalid = checkRetiredDate(value, on, hiredDate);
     if (invalid) {
       seq.current++; // 늦게 오는 앞 응답이 미리 보기를 덮지 않게
       setPreview({ status: "idle" });
@@ -98,7 +101,8 @@ export function RetirementDialog({
     fetchPreview(value);
   };
 
-  const dateNote = checkRetiredDate(date, today) ?? serverDateError;
+  const dateNote = checkRetiredDate(date, today, hiredDate) ?? serverDateError;
+  const hint = retiredDateHint(today, hiredDate);
   const sameDate = mode === "change" && date === currentDate;
   const ready = preview.status === "ok" && preview.date === date && !sameDate;
 
@@ -165,7 +169,16 @@ export function RetirementDialog({
               if (reloadsPreview(value, date, preview.status)) changeDate(value);
             }}
           />
-          <p className="text-[13px] text-erp-label">오늘 이후 또는 최근 3개월 이내({earliestRetiredDate(today)}부터)의 날짜를 선택해 주세요.</p>
+          {/* 고를 수 있는 기간 — 칸 아래 둥근 꺾은선 + 회색 둥근 꼬리표(2026-11-23 사용자 지정, 꺾은선은 급여명세서 3.3% 안내와 같다) */}
+          <p className="flex items-start gap-[6px] text-[13px]">
+            <span aria-hidden className="mt-[5px] ml-[4px] size-[7px] shrink-0 rounded-bl-[4px] border-b border-l border-erp-brand-soft" />
+            <span>
+              <span className="mr-[6px] inline-block rounded-full border border-erp-thead-line bg-erp-thead-bg px-[10px] leading-[20px] font-medium text-erp-ink">
+                {hint.badge}
+              </span>
+              {hint.rest && <span className="text-erp-label">{hint.rest}</span>}
+            </span>
+          </p>
           {dateNote && (
             <p role="alert" className="text-[13px] text-erp-off">
               {dateNote}
@@ -174,37 +187,25 @@ export function RetirementDialog({
           {sameDate && <p className="text-[13px] text-erp-off">지금 퇴직일과 같습니다.</p>}
         </div>
 
-        <div className="flex flex-col gap-[6px]">
-          <p className="text-[13px] text-erp-label">퇴직일 이후 정리되는 항목</p>
-          {preview.status === "loading" && <p className="text-erp-muted">불러오는 중입니다.</p>}
-          {preview.status === "error" && (
-            <p role="alert" className="text-erp-off">
-              {preview.message}
-            </p>
-          )}
-          {preview.status === "ok" && (
-            <ul className="list-disc pl-[18px]">
-              <li>
-                삭제되는 근무스케줄 {preview.value.schedulesToRemove}건{" "}
-                <span className="text-erp-label">· 퇴직일 다음 날({mmdd(nextDay(preview.date))})부터</span>
-              </li>
-              <li>
-                배정 해제되는 TO-DO {preview.value.todosToUnassign}건 <span className="text-erp-label">· 완료하지 않은 개인 배정</span>
-              </li>
-              <li>
-                종료되는 근로계약 {preview.value.contractsToEnd.length}건 <span className="text-erp-label">· 작성 중·서명 요청 전·직원 서명 대기·직원 수정 요청</span>
-              </li>
-            </ul>
-          )}
-        </div>
+        {/* 정리되는 항목 · 안내를 영역으로 나눈다 — 항목은 회색 제목 줄 상자(0건은 줄을 빼고, 모두 0건이면 상자를 두지 않는다), 안내는 안내 박스(2026-11-23 사용자 지정) */}
+        {preview.status === "loading" && <p className="text-[13px] text-erp-muted">정리되는 항목을 확인하는 중입니다.</p>}
+        {preview.status === "error" && (
+          <p role="alert" className="text-erp-off">
+            {preview.message}
+          </p>
+        )}
+        {preview.status === "ok" && <SettleItems date={preview.date} value={preview.value} />}
 
-        <p>
-          퇴직 처리하면 퇴직일만 저장되고, 퇴직일까지는 &apos;퇴직 예정&apos; 상태로 재직 상태와 근로계약이 유지됩니다. 퇴직일 다음 날 퇴직
-          상태로 바뀌며 위 항목이 정리되고, 이후에는 되돌릴 수 없습니다. 퇴직일 전까지는 취소할 수 있습니다. 직원의 앱 계정은 그대로 사용할 수
-          있습니다.
-        </p>
+        <GuideBand
+          title="퇴직 처리 안내"
+          lines={[
+            "퇴직 처리 시 퇴직일이 저장되며, 퇴직일까지는 '퇴직 예정' 상태로 재직 정보와 근로계약이 유지됩니다.",
+            "퇴직일 다음 날 '퇴직' 상태로 변경되며, 재직 정보와 근로계약이 정리됩니다. 이후에는 퇴직 처리를 되돌릴 수 없습니다.",
+            "퇴직 처리는 퇴직일 전까지 취소할 수 있으며, 퇴직 후에도 직원의 앱 계정은 유지됩니다.",
+          ]}
+        />
         {settledNow && (
-          <p className="font-medium text-erp-off">지난 날짜라 처리하는 즉시 퇴직으로 바뀌고 위 항목이 정리됩니다. 되돌릴 수 없습니다.</p>
+          <p className="font-medium text-erp-off">지난 날짜를 퇴직일로 선택하면 즉시 &apos;퇴직&apos; 상태로 변경되고, 재직 정보와 근로계약이 정리됩니다. 처리 후에는 취소할 수 없습니다.</p>
         )}
         {submitError && (
           <p role="alert" className="text-erp-off">
@@ -213,6 +214,32 @@ export function RetirementDialog({
         )}
       </div>
     </ConfirmDialog>
+  );
+}
+
+/** 퇴직일 이후 정리되는 항목 — 회색 제목 줄 상자, 줄마다 이름 · 설명(회색) · 오른쪽 건수. 0건 줄은 빼고 모두 0건이면 그리지 않는다. */
+function SettleItems({ date, value }: { date: string; value: { schedulesToRemove: number; todosToUnassign: number; contractsToEnd: unknown[] } }) {
+  const rows = [
+    { name: "삭제되는 근무스케줄", note: `퇴직일 다음 날(${mmdd(nextDay(date))})부터`, count: value.schedulesToRemove },
+    { name: "배정 해제되는 TO-DO", note: "완료하지 않은 개인 배정", count: value.todosToUnassign },
+    { name: "종료되는 근로계약", note: "작성 중·서명 요청 전·직원 서명 대기·직원 수정 요청", count: value.contractsToEnd.length },
+  ].filter((r) => r.count > 0);
+  if (rows.length === 0) return null;
+  return (
+    <section className="rounded-[2px] border border-erp-thead-line">
+      <h3 className="flex h-[42px] items-center border-b border-erp-thead-line bg-erp-thead-bg px-[12px] text-[14px] font-medium text-erp-ink">퇴직일 이후 정리되는 항목</h3>
+      <ul>
+        {rows.map((r) => (
+          <li key={r.name} className="flex min-h-[46px] items-center gap-[12px] border-b border-erp-thead-line px-[12px] py-[8px] last:border-b-0">
+            <span className="min-w-0 flex-1">
+              {r.name}
+              <span className="block text-[13px] text-erp-label">{r.note}</span>
+            </span>
+            <span className="shrink-0 font-semibold">{r.count}건</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

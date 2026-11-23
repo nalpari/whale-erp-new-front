@@ -27,11 +27,31 @@ export function earliestRetiredDate(today: string): string {
   return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
 }
 
-/** 확인창의 퇴직일 검사. 맞으면 null, 아니면 칸 아래에 둘 문구. 미래 날짜는 상한이 없다(api). */
-export function checkRetiredDate(value: string, today: string): string | null {
+/**
+ * 입사일이 3개월 전보다 늦어 실제로 더 늦게 시작하는가. 입사일 검사는 입사일이 온 뒤에만 본다(S-VZVHSW · CTR-25, WHALEERP-613) —
+ * 시작일이 앞으로인 계약을 맺어 둔 직원은 입사일과 상관없이 3개월 범위다.
+ */
+function hireBound(today: string, hiredDate?: string | null): string | null {
+  return hiredDate && hiredDate <= today && hiredDate > earliestRetiredDate(today) ? hiredDate : null;
+}
+
+/**
+ * 퇴직일 칸 아래 안내 — 고를 수 있는 첫날을 날짜로 보인다(2026-11-23 사용자 지정). 입사일이 더 늦으면 입사일부터다.
+ * badge 는 둥근 꼬리표 안, rest 는 그 옆 회색 글자 — 긴 문장을 꼬리표에 다 넣으면 두 줄로 꺾여 꼬리표가 부풀었다.
+ */
+export function retiredDateHint(today: string, hiredDate?: string | null): { badge: string; rest: string | null } {
+  const hire = hireBound(today, hiredDate);
+  if (hire) return { badge: `퇴직일은 ${hire}(입사일) 이후 날짜로 선택해 주세요.`, rest: null };
+  return { badge: `퇴직일은 ${earliestRetiredDate(today)} 이후 날짜로 선택해 주세요.`, rest: "지난 날짜는 최근 3개월까지만 선택할 수 있습니다." };
+}
+
+/** 확인창의 퇴직일 검사. 맞으면 null, 아니면 칸 아래에 둘 문구. 미래 날짜는 상한이 없다(api). 입사일을 주면 그보다 앞선 날도 막는다(api 400 과 같은 판정). */
+export function checkRetiredDate(value: string, today: string, hiredDate?: string | null): string | null {
   if (value === "") return "퇴직일을 입력해 주세요.";
   if (!isDate(value)) return "퇴직일을 YYYY-MM-DD 로 입력해 주세요.";
   if (value < earliestRetiredDate(today)) return "퇴직일은 오늘 이후, 또는 최근 3개월 안의 지난 날짜만 받습니다.";
+  const hire = hiredDate && hiredDate <= today ? hiredDate : null;
+  if (hire && value < hire) return `퇴직일은 입사일(${hire}) 이후로 선택해 주세요.`;
   return null;
 }
 
