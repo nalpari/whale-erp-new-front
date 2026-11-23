@@ -609,7 +609,14 @@ export function PayslipReview({
             // 드러나게 「사업소득 3.3% 원천징수」(2026-11-19 사용자 지정). 파트타이머 명세서에만 선다(PAY-03)
             tools={
               isPartTime && (
-                <Toggle label="3.3% 원천징수 적용" checked={withholding} disabled={!editable} onChange={(e) => setWithholding(e.target.checked)} />
+                // 안내는 스위치 바로 아래에 둥근 꺾은선으로 잇는다 — 공제 칸 위에 따로 있으면 무엇을 켜는 안내인지 떨어져 보였다(2026-11-23 사용자 지정)
+                <div className="flex flex-col gap-[6px]">
+                  <Toggle label="3.3% 원천징수 적용" checked={withholding} disabled={!editable} onChange={(e) => setWithholding(e.target.checked)} />
+                  <span className={`flex items-start gap-[4px] ${HELP}`}>
+                    <span aria-hidden className="mt-[2px] ml-[4px] size-[7px] shrink-0 rounded-bl-[4px] border-b border-l border-current" />
+                    3.3% 원천징수를 적용하면 [소득세]와 [지방소득세] 대신 [사업소득세 3%]와 [지방소득세 0.3%]가 공제됩니다. 4대보험 공제는 기존과 동일하게 유지됩니다.
+                  </span>
+                </div>
               )
             }
             action={
@@ -620,11 +627,6 @@ export function PayslipReview({
               )
             }
           >
-            {isPartTime && (
-              <span className={HELP}>
-                3.3% 원천징수를 적용하면 [소득세]와 [지방소득세] 대신 [사업소득세 3%]와 [지방소득세 0.3%]가 공제됩니다. 4대보험 공제는 기존과 동일하게 유지됩니다.
-              </span>
-            )}
             <Rows>{basicDeductions.map((i) => field(i, deductionHelp(i)))}</Rows>
           </GroupBox>
           <GroupBox
