@@ -43,7 +43,7 @@ export function StaffDetailActions({ staff, today, listHref }: { staff: StaffMem
       )}
       <Button href={bpPath(bp, listHref)}>목록</Button>
       {id !== null && (dialog === "retire" || dialog === "change") && (
-        <RetirementDialog staffMemberId={id} mode={dialog} currentDate={staff.retiredDate} today={today} onClose={close} />
+        <RetirementDialog staffMemberId={id} mode={dialog} currentDate={staff.retiredDate} hiredDate={staff.hiredDate} today={today} onClose={close} />
       )}
       {id !== null && dialog === "cancel" && <CancelRetirementDialog staffMemberId={id} onClose={close} />}
     </>

@@ -10,6 +10,7 @@ import { getPayslip } from "@/lib/payslips-api";
 import { kstToday } from "@/lib/staff-members";
 import { payslipListHref } from "../payslip-list-query";
 import { attendanceHref, deductionAnchor, detailReviewReasons, reviewBand, reviewDetailText } from "../payslip-row";
+import { confirmBlockedUntil } from "./payslip-edit";
 import { PayslipReview } from "./payslip-review";
 
 export const metadata: Metadata = {
@@ -166,7 +167,7 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
             // 저장 · 확정 뒤 다시 받은 값으로 화면 상태(금액 칸 · 스위치)를 새로 세운다
             key={payslip.updatedAt}
             payslip={payslip}
-            band={reviewBand(reviewReasons)}
+            band={reviewBand(reviewReasons, confirmBlockedUntil(payslip.confirmableFrom, today))}
             listHref={listHref}
             today={today}
             statusLabel={payslip.status ? labelOf(payslipStatuses, payslip.status) : "-"}

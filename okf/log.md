@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-23
+* **Update**: [Staff members screen](/screens/staff-members.md) — 퇴직 처리 확인창 문구 · 배치(고를 수 있는 첫날 꼬리표 · 정리 항목 상자 · 퇴직 처리 안내 박스), 퇴직 표시에 연도.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 초안(초대를 보낸 적 없음)이고 최근 계약이 작성 중인 직원 상세에는 [퇴직 처리]를 두지 않는다(WHALEERP-762 — api 409, 계약을 지우면 직원도 지워진다). 목록에서 퇴직 직원 이름도 상세 링크로 건다(WHALEERP-763).
 
 ## 2026-11-20

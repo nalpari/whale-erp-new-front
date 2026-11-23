@@ -98,7 +98,7 @@ export async function sendPayslip(payslipId: number, updatedAt: string): Promise
   }
 }
 
-/** 재발송 — 발송 완료만. 처음 발송과 같은 문구로 다시 보낸다(재발송 템플릿, 쟁점 NOTI-6 · #605). */
+/** 재발송 — 발송 완료만. 재발송 템플릿(EMAIL · PUSH_PAYSLIP_RESENT)으로 다시 보낸다(쟁점 NOTI-6 · #605). */
 export async function resendPayslip(payslipId: number, updatedAt: string): Promise<Result> {
   if (!validId(payslipId)) return NOT_FOUND;
   try {

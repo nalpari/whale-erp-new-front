@@ -162,7 +162,7 @@ function contractStatusCell(item: StaffMemberListItem, today: string, statusLabe
 /** 재직 칸. 가입 · 계약 · 재직 상태를 한눈에 보는 요약이다(데모). 위에서부터 처음 맞는 것. */
 export function statusCells(item: StaffMemberListItem): Cell[] {
   if (item.employmentStatus === "RETIRED")
-    return [{ text: item.retiredDate ? `퇴직 ${mmdd(item.retiredDate)}` : "퇴직", style: "muted" }];
+    return [{ text: item.retiredDate ? `퇴직 ${item.retiredDate}` : "퇴직", style: "muted" }];
   if (item.joinState === "LINK_HOLD") return [{ text: "확인 필요", style: "mark-off" }];
   if (item.joinState === "UNDER_AGE") return [{ text: "삭제 대상", style: "mark-off" }];
   if (item.joinState === "AFFILIATION_PENDING" || item.joinState === "RETURN_PENDING")
@@ -176,16 +176,16 @@ export function statusCells(item: StaffMemberListItem): Cell[] {
     if (status === "REJECTED" || status === "EXPIRED") return [{ text: "재발송 필요", style: "mark-off" }];
   }
   const cells: Cell[] = [{ text: "재직", style: "mark-on" }];
-  if (item.retiredDate) cells.push({ text: `퇴직 예정 ${mmdd(item.retiredDate)}`, style: "badge-off" });
+  if (item.retiredDate) cells.push({ text: `퇴직 예정 ${item.retiredDate}`, style: "badge-off" });
   return cells;
 }
 
 /** 상세의 재직 상태 칸. 목록 요약(statusCells)과 달리 재직 · 퇴직 예정 · 퇴직만 보인다 — 가입 · 계약 상태는 섞지 않는다. 값이 없으면(가림) 빈 배열. */
 export function employmentStatusCells(item: StaffMemberListItem): Cell[] {
   if (item.employmentStatus === "RETIRED")
-    return [{ text: item.retiredDate ? `퇴직 ${mmdd(item.retiredDate)}` : "퇴직", style: "muted" }];
+    return [{ text: item.retiredDate ? `퇴직 ${item.retiredDate}` : "퇴직", style: "muted" }];
   if (item.employmentStatus !== "EMPLOYED") return [];
   const cells: Cell[] = [{ text: "재직", style: "mark-on" }];
-  if (item.retiredDate) cells.push({ text: `퇴직 예정 ${mmdd(item.retiredDate)}`, style: "badge-off" });
+  if (item.retiredDate) cells.push({ text: `퇴직 예정 ${item.retiredDate}`, style: "badge-off" });
   return cells;
 }

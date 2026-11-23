@@ -728,9 +728,19 @@ export function PayslipReview({
         onConfirm={() => run(() => cancelConfirmation(payslip.payslipId, payslip.updatedAt), "확정을 취소했습니다.")}
         onCancel={close}
       >
-        {payslip.status === "SENT"
-          ? "검토 중으로 돌아옵니다. 이미 보낸 명세서라 직원 근무 앱에는 다시 보낼 때까지 「검토 중」으로 금액 없이 보입니다. 고친 뒤 다시 확정해 보내면 처음 발송과 같은 문구로 다시 갑니다."
-          : "검토 중으로 돌아옵니다. 발송한 뒤에도 취소할 수 있습니다."}
+        {/* 다시 보내면 api 가 재발송 템플릿(EMAIL · PUSH_PAYSLIP_RESENT)을 쓴다 — 「처음 발송과 같은 문구」는 사실과 달라 고쳤다(2026-11-23 사용자 지정) */}
+        {payslip.status === "SENT" ? (
+          <>
+            <p>확정을 취소하면 급여명세서가 검토 중 상태로 변경됩니다.</p>
+            <p>다시 발송하기 전까지 직원 근무 앱에서는 금액 없이 「검토 중」으로 표시됩니다.</p>
+            <p>수정 후 다시 확정하고 발송하면 직원에게 재발송 알림이 전송됩니다.</p>
+          </>
+        ) : (
+          <>
+            <p>확정을 취소하면 급여명세서가 검토 중 상태로 변경됩니다.</p>
+            <p>수정 후 다시 확정해 주세요.</p>
+          </>
+        )}
         {failureText}
       </ConfirmDialog>
       <ConfirmDialog
@@ -752,7 +762,9 @@ export function PayslipReview({
         onConfirm={() => run(() => resendOne(payslip.payslipId, payslip.updatedAt), "다시 발송했습니다.")}
         onCancel={close}
       >
-        {payslip.staffName} 님에게 지금 값으로 명세서를 다시 보냅니다. 문구는 처음 발송과 같습니다.
+        {/* 재발송은 재발송 템플릿(EMAIL · PUSH_PAYSLIP_RESENT)으로 간다 — 「문구는 처음 발송과 같습니다」는 사실과 달라 고쳤다(2026-11-23 사용자 지정) */}
+        <p>{payslip.staffName} 님에게 급여명세서를 다시 발송합니다.</p>
+        <p>직원에게 재발송 알림이 전송됩니다.</p>
         {failureText}
       </ConfirmDialog>
       <ConfirmDialog open={dialog === "load"} title="지난 명세서의 값을 불러오시겠습니까?" confirmLabel="불러오기" busy={busy} onConfirm={load} onCancel={close}>

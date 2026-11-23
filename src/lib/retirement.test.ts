@@ -1,7 +1,7 @@
 // node --test src/lib/retirement.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, reloadsPreview, retirementActions, settlesWithoutWarning, showsBelowDateField, staleDayWarning, todayAfterSubmit } from "./retirement.ts";
+import { checkRetiredDate, earliestRetiredDate, retiredDateHint, failureEffect, isSettledNow, reloadsPreview, retirementActions, settlesWithoutWarning, showsBelowDateField, staleDayWarning, todayAfterSubmit } from "./retirement.ts";
 
 test("가장 이른 퇴직일은 오늘에서 3개월 전 같은 날", () => {
   assert.equal(earliestRetiredDate("2026-10-15"), "2026-07-15");
@@ -161,4 +161,12 @@ test("미리 보기 다시 받기 — 다른 값은 늘, 같은 값은 연결 ·
   assert.equal(reloadsPreview("2026-10-30", "2026-10-29", "ok"), true);
   for (const status of ["ok", "loading", "idle"] as const) assert.equal(reloadsPreview("2026-10-29", "2026-10-29", status), false);
   assert.equal(reloadsPreview("2026-10-29", "2026-10-29", "error"), true);
+});
+
+test("퇴직일 안내 — 고를 수 있는 첫날을 날짜로, 입사일이 더 늦으면 입사일부터(2026-11-23 사용자 지정)", () => {
+  assert.equal(retiredDateHint("2026-11-23", "2025-01-02"), "퇴직일은 2026-08-23부터 선택할 수 있습니다.");
+  assert.equal(retiredDateHint("2026-11-23", null), "퇴직일은 2026-08-23부터 선택할 수 있습니다.");
+  assert.equal(retiredDateHint("2026-11-23", "2026-11-18"), "퇴직일은 입사일(2026-11-18)부터 선택할 수 있습니다.");
+  // 입사일이 아직 오지 않았으면 입사일을 보지 않는다(WHALEERP-613)
+  assert.equal(retiredDateHint("2026-11-23", "2026-12-01"), "퇴직일은 2026-08-23부터 선택할 수 있습니다.");
 });

@@ -82,7 +82,7 @@ export function staffSections({ A, R }) {
   const staffRows = [
     [who("서지안", D), "010-2841-7702", "모리커피 서초점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "서명 완료"), p.mark("ok", "재직")],
     [who("오세라", D), "010-3392-4418", "모리커피 서초점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "서명 완료"), p.mark("ok", "재직")],
-    [who("문태경", D), "010-4471-2298", "온기식당 판교점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "서명 완료"), `${p.mark("ok", "재직")} ${p.tag("warn", "퇴직 예정 09-30")}`], // 퇴직 예정은 재직으로 센다(2026-10-08 재영)
+    [who("문태경", D), "010-4471-2298", "온기식당 판교점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "서명 완료"), `${p.mark("ok", "재직")} ${p.tag("warn", "퇴직 예정 2026-09-30")}`], // 퇴직 예정은 재직으로 센다(2026-10-08 재영)
     [who("배정숙", D), "010-8820-3317", "온기식당 판교점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "갱신 예정 D-20"), p.mark("ok", "재직")],
     [who("남도현"), "010-9014-5563", "모리커피 성수점", "파트타이머", p.tag("warn", "가입 대기 · 08-31"), p.tag("quiet", "서명 요청 전"), p.mark("subtle", "가입 대기")],
     [`<button type="button" aria-expanded="false" aria-controls="${holdPanel}" class="text-erp-link hover:underline">하준서</button>`, "010-3392-4418", "모리커피 성수점", "파트타이머", p.tag("risk", "정보 확인 필요 · 4일"), p.tag("quiet", "서명 요청 전"), p.mark("risk", "확인 필요")],
@@ -91,7 +91,7 @@ export function staffSections({ A, R }) {
     [who("유하람", D), "010-2093-8875", "모리커피 연남점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("risk", "서명 거절 · 09-02"), p.mark("risk", "재발송 필요")],
     [`<span class="whitespace-nowrap text-erp-muted">본사에 정보제공 미동의</span>`, "-", "모리커피 연남점", "-", "-", "-", "-"],
     [who("민세하"), "010-7725-3390", "모리커피 성수점", "파트타이머", p.tag("risk", "가입 불가(만 19세 미만)"), p.tag("quiet", "서명 요청 전"), p.mark("risk", "삭제 대상")],
-    [who("임채운"), "010-6613-0284", "모리커피 연남점", "파트타이머", p.tag("quiet", "가입 완료"), p.tag("quiet", "계약 종료"), p.mark("subtle", "퇴직 07-31")],
+    [who("임채운"), "010-6613-0284", "모리커피 연남점", "파트타이머", p.tag("quiet", "가입 완료"), p.tag("quiet", "계약 종료"), p.mark("subtle", "퇴직 2026-07-31")],
   ];
   // 직원 정보 관리: 점포 목록처럼 왼쪽 필터 + 오른쪽 목록(목업의 목록 위 검색칸·선택칸을 필터로 옮겼다).
   const listFilter = ui.filterPanel(A, [
@@ -430,17 +430,19 @@ export function staffSections({ A, R }) {
     `<div class="flex flex-wrap items-center gap-x-[12px] gap-y-[6px] text-[14px]"><p class="text-erp-ink">총 <b class="font-semibold">${(a + b + c + d).toLocaleString("ko-KR")}</b> 건</p>${vline}<p class="flex items-center text-erp-label">${[["작성 중", a], ["검토 중", b], ["확정", c], ["발송 완료", d]]
       .map(([l, n], i) => `<span class="flex items-center">${i ? '<span class="mx-[6px] text-erp-muted">·</span>' : ""}${l}<b class="ml-[4px] font-semibold text-erp-ink">${n}</b></span>`)
       .join("")}</p>${vline}${p.tag("quiet", `검토 대기 ${review}`)}<div class="ml-auto flex items-center gap-[6px]">${right}</div></div>`;
-  // 목록 오른쪽 위 버튼: 「급여명세서 작성」은 어느 달이든 늘 보인다(2026-10-02 재영). 누르면 점포·직원을 고르는 팝업이 뜨고, 고른 직원으로 작성하면 데모라 명세서 화면으로 간다.
+  // 달 고르기 바로 옆 「N월 급여명세서 작성」(앱 page.tsx, 2026-11-23 사용자 지정 — 달을 바꾸면 이름도 바뀐다) — 어느 달이든 늘 보인다(2026-10-02 재영). 누르면 점포·직원을 고르는 팝업이 뜨고, 고른 직원으로 작성하면 데모라 명세서 화면으로 간다.
   // 근로계약이 없거나 이 달 명세서가 이미 있는 직원은 고를 수 없다(WHALEERP-226). 점포 · 이름으로 좁히기와 「작성」 켜기는 PICK_SCRIPT.
   const pickId = x.dialogId();
-  const pickRow = (name, store, type, contract, slip) => {
+  // 출퇴근 열(앱 attendanceCell, 2026-11-23 사용자 지정) — 기록 있음 · 출퇴근 누락(빨간 꼬리표), 작성할 수 없는 줄은 「-」
+  const pickRow = (name, store, type, contract, slip, attended = true) => {
     const ok = contract === "유효" && slip === "미작성";
     const pick = `<input type="radio" name="${pickId}-staff" aria-label="${name} 선택"${ok ? "" : " disabled"} class="size-[18px] accent-erp-brand disabled:opacity-30">`;
-    return [pick, name, store, type, contract === "유효" ? contract : p.tag("risk", contract), slip === "미작성" ? slip : p.tag("quiet", slip)];
+    const att = !ok ? "-" : attended ? "기록 있음" : p.tag("risk", "출퇴근 누락");
+    return [pick, name, store, type, contract === "유효" ? contract : p.tag("risk", contract), att, slip === "미작성" ? slip : p.tag("quiet", slip)];
   };
   const pickRows = [
     pickRow("유하람", "모리커피 서초점", "정직원", "유효", "미작성"),
-    pickRow("하준서", "모리커피 서초점", "파트타이머", "유효", "미작성"),
+    pickRow("하준서", "모리커피 서초점", "파트타이머", "유효", "미작성", false),
     pickRow("서지안", "모리커피 서초점", "정직원", "유효", "작성됨"),
     pickRow("오세라", "모리커피 서초점", "정직원", "유효", "작성됨"),
     pickRow("최다온", "온기식당 판교점", "파트타이머", "유효", "미작성"),
@@ -456,7 +458,7 @@ export function staffSections({ A, R }) {
       ui.field("직원", ui.searchField(A, { placeholder: "이름" }).replace("<input ", "<input data-pick-name ")),
     ) +
     `<div class="max-h-[322px] overflow-y-auto">${ui.dataTable(
-      [{ header: "선택", width: "w-[60px]" }, { header: "직원" }, { header: "점포" }, { header: "계약 유형" }, { header: "근로계약" }, { header: "명세서" }],
+      [{ header: "선택", width: "w-[52px]" }, { header: "직원" }, { header: "점포" }, { header: "계약 유형" }, { header: "근로계약" }, { header: "출퇴근" }, { header: "명세서" }],
       pickRows,
     )}<p data-pick-none hidden class="py-[24px] text-center text-erp-muted">조건에 맞는 직원이 없습니다.</p></div>` +
     `</div>`;
@@ -470,7 +472,6 @@ export function staffSections({ A, R }) {
       "w-[720px]",
     ) + PICK_SCRIPT;
   const payButtons = (n) =>
-    x.dialogTrigger("급여명세서 작성", pickId, "soft") +
     (n ? p.ask(`확정 ${n}건 발송`, "primary", `확정한 급여명세서 ${n}건을 발송하시겠습니까?`, "직원 근무 앱으로 보냅니다.", "발송") : "") +
     `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`;
   const month = (key, body) => `<div data-week="${key}" hidden class="flex flex-1 flex-col gap-[12px]">${body}</div>`;
@@ -508,7 +509,7 @@ export function staffSections({ A, R }) {
     ui.filterSection("분류", ui.checkbox(A, "검토 대기만", false), { last: true }),
   ]);
   // 직원 고르기 팝업은 달 묶음(hidden) 밖에 한 번만 둔다 — 숨긴 묶음 안의 dialog 는 열어도 보이지 않는다.
-  const payrollTab = `<div class="flex flex-1 flex-col gap-[12px]">${p.weekNav(A, "pay-months", "2026-08-01", { month: true })}<div id="pay-months" class="flex flex-1 flex-col">${months}</div></div>${pickDialog}`;
+  const payrollTab = `<div class="flex flex-1 flex-col gap-[12px]"><div class="flex flex-wrap items-center gap-[12px]">${p.weekNav(A, "pay-months", "2026-08-01", { month: true })}${x.dialogTrigger('<span data-month-name>8월</span> 급여명세서 작성', pickId)}</div><div id="pay-months" class="flex flex-1 flex-col">${months}</div></div>${pickDialog}`;
 
   // ── TO-DO ──
   // TO-DO 리스트 관리 — 앱 src/app/todos(page.tsx · todo-filter.tsx · todo-table.tsx)와 같게 맞췄다(2026-11-09 사용자 지정, 3팀 확인 필요).

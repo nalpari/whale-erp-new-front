@@ -8,6 +8,13 @@ const hh = (h: number) => String(h).padStart(2, "0");
 const hhmmOf = (minutes: number) => `${hh(Math.floor(minutes / 60))}:${hh(minutes % 60)}`;
 
 /** 종료 시각 글자 — 다음 날 0시면 「24:00」, 다음 날이면 「익일 02:00」 */
+// 시간 겹침(409 WORK_SCHEDULE_OVERLAP) 화면 문구 — api 문구 「같은 직원의 근무스케줄과 시간이 겹칩니다.」는 누구와 겹치는지 흐려 바꾼다.
+// 두 줄(\n, 보이는 곳은 whitespace-pre-line)이고 이름을 알면 「김알바 님은 …」으로 앞에 붙인다(2026-11-23 사용자 지정).
+export const OVERLAP_MESSAGE = "선택한 시간에 이미 등록된 근무스케줄이 있습니다.\n시간을 변경하거나 기존 근무스케줄을 수정해 주세요.";
+/** 기간 등록 「건너뛴 날」 목록 한 줄용 — 날짜 · 이름은 줄 앞에 있다 */
+export const OVERLAP_SHORT = "이미 등록된 근무스케줄이 있습니다.";
+export const withStaffName = (message: string, name: string | null | undefined) => (message === OVERLAP_MESSAGE && name ? `${name} 님은 ${message}` : message);
+
 export function endLabel(startTime: string, endTime: string): string {
   if (minutesOf(endTime) > minutesOf(startTime)) return endTime;
   return endTime === "00:00" ? "24:00" : `익일 ${endTime}`;

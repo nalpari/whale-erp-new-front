@@ -9,6 +9,13 @@ export const canDraft = (c: PayslipCandidate) => c.contractId !== null && c.pays
 export const contractCell = (c: PayslipCandidate): Cell =>
   c.contractId !== null ? { text: "유효", style: "muted" } : { text: "계약 없음", style: "badge-off" };
 
+/**
+ * 출퇴근 열 — 그 달 출퇴근 기록이 있으면 「기록 있음」 글자, 없으면 빨간 꼬리표 「출퇴근 누락」. 작성할 수 없는 줄(계약 없음 · 작성됨)은 「-」.
+ * 누락이어도 작성은 된다(검토 사유 「출퇴근 누락」이 붙는다). 전엔 이름 옆에 붙어 그 줄만 이름이 밀렸다(2026-11-23 사용자 지정).
+ */
+export const attendanceCell = (c: PayslipCandidate): Cell =>
+  !canDraft(c) ? { text: "-", style: "muted" } : c.hasAttendance ? { text: "기록 있음", style: "muted" } : { text: "출퇴근 누락", style: "badge-off" };
+
 /** 데모 pickRow — 미작성은 그냥 글자, 작성됨은 회색 꼬리표(quiet). */
 export const payslipCell = (c: PayslipCandidate): Cell =>
   c.payslipId !== null ? { text: "작성됨", style: "badge-neutral" } : { text: "미작성", style: "muted" };
