@@ -139,7 +139,7 @@ test("종료일이 지났으면 서명 완료", () => {
 
 test("재직 칸 — 위에서부터 처음 맞는 것", () => {
   const cases: [Partial<StaffMemberListItem>, { text: string; style: string }[]][] = [
-    [{ employmentStatus: "RETIRED", retiredDate: "2026-07-31" }, [{ text: "퇴직 07-31", style: "muted" }]],
+    [{ employmentStatus: "RETIRED", retiredDate: "2026-07-31" }, [{ text: "퇴직 2026-07-31", style: "muted" }]],
     [{ joinState: "LINK_HOLD" }, [{ text: "확인 필요", style: "mark-off" }]],
     [{ joinState: "UNDER_AGE" }, [{ text: "삭제 대상", style: "mark-off" }]],
     [{ joinState: "AFFILIATION_PENDING" }, [{ text: "응답 대기", style: "muted" }]],
@@ -150,7 +150,7 @@ test("재직 칸 — 위에서부터 처음 맞는 것", () => {
     [contract("REJECTED"), [{ text: "재발송 필요", style: "mark-off" }]],
     [contract("EXPIRED"), [{ text: "재발송 필요", style: "mark-off" }]],
     [{}, [{ text: "재직", style: "mark-on" }]],
-    [{ retiredDate: "2026-10-30" }, [{ text: "재직", style: "mark-on" }, { text: "퇴직 예정 10-30", style: "badge-off" }]],
+    [{ retiredDate: "2026-10-30" }, [{ text: "재직", style: "mark-on" }, { text: "퇴직 예정 2026-10-30", style: "badge-off" }]],
   ];
   for (const [over, expected] of cases) assert.deepEqual(statusCells(item(over)), expected, JSON.stringify(over));
 });
@@ -163,8 +163,8 @@ test("상세 재직 상태 — 가입 · 계약 상태와 상관없이 재직 ·
     [{ joinState: "INVITED" }, [{ text: "재직", style: "mark-on" }]],
     [{ joinState: "LINK_HOLD" }, [{ text: "재직", style: "mark-on" }]],
     [{ joinState: "UNDER_AGE" }, [{ text: "재직", style: "mark-on" }]],
-    [{ retiredDate: "2026-10-30" }, [{ text: "재직", style: "mark-on" }, { text: "퇴직 예정 10-30", style: "badge-off" }]],
-    [{ employmentStatus: "RETIRED", retiredDate: "2026-07-31" }, [{ text: "퇴직 07-31", style: "muted" }]],
+    [{ retiredDate: "2026-10-30" }, [{ text: "재직", style: "mark-on" }, { text: "퇴직 예정 2026-10-30", style: "badge-off" }]],
+    [{ employmentStatus: "RETIRED", retiredDate: "2026-07-31" }, [{ text: "퇴직 2026-07-31", style: "muted" }]],
     [{ employmentStatus: "RETIRED" }, [{ text: "퇴직", style: "muted" }]],
     [{ employmentStatus: null }, []],
   ];
@@ -252,7 +252,7 @@ test("재계약 서명 대기 + 퇴직 예정 — 재직 + 퇴직 예정 MM.DD",
   const it = { ...renewalWait(), retiredDate: "2026-12-31" };
   assert.deepEqual(statusCells(it), [
     { text: "재직", style: "mark-on" },
-    { text: "퇴직 예정 12-31", style: "badge-off" },
+    { text: "퇴직 예정 2026-12-31", style: "badge-off" },
   ]);
   assert.equal(contractCell(it, TODAY, STATUSES)?.tag, "재계약");
 });

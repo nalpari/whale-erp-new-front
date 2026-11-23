@@ -10,7 +10,6 @@ import { useFailure } from "./use-action-failure";
 // 퇴직 처리 · 퇴직일 변경 확인창과 퇴직 처리 취소 확인창(WHALEERP-585). 문구와 배치는 목업 docs/mockup/staff/detail.html ·
 // 데모 detail.mjs 의 확인창이다. 「종료되는 근로계약」은 목업의 발송 대기 · 서명 대기에 임시저장을 더했다 — api 가 셋을 닫는다(2026-10-12 재영).
 
-const mmdd = (date: string) => date.slice(5);
 /** YYYY-MM-DD 다음 날 */
 function nextDay(date: string): string {
   const d = new Date(`${date}T00:00:00Z`);
@@ -220,7 +219,7 @@ export function RetirementDialog({
 /** 퇴직일 이후 정리되는 항목 — 회색 제목 줄 상자, 줄마다 이름 · 설명(회색) · 오른쪽 건수. 0건 줄은 빼고 모두 0건이면 그리지 않는다. */
 function SettleItems({ date, value }: { date: string; value: { schedulesToRemove: number; todosToUnassign: number; contractsToEnd: unknown[] } }) {
   const rows = [
-    { name: "삭제되는 근무스케줄", note: `퇴직일 다음 날(${mmdd(nextDay(date))})부터`, count: value.schedulesToRemove },
+    { name: "삭제되는 근무스케줄", note: `퇴직일 다음 날(${nextDay(date)})부터`, count: value.schedulesToRemove },
     { name: "배정 해제되는 TO-DO", note: "완료하지 않은 개인 배정", count: value.todosToUnassign },
     { name: "종료되는 근로계약", note: "작성 중·서명 요청 전·직원 서명 대기·직원 수정 요청", count: value.contractsToEnd.length },
   ].filter((r) => r.count > 0);
