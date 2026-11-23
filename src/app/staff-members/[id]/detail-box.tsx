@@ -31,7 +31,8 @@ export function Box({
             {manage}
           </span>
         </h3>
-        <div className="border-t border-erp-thead-line">{children}</div>
+        {/* 위 선은 안의 표 머리 · 안내 칸이 긋는다 — 여기서도 그으면 두 겹(2px)이었다 */}
+        <div>{children}</div>
       </section>
     );
   return (

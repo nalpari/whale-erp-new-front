@@ -148,6 +148,12 @@ export function reviewDetailText(text: string, periodStartDate?: string): string
 const WEEKDAY_KO = ["일", "월", "화", "수", "목", "금", "토"];
 const DAY_ITEM = /^(\d{1,2})월 (\d{1,2})일(?: (출근·퇴근|퇴근) 미등록)?$/;
 
+/** month 월이 기준(startYear 년 startMonth 월)에서 가장 가까운 해 — 앞뒤 6달 안 */
+function nearestYear(startYear: number, startMonth: number, month: number): number {
+  const diff = month - (startMonth || month);
+  return diff > 6 ? startYear - 1 : diff < -6 ? startYear + 1 : startYear;
+}
+
 /** 「11월 5일 퇴근 미등록, 11월 3일 출근·퇴근 미등록 외 2일」 → 유형별 줄 「· 출근 · 퇴근 기록 없음: 11월 3일(화)」. 한 항목이라도 못 읽으면 null */
 function dayLines(list: string, periodStartDate?: string): string | null {
   const more = list.match(/ 외 (\d+)일$/);
@@ -159,7 +165,8 @@ function dayLines(list: string, periodStartDate?: string): string | null {
     if (!m) return null;
     const month = Number(m[1]);
     const day = Number(m[2]);
-    const year = startYear ? (startMonth && month > startMonth ? startYear - 1 : startYear) : null;
+    // 날짜엔 연도가 없다 — 기준일(출퇴근 참조 기간 시작)에 가장 가까운 해로 잡는다(12월 명세서의 1월 날짜 · 첫 주의 지난해 12월 날짜)
+    const year = startYear ? nearestYear(startYear, startMonth, month) : null;
     const weekday = year ? `(${WEEKDAY_KO[new Date(Date.UTC(year, month - 1, day)).getUTCDay()]})` : "";
     groups.get(m[3] ?? "")!.push({ key: (year ?? 0) * 10000 + month * 100 + day, text: `${month}월 ${day}일${weekday}` });
   }
