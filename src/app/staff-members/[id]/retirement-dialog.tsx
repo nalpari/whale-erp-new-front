@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Button, ConfirmDialog, DateField, useAction, useToast, GuideBand } from "@/components/common";
+import { ConfirmDialog, DateField, useAction, useToast, GuideBand } from "@/components/common";
 import { checkRetiredDate, isSettledNow, retiredDateHint, reloadsPreview, showsBelowDateField, todayAfterSubmit } from "@/lib/retirement";
 import type { RetirementPreview } from "@/lib/staff-members";
 import { cancelRetirementAction, changeRetirementDateAction, previewRetirementAction, retireAction } from "./actions";
@@ -28,7 +28,6 @@ export function RetirementDialog({
   mode,
   currentDate,
   hiredDate,
-  draftContractHref,
   today: initialToday,
   onClose,
 }: {
@@ -38,8 +37,6 @@ export function RetirementDialog({
   currentDate: string | null;
   /** 입사일 — 3개월 전보다 늦으면 안내 · 검사가 입사일부터다 */
   hiredDate: string | null;
-  /** 작성 중 근로계약만 있을 때 그 계약 이어 쓰기 주소 — api 가 「작성 중인 근로계약서가 존재합니다 …」(409)로 막으면 그 아래 바로 가는 버튼을 둔다 */
-  draftContractHref: string | null;
   /** 화면을 그릴 때 서버의 오늘(KST). 그 뒤로는 서버 액션이 날짜 바뀜으로 막으며 돌려준 오늘로만 바뀐다(todayAfterSubmit). */
   today: string;
   onClose: () => void;
@@ -189,17 +186,9 @@ export function RetirementDialog({
         {/* 정리되는 항목 · 안내를 영역으로 나눈다 — 항목은 회색 제목 줄 상자(0건은 줄을 빼고, 모두 0건이면 상자를 두지 않는다), 안내는 안내 박스(2026-11-23 사용자 지정) */}
         {preview.status === "loading" && <p className="text-[13px] text-erp-muted">정리되는 항목을 확인하는 중입니다.</p>}
         {preview.status === "error" && (
-          <div className="flex flex-col items-start gap-[8px]">
-            <p role="alert" className="text-erp-off">
-              {preview.message}
-            </p>
-            {/* 작성 중 근로계약만 있어 막힌 경우 — 그 계약으로 바로 간다(2026-11-23 사용자 지정). 할 일 화면으로 보내는 이동 버튼이라 Outline */}
-            {draftContractHref && (
-              <Button variant="outline" href={draftContractHref}>
-                근로계약서로 이동
-              </Button>
-            )}
-          </div>
+          <p role="alert" className="text-erp-off">
+            {preview.message}
+          </p>
         )}
         {preview.status === "ok" && <SettleItems date={preview.date} value={preview.value} />}
 
