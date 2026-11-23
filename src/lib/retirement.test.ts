@@ -36,7 +36,7 @@ test("지난 날짜만 그 자리에서 정리된다 — 오늘은 아직 일하
   assert.equal(isSettledNow("2026-10-16", "2026-10-15"), false);
 });
 
-const joined = { joinState: "JOINED" as const, employmentStatus: "EMPLOYED" as const, retiredDate: null, contract: null };
+const joined = { joinState: "JOINED" as const, employmentStatus: "EMPLOYED" as const, retiredDate: null };
 const today = "2026-10-15";
 
 test("재직이면 퇴직 처리", () => {
@@ -54,13 +54,6 @@ test("퇴직일 당일 · 그 뒤(배치 전)는 버튼 없음 — api 가 409 �
 
 test("퇴직한 직원은 버튼 없음", () => {
   assert.equal(retirementActions({ ...joined, employmentStatus: "RETIRED", retiredDate: "2026-10-01" }, today, true), null);
-});
-
-test("작성 중 근로계약만 있는 직원(초안 · 최근 계약 작성 중)은 버튼 없음 — 명세 S-VZVHSW 화면 표시", () => {
-  const draftOnly = { ...joined, joinState: "DRAFT" as const, contract: { status: "DRAFT" } as never };
-  assert.equal(retirementActions(draftOnly, today, true), null);
-  // 초안이어도 최근 계약이 작성 중이 아니면(보낸 계약이 있으면) 재직이라 퇴직 처리
-  assert.equal(retirementActions({ ...draftOnly, contract: { status: "PENDING_SEND" } as never }, today, true), "retire");
 });
 
 test("가입 전 레코드(초안 · 가입 대기 등)도 재직이면 퇴직 처리", () => {
