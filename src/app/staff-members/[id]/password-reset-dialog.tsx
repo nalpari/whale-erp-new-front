@@ -70,7 +70,7 @@ export function PasswordResetDialog({ staffMemberId, email, onClose }: { staffMe
           <br />
           새 비밀번호는 직원이 직접 설정합니다.
           <br />
-          직원은 메일을 받은 뒤 24시간 안에 새 비밀번호를 설정해야 합니다.
+          직원은 24시간 안에 비밀번호를 설정해야 합니다.
         </p>
         {error && (
           <p role="alert" className="text-erp-off">
