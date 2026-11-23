@@ -11,13 +11,30 @@ export function Box({
   title,
   manage,
   tools,
+  plainTitle = false,
   children,
 }: {
   title: string;
   manage?: ReactNode;
   tools?: ReactNode;
+  /** 회색 제목 줄 대신 표 위 글자 제목(15px 600) — 기간 이동으로 묶은 근무스케줄 · 출퇴근 현황(2026-11-23 사용자 지정). 표 위 선은 표가 긋는다 */
+  plainTitle?: boolean;
   children: ReactNode;
 }) {
+  if (plainTitle)
+    return (
+      <section className="flex min-w-0 flex-col gap-[8px]">
+        <h3 className="flex min-h-[26px] items-center gap-[6px] text-[15px] font-semibold text-erp-ink">
+          <span className="flex-1">{title}</span>
+          <span className="flex items-center gap-[6px] text-[14px] font-normal">
+            {tools}
+            {manage}
+          </span>
+        </h3>
+        {/* 위 선은 안의 표 머리 · 안내 칸이 긋는다 — 여기서도 그으면 두 겹(2px)이었다 */}
+        <div>{children}</div>
+      </section>
+    );
   return (
     <section className="min-w-0">
       <h3 className="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">

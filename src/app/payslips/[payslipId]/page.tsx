@@ -65,7 +65,7 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
                       <RoundLink href={at(attendanceHref(payslip))}>출퇴근 기록 보기</RoundLink>
                     )}
                   </span>
-                  {r.detail && <span className="text-[14px] leading-[1.6] text-erp-label">{reviewDetailText(r.detail)}</span>}
+                  {r.detail && <span className="text-[14px] leading-[1.6] whitespace-pre-line text-erp-label">{reviewDetailText(r.detail, payslip.attendanceStartDate || payslip.periodStartDate)}</span>}
                 </li>
               ))}
             </ul>

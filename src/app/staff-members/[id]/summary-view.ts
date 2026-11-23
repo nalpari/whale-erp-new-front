@@ -91,9 +91,14 @@ export function weekHref(search: RawSearch, monday: string, today: string): stri
   return `?${params}`;
 }
 
-/** 주 넘김 가운데 글자 — 데모 weekNav 「2026년 10-19 ~ 10-25」. 연도는 그 주 월요일의 해 */
+/** 주 넘김 가운데 글자 — 「2026년 10-19(월) ~ 10-25(일)」(요일은 2026-11-23 사용자 지정). 연도는 그 주 월요일의 해 */
 export function weekLabel(monday: string): string {
-  return `${monday.slice(0, 4)}년 ${md(monday)} ~ ${md(addDays(monday, 6))}`;
+  return `${monday.slice(0, 4)}년 ${md(monday)}(월) ~ ${md(addDays(monday, 6))}(일)`;
+}
+
+/** 주 넘김 옆 오늘 날짜 — 「오늘 2026-11-23(월)」(2026-11-23 사용자 지정). today 는 한국 날짜 YYYY-MM-DD */
+export function todayLabel(today: string): string {
+  return `오늘 ${today}(${"일월화수목금토"[new Date(`${today}T00:00:00Z`).getUTCDay()]})`;
 }
 
 /** 그 주를 몇째 주로 세는 달(YYYY-MM) — 목요일이 든 달이다(데모 erp.js initWeeks, 9월 1주 = 08-31 ~ 09-06) */
@@ -293,6 +298,17 @@ export function attendanceManageHref(staffMemberId: number, storeId: number, mon
  */
 export function todoManageHref(staffMemberId: number, storeId: number): string {
   return `/todos?${new URLSearchParams({ storeIds: String(storeId), staffMemberId: String(staffMemberId) })}`;
+}
+
+/**
+ * 근로계약 칸 안내의 [근로계약 관리] 주소 — 근로계약 관리를 그 직원 이름(staffMemberName) · 근무지(storeIds)로 연다(2026-11-23 사용자 지정).
+ * 근로계약 목록은 이름 검색이라 같은 근무지의 동명이인도 함께 나온다(급여명세서 「관리」와 같은 한계). 이름을 쓸 수 없으면 근무지만 붙인다.
+ */
+export function contractManageHref(name: string | null, storeId: number): string {
+  const params = new URLSearchParams({ storeIds: String(storeId) });
+  const trimmed = name?.trim() ?? "";
+  if (trimmed && !trimmed.includes("*") && trimmed.length <= PAYSLIP_NAME_MAX) params.set("staffMemberName", trimmed);
+  return `/contracts?${params}`;
 }
 
 /** 급여명세서 직원명 조건 상한(api PayslipListQueryDto · payslip-list-query.ts MAX_KEYWORD_LENGTH 와 같다) */

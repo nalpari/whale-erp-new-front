@@ -40,7 +40,7 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
   // 비밀번호 규칙(PL-QSBSYY) — 어기면 칸 아래 오류, [변경]도 막는다. 「받은 비밀번호와 다름」은 화면이 몰라 api 가 판정한다(2026-10-28 사용자 지정)
   const [ruleCheck, idCheck] = passwordChecks(password, account.loginId);
   const ruleError =
-    password === "" ? undefined : !ruleCheck.met ? "영문·숫자·특수문자를 모두 포함해 8~20자로 입력해 주세요." : !idCheck.met ? "아이디와 다른 비밀번호를 입력해 주세요." : undefined;
+    password === "" ? undefined : !ruleCheck.met ? "영문·숫자·특수문자를 각각 1자 이상 포함해 8~20자로 입력해 주세요." : !idCheck.met ? "비밀번호는 아이디와 다르게 설정해 주세요." : undefined;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();

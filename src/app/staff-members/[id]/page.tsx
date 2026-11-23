@@ -19,7 +19,7 @@ import { MenuManageLink } from "./manage-link";
 import { SendLogBox } from "./send-log-box";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
 import { AttendanceBox, PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
-import { attendanceManageHref, payslipManageHref, scheduleWeekOf, todoManageHref } from "./summary-view";
+import { attendanceManageHref, contractManageHref, payslipManageHref, scheduleWeekOf, todayLabel, todoManageHref } from "./summary-view";
 import { WeekNav } from "./week-nav";
 import { StoreNameWithType } from "@/components/site/store-type-tag";
 
@@ -225,7 +225,7 @@ export default async function StaffMemberDetailPage({
                     }
                   >
                     <LoadGroupArea fallback={AREA_PENDING}>
-                      <ContractBox staffMemberId={staffMemberId} detailSearch={detailSearch} />
+                      <ContractBox staffMemberId={staffMemberId} detailSearch={detailSearch} manageHref={contractManageHref(staff.name, staff.store.storeId)} />
                     </LoadGroupArea>
                   </Box>
                 </div>
@@ -233,12 +233,15 @@ export default async function StaffMemberDetailPage({
                 <div className="flex min-w-0 flex-col gap-[24px]">
                   {/* 근무스케줄 · 출퇴근 현황은 같은 주를 본다 — 주 이동을 두 상자 위 한 줄로 올리고 두 상자를 12px 로 붙여 한 덩어리로 보인다
                       (2026-11-19 사용자 지정 — 전엔 근무스케줄 제목 줄에만 있어 출퇴근 현황이 따라 바뀌는 게 보이지 않았다) */}
-                  <div className="flex flex-col gap-[12px]">
-                  <div className="flex items-center gap-[8px]">
-                    <span className="flex-1 text-[14px] font-medium text-erp-label">근무스케줄 · 출퇴근 현황 기간</span>
+                  {/* 기간 줄과 두 상자를 둥근 테두리 하나로 묶는다 — 기간 줄이 오른쪽 단 전체에 걸린 것처럼 보였다(2026-11-23 사용자 지정). 테두리는 확인 상자(RoundBox)와 같은 8px · #c9d1de */}
+                  <div className="flex flex-col gap-[12px] rounded-[8px] border border-[#c9d1de] p-[12px]">
+                  <div className="flex items-center gap-[12px]">
+                    {/* 기간 이동만 왼쪽에 둔다 — 둥근 테두리로 두 상자와 묶여 「근무스케줄 · 출퇴근 현황 기간」 이름은 뺐다(2026-11-23 사용자 지정) */}
                     <WeekNav monday={monday} search={search} today={today} />
+                    <span className="text-[14px] text-erp-label">{todayLabel(today)}</span>
                   </div>
                   <Box
+                    plainTitle
                     title="근무스케줄"
                     manage={
                       <MenuManageLink
@@ -255,6 +258,7 @@ export default async function StaffMemberDetailPage({
                   </Box>
                   {/* 출퇴근 현황은 근무스케줄과 같은 주를 따라간다 — 주 넘김이 monday 를 바꾸면 이 영역도 key 로 다시 기다린다 */}
                   <Box
+                    plainTitle
                     title="출퇴근 현황"
                     manage={
                       <MenuManageLink

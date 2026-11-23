@@ -130,11 +130,52 @@ export function detailReviewReasons(
  * 「확인 필요로 표시된 출퇴근 기록이 N건 있습니다(근무지 반경 밖 퇴근, 위치 조작 감지 등).」 →
  * 「근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 N건 있습니다.」. api 문장(payslip-attendance-reasons.ts)이 바뀌면
  * 그대로 보인다 — 근본적으로는 api 문장을 고치는 게 맞다(3팀 확인).
+ *
+ * 날짜 목록이 붙은 문장(출퇴근 누락 「…날이 2일 있습니다(11월 5일 퇴근 미등록, 11월 3일 출근·퇴근 미등록).」 · 계약 만료 후 기록
+ * 「…2일 있습니다(11월 21일, 11월 22일).」)은 「…있습니다.」 아래로 유형마다 한 줄 — 「· 출근 · 퇴근 기록 없음: 11월 3일(화), 11월 7일(토)」
+ * · 「· 퇴근 기록 없음: 11월 5일(목)」(날짜 순, 요일, 「미등록」은 「기록 없음」, 유형이 없는 계약 만료 후 기록은 「· 11월 21일(토), …」 한 줄,
+ * api 의 「외 N일」은 마지막 줄 「· 외 N일」). 요일은 급여 기간 시작일의 연도로 셈하고, 기간 시작 달보다 뒤 달의 날짜는 앞 해다(1월 명세서의
+ * 첫 주에 걸친 12월). 날짜로 읽지 못하면 괄호째 다음 줄에 둔다. 이어지는 문장도 줄을 바꾼다 — 화면은 whitespace-pre-line(2026-11-23 사용자 지정).
  */
-export function reviewDetailText(text: string): string {
+export function reviewDetailText(text: string, periodStartDate?: string): string {
   return text
     .replace(/^확인 필요로 표시된 출퇴근 기록이 (\d+)건 있습니다\(근무지 반경 밖 퇴근, 위치 조작 감지 등\)\.$/, "근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 $1건 있습니다.")
-    .replace("확인 필요로 표시된 출퇴근 기록이", "확인이 필요한 출퇴근 기록이");
+    .replace("확인 필요로 표시된 출퇴근 기록이", "확인이 필요한 출퇴근 기록이")
+    .replace(/^(.*있습니다)\((.*)\)\.$/, (_, head: string, list: string) => `${head}.\n${dayLines(list, periodStartDate) ?? `(${list})`}`)
+    .replace(/\. (?=\S)/g, ".\n");
+}
+
+const WEEKDAY_KO = ["일", "월", "화", "수", "목", "금", "토"];
+const DAY_ITEM = /^(\d{1,2})월 (\d{1,2})일(?: (출근·퇴근|퇴근) 미등록)?$/;
+
+/** month 월이 기준(startYear 년 startMonth 월)에서 가장 가까운 해 — 앞뒤 6달 안 */
+function nearestYear(startYear: number, startMonth: number, month: number): number {
+  const diff = month - (startMonth || month);
+  return diff > 6 ? startYear - 1 : diff < -6 ? startYear + 1 : startYear;
+}
+
+/** 「11월 5일 퇴근 미등록, 11월 3일 출근·퇴근 미등록 외 2일」 → 유형별 줄 「· 출근 · 퇴근 기록 없음: 11월 3일(화)」. 한 항목이라도 못 읽으면 null */
+function dayLines(list: string, periodStartDate?: string): string | null {
+  const more = list.match(/ 외 (\d+)일$/);
+  const items = (more ? list.slice(0, -more[0].length) : list).split(", ");
+  const [startYear, startMonth] = (periodStartDate ?? "").split("-").map(Number);
+  const groups = new Map<string, { key: number; text: string }[]>([["출근·퇴근", []], ["퇴근", []], ["", []]]);
+  for (const item of items) {
+    const m = item.match(DAY_ITEM);
+    if (!m) return null;
+    const month = Number(m[1]);
+    const day = Number(m[2]);
+    // 날짜엔 연도가 없다 — 기준일(출퇴근 참조 기간 시작)에 가장 가까운 해로 잡는다(12월 명세서의 1월 날짜 · 첫 주의 지난해 12월 날짜)
+    const year = startYear ? nearestYear(startYear, startMonth, month) : null;
+    const weekday = year ? `(${WEEKDAY_KO[new Date(Date.UTC(year, month - 1, day)).getUTCDay()]})` : "";
+    groups.get(m[3] ?? "")!.push({ key: (year ?? 0) * 10000 + month * 100 + day, text: `${month}월 ${day}일${weekday}` });
+  }
+  const label: Record<string, string> = { "출근·퇴근": "출근 · 퇴근 기록 없음: ", 퇴근: "퇴근 기록 없음: ", "": "" };
+  const lines = [...groups]
+    .filter(([, days]) => days.length > 0)
+    .map(([kind, days]) => `· ${label[kind]}${days.sort((x, y) => x.key - y.key).map((d) => d.text).join(", ")}`);
+  if (more) lines.push(`· 외 ${more[1]}일`);
+  return lines.join("\n");
 }
 
 /**

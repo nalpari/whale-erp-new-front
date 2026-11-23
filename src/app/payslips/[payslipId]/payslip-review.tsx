@@ -137,7 +137,7 @@ function Rows({ children }: { children: ReactNode[] }) {
   return <div className="grid grid-cols-3 gap-x-[24px] gap-y-[16px]">{children}</div>;
 }
 
-/** 경고 띠(데모 band). risk 면 빨강 바탕. */
+/** 경고 띠(데모 band). risk 면 빨강 바탕, warn(검토가 필요한 띠)이면 연한 노랑 바탕 · 황토 글자 — 게시일 꼬리표 · 근태 지각과 같은 노랑(2026-11-23 사용자 지정, 전엔 회색 바탕). */
 export function Band({
   title,
   desc,
@@ -158,10 +158,10 @@ export function Band({
   return (
     <div
       role={risk ? "alert" : undefined}
-      className={`flex min-h-[46px] items-center gap-[12px] rounded-[2px] border px-[16px] py-[12px] ${risk ? "border-erp-off bg-erp-off-bg" : "border-erp-panel-line bg-erp-thead-bg"}`}
+      className={`flex min-h-[46px] items-center gap-[12px] rounded-[2px] border px-[16px] py-[12px] ${risk ? "border-erp-off bg-erp-off-bg" : warn ? "border-[#e8a33d]/50 bg-[#fff6e5]" : "border-erp-panel-line bg-erp-thead-bg"}`}
     >
       <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
-        <p className={`flex items-center gap-[6px] text-[14px] font-semibold ${risk ? "text-erp-off" : "text-erp-ink"}`}>
+        <p className={`flex items-center gap-[6px] text-[14px] font-semibold ${risk ? "text-erp-off" : warn ? "text-[#956013]" : "text-erp-ink"}`}>
           {warn && (
             // 삼각형 느낌표 — 지각과 같은 노랑(#e8a33d, 토큰 없음 · 근태 요약 막대와 같은 값). 막는 것이 아니라 살펴보라는 뜻이라 빨강 대신 노랑
             <svg aria-hidden viewBox="0 0 20 20" className="size-[18px] shrink-0">
@@ -173,7 +173,7 @@ export function Band({
           {title}
           {inline && desc && <span className="font-normal">{desc}</span>}
         </p>
-        {!inline && desc && <p className={`text-[14px] leading-[1.6] ${risk ? "text-erp-off" : "text-erp-ink"}`}>{desc}</p>}
+        {!inline && desc && <p className={`text-[14px] leading-[1.6] ${risk ? "text-erp-off" : warn ? "text-[#956013]" : "text-erp-ink"}`}>{desc}</p>}
       </div>
       {actions && <div className="flex shrink-0 gap-[6px]">{actions}</div>}
     </div>
@@ -609,7 +609,18 @@ export function PayslipReview({
             // 드러나게 「사업소득 3.3% 원천징수」(2026-11-19 사용자 지정). 파트타이머 명세서에만 선다(PAY-03)
             tools={
               isPartTime && (
-                <Toggle label="3.3% 원천징수 적용" checked={withholding} disabled={!editable} onChange={(e) => setWithholding(e.target.checked)} />
+                // 안내는 스위치 바로 아래에 둥근 꺾은선으로 잇는다 — 공제 칸 위에 따로 있으면 무엇을 켜는 안내인지 떨어져 보였다(2026-11-23 사용자 지정)
+                <div className="flex flex-col gap-[6px]">
+                  <Toggle label="3.3% 원천징수 적용" checked={withholding} disabled={!editable} onChange={(e) => setWithholding(e.target.checked)} />
+                  <span className={`flex items-start gap-[4px] ${HELP}`}>
+                    <span aria-hidden className="mt-[2px] ml-[4px] size-[7px] shrink-0 rounded-bl-[4px] border-b border-l border-current" />
+                    <span>
+                      3.3% 원천징수를 적용하면 [소득세]와 [지방소득세] 대신 [사업소득세 3%]와 [지방소득세 0.3%]가 공제됩니다.
+                      <br />
+                      4대보험 공제는 기존과 동일하게 유지됩니다.
+                    </span>
+                  </span>
+                </div>
               )
             }
             action={
@@ -620,11 +631,6 @@ export function PayslipReview({
               )
             }
           >
-            {isPartTime && (
-              <span className={HELP}>
-                3.3% 원천징수를 켜면 공제가 4대보험 네 줄과 3.3% 가 되고 소득세·지방소득세는 빠집니다. 노무·세무 확인 중입니다(STAFF-18).
-              </span>
-            )}
             <Rows>{basicDeductions.map((i) => field(i, deductionHelp(i)))}</Rows>
           </GroupBox>
           <GroupBox

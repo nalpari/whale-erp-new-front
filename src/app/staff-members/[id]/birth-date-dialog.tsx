@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { Checkbox, RoundButton, ConfirmDialog, DateField, useAction, useToast } from "@/components/common";
+import { Checkbox, RoundButton, ConfirmDialog, DateField, GuideBand, useAction, useToast } from "@/components/common";
+import { FIELD } from "@/components/common/theme";
 import { usePagePermission } from "@/components/site/session-gate";
 import {
   BIRTH_DATE_CONFIRM_LABEL,
@@ -190,18 +191,27 @@ function BirthDateDialog({
       onCancel={onClose}
     >
       <div
-        className="flex flex-col gap-[12px]"
+        // 날짜 칸 · 확인 체크 · 안내 상자 · 버튼 줄(ConfirmDialog mt-24) 사이를 모두 24px 로 같게(2026-11-23 사용자 지정)
+        className="flex flex-col gap-[24px]"
         onPointerDownCapture={(e) => (pointerDownAt.current = checkRef.current?.contains(e.target as Node) ? performance.now() : null)}
         onKeyDownCapture={() => (pointerDownAt.current = null)}
       >
-        <div className="flex items-center gap-[8px]">
-          <span className="text-[14px] font-medium text-erp-label">생년월일(변경 전)</span>
-          <span>{current ?? "-"}</span>
-        </div>
+        {/* 변경 전 · 변경 후를 두 칸 나란히(같은 높이 · 같은 모양) — 무엇이 무엇으로 바뀌는지 한눈에 견준다. 변경 전은 읽기 전용 바탕(2026-11-23 사용자 지정) */}
         <div className="flex flex-col gap-[8px]">
-          <span className="text-[14px] font-medium text-erp-label">생년월일(변경 후)</span>
-          <div ref={fieldRef} onInputCapture={() => (editedSinceConfirm.current = true)}>
-            <DateField aria-label="변경할 생년월일" autoHyphen value={date} onChange={changeDate} />
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-x-[10px]">
+            <label className="flex min-w-0 flex-col gap-[8px]">
+              <span className="text-[14px] font-medium text-erp-label">변경 전 생년월일</span>
+              <input readOnly tabIndex={-1} className={FIELD} value={current ?? "-"} />
+            </label>
+            <span aria-hidden className="flex h-[34px] items-center text-[14px] text-erp-label">
+              →
+            </span>
+            <div className="flex min-w-0 flex-col gap-[8px]">
+              <span className="text-[14px] font-medium text-erp-label">변경 후 생년월일</span>
+              <div ref={fieldRef} onInputCapture={() => (editedSinceConfirm.current = true)}>
+                <DateField aria-label="변경할 생년월일" autoHyphen value={date} onChange={changeDate} />
+              </div>
+            </div>
           </div>
           {dateNote && (
             <p role="alert" className="text-[13px] text-erp-off">
@@ -213,11 +223,8 @@ function BirthDateDialog({
           <Checkbox label={BIRTH_DATE_CONFIRM_LABEL} checked={confirmed} onChange={(e) => checkClicked(e.target.checked)} />
           {reconfirm && !confirmed && <p className="text-[13px] text-erp-off">{BIRTH_DATE_RECONFIRM_MESSAGE}</p>}
         </div>
-        <ul className="flex list-disc flex-col gap-[4px] pl-[20px] text-[13px] text-erp-label">
-          {BIRTH_DATE_NOTES.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
+        {/* 안내 세 줄은 다른 패널의 안내 박스(GuideBand)로 묶는다 — 회색 점 목록이 체크 상자 아래에 흩어져 보였다(2026-11-23 사용자 지정) */}
+        <GuideBand title="생년월일 수정 안내" lines={[...BIRTH_DATE_NOTES]} />
         {error && (
           <p role="alert" className="text-erp-off">
             {error}

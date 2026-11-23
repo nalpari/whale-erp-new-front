@@ -24,7 +24,7 @@ const HAS_SPECIAL = /[!@#$%^&*()\-_=+[\]{}?]/;
 export function validatePassword(value: string): string | undefined {
   if (!value) return "비밀번호를 입력해 주세요.";
   if (!PASSWORD_CHARS.test(value) || !HAS_LETTER.test(value) || !HAS_DIGIT.test(value) || !HAS_SPECIAL.test(value))
-    return "영문·숫자·특수문자를 모두 포함해 8~20자로 입력해 주세요.";
+    return "영문·숫자·특수문자를 각각 1자 이상 포함해 8~20자로 입력해 주세요.";
   return undefined;
 }
 
