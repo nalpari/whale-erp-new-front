@@ -175,7 +175,8 @@ export function RetirementDialog({
               <span className="mr-[6px] inline-block rounded-full border border-erp-thead-line bg-erp-thead-bg px-[10px] leading-[20px] font-medium text-erp-ink">
                 {hint.badge}
               </span>
-              {hint.rest && <span className="text-erp-label">{hint.rest}</span>}
+              {/* 뒤 문장은 줄을 바꿔 꼬리표 아래에(2026-11-23 사용자 지정) */}
+              {hint.rest && <span className="mt-[4px] block text-erp-label">{hint.rest}</span>}
             </span>
           </p>
           {dateNote && (
