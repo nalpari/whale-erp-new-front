@@ -128,7 +128,7 @@ export default ({ A, R }) => {
   const reasons = p.roundBox(
     "검토 사유",
     `<ul class="flex flex-col">${[
-      ["출퇴근 누락", p.roundLink("출퇴근 기록 보기", attendanceHref), "출퇴근 기록이 등록되지 않은 날이 2일 있습니다(8월 28일 퇴근 미등록, 8월 22일 출근·퇴근 미등록)."],
+      ["출퇴근 누락", p.roundLink("출퇴근 기록 보기", attendanceHref), "출퇴근 기록이 등록되지 않은 날이 2일 있습니다.<br>· 출근 · 퇴근 기록 없음: 8월 22일(토)<br>· 퇴근 기록 없음: 8월 28일(금)"],
       // 공제 미입력은 사유로 저장하지 않고 공제 칸으로 판정해 더한다(앱 detailReviewReasons, 운영 정책 v221 PAY-06)
       ["공제 미입력", p.roundLink("공제 칸으로 이동", "#deduction-basic"), "국민연금, 건강보험, 장기요양보험, 고용보험, 소득세, 지방소득세"],
     ]
