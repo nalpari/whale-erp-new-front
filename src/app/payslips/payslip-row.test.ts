@@ -49,6 +49,8 @@ test("경고 띠 — 한 줄로 건수와 할 일만, 사유 내용은 오른쪽
     desc: "오른쪽 검토 사유를 확인하고, 문제가 없으면 [확정]해 주세요.",
     inline: true,
   });
+  // 확정 가능일 전이면 [확정]하라고 하지 않고 그날을 알린다
+  assert.equal(reviewBand([reason("MISSING_ATTENDANCE", "출퇴근 기록 없음")], "2026-12-01")?.desc, "오른쪽 검토 사유를 확인해 주세요. 2026-12-01부터 확정할 수 있습니다.");
   // 공제 미입력뿐이면 공제 칸 아래 띠가 말하므로 위 띠는 없다
   assert.equal(reviewBand([reason("DEDUCTION_MISSING", null)]), null);
   assert.equal(reviewBand([]), null);

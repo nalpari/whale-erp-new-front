@@ -183,10 +183,17 @@ function dayLines(list: string, periodStartDate?: string): string | null {
  * 「검토 사유」 표에만 둔다 — 띠와 표에 같은 문장이 두 번 나왔다(2026-11-19 사용자 지정). 건수는 표와 같게 공제 미입력까지 센다. 이미 확인한
  * 사유(확정 때 확인됨)는 빼고, 남은 것이 공제 미입력뿐이면 띠를 두지 않는다 — 공제 칸 아래 빨간 띠가 따로 말한다. 띠가 없으면 null.
  */
-export function reviewBand(reasons: readonly PayslipReviewReason[]): { title: string; desc: string; inline: boolean } | null {
+export function reviewBand(
+  reasons: readonly PayslipReviewReason[],
+  /** 아직 확정할 수 없으면 확정할 수 있는 첫날(confirmBlockedUntil) — 그때는 [확정]하라고 하지 않고 그날을 알린다(2026-11-23 사용자 지정) */
+  blockedUntil: string | null = null,
+): { title: string; desc: string; inline: boolean } | null {
   const open = reasons.filter((r) => r.acknowledgedAt === null);
   if (!open.some((r) => r.reviewReason !== "DEDUCTION_MISSING")) return null;
-  return { title: `검토가 필요한 사유가 ${open.length}건 있습니다.`, desc: "오른쪽 검토 사유를 확인하고, 문제가 없으면 [확정]해 주세요.", inline: true };
+  const desc = blockedUntil
+    ? `오른쪽 검토 사유를 확인해 주세요. ${blockedUntil}부터 확정할 수 있습니다.`
+    : "오른쪽 검토 사유를 확인하고, 문제가 없으면 [확정]해 주세요.";
+  return { title: `검토가 필요한 사유가 ${open.length}건 있습니다.`, desc, inline: true };
 }
 
 /**
