@@ -130,7 +130,8 @@ export default async function TodoDetailPage({
         ]),
     { label: "내용", value: todo.body || "-", multiline: true },
   ];
-  // 등록은 다른 화면처럼 「시각 · 사람」(사람은 회색). 최종수정 줄은 api 가 고친 사람을 주지 않아 일단 뺐다 — 「최종수정자」가 생기면 넣는다(2026-11-09 사용자 지정).
+  // 등록 · 최종수정은 다른 화면처럼 「시각 · 사람」(사람은 회색). 최종수정은 관리자 [수정] 때만 api 가 남기고(상태 변경은 바꾸지 않는다),
+  // 고친 적이 없으면 줄을 두지 않는다(WHALEERP-698 — 근로계약 상세는 줄을 두고 「-」로 보이는 것과 다르다).
   const editRows: DetailRow[] = [
     {
       label: "등록",
@@ -141,6 +142,19 @@ export default async function TodoDetailPage({
         </span>
       ),
     },
+    ...(todo.modifiedAt
+      ? [
+          {
+            label: "최종수정",
+            value: (
+              <span>
+                {formatDateTime(todo.modifiedAt)}
+                {todo.modifiedByName && <span className="text-erp-label"> · {todo.modifiedByName}</span>}
+              </span>
+            ),
+          },
+        ]
+      : []),
   ];
   const due = todo.dueTime ? `${todo.dueDate} ${todo.dueTime}` : todo.dueDate;
   const overall = overallOf(todo);

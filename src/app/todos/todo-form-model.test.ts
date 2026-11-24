@@ -76,6 +76,8 @@ const detail: Detail = {
   createdBy: 1,
   createdAt: "2026-10-01T00:00:00Z",
   updatedAt: "2026-10-01T00:00:00Z",
+  modifiedAt: null,
+  modifiedByName: null,
   assignees: [{ staffMemberId: 1, staffMemberName: "서지안", isCompleted: false, completedAt: null, isMasked: false }],
   groupTodos: [],
   histories: [],
