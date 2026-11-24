@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-11-24
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — TO-DO 상세 「TO-DO」 표의 「등록」 아래에 「최종수정 | 시각 · 사람(회색)」 줄(WHALEERP-698): api `modifiedAt` · `modifiedByName`(api #311)이 있을 때만 — 관리자 [수정] 때만 남고 상태 변경은 바꾸지 않으며, 고친 적이 없으면 줄이 없다(근로계약 상세는 줄을 두고 「-」 — 다르다). `api-types.generated.ts` 다시 생성, DESIGN.md 「TO-DO 리스트 관리 · 상세」도 맞췄다.
+
 ## 2026-11-23
 * **Update**: [Staff members screen](/screens/staff-members.md) — 퇴직 처리 확인창 문구 · 배치(고를 수 있는 첫날 꼬리표 · 정리 항목 상자 · 퇴직 처리 안내 박스), 퇴직 표시에 연도.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 초안(초대를 보낸 적 없음)이고 최근 계약이 작성 중인 직원 상세에는 [퇴직 처리]를 두지 않는다(WHALEERP-762 — api 409, 계약을 지우면 직원도 지워진다). 목록에서 퇴직 직원 이름도 상세 링크로 건다(WHALEERP-763).
