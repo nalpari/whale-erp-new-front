@@ -141,15 +141,44 @@ export function itemAmount(item: Pick<PayslipItem, "adjustedAmount" | "calculate
 /** 3.3% 원천징수를 켜면 소득세 · 지방소득세가 빠진다 — 3.3% 가 사업소득세 3% + 지방소득세 0.3% 라서다(okf/staff.md, PAY-03). */
 const REPLACED_BY_WITHHOLDING = new Set(["INCOME_TAX", "LOCAL_INCOME_TAX"]);
 
+/** 건강보험 · 국민연금 가입이면 보이는 기본 공제 — 장기요양보험은 건강보험료에 붙어 같이 간다(WHALEERP-756) */
+const HEALTH_PENSION_ITEM_CODES = new Set(["NATIONAL_PENSION", "HEALTH_INSURANCE", "LONG_TERM_CARE_INSURANCE"]);
+/** 고용보험 · 산재보험 가입이면 보이는 기본 공제 — 산재보험은 사업주만 내 명세서 줄이 없다(WHALEERP-756) */
+const EMPLOYMENT_INJURY_ITEM_CODES = new Set(["EMPLOYMENT_INSURANCE"]);
+
 /**
- * 이 명세서에 보이는 줄. 지급 · 추가 공제는 있는 줄 그대로, 기본 공제는 여섯(3.3% 를 켜면 4대보험 넷), 원천징수 둘은 3.3% 를
- * 켰을 때만. 원천징수 스위치는 파트타이머에게만 있어 정직원은 늘 기본 공제 여섯이다.
+ * 명세서의 4대보험 가입 여부 — api 가 급여 기간에 효력이 있던 근로계약 중 하나라도 체크했으면 true 로 준다(GET /payslips/:id,
+ * WHALEERP-756).
  */
-export function isItemShown(item: Pick<PayslipItem, "itemCategory" | "itemCode">, isWithholdingApplied: boolean): boolean {
+export type PayslipInsurance = Pick<PayslipDetail, "isHealthPensionInsured" | "isEmploymentInjuryInsured">;
+
+/**
+ * 이 명세서에 보이는 줄. 지급 · 추가 공제는 있는 줄 그대로, 원천징수 둘은 3.3% 를 켰을 때만(그때 소득세 · 지방소득세는 뺀다).
+ * 4대보험은 근로계약에서 가입했으면 보인다 — 건강보험 · 국민연금이면 국민연금 · 건강보험 · 장기요양보험, 고용보험 · 산재보험이면 고용보험
+ * (WHALEERP-756, 2026-11-20 김지영). 미가입이면 저장된 금액이 비었거나(미입력) 0 원일 때만 숨는다 — 예전에 채워 확정한 0 아닌 금액이
+ * 줄 없이 합계에만 남지 않게(2026-11-24 사용자 결정). 금액은 저장된 값(`itemAmount` — api 가 준 줄)이라 입력 중에 칸을 지워도 줄이
+ * 사라지지 않고, 0 으로 저장하면 다음 화면에서 숨는다. 원천징수 스위치는 파트타이머에게만 있어 정직원은 소득세 · 지방소득세가 늘 보인다.
+ * api(payslip-shared.ts isItemCodeShown) · 직원 앱(payslip-rules.ts)과 같은 규칙이다.
+ */
+export function isItemShown(
+  item: Pick<PayslipItem, "itemCategory" | "itemCode" | "isEntered" | "adjustedAmount" | "calculatedAmount">,
+  isWithholdingApplied: boolean,
+  insurance: PayslipInsurance,
+): boolean {
   if (item.itemCategory === "WITHHOLDING") return isWithholdingApplied;
-  if (item.itemCategory === "BASIC") return !(isWithholdingApplied && REPLACED_BY_WITHHOLDING.has(item.itemCode));
+  if (item.itemCategory !== "BASIC") return true;
+  if (REPLACED_BY_WITHHOLDING.has(item.itemCode)) return !isWithholdingApplied;
+  const amount = itemAmount(item);
+  const filled = amount !== null && amount !== 0;
+  // 가입 여부 칸이 없는 응답(api 를 앞 버전으로 되돌린 경우)은 숨기지 않는다 — 명시적으로 false 일 때만 미가입(PR pr-agent)
+  if (HEALTH_PENSION_ITEM_CODES.has(item.itemCode)) return insurance.isHealthPensionInsured !== false || filled;
+  if (EMPLOYMENT_INJURY_ITEM_CODES.has(item.itemCode)) return insurance.isEmploymentInjuryInsured !== false || filled;
   return true;
 }
+
+/** 3.3% 원천징수를 켰는데 4대보험에 가입한 직원 — 근로소득자라 보통 3.3% 대상이 아니어서 상세가 안내한다(확정은 막지 않는다, WHALEERP-756) */
+export const withholdingNeedsCheck = (isWithholdingApplied: boolean, insurance: PayslipInsurance) =>
+  isWithholdingApplied && (insurance.isHealthPensionInsured || insurance.isEmploymentInjuryInsured);
 
 export interface PayslipTotals {
   gross: number;
@@ -159,17 +188,21 @@ export interface PayslipTotals {
   blankDeductions: number;
 }
 
-/** 지급 총액 · 공제 총액 · 실지급액. amounts 는 payslipItemId → 원(넣지 않았으면 null). 숨은 줄은 세지 않는다. */
+/**
+ * 지급 총액 · 공제 총액 · 실지급액. amounts 는 payslipItemId → 원(넣지 않았으면 null, 입력 중 값). 숨은 줄은 세지 않는다 — 숨는지는 items 의
+ * 저장된 값으로 본다(isItemShown).
+ */
 export function payslipTotals(
-  items: readonly Pick<PayslipItem, "payslipItemId" | "itemCategory" | "itemCode">[],
+  items: readonly Pick<PayslipItem, "payslipItemId" | "itemCategory" | "itemCode" | "isEntered" | "adjustedAmount" | "calculatedAmount">[],
   amounts: ReadonlyMap<number, number | null>,
   isWithholdingApplied: boolean,
+  insurance: PayslipInsurance,
 ): PayslipTotals {
   let gross = 0;
   let deduction = 0;
   let blankDeductions = 0;
   for (const item of items) {
-    if (!isItemShown(item, isWithholdingApplied)) continue;
+    if (!isItemShown(item, isWithholdingApplied, insurance)) continue;
     const amount = amounts.get(item.payslipItemId) ?? null;
     if (item.itemCategory === "EARNING") gross += amount ?? 0;
     else if (amount === null || Number.isNaN(amount)) blankDeductions += 1;

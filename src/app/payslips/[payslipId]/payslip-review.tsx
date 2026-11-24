@@ -2,7 +2,7 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useState, useTransition, type ReactNode } from "react";
-import { Button, HelpTip, SummaryStrip, Checkbox, ConfirmDialog, DetailTable, Field, TextField, Toggle, useAction, useToast } from "@/components/common";
+import { Button, GuideNote, HelpTip, SummaryStrip, Checkbox, ConfirmDialog, DetailTable, Field, TextField, Toggle, useAction, useToast } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import {
   formatAmount,
@@ -11,6 +11,7 @@ import {
   itemAmount,
   parseAmount,
   payslipTotals,
+  withholdingNeedsCheck,
   type PayslipAdditionalItem,
   type PayslipDetail,
   type PayslipItem,
@@ -348,8 +349,9 @@ export function PayslipReview({
     };
   }, [blockedUntil, dirty, router]);
 
-  const totals = payslipTotals(items, new Map(items.map((i) => [i.payslipItemId, parseAmount(texts.get(i.payslipItemId) ?? "")])), withholding);
-  const shown = items.filter((i) => isItemShown(i, withholding));
+  // 4대보험 줄은 근로계약의 가입 체크대로만(api 가 상세에 준 가입 여부, WHALEERP-756) — 보이지 않는 줄은 합계 · 빈 칸에서도 세지 않는다
+  const totals = payslipTotals(items, new Map(items.map((i) => [i.payslipItemId, parseAmount(texts.get(i.payslipItemId) ?? "")])), withholding, payslip);
+  const shown = items.filter((i) => isItemShown(i, withholding, payslip));
   // 묶음마다 합계(제목 줄 오른쪽) — 빈 칸 · 잘못 친 값은 0 으로 센다(실지급액 계산 payslipTotals 와 같은 기준, 2026-11-19 사용자 지정)
   const sumOf = (list: readonly PayslipItem[]) =>
     list.reduce((total, i) => {
@@ -439,7 +441,10 @@ export function PayslipReview({
         setDialog(null);
         return toast("불러올 지난 명세서가 없습니다.");
       }
-      const next = applyPrevious(items, texts, result.previous);
+      // 가입하지 않아 숨은 4대보험 줄(3.3% 와 관계없이 숨는 줄)은 채우지 않는다 — 지난 명세서(가입 체크 전)의 금액이 보이지 않는 칸에 들어가
+      // 저장하면 줄이 갑자기 나타나고 합계가 바뀐다(WHALEERP-756)
+      const hidden = new Set(items.filter((i) => !isItemShown(i, true, payslip) && !isItemShown(i, false, payslip)).map((i) => i.payslipItemMasterId));
+      const next = applyPrevious(items, texts, { ...result.previous, items: result.previous.items.filter((p) => !hidden.has(p.payslipItemMasterId)) });
       setItems(next.lines);
       setTexts(next.texts);
       setDialog(null);
@@ -630,6 +635,10 @@ export function PayslipReview({
                       4대보험 공제는 기존과 동일하게 유지됩니다.
                     </span>
                   </span>
+                  {/* 3.3% 를 켰는데 4대보험에 가입한 직원이면 스위치 아래 느낌표 안내 — 확정은 막지 않는다(WHALEERP-756, 2026-11-20 김지영) */}
+                  {withholdingNeedsCheck(withholding, payslip) && (
+                    <GuideNote>4대보험에 가입한 직원은 근로소득자라 보통 3.3% 원천징수 대상이 아닙니다. 세무 담당자와 확인해 주세요.</GuideNote>
+                  )}
                 </div>
               )
             }

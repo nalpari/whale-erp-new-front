@@ -17,7 +17,7 @@ sources:
   - id: api-types-generated
     resource: ../../src/lib/api-types.generated.ts
     title: 생성한 api 타입 — 근무스케줄 칸은 한 주 응답 StaffMemberWeekScheduleResponseDto, TO-DO 칸은 TodoItemDto, 목록 쿼리 storeIds · storeTypes, 재직 이력은 StaffMemberEmploymentPeriodDto · 생년월일 정정(BirthDateCorrectionDto · 상세의 birthDateCorrectable)
-    last_modified: 2026-11-19T07:25:46Z
+    last_modified: 2026-11-24T02:54:45Z
   - id: send-log-box
     resource: ../../src/app/staff-members/[id]/send-log-box.tsx
     title: 상세 발송 이력 칸 — 가입 초대 · 소속 추가 확인 요청 발송 결과 · 실패 사유 · 재시도(WHALEERP-136), 줄 글자는 send-log-view.ts
