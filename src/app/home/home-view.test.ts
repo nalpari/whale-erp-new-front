@@ -5,7 +5,7 @@ import type { AdminStore } from "../../lib/session.ts";
 import { readListQuery } from "../contracts/contract-list.ts";
 import { parseStaffListQuery } from "../staff-members/staff-list-query.ts";
 import { parseTodoListQuery } from "../todos/todo-list-query.ts";
-import { homeSearchOf, latestNotices, pendingLineOf, storeCountsOf, type HomePendingItem } from "./home-view.ts";
+import { homeSearchOf, latestNotices, outsideTableNote, pendingLineOf, storeCountsOf, type HomePending, type HomePendingItem } from "./home-view.ts";
 
 const store = (storeId: number, storeTypeCode: string, storeStatusCode = "OPEN") => ({ storeId, storeTypeCode, storeStatusCode }) as AdminStore;
 const STORES = [store(1, "DIRECT"), store(2, "FRANCHISE"), store(3, "DIRECT", "CLOSED"), store(4, "FRANCHISE")];
@@ -119,4 +119,19 @@ test("계약 갱신 예정 — 가려진 이름이면 대표 없이 「새 근�
   const line = pendingLineOf(item({ type: "CONTRACT_RENEWAL", isFirstNameMasked: true, firstName: null, waitingDays: null, dueInDays: 5 }), 8)!;
   assert.deepEqual([line.who, line.note], [null, "새 근로계약서 초안 없음"]);
   assert.equal(pendingLineOf(item({}), 8)!.note, null);
+});
+
+const pendingOf = (notOperatingCount: number, items: HomePendingItem[]): HomePending => ({ asOf: "2026-11-24T00:00:00Z", platform: false, notOperatingCount, items });
+
+test("운영 점포별 현황 아래 안내 — 미운영 점포 · 문의 답변완료 순, 0건인 쪽은 빼고 둘 다 0이면 null(WHALEERP-759 B안)", () => {
+  const inquiry = item({ type: "INQUIRY_ANSWERED", count: 2, filter: { storeIds: [], status: ["ANSWERED"] } });
+  assert.equal(outsideTableNote(pendingOf(1, [item({}), inquiry])), "미운영 점포 1건 · 문의 답변완료 2건은 운영 점포별 현황에 없고 확인 필요에만 셉니다.");
+  assert.equal(outsideTableNote(pendingOf(1, [item({})])), "미운영 점포 1건은 운영 점포별 현황에 없고 확인 필요에만 셉니다.");
+  assert.equal(outsideTableNote(pendingOf(0, [inquiry])), "문의 답변완료 2건은 운영 점포별 현황에 없고 확인 필요에만 셉니다.");
+  assert.equal(outsideTableNote(pendingOf(0, [item({})])), null);
+});
+
+test("notOperatingCount 가 없는 옛 api 응답이면 미운영 건은 0으로 본다 — api 배포 전에 front 가 먼저 나가도 깨지지 않는다", () => {
+  const old = { asOf: "2026-11-24T00:00:00Z", platform: false, items: [item({})] } as unknown as HomePending;
+  assert.equal(outsideTableNote(old), null);
 });

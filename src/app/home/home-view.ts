@@ -113,6 +113,18 @@ export function pendingLineOf(item: HomePendingItem, bpCodeId: number) {
   };
 }
 
+/**
+ * 운영 점포별 현황 맨 아래 안내 — 확인 필요 총건수 가운데 표에 없는 건(미운영 점포의 건 = api `notOperatingCount`, 점포에 묶이지 않은 문의 답변완료).
+ * 집계 기준은 그대로다 — 현황은 운영 점포만(운영 정책 HOM-06), 확인 필요는 미운영 · 문의까지(HOM-07). 두 숫자의 차이만 글로 알린다(WHALEERP-759 B안,
+ * 2026-11-24 재영). 0건인 쪽은 빼고, 둘 다 0이면 null(줄을 두지 않는다). `notOperatingCount` 가 없는 옛 api 응답이면 0으로 본다(api 배포 전에 front 가 먼저 나가도 깨지지 않게)
+ */
+export function outsideTableNote(pending: HomePending): string | null {
+  const notOperating = pending.notOperatingCount ?? 0;
+  const inquiries = pending.items.find((i) => i.type === "INQUIRY_ANSWERED")?.count ?? 0;
+  const parts = [notOperating > 0 ? `미운영 점포 ${notOperating}건` : null, inquiries > 0 ? `문의 답변완료 ${inquiries}건` : null].filter((p): p is string => p !== null);
+  return parts.length ? `${parts.join(" · ")}은 운영 점포별 현황에 없고 확인 필요에만 셉니다.` : null;
+}
+
 /** 공지 띠가 읽는 글 수 — api 는 고정 공지를 먼저 주므로 넉넉히 받아 게시일로 고른다(latestNotices) */
 export const NOTICES_PATH = "/support-notices?page=1&pageSize=20";
 const NOTICE_SHOWN = 3;
