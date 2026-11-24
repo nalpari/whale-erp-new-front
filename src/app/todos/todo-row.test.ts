@@ -122,6 +122,8 @@ const detail = (over: Partial<Detail> = {}): Detail => ({
   createdBy: 1,
   createdAt: "2026-10-19T00:00:00Z",
   updatedAt: "2026-10-19T00:00:00Z",
+  modifiedAt: null,
+  modifiedByName: null,
   assignees: [],
   groupTodos: [],
   histories: [],
