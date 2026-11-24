@@ -3,16 +3,57 @@
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import { formatAmount, parseAmount, type PayslipAdditionalItem, type PayslipItem, type PayslipPrevious } from "../../../lib/payslips.ts";
 
-/** PUT /payslips/:id 의 items — 줄마다 급여 항목 id 와 금액(빈 칸 null). 숫자가 아닌 칸은 invalid 에 이름을 모은다. */
+/** 금액 옆에 근무시간 칸을 두는 지급 항목 — 야간 · 휴일근무수당(WHALEERP-755, 근로기준법 시행령 제27조의2 5호의 연장 · 야간 · 휴일근로 시간 수) */
+export const HOURS_ITEM_CODES: readonly string[] = ["NIGHT_WORK_PAY", "HOLIDAY_WORK_PAY"];
+export const hasHours = (item: Pick<PayslipItem, "itemCode">) => HOURS_ITEM_CODES.includes(item.itemCode);
+
+/** 근무시간 칸 글자 — 시간(0.5 단위)으로 보인다. 분이 없으면 빈 칸 */
+export const hoursTextOf = (minutes: number | null) => (minutes === null ? "" : String(minutes / 60));
+
+/** 근무시간 칸이 받는 글자 — 숫자와 소수 .0 · .5 만(0.5시간 단위). 치는 중인 「2.」 · 「.5」도 받는다 */
+export const HOURS_INPUT = /^\d*(\.[05]?)?$/;
+
+/** 근무시간 상한(분) — 한 달 31일 × 24시간 = 744시간. api 수정 DTO(PAYSLIP_WORK_MINUTES_MAX)와 같다 */
+export const HOURS_MAX_MINUTES = 31 * 24 * 60;
+
+/** 근무시간 칸 → 분. 빈 칸은 null, 0.5시간 단위가 아니면 NaN(「.5」 처럼 정수부가 없어도 받는다) */
+export function parseHours(text: string): number | null {
+  const t = text.trim();
+  if (t === "") return null;
+  return /^(\d+(\.[05]?)?|\.[05])$/.test(t) ? Math.round(Number(t) * 60) : Number.NaN;
+}
+
+/** 근무시간이 상한(744시간)을 넘는 칸의 이름 — 임시저장 전에 화면이 막는다(api 400 과 같은 범위) */
+export function overHours(lines: readonly PayslipItem[], hours: ReadonlyMap<number, string>): string[] {
+  return lines
+    .filter((l) => {
+      if (!hasHours(l)) return false;
+      const minutes = parseHours(hours.get(l.payslipItemId) ?? "");
+      return minutes !== null && minutes > HOURS_MAX_MINUTES;
+    })
+    .map((l) => l.itemName);
+}
+
+/** 지난 명세서에서 야간 · 휴일근무수당 금액을 채웠는가 — 시간은 불러오지 않아(달마다 다르다) 이 달 값을 넣으라고 알린다 */
+export const loadedHoursAmount = (previous: PayslipPrevious) => previous.items.some((p) => hasHours(p) && p.amount > 0);
+
+/**
+ * PUT /payslips/:id 의 items — 줄마다 급여 항목 id 와 금액(빈 칸 null). 숫자가 아닌 칸은 invalid 에 이름을 모은다.
+ * 야간 · 휴일근무수당 줄은 근무시간 칸(hours, 시간 글자)을 분으로 바꿔 workMinutes 로 싣는다 — 금액이 있는데 시간이 비면 api 가 400 으로 막는다(WHALEERP-755).
+ */
 export function saveItems(
   lines: readonly PayslipItem[],
   texts: ReadonlyMap<number, string>,
-): { items: { payslipItemMasterId: number; amount: number | null }[]; invalid: string[] } {
+  hours: ReadonlyMap<number, string> = new Map(),
+): { items: { payslipItemMasterId: number; amount: number | null; workMinutes?: number | null }[]; invalid: string[] } {
   const invalid: string[] = [];
   const items = lines.map((l) => {
     const amount = parseAmount(texts.get(l.payslipItemId) ?? "");
     if (Number.isNaN(amount)) invalid.push(l.itemName);
-    return { payslipItemMasterId: l.payslipItemMasterId, amount };
+    if (!hasHours(l)) return { payslipItemMasterId: l.payslipItemMasterId, amount };
+    const workMinutes = parseHours(hours.get(l.payslipItemId) ?? "");
+    if (Number.isNaN(workMinutes)) invalid.push(`${l.itemName} 시간`);
+    return { payslipItemMasterId: l.payslipItemMasterId, amount, workMinutes };
   });
   return { items, invalid };
 }
@@ -32,6 +73,8 @@ export function addAdditionalLine(lines: readonly PayslipItem[], master: Payslip
       calculatedAmount: null,
       adjustedAmount: null,
       isEntered: false,
+      workMinutes: null,
+      calculationText: null,
     },
   ];
 }

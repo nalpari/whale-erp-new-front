@@ -13,6 +13,12 @@ import {
   RECHECK_MAX_MS,
   removeLine,
   saveItems,
+  HOURS_INPUT,
+  HOURS_MAX_MINUTES,
+  hoursTextOf,
+  loadedHoursAmount,
+  overHours,
+  parseHours,
 } from "./payslip-edit.ts";
 
 const item = (over: Partial<PayslipItem>): PayslipItem => ({
@@ -25,6 +31,8 @@ const item = (over: Partial<PayslipItem>): PayslipItem => ({
   calculatedAmount: null,
   adjustedAmount: null,
   isEntered: false,
+  workMinutes: null,
+  calculationText: null,
   ...over,
 });
 
@@ -49,6 +57,51 @@ test("임시저장 본문 — 줄마다 급여 항목 id 와 금액(빈 칸은 n
     invalid: [],
   });
   assert.deepEqual(saveItems(lines, new Map([[108, "12a"]])).invalid, ["상여"]);
+});
+
+test("야간 · 휴일근무수당은 근무시간 칸을 분으로 싣는다 — 0.5시간 단위, 빈 칸은 null(WHALEERP-755)", () => {
+  const night = item({ payslipItemId: 104, payslipItemMasterId: 4, itemCode: "NIGHT_WORK_PAY", itemName: "야간수당" });
+  const holiday = item({ payslipItemId: 105, payslipItemMasterId: 5, itemCode: "HOLIDAY_WORK_PAY", itemName: "휴일근무수당" });
+  const texts = new Map([
+    [104, "30,000"],
+    [105, ""],
+  ]);
+  assert.deepEqual(saveItems([night, holiday, lines[1]], texts, new Map([[104, "2.5"]])), {
+    items: [
+      { payslipItemMasterId: 4, amount: 30_000, workMinutes: 150 },
+      { payslipItemMasterId: 5, amount: null, workMinutes: null },
+      { payslipItemMasterId: 8, amount: null },
+    ],
+    invalid: [],
+  });
+  assert.deepEqual(saveItems([night], texts, new Map([[104, "2.3"]])).invalid, ["야간수당 시간"]);
+  assert.equal(parseHours("2."), 120);
+  assert.equal(parseHours(".5"), 30);
+  assert.ok(Number.isNaN(parseHours(".")));
+  assert.equal(parseHours(" "), null);
+  assert.ok(Number.isNaN(parseHours("-1")));
+  assert.equal(hoursTextOf(90), "1.5");
+  assert.equal(hoursTextOf(null), "");
+  // 칸은 숫자와 .0 · .5 만 받는다
+  assert.ok(HOURS_INPUT.test("12.5") && HOURS_INPUT.test("3.") && HOURS_INPUT.test(""));
+  assert.ok(!HOURS_INPUT.test("1.3") && !HOURS_INPUT.test("1.55") && !HOURS_INPUT.test("a"));
+  // 744시간(api 와 같은 한 달 상한)까지 — 넘으면 화면이 이름을 모아 막는다
+  assert.deepEqual(overHours([night, holiday, lines[1]], new Map([[104, "744"], [105, "744.5"]])), ["휴일근무수당"]);
+  assert.equal(HOURS_MAX_MINUTES, 44_640);
+});
+
+test("지난 명세서에서 야간 · 휴일근무수당 금액을 채웠을 때만 시간을 넣으라고 알린다(WHALEERP-755)", () => {
+  const previous = (amount: number): PayslipPrevious => ({
+    payslipId: 39,
+    periodStartDate: "2026-09-01",
+    periodEndDate: "2026-09-30",
+    items: [
+      { payslipItemMasterId: 8, itemCode: "BONUS", itemName: "상여", itemCategory: "EARNING", amount: 100_000 },
+      { payslipItemMasterId: 4, itemCode: "NIGHT_WORK_PAY", itemName: "야간수당", itemCategory: "EARNING", amount },
+    ],
+  });
+  assert.equal(loadedHoursAmount(previous(30_000)), true);
+  assert.equal(loadedHoursAmount(previous(0)), false);
 });
 
 test("추가 공제 붙이기 · 떼기 — 새 줄은 음수 임시 id(급여 항목 id 의 음수), 빈 칸으로 선다", () => {

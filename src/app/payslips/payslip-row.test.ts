@@ -18,7 +18,7 @@ test("발송일 — 한국 날짜 MM-DD, 발송 전이면 「-」", () => {
   assert.equal(sentDateText({ lastSentAt: null }), "-");
 });
 
-const item = { itemCode: "OVERTIME_PAY", isTaxFree: false, calculatedAmount: 96_000, adjustedAmount: null };
+const item = { itemCode: "OVERTIME_PAY", isTaxFree: false, calculatedAmount: 96_000, adjustedAmount: null, calculationText: null };
 
 test("지급 도움말 — 계산값, 고친 값, 직접 입력, 비과세", () => {
   assert.equal(earningHelp(item, true), "계산값");
@@ -34,6 +34,26 @@ test("가산을 끄면 연장수당은 1배로 계산하고 야간 · 휴일근�
   assert.equal(earningHelp({ ...item, adjustedAmount: 128_000 }, false), "가산수당 미적용 · 1배로 계산 · 계산값 96,000 을 128,000 으로 고침");
   assert.equal(earningHelp({ ...item, itemCode: "NIGHT_WORK_PAY", calculatedAmount: null }, false), "가산 대상 아님 · 넣어도 가산하지 않는다.");
   assert.equal(earningHelp({ ...item, itemCode: "HOLIDAY_WORK_PAY", calculatedAmount: null }, false), "가산 대상 아님 · 넣어도 가산하지 않는다.");
+});
+
+test("지급 도움말 — api 의 한 줄 계산식이 있으면 「계산값」 자리에 그 식, 고쳤으면 고친 내용을 뒤에(WHALEERP-755)", () => {
+  const formula = { ...item, calculatedAmount: 123_840, calculationText: "8.0시간 × 10,320원 × 1.5배" };
+  assert.equal(earningHelp(formula, true), "8.0시간 × 10,320원 × 1.5배");
+  // 가산을 끄면 api 가 「× 1배」 식을 준다 — 머리말 없이 직원 앱 · PDF 와 같은 글자
+  assert.equal(earningHelp({ ...formula, calculationText: "8.0시간 × 10,320원 × 1배" }, false), "8.0시간 × 10,320원 × 1배");
+  assert.equal(
+    earningHelp({ ...formula, adjustedAmount: 130_000, calculationText: "8.0시간 · 직접 입력" }, true),
+    "8.0시간 · 직접 입력 · 계산값 123,840 을 130,000 으로 고침",
+  );
+  // 야간 · 휴일근무수당은 넣은 시간
+  assert.equal(earningHelp({ ...item, itemCode: "NIGHT_WORK_PAY", calculatedAmount: null, calculationText: "2.0시간" }, true), "2.0시간");
+  // 가산을 꺼도 넣은 시간은 앞에 — 세 곳 글자가 같게
+  assert.equal(
+    earningHelp({ ...item, itemCode: "HOLIDAY_WORK_PAY", calculatedAmount: null, calculationText: "2.0시간" }, false),
+    "2.0시간 · 가산 대상 아님 · 넣어도 가산하지 않는다.",
+  );
+  // 식이 없으면(2026-11-24 전 명세서) 지금처럼
+  assert.equal(earningHelp({ ...formula, calculationText: null }, true), "계산값");
 });
 
 const reason = (reviewReason: PayslipReviewReason["reviewReason"], detail: string | null): PayslipReviewReason => ({
@@ -80,6 +100,8 @@ test("상세 검토 사유 — 작성 중 · 검토 중이고 보이는 공제 �
     calculatedAmount: null,
     adjustedAmount: null,
     isEntered,
+    workMinutes: null,
+    calculationText: null,
   });
   const attendance: PayslipReviewReason = {
     payslipReviewReasonId: 7,

@@ -7753,6 +7753,13 @@ export interface components {
             adjustedAmount: number | null;
             /** @description 입력 여부 — 공제 미입력과 0 을 가른다 */
             isEntered: boolean;
+            /** @description 계산 · 입력에 쓴 시간(분) — 기본급(파트타이머) · 주휴 · 연장은 계산 때, 야간 · 휴일근무수당은 관리자가 넣은 값. 없으면 null(WHALEERP-755) */
+            workMinutes: number | null;
+            /**
+             * @description 한 줄 계산식(「8.0시간 × 10,320원 × 1.5배」, WHALEERP-755). 관리자가 계산값과 다른 금액으로 고치면 「직접 입력」(연장수당은
+             *     「8.0시간 · 직접 입력」), 야간 · 휴일근무수당은 「2.0시간」. 계산하지 않은 줄 · 2026-11-24 전에 만든 줄은 null
+             */
+            calculationText: string | null;
         };
         PayslipReviewReasonDto: {
             reviewReason: components["schemas"]["PayslipReviewReason"];
@@ -7864,6 +7871,11 @@ export interface components {
         PayslipItemAmountDto: {
             /** @description 원, 0 이상. null 이면 미입력 — 시스템 계산 항목은 계산값으로 돌아간다 */
             amount: number | null;
+            /**
+             * @description 근무시간(분) — 야간수당 · 휴일근무수당만 쓰고 다른 줄은 무시한다(WHALEERP-755). 30분 단위, 0 이상. 금액이 0보다 크면 함께
+             *     넣어야 한다(아니면 400). 빼거나 null 이면 시간 없음
+             */
+            workMinutes?: number | null;
             payslipItemMasterId: number;
         };
         SavePayslipDto: {
@@ -7952,6 +7964,10 @@ export interface components {
             calculatedAmount: number | null;
             adjustedAmount: number | null;
             isEntered: boolean;
+            /** @description 계산 · 입력에 쓴 시간(분). 없으면 null(WHALEERP-755) */
+            workMinutes: number | null;
+            /** @description 한 줄 계산식 — 관리자 상세와 같은 글자(「8.0시간 × 10,320원 × 1.5배」 · 「직접 입력」). 없으면 null(WHALEERP-755) */
+            calculationText: string | null;
         };
         MyPayslipDetailResponseDto: {
             employmentType: components["schemas"]["EmploymentType"];

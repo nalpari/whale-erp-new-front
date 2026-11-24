@@ -62,18 +62,29 @@ export function attendanceCell(item: Pick<PayslipListItem, "isAttendanceConfirme
 /** 「발송일」 칸 — 마지막 발송 MM-DD(근로계약 목록 발송일과 같은 모양), 발송 전이면 「-」. */
 export const sentDateText = (item: Pick<PayslipListItem, "lastSentAt">) => sentText(item.lastSentAt);
 
-/** 지급 칸 아래 도움말. 데모 payrolls-detail 의 help 글자와 같다. */
-export function earningHelp(item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "calculatedAmount" | "adjustedAmount">, isPremiumApplied: boolean): string {
+/**
+ * 지급 칸 아래 도움말. 데모 payrolls-detail 의 help 글자와 같다.
+ * api 가 만든 한 줄 계산식(calculationText — 「8.0시간 × 10,320원 × 1.5배」 · 고치면 「8.0시간 · 직접 입력」 · 야간 · 휴일은 「2.0시간」)이 있으면
+ * 「계산값」 자리에 그 식을 보인다 — 직원 앱 · PDF 와 같은 글자다(WHALEERP-755). 없으면(계산하지 않음 · 2026-11-24 전 명세서) 지금처럼.
+ */
+export function earningHelp(
+  item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "calculatedAmount" | "adjustedAmount" | "calculationText">,
+  isPremiumApplied: boolean,
+): string {
   // 가산을 끄면 연장수당을 가산 없이 1배로 계산하고, 관리자가 넣는 야간 · 휴일근무수당은 가산 대상이 아니다(PAY-05, 2026-10-26 재영).
   if (!isPremiumApplied && (item.itemCode === "NIGHT_WORK_PAY" || item.itemCode === "HOLIDAY_WORK_PAY"))
-    return "가산 대상 아님 · 넣어도 가산하지 않는다.";
+    // 넣은 시간(api 식 「2.0시간」)은 앞에 둔다 — 직원 앱 · PDF 와 같은 글자가 빠지지 않게(WHALEERP-755)
+    return `${item.calculationText ? `${item.calculationText} · ` : ""}가산 대상 아님 · 넣어도 가산하지 않는다.`;
   if (item.isTaxFree) return "비과세";
-  if (item.calculatedAmount === null) return "직접 입력";
-  // 계산값을 고쳤으면 계산값을 함께 보인다(okf/staff.md 급여). 계산 근거 글자(데모 「8.0h × 1.5배」)는 api 에 칸이 없다.
-  const calculated =
-    item.adjustedAmount !== null && item.adjustedAmount !== item.calculatedAmount
+  // 계산값을 고쳤으면 계산값을 함께 보인다(okf/staff.md 급여) — 식은 api 가 「직접 입력」으로 바꿔 준다
+  const corrected =
+    item.calculatedAmount !== null && item.adjustedAmount !== null && item.adjustedAmount !== item.calculatedAmount
       ? `계산값 ${formatAmount(item.calculatedAmount)} 을 ${formatAmount(item.adjustedAmount)} 으로 고침`
-      : "계산값";
+      : null;
+  // 식에 시간 · 시급 · 배율(가산을 끄면 「× 1배」)이 다 들어 있어 「가산수당 미적용」 머리말은 붙이지 않는다 — 세 곳이 같은 글자로 보이게
+  if (item.calculationText !== null) return corrected ? `${item.calculationText} · ${corrected}` : item.calculationText;
+  if (item.calculatedAmount === null) return "직접 입력";
+  const calculated = corrected ?? "계산값";
   return !isPremiumApplied && item.itemCode === "OVERTIME_PAY" ? `가산수당 미적용 · 1배로 계산 · ${calculated}` : calculated;
 }
 
