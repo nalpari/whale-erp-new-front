@@ -39,6 +39,12 @@ test("3.3% 를 켜면 소득세 · 지방소득세가 빠지고 원천징수 둘
   assert.equal(isItemShown(withholding, false, BOTH), false);
 });
 
+test("가입 여부 칸이 없는 응답(api 를 되돌린 경우)은 4대보험 줄을 숨기지 않는다", () => {
+  const missing = {} as typeof BOTH;
+  assert.equal(isItemShown({ itemCategory: "BASIC" as const, itemCode: "NATIONAL_PENSION", ...BLANK }, false, missing), true);
+  assert.equal(isItemShown({ itemCategory: "BASIC" as const, itemCode: "EMPLOYMENT_INSURANCE", ...BLANK }, false, missing), true);
+});
+
 test("합계 — 지급은 비과세 포함, 공제는 보이는 줄만, 비어 있는 공제가 있으면 표시한다", () => {
   const items = [
     { payslipItemId: 1, itemCategory: "EARNING" as const, itemCode: "BASE_PAY", ...BLANK },

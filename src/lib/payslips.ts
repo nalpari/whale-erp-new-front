@@ -170,8 +170,9 @@ export function isItemShown(
   if (REPLACED_BY_WITHHOLDING.has(item.itemCode)) return !isWithholdingApplied;
   const amount = itemAmount(item);
   const filled = amount !== null && amount !== 0;
-  if (HEALTH_PENSION_ITEM_CODES.has(item.itemCode)) return insurance.isHealthPensionInsured || filled;
-  if (EMPLOYMENT_INJURY_ITEM_CODES.has(item.itemCode)) return insurance.isEmploymentInjuryInsured || filled;
+  // 가입 여부 칸이 없는 응답(api 를 앞 버전으로 되돌린 경우)은 숨기지 않는다 — 명시적으로 false 일 때만 미가입(PR pr-agent)
+  if (HEALTH_PENSION_ITEM_CODES.has(item.itemCode)) return insurance.isHealthPensionInsured !== false || filled;
+  if (EMPLOYMENT_INJURY_ITEM_CODES.has(item.itemCode)) return insurance.isEmploymentInjuryInsured !== false || filled;
   return true;
 }
 
