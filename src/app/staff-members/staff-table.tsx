@@ -7,7 +7,7 @@ import type { StaffMemberListItem } from "@/lib/staff-members";
 import { WithIcon } from "../platform-admins/admin-table";
 import { ResendInvitationButton } from "./resend-invitation-button";
 import { withBack } from "./staff-list-query";
-import { canResendInvitation, contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, rowNumber, statusCells, type Cell } from "./staff-row";
+import { canResendInvitation, contractCell, formatPhone, joinCell, rowNumber, statusCells, type Cell } from "./staff-row";
 
 // 데모 staff-parts.mjs 의 회색 배지(quiet). 공통 Badge 에는 on · off 두 가지뿐이다.
 const NEUTRAL = "inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium bg-erp-subtle text-erp-ink whitespace-nowrap";
@@ -41,6 +41,7 @@ export function StaffTable({
   pageSize,
   today,
   contractStatuses,
+  employmentTypes,
   listHref,
   empty = "조건에 맞는 직원이 없습니다.",
   at = (path) => path,
@@ -52,6 +53,8 @@ export function StaffTable({
   today: string;
   /** 계약 상태 이름(GET /enums/ContractStatus) */
   contractStatuses: EnumValue[];
+  /** 고용형태 이름(GET /enums/EmploymentType, WHALEERP-720). 목록에 없는 값 · 받지 못한 목록은 「-」 — 영문 값을 보이지 않는다(계약 상태 칸과 같다) */
+  employmentTypes: EnumValue[];
   /** 지금 목록 주소(staffListHrefOf). 상세 링크에 ?back= 으로 실어 상세의 「목록」이 같은 조건으로 돌아오게 한다. */
   listHref: string;
   /** 빈 목록 문구 */
@@ -86,7 +89,7 @@ export function StaffTable({
     // 점포 이름 앞에 본사 · 직영 · 가맹 꼬리표 — 근로계약 목록 · 상세와 같다(2026-11-19 사용자 지정). 꼬리표만큼 기준 폭을 170 으로 늘렸다
     { header: "점포", width: "w-[170px]", align: "left", cell: (r) => <StoreNameWithType storeId={r.item.store.storeId} name={r.item.store.name} isHq={r.item.store.isHq} /> },
     // 가장 긴 값 「파트타이머」 5자(59px)
-    { header: "고용형태", width: "w-[80px]", cell: personal((item) => (item.employmentType ? EMPLOYMENT_TYPE_LABELS[item.employmentType] : DASH)) },
+    { header: "고용형태", width: "w-[80px]", cell: personal((item) => employmentTypes.find((t) => t.value === item.employmentType)?.label ?? DASH) },
     {
       header: "가입 상태",
       // 데모는 210 — 재발송 버튼(WHALEERP-138)이 배지 옆에 서도록 넓혔다. 데모에는 목록 재발송 자리가 없다.

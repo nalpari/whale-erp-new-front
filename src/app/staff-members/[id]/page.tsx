@@ -9,7 +9,7 @@ import { MENU_CODE } from "@/lib/menus";
 import { getStaffMember, staffMemberIdOf } from "@/lib/staff-members-api";
 import { detailListHrefOf } from "../staff-list-query";
 import { ResendInvitationButton } from "../resend-invitation-button";
-import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone, invitationParts, joinCell } from "../staff-row";
+import { canResendInvitation, employmentStatusCells, formatPhone, invitationParts, joinCell } from "../staff-row";
 import { CellView } from "../staff-table";
 import { BirthDateEditButton } from "./birth-date-dialog";
 import { ContractBox } from "./contract-box";
@@ -75,7 +75,7 @@ export default async function StaffMemberDetailPage({
 }) {
   const { id: rawId } = await params;
   const search = await searchParams;
-  const [staff, joinStateLabels, invitationTypeLabels, invitationStatusLabels, hqConsentLabels] = await Promise.all([
+  const [staff, joinStateLabels, invitationTypeLabels, invitationStatusLabels, hqConsentLabels, employmentTypes] = await Promise.all([
     // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다. 404(없는 직원 · 업무 범위 밖 · 고른 BP 에 없음)는 getStaffMember 가 null 로 바꿔 notFound 다(근로계약 상세와 같다)
     getStaffMember(rawId).catch((e: unknown) => {
       const notice = deniedMessageOf(e);
@@ -86,6 +86,8 @@ export default async function StaffMemberDetailPage({
     loadEnumOrEmpty("InvitationType"),
     loadEnumOrEmpty("InvitationStatus"),
     loadEnumOrEmpty("HqSharingConsentState"),
+    // 고용형태 이름(요약 띠, WHALEERP-720) — 값이 없거나 받지 못했으면 「-」, 영문 값은 보이지 않는다(목록 열과 같다)
+    loadEnumOrEmpty("EmploymentType"),
   ]);
   if (staff && "notice" in staff)
     return (
@@ -126,7 +128,7 @@ export default async function StaffMemberDetailPage({
         </span>
       ),
     },
-    { label: "고용형태", value: <span className="text-[15px] font-semibold text-erp-ink">{staff.employmentType ? EMPLOYMENT_TYPE_LABELS[staff.employmentType] : PENDING}</span> },
+    { label: "고용형태", value: <span className="text-[15px] font-semibold text-erp-ink">{employmentTypes.find((t) => t.value === staff.employmentType)?.label ?? PENDING}</span> },
     { label: "직무", value: <span className="text-[15px] font-semibold text-erp-ink">{staff.jobTitle || PENDING}</span> },
     // 근무지 이름 앞에 본사 · 직영 · 가맹 꼬리표 — 직원 목록 · 근로계약 상세와 같다
     {
