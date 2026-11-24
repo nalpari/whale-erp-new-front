@@ -5,7 +5,7 @@ import { canResetPassword, refreshesAfterReset, resetFailureMessage, resetRecipi
 
 const direct = { storeId: 1, name: "직영점", storeType: "DIRECT", isHq: false };
 const franchise = { storeId: 2, name: "가맹점", storeType: "FRANCHISE", isHq: false };
-const joined = { joinState: "JOINED", employmentStatus: "EMPLOYED", retiredDate: null, store: direct, email: "jian.seo@example.com" } as const;
+const joined = { joinState: "JOINED", employmentStatus: "EMPLOYED", retiredDate: null, store: direct, email: "jian.seo@example.com", isAccountWithdrawn: false } as const;
 
 test("버튼 — 가입 완료 · 재직 · 수정 권한이면 보인다", () => {
   assert.equal(canResetPassword(joined, "FM", true), true);
@@ -89,4 +89,8 @@ test("실패 문구 — 결과를 모르면(5xx · 연결 실패) 다시 보내�
 test("409(가입 전 · 퇴직 · 탈퇴)만 상세를 다시 받는다 — 화면이 낡았으니 버튼을 거둔다", () => {
   assert.equal(refreshesAfterReset({ status: 409 }), true);
   for (const status of [401, 404, 429, 503, undefined]) assert.equal(refreshesAfterReset({ status }), false, String(status));
+});
+
+test("버튼 — 탈퇴 계정에는 숨긴다(WHALEERP-770). email 이 있어 보여도 isAccountWithdrawn 으로 가린다", () => {
+  assert.equal(canResetPassword({ ...joined, isAccountWithdrawn: true }, "FM", true), false);
 });
