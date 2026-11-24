@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입 상태 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 두 단 아래에 발송 이력 칸(WHALEERP-136)을, 오른쪽에 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [수정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-23T06:27:02Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-24T01:25:53Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -29,7 +29,7 @@ sources:
   - id: staff-filter
     resource: ../../src/app/staff-members/staff-filter.tsx
     title: 목록 필터 — 점포 칸은 공통 점포 고르기(StorePicker), 상단 점포 범위와 잇는다(근로계약 목록과 같은 규칙)
-    last_modified: 2026-11-09T05:36:58Z
+    last_modified: 2026-11-24T01:26:01Z
   - id: retirement-dialog
     resource: ../../src/app/staff-members/[id]/retirement-dialog.tsx
     title: 퇴직 처리 · 퇴직일 변경 · 취소 확인창
@@ -49,11 +49,11 @@ sources:
   - id: staff-table
     resource: ../../src/app/staff-members/staff-table.tsx
     title: 목록 표 — 가입 상태 칸의 재발송 버튼, 가린 행의 이름 자리, 휴대전화번호 아이콘, 상세 링크에 목록 주소 ?back=, 빈 상태 fillEmpty, 계약 상태 칸 200px(꼬리표), 1260 창 기준 열 폭 · 표 상자 안 가로 스크롤(2026-11-18), 이름 링크는 재직 · 퇴직 직원(WHALEERP-763)
-    last_modified: 2026-11-23T06:27:02Z
+    last_modified: 2026-11-24T01:26:01Z
   - id: staff-list-page
     resource: ../../src/app/staff-members/page.tsx
     title: 직원 목록 화면 — 도구 줄 [일괄 저장]는 BP 마스터 · 가맹마스터에게만(bulk-export-button.tsx), 빈 목록 문구 가르기
-    last_modified: 2026-11-09T03:19:00Z
+    last_modified: 2026-11-24T01:26:01Z
   - id: staff-export-screen
     resource: ../../src/app/staff-members/export/export-screen.tsx
     title: 직원 자료 일괄 저장 화면(WHALEERP-337) — 미리 보기 · 지난 요청(BFF) · 요청 · 내려받기(서버 액션 actions.ts) · 판정 bulk-export-model.ts
@@ -61,7 +61,7 @@ sources:
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
     title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 재직 이력 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치 · 근무스케줄 주(주소 week) · [목록] 주소(주소 back, 없으면 상세 주소에 붙은 예전 목록 조건) + 생년월일 줄 [수정])
-    last_modified: 2026-10-26T03:31:34Z
+    last_modified: 2026-11-24T01:26:01Z
   - id: employment-history
     resource: ../../src/app/staff-members/[id]/employment-history.ts
     title: 재직 이력 줄(재입사로 이은 이전 · 이후 재직 기간, WHALEERP-615 — 링크는 ?back= + week)
@@ -141,7 +141,7 @@ sources:
   - id: staff-row
     resource: ../../src/app/staff-members/staff-row.ts
     title: 한 줄 표시 규칙(배지 · D-day · 재직 칸 · 재발송 판정 · 상세 초대 줄 · 연장 재계약 꼬리표(WHALEERP-672)). 계약 상태 이름은 GET /enums/ContractStatus 에서 받는다(WHALEERP-659). 갱신 예정 날수(RENEWAL_NOTICE_DAYS)를 상세 근로계약 칸과 함께 쓴다
-    last_modified: 2026-11-13T20:00:00Z
+    last_modified: 2026-11-24T01:26:01Z
   - id: retirement
     resource: ../../src/lib/retirement.ts
     title: 퇴직 처리 판정 — 상세 머리 버튼(초안 + 작성 중 계약이면 없음, WHALEERP-762) · 퇴직일 범위 검사(WHALEERP-585)
@@ -227,7 +227,10 @@ sources:
   `detailListHrefOf` 의 [목록] 주소 — 예전 형식 포함 — 와 보던 주). 저장 · 임시저장 뒤에는 그대로 근로계약 목록으로 간다(WHALEERP-673).
   상세 안에서 다른 화면(근로계약 등)으로 가는 링크는 `back` 을 싣지 않는다. 직원 목록에서 저장 · 삭제 뒤 목록으로 돌아가는 동작이 없어(퇴직 처리 · 변경 · 취소는
   상세에 머물고 다시 받는다) 근로계약의 `withoutStoreSearch` 처리는 두지 않았다.
-* 목록 라벨(`joinCell` 의 `StaffJoinState` · `EmploymentType`)은 아직 화면 상수다. `getEnum` 으로 바꾸는 것은 남았다 — 상세
+* 고용형태 이름(목록 필터 · 목록 열 · 상세 요약 띠)은 `getEnum("EmploymentType")` 으로 받는다(WHALEERP-720). 목록은 `ContractStatus` 와 함께
+  받고 상세는 `loadEnumOrEmpty` 로 받는다. 받지 못하면 서버 로그만 남기고, 열 · 요약 띠는 「-」(영문 값을 보이지 않는다), 필터 체크 이름은 값
+  그대로다(출퇴근 현황 필터와 같다). 쿼리 값 목록 `EMPLOYMENT_TYPES` 는 그대로다.
+* 목록 라벨(`joinCell` 의 `StaffJoinState`)은 아직 화면 상수다. `getEnum` 으로 바꾸는 것은 남았다 — 상세
   「이메일」 칸의 가입 상태 한글은 이미 `getEnum` 으로 받는다(아래 「이메일」).
 * 로그인 만료(401)는 `request()` 가 만료 안내 로그인 화면으로 보내고(2026-11-10), 그 밖의 api 오류(403 · 5xx)는 `error.tsx` 가 받는다. 없는 직원(상세 api 404)은 상세가 먼저 `notFound()` 로 받는다. 로그인 뒤 페이지는 루트 `loading.tsx` 로 스트리밍되어 응답 코드는 404 가 아니라 200 이고 안내는 화면 안에서 처리된다(화면은 같다).
 

@@ -5,12 +5,13 @@ import { useEffect, useEffectEvent, useOptimistic, useState, useTransition } fro
 import { Checkbox, FilterPanel, FilterSection, SearchField, Select, useToast } from "@/components/common";
 import { useCurrentBp, useScope, useStores } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
+import { labelOf, type EnumValue } from "@/lib/enums";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import { EMPLOYMENT_TYPES, JOIN_GROUPS, pickedStoreIdsOf, type EmploymentStatusFilter, type StaffListQuery } from "@/lib/staff-members";
 import { isUnusableScope, scopeStores, toPickedStore } from "@/lib/store-scope";
 import { fillScopeOf } from "../stores/stores-query";
 import { DEFAULT_STAFF_LIST_QUERY, MAX_KEYWORD_LENGTH, toStaffListSearch, withFilter, withPickedStores, withScopeCondition } from "./staff-list-query";
-import { EMPLOYMENT_TYPE_LABELS, JOIN_GROUP_LABELS } from "./staff-row";
+import { JOIN_GROUP_LABELS } from "./staff-row";
 
 const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
@@ -25,7 +26,8 @@ const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? lis
 // 점포 조건이 주소에 없으면(주소 직접 입력 · 즐겨찾기 · 예전 점포명 주소) 헤더 범위로 채운다. 고른 점포가 로그인 정보에 없으면(이 탭이
 // 아직 맞추지 못한 점포 · 다른 탭에서 복사한 주소) 「점포 {id}」 칩으로 그린다 — 조건에서 빼면 api 가 볼 수 있는 점포까지 잃고, 칩이 없으면 보이지
 // 않는 조건이 된다. 업무 범위 밖 id 는 api 가 조용히 뺀다. 주소의 범위를 이 탭에서 쓸 수 없으면(isUnusableScope) 「전체」로 바꾸고 알린다.
-export function StaffFilter({ query }: { query: StaffListQuery }) {
+// 고용형태 이름은 목록 화면이 받은 GET /enums/EmploymentType(WHALEERP-720) — 받지 못했으면 값 그대로다(출퇴근 현황 필터와 같다).
+export function StaffFilter({ query, employmentTypeLabels }: { query: StaffListQuery; employmentTypeLabels: EnumValue[] }) {
   const router = useRouter();
   // 화면 주소는 탭 BP 주소다(/bp/{id}/staff-members)
   const bp = useCurrentBp().bpCodeId;
@@ -99,7 +101,7 @@ export function StaffFilter({ query }: { query: StaffListQuery }) {
         {EMPLOYMENT_TYPES.map((type) => (
           <Checkbox
             key={type}
-            label={EMPLOYMENT_TYPE_LABELS[type]}
+            label={labelOf(employmentTypeLabels, type)}
             checked={current.employmentTypes.includes(type)}
             onChange={() => go({ employmentTypes: toggle(current.employmentTypes, type) })}
           />

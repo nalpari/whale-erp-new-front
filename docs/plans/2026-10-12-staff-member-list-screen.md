@@ -1420,3 +1420,12 @@ Expected: `# fail 0`(pass 14 + 7 + 10 + 11 + 기존 date-math), 린트 · 빌드
 
 - 쿼리와 `?back=` 은 옛 경로로 두고, 링크 · 이동에서만 탭 BP 를 씌운다 — 서버 화면은 `screenPath()`, 클라이언트는 `bpPath`, 서버 액션의 이동은 `bpHref`.
 - api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP · 권한 403 · 없는 BP 404)은 오류 화면 대신 그 문장으로 보인다(`deniedMessageOf`).
+
+## 고용형태 이름을 api 값 이름으로 (WHALEERP-720, 2026-11-24)
+
+작업 위치: 워크트리 `~/.whale-erp-worktrees/whale-erp-front/petra`, 브랜치 `dewgong`(origin/main `e148d42a`). 네이밍 규칙 「front · staff 에 상수 대응표를 두지 않는다」(okf/conventions/naming.md)에 맞춘다. 출퇴근 현황 재직 상태(WHALEERP-721)와 같은 방식이다. 위 Task 4 의 `EMPLOYMENT_TYPE_LABELS` 는 이 작업으로 없어졌다(위 본문은 그때 기록으로 둔다).
+
+- 목록 `page.tsx`: `getEnum("EmploymentType")` 을 `ContractStatus` 와 함께 받는다. 실패하면 로그만 남기고 `[]`.
+- 필터: `employmentTypeLabels` 를 받아 `labelOf` 로 그린다. 쿼리 값 `EMPLOYMENT_TYPES` 는 그대로다.
+- 목록 열 · 상세 요약 띠: 받은 목록에 그 값이 있으면 이름, 값이 없거나 목록을 못 받았으면 「-」.
+- `staff-row.ts` 의 `EMPLOYMENT_TYPE_LABELS` 와 import · 주석 정리. `JOIN_GROUP_LABELS` 는 화면 묶음이라 남긴다.

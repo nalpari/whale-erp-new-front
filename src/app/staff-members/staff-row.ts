@@ -1,10 +1,10 @@
 // 직원 목록 한 줄을 화면 문구와 모양으로 바꾼다. 색과 문구는 데모(docs/demo/src/staff-sections.mjs)를 따른다.
-// StaffJoinState · EmploymentType 라벨은 목 단계라 여기 둔다 — api 를 붙일 때 getEnum 으로 바꾼다. JOIN_GROUP_LABELS
-// 는 화면 묶음이라 여기 남는다.
+// StaffJoinState 라벨은 목 단계라 여기 둔다 — api 를 붙일 때 getEnum 으로 바꾼다. 고용형태 이름은 getEnum("EmploymentType")
+// 으로 받는다(WHALEERP-720). JOIN_GROUP_LABELS 는 화면 묶음이라 여기 남는다.
 // 날짜는 모두 한국 날짜로 견준다. today 는 kstToday() 값(YYYY-MM-DD)을 받는다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { EnumValue } from "../../lib/enums.ts";
-import type { EmploymentType, JoinGroup, StaffMemberListItem } from "../../lib/staff-members.ts";
+import type { JoinGroup, StaffMemberListItem } from "../../lib/staff-members.ts";
 
 export type CellStyle = "badge-on" | "badge-off" | "badge-neutral" | "mark-on" | "mark-off" | "muted";
 export interface Cell {
@@ -14,7 +14,6 @@ export interface Cell {
   tag?: string;
 }
 
-export const EMPLOYMENT_TYPE_LABELS: Record<EmploymentType, string> = { FULL_TIME: "정직원", PART_TIME: "파트타이머" };
 export const JOIN_GROUP_LABELS: Record<JoinGroup, string> = {
   JOINED: "가입 완료",
   INVITED: "가입 대기",
