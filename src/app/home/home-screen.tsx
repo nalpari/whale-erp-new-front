@@ -219,7 +219,7 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
             두 칸 높이는 늘 같다(items-stretch) */}
         <div className="grid min-h-[440px] flex-1 grid-cols-2 items-stretch gap-[12px]">
           {noStores ? (
-            <StoreTable table={{ total: 0, items: [] }} />
+            <StoreTable table={{ total: 0, items: [] }} note={p ? outsideTableNote(p) : null} />
           ) : !summary ? (
             <Notice text="현황을 불러오는 중입니다." />
           ) : "error" in summary ? (
