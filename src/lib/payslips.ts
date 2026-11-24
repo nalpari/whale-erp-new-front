@@ -129,7 +129,10 @@ export const formatAmount = (n: number) => n.toLocaleString("ko-KR");
 export function parseAmount(text: string): number | null {
   const digits = text.replace(/[,\s]/g, "");
   if (digits === "") return null;
-  return /^\d+$/.test(digits) ? Number(digits) : NaN;
+  if (!/^\d+$/.test(digits)) return NaN;
+  // 아주 긴 숫자는 Infinity — JSON 에서 null 이 되어 바뀜 스냅샷이 빈 칸과 같아지므로 잘못된 입력으로 본다(PR #336 재검사)
+  const amount = Number(digits);
+  return Number.isFinite(amount) ? amount : NaN;
 }
 
 /** 줄의 금액. 넣지 않았으면 null — 0 과 다르다(공제 미입력). */

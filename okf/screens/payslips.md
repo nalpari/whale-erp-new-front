@@ -4,12 +4,12 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-24T05:07:14Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-24T05:11:57Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
     title: 타입(생성한 api 타입) · 조회 조건 · api 쿼리 · 달 · 합계
-    last_modified: 2026-10-27T09:23:13Z
+    last_modified: 2026-11-24T05:11:57Z
   - id: payslips-api
     resource: ../../src/lib/payslips-api.ts
     title: GET /payslips · GET /payslips/:id 호출(404 → null)
@@ -37,11 +37,11 @@ sources:
   - id: payslip-edit
     resource: ../../src/app/payslips/[payslipId]/payslip-edit.ts
     title: 검토 화면 고칠 거리 — 임시저장 본문(야간 · 휴일근무수당 근무시간) · 추가 공제 붙이기 · 떼기 · 지난 명세서 불러오기 · 막힌 확정 판정 · 다시 보기 간격(server action actions.ts)
-    last_modified: 2026-11-24T05:00:56Z
+    last_modified: 2026-11-24T05:11:57Z
   - id: payslip-review
     resource: ../../src/app/payslips/[payslipId]/payslip-review.tsx
     title: 검토 화면 — 머리 버튼 · 요약 띠 · 지급 · 공제 묶음(합계 · 도구 줄 · 근무시간 칸) · 합계 띠 · 확인창(공제 항목 추가 체크 목록)
-    last_modified: 2026-11-24T05:07:14Z
+    last_modified: 2026-11-24T05:11:57Z
 ---
 
 # api 로 그린다
@@ -107,8 +107,11 @@ sources:
   api 가 「× 1배」 식을 줘 「가산수당 미적용」 머리말은 붙이지 않는다 — 직원 앱 · PDF 와 같은 글자). 고친 칸은 api 의 「직접 입력」(연장수당
   「8.0시간 · 직접 입력」) 뒤에 「계산값 A 을 B 으로 고침」을 잇는다. 식이 없으면(계산하지 않음 · 2026-11-24 전 명세서) 전처럼 「계산값」 ·
   「계산값 A 을 B 으로 고침」 · 「직접 입력」(칸 아래에는 두지 않음)이고, 전 명세서 연장수당은 가산을 끄면 앞에 「가산수당 미적용 · 1배로 계산」이
-  붙는다(PAY-05, 2026-10-26 재영). 야간수당 · 휴일근무수당은 금액 칸 옆에 근무시간 칸(64px, 뒤에 「h」, 0.5시간 단위 — `.0` · `.5` 만 받는다)이
-  있고(「.5」 처럼 정수부 없이도 받는다) 임시저장 때 분(`workMinutes`)으로 보낸다(`saveItems`). 744시간(api 와 같은 한 달 상한)을 넘으면 화면이
+  붙는다(PAY-05, 2026-10-26 재영). 야간수당 · 휴일근무수당은 금액 칸 옆에 근무시간 칸(64px, 뒤에 「h」, 0.5시간 단위, 여섯 자까지)이
+  있다. 치는 중에는 숫자와 점 하나를 소수 자리 수와 상관없이 받고(「2.3」의 「3」을 거부하면 「2.」가 남아 2시간으로 저장됐다 — PR #336 재검사),
+  임시저장 전에 0.5시간 단위가 아니면 「근무시간은 0.5시간 단위로 넣어 주세요: 야간수당」으로 막는다(`notHalfHours`). 끝이 점인 「2.」 · 「.」와
+  아주 긴 숫자(Infinity — 금액 칸 `parseAmount` 도 같다)는 잘못된 입력(NaN)이라 「숫자만 넣어 주세요」로 막히고 바뀜 스냅샷도 빈 칸과 가른다.
+  「.5」 처럼 정수부가 없어도 받는다. 임시저장 때 분(`workMinutes`)으로 보낸다(`saveItems`). 744시간(api 와 같은 한 달 상한)을 넘으면 화면이
   먼저 「근무시간은 744시간까지 넣을 수 있습니다: 야간수당」으로 막는다(`overHours`). 가산을 끈 명세서의 두 칸은 「2.0시간 · 가산 대상 아님 ·
   넣어도 가산하지 않는다.」처럼 넣은 시간을 앞에 둔다. 도움말은 화면의 지금 가산 스위치를 따른다 — 스위치를 바꾸고 아직 저장하지 않았으면
   연장수당의 저장된 식(「× 1.5배」)은 맞지 않아 보이지 않고 「가산수당 미적용 · 1배로 계산 · 계산값」 · 「계산값」을 쓴다(PR #336 리뷰).

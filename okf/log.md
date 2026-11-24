@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-24
+* **Update**: [Payslips screen](/screens/payslips.md) — PR #336 재검사: 근무시간 칸이 치는 중 소수 자리를 묻지 않고(「2.3」), 저장 전 0.5시간 단위가 아니면 막는다(`notHalfHours`). 끝이 점인 「2.」 · 유한하지 않은 아주 긴 숫자(근무시간 · 금액)는 잘못된 입력(NaN). 근무시간 칸 여섯 자 제한.
 * **Update**: [Payslips screen](/screens/payslips.md) — PR #336 재검사: 근무시간 칸 감싸기를 야간 · 휴일근무수당 줄에만 둬 추가 공제 [빼기] 자리 선택자를 되살렸고, 근무시간 칸을 바꾸면 도움말이 지금 입력을 따른다(`earningFormula`).
 * **Update**: [Payslips screen](/screens/payslips.md) — PR #336 리뷰: 지급 도움말은 지금 가산 스위치를 따른다(저장 전이면 연장수당의 저장된 식 대신 「가산수당 미적용 …」), 바뀜 스냅샷이 잘못 친 근무시간 · 금액을 빈 칸과 가른다(`editSnapshot`). `api-types.generated.ts` 다시 생성(workMinutes 설명 · multipleOf 뺌).
 * **Update**: [Payslips screen](/screens/payslips.md) — 지급 칸 계산식(WHALEERP-755): api `calculationText` 를 「계산값」 자리에 둥근 꺾은선 · 황토 글자로(「8.0시간 × 10,320원 × 1.5배」 · 고치면 「8.0시간 · 직접 입력 · 계산값 A 을 B 으로 고침」, 없으면 전처럼), 야간 · 휴일근무수당 금액 옆 근무시간 칸(64px · 「h」 · 0.5시간 단위, 임시저장 때 분으로). 데모 payrolls-detail 도 맞췄다(.mjs 만). `api-types.generated.ts` 다시 생성. 리뷰 후속: 가산을 끈 야간 · 휴일근무수당도 「2.0시간 · 가산 대상 아님 …」, 시간 「.5」 입력 · 744시간 상한을 화면에서 먼저 막음, 지난 명세서에서 야간 · 휴일 금액을 채우면 「시간은 이 달 값을 넣어 주세요」.

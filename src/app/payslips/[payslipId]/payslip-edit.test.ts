@@ -1,7 +1,7 @@
 // node --test "src/app/payslips/[payslipId]/payslip-edit.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { PayslipItem, PayslipPrevious } from "../../../lib/payslips.ts";
+import { parseAmount, type PayslipItem, type PayslipPrevious } from "../../../lib/payslips.ts";
 import {
   addAdditionalLine,
   applyPrevious,
@@ -15,6 +15,7 @@ import {
   saveItems,
   editSnapshot,
   HOURS_INPUT,
+  notHalfHours,
   HOURS_MAX_MINUTES,
   hoursTextOf,
   loadedHoursAmount,
@@ -75,17 +76,32 @@ test("야간 · 휴일근무수당은 근무시간 칸을 분으로 싣는다 �
     ],
     invalid: [],
   });
-  assert.deepEqual(saveItems([night], texts, new Map([[104, "2.3"]])).invalid, ["야간수당 시간"]);
-  assert.equal(parseHours("2."), 120);
+  // 끝이 점인 「2.」은 치다 만 값 — 2시간으로 받지 않고 잘못된 입력(PR #336 재검사)
+  assert.deepEqual(saveItems([night], texts, new Map([[104, "2."]])).invalid, ["야간수당 시간"]);
+  assert.ok(Number.isNaN(parseHours("2.")));
   assert.equal(parseHours(".5"), 30);
+  assert.equal(parseHours("2.5"), 150);
+  // 「2.3」은 분으로 받고(138분) 0.5시간 단위 검사가 막는다
+  assert.equal(parseHours("2.3"), 138);
+  assert.deepEqual(saveItems([night], texts, new Map([[104, "2.3"]])).invalid, []);
+  assert.deepEqual(notHalfHours([night, holiday], new Map([[104, "2.3"], [105, "2.5"]])), ["야간수당"]);
+  assert.deepEqual(notHalfHours([night], new Map([[104, "2."]])), []);
+  // 아주 긴 숫자(Infinity)는 잘못된 입력 — 스냅샷이 빈 칸과 같아지지 않게
+  const huge = "9".repeat(400);
+  assert.ok(Number.isNaN(parseHours(huge)));
+  assert.ok(Number.isNaN(parseAmount(huge)));
+  assert.equal(parseAmount("9".repeat(20)), 1e20);
+  assert.notEqual(editSnapshot([night], texts, new Map([[104, huge]]), true, false), editSnapshot([night], texts, new Map([[104, ""]]), true, false));
+  assert.notEqual(editSnapshot([night], new Map([[104, huge]]), new Map(), true, false), editSnapshot([night], new Map([[104, ""]]), new Map(), true, false));
   assert.ok(Number.isNaN(parseHours(".")));
   assert.equal(parseHours(" "), null);
   assert.ok(Number.isNaN(parseHours("-1")));
   assert.equal(hoursTextOf(90), "1.5");
   assert.equal(hoursTextOf(null), "");
   // 칸은 숫자와 .0 · .5 만 받는다
-  assert.ok(HOURS_INPUT.test("12.5") && HOURS_INPUT.test("3.") && HOURS_INPUT.test(""));
-  assert.ok(!HOURS_INPUT.test("1.3") && !HOURS_INPUT.test("1.55") && !HOURS_INPUT.test("a"));
+  // 치는 중에는 소수 자리를 묻지 않는다 — 「2.3」의 「3」을 거부하면 「2.」가 남았다
+  assert.ok(HOURS_INPUT.test("12.5") && HOURS_INPUT.test("3.") && HOURS_INPUT.test("") && HOURS_INPUT.test("2.3") && HOURS_INPUT.test(".5"));
+  assert.ok(!HOURS_INPUT.test("1.2.3") && !HOURS_INPUT.test("-1") && !HOURS_INPUT.test("a"));
   // 744시간(api 와 같은 한 달 상한)까지 — 넘으면 화면이 이름을 모아 막는다
   assert.deepEqual(overHours([night, holiday, lines[1]], new Map([[104, "744"], [105, "744.5"]])), ["휴일근무수당"]);
   assert.equal(HOURS_MAX_MINUTES, 44_640);

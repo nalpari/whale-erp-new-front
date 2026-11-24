@@ -35,9 +35,11 @@ import {
   editSnapshot,
   hasHours,
   HOURS_INPUT,
+  HOURS_MAX_LENGTH,
   hoursTextOf,
   loadedHoursAmount,
   nextRecheckMs,
+  notHalfHours,
   overHours,
   parseHours,
   RECHECK_FIRST_MS,
@@ -140,6 +142,7 @@ function AmountField({
               <TextField
                 value={hours.value}
                 inputMode="decimal"
+                maxLength={HOURS_MAX_LENGTH}
                 placeholder={readOnly ? undefined : "시간"}
                 readOnly={readOnly}
                 aria-label={`${label} 근무시간(시간)`}
@@ -473,6 +476,8 @@ export function PayslipReview({
   const save = () => {
     const { items: amounts, invalid } = saveItems(items, texts, hours);
     if (invalid.length > 0) return setFailure({ ok: false, message: `숫자만 넣어 주세요: ${invalid.join(", ")}` });
+    const half = notHalfHours(items, hours);
+    if (half.length > 0) return setFailure({ ok: false, message: `근무시간은 0.5시간 단위로 넣어 주세요: ${half.join(", ")}` });
     const over = overHours(items, hours);
     if (over.length > 0) return setFailure({ ok: false, message: `근무시간은 744시간까지 넣을 수 있습니다: ${over.join(", ")}` });
     run(

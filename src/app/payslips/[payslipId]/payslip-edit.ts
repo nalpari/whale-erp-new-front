@@ -10,17 +10,40 @@ export const hasHours = (item: Pick<PayslipItem, "itemCode">) => HOURS_ITEM_CODE
 /** 근무시간 칸 글자 — 시간(0.5 단위)으로 보인다. 분이 없으면 빈 칸 */
 export const hoursTextOf = (minutes: number | null) => (minutes === null ? "" : String(minutes / 60));
 
-/** 근무시간 칸이 받는 글자 — 숫자와 소수 .0 · .5 만(0.5시간 단위). 치는 중인 「2.」 · 「.5」도 받는다 */
-export const HOURS_INPUT = /^\d*(\.[05]?)?$/;
+/**
+ * 근무시간 칸이 받는 글자 — 숫자와 점 하나, 소수 자리 수는 묻지 않는다. 치는 중에 「2.3」의 「3」을 거부하면 「2.」가 남아 2시간으로 저장됐다
+ * (PR #336 재검사). 0.5시간 단위인지는 저장 전에 본다(notHalfHours)
+ */
+export const HOURS_INPUT = /^\d*(\.\d*)?$/;
+
+/** 근무시간 칸 글자 수 상한 — 「744.5」가 다섯 자라 넉넉히 여섯. 더 긴 값은 붙여 넣어도 잘려 상한(744시간) 검사에 걸린다 */
+export const HOURS_MAX_LENGTH = 6;
 
 /** 근무시간 상한(분) — 한 달 31일 × 24시간 = 744시간. api 수정 DTO(PAYSLIP_WORK_MINUTES_MAX)와 같다 */
 export const HOURS_MAX_MINUTES = 31 * 24 * 60;
 
-/** 근무시간 칸 → 분. 빈 칸은 null, 0.5시간 단위가 아니면 NaN(「.5」 처럼 정수부가 없어도 받는다) */
+/**
+ * 근무시간 칸 → 분. 빈 칸은 null. 숫자 모양이 아니면 NaN — 끝이 점인 「2.」도 잘못된 입력이다(치다 만 값을 2시간으로 받지 않는다,
+ * PR #336 재검사). 「.5」 처럼 정수부가 없어도 받는다. 아주 긴 숫자처럼 유한하지 않은 값도 NaN — Infinity 는 JSON 에서 null 이 되어
+ * 바뀜 스냅샷이 빈 칸과 같아졌다. 0.5시간 단위가 아닌 값(「2.3」 → 138분)은 분으로 돌려주고 notHalfHours 가 막는다.
+ */
 export function parseHours(text: string): number | null {
   const t = text.trim();
   if (t === "") return null;
-  return /^(\d+(\.[05]?)?|\.[05])$/.test(t) ? Math.round(Number(t) * 60) : Number.NaN;
+  if (!/^(\d+(\.\d+)?|\.\d+)$/.test(t)) return Number.NaN;
+  const minutes = Math.round(Number(t) * 60);
+  return Number.isFinite(minutes) ? minutes : Number.NaN;
+}
+
+/** 근무시간이 0.5시간(30분) 단위가 아닌 칸의 이름 — 임시저장 전에 화면이 막는다(api 도 400) */
+export function notHalfHours(lines: readonly PayslipItem[], hours: ReadonlyMap<number, string>): string[] {
+  return lines
+    .filter((l) => {
+      if (!hasHours(l)) return false;
+      const minutes = parseHours(hours.get(l.payslipItemId) ?? "");
+      return minutes !== null && !Number.isNaN(minutes) && minutes % 30 !== 0;
+    })
+    .map((l) => l.itemName);
 }
 
 /** 근무시간이 상한(744시간)을 넘는 칸의 이름 — 임시저장 전에 화면이 막는다(api 400 과 같은 범위) */
