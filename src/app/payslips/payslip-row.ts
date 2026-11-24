@@ -109,7 +109,8 @@ export function earningFormula(
   const hours = item.itemCode === "NIGHT_WORK_PAY" || item.itemCode === "HOLIDAY_WORK_PAY";
   if (hours && hoursMinutes !== undefined && hoursMinutes !== item.workMinutes)
     return hoursMinutes === null || Number.isNaN(hoursMinutes) ? null : `${(hoursMinutes / 60).toFixed(1)}시간`;
-  return item.calculationText;
+  // 응답에 칸이 없는 옛 api(undefined)도 식 없음으로
+  return item.calculationText ?? null;
 }
 
 /**

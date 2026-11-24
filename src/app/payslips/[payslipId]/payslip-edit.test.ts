@@ -15,6 +15,7 @@ import {
   saveItems,
   editSnapshot,
   HOURS_INPUT,
+  missingHours,
   notHalfHours,
   HOURS_MAX_MINUTES,
   hoursTextOf,
@@ -98,6 +99,14 @@ test("야간 · 휴일근무수당은 근무시간 칸을 분으로 싣는다 �
   assert.ok(Number.isNaN(parseHours("-1")));
   assert.equal(hoursTextOf(90), "1.5");
   assert.equal(hoursTextOf(null), "");
+  // 응답에 칸이 없는 옛 api — 「NaN」이 아니라 빈 칸(최종 게이트)
+  assert.equal(hoursTextOf(undefined), "");
+  // 금액이 있는데 시간이 빈 칸만 확정 전에 막는다 — 0원 · 빈 금액 · 시간 있는 칸은 아니다
+  assert.deepEqual(
+    missingHours([night, holiday], new Map([[104, "30,000"], [105, "0"]]), new Map([[104, ""], [105, ""]])),
+    ["야간수당"],
+  );
+  assert.deepEqual(missingHours([night, holiday], new Map([[104, "30,000"], [105, ""]]), new Map([[104, "2"]])), []);
   // 칸은 숫자와 .0 · .5 만 받는다
   // 치는 중에는 소수 자리를 묻지 않는다 — 「2.3」의 「3」을 거부하면 「2.」가 남았다
   assert.ok(HOURS_INPUT.test("12.5") && HOURS_INPUT.test("3.") && HOURS_INPUT.test("") && HOURS_INPUT.test("2.3") && HOURS_INPUT.test(".5"));

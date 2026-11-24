@@ -37,6 +37,7 @@ import {
   HOURS_INPUT,
   hoursTextOf,
   loadedHoursAmount,
+  missingHours,
   nextRecheckMs,
   notHalfHours,
   overHours,
@@ -406,6 +407,8 @@ export function PayslipReview({
   // 야간 · 휴일근무수당 근무시간 칸의 지금 값(분) — 도움말이 저장된 「2.0시간」 대신 지금 입력을 따르게(PR #336 재검사)
   const hoursOf = (item: PayslipItem) => (hasHours(item) ? parseHours(hours.get(item.payslipItemId) ?? "") : undefined);
   const formulaOf = (item: PayslipItem) => earningFormula(item, premium, payslip.isPremiumApplied, hoursOf(item));
+  // 금액이 있는데 근무시간이 빈 야간 · 휴일근무수당 — 공제 미입력처럼 확정 전에 막는다(api 422 WORK_HOURS_MISSING 과 같은 판정)
+  const hoursMissing = missingHours(items, texts, hours);
   const field = (item: PayslipItem, help: string) => (
     <AmountField
       key={item.payslipItemId}
@@ -765,7 +768,7 @@ export function PayslipReview({
         title="급여명세서를 확정하시겠습니까?"
         confirmLabel="확정"
         busy={busy}
-        confirmDisabled={dirty || totals.blankDeductions > 0}
+        confirmDisabled={dirty || totals.blankDeductions > 0 || hoursMissing.length > 0}
         onConfirm={() => run(() => confirmOne(payslip.payslipId, payslip.updatedAt), "확정되었습니다.")}
         onCancel={close}
       >
@@ -773,7 +776,9 @@ export function PayslipReview({
           ? "저장하지 않은 바뀐 내용이 있습니다. 임시저장한 뒤 확정해 주세요."
           : totals.blankDeductions > 0
             ? "입력하지 않은 공제 항목이 있어 확정할 수 없습니다. 공제 대상이 아닌 항목에는 0을 입력해 주세요."
-            : `확정하면 수정할 수 없습니다. 확정 취소하면 검토 중으로 돌아옵니다. 발송은 이 화면의 「발송」이나 급여명세서 목록에서 확정 건을 모아 보냅니다.${
+            : hoursMissing.length > 0
+              ? `근무시간이 없어 확정할 수 없습니다: ${hoursMissing.join(", ")}. 야간 · 휴일근무수당은 근무시간을 함께 입력해 주세요.`
+              : `확정하면 수정할 수 없습니다. 확정 취소하면 검토 중으로 돌아옵니다. 발송은 이 화면의 「발송」이나 급여명세서 목록에서 확정 건을 모아 보냅니다.${
                 band ? " 검토 사유는 확인한 것으로 남고, 확정 취소하면 다시 검토 대기가 됩니다." : ""
               }`}
         {failureText}

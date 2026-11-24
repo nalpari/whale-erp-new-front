@@ -7,8 +7,8 @@ import { formatAmount, parseAmount, type PayslipAdditionalItem, type PayslipItem
 export const HOURS_ITEM_CODES: readonly string[] = ["NIGHT_WORK_PAY", "HOLIDAY_WORK_PAY"];
 export const hasHours = (item: Pick<PayslipItem, "itemCode">) => HOURS_ITEM_CODES.includes(item.itemCode);
 
-/** 근무시간 칸 글자 — 시간(0.5 단위)으로 보인다. 분이 없으면 빈 칸 */
-export const hoursTextOf = (minutes: number | null) => (minutes === null ? "" : String(minutes / 60));
+/** 근무시간 칸 글자 — 시간(0.5 단위)으로 보인다. 분이 없으면 빈 칸 — 응답에 칸이 없는 옛 api(undefined)도 「NaN」 대신 빈 칸(최종 게이트) */
+export const hoursTextOf = (minutes: number | null | undefined) => (minutes == null ? "" : String(minutes / 60));
 
 /**
  * 근무시간 칸이 받는 글자 — 숫자와 점 하나, 소수는 한 자리까지(0.5시간 단위라 둘째 자리가 필요 없다). 치는 중에 「2.3」은 받아 두고
@@ -32,6 +32,20 @@ export function parseHours(text: string): number | null {
   if (!/^(\d+(\.\d)?|\.\d)$/.test(t)) return Number.NaN; // 소수 한 자리까지(HOURS_INPUT) — 분이 늘 6의 배수라 반올림이 없다
   const minutes = Math.round(Number(t) * 60);
   return Number.isFinite(minutes) ? minutes : Number.NaN;
+}
+
+/**
+ * 금액이 있는데 근무시간이 빈 야간 · 휴일근무수당 칸의 이름 — 확정 전에 화면이 막는다(api 422 WORK_HOURS_MISSING 과 같은 판정, 공제 미입력과 같은
+ * 방식). 임시저장은 이 칸을 막지만, 옛 관리자 화면 · 2026-11-24 전 명세서는 시간 없이 저장돼 있을 수 있다(최종 게이트)
+ */
+export function missingHours(lines: readonly PayslipItem[], texts: ReadonlyMap<number, string>, hours: ReadonlyMap<number, string>): string[] {
+  return lines
+    .filter((l) => {
+      if (!hasHours(l)) return false;
+      const amount = parseAmount(texts.get(l.payslipItemId) ?? "");
+      return amount !== null && amount > 0 && parseHours(hours.get(l.payslipItemId) ?? "") === null;
+    })
+    .map((l) => l.itemName);
 }
 
 /** 근무시간이 0.5시간(30분) 단위가 아닌 칸의 이름 — 임시저장 전에 화면이 막는다(api 도 400) */

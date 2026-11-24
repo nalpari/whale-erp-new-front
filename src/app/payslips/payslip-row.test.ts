@@ -70,6 +70,10 @@ test("지급 도움말 — api 의 한 줄 계산식이 있으면 「계산값�
   assert.equal(earningHelp(night, false, false, 210), "3.5시간 · 가산 대상 아님 · 넣어도 가산하지 않는다.");
   assert.equal(earningFormula(night, true, true, 210), "3.5시간");
   assert.equal(earningFormula(night, true, true, null), null);
+  // 응답에 칸이 없는 옛 api — 식 없음으로, 도움말은 전처럼
+  const old = { ...item, calculationText: undefined, workMinutes: undefined } as unknown as typeof item;
+  assert.equal(earningFormula(old, true, true), null);
+  assert.equal(earningHelp(old, true, true), "계산값");
   // 식이 없으면(2026-11-24 전 명세서) 지금처럼
   assert.equal(earningHelp({ ...formula, calculationText: null }, true), "계산값");
 });
