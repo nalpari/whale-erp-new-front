@@ -7753,6 +7753,13 @@ export interface components {
             adjustedAmount: number | null;
             /** @description 입력 여부 — 공제 미입력과 0 을 가른다 */
             isEntered: boolean;
+            /** @description 계산 · 입력에 쓴 시간(분) — 기본급(파트타이머) · 주휴 · 연장은 계산 때, 야간 · 휴일근무수당은 관리자가 넣은 값. 없으면 null(WHALEERP-755) */
+            workMinutes: number | null;
+            /**
+             * @description 한 줄 계산식(「8.0시간 × 10,320원 × 1.5배」, WHALEERP-755). 관리자가 계산값과 다른 금액으로 고치면 「직접 입력」(연장수당은
+             *     「8.0시간 · 직접 입력」), 야간 · 휴일근무수당은 「2.0시간」. 계산하지 않은 줄 · 2026-11-24 전에 만든 줄은 null
+             */
+            calculationText: string | null;
         };
         PayslipReviewReasonDto: {
             reviewReason: components["schemas"]["PayslipReviewReason"];
@@ -7872,6 +7879,13 @@ export interface components {
         PayslipItemAmountDto: {
             /** @description 원, 0 이상. null 이면 미입력 — 시스템 계산 항목은 계산값으로 돌아간다 */
             amount: number | null;
+            /**
+             * @description 근무시간(분), 0 이상 — 야간수당 · 휴일근무수당만 쓰고 다른 줄은 무시한다(WHALEERP-755). 그 두 줄은 30분 단위이고 금액이 0보다
+             *     크면 함께 넣어야 한다(아니면 400 — 서비스가 본다. 다른 줄에 실린 값까지 30분 단위로 막지 않게, PR #317 리뷰). null 이면 시간
+             *     없음. 키를 빼면(근무시간 칸이 없는 옛 관리자 화면) 그 줄의 저장된 시간을 그대로 두고 위 검사도 하지 않는다 — 시간 없이 금액이
+             *     남으면 확정이 422 WORK_HOURS_MISSING 으로 막는다
+             */
+            workMinutes?: number | null;
             payslipItemMasterId: number;
         };
         SavePayslipDto: {
@@ -7960,6 +7974,10 @@ export interface components {
             calculatedAmount: number | null;
             adjustedAmount: number | null;
             isEntered: boolean;
+            /** @description 계산 · 입력에 쓴 시간(분). 없으면 null(WHALEERP-755) */
+            workMinutes: number | null;
+            /** @description 한 줄 계산식 — 관리자 상세와 같은 글자(「8.0시간 × 10,320원 × 1.5배」 · 「직접 입력」). 없으면 null(WHALEERP-755) */
+            calculationText: string | null;
         };
         MyPayslipDetailResponseDto: {
             employmentType: components["schemas"]["EmploymentType"];
@@ -10225,7 +10243,7 @@ export interface components {
             createdByName: string | null;
             /**
              * Format: date-time
-             * @description 최종수정 일시 — 관리자 [수정] 때만. 고친 적이 없으면 null(상세에 줄이 없다). 상태 변경은 바꾸지 않는다 (WHALEERP-698)
+             * @description 최종수정 일시 — 관리자 [수정] 때만. 고친 적이 없으면 null(상세는 줄을 두고 「-」로 보인다). 상태 변경은 바꾸지 않는다 (WHALEERP-698)
              */
             modifiedAt: string | null;
             /** @description 최종수정 관리자 이름 — createdByName 과 같은 규칙 */
@@ -11051,7 +11069,13 @@ export interface components {
              *     false 면 고치기 · 처음 넣기(`PUT`)가 409 STAFF_RETIRED 다.
              */
             editable: boolean;
-            /** @description 이 소속에 낸 신고 정보. 아직 내지 않았으면 null */
+            /**
+             * @description 보존 기간(퇴직 + 3년, 운영 정책 RET-01 · TAX-08)이 지났는지 — 퇴직일이 파기 배치와 같은 기준(`retiredBefore`)보다 앞이면 true 이고
+             *     그때 taxProfile 은 늘 null 이다(배치가 이미 지웠든 배치 전이든). 화면은 이것으로 「넣은 적 없음」과 「보존 기간이 지나 지움」을
+             *     가른다(WHALEERP-772). 퇴직하지 않았거나 기한 안이면 false
+             */
+            expired: boolean;
+            /** @description 이 소속에 낸 신고 정보. 아직 내지 않았거나 보존 기간이 지났으면(expired) null */
             taxProfile: components["schemas"]["MyTaxProfileDto"] | null;
         };
         SaveMyTaxProfileDto: {
@@ -18185,7 +18209,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description PERIOD_NOT_ENDED — 확정할 수 있는 날(퇴직일 · 마지막 계약 종료일 · 급여 기간 마지막 날 가운데 가장 빠른 날의 다음 날, 그 계약의 보낸 갱신(작성 중 제외)이 기간 안에 시작하면 계약 종료일은 보지 않는다) 전 · DEDUCTION_MISSING — 비어 있는 공제(본문 items) */
+            /** @description PERIOD_NOT_ENDED — 확정할 수 있는 날(퇴직일 · 마지막 계약 종료일 · 급여 기간 마지막 날 가운데 가장 빠른 날의 다음 날, 그 계약의 보낸 갱신(작성 중 제외)이 기간 안에 시작하면 계약 종료일은 보지 않는다) 전 · DEDUCTION_MISSING — 비어 있는 공제(본문 items) · WORK_HOURS_MISSING — 금액이 있는데 근무시간이 빈 야간 · 휴일근무수당(본문 items) */
             422: {
                 headers: {
                     [name: string]: unknown;

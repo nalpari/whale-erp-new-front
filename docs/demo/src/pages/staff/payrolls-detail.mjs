@@ -11,16 +11,22 @@ export default ({ A, R }) => {
   const confirmId = x.dialogId();
   const attendanceHref = L("staff/attendance-period.html");
 
-  // 금액 칸(앱 AmountField) — 「직접 입력」 · 「비과세」 안내는 두지 않고, 계산값 안내는 칸 아래 황토 글자 + 둥근 꺾은선
+  // 금액 칸(앱 AmountField) — 「직접 입력」 · 「비과세」 안내는 두지 않고, 계산값 · api 계산식(WHALEERP-755) 안내는 칸 아래 황토 글자 + 둥근 꺾은선.
+  // 야간 · 휴일근무수당은 금액 옆에 근무시간 칸(64px, 뒤에 「h」, 0.5시간 단위)
   const HELP = "text-[12px] leading-[1.5] text-erp-muted";
-  const amount = (label, value, help = "") => {
-    const control = value === null ? ui.textField({ placeholder: "직접 입력", inputmode: "numeric" }) : ui.textField({ value, inputmode: "numeric" });
+  const amount = (label, value, help = "", { formula = false, hours } = {}) => {
+    const input = value === null ? ui.textField({ placeholder: "직접 입력", inputmode: "numeric" }) : ui.textField({ value, inputmode: "numeric" });
+    const hoursField = ui.textField({ ...(hours ? { value: hours } : { placeholder: "시간" }), inputmode: "decimal", "aria-label": `${label} 근무시간(시간)` });
+    const control =
+      hours === undefined
+        ? ui.field(label, input, "w-full")
+        : `<div class="flex items-end gap-[6px]">${ui.field(label, input)}<label class="flex shrink-0 items-center gap-[4px]"><span class="w-[64px]">${hoursField}</span><span aria-hidden="true" class="text-[14px] text-erp-label">h</span></label></div>`;
     const helpHtml = !help
       ? ""
-      : help.includes("계산값")
+      : formula || help.includes("계산값")
         ? `<span class="flex gap-[6px] ${HELP}"><span class="flex flex-1 items-start gap-[4px] text-[#956013]"><span aria-hidden="true" class="mt-[2px] ml-[4px] size-[7px] shrink-0 rounded-bl-[4px] border-b border-l border-[#956013]"></span>${help}</span></span>`
         : `<span class="${HELP}">${help}</span>`;
-    return `<div class="relative flex min-w-px flex-1 flex-col gap-[8px] self-start">${ui.field(label, control, "w-full")}${helpHtml}</div>`;
+    return `<div class="relative flex min-w-px flex-1 flex-col gap-[8px] self-start">${control}${helpHtml}</div>`;
   };
   // 금액 칸은 한 줄 세 칸(칸 사이 24px)
   const rows = (...fields) => `<div class="grid grid-cols-3 gap-x-[24px] gap-y-[16px]">${fields.join("")}</div>`;
@@ -65,11 +71,13 @@ export default ({ A, R }) => {
       ),
     },
     rows(
-      amount("기본급", "2,840,000", "계산값 2,840,310 을 2,840,000 으로 고침"),
-      amount("주휴수당", "0", "계산값"),
-      amount("연장수당", "128,000", "계산값 96,000 을 128,000 으로 고침"),
-      amount("야간수당", "0"),
-      amount("휴일근무수당", "0"),
+      // api 의 한 줄 계산식(WHALEERP-755) — 고친 칸은 「직접 입력」(연장수당은 시간을 앞에) 뒤에 고친 내용, 정직원 주휴는 「기본급에 포함」.
+      // 야간 · 휴일근무수당은 시간을 넣으면 「2.0시간」이 서고, 금액이 있는데 시간이 비면 저장이 막힌다
+      amount("기본급", "2,840,000", "직접 입력 · 계산값 2,840,310 을 2,840,000 으로 고침", { formula: true }),
+      amount("주휴수당", "0", "기본급에 포함", { formula: true }),
+      amount("연장수당", "128,000", "4.7시간 · 직접 입력 · 계산값 96,000 을 128,000 으로 고침", { formula: true }),
+      amount("야간수당", "0", "", { hours: "" }),
+      amount("휴일근무수당", "0", "", { hours: "" }),
       amount("추가근무수당", "0"),
       amount("연차수당", "0"),
       amount("상여", "0"),

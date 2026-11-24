@@ -1,7 +1,7 @@
 // node --test "src/app/payslips/[payslipId]/payslip-edit.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { PayslipItem, PayslipPrevious } from "../../../lib/payslips.ts";
+import { parseAmount, type PayslipItem, type PayslipPrevious } from "../../../lib/payslips.ts";
 import {
   addAdditionalLine,
   applyPrevious,
@@ -13,6 +13,15 @@ import {
   RECHECK_MAX_MS,
   removeLine,
   saveItems,
+  editSnapshot,
+  HOURS_INPUT,
+  missingHours,
+  notHalfHours,
+  HOURS_MAX_MINUTES,
+  hoursTextOf,
+  loadedHoursAmount,
+  overHours,
+  parseHours,
 } from "./payslip-edit.ts";
 
 const item = (over: Partial<PayslipItem>): PayslipItem => ({
@@ -25,6 +34,8 @@ const item = (over: Partial<PayslipItem>): PayslipItem => ({
   calculatedAmount: null,
   adjustedAmount: null,
   isEntered: false,
+  workMinutes: null,
+  calculationText: null,
   ...over,
 });
 
@@ -49,6 +60,90 @@ test("임시저장 본문 — 줄마다 급여 항목 id 와 금액(빈 칸은 n
     invalid: [],
   });
   assert.deepEqual(saveItems(lines, new Map([[108, "12a"]])).invalid, ["상여"]);
+});
+
+test("야간 · 휴일근무수당은 근무시간 칸을 분으로 싣는다 — 0.5시간 단위, 빈 칸은 null(WHALEERP-755)", () => {
+  const night = item({ payslipItemId: 104, payslipItemMasterId: 4, itemCode: "NIGHT_WORK_PAY", itemName: "야간수당" });
+  const holiday = item({ payslipItemId: 105, payslipItemMasterId: 5, itemCode: "HOLIDAY_WORK_PAY", itemName: "휴일근무수당" });
+  const texts = new Map([
+    [104, "30,000"],
+    [105, ""],
+  ]);
+  assert.deepEqual(saveItems([night, holiday, lines[1]], texts, new Map([[104, "2.5"]])), {
+    items: [
+      { payslipItemMasterId: 4, amount: 30_000, workMinutes: 150 },
+      { payslipItemMasterId: 5, amount: null, workMinutes: null },
+      { payslipItemMasterId: 8, amount: null },
+    ],
+    invalid: [],
+  });
+  // 끝이 점인 「2.」은 치다 만 값 — 2시간으로 받지 않고 잘못된 입력(PR #336 재검사)
+  assert.deepEqual(saveItems([night], texts, new Map([[104, "2."]])).invalid, ["야간수당 시간"]);
+  assert.ok(Number.isNaN(parseHours("2.")));
+  assert.equal(parseHours(".5"), 30);
+  assert.equal(parseHours("2.5"), 150);
+  // 「2.3」은 분으로 받고(138분) 0.5시간 단위 검사가 막는다
+  assert.equal(parseHours("2.3"), 138);
+  assert.deepEqual(saveItems([night], texts, new Map([[104, "2.3"]])).invalid, []);
+  assert.deepEqual(notHalfHours([night, holiday], new Map([[104, "2.3"], [105, "2.5"]])), ["야간수당"]);
+  assert.deepEqual(notHalfHours([night], new Map([[104, "2."]])), []);
+  // 아주 긴 숫자(Infinity)는 잘못된 입력 — 스냅샷이 빈 칸과 같아지지 않게
+  const huge = "9".repeat(400);
+  assert.ok(Number.isNaN(parseHours(huge)));
+  assert.ok(Number.isNaN(parseAmount(huge)));
+  assert.equal(parseAmount("9".repeat(20)), 1e20);
+  assert.notEqual(editSnapshot([night], texts, new Map([[104, huge]]), true, false), editSnapshot([night], texts, new Map([[104, ""]]), true, false));
+  assert.notEqual(editSnapshot([night], new Map([[104, huge]]), new Map(), true, false), editSnapshot([night], new Map([[104, ""]]), new Map(), true, false));
+  assert.ok(Number.isNaN(parseHours(".")));
+  assert.equal(parseHours(" "), null);
+  assert.ok(Number.isNaN(parseHours("-1")));
+  assert.equal(hoursTextOf(90), "1.5");
+  assert.equal(hoursTextOf(null), "");
+  // 응답에 칸이 없는 옛 api — 「NaN」이 아니라 빈 칸(최종 게이트)
+  assert.equal(hoursTextOf(undefined), "");
+  // 금액이 있는데 시간이 빈 칸만 확정 전에 막는다 — 0원 · 빈 금액 · 시간 있는 칸은 아니다
+  assert.deepEqual(
+    missingHours([night, holiday], new Map([[104, "30,000"], [105, "0"]]), new Map([[104, ""], [105, ""]])),
+    ["야간수당"],
+  );
+  assert.deepEqual(missingHours([night, holiday], new Map([[104, "30,000"], [105, ""]]), new Map([[104, "2"]])), []);
+  // 0 시간도 시간이 없는 것 — 금액 0 · 시간 0 은 통과(재영 리뷰)
+  assert.deepEqual(missingHours([night, holiday], new Map([[104, "30,000"], [105, "0"]]), new Map([[104, "0"], [105, "0"]])), ["야간수당"]);
+  // 칸은 숫자와 .0 · .5 만 받는다
+  // 치는 중에는 소수 자리를 묻지 않는다 — 「2.3」의 「3」을 거부하면 「2.」가 남았다
+  assert.ok(HOURS_INPUT.test("12.5") && HOURS_INPUT.test("3.") && HOURS_INPUT.test("") && HOURS_INPUT.test("2.3") && HOURS_INPUT.test(".5"));
+  assert.ok(!HOURS_INPUT.test("1.2.3") && !HOURS_INPUT.test("-1") && !HOURS_INPUT.test("a"));
+  // 소수는 한 자리까지 — 「2.499」가 반올림돼 0.5시간 검사를 지나거나, 붙여 넣은 「744.001」이 잘려 744시간이 되지 않게(PR #336 재검사)
+  assert.ok(!HOURS_INPUT.test("2.49") && !HOURS_INPUT.test("2.499") && !HOURS_INPUT.test("744.001"));
+  assert.ok(Number.isNaN(parseHours("2.499")) && Number.isNaN(parseHours("744.001")));
+  // 744시간(api 와 같은 한 달 상한)까지 — 넘으면 화면이 이름을 모아 막는다
+  assert.deepEqual(overHours([night, holiday, lines[1]], new Map([[104, "744"], [105, "744.5"]])), ["휴일근무수당"]);
+  assert.equal(HOURS_MAX_MINUTES, 44_640);
+});
+
+test("바뀜 스냅샷 — 잘못 친 근무시간 · 금액은 빈 칸과 다르게 남아 저장 전 검사를 탄다(PR #336 리뷰)", () => {
+  const night = item({ payslipItemId: 104, payslipItemMasterId: 4, itemCode: "NIGHT_WORK_PAY", itemName: "야간수당" });
+  const texts = new Map([[104, "30,000"]]);
+  const saved = editSnapshot([night], texts, new Map([[104, ""]]), true, false);
+  assert.notEqual(editSnapshot([night], texts, new Map([[104, "."]]), true, false), saved);
+  assert.notEqual(editSnapshot([night], new Map([[104, "1,2a"]]), new Map([[104, ""]]), true, false), editSnapshot([night], new Map([[104, ""]]), new Map([[104, ""]]), true, false));
+  // 같은 값이면 같다 — 스위치는 따로 본다
+  assert.equal(editSnapshot([night], texts, new Map([[104, ""]]), true, false), saved);
+  assert.notEqual(editSnapshot([night], texts, new Map([[104, ""]]), false, false), saved);
+});
+
+test("지난 명세서에서 야간 · 휴일근무수당 금액을 채웠을 때만 시간을 넣으라고 알린다(WHALEERP-755)", () => {
+  const previous = (amount: number): PayslipPrevious => ({
+    payslipId: 39,
+    periodStartDate: "2026-09-01",
+    periodEndDate: "2026-09-30",
+    items: [
+      { payslipItemMasterId: 8, itemCode: "BONUS", itemName: "상여", itemCategory: "EARNING", amount: 100_000 },
+      { payslipItemMasterId: 4, itemCode: "NIGHT_WORK_PAY", itemName: "야간수당", itemCategory: "EARNING", amount },
+    ],
+  });
+  assert.equal(loadedHoursAmount(previous(30_000)), true);
+  assert.equal(loadedHoursAmount(previous(0)), false);
 });
 
 test("추가 공제 붙이기 · 떼기 — 새 줄은 음수 임시 id(급여 항목 id 의 음수), 빈 칸으로 선다", () => {

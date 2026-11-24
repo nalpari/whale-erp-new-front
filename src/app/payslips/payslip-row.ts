@@ -62,19 +62,66 @@ export function attendanceCell(item: Pick<PayslipListItem, "isAttendanceConfirme
 /** 「발송일」 칸 — 마지막 발송 MM-DD(근로계약 목록 발송일과 같은 모양), 발송 전이면 「-」. */
 export const sentDateText = (item: Pick<PayslipListItem, "lastSentAt">) => sentText(item.lastSentAt);
 
-/** 지급 칸 아래 도움말. 데모 payrolls-detail 의 help 글자와 같다. */
-export function earningHelp(item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "calculatedAmount" | "adjustedAmount">, isPremiumApplied: boolean): string {
+/**
+ * 지급 칸 아래 도움말. 데모 payrolls-detail 의 help 글자와 같다.
+ * api 가 만든 한 줄 계산식(calculationText — 「8.0시간 × 10,320원 × 1.5배」 · 고치면 「8.0시간 · 직접 입력」 · 야간 · 휴일은 「2.0시간」)이 있으면
+ * 「계산값」 자리에 그 식을 보인다 — 직원 앱 · PDF 와 같은 글자다(WHALEERP-755). 없으면(계산하지 않음 · 2026-11-24 전 명세서) 지금처럼.
+ * isPremiumApplied 는 화면의 지금 가산 스위치, savedPremium 은 저장된 값이다. 스위치를 바꾸고 아직 저장하지 않았으면 연장수당의 저장된 식
+ * (「× 1.5배」)은 맞지 않아 보이지 않고 지금 스위치의 「가산수당 미적용 …」 · 「계산값」 글자를 쓴다 — 임시저장 때 api 가 새 식을 만든다(PR #336 리뷰).
+ * hoursMinutes 는 야간 · 휴일근무수당 근무시간 칸의 지금 값(분, 비면 null, 잘못 쳤으면 NaN)이다 — 저장값과 다르면 저장된 「2.0시간」 대신 지금
+ * 입력을 따른다(맞으면 「3.5시간」, 비었거나 잘못되면 식 없음, PR #336 재검사).
+ */
+export function earningHelp(
+  item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "calculatedAmount" | "adjustedAmount" | "calculationText" | "workMinutes">,
+  isPremiumApplied: boolean,
+  savedPremium: boolean = isPremiumApplied,
+  hoursMinutes?: number | null,
+): string {
+  const text = earningFormula(item, isPremiumApplied, savedPremium, hoursMinutes);
   // 가산을 끄면 연장수당을 가산 없이 1배로 계산하고, 관리자가 넣는 야간 · 휴일근무수당은 가산 대상이 아니다(PAY-05, 2026-10-26 재영).
   if (!isPremiumApplied && (item.itemCode === "NIGHT_WORK_PAY" || item.itemCode === "HOLIDAY_WORK_PAY"))
-    return "가산 대상 아님 · 넣어도 가산하지 않는다.";
+    // 넣은 시간(api 식 「2.0시간」)은 앞에 둔다 — 직원 앱 · PDF 와 같은 글자가 빠지지 않게(WHALEERP-755)
+    return `${text ? `${text} · ` : ""}가산 대상 아님 · 넣어도 가산하지 않는다.`;
   if (item.isTaxFree) return "비과세";
-  if (item.calculatedAmount === null) return "직접 입력";
-  // 계산값을 고쳤으면 계산값을 함께 보인다(okf/staff.md 급여). 계산 근거 글자(데모 「8.0h × 1.5배」)는 api 에 칸이 없다.
-  const calculated =
-    item.adjustedAmount !== null && item.adjustedAmount !== item.calculatedAmount
+  // 계산값을 고쳤으면 계산값을 함께 보인다(okf/staff.md 급여) — 식은 api 가 「직접 입력」으로 바꿔 준다
+  const corrected =
+    item.calculatedAmount !== null && item.adjustedAmount !== null && item.adjustedAmount !== item.calculatedAmount
       ? `계산값 ${formatAmount(item.calculatedAmount)} 을 ${formatAmount(item.adjustedAmount)} 으로 고침`
-      : "계산값";
+      : null;
+  // 식에 시간 · 시급 · 배율(가산을 끄면 「× 1배」)이 다 들어 있어 「가산수당 미적용」 머리말은 붙이지 않는다 — 세 곳이 같은 글자로 보이게
+  if (text !== null) return corrected ? `${text} · ${corrected}` : text;
+  if (item.calculatedAmount === null) return "직접 입력";
+  const calculated = corrected ?? "계산값";
   return !isPremiumApplied && item.itemCode === "OVERTIME_PAY" ? `가산수당 미적용 · 1배로 계산 · ${calculated}` : calculated;
+}
+
+/**
+ * 시간 글자 — api 계산식의 hoursText(src/payslips/pay-calculation.ts)와 같은 규칙: 분이 6의 배수면 「7.8시간」 · 「2.0시간」, 아니면
+ * 「7시간 50분」 · 「31분」(재영 리뷰, WHALEERP-755). 저장된 글자는 api 가 만들고, 화면은 저장 전 지금 입력을 보일 때만 이것을 쓴다.
+ */
+export function hoursLabel(minutes: number): string {
+  const m = Math.round(minutes);
+  if (m % 6 === 0) return `${(m / 60).toFixed(1)}시간`;
+  const h = Math.floor(m / 60);
+  return h > 0 ? `${h}시간 ${m % 60}분` : `${m % 60}분`;
+}
+
+/**
+ * 도움말에 보일 계산식 — 저장된 calculationText 가 화면의 지금 값(가산 스위치 · 근무시간 칸)과 맞을 때만, 근무시간 칸을 바꿨으면 그 값의
+ * 「N.N시간」(earningHelp 참고). 화면이 이 글자를 계산식 모양(둥근 꺾은선 · 황토)으로 그린다.
+ */
+export function earningFormula(
+  item: Pick<PayslipItem, "itemCode" | "calculationText" | "workMinutes">,
+  isPremiumApplied: boolean,
+  savedPremium: boolean = isPremiumApplied,
+  hoursMinutes?: number | null,
+): string | null {
+  if (item.itemCode === "OVERTIME_PAY" && isPremiumApplied !== savedPremium) return null;
+  const hours = item.itemCode === "NIGHT_WORK_PAY" || item.itemCode === "HOLIDAY_WORK_PAY";
+  if (hours && hoursMinutes !== undefined && hoursMinutes !== item.workMinutes)
+    return hoursMinutes === null || Number.isNaN(hoursMinutes) ? null : hoursLabel(hoursMinutes);
+  // 응답에 칸이 없는 옛 api(undefined)도 식 없음으로
+  return item.calculationText ?? null;
 }
 
 /**

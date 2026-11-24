@@ -16,7 +16,7 @@ import {
   type PayslipDetail,
   type PayslipItem,
 } from "@/lib/payslips";
-import { earningHelp, retirementCell, sortDeductions, STATUS_STYLE } from "../payslip-row";
+import { earningFormula, earningHelp, retirementCell, sortDeductions, STATUS_STYLE } from "../payslip-row";
 import {
   cancelPayslipConfirmation,
   recalculatePayslip,
@@ -33,7 +33,16 @@ import {
   applyPrevious,
   blockedRecheck,
   confirmBlockedUntil,
+  editSnapshot,
+  hasHours,
+  HOURS_INPUT,
+  hoursTextOf,
+  loadedHoursAmount,
+  missingHours,
   nextRecheckMs,
+  notHalfHours,
+  overHours,
+  parseHours,
   RECHECK_FIRST_MS,
   removeLine,
   saveItems,
@@ -61,6 +70,8 @@ function AmountField({
   label,
   value,
   help,
+  formula: isFormula = false,
+  hours,
   readOnly,
   onChange,
   onRemove,
@@ -68,6 +79,10 @@ function AmountField({
   label: string;
   value: string;
   help: string;
+  /** 도움말이 api 의 계산식(calculationText)이다(WHALEERP-755) */
+  formula?: boolean;
+  /** 금액 옆 근무시간 칸(시간 글자) — 야간 · 휴일근무수당(WHALEERP-755) */
+  hours?: { value: string; onChange: (text: string) => void };
   readOnly: boolean;
   onChange: (text: string) => void;
   /** 붙인 추가 공제를 뗀다(고칠 수 있을 때만) */
@@ -75,9 +90,31 @@ function AmountField({
 }) {
   const invalid = Number.isNaN(parseAmount(value));
   // 칸 아래 글자 정리(2026-11-19 사용자 지정) — 「직접 입력」은 칸 안 안내와, 「비과세」는 묶음 제목 「지급 · 비과세」와 같은 말이라 두지 않는다.
-  // 계산값(출퇴근 기록으로 api 가 셈한 값)은 근로계약서 작성의 계산식처럼 둥근 꺾은선 · 황토 글자(#956013)로 보인다
+  // 계산값(출퇴근 기록으로 api 가 셈한 값)과 api 의 한 줄 계산식은 근로계약서 작성의 계산식처럼 둥근 꺾은선 · 황토 글자(#956013)로 보인다
   const shownHelp = help === "직접 입력" || help === "비과세" ? "" : help;
-  const formula = shownHelp.includes("계산값");
+  const formula = isFormula || shownHelp.includes("계산값");
+  const amountField = (
+    <Field label={label}>
+      <TextField
+        value={value}
+        inputMode="numeric"
+        placeholder={readOnly ? undefined : "직접 입력"}
+        readOnly={readOnly}
+        aria-invalid={invalid || undefined}
+        // 숫자와 쉼표만 받는다(화면 설계 공통 기준 1번 — 저장 때 칸 오류가 생기지 않게, WHALEERP-633). 붙여 넣은 「원」 · 「₩」 · 공백은 떼고, 그 밖의
+        // 글자가 섞인 입력은 통째로 받지 않는다 — 글자만 지우면 「1,000.50」이 「100050」처럼 다른 금액이 된다
+        onChange={(e) => {
+          const text = e.target.value.replace(/[\s원₩]/g, "");
+          if (/^[\d,]*$/.test(text)) onChange(text);
+        }}
+        // 다 친 뒤에 쉼표를 넣는다 — 치는 중에 넣으면 커서가 끝으로 튄다
+        onBlur={(e) => {
+          const amount = parseAmount(e.target.value);
+          if (amount !== null && !Number.isNaN(amount)) onChange(formatAmount(amount));
+        }}
+      />
+    </Field>
+  );
   return (
     // 칸 아래 글자가 있는 칸과 없는 칸이 한 줄에 서도 칸 위쪽이 맞게 위로 붙인다(self-start)
     // [빼기]가 있으면 이름 줄 오른쪽에 그만큼 비운다 — 긴 항목 이름(연말(중도)정산 소득세)이 버튼 밑으로 들어갔다(코드 리뷰)
@@ -94,26 +131,35 @@ function AmountField({
           빼기
         </button>
       )}
-      <Field label={label}>
-        <TextField
-          value={value}
-          inputMode="numeric"
-          placeholder={readOnly ? undefined : "직접 입력"}
-          readOnly={readOnly}
-          aria-invalid={invalid || undefined}
-          // 숫자와 쉼표만 받는다(화면 설계 공통 기준 1번 — 저장 때 칸 오류가 생기지 않게, WHALEERP-633). 붙여 넣은 「원」 · 「₩」 · 공백은 떼고, 그 밖의
-          // 글자가 섞인 입력은 통째로 받지 않는다 — 글자만 지우면 「1,000.50」이 「100050」처럼 다른 금액이 된다
-          onChange={(e) => {
-            const text = e.target.value.replace(/[\s원₩]/g, "");
-            if (/^[\d,]*$/.test(text)) onChange(text);
-          }}
-          // 다 친 뒤에 쉼표를 넣는다 — 치는 중에 넣으면 커서가 끝으로 튄다
-          onBlur={(e) => {
-            const amount = parseAmount(e.target.value);
-            if (amount !== null && !Number.isNaN(amount)) onChange(formatAmount(amount));
-          }}
-        />
-      </Field>
+      {/* 야간 · 휴일근무수당은 금액 옆에 근무시간 칸(64px, 뒤에 단위 「h」, 0.5시간 단위) — 임금명세서에 시간 수를 함께 적어야 한다(WHALEERP-755).
+          저장 때 분으로 보낸다. 금액이 있는데 비우면 api 가 막는다. 감싸는 div 는 근무시간 칸이 있는 줄에만 둔다 — 다른 줄은 금액 칸(label)이
+          바깥 div 의 바로 아래 자식이어야 [빼기] 자리 선택자(&>label>span:first-child)가 먹는다. display: contents 는 상자만 없애고 DOM 계층은
+          그대로라, 모든 줄을 감쌌을 때 긴 추가 공제 이름이 버튼 밑으로 들어갔다(PR #336 재검사). 다른 줄의 DOM 은 감싸기 전과 같다 */}
+      {hours ? (
+        <div className="flex items-end gap-[6px]">
+          {amountField}
+          <label className="flex shrink-0 items-center gap-[4px]">
+            <span className="w-[64px]">
+              <TextField
+                value={hours.value}
+                inputMode="decimal"
+                placeholder={readOnly ? undefined : "시간"}
+                readOnly={readOnly}
+                aria-label={`${label} 근무시간(시간)`}
+                onChange={(e) => {
+                  const text = e.target.value.trim();
+                  if (HOURS_INPUT.test(text)) hours.onChange(text);
+                }}
+              />
+            </span>
+            <span aria-hidden className="text-[14px] text-erp-label">
+              h
+            </span>
+          </label>
+        </div>
+      ) : (
+        amountField
+      )}
       {shownHelp && (
         <span className={`flex gap-[6px] ${HELP}`}>
           {formula ? (
@@ -306,11 +352,13 @@ export function PayslipReview({
   const [items, setItems] = useState(payslip.items);
   const [texts, setTexts] = useState(() => new Map(payslip.items.map((i) => [i.payslipItemId, textOf(itemAmount(i))])));
   const setText = (id: number, text: string) => setTexts((m) => new Map(m).set(id, text));
+  // 야간 · 휴일근무수당의 근무시간 칸(시간 글자, WHALEERP-755)
+  const [hours, setHours] = useState(() => new Map(payslip.items.filter(hasHours).map((i) => [i.payslipItemId, hoursTextOf(i.workMinutes)])));
   // 저장하지 않은 바뀜 — 확정은 저장된 값으로 하므로 먼저 임시저장하게 한다
-  const snapshot = (lines: PayslipItem[], values: Map<number, string>, p: boolean, w: boolean) =>
-    JSON.stringify([p, w, saveItems(lines, values).items]);
-  const [saved] = useState(() => snapshot(items, texts, premium, withholding));
-  const dirty = snapshot(items, texts, premium, withholding) !== saved;
+  const snapshot = (lines: PayslipItem[], values: Map<number, string>, p: boolean, w: boolean, h: Map<number, string>) =>
+    editSnapshot(lines, values, h, p, w);
+  const [saved] = useState(() => snapshot(items, texts, premium, withholding, hours));
+  const dirty = snapshot(items, texts, premium, withholding, hours) !== saved;
   // [확정]이 막혀 있으면 확정 가능일이 된 뒤 화면을 새로 받아 서버가 새 날짜(today)로 다시 판정하게 한다 — 열어 둔 채 그날이 와도 풀리게(WHALEERP-690).
   // 브라우저의 한국 날짜가 확정 가능일에 닿았을 때만 새로 받는다(그 전 자정에는 받지 않는다, blockedRecheck). 받았는데도 막혀 있으면(PC 시계가 빠름)
   // 1분에서 두 배씩 늘려 30분 간격까지 다시 본다 — 시계가 며칠 빨라도 자주 받지 않게. 풀리면 blockedUntil 이 null 이 되어 멈춘다.
@@ -358,12 +406,23 @@ export function PayslipReview({
       const amount = parseAmount(texts.get(i.payslipItemId) ?? "");
       return total + (amount === null || Number.isNaN(amount) ? 0 : amount);
     }, 0);
+  // 야간 · 휴일근무수당 근무시간 칸의 지금 값(분) — 도움말이 저장된 「2.0시간」 대신 지금 입력을 따르게(PR #336 재검사)
+  const hoursOf = (item: PayslipItem) => (hasHours(item) ? parseHours(hours.get(item.payslipItemId) ?? "") : undefined);
+  const formulaOf = (item: PayslipItem) => earningFormula(item, premium, payslip.isPremiumApplied, hoursOf(item));
+  // 금액이 있는데 근무시간이 빈 야간 · 휴일근무수당 — 공제 미입력처럼 확정 전에 막는다(api 422 WORK_HOURS_MISSING 과 같은 판정)
+  const hoursMissing = missingHours(items, texts, hours);
   const field = (item: PayslipItem, help: string) => (
     <AmountField
       key={item.payslipItemId}
       label={item.itemName}
       value={texts.get(item.payslipItemId) ?? ""}
       help={help}
+      formula={formulaOf(item) !== null && help.includes(formulaOf(item)!)}
+      hours={
+        hasHours(item)
+          ? { value: hours.get(item.payslipItemId) ?? "", onChange: (text) => setHours((m) => new Map(m).set(item.payslipItemId, text)) }
+          : undefined
+      }
       readOnly={!editable}
       onChange={(text) => setText(item.payslipItemId, text)}
       onRemove={editable && item.itemCategory === "ADDITIONAL" ? () => setItems((l) => removeLine(l, item.payslipItemId)) : undefined}
@@ -380,8 +439,8 @@ export function PayslipReview({
       : "직접 입력";
 
   // 끄면 연장수당을 가산 없이 1배로 계산한다(PAY-05). 금액은 임시저장 때 api 가 그 값으로 다시 계산한다 — 칸을 고치지 않았으면 새 계산값을 따르고,
-  // 앞서 직접 고쳐 둔 연장수당은 그대로 두고 계산값만 바꾼다(PR #159 리뷰). 저장하기 전에는 칸이 저장된 가산 값의 금액이라, 도움말도 저장된 값으로
-  // 쓰고 스위치 아래에 다시 계산한다고 알린다.
+  // 앞서 직접 고쳐 둔 연장수당은 그대로 두고 계산값만 바꾼다(PR #159 리뷰). 저장하기 전에는 칸이 저장된 가산 값의 금액이다. 도움말은 지금
+  // 스위치를 따른다 — 저장된 연장수당 식(「× 1.5배」)은 맞지 않아 보이지 않고 「가산수당 미적용 …」을 쓴다(PR #336 리뷰). 다시 계산은 토스트로 알린다.
   // 바꾼 뒤 무엇이 바뀌는지는 토스트로 알린다 — 지급 상자 안에 안내 줄을 띄우니 스위치를 누를 때마다 틀이 들썩였다(2026-11-19 사용자 지정).
   // 저장된 값으로 되돌린 경우는 알리지 않는다
   const togglePremium = (on: boolean) => {
@@ -418,8 +477,15 @@ export function PayslipReview({
       router.refresh();
     });
   const save = () => {
-    const { items: amounts, invalid } = saveItems(items, texts);
+    const { items: amounts, invalid } = saveItems(items, texts, hours);
     if (invalid.length > 0) return setFailure({ ok: false, message: `숫자만 넣어 주세요: ${invalid.join(", ")}` });
+    // 금액이 있는데 근무시간이 비었거나 0 이면 api 400 과 같은 문구로 먼저 막는다(재영 리뷰)
+    if (hoursMissing.length > 0)
+      return setFailure({ ok: false, message: `야간 · 휴일근무수당은 근무시간을 함께 입력해 주세요: ${hoursMissing.join(", ")}` });
+    const half = notHalfHours(items, hours);
+    if (half.length > 0) return setFailure({ ok: false, message: `근무시간은 0.5시간 단위로 넣어 주세요: ${half.join(", ")}` });
+    const over = overHours(items, hours);
+    if (over.length > 0) return setFailure({ ok: false, message: `근무시간은 744시간까지 넣을 수 있습니다: ${over.join(", ")}` });
     run(
       () =>
         saveDraft(payslip.payslipId, {
@@ -448,7 +514,10 @@ export function PayslipReview({
       setItems(next.lines);
       setTexts(next.texts);
       setDialog(null);
-      setNotice(`${result.previous.periodStartDate.slice(0, 7)} 명세서의 값 ${next.filled}칸을 불러왔습니다. 임시저장해야 남습니다.`);
+      setNotice(
+        `${result.previous.periodStartDate.slice(0, 7)} 명세서의 값 ${next.filled}칸을 불러왔습니다. 임시저장해야 남습니다.` +
+          (loadedHoursAmount(result.previous) ? " 야간 · 휴일근무수당 시간은 이 달 값을 넣어 주세요." : ""),
+      );
     });
 
   const [addable, setAddable] = useState<PayslipAdditionalItem[] | null>(null);
@@ -611,10 +680,10 @@ export function PayslipReview({
               )
             }
           >
-            <Rows>{earnings.filter((i) => !i.isTaxFree).map((i) => field(i, earningHelp(i, payslip.isPremiumApplied)))}</Rows>
+            <Rows>{earnings.filter((i) => !i.isTaxFree).map((i) => field(i, earningHelp(i, premium, payslip.isPremiumApplied, hoursOf(i))))}</Rows>
           </GroupBox>
           <GroupBox title="지급 항목(비과세)" total={sumOf(earnings.filter((i) => i.isTaxFree))}>
-            <Rows>{earnings.filter((i) => i.isTaxFree).map((i) => field(i, earningHelp(i, payslip.isPremiumApplied)))}</Rows>
+            <Rows>{earnings.filter((i) => i.isTaxFree).map((i) => field(i, earningHelp(i, premium, payslip.isPremiumApplied, hoursOf(i))))}</Rows>
           </GroupBox>
           <GroupBox
             id="deduction-basic"
@@ -711,7 +780,7 @@ export function PayslipReview({
         title="급여명세서를 확정하시겠습니까?"
         confirmLabel="확정"
         busy={busy}
-        confirmDisabled={dirty || totals.blankDeductions > 0}
+        confirmDisabled={dirty || totals.blankDeductions > 0 || hoursMissing.length > 0}
         onConfirm={() => run(() => confirmOne(payslip.payslipId, payslip.updatedAt), "확정되었습니다.")}
         onCancel={close}
       >
@@ -719,7 +788,9 @@ export function PayslipReview({
           ? "저장하지 않은 바뀐 내용이 있습니다. 임시저장한 뒤 확정해 주세요."
           : totals.blankDeductions > 0
             ? "입력하지 않은 공제 항목이 있어 확정할 수 없습니다. 공제 대상이 아닌 항목에는 0을 입력해 주세요."
-            : `확정하면 수정할 수 없습니다. 확정 취소하면 검토 중으로 돌아옵니다. 발송은 이 화면의 「발송」이나 급여명세서 목록에서 확정 건을 모아 보냅니다.${
+            : hoursMissing.length > 0
+              ? `근무시간이 없어 확정할 수 없습니다: ${hoursMissing.join(", ")}. 야간 · 휴일근무수당은 근무시간을 함께 입력해 주세요.`
+              : `확정하면 수정할 수 없습니다. 확정 취소하면 검토 중으로 돌아옵니다. 발송은 이 화면의 「발송」이나 급여명세서 목록에서 확정 건을 모아 보냅니다.${
                 band ? " 검토 사유는 확인한 것으로 남고, 확정 취소하면 다시 검토 대기가 됩니다." : ""
               }`}
         {failureText}
