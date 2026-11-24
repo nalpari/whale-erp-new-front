@@ -107,6 +107,8 @@ test("야간 · 휴일근무수당은 근무시간 칸을 분으로 싣는다 �
     ["야간수당"],
   );
   assert.deepEqual(missingHours([night, holiday], new Map([[104, "30,000"], [105, ""]]), new Map([[104, "2"]])), []);
+  // 0 시간도 시간이 없는 것 — 금액 0 · 시간 0 은 통과(재영 리뷰)
+  assert.deepEqual(missingHours([night, holiday], new Map([[104, "30,000"], [105, "0"]]), new Map([[104, "0"], [105, "0"]])), ["야간수당"]);
   // 칸은 숫자와 .0 · .5 만 받는다
   // 치는 중에는 소수 자리를 묻지 않는다 — 「2.3」의 「3」을 거부하면 「2.」가 남았다
   assert.ok(HOURS_INPUT.test("12.5") && HOURS_INPUT.test("3.") && HOURS_INPUT.test("") && HOURS_INPUT.test("2.3") && HOURS_INPUT.test(".5"));

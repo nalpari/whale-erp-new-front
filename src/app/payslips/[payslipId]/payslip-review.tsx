@@ -479,6 +479,9 @@ export function PayslipReview({
   const save = () => {
     const { items: amounts, invalid } = saveItems(items, texts, hours);
     if (invalid.length > 0) return setFailure({ ok: false, message: `숫자만 넣어 주세요: ${invalid.join(", ")}` });
+    // 금액이 있는데 근무시간이 비었거나 0 이면 api 400 과 같은 문구로 먼저 막는다(재영 리뷰)
+    if (hoursMissing.length > 0)
+      return setFailure({ ok: false, message: `야간 · 휴일근무수당은 근무시간을 함께 입력해 주세요: ${hoursMissing.join(", ")}` });
     const half = notHalfHours(items, hours);
     if (half.length > 0) return setFailure({ ok: false, message: `근무시간은 0.5시간 단위로 넣어 주세요: ${half.join(", ")}` });
     const over = overHours(items, hours);

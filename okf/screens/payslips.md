@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-24T07:27:16Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-24T07:28:42Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -37,11 +37,11 @@ sources:
   - id: payslip-edit
     resource: ../../src/app/payslips/[payslipId]/payslip-edit.ts
     title: 검토 화면 고칠 거리 — 임시저장 본문(야간 · 휴일근무수당 근무시간) · 추가 공제 붙이기 · 떼기 · 지난 명세서 불러오기 · 막힌 확정 판정 · 다시 보기 간격(server action actions.ts)
-    last_modified: 2026-11-24T05:36:26Z
+    last_modified: 2026-11-24T07:28:42Z
   - id: payslip-review
     resource: ../../src/app/payslips/[payslipId]/payslip-review.tsx
     title: 검토 화면 — 머리 버튼 · 요약 띠 · 지급 · 공제 묶음(합계 · 도구 줄 · 근무시간 칸) · 합계 띠 · 확인창(공제 항목 추가 체크 목록)
-    last_modified: 2026-11-24T05:36:26Z
+    last_modified: 2026-11-24T07:28:42Z
 ---
 
 # api 로 그린다
@@ -120,7 +120,7 @@ sources:
   잘못되면 식 없음)을 따른다(`earningFormula`, PR #336 재검사). 근무시간 칸을 감싸는 div 는 야간 · 휴일근무수당 줄에만 둔다 — 다른 줄은
   금액 칸 label 이 바깥 div 바로 아래여야 추가 공제의 [빼기] 자리(`[&>label>span:first-child]:pr-[40px]`)가 먹는다(전에 모든 줄을
   `display: contents` div 로 감싸 긴 이름이 버튼 밑으로 들어갔다 — contents 는 DOM 계층을 바꾸지 않는다).
-  [확정] 확인창은 공제 미입력처럼, 금액이 있는데 근무시간이 빈 야간 · 휴일근무수당이 있으면 「근무시간이 없어 확정할 수 없습니다: 야간수당. …」로
+  [확정] 확인창은 공제 미입력처럼, 금액이 있는데 근무시간이 비었거나 0 인 야간 · 휴일근무수당이 있으면(임시저장도 「야간 · 휴일근무수당은 근무시간을 함께 입력해 주세요: 야간수당」으로 먼저 막는다, 재영 리뷰) 「근무시간이 없어 확정할 수 없습니다: 야간수당. …」로
   막는다(`missingHours` — api 422 `WORK_HOURS_MISSING` 과 같은 판정, 그 오류가 오면 확인창 실패 글자로 선다). 임시저장은 두 줄에 늘
   `workMinutes` 키를 싣고 빈 칸은 null 이다 — api 는 키가 없을 때만(옛 화면) 시간 검사를 건너뛴다. 응답에 두 칸이 없는 옛 api 도
   근무시간 칸은 빈 칸(「NaN」 아님), 도움말은 식 없이 전처럼 그린다. **배포 순서는 api(+ db:deploy) → 관리자 웹 · 직원 앱**이다. **api 를 되돌릴 때는 화면을 먼저 되돌린다** — 새 화면은 `workMinutes` 를

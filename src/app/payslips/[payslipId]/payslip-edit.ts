@@ -35,7 +35,7 @@ export function parseHours(text: string): number | null {
 }
 
 /**
- * 금액이 있는데 근무시간이 빈 야간 · 휴일근무수당 칸의 이름 — 확정 전에 화면이 막는다(api 422 WORK_HOURS_MISSING 과 같은 판정, 공제 미입력과 같은
+ * 금액이 있는데 근무시간이 비었거나 0 인 야간 · 휴일근무수당 칸의 이름 — 임시저장 · 확정 전에 화면이 막는다(api 422 WORK_HOURS_MISSING 과 같은 판정, 공제 미입력과 같은
  * 방식). 임시저장은 이 칸을 막지만, 옛 관리자 화면 · 2026-11-24 전 명세서는 시간 없이 저장돼 있을 수 있다(최종 게이트)
  */
 export function missingHours(lines: readonly PayslipItem[], texts: ReadonlyMap<number, string>, hours: ReadonlyMap<number, string>): string[] {
@@ -43,7 +43,9 @@ export function missingHours(lines: readonly PayslipItem[], texts: ReadonlyMap<n
     .filter((l) => {
       if (!hasHours(l)) return false;
       const amount = parseAmount(texts.get(l.payslipItemId) ?? "");
-      return amount !== null && amount > 0 && parseHours(hours.get(l.payslipItemId) ?? "") === null;
+      // 0 시간도 시간이 없는 것이다 — api 저장 · 확정과 같은 판정(재영 리뷰)
+      const minutes = parseHours(hours.get(l.payslipItemId) ?? "");
+      return amount !== null && !Number.isNaN(amount) && amount > 0 && (minutes === null || minutes === 0);
     })
     .map((l) => l.itemName);
 }

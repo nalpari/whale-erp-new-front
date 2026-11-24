@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-24
+* **Update**: [Payslips screen](/screens/payslips.md) — 재영 리뷰: 금액이 있는데 근무시간이 비었거나 0 인 야간 · 휴일근무수당은 임시저장 · 확정 전에 화면이 막는다(`missingHours`, api 와 같은 판정).
 * **Update**: [Payslips screen](/screens/payslips.md) — 재영 리뷰: 근무시간 칸을 바꿨을 때 도움말 시간 글자를 api 와 같은 규칙으로(`hoursLabel` — 6의 배수 분만 「3.5시간」, 아니면 「7시간 50분」).
 * **Update**: [Payslips screen](/screens/payslips.md) — 배포 순서 절에 되돌리기 순서를 더했다: api 를 되돌릴 때는 화면 먼저(새 화면의 `workMinutes` 를 옛 api 가 400 으로 막는다, WHALEERP-755).
 * **Update**: [Payslips screen](/screens/payslips.md) — 최종 게이트: [확정] 확인창이 금액이 있는데 근무시간이 빈 야간 · 휴일근무수당을 막는다(`missingHours`, api 422 `WORK_HOURS_MISSING` 과 같은 판정), 옛 api 응답(칸 없음)도 근무시간 칸은 빈 칸 · 도움말은 식 없이. 배포 순서 api → 관리자 웹 · 직원 앱. `api-types.generated.ts` 다시 생성.
