@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-24
+* **Update**: [Payslips screen](/screens/payslips.md) — PR #336 리뷰: 지급 도움말은 지금 가산 스위치를 따른다(저장 전이면 연장수당의 저장된 식 대신 「가산수당 미적용 …」), 바뀜 스냅샷이 잘못 친 근무시간 · 금액을 빈 칸과 가른다(`editSnapshot`). `api-types.generated.ts` 다시 생성(workMinutes 설명 · multipleOf 뺌).
 * **Update**: [Payslips screen](/screens/payslips.md) — 지급 칸 계산식(WHALEERP-755): api `calculationText` 를 「계산값」 자리에 둥근 꺾은선 · 황토 글자로(「8.0시간 × 10,320원 × 1.5배」 · 고치면 「8.0시간 · 직접 입력 · 계산값 A 을 B 으로 고침」, 없으면 전처럼), 야간 · 휴일근무수당 금액 옆 근무시간 칸(64px · 「h」 · 0.5시간 단위, 임시저장 때 분으로). 데모 payrolls-detail 도 맞췄다(.mjs 만). `api-types.generated.ts` 다시 생성. 리뷰 후속: 가산을 끈 야간 · 휴일근무수당도 「2.0시간 · 가산 대상 아님 …」, 시간 「.5」 입력 · 744시간 상한을 화면에서 먼저 막음, 지난 명세서에서 야간 · 휴일 금액을 채우면 「시간은 이 달 값을 넣어 주세요」.
 * **Update**: [Staff members](/screens/staff-members.md) — 직원 앱 회원 탈퇴 계정 표시(WHALEERP-770): api `isAccountWithdrawn` 이 true 면 가입 상태 칸 「탈퇴 계정」(재직 상태 칸은 그대로), 상세 이메일 칸 「탈퇴 계정」, 비밀번호 초기화 버튼 숨김은 email 짐작 대신 이 값으로. `api-types.generated.ts` 임시 재생성(api 워크트리 openapi.json).
 * **Update**: [Payslips screen](/screens/payslips.md) — 퇴직 표시(WHALEERP-764): api `retiredDate`(api 같은 짝 브랜치)로 작성 팝업 직원 칸 이름 아래(짧게 「퇴직 M/D」 · 「예정 M/D」, 폭 · 글자 크기는 데모 그대로, 화면 낭독기에는 전체 표기) · 상세 요약 띠 성명 옆 · 「급여 산정 기준」 「퇴직일」 줄에 「퇴직 YYYY-MM-DD」(오늘 전, 회색) · 「퇴직 예정 YYYY-MM-DD」(오늘 · 앞으로, 빨간 꼬리표). 판정 `retirementCell` 은 퇴직 처리의 `isSettledNow` 를 쓴다. 오늘은 상세 · 팝업 모두 서버 `kstToday()`(팝업은 작성 대상 action 이 같이 돌려준다). `api-types.generated.ts` 다시 생성.
