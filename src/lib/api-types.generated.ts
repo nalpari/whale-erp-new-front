@@ -7817,6 +7817,14 @@ export interface components {
             periodEndDate: string;
             isPremiumApplied: boolean;
             isWithholdingApplied: boolean;
+            /**
+             * @description 건강보험 · 국민연금 가입 — 급여 기간에 효력이 있던 근로계약(체결 완료 · 체결 뒤 종료) 중 하나라도 체크했으면 true. false 면
+             *     국민연금 · 건강보험 · 장기요양보험 줄 가운데 금액이 비었거나 0 원인 줄을 보이지 않고 확정에서도 세지 않는다 — 0 아닌 금액이 든 줄은
+             *     미가입이어도 보이고 합계에 든다(WHALEERP-756)
+             */
+            isHealthPensionInsured: boolean;
+            /** @description 고용보험 · 산재보험 가입 — 같은 계약 기준. false 면 고용보험 줄이 비었거나 0 원일 때 보이지 않고 확정에서도 세지 않는다(0 아닌 금액이면 보임, WHALEERP-756) */
+            isEmploymentInjuryInsured: boolean;
             grossPayAmount: number;
             totalDeductionAmount: number;
             /** @description 실지급액 */
@@ -8006,6 +8014,13 @@ export interface components {
             logs: components["schemas"]["MyPayslipLogDto"][];
             /** @description 3.3% 원천징수 적용 — 원천징수 · 소득세 줄을 어떻게 보일지 화면이 정한다 */
             isWithholdingApplied: boolean;
+            /**
+             * @description 건강보험 · 국민연금 가입 — 급여 기간에 효력이 있던 근로계약 중 하나라도 체크했으면 true. false 면 국민연금 · 건강보험 ·
+             *     장기요양보험 줄 가운데 금액이 비었거나 0 원인 줄을 보이지 않는다 — 0 아닌 금액이 든 줄은 미가입이어도 보인다(WHALEERP-756)
+             */
+            isHealthPensionInsured: boolean;
+            /** @description 고용보험 · 산재보험 가입 — 같은 계약 기준. false 면 고용보험 줄이 비었거나 0 원일 때 보이지 않는다(0 아닌 금액이면 보임, WHALEERP-756) */
+            isEmploymentInjuryInsured: boolean;
             /** @description 지급 · 공제 항목, 급여 항목 순서. 검토 중이면 빈 목록 */
             items: components["schemas"]["MyPayslipItemDto"][];
         };
@@ -11792,9 +11807,9 @@ export interface components {
             pendingActionCount: number;
         };
         HomeStoreTableDto: {
-            /** @description 운영 점포 전체 수 */
+            /** @description 운영 점포 수 — 본사 점포는 세지 않는다(점포 카드와 같다, 운영 정책 SCP-09 · WHALEERP-751) */
             total: number;
-            /** @description 운영 점포 모두 — 확인 필요 많은 순, 같으면 점포명(HOM-06) */
+            /** @description 운영 점포 모두 — 본사 점포 줄이 맨 위, 나머지는 확인 필요 많은 순, 같으면 점포명(HOM-06) */
             items: components["schemas"]["HomeStoreRowDto"][];
         };
         HomeSummaryResponseDto: {
@@ -11839,6 +11854,11 @@ export interface components {
             asOf: string;
             /** @description 플랫폼 계정이면 true — items 는 빈 배열 */
             platform: boolean;
+            /**
+             * @description items 로 센 건 가운데 미운영 점포의 건수 — 점포별 현황(운영 점포만, HOM-06)에는 없고 확인 필요에만 센다(HOM-07).
+             *     문의 답변완료는 점포가 없어 넣지 않는다(그 줄의 count 를 읽는다). 플랫폼 빈 결과는 0(WHALEERP-759)
+             */
+            notOperatingCount: number;
             /** @description 건수가 0인 유형과 권한이 없는 유형은 뺀다. 순서는 갱신 예정 → 계약 → 직원 → 문의 → TO-DO */
             items: components["schemas"]["HomePendingItemDto"][];
         };

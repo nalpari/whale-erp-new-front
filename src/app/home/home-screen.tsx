@@ -19,7 +19,7 @@ import type { DailyAttendance } from "@/lib/attendance-records-api";
 import type { TodoListResponse } from "@/lib/todos-api";
 import type { PayslipListResponse } from "@/lib/payslips";
 import { defaultPayslipListQuery, toPayslipListSearch } from "../payslips/payslip-list-query";
-import { homeSearchOf, latestNotices, NOTICES_PATH, pendingLineOf, storeCountsOf, type HomePending, type HomeSummary } from "./home-view";
+import { homeSearchOf, latestNotices, NOTICES_PATH, outsideTableNote, pendingLineOf, storeCountsOf, type HomePending, type HomeSummary } from "./home-view";
 import { StoreTypeTag } from "@/components/site/store-type-tag";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"] as const;
@@ -219,13 +219,13 @@ function HomeBody({ greeting }: { greeting: ReactNode }) {
             두 칸 높이는 늘 같다(items-stretch) */}
         <div className="grid min-h-[440px] flex-1 grid-cols-2 items-stretch gap-[12px]">
           {noStores ? (
-            <StoreTable table={{ total: 0, items: [] }} />
+            <StoreTable table={{ total: 0, items: [] }} note={p ? outsideTableNote(p) : null} />
           ) : !summary ? (
             <Notice text="현황을 불러오는 중입니다." />
           ) : "error" in summary ? (
             failed("현황을", summary.error)
           ) : (
-            <StoreTable table={summary.data.storeTable} />
+            <StoreTable table={summary.data.storeTable} note={p ? outsideTableNote(p) : null} />
           )}
           <div className="flex min-h-0 flex-col gap-[12px]">
             {!pending ? <Notice text="확인 필요를 불러오는 중입니다." /> : "error" in pending ? failed("확인 필요를", pending.error) : <Pending data={pending.data} bp={bp} />}
@@ -567,7 +567,7 @@ const CountPill = ({ n }: { n: number }) =>
 // 운영 점포별 현황 — 운영 점포 모두, 확인 필요 많은 순(api 순서, HOM-06). 업무 범위는 헤더 한 곳에서 고른다(SCP-01).
 // 회색 머리 띠 · 46px 줄의 표는 너무 정적이라 열 이름은 12px 회색 + 선, 줄은 구분선, 확인 필요는 빨간 알약으로 그린다(2026-11-18 사용자 지정 홈 표 T2 — 줄 상자 · 진행 막대는
 // 겹이 많고 어수선해 뺐다). 유형 꼬리표는 점포명 앞, 미체결 계약은 점포명 아래 한 줄. 그 메뉴의 조회 권한이 없어 api 가 모든 줄에 null 을 준 칸은 숨긴다(HOM-09)
-function StoreTable({ table }: { table: HomeSummary["storeTable"] }) {
+function StoreTable({ table, note = null }: { table: HomeSummary["storeTable"]; note?: string | null }) {
   const shown = (key: NullableCount) => table.items.some((r) => r[key] !== null);
   const head = `${LIST_HEAD} px-[10px]`;
   const mid = `${ROW_LINE} px-[10px]`;
@@ -637,6 +637,8 @@ function StoreTable({ table }: { table: HomeSummary["storeTable"] }) {
           )}
         </div>
       </div>
+      {/* 확인 필요 총건수와 알약 합이 다른 이유 — 표에 없는 건이 있을 때만 상자 맨 아래에 한 줄(WHALEERP-759 B안, 2026-11-24 재영) */}
+      {note && <p className="-mt-[12px] text-[13px] text-erp-label">{note}</p>}
     </section>
   );
 }

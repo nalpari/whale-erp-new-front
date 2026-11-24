@@ -134,6 +134,8 @@ test("상세 검토 사유 — 작성 중 · 검토 중이고 보이는 공제 �
   const base = {
     status: "REVIEWING" as const,
     isWithholdingApplied: false,
+    isHealthPensionInsured: true,
+    isEmploymentInjuryInsured: true,
     reviewReasons: [attendance],
     items: [line("EARNING", "BONUS", "상여", false), line("BASIC", "NATIONAL_PENSION", "국민연금", false), line("ADDITIONAL", "ETC", "기타공제", false), line("BASIC", "INCOME_TAX", "소득세", true)],
   };
@@ -177,6 +179,19 @@ test("상세 검토 사유 — 작성 중 · 검토 중이고 보이는 공제 �
     }),
     [attendance, { payslipReviewReasonId: 0, reviewReason: "DEDUCTION_MISSING", detail: "국민연금, 사업소득세, 기타공제", acknowledgedAt: null }],
   );
+  // 4대보험에 가입하지 않았으면 그 줄은 비어 있어도 공제 미입력이 아니다(WHALEERP-756)
+  const insuranceLines = [
+    line("BASIC", "NATIONAL_PENSION", "국민연금", false),
+    line("BASIC", "HEALTH_INSURANCE", "건강보험", false),
+    line("BASIC", "LONG_TERM_CARE_INSURANCE", "장기요양보험", false),
+    line("BASIC", "EMPLOYMENT_INSURANCE", "고용보험", false),
+    line("BASIC", "INCOME_TAX", "소득세", true),
+  ];
+  const insured = (isHealthPensionInsured: boolean, isEmploymentInjuryInsured: boolean) =>
+    detailReviewReasons({ ...base, isHealthPensionInsured, isEmploymentInjuryInsured, items: insuranceLines });
+  assert.deepEqual(insured(false, false), [attendance]);
+  assert.equal(insured(true, false).at(-1)?.detail, "국민연금, 건강보험, 장기요양보험");
+  assert.equal(insured(false, true).at(-1)?.detail, "고용보험");
 });
 
 test("검토 사유 상세 — 「확인 필요 기록 포함」 문장은 api 가 준 그대로 보인다(WHALEERP-757)", () => {
@@ -196,12 +211,19 @@ test("sortDeductions — 국민연금 · 건강보험 · 장기요양보험 · �
   );
 });
 
+const BOTH = { isHealthPensionInsured: true, isEmploymentInjuryInsured: true };
+
 test("deductionAnchor — 추가 공제만 비었으면 추가 공제 상자, 기본 공제가 비었으면 기본 공제 상자", () => {
   const line = (itemCategory: "EARNING" | "BASIC" | "ADDITIONAL" | "WITHHOLDING", itemCode: string, isEntered: boolean) => ({ itemCategory, itemCode, isEntered }) as never;
-  assert.equal(deductionAnchor({ isWithholdingApplied: false, items: [line("BASIC", "NATIONAL_PENSION", true), line("ADDITIONAL", "ETC", false)] }), "#deduction-additional");
-  assert.equal(deductionAnchor({ isWithholdingApplied: false, items: [line("BASIC", "NATIONAL_PENSION", false), line("ADDITIONAL", "ETC", false)] }), "#deduction-basic");
+  assert.equal(deductionAnchor({ isWithholdingApplied: false, ...BOTH, items: [line("BASIC", "NATIONAL_PENSION", true), line("ADDITIONAL", "ETC", false)] }), "#deduction-additional");
+  assert.equal(deductionAnchor({ isWithholdingApplied: false, ...BOTH, items: [line("BASIC", "NATIONAL_PENSION", false), line("ADDITIONAL", "ETC", false)] }), "#deduction-basic");
   // 3.3% 를 켜면 숨는 소득세가 비어도 세지 않는다
-  assert.equal(deductionAnchor({ isWithholdingApplied: true, items: [line("BASIC", "INCOME_TAX", false), line("ADDITIONAL", "ETC", false)] }), "#deduction-additional");
+  assert.equal(deductionAnchor({ isWithholdingApplied: true, ...BOTH, items: [line("BASIC", "INCOME_TAX", false), line("ADDITIONAL", "ETC", false)] }), "#deduction-additional");
+  // 가입하지 않은 4대보험 줄도 세지 않는다(WHALEERP-756)
+  assert.equal(
+    deductionAnchor({ isWithholdingApplied: false, isHealthPensionInsured: false, isEmploymentInjuryInsured: false, items: [line("BASIC", "NATIONAL_PENSION", false), line("ADDITIONAL", "ETC", false)] }),
+    "#deduction-additional",
+  );
 });
 
 test("검토 사유 상세 — 날짜 목록은 「있습니다.」 아래 유형마다 한 줄, 이어지는 문장은 줄바꿈", () => {
