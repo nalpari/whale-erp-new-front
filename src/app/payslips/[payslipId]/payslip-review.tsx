@@ -32,6 +32,7 @@ import {
   applyPrevious,
   blockedRecheck,
   confirmBlockedUntil,
+  editSnapshot,
   hasHours,
   HOURS_INPUT,
   hoursTextOf,
@@ -344,7 +345,7 @@ export function PayslipReview({
   const [hours, setHours] = useState(() => new Map(payslip.items.filter(hasHours).map((i) => [i.payslipItemId, hoursTextOf(i.workMinutes)])));
   // 저장하지 않은 바뀜 — 확정은 저장된 값으로 하므로 먼저 임시저장하게 한다
   const snapshot = (lines: PayslipItem[], values: Map<number, string>, p: boolean, w: boolean, h: Map<number, string>) =>
-    JSON.stringify([p, w, saveItems(lines, values, h).items]);
+    editSnapshot(lines, values, h, p, w);
   const [saved] = useState(() => snapshot(items, texts, premium, withholding, hours));
   const dirty = snapshot(items, texts, premium, withholding, hours) !== saved;
   // [확정]이 막혀 있으면 확정 가능일이 된 뒤 화면을 새로 받아 서버가 새 날짜(today)로 다시 판정하게 한다 — 열어 둔 채 그날이 와도 풀리게(WHALEERP-690).

@@ -34,6 +34,28 @@ export function overHours(lines: readonly PayslipItem[], hours: ReadonlyMap<numb
     .map((l) => l.itemName);
 }
 
+/**
+ * 저장하지 않은 바뀜을 가리는 스냅샷 — 저장 본문(saveItems)과 같은 값에 두 스위치를 더한다. 잘못 친 칸(금액 · 근무시간 NaN)은 원문으로 둔다 —
+ * JSON 은 NaN 을 null 로 바꿔 빈 칸과 같아지고, 그러면 바뀜이 없는 것으로 보여 저장 · 확정 전 검사를 건너뛴다(PR #336 리뷰).
+ */
+export function editSnapshot(
+  lines: readonly PayslipItem[],
+  texts: ReadonlyMap<number, string>,
+  hours: ReadonlyMap<number, string>,
+  premium: boolean,
+  withholding: boolean,
+): string {
+  const items = saveItems(lines, texts, hours).items.map((item, i) => {
+    const id = lines[i].payslipItemId;
+    return {
+      ...item,
+      ...(Number.isNaN(item.amount) && { amount: `invalid:${texts.get(id) ?? ""}` }),
+      ...(Number.isNaN(item.workMinutes) && { workMinutes: `invalid:${hours.get(id) ?? ""}` }),
+    };
+  });
+  return JSON.stringify([premium, withholding, items]);
+}
+
 /** 지난 명세서에서 야간 · 휴일근무수당 금액을 채웠는가 — 시간은 불러오지 않아(달마다 다르다) 이 달 값을 넣으라고 알린다 */
 export const loadedHoursAmount = (previous: PayslipPrevious) => previous.items.some((p) => hasHours(p) && p.amount > 0);
 

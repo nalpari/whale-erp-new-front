@@ -13,6 +13,7 @@ import {
   RECHECK_MAX_MS,
   removeLine,
   saveItems,
+  editSnapshot,
   HOURS_INPUT,
   HOURS_MAX_MINUTES,
   hoursTextOf,
@@ -88,6 +89,17 @@ test("야간 · 휴일근무수당은 근무시간 칸을 분으로 싣는다 �
   // 744시간(api 와 같은 한 달 상한)까지 — 넘으면 화면이 이름을 모아 막는다
   assert.deepEqual(overHours([night, holiday, lines[1]], new Map([[104, "744"], [105, "744.5"]])), ["휴일근무수당"]);
   assert.equal(HOURS_MAX_MINUTES, 44_640);
+});
+
+test("바뀜 스냅샷 — 잘못 친 근무시간 · 금액은 빈 칸과 다르게 남아 저장 전 검사를 탄다(PR #336 리뷰)", () => {
+  const night = item({ payslipItemId: 104, payslipItemMasterId: 4, itemCode: "NIGHT_WORK_PAY", itemName: "야간수당" });
+  const texts = new Map([[104, "30,000"]]);
+  const saved = editSnapshot([night], texts, new Map([[104, ""]]), true, false);
+  assert.notEqual(editSnapshot([night], texts, new Map([[104, "."]]), true, false), saved);
+  assert.notEqual(editSnapshot([night], new Map([[104, "1,2a"]]), new Map([[104, ""]]), true, false), editSnapshot([night], new Map([[104, ""]]), new Map([[104, ""]]), true, false));
+  // 같은 값이면 같다 — 스위치는 따로 본다
+  assert.equal(editSnapshot([night], texts, new Map([[104, ""]]), true, false), saved);
+  assert.notEqual(editSnapshot([night], texts, new Map([[104, ""]]), false, false), saved);
 });
 
 test("지난 명세서에서 야간 · 휴일근무수당 금액을 채웠을 때만 시간을 넣으라고 알린다(WHALEERP-755)", () => {
