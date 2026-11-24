@@ -16,7 +16,7 @@ import {
   type PayslipDetail,
   type PayslipItem,
 } from "@/lib/payslips";
-import { earningHelp, sortDeductions, STATUS_STYLE } from "../payslip-row";
+import { earningHelp, retirementCell, sortDeductions, STATUS_STYLE } from "../payslip-row";
 import {
   cancelPayslipConfirmation,
   recalculatePayslip,
@@ -288,6 +288,7 @@ export function PayslipReview({
   const month = payslip.periodStartDate.slice(0, 7);
   // 급여 기간이 끝나기 전(퇴직 · 계약 종료면 그다음 날 전)에는 [확정]을 막고 그날을 알린다(WHALEERP-690)
   const blockedUntil = confirmBlockedUntil(payslip.confirmableFrom, today);
+  const retirement = retirementCell(payslip.retiredDate, today);
 
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [failure, setFailure] = useState<EditFailure | null>(null);
@@ -519,7 +520,16 @@ export function PayslipReview({
         <SummaryStrip cells={[
             // 세무사 사무실 급여명세서의 인적사항 줄처럼 「성명」(2026-11-19 사용자 지정, 통상시급은 오른쪽 「급여 산정 기준」에 둔다). 근로일수 · 근로시간(법정 기재 사항, 근로기준법 시행령
             // 제27조의2)은 api 가 아직 주지 않아 칸을 두지 않는다 — 3팀 요청
-            { label: "성명", value: <span className="text-[15px] font-semibold text-erp-ink">{payslip.staffName}</span> },
+            // 퇴직일이 있으면 이름 옆에 「퇴직 YYYY-MM-DD」 · 「퇴직 예정 YYYY-MM-DD」 — 퇴직한 달 마지막 급여(14일 안 청산)인지 가른다(WHALEERP-764)
+            {
+              label: "성명",
+              value: (
+                <span className="flex items-center gap-[8px]">
+                  <span className="text-[15px] font-semibold text-erp-ink">{payslip.staffName}</span>
+                  {retirement && <CellView cell={retirement} />}
+                </span>
+              ),
+            },
             // 고용형태 — 정직원 · 파트타이머에 따라 계산 · 공제(3.3%)가 달라 머리에 함께 보인다
             { label: "고용형태", value: <span className="text-[15px] font-semibold text-erp-ink">{employmentTypeLabel}</span> },
             { label: "급여월", value: <span className="text-[15px] font-semibold text-erp-ink">{monthLabel(month)}</span> },

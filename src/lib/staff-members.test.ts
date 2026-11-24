@@ -96,13 +96,13 @@ const JOIN_STATE_LABELS = [
 ];
 
 test("이메일 칸 — 값이 있으면 그대로 보인다(조회 권한이면 보인다, ACC-17)", () => {
-  assert.equal(staffEmailText({ email: "jian.seo@example.com", joinState: "JOINED" }, JOIN_STATE_LABELS), "jian.seo@example.com");
+  assert.equal(staffEmailText({ email: "jian.seo@example.com", joinState: "JOINED", isAccountWithdrawn: false }, JOIN_STATE_LABELS), "jian.seo@example.com");
 });
 
 test("이메일 칸 — 초안 · 가입 대기는 「가입 전」(화면 문구, enum 한글이 아니다)", () => {
   for (const joinState of ["DRAFT", "INVITED"] as const) {
-    assert.equal(staffEmailText({ email: null, joinState }, JOIN_STATE_LABELS), "가입 전", joinState);
-    assert.equal(staffEmailText({ email: null, joinState }, []), "가입 전", `${joinState} — enum 없이도`);
+    assert.equal(staffEmailText({ email: null, isAccountWithdrawn: false, joinState }, JOIN_STATE_LABELS), "가입 전", joinState);
+    assert.equal(staffEmailText({ email: null, isAccountWithdrawn: false, joinState }, []), "가입 전", `${joinState} — enum 없이도`);
   }
 });
 
@@ -116,21 +116,21 @@ test("이메일 칸 — 그 밖의 가입 전 상태는 api enum(StaffJoinState)
     UNDER_AGE: "가입 불가(만 19세 미만)",
   } as const;
   for (const [joinState, label] of Object.entries(expected)) {
-    assert.equal(staffEmailText({ email: null, joinState: joinState as keyof typeof expected }, JOIN_STATE_LABELS), label, joinState);
+    assert.equal(staffEmailText({ email: null, isAccountWithdrawn: false, joinState: joinState as keyof typeof expected }, JOIN_STATE_LABELS), label, joinState);
   }
 });
 
-test("이메일 칸 — 가입 완료인데 없으면(퇴직 · 탈퇴 · 본사가 보는 가맹 직원) 「-」", () => {
-  assert.equal(staffEmailText({ email: null, joinState: "JOINED" }, JOIN_STATE_LABELS), "-");
+test("이메일 칸 — 가입 완료인데 없으면(퇴직 · 본사가 보는 가맹 직원) 「-」", () => {
+  assert.equal(staffEmailText({ email: null, isAccountWithdrawn: false, joinState: "JOINED" }, JOIN_STATE_LABELS), "-");
 });
 
 test("이메일 칸 — 가입 상태를 모르면 「-」", () => {
-  assert.equal(staffEmailText({ email: null, joinState: null }, JOIN_STATE_LABELS), "-");
+  assert.equal(staffEmailText({ email: null, isAccountWithdrawn: false, joinState: null }, JOIN_STATE_LABELS), "-");
 });
 
 test("이메일 칸 — enum 을 받지 못했거나(빈 목록) 목록에 없는 값이면 영문 값 대신 「-」", () => {
-  assert.equal(staffEmailText({ email: null, joinState: "LINK_HOLD" }, []), "-");
-  assert.equal(staffEmailText({ email: null, joinState: "SOMETHING_NEW" as never }, JOIN_STATE_LABELS), "-");
+  assert.equal(staffEmailText({ email: null, isAccountWithdrawn: false, joinState: "LINK_HOLD" }, []), "-");
+  assert.equal(staffEmailText({ email: null, isAccountWithdrawn: false, joinState: "SOMETHING_NEW" as never }, JOIN_STATE_LABELS), "-");
 });
 
 const HQ_CONSENT_LABELS = [
@@ -156,4 +156,9 @@ test("재직 이력 칸이 없는 상세 응답(api #136 배포 전)은 빈 목�
   assert.equal(withEmploymentHistory({ ...before, birthDateCorrectable: true } as Parameters<typeof withEmploymentHistory>[0]).birthDateCorrectable, true);
   const after = { ...before, previousRecords: [period], laterRecords: [] } as Parameters<typeof withEmploymentHistory>[0];
   assert.deepEqual(withEmploymentHistory(after).previousRecords, [period]);
+});
+
+test("이메일 칸 — 탈퇴 계정은 email 이 null 이어도 「탈퇴 계정」이다(WHALEERP-770). 가입 완료 + 미제공은 「-」", () => {
+  assert.equal(staffEmailText({ email: null, joinState: "JOINED", isAccountWithdrawn: true }, JOIN_STATE_LABELS), "탈퇴 계정");
+  assert.equal(staffEmailText({ email: null, joinState: "JOINED", isAccountWithdrawn: false }, JOIN_STATE_LABELS), "-");
 });

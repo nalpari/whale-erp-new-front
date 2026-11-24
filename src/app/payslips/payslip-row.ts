@@ -13,6 +13,24 @@ import {
 import { mondayOf } from "../attendance-records/attendance-query.ts";
 import { sentText } from "../contracts/contract-list.ts";
 import type { Cell, CellStyle } from "../staff-members/staff-row.ts";
+import { isSettledNow } from "../../lib/retirement.ts";
+
+/**
+ * 퇴직 꼬리표(WHALEERP-764) — 퇴직한 달 마지막 급여(퇴직 후 14일 안 청산, 근로기준법 제36조)를 쓰는 직원인지 작성 팝업 · 상세에서 가른다.
+ * 글자 · 색은 직원 정보 관리 재직 칸(staff-row statusCells)과 같다 — 지난 퇴직일은 회색 「퇴직 YYYY-MM-DD」, 오늘 · 앞으로면 빨간 꼬리표
+ * 「퇴직 예정 YYYY-MM-DD」. 오늘은 아직 일하는 날이라 퇴직 예정이다(퇴직 처리와 같은 isSettledNow). 퇴직일이 없으면 null. today 는 kstToday() 값.
+ * short 는 작성 팝업의 좁은 직원 칸(데모 94px)용 — 「퇴직 M/D」 · 「예정 M/D」(앞 0 없이, 2026-11-24 사용자 지정). 가장 넓은 「예정 10/30」도
+ * 14px 꼬리표 72.8px 로 칸 안쪽 74px 에 한 줄로 든다. 화면 낭독기에는 전체 표기를 따로 읽힌다(작성 팝업). 상세는 전체 날짜다.
+ */
+export function retirementCell(retiredDate: string | null, today: string, { short = false } = {}): Cell | null {
+  if (!retiredDate) return null;
+  const settled = isSettledNow(retiredDate, today);
+  if (short) {
+    const date = `${Number(retiredDate.slice(5, 7))}/${Number(retiredDate.slice(8, 10))}`;
+    return settled ? { text: `퇴직 ${date}`, style: "muted" } : { text: `예정 ${date}`, style: "badge-off" };
+  }
+  return settled ? { text: `퇴직 ${retiredDate}`, style: "muted" } : { text: `퇴직 예정 ${retiredDate}`, style: "badge-off" };
+}
 
 /** 상태 배지 색. 데모 tag — 작성 중 quiet · 검토 중 warn · 발송 완료 ok. 확정은 데모에 없어 발송 완료와 같은 on 으로 둔다. */
 export const STATUS_STYLE: Record<PayslipStatus, CellStyle> = {
@@ -126,10 +144,9 @@ export function detailReviewReasons(
 }
 
 /**
- * 검토 사유 상세 글자(api 가 준 문장)를 화면 말투로 다듬는다 — 경고 띠와 「검토 대상 항목」 표가 같이 쓴다(2026-11-19 사용자 지정).
- * 「확인 필요로 표시된 출퇴근 기록이 N건 있습니다(근무지 반경 밖 퇴근, 위치 조작 감지 등).」 →
- * 「근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 N건 있습니다.」. api 문장(payslip-attendance-reasons.ts)이 바뀌면
- * 그대로 보인다 — 근본적으로는 api 문장을 고치는 게 맞다(3팀 확인).
+ * 검토 사유 상세 글자(api 가 준 문장)를 화면에 맞게 줄을 나눈다 — 경고 띠와 「검토 대상 항목」 표가 같이 쓴다(2026-11-19 사용자 지정).
+ * 「확인 필요 기록 포함」 문장(「근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 N건 있습니다.」)은 api 가 그대로
+ * 주므로 바꾸지 않는다(WHALEERP-757 — 전에는 api 의 옛 문장을 여기서 바꿨다).
  *
  * 날짜 목록이 붙은 문장(출퇴근 누락 「…날이 2일 있습니다(11월 5일 퇴근 미등록, 11월 3일 출근·퇴근 미등록).」 · 계약 만료 후 기록
  * 「…2일 있습니다(11월 21일, 11월 22일).」)은 「…있습니다.」 아래로 유형마다 한 줄 — 「· 출근 · 퇴근 기록 없음: 11월 3일(화), 11월 7일(토)」
@@ -139,8 +156,6 @@ export function detailReviewReasons(
  */
 export function reviewDetailText(text: string, periodStartDate?: string): string {
   return text
-    .replace(/^확인 필요로 표시된 출퇴근 기록이 (\d+)건 있습니다\(근무지 반경 밖 퇴근, 위치 조작 감지 등\)\.$/, "근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 $1건 있습니다.")
-    .replace("확인 필요로 표시된 출퇴근 기록이", "확인이 필요한 출퇴근 기록이")
     .replace(/^(.*있습니다)\((.*)\)\.$/, (_, head: string, list: string) => `${head}.\n${dayLines(list, periodStartDate) ?? `(${list})`}`)
     .replace(/\. (?=\S)/g, ".\n");
 }

@@ -59,6 +59,8 @@ export function formatPhone(phone: string): string {
 }
 
 export function joinCell(item: StaffMemberListItem, today: string): Cell {
+  // 탈퇴(WHALEERP-770)는 직원 앱 계정이 지워진 것이라 joinState 가 JOINED 여도 「가입 완료」가 아니다. 재직 상태 칸은 따로 그대로다(탈퇴 ≠ 퇴직).
+  if (item.isAccountWithdrawn) return { text: "탈퇴 계정", style: "badge-neutral" };
   switch (item.joinState) {
     case "JOINED":
       return { text: "가입 완료", style: item.employmentStatus === "RETIRED" ? "badge-neutral" : "badge-on" };
