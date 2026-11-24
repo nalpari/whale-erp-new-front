@@ -14,6 +14,7 @@ const candidate = (over: Partial<PayslipCandidate> = {}): PayslipCandidate => ({
   contractId: 7,
   payslipId: null,
   hasAttendance: true,
+  retiredDate: null,
   ...over,
 });
 
