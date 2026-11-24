@@ -52,6 +52,15 @@ test("지급 도움말 — api 의 한 줄 계산식이 있으면 「계산값�
     earningHelp({ ...item, itemCode: "HOLIDAY_WORK_PAY", calculatedAmount: null, calculationText: "2.0시간" }, false),
     "2.0시간 · 가산 대상 아님 · 넣어도 가산하지 않는다.",
   );
+  // 가산 스위치를 바꾸고 아직 저장하지 않았으면 연장수당의 저장된 식은 맞지 않아 지금 스위치의 글자로(PR #336 리뷰)
+  assert.equal(earningHelp(formula, false, true), "가산수당 미적용 · 1배로 계산 · 계산값");
+  assert.equal(earningHelp({ ...formula, calculationText: "8.0시간 × 10,320원 × 1배" }, true, false), "계산값");
+  assert.equal(earningHelp(formula, true, true), "8.0시간 × 10,320원 × 1.5배");
+  // 야간 · 휴일근무수당은 지금 스위치로 가산 대상 아님을 알리고, 넣은 시간은 그대로
+  assert.equal(
+    earningHelp({ ...item, itemCode: "NIGHT_WORK_PAY", calculatedAmount: null, calculationText: "2.0시간" }, false, true),
+    "2.0시간 · 가산 대상 아님 · 넣어도 가산하지 않는다.",
+  );
   // 식이 없으면(2026-11-24 전 명세서) 지금처럼
   assert.equal(earningHelp({ ...formula, calculationText: null }, true), "계산값");
 });

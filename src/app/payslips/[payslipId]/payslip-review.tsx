@@ -422,8 +422,8 @@ export function PayslipReview({
       : "직접 입력";
 
   // 끄면 연장수당을 가산 없이 1배로 계산한다(PAY-05). 금액은 임시저장 때 api 가 그 값으로 다시 계산한다 — 칸을 고치지 않았으면 새 계산값을 따르고,
-  // 앞서 직접 고쳐 둔 연장수당은 그대로 두고 계산값만 바꾼다(PR #159 리뷰). 저장하기 전에는 칸이 저장된 가산 값의 금액이라, 도움말도 저장된 값으로
-  // 쓰고 스위치 아래에 다시 계산한다고 알린다.
+  // 앞서 직접 고쳐 둔 연장수당은 그대로 두고 계산값만 바꾼다(PR #159 리뷰). 저장하기 전에는 칸이 저장된 가산 값의 금액이다. 도움말은 지금
+  // 스위치를 따른다 — 저장된 연장수당 식(「× 1.5배」)은 맞지 않아 보이지 않고 「가산수당 미적용 …」을 쓴다(PR #336 리뷰). 다시 계산은 토스트로 알린다.
   // 바꾼 뒤 무엇이 바뀌는지는 토스트로 알린다 — 지급 상자 안에 안내 줄을 띄우니 스위치를 누를 때마다 틀이 들썩였다(2026-11-19 사용자 지정).
   // 저장된 값으로 되돌린 경우는 알리지 않는다
   const togglePremium = (on: boolean) => {
@@ -655,10 +655,10 @@ export function PayslipReview({
               )
             }
           >
-            <Rows>{earnings.filter((i) => !i.isTaxFree).map((i) => field(i, earningHelp(i, payslip.isPremiumApplied)))}</Rows>
+            <Rows>{earnings.filter((i) => !i.isTaxFree).map((i) => field(i, earningHelp(i, premium, payslip.isPremiumApplied)))}</Rows>
           </GroupBox>
           <GroupBox title="지급 항목(비과세)" total={sumOf(earnings.filter((i) => i.isTaxFree))}>
-            <Rows>{earnings.filter((i) => i.isTaxFree).map((i) => field(i, earningHelp(i, payslip.isPremiumApplied)))}</Rows>
+            <Rows>{earnings.filter((i) => i.isTaxFree).map((i) => field(i, earningHelp(i, premium, payslip.isPremiumApplied)))}</Rows>
           </GroupBox>
           <GroupBox
             id="deduction-basic"

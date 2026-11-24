@@ -66,10 +66,13 @@ export const sentDateText = (item: Pick<PayslipListItem, "lastSentAt">) => sentT
  * 지급 칸 아래 도움말. 데모 payrolls-detail 의 help 글자와 같다.
  * api 가 만든 한 줄 계산식(calculationText — 「8.0시간 × 10,320원 × 1.5배」 · 고치면 「8.0시간 · 직접 입력」 · 야간 · 휴일은 「2.0시간」)이 있으면
  * 「계산값」 자리에 그 식을 보인다 — 직원 앱 · PDF 와 같은 글자다(WHALEERP-755). 없으면(계산하지 않음 · 2026-11-24 전 명세서) 지금처럼.
+ * isPremiumApplied 는 화면의 지금 가산 스위치, savedPremium 은 저장된 값이다. 스위치를 바꾸고 아직 저장하지 않았으면 연장수당의 저장된 식
+ * (「× 1.5배」)은 맞지 않아 보이지 않고 지금 스위치의 「가산수당 미적용 …」 · 「계산값」 글자를 쓴다 — 임시저장 때 api 가 새 식을 만든다(PR #336 리뷰).
  */
 export function earningHelp(
   item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "calculatedAmount" | "adjustedAmount" | "calculationText">,
   isPremiumApplied: boolean,
+  savedPremium: boolean = isPremiumApplied,
 ): string {
   // 가산을 끄면 연장수당을 가산 없이 1배로 계산하고, 관리자가 넣는 야간 · 휴일근무수당은 가산 대상이 아니다(PAY-05, 2026-10-26 재영).
   if (!isPremiumApplied && (item.itemCode === "NIGHT_WORK_PAY" || item.itemCode === "HOLIDAY_WORK_PAY"))
@@ -82,7 +85,8 @@ export function earningHelp(
       ? `계산값 ${formatAmount(item.calculatedAmount)} 을 ${formatAmount(item.adjustedAmount)} 으로 고침`
       : null;
   // 식에 시간 · 시급 · 배율(가산을 끄면 「× 1배」)이 다 들어 있어 「가산수당 미적용」 머리말은 붙이지 않는다 — 세 곳이 같은 글자로 보이게
-  if (item.calculationText !== null) return corrected ? `${item.calculationText} · ${corrected}` : item.calculationText;
+  const text = item.itemCode === "OVERTIME_PAY" && isPremiumApplied !== savedPremium ? null : item.calculationText;
+  if (text !== null) return corrected ? `${text} · ${corrected}` : text;
   if (item.calculatedAmount === null) return "직접 입력";
   const calculated = corrected ?? "계산값";
   return !isPremiumApplied && item.itemCode === "OVERTIME_PAY" ? `가산수당 미적용 · 1배로 계산 · ${calculated}` : calculated;
