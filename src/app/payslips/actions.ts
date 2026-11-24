@@ -3,6 +3,7 @@
 import { ApiError, authHeaders, bpHref, expiredFailureOf, request } from "@/lib/api";
 import type { PayslipBulkResult, PayslipCandidates, PayslipSendResult } from "@/lib/payslips";
 import { getPayslipCandidates } from "@/lib/payslips-api";
+import { kstToday } from "@/lib/staff-members";
 
 // 급여명세서 작성 팝업(WHALEERP-226)의 작성 대상 조회 · 초안 작성 · 일괄 작성과 목록의 「확정 N건 발송」(WHALEERP-231 · 237). 메뉴 권한(급여명세서 관리 등록) · 관리 범위 · 본사 제공 동의 · 계약 유효 · 중복은 api 가 본다.
 // server action 은 공개 엔드포인트라 id 와 달 모양만 다시 본다 — 화면을 거치지 않은 이상한 값을 api 까지 보내지 않는다.
@@ -40,11 +41,16 @@ const post = async (body: object) => ({
   body: JSON.stringify(body),
 });
 
-/** 그 달 작성 대상(팝업을 열 때마다 새로 받는다 — 방금 만든 명세서가 「작성됨」으로 보여야 한다). */
-export async function getPayslipCandidatesAction(month: string): Promise<{ ok: true; data: PayslipCandidates } | DraftFailure> {
+/**
+ * 그 달 작성 대상(팝업을 열 때마다 새로 받는다 — 방금 만든 명세서가 「작성됨」으로 보여야 한다). today 는 서버의 한국 날짜 —
+ * 퇴직 꼬리표를 상세(서버에서 그린다)와 같은 시계로 가른다. 브라우저 시계가 어긋나도 퇴직일 당일이 팝업 · 상세에서 다르게 나오지 않는다(WHALEERP-764)
+ */
+export async function getPayslipCandidatesAction(
+  month: string,
+): Promise<{ ok: true; data: PayslipCandidates; today: string } | DraftFailure> {
   if (!validMonth(month)) return BAD_INPUT;
   try {
-    return { ok: true, data: await getPayslipCandidates(month) };
+    return { ok: true, data: await getPayslipCandidates(month), today: kstToday() };
   } catch (error) {
     if (error instanceof ApiError && error.status < 500) return failureOf(error, "작성 대상 조회");
     console.error("급여명세서 작성 대상 조회 실패", error);

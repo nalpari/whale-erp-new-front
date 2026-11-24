@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PayslipReviewReason } from "../../lib/payslips.ts";
-import { attendanceCell, attendanceHref, deductionAnchor, detailReviewReasons, earningHelp, periodText, reviewBand, reviewDetailText, sentDateText, sortDeductions } from "./payslip-row.ts";
+import { attendanceCell, attendanceHref, deductionAnchor, detailReviewReasons, earningHelp, periodText, retirementCell, reviewBand, reviewDetailText, sentDateText, sortDeductions } from "./payslip-row.ts";
 
 test("목록 칸 — 급여 기간, 출퇴근 확인 전은 「누락」 · 확인은 「확인」 · 가린 줄은 null", () => {
   assert.equal(periodText({ periodStartDate: "2026-09-01", periodEndDate: "2026-09-30" }), "2026-09-01 ~ 2026-09-30");
@@ -187,4 +187,22 @@ test("검토 사유 상세 — 날짜 목록은 「있습니다.」 아래 유�
     reviewDetailText("급여 기간 중 정직원 계약과 파트타이머 계약이 함께 있어 기본급 · 주휴수당 · 연장수당은 자동 계산되지 않았습니다. 금액을 직접 입력해 주세요."),
     "급여 기간 중 정직원 계약과 파트타이머 계약이 함께 있어 기본급 · 주휴수당 · 연장수당은 자동 계산되지 않았습니다.\n금액을 직접 입력해 주세요.",
   );
+});
+
+test("퇴직 꼬리표 — 퇴직일이 오늘(한국) 전이면 회색 「퇴직」, 오늘 · 앞으로면 빨간 「퇴직 예정」, 없으면 null(WHALEERP-764)", () => {
+  const today = "2026-11-24";
+  assert.equal(retirementCell(null, today), null);
+  assert.deepEqual(retirementCell("2026-11-23", today), { text: "퇴직 2026-11-23", style: "muted" });
+  // 오늘은 아직 일하는 날이다 — 직원 정보 관리의 퇴직 처리와 같은 판정(isSettledNow)
+  assert.deepEqual(retirementCell("2026-11-24", today), { text: "퇴직 예정 2026-11-24", style: "badge-off" });
+  assert.deepEqual(retirementCell("2026-12-31", today), { text: "퇴직 예정 2026-12-31", style: "badge-off" });
+});
+
+test("퇴직 꼬리표 짧은 표기 — 작성 팝업은 「퇴직 M/D」 · 「예정 M/D」(앞 0 없이), 판정은 같다(WHALEERP-764)", () => {
+  const today = "2026-11-24";
+  const short = { short: true };
+  assert.equal(retirementCell(null, today, short), null);
+  assert.deepEqual(retirementCell("2026-11-15", today, short), { text: "퇴직 11/15", style: "muted" });
+  assert.deepEqual(retirementCell("2026-11-24", today, short), { text: "예정 11/24", style: "badge-off" });
+  assert.deepEqual(retirementCell("2027-01-05", today, short), { text: "예정 1/5", style: "badge-off" });
 });
