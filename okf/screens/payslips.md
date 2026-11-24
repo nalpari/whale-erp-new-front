@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-24T05:36:26Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-24T06:19:07Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -123,7 +123,8 @@ sources:
   [확정] 확인창은 공제 미입력처럼, 금액이 있는데 근무시간이 빈 야간 · 휴일근무수당이 있으면 「근무시간이 없어 확정할 수 없습니다: 야간수당. …」로
   막는다(`missingHours` — api 422 `WORK_HOURS_MISSING` 과 같은 판정, 그 오류가 오면 확인창 실패 글자로 선다). 임시저장은 두 줄에 늘
   `workMinutes` 키를 싣고 빈 칸은 null 이다 — api 는 키가 없을 때만(옛 화면) 시간 검사를 건너뛴다. 응답에 두 칸이 없는 옛 api 도
-  근무시간 칸은 빈 칸(「NaN」 아님), 도움말은 식 없이 전처럼 그린다. **배포 순서는 api(+ db:deploy) → 관리자 웹 · 직원 앱**이다. 금액이 있는데 시간이 비면 api 가 400 「야간 · 휴일근무수당은 근무시간을 함께
+  근무시간 칸은 빈 칸(「NaN」 아님), 도움말은 식 없이 전처럼 그린다. **배포 순서는 api(+ db:deploy) → 관리자 웹 · 직원 앱**이다. **api 를 되돌릴 때는 화면을 먼저 되돌린다** — 새 화면은 `workMinutes` 를
+  보내고, 옛 api 는 모르는 칸을 400 으로 막는다(api 전역 검사 `forbidNonWhitelisted`). 금액이 있는데 시간이 비면 api 가 400 「야간 · 휴일근무수당은 근무시간을 함께
   입력해 주세요.」로 막고 확인창에 그 문장이 선다. 시간을 넣으면 칸 아래에 「2.0시간」이 보인다. 지난 명세서 불러오기는 시간을 채우지 않는다
   (api `previous-values` 에 시간이 없다 — 달마다 다른 값이라 그 달 시간을 넣게 둔다). 야간 · 휴일근무수당 금액을 채웠으면 불러온 안내 띠 끝에
   「야간 · 휴일근무수당 시간은 이 달 값을 넣어 주세요.」를 붙인다(`loadedHoursAmount`). 가산 스위치를 바꾸면 토스트로 「임시저장하면 연장수당을 … 다시 계산합니다」를 알리고(상자 안에 띄우면 틀이 들썩였다, 2026-11-19 사용자 지정), 지금 칸 값이 저장된 금액과 다르거나 앞서 고쳐 둔 값이 있으면 「직접 고친 연장수당(N원)은 그대로 둡니다」를 붙인다(api 와 같은 기준 — 지금 칸 값으로 판단).

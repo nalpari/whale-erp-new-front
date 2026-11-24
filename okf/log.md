@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-24
+* **Update**: [Payslips screen](/screens/payslips.md) — 배포 순서 절에 되돌리기 순서를 더했다: api 를 되돌릴 때는 화면 먼저(새 화면의 `workMinutes` 를 옛 api 가 400 으로 막는다, WHALEERP-755).
 * **Update**: [Payslips screen](/screens/payslips.md) — 최종 게이트: [확정] 확인창이 금액이 있는데 근무시간이 빈 야간 · 휴일근무수당을 막는다(`missingHours`, api 422 `WORK_HOURS_MISSING` 과 같은 판정), 옛 api 응답(칸 없음)도 근무시간 칸은 빈 칸 · 도움말은 식 없이. 배포 순서 api → 관리자 웹 · 직원 앱. `api-types.generated.ts` 다시 생성.
 * **Update**: [Payslips screen](/screens/payslips.md) — 근무시간 칸은 소수 한 자리까지만 받고 글자 수 제한을 없앴다(「2.499」 반올림 · 「744.001」 잘림, PR #336 재검사, WHALEERP-755).
 * **Update**: [Payslips screen](/screens/payslips.md) — PR #336 재검사: 근무시간 칸이 치는 중 소수 자리를 묻지 않고(「2.3」), 저장 전 0.5시간 단위가 아니면 막는다(`notHalfHours`). 끝이 점인 「2.」 · 유한하지 않은 아주 긴 숫자(근무시간 · 금액)는 잘못된 입력(NaN). 근무시간 칸 여섯 자 제한.
