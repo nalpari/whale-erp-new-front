@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-24
+* **Update**: [급여명세서 관리 화면](/screens/payslips.md) · [직원 정보 관리 화면](/screens/staff-members.md)(생성 api 타입) — 검토 화면의 4대보험 공제 줄을 근로계약서 가입 체크대로만 보인다(WHALEERP-756, 2026-11-20 김지영): api 상세 `isHealthPensionInsured` · `isEmploymentInjuryInsured` 로 `isItemShown` 이 국민연금 · 건강보험 · 장기요양보험 / 고용보험을 가리고, 합계 · 빈 칸 · 「공제 미입력」 · [공제 칸으로 이동]이 따른다. 3.3% 를 켰는데 가입한 직원이면 스위치 아래 `GuideNote` 안내(확정은 막지 않음). 미가입 보험 줄은 저장된 금액이 비었거나 0 원일 때만 숨고(0 아닌 금액은 보여 합계에 든다, 2026-11-24 사용자 결정), 판정은 저장된 값이라 입력 중에 줄이 사라지지 않는다. 「지난 명세서에서 불러오기」는 숨은 미가입 줄을 채우지 않는다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — TO-DO 상세 「TO-DO」 표의 「등록」 아래에 「최종수정 | 시각 · 사람(회색)」 줄(WHALEERP-698): api `modifiedAt` · `modifiedByName`(api #311)이 있을 때만 — 관리자 [수정] 때만 남고 상태 변경은 바꾸지 않으며, 고친 적이 없으면 줄이 없다(근로계약 상세는 줄을 두고 「-」 — 다르다). `api-types.generated.ts` 다시 생성, DESIGN.md 「TO-DO 리스트 관리 · 상세」도 맞췄다.
 * **Update**: [Staff members](/screens/staff-members.md) — 고용형태 이름(목록 필터 · 목록 열 · 상세 요약 띠)을 화면 상수 `EMPLOYMENT_TYPE_LABELS` 대신 `getEnum("EmploymentType")` 으로 받는다(WHALEERP-720, 네이밍 규칙 「상수 대응표를 두지 않는다」). 받지 못하면 열 · 요약 띠는 「-」, 필터는 값 그대로.
 

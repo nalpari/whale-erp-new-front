@@ -110,13 +110,13 @@ export function sortDeductions<T extends Pick<PayslipItem, "itemCode">>(items: r
  * 빨간 띠는 입력 중인 값을 따른다). 더한 줄의 id 는 0 이다(api 사유 id 는 1 부터).
  */
 export function detailReviewReasons(
-  payslip: Pick<PayslipDetail, "status" | "isWithholdingApplied" | "reviewReasons" | "items">,
+  payslip: Pick<PayslipDetail, "status" | "isWithholdingApplied" | "isHealthPensionInsured" | "isEmploymentInjuryInsured" | "reviewReasons" | "items">,
 ): PayslipReviewReason[] {
   // 공제 미입력은 저장된 사유 줄이 아니라 공제 칸으로만 판정한다 — 예전 데이터에 줄이 남아 있어도 두 번 보이지 않게 뺀다
   const stored = payslip.reviewReasons.filter((r) => r.reviewReason !== "DEDUCTION_MISSING");
   if (payslip.status !== "DRAFTING" && payslip.status !== "REVIEWING") return stored;
   const blank = payslip.items.filter(
-    (i) => i.itemCategory !== "EARNING" && !i.isEntered && isItemShown(i, payslip.isWithholdingApplied),
+    (i) => i.itemCategory !== "EARNING" && !i.isEntered && isItemShown(i, payslip.isWithholdingApplied, payslip),
   );
   if (!blank.length) return stored;
   return [
@@ -200,7 +200,9 @@ export function reviewBand(
  * 「공제 미입력」의 [공제 칸으로 이동]이 갈 상자 — 비어 있는 기본 공제(3.3% 포함)가 있으면 「공제 항목(4대보험 · 세금)」, 추가 공제만 비었으면
  * 「공제 항목(추가)」. 늘 기본 공제 상자로 가면 빈 칸이 추가 공제에만 있을 때 다 채운 상자로 갔다(ip-code-review)
  */
-export function deductionAnchor(payslip: Pick<PayslipDetail, "isWithholdingApplied" | "items">): "#deduction-basic" | "#deduction-additional" {
-  const blank = payslip.items.filter((i) => i.itemCategory !== "EARNING" && !i.isEntered && isItemShown(i, payslip.isWithholdingApplied));
+export function deductionAnchor(
+  payslip: Pick<PayslipDetail, "isWithholdingApplied" | "isHealthPensionInsured" | "isEmploymentInjuryInsured" | "items">,
+): "#deduction-basic" | "#deduction-additional" {
+  const blank = payslip.items.filter((i) => i.itemCategory !== "EARNING" && !i.isEntered && isItemShown(i, payslip.isWithholdingApplied, payslip));
   return blank.length > 0 && blank.every((i) => i.itemCategory === "ADDITIONAL") ? "#deduction-additional" : "#deduction-basic";
 }
