@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-19T08:56:17Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-24T01:15:13Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -25,7 +25,7 @@ sources:
   - id: payslip-row
     resource: ../../src/app/payslips/payslip-row.ts
     title: 목록 칸(급여 기간 · 출퇴근 확인 · 발송일 · 검토 대기 꼬리표) · 상태 색 · 지급 도움말 · 경고 띠 · 공제 보이는 순서(sortDeductions)
-    last_modified: 2026-11-10T07:26:16Z
+    last_modified: 2026-11-24T01:15:13Z
   - id: payslip-draft-dialog
     resource: ../../src/app/payslips/payslip-draft-dialog.tsx
     title: 급여명세서 작성 팝업 — 점포 · 이름 좁히기 · 직원 고르기 · 작성 · 일괄 작성(칸 문구 payslip-draft.ts, server action actions.ts)
@@ -142,7 +142,7 @@ page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치
 * **발송**(`POST /payslips/:id/send`, 확정일 때) · **재발송**(`POST /payslips/:id/resend`, 발송 완료일 때) — 머리 버튼, 확인창을 거친다.
   직원 앱 계정 이메일로 간다. 메일 설정 없음 · 계정 없음 · 메일 실패 등은 api 문장을 확인창에 보인다(실패하면 확정 그대로).
 * 화면 제목은 목록과 같은 「급여명세서 관리」다(다른 메뉴 상세처럼 메뉴 이름, 사용자 결정). 머리 버튼은 [임시저장] [확정](확정 · 발송 완료면 [확정 취소] [발송]/[재발송]) 다음 맨 오른쪽에 [목록]을 둔다(직원 · 근로계약 · TO-DO 상세와 같게). 「미리보기」 창 제목은 「급여명세서 미리보기」.
-* 위쪽 경고 띠(`reviewBand`)는 이미 확인한 검토 사유(`acknowledgedAt` — 확정 때 확인됨)를 세우지 않는다.
+* 위쪽 경고 띠(`reviewBand`)는 이미 확인한 검토 사유(`acknowledgedAt` — 확정 때 확인됨)를 세우지 않는다. 검토 사유 상세는 api 문장을 그대로 쓰고(`reviewDetailText` 는 날짜 목록 · 이어지는 문장의 줄만 나눈다), 「확인 필요 기록 포함」 문장도 api 가 새 문장으로 준다(WHALEERP-757, 2026-11-24 — 전에는 옛 문장을 여기서 바꿨다).
 * 3.3% 원천징수 칸 아래는 셈식 「지급 합계(비과세 포함) N원 × 3%」(지방소득세 칸은 × 0.3%)다 — 사업소득에는 비과세가 없다. 금액은 관리자가 넣는다(PAY-03, 2026-11-19 사용자 지정).
 * **배치(2026-11-19 사용자 지정, DESIGN.md 「상세 화면 틀」):** 제목 줄(「급여명세서 상세」 + 버튼) 아래 요약 띠 「성명 · 고용형태 · 급여월 · 근무지(유형 꼬리표) · 상태」, 경고 띠 「⚠ 검토가 필요한 사유가 N건 있습니다. 오른쪽 검토 사유를 확인하고, 문제가 없으면 [확정]해 주세요.」(공제 미입력뿐이면 없음). 왼쪽 7 : 오른쪽 5.
   왼쪽 묶음은 「지급 항목」(도구 줄: 「연장·야간·휴일 가산수당 적용(5인 이상 사업장 필수)」 스위치 + 도움말(상시근로자 5명 이상 의무 · 4명 이하 선택 · 대표자 제외 1개월 평균) · [출퇴근 다시 불러오기]) · 「지급 항목(비과세)」 · 「공제 항목(4대보험 · 세금)」(도구 줄: 파트타이머만 「3.3% 원천징수 적용」 · [지난 명세서에서 불러오기]) · 「공제 항목(추가)」([항목 추가]) — 제목 줄 오른쪽 「합계 N원」, 금액 칸은 한 줄 세 칸. 맨 아래 합계 띠 「지급 항목 합계 − 공제 항목 합계 = 실지급액」. 공제 칸은 국민연금 · 건강보험 · 장기요양보험 · 고용보험 · 소득세 · 지방소득세(3.3% 는 끝) 순서로 보인다(`sortDeductions` — api 순서와 다르다, 「공제 미입력」 사유 글자도 같은 순서).
