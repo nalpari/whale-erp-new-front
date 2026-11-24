@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PayslipReviewReason } from "../../lib/payslips.ts";
-import { attendanceCell, attendanceHref, deductionAnchor, detailReviewReasons, earningFormula, earningHelp, periodText, retirementCell, reviewBand, reviewDetailText, sentDateText, sortDeductions } from "./payslip-row.ts";
+import { attendanceCell, attendanceHref, deductionAnchor, detailReviewReasons, earningFormula, earningHelp, hoursLabel, periodText, retirementCell, reviewBand, reviewDetailText, sentDateText, sortDeductions } from "./payslip-row.ts";
 
 test("목록 칸 — 급여 기간, 출퇴근 확인 전은 「누락」 · 확인은 「확인」 · 가린 줄은 null", () => {
   assert.equal(periodText({ periodStartDate: "2026-09-01", periodEndDate: "2026-09-30" }), "2026-09-01 ~ 2026-09-30");
@@ -69,6 +69,13 @@ test("지급 도움말 — api 의 한 줄 계산식이 있으면 「계산값�
   assert.equal(earningHelp(night, true, true, Number.NaN), "직접 입력");
   assert.equal(earningHelp(night, false, false, 210), "3.5시간 · 가산 대상 아님 · 넣어도 가산하지 않는다.");
   assert.equal(earningFormula(night, true, true, 210), "3.5시간");
+  // 시간 글자는 api 와 같은 규칙 — 6의 배수 분만 소수 한 자리
+  assert.equal(earningFormula(night, true, true, 470), "7시간 50분");
+  assert.equal(hoursLabel(468), "7.8시간");
+  assert.equal(hoursLabel(480), "8.0시간");
+  assert.equal(hoursLabel(61), "1시간 1분");
+  assert.equal(hoursLabel(31), "31분");
+  assert.equal(hoursLabel(0), "0.0시간");
   assert.equal(earningFormula(night, true, true, null), null);
   // 응답에 칸이 없는 옛 api — 식 없음으로, 도움말은 전처럼
   const old = { ...item, calculationText: undefined, workMinutes: undefined } as unknown as typeof item;

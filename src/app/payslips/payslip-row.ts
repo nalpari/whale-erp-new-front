@@ -96,6 +96,17 @@ export function earningHelp(
 }
 
 /**
+ * 시간 글자 — api 계산식의 hoursText(src/payslips/pay-calculation.ts)와 같은 규칙: 분이 6의 배수면 「7.8시간」 · 「2.0시간」, 아니면
+ * 「7시간 50분」 · 「31분」(재영 리뷰, WHALEERP-755). 저장된 글자는 api 가 만들고, 화면은 저장 전 지금 입력을 보일 때만 이것을 쓴다.
+ */
+export function hoursLabel(minutes: number): string {
+  const m = Math.round(minutes);
+  if (m % 6 === 0) return `${(m / 60).toFixed(1)}시간`;
+  const h = Math.floor(m / 60);
+  return h > 0 ? `${h}시간 ${m % 60}분` : `${m % 60}분`;
+}
+
+/**
  * 도움말에 보일 계산식 — 저장된 calculationText 가 화면의 지금 값(가산 스위치 · 근무시간 칸)과 맞을 때만, 근무시간 칸을 바꿨으면 그 값의
  * 「N.N시간」(earningHelp 참고). 화면이 이 글자를 계산식 모양(둥근 꺾은선 · 황토)으로 그린다.
  */
@@ -108,7 +119,7 @@ export function earningFormula(
   if (item.itemCode === "OVERTIME_PAY" && isPremiumApplied !== savedPremium) return null;
   const hours = item.itemCode === "NIGHT_WORK_PAY" || item.itemCode === "HOLIDAY_WORK_PAY";
   if (hours && hoursMinutes !== undefined && hoursMinutes !== item.workMinutes)
-    return hoursMinutes === null || Number.isNaN(hoursMinutes) ? null : `${(hoursMinutes / 60).toFixed(1)}시간`;
+    return hoursMinutes === null || Number.isNaN(hoursMinutes) ? null : hoursLabel(hoursMinutes);
   // 응답에 칸이 없는 옛 api(undefined)도 식 없음으로
   return item.calculationText ?? null;
 }
