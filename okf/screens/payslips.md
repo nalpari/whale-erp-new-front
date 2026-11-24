@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-11-24T05:00:56Z }
+generated: { by: claude-code/opus-5.5, at: 2026-11-24T05:07:14Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -25,7 +25,7 @@ sources:
   - id: payslip-row
     resource: ../../src/app/payslips/payslip-row.ts
     title: 목록 칸(급여 기간 · 출퇴근 확인 · 발송일 · 검토 대기 꼬리표) · 상태 색 · 지급 도움말 · 경고 띠 · 공제 보이는 순서(sortDeductions)
-    last_modified: 2026-11-24T05:00:56Z
+    last_modified: 2026-11-24T05:07:14Z
   - id: payslip-draft-dialog
     resource: ../../src/app/payslips/payslip-draft-dialog.tsx
     title: 급여명세서 작성 팝업 — 점포 · 이름 좁히기 · 직원 고르기 · 작성 · 일괄 작성(칸 문구 payslip-draft.ts, server action actions.ts)
@@ -41,7 +41,7 @@ sources:
   - id: payslip-review
     resource: ../../src/app/payslips/[payslipId]/payslip-review.tsx
     title: 검토 화면 — 머리 버튼 · 요약 띠 · 지급 · 공제 묶음(합계 · 도구 줄 · 근무시간 칸) · 합계 띠 · 확인창(공제 항목 추가 체크 목록)
-    last_modified: 2026-11-24T05:00:56Z
+    last_modified: 2026-11-24T05:07:14Z
 ---
 
 # api 로 그린다
@@ -113,7 +113,10 @@ sources:
   넣어도 가산하지 않는다.」처럼 넣은 시간을 앞에 둔다. 도움말은 화면의 지금 가산 스위치를 따른다 — 스위치를 바꾸고 아직 저장하지 않았으면
   연장수당의 저장된 식(「× 1.5배」)은 맞지 않아 보이지 않고 「가산수당 미적용 · 1배로 계산 · 계산값」 · 「계산값」을 쓴다(PR #336 리뷰).
   저장하지 않은 바뀜(`editSnapshot`)은 잘못 친 근무시간 · 금액(「.」 등)을 원문으로 담아 빈 칸과 가른다 — 아니면 바뀜이 없어 보여 확정 전
-  임시저장 검사를 건너뛰었다(PR #336 리뷰). 금액이 있는데 시간이 비면 api 가 400 「야간 · 휴일근무수당은 근무시간을 함께
+  임시저장 검사를 건너뛰었다(PR #336 리뷰). 근무시간 칸을 저장값과 다르게 바꿨으면 도움말도 저장된 「2.0시간」 대신 지금 입력(「3.5시간」, 비었거나
+  잘못되면 식 없음)을 따른다(`earningFormula`, PR #336 재검사). 근무시간 칸을 감싸는 div 는 야간 · 휴일근무수당 줄에만 둔다 — 다른 줄은
+  금액 칸 label 이 바깥 div 바로 아래여야 추가 공제의 [빼기] 자리(`[&>label>span:first-child]:pr-[40px]`)가 먹는다(전에 모든 줄을
+  `display: contents` div 로 감싸 긴 이름이 버튼 밑으로 들어갔다 — contents 는 DOM 계층을 바꾸지 않는다). 금액이 있는데 시간이 비면 api 가 400 「야간 · 휴일근무수당은 근무시간을 함께
   입력해 주세요.」로 막고 확인창에 그 문장이 선다. 시간을 넣으면 칸 아래에 「2.0시간」이 보인다. 지난 명세서 불러오기는 시간을 채우지 않는다
   (api `previous-values` 에 시간이 없다 — 달마다 다른 값이라 그 달 시간을 넣게 둔다). 야간 · 휴일근무수당 금액을 채웠으면 불러온 안내 띠 끝에
   「야간 · 휴일근무수당 시간은 이 달 값을 넣어 주세요.」를 붙인다(`loadedHoursAmount`). 가산 스위치를 바꾸면 토스트로 「임시저장하면 연장수당을 … 다시 계산합니다」를 알리고(상자 안에 띄우면 틀이 들썩였다, 2026-11-19 사용자 지정), 지금 칸 값이 저장된 금액과 다르거나 앞서 고쳐 둔 값이 있으면 「직접 고친 연장수당(N원)은 그대로 둡니다」를 붙인다(api 와 같은 기준 — 지금 칸 값으로 판단).

@@ -68,16 +68,20 @@ export const sentDateText = (item: Pick<PayslipListItem, "lastSentAt">) => sentT
  * 「계산값」 자리에 그 식을 보인다 — 직원 앱 · PDF 와 같은 글자다(WHALEERP-755). 없으면(계산하지 않음 · 2026-11-24 전 명세서) 지금처럼.
  * isPremiumApplied 는 화면의 지금 가산 스위치, savedPremium 은 저장된 값이다. 스위치를 바꾸고 아직 저장하지 않았으면 연장수당의 저장된 식
  * (「× 1.5배」)은 맞지 않아 보이지 않고 지금 스위치의 「가산수당 미적용 …」 · 「계산값」 글자를 쓴다 — 임시저장 때 api 가 새 식을 만든다(PR #336 리뷰).
+ * hoursMinutes 는 야간 · 휴일근무수당 근무시간 칸의 지금 값(분, 비면 null, 잘못 쳤으면 NaN)이다 — 저장값과 다르면 저장된 「2.0시간」 대신 지금
+ * 입력을 따른다(맞으면 「3.5시간」, 비었거나 잘못되면 식 없음, PR #336 재검사).
  */
 export function earningHelp(
-  item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "calculatedAmount" | "adjustedAmount" | "calculationText">,
+  item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "calculatedAmount" | "adjustedAmount" | "calculationText" | "workMinutes">,
   isPremiumApplied: boolean,
   savedPremium: boolean = isPremiumApplied,
+  hoursMinutes?: number | null,
 ): string {
+  const text = earningFormula(item, isPremiumApplied, savedPremium, hoursMinutes);
   // 가산을 끄면 연장수당을 가산 없이 1배로 계산하고, 관리자가 넣는 야간 · 휴일근무수당은 가산 대상이 아니다(PAY-05, 2026-10-26 재영).
   if (!isPremiumApplied && (item.itemCode === "NIGHT_WORK_PAY" || item.itemCode === "HOLIDAY_WORK_PAY"))
     // 넣은 시간(api 식 「2.0시간」)은 앞에 둔다 — 직원 앱 · PDF 와 같은 글자가 빠지지 않게(WHALEERP-755)
-    return `${item.calculationText ? `${item.calculationText} · ` : ""}가산 대상 아님 · 넣어도 가산하지 않는다.`;
+    return `${text ? `${text} · ` : ""}가산 대상 아님 · 넣어도 가산하지 않는다.`;
   if (item.isTaxFree) return "비과세";
   // 계산값을 고쳤으면 계산값을 함께 보인다(okf/staff.md 급여) — 식은 api 가 「직접 입력」으로 바꿔 준다
   const corrected =
@@ -85,11 +89,27 @@ export function earningHelp(
       ? `계산값 ${formatAmount(item.calculatedAmount)} 을 ${formatAmount(item.adjustedAmount)} 으로 고침`
       : null;
   // 식에 시간 · 시급 · 배율(가산을 끄면 「× 1배」)이 다 들어 있어 「가산수당 미적용」 머리말은 붙이지 않는다 — 세 곳이 같은 글자로 보이게
-  const text = item.itemCode === "OVERTIME_PAY" && isPremiumApplied !== savedPremium ? null : item.calculationText;
   if (text !== null) return corrected ? `${text} · ${corrected}` : text;
   if (item.calculatedAmount === null) return "직접 입력";
   const calculated = corrected ?? "계산값";
   return !isPremiumApplied && item.itemCode === "OVERTIME_PAY" ? `가산수당 미적용 · 1배로 계산 · ${calculated}` : calculated;
+}
+
+/**
+ * 도움말에 보일 계산식 — 저장된 calculationText 가 화면의 지금 값(가산 스위치 · 근무시간 칸)과 맞을 때만, 근무시간 칸을 바꿨으면 그 값의
+ * 「N.N시간」(earningHelp 참고). 화면이 이 글자를 계산식 모양(둥근 꺾은선 · 황토)으로 그린다.
+ */
+export function earningFormula(
+  item: Pick<PayslipItem, "itemCode" | "calculationText" | "workMinutes">,
+  isPremiumApplied: boolean,
+  savedPremium: boolean = isPremiumApplied,
+  hoursMinutes?: number | null,
+): string | null {
+  if (item.itemCode === "OVERTIME_PAY" && isPremiumApplied !== savedPremium) return null;
+  const hours = item.itemCode === "NIGHT_WORK_PAY" || item.itemCode === "HOLIDAY_WORK_PAY";
+  if (hours && hoursMinutes !== undefined && hoursMinutes !== item.workMinutes)
+    return hoursMinutes === null || Number.isNaN(hoursMinutes) ? null : `${(hoursMinutes / 60).toFixed(1)}시간`;
+  return item.calculationText;
 }
 
 /**

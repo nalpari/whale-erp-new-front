@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PayslipReviewReason } from "../../lib/payslips.ts";
-import { attendanceCell, attendanceHref, deductionAnchor, detailReviewReasons, earningHelp, periodText, retirementCell, reviewBand, reviewDetailText, sentDateText, sortDeductions } from "./payslip-row.ts";
+import { attendanceCell, attendanceHref, deductionAnchor, detailReviewReasons, earningFormula, earningHelp, periodText, retirementCell, reviewBand, reviewDetailText, sentDateText, sortDeductions } from "./payslip-row.ts";
 
 test("목록 칸 — 급여 기간, 출퇴근 확인 전은 「누락」 · 확인은 「확인」 · 가린 줄은 null", () => {
   assert.equal(periodText({ periodStartDate: "2026-09-01", periodEndDate: "2026-09-30" }), "2026-09-01 ~ 2026-09-30");
@@ -18,7 +18,7 @@ test("발송일 — 한국 날짜 MM-DD, 발송 전이면 「-」", () => {
   assert.equal(sentDateText({ lastSentAt: null }), "-");
 });
 
-const item = { itemCode: "OVERTIME_PAY", isTaxFree: false, calculatedAmount: 96_000, adjustedAmount: null, calculationText: null };
+const item = { itemCode: "OVERTIME_PAY", isTaxFree: false, calculatedAmount: 96_000, adjustedAmount: null, calculationText: null, workMinutes: null };
 
 test("지급 도움말 — 계산값, 고친 값, 직접 입력, 비과세", () => {
   assert.equal(earningHelp(item, true), "계산값");
@@ -61,6 +61,15 @@ test("지급 도움말 — api 의 한 줄 계산식이 있으면 「계산값�
     earningHelp({ ...item, itemCode: "NIGHT_WORK_PAY", calculatedAmount: null, calculationText: "2.0시간" }, false, true),
     "2.0시간 · 가산 대상 아님 · 넣어도 가산하지 않는다.",
   );
+  // 근무시간 칸을 바꿨으면 저장된 「2.0시간」 대신 지금 입력 — 맞으면 그 시간, 비었거나 잘못되면 식 없음(PR #336 재검사)
+  const night = { ...item, itemCode: "NIGHT_WORK_PAY", calculatedAmount: null, adjustedAmount: 30_000, calculationText: "2.0시간", workMinutes: 120 };
+  assert.equal(earningHelp(night, true, true, 120), "2.0시간");
+  assert.equal(earningHelp(night, true, true, 210), "3.5시간");
+  assert.equal(earningHelp(night, true, true, null), "직접 입력");
+  assert.equal(earningHelp(night, true, true, Number.NaN), "직접 입력");
+  assert.equal(earningHelp(night, false, false, 210), "3.5시간 · 가산 대상 아님 · 넣어도 가산하지 않는다.");
+  assert.equal(earningFormula(night, true, true, 210), "3.5시간");
+  assert.equal(earningFormula(night, true, true, null), null);
   // 식이 없으면(2026-11-24 전 명세서) 지금처럼
   assert.equal(earningHelp({ ...formula, calculationText: null }, true), "계산값");
 });

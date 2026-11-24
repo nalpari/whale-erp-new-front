@@ -15,7 +15,7 @@ import {
   type PayslipDetail,
   type PayslipItem,
 } from "@/lib/payslips";
-import { earningHelp, retirementCell, sortDeductions, STATUS_STYLE } from "../payslip-row";
+import { earningFormula, earningHelp, retirementCell, sortDeductions, STATUS_STYLE } from "../payslip-row";
 import {
   cancelPayslipConfirmation,
   recalculatePayslip,
@@ -39,6 +39,7 @@ import {
   loadedHoursAmount,
   nextRecheckMs,
   overHours,
+  parseHours,
   RECHECK_FIRST_MS,
   removeLine,
   saveItems,
@@ -401,13 +402,16 @@ export function PayslipReview({
       const amount = parseAmount(texts.get(i.payslipItemId) ?? "");
       return total + (amount === null || Number.isNaN(amount) ? 0 : amount);
     }, 0);
+  // 야간 · 휴일근무수당 근무시간 칸의 지금 값(분) — 도움말이 저장된 「2.0시간」 대신 지금 입력을 따르게(PR #336 재검사)
+  const hoursOf = (item: PayslipItem) => (hasHours(item) ? parseHours(hours.get(item.payslipItemId) ?? "") : undefined);
+  const formulaOf = (item: PayslipItem) => earningFormula(item, premium, payslip.isPremiumApplied, hoursOf(item));
   const field = (item: PayslipItem, help: string) => (
     <AmountField
       key={item.payslipItemId}
       label={item.itemName}
       value={texts.get(item.payslipItemId) ?? ""}
       help={help}
-      formula={item.calculationText !== null && help.includes(item.calculationText)}
+      formula={formulaOf(item) !== null && help.includes(formulaOf(item)!)}
       hours={
         hasHours(item)
           ? { value: hours.get(item.payslipItemId) ?? "", onChange: (text) => setHours((m) => new Map(m).set(item.payslipItemId, text)) }
@@ -662,10 +666,10 @@ export function PayslipReview({
               )
             }
           >
-            <Rows>{earnings.filter((i) => !i.isTaxFree).map((i) => field(i, earningHelp(i, premium, payslip.isPremiumApplied)))}</Rows>
+            <Rows>{earnings.filter((i) => !i.isTaxFree).map((i) => field(i, earningHelp(i, premium, payslip.isPremiumApplied, hoursOf(i))))}</Rows>
           </GroupBox>
           <GroupBox title="지급 항목(비과세)" total={sumOf(earnings.filter((i) => i.isTaxFree))}>
-            <Rows>{earnings.filter((i) => i.isTaxFree).map((i) => field(i, earningHelp(i, premium, payslip.isPremiumApplied)))}</Rows>
+            <Rows>{earnings.filter((i) => i.isTaxFree).map((i) => field(i, earningHelp(i, premium, payslip.isPremiumApplied, hoursOf(i))))}</Rows>
           </GroupBox>
           <GroupBox
             id="deduction-basic"
