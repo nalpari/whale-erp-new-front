@@ -89,6 +89,28 @@ function AmountField({
   // 계산값(출퇴근 기록으로 api 가 셈한 값)과 api 의 한 줄 계산식은 근로계약서 작성의 계산식처럼 둥근 꺾은선 · 황토 글자(#956013)로 보인다
   const shownHelp = help === "직접 입력" || help === "비과세" ? "" : help;
   const formula = isFormula || shownHelp.includes("계산값");
+  const amountField = (
+    <Field label={label}>
+      <TextField
+        value={value}
+        inputMode="numeric"
+        placeholder={readOnly ? undefined : "직접 입력"}
+        readOnly={readOnly}
+        aria-invalid={invalid || undefined}
+        // 숫자와 쉼표만 받는다(화면 설계 공통 기준 1번 — 저장 때 칸 오류가 생기지 않게, WHALEERP-633). 붙여 넣은 「원」 · 「₩」 · 공백은 떼고, 그 밖의
+        // 글자가 섞인 입력은 통째로 받지 않는다 — 글자만 지우면 「1,000.50」이 「100050」처럼 다른 금액이 된다
+        onChange={(e) => {
+          const text = e.target.value.replace(/[\s원₩]/g, "");
+          if (/^[\d,]*$/.test(text)) onChange(text);
+        }}
+        // 다 친 뒤에 쉼표를 넣는다 — 치는 중에 넣으면 커서가 끝으로 튄다
+        onBlur={(e) => {
+          const amount = parseAmount(e.target.value);
+          if (amount !== null && !Number.isNaN(amount)) onChange(formatAmount(amount));
+        }}
+      />
+    </Field>
+  );
   return (
     // 칸 아래 글자가 있는 칸과 없는 칸이 한 줄에 서도 칸 위쪽이 맞게 위로 붙인다(self-start)
     // [빼기]가 있으면 이름 줄 오른쪽에 그만큼 비운다 — 긴 항목 이름(연말(중도)정산 소득세)이 버튼 밑으로 들어갔다(코드 리뷰)
@@ -106,29 +128,12 @@ function AmountField({
         </button>
       )}
       {/* 야간 · 휴일근무수당은 금액 옆에 근무시간 칸(64px, 뒤에 단위 「h」, 0.5시간 단위) — 임금명세서에 시간 수를 함께 적어야 한다(WHALEERP-755).
-          저장 때 분으로 보낸다. 금액이 있는데 비우면 api 가 막는다. 다른 칸은 contents 라 틀이 그대로다 */}
-      <div className={hours ? "flex items-end gap-[6px]" : "contents"}>
-        <Field label={label}>
-          <TextField
-            value={value}
-            inputMode="numeric"
-            placeholder={readOnly ? undefined : "직접 입력"}
-            readOnly={readOnly}
-            aria-invalid={invalid || undefined}
-            // 숫자와 쉼표만 받는다(화면 설계 공통 기준 1번 — 저장 때 칸 오류가 생기지 않게, WHALEERP-633). 붙여 넣은 「원」 · 「₩」 · 공백은 떼고, 그 밖의
-            // 글자가 섞인 입력은 통째로 받지 않는다 — 글자만 지우면 「1,000.50」이 「100050」처럼 다른 금액이 된다
-            onChange={(e) => {
-              const text = e.target.value.replace(/[\s원₩]/g, "");
-              if (/^[\d,]*$/.test(text)) onChange(text);
-            }}
-            // 다 친 뒤에 쉼표를 넣는다 — 치는 중에 넣으면 커서가 끝으로 튄다
-            onBlur={(e) => {
-              const amount = parseAmount(e.target.value);
-              if (amount !== null && !Number.isNaN(amount)) onChange(formatAmount(amount));
-            }}
-          />
-        </Field>
-        {hours && (
+          저장 때 분으로 보낸다. 금액이 있는데 비우면 api 가 막는다. 감싸는 div 는 근무시간 칸이 있는 줄에만 둔다 — 다른 줄은 금액 칸(label)이
+          바깥 div 의 바로 아래 자식이어야 [빼기] 자리 선택자(&>label>span:first-child)가 먹는다. display: contents 는 상자만 없애고 DOM 계층은
+          그대로라, 모든 줄을 감쌌을 때 긴 추가 공제 이름이 버튼 밑으로 들어갔다(PR #336 재검사). 다른 줄의 DOM 은 감싸기 전과 같다 */}
+      {hours ? (
+        <div className="flex items-end gap-[6px]">
+          {amountField}
           <label className="flex shrink-0 items-center gap-[4px]">
             <span className="w-[64px]">
               <TextField
@@ -147,8 +152,10 @@ function AmountField({
               h
             </span>
           </label>
-        )}
-      </div>
+        </div>
+      ) : (
+        amountField
+      )}
       {shownHelp && (
         <span className={`flex gap-[6px] ${HELP}`}>
           {formula ? (
