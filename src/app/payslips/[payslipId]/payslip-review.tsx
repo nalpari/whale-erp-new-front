@@ -35,7 +35,6 @@ import {
   editSnapshot,
   hasHours,
   HOURS_INPUT,
-  HOURS_MAX_LENGTH,
   hoursTextOf,
   loadedHoursAmount,
   nextRecheckMs,
@@ -142,7 +141,6 @@ function AmountField({
               <TextField
                 value={hours.value}
                 inputMode="decimal"
-                maxLength={HOURS_MAX_LENGTH}
                 placeholder={readOnly ? undefined : "시간"}
                 readOnly={readOnly}
                 aria-label={`${label} 근무시간(시간)`}

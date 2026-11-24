@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-24
+* **Update**: [Payslips screen](/screens/payslips.md) — 근무시간 칸은 소수 한 자리까지만 받고 글자 수 제한을 없앴다(「2.499」 반올림 · 「744.001」 잘림, PR #336 재검사, WHALEERP-755).
 * **Update**: [Payslips screen](/screens/payslips.md) — PR #336 재검사: 근무시간 칸이 치는 중 소수 자리를 묻지 않고(「2.3」), 저장 전 0.5시간 단위가 아니면 막는다(`notHalfHours`). 끝이 점인 「2.」 · 유한하지 않은 아주 긴 숫자(근무시간 · 금액)는 잘못된 입력(NaN). 근무시간 칸 여섯 자 제한.
 * **Update**: [Payslips screen](/screens/payslips.md) — PR #336 재검사: 근무시간 칸 감싸기를 야간 · 휴일근무수당 줄에만 둬 추가 공제 [빼기] 자리 선택자를 되살렸고, 근무시간 칸을 바꾸면 도움말이 지금 입력을 따른다(`earningFormula`).
 * **Update**: [Payslips screen](/screens/payslips.md) — PR #336 리뷰: 지급 도움말은 지금 가산 스위치를 따른다(저장 전이면 연장수당의 저장된 식 대신 「가산수당 미적용 …」), 바뀜 스냅샷이 잘못 친 근무시간 · 금액을 빈 칸과 가른다(`editSnapshot`). `api-types.generated.ts` 다시 생성(workMinutes 설명 · multipleOf 뺌).

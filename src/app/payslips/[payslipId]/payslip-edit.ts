@@ -11,13 +11,12 @@ export const hasHours = (item: Pick<PayslipItem, "itemCode">) => HOURS_ITEM_CODE
 export const hoursTextOf = (minutes: number | null) => (minutes === null ? "" : String(minutes / 60));
 
 /**
- * 근무시간 칸이 받는 글자 — 숫자와 점 하나, 소수 자리 수는 묻지 않는다. 치는 중에 「2.3」의 「3」을 거부하면 「2.」가 남아 2시간으로 저장됐다
- * (PR #336 재검사). 0.5시간 단위인지는 저장 전에 본다(notHalfHours)
+ * 근무시간 칸이 받는 글자 — 숫자와 점 하나, 소수는 한 자리까지(0.5시간 단위라 둘째 자리가 필요 없다). 치는 중에 「2.3」은 받아 두고
+ * 0.5시간 단위인지는 저장 전에 본다(notHalfHours) — 「3」을 거부하면 「2.」가 남아 2시간으로 저장됐다(PR #336 재검사). 둘째 소수 자리를
+ * 받으면 「2.499」가 반올림돼 150분으로 0.5시간 검사를 지나고, 글자 수로 자르면 붙여 넣은 「744.001」이 「744.00」이 됐다(PR #336
+ * 재검사) — 이 모양에 안 맞는 입력(붙여넣기 포함)은 칸에 들이지 않는다
  */
-export const HOURS_INPUT = /^\d*(\.\d*)?$/;
-
-/** 근무시간 칸 글자 수 상한 — 「744.5」가 다섯 자라 넉넉히 여섯. 더 긴 값은 붙여 넣어도 잘려 상한(744시간) 검사에 걸린다 */
-export const HOURS_MAX_LENGTH = 6;
+export const HOURS_INPUT = /^\d*(\.\d?)?$/;
 
 /** 근무시간 상한(분) — 한 달 31일 × 24시간 = 744시간. api 수정 DTO(PAYSLIP_WORK_MINUTES_MAX)와 같다 */
 export const HOURS_MAX_MINUTES = 31 * 24 * 60;
@@ -30,7 +29,7 @@ export const HOURS_MAX_MINUTES = 31 * 24 * 60;
 export function parseHours(text: string): number | null {
   const t = text.trim();
   if (t === "") return null;
-  if (!/^(\d+(\.\d+)?|\.\d+)$/.test(t)) return Number.NaN;
+  if (!/^(\d+(\.\d)?|\.\d)$/.test(t)) return Number.NaN; // 소수 한 자리까지(HOURS_INPUT) — 분이 늘 6의 배수라 반올림이 없다
   const minutes = Math.round(Number(t) * 60);
   return Number.isFinite(minutes) ? minutes : Number.NaN;
 }

@@ -102,6 +102,9 @@ test("야간 · 휴일근무수당은 근무시간 칸을 분으로 싣는다 �
   // 치는 중에는 소수 자리를 묻지 않는다 — 「2.3」의 「3」을 거부하면 「2.」가 남았다
   assert.ok(HOURS_INPUT.test("12.5") && HOURS_INPUT.test("3.") && HOURS_INPUT.test("") && HOURS_INPUT.test("2.3") && HOURS_INPUT.test(".5"));
   assert.ok(!HOURS_INPUT.test("1.2.3") && !HOURS_INPUT.test("-1") && !HOURS_INPUT.test("a"));
+  // 소수는 한 자리까지 — 「2.499」가 반올림돼 0.5시간 검사를 지나거나, 붙여 넣은 「744.001」이 잘려 744시간이 되지 않게(PR #336 재검사)
+  assert.ok(!HOURS_INPUT.test("2.49") && !HOURS_INPUT.test("2.499") && !HOURS_INPUT.test("744.001"));
+  assert.ok(Number.isNaN(parseHours("2.499")) && Number.isNaN(parseHours("744.001")));
   // 744시간(api 와 같은 한 달 상한)까지 — 넘으면 화면이 이름을 모아 막는다
   assert.deepEqual(overHours([night, holiday, lines[1]], new Map([[104, "744"], [105, "744.5"]])), ["휴일근무수당"]);
   assert.equal(HOURS_MAX_MINUTES, 44_640);
