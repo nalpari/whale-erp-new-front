@@ -2,6 +2,8 @@
 
 ## 2026-11-24
 * **Update**: [Payslips screen](/screens/payslips.md) — 검토 사유 「확인 필요 기록 포함」 문장을 바꾸던 정규식을 뺐다. api 가 새 문장(「근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 N건 있습니다.」)을 준다(WHALEERP-757). 배포는 api 배포 · `db:deploy`(저장된 옛 문장을 고치는 마이그레이션) 뒤에 한다 — 앞서면 옛 문장의 괄호가 다음 줄로 떨어져 보인다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — TO-DO 상세 「TO-DO」 표의 「등록」 아래에 「최종수정 | 시각 · 사람(회색)」 줄(WHALEERP-698): api `modifiedAt` · `modifiedByName`(api #311)이 있을 때만 — 관리자 [수정] 때만 남고 상태 변경은 바꾸지 않으며, 고친 적이 없으면 줄이 없다(근로계약 상세는 줄을 두고 「-」 — 다르다). `api-types.generated.ts` 다시 생성, DESIGN.md 「TO-DO 리스트 관리 · 상세」도 맞췄다.
+* **Update**: [Staff members](/screens/staff-members.md) — 고용형태 이름(목록 필터 · 목록 열 · 상세 요약 띠)을 화면 상수 `EMPLOYMENT_TYPE_LABELS` 대신 `getEnum("EmploymentType")` 으로 받는다(WHALEERP-720, 네이밍 규칙 「상수 대응표를 두지 않는다」). 받지 못하면 열 · 요약 띠는 「-」, 필터는 값 그대로.
 
 ## 2026-11-23
 * **Update**: [Staff members screen](/screens/staff-members.md) — 퇴직 처리 확인창 문구 · 배치(고를 수 있는 첫날 꼬리표 · 정리 항목 상자 · 퇴직 처리 안내 박스), 퇴직 표시에 연도.

@@ -10142,6 +10142,13 @@ export interface components {
             completedAt: string | null;
             performer: components["schemas"]["TodoStaffDto"] | null;
             createdByName: string | null;
+            /**
+             * Format: date-time
+             * @description 최종수정 일시 — 관리자 [수정] 때만. 고친 적이 없으면 null(상세에 줄이 없다). 상태 변경은 바꾸지 않는다 (WHALEERP-698)
+             */
+            modifiedAt: string | null;
+            /** @description 최종수정 관리자 이름 — createdByName 과 같은 규칙 */
+            modifiedByName: string | null;
             todoId: number;
             storeId: number;
             /** @description 본사 점포(stores.is_hq) — 화면은 「[본사] 상호」로 보인다. 점포 행이 없으면 false */
