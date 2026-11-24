@@ -99,6 +99,19 @@ export function deletePreview(detail: Pick<TodoDetail, "status" | "groupTodos">)
   return { pending, remaining: rows.length - pending };
 }
 
+/**
+ * 상세 「최종수정」 칸 — 고친 적이 없어도 줄을 두고 흐린 「-」, 고쳤으면 시각과 이름(회색, 없으면 시각만). 근로계약 상세(WHALEERP-699) ·
+ * 공지 · 점포 변경이력과 같다(WHALEERP-698 후속, 2026-11-24 재영). 최종수정은 관리자 [수정] 때만 api 가 남긴다(상태 변경은 바꾸지 않는다).
+ * 시각 모양은 화면의 formatDateTime 을 넘겨받는다
+ */
+export function modifiedCell(
+  d: Pick<TodoDetail, "modifiedAt" | "modifiedByName">,
+  format: (iso: string) => string,
+): { value: string; by: string | null; muted: boolean } {
+  if (!d.modifiedAt) return { value: "-", by: null, muted: true };
+  return { value: format(d.modifiedAt), by: d.modifiedByName, muted: false };
+}
+
 /** 상태 이력 한 줄의 「변경」 칸 */
 export function historyText(h: Schemas["TodoStatusHistoryDto"], labels: EnumValue[]): string {
   if (h.isUnassignedStaffMemberMasked) return `배정 풀림 · ${MASKED_STAFF}(퇴직)`;

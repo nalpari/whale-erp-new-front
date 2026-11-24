@@ -10243,7 +10243,7 @@ export interface components {
             createdByName: string | null;
             /**
              * Format: date-time
-             * @description 최종수정 일시 — 관리자 [수정] 때만. 고친 적이 없으면 null(상세에 줄이 없다). 상태 변경은 바꾸지 않는다 (WHALEERP-698)
+             * @description 최종수정 일시 — 관리자 [수정] 때만. 고친 적이 없으면 null(상세는 줄을 두고 「-」로 보인다). 상태 변경은 바꾸지 않는다 (WHALEERP-698)
              */
             modifiedAt: string | null;
             /** @description 최종수정 관리자 이름 — createdByName 과 같은 규칙 */
@@ -11069,7 +11069,13 @@ export interface components {
              *     false 면 고치기 · 처음 넣기(`PUT`)가 409 STAFF_RETIRED 다.
              */
             editable: boolean;
-            /** @description 이 소속에 낸 신고 정보. 아직 내지 않았으면 null */
+            /**
+             * @description 보존 기간(퇴직 + 3년, 운영 정책 RET-01 · TAX-08)이 지났는지 — 퇴직일이 파기 배치와 같은 기준(`retiredBefore`)보다 앞이면 true 이고
+             *     그때 taxProfile 은 늘 null 이다(배치가 이미 지웠든 배치 전이든). 화면은 이것으로 「넣은 적 없음」과 「보존 기간이 지나 지움」을
+             *     가른다(WHALEERP-772). 퇴직하지 않았거나 기한 안이면 false
+             */
+            expired: boolean;
+            /** @description 이 소속에 낸 신고 정보. 아직 내지 않았거나 보존 기간이 지났으면(expired) null */
             taxProfile: components["schemas"]["MyTaxProfileDto"] | null;
         };
         SaveMyTaxProfileDto: {
