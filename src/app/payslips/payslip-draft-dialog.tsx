@@ -12,6 +12,7 @@ import { storeOptionLabel } from "@/lib/store-scope";
 import { CellView } from "../staff-members/staff-table";
 import { bulkCreatePayslips, createPayslip, getPayslipCandidatesAction, type DraftFailure } from "./actions";
 import { bulkSummary, canDraft, candidateStores, attendanceCell, contractCell, filterCandidates, payslipCell } from "./payslip-draft";
+import { retirementCell } from "./payslip-row";
 import { StoreNameWithType } from "@/components/site/store-type-tag";
 
 // 「급여명세서 작성」 버튼과 그 팝업(데모 staff-sections.mjs pickId, 720px). 미리 고른 직원은 없다 — 점포 · 이름으로 좁혀 한 명을
@@ -31,6 +32,8 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
   const titleId = useId();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<PayslipCandidate[] | null>(null);
+  // 퇴직 · 퇴직 예정 판정의 오늘(한국) — 작성 대상을 받을 때 정한다
+  const [today, setToday] = useState("");
   const [storeId, setStoreId] = useState<number | null>(null);
   const [name, setName] = useState("");
   const [picked, setPicked] = useState<number | null>(null);
@@ -63,6 +66,7 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
       }
       if (mine !== requestNumber.current) return;
       if (!result.ok) return setFailure(result);
+      setToday(result.today);
       setItems(result.data.items);
     });
   };
@@ -146,7 +150,25 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
       // 직원 · 점포에도 기준 폭을 두고 표에 최소폭을 걸어, 좁은 창(휴대폰 브라우저 등)에서 이 두 열이 0 으로 줄어 「직원」이 세로로 꺾이고
       // 이름이 사라지지 않게 한다 — 모자라면 표 상자 안에서 가로로 민다(2026-11-19 사용자 지정)
       width: "w-[94px]",
-      cell: (c) => c.staffName,
+      // 퇴직일이 있으면 이름 아래 줄에 짧은 「퇴직 M/D」 · 「예정 M/D」(WHALEERP-764 — 퇴직한 달 마지막 급여인지 가른다). 이름 옆에 두면
+      // 그 줄만 이름이 밀려(출퇴근 누락, 2026-11-23) 아래 줄로, 폭은 데모 그대로 두고 글자를 줄였다(2026-11-24 사용자 지정).
+      // 화면 낭독기에는 짧은 글자 대신 전체 표기(「퇴직 예정 2026-11-30」)를 읽힌다. 웹 글꼴을 받기 전 대체 글꼴로 그려져 꼬리표가
+      // 조금 넓어져도 잘리지 않게 칸 좌우 여백(10px) 중 8px 를 꼬리표 줄에 내준다 — 칸은 넘침을 여백 바깥에서 자른다
+      cell: (c) => {
+        const retirement = retirementCell(c.retiredDate, today, { short: true });
+        return retirement ? (
+          <span className="-mx-[8px] flex flex-col items-center gap-[2px]">
+            {/* 칸의 말줄임은 세로 정렬 안의 글자에 먹지 않아 이름을 따로 줄인다 */}
+            <span className="max-w-full truncate">{c.staffName}</span>
+            <span aria-hidden="true">
+              <CellView cell={retirement} />
+            </span>
+            <span className="sr-only">{retirementCell(c.retiredDate, today)?.text}</span>
+          </span>
+        ) : (
+          c.staffName
+        );
+      },
     },
     // 점포 이름 앞에 본사 · 직영 · 가맹 꼬리표, 왼쪽 정렬 — 직원 · 근로계약 목록과 같다(2026-11-19 사용자 지정)
     { header: "점포", width: "w-[170px]", align: "left", cell: (c) => <StoreNameWithType storeId={c.storeId} name={c.storeName} isHq={c.storeIsHq} /> },
