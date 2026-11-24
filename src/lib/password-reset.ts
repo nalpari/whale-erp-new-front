@@ -10,21 +10,20 @@ const HQ_ROLES: ReadonlySet<string> = new Set(["BM", "BA"]);
  * 상세의 「비밀번호 초기화」 버튼. 가입 전 · 퇴직 · 탈퇴 직원에게는 숨기고(데모 주석, 2026-10-08 재영), 「직원 정보 관리」 수정 권한이
  * 있을 때만 보인다(api 의 메뉴 권한 검사, WHALEERP-177).
  * 퇴직 예정(재직 + 퇴직일)은 아직 일하는 직원이라 보인다 — api 도 퇴직(RETIRED)만 409 로 막는다.
- * 탈퇴는 가입 완료인데 계정 이메일이 없는 것으로 가린다 — 상세 응답은 조회 권한이면 email 을 내고, 가입 전 · 탈퇴 · 퇴직이거나
- * 본사 역할이 동의로만 보는 가맹 점포 직원이면 null 이다(WHALEERP-180). 어느 쪽이든 보낼 수 없으니 숨기는 것이 맞다(나머지는 위
- * 조건으로도 이미 숨는다). 조회 권한만 있는 관리자에게는 email 이 와도 canUpdate 로 숨는다.
- * 탈퇴 표시가 따로 오지 않으니 이 규칙이 바뀌면 함께 고친다. 놓친 경우는 api 가 409 로 막는다. 응답에 email 칸이 없으면(api #56 전
- * 배포) 탈퇴인지 알 수 없어 숨긴다.
+ * 탈퇴 계정은 isAccountWithdrawn(WHALEERP-770)으로 가린다. 그 밖에 email 이 없으면 숨긴다 — 상세 응답은 조회 권한이면 email 을 내고,
+ * 가입 전 · 탈퇴 · 퇴직이거나 본사 역할이 동의로만 보는 가맹 점포 직원이면 null 이다(WHALEERP-180). 보낼 곳이 없으니 숨기는 것이 맞다.
+ * 조회 권한만 있는 관리자에게는 email 이 와도 canUpdate 로 숨는다. 놓친 경우는 api 가 409 로 막는다. 응답에 email 칸이 없으면(api #56 전
+ * 배포) 숨긴다.
  * 본사 역할(BM · BA)은 직영 점포 직원에게만 보인다. 본사 제공 동의한 가맹 직원은 상세가 열리지만, 계정 조치는 동의와 상관없이
  * 점포 단위라 api 가 404 다 — 가맹 점포 직원은 가맹마스터 · 가맹관리자만 된다(api canManageStaffAccount, 2026-10-14 재영, ATT-30).
  * 점포 유형을 모르면 api 처럼 직영이 아닌 것으로 본다. 본사 역할이 아니면 점포 유형을 보지 않는다 — 범위는 api 가 본다.
  */
 export function canResetPassword(
-  staff: Pick<StaffMember, "joinState" | "employmentStatus" | "store" | "email">,
+  staff: Pick<StaffMember, "joinState" | "employmentStatus" | "store" | "email" | "isAccountWithdrawn">,
   roleTypeCode: string,
   canUpdate: boolean,
 ): boolean {
-  if (!canUpdate || staff.joinState !== "JOINED" || staff.employmentStatus !== "EMPLOYED" || !staff.email) return false;
+  if (!canUpdate || staff.joinState !== "JOINED" || staff.isAccountWithdrawn || staff.employmentStatus !== "EMPLOYED" || !staff.email) return false;
   return !HQ_ROLES.has(roleTypeCode) || staff.store.storeType === "DIRECT";
 }
 

@@ -32,6 +32,7 @@ const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => (
   contract: { contractId: 1, status: "SIGNED", signDeadlineAt: null, lastSentAt: null, endDate: null, updatedAt: null, canResend: false, workDays: null, isRenewal: false },
   employmentStatus: "EMPLOYED",
   retiredDate: null,
+  isAccountWithdrawn: false,
   ...over,
 });
 const contract = (status: NonNullable<StaffMemberListItem["contract"]>["status"], over = {}) => ({
@@ -55,6 +56,14 @@ test("가입·인증 — 가입 완료 · 가입 대기 · 정보 확인 필요"
     joinCell(item({ joinState: "LINK_HOLD", linkHold: { linkHoldId: 1, mismatchReason: "PHONE_MISMATCH", verifiedPhoneLast4: "4418", heldAt: "2026-10-08T09:00:00+09:00" } }), TODAY),
     { text: "정보 확인 필요 · 4일", style: "badge-off" },
   );
+});
+
+test("가입·인증 — 탈퇴 계정은 가입 상태 칸만 「탈퇴 계정」이고 재직 상태 칸은 그대로다(WHALEERP-770)", () => {
+  const withdrawn = item({ isAccountWithdrawn: true, employmentStatus: "RETIRED", retiredDate: "2026-10-01" });
+  assert.deepEqual(joinCell(withdrawn, TODAY), { text: "탈퇴 계정", style: "badge-neutral" });
+  assert.deepEqual(joinCell(item({ isAccountWithdrawn: true, isMasked: true }), TODAY), { text: "탈퇴 계정", style: "badge-neutral" });
+  assert.deepEqual(statusCells(withdrawn), [{ text: "퇴직 2026-10-01", style: "muted" }]);
+  assert.deepEqual(statusCells(item({ isAccountWithdrawn: true })), [{ text: "재직", style: "mark-on" }]);
 });
 
 test("가입·인증 — 가입 대기 날짜는 한국 날짜다(UTC 로 전날이어도)", () => {

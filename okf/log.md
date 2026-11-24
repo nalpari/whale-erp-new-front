@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-24
+* **Update**: [Staff members](/screens/staff-members.md) — 직원 앱 회원 탈퇴 계정 표시(WHALEERP-770): api `isAccountWithdrawn` 이 true 면 가입 상태 칸 「탈퇴 계정」(재직 상태 칸은 그대로), 상세 이메일 칸 「탈퇴 계정」, 비밀번호 초기화 버튼 숨김은 email 짐작 대신 이 값으로. `api-types.generated.ts` 임시 재생성(api 워크트리 openapi.json).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — TO-DO 상세 「TO-DO」 표의 「등록」 아래에 「최종수정 | 시각 · 사람(회색)」 줄(WHALEERP-698): api `modifiedAt` · `modifiedByName`(api #311)이 있을 때만 — 관리자 [수정] 때만 남고 상태 변경은 바꾸지 않으며, 고친 적이 없으면 줄이 없다(근로계약 상세는 줄을 두고 「-」 — 다르다). `api-types.generated.ts` 다시 생성, DESIGN.md 「TO-DO 리스트 관리 · 상세」도 맞췄다.
 * **Update**: [Staff members](/screens/staff-members.md) — 고용형태 이름(목록 필터 · 목록 열 · 상세 요약 띠)을 화면 상수 `EMPLOYMENT_TYPE_LABELS` 대신 `getEnum("EmploymentType")` 으로 받는다(WHALEERP-720, 네이밍 규칙 「상수 대응표를 두지 않는다」). 받지 못하면 열 · 요약 띠는 「-」, 필터는 값 그대로.
 
