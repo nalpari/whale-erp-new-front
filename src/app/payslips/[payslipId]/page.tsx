@@ -9,7 +9,8 @@ import { formatDateTime } from "@/lib/format";
 import { getPayslip } from "@/lib/payslips-api";
 import { kstToday } from "@/lib/staff-members";
 import { payslipListHref } from "../payslip-list-query";
-import { attendanceHref, deductionAnchor, detailReviewReasons, reviewBand, reviewDetailText } from "../payslip-row";
+import { attendanceHref, deductionAnchor, detailReviewReasons, retirementCell, reviewBand, reviewDetailText } from "../payslip-row";
+import { CellView } from "../../staff-members/staff-table";
 import { confirmBlockedUntil } from "./payslip-edit";
 import { PayslipReview } from "./payslip-review";
 
@@ -44,6 +45,7 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
   // 오른쪽 상자는 모두 둥근 확인 상자(RoundBox — 8px · #c9d1de, 제목 15px 600) — 근로계약 상세와 같은 모양. 건수는 제목 줄 오른쪽 끝, 이동은 줄 오른쪽 끝
   // 점선 알약 링크(RoundLink). 왼쪽 입력 칸(회색 제목 줄 상자)과 모양으로 가른다(2026-11-19 사용자 지정, DESIGN.md 「상세 화면 틀」)
   const sameAttendance = payslip.attendanceStartDate === payslip.periodStartDate && payslip.attendanceEndDate === payslip.periodEndDate;
+  const retirement = retirementCell(payslip.retiredDate, today);
   const aside = (
     <>
       <section className="min-w-0">
@@ -95,6 +97,8 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
               ),
             },
             ...(sameAttendance ? [] : [{ label: "출퇴근기간", value: `${payslip.attendanceStartDate} ~ ${payslip.attendanceEndDate.slice(5)}` }]),
+            // 퇴직일 — 퇴직한 달 마지막 급여면 산정기간 · 확정 가능일(퇴직 다음 날)이 퇴직일에 걸린다. 퇴직일이 없으면 줄을 두지 않는다(WHALEERP-764)
+            ...(retirement ? [{ label: "퇴직일", value: <CellView cell={retirement} /> }] : []),
             // 근로계약 급여액은 고용형태와 상관없이 시급이다(2026-10-12) — 정직원 기본급은 시급 × 월 기본시간. 이름은 세무사 사무실 급여명세서 용어
             // 「통상시급」(2026-11-19 사용자 지정 — 위 요약 띠에 올렸다가 다시 여기로)
             { label: "통상시급", value: contract.wageAmount === null ? "-" : `${formatAmount(contract.wageAmount)} 원` },
