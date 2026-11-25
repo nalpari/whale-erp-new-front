@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { GuideIcon, useAction, usePanelOpen } from "@/components/common";
+import { PeekingWhales } from "@/components/site/peeking-whales";
 import { useAccount, useCurrentBp, useMyPageOpen, usePasswordChangeOpen, useService, useStores, useWithdrawOpen } from "@/components/site/session-gate";
 import { stripBp } from "@/lib/bp-path";
 import {
@@ -268,6 +269,8 @@ export function GuideMiniCardSlot() {
         style={placeStyle}
         className={`fixed ${place} z-40 flex h-[40px] cursor-pointer touch-none items-center select-none gap-[8px] rounded-full border border-erp-brand bg-white px-[16px] text-[14px] font-medium text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-colors duration-150 ease-out hover:bg-erp-point-subtle`}
       >
+        {/* 접은 알약 위에는 아기 고래만(2026-11-25 사용자 지정) */}
+        <PeekingWhales variant="baby" />
         <span className="flex h-[20px] items-center rounded-full bg-erp-point-bg px-[8px] text-[11px] font-semibold text-erp-point">
           STEP {parsed.step}
         </span>
@@ -282,6 +285,8 @@ export function GuideMiniCardSlot() {
       style={placeStyle}
       className={`fixed ${place} z-40 flex max-h-[calc(100dvh-160px)] w-[420px] flex-col rounded-[6px] border border-erp-brand bg-white shadow-[0_2px_6px_rgba(40,47,55,0.08)]`}
     >
+      {/* 카드 위로 고개를 내민 아기 · 엄마 고래 · 꼬리(2026-11-25 사용자 지정) — 접은 알약에는 아기 고래만 */}
+      <PeekingWhales variant="family" />
       {/* 머리 줄을 잡고 끌어 옮긴다(이동 커서) — touch-none 이라 터치로 끌어도 화면이 스크롤되지 않는다 */}
       <header
         onPointerDown={(e) => handleDragStart(e, boxRef.current)}

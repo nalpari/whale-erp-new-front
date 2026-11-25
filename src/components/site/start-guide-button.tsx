@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useDropdown } from "@/components/common/popup";
 import { branchStores } from "@/lib/store-scope";
+import { HoverBabyWhale, PeekingWhales } from "./peeking-whales";
 import { useAccount, useStores } from "./session-gate";
 import { GUIDE_STEPS, guideHref, initialTrackOf, stepNumberOf, TRACK_LABEL, tracksOf, type GuideStep, type GuideTrack } from "@/lib/start-guide";
 
@@ -32,8 +33,10 @@ export function StartGuideButton() {
         onClick={() => setOpen((v) => !v)}
         // 글자는 늘 포인트 파랑 — 전엔 회색이다가 호버 · 열림에만 파랑이라 눈에 잘 안 띄었다(2026-11-11 사용자 지정).
         // 마우스를 올리거나 열려 있으면 연한 포인트 바탕(erp-point-bg) 알약이 깔린다 — 누를 수 있는 것으로 보이게(2026-11-13 사용자 지정, A안)
-        className={`flex h-[34px] shrink-0 items-center gap-[6px] rounded-full px-[14px] text-[14px] font-medium whitespace-nowrap text-erp-point transition-colors duration-150 ease-out hover:bg-erp-point-bg ${open ? "bg-erp-point-bg" : ""}`}
+        className={`group relative flex h-[34px] shrink-0 items-center gap-[6px] rounded-full px-[14px] text-[14px] font-medium whitespace-nowrap text-erp-point transition-colors duration-150 ease-out hover:bg-erp-point-bg ${open ? "bg-erp-point-bg" : ""}`}
       >
+        {/* 마우스를 올리면 버튼 뒤에서 아기 고래가 고개를 내밀고, 눌러 목록이 열리면 숨는다(목록 위엔 엄마 고래, 2026-11-25 사용자 지정) */}
+        <HoverBabyWhale open={open} />
         시작 가이드
         {/* 꺾쇠는 글자색(파랑)을 따른다(currentColor). 모양은 /icons/chevron-small.svg 와 같다 */}
         <svg aria-hidden="true" width="5" height="8" viewBox="0 0 5.09 8.06" fill="none" className={`shrink-0 transition-transform duration-150 ease-out ${open ? "-rotate-90" : "rotate-180"}`}>
@@ -47,7 +50,17 @@ export function StartGuideButton() {
         inert={!open}
         className={`absolute top-[calc(100%+8px)] right-0 z-20 w-[400px] rounded-[6px] border border-erp-brand bg-white px-[16px] py-[14px] text-left text-erp-ink transition-[opacity,translate,visibility] duration-150 ease-out motion-reduce:translate-y-0 ${open ? "visible translate-y-0 opacity-100" : "invisible translate-y-[4px] opacity-0"}`}
       >
+        {/* 상자 위로 고개를 내민 엄마 고래 · 꼬리(2026-11-25 사용자 지정) — 상자와 함께 나타나고 사라진다 */}
+        <PeekingWhales variant="mom" />
         <div className="flex flex-col gap-[12px]">
+          {/* 제목 줄 + 닫기(2026-11-25 사용자 지정) — 바탕을 눌러 닫히는 것을 모르는 사람을 위해 [×]를 둔다(바탕 누르기도 그대로).
+              [×]는 미니 카드 머리 줄과 같은 모양이고, 닫으면 포커스가 [시작 가이드] 버튼으로 돌아간다(close) */}
+          <div className="flex items-center justify-between">
+            <b className="text-[15px] font-semibold text-erp-ink">시작 가이드</b>
+            <button type="button" aria-label="시작 가이드 닫기" onClick={close} className="-mr-[4px] flex size-[24px] items-center justify-center text-[16px] leading-none text-erp-label hover:text-erp-ink">
+              ×
+            </button>
+          </div>
           {tracks.length > 1 && (
             // 밑줄 탭 — 고른 칸만 파랑 글자 600 + 파랑 2px 밑줄, 아래는 표 선(erp-thead-line) 한 줄(2026-11-04 사용자 지정 — 회청 바탕은 칙칙했다).
             // 파랑은 점포 없음 띠와 같은 포인트 색(erp-point), STEP 꼬리표 바탕은 erp-point-bg
