@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PayslipReviewReason } from "../../lib/payslips.ts";
-import { attendanceCell, attendanceHref, deductionAnchor, detailReviewReasons, earningHelp, periodText, retirementCell, reviewBand, reviewDetailText, sentDateText, sortDeductions } from "./payslip-row.ts";
+import { attendanceCell, attendanceHref, deductionAnchor, detailReviewReasons, earningFormula, earningHelp, hoursLabel, periodText, retirementCell, reviewBand, reviewDetailText, sentDateText, sortDeductions } from "./payslip-row.ts";
 
 test("목록 칸 — 급여 기간, 출퇴근 확인 전은 「누락」 · 확인은 「확인」 · 가린 줄은 null", () => {
   assert.equal(periodText({ periodStartDate: "2026-09-01", periodEndDate: "2026-09-30" }), "2026-09-01 ~ 2026-09-30");
@@ -18,7 +18,7 @@ test("발송일 — 한국 날짜 MM-DD, 발송 전이면 「-」", () => {
   assert.equal(sentDateText({ lastSentAt: null }), "-");
 });
 
-const item = { itemCode: "OVERTIME_PAY", isTaxFree: false, calculatedAmount: 96_000, adjustedAmount: null };
+const item = { itemCode: "OVERTIME_PAY", isTaxFree: false, calculatedAmount: 96_000, adjustedAmount: null, calculationText: null, workMinutes: null };
 
 test("지급 도움말 — 계산값, 고친 값, 직접 입력, 비과세", () => {
   assert.equal(earningHelp(item, true), "계산값");
@@ -34,6 +34,55 @@ test("가산을 끄면 연장수당은 1배로 계산하고 야간 · 휴일근�
   assert.equal(earningHelp({ ...item, adjustedAmount: 128_000 }, false), "가산수당 미적용 · 1배로 계산 · 계산값 96,000 을 128,000 으로 고침");
   assert.equal(earningHelp({ ...item, itemCode: "NIGHT_WORK_PAY", calculatedAmount: null }, false), "가산 대상 아님 · 넣어도 가산하지 않는다.");
   assert.equal(earningHelp({ ...item, itemCode: "HOLIDAY_WORK_PAY", calculatedAmount: null }, false), "가산 대상 아님 · 넣어도 가산하지 않는다.");
+});
+
+test("지급 도움말 — api 의 한 줄 계산식이 있으면 「계산값」 자리에 그 식, 고쳤으면 고친 내용을 뒤에(WHALEERP-755)", () => {
+  const formula = { ...item, calculatedAmount: 123_840, calculationText: "8.0시간 × 10,320원 × 1.5배" };
+  assert.equal(earningHelp(formula, true), "8.0시간 × 10,320원 × 1.5배");
+  // 가산을 끄면 api 가 「× 1배」 식을 준다 — 머리말 없이 직원 앱 · PDF 와 같은 글자
+  assert.equal(earningHelp({ ...formula, calculationText: "8.0시간 × 10,320원 × 1배" }, false), "8.0시간 × 10,320원 × 1배");
+  assert.equal(
+    earningHelp({ ...formula, adjustedAmount: 130_000, calculationText: "8.0시간 · 직접 입력" }, true),
+    "8.0시간 · 직접 입력 · 계산값 123,840 을 130,000 으로 고침",
+  );
+  // 야간 · 휴일근무수당은 넣은 시간
+  assert.equal(earningHelp({ ...item, itemCode: "NIGHT_WORK_PAY", calculatedAmount: null, calculationText: "2.0시간" }, true), "2.0시간");
+  // 가산을 꺼도 넣은 시간은 앞에 — 세 곳 글자가 같게
+  assert.equal(
+    earningHelp({ ...item, itemCode: "HOLIDAY_WORK_PAY", calculatedAmount: null, calculationText: "2.0시간" }, false),
+    "2.0시간 · 가산 대상 아님 · 넣어도 가산하지 않는다.",
+  );
+  // 가산 스위치를 바꾸고 아직 저장하지 않았으면 연장수당의 저장된 식은 맞지 않아 지금 스위치의 글자로(PR #336 리뷰)
+  assert.equal(earningHelp(formula, false, true), "가산수당 미적용 · 1배로 계산 · 계산값");
+  assert.equal(earningHelp({ ...formula, calculationText: "8.0시간 × 10,320원 × 1배" }, true, false), "계산값");
+  assert.equal(earningHelp(formula, true, true), "8.0시간 × 10,320원 × 1.5배");
+  // 야간 · 휴일근무수당은 지금 스위치로 가산 대상 아님을 알리고, 넣은 시간은 그대로
+  assert.equal(
+    earningHelp({ ...item, itemCode: "NIGHT_WORK_PAY", calculatedAmount: null, calculationText: "2.0시간" }, false, true),
+    "2.0시간 · 가산 대상 아님 · 넣어도 가산하지 않는다.",
+  );
+  // 근무시간 칸을 바꿨으면 저장된 「2.0시간」 대신 지금 입력 — 맞으면 그 시간, 비었거나 잘못되면 식 없음(PR #336 재검사)
+  const night = { ...item, itemCode: "NIGHT_WORK_PAY", calculatedAmount: null, adjustedAmount: 30_000, calculationText: "2.0시간", workMinutes: 120 };
+  assert.equal(earningHelp(night, true, true, 120), "2.0시간");
+  assert.equal(earningHelp(night, true, true, 210), "3.5시간");
+  assert.equal(earningHelp(night, true, true, null), "직접 입력");
+  assert.equal(earningHelp(night, true, true, Number.NaN), "직접 입력");
+  assert.equal(earningHelp(night, false, false, 210), "3.5시간 · 가산 대상 아님 · 넣어도 가산하지 않는다.");
+  assert.equal(earningFormula(night, true, true, 210), "3.5시간");
+  // 시간 글자는 api 와 같은 규칙 — 6의 배수 분만 소수 한 자리
+  assert.equal(earningFormula(night, true, true, 470), "7시간 50분");
+  assert.equal(hoursLabel(468), "7.8시간");
+  assert.equal(hoursLabel(480), "8.0시간");
+  assert.equal(hoursLabel(61), "1시간 1분");
+  assert.equal(hoursLabel(31), "31분");
+  assert.equal(hoursLabel(0), "0.0시간");
+  assert.equal(earningFormula(night, true, true, null), null);
+  // 응답에 칸이 없는 옛 api — 식 없음으로, 도움말은 전처럼
+  const old = { ...item, calculationText: undefined, workMinutes: undefined } as unknown as typeof item;
+  assert.equal(earningFormula(old, true, true), null);
+  assert.equal(earningHelp(old, true, true), "계산값");
+  // 식이 없으면(2026-11-24 전 명세서) 지금처럼
+  assert.equal(earningHelp({ ...formula, calculationText: null }, true), "계산값");
 });
 
 const reason = (reviewReason: PayslipReviewReason["reviewReason"], detail: string | null): PayslipReviewReason => ({
@@ -80,6 +129,8 @@ test("상세 검토 사유 — 작성 중 · 검토 중이고 보이는 공제 �
     calculatedAmount: null,
     adjustedAmount: null,
     isEntered,
+    workMinutes: null,
+    calculationText: null,
   });
   const attendance: PayslipReviewReason = {
     payslipReviewReasonId: 7,
@@ -90,6 +141,8 @@ test("상세 검토 사유 — 작성 중 · 검토 중이고 보이는 공제 �
   const base = {
     status: "REVIEWING" as const,
     isWithholdingApplied: false,
+    isHealthPensionInsured: true,
+    isEmploymentInjuryInsured: true,
     reviewReasons: [attendance],
     items: [line("EARNING", "BONUS", "상여", false), line("BASIC", "NATIONAL_PENSION", "국민연금", false), line("ADDITIONAL", "ETC", "기타공제", false), line("BASIC", "INCOME_TAX", "소득세", true)],
   };
@@ -133,17 +186,26 @@ test("상세 검토 사유 — 작성 중 · 검토 중이고 보이는 공제 �
     }),
     [attendance, { payslipReviewReasonId: 0, reviewReason: "DEDUCTION_MISSING", detail: "국민연금, 사업소득세, 기타공제", acknowledgedAt: null }],
   );
+  // 4대보험에 가입하지 않았으면 그 줄은 비어 있어도 공제 미입력이 아니다(WHALEERP-756)
+  const insuranceLines = [
+    line("BASIC", "NATIONAL_PENSION", "국민연금", false),
+    line("BASIC", "HEALTH_INSURANCE", "건강보험", false),
+    line("BASIC", "LONG_TERM_CARE_INSURANCE", "장기요양보험", false),
+    line("BASIC", "EMPLOYMENT_INSURANCE", "고용보험", false),
+    line("BASIC", "INCOME_TAX", "소득세", true),
+  ];
+  const insured = (isHealthPensionInsured: boolean, isEmploymentInjuryInsured: boolean) =>
+    detailReviewReasons({ ...base, isHealthPensionInsured, isEmploymentInjuryInsured, items: insuranceLines });
+  assert.deepEqual(insured(false, false), [attendance]);
+  assert.equal(insured(true, false).at(-1)?.detail, "국민연금, 건강보험, 장기요양보험");
+  assert.equal(insured(false, true).at(-1)?.detail, "고용보험");
 });
 
-test("검토 사유 상세 — api 의 「확인 필요로 표시된 …(예시)」 문장을 「… 등의 사유로 확인이 필요한 …」으로 다듬는다(2026-11-19 사용자 지정)", () => {
-  assert.equal(
-    reviewDetailText("확인 필요로 표시된 출퇴근 기록이 1건 있습니다(근무지 반경 밖 퇴근, 위치 조작 감지 등)."),
-    "근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 1건 있습니다.",
-  );
-  assert.equal(
-    reviewDetailText("이번 급여 기간과 첫 주에 포함된 지난달 날짜(9월 29일)에 확인 필요로 표시된 출퇴근 기록이 2건 있습니다."),
-    "이번 급여 기간과 첫 주에 포함된 지난달 날짜(9월 29일)에 확인이 필요한 출퇴근 기록이 2건 있습니다.",
-  );
+test("검토 사유 상세 — 「확인 필요 기록 포함」 문장은 api 가 준 그대로 보인다(WHALEERP-757)", () => {
+  const basic = "근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 1건 있습니다.";
+  assert.equal(reviewDetailText(basic), basic);
+  const lead = "이번 급여 기간과 첫 주에 포함된 지난달 날짜(9월 28일~9월 30일)에 확인이 필요한 출퇴근 기록이 2건 있습니다.";
+  assert.equal(reviewDetailText(lead), lead);
   assert.equal(reviewDetailText("출퇴근 기록 2일 누락."), "출퇴근 기록 2일 누락.");
 });
 
@@ -156,12 +218,19 @@ test("sortDeductions — 국민연금 · 건강보험 · 장기요양보험 · �
   );
 });
 
+const BOTH = { isHealthPensionInsured: true, isEmploymentInjuryInsured: true };
+
 test("deductionAnchor — 추가 공제만 비었으면 추가 공제 상자, 기본 공제가 비었으면 기본 공제 상자", () => {
   const line = (itemCategory: "EARNING" | "BASIC" | "ADDITIONAL" | "WITHHOLDING", itemCode: string, isEntered: boolean) => ({ itemCategory, itemCode, isEntered }) as never;
-  assert.equal(deductionAnchor({ isWithholdingApplied: false, items: [line("BASIC", "NATIONAL_PENSION", true), line("ADDITIONAL", "ETC", false)] }), "#deduction-additional");
-  assert.equal(deductionAnchor({ isWithholdingApplied: false, items: [line("BASIC", "NATIONAL_PENSION", false), line("ADDITIONAL", "ETC", false)] }), "#deduction-basic");
+  assert.equal(deductionAnchor({ isWithholdingApplied: false, ...BOTH, items: [line("BASIC", "NATIONAL_PENSION", true), line("ADDITIONAL", "ETC", false)] }), "#deduction-additional");
+  assert.equal(deductionAnchor({ isWithholdingApplied: false, ...BOTH, items: [line("BASIC", "NATIONAL_PENSION", false), line("ADDITIONAL", "ETC", false)] }), "#deduction-basic");
   // 3.3% 를 켜면 숨는 소득세가 비어도 세지 않는다
-  assert.equal(deductionAnchor({ isWithholdingApplied: true, items: [line("BASIC", "INCOME_TAX", false), line("ADDITIONAL", "ETC", false)] }), "#deduction-additional");
+  assert.equal(deductionAnchor({ isWithholdingApplied: true, ...BOTH, items: [line("BASIC", "INCOME_TAX", false), line("ADDITIONAL", "ETC", false)] }), "#deduction-additional");
+  // 가입하지 않은 4대보험 줄도 세지 않는다(WHALEERP-756)
+  assert.equal(
+    deductionAnchor({ isWithholdingApplied: false, isHealthPensionInsured: false, isEmploymentInjuryInsured: false, items: [line("BASIC", "NATIONAL_PENSION", false), line("ADDITIONAL", "ETC", false)] }),
+    "#deduction-additional",
+  );
 });
 
 test("검토 사유 상세 — 날짜 목록은 「있습니다.」 아래 유형마다 한 줄, 이어지는 문장은 줄바꿈", () => {

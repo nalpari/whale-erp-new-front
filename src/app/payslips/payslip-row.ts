@@ -62,19 +62,66 @@ export function attendanceCell(item: Pick<PayslipListItem, "isAttendanceConfirme
 /** 「발송일」 칸 — 마지막 발송 MM-DD(근로계약 목록 발송일과 같은 모양), 발송 전이면 「-」. */
 export const sentDateText = (item: Pick<PayslipListItem, "lastSentAt">) => sentText(item.lastSentAt);
 
-/** 지급 칸 아래 도움말. 데모 payrolls-detail 의 help 글자와 같다. */
-export function earningHelp(item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "calculatedAmount" | "adjustedAmount">, isPremiumApplied: boolean): string {
+/**
+ * 지급 칸 아래 도움말. 데모 payrolls-detail 의 help 글자와 같다.
+ * api 가 만든 한 줄 계산식(calculationText — 「8.0시간 × 10,320원 × 1.5배」 · 고치면 「8.0시간 · 직접 입력」 · 야간 · 휴일은 「2.0시간」)이 있으면
+ * 「계산값」 자리에 그 식을 보인다 — 직원 앱 · PDF 와 같은 글자다(WHALEERP-755). 없으면(계산하지 않음 · 2026-11-24 전 명세서) 지금처럼.
+ * isPremiumApplied 는 화면의 지금 가산 스위치, savedPremium 은 저장된 값이다. 스위치를 바꾸고 아직 저장하지 않았으면 연장수당의 저장된 식
+ * (「× 1.5배」)은 맞지 않아 보이지 않고 지금 스위치의 「가산수당 미적용 …」 · 「계산값」 글자를 쓴다 — 임시저장 때 api 가 새 식을 만든다(PR #336 리뷰).
+ * hoursMinutes 는 야간 · 휴일근무수당 근무시간 칸의 지금 값(분, 비면 null, 잘못 쳤으면 NaN)이다 — 저장값과 다르면 저장된 「2.0시간」 대신 지금
+ * 입력을 따른다(맞으면 「3.5시간」, 비었거나 잘못되면 식 없음, PR #336 재검사).
+ */
+export function earningHelp(
+  item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "calculatedAmount" | "adjustedAmount" | "calculationText" | "workMinutes">,
+  isPremiumApplied: boolean,
+  savedPremium: boolean = isPremiumApplied,
+  hoursMinutes?: number | null,
+): string {
+  const text = earningFormula(item, isPremiumApplied, savedPremium, hoursMinutes);
   // 가산을 끄면 연장수당을 가산 없이 1배로 계산하고, 관리자가 넣는 야간 · 휴일근무수당은 가산 대상이 아니다(PAY-05, 2026-10-26 재영).
   if (!isPremiumApplied && (item.itemCode === "NIGHT_WORK_PAY" || item.itemCode === "HOLIDAY_WORK_PAY"))
-    return "가산 대상 아님 · 넣어도 가산하지 않는다.";
+    // 넣은 시간(api 식 「2.0시간」)은 앞에 둔다 — 직원 앱 · PDF 와 같은 글자가 빠지지 않게(WHALEERP-755)
+    return `${text ? `${text} · ` : ""}가산 대상 아님 · 넣어도 가산하지 않는다.`;
   if (item.isTaxFree) return "비과세";
-  if (item.calculatedAmount === null) return "직접 입력";
-  // 계산값을 고쳤으면 계산값을 함께 보인다(okf/staff.md 급여). 계산 근거 글자(데모 「8.0h × 1.5배」)는 api 에 칸이 없다.
-  const calculated =
-    item.adjustedAmount !== null && item.adjustedAmount !== item.calculatedAmount
+  // 계산값을 고쳤으면 계산값을 함께 보인다(okf/staff.md 급여) — 식은 api 가 「직접 입력」으로 바꿔 준다
+  const corrected =
+    item.calculatedAmount !== null && item.adjustedAmount !== null && item.adjustedAmount !== item.calculatedAmount
       ? `계산값 ${formatAmount(item.calculatedAmount)} 을 ${formatAmount(item.adjustedAmount)} 으로 고침`
-      : "계산값";
+      : null;
+  // 식에 시간 · 시급 · 배율(가산을 끄면 「× 1배」)이 다 들어 있어 「가산수당 미적용」 머리말은 붙이지 않는다 — 세 곳이 같은 글자로 보이게
+  if (text !== null) return corrected ? `${text} · ${corrected}` : text;
+  if (item.calculatedAmount === null) return "직접 입력";
+  const calculated = corrected ?? "계산값";
   return !isPremiumApplied && item.itemCode === "OVERTIME_PAY" ? `가산수당 미적용 · 1배로 계산 · ${calculated}` : calculated;
+}
+
+/**
+ * 시간 글자 — api 계산식의 hoursText(src/payslips/pay-calculation.ts)와 같은 규칙: 분이 6의 배수면 「7.8시간」 · 「2.0시간」, 아니면
+ * 「7시간 50분」 · 「31분」(재영 리뷰, WHALEERP-755). 저장된 글자는 api 가 만들고, 화면은 저장 전 지금 입력을 보일 때만 이것을 쓴다.
+ */
+export function hoursLabel(minutes: number): string {
+  const m = Math.round(minutes);
+  if (m % 6 === 0) return `${(m / 60).toFixed(1)}시간`;
+  const h = Math.floor(m / 60);
+  return h > 0 ? `${h}시간 ${m % 60}분` : `${m % 60}분`;
+}
+
+/**
+ * 도움말에 보일 계산식 — 저장된 calculationText 가 화면의 지금 값(가산 스위치 · 근무시간 칸)과 맞을 때만, 근무시간 칸을 바꿨으면 그 값의
+ * 「N.N시간」(earningHelp 참고). 화면이 이 글자를 계산식 모양(둥근 꺾은선 · 황토)으로 그린다.
+ */
+export function earningFormula(
+  item: Pick<PayslipItem, "itemCode" | "calculationText" | "workMinutes">,
+  isPremiumApplied: boolean,
+  savedPremium: boolean = isPremiumApplied,
+  hoursMinutes?: number | null,
+): string | null {
+  if (item.itemCode === "OVERTIME_PAY" && isPremiumApplied !== savedPremium) return null;
+  const hours = item.itemCode === "NIGHT_WORK_PAY" || item.itemCode === "HOLIDAY_WORK_PAY";
+  if (hours && hoursMinutes !== undefined && hoursMinutes !== item.workMinutes)
+    return hoursMinutes === null || Number.isNaN(hoursMinutes) ? null : hoursLabel(hoursMinutes);
+  // 응답에 칸이 없는 옛 api(undefined)도 식 없음으로
+  return item.calculationText ?? null;
 }
 
 /**
@@ -128,13 +175,13 @@ export function sortDeductions<T extends Pick<PayslipItem, "itemCode">>(items: r
  * 빨간 띠는 입력 중인 값을 따른다). 더한 줄의 id 는 0 이다(api 사유 id 는 1 부터).
  */
 export function detailReviewReasons(
-  payslip: Pick<PayslipDetail, "status" | "isWithholdingApplied" | "reviewReasons" | "items">,
+  payslip: Pick<PayslipDetail, "status" | "isWithholdingApplied" | "isHealthPensionInsured" | "isEmploymentInjuryInsured" | "reviewReasons" | "items">,
 ): PayslipReviewReason[] {
   // 공제 미입력은 저장된 사유 줄이 아니라 공제 칸으로만 판정한다 — 예전 데이터에 줄이 남아 있어도 두 번 보이지 않게 뺀다
   const stored = payslip.reviewReasons.filter((r) => r.reviewReason !== "DEDUCTION_MISSING");
   if (payslip.status !== "DRAFTING" && payslip.status !== "REVIEWING") return stored;
   const blank = payslip.items.filter(
-    (i) => i.itemCategory !== "EARNING" && !i.isEntered && isItemShown(i, payslip.isWithholdingApplied),
+    (i) => i.itemCategory !== "EARNING" && !i.isEntered && isItemShown(i, payslip.isWithholdingApplied, payslip),
   );
   if (!blank.length) return stored;
   return [
@@ -144,10 +191,9 @@ export function detailReviewReasons(
 }
 
 /**
- * 검토 사유 상세 글자(api 가 준 문장)를 화면 말투로 다듬는다 — 경고 띠와 「검토 대상 항목」 표가 같이 쓴다(2026-11-19 사용자 지정).
- * 「확인 필요로 표시된 출퇴근 기록이 N건 있습니다(근무지 반경 밖 퇴근, 위치 조작 감지 등).」 →
- * 「근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 N건 있습니다.」. api 문장(payslip-attendance-reasons.ts)이 바뀌면
- * 그대로 보인다 — 근본적으로는 api 문장을 고치는 게 맞다(3팀 확인).
+ * 검토 사유 상세 글자(api 가 준 문장)를 화면에 맞게 줄을 나눈다 — 경고 띠와 「검토 대상 항목」 표가 같이 쓴다(2026-11-19 사용자 지정).
+ * 「확인 필요 기록 포함」 문장(「근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 N건 있습니다.」)은 api 가 그대로
+ * 주므로 바꾸지 않는다(WHALEERP-757 — 전에는 api 의 옛 문장을 여기서 바꿨다).
  *
  * 날짜 목록이 붙은 문장(출퇴근 누락 「…날이 2일 있습니다(11월 5일 퇴근 미등록, 11월 3일 출근·퇴근 미등록).」 · 계약 만료 후 기록
  * 「…2일 있습니다(11월 21일, 11월 22일).」)은 「…있습니다.」 아래로 유형마다 한 줄 — 「· 출근 · 퇴근 기록 없음: 11월 3일(화), 11월 7일(토)」
@@ -157,8 +203,6 @@ export function detailReviewReasons(
  */
 export function reviewDetailText(text: string, periodStartDate?: string): string {
   return text
-    .replace(/^확인 필요로 표시된 출퇴근 기록이 (\d+)건 있습니다\(근무지 반경 밖 퇴근, 위치 조작 감지 등\)\.$/, "근무지 반경 밖 퇴근, 위치 조작 감지 등의 사유로 확인이 필요한 출퇴근 기록이 $1건 있습니다.")
-    .replace("확인 필요로 표시된 출퇴근 기록이", "확인이 필요한 출퇴근 기록이")
     .replace(/^(.*있습니다)\((.*)\)\.$/, (_, head: string, list: string) => `${head}.\n${dayLines(list, periodStartDate) ?? `(${list})`}`)
     .replace(/\. (?=\S)/g, ".\n");
 }
@@ -218,7 +262,9 @@ export function reviewBand(
  * 「공제 미입력」의 [공제 칸으로 이동]이 갈 상자 — 비어 있는 기본 공제(3.3% 포함)가 있으면 「공제 항목(4대보험 · 세금)」, 추가 공제만 비었으면
  * 「공제 항목(추가)」. 늘 기본 공제 상자로 가면 빈 칸이 추가 공제에만 있을 때 다 채운 상자로 갔다(ip-code-review)
  */
-export function deductionAnchor(payslip: Pick<PayslipDetail, "isWithholdingApplied" | "items">): "#deduction-basic" | "#deduction-additional" {
-  const blank = payslip.items.filter((i) => i.itemCategory !== "EARNING" && !i.isEntered && isItemShown(i, payslip.isWithholdingApplied));
+export function deductionAnchor(
+  payslip: Pick<PayslipDetail, "isWithholdingApplied" | "isHealthPensionInsured" | "isEmploymentInjuryInsured" | "items">,
+): "#deduction-basic" | "#deduction-additional" {
+  const blank = payslip.items.filter((i) => i.itemCategory !== "EARNING" && !i.isEntered && isItemShown(i, payslip.isWithholdingApplied, payslip));
   return blank.length > 0 && blank.every((i) => i.itemCategory === "ADDITIONAL") ? "#deduction-additional" : "#deduction-basic";
 }

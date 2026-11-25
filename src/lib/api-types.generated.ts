@@ -4286,13 +4286,17 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 그 소속의 신고 정보 (TAX-8). 주민등록번호 · 계좌번호는 가린 값만 준다 */
+        /**
+         * 그 소속의 신고 정보 (TAX-8). 주민등록번호 · 계좌번호는 가린 값만 준다.
+         *     퇴직한 소속도 같은 가린 값으로 주고 `editable: false` 다 — 조회만 된다(WHALEERP-765, 퇴직 후 3년. 지나면 파기 배치가 지워 `taxProfile: null`).
+         */
         get: operations["MyMembershipsController_taxProfile"];
         /**
          * 신고 정보 작성 · 수정 (WHALEERP-334). 직원 본인만 — 관리자 토큰은 403. 처음에는 주민등록번호 · 은행 · 계좌번호를 모두,
          *     고칠 때는 주민등록번호만 또는 급여 계좌(은행 · 계좌번호 함께)만 보낸다. 주민등록번호를 새로 받으면 수집 일시가 바뀌고
          *     이전 값은 남기지 않는다. 급여 계좌는 다음 급여부터 쓴다. 응답은 조회와 같다(가린 값만).
          *     이미 낸 신고 정보를 고칠 때는 `currentPassword`(지금 비밀번호)도 보낸다 — 처음 작성에는 필요 없다(2026-10-23).
+         *     퇴직한 소속은 고치기 · 처음 넣기 모두 409 다(WHALEERP-765).
          */
         put: operations["MyMembershipsController_saveTaxProfile"];
         post?: never;
@@ -4405,6 +4409,46 @@ export interface paths {
         put?: never;
         /** 본사 제공 동의 철회 (ATT-30) */
         post: operations["MyConsentController_withdrawHqSharing"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/profile/withdrawal-eligibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 탈퇴 전 조건. 재직 중인 근무지(퇴직 예정 포함)가 하나라도 있으면 `canWithdraw` 는 false 이고 근무지 · 퇴직일을 준다 — 화면이
+         *     「근무지 관리자에게 퇴직 처리를 요청해 주세요」와 함께 보인다. `pendingContractCount` 는 탈퇴하면 종료되는 대기 중 근로계약 수다
+         */
+        get: operations["MyWithdrawalController_getEligibility"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/profile/withdrawal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 회원 탈퇴. 지금 비밀번호가 맞고 재직 중인 근무지가 없으면 즉시 탈퇴한다 — 개인정보 · 위치정보를 지우고 모든 기기의 접속을
+         *     끊는다(되돌릴 수 없다). 근로계약서 · 급여명세서 · 출퇴근 기록은 근무지 데이터로 남는다
+         */
+        post: operations["MyWithdrawalController_withdraw"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5417,8 +5461,8 @@ export interface components {
         StaffMemberLinkHoldDto: {
             mismatchReason: components["schemas"]["LinkHoldMismatchReason"];
             linkHoldId: number;
-            /** @description 가입자가 본인인증한 번호의 끝 4자리 */
-            verifiedPhoneLast4: string;
+            /** @description 가입자가 본인인증한 번호의 끝 4자리. 탈퇴한 계정이면 null(탈퇴할 때 열린 보류를 지워 보통 오지 않는다) */
+            verifiedPhoneLast4: string | null;
             /** Format: date-time */
             heldAt: string;
         };
@@ -5487,6 +5531,12 @@ export interface components {
             contract: components["schemas"]["StaffMemberContractDto"] | null;
             /** @description 퇴직일(YYYY-MM-DD). 재직이면서 값이 있으면 퇴직 예정 */
             retiredDate: string | null;
+            /**
+             * @description 직원이 직원 앱에서 회원 탈퇴한 계정인지(WHALEERP-770). 탈퇴해도 직원 레코드 · 계약 · 출퇴근 기록은 근무지 데이터로 남고
+             *     계정의 개인정보(이메일 · 휴대전화 등)만 지워진다 — 화면은 「탈퇴 계정」 표시를 한다. 가입 전(계정 없음)이면 false 다.
+             *     가린 줄(isMasked)에도 같은 값이 온다.
+             */
+            isAccountWithdrawn: boolean;
         };
         StaffMemberListResponseDto: {
             items: components["schemas"]["StaffMemberListItemDto"][];
@@ -5557,6 +5607,12 @@ export interface components {
             contract: components["schemas"]["StaffMemberContractDto"] | null;
             /** @description 퇴직일(YYYY-MM-DD). 재직이면서 값이 있으면 퇴직 예정 */
             retiredDate: string | null;
+            /**
+             * @description 직원이 직원 앱에서 회원 탈퇴한 계정인지(WHALEERP-770). 탈퇴해도 직원 레코드 · 계약 · 출퇴근 기록은 근무지 데이터로 남고
+             *     계정의 개인정보(이메일 · 휴대전화 등)만 지워진다 — 화면은 「탈퇴 계정」 표시를 한다. 가입 전(계정 없음)이면 false 다.
+             *     가린 줄(isMasked)에도 같은 값이 온다.
+             */
+            isAccountWithdrawn: boolean;
         };
         StaffMemberPayrollAccountDto: {
             /** @description 은행 이름(BANK 공통코드 이름, 예 KB국민은행). 공통코드에 없으면 은행 코드 그대로 */
@@ -7697,6 +7753,13 @@ export interface components {
             adjustedAmount: number | null;
             /** @description 입력 여부 — 공제 미입력과 0 을 가른다 */
             isEntered: boolean;
+            /** @description 계산 · 입력에 쓴 시간(분) — 기본급(파트타이머) · 주휴 · 연장은 계산 때, 야간 · 휴일근무수당은 관리자가 넣은 값. 없으면 null(WHALEERP-755) */
+            workMinutes: number | null;
+            /**
+             * @description 한 줄 계산식(「8.0시간 × 10,320원 × 1.5배」, WHALEERP-755). 관리자가 계산값과 다른 금액으로 고치면 「직접 입력」(연장수당은
+             *     「8.0시간 · 직접 입력」), 야간 · 휴일근무수당은 「2.0시간」. 계산하지 않은 줄 · 2026-11-24 전에 만든 줄은 null
+             */
+            calculationText: string | null;
         };
         PayslipReviewReasonDto: {
             reviewReason: components["schemas"]["PayslipReviewReason"];
@@ -7754,6 +7817,14 @@ export interface components {
             periodEndDate: string;
             isPremiumApplied: boolean;
             isWithholdingApplied: boolean;
+            /**
+             * @description 건강보험 · 국민연금 가입 — 급여 기간에 효력이 있던 근로계약(체결 완료 · 체결 뒤 종료) 중 하나라도 체크했으면 true. false 면
+             *     국민연금 · 건강보험 · 장기요양보험 줄 가운데 금액이 비었거나 0 원인 줄을 보이지 않고 확정에서도 세지 않는다 — 0 아닌 금액이 든 줄은
+             *     미가입이어도 보이고 합계에 든다(WHALEERP-756)
+             */
+            isHealthPensionInsured: boolean;
+            /** @description 고용보험 · 산재보험 가입 — 같은 계약 기준. false 면 고용보험 줄이 비었거나 0 원일 때 보이지 않고 확정에서도 세지 않는다(0 아닌 금액이면 보임, WHALEERP-756) */
+            isEmploymentInjuryInsured: boolean;
             grossPayAmount: number;
             totalDeductionAmount: number;
             /** @description 실지급액 */
@@ -7808,6 +7879,13 @@ export interface components {
         PayslipItemAmountDto: {
             /** @description 원, 0 이상. null 이면 미입력 — 시스템 계산 항목은 계산값으로 돌아간다 */
             amount: number | null;
+            /**
+             * @description 근무시간(분), 0 이상 — 야간수당 · 휴일근무수당만 쓰고 다른 줄은 무시한다(WHALEERP-755). 그 두 줄은 30분 단위이고 금액이 0보다
+             *     크면 함께 넣어야 한다(아니면 400 — 서비스가 본다. 다른 줄에 실린 값까지 30분 단위로 막지 않게, PR #317 리뷰). null 이면 시간
+             *     없음. 키를 빼면(근무시간 칸이 없는 옛 관리자 화면) 그 줄의 저장된 시간을 그대로 두고 위 검사도 하지 않는다 — 시간 없이 금액이
+             *     남으면 확정이 422 WORK_HOURS_MISSING 으로 막는다
+             */
+            workMinutes?: number | null;
             payslipItemMasterId: number;
         };
         SavePayslipDto: {
@@ -7896,6 +7974,10 @@ export interface components {
             calculatedAmount: number | null;
             adjustedAmount: number | null;
             isEntered: boolean;
+            /** @description 계산 · 입력에 쓴 시간(분). 없으면 null(WHALEERP-755) */
+            workMinutes: number | null;
+            /** @description 한 줄 계산식 — 관리자 상세와 같은 글자(「8.0시간 × 10,320원 × 1.5배」 · 「직접 입력」). 없으면 null(WHALEERP-755) */
+            calculationText: string | null;
         };
         MyPayslipDetailResponseDto: {
             employmentType: components["schemas"]["EmploymentType"];
@@ -7932,6 +8014,13 @@ export interface components {
             logs: components["schemas"]["MyPayslipLogDto"][];
             /** @description 3.3% 원천징수 적용 — 원천징수 · 소득세 줄을 어떻게 보일지 화면이 정한다 */
             isWithholdingApplied: boolean;
+            /**
+             * @description 건강보험 · 국민연금 가입 — 급여 기간에 효력이 있던 근로계약 중 하나라도 체크했으면 true. false 면 국민연금 · 건강보험 ·
+             *     장기요양보험 줄 가운데 금액이 비었거나 0 원인 줄을 보이지 않는다 — 0 아닌 금액이 든 줄은 미가입이어도 보인다(WHALEERP-756)
+             */
+            isHealthPensionInsured: boolean;
+            /** @description 고용보험 · 산재보험 가입 — 같은 계약 기준. false 면 고용보험 줄이 비었거나 0 원일 때 보이지 않는다(0 아닌 금액이면 보임, WHALEERP-756) */
+            isEmploymentInjuryInsured: boolean;
             /** @description 지급 · 공제 항목, 급여 항목 순서. 검토 중이면 빈 목록 */
             items: components["schemas"]["MyPayslipItemDto"][];
         };
@@ -10154,7 +10243,7 @@ export interface components {
             createdByName: string | null;
             /**
              * Format: date-time
-             * @description 최종수정 일시 — 관리자 [수정] 때만. 고친 적이 없으면 null(상세에 줄이 없다). 상태 변경은 바꾸지 않는다 (WHALEERP-698)
+             * @description 최종수정 일시 — 관리자 [수정] 때만. 고친 적이 없으면 null(상세는 줄을 두고 「-」로 보인다). 상태 변경은 바꾸지 않는다 (WHALEERP-698)
              */
             modifiedAt: string | null;
             /** @description 최종수정 관리자 이름 — createdByName 과 같은 규칙 */
@@ -10975,7 +11064,18 @@ export interface components {
         };
         MyTaxProfileResponseDto: {
             staffMemberId: number;
-            /** @description 이 소속에 낸 신고 정보. 아직 내지 않았으면 null */
+            /**
+             * @description 고칠 수 있는지 — 퇴직한 소속(퇴직일이 지남, 퇴직 배치 전 포함)이면 false 이고 조회만 된다(WHALEERP-765).
+             *     false 면 고치기 · 처음 넣기(`PUT`)가 409 STAFF_RETIRED 다.
+             */
+            editable: boolean;
+            /**
+             * @description 보존 기간(퇴직 + 3년, 운영 정책 RET-01 · TAX-08)이 지났는지 — 퇴직일이 파기 배치와 같은 기준(`retiredBefore`)보다 앞이면 true 이고
+             *     그때 taxProfile 은 늘 null 이다(배치가 이미 지웠든 배치 전이든). 화면은 이것으로 「넣은 적 없음」과 「보존 기간이 지나 지움」을
+             *     가른다(WHALEERP-772). 퇴직하지 않았거나 기한 안이면 false
+             */
+            expired: boolean;
+            /** @description 이 소속에 낸 신고 정보. 아직 내지 않았거나 보존 기간이 지났으면(expired) null */
             taxProfile: components["schemas"]["MyTaxProfileDto"] | null;
         };
         SaveMyTaxProfileDto: {
@@ -10999,6 +11099,34 @@ export interface components {
         AgreeHqSharingConsentDto: {
             /** @description 화면이 보여 준 본사 제공 동의 문구 버전 — 예: v1.0 */
             consentVersion: string;
+        };
+        EmployedStoreDto: {
+            /** @description 근무지(점포) 이름 */
+            storeName: string;
+            /** @description 퇴직일(YYYY-MM-DD). 값이 있으면 퇴직 예정 — 퇴직일까지 재직이라 탈퇴는 막힌다. 없으면 null */
+            retiredDate: string | null;
+        };
+        MyWithdrawalEligibilityResponseDto: {
+            /** @description 지금 탈퇴할 수 있는지 — 재직 중인 근무지가 없을 때만 true */
+            canWithdraw: boolean;
+            /** @description 가입 완료 · 재직 중인 근무지(퇴직 예정 포함). 하나라도 있으면 탈퇴할 수 없다 */
+            employedStores: components["schemas"]["EmployedStoreDto"][];
+            /** @description 탈퇴하면 종료로 닫히는 대기 중 근로계약 수(임시저장 · 발송 대기 · 서명 대기 · 수정 요청) */
+            pendingContractCount: number;
+        };
+        WithdrawMyAccountDto: {
+            /** @description 지금 비밀번호 — 재확인. 틀려도 로그인 실패 횟수는 세지 않는다 */
+            currentPassword: string;
+        };
+        MyWithdrawalConflictResponseDto: {
+            statusCode: number;
+            error: string;
+            /** @description `EMPLOYED_AFFILIATION`(재직 중) 일 때만 있다. 교착이 겹친 409 에는 없다 */
+            code?: string;
+            /** @description 재직 중이면 「근무지 관리자에게 퇴직 처리를 요청해 주세요.」, 교착이면 「다른 처리와 겹쳐 …」 */
+            message: string;
+            /** @description `code` 가 `EMPLOYED_AFFILIATION` 일 때만 있다 */
+            employedStores?: components["schemas"]["EmployedStoreDto"][];
         };
         InvitationLookupDto: {
             /** @description 초대 링크의 토큰(base64url 43자) */
@@ -11685,9 +11813,9 @@ export interface components {
             pendingActionCount: number;
         };
         HomeStoreTableDto: {
-            /** @description 운영 점포 전체 수 */
+            /** @description 운영 점포 수 — 본사 점포는 세지 않는다(점포 카드와 같다, 운영 정책 SCP-09 · WHALEERP-751) */
             total: number;
-            /** @description 운영 점포 모두 — 확인 필요 많은 순, 같으면 점포명(HOM-06) */
+            /** @description 운영 점포 모두 — 본사 점포 줄이 맨 위, 나머지는 확인 필요 많은 순, 같으면 점포명(HOM-06) */
             items: components["schemas"]["HomeStoreRowDto"][];
         };
         HomeSummaryResponseDto: {
@@ -11732,6 +11860,11 @@ export interface components {
             asOf: string;
             /** @description 플랫폼 계정이면 true — items 는 빈 배열 */
             platform: boolean;
+            /**
+             * @description items 로 센 건 가운데 미운영 점포의 건수 — 점포별 현황(운영 점포만, HOM-06)에는 없고 확인 필요에만 센다(HOM-07).
+             *     문의 답변완료는 점포가 없어 넣지 않는다(그 줄의 count 를 읽는다). 플랫폼 빈 결과는 0(WHALEERP-759)
+             */
+            notOperatingCount: number;
             /** @description 건수가 0인 유형과 권한이 없는 유형은 뺀다. 순서는 갱신 예정 → 계약 → 직원 → 문의 → TO-DO */
             items: components["schemas"]["HomePendingItemDto"][];
         };
@@ -18076,7 +18209,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description PERIOD_NOT_ENDED — 확정할 수 있는 날(퇴직일 · 마지막 계약 종료일 · 급여 기간 마지막 날 가운데 가장 빠른 날의 다음 날, 그 계약의 보낸 갱신(작성 중 제외)이 기간 안에 시작하면 계약 종료일은 보지 않는다) 전 · DEDUCTION_MISSING — 비어 있는 공제(본문 items) */
+            /** @description PERIOD_NOT_ENDED — 확정할 수 있는 날(퇴직일 · 마지막 계약 종료일 · 급여 기간 마지막 날 가운데 가장 빠른 날의 다음 날, 그 계약의 보낸 갱신(작성 중 제외)이 기간 안에 시작하면 계약 종료일은 보지 않는다) 전 · DEDUCTION_MISSING — 비어 있는 공제(본문 items) · WORK_HOURS_MISSING — 금액이 있는데 근무시간이 빈 야간 · 휴일근무수당(본문 items) */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -25140,7 +25273,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 내 소속이 아님 — 없는 id · 범위 밖 id, 남의 레코드, 퇴직했거나 서명 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            /** @description 내 소속이 아님 — 없는 id · 범위 밖 id, 남의 레코드, 서명 완료 근로계약이 없거나 가입 전인 내 레코드. 모두 같은 본문 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -25209,6 +25342,13 @@ export interface operations {
             };
             /** @description 내 소속이 아님 — 조회와 같은 본문 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description STAFF_RETIRED — 퇴직한 소속(조회의 editable: false)이라 고치기 · 처음 넣기 모두 막힘. 「퇴직한 근무지의 신고 정보는 조회만 할 수 있습니다.」 내 소속 확인 뒤 · 비밀번호 전에 본다 */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -25493,6 +25633,98 @@ export interface operations {
             };
             /** @description 지금 동의 상태에서 할 수 없는 동작 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyWithdrawalController_getEligibility: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyWithdrawalEligibilityResponseDto"];
+                };
+            };
+            /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyWithdrawalController_withdraw: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WithdrawMyAccountDto"];
+            };
+        };
+        responses: {
+            /** @description 탈퇴함 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 지금 비밀번호가 맞지 않음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 재직 중인 근무지가 있음(code EMPLOYED_AFFILIATION, employedStores 에 근무지 · 퇴직일) · 다른 처리와 겹침(다시 시도) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyWithdrawalConflictResponseDto"];
+                };
+            };
+            /** @description 계정 · IP 요청 한도 */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

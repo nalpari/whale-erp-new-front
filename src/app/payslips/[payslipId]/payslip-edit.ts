@@ -3,16 +3,117 @@
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import { formatAmount, parseAmount, type PayslipAdditionalItem, type PayslipItem, type PayslipPrevious } from "../../../lib/payslips.ts";
 
-/** PUT /payslips/:id 의 items — 줄마다 급여 항목 id 와 금액(빈 칸 null). 숫자가 아닌 칸은 invalid 에 이름을 모은다. */
+/** 금액 옆에 근무시간 칸을 두는 지급 항목 — 야간 · 휴일근무수당(WHALEERP-755, 근로기준법 시행령 제27조의2 5호의 연장 · 야간 · 휴일근로 시간 수) */
+export const HOURS_ITEM_CODES: readonly string[] = ["NIGHT_WORK_PAY", "HOLIDAY_WORK_PAY"];
+export const hasHours = (item: Pick<PayslipItem, "itemCode">) => HOURS_ITEM_CODES.includes(item.itemCode);
+
+/** 근무시간 칸 글자 — 시간(0.5 단위)으로 보인다. 분이 없으면 빈 칸 — 응답에 칸이 없는 옛 api(undefined)도 「NaN」 대신 빈 칸(최종 게이트) */
+export const hoursTextOf = (minutes: number | null | undefined) => (minutes == null ? "" : String(minutes / 60));
+
+/**
+ * 근무시간 칸이 받는 글자 — 숫자와 점 하나, 소수는 한 자리까지(0.5시간 단위라 둘째 자리가 필요 없다). 치는 중에 「2.3」은 받아 두고
+ * 0.5시간 단위인지는 저장 전에 본다(notHalfHours) — 「3」을 거부하면 「2.」가 남아 2시간으로 저장됐다(PR #336 재검사). 둘째 소수 자리를
+ * 받으면 「2.499」가 반올림돼 150분으로 0.5시간 검사를 지나고, 글자 수로 자르면 붙여 넣은 「744.001」이 「744.00」이 됐다(PR #336
+ * 재검사) — 이 모양에 안 맞는 입력(붙여넣기 포함)은 칸에 들이지 않는다
+ */
+export const HOURS_INPUT = /^\d*(\.\d?)?$/;
+
+/** 근무시간 상한(분) — 한 달 31일 × 24시간 = 744시간. api 수정 DTO(PAYSLIP_WORK_MINUTES_MAX)와 같다 */
+export const HOURS_MAX_MINUTES = 31 * 24 * 60;
+
+/**
+ * 근무시간 칸 → 분. 빈 칸은 null. 숫자 모양이 아니면 NaN — 끝이 점인 「2.」도 잘못된 입력이다(치다 만 값을 2시간으로 받지 않는다,
+ * PR #336 재검사). 「.5」 처럼 정수부가 없어도 받는다. 아주 긴 숫자처럼 유한하지 않은 값도 NaN — Infinity 는 JSON 에서 null 이 되어
+ * 바뀜 스냅샷이 빈 칸과 같아졌다. 0.5시간 단위가 아닌 값(「2.3」 → 138분)은 분으로 돌려주고 notHalfHours 가 막는다.
+ */
+export function parseHours(text: string): number | null {
+  const t = text.trim();
+  if (t === "") return null;
+  if (!/^(\d+(\.\d)?|\.\d)$/.test(t)) return Number.NaN; // 소수 한 자리까지(HOURS_INPUT) — 분이 늘 6의 배수라 반올림이 없다
+  const minutes = Math.round(Number(t) * 60);
+  return Number.isFinite(minutes) ? minutes : Number.NaN;
+}
+
+/**
+ * 금액이 있는데 근무시간이 비었거나 0 인 야간 · 휴일근무수당 칸의 이름 — 임시저장 · 확정 전에 화면이 막는다(api 422 WORK_HOURS_MISSING 과 같은 판정, 공제 미입력과 같은
+ * 방식). 임시저장은 이 칸을 막지만, 옛 관리자 화면 · 2026-11-24 전 명세서는 시간 없이 저장돼 있을 수 있다(최종 게이트)
+ */
+export function missingHours(lines: readonly PayslipItem[], texts: ReadonlyMap<number, string>, hours: ReadonlyMap<number, string>): string[] {
+  return lines
+    .filter((l) => {
+      if (!hasHours(l)) return false;
+      const amount = parseAmount(texts.get(l.payslipItemId) ?? "");
+      // 0 시간도 시간이 없는 것이다 — api 저장 · 확정과 같은 판정(재영 리뷰)
+      const minutes = parseHours(hours.get(l.payslipItemId) ?? "");
+      return amount !== null && !Number.isNaN(amount) && amount > 0 && (minutes === null || minutes === 0);
+    })
+    .map((l) => l.itemName);
+}
+
+/** 근무시간이 0.5시간(30분) 단위가 아닌 칸의 이름 — 임시저장 전에 화면이 막는다(api 도 400) */
+export function notHalfHours(lines: readonly PayslipItem[], hours: ReadonlyMap<number, string>): string[] {
+  return lines
+    .filter((l) => {
+      if (!hasHours(l)) return false;
+      const minutes = parseHours(hours.get(l.payslipItemId) ?? "");
+      return minutes !== null && !Number.isNaN(minutes) && minutes % 30 !== 0;
+    })
+    .map((l) => l.itemName);
+}
+
+/** 근무시간이 상한(744시간)을 넘는 칸의 이름 — 임시저장 전에 화면이 막는다(api 400 과 같은 범위) */
+export function overHours(lines: readonly PayslipItem[], hours: ReadonlyMap<number, string>): string[] {
+  return lines
+    .filter((l) => {
+      if (!hasHours(l)) return false;
+      const minutes = parseHours(hours.get(l.payslipItemId) ?? "");
+      return minutes !== null && minutes > HOURS_MAX_MINUTES;
+    })
+    .map((l) => l.itemName);
+}
+
+/**
+ * 저장하지 않은 바뀜을 가리는 스냅샷 — 저장 본문(saveItems)과 같은 값에 두 스위치를 더한다. 잘못 친 칸(금액 · 근무시간 NaN)은 원문으로 둔다 —
+ * JSON 은 NaN 을 null 로 바꿔 빈 칸과 같아지고, 그러면 바뀜이 없는 것으로 보여 저장 · 확정 전 검사를 건너뛴다(PR #336 리뷰).
+ */
+export function editSnapshot(
+  lines: readonly PayslipItem[],
+  texts: ReadonlyMap<number, string>,
+  hours: ReadonlyMap<number, string>,
+  premium: boolean,
+  withholding: boolean,
+): string {
+  const items = saveItems(lines, texts, hours).items.map((item, i) => {
+    const id = lines[i].payslipItemId;
+    return {
+      ...item,
+      ...(Number.isNaN(item.amount) && { amount: `invalid:${texts.get(id) ?? ""}` }),
+      ...(Number.isNaN(item.workMinutes) && { workMinutes: `invalid:${hours.get(id) ?? ""}` }),
+    };
+  });
+  return JSON.stringify([premium, withholding, items]);
+}
+
+/** 지난 명세서에서 야간 · 휴일근무수당 금액을 채웠는가 — 시간은 불러오지 않아(달마다 다르다) 이 달 값을 넣으라고 알린다 */
+export const loadedHoursAmount = (previous: PayslipPrevious) => previous.items.some((p) => hasHours(p) && p.amount > 0);
+
+/**
+ * PUT /payslips/:id 의 items — 줄마다 급여 항목 id 와 금액(빈 칸 null). 숫자가 아닌 칸은 invalid 에 이름을 모은다.
+ * 야간 · 휴일근무수당 줄은 근무시간 칸(hours, 시간 글자)을 분으로 바꿔 workMinutes 로 싣는다 — 금액이 있는데 시간이 비면 api 가 400 으로 막는다(WHALEERP-755).
+ */
 export function saveItems(
   lines: readonly PayslipItem[],
   texts: ReadonlyMap<number, string>,
-): { items: { payslipItemMasterId: number; amount: number | null }[]; invalid: string[] } {
+  hours: ReadonlyMap<number, string> = new Map(),
+): { items: { payslipItemMasterId: number; amount: number | null; workMinutes?: number | null }[]; invalid: string[] } {
   const invalid: string[] = [];
   const items = lines.map((l) => {
     const amount = parseAmount(texts.get(l.payslipItemId) ?? "");
     if (Number.isNaN(amount)) invalid.push(l.itemName);
-    return { payslipItemMasterId: l.payslipItemMasterId, amount };
+    if (!hasHours(l)) return { payslipItemMasterId: l.payslipItemMasterId, amount };
+    const workMinutes = parseHours(hours.get(l.payslipItemId) ?? "");
+    if (Number.isNaN(workMinutes)) invalid.push(`${l.itemName} 시간`);
+    return { payslipItemMasterId: l.payslipItemMasterId, amount, workMinutes };
   });
   return { items, invalid };
 }
@@ -32,6 +133,8 @@ export function addAdditionalLine(lines: readonly PayslipItem[], master: Payslip
       calculatedAmount: null,
       adjustedAmount: null,
       isEntered: false,
+      workMinutes: null,
+      calculationText: null,
     },
   ];
 }
