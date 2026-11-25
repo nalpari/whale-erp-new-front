@@ -1,7 +1,7 @@
 # Bundle history
 
 ## 2026-11-25
-* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드 목록 상자 · 미니 카드 위로 고개를 내민 고래(`PeekingWhales`) — 목록 상자는 엄마 + 꼬리, 미니 카드는 아기 → 엄마 → 꼬리.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드 미니 카드 위로 고개를 내민 고래(`PeekingWhales`) — 펼친 카드는 아기 → 엄마 → 꼬리, 접은 알약은 아기. [시작 가이드]에 마우스를 올리면 아기 고래(`HoverBabyWhale`). 헤더 목록 상자에 제목 줄 · [×] 닫기.
 
 ## 2026-11-24
 * **Update**: [Payslips screen](/screens/payslips.md) — 퇴직 표시(WHALEERP-764): api `retiredDate`(api 같은 짝 브랜치)로 작성 팝업 직원 칸 이름 아래(짧게 「퇴직 M/D」 · 「예정 M/D」, 폭 · 글자 크기는 데모 그대로, 화면 낭독기에는 전체 표기) · 상세 요약 띠 성명 옆 · 「급여 산정 기준」 「퇴직일」 줄에 「퇴직 YYYY-MM-DD」(오늘 전, 회색) · 「퇴직 예정 YYYY-MM-DD」(오늘 · 앞으로, 빨간 꼬리표). 판정 `retirementCell` 은 퇴직 처리의 `isSettledNow` 를 쓴다. 오늘은 상세 · 팝업 모두 서버 `kstToday()`(팝업은 작성 대상 action 이 같이 돌려준다). `api-types.generated.ts` 다시 생성.

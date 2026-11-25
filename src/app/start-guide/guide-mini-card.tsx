@@ -79,6 +79,8 @@ function tipsOf(tip: string | undefined) {
 /** 카드 폭 · 머리 줄 높이 — 창을 줄였을 때 머리 줄이 화면 안에 남게 붙잡는 데 쓴다 */
 const CARD_WIDTH = 420;
 const HEAD_HEIGHT = 46;
+/** 카드 · 알약 위로 고개를 내민 고래 높이 — 화면 맨 위로 옮겨도 고래 머리가 잘리지 않게 위쪽은 이만큼 띄운다(2026-11-25, 리뷰) */
+const WHALE_ROOM = 56;
 
 /** 자동 카드를 닫은 기록 — 막힌 브라우저(사생활 보호 창 등)에서는 읽고 쓰지 못해도 화면이 깨지지 않게 기록 없음으로 본다 */
 function isDismissed(key: string) {
@@ -184,7 +186,7 @@ export function GuideMiniCardSlot() {
       const pill = pillRef.current?.getBoundingClientRect();
       const width = pill ? pill.width : CARD_WIDTH;
       const height = pill ? pill.height : HEAD_HEIGHT;
-      setPos((p) => p && { left: Math.max(0, Math.min(p.left, window.innerWidth - width)), top: Math.max(0, Math.min(p.top, window.innerHeight - height)) });
+      setPos((p) => p && { left: Math.max(0, Math.min(p.left, window.innerWidth - width)), top: Math.max(WHALE_ROOM, Math.min(p.top, window.innerHeight - height)) });
     };
     window.addEventListener("resize", clamp);
     return () => window.removeEventListener("resize", clamp);
@@ -199,7 +201,7 @@ export function GuideMiniCardSlot() {
       const box = next ? boxRef.current : null;
       if (!box) return;
       const rect = box.getBoundingClientRect();
-      setPos((p) => p && { left: Math.max(0, Math.min(p.left, window.innerWidth - rect.width)), top: Math.max(0, Math.min(p.top, window.innerHeight - rect.height)) });
+      setPos((p) => p && { left: Math.max(0, Math.min(p.left, window.innerWidth - rect.width)), top: Math.max(WHALE_ROOM, Math.min(p.top, window.innerHeight - rect.height)) });
     });
   };
 
@@ -223,7 +225,7 @@ export function GuideMiniCardSlot() {
       if (!draggedRef.current && Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) < 4) return;
       draggedRef.current = true;
       const left = Math.min(Math.max(ev.clientX - dx, 0), window.innerWidth - rect.width);
-      const top = Math.min(Math.max(ev.clientY - dy, 0), window.innerHeight - rect.height);
+      const top = Math.min(Math.max(ev.clientY - dy, WHALE_ROOM), window.innerHeight - rect.height);
       setPos({ left, top });
     };
     const end = () => {
