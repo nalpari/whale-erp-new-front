@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>단위 상품 수정 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="master" data-sub="master/products.html" data-self-code="PD000001">
+    <!-- 단위 상품 수정 · /products/:productId/edit · 1팀 · 2차
+         기준: 「기초정보 정책서」 PL-10 ~ PL-15, PL-22. 입력 규칙은 시설물 · 장비 수정 화면과 같다 — [저장]을 누르면 검사해 걸린 칸 바로 아래에 빨간 문구를 보이고, 띠는 저장 실패처럼 칸에 묶이지 않는 것만 쓴다.
+         적용 점포: 등록 · 수정에서도 단위 상품 방식 점포를 고른다. 고르는 방식은 BP 관리자 등록의 대상 점포와 같다 — 찾기 · 일괄 검색 · 선택한 점포(2026-11-24 사용자 지정).
+         상태는 활성 · 비활성 토글, 상품 코드는 읽기 전용이다.
+         옵션 SET(B안 확정, 2026-11-25): SET 마다 옵션 상품을 자동완성 선택칸으로 고른다 — 옵션 상품 관리에 있는 이름이면 골라 넣고 추가 가격을 불러오며, 없는 이름이면 「새 옵션으로 등록」으로 넣고 저장할 때 옵션 상품 관리에 새 옵션 상품으로 등록된다(PL-44). 추가 가격은 불러와도 이 상품에서 바꿀 수 있고, 바꾼 값은 이 상품의 SET 에만 쓴다(PL-45). -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="pe" style="display: contents">
+        <div class="titlebar">
+          <h1 class="t-h1">상품 정보 관리</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">2차 · /products/:productId/edit</span>
+          </div>
+        </div>
+
+          <div class="content">
+            <div class="demo" data-demo="pe">
+              <b>목업 상태</b>
+              <div class="seg">
+                <button type="button" data-state="in" aria-pressed="true">입력 중</button>
+                <button type="button" data-state="miss" aria-pressed="false">필수 누락</button>
+                <button type="button" data-state="fail" aria-pressed="false">저장 실패</button>
+              </div>
+            </div>
+
+            <div class="band band--risk" data-show="fail" hidden>
+              <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+              <div class="band__body"><div class="band__title">저장하지 못했습니다. 잠시 후 다시 시도해 주세요.</div></div>
+            </div>
+
+            <!-- 배치(2026-11-25 사용자 지정). 위 두 단 — 왼쪽: 기본 정보 → 표시 정보 → 다국어 이름, 오른쪽: 상태 · 이미지 → 적용 점포.
+                 옵션 구성은 표가 넓어 두 단 아래에 전체 폭으로 둔다 -->
+            <div class="grid" style="grid-template-columns: minmax(0, 2fr) minmax(340px, 1fr); gap: var(--s-5); align-items: start">
+              <div style="display: flex; flex-direction: column; gap: var(--s-5)">
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">단위 상품 수정</h2><span class="subtle" style="font-size: 13px; font-weight: 500">필수 칸은 * 표시</span>
+                    <div class="inline" style="margin-left: auto; gap: 6px">
+                  <a class="btn btn--secondary btn--sm" href="products-detail.html">취소</a>
+                  <a class="btn btn--primary btn--sm" href="products-detail.html" data-show="in">저장</a>
+                  <button class="btn btn--primary btn--sm" type="button" data-show="miss fail" hidden>저장</button>
+                </div>
+                  </div>
+                  <div class="panel__body" style="display: flex; flex-direction: column; gap: var(--s-4)">
+                    <div class="field"><label>상품 코드</label><input data-show="in miss fail" class="input mono" value="PD000001" readonly aria-label="상품 코드" /><span class="help">상품 코드는 바꿀 수 없습니다.</span></div>
+                    <div class="field" data-ptype><label>상품 유형 <span class="req">*</span></label><div class="inline" style="gap: var(--s-5)"><label class="inline" style="gap: 6px"><input type="radio" name="ptype" value="single" checked />단일 상품</label><label class="inline" style="gap: 6px; opacity: 0.5; cursor: not-allowed" title="세트 상품 1개(아메리카노 2잔 + 치즈케익 세트)에 연결된 상품입니다. 세트에서 먼저 빼 주세요."><input type="radio" name="ptype" value="set" disabled />세트 상품</label></div><span class="help">세트 상품 2개에 연결된 상품이라 세트 상품으로 바꿀 수 없습니다. 세트에서 먼저 빼 주세요.</span></div>
+                    <div class="grid grid--2" style="align-items: start"><div class="field"><label for="pname">상품명 <span class="req">*</span></label><input data-show="in fail" class="input" id="pname" value="아메리카노" maxlength="50" /><input data-show="miss" hidden class="input" aria-label="상품명" aria-invalid="true" value="" maxlength="50" /><span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>상품명을 입력해 주세요.</span></div><div class="field"><label for="pclass">상품 분류 <span class="req">*</span><span class="subtle" style="margin-left:auto;margin-block:-3px;font-weight:500">공통코드 그룹 <span class="tag">PRODUCT_CLASS</span></span></label><select data-show="in fail" class="select" id="pclass"><option>선택</option><option selected>음료</option><option>베이커리</option><option>기타</option></select><select data-show="miss" hidden class="select" aria-label="상품 분류" aria-invalid="true"><option selected>선택</option><option>음료</option><option>베이커리</option><option>기타</option></select><span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>상품 분류를 선택해 주세요.</span></div></div>
+                    <div class="grid grid--2" style="align-items: start"><div class="field"><label for="pprice">표준가격(원) <span class="req">*</span></label><input data-show="in fail" class="input mono" id="pprice" value="3,000" inputmode="numeric" maxlength="10" placeholder="숫자만 입력" /><input data-show="miss" hidden class="input mono" aria-label="표준가격" aria-invalid="true" value="" inputmode="numeric" maxlength="10" placeholder="숫자만 입력" /><span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>표준가격을 입력해 주세요.</span><span class="help">원 단위로 숫자만 입력합니다. 0원이면 무료 상품으로 등록됩니다.</span></div><div class="field">
+                      <label>과세 구분 <span class="req">*</span></label>
+                      <div class="inline" style="min-height: 34px; gap: var(--s-4)" role="radiogroup" aria-label="과세 구분">
+                        <label class="inline" style="gap: 6px"><input type="radio" name="tax" checked />과세</label>
+                        <label class="inline" style="gap: 6px"><input type="radio" name="tax" />면세</label>
+                        <label class="inline" style="gap: 6px"><input type="radio" name="tax" />비과세</label>
+                      </div>
+                      <span class="help">과세 상품의 표준가격은 부가세(VAT)를 포함한 금액입니다.</span>
+                    </div></div>
+                    <div class="field"><label for="pdesc">설명 <span class="req">*</span> <span class="subtle">26 / 200</span></label><textarea data-show="in fail" class="textarea" id="pdesc" rows="4" maxlength="200">에스프레소에 물을 더한 깔끔한 기본 커피입니다.</textarea><textarea data-show="miss" hidden class="textarea" aria-label="설명" aria-invalid="true" rows="4" maxlength="200" placeholder="상품 설명을 입력해 주세요."></textarea><span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>설명을 입력해 주세요.</span></div>
+                  </div>
+                </section>
+                <section class="panel">
+                  <div class="panel__head"><h2 class="t-h2">표시 정보</h2><span class="subtle" style="font-size: 13px; font-weight: 500">선택</span></div>
+                  <div class="panel__body" style="display: flex; flex-direction: column; gap: var(--s-4)">
+                    <div class="grid grid--2" style="align-items: start"><div class="field"><label>마케팅 분류</label><div class="inline" style="min-height: 34px; gap: var(--s-4)"><label class="inline" style="gap: 6px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" data-icon="check" data-icon-size="11"></span>NEW</label><label class="inline" style="gap: 6px"><span class="check" role="checkbox" aria-checked="true" tabindex="0" data-icon="check" data-icon-size="11"></span>BEST</label><label class="inline" style="gap: 6px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" data-icon="check" data-icon-size="11"></span>EVENT</label></div></div><div class="field"><label>온도 분류</label><div class="inline" style="min-height: 34px; gap: var(--s-4)"><label class="inline" style="gap: 6px"><span class="check" role="checkbox" aria-checked="true" tabindex="0" data-icon="check" data-icon-size="11"></span>HOT</label><label class="inline" style="gap: 6px"><span class="check" role="checkbox" aria-checked="true" tabindex="0" data-icon="check" data-icon-size="11"></span>ICED</label></div></div></div>
+                    <div class="field"><label for="porder">노출 순서</label><input class="input mono" id="porder" value="1" inputmode="numeric" maxlength="4" /><span class="help">비워 두면 맨 뒤에 놓입니다.</span></div>
+                  </div>
+                </section>
+                <section class="panel">
+                  <div class="panel__body">
+                    <details class="fold" style="margin-top: var(--s-5)">
+                  <summary>다국어 이름 <span class="subtle" style="font-size: 13px; font-weight: 500">입력 4 / 4</span> <span class="fold__hint">영어 · 중국어 간체 · 중국어 번체 · 일본어</span></summary>
+                  <div class="fold__body stack--lg" style="display: flex; flex-direction: column">
+                    <div class="grid grid--2">
+                      <div class="field"><label for="ml-en">영어</label><input class="input" id="ml-en" value="Americano" /></div>
+                      <div class="field"><label for="ml-ja">일본어</label><input class="input" id="ml-ja" value="アメリカーノ" /></div>
+                    </div>
+                    <div class="grid grid--2">
+                      <div class="field"><label for="ml-zh">중국어 간체</label><input class="input" id="ml-zh" value="美式咖啡" /></div>
+                      <div class="field"><label for="ml-tw">중국어 번체</label><input class="input" id="ml-tw" value="美式咖啡" /></div>
+                    </div>
+                  </div>
+                </details>
+                  </div>
+                </section>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: var(--s-5)">
+                <section class="panel">
+                  <div class="panel__head"><h2 class="t-h2">상태 · 이미지</h2></div>
+                  <div class="panel__body" style="display: flex; flex-direction: column; gap: var(--s-4)">
+                    <div class="field"><label>상태</label><div class="inline" style="gap: 8px"><span class="toggle" role="switch" aria-pressed="true" tabindex="0" data-show="in miss fail"></span><span data-show="in miss fail">활성</span></div></div>
+                    <div class="field">
+                      <label>목록 이미지</label>
+                      <div><button class="btn btn--secondary" type="button">파일 선택</button></div>
+                      <span class="help">JPG, PNG 파일을 1장 첨부할 수 있습니다. (5MB 이하)</span>
+                      <ul style="list-style: none; margin: var(--s-2) 0 0; padding: 0" aria-label="목록 이미지"><li class="spread" style="height: 34px; border-bottom: 1px solid #eeeeee"><span>americano.jpg</span><span><span class="mono subtle">120KB</span> <button class="tbtn" type="button">빼기</button></span></li></ul>
+                    </div>
+                  </div>
+                </section>
+                <section class="panel">
+                  <div class="panel__head"><h2 class="t-h2">적용 점포</h2><span class="subtle" style="font-size: 13px; font-weight: 500">단위 상품 방식 점포</span></div>
+                  <div class="panel__body" style="display: flex; flex-direction: column; gap: var(--s-4)">
+                    <!-- 적용 점포 — 단위 상품 방식 점포를 고른다(PL-15). 고르는 방식은 BP 관리자 등록의 대상 점포와 같다(찾기 · 일괄 검색 · 선택한 점포).
+                         상품 리스트 방식 점포는 사유와 함께 흐리게 보이고 고를 수 없다. 본사 · 폐점 점포는 후보에 없다(PL-3) -->
+                    <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포|기본 메뉴 사용 중;ST000005|모리커피 을지로점|가맹점포|여름 메뉴 사용 중;ST000006|모리커피 연남점|가맹점포|여름 메뉴 사용 중;ST000007|모리커피 청담점|가맹점포|여름 메뉴 사용 중" data-picked="ST000001">
+                  <div class="spick__find">
+                    <div class="spick__head"><b>점포 찾기</b></div>
+                    <div class="spick__row">
+                      <div class="addr__q spick__q">
+                        <span data-icon="search" data-icon-size="15"></span>
+                        <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="적용할 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                        <div class="addr__list spick__list" role="listbox" aria-label="선택할 수 있는 점포" hidden></div>
+                      </div>
+                      <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
+                    </div>
+                    <span class="help" style="display: block; margin-top: var(--s-2)">단위 상품 방식 점포만 고를 수 있습니다. 상품 리스트 방식 점포의 상품은 상품 리스트 상세에서 정합니다. 본사 · 폐점 점포는 목록에 나오지 않습니다.</span>
+                  </div>
+                  <div class="spick__box">
+                    <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>1개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
+                    <ul class="spick__picked" data-spick-list aria-label="선택한 점포"></ul>
+                    <p class="spick__empty" data-spick-empty hidden>아직 고른 점포가 없습니다. 위에서 찾아 더하세요.</p>
+                  </div>
+                </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+            <!-- 연결 상품(2026-11-25 사용자 지정, PL-46) — 세트 상품처럼 이 상품을 이루는 단위 상품을 연결한다.
+                 연결해도 다른 상품 정보(옵션 · 가격 · 카테고리 · 점포)는 바뀌지 않고, 나중에 재고 관리에서 함께 차감할 때만 쓴다.
+                 고른 상품에 옵션 SET 이 있으면 옵션도 추가할지 묻고, 추가하면 그 연결 상품 묶음에 복사한다(복사한 뒤에는 따로 고친다).
+                 수량 칸은 없다 — 같은 상품이 두 개면 두 번 연결한다(2026-11-25 사용자 지정) -->
+            <section class="panel" data-set-only hidden>
+              <div class="panel__head"><h2 class="t-h2">연결 상품 <span class="req">*</span></h2><span class="subtle" style="font-size: 13px; font-weight: 500">1개 이상</span></div>
+              <div class="panel__body" style="display: flex; flex-direction: column; gap: var(--s-3)">
+                <span class="help">세트처럼 이 상품을 이루는 단위 상품을 연결합니다. 연결해도 다른 상품 정보는 바뀌지 않고, 재고 관리에서 함께 차감할 때 씁니다. 단일 상품만 연결할 수 있고, 같은 상품이 두 개 들어가면 두 번 연결합니다. 연결 상품마다 옵션 구성에 묶음이 생깁니다. 세트 상품은 연결 상품이 1개 이상 있어야 저장됩니다.</span>
+                <div class="tblwrap" style="overflow: visible"><table class="tbl"><thead><tr><th scope="col">연결 상품</th><th scope="col">상품 코드</th><th scope="col"></th></tr></thead><tbody data-link-body>
+                  <tr><td style="min-width: 260px"><div class="addr__q" data-linkq><span data-icon="search" data-icon-size="15"></span><input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="연결 상품" placeholder="상품명 또는 상품 코드" autocomplete="off" /><div class="addr__list spick__list" role="listbox" aria-label="단위 상품" hidden></div></div></td><td data-linkq-code><span class="nil">-</span></td><td><button class="tbtn" type="button" data-link-rm>빼기</button></td></tr>
+                </tbody></table></div>
+                <span class="err" data-link-err hidden><span data-icon="alert" data-icon-size="13"></span>세트 상품은 연결 상품을 1개 이상 넣어 주세요.</span>
+                <div><button class="btn btn--secondary btn--sm" type="button" data-link-add><span data-icon="plus" data-icon-size="14"></span>연결 상품 추가</button></div>
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel__head"><h2 class="t-h2">옵션 구성</h2><span class="subtle" style="font-size: 13px; font-weight: 500">선택</span><div class="panel__end"><button class="btn btn--secondary btn--sm" type="button" data-order-pv>주문 화면 미리보기</button></div></div>
+              <div class="panel__body" style="display: flex; flex-direction: column; gap: var(--s-4)">
+                <div class="inline" data-common-head hidden style="gap: 8px"><span class="tag">세트 공통</span><span class="help">세트 전체에 한 번 고르는 옵션(포장 · 세트 업그레이드 등). 연결 상품의 옵션은 아래 묶음에서 고칩니다.</span></div>
+
+<div>
+                <div class="stack--lg" style="display: flex; flex-direction: column">
+              <div data-set-host data-show="in miss fail" class="stack--lg" style="display: flex; flex-direction: column"><div style="border: 1px solid var(--hairline); border-radius: 6px; padding: var(--s-4)" class="stack--lg">
+                  <div class="grid" style="grid-template-columns: minmax(0, 1fr) auto; gap: var(--s-4); align-items: end">
+                    <div class="field"><label for="set1">SET 이름 <span class="req">*</span></label><input data-show="in fail" class="input" id="set1" value="원두 선택" placeholder="예: 원두 선택" /><input data-show="miss" hidden class="input" aria-label="SET 이름" aria-invalid="true" value="" placeholder="예: 원두 선택" /><span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>SET 이름을 입력해 주세요.</span></div>
+                    <button class="btn btn--secondary btn--sm" type="button">SET 삭제</button>
+                  </div>
+                  <div class="inline" style="gap: var(--s-5); flex-wrap: wrap">
+                    <span class="inline" style="gap: 6px">필수선택 <span class="toggle" role="switch" aria-pressed="true" tabindex="0"></span></span><span class="inline" style="gap: 6px">다중선택 <span class="toggle" role="switch" aria-pressed="false" tabindex="0"></span></span><span class="inline" style="gap: 6px">사용 <span class="toggle" role="switch" aria-pressed="true" tabindex="0"></span></span>
+                    <span class="inline" style="gap: 6px">노출 순서 <input class="input mono" style="width: 64px" value="1" aria-label="SET 노출 순서" /></span>
+                  </div>
+                  <div class="tblwrap" style="overflow: visible"><table class="tbl"><thead><tr><th scope="col">옵션 상품</th><th scope="col">옵션 코드</th><th scope="col" class="num">추가 가격</th><th scope="col">수량입력</th><th scope="col">기본선택</th><th scope="col">사용</th><th scope="col"></th></tr></thead><tbody><tr><td style="min-width: 240px"><div class="addr__q" data-optq><span data-icon="search" data-icon-size="15"></span><input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="옵션 상품" placeholder="옵션 상품명 입력" autocomplete="off" value="디카페인 원두" /><div class="addr__list spick__list" role="listbox" aria-label="옵션 상품" hidden></div></div><span class="help" data-optq-new hidden style="display: block; margin-top: 4px">저장하면 옵션 상품 관리에 새 옵션 상품으로 등록됩니다.</span></td><td data-optq-code><span class="mono">OP000005</span></td><td class="num"><input class="input mono" style="width: 96px; text-align: right" inputmode="numeric" aria-label="추가 가격" value="500" data-optq-price /><span class="help" data-optq-base style="display: block; margin-top: 4px">기본 500원</span></td><td><span class="toggle" role="switch" aria-pressed="false" tabindex="0" aria-label="수량입력"></span></td><td><input type="radio" name="dflt1" aria-label="기본선택" /></td><td><span class="toggle" role="switch" aria-pressed="true" tabindex="0" aria-label="사용"></span></td><td><button class="tbtn" type="button">빼기</button></td></tr></tbody></table></div>
+                  <div class="inline"><button class="btn btn--secondary btn--sm" type="button" data-opt-add><span data-icon="plus" data-icon-size="14"></span>옵션 추가</button><a class="tlink" href="option-products.html">옵션 상품 관리 ›</a></div>
+                </div><div style="border: 1px solid var(--hairline); border-radius: 6px; padding: var(--s-4)" class="stack--lg">
+                  <div class="grid" style="grid-template-columns: minmax(0, 1fr) auto; gap: var(--s-4); align-items: end">
+                    <div class="field"><label for="set2">SET 이름 <span class="req">*</span></label><input class="input" id="set2" value="추가" placeholder="예: 원두 선택" /></div>
+                    <button class="btn btn--secondary btn--sm" type="button">SET 삭제</button>
+                  </div>
+                  <div class="inline" style="gap: var(--s-5); flex-wrap: wrap">
+                    <span class="inline" style="gap: 6px">필수선택 <span class="toggle" role="switch" aria-pressed="false" tabindex="0"></span></span><span class="inline" style="gap: 6px">다중선택 <span class="toggle" role="switch" aria-pressed="true" tabindex="0"></span></span><span class="inline" style="gap: 6px">사용 <span class="toggle" role="switch" aria-pressed="true" tabindex="0"></span></span>
+                    <span class="inline" style="gap: 6px">노출 순서 <input class="input mono" style="width: 64px" value="2" aria-label="SET 노출 순서" /></span>
+                  </div>
+                  <div class="tblwrap" style="overflow: visible"><table class="tbl"><thead><tr><th scope="col">옵션 상품</th><th scope="col">옵션 코드</th><th scope="col" class="num">추가 가격</th><th scope="col">수량입력</th><th scope="col">기본선택</th><th scope="col">사용</th><th scope="col"></th></tr></thead><tbody><tr><td style="min-width: 240px"><div class="addr__q" data-optq><span data-icon="search" data-icon-size="15"></span><input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="옵션 상품" placeholder="옵션 상품명 입력" autocomplete="off" value="샷 추가" /><div class="addr__list spick__list" role="listbox" aria-label="옵션 상품" hidden></div></div><span class="help" data-optq-new hidden style="display: block; margin-top: 4px">저장하면 옵션 상품 관리에 새 옵션 상품으로 등록됩니다.</span></td><td data-optq-code><span class="mono">OP000001</span></td><td class="num"><input class="input mono" style="width: 96px; text-align: right" inputmode="numeric" aria-label="추가 가격" value="500" data-optq-price /><span class="help" data-optq-base style="display: block; margin-top: 4px">기본 500원</span></td><td><span class="toggle" role="switch" aria-pressed="true" tabindex="0" aria-label="수량입력"></span></td><td><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="기본선택" data-icon="check" data-icon-size="11"></span></td><td><span class="toggle" role="switch" aria-pressed="true" tabindex="0" aria-label="사용"></span></td><td><button class="tbtn" type="button">빼기</button></td></tr><tr><td style="min-width: 240px"><div class="addr__q" data-optq><span data-icon="search" data-icon-size="15"></span><input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="옵션 상품" placeholder="옵션 상품명 입력" autocomplete="off" value="바닐라 시럽" /><div class="addr__list spick__list" role="listbox" aria-label="옵션 상품" hidden></div></div><span class="help" data-optq-new hidden style="display: block; margin-top: 4px">저장하면 옵션 상품 관리에 새 옵션 상품으로 등록됩니다.</span></td><td data-optq-code><span class="mono">OP000002</span></td><td class="num"><input class="input mono" style="width: 96px; text-align: right" inputmode="numeric" aria-label="추가 가격" value="500" data-optq-price /><span class="help" data-optq-base style="display: block; margin-top: 4px">기본 500원</span></td><td><span class="toggle" role="switch" aria-pressed="false" tabindex="0" aria-label="수량입력"></span></td><td><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="기본선택" data-icon="check" data-icon-size="11"></span></td><td><span class="toggle" role="switch" aria-pressed="true" tabindex="0" aria-label="사용"></span></td><td><button class="tbtn" type="button">빼기</button></td></tr></tbody></table></div>
+                  <div class="inline"><button class="btn btn--secondary btn--sm" type="button" data-opt-add><span data-icon="plus" data-icon-size="14"></span>옵션 추가</button><a class="tlink" href="option-products.html">옵션 상품 관리 ›</a></div>
+                </div></div>
+              <div><button class="btn btn--secondary" type="button"><span data-icon="plus" data-icon-size="14"></span>옵션 SET 추가</button></div>
+              <div data-group-host style="display: flex; flex-direction: column; gap: var(--s-4)"></div>
+            </div>
+              </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 연결 상품의 옵션 추가 — 고른 연결 상품에 옵션 SET 이 있을 때와 묶음의 [옵션 가져오기]에서 뜬다(PL-47). 고른 SET 을 그 연결 상품 묶음에 복사한다 -->
+    <div class="modal" id="pop-link-opt" hidden role="dialog" aria-modal="true" aria-labelledby="pop-lo-t">
+      <div class="modal__box" style="max-width: 640px">
+        <div class="modal__head">
+          <h2 class="t-h2" id="pop-lo-t">「<span data-lo-name></span>」의 옵션도 추가할까요?</h2>
+          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+        </div>
+        <div class="modal__body" style="display: flex; flex-direction: column; gap: var(--s-3)">
+          <p class="help" style="margin: 0">고른 옵션 SET 이 옵션 구성의 이 연결 상품 묶음에 복사됩니다. 복사한 뒤에는 따로 고칠 수 있고, 연결 상품의 옵션은 바뀌지 않습니다.</p>
+          <div data-lo-sets style="display: flex; flex-direction: column"></div>
+        </div>
+        <div class="modal__foot">
+          <button class="btn btn--ghost" type="button" data-close>옵션 없이 연결</button>
+          <button class="btn btn--primary" type="button" data-close data-lo-apply>옵션 추가</button>
+        </div>
+      </div>
+    </div>
+    <!-- 주문 화면 미리보기(목업 전용) — 지금 옵션 구성으로 손님이 고르는 모양. 연결 상품 묶음마다 한 칸(PL-47) -->
+    <div class="modal" id="pop-order-pv" hidden role="dialog" aria-modal="true" aria-labelledby="pop-pv-t">
+      <div class="modal__box" style="max-width: 560px">
+        <div class="modal__head">
+          <h2 class="t-h2" id="pop-pv-t">주문 화면 미리보기 · <span data-pv-name></span></h2>
+          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+        </div>
+        <div class="modal__body" style="display: flex; flex-direction: column; gap: var(--s-3); max-height: 64vh; overflow-y: auto">
+          <p class="help" style="margin: 0">키오스크 · 테이블오더에서 손님이 옵션을 고르는 순서입니다. 실제 부가서비스 화면은 서비스마다 다릅니다.</p>
+          <div data-pv-body style="display: flex; flex-direction: column; gap: var(--s-3)"></div>
+        </div>
+        <div class="modal__foot"><button class="btn btn--ghost" type="button" data-close>닫기</button></div>
+      </div>
+    </div>
+    <script src="../assets/product-form.js"></script>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>
