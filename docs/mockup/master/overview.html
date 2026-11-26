@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>기초정보관리 개요 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="master" data-sub="master/overview.html">
+    <!-- 기초정보관리(상품 · 카테고리 · 가격) 영역 개요 — 목업 전용 페이지다. 1팀 작업 · 2차.
+         기준: 「0. 웨일ERP_개념 정의 및 해설_master.pptx」 Ⅵ. 기초 정보(원본)와 Notion 「기초정보(상품 · 카테고리 · 가격) 정책서」 PL-1 ~ PL-42.
+         화면정의서 v0.72(MasterData관리)는 「마스터용 → 점포용 상속」 구조라 쓰지 않고, 상품 항목(옵션 SET · 다국어 · 과세 · 마케팅 · 온도 분류)만 가져왔다.
+         개념 정의서끼리 어긋나는 쟁점 1 ~ 8 은 Notion 「기초정보 정책서 문의」 Q2 ~ Q9 로 기획에 물었고, 목업에는 그리지 않았다(2026-11-18 사용자 지정). -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="../index.html" aria-label="목업 허브로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">기초정보관리</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <span class="badge badge--preview">영역 개요</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">2차 · master/</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--warn">
+            <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">상품 · 카테고리 · 가격은 BP 가 만들고, 점포는 그중 무엇을 쓸지만 정한다</div>
+              <p class="band__desc">
+                단위 정보(단위 상품 · 표준 카테고리 · 표준가격)로 운영할 수도 있고, 리스트(상품 리스트 · 카테고리 리스트 · 가격 리스트)를 묶어 점포마다 다르게 운영할 수도 있다.
+                점포는 <b>단위 상품 방식</b>과 <b>상품 리스트 방식</b> 중 하나만 쓴다(PL-6). 기초정보관리 메뉴는 마스터 권한자(BP 마스터 · BP 관리자)에게만 주고,
+                점포 권한자는 점포관리의 「점포 상품 관리」에서 판매 상태 · 품절만 바꾼다(PL-2 · PL-40).
+              </p>
+            </div>
+            <div class="band__act">
+              <a class="btn btn--primary" href="products.html">상품 정보 관리부터 보기</a>
+            </div>
+          </div>
+
+          <div class="inline" style="gap: 10px; font-size: 13px">
+            <span data-icon="info" data-icon-size="14"></span>
+            <span>정책서 <a class="tlink" href="https://app.notion.com/p/41c1f1b7a14281b2b3d2fed5e99cf0ce" target="_blank" rel="noopener">기초정보(상품 · 카테고리 · 가격) 정책서 ↗</a></span>
+            <span class="subtle">|</span>
+            <span>문의 <a class="tlink" href="https://app.notion.com/p/41c1f1b7a142819ca2ffee276f0c7198" target="_blank" rel="noopener">기초정보 정책서 문의 ↗</a></span>
+            <span class="subtle">|</span>
+            <span>설계 <span class="mono">docs/superpowers/specs/2026-11-18-master-data-mockup-design.md</span></span>
+          </div>
+
+          <!-- 구조 — 개념 정의서 3 · 5 · 9 · 10쪽을 한 표로 -->
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">구조</h2>
+              <div class="panel__end"><span class="filters__count mono">PL-6 · PL-7 · PL-34</span></div>
+            </div>
+            <div class="tblwrap">
+              <table class="tbl">
+                <thead>
+                  <tr><th scope="col"></th><th scope="col">단위 상품 방식</th><th scope="col">상품 리스트 방식</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td class="k">상품</td><td>단위 상품마다 점포를 매핑한다(N:N) — 단위 상품 상세</td><td>상품 리스트 하나를 점포에 매핑한다(점포당 1개) — 상품 리스트 상세</td></tr>
+                  <tr><td class="k">카테고리</td><td>표준 카테고리(BP 마다 하나, 2단계)</td><td>상품 리스트에 1:1 로 붙은 카테고리 리스트</td></tr>
+                  <tr><td class="k">가격</td><td>단위 상품의 표준가격</td><td><b>프로모션 가격 리스트 → 일반 가격 리스트 → 표준가격</b> 순으로, 앞 순위에 가격이 있으면 그것</td></tr>
+                  <tr><td class="k">부가서비스 노출</td><td colspan="2">상품(리스트) 활성 · 점포 매핑 · 적용 가격 · 카테고리 분류 배정 · 점포의 판매 상태가 모두 맞아야 보인다(PL-38)</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">화면</h2>
+              <span class="badge badge--quiet">10개 + 팝업</span>
+              <div class="panel__end"><span class="filters__count mono">master/ · stores/</span></div>
+            </div>
+            <div class="grid grid--2">
+              <a class="mk-card" href="products.html">
+                <span class="mk-card__route">/products</span>
+                <span class="mk-card__name">상품 정보 관리</span>
+                <span class="mk-card__desc">탭 [단위 상품 | 상품 리스트]. 단위 상품은 카테고리 미배정을 꼬리표로 짚는다. 상품 리스트는 상품 수 · 카테고리 리스트 · 가격 리스트 · 적용 점포를 한 줄에 보인다.</span>
+                <span class="mk-card__end"><span class="badge badge--quiet">PL-10 ~ 19</span></span>
+              </a>
+              <a class="mk-card" href="products-detail.html">
+                <span class="mk-card__route">/products/:productId</span>
+                <span class="mk-card__name">단위 상품 상세 · 점포 매핑</span>
+                <span class="mk-card__desc">기본 · 가격 · 옵션 구성 · 카테고리 · 상품 리스트 · 적용 점포. 단위 상품 방식 점포만 매핑한다. 한 번도 활성화하지 않은 상품만 삭제한다.</span>
+                <span class="mk-card__end"><span class="badge badge--quiet">PL-13 ~ 15</span></span>
+              </a>
+              <a class="mk-card" href="products-new.html">
+                <span class="mk-card__route">/products/new · /products/:productId/edit</span>
+                <span class="mk-card__name">단위 상품 등록 · 수정</span>
+                <span class="mk-card__desc">표준가격 필수, 새 상품은 비활성으로 등록. 옵션 SET 안에서 다른 단위 상품을 옵션으로 고르거나 이름만 적는다.</span>
+                <span class="mk-card__end"><span class="badge badge--quiet">PL-10 ~ 13</span></span>
+              </a>
+              <a class="mk-card" href="product-lists-detail.html">
+                <span class="mk-card__route">/product-lists/:productListId</span>
+                <span class="mk-card__name">상품 리스트 상세 · 점포 매핑</span>
+                <span class="mk-card__desc">담은 상품 넣기 · 빼기(가격 리스트에 자동 반영), 연결된 카테고리 · 가격 리스트, 적용 점포마다 일반 · 프로모션 가격 리스트 선택.</span>
+                <span class="mk-card__end"><span class="badge badge--quiet">PL-16 ~ 19 · PL-36</span></span>
+              </a>
+              <a class="mk-card" href="categories.html">
+                <span class="mk-card__route">/categories</span>
+                <span class="mk-card__name">카테고리 정보 관리</span>
+                <span class="mk-card__desc">탭 [표준 카테고리 | 카테고리 리스트]. 왼쪽 2단계 트리, 오른쪽 고른 분류의 설정과 배정 상품. 미배정 상품을 띠로 알린다.</span>
+                <span class="mk-card__end"><span class="badge badge--quiet">PL-20 ~ 27</span></span>
+              </a>
+              <a class="mk-card" href="prices.html">
+                <span class="mk-card__route">/price-lists</span>
+                <span class="mk-card__name">가격 정보 관리</span>
+                <span class="mk-card__desc">탭 [일반 가격 리스트 | 프로모션 가격 리스트 | 가격 변경 이력]. 모든 가격 변경을 이력으로 남긴다.</span>
+                <span class="mk-card__end"><span class="badge badge--quiet">PL-30 ~ 37</span></span>
+              </a>
+              <a class="mk-card" href="prices-detail.html">
+                <span class="mk-card__route">/price-lists/:priceListId</span>
+                <span class="mk-card__name">일반 가격 리스트 상세</span>
+                <span class="mk-card__desc">표 안에서 바로 고치고 정액 · 정률로 일괄 적용. 저장하면 이 리스트를 고른 점포에 바로 적용된다.</span>
+                <span class="mk-card__end"><span class="badge badge--quiet">PL-31 · PL-37</span><span class="badge badge--warn">쟁점 2</span></span>
+              </a>
+              <a class="mk-card" href="prices-promotion-detail.html">
+                <span class="mk-card__route">/price-lists/:priceListId</span>
+                <span class="mk-card__name">프로모션 가격 리스트 상세</span>
+                <span class="mk-card__desc">기간 · 상태(대기 · 진행 중 · 종료), 부가서비스 다섯 칸. 빈 칸은 일반 가격으로 넘어간다.</span>
+                <span class="mk-card__end"><span class="badge badge--quiet">PL-32 ~ 35</span></span>
+              </a>
+              <a class="mk-card" href="store-products.html">
+                <span class="mk-card__route">/store-products</span>
+                <span class="mk-card__name">점포 상품 관리</span>
+                <span class="mk-card__desc">점포마다 상품 방식 · 기본 · 기간 상품 리스트 · 가격 리스트를 고르고(본사), 다른 점포에 복사한다. 적용된 상품 · 적용 가격(출처 꼬리표) · 노출 여부, 상품 · 옵션의 부가서비스별 판매 상태와 품절, 분류 사용 여부.</span>
+                <span class="mk-card__end"><span class="badge badge--quiet">PL-40 ~ 42</span><span class="badge badge--warn">쟁점 3</span></span>
+              </a>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">쟁점</h2>
+              <span class="badge badge--warn">8건 · 1건 확정 · 7건 답변 대기</span>
+            </div>
+            <p class="gap__note" style="margin-top: 0">
+              개념 정의서끼리 어긋나거나 정하지 않은 곳이다. 예시와 비교표는 <a class="tlink" href="https://app.notion.com/p/41c1f1b7a142819ca2ffee276f0c7198" target="_blank" rel="noopener">기초정보 정책서 문의 ↗</a> 에 있다(쟁점 N = 문의 Q(N+1)).
+              목업에는 그리지 않고, 걸리는 자리에 노란 「쟁점 N」 꼬리표나 띠만 두었다. 앞의 안이 정책서 본문이 적어 둔 추천안이다.
+            </p>
+
+            <div class="gap is-decided">
+              <div class="gap__head"><span class="gap__no">쟁점 1</span><b>일반 가격 리스트에서 가격 칸이 비었을 때</b><span class="gap__decided">확정 · A 표준가격으로 넘어감 (2026-11-18)</span><span class="gap__ref">PL-33 · 9쪽 ↔ 10 · 12쪽</span></div>
+              <div class="gap__opts">
+                <div class="gap__opt is-picked" data-side="a"><div class="gap__label">A · 표준가격으로 넘어감</div><p>빈 칸이어도 표준가격으로 팔린다. 판매 중지는 상품 비활성 · 점포 품절로.</p></div>
+                <div class="gap__opt is-dropped" data-side="b"><div class="gap__label">B · 숨김</div><p>빈 칸이면 그 상품이 그 점포에 보이지 않는다.</p></div>
+              </div>
+            </div>
+            <div class="gap is-held">
+              <div class="gap__head"><span class="gap__no">쟁점 2</span><b>부가서비스별 가격은 어느 가격 리스트에 두나</b><span class="gap__held">Q3 답변 대기</span><span class="gap__ref">PL-32 · 2쪽 ↔ 9 · 12쪽</span></div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a"><div class="gap__label">B · 일반도 채널별 (추천)</div><p>기본 가격 + 접힌 부가서비스 칸(비우면 기본). 픽업오더 상시 가격을 둘 수 있다.</p></div>
+                <div class="gap__opt" data-side="b"><div class="gap__label">A · 프로모션만 채널별</div><p>일반 가격 리스트는 가격 한 칸. 지금 목업은 이 모양이고 채널 칸 자리에 쟁점 띠가 있다.</p></div>
+              </div>
+            </div>
+            <div class="gap is-held">
+              <div class="gap__head"><span class="gap__no">쟁점 3</span><b>점포 하나만 분류 없이 보이게 하는 「카테고리 매핑 해제」</b><span class="gap__held">Q4 답변 대기</span><span class="gap__ref">PL-22 · 7쪽 ↔ 8쪽</span></div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a"><div class="gap__label">B · 점포마다 「카테고리 사용」 스위치 (추천)</div><p>끄면 그 점포만 분류 없이 노출.</p></div>
+                <div class="gap__opt" data-side="b"><div class="gap__label">A · 연결 해제 / C · 기능 뺌</div><p>A 는 상품 리스트와 카테고리 리스트 연결을 풀어 그 리스트를 쓰는 모든 점포에 적용된다.</p></div>
+              </div>
+            </div>
+            <div class="gap is-held">
+              <div class="gap__head"><span class="gap__no">쟁점 4</span><b>지울 수 있는 상품</b><span class="gap__held">Q5 답변 대기</span><span class="gap__ref">PL-14 · 5쪽</span></div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a"><div class="gap__label">A · 한 번도 활성화하지 않은 상품만 (추천)</div><p>판매 · 가격 이력이 가리키는 상품을 지킨다. 목업은 두 안 공통인 「한 번도 활성화하지 않은 상품」 삭제만 그렸다.</p></div>
+                <div class="gap__opt" data-side="b"><div class="gap__label">B · 지금 비활성이면</div><p>활성화했다가 비활성으로 돌린 상품도 지운다.</p></div>
+              </div>
+            </div>
+            <div class="gap is-held">
+              <div class="gap__head"><span class="gap__no">쟁점 5</span><b>점포 매핑 · 가격 리스트 선택은 누가 하나</b><span class="gap__held">Q6 답변 대기</span><span class="gap__ref">PL-4 · 13쪽 ↔ 14쪽 · 6쪽</span></div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a"><div class="gap__label">A · 본사(마스터 권한자)만 (추천)</div><p>목업은 BP 마스터 기준이고, 점포 상품 관리에서 가격 리스트는 조회만 된다.</p></div>
+                <div class="gap__opt" data-side="b"><div class="gap__label">B · 가맹점이 후보 중 고름</div><p>본사가 붙인 가격 리스트 가운데 가맹점이 하나씩 고른다.</p></div>
+              </div>
+            </div>
+            <div class="gap is-held">
+              <div class="gap__head"><span class="gap__no">쟁점 6</span><b>가격 반영 예약</b><span class="gap__held">Q7 답변 대기</span><span class="gap__ref">화면정의서 v0.72 48쪽</span></div>
+              <p class="gap__note">추천은 넣지 않음 — 기간이 있는 프로모션 가격 리스트가 대신한다. 목업에 없다.</p>
+            </div>
+            <div class="gap is-held">
+              <div class="gap__head"><span class="gap__no">쟁점 7</span><b>「점포 적용 관리」 메뉴를 새로 만드는가</b><span class="gap__held">Q8 답변 대기</span><span class="gap__ref">PL-39</span></div>
+              <p class="gap__note">
+                추천은 새 메뉴 — 점포마다 방식 · 상품 리스트 · 가격 리스트 · 안 보이는 상품과 이유를 한 곳에서. 목업은 이 메뉴 없이 개념 정의서 14쪽 흐름대로
+                단위 상품 상세(단위 상품 방식 점포)와 상품 리스트 상세(상품 리스트 방식 점포 · 가격 리스트 선택)에서 매핑한다.
+              </p>
+            </div>
+            <div class="gap is-held">
+              <div class="gap__head"><span class="gap__no">쟁점 8</span><b>점포가 쓰고 있는 상품 리스트를 지울 수 있는가</b><span class="gap__held">Q9 답변 대기</span><span class="gap__ref">PL-19</span></div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a"><div class="gap__label">A · 쓰고 있으면 막고, 아니면 논리 삭제 (추천)</div><p>여러 점포의 판매가 한꺼번에 멈추는 것을 막는다.</p></div>
+                <div class="gap__opt" data-side="b"><div class="gap__label">B · 매핑을 풀고 삭제</div><p>그 리스트를 쓰던 점포의 상품이 모두 사라진다.</p></div>
+              </div>
+            </div>
+          </section>
+
+          <p class="note">
+            <span data-icon="info" data-icon-size="14"></span>
+            <span>
+              문의 Q1(정가 · 원가를 따로 관리하는지, 표준가격이 정가인지)도 답변 대기다. 답이 오면 상품 등록 화면의 가격 칸이 늘어날 수 있다.
+              문의 Q10(일반 가격도 「다음 달부터 얼마」처럼 미래 가격을 걸어 두는가 — 가격 예약 · 리스트 기간)은 쟁점 6 과 함께 답변 대기다. 답이 오면 가격 리스트 상세에 예약 칸이 생길 수 있다.
+              문의 Q11(옵션으로만 쓰는 상품 — 샷 추가 — 도 카테고리 분류에 배정해야 보이는가)은 목업을 그리다 찾았다. 상품 리스트 상세 · 점포 상품 관리의 「샷 추가」 줄에 Q11 꼬리표가 있다.
+              화면정의서(<span class="mono">*.screen-def.html</span>)는 쟁점이 정해진 뒤 만든다.
+            </span>
+          </p>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

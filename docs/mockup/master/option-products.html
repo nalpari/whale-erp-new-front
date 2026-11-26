@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>옵션 상품 관리 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="master" data-sub="master/option-products.html">
+    <!-- 옵션 상품 관리 · 2차 · B안으로 정함(2026-11-25 사용자 지정 — A안 옵션 셋트 관리는 걷었다)
+         단위 상품 등록 · 수정의 옵션 칸에서 없는 이름을 넣으면 저장할 때 여기에 새 옵션 상품으로 등록된다(PL-44).
+         B안: 옵션을 「옵션 상품」으로 한 번만 등록한다(옵션 상품명 · 옵션 코드 OP000001 · 추가 가격 · 상태). 단위 상품과 따로 있는 목록이라
+         단위 상품 목록 · 상품 리스트 · 카테고리에 나오지 않는다. 단위 상품마다 SET 을 만들고 SET 안에 옵션 상품을 골라 넣는다.
+         위쪽 점선 줄은 목업 전용 전환이다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="op" style="display: contents">
+          <div class="titlebar">
+            <h1 class="t-h1">옵션 상품 관리</h1>
+            <span class="badge badge--warn">1팀 작업</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">2차 · /option-products</span>
+              <button class="btn btn--primary btn--sm" type="button" data-open="pop-op-add">등록</button>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="demo" data-demo="op">
+              <b>목업 상태</b>
+              <div class="seg">
+                <button type="button" data-state="base" aria-pressed="true">기본</button>
+                <button type="button" data-state="zero" aria-pressed="false">등록 없음</button>
+              </div>
+            </div>
+
+            <div class="band band--info">
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body"><div class="band__title">옵션 상품은 단위 상품 목록 · 상품 리스트 · 카테고리에 나오지 않고, 단위 상품의 옵션 SET 에만 넣습니다.</div></div>
+            </div>
+
+            <section class="panel">
+              <div class="panel__head"><h2 class="t-h2">검색 조건</h2></div>
+              <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                <div class="grid" style="align-items: start; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4)">
+                  <div class="field">
+                    <label for="q-oname">옵션 상품명</label>
+                    <div class="inputwrap"><span data-icon="search" data-icon-size="15"></span><input class="input" id="q-oname" placeholder="옵션 상품명으로 찾기" autocomplete="off" /></div>
+                  </div>
+                  <div class="field">
+                    <label for="q-ocode">옵션 코드</label>
+                    <div class="inputwrap"><span data-icon="search" data-icon-size="15"></span><input class="input mono" id="q-ocode" placeholder="OP000001" autocomplete="off" /></div>
+                  </div>
+                  <div class="field">
+                    <label>상태</label>
+                    <div class="seg" aria-label="상태"><button type="button" aria-pressed="true">전체</button><button type="button" aria-pressed="false">활성</button><button type="button" aria-pressed="false">비활성</button></div>
+                  </div>
+                </div>
+                <div class="inline" style="justify-content: flex-end">
+                  <button class="btn btn--secondary" type="button" data-state-go="base">초기화</button>
+                  <button class="btn btn--primary" type="button">조회</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">옵션 상품</h2>
+                <span class="badge badge--quiet" data-show="base">7건</span>
+                <span class="badge badge--quiet" data-show="zero" hidden>0건</span>
+              </div>
+              <div class="tblwrap" data-show="base">
+                <table class="tbl">
+                  <thead><tr><th scope="col" class="n">순번</th><th scope="col">옵션 상품명</th><th scope="col">옵션 코드</th><th scope="col" class="num">추가 가격</th><th scope="col">상태</th><th scope="col" class="num">쓰는 단위 상품 수</th><th scope="col">최종수정</th></tr></thead>
+                  <tbody>
+                    <tr><td class="n">7</td><td class="k"><button class="tlink" type="button" data-open="pop-op-edit" data-op="얼음 많이|OP000007" style="background:none;border:0;padding:0;cursor:pointer;font:inherit">얼음 많이</button></td><td class="mono">OP000007</td><td class="num mono">0원</td><td><span class="badge badge--quiet">비활성</span></td><td class="num mono">0</td><td class="mono">2026-11-24</td></tr>
+                    <tr><td class="n">6</td><td class="k"><button class="tlink" type="button" data-open="pop-op-edit" data-op="라지 사이즈|OP000006" style="background:none;border:0;padding:0;cursor:pointer;font:inherit">라지 사이즈</button></td><td class="mono">OP000006</td><td class="num mono">700원</td><td><span class="badge badge--ok">활성</span></td><td class="num mono">4</td><td class="mono">2026-11-24</td></tr>
+                    <tr><td class="n">5</td><td class="k"><button class="tlink" type="button" data-open="pop-op-edit" data-op="디카페인 원두|OP000005" style="background:none;border:0;padding:0;cursor:pointer;font:inherit">디카페인 원두</button></td><td class="mono">OP000005</td><td class="num mono">500원</td><td><span class="badge badge--ok">활성</span></td><td class="num mono">5</td><td class="mono">2026-11-20</td></tr>
+                    <tr><td class="n">4</td><td class="k"><button class="tlink" type="button" data-open="pop-op-edit" data-op="휘핑 추가|OP000004" style="background:none;border:0;padding:0;cursor:pointer;font:inherit">휘핑 추가</button></td><td class="mono">OP000004</td><td class="num mono">500원</td><td><span class="badge badge--ok">활성</span></td><td class="num mono">3</td><td class="mono">2026-11-20</td></tr>
+                    <tr><td class="n">3</td><td class="k"><button class="tlink" type="button" data-open="pop-op-edit" data-op="헤이즐넛 시럽|OP000003" style="background:none;border:0;padding:0;cursor:pointer;font:inherit">헤이즐넛 시럽</button></td><td class="mono">OP000003</td><td class="num mono">500원</td><td><span class="badge badge--ok">활성</span></td><td class="num mono">3</td><td class="mono">2026-11-18</td></tr>
+                    <tr><td class="n">2</td><td class="k"><button class="tlink" type="button" data-open="pop-op-edit" data-op="바닐라 시럽|OP000002" style="background:none;border:0;padding:0;cursor:pointer;font:inherit">바닐라 시럽</button></td><td class="mono">OP000002</td><td class="num mono">500원</td><td><span class="badge badge--ok">활성</span></td><td class="num mono">3</td><td class="mono">2026-11-18</td></tr>
+                    <tr><td class="n">1</td><td class="k"><button class="tlink" type="button" data-open="pop-op-edit" data-op="샷 추가|OP000001" style="background:none;border:0;padding:0;cursor:pointer;font:inherit">샷 추가</button></td><td class="mono">OP000001</td><td class="num mono">500원</td><td><span class="badge badge--ok">활성</span></td><td class="num mono">5</td><td class="mono">2026-11-10</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="empty" data-show="zero" hidden>
+                <span class="empty__ic" data-icon="tag" data-icon-size="22"></span>
+                <p>등록된 옵션 상품이 없습니다.</p>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div class="modal" id="pop-op-add" hidden role="dialog" aria-modal="true" aria-labelledby="pop-op-t">
+      <div class="modal__box">
+        <div class="modal__head">
+          <h2 class="t-h2" id="pop-op-t">옵션 상품 등록</h2>
+          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+        </div>
+        <div class="modal__body" style="display: flex; flex-direction: column; gap: var(--s-4)">
+          <div class="field"><label for="op-name">옵션 상품명 <span class="req">*</span></label><input class="input" id="op-name" maxlength="30" placeholder="예: 샷 추가" autocomplete="off" /></div>
+          <div class="field"><label for="op-price">추가 가격(원) <span class="req">*</span></label><input class="input mono" id="op-price" inputmode="numeric" maxlength="10" placeholder="숫자만 입력" /><span class="help">0원이면 가격 변동이 없는 옵션입니다. 단위 상품에 넣을 때 기본값으로 불러오고, 단위 상품마다 바꿀 수 있습니다. 옵션 코드는 등록하면 자동으로 붙습니다.</span></div>
+          <div class="field"><label>상태</label><div class="inline" style="gap: 8px"><span class="toggle" role="switch" aria-pressed="true" tabindex="0" aria-label="상태"></span>활성</div></div>
+        </div>
+        <div class="modal__foot">
+          <button class="btn btn--ghost" type="button" data-close>취소</button>
+          <button class="btn btn--primary" type="button" data-close>등록</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 옵션 상품 수정 — 목록에서 옵션 상품명을 누르면 연다(2026-11-25). 옵션 코드는 바꿀 수 없다.
+         이름 · 상태를 바꾸면 이 옵션 상품을 넣은 모든 단위 상품의 SET 에 바로 반영된다. 추가 가격은 기본값이라, 단위 상품에서 따로 바꾸지 않은 SET 줄에만 반영된다(PL-45).
+         삭제는 쓰는 단위 상품이 없을 때만 — 있으면 [삭제]가 막히고 비활성으로 바꾸라고 안내한다. 목업은 「샷 추가」로 채운다 -->
+    <div class="modal" id="pop-op-edit" hidden role="dialog" aria-modal="true" aria-labelledby="pop-ope-t">
+      <div class="modal__box modal__box--wide">
+        <div class="modal__head">
+          <h2 class="t-h2" id="pop-ope-t">옵션 상품 수정</h2>
+          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+        </div>
+        <div class="modal__body" style="display: flex; flex-direction: column; gap: var(--s-4)">
+          <div class="field"><label>옵션 코드</label><input class="input mono" value="OP000001" readonly aria-label="옵션 코드" data-ope-code /><span class="help">옵션 코드는 바꿀 수 없습니다.</span></div>
+          <div class="grid grid--2" style="align-items: start">
+            <div class="field"><label for="ope-name">옵션 상품명 <span class="req">*</span></label><input class="input" id="ope-name" maxlength="30" value="샷 추가" autocomplete="off" data-ope-name /></div>
+            <div class="field"><label for="ope-price">추가 가격(원) <span class="req">*</span></label><input class="input mono" id="ope-price" inputmode="numeric" maxlength="10" value="500" /></div>
+          </div>
+          <div class="field"><label>상태</label><div class="inline" style="gap: 8px"><span class="toggle" role="switch" aria-pressed="true" tabindex="0" aria-label="상태"></span>활성</div><span class="help">비활성으로 바꾸면 단위 상품의 옵션 SET 에서 새로 고를 수 없고, 이미 넣은 SET 에서는 부가서비스에 보이지 않습니다.</span></div>
+          <div class="field">
+            <label>이 옵션 상품을 쓰는 단위 상품 <span class="subtle">5개</span></label>
+            <div class="tblwrap"><table class="tbl">
+              <thead><tr><th scope="col">단위 상품</th><th scope="col">SET</th></tr></thead>
+              <tbody>
+                <tr><td><a class="tlink" href="products-detail.html">아메리카노</a></td><td>추가</td></tr>
+                <tr><td><a class="tlink" href="products-detail.html">카페라떼</a></td><td>추가</td></tr>
+                <tr><td><a class="tlink" href="products-detail.html">바닐라라떼</a></td><td>추가</td></tr>
+                <tr><td><a class="tlink" href="products-detail.html">콜드브루</a></td><td>추가</td></tr>
+                <tr><td><a class="tlink" href="products-detail.html">흑당라떼</a></td><td>추가</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+          <div class="band band--info"><div class="band__body"><p class="band__desc" style="margin: 0">옵션 상품명 · 상태를 바꾸면 위 단위 상품 5개의 옵션 SET 에 바로 반영됩니다. 추가 가격은 단위 상품에서 따로 바꾸지 않은 곳에만 반영됩니다. <span class="badge badge--warn">Q3</span></p></div></div>
+        </div>
+        <div class="modal__foot">
+          <button class="btn btn--secondary" type="button" disabled title="이 옵션 상품을 쓰는 단위 상품이 있어 삭제할 수 없습니다. 비활성으로 바꿔 주세요." style="margin-right: auto">삭제</button>
+          <button class="btn btn--ghost" type="button" data-close>취소</button>
+          <button class="btn btn--primary" type="button" data-close>저장</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* 목업 전용 — 누른 옵션 상품의 이름 · 코드를 수정 팝업 머리 칸에 채운다(나머지 칸은 「샷 추가」 예시 그대로) */
+      document.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-op]");
+        if (!b) return;
+        var v = b.dataset.op.split("|");
+        document.querySelector("[data-ope-name]").value = v[0];
+        document.querySelector("[data-ope-code]").value = v[1];
+      });
+    </script>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>가격 정보 관리 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="master" data-sub="master/prices.html">
+    <!-- 가격 정보 관리 · /price-lists · 1팀 · 2차
+         기준: 「기초정보(상품 · 카테고리 · 가격) 정책서」 PL-30 ~ PL-37. 설계 docs/superpowers/specs/2026-11-18-master-data-mockup-design.md §6.
+         탭 셋 — 일반 가격 리스트 · 프로모션 가격 리스트 · 가격 변경 이력(#general · #promotion · #history). 적용 순서는 프로모션 → 일반 → 표준가격(PL-34).
+         BP · 가맹 선택칸은 두지 않는다(PL-1) — 검색 조건 머리 오른쪽에 BP 만 적는다. 쟁점(2 부가서비스별 가격)은 상세 화면에 띠로만 둔다.
+         [등록]은 등록 화면(prices-new.html)으로 간다 — 이름 · 상품 리스트 · 상품 가격을 한 번에 넣는다(2026-11-25). 탭 수는 예시 데이터(일반 3 · 프로모션 3)를 따른다. 위쪽 점선 줄은 목업 전용 전환이다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="prc" style="display: contents">
+          <div class="titlebar">
+            <h1 class="t-h1">가격 정보 관리</h1>
+            <span class="badge badge--warn">1팀 작업</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">2차 · /price-lists</span>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="stack">
+              <div class="demo" data-demo="prc" data-demo-key="role">
+                <b>목업 권한</b>
+                <div class="seg">
+                  <button type="button" data-state="edit" aria-pressed="true">조회 · 등록 · 수정 · 삭제</button>
+                  <button type="button" data-state="view" aria-pressed="false">조회만</button>
+                </div>
+              </div>
+              <div class="demo" data-demo="prc">
+                <b>목업 상태</b>
+                <div class="seg">
+                  <button type="button" data-state="base" aria-pressed="true">기본</button>
+                  <button type="button" data-state="none" aria-pressed="false">조건에 맞는 것 없음</button>
+                  <button type="button" data-state="zero" aria-pressed="false">등록된 것 없음</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 적용 순서 그림 — 점포에 가격 리스트가 없으면 표준가격(PL-34) -->
+            <div class="note" style="align-items: center; flex-wrap: wrap; gap: 8px">
+              <span data-icon="info" data-icon-size="14"></span>
+              <b style="color: var(--ink)">적용 순서</b>
+              <span class="inline" style="gap: 6px">
+                <span class="badge badge--info">프로모션 가격</span>
+                <span class="subtle">→</span>
+                <span class="badge badge--quiet">일반 가격</span>
+                <span class="subtle">→</span>
+                <span class="tag">표준가격</span>
+              </span>
+              <span>점포에 가격 리스트가 없으면 단위 상품의 표준가격이 적용됩니다.</span>
+            </div>
+
+            <div class="tabs" data-tabs="prc-tabs">
+              <button type="button" data-tab="general" aria-selected="true">일반 가격 리스트 <span class="count">3</span></button>
+              <button type="button" data-tab="promotion" aria-selected="false">프로모션 가격 리스트 <span class="count">3</span></button>
+              <button type="button" data-tab="history" aria-selected="false">가격 변경 이력</button>
+            </div>
+
+            <div id="prc-tabs" class="stack--lg" style="display: flex; flex-direction: column">
+              <!-- ── 일반 가격 리스트 ── 목록 열: 순번 · 리스트명 · 상품 리스트 · 상품 수 · 고른 점포 수 · 최종수정 -->
+              <section class="panel" data-panel="general">
+                <div class="panel__head">
+                  <h2 class="t-h2">일반 가격 리스트</h2>
+                  <span class="badge badge--quiet" data-show="base">3건</span>
+                  <span class="badge badge--quiet" data-show="none zero" hidden>0건</span>
+                  <span class="subtle" style="font-size: 12px">BP <b>㈜한강상회 · BP000017</b></span>
+                  <div class="titlebar__end">
+                    <a class="btn btn--primary btn--sm" href="prices-new.html" data-show-role="edit">등록</a>
+                  </div>
+                </div>
+                <div class="tblwrap" data-show="base" data-pager="3" data-pager-sizes="50">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th scope="col" class="n">순번</th>
+                        <th scope="col">리스트명</th>
+                        <th scope="col">상품 리스트</th>
+                        <th scope="col" class="n">상품 수</th>
+                        <th scope="col" class="n">고른 점포 수</th>
+                        <th scope="col">최종수정</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="n">3</td>
+                        <td class="k"><a class="tlink" href="prices-detail.html">역세권가</a></td>
+                        <td><a class="tlink" href="product-lists-detail.html">여름 메뉴</a></td>
+                        <td class="n">5</td><td class="n">3</td>
+                        <td class="mono">2026-11-17 14:20 · 정하윤</td>
+                      </tr>
+                      <tr>
+                        <td class="n">2</td>
+                        <td class="k"><a class="tlink" href="prices-detail.html">기본가</a></td>
+                        <td><a class="tlink" href="product-lists-detail.html">기본 메뉴</a></td>
+                        <td class="n">7</td><td class="n">1</td>
+                        <td class="mono">2026-11-12 10:30 · 정하윤</td>
+                      </tr>
+                      <tr>
+                        <td class="n">1</td>
+                        <td class="k"><a class="tlink" href="prices-detail.html">상권 일반가</a></td>
+                        <td><a class="tlink" href="product-lists-detail.html">여름 메뉴</a></td>
+                        <td class="n">5</td><td class="n">0</td>
+                        <td class="mono">2026-10-20 16:05 · 이도윤</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="tblwrap" data-show="none zero" hidden>
+                  <table class="tbl">
+                    <thead><tr><th scope="col" class="n">순번</th><th scope="col">리스트명</th><th scope="col">상품 리스트</th><th scope="col" class="n">상품 수</th><th scope="col" class="n">고른 점포 수</th><th scope="col">최종수정</th></tr></thead>
+                  </table>
+                  <div class="empty">
+                    <span class="empty__ic" data-icon="store" data-icon-size="22"></span>
+                    <p data-show="none">조건에 맞는 일반 가격 리스트가 없습니다.</p>
+                    <p data-show="zero" hidden>등록된 일반 가격 리스트가 없습니다.</p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ── 프로모션 가격 리스트 ── 상태는 대기 · 진행 중 · 종료. 기간이 끝나면 점포 선택이 자동으로 풀린다(PL-35) -->
+              <div data-panel="promotion" hidden class="stack--lg" style="display: flex; flex-direction: column">
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">검색 조건</h2>
+                    <span class="subtle" style="font-size: 12px">BP <b>㈜한강상회 · BP000017</b></span>
+                  </div>
+                  <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                    <div class="field">
+                      <label>상태</label>
+                      <div class="seg" id="promo-status" style="align-self: flex-start">
+                        <button type="button" data-st="all" aria-pressed="true">전체</button>
+                        <button type="button" data-st="wait" aria-pressed="false">대기</button>
+                        <button type="button" data-st="run" aria-pressed="false">진행 중</button>
+                        <button type="button" data-st="end" aria-pressed="false">종료</button>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">프로모션 가격 리스트</h2>
+                    <span class="badge badge--quiet" data-show="base" id="promo-count">3건</span>
+                    <span class="badge badge--quiet" data-show="none zero" hidden>0건</span>
+                    <div class="titlebar__end">
+                      <a class="btn btn--primary btn--sm" href="prices-new.html?type=promotion" data-show-role="edit">등록</a>
+                    </div>
+                  </div>
+                  <div class="tblwrap" data-show="base">
+                    <table class="tbl">
+                      <thead>
+                        <tr>
+                          <th scope="col" class="n">순번</th>
+                          <th scope="col">상태</th>
+                          <th scope="col">리스트명</th>
+                          <th scope="col">상품 리스트</th>
+                          <th scope="col">기간</th>
+                          <th scope="col" class="n">고른 점포 수</th>
+                          <th scope="col">최종수정</th>
+                        </tr>
+                      </thead>
+                      <tbody id="promo-rows">
+                        <tr data-status="wait">
+                          <td class="n">3</td><td><span class="badge badge--quiet">대기</span></td>
+                          <td class="k"><a class="tlink" href="prices-promotion-detail.html">겨울 시즌 할인</a></td>
+                          <td><a class="tlink" href="product-lists-detail.html">기본 메뉴</a></td>
+                          <td class="mono">2026-12-01 ~ 2026-12-31</td><td class="n">0</td>
+                          <td class="mono">2026-11-14 11:00 · 정하윤</td>
+                        </tr>
+                        <tr data-status="run">
+                          <td class="n">2</td><td><span class="badge badge--info">진행 중</span></td>
+                          <td class="k"><a class="tlink" href="prices-promotion-detail.html">11월 감사제</a></td>
+                          <td><a class="tlink" href="product-lists-detail.html">기본 메뉴</a></td>
+                          <td class="mono">2026-11-10 ~ 2026-11-30</td><td class="n">1</td>
+                          <td class="mono">2026-11-10 09:00 · 정하윤</td>
+                        </tr>
+                        <tr data-status="end">
+                          <td class="n">1</td><td><span class="tag">종료</span></td>
+                          <td class="k"><a class="tlink" href="prices-promotion-detail.html">8월 할인</a></td>
+                          <td><a class="tlink" href="product-lists-detail.html">여름 메뉴</a></td>
+                          <td class="mono">2026-08-01 ~ 2026-08-31</td><td class="n">0</td>
+                          <td class="mono">2026-08-31 23:59 · 시스템</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="tblwrap" data-show="none zero" hidden>
+                    <table class="tbl">
+                      <thead><tr><th scope="col" class="n">순번</th><th scope="col">상태</th><th scope="col">리스트명</th><th scope="col">상품 리스트</th><th scope="col">기간</th><th scope="col" class="n">고른 점포 수</th><th scope="col">최종수정</th></tr></thead>
+                    </table>
+                    <div class="empty">
+                      <span class="empty__ic" data-icon="store" data-icon-size="22"></span>
+                      <p data-show="none">조건에 맞는 프로모션 가격 리스트가 없습니다.</p>
+                      <p data-show="zero" hidden>등록된 프로모션 가격 리스트가 없습니다.</p>
+                    </div>
+                  </div>
+                </section>
+                <p class="note">
+                  <span data-icon="info" data-icon-size="14"></span>
+                  <span>기간이 끝나면 상태가 종료로 바뀌고, 고른 점포의 선택이 자동으로 풀립니다(PL-35).</span>
+                </p>
+              </div>
+
+              <!-- ── 가격 변경 이력(PL-37) ── 이력은 지우지 않는다 -->
+              <div data-panel="history" hidden class="stack--lg" style="display: flex; flex-direction: column">
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">검색 조건</h2>
+                    <span class="subtle" style="font-size: 12px">BP <b>㈜한강상회 · BP000017</b></span>
+                  </div>
+                  <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                    <div class="grid" style="align-items: start; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4)">
+                      <div class="field">
+                        <label for="h-from">기간</label>
+                        <div class="inline" style="flex-wrap: nowrap">
+                          <input class="input" id="h-from" type="date" value="2026-11-01" />
+                          <span class="subtle">~</span>
+                          <input class="input" type="date" aria-label="기간 끝" value="2026-11-18" />
+                        </div>
+                      </div>
+                      <div class="field">
+                        <label for="h-name">상품명</label>
+                        <div class="inputwrap">
+                          <span data-icon="search" data-icon-size="15"></span>
+                          <input class="input" id="h-name" placeholder="상품명으로 찾기" autocomplete="off" />
+                        </div>
+                      </div>
+                      <div class="field">
+                        <label for="h-kind">가격 종류</label>
+                        <select class="select" id="h-kind">
+                          <option selected>전체</option>
+                          <option>표준가격</option>
+                          <option>일반 가격 리스트</option>
+                          <option>프로모션 가격 리스트</option>
+                        </select>
+                      </div>
+                      <div class="field">
+                        <label for="h-list">리스트</label>
+                        <select class="select" id="h-list">
+                          <option selected>전체</option>
+                          <option>기본가</option>
+                          <option>역세권가</option>
+                          <option>상권 일반가</option>
+                          <option>11월 감사제</option>
+                          <option>겨울 시즌 할인</option>
+                          <option>8월 할인</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="inline" style="justify-content: flex-end">
+                      <button class="btn btn--secondary" type="button" data-state-go="base">초기화</button>
+                      <button class="btn btn--primary" type="button">조회</button>
+                    </div>
+                  </div>
+                </section>
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">가격 변경 이력</h2>
+                    <span class="badge badge--quiet" data-show="base">3건</span>
+                    <span class="badge badge--quiet" data-show="none zero" hidden>0건</span>
+                  </div>
+                  <div class="tblwrap" data-show="base" data-pager="3" data-pager-sizes="50">
+                    <table class="tbl">
+                      <thead>
+                        <tr>
+                          <th scope="col">변경일시</th>
+                          <th scope="col">상품</th>
+                          <th scope="col">가격 종류</th>
+                          <th scope="col">리스트</th>
+                          <th scope="col">부가서비스</th>
+                          <th scope="col" class="n">이전 가격 → 바꾼 가격</th>
+                          <th scope="col">바꾼 사람</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td class="mono">2026-11-17 14:20</td><td class="k"><a class="tlink" href="products-detail.html">아메리카노</a></td>
+                          <td>일반 가격 리스트</td><td>역세권가</td><td class="nil">-</td>
+                          <td class="n"><span class="mono">3,200</span>원 → <b class="mono">3,300</b>원</td><td>정하윤</td>
+                        </tr>
+                        <tr>
+                          <td class="mono">2026-11-10 09:00</td><td class="k"><a class="tlink" href="products-detail.html">아메리카노</a></td>
+                          <td>프로모션 가격 리스트</td><td>11월 감사제</td><td>POS</td>
+                          <td class="n"><span class="subtle">(빈 값)</span> → <b class="mono">2,500</b>원</td><td>정하윤</td>
+                        </tr>
+                        <tr>
+                          <td class="mono">2026-11-03 11:05</td><td class="k"><a class="tlink" href="products-detail.html">크루아상</a></td>
+                          <td>표준가격</td><td class="nil">-</td><td class="nil">-</td>
+                          <td class="n"><span class="mono">3,000</span>원 → <b class="mono">3,200</b>원</td><td>이도윤</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="tblwrap" data-show="none zero" hidden>
+                    <table class="tbl">
+                      <thead><tr><th scope="col">변경일시</th><th scope="col">상품</th><th scope="col">가격 종류</th><th scope="col">리스트</th><th scope="col">부가서비스</th><th scope="col" class="n">이전 가격 → 바꾼 가격</th><th scope="col">바꾼 사람</th></tr></thead>
+                    </table>
+                    <div class="empty">
+                      <span class="empty__ic" data-icon="store" data-icon-size="22"></span>
+                      <p data-show="none">조건에 맞는 가격 변경 이력이 없습니다.</p>
+                      <p data-show="zero" hidden>등록된 가격 변경 이력이 없습니다.</p>
+                    </div>
+                  </div>
+                </section>
+                <p class="note">
+                  <span data-icon="info" data-icon-size="14"></span>
+                  <span>가격 변경 이력은 지우지 않습니다. 가격 리스트를 삭제해도 그 리스트의 이력은 남습니다(PL-37).</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      /* 목업 전용 — 프로모션 상태 seg 가 줄을 거른다 */
+      (function () {
+        var seg = document.getElementById("promo-status");
+        seg.addEventListener("click", function (e) {
+          var b = e.target.closest("button");
+          if (!b) return;
+          var n = 0;
+          document.querySelectorAll("#promo-rows tr").forEach(function (r) {
+            var on = b.dataset.st === "all" || r.dataset.status === b.dataset.st;
+            r.hidden = !on;
+            if (on) n++;
+          });
+          document.getElementById("promo-count").textContent = n + "건";
+        });
+      })();
+    </script>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

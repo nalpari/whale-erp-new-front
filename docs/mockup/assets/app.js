@@ -198,10 +198,16 @@
           { text: "회원 탈퇴", href: "mypage/withdraw.html" }
         ]},
 
-        { key: "master", text: "기초정보관리", team: "1팀", items: [
-          { text: "상품 정보 관리", phase: "2" },
-          { text: "가격 정보 관리", phase: "2" },
-          { text: "카테고리 정보 관리", phase: "2" },
+        /* 기초정보관리는 개념 정의서 Ⅵ(상품 · 카테고리 · 가격)와 Notion 「기초정보 정책서」(PL-1 ~ 42)로 만들었다.
+           쟁점(문의 Q2 ~ Q9)은 그리지 않았다. 상세 · 등록 · 수정은 메뉴로 나누지 않는다 — 그 화면들은 부모 줄을 켠다.
+           점포 상품 관리도 여기 둔다 — 점포 적용 · 복사를 본사가 하는 화면이 되어 점포관리에서 옮겼다(2026-11-25). 이 메뉴 하나는 가맹 역할에도 준다 — 맡은 점포만, 판매 상태 · 품절 · 분류 사용만 바꾼다(PL-2 예외). */
+        { key: "master", text: "기초정보관리", team: "1팀", toggle: 1, items: [
+          { text: "영역 개요", href: "master/overview.html", mock: 1 },
+          { text: "상품 정보 관리", phase: "2", href: "master/products.html" },
+          { text: "카테고리 정보 관리", phase: "2", href: "master/categories.html" },
+          { text: "가격 정보 관리", phase: "2", href: "master/prices.html" },
+          { text: "옵션 상품 관리", phase: "2", href: "master/option-products.html" },
+          { text: "점포 상품 관리", phase: "2", href: "master/store-products.html" },
           { text: "자재 정보 관리", phase: "1.5" }
         ]},
 

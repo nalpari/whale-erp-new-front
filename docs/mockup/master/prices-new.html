@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>가격 리스트 등록 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+    <style>
+      /* 목업 전용 — 가격 입력칸 폭 */
+      .price-in { width: 112px; text-align: right; }
+    </style>
+  </head>
+  <body data-root="../" data-page="master" data-sub="master/prices.html">
+    <!-- 가격 리스트 등록 · /price-lists/new · 1팀 · 2차
+         기준: 「기초정보 정책서」 PL-31 ~ PL-35. 가격 리스트 이름 · 유형 · 상품 리스트 · (프로모션은 기간) · 상품 가격을 한 화면에서 한 번에 넣는다(2026-11-25 사용자 지정 — 전엔 팝업에서 이름 · 상품 리스트만 받고 상세에서 가격을 넣었다).
+         가격 리스트는 만들 때 상품 리스트 하나에 묶이고 바꾸지 않는다(상품 리스트 1 : 가격 리스트 N, A안). 상품 리스트를 고르면 그 리스트의 상품이 가격 표에 펼쳐진다.
+         일반: 상품마다 가격 칸 하나. 비워 두면 표준가격이 적용된다(PL-33, 칸에 회색 「표준가 N 적용」). 부가서비스별 칸을 둘지는 문의 Q7.
+         프로모션: 기간(필수) + 부가서비스별 칸 다섯. 비워 두면 그 부가서비스는 일반 가격 리스트 가격(없으면 표준가격)이 적용된다.
+         [등록] 하면 상세로 간다. 목록의 [등록]은 탭에 맞춰 유형을 미리 고른다(?type=promotion). 위쪽 점선 줄은 목업 전용 전환이다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="pn" style="display: contents">
+          <div class="titlebar">
+            <h1 class="t-h1">가격 정보 관리</h1>
+            <span class="badge badge--warn">1팀 작업</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">2차 · /price-lists/new</span>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="demo" data-demo="pn">
+              <b>목업 상태</b>
+              <div class="seg">
+                <button type="button" data-state="in" aria-pressed="true">입력 중</button>
+                <button type="button" data-state="miss" aria-pressed="false">필수 누락</button>
+                <button type="button" data-state="fail" aria-pressed="false">저장 실패</button>
+              </div>
+            </div>
+
+            <div class="band band--risk" data-show="fail" hidden>
+              <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+              <div class="band__body"><div class="band__title">저장하지 못했습니다. 잠시 후 다시 시도해 주세요.</div></div>
+            </div>
+
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">가격 리스트 등록</h2>
+                <span class="subtle" style="font-size: 13px; font-weight: 500">필수 칸은 * 표시</span>
+                <div class="inline" style="margin-left: auto; gap: 6px">
+                  <a class="btn btn--secondary btn--sm" href="prices.html">취소</a>
+                  <a class="btn btn--primary btn--sm" href="prices-detail.html" data-show="in" data-pn-go>등록</a>
+                  <button class="btn btn--primary btn--sm" type="button" data-show="miss fail" hidden>등록</button>
+                </div>
+              </div>
+              <div class="panel__body" style="display: flex; flex-direction: column; gap: var(--s-4)">
+                <div class="grid grid--2" style="align-items: start">
+                  <div class="field">
+                    <label for="pn-name">가격 리스트 이름 <span class="req">*</span></label>
+                    <input class="input" id="pn-name" maxlength="30" placeholder="예: 역세권가 · 12월 연말 할인" autocomplete="off" value="상권 특가" data-show="in fail" />
+                    <input class="input" aria-label="가격 리스트 이름" aria-invalid="true" maxlength="30" placeholder="예: 역세권가 · 12월 연말 할인" autocomplete="off" data-show="miss" hidden />
+                    <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>가격 리스트 이름을 입력해 주세요.</span>
+                  </div>
+                  <div class="field">
+                    <label>유형 <span class="req">*</span></label>
+                    <div class="inline" style="min-height: 34px; gap: var(--s-4)" role="radiogroup" aria-label="유형">
+                      <label class="inline" style="gap: 6px"><input type="radio" name="pn-type" value="general" checked data-pn-type />일반</label>
+                      <label class="inline" style="gap: 6px"><input type="radio" name="pn-type" value="promotion" data-pn-type />프로모션</label>
+                    </div>
+                    <span class="help" data-pn-typehelp>기간 없이 쓰는 가격입니다. 점포는 일반 가격 리스트를 하나 고릅니다.</span>
+                  </div>
+                </div>
+                <div class="grid grid--2" style="align-items: start">
+                  <div class="field">
+                    <label for="pn-list">상품 리스트 <span class="req">*</span></label>
+                    <select class="select" id="pn-list" data-pn-list>
+                      <option value="">선택</option>
+                      <option value="basic">기본 메뉴</option>
+                      <option value="summer" selected>여름 메뉴</option>
+                      <option value="fall">가을 메뉴(준비)</option>
+                    </select>
+                    <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>상품 리스트를 선택해 주세요.</span>
+                    <span class="help">가격 리스트는 고른 상품 리스트 하나에 묶이고, 등록한 뒤에는 바꿀 수 없습니다.</span>
+                  </div>
+                  <div class="field" data-pn-period hidden>
+                    <label for="pn-from">기간 <span class="req">*</span></label>
+                    <div class="inline" style="flex-wrap: nowrap; gap: 6px">
+                      <input class="input mono" id="pn-from" style="width: 150px" value="2026-12-01" placeholder="YYYY-MM-DD" />
+                      <span class="subtle">~</span>
+                      <input class="input mono" style="width: 150px" value="2026-12-31" placeholder="YYYY-MM-DD" aria-label="종료일" />
+                    </div>
+                    <span class="help">기간 밖에는 점포에 걸려 있어도 적용되지 않습니다.</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">상품 가격</h2>
+                <span class="badge badge--quiet" data-pn-count>5</span>
+                <span class="subtle" style="font-size: 12.5px" data-pn-listname>여름 메뉴의 상품</span>
+              </div>
+              <!-- 일괄 적용 — 체크한 상품에 표준가격 대비 정액 · 정률로 한 번에 채운다(상세의 일괄 적용과 같다) -->
+              <div class="inline" style="gap: 8px; padding: 12px var(--s-5); border-bottom: 1px solid var(--hairline)" data-pn-bulk>
+                <span class="subtle" style="font-size: 13px">체크한 상품에</span>
+                <select class="select" style="width: 100px" aria-label="적용 방식"><option>정액 할인</option><option>정률 할인</option><option>지정가</option></select>
+                <input class="input mono price-in" placeholder="값" aria-label="값" />
+                <button class="btn btn--secondary btn--sm" type="button">표준가격 기준 적용</button>
+                <span class="subtle" style="font-size: 12.5px">원 미만은 버립니다.</span>
+              </div>
+              <div class="tblwrap" data-pn-table>
+                <table class="tbl">
+                  <thead data-pn-head></thead>
+                  <tbody data-pn-rows></tbody>
+                </table>
+              </div>
+              <div class="empty" data-pn-empty hidden>
+                <span class="empty__ic" data-icon="tag" data-icon-size="22"></span>
+                <p>상품 리스트를 고르면 그 리스트의 상품이 여기에 나옵니다.</p>
+              </div>
+              <p class="note" style="margin: 0; padding: 12px var(--s-5)">
+                <span data-icon="info" data-icon-size="14"></span>
+                <span data-pn-note>빈 칸은 표준가격이 적용됩니다. 0 은 무료 판매입니다.</span>
+              </p>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      /* 목업 전용 — 유형 · 상품 리스트를 고르면 가격 표를 다시 그린다. ?type=promotion 이면 프로모션으로 시작한다 */
+      (function () {
+        var LISTS = {
+          basic: { name: "기본 메뉴", items: [["아메리카노", "PD000001", 3000], ["카페라떼", "PD000002", 3500], ["바닐라라떼", "PD000003", 4000], ["콜드브루", "PD000004", 4200], ["크루아상", "PD000009", 3500], ["샷 추가", "PD000007", 500]] },
+          summer: { name: "여름 메뉴", items: [["아메리카노", "PD000001", 3000], ["카페라떼", "PD000002", 3500], ["콜드브루", "PD000004", 4200], ["흑당라떼", "PD000005", 4500], ["샷 추가", "PD000007", 500]] },
+          fall: { name: "가을 메뉴(준비)", items: [["아메리카노", "PD000001", 3000], ["밤 라떼", "PD000010", 5000], ["크루아상", "PD000009", 3500]] }
+        };
+        var SVC = ["POS", "KIOSK", "테이블오더", "픽업오더", "QR오더"];
+        function won(n) { return n.toLocaleString("ko-KR"); }
+        function q(sel) { return document.querySelector(sel); }
+        function type() { return q("[data-pn-type]:checked").value; }
+        function paint() {
+          var promo = type() === "promotion", key = q("[data-pn-list]").value, list = LISTS[key];
+          q("[data-pn-period]").hidden = !promo;
+          q("[data-pn-typehelp]").textContent = promo ? "기간 동안만 쓰는 가격입니다. 일반 가격보다 먼저 적용됩니다." : "기간 없이 쓰는 가격입니다. 점포는 일반 가격 리스트를 하나 고릅니다.";
+          q("[data-pn-note]").textContent = promo ? "빈 칸은 그 부가서비스에서 일반 가격 리스트 가격(없으면 표준가격)이 적용됩니다. 0 은 무료 판매입니다." : "빈 칸은 표준가격이 적용됩니다. 0 은 무료 판매입니다.";
+          q("[data-pn-empty]").hidden = !!list;
+          q("[data-pn-table]").hidden = !list;
+          q("[data-pn-bulk]").hidden = !list;
+          q("[data-pn-count]").textContent = list ? list.items.length : 0;
+          q("[data-pn-listname]").textContent = list ? list.name + "의 상품" : "";
+          if (!list) return;
+          var head = '<tr><th scope="col" style="width: 40px"></th><th scope="col">상품명</th><th scope="col">상품 코드</th><th scope="col" class="num">표준가격</th>';
+          head += promo ? SVC.map(function (s) { return '<th scope="col" class="num">' + s + "</th>"; }).join("") : '<th scope="col" class="num">가격</th>';
+          q("[data-pn-head]").innerHTML = head + "</tr>";
+          q("[data-pn-rows]").innerHTML = list.items.map(function (it) {
+            var cells = promo
+              ? SVC.map(function (s) { return '<td class="num"><input class="input mono price-in" aria-label="' + it[0] + " " + s + ' 가격" inputmode="numeric" /></td>'; }).join("")
+              : '<td class="num"><input class="input mono price-in" aria-label="' + it[0] + ' 가격" inputmode="numeric" /></td>';
+            return '<tr><td><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="' + it[0] + ' 선택" data-icon="check" data-icon-size="11" data-icon-done="1"><svg width="11" height="11" aria-hidden="true"><use href="#i-check"/></svg></span></td><td class="k">' + it[0] + '</td><td class="mono">' + it[1] + '</td><td class="num mono subtle">' + won(it[2]) + "원</td>" + cells + "</tr>";
+          }).join("");
+          q("[data-pn-go]").href = promo ? "prices-promotion-detail.html" : "prices-detail.html";
+        }
+        if (/[?&]type=promotion/.test(location.search)) q('[data-pn-type][value="promotion"]').checked = true;
+        var lm = /[?&]list=(\w+)/.exec(location.search);
+        if (lm && LISTS[lm[1]]) q("[data-pn-list]").value = lm[1];
+        document.addEventListener("change", function (e) { if (e.target.closest("[data-pn-type], [data-pn-list]")) paint(); });
+        paint();
+      })();
+    </script>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>
