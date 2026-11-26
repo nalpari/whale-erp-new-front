@@ -6,6 +6,39 @@
     <title>직원 상세 · WHALE ERP</title>
     <link rel="icon" href="../assets/img/favicon.svg" />
     <link rel="stylesheet" href="../assets/whale.css" />
+    <style>
+      /* 상세 화면 틀(2026-11-19 사용자 지정) — 요약 띠 · 둥근 확인 상자 · 점선 알약 · 점포 유형 꼬리표.
+         개발 화면 src/components/common/round-box.tsx · site/store-type-tag.tsx 와 같은 모양을 이 목업 안에서만 그린다(DESIGN.md 「상세 화면 틀」). */
+      .dstrip { display: flex; flex-wrap: wrap; border: 1px solid #c9d1de; border-radius: 8px; background: #fff; padding: 12px 8px; }
+      .dstrip > div { display: flex; flex-direction: column; gap: 4px; padding: 0 16px; min-width: 0; }
+      .dstrip > div + div { border-left: 1px solid #eeeeee; }
+      .dstrip__k { font-size: 13px; font-weight: 500; color: #888888; }
+      .dstrip__v { display: flex; align-items: center; gap: 8px; min-height: 24px; font-size: 15px; font-weight: 600; color: #3c4046; }
+      .dstrip__warn { font-size: 13px; font-weight: 500; color: #ef6363; }
+      .rbox { display: flex; flex-direction: column; min-width: 0; border: 1px solid #c9d1de; border-radius: 8px; background: #fff; padding: 16px 20px; }
+      .rbox__head { display: flex; align-items: center; gap: 8px; min-height: 34px; padding-bottom: 12px; border-bottom: 1px solid #c9d1de; }
+      .rbox__head h2 { flex: 1; margin: 0; font-size: 15px; font-weight: 600; color: #3c4046; }
+      .rbox__row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #eeeeee; font-size: 14px; }
+      .rbox__head + .rbox__row, .rbox__head + * > .rbox__row:first-child { border-top: 0; }
+      .rbox__row:last-child { padding-bottom: 0; }
+      .rbox__row--top { align-items: flex-start; }
+      .rbox__row--col { flex-direction: column; align-items: stretch; gap: 4px; }
+      .rbox__k { width: 90px; flex-shrink: 0; font-weight: 500; color: #888888; }
+      .rbox__v { flex: 1; min-width: 0; color: #3c4046; }
+      .rbox__line { display: flex; align-items: center; gap: 8px; }
+      .rbox__line > b { flex: 1; font-weight: 600; }
+      .rbox__desc { color: #888888; line-height: 1.6; }
+      .rbox__empty { padding-top: 12px; font-size: 14px; color: #999999; }
+      .rbox__who { display: flex; flex-shrink: 0; align-items: center; gap: 8px; color: #888888; }
+      .vbar { display: inline-block; width: 1px; height: 11px; background: #d9d9d9; }
+      .dpill { display: inline-flex; flex-shrink: 0; align-items: center; gap: 2px; height: 26px; padding: 0 10px; border: 1px dashed #6b7988; border-radius: 9999px; background: #fff; font-size: 13px; font-weight: 500; color: #6b7988; white-space: nowrap; text-decoration: none; cursor: pointer; }
+      .dpill:hover { background: #f8f9fb; }
+      .dpill:active { border-style: solid; background: #6b7988; color: #fff; }
+      .stag { flex-shrink: 0; padding: 0 4px; border: 1px solid #e9edf5; border-radius: 2px; font-size: 12px; font-weight: 500; color: #858b94; }
+      .stag--direct { background: #f4f9ff; }
+      .stag--franchise { background: #f8f9fb; }
+      .stag--hq { background: #fff; }
+    </style>
   </head>
   <body data-root="../" data-page="staff" data-sub="staff/detail.html">
     <!-- /staff/[staffId] · S-PIXATL "직원 상세 정보 확인"
@@ -16,11 +49,8 @@
       <main class="main" id="main">
         <div class="titlebar">
           <a class="iconbtn" href="index.html" aria-label="직원 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
-          <h1 class="t-h1">서지안</h1>
-          <span class="badge badge--ok" data-ret-badge>재직</span>
-          <span class="badge badge--quiet">본인인증 완료</span>
+          <h1 class="t-h1">직원 상세</h1>
           <div class="titlebar__end">
-            <span class="filters__count mono">EMP-2026-0143</span>
             <button class="btn btn--danger btn--sm" type="button" data-ret-open="ret-pop" data-tip="그 직원 근무지가 업무 범위 안에 있고 메뉴 권한 「직원 정보 관리」 수정이 켜진 관리자에게만 보인다. 가입 전(초안·초대 발송) 레코드에는 숨긴다.">퇴직 처리</button>
             <!-- 퇴직 예정(퇴직일 전날까지)일 때 같은 자리에 둘 -->
             <button class="btn btn--secondary btn--sm" type="button" data-ret-open="ret-pop" data-ret-change hidden>퇴직일 변경</button>
@@ -30,6 +60,17 @@
         </div>
 
         <div class="content">
+          <!-- 요약 띠(2026-11-19 사용자 지정) — 성명(+ 재직) · 고용형태 · 직무 · 근무지(유형 꼬리표) · 입사일 · 가입 상태. 개발 화면 staff-members/[id]/page.tsx 와 같다.
+               퇴직 처리하면 성명 옆에 「퇴직 예정 MM-DD」가 붙는다. 만 19세 미만으로 막히면 가입 상태가 「가입 불가(만 19세 미만)」다 -->
+          <div class="dstrip">
+            <div><span class="dstrip__k">성명</span><span class="dstrip__v">서지안 <span class="ok" data-ret-badge>재직</span></span></div>
+            <div><span class="dstrip__k">고용형태</span><span class="dstrip__v">정직원</span></div>
+            <div><span class="dstrip__k">직무</span><span class="dstrip__v">바리스타</span></div>
+            <div><span class="dstrip__k">근무지</span><span class="dstrip__v"><span class="stag stag--direct">직영</span>모리커피 서초점</span></div>
+            <div><span class="dstrip__k">입사일</span><span class="dstrip__v mono">2026-03-01</span></div>
+            <div><span class="dstrip__k">가입 상태</span><span class="dstrip__v"><span class="badge badge--ok">가입 완료</span></span></div>
+          </div>
+
           <div class="gap is-decided">
             <div class="gap__head">
               <span class="gap__no">STAFF-6</span>
@@ -93,41 +134,24 @@
             <!-- 왼쪽 : 기본 정보 + 근로계약 요약 -->
             <section class="stack--lg" style="display: flex; flex-direction: column">
               <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2" style="flex: 1">직원 정보</h2>
+                  <!-- 표 제목 줄의 작은 동작은 점선 알약(26px) — 34px 색 바탕 버튼은 표 안에서 무거웠다(2026-11-19 사용자 지정) -->
+                  <button class="dpill" type="button">생년월일 수정</button>
+                  <button class="dpill" type="button" data-ret-open="pw-pop" data-tip="가입 전·퇴직·탈퇴 직원에게는 숨긴다.">비밀번호 초기화</button>
+                </div>
                 <div class="panel__body">
-                  <div class="rowmain" style="gap: var(--s-4); margin-bottom: var(--s-4)">
-                    <span class="avatar avatar--lg"><img src="../assets/img/staff-1.webp" alt="" /></span>
-                    <div class="rowmain__text">
-                      <b style="font-size: 17px">서지안</b>
-                      <span>바리스타 · 모리커피 서초점</span>
-                    </div>
-                  </div>
                   <dl class="kv">
-                    <dt>고용 형태</dt>
-                    <dd>정직원</dd>
-                    <dt>소속 근무지</dt>
-                    <dd>모리커피 서초점</dd>
-                    <dt>입사일</dt>
-                    <dd class="mono">2026-03-01</dd>
-                    <dt data-ret-date hidden>퇴직일</dt>
-                    <dd class="mono" data-ret-date hidden>2026-09-10</dd>
-                    <!-- 재직 이력(WHALEERP-615 C안, 운영 정책 CTR-30) — 이 레코드와 연결된 이전 재직 레코드의 기간(입사일 ~ 퇴직일).
-                         누르면 그 기간의 직원 상세로 간다. 옛 레코드 상세에서는 같은 자리에 「이후 재입사」 줄을 두어 지금 레코드로 간다.
-                         연결된 다른 기간이 없으면 줄을 두지 않는다. 직원 목록은 레코드마다 한 줄 그대로다. -->
-                    <dt>재직 이력</dt>
-                    <dd><a href="detail.html"><span class="mono">2024-03-04 ~ 2025-08-31</span></a> <span class="subtle">· 이전 재직</span></dd>
                     <dt>생년월일</dt>
                     <dd class="mono">1998-07-12</dd>
                     <dt>휴대전화번호</dt>
                     <dd class="mono">010-2841-7702</dd>
                     <dt>이메일</dt>
                     <dd class="mono">jian.seo@example.com</dd>
+                    <!-- 초대는 「종류 ┃ 결과 ┃ YYYY-MM-DD 발송」 — 값 여럿을 세로선으로 나눈다(2026-11-19 사용자 지정) -->
+                    <dt>초대</dt>
+                    <dd>가입 초대 <span class="vbar"></span> 수락 <span class="vbar"></span> <span class="mono">2026-02-24</span> 발송</dd>
                   </dl>
-                  <div class="spread" style="margin-top: var(--s-4)">
-                    <span class="subtle" style="font-size: 12.5px">앱에 못 들어간다면</span>
-                    <button class="btn btn--secondary btn--sm" type="button" data-ret-open="pw-pop" data-tip="가입 전·퇴직·탈퇴 직원에게는 숨긴다.">
-                      <span data-icon="lock" data-icon-size="14"></span>비밀번호 초기화
-                    </button>
-                  </div>
                 </div>
                 <div class="panel__note">
                   휴대전화번호·주소는 직원이 앱의 내 정보에서 직접 고친다. 관리자는 대신 수정하지 않는다.
@@ -139,8 +163,22 @@
 <b>직접 와서 물은 경우에만</b> 알려 준다. 전화나 메시지로는 알려 주지 않는다.
 가맹 점포 직원의 상세에는 <b>본사 제공 동의</b> 상태가 한 줄 선다 — 동의했는지 아닌지만이다. 이 표본은 직영 점포라 그 줄이 없다.
                   가맹 역할이 직원에게 동의를 받으러 안내할 때 쓰는 값이고, 본사에게는 동의한 직원만 보이므로 본사 화면에서는 늘 「동의」다.
-                  직원이 본인인증에서 <b>만 19세 미만</b>으로 막히면 제목 옆 배지가 <b>가입 불가(만 19세 미만)</b>가 된다.
+                  직원이 본인인증에서 <b>만 19세 미만</b>으로 막히면 요약 띠 「가입 상태」가 <b>가입 불가(만 19세 미만)</b>가 된다.
                   생년월일은 그때도 보이지 않고, 관리자는 이 레코드와 초안을 지운다.
+                </div>
+              </div>
+
+              <!-- 재직 정보 — 있는 직원만(퇴직일 · 재입사로 이은 다른 재직 기간 · 가맹 점포 직원의 본사 제공 동의). 고용형태 · 근무지 · 입사일은 요약 띠에 있다 -->
+              <div class="panel">
+                <div class="panel__head"><h2 class="t-h2">재직 정보</h2></div>
+                <div class="panel__body">
+                  <dl class="kv">
+                    <dt data-ret-date hidden>퇴직일</dt>
+                    <dd class="mono" data-ret-date hidden>2026-09-10</dd>
+                    <!-- 재직 이력(WHALEERP-615 C안, 운영 정책 CTR-30) — 이 레코드와 연결된 이전 재직 레코드의 기간. 누르면 그 기간의 직원 상세로 간다 -->
+                    <dt>재직 이력</dt>
+                    <dd><a href="detail.html"><span class="mono">2024-03-04 ~ 2025-08-31</span></a> <span class="subtle">· 이전 재직</span></dd>
+                  </dl>
                 </div>
               </div>
 
@@ -165,24 +203,27 @@
                     <dd class="subtle">—</dd>
                   </dl>
                 </div>
-                <div class="panel__note">가장 최근 계약 1건만 보인다. 이전 이력은 근로계약 관리에서.</div>
+                <div class="panel__note">최근 체결한 근로계약 1건만 표시됩니다. 이전 계약은 [근로계약 관리]에서 확인할 수 있습니다.</div>
               </div>
             </section>
 
             <!-- 오른쪽 : 근무 · 출퇴근 · 급여 · TO-DO 현황 -->
             <section class="stack--lg" style="display: flex; flex-direction: column">
-              <div class="panel">
+              <!-- 근무스케줄 · 출퇴근 현황은 같은 주를 본다 — 주 이동을 두 상자 위 한 줄로 올리고 두 상자를 붙여 한 덩어리로 보인다(2026-11-19 사용자 지정 —
+                   전엔 근무스케줄 제목 줄에만 있어 출퇴근 현황이 따라 바뀌는 게 보이지 않았다) -->
+              <div class="spread">
+                <span class="subtle" style="font-size: 14px; font-weight: 500">근무스케줄 · 출퇴근 현황 기간</span>
+                <span style="display: flex; align-items: center; gap: 6px">
+                  <button class="iconbtn" type="button" aria-label="이전 주" data-icon="arrowleft" data-icon-size="16"></button>
+                  <button class="btn btn--secondary btn--sm mono" type="button" style="min-width: 190px">2026년 08-31 ~ 09-06</button>
+                  <button class="iconbtn" type="button" aria-label="다음 주" data-icon="arrowright" data-icon-size="16"></button>
+                </span>
+              </div>
+              <div class="panel" style="margin-top: calc(12px - var(--s-6))">
                 <div class="panel__head">
                   <h2 class="t-h2">근무스케줄</h2>
-                  <span class="badge badge--quiet">이번 주 38.5h</span>
+                  <span class="badge badge--quiet">주간 근무시간 합계 38.5h</span>
                   <div class="panel__end">
-                    <select class="select select--sm" style="width: 132px" aria-label="기간">
-                      <option>이번 주</option>
-                      <option>최근 4주</option>
-                      <option>최근 3개월</option>
-                      <option>최근 1년</option>
-                      <option>전체 · 3년</option>
-                    </select>
                     <a class="tbtn" href="index.html#sched">관리</a>
                   </div>
                 </div>
@@ -233,10 +274,9 @@
                 </div>
               </div>
 
-              <div class="panel">
+              <div class="panel" style="margin-top: calc(12px - var(--s-6))">
                 <div class="panel__head">
                   <h2 class="t-h2">출퇴근 현황</h2>
-                  <span class="badge badge--quiet">이번 주 · 출근 4 · 지각 1 · 결근 0</span>
                   <div class="panel__end">
                     <a class="tbtn" href="index.html#sched">관리</a>
                   </div>
@@ -378,6 +418,17 @@
                     <span class="row__end subtle">대기</span>
                   </div>
                 </div>
+                <!-- TO-DO 처리 이력 — 최근 5건, 일시 · TO-DO · 무엇을 · 바꾼 쪽(관리자 · 직원 · 시스템). 바꾼 사람 이름은 api 가 주지 않는다 -->
+                <div class="panel__body" style="border-top: 1px solid var(--hairline-strong)">
+                  <div class="subtle" style="font-size: 13px; font-weight: 500; margin-bottom: var(--s-2)">TO-DO 처리 이력</div>
+                  <table class="tbl tbl--dense">
+                    <tbody>
+                      <tr><td class="mono subtle">08-28 15:02</td><td>신메뉴 시식 교육 참석</td><td>진행 중 → 완료</td><td class="subtle">직원</td></tr>
+                      <tr><td class="mono subtle">08-27 18:40</td><td>본사 위생점검 대비 냉장고 정리</td><td>긴급 표시 변경</td><td class="subtle">관리자</td></tr>
+                      <tr><td class="mono subtle">08-25 11:20</td><td>여름 프로모션 POP 교체</td><td>대기 → 완료</td><td class="subtle">직원</td></tr>
+                    </tbody>
+                  </table>
+                </div>
                 <div class="panel__note">직원은 자기 TO-DO 의 수행 상태만 바꾼다. 등록·삭제는 관리자만.</div>
               </div>
             </section>
@@ -390,7 +441,7 @@
                 <button class="iconbtn" type="button" data-ret-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
-                <p style="margin: 0">재설정 링크가 이메일 아이디 <span class="mono">jian.seo@example.com</span> 으로 갑니다. 링크는 24시간 동안 한 번만 쓸 수 있습니다.</p>
+                <p style="margin: 0">재설정 링크가 이메일 아이디 <span class="mono">jian.seo@example.com</span> 으로 갑니다. 직원은 24시간 안에 비밀번호를 설정해야 합니다.</p>
                 <div class="band band--warn">
                   <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
                   <div class="band__body">

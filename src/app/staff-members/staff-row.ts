@@ -1,10 +1,10 @@
 // 직원 목록 한 줄을 화면 문구와 모양으로 바꾼다. 색과 문구는 데모(docs/demo/src/staff-sections.mjs)를 따른다.
-// StaffJoinState · EmploymentType 라벨은 목 단계라 여기 둔다 — api 를 붙일 때 getEnum 으로 바꾼다. JOIN_GROUP_LABELS
-// 는 화면 묶음이라 여기 남는다.
+// StaffJoinState 라벨은 목 단계라 여기 둔다 — api 를 붙일 때 getEnum 으로 바꾼다. 고용형태 이름은 getEnum("EmploymentType")
+// 으로 받는다(WHALEERP-720). JOIN_GROUP_LABELS 는 화면 묶음이라 여기 남는다.
 // 날짜는 모두 한국 날짜로 견준다. today 는 kstToday() 값(YYYY-MM-DD)을 받는다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { EnumValue } from "../../lib/enums.ts";
-import type { EmploymentType, JoinGroup, StaffMemberListItem } from "../../lib/staff-members.ts";
+import type { JoinGroup, StaffMemberListItem } from "../../lib/staff-members.ts";
 
 export type CellStyle = "badge-on" | "badge-off" | "badge-neutral" | "mark-on" | "mark-off" | "muted";
 export interface Cell {
@@ -14,7 +14,6 @@ export interface Cell {
   tag?: string;
 }
 
-export const EMPLOYMENT_TYPE_LABELS: Record<EmploymentType, string> = { FULL_TIME: "정직원", PART_TIME: "파트타이머" };
 export const JOIN_GROUP_LABELS: Record<JoinGroup, string> = {
   JOINED: "가입 완료",
   INVITED: "가입 대기",
@@ -60,6 +59,8 @@ export function formatPhone(phone: string): string {
 }
 
 export function joinCell(item: StaffMemberListItem, today: string): Cell {
+  // 탈퇴(WHALEERP-770)는 직원 앱 계정이 지워진 것이라 joinState 가 JOINED 여도 「가입 완료」가 아니다. 재직 상태 칸은 따로 그대로다(탈퇴 ≠ 퇴직).
+  if (item.isAccountWithdrawn) return { text: "탈퇴 계정", style: "badge-neutral" };
   switch (item.joinState) {
     case "JOINED":
       return { text: "가입 완료", style: item.employmentStatus === "RETIRED" ? "badge-neutral" : "badge-on" };
@@ -102,15 +103,19 @@ export function canResendInvitation(item: Pick<StaffMemberListItem, "contract">)
  * 상세 「초대」 줄 — 초대 유형 · 초대 상태 · 보낸 날(한국 날짜). 한글은 api enum(InvitationType · InvitationStatus)이고, 받지 못했거나
  * 목록에 없는 값은 영문 값 대신 그 조각을 뺀다. 초대가 없으면 「-」.
  */
-export function invitationText(
+export function invitationParts(
   invitation: StaffMemberListItem["invitation"],
   typeLabels: readonly EnumValue[],
   statusLabels: readonly EnumValue[],
-): string {
-  if (!invitation) return "-";
+): string[] {
+  if (!invitation) return [];
   const label = (values: readonly EnumValue[], value: string) => values.find((v) => v.value === value)?.label;
-  const parts = [label(typeLabels, invitation.invitationType), label(statusLabels, invitation.status), `보낸 날 ${kstDate(invitation.lastSentAt)}`];
-  return parts.filter(Boolean).join(" · ");
+  // 「소속 추가 확인 ┃ 수락 ┃ 2026-11-18 발송」 — 값 여럿을 세로선으로 나누는 상세 표 모양(근로계약 상세 「직원」 줄과 같다). 문장으로 풀면
+  // 「소속 추가 확인 초대 — 수락 (… 보냄)」처럼 어색했고, 가운뎃점만 잇던 예전 글자는 무슨 정보인지 읽히지 않았다(2026-11-19 사용자 지정).
+  // 한글을 받지 못한 조각은 뺀다(영문 값을 보이지 않는다)
+  return [label(typeLabels, invitation.invitationType), label(statusLabels, invitation.status), `${kstDate(invitation.lastSentAt)} 발송`].filter(
+    (part): part is string => !!part,
+  );
 }
 
 /** 계약 상태 칸. 상태 이름은 GET /enums/ContractStatus(statusLabels)에서 받고, 날수 · 날짜 꼬리만 여기서 붙인다(WHALEERP-659).
@@ -158,7 +163,7 @@ function contractStatusCell(item: StaffMemberListItem, today: string, statusLabe
 /** 재직 칸. 가입 · 계약 · 재직 상태를 한눈에 보는 요약이다(데모). 위에서부터 처음 맞는 것. */
 export function statusCells(item: StaffMemberListItem): Cell[] {
   if (item.employmentStatus === "RETIRED")
-    return [{ text: item.retiredDate ? `퇴직 ${mmdd(item.retiredDate)}` : "퇴직", style: "muted" }];
+    return [{ text: item.retiredDate ? `퇴직 ${item.retiredDate}` : "퇴직", style: "muted" }];
   if (item.joinState === "LINK_HOLD") return [{ text: "확인 필요", style: "mark-off" }];
   if (item.joinState === "UNDER_AGE") return [{ text: "삭제 대상", style: "mark-off" }];
   if (item.joinState === "AFFILIATION_PENDING" || item.joinState === "RETURN_PENDING")
@@ -172,16 +177,16 @@ export function statusCells(item: StaffMemberListItem): Cell[] {
     if (status === "REJECTED" || status === "EXPIRED") return [{ text: "재발송 필요", style: "mark-off" }];
   }
   const cells: Cell[] = [{ text: "재직", style: "mark-on" }];
-  if (item.retiredDate) cells.push({ text: `퇴직 예정 ${mmdd(item.retiredDate)}`, style: "badge-off" });
+  if (item.retiredDate) cells.push({ text: `퇴직 예정 ${item.retiredDate}`, style: "badge-off" });
   return cells;
 }
 
 /** 상세의 재직 상태 칸. 목록 요약(statusCells)과 달리 재직 · 퇴직 예정 · 퇴직만 보인다 — 가입 · 계약 상태는 섞지 않는다. 값이 없으면(가림) 빈 배열. */
 export function employmentStatusCells(item: StaffMemberListItem): Cell[] {
   if (item.employmentStatus === "RETIRED")
-    return [{ text: item.retiredDate ? `퇴직 ${mmdd(item.retiredDate)}` : "퇴직", style: "muted" }];
+    return [{ text: item.retiredDate ? `퇴직 ${item.retiredDate}` : "퇴직", style: "muted" }];
   if (item.employmentStatus !== "EMPLOYED") return [];
   const cells: Cell[] = [{ text: "재직", style: "mark-on" }];
-  if (item.retiredDate) cells.push({ text: `퇴직 예정 ${mmdd(item.retiredDate)}`, style: "badge-off" });
+  if (item.retiredDate) cells.push({ text: `퇴직 예정 ${item.retiredDate}`, style: "badge-off" });
   return cells;
 }

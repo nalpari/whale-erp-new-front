@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { EnumValue } from "../../lib/enums.ts";
 import { JOIN_GROUPS, type StaffMemberListItem } from "../../lib/staff-members.ts";
-import { canResendInvitation, contractCell, employmentStatusCells, formatPhone, invitationText, joinCell, JOIN_GROUP_LABELS, rowNumber, statusCells } from "./staff-row.ts";
+import { canResendInvitation, contractCell, employmentStatusCells, formatPhone, invitationParts, joinCell, JOIN_GROUP_LABELS, rowNumber, statusCells } from "./staff-row.ts";
 
 const TODAY = "2026-10-12";
 // GET /enums/ContractStatus 가 주는 이름(WHALEERP-659) — 칸은 이 이름에 날수 · 날짜 꼬리만 붙인다
@@ -24,7 +24,7 @@ const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => (
   isMasked: false,
   name: "서지안",
   phone: "01028417702",
-  store: { storeId: 1, name: "모리커피 서초점", storeType: "DIRECT" },
+  store: { storeId: 1, name: "모리커피 서초점", storeType: "DIRECT", isHq: false },
   employmentType: "FULL_TIME",
   joinState: "JOINED",
   invitation: null,
@@ -32,6 +32,7 @@ const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => (
   contract: { contractId: 1, status: "SIGNED", signDeadlineAt: null, lastSentAt: null, endDate: null, updatedAt: null, canResend: false, workDays: null, isRenewal: false },
   employmentStatus: "EMPLOYED",
   retiredDate: null,
+  isAccountWithdrawn: false,
   ...over,
 });
 const contract = (status: NonNullable<StaffMemberListItem["contract"]>["status"], over = {}) => ({
@@ -55,6 +56,14 @@ test("가입·인증 — 가입 완료 · 가입 대기 · 정보 확인 필요"
     joinCell(item({ joinState: "LINK_HOLD", linkHold: { linkHoldId: 1, mismatchReason: "PHONE_MISMATCH", verifiedPhoneLast4: "4418", heldAt: "2026-10-08T09:00:00+09:00" } }), TODAY),
     { text: "정보 확인 필요 · 4일", style: "badge-off" },
   );
+});
+
+test("가입·인증 — 탈퇴 계정은 가입 상태 칸만 「탈퇴 계정」이고 재직 상태 칸은 그대로다(WHALEERP-770)", () => {
+  const withdrawn = item({ isAccountWithdrawn: true, employmentStatus: "RETIRED", retiredDate: "2026-10-01" });
+  assert.deepEqual(joinCell(withdrawn, TODAY), { text: "탈퇴 계정", style: "badge-neutral" });
+  assert.deepEqual(joinCell(item({ isAccountWithdrawn: true, isMasked: true }), TODAY), { text: "탈퇴 계정", style: "badge-neutral" });
+  assert.deepEqual(statusCells(withdrawn), [{ text: "퇴직 2026-10-01", style: "muted" }]);
+  assert.deepEqual(statusCells(item({ isAccountWithdrawn: true })), [{ text: "재직", style: "mark-on" }]);
 });
 
 test("가입·인증 — 가입 대기 날짜는 한국 날짜다(UTC 로 전날이어도)", () => {
@@ -139,7 +148,7 @@ test("종료일이 지났으면 서명 완료", () => {
 
 test("재직 칸 — 위에서부터 처음 맞는 것", () => {
   const cases: [Partial<StaffMemberListItem>, { text: string; style: string }[]][] = [
-    [{ employmentStatus: "RETIRED", retiredDate: "2026-07-31" }, [{ text: "퇴직 07-31", style: "muted" }]],
+    [{ employmentStatus: "RETIRED", retiredDate: "2026-07-31" }, [{ text: "퇴직 2026-07-31", style: "muted" }]],
     [{ joinState: "LINK_HOLD" }, [{ text: "확인 필요", style: "mark-off" }]],
     [{ joinState: "UNDER_AGE" }, [{ text: "삭제 대상", style: "mark-off" }]],
     [{ joinState: "AFFILIATION_PENDING" }, [{ text: "응답 대기", style: "muted" }]],
@@ -150,7 +159,7 @@ test("재직 칸 — 위에서부터 처음 맞는 것", () => {
     [contract("REJECTED"), [{ text: "재발송 필요", style: "mark-off" }]],
     [contract("EXPIRED"), [{ text: "재발송 필요", style: "mark-off" }]],
     [{}, [{ text: "재직", style: "mark-on" }]],
-    [{ retiredDate: "2026-10-30" }, [{ text: "재직", style: "mark-on" }, { text: "퇴직 예정 10-30", style: "badge-off" }]],
+    [{ retiredDate: "2026-10-30" }, [{ text: "재직", style: "mark-on" }, { text: "퇴직 예정 2026-10-30", style: "badge-off" }]],
   ];
   for (const [over, expected] of cases) assert.deepEqual(statusCells(item(over)), expected, JSON.stringify(over));
 });
@@ -163,8 +172,8 @@ test("상세 재직 상태 — 가입 · 계약 상태와 상관없이 재직 ·
     [{ joinState: "INVITED" }, [{ text: "재직", style: "mark-on" }]],
     [{ joinState: "LINK_HOLD" }, [{ text: "재직", style: "mark-on" }]],
     [{ joinState: "UNDER_AGE" }, [{ text: "재직", style: "mark-on" }]],
-    [{ retiredDate: "2026-10-30" }, [{ text: "재직", style: "mark-on" }, { text: "퇴직 예정 10-30", style: "badge-off" }]],
-    [{ employmentStatus: "RETIRED", retiredDate: "2026-07-31" }, [{ text: "퇴직 07-31", style: "muted" }]],
+    [{ retiredDate: "2026-10-30" }, [{ text: "재직", style: "mark-on" }, { text: "퇴직 예정 2026-10-30", style: "badge-off" }]],
+    [{ employmentStatus: "RETIRED", retiredDate: "2026-07-31" }, [{ text: "퇴직 2026-07-31", style: "muted" }]],
     [{ employmentStatus: "RETIRED" }, [{ text: "퇴직", style: "muted" }]],
     [{ employmentStatus: null }, []],
   ];
@@ -204,9 +213,9 @@ test("재발송 — api 의 contract.canResend 하나로 정한다(WHALEERP-611 
 test("상세 초대 줄 — 유형 · 상태 · 보낸 한국 날짜, 모르는 한글은 뺀다", () => {
   const types = [{ value: "SIGNUP", label: "가입 초대", order: 1 }];
   const statuses = [{ value: "SENT", label: "발송", order: 1 }];
-  assert.equal(invitationText(invitation(), types, statuses), "가입 초대 · 발송 · 보낸 날 2026-08-31");
-  assert.equal(invitationText(invitation(), [], []), "보낸 날 2026-08-31");
-  assert.equal(invitationText(null, types, statuses), "-");
+  assert.deepEqual(invitationParts(invitation(), types, statuses), ["가입 초대", "발송", "2026-08-31 발송"]);
+  assert.deepEqual(invitationParts(invitation(), [], []), ["2026-08-31 발송"]);
+  assert.deepEqual(invitationParts(null, types, statuses), []);
 });
 
 test("가입 상태 필터 라벨 — 목록 필터 체크박스 문구(WHALEERP-660)", () => {
@@ -252,7 +261,7 @@ test("재계약 서명 대기 + 퇴직 예정 — 재직 + 퇴직 예정 MM.DD",
   const it = { ...renewalWait(), retiredDate: "2026-12-31" };
   assert.deepEqual(statusCells(it), [
     { text: "재직", style: "mark-on" },
-    { text: "퇴직 예정 12-31", style: "badge-off" },
+    { text: "퇴직 예정 2026-12-31", style: "badge-off" },
   ]);
   assert.equal(contractCell(it, TODAY, STATUSES)?.tag, "재계약");
 });

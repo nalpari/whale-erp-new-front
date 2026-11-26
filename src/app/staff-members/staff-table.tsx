@@ -1,12 +1,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge, DataTable, Tag, type Column } from "@/components/common";
+import { StoreNameWithType } from "@/components/site/store-type-tag";
 import type { EnumValue } from "@/lib/enums";
 import type { StaffMemberListItem } from "@/lib/staff-members";
 import { WithIcon } from "../platform-admins/admin-table";
 import { ResendInvitationButton } from "./resend-invitation-button";
 import { withBack } from "./staff-list-query";
-import { canResendInvitation, contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, rowNumber, statusCells, type Cell } from "./staff-row";
+import { canResendInvitation, contractCell, formatPhone, joinCell, rowNumber, statusCells, type Cell } from "./staff-row";
 
 // 데모 staff-parts.mjs 의 회색 배지(quiet). 공통 Badge 에는 on · off 두 가지뿐이다.
 const NEUTRAL = "inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium bg-erp-subtle text-erp-ink whitespace-nowrap";
@@ -40,6 +41,7 @@ export function StaffTable({
   pageSize,
   today,
   contractStatuses,
+  employmentTypes,
   listHref,
   empty = "조건에 맞는 직원이 없습니다.",
   at = (path) => path,
@@ -51,6 +53,8 @@ export function StaffTable({
   today: string;
   /** 계약 상태 이름(GET /enums/ContractStatus) */
   contractStatuses: EnumValue[];
+  /** 고용형태 이름(GET /enums/EmploymentType, WHALEERP-720). 목록에 없는 값 · 받지 못한 목록은 「-」 — 영문 값을 보이지 않는다(계약 상태 칸과 같다) */
+  employmentTypes: EnumValue[];
   /** 지금 목록 주소(staffListHrefOf). 상세 링크에 ?back= 으로 실어 상세의 「목록」이 같은 조건으로 돌아오게 한다. */
   listHref: string;
   /** 빈 목록 문구 */
@@ -69,7 +73,8 @@ export function StaffTable({
           // 본사 역할에게 가린 가맹 점포 직원(STAFF-23 · ATT-30) — 「본사에 정보제공 미동의」 한 줄. 가맹점포인 것은 옆 점포 열이 말해 「가맹 점포 직원」은 뺐다
           // (2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「본사 제공 동의 없음 · 가맹 점포 직원」 두 줄)
           <span className="whitespace-nowrap text-erp-muted">본사에 정보제공 미동의</span>
-        ) : item.staffMemberId !== null && item.employmentStatus === "EMPLOYED" ? (
+        ) : item.staffMemberId !== null && (item.employmentStatus === "EMPLOYED" || item.employmentStatus === "RETIRED") ? (
+          // 재직(가입 전 레코드 포함, WHALEERP-682)과 퇴직 직원은 상세로 간다 — 퇴직 직원도 상세에서 퇴직일 · 재직 이력을 본다(WHALEERP-763, 명세 S-VZVHSW · CTR-30)
           <Link href={at(withBack(`/staff-members/${item.staffMemberId}`, listHref))} className="text-erp-link hover:underline">
             {item.name}
           </Link>
@@ -81,9 +86,10 @@ export function StaffTable({
     { header: "휴대전화번호", width: "w-[145px]", cell: personal((item) => (item.phone ? <WithIcon icon="phone">{formatPhone(item.phone)}</WithIcon> : DASH)) },
     // 점포는 남는 폭 — 표 최소 폭(아래 minWidth)이 140px 을 지킨다. 길이가 제각각인 이름이라 왼쪽 정렬(점포 목록 점포명과 같다, 2026-11-18 사용자 지정)
     // 점포도 기준 폭(140)을 둔다 — 넓은 창에서는 모든 열이 같은 비율로 늘어난다 — 이 열만 남는 폭을 가지면 넓은 창에서 혼자 넓어져 표가 휑했다(2026-11-18 사용자 지정)
-    { header: "점포", width: "w-[140px]", align: "left", cell: (r) => r.item.store.name },
+    // 점포 이름 앞에 본사 · 직영 · 가맹 꼬리표 — 근로계약 목록 · 상세와 같다(2026-11-19 사용자 지정). 꼬리표만큼 기준 폭을 170 으로 늘렸다
+    { header: "점포", width: "w-[170px]", align: "left", cell: (r) => <StoreNameWithType storeId={r.item.store.storeId} name={r.item.store.name} isHq={r.item.store.isHq} /> },
     // 가장 긴 값 「파트타이머」 5자(59px)
-    { header: "고용형태", width: "w-[80px]", cell: personal((item) => (item.employmentType ? EMPLOYMENT_TYPE_LABELS[item.employmentType] : DASH)) },
+    { header: "고용형태", width: "w-[80px]", cell: personal((item) => employmentTypes.find((t) => t.value === item.employmentType)?.label ?? DASH) },
     {
       header: "가입 상태",
       // 데모는 210 — 재발송 버튼(WHALEERP-138)이 배지 옆에 서도록 넓혔다. 데모에는 목록 재발송 자리가 없다.

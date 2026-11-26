@@ -2,7 +2,7 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
-import { Button, Checkbox, ConfirmDialog, DateField, Field, FieldMessage, FormGroup, FormRow, Radio, TextField, useAction, useToast } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DateField, Field, FieldMessage, FormGroup, TextField, useAction, useToast } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatPhone, GENDERS, inProgressLine, shownProblems, type InProgressContract } from "../../new/contract-form-model";
 import { useInvalid } from "../../field-errors";
@@ -18,14 +18,15 @@ import { WORKER_SAVED, WORKER_UNCHANGED, workerBody, workerProblemsByField, work
 // 직원이 가입 값과 달라 수정을 요청했을 때 쓴다. 다섯 칸은 직원이 가입하며 넣는 값과 대조된다.
 export function WorkerForm({
   contractId,
-  status,
+  staffJoined,
   initial,
   canResend,
   labels,
   back,
 }: {
   contractId: number;
-  status: string;
+  /** 가입한 직원인가(api staffJoined) — 저장 안내를 고른다(WHALEERP-746, 재발송 확인창과 같은 기준) */
+  staffJoined: boolean;
   initial: Form;
   /** 상세에 [재발송]이 보이는가(canShowResend) — 보이면 같은 값 저장을 막고 그리로 안내한다 */
   canResend: boolean;
@@ -115,7 +116,8 @@ export function WorkerForm({
 
   return (
     <div ref={formRef} className="flex flex-col gap-[12px]">
-      <div className="flex items-end gap-[6px]">
+      {/* 제목과 버튼은 세로 가운데 — 근로계약서 작성과 같다(2026-11-19 사용자 지정) */}
+      <div className="flex items-center gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로자 정보 수정</h2>
         <Button variant="off" href={at(withBack(`/contracts/${contractId}`, back))}>
           취소
@@ -124,12 +126,20 @@ export function WorkerForm({
           {saving ? "저장 중" : "저장"}
         </Button>
       </div>
-      <p className="text-[14px] text-erp-label">
-        이름 · 휴대전화번호 · 생년월일 · 성별 · 외국인 여부는 직원이 가입하며 넣는 값과 대조해, 모두 같아야 서명할 수 있습니다. {workerSaveNote(status)}
-      </p>
+      {/* 한 문장씩 한 줄, 대조하는 항목은 밑줄(2026-11-19 사용자 지정) */}
+      <div className="flex flex-col text-[14px] leading-[1.6] text-erp-label">
+        {/* 첫 문장은 서명 조건이라 먹색 500 으로 강조 — 아래 저장 안내(회색)와 갈린다(2026-11-19 사용자 지정) */}
+        <p className="font-medium text-erp-ink">
+          <u>이름 · 휴대전화번호 · 생년월일 · 성별 · 외국인 여부</u>는 직원이 앱에 가입할 때 입력한 정보와 모두 일치해야 직원이 서명할 수 있습니다.
+        </p>
+        {workerSaveNote(staffJoined).map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+      </div>
 
-      <FormGroup title="직원 정보">
-        <FormRow>
+      {/* 이름 · 휴대전화번호 · 생년월일 · 성별을 근로계약서 작성 「직원 정보」 첫 줄과 같이 4등분 한 줄로(칸 사이 18px, 2026-11-19 사용자 지정) */}
+      <FormGroup roomy title="직원 정보">
+        <div className="grid grid-cols-4 gap-[18px]">
           {/* 저장 때 찾은 오류는 칸 바로 아래(공통 FieldMessage, WHALEERP-631). Field 는 <label> 이라 오류를 그 밖에 둔다 — 안에 두면 입력 이름이 된다 */}
           <div className="flex min-w-px flex-1 flex-col gap-[8px]">
             <Field label="이름" required>
@@ -151,8 +161,6 @@ export function WorkerForm({
             </Field>
             <FieldMessage id={ids.phone} message={errs.phone} />
           </div>
-        </FormRow>
-        <FormRow>
           <div ref={birthRef} data-invalid={errs.birthDate ? true : undefined} className="flex min-w-px flex-1 flex-col gap-[8px]">
             <span className="text-[14px] font-medium text-erp-label">생년월일 *</span>
             <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />
@@ -166,15 +174,27 @@ export function WorkerForm({
             className="flex min-w-px flex-1 flex-col gap-[8px]"
           >
             <span className="text-[14px] font-medium text-erp-label">성별 *</span>
-            <div role="radiogroup" className="flex min-h-[34px] flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-              {GENDERS.map((v) => (
-                <Radio key={v} name="gender" label={labelOf(labels.gender, v)} checked={form.gender === v} onChange={() => set("gender", v)} />
-              ))}
-              <Checkbox label="외국인" checked={form.isForeigner} onChange={(e) => set("isForeigner", e.target.checked)} />
+            {/* 남 · 여는 근로계약서 작성과 같은 64px 카드 모양 선택, 외국인은 18px 뒤(2026-11-19 사용자 지정) */}
+            <div className="flex min-h-[34px] items-center gap-[18px]">
+              {/* 이름은 바깥 role=group(「성별」)이 단다 */}
+              <div role="radiogroup" className="flex gap-[18px]">
+                {GENDERS.map((v) => (
+                  <label
+                    key={v}
+                    className="relative flex h-[34px] w-[64px] cursor-pointer items-center justify-center rounded-[4px] border border-erp-panel-line bg-white text-[14px] font-medium text-erp-ink transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-erp-brand"
+                  >
+                    <input type="radio" name="gender" className="sr-only" checked={form.gender === v} onChange={() => set("gender", v)} />
+                    {labelOf(labels.gender, v)}
+                  </label>
+                ))}
+              </div>
+              <span className="flex shrink-0">
+                <Checkbox label="외국인" checked={form.isForeigner} onChange={(e) => set("isForeigner", e.target.checked)} />
+              </span>
             </div>
             <FieldMessage id={ids.gender} message={errs.gender} />
           </div>
-        </FormRow>
+        </div>
       </FormGroup>
 
       {unchangedAsked && (

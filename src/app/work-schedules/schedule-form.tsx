@@ -5,7 +5,6 @@ import { createContext, use, useEffect, useRef, useState, useTransition, type CS
 import { Button, Checkbox, ConfirmDialog, DateField, Field, FormGroup, FormRow, GuideBand, Radio, RequiredMark, Select, SlidePanel, TextField, useAction, useBackdropActive, useToast } from "@/components/common";
 import { useAccount, usePagePermission, useStores } from "@/components/site/session-gate";
 import { isPlatformRole } from "@/lib/auth-routes";
-import { isClosedStore } from "@/lib/store-scope";
 import type { ScheduleDefaults, ScheduleStaff, WorkSchedule } from "@/lib/work-schedules-api";
 import { useFailure } from "../staff-members/[id]/use-action-failure";
 import {
@@ -34,16 +33,18 @@ import {
   WEEKDAYS,
   type ShiftInput,
 } from "./schedule-form-model";
+import { OVERLAP_MESSAGE, OVERLAP_SHORT, scheduleBlockOf, withStaffName } from "./work-schedule-view";
 
 // 근무스케줄 등록 · 수정 패널(#203). 칸과 문구는 데모 schedForm · bulkPane 이다. 근무지는 화면에서 고른 점포이고, 근무일은 하루 하나다.
 // 여는 곳은 도구 줄 「근무스케줄 등록」 · 막대(수정) · 공백 줄 「이 시간대에 배정」이다. 여닫음은 화면 안 상태로 둔다 — 주소에 두면
-// 입력이 이동마다 지워진다. 폐점 점포는 등록을 열지 않는다(운영 정책 ATT-33, 2026-10-22 재영). 막는 것은 api 다(WHALEERP-614).
+// 입력이 이동마다 지워진다. 폐점 · 미운영 점포는 등록을 열지 않는다(운영 정책 ATT-33, 2026-10-22 재영 · 미운영 WHALEERP-723).
+// 막는 것은 api 다(WHALEERP-614 · 723).
 
 export type Opening = { kind: "new"; workDate: string; startTime?: string; endTime?: string } | { kind: "edit"; item: WorkSchedule; staffName: string };
 
 const OpenContext = createContext<{
   open: (o: Opening) => void;
-  closed: boolean;
+  blocked: boolean;
 } | null>(null);
 
 function useSchedulePanel() {
@@ -59,7 +60,7 @@ function useSchedulePanel() {
  */
 export function SchedulePanel({ storeId, children }: { storeId: number; children: ReactNode }) {
   const store = useStores().find((s) => s.storeId === storeId);
-  const closed = !!store && isClosedStore(store);
+  const blocked = scheduleBlockOf(store) !== null;
   const [opening, setOpening] = useState<Opening | null>(null);
   // 열 때마다 칸을 새로 그린다(같은 근무스케줄을 다시 열어도 처음 값부터)
   const [round, setRound] = useState(0);
@@ -71,7 +72,7 @@ export function SchedulePanel({ storeId, children }: { storeId: number; children
     setOpening(null);
   }
   const open = (o: Opening) => {
-    if (o.kind === "new" && closed) return;
+    if (o.kind === "new" && blocked) return;
     trigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setOpening(o);
     setRound((n) => n + 1);
@@ -79,7 +80,7 @@ export function SchedulePanel({ storeId, children }: { storeId: number; children
   const close = () => setOpening(null);
   const backdropActive = useBackdropActive();
   return (
-    <OpenContext value={{ open, closed }}>
+    <OpenContext value={{ open, blocked }}>
       {/* 출퇴근 대신 등록과 같이 바탕을 깔고 바탕을 누르면 닫는다 — 패널이 아닌 본문은 그동안 inert(2026-11-05 사용자 지정, 3팀 확인 필요) */}
       <div className="contents" inert={backdropActive}>
         {children}
@@ -98,19 +99,19 @@ export function SchedulePanel({ storeId, children }: { storeId: number; children
   );
 }
 
-/** 도구 줄 「근무스케줄 등록」 — 등록 권한이 없으면 두지 않는다(플랫폼 계정은 두고 누르면 권한 안내). 폐점 점포면 흐리게 둔다 */
+/** 도구 줄 「근무스케줄 등록」 — 등록 권한이 없으면 두지 않는다(플랫폼 계정은 두고 누르면 권한 안내). 폐점 · 미운영 점포면 흐리게 둔다 */
 export function NewScheduleButton({ workDate }: { workDate: string }) {
-  const { open, closed } = useSchedulePanel();
+  const { open, blocked } = useSchedulePanel();
   const toast = useToast();
   const platform = isPlatformRole(useAccount().roleTypeCode);
   const canCreate = usePagePermission().create;
   // 플랫폼 계정은 등록 권한이 없어도 BP 마스터와 같은 버튼을 두고, 누르면 권한 안내만 띄운다 — 버튼이 없으면 BP 화면이 다르게 보였다
   // (2026-11-05 사용자 지정, 3팀 확인 필요 — 점포 없음 띠 [점포 등록하기]와 같은 문구). 그 밖의 계정은 지금처럼 두지 않는다
   if (!canCreate && !platform) return null;
-  // 막힌 버튼은 마우스를 받지 않아(disabled:pointer-events-none) title 이 뜨지 않는다 — 폐점 이유는 근무지 칸 아래 안내(SchedulePicker)가 말한다
+  // 막힌 버튼은 마우스를 받지 않아(disabled:pointer-events-none) title 이 뜨지 않는다 — 폐점 · 미운영 이유는 근무지 칸 아래 안내(SchedulePicker)가 말한다
   return (
     <>
-      <Button aria-controls="schedule-form" disabled={closed} onClick={() => (canCreate ? open({ kind: "new", workDate }) : toast("접근 권한이 없습니다."))}>
+      <Button aria-controls="schedule-form" disabled={blocked} onClick={() => (canCreate ? open({ kind: "new", workDate }) : toast("접근 권한이 없습니다."))}>
         근무스케줄 등록
       </Button>
     </>
@@ -119,8 +120,8 @@ export function NewScheduleButton({ workDate }: { workDate: string }) {
 
 /** 공백 줄 「이 시간대에 배정」(데모 soft 버튼) — 그 근무일 · 공백 시작 · 끝으로 등록을 연다. 공백이 여럿이면 글자에 시각을 적는다(label) */
 export function AssignGapButton({ workDate, startTime, endTime, label }: { workDate: string; startTime: string; endTime: string; label: string }) {
-  const { open, closed } = useSchedulePanel();
-  if (!usePagePermission().create || closed) return null;
+  const { open, blocked } = useSchedulePanel();
+  if (!usePagePermission().create || blocked) return null;
   return (
     <Button variant="soft" aria-controls="schedule-form" aria-label={`${startTime}-${endTime} 에 배정`} onClick={() => open({ kind: "new", workDate, startTime, endTime })}>
       {label}
@@ -166,7 +167,7 @@ export function ScheduleBar({
   );
 }
 
-const ERROR = "text-[13px] text-erp-off";
+const ERROR = "text-[13px] whitespace-pre-line text-erp-off";
 // 직원 칸의 상태 문구(없음 · 불러오는 중) — 입력칸과 같은 14px 회색. 12px 는 너무 작았다(2026-11-05 사용자 지적, 3팀 확인 필요)
 const STATUS = "text-[14px] text-erp-label";
 const STAFF_FAILED = "직원 목록을 불러오지 못했습니다. 근무일을 다시 선택해 주세요.";
@@ -389,7 +390,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
       return;
     }
     const message = onFailure(result);
-    if (message) setServerError(message);
+    if (message) setServerError(withStaffName(message, edit ? edit.staffName : staffId === null ? null : nameOf(staffId)));
   };
 
   const handleSave = () => {
@@ -432,7 +433,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
           // 성공한 줄은 닫고 실패한 줄만 남겨 사유를 보인다
           const failedIds = result.result.failed.map((f) => f.staffMemberId);
           setPicked(failedIds);
-          setRowErrors(Object.fromEntries(result.result.failed.map((f) => [f.staffMemberId, f.message])));
+          setRowErrors(Object.fromEntries(result.result.failed.map((f) => [f.staffMemberId, withStaffName(f.message, nameOf(f.staffMemberId))])));
           setPartialNotice(`${result.result.created.length}명은 등록했고 ${failedIds.length}명은 등록하지 못했습니다.`);
           return;
         }
@@ -543,8 +544,8 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
                 <p aria-live="polite" className={rangeError ? ERROR : STATUS}>
                   {rangeError ??
                     (mode === "bulk" && picked.length > 1
-                      ? `${rangeDates(workDate, toDate, weekdays).length}일 × ${picked.length}명, ${rangeDates(workDate, toDate, weekdays).length * picked.length}건을 등록합니다.`
-                      : `${rangeDates(workDate, toDate, weekdays).length}일에 등록합니다.`)}
+                      ? `${rangeDates(workDate, toDate, weekdays).length}일 × ${picked.length}명, 총 ${rangeDates(workDate, toDate, weekdays).length * picked.length}건의 근무스케줄을 등록합니다.`
+                      : `총 ${rangeDates(workDate, toDate, weekdays).length}일의 근무스케줄을 등록합니다.`)}
                 </p>
               </div>
             )}
@@ -661,7 +662,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
                 </>,
                 "퇴직일이 정해진 직원은 퇴직일까지만 근무스케줄을 등록할 수 있습니다.",
                 // 기간 등록(WHALEERP-730, 2026-11-17 재영)
-                "근무 종료일을 정하면 기간(최대 92일) 중 선택한 요일마다 등록합니다. 휴일도 포함되니 쉬는 날은 요일에서 빼 주세요. 등록할 수 없는 날은 건너뛰고 사유를 알려 드립니다.",
+                "근무 종료일을 입력하면 기간(최대 92일) 중 선택한 요일마다 근무스케줄이 등록됩니다. 휴일에도 등록되니, 쉬는 날은 등록 후 근무표에서 삭제해 주세요. 등록할 수 없는 날은 건너뛰고 그 사유를 알려 드립니다.",
               ]),
           ...(mode === "bulk" && !edit && !range ? ["여러 명을 등록할 때 일부가 실패하면, 성공한 직원은 등록되고 실패한 직원만 사유와 함께 남습니다."] : []),
           // 알림이 가는 곳에 밑줄(2026-11-05 사용자 지정, 3팀 확인 필요)
@@ -688,7 +689,8 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
         <ul aria-label="건너뛴 날" className="flex max-h-[200px] flex-col gap-[4px] overflow-y-auto text-[13px] text-erp-label">
           {rangeResult.skipped.map((f, i) => (
             <li key={`${f.workDate}-${f.name}-${i}`}>
-              {dayText(f.workDate)} · {f.name} — {f.message}
+              {/* 기간 등록 목록은 줄이 여럿이라 겹침 사유를 짧게(2026-11-23 사용자 지정) */}
+              {dayText(f.workDate)} · {f.name} — {f.message === OVERLAP_MESSAGE ? OVERLAP_SHORT : f.message}
             </li>
           ))}
         </ul>

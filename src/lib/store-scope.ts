@@ -27,7 +27,7 @@ export const isHqStore = (s: { isHq?: boolean }) => s.isHq === true;
  */
 export const branchStores = <T extends { isHq?: boolean }>(stores: readonly T[]): T[] => stores.filter((s) => !isHqStore(s));
 
-/** 점포를 고르거나 보이는 칸(근무지 선택칸 · 점포 고르기 · 홈 점포별 현황)의 점포 이름 — 본사 점포는 앞에 「[본사]」를 붙여 매장과 가른다(본사 점포 설계, 2026-11-17 사용자 지정) */
+/** 점포를 고르거나 보이는 칸(근무지 선택칸 · 점포 고르기 — 홈 점포별 현황은 「본사」 꼬리표를 쓴다)의 점포 이름 — 본사 점포는 앞에 「[본사]」를 붙여 매장과 가른다(본사 점포 설계, 2026-11-17 사용자 지정) */
 export const storeOptionLabel = (s: { name: string; isHq?: boolean }) => (isHqStore(s) ? `[본사] ${s.name}` : s.name);
 
 /** 범위에 드는 점포 — 전체면 [](조건 없음), 직영 · 가맹이면 폐점이 아닌 그 유형의 점포 모두(본사 빼고), 점포 하나면 그 점포(폐점도, 본사이거나 로그인 정보에 없으면 []) */

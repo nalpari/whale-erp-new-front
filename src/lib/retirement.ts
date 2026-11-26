@@ -2,7 +2,7 @@
 // 막는 것은 늘 api 다(입사일보다 앞선 날짜처럼 화면이 모르는 값은 미리 보기의 400 으로 받는다).
 // 날짜는 모두 한국 날짜 YYYY-MM-DD 다. today 는 kstToday() 값을 받는다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
-import type { StaffMemberListItem } from "./staff-members.ts";
+import type { ContractStatus, StaffMemberListItem } from "./staff-members.ts";
 
 /** 지난 날짜로 받는 범위. api MAX_PAST_MONTHS 와 같다(STAFF-24). */
 const MAX_PAST_MONTHS = 3;
@@ -27,7 +27,21 @@ export function earliestRetiredDate(today: string): string {
   return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
 }
 
-/** 확인창의 퇴직일 검사. 맞으면 null, 아니면 칸 아래에 둘 문구. 미래 날짜는 상한이 없다(api). */
+/**
+ * 입사일이 3개월 전보다 늦어 실제로 더 늦게 시작하는가. 입사일 검사는 입사일이 온 뒤에만 본다(S-VZVHSW · CTR-25, WHALEERP-613) —
+ * 시작일이 앞으로인 계약을 맺어 둔 직원은 입사일과 상관없이 3개월 범위다.
+ */
+function hireBound(today: string, hiredDate?: string | null): string | null {
+  return hiredDate && hiredDate <= today && hiredDate > earliestRetiredDate(today) ? hiredDate : null;
+}
+
+/** 퇴직일 칸 아래 꼬리표 — 고를 수 있는 첫날을 날짜로 보인다(2026-11-23 사용자 지정). 입사일이 더 늦으면 입사일부터다. */
+export function retiredDateHint(today: string, hiredDate?: string | null): string {
+  const hire = hireBound(today, hiredDate);
+  return hire ? `퇴직일은 입사일(${hire})부터 선택할 수 있습니다.` : `퇴직일은 ${earliestRetiredDate(today)}부터 선택할 수 있습니다.`;
+}
+
+/** 확인창의 퇴직일 검사. 맞으면 null, 아니면 칸 아래에 둘 문구. 미래 날짜는 상한이 없다(api). 입사일보다 앞선 날은 api 400 으로 받는다. */
 export function checkRetiredDate(value: string, today: string): string | null {
   if (value === "") return "퇴직일을 입력해 주세요.";
   if (!isDate(value)) return "퇴직일을 YYYY-MM-DD 로 입력해 주세요.";
@@ -84,16 +98,21 @@ export function staleDayWarning(retiredDate: string, shownToday: string, serverT
 
 /**
  * 상세 머리의 퇴직 버튼. retire = 「퇴직 처리」, scheduled = 「퇴직일 변경」 · 「퇴직 처리 취소」, null = 없음.
- * 재직이면 가입 전(초대 대기 · 초안 등) 레코드도 보인다 — api 가 가입 전 레코드의 퇴직 처리를 받는다(작성 중 근로계약만 있는 직원은 409 라 확인창 안에 문구로 보인다). 「직원 정보 관리」 수정 권한이 있을 때만 보인다. 업무 범위 밖 직원은 상세 api 가 404 라 여기 오지 않는다.
+ * 재직이면 가입 전(초대 대기 등) 레코드도 보인다 — api 가 가입 전 레코드의 퇴직 처리를 받는다(WHALEERP-682). 다만 초안(초대를 보낸 적 없음)이고
+ * 최근 계약이 작성 중(또는 없음)이면 「퇴직 처리」를 두지 않는다 — api 가 409(작성 중 근로계약만 있는 직원)로 막고, 그 계약을 지우면 직원 정보도
+ * 함께 지워져 퇴직 처리할 대상이 없다(WHALEERP-762, 명세 S-VZVHSW · CTR-29). api 규칙(작성 중이 아닌 계약이 하나도 없음)을 최근 계약 하나로
+ * 근사한 것이라, 화면이 못 가르는 드문 경우의 409 는 지금처럼 확인창 안 문구로 보인다. 「직원 정보 관리」 수정 권한이 있을 때만 보인다. 업무 범위 밖 직원은 상세 api 가 404 라 여기 오지 않는다.
  * 변경 · 취소는 퇴직일 전날까지만 된다 — 당일부터는 배치가 돌 수 있어 api 가 409 다.
  */
 export function retirementActions(
-  staff: Pick<StaffMemberListItem, "employmentStatus" | "retiredDate">,
+  staff: Pick<StaffMemberListItem, "employmentStatus" | "retiredDate" | "joinState"> & { contract: { status: ContractStatus | null } | null },
   today: string,
   canUpdate: boolean,
 ): "retire" | "scheduled" | null {
   if (!canUpdate || staff.employmentStatus !== "EMPLOYED") return null;
-  if (!staff.retiredDate) return "retire";
+  // 초안 판정은 「퇴직 처리」에만 — 퇴직일이 이미 있으면 api 가 퇴직을 받은 직원이라, 그 뒤 작성 중 재계약이 최근 계약이 돼도 변경 · 취소는 둔다
+  if (!staff.retiredDate)
+    return staff.joinState === "DRAFT" && (staff.contract === null || staff.contract.status === "DRAFT") ? null : "retire";
   return staff.retiredDate > today ? "scheduled" : null;
 }
 

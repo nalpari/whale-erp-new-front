@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DetailTable, LoadGroup, LoadGroupArea, PageBar } from "@/components/common";
+import { DetailTable, DetailValues, LoadGroup, LoadGroupArea, PageBar, SummaryStrip } from "@/components/common";
 import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import type { EnumValue } from "@/lib/enums";
 import { hqSharingConsentText, kstToday, staffEmailText } from "@/lib/staff-members";
@@ -9,9 +9,9 @@ import { MENU_CODE } from "@/lib/menus";
 import { getStaffMember, staffMemberIdOf } from "@/lib/staff-members-api";
 import { detailListHrefOf } from "../staff-list-query";
 import { ResendInvitationButton } from "../resend-invitation-button";
-import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone, invitationText, joinCell } from "../staff-row";
+import { canResendInvitation, employmentStatusCells, formatPhone, invitationParts, joinCell } from "../staff-row";
 import { CellView } from "../staff-table";
-import { BirthDateCell } from "./birth-date-dialog";
+import { BirthDateEditButton } from "./birth-date-dialog";
 import { ContractBox } from "./contract-box";
 import { Box } from "./detail-box";
 import { employmentHistoryLines, historySearch } from "./employment-history";
@@ -19,8 +19,9 @@ import { MenuManageLink } from "./manage-link";
 import { SendLogBox } from "./send-log-box";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
 import { AttendanceBox, PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
-import { attendanceManageHref, payslipManageHref, scheduleWeekOf, todoManageHref } from "./summary-view";
+import { attendanceManageHref, contractManageHref, payslipManageHref, scheduleWeekOf, todayLabel, todoManageHref } from "./summary-view";
 import { WeekNav } from "./week-nav";
+import { StoreNameWithType } from "@/components/site/store-type-tag";
 
 export const metadata: Metadata = {
   title: "직원 상세 · Whale ERP",
@@ -74,7 +75,7 @@ export default async function StaffMemberDetailPage({
 }) {
   const { id: rawId } = await params;
   const search = await searchParams;
-  const [staff, joinStateLabels, invitationTypeLabels, invitationStatusLabels, hqConsentLabels] = await Promise.all([
+  const [staff, joinStateLabels, invitationTypeLabels, invitationStatusLabels, hqConsentLabels, employmentTypes] = await Promise.all([
     // api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP 403 — deniedMessageOf)은 오류 화면이 아니라 그 문장으로 보인다. 404(없는 직원 · 업무 범위 밖 · 고른 BP 에 없음)는 getStaffMember 가 null 로 바꿔 notFound 다(근로계약 상세와 같다)
     getStaffMember(rawId).catch((e: unknown) => {
       const notice = deniedMessageOf(e);
@@ -85,11 +86,13 @@ export default async function StaffMemberDetailPage({
     loadEnumOrEmpty("InvitationType"),
     loadEnumOrEmpty("InvitationStatus"),
     loadEnumOrEmpty("HqSharingConsentState"),
+    // 고용형태 이름(요약 띠, WHALEERP-720) — 값이 없거나 받지 못했으면 「-」, 영문 값은 보이지 않는다(목록 열과 같다)
+    loadEnumOrEmpty("EmploymentType"),
   ]);
   if (staff && "notice" in staff)
     return (
       <>
-        <PageBar title="직원 정보 관리" />
+        <PageBar title="직원정보 관리" />
         <p role="alert" className="p-[24px] text-[14px] text-erp-label">
           {staff.notice}
         </p>
@@ -111,13 +114,13 @@ export default async function StaffMemberDetailPage({
   // 서버가 그리는 링크(재직 이력)에 탭 BP 를 붙인다. 목록 주소 · ?back= 은 옛 경로 그대로다. 「관리」 링크(MenuManageLink)는 화면이 붙인다
   const at = await screenPath();
 
-  const basicRows = [
-    // 재직 상태는 이름 옆 칩이다(184 완료 조건 2 「이름 아래」 — 줄 높이 46 이 고정이라 옆에 둔다). 본인인증은 1차 범위 밖이라(WHALEERP-612 → 2차)
-    // 줄도 칩도 두지 않는다(2026-10-21 재영).
+  // 기본 정보를 성격대로 나눈다(2026-11-19 사용자 지정 — 전엔 근무 · 인적 사항 · 앱 계정 값이 「기본 정보」 한 표에 섞여 있었다).
+  // 맨 위 요약 띠: 성명(+ 재직 상태) · 고용형태 · 직무 · 근무지 · 입사일 · 가입 상태 — 근로계약 · 급여명세서 상세와 같은 모양
+  const summaryCells = [
     {
-      label: "이름",
+      label: "성명",
       value: (
-        <span className="inline-flex min-w-0 items-center gap-[10px]">
+        <span className="inline-flex min-w-0 items-center gap-[8px] text-[15px] font-semibold text-erp-ink">
           <span className="truncate">{staff.name}</span>
           {employmentStatus.map((cell) => (
             <CellView key={cell.text} cell={cell} />
@@ -125,14 +128,38 @@ export default async function StaffMemberDetailPage({
         </span>
       ),
     },
-    { label: "직무", value: staff.jobTitle || PENDING },
-    { label: "고용 형태", value: staff.employmentType ? EMPLOYMENT_TYPE_LABELS[staff.employmentType] : PENDING },
-    { label: "소속 근무지", value: staff.store.name },
-    // 입사일은 나중에 시스템이 첫 체결 계약 시작일로 채운다. 지금은 늘 null 이라 「-」다(2026-10-21 재영)
-    { label: "입사일", value: staff.hiredDate ?? PENDING },
-    // 퇴직 예정 · 퇴직이면 퇴직일을 보인다(목업 detail.html)
+    { label: "고용형태", value: <span className="text-[15px] font-semibold text-erp-ink">{employmentTypes.find((t) => t.value === staff.employmentType)?.label ?? PENDING}</span> },
+    { label: "직무", value: <span className="text-[15px] font-semibold text-erp-ink">{staff.jobTitle || PENDING}</span> },
+    // 근무지 이름 앞에 본사 · 직영 · 가맹 꼬리표 — 직원 목록 · 근로계약 상세와 같다
+    {
+      label: "근무지",
+      value: (
+        <span className="text-[15px] font-semibold text-erp-ink">
+          <StoreNameWithType storeId={staff.store.storeId} name={staff.store.name} isHq={staff.store.isHq} />
+        </span>
+      ),
+    },
+    // 입사일은 나중에 시스템이 첫 체결 계약 시작일로 채운다(2026-10-21 재영)
+    { label: "입사일", value: <span className="text-[15px] font-semibold text-erp-ink">{staff.hiredDate ?? PENDING}</span> },
+    // 가입 상태 · 재발송은 목록과 같은 함수 · 버튼이다(staff-row.ts, WHALEERP-138)
+    {
+      label: "가입 상태",
+      value: (
+        <span className="inline-flex items-center gap-[6px]">
+          <CellView cell={joinCell(staff, today)} />
+          {staff.contract && canResendInvitation(staff) && <ResendInvitationButton contractId={staff.contract.contractId} name={staff.name} status={staff.contract.status} lastSentAt={staff.contract.lastSentAt} />}
+        </span>
+      ),
+    },
+  ];
+  // 인적 사항 — 본인 확인용 값. 생년월일은 가입한 계정 값, 가입 전 · 탈퇴면 가장 최근 계약에 적은 값(api #183)
+  const personalRows = [
+    { label: "생년월일", value: staff.birthDate ?? PENDING },
+    { label: "휴대전화번호", value: staff.phone ? formatPhone(staff.phone) : PENDING },
+  ];
+  // 재직 정보 — 있는 직원만: 퇴직일(퇴직 예정 · 퇴직), 재입사로 이은 다른 재직 기간(WHALEERP-615), 본사 제공 동의(가맹 점포 직원만, ATT-30)
+  const workRows = [
     ...(staff.retiredDate ? [{ label: "퇴직일", value: staff.retiredDate }] : []),
-    // 재입사로 이은 다른 재직 기간(WHALEERP-615, 목업 detail.html) — 누르면 그 기간의 상세. 이은 레코드가 없으면 줄이 없다.
     // 좁은 단에서 기간이 꺾여도 잘리지 않게 높이가 내용만큼 늘어나는 줄로 둔다
     ...employmentHistoryLines(staff, detailSearch).map((line) => ({
       label: line.label,
@@ -150,29 +177,23 @@ export default async function StaffMemberDetailPage({
         </span>
       ),
     })),
-    // 가입한 계정 값, 가입 전 · 탈퇴면 가장 최근 계약에 적은 값(api #183). api 가 주는 대로 보이고 화면에서 따로 가리지 않는다(2026-10-21 재영)
-    { label: "생년월일", value: <BirthDateCell staff={staff} text={staff.birthDate ?? PENDING} today={today} /> },
-    { label: "휴대전화번호", value: staff.phone ? formatPhone(staff.phone) : PENDING },
-    // 가입 상태 · 초대는 목록과 같은 함수다(staff-row.ts). 재발송도 목록과 같은 판정 · 버튼이다(WHALEERP-138)
-    {
-      label: "가입 상태",
-      value: (
-        <span className="inline-flex items-center gap-[6px]">
-          <CellView cell={joinCell(staff, today)} />
-          {staff.contract && canResendInvitation(staff) && <ResendInvitationButton contractId={staff.contract.contractId} name={staff.name} status={staff.contract.status} lastSentAt={staff.contract.lastSentAt} />}
-        </span>
-      ),
-    },
-    { label: "초대", value: invitationText(staff.invitation, invitationTypeLabels, invitationStatusLabels) },
-    // 계정 이메일(회원 ID) — 상세를 볼 수 있으면 보이고, 고치지 못한다(ACC-17, WHALEERP-180). 없을 때의 표시는 staffEmailText.
-    { label: "이메일", value: staffEmailText(staff, joinStateLabels) },
-    // 가맹 점포 직원만 동의 · 미동의 한 줄, 직영 점포 직원은 줄이 없다(184 완료 조건 8, ATT-30)
     ...(hqConsent === null ? [] : [{ label: "본사 제공 동의", value: hqConsent }]),
+  ];
+  // 직원 앱 계정 — 계정 이메일(회원 ID, ACC-17 · WHALEERP-180)과 초대(WHALEERP-138). 인적 사항과 한 표 「직원 정보」로 보인다
+  const accountRows = [
+    { label: "이메일", value: staffEmailText(staff, joinStateLabels) },
+    {
+      label: "초대",
+      value: (() => {
+        const parts = invitationParts(staff.invitation, invitationTypeLabels, invitationStatusLabels);
+        return parts.length ? <DetailValues items={parts} /> : PENDING;
+      })(),
+    },
   ];
 
   return (
     <>
-      <PageBar title="직원 정보 관리" />
+      <PageBar title="직원정보 관리" />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
           <div className="flex flex-1 flex-col gap-[12px]">
@@ -180,13 +201,20 @@ export default async function StaffMemberDetailPage({
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>
               <StaffDetailActions staff={staff} today={today} listHref={listHref} />
             </div>
-            {/* 처음 들어올 때는 제목 줄 아래 본문 전체(기본 정보 · 영역들)를 LoadGroup 이 빈 자리로 덮고(상세 진입에는 고래를 쓰지 않는다), 영역이 모두(발송 이력 포함) 온 뒤 한 번에 보인다.
+            {/* 요약 띠는 상세 응답만으로 그리므로 먼저 보인다. 그 아래 본문 전체(직원 정보 · 영역들)는 처음 들어올 때 LoadGroup 이 빈 자리로 덮고(상세 진입에는 고래를 쓰지 않는다), 영역이 모두(발송 이력 포함) 온 뒤 한 번에 보인다.
                   영역은 LoadGroupArea 가 각자 세기만 한다 */}
+            <SummaryStrip cells={summaryCells} />
             <LoadGroup fallback={BODY_PENDING}>
               <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
                 <div className="flex min-w-0 flex-col gap-[24px]">
-                  <DetailTable title="기본 정보" rows={basicRows} />
-                  <PasswordResetButton staff={staff} />
+                  {/* 인적 사항 · 직원 앱 계정을 한 표 「직원 정보」로 — 근로계약 상세 「직원 정보」와 같은 이름(2026-11-19 사용자 지정). [비밀번호 초기화]는 제목 줄 오른쪽 */}
+                  <DetailTable title="직원 정보" action={
+                      <span className="flex items-center gap-[6px]">
+                        <BirthDateEditButton staff={staff} today={today} />
+                        <PasswordResetButton staff={staff} />
+                      </span>
+                    } rows={[...personalRows, ...accountRows]} />
+                  {workRows.length > 0 && <DetailTable title="재직 정보" rows={workRows} />}
                   {/* 가장 최근 계약 1건 — 근로계약 영역 요약(api #183). 계약이 없으면 그 칸이 작성으로 넘긴다 */}
                   <Box
                     title="근로계약"
@@ -199,15 +227,24 @@ export default async function StaffMemberDetailPage({
                     }
                   >
                     <LoadGroupArea fallback={AREA_PENDING}>
-                      <ContractBox staffMemberId={staffMemberId} detailSearch={detailSearch} />
+                      <ContractBox staffMemberId={staffMemberId} detailSearch={detailSearch} manageHref={contractManageHref(staff.name, staff.store.storeId)} />
                     </LoadGroupArea>
                   </Box>
                 </div>
                 {/* 영역마다 따로 받는다 — 한 영역이 실패해도 그 영역에만 안내 · 다시 하기를 그리고 나머지는 그대로다 */}
                 <div className="flex min-w-0 flex-col gap-[24px]">
+                  {/* 근무스케줄 · 출퇴근 현황은 같은 주를 본다 — 주 이동을 두 상자 위 한 줄로 올리고 두 상자를 12px 로 붙여 한 덩어리로 보인다
+                      (2026-11-19 사용자 지정 — 전엔 근무스케줄 제목 줄에만 있어 출퇴근 현황이 따라 바뀌는 게 보이지 않았다) */}
+                  {/* 기간 줄과 두 상자를 둥근 테두리 하나로 묶는다 — 기간 줄이 오른쪽 단 전체에 걸린 것처럼 보였다(2026-11-23 사용자 지정). 테두리는 확인 상자(RoundBox)와 같은 8px · #c9d1de */}
+                  <div className="flex flex-col gap-[12px] rounded-[8px] border border-[#c9d1de] p-[12px]">
+                  <div className="flex items-center gap-[12px]">
+                    {/* 기간 이동만 왼쪽에 둔다 — 둥근 테두리로 두 상자와 묶여 「근무스케줄 · 출퇴근 현황 기간」 이름은 뺐다(2026-11-23 사용자 지정) */}
+                    <WeekNav monday={monday} search={search} today={today} />
+                    <span className="text-[14px] text-erp-label">{todayLabel(today)}</span>
+                  </div>
                   <Box
+                    plainTitle
                     title="근무스케줄"
-                    tools={<WeekNav monday={monday} search={search} today={today} />}
                     manage={
                       <MenuManageLink
                         menuCode={MENU_CODE.workSchedules}
@@ -223,6 +260,7 @@ export default async function StaffMemberDetailPage({
                   </Box>
                   {/* 출퇴근 현황은 근무스케줄과 같은 주를 따라간다 — 주 넘김이 monday 를 바꾸면 이 영역도 key 로 다시 기다린다 */}
                   <Box
+                    plainTitle
                     title="출퇴근 현황"
                     manage={
                       <MenuManageLink
@@ -236,6 +274,7 @@ export default async function StaffMemberDetailPage({
                       <AttendanceBox staffMemberId={staffMemberId} weekStart={monday} />
                     </LoadGroupArea>
                   </Box>
+                  </div>
                   <Box title="급여명세서" manage={<MenuManageLink menuCode={MENU_CODE.payslips} menuName="급여명세서 관리" href={payslipManageHref(staff.name, staff.store.storeId)} />}>
                     <LoadGroupArea fallback={AREA_PENDING}>
                       <PayslipBox staffMemberId={staffMemberId} />

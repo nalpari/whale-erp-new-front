@@ -23,7 +23,7 @@ const ERP_MENUS = [
   [
     "직원관리",
     [
-      ["직원 정보 관리", "staff/index.html"],
+      ["직원정보 관리", "staff/index.html"],
       ["근로계약 관리", "staff/contracts.html"],
       ["급여명세서 관리", "staff/payslips.html"],
       ["근무스케줄 관리", "staff/work-schedules.html"],
@@ -598,8 +598,8 @@ const PLATFORM_MENUS = [
     [
       ["공지사항", "support/community-notices.html"],
       ["FAQ", "support/community-faq.html"],
-      ["문의사항", "support/community-asks.html"],
-      ["도입문의", "support/community-leads.html"],
+      ["문의사항 관리(회원용)", "support/community-asks.html"],
+      ["도입문의 관리(비회원용)", "support/community-leads.html"],
     ],
   ],
 ];

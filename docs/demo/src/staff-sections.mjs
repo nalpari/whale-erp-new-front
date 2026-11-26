@@ -82,7 +82,7 @@ export function staffSections({ A, R }) {
   const staffRows = [
     [who("서지안", D), "010-2841-7702", "모리커피 서초점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "서명 완료"), p.mark("ok", "재직")],
     [who("오세라", D), "010-3392-4418", "모리커피 서초점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "서명 완료"), p.mark("ok", "재직")],
-    [who("문태경", D), "010-4471-2298", "온기식당 판교점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "서명 완료"), `${p.mark("ok", "재직")} ${p.tag("warn", "퇴직 예정 09-30")}`], // 퇴직 예정은 재직으로 센다(2026-10-08 재영)
+    [who("문태경", D), "010-4471-2298", "온기식당 판교점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "서명 완료"), `${p.mark("ok", "재직")} ${p.tag("warn", "퇴직 예정 2026-09-30")}`], // 퇴직 예정은 재직으로 센다(2026-10-08 재영)
     [who("배정숙", D), "010-8820-3317", "온기식당 판교점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "갱신 예정 D-20"), p.mark("ok", "재직")],
     [who("남도현"), "010-9014-5563", "모리커피 성수점", "파트타이머", p.tag("warn", "가입 대기 · 08-31"), p.tag("quiet", "서명 요청 전"), p.mark("subtle", "가입 대기")],
     [`<button type="button" aria-expanded="false" aria-controls="${holdPanel}" class="text-erp-link hover:underline">하준서</button>`, "010-3392-4418", "모리커피 성수점", "파트타이머", p.tag("risk", "정보 확인 필요 · 4일"), p.tag("quiet", "서명 요청 전"), p.mark("risk", "확인 필요")],
@@ -91,7 +91,7 @@ export function staffSections({ A, R }) {
     [who("유하람", D), "010-2093-8875", "모리커피 연남점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("risk", "서명 거절 · 09-02"), p.mark("risk", "재발송 필요")],
     [`<span class="whitespace-nowrap text-erp-muted">본사에 정보제공 미동의</span>`, "-", "모리커피 연남점", "-", "-", "-", "-"],
     [who("민세하"), "010-7725-3390", "모리커피 성수점", "파트타이머", p.tag("risk", "가입 불가(만 19세 미만)"), p.tag("quiet", "서명 요청 전"), p.mark("risk", "삭제 대상")],
-    [who("임채운"), "010-6613-0284", "모리커피 연남점", "파트타이머", p.tag("quiet", "가입 완료"), p.tag("quiet", "계약 종료"), p.mark("subtle", "퇴직 07-31")],
+    [who("임채운"), "010-6613-0284", "모리커피 연남점", "파트타이머", p.tag("quiet", "가입 완료"), p.tag("quiet", "계약 종료"), p.mark("subtle", "퇴직 2026-07-31")],
   ];
   // 직원 정보 관리: 점포 목록처럼 왼쪽 필터 + 오른쪽 목록(목업의 목록 위 검색칸·선택칸을 필터로 옮겼다).
   const listFilter = ui.filterPanel(A, [
@@ -279,28 +279,44 @@ export function staffSections({ A, R }) {
     p.weekNav(A, "attend-sums", "2026-08-31", { md: true }),
     `<div id="attend-sums">${weekSum("2026-08-31", [54, 5, 2], ["1,284h", "42h", "18h", "38명"])}${weekSum("2026-08-24", [58, 3, 1], ["1,312h", "36h", "16h", "38명"])}${weekSum("", [0, 0, 0], ["0h", "0h", "0h", "-"])}</div>`,
   );
-  // 「이력」은 그 기록의 변경 이력을 확인창으로 보인다(변경 전후 값·일시·처리한 사람·사유, 2026-10-02 재영).
+  // 「보정 이력」은 그 기록의 변경 이력을 창으로 보인다(변경 전후 값·일시·처리한 사람·사유, 2026-10-02 재영). 맨 위 근무지 · 직원 · 날짜 정보 상자,
+  // 건마다 「구분 · 일시」 제목 표(앱 attendance-fix-list.tsx, 2026-11-20 사용자 지정 — 전엔 「이름 출퇴근 기록 이력」, 일시 · 구분 줄)
   const histId = { 문태경: x.dialogId(), 오세라: x.dialogId() };
-  const histDialog = (name, rows) =>
-    x.dialog(histId[name], `${name} 출퇴근 기록 이력`, ui.detailTable("이력", rows), ui.button("닫기", { variant: "off", "data-close": true }));
+  const histDialog = (name, day, title, rows) =>
+    x.dialog(
+      histId[name],
+      "보정 이력",
+      `<div class="mb-[12px]">${p.recordTarget([["근무지", p.storeName("직영", "모리커피 성수점")], ["직원", name], ["날짜", day]])}</div>` + ui.detailTable(title, rows),
+      ui.button("닫기", { variant: "off", "data-close": true }),
+    );
   const histDialogs =
-    histDialog("문태경", [
-      ["일시", "2026-08-30 10:12"],
-      ["구분", "보정"],
+    histDialog("문태경", "2026-08-29(토)", "보정 · 2026-08-30 10:12", [
       ["처리한 사람", "정하윤 (BP 마스터)"],
       ["변경 전", "출근 09:02 · 퇴근 없음"],
       ["변경 후", "출근 09:02 · 퇴근 18:30"],
       ["사유", "퇴근 등록 누락 · 점장 확인"],
     ]) +
-    histDialog("오세라", [
-      ["일시", "2026-08-27 18:05"],
-      ["구분", "대신 등록"],
+    histDialog("오세라", "2026-08-27(목)", "대신 등록 · 2026-08-27 18:05", [
       ["처리한 사람", "정하윤 (BP 마스터)"],
       ["등록한 값", "출근 10:00 · 퇴근 16:00"],
       ["사유", "위치 수집 일시 중지 · 점장 확인"],
     ]);
   // 「이상 없음」은 확인 필요 꼬리표가 붙은 줄에만 — 출근·퇴근 미등록은 보정으로 채운다(운영 정책 ATT-19, 2026-10-26 재영).
-  const fixBtns = (ok = true) => `<span class="flex justify-center gap-[6px]">${ui.slideTrigger("보정", fixPanel, "off")}${ok ? p.ask("이상 없음", "off", "이상 없음으로 검토를 마치시겠습니까?", "확인 필요 꼬리표와 사유를 지웁니다.") : ""}</span>`;
+  // 줄 버튼은 26px RowButton — [보정]만 회청 바탕, 나머지 테두리, 칸 오른쪽 끝(앱 attendance-fix-list.tsx, 2026-11-20 사용자 지정)
+  const okBtn = (reason) => {
+    const id = x.dialogId();
+    return (
+      ui.rowButton("이상 없음 처리", { "data-dialog": id }) +
+      x.dialog(
+        id,
+        "출퇴근 기록을 '이상 없음'으로 처리하시겠습니까?",
+        `'${reason}' 확인 필요 사유가 해제되며, 보정이 필요한 기록 목록에서 제외됩니다. 출퇴근 시각은 변경되지 않습니다.`,
+        ui.button("취소", { variant: "off", "data-close": true }) + ui.button("이상 없음 처리", { "data-close": true }),
+      )
+    );
+  };
+  const rowBtns = (html) => `<span class="flex justify-end gap-[6px] pr-[8px]">${html}</span>`;
+  const fixBtns = (reason) => rowBtns(ui.rowButton("보정", { variant: "primary", "aria-expanded": "false", "aria-controls": fixPanel }) + (reason ? okBtn(reason) : ""));
   // 보정 목록 묶음. 급여명세서에서 오면(앱 fixAll) 제목 · 기간 · 줄 · 빈 문구가 바뀌고 표 아래 안내가 붙는다(WHALEERP-664).
   const fixSection = (title, from, to, rows, empty, after = "") =>
     p.section(
@@ -314,7 +330,7 @@ export function staffSections({ A, R }) {
           { header: "출근", width: "w-[80px]" },
           { header: "퇴근", width: "w-[80px]" },
           { header: "사유", align: "left" },
-          { header: "", width: "w-[230px]" },
+          { header: "", width: "w-[260px]" },
         ],
         rows,
         empty,
@@ -325,13 +341,13 @@ export function staffSections({ A, R }) {
     "2026-08-06",
     "2026-09-06",
       [
-        ["서지안", "09-05", "12:58", "-", p.tag("warn", "퇴근 미등록"), fixBtns(false)],
-        ["권도윤", "08-21", "-", "21:12", p.tag("warn", "출근 미등록"), fixBtns(false)],
-        ["배정숙", "09-02", "08:47", "23:58", p.tag("risk", "반경 밖 퇴근"), fixBtns()],
-        ["남주호", "09-01", "09:04", "18:02", p.tag("risk", "위치 조작 감지"), fixBtns()],
-        ["한도윤", "08-31", "09:00", "22:30", p.tag("risk", "근무 12시간 초과"), fixBtns()],
-        ["문태경", "08-29", "09:02", "18:30", `${p.tag("info", "수정됨")} ${p.sub("08-30 정하윤")}`, x.dialogTrigger("이력", histId.문태경, "off")],
-        ["오세라", "08-27", "10:00", "16:00", `${p.tag("info", "대신 등록")} ${p.sub("위치 수집 일시 중지 · 정하윤")}`, x.dialogTrigger("이력", histId.오세라, "off")],
+        ["서지안", "09-05", "12:58", "-", p.tag("warn", "퇴근 미등록"), fixBtns()],
+        ["권도윤", "08-21", "-", "21:12", p.tag("warn", "출근 미등록"), fixBtns()],
+        ["배정숙", "09-02", "08:47", "23:58", p.tag("risk", "반경 밖 퇴근"), fixBtns("반경 밖 퇴근")],
+        ["남주호", "09-01", "09:04", "18:02", p.tag("risk", "위치 조작 감지"), fixBtns("위치 조작 감지")],
+        ["한도윤", "08-31", "09:00", "22:30", p.tag("risk", "근무 12시간 초과"), fixBtns("근무 12시간 초과")],
+        ["문태경", "08-29", "09:02", "18:30", `${p.tag("info", "수정됨")} ${p.sub("08-30 정하윤")}`, rowBtns(ui.rowButton("보정 이력", { "data-dialog": histId.문태경 }))],
+        ["오세라", "08-27", "10:00", "16:00", `${p.tag("info", "대신 등록")} ${p.sub("위치 수집 일시 중지 · 정하윤")}`, rowBtns(ui.rowButton("보정 이력", { "data-dialog": histId.오세라 }))],
       ],
       // 기간이 늘 걸려 있어 문구는 하나다(앱 attendance-fix-list.tsx)
       "보정이 필요한 출·퇴근 기록이 없습니다.",
@@ -414,17 +430,19 @@ export function staffSections({ A, R }) {
     `<div class="flex flex-wrap items-center gap-x-[12px] gap-y-[6px] text-[14px]"><p class="text-erp-ink">총 <b class="font-semibold">${(a + b + c + d).toLocaleString("ko-KR")}</b> 건</p>${vline}<p class="flex items-center text-erp-label">${[["작성 중", a], ["검토 중", b], ["확정", c], ["발송 완료", d]]
       .map(([l, n], i) => `<span class="flex items-center">${i ? '<span class="mx-[6px] text-erp-muted">·</span>' : ""}${l}<b class="ml-[4px] font-semibold text-erp-ink">${n}</b></span>`)
       .join("")}</p>${vline}${p.tag("quiet", `검토 대기 ${review}`)}<div class="ml-auto flex items-center gap-[6px]">${right}</div></div>`;
-  // 목록 오른쪽 위 버튼: 「급여명세서 작성」은 어느 달이든 늘 보인다(2026-10-02 재영). 누르면 점포·직원을 고르는 팝업이 뜨고, 고른 직원으로 작성하면 데모라 명세서 화면으로 간다.
+  // 달 고르기 바로 옆 「N월 급여명세서 작성」(앱 page.tsx, 2026-11-23 사용자 지정 — 달을 바꾸면 이름도 바뀐다) — 어느 달이든 늘 보인다(2026-10-02 재영). 누르면 점포·직원을 고르는 팝업이 뜨고, 고른 직원으로 작성하면 데모라 명세서 화면으로 간다.
   // 근로계약이 없거나 이 달 명세서가 이미 있는 직원은 고를 수 없다(WHALEERP-226). 점포 · 이름으로 좁히기와 「작성」 켜기는 PICK_SCRIPT.
   const pickId = x.dialogId();
-  const pickRow = (name, store, type, contract, slip) => {
+  // 출퇴근 열(앱 attendanceCell, 2026-11-23 사용자 지정) — 기록 있음 · 출퇴근 누락(빨간 꼬리표), 작성할 수 없는 줄은 「-」
+  const pickRow = (name, store, type, contract, slip, attended = true) => {
     const ok = contract === "유효" && slip === "미작성";
     const pick = `<input type="radio" name="${pickId}-staff" aria-label="${name} 선택"${ok ? "" : " disabled"} class="size-[18px] accent-erp-brand disabled:opacity-30">`;
-    return [pick, name, store, type, contract === "유효" ? contract : p.tag("risk", contract), slip === "미작성" ? slip : p.tag("quiet", slip)];
+    const att = !ok ? "-" : attended ? "기록 있음" : p.tag("risk", "출퇴근 누락");
+    return [pick, name, store, type, contract === "유효" ? contract : p.tag("risk", contract), att, slip === "미작성" ? slip : p.tag("quiet", slip)];
   };
   const pickRows = [
     pickRow("유하람", "모리커피 서초점", "정직원", "유효", "미작성"),
-    pickRow("하준서", "모리커피 서초점", "파트타이머", "유효", "미작성"),
+    pickRow("하준서", "모리커피 서초점", "파트타이머", "유효", "미작성", false),
     pickRow("서지안", "모리커피 서초점", "정직원", "유효", "작성됨"),
     pickRow("오세라", "모리커피 서초점", "정직원", "유효", "작성됨"),
     pickRow("최다온", "온기식당 판교점", "파트타이머", "유효", "미작성"),
@@ -440,7 +458,7 @@ export function staffSections({ A, R }) {
       ui.field("직원", ui.searchField(A, { placeholder: "이름" }).replace("<input ", "<input data-pick-name ")),
     ) +
     `<div class="max-h-[322px] overflow-y-auto">${ui.dataTable(
-      [{ header: "선택", width: "w-[60px]" }, { header: "직원" }, { header: "점포" }, { header: "계약 유형" }, { header: "근로계약" }, { header: "명세서" }],
+      [{ header: "선택", width: "w-[52px]" }, { header: "직원" }, { header: "점포" }, { header: "계약 유형" }, { header: "근로계약" }, { header: "출퇴근" }, { header: "명세서" }],
       pickRows,
     )}<p data-pick-none hidden class="py-[24px] text-center text-erp-muted">조건에 맞는 직원이 없습니다.</p></div>` +
     `</div>`;
@@ -454,7 +472,6 @@ export function staffSections({ A, R }) {
       "w-[720px]",
     ) + PICK_SCRIPT;
   const payButtons = (n) =>
-    x.dialogTrigger("급여명세서 작성", pickId, "soft") +
     (n ? p.ask(`확정 ${n}건 발송`, "primary", `확정한 급여명세서 ${n}건을 발송하시겠습니까?`, "직원 근무 앱으로 보냅니다.", "발송") : "") +
     `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`;
   const month = (key, body) => `<div data-week="${key}" hidden class="flex flex-1 flex-col gap-[12px]">${body}</div>`;
@@ -492,7 +509,7 @@ export function staffSections({ A, R }) {
     ui.filterSection("분류", ui.checkbox(A, "검토 대기만", false), { last: true }),
   ]);
   // 직원 고르기 팝업은 달 묶음(hidden) 밖에 한 번만 둔다 — 숨긴 묶음 안의 dialog 는 열어도 보이지 않는다.
-  const payrollTab = `<div class="flex flex-1 flex-col gap-[12px]">${p.weekNav(A, "pay-months", "2026-08-01", { month: true })}<div id="pay-months" class="flex flex-1 flex-col">${months}</div></div>${pickDialog}`;
+  const payrollTab = `<div class="flex flex-1 flex-col gap-[12px]"><div class="flex flex-wrap items-center gap-[12px]">${p.weekNav(A, "pay-months", "2026-08-01", { month: true })}${x.dialogTrigger('<span data-month-name>8월</span> 급여명세서 작성', pickId)}</div><div id="pay-months" class="flex flex-1 flex-col">${months}</div></div>${pickDialog}`;
 
   // ── TO-DO ──
   // TO-DO 리스트 관리 — 앱 src/app/todos(page.tsx · todo-filter.tsx · todo-table.tsx)와 같게 맞췄다(2026-11-09 사용자 지정, 3팀 확인 필요).
@@ -596,18 +613,19 @@ export function staffSections({ A, R }) {
   );
   const fixForm = ui.slidePanel(
     fixPanel,
-    "기록 보정",
-    panelHead("기록 보정", p.tag("quiet", "서지안 · 09-05")) +
+    "출퇴근 기록 보정",
+    // 제목 아래 근무지 · 직원 · 날짜 정보 상자(앱 RecordTarget, 2026-11-20 사용자 지정 — 전엔 제목 옆 회색 꼬리표 「서지안 · 09-05」)
+    `<div class="flex flex-col gap-[8px]"><h2 class="text-[18px] font-semibold text-erp-ink">출퇴근 기록 보정</h2>${p.recordTarget([["근무지", p.storeName("직영", "모리커피 성수점")], ["직원", "서지안"], ["날짜", "2026-09-05(토)"]])}</div>` +
       ui.formGroup(
         "출퇴근 기록",
-        ui.formRow(p.fieldH("출근", p.timeField("12:58", "출근"), "원본 12:58"), p.fieldH("퇴근", p.timeField("21:30", "퇴근"), "원본 없음")),
-        p.fieldH("수정 사유", ui.textarea({ rows: 2, value: "퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인." }), ""),
+        ui.formRow(p.fieldH("출근", p.timeField("12:58", "출근"), "보정 전 12:58"), p.fieldH("퇴근", p.timeField("21:30", "퇴근"), "보정 전 없음")),
+        p.fieldH("보정 사유", ui.textarea({ rows: 2, value: "퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인." }), ""),
       ) +
       // 안내는 묶음 상자 밖 안내 박스, 버튼은 가운데 [취소] [저장](앱 attendance-fix-list.tsx FixForm, 2026-11-05 사용자 지정, 3팀 확인 필요 — 전엔 「보정 저장」, 사유 4줄)
       p.guideBand("보정 안내", [
         "최근 3개월 이내의 기록만 보정할 수 있으며, 미래 시각은 등록할 수 없습니다.",
         "관리자가 보정한 기록은 직원 근무 앱에 연필 아이콘으로 표시됩니다.",
-        "보정한 기록의 확인 필요 표시와 사유는 삭제됩니다.",
+        "보정한 기록의 확인 필요 사유가 해제됩니다.",
         "퇴근 시각이 출근 시각과 같거나 이전인 경우, 다음 날 퇴근한 것으로 처리됩니다.",
         "그 외에 다음 날 퇴근한 경우, 관리자가 「다음 날 퇴근」을 체크합니다.",
       ]) +

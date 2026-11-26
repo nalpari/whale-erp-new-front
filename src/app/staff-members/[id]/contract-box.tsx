@@ -1,11 +1,13 @@
 import { Button } from "@/components/common";
 import { bpHref } from "@/lib/api";
+import { MENU_CODE } from "@/lib/menus";
 import { labelOf } from "@/lib/enums";
 import { getStaffMemberContractSummary } from "@/lib/staff-members-api";
 import { StatusBadge } from "../../contracts/columns";
 import { ContractMenuPermission } from "../../contracts/contract-permission";
-import { contractSummaryTexts, payrollAccountRows } from "./contract-summary";
+import { contractSummaryTexts, payrollAccountRows, TAX_PROFILE_UNAVAILABLE } from "./contract-summary";
 import { AreaFailure, BoxMessage } from "./detail-box";
+import { MenuTextLink } from "./manage-link";
 import { loadArea, loadLabels } from "./summary-load";
 
 /**
@@ -13,7 +15,7 @@ import { loadArea, loadLabels } from "./summary-load";
  * 계약 하나를 받는다. 이 경로는 근로계약 관리 조회 권한도 보므로, 그 권한이 없으면 403 「조회 권한이 없습니다.」라 이 칸만 안내한다
  * (front #79 와 같은 자리). 못 받으면 이 칸만 안내를 그리고 throw 하지 않는다 — 기본 정보 · 다른 칸은 그대로 둔다.
  */
-export async function ContractBox({ staffMemberId, detailSearch }: { staffMemberId: number; detailSearch: string }) {
+export async function ContractBox({ staffMemberId, detailSearch, manageHref }: { staffMemberId: number; detailSearch: string; manageHref: string }) {
   const [result, statuses, employmentTypes] = await Promise.all([
     loadArea("근로계약 칸", () => getStaffMemberContractSummary(staffMemberId)),
     loadLabels("ContractStatus"),
@@ -43,7 +45,11 @@ export async function ContractBox({ staffMemberId, detailSearch }: { staffMember
     { label: "계약 유형", value: texts.type },
     { label: "계약 기간", value: texts.period },
     { label: "계약 상태", value: statusCell },
-    ...payrollAccountRows(result.data),
+    // 신고 정보를 풀지 못하면 그 줄만 회색 안내 — 근로계약 상세와 같은 모양(WHALEERP-758)
+    ...payrollAccountRows(result.data).map((r) => ({
+      ...r,
+      value: r.value === TAX_PROFILE_UNAVAILABLE ? <span className="text-erp-label">{r.value}</span> : r.value,
+    })),
     { label: "최근 발송일", value: texts.lastSent },
     { label: "갱신 예정일", value: texts.renewal },
   ];
@@ -75,7 +81,14 @@ export async function ContractBox({ staffMemberId, detailSearch }: { staffMember
           );
         })}
       </dl>
-      <p className="mt-[6px] text-[13px] text-erp-label">가장 최근 계약 1건만 표시됩니다. 이전 계약은 [근로계약 관리]에서 확인할 수 있습니다.</p>
+      {/* [근로계약 관리]는 그 직원 이름 · 근무지로 검색한 근로계약 목록으로 간다 — 조회 권한이 없으면 글자만(2026-11-23 사용자 지정) */}
+      <p className="mt-[6px] text-[13px] text-erp-label">
+        최근 체결한 근로계약 1건만 표시됩니다. 이전 계약은{" "}
+        <MenuTextLink menuCode={MENU_CODE.contracts} href={manageHref}>
+          [근로계약 관리]
+        </MenuTextLink>
+        에서 확인할 수 있습니다.
+      </p>
     </>
   );
 }

@@ -57,3 +57,19 @@
 
 - 쿼리와 `?back=` 은 옛 경로로 두고, 링크 · 이동에서만 탭 BP 를 씌운다 — 서버 화면은 `screenPath()`, 클라이언트는 `bpPath`, 서버 액션의 이동은 `bpHref`.
 - api 의 거절(BP 를 고르지 않은 플랫폼 계정 400 · 다른 BP · 권한 403 · 없는 BP 404)은 오류 화면 대신 그 문장으로 보인다(`deniedMessageOf`).
+
+## 상세 최종수정 줄 (WHALEERP-698, 2026-11-24)
+
+작업 위치: 워크트리 `~/.whale-erp-worktrees/whale-erp-front/meteora`, 브랜치 `shellder`(origin/main `e148d42a`). api #311(머지 `2576904e`)이 상세에 `modifiedAt` · `modifiedByName` 을 준다 — 관리자 [수정] 때만, 상태 변경은 바꾸지 않는다.
+
+- `api-types.generated.ts` 를 api main 의 openapi 로 다시 만든다.
+- `src/app/todos/[id]/page.tsx` `editRows`: `modifiedAt` 이 있을 때만 「등록」 아래에 「최종수정 | 시각 · 이름(회색)」. 「등록」과 같은 모양.
+- DESIGN.md 「TO-DO 리스트 관리 · 상세」 · okf(whale-erp-front.md · log.md)를 「등록 · 최종수정(시각 · 사람, 관리자 [수정] 때만, 없으면 줄 없음)」으로.
+
+## 최종수정 줄을 늘 두기 (WHALEERP-698 후속, 2026-11-24 재영)
+
+근로계약 상세(WHALEERP-699) · 공지 · 점포 변경이력은 고친 적이 없어도 「최종수정」 줄을 두고 흐린 「-」를 보인다. 698 인테이크가 699 를 「기록이 없으면 줄 없음」으로 잘못 옮겨 TO-DO 만 달랐다 — 같게 맞춘다. front 만 고친다.
+
+- `todo-row.ts` 에 `modifiedCell` — `modifiedAt` 이 있으면 「시각」 + 이름(없으면 시각만), 없으면 흐린 「-」. `page.tsx` `editRows` 는 「등록」 아래에 「최종수정」 줄을 늘 둔다.
+- 698 때 적은 「근로계약과 다르다」 설명을 「같다」로: 코드 주석 · okf(whale-erp-front.md · log.md) · DESIGN.md TO-DO 상세, DESIGN.md 「최종수정」 공통 규칙에 「값이 없으면 줄을 두고 「-」(흐린 글씨)」.
+- 검증: `todo-row.test.ts`(고친 적 없음 → 「-」 흐림, 고침 → 시각 · 이름, 이름 없음 → 시각만), tsc · eslint, 로컬에서 고친 적 없는 TO-DO 상세 캡처.

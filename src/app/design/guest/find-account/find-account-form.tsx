@@ -108,7 +108,7 @@ export function FindAccountForm() {
             회원가입
           </GuestButton>
           <GuestButton tone="line" href="/design/guest/login" arrow="back" tall>
-            로그인 이동
+            로그인
           </GuestButton>
         </div>
         {done && tab === "id" && (

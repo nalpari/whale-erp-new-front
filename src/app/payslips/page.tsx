@@ -50,13 +50,15 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
 
   return (
     <>
-      <PageBar title="급여명세서 관리">
-        <PayslipCreateAction month={query.month} employmentTypeLabels={employmentTypeLabels} />
-      </PageBar>
+      <PageBar title="급여명세서 관리" />
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         <PayslipFilter query={query} today={today} statusLabels={statusLabels} />
         <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0">
-          <PayslipMonthNav key={query.month} query={query} />
+          {/* 작성 버튼은 제목 줄이 아니라 달 고르기 바로 옆 — 그 달 명세서를 만든다는 것이 이름(「10월 급여명세서 작성」)과 자리로 읽히게(2026-11-23 사용자 지정) */}
+          <div className="flex flex-wrap items-center gap-[12px]">
+            <PayslipMonthNav key={query.month} query={query} />
+            <PayslipCreateAction month={query.month} employmentTypeLabels={employmentTypeLabels} />
+          </div>
           {/* 총 건수 · 상태별 건수 · 검토 대기를 한 줄로, 버튼 · 건수 고르기는 오른쪽 — 모든 칸을 줄 가운데에 맞춘다(2026-11-04 사용자 지정 — 전엔 상태 건수 줄과
               총 건수 줄이 따로 있었고, 공통 ListToolbar 가 아래 끝에 맞춰 「총 N 건」이 처졌다) */}
           <div className="flex flex-wrap items-center gap-x-[12px] gap-y-[6px] text-[14px]">

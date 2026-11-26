@@ -1,6 +1,6 @@
 // 근로계약 상세의 칸 표기. 테스트: node --test "src/app/contracts/[contractId]/detail-format.test.ts"
 import { WEEKDAYS, WEEKS_PER_MONTH, type ContractDetail } from "../new/contract-form-model.ts";
-import { payrollAccountText } from "../../staff-members/[id]/contract-summary.ts";
+import { payrollAccountText, TAX_PROFILE_UNAVAILABLE } from "../../staff-members/[id]/contract-summary.ts";
 import { wasUpdated } from "../../../lib/format.ts";
 
 const minutes = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
@@ -49,8 +49,8 @@ export function insuranceText(healthPension: boolean | null, employmentInjury: b
   return on.length ? on.join(", ") : "가입 안 함";
 }
 
-/** 신고 정보를 풀 수 없을 때(api UNAVAILABLE — 키 없음 · 복호화 실패) 주민등록번호 · 급여 계좌 칸에 보이는 글자 */
-export const TAX_PROFILE_UNAVAILABLE = "신고 정보를 지금 볼 수 없습니다.";
+/** 신고 정보를 풀 수 없을 때(api UNAVAILABLE — 키 없음 · 복호화 실패) 주민등록번호 · 급여 계좌 칸에 보이는 글자. 직원 상세 근로계약 칸과 같이 써 contract-summary 에 둔다 */
+export { TAX_PROFILE_UNAVAILABLE };
 
 /**
  * 「주민등록번호」 · 「급여 계좌」 칸 글자(WHALEERP-155). 주민등록번호는 api 가 가린 값(900101-1******) 그대로, 급여 계좌는 직원 상세 근로계약
@@ -94,7 +94,7 @@ const DEADLINE_SHOWN = new Set(["PENDING_SEND", "PENDING_SIGNATURE", "EXPIRED"])
 
 /**
  * 근로계약 상세의 발송 · 처리 정보 줄(WHALEERP-155 · 328). 전자계약은 발송일 · (재발송했으면) 재발송 횟수와 마지막 발송 · (날인을
- * 기다리는 동안 · 만료) 날인 기한, 종이 계약은 발송 칸 대신 등록일 · 등록 관리자다. 그 뒤 최종 처리일(가장 최근 상태 변경), 최종수정(관리자가
+ * 기다리는 동안 · 만료) 날인 기한, 종이 계약은 발송 칸 대신 등록일 · 등록 관리자다. 그 뒤 최종수정(관리자가
  * 고치거나 보낸 일시 · 사람 — 직원 서명 · 배치는 바꾸지 않는다, WHALEERP-699. 없거나 등록 · 첫 발송 뒤 고친 적 없으면 「-」), 수정
  * 요청된 계약은 직원이 남긴 수정 요청 사유(직원이 쓴 글이라 길면 줄이 늘어난다, 없으면 「-」). 거부 사유는 받지 않아 줄이 없다
  * (WHALEERP-635). 값이 없는 칸은 줄을 두지 않는다(최종수정 · 수정 요청 사유는 「-」). 시각은 한국 시간.
@@ -108,11 +108,11 @@ export function processRows(c: ProcessFields): ProcessRow[] {
     if (c.registeredAt) rows.push({ label: "등록일", value: kstDateTime(c.registeredAt) });
     if (c.registeredBy) rows.push({ label: "등록 관리자", value: c.registeredBy });
   } else {
-    if (c.firstSentAt) rows.push({ label: "발송일", value: kstDateTime(c.firstSentAt) });
+    if (c.firstSentAt) rows.push({ label: "최초 발송일", value: kstDateTime(c.firstSentAt) }); // 처음 보낸 일시 — 아래 「재발송 · 마지막」과 짝이 분명하게(2026-11-19 사용자 지정, 전엔 「발송일」)
     if (c.resendCount > 0 && c.lastSentAt) rows.push({ label: "재발송", value: `${c.resendCount}회 · 마지막 ${kstDateTime(c.lastSentAt)}` });
     if (c.signDeadlineAt && c.status && DEADLINE_SHOWN.has(c.status)) rows.push({ label: "서명 기한", value: kstDateTime(c.signDeadlineAt) });
   }
-  if (c.lastProcessedAt) rows.push({ label: "최종 처리일", value: kstDateTime(c.lastProcessedAt) });
+  // 상태 변경일(옛 최종 처리일, lastProcessedAt)은 두지 않는다 — 바로 옆 상태 변경이력의 맨 윗줄과 같은 값이다(2026-11-19 사용자 지정)
   // 등록(종이 계약) · 첫 발송(전자계약) 뒤 고친 적이 없으면 「-」 — 바로 위 등록일 · 발송일과 같은 값을 거듭 보이지 않는다(1팀 상세의
   // wasUpdated 규칙, front #286 리뷰). 아직 보내지 않은 전자계약은 견줄 때가 없어 그대로 보인다
   const since = c.contractMethod === "PAPER" ? c.registeredAt : c.firstSentAt;
@@ -139,8 +139,10 @@ export type PartTimeRow = {
   amount: string;
 };
 
-const won = (n: number | null) => (n === null ? "-" : n.toLocaleString("ko-KR"));
-const hoursText = (n: number | null) => (n === null ? "" : String(Number(n.toFixed(2))));
+// 소정근로시간 표의 시급 · 소계 칸은 「15,000 원」처럼 단위를 붙인다(2026-11-19 사용자 지정)
+const won = (n: number | null) => (n === null ? "-" : `${n.toLocaleString("ko-KR")} 원`);
+// 근로시간 칸은 「8 h」처럼 단위를 붙인다 — 작성 화면과 같다(2026-11-19 사용자 지정)
+const hoursText = (n: number | null) => (n === null ? "" : `${Number(n.toFixed(2))} h`);
 
 /**
  * 파트타이머 상세의 소정근로시간 표 — 작성 화면의 표와 같은 줄 · 같은 셈(partTimePay: 요일 소계 = 시급 × 그날 시간, 주휴시간 =
@@ -185,3 +187,7 @@ export function partTimeRows(d: ContractDetail, dayLabel: (d: string) => string)
     { key: "monthly", label: "월급여", amount: won(pay.monthly) },
   ];
 }
+
+/** 소정근로시간 표에서 요일 줄 아래 합계 줄의 키 — 작성 · 상세 화면이 이 줄에 바탕을 깐다(2026-11-19 사용자 지정) */
+export const PAY_SUMMARY_KEYS: ReadonlySet<string> = new Set(["work", "holiday", "weekly", "monthly"]);
+

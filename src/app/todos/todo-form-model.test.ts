@@ -59,6 +59,7 @@ type Detail = components["schemas"]["TodoDetailDto"];
 const detail: Detail = {
   assignmentGroupId: null,
   storeName: "모리커피 서초점",
+  storeIsHq: false,
   body: "선반별로 비운다",
   assigneeType: "INDIVIDUAL",
   executionMode: "EACH",
@@ -75,6 +76,8 @@ const detail: Detail = {
   createdBy: 1,
   createdAt: "2026-10-01T00:00:00Z",
   updatedAt: "2026-10-01T00:00:00Z",
+  modifiedAt: null,
+  modifiedByName: null,
   assignees: [{ staffMemberId: 1, staffMemberName: "서지안", isCompleted: false, completedAt: null, isMasked: false }],
   groupTodos: [],
   histories: [],

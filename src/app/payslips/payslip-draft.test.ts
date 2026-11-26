@@ -2,17 +2,19 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PayslipCandidate } from "../../lib/payslips.ts";
-import { bulkSummary, canDraft, candidateStores, contractCell, filterCandidates, payslipCell } from "./payslip-draft.ts";
+import { attendanceCell, bulkSummary, canDraft, candidateStores, contractCell, filterCandidates, payslipCell } from "./payslip-draft.ts";
 
 const candidate = (over: Partial<PayslipCandidate> = {}): PayslipCandidate => ({
   staffMemberId: 30,
   staffName: "서지안",
   storeId: 5,
   storeName: "모리커피 서초점",
+  storeIsHq: false,
   employmentType: "PART_TIME",
   contractId: 7,
   payslipId: null,
   hasAttendance: true,
+  retiredDate: null,
   ...over,
 });
 
@@ -31,14 +33,14 @@ test("칸 — 근로계약 유효 · 계약 없음(빨간 꼬리표), 명세서 
 
 const items = [
   candidate(),
-  candidate({ staffMemberId: 31, staffName: "하준서", storeId: 6, storeName: "온기식당 판교점" }),
-  candidate({ staffMemberId: 32, staffName: "서하은", storeId: 6, storeName: "온기식당 판교점" }),
+  candidate({ staffMemberId: 31, staffName: "하준서", storeId: 6, storeName: "온기식당 판교점", storeIsHq: true }),
+  candidate({ staffMemberId: 32, staffName: "서하은", storeId: 6, storeName: "온기식당 판교점", storeIsHq: true }),
 ];
 
 test("점포 선택지 — 작성 대상의 점포를 이름순으로 한 번씩", () => {
   assert.deepEqual(candidateStores([...items].reverse()), [
-    { storeId: 5, name: "모리커피 서초점" },
-    { storeId: 6, name: "온기식당 판교점" },
+    { storeId: 5, name: "모리커피 서초점", isHq: false },
+    { storeId: 6, name: "온기식당 판교점", isHq: true },
   ]);
 });
 
@@ -70,4 +72,11 @@ test("일괄 작성 결과 한 줄 — 만든 수 · 건너뛴 수와 사유, �
     "1건 작성",
   );
   assert.equal(bulkSummary({ created: [], skipped: [{ staffMemberId: 3, staffName: "c", reason: "EXISTS" }] }), "0건 작성 · 1건 건너뜀 (이미 있음 1)");
+});
+
+test("출퇴근 열 — 기록 있음 · 출퇴근 누락(빨간 꼬리표), 작성할 수 없는 줄은 「-」", () => {
+  assert.deepEqual(attendanceCell(candidate()), { text: "기록 있음", style: "muted" });
+  assert.deepEqual(attendanceCell(candidate({ hasAttendance: false })), { text: "출퇴근 누락", style: "badge-off" });
+  assert.deepEqual(attendanceCell(candidate({ contractId: null, hasAttendance: false })), { text: "-", style: "muted" });
+  assert.deepEqual(attendanceCell(candidate({ payslipId: 9, hasAttendance: false })), { text: "-", style: "muted" });
 });

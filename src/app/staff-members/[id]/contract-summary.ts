@@ -21,7 +21,8 @@ export function contractSummaryTexts(
 ): { type: string; period: string; lastSent: string; renewal: string } {
   return {
     type: employmentTypeLabel ? `${employmentTypeLabel} 근로계약` : "-",
-    period: c.startDate ? `${c.startDate} ~ ${c.endDate ?? "무기한"}` : "-",
+    // 종료일이 없으면 「기간의 정함 없음」 — 근로계약 상세와 같은 말(2026-11-19 사용자 지정). 폭이 좁은 근로계약 목록 열만 「무기한」으로 둔다
+    period: c.startDate ? `${c.startDate} ~ ${c.endDate ?? "기간의 정함 없음"}` : "-",
     lastSent: formatDate(c.lastSentAt) || "-",
     renewal: c.renewalDate ?? "-",
   };
@@ -36,14 +37,26 @@ export function payrollAccountText(account: { bankName: string; accountNumber: s
 }
 
 /**
+ * 신고 정보를 풀 수 없을 때(api 키 없음 · 복호화 실패) 급여 계좌 칸에 보이는 글자. 근로계약 상세(UNAVAILABLE)와 직원 상세
+ * 근로계약 칸(payrollAccountUnavailable, WHALEERP-758)이 같이 쓴다 — detail-format 이 이 파일을 읽어 여기 둔다
+ */
+export const TAX_PROFILE_UNAVAILABLE = "신고 정보를 지금 볼 수 없습니다.";
+
+/**
  * 「급여 계좌」 줄 — 보일 때만 한 줄짜리 배열, 숨길 때는 빈 배열이다. 재영 정책(2026-10-29): 가맹 직원의 급여 계좌는 본사 역할에게 보이지 않고,
  * 이때 줄 자체를 숨긴다(노영주). api 의 canViewPayrollAccount 가 true 일 때만 보인다. 타입은 필수 boolean 이지만 칸이 없는 옛 응답이 와도(런타임 undefined)
  * 정해지지 않아 안전한 쪽인 숨김으로 둔다 — 보이면 안 되는 사람에게 계좌가 나가지 않게.
+ * api 가 신고 정보를 풀지 못하면(payrollAccountUnavailable) 줄은 두고 「신고 정보를 지금 볼 수 없습니다.」다 — 화면이 회색으로 그린다(WHALEERP-758).
  */
 export function payrollAccountRows(
-  data: Pick<components["schemas"]["StaffMemberContractSummaryResponseDto"], "canViewPayrollAccount" | "payrollAccount">,
+  data: Pick<
+    components["schemas"]["StaffMemberContractSummaryResponseDto"],
+    "canViewPayrollAccount" | "payrollAccount" | "payrollAccountUnavailable"
+  >,
 ): { label: string; value: string }[] {
-  return data.canViewPayrollAccount === true ? [{ label: "급여 계좌", value: payrollAccountText(data.payrollAccount) }] : [];
+  if (data.canViewPayrollAccount !== true) return [];
+  const value = data.payrollAccountUnavailable === true ? TAX_PROFILE_UNAVAILABLE : payrollAccountText(data.payrollAccount);
+  return [{ label: "급여 계좌", value }];
 }
 
 /**

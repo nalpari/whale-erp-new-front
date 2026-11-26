@@ -5,11 +5,12 @@ import { Badge, DataTable, DetailTable, GuideIcon, GuideNote, PageBar, Tag, type
 import { deniedMessageOf, getEnum, screenPath } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
+import { storeOptionLabel } from "@/lib/store-scope";
 import { getTodo, type TodoDetail } from "@/lib/todos-api";
 import { CellView } from "../../staff-members/staff-table";
 import { backHrefOf, withBack } from "../todo-list-query";
 import { StaffNames } from "../staff-names";
-import { overallOf, staffNameText, statusCells } from "../todo-row";
+import { modifiedCell, overallOf, staffNameText, statusCells } from "../todo-row";
 import { TodoDetailActions, TodoStatusControl } from "./todo-detail-actions";
 import { TodoHistory } from "./todo-history";
 
@@ -71,7 +72,7 @@ export default async function TodoDetailPage({
       ? (todo.groupTodos.map((r) => r.completedAt).filter((v): v is string => Boolean(v)).sort().at(-1) ?? null)
       : null;
   const assignRows: DetailRow[] = [
-    { label: "근무지", value: todo.storeName ?? "-" },
+    { label: "근무지", value: todo.storeName ? storeOptionLabel({ name: todo.storeName, isHq: todo.storeIsHq }) : "-" },
     {
       label: "배정대상",
       value:
@@ -129,7 +130,9 @@ export default async function TodoDetailPage({
         ]),
     { label: "내용", value: todo.body || "-", multiline: true },
   ];
-  // 등록은 다른 화면처럼 「시각 · 사람」(사람은 회색). 최종수정 줄은 api 가 고친 사람을 주지 않아 일단 뺐다 — 「최종수정자」가 생기면 넣는다(2026-11-09 사용자 지정).
+  // 등록 · 최종수정은 다른 화면처럼 「시각 · 사람」(사람은 회색). 최종수정은 관리자 [수정] 때만 api 가 남기고(상태 변경은 바꾸지 않는다),
+  // 고친 적이 없어도 줄을 두고 흐린 「-」를 보인다 — 근로계약 상세와 같다(WHALEERP-698 후속, 2026-11-24 재영, modifiedCell).
+  const modified = modifiedCell(todo, formatDateTime);
   const editRows: DetailRow[] = [
     {
       label: "등록",
@@ -137,6 +140,17 @@ export default async function TodoDetailPage({
         <span>
           {formatDateTime(todo.createdAt)}
           {todo.createdByName && <span className="text-erp-label"> · {todo.createdByName}</span>}
+        </span>
+      ),
+    },
+    {
+      label: "최종수정",
+      value: modified.muted ? (
+        <span className="text-erp-muted">{modified.value}</span>
+      ) : (
+        <span>
+          {modified.value}
+          {modified.by && <span className="text-erp-label"> · {modified.by}</span>}
         </span>
       ),
     },

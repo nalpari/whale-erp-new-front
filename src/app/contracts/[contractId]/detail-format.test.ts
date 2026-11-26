@@ -52,25 +52,25 @@ test("partTimeRows — 요일마다 저장한 시각 · 시간 · 소계를 보�
   } as unknown as ContractDetail;
   const rows = partTimeRows(detail, label);
   assert.deepEqual(rows.slice(0, 3), [
-    { key: "MON", label: "월", start: "09:00", end: "18:00", restStart: "12:00", restEnd: "13:00", hours: "8", wage: "10,000", amount: "80,000" },
-    { key: "TUE", label: "화", start: "09:00", end: "13:00", restStart: "-", restEnd: "-", hours: "4", wage: "10,000", amount: "40,000" },
-    { key: "WED", label: "수", start: "10:00", end: "16:00", restStart: "12:00", restEnd: "13:00", hours: "5", wage: "10,000", amount: "50,000" },
+    { key: "MON", label: "월", start: "09:00", end: "18:00", restStart: "12:00", restEnd: "13:00", hours: "8 h", wage: "10,000 원", amount: "80,000 원" },
+    { key: "TUE", label: "화", start: "09:00", end: "13:00", restStart: "-", restEnd: "-", hours: "4 h", wage: "10,000 원", amount: "40,000 원" },
+    { key: "WED", label: "수", start: "10:00", end: "16:00", restStart: "12:00", restEnd: "13:00", hours: "5 h", wage: "10,000 원", amount: "50,000 원" },
   ]);
   // 근무하지 않는 요일
   assert.deepEqual(rows[3], { key: "THU", label: "목", start: "-", end: "-", restStart: "-", restEnd: "-", amount: "-" });
   // 주 17시간 → 주휴 3.4시간(÷5) · 34,000, 주급 204,000, 월급여 × 4.345
   assert.deepEqual(rows.slice(7), [
-    { key: "work", label: "소계", hours: "17", amount: "170,000" },
-    { key: "holiday", label: "주휴수당", hours: "3.4", amount: "34,000" },
-    { key: "weekly", label: "주급", amount: "204,000" },
-    { key: "monthly", label: "월급여", amount: "886,380" },
+    { key: "work", label: "소계", hours: "17 h", amount: "170,000 원" },
+    { key: "holiday", label: "주휴수당", hours: "3.4 h", amount: "34,000 원" },
+    { key: "weekly", label: "주급", amount: "204,000 원" },
+    { key: "monthly", label: "월급여", amount: "886,380 원" },
   ]);
 });
 
 test("partTimeRows — 주 15시간 미만이면 주휴수당이 없고, 시급이 비면 금액은 0 · 시급 칸은 「-」", () => {
   const rows = partTimeRows({ wageAmount: null, workDays: [day("MON", "09:00", "13:00", false)] } as unknown as ContractDetail, label);
   assert.equal(rows[0].wage, "-");
-  assert.deepEqual(rows.find((r) => r.key === "holiday"), { key: "holiday", label: "주휴수당", hours: "0", amount: "0" });
+  assert.deepEqual(rows.find((r) => r.key === "holiday"), { key: "holiday", label: "주휴수당", hours: "0 h", amount: "0 원" });
 });
 
 // 발송 · 처리 정보(WHALEERP-155 · 328). 시각은 한국 시간
@@ -89,11 +89,10 @@ const sent = {
   modifiedBy: "김관리",
 } as const;
 
-test("전자계약은 발송일 · 서명 기한 · 최종 처리일을 보이고, 재발송했으면 횟수와 마지막 발송을 더한다", () => {
+test("전자계약은 발송일 · 서명 기한을 보이고, 재발송했으면 횟수와 마지막 발송을 더한다", () => {
   assert.deepEqual(processRows(sent), [
-    { label: "발송일", value: "2026-10-20 10:00" },
+    { label: "최초 발송일", value: "2026-10-20 10:00" },
     { label: "서명 기한", value: "2026-11-19 10:00" },
-    { label: "최종 처리일", value: "2026-10-20 10:00" },
     { label: "최종수정", value: "-", muted: true },
   ]);
   assert.deepEqual(processRows({ ...sent, resendCount: 2, lastSentAt: "2026-10-22T03:30:00.000Z" })[1], {
@@ -183,18 +182,14 @@ test("종이 계약은 발송 칸 대신 등록일 · 등록 관리자를 보인
     [
       { label: "등록일", value: "2026-10-15 12:00" },
       { label: "등록 관리자", value: "김관리" },
-      { label: "최종 처리일", value: "2026-10-15 12:00" },
       { label: "최종수정", value: "-", muted: true },
     ],
   );
 });
 
-test("보낸 적 없는 임시저장은 최종 처리일 · 최종수정만 — 이력도 없으면 최종수정만", () => {
+test("보낸 적 없는 임시저장은 최종수정만 — 상태 변경일은 두지 않는다(이력 표 맨 윗줄과 같다)", () => {
   const draft = { ...sent, status: "DRAFT", firstSentAt: null, lastSentAt: null, signDeadlineAt: null } as const;
-  assert.deepEqual(processRows(draft), [
-    { label: "최종 처리일", value: "2026-10-20 10:00" },
-    { label: "최종수정", value: "2026-10-20 10:00", by: "김관리" },
-  ]);
+  assert.deepEqual(processRows(draft), [{ label: "최종수정", value: "2026-10-20 10:00", by: "김관리" }]);
   assert.deepEqual(processRows({ ...draft, lastProcessedAt: null }), [{ label: "최종수정", value: "2026-10-20 10:00", by: "김관리" }]);
 });
 

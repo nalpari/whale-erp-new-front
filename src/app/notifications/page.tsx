@@ -29,7 +29,7 @@ export default async function NotificationsPage({
 
   return (
     <>
-      <PageBar title="운영 알림함" />
+      <PageBar title="알림함" />
       <div className="flex min-h-0 flex-1 p-[24px]">
         <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
           {data ? (

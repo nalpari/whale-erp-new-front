@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { components } from "../../lib/api-types.generated.ts";
-import { assigneeText, deletePreview, doneCountText, dueFullText, dueText, historyActorText, historyText, MASKED_STAFF, overallOf, staffNameText, statusCells, targetText } from "./todo-row.ts";
+import { assigneeText, deletePreview, doneCountText, dueFullText, dueText, historyActorText, historyText, MASKED_STAFF, modifiedCell, overallOf, staffNameText, statusCells, targetText } from "./todo-row.ts";
 
 type Item = components["schemas"]["TodoListItemDto"];
 type Detail = components["schemas"]["TodoDetailDto"];
@@ -27,6 +27,7 @@ const item = (over: Partial<Item> = {}): Item => ({
   assignmentGroupId: null,
   storeId: 1,
   storeName: "모리커피 서초점",
+  storeIsHq: false,
   title: "신규 원두 시음 기록 제출",
   isUrgent: false,
   todoCount: 1,
@@ -104,6 +105,7 @@ test("상태 — 한 명 수행을 완료해도 상태 하나만(수행자 이�
 const detail = (over: Partial<Detail> = {}): Detail => ({
   assignmentGroupId: null,
   storeName: "모리커피 서초점",
+  storeIsHq: false,
   body: null,
   assigneeType: "INDIVIDUAL",
   executionMode: "EACH",
@@ -120,6 +122,8 @@ const detail = (over: Partial<Detail> = {}): Detail => ({
   createdBy: 1,
   createdAt: "2026-10-19T00:00:00Z",
   updatedAt: "2026-10-19T00:00:00Z",
+  modifiedAt: null,
+  modifiedByName: null,
   assignees: [],
   groupTodos: [],
   histories: [],
@@ -175,4 +179,11 @@ test("상태 이력 — 가린 직원은 바꾼 사람 · 배정 풀림 모두 �
   assert.equal(historyActorText(history({ staffMemberName: "서지안" })), "서지안");
   assert.equal(historyActorText(history({ changedByName: "김점장" })), "김점장");
   assert.equal(historyActorText(history()), "-");
+});
+
+test("최종수정 — 고친 적이 없어도 줄을 두고 흐린 「-」, 고쳤으면 시각 · 이름(이름이 없으면 시각만)(WHALEERP-698 후속, 근로계약 상세와 같다)", () => {
+  const fmt = (iso: string) => `[${iso}]`;
+  assert.deepEqual(modifiedCell({ modifiedAt: null, modifiedByName: null }, fmt), { value: "-", by: null, muted: true });
+  assert.deepEqual(modifiedCell({ modifiedAt: "2026-11-24T01:00:00Z", modifiedByName: "김관리" }, fmt), { value: "[2026-11-24T01:00:00Z]", by: "김관리", muted: false });
+  assert.deepEqual(modifiedCell({ modifiedAt: "2026-11-24T01:00:00Z", modifiedByName: null }, fmt), { value: "[2026-11-24T01:00:00Z]", by: null, muted: false });
 });

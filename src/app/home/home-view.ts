@@ -6,7 +6,7 @@ import type { Scope } from "../../lib/browser-storage.ts";
 import { bpPath } from "../../lib/bp-path.ts";
 import type { AdminStore } from "../../lib/session.ts";
 import { JOIN_GROUP_STATES, JOIN_GROUPS } from "../../lib/staff-members.ts";
-import { isUnusableScope, scopeStores } from "../../lib/store-scope.ts";
+import { branchStores, isClosedStore, isUnusableScope, scopeStores } from "../../lib/store-scope.ts";
 import { listHrefOf } from "../contracts/contract-list.ts";
 import { DEFAULT_STAFF_LIST_QUERY, staffListHrefOf } from "../staff-members/staff-list-query.ts";
 import { DEFAULT_TODO_LIST_QUERY, TODO_STATUSES, toTodoListSearch } from "../todos/todo-list-query.ts";
@@ -25,16 +25,25 @@ export function homeSearchOf(scope: Scope, stores: readonly AdminStore[]): strin
   return ids.length ? `?storeIds=${ids.join(",")}` : "";
 }
 
-type Kind = "계약" | "직원" | "문의" | "TO-DO";
+/** 홈 「점포」 칸의 운영 · 미운영 × 직영 · 가맹 수 — 로그인 정보의 점포를 상단 범위로 거른다(전체면 모두). 본사 · 폐점은 세지 않는다(2026-11-18 사용자 지정) */
+export function storeCountsOf(scope: Scope, stores: readonly AdminStore[]) {
+  const inScope = scope.type === "ALL" ? stores : scopeStores(scope, stores);
+  const live = branchStores(inScope).filter((s) => !isClosedStore(s));
+  const count = (status: string, type: string) => live.filter((s) => s.storeStatusCode === status && s.storeTypeCode === type).length;
+  const row = (status: string) => ({ direct: count(status, "DIRECT"), franchise: count(status, "FRANCHISE") });
+  return { operating: row("OPERATING"), notOperating: row("NOT_OPERATING") };
+}
+
+type Kind = "근로계약" | "직원" | "문의" | "TO-DO";
 
 const PENDING_TEXT: Record<HomePendingItem["type"], { kind: Kind; title: string; since?: string }> = {
-  CONTRACT_RENEWAL: { kind: "계약", title: "계약 갱신 예정" },
-  CONTRACT_PENDING_SIGNATURE: { kind: "계약", title: "근로계약 직원 서명 대기", since: "발송" },
-  CONTRACT_CORRECTION_REQUESTED: { kind: "계약", title: "근로계약 직원 수정 요청", since: "요청" },
+  CONTRACT_RENEWAL: { kind: "근로계약", title: "갱신 예정" },
+  CONTRACT_PENDING_SIGNATURE: { kind: "근로계약", title: "직원 서명 대기", since: "발송" },
+  CONTRACT_CORRECTION_REQUESTED: { kind: "근로계약", title: "직원 수정 요청", since: "요청" },
   AFFILIATION_REJECTED: { kind: "직원", title: "소속 확인 거절", since: "거절" },
-  INQUIRY_ANSWERED: { kind: "문의", title: "문의 답변완료", since: "답변" },
+  INQUIRY_ANSWERED: { kind: "문의", title: "답변완료", since: "답변" },
   // TO-DO 상태 이름이 아닌 「미완료」를 쓰지 않는다(용어집 TO-DO 상태 3종) — 대기 · 진행 중 긴급 TO-DO 다
-  URGENT_TODO: { kind: "TO-DO", title: "긴급 TO-DO", since: "등록" },
+  URGENT_TODO: { kind: "TO-DO", title: "긴급", since: "등록" },
 };
 
 /** 대표 이름 — 가려졌으면 이름 없이 「N건」, 나머지가 있으면 「외 N명」(문의 · TO-DO 는 제목이라 「외 N건」) */
@@ -90,9 +99,30 @@ export function pendingLineOf(item: HomePendingItem, bpCodeId: number) {
     kind: text.kind,
     title: `${text.title} ${item.count}건`,
     desc: [whoOf(item, text.kind), waited].filter(Boolean).join(" · "),
+    /** 대표 이름 — 홈 확인 필요의 항목 옆. 가려졌거나 없으면 null(제목에 이미 건수가 있어 「3건 · 3건」이 되지 않게, 리뷰 반영) */
+    who: item.isFirstNameMasked || item.firstName === null ? null : whoOf(item, text.kind),
+    /**
+     * 짧은 경과 — 홈 확인 필요의 오른쪽 칸(「2일 경과」 · 「오늘」). 칸이 좁아(창 1260) 「발송 후」 같은 앞말은 뺀다(2026-11-18 사용자 지정).
+     * 계약 갱신 예정은 경과가 없어 null — 「새 근로계약서 초안 없음」은 항목 칸에 붙이고 오른쪽 칸은 종료 D-N(due)이다
+     */
+    /** 계약 갱신 예정의 「새 근로계약서 초안 없음」 — 대표 이름 옆에 붙인다(가려진 이름이면 이것만) */
+    note: item.type === "CONTRACT_RENEWAL" ? waited : null,
+    elapsed: !text.since || days === null ? null : days === 0 ? "오늘" : `${days}일 경과`,
     due: left === null ? null : { text: `종료 D-${left}`, urgent: left <= RENEWAL_URGENT_DAYS },
     href: pendingHrefOf(item, bpCodeId),
   };
+}
+
+/**
+ * 운영 점포별 현황 맨 아래 안내 — 확인 필요 총건수 가운데 표에 없는 건(미운영 점포의 건 = api `notOperatingCount`, 점포에 묶이지 않은 문의 답변완료).
+ * 집계 기준은 그대로다 — 현황은 운영 점포만(운영 정책 HOM-06), 확인 필요는 미운영 · 문의까지(HOM-07). 두 숫자의 차이만 글로 알린다(WHALEERP-759 B안,
+ * 2026-11-24 재영). 0건인 쪽은 빼고, 둘 다 0이면 null(줄을 두지 않는다). `notOperatingCount` 가 없는 옛 api 응답이면 0으로 본다(api 배포 전에 front 가 먼저 나가도 깨지지 않게)
+ */
+export function outsideTableNote(pending: HomePending): string | null {
+  const notOperating = pending.notOperatingCount ?? 0;
+  const inquiries = pending.items.find((i) => i.type === "INQUIRY_ANSWERED")?.count ?? 0;
+  const parts = [notOperating > 0 ? `미운영 점포 ${notOperating}건` : null, inquiries > 0 ? `문의 답변완료 ${inquiries}건` : null].filter((p): p is string => p !== null);
+  return parts.length ? `${parts.join(" · ")}은 운영 점포별 현황에 없고 확인 필요에만 셉니다.` : null;
 }
 
 /** 공지 띠가 읽는 글 수 — api 는 고정 공지를 먼저 주므로 넉넉히 받아 게시일로 고른다(latestNotices) */

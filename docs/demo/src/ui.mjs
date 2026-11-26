@@ -209,6 +209,10 @@ export function pagination(A, page, totalPages, maxPages = 10) {
 // slide-panel.tsx. trigger 는 aria-controls 로 이 id 를 가리키는 버튼이다(slideTrigger).
 export const slidePanel = (id, label, children) =>
   `<aside id="${id}" aria-label="${label}" inert class="absolute inset-y-0 right-0 z-10 flex w-[464px] flex-col gap-[16px] overflow-y-auto border-x border-erp-panel-line bg-white p-[24px] transition-transform duration-250 ${EASE_OUT} motion-reduce:transition-none translate-x-full">${children}</aside>`;
+// row-button.tsx — 표 줄 끝 26px 버튼. 주 동작 하나만 primary(회청 바탕), 나머지 outline(2026-11-20 사용자 지정)
+const ROW_TONE = { primary: "bg-erp-brand text-white hover:bg-white hover:text-erp-ink", outline: "bg-white text-erp-ink hover:bg-erp-subtle" };
+export const rowButton = (label, { variant = "outline", ...a } = {}) =>
+  `<button type="button"${attrs(a)} class="inline-flex h-[26px] shrink-0 items-center justify-center rounded-[2px] border border-erp-brand px-[10px] text-[13px] font-medium whitespace-nowrap transition-colors duration-150 ease-out ${ROW_TONE[variant]}">${label}</button>`;
 export const slideTrigger = (label, id, variant = "primary") => button(label, { variant, "aria-expanded": "false", "aria-controls": id });
 // 패널 아래 버튼 줄. data-close 는 erp.js 가 패널을 닫는 단서다.
 export const panelButtons = (cancel = "취소", save = "저장") =>

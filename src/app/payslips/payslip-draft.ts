@@ -9,14 +9,21 @@ export const canDraft = (c: PayslipCandidate) => c.contractId !== null && c.pays
 export const contractCell = (c: PayslipCandidate): Cell =>
   c.contractId !== null ? { text: "유효", style: "muted" } : { text: "계약 없음", style: "badge-off" };
 
+/**
+ * 출퇴근 열 — 그 달 출퇴근 기록이 있으면 「기록 있음」 글자, 없으면 빨간 꼬리표 「출퇴근 누락」. 작성할 수 없는 줄(계약 없음 · 작성됨)은 「-」.
+ * 누락이어도 작성은 된다(검토 사유 「출퇴근 누락」이 붙는다). 전엔 이름 옆에 붙어 그 줄만 이름이 밀렸다(2026-11-23 사용자 지정).
+ */
+export const attendanceCell = (c: PayslipCandidate): Cell =>
+  !canDraft(c) ? { text: "-", style: "muted" } : c.hasAttendance ? { text: "기록 있음", style: "muted" } : { text: "출퇴근 누락", style: "badge-off" };
+
 /** 데모 pickRow — 미작성은 그냥 글자, 작성됨은 회색 꼬리표(quiet). */
 export const payslipCell = (c: PayslipCandidate): Cell =>
   c.payslipId !== null ? { text: "작성됨", style: "badge-neutral" } : { text: "미작성", style: "muted" };
 
-/** 점포 선택지 — 작성 대상(관리 범위 직원)의 점포를 이름순으로 한 번씩. */
-export function candidateStores(items: readonly PayslipCandidate[]): { storeId: number; name: string }[] {
-  const byId = new Map(items.map((c) => [c.storeId, c.storeName]));
-  return [...byId].map(([storeId, name]) => ({ storeId, name })).sort((a, b) => a.name.localeCompare(b.name, "ko") || a.storeId - b.storeId);
+/** 점포 선택지 — 작성 대상(관리 범위 직원)의 점포를 이름순으로 한 번씩. 본사 여부는 「[본사] 상호」 표시(storeOptionLabel)에 쓴다. */
+export function candidateStores(items: readonly PayslipCandidate[]): { storeId: number; name: string; isHq: boolean }[] {
+  const byId = new Map(items.map((c) => [c.storeId, { name: c.storeName, isHq: c.storeIsHq }]));
+  return [...byId].map(([storeId, s]) => ({ storeId, ...s })).sort((a, b) => a.name.localeCompare(b.name, "ko") || a.storeId - b.storeId);
 }
 
 /** 점포(null 은 전체)와 이름 부분 일치로 좁힌다. */

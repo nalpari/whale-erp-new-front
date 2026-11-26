@@ -1,7 +1,7 @@
 // pnpm test 로 함께 돈다. 이 파일만: node --test "src/**/contract-summary.test.ts" — 경로의 [id] 를 node 가 glob 으로 읽어 그대로 적으면 찾지 못한다
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { contractSummaryTexts, labelsOrNull, payrollAccountRows, payrollAccountText } from "./contract-summary.ts";
+import { contractSummaryTexts, labelsOrNull, payrollAccountRows, payrollAccountText, TAX_PROFILE_UNAVAILABLE } from "./contract-summary.ts";
 
 const contract = (startDate: string | null, endDate: string | null, more: { lastSentAt?: string | null; renewalDate?: string | null } = {}) => ({
   startDate,
@@ -25,9 +25,9 @@ test("enum 목록이 비면 받지 못한 것과 같다 — 응답에 그 enum �
   assert.equal(labelsOrNull(values), values);
 });
 
-test("계약 기간은 시작일 ~ 종료일, 종료일이 없으면 무기한, 시작일이 없으면 -", () => {
+test("계약 기간은 시작일 ~ 종료일, 종료일이 없으면 기간의 정함 없음, 시작일이 없으면 -", () => {
   assert.equal(contractSummaryTexts(contract("2026-03-01", "2027-02-28"), "정직원").period, "2026-03-01 ~ 2027-02-28");
-  assert.equal(contractSummaryTexts(contract("2026-03-01", null), "정직원").period, "2026-03-01 ~ 무기한");
+  assert.equal(contractSummaryTexts(contract("2026-03-01", null), "정직원").period, "2026-03-01 ~ 기간의 정함 없음");
   // 임시저장은 시작일을 비워 둘 수 있다 — 종료일만 있어도 기간을 반쪽으로 보이지 않는다
   assert.equal(contractSummaryTexts(contract(null, null), "정직원").period, "-");
   assert.equal(contractSummaryTexts(contract(null, "2026-12-31"), "정직원").period, "-");
@@ -59,17 +59,27 @@ test("급여 계좌 신고 정보가 없으면 - 다", () => {
 const account = { bankName: "KB국민은행", accountNumber: "123456789012" };
 
 test("급여 계좌 줄: 볼 수 있고 계좌가 있으면 값이 있는 줄", () => {
-  assert.deepEqual(payrollAccountRows({ canViewPayrollAccount: true, payrollAccount: account }), [
+  assert.deepEqual(payrollAccountRows({ canViewPayrollAccount: true, payrollAccount: account, payrollAccountUnavailable: false }), [
     { label: "급여 계좌", value: "KB국민은행 123456789012" },
   ]);
 });
 
 test("급여 계좌 줄: 볼 수 있고 계좌가 null 이면 - 인 줄", () => {
-  assert.deepEqual(payrollAccountRows({ canViewPayrollAccount: true, payrollAccount: null }), [{ label: "급여 계좌", value: "-" }]);
+  assert.deepEqual(payrollAccountRows({ canViewPayrollAccount: true, payrollAccount: null, payrollAccountUnavailable: false }), [{ label: "급여 계좌", value: "-" }]);
 });
 
 test("급여 계좌 줄: 볼 수 없으면 줄이 없다", () => {
-  assert.deepEqual(payrollAccountRows({ canViewPayrollAccount: false, payrollAccount: null }), []);
+  assert.deepEqual(payrollAccountRows({ canViewPayrollAccount: false, payrollAccount: null, payrollAccountUnavailable: false }), []);
+});
+
+test("급여 계좌 줄: 신고 정보를 풀지 못하면(payrollAccountUnavailable) 줄은 두고 「지금 볼 수 없음」 — WHALEERP-758", () => {
+  assert.deepEqual(payrollAccountRows({ canViewPayrollAccount: true, payrollAccount: null, payrollAccountUnavailable: true }), [
+    { label: "급여 계좌", value: TAX_PROFILE_UNAVAILABLE },
+  ]);
+});
+
+test("급여 계좌 줄: 볼 수 없으면 payrollAccountUnavailable 이 와도 줄이 없다", () => {
+  assert.deepEqual(payrollAccountRows({ canViewPayrollAccount: false, payrollAccount: null, payrollAccountUnavailable: true }), []);
 });
 
 test("급여 계좌 줄: 칸이 없는 옛 응답(undefined)은 안전하게 숨긴다", () => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/common";
+import { Button, RoundButton } from "@/components/common";
 import { useAccount, useCurrentBp, usePagePermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
 import { canResetPassword } from "@/lib/password-reset";
@@ -10,7 +10,7 @@ import type { StaffMember } from "@/lib/staff-members";
 import { PasswordResetDialog } from "./password-reset-dialog";
 import { CancelRetirementDialog, RetirementDialog } from "./retirement-dialog";
 
-// 카드 머리 오른쪽(WHALEERP-585). 퇴직 버튼은 retirementActions 가 정한다 — 재직이면(가입 전 레코드도, WHALEERP-682) 붉은 「퇴직 처리」,
+// 카드 머리 오른쪽(WHALEERP-585). 퇴직 버튼은 retirementActions 가 정한다 — 재직이면(가입 전 레코드도, WHALEERP-682 · 초안이고 최근 계약이 작성 중이면 없음, WHALEERP-762) 붉은 「퇴직 처리」,
 // 퇴직일 전의 퇴직 예정이면 「퇴직일 변경」 · 「퇴직 처리 취소」(목업 detail.html).
 // 수정 권한은 지금 주소의 메뉴 권한(usePagePermission)으로 미리 가리고, 막는 것은 api 다.
 // 「목록」은 목록이 ?back= 으로 실어 보낸 목록 주소로 돌아간다(backHrefOf).
@@ -43,14 +43,14 @@ export function StaffDetailActions({ staff, today, listHref }: { staff: StaffMem
       )}
       <Button href={bpPath(bp, listHref)}>목록</Button>
       {id !== null && (dialog === "retire" || dialog === "change") && (
-        <RetirementDialog staffMemberId={id} mode={dialog} currentDate={staff.retiredDate} today={today} onClose={close} />
+        <RetirementDialog staffMemberId={id} mode={dialog} currentDate={staff.retiredDate} hiredDate={staff.hiredDate} today={today} onClose={close} />
       )}
       {id !== null && dialog === "cancel" && <CancelRetirementDialog staffMemberId={id} onClose={close} />}
     </>
   );
 }
 
-// 기본 정보 표 바로 아래 줄 오른쪽(데모와 같은 자리). 숨길 때는 줄째 빼 간격이 남지 않게 한다. 가입 전 · 퇴직 · 탈퇴 직원, 수정 권한 없음, 본사 역할의 직영 아닌 점포 직원에게는 숨긴다(canResetPassword).
+// 「직원 정보」 표 제목 줄 오른쪽 — 직원 앱 계정(이메일 · 초대)과 같은 표라 어떤 비밀번호인지 드러난다(2026-11-19 사용자 지정, 전엔 기본 정보 표 아래 따로 떠 있었다). 가입 전 · 퇴직 · 탈퇴 직원, 수정 권한 없음, 본사 역할의 직영 아닌 점포 직원에게는 숨긴다(canResetPassword).
 export function PasswordResetButton({ staff }: { staff: StaffMember }) {
   const canUpdate = usePagePermission().update;
   const { roleTypeCode } = useAccount();
@@ -59,11 +59,9 @@ export function PasswordResetButton({ staff }: { staff: StaffMember }) {
   if (id === null || !canResetPassword(staff, roleTypeCode, canUpdate)) return null;
 
   return (
-    <div className="flex items-center justify-end gap-[6px]">
-      <Button variant="soft" onClick={() => setOpen(true)}>
-        비밀번호 초기화
-      </Button>
+    <>
+      <RoundButton onClick={() => setOpen(true)}>비밀번호 초기화</RoundButton>
       {open && <PasswordResetDialog staffMemberId={id} email={staff.email} onClose={() => setOpen(false)} />}
-    </div>
+    </>
   );
 }

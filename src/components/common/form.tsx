@@ -35,6 +35,7 @@ const DASH_MOTION =
 // Figma Form_check. 하루에도 여러 번 누르는 컨트롤이라 짧고 옅게만 움직인다:
 // 칸 색은 150ms 로 짧게 바뀌고, 체크 표시는 살짝 커지며 나타난다.
 // indeterminate 는 「일부만 선택」(–) — HTML 속성이 아니라 DOM 값이라 ref 로 단다. 화면 읽기는 「혼합」으로 읽는다.
+// 빈 체크 상자 · 라디오 테두리는 연회청(erp-brand-soft) — 입력칸 선(#ededee)이면 흰 바탕에서 거의 안 보였다(2026-11-23 사용자 지정)
 export function Checkbox({
   label,
   indeterminate = false,
@@ -49,7 +50,7 @@ export function Checkbox({
             if (el) el.indeterminate = indeterminate;
           }}
           type="checkbox"
-          className="peer absolute inset-0 appearance-none rounded-[2px] border border-erp-field-line bg-white transition-[background-color,border-color] duration-150 ease-out checked:border-erp-brand checked:bg-erp-brand indeterminate:border-erp-brand indeterminate:bg-erp-brand"
+          className="peer absolute inset-0 appearance-none rounded-[2px] border border-erp-brand-soft bg-white transition-[background-color,border-color] duration-150 ease-out checked:border-erp-brand checked:bg-erp-brand indeterminate:border-erp-brand indeterminate:bg-erp-brand"
         />
         <Image src="/icons/check.svg" alt="" width={12} height={9} className={`${MARK_MOTION} peer-indeterminate:hidden`} />
         <span className={`absolute h-[2px] w-[10px] rounded-[1px] bg-white ${DASH_MOTION}`} />
@@ -67,7 +68,7 @@ export function Radio({ label, ...props }: { label: string } & Omit<ComponentPro
         <input
           {...props}
           type="radio"
-          className="peer absolute inset-0 appearance-none rounded-full border border-erp-field-line bg-white transition-[border-color] duration-150 ease-out checked:border-erp-brand"
+          className="peer absolute inset-0 appearance-none rounded-full border border-erp-brand-soft bg-white transition-[border-color] duration-150 ease-out checked:border-erp-brand"
         />
         <span className={`size-[8px] rounded-full bg-erp-brand ${MARK_MOTION}`} />
       </span>
@@ -118,12 +119,13 @@ export function FormRow({ children }: { children: ReactNode }) {
 
 // Figma Row group. 제목과 그 아래 입력칸 카드. title 은 보통 글자 하나지만, 필수 표시 같은 꾸민 안내문구가
 // 섞일 수 있어 ReactNode 로 받는다(2026-10-12 코드리뷰 — 화면 변화 없는 타입 변경).
-export function FormGroup({ title, children }: { title: ReactNode; children: ReactNode }) {
+// roomy — 칸 줄 사이를 18 대신 24px 로(근로계약서 작성 — 줄마다 칸 이름 · 안내가 있어 18px 은 위아래가 붙어 보였다, 2026-11-19 사용자 지정. 공지 · FAQ 등록과 같은 24px)
+export function FormGroup({ title, children, roomy = false }: { title: ReactNode; children: ReactNode; roomy?: boolean }) {
   return (
     <section className="flex w-full flex-col gap-[10px]">
       <h3 className="text-[15px] font-semibold text-erp-ink">{title}</h3>
       {/* flex-1 로 둬 나란한 두 묶음이 그리드에서 같은 선에 맞춰 늘어나게 둔다(부모가 stretch 일 때만 뜻이 있다) */}
-      <div className="flex flex-1 flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">{children}</div>
+      <div className={`flex flex-1 flex-col ${roomy ? "gap-[24px]" : "gap-[18px]"} rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]`}>{children}</div>
     </section>
   );
 }

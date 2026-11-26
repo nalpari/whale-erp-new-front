@@ -92,7 +92,8 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-// 시안의 세 버튼 줄 — 주 동작 · 회원가입 · 로그인 이동. 같은 폭으로 둔다(flex-1 은 여백 있는 링크를 더 넓힌다).
+// 시안의 세 버튼 줄 — 주 동작 · 회원가입 · 로그인. 같은 폭으로 둔다(flex-1 은 여백 있는 링크를 더 넓힌다).
+// 셋째 버튼은 「← 로그인」 — 「로그인 이동」은 창 1260 의 같은 폭 칸(약 120px)에 화살표와 함께 다 들어가지 않아 양옆 여백에 붙었다(2026-11-19 사용자 지정).
 function Actions({ submit }: { submit?: ReactNode }) {
   return (
     <div className={`grid gap-[8px] ${submit ? "grid-cols-3" : "grid-cols-2"}`}>
@@ -101,7 +102,7 @@ function Actions({ submit }: { submit?: ReactNode }) {
         회원가입
       </GuestButton>
       <GuestButton tone="line" href={SITE_ROUTES.login} arrow="back" tall>
-        로그인 이동
+        로그인
       </GuestButton>
     </div>
   );

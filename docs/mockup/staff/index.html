@@ -159,7 +159,7 @@
                         <td><span class="badge badge--quiet">정직원</span></td>
                         <td><span class="badge badge--ok">가입 완료</span></td>
                         <td><span class="badge badge--ok">체결 완료</span></td>
-                        <td><span class="ok">재직</span> <span class="badge badge--warn" data-tip="퇴직일만 정해 둔 상태다. 퇴직일 다음 날 퇴직으로 바뀌기 전까지는 재직으로 센다 (2026-10-08 재영).">퇴직 예정 09-30</span></td>
+                        <td><span class="ok">재직</span> <span class="badge badge--warn" data-tip="퇴직일만 정해 둔 상태다. 퇴직일 다음 날 퇴직으로 바뀌기 전까지는 재직으로 센다 (2026-10-08 재영).">퇴직 예정 2026-09-30</span></td>
                       </tr>
                       <tr>
                         <td>
@@ -300,7 +300,7 @@
                         <td><span class="badge">파트타이머</span></td>
                         <td><span class="badge badge--quiet">가입 완료</span></td>
                         <td><span class="badge badge--quiet">종료</span></td>
-                        <td><span class="subtle">퇴직 07-31</span></td>
+                        <td><span class="subtle">퇴직 2026-07-31</span></td>
                       </tr>
                     </tbody>
                   </table>
@@ -490,7 +490,7 @@
                           <td class="n">10,400 /h</td>
                           <td class="mono">2025-07-28</td>
                           <td><span class="badge badge--ok">체결 완료</span></td>
-                          <td class="c"><span class="subtle">퇴직 07-31</span></td>
+                          <td class="c"><span class="subtle">퇴직 2026-07-31</span></td>
                         </tr>
                       </tbody>
                     </table>
@@ -1369,7 +1369,7 @@
                           <td><span class="badge badge--risk">반경 밖 퇴근</span></td>
                           <td class="c">
                             <button class="tbtn" type="button">보정</button>
-                            <button class="tbtn" type="button" data-tip="기록 값은 그대로 두고 검토만 끝낸다. 보정 이력도 연필 표시도 남지 않는다.">이상 없음</button>
+                            <button class="tbtn" type="button" data-tip="기록 값은 그대로 두고 검토만 끝낸다. 보정 이력도 연필 표시도 남지 않는다.">이상 없음 처리</button>
                           </td>
                         </tr>
                         <tr>
@@ -1380,7 +1380,7 @@
                           <td><span class="badge badge--risk">위치 조작 감지</span></td>
                           <td class="c">
                             <button class="tbtn" type="button">보정</button>
-                            <button class="tbtn" type="button" data-tip="기록 값은 그대로 두고 검토만 끝낸다. 보정 이력도 연필 표시도 남지 않는다.">이상 없음</button>
+                            <button class="tbtn" type="button" data-tip="기록 값은 그대로 두고 검토만 끝낸다. 보정 이력도 연필 표시도 남지 않는다.">이상 없음 처리</button>
                           </td>
                         </tr>
                         <tr>
@@ -1391,7 +1391,7 @@
                           <td><span class="badge badge--risk">근무 12시간 초과</span></td>
                           <td class="c">
                             <button class="tbtn" type="button">보정</button>
-                            <button class="tbtn" type="button" data-tip="기록 값은 그대로 두고 검토만 끝낸다. 보정 이력도 연필 표시도 남지 않는다.">이상 없음</button>
+                            <button class="tbtn" type="button" data-tip="기록 값은 그대로 두고 검토만 끝낸다. 보정 이력도 연필 표시도 남지 않는다.">이상 없음 처리</button>
                           </td>
                         </tr>
                         <tr>
@@ -1403,7 +1403,7 @@
                             <span class="badge badge--info">수정됨</span>
                             <span class="subtle">08-30 정하윤</span>
                           </td>
-                          <td class="c"><button class="tbtn" type="button">이력</button></td>
+                          <td class="c"><button class="tbtn" type="button">보정 이력</button></td>
                         </tr>
                         <tr>
                           <td class="k">오세라</td>
@@ -1414,7 +1414,7 @@
                             <span class="badge badge--info">대신 등록</span>
                             <span class="subtle">위치 수집 일시 중지 · 정하윤</span>
                           </td>
-                          <td class="c"><button class="tbtn" type="button">이력</button></td>
+                          <td class="c"><button class="tbtn" type="button">보정 이력</button></td>
                         </tr>
                       </tbody>
                     </table>
@@ -1432,20 +1432,21 @@
 
                 <section class="panel">
                   <div class="panel__head">
-                    <h2 class="t-h2">기록 보정</h2>
-                    <span class="badge badge--quiet">서지안 · 09-05</span>
+                    <h2 class="t-h2">출퇴근 기록 보정</h2>
+                    <!-- 2026-11-20 사용자 지정: 제목 옆 꼬리표 대신 제목 아래 둥근 정보 상자에 근무지 · 직원 · 날짜를 한 줄씩(앱 RecordTarget) -->
+                    <span class="help">근무지 모리커피 성수점 · 직원 서지안 · 날짜 2026-09-05(토)</span>
                   </div>
                   <div class="panel__body">
                     <div class="grid grid--2" style="gap: var(--s-4)">
                       <div class="field">
                         <label for="a1">출근</label>
                         <input class="input mono" id="a1" type="time" value="12:58" />
-                        <span class="help">원본 12:58</span>
+                        <span class="help">보정 전 12:58</span>
                       </div>
                       <div class="field">
                         <label for="a2">퇴근</label>
                         <input class="input mono" id="a2" type="time" value="21:30" />
-                        <span class="help">원본 없음</span>
+                        <span class="help">보정 전 없음</span>
                       </div>
                     </div>
                     <div class="field">

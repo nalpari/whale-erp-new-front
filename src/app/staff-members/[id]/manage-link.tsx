@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { RoundLink } from "@/components/common";
 import type { ReactNode } from "react";
 import { useCurrentBp, useMenuRole } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
@@ -9,16 +10,20 @@ import type { MenuCode } from "@/lib/menus";
 // 직원 상세 영역 머리의 「관리」. 직원 상세는 「직원 정보 관리」 권한으로 열리고 각 관리 화면은 그 메뉴의 조회 권한이라, 권한이 없는
 // 관리자를 공통 틀이 막는 곳으로 보내지 않게 흐리게 두고 누를 수 없게 한다(화면이 없을 때의 「관리」와 같은 모양, front #90 리뷰).
 // 막는 것은 공통 틀과 api 다. href 는 옛 경로로 받고 탭 BP 를 붙인다 — 가는 화면(근로계약 · 근무스케줄 · 출퇴근 · 급여명세서 · TO-DO)이 모두 탭 BP 주소다.
+// 모양은 점선 알약 + 꺾쇠(RoundLink)이고 글자는 가는 화면 이름(「근로계약 관리 ›」) — 파란 「관리」 글자는 버튼처럼 보이지 않았다. 같은 화면 「직원 정보」
+// 줄의 [생년월일 수정] · 확인 상자의 「출퇴근 기록 보기 ›」와 같은 모양이다(2026-11-23 사용자 지정). 권한이 없으면 같은 알약을 흐리게(40%) 둔다.
 export function MenuManageLink({ menuCode, menuName, href }: { menuCode: MenuCode; menuName: string; href: string }) {
   const canRead = useMenuRole(menuCode, "read");
   const bp = useCurrentBp().bpCodeId;
   return canRead ? (
-    <Link href={bpPath(bp, href)} className="text-erp-link hover:underline">
-      관리
-    </Link>
+    <RoundLink href={bpPath(bp, href)}>{menuName}</RoundLink>
   ) : (
-    <span aria-disabled="true" title={`${menuName} 조회 권한이 없습니다.`} className="cursor-default text-erp-muted">
-      관리
+    <span
+      aria-disabled="true"
+      title={`${menuName} 조회 권한이 없습니다.`}
+      className="inline-flex h-[26px] shrink-0 cursor-default items-center rounded-full border border-dashed border-erp-brand px-[10px] text-[13px] font-medium whitespace-nowrap text-erp-brand opacity-40"
+    >
+      {menuName}
     </span>
   );
 }
