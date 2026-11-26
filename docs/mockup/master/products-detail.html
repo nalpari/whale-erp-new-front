@@ -10,9 +10,9 @@
   <body data-root="../" data-page="master" data-sub="master/products.html">
     <!-- 단위 상품 상세 · /products/:productId · 1팀 · 2차
          기준: 「기초정보 정책서」 PL-10 ~ PL-15, PL-22. 이름 줄 · 패널 모양은 시설물 · 장비 상세와 같다.
-         [삭제]는 한 번도 활성화한 적 없는 상품만 열린다(PL-14). 활성 상품은 막힌 버튼 + 이유(두 안 공통), 활성화했다가 비활성으로 돌린 상품은 쟁점 4(문의 Q5)라 꼬리표만 둔다.
+         [삭제]는 한 번도 활성화한 적 없는 상품만 열린다(PL-14, 쟁점 4 추천안 A). 활성 상품과 활성화했다가 비활성으로 돌린 상품은 막힌 버튼 + 이유 말풍선이다.
          점포 매핑(PL-15)은 단위 상품 방식 점포만 고를 수 있다 — 상품 리스트 방식 점포는 사유와 함께 흐리게, 폐점 · 본사 점포는 빠진다. 등록 · 수정 화면에서도 같은 칸으로 고른다(BP 관리자 등록의 대상 점포 방식, 2026-11-24 사용자 지정).
-         옵션으로 쓰이는 상품은 상단 띠로 알린다. 옵션 구성은 B안(옵션 상품으로 SET 구성, option-products.html)으로 정했다(2026-11-25). 추가 가격은 이 상품에 적용된 값이다(PL-45). -->
+         상품 유형(PL-46)은 「세트 상품」 상태로 본다 — 연결 상품 표(수량 칸 없음)와 세트 공통 · 연결 상품별 옵션 묶음(PL-47). 옵션 구성은 B안(옵션 상품으로 SET 구성, option-products.html)으로 정했다(2026-11-25). 추가 가격은 이 상품에 적용된 값이다(PL-45). -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
@@ -33,34 +33,27 @@
                 <button type="button" data-state="off" aria-pressed="false">비활성</button>
                 <button type="button" data-state="never" aria-pressed="false">한 번도 활성화 안 함</button>
                 <button type="button" data-state="was" aria-pressed="false">활성화했다가 비활성</button>
-                <button type="button" data-state="opt" aria-pressed="false">옵션으로 쓰이는 상품</button>
+                <button type="button" data-state="set" aria-pressed="false">세트 상품</button>
               </div>
             </div>
 
             <section>
               <div style="display: flex; flex-direction: row; align-items: center; gap: 18px; padding: 6px 0">
                 <div class="stack" style="flex: 1; min-width: 0; gap: 6px">
-                  <h2 class="t-h2" style="margin: 0; font-size: 20px"><span data-show="act off">아메리카노</span><span data-show="never" hidden>딸기라떼</span><span data-show="was" hidden>시즌 밤라떼</span><span data-show="opt" hidden>샷 추가</span></h2>
-                  <span class="inline subtle" style="gap: 10px; font-size: 14px"><span data-show="act opt"><span class="badge badge--ok">활성</span></span><span data-show="off never was" hidden><span class="badge badge--quiet">비활성</span></span><span class="mono"><span data-show="act off">PD000001</span><span data-show="never" hidden>PD000009</span><span data-show="was" hidden>PD000010</span><span data-show="opt" hidden>PD000007</span></span></span>
+                  <h2 class="t-h2" style="margin: 0; font-size: 20px"><span data-show="act off">아메리카노</span><span data-show="never" hidden>딸기라떼</span><span data-show="was" hidden>시즌 밤라떼</span><span data-show="set" hidden>아메리카노 2잔 + 치즈케익 세트</span></h2>
+                  <span class="inline subtle" style="gap: 10px; font-size: 14px"><span data-show="act"><span class="badge badge--ok">활성</span></span><span data-show="off never was set" hidden><span class="badge badge--quiet">비활성</span></span><span class="mono"><span data-show="act off">PD000001</span><span data-show="never" hidden>PD000009</span><span data-show="was" hidden>PD000010</span><span data-show="set" hidden>PD000012</span></span></span>
                 </div>
                 <div class="inline" style="gap: 6px">
-                  <button class="btn btn--secondary btn--sm" type="button" disabled data-show="act opt" title="판매한 적이 있는 상품은 삭제할 수 없습니다. 비활성으로 바꿔 주세요.">삭제</button>
-                  <span data-show="off was" hidden><span class="badge badge--warn" title="활성화한 적 있는 상품을 지울 수 있는지는 정해지지 않았다. 답이 오면 그린다.">쟁점 4 · Q5</span></span>
-                  <button class="btn btn--secondary btn--sm" type="button" data-open="pop-delete" data-show="never" hidden>삭제</button>
+                  <span data-show="off was" hidden><span class="badge badge--warn" title="활성화한 적 있는 상품은 지우지 못하게 막는 추천안 A 로 그렸다. 확정 전이다.">쟁점 4</span></span>
+                  <button class="btn btn--secondary btn--sm" type="button" disabled data-show="act off was" title="판매한 적이 있는 상품은 삭제할 수 없습니다. 비활성으로 바꿔 주세요.">삭제</button>
+                  <button class="btn btn--secondary btn--sm" type="button" data-open="pop-delete" data-show="never set" hidden>삭제</button>
                   <a class="btn btn--secondary btn--sm" href="products-edit.html">수정</a>
                   <a class="btn btn--primary btn--sm" href="products.html">목록</a>
                 </div>
               </div>
             </section>
 
-            <div class="band band--info" data-show="opt" hidden>
-              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
-              <div class="band__body">
-                <div class="band__title">이 상품을 옵션으로 쓰는 상품이 3개 있습니다.</div>
-                <p class="band__desc"><a class="tlink" href="products-detail.html">아메리카노</a> · 카페라떼 · 콜드브루 — 비활성으로 바꾸면 그 상품들에서 이 옵션이 보이지 않습니다.</p>
-              </div>
-            </div>
-            <div class="band band--info" data-show="off never was" hidden>
+            <div class="band band--info" data-show="off never was set" hidden>
               <span class="band__ic" data-icon="info" data-icon-size="20"></span>
               <div class="band__body">
                 <div class="band__title">비활성 상품은 부가서비스와 점포에 보이지 않습니다.</div>
@@ -74,28 +67,27 @@
                   <div class="panel__head"><h2 class="t-h2">기본 정보</h2></div>
                   <div class="panel__body">
                     <dl class="kv">
-                    <dt>상태</dt><dd><span class="inline" style="gap: 8px"><span class="toggle" role="switch" aria-pressed="true" tabindex="0" data-show="act opt"></span><span class="toggle" role="switch" aria-pressed="false" tabindex="0" data-show="off never was" hidden></span><span data-show="act opt">활성</span><span data-show="off never was" hidden>비활성</span></span></dd>
-                    <dt>상품 유형</dt><dd>단일 상품</dd>
-                    <dt>상품 분류</dt><dd><span data-show="act off never was">음료</span><span data-show="opt" hidden>기타</span> <span class="subtle">|</span> <span class="tag">PRODUCT_CLASS</span></dd>
-                    <dt>마케팅 분류</dt><dd><span data-show="act off"><span class="tag">BEST</span></span><span data-show="never was opt" hidden><span class="nil">-</span></span></dd>
-                    <dt>온도 분류</dt><dd><span data-show="act off">HOT · ICED</span><span data-show="never" hidden>ICED</span><span data-show="was" hidden>HOT</span><span data-show="opt" hidden><span class="nil">-</span></span></dd>
+                    <dt>상태</dt><dd><span class="inline" style="gap: 8px"><span class="toggle" role="switch" aria-pressed="true" tabindex="0" data-show="act"></span><span class="toggle" role="switch" aria-pressed="false" tabindex="0" data-show="off never was set" hidden></span><span data-show="act">활성</span><span data-show="off never was set" hidden>비활성</span></span></dd>
+                    <dt>상품 유형</dt><dd><span data-show="act off never was">단일 상품</span><span data-show="set" hidden>세트 상품</span></dd>
+                    <dt>상품 분류</dt><dd>음료 <span class="subtle">|</span> <span class="tag">PRODUCT_CLASS</span></dd>
+                    <dt>마케팅 분류</dt><dd><span data-show="act off"><span class="tag">BEST</span></span><span data-show="never was set" hidden><span class="nil">-</span></span></dd>
+                    <dt>온도 분류</dt><dd><span data-show="act off">HOT · ICED</span><span data-show="never" hidden>ICED</span><span data-show="was" hidden>HOT</span><span data-show="set" hidden><span class="nil">-</span></span></dd>
                     <dt>과세</dt><dd>과세 <span class="subtle">(부가세 포함)</span></dd>
-                    <dt>설명</dt><dd><span data-show="act off">에스프레소에 물을 더한 깔끔한 기본 커피입니다.</span><span data-show="never" hidden>딸기 과육을 넣은 시즌 라떼입니다.</span><span data-show="was" hidden>밤 시럽을 넣은 가을 한정 라떼입니다.</span><span data-show="opt" hidden>에스프레소 샷을 더하는 옵션 상품입니다.</span></dd>
-                    <dt>다국어 이름</dt><dd><span data-show="act off"><span class="subtle">영어</span> Americano <span class="subtle">|</span> <span class="subtle">중국어 간체</span> 美式咖啡 <span class="subtle">|</span> <span class="subtle">중국어 번체</span> 美式咖啡 <span class="subtle">|</span> <span class="subtle">일본어</span> アメリカーノ</span><span data-show="never was opt" hidden><span class="nil">-</span></span></dd>
-                    <dt>노출 순서</dt><dd class="mono"><span data-show="act off">1</span><span data-show="never" hidden>9</span><span data-show="was" hidden>10</span><span data-show="opt" hidden>7</span></dd>
-                    <dt>목록 이미지</dt><dd><span data-show="act off"><a class="tlink" href="#">americano.jpg</a> <span class="mono subtle">120KB</span></span><span data-show="never was opt" hidden><span class="nil">-</span></span></dd>
-                    <dt>변경이력</dt><dd><span class="subtle">등록</span> <span data-show="act off">2026-10-02 10:00</span><span data-show="never" hidden>2026-11-02 11:20</span><span data-show="was" hidden>2026-11-12 09:45</span><span data-show="opt" hidden>2026-10-15 10:30</span> · 정하윤 <span class="subtle">|</span> <span class="subtle">최종수정</span> <span data-show="act">2026-11-05 15:40</span><span data-show="off" hidden>2026-11-18 09:10</span><span data-show="never" hidden>2026-11-02 11:20</span><span data-show="was" hidden>2026-11-16 17:05</span><span data-show="opt" hidden>2026-10-15 10:30</span> · 정하윤</dd>
+                    <dt>설명</dt><dd><span data-show="act off">에스프레소에 물을 더한 깔끔한 기본 커피입니다.</span><span data-show="never" hidden>딸기 과육을 넣은 시즌 라떼입니다.</span><span data-show="was" hidden>밤 시럽을 넣은 가을 한정 라떼입니다.</span><span data-show="set" hidden>아메리카노 2잔과 치즈케익 1개를 함께 파는 세트입니다.</span></dd>
+                    <dt>다국어 이름</dt><dd><span data-show="act off"><span class="subtle">영어</span> Americano <span class="subtle">|</span> <span class="subtle">중국어 간체</span> 美式咖啡 <span class="subtle">|</span> <span class="subtle">중국어 번체</span> 美式咖啡 <span class="subtle">|</span> <span class="subtle">일본어</span> アメリカーノ</span><span data-show="never was set" hidden><span class="nil">-</span></span></dd>
+                    <dt>노출 순서</dt><dd class="mono"><span data-show="act off">1</span><span data-show="never" hidden>9</span><span data-show="was" hidden>10</span><span data-show="set" hidden>11</span></dd>
+                    <dt>목록 이미지</dt><dd><span data-show="act off"><a class="tlink" href="#">americano.jpg</a> <span class="mono subtle">120KB</span></span><span data-show="never was set" hidden><span class="nil">-</span></span></dd>
+                    <dt>변경이력</dt><dd><span class="subtle">등록</span> <span data-show="act off">2026-10-02 10:00</span><span data-show="never" hidden>2026-11-02 11:20</span><span data-show="was" hidden>2026-11-12 09:45</span><span data-show="set" hidden>2026-11-25 14:10</span> · 정하윤 <span class="subtle">|</span> <span class="subtle">최종수정</span> <span data-show="act">2026-11-05 15:40</span><span data-show="off" hidden>2026-11-18 09:10</span><span data-show="never" hidden>2026-11-02 11:20</span><span data-show="was" hidden>2026-11-16 17:05</span><span data-show="set" hidden>2026-11-25 14:10</span> · 정하윤</dd>
                     </dl>
                   </div>
                 </section>
                 <section class="panel">
                   <div class="panel__head"><h2 class="t-h2">가격</h2></div>
                   <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-                    <dl class="kv"><dt>표준가격</dt><dd class="mono"><span data-show="act off">3,000</span><span data-show="never" hidden>5,500</span><span data-show="was" hidden>5,000</span><span data-show="opt" hidden>500</span>원</dd></dl>
+                    <dl class="kv"><dt>표준가격</dt><dd class="mono"><span data-show="act off">3,000</span><span data-show="never" hidden>5,500</span><span data-show="was" hidden>5,000</span><span data-show="set" hidden>9,500</span>원</dd></dl>
                     <b style="font-size: 13.5px">이 상품이 들어간 가격 리스트</b>
-                    <div data-show="act off"><div class="tblwrap"><table class="tbl"><thead><tr><th scope="col">가격 리스트</th><th scope="col">유형</th><th scope="col" class="num">가격</th></tr></thead><tbody><tr><td class="k"><a class="tlink" href="prices-detail.html">기본가</a></td><td><span class="tag">일반</span></td><td class="num mono">3,000원</td></tr><tr><td class="k"><a class="tlink" href="prices-detail.html">역세권가</a></td><td><span class="tag">일반</span></td><td class="num mono">3,300원</td></tr><tr><td class="k"><a class="tlink" href="prices-detail.html">상권 일반가</a></td><td><span class="tag">일반</span></td><td class="num mono">3,000원</td></tr><tr><td class="k"><a class="tlink" href="prices-promotion-detail.html">11월 감사제</a></td><td><span class="tag">프로모션</span></td><td class="num mono">2,500원 <span class="subtle">전 부가서비스</span></td></tr><tr><td class="k"><a class="tlink" href="prices-promotion-detail.html">겨울 시즌 할인</a></td><td><span class="tag">프로모션</span></td><td class="num mono"><span class="nil">-</span> <span class="subtle">빈 칸</span></td></tr><tr><td class="k"><a class="tlink" href="prices-promotion-detail.html">8월 할인</a></td><td><span class="tag">프로모션</span></td><td class="num mono"><span class="nil">-</span> <span class="subtle">종료</span></td></tr></tbody></table></div></div>
-                    <div data-show="opt" hidden><div class="tblwrap"><table class="tbl"><thead><tr><th scope="col">가격 리스트</th><th scope="col">유형</th><th scope="col" class="num">가격</th></tr></thead><tbody><tr><td class="k"><a class="tlink" href="prices-detail.html">기본가</a></td><td><span class="tag">일반</span></td><td class="num mono">500원</td></tr><tr><td class="k"><a class="tlink" href="prices-detail.html">역세권가</a></td><td><span class="tag">일반</span></td><td class="num mono">500원</td></tr><tr><td class="k"><a class="tlink" href="prices-detail.html">상권 일반가</a></td><td><span class="tag">일반</span></td><td class="num mono">500원</td></tr></tbody></table></div></div>
-                    <div data-show="never was" hidden><p class="subtle" style="margin: 0">이 상품이 들어간 가격 리스트가 없습니다.</p></div>
+                    <div data-show="act off"><div class="tblwrap"><table class="tbl"><thead><tr><th scope="col">가격 리스트</th><th scope="col">유형</th><th scope="col" class="num">가격</th></tr></thead><tbody><tr><td class="k"><a class="tlink" href="prices-detail.html">기본가</a></td><td><span class="tag">일반</span></td><td class="num mono">3,000원</td></tr><tr><td class="k"><a class="tlink" href="prices-detail.html">역세권가</a></td><td><span class="tag">일반</span></td><td class="num mono">3,300원</td></tr><tr><td class="k"><a class="tlink" href="prices-detail.html">상권 일반가</a></td><td><span class="tag">일반</span></td><td class="num mono">3,000원</td></tr><tr><td class="k"><a class="tlink" href="prices-promotion-detail.html">11월 감사제</a></td><td><span class="tag">프로모션</span></td><td class="num mono">2,500원 <span class="subtle">전 부가서비스</span></td></tr><tr><td class="k"><a class="tlink" href="prices-promotion-detail.html">겨울 시즌 할인</a></td><td><span class="tag">프로모션</span></td><td class="num mono"><span class="nil">-</span> <span class="subtle">빈 칸</span></td></tr><tr><td class="k"><a class="tlink" href="prices-promotion-detail.html">8월 할인</a></td><td><span class="tag">프로모션</span></td><td class="num mono">2,800원 <span class="subtle">종료</span></td></tr></tbody></table></div></div>
+                    <div data-show="never was set" hidden><p class="subtle" style="margin: 0">이 상품이 들어간 가격 리스트가 없습니다.</p></div>
                   </div>
                 </section>
                 <section class="panel">
@@ -107,7 +99,7 @@
                       <dt>여름 카테고리</dt><dd>아이스 커피 › 아메리카노</dd>
                     </dl></div>
                     <div data-show="never" hidden><dl class="kv"><dt>표준 카테고리</dt><dd>논커피 › 시즌 <span class="badge badge--quiet">미사용</span></dd><dt>카테고리 리스트</dt><dd><span class="nil">-</span></dd></dl></div>
-                    <div data-show="was opt" hidden><dl class="kv"><dt>표준 카테고리</dt><dd><span class="badge badge--warn">미배정</span></dd><dt>카테고리 리스트</dt><dd><span class="nil">-</span></dd></dl></div>
+                    <div data-show="was set" hidden><dl class="kv"><dt>표준 카테고리</dt><dd><span class="badge badge--warn">미배정</span></dd><dt>카테고리 리스트</dt><dd><span class="nil">-</span></dd></dl></div>
                   </div>
                 </section>
               </div>
@@ -116,7 +108,8 @@
                 <section class="panel">
                   <div class="panel__head"><h2 class="t-h2">연결 상품</h2></div>
                   <div class="panel__body" style="display: flex; flex-direction: column; gap: var(--s-3)">
-                    <p class="subtle" style="margin: 0">단일 상품이라 연결 상품이 없습니다.</p>
+                    <p class="subtle" style="margin: 0" data-show="act off never was">단일 상품이라 연결 상품이 없습니다.</p>
+                    <div class="tblwrap" data-show="set" hidden><table class="tbl"><thead><tr><th scope="col" class="n">순번</th><th scope="col">연결 상품</th><th scope="col">상품 코드</th></tr></thead><tbody><tr><td class="n">1</td><td class="k"><a class="tlink" href="products-detail.html">아메리카노</a></td><td class="mono">PD000001</td></tr><tr><td class="n">2</td><td class="k"><a class="tlink" href="products-detail.html">아메리카노</a></td><td class="mono">PD000001</td></tr><tr><td class="n">3</td><td class="k"><a class="tlink" href="products-detail.html">치즈케익</a></td><td class="mono">PD000011</td></tr></tbody></table></div>
                     <span class="help">세트 상품만 단일 상품을 연결합니다. 연결 상품은 재고 관리에서 함께 차감할 때 씁니다.</span>
                   </div>
                 </section>
@@ -130,16 +123,21 @@
                       <div class="inline" style="gap: 10px; padding: 10px 14px; background: #f8f9fb"><b>추가</b><span class="tag">선택</span><span class="tag">다중선택</span><span class="badge badge--ok">사용</span></div>
                       <div class="tblwrap"><table class="tbl"><thead><tr><th scope="col">옵션 상품명</th><th scope="col">옵션 코드</th><th scope="col" class="num">추가 가격</th><th scope="col">수량입력</th><th scope="col">기본선택</th><th scope="col">상태</th></tr></thead><tbody><tr><td class="k">샷 추가</td><td class="mono">OP000001</td><td class="num mono">+500</td><td>함</td><td><span class="nil">-</span></td><td><span class="badge badge--ok">사용</span></td></tr><tr><td class="k">바닐라 시럽</td><td class="mono">OP000002</td><td class="num mono">+500</td><td><span class="subtle">안 함</span></td><td><span class="nil">-</span></td><td><span class="badge badge--ok">사용</span></td></tr></tbody></table></div>
                     </div></div><div><a class="tlink" href="option-products.html">옵션 상품 관리 ›</a></div></div>
-                    <div data-show="never was opt" hidden><p class="subtle" style="margin: 0">옵션 구성이 없습니다.</p></div>
+                    <div data-show="never was" hidden><p class="subtle" style="margin: 0">옵션 구성이 없습니다.</p></div>
+                    <div data-show="set" hidden><div class="stack--lg" style="display: flex; flex-direction: column">
+                      <div style="display: flex; flex-direction: column; gap: var(--s-2)"><div class="inline" style="gap: 8px"><b>세트 공통</b><span class="subtle" style="font-size: 12.5px">세트 전체에 한 번</span></div><div style="border: 1px solid var(--hairline); border-radius: 6px; overflow: hidden"><div class="inline" style="gap: 10px; padding: 10px 14px; background: #f8f9fb"><b>포장</b><span class="tag">선택</span><span class="tag">단일선택</span><span class="badge badge--ok">사용</span></div><div class="tblwrap"><table class="tbl"><thead><tr><th scope="col">옵션 상품명</th><th scope="col">옵션 코드</th><th scope="col" class="num">추가 가격</th><th scope="col">수량입력</th><th scope="col">기본선택</th><th scope="col">상태</th></tr></thead><tbody><tr><td class="k">포장 봉투</td><td class="mono">OP000008</td><td class="num mono">+100</td><td><span class="subtle">안 함</span></td><td><span class="nil">-</span></td><td><span class="badge badge--ok">사용</span></td></tr></tbody></table></div></div></div>
+                      <div style="display: flex; flex-direction: column; gap: var(--s-2)"><div class="inline" style="gap: 8px"><b>아메리카노 1</b><span class="subtle" style="font-size: 12.5px">연결 상품 1 · PD000001</span></div><div style="border: 1px solid var(--hairline); border-radius: 6px; overflow: hidden"><div class="inline" style="gap: 10px; padding: 10px 14px; background: #f8f9fb"><b>원두 선택</b><span class="tag">필수선택</span><span class="tag">단일선택</span><span class="badge badge--ok">사용</span></div><div class="tblwrap"><table class="tbl"><thead><tr><th scope="col">옵션 상품명</th><th scope="col">옵션 코드</th><th scope="col" class="num">추가 가격</th><th scope="col">수량입력</th><th scope="col">기본선택</th><th scope="col">상태</th></tr></thead><tbody><tr><td class="k">디카페인 원두</td><td class="mono">OP000005</td><td class="num mono">+500</td><td><span class="subtle">안 함</span></td><td><span class="nil">-</span></td><td><span class="badge badge--ok">사용</span></td></tr></tbody></table></div></div><div style="border: 1px solid var(--hairline); border-radius: 6px; overflow: hidden"><div class="inline" style="gap: 10px; padding: 10px 14px; background: #f8f9fb"><b>추가</b><span class="tag">선택</span><span class="tag">다중선택</span><span class="badge badge--ok">사용</span></div><div class="tblwrap"><table class="tbl"><thead><tr><th scope="col">옵션 상품명</th><th scope="col">옵션 코드</th><th scope="col" class="num">추가 가격</th><th scope="col">수량입력</th><th scope="col">기본선택</th><th scope="col">상태</th></tr></thead><tbody><tr><td class="k">샷 추가</td><td class="mono">OP000001</td><td class="num mono">+500</td><td>함</td><td><span class="nil">-</span></td><td><span class="badge badge--ok">사용</span></td></tr><tr><td class="k">바닐라 시럽</td><td class="mono">OP000002</td><td class="num mono">+500</td><td><span class="subtle">안 함</span></td><td><span class="nil">-</span></td><td><span class="badge badge--ok">사용</span></td></tr></tbody></table></div></div></div>
+                      <div style="display: flex; flex-direction: column; gap: var(--s-2)"><div class="inline" style="gap: 8px"><b>아메리카노 2</b><span class="subtle" style="font-size: 12.5px">연결 상품 2 · PD000001</span></div><div style="border: 1px solid var(--hairline); border-radius: 6px; overflow: hidden"><div class="inline" style="gap: 10px; padding: 10px 14px; background: #f8f9fb"><b>원두 선택</b><span class="tag">필수선택</span><span class="tag">단일선택</span><span class="badge badge--ok">사용</span></div><div class="tblwrap"><table class="tbl"><thead><tr><th scope="col">옵션 상품명</th><th scope="col">옵션 코드</th><th scope="col" class="num">추가 가격</th><th scope="col">수량입력</th><th scope="col">기본선택</th><th scope="col">상태</th></tr></thead><tbody><tr><td class="k">디카페인 원두</td><td class="mono">OP000005</td><td class="num mono">+500</td><td><span class="subtle">안 함</span></td><td><span class="nil">-</span></td><td><span class="badge badge--ok">사용</span></td></tr></tbody></table></div></div><div style="border: 1px solid var(--hairline); border-radius: 6px; overflow: hidden"><div class="inline" style="gap: 10px; padding: 10px 14px; background: #f8f9fb"><b>추가</b><span class="tag">선택</span><span class="tag">다중선택</span><span class="badge badge--ok">사용</span></div><div class="tblwrap"><table class="tbl"><thead><tr><th scope="col">옵션 상품명</th><th scope="col">옵션 코드</th><th scope="col" class="num">추가 가격</th><th scope="col">수량입력</th><th scope="col">기본선택</th><th scope="col">상태</th></tr></thead><tbody><tr><td class="k">샷 추가</td><td class="mono">OP000001</td><td class="num mono">+500</td><td>함</td><td><span class="nil">-</span></td><td><span class="badge badge--ok">사용</span></td></tr><tr><td class="k">바닐라 시럽</td><td class="mono">OP000002</td><td class="num mono">+500</td><td><span class="subtle">안 함</span></td><td><span class="nil">-</span></td><td><span class="badge badge--ok">사용</span></td></tr></tbody></table></div></div></div>
+                      <div style="display: flex; flex-direction: column; gap: var(--s-2)"><div class="inline" style="gap: 8px"><b>치즈케익</b><span class="subtle" style="font-size: 12.5px">연결 상품 3 · PD000011</span></div><p class="subtle" style="margin: 0">옵션 구성이 없습니다.</p></div>
+                      <div><a class="tlink" href="option-products.html">옵션 상품 관리 ›</a></div></div></div>
                   </div>
                 </section>
                 <section class="panel">
                   <div class="panel__head"><h2 class="t-h2">상품 리스트</h2></div>
                   <div class="panel__body">
                     <div data-show="act off"><dl class="kv"><dt>담긴 리스트</dt><dd><a class="tlink" href="product-lists-detail.html">기본 메뉴</a> · <a class="tlink" href="product-lists-detail.html">여름 메뉴</a> · <a class="tlink" href="product-lists-detail.html">가을 메뉴(준비)</a></dd></dl></div>
-                    <div data-show="opt" hidden><dl class="kv"><dt>담긴 리스트</dt><dd><a class="tlink" href="product-lists-detail.html">기본 메뉴</a> · <a class="tlink" href="product-lists-detail.html">여름 메뉴</a></dd></dl></div>
                     <div data-show="was" hidden><dl class="kv"><dt>담긴 리스트</dt><dd><a class="tlink" href="product-lists-detail.html">가을 메뉴(준비)</a></dd></dl></div>
-                    <div data-show="never" hidden><p class="subtle" style="margin: 0">담긴 상품 리스트가 없습니다.</p></div>
+                    <div data-show="never set" hidden><p class="subtle" style="margin: 0">담긴 상품 리스트가 없습니다.</p></div>
                   </div>
                 </section>
                 <section class="panel">
@@ -153,7 +151,7 @@
                       <tbody><tr><td class="k">모리커피 서초점</td><td>직영</td><td><span class="badge badge--ok">운영</span></td></tr></tbody>
                     </table>
                   </div>
-                  <div class="empty" data-show="never was opt" hidden><p>단위 상품 방식으로 매핑한 점포가 없습니다.</p></div>
+                  <div class="empty" data-show="never was set" hidden><p>단위 상품 방식으로 매핑한 점포가 없습니다.</p></div>
                 </section>
               </div>
             </div>
@@ -207,7 +205,7 @@
     <div class="modal" id="pop-delete" hidden role="dialog" aria-modal="true" aria-labelledby="pdl-t">
       <div class="modal__box">
         <div class="modal__head">
-          <h2 class="t-h2" id="pdl-t">딸기라떼를 삭제하시겠습니까?</h2>
+          <h2 class="t-h2" id="pdl-t">이 상품을 삭제하시겠습니까?</h2>
           <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
         </div>
         <div class="modal__body">

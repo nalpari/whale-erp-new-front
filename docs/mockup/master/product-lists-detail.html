@@ -17,10 +17,10 @@
   <body data-root="../" data-page="master" data-sub="master/products.html">
     <!-- 상품 리스트 상세 · /product-lists/:productListId · 1팀 · 2차
          기준: 「기초정보(상품 · 카테고리 · 가격) 정책서」 PL-16 ~ 19(상품 리스트 · 상품 담기), PL-25(카테고리 리스트 1:1), PL-31 · PL-36(가격 리스트 연결 · 점포 선택), 개념 정의서 14쪽(점포 매핑).
-         한 화면에서 ① 담은 상품 ② 연결(카테고리 리스트 · 가격 리스트) ③ 적용 점포(이 리스트를 쓸 수 있는 점포 — 가격 리스트 · 기간은 점포 상품 관리에서)를 다룬다. 점포 적용 관리 메뉴는 따로 없다(쟁점 7).
-         쟁점 — 8 [삭제](Q9 답변 대기, 버튼 없이 꼬리표만). 쟁점 동작은 그리지 않는다.
+         한 화면에서 ① 담은 상품 ② 연결(카테고리 리스트 · 가격 리스트) ③ 적용 점포(이 리스트를 쓸 수 있는 점포 — 가격 리스트 · 기간은 점포 상품 관리에서)를 다룬다. 점포 적용 관리 메뉴는 따로 없다(쟁점 7 확정).
+         [삭제]는 점포에 매핑된 리스트면 막히고 이유를 말풍선으로 보인다(PL-19, 쟁점 8 추천안). 매핑이 없으면 확인창 뒤 논리 삭제.
          상품을 넣으면 그 상품 리스트의 가격 리스트 상세에 빈 칸으로 보인다 — 가격을 적어 저장하기 전에는 가격 데이터가 없고, 일반은 표준가격 · 프로모션은 일반 가격이 적용된다(PL-18, 2026-11-25). 빼면 가격 리스트 · 카테고리 배정에서도 빠진다.
-         점포는 점포 하나에 상품 리스트 하나다. 점포 하나가 여러 상품 리스트에 매핑될 수 있고, 무엇을 노출할지는 점포 상품 관리에서 고른다(2026-11-25).
+         상품 리스트와 점포는 N:N 이다(PL-17) — 리스트 하나를 여러 점포에, 점포 하나를 여러 리스트에 매핑할 수 있고, 무엇을 노출할지는 점포 상품 관리에서 고른다(2026-11-25).
          본사 점포는 후보에 없고 폐점 점포는 새로 고를 수 없다(PL-3). 폐점 점포 줄은 조회만 된다. 목업 사용자는 BP 마스터.
          위쪽 점선 줄은 목업 전용이다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
@@ -54,11 +54,13 @@
                   <span class="inline" style="gap: 10px; font-size: 14px">
                     <span class="inline" style="gap: 6px; flex-wrap: nowrap" data-show="base"><button class="toggle" type="button" aria-pressed="true" aria-label="상품 리스트 상태"></button><span class="badge badge--ok">활성</span></span>
                     <span class="inline" style="gap: 6px; flex-wrap: nowrap" data-show="nocat" hidden><button class="toggle" type="button" aria-pressed="false" aria-label="상품 리스트 상태"></button><span class="badge badge--quiet">비활성</span></span>
-                    <span class="subtle"><span class="subtle">최종수정</span> 2026-11-12 16:08 · 정하윤</span>
+                    <span class="subtle"><span class="subtle">최종수정</span> <span data-show="base">2026-11-12 16:08</span><span data-show="nocat" hidden>2026-11-17 16:20</span> · 정하윤</span>
                   </span>
                 </div>
                 <div class="inline" style="gap: 6px">
-                  <span class="badge badge--warn" title="상품 리스트를 지울 수 있는지, 지우면 점포 · 가격 리스트가 어떻게 되는지 정해지지 않았습니다.">쟁점 8 · Q9</span>
+                  <span class="badge badge--warn" title="점포에 매핑된 리스트는 지울 수 없게 막는 추천안으로 그렸다. 확정 전이다.">쟁점 8</span>
+                  <button class="btn btn--secondary btn--sm" type="button" disabled data-show="base" title="4개 점포가 쓰는 리스트입니다. 점포 적용을 먼저 바꿔 주세요.">삭제</button>
+                  <button class="btn btn--secondary btn--sm" type="button" data-open="pop-pl-delete" data-show="nocat" hidden>삭제</button>
                   <a class="btn btn--primary btn--sm" href="products.html#lists">목록</a>
                 </div>
               </div>
@@ -67,8 +69,8 @@
             <div class="band band--info" data-show="nocat" hidden>
               <span class="band__ic" data-icon="info" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">비활성 상품 리스트는 점포에 적용할 수 없습니다.</div>
-                <p class="band__desc">활성으로 바꾼 뒤 카테고리 리스트와 가격 리스트를 연결하고 점포를 추가해 주세요.</p>
+                <div class="band__title">비활성 상품 리스트의 상품은 부가서비스에 보이지 않습니다.</div>
+                <p class="band__desc">활성으로 바꾸고 카테고리 리스트와 가격 리스트를 연결해 주세요.</p>
               </div>
             </div>
 
@@ -129,11 +131,11 @@
                       <td style="text-align: center"><button class="btn btn--secondary btn--sm" type="button" data-open="pop-remove">빼기</button></td>
                     </tr>
                     <tr>
-                      <td><a class="tlink" href="products-detail.html">샷 추가</a></td>
-                      <td class="mono">PD000007</td><td>기타</td>
-                      <td class="mono" style="text-align: right">500원</td>
+                      <td><a class="tlink" href="products-detail.html">바닐라라떼</a></td>
+                      <td class="mono">PD000003</td><td>음료</td>
+                      <td class="mono" style="text-align: right">4,000원</td>
                       <td><span class="badge badge--ok">활성</span></td>
-                      <td><span class="subtle">옵션으로 쓰임</span> <span class="badge badge--warn" title="옵션으로만 쓰는 상품도 분류에 배정해야 하는가 — 문의 Q11 답변 대기">Q11</span></td>
+                      <td><span class="badge badge--warn">미배정</span></td>
                       <td style="text-align: center"><button class="btn btn--secondary btn--sm" type="button" data-open="pop-remove">빼기</button></td>
                     </tr>
                   </tbody>
@@ -204,7 +206,7 @@
                 <table class="tbl">
                   <thead><tr><th scope="col" style="width: 90px">유형</th><th scope="col">가격 리스트</th><th scope="col" style="width: 220px">기간</th><th scope="col" style="width: 90px">상태</th><th scope="col" class="num" style="width: 90px">상품 수</th><th scope="col" style="width: 200px">고른 점포</th></tr></thead>
                   <tbody>
-                    <tr><td><span class="tag">일반</span></td><td class="k"><a class="tlink" href="prices-detail.html">역세권가</a></td><td class="nil">-</td><td><span class="badge badge--ok">사용</span></td><td class="num mono">5</td><td>을지로점 · 연남점</td></tr>
+                    <tr><td><span class="tag">일반</span></td><td class="k"><a class="tlink" href="prices-detail.html">역세권가</a></td><td class="nil">-</td><td><span class="badge badge--ok">사용</span></td><td class="num mono">5</td><td>을지로점 · 연남점 · 합정점</td></tr>
                     <tr><td><span class="tag">일반</span></td><td class="k"><a class="tlink" href="prices-detail.html">상권 일반가</a></td><td class="nil">-</td><td><span class="badge badge--ok">사용</span></td><td class="num mono">5</td><td class="subtle">없음</td></tr>
                     <tr class="dim"><td><span class="tag">프로모션</span></td><td class="k"><a class="tlink" href="prices-promotion-detail.html">8월 할인</a></td><td class="mono">2026-08-01 ~ 2026-08-31</td><td><span class="tag">종료</span></td><td class="num mono">5</td><td class="subtle">없음</td></tr>
                   </tbody>
@@ -225,14 +227,14 @@
             <section class="panel">
               <div class="panel__head">
                 <h2 class="t-h2">적용 점포</h2>
-                <span class="badge badge--quiet" data-show="base">3</span>
+                <span class="badge badge--quiet" data-show="base">4</span>
                 <span class="badge badge--quiet" data-show="nocat" hidden>0</span>
                 <div class="panel__end">
                   <button class="btn btn--primary btn--sm" type="button" data-show="base" data-pl-save>저장</button>
                 </div>
               </div>
               <div class="panel__body" data-show="base" style="display: flex; flex-direction: column; gap: var(--s-4)">
-                <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포" data-picked="ST000005 ST000006 ST000007">
+                <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포|단위 상품 방식;ST000002|모리커피 성수점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000012|모리커피 합정점|가맹점포|폐점 — 이미 적용된 것만 남음" data-picked="ST000005 ST000006 ST000007 ST000012">
                   <div class="spick__find">
                     <div class="spick__head"><b>점포 찾기</b></div>
                     <div class="spick__row">
@@ -243,7 +245,7 @@
                       </div>
                       <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                     </div>
-                    <span class="help" style="display: block; margin-top: var(--s-2)">본사 · 폐점 점포는 목록에 나오지 않습니다.</span>
+                    <span class="help" style="display: block; margin-top: var(--s-2)">단위 상품 방식 점포는 고를 수 없습니다. 점포 상품 관리에서 방식을 먼저 바꿔 주세요. 본사 · 폐점 점포는 목록에 나오지 않습니다.</span>
                   </div>
                   <div class="spick__box">
                     <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>3개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
@@ -257,7 +259,6 @@
                 <div class="empty">
                   <span class="empty__ic" data-icon="store" data-icon-size="22"></span>
                   <p>적용된 점포가 없습니다.</p>
-                  <p class="subtle" style="font-size: 12.5px">비활성 상품 리스트는 점포에 매핑할 수 없습니다. 활성으로 바꾼 뒤 점포를 고르세요.</p>
                 </div>
               </div>
               <p class="note" style="margin: 0; padding: 12px var(--s-5)">
@@ -294,12 +295,12 @@
                     <tbody data-show="base">
                       <tr class="dim"><td><span class="check" role="checkbox" aria-checked="true" disabled aria-label="아메리카노 이미 담음" data-icon="check" data-icon-size="11"></span></td><td>아메리카노</td><td class="mono">PD000001</td><td>음료</td><td class="mono" style="text-align: right">3,000원</td><td class="subtle">담음</td></tr>
                       <tr class="dim"><td><span class="check" role="checkbox" aria-checked="true" disabled aria-label="카페라떼 이미 담음" data-icon="check" data-icon-size="11"></span></td><td>카페라떼</td><td class="mono">PD000002</td><td>음료</td><td class="mono" style="text-align: right">3,500원</td><td class="subtle">담음</td></tr>
-                      <tr><td><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="바닐라라떼" data-icon="check" data-icon-size="11"></span></td><td>바닐라라떼</td><td class="mono">PD000003</td><td>음료</td><td class="mono" style="text-align: right">4,000원</td><td><span class="badge badge--ok">활성</span></td></tr>
+                      <tr class="dim"><td><span class="check" role="checkbox" aria-checked="true" disabled aria-label="바닐라라떼 이미 담음" data-icon="check" data-icon-size="11"></span></td><td>바닐라라떼</td><td class="mono">PD000003</td><td>음료</td><td class="mono" style="text-align: right">4,000원</td><td class="subtle">담음</td></tr>
                       <tr class="dim"><td><span class="check" role="checkbox" aria-checked="true" disabled aria-label="콜드브루 이미 담음" data-icon="check" data-icon-size="11"></span></td><td>콜드브루</td><td class="mono">PD000004</td><td>음료</td><td class="mono" style="text-align: right">4,200원</td><td class="subtle">담음</td></tr>
                       <tr class="dim"><td><span class="check" role="checkbox" aria-checked="true" disabled aria-label="흑당라떼 이미 담음" data-icon="check" data-icon-size="11"></span></td><td>흑당라떼</td><td class="mono">PD000005</td><td>음료</td><td class="mono" style="text-align: right">4,500원</td><td class="subtle">담음</td></tr>
                       <tr><td><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="크루아상" data-icon="check" data-icon-size="11"></span></td><td>크루아상</td><td class="mono">PD000006</td><td>베이커리</td><td class="mono" style="text-align: right">3,200원</td><td><span class="badge badge--ok">활성</span></td></tr>
-                      <tr class="dim"><td><span class="check" role="checkbox" aria-checked="true" disabled aria-label="샷 추가 이미 담음" data-icon="check" data-icon-size="11"></span></td><td>샷 추가</td><td class="mono">PD000007</td><td>기타</td><td class="mono" style="text-align: right">500원</td><td class="subtle">담음</td></tr>
-                      <tr><td><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="바닐라 시럽" data-icon="check" data-icon-size="11"></span></td><td>바닐라 시럽</td><td class="mono">PD000008</td><td>기타</td><td class="mono" style="text-align: right">500원</td><td><span class="badge badge--ok">활성</span></td></tr>
+                      <tr><td><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="치즈케익" data-icon="check" data-icon-size="11"></span></td><td>치즈케익</td><td class="mono">PD000011</td><td>베이커리</td><td class="mono" style="text-align: right">4,800원</td><td><span class="badge badge--ok">활성</span></td></tr>
+                      <tr><td><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="아메리카노 2잔 + 치즈케익 세트" data-icon="check" data-icon-size="11"></span></td><td>아메리카노 2잔 + 치즈케익 세트</td><td class="mono">PD000012</td><td>음료</td><td class="mono" style="text-align: right">9,500원</td><td><span class="badge badge--quiet">비활성</span></td></tr>
                       <tr><td><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="딸기라떼" data-icon="check" data-icon-size="11"></span></td><td>딸기라떼</td><td class="mono">PD000009</td><td>음료</td><td class="mono" style="text-align: right">5,500원</td><td><span class="badge badge--quiet">비활성</span></td></tr>
                       <tr><td><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="시즌 밤라떼" data-icon="check" data-icon-size="11"></span></td><td>시즌 밤라떼</td><td class="mono">PD000010</td><td>음료</td><td class="mono" style="text-align: right">5,000원</td><td><span class="badge badge--quiet">비활성</span></td></tr>
                     </tbody>
@@ -329,6 +330,22 @@
             </div>
           </div>
 
+          <!-- 상품 리스트 삭제 확인 — 매핑된 점포가 없을 때만 연다(PL-19). 논리 삭제, 카테고리 리스트 연결 · 가격 리스트도 함께 지운다 -->
+          <div class="modal" id="pop-pl-delete" hidden role="dialog" aria-modal="true" aria-labelledby="ppd-t">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="ppd-t">가을 메뉴(준비)를 삭제하시겠습니까?</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <p style="margin: 0">이 리스트에 붙은 카테고리 리스트 연결과 가격 리스트도 함께 지워집니다.</p>
+              </div>
+              <div class="modal__foot">
+                <button class="btn btn--ghost" type="button" data-close>취소</button>
+                <a class="btn btn--primary" href="products.html#lists">삭제</a>
+              </div>
+            </div>
+          </div>
           <!-- 상품 빼기 확인 -->
           <div class="modal" id="pop-remove" hidden role="dialog" aria-modal="true" aria-labelledby="pr-t">
             <div class="modal__box">

@@ -11,7 +11,7 @@
     <!-- 가격 정보 관리 · /price-lists · 1팀 · 2차
          기준: 「기초정보(상품 · 카테고리 · 가격) 정책서」 PL-30 ~ PL-37. 설계 docs/superpowers/specs/2026-11-18-master-data-mockup-design.md §6.
          탭 셋 — 일반 가격 리스트 · 프로모션 가격 리스트 · 가격 변경 이력(#general · #promotion · #history). 적용 순서는 프로모션 → 일반 → 표준가격(PL-34).
-         BP · 가맹 선택칸은 두지 않는다(PL-1) — 검색 조건 머리 오른쪽에 BP 만 적는다. 쟁점(2 부가서비스별 가격)은 상세 화면에 띠로만 둔다.
+         BP · 가맹 선택칸은 두지 않는다(PL-1) — 검색 조건 머리 오른쪽에 BP 만 적는다. 쟁점 2(부가서비스별 가격, 문의 Q7)는 상세 화면의 가격 표에 꼬리표로 둔다.
          [등록]은 등록 화면(prices-new.html)으로 간다 — 이름 · 상품 리스트 · 상품 가격을 한 번에 넣는다(2026-11-25). 탭 수는 예시 데이터(일반 3 · 프로모션 3)를 따른다. 위쪽 점선 줄은 목업 전용 전환이다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
@@ -100,7 +100,7 @@
                         <td class="n">2</td>
                         <td class="k"><a class="tlink" href="prices-detail.html">기본가</a></td>
                         <td><a class="tlink" href="product-lists-detail.html">기본 메뉴</a></td>
-                        <td class="n">7</td><td class="n">1</td>
+                        <td class="n">5</td><td class="n">2</td>
                         <td class="mono">2026-11-12 10:30 · 정하윤</td>
                       </tr>
                       <tr>
@@ -125,7 +125,7 @@
                 </div>
               </section>
 
-              <!-- ── 프로모션 가격 리스트 ── 상태는 대기 · 진행 중 · 종료. 기간이 끝나면 점포 선택이 자동으로 풀린다(PL-35) -->
+              <!-- ── 프로모션 가격 리스트 ── 상태는 대기 · 진행 중 · 종료. 기간 밖에는 적용되지 않고 끝나면 자동으로 쓰이지 않는다(PL-35) -->
               <div data-panel="promotion" hidden class="stack--lg" style="display: flex; flex-direction: column">
                 <section class="panel">
                   <div class="panel__head">
@@ -204,7 +204,7 @@
                 </section>
                 <p class="note">
                   <span data-icon="info" data-icon-size="14"></span>
-                  <span>기간이 끝나면 상태가 종료로 바뀌고, 고른 점포의 선택이 자동으로 풀립니다(PL-35).</span>
+                  <span>프로모션 가격 리스트는 기간 밖에는 점포가 골라 두었어도 적용되지 않고, 기간이 끝나면 상태가 종료로 바뀌어 자동으로 쓰이지 않습니다(PL-35).</span>
                 </p>
               </div>
 
@@ -282,12 +282,12 @@
                       <tbody>
                         <tr>
                           <td class="mono">2026-11-17 14:20</td><td class="k"><a class="tlink" href="products-detail.html">아메리카노</a></td>
-                          <td>일반 가격 리스트</td><td>역세권가</td><td class="nil">-</td>
+                          <td>일반 가격 리스트</td><td>역세권가</td><td>기본 가격</td>
                           <td class="n"><span class="mono">3,200</span>원 → <b class="mono">3,300</b>원</td><td>정하윤</td>
                         </tr>
                         <tr>
                           <td class="mono">2026-11-10 09:00</td><td class="k"><a class="tlink" href="products-detail.html">아메리카노</a></td>
-                          <td>프로모션 가격 리스트</td><td>11월 감사제</td><td>POS</td>
+                          <td>프로모션 가격 리스트</td><td>11월 감사제</td><td>기본 가격</td>
                           <td class="n"><span class="subtle">(빈 값)</span> → <b class="mono">2,500</b>원</td><td>정하윤</td>
                         </tr>
                         <tr>
