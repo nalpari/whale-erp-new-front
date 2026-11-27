@@ -43,6 +43,8 @@ export function TimeField({
 }) {
   const [text, setText] = useState(controlled ?? defaultValue);
   const [open, setOpen] = useState(false);
+  // 시 · 분 목록에서 방향키로 옮겨 간 칸 — Tab 정지점(tabIndex 0)은 이 칸이다. 판을 열 때마다 비우고, 비면 고른 칸(없으면 첫 칸).
+  const [cursor, setCursor] = useState<{ hour: string | null; minute: string | null }>({ hour: null, minute: null });
   const canPopover = useSyncExternalStore(NO_SUBSCRIBE, HAS_POPOVER, () => true);
 
   const wrap = useRef<HTMLDivElement>(null);
@@ -105,7 +107,7 @@ export function TimeField({
   };
 
   // 시 · 분 목록은 목록마다 Tab 한 번으로 들어가고(고른 칸, 없으면 첫 칸), 안에서는 위 · 아래 · Home · End 로 옮긴다.
-  const moveInList = (e: KeyboardEvent<HTMLDivElement>) => {
+  const moveInList = (list: "hour" | "minute") => (e: KeyboardEvent<HTMLDivElement>) => {
     const keys = ["ArrowDown", "ArrowUp", "Home", "End"];
     if (!keys.includes(e.key)) return;
     const options = [...e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="option"]')];
@@ -114,9 +116,15 @@ export function TimeField({
     const next =
       e.key === "Home" ? 0 : e.key === "End" ? last : e.key === "ArrowDown" ? Math.min(last, at + 1) : Math.max(0, at - 1);
     e.preventDefault();
-    options[next]?.focus();
-    options[next]?.scrollIntoView({ block: "nearest" });
+    const target = options[next];
+    if (!target) return;
+    target.focus();
+    target.scrollIntoView({ block: "nearest" });
+    const value = target.dataset.value ?? null;
+    setCursor((c) => ({ ...c, [list]: value }));
   };
+  const hourStop = cursor.hour ?? hour ?? HOURS[0];
+  const minuteStop = cursor.minute ?? minute ?? MINUTES[0];
 
   const set = (next: string, closeAfter: boolean) => {
     setText(next);
@@ -175,6 +183,7 @@ export function TimeField({
         onToggle={(e) => {
           const opened = (e.nativeEvent as ToggleEvent).newState === "open";
           setOpen(opened);
+          if (opened) setCursor({ hour: null, minute: null });
           if (!opened && document.activeElement === document.body) trigger.current?.focus();
         }}
         onBlur={(e) => {
@@ -188,13 +197,14 @@ export function TimeField({
             <div className="flex gap-[8px]">
               <div className="flex flex-col gap-[6px]">
                 <p className="text-center text-[12px] text-erp-label">시</p>
-                <div role="listbox" aria-label="시" className={COL} onKeyDown={moveInList}>
-                  {HOURS.map((h, i) => (
+                <div role="listbox" aria-label="시" className={COL} onKeyDown={moveInList("hour")}>
+                  {HOURS.map((h) => (
                     <button
                       key={h}
                       type="button"
                       role="option"
-                      tabIndex={h === hour || (hour === null && i === 0) ? 0 : -1}
+                      data-value={h}
+                      tabIndex={h === hourStop ? 0 : -1}
                       aria-selected={h === hour}
                       onClick={() => set(`${h}:${minute ?? "00"}`, false)}
                       className={`${CELL} ${h === hour ? "bg-erp-brand text-white" : "text-erp-ink hover:bg-erp-thead-bg"}`}
@@ -206,13 +216,14 @@ export function TimeField({
               </div>
               <div className="flex flex-col gap-[6px]">
                 <p className="text-center text-[12px] text-erp-label">분</p>
-                <div role="listbox" aria-label="분" className={COL} onKeyDown={moveInList}>
-                  {MINUTES.map((m, i) => (
+                <div role="listbox" aria-label="분" className={COL} onKeyDown={moveInList("minute")}>
+                  {MINUTES.map((m) => (
                     <button
                       key={m}
                       type="button"
                       role="option"
-                      tabIndex={m === minute || (minute === null && i === 0) ? 0 : -1}
+                      data-value={m}
+                      tabIndex={m === minuteStop ? 0 : -1}
                       aria-selected={m === minute}
                       onClick={() => set(`${hour ?? "09"}:${m}`, true)}
                       className={`${CELL} ${m === minute ? "bg-erp-brand text-white" : "text-erp-ink hover:bg-erp-thead-bg"}`}

@@ -74,7 +74,9 @@ test("colonizeTime 은 숫자 네 자리가 되면 쌍점을 넣고, 세 자리�
   assert.equal(colonizeTime("09:301"), "09:301", "쌍점 뒤로 넘치게 붙여넣어도 자르지 않는다");
   assert.equal(colonizeTime("9:5"), "9:5", "쌍점을 직접 친 모양은 그대로");
   assert.equal(colonizeTime("9.05"), "9:05", "점은 쌍점으로 바꾸고 자리를 지킨다");
-  assert.equal(colonizeTime("09:3a0"), "09:30");
+  assert.equal(colonizeTime("09:3a0"), "09:3a0", "숫자가 아닌 글자가 섞이면 지우지 않는다");
+  assert.equal(parseTime(colonizeTime("1:30 PM")), null, "오후 표기를 지워 01:30 으로 통과시키지 않는다");
+  assert.equal(parseTime(colonizeTime("9시")), null);
 });
 
 // 칸은 한 글자 칠 때마다 colonizeTime 을 거치고, 칸을 벗어날 때 parseTime 으로 읽는다 — 그 길 그대로 확인한다.

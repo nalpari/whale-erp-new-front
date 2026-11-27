@@ -53,8 +53,11 @@ export const isTime = (v: string) => TIME.test(v);
 // 자릿수가 넘치면(09:301 · 09301) 잘라서 맞는 시각으로 만들지 않고 그대로 둔다 — 잘못 붙여넣은 근태 시각이 조용히 통과하지 않고
 // 칸을 벗어날 때 parseTime 이 읽지 못해 저장 검사가 알린다(PR #341 pr-agent 리뷰).
 export function colonizeTime(input: string): string {
+  // 숫자 · 쌍점 · 점 밖의 글자(1:30 PM · 9시)가 섞이면 지우지 않고 그대로 둔다 — 지우면 오후 1시 30분이 01:30 으로 통과한다.
+  // 칸을 벗어날 때 parseTime 이 읽지 못해 저장 검사가 알린다(PR #341 pr-agent 재리뷰).
+  if (/[^\d:.]/.test(input)) return input;
   // 쌍점이나 점을 직접 치면 그 자리를 지킨다(9:05 · 9.05). 점은 쌍점으로 바꾼다.
-  if (/[:.]/.test(input)) return input.replace(/[^\d:.]/g, "").replace(".", ":");
+  if (/[:.]/.test(input)) return input.replace(".", ":");
   // 숫자만 치면 네 자리가 됐을 때만 쌍점을 넣는다 — 세 자리(930)에서 넣으면 93:0 이 되어 9:30 으로 읽지 못한다.
   const d = input.replace(/\D/g, "");
   return d.length === 4 ? `${d.slice(0, 2)}:${d.slice(2)}` : d;
