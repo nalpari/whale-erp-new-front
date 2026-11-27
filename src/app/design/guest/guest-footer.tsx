@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Fragment } from "react";
 import { SITE_ROUTES } from "./guest-routes";
+import { HideFloatingAtFooter } from "./hide-floating-at-footer";
 import { HOVER } from "./theme";
 
 // 비로그인 화면 전체(실제 라우트·디자인 샘플)가 함께 쓰는 푸터. 이용약관·개인정보처리방침은 약관 전문 화면(/terms)의 그 탭으로 간다 — 데모 guest.mjs 와 같다(2026-10-19).
@@ -17,6 +18,7 @@ function Bar() {
 export function GuestFooter() {
   return (
     <footer className="bg-white">
+      <HideFloatingAtFooter />
       <div className="border-t border-guest-line px-[80px] pt-[38px] pb-[32px]">
         <div className="flex items-start gap-[100px]">
           <span className="relative h-[50px] w-[80px]">
