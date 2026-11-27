@@ -2,7 +2,7 @@
 // Node 24 가 타입을 벗겨 그대로 실행한다. 테스트 도구를 따로 깔지 않는다.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { addDays, colonizeTime, hyphenateDate, isTime, iso, monthGrid, parse, parseTime, shiftMonth } from "./date-math.ts";
+import { addDays, atMonth, colonizeTime, hyphenateDate, isTime, iso, monthGrid, parse, parseTime, shiftMonth } from "./date-math.ts";
 
 test("parse 는 사람이 치는 모양까지 받고, 없는 날짜는 버린다", () => {
   assert.equal(iso(parse("2020-08-28")!), "2020-08-28");
@@ -66,18 +66,49 @@ test("hyphenateDate 는 / · . 로 친 값은 그대로 둔다 (2020/8/5 를 par
   assert.equal(hyphenateDate("2020.08.05"), "2020.08.05");
 });
 
-test("colonizeTime 은 숫자만 쳐도 HH:MM 으로 쌍점을 넣는다", () => {
+test("colonizeTime 은 숫자 네 자리가 되면 쌍점을 넣고, 세 자리까지는 그대로 둔다", () => {
   assert.equal(colonizeTime("09"), "09");
-  assert.equal(colonizeTime("093"), "09:3");
+  assert.equal(colonizeTime("093"), "093", "세 자리에서 쌍점을 넣으면 930 이 93:0 이 된다");
   assert.equal(colonizeTime("0930"), "09:30");
   assert.equal(colonizeTime("093015"), "09:30", "네 자리 넘게 치면 자른다");
   assert.equal(colonizeTime("9:5"), "9:5", "쌍점을 직접 친 모양은 그대로");
+  assert.equal(colonizeTime("9.05"), "9:05", "점은 쌍점으로 바꾸고 자리를 지킨다");
   assert.equal(colonizeTime("09:3a0"), "09:30");
+});
+
+// 칸은 한 글자 칠 때마다 colonizeTime 을 거치고, 칸을 벗어날 때 parseTime 으로 읽는다 — 그 길 그대로 확인한다.
+const typed = (keys: string) => [...keys].reduce((v, k) => colonizeTime(v + k), "");
+const typedThenLeft = (keys: string) => parseTime(typed(keys));
+
+test("한 글자씩 친 뒤 칸을 벗어나면 친 뜻대로 읽는다", () => {
+  assert.equal(typedThenLeft("930"), "09:30");
+  assert.equal(typedThenLeft("905"), "09:05");
+  assert.equal(typedThenLeft("130"), "01:30", "1:30 이 13:00 으로 바뀌지 않는다");
+  assert.equal(typedThenLeft("123"), "01:23");
+  assert.equal(typedThenLeft("0930"), "09:30");
+  assert.equal(typedThenLeft("1234"), "12:34");
+  assert.equal(typedThenLeft("9:30"), "09:30");
+  assert.equal(typedThenLeft("9.05"), "09:05");
+  assert.equal(typedThenLeft("9"), "09:00");
+  assert.equal(typedThenLeft("9:3"), null, "분 한 자리는 9:03 인지 9:30 인지 몰라 읽지 않는다");
+  assert.equal(typedThenLeft("2400"), null);
+  for (const digits of ["905", "930", "130", "123", "0930", "1234", "9"]) {
+    assert.equal(typedThenLeft(digits), parseTime(digits), `${digits}: 친 길과 한 번에 읽은 값이 같다`);
+  }
+});
+
+test("atMonth 는 연 · 월만 바꾸고 날이 없으면 말일로 당긴다", () => {
+  assert.equal(iso(atMonth(new Date(2026, 0, 31), 2026, 1)), "2026-02-28");
+  assert.equal(iso(atMonth(new Date(2024, 0, 31), 2024, 1)), "2024-02-29");
+  assert.equal(iso(atMonth(new Date(2024, 1, 29), 2025, 1)), "2025-02-28");
+  assert.equal(iso(atMonth(new Date(2026, 2, 31), 2026, 3)), "2026-04-30");
+  assert.equal(iso(atMonth(new Date(2026, 4, 15), 1998, 6)), "1998-07-15");
 });
 
 test("parseTime 은 사람이 치는 모양을 HH:MM 으로 맞추고 범위 밖은 버린다", () => {
   assert.equal(parseTime("09:30"), "09:30");
-  assert.equal(parseTime("9:5"), "09:05");
+  assert.equal(parseTime("9:05"), "09:05");
+  assert.equal(parseTime("9:5"), null, "쌍점 뒤 분은 두 자리만");
   assert.equal(parseTime("9.05"), "09:05");
   assert.equal(parseTime("0905"), "09:05");
   assert.equal(parseTime("905"), "09:05");

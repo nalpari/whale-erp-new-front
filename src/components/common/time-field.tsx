@@ -17,9 +17,10 @@ const CELL = "grid h-[30px] w-full shrink-0 place-items-center rounded-[2px] tex
 const FOOT = "text-[13px] transition-colors duration-150 ease-out";
 
 // 시간 입력칸(2026-11-27 사용자 지정 — 네이티브 <input type="time"> 은 칸 안 시 · 분 조각을 하나씩 눌러 바꿔야 해 다루기 어려웠다).
-// DateField 처럼 직접 칠 수도 있고(0930 · 9:30 · 930 → 09:30), 시계 버튼을 누르면 시 · 분 두 줄 판에서 고를 수 있다.
+// DateField 처럼 직접 칠 수도 있고(0930 · 930 · 9:30 · 9.30 → 09:30), 시계 버튼을 누르면 시 · 분 두 열 판에서 고를 수 있다.
 // 판은 DateField 와 같은 popover 모양이다. 시를 고르면 분이 없을 때 00분으로 채우고, 분을 고르면 닫는다.
-// 값은 네이티브 시간 칸과 같은 HH:MM(24시간)이고, 덜 친 값은 내보내지 않다가 칸을 벗어날 때 맞추거나 지운다.
+// 값은 네이티브 시간 칸과 같은 HH:MM(24시간)이다. 치는 중에는 다 친 값만 내보내고, 칸을 벗어날 때 시간으로 읽히면 HH:MM 으로 맞춘다.
+// 읽히지 않으면 지우지 않고 친 글자를 그대로 내보낸다 — 쓰는 쪽의 저장 검사(「시 · 분까지 입력해 주세요」)가 잡게.
 export function TimeField({
   value: controlled,
   defaultValue = "",
@@ -112,10 +113,16 @@ export function TimeField({
         placeholder="HH:MM"
         onChange={(e) => emit(colonizeTime(e.target.value))}
         onBlur={(e) => {
-          // 9:5 · 905 처럼 쳐도 HH:MM 으로 맞춘다. 시간으로 안 읽히면 지운다 — 반쯤 친 값이 저장에 실리지 않게.
-          const t = parseTime(e.target.value);
-          if (t) set(t, false);
-          else if (e.target.value) emit("");
+          const raw = e.target.value;
+          // 905 · 9.05 처럼 쳐도 HH:MM 으로 맞춘다. 값이 그대로면 내보내지 않는다(쓰는 쪽이 서버 거절 문장을 지우지 않게).
+          const t = parseTime(raw);
+          if (t) {
+            setText(t);
+            if (t !== controlled) onChange?.(t);
+          } else if (raw && raw !== controlled) {
+            // 시간으로 안 읽히면 지우지 않고 그대로 넘겨 저장 검사가 알리게 한다 — 조용히 지우면 넣으려던 시각이 사라진다.
+            onChange?.(raw);
+          }
         }}
         className={`${FIELD_BOX} h-[34px] ${canPopover ? "pr-[34px]" : "pr-[10px]"} pl-[10px] tabular-nums`}
       />
@@ -130,7 +137,7 @@ export function TimeField({
           aria-expanded={open}
           className="absolute top-0 right-0 grid h-[34px] w-[30px] place-items-center text-erp-label disabled:opacity-40"
         >
-          {/* 시계 — 달력 버튼(calendar.svg)과 같은 회색 선 */}
+          {/* 시계 — 달력 버튼 자리 · 크기에 맞춘 선 그림(색은 erp-label 회색) */}
           <svg viewBox="0 0 16 16" fill="none" aria-hidden className="size-[15px]">
             <circle cx="8" cy="8" r="6.25" stroke="currentColor" strokeWidth="1.3" />
             <path d="M8 4.75V8l2.25 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />

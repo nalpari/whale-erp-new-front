@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
-import { addDays, firstOfMonth, hyphenateDate, iso, monthGrid, parse, shiftMonth } from "./date-math";
+import { addDays, atMonth, firstOfMonth, hyphenateDate, iso, monthGrid, parse, shiftMonth } from "./date-math";
 import { EASE_OUT, FIELD_BOX } from "./theme";
 
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -24,12 +24,6 @@ function yearsAround(shown: number) {
   const from = Math.min(shown, now - 100);
   const to = Math.max(shown, now + 10);
   return Array.from({ length: to - from + 1 }, (_, i) => to - i);
-}
-
-/** 연 · 월만 바꾸고 날은 지킨다 — 31일에서 2월로 가면 말일로 당긴다(shiftMonth 와 같은 규칙). */
-function atMonth(d: Date, year: number, month: number) {
-  const last = new Date(year, month + 1, 0).getDate();
-  return new Date(year, month, Math.min(d.getDate(), last));
 }
 
 // 팝업이 나중에 ErpRoot 밖(포털 등)으로 옮겨가도 글꼴·색이 깨지지 않게 여기서 다시 준다.

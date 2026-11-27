@@ -48,20 +48,23 @@ export function monthGrid(view: Date) {
 const TIME = /^([01]\d|2[0-3]):([0-5]\d)$/;
 export const isTime = (v: string) => TIME.test(v);
 
-// 숫자만 쳐도 HH:MM 으로 쌍점을 넣는다(0930 → 09:30). 세 번째 숫자가 와야 쌍점을 붙여 지우기가 걸리지 않는다.
-// 쌍점을 직접 친 사람은 그 모양 그대로 둔다(9:5 처럼 한 자리도) — parseTime 이 받는다.
+// 숫자만 쳐도 네 자리가 되면 HH:MM 으로 쌍점을 넣는다(0930 → 09:30). 세 자리(930)까지는 숫자 그대로 두고 칸을 벗어날 때
+// parseTime 이 9:30 으로 읽는다. 쌍점 · 점을 직접 친 사람은 그 자리를 지킨다(9:05 · 9.05).
 export function colonizeTime(input: string): string {
-  if (input.includes(":")) return input.replace(/[^\d:]/g, "").slice(0, 5);
+  // 쌍점이나 점을 직접 치면 그 자리를 지킨다(9:05 · 9.05). 점은 쌍점으로 바꾼다.
+  if (/[:.]/.test(input)) return input.replace(/[^\d:.]/g, "").replace(".", ":").slice(0, 5);
+  // 숫자만 치면 네 자리가 됐을 때만 쌍점을 넣는다 — 세 자리(930)에서 넣으면 93:0 이 되어 9:30 으로 읽지 못한다.
   const d = input.replace(/\D/g, "").slice(0, 4);
-  return d.length <= 2 ? d : `${d.slice(0, 2)}:${d.slice(2)}`;
+  return d.length < 4 ? d : `${d.slice(0, 2)}:${d.slice(2)}`;
 }
 
-// 사람이 치는 모양을 HH:MM 으로 맞춘다 — 9:5 · 9.05 · 0905 · 905 · 9 (9시 정각). 범위를 벗어나면(24:00 · 12:60) null.
+// 사람이 치는 모양을 HH:MM 으로 맞춘다 — 9:05 · 9.05 · 0905 · 905 · 9 (9시 정각). 쌍점 뒤 분은 두 자리만 받는다(9:3 은 9:03 인지 9:30 인지 몰라 null).
+// 범위를 벗어나면(24:00 · 12:60) null.
 export function parseTime(v: string): string | null {
   const s = v.trim();
   let h: number;
   let m: number;
-  const sep = /^(\d{1,2})[:.](\d{1,2})$/.exec(s);
+  const sep = /^(\d{1,2})[:.](\d{2})$/.exec(s);
   if (sep) {
     h = Number(sep[1]);
     m = Number(sep[2]);
@@ -72,4 +75,10 @@ export function parseTime(v: string): string | null {
   } else return null;
   if (h > 23 || m > 59) return null;
   return `${pad(h)}:${pad(m)}`;
+}
+
+/** 연 · 월만 바꾸고 날은 지킨다 — 31일에서 2월로 가면 말일로 당긴다(shiftMonth 와 같은 규칙). month 는 0~11. */
+export function atMonth(d: Date, year: number, month: number): Date {
+  const last = new Date(year, month + 1, 0).getDate();
+  return new Date(year, month, Math.min(d.getDate(), last));
 }
