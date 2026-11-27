@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>점포 상품 관리 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="master" data-sub="master/store-products.html">
+    <!-- 점포 상품 관리 · /store-products · 1팀 · 2차 · 기초정보관리 아래(2026-11-25 점포관리에서 옮김)
+         기준: 「기초정보(상품 · 카테고리 · 가격) 정책서」 PL-6 · PL-36 · PL-38 ~ PL-43. 설계 docs/superpowers/specs/2026-11-18-master-data-mockup-design.md §9.
+         점포 하나를 고르면(본사 점포 없음 · 헤더 범위를 따른다) 위 「점포」 상자에서 점포 적용을 고르고 — 상품 방식(단위 상품 · 상품 리스트), 상품 리스트면 기본 · 기간 상품 리스트와 리스트마다 일반 · 프로모션 가격 리스트 —
+         아래 탭에서 그 점포의 상품 · 최종 가격(어느 리스트에서 왔는지 꼬리표) · 카테고리 분류를 본다(PL-40). 점포 적용 · [다른 점포에 복사]는 BP 마스터 · BP 관리자만 고치고 가맹 역할은 읽기만 한다(쟁점 5 · 7 확정).
+         방식을 바꿔 저장하면 이전 방식의 매핑이 풀린다는 것을 확인창으로 먼저 묻는다(PL-6).
+         판매 상태(부가서비스별) · 품절 · 분류 사용은 가맹 역할도 바꾸고, 바꾸면 바로 저장해 토스트로 알린다. 본사가 상품 정보를 고쳐도 그대로다(PL-41 · PL-42).
+         상품 탭 위에 「안 보이는 상품 N건」과 상품별 이유 · 고칠 곳 링크를 둔다(PL-38 · PL-39). 카테고리 미배정 상품은 「노출」로 보이지 않는다.
+         카테고리 분류 탭은 상품 리스트마다 「카테고리 사용」 스위치를 둔다(PL-41, 쟁점 3 추천안 B — 끄면 그 리스트의 상품이 분류 없이 보인다). 위쪽 점선 줄은 목업 전용 전환이다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="sp" style="display: contents">
+          <div class="titlebar">
+            <h1 class="t-h1">점포 상품 관리</h1>
+            <span class="badge badge--warn">1팀 작업</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">2차 · /store-products</span>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="stack">
+              <div class="demo" data-demo="sp" data-demo-key="role">
+                <b>목업 권한</b>
+                <div class="seg">
+                  <button type="button" data-state="bp" aria-pressed="true">BP 마스터</button>
+                  <button type="button" data-state="fr" aria-pressed="false">가맹 마스터</button>
+                </div>
+              </div>
+              <div class="demo" data-demo="sp">
+                <b>목업 상태</b>
+                <div class="seg">
+                  <button type="button" data-state="lists" aria-pressed="true">상품 리스트 방식(을지로점)</button>
+                  <button type="button" data-state="unit" aria-pressed="false">단위 상품 방식(서초점)</button>
+                  <button type="button" data-state="empty" aria-pressed="false">기본 상품 리스트 없음(청담점)</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="band band--info" data-show-role="fr" hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">가맹 마스터는 맡은 가맹 점포만 볼 수 있습니다.</div>
+                <p class="band__desc">직영 점포(서초점 · 성수점)는 점포 선택에 나오지 않습니다.</p>
+              </div>
+            </div>
+
+            <div class="band band--info" data-show-role="fr" data-show="unit" hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">목업 안내: 단위 상품 방식 예시(서초점)는 직영 점포라 가맹 마스터 화면에는 나오지 않습니다.</div>
+                <p class="band__desc">아래는 BP 마스터 화면 그대로입니다.</p>
+              </div>
+            </div>
+
+            <!-- 복사 결과 — 고른 점포에 있는 상품 리스트 · 단위 상품에만 적용된다(2026-11-25 사용자 지정). 다 적용되면 토스트만,
+                 일부만 적용된 점포가 있으면 이 띠로 점포마다 적용하지 못한 것을 알린다. 띠는 다음 저장 · 복사까지 남는다(여러 건 저장의 일부 실패 요약 규칙) -->
+            <div class="band band--info" data-copy-result hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title"><span data-copy-total>2</span>개 점포에 복사했습니다. 1개 점포는 일부만 적용되었습니다.</div>
+                <ul class="band__desc" style="margin: 4px 0 0; padding-left: 18px">
+                  <li>모리커피 연남점 — 모두 적용</li>
+                  <li>모리커피 청담점 — 일부 적용: 기간 상품 리스트 「기본 메뉴」는 청담점에 매핑되지 않아 적용하지 못했습니다.</li>
+                </ul>
+              </div>
+              <button class="iconbtn" type="button" aria-label="닫기" data-icon="x" data-icon-size="16" data-copy-close style="margin-left: auto"></button>
+            </div>
+
+            <!-- 점포 고르기 + 점포 적용(본사가 고름 · 가맹은 읽기만) -->
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">점포</h2>
+                <span class="subtle" style="font-size: 12px">BP <b>㈜한강상회 · BP000017</b></span>
+              </div>
+              <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                <!-- 점포 적용 — 화면에서 바로 고른다(팝업 아님, 2026-11-25 사용자 지정). 따로 「점포 적용 관리」 메뉴를 두지 않는다.
+                     상품 방식(단위 상품 · 상품 리스트) 중 하나를 고르고, 상품 리스트면 기본 상품 리스트 하나와 기간 상품 리스트(이벤트)를 걸어 두고 리스트마다 일반 · 프로모션 가격 리스트를 고른다.
+                     가격 리스트 후보는 그 상품 리스트에 붙은 것뿐이고 비우면 다음 순위(일반 → 표준가격)다(PL-34 · PL-36). 비활성 리스트 · 종료된 프로모션은 고를 수 없다.
+                     방식을 바꾸면 이전 방식의 매핑이 풀린다(PL-6) — [저장]을 누르면 풀리는 매핑 수를 확인창으로 보이고 [변경]해야 저장한다.
+                     고르는 사람은 본사(BP 마스터 · BP 관리자)뿐이다(개념 정의서 14쪽) — 가맹 역할은 같은 화면을 읽기만 한다(칸이 막히고 [저장]이 없다).
+                     상품 리스트의 내용(담는 단위 상품)은 여기서 고치지 않는다 — 여러 점포가 같은 리스트를 쓰므로 상품 정보 관리 › 상품 리스트에서 고친다 -->
+                <div class="stack--lg" style="display: flex; flex-direction: column" data-sp-apply>
+                  <!-- 점포 · 상품 방식을 한 줄에(2026-11-25 사용자 지정) -->
+                  <div class="inline" style="gap: var(--s-6, 32px); align-items: flex-start; flex-wrap: wrap">
+                  <div class="field" style="width: 320px">
+                    <label for="sp-store">점포</label>
+                    <select class="select" id="sp-store" data-show="lists">
+                      <option data-show-role="bp">모리커피 성수점</option>
+                      <option selected>모리커피 을지로점</option>
+                      <option>모리커피 연남점</option>
+                      <option>모리커피 청담점</option>
+                      <option>모리커피 합정점 (폐점)</option>
+                    </select>
+                    <select class="select" aria-label="점포" data-show="unit" hidden>
+                      <option selected data-show-role="bp">모리커피 서초점</option>
+                      <option data-show-role="bp">모리커피 성수점</option>
+                      <option>모리커피 을지로점</option>
+                      <option>모리커피 연남점</option>
+                      <option>모리커피 청담점</option>
+                      <option>모리커피 합정점 (폐점)</option>
+                    </select>
+                    <select class="select" aria-label="점포" data-show="empty" hidden>
+                      <option>모리커피 을지로점</option>
+                      <option>모리커피 연남점</option>
+                      <option selected>모리커피 청담점</option>
+                      <option>모리커피 합정점 (폐점)</option>
+                    </select>
+                    <span class="help">본사 점포는 고를 수 없습니다.</span>
+                  </div>
+                    <div class="field">
+                      <label>상품 방식 <span class="tag" data-show-role="fr" hidden>본사가 정합니다</span></label>
+                      <div class="inline" style="min-height: 34px; gap: var(--s-4)" role="radiogroup" aria-label="상품 방식">
+                        <label class="inline" style="gap: 6px"><input type="radio" name="sp-mode" data-sp-mode="unit" />단위 상품</label>
+                        <label class="inline" style="gap: 6px"><input type="radio" name="sp-mode" data-sp-mode="list" />상품 리스트</label>
+                      </div>
+                      <span class="help">점포는 두 방식 중 하나만 씁니다.</span>
+                    </div>
+                  </div>
+
+                  <!-- 단위 상품 방식 — 매핑은 단위 상품 화면의 「적용 점포」에서 한다. 가격은 표준가격, 카테고리는 표준 카테고리 -->
+                  <div data-sp-unit hidden>
+                    <dl class="kv" style="margin: 0">
+                      <dt>매핑한 단위 상품</dt><dd>3건 <a class="tlink" href="products.html" style="margin-left: 8px">단위 상품에서 매핑 ›</a></dd>
+                      <dt>카테고리</dt><dd>표준 카테고리</dd>
+                      <dt>가격</dt><dd>표준가격 <span class="subtle">(단위 상품 방식은 가격 리스트를 고르지 않습니다)</span></dd>
+                    </dl>
+                  </div>
+
+                  <!-- 상품 리스트 방식 — 기본 상품 리스트 하나(기간 없이 늘) + 기간 상품 리스트(이벤트)를 미리 걸어 둔다(2026-11-25 사용자 지정, A안 바꿔 끼우기).
+                       기간 상품 리스트의 기간에는 그 리스트만 보이고, 끝나면 자동으로 기본 상품 리스트로 돌아간다. 그날 점포마다 들어가 바꾸지 않아도 된다.
+                       가격 리스트(일반 · 프로모션)는 여기서만 고른다(A안, 2026-11-25) — 걸어 둔 리스트마다 그 리스트에 붙은 것 중에서. 고를 수 있는 상품 리스트는 이 점포에 매핑된 것뿐이다(매핑은 상품 리스트 상세). 기간 상품 리스트끼리 기간이 겹칠 때는 문의 Q9 — 꼬리표만 둔다.
+                       개념 정의서 5번째 슬라이드 「점포는 하나의 상품 리스트를 매핑할 수 있다」와 다른 안이라 문의 Q9 로 올렸다 -->
+                  <div data-sp-list hidden class="stack--lg" style="display: flex; flex-direction: column">
+                    <div>
+                      <div class="inline" style="gap: 8px; margin-bottom: 8px"><b style="font-size: 13px">기본 상품 리스트</b><span class="subtle" style="font-size: 12px">기간 없이 늘 적용됩니다</span></div>
+                      <div class="tblwrap">
+                        <table class="tbl">
+                          <thead><tr><th scope="col">상품 리스트</th><th scope="col" style="width: 210px">일반 가격 리스트</th><th scope="col" style="width: 210px">프로모션 가격 리스트</th></tr></thead>
+                          <tbody><tr>
+                            <td data-sp-base><select class="select" aria-label="기본 상품 리스트" data-sp-ctl><option>선택</option><option>기본 메뉴</option><option selected>여름 메뉴</option></select></td>
+                            <td><select class="select" aria-label="기본 상품 리스트 일반 가격 리스트" data-sp-ctl><option>선택 안 함 (표준가격)</option><option selected>역세권가</option><option>상권 일반가</option></select></td>
+                            <td><select class="select" aria-label="기본 상품 리스트 프로모션 가격 리스트" data-sp-ctl><option selected>선택 안 함</option><option disabled>8월 할인 — 종료</option></select></td>
+                          </tr></tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div class="inline" style="gap: 8px; margin-bottom: 8px">
+                        <b style="font-size: 13px">기간 상품 리스트</b><span class="subtle" style="font-size: 12px">기간 동안 기본 상품 리스트 대신 보입니다</span>
+                        <span class="badge badge--warn" title="기간 상품 리스트끼리 기간이 겹칠 때 어떻게 할지는 문의 Q9 답변을 기다린다.">Q9</span>
+                        <button class="btn btn--secondary btn--sm" type="button" data-sp-add data-show-role="bp" style="margin-left: auto"><span data-icon="plus" data-icon-size="14"></span>기간 상품 리스트 추가</button>
+                      </div>
+                      <div class="tblwrap">
+                        <table class="tbl">
+                          <thead><tr><th scope="col">상품 리스트</th><th scope="col" style="width: 330px">기간</th><th scope="col" style="width: 80px">상태</th><th scope="col" style="width: 180px">일반 가격 리스트</th><th scope="col" style="width: 180px">프로모션 가격 리스트</th><th scope="col" style="width: 64px"></th></tr></thead>
+                          <tbody data-sp-periods>
+                            <tr data-sp-period>
+                              <td><select class="select" aria-label="기간 상품 리스트" data-sp-ctl><option>선택</option><option selected>기본 메뉴</option><option>여름 메뉴</option></select></td>
+                              <td><div class="inline" style="gap: 6px; flex-wrap: nowrap"><input class="input mono" style="width: 128px" value="2026-12-20" aria-label="시작일" data-sp-ctl /><span class="subtle">~</span><input class="input mono" style="width: 128px" value="2026-12-31" aria-label="종료일" data-sp-ctl /></div></td>
+                              <td style="text-align: center"><span class="badge badge--quiet">예정</span></td>
+                              <td><select class="select" aria-label="기간 상품 리스트 일반 가격 리스트" data-sp-ctl><option>선택 안 함 (표준가격)</option><option selected>기본가</option></select></td>
+                              <td><select class="select" aria-label="기간 상품 리스트 프로모션 가격 리스트" data-sp-ctl><option selected>선택 안 함</option><option>11월 감사제 — 진행 중</option><option>겨울 시즌 할인 — 대기</option></select></td>
+                              <td style="text-align: center"><button class="tbtn" type="button" data-sp-del data-show-role="bp">빼기</button></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <p class="subtle" data-sp-noperiod hidden style="margin: var(--s-2) 0 0; font-size: 13px">걸어 둔 기간 상품 리스트가 없습니다.</p>
+                    </div>
+                    <span class="help" style="display: block">상품 리스트는 이 점포에 매핑된 것만 고를 수 있습니다 — 매핑은 상품 정보 관리 › 상품 리스트 상세의 「적용 점포」에서 합니다. 기간 상품 리스트는 시작일 0시부터 종료일 24시까지 그 리스트만 보이고, 끝나면 기본 상품 리스트로 돌아갑니다. 가격 리스트는 리스트마다 그 리스트에 붙은 것만 고를 수 있고, 비우면 다음 순위 가격(일반 → 표준가격)이 적용됩니다.</span>
+                  </div>
+
+                  <div class="band band--risk" data-sp-warn hidden><span class="band__ic" data-icon="warn" data-icon-size="20"></span><div class="band__body"><div class="band__title" data-sp-warn-text></div></div></div>
+
+                  <div class="inline" style="justify-content: flex-end; gap: 6px" data-show-role="bp">
+                    <!-- 다른 점포에 복사 — 이 점포에 저장된 설정을 기준으로 여러 점포에 한 번에 같은 설정을 넣는다(2026-11-25 사용자 지정) -->
+                    <button class="btn btn--secondary btn--sm" type="button" data-open="pop-copy" style="margin-right: auto">다른 점포에 복사</button>
+                    <button class="btn btn--ghost btn--sm" type="button" data-sp-reset>되돌리기</button>
+                    <button class="btn btn--primary btn--sm" type="button" data-sp-save>저장</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div class="tabs" data-tabs="sp-tabs">
+              <button type="button" data-tab="products" aria-selected="true">상품 <span class="count"><span data-show="lists">5</span><span data-show="unit" hidden>3</span><span data-show="empty" hidden>0</span></span></button>
+              <button type="button" data-tab="categories" aria-selected="false">카테고리 분류 <span class="count"><span data-show="lists">5</span><span data-show="unit" hidden>7</span><span data-show="empty" hidden>0</span></span></button>
+            </div>
+
+            <div id="sp-tabs" class="stack--lg" style="display: flex; flex-direction: column">
+              <!-- ── 상품 탭 ── 바꾸면 바로 저장한다 -->
+              <section class="panel" data-panel="products">
+                <div class="panel__head">
+                  <h2 class="t-h2">상품</h2>
+                  <span class="badge badge--quiet" data-show="lists">5개</span>
+                  <span class="badge badge--quiet" data-show="unit" hidden>3개</span>
+                  <span class="badge badge--quiet" data-show="empty" hidden>0개</span>
+                </div>
+                <!-- 안 보이는 상품(PL-38 · PL-39) — 이 점포의 부가서비스에 하나라도 안 보이는 상품 수와 상품별 이유, 고칠 곳으로 가는 링크.
+                     품절은 보이되 주문할 수 없으므로 세지 않는다. 건수는 아래 표의 「안 보임」 · 「일부 안 보임」 줄 수와 같다 -->
+                <div class="band band--info" data-show="lists" style="margin: 12px 20px 0">
+                  <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">이 점포에서 안 보이는 상품 3건</div>
+                    <ul class="band__desc" style="margin: 4px 0 0; padding-left: 18px">
+                      <li>흑당라떼 — 카테고리 미배정: 여름 카테고리의 분류에 배정되지 않았습니다. <a class="tlink" href="categories.html">카테고리에서 배정 ›</a></li>
+                      <li>바닐라라떼 — 카테고리 미배정: 여름 메뉴에 넣은 뒤 분류를 정하지 않았습니다. <a class="tlink" href="categories.html#lists">여름 카테고리 ›</a></li>
+                      <li>카페라떼 — 판매 중지(KIOSK): KIOSK 에만 보이지 않습니다. <a class="tlink" href="#sp-latte-kiosk">KIOSK 판매 켜기 ›</a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="band band--info" data-show="unit" hidden style="margin: 12px 20px 0">
+                  <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">이 점포에서 안 보이는 상품 1건</div>
+                    <ul class="band__desc" style="margin: 4px 0 0; padding-left: 18px">
+                      <li>딸기라떼 — 비활성: 상품을 활성으로 바꿔야 보입니다. <a class="tlink" href="products-detail.html?state=never">상품 상세 ›</a></li>
+                      <li>딸기라떼 — 분류 미사용(시즌): 본사가 시즌 분류를 미사용으로 두었습니다. <a class="tlink" href="categories.html">카테고리 ›</a></li>
+                    </ul>
+                  </div>
+                </div>
+<div class="tblwrap" data-show="lists"><table class="tbl" style="min-width: 1000px"><thead><tr><th scope="col">상품</th><th scope="col">노출</th><th scope="col" class="n">적용 가격</th><th scope="col" class="c">품절</th><th scope="col" class="c">POS</th><th scope="col" class="c">KIOSK</th><th scope="col" class="c">테이블오더</th><th scope="col" class="c">픽업오더</th><th scope="col" class="c">QR오더</th><th scope="col" class="c">옵션</th></tr></thead><tbody><tr><td><div class="inline" style="gap: 10px; flex-wrap: nowrap"><span class="thumb" style="display: grid; place-items: center; color: var(--muted)" data-icon="image" data-icon-size="16"></span><div><span class="k" style="font-weight: 500; color: var(--ink)"><a class="tlink" href="products-detail.html">아메리카노</a></span><div class="subtle" style="font-size: 12px">음료</div></div></div></td><td><span class="badge badge--ok">노출</span></td><td class="n"><span class="mono">3,300</span>원 <span class="badge badge--quiet">일반</span></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="아메리카노 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="아메리카노 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="아메리카노 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="아메리카노 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="아메리카노 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="아메리카노 QR오더 판매"></button></td><td class="c"><button class="btn btn--secondary btn--sm" type="button" data-optrow="lists0">옵션 2</button></td></tr></tbody><tbody data-optbody="lists0" hidden><tr><td style="padding-left: 52px"><span class="subtle">원두 선택 ›</span> 디카페인 원두</td><td></td><td></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="디카페인 원두 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="디카페인 원두 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="디카페인 원두 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="디카페인 원두 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="디카페인 원두 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="디카페인 원두 QR오더 판매"></button></td><td></td></tr><tr><td style="padding-left: 52px"><span class="subtle">추가 ›</span> 샷 추가</td><td></td><td></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="샷 추가 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 QR오더 판매"></button></td><td></td></tr><tr><td style="padding-left: 52px"><span class="subtle">추가 ›</span> 바닐라 시럽</td><td></td><td></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="바닐라 시럽 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 QR오더 판매"></button></td><td></td></tr></tbody><tbody><tr><td><div class="inline" style="gap: 10px; flex-wrap: nowrap"><span class="thumb" style="display: grid; place-items: center; color: var(--muted)" data-icon="image" data-icon-size="16"></span><div><span class="k" style="font-weight: 500; color: var(--ink)"><a class="tlink" href="products-detail.html">카페라떼</a></span><div class="subtle" style="font-size: 12px">음료</div></div></div></td><td><span class="badge badge--warn">일부 안 보임</span><div class="subtle" style="font-size: 12px; margin-top: 2px">판매 중지(KIOSK)</div></td><td class="n"><span class="mono">3,800</span>원 <span class="badge badge--quiet">일반</span></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="카페라떼 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="카페라떼 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="카페라떼 KIOSK 판매" id="sp-latte-kiosk"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="카페라떼 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="카페라떼 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="카페라떼 QR오더 판매"></button></td><td class="c"><button class="btn btn--secondary btn--sm" type="button" data-optrow="lists1">옵션 1</button></td></tr></tbody><tbody data-optbody="lists1" hidden><tr><td style="padding-left: 52px"><span class="subtle">추가 ›</span> 샷 추가</td><td></td><td></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="샷 추가 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 QR오더 판매"></button></td><td></td></tr><tr><td style="padding-left: 52px"><span class="subtle">추가 ›</span> 바닐라 시럽</td><td></td><td></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="바닐라 시럽 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 QR오더 판매"></button></td><td></td></tr></tbody><tbody><tr><td><div class="inline" style="gap: 10px; flex-wrap: nowrap"><span class="thumb" style="display: grid; place-items: center; color: var(--muted)" data-icon="image" data-icon-size="16"></span><div><span class="k" style="font-weight: 500; color: var(--ink)"><a class="tlink" href="products-detail.html">콜드브루</a></span><span class="badge badge--risk" style="margin-left: 6px">품절</span><div class="subtle" style="font-size: 12px">음료</div></div></div></td><td><span class="badge badge--ok">노출</span></td><td class="n"><span class="mono">4,500</span>원 <span class="badge badge--quiet">일반</span></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="콜드브루 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="콜드브루 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="콜드브루 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="콜드브루 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="콜드브루 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="콜드브루 QR오더 판매"></button></td><td class="c"><button class="btn btn--secondary btn--sm" type="button" data-optrow="lists2">옵션 1</button></td></tr></tbody><tbody data-optbody="lists2" hidden><tr><td style="padding-left: 52px"><span class="subtle">얼음 양 ›</span> 얼음 많이 <span class="badge badge--quiet">옵션 상품 비활성</span></td><td></td><td></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="얼음 많이 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="얼음 많이 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="얼음 많이 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="얼음 많이 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="얼음 많이 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="얼음 많이 QR오더 판매"></button></td><td></td></tr></tbody><tbody><tr><td><div class="inline" style="gap: 10px; flex-wrap: nowrap"><span class="thumb" style="display: grid; place-items: center; color: var(--muted)" data-icon="image" data-icon-size="16"></span><div><span class="k" style="font-weight: 500; color: var(--ink)"><a class="tlink" href="products-detail.html">흑당라떼</a></span><div class="subtle" style="font-size: 12px">음료</div></div></div></td><td><span class="badge badge--quiet">안 보임</span><div class="subtle" style="font-size: 12px; margin-top: 2px">카테고리 미배정 — 여름 카테고리에 배정되지 않았습니다.</div></td><td class="n"><span class="mono">4,500</span>원 <span class="tag">표준</span></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="흑당라떼 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="흑당라떼 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="흑당라떼 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="흑당라떼 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="흑당라떼 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="흑당라떼 QR오더 판매"></button></td><td class="c"><span class="nil">-</span></td></tr></tbody><tbody><tr><td><div class="inline" style="gap: 10px; flex-wrap: nowrap"><span class="thumb" style="display: grid; place-items: center; color: var(--muted)" data-icon="image" data-icon-size="16"></span><div><span class="k" style="font-weight: 500; color: var(--ink)"><a class="tlink" href="products-detail.html">바닐라라떼</a></span><div class="subtle" style="font-size: 12px">음료</div></div></div></td><td><span class="badge badge--quiet">안 보임</span><div class="subtle" style="font-size: 12px; margin-top: 2px">카테고리 미배정</div></td><td class="n"><span class="mono">4,000</span>원 <span class="tag">표준</span></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="바닐라라떼 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라라떼 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라라떼 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라라떼 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라라떼 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라라떼 QR오더 판매"></button></td><td class="c"><button class="btn btn--secondary btn--sm" type="button" data-optrow="lists4">옵션 1</button></td></tr></tbody><tbody data-optbody="lists4" hidden><tr><td style="padding-left: 52px"><span class="subtle">추가 ›</span> 샷 추가</td><td></td><td></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="샷 추가 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 QR오더 판매"></button></td><td></td></tr></tbody></table></div>
+<div class="tblwrap" data-show="unit" hidden><table class="tbl" style="min-width: 1000px"><thead><tr><th scope="col">상품</th><th scope="col">노출</th><th scope="col" class="n">적용 가격</th><th scope="col" class="c">품절</th><th scope="col" class="c">POS</th><th scope="col" class="c">KIOSK</th><th scope="col" class="c">테이블오더</th><th scope="col" class="c">픽업오더</th><th scope="col" class="c">QR오더</th><th scope="col" class="c">옵션</th></tr></thead><tbody><tr><td><div class="inline" style="gap: 10px; flex-wrap: nowrap"><span class="thumb" style="display: grid; place-items: center; color: var(--muted)" data-icon="image" data-icon-size="16"></span><div><span class="k" style="font-weight: 500; color: var(--ink)"><a class="tlink" href="products-detail.html">아메리카노</a></span><div class="subtle" style="font-size: 12px">음료</div></div></div></td><td><span class="badge badge--ok">노출</span></td><td class="n"><span class="mono">3,000</span>원 <span class="tag">표준</span></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="아메리카노 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="아메리카노 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="아메리카노 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="아메리카노 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="아메리카노 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="아메리카노 QR오더 판매"></button></td><td class="c"><button class="btn btn--secondary btn--sm" type="button" data-optrow="unit0">옵션 2</button></td></tr></tbody><tbody data-optbody="unit0" hidden><tr><td style="padding-left: 52px"><span class="subtle">원두 선택 ›</span> 디카페인 원두</td><td></td><td></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="디카페인 원두 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="디카페인 원두 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="디카페인 원두 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="디카페인 원두 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="디카페인 원두 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="디카페인 원두 QR오더 판매"></button></td><td></td></tr><tr><td style="padding-left: 52px"><span class="subtle">추가 ›</span> 샷 추가</td><td></td><td></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="샷 추가 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 QR오더 판매"></button></td><td></td></tr><tr><td style="padding-left: 52px"><span class="subtle">추가 ›</span> 바닐라 시럽</td><td></td><td></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="바닐라 시럽 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 QR오더 판매"></button></td><td></td></tr></tbody><tbody><tr><td><div class="inline" style="gap: 10px; flex-wrap: nowrap"><span class="thumb" style="display: grid; place-items: center; color: var(--muted)" data-icon="image" data-icon-size="16"></span><div><span class="k" style="font-weight: 500; color: var(--ink)"><a class="tlink" href="products-detail.html">카페라떼</a></span><div class="subtle" style="font-size: 12px">음료</div></div></div></td><td><span class="badge badge--ok">노출</span></td><td class="n"><span class="mono">3,500</span>원 <span class="tag">표준</span></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="카페라떼 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="카페라떼 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="카페라떼 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="카페라떼 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="카페라떼 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="카페라떼 QR오더 판매"></button></td><td class="c"><button class="btn btn--secondary btn--sm" type="button" data-optrow="unit1">옵션 1</button></td></tr></tbody><tbody data-optbody="unit1" hidden><tr><td style="padding-left: 52px"><span class="subtle">추가 ›</span> 샷 추가</td><td></td><td></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="샷 추가 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="샷 추가 QR오더 판매"></button></td><td></td></tr><tr><td style="padding-left: 52px"><span class="subtle">추가 ›</span> 바닐라 시럽</td><td></td><td></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="바닐라 시럽 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="바닐라 시럽 QR오더 판매"></button></td><td></td></tr></tbody><tbody><tr><td><div class="inline" style="gap: 10px; flex-wrap: nowrap"><span class="thumb" style="display: grid; place-items: center; color: var(--muted)" data-icon="image" data-icon-size="16"></span><div><span class="k" style="font-weight: 500; color: var(--ink)"><a class="tlink" href="products-detail.html?state=never">딸기라떼</a></span><div class="subtle" style="font-size: 12px">음료</div></div></div></td><td><span class="badge badge--quiet">안 보임</span><div class="subtle" style="font-size: 12px; margin-top: 2px">비활성 · 분류 미사용(시즌)</div></td><td class="n"><span class="mono">5,500</span>원 <span class="tag">표준</span></td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="딸기라떼 품절"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="딸기라떼 POS 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="딸기라떼 KIOSK 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="딸기라떼 테이블오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="딸기라떼 픽업오더 판매"></button></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="딸기라떼 QR오더 판매"></button></td><td class="c"><span class="nil">-</span></td></tr></tbody></table></div>
+<div class="tblwrap" data-show="empty" hidden><table class="tbl"><thead><tr><th scope="col">상품</th></tr></thead></table><div class="empty"><span class="empty__ic" data-icon="store" data-icon-size="22"></span><p>이 점포에 보이는 상품이 없습니다.</p><p class="subtle" style="font-size: 12.5px">여름 메뉴가 매핑돼 있지만 기본 상품 리스트를 고르지 않았습니다.</p></div></div>
+              </section>
+
+              <!-- ── 카테고리 분류 탭(PL-41) ── 쟁점 3 꼬리표만 -->
+              <section class="panel" data-panel="categories" hidden>
+                <div class="panel__head">
+                  <h2 class="t-h2">카테고리 분류</h2>
+                  <span class="badge badge--warn" title="카테고리 전체를 점포 단위로 끄는 방법(추천안: 점포 적용의 「카테고리 사용」 스위치)은 아직 정하지 않았다.">쟁점 3</span>
+                  <span class="subtle" style="font-size: 12.5px">추천안 B — 상품 리스트마다 「카테고리 사용」 스위치</span>
+                </div>
+<!-- 상품 리스트 방식 — 점포에 기본 · 기간 상품 리스트가 걸리고 리스트마다 카테고리 리스트가 다르다(1:1).
+     위 선택칸에서 상품 리스트를 골라 그 리스트의 카테고리 분류만 본다(걸린 리스트가 많아도 되게 버튼 묶음이 아니라 선택칸, 2026-11-25 사용자 지정)(트리에 리스트 단계를 더하지 않는다 — 리스트가 늘면 3단계 트리가 길어지고, 본사 카테고리 화면과 같은 2단계 모양을 지키려고).
+     분류 사용 여부는 리스트마다 따로다 — 기간 상품 리스트의 분류도 기간 전에 미리 정해 둘 수 있다(2026-11-25 사용자 지정) -->
+<div data-show="lists" class="stack--lg" style="display: flex; flex-direction: column" data-catlists>
+  <div class="inline" style="gap: 10px; flex-wrap: wrap; padding: 12px 20px 0">
+    <label class="subtle" style="font-size: 13px" for="sp-catlist">상품 리스트</label>
+    <select class="select" id="sp-catlist" style="width: 360px" data-catlist-select><option value="summer" selected>여름 메뉴 — 기본</option><option value="basic">기본 메뉴 — 기간 2026-12-20 ~ 2026-12-31 · 예정</option></select>
+    <span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="이 상품 리스트의 카테고리 사용"></button><span style="font-size: 13px">카테고리 사용</span></span>
+    <span class="subtle" style="font-size: 13px; margin-left: auto">카테고리 리스트 <b data-catlist-name style="color: var(--ink)">여름 카테고리</b></span>
+  </div>
+<div class="tblwrap" data-catlist-body="summer"><table class="tbl" style="min-width: 560px"><thead><tr><th scope="col">분류</th><th scope="col" class="n">배정 상품</th><th scope="col" class="c">이 점포에서 사용</th></tr></thead><tbody><tr><td style="padding-left: 16px"><span class="k" style="font-weight: 600; color: var(--ink)">아이스 커피</span></td><td class="n"><span class="nil">-</span></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="아이스 커피 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 36px"><span class="subtle">└ </span>아메리카노</td><td class="n"><span class="mono">1</span>개</td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="아메리카노 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 36px"><span class="subtle">└ </span>콜드브루</td><td class="n"><span class="mono">1</span>개</td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="콜드브루 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 16px"><span class="k" style="font-weight: 600; color: var(--ink)">라떼</span></td><td class="n"><span class="nil">-</span></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="라떼 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 36px"><span class="subtle">└ </span>카페라떼</td><td class="n"><span class="mono">1</span>개</td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="카페라떼 이 점포에서 사용"></button></td></tr></tbody></table></div>
+<div class="tblwrap" data-catlist-body="basic" hidden><table class="tbl" style="min-width: 560px"><thead><tr><th scope="col">분류</th><th scope="col" class="n">배정 상품</th><th scope="col" class="c">이 점포에서 사용</th></tr></thead><tbody><tr><td style="padding-left: 16px"><span class="k" style="font-weight: 600; color: var(--ink)">커피</span></td><td class="n"><span class="nil">-</span></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="커피 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 36px"><span class="subtle">└ </span>아메리카노</td><td class="n"><span class="mono">1</span>개</td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="아메리카노 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 36px"><span class="subtle">└ </span>콜드브루</td><td class="n"><span class="mono">1</span>개</td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="콜드브루 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 16px"><span class="k" style="font-weight: 600; color: var(--ink)">라떼</span></td><td class="n"><span class="nil">-</span></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="라떼 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 36px"><span class="subtle">└ </span>카페라떼</td><td class="n"><span class="mono">2</span>개</td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="카페라떼 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 16px"><span class="k" style="font-weight: 600; color: var(--ink)">베이커리</span></td><td class="n"><span class="mono">1</span>개</td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="베이커리 이 점포에서 사용"></button></td></tr></tbody></table></div>
+  <span class="help" style="padding: 0 20px 16px">점포에 걸어 둔 상품 리스트(기본 · 기간)마다 분류를 따로 켜고 끕니다. 「카테고리 사용」을 끄면 그 리스트의 상품이 분류 없이 보입니다. 기간 상품 리스트의 분류는 기간이 되기 전에 미리 정해 둘 수 있습니다.</span>
+</div>
+<div class="tblwrap" data-show="unit" hidden><table class="tbl" style="min-width: 560px"><thead><tr><th scope="col">분류</th><th scope="col" class="n">배정 상품</th><th scope="col" class="c">이 점포에서 사용</th></tr></thead><tbody><tr><td style="padding-left: 16px"><span class="k" style="font-weight: 600; color: var(--ink)">커피</span></td><td class="n"><span class="nil">-</span></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="커피 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 36px"><span class="subtle">└ </span>에스프레소</td><td class="n"><span class="mono">1</span>개</td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="에스프레소 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 36px"><span class="subtle">└ </span>콜드브루</td><td class="n"><span class="mono">1</span>개</td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="콜드브루 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 16px"><span class="k" style="font-weight: 600; color: var(--ink)">논커피</span></td><td class="n"><span class="nil">-</span></td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="논커피 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 36px"><span class="subtle">└ </span>라떼</td><td class="n"><span class="mono">3</span>개</td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="라떼 이 점포에서 사용"></button></td></tr><tr><td style="padding-left: 36px"><span class="subtle">└ </span>시즌 <span class="tag">본사 미사용</span></td><td class="n"><span class="mono">1</span>개</td><td class="c"><button class="toggle" type="button" aria-pressed="false" aria-label="시즌 이 점포에서 사용" disabled title="본사에서 미사용으로 둔 분류입니다."></button></td></tr><tr><td style="padding-left: 16px"><span class="k" style="font-weight: 600; color: var(--ink)">베이커리</span></td><td class="n"><span class="mono">1</span>개</td><td class="c"><button class="toggle" type="button" aria-pressed="true" aria-label="베이커리 이 점포에서 사용"></button></td></tr></tbody></table></div>
+<div class="tblwrap" data-show="empty" hidden><table class="tbl"><thead><tr><th scope="col">분류</th></tr></thead></table><div class="empty"><span class="empty__ic" data-icon="store" data-icon-size="22"></span><p>이 점포에 적용된 카테고리가 없습니다.</p><p class="subtle" style="font-size: 12.5px">상품 · 카테고리는 본사가 정합니다. 적용이 필요하면 본사에 문의해 주세요.</p></div></div>
+              </section>
+
+              <p class="note">
+                <span data-icon="info" data-icon-size="14"></span>
+                <span>본사가 상품 정보를 고쳐도 여기서 정한 판매 상태 · 품절은 그대로입니다. 바꾸면 바로 저장됩니다.</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 다른 점포에 복사 — 본사 역할만. 지금 점포에 「저장된」 설정을 기준으로 고른 점포들에 같은 설정을 넣는다(2026-11-25 사용자 지정).
+         점포 적용(상품 방식 · 기본 · 기간 상품 리스트 · 가격 리스트)은 늘 복사하고, 카테고리 분류 사용 여부 · 상품 판매 상태 · 품절은 골라서 복사한다.
+         대상 점포 고르기는 BP 관리자 등록의 대상 점포와 같은 칸(찾기 · 일괄 검색 · 선택한 점포). 기준 점포 자신 · 본사 · 폐점 점포는 후보에 없다.
+         대상 점포의 기존 설정은 덮어쓴다 — 단위 상품 방식 점포는 단위 상품 매핑이 풀린다(PL-6). 목업은 을지로점(상품 리스트 방식)을 기준으로 보인다 -->
+    <div class="modal" id="pop-copy" hidden role="dialog" aria-modal="true" aria-labelledby="pc-t">
+      <div class="modal__box modal__box--wide">
+        <div class="modal__head">
+          <h2 class="t-h2" id="pc-t">다른 점포에 복사</h2>
+          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+        </div>
+        <div class="modal__body stack--lg" style="display: flex; flex-direction: column">
+          <dl class="kv" style="margin: 0; font-size: 13.5px">
+            <dt>기준 점포</dt><dd>모리커피 을지로점</dd>
+            <dt>상품 방식</dt><dd>상품 리스트</dd>
+            <dt>기본</dt><dd>여름 메뉴 <span class="subtle">· 일반 역세권가 · 프로모션 없음</span></dd>
+            <dt>기간</dt><dd>기본 메뉴 <span class="subtle">· 2026-12-20 ~ 2026-12-31 · 일반 기본가</span></dd>
+          </dl>
+          <div class="field">
+            <label>복사할 항목</label>
+            <div class="stack" style="display: flex; flex-direction: column; gap: 8px">
+              <label class="inline" style="gap: 6px"><span class="check" role="checkbox" aria-checked="true" aria-disabled="true" data-icon="check" data-icon-size="11"></span>점포 적용 <span class="subtle">— 상품 방식 · 기본 · 기간 상품 리스트 · 가격 리스트 (늘 복사)</span></label>
+              <label class="inline" style="gap: 6px"><span class="check" role="checkbox" aria-checked="true" tabindex="0" data-icon="check" data-icon-size="11"></span>카테고리 분류 사용 여부</label>
+              <label class="inline" style="gap: 6px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" data-icon="check" data-icon-size="11"></span>상품 판매 상태 · 품절 <span class="subtle">— 부가서비스별 판매 상태와 품절</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <label>대상 점포 <span class="req">*</span></label>
+            <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포" data-picked="ST000006 ST000007">
+              <div class="spick__find">
+                <div class="spick__row">
+                  <div class="addr__q spick__q">
+                    <span data-icon="search" data-icon-size="15"></span>
+                    <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="복사할 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                    <div class="addr__list spick__list" role="listbox" aria-label="선택할 수 있는 점포" hidden></div>
+                  </div>
+                  <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
+                </div>
+              </div>
+              <div class="spick__box">
+                <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>2개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
+                <ul class="spick__picked" data-spick-list aria-label="선택한 점포"></ul>
+                <p class="spick__empty" data-spick-empty hidden>아직 고른 점포가 없습니다. 위에서 찾아 더하세요.</p>
+              </div>
+            </div>
+            <span class="help">기준 점포 · 본사 점포 · 폐점 점포는 목록에 나오지 않습니다.</span>
+          </div>
+          <div class="band band--risk"><div class="band__body"><p class="band__desc" style="margin: 0">고른 점포의 기존 설정은 기준 점포의 설정으로 바뀝니다.<br />단위 상품 방식 점포(서초점)를 고르면 그 점포의 단위 상품 매핑이 풀립니다.<br />고른 점포에 있는 상품 리스트 · 단위 상품에만 적용되고, 적용하지 못한 것은 복사한 뒤에 알려 드립니다.</p></div></div>
+        </div>
+        <div class="modal__foot">
+          <button class="btn btn--ghost" type="button" data-close>취소</button>
+          <button class="btn btn--primary" type="button" data-close data-copy-go>복사</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 상품 방식 변경 확인(PL-6) — [저장] 때 저장된 방식과 다르면 연다. 풀리는 매핑 수를 보이고 [변경]해야 저장한다. 문구는 아래 스크립트가 채운다 -->
+    <div class="modal" id="pop-mode" hidden role="dialog" aria-modal="true" aria-labelledby="pm-t">
+      <div class="modal__box">
+        <div class="modal__head">
+          <h2 class="t-h2" id="pm-t" data-pm-title>상품 방식을 바꾸시겠습니까?</h2>
+          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+        </div>
+        <div class="modal__body">
+          <p style="margin: 0; font-size: 13.5px" data-pm-text></p>
+          <p class="subtle" style="margin: 6px 0 0; font-size: 13px" data-pm-sub></p>
+        </div>
+        <div class="modal__foot">
+          <button class="btn btn--ghost" type="button" data-close>취소</button>
+          <button class="btn btn--primary" type="button" data-close data-pm-go>변경</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* 목업 전용 — [복사]를 누르면 결과를 알린다. 목업은 청담점이 있으면 「일부만 적용」 띠, 없으면 토스트만 */
+      document.addEventListener("click", function (e) {
+        var band = document.querySelector("[data-copy-result]");
+        if (e.target.closest("[data-copy-close]")) { band.hidden = true; return; }
+        if (!e.target.closest("[data-copy-go]")) return;
+        var picked = [].map.call(document.querySelectorAll("#pop-copy [data-spick-list] li"), function (li) { return li.textContent; });
+        var partial = picked.some(function (t) { return t.indexOf("청담") > -1; });
+        if (partial) {
+          band.querySelector("[data-copy-total]").textContent = picked.length;
+          band.hidden = false;
+          band.scrollIntoView({ block: "nearest" });
+          return;
+        }
+        band.hidden = true;
+        var d = document.createElement("div");
+        d.className = "scopetoast";
+        d.setAttribute("role", "status");
+        d.textContent = picked.length + "개 점포에 복사했습니다.";
+        document.body.appendChild(d);
+        setTimeout(function () { d.remove(); }, 2000);
+      });
+
+      /* 목업 전용 — 점포 적용: 목업 상태대로 처음 값을 채우고, 방식을 바꾸면 칸을 열고 닫는다. 방식을 바꿔 [저장]하면 풀리는 매핑 수를 확인창으로 묻는다(PL-6).
+         [기간 상품 리스트 추가]는 빈 줄을 더하고 [빼기]는 줄을 지운다. 가맹 역할이면 모든 칸을 막는다 */
+      (function () {
+        var box = document.querySelector("[data-sp-apply]");
+        /* mapped — 지금 방식에서 이 점포에 매핑된 것(상품 리스트 이름 · 단위 상품 수). 방식을 바꾸면 모두 풀린다 */
+        var SAVED = { lists: { mode: "list", base: "여름 메뉴", mapped: ["여름 메뉴", "기본 메뉴"] }, unit: { mode: "unit", base: "", mapped: 3 }, empty: { mode: "list", base: "", mapped: ["여름 메뉴"] } };
+        var body = box.querySelector("[data-sp-periods]");
+        var tpl = body.querySelector("[data-sp-period]").cloneNode(true);
+        function bar(key) { return document.querySelector('[data-demo="sp"]' + (key ? '[data-demo-key="' + key + '"]' : ":not([data-demo-key])")); }
+        function cur(key) { var b = bar(key); return (b && b.dataset.current) || (key ? "bp" : "lists"); }
+        function q(sel) { return box.querySelector(sel); }
+        function mode() { var r = q("[data-sp-mode]:checked"); return r ? r.dataset.spMode : ""; }
+        function base() { var s = q("[data-sp-base] select"); return s && s.selectedIndex > 0 ? s.value : ""; }
+        function paint() {
+          var m = mode(), saved = SAVED[cur()], ro = cur("role") === "fr";
+          q("[data-sp-unit]").hidden = m !== "unit";
+          q("[data-sp-list]").hidden = m !== "list";
+          box.querySelectorAll("[data-sp-mode], [data-sp-ctl]").forEach(function (c) { c.disabled = ro; });
+          box.querySelectorAll("[data-sp-del]").forEach(function (d) { d.hidden = ro; });
+          q("[data-sp-noperiod]").hidden = !!body.querySelector("[data-sp-period]");
+          var b = base();
+          var warn = q("[data-sp-warn]"), txt = q("[data-sp-warn-text]"), msg = "";
+          if (m === "list" && !b) msg = "기본 상품 리스트를 고르지 않으면 기간 상품 리스트의 기간 밖에는 이 점포에 상품이 보이지 않습니다.";
+          txt.textContent = msg;
+          warn.hidden = !msg;
+        }
+        function load() {
+          var v = SAVED[cur()];
+          box.querySelectorAll("[data-sp-mode]").forEach(function (r) { r.checked = r.dataset.spMode === v.mode; });
+          var bs = q("[data-sp-base] select");
+          bs.value = v.base || "선택";
+          /* 고를 수 있는 상품 리스트는 이 점포에 매핑된 것뿐(PL-17) */
+          [].forEach.call(bs.options, function (o) { o.hidden = o.index > 0 && Array.isArray(v.mapped) && v.mapped.indexOf(o.value) < 0; });
+          body.innerHTML = "";
+          if (cur() === "lists") body.appendChild(tpl.cloneNode(true));
+          paint();
+        }
+        box.addEventListener("change", paint);
+        document.querySelectorAll('[data-demo="sp"]').forEach(function (b) {
+          b.addEventListener("click", function (e) { if (e.target.closest("[data-state]")) setTimeout(load); });
+        });
+        box.addEventListener("click", function (e) {
+          if (e.target.closest("[data-sp-add]")) {
+            var r = tpl.cloneNode(true);
+            r.querySelectorAll("select").forEach(function (s) { s.selectedIndex = 0; });
+            r.querySelectorAll("input").forEach(function (i) { i.value = ""; i.placeholder = "YYYY-MM-DD"; });
+            r.querySelector(".badge").textContent = "-";
+            body.appendChild(r);
+            paint();
+          }
+          var d = e.target.closest("[data-sp-del]");
+          if (d) { d.closest("[data-sp-period]").remove(); paint(); }
+          if (e.target.closest("[data-sp-reset]")) load();
+          if (e.target.closest("[data-sp-save]")) {
+            var sv = SAVED[cur()], n = sv.mode === "unit" ? sv.mapped : sv.mapped.length;
+            if (mode() !== sv.mode && n) {
+              var pop = document.getElementById("pop-mode");
+              pop.querySelector("[data-pm-title]").textContent = (mode() === "list" ? "상품 리스트" : "단위 상품") + " 방식으로 바꾸시겠습니까?";
+              pop.querySelector("[data-pm-text]").textContent = sv.mode === "unit"
+                ? "이 점포의 단위 상품 매핑 " + n + "건이 풀립니다."
+                : "이 점포의 상품 리스트 매핑 " + n + "건(" + sv.mapped.join(" · ") + ")이 풀립니다.";
+              pop.querySelector("[data-pm-sub]").textContent = sv.mode === "unit"
+                ? "저장한 뒤 기본 상품 리스트를 골라야 이 점포에 상품이 보입니다."
+                : "기본 · 기간 상품 리스트와 가격 리스트 선택도 함께 풀립니다. 단위 상품을 매핑하기 전까지 이 점포에는 상품이 보이지 않습니다.";
+              pop.hidden = false;
+              return;
+            }
+            saved();
+          }
+        });
+        document.addEventListener("click", function (e) { if (e.target.closest("[data-pm-go]")) saved(); });
+        function saved() {
+          var t = document.createElement("div");
+          t.className = "scopetoast";
+          t.setAttribute("role", "status");
+          t.textContent = "점포 적용을 저장했습니다.";
+          document.body.appendChild(t);
+          setTimeout(function () { t.remove(); }, 2000);
+        }
+        load();
+      })();
+
+      /* 목업 전용 — 카테고리 분류 탭: 상품 리스트를 고르면 그 리스트의 카테고리 분류만 보인다(리스트가 많아도 되게 선택칸) */
+      document.addEventListener("change", function (e) {
+        var sel = e.target.closest("[data-catlist-select]");
+        if (!sel) return;
+        var box = sel.closest("[data-catlists]");
+        box.querySelectorAll("[data-catlist-body]").forEach(function (x) { x.hidden = x.dataset.catlistBody !== sel.value; });
+        box.querySelector("[data-catlist-name]").textContent = sel.value === "basic" ? "기본 카테고리" : "여름 카테고리";
+      });
+
+      /* 목업 전용 — 판매 상태 · 분류 사용을 바꾸면 바로 저장한 것처럼 토스트를 띄우고, [옵션]이 옵션 줄을 펼친다 */
+      document.addEventListener("click", function (e) {
+        var t = e.target.closest(".toggle");
+        if (t && !t.disabled && e.target.closest("#sp-tabs")) {
+          var d = document.createElement("div");
+          d.className = "scopetoast";
+          d.setAttribute("role", "status");
+          d.textContent = t.closest("[data-panel='categories']") ? "분류 사용을 바꿨습니다." : "판매 상태를 바꿨습니다.";
+          document.body.appendChild(d);
+          setTimeout(function () { d.remove(); }, 2000);
+        }
+        var o = e.target.closest("[data-optrow]");
+        if (o) {
+          var b = document.querySelector('[data-optbody="' + o.dataset.optrow + '"]');
+          if (b) b.hidden = !b.hidden;
+        }
+      });
+    </script>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

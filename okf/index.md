@@ -17,6 +17,7 @@ okf_version: "0.2"
 * [마이페이지](mypage.md) - 내 정보·비밀번호 변경·회원 탈퇴·로그아웃. 목업 `docs/mockup/mypage/` 기준.
 * [BP 마스터 계정 관리](bp.md) - 플랫폼 사용자가 BP 와 BP 마스터 계정을 조회·등록·수정하고 상태를 바꾼다. 목업 `docs/mockup/bp/` 기준.
 * [점포 관리](stores.md) - 점포 등록·조회·수정과 미운영→운영→폐점 상태 전환. 목업 `docs/mockup/stores/` 기준.
+* [기초정보관리](master.md) - 상품 · 옵션 · 카테고리 · 가격과 점포 상품 관리. 정책서(Notion → `docs/raw/`) 기준, 목업 `docs/mockup/master/`. 구현 전.
 * [BP 환경설정](config.md) - BP 의 관리자 계정·권한 그룹·공통코드·휴일. 목업 `docs/mockup/config/` 기준.
 * [플랫폼 시스템 관리](system.md) - 플랫폼 계정·권한과 공통 기준정보(메뉴·공통코드·공식 휴일). 목업 `docs/mockup/system/` 기준.
 * [네이밍 규칙](conventions/naming.md) - DB·API·FRONT 세 계층의 이름 규칙과 용어집 영문 식별자 대응표. 세 저장소가 함께 쓴다.
