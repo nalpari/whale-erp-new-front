@@ -9,8 +9,8 @@ const NO_SUBSCRIBE = () => () => {};
 const HAS_POPOVER = () => "popover" in HTMLElement.prototype;
 
 const HOURS = Array.from({ length: 24 }, (_, h) => pad(h));
-/** 판에서 고르는 분은 5분 단위다. 그 밖의 분(09:07)은 칸에 직접 친다. */
-const MINUTES = Array.from({ length: 12 }, (_, i) => pad(i * 5));
+/** 판에서 고르는 분은 1분 단위(00~59)다(2026-11-27 사용자 지정 — 전엔 5분 단위). */
+const MINUTES = Array.from({ length: 60 }, (_, m) => pad(m));
 
 const COL = "flex h-[200px] w-[56px] flex-col gap-[2px] overflow-y-auto overscroll-contain pr-[2px] [scrollbar-width:thin]";
 const CELL = "grid h-[30px] w-full shrink-0 place-items-center rounded-[2px] text-[14px] tabular-nums transition-colors duration-150 ease-out";
