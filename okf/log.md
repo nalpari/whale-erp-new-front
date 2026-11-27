@@ -1,5 +1,13 @@
 # Bundle history
 
+## 2026-11-27
+* **Update**: [Whale ERP Front](/whale-erp-front.md) — 날짜 · 시간 입력칸에 Safari 가 띄우던 연락처 자동 채우기 단추(사람 · 화살표)를 감춤(`autoComplete="off"` + globals.css `.no-autofill-button`).
+* **Update**: [Whale ERP Front](/whale-erp-front.md) — PR #341 재영 리뷰 반영: `TimeField` 는 칸을 벗어날 때 다 친 모양(H:MM · HH:MM · 네 자리)만 시각으로 맞추고 덜 친 1~3자리는 그대로 넘겨 저장 검사가 막는다(블로커). 시가 빈 채 분을 고르면 09시로 채우지 않고 시를 기다리며, 달력 연 · 월 상자를 바꿔도 포커스가 날짜 칸으로 넘어가지 않는다.
+* **Update**: [Whale ERP Front](/whale-erp-front.md) — PR #341 재리뷰 반영: `TimeField` 는 숫자가 아닌 글자가 섞인 값(1:30 PM)을 지워 다른 시각으로 통과시키지 않고, 시 · 분 목록의 Tab 정지점은 방향키로 옮겨 간 칸을 따른다.
+* **Update**: [Whale ERP Front](/whale-erp-front.md) — PR #341 pr-agent 리뷰 반영: `TimeField` 는 자릿수가 넘치는 값(09:301)을 잘라 맞는 시각으로 만들지 않고 저장 검사로 넘기며, Enter 를 누를 때도 칸을 벗어날 때처럼 값을 맞춰 내보내고, 시 · 분 목록은 목록마다 Tab 한 번 · 위아래 방향키로 옮긴다.
+* **Update**: [Whale ERP Front](/whale-erp-front.md) — PR 전 코드리뷰 반영: `TimeField` 는 세 자리(930 · 130)를 친 뜻대로 읽고, 읽히지 않는 값은 지우지 않고 넘겨 저장 검사가 알린다. 값이 그대로면 칸을 벗어나도 onChange 를 부르지 않는다. 쌍점 뒤 분은 두 자리만 받는다. `atMonth` 를 `date-math` 로 옮겨 테스트했다.
+* **Update**: [Whale ERP Front](/whale-erp-front.md) — 사용자 지정 3건: 비로그인 푸터 아래 136px 여백을 없애고 푸터가 보이면 떠 있는 띠를 감춤, DateField 머리에 연 · 월 고르기 상자, 시간 칸을 `TimeField`(직접 입력 + 시 · 분 판)로 바꿈(출퇴근 기록 보정 · 대리 등록, TO-DO 등록).
+
 ## 2026-11-26
 * **Update**: 목업 `docs/mockup/master/` 를 정책서와 맞췄다(옵션 상품을 단위 상품 화면에서 뺌 · 세트 상품 상세 · 가격 리스트 기본 가격 + 부가서비스 칸 · 점포 상품 관리 안 보이는 상품 · 방식 변경 확인창). [기초정보관리](/master.md) 본문은 바뀌지 않았다.
 * **Update**: `2026-11-26-기초정보-정책서.md` 를 목업과 대조해 고친 내용(PL-4 가맹 역할 분류 사용 · PL-14 · 3장/PL-17 점포에 상품 리스트 여러 개 매핑 · PL-36 리스트마다 · PL-40 확인창 · 8장 쟁점 ↔ 문의 번호 · 10장 점포 상품 리스트 · 점포 분류 사용 식별자)을 [기초정보관리](/master.md) 에 반영했다.

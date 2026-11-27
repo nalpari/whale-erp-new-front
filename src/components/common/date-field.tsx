@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
-import { addDays, firstOfMonth, hyphenateDate, iso, monthGrid, parse, shiftMonth } from "./date-math";
+import { addDays, atMonth, firstOfMonth, hyphenateDate, iso, monthGrid, parse, shiftMonth } from "./date-math";
 import { EASE_OUT, FIELD_BOX } from "./theme";
 
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -15,10 +15,20 @@ const HAS_POPOVER = () => "popover" in HTMLElement.prototype;
 const CELL = "grid h-[32px] w-[34px] place-items-center rounded-[2px] text-[14px] transition-colors duration-150 ease-out";
 const NAV = "grid size-[28px] place-items-center rounded-[2px] text-erp-label transition-colors duration-150 ease-out hover:bg-erp-thead-bg";
 const FOOT = "text-[13px] transition-colors duration-150 ease-out";
+// 달력 머리의 연 · 월 고르기 — 공통 Select 와 같은 껍데기 · 오른쪽 화살표를 30px 높이 · 14px 글자로 줄였다.
+const HEAD_SELECT = `${FIELD_BOX} h-[30px] w-auto! shrink-0 appearance-none bg-[url(/icons/select-arrow.svg)] bg-[length:24px_24px] bg-[position:right_2px_center] bg-no-repeat pr-[26px] pl-[10px] text-[14px] font-semibold`;
+
+/** 연도 고르기 범위 — 올해 기준 100년 전(생년월일)부터 10년 뒤까지. 보고 있는 연도가 그 밖이면 넣어 준다. */
+function yearsAround(shown: number) {
+  const now = new Date().getFullYear();
+  const from = Math.min(shown, now - 100);
+  const to = Math.max(shown, now + 10);
+  return Array.from({ length: to - from + 1 }, (_, i) => to - i);
+}
 
 // 팝업이 나중에 ErpRoot 밖(포털 등)으로 옮겨가도 글꼴·색이 깨지지 않게 여기서 다시 준다.
 // 열릴 때만 4px 위에서 내려오며 나타난다(동작 줄이기 설정이면 바로 나타난다).
-const POPOVER =
+export const POPOVER =
   `fixed m-0 w-[268px] rounded-[2px] border border-[#ebebeb] bg-white p-[16px] shadow-[0_2px_6px_rgba(40,47,55,0.08)] ` +
   `font-erp tracking-[-0.025em] text-erp-ink scheme-light ` +
   `-translate-y-[4px] opacity-0 transition-[opacity,translate,display,overlay] transition-discrete duration-150 ${EASE_OUT} ` +
@@ -102,7 +112,11 @@ export function DateField({
 
   // 열리면 기준 칸으로 포커스를 옮긴다. 닫힐 때 트리거로 되돌리는 것은 popover 가 해 주지 않아 직접 한다.
   useEffect(() => {
-    if (open) pop.current?.querySelector<HTMLElement>('[tabindex="0"]')?.focus();
+    if (!open) return;
+    // 연 · 월 상자로 바꾼 때는 포커스를 상자에 둔다 — 날짜 칸으로 옮기면 키보드로 연도를 여러 해 넘길 수 없다(PR #341 재영 리뷰).
+    const active = document.activeElement;
+    if (active instanceof HTMLSelectElement && pop.current?.contains(active)) return;
+    pop.current?.querySelector<HTMLElement>('[tabindex="0"]')?.focus();
   }, [open, cursor]);
 
   // 치는 중에는 빈 값과 YYYY-MM-DD 10자를 다 친 값만 내보낸다. "2020-0" 이 조회 조건에 실려 가면 안 되고,
@@ -152,6 +166,8 @@ export function DateField({
         disabled={disabled}
         aria-label={label}
         placeholder="YYYY-MM-DD"
+        // Safari 의 연락처 자동 채우기 단추가 달력 버튼 옆에 뜨지 않게(TimeField 와 같다)
+        autoComplete="off"
         onChange={(e) => emit(autoHyphen ? hyphenateDate(e.target.value) : e.target.value)}
         onBlur={(e) => {
           // 2020/8/5 처럼 쳐도 받아 YYYY-MM-DD 로 맞춘다. 날짜로 안 읽히면 지운다 —
@@ -163,7 +179,7 @@ export function DateField({
             onChange?.(iso(d));
           } else if (e.target.value) emit("");
         }}
-        className={`${FIELD_BOX} h-[34px] ${canPopover ? "pr-[34px]" : "pr-[10px]"} pl-[10px]`}
+        className={`${FIELD_BOX} h-[34px] ${canPopover ? "pr-[34px]" : "pr-[10px]"} pl-[10px] no-autofill-button`}
       />
       {canPopover && (
         <button
@@ -214,9 +230,34 @@ export function DateField({
                 {/* chevron-small.svg 는 왼쪽을 본다. 다음 달만 뒤집는다. */}
                 <Image src="/icons/chevron-small.svg" alt="" width={5} height={8} />
               </button>
-              <p aria-live="polite" className="text-[15px] font-semibold text-erp-ink">
-                {view.getFullYear()}년 {view.getMonth() + 1}월
-              </p>
+              {/* 연 · 월은 고르기 상자로 바로 옮긴다 — 화살표로만 넘기면 생년월일 · 오래전 날짜까지 수십 번 눌러야 했다(2026-11-27 사용자 지정).
+                  모양은 공통 Select(같은 껍데기 · 오른쪽 화살표)를 달력 머리에 맞게 줄인 것이다 */}
+              <div className="flex items-center gap-[6px]">
+                <select
+                  aria-label="연도"
+                  value={view.getFullYear()}
+                  onChange={(e) => move(atMonth(cursor, Number(e.target.value), view.getMonth()))}
+                  className={HEAD_SELECT}
+                >
+                  {yearsAround(view.getFullYear()).map((y) => (
+                    <option key={y} value={y}>
+                      {y}년
+                    </option>
+                  ))}
+                </select>
+                <select
+                  aria-label="월"
+                  value={view.getMonth()}
+                  onChange={(e) => move(atMonth(cursor, view.getFullYear(), Number(e.target.value)))}
+                  className={HEAD_SELECT}
+                >
+                  {Array.from({ length: 12 }, (_, m) => (
+                    <option key={m} value={m}>
+                      {m + 1}월
+                    </option>
+                  ))}
+                </select>
+              </div>
               <button type="button" aria-label="다음 달" onClick={() => move(shiftMonth(cursor, 1))} className={NAV}>
                 <Image src="/icons/chevron-small.svg" alt="" width={5} height={8} className="rotate-180" />
               </button>

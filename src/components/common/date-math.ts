@@ -41,3 +41,51 @@ export function monthGrid(view: Date) {
   const start = addDays(first, -first.getDay());
   return Array.from({ length: 42 }, (_, i) => addDays(start, i));
 }
+
+// ── 시간(TimeField) ──────────────────────────────────────────────
+// 시간 칸이 받는 값은 24시간 HH:MM 하나다(네이티브 <input type="time"> 의 value 와 같은 모양).
+
+const TIME = /^([01]\d|2[0-3]):([0-5]\d)$/;
+export const isTime = (v: string) => TIME.test(v);
+
+// 숫자만 쳐도 네 자리가 되면 HH:MM 으로 쌍점을 넣는다(0930 → 09:30). 세 자리(930)까지는 숫자 그대로 둔다 — 덜 친 값이라
+// 칸을 벗어나도 parseTime 이 시각으로 읽지 않고 저장 검사가 막는다. 쌍점 · 점을 직접 친 사람은 그 자리를 지킨다(9:05 · 9.05).
+// 자릿수가 넘치면(09:301 · 09301) 잘라서 맞는 시각으로 만들지 않고 그대로 둔다 — 잘못 붙여넣은 근태 시각이 조용히 통과하지 않고
+// 칸을 벗어날 때 parseTime 이 읽지 못해 저장 검사가 알린다(PR #341 pr-agent 리뷰).
+export function colonizeTime(input: string): string {
+  // 숫자 · 쌍점 · 점 밖의 글자(1:30 PM · 9시)가 섞이면 지우지 않고 그대로 둔다 — 지우면 오후 1시 30분이 01:30 으로 통과한다.
+  // 칸을 벗어날 때 parseTime 이 읽지 못해 저장 검사가 알린다(PR #341 pr-agent 재리뷰).
+  if (/[^\d:.]/.test(input)) return input;
+  // 쌍점이나 점을 직접 치면 그 자리를 지킨다(9:05 · 9.05). 점은 쌍점으로 바꾼다.
+  if (/[:.]/.test(input)) return input.replace(".", ":");
+  // 숫자만 치면 네 자리가 됐을 때만 쌍점을 넣는다 — 세 자리(930)에서 넣으면 93:0 이 되어 9:30 으로 읽지 못한다.
+  const d = input.replace(/\D/g, "");
+  return d.length === 4 ? `${d.slice(0, 2)}:${d.slice(2)}` : d;
+}
+
+// 다 친 모양만 HH:MM 으로 맞춘다 — H:MM · HH:MM(9:05 · 9.05 · 09:05)과 숫자 네 자리(0905). 쌍점 뒤 분은 두 자리만 받는다(9:3 은 null).
+// 숫자 1~3자리(18 · 123 · 905)는 덜 친 값으로 보고 null — 퇴근 1830 을 치다 18 · 123 에서 저장하면 18:00 · 01:23 으로 채워져
+// 저장 검사를 통과하고 01:23 은 다음 날 퇴근으로까지 붙었다(PR #341 재영 리뷰 블로커, 예전 type="time" 칸은 이때 저장이 막혔다).
+// 범위를 벗어나면(24:00 · 12:60) null.
+export function parseTime(v: string): string | null {
+  const s = v.trim();
+  let h: number;
+  let m: number;
+  const sep = /^(\d{1,2})[:.](\d{2})$/.exec(s);
+  if (sep) {
+    h = Number(sep[1]);
+    m = Number(sep[2]);
+  } else if (/^\d{4}$/.test(s)) {
+    // 네 자리는 앞 두 자리가 시, 뒤 두 자리가 분(0930 → 09:30)
+    h = Number(s.slice(0, 2));
+    m = Number(s.slice(2));
+  } else return null;
+  if (h > 23 || m > 59) return null;
+  return `${pad(h)}:${pad(m)}`;
+}
+
+/** 연 · 월만 바꾸고 날은 지킨다 — 31일에서 2월로 가면 말일로 당긴다(shiftMonth 와 같은 규칙). month 는 0~11. */
+export function atMonth(d: Date, year: number, month: number): Date {
+  const last = new Date(year, month + 1, 0).getDate();
+  return new Date(year, month, Math.min(d.getDate(), last));
+}

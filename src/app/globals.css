@@ -212,17 +212,15 @@ body {
     animation-range: entry calc(10% + var(--reveal-delay, 0%)) entry calc(70% + var(--reveal-delay, 0%));
   }
 }
-/* 홈 · 소개 화면 아래 떠 있는 [무료로 시작] 띠(높이 약 88 + 아래 24px)가 페이지 끝에서 푸터 사업자 정보를 가리지 않게, 띠가 있는 화면에서만 푸터 아래 여백을 늘린다(PR #259 리뷰). */
-body:has(.guest-floating) footer {
-  padding-bottom: 136px;
-}
 /* 소개 화면의 붙는 구역이 화면을 채우는 동안(body[data-guest-pinned], use-pinned-hides-floating.ts) 떠 있는 띠를 아래로 내려 감춘다 — 구역 아래쪽 목록 · 그림을 가리고 클릭을 가로챘다(PR 리뷰). */
 .guest-floating {
   transition: translate 250ms ease, opacity 250ms ease, visibility 0s linear 0s;
 }
-/* 홈 첫 화면의 핵심기능 판이 보이는 동안(판을 감싼 [data-guest-hero] 에 data-passed 가 없는 동안, hide-floating-while-visible.tsx)도 같은 모양으로 감춘다 — 서버가 그린 처음 화면부터 감춰 띠가 깜빡이지 않는다(2026-11-13 사용자 지정) */
+/* 푸터가 보이는 동안(body[data-guest-footer], hide-floating-at-footer.tsx — 띠가 사업자 정보를 가리지 않게, 2026-11-27. 전엔 푸터 아래 여백을 136px 늘려 띠가 없을 때 휑했다)과
+   홈 첫 화면의 핵심기능 판이 보이는 동안(판을 감싼 [data-guest-hero] 에 data-passed 가 없는 동안, hide-floating-while-visible.tsx)도 같은 모양으로 감춘다 — 서버가 그린 처음 화면부터 감춰 띠가 깜빡이지 않는다(2026-11-13 사용자 지정) */
 body:has([data-guest-hero]:not([data-passed])) .guest-floating,
-body[data-guest-pinned] .guest-floating {
+body[data-guest-pinned] .guest-floating,
+body[data-guest-footer] .guest-floating {
   translate: 0 24px;
   opacity: 0;
   visibility: hidden;
@@ -231,7 +229,8 @@ body[data-guest-pinned] .guest-floating {
 @media (prefers-reduced-motion: reduce) {
   .guest-floating,
   body:has([data-guest-hero]:not([data-passed])) .guest-floating,
-  body[data-guest-pinned] .guest-floating {
+  body[data-guest-pinned] .guest-floating,
+  body[data-guest-footer] .guest-floating {
     transition: none;
   }
 }
@@ -529,4 +528,12 @@ details[name="guest-faq"][open]::details-content {
   .wl-root .wl-sq i {
     animation-duration: 6s;
   }
+}
+
+/* 날짜 · 시간 입력칸(DateField · TimeField)에 Safari 가 띄우는 연락처 · 암호 자동 채우기 단추(사람 · 화살표)를 감춘다 — 시계 · 달력 버튼 옆에 겹쳐 보였다(2026-11-27 사용자 지정) */
+.no-autofill-button::-webkit-contacts-auto-fill-button,
+.no-autofill-button::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
 }
