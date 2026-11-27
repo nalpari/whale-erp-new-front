@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-27
+* **Update**: [Whale ERP Front](/whale-erp-front.md) — PR 전 코드리뷰 반영: `TimeField` 는 세 자리(930 · 130)를 친 뜻대로 읽고, 읽히지 않는 값은 지우지 않고 넘겨 저장 검사가 알린다. 값이 그대로면 칸을 벗어나도 onChange 를 부르지 않는다. 쌍점 뒤 분은 두 자리만 받는다. `atMonth` 를 `date-math` 로 옮겨 테스트했다.
 * **Update**: [Whale ERP Front](/whale-erp-front.md) — 사용자 지정 3건: 비로그인 푸터 아래 136px 여백을 없애고 푸터가 보이면 떠 있는 띠를 감춤, DateField 머리에 연 · 월 고르기 상자, 시간 칸을 `TimeField`(직접 입력 + 시 · 분 판)로 바꿈(출퇴근 기록 보정 · 대리 등록, TO-DO 등록).
 
 ## 2026-11-26
