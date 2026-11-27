@@ -16,7 +16,7 @@ const CELL = "grid h-[32px] w-[34px] place-items-center rounded-[2px] text-[14px
 const NAV = "grid size-[28px] place-items-center rounded-[2px] text-erp-label transition-colors duration-150 ease-out hover:bg-erp-thead-bg";
 const FOOT = "text-[13px] transition-colors duration-150 ease-out";
 // 달력 머리의 연 · 월 고르기 — 공통 Select 와 같은 껍데기 · 오른쪽 화살표를 30px 높이 · 14px 글자로 줄였다.
-const HEAD_SELECT = `${FIELD_BOX} h-[30px] appearance-none bg-[url(/icons/select-arrow.svg)] bg-[length:26px_26px] bg-[position:right_center] bg-no-repeat pr-[24px] pl-[8px] text-[14px] font-semibold`;
+const HEAD_SELECT = `${FIELD_BOX} h-[30px] w-auto! shrink-0 appearance-none bg-[url(/icons/select-arrow.svg)] bg-[length:24px_24px] bg-[position:right_2px_center] bg-no-repeat pr-[26px] pl-[10px] text-[14px] font-semibold`;
 
 /** 연도 고르기 범위 — 올해 기준 100년 전(생년월일)부터 10년 뒤까지. 보고 있는 연도가 그 밖이면 넣어 준다. */
 function yearsAround(shown: number) {
@@ -237,7 +237,7 @@ export function DateField({
                   aria-label="연도"
                   value={view.getFullYear()}
                   onChange={(e) => move(atMonth(cursor, Number(e.target.value), view.getMonth()))}
-                  className={`${HEAD_SELECT} w-[98px]`}
+                  className={HEAD_SELECT}
                 >
                   {yearsAround(view.getFullYear()).map((y) => (
                     <option key={y} value={y}>
@@ -249,7 +249,7 @@ export function DateField({
                   aria-label="월"
                   value={view.getMonth()}
                   onChange={(e) => move(atMonth(cursor, view.getFullYear(), Number(e.target.value)))}
-                  className={`${HEAD_SELECT} w-[72px]`}
+                  className={HEAD_SELECT}
                 >
                   {Array.from({ length: 12 }, (_, m) => (
                     <option key={m} value={m}>
