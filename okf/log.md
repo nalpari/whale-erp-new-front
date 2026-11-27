@@ -5,6 +5,9 @@
 * **Update**: `2026-11-26-기초정보-정책서.md` 를 목업과 대조해 고친 내용(PL-4 가맹 역할 분류 사용 · PL-14 · 3장/PL-17 점포에 상품 리스트 여러 개 매핑 · PL-36 리스트마다 · PL-40 확인창 · 8장 쟁점 ↔ 문의 번호 · 10장 점포 상품 리스트 · 점포 분류 사용 식별자)을 [기초정보관리](/master.md) 에 반영했다.
 * **Update**: `2026-11-26-기초정보-정책서.md`(Notion 「기초정보(상품 · 카테고리 · 가격) 정책서」를 옮긴 것, PL-1 ~ 47 · 쟁점 1 ~ 8 · 문의 Q1 ~ Q11)를 새 concept [기초정보관리](/master.md) 로 만들었다. 화면 근거는 정책서 기준으로 그린 목업 `docs/mockup/master/`. 구현 전이라 코드와 견줄 것은 없다.
 
+## 2026-11-25
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 시작 가이드 미니 카드 위로 고개를 내민 고래(`PeekingWhales`) — 펼친 카드는 아기 → 엄마 → 꼬리, 접은 알약은 아기. [시작 가이드]에 마우스를 올리면 아기 고래(`HoverBabyWhale`). 헤더 목록 상자에 제목 줄 · [×] 닫기.
+
 ## 2026-11-24
 * **Update**: [Payslips screen](/screens/payslips.md) — 재영 리뷰: 금액이 있는데 근무시간이 비었거나 0 인 야간 · 휴일근무수당은 임시저장 · 확정 전에 화면이 막는다(`missingHours`, api 와 같은 판정).
 * **Update**: [Payslips screen](/screens/payslips.md) — 재영 리뷰: 근무시간 칸을 바꿨을 때 도움말 시간 글자를 api 와 같은 규칙으로(`hoursLabel` — 6의 배수 분만 「3.5시간」, 아니면 「7시간 50분」).
