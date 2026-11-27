@@ -83,22 +83,21 @@ test("colonizeTime 은 숫자 네 자리가 되면 쌍점을 넣고, 세 자리�
 const typed = (keys: string) => [...keys].reduce((v, k) => colonizeTime(v + k), "");
 const typedThenLeft = (keys: string) => parseTime(typed(keys));
 
-test("한 글자씩 친 뒤 칸을 벗어나면 친 뜻대로 읽는다", () => {
-  assert.equal(typedThenLeft("930"), "09:30");
-  assert.equal(typedThenLeft("905"), "09:05");
-  assert.equal(typedThenLeft("130"), "01:30", "1:30 이 13:00 으로 바뀌지 않는다");
-  assert.equal(typedThenLeft("123"), "01:23");
+test("한 글자씩 친 뒤 칸을 벗어나면 다 친 모양만 시각으로 읽는다", () => {
   assert.equal(typedThenLeft("0930"), "09:30");
   assert.equal(typedThenLeft("1234"), "12:34");
+  assert.equal(typedThenLeft("1830"), "18:30");
   assert.equal(typedThenLeft("9:30"), "09:30");
   assert.equal(typedThenLeft("9.05"), "09:05");
-  assert.equal(typedThenLeft("9"), "09:00");
   assert.equal(typedThenLeft("9:3"), null, "분 한 자리는 9:03 인지 9:30 인지 몰라 읽지 않는다");
   assert.equal(typedThenLeft("2400"), null);
   assert.equal(typedThenLeft("09301"), null, "다섯 자리는 맞는 시각으로 자르지 않는다");
   assert.equal(parseTime(colonizeTime("09:301")), null, "넘치게 붙여넣은 값은 읽지 않는다");
-  for (const digits of ["905", "930", "130", "123", "0930", "1234", "9"]) {
-    assert.equal(typedThenLeft(digits), parseTime(digits), `${digits}: 친 길과 한 번에 읽은 값이 같다`);
+});
+
+test("덜 친 1~3자리 숫자는 시각으로 채우지 않는다 — 1830 을 치다 18 · 123 에서 저장해도 18:00 · 01:23 이 되지 않게", () => {
+  for (const digits of ["1", "9", "18", "123", "130", "905", "930"]) {
+    assert.equal(typedThenLeft(digits), null, `${digits}: 덜 친 값`);
   }
 });
 
@@ -116,8 +115,8 @@ test("parseTime 은 사람이 치는 모양을 HH:MM 으로 맞추고 범위 밖
   assert.equal(parseTime("9:5"), null, "쌍점 뒤 분은 두 자리만");
   assert.equal(parseTime("9.05"), "09:05");
   assert.equal(parseTime("0905"), "09:05");
-  assert.equal(parseTime("905"), "09:05");
-  assert.equal(parseTime("9"), "09:00");
+  assert.equal(parseTime("905"), null, "세 자리는 덜 친 값");
+  assert.equal(parseTime("9"), null, "한 자리는 덜 친 값");
   assert.equal(parseTime("23:59"), "23:59");
   assert.equal(parseTime("24:00"), null);
   assert.equal(parseTime("12:60"), null);

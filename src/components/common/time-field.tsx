@@ -17,8 +17,8 @@ const CELL = "grid h-[30px] w-full shrink-0 place-items-center rounded-[2px] tex
 const FOOT = "text-[13px] transition-colors duration-150 ease-out";
 
 // 시간 입력칸(2026-11-27 사용자 지정 — 네이티브 <input type="time"> 은 칸 안 시 · 분 조각을 하나씩 눌러 바꿔야 해 다루기 어려웠다).
-// DateField 처럼 직접 칠 수도 있고(0930 · 930 · 9:30 · 9.30 → 09:30), 시계 버튼을 누르면 시 · 분 두 열 판에서 고를 수 있다.
-// 판은 DateField 와 같은 popover 모양이다. 시를 고르면 분이 없을 때 00분으로 채우고, 분을 고르면 닫는다.
+// DateField 처럼 직접 칠 수도 있고(0930 · 9:30 · 9.30 → 09:30, 덜 친 1~3자리는 시각으로 채우지 않는다), 시계 버튼을 누르면 시 · 분 두 열 판에서 고를 수 있다.
+// 판은 DateField 와 같은 popover 모양이다. 시를 고르면 분이 없을 때 00분으로 채우고, 분을 고르면 닫는다(시가 비었으면 시를 고를 때까지 연 채 기다린다).
 // 값은 네이티브 시간 칸과 같은 HH:MM(24시간)이다. 치는 중에는 다 친 값만 내보내고, 칸을 벗어날 때 시간으로 읽히면 HH:MM 으로 맞춘다.
 // 읽히지 않으면 지우지 않고 친 글자를 그대로 내보낸다 — 쓰는 쪽의 저장 검사(「시 · 분까지 입력해 주세요」)가 잡게.
 export function TimeField({
@@ -45,6 +45,8 @@ export function TimeField({
   const [open, setOpen] = useState(false);
   // 시 · 분 목록에서 방향키로 옮겨 간 칸 — Tab 정지점(tabIndex 0)은 이 칸이다. 판을 열 때마다 비우고, 비면 고른 칸(없으면 첫 칸).
   const [cursor, setCursor] = useState<{ hour: string | null; minute: string | null }>({ hour: null, minute: null });
+  // 시가 비어 있을 때 먼저 고른 분 — 시를 09 로 채워 닫지 않고, 판을 연 채 시를 고르면 함께 넣고 닫는다(PR #341 재영 리뷰).
+  const [pendingMinute, setPendingMinute] = useState<string | null>(null);
   const canPopover = useSyncExternalStore(NO_SUBSCRIBE, HAS_POPOVER, () => true);
 
   const wrap = useRef<HTMLDivElement>(null);
@@ -124,7 +126,8 @@ export function TimeField({
     setCursor((c) => ({ ...c, [list]: value }));
   };
   const hourStop = cursor.hour ?? hour ?? HOURS[0];
-  const minuteStop = cursor.minute ?? minute ?? MINUTES[0];
+  const shownMinute = pendingMinute ?? minute;
+  const minuteStop = cursor.minute ?? shownMinute ?? MINUTES[0];
 
   const set = (next: string, closeAfter: boolean) => {
     setText(next);
@@ -147,7 +150,7 @@ export function TimeField({
         aria-describedby={describedBy}
         placeholder="HH:MM"
         onChange={(e) => emit(colonizeTime(e.target.value))}
-        // 905 · 9.05 처럼 쳐도 HH:MM 으로 맞춘다
+        // 9:05 · 9.05 · 0905 처럼 쳐도 HH:MM 으로 맞춘다(덜 친 1~3자리는 그대로 넘겨 저장 검사가 막는다)
         onBlur={(e) => commit(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter") commit(e.currentTarget.value);
@@ -184,6 +187,7 @@ export function TimeField({
           const opened = (e.nativeEvent as ToggleEvent).newState === "open";
           setOpen(opened);
           if (opened) setCursor({ hour: null, minute: null });
+          if (!opened) setPendingMinute(null);
           if (!opened && document.activeElement === document.body) trigger.current?.focus();
         }}
         onBlur={(e) => {
@@ -206,7 +210,11 @@ export function TimeField({
                       data-value={h}
                       tabIndex={h === hourStop ? 0 : -1}
                       aria-selected={h === hour}
-                      onClick={() => set(`${h}:${minute ?? "00"}`, false)}
+                      onClick={() => {
+                        const m = pendingMinute ?? minute;
+                        setPendingMinute(null);
+                        set(`${h}:${m ?? "00"}`, pendingMinute !== null);
+                      }}
                       className={`${CELL} ${h === hour ? "bg-erp-brand text-white" : "text-erp-ink hover:bg-erp-thead-bg"}`}
                     >
                       {h}
@@ -224,9 +232,12 @@ export function TimeField({
                       role="option"
                       data-value={m}
                       tabIndex={m === minuteStop ? 0 : -1}
-                      aria-selected={m === minute}
-                      onClick={() => set(`${hour ?? "09"}:${m}`, true)}
-                      className={`${CELL} ${m === minute ? "bg-erp-brand text-white" : "text-erp-ink hover:bg-erp-thead-bg"}`}
+                      aria-selected={m === shownMinute}
+                      onClick={() => {
+                        if (hour === null) setPendingMinute(m);
+                        else set(`${hour}:${m}`, true);
+                      }}
+                      className={`${CELL} ${m === shownMinute ? "bg-erp-brand text-white" : "text-erp-ink hover:bg-erp-thead-bg"}`}
                     >
                       {m}
                     </button>

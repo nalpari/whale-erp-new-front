@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-11-27
+* **Update**: [Whale ERP Front](/whale-erp-front.md) — PR #341 재영 리뷰 반영: `TimeField` 는 칸을 벗어날 때 다 친 모양(H:MM · HH:MM · 네 자리)만 시각으로 맞추고 덜 친 1~3자리는 그대로 넘겨 저장 검사가 막는다(블로커). 시가 빈 채 분을 고르면 09시로 채우지 않고 시를 기다리며, 달력 연 · 월 상자를 바꿔도 포커스가 날짜 칸으로 넘어가지 않는다.
 * **Update**: [Whale ERP Front](/whale-erp-front.md) — PR #341 재리뷰 반영: `TimeField` 는 숫자가 아닌 글자가 섞인 값(1:30 PM)을 지워 다른 시각으로 통과시키지 않고, 시 · 분 목록의 Tab 정지점은 방향키로 옮겨 간 칸을 따른다.
 * **Update**: [Whale ERP Front](/whale-erp-front.md) — PR #341 pr-agent 리뷰 반영: `TimeField` 는 자릿수가 넘치는 값(09:301)을 잘라 맞는 시각으로 만들지 않고 저장 검사로 넘기며, Enter 를 누를 때도 칸을 벗어날 때처럼 값을 맞춰 내보내고, 시 · 분 목록은 목록마다 Tab 한 번 · 위아래 방향키로 옮긴다.
 * **Update**: [Whale ERP Front](/whale-erp-front.md) — PR 전 코드리뷰 반영: `TimeField` 는 세 자리(930 · 130)를 친 뜻대로 읽고, 읽히지 않는 값은 지우지 않고 넘겨 저장 검사가 알린다. 값이 그대로면 칸을 벗어나도 onChange 를 부르지 않는다. 쌍점 뒤 분은 두 자리만 받는다. `atMonth` 를 `date-math` 로 옮겨 테스트했다.

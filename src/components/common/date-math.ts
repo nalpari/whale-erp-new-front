@@ -48,8 +48,8 @@ export function monthGrid(view: Date) {
 const TIME = /^([01]\d|2[0-3]):([0-5]\d)$/;
 export const isTime = (v: string) => TIME.test(v);
 
-// 숫자만 쳐도 네 자리가 되면 HH:MM 으로 쌍점을 넣는다(0930 → 09:30). 세 자리(930)까지는 숫자 그대로 두고 칸을 벗어날 때
-// parseTime 이 9:30 으로 읽는다. 쌍점 · 점을 직접 친 사람은 그 자리를 지킨다(9:05 · 9.05).
+// 숫자만 쳐도 네 자리가 되면 HH:MM 으로 쌍점을 넣는다(0930 → 09:30). 세 자리(930)까지는 숫자 그대로 둔다 — 덜 친 값이라
+// 칸을 벗어나도 parseTime 이 시각으로 읽지 않고 저장 검사가 막는다. 쌍점 · 점을 직접 친 사람은 그 자리를 지킨다(9:05 · 9.05).
 // 자릿수가 넘치면(09:301 · 09301) 잘라서 맞는 시각으로 만들지 않고 그대로 둔다 — 잘못 붙여넣은 근태 시각이 조용히 통과하지 않고
 // 칸을 벗어날 때 parseTime 이 읽지 못해 저장 검사가 알린다(PR #341 pr-agent 리뷰).
 export function colonizeTime(input: string): string {
@@ -63,7 +63,9 @@ export function colonizeTime(input: string): string {
   return d.length === 4 ? `${d.slice(0, 2)}:${d.slice(2)}` : d;
 }
 
-// 사람이 치는 모양을 HH:MM 으로 맞춘다 — 9:05 · 9.05 · 0905 · 905 · 9 (9시 정각). 쌍점 뒤 분은 두 자리만 받는다(9:3 은 9:03 인지 9:30 인지 몰라 null).
+// 다 친 모양만 HH:MM 으로 맞춘다 — H:MM · HH:MM(9:05 · 9.05 · 09:05)과 숫자 네 자리(0905). 쌍점 뒤 분은 두 자리만 받는다(9:3 은 null).
+// 숫자 1~3자리(18 · 123 · 905)는 덜 친 값으로 보고 null — 퇴근 1830 을 치다 18 · 123 에서 저장하면 18:00 · 01:23 으로 채워져
+// 저장 검사를 통과하고 01:23 은 다음 날 퇴근으로까지 붙었다(PR #341 재영 리뷰 블로커, 예전 type="time" 칸은 이때 저장이 막혔다).
 // 범위를 벗어나면(24:00 · 12:60) null.
 export function parseTime(v: string): string | null {
   const s = v.trim();
@@ -73,10 +75,10 @@ export function parseTime(v: string): string | null {
   if (sep) {
     h = Number(sep[1]);
     m = Number(sep[2]);
-  } else if (/^\d{1,4}$/.test(s)) {
-    // 1~2자리는 시, 3~4자리는 뒤 두 자리가 분(905 → 9:05, 0930 → 9:30)
-    h = Number(s.length <= 2 ? s : s.slice(0, -2));
-    m = s.length <= 2 ? 0 : Number(s.slice(-2));
+  } else if (/^\d{4}$/.test(s)) {
+    // 네 자리는 앞 두 자리가 시, 뒤 두 자리가 분(0930 → 09:30)
+    h = Number(s.slice(0, 2));
+    m = Number(s.slice(2));
   } else return null;
   if (h > 23 || m > 59) return null;
   return `${pad(h)}:${pad(m)}`;

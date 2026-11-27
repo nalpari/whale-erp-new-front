@@ -112,7 +112,11 @@ export function DateField({
 
   // 열리면 기준 칸으로 포커스를 옮긴다. 닫힐 때 트리거로 되돌리는 것은 popover 가 해 주지 않아 직접 한다.
   useEffect(() => {
-    if (open) pop.current?.querySelector<HTMLElement>('[tabindex="0"]')?.focus();
+    if (!open) return;
+    // 연 · 월 상자로 바꾼 때는 포커스를 상자에 둔다 — 날짜 칸으로 옮기면 키보드로 연도를 여러 해 넘길 수 없다(PR #341 재영 리뷰).
+    const active = document.activeElement;
+    if (active instanceof HTMLSelectElement && pop.current?.contains(active)) return;
+    pop.current?.querySelector<HTMLElement>('[tabindex="0"]')?.focus();
   }, [open, cursor]);
 
   // 치는 중에는 빈 값과 YYYY-MM-DD 10자를 다 친 값만 내보낸다. "2020-0" 이 조회 조건에 실려 가면 안 되고,
