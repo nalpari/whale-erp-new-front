@@ -13,6 +13,7 @@ export { FieldMessage, FailedBand } from "./field-message";
 export { GuideBand, NoticeBand } from "./notice-band";
 export { ExcelDownloadButton, ExcelDownloadNotice, ExcelDownloadProvider } from "./excel-download";
 export { DateField } from "./date-field";
+export { TimeField } from "./time-field";
 export { MonthPicker } from "./month-picker";
 export { SearchField } from "./search-field";
 export { DataTable, type Column, type RowState, type TableHeadVariant } from "./data-table";

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { createContext, use, useCallback, useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, Checkbox, ConfirmDialog, RowButton, DataTable, DetailTable, Field, FieldMessage, FormGroup, GuideBand, Select, SlidePanel, TextField, Textarea, useAction, useToast, type Column } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, RowButton, DataTable, DetailTable, Field, FieldMessage, FormGroup, GuideBand, Select, SlidePanel, TextField, Textarea, TimeField, useAction, useToast, type Column } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { BackdropInert } from "./backdrop-inert";
@@ -446,15 +446,14 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
       <FormGroup title="출퇴근 기록">
         <MessageRow>
           <HelpField label="출근" help={`보정 전 ${pair.checkIn?.time ?? "없음"}`} message={<FieldMessage id={`${ids}-checkIn`} message={errors.checkIn} />}>
-            <TextField
-              type="time"
+            <TimeField
               aria-label="출근"
               value={checkIn}
               {...invalidProps(ids, errors, "checkIn")}
-              onChange={(e) => {
-                setCheckIn(e.target.value);
+              onChange={(v) => {
+                setCheckIn(v);
                 setErrors((x) => clearError(x, "checkIn"));
-                clearRejection(fixPoints(fix.row.date, !!pair.checkIn, e.target.value, checkOut, nextDay));
+                clearRejection(fixPoints(fix.row.date, !!pair.checkIn, v, checkOut, nextDay));
               }}
             />
           </HelpField>
@@ -463,15 +462,14 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
             help={`보정 전 ${pair.checkOut ? pair.checkOut.time + laterDayMark(fix.row.date, pair.checkOut.recordedAt) : "없음"}`}
             message={<FieldMessage id={`${ids}-checkOut`} message={errors.checkOut} />}
           >
-            <TextField
-              type="time"
+            <TimeField
               aria-label="퇴근"
               value={checkOut}
               {...invalidProps(ids, errors, "checkOut")}
-              onChange={(e) => {
-                setCheckOut(e.target.value);
+              onChange={(v) => {
+                setCheckOut(v);
                 setErrors((x) => clearError(x, "checkOut"));
-                clearRejection(fixPoints(fix.row.date, !!pair.checkIn, checkIn, e.target.value, nextDay));
+                clearRejection(fixPoints(fix.row.date, !!pair.checkIn, checkIn, v, nextDay));
               }}
             />
           </HelpField>
@@ -708,28 +706,26 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
         </MessageRow>
         <MessageRow>
           <MessageField label="출근" required message={<FieldMessage id={`${ids}-checkIn`} message={errors.checkIn} />}>
-            <TextField
-              type="time"
+            <TimeField
               aria-label="출근"
               value={checkIn}
               {...invalidProps(ids, errors, "checkIn")}
-              onChange={(e) => {
-                setCheckIn(e.target.value);
+              onChange={(v) => {
+                setCheckIn(v);
                 setErrors((x) => clearError(x, "checkIn"));
-                clearRejection(proxyPoints(date, e.target.value, checkOut));
+                clearRejection(proxyPoints(date, v, checkOut));
               }}
             />
           </MessageField>
           <MessageField label="퇴근" required={!isProxy} message={<FieldMessage id={`${ids}-checkOut`} message={errors.checkOut} />}>
-            <TextField
-              type="time"
+            <TimeField
               aria-label="퇴근"
               value={checkOut}
               {...invalidProps(ids, errors, "checkOut")}
-              onChange={(e) => {
-                setCheckOut(e.target.value);
+              onChange={(v) => {
+                setCheckOut(v);
                 setErrors((x) => clearError(x, "checkOut"));
-                clearRejection(proxyPoints(date, checkIn, e.target.value));
+                clearRejection(proxyPoints(date, checkIn, v));
               }}
             />
           </MessageField>

@@ -41,3 +41,35 @@ export function monthGrid(view: Date) {
   const start = addDays(first, -first.getDay());
   return Array.from({ length: 42 }, (_, i) => addDays(start, i));
 }
+
+// ── 시간(TimeField) ──────────────────────────────────────────────
+// 시간 칸이 받는 값은 24시간 HH:MM 하나다(네이티브 <input type="time"> 의 value 와 같은 모양).
+
+const TIME = /^([01]\d|2[0-3]):([0-5]\d)$/;
+export const isTime = (v: string) => TIME.test(v);
+
+// 숫자만 쳐도 HH:MM 으로 쌍점을 넣는다(0930 → 09:30). 세 번째 숫자가 와야 쌍점을 붙여 지우기가 걸리지 않는다.
+// 쌍점을 직접 친 사람은 그 모양 그대로 둔다(9:5 처럼 한 자리도) — parseTime 이 받는다.
+export function colonizeTime(input: string): string {
+  if (input.includes(":")) return input.replace(/[^\d:]/g, "").slice(0, 5);
+  const d = input.replace(/\D/g, "").slice(0, 4);
+  return d.length <= 2 ? d : `${d.slice(0, 2)}:${d.slice(2)}`;
+}
+
+// 사람이 치는 모양을 HH:MM 으로 맞춘다 — 9:5 · 9.05 · 0905 · 905 · 9 (9시 정각). 범위를 벗어나면(24:00 · 12:60) null.
+export function parseTime(v: string): string | null {
+  const s = v.trim();
+  let h: number;
+  let m: number;
+  const sep = /^(\d{1,2})[:.](\d{1,2})$/.exec(s);
+  if (sep) {
+    h = Number(sep[1]);
+    m = Number(sep[2]);
+  } else if (/^\d{1,4}$/.test(s)) {
+    // 1~2자리는 시, 3~4자리는 뒤 두 자리가 분(905 → 9:05, 0930 → 9:30)
+    h = Number(s.length <= 2 ? s : s.slice(0, -2));
+    m = s.length <= 2 ? 0 : Number(s.slice(-2));
+  } else return null;
+  if (h > 23 || m > 59) return null;
+  return `${pad(h)}:${pad(m)}`;
+}

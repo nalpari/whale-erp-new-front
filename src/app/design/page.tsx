@@ -8,6 +8,7 @@ import {
   DataTable,
   DetailTable,
   DateField,
+  TimeField,
   Field,
   FormGroup,
   FormRow,
@@ -124,8 +125,8 @@ export default function DesignUnitsPage() {
         </div>
       </Section>
 
-      <Section title="SearchField · Select · DateField">
-        <div className="grid max-w-[640px] gap-4 sm:grid-cols-3">
+      <Section title="SearchField · Select · DateField · TimeField">
+        <div className="grid max-w-[860px] gap-4 sm:grid-cols-4">
           <SearchField placeholder="대표자명 입력" aria-label="대표자명" />
           <Select aria-label="페이지당 건수" defaultValue="50">
             <option>20</option>
@@ -133,6 +134,7 @@ export default function DesignUnitsPage() {
             <option>100</option>
           </Select>
           <DateField aria-label="등록일" defaultValue="2020-08-28" />
+          <TimeField aria-label="시간" defaultValue="09:30" />
         </div>
       </Section>
 

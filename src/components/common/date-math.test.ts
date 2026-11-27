@@ -2,7 +2,7 @@
 // Node 24 가 타입을 벗겨 그대로 실행한다. 테스트 도구를 따로 깔지 않는다.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { addDays, hyphenateDate, iso, monthGrid, parse, shiftMonth } from "./date-math.ts";
+import { addDays, colonizeTime, hyphenateDate, isTime, iso, monthGrid, parse, parseTime, shiftMonth } from "./date-math.ts";
 
 test("parse 는 사람이 치는 모양까지 받고, 없는 날짜는 버린다", () => {
   assert.equal(iso(parse("2020-08-28")!), "2020-08-28");
@@ -64,4 +64,29 @@ test("hyphenateDate 는 하이픈을 두 번 친 값(한 자리 달 · 날)을 �
 test("hyphenateDate 는 / · . 로 친 값은 그대로 둔다 (2020/8/5 를 parse 가 받는다)", () => {
   assert.equal(hyphenateDate("2020/8/5"), "2020/8/5");
   assert.equal(hyphenateDate("2020.08.05"), "2020.08.05");
+});
+
+test("colonizeTime 은 숫자만 쳐도 HH:MM 으로 쌍점을 넣는다", () => {
+  assert.equal(colonizeTime("09"), "09");
+  assert.equal(colonizeTime("093"), "09:3");
+  assert.equal(colonizeTime("0930"), "09:30");
+  assert.equal(colonizeTime("093015"), "09:30", "네 자리 넘게 치면 자른다");
+  assert.equal(colonizeTime("9:5"), "9:5", "쌍점을 직접 친 모양은 그대로");
+  assert.equal(colonizeTime("09:3a0"), "09:30");
+});
+
+test("parseTime 은 사람이 치는 모양을 HH:MM 으로 맞추고 범위 밖은 버린다", () => {
+  assert.equal(parseTime("09:30"), "09:30");
+  assert.equal(parseTime("9:5"), "09:05");
+  assert.equal(parseTime("9.05"), "09:05");
+  assert.equal(parseTime("0905"), "09:05");
+  assert.equal(parseTime("905"), "09:05");
+  assert.equal(parseTime("9"), "09:00");
+  assert.equal(parseTime("23:59"), "23:59");
+  assert.equal(parseTime("24:00"), null);
+  assert.equal(parseTime("12:60"), null);
+  assert.equal(parseTime("가나"), null);
+  assert.equal(parseTime(""), null);
+  assert.equal(isTime("09:30"), true);
+  assert.equal(isTime("9:30"), false);
 });

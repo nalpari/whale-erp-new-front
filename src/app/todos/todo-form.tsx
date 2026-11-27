@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, DateField, DetailTable, FieldMessage, FormGroup, FormRow, GuideBand, GuideNote, NoticeBand, RequiredMark, SearchField, Select, Textarea, TextField, Toggle, useAction, useToast } from "@/components/common";
+import { Button, DateField, DetailTable, FieldMessage, FormGroup, FormRow, GuideBand, GuideNote, NoticeBand, RequiredMark, SearchField, Select, Textarea, TextField, TimeField, Toggle, useAction, useToast } from "@/components/common";
 import { useAccount, useCurrentBp, useMenuRole, useStores } from "@/components/site/session-gate";
 import { isFranchiseRole } from "@/lib/auth-routes";
 import { bpPath } from "@/lib/bp-path";
@@ -421,7 +421,7 @@ function TodoFormFields({
             </Stack>
             <Stack grow>
               <TopField label="시간 (선택)">
-                <TextField type="time" value={form.dueTime} aria-describedby={describe("dueTime")} onChange={(e) => set("dueTime", e.target.value)} />
+                <TimeField aria-label="시간" value={form.dueTime} aria-describedby={describe("dueTime")} onChange={(v) => set("dueTime", v)} />
               </TopField>
               {message("dueTime")}
             </Stack>
