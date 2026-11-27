@@ -166,6 +166,8 @@ export function DateField({
         disabled={disabled}
         aria-label={label}
         placeholder="YYYY-MM-DD"
+        // Safari 의 연락처 자동 채우기 단추가 달력 버튼 옆에 뜨지 않게(TimeField 와 같다)
+        autoComplete="off"
         onChange={(e) => emit(autoHyphen ? hyphenateDate(e.target.value) : e.target.value)}
         onBlur={(e) => {
           // 2020/8/5 처럼 쳐도 받아 YYYY-MM-DD 로 맞춘다. 날짜로 안 읽히면 지운다 —
@@ -177,7 +179,7 @@ export function DateField({
             onChange?.(iso(d));
           } else if (e.target.value) emit("");
         }}
-        className={`${FIELD_BOX} h-[34px] ${canPopover ? "pr-[34px]" : "pr-[10px]"} pl-[10px]`}
+        className={`${FIELD_BOX} h-[34px] ${canPopover ? "pr-[34px]" : "pr-[10px]"} pl-[10px] no-autofill-button`}
       />
       {canPopover && (
         <button

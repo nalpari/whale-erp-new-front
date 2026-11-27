@@ -149,13 +149,16 @@ export function TimeField({
         aria-invalid={invalid}
         aria-describedby={describedBy}
         placeholder="HH:MM"
+        // Safari 가 칸 오른쪽(시계 왼쪽)에 연락처 자동 채우기 단추(사람 · 화살표)를 띄웠다 — 자동 완성을 끄고 단추도 감춘다
+        // (globals.css .no-autofill-button, 2026-11-27 사용자 지정)
+        autoComplete="off"
         onChange={(e) => emit(colonizeTime(e.target.value))}
         // 9:05 · 9.05 · 0905 처럼 쳐도 HH:MM 으로 맞춘다(덜 친 1~3자리는 그대로 넘겨 저장 검사가 막는다)
         onBlur={(e) => commit(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter") commit(e.currentTarget.value);
         }}
-        className={`${FIELD_BOX} h-[34px] ${canPopover ? "pr-[34px]" : "pr-[10px]"} pl-[10px] tabular-nums`}
+        className={`${FIELD_BOX} h-[34px] ${canPopover ? "pr-[34px]" : "pr-[10px]"} pl-[10px] tabular-nums no-autofill-button`}
       />
       {canPopover && (
         <button

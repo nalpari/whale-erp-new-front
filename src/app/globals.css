@@ -529,3 +529,11 @@ details[name="guest-faq"][open]::details-content {
     animation-duration: 6s;
   }
 }
+
+/* 날짜 · 시간 입력칸(DateField · TimeField)에 Safari 가 띄우는 연락처 · 암호 자동 채우기 단추(사람 · 화살표)를 감춘다 — 시계 · 달력 버튼 옆에 겹쳐 보였다(2026-11-27 사용자 지정) */
+.no-autofill-button::-webkit-contacts-auto-fill-button,
+.no-autofill-button::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
+}
