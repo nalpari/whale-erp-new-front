@@ -50,12 +50,14 @@ export const isTime = (v: string) => TIME.test(v);
 
 // 숫자만 쳐도 네 자리가 되면 HH:MM 으로 쌍점을 넣는다(0930 → 09:30). 세 자리(930)까지는 숫자 그대로 두고 칸을 벗어날 때
 // parseTime 이 9:30 으로 읽는다. 쌍점 · 점을 직접 친 사람은 그 자리를 지킨다(9:05 · 9.05).
+// 자릿수가 넘치면(09:301 · 09301) 잘라서 맞는 시각으로 만들지 않고 그대로 둔다 — 잘못 붙여넣은 근태 시각이 조용히 통과하지 않고
+// 칸을 벗어날 때 parseTime 이 읽지 못해 저장 검사가 알린다(PR #341 pr-agent 리뷰).
 export function colonizeTime(input: string): string {
   // 쌍점이나 점을 직접 치면 그 자리를 지킨다(9:05 · 9.05). 점은 쌍점으로 바꾼다.
-  if (/[:.]/.test(input)) return input.replace(/[^\d:.]/g, "").replace(".", ":").slice(0, 5);
+  if (/[:.]/.test(input)) return input.replace(/[^\d:.]/g, "").replace(".", ":");
   // 숫자만 치면 네 자리가 됐을 때만 쌍점을 넣는다 — 세 자리(930)에서 넣으면 93:0 이 되어 9:30 으로 읽지 못한다.
-  const d = input.replace(/\D/g, "").slice(0, 4);
-  return d.length < 4 ? d : `${d.slice(0, 2)}:${d.slice(2)}`;
+  const d = input.replace(/\D/g, "");
+  return d.length === 4 ? `${d.slice(0, 2)}:${d.slice(2)}` : d;
 }
 
 // 사람이 치는 모양을 HH:MM 으로 맞춘다 — 9:05 · 9.05 · 0905 · 905 · 9 (9시 정각). 쌍점 뒤 분은 두 자리만 받는다(9:3 은 9:03 인지 9:30 인지 몰라 null).

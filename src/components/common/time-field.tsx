@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 import { POPOVER } from "./date-field";
 import { colonizeTime, isTime, pad, parseTime } from "./date-math";
 import { FIELD_BOX } from "./theme";
@@ -91,6 +91,33 @@ export function TimeField({
     else if (!next) onChange?.("");
   };
 
+  // 친 값을 HH:MM 으로 맞춰 내보낸다 — 칸을 벗어날 때와 Enter 를 누를 때 같다(Enter 로 바로 제출해도 화면에 보이는 값이 넘어가게).
+  // 값이 그대로면 내보내지 않는다(쓰는 쪽이 서버 거절 문장을 지우지 않게).
+  const commit = (raw: string) => {
+    const t = parseTime(raw);
+    if (t) {
+      setText(t);
+      if (t !== controlled) onChange?.(t);
+    } else if (raw && raw !== controlled) {
+      // 시간으로 안 읽히면 지우지 않고 그대로 넘겨 저장 검사가 알리게 한다 — 조용히 지우면 넣으려던 시각이 사라진다.
+      onChange?.(raw);
+    }
+  };
+
+  // 시 · 분 목록은 목록마다 Tab 한 번으로 들어가고(고른 칸, 없으면 첫 칸), 안에서는 위 · 아래 · Home · End 로 옮긴다.
+  const moveInList = (e: KeyboardEvent<HTMLDivElement>) => {
+    const keys = ["ArrowDown", "ArrowUp", "Home", "End"];
+    if (!keys.includes(e.key)) return;
+    const options = [...e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="option"]')];
+    const at = options.indexOf(document.activeElement as HTMLButtonElement);
+    const last = options.length - 1;
+    const next =
+      e.key === "Home" ? 0 : e.key === "End" ? last : e.key === "ArrowDown" ? Math.min(last, at + 1) : Math.max(0, at - 1);
+    e.preventDefault();
+    options[next]?.focus();
+    options[next]?.scrollIntoView({ block: "nearest" });
+  };
+
   const set = (next: string, closeAfter: boolean) => {
     setText(next);
     onChange?.(next);
@@ -112,17 +139,10 @@ export function TimeField({
         aria-describedby={describedBy}
         placeholder="HH:MM"
         onChange={(e) => emit(colonizeTime(e.target.value))}
-        onBlur={(e) => {
-          const raw = e.target.value;
-          // 905 · 9.05 처럼 쳐도 HH:MM 으로 맞춘다. 값이 그대로면 내보내지 않는다(쓰는 쪽이 서버 거절 문장을 지우지 않게).
-          const t = parseTime(raw);
-          if (t) {
-            setText(t);
-            if (t !== controlled) onChange?.(t);
-          } else if (raw && raw !== controlled) {
-            // 시간으로 안 읽히면 지우지 않고 그대로 넘겨 저장 검사가 알리게 한다 — 조용히 지우면 넣으려던 시각이 사라진다.
-            onChange?.(raw);
-          }
+        // 905 · 9.05 처럼 쳐도 HH:MM 으로 맞춘다
+        onBlur={(e) => commit(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit(e.currentTarget.value);
         }}
         className={`${FIELD_BOX} h-[34px] ${canPopover ? "pr-[34px]" : "pr-[10px]"} pl-[10px] tabular-nums`}
       />
@@ -168,12 +188,13 @@ export function TimeField({
             <div className="flex gap-[8px]">
               <div className="flex flex-col gap-[6px]">
                 <p className="text-center text-[12px] text-erp-label">시</p>
-                <div role="listbox" aria-label="시" className={COL}>
-                  {HOURS.map((h) => (
+                <div role="listbox" aria-label="시" className={COL} onKeyDown={moveInList}>
+                  {HOURS.map((h, i) => (
                     <button
                       key={h}
                       type="button"
                       role="option"
+                      tabIndex={h === hour || (hour === null && i === 0) ? 0 : -1}
                       aria-selected={h === hour}
                       onClick={() => set(`${h}:${minute ?? "00"}`, false)}
                       className={`${CELL} ${h === hour ? "bg-erp-brand text-white" : "text-erp-ink hover:bg-erp-thead-bg"}`}
@@ -185,12 +206,13 @@ export function TimeField({
               </div>
               <div className="flex flex-col gap-[6px]">
                 <p className="text-center text-[12px] text-erp-label">분</p>
-                <div role="listbox" aria-label="분" className={COL}>
-                  {MINUTES.map((m) => (
+                <div role="listbox" aria-label="분" className={COL} onKeyDown={moveInList}>
+                  {MINUTES.map((m, i) => (
                     <button
                       key={m}
                       type="button"
                       role="option"
+                      tabIndex={m === minute || (minute === null && i === 0) ? 0 : -1}
                       aria-selected={m === minute}
                       onClick={() => set(`${hour ?? "09"}:${m}`, true)}
                       className={`${CELL} ${m === minute ? "bg-erp-brand text-white" : "text-erp-ink hover:bg-erp-thead-bg"}`}

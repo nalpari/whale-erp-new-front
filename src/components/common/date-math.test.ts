@@ -70,7 +70,8 @@ test("colonizeTime 은 숫자 네 자리가 되면 쌍점을 넣고, 세 자리�
   assert.equal(colonizeTime("09"), "09");
   assert.equal(colonizeTime("093"), "093", "세 자리에서 쌍점을 넣으면 930 이 93:0 이 된다");
   assert.equal(colonizeTime("0930"), "09:30");
-  assert.equal(colonizeTime("093015"), "09:30", "네 자리 넘게 치면 자른다");
+  assert.equal(colonizeTime("093015"), "093015", "네 자리 넘게 치면 자르지 않고 그대로 둔다(읽지 못해 저장 검사가 알린다)");
+  assert.equal(colonizeTime("09:301"), "09:301", "쌍점 뒤로 넘치게 붙여넣어도 자르지 않는다");
   assert.equal(colonizeTime("9:5"), "9:5", "쌍점을 직접 친 모양은 그대로");
   assert.equal(colonizeTime("9.05"), "9:05", "점은 쌍점으로 바꾸고 자리를 지킨다");
   assert.equal(colonizeTime("09:3a0"), "09:30");
@@ -92,6 +93,8 @@ test("한 글자씩 친 뒤 칸을 벗어나면 친 뜻대로 읽는다", () => 
   assert.equal(typedThenLeft("9"), "09:00");
   assert.equal(typedThenLeft("9:3"), null, "분 한 자리는 9:03 인지 9:30 인지 몰라 읽지 않는다");
   assert.equal(typedThenLeft("2400"), null);
+  assert.equal(typedThenLeft("09301"), null, "다섯 자리는 맞는 시각으로 자르지 않는다");
+  assert.equal(parseTime(colonizeTime("09:301")), null, "넘치게 붙여넣은 값은 읽지 않는다");
   for (const digits of ["905", "930", "130", "123", "0930", "1234", "9"]) {
     assert.equal(typedThenLeft(digits), parseTime(digits), `${digits}: 친 길과 한 번에 읽은 값이 같다`);
   }
